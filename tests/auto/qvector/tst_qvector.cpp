@@ -837,7 +837,7 @@ void tst_QVector::QTBUG6416_reserve()
 
 void tst_QVector::initializeList()
 {
-#ifdef QT_CXX0X_INITIALIZERLIST
+#ifdef Q_COMPILER_INITIALIZER_LISTS
     QVector<int> v1{2,3,4};
     QCOMPARE(v1, QVector<int>() << 2 << 3 << 4);
     QCOMPARE(v1, (QVector<int>{2,3,4}));

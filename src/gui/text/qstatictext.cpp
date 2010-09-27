@@ -43,6 +43,7 @@
 #include "qstatictext_p.h"
 #include <private/qtextengine_p.h>
 #include <private/qfontengine_p.h>
+#include <qabstracttextdocumentlayout.h>
 
 #include <QtGui/qapplication.h>
 
@@ -448,7 +449,6 @@ namespace {
             currentItem.font = ti.font();
             currentItem.charOffset = m_chars.size();
             currentItem.numChars = ti.num_chars;
-            currentItem.numGlyphs = ti.glyphs.numGlyphs;
             currentItem.glyphOffset = m_glyphs.size(); // Store offset into glyph pool
             currentItem.positionOffset = m_glyphs.size(); // Offset into position pool
             currentItem.useBackendOptimizations = m_useBackendOptimizations;
@@ -463,8 +463,8 @@ namespace {
             ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
 
             int size = glyphs.size();
-            Q_ASSERT(size == ti.glyphs.numGlyphs);
             Q_ASSERT(size == positions.size());
+            currentItem.numGlyphs = size;
 
             m_glyphs.resize(m_glyphs.size() + size);
             m_positions.resize(m_glyphs.size());
@@ -655,7 +655,9 @@ void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p)
 
         p->save();
         p->translate(topLeftPosition);
-        document.drawContents(p);
+        QAbstractTextDocumentLayout::PaintContext ctx;
+        ctx.palette.setColor(QPalette::Text, p->pen().color());
+        document.documentLayout()->draw(p, ctx);
         p->restore();
 
         if (textWidth >= 0.0)

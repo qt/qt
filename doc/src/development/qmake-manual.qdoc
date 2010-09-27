@@ -2665,6 +2665,13 @@
     value of this variable is typically handled by \c qmake or
      \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
 
+    \section1 QMAKE_LN_SHLIB
+
+    This variable contains the command to execute when creating a link
+    to a shared library. The
+    value of this variable is typically handled by \c qmake or
+     \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
     \section1 QMAKE_POST_LINK
 
     This variable contains the command to execute after linking the TARGET
@@ -2679,12 +2686,13 @@
     executed, additionally some backends will not support this - mostly only
     Makefile backends.
 
-    \section1 QMAKE_LN_SHLIB
+    \section1 QMAKE_PROJECT_NAME
 
-    This variable contains the command to execute when creating a link
-    to a shared library. The
-    value of this variable is typically handled by \c qmake or
-     \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+    \e {This is used for Visual Studio project files only.}
+
+    This variable determines the name of the project when generating project
+    files for IDEs. The default value is the target name. The value of this
+    variable is typically handled by \c qmake and rarely needs to be modified.
 
     \section1 QMAKE_MAC_SDK
 

@@ -79,69 +79,6 @@ inline static void blend_pixel(quint32 &dst, const quint32 src)
     }
 
 
-#define BLEND_SOURCE_OVER_ARGB32_FIRST_ROW_SSSE3(dst, src, length, nullVector, half, one, colorMask, alphaMask) { \
-    int x = 0; \
-\
-    /* First, get dst aligned. */ \
-    const int offsetToAlignOn16Bytes = (4 - ((reinterpret_cast<quintptr>(dst) >> 2) & 0x3)) & 0x3;\
-    const int prologLength = qMin(length, offsetToAlignOn16Bytes);\
-\
-    for (; x < prologLength; ++x) {\
-        blend_pixel(dst[x], src[x]); \
-    } \
-\
-    const int minusOffsetToAlignSrcOn16Bytes = (reinterpret_cast<quintptr>(&(src[x])) >> 2) & 0x3;\
-\
-    if (!minusOffsetToAlignSrcOn16Bytes) {\
-        /* src is aligned, usual algorithm but with aligned operations.\
-           See the SSE2 version for more documentation on the algorithm itself. */\
-        const __m128i alphaShuffleMask = _mm_set_epi8(0xff,15,0xff,15,0xff,11,0xff,11,0xff,7,0xff,7,0xff,3,0xff,3);\
-        for (; x < length-3; x += 4) { \
-            const __m128i srcVector = _mm_load_si128((__m128i *)&src[x]); \
-            const __m128i srcVectorAlpha = _mm_and_si128(srcVector, alphaMask); \
-            if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVectorAlpha, alphaMask)) == 0xffff) { \
-                _mm_store_si128((__m128i *)&dst[x], srcVector); \
-            } else if (_mm_movemask_epi8(_mm_cmpeq_epi32(srcVectorAlpha, nullVector)) != 0xffff) { \
-                __m128i alphaChannel = _mm_shuffle_epi8(srcVector, alphaShuffleMask); \
-                alphaChannel = _mm_sub_epi16(one, alphaChannel); \
-                const __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]); \
-                __m128i destMultipliedByOneMinusAlpha; \
-                BYTE_MUL_SSE2(destMultipliedByOneMinusAlpha, dstVector, alphaChannel, colorMask, half); \
-                const __m128i result = _mm_add_epi8(srcVector, destMultipliedByOneMinusAlpha); \
-                _mm_store_si128((__m128i *)&dst[x], result); \
-            } \
-        } /* end for() */\
-    } else if ((length - x) >= 8) {\
-        /* We are at the first line, so "x - minusOffsetToAlignSrcOn16Bytes" could go before src, and\
-           generate an invalid access. */\
-\
-        /* We use two vectors to extract the src: prevLoaded for the first pixels, lastLoaded for the current pixels. */\
-        __m128i srcVectorPrevLoaded;\
-        if (minusOffsetToAlignSrcOn16Bytes > prologLength) {\
-            /* We go forward 4 pixels to avoid reading before src. */\
-            for (; x < prologLength + 4; ++x)\
-                blend_pixel(dst[x], src[x]); \
-        }\
-        srcVectorPrevLoaded = _mm_load_si128((__m128i *)&src[x - minusOffsetToAlignSrcOn16Bytes]);\
-        const int palignrOffset = minusOffsetToAlignSrcOn16Bytes << 2;\
-\
-        const __m128i alphaShuffleMask = _mm_set_epi8(0xff,15,0xff,15,0xff,11,0xff,11,0xff,7,0xff,7,0xff,3,0xff,3);\
-        switch (palignrOffset) {\
-        case 4:\
-            BLENDING_LOOP(4, length)\
-            break;\
-        case 8:\
-            BLENDING_LOOP(8, length)\
-            break;\
-        case 12:\
-            BLENDING_LOOP(12, length)\
-            break;\
-        }\
-    }\
-    for (; x < length; ++x) \
-        blend_pixel(dst[x], src[x]); \
-}
-
 // Basically blend src over dst with the const alpha defined as constAlphaVector.
 // nullVector, half, one, colorMask are constant accross the whole image/texture, and should be defined as:
 //const __m128i nullVector = _mm_set1_epi32(0);
@@ -153,7 +90,7 @@ inline static void blend_pixel(quint32 &dst, const quint32 src)
 // The computation being done is:
 // result = s + d * (1-alpha)
 // with shortcuts if fully opaque or fully transparent.
-#define BLEND_SOURCE_OVER_ARGB32_MAIN_SSSE3(dst, src, length, nullVector, half, one, colorMask, alphaMask) { \
+#define BLEND_SOURCE_OVER_ARGB32_SSSE3(dst, src, length, nullVector, half, one, colorMask, alphaMask) { \
     int x = 0; \
 \
     /* First, get dst aligned. */ \
@@ -218,14 +155,8 @@ void qt_blend_argb32_on_argb32_ssse3(uchar *destPixels, int dbpl,
         const __m128i one = _mm_set1_epi16(0xff);
         const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
 
-        // We have to unrol the first row in order to deal with the load on unaligned data
-        // prior to the src pointer.
-        BLEND_SOURCE_OVER_ARGB32_FIRST_ROW_SSSE3(dst, src, w, nullVector, half, one, colorMask, alphaMask);
-        dst = (quint32 *)(((uchar *) dst) + dbpl);
-        src = (const quint32 *)(((const uchar *) src) + sbpl);
-
-        for (int y = 1; y < h; ++y) {
-            BLEND_SOURCE_OVER_ARGB32_MAIN_SSSE3(dst, src, w, nullVector, half, one, colorMask, alphaMask);
+        for (int y = 0; y < h; ++y) {
+            BLEND_SOURCE_OVER_ARGB32_SSSE3(dst, src, w, nullVector, half, one, colorMask, alphaMask);
             dst = (quint32 *)(((uchar *) dst) + dbpl);
             src = (const quint32 *)(((const uchar *) src) + sbpl);
         }

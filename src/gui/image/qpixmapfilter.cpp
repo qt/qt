@@ -764,10 +764,17 @@ void expblur(QImage &img, qreal radius, bool improvedQuality = false, int transp
     }
 
     if (transposed == 0) {
-        qt_memrotate90(reinterpret_cast<const quint32*>(temp.bits()),
-                       temp.width(), temp.height(), temp.bytesPerLine(),
-                       reinterpret_cast<quint32*>(img.bits()),
-                       img.bytesPerLine());
+        if (img.depth() == 8) {
+            qt_memrotate90(reinterpret_cast<const quint8*>(temp.bits()),
+                           temp.width(), temp.height(), temp.bytesPerLine(),
+                           reinterpret_cast<quint8*>(img.bits()),
+                           img.bytesPerLine());
+        } else {
+            qt_memrotate90(reinterpret_cast<const quint32*>(temp.bits()),
+                           temp.width(), temp.height(), temp.bytesPerLine(),
+                           reinterpret_cast<quint32*>(img.bits()),
+                           img.bytesPerLine());
+        }
     } else {
         img = temp;
     }

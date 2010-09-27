@@ -221,6 +221,8 @@ private slots:
     void drawRect_task215378();
     void drawRect_task247505();
 
+    void drawText_subPixelPositionsInRaster_qtbug5053();
+
     void drawImage_data();
     void drawImage();
 
@@ -4541,6 +4543,14 @@ void tst_QPainter::clipBoundingRect()
     QVERIFY(p.clipBoundingRect().contains(QRect(120, 120, 20, 20)));
     QVERIFY(!p.clipBoundingRect().contains(QRectF(100, 100, 200, 100)));
 
+    // Test a basic float rectangle
+    p.setClipRect(QRectF(100, 100, 200, 100));
+    QVERIFY(p.clipBoundingRect().contains(QRectF(100, 100, 200, 100)));
+    QVERIFY(!p.clipBoundingRect().contains(QRectF(50, 50, 300, 200)));
+    p.setClipRect(QRectF(120, 120, 20, 20), Qt::IntersectClip);
+    QVERIFY(p.clipBoundingRect().contains(QRect(120, 120, 20, 20)));
+    QVERIFY(!p.clipBoundingRect().contains(QRectF(100, 100, 200, 100)));
+
     // Test a basic path + region
     QPainterPath path;
     path.addRect(100, 100, 200, 100);
@@ -4560,6 +4570,65 @@ void tst_QPainter::clipBoundingRect()
     QVERIFY(p.clipBoundingRect().contains(QRectF(-100, -100, 200, 200)));
     QVERIFY(!p.clipBoundingRect().contains(QRectF(-250, -250, 500, 500)));
 
+}
+
+void tst_QPainter::drawText_subPixelPositionsInRaster_qtbug5053()
+{
+#if !defined(Q_WS_MAC) || !defined(QT_MAC_USE_COCOA)
+    QSKIP("Only Mac/Cocoa supports sub pixel positions in raster engine currently", SkipAll);
+#endif
+
+    int w = 10, h = 10;
+    QImage image(w, h, QImage::Format_RGB32);
+    image.fill(0xffffffff);
+    QPainter p(&image);
+    p.drawText(0, h, "X\\");
+    p.end();
+
+    bool foundNonGrayPixel = false;
+    const int *bits = (const int *) ((const QImage &) image).bits();
+    int bpl = image.bytesPerLine() / 4;
+    for (int y=0; y<w; ++y) {
+        for (int x=0; x<h; ++x) {
+            int r = qRed(bits[x]);
+            int g = qGreen(bits[x]);
+            int b = qBlue(bits[x]);
+            if (r != g || r != b) {
+                foundNonGrayPixel = true;
+                break;
+            }
+        }
+        bits += bpl;
+    }
+    if (!foundNonGrayPixel)
+        QSKIP("Font smoothing must be turned on for this test", SkipAll);
+
+    QFontMetricsF fm(qApp->font());
+
+    QImage baseLine(fm.width(QChar::fromLatin1('e')), fm.height(), QImage::Format_RGB32);
+    baseLine.fill(Qt::white);
+    {
+        QPainter p(&baseLine);
+        p.drawText(0, fm.ascent(), QString::fromLatin1("e"));
+    }
+
+    bool foundDifferentRasterization = false;
+    for (int i=1; i<12; ++i) {
+        QImage comparison(baseLine.size(), QImage::Format_RGB32);
+        comparison.fill(Qt::white);
+
+        {
+            QPainter p(&comparison);
+            p.drawText(QPointF(i / 12.0, fm.ascent()), QString::fromLatin1("e"));
+        }
+
+        if (comparison != baseLine) {
+            foundDifferentRasterization = true;
+            break;
+        }
+    }
+
+    QVERIFY(foundDifferentRasterization);
 }
 
 QTEST_MAIN(tst_QPainter)

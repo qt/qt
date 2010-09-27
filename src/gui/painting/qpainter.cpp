@@ -2737,6 +2737,8 @@ QRectF QPainter::clipBoundingRect() const
 
          if (info.clipType == QPainterClipInfo::RectClip)
              r = info.rect;
+         else if (info.clipType == QPainterClipInfo::RectFClip)
+             r = info.rectf;
          else if (info.clipType == QPainterClipInfo::RegionClip)
              r = info.region.boundingRect();
          else
@@ -8932,7 +8934,7 @@ QPainterPath QPaintEngineState::clipPath() const
 }
 
 /*!
-    Returns wether clipping is enabled or not in the current paint
+    Returns whether clipping is enabled or not in the current paint
     engine state.
 
     This variable should only be used when the state() returns a

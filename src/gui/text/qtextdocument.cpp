@@ -291,7 +291,18 @@ QTextCodec *Qt::codecForHtml(const QByteArray &ba)
     by an editor widget through the undo() and redo() slots; the document also
     provides contentsChanged(), undoAvailable(), and redoAvailable() signals
     that inform connected editor widgets about the state of the undo/redo
-    system.
+    system. The following are the undo/redo operations of a QTextDocument:
+
+    \list
+        \o Insertion or removal of characters. A sequence of insertions or removals
+           within the same text block are regarded as a single undo/redo operation.
+        \o Insertion or removal of text blocks. Sequences of insertion or removals
+           in a single operation (e.g., by selecting and then deleting text) are
+           regarded as a single undo/redo operation.
+        \o Text character format changes.
+        \o Text block format changes.
+        \o Text block group format changes.
+    \endlist
 
     \sa QTextCursor, QTextEdit, \link richtext.html Rich Text Processing\endlink , {Text Object Example}
 */

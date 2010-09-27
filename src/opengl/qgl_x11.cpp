@@ -54,6 +54,7 @@
 #include <private/qt_x11_p.h>
 #include <private/qpixmap_x11_p.h>
 #include <private/qimagepixmapcleanuphooks_p.h>
+#include <private/qunicodetables_p.h>
 #ifdef Q_OS_HPUX
 // for GLXPBuffer
 #include <private/qglpixelbuffer_p.h>

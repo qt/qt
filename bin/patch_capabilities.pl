@@ -46,7 +46,13 @@
 #
 #######################################################################
 
+#
+# Note: Please make sure to output all changes done to the pkg file in a print statements
+#       starting with "Patching: " to ease integration into IDEs!
+#
+
 use File::Copy;
+use File::Spec;
 
 sub Usage() {
     print("This script can be used to set capabilities of all binaries\n");
@@ -142,39 +148,56 @@ if (@ARGV)
         # Parse each line.
         while (<PKG>)
         {
-            # Patch pkg UID
             my $line = $_;
             my $newLine = $line;
-            if ($line =~ m/^\#.*\(0x[0-9|a-f|A-F]*\).*$/)
+
+            # Patch pkg UID if it's in protected range
+            if ($line =~ m/^\#.*\((0x[0-7][0-9|a-f|A-F]*)\).*$/)
             {
-                $newLine =~ s/\(0x./\(0xE/;
+                my $oldUID = $1;
+                my $newUID = $oldUID;
+                $newUID =~ s/0x./0xE/i;
+                $newLine =~ s/$oldUID/$newUID/;
+                print ("Patching: UID $oldUID is not compatible with self-signing! Changed to: $newUID.\n");
             }
 
-            # Patch embedded sis name and UID
-            if ($line =~ m/^@.*\.sis.*\(0x[0-9|a-f|A-F]*\).*$/)
+            # Patch embedded sis name and UID if UID is in protected range
+            if ($line =~ m/^@\"*(.*\.sis).*\((0x[0-7][0-9|a-f|A-F]*)\).*$/)
             {
-                $newLine =~ s/\(0x./\(0xE/;
-                if ($line !~ m/^.*_selfsigned.sis.*$/)
+                my $oldSisName = $1;
+                my $oldUID = $2;
+                my $newUID = $oldUID;
+                $newUID =~ s/0x./0xE/i;
+                $newLine =~ s/$oldUID/$newUID/;
+                print ("Patching: Embedded sis $oldSisName UID $oldUID changed to: $newUID.\n");
+
+                if ($oldSisName !~ m/^.*_selfsigned.sis$/i)
                 {
-                    $newLine =~ s/\.sis/_selfsigned\.sis/i;
+                    my $newSisName = $oldSisName;
+                    $newSisName =~ s/\.sis$/_selfsigned\.sis/i;
+                    $newLine =~ s/$oldSisName/$newSisName/i;
+                    print ("Patching: Embedded sis $oldSisName name changed to: $newSisName.\n");
                 }
             }
 
-            # Remove dependencies to known problem packages (i.e. packages that are likely to be patched, also)
+            # Remove dependencies to known problem packages (i.e. packages that are likely to be patched, too)
             # to reduce unnecessary error messages.
-            if ($line =~ m/^\(0x2002af5f\).*\{.*\}$/)
+            if ($line =~ m/^\((0x2002af5f)\).*\{.*\}$/)
             {
-                $newLine = "\n"
+                $newLine = "\n";
+                print ("Patching: Removed dependency to sqlite3.sis ($1) to avoid installation issues in case sqlite3.sis is also patched.\n");
             }
-            if ($line =~ m/^\(0x2001E61C\).*\{.*\}$/)
+            if ($line =~ m/^\((0x2001E61C)\).*\{.*\}$/)
             {
-                $newLine = "\n"
+                $newLine = "\n";
+                print ("Patching: Removed dependency to qt.sis ($1) to avoid installation issues in case qt.sis is also patched.\n");
             }
 
             # Remove manufacturer ifdef
             if ($line =~ m/^.*\(MANUFACTURER\)\=\(.*\).*$/)
             {
                 $newLine = "\n";
+                print ("Patching: Removed manufacturer check as it is usually not desirable in self-signed packages.\n");
             }
 
             if ($line =~ m/^ELSEIF.*MANUFACTURER$/)
@@ -240,7 +263,9 @@ if (@ARGV)
         foreach my $binaryPath(@binaries)
         {
             # Create the command line for setting the capabilities.
+            my ($binaryVolume, $binaryDirs, $binaryBaseName) = File::Spec->splitpath($binaryPath);
             my $commandToExecute = $baseCommandToExecute;
+            my $executeNeeded = 0;
             if (@capabilitiesSpecified)
             {
                 $commandToExecute = sprintf($baseCommandToExecute, join(" ", @capabilitiesSpecified));
@@ -250,34 +275,54 @@ if (@ARGV)
                 my $dllCaps;
                 open($dllCaps, "elftran -dump s $binaryPath |") or die ("Could not execute elftran");
                 my $capsFound = 0;
+                my $originalVid;
                 my @capabilitiesToSet;
                 my $capabilitiesToAllow = join(" ", @capabilitiesToAllow);
+                my @capabilitiesToDrop;
                 while (<$dllCaps>) {
+                    if (/^Vendor ID: (.*)$/) {
+                        $originalVid = "$1";
+                    }
                     if (!$capsFound) {
                         $capsFound = 1 if (/Capabilities:/);
                     } else {
                         $_ = trim($_);
                         if ($capabilitiesToAllow =~ /$_/) {
                             push(@capabilitiesToSet, $_);
+                        } else {
+                            push(@capabilitiesToDrop, $_);
                         }
                     }
                 }
                 close($dllCaps);
+                if ($originalVid !~ "00000000") {
+                    print ("Patching: Vendor ID (0x$originalVid) incompatible with self-signed packages, setting it to zero for \"$binaryBaseName\".\n");
+                    $executeNeeded = 1;
+                }
+                if ($#capabilitiesToDrop) {
+                    my $capsToDropStr = join("\", \"", @capabilitiesToDrop);
+                    $capsToDropStr =~ s/\", \"$//;
+
+                    print ("Patching: The following capabilities used in \"$binaryBaseName\" are not compatible with a self-signed package and will be removed: \"$capsToDropStr\".\n");
+                    $executeNeeded = 1;
+                }
                 $commandToExecute = sprintf($baseCommandToExecute, join(" ", @capabilitiesToSet));
             }
             $commandToExecute .= $binaryPath;
 
-            # Actually execute the elftran command to set the capabilities.
-            print ("Executing ".$commandToExecute."\n");
-            system ($commandToExecute." > $nullDevice");
-
+            if ($executeNeeded) {
+                # Actually execute the elftran command to set the capabilities.
+                print ("\n");
+                system ("$commandToExecute > $nullDevice");
+            }
             ## Create another command line to check that the set capabilities are correct.
             #$commandToExecute = "elftran -dump s ".$binaryPath;
         }
 
         print ("\n");
-        print ("NOTE: A patched package may not work as expected due to reduced capabilities.\n");
-        print ("      Therefore it should not be used for any kind of Symbian signing or distribution!\n");
+        print ("NOTE: A patched package may not work as expected due to reduced capabilities and other modifications,\n");
+        print ("      so it should not be used for any kind of Symbian signing or distribution!\n");
+        print ("      Use a proper certificate to avoid the need to patch the package.\n");
         print ("\n");
     }
 }

@@ -136,16 +136,6 @@ QT_END_NAMESPACE
     qt_dispatchTabletProximityEvent(tabletEvent);
 }
 
-- (void)qtDispatcherToQAction:(id)sender
-{
-    // If this window is modal, the menu bar will be modally shaddowed.
-    // In that case, since the window will be in the first responder chain,
-    // we can still catch the trigger here and forward it to the menu bar.
-    // This is needed as a single modal dialog on Qt should be able to access
-    // the application menu (e.g. quit).
-    [[NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)] qtDispatcherToQAction:sender];
-}
-
 - (void)terminate:(id)sender
 {
     // This function is called from the quit item in the menubar when this window

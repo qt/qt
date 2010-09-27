@@ -854,6 +854,9 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
 #ifdef QT_BUILD_KEY_COMPAT2
                && key != QT_BUILD_KEY_COMPAT2
 #endif
+#ifdef QT_BUILD_KEY_COMPAT3
+               && key != QT_BUILD_KEY_COMPAT3
+#endif
                ) {
         if (qt_debug_component()) {
             qWarning("In %s:\n"

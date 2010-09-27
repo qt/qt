@@ -43,7 +43,6 @@
 #include "qtextdocumentfragment_p.h"
 #include "qtextcursor_p.h"
 #include "qtextlist.h"
-#include "private/qunicodetables_p.h"
 
 #include <qdebug.h>
 #include <qtextcodec.h>

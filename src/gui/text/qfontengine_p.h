@@ -155,6 +155,7 @@ public:
         SynthesizedStretch = 0x4
     };
     virtual int synthesized() const { return 0; }
+    virtual bool supportsSubPixelPositions() const { return false; }
 
     virtual QFixed emSquareSize() const { return ascent(); }
 
@@ -188,7 +189,7 @@ public:
      */
     virtual QImage alphaMapForGlyph(glyph_t);
     virtual QImage alphaMapForGlyph(glyph_t, const QTransform &t);
-    virtual QImage alphaRGBMapForGlyph(glyph_t, int margin, const QTransform &t);
+    virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
 
     virtual void removeGlyphFromCache(glyph_t);
 
@@ -448,6 +449,7 @@ public:
     virtual bool canRender(const QChar *string, int len);
 
     virtual int synthesized() const { return synthesisFlags; }
+    virtual bool supportsSubPixelPositions() const { return true; }
 
     virtual Type type() const { return QFontEngine::Mac; }
 
@@ -457,13 +459,13 @@ public:
     virtual bool getSfntTableData(uint /*tag*/, uchar * /*buffer*/, uint * /*length*/) const;
     virtual void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics);
     virtual QImage alphaMapForGlyph(glyph_t);
-    virtual QImage alphaRGBMapForGlyph(glyph_t, int margin, const QTransform &t);
+    virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
     virtual qreal minRightBearing() const;
     virtual qreal minLeftBearing() const;
     virtual QFont createExplicitFont() const;
 
 private:
-    QImage imageForGlyph(glyph_t glyph, int margin, bool colorful);
+    QImage imageForGlyph(glyph_t glyph, QFixed subPixelPosition, int margin, bool colorful);
     CTFontRef ctfont;
     CGFontRef cgFont;
     QCoreTextFontEngineMulti *parentEngine;
@@ -475,8 +477,7 @@ private:
 class QCoreTextFontEngineMulti : public QFontEngineMulti
 {
 public:
-    QCoreTextFontEngineMulti(const ATSFontFamilyRef &atsFamily, const ATSFontRef &atsFontRef,
-                             const QFontDef &fontDef, bool kerning);
+    QCoreTextFontEngineMulti(const QCFString &name, const QFontDef &fontDef, bool kerning);
     ~QCoreTextFontEngineMulti();
 
     virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs,
@@ -546,7 +547,7 @@ public:
     virtual Properties properties() const;
     virtual void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics);
     virtual QImage alphaMapForGlyph(glyph_t);
-    virtual QImage alphaRGBMapForGlyph(glyph_t, int margin, const QTransform &t);
+    virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
 
 private:
     QImage imageForGlyph(glyph_t glyph, int margin, bool colorful);

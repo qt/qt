@@ -143,7 +143,7 @@ void qmacfontengine_gamma_correct(QImage *image)
 
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
-QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const ATSFontFamilyRef &, const ATSFontRef &atsFontRef, const QFontDef &fontDef, bool kerning)
+QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const QCFString &name, const QFontDef &fontDef, bool kerning)
     : QFontEngineMulti(0)
 {
     this->fontDef = fontDef;
@@ -158,9 +158,6 @@ QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const ATSFontFamilyRef &, con
         symbolicTraits |= kCTFontItalicTrait;
         break;
     }
-
-    QCFString name;
-    ATSFontGetName(atsFontRef, kATSOptionFlagsDefault, &name);
 
     transform = CGAffineTransformIdentity;
     if (fontDef.stretch != 100) {
@@ -422,8 +419,7 @@ QCoreTextFontEngine::QCoreTextFontEngine(CTFontRef font, const QFontDef &def,
     synthesisFlags = 0;
     ctfont = font;
     CFRetain(ctfont);
-    ATSFontRef atsfont = CTFontGetPlatformFont(ctfont, 0);
-    cgFont = CGFontCreateWithPlatformFont(&atsfont);
+    cgFont = CTFontCopyGraphicsFont(ctfont, NULL);
     CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(ctfont);
     if (fontDef.weight >= QFont::Bold && !(traits & kCTFontBoldTrait)) {
          synthesisFlags |= SynthesizedBold;
@@ -443,8 +439,8 @@ QCoreTextFontEngine::QCoreTextFontEngine(CTFontRef font, const QFontDef &def,
 
 QCoreTextFontEngine::~QCoreTextFontEngine()
 {
-    CFRelease(ctfont);
     CFRelease(cgFont);
+    CFRelease(ctfont);
 }
 
 bool QCoreTextFontEngine::stringToCMap(const QChar *, int, QGlyphLayout *, int *, QTextEngine::ShaperFlags) const
@@ -663,7 +659,7 @@ QFont QCoreTextFontEngine::createExplicitFont() const
     return createExplicitFontWithName(familyName);
 }
 
-QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, int margin, bool aa)
+QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, int /*margin*/, bool aa)
 {
     const glyph_metrics_t br = boundingBox(glyph);
     QImage im(qRound(br.width)+2, qRound(br.height)+2, QImage::Format_RGB32);
@@ -696,11 +692,10 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, int margin, bool aa)
     CGContextSetRGBFillColor(ctx, 1, 1, 1, 1);
     CGContextSetTextDrawingMode(ctx, kCGTextFill);
 
-    ATSFontRef atsfont = CTFontGetPlatformFont(ctfont, 0);
-    QCFType<CGFontRef> cgFont = CGFontCreateWithPlatformFont(&atsfont);
     CGContextSetFont(ctx, cgFont);
 
-    qreal pos_x = -br.x.toReal()+1, pos_y = im.height()+br.y.toReal();
+    qreal pos_x = -br.x.toReal() + subPixelPosition.toReal();
+    qreal pos_y = im.height()+br.y.toReal();
     CGContextSetTextPosition(ctx, pos_x, pos_y);
 
     CGSize advance;
@@ -721,7 +716,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, int margin, bool aa)
 
 QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph)
 {
-    QImage im = imageForGlyph(glyph, 0, false);
+    QImage im = imageForGlyph(glyph, QFixed(), 0, false);
 
     QImage indexed(im.width(), im.height(), QImage::Format_Indexed8);
     QVector<QRgb> colors(256);
@@ -742,12 +737,12 @@ QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph)
     return indexed;
 }
 
-QImage QCoreTextFontEngine::alphaRGBMapForGlyph(glyph_t glyph, int margin, const QTransform &x)
+QImage QCoreTextFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed subPixelPosition, int margin, const QTransform &x)
 {
     if (x.type() >= QTransform::TxScale)
-        return QFontEngine::alphaRGBMapForGlyph(glyph, margin, x);
+        return QFontEngine::alphaRGBMapForGlyph(glyph, subPixelPosition, margin, x);
 
-    QImage im = imageForGlyph(glyph, margin, true);
+    QImage im = imageForGlyph(glyph, subPixelPosition, margin, true);
     qmacfontengine_gamma_correct(&im);
     return im;
 }
@@ -1706,7 +1701,7 @@ QImage QFontEngineMac::alphaMapForGlyph(glyph_t glyph)
     return indexed;
 }
 
-QImage QFontEngineMac::alphaRGBMapForGlyph(glyph_t glyph, int margin, const QTransform &t)
+QImage QFontEngineMac::alphaRGBMapForGlyph(glyph_t glyph, QFixed, int margin, const QTransform &t)
 {
     QImage im = imageForGlyph(glyph, margin, true);
 

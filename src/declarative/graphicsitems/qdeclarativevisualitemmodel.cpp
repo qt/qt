@@ -287,16 +287,12 @@ public:
                 m_roles = m_listModelInterface->roles();
                 for (int ii = 0; ii < m_roles.count(); ++ii)
                     m_roleNames.insert(m_listModelInterface->toString(m_roles.at(ii)).toUtf8(), m_roles.at(ii));
-                if (m_roles.count() == 1)
-                    m_roleNames.insert("modelData", m_roles.at(0));
             } else if (m_abstractItemModel) {
                 for (QHash<int,QByteArray>::const_iterator it = m_abstractItemModel->roleNames().begin();
                         it != m_abstractItemModel->roleNames().end(); ++it) {
                     m_roles.append(it.key());
                     m_roleNames.insert(*it, it.key());
                 }
-                if (m_roles.count() == 1)
-                    m_roleNames.insert("modelData", m_roles.at(0));
                 if (m_roles.count())
                     m_roleNames.insert("hasModelChildren", -1);
             } else if (m_listAccessor) {
@@ -314,7 +310,8 @@ public:
         }
     }
 
-    QHash<int,int> roleToPropId;
+    QHash<int,int> m_roleToPropId;
+    int m_modelDataPropId;
     void createMetaData() {
         if (!m_metaDataCreated) {
             ensureRoles();
@@ -322,9 +319,12 @@ public:
                 QHash<QByteArray, int>::const_iterator it = m_roleNames.begin();
                 while (it != m_roleNames.end()) {
                     int propId = m_delegateDataType->createProperty(it.key()) - m_delegateDataType->propertyOffset();
-                    roleToPropId.insert(*it, propId);
+                    m_roleToPropId.insert(*it, propId);
                     ++it;
                 }
+                // Add modelData property
+                if (m_roles.count() == 1)
+                    m_modelDataPropId = m_delegateDataType->createProperty("modelData") - m_delegateDataType->propertyOffset();
                 m_metaDataCreated = true;
             }
         }
@@ -430,6 +430,11 @@ public:
     void setIndex(int index);
 
     int propForRole(int) const;
+    int modelDataPropertyId() const {
+        QDeclarativeVisualDataModelPrivate *model = QDeclarativeVisualDataModelPrivate::get(m_model);
+        return model->m_modelDataPropId;
+    }
+
     void setValue(int, const QVariant &);
     bool hasValue(int id) const {
         return m_meta->hasValue(id);
@@ -450,8 +455,8 @@ private:
 int QDeclarativeVisualDataModelData::propForRole(int id) const
 {
     QDeclarativeVisualDataModelPrivate *model = QDeclarativeVisualDataModelPrivate::get(m_model);
-    QHash<int,int>::const_iterator it = model->roleToPropId.find(id);
-    if (it != model->roleToPropId.end())
+    QHash<int,int>::const_iterator it = model->m_roleToPropId.find(id);
+    if (it != model->m_roleToPropId.end())
         return *it;
 
     return -1;
@@ -518,14 +523,16 @@ QVariant QDeclarativeVisualDataModelDataMetaObject::initialValue(int propId)
         }
     } else if (model->m_abstractItemModel) {
         model->ensureRoles();
+        QModelIndex index = model->m_abstractItemModel->index(data->m_index, 0, model->m_root);
         if (propName == "hasModelChildren") {
-            QModelIndex index = model->m_abstractItemModel->index(data->m_index, 0, model->m_root);
             return model->m_abstractItemModel->hasChildren(index);
         } else {
             QHash<QByteArray,int>::const_iterator it = model->m_roleNames.find(propName);
             if (it != model->m_roleNames.end()) {
-                QModelIndex index = model->m_abstractItemModel->index(data->m_index, 0, model->m_root);
                 return model->m_abstractItemModel->data(index, *it);
+            } else if (model->m_roles.count() == 1 && propName == "modelData") {
+                //for compatibility with other lists, assign modelData if there is only a single role
+                return model->m_abstractItemModel->data(index, model->m_roles.first());
             }
         }
     }
@@ -1193,6 +1200,19 @@ void QDeclarativeVisualDataModel::_q_itemsChanged(int index, int count,
                     else if (d->m_abstractItemModel)
                         roleName = QString::fromUtf8(d->m_abstractItemModel->roleNames().value(role));
                     qmlInfo(this) << "Changing role not present in item: " << roleName;
+                }
+            }
+            if (roles.count() == 1) {
+                // Handle the modelData role we add if there is just one role.
+                int propId = data->modelDataPropertyId();
+                if (data->hasValue(propId)) {
+                    int role = roles.at(0);
+                    if (d->m_listModelInterface) {
+                        data->setValue(propId, d->m_listModelInterface->data(idx, QList<int>() << role).value(role));
+                    } else if (d->m_abstractItemModel) {
+                        QModelIndex index = d->m_abstractItemModel->index(idx, 0, d->m_root);
+                        data->setValue(propId, d->m_abstractItemModel->data(index, role));
+                    }
                 }
             }
         }

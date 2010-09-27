@@ -87,7 +87,7 @@ QT_BEGIN_NAMESPACE
     \value NotMapped The video buffer has is not mapped to memory.
     \value ReadOnly The mapped memory is populated with data from the video buffer when mapped, but
     the content of the mapped memory may be discarded when unmapped.
-    \value WriteOnly The mapped memory in unitialized when mapped, and the content will be used to
+    \value WriteOnly The mapped memory is uninitialized when mapped, and the content will be used to
     populate the video buffer when unmapped.
     \value ReadWrite The mapped memory is populated with data from the video buffer, and the
     video buffer is repopulated with the content of the mapped memory.

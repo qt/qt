@@ -239,6 +239,7 @@ void tst_QImageReader::readImage_data()
 
 #if defined QTEST_HAVE_JPEG
     QTest::newRow("JPEG: beavis") << QString("beavis.jpg") << true << QByteArray("jpeg");
+    QTest::newRow("JPEG: qtbug13653") << QString("qtbug13653-no_eoi.jpg") << true << QByteArray("jpeg");
 #endif
 #if defined QTEST_HAVE_GIF
     QTest::newRow("GIF: earth") << QString("earth.gif") << true << QByteArray("gif");
@@ -1039,6 +1040,7 @@ void tst_QImageReader::readFromDevice_data()
     QTest::newRow("jpeg-1") << QString("beavis.jpg") << QByteArray("jpeg");
     QTest::newRow("jpeg-2") << QString("YCbCr_cmyk.jpg") << QByteArray("jpeg");
     QTest::newRow("jpeg-3") << QString("YCbCr_rgb.jpg") << QByteArray("jpeg");
+    QTest::newRow("jpeg-4") << QString("qtbug13653-no_eoi.jpg") << QByteArray("jpeg");
 #endif // QTEST_HAVE_JPEG
 #ifdef QTEST_HAVE_GIF
     QTest::newRow("gif-1") << QString("earth.gif") << QByteArray("gif");
@@ -1314,6 +1316,9 @@ void tst_QImageReader::readFromResources_data()
     QTest::newRow("YCbCr_rgb.jpg") << QString("YCbCr_rgb.jpg")
                                           << QByteArray("jpg") << QSize(75, 50)
                                           << QString("");
+    QTest::newRow("qtbug13653-no_eoi.jpg") << QString("qtbug13653-no_eoi.jpg")
+                                        << QByteArray("jpg") << QSize(240, 180)
+                                        << QString("");
 #endif
 #ifdef QTEST_HAVE_MNG
     QTest::newRow("corrupt.mng") << QString("corrupt.mng")

@@ -351,7 +351,7 @@ inline QT_DEPRECATED T qFindChild(const QObject *o, const QString &name = QStrin
 { return o->findChild<T>(name); }
 
 template<typename T>
-inline QList<T> qFindChildren(const QObject *o, const QString &name = QString())
+inline QT_DEPRECATED QList<T> qFindChildren(const QObject *o, const QString &name = QString())
 {
     return o->findChildren<T>(name);
 }
@@ -378,14 +378,10 @@ inline T qobject_cast(QObject *object)
 template <class T>
 inline T qobject_cast(const QObject *object)
 {
-    // this will cause a compilation error if T is not const
-    register T ptr = static_cast<T>(object);
-    Q_UNUSED(ptr);
-
 #if !defined(QT_NO_QOBJECT_CHECK)
     reinterpret_cast<T>(0)->qt_check_for_QOBJECT_macro(*reinterpret_cast<T>(const_cast<QObject *>(object)));
 #endif
-    return static_cast<T>(const_cast<QObject *>(reinterpret_cast<T>(0)->staticMetaObject.cast(const_cast<QObject *>(object))));
+    return static_cast<T>(reinterpret_cast<T>(0)->staticMetaObject.cast(object));
 }
 
 

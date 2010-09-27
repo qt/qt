@@ -57,6 +57,9 @@
 
 QT_BEGIN_NAMESPACE
 
+// qmainwindow.cpp
+extern QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *window);
+
 /******************************************************************************
 ** QToolBarItem
 */
@@ -404,7 +407,7 @@ void QToolBarLayout::setGeometry(const QRect &rect)
     if (QMainWindow *win = qobject_cast<QMainWindow*>(tb->parentWidget())) {
         Qt::ToolBarArea area = win->toolBarArea(tb);
         if (win->unifiedTitleAndToolBarOnMac() && area == Qt::TopToolBarArea) {
-            static_cast<QMainWindowLayout *>(win->layout())->fixSizeInUnifiedToolbar(tb);
+            qt_mainwindow_layout(win)->fixSizeInUnifiedToolbar(tb);
         }
     }
 #  endif
@@ -659,7 +662,7 @@ void QToolBarLayout::setExpanded(bool exp)
 #else
         animating = !tb->isWindow() && win->isAnimated();
 #endif
-        QMainWindowLayout *layout = qobject_cast<QMainWindowLayout*>(win->layout());
+        QMainWindowLayout *layout = qt_mainwindow_layout(win);
         if (expanded) {
             tb->raise();
         } else {

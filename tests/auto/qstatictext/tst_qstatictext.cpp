@@ -94,6 +94,8 @@ private slots:
     void drawStruckOutText();
     void drawOverlinedText();
     void drawUnderlinedText();
+
+    void unprintableCharacter_qtbug12614();
 };
 
 void tst_QStaticText::init()
@@ -359,7 +361,7 @@ bool tst_QStaticText::supportsTransformations() const
     QPaintEngine::Type type = engine->type();
 
     if (type == QPaintEngine::OpenGL
-#if !defined Q_WS_WIN
+#if !defined(Q_WS_WIN) && !defined(Q_WS_X11)
         || type == QPaintEngine::Raster
 #endif
         )
@@ -770,6 +772,15 @@ void tst_QStaticText::drawUnderlinedText()
 #endif
 
     QCOMPARE(imageDrawText, imageDrawStaticText);
+}
+
+void tst_QStaticText::unprintableCharacter_qtbug12614()
+{
+    QString s(QChar(0x200B)); // U+200B, ZERO WIDTH SPACE
+
+    QStaticText staticText(s);
+
+    QVERIFY(staticText.size().isValid()); // Force layout. Should not crash.
 }
 
 QTEST_MAIN(tst_QStaticText)

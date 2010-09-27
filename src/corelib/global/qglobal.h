@@ -402,6 +402,19 @@ namespace QT_NAMESPACE {}
 #    undef QT_HAVE_3DNOW
 #  endif
 
+#if defined(Q_CC_MSVC) && _MSC_VER >= 1600
+#      define Q_COMPILER_RVALUE_REFS
+#      define Q_COMPILER_INITIALIZER_LISTS
+#      define Q_COMPILER_AUTO_TYPE
+#      define Q_COMPILER_LAMBDA
+//#      define Q_COMPILER_VARIADIC_TEMPLATES
+//#      define Q_COMPILER_CLASS_ENUM
+//#      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
+//#      define Q_COMPILER_UNICODE_STRINGS
+//#      define Q_COMPILER_EXTERN_TEMPLATES
+#  endif
+
+
 #elif defined(__BORLANDC__) || defined(__TURBOC__)
 #  define Q_CC_BOR
 #  define Q_INLINE_TEMPLATE
