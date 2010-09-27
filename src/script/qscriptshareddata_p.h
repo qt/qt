@@ -36,6 +36,7 @@
 #define QSCRIPTSHAREDDATA_P_H
 
 #include "qglobal.h"
+#include "qshareddata.h"
 
 /*!
   \internal
@@ -61,6 +62,86 @@ public:
 
 private:
     Q_DISABLE_COPY(QScriptSharedData);
+};
+
+
+template <class T> class QScriptPassPointer;
+
+// FIXME: that could be reimplemented to not check for a null value.
+template<class T>
+class QScriptSharedDataPointer : public QExplicitlySharedDataPointer<T>
+{
+public:
+    inline QScriptSharedDataPointer() {}
+    explicit QScriptSharedDataPointer(QScriptPassPointer<T> data) : QExplicitlySharedDataPointer<T>(data.give()) {}
+    explicit QScriptSharedDataPointer(T *data) : QExplicitlySharedDataPointer<T>(data) {}
+
+    inline QScriptSharedDataPointer<T> &operator=(const QScriptPassPointer<T> &other)
+    {
+        this->QExplicitlySharedDataPointer<T>::operator =(other.give());
+        return *this;
+    }
+    inline QScriptSharedDataPointer<T> &operator=(T *other)
+    {
+        this->QExplicitlySharedDataPointer<T>::operator =(other);
+        return *this;
+    }
+};
+
+// FIXME: that could be reimplemented to not check for a null value.
+template <class T>
+class QScriptPassPointer {
+public:
+    QScriptPassPointer(T *data) : m_ptr(data) {}
+    inline QScriptPassPointer() { m_ptr = 0; }
+    inline QScriptPassPointer(const QScriptPassPointer<T> &other) : m_ptr(other.give()) {}
+    inline ~QScriptPassPointer() { Q_ASSERT_X(!m_ptr, Q_FUNC_INFO, "Ownership of the QScriptPassPointer hasn't been taken"); }
+
+    inline T &operator*() const { return *m_ptr; }
+    inline T *operator->() { return m_ptr; }
+    inline T *operator->() const { return m_ptr; }
+    inline T *data() const { return m_ptr; }
+    inline const T *constData() const { return m_ptr; }
+
+    inline bool operator==(const QScriptPassPointer<T> &other) const { return m_ptr == other.m_ptr; }
+    inline bool operator!=(const QScriptPassPointer<T> &other) const { return m_ptr != other.m_ptr; }
+    inline bool operator==(const QScriptSharedDataPointer<T> &other) const { return m_ptr == other.m_ptr; }
+    inline bool operator!=(const QScriptSharedDataPointer<T> &other) const { return m_ptr != other.m_ptr; }
+    inline bool operator==(const T *ptr) const { return m_ptr == ptr; }
+    inline bool operator!=(const T *ptr) const { return m_ptr != ptr; }
+
+    inline operator bool () const { return m_ptr != 0; }
+    inline bool operator!() const { return !m_ptr; }
+
+    inline QScriptPassPointer<T> & operator=(const QScriptPassPointer<T> &other)
+    {
+        if (other.m_ptr != m_ptr) {
+            if (m_ptr)
+                delete m_ptr;
+            m_ptr = other.give();
+        }
+        return *this;
+    }
+
+    inline QScriptPassPointer &operator=(T *other)
+    {
+        if (other != m_ptr) {
+            if (m_ptr)
+                delete m_ptr;
+            m_ptr = other;
+        }
+        return *this;
+    }
+
+    inline T* give() const
+    {
+        T* result = m_ptr;
+        m_ptr = 0;
+        return result;
+    }
+
+private:
+    mutable T* m_ptr;
 };
 
 #endif // QSCRIPTSHAREDDATA_P_H

@@ -93,7 +93,7 @@ public:
     inline QString name() const;
     inline QScriptStringPrivate* scriptName() const;
 
-    inline QScriptValuePrivate* value() const;
+    inline QScriptPassPointer<QScriptValuePrivate> value() const;
     inline void setValue(const QScriptValuePrivate* value);
 
     inline void remove();
@@ -198,7 +198,7 @@ inline QScriptStringPrivate* QScriptValueIteratorPrivate::scriptName() const
     return new QScriptStringPrivate(QScriptConverter::toString(m_iterator.value()));
 }
 
-inline QScriptValuePrivate* QScriptValueIteratorPrivate::value() const
+inline QScriptPassPointer<QScriptValuePrivate> QScriptValueIteratorPrivate::value() const
 {
     //dump("value()");
     if (!isValid())

@@ -29,6 +29,8 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qsharedpointer.h>
 
+#include "qscriptshareddata_p.h"
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -204,9 +206,10 @@ private:
     QScriptValue(QScriptEngine *, void *);
 
     QScriptValue(QScriptValuePrivate*);
+    QScriptValue(QScriptPassPointer<QScriptValuePrivate>);
 
 private:
-    QExplicitlySharedDataPointer<QScriptValuePrivate> d_ptr;
+    QScriptSharedDataPointer<QScriptValuePrivate> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptValue)
 };

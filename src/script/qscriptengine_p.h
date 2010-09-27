@@ -55,20 +55,20 @@ public:
     QScriptEnginePrivate(QScriptEngine*, QScriptEngine::ContextOwnership ownership = QScriptEngine::CreateNewContext);
     ~QScriptEnginePrivate();
 
-    inline QScriptValuePrivate* evaluate(const QString& program, const QString& fileName, int lineNumber);
-    inline QScriptValuePrivate* evaluate(QScriptProgramPrivate* program);
-    QScriptValuePrivate* evaluate(v8::Handle<v8::Script> script, v8::TryCatch& tryCatch);
+    inline QScriptPassPointer<QScriptValuePrivate> evaluate(const QString& program, const QString& fileName, int lineNumber);
+    inline QScriptPassPointer<QScriptValuePrivate> evaluate(QScriptProgramPrivate* program);
+    QScriptPassPointer<QScriptValuePrivate> evaluate(v8::Handle<v8::Script> script, v8::TryCatch& tryCatch);
     inline void collectGarbage();
     inline void reportAdditionalMemoryCost(int cost);
-    QScriptValuePrivate* globalObject() const;
+    QScriptPassPointer<QScriptValuePrivate> globalObject() const;
     void setGlobalObject(QScriptValuePrivate* newGlobalObjectValue);
 
-    QScriptValuePrivate* newArray(uint length);
-    QScriptValuePrivate* newObject();
-    QScriptValuePrivate* newScriptClassObject(QScriptClassPrivate* scriptclass, QScriptValuePrivate* previousValue = 0);
-    QScriptValuePrivate* newObject(QScriptClassPrivate* scriptclass, QScriptValuePrivate* data);
-    QScriptValuePrivate *newFunction(QScriptEngine::FunctionSignature fun, QScriptValuePrivate *prototype, int length);
-    QScriptValuePrivate *newFunction(QScriptEngine::FunctionWithArgSignature fun, void *arg);
+    QScriptPassPointer<QScriptValuePrivate> newArray(uint length);
+    QScriptPassPointer<QScriptValuePrivate> newObject();
+    QScriptPassPointer<QScriptValuePrivate> newScriptClassObject(QScriptClassPrivate* scriptclass, QScriptValuePrivate* previousValue = 0);
+    QScriptPassPointer<QScriptValuePrivate> newObject(QScriptClassPrivate* scriptclass, QScriptValuePrivate* data);
+    QScriptPassPointer<QScriptValuePrivate> newFunction(QScriptEngine::FunctionSignature fun, QScriptValuePrivate *prototype, int length);
+    QScriptPassPointer<QScriptValuePrivate> newFunction(QScriptEngine::FunctionWithArgSignature fun, void *arg);
 
     v8::Handle<v8::Object> newQObject(
         QObject *object, QScriptEngine::ValueOwnership own = QScriptEngine::QtOwnership,
@@ -139,7 +139,7 @@ public:
     inline void clearExceptions();
     inline void setException(v8::Handle<v8::Value> exception);
     inline bool hasUncaughtException() const;
-    QScriptValuePrivate* uncaughtException() const;
+    QScriptPassPointer<QScriptValuePrivate> uncaughtException() const;
 
     v8::Handle<v8::String> qtDataId();
 
@@ -147,7 +147,7 @@ public:
     inline void exitIsolate() const;
 
     void pushScope(QScriptValuePrivate* value);
-    QScriptValuePrivate* popScope();
+    QScriptPassPointer<QScriptValuePrivate> popScope();
 
     inline QScriptContextPrivate *setCurrentQSContext(QScriptContextPrivate *ctx);
     inline QScriptContextPrivate *currentContext() { return m_currentQsContext; }
@@ -221,7 +221,7 @@ inline QScriptValue::PropertyFlags QScriptEnginePrivate::getPropertyFlags(v8::Ha
     return m_originalGlobalObject.getPropertyFlags(object, property, mode);
 }
 
-QScriptValuePrivate* QScriptEnginePrivate::evaluate(const QString& program, const QString& fileName, int lineNumber)
+QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(const QString& program, const QString& fileName, int lineNumber)
 {
     Q_UNUSED(lineNumber);
     v8::TryCatch tryCatch;
@@ -229,7 +229,7 @@ QScriptValuePrivate* QScriptEnginePrivate::evaluate(const QString& program, cons
     return evaluate(script, tryCatch);
 }
 
-inline QScriptValuePrivate* QScriptEnginePrivate::evaluate(QScriptProgramPrivate* program)
+inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(QScriptProgramPrivate* program)
 {
     v8::TryCatch tryCatch;
     v8::Handle<v8::Script> script = program->compiled(this);

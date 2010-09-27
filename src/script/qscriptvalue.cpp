@@ -125,6 +125,15 @@ QScriptValue::QScriptValue(QScriptValuePrivate* d)
 }
 
 /*!
+    Constructs a new QScriptValue from private
+    \internal
+*/
+QScriptValue::QScriptValue(QScriptPassPointer<QScriptValuePrivate> d)
+    : d_ptr(d)
+{
+}
+
+/*!
   \obsolete
 
   Constructs a new QScriptValue with the boolean \a value and

@@ -861,7 +861,7 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     //m_isolate->Dispose();
 }
 
-QScriptValuePrivate* QScriptEnginePrivate::evaluate(v8::Handle<v8::Script> script, v8::TryCatch& tryCatch)
+QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(v8::Handle<v8::Script> script, v8::TryCatch& tryCatch)
 {
     v8::HandleScope handleScope;
     clearExceptions();
@@ -1062,7 +1062,7 @@ QScriptValue QScriptEngine::uncaughtException() const
     return QScriptValuePrivate::get(d->uncaughtException());
 }
 
-QScriptValuePrivate* QScriptEnginePrivate::uncaughtException() const
+QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::uncaughtException() const
 {
     if (!hasUncaughtException())
         return new QScriptValuePrivate();
@@ -1488,7 +1488,7 @@ QScriptValue QScriptEngine::globalObject() const
     return QScriptValuePrivate::get(d->globalObject());
 }
 
-QScriptValuePrivate* QScriptEnginePrivate::globalObject() const
+QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::globalObject() const
 {
     return new QScriptValuePrivate(const_cast<QScriptEnginePrivate*>(this), m_v8Context->Global());
 }
@@ -1802,7 +1802,7 @@ void QScriptEnginePrivate::pushScope(QScriptValuePrivate* value)
     m_v8Context->SetSecurityToken(securityToken);
 }
 
-QScriptValuePrivate* QScriptEnginePrivate::popScope()
+QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::popScope()
 {
     if (!m_v8Scopes.count())
         return new QScriptValuePrivate();
@@ -1873,7 +1873,7 @@ QScriptValue QScriptEngine::toObject(const QScriptValue& value)
     return QScriptValuePrivate::get(QScriptValuePrivate::get(value)->toObject(d));
 }
 
-QScriptValuePrivate* QScriptEnginePrivate::newObject()
+QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newObject()
 {
     v8::Persistent<v8::Object> object(v8::Persistent<v8::Object>::New(v8::Object::New()));
     return new QScriptValuePrivate(this, object);
@@ -1889,7 +1889,7 @@ static v8::Handle<v8::Value> QtClassInstanceNamedPropertyGetter(v8::Local<v8::St
         // for compatibility with the old back-end, normal JS properties
         // are queried first.
         //FIXME: don't convert to QString
-        QExplicitlySharedDataPointer<QScriptValuePrivate> originalResult(original->property(QScriptConverter::toString(property), QScriptValue::ResolveLocal));
+        QScriptSharedDataPointer<QScriptValuePrivate> originalResult(original->property(QScriptConverter::toString(property), QScriptValue::ResolveLocal));
         if (originalResult->isValid())
             return originalResult->m_value;
     }
@@ -1984,14 +1984,14 @@ static v8::Handle<v8::Boolean> QtClassInstanceIndexedPropertyDeleter(uint32_t in
     return handleScope.Close(v8::Handle<v8::Boolean>());
 }
 
-QScriptValuePrivate* QScriptEnginePrivate::newObject(QScriptClassPrivate* scriptclass, QScriptValuePrivate* data)
+QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newObject(QScriptClassPrivate* scriptclass, QScriptValuePrivate* data)
 {
-    QScriptValuePrivate* object = newScriptClassObject(scriptclass);
+    QScriptPassPointer<QScriptValuePrivate> object = newScriptClassObject(scriptclass);
     object->setData(data);
     return object;
 }
 
-QScriptValuePrivate* QScriptEnginePrivate::newScriptClassObject(QScriptClassPrivate* scriptclass, QScriptValuePrivate *previousValue)
+QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newScriptClassObject(QScriptClassPrivate* scriptclass, QScriptValuePrivate *previousValue)
 {
     if (this != scriptclass->engine()) {
         qWarning("QScriptEngine::newObject: this engine and ScriptClass engine doesn't match");
@@ -2027,7 +2027,7 @@ QScriptValuePrivate* QScriptEnginePrivate::newScriptClassObject(QScriptClassPriv
     return object;
 }
 
-QScriptValuePrivate* QScriptEnginePrivate::newArray(uint length)
+QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newArray(uint length)
 {
     v8::Persistent<v8::Array> array(v8::Persistent<v8::Array>::New(v8::Array::New(length)));
     // FIXME hmm it seems that V8 Array constructor doesn't set the length attribute as it is done
@@ -2036,7 +2036,7 @@ QScriptValuePrivate* QScriptEnginePrivate::newArray(uint length)
     return new QScriptValuePrivate(this, array);
 }
 
-QScriptValuePrivate* QScriptEnginePrivate::newFunction(QScriptEngine::FunctionSignature fun, QScriptValuePrivate *prototype, int length)
+QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newFunction(QScriptEngine::FunctionSignature fun, QScriptValuePrivate *prototype, int length)
 {
     Q_UNUSED(length);
 
@@ -2053,17 +2053,17 @@ QScriptValuePrivate* QScriptEnginePrivate::newFunction(QScriptEngine::FunctionSi
     // are leaking this.
     function.MakeWeak(reinterpret_cast<void *>(data), QtNativeFunctionCleanup<QScriptNativeFunctionData>);
 
-    QScriptValuePrivate *result = new QScriptValuePrivate(this, function);
+    QScriptPassPointer<QScriptValuePrivate> result(new QScriptValuePrivate(this, function));
 
     if (prototype) {
         result->setProperty(QString::fromAscii("prototype"), prototype, v8::DontDelete);
-        prototype->setProperty(QString::fromAscii("constructor"), result, v8::PropertyAttribute(v8::DontDelete | v8::DontEnum));
+        prototype->setProperty(QString::fromAscii("constructor"), result.data(), v8::PropertyAttribute(v8::DontDelete | v8::DontEnum));
     }
 
     return result;
 }
 
-QScriptValuePrivate* QScriptEnginePrivate::newFunction(QScriptEngine::FunctionWithArgSignature fun, void *arg)
+QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newFunction(QScriptEngine::FunctionWithArgSignature fun, void *arg)
 {
     // See other newFunction() for commentary. They should have similar implementations.
     QScriptNativeFunctionWithArgData *data = new QScriptNativeFunctionWithArgData(this, fun, arg);

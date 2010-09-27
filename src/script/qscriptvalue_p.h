@@ -54,7 +54,7 @@ public:
     inline static QScriptValuePrivate* get(const QScriptValue& q);
     inline static QScriptValue get(const QScriptValuePrivate* d);
     inline static QScriptValue get(QScriptValuePrivate* d);
-
+    inline static QScriptValue get(QScriptPassPointer<QScriptValuePrivate> d);
     inline ~QScriptValuePrivate();
 
     inline QScriptValuePrivate();
@@ -76,8 +76,8 @@ public:
 
     inline bool toBool() const;
     inline qsreal toNumber() const;
-    inline QScriptValuePrivate* toObject() const;
-    inline QScriptValuePrivate* toObject(QScriptEnginePrivate* engine) const;
+    inline QScriptPassPointer<QScriptValuePrivate> toObject() const;
+    inline QScriptPassPointer<QScriptValuePrivate> toObject(QScriptEnginePrivate* engine) const;
     inline QString toString() const;
     inline qsreal toInteger() const;
     inline qint32 toInt32() const;
@@ -109,27 +109,27 @@ public:
     inline bool instanceOf(QScriptValuePrivate*) const;
     inline bool instanceOf(v8::Handle<v8::Object> other) const;
 
-    inline QScriptValuePrivate* prototype() const;
+    inline QScriptPassPointer<QScriptValuePrivate> prototype() const;
     inline void setPrototype(QScriptValuePrivate* prototype);
     inline void setScriptClass(QScriptClassPrivate* scriptclass);
 
     inline void setProperty(const QString& name, QScriptValuePrivate *value, v8::PropertyAttribute attribs = v8::None);
     inline void setProperty(quint32 index, QScriptValuePrivate *value, v8::PropertyAttribute attribs = v8::None);
-    inline QScriptValuePrivate* property(const QString& name, const QScriptValue::ResolveFlags& mode) const;
-    inline QScriptValuePrivate* property(quint32 index, const QScriptValue::ResolveFlags& mode) const;
+    inline QScriptPassPointer<QScriptValuePrivate> property(const QString& name, const QScriptValue::ResolveFlags& mode) const;
+    inline QScriptPassPointer<QScriptValuePrivate> property(quint32 index, const QScriptValue::ResolveFlags& mode) const;
     inline bool deleteProperty(const QString& name);
     inline QScriptValue::PropertyFlags propertyFlags(const QString& name, const QScriptValue::ResolveFlags& mode) const;
     inline void setData(QScriptValuePrivate* value) const;
-    inline QScriptValuePrivate* data() const;
+    inline QScriptPassPointer<QScriptValuePrivate> data() const;
 
     inline int convertArguments(QVarLengthArray<v8::Handle<v8::Value>, 8> *argv, const QScriptValue& arguments);
 
-    inline QScriptValuePrivate* call(QScriptValuePrivate* thisObject, const QScriptValueList& args);
-    inline QScriptValuePrivate* call(QScriptValuePrivate* thisObject, const QScriptValue& arguments);
-    inline QScriptValuePrivate* call(QScriptValuePrivate* thisObject, int argc, v8::Handle< v8::Value >* argv);
-    inline QScriptValuePrivate* construct(int argc, v8::Handle<v8::Value> *argv);
-    inline QScriptValuePrivate* construct(const QScriptValueList& args);
-    inline QScriptValuePrivate* construct(const QScriptValue& arguments);
+    inline QScriptPassPointer<QScriptValuePrivate> call(QScriptValuePrivate* thisObject, const QScriptValueList& args);
+    inline QScriptPassPointer<QScriptValuePrivate> call(QScriptValuePrivate* thisObject, const QScriptValue& arguments);
+    inline QScriptPassPointer<QScriptValuePrivate> call(QScriptValuePrivate* thisObject, int argc, v8::Handle< v8::Value >* argv);
+    inline QScriptPassPointer<QScriptValuePrivate> construct(int argc, v8::Handle<v8::Value> *argv);
+    inline QScriptPassPointer<QScriptValuePrivate> construct(const QScriptValueList& args);
+    inline QScriptPassPointer<QScriptValuePrivate> construct(const QScriptValue& arguments);
 
     inline bool assignEngine(QScriptEnginePrivate* engine);
     inline QScriptEnginePrivate* engine() const;
@@ -184,6 +184,12 @@ QScriptValue QScriptValuePrivate::get(const QScriptValuePrivate* d)
 {
     Q_ASSERT(d);
     return QScriptValue(const_cast<QScriptValuePrivate*>(d));
+}
+
+QScriptValue QScriptValuePrivate::get(QScriptPassPointer<QScriptValuePrivate> d)
+{
+    Q_ASSERT(d);
+    return QScriptValue(d);
 }
 
 QScriptValue QScriptValuePrivate::get(QScriptValuePrivate* d)
@@ -351,7 +357,7 @@ qsreal QScriptValuePrivate::toNumber() const
     return 0; // Avoid compiler warning.
 }
 
-QScriptValuePrivate* QScriptValuePrivate::toObject(QScriptEnginePrivate* engine) const
+QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::toObject(QScriptEnginePrivate* engine) const
 {
     Q_ASSERT(engine);
     if (this->engine() && engine != this->engine()) {
@@ -387,7 +393,7 @@ QScriptValuePrivate* QScriptValuePrivate::toObject(QScriptEnginePrivate* engine)
   This method is created only for QScriptValue::toObject() purpose which is obsolete.
   \internal
  */
-QScriptValuePrivate* QScriptValuePrivate::toObject() const
+QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::toObject() const
 {
     if (isJSBased())
         return toObject(engine());
@@ -730,7 +736,7 @@ inline bool QScriptValuePrivate::instanceOf(v8::Handle<v8::Object> other) const
     return false;
 }
 
-inline QScriptValuePrivate* QScriptValuePrivate::prototype() const
+inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::prototype() const
 {
     if (isJSBased() && m_value->IsObject()) {
         v8::HandleScope handleScope;
@@ -772,11 +778,10 @@ inline void QScriptValuePrivate::setScriptClass(QScriptClassPrivate *scriptclass
         m_value.Clear();
         m_state = QScriptValuePrivate::CUndefined;
     }
-    QScriptValuePrivate *newObject = scriptclass->engine()->newScriptClassObject(scriptclass, previousValue);
+    QScriptSharedDataPointer<QScriptValuePrivate> newObject(scriptclass->engine()->newScriptClassObject(scriptclass, previousValue));
     reinitialize(newObject->engine(), *newObject);
     newObject->m_value.Clear();
     newObject->m_state = QScriptValuePrivate::CUndefined;
-    delete newObject;
 }
 
 inline void QScriptValuePrivate::setProperty(const QString& name, QScriptValuePrivate* value, v8::PropertyAttribute attribs)
@@ -834,7 +839,7 @@ inline void QScriptValuePrivate::setProperty(quint32 index, QScriptValuePrivate*
     v8::Object::Cast(*m_value)->Set(index, value->m_value);
 }
 
-inline QScriptValuePrivate* QScriptValuePrivate::property(const QString& name, const QScriptValue::ResolveFlags& mode) const
+inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(const QString& name, const QScriptValue::ResolveFlags& mode) const
 {
     Q_UNUSED(mode);
     if (!isObject())
@@ -852,7 +857,7 @@ inline QScriptValuePrivate* QScriptValuePrivate::property(const QString& name, c
     return new QScriptValuePrivate(engine(), result);
 }
 
-inline QScriptValuePrivate* QScriptValuePrivate::property(quint32 index, const QScriptValue::ResolveFlags& mode) const
+inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(quint32 index, const QScriptValue::ResolveFlags& mode) const
 {
     Q_UNUSED(mode);
     if (!isObject())
@@ -888,7 +893,7 @@ inline QScriptValue::PropertyFlags QScriptValuePrivate::propertyFlags(const QStr
     return engine()->getPropertyFlags(v8::Handle<v8::Object>::Cast(m_value), QScriptConverter::toString(name), mode);
 }
 
-inline QScriptValuePrivate* QScriptValuePrivate::data() const
+inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::data() const
 {
     if (!isObject())
         return new QScriptValuePrivate();
@@ -935,7 +940,7 @@ inline int QScriptValuePrivate::convertArguments(QVarLengthArray<v8::Handle<v8::
     return argc;
 }
 
-inline QScriptValuePrivate* QScriptValuePrivate::call(QScriptValuePrivate* thisObject, const QScriptValueList& args)
+inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::call(QScriptValuePrivate* thisObject, const QScriptValueList& args)
 {
     if (!isFunction())
         return new QScriptValuePrivate();
@@ -953,7 +958,7 @@ inline QScriptValuePrivate* QScriptValuePrivate::call(QScriptValuePrivate* thisO
     return call(thisObject, argc, argv.data());
 }
 
-inline QScriptValuePrivate* QScriptValuePrivate::call(QScriptValuePrivate* thisObject, const QScriptValue& arguments)
+inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::call(QScriptValuePrivate* thisObject, const QScriptValue& arguments)
 {
     if (!isFunction())
         return new QScriptValuePrivate();
@@ -966,11 +971,11 @@ inline QScriptValuePrivate* QScriptValuePrivate::call(QScriptValuePrivate* thisO
 }
 
 
-QScriptValuePrivate* QScriptValuePrivate::call(QScriptValuePrivate* thisObjectPtr, int argc, v8::Handle<v8::Value> *argv)
+QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::call(QScriptValuePrivate* thisObjectPtr, int argc, v8::Handle<v8::Value> *argv)
 {
     QScriptEnginePrivate *e = engine();
 
-    QExplicitlySharedDataPointer<QScriptValuePrivate> thisObject(thisObjectPtr);
+    QScriptSharedDataPointer<QScriptValuePrivate> thisObject(thisObjectPtr);
 
     if (!thisObject || !thisObject->isObject())
         thisObject = m_engine->globalObject();
@@ -1000,7 +1005,7 @@ QScriptValuePrivate* QScriptValuePrivate::call(QScriptValuePrivate* thisObjectPt
     return new QScriptValuePrivate(e, result);
 }
 
-inline QScriptValuePrivate* QScriptValuePrivate::construct(int argc, v8::Handle<v8::Value> *argv)
+inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::construct(int argc, v8::Handle<v8::Value> *argv)
 {
     QScriptEnginePrivate *e = engine();
 
@@ -1021,7 +1026,7 @@ inline QScriptValuePrivate* QScriptValuePrivate::construct(int argc, v8::Handle<
     return new QScriptValuePrivate(e, result);
 }
 
-inline QScriptValuePrivate* QScriptValuePrivate::construct(const QScriptValueList& args)
+inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::construct(const QScriptValueList& args)
 {
     if (isQMetaObject()) {
         QtMetaObjectData *data = static_cast<QtMetaObjectData *>(m_value->ToObject()->GetPointerFromInternalField(0));
@@ -1044,7 +1049,7 @@ inline QScriptValuePrivate* QScriptValuePrivate::construct(const QScriptValueLis
     return construct(argc, argv.data());
 }
 
-inline QScriptValuePrivate* QScriptValuePrivate::construct(const QScriptValue& arguments)
+inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::construct(const QScriptValue& arguments)
 {
     if (!isFunction())
         return new QScriptValuePrivate();
