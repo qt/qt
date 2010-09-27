@@ -126,6 +126,8 @@ public:
     ~QNetworkSessionPrivateImpl()
     {
         cleanupSession();
+
+        QDBusConnection::disconnectFromBus(m_dbusInterface->connection().name());
     }
 
     //called by QNetworkSession constructor and ensures
