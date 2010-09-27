@@ -517,7 +517,7 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
             QPainterPath painterPath = state()->matrix.map(path.convertToPainterPath());
             d->activeStroker->strokePath(painterPath, d->strokeHandler, QTransform());
         } else {
-            d->activeStroker->setCurveThresholdFromTransform(state()->matrix);
+            d->activeStroker->setCurveThresholdFromTransform(QTransform());
             d->activeStroker->begin(d->strokeHandler);
             if (types) {
                 while (points < lastPoint) {

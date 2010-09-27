@@ -267,8 +267,9 @@
     for more information.
     
     There currently is a problem when compiling Qt with Visual Studio 2010 for 64-bit.
-    Its optimizer causes trouble and crashes for the release builds and it is not supported
-    in that configuration. See task http://bugreports.qt.nokia.com/browse/QTBUG-11445.
+    Its optimizer causes trouble and generates code that crashes for the release builds.
+    To avoid the crashes, You need to apply the hotfix in the following article
+    http://support.microsoft.com/kb/2280741.
 
     \section1 IBM xlC (AIX)
 
