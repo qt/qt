@@ -56,11 +56,15 @@
 #if defined(Q_OS_MAC)
 # include <mach/mach.h>
 # include <mach/task.h>
+#elif defined(Q_OS_LINUX)
+# include <linux/futex.h>
+# include <sys/syscall.h>
+# include <unistd.h>
 #endif
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(Q_OS_MAC)
+#if !defined(Q_OS_MAC) && !defined(Q_OS_LINUX)
 static void report_error(int code, const char *where, const char *what)
 {
     if (code != 0)
@@ -76,7 +80,7 @@ QMutexPrivate::QMutexPrivate(QMutex::RecursionMode mode)
     kern_return_t r = semaphore_create(mach_task_self(), &mach_semaphore, SYNC_POLICY_FIFO, 0);
     if (r != KERN_SUCCESS)
         qWarning("QMutex: failed to create semaphore, error %d", r);
-#else
+#elif !defined(Q_OS_LINUX)
     wakeup = false;
     report_error(pthread_mutex_init(&mutex, NULL), "QMutex", "mutex init");
     report_error(pthread_cond_init(&cond, NULL), "QMutex", "cv init");
@@ -89,7 +93,7 @@ QMutexPrivate::~QMutexPrivate()
     kern_return_t r = semaphore_destroy(mach_task_self(), mach_semaphore);
     if (r != KERN_SUCCESS)
         qWarning("QMutex: failed to destroy semaphore, error %d", r);
-#else
+#elif !defined(Q_OS_LINUX)
     report_error(pthread_cond_destroy(&cond), "QMutex", "cv destroy");
     report_error(pthread_mutex_destroy(&mutex), "QMutex", "mutex destroy");
 #endif
@@ -122,7 +126,36 @@ void QMutexPrivate::wakeUp()
     semaphore_signal(mach_semaphore);
 }
 
-#else // !Q_OS_MAC
+#elif defined(Q_OS_LINUX)
+
+static inline int _q_futex(volatile int *addr, int op, int val, const struct timespec *timeout, int *addr2, int val2)
+{
+    return syscall(SYS_futex, addr, op, val, timeout, addr2, val2);
+}
+
+bool QMutexPrivate::wait(int timeout)
+{
+    while (contenders.fetchAndStoreAcquire(2) > 0) {
+        struct timespec ts, *pts = 0;
+        if (timeout >= 0) {
+            ts.tv_nsec = ((timeout % 1000) * 1000) * 1000;
+            ts.tv_sec = (timeout / 1000);
+            pts = &ts;
+        }
+        int r = _q_futex(&contenders._q_value, FUTEX_WAIT, 2, pts, 0, 0);
+        if (r != 0 && errno == ETIMEDOUT)
+            return false;
+    }
+    return true;
+}
+
+void QMutexPrivate::wakeUp()
+{
+    (void) contenders.fetchAndStoreRelease(0);
+    (void) _q_futex(&contenders._q_value, FUTEX_WAKE, 1, 0, 0, 0);
+}
+
+#else // !Q_OS_MAC && !Q_OS_LINUX
 
 bool QMutexPrivate::wait(int timeout)
 {
@@ -166,7 +199,7 @@ void QMutexPrivate::wakeUp()
     report_error(pthread_mutex_unlock(&mutex), "QMutex::unlock", "mutex unlock");
 }
 
-#endif // !Q_OS_MAC
+#endif // !Q_OS_MAC && !Q_OS_LINUX
 
 QT_END_NAMESPACE
 

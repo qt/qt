@@ -78,7 +78,7 @@ public:
 
 #if defined(Q_OS_MAC)
     semaphore_t mach_semaphore;
-#elif defined(Q_OS_UNIX)
+#elif defined(Q_OS_UNIX) && !defined(Q_OS_LINUX)
     volatile bool wakeup;
     pthread_mutex_t mutex;
     pthread_cond_t cond;
