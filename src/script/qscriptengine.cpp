@@ -773,7 +773,7 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine:
     Q_ASSERT(!m_v8Context.IsEmpty());
     m_baseQsContext.reset(new QScriptContextPrivate(this));
     {
-        v8::Context::Scope contextScope(m_v8Context);
+        m_v8Context->Enter();
         v8::HandleScope handle_scope;
         m_signalTemplate = v8::Persistent<v8::FunctionTemplate>::New(createSignalTemplate());
         m_metaObjectTemplate = v8::Persistent<v8::FunctionTemplate>::New(createMetaObjectTemplate());
@@ -847,6 +847,7 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     }
     m_exception.Dispose();
 
+    m_v8Context->Exit();
     m_v8Context.Dispose();
     for (int i = 0; i < m_v8Scopes.count(); ++i) {
         m_v8Scopes[i].second.Dispose();
