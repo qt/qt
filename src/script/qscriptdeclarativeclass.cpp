@@ -365,8 +365,7 @@ QScriptValue QScriptDeclarativeClass::newStaticScopeObject(
 */
 QScriptValue QScriptDeclarativeClass::newStaticScopeObject(QScriptEngine *engine)
 {
-    Q_UNUSED(engine);
-    return QScriptValue();
+    return engine->newObject();
 }
 
 QT_END_NAMESPACE
