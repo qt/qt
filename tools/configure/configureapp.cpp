@@ -2131,7 +2131,7 @@ bool Configure::checkAvailability(const QString &part)
         available = findFile("BuildConsole.exe") && findFile("xgConsole.exe");
     else if (part == "XMLPATTERNS")
         available = dictionary.value("EXCEPTIONS") == "yes";
-    } else if (part == "PHONON") {
+    else if (part == "PHONON") {
         if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
             available = true;
         } else {
