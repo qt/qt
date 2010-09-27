@@ -45,7 +45,8 @@
 
 // if non zero this causes the iSlabs to be configured only when the chunk size exceeds this level
 #define DELAYED_SLAB_THRESHOLD (64*1024)		// 64KB seems about right based on trace data
-#define SLAB_CONFIG 0xabe						// Use slabs of size 48, 40, 32, 24, 20, 16, 12, and 8 bytes
+//#define SLAB_CONFIG 0xabe						// Use slabs of size 48, 40, 32, 24, 20, 16, 12, and 8 bytes
+#define SLAB_CONFIG 0x3fff						// Use all slab sizes 4,8..56 bytes
 
 #ifdef _DEBUG
 #define __SIMULATE_ALLOC_FAIL(s)	if (CheckForSimulatedAllocFail()) {s}

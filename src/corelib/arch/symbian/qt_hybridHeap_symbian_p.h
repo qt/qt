@@ -52,6 +52,13 @@
 
 #ifdef QT_USE_NEW_SYMBIAN_ALLOCATOR
 
+#ifndef __WINS__
+#pragma push
+#pragma arm
+#pragma Otime
+#pragma O2
+#endif
+
 #include "common_p.h"
 #ifdef QT_SYMBIAN_HAVE_U32STD_H
 #include <u32std.h>
