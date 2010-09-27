@@ -392,9 +392,10 @@ DitaXmlGenerator::DitaXmlGenerator()
       myTree(0),
       slow(false),
       obsoleteLinks(false),
-      noLinks(0),
+      noLinks(false),
       tableColumnCount(0)
 {
+    // nothing yet.
 }
 
 /*!
@@ -402,7 +403,11 @@ DitaXmlGenerator::DitaXmlGenerator()
  */
 DitaXmlGenerator::~DitaXmlGenerator()
 {
-    // nothing yet.
+    GuidMaps::iterator i = guidMaps.begin();
+    while (i != guidMaps.end()) {
+        delete i.value();
+        ++i;
+    }
 }
 
 /*!
@@ -526,7 +531,7 @@ QString DitaXmlGenerator::format()
  */
 QString DitaXmlGenerator::writeGuidAttribute(QString text)
 {
-    QString guid = lookupGuid(text);
+    QString guid = lookupGuid(outFileName(),text);
     xmlWriter().writeAttribute("id",guid);
     return guid;
 }
@@ -556,6 +561,41 @@ QString DitaXmlGenerator::lookupGuid(QString text)
     QString guid = QUuid::createUuid().toString();
     name2guidMap.insert(text,guid);
     return guid;
+}
+
+/*!
+  First, look up the GUID map for \a fileName. If there isn't
+  a GUID map for \a fileName, create one and insert it into
+  the map of GUID maps. Then look up \a text in that GUID map.
+  If \a text is found, return the associated GUID. Otherwise,
+  insert \a text into the GUID map with a new GUID, and return
+  the new GUID.
+ */
+QString DitaXmlGenerator::lookupGuid(const QString& fileName, const QString& text)
+{
+    GuidMap* gm = lookupGuidMap(fileName);
+    GuidMap::const_iterator i = gm->find(text);
+    if (i != gm->end())
+        return i.value();
+    QString guid = QUuid::createUuid().toString();
+    gm->insert(text,guid);
+    return guid;
+}
+
+/*!
+  Looks up \a fileName in the map of GUID maps. If it finds
+  \a fileName, it returns a pointer to the associated GUID
+  map. Otherwise it creates a new GUID map and inserts it
+  into the map of GUID maps with \a fileName as its key.
+ */
+GuidMap* DitaXmlGenerator::lookupGuidMap(const QString& fileName)
+{
+    GuidMaps::const_iterator i = guidMaps.find(fileName);
+    if (i != guidMaps.end())
+        return i.value();
+    GuidMap* gm = new GuidMap;
+    guidMaps.insert(fileName,gm);
+    return gm;
 }
 
 /*!
@@ -616,7 +656,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     case Atom::AbstractRight:
         break;
     case Atom::AutoLink:
-        if ((noLinks > 0) && !inLink && !inContents && !inSectionHeading) {
+        if (!noLinks && !inLink && !inContents && !inSectionHeading) {
             const Node* node = 0;
             QString link = getLink(atom, relative, marker, &node);
             if (!link.isEmpty()) {
@@ -641,8 +681,10 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         }
         if (inApiDesc)
             xmlWriter().writeStartElement("p");
-        else
+        else {
+            noLinks = true;
             xmlWriter().writeStartElement(SHORTDESC);
+        }
         if (relative->type() == Node::Property ||
             relative->type() == Node::Variable) {
             QString str;
@@ -675,6 +717,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     case Atom::BriefRight:
         if (relative->type() != Node::Fake) {
             xmlWriter().writeEndElement(); // </shortdesc> or </p>
+            noLinks = false;
         }
         break;
     case Atom::C:
@@ -688,10 +731,13 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         xmlWriter().writeEndElement(); // sse writeStartElement() above
         break;
     case Atom::Code:
-        xmlWriter().writeStartElement("pre");
-        xmlWriter().writeAttribute("outputclass","highlightedcode");
-        writeText(trimmedTrailing(atom->string()), marker, relative);
-        xmlWriter().writeEndElement(); // </pre>
+        {
+            xmlWriter().writeStartElement("pre");
+            xmlWriter().writeAttribute("outputclass","highlightedcode");
+            QString chars = trimmedTrailing(atom->string()); 
+            writeText(chars, marker, relative);
+            xmlWriter().writeEndElement(); // </pre>
+        }
 	break;
     case Atom::Qml:
         xmlWriter().writeStartElement("pre");
@@ -1060,17 +1106,30 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             const Node *node = 0;
             QString myLink = getLink(atom, relative, marker, &node);
             if (myLink.isEmpty()) {
-                relative->doc().location().warning(tr("Cannot link to '%1' in %2")
+                relative->doc().location().warning(tr("Can't link to '%1' in %2")
                         .arg(atom->string())
                         .arg(marker->plainFullName(relative)));
             }
+#if 0            
+            else
+                qDebug() << "MYLINK:" << myLink << outFileName();;
+#endif            
             beginLink(myLink, node, relative, marker);
+            skipAhead = 1;
+        }
+        break;
+    case Atom::GuidLink:
+        {
+#if 0            
+            qDebug() << "GUID LINK:" << atom->string() << outFileName();
+#endif            
+            beginLink(atom->string(), 0, relative, marker);
             skipAhead = 1;
         }
         break;
     case Atom::LinkNode:
         {
-            const Node *node = CodeMarker::nodeForString(atom->string());
+            const Node* node = CodeMarker::nodeForString(atom->string());
             beginLink(linkForNode(node, relative), node, relative, marker);
             skipAhead = 1;
         }
@@ -2038,11 +2097,11 @@ void DitaXmlGenerator::generateBrief(const Node* node, CodeMarker* marker)
 {
     Text brief = node->doc().briefText();
     if (!brief.isEmpty()) {
-        ++noLinks;
+        noLinks = true;
         xmlWriter().writeStartElement(SHORTDESC);
         generateText(brief, node, marker);
         xmlWriter().writeEndElement(); // </shortdesc>
-        --noLinks;
+        noLinks = false;
     }
 }
 
@@ -3089,12 +3148,14 @@ void DitaXmlGenerator::generateSectionInheritedList(const Section& section,
         text += " inherited from ";
         xmlWriter().writeCharacters(text);
         xmlWriter().writeStartElement("xref");
+        // zzz
         text = fileName((*p).first) + "#";
         text += DitaXmlGenerator::cleanRef(section.name.toLower());
         xmlWriter().writeAttribute("href",text);
         text = protectEnc(marker->plainFullName((*p).first, relative));
         xmlWriter().writeCharacters(text);
         xmlWriter().writeEndElement(); // </xref>
+        xmlWriter().writeEndElement(); // </li>
         ++p;
     }
     xmlWriter().writeEndElement(); // </ul>
@@ -3406,8 +3467,10 @@ QString DitaXmlGenerator::registerRef(const QString& ref)
         }
         else if (prevRef == ref)
             break;
+#if 0        
         else
             qDebug() << "PREVREF:" << prevRef;
+#endif        
         clean += "x";
     }
     return clean;
@@ -3492,28 +3555,10 @@ QString DitaXmlGenerator::fileBase(const Node* node) const
     return result;
 }
 
-/*!
-  Constructs a file name appropriate for the \a node
-  and returns the file name. If the \a node is not a
-  fake node, or if it is a fake node but it is neither
-  an external page node nor an image node, call the
-  PageGenerator::fileName() function.
- */
-QString DitaXmlGenerator::fileName(const Node* node)
-{
-    if (node->type() == Node::Fake) {
-        if (static_cast<const FakeNode*>(node)->subType() == Node::ExternalPage)
-            return node->name();
-        if (static_cast<const FakeNode*>(node)->subType() == Node::Image)
-            return node->name();
-    }
-    return PageGenerator::fileName(node);
-}
-
 QString DitaXmlGenerator::refForNode(const Node* node)
 {
     const FunctionNode* func;
-    const TypedefNode* typedeffe;
+    const TypedefNode* tdn;
     QString ref;
 
     switch (node->type()) {
@@ -3525,9 +3570,9 @@ QString DitaXmlGenerator::refForNode(const Node* node)
         ref = node->name() + "-enum";
         break;
     case Node::Typedef:
-        typedeffe = static_cast<const TypedefNode *>(node);
-        if (typedeffe->associatedEnum()) {
-            return refForNode(typedeffe->associatedEnum());
+        tdn = static_cast<const TypedefNode *>(node);
+        if (tdn->associatedEnum()) {
+            return refForNode(tdn->associatedEnum());
         }
         else {
             ref = node->name() + "-typedef";
@@ -3566,12 +3611,74 @@ QString DitaXmlGenerator::refForNode(const Node* node)
     return registerRef(ref);
 }
 
+QString DitaXmlGenerator::guidForNode(const Node* node)
+{
+    switch (node->type()) {
+    case Node::Namespace:
+    case Node::Class:
+    default:
+        break;
+    case Node::Enum:
+        return node->guid();
+    case Node::Typedef:
+        {
+            const TypedefNode* tdn = static_cast<const TypedefNode*>(node);
+            if (tdn->associatedEnum()) 
+                return guidForNode(tdn->associatedEnum());
+        }
+        return node->guid();
+    case Node::Function:
+        {
+            const FunctionNode* fn = static_cast<const FunctionNode*>(node);
+            if (fn->associatedProperty()) {
+                return guidForNode(fn->associatedProperty());
+            }
+            else {
+                QString ref = fn->name();
+                if (fn->overloadNumber() != 1) {
+                    ref += "-" + QString::number(fn->overloadNumber());
+                    //qDebug() << "guidForNode() overloaded function:" << outFileName() << ref;
+                }
+            }
+            return fn->guid();
+        }
+    case Node::Fake:
+        if (node->subType() != Node::QmlPropertyGroup)
+            break;
+    case Node::QmlProperty:
+    case Node::Property:
+        return node->guid();
+    case Node::QmlSignal:
+        return node->guid();
+    case Node::QmlMethod:
+        return node->guid();
+    case Node::Variable:
+        return node->guid();
+    case Node::Target:
+        return node->guid();
+    }
+    return QString();
+}
+
+/*!
+  Constructs a file name appropriate for the \a node and returns
+  it. If the \a node is not a fake node, or if it is a fake node but
+  it is neither an external page node nor an image node, call the
+  PageGenerator::fileName() function.
+ */
+QString DitaXmlGenerator::fileName(const Node* node)
+{
+    if (node->type() == Node::Fake) {
+        if (static_cast<const FakeNode*>(node)->subType() == Node::ExternalPage)
+            return node->name();
+        if (static_cast<const FakeNode*>(node)->subType() == Node::Image)
+            return node->name();
+    }
+    return PageGenerator::fileName(node);
+}
+
 QString DitaXmlGenerator::linkForNode(const Node* node, const Node* relative)
 {
-    QString link;
-    QString fn;
-    QString ref;
-
     if (node == 0 || node == relative)
         return QString();
     if (!node->url().isEmpty())
@@ -3581,21 +3688,18 @@ QString DitaXmlGenerator::linkForNode(const Node* node, const Node* relative)
     if (node->access() == Node::Private)
         return QString();
 
-    fn = fileName(node);
-    link += fn + "#" + node->guid();
-    return link;
+    QString fn = fileName(node);
+    QString link = fn;
 
-#if 0    
     if (!node->isInnerNode() || node->subType() == Node::QmlPropertyGroup) {
-        ref = refForNode(node);
-        if (relative && fn == fileName(relative) && ref == refForNode(relative))
+        QString guid = guidForNode(node);
+        if (relative && fn == fileName(relative) && guid == guidForNode(relative)) {
             return QString();
-
+        }
         link += "#";
-        link += ref;
+        link += guid;
     }
     return link;
-#endif    
 }
 
 QString DitaXmlGenerator::refForAtom(Atom* atom, const Node* /* node */)
@@ -3983,26 +4087,33 @@ QString DitaXmlGenerator::getLink(const Atom* atom,
         Atom* targetAtom = 0;
         QString first = path.first().trimmed();
 
-        if (first.isEmpty())
+        if (first.isEmpty()) {
             *node = relative;
-        else if (first.endsWith(".html"))
+        }
+        else if (first.endsWith(".html")) {
             *node = myTree->root()->findNode(first, Node::Fake);
+        }
         else {
             *node = marker->resolveTarget(first, myTree, relative);
-            if (!*node)
+            if (!*node) {
                 *node = myTree->findFakeNodeByTitle(first);
-            if (!*node)
+            }
+            if (!*node) {
                 *node = myTree->findUnambiguousTarget(first, targetAtom);
+            }
         }
 
         if (*node) {
-            if (!(*node)->url().isEmpty())
+            if (!(*node)->url().isEmpty()) {
                 return (*node)->url();
-            else
+            }
+            else {
                 path.removeFirst();
+            }
         }
-        else
+        else {
             *node = relative;
+        }
 
         if (*node && (*node)->status() == Node::Obsolete) {
             if (relative && (relative->parent() != *node) &&
@@ -4075,13 +4186,13 @@ void DitaXmlGenerator::generateStatus(const Node* node, CodeMarker* marker)
             Atom *targetAtom = 0;
             if (fakeNode && node->type() == Node::Class) {
                 QString oldName(node->name());
-                targetAtom = myTree->findTarget(oldName.replace("3", ""),
-                                                fakeNode);
+                targetAtom = myTree->findTarget(oldName.replace("3",""),fakeNode);
             }
 
             if (targetAtom) {
-                text << Atom(Atom::Link, linkForNode(fakeNode, node) + "#" +
-                                         refForAtom(targetAtom, fakeNode));
+                QString fn = fileName(fakeNode);
+                QString guid = lookupGuid(fn,refForAtom(targetAtom,fakeNode));
+                text << Atom(Atom::GuidLink, fn + "#" + guid);
             }
             else
                 text << Atom(Atom::Link, "Porting to Qt 4");
