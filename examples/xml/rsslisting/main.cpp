@@ -57,7 +57,6 @@ Provides the main function for the RSS news reader example.
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
-    qWarning("The usage of QHttp is not recommended anymore, please use QNetworkAccessManager.");
     RSSListing *rsslisting = new RSSListing;
     rsslisting->show();
     return app.exec();

@@ -45,10 +45,10 @@ defineReplace(mocCmd) {
         if(contains(TEMPLATE, "vc.*")|contains(TEMPLATE_PREFIX, "vc")) {
             RET += $$mocinclude.commands
         }
-        RET += $$QMAKE_MOC $(DEFINES) @$$WIN_INCLUDETEMP $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$1 -o $$2
+        RET += $$QMAKE_MOC $(DEFINES) @$$WIN_INCLUDETEMP $$join(QMAKE_COMPILER_DEFINES, " -D", -D) \"$$1\" -o $$2
         return($$RET)
     }
-    return($$QMAKE_MOC $(DEFINES) $(INCPATH) $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$1 -o $$2)
+    return($$QMAKE_MOC $(DEFINES) $(INCPATH) $$join(QMAKE_COMPILER_DEFINES, " -D", -D) \"$$1\" -o $$2)
 }
 
 #moc headers

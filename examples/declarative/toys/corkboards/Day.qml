@@ -45,9 +45,16 @@ Component {
         property variant stickies
 
         id: page
-        width: 840; height: 480
+        width: ListView.view.width+40; height: ListView.view.height
 
-        Image { source: "cork.jpg" }
+
+        Image { 
+            source: "cork.jpg"
+            width: page.ListView.view.width
+            height: page.ListView.view.height
+            fillMode: Image.PreserveAspectCrop
+            clip: true
+        }
 
         MouseArea {
             anchors.fill: parent
@@ -65,8 +72,8 @@ Component {
             Item {
                 id: stickyPage
 
-                property int randomX: Math.random() * 500 + 100
-                property int randomY: Math.random() * 200 + 50
+                property int randomX: Math.random() * (page.ListView.view.width-0.5*stickyImage.width) +100
+                property int randomY: Math.random() * (page.ListView.view.height-0.5*stickyImage.height) +50
 
                 x: randomX; y: randomY
 
