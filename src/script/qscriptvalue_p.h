@@ -459,7 +459,6 @@ const QMetaObject *QScriptValuePrivate::toQMetaObject() const
 {
     if (!isQMetaObject())
         return 0;
-    v8::Context::Scope contextScope(*m_engine);
     v8::HandleScope handleScope;
     v8::Handle<v8::Object> object = m_value->ToObject();
     Q_ASSERT(object->InternalFieldCount() == 1);
