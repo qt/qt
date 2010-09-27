@@ -493,9 +493,11 @@ void tst_qdeclarativedom::loadDynamicProperty()
     {
         QByteArray qml = "import Qt 4.7\n"
                          "Item {\n"
+                         "    id: item\n"
                          "    property int a: 12\n"
                          "    property int b: a + 6\n"
                          "    default property QtObject c\n"
+                         "    property alias d: item.a\n"
                          "}\n";
 
         QDeclarativeDomDocument document;
@@ -504,11 +506,12 @@ void tst_qdeclarativedom::loadDynamicProperty()
         QDeclarativeDomObject rootObject = document.rootObject();
         QVERIFY(rootObject.isValid());
 
-        QCOMPARE(rootObject.dynamicProperties().count(), 3);
+        QCOMPARE(rootObject.dynamicProperties().count(), 4);
 
         {
             QDeclarativeDomDynamicProperty d = rootObject.dynamicProperties().at(0);
             QVERIFY(d.isDefaultProperty() == false);
+            QVERIFY(d.isAlias() == false);
             QVERIFY(d.defaultValue().isValid());
             QVERIFY(d.defaultValue().propertyName() == "a");
             QVERIFY(d.defaultValue().value().isLiteral());
@@ -517,6 +520,7 @@ void tst_qdeclarativedom::loadDynamicProperty()
         {
             QDeclarativeDomDynamicProperty d = rootObject.dynamicProperties().at(1);
             QVERIFY(d.isDefaultProperty() == false);
+            QVERIFY(d.isAlias() == false);
             QVERIFY(d.defaultValue().isValid());
             QVERIFY(d.defaultValue().propertyName() == "b");
             QVERIFY(d.defaultValue().value().isBinding());
@@ -525,7 +529,14 @@ void tst_qdeclarativedom::loadDynamicProperty()
         {
             QDeclarativeDomDynamicProperty d = rootObject.dynamicProperties().at(2);
             QVERIFY(d.isDefaultProperty() == true);
+            QVERIFY(d.isAlias() == false);
             QVERIFY(d.defaultValue().isValid() == false);
+        }
+
+        {
+            QDeclarativeDomDynamicProperty d = rootObject.dynamicProperties().at(3);
+            QVERIFY(d.isDefaultProperty() == false);
+            QVERIFY(d.isAlias() == true);
         }
     }
 }
