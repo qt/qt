@@ -1,27 +1,48 @@
-/*
-  libconninet - Internet Connectivity support library
-  
-  Copyright (C) 2009 Nokia Corporation. All rights reserved.
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the plugins of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
 
-  Contact: Jukka Rissanen <jukka.rissanen@nokia.com>
 
-  This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public License
-  version 2.1 as published by the Free Software Foundation.
-
-  This library is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this library; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-  02110-1301 USA
-*/
-
-#include <stdio.h>
 #include "maemo_icd.h"
+#include "dbusdispatcher.h"
+
 #include <QObject>
 #include <QTimer>
 #include <QCoreApplication>
@@ -30,6 +51,7 @@
 #include <dbus/dbus.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
+#include <stdio.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -52,73 +74,6 @@ namespace Maemo {
 #else
 #define PDEBUG(fmt...)
 #endif
-
-
-/* Reference counting singleton class that creates a single connection
- * to icd so that icd reference counting works as expected. This is
- * needed because DBusDispatcher uses private dbus connections
- * which come and go and icd cannot use that information to
- * determine whether application quit or not. So we create one
- * persistent connection that is only teared down when application
- * quits or calls disconnect()
- */
-class IcdRefCounting
-{
-public:
-    IcdRefCounting() : first_call(true) { }
-    void setup(enum icd_connection_flags flag);
-    void cleanup();
-
-private:
-    bool first_call;
-    struct DBusConnection *connection;
-};
-
-Q_GLOBAL_STATIC(IcdRefCounting, icdRefCounting);
-
-
-void IcdRefCounting::setup(enum icd_connection_flags flag)
-{
-    if (first_call) {
-	DBusMessage *msg = NULL;
-
-	connection = dbus_bus_get_private(DBUS_BUS_SYSTEM, NULL);
-	dbus_connection_set_exit_on_disconnect(connection, FALSE);
-	dbus_connection_setup_with_g_main(connection, NULL);
-
-	msg = dbus_message_new_method_call(ICD_DBUS_API_INTERFACE,
-					   ICD_DBUS_API_PATH,
-					   ICD_DBUS_API_INTERFACE,
-					   ICD_DBUS_API_CONNECT_REQ);
-	if (msg == NULL)
-	    goto out;
-
-	if (!dbus_message_append_args(msg,
-				      DBUS_TYPE_UINT32, &flag,
-				      DBUS_TYPE_INVALID))
-	    goto out;
-
-	if (!dbus_connection_send_with_reply(connection, msg,
-					     NULL, 60*1000))
-	    goto out;
-
-	first_call = false;
-	return;
-
-    out:
-	dbus_connection_close(connection);
-	dbus_connection_unref(connection);
-    }
-}
-
-void IcdRefCounting::cleanup()
-{
-    if (!first_call) {
-	dbus_connection_close(connection);
-	dbus_connection_unref(connection);
-	first_call = true;
-    }
-}
 
 
 class IcdPrivate
@@ -171,36 +126,20 @@ public:
 		     QStringList &network_types,
 		     QList<IcdScanResult>& scan_results,
 		     QString& error);
-    void scanCancel();
-    bool connect(icd_connection_flags flags, IcdConnectResult& result);
-    bool connect(icd_connection_flags flags, QList<ConnectParams>& params,
-		 IcdConnectResult& result);
-    bool connect(icd_connection_flags flags, QString& iap, QString& result);
-    void select(uint flags);
-    void disconnect(uint connect_flags, QString& service_type,
-		    uint service_attrs, QString& service_id,
-		    QString& network_type, uint network_attrs,
-		    QByteArray& network_id);
-    void disconnect(uint connect_flags);
 
     uint state(QString& service_type, uint service_attrs,
 	       QString& service_id, QString& network_type,
 	       uint network_attrs, QByteArray& network_id,
 	       IcdStateResult &state_result);
-    uint statistics(QString& service_type, uint service_attrs,
-		    QString& service_id, QString& network_type,
-		    uint network_attrs, QByteArray& network_id,
-		    IcdStatisticsResult& stats_result);
+
     uint addrinfo(QString& service_type, uint service_attrs,
 		  QString& service_id, QString& network_type,
 		  uint network_attrs, QByteArray& network_id,
 		  IcdAddressInfoResult& addr_result);
 
     uint state(QList<IcdStateResult>& state_results);
-    uint state_non_blocking(QList<IcdStateResult>& state_results);
     uint statistics(QList<IcdStatisticsResult>& stats_results);
     uint addrinfo(QList<IcdAddressInfoResult>& addr_results);
-    uint addrinfo_non_blocking(QList<IcdAddressInfoResult>& addr_results);
 
     void signalReceived(const QString& interface, 
                         const QString& signal,
@@ -208,8 +147,6 @@ public:
     void callReply(const QString& method, 
                    const QList<QVariant>& args,
                    const QString& error);
-
-    QString error() { return mError; }
 
 public:
     DBusDispatcher *mDBus;
@@ -279,8 +216,6 @@ public:
       receivedSignals.clear();
     }
 
-    bool doConnect(IcdConnectResult& result);
-    bool doConnect(QString& result);
     bool doState();
 };
 
@@ -331,24 +266,6 @@ static void get_scan_result(QList<QVariant>& args,
     ret.signal_strength = args[i++].toInt();
     ret.station_id = args[i++].toString();
     ret.signal_dB = args[i++].toInt();
-}
-
-
-static void get_connect_result(QList<QVariant>& args,
-			       IcdConnectResult& ret)
-{
-    int i=0;
-
-    if (args.isEmpty())
-      return;
-
-    ret.connect.service_type = args[i++].toString();
-    ret.connect.service_attrs = args[i++].toInt();
-    ret.connect.service_id = args[i++].toString();
-    ret.connect.network_type = args[i++].toString();
-    ret.connect.network_attrs = args[i++].toInt();
-    ret.connect.network_id = args[i++].toByteArray();
-    ret.status = args[i++].toInt();
 }
 
 
@@ -458,147 +375,6 @@ QStringList IcdPrivate::scan(icd_scan_request_flags flags,
 }
 
 
-void IcdPrivate::scanCancel()
-{
-    mDBus->call(ICD_DBUS_API_SCAN_CANCEL);
-}
-
-
-bool IcdPrivate::doConnect(IcdConnectResult& result)
-{
-    QTimer timer;
-    bool status = false;
-
-    timer.setSingleShot(true);
-    timer.start(timeout);
-
-    //qDebug() << "Waiting" << ICD_DBUS_API_CONNECT_SIG << "signal";
-
-    while (timer.isActive() && mInterface.isEmpty() &&
-	mSignal != ICD_DBUS_API_CONNECT_SIG &&
-	mError.isEmpty()) {
-	QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-    }
-
-    timer.stop();
-
-    if (mError.isEmpty()) {
-        if (!mArgs.isEmpty()) {
-	    get_connect_result(mArgs, result);
-	    status = true;
-	} else
-	    status = false;
-    } else
-	status = false;
-
-    return status;
-}
-
-
-bool IcdPrivate::connect(icd_connection_flags flags, IcdConnectResult& result)
-{
-    clearState();
-    //mDBus->callAsynchronous(ICD_DBUS_API_CONNECT_REQ, (uint)flags);
-    mDBus->call(ICD_DBUS_API_CONNECT_REQ, (uint)flags);
-    icdRefCounting()->setup(flags);
-    return doConnect(result);
-}
-
-
-bool IcdPrivate::connect(icd_connection_flags flags, QList<ConnectParams>& params,
-		IcdConnectResult& result)
-{
-    QVariantList varlist;
-    QVariantList varlist2;
-
-    foreach (ConnectParams param, params) {
-        QVariantList items;
-
-	items.append(QVariant(param.connect.service_type));
-	items.append(QVariant(param.connect.service_attrs));
-	items.append(QVariant(param.connect.service_id));
-	items.append(QVariant(param.connect.network_type));
-	items.append(QVariant(param.connect.network_attrs));
-	items.append(QVariant(param.connect.network_id));
-
-	varlist.append(items);
-    }
-
-    varlist2.append(QVariant(varlist));
-
-    clearState();
-    //mDBus->callAsynchronous(ICD_DBUS_API_CONNECT_REQ, (uint)flags, varlist2);
-    mDBus->call(ICD_DBUS_API_CONNECT_REQ, (uint)flags, varlist2);
-    icdRefCounting()->setup(flags);
-    return doConnect(result);
-}
-
-
-bool IcdPrivate::doConnect(QString& ret)
-{
-    QTimer timer;
-    bool status = false;
-
-    timer.setSingleShot(true);
-    timer.start(timeout);
-
-    while (timer.isActive() && mInterface.isEmpty() &&
-	mError.isEmpty()) {
-	QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-    }
-
-    timer.stop();
-
-    if (mError.isEmpty()) {
-	if (!mArgs.isEmpty()) {
-	    status = true;
-	    //ret = mArgs[0];  // TODO correctly
-	} else
-	    status = false;
-    } else
-	status = false;
-
-    return status;
-}
-
-
-bool IcdPrivate::connect(icd_connection_flags flags, QString& iap, QString& result)
-{
-    clearState();
-    //mDBus->callAsynchronous(ICD_CONNECT_REQ, iap, (uint)flags);
-    mDBus->call(ICD_CONNECT_REQ, iap, (uint)flags);
-    icdRefCounting()->setup(flags);
-    return doConnect(result);
-}
-
-
-void IcdPrivate::select(uint flags)
-{
-    mDBus->call(ICD_DBUS_API_SELECT_REQ, flags);
-}
-
-
-void IcdPrivate::disconnect(uint flags, QString& service_type,
-		    uint service_attrs, QString& service_id,
-		    QString& network_type, uint network_attrs,
-		    QByteArray& network_id)
-{
-    clearState();
-    mDBus->call(ICD_DBUS_API_DISCONNECT_REQ, flags,
-		service_type, service_attrs, service_id,
-		network_type, network_attrs, network_id);
-    icdRefCounting()->cleanup();
-}
-
-
-void IcdPrivate::disconnect(uint flags)
-{
-    clearState();
-    mDBus->call(ICD_DBUS_API_DISCONNECT_REQ, flags);
-    icdRefCounting()->cleanup();
-}
-
-
 static void get_state_all_result(QList<QVariant>& args,
 				 IcdStateResult& ret)
 {
@@ -688,68 +464,6 @@ uint IcdPrivate::state(QString& service_type, uint service_attrs,
     }
 
     // The returned value should be one because we asked for one state
-    return total_signals;
-}
-
-
-uint IcdPrivate::state_non_blocking(QList<IcdStateResult>& state_results)
-{
-    QTimer timer;
-    QVariant reply;
-    QVariantList vl;
-    uint signals_left, total_signals;
-    IcdStateResult result;
-
-    PDEBUG("%s\n", "non blocking state");
-
-    clearState();
-    reply = mDBus->call(ICD_DBUS_API_STATE_REQ);
-    if (reply.type() != QVariant::List)
-        return 0;
-    vl = reply.toList();
-    if (vl.isEmpty())
-        return 0;
-    reply = vl.first();
-    signals_left = total_signals = reply.toUInt();
-    if (!signals_left)
-        return 0;
-
-    timer.setSingleShot(true);
-    timer.start(timeout);
-    state_results.clear();
-    mError.clear();
-    while (signals_left) {
-        mInterface.clear();
-	while (timer.isActive() && mInterface.isEmpty()) {
-	    QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-	}
-
-	if (!timer.isActive()) {
-	    total_signals = 0;
-	    break;
-	}
-
-	if (mSignal != ICD_DBUS_API_STATE_SIG) {
-	    continue;
-	}
-
-	if (mError.isEmpty()) {
-	    if (!mArgs.isEmpty()) {
-	        if (mArgs.size()==2)
-	            get_state_all_result2(mArgs, result);
-		else
-	            get_state_all_result(mArgs, result);
-		state_results << result;
-	    }
-	    signals_left--;
-	} else {
-	    qWarning() << "Error:" << mError;
-	    break;
-	}
-    }
-    timer.stop();
-
-    PDEBUG("total_signals=%d\n", total_signals);
     return total_signals;
 }
 
@@ -898,57 +612,6 @@ uint IcdPrivate::statistics(QList<IcdStatisticsResult>& stats_results)
 }
 
 
-uint IcdPrivate::statistics(QString& service_type, uint service_attrs,
-			    QString& service_id, QString& network_type,
-			    uint network_attrs, QByteArray& network_id,
-			    IcdStatisticsResult& stats_result)
-{
-    QTimer timer;
-    QVariant reply;
-    uint total_signals;
-    QVariantList vl;
-
-    clearState();
-
-    reply = mDBus->call(ICD_DBUS_API_STATISTICS_REQ,
-			service_type, service_attrs, service_id,
-			network_type, network_attrs, network_id);
-    if (reply.type() != QVariant::List)
-        return 0;
-    vl = reply.toList();
-    if (vl.isEmpty())
-        return 0;
-    reply = vl.first();
-    total_signals = reply.toUInt();
-    if (!total_signals)
-        return 0;
-
-    timer.setSingleShot(true);
-    timer.start(timeout);
-
-    mInterface.clear();
-    while (timer.isActive() && mInterface.isEmpty()) {
-        QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-
-	if (mSignal != ICD_DBUS_API_STATISTICS_SIG) {
-            mInterface.clear();
-	    continue;
-	}
-    }
-
-    timer.stop();
-
-    if (mError.isEmpty()) {
-        get_statistics_all_result(mArgs, stats_result);
-    } else {
-        qWarning() << "Error:" << mError;
-    }
-
-    // The returned value should be one because we asked for one statistics
-    return total_signals;
-}
-
-
 static void get_addrinfo_all_result(QList<QVariant>& args,
 				    IcdAddressInfoResult& ret)
 {
@@ -1043,62 +706,6 @@ uint IcdPrivate::addrinfo(QList<IcdAddressInfoResult>& addr_results)
     return total_signals;
 }
 
-uint IcdPrivate::addrinfo_non_blocking(QList<IcdAddressInfoResult>& addr_results)
-{
-    QTimer timer;
-    QVariant reply;
-    QVariantList vl;
-    uint signals_left, total_signals;
-    IcdAddressInfoResult result;
-
-    PDEBUG("%s\n", "non blocking addrinfo");
-
-    clearState();
-    reply = mDBus->call(ICD_DBUS_API_ADDRINFO_REQ);
-    if (reply.type() != QVariant::List)
-        return 0;
-    vl = reply.toList();
-    if (vl.isEmpty())
-        return 0;
-    reply = vl.first();
-    if (reply.type() != QVariant::UInt)
-        return 0;
-    signals_left = total_signals = reply.toUInt();
-    if (!signals_left)
-        return 0;
-
-    timer.setSingleShot(true);
-    timer.start(timeout);
-    addr_results.clear();
-    while (signals_left) {
-        mInterface.clear();
-	while (timer.isActive() && mInterface.isEmpty()) {
-	    QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-	}
-
-	if (!timer.isActive()) {
-	    total_signals = 0;
-	    break;
-	}
-
-	if (mSignal != ICD_DBUS_API_ADDRINFO_SIG) {
-	    continue;
-	}
-
-	if (mError.isEmpty()) {
-  	    get_addrinfo_all_result(mArgs, result);
-	    addr_results << result;
-	    signals_left--;
-	} else {
-	    qWarning() << "Error:" << mError;
-	    break;
-	}
-    }
-    timer.stop();
-    PDEBUG("total_signals=%d\n", total_signals);
-    return total_signals;
-}
-
 
 uint IcdPrivate::addrinfo(QString& service_type, uint service_attrs,
 			  QString& service_id, QString& network_type,
@@ -1182,55 +789,6 @@ QStringList Icd::scan(icd_scan_request_flags flags,
 }
 
 
-void Icd::scanCancel()
-{
-    d->scanCancel();
-}
-
-
-bool Icd::connect(icd_connection_flags flags, IcdConnectResult& result)
-{
-    return d->connect(flags, result);
-}
-
-
-bool Icd::connect(icd_connection_flags flags, QList<ConnectParams>& params,
-		  IcdConnectResult& result)
-{
-    return d->connect(flags, params, result);
-}
-
-
-bool Icd::connect(icd_connection_flags flags, QString& iap, QString& result)
-{
-    return d->connect(flags, iap, result);
-}
-
-
-void Icd::select(uint flags)
-{
-    d->select(flags);
-}
-
-
-void Icd::disconnect(uint connect_flags, QString& service_type,
-		     uint service_attrs, QString& service_id,
-		     QString& network_type, uint network_attrs,
-		     QByteArray& network_id)
-{
-    d->disconnect(connect_flags, service_type,
-		  service_attrs, service_id,
-		  network_type, network_attrs,
-		  network_id);
-}
-
-
-void Icd::disconnect(uint connect_flags)
-{
-    d->disconnect(connect_flags);
-}
-
-
 uint Icd::state(QString& service_type, uint service_attrs,
 		QString& service_id, QString& network_type,
 		uint network_attrs, QByteArray& network_id,
@@ -1239,17 +797,6 @@ uint Icd::state(QString& service_type, uint service_attrs,
     return d->state(service_type, service_attrs, service_id,
 		    network_type, network_attrs, network_id,
 		    state_result);
-}
-
-
-uint Icd::statistics(QString& service_type, uint service_attrs,
-		     QString& service_id, QString& network_type,
-		     uint network_attrs, QByteArray& network_id,
-		     IcdStatisticsResult& stats_result)
-{
-    return d->statistics(service_type, service_attrs, service_id,
-			 network_type, network_attrs, network_id,
-			 stats_result);
 }
 
 
@@ -1269,10 +816,6 @@ uint Icd::state(QList<IcdStateResult>& state_results)
     return d->state(state_results);
 }
 
-uint Icd::state_non_blocking(QList<IcdStateResult>& state_results)
-{
-    return d->state_non_blocking(state_results);
-}
 
 uint Icd::statistics(QList<IcdStatisticsResult>& stats_results)
 {
@@ -1285,10 +828,6 @@ uint Icd::addrinfo(QList<IcdAddressInfoResult>& addr_results)
     return d->addrinfo(addr_results);
 }
 
-uint Icd::addrinfo_non_blocking(QList<IcdAddressInfoResult>& addr_results)
-{
-    return d->addrinfo_non_blocking(addr_results);
-}
 
 void Icd::icdSignalReceived(const QString& interface, 
 			 const QString& signal,
@@ -1303,12 +842,6 @@ void Icd::icdCallReply(const QString& method,
 		    const QString& error)
 {
     d->callReply(method, args, error);
-}
-
-
-QString Icd::error()
-{
-    return d->error();
 }
 
 }  // Maemo namespace
