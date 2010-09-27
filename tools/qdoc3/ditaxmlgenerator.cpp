@@ -1594,9 +1594,11 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
                     needOtherSection = true;
             }
             else {
+                QString attr;
                 if (!s->members.isEmpty()) {
                     xmlWriter().writeStartElement("section");
-                    xmlWriter().writeAttribute("outputclass","h2");
+                    attr = "h2 " + cleanRef((*s).name).toLower();
+                    xmlWriter().writeAttribute("outputclass",attr);
                     xmlWriter().writeStartElement("title");
                     xmlWriter().writeCharacters(protectEnc((*s).name));
                     xmlWriter().writeEndElement(); // </title>
@@ -1606,8 +1608,9 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
                 }
                 if (!s->reimpMembers.isEmpty()) {
                     QString name = QString("Reimplemented ") + (*s).name;
+                    attr = "h2 " + cleanRef(name).toLower();
                     xmlWriter().writeStartElement("section");
-                    xmlWriter().writeAttribute("outputclass","h2");
+                    xmlWriter().writeAttribute("outputclass",attr);
                     xmlWriter().writeStartElement("title");
                     xmlWriter().writeCharacters(protectEnc(name));
                     xmlWriter().writeEndElement(); // </title>
@@ -1620,7 +1623,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         }
         if (needOtherSection) {
             xmlWriter().writeStartElement("section");
-            xmlWriter().writeAttribute("outputclass","h3");
+            xmlWriter().writeAttribute("outputclass","h3 additional-inherited-members");
             xmlWriter().writeStartElement("title");
             xmlWriter().writeCharacters("Additional Inherited Members");
             xmlWriter().writeEndElement(); // </title>
