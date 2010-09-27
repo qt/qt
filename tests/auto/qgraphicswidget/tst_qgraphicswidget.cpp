@@ -101,6 +101,7 @@ private slots:
     void focusWidget_data();
     void focusWidget();
     void focusWidget2();
+    void focusWidget3();
     void focusPolicy_data();
     void focusPolicy();
     void font_data();
@@ -556,6 +557,39 @@ void tst_QGraphicsWidget::focusWidget2()
     QTRY_COMPARE(otherFocusOutSpy.count(), 1);
     QVERIFY(!scene.focusItem());
     QVERIFY(!widget->focusWidget());
+}
+
+class FocusWatchWidget : public QGraphicsWidget
+{
+public:
+    FocusWatchWidget(QGraphicsItem *parent = 0) : QGraphicsWidget(parent) { gotFocusInCount = 0; gotFocusOutCount = 0; }
+    int gotFocusInCount, gotFocusOutCount;
+protected:
+    void focusInEvent(QFocusEvent *fe) { gotFocusInCount++; QGraphicsWidget::focusInEvent(fe); }
+    void focusOutEvent(QFocusEvent *fe) { gotFocusOutCount++; QGraphicsWidget::focusOutEvent(fe); }
+};
+
+void tst_QGraphicsWidget::focusWidget3()
+{
+    QGraphicsScene scene;
+    QEvent windowActivate(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &windowActivate);
+
+    QGraphicsWidget *widget = new QGraphicsWidget;
+    FocusWatchWidget *subWidget = new FocusWatchWidget(widget);
+    subWidget->setFocusPolicy(Qt::StrongFocus);
+
+    scene.addItem(widget);
+    widget->show();
+
+    QTRY_VERIFY(!widget->hasFocus());
+    QTRY_VERIFY(!subWidget->hasFocus());
+
+    subWidget->setFocus();
+    QCOMPARE(subWidget->gotFocusInCount, 1);
+    QCOMPARE(subWidget->gotFocusOutCount, 0);
+    widget->hide();
+    QCOMPARE(subWidget->gotFocusOutCount, 1);
 }
 
 Q_DECLARE_METATYPE(Qt::FocusPolicy)

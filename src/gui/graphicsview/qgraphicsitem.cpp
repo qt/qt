@@ -6655,6 +6655,11 @@ bool QGraphicsItem::sceneEvent(QEvent *event)
         return true;
     }
 
+    if (event->type() == QEvent::FocusOut) {
+        focusOutEvent(static_cast<QFocusEvent *>(event));
+        return true;
+    }
+
     if (!d_ptr->visible) {
         // Eaten
         return true;
@@ -6663,9 +6668,6 @@ bool QGraphicsItem::sceneEvent(QEvent *event)
     switch (event->type()) {
     case QEvent::FocusIn:
         focusInEvent(static_cast<QFocusEvent *>(event));
-        break;
-    case QEvent::FocusOut:
-        focusOutEvent(static_cast<QFocusEvent *>(event));
         break;
     case QEvent::GraphicsSceneContextMenu:
         contextMenuEvent(static_cast<QGraphicsSceneContextMenuEvent *>(event));
