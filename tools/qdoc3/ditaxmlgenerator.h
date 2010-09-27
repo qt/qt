@@ -291,7 +291,7 @@ class DitaXmlGenerator : public PageGenerator
     const Tree* myTree;
     bool slow;
     bool obsoleteLinks;
-    int noLinks;
+    bool noLinks;
     int tableColumnCount;
     QMap<QString, NodeMap > moduleClassMap;
     QMap<QString, NodeMap > moduleNamespaceMap;

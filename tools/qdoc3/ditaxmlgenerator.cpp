@@ -392,7 +392,7 @@ DitaXmlGenerator::DitaXmlGenerator()
       myTree(0),
       slow(false),
       obsoleteLinks(false),
-      noLinks(0),
+      noLinks(false),
       tableColumnCount(0)
 {
     // nothing yet.
@@ -656,7 +656,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     case Atom::AbstractRight:
         break;
     case Atom::AutoLink:
-        if ((noLinks > 0) && !inLink && !inContents && !inSectionHeading) {
+        if (!noLinks && !inLink && !inContents && !inSectionHeading) {
             const Node* node = 0;
             QString link = getLink(atom, relative, marker, &node);
             if (!link.isEmpty()) {
@@ -681,8 +681,10 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         }
         if (inApiDesc)
             xmlWriter().writeStartElement("p");
-        else
+        else {
+            noLinks = true;
             xmlWriter().writeStartElement(SHORTDESC);
+        }
         if (relative->type() == Node::Property ||
             relative->type() == Node::Variable) {
             QString str;
@@ -715,6 +717,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     case Atom::BriefRight:
         if (relative->type() != Node::Fake) {
             xmlWriter().writeEndElement(); // </shortdesc> or </p>
+            noLinks = false;
         }
         break;
     case Atom::C:
@@ -1126,7 +1129,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::LinkNode:
         {
-            const Node *node = CodeMarker::nodeForString(atom->string());
+            const Node* node = CodeMarker::nodeForString(atom->string());
             beginLink(linkForNode(node, relative), node, relative, marker);
             skipAhead = 1;
         }
@@ -2094,11 +2097,11 @@ void DitaXmlGenerator::generateBrief(const Node* node, CodeMarker* marker)
 {
     Text brief = node->doc().briefText();
     if (!brief.isEmpty()) {
-        ++noLinks;
+        noLinks = true;
         xmlWriter().writeStartElement(SHORTDESC);
         generateText(brief, node, marker);
         xmlWriter().writeEndElement(); // </shortdesc>
-        --noLinks;
+        noLinks = false;
     }
 }
 
@@ -3610,8 +3613,6 @@ QString DitaXmlGenerator::refForNode(const Node* node)
 
 QString DitaXmlGenerator::guidForNode(const Node* node)
 {
-    QString ref;
-
     switch (node->type()) {
     case Node::Namespace:
     case Node::Class:
@@ -3633,14 +3634,13 @@ QString DitaXmlGenerator::guidForNode(const Node* node)
                 return guidForNode(fn->associatedProperty());
             }
             else {
-                ref = fn->name();
+                QString ref = fn->name();
                 if (fn->overloadNumber() != 1) {
                     ref += "-" + QString::number(fn->overloadNumber());
-#if 0                    
-                    qDebug() << "guidForNode() overloaded function:" << ref;
-#endif                    
+                    //qDebug() << "guidForNode() overloaded function:" << outFileName() << ref;
                 }
             }
+            return fn->guid();
         }
     case Node::Fake:
         if (node->subType() != Node::QmlPropertyGroup)
@@ -3657,7 +3657,7 @@ QString DitaXmlGenerator::guidForNode(const Node* node)
     case Node::Target:
         return node->guid();
     }
-    return registerRef(ref);
+    return QString();
 }
 
 /*!
