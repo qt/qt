@@ -233,7 +233,7 @@
   /* new algorithms                                                       */
 
   typedef int   TCoord;   /* integer scanline/pixel coordinate */
-  typedef long  TPos;     /* sub-pixel coordinate              */
+  typedef int   TPos;     /* sub-pixel coordinate              */
 
   /* determine the type used to store cell areas.  This normally takes at */
   /* least PIXEL_BITS*2 + 1 bits.  On 16-bit systems, we need to use      */
@@ -538,7 +538,7 @@
                                  TCoord  y2 )
   {
     TCoord  ex1, ex2, fx1, fx2, delta;
-    long    p, first, dx;
+    int     p, first, dx;
     int     incr, lift, mod, rem;
 
 
@@ -643,7 +643,7 @@
   {
     TCoord  ey1, ey2, fy1, fy2;
     TPos    dx, dy, x, x2;
-    long    p, first;
+    int     p, first;
     int     delta, rem, mod, lift, incr;
 
 
@@ -1670,7 +1670,7 @@
         {
           PCell  cells_max;
           int    yindex;
-          long   cell_start, cell_end, cell_mod;
+          int    cell_start, cell_end, cell_mod;
 
 
           ras.ycells = (PCell*)ras.buffer;
