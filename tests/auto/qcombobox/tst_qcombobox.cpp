@@ -475,6 +475,18 @@ void tst_QComboBox::setPalette()
             QVERIFY(((QWidget*)o)->palette() == pal);
         }
     }
+
+    testWidget->setEditable(true);
+    pal.setColor(QPalette::Base, Qt::red);
+    //Setting it on the lineedit should be separate form the combo
+    testWidget->lineEdit()->setPalette(pal);
+    QVERIFY(testWidget->palette() != pal);
+    QVERIFY(testWidget->lineEdit()->palette() == pal);
+    pal.setColor(QPalette::Base, Qt::green);
+    //Setting it on the combo directly should override lineedit
+    testWidget->setPalette(pal);
+    QVERIFY(testWidget->palette() == pal);
+    QVERIFY(testWidget->lineEdit()->palette() == pal);
 }
 
 void tst_QComboBox::sizeAdjustPolicy()
