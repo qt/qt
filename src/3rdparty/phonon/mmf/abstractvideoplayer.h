@@ -64,21 +64,22 @@ public:
     virtual void doStop();
     virtual void doSeek(qint64 milliseconds);
     virtual int setDeviceVolume(int mmfVolume);
+    virtual int openFile(const QString &fileName);
     virtual int openFile(RFile &file);
     virtual int openUrl(const QString &url);
     virtual int openDescriptor(const TDesC8 &des);
     virtual int bufferStatus() const;
-    virtual void close();
+    virtual void doClose();
 
     // MediaObjectInterface
     virtual bool hasVideo() const;
-    virtual qint64 currentTime() const;
     virtual qint64 totalTime() const;
 
     // AbstractPlayer
     virtual void videoOutputChanged();
 
     // AbstractMediaPlayer
+    virtual qint64 getCurrentTime() const;
     virtual int numberOfMetaDataEntries() const;
     virtual QPair<QString, QString> metaDataEntry(int index) const;
 
