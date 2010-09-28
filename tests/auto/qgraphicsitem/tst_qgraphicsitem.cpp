@@ -377,6 +377,7 @@ private slots:
     void itemClipsChildrenToShape2();
     void itemClipsChildrenToShape3();
     void itemClipsChildrenToShape4();
+    void itemClipsChildrenToShape5();
     void itemClipsTextChildToShape();
     void itemClippingDiscovery();
     void ancestorFlags();
@@ -5462,6 +5463,193 @@ void tst_QGraphicsItem::itemClipsChildrenToShape4()
     view.show();
     QTRY_COMPARE(QApplication::activeWindow(), (QWidget *)&view);
     QTRY_COMPARE(innerWidget->painted, true);
+}
+
+//#define DEBUG_ITEM_CLIPS_CHILDREN_TO_SHAPE_5
+static inline void renderSceneToImage(QGraphicsScene *scene, QImage *image, const QString &filename)
+{
+    image->fill(0);
+    QPainter painter(image);
+    scene->render(&painter);
+    painter.end();
+#ifdef DEBUG_ITEM_CLIPS_CHILDREN_TO_SHAPE_5
+    image->save(filename);
+#else
+    Q_UNUSED(filename);
+#endif
+}
+
+void tst_QGraphicsItem::itemClipsChildrenToShape5()
+{
+    class ParentItem : public QGraphicsRectItem
+    {
+    public:
+        ParentItem(qreal x, qreal y, qreal width, qreal height)
+            : QGraphicsRectItem(x, y, width, height) {}
+
+        QPainterPath shape() const
+        {
+            QPainterPath path;
+            path.addRect(50, 50, 200, 200);
+            return path;
+        }
+    };
+
+    ParentItem *parent = new ParentItem(0, 0, 300, 300);
+    parent->setBrush(Qt::blue);
+    parent->setOpacity(0.5);
+
+    const QRegion parentRegion(0, 0, 300, 300);
+    const QRegion clippedParentRegion = parentRegion & QRect(50, 50, 200, 200);
+    QRegion childRegion;
+    QRegion grandChildRegion;
+
+    QGraphicsRectItem *topLeftChild = new QGraphicsRectItem(0, 0, 100, 100);
+    topLeftChild->setBrush(Qt::red);
+    topLeftChild->setParentItem(parent);
+    childRegion += QRect(0, 0, 100, 100);
+
+    QGraphicsRectItem *topRightChild = new QGraphicsRectItem(0, 0, 100, 100);
+    topRightChild->setBrush(Qt::red);
+    topRightChild->setParentItem(parent);
+    topRightChild->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
+    topRightChild->setPos(200, 0);
+    childRegion += QRect(200, 0, 100, 100);
+
+    QGraphicsRectItem *topRightGrandChild = new QGraphicsRectItem(0, 0, 100, 100);
+    topRightGrandChild->setBrush(Qt::green);
+    topRightGrandChild->setParentItem(topRightChild);
+    topRightGrandChild->setPos(-40, 40);
+    grandChildRegion += QRect(200 - 40, 0 + 40, 100, 100) & QRect(200, 0, 100, 100);
+
+    QGraphicsRectItem *bottomLeftChild = new QGraphicsRectItem(0, 0, 100, 100);
+    bottomLeftChild->setBrush(Qt::red);
+    bottomLeftChild->setParentItem(parent);
+    bottomLeftChild->setFlag(QGraphicsItem::ItemClipsToShape);
+    bottomLeftChild->setPos(0, 200);
+    childRegion += QRect(0, 200, 100, 100);
+
+    QGraphicsRectItem *bottomLeftGrandChild = new QGraphicsRectItem(0, 0, 160, 160);
+    bottomLeftGrandChild->setBrush(Qt::green);
+    bottomLeftGrandChild->setParentItem(bottomLeftChild);
+    bottomLeftGrandChild->setFlag(QGraphicsItem::ItemClipsToShape);
+    bottomLeftGrandChild->setPos(0, -60);
+    grandChildRegion += QRect(0, 200 - 60, 160, 160);
+
+    QGraphicsRectItem *bottomRightChild = new QGraphicsRectItem(0, 0, 100, 100);
+    bottomRightChild->setBrush(Qt::red);
+    bottomRightChild->setParentItem(parent);
+    bottomRightChild->setPos(200, 200);
+    childRegion += QRect(200, 200, 100, 100);
+
+    QPoint controlPoints[17] = {
+        QPoint(5, 5)  , QPoint(95, 5)  , QPoint(205, 5)  , QPoint(295, 5)  ,
+        QPoint(5, 95) , QPoint(95, 95) , QPoint(205, 95) , QPoint(295, 95) ,
+                             QPoint(150, 150),
+        QPoint(5, 205), QPoint(95, 205), QPoint(205, 205), QPoint(295, 205),
+        QPoint(5, 295), QPoint(95, 295), QPoint(205, 295), QPoint(295, 295),
+    };
+
+    const QRegion clippedChildRegion = childRegion & QRect(50, 50, 200, 200);
+    const QRegion clippedGrandChildRegion = grandChildRegion & QRect(50, 50, 200, 200);
+
+    QGraphicsScene scene;
+    scene.addItem(parent);
+    QImage sceneImage(300, 300, QImage::Format_ARGB32);
+
+#define VERIFY_CONTROL_POINTS(pRegion, cRegion, gRegion) \
+    for (int i = 0; i < 17; ++i) { \
+        QPoint controlPoint = controlPoints[i]; \
+        QRgb pixel = sceneImage.pixel(controlPoint.x(), controlPoint.y()); \
+        if (pRegion.contains(controlPoint)) \
+            QVERIFY(qBlue(pixel) != 0); \
+        else \
+            QVERIFY(qBlue(pixel) == 0); \
+        if (cRegion.contains(controlPoint)) \
+            QVERIFY(qRed(pixel) != 0); \
+        else \
+            QVERIFY(qRed(pixel) == 0); \
+        if (gRegion.contains(controlPoint)) \
+            QVERIFY(qGreen(pixel) != 0); \
+        else \
+            QVERIFY(qGreen(pixel) == 0); \
+    }
+
+    const QList<QGraphicsItem *> children = parent->childItems();
+    const int childrenCount = children.count();
+
+    for (int i = 0; i < 5; ++i) {
+        QString clipString;
+        QString childString;
+        switch (i) {
+        case 0:
+            // All children stacked in front.
+            childString = QLatin1String("ChildrenInFront.png");
+            foreach (QGraphicsItem *child, children)
+                child->setFlag(QGraphicsItem::ItemStacksBehindParent, false);
+            break;
+        case 1:
+            // All children stacked behind.
+            childString = QLatin1String("ChildrenBehind.png");
+            foreach (QGraphicsItem *child, children)
+                child->setFlag(QGraphicsItem::ItemStacksBehindParent, true);
+            break;
+        case 2:
+            // First half of the children behind, second half in front.
+            childString = QLatin1String("FirstHalfBehind_SecondHalfInFront.png");
+            for (int j = 0; j < childrenCount; ++j) {
+                QGraphicsItem *child = children.at(j);
+                child->setFlag(QGraphicsItem::ItemStacksBehindParent, (j < childrenCount / 2));
+            }
+            break;
+        case 3:
+            // First half of the children in front, second half behind.
+            childString = QLatin1String("FirstHalfInFront_SecondHalfBehind.png");
+            for (int j = 0; j < childrenCount; ++j) {
+                QGraphicsItem *child = children.at(j);
+                child->setFlag(QGraphicsItem::ItemStacksBehindParent, (j >= childrenCount / 2));
+            }
+            break;
+        case 4:
+            // Child2 and child4 behind, rest in front.
+            childString = QLatin1String("Child2And4Behind_RestInFront.png");
+            for (int j = 0; j < childrenCount; ++j) {
+                QGraphicsItem *child = children.at(j);
+                if (j == 1 || j == 3)
+                    child->setFlag(QGraphicsItem::ItemStacksBehindParent, true);
+                else
+                    child->setFlag(QGraphicsItem::ItemStacksBehindParent, false);
+            }
+            break;
+        default:
+            qFatal("internal error");
+        }
+
+        // Nothing is clipped.
+        parent->setFlag(QGraphicsItem::ItemClipsChildrenToShape, false);
+        parent->setFlag(QGraphicsItem::ItemClipsToShape, false);
+        clipString = QLatin1String("nothingClipped_");
+        renderSceneToImage(&scene, &sceneImage, clipString + childString);
+        VERIFY_CONTROL_POINTS(parentRegion, childRegion, grandChildRegion);
+
+        // Parent clips children to shape.
+        parent->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
+        clipString = QLatin1String("parentClipsChildrenToShape_");
+        renderSceneToImage(&scene, &sceneImage, clipString + childString);
+        VERIFY_CONTROL_POINTS(parentRegion, clippedChildRegion, clippedGrandChildRegion);
+
+        // Parent clips itself and children to shape.
+        parent->setFlag(QGraphicsItem::ItemClipsToShape);
+        clipString = QLatin1String("parentClipsItselfAndChildrenToShape_");
+        renderSceneToImage(&scene, &sceneImage, clipString + childString);
+        VERIFY_CONTROL_POINTS(clippedParentRegion, clippedChildRegion, clippedGrandChildRegion);
+
+        // Parent clips itself to shape.
+        parent->setFlag(QGraphicsItem::ItemClipsChildrenToShape, false);
+        clipString = QLatin1String("parentClipsItselfToShape_");
+        renderSceneToImage(&scene, &sceneImage, clipString + childString);
+        VERIFY_CONTROL_POINTS(clippedParentRegion, childRegion, grandChildRegion);
+    }
 }
 
 void tst_QGraphicsItem::itemClipsTextChildToShape()

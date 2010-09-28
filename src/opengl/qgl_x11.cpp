@@ -1776,6 +1776,10 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pixmap, cons
     QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(pixmap->data_ptr().data());
     Q_ASSERT(pixmapData->classId() == QPixmapData::X11Class);
 
+    // We can't use TFP if the pixmap has a separate X11 mask
+    if (pixmapData->x11_mask)
+        return 0;
+
     if (!qt_resolveTextureFromPixmap(paintDevice))
         return 0;
 

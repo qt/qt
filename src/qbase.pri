@@ -183,3 +183,20 @@ QMAKE_PKGCONFIG_VARIABLES += moc_dir uic_dir rcc_dir lupdate_dir lrelease_dir
 include(qt_targets.pri)
 
 win32:DEFINES+=_USE_MATH_DEFINES
+
+symbian {
+    # Partial upgrade SIS file
+    vendorinfo = \
+        "; Localised Vendor name" \
+        "%{\"Nokia, Qt\"}" \
+        " " \
+        "; Unique Vendor name" \
+        ":\"Nokia, Qt\"" \
+        " "
+    pu_header = "; Partial upgrade package for testing $${TARGET} changes without reinstalling everything" \
+                "$${LITERAL_HASH}{\"$${TARGET}\"}, (0x2001E61C), $${QT_MAJOR_VERSION},$${QT_MINOR_VERSION},$${QT_PATCH_VERSION}, TYPE=PU"
+    partial_upgrade.pkg_prerules = pu_header vendorinfo
+    partial_upgrade.sources = $$QMAKE_LIBDIR_QT/$${TARGET}.dll
+    partial_upgrade.path = c:/sys/bin
+    DEPLOYMENT += partial_upgrade
+}

@@ -152,7 +152,7 @@ if (@ARGV)
             my $newLine = $line;
 
             # Patch pkg UID if it's in protected range
-            if ($line =~ m/^\#.*\((0x[0-7][0-9|a-f|A-F]*)\).*$/)
+            if ($line =~ m/^\#.*\((0x[0-7][0-9a-fA-F]*)\).*$/)
             {
                 my $oldUID = $1;
                 my $newUID = $oldUID;
@@ -162,7 +162,7 @@ if (@ARGV)
             }
 
             # Patch embedded sis name and UID if UID is in protected range
-            if ($line =~ m/^@\"*(.*\.sis).*\((0x[0-7][0-9|a-f|A-F]*)\).*$/)
+            if ($line =~ m/^@\"*(.*\.sis).*\((0x[0-7][0-9a-fA-F]*)\).*$/)
             {
                 my $oldSisName = $1;
                 my $oldUID = $2;
@@ -280,7 +280,16 @@ if (@ARGV)
                 my $capabilitiesToAllow = join(" ", @capabilitiesToAllow);
                 my @capabilitiesToDrop;
                 while (<$dllCaps>) {
-                    if (/^Vendor ID: (.*)$/) {
+                    if (/^Secure ID: ([0-7][0-9a-fA-F]*)$/) {
+                        my $exeSid = $1;
+                        if ($binaryBaseName =~ /\.exe$/) {
+                            # Installer refuses to install protected executables in a self signed package, so abort if one is detected.
+                            # We can't simply just patch the executable SID, as any registration resources executable uses will be linked to it via SID.
+                            print ("Patching: Executable with SID in the protected range (0x$exeSid) detected: \"$binaryBaseName\". A self-signed sis with protected executables is not supported.\n");
+                            exit(1);
+                        }
+                    }
+                    if (/^Vendor ID: ([0-9a-fA-F]*)$/) {
                         $originalVid = "$1";
                     }
                     if (!$capsFound) {
@@ -303,8 +312,15 @@ if (@ARGV)
                     my $capsToDropStr = join("\", \"", @capabilitiesToDrop);
                     $capsToDropStr =~ s/\", \"$//;
 
-                    print ("Patching: The following capabilities used in \"$binaryBaseName\" are not compatible with a self-signed package and will be removed: \"$capsToDropStr\".\n");
-                    $executeNeeded = 1;
+                    if ($binaryBaseName =~ /\.exe$/) {
+                        # While libraries often have capabilities they do not themselves need just to enable them to be loaded by wider variety of processes,
+                        # executables are more likely to need every capability they have been assigned or they won't function correctly.
+                        print ("Patching: Executable with capabilities incompatible with self-signing detected: \"$binaryBaseName\". (Incompatible capabilities: \"$capsToDropStr\".) Reducing capabilities is only supported for libraries.\n");
+                        exit(1);
+                    } else {
+                        print ("Patching: The following capabilities used in \"$binaryBaseName\" are not compatible with a self-signed package and will be removed: \"$capsToDropStr\".\n");
+                        $executeNeeded = 1;
+                    }
                 }
                 $commandToExecute = sprintf($baseCommandToExecute, join(" ", @capabilitiesToSet));
             }

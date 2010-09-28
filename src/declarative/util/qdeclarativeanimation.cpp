@@ -2192,6 +2192,13 @@ void QDeclarativePropertyAnimation::setProperties(const QString &prop)
     The singular forms are slightly optimized, so if you do have only a single target/property
     to animate you should try to use them.
 
+    The \c targets property allows multiple targets to be set. For example, this animates the
+    \c x property of both \c itemA and \c itemB:
+
+    \qml
+    NumberAnimation { targets: [itemA, itemB]; properties: "x"; to: 500 }
+    \endqml
+
     In many cases these properties do not need to be explicitly specified, as they can be
     inferred from the animation framework:
 
@@ -2255,7 +2262,7 @@ void QDeclarativePropertyAnimation::setProperties(const QString &prop)
 
     As seen in the above example, properties is specified as a comma-separated string of property names to animate.
 
-    \sa exclude
+    \sa exclude, {QML Animation}
 */
 QDeclarativeListProperty<QObject> QDeclarativePropertyAnimation::targets()
 {

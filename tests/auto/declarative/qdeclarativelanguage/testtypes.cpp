@@ -54,6 +54,8 @@ void registerTypes()
     qmlRegisterType<MyGroupedObject>();
 
     qmlRegisterCustomType<MyCustomParserType>("Test", 1, 0, "MyCustomParserType", new MyCustomParserTypeParser);
+
+    qmlRegisterTypeNotAvailable("Test",1,0,"UnavailableType", "UnavailableType is unavailable for testing");
 }
 
 QVariant myCustomVariantTypeConverter(const QString &data)

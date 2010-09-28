@@ -405,6 +405,8 @@ void QThread::start(Priority priority)
     d->running = true;
     d->finished = false;
     d->terminated = false;
+    d->exited = false;
+    d->returnCode = 0;
 
     /*
       NOTE: we create the thread in the suspended state, set the
