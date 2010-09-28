@@ -837,6 +837,9 @@
         padding-left: 25px;
         padding-top: 10px;
     }
+	.wrap .content ul img {
+		vertical-align:middle;
+	}	
     a:hover
     {
         color: #4c0033;
