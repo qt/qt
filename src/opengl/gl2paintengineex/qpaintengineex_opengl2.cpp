@@ -1499,9 +1499,22 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         staticTextItem->fontEngine->setGlyphCache(ctx, cache);
     }
 
-    cache->setPaintEnginePrivate(this);
-    cache->populate(staticTextItem->fontEngine, staticTextItem->numGlyphs, staticTextItem->glyphs,
-                    staticTextItem->glyphPositions);
+    bool recreateVertexArrays = false;
+    if (staticTextItem->userDataNeedsUpdate)
+        recreateVertexArrays = true;
+    else if (staticTextItem->userData == 0)
+        recreateVertexArrays = true;
+    else if (staticTextItem->userData->type != QStaticTextUserData::OpenGLUserData)
+        recreateVertexArrays = true;
+
+    // We only need to update the cache with new glyphs if we are actually going to recreate the vertex arrays.
+    // If the cache size has changed, we do need to regenerate the vertices, but we don't need to repopulate the
+    // cache so this text is performed before we test if the cache size has changed.
+    if (recreateVertexArrays) {
+        cache->setPaintEnginePrivate(this);
+        cache->populate(staticTextItem->fontEngine, staticTextItem->numGlyphs, staticTextItem->glyphs,
+                        staticTextItem->glyphPositions);
+    }
 
     if (cache->width() == 0 || cache->height() == 0)
         return;
@@ -1512,14 +1525,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 
     GLfloat dx = 1.0 / cache->width();
     GLfloat dy = 1.0 / cache->height();
-
-    bool recreateVertexArrays = false;
-    if (staticTextItem->userDataNeedsUpdate)
-        recreateVertexArrays = true;
-    else if (staticTextItem->userData == 0)
-        recreateVertexArrays = true;
-    else if (staticTextItem->userData->type != QStaticTextUserData::OpenGLUserData)
-        recreateVertexArrays = true;
 
     // Use global arrays by default
     QGL2PEXVertexArray *vertexCoordinates = &vertexCoordinateArray;
