@@ -1,24 +1,44 @@
-/*
-  libconninet - Internet Connectivity support library
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the plugins of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
 
-  Copyright (C) 2009-2010 Nokia Corporation. All rights reserved.
-
-  Contact: Aapo Makela <aapo.makela@nokia.com>
-
-  This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public License
-  version 2.1 as published by the Free Software Foundation.
-
-  This library is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this library; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-  02110-1301 USA
-*/
 
 #include <stdlib.h>
 #include <string.h>
@@ -191,61 +211,6 @@ IAPConf::~IAPConf()
     delete d_ptr;
 }
 
-void IAPConf::setValue(const QString& key, const QVariant& value)
-{
-    // Invalid value means unsetting the given key
-    if (!value.isValid()) {
-        int err = conn_settings_unset(d_ptr->settings, 
-                                      QSTRING_TO_CONST_CSTR(key));
-        if (err != CONN_SETTINGS_E_NO_ERROR) {
-            qWarning("IAPConf: unable to unset key %s: %s",
-                     QSTRING_TO_CONST_CSTR(key),
-                     conn_settings_error_text((ConnSettingsError)err));
-        }
-        return;
-    }
-
-    // Convert value to ConnSettingsValue
-    ConnSettingsValue *val = d_ptr->variantToValue(value);
-    if (val == 0) return;
-
-    // Set value and handle errors
-    int error = conn_settings_set(d_ptr->settings,
-                                  QSTRING_TO_CONST_CSTR(key),
-                                  val);
-    if (error != CONN_SETTINGS_E_NO_ERROR) {
-        qWarning("IAPConf: error in setting key %s: %s", 
-                 QSTRING_TO_CONST_CSTR(key), 
-                 conn_settings_error_text((ConnSettingsError)error));
-    }
-
-    // Destroy value
-    conn_settings_value_destroy(val);
-    return;
-}
-
-void IAPConf::set(const QString& key1, const QVariant& value1, 
-                  const QString& key2, const QVariant& value2, 
-                  const QString& key3, const QVariant& value3, 
-                  const QString& key4, const QVariant& value4, 
-                  const QString& key5, const QVariant& value5, 
-                  const QString& key6, const QVariant& value6, 
-                  const QString& key7, const QVariant& value7, 
-                  const QString& key8, const QVariant& value8, 
-                  const QString& key9, const QVariant& value9,
-                  const QString& key10, const QVariant& value10)
-{
-    if (!key1.isEmpty()) setValue(key1, value1);
-    if (!key2.isEmpty()) setValue(key2, value2);
-    if (!key3.isEmpty()) setValue(key3, value3);
-    if (!key4.isEmpty()) setValue(key4, value4);
-    if (!key5.isEmpty()) setValue(key5, value5);
-    if (!key6.isEmpty()) setValue(key6, value6);
-    if (!key7.isEmpty()) setValue(key7, value7);
-    if (!key8.isEmpty()) setValue(key8, value8);
-    if (!key9.isEmpty()) setValue(key9, value9);
-    if (!key10.isEmpty()) setValue(key10, value10);
-}
 
 QVariant IAPConf::value(const QString& key) const
 {
@@ -255,25 +220,6 @@ QVariant IAPConf::value(const QString& key) const
     QVariant variant = d_ptr->valueToVariant(val);
     conn_settings_value_destroy(val);
     return variant;
-}
-
-void IAPConf::clear(const char *default_path)
-{
-    Q_UNUSED(default_path); // default path is unused
-
-    int error = conn_settings_remove(d_ptr->settings);
-    if (error != CONN_SETTINGS_E_NO_ERROR) {
-        qWarning("IAPConf: Error when removing IAP: %s",
-                 conn_settings_error_text((ConnSettingsError)error));
-    }
-}
-
-void IAPConf::clearAll()
-{
-    ConnSettings *settings = conn_settings_open(CONN_SETTINGS_CONNECTION,
-                                                NULL);
-    conn_settings_remove(settings);
-    conn_settings_close(settings);
 }
 
 
