@@ -37,7 +37,7 @@ equals(GENERATE_SIS_TARGETS, true) {
                               )
 
         ok_sis_target.target = ok_sis
-        ok_sis_target.commands = createpackage.bat $$CONVERT_GCCE_PARAM $(QT_SIS_OPTIONS) $${baseTarget}_template.pkg \
+        ok_sis_target.commands = createpackage $$CONVERT_GCCE_PARAM $(QT_SIS_OPTIONS) $${baseTarget}_template.pkg \
                                      $(QT_SIS_TARGET) $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
 
         unsigned_sis_target.target = unsigned_sis
@@ -56,7 +56,7 @@ equals(GENERATE_SIS_TARGETS, true) {
                               )
 
         ok_unsigned_sis_target.target = ok_unsigned_sis
-        ok_unsigned_sis_target.commands = createpackage.bat $$CONVERT_GCCE_PARAM $(QT_SIS_OPTIONS) -o $${baseTarget}_template.pkg $(QT_SIS_TARGET)
+        ok_unsigned_sis_target.commands = createpackage $$CONVERT_GCCE_PARAM $(QT_SIS_OPTIONS) -o $${baseTarget}_template.pkg $(QT_SIS_TARGET)
 
         target_sis_target.target = $${baseTarget}.sis
         target_sis_target.commands = $(MAKE) -f $(MAKEFILE) sis
@@ -70,7 +70,7 @@ equals(GENERATE_SIS_TARGETS, true) {
         installer_sis_target.depends = $${baseTarget}.sis
 
         ok_installer_sis_target.target = ok_installer_sis
-        ok_installer_sis_target.commands = createpackage.bat $(QT_SIS_OPTIONS) $${baseTarget}_installer.pkg - \
+        ok_installer_sis_target.commands = createpackage $(QT_SIS_OPTIONS) $${baseTarget}_installer.pkg - \
                                                $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
 
         fail_sis_nopkg_target.target = fail_sis_nopkg
@@ -95,7 +95,7 @@ equals(GENERATE_SIS_TARGETS, true) {
                                    )
 
         ok_stub_sis_target.target = ok_stub_sis
-        ok_stub_sis_target.commands = createpackage.bat -s $(QT_SIS_OPTIONS) $${baseTarget}_stub.pkg \
+        ok_stub_sis_target.commands = createpackage -s $(QT_SIS_OPTIONS) $${baseTarget}_stub.pkg \
                                           $(QT_SIS_TARGET) $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
 
         QMAKE_EXTRA_TARGETS += sis_target \
