@@ -317,6 +317,7 @@
     PCell*     ycells;
     int        ycount;
 
+    int        skip_spans;
   } TWorker, *PWorker;
 
 
@@ -331,7 +332,12 @@
 
   } TRaster, *PRaster;
 
-
+  int q_gray_rendered_spans(TRaster *raster)
+  {
+    if ( raster && raster->worker )
+      return raster->worker->skip_spans > 0 ? 0 : -raster->worker->skip_spans;
+    return 0;
+  }
 
   /*************************************************************************/
   /*                                                                       */
@@ -1179,6 +1185,7 @@
   {
     QT_FT_Span*  span;
     int       coverage;
+    int       skip;
 
 
     /* compute the coverage line's coverage, depending on the    */
@@ -1229,9 +1236,16 @@
 
       if ( ras.num_gray_spans >= QT_FT_MAX_GRAY_SPANS )
       {
-        if ( ras.render_span )
-          ras.render_span( ras.num_gray_spans, ras.gray_spans,
+        if ( ras.render_span && ras.num_gray_spans > ras.skip_spans )
+        {
+          skip = ras.skip_spans > 0 ? ras.skip_spans : 0;
+          ras.render_span( ras.num_gray_spans - skip,
+                           ras.gray_spans + skip,
                            ras.render_span_data );
+        }
+
+        ras.skip_spans -= ras.num_gray_spans;
+
         /* ras.render_span( span->y, ras.gray_spans, count ); */
 
 #ifdef DEBUG_GRAYS
@@ -1601,7 +1615,8 @@
     TBand* volatile  band;
     int volatile     n, num_bands;
     TPos volatile    min, max, max_y;
-    QT_FT_BBox*         clip;
+    QT_FT_BBox*      clip;
+    int              skip;
 
     ras.num_gray_spans = 0;
 
@@ -1742,9 +1757,15 @@
       }
     }
 
-    if ( ras.render_span && ras.num_gray_spans > 0 )
-        ras.render_span( ras.num_gray_spans,
-                         ras.gray_spans, ras.render_span_data );
+    if ( ras.render_span && ras.num_gray_spans > ras.skip_spans )
+    {
+        skip = ras.skip_spans > 0 ? ras.skip_spans : 0;
+        ras.render_span( ras.num_gray_spans - skip,
+                         ras.gray_spans + skip,
+                         ras.render_span_data );
+    }
+
+    ras.skip_spans -= ras.num_gray_spans;
 
     if ( ras.band_shoot > 8 && ras.band_size > 16 )
       ras.band_size = ras.band_size / 2;
@@ -1764,6 +1785,9 @@
 
     if ( !raster || !raster->buffer || !raster->buffer_size )
       return ErrRaster_Invalid_Argument;
+
+    if ( raster->worker )
+      raster->worker->skip_spans = params->skip_spans;
 
     // If raster object and raster buffer are allocated, but
     // raster size isn't of the minimum size, indicate out of
