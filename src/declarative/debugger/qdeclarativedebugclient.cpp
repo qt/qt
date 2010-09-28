@@ -277,7 +277,7 @@ void QDeclarativeDebugClient::sendMessage(const QByteArray &message)
     d->client->d->protocol->send(pack);
 }
 
-void QDeclarativeDebugClient::statusChanged(Status status)
+void QDeclarativeDebugClient::statusChanged(Status)
 {
 }
 
