@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
     bool checkLinks = false;
 
     QCoreApplication app(argc, argv);
+#ifndef Q_OS_WIN32
     QTranslator translator;
     QTranslator qtTranslator;
     QTranslator qt_helpTranslator;
@@ -80,6 +81,7 @@ int main(int argc, char *argv[])
         app.installTranslator(&qtTranslator);
         app.installTranslator(&qt_helpTranslator);
     }
+#endif // Q_OS_WIN32
 
     for (int i = 1; i < argc; ++i) {
         arg = QString::fromLocal8Bit(argv[i]);
