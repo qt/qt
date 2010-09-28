@@ -1743,7 +1743,7 @@ static v8::Handle<v8::Value> QtClassInstanceNamedPropertyGetter(v8::Local<v8::St
                                                                 QScriptStringPrivate::get(new QScriptStringPrivate(QScriptConverter::toString(property))),
                                                                 QScriptClass::HandlesReadAccess,
                                                                 &id);
-    if (!userFlags & QScriptClass::HandlesReadAccess)
+    if (!(userFlags & QScriptClass::HandlesReadAccess))
         return handleScope.Close(v8::Undefined());
     QScriptValue userResult = scriptclass->userCallback()->property(QScriptValuePrivate::get(object.data()),
                                                                 QScriptStringPrivate::get(new QScriptStringPrivate(QScriptConverter::toString(property))),
@@ -1769,7 +1769,7 @@ static v8::Handle<v8::Value> QtClassInstanceNamedPropertySetter(v8::Local<v8::St
                                                                 QScriptClass::HandlesWriteAccess,
                                                                 &id);
     // FIXME why HandlesReadAccess?
-    if (!userFlags & QScriptClass::HandlesReadAccess)
+    if (!(userFlags & QScriptClass::HandlesReadAccess))
         return handleScope.Close(value);
 
     scriptclass->userCallback()->setProperty(obj,
