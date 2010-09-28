@@ -1695,12 +1695,26 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     }
     //### TODO: Gamma correction
 
-    glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
-    if (lastMaskTextureUsed != cache->texture()) {
-        glBindTexture(GL_TEXTURE_2D, cache->texture());
-        lastMaskTextureUsed = cache->texture();
+    QGLTextureGlyphCache::FilterMode filterMode = (s->matrix.type() > QTransform::TxTranslate)?QGLTextureGlyphCache::Linear:QGLTextureGlyphCache::Nearest;
+    if (lastMaskTextureUsed != cache->texture() || cache->filterMode() != filterMode) {
+
+        glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
+        if (lastMaskTextureUsed != cache->texture()) {
+            glBindTexture(GL_TEXTURE_2D, cache->texture());
+            lastMaskTextureUsed = cache->texture();
+        }
+
+        if (cache->filterMode() != filterMode) {
+            if (filterMode == QGLTextureGlyphCache::Linear) {
+                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            } else {
+                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            }
+            cache->setFilterMode(filterMode);
+        }
     }
-    updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, s->matrix.type() > QTransform::TxTranslate);
 
 #if defined(QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO)
     glDrawElements(GL_TRIANGLE_STRIP, 6 * staticTextItem->numGlyphs, GL_UNSIGNED_SHORT, 0);
