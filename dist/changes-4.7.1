@@ -55,6 +55,15 @@ QtGui
 	* [QTBUG-12540] Fix rendering of large glyphs with OpenGL2 paint engine.
 
 
+ - QPinchGesture
+    * The scaleFactor and totalScaleFactor now represent a value that allows
+      an object to track a touchpoint during a Pinch Gesture even when using
+      sequences for zooming.
+      Therefor the scale factors are initialized to 1.0 and for every new
+      sequence the totalScaleFactor is multiplied with the scaleFactor of the
+      new sequence.
+
+
 QtDBus
 ------
 
