@@ -91,6 +91,8 @@ public:
 
     IcdPrivate(unsigned int timeout, IcdDbusInterfaceVer ver, Icd *myfriend)
     {
+        Q_UNUSED(ver);
+
         /* Note that the old Icd interface is currently disabled and
 	 * the new one is always used.
 	 */
@@ -274,6 +276,8 @@ QStringList IcdPrivate::scan(icd_scan_request_flags flags,
 			     QList<IcdScanResult>& scan_results,
 			     QString& error)
 {
+    Q_UNUSED(network_types);
+
     QStringList scanned_types;
     QTimer timer;
     QVariant reply;

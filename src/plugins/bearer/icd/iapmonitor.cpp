@@ -93,7 +93,9 @@ void conn_settings_notify_func (ConnSettingsType type,
                                 const char *key,
                                 ConnSettingsValue *value,
                                 void *user_data)
-{    
+{
+    Q_UNUSED(id);
+
     if (type != CONN_SETTINGS_CONNECTION) return;
     IAPMonitorPrivate *priv = (IAPMonitorPrivate *)user_data;
 
@@ -119,11 +121,13 @@ IAPMonitor::~IAPMonitor()
 
 void IAPMonitor::iapAdded(const QString &id)
 {
+    Q_UNUSED(id);
     // By default do nothing
 }
 
 void IAPMonitor::iapRemoved(const QString &id)
 {
+    Q_UNUSED(id);
     // By default do nothing
 }
 
