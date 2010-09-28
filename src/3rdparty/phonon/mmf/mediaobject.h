@@ -89,6 +89,7 @@ public:
 
     void setVideoOutput(AbstractVideoOutput* videoOutput);
 
+    int openFileHandle(const QString &fileName);
     RFile* file() const;
     QResource* resource() const;
 
