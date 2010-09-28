@@ -182,7 +182,9 @@ void QDeclarativeDebugServer::newConnection()
 bool QDeclarativeDebugServer::hasDebuggingClient() const
 {
     Q_D(const QDeclarativeDebugServer);
-    return d->gotHello;
+    return d->connection
+            && (d->connection->state() == QTcpSocket::ConnectedState)
+            && d->gotHello;
 }
 
 QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
@@ -485,7 +487,7 @@ void QDeclarativeDebugService::sendMessage(const QByteArray &message)
 {
     Q_D(QDeclarativeDebugService);
 
-    if (!d->server || !d->server->d_func()->connection)
+    if (status() != Enabled)
         return;
 
     QPacket pack;
