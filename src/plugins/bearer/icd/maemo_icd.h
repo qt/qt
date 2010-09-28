@@ -1,24 +1,44 @@
-/*
-  libconninet - Internet Connectivity support library
-  
-  Copyright (C) 2009 Nokia Corporation. All rights reserved.
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the plugins of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
 
-  Contact: Jukka Rissanen <jukka.rissanen@nokia.com>
-
-  This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public License
-  version 2.1 as published by the Free Software Foundation.
-
-  This library is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this library; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-  02110-1301 USA
-*/
 
 #ifndef MAEMO_ICD_H
 #define MAEMO_ICD_H
@@ -34,8 +54,6 @@
 #include <icd/dbus_api.h>
 #include <icd/osso-ic.h>
 #include <icd/osso-ic-dbus.h>
-
-#include "dbusdispatcher.h"
 #include <icd/network_api_defines.h>
 
 #define ICD_LONG_SCAN_TIMEOUT (30*1000)  /* 30sec */
@@ -52,10 +70,6 @@ struct CommonParams {
 	QString network_type;
 	uint network_attrs;
 	QByteArray network_id;
-};
-
-struct ConnectParams {
-	struct CommonParams connect;
 };
 
 struct IcdScanResult {
@@ -75,11 +89,6 @@ struct IcdScanResult {
 			scan.network_attrs = network_priority = signal_strength =
 			signal_dB = 0;
 	}
-};
-
-struct IcdConnectResult {
-	struct CommonParams connect;
-	uint status;
 };
 
 struct IcdStateResult {
@@ -126,43 +135,26 @@ public:
     Icd(unsigned int timeout, QObject *parent = 0);
     Icd(unsigned int timeout, IcdDbusInterfaceVer ver, QObject *parent = 0);
     ~Icd();
-    QString error();  // returns last error string
 
     /* Icd2 dbus API functions */
     QStringList scan(icd_scan_request_flags flags,
 		     QStringList &network_types,
 		     QList<IcdScanResult>& scan_results,
 		     QString& error);
-    void scanCancel();
-    bool connect(icd_connection_flags flags, IcdConnectResult& result);
-    bool connect(icd_connection_flags flags, QList<ConnectParams>& params,
-		 IcdConnectResult& result);
-    bool connect(icd_connection_flags flags, QString& iap, QString& result);
-    void select(uint flags);
-    void disconnect(uint connect_flags, QString& service_type,
-		    uint service_attrs, QString& service_id,
-		    QString& network_type, uint network_attrs,
-		    QByteArray& network_id);
-    void disconnect(uint connect_flags);
 
     uint state(QString& service_type, uint service_attrs,
 	       QString& service_id, QString& network_type,
 	       uint network_attrs, QByteArray& network_id,
 	       IcdStateResult &state_result);
-    uint statistics(QString& service_type, uint service_attrs,
-		    QString& service_id, QString& network_type,
-		    uint network_attrs, QByteArray& network_id,
-		    IcdStatisticsResult& stats_result);
+
     uint addrinfo(QString& service_type, uint service_attrs,
 		  QString& service_id, QString& network_type,
 		  uint network_attrs, QByteArray& network_id,
 		  IcdAddressInfoResult& addr_result);
 
     uint state(QList<IcdStateResult>& state_results);
-    uint state_non_blocking(QList<IcdStateResult>& state_results);
     uint statistics(QList<IcdStatisticsResult>& stats_results);
     uint addrinfo(QList<IcdAddressInfoResult>& addr_results);
-    uint addrinfo_non_blocking(QList<IcdAddressInfoResult>& addr_results);
 
 private Q_SLOTS:
     void icdSignalReceived(const QString& interface, 

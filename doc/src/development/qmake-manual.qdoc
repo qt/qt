@@ -1602,6 +1602,9 @@
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 36
 
+    Note that \c qmake will skip files that are executable. If you need to install
+    executable files, you can unset the files' executable flags.
+
     \target LEXIMPLS
     \section1 LEXIMPLS
 
