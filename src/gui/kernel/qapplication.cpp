@@ -711,6 +711,12 @@ void QApplicationPrivate::process_cmdline()
             done.
     \endlist
 
+    \section1 X11 Notes
+
+    If QApplication fails to open the X11 display, it will terminate
+    the process. This behavior is consistent with most X11
+    applications.
+
     \sa arguments()
 */
 
@@ -2397,8 +2403,13 @@ static const char *application_menu_strings[] = {
     };
 QString qt_mac_applicationmenu_string(int type)
 {
-    return qApp->translate("MAC_APPLICATION_MENU",
-                           application_menu_strings[type]);
+    QString menuString = QString::fromLatin1(application_menu_strings[type]);
+    QString translated = qApp->translate("QMenuBar", application_menu_strings[type]);
+    if (translated != menuString)
+        return translated;
+    else
+        return qApp->translate("MAC_APPLICATION_MENU",
+                               application_menu_strings[type]);
 }
 #endif
 #endif

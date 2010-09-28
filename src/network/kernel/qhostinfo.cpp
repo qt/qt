@@ -468,14 +468,17 @@ void QHostInfoRunnable::run()
     resultEmitter.emitResultsReady(hostInfo);
 
     // now also iterate through the postponed ones
-    QMutableListIterator<QHostInfoRunnable*> iterator(manager->postponedLookups);
-    while (iterator.hasNext()) {
-        QHostInfoRunnable* postponed = iterator.next();
-        if (toBeLookedUp == postponed->toBeLookedUp) {
-            // we can now emit
-            iterator.remove();
-            hostInfo.setLookupId(postponed->id);
-            postponed->resultEmitter.emitResultsReady(hostInfo);
+    {
+        QMutexLocker locker(&manager->mutex);
+        QMutableListIterator<QHostInfoRunnable*> iterator(manager->postponedLookups);
+        while (iterator.hasNext()) {
+            QHostInfoRunnable* postponed = iterator.next();
+            if (toBeLookedUp == postponed->toBeLookedUp) {
+                // we can now emit
+                iterator.remove();
+                hostInfo.setLookupId(postponed->id);
+                postponed->resultEmitter.emitResultsReady(hostInfo);
+            }
         }
     }
 
