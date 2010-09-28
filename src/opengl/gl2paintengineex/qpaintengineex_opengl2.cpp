@@ -1666,7 +1666,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
             glBindTexture(GL_TEXTURE_2D, cache->texture());
             updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
-            shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
 #if defined(QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO)
             glDrawElements(GL_TRIANGLE_STRIP, 6 * staticTextItem->numGlyphs, GL_UNSIGNED_SHORT, 0);
 #else
@@ -1702,7 +1701,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         lastMaskTextureUsed = cache->texture();
     }
     updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, s->matrix.type() > QTransform::TxTranslate);
-    shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
 
 #if defined(QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO)
     glDrawElements(GL_TRIANGLE_STRIP, 6 * staticTextItem->numGlyphs, GL_UNSIGNED_SHORT, 0);
