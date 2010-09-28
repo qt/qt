@@ -414,8 +414,12 @@ QString QScriptContext::toString() const
 */
 QScriptValueList QScriptContext::scopeChain() const
 {
-    Q_UNIMPLEMENTED();
-    return QScriptValueList();
+    Q_D(const QScriptContext);
+    QScriptValueList list;
+    for (int i = 0; i < d->v8Scopes.count(); i++) {
+        list << QScriptValuePrivate::get(new QScriptValuePrivate(d->engine, d->v8Scopes.at(i).second));
+    }
+    return list;
 }
 
 static v8::Handle<v8::Value> QtScopeObjectNamedPropertyGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info)
