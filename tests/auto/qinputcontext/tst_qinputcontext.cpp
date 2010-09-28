@@ -492,6 +492,7 @@ Q_DECLARE_METATYPE(QTextEdit *)
 template <class WidgetType>
 void tst_QInputContext::symbianTestCoeFepInputContext_addData()
 {
+#ifdef Q_OS_SYMBIAN
     QList<FepReplayEvent> events;
     QWidget *editwidget;
 
@@ -1047,6 +1048,7 @@ void tst_QInputContext::symbianTestCoeFepInputContext_addData()
             << QString("")
             << QString("");
     events.clear();
+#endif
 }
 
 void tst_QInputContext::symbianTestCoeFepInputContext()
