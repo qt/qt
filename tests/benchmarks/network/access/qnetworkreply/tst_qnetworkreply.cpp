@@ -51,8 +51,7 @@
 #include "../../../../auto/network-settings.h"
 
 
-typedef QSharedPointer<QVarLengthArray<char, 0> > QVarLengthArraySharedPointer;
-Q_DECLARE_METATYPE(QVarLengthArraySharedPointer)
+Q_DECLARE_METATYPE(QSharedPointer<char>)
 
 class TimedSender: public QThread
 {
@@ -661,6 +660,7 @@ private:
     bool useDownloadBuffer;
     QNetworkReply *reply;
     qint64 uploadSize;
+    QList<qint64> bytesAvailableList;
 public:
     HttpDownloadPerformanceClientDownloadBuffer (QNetworkReply *reply, bool useDownloadBuffer, qint64 uploadSize)
         : useDownloadBuffer(useDownloadBuffer), reply(reply), uploadSize(uploadSize)
@@ -672,7 +672,7 @@ public:
     void finishedSlot() {
         if (useDownloadBuffer) {
             QVariant downloadBufferAttribute = reply->attribute(QNetworkRequest::DownloadBufferAttribute);
-            QSharedPointer<QVarLengthArray<char, 0> > data = downloadBufferAttribute.value<QSharedPointer<QVarLengthArray<char, 0> > >();
+            QSharedPointer<char> data = downloadBufferAttribute.value<QSharedPointer<char> >();
         } else {
             // We did not have a download buffer but we still need to benchmark having the data, e.g. reading it all.
             char* replyData = (char*) qMalloc(uploadSize);
@@ -690,6 +690,7 @@ void tst_qnetworkreply::httpDownloadPerformanceDownloadBuffer_data()
     QTest::newRow("do-not-use-download-buffer") << false;
 }
 
+// Please note that the whole "zero copy" download buffer API is private right now. Do not use it.
 void tst_qnetworkreply::httpDownloadPerformanceDownloadBuffer()
 {
     QFETCH(bool, useDownloadBuffer);
