@@ -36,6 +36,7 @@ symbian {
 			   $$PHONON_MMF_DIR/backend.h                \
 			   $$PHONON_MMF_DIR/bassboost.h              \
 			   $$PHONON_MMF_DIR/defs.h                   \
+			   $$PHONON_MMF_DIR/download.h               \
 			   $$PHONON_MMF_DIR/dummyplayer.h            \
 			   $$PHONON_MMF_DIR/effectfactory.h          \
 			   $$PHONON_MMF_DIR/effectparameter.h        \
@@ -61,6 +62,7 @@ symbian {
 			   $$PHONON_MMF_DIR/abstractvideoplayer.cpp  \
 			   $$PHONON_MMF_DIR/backend.cpp              \
 			   $$PHONON_MMF_DIR/bassboost.cpp            \
+			   $$PHONON_MMF_DIR/download.cpp             \
 			   $$PHONON_MMF_DIR/dummyplayer.cpp          \
 			   $$PHONON_MMF_DIR/effectfactory.cpp        \
 			   $$PHONON_MMF_DIR/effectparameter.cpp      \
@@ -111,6 +113,7 @@ symbian {
 	LIBS += -lapgrfx -lapmime         # For recognizer
 	LIBS += -lmmfcontrollerframework  # For CMMFMetaDataEntry
 	LIBS += -lmediaclientaudiostream  # For CMdaAudioOutputStream
+	LIBS += -ldownloadmgr
 
 	# These are for effects.
 	LIBS += -lAudioEqualizerEffect -lBassBoostEffect -lDistanceAttenuationEffect -lDopplerBase -lEffectBase -lEnvironmentalReverbEffect -lListenerDopplerEffect -lListenerLocationEffect -lListenerOrientationEffect -lLocationBase -lLoudnessEffect -lOrientationBase -lSourceDopplerEffect -lSourceLocationEffect -lSourceOrientationEffect -lStereoWideningEffect
