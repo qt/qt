@@ -195,10 +195,18 @@ the value last in the scope chain.
 */
 QScriptValue QScriptDeclarativeClass::scopeChainValue(QScriptContext *context, int index)
 {
-    Q_UNUSED(context);
-    Q_UNUSED(index);
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    QScriptValueList chain;
+    while (context) {
+        chain = context->scopeChain() + chain;
+        chain.prepend(context->thisObject());
+        context = context->parentContext();
+    }
+    foreach(QScriptValue it, chain)
+        qDebug() << it.toVariant();
+    if (index >= 0)
+        return chain.value(index);
+    else
+        return chain.value(chain.count() + index);
 }
 
 /*!
