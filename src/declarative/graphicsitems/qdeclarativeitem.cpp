@@ -1705,7 +1705,7 @@ int QDeclarativeItemPrivate::transform_count(QDeclarativeListProperty<QGraphicsT
 void QDeclarativeItemPrivate::transform_append(QDeclarativeListProperty<QGraphicsTransform> *list, QGraphicsTransform *item)
 {
     QGraphicsObject *object = qobject_cast<QGraphicsObject *>(list->object);
-    if (object) // QGraphicsItem applies the list in the wrong order, so we prepend.
+    if (object && item) // QGraphicsItem applies the list in the wrong order, so we prepend.
         QGraphicsItemPrivate::get(object)->prependGraphicsTransform(item);
 }
 
