@@ -1321,7 +1321,6 @@ QBitmap QX11PixmapData::mask() const
     return mask;
 }
 
-
 /*!
     Sets a mask bitmap.
 
@@ -1549,7 +1548,7 @@ QImage QX11PixmapData::toImage(const QRect &rect) const
     if (!xiWrapper.xi)
         return QImage();
 
-    if (canTakeQImageFromXImage(xiWrapper))
+    if (!x11_mask && canTakeQImageFromXImage(xiWrapper))
         return takeQImageFromXImage(xiWrapper);
 
     QImage image = toImage(xiWrapper, rect);
