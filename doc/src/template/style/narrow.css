@@ -6,7 +6,7 @@
     }
 
     .narrow a {
-      color: #44a51c;
+      color: #00732f;
     }
 
     .narrow .header, .narrow .header .content, .narrow .footer, .narrow .wrapper {
@@ -45,7 +45,7 @@
     {
       width: auto;
       height: auto;
-      color: #363534;
+      color: #00732f;
       position: static;
       float: left;
       margin-left: 25px;
@@ -163,7 +163,7 @@
     }
 
     .narrow .wrap .breadcrumb ul li a {
-      color: #44a51c;
+      color: #00732f;
     }
 
     .narrow .wrap .breadcrumb ul li.last a {
