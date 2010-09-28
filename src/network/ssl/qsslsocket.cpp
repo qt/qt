@@ -1354,7 +1354,7 @@ QList<QSslCertificate> QSslSocket::defaultCaCertificates()
 */
 QList<QSslCertificate> QSslSocket::systemCaCertificates()
 {
-    QSslSocketPrivate::ensureInitialized();
+    // we are calling ensureInitialized() in the method below
     return QSslSocketPrivate::systemCaCertificates();
 }
 
