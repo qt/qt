@@ -87,6 +87,8 @@ private slots:
     void cancelLongTimer();
     void singleShotStaticFunctionZeroTimeout();
     void recurseOnTimeoutAndStopTimer();
+
+    void QTBUG13633_dontBlockEvents();
 };
 
 class TimerHelper : public QObject
@@ -161,8 +163,9 @@ void tst_QTimer::singleShotTimeout()
     QCOMPARE(helper.count, 1);
 }
 
-#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
-// Increase wait as emulator startup can cause unexpected delays
+#if defined(Q_OS_SYMBIAN)
+// Increase wait as emulator startup can cause unexpected delays, and
+// on hardware there are sometimes spikes right after process startup.
 #define TIMEOUT_TIMEOUT 2000
 #else
 #define TIMEOUT_TIMEOUT 200
@@ -268,13 +271,7 @@ void tst_QTimer::livelock()
     QCOMPARE(tester.timeoutsForFirst, 1);
     QCOMPARE(tester.timeoutsForExtra, 0);
     QCOMPARE(tester.timeoutsForSecond, 1);
-#if defined(Q_OS_MAC)
-    QEXPECT_FAIL("zero timer", "Posted events source are handled AFTER timers", Continue);
-    QEXPECT_FAIL("non-zero timer", "Posted events source are handled AFTER timers", Continue);
-#elif defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
-    QEXPECT_FAIL("zero timer", "", Continue);
-    QEXPECT_FAIL("non-zero timer", "", Continue);
-#elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 	if (QSysInfo::WindowsVersion < QSysInfo::WV_XP)
 		QEXPECT_FAIL("non-zero timer", "Multimedia timers are not available on Windows 2000", Continue);
 #elif defined(Q_OS_WINCE)
@@ -665,6 +662,65 @@ void tst_QTimer::recurseOnTimeoutAndStopTimer()
 
     QVERIFY(!t.one->isActive());
     QVERIFY(!t.two->isActive());
+}
+
+
+
+class DontBlockEvents : public QObject
+{
+    Q_OBJECT
+public:
+    DontBlockEvents();
+    void timerEvent(QTimerEvent*);
+
+    int count;
+    int total;
+    QBasicTimer m_timer;
+
+public slots:
+    void paintEvent();
+
+};
+
+DontBlockEvents::DontBlockEvents()
+{
+    count = 0;
+    total = 0;
+
+    //QTBUG-13633 need few unrelated timer running to reproduce the bug.
+    (new QTimer(this))->start(2000);
+    (new QTimer(this))->start(2500);
+    (new QTimer(this))->start(3000);
+    (new QTimer(this))->start(5000);
+    (new QTimer(this))->start(1000);
+    (new QTimer(this))->start(2000);
+
+    m_timer.start(1, this);
+}
+
+void DontBlockEvents::timerEvent(QTimerEvent* event)
+{
+    if (event->timerId() == m_timer.timerId()) {
+        QMetaObject::invokeMethod(this, "paintEvent", Qt::QueuedConnection);
+        m_timer.start(0, this);
+        count++;
+        QCOMPARE(count, 1);
+        total++;
+    }
+}
+
+void DontBlockEvents::paintEvent()
+{
+    count--;
+    QCOMPARE(count, 0);
+}
+
+
+void tst_QTimer::QTBUG13633_dontBlockEvents()
+{
+    DontBlockEvents t;
+    QTest::qWait(60);
+    QVERIFY(t.total > 2);
 }
 
 QTEST_MAIN(tst_QTimer)

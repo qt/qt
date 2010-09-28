@@ -234,7 +234,7 @@ void QGraphicsLayoutItemPrivate::setSize(Qt::SizeHint which, const QSizeF &size)
     if (userSizeHints) {
         if (size == userSizeHints[which])
             return;
-    } else if (!size.isValid()) {
+    } else if (size.width() < 0 && size.height() < 0) {
         return;
     }
 
@@ -285,10 +285,6 @@ bool QGraphicsLayoutItemPrivate::hasHeightForWidth() const
 
 bool QGraphicsLayoutItemPrivate::hasWidthForHeight() const
 {
-    // enable this code when we add QSizePolicy::hasWidthForHeight() (For 4.8)
-#if 1
-    return false;
-#else
     Q_Q(const QGraphicsLayoutItem);
     if (isLayout) {
         const QGraphicsLayout *l = static_cast<const QGraphicsLayout *>(q);
@@ -305,7 +301,6 @@ bool QGraphicsLayoutItemPrivate::hasWidthForHeight() const
         }
     }
     return q->sizePolicy().hasWidthForHeight();
-#endif
 }
 
 /*!

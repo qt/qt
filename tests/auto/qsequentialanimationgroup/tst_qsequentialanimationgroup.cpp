@@ -381,7 +381,7 @@ void tst_QSequentialAnimationGroup::setCurrentTimeWithUncontrolledAnimation()
     QCOMPARE(a1_s_o2->currentLoopTime(), 250);
     QCOMPARE(notTimeDriven->currentLoopTime(), 0);
     QCOMPARE(loopsForever->currentLoopTime(), 0);
-    QCOMPARE(group.currentAnimation(), notTimeDriven);
+    QCOMPARE(group.currentAnimation(), static_cast<QAbstractAnimation *>(notTimeDriven));
 
     // Current time = 505
     group.setCurrentTime(505);
@@ -391,7 +391,7 @@ void tst_QSequentialAnimationGroup::setCurrentTimeWithUncontrolledAnimation()
     QCOMPARE(a1_s_o2->currentLoopTime(), 250);
     QCOMPARE(notTimeDriven->currentLoopTime(), 5);
     QCOMPARE(loopsForever->currentLoopTime(), 0);
-    QCOMPARE(group.currentAnimation(), notTimeDriven);
+    QCOMPARE(group.currentAnimation(), static_cast<QAbstractAnimation *>(notTimeDriven));
     QCOMPARE(sequence->state(), QAnimationGroup::Stopped);
     QCOMPARE(a1_s_o1->state(), QAnimationGroup::Stopped);
     QCOMPARE(a1_s_o2->state(), QAnimationGroup::Stopped);

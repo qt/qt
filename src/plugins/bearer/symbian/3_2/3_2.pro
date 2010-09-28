@@ -1,13 +1,15 @@
 include(../symbian.pri)
 
 symbian {
-    exists($${EPOCROOT}epoc32/release/winscw/udeb/cmmanager.lib)| \
-    exists($${EPOCROOT}epoc32/release/armv5/lib/cmmanager.lib) {
+    contains(S60_VERSION, 3.1) {
+        is_using_gnupoc {
+            LIBS += -lapengine
+        } else {
+            LIBS += -lAPEngine
+        }
+    } else {
         DEFINES += SNAP_FUNCTIONALITY_AVAILABLE
         LIBS += -lcmmanager
-    } else {
-        # Fall back to 3_1 implementation on platforms that do not have cmmanager
-        LIBS += -lapengine
     }
 }
 

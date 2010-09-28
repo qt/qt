@@ -109,6 +109,11 @@ public:
     QHash<QString,QDeclarativeImportedNamespace* > set;
 };
 
+/*!
+\class QDeclarativeImports
+\brief The QDeclarativeImports class encapsulates one QML document's import statements.
+\internal
+*/
 QDeclarativeImports::QDeclarativeImports(const QDeclarativeImports &copy) 
 : d(copy.d)
 {
@@ -181,7 +186,7 @@ cacheForNamespace(QDeclarativeEngine *engine, const QDeclarativeImportedNamespac
     return cache;
 }
 
-void QDeclarativeImports::cache(QDeclarativeTypeNameCache *cache, QDeclarativeEngine *engine) const
+void QDeclarativeImports::populateCache(QDeclarativeTypeNameCache *cache, QDeclarativeEngine *engine) const
 {
     const QDeclarativeImportedNamespace &set = d->unqualifiedset;
 
@@ -201,6 +206,67 @@ void QDeclarativeImports::cache(QDeclarativeTypeNameCache *cache, QDeclarativeEn
 
     cacheForNamespace(engine, set, cache);
 }
+
+/*!
+  \internal
+
+  The given (namespace qualified) \a type is resolved to either
+  \list
+  \o a QDeclarativeImportedNamespace stored at \a ns_return,
+  \o a QDeclarativeType stored at \a type_return, or
+  \o a component located at \a url_return.
+  \endlist
+
+  If any return pointer is 0, the corresponding search is not done.
+
+  \sa addImport()
+*/
+bool QDeclarativeImports::resolveType(const QByteArray& type, 
+                                      QDeclarativeType** type_return, QUrl* url_return, int *vmaj, int *vmin,
+                                      QDeclarativeImportedNamespace** ns_return, QString *errorString) const
+{
+    QDeclarativeImportedNamespace* ns = d->findNamespace(QString::fromUtf8(type));
+    if (ns) {
+        if (ns_return)
+            *ns_return = ns;
+        return true;
+    }
+    if (type_return || url_return) {
+        if (d->find(type,vmaj,vmin,type_return,url_return, errorString)) {
+            if (qmlImportTrace()) {
+                if (type_return && *type_return && url_return && !url_return->isEmpty())
+                    qDebug().nospace() << "QDeclarativeImports(" << qPrintable(baseUrl().toString()) << ")" << "::resolveType: " 
+                                       << type << " => " << (*type_return)->typeName() << " " << *url_return;
+                if (type_return && *type_return)
+                    qDebug().nospace() << "QDeclarativeImports(" << qPrintable(baseUrl().toString()) << ")" << "::resolveType: " 
+                                       << type << " => " << (*type_return)->typeName();
+                if (url_return && !url_return->isEmpty())
+                    qDebug().nospace() << "QDeclarativeImports(" << qPrintable(baseUrl().toString()) << ")" << "::resolveType: " 
+                                       << type << " => " << *url_return;
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+/*!
+  \internal
+
+  Searching \e only in the namespace \a ns (previously returned in a call to
+  resolveType(), \a type is found and returned to either
+  a QDeclarativeType stored at \a type_return, or
+  a component located at \a url_return.
+
+  If either return pointer is 0, the corresponding search is not done.
+*/
+bool QDeclarativeImports::resolveType(QDeclarativeImportedNamespace* ns, const QByteArray& type, 
+                                      QDeclarativeType** type_return, QUrl* url_return, 
+                                      int *vmaj, int *vmin) const
+{
+    return ns->find(type,vmaj,vmin,type_return,url_return);
+}
+
 bool QDeclarativeImportedNamespace::find_helper(int i, const QByteArray& type, int *vmajor, int *vminor,
                                  QDeclarativeType** type_return, QUrl* url_return,
                                  QUrl *base, bool *typeRecursionDetected)
@@ -280,15 +346,16 @@ QDeclarativeImportsPrivate::~QDeclarativeImportsPrivate()
 }
 
 bool QDeclarativeImportsPrivate::importExtension(const QString &absoluteFilePath, const QString &uri, 
-                                                  QDeclarativeImportDatabase *database, 
-                                                  QDeclarativeDirComponents* components, QString *errorString) 
+                                                 QDeclarativeImportDatabase *database, 
+                                                 QDeclarativeDirComponents* components, QString *errorString) 
 {
     QFile file(absoluteFilePath);
     QString filecontent;
     if (file.open(QFile::ReadOnly)) {
         filecontent = QString::fromUtf8(file.readAll());
         if (qmlImportTrace())
-            qDebug() << "QDeclarativeImportDatabase::add: loaded" << absoluteFilePath;
+            qDebug().nospace() << "QDeclarativeImports(" << qPrintable(base.toString()) << "::importExtension: "
+                               << "loaded " << absoluteFilePath;
     } else {
         if (errorString)
             *errorString = QDeclarativeImportDatabase::tr("module \"%1\" definition \"%2\" not readable").arg(uri).arg(absoluteFilePath);
@@ -338,7 +405,7 @@ QString QDeclarativeImportsPrivate::resolvedUri(const QString &dir_arg, QDeclara
     qSort(paths.begin(), paths.end(), greaterThan); // Ensure subdirs preceed their parents.
 
     QString stableRelativePath = dir;
-    foreach( QString path, paths) {
+    foreach(const QString &path, paths) {
         if (dir.startsWith(path)) {
             stableRelativePath = dir.mid(path.length()+1);
             break;
@@ -576,6 +643,10 @@ bool QDeclarativeImportedNamespace::find(const QByteArray& type, int *vmajor, in
     return false;
 }
 
+/*!
+\class QDeclarativeImportDatabase
+\brief The QDeclarativeImportDatabase class manages the QML imports for a QDeclarativeEngine.
+*/
 QDeclarativeImportDatabase::QDeclarativeImportDatabase(QDeclarativeEngine *e)
 : engine(e)
 {
@@ -619,75 +690,19 @@ QDeclarativeImportDatabase::~QDeclarativeImportDatabase()
 
   The base URL must already have been set with Import::setBaseUrl().
 */
-bool QDeclarativeImportDatabase::addToImport(QDeclarativeImports* imports, 
-                                             const QDeclarativeDirComponents &qmldircomponentsnetwork, 
-                                             const QString& uri, const QString& prefix, int vmaj, int vmin, 
-                                             QDeclarativeScriptParser::Import::Type importType, 
-                                             QString *errorString) 
+bool QDeclarativeImports::addImport(QDeclarativeImportDatabase *importDb, 
+                                    const QString& uri, const QString& prefix, int vmaj, int vmin, 
+                                    QDeclarativeScriptParser::Import::Type importType, 
+                                    const QDeclarativeDirComponents &qmldircomponentsnetwork, 
+                                    QString *errorString) 
 {
     if (qmlImportTrace())
-        qDebug().nospace() << "QDeclarativeImportDatabase::addToImport " << imports << " " << uri << " " 
-                           << vmaj << '.' << vmin << " " 
+        qDebug().nospace() << "QDeclarativeImports(" << qPrintable(baseUrl().toString()) << ")" << "::addImport: " 
+                           << uri << " " << vmaj << '.' << vmin << " " 
                            << (importType==QDeclarativeScriptParser::Import::Library? "Library" : "File") 
                            << " as " << prefix;
 
-    bool ok = imports->d->add(qmldircomponentsnetwork, uri, prefix, vmaj, vmin, importType, this, errorString);
-    return ok;
-}
-
-/*!
-  \internal
-
-  Using the given \a imports, the given (namespace qualified) \a type is resolved to either
-  a QDeclarativeImportedNamespace stored at \a ns_return,
-  a QDeclarativeType stored at \a type_return, or
-  a component located at \a url_return.
-
-  If any return pointer is 0, the corresponding search is not done.
-
-  \sa addToImport()
-*/
-bool QDeclarativeImportDatabase::resolveType(const QDeclarativeImports& imports, const QByteArray& type, 
-                                             QDeclarativeType** type_return, QUrl* url_return, int *vmaj, int *vmin,
-                                             QDeclarativeImportedNamespace** ns_return, QString *errorString) const
-{
-    QDeclarativeImportedNamespace* ns = imports.d->findNamespace(QString::fromUtf8(type));
-    if (ns) {
-        if (ns_return)
-            *ns_return = ns;
-        return true;
-    }
-    if (type_return || url_return) {
-        if (imports.d->find(type,vmaj,vmin,type_return,url_return, errorString)) {
-            if (qmlImportTrace()) {
-                if (type_return && *type_return && url_return && !url_return->isEmpty())
-                    qDebug() << "QDeclarativeImportDatabase::resolveType" << type << '=' << (*type_return)->typeName() << *url_return;
-                if (type_return && *type_return)
-                    qDebug() << "QDeclarativeImportDatabase::resolveType" << type << '=' << (*type_return)->typeName();
-                if (url_return && !url_return->isEmpty())
-                    qDebug() << "QDeclarativeImportDatabase::resolveType" << type << '=' << *url_return;
-            }
-            return true;
-        }
-    }
-    return false;
-}
-
-/*!
-  \internal
-
-  Searching \e only in the namespace \a ns (previously returned in a call to
-  resolveType(), \a type is found and returned to either
-  a QDeclarativeType stored at \a type_return, or
-  a component located at \a url_return.
-
-  If either return pointer is 0, the corresponding search is not done.
-*/
-bool QDeclarativeImportDatabase::resolveTypeInNamespace(QDeclarativeImportedNamespace* ns, const QByteArray& type, 
-                                                        QDeclarativeType** type_return, QUrl* url_return, 
-                                                        int *vmaj, int *vmin) const
-{
-    return ns->find(type,vmaj,vmin,type_return,url_return);
+    return d->add(qmldircomponentsnetwork, uri, prefix, vmaj, vmin, importType, importDb, errorString);
 }
 
 /*!
@@ -834,7 +849,7 @@ void QDeclarativeImportDatabase::setPluginPathList(const QStringList &paths)
 void QDeclarativeImportDatabase::addPluginPath(const QString& path)
 {
     if (qmlImportTrace())
-        qDebug() << "QDeclarativeImportDatabase::addPluginPath" << path;
+        qDebug().nospace() << "QDeclarativeImportDatabase::addPluginPath: " << path;
 
     QUrl url = QUrl(path);
     if (url.isRelative() || url.scheme() == QLatin1String("file")) {
@@ -848,7 +863,7 @@ void QDeclarativeImportDatabase::addPluginPath(const QString& path)
 void QDeclarativeImportDatabase::addImportPath(const QString& path)
 {
     if (qmlImportTrace())
-        qDebug() << "QDeclarativeImportDatabase::addImportPath" << path;
+        qDebug().nospace() << "QDeclarativeImportDatabase::addImportPath: " << path;
 
     if (path.isEmpty())
         return;
@@ -882,7 +897,7 @@ void QDeclarativeImportDatabase::setImportPathList(const QStringList &paths)
 bool QDeclarativeImportDatabase::importPlugin(const QString &filePath, const QString &uri, QString *errorString)
 {
     if (qmlImportTrace())
-        qDebug() << "QDeclarativeImportDatabase::importPlugin" << uri << "from" << filePath;
+        qDebug().nospace() << "QDeclarativeImportDatabase::importPlugin: " << uri << " from " << filePath;
 
     QFileInfo fileInfo(filePath);
     const QString absoluteFilePath = fileInfo.absoluteFilePath();

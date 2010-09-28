@@ -80,7 +80,8 @@ class QHELP_EXPORT QHelpSearchEngine : public QObject
     Q_OBJECT
 
 public:
-    QHelpSearchEngine(QHelpEngineCore *helpEngine, QObject *parent = 0);
+    explicit QHelpSearchEngine(QHelpEngineCore *helpEngine,
+        QObject *parent = 0);
     ~QHelpSearchEngine();
 
     QHelpSearchQueryWidget* queryWidget();

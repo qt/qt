@@ -162,7 +162,8 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
 
 /*!
     \qmlclass Text QDeclarativeText
-  \since 4.7
+    \ingroup qml-basic-visual-elements
+    \since 4.7
     \brief The Text item allows you to add formatted text to a scene.
     \inherits Item
 
@@ -188,32 +189,6 @@ QSet<QUrl> QTextDocumentWithImageResources::errors;
     Text provides read-only text. For editable text, see \l TextEdit.
 
     \sa {declarative/text/fonts}{Fonts example}
-*/
-
-/*!
-    \internal
-    \class QDeclarativeText
-    \qmlclass Text
-
-    \brief The QDeclarativeText class provides a formatted text item that you can add to a QDeclarativeView.
-
-    Text was designed for read-only text; it does not allow for any text editing.
-    It can display both plain and rich text. For example:
-
-    \qml
-    Text { text: "Hello World!"; font.family: "Helvetica"; font.pointSize: 24; color: "red" }
-    Text { text: "<b>Hello</b> <i>World!</i>" }
-    \endqml
-
-    \image text.png
-
-    If height and width are not explicitly set, Text will attempt to determine how
-    much room is needed and set it accordingly. Unless \c wrapMode is set, it will always
-    prefer width to height (all text will be placed on a single line).
-
-    The \c elide property can alternatively be used to fit a line of plain text to a set width.
-
-    A QDeclarativeText object can be instantiated in QML using the tag \c Text.
 */
 QDeclarativeText::QDeclarativeText(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativeTextPrivate), parent)
@@ -454,6 +429,9 @@ void QDeclarativeText::setStyle(QDeclarativeText::TextStyle style)
     if (d->style == style)
         return;
 
+    // changing to/from Normal requires the boundingRect() to change
+    if (isComponentComplete() && (d->style == Normal || style == Normal))
+        prepareGeometryChange();
     d->style = style;
     d->markImgDirty();
     emit styleChanged(d->style);
@@ -519,8 +497,9 @@ void QDeclarativeText::setHAlign(HAlignment align)
     if (d->hAlign == align)
         return;
 
+    if (isComponentComplete())
+        prepareGeometryChange();
     d->hAlign = align;
-    update();
     emit horizontalAlignmentChanged(align);
 }
 
@@ -536,8 +515,9 @@ void QDeclarativeText::setVAlign(VAlignment align)
     if (d->vAlign == align)
         return;
 
+    if (isComponentComplete())
+        prepareGeometryChange();
     d->vAlign = align;
-    update();
     emit verticalAlignmentChanged(align);
 }
 
@@ -830,7 +810,6 @@ void QDeclarativeTextPrivate::updateSize()
             else
                 doc->setTextWidth(doc->idealWidth()); // ### Text does not align if width is not set (QTextDoc bug)
             dy -= (int)doc->size().height();
-                q->prepareGeometryChange();
             QSize dsize = doc->size().toSize();
             if (dsize != cachedLayoutSize) {
                 q->prepareGeometryChange();
@@ -907,8 +886,6 @@ void QDeclarativeTextPrivate::drawOutline()
     ppm.drawPixmap(pos, imgCache);
     ppm.end();
 
-    if (imgCache.size() != img.size())
-        q_func()->prepareGeometryChange();
     imgCache = img;
 }
 
@@ -927,8 +904,6 @@ void QDeclarativeTextPrivate::drawOutline(int yOffset)
     ppm.drawPixmap(pos, imgCache);
     ppm.end();
 
-    if (imgCache.size() != img.size())
-        q_func()->prepareGeometryChange();
     imgCache = img;
 }
 
@@ -1046,10 +1021,10 @@ QPixmap QDeclarativeTextPrivate::richTextImage(bool drawStyle)
 
     QAbstractTextDocumentLayout::PaintContext context;
 
+    QTextOption oldOption(doc->defaultTextOption());
     if (drawStyle) {
         context.palette.setColor(QPalette::Text, styleColor);
-        // ### Do we really want this?
-        QTextOption colorOption;
+        QTextOption colorOption(doc->defaultTextOption());
         colorOption.setFlags(QTextOption::SuppressColors);
         doc->setDefaultTextOption(colorOption);
     } else {
@@ -1057,7 +1032,7 @@ QPixmap QDeclarativeTextPrivate::richTextImage(bool drawStyle)
     }
     doc->documentLayout()->draw(&p, context);
     if (drawStyle)
-        doc->setDefaultTextOption(QTextOption());
+        doc->setDefaultTextOption(oldOption);
     return img;
 }
 
@@ -1079,8 +1054,6 @@ void QDeclarativeTextPrivate::checkImgCache()
         if (style != QDeclarativeText::Normal)
             imgStyleCache = wrappedTextImage(true); //### should use styleColor
     }
-    if (imgCache.size() != newImgCache.size())
-        q_func()->prepareGeometryChange();
     imgCache = newImgCache;
     if (!empty)
         switch (style) {
@@ -1217,7 +1190,7 @@ void QDeclarativeText::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
     if (!d->richText || !d->doc || d->doc->documentLayout()->anchorAt(event->pos()).isEmpty()) {
         event->setAccepted(false);
-        d->activeLink = QString();
+        d->activeLink.clear();
     } else {
         d->activeLink = d->doc->documentLayout()->anchorAt(event->pos());
     }
@@ -1230,9 +1203,19 @@ void QDeclarativeText::mousePressEvent(QGraphicsSceneMouseEvent *event)
 }
 
 /*!
-    \qmlsignal Text::onLinkActivated(link)
+    \qmlsignal Text::onLinkActivated(string link)
 
     This handler is called when the user clicks on a link embedded in the text.
+    The link must be in rich text or HTML format and the 
+    \a link string provides access to the particular link. 
+
+    \snippet doc/src/snippets/declarative/text/onLinkActivated.qml 0
+
+    The example code will display the text 
+    "The main website is at \l{http://qt.nokia.com}{Nokia Qt DF}."
+
+    Clicking on the highlighted link will output 
+    \tt{http://qt.nokia.com link activated} to the console.
 */
 
 /*!

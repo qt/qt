@@ -379,6 +379,10 @@ void PreferencesDialog::applyChanges()
     if (filtersWereChanged || !m_regDocs.isEmpty() || !m_unregDocs.isEmpty())
         helpEngine.setupData();
 
+    helpEngine.setShowTabs(m_ui.showTabs->isChecked());
+    if (m_showTabs != m_ui.showTabs->isChecked())
+        emit updateUserInterface();
+
     accept();
 }
 
@@ -469,6 +473,9 @@ void PreferencesDialog::updateOptionsPage()
 
     int option = helpEngine.startOption();
     m_ui.helpStartComboBox->setCurrentIndex(option);
+
+    m_showTabs = helpEngine.showTabs();
+    m_ui.showTabs->setChecked(m_showTabs);
 
     connect(m_ui.blankPageButton, SIGNAL(clicked()), this, SLOT(setBlankPage()));
     connect(m_ui.currentPageButton, SIGNAL(clicked()), this, SLOT(setCurrentPage()));

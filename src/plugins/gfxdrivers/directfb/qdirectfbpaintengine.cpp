@@ -978,7 +978,7 @@ void QDirectFBPaintEnginePrivate::setCompositionMode(QPainter::CompositionMode m
         break;
     case QPainter::CompositionMode_SourceOver:
         compositionModeStatus &= ~PorterDuff_AlwaysBlend;
-        surface->SetPorterDuff(surface, DSPD_SRC_OVER);
+        surface->SetPorterDuff(surface, DSPD_NONE);
         break;
     case QPainter::CompositionMode_DestinationOver:
         surface->SetPorterDuff(surface, DSPD_DST_OVER);

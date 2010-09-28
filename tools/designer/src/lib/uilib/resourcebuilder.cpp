@@ -44,6 +44,7 @@
 #include <QtCore/QVariant>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
+#include <QtCore/QDebug>
 #include <QtGui/QPixmap>
 #include <QtGui/QIcon>
 
@@ -52,6 +53,8 @@ QT_BEGIN_NAMESPACE
 #ifdef QFORMINTERNAL_NAMESPACE
 namespace QFormInternal {
 #endif
+
+enum { themeDebug = 0 };
 
 QResourceBuilder::QResourceBuilder()
 {
@@ -95,6 +98,14 @@ QVariant QResourceBuilder::loadResource(const QDir &workingDirectory, const DomP
         }
         case DomProperty::IconSet: {
             const DomResourceIcon *dpi = property->elementIconSet();
+            if (!dpi->attributeTheme().isEmpty()) {
+                const QString theme = dpi->attributeTheme();
+                const bool known = QIcon::hasThemeIcon(theme);
+                if (themeDebug)
+                    qDebug("Theme %s known %d", qPrintable(theme), known);
+                if (known)
+                    return qVariantFromValue(QIcon::fromTheme(dpi->attributeTheme()));
+            } // non-empty theme
             if (const int flags = iconStateFlags(dpi)) { // new, post 4.4 format
                 QIcon icon;
                 if (flags & NormalOff)

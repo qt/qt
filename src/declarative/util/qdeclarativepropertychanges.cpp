@@ -52,6 +52,7 @@
 #include <qdeclarativeguard_p.h>
 #include <qdeclarativeproperty_p.h>
 #include <qdeclarativecontext_p.h>
+#include <qdeclarativestate_p_p.h>
 
 #include <QtCore/qdebug.h>
 
@@ -61,51 +62,34 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass PropertyChanges QDeclarativePropertyChanges
+    \ingroup qml-state-elements
     \since 4.7
     \brief The PropertyChanges element describes new property bindings or values for a state.
 
-    PropertyChanges provides a state change that modifies the properties of an item.
+    PropertyChanges is used to define the property values or bindings in a 
+    \l State. This enables an item's property values to be changed when it
+    \l {QML States}{changes between states}.
 
-    Here is a property change that modifies the text and color of a \l Text element
-    when it is clicked:
+    To create a PropertyChanges object, specify the \l target item whose 
+    properties are to be modified, and define the new property values or
+    bindings. For example:
     
-    \qml
-    Text {
-        id: myText
-        width: 100; height: 100
-        text: "Hello"
-        color: "blue"
+    \snippet doc/src/snippets/declarative/propertychanges.qml import 
+    \codeline
+    \snippet doc/src/snippets/declarative/propertychanges.qml 0
 
-        states: State {
-            name: "myState"
+    When the mouse is pressed, the \l Rectangle changes to the \e resized
+    state. In this state, the PropertyChanges object sets the rectangle's 
+    color to blue and the \c height value to that of \c container.height.
 
-            PropertyChanges {
-                target: myText
-                text: "Goodbye"
-                color: "red"
-            }
-        }
-
-        MouseArea { anchors.fill: parent; onClicked: myText.state = 'myState' }
-    }
-    \endqml
-
-    By default, PropertyChanges will establish new bindings where appropriate.
-    For example, the following creates a new binding for myItem's \c height property.
-
-    \qml
-    PropertyChanges {
-        target: myItem
-        height: parent.height
-    }
-    \endqml
-
-    If you don't want a binding to be established (and instead just want to assign
-    the value of the binding at the time the state is entered),
-    you should set the PropertyChange's \l{PropertyChanges::explicit}{explicit}
+    Note this automatically binds \c rect.height to \c container.height 
+    in the \e resized state. If a property binding should not be
+    established, and the height should just be set to the value of
+    \c container.height at the time of the state change, set the \l explicit
     property to \c true.
-    
-    State-specific script for signal handlers can also be specified:
+   
+    A PropertyChanges object can also override the default signal handler
+    for an object to implement a signal handler specific to the new state:
 
     \qml
     PropertyChanges {
@@ -114,44 +98,33 @@ QT_BEGIN_NAMESPACE
     }
     \endqml
 
-    You can reset a property in a state change by assigning \c undefined. In the following
-    example we reset \c theText's width when we enter state1. This will give the text its
-    natural width (which is the whole string on one line).
+    \note PropertyChanges can be used to change anchor margins, but not other anchor
+    values; use AnchorChanges for this instead. Similarly, to change an \l Item's
+    \l {Item::}{parent} value, use ParentChanges instead.
 
-    \qml
-    import Qt 4.7
 
-    Rectangle {
-        width: 640
-        height: 480
-        Text {
-            id: theText
-            width: 50
-            wrapMode: Text.WordWrap
-            text: "a text string that is longer than 50 pixels"
-        }
+    \section2 Resetting property values
 
-        states: State {
-            name: "state1"
-            PropertyChanges {
-                target: theText
-                width: undefined
-            }
-        }
-    }
-    \endqml
+    The \c undefined value can be used to reset the property value for a state.
+    In the following example, when \c theText changes to the \e widerText
+    state, its \c width property is reset, giving the text its natural width
+    and displaying the whole string on a single line.
 
-    Anchor margins should be changed with PropertyChanges, but other anchor changes or changes to
-    an Item's parent should be done using the associated change elements
-    (ParentChange and AnchorChanges, respectively).
+    \snippet doc/src/snippets/declarative/propertychanges.qml reset
+
+
+    \section2 Immediate property changes in transitions
+
+    When \l Transitions are used to animate state changes, they animate 
+    properties from their values in the current state to those defined in the
+    new state (as defined by PropertyChanges objects). However, 
+    it is sometimes desirable to set a property value \e immediately during a 
+    \l Transition, without animation; in these cases, the PropertyAction 
+    element can be used to force an immediate property change.
+
+    See the PropertyAction documentation for more details.
 
     \sa {declarative/animation/states}{states example}, {qmlstate}{States}, QtDeclarative
-*/
-
-/*!
-    \internal
-    \class QDeclarativePropertyChanges
-    \brief The QDeclarativePropertyChanges class describes new property values for a state.
 */
 
 /*!
@@ -228,14 +201,14 @@ public:
 };
 
 
-class QDeclarativePropertyChangesPrivate : public QObjectPrivate
+class QDeclarativePropertyChangesPrivate : public QDeclarativeStateOperationPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativePropertyChanges)
 public:
-    QDeclarativePropertyChangesPrivate() : object(0), decoded(true), restore(true),
+    QDeclarativePropertyChangesPrivate() : decoded(true), restore(true),
                                 isExplicit(false) {}
 
-    QObject *object;
+    QDeclarativeGuard<QObject> object;
     QByteArray data;
 
     bool decoded : 1;
@@ -396,12 +369,12 @@ void QDeclarativePropertyChanges::setObject(QObject *o)
 
 /*!
     \qmlproperty bool PropertyChanges::restoreEntryValues
-    
-    Whether or not the previous values should be restored when
-    leaving the state. By default, restoreEntryValues is true.
 
-    By setting restoreEntryValues to false, you can create a temporary state
-    that has permanent effects on property values.
+    This property holds whether the previous values should be restored when
+    leaving the state. 
+
+    The default value is \c true. Setting this value to \c false creates a
+    temporary state that has permanent effects on property values.
 */
 bool QDeclarativePropertyChanges::restoreEntryValues() const
 {
@@ -523,6 +496,274 @@ void QDeclarativePropertyChanges::setIsExplicit(bool e)
 {
     Q_D(QDeclarativePropertyChanges);
     d->isExplicit = e;
+}
+
+bool QDeclarativePropertyChanges::containsValue(const QByteArray &name) const
+{
+    Q_D(const QDeclarativePropertyChanges);
+    typedef QPair<QByteArray, QVariant> PropertyEntry;
+
+    QListIterator<PropertyEntry> propertyIterator(d->properties);
+    while (propertyIterator.hasNext()) {
+        const PropertyEntry &entry = propertyIterator.next();
+        if (entry.first == name) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool QDeclarativePropertyChanges::containsExpression(const QByteArray &name) const
+{
+    Q_D(const QDeclarativePropertyChanges);
+    typedef QPair<QByteArray, QDeclarativeExpression *> ExpressionEntry;
+
+    QListIterator<ExpressionEntry> expressionIterator(d->expressions);
+    while (expressionIterator.hasNext()) {
+        const ExpressionEntry &entry = expressionIterator.next();
+        if (entry.first == name) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool QDeclarativePropertyChanges::containsProperty(const QByteArray &name) const
+{
+    return containsValue(name) || containsExpression(name);
+}
+
+void QDeclarativePropertyChanges::changeValue(const QByteArray &name, const QVariant &value)
+{
+    Q_D(QDeclarativePropertyChanges);
+    typedef QPair<QByteArray, QVariant> PropertyEntry;
+    typedef QPair<QByteArray, QDeclarativeExpression *> ExpressionEntry;
+
+    QMutableListIterator<ExpressionEntry> expressionIterator(d->expressions);
+    while (expressionIterator.hasNext()) {
+        const ExpressionEntry &entry = expressionIterator.next();
+        if (entry.first == name) {
+            expressionIterator.remove();
+            if (state() && state()->isStateActive()) {
+                QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::binding(d->property(name));
+                if (oldBinding) {
+                    QDeclarativePropertyPrivate::setBinding(d->property(name), 0);
+                    oldBinding->destroy();
+                }
+                d->property(name).write(value);
+            }
+
+            d->properties.append(PropertyEntry(name, value));
+            return;
+        }
+    }
+
+    QMutableListIterator<PropertyEntry> propertyIterator(d->properties);
+    while (propertyIterator.hasNext()) {
+        PropertyEntry &entry = propertyIterator.next();
+        if (entry.first == name) {
+            entry.second = value;
+            if (state() && state()->isStateActive())
+                d->property(name).write(value);
+            return;
+        }
+    }
+
+    QDeclarativeAction action;
+    action.restore = restoreEntryValues();
+    action.property = d->property(name);
+    action.fromValue = action.property.read();
+    action.specifiedObject = object();
+    action.specifiedProperty = QString::fromUtf8(name);
+    action.toValue = value;
+
+    propertyIterator.insert(PropertyEntry(name, value));
+    if (state() && state()->isStateActive()) {
+        state()->addEntryToRevertList(action);
+        QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::binding(action.property);
+        if (oldBinding)
+            oldBinding->setEnabled(false, QDeclarativePropertyPrivate::DontRemoveBinding | QDeclarativePropertyPrivate::BypassInterceptor);
+        d->property(name).write(value);
+    }
+}
+
+void QDeclarativePropertyChanges::changeExpression(const QByteArray &name, const QString &expression)
+{
+    Q_D(QDeclarativePropertyChanges);
+    typedef QPair<QByteArray, QVariant> PropertyEntry;
+    typedef QPair<QByteArray, QDeclarativeExpression *> ExpressionEntry;
+
+    bool hadValue = false;
+
+    QMutableListIterator<PropertyEntry> propertyIterator(d->properties);
+    while (propertyIterator.hasNext()) {
+        PropertyEntry &entry = propertyIterator.next();
+        if (entry.first == name) {
+            propertyIterator.remove();
+            hadValue = true;
+            break;
+        }
+    }
+
+    QMutableListIterator<ExpressionEntry> expressionIterator(d->expressions);
+    while (expressionIterator.hasNext()) {
+        const ExpressionEntry &entry = expressionIterator.next();
+        if (entry.first == name) {
+            entry.second->setExpression(expression);
+            if (state() && state()->isStateActive()) {
+                QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::binding(d->property(name));
+                if (oldBinding) {
+                       QDeclarativePropertyPrivate::setBinding(d->property(name), 0);
+                       oldBinding->destroy();
+                }
+
+                QDeclarativeBinding *newBinding = new QDeclarativeBinding(expression, object(), qmlContext(this));
+                newBinding->setTarget(d->property(name));
+                QDeclarativePropertyPrivate::setBinding(d->property(name), newBinding, QDeclarativePropertyPrivate::DontRemoveBinding | QDeclarativePropertyPrivate::BypassInterceptor);
+            }
+            return;
+        }
+    }
+
+    QDeclarativeExpression *newExpression = new QDeclarativeExpression(qmlContext(this), d->object, expression);
+    expressionIterator.insert(ExpressionEntry(name, newExpression));
+
+    if (state() && state()->isStateActive()) {
+        if (hadValue) {
+            QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::binding(d->property(name));
+            if (oldBinding) {
+                oldBinding->setEnabled(false, QDeclarativePropertyPrivate::DontRemoveBinding | QDeclarativePropertyPrivate::BypassInterceptor);
+                state()->changeBindingInRevertList(object(), name, oldBinding);
+            }
+
+            QDeclarativeBinding *newBinding = new QDeclarativeBinding(expression, object(), qmlContext(this));
+            newBinding->setTarget(d->property(name));
+            QDeclarativePropertyPrivate::setBinding(d->property(name), newBinding, QDeclarativePropertyPrivate::DontRemoveBinding | QDeclarativePropertyPrivate::BypassInterceptor);
+        } else {
+            QDeclarativeAction action;
+            action.restore = restoreEntryValues();
+            action.property = d->property(name);
+            action.fromValue = action.property.read();
+            action.specifiedObject = object();
+            action.specifiedProperty = QString::fromUtf8(name);
+
+
+            if (d->isExplicit) {
+                action.toValue = newExpression->evaluate();
+            } else {
+                QDeclarativeBinding *newBinding = new QDeclarativeBinding(newExpression->expression(), object(), qmlContext(this));
+                newBinding->setTarget(d->property(name));
+                action.toBinding = newBinding;
+                action.deletableToBinding = true;
+
+                state()->addEntryToRevertList(action);
+                QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::binding(action.property);
+                if (oldBinding)
+                    oldBinding->setEnabled(false, QDeclarativePropertyPrivate::DontRemoveBinding | QDeclarativePropertyPrivate::BypassInterceptor);
+
+                QDeclarativePropertyPrivate::setBinding(action.property, newBinding, QDeclarativePropertyPrivate::DontRemoveBinding | QDeclarativePropertyPrivate::BypassInterceptor);
+            }
+        }
+    }
+    // what about the signal handler?
+}
+
+QVariant QDeclarativePropertyChanges::property(const QByteArray &name) const
+{
+    Q_D(const QDeclarativePropertyChanges);
+    typedef QPair<QByteArray, QVariant> PropertyEntry;
+    typedef QPair<QByteArray, QDeclarativeExpression *> ExpressionEntry;
+
+    QListIterator<PropertyEntry> propertyIterator(d->properties);
+    while (propertyIterator.hasNext()) {
+        const PropertyEntry &entry = propertyIterator.next();
+        if (entry.first == name) {
+            return entry.second;
+        }
+    }
+
+    QListIterator<ExpressionEntry> expressionIterator(d->expressions);
+    while (expressionIterator.hasNext()) {
+        const ExpressionEntry &entry = expressionIterator.next();
+        if (entry.first == name) {
+            return QVariant(entry.second->expression());
+        }
+    }
+
+    return QVariant();
+}
+
+void QDeclarativePropertyChanges::removeProperty(const QByteArray &name)
+{
+    Q_D(QDeclarativePropertyChanges);
+    typedef QPair<QByteArray, QVariant> PropertyEntry;
+    typedef QPair<QByteArray, QDeclarativeExpression *> ExpressionEntry;
+
+    QMutableListIterator<ExpressionEntry> expressionIterator(d->expressions);
+    while (expressionIterator.hasNext()) {
+        const ExpressionEntry &entry = expressionIterator.next();
+        if (entry.first == name) {
+            expressionIterator.remove();
+            state()->removeEntryFromRevertList(object(), name);
+            return;
+        }
+    }
+
+    QMutableListIterator<PropertyEntry> propertyIterator(d->properties);
+    while (propertyIterator.hasNext()) {
+        const PropertyEntry &entry = propertyIterator.next();
+        if (entry.first == name) {
+            propertyIterator.remove();
+            state()->removeEntryFromRevertList(object(), name);
+            return;
+        }
+    }
+}
+
+QVariant QDeclarativePropertyChanges::value(const QByteArray &name) const
+{
+    Q_D(const QDeclarativePropertyChanges);
+    typedef QPair<QByteArray, QVariant> PropertyEntry;
+
+    QListIterator<PropertyEntry> propertyIterator(d->properties);
+    while (propertyIterator.hasNext()) {
+        const PropertyEntry &entry = propertyIterator.next();
+        if (entry.first == name) {
+            return entry.second;
+        }
+    }
+
+    return QVariant();
+}
+
+QString QDeclarativePropertyChanges::expression(const QByteArray &name) const
+{
+    Q_D(const QDeclarativePropertyChanges);
+    typedef QPair<QByteArray, QDeclarativeExpression *> ExpressionEntry;
+
+    QListIterator<ExpressionEntry> expressionIterator(d->expressions);
+    while (expressionIterator.hasNext()) {
+        const ExpressionEntry &entry = expressionIterator.next();
+        if (entry.first == name) {
+            return entry.second->expression();
+        }
+    }
+
+    return QString();
+}
+
+void QDeclarativePropertyChanges::detachFromState()
+{
+    if (state())
+        state()->removeAllEntriesFromRevertList(object());
+}
+
+void QDeclarativePropertyChanges::attachToState()
+{
+    if (state())
+        state()->addEntriesToRevertList(actions());
 }
 
 QT_END_NAMESPACE

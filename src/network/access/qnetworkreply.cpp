@@ -49,6 +49,7 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     : readBufferMaxSize(0),
       operation(QNetworkAccessManager::UnknownOperation),
       errorCode(QNetworkReply::NoError)
+    , isFinished(false)
 {
     // set the default attribute values
     attributes.insert(QNetworkRequest::ConnectionEncryptedAttribute, false);
@@ -283,9 +284,6 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     The upload is finished when \a bytesSent is equal to \a
     bytesTotal. At that time, \a bytesTotal will not be -1.
 
-    This signal is suitable to connecting to QProgressBar::setValue()
-    to update the QProgressBar that provides user feedback.
-
     \sa downloadProgress()
 */
 
@@ -305,9 +303,6 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
 
     The download is finished when \a bytesReceived is equal to \a
     bytesTotal. At that time, \a bytesTotal will not be -1.
-
-    This signal is suitable to connecting to QProgressBar::setValue()
-    to update the QProgressBar that provides user feedback.
 
     Note that the values of both \a bytesReceived and \a bytesTotal
     may be different from size(), the total number of bytes
@@ -468,7 +463,7 @@ QNetworkReply::NetworkError QNetworkReply::error() const
 */
 bool QNetworkReply::isFinished() const
 {
-    return d_func()->isFinished();
+    return d_func()->isFinished;
 }
 
 /*!
@@ -722,6 +717,21 @@ void QNetworkReply::setError(NetworkError errorCode, const QString &errorString)
     d->errorCode = errorCode;
     setErrorString(errorString); // in QIODevice
 }
+
+/*!
+    \since 4.8
+    Sets the reply as \a finished.
+
+    After having this set the replies data must not change.
+
+    \sa isFinished()
+*/
+void QNetworkReply::setFinished(bool finished)
+{
+    Q_D(QNetworkReply);
+    d->isFinished = finished;
+}
+
 
 /*!
     Sets the URL being processed to be \a url. Normally, the URL

@@ -45,6 +45,7 @@
 #include "qurl.h"
 #include "qhttp.h"
 #include "qelapsedtimer.h"
+#include "qnetworkinterface.h"
 
 #if !defined(QT_NO_NETWORKPROXY) && !defined(QT_NO_HTTP)
 #include <qdebug.h>
@@ -239,6 +240,34 @@ qint64 QHttpSocketEngine::write(const char *data, qint64 len)
 }
 
 #ifndef QT_NO_UDPSOCKET
+bool QHttpSocketEngine::joinMulticastGroup(const QHostAddress &,
+                                           const QNetworkInterface &)
+{
+    setError(QAbstractSocket::UnsupportedSocketOperationError,
+             QLatin1String("Operation on socket is not supported"));
+    return false;
+}
+
+bool QHttpSocketEngine::leaveMulticastGroup(const QHostAddress &,
+                                            const QNetworkInterface &)
+{
+    setError(QAbstractSocket::UnsupportedSocketOperationError,
+             QLatin1String("Operation on socket is not supported"));
+    return false;
+}
+
+QNetworkInterface QHttpSocketEngine::multicastInterface() const
+{
+    return QNetworkInterface();
+}
+
+bool QHttpSocketEngine::setMulticastInterface(const QNetworkInterface &)
+{
+    setError(QAbstractSocket::UnsupportedSocketOperationError,
+             QLatin1String("Operation on socket is not supported"));
+    return false;
+}
+
 qint64 QHttpSocketEngine::readDatagram(char *, qint64, QHostAddress *,
                                        quint16 *)
 {

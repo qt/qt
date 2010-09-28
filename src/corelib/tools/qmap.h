@@ -185,6 +185,10 @@ public:
     inline ~QMap() { if (!d) return; if (!d->ref.deref()) freeData(d); }
 
     QMap<Key, T> &operator=(const QMap<Key, T> &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QMap<Key, T> &operator=(QMap<Key, T> &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
 #ifndef QT_NO_STL
     explicit QMap(const typename std::map<Key, T> &other);
     std::map<Key, T> toStdMap() const;
@@ -424,10 +428,11 @@ template <class Key, class T>
 Q_INLINE_TEMPLATE QMap<Key, T> &QMap<Key, T>::operator=(const QMap<Key, T> &other)
 {
     if (d != other.d) {
-        other.d->ref.ref();
+        QMapData* o = other.d;
+        o->ref.ref();
         if (!d->ref.deref())
             freeData(d);
-        d = other.d;
+        d = o;
         if (!d->sharable)
             detach_helper();
     }

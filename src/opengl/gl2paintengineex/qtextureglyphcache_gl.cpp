@@ -216,7 +216,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     pex->updateClipScissorTest();
 }
 
-void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
+void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed subPixelPosition)
 {
     if (ctx == 0) {
         qWarning("QGLTextureGlyphCache::fillTexture: Called with no context");
@@ -225,7 +225,7 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
 
     QGLGlyphTexture *glyphTexture = m_textureResource.value(ctx);
     if (pex == 0 || ctx->d_ptr->workaround_brokenFBOReadBack) {
-        QImageTextureGlyphCache::fillTexture(c, glyph);
+        QImageTextureGlyphCache::fillTexture(c, glyph, subPixelPosition);
 
         glBindTexture(GL_TEXTURE_2D, glyphTexture->m_texture);
         const QImage &texture = image();
@@ -238,7 +238,7 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
         return;
     }
 
-    QImage mask = textureMapForGlyph(glyph);
+    QImage mask = textureMapForGlyph(glyph, subPixelPosition);
     const int maskWidth = mask.width();
     const int maskHeight = mask.height();
 
@@ -291,4 +291,19 @@ int QGLTextureGlyphCache::glyphPadding() const
     return 1;
 }
 
+int QGLTextureGlyphCache::maxTextureWidth() const
+{
+    if (ctx == 0)
+        return QImageTextureGlyphCache::maxTextureWidth();
+    else
+        return ctx->d_ptr->maxTextureSize();
+}
+
+int QGLTextureGlyphCache::maxTextureHeight() const
+{
+    if (ctx == 0)
+        return QImageTextureGlyphCache::maxTextureHeight();
+    else
+        return ctx->d_ptr->maxTextureSize();
+}
 QT_END_NAMESPACE

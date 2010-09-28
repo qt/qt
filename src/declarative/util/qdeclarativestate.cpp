@@ -123,9 +123,6 @@ bool QDeclarativeActionEvent::override(QDeclarativeActionEvent *other)
     return false;
 }
 
-/*!
-    \internal
-*/
 QDeclarativeStateOperation::QDeclarativeStateOperation(QObjectPrivate &dd, QObject *parent)
     : QObject(dd, parent)
 {
@@ -133,6 +130,7 @@ QDeclarativeStateOperation::QDeclarativeStateOperation(QObjectPrivate &dd, QObje
 
 /*!
     \qmlclass State QDeclarativeState
+    \ingroup qml-state-elements
     \since 4.7
     \brief The State element defines configurations of objects and properties.
 
@@ -163,20 +161,6 @@ QDeclarativeStateOperation::QDeclarativeStateOperation(QObjectPrivate &dd, QObje
     \sa {declarative/animation/states}{states example}, {qmlstates}{States},
     {qdeclarativeanimation.html#transitions}{QML Transitions}, QtDeclarative
 */
-
-/*!
-    \internal
-    \class QDeclarativeState
-    \brief The QDeclarativeState class allows you to define configurations of objects and properties.
-
-
-    QDeclarativeState allows you to specify a state as a set of batched changes from the default
-    configuration.
-
-    \sa {states-transitions}{States and Transitions}
-*/
-
-
 QDeclarativeState::QDeclarativeState(QObject *parent)
 : QObject(*(new QDeclarativeStatePrivate), parent)
 {
@@ -320,7 +304,7 @@ void QDeclarativeStatePrivate::complete()
 
     for (int ii = 0; ii < reverting.count(); ++ii) {
         for (int jj = 0; jj < revertList.count(); ++jj) {
-            if (revertList.at(jj).property == reverting.at(ii)) {
+            if (revertList.at(jj).property() == reverting.at(ii)) {
                 revertList.removeAt(jj);
                 break;
             }
@@ -386,6 +370,192 @@ void QDeclarativeAction::deleteFromBinding()
     }
 }
 
+bool QDeclarativeState::containsPropertyInRevertList(QObject *target, const QByteArray &name) const
+{
+    Q_D(const QDeclarativeState);
+
+    if (isStateActive()) {
+        QListIterator<QDeclarativeSimpleAction> revertListIterator(d->revertList);
+
+        while (revertListIterator.hasNext()) {
+            const QDeclarativeSimpleAction &simpleAction = revertListIterator.next();
+            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty().toUtf8() == name)
+                return true;
+        }
+    }
+
+    return false;
+}
+
+bool QDeclarativeState::changeValueInRevertList(QObject *target, const QByteArray &name, const QVariant &revertValue)
+{
+    Q_D(QDeclarativeState);
+
+    if (isStateActive()) {
+        QMutableListIterator<QDeclarativeSimpleAction> revertListIterator(d->revertList);
+
+        while (revertListIterator.hasNext()) {
+            QDeclarativeSimpleAction &simpleAction = revertListIterator.next();
+            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty().toUtf8() == name) {
+                    simpleAction.setValue(revertValue);
+                    return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool QDeclarativeState::changeBindingInRevertList(QObject *target, const QByteArray &name, QDeclarativeAbstractBinding *binding)
+{
+    Q_D(QDeclarativeState);
+
+    if (isStateActive()) {
+        QMutableListIterator<QDeclarativeSimpleAction> revertListIterator(d->revertList);
+
+        while (revertListIterator.hasNext()) {
+            QDeclarativeSimpleAction &simpleAction = revertListIterator.next();
+            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty().toUtf8() == name) {
+                if (simpleAction.binding())
+                    simpleAction.binding()->destroy();
+
+                simpleAction.setBinding(binding);
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool QDeclarativeState::removeEntryFromRevertList(QObject *target, const QByteArray &name)
+{
+    Q_D(QDeclarativeState);
+
+    if (isStateActive()) {
+        QMutableListIterator<QDeclarativeSimpleAction> revertListIterator(d->revertList);
+
+        while (revertListIterator.hasNext()) {
+            QDeclarativeSimpleAction &simpleAction = revertListIterator.next();
+            if (simpleAction.property().object() == target && simpleAction.property().name().toUtf8() == name) {
+                QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::binding(simpleAction.property());
+                if (oldBinding) {
+                    QDeclarativePropertyPrivate::setBinding(simpleAction.property(), 0);
+                    oldBinding->destroy();
+                }
+
+                simpleAction.property().write(simpleAction.value());
+                if (simpleAction.binding())
+                    QDeclarativePropertyPrivate::setBinding(simpleAction.property(), simpleAction.binding());
+
+                revertListIterator.remove();
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+void QDeclarativeState::addEntryToRevertList(const QDeclarativeAction &action)
+{
+    Q_D(QDeclarativeState);
+
+    QDeclarativeSimpleAction simpleAction(action);
+
+    d->revertList.append(simpleAction);
+}
+
+void QDeclarativeState::removeAllEntriesFromRevertList(QObject *target)
+{
+     Q_D(QDeclarativeState);
+
+     if (isStateActive()) {
+         QMutableListIterator<QDeclarativeSimpleAction> revertListIterator(d->revertList);
+
+         while (revertListIterator.hasNext()) {
+             QDeclarativeSimpleAction &simpleAction = revertListIterator.next();
+             if (simpleAction.property().object() == target) {
+                 QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::binding(simpleAction.property());
+                 if (oldBinding) {
+                     QDeclarativePropertyPrivate::setBinding(simpleAction.property(), 0);
+                     oldBinding->destroy();
+                 }
+
+                 simpleAction.property().write(simpleAction.value());
+                 if (simpleAction.binding())
+                     QDeclarativePropertyPrivate::setBinding(simpleAction.property(), simpleAction.binding());
+
+                 revertListIterator.remove();
+             }
+         }
+     }
+}
+
+void QDeclarativeState::addEntriesToRevertList(const QList<QDeclarativeAction> &actionList)
+{
+    Q_D(QDeclarativeState);
+    if (isStateActive()) {
+        QList<QDeclarativeSimpleAction> simpleActionList;
+
+        QListIterator<QDeclarativeAction> actionListIterator(actionList);
+        while(actionListIterator.hasNext()) {
+            const QDeclarativeAction &action = actionListIterator.next();
+            QDeclarativeSimpleAction simpleAction(action);
+            action.property.write(action.toValue);
+            if (action.toBinding) {
+                QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::binding(simpleAction.property());
+                if (oldBinding)
+                    QDeclarativePropertyPrivate::setBinding(simpleAction.property(), 0);
+                QDeclarativePropertyPrivate::setBinding(simpleAction.property(), action.toBinding, QDeclarativePropertyPrivate::DontRemoveBinding);
+            }
+
+            simpleActionList.append(simpleAction);
+        }
+
+        d->revertList.append(simpleActionList);
+    }
+}
+
+QVariant QDeclarativeState::valueInRevertList(QObject *target, const QByteArray &name) const
+{
+    Q_D(const QDeclarativeState);
+
+    if (isStateActive()) {
+        QListIterator<QDeclarativeSimpleAction> revertListIterator(d->revertList);
+
+        while (revertListIterator.hasNext()) {
+            const QDeclarativeSimpleAction &simpleAction = revertListIterator.next();
+            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty().toUtf8() == name)
+                return simpleAction.value();
+        }
+    }
+
+    return QVariant();
+}
+
+QDeclarativeAbstractBinding *QDeclarativeState::bindingInRevertList(QObject *target, const QByteArray &name) const
+{
+    Q_D(const QDeclarativeState);
+
+    if (isStateActive()) {
+        QListIterator<QDeclarativeSimpleAction> revertListIterator(d->revertList);
+
+        while (revertListIterator.hasNext()) {
+            const QDeclarativeSimpleAction &simpleAction = revertListIterator.next();
+            if (simpleAction.specifiedObject() == target && simpleAction.specifiedProperty().toUtf8() == name)
+                return simpleAction.binding();
+        }
+    }
+
+    return 0;
+}
+
+bool QDeclarativeState::isStateActive() const
+{
+    return stateGroup() && stateGroup()->state() == name();
+}
+
 void QDeclarativeState::apply(QDeclarativeStateGroup *group, QDeclarativeTransition *trans, QDeclarativeState *revert)
 {
     Q_D(QDeclarativeState);
@@ -419,13 +589,13 @@ void QDeclarativeState::apply(QDeclarativeStateGroup *group, QDeclarativeTransit
                 continue;
             bool found = false;
             for (int jj = 0; jj < d->revertList.count(); ++jj) {
-                QDeclarativeActionEvent *event = d->revertList.at(jj).event;
+                QDeclarativeActionEvent *event = d->revertList.at(jj).event();
                 if (event && event->typeName() == action.event->typeName()) {
                     if (action.event->override(event)) {
                         found = true;
 
-                        if (action.event != d->revertList.at(jj).event && action.event->needsCopy()) {
-                            action.event->copyOriginals(d->revertList.at(jj).event);
+                        if (action.event != d->revertList.at(jj).event() && action.event->needsCopy()) {
+                            action.event->copyOriginals(d->revertList.at(jj).event());
 
                             QDeclarativeSimpleAction r(action);
                             additionalReverts << r;
@@ -450,9 +620,9 @@ void QDeclarativeState::apply(QDeclarativeStateGroup *group, QDeclarativeTransit
             action.fromBinding = QDeclarativePropertyPrivate::binding(action.property);
 
             for (int jj = 0; jj < d->revertList.count(); ++jj) {
-                if (d->revertList.at(jj).property == action.property) {
+                if (d->revertList.at(jj).property() == action.property) {
                     found = true;
-                    if (d->revertList.at(jj).binding != action.fromBinding) {
+                    if (d->revertList.at(jj).binding() != action.fromBinding) {
                         action.deleteFromBinding();
                     }
                     break;
@@ -461,7 +631,7 @@ void QDeclarativeState::apply(QDeclarativeStateGroup *group, QDeclarativeTransit
 
             if (!found) {
                 if (!action.restore) {
-                    action.deleteFromBinding();
+                    action.deleteFromBinding();;
                 } else {
                     // Only need to revert the applyList action if the previous
                     // state doesn't have a higher priority revert already
@@ -476,8 +646,8 @@ void QDeclarativeState::apply(QDeclarativeStateGroup *group, QDeclarativeTransit
     // into this state need to be translated into apply actions
     for (int ii = 0; ii < d->revertList.count(); ++ii) {
         bool found = false;
-        if (d->revertList.at(ii).event) {
-            QDeclarativeActionEvent *event = d->revertList.at(ii).event;
+        if (d->revertList.at(ii).event()) {
+            QDeclarativeActionEvent *event = d->revertList.at(ii).event();
             if (!event->isReversable())
                 continue;
             for (int jj = 0; !found && jj < applyList.count(); ++jj) {
@@ -490,31 +660,31 @@ void QDeclarativeState::apply(QDeclarativeStateGroup *group, QDeclarativeTransit
         } else {
             for (int jj = 0; !found && jj < applyList.count(); ++jj) {
                 const QDeclarativeAction &action = applyList.at(jj);
-                if (action.property == d->revertList.at(ii).property)
+                if (action.property == d->revertList.at(ii).property())
                     found = true;
             }
         }
         if (!found) {
-            QVariant cur = d->revertList.at(ii).property.read();
+            QVariant cur = d->revertList.at(ii).property().read();
             QDeclarativeAbstractBinding *delBinding = 
-                QDeclarativePropertyPrivate::setBinding(d->revertList.at(ii).property, 0);
+                QDeclarativePropertyPrivate::setBinding(d->revertList.at(ii).property(), 0);
             if (delBinding)
                 delBinding->destroy();
 
             QDeclarativeAction a;
-            a.property = d->revertList.at(ii).property;
+            a.property = d->revertList.at(ii).property();
             a.fromValue = cur;
-            a.toValue = d->revertList.at(ii).value;
-            a.toBinding = d->revertList.at(ii).binding;
-            a.specifiedObject = d->revertList.at(ii).specifiedObject;
-            a.specifiedProperty = d->revertList.at(ii).specifiedProperty;
-            a.event = d->revertList.at(ii).event;
-            a.reverseEvent = d->revertList.at(ii).reverseEvent;
+            a.toValue = d->revertList.at(ii).value();
+            a.toBinding = d->revertList.at(ii).binding();
+            a.specifiedObject = d->revertList.at(ii).specifiedObject();
+            a.specifiedProperty = d->revertList.at(ii).specifiedProperty();
+            a.event = d->revertList.at(ii).event();
+            a.reverseEvent = d->revertList.at(ii).reverseEvent();
             if (a.event && a.event->isRewindable())
                 a.event->saveCurrentValues();
             applyList << a;
             // Store these special reverts in the reverting list
-            d->reverting << d->revertList.at(ii).property;
+            d->reverting << d->revertList.at(ii).property();
         }
     }
     // All the local reverts now become part of the ongoing revertList
@@ -540,6 +710,18 @@ void QDeclarativeState::apply(QDeclarativeStateGroup *group, QDeclarativeTransit
 QDeclarativeStateOperation::ActionList QDeclarativeStateOperation::actions()
 {
     return ActionList();
+}
+
+QDeclarativeState *QDeclarativeStateOperation::state() const
+{
+    Q_D(const QDeclarativeStateOperation);
+    return d->m_state;
+}
+
+void QDeclarativeStateOperation::setState(QDeclarativeState *state)
+{
+    Q_D(QDeclarativeStateOperation);
+    d->m_state = state;
 }
 
 QT_END_NAMESPACE

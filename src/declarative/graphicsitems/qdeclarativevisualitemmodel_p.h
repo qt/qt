@@ -79,7 +79,6 @@ public:
     virtual ReleaseFlags release(QDeclarativeItem *item) = 0;
     virtual bool completePending() const = 0;
     virtual void completeItem() = 0;
-    virtual QVariant evaluate(int index, const QString &expression, QObject *objectContext) = 0;
     virtual QString stringValue(int, const QString &) { return QString(); }
 
     virtual int indexOf(QDeclarativeItem *item, QObject *objectContext) const = 0;
@@ -122,7 +121,6 @@ public:
     virtual bool completePending() const;
     virtual void completeItem();
     virtual QString stringValue(int index, const QString &role);
-    virtual QVariant evaluate(int index, const QString &expression, QObject *objectContext);
 
     virtual int indexOf(QDeclarativeItem *item, QObject *objectContext) const;
 
@@ -177,7 +175,6 @@ public:
     bool completePending() const;
     void completeItem();
     virtual QString stringValue(int index, const QString &role);
-    QVariant evaluate(int index, const QString &expression, QObject *objectContext);
 
     int indexOf(QDeclarativeItem *item, QObject *objectContext) const;
 
@@ -197,6 +194,7 @@ private Q_SLOTS:
     void _q_rowsRemoved(const QModelIndex &,int,int);
     void _q_rowsMoved(const QModelIndex &, int, int, const QModelIndex &, int);
     void _q_dataChanged(const QModelIndex&,const QModelIndex&);
+    void _q_layoutChanged();
     void _q_modelReset();
     void _q_createdPackage(int index, QDeclarativePackage *package);
     void _q_destroyingPackage(QDeclarativePackage *package);

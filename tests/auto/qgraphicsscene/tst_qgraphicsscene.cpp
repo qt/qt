@@ -276,6 +276,7 @@ private slots:
     void isActive();
     void siblingIndexAlwaysValid();
     void removeFullyTransparentItem();
+    void zeroScale();
 
     // task specific tests below me
     void task139710_bspTreeCrash();
@@ -286,6 +287,7 @@ private slots:
     void taskQTBUG_5904_crashWithDeviceCoordinateCache();
     void taskQT657_paintIntoCacheWithTransparentParts();
     void taskQTBUG_7863_paintIntoCacheWithTransparentParts();
+    void taskQT_3674_doNotCrash();
 };
 
 void tst_QGraphicsScene::initTestCase()
@@ -4562,6 +4564,50 @@ void tst_QGraphicsScene::taskQTBUG_7863_paintIntoCacheWithTransparentParts()
 
         delete view;
     }
+}
+
+void tst_QGraphicsScene::taskQT_3674_doNotCrash()
+{
+    QGraphicsScene scene;
+
+    QGraphicsView view(&scene);
+    view.resize(200, 200);
+
+    QPixmap pixmap(view.size());
+    QPainter painter(&pixmap);
+    view.render(&painter);
+    painter.end();
+
+    scene.addItem(new QGraphicsWidget);
+    scene.setBackgroundBrush(Qt::green);
+
+    QApplication::processEvents();
+    QApplication::processEvents();
+}
+
+void tst_QGraphicsScene::zeroScale()
+{
+    //should not crash
+    QGraphicsScene scene;
+    scene.setSceneRect(-100, -100, 100, 100);
+    QGraphicsView view(&scene);
+
+    ChangedListener cl;
+    connect(&scene, SIGNAL(changed(const QList<QRectF> &)), &cl, SLOT(changed(const QList<QRectF> &)));
+
+    QGraphicsRectItem *rect1 = new QGraphicsRectItem(0, 0, 0.0000001, 0.00000001);
+    scene.addItem(rect1);
+    rect1->setRotation(82);
+    rect1->setScale(0.00000001);
+
+    QApplication::processEvents();
+    QTRY_COMPARE(cl.changes.count(), 1);
+    QGraphicsRectItem *rect2 = new QGraphicsRectItem(-0.0000001, -0.0000001, 0.0000001, 0.0000001);
+    rect2->setScale(0.00000001);
+    scene.addItem(rect2);
+    rect1->setPos(20,20);
+    QApplication::processEvents();
+    QTRY_COMPARE(cl.changes.count(), 2);
 }
 
 QTEST_MAIN(tst_QGraphicsScene)

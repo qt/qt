@@ -180,7 +180,7 @@ static void resolveLibs()
 
         triedResolve = true;
 #if !defined(Q_OS_WINCE)
-        HINSTANCE advapiHnd = LoadLibrary(L"advapi32");
+        HINSTANCE advapiHnd = QSystemLibrary::load(L"advapi32");
         if (advapiHnd) {
             ptrGetNamedSecurityInfoW = (PtrGetNamedSecurityInfoW)GetProcAddress(advapiHnd, "GetNamedSecurityInfoW");
             ptrLookupAccountSidW = (PtrLookupAccountSidW)GetProcAddress(advapiHnd, "LookupAccountSidW");
@@ -212,7 +212,7 @@ static void resolveLibs()
                 ptrFreeSid(pWorld);
             }
         }
-        HINSTANCE userenvHnd = LoadLibrary(L"userenv");
+        HINSTANCE userenvHnd = QSystemLibrary::load(L"userenv");
         if (userenvHnd)
             ptrGetUserProfileDirectoryW = (PtrGetUserProfileDirectoryW)GetProcAddress(userenvHnd, "GetUserProfileDirectoryW");
         HINSTANCE kernel32 = LoadLibrary(L"kernel32");
@@ -246,7 +246,7 @@ static bool resolveUNCLibs()
 #endif
         triedResolve = true;
 #if !defined(Q_OS_WINCE)
-        HINSTANCE hLib = LoadLibrary(L"netapi32");
+        HINSTANCE hLib = QSystemLibrary::load(L"Netapi32");
         if (hLib) {
             ptrNetShareEnum = (PtrNetShareEnum)GetProcAddress(hLib, "NetShareEnum");
             if (ptrNetShareEnum)

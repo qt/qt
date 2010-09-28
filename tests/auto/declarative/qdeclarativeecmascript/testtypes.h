@@ -92,9 +92,10 @@ class MyQmlObject : public QObject
     Q_PROPERTY(QDeclarativeListProperty<QObject> objectListProperty READ objectListProperty CONSTANT)
     Q_PROPERTY(int resettableProperty READ resettableProperty WRITE setResettableProperty RESET resetProperty)
     Q_PROPERTY(QRegExp regExp READ regExp WRITE setRegExp)
+    Q_PROPERTY(int nonscriptable READ nonscriptable WRITE setNonscriptable SCRIPTABLE false);
 
 public:
-    MyQmlObject(): m_methodCalled(false), m_methodIntCalled(false), m_object(0), m_value(0), m_resetProperty(13) {}
+    MyQmlObject(): myinvokableObject(0), m_methodCalled(false), m_methodIntCalled(false), m_object(0), m_value(0), m_resetProperty(13) {}
 
     enum MyEnum { EnumValue1 = 0, EnumValue2 = 1 };
     enum MyEnum2 { EnumValue3 = 2, EnumValue4 = 3 };
@@ -144,6 +145,13 @@ public:
     void setRegExp(const QRegExp &regExp) { m_regExp = regExp; }
 
     int console() const { return 11; }
+
+    int nonscriptable() const { return 0; }
+    void setNonscriptable(int) {}
+
+    MyQmlObject *myinvokableObject;
+    Q_INVOKABLE MyQmlObject *returnme() { return this; }
+
 signals:
     void basicSignal();
     void argumentSignal(int a, QString b, qreal c);
@@ -157,6 +165,7 @@ public slots:
     void methodNoArgs() { m_methodCalled = true; }
     void method(int a) { if(a == 163) m_methodIntCalled = true; }
     void setString(const QString &s) { m_string = s; }
+    void myinvokable(MyQmlObject *o) { myinvokableObject = o; }
 
 private:
     friend class tst_qdeclarativeecmascript;
@@ -604,62 +613,62 @@ class NumberAssignment : public QObject
 {
     Q_OBJECT
 public:
-    Q_PROPERTY(qreal test1 READ test1 WRITE setTest1);
+    Q_PROPERTY(qreal test1 READ test1 WRITE setTest1)
     qreal _test1;
     qreal test1() const { return _test1; }
     void setTest1(qreal v) { _test1 = v; }
 
-    Q_PROPERTY(qreal test2 READ test2 WRITE setTest2);
+    Q_PROPERTY(qreal test2 READ test2 WRITE setTest2)
     qreal _test2;
     qreal test2() const { return _test2; }
     void setTest2(qreal v) { _test2 = v; }
 
-    Q_PROPERTY(qreal test3 READ test3 WRITE setTest3);
+    Q_PROPERTY(qreal test3 READ test3 WRITE setTest3)
     qreal _test3;
     qreal test3() const { return _test3; }
     void setTest3(qreal v) { _test3 = v; }
 
-    Q_PROPERTY(qreal test4 READ test4 WRITE setTest4);
+    Q_PROPERTY(qreal test4 READ test4 WRITE setTest4)
     qreal _test4;
     qreal test4() const { return _test4; }
     void setTest4(qreal v) { _test4 = v; }
 
-    Q_PROPERTY(int test5 READ test5 WRITE setTest5);
+    Q_PROPERTY(int test5 READ test5 WRITE setTest5)
     int _test5;
     int test5() const { return _test5; }
     void setTest5(int v) { _test5 = v; }
 
-    Q_PROPERTY(int test6 READ test6 WRITE setTest6);
+    Q_PROPERTY(int test6 READ test6 WRITE setTest6)
     int _test6;
     int test6() const { return _test6; }
     void setTest6(int v) { _test6 = v; }
 
-    Q_PROPERTY(int test7 READ test7 WRITE setTest7);
+    Q_PROPERTY(int test7 READ test7 WRITE setTest7)
     int _test7;
     int test7() const { return _test7; }
     void setTest7(int v) { _test7 = v; }
 
-    Q_PROPERTY(int test8 READ test8 WRITE setTest8);
+    Q_PROPERTY(int test8 READ test8 WRITE setTest8)
     int _test8;
     int test8() const { return _test8; }
     void setTest8(int v) { _test8 = v; }
 
-    Q_PROPERTY(unsigned int test9 READ test9 WRITE setTest9);
+    Q_PROPERTY(unsigned int test9 READ test9 WRITE setTest9)
     unsigned int _test9;
     unsigned int test9() const { return _test9; }
     void setTest9(unsigned int v) { _test9 = v; }
 
-    Q_PROPERTY(unsigned int test10 READ test10 WRITE setTest10);
+    Q_PROPERTY(unsigned int test10 READ test10 WRITE setTest10)
     unsigned int _test10;
     unsigned int test10() const { return _test10; }
     void setTest10(unsigned int v) { _test10 = v; }
 
-    Q_PROPERTY(unsigned int test11 READ test11 WRITE setTest11);
+    Q_PROPERTY(unsigned int test11 READ test11 WRITE setTest11)
     unsigned int _test11;
     unsigned int test11() const { return _test11; }
     void setTest11(unsigned int v) { _test11 = v; }
 
-    Q_PROPERTY(unsigned int test12 READ test12 WRITE setTest12);
+    Q_PROPERTY(unsigned int test12 READ test12 WRITE setTest12)
     unsigned int _test12;
     unsigned int test12() const { return _test12; }
     void setTest12(unsigned int v) { _test12 = v; }

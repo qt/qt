@@ -1074,7 +1074,7 @@ void QGraphicsScenePrivate::enableMouseTrackingOnViews()
 /*!
     Returns all items for the screen position in \a event.
 */
-QList<QGraphicsItem *> QGraphicsScenePrivate::itemsAtPosition(const QPoint &screenPos,
+QList<QGraphicsItem *> QGraphicsScenePrivate::itemsAtPosition(const QPoint &/*screenPos*/,
                                                               const QPointF &scenePos,
                                                               QWidget *widget) const
 {
@@ -1083,16 +1083,12 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::itemsAtPosition(const QPoint &scre
     if (!view)
         return q->items(scenePos, Qt::IntersectsItemShape, Qt::DescendingOrder, QTransform());
 
-    const QRectF pointRect(QPointF(widget->mapFromGlobal(screenPos)), QSizeF(1, 1));
+    const QRectF pointRect(scenePos, QSizeF(1, 1));
     if (!view->isTransformed())
         return q->items(pointRect, Qt::IntersectsItemShape, Qt::DescendingOrder);
 
     const QTransform viewTransform = view->viewportTransform();
-    if (viewTransform.type() <= QTransform::TxScale) {
-        return q->items(viewTransform.inverted().mapRect(pointRect), Qt::IntersectsItemShape,
-                        Qt::DescendingOrder, viewTransform);
-    }
-    return q->items(viewTransform.inverted().map(pointRect), Qt::IntersectsItemShape,
+    return q->items(pointRect, Qt::IntersectsItemShape,
                     Qt::DescendingOrder, viewTransform);
 }
 
@@ -4755,7 +4751,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         ENSURE_TRANSFORM_PTR
         QRect viewBoundingRect = translateOnlyTransform ? brect.translated(transformPtr->dx(), transformPtr->dy()).toAlignedRect()
                                                         : transformPtr->mapRect(brect).toAlignedRect();
-        viewBoundingRect.adjust(-rectAdjust, -rectAdjust, rectAdjust, rectAdjust);
+        viewBoundingRect.adjust(-int(rectAdjust), -int(rectAdjust), rectAdjust, rectAdjust);
         if (widget)
             item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
         drawItem = exposedRegion ? exposedRegion->intersects(viewBoundingRect)
@@ -4988,14 +4984,15 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
         return;
     }
 
-    bool hasNoContents = item->d_ptr->flags & QGraphicsItem::ItemHasNoContents
-                         && !item->d_ptr->graphicsEffect;
+    bool hasNoContents = item->d_ptr->flags & QGraphicsItem::ItemHasNoContents;
     if (!hasNoContents) {
         item->d_ptr->dirty = 1;
         if (fullItemUpdate)
             item->d_ptr->fullUpdatePending = 1;
         else if (!item->d_ptr->fullUpdatePending)
             item->d_ptr->needsRepaint |= rect;
+    } else if (item->d_ptr->graphicsEffect) {
+        invalidateChildren = true;
     }
 
     if (invalidateChildren) {
@@ -5126,7 +5123,9 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                 q->update(itemBoundingRect.translated(item->d_ptr->sceneTransform.dx(),
                                                       item->d_ptr->sceneTransform.dy()));
             } else {
-                q->update(item->d_ptr->sceneTransform.mapRect(itemBoundingRect));
+                QRectF rect = item->d_ptr->sceneTransform.mapRect(itemBoundingRect);
+                if (!rect.isEmpty())
+                    q->update(rect);
             }
         } else {
             QRectF dirtyRect;
@@ -5272,7 +5271,6 @@ void QGraphicsScene::drawItems(QPainter *painter,
     if (!d->unpolishedItems.isEmpty())
         d->_q_polishItems();
 
-    d->updateAll = false;
     QTransform viewTransform = painter->worldTransform();
     Q_UNUSED(options);
 
@@ -5281,6 +5279,7 @@ void QGraphicsScene::drawItems(QPainter *painter,
     QRegion *expose = 0;
     const quint32 oldRectAdjust = d->rectAdjust;
     if (view) {
+        d->updateAll = false;
         expose = &view->d_func()->exposedRegion;
         if (view->d_func()->optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
             d->rectAdjust = 1;
@@ -5740,16 +5739,11 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
             }
 
             if (sceneTouchEvent->deviceType() == QTouchEvent::TouchScreen) {
-                // on touch-screens, combine this touch point with the closest one we find if it
-                // is a a direct descendent or ancestor (
+                // on touch-screens, combine this touch point with the closest one we find
                 int closestTouchPointId = findClosestTouchPointId(touchPoint.scenePos());
                 QGraphicsItem *closestItem = itemForTouchPointId.value(closestTouchPointId);
-                if (!item
-                    || (closestItem
-                        && (item->isAncestorOf(closestItem)
-                            || closestItem->isAncestorOf(item)))) {
+                if (!item || (closestItem && cachedItemsUnderMouse.contains(closestItem)))
                     item = closestItem;
-                }
             }
             if (!item)
                 continue;
@@ -6144,7 +6138,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
                                 << g << item.data();
                     }
                     // remember the first item that received the override event
-                    // as it most likely become a target if noone else accepts
+                    // as it most likely become a target if no one else accepts
                     // the override event
                     if (!gestureTargets.contains(g) && item)
                         gestureTargets.insert(g, item.data());

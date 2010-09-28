@@ -88,7 +88,10 @@ QtGui
 
  - QComboBox
     * [QTBUG-8796] Made ForegroundRole work for all styles.
-				
+
+ - QCommandLinkButton
+    * [QTBUG-5995] Fixed text and icon alignment issues.
+	
  - QPrinter
     * Obsoleted the slightly confusing setNumCopies() and numCopies()
       functions, and replaced them with setCopyCount(), copyCount() and
@@ -132,6 +135,9 @@ QtGui
     * [QTBUG-9640] Prevented unneccessary copy in QImage::setAlphaChannel().
     * [QTBUG-7982] Added QImage::bitPlaneCount().
     * [QTBUG-9072] Fixed alpha check for 1-bit-per-pixel images.
+
+ - QLineEdit
+    * [QTBUG-9823] Placeholder text is now correctly aligned with text.
 
  - QPicture
     * [QTBUG-4974] Printing QPictures containing text to a high resolution
@@ -286,8 +292,9 @@ Qt for Linux/X11
 ----------------
  - QGtkStyle
     * Fixed rtl issues with sliders (QTBUG-8986)
-    * Fixed missing pressed appearance on scroll bar handles. (QTBUG-10396)  
- 
+    * Fixed missing pressed appearance on scroll bar handles. (QTBUG-10396)
+    * Fixed crash when creating QGtkStyle before QApplication. (QTBUG-10758)
+
  - QFontDatabase
     * [QTBUG-4428] Fixed regression when using bitmap fonts on some 
       Linux systems.
@@ -303,7 +310,12 @@ Qt for Linux/X11
 Qt for Windows
 --------------
  - Popup windows now implicitly activate when shown. (QTBUG-7386)
-
+ - QComboBox [QTBUG-7552] Fix an issue where only "..." would be shown for
+   QComboBox with certain DPI settings.
+ - Fixed a problem where menus exec'ed on system tray icons did not 
+   disappear. (QTBUG-7386)
+ - Improved look and feel for QWizard on Windows 7 and Vista. (QTBUG-9873), 
+   (QTBUG-11974) and (QTBUG-6120)    
  - QLocalSocket
     * Pipe handle leak fixed, when closing a QLocalSocket that still has
       unwritten data. (QTBUG-7815)
@@ -315,7 +327,9 @@ Qt for Mac OS X
 ---------------
  - QMacStyle
     * Removed frame around statusbar items. (QTBUG-3574)
-    * More native appearance of item view headers and frames. (QTBUG-10047)    
+    * More native appearance of item view headers and frames. (QTBUG-10047)
+    * Increased spacing between tree view items. (QTBUG-10190)
+    * Removed frame around status bar items. (QTBUG-3574)
 
  - QFontEngine	
     * Enable fractional metrics for the font engine on Mac in all 
@@ -357,6 +371,10 @@ Qt for Symbian
  - QSplashScreen
     * [QTBUG-11129] Fixed a hanging bug in QSplashScreen on 3.1 devices.
 
+ - QS60Main... classes
+    * The future compatibility of QS60MainAppUi, QS60MainDocument and
+      QS60MainApplication are improved by removing the need for any 
+      sub-class to link to Avkon functions that may not exist in future.
 
 
 ****************************************************************************
@@ -477,6 +495,18 @@ QtCore:
   - QTextBoundaryFinder is now consistent with ICU when it comes to
     line breaking, reporting the index of the boundary at which the line
     break should occur rather than the index of the character.
+
+QtGui:
+  - QWidget::setLayoutDirection no longer affects the text layout
+    direction (Qt::LeftToRight or Qt::RightToLeft) of QTextEdit, QLineEdit
+    and widgets based on them. The default text layout direction
+    (Qt::LayoutDirectionAuto) is now detected from keyboard layout and
+    language of the text (conforms to Unicode standards). To
+    programmatically force the text direction of a QTextEdit, you can
+    change the defaultTextOption of the QTextDocument associated with that
+    widget with a new QTextOption of different textDirection property. For
+    QLineEdit, the only way so far is sending a Qt::Key_Direction_L/R
+    keyboard event to that widget.
 
 QtNetwork:
   - Qt does no longer provide its own CA bundle, but uses system APIs for

@@ -145,7 +145,7 @@ private:
     void copyBackFromRenderFbo(bool keepCurrentFboBound) const;
     QSize size() const { return QSize(w, h); }
 
-    static bool useFramebufferObjects();
+    bool useFramebufferObjects() const;
 
     QImage fillImage(const QColor &color) const;
 
@@ -168,6 +168,7 @@ private:
     mutable QGLPixmapGLPaintDevice m_glDevice;
 
     friend class QGLPixmapGLPaintDevice;
+    friend class QMeeGoPixmapData;
 };
 
 QT_END_NAMESPACE

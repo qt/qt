@@ -4578,7 +4578,7 @@ void tst_QGraphicsItem::itemChange()
         QCOMPARE(tester.changes.at(tester.changes.size() - 1), QGraphicsItem::ItemFlagsHaveChanged);
         QVariant expectedFlags = qVariantFromValue<quint32>(QGraphicsItem::GraphicsItemFlags(QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemSendsGeometryChanges));
         QCOMPARE(tester.values.at(tester.values.size() - 2), expectedFlags);
-        QCOMPARE(tester.values.at(tester.values.size() - 1), qVariantFromValue<quint32>(QGraphicsItem::ItemIsSelectable));
+        QCOMPARE(tester.values.at(tester.values.size() - 1), qVariantFromValue<quint32>((quint32)QGraphicsItem::ItemIsSelectable));
     }
     {
         // ItemSelectedChange

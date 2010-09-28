@@ -43,7 +43,6 @@
 #include "qtextdocumentfragment_p.h"
 #include "qtextcursor_p.h"
 #include "qtextlist.h"
-#include "private/qunicodetables_p.h"
 
 #include <qdebug.h>
 #include <qtextcodec.h>
@@ -683,6 +682,10 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processSpecialNodes()
 
             QTextListFormat listFmt;
             listFmt.setStyle(style);
+            if (!currentNode->textListNumberPrefix.isNull())
+                listFmt.setNumberPrefix(currentNode->textListNumberPrefix);
+            if (!currentNode->textListNumberSuffix.isNull())
+                listFmt.setNumberSuffix(currentNode->textListNumberSuffix);
 
             ++indent;
             if (currentNode->hasCssListIndent)

@@ -75,6 +75,6 @@ EXPORTS
 	?trUtf8@QTestEventLoop@@SA?AVQString@@PBD0@Z @ 74 NONAME ; class QString QTestEventLoop::trUtf8(char const *, char const *)
 	?trUtf8@QTestEventLoop@@SA?AVQString@@PBD0H@Z @ 75 NONAME ; class QString QTestEventLoop::trUtf8(char const *, char const *, int)
 	?staticMetaObject@QTestEventLoop@@2UQMetaObject@@B @ 76 NONAME ; struct QMetaObject const QTestEventLoop::staticMetaObject
-	?endBenchmarkMeasurement@QTest@@YA_KXZ @ 77 NONAME ; unsigned long long QTest::endBenchmarkMeasurement(void)
-	?setBenchmarkResult@QTest@@YAXMW4QBenchmarkMetric@1@@Z @ 78 NONAME ; void QTest::setBenchmarkResult(float, enum QTest::QBenchmarkMetric)
+	?setBenchmarkResult@QTest@@YAXMW4QBenchmarkMetric@1@@Z @ 77 NONAME ; void QTest::setBenchmarkResult(float, enum QTest::QBenchmarkMetric)
+	?endBenchmarkMeasurement@QTest@@YA_KXZ @ 78 NONAME ; unsigned long long QTest::endBenchmarkMeasurement(void)
 

@@ -81,6 +81,10 @@ public:
     void setBoundingRect(const QRect &r);
 
     QPicture& operator=(const QPicture &p);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QPicture &operator=(QPicture &&other)
+    { qSwap(d_ptr, other.d_ptr); return *this; }
+#endif
     void detach();
     bool isDetached() const;
 

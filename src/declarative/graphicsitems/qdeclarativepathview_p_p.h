@@ -75,19 +75,19 @@ class QDeclarativePathViewPrivate : public QDeclarativeItemPrivate, public QDecl
 public:
     QDeclarativePathViewPrivate()
       : path(0), currentIndex(0), currentItemOffset(0.0), startPc(0), lastDist(0)
-        , lastElapsed(0), mappedRange(1.0)
+        , lastElapsed(0), offset(0.0), offsetAdj(0.0), mappedRange(1.0)
         , stealMouse(false), ownModel(false), interactive(true), haveHighlightRange(true)
         , autoHighlight(true), highlightUp(false), layoutScheduled(false)
         , moving(false), flicking(false)
         , dragMargin(0), deceleration(100)
-        , moveOffset(this, &QDeclarativePathViewPrivate::setOffset)
+        , moveOffset(this, &QDeclarativePathViewPrivate::setAdjustedOffset)
         , firstIndex(-1), pathItems(-1), requestedIndex(-1)
         , moveReason(Other), attType(0), highlightComponent(0), highlightItem(0)
         , moveHighlight(this, &QDeclarativePathViewPrivate::setHighlightPosition)
         , highlightPosition(0)
         , highlightRangeStart(0), highlightRangeEnd(0)
         , highlightRangeMode(QDeclarativePathView::StrictlyEnforceRange)
-        , highlightMoveDuration(300)
+        , highlightMoveDuration(300), modelCount(0)
     {
     }
 
@@ -96,6 +96,8 @@ public:
     void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry) {
         if ((newGeometry.size() != oldGeometry.size())
             && (!highlightItem || item != highlightItem)) {
+            if (QDeclarativePathViewAttached *att = attached(item))
+                att->m_percent = -1;
             scheduleLayout();
         }
     }
@@ -121,11 +123,16 @@ public:
         return model && model->count() > 0 && model->isValid() && path;
     }
 
+    void handleMousePressEvent(QGraphicsSceneMouseEvent *event);
+    void handleMouseMoveEvent(QGraphicsSceneMouseEvent *event);
+    void handleMouseReleaseEvent(QGraphicsSceneMouseEvent *);
+
     int calcCurrentIndex();
     void updateCurrent();
     static void fixOffsetCallback(void*);
     void fixOffset();
     void setOffset(qreal offset);
+    void setAdjustedOffset(qreal offset);
     void regenerate();
     void updateItem(QDeclarativeItem *, qreal);
     void snapToCurrent();
@@ -140,6 +147,7 @@ public:
     qreal lastDist;
     int lastElapsed;
     qreal offset;
+    qreal offsetAdj;
     qreal mappedRange;
     bool stealMouse : 1;
     bool ownModel : 1;
@@ -160,6 +168,7 @@ public:
     int pathItems;
     int requestedIndex;
     QList<QDeclarativeItem *> items;
+    QList<QDeclarativeItem *> itemCache;
     QDeclarativeGuard<QDeclarativeVisualModel> model;
     QVariant modelVariant;
     enum MovementReason { Other, SetIndex, Mouse };
@@ -173,6 +182,7 @@ public:
     qreal highlightRangeEnd;
     QDeclarativePathView::HighlightRangeMode highlightRangeMode;
     int highlightMoveDuration;
+    int modelCount;
 };
 
 QT_END_NAMESPACE

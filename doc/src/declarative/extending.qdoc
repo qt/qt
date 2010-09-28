@@ -124,7 +124,7 @@ The QML snippet shown above assigns a \c Person object to the \c BirthdayParty's
 
 QML can set properties of types that are more complex than basic intrinsics like
 integers and strings.  Properties can also be object pointers, Qt interface
-pointers,  lists of object points, and lists of Qt interface pointers.  As QML
+pointers,  lists of object pointers, and lists of Qt interface pointers.  As QML
 is typesafe it ensures that only valid types are assigned to these properties,
 just like it does for primitive types.
 
@@ -434,6 +434,23 @@ NOTIFY signal in C++.
 
 See also \l {Extending types from QML}.
 
+\section1 Methods
+
+Slots and methods marked Q_INVOKABLE may be called as functions in QML.
+
+\snippet examples/declarative/cppextensions/referenceexamples/methods/example.qml 0
+
+In this example an invitation is added via an \c {invite()} invokable method of
+the BirthdayParty element.  This function is available in QML by marking the \c {invite()}
+method with Q_INVOKABLE in the BirthdayParty class:
+
+\snippet examples/declarative/cppextensions/referenceexamples/methods/birthdayparty.h 0
+
+\l {Extending QML - Methods Example} shows the complete code used to
+implement the invite() method.
+
+The \c {invite()} method is similarly available if it is declared as a slot.
+
 \section1 Property Value Sources
 
 \snippet examples/declarative/cppextensions/referenceexamples/valuesource/example.qml 0
@@ -656,6 +673,16 @@ declaring a new property, and the corresponding C++ type.
 \row \o date \o QDateTime
 \row \o variant \o QVariant
 \endtable
+
+From QML you can also declare object and list properties using any element name
+like this:
+
+\code
+    property QtObject objectProperty
+    property Item itemProperty
+    property MyCustomType customProperty
+    property list<Item> listOfItemsProperty
+\endcode
 
 QML supports two methods for adding a new property to a type: a new property
 definition, and a property alias.
@@ -947,6 +974,20 @@ Item {
     }
 }
 \endcode
+
+This may be connected to via QObject::connect() or called directly from C++ using
+QMetaObject::invokeMethod():
+
+\code
+    QDeclarativeEngine engine;
+    QDeclarativeContext *context = new QDeclarativeContext(engine.rootContext());
+    QDeclarativeComponent component(&engine, QUrl::fromLocalFile("main.qml"));
+    QObject *object = component.create(context);
+    QVariant str("Hello");
+    QMetaObject::invokeMethod(object, "say", Q_ARG(QVariant, str));
+\endcode
+
+Return values of type QVariant are also supported via Q_RETURN_ARG.
 
 \section1 Defining new Components
 \target components

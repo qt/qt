@@ -54,43 +54,36 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \class QDeclarativeAnimatedImage
-    \internal
-*/
-
-/*!
     \qmlclass AnimatedImage QDeclarativeAnimatedImage
     \inherits Image
     \since 4.7
+    \ingroup basic-visual-elements
 
-    The AnimatedImage element provides for playing animations stored as images containing a series of frames,
-    such as GIF files. 
-    
+    The AnimatedImage element extends the features of the \l Image element, providing
+    a way to play animations stored as images containing a series of frames,
+    such as those stored in GIF files.
+
+    Information about the current frame and totla length of the animation can be
+    obtained using the \l currentFrame and \l frameCount properties. You can
+    start, pause and stop the animation by changing the values of the \l playing
+    and \l paused properties.
+
     The full list of supported formats can be determined with QMovie::supportedFormats().
 
-    \table
-    \row
-    \o \image animatedimageitem.gif
-    \o
-    \qml
-    import Qt 4.7
+    \section1 Example Usage
 
-    Rectangle {
-        width: animation.width; height: animation.height + 8
+    \beginfloatleft
+    \image animatedimageitem.gif
+    \endfloat
 
-        AnimatedImage { id: animation; source: "animation.gif" }
+    The following QML shows how to display an animated image and obtain information
+    about its state, such as the current frame and total number of frames.
+    The result is an animated image with a simple progress indicator underneath it.
 
-        Rectangle { 
-            property int frames: animation.frameCount
+    \clearfloat
+    \snippet doc/src/snippets/declarative/animatedimage.qml document
 
-            width: 4; height: 8
-            x: (animation.width - width) * animation.currentFrame / frames
-            y: animation.height
-            color: "red"
-        }
-    }
-    \endqml
-    \endtable
+    \sa BorderImage, Image
 */
 
 QDeclarativeAnimatedImage::QDeclarativeAnimatedImage(QDeclarativeItem *parent)
@@ -108,7 +101,8 @@ QDeclarativeAnimatedImage::~QDeclarativeAnimatedImage()
   \qmlproperty bool AnimatedImage::paused
   This property holds whether the animated image is paused.
 
-  Defaults to false, and can be set to true when you want to pause.
+  By default, this property is false. Set it to true when you want to pause
+  the animation.
 */
 bool QDeclarativeAnimatedImage::isPaused() const
 {
@@ -132,7 +126,8 @@ void QDeclarativeAnimatedImage::setPaused(bool pause)
   \qmlproperty bool AnimatedImage::playing
   This property holds whether the animated image is playing.
 
-  Defaults to true, so as to start playing immediately.
+  By defaults, this property is true, meaning that the animation
+  will start playing immediately.
 */
 bool QDeclarativeAnimatedImage::isPlaying() const
 {
@@ -160,9 +155,11 @@ void QDeclarativeAnimatedImage::setPlaying(bool play)
   \qmlproperty int AnimatedImage::currentFrame
   \qmlproperty int AnimatedImage::frameCount
 
-  currentFrame is the frame that is currently visible. Watching when this changes can
-  allow other things to animate at the same time as the image. frameCount is the number
-  of frames in the animation. For some animation formats, frameCount is unknown and set to zero.
+  currentFrame is the frame that is currently visible. By monitoring this property
+  for changes, you can animate other items at the same time as the image.
+
+  frameCount is the number of frames in the animation. For some animation formats,
+  frameCount is unknown and has a value of zero.
 */
 int QDeclarativeAnimatedImage::currentFrame() const
 {

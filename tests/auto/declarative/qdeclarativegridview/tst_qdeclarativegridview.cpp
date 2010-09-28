@@ -590,7 +590,7 @@ void tst_QDeclarativeGridView::currentIndex()
     QCOMPARE(gridview->currentIndex(), 35);
     QCOMPARE(gridview->currentItem(), findItem<QDeclarativeItem>(contentItem, "wrapper", 35));
     QCOMPARE(gridview->currentItem()->y(), gridview->highlightItem()->y());
-    QCOMPARE(gridview->contentY(), 399.0);
+    QCOMPARE(gridview->contentY(), 400.0);
 
     gridview->moveCurrentIndexRight();
     QCOMPARE(gridview->currentIndex(), 36);
@@ -604,6 +604,8 @@ void tst_QDeclarativeGridView::currentIndex()
     // no wrap
     gridview->setCurrentIndex(0);
     QCOMPARE(gridview->currentIndex(), 0);
+    // confirm that the velocity is updated
+    QTRY_VERIFY(gridview->verticalVelocity() != 0.0);
 
     gridview->moveCurrentIndexUp();
     QCOMPARE(gridview->currentIndex(), 0);
@@ -629,7 +631,7 @@ void tst_QDeclarativeGridView::currentIndex()
     gridview->moveCurrentIndexLeft();
     QCOMPARE(gridview->currentIndex(), model.count()-1);
 
-    QTRY_COMPARE(gridview->contentY(), 879.0);
+    QTRY_COMPARE(gridview->contentY(), 880.0);
 
     gridview->moveCurrentIndexRight();
     QCOMPARE(gridview->currentIndex(), 0);
@@ -654,6 +656,15 @@ void tst_QDeclarativeGridView::currentIndex()
     QCOMPARE(gridview->currentIndex(), 0);
 
     gridview->setFlow(QDeclarativeGridView::TopToBottom);
+
+    qApp->setActiveWindow(canvas);
+#ifdef Q_WS_X11
+    // to be safe and avoid failing setFocus with window managers
+    qt_x11_wait_for_window_manager(canvas);
+#endif
+    QTRY_VERIFY(canvas->hasFocus());
+    QTRY_VERIFY(canvas->scene()->hasFocus());
+    qApp->processEvents();
 
     QTest::keyClick(canvas, Qt::Key_Right);
     QCOMPARE(gridview->currentIndex(), 5);

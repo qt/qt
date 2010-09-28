@@ -142,10 +142,13 @@ static Ending ending(QString str, QLocale::Language lang)
     case 0x2048: // question exclamation mark
     case 0x2049: // exclamation question mark
     case 0x2762: // heavy exclamation mark ornament
+    case 0xff01: // full width exclamation mark
+    case 0xff1f: // full width question mark
         return End_Interrobang;
     case 0x003b: // greek 'compatibility' questionmark
         return lang == QLocale::Greek ? End_Interrobang : End_None;
     case 0x003a: // colon
+    case 0xff1a: // full width colon
         return End_Colon;
     case 0x2026: // horizontal ellipsis
         return End_Ellipsis;
@@ -1027,6 +1030,8 @@ void MainWindow::findAgain()
                             break;
                         if (searchItem(m->extraComment()))
                             break;
+                        if (searchItem(m->translatorComment()))
+                            break;
                         m_foundWhere = DataModel::NoLocation;
                         // did not find the search string in this message
                     }
@@ -1517,7 +1522,7 @@ void MainWindow::selectedMessageChanged(const QModelIndex &sortedIndex, const QM
             }
             m_phraseView->setSourceText(-1, QString());
         }
-        if (m) {
+        if (m && !m->fileName().isEmpty()) {
             if (hasFormPreview(m->fileName())) {
                 m_sourceAndFormView->setCurrentWidget(m_formPreviewView);
                 m_formPreviewView->setSourceContext(model, m);
@@ -1572,7 +1577,7 @@ void MainWindow::updateTranslation(const QStringList &translations)
         return;
 
     m->setTranslations(translations);
-    if (hasFormPreview(m->fileName()))
+    if (!m->fileName().isEmpty() && hasFormPreview(m->fileName()))
         m_formPreviewView->setSourceContext(m_currentIndex.model(), m);
     updateDanger(m_currentIndex, true);
 
@@ -1991,7 +1996,7 @@ void MainWindow::updateLatestModel(int model)
 
         if (m_currentIndex.isValid()) {
             if (MessageItem *item = m_dataModel->messageItem(m_currentIndex)) {
-                if (hasFormPreview(item->fileName()))
+                if (!item->fileName().isEmpty() && hasFormPreview(item->fileName()))
                     m_formPreviewView->setSourceContext(model, item);
                 if (enableRw && !item->isObsolete())
                     m_phraseView->setSourceText(model, item->text());

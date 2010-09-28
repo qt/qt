@@ -53,7 +53,6 @@
 #include "qtextdocument_p.h"
 #include "qtextcursor.h"
 #include "qfont_p.h"
-#include "private/qunicodetables_p.h"
 #include "private/qfunctions_p.h"
 
 #ifndef QT_NO_TEXTHTMLPARSER
@@ -1323,6 +1322,12 @@ void QTextHtmlParserNode::applyCssDeclarations(const QVector<QCss::Declaration> 
         case QCss::ListStyleType:
         case QCss::ListStyle:
             setListStyle(decl.d->values);
+            break;
+        case QCss::QtListNumberPrefix:
+            textListNumberPrefix = decl.d->values.first().variant.toString();
+            break;
+        case QCss::QtListNumberSuffix:
+            textListNumberSuffix = decl.d->values.first().variant.toString();
             break;
         default: break;
         }

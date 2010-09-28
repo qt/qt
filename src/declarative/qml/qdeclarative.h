@@ -269,7 +269,7 @@ int qmlRegisterInterface(const char *typeName)
     QByteArray pointerName(name + '*');
     QByteArray listName("QDeclarativeListProperty<" + name + ">");
 
-    QDeclarativePrivate::RegisterInterface interface = {
+    QDeclarativePrivate::RegisterInterface qmlInterface = {
         0,
 
         qRegisterMetaType<T *>(pointerName.constData()),
@@ -278,7 +278,7 @@ int qmlRegisterInterface(const char *typeName)
         qobject_interface_iid<T *>()
     };
 
-    return QDeclarativePrivate::qmlregister(QDeclarativePrivate::InterfaceRegistration, &interface);
+    return QDeclarativePrivate::qmlregister(QDeclarativePrivate::InterfaceRegistration, &qmlInterface);
 }
 
 template<typename T>

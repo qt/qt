@@ -767,6 +767,7 @@ QString QDir::relativeFilePath(const QString &fileName) const
     return result;
 }
 
+#ifndef QT_NO_DEPRECATED
 /*!
     \obsolete
 
@@ -776,6 +777,7 @@ QString QDir::convertSeparators(const QString &pathName)
 {
     return toNativeSeparators(pathName);
 }
+#endif
 
 /*!
     \since 4.2

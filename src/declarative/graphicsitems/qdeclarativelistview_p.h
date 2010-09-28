@@ -43,6 +43,7 @@
 #define QDECLARATIVELISTVIEW_H
 
 #include "private/qdeclarativeflickable_p.h"
+#include "private/qdeclarativeguard_p.h"
 
 QT_BEGIN_HEADER
 
@@ -245,6 +246,7 @@ protected:
     virtual qreal minXExtent() const;
     virtual qreal maxXExtent() const;
     virtual void keyPressEvent(QKeyEvent *);
+    virtual void geometryChanged(const QRectF &newGeometry,const QRectF &oldGeometry);
     virtual void componentComplete();
 
 private Q_SLOTS:
@@ -268,8 +270,14 @@ public:
         : QObject(parent), m_view(0), m_isCurrent(false), m_delayRemove(false) {}
     ~QDeclarativeListViewAttached() {}
 
-    Q_PROPERTY(QDeclarativeListView *view READ view CONSTANT)
+    Q_PROPERTY(QDeclarativeListView *view READ view NOTIFY viewChanged)
     QDeclarativeListView *view() { return m_view; }
+    void setView(QDeclarativeListView *view) {
+        if (view != m_view) {
+            m_view = view;
+            emit viewChanged();
+        }
+    }
 
     Q_PROPERTY(bool isCurrentItem READ isCurrentItem NOTIFY currentItemChanged)
     bool isCurrentItem() const { return m_isCurrent; }
@@ -327,9 +335,10 @@ Q_SIGNALS:
     void delayRemoveChanged();
     void add();
     void remove();
+    void viewChanged();
 
 public:
-    QDeclarativeListView *m_view;
+    QDeclarativeGuard<QDeclarativeListView> m_view;
     mutable QString m_section;
     QString m_prevSection;
     QString m_nextSection;

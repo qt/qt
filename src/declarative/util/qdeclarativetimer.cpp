@@ -70,6 +70,7 @@ public:
 
 /*!
     \qmlclass Timer QDeclarativeTimer
+    \ingroup qml-utility-elements
     \since 4.7
     \brief The Timer item triggers a handler at a specified interval.
 

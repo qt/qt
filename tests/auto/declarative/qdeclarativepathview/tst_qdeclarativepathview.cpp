@@ -84,7 +84,7 @@ private slots:
     void modelChanges();
     void pathUpdateOnStartChanged();
     void package();
-
+    void emptyModel();
 
 private:
     QDeclarativeView *createView();
@@ -152,27 +152,27 @@ public:
     QString number(int index) const { return list.at(index).second; }
 
     void addItem(const QString &name, const QString &number) {
-        emit beginInsertRows(QModelIndex(), list.count(), list.count());
+        beginInsertRows(QModelIndex(), list.count(), list.count());
         list.append(QPair<QString,QString>(name, number));
-        emit endInsertRows();
+        endInsertRows();
     }
 
     void insertItem(int index, const QString &name, const QString &number) {
-        emit beginInsertRows(QModelIndex(), index, index);
+        beginInsertRows(QModelIndex(), index, index);
         list.insert(index, QPair<QString,QString>(name, number));
-        emit endInsertRows();
+        endInsertRows();
     }
 
     void removeItem(int index) {
-        emit beginRemoveRows(QModelIndex(), index, index);
+        beginRemoveRows(QModelIndex(), index, index);
         list.removeAt(index);
-        emit endRemoveRows();
+        endRemoveRows();
     }
 
     void moveItem(int from, int to) {
-        emit beginMoveRows(QModelIndex(), from, from, QModelIndex(), to);
+        beginMoveRows(QModelIndex(), from, from, QModelIndex(), to);
         list.move(from, to);
-        emit endMoveRows();
+        endMoveRows();
     }
 
     void modifyItem(int idx, const QString &name, const QString &number) {
@@ -367,9 +367,11 @@ void tst_QDeclarativePathView::dataModel()
     QCOMPARE(item->y(), 10.0);
 
     model.insertItem(4, "orange", "10");
+    QTest::qWait(100);
 
-    int itemCount = findItems<QDeclarativeItem>(pathview, "wrapper").count();
-    QCOMPARE(itemCount, 10);
+    QTRY_COMPARE(findItems<QDeclarativeItem>(pathview, "wrapper").count(), 10);
+
+    QVERIFY(pathview->currentIndex() == 0);
 
     QDeclarativeText *text = findItem<QDeclarativeText>(pathview, "myText", 4);
     QVERIFY(text);
@@ -384,29 +386,37 @@ void tst_QDeclarativePathView::dataModel()
     QMetaObject::invokeMethod(canvas->rootObject(), "checkProperties");
     QVERIFY(testObject->error() == false);
 
-    itemCount = findItems<QDeclarativeItem>(pathview, "wrapper").count();
-    QCOMPARE(itemCount, 5);
+    QTRY_COMPARE(findItems<QDeclarativeItem>(pathview, "wrapper").count(), 5);
 
     QDeclarativeRectangle *testItem = findItem<QDeclarativeRectangle>(pathview, "wrapper", 4);
     QVERIFY(testItem != 0);
     testItem = findItem<QDeclarativeRectangle>(pathview, "wrapper", 5);
     QVERIFY(testItem == 0);
 
-    model.insertItem(2, "pink", "2");
+    pathview->setCurrentIndex(1);
 
-    itemCount = findItems<QDeclarativeItem>(pathview, "wrapper").count();
-    QCOMPARE(itemCount, 5);
+    model.insertItem(2, "pink", "2");
+    QTest::qWait(100);
+
+    QTRY_COMPARE(findItems<QDeclarativeItem>(pathview, "wrapper").count(), 5);
+    QVERIFY(pathview->currentIndex() == 1);
 
     text = findItem<QDeclarativeText>(pathview, "myText", 2);
     QVERIFY(text);
     QCOMPARE(text->text(), model.name(2));
 
     model.removeItem(3);
-    itemCount = findItems<QDeclarativeItem>(pathview, "wrapper").count();
-    QCOMPARE(itemCount, 5);
+    QTRY_COMPARE(findItems<QDeclarativeItem>(pathview, "wrapper").count(), 5);
     text = findItem<QDeclarativeText>(pathview, "myText", 3);
     QVERIFY(text);
     QCOMPARE(text->text(), model.name(3));
+
+    model.moveItem(3, 5);
+    QTRY_COMPARE(findItems<QDeclarativeItem>(pathview, "wrapper").count(), 5);
+    QList<QDeclarativeItem*> items = findItems<QDeclarativeItem>(pathview, "wrapper");
+    foreach (QDeclarativeItem *item, items) {
+        QVERIFY(item->property("onPath").toBool());
+    }
 
     delete canvas;
 }
@@ -754,6 +764,28 @@ void tst_QDeclarativePathView::package()
 
     delete canvas;
 }
+
+//QTBUG-13017
+void tst_QDeclarativePathView::emptyModel()
+{
+    QDeclarativeView *canvas = createView();
+
+    QStringListModel model;
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("emptyModel", &model);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/emptymodel.qml"));
+    qApp->processEvents();
+
+    QDeclarativePathView *pathview = qobject_cast<QDeclarativePathView*>(canvas->rootObject());
+    QVERIFY(pathview != 0);
+
+    QCOMPARE(pathview->offset(), qreal(0.0));
+
+    delete canvas;
+}
+
 
 QDeclarativeView *tst_QDeclarativePathView::createView()
 {

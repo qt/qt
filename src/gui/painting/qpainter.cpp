@@ -702,9 +702,9 @@ void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
 
         skip = false;
 
-        QBrush penBrush = s->pen.brush();
-        Qt::BrushStyle brushStyle = s->brush.style();
-        Qt::BrushStyle penBrushStyle = penBrush.style();
+        QBrush penBrush = (qpen_style(s->pen) == Qt::NoPen) ? QBrush(Qt::NoBrush) : qpen_brush(s->pen);
+        Qt::BrushStyle brushStyle = qbrush_style(s->brush);
+        Qt::BrushStyle penBrushStyle = qbrush_style(penBrush);
         alpha = (penBrushStyle != Qt::NoBrush
                  && (penBrushStyle < Qt::LinearGradientPattern && penBrush.color().alpha() != 255)
                  && !penBrush.isOpaque())
@@ -2737,6 +2737,8 @@ QRectF QPainter::clipBoundingRect() const
 
          if (info.clipType == QPainterClipInfo::RectClip)
              r = info.rect;
+         else if (info.clipType == QPainterClipInfo::RectFClip)
+             r = info.rectf;
          else if (info.clipType == QPainterClipInfo::RegionClip)
              r = info.region.boundingRect();
          else
@@ -5986,10 +5988,14 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         return;
     }
 
-    if (d->extended->type() == QPaintEngine::OpenGL2 && !staticText_d->untransformedCoordinates) {
+    bool paintEngineSupportsTransformations = d->extended->type() == QPaintEngine::OpenGL2
+                                           || d->extended->type() == QPaintEngine::OpenVG
+                                           || d->extended->type() == QPaintEngine::OpenGL;
+
+    if (paintEngineSupportsTransformations && !staticText_d->untransformedCoordinates) {
         staticText_d->untransformedCoordinates = true;
         staticText_d->needsRelayout = true;
-    } else if (d->extended->type() != QPaintEngine::OpenGL2 && staticText_d->untransformedCoordinates) {
+    } else if (!paintEngineSupportsTransformations && staticText_d->untransformedCoordinates) {
         staticText_d->untransformedCoordinates = false;
         staticText_d->needsRelayout = true;
     }
@@ -7997,7 +8003,7 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
 }
 void qt_format_text(const QFont &fnt, const QRectF &_r,
                     int tf, const QTextOption *option, const QString& str, QRectF *brect,
-                    int tabstops, int *, int tabarraylen,
+                    int tabstops, int *ta, int tabarraylen,
                     QPainter *painter)
 {
 
@@ -8119,6 +8125,13 @@ start_lengthVariant:
 
     if (engine.option.tabStop() < 0 && tabstops > 0)
         engine.option.setTabStop(tabstops);
+
+    if (engine.option.tabs().isEmpty() && ta) {
+        QList<qreal> tabs;
+        for (int i = 0; i < tabarraylen; i++)
+            tabs.append(qreal(ta[i]));
+        engine.option.setTabArray(tabs);
+    }
 
     engine.option.setTextDirection(layout_direction);
     if (tf & Qt::AlignJustify)
@@ -8921,7 +8934,7 @@ QPainterPath QPaintEngineState::clipPath() const
 }
 
 /*!
-    Returns wether clipping is enabled or not in the current paint
+    Returns whether clipping is enabled or not in the current paint
     engine state.
 
     This variable should only be used when the state() returns a
@@ -9151,7 +9164,7 @@ void QPainter::drawPixmapFragments(const PixmapFragment *fragments, int fragment
 {
     Q_D(QPainter);
 
-    if (!d->engine)
+    if (!d->engine || pixmap.isNull())
         return;
 
 #ifndef QT_NO_DEBUG

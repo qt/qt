@@ -214,22 +214,23 @@ void QSmoothedAnimation::init()
     }
 
     bool hasReversed = trackVelocity != 0. &&
-                      ((trackVelocity > 0) == ((initialValue - to) > 0));
+                      ((!invert) == ((initialValue - to) > 0));
 
     if (hasReversed) {
         switch (reversingMode) {
             default:
             case QDeclarativeSmoothedAnimation::Eased:
+                initialVelocity = -trackVelocity;
                 break;
             case QDeclarativeSmoothedAnimation::Sync:
                 QDeclarativePropertyPrivate::write(target, to,
                                                    QDeclarativePropertyPrivate::BypassInterceptor
                                                    | QDeclarativePropertyPrivate::DontRemoveBinding);
+                trackVelocity = 0;
                 stop();
                 return;
             case QDeclarativeSmoothedAnimation::Immediate:
                 initialVelocity = 0;
-                delayedStop();
                 break;
         }
     }
@@ -249,6 +250,7 @@ void QSmoothedAnimation::init()
 
 /*!
     \qmlclass SmoothedAnimation QDeclarativeSmoothedAnimation
+    \ingroup qml-animation-transition
     \since 4.7
     \inherits NumberAnimation
     \brief The SmoothedAnimation element allows a property to smoothly track a value.
@@ -310,6 +312,17 @@ QDeclarativeSmoothedAnimationPrivate::QDeclarativeSmoothedAnimationPrivate()
     QDeclarative_setParent_noEvent(anim, q);
 }
 
+void QDeclarativeSmoothedAnimationPrivate::updateRunningAnimations()
+{
+    foreach(QSmoothedAnimation* ease, activeAnimations.values()){
+        ease->maximumEasingTime = anim->maximumEasingTime;
+        ease->reversingMode = anim->reversingMode;
+        ease->velocity = anim->velocity;
+        ease->userDuration = anim->userDuration;
+        ease->init();
+    }
+}
+
 QAbstractAnimation* QDeclarativeSmoothedAnimation::qtAnimation()
 {
     Q_D(QDeclarativeSmoothedAnimation);
@@ -339,7 +352,6 @@ void QDeclarativeSmoothedAnimation::transition(QDeclarativeStateActions &actions
             ease = d->activeAnimations.value((*d->actions)[i].property);
             needsRestart = true;
         }
-
         ease->target = (*d->actions)[i].property;
         ease->to = (*d->actions)[i].toValue.toReal();
 
@@ -393,6 +405,7 @@ void QDeclarativeSmoothedAnimation::setReversingMode(ReversingMode m)
 
     d->anim->reversingMode = m;
     emit reversingModeChanged();
+    d->updateRunningAnimations();
 }
 
 /*!
@@ -401,6 +414,9 @@ void QDeclarativeSmoothedAnimation::setReversingMode(ReversingMode m)
     This property holds the animation duration, in msecs, used when tracking the source.
 
     Setting this to -1 (the default) disables the duration value.
+
+    If the velocity value and the duration value are both enabled, then the animation will
+    use whichever gives the shorter duration.
 */
 int QDeclarativeSmoothedAnimation::duration() const
 {
@@ -413,7 +429,10 @@ void QDeclarativeSmoothedAnimation::setDuration(int duration)
     Q_D(QDeclarativeSmoothedAnimation);
     if (duration != -1)
         QDeclarativeNumberAnimation::setDuration(duration);
+    if(duration == d->anim->userDuration)
+        return;
     d->anim->userDuration = duration;
+    d->updateRunningAnimations();
 }
 
 qreal QDeclarativeSmoothedAnimation::velocity() const
@@ -430,6 +449,9 @@ qreal QDeclarativeSmoothedAnimation::velocity() const
     The default velocity of SmoothedAnimation is 200 units/second.
 
     Setting this to -1 disables the velocity value.
+
+    If the velocity value and the duration value are both enabled, then the animation will
+    use whichever gives the shorter duration.
 */
 void QDeclarativeSmoothedAnimation::setVelocity(qreal v)
 {
@@ -439,12 +461,13 @@ void QDeclarativeSmoothedAnimation::setVelocity(qreal v)
 
     d->anim->velocity = v;
     emit velocityChanged();
+    d->updateRunningAnimations();
 }
 
 /*!
     \qmlproperty int SmoothedAnimation::maximumEasingTime
 
-    This property specifies the maximum time, in msecs, an "eases" during the follow should take.
+    This property specifies the maximum time, in msecs, any "eases" during the follow should take.
     Setting this property causes the velocity to "level out" after at a time.  Setting
     a negative value reverts to the normal mode of easing over the entire animation
     duration.
@@ -460,8 +483,11 @@ int QDeclarativeSmoothedAnimation::maximumEasingTime() const
 void QDeclarativeSmoothedAnimation::setMaximumEasingTime(int v)
 {
     Q_D(QDeclarativeSmoothedAnimation);
+    if(v == d->anim->maximumEasingTime)
+        return;
     d->anim->maximumEasingTime = v;
     emit maximumEasingTimeChanged();
+    d->updateRunningAnimations();
 }
 
 QT_END_NAMESPACE

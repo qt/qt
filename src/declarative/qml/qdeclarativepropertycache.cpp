@@ -134,8 +134,9 @@ QDeclarativePropertyCache::~QDeclarativePropertyCache()
 
 void QDeclarativePropertyCache::clear()
 {
-    for (int ii = 0; ii < indexCache.count(); ++ii) 
-        indexCache.at(ii)->release();
+    for (int ii = 0; ii < indexCache.count(); ++ii) {
+        if (indexCache.at(ii)) indexCache.at(ii)->release();
+    }
 
     for (StringCache::ConstIterator iter = stringCache.begin(); 
             iter != stringCache.end(); ++iter)
@@ -156,14 +157,27 @@ QDeclarativePropertyCache::Data QDeclarativePropertyCache::create(const QMetaObj
     Q_ASSERT(metaObject);
 
     QDeclarativePropertyCache::Data rv;
-    int idx = metaObject->indexOfProperty(property.toUtf8());
-    if (idx != -1) {
-        rv.load(metaObject->property(idx));
-        return rv;
+    {
+        const QMetaObject *cmo = metaObject;
+        while (cmo) {
+            int idx = metaObject->indexOfProperty(property.toUtf8());
+            if (idx != -1) {
+                QMetaProperty p = metaObject->property(idx);
+                if (p.isScriptable()) {
+                    rv.load(metaObject->property(idx));
+                    return rv;
+                } else {
+                    while (cmo && cmo->propertyOffset() >= idx)
+                        cmo = cmo->superClass();
+                }
+            } else {
+                cmo = 0;
+            }
+        }
     }
 
     int methodCount = metaObject->methodCount();
-    for (int ii = methodCount - 1; ii >= 2; --ii) { // >=2 to block the destroyed signal
+    for (int ii = methodCount - 1; ii >= 3; --ii) { // >=3 to block the destroyed signal and deleteLater() slot
         QMetaMethod m = metaObject->method(ii);
         if (m.access() == QMetaMethod::Private)
             continue;
@@ -189,8 +203,9 @@ QDeclarativePropertyCache *QDeclarativePropertyCache::copy() const
     cache->stringCache = stringCache;
     cache->identifierCache = identifierCache;
 
-    for (int ii = 0; ii < indexCache.count(); ++ii)
-        indexCache.at(ii)->addref();
+    for (int ii = 0; ii < indexCache.count(); ++ii) {
+        if (indexCache.at(ii)) indexCache.at(ii)->addref();
+    }
     for (StringCache::ConstIterator iter = stringCache.begin(); iter != stringCache.end(); ++iter)
         (*iter)->addref();
     for (IdentifierCache::ConstIterator iter = identifierCache.begin(); iter != identifierCache.end(); ++iter)
@@ -210,6 +225,9 @@ void QDeclarativePropertyCache::append(QDeclarativeEngine *engine, const QMetaOb
     indexCache.resize(propCount);
     for (int ii = propOffset; ii < propCount; ++ii) {
         QMetaProperty p = metaObject->property(ii);
+        if (!p.isScriptable()) 
+            continue;
+        
         QString propName = QString::fromUtf8(p.name());
 
         RData *data = new RData;
@@ -275,6 +293,10 @@ void QDeclarativePropertyCache::update(QDeclarativeEngine *engine, const QMetaOb
     indexCache.resize(propCount);
     for (int ii = propCount - 1; ii >= 0; --ii) {
         QMetaProperty p = metaObject->property(ii);
+        if (!p.isScriptable()) {
+            indexCache[ii] = 0;
+            continue;
+        }
         QString propName = QString::fromUtf8(p.name());
 
         RData *data = new RData;
@@ -294,7 +316,7 @@ void QDeclarativePropertyCache::update(QDeclarativeEngine *engine, const QMetaOb
     }
 
     int methodCount = metaObject->methodCount();
-    for (int ii = methodCount - 1; ii >= 2; --ii) { // >=2 to block the destroyed signal
+    for (int ii = methodCount - 1; ii >= 3; --ii) { // >=3 to block the destroyed signal and deleteLater() slot
         QMetaMethod m = metaObject->method(ii);
         if (m.access() == QMetaMethod::Private)
             continue;

@@ -42,9 +42,15 @@
 #include "globalactions.h"
 
 #include "centralwidget.h"
+#include "helpviewer.h"
 #include "tracer.h"
 
 #include <QtGui/QAction>
+#include <QtGui/QMenu>
+
+#if !defined(QT_NO_WEBKIT)
+#include <QtWebKit/QWebHistory>
+#endif
 
 GlobalActions *GlobalActions::instance(QObject *parent)
 {
@@ -81,6 +87,8 @@ GlobalActions::GlobalActions(QObject *parent) : QObject(parent)
     m_nextAction->setIcon(QIcon(resourcePath + QLatin1String("/next.png")));
     connect(m_nextAction, SIGNAL(triggered()), centralWidget, SLOT(forward()));
     m_actionList << m_nextAction;
+
+    setupNavigationMenus(m_backAction, m_nextAction, centralWidget);
 
     m_homeAction = new QAction(tr("&Home"), parent);
     m_homeAction->setShortcut(tr("ALT+Home"));
@@ -158,6 +166,81 @@ void GlobalActions::setCopyAvailable(bool available)
 {
     TRACE_OBJ
     m_copyAction->setEnabled(available);
+}
+
+#if !defined(QT_NO_WEBKIT)
+
+void GlobalActions::slotAboutToShowBackMenu()
+{
+    TRACE_OBJ
+    m_backMenu->clear();
+    if (QWebHistory *history = CentralWidget::instance()->currentHelpViewer()->history()) {
+        const int currentItemIndex = history->currentItemIndex();
+        QList<QWebHistoryItem> items = history->backItems(history->count());
+        for (int i = items.count() - 1; i >= 0; --i) {
+            QAction *action = new QAction(this);
+            action->setText(items.at(i).title());
+            action->setData(-1 * (currentItemIndex - i));
+            m_backMenu->addAction(action);
+        }
+    }
+}
+
+void GlobalActions::slotAboutToShowNextMenu()
+{
+    TRACE_OBJ
+    m_nextMenu->clear();
+    if (QWebHistory *history = CentralWidget::instance()->currentHelpViewer()->history()) {
+        const int count = history->count();
+        QList<QWebHistoryItem> items = history->forwardItems(count);
+        for (int i = 0; i < items.count(); ++i) {
+            QAction *action = new QAction(this);
+            action->setData(count - i);
+            action->setText(items.at(i).title());
+            m_nextMenu->addAction(action);
+        }
+    }
+}
+
+void GlobalActions::slotOpenActionUrl(QAction *action)
+{
+    TRACE_OBJ
+    if (HelpViewer* viewer = CentralWidget::instance()->currentHelpViewer()) {
+        const int offset = action->data().toInt();
+        QWebHistory *history = viewer->history();
+        if (offset > 0) {
+            history->goToItem(history->forwardItems(history->count()
+                - offset + 1).back());  // forward
+        } else if (offset < 0) {
+            history->goToItem(history->backItems(-1 * offset).first()); // back
+        }
+    }
+}
+
+#endif
+
+void GlobalActions::setupNavigationMenus(QAction *back, QAction *next,
+    QWidget *parent)
+{
+#if !defined(QT_NO_WEBKIT)
+    m_backMenu = new QMenu(parent);
+    connect(m_backMenu, SIGNAL(aboutToShow()), this,
+        SLOT(slotAboutToShowBackMenu()));
+    connect(m_backMenu, SIGNAL(triggered(QAction*)), this,
+        SLOT(slotOpenActionUrl(QAction*)));
+    back->setMenu(m_backMenu);
+
+    m_nextMenu = new QMenu(parent);
+    connect(m_nextMenu, SIGNAL(aboutToShow()), this,
+        SLOT(slotAboutToShowNextMenu()));
+    connect(m_nextMenu, SIGNAL(triggered(QAction*)), this,
+        SLOT(slotOpenActionUrl(QAction*)));
+    next->setMenu(m_nextMenu);
+#else
+    Q_UNUSED(back)
+    Q_UNUSED(next)
+    Q_UNUSED(parent)
+#endif
 }
 
 GlobalActions *GlobalActions::m_instance = 0;

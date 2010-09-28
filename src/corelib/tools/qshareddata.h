@@ -95,9 +95,10 @@ public:
         if (o.d != d) {
             if (o.d)
                 o.d->ref.ref();
-            if (d && !d->ref.deref())
-                delete d;
+            T *old = d;
             d = o.d;
+            if (old && !old->ref.deref())
+                delete old;
         }
         return *this;
     }
@@ -105,12 +106,17 @@ public:
         if (o != d) {
             if (o)
                 o->ref.ref();
-            if (d && !d->ref.deref())
-                delete d;
+            T *old = d;
             d = o;
+            if (old && !old->ref.deref())
+                delete old;
         }
         return *this;
     }
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QSharedDataPointer<T> &operator=(QSharedDataPointer<T> &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
 
     inline bool operator!() const { return !d; }
 
@@ -172,9 +178,10 @@ public:
         if (o.d != d) {
             if (o.d)
                 o.d->ref.ref();
-            if (d && !d->ref.deref())
-                delete d;
+            T *old = d;
             d = o.d;
+            if (old && !old->ref.deref())
+                delete old;
         }
         return *this;
     }
@@ -182,12 +189,17 @@ public:
         if (o != d) {
             if (o)
                 o->ref.ref();
-            if (d && !d->ref.deref())
-                delete d;
+            T *old = d;
             d = o;
+            if (old && !old->ref.deref())
+                delete old;
         }
         return *this;
     }
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QSharedDataPointer<T> &operator=(QSharedDataPointer<T> &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
 
     inline bool operator!() const { return !d; }
 

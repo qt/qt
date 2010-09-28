@@ -43,6 +43,7 @@
 #define QDECLARATIVEGRIDVIEW_H
 
 #include "private/qdeclarativeflickable_p.h"
+#include "private/qdeclarativeguard_p.h"
 
 QT_BEGIN_HEADER
 
@@ -220,8 +221,14 @@ public:
         : QObject(parent), m_view(0), m_isCurrent(false), m_delayRemove(false) {}
     ~QDeclarativeGridViewAttached() {}
 
-    Q_PROPERTY(QDeclarativeGridView *view READ view CONSTANT)
+    Q_PROPERTY(QDeclarativeGridView *view READ view NOTIFY viewChanged)
     QDeclarativeGridView *view() { return m_view; }
+    void setView(QDeclarativeGridView *view) {
+        if (view != m_view) {
+            m_view = view;
+            emit viewChanged();
+        }
+    }
 
     Q_PROPERTY(bool isCurrentItem READ isCurrentItem NOTIFY currentItemChanged)
     bool isCurrentItem() const { return m_isCurrent; }
@@ -249,9 +256,10 @@ Q_SIGNALS:
     void delayRemoveChanged();
     void add();
     void remove();
+    void viewChanged();
 
 public:
-    QDeclarativeGridView *m_view;
+    QDeclarativeGuard<QDeclarativeGridView> m_view;
     bool m_isCurrent : 1;
     bool m_delayRemove : 1;
 };

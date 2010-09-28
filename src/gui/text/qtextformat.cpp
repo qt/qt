@@ -2227,6 +2227,44 @@ QTextListFormat::QTextListFormat(const QTextFormat &fmt)
     \sa setIndent()
 */
 
+/*!
+    \fn void QTextListFormat::setNumberPrefix(const QString &numberPrefix)
+    \since 4.8
+
+    Sets the list format's number prefix. This can be used with all
+    sorted list types. It does not have any effect on unsorted list types.
+
+    \sa numberPrefix()
+*/
+
+/*!
+    \fn int QTextListFormat::numberPrefix() const
+    \since 4.8
+
+    Returns the list format's number prefix.
+
+    \sa setNumberPrefix()
+*/
+
+/*!
+    \fn void QTextListFormat::setNumberSuffix(const QString &numberSuffix)
+    \since 4.8
+
+    Sets the list format's number suffix. This can be used with all
+    sorted list types. It does not have any effect on unsorted list types.
+    The default suffix is ".".
+
+    \sa numberSuffix()
+*/
+
+/*!
+    \fn int QTextListFormat::numberSuffix() const
+    \since 4.8
+
+    Returns the list format's number suffix.
+
+    \sa setNumberSuffix()
+*/
 
 /*!
     \class QTextFrameFormat

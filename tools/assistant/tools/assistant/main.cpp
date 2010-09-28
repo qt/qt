@@ -316,6 +316,7 @@ int main(int argc, char *argv[])
     TRACE_OBJ
     QApplication a(argc, argv, useGui(argc, argv));
     a.addLibraryPath(a.applicationDirPath() + QLatin1String("/plugins"));
+    setupTranslations();
 
     // Parse arguments.
     CmdLineParser cmd(a.arguments());
@@ -355,7 +356,7 @@ int main(int argc, char *argv[])
     QHelpEngineCore cachedCollection(cachedCollectionFile);
     if (!cachedCollection.setupData()) {
         cmd.showMessage(QCoreApplication::translate("Assistant",
-                            "Error reading collection file '%1': %2").
+                            "Error reading collection file '%1': %2.").
                         arg(cachedCollectionFile).
                         arg(cachedCollection.error()), true);
         return EXIT_FAILURE;
@@ -418,8 +419,6 @@ int main(int argc, char *argv[])
             collection->setCurrentFilter(cmd.currentFilter());
         cachedCollection.setCurrentFilter(cmd.currentFilter());
     }
-
-    setupTranslations();
 
     /*
      * We need to be careful here: The main window has to be deleted before

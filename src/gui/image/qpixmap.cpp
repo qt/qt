@@ -579,7 +579,7 @@ int QPixmap::height() const
 */
 QSize QPixmap::size() const
 {
-    return data ? QSize(data->width(), data->height()) : QSize();
+    return data ? QSize(data->width(), data->height()) : QSize(0, 0);
 }
 
 /*!
@@ -830,14 +830,16 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
         return false;
 
     QFileInfo info(fileName);
-    if (!info.exists())
-        return false;
-
     QString key = QLatin1Literal("qt_pixmap")
                   % info.absoluteFilePath()
                   % HexString<uint>(info.lastModified().toTime_t())
                   % HexString<quint64>(info.size())
                   % HexString<uint>(data ? data->pixelType() : QPixmapData::PixmapType);
+
+    // Note: If no extension is provided, we try to match the 
+    // file against known plugin extensions
+    if (!info.completeSuffix().isEmpty() && !info.exists())
+        return false;
 
     if (QPixmapCache::find(key, *this))
         return true;
@@ -1168,15 +1170,24 @@ QPixmap QPixmap::grabWidget(QWidget * widget, const QRect &rect)
 
     \warning This function is X11 specific; using it is non-portable.
 
+    \warning Since 4.8, pixmaps do not have an X11 handle unless
+    created with \l {QPixmap::}{fromX11Pixmap()}, or if the native
+    graphics system is explicitly enabled.
+
     \sa detach()
+    \sa QApplication::setGraphicsSystem()
 */
 
 Qt::HANDLE QPixmap::handle() const
 {
 #if defined(Q_WS_X11)
     const QPixmapData *pd = pixmapData();
-    if (pd && pd->classId() == QPixmapData::X11Class)
-        return static_cast<const QX11PixmapData*>(pd)->handle();
+    if (pd) {
+        if (pd->classId() == QPixmapData::X11Class)
+            return static_cast<const QX11PixmapData*>(pd)->handle();
+        else
+            qWarning("QPixmap::handle(): Pixmap is not an X11 class pixmap");
+    }
 #endif
     return 0;
 }

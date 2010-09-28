@@ -250,6 +250,7 @@ bool QThreadPoolPrivate::tooManyThreadsActive() const
 void QThreadPoolPrivate::startThread(QRunnable *runnable)
 {
     QScopedPointer <QThreadPoolThread> thread(new QThreadPoolThread(this));
+    thread->setObjectName(QLatin1String("Thread (pooled)"));
     allThreads.insert(thread.data());
     ++activeThreads;
 

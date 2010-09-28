@@ -45,16 +45,19 @@ for your platform from the following list.
 \brief How to install Qt on platforms with X11.
 \previouspage Installation
 
-\note Qt for X11 has some requirements that are given in more detail
-in the \l{Qt for X11 Requirements} document.
+\tableofcontents
 
-\list 1
-\o  If you have the commercial edition of Qt, install your license
+    Qt for X11 has some requirements that are given in more detail 
+    in the \l{Qt for X11 Requirements} document.
+
+\section1 Step 1: Installing the License File (commercial editions only)
+    If you have the commercial edition of Qt, install your license
     file as \c{$HOME/.qt-license}.
 
     For the open source version you do not need a license file.
 
-\o  Unpack the archive if you have not done so already. For example,
+\section1 Step 2: Unpacking the Archive
+    Unpack the archive if you have not done so already. For example,
     if you have the \c{qt-everywhere-opensource-src-%VERSION%.tar.gz}
     package, type the following commands at a command line prompt:
 
@@ -64,7 +67,7 @@ in the \l{Qt for X11 Requirements} document.
     containing the files from the archive. We only support the GNU version of
     the tar archiving utility. Note that on some systems it is called gtar.
 
-\o  Building
+\section1 Step 3: Building the Library
 
     To configure the Qt library for your machine type, run the
     \c{./configure} script in the package directory.
@@ -84,12 +87,10 @@ in the \l{Qt for X11 Requirements} document.
 
     If \c{-prefix} is outside the build directory, you need to install
     the library, demos, examples, tools, and tutorials in the appropriate
-    place. To do this, type:
+    place. To do this (as root if necessary), type:
 
 \snippet doc/src/snippets/code/doc_src_installation.qdoc 3
-
-    , as root if necessary.
-
+    
     Note that on some systems the make utility is named differently,
     e.g. gmake. The configure script tells you which make utility to
     use.
@@ -99,7 +100,7 @@ in the \l{Qt for X11 Requirements} document.
     removed by entering the build directory and typing \c{make confclean}
     before running \c configure again.
 
-\o  Environment variables
+\section1 Step 4: Set the Environment Variables
 
     In order to use Qt, some environment variables needs to be
     extended.
@@ -125,7 +126,9 @@ in the \l{Qt for X11 Requirements} document.
     \c{/usr/local/Trolltech/Qt-%VERSION%/lib}. On Linux with GCC this step
     is not needed.
 
-\o  That's all. Qt is now installed.
+\bold {That's all. Qt is now installed.}
+
+\section1 Qt Demos and Examples
 
     If you are new to Qt, we suggest that you take a look at the demos
     and examples to see Qt in action. Run the Qt Examples and Demos
@@ -141,7 +144,6 @@ in the \l{Qt for X11 Requirements} document.
     \o \l{Developer Zone}
     \o \l{Deploying Qt Applications}
     \endlist
-\endlist
 
     We hope you will enjoy using Qt. Good luck!
 
@@ -154,24 +156,22 @@ in the \l{Qt for X11 Requirements} document.
 \brief How to install Qt on Windows.
 \previouspage Installation
 
-\note Qt for Windows has some requirements that are given in more detail
-in the \l{Qt for Windows Requirements} document.
+\tableofcontents
 
-\table
-\row \o \bold{Notes:}
-\list
-\o If you have obtained a binary package for this platform,
-consult the installation instructions provided instead of the ones in
-this document.
-\o \l{Open Source Versions of Qt} is not officially supported for use with
-any version of Visual Studio. Integration with Visual Studio is available
-as part of the \l{Qt Commercial Edition}.
+    Qt for Windows has some requirements that are given in more detail
+    in the \l{Qt for Windows Requirements} document.
 
-\endlist
-\endtable
+    If you have obtained a binary package for this platform,
+    consult the installation instructions provided instead of the ones in
+    this document.
 
-\list 1
-\o  If you have the commercial edition of Qt, copy the license file
+    Open Source Versions of Qt is not officially supported for use with
+    any version of Visual Studio. Integration with Visual Studio is available
+    as part of the \l{Qt Commercial Edition}.
+
+\section1 Step 1: Install the License File (commercial editions only)
+
+    If you have the commercial edition of Qt, copy the license file
     from your account on dist.trolltech.com into your home directory
     (this may be known as the \c userprofile environment variable) and
     rename it to \c{.qt-license}. This renaming process must be done
@@ -181,13 +181,15 @@ as part of the \l{Qt Commercial Edition}.
 
     For the open source version you do not need a license file.
 
-\o  Uncompress the files into the directory you want Qt installed;
+\section1 Step 2: Unpack the Archive
+
+    Uncompress the files into the directory you want Qt installed;
     e.g. \c{C:\Qt\%VERSION%}.
 
     \note The install path must not contain any spaces or Windows specific
     file system characters.
 
-\o Environment variables
+\section1 Step 3: Set the Environment variables
 
     In order to build and use Qt, the \c PATH environment variable needs to be
     extended:
@@ -203,12 +205,13 @@ as part of the \l{Qt Commercial Edition}.
     other build tools are listed in the \c PATH variable. This will depend
     on your choice of software development environment.
 
-    \bold{Note}: If you don't use the configured shells, which is
+    \note If you don't use the configured shells, which is
     available in the application menu, in the \l{Open Source Versions of Qt},
     \c configure requires that \c sh.exe is not in the path
     or that it is run from \c msys. This also goes for mingw32-make.
 
-\o Building
+\section1 Step 4: Build the Qt Library
+
 
     To configure the Qt library for your machine, type the following command
     in a \bold{Visual Studio} command prompt:
@@ -243,7 +246,9 @@ as part of the \l{Qt Commercial Edition}.
     removed by entering the build directory and typing \c{nmake distclean}
     before running \c configure again.
 
-\o  That's all. Qt is now installed.
+\bold{That's all. Qt is now installed.}
+
+\section1 Qt Demos and Examples
 
     If you are new to Qt, we suggest that you take a look at the demos
     and examples to see Qt in action. Run the Qt Examples and Demos
@@ -259,8 +264,6 @@ as part of the \l{Qt Commercial Edition}.
     \o \l{Deploying Qt Applications}
     \endlist
 
-\endlist
-
     We hope you will enjoy using Qt. Good luck!
 
 */
@@ -270,11 +273,14 @@ as part of the \l{Qt Commercial Edition}.
 \ingroup installation
 \brief How to install Qt on Mac OS X.
 \previouspage Installation
+\tableofcontents
 
-\note Qt for Mac OS X has some requirements that are given in more detail
+Qt for Mac OS X has some requirements that are given in more detail
 in the \l{Qt for Mac OS X Requirements} document.
 
-\bold{Note for the binary package}: If you have the binary package, simply double-click on the Qt.mpkg
+The following instructions describe how to install Qt from the source package.
+
+For the binary package, simply double-click on the Qt.mpkg
 and follow the instructions to install Qt. You can later run the \c{uninstall-qt.py}
 script to uninstall the binary package. The script is located in /Developer/Tools and
 must be run as root.
@@ -283,15 +289,13 @@ must be run as root.
 \l{http://openradar.appspot.com/7214991} 
 {iPhone simulator conflicts with the package installer}.
 
-The following instructions describe how to install Qt from the source package.
-
-\list 1
-\o  If you have the commercial edition of Qt, install your license
+\section1 Step 1: Install the License File (commercial editions only)
+    If you have the commercial edition of Qt, install your license
     file as \c{$HOME/.qt-license}.
 
     For the open source version you do not need a license file.
 
-\o  Unpack the archive if you have not done so already. For example,
+    Unpack the archive if you have not done so already. For example,
     if you have the \c{qt-everywhere-opensource-src-%VERSION%.tar.gz}
     package, type the following commands at a command line prompt:
 
@@ -300,7 +304,7 @@ The following instructions describe how to install Qt from the source package.
     This creates the directory \c{/tmp/qt-everywhere-opensource-src-%VERSION%}
     containing the files from the archive.
 
-\o  Building
+\section1 Step 2:  Build the Qt Library
 
     To configure the Qt library for your machine type, run the
     \c{./configure} script in the package directory.
@@ -335,18 +339,18 @@ The following instructions describe how to install Qt from the source package.
 
 \snippet doc/src/snippets/code/doc_src_installation.qdoc 14
 
-    as root, if neccessary (note that this requires that you have administrator access
-    to your machine).
+    This command requires that you have administrator access
+    on your machine.
 
-    There is a potential race condition when running make install with multiple
+    \note There is a potential race condition when running make install with multiple
     jobs. It is best to only run one make job (-j1) for the install.
 
-    \bold{Note:} If you later need to reconfigure and rebuild Qt from the
+    If you later need to reconfigure and rebuild Qt from the
     same location, ensure that all traces of the previous configuration are
     removed by entering the build directory and typing \c{make confclean}
     before running \c configure again.
 
-\o  Environment variables
+\section1 Step 3: Set the Environment variables
 
     In order to use Qt, some environment variables need to be
     extended.
@@ -366,8 +370,9 @@ The following instructions describe how to install Qt from the source package.
     If you use a different shell, please modify your environment
     variables accordingly.
 
-\o  That's all. Qt is now installed.
+\bold {That's all. Qt is now installed.}
 
+\section1 Qt Demos and Examples
     If you are new to Qt, we suggest that you take a look at the demos
     and examples to see Qt in action. Run the Qt Examples and Demos
     either by typing \c qtdemo on the command line or through the
@@ -381,7 +386,6 @@ The following instructions describe how to install Qt from the source package.
     \o \l{Developer Zone}
     \o \l{Deploying Qt Applications}
     \endlist
-\endlist
 
     We hope you will enjoy using Qt. Good luck!
 
@@ -393,96 +397,96 @@ The following instructions describe how to install Qt from the source package.
 \ingroup qtce
 \brief How to install Qt on Windows CE.
 \previouspage Installation
+\tableofcontents
 
-\note Qt for Windows CE has some requirements that are given in more detail
+Qt for Windows CE has some requirements that are given in more detail
 in the \l{Qt for Windows CE Requirements} document.
 
-\list 1
-    \o  Uncompress the files into the directory you want to install Qt into;
-        e.g., \c{C:\Qt\%VERSION%}.
+\section1 Step 1: Install the License File (commercial editions only)
+    Uncompress the files into the directory you want to install Qt into;
+    e.g., \c{C:\Qt\%VERSION%}.
 
-        \note The install path must not contain any spaces.
+    \note The install path must not contain any spaces.
 
-    \o  Environment variables
+\section1 Step 2: Set the Environment variables
 
-        In order to build and use Qt, the \c PATH environment variable needs
-        to be extended:
+    In order to build and use Qt, the \c PATH environment variable needs
+    to be extended:
 
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 18
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 18
+    This is done by adding \c{c:\Qt\%VERSION%\bin} to the \c PATH variable.
 
-        This is done by adding \c{c:\Qt\%VERSION%\bin} to the \c PATH variable.
+    For newer versions of Windows, \c PATH can be extended through
+    "Control Panel->System->Advanced->Environment variables" and for
+    older versions by editing \c{c:\autoexec.bat}.
 
-        For newer versions of Windows, \c PATH can be extended through
-        "Control Panel->System->Advanced->Environment variables" and for
-        older versions by editing \c{c:\autoexec.bat}.
+    Make sure the enviroment variables for your compiler are set.
+    Visual Studio includes \c{vcvars32.bat} for that purpose - or simply
+    use the "Visual Studio Command Prompt" from the Start menu.
 
-        Make sure the enviroment variables for your compiler are set.
-        Visual Studio includes \c{vcvars32.bat} for that purpose - or simply
-        use the "Visual Studio Command Prompt" from the Start menu.
+\section1 Step 3: Configure Qt
 
-    \o  Configuring Qt
+    To configure Qt for Windows Mobile 5.0 for Pocket PC, type the
+    following:
 
-        To configure Qt for Windows Mobile 5.0 for Pocket PC, type the
-        following:
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 19
 
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 19
+    If you want to configure Qt for another platform or with other
+    options, type \c{configure -help} to get a list of all available
+    options. See the \c README file for the list of supported platforms.
 
-        If you want to configure Qt for another platform or with other
-        options, type \c{configure -help} to get a list of all available
-        options. See the \c README file for the list of supported platforms.
+\section1 Step 4: Build Qt Library
 
+    Now, to build Qt you first have to update your \c PATH, \c INCLUDE
+    and \c LIB paths to point to the correct resources for your target
+    platforms. For a default installation of the Windows Mobile 5.0
+    Pocket PC SDK, this is done with the following commands:
 
-    \o Building Qt
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 20
 
-        Now, to build Qt you first have to update your \c PATH, \c INCLUDE
-        and \c LIB paths to point to the correct resources for your target
-        platforms. For a default installation of the Windows Mobile 5.0
-        Pocket PC SDK, this is done with the following commands:
+    We provide a convenience script for this purpose, called \c{setcepaths}.
+    Simply type:
 
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 20
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 21
 
-        We provide a convenience script for this purpose, called \c{setcepaths}.
-        Simply type:
+    Then to build Qt type:
 
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 21
+    \snippet doc/src/snippets/code/doc_src_installation.qdoc 22
 
-        Then to build Qt type:
+\bold{That's all. Qt is now installed.}
 
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 22
+\section1 Qt Demos and Examples
 
-        \o  That's all. Qt is now installed.
+    To get started with Qt, you can check out the examples found in the
+    \c{examples} directory of your Qt installation. The documentation can
+    be found in \c{doc\html}.
 
-        To get started with Qt, you can check out the examples found in the
-        \c{examples} directory of your Qt installation. The documentation can
-        be found in \c{doc\html}.
+    \note If you reconfigure Qt for a different platform,
+    make sure you start with a new clean console to get rid of the
+    platform dependent include directories.
 
-        \bold{Remember:} If you reconfigure Qt for a different platform,
-        make sure you start with a new clean console to get rid of the
-        platform dependent include directories.
+    The links below provide further information for using Qt:
+    \list
+    \o \l{How to Learn Qt}
+    \o \l{Tutorials}
+    \o \l{Developer Zone}
+    \o \l{Deploying Qt Applications}
+    \endlist
 
-        The links below provide further information for using Qt:
-        \list
-        \o \l{How to Learn Qt}
-        \o \l{Tutorials}
-        \o \l{Developer Zone}
-        \o \l{Deploying Qt Applications}
-        \endlist
+    You might also want to try the following Windows CE specific links:
+    \list
+    \o \l{Windows CE - Introduction to using Qt}
+    \o \l{Windows CE - Working with Custom SDKs}
+    \o \l{Windows CE - Using shadow builds}
+    \o \l{Windows CE - Signing}
+    \endlist
 
-        You might also want to try the following Windows CE specific links:
-        \list
-        \o \l{Windows CE - Introduction to using Qt}
-        \o \l{Windows CE - Working with Custom SDKs}
-        \o \l{Windows CE - Using shadow builds}
-        \o \l{Windows CE - Signing}
-        \endlist
-
-        Information on feature and performance tuning for embedded builds can
-        be found on the following pages:
-        \list
-        \o \l{Fine-Tuning Features in Qt}
-        \o \l{Qt Performance Tuning}
-        \endlist
-\endlist
+    Information on feature and performance tuning for embedded builds can
+    be found on the following pages:
+    \list
+    \o \l{Fine-Tuning Features in Qt}
+    \o \l{Qt Performance Tuning}
+    \endlist
 
     We hope you will enjoy using Qt. Good luck!
 */
@@ -491,20 +495,22 @@ in the \l{Qt for Windows CE Requirements} document.
 \title Installing Qt on the Symbian platform from a Binary Package
 \ingroup qtsymbian
 \brief How to install Qt on the Symbian platform from a binary package.
+\previouspage Installation
 
-\note Qt for the Symbian platform has some requirements that are given in more detail
+\tableofcontents
+
+Qt for the Symbian platform has some requirements that are given in more detail
 in the \l{Qt for the Symbian platform Requirements} document.
 
-\list 1
 
-    \o  Install Qt
+\section1 Step 1: Install Qt
 
         Run \c{qt-symbian-opensource-%VERSION%.exe} and follow the instructions.
 
         \note Qt must be installed on the same drive as the Symbian SDK you are
         using, and the install path must not contain any spaces.
 
-    \o  Install Qt into a device
+\section1 Step 2: Install Qt into a device
 
         To run Qt applications on a device, \c{qt_installer.sis} found
         in the Qt installation directory must be first installed into the device.
@@ -516,7 +522,7 @@ in the \l{Qt for the Symbian platform Requirements} document.
         on the \c{qt_installer.sis} file, select "Install with Nokia Application
         Installer" and follow the instructions.
 
-    \o  Running Qt demos
+\section1 Running Qt demos
 
         We've included a subset of the Qt demos in this package for you
         to try out. An excellent starting point is the "fluidlauncher"
@@ -540,9 +546,8 @@ in the \l{Qt for the Symbian platform Requirements} document.
 Symbian platform,
         see \l{The Symbian platform - Introduction to Qt}.
 
-    We hope you will enjoy using Qt.
+\bold{We hope you will enjoy using Qt.}
 
-\endlist
 
 */
 /*! \page install-Symbian.html
@@ -550,140 +555,133 @@ Symbian platform,
 \ingroup installation
 \ingroup qtsymbian
 \brief How to install Qt on the Symbian platform.
+\previouspage Installation
+\tableofcontents
 
-\note Qt for the Symbian platform has some requirements that are given in more detail
+Qt for the Symbian platform has some requirements that are given in more detail
 in the \l{Qt for the Symbian platform Requirements} document.
 
-\note \bold {This document describes how to install and configure Qt for
-the Symbian platform from scratch.
-If you are using pre-built binaries, follow the instructions given in the
-\l{Installing Qt on the Symbian platform from a Binary Package} document.}
+This document describes how to install and configure Qt for
+the Symbian platform from scratch. If you are using pre-built binaries, follow 
+the instructions given in the \l{Installing Qt on the Symbian platform from a 
+Binary Package} document.
 
-\list 1
+\section1 Step 1: Set Up the Development Environment
 
-    \o  Setup the development environment
+    Make sure your Symbian development environment is correctly installed 
+    and patched as explained in the \l{Qt for the Symbian platform Requirements}
+    document.
 
-        Make sure your Symbian development environment is correctly installed and
-        patched as explained in the \l{Qt for the Symbian platform Requirements} document.
+    After you have finished the Symbian development environment setup, it is 
+    good to verify that environment is functional for example by compiling one
+    of the pure Symbian examples for both emulator and HW. This can be done from
+    command prompt as follows:
 
-        After you have finished the Symbian development environment setup, it is good
-        to verify that environment is functional for example by compiling one
-        of the pure Symbian examples for both emulator and HW. This can be done from
-        command prompt as follows:
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 32
 
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 32
+    If all steps pass without errors your Symbian development environment is
+    very likely installed correctly.
 
-        If all steps pass without errors your Symbian development environment is
-        very likely installed correctly.
+\section1 Step 2: Install Qt
 
-    \o  Install Qt
+    Uncompress the \l{http://qt.nokia.com/downloads}{downloaded} source 
+    package into the directory you want Qt installed, e.g. \c{C:\Qt\%VERSION%}.
 
-        Uncompress the \l{http://qt.nokia.com/downloads}{downloaded} source package into the
-        directory you want Qt installed, e.g. \c{C:\Qt\%VERSION%}.
+    \note Qt must be installed on the same drive as the Symbian SDK you are
+    using, and the install path must not contain any spaces.
 
-        \note Qt must be installed on the same drive as the Symbian SDK you are
-        using, and the install path must not contain any spaces.
+\section1 Step 3: Set the Environment variables
 
-    \o  Environment variables
+    In order to build and use Qt, the \c PATH environment variable needs
+    to be extended:
 
-        In order to build and use Qt, the \c PATH environment variable needs
-        to be extended:
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 18
 
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 18
+    This is done by adding \c{c:\Qt\%VERSION%\bin} to the \c PATH variable.
 
-        This is done by adding \c{c:\Qt\%VERSION%\bin} to the \c PATH variable.
+    On Windows the\c PATH can be extended by navigating to
+    "Control Panel->System->Advanced->Environment variables".
 
-        On Windows the PATH can be extended by navigating to
-        "Control Panel->System->Advanced->Environment variables".
+    In addition, you must configure the environment for use with the Symbian
+    emulator. This is done by locating the Carbide.c++ submenu on the Start
+    menu, and choosing "Configure environment for WINSCW command line".
 
-        In addition, you must configure the environment for use with the Symbian
-        emulator. This is done by locating the Carbide.c++ submenu on the Start
-        menu, and choosing "Configure environment for WINSCW command line".
+    If you are planning to use \c abld (the default build system that comes with 
+    the S60 SDK) to build Qt, you will also need to set the following 
+    environment variable:
 
-        If you are planning to use abld (the default build system that comes with the S60 SDK)
-        to build Qt, you will also need to set the following environment variable:
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 33
 
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 33
+    This is not necessary for other applications, only when building Qt.
 
-        This is not necessary for other applications, only when building Qt.
+\section1 Step 4: Configure Qt
 
-    \o  Configure Qt
+    To configure Qt for the Symbian platform, do:
 
-        To configure Qt for the Symbian platform, do:
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 23
+    (to build the tools using MinGW, and the libraries using abld)
+    
+    \bold or
 
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 23
-        to build the tools using MinGW, and the libraries using abld.
-        or
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 31
-        to build the tools using MinGW, and the libraries using SBSv2.
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 31
+    (to build the tools using MinGW, and the libraries using SBSv2)
 
-        SBSv2 (also known as \l{http://developer.symbian.org/wiki/index.php/Introduction_to_RAPTOR} {Raptor})
-        is a next-generation Symbian build system. SBSv2 is not officially
-        supported by any of the S60 SDKs currently available from Forum Nokia.
+    SBSv2 (also known as \l{http://developer.symbian.org/wiki/index.php/Introduction_to_RAPTOR} {Raptor}) 
+    is a next-generation Symbian build system. SBSv2 is not officially supported
+    by any of the S60 SDKs currently available from Forum Nokia.
 
-    \o  Build Qt
+\section1 Step 5: Build Qt
 
-        To build Qt for the emulator, type:
+    To build Qt for the emulator, type:
 
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 24
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 24
 
-        To build Qt for the device, type:
+    To build Qt for the device, type:
 
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 28
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 28
 
-        Congratulations, Qt is now ready to use.
+    Congratulations, Qt is now ready to use.
 
-    \o  Installing Qt libraries on the device
+\section1 Step 7: Installing Qt Libraries on the Device
 
-        To run the demo on a real device, you first have to install
-        the Qt libraries on the device:
+    To run the demo on a real device, you first have to install
+    the Qt libraries on the device:
 
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 29
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 29
 
-        The Qt libraries are built with "All -Tcb" capability, so that
-        they can support all types of application.
-        If you don't have a suitable certificate, it is possible to patch
-        the binaries as follows:
+    The Qt libraries are built with "All -Tcb" capability, so that
+    they can support all types of application.
+    If you don't have a suitable certificate, it is possible to patch
+    the binaries as follows:
 
-    \list A
-        \o Installing Qt without a certificate
+    If you have no certificate, build a self signed Qt:
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 34
 
-            If you have no certificate, build a self signed Qt:
+    If you have a symbian-signed developer certificate, specify the
+    capabilities you can sign for, for example:
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 35
 
-            \snippet doc/src/snippets/code/doc_src_installation.qdoc 34
+\section1 Running Qt demos
 
-        \o Installing Qt with a Symbian developer certificate
+    We've included a subset of the Qt demos in this package for you
+    to try out. An excellent starting point is the "fluidlauncher"
+    demo.
 
-            If you have a symbian-signed developer certificate, specify the
-            capabilities you can sign for, for example:
+    Similarly, install fluidlauncher to the device:
 
-            \snippet doc/src/snippets/code/doc_src_installation.qdoc 35
-    \endlist
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 30
 
-    \o  Running Qt demos
+    This will create a self-signed \c fluidlauncher.sis and
+    install it to your device.
 
-        We've included a subset of the Qt demos in this package for you
-        to try out. An excellent starting point is the "fluidlauncher"
-        demo.
+    To run the demos on the emulator simply navigate to the directory of the demo
+    you want to see and run:
 
-        Similarly, install fluidlauncher to the device:
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 27
 
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 30
-
-        This will create a self-signed \c fluidlauncher.sis and
-        install it to your device.
-
-        To run the demos on the emulator simply navigate to the directory of the demo
-        you want to see and run:
-
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 27
-
-        For more information about building and running Qt programs on the
-        Symbian platform, see \l{The Symbian platform - Introduction to Qt}.
-
+    For more information about building and running Qt programs on the
+    Symbian platform, see \l{The Symbian platform - Introduction to Qt}.
     We hope you will enjoy using Qt.
-
-\endlist
 
 */
 /*! \page install-Symbian-linux.html
@@ -691,65 +689,66 @@ If you are using pre-built binaries, follow the instructions given in the
 \ingroup installation
 \ingroup qtsymbian
 \brief How to install Qt on the Symbian platform using Linux.
+\previouspage Installation
+\tableofcontents
 
-\note \bold {This document describes how to install and configure Qt for
+This document describes how to install and configure Qt for
 the Symbian platform from scratch, using Linux as the build host.
 Qt for Symbian binaries can be downloaded directly so development of
-applications using Qt for Symbian can start right away.}
+applications using Qt for Symbian can start right away.
 
-\list 1
+\section1 Step 1:  Setup the development environment
 
-    \o  Setup the development environment
+    Qt for the Symbian platform has some requirements on the development
+    platform. The Symbian SDK for Linux as well as a cross compiler for the ARM
+    processor used on Symbian devices should be present on the development 
+    machine.
+    
+    See \l{http://qt.gitorious.org/qt/pages/QtCreatorSymbianLinux} for more details.
+\section1 Step 2: Unpack the Archive
 
-        \note Qt for the Symbian platform has some requirements on the development
-        platform. The Symbian SDK for Linux as well as a cross compiler for the ARM
-        processor used on Symbian devices should be present on the development machine.
-        See {http://qt.gitorious.org/qt/pages/QtCreatorSymbianLinux} for more details.
-
-    \o  Install Qt
-
-        Uncompress the \l{http://qt.nokia.com/downloads}{downloaded} source package into the
+    Uncompress the \l{http://qt.nokia.com/downloads}{downloaded} source package into the
         directory you want Qt installed, e.g. \c{/home/user/qt/%VERSION%}.
 
-    \o  Environment variables
+\section1 Step 3: Set the Environment Variables
 
-        In order to build and use Qt, the \c PATH environment variable needs
-        to be extended to fine Qt tools and also to find the Symbian platform tools:
+    In order to build and use Qt, the \c PATH environment variable needs
+    to be extended to fine Qt tools and also to find the Symbian platform tools:
 
-        First you need to set the \c EPOCROOT environment variable to point to the location
-        of your S60 SDK:
+    First you need to set the \c EPOCROOT environment variable to point to the 
+    location of your S60 SDK:
 
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 36
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 36
 
-        Then you can update the PATH variable;
+    Then you can update the PATH variable;
 
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 37
 
-    \o  Configure Qt
+\section1 Step 4: Configure Qt
 
-        To configure Qt for the Symbian platform, do:
+    To configure Qt for the Symbian platform, do:
 
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 38
-        to build the libraries using RVCT or
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 39
-        to build the libraries using GCCE.
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 38
+    to build the libraries using RVCT or
 
-    \o  Build Qt
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 39
+    to build the libraries using GCCE.
 
-        To build Qt for the device, type:
+\section1 Step 5: Build Qt
 
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 40
+    To build Qt for the device, type:
 
-        Congratulations, Qt is now ready to use.
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 40
 
-    \o  Building Qt packages for the device
+    Congratulations, Qt is now ready to use.
 
-        To run any application or demo on a real device, you need to install it
-        on the device. To do this you first have to create a a package for the
-        device, containing the libraries:
+\section1 Step 6: Building Qt packages for the Device
 
-    \list A
-        \o Building a Qt package without a certificate
+    To run any application or demo on a real device, you need to install it
+    on the device. To do this you first have to create a a package for the
+    device, containing the libraries:
+
+    \bold{Building a Qt package without a certificate}
 
             If you have no certificate, build a self signed Qt:
 
@@ -760,15 +759,14 @@ applications using Qt for Symbian can start right away.}
             capabilities are automatically lowered if you make a self-signed
             package.
 
-        \o Building a Qt package with a Symbian developer certificate
+    \bold{Building a Qt package with a Symbian developer certificate}
 
             If you have a symbian-signed developer certificate, specify the
             capabilities you can sign for, for example:
 
             \snippet doc/src/snippets/code/doc_src_installation.qdoc 42
-    \endlist
-
-    \o  Installing Qt packages to the device.
+   
+    \section2  Installing Qt packages to the device.
 
         It is possible to install packages to a phone in Linux by putting
         the package on the phone memory card and then installing manually
@@ -776,8 +774,7 @@ applications using Qt for Symbian can start right away.}
         on phones without a memory card, so the method recommended by Qt is
         to use the App TRK tool.
 
-        \list a
-            \o Obtaining the App TRK package.
+        \section3 Obtaining the App TRK package.
 
                 Download the package from the following location.
 
@@ -793,7 +790,7 @@ applications using Qt for Symbian can start right away.}
                 menu, or using a Windows PC for doing the install. However,
                 the installation only has to be done once.
 
-            \o Configuring App TRK on the phone.
+         \section3 Configuring App TRK on the phone.
 
                 When App TRK is installed, connect the phone to the PC using
                 the USB cable. Select "PCSuite" as connection type. Then run
@@ -802,7 +799,7 @@ applications using Qt for Symbian can start right away.}
                 the \c Settings menu entry. If necessary, choose \c Connect
                 from the menu.
 
-            \o Configuring the USB serial driver on the Linux system.
+         \section3 Configuring the USB serial driver on the Linux system.
 
                On Linux, phone should appear as the \c /dev/ttyUSB1 device,
                however if you are running an old kernel, you may need to
@@ -821,7 +818,7 @@ applications using Qt for Symbian can start right away.}
                The \c rmmod step may fail if the module is not already
                loaded, but that is harmless.
 
-            \o Building the \c runonphone tool.
+          \section3 Building the \c runonphone tool.
 
                Note that building the \c runonphone tool requires a separate
                installation of Qt for Linux. If there is a version of Qt
@@ -846,7 +843,7 @@ applications using Qt for Symbian can start right away.}
                Copy the resulting executable to a folder which is in your
                \c PATH environment variable.
 
-            \o Installing the built package onto the phone.
+           \section3 Installing the built package onto the phone.
 
                Return to the root of the Qt tree configured for Symbian. Then
                install the Qt libraries by running the following:
@@ -863,9 +860,7 @@ applications using Qt for Symbian can start right away.}
 
                \snippet doc/src/snippets/code/doc_src_installation.qdoc 50
 
-        \endlist
-
-    \o  Running Qt demos
+\section1 Running Qt demos
 
         We've included a subset of the Qt demos in this package for you
         to try out. An excellent starting point is the "fluidlauncher"
@@ -883,10 +878,8 @@ applications using Qt for Symbian can start right away.}
         Symbian platform, see \l{The Symbian platform - Introduction to Qt}.
 
     We hope you will enjoy using Qt.
-
-\endlist
-
 */
+
 /*!
     \page requirements.html
     \title General Qt Requirements
@@ -957,6 +950,9 @@ applications using Qt for Symbian can start right away.}
     \ingroup installation
     \brief Setting up the Mac OS X environment for Qt.
     \previouspage General Qt Requirements
+
+    Qt requires Xcode to be installed on the system. Xcode should be
+    available on the Mac installation CD.
 
     \sa {Known Issues}
 */
@@ -1211,9 +1207,9 @@ applications using Qt for Symbian can start right away.}
 
     Qt for the Symbian platform requires the following software installed on your development PC:
     \list
-        \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/carbide_cpp/}{Carbide.c++ v2.0.0 or higher}
+        \o \l{http://www.forum.nokia.com/Library/Tools_and_downloads/Other/Carbide.c++/}{Carbide.c++ v2.3.0 or higher recommended}.
            \list
-           \o \bold{Note:} It may be necessary to update the Carbide compiler.
+           \o \bold{Note:} It may be necessary to update the Carbide compiler depending on Carbide version.
               See \l{http://pepper.troll.no/s60prereleases/patches/}{here} for instructions how to check your
               compiler version and how to patch it, if needed.
            \endlist
@@ -1223,18 +1219,18 @@ applications using Qt for Symbian can start right away.}
               but that version is no longer available from ActiveState. However, Qt for Symbian has been successfully
               compiled using both 5.8.x and 5.10.x versions.
            \endlist
-        \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/S60SDK/}{S60 Platform SDK 3rd Edition FP1 or higher}
+        \o \l{http://www.forum.nokia.com/info/sw.nokia.com/id/ec866fab-4b76-49f6-b5a5-af0631419e9c/S60_All_in_One_SDKs.html}{S60 Platform SDK 3rd Edition FP1 or higher}
            \list
            \o \bold{Note:} Users of \bold{S60 Platform SDK 3rd Edition FP1} also need special update. The update can be found
            \l{http://pepper.troll.no/s60prereleases/patches/}{here}.
            \endlist
-        \o \l{http://www.forum.nokia.com/main/resources/technologies/openc_cpp/}{Open C/C++ v1.6.0 or higher}.
+        \o \l{http://www.forum.nokia.com/info/sw.nokia.com/id/91d89929-fb8c-4d66-bea0-227e42df9053/Open_C_SDK_Plug-In.html}{Open C/C++ v1.7.5 or higher}.
            Install this to all Symbian SDKs you plan to use Qt with.
         \o Building Qt tools from scratch requires \l{http://www.mingw.org/}{MinGW 3.4.5 or higher}, or another windows compiler.
            \list
            \o \bold{Note:} This is not required if you are using pre-built binary package.
            \endlist
-        \o Building Qt libraries requires \l{http://www.arm.com/products/DevTools/RVCT.html}{RVCT} version 2.2 (build 686 or later),
+        \o Building Qt libraries requires \l{http://www.arm.com/products/tools/software-development-tools.php}{RVCT} version 2.2 (build 686 or later),
            which is not available free of charge.  Usage of later versions of RVCT, including the 3.x and 4.x series, is not supported
            in this release.
     \endlist

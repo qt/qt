@@ -104,7 +104,10 @@ public:
     QString &operator=(QChar c);
     QString &operator=(const QString &);
     inline QString &operator=(const QLatin1String &);
-
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QString &operator=(QString &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
     inline int size() const { return d->size; }
     inline int count() const { return d->size; }
     inline int length() const;
@@ -613,6 +616,7 @@ private:
         ushort asciiCache : 1;
         ushort capacity : 1;
         ushort reserved : 11;
+        // ### Qt5: try to ensure that "array" is aligned to 16 bytes on both 32- and 64-bit
         ushort array[1];
     };
     static Data shared_null;
@@ -1160,6 +1164,12 @@ public:
     }
     inline const QChar *data() const { return unicode(); }
     inline const QChar *constData() const {  return unicode(); }
+
+    QByteArray toAscii() const Q_REQUIRED_RESULT;
+    QByteArray toLatin1() const Q_REQUIRED_RESULT;
+    QByteArray toUtf8() const Q_REQUIRED_RESULT;
+    QByteArray toLocal8Bit() const Q_REQUIRED_RESULT;
+    QVector<uint> toUcs4() const Q_REQUIRED_RESULT;
 
     inline void clear() { m_string = 0; m_position = m_size = 0; }
     QString toString() const;

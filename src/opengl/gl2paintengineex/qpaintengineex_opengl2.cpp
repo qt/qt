@@ -90,7 +90,10 @@
 
 QT_BEGIN_NAMESPACE
 
-//#define QT_GL_NO_SCISSOR_TEST
+#if defined(Q_OS_SYMBIAN)
+#define QT_GL_NO_SCISSOR_TEST
+#endif
+
 #if defined(Q_WS_WIN)
 extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 #endif
@@ -374,12 +377,12 @@ void QGL2PaintEngineExPrivate::updateMatrix()
         dx = ceilf(dx - 0.5f);
         dy = ceilf(dy - 0.5f);
     }
-
+#ifndef Q_OS_SYMBIAN
     if (addOffset) {
         dx += 0.49f;
         dy += 0.49f;
     }
-
+#endif
     pmvMatrix[0][0] = (wfactor * transform.m11())  - transform.m13();
     pmvMatrix[1][0] = (wfactor * transform.m21())  - transform.m23();
     pmvMatrix[2][0] = (wfactor * dx) - transform.m33();
@@ -588,6 +591,12 @@ void QGL2PaintEngineEx::endNativePainting()
     d->nativePaintingActive = false;
 }
 
+void QGL2PaintEngineEx::invalidateState()
+{
+    Q_D(QGL2PaintEngineEx);
+    d->needsSync = true;
+}
+
 bool QGL2PaintEngineEx::isNativePaintingActive() const {
     Q_D(const QGL2PaintEngineEx);
     return d->nativePaintingActive;
@@ -686,7 +695,12 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
     const QPointF* const points = reinterpret_cast<const QPointF*>(path.points());
 
     // ### Remove before release...
-    static bool do_vectorpath_cache = qgetenv("QT_OPENGL_NO_PATH_CACHE").isEmpty();
+#ifdef Q_OS_SYMBIAN
+    // ### There are some unresolved issues in Symbian vector path caching.
+    static bool do_vectorpath_cache = false;
+#else
+    static bool do_vectorpath_cache = true;
+#endif
 
     // Check to see if there's any hints
     if (path.shape() == QVectorPath::RectangleHint) {
@@ -851,6 +865,32 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
             // Tag it for later so that if the same path is drawn twice, it is assumed to be static and thus cachable
             if (do_vectorpath_cache)
                 path.makeCacheable();
+
+            if (!device->format().stencil()) {
+                // If there is no stencil buffer, triangulate the path instead.
+
+                QRectF bbox = path.controlPointRect();
+                // If the path doesn't fit within these limits, it is possible that the triangulation will fail.
+                bool withinLimits = (bbox.left() > -0x8000 * inverseScale)
+                                  && (bbox.right() < 0x8000 * inverseScale)
+                                  && (bbox.top() > -0x8000 * inverseScale)
+                                  && (bbox.bottom() < 0x8000 * inverseScale);
+                if (withinLimits) {
+                    QTriangleSet polys = qTriangulate(path, QTransform().scale(1 / inverseScale, 1 / inverseScale));
+
+                    QVarLengthArray<float> vertices(polys.vertices.size());
+                    for (int i = 0; i < polys.vertices.size(); ++i)
+                        vertices[i] = float(inverseScale * polys.vertices.at(i));
+
+                    prepareForDraw(currentBrush.isOpaque());
+                    setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, vertices.constData());
+                    glDrawElements(GL_TRIANGLES, polys.indices.size(), GL_UNSIGNED_INT, polys.indices.constData());
+                } else {
+                    // We can't handle big, concave painter paths with OpenGL without stencil buffer.
+                    qWarning("Painter path exceeds +/-32767 pixels.");
+                }
+                return;
+            }
 
             // The path is too complicated & needs the stencil technique
             vertexCoordinateArray.clear();
@@ -1511,8 +1551,15 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         vertexCoordinates->clear();
         textureCoordinates->clear();
 
+        bool supportsSubPixelPositions = staticTextItem->fontEngine->supportsSubPixelPositions();
         for (int i=0; i<staticTextItem->numGlyphs; ++i) {
-            const QTextureGlyphCache::Coord &c = cache->coords.value(staticTextItem->glyphs[i]);
+            QFixed subPixelPosition;
+            if (supportsSubPixelPositions)
+                subPixelPosition = cache->subPixelPositionForX(staticTextItem->glyphPositions[i].x);
+
+            QTextureGlyphCache::GlyphAndSubPixelPosition glyph(staticTextItem->glyphs[i], subPixelPosition);
+
+            const QTextureGlyphCache::Coord &c = cache->coords.value(glyph);
             int x = staticTextItem->glyphPositions[i].x.toInt() + c.baseLineX - margin;
             int y = staticTextItem->glyphPositions[i].y.toInt() - c.baseLineY - margin;
 

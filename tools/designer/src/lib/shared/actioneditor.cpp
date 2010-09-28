@@ -445,7 +445,6 @@ void ActionEditor::slotNewAction()
     if (dlg.exec() == QDialog::Accepted) {
         const ActionData actionData = dlg.actionData();
         m_actionView->clearSelection();
-
         QAction *action = new QAction(formWindow());
         action->setObjectName(actionData.name);
         formWindow()->ensureUniqueObjectName(action);
@@ -480,7 +479,7 @@ static inline bool isSameIcon(const QIcon &i1, const QIcon &i2)
 static QDesignerFormWindowCommand *setIconPropertyCommand(const PropertySheetIconValue &newIcon, QAction *action, QDesignerFormWindowInterface *fw)
 {
     const QString iconProperty = QLatin1String(iconPropertyC);
-    if (newIcon.paths().isEmpty()) {
+    if (newIcon.isEmpty()) {
         ResetPropertyCommand *cmd = new ResetPropertyCommand(fw);
         cmd->init(action, iconProperty);
         return cmd;

@@ -737,9 +737,6 @@ static void qt_post_window_change_event(QWidget *widget)
 */
 static void qt_mac_update_child_gl_widgets(QWidget *widget)
 {
-    if (widget->isWindow())
-        return;
-
     // Update all OpenGL child widgets for the given widget.
     QList<QWidgetPrivate::GlWidgetInfo> &glWidgets = qt_widget_private(widget)->glWidgets;
     QList<QWidgetPrivate::GlWidgetInfo>::iterator end = glWidgets.end();

@@ -56,6 +56,7 @@
 #include "qurl.h"
 #include "qauthenticator.h"
 #include <qendian.h>
+#include <qnetworkinterface.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1544,6 +1545,35 @@ qint64 QSocks5SocketEngine::write(const char *data, qint64 len)
 }
 
 #ifndef QT_NO_UDPSOCKET
+bool QSocks5SocketEngine::joinMulticastGroup(const QHostAddress &,
+                                             const QNetworkInterface &)
+{
+    setError(QAbstractSocket::UnsupportedSocketOperationError,
+             QLatin1String("Operation on socket is not supported"));
+    return false;
+}
+
+bool QSocks5SocketEngine::leaveMulticastGroup(const QHostAddress &,
+                                              const QNetworkInterface &)
+{
+    setError(QAbstractSocket::UnsupportedSocketOperationError,
+             QLatin1String("Operation on socket is not supported"));
+    return false;
+}
+
+
+QNetworkInterface QSocks5SocketEngine::multicastInterface() const
+{
+    return QNetworkInterface();
+}
+
+bool QSocks5SocketEngine::setMulticastInterface(const QNetworkInterface &)
+{
+    setError(QAbstractSocket::UnsupportedSocketOperationError,
+             QLatin1String("Operation on socket is not supported"));
+    return false;
+}
+
 qint64 QSocks5SocketEngine::readDatagram(char *data, qint64 maxlen, QHostAddress *addr,
                                         quint16 *port)
 {

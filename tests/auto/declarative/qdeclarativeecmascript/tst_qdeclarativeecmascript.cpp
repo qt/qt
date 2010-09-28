@@ -52,6 +52,7 @@
 #include <private/qdeclarativeglobalscriptclass_p.h>
 #include "testtypes.h"
 #include "testhttpserver.h"
+#include "../../../shared/util.h"
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -157,10 +158,15 @@ private slots:
     void qtbug_10696();
     void qtbug_11606();
     void qtbug_11600();
+    void nonscriptable();
+    void deleteLater();
+    void in();
 
     void include();
 
     void callQtInvokables();
+    void invokableObjectArg();
+    void invokableObjectRet();
 private:
     QDeclarativeEngine engine;
 };
@@ -1730,6 +1736,31 @@ void tst_qdeclarativeecmascript::callQtInvokables()
     QCOMPARE(o.actuals().at(0), QVariant(9));
 }
 
+// QTBUG-13047 (check that you can pass registered object types as args)
+void tst_qdeclarativeecmascript::invokableObjectArg()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("invokableObjectArg.qml"));
+
+    QObject *o = component.create();
+    QVERIFY(o);
+    MyQmlObject *qmlobject = qobject_cast<MyQmlObject *>(o);
+    QVERIFY(qmlobject);
+    QCOMPARE(qmlobject->myinvokableObject, qmlobject);
+
+    delete o;
+}
+
+// QTBUG-13047 (check that you can return registered object types from methods)
+void tst_qdeclarativeecmascript::invokableObjectRet()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("invokableObjectRet.qml"));
+
+    QObject *o = component.create();
+    QVERIFY(o);
+    QCOMPARE(o->property("test").toBool(), true);
+    delete o;
+}
+
 // QTBUG-5675
 void tst_qdeclarativeecmascript::listToVariant()
 {
@@ -2386,15 +2417,6 @@ void tst_qdeclarativeecmascript::function()
     delete o;
 }
 
-#define TRY_WAIT(expr) \
-    do { \
-        for (int ii = 0; ii < 6; ++ii) { \
-            if ((expr)) break; \
-            QTest::qWait(50); \
-        } \
-        QVERIFY((expr)); \
-    } while (false) 
-
 // Test the "Qt.include" method
 void tst_qdeclarativeecmascript::include()
 {
@@ -2466,8 +2488,8 @@ void tst_qdeclarativeecmascript::include()
     QObject *o = component.create();
     QVERIFY(o != 0);
 
-    TRY_WAIT(o->property("done").toBool() == true);
-    TRY_WAIT(o->property("done2").toBool() == true);
+    QTRY_VERIFY(o->property("done").toBool() == true);
+    QTRY_VERIFY(o->property("done2").toBool() == true);
 
     QCOMPARE(o->property("test1").toBool(), true);
     QCOMPARE(o->property("test2").toBool(), true);
@@ -2494,7 +2516,7 @@ void tst_qdeclarativeecmascript::include()
     QObject *o = component.create();
     QVERIFY(o != 0);
 
-    TRY_WAIT(o->property("done").toBool() == true);
+    QTRY_VERIFY(o->property("done").toBool() == true);
 
     QCOMPARE(o->property("test1").toBool(), true);
     QCOMPARE(o->property("test2").toBool(), true);
@@ -2530,6 +2552,36 @@ void tst_qdeclarativeecmascript::qtbug_11600()
     delete o;
 }
 
+// Reading and writing non-scriptable properties should fail
+void tst_qdeclarativeecmascript::nonscriptable()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("nonscriptable.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    QCOMPARE(o->property("readOk").toBool(), true);
+    QCOMPARE(o->property("writeOk").toBool(), true);
+    delete o;
+}
+
+// deleteLater() should not be callable from QML
+void tst_qdeclarativeecmascript::deleteLater()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("deleteLater.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    QCOMPARE(o->property("test").toBool(), true);
+    delete o;
+}
+
+void tst_qdeclarativeecmascript::in()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("in.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    QCOMPARE(o->property("test1").toBool(), true);
+    QCOMPARE(o->property("test2").toBool(), true);
+    delete o;
+}
 
 QTEST_MAIN(tst_qdeclarativeecmascript)
 

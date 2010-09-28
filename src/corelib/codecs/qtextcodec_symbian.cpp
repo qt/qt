@@ -53,12 +53,14 @@ struct QSymbianCodecInitData {
     const char *aliases;
 };
 
-/* This table contains the known Symbian codecs aliases. It is ordered by charsetId.
-   It is required as symbian does not provide have aliases.
+/* This table contains the known Symbian codecs aliases.
+   It is required because symbian does not provide aliases for codecs.
+   It is also faster to have a name here than asking the system.
+   It is ordered by charsetId to allow binary search lookup
  */
 static const QSymbianCodecInitData codecsData[] = {
-    { /*268439485*/ KCharacterSetIdentifierShiftJis,            17, "Shift_JIS\0MS_Kanji\0csShiftJIS\0MS_KANJI\0SJIS\0" },
-    { /*268439486*/ KCharacterSetIdentifierGb2312,              57, "GB2312\0csGB2312\0CN-GB\0EUC-CN\0" },
+    { /*268439485*/ KCharacterSetIdentifierShiftJis,            17, "Shift_JIS\0MS_Kanji\0csShiftJIS\0SJIS\0" },
+    { /*268439486*/ KCharacterSetIdentifierGb2312,              57, "GB2312\0csGB2312\0CN-GB\0EUC-CN\0" },  // Note: ConvertCharacterSetIdentifierToMibEnumL returns Mib 0 instaead of 57
     { /*268439487*/ KCharacterSetIdentifierBig5,              2026, "Big5\0csBig5\0Big5-ETen\0CP950\0BIG-FIVE\0CN-BIG5\0" },
     { /*268440246*/ KCharacterSetIdentifierCodePage1252,      2252, "windows-1252\0Code Page 1252\0CP1252\0MS-ANSI\0" },
 //  { /*268450576*/ KCharacterSetIdentifierIso88591,             4, "ISO-8859-1\0ISO_8859-1:1987\0iso-ir-100\0ISO_8859-1\0latin1\0l1\0IBM819\0CP819\0csISOLatin1\0ISO-IR-100\0ISO8859-1\0L1\0LATIN1\0CSISOLATIN1\0" },
@@ -108,15 +110,20 @@ static const QSymbianCodecInitData codecsData[] = {
     { /*270562232*/ 270562232,                                2258, "Windows-1258\0CP1258\0WINDOWS-1258\0" },
     { /*270586888*/ 270586888,                                   0, "J5\0" },
     { /*271011982*/ 271011982,                                   0, "ISCII\0" },
-    { /*271066541*/ 271066541,                                2009, "CP850\0IBM850\0""850\0csPC850Multilingual\0" },
+    { /*271066541*/ 271066541,                                2009, "CP850\0IBM850\0""850\0csPC850Multilingual\0" }, // Note: ConvertCharacterSetIdentifierToMibEnumL returns Mib 0 instead of 2009
     { /*271082493*/ 271082493,                                   0, "EXTENDED_SMS_7BIT\0" },
     { /*271082494*/ 271082494,                                   0, "gsm7_turkish_single\0" },
     { /*271082495*/ 271082495,                                   0, "turkish_locking_gsm7ext\0" },
     { /*271082496*/ 271082496,                                   0, "turkish_locking_single\0" },
+    { /*271082503*/ 271082503,                                   0, "portuguese_gsm7_single\0" },
+    { /*271082504*/ 271082504,                                   0, "portuguese_locking_gsm7ext\0" },
+    { /*271082505*/ 271082505,                                   0, "portuguese_locking_single\0" },
+    { /*271082506*/ 271082506,                                   0, "spanish_gsm7_single\0" },
+    { /*271085624*/ 271085624,                                 114, "GB18030\0" },
     { /*536929574*/ 536929574,                                  38, "EUC-KR\0" },
     { /*536936703*/ 536936703,                                   0, "CP949\0" },
-    { /*536936705*/ 536936705,                                  37, "ISO-2022-KR\0" },
-    { /*536941517*/ 536941517,                                  36, "KS_C_5601-1987\0" }
+    { /*536936705*/ 536936705,                                  37, "ISO-2022-KR\0csISO2022KR\0" },
+    { /*536941517*/ 536941517,                                  36, "KS_C_5601-1987\0iso-ir-149\0KS_C_5601-1989\0KSC_5601\0Korean\0csKSC56011987\0" }
     };
 
 
@@ -657,6 +664,10 @@ QSymbianTextCodec *QSymbianTextCodec::init()
             if (charsetId == localeMapperId)
                 localeMapper = c;
         } else {
+            // We did not find the charsetId in our codecsData[], therefore we ask
+            // the OS for the codec name. We first try to get a "standard name" and fall
+            // back to array->At(i).Name(), if really needed. array->At(i).Name() is not
+            // guaranteed to be a correct name for QTextCodec::codecFromName().
             QScopedPointer<HBufC8> buf;
             QT_TRAP_THROWING(buf.reset(converter->ConvertCharacterSetIdentifierToStandardNameL(charsetId, qt_s60GetRFs())))
             QByteArray name;

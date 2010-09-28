@@ -62,10 +62,12 @@ public:
 
     struct SpringAnimation {
         SpringAnimation()
-            : currentValue(0), to(0), velocity(0){}
+            : currentValue(0), to(0), velocity(0), start(0), duration(0) {}
         qreal currentValue;
         qreal to;
         qreal velocity;
+        int start;
+        int duration;
     };
     QHash<QDeclarativeProperty, SpringAnimation> activeAnimations;
 
@@ -135,7 +137,6 @@ void QDeclarativeSpringAnimationPrivate::tick(int time)
 
 bool QDeclarativeSpringAnimationPrivate::animate(const QDeclarativeProperty &property, SpringAnimation &animation, int elapsed)
 {
-
     qreal srcVal = animation.to;
 
     bool stop = false;
@@ -192,18 +193,14 @@ bool QDeclarativeSpringAnimationPrivate::animate(const QDeclarativeProperty &pro
             animation.currentValue += moveBy;
             if (haveModulus)
                 animation.currentValue = fmod(animation.currentValue, modulus);
-            if (animation.currentValue > animation.to) {
-                animation.currentValue = animation.to;
-                stop = true;
-            }
         } else {
             animation.currentValue -= moveBy;
             if (haveModulus && animation.currentValue < 0.0)
                 animation.currentValue = fmod(animation.currentValue, modulus) + modulus;
-            if (animation.currentValue < animation.to) {
-                animation.currentValue = animation.to;
-                stop = true;
-            }
+        }
+        if (lastTime - animation.start >= animation.duration) {
+            animation.currentValue = animation.to;
+            stop = true;
         }
     }
 
@@ -222,12 +219,23 @@ void QDeclarativeSpringAnimationPrivate::updateMode()
         mode = Track;
     else if (spring > 0.)
         mode = Spring;
-    else
+    else {
         mode = Velocity;
+        QHash<QDeclarativeProperty, SpringAnimation>::iterator it;
+        for (it = activeAnimations.begin(); it != activeAnimations.end(); ++it) {
+            SpringAnimation &animation = *it;
+            animation.start = lastTime;
+            qreal dist = qAbs(animation.currentValue - animation.to);
+            if (haveModulus && dist > modulus / 2)
+                dist = modulus - fmod(dist, modulus);
+            animation.duration = dist / velocityms;
+        }
+    }
 }
 
 /*!
     \qmlclass SpringAnimation QDeclarativeSpringAnimation
+    \ingroup qml-animation-transition
     \inherits Animation
     \since 4.7
 
@@ -377,6 +385,7 @@ void QDeclarativeSpringAnimation::setModulus(qreal modulus)
     if (d->modulus != modulus) {
         d->haveModulus = modulus != 0.0;
         d->modulus = modulus;
+        d->updateMode();
         emit modulusChanged();
     }
 }
@@ -428,10 +437,17 @@ void QDeclarativeSpringAnimation::transition(QDeclarativeStateActions &actions,
             QDeclarativeSpringAnimationPrivate::SpringAnimation &animation
                     = d->activeAnimations[property];
             animation.to = d->actions->at(i).toValue.toReal();
+            animation.start = d->lastTime;
             if (d->fromIsDefined)
                 animation.currentValue = d->actions->at(i).fromValue.toReal();
             else
                 animation.currentValue = property.read().toReal();
+            if (d->mode == QDeclarativeSpringAnimationPrivate::Velocity) {
+                qreal dist = qAbs(animation.currentValue - animation.to);
+                if (d->haveModulus && dist > d->modulus / 2)
+                    dist = d->modulus - fmod(dist, d->modulus);
+                animation.duration = dist / d->velocityms;
+            }
         }
     }
 }

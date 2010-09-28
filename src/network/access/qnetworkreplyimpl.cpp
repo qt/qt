@@ -595,6 +595,7 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QIODevice *data)
 
 void QNetworkReplyImplPrivate::appendDownstreamData(const QByteArray &data)
 {
+    Q_UNUSED(data)
     // TODO implement
 
     // TODO call
@@ -689,6 +690,8 @@ void QNetworkReplyImplPrivate::finished()
     resumeNotificationHandling();
 
     state = Finished;
+    q->setFinished(true);
+
     pendingNotifications.clear();
 
     pauseNotificationHandling();
@@ -759,11 +762,6 @@ void QNetworkReplyImplPrivate::sslErrors(const QList<QSslError> &errors)
 #endif
 }
 
-bool QNetworkReplyImplPrivate::isFinished() const
-{
-    return (state == Finished || state == Aborted);
-}
-
 QNetworkReplyImpl::QNetworkReplyImpl(QObject *parent)
     : QNetworkReply(*new QNetworkReplyImplPrivate, parent)
 {
@@ -798,7 +796,7 @@ void QNetworkReplyImpl::abort()
     QNetworkReply::close();
 
     if (d->state != QNetworkReplyImplPrivate::Finished) {
-        // emit signals
+        // call finished which will emit signals
         d->error(OperationCanceledError, tr("Operation canceled"));
         d->finished();
     }
@@ -826,7 +824,7 @@ void QNetworkReplyImpl::close()
 
     QNetworkReply::close();
 
-    // emit signals
+    // call finished which will emit signals
     d->error(OperationCanceledError, tr("Operation canceled"));
     d->finished();
 }

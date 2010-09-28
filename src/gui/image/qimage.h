@@ -140,6 +140,11 @@ public:
     ~QImage();
 
     QImage &operator=(const QImage &);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QImage &operator=(QImage &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
+
     bool isNull() const;
 
     int devType() const;

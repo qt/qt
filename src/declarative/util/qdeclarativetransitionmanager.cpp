@@ -86,8 +86,8 @@ void QDeclarativeTransitionManager::complete()
     d->applyBindings();
 
     for (int ii = 0; ii < d->completeList.count(); ++ii) {
-        const QDeclarativeProperty &prop = d->completeList.at(ii).property;
-        prop.write(d->completeList.at(ii).value);
+        const QDeclarativeProperty &prop = d->completeList.at(ii).property();
+        prop.write(d->completeList.at(ii).value());
     }
 
     d->completeList.clear();
@@ -176,7 +176,7 @@ void QDeclarativeTransitionManager::transition(const QList<QDeclarativeAction> &
                 if (action.event->isReversable()) {
                     action.event->clearBindings();
                     action.event->rewind();
-                    action.event->clearBindings();
+                    action.event->clearBindings();  //### shouldn't be needed
                 }
                 continue;
             }

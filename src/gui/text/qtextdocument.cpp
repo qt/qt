@@ -291,7 +291,18 @@ QTextCodec *Qt::codecForHtml(const QByteArray &ba)
     by an editor widget through the undo() and redo() slots; the document also
     provides contentsChanged(), undoAvailable(), and redoAvailable() signals
     that inform connected editor widgets about the state of the undo/redo
-    system.
+    system. The following are the undo/redo operations of a QTextDocument:
+
+    \list
+        \o Insertion or removal of characters. A sequence of insertions or removals
+           within the same text block are regarded as a single undo/redo operation.
+        \o Insertion or removal of text blocks. Sequences of insertion or removals
+           in a single operation (e.g., by selecting and then deleting text) are
+           regarded as a single undo/redo operation.
+        \o Text character format changes.
+        \o Text block format changes.
+        \o Text block group format changes.
+    \endlist
 
     \sa QTextCursor, QTextEdit, \link richtext.html Rich Text Processing\endlink , {Text Object Example}
 */
@@ -2591,14 +2602,40 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
                 default: html += QLatin1String("<ul"); // ### should not happen
             }
 
-            html += QLatin1String(" style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px;");
+            QString styleString = QString::fromLatin1("margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px;");
 
             if (format.hasProperty(QTextFormat::ListIndent)) {
-                html += QLatin1String(" -qt-list-indent: ");
-                html += QString::number(format.indent());
-                html += QLatin1Char(';');
+                styleString += QLatin1String(" -qt-list-indent: ");
+                styleString += QString::number(format.indent());
+                styleString += QLatin1Char(';');
             }
 
+            if (format.hasProperty(QTextFormat::ListNumberPrefix)) {
+                QString numberPrefix = format.numberPrefix();
+                numberPrefix.replace('"', "\\22");
+                numberPrefix.replace('\'', "\\27"); // FIXME: There's a problem in the CSS parser the prevents this from being correctly restored
+                styleString += QLatin1String(" -qt-list-number-prefix: ");
+                styleString += QLatin1Char('\'');
+                styleString += numberPrefix;
+                styleString += QLatin1Char('\'');
+                styleString += QLatin1Char(';');
+            }
+
+            if (format.hasProperty(QTextFormat::ListNumberSuffix)) {
+                if (format.numberSuffix() != QLatin1String(".")) { // this is our default
+                    QString numberSuffix = format.numberSuffix();
+                    numberSuffix.replace('"', "\\22");
+                    numberSuffix.replace('\'', "\\27"); // see above
+                    styleString += QLatin1String(" -qt-list-number-suffix: ");
+                    styleString += QLatin1Char('\'');
+                    styleString += numberSuffix;
+                    styleString += QLatin1Char('\'');
+                    styleString += QLatin1Char(';');
+                }
+            }
+
+            html += QLatin1String(" style=\"");
+            html += styleString;
             html += QLatin1String("\">");
         }
 

@@ -254,10 +254,10 @@ void qt_scale_image_argb32_on_rgb16(uchar *destPixels, int dbpl,
     }
 }
 
-static void qt_blend_rgb16_on_rgb16(uchar *dst, int dbpl,
-                                    const uchar *src, int sbpl,
-                                    int w, int h,
-                                    int const_alpha)
+void qt_blend_rgb16_on_rgb16(uchar *dst, int dbpl,
+                             const uchar *src, int sbpl,
+                             int w, int h,
+                             int const_alpha)
 {
 #ifdef QT_DEBUG_DRAW
     printf("qt_blend_rgb16_on_rgb16: dst=(%p, %d), src=(%p, %d), dim=(%d, %d) alpha=%d\n",
@@ -309,9 +309,9 @@ template <typename T> void qt_blend_argb24_on_rgb16(uchar *destPixels, int dbpl,
         const uchar *src = srcPixels + y * sbpl;
         const uchar *srcEnd = src + srcOffset;
         while (src < srcEnd) {
-#if defined(QT_ARCH_ARM) || defined(QT_ARCH_POWERPC) || defined(QT_ARCH_SH) || defined(QT_ARCH_AVR32) || (defined(QT_ARCH_WINDOWSCE) && !defined(_X86_)) || (defined(QT_ARCH_SPARC) && defined(Q_CC_GNU))
+#if defined(QT_ARCH_ARMV5) || defined(QT_ARCH_POWERPC) || defined(QT_ARCH_SH) || defined(QT_ARCH_AVR32) || (defined(QT_ARCH_WINDOWSCE) && !defined(_X86_)) || (defined(QT_ARCH_SPARC) && defined(Q_CC_GNU))
             // non-16-bit aligned memory access is not possible on PowerPC,
-            // ARM <v6 (QT_ARCH_ARMV6) & SH & AVR32 & SPARC w/GCC
+            // ARM <v6 (QT_ARCH_ARMV5) & SH & AVR32 & SPARC w/GCC
             quint16 spix = (quint16(src[2])<<8) + src[1];
 #else
             quint16 spix = *(quint16 *) (src + 1);

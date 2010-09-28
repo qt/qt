@@ -136,7 +136,8 @@ bootstrap { #Qt code
           LIBS += -framework ApplicationServices
         }
     } else:win32 {
-        SOURCES += qfilesystemengine_win.cpp qfsfileengine_win.cpp qfilesystemiterator_win.cpp qsettings_win.cpp
+        SOURCES += qfilesystemengine_win.cpp qfsfileengine_win.cpp qfilesystemiterator_win.cpp qsettings_win.cpp \
+            qsystemlibrary.cpp
         win32-msvc*:LIBS += ole32.lib advapi32.lib
         win32-g++*:LIBS += -lole32 -luuid
     }

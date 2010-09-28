@@ -52,6 +52,7 @@
 #include "private/qdeclarativecontext_p.h"
 #include "private/qdeclarativeproperty_p.h"
 #include "private/qdeclarativebinding_p.h"
+#include "private/qdeclarativestate_p_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtGui/qgraphicsitem.h>
@@ -61,7 +62,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeParentChangePrivate : public QObjectPrivate
+class QDeclarativeParentChangePrivate : public QDeclarativeStateOperationPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeParentChange)
 public:
@@ -98,14 +99,15 @@ void QDeclarativeParentChangePrivate::doChange(QDeclarativeItem *targetParent, Q
 
         qreal scale = 1;
         qreal rotation = 0;
-        if (ok && transform.type() != QTransform::TxRotate) {
+        bool isRotate = (transform.type() == QTransform::TxRotate) || (transform.m11() < 0);
+        if (ok && !isRotate) {
             if (transform.m11() == transform.m22())
                 scale = transform.m11();
             else {
                 qmlInfo(q) << QDeclarativeParentChange::tr("Unable to preserve appearance under non-uniform scale");
                 ok = false;
             }
-        } else if (ok && transform.type() == QTransform::TxRotate) {
+        } else if (ok && isRotate) {
             if (transform.m11() == transform.m22())
                 scale = qSqrt(transform.m11()*transform.m11() + transform.m12()*transform.m12());
             else {
@@ -161,6 +163,7 @@ void QDeclarativeParentChangePrivate::doChange(QDeclarativeItem *targetParent, Q
 /*!
     \preliminary
     \qmlclass ParentChange QDeclarativeParentChange
+    \ingroup qml-state-elements
     \brief The ParentChange element allows you to reparent an Item in a state change.
 
     ParentChange reparents an item while preserving its visual appearance (position, size,
@@ -578,7 +581,7 @@ void QDeclarativeParentChange::rewind()
     d->doChange(d->rewindParent, d->rewindStackBefore);
 }
 
-class QDeclarativeStateChangeScriptPrivate : public QObjectPrivate
+class QDeclarativeStateChangeScriptPrivate : public QDeclarativeStateOperationPrivate
 {
 public:
     QDeclarativeStateChangeScriptPrivate() {}
@@ -589,6 +592,7 @@ public:
 
 /*!
     \qmlclass StateChangeScript QDeclarativeStateChangeScript
+    \ingroup qml-state-elements
     \brief The StateChangeScript element allows you to run a script in a state.
 
     A StateChangeScript is run upon entering a state. You can optionally use
@@ -693,6 +697,7 @@ QString QDeclarativeStateChangeScript::typeName() const
 
 /*!
     \qmlclass AnchorChanges QDeclarativeAnchorChanges
+    \ingroup qml-state-elements
     \brief The AnchorChanges element allows you to change the anchors of an item in a state.
 
     The AnchorChanges element is used to modify the anchors of an item in a \l State.
@@ -961,7 +966,7 @@ void QDeclarativeAnchorSet::resetCenterIn()
 }
 
 
-class QDeclarativeAnchorChangesPrivate : public QObjectPrivate
+class QDeclarativeAnchorChangesPrivate : public QDeclarativeStateOperationPrivate
 {
 public:
     QDeclarativeAnchorChangesPrivate()
@@ -1025,6 +1030,11 @@ public:
     bool applyOrigBottom;
     bool applyOrigVCenter;
     bool applyOrigBaseline;
+
+    QDeclarativeNullableValue<qreal> origWidth;
+    QDeclarativeNullableValue<qreal> origHeight;
+    qreal origX;
+    qreal origY;
 
     QList<QDeclarativeAbstractBinding*> oldBindings;
 
@@ -1317,6 +1327,42 @@ void QDeclarativeAnchorChanges::reverse(Reason reason)
         QDeclarativePropertyPrivate::setBinding(d->vCenterProp, d->origVCenterBinding);
     if (d->origBaselineBinding)
         QDeclarativePropertyPrivate::setBinding(d->baselineProp, d->origBaselineBinding);
+
+    //restore any absolute geometry changed by the state's anchors
+    QDeclarativeAnchors::Anchors stateVAnchors = d->anchorSet->d_func()->usedAnchors & QDeclarativeAnchors::Vertical_Mask;
+    QDeclarativeAnchors::Anchors origVAnchors = targetPrivate->anchors()->usedAnchors() & QDeclarativeAnchors::Vertical_Mask;
+    QDeclarativeAnchors::Anchors stateHAnchors = d->anchorSet->d_func()->usedAnchors & QDeclarativeAnchors::Horizontal_Mask;
+    QDeclarativeAnchors::Anchors origHAnchors = targetPrivate->anchors()->usedAnchors() & QDeclarativeAnchors::Horizontal_Mask;
+
+    bool stateSetWidth = (stateHAnchors &&
+                          stateHAnchors != QDeclarativeAnchors::LeftAnchor &&
+                          stateHAnchors != QDeclarativeAnchors::RightAnchor &&
+                          stateHAnchors != QDeclarativeAnchors::HCenterAnchor);
+    bool origSetWidth = (origHAnchors &&
+                         origHAnchors != QDeclarativeAnchors::LeftAnchor &&
+                         origHAnchors != QDeclarativeAnchors::RightAnchor &&
+                         origHAnchors != QDeclarativeAnchors::HCenterAnchor);
+    if (d->origWidth.isValid() && stateSetWidth && !origSetWidth)
+        d->target->setWidth(d->origWidth.value);
+
+    bool stateSetHeight = (stateVAnchors &&
+                           stateVAnchors != QDeclarativeAnchors::TopAnchor &&
+                           stateVAnchors != QDeclarativeAnchors::BottomAnchor &&
+                           stateVAnchors != QDeclarativeAnchors::VCenterAnchor &&
+                           stateVAnchors != QDeclarativeAnchors::BaselineAnchor);
+    bool origSetHeight = (origVAnchors &&
+                          origVAnchors != QDeclarativeAnchors::TopAnchor &&
+                          origVAnchors != QDeclarativeAnchors::BottomAnchor &&
+                          origVAnchors != QDeclarativeAnchors::VCenterAnchor &&
+                          origVAnchors != QDeclarativeAnchors::BaselineAnchor);
+    if (d->origHeight.isValid() && stateSetHeight && !origSetHeight)
+        d->target->setHeight(d->origHeight.value);
+
+    if (stateHAnchors && !origHAnchors)
+        d->target->setX(d->origX);
+
+    if (stateVAnchors && !origVAnchors)
+        d->target->setY(d->origY);
 }
 
 QString QDeclarativeAnchorChanges::typeName() const
@@ -1379,6 +1425,14 @@ void QDeclarativeAnchorChanges::saveOriginals()
     d->origVCenterBinding = QDeclarativePropertyPrivate::binding(d->vCenterProp);
     d->origBaselineBinding = QDeclarativePropertyPrivate::binding(d->baselineProp);
 
+    QDeclarativeItemPrivate *targetPrivate = QDeclarativeItemPrivate::get(d->target);
+    if (targetPrivate->widthValid)
+        d->origWidth = d->target->width();
+    if (targetPrivate->heightValid)
+        d->origHeight = d->target->height();
+    d->origX = d->target->x();
+    d->origY = d->target->y();
+
     d->applyOrigLeft = d->applyOrigRight = d->applyOrigHCenter = d->applyOrigTop
       = d->applyOrigBottom = d->applyOrigVCenter = d->applyOrigBaseline = false;
 
@@ -1411,6 +1465,11 @@ void QDeclarativeAnchorChanges::copyOriginals(QDeclarativeActionEvent *other)
     d->origVCenterBinding = acp->origVCenterBinding;
     d->origBaselineBinding = acp->origBaselineBinding;
 
+    d->origWidth = acp->origWidth;
+    d->origHeight = acp->origHeight;
+    d->origX = acp->origX;
+    d->origY = acp->origY;
+
     d->oldBindings.clear();
     d->oldBindings << acp->leftBinding << acp->rightBinding << acp->hCenterBinding
                 << acp->topBinding << acp->bottomBinding << acp->baselineBinding;
@@ -1424,6 +1483,7 @@ void QDeclarativeAnchorChanges::clearBindings()
     if (!d->target)
         return;
 
+    //### should this (saving "from" values) be moved to saveCurrentValues()?
     d->fromX = d->target->x();
     d->fromY = d->target->y();
     d->fromWidth = d->target->width();
@@ -1483,22 +1543,8 @@ void QDeclarativeAnchorChanges::rewind()
         return;
 
     QDeclarativeItemPrivate *targetPrivate = QDeclarativeItemPrivate::get(d->target);
-    //restore previous anchors
-    if (d->rewindLeft.anchorLine != QDeclarativeAnchorLine::Invalid)
-        targetPrivate->anchors()->setLeft(d->rewindLeft);
-    if (d->rewindRight.anchorLine != QDeclarativeAnchorLine::Invalid)
-        targetPrivate->anchors()->setRight(d->rewindRight);
-    if (d->rewindHCenter.anchorLine != QDeclarativeAnchorLine::Invalid)
-        targetPrivate->anchors()->setHorizontalCenter(d->rewindHCenter);
-    if (d->rewindTop.anchorLine != QDeclarativeAnchorLine::Invalid)
-        targetPrivate->anchors()->setTop(d->rewindTop);
-    if (d->rewindBottom.anchorLine != QDeclarativeAnchorLine::Invalid)
-        targetPrivate->anchors()->setBottom(d->rewindBottom);
-    if (d->rewindVCenter.anchorLine != QDeclarativeAnchorLine::Invalid)
-        targetPrivate->anchors()->setVerticalCenter(d->rewindVCenter);
-    if (d->rewindBaseline.anchorLine != QDeclarativeAnchorLine::Invalid)
-        targetPrivate->anchors()->setBaseline(d->rewindBaseline);
 
+    //restore previous values (but not previous bindings, i.e. anchors)
     d->target->setX(d->rewindX);
     d->target->setY(d->rewindY);
     if (targetPrivate->widthValid) {

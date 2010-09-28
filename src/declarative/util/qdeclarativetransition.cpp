@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Transition QDeclarativeTransition
+    \ingroup qml-animation-transition
     \since 4.7
     \brief The Transition element defines animated transitions that occur on state changes.
 
@@ -96,12 +97,6 @@ QT_BEGIN_NAMESPACE
     state change.
 
     \sa {QML Animation}, {declarative/animation/states}{states example}, {qmlstates}{States}, {QtDeclarative}
-*/
-
-/*!
-    \internal
-    \class QDeclarativeTransition
-    \brief The QDeclarativeTransition class allows you to define animated transitions that occur on state changes.
 */
 
 //ParallelAnimationWrapper allows us to do a "callback" when the animation finishes, rather than connecting

@@ -777,7 +777,7 @@ void tst_qdeclarativetextedit::delegateLoading_data()
 
     // import installed
     QTest::newRow("pass") << "cursorHttpTestPass.qml" << "";
-    QTest::newRow("fail1") << "cursorHttpTestFail1.qml" << "<Unknown File>: Network error for URL http://localhost:42332/FailItem.qml ";
+    QTest::newRow("fail1") << "cursorHttpTestFail1.qml" << "http://localhost:42332/FailItem.qml: Remote host closed the connection ";
     QTest::newRow("fail2") << "cursorHttpTestFail2.qml" << "http://localhost:42332/ErrItem.qml:4:5: Fungus is not a type ";
 }
 
@@ -1096,7 +1096,7 @@ void tst_qdeclarativetextedit::openInputPanelOnFocus()
     QApplication::processEvents();
     QCOMPARE(ic.openInputPanelReceived, true);
     ic.openInputPanelReceived = false;
-    QCOMPARE(view.inputContext(), &ic);
+    QCOMPARE(view.inputContext(), (QInputContext*)&ic);
     QVERIFY(view.testAttribute(Qt::WA_InputMethodEnabled));
 
     // input method should be disabled if focus

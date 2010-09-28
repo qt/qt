@@ -247,6 +247,12 @@ typedef struct _NPRect
 } NPRect;
 
 
+typedef struct _NPSize
+{
+  int32 width;
+  int32 height;
+} NPSize;
+
 #ifdef XP_UNIX
 /*
  * Unix specific structures and definitions
@@ -373,6 +379,11 @@ typedef enum {
     /* In the NPDrawingModelCoreAnimation drawing model, the browser asks the plug-in for a Core Animation layer. */
     NPPVpluginCoreAnimationLayer = 1003
 #endif
+
+
+#if defined(MOZ_PLATFORM_MAEMO) && (MOZ_PLATFORM_MAEMO == 5)
+    NPPVpluginWindowlessLocalBool = 2002
+#endif
 } NPPVariable;
 
 /*
@@ -419,6 +430,9 @@ typedef enum {
     , NPNVsupportsCocoaBool = 3001 /* TRUE if the browser supports the Cocoa event model */
     
 #endif /* XP_MACOSX */
+#if defined(MOZ_PLATFORM_MAEMO) && (MOZ_PLATFORM_MAEMO == 5)
+  , NPNVSupportsWindowlessLocal = 2002
+#endif
 } NPNVariable;
 
 typedef enum {
@@ -537,6 +551,23 @@ typedef struct _NPWindow
 #endif /* XP_UNIX || XP_SYMBIAN */
     NPWindowType type;    /* Is this a window or a drawable? */
 } NPWindow;
+
+
+typedef struct _NPImageExpose
+{
+  char*    data;       /* image pointer */
+  int32  stride;     /* Stride of data image pointer */
+  int32  depth;      /* Depth of image pointer */
+  int32  x;          /* Expose x */
+  int32  y;          /* Expose y */
+  uint32 width;      /* Expose width */
+  uint32 height;     /* Expose height */
+  NPSize   dataSize;   /* Data buffer size */
+  float    translateX; /* translate X matrix value */
+  float    translateY; /* translate Y matrix value */
+  float    scaleX;     /* scale X matrix value */
+  float    scaleY;     /* scale Y matrix value */
+} NPImageExpose;
 
 
 typedef struct _NPFullPrint

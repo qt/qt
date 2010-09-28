@@ -324,6 +324,10 @@ void QGLFBOGLPaintDevice::setFBO(QGLFramebufferObject* f,
         fboFormat.setStencil(true);
     } else if (attachment == QGLFramebufferObject::Depth) {
         fboFormat.setDepth(true);
+        fboFormat.setStencil(false);
+    } else {
+        fboFormat.setDepth(false);
+        fboFormat.setStencil(false);
     }
 
     GLenum format = f->format().internalTextureFormat();
@@ -615,6 +619,13 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     If you want to use a framebuffer object with multisampling enabled
     as a texture, you first need to copy from it to a regular framebuffer
     object using QGLContext::blitFramebuffer().
+
+    \section Threading
+
+    As of Qt 4.8, it's possible to draw into a QGLFramebufferObject
+    using a QPainter in a separate thread. Note that OpenGL 2.0 or
+    OpenGL ES 2.0 is required for this to work. Also, under X11, it's
+    necessary to set the Qt::AA_X11InitThreads application attribute.
 
     \sa {Framebuffer Object Example}
 */

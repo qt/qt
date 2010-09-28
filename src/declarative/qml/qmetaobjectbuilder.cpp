@@ -205,7 +205,7 @@ public:
             (const QByteArray& _name, const QByteArray& _type, int notifierIdx=-1)
         : name(_name),
           type(QMetaObject::normalizedType(_type.constData())),
-          flags(Readable | Writable), notifySignal(-1)
+          flags(Readable | Writable | Scriptable), notifySignal(-1)
     {
         if (notifierIdx >= 0) {
             flags |= Notify;
@@ -1142,7 +1142,7 @@ static QByteArray buildParameterNames
     if (!parameterNames.isEmpty()) {
         QByteArray names;
         bool first = true;
-        foreach (QByteArray name, parameterNames) {
+        foreach (const QByteArray &name, parameterNames) {
             if (first)
                 first = false;
             else
@@ -2187,7 +2187,7 @@ bool QMetaPropertyBuilder::isDesignable() const
 
 /*!
     Returns true if the property is scriptable; otherwise returns false.
-    This default value is false.
+    This default value is true.
 
     \sa setScriptable(), isDesignable(), isStored()
 */

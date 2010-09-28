@@ -89,6 +89,8 @@ private slots:
 
     void testSTLIterators() const;
     void testOperators() const;
+
+    void initializeList() const;
 };
 
 void tst_QList::length() const
@@ -660,6 +662,20 @@ void tst_QList::testSTLIterators() const
     QVERIFY(list.size() == 2);
     QCOMPARE(*it++, QLatin1String("bar"));
     QCOMPARE(*it, QLatin1String("foo"));
+}
+
+void tst_QList::initializeList() const
+{
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    QList<int> v1{2,3,4};
+    QCOMPARE(v1, QList<int>() << 2 << 3 << 4);
+    QCOMPARE(v1, (QList<int>{2,3,4}));
+
+    QList<QList<int>> v2{ v1, {1}, QList<int>(), {2,3,4}  };
+    QList<QList<int>> v3;
+    v3 << v1 << (QList<int>() << 1) << QList<int>() << v1;
+    QCOMPARE(v3, v2);
+#endif
 }
 
 QTEST_APPLESS_MAIN(tst_QList)

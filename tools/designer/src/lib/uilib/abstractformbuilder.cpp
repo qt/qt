@@ -1381,9 +1381,83 @@ DomActionRef *QAbstractFormBuilder::createActionRefDom(QAction *action)
     return ui_action_ref;
 }
 
+// Struct to store layout item parameters for saving layout items
+struct FormBuilderSaveLayoutEntry {
+    explicit FormBuilderSaveLayoutEntry(QLayoutItem *li = 0) :
+        item(li), row(-1), column(-1), rowSpan(0), columnSpan(0) {}
+
+    QLayoutItem *item;
+    int row;
+    int column;
+    int rowSpan;
+    int columnSpan;
+};
+
+// Create list from standard box layout
+static QList<FormBuilderSaveLayoutEntry> saveLayoutEntries(const QLayout *layout)
+{
+    QList<FormBuilderSaveLayoutEntry> rc;
+    if (const int count = layout->count()) {
+        rc.reserve(count);
+        for (int idx = 0; idx < count; ++idx) {
+            QLayoutItem *item = layout->itemAt(idx);
+            rc.append(FormBuilderSaveLayoutEntry(item));
+        }
+    }
+    return rc;
+}
+
+// Create list from grid layout
+static QList<FormBuilderSaveLayoutEntry> saveGridLayoutEntries(QGridLayout *gridLayout)
+{
+    QList<FormBuilderSaveLayoutEntry> rc;
+    if (const int count = gridLayout->count()) {
+        rc.reserve(count);
+        for (int idx = 0; idx < count; ++idx) {
+            QLayoutItem *item = gridLayout->itemAt(idx);
+            FormBuilderSaveLayoutEntry entry(item);
+            gridLayout->getItemPosition(idx, &entry.row, &entry.column, &entry.rowSpan,&entry.columnSpan);
+            rc.append(entry);
+        }
+    }
+    return rc;
+}
+
+#ifndef QT_NO_FORMLAYOUT
+// Create list from form layout
+static QList<FormBuilderSaveLayoutEntry> saveFormLayoutEntries(const QFormLayout *formLayout)
+{
+    QList<FormBuilderSaveLayoutEntry> rc;
+    if (const int count = formLayout->count()) {
+        rc.reserve(count);
+        for (int idx = 0; idx < count; ++idx) {
+            QLayoutItem *item = formLayout->itemAt(idx);
+            QFormLayout::ItemRole role = QFormLayout::LabelRole;
+            FormBuilderSaveLayoutEntry entry(item);
+            formLayout->getItemPosition(idx, &entry.row, &role);
+            switch (role ) {
+            case QFormLayout::LabelRole:
+                entry.column = 0;
+                break;
+            case QFormLayout::FieldRole:
+                entry.column = 1;
+                break;
+            case QFormLayout::SpanningRole:
+                entry.column = 0;
+                entry.columnSpan = 2;
+                break;
+            }
+            rc.push_back(entry);
+        }
+    }
+    return rc;
+}
+#endif
+
 /*!
     \internal
 */
+
 DomLayout *QAbstractFormBuilder::createDom(QLayout *layout, DomLayout *ui_layout, DomWidget *ui_parentWidget)
 {
     Q_UNUSED(ui_layout)
@@ -1394,37 +1468,30 @@ DomLayout *QAbstractFormBuilder::createDom(QLayout *layout, DomLayout *ui_layout
         lay->setAttributeName(objectName);
     lay->setElementProperty(computeProperties(layout));
 
+    QList<FormBuilderSaveLayoutEntry> newList;
+    if (QGridLayout *gridLayout = qobject_cast<QGridLayout *>(layout)) {
+        newList = saveGridLayoutEntries(gridLayout);
+#ifndef QT_NO_FORMLAYOUT
+    } else if (const QFormLayout *formLayout = qobject_cast<const QFormLayout *>(layout)) {
+        newList = saveFormLayoutEntries(formLayout);
+#endif
+    } else {
+        newList = saveLayoutEntries(layout);
+    }
+
     QList<DomLayoutItem*> ui_items;
-
-    QMap<QObject *, QLayoutItem *> objectToItem;
-    QList<QLayoutItem *> spacerItems;
-    QList<QLayoutItem *> newList;
-
-    for (int idx=0; layout->itemAt(idx); ++idx) {
-        QLayoutItem *item = layout->itemAt(idx);
-        if (item->widget())
-            objectToItem[item->widget()] = item;
-        else if (item->layout())
-            objectToItem[item->layout()] = item;
-        else if (item->spacerItem())
-            spacerItems.append(item);
-        newList.append(item);
-    }
-
-    if (qobject_cast<QGridLayout *>(layout)) {
-        newList.clear();
-        QList<QObject *> childrenList = layout->parentWidget()->children();
-        foreach (QObject *o, childrenList) {
-            if (objectToItem.contains(o))
-                newList.append(objectToItem[o]);
-        }
-        newList += spacerItems;
-    }
-
-    foreach (QLayoutItem *item, newList) {
-        DomLayoutItem *ui_item = createDom(item, lay, ui_parentWidget);
-        if (ui_item)
+    foreach (const FormBuilderSaveLayoutEntry &item, newList) {
+        if (DomLayoutItem *ui_item = createDom(item.item, lay, ui_parentWidget)) {
+            if (item.row >= 0)
+                ui_item->setAttributeRow(item.row);
+            if (item.column >= 0)
+                ui_item->setAttributeColumn(item.column);
+            if (item.rowSpan > 1)
+                ui_item->setAttributeRowSpan(item.rowSpan);
+            if (item.columnSpan > 1)
+                ui_item->setAttributeColSpan(item.columnSpan);
             ui_items.append(ui_item);
+        }
     }
 
     lay->setElementItem(ui_items);

@@ -65,6 +65,10 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #else
 #   include <EGL/egl.h>
 #endif
+#if !defined(EGL_VERSION_1_2)
+typedef unsigned int EGLenum;
+typedef void *EGLClientBuffer;
+#endif
 #else
 
 //types from egltypes.h for compiling stub without EGL headers

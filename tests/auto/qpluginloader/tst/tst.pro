@@ -27,3 +27,5 @@ symbian: {
 
    DEPLOYMENT += libDep pluginDep
 }
+
+DEFINES += SRCDIR=\\\"$$PWD/../\\\"

@@ -7745,6 +7745,7 @@ void DomResourceIcon::clear(bool clear_all)
 
     if (clear_all) {
     m_text = QLatin1String("");
+    m_has_attr_theme = false;
     m_has_attr_resource = false;
     }
 
@@ -7762,6 +7763,7 @@ void DomResourceIcon::clear(bool clear_all)
 DomResourceIcon::DomResourceIcon()
 {
     m_children = 0;
+    m_has_attr_theme = false;
     m_has_attr_resource = false;
     m_text = QLatin1String("");
     m_normalOff = 0;
@@ -7791,6 +7793,10 @@ void DomResourceIcon::read(QXmlStreamReader &reader)
 
     foreach (const QXmlStreamAttribute &attribute, reader.attributes()) {
         QStringRef name = attribute.name();
+        if (name == QLatin1String("theme")) {
+            setAttributeTheme(attribute.value().toString());
+            continue;
+        }
         if (name == QLatin1String("resource")) {
             setAttributeResource(attribute.value().toString());
             continue;
@@ -7869,6 +7875,8 @@ void DomResourceIcon::read(QXmlStreamReader &reader)
 #ifdef QUILOADER_QDOM_READ
 void DomResourceIcon::read(const QDomElement &node)
 {
+    if (node.hasAttribute(QLatin1String("theme")))
+        setAttributeTheme(node.attribute(QLatin1String("theme")));
     if (node.hasAttribute(QLatin1String("resource")))
         setAttributeResource(node.attribute(QLatin1String("resource")));
 
@@ -7937,6 +7945,9 @@ void DomResourceIcon::read(const QDomElement &node)
 void DomResourceIcon::write(QXmlStreamWriter &writer, const QString &tagName) const
 {
     writer.writeStartElement(tagName.isEmpty() ? QString::fromUtf8("resourceicon") : tagName.toLower());
+
+    if (hasAttributeTheme())
+        writer.writeAttribute(QLatin1String("theme"), attributeTheme());
 
     if (hasAttributeResource())
         writer.writeAttribute(QLatin1String("resource"), attributeResource());

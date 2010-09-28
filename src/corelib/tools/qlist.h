@@ -50,6 +50,10 @@
 #include <iterator>
 #include <list>
 #endif
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+#include <iterator>
+#include <initializer_list>
+#endif
 
 #include <new>
 #include <limits.h>
@@ -118,6 +122,14 @@ public:
     inline QList(const QList<T> &l) : d(l.d) { d->ref.ref(); if (!d->sharable) detach_helper(); }
     ~QList();
     QList<T> &operator=(const QList<T> &l);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QList &operator=(QList &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    inline QList(std::initializer_list<T> args) : d(&QListData::shared_null)
+    { d->ref.ref(); qCopy(args.begin(), args.end(), std::back_inserter(*this)); }
+#endif
     bool operator==(const QList<T> &l) const;
     inline bool operator!=(const QList<T> &l) const { return !(*this == l); }
 
@@ -424,10 +436,11 @@ template <typename T>
 Q_INLINE_TEMPLATE QList<T> &QList<T>::operator=(const QList<T> &l)
 {
     if (d != l.d) {
-        l.d->ref.ref();
+        QListData::Data *o = l.d;
+        o->ref.ref();
         if (!d->ref.deref())
             free(d);
-        d = l.d;
+        d = o;
         if (!d->sharable)
             detach_helper();
     }
