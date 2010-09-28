@@ -39,34 +39,85 @@
 **
 ****************************************************************************/
 
-#include <qtest.h>
-#include <QtCore>
+#include <QtCore/QtCore>
+#include <QtTest/QtTest>
 
 #include <math.h>
 
-//TESTED_FILES=
+#ifdef Q_OS_UNIX
+#  include <pthread.h>
+#  include <errno.h>
+typedef pthread_mutex_t NativeMutexType;
+void NativeMutexInitialize(NativeMutexType *mutex)
+{
+    pthread_mutex_init(mutex, NULL);
+}
+void NativeMutexDestroy(NativeMutexType *mutex)
+{
+    pthread_mutex_destroy(mutex);
+}
+void NativeMutexLock(NativeMutexType *mutex)
+{
+    pthread_mutex_lock(mutex);
+}
+void NativeMutexUnlock(NativeMutexType *mutex)
+{
+    pthread_mutex_unlock(mutex);
+}
+#elif defined(Q_OS_WIN)
+#  define _WIN32_WINNT 0x0400
+#  include <windows.h>
+typedef CRITICAL_SECTION NativeMutexType;
+void NativeMutexInitialize(NativeMutexType *mutex)
+{
+    InitializeCriticalSection(mutex);
+}
+void NativeMutexDestroy(NativeMutexType *mutex)
+{
+    DeleteCriticalSection(mutex);
+}
+void NativeMutexLock(NativeMutexType *mutex)
+{
+    EnterCriticalSection(mutex);
+}
+void NativeMutexUnlock(NativeMutexType *mutex)
+{
+    LeaveCriticalSection(mutex);
+}
+#endif
 
+//TESTED_FILES=
 
 class tst_QMutex : public QObject
 {
     Q_OBJECT
 
+    int threadCount;
+
 public:
-    tst_QMutex();
-    virtual ~tst_QMutex();
+    tst_QMutex()
+    {
+        // at least 2 threads, even on single cpu/core machines
+        threadCount = qMax(2, QThread::idealThreadCount());
+        qDebug("thread count: %d", threadCount);
+    }
 
 private slots:
     void noThread_data();
     void noThread();
+
+    void uncontendedNative();
+    void uncontendedQMutex();
+    void uncontendedQMutexLocker();
+
+    void contendedNative_data();
+    void contendedQMutex_data() { contendedNative_data(); }
+    void contendedQMutexLocker_data() { contendedNative_data(); }
+
+    void contendedNative();
+    void contendedQMutex();
+    void contendedQMutexLocker();
 };
-
-tst_QMutex::tst_QMutex()
-{
-}
-
-tst_QMutex::~tst_QMutex()
-{
-}
 
 void tst_QMutex::noThread_data()
 {
@@ -125,6 +176,203 @@ void tst_QMutex::noThread()
             break;
     }
     QCOMPARE(int(count), N);
+}
+
+void tst_QMutex::uncontendedNative()
+{
+    NativeMutexType mutex;
+    NativeMutexInitialize(&mutex);
+    QBENCHMARK {
+        NativeMutexLock(&mutex);
+        NativeMutexUnlock(&mutex);
+    }
+    NativeMutexDestroy(&mutex);
+}
+
+void tst_QMutex::uncontendedQMutex()
+{
+    QMutex mutex;
+    QBENCHMARK {
+        mutex.lock();
+        mutex.unlock();
+    }
+}
+
+void tst_QMutex::uncontendedQMutexLocker()
+{
+    QMutex mutex;
+    QBENCHMARK {
+        QMutexLocker locker(&mutex);
+    }
+}
+
+void tst_QMutex::contendedNative_data()
+{
+    QTest::addColumn<int>("iterations");
+    QTest::addColumn<int>("msleepDuration");
+    QTest::newRow("-1")  << 100 <<  -1;
+    QTest::newRow("0")   << 100 <<   0;
+    QTest::newRow("1")   <<  10 <<   1;
+    QTest::newRow("2")   <<  10 <<   2;
+}
+
+class NativeMutexThread : public QThread
+{
+    QSemaphore *semaphore1, *semaphore2;
+    NativeMutexType *mutex;
+    int iterations, msleepDuration;
+public:
+    bool done;
+    NativeMutexThread(QSemaphore *semaphore1, QSemaphore *semaphore2, NativeMutexType *mutex, int iterations, int msleepDuration)
+        : semaphore1(semaphore1), semaphore2(semaphore2), mutex(mutex), iterations(iterations), msleepDuration(msleepDuration), done(false)
+    { }
+    void run() {
+        forever {
+            semaphore1->acquire();
+            if (done)
+                break;
+            for (int i = 0; i < iterations; ++i) {
+                NativeMutexLock(mutex);
+                if (msleepDuration >= 0)
+                    msleep(msleepDuration);
+                NativeMutexUnlock(mutex);
+            }
+            semaphore2->release();
+        }
+    }
+};
+
+void tst_QMutex::contendedNative()
+{
+    QFETCH(int, iterations);
+    QFETCH(int, msleepDuration);
+
+    QSemaphore semaphore1, semaphore2;
+    NativeMutexType mutex;
+    NativeMutexInitialize(&mutex);
+
+    QVector<NativeMutexThread *> threads(threadCount);
+    for (int i = 0; i < threads.count(); ++i) {
+        threads[i] = new NativeMutexThread(&semaphore1, &semaphore2, &mutex, iterations, msleepDuration);
+        threads[i]->start();
+    }
+
+    QBENCHMARK {
+        semaphore1.release(threadCount);
+        semaphore2.acquire(threadCount);
+    }
+
+    for (int i = 0; i < threads.count(); ++i)
+        threads[i]->done = true;
+    semaphore1.release(threadCount);
+    for (int i = 0; i < threads.count(); ++i)
+        threads[i]->wait();
+    qDeleteAll(threads);
+
+    NativeMutexDestroy(&mutex);
+}
+
+class QMutexThread : public QThread
+{
+    QSemaphore *semaphore1, *semaphore2;
+    QMutex *mutex;
+    int iterations, msleepDuration;
+public:
+    bool done;
+    QMutexThread(QSemaphore *semaphore1, QSemaphore *semaphore2, QMutex *mutex, int iterations, int msleepDuration)
+        : semaphore1(semaphore1), semaphore2(semaphore2), mutex(mutex), iterations(iterations), msleepDuration(msleepDuration), done(false)
+    { }
+    void run() {
+        forever {
+            semaphore1->acquire();
+            if (done)
+                break;
+            for (int i = 0; i < iterations; ++i) {
+                mutex->lock();
+                if (msleepDuration >= 0)
+                    msleep(msleepDuration);
+                mutex->unlock();
+            }
+            semaphore2->release();
+        }
+    }
+};
+
+void tst_QMutex::contendedQMutex()
+{
+    QFETCH(int, iterations);
+    QFETCH(int, msleepDuration);
+    QSemaphore semaphore1, semaphore2;
+    QMutex mutex;
+
+    QVector<QMutexThread *> threads(threadCount);
+    for (int i = 0; i < threads.count(); ++i) {
+        threads[i] = new QMutexThread(&semaphore1, &semaphore2, &mutex, iterations, msleepDuration);
+        threads[i]->start();
+    }
+
+    QBENCHMARK {
+        semaphore1.release(threadCount);
+        semaphore2.acquire(threadCount);
+    }
+
+    for (int i = 0; i < threads.count(); ++i)
+        threads[i]->done = true;
+    semaphore1.release(threadCount);
+    for (int i = 0; i < threads.count(); ++i)
+        threads[i]->wait();
+    qDeleteAll(threads);
+}
+
+class QMutexLockerThread : public QThread
+{
+    QSemaphore *semaphore1, *semaphore2;
+    QMutex *mutex;
+    int iterations, msleepDuration;
+public:
+    bool done;
+    QMutexLockerThread(QSemaphore *semaphore1, QSemaphore *semaphore2, QMutex *mutex, int iterations, int msleepDuration)
+        : semaphore1(semaphore1), semaphore2(semaphore2), mutex(mutex), iterations(iterations), msleepDuration(msleepDuration), done(false)
+    { }
+    void run() {
+        forever {
+            semaphore1->acquire();
+            if (done)
+                break;
+            for (int i = 0; i < iterations; ++i) {
+                QMutexLocker locker(mutex);
+                if (msleepDuration >= 0)
+                    msleep(msleepDuration);
+            }
+            semaphore2->release();
+        }
+    }
+};
+
+void tst_QMutex::contendedQMutexLocker()
+{
+    QFETCH(int, iterations);
+    QFETCH(int, msleepDuration);
+    QSemaphore semaphore1, semaphore2;
+    QMutex mutex;
+
+    QVector<QMutexLockerThread *> threads(threadCount);
+    for (int i = 0; i < threads.count(); ++i) {
+        threads[i] = new QMutexLockerThread(&semaphore1, &semaphore2, &mutex, iterations, msleepDuration);
+        threads[i]->start();
+    }
+
+    QBENCHMARK {
+        semaphore1.release(threadCount);
+        semaphore2.acquire(threadCount);
+    }
+
+    for (int i = 0; i < threads.count(); ++i)
+        threads[i]->done = true;
+    semaphore1.release(threadCount);
+    for (int i = 0; i < threads.count(); ++i)
+        threads[i]->wait();
+    qDeleteAll(threads);
 }
 
 QTEST_MAIN(tst_QMutex)
