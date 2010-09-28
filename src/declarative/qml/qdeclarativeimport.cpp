@@ -876,6 +876,7 @@ void QDeclarativeImportDatabase::addImportPath(const QString& path)
         cPath = dir.canonicalPath();
     } else {
         cPath = path;
+        cPath.replace(QLatin1Char('\\'), QLatin1Char('/'));
     }
 
     if (!cPath.isEmpty()

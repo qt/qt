@@ -1536,7 +1536,7 @@ public:
 #endif
 #ifdef Q_OS_SYMBIAN
     enum SymbianVersion {
-        SV_Unknown = 0x0000,
+        SV_Unknown = 1000000, // Assume unknown is something newer than what is supported
         //These are the Symbian Ltd versions 9.2-9.4
         SV_9_2 = 10,
         SV_9_3 = 20,
@@ -1550,7 +1550,7 @@ public:
     static SymbianVersion symbianVersion();
     enum S60Version {
         SV_S60_None = 0,
-        SV_S60_Unknown = 1,
+        SV_S60_Unknown = SV_Unknown,
         SV_S60_3_1 = SV_9_2,
         SV_S60_3_2 = SV_9_3,
         SV_S60_5_0 = SV_9_4,

@@ -1341,6 +1341,10 @@ void QSymbianControl::setFocusSafely(bool focus)
     // focus in Symbian. If this is not executed, the control which happens to be on
     // the top of the stack may randomly be assigned focus by Symbian, for example
     // when creating new windows (specifically in CCoeAppUi::HandleStackChanged()).
+
+    // Close any popups.
+    CEikonEnv::Static()->EikAppUi()->StopDisplayingMenuBar();
+
     if (focus) {
         S60->appUi()->RemoveFromStack(this);
         // Symbian doesn't automatically remove focus from the last focused control, so we need to
