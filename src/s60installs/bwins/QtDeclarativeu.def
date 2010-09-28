@@ -242,7 +242,7 @@ EXPORTS
 	?idString@QDeclarativeDebugObjectReference@@QBE?AVQString@@XZ @ 241 NONAME ; class QString QDeclarativeDebugObjectReference::idString(void) const
 	?customTypeData@QDeclarativeDomObject@@QBE?AVQByteArray@@XZ @ 242 NONAME ; class QByteArray QDeclarativeDomObject::customTypeData(void) const
 	?stop@QDeclarativeTransition@@QAEXXZ @ 243 NONAME ; void QDeclarativeTransition::stop(void)
-	?data@QDeclarativeListModel@@UBE?AV?$QHash@HVQVariant@@@@HABV?$QList@H@@@Z @ 244 NONAME ; class QHash<int, class QVariant> QDeclarativeListModel::data(int, class QList<int> const &) const
+	?data@QDeclarativeListModel@@UBE?AV?$QHash@HVQVariant@@@@HABV?$QList@H@@@Z @ 244 NONAME ABSENT ; class QHash<int, class QVariant> QDeclarativeListModel::data(int, class QList<int> const &) const
 	?verticalCenterOffset@QDeclarativeAnchors@@QBEMXZ @ 245 NONAME ; float QDeclarativeAnchors::verticalCenterOffset(void) const
 	?metaObject@QDeclarativeText@@UBEPBUQMetaObject@@XZ @ 246 NONAME ; struct QMetaObject const * QDeclarativeText::metaObject(void) const
 	??0QDeclarativeComponent@@QAE@PAVQDeclarativeEngine@@PAVQObject@@@Z @ 247 NONAME ; QDeclarativeComponent::QDeclarativeComponent(class QDeclarativeEngine *, class QObject *)
@@ -608,7 +608,7 @@ EXPORTS
 	??_EQDeclarativeDebugObjectExpressionWatch@@UAE@I@Z @ 607 NONAME ; QDeclarativeDebugObjectExpressionWatch::~QDeclarativeDebugObjectExpressionWatch(unsigned int)
 	?computeTransformOrigin@QDeclarativeItemPrivate@@QBE?AVQPointF@@XZ @ 608 NONAME ; class QPointF QDeclarativeItemPrivate::computeTransformOrigin(void) const
 	??0QDeclarativeListReference@@QAE@PAVQObject@@PBDPAVQDeclarativeEngine@@@Z @ 609 NONAME ; QDeclarativeListReference::QDeclarativeListReference(class QObject *, char const *, class QDeclarativeEngine *)
-	?setData@QListModelInterface@@UAE_NHABV?$QHash@HVQVariant@@@@@Z @ 610 NONAME ; bool QListModelInterface::setData(int, class QHash<int, class QVariant> const &)
+	?setData@QListModelInterface@@UAE_NHABV?$QHash@HVQVariant@@@@@Z @ 610 NONAME ABSENT ; bool QListModelInterface::setData(int, class QHash<int, class QVariant> const &)
 	??0QDeclarativePen@@QAE@PAVQObject@@@Z @ 611 NONAME ; QDeclarativePen::QDeclarativePen(class QObject *)
 	?trUtf8@QPacketProtocol@@SA?AVQString@@PBD0H@Z @ 612 NONAME ; class QString QPacketProtocol::trUtf8(char const *, char const *, int)
 	?setContextObject@QDeclarativeContext@@QAEXPAVQObject@@@Z @ 613 NONAME ; void QDeclarativeContext::setContextObject(class QObject *)
@@ -1715,4 +1715,89 @@ EXPORTS
 	??0QDeclarativeListModel@@AAE@PBV0@PAVQDeclarativeListModelWorkerAgent@@@Z @ 1714 NONAME ; QDeclarativeListModel::QDeclarativeListModel(class QDeclarativeListModel const *, class QDeclarativeListModelWorkerAgent *)
 	?inWorkerThread@QDeclarativeListModel@@ABE_NXZ @ 1715 NONAME ; bool QDeclarativeListModel::inWorkerThread(void) const
 	?canMove@QDeclarativeListModel@@ABE_NHHH@Z @ 1716 NONAME ; bool QDeclarativeListModel::canMove(int, int, int) const
+	?setLoops@QDeclarativeAbstractAnimation@@QAEXH@Z @ 1717 NONAME ; void QDeclarativeAbstractAnimation::setLoops(int)
+	?trUtf8@QDeclarativeAbstractAnimation@@SA?AVQString@@PBD0@Z @ 1718 NONAME ; class QString QDeclarativeAbstractAnimation::trUtf8(char const *, char const *)
+	?staticMetaObject@QDeclarativeAbstractAnimation@@2UQMetaObject@@B @ 1719 NONAME ; struct QMetaObject const QDeclarativeAbstractAnimation::staticMetaObject
+	?setRunning@QDeclarativeTimer@@QAEX_N@Z @ 1720 NONAME ; void QDeclarativeTimer::setRunning(bool)
+	?tr@QDeclarativeTimer@@SA?AVQString@@PBD0@Z @ 1721 NONAME ; class QString QDeclarativeTimer::tr(char const *, char const *)
+	?qt_metacall@QDeclarativeTimer@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 1722 NONAME ; int QDeclarativeTimer::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?setPaused@QDeclarativeAbstractAnimation@@QAEX_N@Z @ 1723 NONAME ; void QDeclarativeAbstractAnimation::setPaused(bool)
+	?setRepeating@QDeclarativeTimer@@QAEX_N@Z @ 1724 NONAME ; void QDeclarativeTimer::setRepeating(bool)
+	?interval@QDeclarativeTimer@@QBEHXZ @ 1725 NONAME ; int QDeclarativeTimer::interval(void) const
+	?start@QDeclarativeTimer@@QAEXXZ @ 1726 NONAME ; void QDeclarativeTimer::start(void)
+	?transition@QDeclarativeAbstractAnimation@@UAEXAAV?$QList@VQDeclarativeAction@@@@AAV?$QList@VQDeclarativeProperty@@@@W4TransitionDirection@1@@Z @ 1727 NONAME ; void QDeclarativeAbstractAnimation::transition(class QList<class QDeclarativeAction> &, class QList<class QDeclarativeProperty> &, enum QDeclarativeAbstractAnimation::TransitionDirection)
+	?componentComplete@QDeclarativeAbstractAnimation@@UAEXXZ @ 1728 NONAME ; void QDeclarativeAbstractAnimation::componentComplete(void)
+	?runningChanged@QDeclarativeAbstractAnimation@@IAEX_N@Z @ 1729 NONAME ; void QDeclarativeAbstractAnimation::runningChanged(bool)
+	?trUtf8@QDeclarativeAbstractAnimation@@SA?AVQString@@PBD0H@Z @ 1730 NONAME ; class QString QDeclarativeAbstractAnimation::trUtf8(char const *, char const *, int)
+	?metaObject@QDeclarativeTimer@@UBEPBUQMetaObject@@XZ @ 1731 NONAME ; struct QMetaObject const * QDeclarativeTimer::metaObject(void) const
+	?setGroup@QDeclarativeAbstractAnimation@@QAEXPAVQDeclarativeAnimationGroup@@@Z @ 1732 NONAME ; void QDeclarativeAbstractAnimation::setGroup(class QDeclarativeAnimationGroup *)
+	?isRepeating@QDeclarativeTimer@@QBE_NXZ @ 1733 NONAME ; bool QDeclarativeTimer::isRepeating(void) const
+	?setTriggeredOnStart@QDeclarativeTimer@@QAEX_N@Z @ 1734 NONAME ; void QDeclarativeTimer::setTriggeredOnStart(bool)
+	?currentTime@QDeclarativeAbstractAnimation@@QAEHXZ @ 1735 NONAME ; int QDeclarativeAbstractAnimation::currentTime(void)
+	??1QDeclarativeAbstractAnimation@@UAE@XZ @ 1736 NONAME ; QDeclarativeAbstractAnimation::~QDeclarativeAbstractAnimation(void)
+	?triggered@QDeclarativeTimer@@IAEXXZ @ 1737 NONAME ; void QDeclarativeTimer::triggered(void)
+	?finished@QDeclarativeTimer@@AAEXXZ @ 1738 NONAME ; void QDeclarativeTimer::finished(void)
+	?pausedChanged@QDeclarativeAbstractAnimation@@IAEX_N@Z @ 1739 NONAME ; void QDeclarativeAbstractAnimation::pausedChanged(bool)
+	?complete@QDeclarativeAbstractAnimation@@QAEXXZ @ 1740 NONAME ; void QDeclarativeAbstractAnimation::complete(void)
+	?setRunning@QDeclarativeAbstractAnimation@@QAEX_N@Z @ 1741 NONAME ; void QDeclarativeAbstractAnimation::setRunning(bool)
+	?completed@QDeclarativeAbstractAnimation@@IAEXXZ @ 1742 NONAME ; void QDeclarativeAbstractAnimation::completed(void)
+	?trUtf8@QDeclarativeTimer@@SA?AVQString@@PBD0@Z @ 1743 NONAME ; class QString QDeclarativeTimer::trUtf8(char const *, char const *)
+	?loopCountChanged@QDeclarativeAbstractAnimation@@IAEXH@Z @ 1744 NONAME ; void QDeclarativeAbstractAnimation::loopCountChanged(int)
+	?repeatChanged@QDeclarativeTimer@@IAEXXZ @ 1745 NONAME ; void QDeclarativeTimer::repeatChanged(void)
+	?setDisableUserControl@QDeclarativeAbstractAnimation@@QAEXXZ @ 1746 NONAME ; void QDeclarativeAbstractAnimation::setDisableUserControl(void)
+	?setDefaultTarget@QDeclarativeAbstractAnimation@@QAEXABVQDeclarativeProperty@@@Z @ 1747 NONAME ; void QDeclarativeAbstractAnimation::setDefaultTarget(class QDeclarativeProperty const &)
+	?triggeredOnStart@QDeclarativeTimer@@QBE_NXZ @ 1748 NONAME ; bool QDeclarativeTimer::triggeredOnStart(void) const
+	?notifyRunningChanged@QDeclarativeAbstractAnimation@@AAEX_N@Z @ 1749 NONAME ; void QDeclarativeAbstractAnimation::notifyRunningChanged(bool)
+	?componentComplete@QDeclarativeTimer@@MAEXXZ @ 1750 NONAME ; void QDeclarativeTimer::componentComplete(void)
+	?tr@QDeclarativeAbstractAnimation@@SA?AVQString@@PBD0@Z @ 1751 NONAME ; class QString QDeclarativeAbstractAnimation::tr(char const *, char const *)
+	?isRunning@QDeclarativeAbstractAnimation@@QBE_NXZ @ 1752 NONAME ; bool QDeclarativeAbstractAnimation::isRunning(void) const
+	?d_func@QDeclarativeAbstractAnimation@@ABEPBVQDeclarativeAbstractAnimationPrivate@@XZ @ 1753 NONAME ; class QDeclarativeAbstractAnimationPrivate const * QDeclarativeAbstractAnimation::d_func(void) const
+	??_EQDeclarativeAbstractAnimation@@UAE@I@Z @ 1754 NONAME ; QDeclarativeAbstractAnimation::~QDeclarativeAbstractAnimation(unsigned int)
+	?d_func@QDeclarativeAbstractAnimation@@AAEPAVQDeclarativeAbstractAnimationPrivate@@XZ @ 1755 NONAME ; class QDeclarativeAbstractAnimationPrivate * QDeclarativeAbstractAnimation::d_func(void)
+	?componentFinalized@QDeclarativeAbstractAnimation@@AAEXXZ @ 1756 NONAME ; void QDeclarativeAbstractAnimation::componentFinalized(void)
+	??_EQDeclarativeTimer@@UAE@I@Z @ 1757 NONAME ; QDeclarativeTimer::~QDeclarativeTimer(unsigned int)
+	?pause@QDeclarativeAbstractAnimation@@QAEXXZ @ 1758 NONAME ; void QDeclarativeAbstractAnimation::pause(void)
+	?stop@QDeclarativeTimer@@QAEXXZ @ 1759 NONAME ; void QDeclarativeTimer::stop(void)
+	?timelineComplete@QDeclarativeAbstractAnimation@@AAEXXZ @ 1760 NONAME ; void QDeclarativeAbstractAnimation::timelineComplete(void)
+	?setAlwaysRunToEnd@QDeclarativeAbstractAnimation@@QAEX_N@Z @ 1761 NONAME ; void QDeclarativeAbstractAnimation::setAlwaysRunToEnd(bool)
+	?classBegin@QDeclarativeAbstractAnimation@@UAEXXZ @ 1762 NONAME ; void QDeclarativeAbstractAnimation::classBegin(void)
+	?d_func@QDeclarativeTimer@@AAEPAVQDeclarativeTimerPrivate@@XZ @ 1763 NONAME ; class QDeclarativeTimerPrivate * QDeclarativeTimer::d_func(void)
+	??0QDeclarativeAbstractAnimation@@QAE@PAVQObject@@@Z @ 1764 NONAME ; QDeclarativeAbstractAnimation::QDeclarativeAbstractAnimation(class QObject *)
+	?metaObject@QDeclarativeAbstractAnimation@@UBEPBUQMetaObject@@XZ @ 1765 NONAME ; struct QMetaObject const * QDeclarativeAbstractAnimation::metaObject(void) const
+	?tr@QDeclarativeAbstractAnimation@@SA?AVQString@@PBD0H@Z @ 1766 NONAME ; class QString QDeclarativeAbstractAnimation::tr(char const *, char const *, int)
+	?started@QDeclarativeAbstractAnimation@@IAEXXZ @ 1767 NONAME ; void QDeclarativeAbstractAnimation::started(void)
+	?setInterval@QDeclarativeTimer@@QAEXH@Z @ 1768 NONAME ; void QDeclarativeTimer::setInterval(int)
+	?d_func@QDeclarativeTimer@@ABEPBVQDeclarativeTimerPrivate@@XZ @ 1769 NONAME ; class QDeclarativeTimerPrivate const * QDeclarativeTimer::d_func(void) const
+	?staticMetaObject@QDeclarativeTimer@@2UQMetaObject@@B @ 1770 NONAME ; struct QMetaObject const QDeclarativeTimer::staticMetaObject
+	?qt_metacast@QDeclarativeAbstractAnimation@@UAEPAXPBD@Z @ 1771 NONAME ; void * QDeclarativeAbstractAnimation::qt_metacast(char const *)
+	?setCurrentTime@QDeclarativeAbstractAnimation@@QAEXH@Z @ 1772 NONAME ; void QDeclarativeAbstractAnimation::setCurrentTime(int)
+	?restart@QDeclarativeAbstractAnimation@@QAEXXZ @ 1773 NONAME ; void QDeclarativeAbstractAnimation::restart(void)
+	??0QDeclarativeAbstractAnimation@@IAE@AAVQDeclarativeAbstractAnimationPrivate@@PAVQObject@@@Z @ 1774 NONAME ; QDeclarativeAbstractAnimation::QDeclarativeAbstractAnimation(class QDeclarativeAbstractAnimationPrivate &, class QObject *)
+	?resume@QDeclarativeAbstractAnimation@@QAEXXZ @ 1775 NONAME ; void QDeclarativeAbstractAnimation::resume(void)
+	?runningChanged@QDeclarativeTimer@@IAEXXZ @ 1776 NONAME ; void QDeclarativeTimer::runningChanged(void)
+	?ticked@QDeclarativeTimer@@AAEXXZ @ 1777 NONAME ; void QDeclarativeTimer::ticked(void)
+	?trUtf8@QDeclarativeTimer@@SA?AVQString@@PBD0H@Z @ 1778 NONAME ; class QString QDeclarativeTimer::trUtf8(char const *, char const *, int)
+	??0QDeclarativeTimer@@QAE@PAVQObject@@@Z @ 1779 NONAME ; QDeclarativeTimer::QDeclarativeTimer(class QObject *)
+	?loops@QDeclarativeAbstractAnimation@@QBEHXZ @ 1780 NONAME ; int QDeclarativeAbstractAnimation::loops(void) const
+	?setTarget@QDeclarativeAbstractAnimation@@EAEXABVQDeclarativeProperty@@@Z @ 1781 NONAME ; void QDeclarativeAbstractAnimation::setTarget(class QDeclarativeProperty const &)
+	?alwaysRunToEnd@QDeclarativeAbstractAnimation@@QBE_NXZ @ 1782 NONAME ; bool QDeclarativeAbstractAnimation::alwaysRunToEnd(void) const
+	?tr@QDeclarativeTimer@@SA?AVQString@@PBD0H@Z @ 1783 NONAME ; class QString QDeclarativeTimer::tr(char const *, char const *, int)
+	?intervalChanged@QDeclarativeTimer@@IAEXXZ @ 1784 NONAME ; void QDeclarativeTimer::intervalChanged(void)
+	?isPaused@QDeclarativeAbstractAnimation@@QBE_NXZ @ 1785 NONAME ; bool QDeclarativeAbstractAnimation::isPaused(void) const
+	?getStaticMetaObject@QDeclarativeAbstractAnimation@@SAABUQMetaObject@@XZ @ 1786 NONAME ; struct QMetaObject const & QDeclarativeAbstractAnimation::getStaticMetaObject(void)
+	?group@QDeclarativeAbstractAnimation@@QBEPAVQDeclarativeAnimationGroup@@XZ @ 1787 NONAME ; class QDeclarativeAnimationGroup * QDeclarativeAbstractAnimation::group(void) const
+	?classBegin@QDeclarativeTimer@@MAEXXZ @ 1788 NONAME ; void QDeclarativeTimer::classBegin(void)
+	?restart@QDeclarativeTimer@@QAEXXZ @ 1789 NONAME ; void QDeclarativeTimer::restart(void)
+	??1QDeclarativeTimer@@UAE@XZ @ 1790 NONAME ; QDeclarativeTimer::~QDeclarativeTimer(void)
+	?getStaticMetaObject@QDeclarativeTimer@@SAABUQMetaObject@@XZ @ 1791 NONAME ; struct QMetaObject const & QDeclarativeTimer::getStaticMetaObject(void)
+	?qt_metacast@QDeclarativeTimer@@UAEPAXPBD@Z @ 1792 NONAME ; void * QDeclarativeTimer::qt_metacast(char const *)
+	?alwaysRunToEndChanged@QDeclarativeAbstractAnimation@@IAEX_N@Z @ 1793 NONAME ; void QDeclarativeAbstractAnimation::alwaysRunToEndChanged(bool)
+	?triggeredOnStartChanged@QDeclarativeTimer@@IAEXXZ @ 1794 NONAME ; void QDeclarativeTimer::triggeredOnStartChanged(void)
+	?isRunning@QDeclarativeTimer@@QBE_NXZ @ 1795 NONAME ; bool QDeclarativeTimer::isRunning(void) const
+	?update@QDeclarativeTimer@@AAEXXZ @ 1796 NONAME ; void QDeclarativeTimer::update(void)
+	?stop@QDeclarativeAbstractAnimation@@QAEXXZ @ 1797 NONAME ; void QDeclarativeAbstractAnimation::stop(void)
+	?start@QDeclarativeAbstractAnimation@@QAEXXZ @ 1798 NONAME ; void QDeclarativeAbstractAnimation::start(void)
+	?qt_metacall@QDeclarativeAbstractAnimation@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 1799 NONAME ; int QDeclarativeAbstractAnimation::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?getScriptEngine@QDeclarativeDebugHelper@@SAPAVQScriptEngine@@PAVQDeclarativeEngine@@@Z @ 1800 NONAME ; class QScriptEngine * QDeclarativeDebugHelper::getScriptEngine(class QDeclarativeEngine *)
+	?setAnimationSlowDownFactor@QDeclarativeDebugHelper@@SAXM@Z @ 1801 NONAME ; void QDeclarativeDebugHelper::setAnimationSlowDownFactor(float)
 

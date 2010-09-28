@@ -365,7 +365,6 @@ private:
     int m_queryId;
     QVariant m_expr;
     QVariant m_result;
-
 };
 
 QT_END_NAMESPACE

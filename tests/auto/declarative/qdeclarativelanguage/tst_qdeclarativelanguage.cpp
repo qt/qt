@@ -376,6 +376,7 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("invalidOn") << "invalidOn.qml" << "invalidOn.errors.txt" << false;
     QTest::newRow("invalidProperty") << "invalidProperty.qml" << "invalidProperty.errors.txt" << false;
     QTest::newRow("nonScriptableProperty") << "nonScriptableProperty.qml" << "nonScriptableProperty.errors.txt" << false;
+    QTest::newRow("notAvailable") << "notAvailable.qml" << "notAvailable.errors.txt" << false;
 }
 
 

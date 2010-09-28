@@ -70,6 +70,7 @@
 #include <qtoolbar.h>
 #include <QtGui/qpaintengine.h>
 #include <private/qbackingstore_p.h>
+#include <qmenubar.h>
 
 #include <QtGui/QGraphicsView>
 #include <QtGui/QGraphicsProxyWidget>
@@ -81,8 +82,14 @@
 #include <avkon.hrh>                // EEikStatusPaneUidTitle
 #include <akntitle.h>               // CAknTitlePane
 #include <akncontext.h>             // CAknContextPane
+#endif
+
+#ifdef Q_OS_SYMBIAN
 #include <eikspane.h>               // CEikStatusPane
 #include <eikbtgpc.h>               // CEikButtonGroupContainer
+#include <eikenv.h>                 // CEikonEnv
+#include <eikaufty.h>               // MEikAppUiFactory
+#include <eikmenub.h>               // CEikMenuBar
 #endif
 
 #ifdef Q_WS_QWS
@@ -387,6 +394,7 @@ private slots:
     void maximizedWindowModeTransitions();
     void minimizedWindowModeTransitions();
     void normalWindowModeTransitions();
+    void focusSwitchClosesPopupMenu();
 #endif
 
     void focusProxyAndInputMethods();
@@ -10252,6 +10260,31 @@ void tst_QWidget::normalWindowModeTransitions()
     QCOMPARE(widget.geometry(), normalGeometry);
     QVERIFY(!buttonGroup->IsVisible());
     QVERIFY(!statusPane->IsVisible());
+}
+
+void tst_QWidget::focusSwitchClosesPopupMenu()
+{
+    QMainWindow mainWindow;
+    QAction action("Test action", &mainWindow);
+    mainWindow.menuBar()->addAction(&action);
+
+    mainWindow.show();
+    QT_TRAP_THROWING(CEikonEnv::Static()->AppUiFactory()->MenuBar()->TryDisplayMenuBarL());
+    QVERIFY(CEikonEnv::Static()->AppUiFactory()->MenuBar()->IsDisplayed());
+
+    // Close the popup by opening a new window.
+    QMainWindow mainWindow2;
+    QAction action2("Test action", &mainWindow2);
+    mainWindow2.menuBar()->addAction(&action2);
+    mainWindow2.show();
+    QVERIFY(!CEikonEnv::Static()->AppUiFactory()->MenuBar()->IsDisplayed());
+
+    QT_TRAP_THROWING(CEikonEnv::Static()->AppUiFactory()->MenuBar()->TryDisplayMenuBarL());
+    QVERIFY(CEikonEnv::Static()->AppUiFactory()->MenuBar()->IsDisplayed());
+
+    // Close the popup by switching focus.
+    mainWindow.activateWindow();
+    QVERIFY(!CEikonEnv::Static()->AppUiFactory()->MenuBar()->IsDisplayed());
 }
 #endif
 
