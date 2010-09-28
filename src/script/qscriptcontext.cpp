@@ -555,7 +555,12 @@ void QScriptContext::pushScope(const QScriptValue &value)
     v8::Handle<v8::Value> securityToken = d->engine->securityToken();
     v8::Handle<v8::ObjectTemplate> scopeObjectTemplate = v8::ObjectTemplate::New();
     {   // Initialize scopeObjectTemplate
-        v8::Handle<v8::Value> globalObject = d->engine->globalObject();
+        v8::Handle<v8::Value> globalObject;
+        if (d->v8Scopes.isEmpty()) {
+            globalObject = d->engine->globalObject();
+        } else {
+            globalObject = d->v8Scopes.at(d->v8Scopes.count() - 1).first->Global();
+        }
         v8::Handle<v8::Value> scopeObject = static_cast<v8::Handle<v8::Value> >(*object);
         v8::Handle<v8::Array> scopeChain = v8::Array::New(2);
         Q_ASSERT(!globalObject.IsEmpty());
