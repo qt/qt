@@ -286,7 +286,7 @@ static inline uint detectProcessorFeatures()
     uint feature_result = 0;
 
 #if defined(Q_CC_GNU)
-    long tmp;
+    quint64 tmp;
     asm ("xchg %%rbx, %1\n"
          "cpuid\n"
          "xchg %%rbx, %1\n"
