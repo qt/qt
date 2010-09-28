@@ -26,6 +26,7 @@
 
 #include <QtCore/qhash.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/qset.h>
 
 #include <private/qobject_p.h>
 
@@ -168,6 +169,7 @@ private:
     v8::Persistent<v8::ObjectTemplate> m_globalObjectTemplate;
     QScriptContextPrivate *m_currentQsContext;
     QScopedPointer<QScriptContextPrivate> m_baseQsContext;
+    QSet<int> visitedConversionObjects;
 };
 
 v8::Handle<v8::Value> QScriptEnginePrivate::makeJSValue(bool value)

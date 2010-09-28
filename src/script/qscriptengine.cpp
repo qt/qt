@@ -274,9 +274,15 @@ v8::Handle<v8::Array> QScriptEnginePrivate::variantListToJS(const QVariantList &
 QVariantList QScriptEnginePrivate::variantListFromJS(v8::Handle<v8::Array> jsArray)
 {
     QVariantList result;
+    int hash = jsArray->GetIdentityHash();
+    if (visitedConversionObjects.contains(hash))
+        return result; // Avoid recursion.
+    v8::HandleScope handleScope;
+    visitedConversionObjects.insert(hash);
     uint32_t length = jsArray->Length();
     for (uint32_t i = 0; i < length; ++i)
         result.append(variantFromJS(jsArray->Get(i)));
+    visitedConversionObjects.remove(hash);
     return result;
 }
 
@@ -300,6 +306,11 @@ v8::Handle<v8::Object> QScriptEnginePrivate::variantMapToJS(const QVariantMap &v
 QVariantMap QScriptEnginePrivate::variantMapFromJS(v8::Handle<v8::Object> jsObject)
 {
     QVariantMap result;
+    int hash = jsObject->GetIdentityHash();
+    if (visitedConversionObjects.contains(hash))
+        return result; // Avoid recursion.
+    visitedConversionObjects.insert(hash);
+    v8::HandleScope handleScope;
     // TODO: Only object's own property names. Include non-enumerable properties.
     v8::Handle<v8::Array> propertyNames = jsObject->GetPropertyNames();
     uint32_t length = propertyNames->Length();
@@ -307,6 +318,7 @@ QVariantMap QScriptEnginePrivate::variantMapFromJS(v8::Handle<v8::Object> jsObje
         v8::Handle<v8::Value> name = propertyNames->Get(i);
         result.insert(QScriptConverter::toString(name->ToString()), variantFromJS(jsObject->Get(name)));
     }
+    visitedConversionObjects.remove(hash);
     return result;
 }
 
