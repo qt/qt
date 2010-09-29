@@ -55,7 +55,7 @@ QtGui
  - QPainter
     * [QTBUG-13429] Fixed scale point drawing with square cap in the raster
       engine, plus some potential floating point overflows in the rasterizer.
-	  
+
  - QStaticText
     * [QTBUG-12614] Fix crash with zero-width string.
 	* [QTBUG-12540] Fix rendering of large glyphs with OpenGL2 paint engine.
@@ -96,7 +96,9 @@ QtNetwork
 
 QtOpenGL
 --------
-
+ - QGL2PaintEngineEx
+    * Fixed drawing a large number of glyphs with the same font on systems
+      with small texure size limits.
 
 QtOpenVG
 --------
@@ -148,6 +150,13 @@ Qt for Windows
  - Drag & Drop:
    * [QTBUG-13787] Fixed a possible crash with mingw
 
+ - QPrinter
+   * [QTBUG-12263] Strokes were in some cases not printed with the correct
+     color under Windows.
+
+ - QGLWidget
+   * [QTBUG-13141] Fixed multi-sampling support for ATI based cards under
+     Windows.
 
 Qt for Mac OS X
 ---------------
