@@ -41,11 +41,20 @@ Optimizations
 QtCore
 ------
 
+ - Containers
+    * [QTBUG-13079] Fix assingment of a container included in the container itself
+
  - QLibrary
     * [QT-3825] System libraries are only loaded from the system directories
 
+
  - QUuid
     * [QTBUG-11213] QUuid::createUuid() should not generate identical sequences on UNIX
+
+ - QEventDispatcherUnix
+    * [QTBUG-13633] Do not process too many timer events if other events need
+     to be processed first
+
 
 QtGui
 -----
@@ -57,6 +66,7 @@ QtGui
  - QPainter
     * [QTBUG-13429] Fixed scale point drawing with square cap in the raster
       engine, plus some potential floating point overflows in the rasterizer.
+    * Optimized pixmap drawing with SmoothPixmapTransform.
 
  - QStaticText
     * [QTBUG-12614] Fix crash with zero-width string.
@@ -76,6 +86,9 @@ QtGui
 
  - QPixmap
     * [QTBUG-12560] Fixed a regression preventing loading images without extensions
+
+ - QTreeView
+    * [QTBUG-13567] Do not scroll to top if last item is removed
 
 
 QtDBus
@@ -117,6 +130,10 @@ QtSql
 QtSvg
 -----
 
+QtXml
+-----
+ * Fixed a crash when parsing invalid tag names.
+
 QtXmlPatterns
 -------------
  - XML Schema internals:
@@ -127,6 +144,10 @@ QtDeclarative
  - QML debugging:
     * [QTBUG-5162] The debugger is now activated with -qmljsdebugger command
     line arg to enable support for platforms without environment variables
+    * Various improvements to ease debugging in creator
+ - QDeclarativeImageProvider:
+    * Fixed memory leak
+    * Improved concurrency when using in assynchronus mode.
 
 Qt Plugins
 ----------
@@ -197,6 +218,9 @@ Qt for Symbian
 
  - uic
   * Improve warnings and error reports
+
+ - moc
+  * Show an error if NOTIFY refer to a wrong signal in Q_PROPERTY
 
 ****************************************************************************
 *                     Important Behavior Changes                           *
