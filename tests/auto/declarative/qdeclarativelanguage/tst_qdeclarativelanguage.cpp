@@ -1715,12 +1715,18 @@ void tst_qdeclarativelanguage::initTestCase()
 {
     registerTypes();
 
+    // Registering the TestType class in other modules should have no adverse effects
+    qmlRegisterType<TestType>("com.nokia.TestPre", 1, 0, "Test");
+
     qmlRegisterType<TestType>("com.nokia.Test", 0, 0, "TestTP");
     qmlRegisterType<TestType>("com.nokia.Test", 1, 0, "Test");
     qmlRegisterType<TestType>("com.nokia.Test", 1, 5, "Test");
     qmlRegisterType<TestType2>("com.nokia.Test", 1, 8, "Test");
     qmlRegisterType<TestType>("com.nokia.Test", 1, 9, "OldTest");
     qmlRegisterType<TestType2>("com.nokia.Test", 1, 12, "Test");
+
+    // Registering the TestType class in other modules should have no adverse effects
+    qmlRegisterType<TestType>("com.nokia.TestPost", 1, 0, "Test");
 
     // Create locale-specific file
     // For POSIX, this will just be data/I18nType.qml, since POSIX is 7-bit
