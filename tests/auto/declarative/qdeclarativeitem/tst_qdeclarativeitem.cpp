@@ -81,6 +81,8 @@ private slots:
     void resourcesProperty();
     void mouseFocus();
 
+    void transformCrash();
+
 private:
     template<typename T>
     T *findItem(QGraphicsObject *parent, const QString &objectName);
@@ -789,6 +791,16 @@ void tst_QDeclarativeItem::childrenRectBug3()
     canvas->show();
 
     //don't crash on delete
+    delete canvas;
+}
+
+// QTBUG-13893
+void tst_QDeclarativeItem::transformCrash()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/transformCrash.qml"));
+    canvas->show();
+
     delete canvas;
 }
 
