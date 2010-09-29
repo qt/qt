@@ -88,6 +88,14 @@ void Panic(TCdtPanic reason)
     User::Panic(KCat, reason);
 }
 
+// disabling the BTrace components of heap checking macros
+#ifndef ENABLE_BTRACE
+int noBTrace()
+{
+    return 0;
+}
+#endif
+
 #else /* QT_USE_NEW_SYMBIAN_ALLOCATOR */
 
 #include <e32std.h>

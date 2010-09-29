@@ -93,7 +93,6 @@
 #define __INIT_COUNTERS(i)	iCellCount=i,iTotalAllocSize=i
 #define __POWER_OF_2(x)		(!((x)&((x)-1)))
 
-#ifdef ENABLE_BTRACE
 #define __DL_BFR_CHECK(M,P) \
 		  if ( MEMORY_MONITORED ) \
              if ( !IS_ALIGNED(P) || ((TUint8*)(P)<M->iSeg.iBase) || ((TUint8*)(P)>(M->iSeg.iBase+M->iSeg.iSize))) \
@@ -112,11 +111,6 @@
 			if ( ((TUint32)P &  ((1 << iPageSize)-1)) || ((TUint8*)P<iMemBase) || ((TUint8*)(P)>(TUint8*)this))  \
 				BTraceContext12(BTrace::EHeap, BTrace::EHeapCorruption, (TUint32)this, (TUint32)P, (TUint32)0), HEAP_PANIC(ETHeapBadCellAddress)
 
-#endif
-#else
-#define __DL_BFR_CHECK(M,P)
-#define __SLAB_BFR_CHECK(S,P,B)
-#define __PAGE_BFR_CHECK(P)
 #endif
 
 #ifdef _MSC_VER

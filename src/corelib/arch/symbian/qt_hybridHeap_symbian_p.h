@@ -97,6 +97,12 @@
 #define NO_NAMED_LOCAL_CHUNKS
 #endif
 
+// disabling the BTrace components of heap checking macros
+#ifndef ENABLE_BTRACE
+extern int noBTrace();
+#define BTraceContext12(a,b,c,d,e) noBTrace()
+#endif
+
 #ifndef QT_SYMBIAN_HAVE_U32STD_H
 struct SThreadCreateInfo
     {
