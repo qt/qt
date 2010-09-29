@@ -1312,6 +1312,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         inSection = true;
         xmlWriter().writeStartElement("section");
         writeGuidAttribute(Doc::canonicalTitle(Text::sectionHeading(atom).toString()));
+        xmlWriter().writeAttribute("outputclass","details");
         break;
     case Atom::SectionRight:
         if (inSection) {
@@ -1594,10 +1595,13 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
                     needOtherSection = true;
             }
             else {
+                QString attr;
                 if (!s->members.isEmpty()) {
                     xmlWriter().writeStartElement("section");
-                    xmlWriter().writeAttribute("outputclass","h2");
+                    attr = cleanRef((*s).name).toLower() + " redundant";
+                    xmlWriter().writeAttribute("outputclass",attr);
                     xmlWriter().writeStartElement("title");
+                    xmlWriter().writeAttribute("outputclass","h2");
                     xmlWriter().writeCharacters(protectEnc((*s).name));
                     xmlWriter().writeEndElement(); // </title>
                     generateSection(s->members, inner, marker, CodeMarker::Summary);
@@ -1606,9 +1610,11 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
                 }
                 if (!s->reimpMembers.isEmpty()) {
                     QString name = QString("Reimplemented ") + (*s).name;
+                    attr = cleanRef(name).toLower() + " redundant";
                     xmlWriter().writeStartElement("section");
-                    xmlWriter().writeAttribute("outputclass","h2");
+                    xmlWriter().writeAttribute("outputclass",attr);
                     xmlWriter().writeStartElement("title");
+                    xmlWriter().writeAttribute("outputclass","h2");
                     xmlWriter().writeCharacters(protectEnc(name));
                     xmlWriter().writeEndElement(); // </title>
                     generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
@@ -1620,8 +1626,9 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         }
         if (needOtherSection) {
             xmlWriter().writeStartElement("section");
-            xmlWriter().writeAttribute("outputclass","h3");
+            xmlWriter().writeAttribute("outputclass","additional-inherited-members redundant");
             xmlWriter().writeStartElement("title");
+            xmlWriter().writeAttribute("outputclass","h3");
             xmlWriter().writeCharacters("Additional Inherited Members");
             xmlWriter().writeEndElement(); // </title>
             s = summarySections.begin();
@@ -2427,8 +2434,8 @@ QString DitaXmlGenerator::generateLowStatusMemberFile(const InnerNode* inner,
     
     for (i = 0; i < sections.size(); ++i) {
         xmlWriter().writeStartElement("section");
-        xmlWriter().writeAttribute("outputclass","h2");
         xmlWriter().writeStartElement("title");
+        xmlWriter().writeAttribute("outputclass","h2");
         xmlWriter().writeCharacters(protectEnc(sections.at(i).name));
         xmlWriter().writeEndElement(); // </title>
         generateSection(sections.at(i).members, inner, marker, CodeMarker::Summary);
@@ -5334,18 +5341,28 @@ void DitaXmlGenerator::writeDetailedDescription(const Node* node,
         if (apiDesc) {
             inApiDesc = true;
             xmlWriter().writeStartElement(APIDESC);
-            // zzz xmlWriter().writeAttribute("id",node->guid());
-            if (!title.isEmpty())
+            if (!title.isEmpty()) {
+                writeGuidAttribute(title);
                 xmlWriter().writeAttribute("spectitle",title);
+            }
+            else
+                writeGuidAttribute("Detailed Description");
+            xmlWriter().writeAttribute("outputclass","details");
         }
         else {
             inSection = true;
             xmlWriter().writeStartElement("section");
-            // zzz xmlWriter().writeAttribute("id",node->guid());
             if (!title.isEmpty()) {
+                writeGuidAttribute(title);
+                xmlWriter().writeAttribute("outputclass","details");
                 xmlWriter().writeStartElement("title");
+                xmlWriter().writeAttribute("outputclass","h2");
                 xmlWriter().writeCharacters(title);
                 xmlWriter().writeEndElement(); // </title>
+            }
+            else {
+                writeGuidAttribute("Detailed Description");
+                xmlWriter().writeAttribute("outputclass","details");
             }
         }
         generateBody(node, marker);
