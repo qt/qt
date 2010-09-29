@@ -41,6 +41,9 @@ Optimizations
 QtCore
 ------
 
+ - QLibrary
+    * [QT-3825] System libraries are only loaded from the system directories
+
 
 QtGui
 -----
@@ -65,6 +68,12 @@ QtGui
       Therefor the scale factors are initialized to 1.0 and for every new
       sequence the totalScaleFactor is multiplied with the scaleFactor of the
       new sequence.
+
+ - QLineEdit
+    * [QTBUG-13520] Fixed the scrolling of text with right alignment
+
+ - QPixmap
+    * [QTBUG-12560] Fixed a regression preventing loading images without extensions
 
 
 QtDBus
@@ -136,6 +145,8 @@ Qt for Linux/X11
 
 Qt for Windows
 --------------
+ - Drag & Drop:
+   * [QTBUG-13787] Fixed a possible crash with mingw
 
 
 Qt for Mac OS X
