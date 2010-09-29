@@ -138,6 +138,7 @@ private:
 
     const QGLContext *ctx;
     QGL2PaintEngineExPrivate *pex;
+    QGLShaderProgram *m_blitProgram;
 };
 
 QT_END_NAMESPACE
