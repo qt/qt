@@ -52,9 +52,9 @@
 
 #include <QtCore/QCoreApplication>
 
-QT_BEGIN_NAMESPACE
-
 Q_DECLARE_METATYPE(QSharedPointer<char>)
+
+QT_BEGIN_NAMESPACE
 
 inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
     : backend(0), outgoingData(0), outgoingDataBuffer(0),
