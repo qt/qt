@@ -45,7 +45,7 @@
 #include "qplatformdefs.h"
 #include "qabstractfileengine.h"
 #include "private/qfsfileengine_p.h"
-#include "qfilesystemengine_p.h"
+#include <private/qsystemlibrary_p.h>
 #include <qdebug.h>
 
 #include "qfile.h"

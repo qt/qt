@@ -89,7 +89,6 @@ QTOBJS= \
 	qabstractfileengine.obj \
 	qfsfileengine_win.obj \
 	qsystemlibrary.obj \
-	qfsfileengine_iterator_win.obj \
 	qfileinfo.obj \
 	qglobal.obj \
 	qhash.obj \
