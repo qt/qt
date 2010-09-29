@@ -6156,12 +6156,6 @@ if [ "$PLATFORM_QPA" = "yes" ]; then
         fi
     fi
 
-    # MIT_SHM is required for testlite
-    if [ "$CFG_MITSHM" != "no" ]; then
-	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/mitshm "mitshm" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
-            QT_CONFIG="$QT_CONFIG mitshm"
-	fi
-    fi
 fi
 
 
