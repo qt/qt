@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 #include <qtest.h>
+#include <QDir>
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
 
@@ -56,12 +57,20 @@ public:
 private slots:
     void create();
 
+    void accidentalImport_data();
+    void accidentalImport();
+
 private:
+    QStringList findFiles(const QDir &d);
+
     QDeclarativeEngine engine;
+    QStringList excludedFiles;
 };
 
 tst_moduleqt47::tst_moduleqt47()
 {
+    excludedFiles << "tests/auto/declarative/moduleqt47/data/importqt47.qml"
+                  << "doc/src/declarative/whatsnew.qdoc";
 }
 
 void tst_moduleqt47::create()
@@ -72,6 +81,54 @@ void tst_moduleqt47::create()
 
     QVERIFY(obj != 0);
     delete obj;
+}
+
+QStringList tst_moduleqt47::findFiles(const QDir &d)
+{
+    QStringList rv;
+
+    QStringList files = d.entryList(QStringList() << QLatin1String("*.qml") << QLatin1String("*.qdoc"), QDir::Files);
+    foreach (const QString &file, files) {
+
+        QString absFile = d.absoluteFilePath(file);
+
+        bool skip = false;
+        for (int ii = 0; !skip && ii < excludedFiles.count(); ++ii) 
+            skip = (absFile.endsWith(excludedFiles.at(ii)));
+
+        if (!skip)
+            rv << absFile;
+    }
+
+    QStringList dirs = d.entryList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+    foreach (const QString &dir, dirs) {
+        QDir sub = d;
+        sub.cd(dir);
+        rv << findFiles(sub);
+    }
+
+    return rv;
+}
+
+void tst_moduleqt47::accidentalImport_data()
+{
+    QTest::addColumn<QString>("file");
+    QStringList files = findFiles(QDir(SRCDIR "/../../../../"));
+
+    foreach(const QString &file, files) 
+        QTest::newRow(qPrintable(file)) << file;
+}
+
+void tst_moduleqt47::accidentalImport()
+{
+    QFETCH(QString, file);
+
+    QFile f(file);
+    if (!f.open(QIODevice::ReadOnly))
+        return;
+    QByteArray data = f.readAll();
+
+    QVERIFY(!data.contains("import Qt 4"));
 }
 
 QTEST_MAIN(tst_moduleqt47)
