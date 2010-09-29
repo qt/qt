@@ -197,11 +197,19 @@ Qt for Symbian
 --------------
 
  - configure
+   * [QTBUG-4586] Fixed wrong paths in include/ActiveQt/headers.pri.
    * [QTBUG-11671] Fixed audio-backend detection in configure tests.
 
  - qmake
    * [QTBUG-13523] Added support for using -L notation in the LIBS variable
      when building with the symbian/linux-armcc or gcce mkspec.
+   * [QTBUG-12851] Fix assertion on Windows when DESTDIR is empty in static
+     libs.
+   * [QTBUG-12802] Fix vcxproj generator when using /Fd in QMAKE_CXXFLAGS.
+   * [QTBUG-13080] vcxproj generator: fix bug when using CharacterSet=1 in
+     .pro file.
+   * [QTBUG-13081] vc[x]proj generators: support /MAP option without file
+     name.
 
  - QInputContext
    * [QTBUG-12949] Fixed a bug where passwords would not be committed when
@@ -209,6 +217,10 @@ Qt for Symbian
    * [QTBUG-13472] Fixed crash in input methods when using symbols menu and
      numbers only.
 
+Qt for Windows CE
+-----------------
+ - Gui
+   * [QTBUG-8408] Show the [X] button on Windows mobile when maximizing.
 
 ****************************************************************************
 *                          Tools                                           *
