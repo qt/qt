@@ -214,6 +214,7 @@ void tst_QMutex::contendedNative_data()
     QTest::newRow("0")   << 100 <<   0;
     QTest::newRow("1")   <<  10 <<   1;
     QTest::newRow("2")   <<  10 <<   2;
+    QTest::newRow("10")  <<  10 <<  10;
 }
 
 class NativeMutexThread : public QThread
