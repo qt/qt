@@ -1,4 +1,4 @@
-import Qt 4.7
+import QtQuick 1.0
 
 Path {
     startX: 120; startY: 100
