@@ -547,7 +547,7 @@ void QDeclarativePathAttribute::setName(const QString &name)
 }
 
 /*!
-   \qmlproperty string PathAttribute::value
+   \qmlproperty real PathAttribute::value
    This property holds the value for the attribute.
 
    The value specified can be used to influence the visual appearance
