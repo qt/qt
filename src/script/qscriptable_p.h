@@ -52,9 +52,9 @@ public:
 
     inline QScriptEnginePrivate* engine() const;
     inline QScriptContextPrivate* context() const;
-    inline QScriptValuePrivate* thisObject() const;
+    inline QScriptPassPointer<QScriptValuePrivate> thisObject() const;
     inline int argumentCount() const;
-    inline QScriptValuePrivate* argument(int index) const;
+    inline QScriptPassPointer<QScriptValuePrivate> argument(int index) const;
 private:
     QExplicitlySharedDataPointer<QScriptEnginePrivate> m_engine;
 };
@@ -72,7 +72,7 @@ inline QScriptContextPrivate* QScriptablePrivate::context() const
     return m_engine->currentContext();
 }
 
-inline QScriptValuePrivate* QScriptablePrivate::thisObject() const
+inline QScriptPassPointer<QScriptValuePrivate> QScriptablePrivate::thisObject() const
 {
     return context()->thisObject();
 }
@@ -80,6 +80,11 @@ inline QScriptValuePrivate* QScriptablePrivate::thisObject() const
 inline int QScriptablePrivate::argumentCount() const
 {
     return context()->argumentCount();
+}
+
+inline QScriptPassPointer<QScriptValuePrivate> QScriptablePrivate::argument(int index) const
+{
+    return context()->argument(index);
 }
 
 QT_END_NAMESPACE

@@ -56,9 +56,9 @@ public:
     inline QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args = 0);
     inline ~QScriptContextPrivate();
 
-    inline QScriptValuePrivate *argument(int index) const;
+    inline QScriptPassPointer<QScriptValuePrivate> argument(int index) const;
     inline int argumentCount() const;
-    inline QScriptValuePrivate *thisObject() const;
+    inline QScriptPassPointer<QScriptValuePrivate> thisObject() const;
 
     QScriptContext* q_ptr;
     QScriptEnginePrivate *engine;
@@ -95,7 +95,7 @@ QScriptContextPrivate::~QScriptContextPrivate()
 
 
 
-inline QScriptValuePrivate *QScriptContextPrivate::argument(int index) const
+inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::argument(int index) const
 {
     if (index < 0)
         return new QScriptValuePrivate();
@@ -121,7 +121,7 @@ inline int QScriptContextPrivate::argumentCount() const
     return -1;
 }
 
-inline QScriptValuePrivate *QScriptContextPrivate::thisObject() const
+inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::thisObject() const
 {
     if (arguments) {
         return new QScriptValuePrivate(engine, arguments->This());

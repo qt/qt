@@ -45,6 +45,15 @@ QScriptString::QScriptString(QScriptStringPrivate* d)
 }
 
 /*!
+  Constructs an QScriptString from internal representation
+  \internal
+*/
+QScriptString::QScriptString(QScriptPassPointer<QScriptStringPrivate> d)
+    : d_ptr(d)
+{
+}
+
+/*!
   Constructs a new QScriptString that is a copy of \a other.
 */
 QScriptString::QScriptString(const QScriptString& other)

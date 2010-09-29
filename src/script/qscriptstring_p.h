@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
 class QScriptStringPrivate : public QScriptSharedData {
 public:
     static inline QScriptString get(QScriptStringPrivate* d);
+    static inline QScriptString get(QScriptPassPointer<QScriptStringPrivate> d);
     static inline QScriptStringPrivate* get(const QScriptString& p);
 
     inline QScriptStringPrivate();
@@ -79,6 +80,12 @@ QScriptStringPrivate::~QScriptStringPrivate()
 }
 
 QScriptString QScriptStringPrivate::get(QScriptStringPrivate* d)
+{
+    Q_ASSERT(d);
+    return QScriptString(d);
+}
+
+QScriptString QScriptStringPrivate::get(QScriptPassPointer<QScriptStringPrivate> d)
 {
     Q_ASSERT(d);
     return QScriptString(d);

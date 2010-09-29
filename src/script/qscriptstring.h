@@ -26,7 +26,7 @@
 
 #include <QtCore/qstring.h>
 
-#include <QtCore/qsharedpointer.h>
+#include "qscriptshareddata_p.h"
 
 QT_BEGIN_HEADER
 
@@ -60,7 +60,8 @@ public:
 
 private:
     QScriptString(QScriptStringPrivate*);
-    QExplicitlySharedDataPointer<QScriptStringPrivate> d_ptr;
+    QScriptString(QScriptPassPointer<QScriptStringPrivate>);
+    QScriptSharedDataPointer<QScriptStringPrivate> d_ptr;
     friend class QScriptValue;
     Q_DECLARE_PRIVATE(QScriptString)
 };
