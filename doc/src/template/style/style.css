@@ -528,6 +528,8 @@
 		height:21px;
 		padding:2px 0 0 5px;
 		width:167px;
+		_height: 23px;
+		_width: 169px;		
     }
 
     .sidebar .search form input#pageType
@@ -644,6 +646,81 @@
 	}
 	.floatingResult:hover{
 	}
+	
+		
+	#resultdialog {
+	  display: none;
+	  position: absolute;
+	  *left: 30px;
+	  _left: 0;
+	  *top: 35px;
+	  _top: 30px;
+	  _zoom: 1;
+	  background-color: #fff;
+	  border: 1px solid #666;
+		z-index: 4;
+	  margin-top: 5px;
+	  _margin: 0 0 0 -20px;
+	  padding: 10px;
+	  width: 220px;
+	  _width: 196px;
+	  height: 250px;
+	  overflow: auto;
+		-webkit-border-radius: .5em;
+		-moz-border-radius: .5em;
+		border-radius: .5em;
+		-webkit-box-shadow: 0 4px 6px 0 rgba(0,0,0,.2);
+		-moz-box-shadow: 0 4px 6px 0 rgba(0,0,0,.2);
+		box-shadow: 0 4px 6px 0 rgba(0,0,0,.2);
+	}
+
+	#resultdialog.active {
+	  display: block;
+	}
+
+	#resultdialog #resultclose {
+	  float: right;
+	}
+
+	#resultdialog p,
+	#resultdialog ul {
+	  clear: both;
+	  margin: 3px 0;
+	}
+
+	p#searchcount span {
+		display: none;
+	}
+
+	p#searchcount.all span#resultcount,
+	p#searchcount.api span#apicount,
+	p#searchcount.article span#articlecount,
+	p#searchcount.example span#examplecount {
+		display: inline;
+	}
+
+	#resultlist li {
+		display: none;
+	}
+
+	#resultlist.api li.api,
+	#resultlist.article li.article,
+	#resultlist.example li.example,
+	#resultlist.all li {
+		display: block;
+	}
+
+	#resultlinks.api a#showapiresults,
+	#resultlinks.api a#showapiresults:hover,
+	#resultlinks.article a#showarticleresults,
+	#resultlinks.article a#showarticleresults:hover,
+	#resultlinks.example a#showexampleresults,
+	#resultlinks.example a#showexampleresults:hover,
+	#resultlinks.all a#showallresults,
+	#resultlinks.all a#showallresults:hover {
+		color: #B0ADAB;
+	}	
+			
 	
 /* end sidebar elements */
 /* content elements */
@@ -837,6 +914,9 @@
         padding-left: 25px;
         padding-top: 10px;
     }
+	.wrap .content ul img {
+		vertical-align:middle;
+	}	
     a:hover
     {
         color: #4c0033;
@@ -1341,7 +1421,8 @@
 	.creator .wrapper .hd,
     .creator .wrapper .ft,
 	.creator .sidebar,
-	.creator .wrap .feedback
+	.creator .wrap .feedback,
+	.creator #resultdialog
     {
 	display:none;
     }

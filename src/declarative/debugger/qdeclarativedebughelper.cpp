@@ -39,12 +39,28 @@
 **
 ****************************************************************************/
 
-#include "private/qdeclarativeclassfactory_p.h"
+#include <QtScript/QScriptEngine>
+
+#include "private/qdeclarativedebughelper_p.h"
+
+#include <QtCore/QAbstractAnimation>
+#include <QtScript/QScriptEngine>
+
+#include <private/qdeclarativeengine_p.h>
+#include <private/qabstractanimation_p.h>
 
 QT_BEGIN_NAMESPACE
 
-QDeclarativeClassFactory::~QDeclarativeClassFactory()
+QScriptEngine *QDeclarativeDebugHelper::getScriptEngine(QDeclarativeEngine *engine)
 {
+    return QDeclarativeEnginePrivate::getScriptEngine(engine);
+}
+
+void QDeclarativeDebugHelper::setAnimationSlowDownFactor(qreal factor)
+{
+    QUnifiedTimer *timer = QUnifiedTimer::instance();
+    timer->setSlowModeEnabled(factor != 1.0);
+    timer->setSlowdownFactor(factor);
 }
 
 QT_END_NAMESPACE
