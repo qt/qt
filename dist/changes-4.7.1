@@ -44,6 +44,8 @@ QtCore
  - QLibrary
     * [QT-3825] System libraries are only loaded from the system directories
 
+ - QUuid
+    * [QTBUG-11213] QUuid::createUuid() should not generate identical sequences on UNIX
 
 QtGui
 -----
@@ -139,7 +141,8 @@ Qt Plugins
 
 Qt for Unix (X11 and Mac OS X)
 ------------------------------
-
+ - Event System:
+   * [QT_3553] Fix invalid memory write during recursive timer activation.
 
 Qt for Linux/X11
 ----------------
@@ -147,6 +150,9 @@ Qt for Linux/X11
 
 Qt for Windows
 --------------
+ - Event System:
+   * [QTBUG-12721] Fix Qt applications freezing until mouse/keyboard events occur.
+
  - Drag & Drop:
    * [QTBUG-13787] Fixed a possible crash with mingw
 
