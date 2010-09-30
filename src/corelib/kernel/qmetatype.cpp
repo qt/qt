@@ -229,11 +229,7 @@ QT_BEGIN_NAMESPACE
 #define QT_ADD_STATIC_METATYPE(STR, TP) \
     { STR, sizeof(STR) - 1, TP }
 
-/*
-    Note: these MUST be in the order of the enums.
-    Note: adding, removing or changing values in the array should be followed by
-    recration of a hash function in the QMetaTypeStaticType class.
- */
+/* Note: these MUST be in the order of the enums */
 static const struct { const char * typeName; int typeNameLength; int type; } types[] = {
 
     /* All Core types */
@@ -422,165 +418,17 @@ const char *QMetaType::typeName(int type)
     return 0;
 }
 
-/*!
-  \internal
-  \threadsafe
-  This class contains a hash table for converting typeName -> typeId it is used by qMetaTypeStaticType.
-
-  C++ code produced by gperf version 3.0.3
-  Command-line: gperf -C -m 100 -t -L C++ keys.txt
-  To recreate keys.txt file, all registered static types (look at QT_ADD_STATIC_METATYPE) should be
-  dump with their index number in the types static arrays. It would looks like this:
-    ...
-    void, 0
-    bool, 1
-    int, 2
-    uint, 3
-    ...
-
-  Computed positions: -k'2,8,$'
-  The code was modified to save memory and follow the Qt coding style.
-    - AssoValues and ValueList classes were created to cut size of a correspondent static arrays.
-    - Function names and some arguments types were renamed.
-    - By default gperf generated code returns a struct containing a key and copy of a
-      corresponding value, to save memory the values copy was removed.
-*/
-class QMetaTypeStaticType {
-#if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
-    && ('%' == 37) && ('&' == 38) && ('\'' == 39) && ('(' == 40) \
-    && (')' == 41) && ('*' == 42) && ('+' == 43) && (',' == 44) \
-    && ('-' == 45) && ('.' == 46) && ('/' == 47) && ('0' == 48) \
-    && ('1' == 49) && ('2' == 50) && ('3' == 51) && ('4' == 52) \
-    && ('5' == 53) && ('6' == 54) && ('7' == 55) && ('8' == 56) \
-    && ('9' == 57) && (':' == 58) && (';' == 59) && ('<' == 60) \
-    && ('=' == 61) && ('>' == 62) && ('?' == 63) && ('A' == 65) \
-    && ('B' == 66) && ('C' == 67) && ('D' == 68) && ('E' == 69) \
-    && ('F' == 70) && ('G' == 71) && ('H' == 72) && ('I' == 73) \
-    && ('J' == 74) && ('K' == 75) && ('L' == 76) && ('M' == 77) \
-    && ('N' == 78) && ('O' == 79) && ('P' == 80) && ('Q' == 81) \
-    && ('R' == 82) && ('S' == 83) && ('T' == 84) && ('U' == 85) \
-    && ('V' == 86) && ('W' == 87) && ('X' == 88) && ('Y' == 89) \
-    && ('Z' == 90) && ('[' == 91) && ('\\' == 92) && (']' == 93) \
-    && ('^' == 94) && ('_' == 95) && ('a' == 97) && ('b' == 98) \
-    && ('c' == 99) && ('d' == 100) && ('e' == 101) && ('f' == 102) \
-    && ('g' == 103) && ('h' == 104) && ('i' == 105) && ('j' == 106) \
-    && ('k' == 107) && ('l' == 108) && ('m' == 109) && ('n' == 110) \
-    && ('o' == 111) && ('p' == 112) && ('q' == 113) && ('r' == 114) \
-    && ('s' == 115) && ('t' == 116) && ('u' == 117) && ('v' == 118) \
-    && ('w' == 119) && ('x' == 120) && ('y' == 121) && ('z' == 122) \
-    && ('{' == 123) && ('|' == 124) && ('}' == 125) && ('~' == 126))
-/* The character set is not based on ISO-646.  */
-#error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gnu-gperf@gnu.org>."
-#endif
-    class AssoValues {
-        static const uchar assoValues[];
-    public:
-        inline int operator[](uint i)
-        {
-            if (i < 42 || i >= 122)
-                return 126;
-            return assoValues[i - 42];
-        }
-    };
-
-    class ValuesList {
-        static const uchar valuesList[];
-    public:
-        inline int operator[](uchar i)
-        {
-            if (i < 83)
-                return valuesList[i];
-            switch (i) {
-            case 87:
-                return 48;
-            case 100:
-                return 63;
-            case 101:
-                return 62;
-            case 125:
-                return 49;
-            default:
-                return -1;
-            };
-        }
-    };
-
-public:
-    static inline int type(const char *str, uint len);
-private:
-    static inline uint hash(const char *str, uint len);
-
-    static const uint minWordLength = 3;
-    static const uint maxWordLength = 18;
-    static const uint maxHashValue = 125;
-};
-
-const uchar QMetaTypeStaticType::AssoValues::assoValues[] = {
-    46, 126, 126, 126, 126, 126, 126, 126,
-    42, 39, 41, 126, 50, 126, 50, 126, 126, 126,
-    126, 126, 12, 126, 126, 126, 30, 9, 1, 55,
-    19, 126, 42, 48, 126, 45, 21, 33, 126, 1,
-    0, 61, 25, 19, 33, 58, 30, 0, 126, 126,
-    126, 126, 126, 126, 126, 126, 126, 13, 126, 34,
-    0, 1, 126, 2, 16, 1, 126, 126, 6, 32,
-    0, 12, 30, 126, 20, 3, 0, 17, 126, 126,
-    14, 9
-};
-
-const uchar QMetaTypeStaticType::ValuesList::valuesList[] = {
-    -1, -1, -1, 2, 44, 3, 25, 14, 38, 59,
-    35, 61, 66, 58, 67, 65, 0, 4, 55, 6,
-    70, 56, 1, 69, 31, 21, 26, 23, 10, 18,
-    19, 82, 39, 68, 7, 34, 41, 32, 64, 15,
-    57, 5, 9, 16, 22, 42, 24, 80, 77, 75,
-    20, 11, 33, 36, 47, 37, 71, 73, 28, 60,
-    45, 13, 27, 54, 46, 78, 76, 40, 17, 12,
-    30, 8, 53, 72, 74, 43, 81, 29, 79, 51,
-    -1, 52, 50
-};
-
-inline uint QMetaTypeStaticType::hash(register const char *str, register uint len)
-{
-    register int hval = len;
-    static AssoValues assoValues;
-    switch (hval) {
-    default:
-        hval += assoValues[(uchar)str[7]];
-        /*FALLTHROUGH*/
-    case 7:
-    case 6:
-    case 5:
-    case 4:
-    case 3:
-    case 2:
-        hval += assoValues[(uchar)str[1]];
-        break;
-    }
-    return hval + assoValues[(uchar)str[len - 1]];
-}
-
-int QMetaTypeStaticType::type(register const char *str, register uint len)
-{
-    static ValuesList valueList;
-    if (len <= maxWordLength && len >= minWordLength) {
-        register uint key = hash(str, len);
-        if (key <= maxHashValue)
-            return valueList[key];
-    }
-    return -1;
-}
-
 /*! \internal
     Similar to QMetaType::type(), but only looks in the static set of types.
 */
 static inline int qMetaTypeStaticType(const char *typeName, int length)
 {
-    int idx = QMetaTypeStaticType::type(typeName, length);
-    if (idx < 0)
-        return QMetaType::Void;
-    if (types[idx].typeNameLength == length && !strcmp(typeName, types[idx].typeName))
-        return types[idx].type;
-    return QMetaType::Void;
+    int i = 0;
+    while (types[i].typeName && ((length != types[i].typeNameLength)
+                                 || strcmp(typeName, types[i].typeName))) {
+        ++i;
+    }
+    return types[i].type;
 }
 
 /*! \internal

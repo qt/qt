@@ -72,8 +72,6 @@ private slots:
     void normalizedTypes();
     void typeName_data();
     void typeName();
-    void type_data();
-    void type();
     void construct();
     void typedefs();
     void isRegistered_data();
@@ -133,20 +131,14 @@ void tst_QMetaType::threadSafety()
     MetaTypeTorturer t1;
     MetaTypeTorturer t2;
     MetaTypeTorturer t3;
-    MetaTypeTorturer t4;
-    MetaTypeTorturer t5;
 
     t1.start();
     t2.start();
     t3.start();
-    t4.start();
-    t5.start();
 
     QVERIFY(t1.wait());
     QVERIFY(t2.wait());
     QVERIFY(t3.wait());
-    QVERIFY(t4.wait());
-    QVERIFY(t5.wait());
 }
 
 namespace TestSpace
@@ -228,70 +220,14 @@ void tst_QMetaType::typeName_data()
     QTest::addColumn<QString>("aTypeName");
 
     QTest::newRow("void") << QMetaType::Void << "void";
-    QTest::newRow("bool") << QMetaType::Bool << "bool";
     QTest::newRow("int") << QMetaType::Int << "int";
-    QTest::newRow("uint") << QMetaType::UInt << "uint";
-    QTest::newRow("qlonglong") << QMetaType::LongLong << "qlonglong";
-    QTest::newRow("qulonglong") << QMetaType::ULongLong << "qulonglong";
     QTest::newRow("double") << QMetaType::Double << "double";
-    QTest::newRow("QChar") << QMetaType::QChar << "QChar";
-    QTest::newRow("QVariantMap") << QMetaType::QVariantMap << "QVariantMap";
-    QTest::newRow("QVariantList") << QMetaType::QVariantList << "QVariantList";
-    QTest::newRow("QString") << QMetaType::QString << "QString";
-    QTest::newRow("QStringList") << QMetaType::QStringList << "QStringList";
-    QTest::newRow("QByteArray") << QMetaType::QByteArray << "QByteArray";
-    QTest::newRow("QBitArray") << QMetaType::QBitArray << "QBitArray";
-    QTest::newRow("QDate") << QMetaType::QDate << "QDate";
-    QTest::newRow("QTime") << QMetaType::QTime << "QTime";
-    QTest::newRow("QDateTime") << QMetaType::QDateTime << "QDateTime";
-    QTest::newRow("QUrl") << QMetaType::QUrl << "QUrl";
-    QTest::newRow("QLocale") << QMetaType::QLocale << "QLocale";
-    QTest::newRow("QRect") << QMetaType::QRect << "QRect";
-    QTest::newRow("QRectF") << QMetaType::QRectF << "QRectF";
-    QTest::newRow("QSize") << QMetaType::QSize << "QSize";
-    QTest::newRow("QSizeF") << QMetaType::QSizeF << "QSizeF";
-    QTest::newRow("QLine") << QMetaType::QLine << "QLine";
-    QTest::newRow("QLineF") << QMetaType::QLineF << "QLineF";
-    QTest::newRow("QPoint") << QMetaType::QPoint << "QPoint";
-    QTest::newRow("QPointF") << QMetaType::QPointF << "QPointF";
+    QTest::newRow("qlonglong") << QMetaType::LongLong << "qlonglong";
     QTest::newRow("QRegExp") << QMetaType::QRegExp << "QRegExp";
     QTest::newRow("QColorGroup") << QMetaType::Type(63) << "QColorGroup";
-    QTest::newRow("QVariantHash") << QMetaType::QVariantHash << "QVariantHash";
-    QTest::newRow("QEasingCurve") << QMetaType::QEasingCurve << "QEasingCurve";
-    QTest::newRow("QFont") << QMetaType::QFont << "QFont";
-    QTest::newRow("QPixmap") << QMetaType::QPixmap << "QPixmap";
-    QTest::newRow("QBrush") << QMetaType::QBrush << "QBrush";
-    QTest::newRow("QColor") << QMetaType::QColor << "QColor";
-    QTest::newRow("QPalette") << QMetaType::QPalette << "QPalette";
-    QTest::newRow("QIcon") << QMetaType::QIcon << "QIcon";
-    QTest::newRow("QImage") << QMetaType::QImage << "QImage";
-    QTest::newRow("QPolygon") << QMetaType::QPolygon << "QPolygon";
-    QTest::newRow("QRegion") << QMetaType::QRegion << "QRegion";
-    QTest::newRow("QBitmap") << QMetaType::QBitmap << "QBitmap";
-    QTest::newRow("QCursor") << QMetaType::QCursor << "QCursor";
-    QTest::newRow("QSizePolicy") << QMetaType::QSizePolicy << "QSizePolicy";
-    QTest::newRow("QKeySequence") << QMetaType::QKeySequence << "QKeySequence";
-    QTest::newRow("QPen") << QMetaType::QPen << "QPen";
-    QTest::newRow("QTextLength") << QMetaType::QTextLength << "QTextLength";
-    QTest::newRow("QTextFormat") << QMetaType::QTextFormat << "QTextFormat";
-    QTest::newRow("QMatrix") << QMetaType::QMatrix << "QMatrix";
-    QTest::newRow("QTransform") << QMetaType::QTransform << "QTransform";
-    QTest::newRow("QMatrix4x4") << QMetaType::QMatrix4x4 << "QMatrix4x4";
-    QTest::newRow("QVector2D") << QMetaType::QVector2D << "QVector2D";
-    QTest::newRow("QVector3D") << QMetaType::QVector3D << "QVector3D";
-    QTest::newRow("QVector4D") << QMetaType::QVector4D << "QVector4D";
-    QTest::newRow("QQuaternion") << QMetaType::QQuaternion << "QQuaternion";
     QTest::newRow("void*") << QMetaType::VoidStar << "void*";
-    QTest::newRow("long") << QMetaType::Long << "long";
-    QTest::newRow("short") << QMetaType::Short << "short";
-    QTest::newRow("char") << QMetaType::Char << "char";
     QTest::newRow("ulong") << QMetaType::ULong << "ulong";
-    QTest::newRow("ushort") << QMetaType::UShort << "ushort";
-    QTest::newRow("uchar") << QMetaType::UChar << "uchar";
-    QTest::newRow("float") << QMetaType::Float << "float";
-    QTest::newRow("QObject*") << QMetaType::QObjectStar << "QObject*";
     QTest::newRow("QWidget*") << QMetaType::QWidgetStar << "QWidget*";
-    QTest::newRow("QVariant") << QMetaType::QVariant << "QVariant";
 }
 
 void tst_QMetaType::typeName()
@@ -300,19 +236,6 @@ void tst_QMetaType::typeName()
     QFETCH(QString, aTypeName);
 
     QCOMPARE(QString::fromLatin1(QMetaType::typeName(aType)), aTypeName);
-}
-
-void tst_QMetaType::type_data()
-{
-    typeName_data();
-}
-
-void tst_QMetaType::type()
-{
-    QFETCH(QMetaType::Type, aType);
-    QFETCH(QString, aTypeName);
-
-    QCOMPARE(QMetaType::type(aTypeName.toLatin1().constData()), static_cast<int>(aType));
 }
 
 void tst_QMetaType::construct()
