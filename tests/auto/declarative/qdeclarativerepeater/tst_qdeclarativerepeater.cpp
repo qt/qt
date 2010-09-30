@@ -397,7 +397,7 @@ void tst_QDeclarativeRepeater::properties()
     QSignalSpy delegateSpy(repeater, SIGNAL(delegateChanged()));
 
     QDeclarativeComponent rectComponent(&engine);
-    rectComponent.setData("import Qt 4.7; Rectangle {}", QUrl::fromLocalFile(""));
+    rectComponent.setData("import QtQuick 1.0; Rectangle {}", QUrl::fromLocalFile(""));
 
     repeater->setDelegate(&rectComponent);
     QCOMPARE(delegateSpy.count(),1);

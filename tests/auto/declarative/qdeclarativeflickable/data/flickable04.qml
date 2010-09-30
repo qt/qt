@@ -1,4 +1,4 @@
-import Qt 4.7
+import QtQuick 1.0
 
 Flickable {
     property bool ok: false

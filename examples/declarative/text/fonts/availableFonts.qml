@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 
 Rectangle {
     width: 480; height: 640; color: "steelblue"

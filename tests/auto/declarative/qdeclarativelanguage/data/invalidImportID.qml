@@ -1,4 +1,4 @@
-import Qt 4.7
-import Qt 4.7 as qt
+import QtQuick 1.0
+import QtQuick 1.0 as qt
 
 QtObject {}

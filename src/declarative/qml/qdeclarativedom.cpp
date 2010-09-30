@@ -896,7 +896,7 @@ QByteArray QDeclarativeDomObject::customTypeData() const
 */
 bool QDeclarativeDomObject::isComponent() const
 {
-    return (d->object && d->object->typeName == "Qt/Component");
+    return (d->object && (d->object->typeName == "Qt/Component" || d->object->typeName == "QtQuick/Component"));
 }
 
 /*!

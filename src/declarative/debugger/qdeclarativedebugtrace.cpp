@@ -78,7 +78,7 @@ void QDeclarativeDebugTrace::endRange(RangeType t)
 
 void QDeclarativeDebugTrace::addEventImpl(EventType event)
 {
-    if (!isEnabled())
+    if (status() != Enabled)
         return;
 
     QByteArray data;
@@ -89,7 +89,7 @@ void QDeclarativeDebugTrace::addEventImpl(EventType event)
 
 void QDeclarativeDebugTrace::startRangeImpl(RangeType range)
 {
-    if (!isEnabled())
+    if (status() != Enabled)
         return;
 
     QByteArray data;
@@ -100,7 +100,7 @@ void QDeclarativeDebugTrace::startRangeImpl(RangeType range)
 
 void QDeclarativeDebugTrace::rangeDataImpl(RangeType range, const QUrl &u)
 {
-    if (!isEnabled())
+    if (status() != Enabled)
         return;
 
     QByteArray data;
@@ -111,7 +111,7 @@ void QDeclarativeDebugTrace::rangeDataImpl(RangeType range, const QUrl &u)
 
 void QDeclarativeDebugTrace::endRangeImpl(RangeType range)
 {
-    if (!isEnabled())
+    if (status() != Enabled)
         return;
 
     QByteArray data;

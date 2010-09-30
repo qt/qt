@@ -57,6 +57,7 @@ QGLTextureGlyphCache::QGLTextureGlyphCache(QGLContext *context, QFontEngineGlyph
     , ctx(context)
     , m_width(0)
     , m_height(0)
+    , m_filterMode(Nearest)
 {
     // broken FBO readback is a bug in the SGX 1.3 and 1.4 drivers for the N900 where
     // copying between FBO's is broken if the texture is either GL_ALPHA or POT. The
@@ -114,6 +115,9 @@ void QGLTextureGlyphCache::createTextureData(int width, int height)
 
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_filterMode = Nearest;
 }
 
 void QGLTextureGlyphCache::resizeTextureData(int width, int height)
@@ -152,6 +156,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_filterMode = Nearest;
     glBindTexture(GL_TEXTURE_2D, 0);
     glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
                            GL_TEXTURE_2D, tmp_texture, 0);
