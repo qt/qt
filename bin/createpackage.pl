@@ -148,6 +148,10 @@ my $certfilepath = abs_path(dirname($certfile));
 my $templatepkg = $ARGV[0];
 my $targetplatform = lc $ARGV[1];
 
+if ($targetplatform eq "") {
+    $targetplatform = "-";
+}
+
 my @tmpvalues = split('-', $targetplatform);
 my $target;
 $target = $tmpvalues[0] or $target = "";
@@ -179,11 +183,11 @@ $passphrase = $ARGV[4] or $passphrase = "";
 my $pkgoutputbasename = $templatepkg;
 my $preservePkgOutput = "";
 $pkgoutputbasename =~ s/_template/_$targetplatform/g;
+$pkgoutputbasename =~ s/_installer\.pkg/_installer___temp\.pkg/g;
 if ($pkgoutputbasename eq $templatepkg) {
     $preservePkgOutput = "1";
 }
 $pkgoutputbasename =~ s/\.pkg//g;
-$pkgoutputbasename = $pkgoutputbasename;
 
 # Store output file names to variables
 my $pkgoutput = $pkgoutputbasename.".pkg";
@@ -191,6 +195,7 @@ my $sisoutputbasename;
 if ($signed_sis_name eq "") {
     $sisoutputbasename = $pkgoutputbasename;
     $sisoutputbasename =~ s/_$targetplatform//g;
+    $sisoutputbasename =~ s/_installer___temp/_installer/g;
     $signed_sis_name = $sisoutputbasename.".sis";
 } else {
     $sisoutputbasename = $signed_sis_name;
@@ -199,6 +204,16 @@ if ($signed_sis_name eq "") {
     } else {
         $signed_sis_name = $signed_sis_name.".sis";
     }
+}
+
+my $installer_unsigned_app_sis_name = "";
+my $installer_app_sis_name = "";
+
+if ($templatepkg =~ m/_installer\.pkg$/i && $onlyUnsigned) {
+    $installer_unsigned_app_sis_name = $templatepkg;
+    $installer_unsigned_app_sis_name =~ s/_installer.pkg$/_unsigned.sis/i;
+    $installer_app_sis_name = $installer_unsigned_app_sis_name;
+    $installer_app_sis_name =~ s/_unsigned.sis$/.sis/;
 }
 
 my $unsigned_sis_name = $sisoutputbasename."_unsigned.sis";
@@ -271,7 +286,9 @@ if (length($certfile)) {
 
 # Remove any existing .sis packages
 unlink $unsigned_sis_name;
-unlink $signed_sis_name;
+if (!$onlyUnsigned) {
+    unlink $signed_sis_name;
+}
 if (!$preservePkgOutput) {
     unlink $pkgoutput;
 }
@@ -295,6 +312,10 @@ if (m/\$\(PLATFORM\)/) {
 # replace the PKG variables
 s/\$\(PLATFORM\)/$platform/gm;
 s/\$\(TARGET\)/$target/gm;
+
+if ($installer_unsigned_app_sis_name ne "") {
+    s/$installer_app_sis_name\"/$installer_unsigned_app_sis_name\"/;
+}
 
 #write the output
 open( OUTPUT, ">$pkgoutput" ) or die "Error '$pkgoutput' $!\n";
@@ -347,6 +368,7 @@ if($stub) {
         if (!$preservePkgOutput) {
             unlink $pkgoutput;
         }
+        print ("\n");
         exit;
     }
 
@@ -388,6 +410,7 @@ if($stub) {
         # Lets leave the generated PKG for problem solving purposes
         print ("\nSIS creation failed!\n");
     }
+    print ("\n");
 }
 
 #end of file
