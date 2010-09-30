@@ -41,6 +41,7 @@
 
 #include "qtextureglyphcache_gl_p.h"
 #include "qpaintengineex_opengl2_p.h"
+#include "private/qglengineshadersource_p.h"
 
 #if defined QT_OPENGL_ES_2 && !defined(QT_NO_EGL)
 #include "private/qeglcontext_p.h"
@@ -56,6 +57,7 @@ QGLTextureGlyphCache::QGLTextureGlyphCache(const QGLContext *context, QFontEngin
     : QImageTextureGlyphCache(type, matrix)
     , ctx(0)
     , pex(0)
+    , m_blitProgram(0)
 {
 #ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
     qDebug(" -> QGLTextureGlyphCache() %p for context %p.", this, ctx);
@@ -68,6 +70,8 @@ QGLTextureGlyphCache::~QGLTextureGlyphCache()
 #ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
     qDebug(" -> ~QGLTextureGlyphCache() %p.", this);
 #endif
+
+    delete m_blitProgram;
 }
 
 void QGLTextureGlyphCache::setContext(const QGLContext *context)
@@ -86,7 +90,7 @@ void QGLTextureGlyphCache::createTextureData(int width, int height)
     // create in QImageTextureGlyphCache baseclass is meant to be called
     // only to create the initial image and does not preserve the content,
     // so we don't call when this function is called from resize.
-    if ((pex == 0 || ctx->d_ptr->workaround_brokenFBOReadBack) && image().isNull())
+    if (ctx->d_ptr->workaround_brokenFBOReadBack && image().isNull())
         QImageTextureGlyphCache::createTextureData(width, height);
 
     // Make the lower glyph texture size 16 x 16.
@@ -135,7 +139,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     GLuint oldTexture = glyphTexture->m_texture;
     createTextureData(width, height);
 
-    if (pex == 0 || ctx->d_ptr->workaround_brokenFBOReadBack) {
+    if (ctx->d_ptr->workaround_brokenFBOReadBack) {
         QImageTextureGlyphCache::resizeTextureData(width, height);
         Q_ASSERT(image().depth() == 8);
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, oldWidth, oldHeight, GL_ALPHA, GL_UNSIGNED_BYTE, image().constBits());
@@ -164,7 +168,8 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     glBindTexture(GL_TEXTURE_2D, oldTexture);
 
-    pex->transferMode(BrushDrawingMode);
+    if (pex != 0)
+        pex->transferMode(BrushDrawingMode);
 
     glDisable(GL_STENCIL_TEST);
     glDisable(GL_DEPTH_TEST);
@@ -173,7 +178,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 
     glViewport(0, 0, oldWidth, oldHeight);
 
-    GLfloat* vertexCoordinateArray = pex->staticVertexCoordinateArray;
+    GLfloat vertexCoordinateArray[8];
     vertexCoordinateArray[0] = -1.0f;
     vertexCoordinateArray[1] = -1.0f;
     vertexCoordinateArray[2] =  1.0f;
@@ -183,7 +188,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     vertexCoordinateArray[6] = -1.0f;
     vertexCoordinateArray[7] =  1.0f;
 
-    GLfloat* textureCoordinateArray = pex->staticTextureCoordinateArray;
+    GLfloat textureCoordinateArray[8];
     textureCoordinateArray[0] = 0.0f;
     textureCoordinateArray[1] = 0.0f;
     textureCoordinateArray[2] = 1.0f;
@@ -193,11 +198,58 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     textureCoordinateArray[6] = 0.0f;
     textureCoordinateArray[7] = 1.0f;
 
-    pex->setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, vertexCoordinateArray);
-    pex->setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, textureCoordinateArray);
+    QGLShaderProgram *blitProgram = 0;
+    if (pex == 0) {
+        if (m_blitProgram == 0) {
+            m_blitProgram = new QGLShaderProgram(ctx);
 
-    pex->shaderManager->useBlitProgram();
-    pex->shaderManager->blitProgram()->setUniformValue("imageTexture", QT_IMAGE_TEXTURE_UNIT);
+            {
+                QString source;
+                source.append(qglslMainWithTexCoordsVertexShader);
+                source.append(qglslUntransformedPositionVertexShader);
+
+                QGLShader *vertexShader = new QGLShader(QGLShader::Vertex, m_blitProgram);
+                vertexShader->compileSourceCode(source);
+
+                m_blitProgram->addShader(vertexShader);
+            }
+
+            {
+                QString source;
+                source.append(qglslMainFragmentShader);
+                source.append(qglslImageSrcFragmentShader);
+
+                QGLShader *fragmentShader = new QGLShader(QGLShader::Fragment, m_blitProgram);
+                fragmentShader->compileSourceCode(source);
+
+                m_blitProgram->addShader(fragmentShader);
+            }
+
+            m_blitProgram->bindAttributeLocation("vertexCoordsArray", QT_VERTEX_COORDS_ATTR);
+            m_blitProgram->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
+
+            m_blitProgram->link();
+        }
+
+        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray);
+        glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray);
+
+        m_blitProgram->bind();
+        QGLContextPrivate* ctx_d = const_cast<QGLContextPrivate *>(ctx->d_func());
+        ctx_d->setVertexAttribArrayEnabled(QT_VERTEX_COORDS_ATTR, true);
+        ctx_d->setVertexAttribArrayEnabled(QT_TEXTURE_COORDS_ATTR, true);
+        ctx_d->setVertexAttribArrayEnabled(QT_OPACITY_ATTR, false);
+        blitProgram = m_blitProgram;
+
+    } else {
+        pex->setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, vertexCoordinateArray);
+        pex->setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, textureCoordinateArray);
+
+        pex->shaderManager->useBlitProgram();
+        blitProgram = pex->shaderManager->blitProgram();
+    }
+
+    blitProgram->setUniformValue("imageTexture", QT_IMAGE_TEXTURE_UNIT);
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -212,8 +264,10 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->current_fbo);
 
-    glViewport(0, 0, pex->width, pex->height);
-    pex->updateClipScissorTest();
+    if (pex != 0) {
+        glViewport(0, 0, pex->width, pex->height);
+        pex->updateClipScissorTest();
+    }
 }
 
 void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed subPixelPosition)
@@ -224,7 +278,7 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed sub
     }
 
     QGLGlyphTexture *glyphTexture = m_textureResource.value(ctx);
-    if (pex == 0 || ctx->d_ptr->workaround_brokenFBOReadBack) {
+    if (ctx->d_ptr->workaround_brokenFBOReadBack) {
         QImageTextureGlyphCache::fillTexture(c, glyph, subPixelPosition);
 
         glBindTexture(GL_TEXTURE_2D, glyphTexture->m_texture);
