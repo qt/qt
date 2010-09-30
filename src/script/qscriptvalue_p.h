@@ -1122,6 +1122,7 @@ QScriptEnginePrivate* QScriptValuePrivate::engine() const
 
 inline QScriptValuePrivate::operator v8::Persistent<v8::Value>() const
 {
+    Q_ASSERT(isJSBased());
     return m_value;
 }
 
