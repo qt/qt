@@ -44,7 +44,7 @@
 
 #include <qglobal.h>
 
-#if !defined(SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS) && !defined(__WINSCW__)
+#if !defined(SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS) && !defined(__WINS__)
 //Enable the (backported) new allocator. When it is available in OS,
 //this flag should be disabled for that OS version onward
 #define QT_USE_NEW_SYMBIAN_ALLOCATOR
@@ -52,7 +52,7 @@
 
 #ifdef QT_USE_NEW_SYMBIAN_ALLOCATOR
 
-#ifndef __WINS__
+#ifdef Q_CC_RVCT
 #pragma push
 #pragma arm
 #pragma Otime
@@ -78,11 +78,8 @@
 #endif
 #include "heap_hybrid_p.h"
 
-// disabling Symbian import/export macros to prevent code copied from Symbian^4 from exporting symbols in arm builds
-#undef UIMPORT_C
-#define UIMPORT_C
-#undef IMPORT_C
-#define IMPORT_C
+// disabling Symbian import/export macros to prevent heap_hybrid.cpp, copied from Symbian^4, from exporting symbols in arm builds
+// this minimises the code changes to heap_hybrid.cpp to ease future integration
 #undef UEXPORT_C
 #define UEXPORT_C
 #undef EXPORT_C

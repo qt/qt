@@ -105,8 +105,8 @@ public:
 	enum TDebugOp { EWalk = 128, EHybridHeap };
 	enum TAllocFail
 		{
-		/*ERandom, ETrueRandom, EDeterministic, ENone, EFailNext, EReset, EBurstRandom,
-		EBurstTrueRandom, EBurstDeterministic, EBurstFailNext,*/ ECheckFailure = 10,
+		ERandom, ETrueRandom, EDeterministic, EHybridNone, EFailNext, EReset, EBurstRandom,
+		EBurstTrueRandom, EBurstDeterministic, EBurstFailNext, ECheckFailure,
 		};
 
 	struct HeapInfo

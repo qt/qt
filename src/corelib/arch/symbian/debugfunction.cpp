@@ -42,7 +42,6 @@
 #include "qt_hybridheap_symbian_p.h"
 
 #ifdef QT_USE_NEW_SYMBIAN_ALLOCATOR
-#define RAllocator RHybridHeap
 
 #define GM  (&iGlobalMallocState)
 #define __HEAP_CORRUPTED_TRACE(t,p,l) BTraceContext12(BTrace::EHeap, BTrace::EHeapCorruption, (TUint32)t, (TUint32)p, (TUint32)l);
@@ -80,11 +79,11 @@ TInt RHybridHeap::DebugFunction(TInt aFunc, TAny* a1, TAny* a2)
             __DEBUG_ONLY(DoSetAllocFail((TAllocFail)(TInt)a1, (TInt)a2));
             break;
 
-        case RAllocator::EGetFail:
+        case RHybridHeap::EGetFail:
             __DEBUG_ONLY(r = iFailType);
             break;
 
-        case RAllocator::ESetBurstFail:
+        case RHybridHeap::ESetBurstFail:
 #if _DEBUG
             {
             SRAllocatorBurstFail* fail = (SRAllocatorBurstFail*) a2;
@@ -93,7 +92,7 @@ TInt RHybridHeap::DebugFunction(TInt aFunc, TAny* a1, TAny* a2)
 #endif
             break;
             
-        case RAllocator::ECheckFailure:
+        case RHybridHeap::ECheckFailure:
             // iRand will be incremented for each EFailNext, EBurstFailNext,
             // EDeterministic and EBurstDeterministic failure.
             r = iRand;
@@ -106,31 +105,31 @@ TInt RHybridHeap::DebugFunction(TInt aFunc, TAny* a1, TAny* a2)
             break;
             }
 
-		case RAllocator::EGetSize:
+		case RHybridHeap::EGetSize:
 			{
 			r = iChunkSize - sizeof(RHybridHeap);
 			break;
 			}
 
-		case RAllocator::EGetMaxLength:
+		case RHybridHeap::EGetMaxLength:
 			{
 			r = iMaxLength;
 			break;
 			}
 
-		case RAllocator::EGetBase:
+		case RHybridHeap::EGetBase:
 			{
 			*(TAny**)a1 = iBase;
 			break;
 			}
 
-		case RAllocator::EAlignInteger:
+		case RHybridHeap::EAlignInteger:
 			{
 			r = _ALIGN_UP((TInt)a1, iAlign);
 			break;
 			}
 
-		case RAllocator::EAlignAddr:
+		case RHybridHeap::EAlignAddr:
 			{
             *(TAny**)a2 = (TAny*)_ALIGN_UP((TLinAddr)a1, iAlign);
 			break;
