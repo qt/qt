@@ -77,6 +77,10 @@ void tst_QDeclarativeDebugClient::initTestCase()
     new QDeclarativeEngine(this);
 
     m_conn = new QDeclarativeDebugConnection(this);
+
+    QDeclarativeDebugTestClient client("tst_QDeclarativeDebugClient::handshake()", m_conn);
+    QDeclarativeDebugTestService service("tst_QDeclarativeDebugClient::handshake()");
+
     m_conn->connectToHost("127.0.0.1", 3770);
 
     QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Connection established");
@@ -84,6 +88,7 @@ void tst_QDeclarativeDebugClient::initTestCase()
     Q_ASSERT(ok);
 
     QTRY_VERIFY(QDeclarativeDebugService::hasDebuggingClient());
+    QTRY_COMPARE(client.status(), QDeclarativeDebugClient::Enabled);
 }
 
 void tst_QDeclarativeDebugClient::name()
