@@ -136,7 +136,7 @@ void QDeclarativeDebugConnectionPrivate::readyRead()
             return;
         }
 
-        qDebug() << "Available server side plugins: " << serverPlugins;
+        gotHello = true;
 
         QHash<QString, QDeclarativeDebugClient *>::Iterator iter = plugins.begin();
         for (; iter != plugins.end(); ++iter) {
@@ -145,7 +145,6 @@ void QDeclarativeDebugConnectionPrivate::readyRead()
                 newStatus = QDeclarativeDebugClient::Enabled;
             iter.value()->statusChanged(newStatus);
         }
-        gotHello = true;
     }
 
     while (protocol->packetsAvailable()) {

@@ -91,8 +91,9 @@ QByteArray QDeclarativeDebugTestClient::waitForResponse()
     return lastMsg;
 }
 
-void QDeclarativeDebugTestClient::statusChanged(Status status)
+void QDeclarativeDebugTestClient::statusChanged(Status stat)
 {
+    QCOMPARE(stat, status());
     emit statusHasChanged();
 }
 
