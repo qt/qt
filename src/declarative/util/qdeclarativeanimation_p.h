@@ -63,7 +63,7 @@ QT_MODULE(Declarative)
 
 class QDeclarativeAbstractAnimationPrivate;
 class QDeclarativeAnimationGroup;
-class Q_AUTOTEST_EXPORT QDeclarativeAbstractAnimation : public QObject, public QDeclarativePropertyValueSource, public QDeclarativeParserStatus
+class Q_DECLARATIVE_EXPORT QDeclarativeAbstractAnimation : public QObject, public QDeclarativePropertyValueSource, public QDeclarativeParserStatus
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDeclarativeAbstractAnimation)

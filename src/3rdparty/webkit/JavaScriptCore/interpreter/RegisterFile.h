@@ -41,6 +41,10 @@
 #include <sys/mman.h>
 #endif
 
+#if OS(SYMBIAN)
+#include <wtf/symbian/RegisterFileAllocatorSymbian.h>
+#endif
+
 namespace JSC {
 
 /*
@@ -152,12 +156,21 @@ namespace JSC {
 #if HAVE(VIRTUALALLOC)
         Register* m_commitEnd;
 #endif
+#if OS(SYMBIAN)
+        // Commits and frees a continguous chunk of memory as required
+        WTF::RegisterFileAllocator* m_registerFileAllocator;
+#endif
 
         JSGlobalObject* m_globalObject; // The global object whose vars are currently stored in the register file.
     };
 
     // FIXME: Add a generic getpagesize() to WTF, then move this function to WTF as well.
-    inline bool isPageAligned(size_t size) { return size != 0 && size % (8 * 1024) == 0; }
+    // This is still a hack that should be fixed later. We know that a Symbian page size is 4K.
+    #if OS(SYMBIAN)
+    inline bool isPageAligned(size_t size) { return size && !(size % (4 * 1024)); }
+    #else
+    inline bool isPageAligned(size_t size) { return size && !(size % (8 * 1024)); }
+    #endif
 
     inline RegisterFile::RegisterFile(size_t capacity, size_t maxGlobals)
         : m_numGlobals(0)
@@ -204,7 +217,13 @@ namespace JSC {
             CRASH();
         }
         m_commitEnd = reinterpret_cast<Register*>(reinterpret_cast<char*>(m_buffer) + committedSize);
-    #else 
+    #elif OS(SYMBIAN)
+        m_registerFileAllocator = new WTF::RegisterFileAllocator(bufferLength);
+        m_buffer = (Register*)(m_registerFileAllocator->buffer());
+        // start by committing enough space to hold maxGlobals
+        void* newEnd = (void*)((int)m_buffer + (maxGlobals * sizeof(Register)));
+        m_registerFileAllocator->grow(newEnd);
+    #else
         /* 
          * If neither MMAP nor VIRTUALALLOC are available - use fastMalloc instead.
          *
@@ -226,8 +245,13 @@ namespace JSC {
         if (newEnd >= m_end)
             return;
         m_end = newEnd;
-        if (m_end == m_start && (m_maxUsed - m_start) > maxExcessCapacity)
+        if (m_end == m_start && (m_maxUsed - m_start) > maxExcessCapacity) {
+#if OS(SYMBIAN)
+            m_registerFileAllocator->shrink(newEnd);
+#endif
+
             releaseExcessCapacity();
+        }
     }
 
     inline bool RegisterFile::grow(Register* newEnd)
@@ -251,6 +275,9 @@ namespace JSC {
             }
             m_commitEnd = reinterpret_cast<Register*>(reinterpret_cast<char*>(m_commitEnd) + size);
         }
+#endif
+#if OS(SYMBIAN)
+        m_registerFileAllocator->grow((void*)newEnd);
 #endif
 
         if (newEnd > m_maxUsed)

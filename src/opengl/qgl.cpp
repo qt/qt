@@ -1689,9 +1689,6 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     workaround_brokenFBOReadBack = false;
     workaroundsCached = false;
 
-    workaround_brokenTextureFromPixmap = false;
-    workaround_brokenTextureFromPixmap_init = false;
-
     for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i)
         vertexAttributeArraysEnabledState[i] = false;
 }
@@ -2577,34 +2574,18 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
         }
     }
 
-#if defined(Q_WS_X11)
-    // Try to use texture_from_pixmap
+#if defined(Q_WS_X11) && !defined(QT_NO_EGL)
+    // Only try to use texture_from_pixmap under X11/EGL
     const QX11Info *xinfo = qt_x11Info(paintDevice);
     if (pd->classId() == QPixmapData::X11Class && pd->pixelType() == QPixmapData::PixmapType
         && xinfo && xinfo->screen() == pixmap.x11Info().screen()
         && target == GL_TEXTURE_2D)
     {
-        if (!workaround_brokenTextureFromPixmap_init) {
-            workaround_brokenTextureFromPixmap_init = true;
-
-            const QByteArray versionString(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
-            const int pos = versionString.indexOf("NVIDIA ");
-
-            if (pos >= 0) {
-                const QByteArray nvidiaVersionString = versionString.mid(pos + strlen("NVIDIA "));
-
-                if (nvidiaVersionString.startsWith("195") || nvidiaVersionString.startsWith("256"))
-                    workaround_brokenTextureFromPixmap = true;
-            }
-        }
-
-        if (!workaround_brokenTextureFromPixmap) {
-            texture = bindTextureFromNativePixmap(const_cast<QPixmap*>(&pixmap), key, options);
-            if (texture) {
-                texture->options |= QGLContext::MemoryManagedBindOption;
-                texture->boundPixmap = pd;
-                boundPixmaps.insert(pd, QPixmap(pixmap));
-            }
+        texture = bindTextureFromNativePixmap(const_cast<QPixmap*>(&pixmap), key, options);
+        if (texture) {
+            texture->options |= QGLContext::MemoryManagedBindOption;
+            texture->boundPixmap = pd;
+            boundPixmaps.insert(pd, QPixmap(pixmap));
         }
     }
 #endif

@@ -137,7 +137,7 @@ Rectangle {
 
     Flickable {
         anchors.fill: parent
-        contentHeight: layout.height
+        contentHeight: layout.height+50
         Rectangle {
             id: titlePane
             color: "#444444"
