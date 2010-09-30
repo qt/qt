@@ -49,6 +49,7 @@
 #include "DateConstructor.h"
 #include "RegExpConstructor.h"
 
+#include "ExceptionHelpers.h"
 #include "PrototypeFunction.h"
 #include "InitializeThreading.h"
 #include "ObjectPrototype.h"
@@ -3547,9 +3548,11 @@ bool QScriptEngine::isEvaluating() const
 void QScriptEngine::abortEvaluation(const QScriptValue &result)
 {
     Q_D(QScriptEngine);
-
-    d->timeoutChecker()->setShouldAbort(true);
+    if (!isEvaluating())
+        return;
     d->abortResult = result;
+    d->timeoutChecker()->setShouldAbort(true);
+    JSC::throwError(d->currentFrame, JSC::createInterruptedExecutionException(&d->currentFrame->globalData()).toObject(d->currentFrame));
 }
 
 #ifndef QT_NO_QOBJECT
