@@ -46,7 +46,7 @@ public:
     virtual void populateFontDatabase();
     virtual QFontEngine *fontEngine(const QFontDef &fontDef, QUnicodeTables::Script script, void *handle);
     virtual QStringList fallbacksForFamily(const QString family, const QFont::Style &style, const QUnicodeTables::Script &script) const;
-    virtual void addApplicationFont(const QByteArray &fontData, const QString &fileName);
+    virtual QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
     virtual void releaseHandle(void *handle);
 
     virtual QString fontDir() const;

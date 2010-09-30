@@ -199,7 +199,8 @@ static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
 {
     QFontDatabasePrivate *db = privateDb();
 
-    QApplicationPrivate::platformIntegration()->fontDatabase()->addApplicationFont(fnt->data,fnt->fileName);
+    fnt->families = QApplicationPrivate::platformIntegration()->fontDatabase()->addApplicationFont(fnt->data,fnt->fileName);
+
     db->reregisterAppFonts = true;
 }
 

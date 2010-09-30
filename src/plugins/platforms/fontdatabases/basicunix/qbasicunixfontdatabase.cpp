@@ -204,9 +204,9 @@ QStringList QBasicUnixFontDatabase::fallbacksForFamily(const QString family, con
     return QStringList();
 }
 
-void QBasicUnixFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
+QStringList QBasicUnixFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
 {
-    addTTFile(fontData,fileName.toLocal8Bit());
+    return addTTFile(fontData,fileName.toLocal8Bit());
 }
 
 void QBasicUnixFontDatabase::releaseHandle(void *handle)
@@ -215,13 +215,14 @@ void QBasicUnixFontDatabase::releaseHandle(void *handle)
     delete file;
 }
 
-void QBasicUnixFontDatabase::addTTFile(const QByteArray &fontData, const QByteArray &file)
+QStringList QBasicUnixFontDatabase::addTTFile(const QByteArray &fontData, const QByteArray &file)
 {
     extern FT_Library qt_getFreetype();
     FT_Library library = qt_getFreetype();
 
     int index = 0;
     int numFaces = 0;
+    QStringList families;
     do {
         FT_Face face;
         FT_Error error;
@@ -275,7 +276,10 @@ void QBasicUnixFontDatabase::addTTFile(const QByteArray &fontData, const QByteAr
 
         registerFont(family,"",weight,style,100,true,true,0,writingSystems,fontFile);
 
+        families.append(family);
+
         FT_Done_Face(face);
         ++index;
     } while (index < numFaces);
+    return families;
 }
