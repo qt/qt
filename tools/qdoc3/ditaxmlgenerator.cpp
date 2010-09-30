@@ -679,7 +679,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             skipAhead = skipAtoms(atom, Atom::BriefRight);
             break;
         }
-        if (inApiDesc)
+        if (inApiDesc || inSection)
             xmlWriter().writeStartElement("p");
         else {
             noLinks = true;
@@ -1358,27 +1358,37 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                 tableColumnCount = 0;
             }
             const Atom* t = atom->next();
-            while ((t->type() != Atom::TableHeaderRight) &&
-                   (t->type() != Atom::TableRowRight) &&
-                   (t->type() != Atom::TableRight)) {
-                if (t->type() == Atom::TableItemLeft)
-                    ++tableColumnCount;
+            while (t->type() == Atom::TableHeaderLeft) {
+                int count = 0;
+                t = t->next();
+                while (t->type() != Atom::TableHeaderRight) {
+                    if (t->type() == Atom::TableItemLeft)
+                        ++count;
+                    t = t->next();
+                }
+                if (count > tableColumnCount)
+                    tableColumnCount = count;
                 t = t->next();
             }
             xmlWriter().writeStartElement("tgroup");
             xmlWriter().writeAttribute("cols",QString::number(tableColumnCount));
+            inTableHeader = false;
+            inTableBody = false;
         }
         break;
     case Atom::TableRight:
         xmlWriter().writeEndElement(); // </tbody>
         xmlWriter().writeEndElement(); // </tgroup>
         xmlWriter().writeEndElement(); // </table>
+        inTableHeader = false;
+        inTableBody = false;
         tableColumnCount = 0;
         break;
     case Atom::TableHeaderLeft:
         xmlWriter().writeStartElement("thead");
+        xmlWriter().writeAttribute("valign","top");
         xmlWriter().writeStartElement("row");
-        xmlWriter().writeAttribute("outputclass","qt-style topAlign");
+        xmlWriter().writeAttribute("valign","top");
         inTableHeader = true;
         inTableBody = false;
         break;
@@ -1387,7 +1397,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         if (matchAhead(atom, Atom::TableHeaderLeft)) {
             skipAhead = 1;
             xmlWriter().writeStartElement("row");
-            xmlWriter().writeAttribute("outputclass","qt-style topAlign");
+            xmlWriter().writeAttribute("valign","top");
         }
         else { 
             xmlWriter().writeEndElement(); // </thead>
@@ -1402,25 +1412,28 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             xmlWriter().writeStartElement("tbody");
         }
         xmlWriter().writeStartElement("row");
+        xmlWriter().writeAttribute("valign","top");
         if (++numTableRows % 2 == 1)
-            xmlWriter().writeAttribute("outputclass","odd topAlign");
+            xmlWriter().writeAttribute("outputclass","odd");
         else
-            xmlWriter().writeAttribute("outputclass","even topAlign");
+            xmlWriter().writeAttribute("outputclass","even");
         break;
     case Atom::TableRowRight:
-        xmlWriter().writeEndElement(); // </row>\n";
+        xmlWriter().writeEndElement(); // </row>
         break;
     case Atom::TableItemLeft:
         {
-            if (inTableHeader)
-                xmlWriter().writeStartElement("entry");
-            else
-                xmlWriter().writeStartElement("entry");
-
+            xmlWriter().writeStartElement("entry");
             QStringList spans = atom->string().split(",");
             if (spans.size() == 2) {
+                if (inTableHeader ||
+                    (spans[0].toInt() != 1) ||
+                    (spans[1].toInt() != 1)) {
+                    QString s = "span(" + spans[0] + "," + spans[1] + ")";
+                    xmlWriter().writeAttribute("outputclass",s);
+                }
                 if (!inTableHeader)
-                    xmlWriter().writeStartElement("p"); 
+                    xmlWriter().writeStartElement("p");
             }
             if (matchAhead(atom, Atom::ParaLeft))
                 skipAhead = 1;
@@ -1439,7 +1452,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     case Atom::TableOfContents:
         {
             int numColumns = 1;
-            const Node *node = relative;
+            const Node* node = relative;
 
             Doc::SectioningUnit sectioningUnit = Doc::Section4;
             QStringList params = atom->string().split(",");
@@ -1637,6 +1650,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
                     generateSectionInheritedList(*s, inner, marker);
                 ++s;
             }
+            xmlWriter().writeEndElement(); // </section>
         }
         
         writeDetailedDescription(cn, marker, false, QString("Detailed Description"));
