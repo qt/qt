@@ -3350,6 +3350,7 @@ void tst_QGraphicsWidget::QT_BUG_13865_doublePaintWhenAddingASubItem()
 
     view.show();
     QTest::qWaitForWindowShown(&view);
+    QApplication::processEvents();
 
 
     GreenWidget *sub =  new GreenWidget;
