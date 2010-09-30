@@ -165,12 +165,17 @@ QStringList QPlatformFontDatabase::fallbacksForFamily(const QString family, cons
     return QStringList();
 }
 
-void QPlatformFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
+/*!
+    Adds an application font. Returns a list of family names, or an empty list if the font could
+    not be added
+*/
+QStringList QPlatformFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
 {
     Q_UNUSED(fontData);
     Q_UNUSED(fileName);
 
     qWarning("This plugin does not support application fonts");
+    return QStringList();
 }
 
 void QPlatformFontDatabase::releaseHandle(void *handle)
