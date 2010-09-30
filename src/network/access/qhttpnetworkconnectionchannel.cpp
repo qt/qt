@@ -427,7 +427,8 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
                replyPrivate->totalProgress += haveRead;
 
                // the user will get notified of it via progress signal
-               emit reply->dataReadProgress(replyPrivate->totalProgress, replyPrivate->bodyLength);
+               if (haveRead > 0)
+                   emit reply->dataReadProgress(replyPrivate->totalProgress, replyPrivate->bodyLength);
            } else if (!replyPrivate->isChunked() && !replyPrivate->autoDecompress
                  && replyPrivate->bodyLength > 0) {
                  // bulk files like images should fulfill these properties and
