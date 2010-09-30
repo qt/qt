@@ -290,19 +290,13 @@ enum-type property to store a display mode for each chart:
 \endcode
 
 We can also use various other property types. QML has built-in support for the following
-types:
+types listed in the \l{Extending Types from QML} document, including the following:
 
 \list
-\o bool
-\o unsigned int, int
-\o float, double, qreal
-\o QString
-\o QUrl
-\o QColor
+\o bool, unsigned int, int, float, double, qreal
+\o QString, QUrl, QColor
 \o QDate, QTime, QDateTime
-\o QPoint, QPointF
-\o QSize, QSizeF
-\o QRect, QRectF
+\o QPoint, QPointF, QSize, QSizeF, QRect, QRectF
 \o QVariant
 \endlist
 
