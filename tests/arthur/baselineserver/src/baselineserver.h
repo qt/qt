@@ -23,6 +23,7 @@ public:
     BaselineServer(QObject *parent = 0);
 
     static QString storagePath();
+    static QString baseUrl();
 
 protected:
     void incomingConnection(int socketDescriptor);
@@ -58,6 +59,10 @@ class BaselineHandler : public QObject
 public:
     BaselineHandler(int socketDescriptor = -1);
     void testPathMapping();
+
+    static QString updateAllBaselines(const QString &host, const QString &id,
+                                      const QString &engine, const QString &format);
+    static QString updateSingleBaseline(const QString &oldBaseline, const QString &newBaseline);
 
 private slots:
     void receiveRequest();

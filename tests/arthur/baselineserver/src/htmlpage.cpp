@@ -1,7 +1,9 @@
 #include "htmlpage.h"
 #include "baselineprotocol.h"
+#include "baselineserver.h"
 #include <QDir>
 #include <QProcess>
+#include <QUrl>
 
 HTMLPage::HTMLPage()
     : headerWritten(false)
@@ -36,6 +38,9 @@ void HTMLPage::writeHeader(const ImageItem &item)
 {
     path = QLS("reports/") + id + QLC('_') + item.engineAsString()
             + QLC('_') + item.formatAsString() + QLS(".html");
+
+    QString pageUrl = BaselineServer::baseUrl() + path;
+
     file.setFileName(root + path);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
         qWarning() << "Failed to open report file" << file.fileName();
@@ -47,6 +52,10 @@ void HTMLPage::writeHeader(const ImageItem &item)
     out << "<h3>Build key: " << plat.buildKey << "</h3>\n";
     out << "<h3>Engine: " << item.engineAsString() << "</h3>\n";
     out << "<h3>Format: " << item.formatAsString() << "</h3>\n\n";
+    out << "<h3><a href=\"/cgi-bin/server.cgi?update=all&id="<< id << "&host=" << plat.hostname
+        << "&engine=" << item.engineAsString() << "&format=" << item.formatAsString()
+        << "&url=" << pageUrl
+        << "\">Update all baselines</a></h3>\n\n";
     out << "<table border=\"2\">\n"
            "<tr>\n"
            "<td><b>Script</b></td>\n"
@@ -55,6 +64,7 @@ void HTMLPage::writeHeader(const ImageItem &item)
            "<td><b>Comparison</b></td>\n"
            "<td><b>Fuzzy Comparison</b></td>\n"
            "<td><b>Score</b></td>\n"
+           "<td><b>Update</b></td>\n"
            "</b></tr>\n\n";
 }
 
@@ -73,12 +83,15 @@ void HTMLPage::addItem(const QString &baseline, const QString &rendered, const I
     }
     QString compared = generateCompared(baseline, rendered);
     QString fuzzy = generateCompared(baseline, rendered, true);
+    QString pageUrl = BaselineServer::baseUrl() + path;
 
     out << "<tr>\n";
     out << "<td>" << item.scriptName << "</td>\n";
     QStringList images = QStringList() << baseline << rendered << compared << fuzzy;
     foreach(const QString& img, images)
         out << "<td><a href=\"/" << img << "\"><img src=\"/" << img << "\" width=240 height=240></a></td>\n";
+    out << "<td></td><td><a href=\"/cgi-bin/server.cgi?update=single&oldBaseline=" << baseline
+        << "&newBaseline=" << rendered << "&url=" << pageUrl << "\">Update baseline</a></td>\n";
     out << "<tr>\n\n";
 }
 
@@ -107,4 +120,27 @@ QString HTMLPage::generateCompared(const QString &baseline, const QString &rende
     args << root+baseline << root+rendered << root+res;
     QProcess::execute(QLS("compare"), args);
     return res;
+}
+
+
+void HTMLPage::handleCGIQuery(const QString &query)
+{
+    QUrl cgiUrl(QLS("http://dummy/cgi-bin/dummy.cgi?") + query);
+    QTextStream s(stdout);
+    s << "Content-Type: text/html\r\n\r\n"
+      << "<HTML>";
+//      << "Contents of QUERY_STRING:<br>"
+//      << "Full string = " << query << "<br>";
+
+    if (cgiUrl.queryItemValue(QLS("update")) == QLS("single")) {
+        s << BaselineHandler::updateSingleBaseline(cgiUrl.queryItemValue(QLS("oldBaseline")),
+                                                   cgiUrl.queryItemValue(QLS("newBaseline")));
+    } else {
+        s << BaselineHandler::updateAllBaselines(cgiUrl.queryItemValue(QLS("host")),
+                                                 cgiUrl.queryItemValue(QLS("id")),
+                                                 cgiUrl.queryItemValue(QLS("engine")),
+                                                 cgiUrl.queryItemValue(QLS("format")));
+    }
+    s << "<p><a href=\"" << cgiUrl.queryItemValue(QLS("url")) << "\">Back to report</a>";
+    s << "</HTML>";
 }

@@ -6,6 +6,7 @@
 #include <QFileInfo>
 #include <QHostInfo>
 #include <QTextStream>
+#include <QProcess>
 
 QString BaselineServer::storage;
 
@@ -27,6 +28,13 @@ QString BaselineServer::storagePath()
         storage =  dir.path() + QLS("/storage/");
     }
     return storage;
+}
+
+QString BaselineServer::baseUrl()
+{
+    return QLS("http://")
+            + QHostInfo::localHostName().toLatin1() + '.'
+            + QHostInfo::localDomainName().toLatin1() + '/';
 }
 
 void BaselineServer::incomingConnection(int socketDescriptor)
@@ -190,9 +198,7 @@ void BaselineHandler::storeImage(const QByteArray &itemBlock, bool isBaseline)
 
     QByteArray msg(isBaseline ? "New baseline image stored: " :
                                 "Mismatch report: " );
-    msg += "http://"
-        + QHostInfo::localHostName().toLatin1() + '.'
-        + QHostInfo::localDomainName().toLatin1() + '/';
+    msg += BaselineServer::baseUrl();
     if (isBaseline)
         msg += pathForItem(item, true, false).toLatin1() + FileFormat;
     else
@@ -242,6 +248,64 @@ QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline, boo
     return storePath + itemName + QLC('.');
 }
 
+
+QString BaselineHandler::updateAllBaselines(const QString &host, const QString &id,
+                                            const QString &engine, const QString &format)
+{
+    QString basePath(BaselineServer::storagePath());
+    QString srcDir(basePath + host + QLC('/')
+                   + QString(QLS("mismatches_%1_%2/")).arg(engine, format)
+                   + id);
+    QString dstDir(basePath + host + QLC('/')
+                   + QString(QLS("baselines_%1_%2/")).arg(engine, format));
+
+    QDir dir(srcDir);
+    QStringList nameFilter;
+    nameFilter << "*.metadata" << "*.png";
+    QStringList fileList = dir.entryList(nameFilter, QDir::Files | QDir::NoDotAndDotDot);
+
+    // remove the generated _fuzzycompared.png and _compared.png files from the list
+    QMutableStringListIterator it(fileList);
+    while (it.hasNext()) {
+        it.next();
+        if (it.value().endsWith(QLS("compared.png")))
+            it.remove();
+    }
+
+    QString res;
+    QProcess proc;
+    proc.setWorkingDirectory(srcDir);
+    proc.setProcessChannelMode(QProcess::MergedChannels);
+    proc.start(QLS("cp"), QStringList() << QLS("-f") << fileList << dstDir);
+    proc.waitForFinished();
+    if (proc.exitCode() == 0)
+        res = QLS("Successfully updated baseline for all failed tests.");
+    else
+        res = QString("Error updating baseline: %1<br>"
+                      "Command output: <pre>%2</pre>").arg(proc.errorString(), proc.readAll().constData());
+
+    return res;
+}
+
+QString BaselineHandler::updateSingleBaseline(const QString &oldBaseline, const QString &newBaseline)
+{
+    QString res;
+    QString basePath(BaselineServer::storagePath());
+    QString srcBase(basePath + newBaseline.left(newBaseline.length() - 3));
+    QString dstDir(basePath + oldBaseline.left(oldBaseline.lastIndexOf(QLC('/'))));
+
+    QProcess proc;
+    proc.setProcessChannelMode(QProcess::MergedChannels);
+    proc.start(QLS("cp"), QStringList() << QLS("-f") << srcBase + QLS("png") << srcBase + QLS("metadata") << dstDir);
+    proc.waitForFinished();
+    if (proc.exitCode() == 0)
+        res = QString("Successfully updated '%1'").arg(oldBaseline + QLS("/metadata"));
+    else
+        res = QString("Error updating baseline: %1<br>"
+                      "Command output: <pre>%2</pre>").arg(proc.errorString(), proc.readAll().constData());
+
+    return res;
+}
 
 void BaselineHandler::testPathMapping()
 {

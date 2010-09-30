@@ -14,8 +14,9 @@ public:
     void start(const QString &storagePath, const QString &runId, const PlatformInfo pinfo);
     void addItem(const QString &baseline, const QString &rendered, const ImageItem &item);
     void end();
-
     QString filePath();
+
+    static void handleCGIQuery(const QString &query);
 
 private:
     void writeHeader(const ImageItem &item);
