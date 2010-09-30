@@ -103,12 +103,12 @@ void tst_QDeclarativeDebugService::status()
 
     {
         QDeclarativeDebugTestClient client("tst_QDeclarativeDebugService::status()", m_conn);
-        QDeclarativeDebugTest::waitForSignal(&service, SIGNAL(statusHasChanged()));
-        QCOMPARE(service.status(), QDeclarativeDebugService::Enabled);
+        QTRY_COMPARE(client.status(), QDeclarativeDebugClient::Enabled);
+        QTRY_COMPARE(service.status(), QDeclarativeDebugService::Enabled);
     }
 
-    QDeclarativeDebugTest::waitForSignal(&service, SIGNAL(statusHasChanged()));
-    QCOMPARE(service.status(), QDeclarativeDebugService::Unavailable);
+
+    QTRY_COMPARE(service.status(), QDeclarativeDebugService::Unavailable);
 
     QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugService: Conflicting plugin name \"tst_QDeclarativeDebugService::status()\" ");
 
@@ -123,10 +123,8 @@ void tst_QDeclarativeDebugService::sendMessage()
 
     QByteArray msg = "hello!";
 
-    if (service.status() != QDeclarativeDebugService::Enabled)
-        QDeclarativeDebugTest::waitForSignal(&service, SIGNAL(statusHasChanged()));
-    if (client.status() != QDeclarativeDebugClient::Enabled)
-        QDeclarativeDebugTest::waitForSignal(&client, SIGNAL(statusHasChanged()));
+    QTRY_COMPARE(client.status(), QDeclarativeDebugClient::Enabled);
+    QTRY_COMPARE(service.status(), QDeclarativeDebugService::Enabled);
 
     client.sendMessage(msg);
     QByteArray resp = client.waitForResponse();
