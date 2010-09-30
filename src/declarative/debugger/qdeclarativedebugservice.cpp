@@ -142,6 +142,7 @@ void QDeclarativeDebugServerPrivate::advertisePlugins()
     QPacket pack;
     pack << QString(QLatin1String("QDeclarativeDebugClient")) << 1 << plugins.keys();
     protocol->send(pack);
+    connection->flush();
 }
 
 void QDeclarativeDebugServer::listen()

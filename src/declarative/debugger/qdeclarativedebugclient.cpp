@@ -99,6 +99,7 @@ void QDeclarativeDebugConnectionPrivate::advertisePlugins()
     QPacket pack;
     pack << serverId << 1 << plugins.keys();
     protocol->send(pack);
+    q->flush();
 }
 
 void QDeclarativeDebugConnectionPrivate::connected()
@@ -106,6 +107,7 @@ void QDeclarativeDebugConnectionPrivate::connected()
     QPacket pack;
     pack << serverId << 0 << protocolVersion << plugins.keys();
     protocol->send(pack);
+    q->flush();
 }
 
 void QDeclarativeDebugConnectionPrivate::readyRead()
@@ -274,6 +276,7 @@ void QDeclarativeDebugClient::sendMessage(const QByteArray &message)
     QPacket pack;
     pack << d->name << message;
     d->client->d->protocol->send(pack);
+    d->client->d->q->flush();
 }
 
 void QDeclarativeDebugClient::statusChanged(Status)
