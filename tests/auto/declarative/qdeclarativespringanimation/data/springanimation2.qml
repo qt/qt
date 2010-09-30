@@ -1,4 +1,4 @@
-import Qt 4.7
+import QtQuick 1.0
 
 SpringAnimation {
     to: 1.44; velocity: 0.9

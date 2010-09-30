@@ -101,7 +101,7 @@ QT_BEGIN_NAMESPACE
     The following example moves the Y axis of the \l Rectangle elements while still allowing the \l Row element
     to lay the items out as if they had not been transformed:
     \qml
-    import Qt 4.7
+    import QtQuick 1.0
 
     Row {
         Rectangle {
@@ -1705,7 +1705,7 @@ int QDeclarativeItemPrivate::transform_count(QDeclarativeListProperty<QGraphicsT
 void QDeclarativeItemPrivate::transform_append(QDeclarativeListProperty<QGraphicsTransform> *list, QGraphicsTransform *item)
 {
     QGraphicsObject *object = qobject_cast<QGraphicsObject *>(list->object);
-    if (object) // QGraphicsItem applies the list in the wrong order, so we prepend.
+    if (object && item) // QGraphicsItem applies the list in the wrong order, so we prepend.
         QGraphicsItemPrivate::get(object)->prependGraphicsTransform(item);
 }
 
@@ -1745,8 +1745,8 @@ void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeN
     \qmlproperty list<Object> Item::data
     \default
 
-    The data property is allows you to freely mix visual children and resources
-    of an item.  If you assign a visual item to the data list it becomes
+    The data property allows you to freely mix visual children and resources
+    in an item.  If you assign a visual item to the data list it becomes
     a child and if you assign any other object type, it is added as a resource.
 
     So you can write:

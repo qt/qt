@@ -1,4 +1,4 @@
-import Qt 4.7
+import QtQuick 1.0
 
 /*
 This test shows a green rectangle moving and growing from the upper-left corner

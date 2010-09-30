@@ -1,7 +1,7 @@
 // This example demonstrates placing items in a view using
 // a VisualItemModel
 
-import Qt 4.7
+import QtQuick 1.0
 
 Rectangle {
     color: "lightgray"
