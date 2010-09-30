@@ -96,7 +96,7 @@
 
 // disabling the BTrace components of heap checking macros
 #ifndef ENABLE_BTRACE
-extern int noBTrace();
+inline int noBTrace() {return 0;}
 #define BTraceContext12(a,b,c,d,e) noBTrace()
 #endif
 
