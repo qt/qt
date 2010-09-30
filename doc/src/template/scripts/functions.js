@@ -1,11 +1,12 @@
 // Removing search results
 function hideSearchResults() {
+/* hiding search results as the user clicks on the different categories */
   $('#resultdialog').removeClass('active');
 	$("#resultlist").removeClass().addClass('all');
 	$("#resultlinks").removeClass().addClass('all');
 	$("#searchcount").removeClass().addClass('all');
 }
-// Closing search result box
+/* closing the searhc result dialog */
 $('#resultclose').click(function(e) {
   e.preventDefault();
   hideSearchResults();
@@ -19,14 +20,14 @@ $('.t_button').mouseover(function() {
     $('.t_button').css('cursor','pointer');
 });
 /* END non link areas  */
-// Font size small
+/* Changing font size to smaller */
 $('#smallA').click(function() {
 		$('.mainContent .heading,.mainContent h1, .mainContent h2, .mainContent h3, .mainContent p, .mainContent li, .mainContent table').css('font-size','smaller');
 		$('.t_button').removeClass('active')
 		$(this).addClass('active')
 });
 
-// Font size reset
+/* Reset font size */
 $('#medA').click(function() {
 		$('.mainContent .heading').css('font','600 16px/1 Arial');
 		$('.mainContent h1').css('font','600 18px/1.2 Arial');
@@ -42,8 +43,7 @@ $('#medA').click(function() {
 		$('.t_button').removeClass('active')
 		$(this).addClass('active')
 });
-
-// Font size large
+/* Changing font size to bigger */
 $('#bigA').click(function() {
 		$('.mainContent .heading,.mainContent h1, .mainContent h2, .mainContent h3, .mainContent p, .mainContent li, .mainContent table').css('font-size','large');
 		$('.mainContent .heading,.mainContent h1, .mainContent h2, .mainContent h3, .mainContent p, .mainContent li, .mainContent table').css('line-height','25px');
@@ -51,7 +51,7 @@ $('#bigA').click(function() {
 		$(this).addClass('active')
 });
 
-// Show page content after closing feedback box
+/* Show page content after closing feedback box */
 $('.feedclose').click(function() {
 	$('.bd').show();
 	$('.hd').show();
@@ -60,7 +60,7 @@ $('.feedclose').click(function() {
 	$('#blurpage').hide();
 });
 
-// Hide page content and show feedback box
+/* Hide page content and show feedback box */
 $('.feedback').click(function() {
 	$('.bd').hide();
 	$('.hd').hide();
@@ -68,8 +68,10 @@ $('.feedback').click(function() {
 	$('#feedbackBox').show();
 	$('#blurpage').show();
 });
-// Setting URL - in this case relative to root
+/* Default search URL */
 var qturl = "";
+
+/* The next function handles the response data (in xml) returned by the search engine */
 
 // Process data sent back from the server. The data is structured as a XML.
 /*
@@ -84,46 +86,61 @@ XML structure handled by function processNokiaData()
 
 
 function processNokiaData(response){
+/* fetch the responce from the server using page as the root element */
 	var propertyTags = response.getElementsByTagName('page');
-	
-	var apiCount = 0;
+	/* reset counters */	
+	var lookupCount = 0;
 	var articleCount = 0;
 	var exampleCount = 0;
-	
 	var full_li_element;
 
+/* remove any old results */
 	$('#resultlist li').remove();
 
 
+	/* running through the elements in the xml structure */
  	for (var i=0; i<propertyTags.length; i++) {
+		/* for every element named pageWords*/
 		for (var j=0; j< propertyTags[i].getElementsByTagName('pageWords').length; j++) {
+			/* start a new list element */
 			full_li_element = '<li';
+					/* if the pageType element reads APIPage, add class name api */
       if (propertyTags[j].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'APIPage') {
       	full_li_element += ' class="api"';
       	apiCount++;
       }
+					/* if the pageType element reads Article, add class name article */
       else if (propertyTags[j].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Article') {
       	full_li_element += ' class="article"';
       	articleCount++;
       }
+					/* if the pageType element reads Example, add class name example */
       else if (propertyTags[j].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Example') {
       	full_li_element += ' class="example"';
       	exampleCount++;
       }
+			/* adding the link element*/
 			full_li_element += '><a href="'+qturl;
-      full_li_element += propertyTags[i].getElementsByTagName('pageUrl')[j].firstChild.nodeValue;
-      full_li_element += '">' + propertyTags[i].getElementsByTagName('pageTitle')[0].firstChild.nodeValue + '</a></li>';
-      $('#resultlist').append(full_li_element);
-    }
+			/* adding the URL attribute*/
+			full_li_element += propertyTags[i].getElementsByTagName('pageUrl')[j].firstChild.nodeValue;
+      		/* adding the link title and closing the link and list elements */
+			full_li_element += '">' + propertyTags[i].getElementsByTagName('pageTitle')[0].firstChild.nodeValue + '</a></li>';
+			/* appending the list element to the #resultlist div*/
+			$('#resultlist').append(full_li_element);
+		}
 	}
 
+	/* if the result is not empty */
 	if (propertyTags.length > 0) {
+	/* add class name active to show the dialog */
 	  $('#resultdialog').addClass('active');
+	  /* setting number of hits*/
 	  $('#resultcount').html(propertyTags.length);
 	  $('#apicount').html(apiCount);
 	  $('#articlecount').html(articleCount);
 	  $('#examplecount').html(exampleCount);
   }
+
 
   // Filtering results in display
 	$('p#resultlinks a').click(function(e) {
@@ -157,8 +174,11 @@ function processNokiaData(response){
 
 //build regular expression object to find empty string or any number of blank
 var blankRE=/^\s*$/;
+
+
 function CheckEmptyAndLoadList()
 {
+	/* Start Extracting information for feedback and adding this to the feedback form */
 	var pageUrl = window.location.href;
 	var pageVal = $('title').html();
 	$('#feedUrl').remove();
@@ -166,50 +186,52 @@ function CheckEmptyAndLoadList()
 	$('.menuAlert').remove();
 	$('#feedform').append('<input id="feedUrl" name="feedUrl" value="'+pageUrl+'" style="display:none;">');
 	$('#feedform').append('<input id="pageVal" name="pageVal" value="'+pageVal+'" style="display:none;">');
-	$('.liveResult').remove();
-    $('.defaultLink').css('display','block');
+	/* End Extracting information for feedback and adding this to the feedback form */
+
+	/* extracts search query */
 	var value = document.getElementById('pageType').value; 
+	/* if the search is less than three chars long remove class names and remove elements from old search*/
 	if((blankRE.test(value)) || (value.length < 3))
 	{
-
-
-
-	 $('.defaultLink').css('display','block');
-
 	$('#resultdialog').removeClass('active');
 	$('#resultlist li').remove();
-	}else{
-
 	}
 }
 
 // Loads on doc ready - prepares search 
 	$(document).ready(function () {
-
-
+	/* fetch page title*/ 
 	var pageTitle = $('title').html();
+	/* getting content from search box */
           var currentString = $('#pageType').val() ;
+	  /* if the search box is not empty run CheckEmptyAndLoadList*/
 		  if(currentString.length < 1){
-			$('.defaultLink').css('display','block');
       	   		CheckEmptyAndLoadList();			
 		  }
 
+		/* on key-up in the search box execute the following */
         $('#pageType').keyup(function () {
+		/* extract the search box content */
           var searchString = $('#pageType').val() ;
+	  /* if the string is less than three characters */
           if ((searchString == null) || (searchString.length < 3)) {
+			/* remove classes and elements*/
 				$('#pageType').removeClass('loading');
-				 $('.liveResult').remove(); 
 				 $('.searching').remove(); 
+			/*  run CheckEmptyAndLoadList */
       	   		CheckEmptyAndLoadList();
-				$('.report').remove();
 
+				$('.report').remove();
 				return;
 		   }
+	   /* if timer checks out */
             if (this.timer) clearTimeout(this.timer);
             this.timer = setTimeout(function () {
+			/* add loading image by adding loading class */
 				$('#pageType').addClass('loading');
 				$('.searching').remove(); 
 
+			/* run the actual search */
                $.ajax({
                 contentType: "application/x-www-form-urlencoded",
                 url: 'http://' + location.host + '/nokiasearch/GetDataServlet',
@@ -217,8 +239,7 @@ function CheckEmptyAndLoadList()
                 dataType:'xml',
 				type: 'post',	 
                 success: function (response, textStatus) {
-
-				$('.liveResult').remove(); 
+				/* on success remove loading img */
 				$('.searching').remove(); 
 				$('#pageType').removeClass('loading');
 
@@ -226,6 +247,6 @@ function CheckEmptyAndLoadList()
 
  }     
               });
-            }, 500);
+            }, 500); /* timer set to 500 ms */
         });
       }); 

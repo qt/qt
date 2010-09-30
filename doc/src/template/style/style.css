@@ -528,8 +528,6 @@
 		height:21px;
 		padding:2px 0 0 5px;
 		width:167px;
-		_height: 23px;
-		_width: 169px;		
     }
 
     .sidebar .search form input#pageType
@@ -629,25 +627,11 @@
 			background:url("../images/spinner.gif") no-repeat scroll right center transparent;
 	}
 
-.floatingResult{
-	z-index:1;
-	position:relative;
-	padding-top:0px;
-	background-color:white;
-	border:solid 1px black;
-	height:250px;
-	width:600px;
-	overflow-x:hidden;
-	overflow-y:auto;
-}
+	.sidebar .search form {
+		_height: 23px;
+		_width: 169px;
+	}
 
-	.floatingResult:hover{
-		display:block;
-	}
-	.floatingResult:hover{
-	}
-	
-		
 	#resultdialog {
 	  display: none;
 	  position: absolute;
@@ -720,7 +704,23 @@
 	#resultlinks.all a#showallresults:hover {
 		color: #B0ADAB;
 	}	
-			
+	.floatingResult{
+		z-index:1;
+		position:relative;
+		padding-top:0px;
+		background-color:white;
+		border:solid 1px black;
+		height:250px;
+		width:600px;
+		overflow-x:hidden;
+		overflow-y:auto;
+	}
+
+	.floatingResult:hover{
+		display:block;
+	}
+	.floatingResult:hover{
+	}
 	
 /* end sidebar elements */
 /* content elements */
@@ -1421,8 +1421,7 @@
 	.creator .wrapper .hd,
     .creator .wrapper .ft,
 	.creator .sidebar,
-	.creator .wrap .feedback,
-	.creator #resultdialog
+	.creator .wrap .feedback
     {
 	display:none;
     }
