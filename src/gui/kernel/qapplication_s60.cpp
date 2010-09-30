@@ -673,6 +673,9 @@ void QSymbianControl::HandleStatusPaneSizeChange()
 {
     QS60MainAppUi *s60AppUi = static_cast<QS60MainAppUi *>(S60->appUi());
     s60AppUi->HandleStatusPaneSizeChange();
+    // Send resize event to trigger desktopwidget workAreaResized signal
+    QResizeEvent e(qt_desktopWidget->size(), qt_desktopWidget->size());
+    QApplication::sendEvent(qt_desktopWidget, &e);
 }
 #endif
 
