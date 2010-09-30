@@ -171,6 +171,7 @@ XsdTypeChecker::XsdTypeChecker(const XsdSchemaContext::Ptr &context, const QVect
 
 XsdTypeChecker::~XsdTypeChecker()
 {
+    delete m_reflection;
 }
 
 QString XsdTypeChecker::normalizedValue(const QString &value, const XsdFacet::Hash &facets)

@@ -60,13 +60,16 @@ QDBusArgument &operator<<(QDBusArgument &argument,
                           const ICd2DetailsDBusStruct &icd2)
 {
     argument.beginStructure();
+
     argument << icd2.serviceType;
     argument << icd2.serviceAttributes;
     argument << icd2.setviceId;
     argument << icd2.networkType;
     argument << icd2.networkAttributes;
     argument << icd2.networkId;
+
     argument.endStructure();
+
     return argument;
 }
 
@@ -74,13 +77,16 @@ const QDBusArgument &operator>>(const QDBusArgument &argument,
                                 ICd2DetailsDBusStruct &icd2)
 {
     argument.beginStructure();
+
     argument >> icd2.serviceType;
     argument >> icd2.serviceAttributes;
     argument >> icd2.setviceId;
     argument >> icd2.networkType;
     argument >> icd2.networkAttributes;
     argument >> icd2.networkId;
+
     argument.endStructure();
+
     return argument;
 }
 
@@ -104,9 +110,12 @@ QDBusArgument &operator<<(QDBusArgument &argument,
                           const ICd2DetailsList &detailsList)
 {
      argument.beginArray(qMetaTypeId<ICd2DetailsDBusStruct>());
+
      for (int i = 0; i < detailsList.count(); ++i)
          argument << detailsList[i];
+
      argument.endArray();
+
      return argument;
 }
 
@@ -144,7 +153,8 @@ void QNetworkSessionPrivateImpl::iapStateChanged(const QString& iapid, uint icd_
 
 void QNetworkSessionPrivateImpl::cleanupSession(void)
 {
-    QObject::disconnect(q, SIGNAL(stateChanged(QNetworkSession::State)), this, SLOT(updateProxies(QNetworkSession::State)));
+    QObject::disconnect(q, SIGNAL(stateChanged(QNetworkSession::State)),
+                        this, SLOT(updateProxies(QNetworkSession::State)));
 }
 
 
@@ -881,7 +891,6 @@ void QNetworkSessionPrivateImpl::close()
     } else if (isOpen) {
         if ((activeConfig.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
 	    // We will not wait any disconnect from icd as it might never come
-	    Maemo::Icd icd;
 #ifdef BEARER_MANAGEMENT_DEBUG
 	    qDebug() << "closing session" << publicConfig.identifier();
 #endif
@@ -894,7 +903,7 @@ void QNetworkSessionPrivateImpl::close()
 	    opened = false;
 	    isOpen = false;
 
-	    icd.disconnect(ICD_CONNECTION_FLAG_APPLICATION_EVENT);
+        m_dbusInterface->call(ICD_DBUS_API_DISCONNECT_REQ, ICD_CONNECTION_FLAG_APPLICATION_EVENT);
 	    startTime = QDateTime();
         } else {
 	    opened = false;
@@ -915,7 +924,6 @@ void QNetworkSessionPrivateImpl::stop()
         emit QNetworkSessionPrivate::error(lastError);
     } else {
         if ((activeConfig.state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
-	    Maemo::Icd icd;
 #ifdef BEARER_MANAGEMENT_DEBUG
 	    qDebug() << "stopping session" << publicConfig.identifier();
 #endif
@@ -928,7 +936,7 @@ void QNetworkSessionPrivateImpl::stop()
 	    opened = false;
 	    isOpen = false;
 
-	    icd.disconnect(ICD_CONNECTION_FLAG_APPLICATION_EVENT);
+        m_dbusInterface->call(ICD_DBUS_API_DISCONNECT_REQ, ICD_CONNECTION_FLAG_APPLICATION_EVENT);
 	    startTime = QDateTime();
         } else {
 	    opened = false;

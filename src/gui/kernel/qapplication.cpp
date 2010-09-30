@@ -494,6 +494,7 @@ bool QApplicationPrivate::fade_tooltip = false;
 bool QApplicationPrivate::animate_toolbox = false;
 bool QApplicationPrivate::widgetCount = false;
 bool QApplicationPrivate::load_testability = false;
+QString QApplicationPrivate::qmljsDebugArguments;
 #ifdef QT_KEYPAD_NAVIGATION
 #  ifdef Q_OS_SYMBIAN
 Qt::NavigationMode QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadDirectional;
@@ -565,6 +566,8 @@ void QApplicationPrivate::process_cmdline()
         QString s;
         if (arg == "-qdevel" || arg == "-qdebug") {
             // obsolete argument
+        } else if (arg.indexOf("-qmljsdebugger=", 0) != -1) {
+            qmljsDebugArguments = QString::fromLocal8Bit(arg.right(arg.length() - 15));
         } else if (arg.indexOf("-style=", 0) != -1) {
             s = QString::fromLocal8Bit(arg.right(arg.length() - 7).toLower());
         } else if (arg == "-style" && i < argc-1) {
@@ -670,6 +673,9 @@ void QApplicationPrivate::process_cmdline()
             Qt::RightToLeft
         \o  -graphicssystem, sets the backend to be used for on-screen widgets
             and QPixmaps. Available options are \c{raster} and \c{opengl}.
+        \o  -qmljsdebugger=, activates the QML/JS debugger with a specified port.
+            The value must be of format port:1234[,block], where block is optional
+            and will make the application wait until a debugger connects to it.
     \endlist
 
     The X11 version of Qt supports some traditional X11 command line options:
@@ -704,6 +710,12 @@ void QApplicationPrivate::process_cmdline()
             floating over the widget and is not inserted until the editing is
             done.
     \endlist
+
+    \section1 X11 Notes
+
+    If QApplication fails to open the X11 display, it will terminate
+    the process. This behavior is consistent with most X11
+    applications.
 
     \sa arguments()
 */
@@ -2391,8 +2403,13 @@ static const char *application_menu_strings[] = {
     };
 QString qt_mac_applicationmenu_string(int type)
 {
-    return qApp->translate("MAC_APPLICATION_MENU",
-                           application_menu_strings[type]);
+    QString menuString = QString::fromLatin1(application_menu_strings[type]);
+    QString translated = qApp->translate("QMenuBar", application_menu_strings[type]);
+    if (translated != menuString)
+        return translated;
+    else
+        return qApp->translate("MAC_APPLICATION_MENU",
+                               application_menu_strings[type]);
 }
 #endif
 #endif
