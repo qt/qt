@@ -1614,7 +1614,13 @@ void QDeclarativeItemPrivate::data_append(QDeclarativeListProperty<QObject> *pro
     while (mo && mo != &QGraphicsObject::staticMetaObject) mo = mo->d.superdata;
 
     if (mo) {
-        QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(o))->setParentItemHelper(that, 0, 0);
+        QGraphicsObject *graphicsObject = static_cast<QGraphicsObject *>(o);
+        QDeclarativeItemPrivate *contentItemPrivate = static_cast<QDeclarativeItemPrivate *>(QGraphicsItemPrivate::get(graphicsObject));
+        if (contentItemPrivate->componentComplete) {
+            graphicsObject->setParentItem(that);
+        } else {
+            contentItemPrivate->setParentItemHelper(that, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+        }
     } else {
         o->setParent(that);
     }
@@ -1637,10 +1643,15 @@ static inline QObject *children_at_helper(QDeclarativeListProperty<QObject> *pro
 
 static inline void children_clear_helper(QDeclarativeListProperty<QObject> *prop)
 {
-    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(prop->object));
+    QDeclarativeItemPrivate *d = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(prop->object)));
     int childCount = d->children.count();
-    for (int index = 0 ;index < childCount; index++)
-        QGraphicsItemPrivate::get(d->children.at(0))->setParentItemHelper(0, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+    if (d->componentComplete) {
+        for (int index = 0 ;index < childCount; index++)
+            d->children.at(0)->setParentItem(0);
+    } else {
+        for (int index = 0 ;index < childCount; index++)
+            QGraphicsItemPrivate::get(d->children.at(0))->setParentItemHelper(0, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+    }
 }
 
 int QDeclarativeItemPrivate::data_count(QDeclarativeListProperty<QObject> *prop)
