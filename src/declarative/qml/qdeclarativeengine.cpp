@@ -284,9 +284,11 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
 QUrl QDeclarativeScriptEngine::resolvedUrl(QScriptContext *context, const QUrl& url)
 {
     if (p) {
-        QDeclarativeContextData *ctxt = QDeclarativeEnginePrivate::get(this)->getContext(context);
-        Q_ASSERT(ctxt);
-        return ctxt->resolvedUrl(url);
+        QDeclarativeContextData *ctxt = p->getContext(context);
+        if (ctxt)
+            return ctxt->resolvedUrl(url);
+        else
+            return p->getUrl(context).resolved(url);
     }
     return baseUrl.resolved(url);
 }
@@ -1146,12 +1148,8 @@ QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt, QS
         QString arg = ctxt->argument(0).toString();
         if (arg.isEmpty())
             return engine->nullValue();
-        QUrl url;
+        QUrl url = QDeclarativeScriptEngine::get(engine)->resolvedUrl(ctxt, QUrl(arg));
         QDeclarativeContextData* context = activeEnginePriv->getContext(ctxt);
-        if (context)
-            url = QUrl(context->resolvedUrl(QUrl(arg)));
-        else
-            url = activeEnginePriv->getUrl(ctxt).resolved(QUrl(arg));
         QDeclarativeComponent *c = new QDeclarativeComponent(activeEngine, url, activeEngine);
         QDeclarativeComponentPrivate::get(c)->creationContext = context;
         QDeclarativeData::get(c, true)->setImplicitDestructible();
@@ -1635,7 +1633,7 @@ QScriptValue QDeclarativeEnginePrivate::desktopOpenUrl(QScriptContext *ctxt, QSc
         return QScriptValue(e, false);
     bool ret = false;
 #ifndef QT_NO_DESKTOPSERVICES
-    ret = QDesktopServices::openUrl(QUrl(ctxt->argument(0).toString()));
+    ret = QDesktopServices::openUrl(QDeclarativeScriptEngine::get(e)->resolvedUrl(ctxt, QUrl(ctxt->argument(0).toString())));
 #endif
     return QScriptValue(e, ret);
 }
