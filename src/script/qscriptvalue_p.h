@@ -1109,6 +1109,7 @@ void QScriptValuePrivate::reinitialize(QScriptEnginePrivate* engine, v8::Handle<
     } else if (isStringBased()) {
         delete u.m_string;
     }
+    m_engine = engine;
     m_state = JSValue;
     m_value = v8::Persistent<v8::Value>::New(value);
 }
