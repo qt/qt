@@ -4386,7 +4386,6 @@ void DitaXmlGenerator::generateDetailedQmlMember(const Node* node,
         writeGuidAttribute(n);
         marked = getMarkedUpSynopsis(n, relative, marker, CodeMarker::Detailed);
         writeText(marked, marker, relative);
-        generateQmlItem(n, relative, marker, false);
         xmlWriter().writeEndElement(); // </li>
         xmlWriter().writeEndElement(); // </ul>
     }
