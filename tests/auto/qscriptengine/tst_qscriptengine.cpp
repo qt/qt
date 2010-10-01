@@ -353,7 +353,6 @@ void tst_QScriptEngine::newFunction()
         QEXPECT_FAIL("", "QScriptValue::propertyFlags() not implemented yet.", Continue);
         QCOMPARE(fun.propertyFlags("prototype"), QScriptValue::Undeletable);
         QCOMPARE(proto.property("constructor").strictlyEquals(fun), true);
-        QEXPECT_FAIL("", "QScriptValue::propertyFlags() not implemented yet.", Continue);
         QCOMPARE(proto.propertyFlags("constructor"),
                  QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
 
@@ -1222,7 +1221,6 @@ void tst_QScriptEngine::globalObjectProperties()
     QCOMPARE(global.propertyFlags("URIError"), QScriptValue::SkipInEnumeration);
     QVERIFY(global.property("Math").isObject());
     QVERIFY(!global.property("Math").isFunction());
-    QEXPECT_FAIL("", "[ECMA compliance] JSC sets DontDelete flag for Math object", Continue);
     QCOMPARE(global.propertyFlags("Math"), QScriptValue::SkipInEnumeration);
 
     // enumeration
