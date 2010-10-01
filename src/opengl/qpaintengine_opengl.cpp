@@ -506,12 +506,12 @@ struct QDrawQueueItem
 
 ////////// GL program cache: start
 
-typedef struct {
+struct GLProgram {
     int brush; // brush index or mask index
     int mode;  // composition mode index
     bool mask;
     GLuint program;
-} GLProgram;
+};
 
 typedef QMultiHash<const QGLContext *, GLProgram> QGLProgramHash;
 

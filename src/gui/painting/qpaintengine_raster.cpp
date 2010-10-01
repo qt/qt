@@ -4233,6 +4233,8 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
                 break;
             }
 
+            rendered_spans += q_gray_rendered_spans(*grayRaster.data());
+
 #if defined(Q_WS_WIN64)
             _aligned_free(rasterPoolBase);
 #else
