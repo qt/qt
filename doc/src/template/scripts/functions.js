@@ -89,7 +89,7 @@ function processNokiaData(response){
 /* fetch the responce from the server using page as the root element */
 	var propertyTags = response.getElementsByTagName('page');
 	/* reset counters */	
-	var lookupCount = 0;
+	var apiCount = 0;
 	var articleCount = 0;
 	var exampleCount = 0;
 	var full_li_element;
