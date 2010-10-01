@@ -437,15 +437,12 @@ void QMutex::lockInternal()
 
     do {
         if (spinCount++ > maximumSpinCount) {
-            // puts("spinning useless, sleeping");
-            bool isLocked = d->contenders.testAndSetAcquire(0, 1);
-            if (!isLocked) {
+            // didn't get the lock, wait for it
+            bool isLocked = d->wait();
+            Q_ASSERT_X(isLocked, "QMutex::lock",
+                       "Internal error, infinite wait has timed out.");
+            Q_UNUSED(isLocked);
 
-                // didn't get the lock, wait for it
-                isLocked = d->wait();
-                Q_ASSERT_X(isLocked, "QMutex::lock",
-                            "Internal error, infinite wait has timed out.");
-            }
             // decrease the lastSpinCount since we didn't actually get the lock by spinning
             spinCount = -d->lastSpinCount / SpinCountPenalizationDivisor;
             break;
