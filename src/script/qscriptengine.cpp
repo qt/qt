@@ -867,9 +867,7 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
         m_v8Contexts[i].Dispose();
 
     m_isolate->Exit();
-
-    //FIXME Dispose crashes, but need to be done
-    //m_isolate->Dispose();
+    m_isolate->Dispose();
 }
 
 QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(v8::Handle<v8::Script> script, v8::TryCatch& tryCatch)
