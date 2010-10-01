@@ -491,17 +491,17 @@ void QDeclarativeCurve::setY(qreal y)
     \since 4.7
     \brief The PathAttribute allows setting an attribute at a given position in a Path.
 
-    The PathAttribute object allows attibutes consisting of a name and
-    a value to be specified for the endpoints of path segments.  The
+    The PathAttribute object allows attributes consisting of a name and
+    a value to be specified for various points along a path.  The
     attributes are exposed to the delegate as
     \l{qdeclarativeintroduction.html#attached-properties} {Attached Properties}.
-    The value of an attribute at any particular point is interpolated
-    from the PathAttributes bounding the point.
+    The value of an attribute at any particular point along the path is interpolated
+    from the PathAttributes bounding that point.
 
     The example below shows a path with the items scaled to 30% with
     opacity 50% at the top of the path and scaled 100% with opacity
-    100% at the bottom.  Note the use of the PathView.scale and
-    PathView.opacity attached properties to set the scale and opacity
+    100% at the bottom.  Note the use of the PathView.iconScale and
+    PathView.iconOpacity attached properties to set the scale and opacity
     of the delegate.
 
     \table
@@ -509,14 +509,17 @@ void QDeclarativeCurve::setY(qreal y)
     \o \image declarative-pathattribute.png
     \o
     \snippet doc/src/snippets/declarative/pathview/pathattributes.qml 0
+    (see the PathView documentation for the specification of ContactModel.qml
+     used for ContactModel above.)
     \endtable
 
-   \sa Path
+
+    \sa Path
 */
 
 /*!
     \qmlproperty string PathAttribute::name
-    the name of the attribute to change.
+    This property holds the name of the attribute to change.
 
     This attribute will be available to the delegate as PathView.<name>
 
@@ -544,8 +547,39 @@ void QDeclarativePathAttribute::setName(const QString &name)
 }
 
 /*!
-   \qmlproperty string PathAttribute::value
-   the new value of the attribute.
+   \qmlproperty real PathAttribute::value
+   This property holds the value for the attribute.
+
+   The value specified can be used to influence the visual appearance
+   of an item along the path. For example, the following Path specifies
+   an attribute named \e itemRotation, which has the value \e 0 at the
+   beginning of the path, and the value 90 at the end of the path.
+
+   \qml
+   Path {
+       startX: 0
+       startY: 0
+       PathAttribute { name: "itemRotation"; value: 0 }
+       PathLine { x: 100; y: 100 }
+       PathAttribute { name: "itemRotation"; value: 90 }
+   }
+   \endqml
+
+   In our delegate, we can then bind the \e rotation property to the
+   \l{qdeclarativeintroduction.html#attached-properties} {Attached Property}
+   \e PathView.itemRotation created for this attribute.
+
+   \qml
+   Rectangle {
+       width: 10; height: 10
+       rotation: PathView.itemRotation
+   }
+   \endqml
+
+   As each item is positioned along the path, it will be rotated accordingly:
+   an item at the beginning of the path with be not be rotated, an item at
+   the end of the path will be rotated 90 degrees, and an item mid-way along
+   the path will be rotated 45 degrees.
 */
 
 /*!
@@ -792,6 +826,10 @@ void QDeclarativePathCubic::addToPath(QPainterPath &path)
     \since 4.7
     \brief The PathPercent manipulates the way a path is interpreted.
 
+    PathPercent allows you to manipulate the spacing between items on a
+    PathView's path. You can use it to bunch together items on part of
+    the path, and spread them out on other parts of the path.
+
     The examples below show the normal distrubution of items along a path
     compared to a distribution which places 50% of the items along the
     PathLine section of the path.
@@ -800,30 +838,66 @@ void QDeclarativePathCubic::addToPath(QPainterPath &path)
     \o \image declarative-nopercent.png
     \o
     \qml
-    Path {
-        startX: 20; startY: 0
-        PathQuad { x: 50; y: 80; controlX: 0; controlY: 80 }
-        PathLine { x: 150; y: 80 }
-        PathQuad { x: 180; y: 0; controlX: 200; controlY: 80 }
+    PathView {
+        ...
+        Path {
+            startX: 20; startY: 0
+            PathQuad { x: 50; y: 80; controlX: 0; controlY: 80 }
+            PathLine { x: 150; y: 80 }
+            PathQuad { x: 180; y: 0; controlX: 200; controlY: 80 }
+        }
     }
     \endqml
     \row
     \o \image declarative-percent.png
     \o
     \qml
-    Path {
-        startX: 20; startY: 0
-        PathQuad { x: 50; y: 80; controlX: 0; controlY: 80 }
-        PathPercent { value: 0.25 }
-        PathLine { x: 150; y: 80 }
-        PathPercent { value: 0.75 }
-        PathQuad { x: 180; y: 0; controlX: 200; controlY: 80 }
-        PathPercent { value: 1 }
+    PathView {
+        ...
+        Path {
+            startX: 20; startY: 0
+            PathQuad { x: 50; y: 80; controlX: 0; controlY: 80 }
+            PathPercent { value: 0.25 }
+            PathLine { x: 150; y: 80 }
+            PathPercent { value: 0.75 }
+            PathQuad { x: 180; y: 0; controlX: 200; controlY: 80 }
+            PathPercent { value: 1 }
+        }
     }
     \endqml
     \endtable
 
     \sa Path
+*/
+
+/*!
+    \qmlproperty real value
+    The proporation of items that should be laid out up to this point.
+
+    This value should always be higher than the last value specified
+    by a PathPercent at a previous position in the Path.
+
+    In the following example we have a Path made up of three PathLines.
+    Normally, the items of the PathView would be laid out equally along
+    this path, with an equal number of items per line segment. PathPercent
+    allows us to specify that the first and third lines should each hold
+    10% of the laid out items, while the second line should hold the remaining
+    80%.
+
+    \qml
+    PathView {
+        ...
+        Path {
+            startX: 0; startY: 0
+            PathLine { x:100; y: 0; }
+            PathPercent { value: 0.1 }
+            PathLine { x: 100; y: 100 }
+            PathPercent { value: 0.9 }
+            PathLine { x: 100; y: 0 }
+            PathPercent { value: 1 }
+        }
+    }
+    \endqml
 */
 
 qreal QDeclarativePathPercent::value() const

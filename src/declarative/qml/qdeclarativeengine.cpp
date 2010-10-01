@@ -141,7 +141,7 @@ QT_BEGIN_NAMESPACE
     \qml
     // MyRect.qml
 
-    import Qt 4.7
+    import QtQuick 1.0
 
     Item {
         width: 200; height: 200
@@ -177,9 +177,15 @@ static bool qt_QmlQtModule_registered = false;
 
 void QDeclarativeEnginePrivate::defineModule()
 {
+    qmlRegisterType<QDeclarativeComponent>("QtQuick",1,0,"Component");
+    qmlRegisterType<QObject>("QtQuick",1,0,"QtObject");
+    qmlRegisterType<QDeclarativeWorkerScript>("QtQuick",1,0,"WorkerScript");
+
+#ifndef QT_NO_IMPORT_QT47_QML
     qmlRegisterType<QDeclarativeComponent>("Qt",4,7,"Component");
     qmlRegisterType<QObject>("Qt",4,7,"QtObject");
     qmlRegisterType<QDeclarativeWorkerScript>("Qt",4,7,"WorkerScript");
+#endif
 
     qmlRegisterType<QDeclarativeBinding>();
 }
@@ -198,7 +204,7 @@ with enums and functions.  To use it, call the members of the global \c Qt objec
 For example:
 
 \qml
-import Qt 4.7
+import QtQuick 1.0
 
 Text {
     color: Qt.rgba(255, 0, 0, 1)
@@ -510,7 +516,7 @@ QDeclarativeWorkerScriptEngine *QDeclarativeEnginePrivate::getWorkerScriptEngine
   \code
   QDeclarativeEngine engine;
   QDeclarativeComponent component(&engine);
-  component.setData("import Qt 4.7\nText { text: \"Hello world!\" }", QUrl());
+  component.setData("import QtQuick 1.0\nText { text: \"Hello world!\" }", QUrl());
   QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(component.create());
 
   //add item to view, etc

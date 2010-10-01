@@ -531,7 +531,7 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
     A XmlListModel could create a model from this data, like this:
 
     \qml
-    import Qt 4.7
+    import QtQuick 1.0
 
     XmlListModel {
         id: xmlModel

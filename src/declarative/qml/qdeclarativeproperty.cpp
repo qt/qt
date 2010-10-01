@@ -220,7 +220,7 @@ void QDeclarativePropertyPrivate::initProperty(QObject *obj, const QString &name
                 QDeclarativeAttachedPropertiesFunc func = data->type->attachedPropertiesFunction();
                 if (!func) return; // Not an attachable type
 
-                currentObject = qmlAttachedPropertiesObjectById(data->type->index(), currentObject);
+                currentObject = qmlAttachedPropertiesObjectById(data->type->attachedPropertiesId(), currentObject);
                 if (!currentObject) return; // Something is broken with the attachable type
             } else {
                 Q_ASSERT(data->typeNamespace);
@@ -232,7 +232,7 @@ void QDeclarativePropertyPrivate::initProperty(QObject *obj, const QString &name
                 QDeclarativeAttachedPropertiesFunc func = data->type->attachedPropertiesFunction();
                 if (!func) return; // Not an attachable type
 
-                currentObject = qmlAttachedPropertiesObjectById(data->type->index(), currentObject);
+                currentObject = qmlAttachedPropertiesObjectById(data->type->attachedPropertiesId(), currentObject);
                 if (!currentObject) return; // Something is broken with the attachable type
             }
         } else {

@@ -1,4 +1,4 @@
-import Qt 4.7
+import QtQuick 1.0
 
 QtObject {
     property date date1: "2008-12-24"
