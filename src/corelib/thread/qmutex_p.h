@@ -75,6 +75,7 @@ public:
     // 1ms = 1000000ns
     enum { MaximumSpinTimeThreshold = 1000000 };
     volatile qint64 maximumSpinTime;
+    volatile qint64 averageWaitTime;
     Qt::HANDLE owner;
     uint count;
 

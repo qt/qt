@@ -453,14 +453,20 @@ void QMutex::lockInternal()
             Q_UNUSED(isLocked);
 
             qint64 maximumSpinTime = d->maximumSpinTime;
-            qint64 waitTime = elapsedTimer.nsecsElapsed();
+            qint64 averageWaitTime = d->averageWaitTime;
+            qint64 actualWaitTime = elapsedTimer.nsecsElapsed();
+            if (actualWaitTime < (QMutexPrivate::MaximumSpinTimeThreshold * 3 / 2)) {
+                // measure the wait times
+                averageWaitTime = d->averageWaitTime = qMin((averageWaitTime + actualWaitTime) / 2, qint64(QMutexPrivate::MaximumSpinTimeThreshold));
+            }
+
             // adjust the spin count when spinning does not benefit contention performance
-            if (spinTime + waitTime > QMutexPrivate::MaximumSpinTimeThreshold) {
+            if ((spinTime + actualWaitTime) - qint64(QMutexPrivate::MaximumSpinTimeThreshold) >= qint64(QMutexPrivate::MaximumSpinTimeThreshold)) {
                 // long waits, stop spinning
                 d->maximumSpinTime = 0;
-            } else if (waitTime < maximumSpinTime) {
-                // never spin more than the minimum wait time (otherwise we may perform worse)
-                d->maximumSpinTime = waitTime;
+            } else {
+                // allow spinning if wait times decrease, but never spin more than the average wait time (otherwise we may perform worse)
+                d->maximumSpinTime = qBound(qint64(averageWaitTime * 3 / 2), maximumSpinTime / 2, qint64(QMutexPrivate::MaximumSpinTimeThreshold));
             }
             return;
         }
@@ -468,7 +474,13 @@ void QMutex::lockInternal()
         QThread::yieldCurrentThread();
     } while (d->contenders != 0 || !d->contenders.testAndSetAcquire(0, 1));
 
-    // spinning is working, do not change the spin time
+    // spinning is working, do not change the spin time (unless we are using much less time than allowed to spin)
+    qint64 maximumSpinTime = d->maximumSpinTime;
+    qint64 spinTime = elapsedTimer.nsecsElapsed();
+    if (spinTime < maximumSpinTime / 2) {
+        // we are using much less time than we need, adjust the limit
+        d->maximumSpinTime = qBound(qint64(d->averageWaitTime * 3 / 2), maximumSpinTime / 2, qint64(QMutexPrivate::MaximumSpinTimeThreshold));
+    }
 }
 
 /*!

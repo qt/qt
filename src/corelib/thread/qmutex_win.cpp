@@ -48,7 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 QMutexPrivate::QMutexPrivate(QMutex::RecursionMode mode)
-    : QMutexData(mode), maximumSpinTime(MaximumSpinTimeThreshold), owner(0), count(0)
+    : QMutexData(mode), maximumSpinTime(MaximumSpinTimeThreshold), averageWaitTime(0), owner(0), count(0)
 {
     event = CreateEvent(0, FALSE, FALSE, 0);
     if (!event)
