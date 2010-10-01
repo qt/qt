@@ -100,6 +100,9 @@ inline int noBTrace() {return 0;}
 #define BTraceContext12(a,b,c,d,e) noBTrace()
 #endif
 
+// declare ETHeapBadDebugFailParameter, where missing
+#define ETHeapBadDebugFailParameter ((TCdtPanic)213)
+
 #ifndef QT_SYMBIAN_HAVE_U32STD_H
 struct SThreadCreateInfo
     {

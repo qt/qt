@@ -549,7 +549,7 @@ void ResetAllocCellLevels(TAny* aPtr, RHybridHeap::TCellType aType, TAny* aCell,
     
     if (aType == RHybridHeap::EGoodAllocatedCell)
         {
-        RHybridHeap::SDebugCell* DbgCell = (RHybridHeap::SDebugCell*)((TUint8*)aCell-RHeap::EDebugHdrSize);
+        RHybridHeap::SDebugCell* DbgCell = (RHybridHeap::SDebugCell*)((TUint8*)aCell-RHybridHeap::EDebugHdrSize);
         DbgCell->nestingLevel = 0;
         }
 }

@@ -103,11 +103,15 @@ public:
 		EGetSize=48, EGetMaxLength, EGetBase, EAlignInteger, EAlignAddr
 		};
 	enum TDebugOp { EWalk = 128, EHybridHeap };
-	enum TAllocFail
+	enum THybridAllocFail
 		{
 		ERandom, ETrueRandom, EDeterministic, EHybridNone, EFailNext, EReset, EBurstRandom,
 		EBurstTrueRandom, EBurstDeterministic, EBurstFailNext, ECheckFailure,
 		};
+	enum { EDebugHdrSize = sizeof(SDebugCell) };
+#ifndef SYMBIAN_ENABLE_SPLIT_HEADERS
+	struct SRAllocatorBurstFail {TInt iBurst; TInt iRate; TInt iUnused[2];};
+#endif
 
 	struct HeapInfo
 		{
