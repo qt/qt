@@ -207,7 +207,7 @@ For example:
 import QtQuick 1.0
 
 Text {
-    color: Qt.rgba(255, 0, 0, 1)
+    color: Qt.rgba(1, 0, 0, 1)
     text: Qt.md5("hello, world")
 }
 \endqml
