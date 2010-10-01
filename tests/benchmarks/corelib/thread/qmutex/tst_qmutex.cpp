@@ -210,11 +210,12 @@ void tst_QMutex::contendedNative_data()
 {
     QTest::addColumn<int>("iterations");
     QTest::addColumn<int>("msleepDuration");
-    QTest::newRow("-1")  << 100 <<  -1;
-    QTest::newRow("0")   << 100 <<   0;
-    QTest::newRow("1")   <<  10 <<   1;
-    QTest::newRow("2")   <<  10 <<   2;
-    QTest::newRow("10")  <<  10 <<  10;
+    QTest::newRow("baseline")    <<    0 <<  -1;
+    QTest::newRow("no msleep")   << 1000 <<  -1;
+    QTest::newRow("msleep(0)")   << 1000 <<   0;
+    QTest::newRow("msleep(1)")   <<   10 <<   1;
+    QTest::newRow("msleep(2)")   <<   10 <<   2;
+    QTest::newRow("msleep(10)")  <<   10 <<  10;
 }
 
 class NativeMutexThread : public QThread
