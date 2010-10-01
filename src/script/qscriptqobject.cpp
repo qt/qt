@@ -33,6 +33,7 @@
 #include "qscriptvalue_p.h"
 #include "qscriptdeclarativeobject_p.h"
 #include "qscriptcontext_p.h"
+#include "qscriptisolate_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -132,6 +133,7 @@ void QtConnection::onSignal(void **argv)
     Q_ASSERT(!m_callback.IsEmpty());
 
     QScriptEnginePrivate *engine = QtInstanceData::get(m_signal->object())->engine();
+    QScriptIsolate api(engine);
     v8::HandleScope handleScope;
 
     const QMetaObject *meta = sender()->metaObject();
