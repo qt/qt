@@ -4253,8 +4253,6 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
 #endif
             Q_CHECK_PTR(rasterPoolBase); // note: we just freed the old rasterPoolBase. I hope it's not fatal.
 
-            rendered_spans += q_gray_rendered_spans(*grayRaster.data());
-
             qt_ft_grays_raster.raster_done(*grayRaster.data());
             qt_ft_grays_raster.raster_new(grayRaster.data());
             qt_ft_grays_raster.raster_reset(*grayRaster.data(), rasterPoolBase, rasterPoolSize);
