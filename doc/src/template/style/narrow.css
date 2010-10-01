@@ -61,6 +61,7 @@
     {
       background-image: none;
       text-indent: 0;
+        width: 260px;
     }
 
     .narrow .header #nav-topright

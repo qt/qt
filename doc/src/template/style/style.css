@@ -204,6 +204,10 @@
     {
         font-size: 13px;
     }
+	.red
+	{
+		color:red;
+	}
 /* end font style elements */
 
 /* global settings*/
@@ -907,7 +911,6 @@
     .wrap .content table p
     {
         line-height: 20px;
-       /* padding: 0px;*/
     }	
     .wrap .content ul
     {
