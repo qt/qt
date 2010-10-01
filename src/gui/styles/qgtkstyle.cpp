@@ -803,10 +803,13 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
             // ### this mess should move to subcontrolrect
             QRect frameRect = option->rect.adjusted(1, 1, -1, -2);
 
-            if (qobject_cast<const QTabBar*>(widget))
-                frameRect.adjust(-1, 1, 1, 1);
-
-            gtkPainter.paintFocus(NULL, "tab", frameRect, GTK_STATE_ACTIVE, style);
+            if (qobject_cast<const QTabBar*>(widget)) {
+                GtkWidget *gtkNotebook = d->gtkWidget("GtkNotebook");
+                style = gtkPainter.getStyle(gtkNotebook);
+                gtkPainter.paintFocus(gtkNotebook, "tab", frameRect.adjusted(-1, 1, 1, 1), GTK_STATE_ACTIVE, style);
+            } else {
+                gtkPainter.paintFocus(NULL, "tab", frameRect, GTK_STATE_ACTIVE, style);
+            }
         }
         break;
 
