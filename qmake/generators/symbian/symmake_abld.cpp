@@ -323,6 +323,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
                     QString fixedValue(QDir::toNativeSeparators(values.at(i)));
                     dirsToClean << fixedValue;
                     t << "\t-@ " << dirExists << " \""  << fixedValue << "\" "
+                      << (isWindowsShell() ? "" : "|| ")
                       << mkdir << " \"" << fixedValue << "\"" << endl;
                 }
             }
