@@ -836,9 +836,10 @@ v8::Handle<v8::Value> QtScriptDeclarativeClassObjectCall(const v8::Arguments& ar
 
     QScriptValue result = declarativeClassObject->scriptClass->call(declarativeClassObject->obj.data(), &qScriptContext).toScriptValue(QScriptEnginePrivate::get(engine));
     QScriptValuePrivate* result_private = QScriptValuePrivate::get(result);
-    //FIXME: check the result value of assignEngine;
-    result_private->assignEngine(engine);
-    return *result_private;
+
+    if (result_private->assignEngine(engine))
+        return *result_private;
+    return v8::Handle<v8::Value>();
 }
 
 // This callback implements a catch-all property getter for QMetaObject wrapper objects.
