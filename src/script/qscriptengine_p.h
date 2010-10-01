@@ -38,6 +38,8 @@
 #include "qscriptprogram_p.h"
 #include <v8.h>
 
+Q_DECLARE_METATYPE(QScriptValue)
+
 QT_BEGIN_NAMESPACE
 
 class QDateTime;

@@ -47,8 +47,6 @@
 #include <QtCore/qfile.h>
 #include <QtCore/qfileinfo.h>
 
-Q_DECLARE_METATYPE(QScriptValue)
-
 QT_BEGIN_NAMESPACE
 
 // Data associated with a QVariant JS wrapper object.
@@ -793,6 +791,7 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine:
         m_metaObjectTemplate = v8::Persistent<v8::FunctionTemplate>::New(createMetaObjectTemplate());
         m_variantTemplate = v8::Persistent<v8::FunctionTemplate>::New(createVariantTemplate());
     }
+    qRegisterMetaType<QScriptValue>();
     m_isolate->Exit();
 }
 
