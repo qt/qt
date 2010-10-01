@@ -37,7 +37,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-import Qt 4.7
+import QtQuick 1.0
 import "ImageProviderCore" // import the plugin that registers the color image provider
 
 //![0]

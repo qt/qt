@@ -78,7 +78,7 @@ class QByteArray;
     For example, if there is a \c main.qml file like this:
 
     \qml
-    import Qt 4.7
+    import QtQuick 1.0
 
     Item {
         width: 200

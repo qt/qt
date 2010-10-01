@@ -162,7 +162,7 @@ void tst_qdeclarativeflickable::properties()
 void tst_qdeclarativeflickable::boundsBehavior()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.7; Flickable { boundsBehavior: Flickable.StopAtBounds }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0; Flickable { boundsBehavior: Flickable.StopAtBounds }", QUrl::fromLocalFile(""));
     QDeclarativeFlickable *flickable = qobject_cast<QDeclarativeFlickable*>(component.create());
     QSignalSpy spy(flickable, SIGNAL(boundsBehaviorChanged()));
 
@@ -191,7 +191,7 @@ void tst_qdeclarativeflickable::boundsBehavior()
 void tst_qdeclarativeflickable::maximumFlickVelocity()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.7; Flickable { maximumFlickVelocity: 1.0; }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0; Flickable { maximumFlickVelocity: 1.0; }", QUrl::fromLocalFile(""));
     QDeclarativeFlickable *flickable = qobject_cast<QDeclarativeFlickable*>(component.create());
     QSignalSpy spy(flickable, SIGNAL(maximumFlickVelocityChanged()));
 
@@ -208,7 +208,7 @@ void tst_qdeclarativeflickable::maximumFlickVelocity()
 void tst_qdeclarativeflickable::flickDeceleration()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.7; Flickable { flickDeceleration: 1.0; }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0; Flickable { flickDeceleration: 1.0; }", QUrl::fromLocalFile(""));
     QDeclarativeFlickable *flickable = qobject_cast<QDeclarativeFlickable*>(component.create());
     QSignalSpy spy(flickable, SIGNAL(flickDecelerationChanged()));
 
@@ -225,7 +225,7 @@ void tst_qdeclarativeflickable::flickDeceleration()
 void tst_qdeclarativeflickable::pressDelay()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.7; Flickable { pressDelay: 100; }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0; Flickable { pressDelay: 100; }", QUrl::fromLocalFile(""));
     QDeclarativeFlickable *flickable = qobject_cast<QDeclarativeFlickable*>(component.create());
     QSignalSpy spy(flickable, SIGNAL(pressDelayChanged()));
 
@@ -242,7 +242,7 @@ void tst_qdeclarativeflickable::pressDelay()
 void tst_qdeclarativeflickable::flickableDirection()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.7; Flickable { flickableDirection: Flickable.VerticalFlick; }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0; Flickable { flickableDirection: Flickable.VerticalFlick; }", QUrl::fromLocalFile(""));
     QDeclarativeFlickable *flickable = qobject_cast<QDeclarativeFlickable*>(component.create());
     QSignalSpy spy(flickable, SIGNAL(flickableDirectionChanged()));
 

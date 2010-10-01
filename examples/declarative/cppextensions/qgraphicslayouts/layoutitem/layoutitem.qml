@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 
 LayoutItem {    //Sized by the layout
     id: resizable
