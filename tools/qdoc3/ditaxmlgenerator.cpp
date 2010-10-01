@@ -638,6 +638,33 @@ void DitaXmlGenerator::startText(const Node* /* relative */,
     sectionNumber.clear();
 }
 
+static int countTableColumns(const Atom* t)
+{
+    int result = 0;
+    if (t->type() == Atom::TableHeaderLeft) {
+        while (t->type() == Atom::TableHeaderLeft) {
+            int count = 0;
+            t = t->next();
+            while (t->type() != Atom::TableHeaderRight) {
+                if (t->type() == Atom::TableItemLeft)
+                    ++count;
+                t = t->next();
+            }
+            if (count > result)
+                result = count;
+            t = t->next();
+        }
+    }
+    else if (t->type() == Atom::TableRowLeft) {
+        while (t->type() != Atom::TableRowRight) {
+            if (t->type() == Atom::TableItemLeft)
+                ++result;
+            t = t->next();
+        }
+    }
+    return result;
+}
+
 /*!
   Generate html from an instance of Atom.
  */
@@ -1357,19 +1384,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                 qDebug() << "ERROR: Nested tables!";
                 tableColumnCount = 0;
             }
-            const Atom* t = atom->next();
-            while (t->type() == Atom::TableHeaderLeft) {
-                int count = 0;
-                t = t->next();
-                while (t->type() != Atom::TableHeaderRight) {
-                    if (t->type() == Atom::TableItemLeft)
-                        ++count;
-                    t = t->next();
-                }
-                if (count > tableColumnCount)
-                    tableColumnCount = count;
-                t = t->next();
-            }
+            tableColumnCount = countTableColumns(atom->next());
             xmlWriter().writeStartElement("tgroup");
             xmlWriter().writeAttribute("cols",QString::number(tableColumnCount));
             inTableHeader = false;
@@ -1793,8 +1808,15 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
         sections = marker->qmlSections(qml_cn,CodeMarker::Summary,0);
         s = sections.begin();
         while (s != sections.end()) {
-            writeTargetAndHeader((*s).name,protectEnc((*s).name),"h2");
+            xmlWriter().writeStartElement("section");
+            QString attr = cleanRef((*s).name).toLower();
+            xmlWriter().writeAttribute("outputclass",attr);
+            xmlWriter().writeStartElement("title");
+            xmlWriter().writeAttribute("outputclass","h2");
+            xmlWriter().writeCharacters(protectEnc((*s).name));
+            xmlWriter().writeEndElement(); // </title>
             generateQmlSummary(*s,fake,marker);
+            xmlWriter().writeEndElement(); // </section>
             ++s;
         }
         
@@ -1809,15 +1831,21 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
         sections = marker->qmlSections(qml_cn,CodeMarker::Detailed,0);
         s = sections.begin();
         while (s != sections.end()) {
-            xmlWriter().writeStartElement("p");
-            xmlWriter().writeAttribute("outputclass","h2");
-            xmlWriter().writeCharacters(protectEnc((*s).name));
-            xmlWriter().writeEndElement(); // </p>
-            NodeList::ConstIterator m = (*s).members.begin();
-            while (m != (*s).members.end()) {
-                generateDetailedQmlMember(*m, fake, marker);
-                //out() << "<br/>\n";
-                ++m;
+            if (!s->members.isEmpty()) {
+                QString attr;
+                xmlWriter().writeStartElement("section");
+                attr = cleanRef((*s).name).toLower();
+                xmlWriter().writeAttribute("outputclass",attr);
+                xmlWriter().writeStartElement("title");
+                xmlWriter().writeAttribute("outputclass","h2");
+                xmlWriter().writeCharacters(protectEnc((*s).name));
+                xmlWriter().writeEndElement(); // </title>
+                NodeList::ConstIterator m = (*s).members.begin();
+                while (m != (*s).members.end()) {
+                    generateDetailedQmlMember(*m, fake, marker);
+                    ++m;
+                }
+                xmlWriter().writeEndElement(); // </section>
             }
             ++s;
         }
@@ -3317,7 +3345,7 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
                 }
                 xmlWriter().writeEndElement(); // </<entry>
                 xmlWriter().writeStartElement("entry");
-                xmlWriter().writeAttribute("outputclass=","memItemRight bottomAlign");
+                xmlWriter().writeAttribute("outputclass","memItemRight bottomAlign");
                 done = true;
             }
             i += 2;
@@ -4324,81 +4352,59 @@ void DitaXmlGenerator::generateDetailedQmlMember(const Node* node,
                                                  CodeMarker* marker)
 {
     QString marked;
-    const QmlPropertyNode* qpn = 0;
-    out() << "<div class=\"qmlitem\">";
+    QmlPropertyNode* qpn = 0;
     if (node->subType() == Node::QmlPropertyGroup) {
         const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(node);
         NodeList::ConstIterator p = qpgn->childNodes().begin();
-        out() << "<div class=\"qmlproto\">";
-        out() << "<table class=\"qmlname\">";
-
+        xmlWriter().writeStartElement("ul");
         while (p != qpgn->childNodes().end()) {
             if ((*p)->type() == Node::QmlProperty) {
                 qpn = static_cast<const QmlPropertyNode*>(*p);
-                
-				if (++numTableRows % 2 == 1)
-					out() << "<tr class=\"odd\">";
-				else
-					out() << "<tr class=\"even\">";
-				
-				out() << "<td><p>";
-                //out() << "<tr><td>"; // old
-                out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
+                xmlWriter().writeStartElement("li");
+                writeGuidAttribute(qpn);
+                QString attr;
                 if (!qpn->isWritable(myTree))
-                    out() << "<span class=\"qmlreadonly\">read-only</span>";
-                if (qpgn->isDefault())
-                    out() << "<span class=\"qmldefault\">default</span>";
+                    attr = "read-only";
+                if (qpgn->isDefault()) {
+                    if (!attr.isEmpty())
+                        attr += " ";
+                    attr += "default";
+                }
+                if (!attr.isEmpty())
+                    xmlWriter().writeAttribute("outputclass",attr);
                 generateQmlItem(qpn, relative, marker, false);
-                out() << "</td></tr>";
+                xmlWriter().writeEndElement(); // </li>
             }
             ++p;
         }
-        out() << "</table>";
-        out() << "</div>";
+        xmlWriter().writeEndElement(); // </ul>
     }
     else if (node->type() == Node::QmlSignal) {
-        const FunctionNode* qsn = static_cast<const FunctionNode*>(node);
-        out() << "<div class=\"qmlproto\">";
-        out() << "<table class=\"qmlname\">";
-        //out() << "<tr>";
-		if (++numTableRows % 2 == 1)
-			out() << "<tr class=\"odd\">";
-		else
-			out() << "<tr class=\"even\">";
-        out() << "<td><p>";
-        out() << "<a name=\"" + refForNode(qsn) + "\"></a>";
-        marked = getMarkedUpSynopsis(qsn, relative, marker, CodeMarker::Detailed);
+        Node* n = const_cast<Node*>(node);
+        xmlWriter().writeStartElement("ul");
+        xmlWriter().writeStartElement("li");
+        writeGuidAttribute(n);
+        marked = getMarkedUpSynopsis(n, relative, marker, CodeMarker::Detailed);
         writeText(marked, marker, relative);
-        //generateQmlItem(qsn,relative,marker,false);
-        out() << "</p></td></tr>";
-        out() << "</table>";
-        out() << "</div>";
+        generateQmlItem(n, relative, marker, false);
+        xmlWriter().writeEndElement(); // </li>
+        xmlWriter().writeEndElement(); // </ul>
     }
     else if (node->type() == Node::QmlMethod) {
-        const FunctionNode* qmn = static_cast<const FunctionNode*>(node);
-        out() << "<div class=\"qmlproto\">";
-        out() << "<table class=\"qmlname\">";
-        //out() << "<tr>";
-		if (++numTableRows % 2 == 1)
-			out() << "<tr class=\"odd\">";
-		else
-			out() << "<tr class=\"even\">";
-        out() << "<td><p>";
-        out() << "<a name=\"" + refForNode(qmn) + "\"></a>";
-        marked = getMarkedUpSynopsis(qmn, relative, marker, CodeMarker::Detailed);
+        Node* n = const_cast<Node*>(node);
+        xmlWriter().writeStartElement("ul");
+        xmlWriter().writeStartElement("li");
+        writeGuidAttribute(n);
+        marked = getMarkedUpSynopsis(n, relative, marker, CodeMarker::Detailed);
         writeText(marked, marker, relative);
-        out() << "</p></td></tr>";
-        out() << "</table>";
-        out() << "</div>";
+        xmlWriter().writeEndElement(); // </li>
+        xmlWriter().writeEndElement(); // </ul>
     }
-    out() << "<div class=\"qmldoc\">";
     generateStatus(node, marker);
     generateBody(node, marker);
     generateThreadSafeness(node, marker);
     generateSince(node, marker);
     generateAlsoList(node, marker);
-    out() << "</div>";
-    out() << "</div>";
 }
 
 /*!
