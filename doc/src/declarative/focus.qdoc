@@ -301,14 +301,4 @@ actually performs the work of handling the \e {Return} key.
 
 All of the QML view classes, such as \l PathView and \l GridView, behave
 in a similar manner to allow key handling in their respective delegates.
-
-\section1 Focus Panels
-
-Traditional UIs are composed of many top-level windows.  Windows actually
-perform two tasks - they act as the visual bounds for a widget, and they segment
-focus.  Each window has a separate focused widget, that becomes (to mix
-terminologies) the \e {active focus} widget when the window is the active
-window.
-
-### Focus panels do basically the same thing.
 */
