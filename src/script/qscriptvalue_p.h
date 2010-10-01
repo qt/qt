@@ -72,6 +72,7 @@ public:
     inline QScriptValuePrivate(QScriptEnginePrivate* engine, const QString& value);
     inline QScriptValuePrivate(QScriptEnginePrivate* engine, QScriptValue::SpecialValue value);
     inline QScriptValuePrivate(QScriptEnginePrivate* engine, v8::Handle<v8::Value>);
+    inline void reinitialize();
     inline void reinitialize(QScriptEnginePrivate* engine, v8::Handle<v8::Value>);
 
     inline bool toBool() const;
@@ -288,6 +289,8 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate *engine, v8::Handl
     // It shouldn't happen, v8 shows errors by returning an empty handler. This is important debug
     // information and it can't be simply ignored.
     Q_ASSERT(!value.IsEmpty());
+    if (engine->isInvalid(value))
+        reinitialize();
 }
 
 QScriptValuePrivate::~QScriptValuePrivate()
@@ -1101,7 +1104,11 @@ bool QScriptValuePrivate::assignEngine(QScriptEnginePrivate* engine)
     return true;
 }
 
-void QScriptValuePrivate::reinitialize(QScriptEnginePrivate* engine, v8::Handle<v8::Value> value)
+/*!
+  \internal
+  reinitialize this value to an invalid
+*/
+void QScriptValuePrivate::reinitialize()
 {
     if (isJSBased()) {
         m_value.Dispose();
@@ -1109,9 +1116,29 @@ void QScriptValuePrivate::reinitialize(QScriptEnginePrivate* engine, v8::Handle<
     } else if (isStringBased()) {
         delete u.m_string;
     }
-    m_engine = engine;
-    m_state = JSValue;
-    m_value = v8::Persistent<v8::Value>::New(value);
+    m_engine = 0;
+    m_state = Invalid;
+}
+
+/*!
+  \internal
+  reinitialize this value to an JSValue or invalid (if the given handle point to invalid)
+*/
+void QScriptValuePrivate::reinitialize(QScriptEnginePrivate* engine, v8::Handle<v8::Value> value)
+{
+    if (isJSBased()) {
+        m_value.Dispose();
+    } else if (isStringBased()) {
+        delete u.m_string;
+    }
+    if (engine->isInvalid(value)) {
+        engine = 0;
+        m_state = Invalid;
+    } else {
+        m_engine = engine;
+        m_state = JSValue;
+        m_value = v8::Persistent<v8::Value>::New(value);
+    }
 }
 
 QScriptEnginePrivate* QScriptValuePrivate::engine() const
