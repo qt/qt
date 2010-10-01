@@ -59,7 +59,7 @@ QT_END_INCLUDE_HEADER
     || defined(__ARM_ARCH_6K__) \
     || defined(__ARM_ARCH_6ZK__) \
     || defined(__ARM_ARCH_6M__) \
-    || (__TARGET_ARCH_ARM-0 >= 6)
+    || (defined(__TARGET_ARCH_ARM) && (__TARGET_ARCH_ARM-0 >= 6))
 # define QT_ARCH_ARMV6
 QT_BEGIN_INCLUDE_HEADER
 # include "QtCore/qatomic_armv6.h"
