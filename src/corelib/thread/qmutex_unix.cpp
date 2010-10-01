@@ -74,7 +74,7 @@ static void report_error(int code, const char *where, const char *what)
 
 
 QMutexPrivate::QMutexPrivate(QMutex::RecursionMode mode)
-    : QMutexData(mode), lastSpinCount(0), owner(0), count(0)
+    : QMutexData(mode), maximumSpinTime(MaximumSpinTimeThreshold), owner(0), count(0)
 {
 #if defined(Q_OS_MAC)
     kern_return_t r = semaphore_create(mach_task_self(), &mach_semaphore, SYNC_POLICY_FIFO, 0);

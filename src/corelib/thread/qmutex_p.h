@@ -72,7 +72,9 @@ public:
     bool wait(int timeout = -1);
     void wakeUp();
 
-    volatile int lastSpinCount;
+    // half of a frame (in ms) at 60fps
+    enum { MaximumSpinTimeThreshold = 8 };
+    volatile int maximumSpinTime;
     Qt::HANDLE owner;
     uint count;
 

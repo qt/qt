@@ -45,6 +45,7 @@
 
 #ifndef QT_NO_THREAD
 #include "qatomic.h"
+#include "qelapsedtimer.h"
 #include "qthread.h"
 #include "qmutex_p.h"
 
@@ -439,31 +440,34 @@ void QMutex::lockInternal()
         return;
     }
 
-    int spinCount = 0;
-    int lastSpinCount = d->lastSpinCount;
-
-    enum { AdditionalSpins = 20, SpinCountPenalizationDivisor = 4 };
-    const int maximumSpinCount = lastSpinCount + AdditionalSpins;
-
+    QElapsedTimer elapsedTimer;
+    elapsedTimer.start();
     do {
-        if (spinCount++ > maximumSpinCount) {
-            // didn't get the lock, wait for it
+        if (elapsedTimer.hasExpired(d->maximumSpinTime)) {
+            // didn't get the lock, wait for it, since we're not going to gain anything by spinning more
+            int spinTime = elapsedTimer.restart();
             bool isLocked = d->wait();
             Q_ASSERT_X(isLocked, "QMutex::lock",
                        "Internal error, infinite wait has timed out.");
             Q_UNUSED(isLocked);
 
-            // decrease the lastSpinCount since we didn't actually get the lock by spinning
-            spinCount = -d->lastSpinCount / SpinCountPenalizationDivisor;
-            break;
+            int maximumSpinTime = d->maximumSpinTime;
+            int waitTime = elapsedTimer.elapsed();
+            // adjust the spin count when spinning does not benefit contention performance
+            if (spinTime + waitTime > QMutexPrivate::MaximumSpinTimeThreshold) {
+                // long waits, stop spinning
+                d->maximumSpinTime = 0;
+            } else if (waitTime < maximumSpinTime) {
+                // never spin more than the minimum wait time (otherwise we may perform worse)
+                d->maximumSpinTime = waitTime;
+            }
+            return;
         }
+        // be a good citizen... yielding lets something else run if there is something to run, but may also relieve memory pressure if not
+        QThread::yieldCurrentThread();
     } while (d->contenders != 0 || !d->contenders.testAndSetAcquire(0, 1));
 
-    // adjust the last spin lock count
-    lastSpinCount = d->lastSpinCount;
-    d->lastSpinCount = spinCount >= 0
-                        ? qMax(lastSpinCount, spinCount)
-                        : lastSpinCount + spinCount;
+    // spinning is working, do not change the spin time
 }
 
 /*!
