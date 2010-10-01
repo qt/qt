@@ -304,7 +304,7 @@ void tst_qdeclarativeanchors::illegalSets()
 
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\n" + qml.toUtf8()), QUrl::fromLocalFile(""));
+    component.setData(QByteArray("import QtQuick 1.0\n" + qml.toUtf8()), QUrl::fromLocalFile(""));
     if (!component.isReady())
         qWarning() << "Test errors:" << component.errors();
     QVERIFY(component.isReady());

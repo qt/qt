@@ -101,7 +101,7 @@ QT_BEGIN_NAMESPACE
     The following example moves the Y axis of the \l Rectangle elements while still allowing the \l Row element
     to lay the items out as if they had not been transformed:
     \qml
-    import Qt 4.7
+    import QtQuick 1.0
 
     Row {
         Rectangle {

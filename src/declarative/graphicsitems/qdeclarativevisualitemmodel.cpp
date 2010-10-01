@@ -142,7 +142,7 @@ public:
 
     The example below places three colored rectangles in a ListView.
     \code
-    import Qt 4.7
+    import QtQuick 1.0
 
     Rectangle {
         VisualItemModel {
