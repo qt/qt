@@ -1128,6 +1128,8 @@ void QInputDialog::done(int result)
     be entered).
     \a text is the default text which is placed in the line edit.
     \a mode is the echo mode the line edit will use.
+    \a inputMethodHints is the input method hints that will be used in the
+    edit widget if an input method is active.
 
     If \a ok is nonnull \e *\a ok will be set to true if the user pressed
     \gui OK and to false if the user pressed \gui Cancel. The dialog's parent
@@ -1150,13 +1152,14 @@ void QInputDialog::done(int result)
 
 QString QInputDialog::getText(QWidget *parent, const QString &title, const QString &label,
                               QLineEdit::EchoMode mode, const QString &text, bool *ok,
-                              Qt::WindowFlags flags)
+                              Qt::WindowFlags flags, Qt::InputMethodHints inputMethodHints)
 {
     QInputDialog dialog(parent, flags);
     dialog.setWindowTitle(title);
     dialog.setLabelText(label);
     dialog.setTextValue(text);
     dialog.setTextEchoMode(mode);
+    dialog.setInputMethodHints(inputMethodHints);
 
     int ret = dialog.exec();
     if (ok)
@@ -1166,6 +1169,17 @@ QString QInputDialog::getText(QWidget *parent, const QString &title, const QStri
     } else {
         return QString();
     }
+}
+
+/*!
+    \internal
+*/
+// ### Qt 5: Use only the version above.
+QString QInputDialog::getText(QWidget *parent, const QString &title, const QString &label,
+                              QLineEdit::EchoMode mode, const QString &text, bool *ok,
+                              Qt::WindowFlags flags)
+{
+    return getText(parent, title, label, mode, text, ok, flags, Qt::ImhNone);
 }
 
 /*!
@@ -1278,6 +1292,8 @@ double QInputDialog::getDouble(QWidget *parent, const QString &title, const QStr
     be entered).
     \a items is the string list which is inserted into the combobox.
     \a current is the number  of the item which should be the current item.
+    \a inputMethodHints is the input method hints that will be used if the
+    combobox is editable and an input method is active.
 
     If \a editable is true the user can enter their own text; otherwise the
     user may only select one of the existing items.
@@ -1302,7 +1318,7 @@ double QInputDialog::getDouble(QWidget *parent, const QString &title, const QStr
 
 QString QInputDialog::getItem(QWidget *parent, const QString &title, const QString &label,
                               const QStringList &items, int current, bool editable, bool *ok,
-                              Qt::WindowFlags flags)
+                              Qt::WindowFlags flags, Qt::InputMethodHints inputMethodHints)
 {
     QString text(items.value(current));
 
@@ -1312,6 +1328,7 @@ QString QInputDialog::getItem(QWidget *parent, const QString &title, const QStri
     dialog.setComboBoxItems(items);
     dialog.setTextValue(text);
     dialog.setComboBoxEditable(editable);
+    dialog.setInputMethodHints(inputMethodHints);
 
     int ret = dialog.exec();
     if (ok)
@@ -1321,6 +1338,17 @@ QString QInputDialog::getItem(QWidget *parent, const QString &title, const QStri
     } else {
         return text;
     }
+}
+
+/*!
+    \internal
+*/
+// ### Qt 5: Use only the version above.
+QString QInputDialog::getItem(QWidget *parent, const QString &title, const QString &label,
+                              const QStringList &items, int current, bool editable, bool *ok,
+                              Qt::WindowFlags flags)
+{
+    return getItem(parent, title, label, items, current, editable, ok, flags, Qt::ImhNone);
 }
 
 /*!
