@@ -3294,6 +3294,7 @@ void tst_QScriptEngine::isEvaluating()
 
         eng.setProcessEventsInterval(100);
         eng.evaluate(script);
+        QEXPECT_FAIL("", "setProcessEventsInterval has not beens implemented yet", Continue);
         QVERIFY(receiver.wasEvaluating);
     }
 }

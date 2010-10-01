@@ -782,6 +782,7 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine:
             v8::Persistent<v8::Context>::New(v8::Context::GetCurrent()) : v8::Context::New())
     , m_originalGlobalObject(m_v8Context)
     , m_currentQsContext(0)
+    , m_isEvaluating(false)
 {
     Q_ASSERT(!m_v8Context.IsEmpty());
     m_baseQsContext.reset(new QScriptContextPrivate(this));
@@ -874,18 +875,22 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
 QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(v8::Handle<v8::Script> script, v8::TryCatch& tryCatch)
 {
     v8::HandleScope handleScope;
+    m_isEvaluating = true;
     clearExceptions();
     if (script.IsEmpty()) {
         v8::Handle<v8::Value> exception = tryCatch.Exception();
         setException(exception);
+        m_isEvaluating = false;
         return new QScriptValuePrivate(this, exception);
     }
     v8::Handle<v8::Value> result = script->Run();
     if (result.IsEmpty()) {
         v8::Handle<v8::Value> exception = tryCatch.Exception();
         setException(exception);
+        m_isEvaluating = false;
         return new QScriptValuePrivate(this, exception);
     }
+    m_isEvaluating = false;
     return new QScriptValuePrivate(this, result);
 }
 
@@ -1209,8 +1214,8 @@ QScriptValue QScriptEngine::evaluate(const QString& program, const QString& file
 */
 bool QScriptEngine::isEvaluating() const
 {
-    Q_UNIMPLEMENTED();
-    return false;
+    Q_D(const QScriptEngine);
+    return d->isEvaluating();
 }
 
 /*!

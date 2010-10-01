@@ -59,6 +59,7 @@ public:
     inline QScriptPassPointer<QScriptValuePrivate> evaluate(const QString& program, const QString& fileName, int lineNumber);
     inline QScriptPassPointer<QScriptValuePrivate> evaluate(QScriptProgramPrivate* program);
     QScriptPassPointer<QScriptValuePrivate> evaluate(v8::Handle<v8::Script> script, v8::TryCatch& tryCatch);
+    inline bool isEvaluating() const;
     inline void collectGarbage();
     inline void reportAdditionalMemoryCost(int cost);
     v8::Handle<v8::Value> globalObject() const;
@@ -172,6 +173,7 @@ private:
     QScriptContextPrivate *m_currentQsContext;
     QScopedPointer<QScriptContextPrivate> m_baseQsContext;
     QSet<int> visitedConversionObjects;
+    bool m_isEvaluating;
 };
 
 v8::Handle<v8::Value> QScriptEnginePrivate::makeJSValue()
@@ -252,6 +254,11 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(QS
     v8::TryCatch tryCatch;
     v8::Handle<v8::Script> script = program->compiled(this);
     return evaluate(script, tryCatch);
+}
+
+inline bool QScriptEnginePrivate::isEvaluating() const
+{
+    return m_isEvaluating;
 }
 
 void QScriptEnginePrivate::collectGarbage()
