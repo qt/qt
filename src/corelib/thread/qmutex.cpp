@@ -443,16 +443,17 @@ void QMutex::lockInternal()
     QElapsedTimer elapsedTimer;
     elapsedTimer.start();
     do {
-        if (elapsedTimer.hasExpired(d->maximumSpinTime)) {
+        qint64 spinTime = elapsedTimer.nsecsElapsed();
+        if (spinTime > d->maximumSpinTime) {
             // didn't get the lock, wait for it, since we're not going to gain anything by spinning more
-            int spinTime = elapsedTimer.restart();
+            elapsedTimer.start();
             bool isLocked = d->wait();
             Q_ASSERT_X(isLocked, "QMutex::lock",
                        "Internal error, infinite wait has timed out.");
             Q_UNUSED(isLocked);
 
-            int maximumSpinTime = d->maximumSpinTime;
-            int waitTime = elapsedTimer.elapsed();
+            qint64 maximumSpinTime = d->maximumSpinTime;
+            qint64 waitTime = elapsedTimer.nsecsElapsed();
             // adjust the spin count when spinning does not benefit contention performance
             if (spinTime + waitTime > QMutexPrivate::MaximumSpinTimeThreshold) {
                 // long waits, stop spinning
