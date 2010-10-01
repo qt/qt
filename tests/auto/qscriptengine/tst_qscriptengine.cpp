@@ -103,6 +103,7 @@ private slots:
     void newQObject();
     void newQMetaObject();
     void newActivationObject();
+    void getSetGlobalObjectSimple();
     void getSetGlobalObject();
     void globalObjectProperties();
     void globalObjectGetterSetterProperty();
@@ -1055,6 +1056,19 @@ void tst_QScriptEngine::newActivationObject()
     QVERIFY(act.prototype().isNull());
 }
 
+void tst_QScriptEngine::getSetGlobalObjectSimple()
+{
+    QScriptEngine engine;
+    QScriptValue object = engine.newObject();
+    object.setProperty("foo", 123);
+    engine.evaluate("var bar = 100");
+    engine.setGlobalObject(object);
+    engine.evaluate("rab = 100");
+    QVERIFY(engine.globalObject().property("rab").isValid());
+    QVERIFY(engine.globalObject().property("foo").isValid());
+    QVERIFY(!engine.globalObject().property("bar").isValid());
+}
+
 void tst_QScriptEngine::getSetGlobalObject()
 {
     QScriptEngine eng;
@@ -1106,7 +1120,6 @@ void tst_QScriptEngine::getSetGlobalObject()
     QEXPECT_FAIL("", "currentContext is not yet implemented", Continue);
     QVERIFY(eng.currentContext()->activationObject().strictlyEquals(obj));
 
-    QEXPECT_FAIL("", "FIXME: Changed global object returns undefined instead of invalid", Continue);
     QVERIFY(!obj.property("foo").isValid());
     eng.evaluate("var foo = 123");
     {
@@ -1115,7 +1128,6 @@ void tst_QScriptEngine::getSetGlobalObject()
         QCOMPARE(ret.toInt32(), 123);
     }
 
-    QEXPECT_FAIL("", "FIXME: Changed global object returns undefined instead of invalid", Continue);
     QVERIFY(!obj.property("bar").isValid());
     eng.evaluate("bar = 456");
     {
@@ -1124,7 +1136,6 @@ void tst_QScriptEngine::getSetGlobalObject()
         QCOMPARE(ret.toInt32(), 456);
     }
 
-    QEXPECT_FAIL("", "FIXME: Changed global object returns undefined instead of invalid", Continue);
     QVERIFY(!obj.property("baz").isValid());
     eng.evaluate("this['baz'] = 789");
     {
@@ -4494,17 +4505,11 @@ void tst_QScriptEngine::installTranslatorFunctions()
     } else {
         global = globalOrig;
     }
-    QEXPECT_FAIL("Custom global object", "FIXME: custom object returns udnefined if value is not found", Continue);
     QVERIFY(!global.property("qsTranslate").isValid());
-    QEXPECT_FAIL("Custom global object", "FIXME: custom object returns udnefined if value is not found", Continue);
     QVERIFY(!global.property("QT_TRANSLATE_NOOP").isValid());
-    QEXPECT_FAIL("Custom global object", "FIXME: custom object returns udnefined if value is not found", Continue);
     QVERIFY(!global.property("qsTr").isValid());
-    QEXPECT_FAIL("Custom global object", "FIXME: custom object returns udnefined if value is not found", Continue);
     QVERIFY(!global.property("QT_TR_NOOP").isValid());
-    QEXPECT_FAIL("Custom global object", "FIXME: custom object returns udnefined if value is not found", Continue);
     QVERIFY(!global.property("qsTrId").isValid());
-    QEXPECT_FAIL("Custom global object", "FIXME: custom object returns udnefined if value is not found", Continue);
     QVERIFY(!global.property("QT_TRID_NOOP").isValid());
     QVERIFY(!globalOrig.property("String").property("prototype").property("arg").isValid());
 

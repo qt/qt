@@ -548,7 +548,7 @@ inline bool QScriptValuePrivate::isNumber() const
 
 inline bool QScriptValuePrivate::isObject() const
 {
-    return isJSBased() && m_value->IsObject();
+    return isJSBased() && !engine()->isInvalid(m_value) && m_value->IsObject();
 }
 
 inline bool QScriptValuePrivate::isString() const
@@ -563,7 +563,7 @@ inline bool QScriptValuePrivate::isUndefined() const
 
 inline bool QScriptValuePrivate::isValid() const
 {
-    return m_state != Invalid;
+    return !(m_state == Invalid || (isJSBased() && engine()->isInvalid(m_value)));
 }
 
 inline bool QScriptValuePrivate::isVariant() const
