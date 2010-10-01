@@ -429,6 +429,16 @@ void QMutex::unlock()
 void QMutex::lockInternal()
 {
     QMutexPrivate *d = static_cast<QMutexPrivate *>(this->d);
+
+    if (QThread::idealThreadCount() == 1) {
+        // don't spin on single cpu machines
+        bool isLocked = d->wait();
+        Q_ASSERT_X(isLocked, "QMutex::lock",
+                   "Internal error, infinite wait has timed out.");
+        Q_UNUSED(isLocked);
+        return;
+    }
+
     int spinCount = 0;
     int lastSpinCount = d->lastSpinCount;
 
