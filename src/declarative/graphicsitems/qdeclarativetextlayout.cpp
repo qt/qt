@@ -273,7 +273,12 @@ void QDeclarativeTextLayout::draw(QPainter *painter, const QPointF &p)
 {
     QPainterPrivate *priv = QPainterPrivate::get(painter);
 
-    if (!priv->extended) {
+    bool paintEngineSupportsTransformations = priv->extended &&
+                                              (priv->extended->type() == QPaintEngine::OpenGL2 ||
+                                               priv->extended->type() == QPaintEngine::OpenVG ||
+                                               priv->extended->type() == QPaintEngine::OpenGL);
+
+    if (!paintEngineSupportsTransformations) {
         QTextLayout::draw(painter, p);
         return;
     }
