@@ -56,8 +56,10 @@ MMF::AbstractMediaPlayer::AbstractMediaPlayer
         ,   m_mmfMaxVolume(NullMaxVolume)
         ,   m_prefinishMarkSent(false)
         ,   m_aboutToFinishSent(false)
+#ifdef PHONON_MMF_PROGRESSIVE_DOWNLOAD
         ,   m_download(0)
         ,   m_downloadStalled(false)
+#endif
 {
     connect(m_positionTimer.data(), SIGNAL(timeout()), this, SLOT(positionTick()));
     connect(m_bufferStatusTimer.data(), SIGNAL(timeout()), this, SLOT(bufferStatusTick()));
@@ -256,7 +258,9 @@ void MMF::AbstractMediaPlayer::open()
             symbianErr = openFile(*file);
             if (KErrNone != symbianErr)
                 errorMessage = tr("Error opening file");
-        } else if (url.scheme() == QLatin1String("http")) {
+        }
+#ifdef PHONON_MMF_PROGRESSIVE_DOWNLOAD
+        else if (url.scheme() == QLatin1String("http")) {
             Q_ASSERT(!m_download);
             m_download = new Download(url, this);
             connect(m_download, SIGNAL(lengthChanged(qint64)),
@@ -264,7 +268,9 @@ void MMF::AbstractMediaPlayer::open()
             connect(m_download, SIGNAL(stateChanged(Download::State)),
                     this, SLOT(downloadStateChanged(Download::State)));
             m_download->start();
-        } else {
+        }
+#endif
+        else {
             symbianErr = openUrl(url.toString());
             if (KErrNone != symbianErr)
                 errorMessage = tr("Error opening URL");
@@ -308,8 +314,10 @@ void MMF::AbstractMediaPlayer::open()
 void MMF::AbstractMediaPlayer::close()
 {
     doClose();
+#ifdef PHONON_MMF_PROGRESSIVE_DOWNLOAD
     delete m_download;
     m_download = 0;
+#endif
     m_position = 0;
 }
 
@@ -419,7 +427,9 @@ void MMF::AbstractMediaPlayer::loadingComplete(int error)
             bufferingComplete();
             doSeek(m_position);
             startPlayback();
+#ifdef PHONON_MMF_PROGRESSIVE_DOWNLOAD
             m_downloadStalled = false;
+#endif
         }
     } else {
         Q_ASSERT(Phonon::LoadingState == state());
@@ -472,12 +482,20 @@ qint64 MMF::AbstractMediaPlayer::toMilliSeconds(const TTimeIntervalMicroSeconds 
 
 bool MMF::AbstractMediaPlayer::isProgressiveDownload() const
 {
+#ifdef PHONON_MMF_PROGRESSIVE_DOWNLOAD
     return (0 != m_download);
+#else
+    return false;
+#endif
 }
 
 bool MMF::AbstractMediaPlayer::progressiveDownloadStalled() const
 {
+#ifdef PHONON_MMF_PROGRESSIVE_DOWNLOAD
     return m_downloadStalled;
+#else
+    return false;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -547,6 +565,7 @@ void MMF::AbstractMediaPlayer::startPlayback()
 
 void MMF::AbstractMediaPlayer::setProgressiveDownloadStalled()
 {
+#ifdef PHONON_MMF_PROGRESSIVE_DOWNLOAD
     TRACE_CONTEXT(AbstractMediaPlayer::setProgressiveDownloadStalled, EAudioApi);
     TRACE_ENTRY("state %d", state());
     Q_ASSERT(isProgressiveDownload());
@@ -555,7 +574,6 @@ void MMF::AbstractMediaPlayer::setProgressiveDownloadStalled()
     bufferingStarted();
     // Video player loses window handle when closed - need to reapply it here
     videoOutputChanged();
-#ifdef QT_PHONON_MMF_DOWNLOAD_DUMMY
     m_download->resume();
 #endif
 }
@@ -569,6 +587,7 @@ void MMF::AbstractMediaPlayer::bufferStatusTick()
     emit MMF::AbstractPlayer::bufferStatus(status);
 }
 
+#ifdef PHONON_MMF_PROGRESSIVE_DOWNLOAD
 void MMF::AbstractMediaPlayer::downloadLengthChanged(qint64 length)
 {
     TRACE_CONTEXT(AbstractMediaPlayer::downloadLengthChanged, EAudioApi);
@@ -611,6 +630,7 @@ void MMF::AbstractMediaPlayer::downloadStateChanged(Download::State state)
         break;
     }
 }
+#endif // PHONON_MMF_PROGRESSIVE_DOWNLOAD
 
 Phonon::State MMF::AbstractMediaPlayer::phononState(PrivateState state) const
 {

@@ -23,7 +23,9 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <QScopedPointer>
 #include <e32std.h>
 #include "abstractplayer.h"
-#include "download.h"
+#ifdef PHONON_MMF_PROGRESSIVE_DOWNLOAD
+#   include "download.h"
+#endif
 
 class RFile;
 
@@ -118,8 +120,10 @@ private:
 private Q_SLOTS:
     void positionTick();
     void bufferStatusTick();
+#ifdef PHONON_MMF_PROGRESSIVE_DOWNLOAD
     void downloadLengthChanged(qint64);
     void downloadStateChanged(Download::State);
+#endif
 
 private:
     MediaObject *const          m_parent;
@@ -140,9 +144,10 @@ private:
     // Used for playback of resource files
     TPtrC8                      m_buffer;
 
-    // Used for progressive download
+#ifdef PHONON_MMF_PROGRESSIVE_DOWNLOAD
     Download                    *m_download;
     bool                        m_downloadStalled;
+#endif
 
     QMultiMap<QString, QString> m_metaData;
 

@@ -70,8 +70,6 @@ public:
     const QUrl &sourceUrl() const;
     const QString &targetFileName() const;
     void start();
-
-    // Only has effect when QT_PHONON_MMF_DOWNLOAD_DUMMY is defined
     void resume();
 
     enum State {
