@@ -308,7 +308,7 @@ Qt for Symbian
    * [QTBUG-4586] Fixed wrong paths in include/ActiveQt/headers.pri.
    * [QTBUG-11671] Fixed audio-backend detection in configure tests.
 
- - qmake
+ - qmake & mkspecs
    * [QTBUG-13523] Added support for using -L notation in the LIBS variable
      when building with the symbian/linux-armcc or gcce mkspec.
    * [QTBUG-12851] Fix assertion on Windows when DESTDIR is empty in static
@@ -318,12 +318,54 @@ Qt for Symbian
      .pro file.
    * [QTBUG-13081] vc[x]proj generators: support /MAP option without file
      name.
+   * [QTBUG-13902] Added support for unsigned smart installer package creation.
+   * [QTBUG-13991] No longer need to manually edit smart installer pkg file for publishing.
+   * [QT-3949] Load environment.prf from Symbian SDK if it exists there.
+   * [QTBUG-13499] Provide a way to compile with RVCT 4.0 using generated Makefile.
+   * [QTBUG-13336] Ignore MAKEFILE variable for Symbian abld and sbsv2 builds.
+   * [QTBUG-13363] Fix Symbian handling of projects with special characters in TARGET.
+   * [QTBUG-12762 & QTBUG-13307] Gcce building support for symbian-sbsv2
+   * [QTBUG-13147] Added support for DEPLOYMENT.pkg_build_version
+   * [QTBUG-12884] Fix "installer_sis" and "deploy" targets when TARGET has path.
+   * [QTBUG-12879] Fix check to remove unnecessary deployments in Symbian.
+   * [QTBUG-12716] Make bld.inf target in Symbian mkspecs to depend on .pro file.
+   * [QTBUG-12715] Rename Symbian generated mmp/mk files to include target in filename.
+   * [QTBUG-12617] Fix package header in cases where VERSION doesn't contain all values.
+   * Fix run and runonphone targets for projects that have TARGET with path.
+   * Fix QT_LIBINFIX for QT_PLUGINS_BASE_DIR.
+   * No longer require PRE_TARGETDEPS items to be absolute for symbian-sbsv2 mkspec.
+   * Do smart command replacement for commands containing $$QMAKE_*
+     command variables, such as $$QMAKE_COPY, when generating bld.inf
+     extensions for QMAKE_EXTRA_* variables for symbian-sbsv2 mkspec.
+
+ - s60installs
+   * Fixed qsymbianbearer.qtplugin exports in s60installs.pro.
+
+ - patch_capabilities.pl
+   * [QTBUG-13760] Improved output of patch_capabilities.pl script.
 
  - QInputContext
    * [QTBUG-12949] Fixed a bug where passwords would not be committed when
      confirming.
    * [QTBUG-13472] Fixed crash in input methods when using symbols menu and
      numbers only.
+
+ - QDesktopWidget
+   * [QTBUG-14058] Fix QApplication::desktop()->availableGeometry().
+
+ - QtCore
+   * [QTBUG-13802] Symbian^4 platform detection for QSysInfo::symbianVersion().
+   * [QTBUG-13612] Do not wait for QThread exit when destroying global statics.
+   * [QT-3895] Change RLibrary handle in QS60PluginResolver to be process wide.
+   * [QTBUG-11218] Fix QProcessManager destruction.
+
+ - Qt Plugins
+   * [QT-3949] Remove pre-Symbian3 plugins from Symbian3 and later builds and
+     Check S60_VERSION instead of existence of certain files in bearer plugin.
+
+ - Demos & Examples
+   * [QTBUG-13461] Remove some .pro statements left behind after IAP usage cleanup
+   * [QTBUG-12276] Assigned valid UID3 for fortuneserver example.
 
 Qt for Windows CE
 -----------------
