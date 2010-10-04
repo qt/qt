@@ -3386,9 +3386,22 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
                             html.clear();
                         }
                         par1 = QStringRef();
-                        marker->resolveTarget(arg.toString(), myTree, relative);
-                        QString link = linkForNode(n,relative);
-                        addLink(link, arg);
+                        QString link;
+                        n = marker->resolveTarget(arg.toString(), myTree, relative);
+                        if (n && n->subType() == Node::QmlBasicType) {
+                            if (relative && relative->subType() == Node::QmlClass) {
+                                link = linkForNode(n,relative);
+                                addLink(link, arg);
+                            }
+                            else {
+                                link = arg.toString();
+                            }
+                        }
+                        else {
+                            // (zzz) Is this correct for all cases?
+                            link = linkForNode(n,relative);
+                            addLink(link, arg);
+                        }
                     }
                     handled = true;
                     break;
