@@ -32,7 +32,7 @@
    Qt includes a set of examples that cover nearly every aspect of Qt
    development. They aren't meant to be impressive when you run them,
    but in each case the source code has been carefully written to
-   illustrate one or more best Qt programming practices. 
+   illustrate one or more best Qt programming practices.
 
    You can run the examples from the \l{Examples and Demos Launcher}
    application (except see \l{QML Examples and Demos} {QML Examples}
@@ -764,6 +764,9 @@
     \row \o \l{webkit/googlechat}{Google Chat}
     \o A real-world example that shows how an existing Web-based service can be accessed
     using QtWebKit.
+    \row \o \l{webkit/imageanalyzer}{Image Analyzer}\raisedaster
+    \o A \l{The QtWebKit Bridge}{QtWebKit bridge} application which contains a
+    web interface and client-side processing.
     \row \o \l{webkit/previewer}{Previewer}\raisedaster
     \o Shows how to make a simple Web page previewer by using Qt's text input widgets
     together with a QWebView widget.
@@ -776,7 +779,7 @@
 */
 
 /*!
-    \page examples-helpsystem.html 
+    \page examples-helpsystem.html
     \ingroup all-examples
     \title Help System Examples
     \brief Adding interactive help to your Qt application.
