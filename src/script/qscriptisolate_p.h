@@ -74,7 +74,7 @@ private:
     }
 
     Q_DISABLE_COPY(QScriptIsolate);
-    QExplicitlySharedDataPointer<QScriptEnginePrivate> m_engine;
+    const QExplicitlySharedDataPointer<QScriptEnginePrivate> m_engine;
     const OperationMode m_mode;
 };
 
