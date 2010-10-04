@@ -90,7 +90,7 @@
 // disabling code ported from Symbian^4 that we don't want/can't have in earlier platforms
 #define QT_SYMBIAN4_ALLOCATOR_UNWANTED_CODE
 
-#if defined(SYMBIAN_VERSION_9_2) || defined(SYMBIAN_VERSION_9_1)
+#if defined(SYMBIAN_VERSION_9_1) || defined(SYMBIAN_VERSION_9_2) || defined(SYMBIAN_VERSION_9_3) || defined(SYMBIAN_VERSION_9_4) || defined(SYMBIAN_VERSION_SYMBIAN2)
 #define NO_NAMED_LOCAL_CHUNKS
 #endif
 
