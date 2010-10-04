@@ -1088,6 +1088,7 @@ QT_FT_BEGIN_HEADER
     QT_FT_Raster_BitSet_Func   bit_set;      /* doesn't work! */
     void*                   user;
     QT_FT_BBox                 clip_box;
+    int                     skip_spans;
 
   } QT_FT_Raster_Params;
 

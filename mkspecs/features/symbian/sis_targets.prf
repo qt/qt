@@ -37,7 +37,7 @@ equals(GENERATE_SIS_TARGETS, true) {
                               )
 
         ok_sis_target.target = ok_sis
-        ok_sis_target.commands = createpackage.bat $$CONVERT_GCCE_PARAM $(QT_SIS_OPTIONS) $${baseTarget}_template.pkg \
+        ok_sis_target.commands = createpackage $$CONVERT_GCCE_PARAM $(QT_SIS_OPTIONS) $${baseTarget}_template.pkg \
                                      $(QT_SIS_TARGET) $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
 
         unsigned_sis_target.target = unsigned_sis
@@ -56,7 +56,7 @@ equals(GENERATE_SIS_TARGETS, true) {
                               )
 
         ok_unsigned_sis_target.target = ok_unsigned_sis
-        ok_unsigned_sis_target.commands = createpackage.bat $$CONVERT_GCCE_PARAM $(QT_SIS_OPTIONS) -o $${baseTarget}_template.pkg $(QT_SIS_TARGET)
+        ok_unsigned_sis_target.commands = createpackage $$CONVERT_GCCE_PARAM $(QT_SIS_OPTIONS) -o $${baseTarget}_template.pkg $(QT_SIS_TARGET)
 
         target_sis_target.target = $${baseTarget}.sis
         target_sis_target.commands = $(MAKE) -f $(MAKEFILE) sis
@@ -67,11 +67,22 @@ equals(GENERATE_SIS_TARGETS, true) {
                                         , \
                                             $(MAKE) -f $(MAKEFILE) fail_sis_nopkg \
                                         )
-        installer_sis_target.depends = $${baseTarget}.sis
+        installer_sis_target.depends = sis
 
         ok_installer_sis_target.target = ok_installer_sis
-        ok_installer_sis_target.commands = createpackage.bat $(QT_SIS_OPTIONS) $${baseTarget}_installer.pkg - \
+        ok_installer_sis_target.commands = createpackage $(QT_SIS_OPTIONS) $${baseTarget}_installer.pkg - \
                                                $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
+
+        unsigned_installer_sis_target.target = unsigned_installer_sis
+        unsigned_installer_sis_target.commands = $(if $(wildcard $${baseTarget}_installer.pkg), \
+                                            $(MAKE) -f $(MAKEFILE) ok_unsigned_installer_sis \
+                                        , \
+                                            $(MAKE) -f $(MAKEFILE) fail_sis_nopkg \
+                                        )
+        unsigned_installer_sis_target.depends = unsigned_sis
+
+        ok_unsigned_installer_sis_target.target = ok_unsigned_installer_sis
+        ok_unsigned_installer_sis_target.commands = createpackage $(QT_SIS_OPTIONS) -o $${baseTarget}_installer.pkg
 
         fail_sis_nopkg_target.target = fail_sis_nopkg
         fail_sis_nopkg_target.commands = "$(error PKG file does not exist, 'sis' and 'installer_sis' target are only supported for executables or projects with DEPLOYMENT statement)"
@@ -95,7 +106,7 @@ equals(GENERATE_SIS_TARGETS, true) {
                                    )
 
         ok_stub_sis_target.target = ok_stub_sis
-        ok_stub_sis_target.commands = createpackage.bat -s $(QT_SIS_OPTIONS) $${baseTarget}_stub.pkg \
+        ok_stub_sis_target.commands = createpackage -s $(QT_SIS_OPTIONS) $${baseTarget}_stub.pkg \
                                           $(QT_SIS_TARGET) $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
 
         QMAKE_EXTRA_TARGETS += sis_target \
@@ -105,6 +116,8 @@ equals(GENERATE_SIS_TARGETS, true) {
                                target_sis_target \
                                installer_sis_target \
                                ok_installer_sis_target \
+                               unsigned_installer_sis_target \
+                               ok_unsigned_installer_sis_target \
                                fail_sis_nopkg_target \
                                fail_sis_nocache_target \
                                stub_sis_target \
@@ -127,7 +140,6 @@ equals(GENERATE_SIS_TARGETS, true) {
                 && echo $${shellFixedHash}  Version     :  >> $$make_cache_name \
                 && echo $${shellFixedHash} >> $$make_cache_name \
                 && echo $${shellFixedHash} ============================================================================== >> $$make_cache_name \
-                && echo. >> $$make_cache_name \
                 && echo QT_SIS_TARGET ?= $(QT_SIS_TARGET) >> $$make_cache_name
 
             QMAKE_EXTRA_TARGETS += store_build_target
@@ -154,17 +166,24 @@ equals(GENERATE_SIS_TARGETS, true) {
         installer_sis_target.target = installer_sis
         installer_sis_target.commands = $$QMAKE_CREATEPACKAGE $(QT_SIS_OPTIONS) $${baseTarget}_installer.pkg - \
                                             $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
-        installer_sis_target.depends = $${sis_destdir}/$${baseTarget}.sis
+        installer_sis_target.depends = sis
+
+        unsigned_installer_sis_target.target = unsigned_installer_sis
+        unsigned_installer_sis_target.commands = $$QMAKE_CREATEPACKAGE $(QT_SIS_OPTIONS) -o $${baseTarget}_installer.pkg
+        unsigned_installer_sis_target.depends = unsigned_sis
 
         !isEmpty(sis_destdir):!equals(sis_destdir, "."):!equals(sis_destdir, "./") {
             sis_target.commands += && $$QMAKE_MOVE $${baseTarget}.sis $$sis_destdir
-            installer_sis_target.commands += && $$QMAKE_MOVE $${baseTarget}.sis $$sis_destdir
+            unsigned_sis_target.commands += && $$QMAKE_MOVE $${baseTarget}_unsigned.sis $$sis_destdir
+            installer_sis_target.commands += && $$QMAKE_MOVE $${baseTarget}_installer.sis $$sis_destdir
+            unsigned_installer_sis_target.commands += && $$QMAKE_MOVE $${baseTarget}_unsigned_installer.sis $$sis_destdir
         }
 
         QMAKE_EXTRA_TARGETS += sis_target \
                                unsigned_sis_target \
                                target_sis_target \
-                               installer_sis_target
+                               installer_sis_target \
+                               unsigned_installer_sis_target
 
         QMAKE_DISTCLEAN += $${sis_destdir}/$${baseTarget}.sis
     }

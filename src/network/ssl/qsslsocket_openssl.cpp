@@ -772,14 +772,35 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
         }
     }
 #elif defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
-    systemCerts.append(QSslCertificate::fromPath(QLatin1String("/var/ssl/certs/*.pem"), QSsl::Pem, QRegExp::Wildcard)); // AIX
-    systemCerts.append(QSslCertificate::fromPath(QLatin1String("/usr/local/ssl/certs/*.pem"), QSsl::Pem, QRegExp::Wildcard)); // Solaris
-    systemCerts.append(QSslCertificate::fromPath(QLatin1String("/opt/openssl/certs/*.pem"), QSsl::Pem, QRegExp::Wildcard)); // HP-UX
-    systemCerts.append(QSslCertificate::fromPath(QLatin1String("/etc/ssl/certs/*.pem"), QSsl::Pem, QRegExp::Wildcard)); // (K)ubuntu, OpenSUSE, Mandriva, ...
-    systemCerts.append(QSslCertificate::fromPath(QLatin1String("/etc/pki/tls/certs/ca-bundle.crt"), QSsl::Pem)); // Fedora
-    systemCerts.append(QSslCertificate::fromPath(QLatin1String("/usr/lib/ssl/certs/*.pem"), QSsl::Pem, QRegExp::Wildcard)); // Gentoo, Mandrake
-    systemCerts.append(QSslCertificate::fromPath(QLatin1String("/usr/share/ssl/*.pem"), QSsl::Pem, QRegExp::Wildcard)); // Centos, Redhat, SuSE
-    systemCerts.append(QSslCertificate::fromPath(QLatin1String("/usr/local/ssl/*.pem"), QSsl::Pem, QRegExp::Wildcard)); // Normal OpenSSL Tarball
+    QSet<QString> certFiles;
+    QList<QByteArray> directories;
+    directories << "/etc/ssl/certs/"; // (K)ubuntu, OpenSUSE, Mandriva, MeeGo ...
+    directories << "/usr/lib/ssl/certs/"; // Gentoo, Mandrake
+    directories << "/usr/share/ssl/"; // Centos, Redhat, SuSE
+    directories << "/usr/local/ssl/"; // Normal OpenSSL Tarball
+    directories << "/var/ssl/certs/"; // AIX
+    directories << "/usr/local/ssl/certs/"; // Solaris
+    directories << "/opt/openssl/certs/"; // HP-UX
+
+    QDir currentDir;
+    QStringList nameFilters;
+    nameFilters << QLatin1String("*.pem") << QLatin1String("*.crt");
+    currentDir.setNameFilters(nameFilters);
+    for (int a = 0; a < directories.count(); a++) {
+        currentDir.setPath(QLatin1String(directories.at(a)));
+        QDirIterator it(currentDir);
+        while(it.hasNext()) {
+            it.next();
+            // use canonical path here to not load the same certificate twice if symlinked
+            certFiles.insert(it.fileInfo().canonicalFilePath());
+        }
+    }
+    QSetIterator<QString> it(certFiles);
+    while(it.hasNext()) {
+        systemCerts.append(QSslCertificate::fromPath(it.next()));
+    }
+    systemCerts.append(QSslCertificate::fromPath(QLatin1String("/etc/pki/tls/certs/ca-bundle.crt"), QSsl::Pem)); // Fedora, Mandriva
+
 #elif defined(Q_OS_SYMBIAN)
     QList<QByteArray> certs;
     QScopedPointer<CSymbianCertificateRetriever> retriever(CSymbianCertificateRetriever::NewL());

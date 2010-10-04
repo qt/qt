@@ -7356,14 +7356,14 @@ g++*)
 icc*)
     # The Intel CC compiler on Unix systems matches the ABI of the g++
     # that is found on PATH
-    COMPILER="icc"
-    COMPAT_COMPILER="g++-4"
+    COMPAT_COMPILER="icc"
+    COMPILER="g++-4"
     case "`g++ -dumpversion` 2>/dev/null" in
     2.95.*)
-        COMPAT_COMPILER="g++-2.95.*"
+        COMPILER="g++-2.95.*"
         ;;
     3.*)
-        COMPAT_COMPILER="g++-3.*"
+a        COMPILER="g++-3.*"
         ;;
     *)
         ;;

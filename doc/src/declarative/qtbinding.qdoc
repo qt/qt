@@ -188,7 +188,7 @@ is to have a "running" property in \c main.qml.  This leads to much nicer QML co
 \o
 \code
 // main.qml
-import Qt 4.7
+import QtQuick 1.0
 
 Rectangle {
     MouseArea {

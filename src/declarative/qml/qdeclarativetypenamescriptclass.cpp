@@ -129,7 +129,7 @@ QDeclarativeTypeNameScriptClass::queryProperty(Object *obj, const Identifier &na
             return 0;
         } else if (data->object) {
             // Must be an attached property
-            object = qmlAttachedPropertiesObjectById(data->type->index(), data->object);
+            object = qmlAttachedPropertiesObjectById(data->type->attachedPropertiesId(), data->object);
             if (!object) return 0;
             return ep->objectClass->queryProperty(object, name, flags, 0);
         }

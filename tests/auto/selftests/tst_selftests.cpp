@@ -339,12 +339,22 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QString const& logger, Q
 
     const QByteArray err(proc.readAllStandardError());
 
-    /* Some platforms decides to output a message for uncaught exceptions. For instance,
-     * this is what windows platforms says:
-     * "This application has requested the Runtime to terminate it in an unusual way.
-     * Please contact the application's support team for more information." */
-    if(subdir != QLatin1String("exceptionthrow") && subdir != QLatin1String("fetchbogus")
-        && subdir != QLatin1String("xunit"))
+    /*
+        Some tests may output unpredictable strings to stderr, which we'll ignore.
+
+        For instance, uncaught exceptions on Windows might say (depending on Windows
+        version and JIT debugger settings):
+        "This application has requested the Runtime to terminate it in an unusual way.
+        Please contact the application's support team for more information."
+
+        Also, tests which use valgrind may generate warnings if the toolchain is
+        newer than the valgrind version, such that valgrind can't understand the
+        debug information on the binary.
+    */
+    if (subdir != QLatin1String("exceptionthrow")
+        && subdir != QLatin1String("fetchbogus")
+        && subdir != QLatin1String("xunit")
+        && subdir != QLatin1String("benchlibcallgrind"))
         QVERIFY2(err.isEmpty(), err.constData());
 
     QList<QByteArray> res = splitLines(out);

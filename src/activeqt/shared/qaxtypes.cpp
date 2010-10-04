@@ -1376,8 +1376,10 @@ QVariant VARIANTToQVariant(const VARIANT &arg, const QByteArray &typeName, uint 
     }
     
     QVariant::Type proptype = (QVariant::Type)type;
-    if (proptype == QVariant::Invalid && !typeName.isEmpty())
-        proptype = QVariant::nameToType(typeName);
+    if (proptype == QVariant::Invalid && !typeName.isEmpty()) {
+        if (typeName != "QVariant")
+            proptype = QVariant::nameToType(typeName);
+    }
     if (proptype != QVariant::LastType && proptype != QVariant::Invalid && var.type() != proptype) {
         if (var.canConvert(proptype)) {
             QVariant oldvar = var;

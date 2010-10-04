@@ -84,8 +84,8 @@ SymbianNetworkConfigurationPrivate::~SymbianNetworkConfigurationPrivate()
 }
 
 SymbianEngine::SymbianEngine(QObject *parent)
-:   QBearerEngine(parent), CActive(CActive::EPriorityHigh), iFirstUpdate(true), iInitOk(true),
-    iUpdatePending(false)
+:   QBearerEngine(parent), CActive(CActive::EPriorityHigh), iFirstUpdate(true), ipCommsDB(0),
+    iInitOk(true), iUpdatePending(false), ipAccessPointsAvailabilityScanner(0)
 {
 }
 

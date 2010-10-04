@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 
 Rectangle {
     property string myText: "The quick brown fox jumps over the lazy dog."

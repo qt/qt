@@ -101,7 +101,7 @@ QT_BEGIN_NAMESPACE
     The following example moves the Y axis of the \l Rectangle elements while still allowing the \l Row element
     to lay the items out as if they had not been transformed:
     \qml
-    import Qt 4.7
+    import QtQuick 1.0
 
     Row {
         Rectangle {
@@ -1613,7 +1613,13 @@ void QDeclarativeItemPrivate::data_append(QDeclarativeListProperty<QObject> *pro
     while (mo && mo != &QGraphicsObject::staticMetaObject) mo = mo->d.superdata;
 
     if (mo) {
-        QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(o))->setParentItemHelper(that, 0, 0);
+        QGraphicsObject *graphicsObject = static_cast<QGraphicsObject *>(o);
+        QDeclarativeItemPrivate *contentItemPrivate = static_cast<QDeclarativeItemPrivate *>(QGraphicsItemPrivate::get(graphicsObject));
+        if (contentItemPrivate->componentComplete) {
+            graphicsObject->setParentItem(that);
+        } else {
+            contentItemPrivate->setParentItemHelper(that, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+        }
     } else {
         o->setParent(that);
     }
@@ -1636,10 +1642,15 @@ static inline QObject *children_at_helper(QDeclarativeListProperty<QObject> *pro
 
 static inline void children_clear_helper(QDeclarativeListProperty<QObject> *prop)
 {
-    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(prop->object));
+    QDeclarativeItemPrivate *d = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(prop->object)));
     int childCount = d->children.count();
-    for (int index = 0 ;index < childCount; index++)
-        QGraphicsItemPrivate::get(d->children.at(0))->setParentItemHelper(0, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+    if (d->componentComplete) {
+        for (int index = 0 ;index < childCount; index++)
+            d->children.at(0)->setParentItem(0);
+    } else {
+        for (int index = 0 ;index < childCount; index++)
+            QGraphicsItemPrivate::get(d->children.at(0))->setParentItemHelper(0, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+    }
 }
 
 int QDeclarativeItemPrivate::data_count(QDeclarativeListProperty<QObject> *prop)
@@ -1704,7 +1715,7 @@ int QDeclarativeItemPrivate::transform_count(QDeclarativeListProperty<QGraphicsT
 void QDeclarativeItemPrivate::transform_append(QDeclarativeListProperty<QGraphicsTransform> *list, QGraphicsTransform *item)
 {
     QGraphicsObject *object = qobject_cast<QGraphicsObject *>(list->object);
-    if (object) // QGraphicsItem applies the list in the wrong order, so we prepend.
+    if (object && item) // QGraphicsItem applies the list in the wrong order, so we prepend.
         QGraphicsItemPrivate::get(object)->prependGraphicsTransform(item);
 }
 
@@ -1744,8 +1755,8 @@ void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeN
     \qmlproperty list<Object> Item::data
     \default
 
-    The data property is allows you to freely mix visual children and resources
-    of an item.  If you assign a visual item to the data list it becomes
+    The data property allows you to freely mix visual children and resources
+    in an item.  If you assign a visual item to the data list it becomes
     a child and if you assign any other object type, it is added as a resource.
 
     So you can write:

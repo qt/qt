@@ -82,7 +82,7 @@ Each instance is created with a different value for its \c text property:
 \o \snippet doc/src/snippets/declarative/qml-documents/qmldocuments.qml document
 \o 
 \qml
-import Qt 4.7
+import QtQuick 1.0
 
 Column {
     spacing: 10
