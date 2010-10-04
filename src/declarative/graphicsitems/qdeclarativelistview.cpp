@@ -3090,7 +3090,7 @@ void QDeclarativeListView::itemsMoved(int from, int to, int count)
     while (moved.count()) {
         int idx = moved.begin().key();
         FxListItem *item = moved.take(idx);
-        if (item->item == d->currentItem->item)
+        if (d->currentItem && item->item == d->currentItem->item)
             item->setPosition(d->positionAt(idx));
         d->releaseItem(item);
     }
