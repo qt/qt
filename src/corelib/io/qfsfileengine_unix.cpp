@@ -588,15 +588,11 @@ bool QFSFileEnginePrivate::nativeIsSequential() const
 bool QFSFileEngine::remove()
 {
     Q_D(QFSFileEngine);
-    bool ret = QFileSystemEngine::removeFile(d->fileEntry);
+    QString errorString;
+    bool ret = QFileSystemEngine::removeFile(d->fileEntry, errorString);
     d->metaData.clear();
     if (!ret) {
-#ifdef Q_OS_SYMBIAN
-        //TODO: error reporting
-        d->setSymbianError(KErrGeneral, QFile::RemoveError, QLatin1String("remove error"));
-#else
-        setError(QFile::RemoveError, qt_error_string(errno));
-#endif
+        setError(QFile::RemoveError, errorString);
     }
     return ret;
 }
@@ -604,16 +600,10 @@ bool QFSFileEngine::remove()
 bool QFSFileEngine::copy(const QString &newName)
 {
     Q_D(QFSFileEngine);
-    bool ret = QFileSystemEngine::copyFile(d->fileEntry, QFileSystemEntry(newName));
+    QString error;
+    bool ret = QFileSystemEngine::copyFile(d->fileEntry, QFileSystemEntry(newName), error);
     if (!ret) {
-#ifdef Q_OS_SYMBIAN
-        //TODO: error reporting
-        d->setSymbianError(KErrGeneral, QFile::CopyError, QLatin1String("copy error"));
-#else
-        // ### Add copy code for Unix to the filesystem engine
-        setError(QFile::UnspecifiedError, QLatin1String("Not implemented!"));
-        //setError(QFile::CopyError, qt_error_string(errno));
-#endif
+        setError(QFile::CopyError, error);
     }
     return ret;
 }
@@ -621,15 +611,11 @@ bool QFSFileEngine::copy(const QString &newName)
 bool QFSFileEngine::rename(const QString &newName)
 {
     Q_D(QFSFileEngine);
-    bool ret = QFileSystemEngine::renameFile(d->fileEntry, QFileSystemEntry(newName));
+    QString error;
+    bool ret = QFileSystemEngine::renameFile(d->fileEntry, QFileSystemEntry(newName), error);
 
     if (!ret) {
-#ifdef Q_OS_SYMBIAN
-        //TODO: error reporting
-        d->setSymbianError(KErrGeneral, QFile::RenameError, QLatin1String("rename error"));
-#else
-        setError(QFile::RenameError, qt_error_string(errno));
-#endif
+        setError(QFile::RenameError, error);
     }
 
     return ret;
@@ -638,14 +624,10 @@ bool QFSFileEngine::rename(const QString &newName)
 bool QFSFileEngine::link(const QString &newName)
 {
     Q_D(QFSFileEngine);
-    bool ret = QFileSystemEngine::createLink(d->fileEntry, QFileSystemEntry(newName));
+    QString error;
+    bool ret = QFileSystemEngine::createLink(d->fileEntry, QFileSystemEntry(newName), error);
     if (!ret) {
-#ifdef Q_OS_SYMBIAN
-        //TODO: error reporting
-        d->setSymbianError(KErrNotSupported, QFile::RenameError, QLatin1String("not supported"));
-#else
-        setError(QFile::RenameError, qt_error_string(errno));
-#endif
+        setError(QFile::RenameError, error);
     }
     return ret;
 }
@@ -900,14 +882,9 @@ QString QFSFileEngine::owner(FileOwner own) const
 bool QFSFileEngine::setPermissions(uint perms)
 {
     Q_D(QFSFileEngine);
-    if (!QFileSystemEngine::setPermissions(d->fileEntry, QFile::Permissions(perms), 0)) {
-        setError(QFile::PermissionsError,
-#ifdef Q_OS_SYMBIAN
-    //TODO: connect up error reporting properly
-    QString());
-#else
-    qt_error_string(errno));
-#endif
+    QString error;
+    if (!QFileSystemEngine::setPermissions(d->fileEntry, QFile::Permissions(perms), error, 0)) {
+        setError(QFile::PermissionsError, error);
         return false;
     }
     return true;
@@ -940,7 +917,7 @@ bool QFSFileEngine::setSize(qint64 size)
     }
     if (!ret) {
         if (err)
-            d->setSymbianError(err, QFile::ResizeError, QString());
+            setError(QFile::ResizeError, QFileSystemEngine::errorString(err));
         else
             setError(QFile::ResizeError, qt_error_string(errno));
     }

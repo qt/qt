@@ -1115,36 +1115,43 @@ QFileSystemEntry QFileSystemEngine::currentPath()
 }
 
 //static
-bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSystemEntry &target)
+bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSystemEntry &target, QString &errorString)
 {
+    errorString = QLatin1String("not implemented");
     return false; // TODO implement;
 }
 
 //static
-bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target)
+bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QString &errorString)
 {
     bool ret = ::CopyFile((wchar_t*)source.nativeFilePath().utf16(),
                           (wchar_t*)target.nativeFilePath().utf16(), true) != 0;
+    if(!ret)
+        errorString = qt_error_string(::GetLastError());
     return ret;
 }
 
 //static
-bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSystemEntry &target)
+bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QString &errorString)
 {
     bool ret = ::MoveFile((wchar_t*)source.nativeFilePath().utf16(),
                           (wchar_t*)target.nativeFilePath().utf16()) != 0;
+    if(!ret)
+        errorString = qt_error_string(::GetLastError());
     return ret;
 }
 
 //static
-bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry)
+bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry, QString &errorString)
 {
     bool ret = ::DeleteFile((wchar_t*)entry.nativeFilePath().utf16()) != 0;
+    if(!ret)
+        errorString = qt_error_string(::GetLastError());
     return ret;
 }
 
 //static
-bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions,
+bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions, QString &errorString,
                                        QFileSystemMetaData *data)
 {
     Q_UNUSED(data);
@@ -1160,7 +1167,10 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
     if (mode == 0) // not supported
         return false;
 
-    return ::_wchmod((wchar_t*)entry.nativeFilePath().utf16(), mode) == 0;
+    bool ret = (::_wchmod((wchar_t*)entry.nativeFilePath().utf16(), mode) == 0);
+    if(!ret)
+        errorString = qt_error_string(errno);
+    return ret;
 }
 
 static inline QDateTime fileTimeToQDateTime(const FILETIME *time)

@@ -282,49 +282,56 @@ bool QFileSystemEngine::removeDirectory(const QFileSystemEntry &entry, bool remo
 }
 
 //static
-bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSystemEntry &target)
+bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSystemEntry &target, QString &errorString)
 {
     Q_UNUSED(source)
     Q_UNUSED(target)
+    errorString = QLatin1String("not supported");
     return false;
 }
 
 //static
-bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target)
+bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QString &errorString)
 {
-    //TODO: review - should this be a singleton?
+    //CFileMan is allocated each time because it is not thread-safe
     CFileMan *fm = 0;
     TRAPD(err, fm = CFileMan::NewL(qt_s60GetRFs()));
-    if(err == KErrNone) {
+    if (err == KErrNone) {
         err = fm->Copy(qt_QString2TPtrC(source.nativeFilePath()), qt_QString2TPtrC(target.nativeFilePath()), 0);
         delete fm;
         return true;
     }
-    //TODO: error reporting d->setSymbianError(err, QFile::CopyError);
+    errorString = QFileSystemEngine::errorString(err);
     return false;
 }
 
 //static
-bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSystemEntry &target)
+bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QString &errorString)
 {
     QString sourcepath = absoluteName(source).nativeFilePath();
     QString targetpath = absoluteName(target).nativeFilePath();
     RFs& fs(qt_s60GetRFs());
     TInt err = fs.Rename(qt_QString2TPtrC(sourcepath), qt_QString2TPtrC(targetpath));
-    return err == KErrNone; // TODO error reporting;
+    if (err == KErrNone)
+        return true;
+    errorString = QFileSystemEngine::errorString(err);
+    return false;
 }
 
 //static
-bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry)
+bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry, QString &errorString)
 {
     QString targetpath = absoluteName(entry).nativeFilePath();
     RFs& fs(qt_s60GetRFs());
     TInt err = fs.Delete(qt_QString2TPtrC(targetpath));
-    return err == KErrNone; // TODO error reporting;
+    if (err == KErrNone)
+        return true;
+    errorString = QFileSystemEngine::errorString(err);
+    return false;
 }
 
 //static
-bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions, QFileSystemMetaData *data)
+bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions, QString &errorString, QFileSystemMetaData *data)
 {
     QString targetpath = absoluteName(entry).nativeFilePath();
     TUint setmask = 0;
@@ -340,7 +347,10 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
         data->entryFlags |= QFileSystemMetaData::MetaDataFlag(uint(permissions));
         data->knownFlagsMask |= QFileSystemMetaData::Permissions;
     }
-    return err == KErrNone; // TODO error reporting
+    if (err == KErrNone)
+        return true;
+    errorString = QFileSystemEngine::errorString(err);
+    return false;
 }
 
 QString QFileSystemEngine::homePath()
@@ -403,6 +413,66 @@ QFileSystemEntry QFileSystemEngine::currentPath()
         ret = QFileSystemEntry(qt_TDesC2QString(fn), QFileSystemEntry::FromNativePath());
     }
     return ret;
+}
+
+QString QFileSystemEngine::errorString(int errorcode)
+{
+    switch (errorcode) {
+    case KErrNotFound:
+        return QLatin1String("not found");
+    case KErrCancel:
+        return QLatin1String("cancelled");
+    case KErrNoMemory:
+        return QLatin1String("out of memory");
+    case KErrNotSupported:
+        return QLatin1String("not supported");
+    case KErrBadHandle:
+        return QLatin1String("bad handle"); //KERN-EXEC 0 panic is more likely
+    case KErrAlreadyExists:
+        return QLatin1String("already exists");
+    case KErrPathNotFound:
+        return QLatin1String("path not found");
+    case KErrInUse:
+        return QLatin1String("in use");
+    case KErrNotReady:
+        return QLatin1String("not ready (e.g. FS dismounted, no memory card)");
+    case KErrCorrupt:
+        return QLatin1String("corrupt");
+    case KErrAccessDenied:
+        return QLatin1String("access denied");
+    case KErrLocked:
+        return QLatin1String("locked");
+    case KErrWrite:
+        return QLatin1String("incomplete write error");
+    case KErrDisMounted:
+        return QLatin1String("file system dismounted during operation"); //i.e. a forcible dismount was done while we had files open
+    case KErrEof:
+        return QLatin1String("end of file");
+    case KErrDiskFull:
+        return QLatin1String("no space in file system");
+    case KErrBadName:
+        return QLatin1String("invalid filename");
+    case KErrTimedOut:
+        return QLatin1String("timed out");
+    case KErrBadDescriptor:
+        return QLatin1String("bad descriptor (passed address on stack to async call?)");
+    case KErrAbort:
+        return QLatin1String("aborted");
+    case KErrTooBig:
+        return QLatin1String("too big"); //e.g. trying to open a >2GB file with 32 bit API
+    case KErrBadPower:
+        return QLatin1String("insufficient power");
+    case KErrDirFull:
+        return QLatin1String("no space in directory table");
+    case KErrHardwareNotAvailable:
+        return QLatin1String("hardware not available");
+    case KErrSessionClosed:
+        return QLatin1String("session closed");
+    case KErrPermissionDenied:
+        return QLatin1String("permission denied");
+    default:
+        return QString(QLatin1String("symbian error %d")).arg(errorcode);
+    }
 }
 
 QT_END_NAMESPACE

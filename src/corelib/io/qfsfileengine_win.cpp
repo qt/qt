@@ -503,27 +503,30 @@ bool QFSFileEnginePrivate::nativeIsSequential() const
 bool QFSFileEngine::remove()
 {
     Q_D(QFSFileEngine);
-    bool ret = QFileSystemEngine::removeFile(d->fileEntry);
+    QString error;
+    bool ret = QFileSystemEngine::removeFile(d->fileEntry, error);
     if (!ret)
-        setError(QFile::RemoveError, qt_error_string());
+        setError(QFile::RemoveError, error);
     return ret;
 }
 
 bool QFSFileEngine::copy(const QString &copyName)
 {
     Q_D(QFSFileEngine);
-    bool ret = QFileSystemEngine::copyFile(d->fileEntry, QFileSystemEntry(copyName));
+    QString error;
+    bool ret = QFileSystemEngine::copyFile(d->fileEntry, QFileSystemEntry(copyName), error);
     if (!ret)
-        setError(QFile::CopyError, qt_error_string());
+        setError(QFile::CopyError, error);
     return ret;
 }
 
 bool QFSFileEngine::rename(const QString &newName)
 {
     Q_D(QFSFileEngine);
-    bool ret = QFileSystemEngine::renameFile(d->fileEntry, QFileSystemEntry(newName));
+    QString error;
+    bool ret = QFileSystemEngine::renameFile(d->fileEntry, QFileSystemEntry(newName), error);
     if (!ret)
-        setError(QFile::RenameError, qt_error_string());
+        setError(QFile::RenameError, error);
     return ret;
 }
 
@@ -851,9 +854,10 @@ QString QFSFileEngine::owner(FileOwner own) const
 bool QFSFileEngine::setPermissions(uint perms)
 {
     Q_D(QFSFileEngine);
-    bool ret = QFileSystemEngine::setPermissions(d->fileEntry, QFile::Permissions(perms));
+    QString error;
+    bool ret = QFileSystemEngine::setPermissions(d->fileEntry, QFile::Permissions(perms), error);
     if (!ret)
-        setError(QFile::PermissionsError, qt_error_string(errno));
+        setError(QFile::PermissionsError, error);
     return ret;
 }
 
