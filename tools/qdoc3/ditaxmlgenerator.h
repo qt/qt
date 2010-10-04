@@ -117,7 +117,7 @@ class DitaXmlGenerator : public PageGenerator
     void writeDerivations(const ClassNode* cn, CodeMarker* marker);
     void writeLocation(const Node* n);
     void writeFunctions(const Section& s, 
-                        const ClassNode* cn, 
+                        const Node* n, 
                         CodeMarker* marker);
     void writeParameters(const FunctionNode* fn);
     void writeEnumerations(const Section& s, CodeMarker* marker);
