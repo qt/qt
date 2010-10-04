@@ -4902,9 +4902,8 @@ case "$XPLATFORM" in *symbian*)
         # Raptor does not support configure tests.
 
         # the main commands needed to compile;
-        (cd config.tests/symbian
-            mkdir -p rcomp
-            cd rcomp
+        (mkdir -p config.tests/symbian/rcomp
+            cd config.tests/symbian/rcomp
             rm -f rcomp_test.rsg
             touch rcomp_test.rpp rcomp_test.rsc rcomp_test.rss
             rcomp -u -m045,046,047 -s./rcomp_test.rpp -o./rcomp_test.rsc -h./rcomp_test.rsg -i./rcomp_test.rss 2>&1 > /dev/null
