@@ -46,7 +46,6 @@
 #include <qbitmap.h>
 #include <private/qpaintengine_mac_p.h>
 #include <private/qprintengine_mac_p.h>
-#include <private/qpdf_p.h>
 #include <qglobal.h>
 #include <qpixmap.h>
 #include <qpixmapcache.h>
@@ -1853,7 +1852,7 @@ QFontEngine::Properties QFontEngineMac::properties() const
     QCFString psName;
     if (ATSFontGetPostScriptName(FMGetATSFontRefFromFont(fontID), kATSOptionFlagsDefault, &psName) == noErr)
         props.postscriptName = QString(psName).toUtf8();
-    props.postscriptName = QPdf::stripSpecialCharacters(props.postscriptName);
+    props.postscriptName = QFontEngine::convertToPostscriptFontFamilyName(props.postscriptName);
     return props;
 }
 

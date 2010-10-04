@@ -47,6 +47,8 @@
 #include <qt_windows.h>
 #include <QtCore/qstring.h>
 
+QT_BEGIN_NAMESPACE
+
 class QSystemLibrary
 {
 public:
@@ -100,6 +102,8 @@ private:
     QString m_libraryName;
     bool m_didLoad;
 };
+
+QT_END_NAMESPACE
 
 #endif  //Q_OS_WIN
 

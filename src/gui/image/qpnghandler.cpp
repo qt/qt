@@ -678,33 +678,12 @@ bool QPNGImageWriter::writeImage(const QImage& image, int off_x, int off_y)
     return writeImage(image, -1, QString(), off_x, off_y);
 }
 
-bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image_in, int quality_in, const QString &description,
+bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image, int quality_in, const QString &description,
                                  int off_x_in, int off_y_in)
 {
 #ifdef QT_NO_IMAGE_TEXT
     Q_UNUSED(description);
 #endif
-
-    QImage image;
-    switch (image_in.format()) {
-    case QImage::Format_ARGB32_Premultiplied:
-    case QImage::Format_ARGB4444_Premultiplied:
-    case QImage::Format_ARGB8555_Premultiplied:
-    case QImage::Format_ARGB8565_Premultiplied:
-    case QImage::Format_ARGB6666_Premultiplied:
-        image = image_in.convertToFormat(QImage::Format_ARGB32);
-        break;
-    case QImage::Format_RGB16:
-    case QImage::Format_RGB444:
-    case QImage::Format_RGB555:
-    case QImage::Format_RGB666:
-    case QImage::Format_RGB888:
-        image = image_in.convertToFormat(QImage::Format_RGB32);
-        break;
-    default:
-        image = image_in;
-        break;
-    }
 
     QPoint offset = image.offset();
     int off_x = off_x_in + offset.x();
@@ -712,7 +691,6 @@ bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image_in,
 
     png_structp png_ptr;
     png_infop info_ptr;
-    png_bytep* row_pointers;
 
     png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING,0,0,0);
     if (!png_ptr) {
@@ -743,13 +721,18 @@ bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image_in,
 
     png_set_write_fn(png_ptr, (void*)this, qpiw_write_fn, qpiw_flush_fn);
 
+
+    int color_type = 0;
+    if (image.colorCount())
+        color_type = PNG_COLOR_TYPE_PALETTE;
+    else if (image.hasAlphaChannel())
+        color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+    else
+        color_type = PNG_COLOR_TYPE_RGB;
+
     png_set_IHDR(png_ptr, info_ptr, image.width(), image.height(),
-        image.depth() == 1 ? 1 : 8 /* per channel */,
-        image.depth() == 32
-            ? image.format() == QImage::Format_RGB32
-                ? PNG_COLOR_TYPE_RGB
-                : PNG_COLOR_TYPE_RGB_ALPHA
-            : PNG_COLOR_TYPE_PALETTE, 0, 0, 0);  // also sets #channels
+                 image.depth() == 1 ? 1 : 8, // per channel
+                 color_type, 0, 0, 0);       // sets #channels
 
     if (gamma != 0.0) {
         png_set_gAMA(png_ptr, info_ptr, 1.0/gamma);
@@ -794,8 +777,9 @@ bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image_in,
         png_set_swap_alpha(png_ptr);
     }
 
-    // Qt==ARGB==Big(ARGB)==Little(BGRA)
-    if (QSysInfo::ByteOrder == QSysInfo::LittleEndian) {
+    // Qt==ARGB==Big(ARGB)==Little(BGRA). But RGB888 is RGB regardless
+    if (QSysInfo::ByteOrder == QSysInfo::LittleEndian
+        && image.format() != QImage::Format_RGB888) {
         png_set_bgr(png_ptr);
     }
 
@@ -820,7 +804,7 @@ bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image_in,
     if (image.depth() != 1)
         png_set_packing(png_ptr);
 
-    if (image.format() == QImage::Format_RGB32)
+    if (color_type == PNG_COLOR_TYPE_RGB && image.format() != QImage::Format_RGB888)
         png_set_filler(png_ptr, 0,
             QSysInfo::ByteOrder == QSysInfo::BigEndian ?
                 PNG_FILLER_BEFORE : PNG_FILLER_AFTER);
@@ -841,22 +825,36 @@ bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image_in,
         png_write_chunk(png_ptr, (png_byte*)"gIFg", data, 4);
     }
 
-    png_uint_32 width;
-    png_uint_32 height;
-    int bit_depth;
-    int color_type;
-    png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type,
-        0, 0, 0);
-
-    const uchar *data = (static_cast<const QImage *>(&image))->bits();
-    int bpl = image.bytesPerLine();
-    row_pointers = new png_bytep[height];
-    uint y;
-    for (y=0; y<height; y++) {
-        row_pointers[y] = (png_bytep)(data + y * bpl);
+    int height = image.height();
+    int width = image.width();
+    switch (image.format()) {
+    case QImage::Format_Mono:
+    case QImage::Format_MonoLSB:
+    case QImage::Format_Indexed8:
+    case QImage::Format_RGB32:
+    case QImage::Format_ARGB32:
+    case QImage::Format_RGB888:
+        {
+            png_bytep* row_pointers = new png_bytep[height];
+            for (int y=0; y<height; y++)
+                row_pointers[y] = (png_bytep)image.constScanLine(y);
+            png_write_image(png_ptr, row_pointers);
+            delete [] row_pointers;
+        }
+        break;
+    default:
+        {
+            QImage::Format fmt = image.hasAlphaChannel() ? QImage::Format_ARGB32 : QImage::Format_RGB32;
+            QImage row;
+            png_bytep row_pointers[1];
+            for (int y=0; y<height; y++) {
+                row = image.copy(0, y, width, 1).convertToFormat(fmt);
+                row_pointers[0] = png_bytep(row.constScanLine(0));
+                png_write_rows(png_ptr, row_pointers, 1);
+            }
+        }
+        break;
     }
-    png_write_image(png_ptr, row_pointers);
-    delete [] row_pointers;
 
     png_write_end(png_ptr, info_ptr);
     frames_written++;
