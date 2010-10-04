@@ -5,6 +5,8 @@
 #include <private/qpainter_p.h>
 #include <private/qpaintengineex_p.h>
 
+QT_BEGIN_NAMESPACE
+
 class QDeclarativeTextLayoutPrivate
 {
 public:
@@ -310,4 +312,6 @@ void QDeclarativeTextLayout::draw(QPainter *painter, const QPointF &p)
         priv->extended->drawStaticTextItem(&item);
     }
 }
+
+QT_END_NAMESPACE
 
