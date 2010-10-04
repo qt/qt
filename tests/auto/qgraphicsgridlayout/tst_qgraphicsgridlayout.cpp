@@ -108,6 +108,7 @@ private slots:
     void styleInfoLeak();
     void task236367_maxSizeHint();
     void heightForWidth();
+    void heightForWidthWithSpanning();
 };
 
 class RectWidget : public QGraphicsWidget
@@ -2569,6 +2570,40 @@ void tst_QGraphicsGridLayout::heightForWidth()
     // the total height of the last row is 100 (which leaves the layout height to be 200)
     QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(500, -1)), QSizeF(500, 200));
 
+}
+
+void tst_QGraphicsGridLayout::heightForWidthWithSpanning()
+{
+    QGraphicsWidget *widget = new QGraphicsWidget;
+    QGraphicsGridLayout *layout = new QGraphicsGridLayout;
+    widget->setLayout(layout);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+
+    RectWidget *w = new RectWidget;
+    w->setSizeHint(Qt::MinimumSize, QSizeF(1,1));
+    w->setSizeHint(Qt::MaximumSize, QSizeF(30000,30000));
+    w->setConstraintFunction(hfw);
+    QSizePolicy sp(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    sp.setHeightForWidth(true);
+    w->setSizePolicy(sp);
+    layout->addItem(w, 0,0,2,2);
+
+    QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(-1, -1)), QSizeF(1, 100));
+    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(-1, -1)), QSizeF(200, 100));
+    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(-1, -1)), QSizeF(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX));
+
+    QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(200, -1)), QSizeF(200, 100));
+    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(200, -1)), QSizeF(200, 100));
+    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(200, -1)), QSizeF(200, QWIDGETSIZE_MAX));
+
+    QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(2, -1)), QSizeF(2, 10000));
+    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(2, -1)), QSizeF(2, 10000));
+    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(2, -1)), QSizeF(2, QWIDGETSIZE_MAX));
+
+    QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(200, -1)), QSizeF(200, 100));
+    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(200, -1)), QSizeF(200, 100));
+    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(200, -1)), QSizeF(200, QWIDGETSIZE_MAX));
 }
 
 QTEST_MAIN(tst_QGraphicsGridLayout)

@@ -93,8 +93,8 @@ enum LayoutSide {
 
 enum {
     NoConstraint,
-    HorizontalConstraint,
-    VerticalConstraint,
+    HorizontalConstraint,   // Width depends on the height
+    VerticalConstraint,     // Height depends on the width
     UnknownConstraint,      // need to update cache
     UnfeasibleConstraint    // not feasible, it be has some items with Vertical and others with Horizontal constraints
 };
@@ -410,9 +410,14 @@ private:
     void setItemAt(int row, int column, QGridLayoutItem *item);
     void insertOrRemoveRows(int row, int delta, Qt::Orientation orientation = Qt::Vertical);
     void fillRowData(QGridLayoutRowData *rowData, const QLayoutStyleInfo &styleInfo,
-                     Qt::Orientation orientation = Qt::Vertical) const;
+                                    qreal *colPositions, qreal *colSizes,
+                                    Qt::Orientation orientation = Qt::Vertical) const;
     void ensureEffectiveFirstAndLastRows() const;
-    void ensureColumnAndRowData(const QLayoutStyleInfo &styleInfo) const;
+    void ensureColumnAndRowData(QGridLayoutRowData *rowData, QGridLayoutBox *totalBox,
+                                            const QLayoutStyleInfo &styleInfo,
+                                            qreal *colPositions, qreal *colSizes,
+                                            Qt::Orientation orientation) const;
+
     void ensureGeometries(const QLayoutStyleInfo &styleInfo, const QSizeF &size) const;
 
     // User input
