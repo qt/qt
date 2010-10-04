@@ -1933,20 +1933,27 @@ void QWidgetPrivate::show_sys()
         if (flags & Qt::WindowStaysOnTopHint) {
             if (flags & Qt::WindowStaysOnBottomHint)
                 qWarning() << "QWidget: Incompatible window flags: the window can't be on top and on bottom at the same time";
-            netWmState.append(ATOM(_NET_WM_STATE_ABOVE));
-            netWmState.append(ATOM(_NET_WM_STATE_STAYS_ON_TOP));
+            if (!netWmState.contains(ATOM(_NET_WM_STATE_ABOVE)))
+                netWmState.append(ATOM(_NET_WM_STATE_ABOVE));
+            if (!netWmState.contains(ATOM(_NET_WM_STATE_STAYS_ON_TOP)))
+                netWmState.append(ATOM(_NET_WM_STATE_STAYS_ON_TOP));
         } else if (flags & Qt::WindowStaysOnBottomHint) {
-            netWmState.append(ATOM(_NET_WM_STATE_BELOW));
+            if (!netWmState.contains(ATOM(_NET_WM_STATE_BELOW)))
+                netWmState.append(ATOM(_NET_WM_STATE_BELOW));
         }
         if (q->isFullScreen()) {
-            netWmState.append(ATOM(_NET_WM_STATE_FULLSCREEN));
+            if (!netWmState.contains(ATOM(_NET_WM_STATE_FULLSCREEN)))
+                netWmState.append(ATOM(_NET_WM_STATE_FULLSCREEN));
         }
         if (q->isMaximized()) {
-            netWmState.append(ATOM(_NET_WM_STATE_MAXIMIZED_HORZ));
-            netWmState.append(ATOM(_NET_WM_STATE_MAXIMIZED_VERT));
+            if (!netWmState.contains(ATOM(_NET_WM_STATE_MAXIMIZED_HORZ)))
+                netWmState.append(ATOM(_NET_WM_STATE_MAXIMIZED_HORZ));
+            if (!netWmState.contains(ATOM(_NET_WM_STATE_MAXIMIZED_VERT)))
+                netWmState.append(ATOM(_NET_WM_STATE_MAXIMIZED_VERT));
         }
         if (data.window_modality != Qt::NonModal) {
-            netWmState.append(ATOM(_NET_WM_STATE_MODAL));
+            if (!netWmState.contains(ATOM(_NET_WM_STATE_MODAL)))
+                netWmState.append(ATOM(_NET_WM_STATE_MODAL));
         }
 
         if (!netWmState.isEmpty()) {
