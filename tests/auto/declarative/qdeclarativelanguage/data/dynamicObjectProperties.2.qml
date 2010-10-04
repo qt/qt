@@ -1,5 +1,5 @@
-import Qt 4.7 
-import Qt 4.7 as Qt47
+import QtQuick 1.0 
+import QtQuick 1.0 as Qt47
 
 Qt.QtObject {
     property Qt47.QtObject objectProperty

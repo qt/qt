@@ -837,6 +837,9 @@
         padding-left: 25px;
         padding-top: 10px;
     }
+	.wrap .content ul img {
+		vertical-align:middle;
+	}	
     a:hover
     {
         color: #4c0033;
@@ -898,6 +901,7 @@
 	margin-left:10px;
 	min-width:250px;
 	line-height: 1.2;
+	min-width:100%;
 
 	}
 	

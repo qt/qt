@@ -1004,6 +1004,13 @@ RSS_RULES.footer +="RESOURCE CAPTION_AND_ICON_INFO r_my_icon \{ icon_file =\"$$P
 //! [151]
 
 //! [152]
+my_exports = \
+    "foo.h /epoc32/include/mylib/foo.h" \
+    "bar.h /epoc32/include/mylib/bar.h"
+BLD_INF_RULES.prj_exports += my_exports
+//! [152]
+
+//! [153]
 my_note.pkg_postrules.installer = "\"myinstallnote.txt\" - \"\", FILETEXT, TEXTCONTINUE"
 DEPLOYMENT += my_note
-//! [152]
+//! [153]

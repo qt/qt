@@ -7669,7 +7669,12 @@ void QGraphicsObject::updateMicroFocus()
 
 void QGraphicsItemPrivate::children_append(QDeclarativeListProperty<QGraphicsObject> *list, QGraphicsObject *item)
 {
-    QGraphicsItemPrivate::get(item)->setParentItemHelper(static_cast<QGraphicsObject *>(list->object), /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+    QGraphicsObject *graphicsObject = static_cast<QGraphicsObject *>(list->object);
+    if (QGraphicsItemPrivate::get(graphicsObject)->sendParentChangeNotification) {
+        item->setParentItem(graphicsObject);
+    } else {
+        QGraphicsItemPrivate::get(item)->setParentItemHelper(graphicsObject, 0, 0);
+    }
 }
 
 int QGraphicsItemPrivate::children_count(QDeclarativeListProperty<QGraphicsObject> *list)
@@ -7691,8 +7696,13 @@ void QGraphicsItemPrivate::children_clear(QDeclarativeListProperty<QGraphicsObje
 {
     QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(list->object));
     int childCount = d->children.count();
-    for (int index = 0; index < childCount; index++)
-        QGraphicsItemPrivate::get(d->children.at(0))->setParentItemHelper(0, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+    if (d->sendParentChangeNotification) {
+        for (int index = 0; index < childCount; index++)
+            d->children.at(0)->setParentItem(0);
+    } else {
+        for (int index = 0; index < childCount; index++)
+            QGraphicsItemPrivate::get(d->children.at(0))->setParentItemHelper(0, 0, 0);
+    }
 }
 
 /*!

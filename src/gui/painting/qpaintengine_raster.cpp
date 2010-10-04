@@ -4136,6 +4136,10 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
     rasterize(outline, callback, (void *)spanData, rasterBuffer);
 }
 
+extern "C" {
+    int q_gray_rendered_spans(QT_FT_Raster raster);
+}
+
 void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
                                           ProcessSpans callback,
                                           void *userData, QRasterBuffer *)
@@ -4200,10 +4204,13 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
     bool done = false;
     int error;
 
+    int rendered_spans = 0;
+
     while (!done) {
 
         rasterParams.flags |= (QT_FT_RASTER_FLAG_AA | QT_FT_RASTER_FLAG_DIRECT);
         rasterParams.gray_spans = callback;
+        rasterParams.skip_spans = rendered_spans;
         error = qt_ft_grays_raster.raster_render(*grayRaster.data(), &rasterParams);
 
         // Out of memory, reallocate some more and try again...
@@ -4231,6 +4238,8 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
                 (unsigned char *) malloc(rasterPoolSize);
 #endif
             Q_CHECK_PTR(rasterPoolBase); // note: we just freed the old rasterPoolBase. I hope it's not fatal.
+
+            rendered_spans += q_gray_rendered_spans(*grayRaster.data());
 
             qt_ft_grays_raster.raster_done(*grayRaster.data());
             qt_ft_grays_raster.raster_new(grayRaster.data());

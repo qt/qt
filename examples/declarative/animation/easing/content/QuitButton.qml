@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 Image {
     source: "quit.png"
     scale: quitMouse.pressed ? 0.8 : 1.0

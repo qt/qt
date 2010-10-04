@@ -224,7 +224,10 @@ QHostInfo QHostInfo::fromName(const QString &name)
     qDebug("QHostInfo::fromName(\"%s\")",name.toLatin1().constData());
 #endif
 
-    return QHostInfoAgent::fromName(name);
+    QHostInfo hostInfo = QHostInfoAgent::fromName(name);
+    QHostInfoLookupManager *manager = theHostInfoLookupManager();
+    manager->cache.put(name, hostInfo);
+    return hostInfo;
 }
 
 /*!

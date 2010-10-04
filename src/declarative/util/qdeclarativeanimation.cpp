@@ -305,6 +305,8 @@ void QDeclarativeAbstractAnimation::componentFinalized()
     animation will finish playing normally but not restart.
 
     By default, the alwaysRunToEnd property is not set.
+
+    \note alwaysRunToEnd has no effect on animations in a Transition.
 */
 bool QDeclarativeAbstractAnimation::alwaysRunToEnd() const
 {

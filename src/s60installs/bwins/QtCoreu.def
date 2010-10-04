@@ -4482,4 +4482,5 @@ EXPORTS
 	?textDirection@QLocale@@QBE?AW4LayoutDirection@Qt@@XZ @ 4481 NONAME ; enum Qt::LayoutDirection QLocale::textDirection(void) const
 	?msecsSinceReference@QElapsedTimer@@QBE_JXZ @ 4482 NONAME ; long long QElapsedTimer::msecsSinceReference(void) const
 	?selectThread@QEventDispatcherSymbian@@AAEAAVQSelectThread@@XZ @ 4483 NONAME ; class QSelectThread & QEventDispatcherSymbian::selectThread(void)
+	?qt_symbian_SetupThreadHeap@@YAHHAAUSStdEpocThreadCreateInfo@@@Z @ 4484 NONAME ; int qt_symbian_SetupThreadHeap(int, struct SStdEpocThreadCreateInfo &)
 

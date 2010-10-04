@@ -193,6 +193,7 @@ void macWindowToolbarShow(const QWidget *widget, bool show )
         }
     }
 #else
+    qt_widget_private(const_cast<QWidget *>(widget))->updateFrameStrut();
     ShowHideWindowToolbar(wnd, show, false);
 #endif
 }
