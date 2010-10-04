@@ -2591,7 +2591,7 @@ void QDeclarativeGridView::itemsMoved(int from, int to, int count)
     while (moved.count()) {
         int idx = moved.begin().key();
         FxGridItem *item = moved.take(idx);
-        if (item->item == d->currentItem->item)
+        if (d->currentItem && item->item == d->currentItem->item)
             item->setPosition(d->colPosAt(idx), d->rowPosAt(idx));
         d->releaseItem(item);
     }
