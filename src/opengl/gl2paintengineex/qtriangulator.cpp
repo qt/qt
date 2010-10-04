@@ -2025,7 +2025,7 @@ void QTriangulator<T>::ComplexToSimple::fillPriorityQueue()
         Q_ASSERT(m_edges.at(i).previous == -1 && m_edges.at(i).next == -1);
         Q_ASSERT(m_edges.at(i).node == 0);
         Q_ASSERT(m_edges.at(i).pointingUp == m_edges.at(i).originallyPointingUp);
-        Q_ASSERT(m_edges.at(i).pointingUp == (m_parent->m_vertices.at(qint32)(m_edges.at(i).to) < m_parent->m_vertices.at(m_edges.at(i).from)));
+        Q_ASSERT(m_edges.at(i).pointingUp == (m_parent->m_vertices.at(m_edges.at(i).to) < m_parent->m_vertices.at(m_edges.at(i).from)));
         // Ignore zero-length edges.
         if (m_parent->m_vertices.at(m_edges.at(i).to) != m_parent->m_vertices.at(m_edges.at(i).from)) {
             QPodPoint upper = m_parent->m_vertices.at(m_edges.at(i).upper());
@@ -2214,7 +2214,7 @@ void QTriangulator<T>::ComplexToSimple::removeUnwantedEdgesAndConnect()
             while (current != b.second) {
                 Q_ASSERT(current);
                 Q_ASSERT(m_edges.at(current->data).node == current);
-                Q_ASSERT(qIntersectionPoint(event.point).isOnLine(m_parent->m_vertices.at(m_edges.at(current->data).from), m_parent->m_vertices.at(qint32)(m_edges.at(current->data).to)));
+                Q_ASSERT(qIntersectionPoint(event.point).isOnLine(m_parent->m_vertices.at(m_edges.at(current->data).from), m_parent->m_vertices.at(m_edges.at(current->data).to)));
                 Q_ASSERT(m_parent->m_vertices.at(m_edges.at(current->data).from) == event.point || m_parent->m_vertices.at(m_edges.at(current->data).to) == event.point);
                 insertEdgeIntoVectorIfWanted(orderedEdges, current->data);
                 current = m_edgeList.next(current);
