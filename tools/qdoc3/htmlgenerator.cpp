@@ -927,7 +927,6 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             threeColumnEnumValueTable = isThreeColumnEnumValueTable(atom);
             if (threeColumnEnumValueTable) {
                 out() << "<table class=\"valuelist\">";
-                //  << "<tr>"
                 if (++numTableRows % 2 == 1)
                         out() << "<tr class=\"odd\">";
                 else
