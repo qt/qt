@@ -66,7 +66,6 @@ QT_BEGIN_NAMESPACE
 class QTextLayout;
 class QTextDocumentWithImageResources;
 
-#define QML_NO_TEXT_CACHE 
 class QDeclarativeTextPrivate : public QDeclarativeItemPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeText)

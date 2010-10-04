@@ -1143,7 +1143,7 @@ void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWid
     } else {
         qreal y = boundingRect().y();
 
-        bool needClip = !clip() && (d->cachedLayoutSize.width() > width() ||
+        bool needClip = clip() && (d->cachedLayoutSize.width() > width() ||
                                     d->cachedLayoutSize.height() > height());
 
         if (needClip) {
