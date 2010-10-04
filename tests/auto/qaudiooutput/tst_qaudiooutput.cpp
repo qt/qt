@@ -52,6 +52,8 @@
 #define SRCDIR ""
 #endif
 
+Q_DECLARE_METATYPE(QAudioFormat)
+
 class tst_QAudioOutput : public QObject
 {
     Q_OBJECT
@@ -60,6 +62,8 @@ public:
 
 private slots:
     void initTestCase();
+    void invalidFormat_data();
+    void invalidFormat();
     void settings();
     void buffers();
     void notifyInterval();
@@ -74,6 +78,8 @@ private:
 
 void tst_QAudioOutput::initTestCase()
 {
+    qRegisterMetaType<QAudioFormat>();
+
     format.setFrequency(8000);
     format.setChannels(1);
     format.setSampleSize(8);
@@ -90,6 +96,47 @@ void tst_QAudioOutput::initTestCase()
         available = false;
     }
     audio = new QAudioOutput(format, this);
+}
+
+void tst_QAudioOutput::invalidFormat_data()
+{
+    QTest::addColumn<QAudioFormat>("invalidFormat");
+
+    QAudioFormat audioFormat;
+
+    QTest::newRow("Null Format")
+            << audioFormat;
+
+    audioFormat = format;
+    audioFormat.setChannels(0);
+    QTest::newRow("Channel count 0")
+            << audioFormat;
+
+    audioFormat = format;
+    audioFormat.setFrequency(0);
+    QTest::newRow("Sample rate 0")
+            << audioFormat;
+
+    audioFormat = format;
+    audioFormat.setSampleSize(0);
+    QTest::newRow("Sample size 0")
+            << audioFormat;
+}
+
+void tst_QAudioOutput::invalidFormat()
+{
+    QFETCH(QAudioFormat, invalidFormat);
+
+    QAudioOutput audioOutput(invalidFormat, this);
+
+    // Check that we are in the default state before calling start
+    QVERIFY2((audioOutput.state() == QAudio::StoppedState), "state() was not set to StoppedState before start()");
+    QVERIFY2((audioOutput.error() == QAudio::NoError), "error() was not set to QAudio::NoError before start()");
+
+    audioOutput.start();
+
+    // Check that error is raised
+    QVERIFY2((audioOutput.error() == QAudio::OpenError),"error() was not set to QAudio::OpenError after start()");
 }
 
 void tst_QAudioOutput::settings()
