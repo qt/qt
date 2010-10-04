@@ -77,6 +77,9 @@
     in the documentation for LoadLibrary for Windows CE at MSDN.
     (http://msdn.microsoft.com/en-us/library/ms886736.aspx)
 */
+
+QT_BEGIN_NAMESPACE
+
 #if defined(Q_OS_WINCE)
 HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirectory /* = true */)
 {
@@ -134,3 +137,5 @@ HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirect
 }
 
 #endif  //Q_OS_WINCE
+
+QT_END_NAMESPACE
