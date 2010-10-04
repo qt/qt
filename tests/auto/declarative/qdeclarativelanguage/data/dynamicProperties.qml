@@ -1,5 +1,5 @@
 import Test 1.0
-import Qt 4.7
+import QtQuick 1.0
 QtObject {
     default property int intProperty : 10
     property bool boolProperty: false

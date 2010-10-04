@@ -889,8 +889,10 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
                 q->setWindowOpacity(maybeTopData()->opacity/255.);
 
         }
-    } else if (q->testAttribute(Qt::WA_SetCursor) && q->internalWinId()) {
+    } else if (q->internalWinId()) {
         qt_x11_enforce_cursor(q);
+        if (QWidget *p = q->parentWidget()) // reset the cursor on the native parent
+            qt_x11_enforce_cursor(p);
     }
 
     if (extra && !extra->mask.isEmpty() && q->internalWinId())

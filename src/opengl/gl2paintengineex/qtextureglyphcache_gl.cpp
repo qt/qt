@@ -55,8 +55,9 @@ extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 
 QGLTextureGlyphCache::QGLTextureGlyphCache(const QGLContext *context, QFontEngineGlyphCache::Type type, const QTransform &matrix)
     : QImageTextureGlyphCache(type, matrix)
-    , ctx(0)
+    , ctx(context)
     , pex(0)
+    , m_filterMode(Nearest)
     , m_blitProgram(0)
 {
 #ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
@@ -117,6 +118,9 @@ void QGLTextureGlyphCache::createTextureData(int width, int height)
 
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_filterMode = Nearest;
 }
 
 void QGLTextureGlyphCache::resizeTextureData(int width, int height)
@@ -161,6 +165,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_filterMode = Nearest;
     glBindTexture(GL_TEXTURE_2D, 0);
     glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
                            GL_TEXTURE_2D, tmp_texture, 0);

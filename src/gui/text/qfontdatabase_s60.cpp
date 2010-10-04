@@ -453,7 +453,7 @@ QFontDef cleanedFontDef(const QFontDef &req)
     return result;
 }
 
-QFontEngine *QFontDatabase::findFont(int script, const QFontPrivate *, const QFontDef &req)
+QFontEngine *QFontDatabase::findFont(int script, const QFontPrivate *d, const QFontDef &req)
 {
     const QFontCache::Key key(cleanedFontDef(req), script);
 
@@ -498,8 +498,14 @@ QFontEngine *QFontDatabase::findFont(int script, const QFontPrivate *, const QFo
                 static_cast<const QSymbianFontDatabaseExtrasImplementation*>(db->symbianExtras);
         const QSymbianTypeFaceExtras *typeFaceExtras =
                 dbExtras->extras(fontFamily, request.weight > QFont::Normal, request.style != QFont::StyleNormal);
+
+        // We need a valid pixelSize, e.g. for lineThickness()
+        if (request.pixelSize < 0)
+            request.pixelSize = request.pointSize * d->dpi / 72;
+
         fe = new QFontEngineS60(request, typeFaceExtras);
 #else // QT_NO_FREETYPE
+        Q_UNUSED(d)
         QFontEngine::FaceId faceId;
         const QtFontFamily * const reqQtFontFamily = db->family(fontFamily);
         faceId.filename = reqQtFontFamily->fontFilename;

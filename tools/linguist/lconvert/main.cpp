@@ -140,6 +140,7 @@ struct File
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
+#ifndef Q_OS_WIN32
     QTranslator translator;
     QTranslator qtTranslator;
     QString sysLocale = QLocale::system().name();
@@ -149,6 +150,7 @@ int main(int argc, char *argv[])
         app.installTranslator(&translator);
         app.installTranslator(&qtTranslator);
     }
+#endif // Q_OS_WIN32
 
     QStringList args = app.arguments();
     QList<File> inFiles;

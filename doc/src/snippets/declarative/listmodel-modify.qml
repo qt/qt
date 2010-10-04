@@ -37,7 +37,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-import Qt 4.7
+import QtQuick 1.0
 
 Rectangle {
     width: 200; height: 200

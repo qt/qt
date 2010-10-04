@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 import "../../toys/clocks/content"  // for loading the Clock element
 import "qml"
 

@@ -1,4 +1,4 @@
-import Qt 4.7
+import QtQuick 1.0
 import "include.js" as IncludeTest
 
 QtObject {

@@ -45,7 +45,7 @@
 // API, but users from QML don't need to understand the implementation in
 // order to create a Map.
 
-import Qt 4.7
+import QtQuick 1.0
 import QtWebKit 1.0
 import "content/Mapping"
 

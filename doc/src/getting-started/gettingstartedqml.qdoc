@@ -73,7 +73,7 @@
 
     \snippet examples/tutorials/gettingStarted/gsQml/part0/Button.qml document
 
-    First, the \c { import Qt 4.7 } allows the qmlviewer tool to import the QML elements
+    First, the \c { import QtQuick 1.0 } allows the qmlviewer tool to import the QML elements
     we will later use. This line must exist for every QML file. Notice that the version
     of Qt modules is included in the import statement.
 
@@ -209,7 +209,7 @@
     \c FileMenu.qml.
 
     \code
-        import Qt 4.7                \\import the main Qt QML module
+        import QtQuick 1.0                \\import the main Qt QML module
         import "folderName"            \\import the contents of the folder    
         import "script.js" as Script        \\import a Javascript file and name it as Script
     \endcode

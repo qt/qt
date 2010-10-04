@@ -67,6 +67,8 @@ public:
     tst_QInputContext() : m_phoneIsQwerty(false) {}
     virtual ~tst_QInputContext() {}
 
+    template <class WidgetType> void symbianTestCoeFepInputContext_addData();
+
 public slots:
     void initTestCase();
     void cleanupTestCase() {}
@@ -467,6 +469,7 @@ void tst_QInputContext::focusProxy()
 void tst_QInputContext::symbianTestCoeFepInputContext_data()
 {
 #ifdef Q_OS_SYMBIAN
+    QTest::addColumn<QWidget *>              ("editwidget");
     QTest::addColumn<bool>                   ("inputMethodEnabled");
     QTest::addColumn<Qt::InputMethodHints>   ("inputMethodHints");
     QTest::addColumn<int>                    ("maxLength"); // Zero for no limit
@@ -474,7 +477,24 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
     QTest::addColumn<QList<FepReplayEvent> > ("keyEvents");
     QTest::addColumn<QString>                ("finalString");
     QTest::addColumn<QString>                ("preeditString");
+
+    symbianTestCoeFepInputContext_addData<QLineEdit>();
+    symbianTestCoeFepInputContext_addData<QPlainTextEdit>();
+    symbianTestCoeFepInputContext_addData<QTextEdit>();
+#endif
+}
+
+Q_DECLARE_METATYPE(QWidget *)
+Q_DECLARE_METATYPE(QLineEdit *)
+Q_DECLARE_METATYPE(QPlainTextEdit *)
+Q_DECLARE_METATYPE(QTextEdit *)
+
+template <class WidgetType>
+void tst_QInputContext::symbianTestCoeFepInputContext_addData()
+{
+#ifdef Q_OS_SYMBIAN
     QList<FepReplayEvent> events;
+    QWidget *editwidget;
 
     events << FepReplayEvent(EStdKeyBackspace, EKeyBackspace, 0, 0);
     events << FepReplayEvent(EStdKeyBackspace, EKeyBackspace, 0, 0);
@@ -487,7 +507,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
     events << FepReplayEvent(EStdKeyBackspace, EKeyBackspace, 0, 0);
     events << FepReplayEvent('2', '2', 0, 0);
     events << FepReplayEvent('1', '1', 0, 0);
-    QTest::newRow("Numbers (no FEP)")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Numbers (no FEP)").toLocal8Bit())
+            << editwidget
             << false
             << Qt::InputMethodHints(Qt::ImhNone)
             << 0
@@ -495,7 +518,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("521")
             << QString("");
-    QTest::newRow("Numbers and password mode (no FEP)")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Numbers and password mode (no FEP)").toLocal8Bit())
+            << editwidget
             << false
             << Qt::InputMethodHints(Qt::ImhNone)
             << 0
@@ -503,7 +529,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("521")
             << QString("");
-    QTest::newRow("Numbers")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Numbers").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhDigitsOnly)
             << 0
@@ -511,7 +540,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("521")
             << QString("");
-    QTest::newRow("Numbers max length (no FEP)")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Numbers max length (no FEP)").toLocal8Bit())
+            << editwidget
             << false
             << Qt::InputMethodHints(Qt::ImhNone)
             << 2
@@ -519,7 +551,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("21")
             << QString("");
-    QTest::newRow("Numbers max length")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Numbers max length").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhDigitsOnly)
             << 2
@@ -534,7 +569,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
     events << FepReplayEvent(EEventKey, '5', '5', 0, 1);
     events << FepReplayEvent(EEventKey, '5', '5', 0, 1);
     events << FepReplayEvent(EEventKeyUp, '5', 0, 0, 0);
-    QTest::newRow("Numbers and autorepeat (no FEP)")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Numbers and autorepeat (no FEP)").toLocal8Bit())
+            << editwidget
             << false
             << Qt::InputMethodHints(Qt::ImhNone)
             << 0
@@ -552,7 +590,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
     events << FepReplayEvent('5', '5', 0, 0);
     events << FepReplayEvent('5', '5', 0, 0);
     events << FepReplayEvent(EStdKeyBackspace, EKeyBackspace, 0, 0);
-    QTest::newRow("Multitap")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Multitap").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhNoPredictiveText)
             << 0
@@ -560,7 +601,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("Adh")
             << QString("");
-    QTest::newRow("Multitap with no auto uppercase")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Multitap with no auto uppercase").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhNoPredictiveText | Qt::ImhNoAutoUppercase)
             << 0
@@ -568,7 +612,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("adh")
             << QString("");
-    QTest::newRow("Multitap with uppercase")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Multitap with uppercase").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhNoPredictiveText | Qt::ImhPreferUppercase)
             << 0
@@ -576,7 +623,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("ADH")
             << QString("");
-    QTest::newRow("Multitap with lowercase")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Multitap with lowercase").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhNoPredictiveText | Qt::ImhPreferLowercase)
             << 0
@@ -584,7 +634,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("adh")
             << QString("");
-    QTest::newRow("Multitap with forced uppercase")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Multitap with forced uppercase").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhNoPredictiveText | Qt::ImhUppercaseOnly)
             << 0
@@ -592,7 +645,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("ADH")
             << QString("");
-    QTest::newRow("Multitap with forced lowercase")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Multitap with forced lowercase").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhNoPredictiveText | Qt::ImhLowercaseOnly)
             << 0
@@ -611,7 +667,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
     events << FepReplayEvent('5', '5', 0, 0);
     events << FepReplayEvent('5', '5', 0, 0);
     events << FepReplayEvent(EStdKeyBackspace, EKeyBackspace, 0, 0);
-    QTest::newRow("Multitap with mode switch")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Multitap with mode switch").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhNoPredictiveText)
             << 0
@@ -626,7 +685,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
     events << FepReplayEvent('8', '8', 0, 0);
     events << FepReplayEvent('9', '9', 0, 0);
     events << FepReplayEvent('9', '9', 0, 0);
-    QTest::newRow("Multitap with unfinished text")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Multitap with unfinished text").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhNoPredictiveText)
             << 0
@@ -635,7 +697,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << QString("Qt")
             << QString("x");
     events << FepReplayEvent(2000);
-    QTest::newRow("Multitap with committed text")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Multitap with committed text").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhNoPredictiveText)
             << 0
@@ -671,7 +736,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
     events << FepReplayEvent('8', '8', 0, 0);
     events << FepReplayEvent(2000);
     events << FepReplayEvent(EStdKeyDevice3, EKeyDevice3, 0, 0); // Select key
-    QTest::newRow("Multitap and numbers")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Multitap and numbers").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhNoPredictiveText)
             << 0
@@ -679,7 +747,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("H778wmt")
             << QString("");
-    QTest::newRow("T9 and numbers")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": T9 and numbers").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhPreferLowercase)
             << 0
@@ -692,7 +763,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
     events << FepReplayEvent('4', '4', 0, 0);
     events << FepReplayEvent('4', '4', 0, 0);
     events << FepReplayEvent(EStdKeyDevice3, EKeyDevice3, 0, 0); // Select key
-    QTest::newRow("T9")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": T9").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhPreferLowercase)
             << 0
@@ -700,7 +774,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("hi")
             << QString("");
-    QTest::newRow("T9 with uppercase")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": T9 with uppercase").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhPreferUppercase)
             << 0
@@ -708,7 +785,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("HI")
             << QString("");
-    QTest::newRow("T9 with forced lowercase")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": T9 with forced lowercase").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhLowercaseOnly)
             << 0
@@ -716,7 +796,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("hi")
             << QString("");
-    QTest::newRow("T9 with forced uppercase")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": T9 with forced uppercase").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhUppercaseOnly)
             << 0
@@ -724,7 +807,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("HI")
             << QString("");
-    QTest::newRow("T9 with maxlength")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": T9 with maxlength").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhLowercaseOnly)
             << 1
@@ -746,7 +832,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
     events << FepReplayEvent(EStdKeyRightArrow, EKeyRightArrow, 0, 0);
     events << FepReplayEvent('8', '8', 0, 0);
     events << FepReplayEvent('8', '8', 0, 0);
-    QTest::newRow("T9 with movement and unfinished text")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": T9 with movement and unfinished text").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhPreferLowercase)
             << 0
@@ -754,7 +843,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("you hi")
             << QString("tv");
-    QTest::newRow("T9 with movement, password and unfinished text")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": T9 with movement, password and unfinished text").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhPreferLowercase)
             << 0
@@ -762,7 +854,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("wmt h")
             << QString("u");
-    QTest::newRow("T9 with movement, maxlength, password and unfinished text")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": T9 with movement, maxlength, password and unfinished text").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhPreferLowercase)
             << 2
@@ -770,7 +865,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("wh")
             << QString("");
-    QTest::newRow("T9 with movement, maxlength and unfinished text")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": T9 with movement, maxlength and unfinished text").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhPreferLowercase)
             << 2
@@ -778,7 +876,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("hi")
             << QString("");
-    QTest::newRow("Multitap with movement and unfinished text")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Multitap with movement and unfinished text").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhNoPredictiveText | Qt::ImhPreferLowercase)
             << 0
@@ -786,7 +887,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("wmt h")
             << QString("u");
-    QTest::newRow("Multitap with movement, maxlength and unfinished text")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Multitap with movement, maxlength and unfinished text").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhNoPredictiveText | Qt::ImhPreferLowercase)
             << 2
@@ -794,7 +898,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("wh")
             << QString("");
-    QTest::newRow("Numbers with movement")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Numbers with movement").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhDigitsOnly)
             << 0
@@ -802,7 +909,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("96804488")
             << QString("");
-    QTest::newRow("Numbers with movement and maxlength")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Numbers with movement and maxlength").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhDigitsOnly)
             << 2
@@ -810,7 +920,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("44")
             << QString("");
-    QTest::newRow("Numbers with movement, password and unfinished text")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Numbers with movement, password and unfinished text").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhDigitsOnly)
             << 0
@@ -818,7 +931,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("9680448")
             << QString("8");
-    QTest::newRow("Numbers with movement, maxlength, password and unfinished text")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Numbers with movement, maxlength, password and unfinished text").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhDigitsOnly)
             << 2
@@ -827,7 +943,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << QString("44")
             << QString("");
     events << FepReplayEvent(EStdKeyRightArrow, EKeyRightArrow, 0, 0);
-    QTest::newRow("T9 with movement")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": T9 with movement").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhPreferLowercase)
             << 0
@@ -835,7 +954,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("you htvi")
             << QString("");
-    QTest::newRow("T9 with movement and password")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": T9 with movement and password").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhPreferLowercase)
             << 0
@@ -843,7 +965,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("wmt hu")
             << QString("");
-    QTest::newRow("T9 with movement, maxlength and password")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": T9 with movement, maxlength and password").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhPreferLowercase)
             << 2
@@ -851,7 +976,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("wh")
             << QString("");
-    QTest::newRow("Multitap with movement")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Multitap with movement").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhNoPredictiveText | Qt::ImhPreferLowercase)
             << 0
@@ -859,7 +987,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("wmt hu")
             << QString("");
-    QTest::newRow("Multitap with movement and maxlength")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Multitap with movement and maxlength").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhNoPredictiveText | Qt::ImhPreferLowercase)
             << 2
@@ -867,7 +998,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("wh")
             << QString("");
-    QTest::newRow("Numbers with movement and password")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Numbers with movement and password").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhDigitsOnly)
             << 0
@@ -875,7 +1009,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("96804488")
             << QString("");
-    QTest::newRow("Numbers with movement, maxlength and password")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Numbers with movement, maxlength and password").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhDigitsOnly)
             << 2
@@ -888,7 +1025,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
     // Test that the symbol key successfully does nothing when in number-only mode.
     events << FepReplayEvent(EEventKeyDown, EStdKeyLeftFunc, 0, 0, 0);
     events << FepReplayEvent(EEventKeyUp, EStdKeyLeftFunc, 0, 0, 0);
-    QTest::newRow("Dead symbols key")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Dead symbols key").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhDigitsOnly)
             << 0
@@ -896,7 +1036,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
             << events
             << QString("")
             << QString("");
-    QTest::newRow("Dead symbols key and password")
+    editwidget = new WidgetType;
+    QTest::newRow(QString(QString::fromLatin1(editwidget->metaObject()->className())
+            + ": Dead symbols key and password").toLocal8Bit())
+            << editwidget
             << true
             << Qt::InputMethodHints(Qt::ImhDigitsOnly)
             << 0
@@ -918,6 +1061,7 @@ void tst_QInputContext::symbianTestCoeFepInputContext()
         QSKIP("coefep is not the active input context; skipping test", SkipAll);
     }
 
+    QFETCH(QWidget *,             editwidget);
     QFETCH(bool,                  inputMethodEnabled);
     QFETCH(Qt::InputMethodHints,  inputMethodHints);
     QFETCH(int,                   maxLength);
@@ -933,30 +1077,39 @@ void tst_QInputContext::symbianTestCoeFepInputContext()
     QWidget w;
     QLayout *layout = new QVBoxLayout;
     w.setLayout(layout);
-    QLineEdit *lineedit = new QLineEdit;
-    layout->addWidget(lineedit);
-    lineedit->setFocus();
+
+    layout->addWidget(editwidget);
+    editwidget->setFocus();
 #ifdef QT_KEYPAD_NAVIGATION
-    lineedit->setEditFocus(true);
+    editwidget->setEditFocus(true);
 #endif
     w.show();
 
-    lineedit->setAttribute(Qt::WA_InputMethodEnabled, inputMethodEnabled);
-    lineedit->setInputMethodHints(inputMethodHints);
-    if (maxLength > 0)
-        lineedit->setMaxLength(maxLength);
-    lineedit->setEchoMode(echoMode);
+    editwidget->setAttribute(Qt::WA_InputMethodEnabled, inputMethodEnabled);
+    editwidget->setInputMethodHints(inputMethodHints);
+    QLineEdit *lineedit = qobject_cast<QLineEdit *>(editwidget);
+    if (lineedit) {
+        if (maxLength > 0)
+            lineedit->setMaxLength(maxLength);
+        lineedit->setEchoMode(echoMode);
+    } else if (maxLength > 0 || echoMode != QLineEdit::Normal) {
+        // Only QLineEdits support these features so don't attempt any tests using those
+        // on other widgets.
+        return;
+    }
 
     QTest::qWait(200);
 
     foreach(FepReplayEvent event, keyEvents) {
-        event.replay(lineedit);
+        event.replay(editwidget);
     }
 
     QApplication::processEvents();
 
-    QCOMPARE(lineedit->text(), finalString);
+    QCOMPARE(editwidget->inputMethodQuery(Qt::ImSurroundingText).toString(), finalString);
     QCOMPARE(ic->m_preeditString, preeditString);
+
+    delete editwidget;
 #endif
 }
 

@@ -483,8 +483,8 @@ Reason:
         <translation>Видаліть файли, на які немає посилань ні за ключовим словом, ні зі змісту.</translation>
     </message>
     <message>
-        <source>&lt;p&gt;&lt;b&gt;Warning:&lt;/b&gt; Be aware when removing images or stylesheets since those files are not directly referenced by the .adp or .dcf file.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;&lt;b&gt;Попередження:&lt;/b&gt; Будьте уважними, при видаленні зображень чи таблиць стилів, оскільки на ці файли не має прямих посилань файла .adp чи .dcf.&lt;/p&gt;</translation>
+        <source>&lt;p&gt;&lt;b&gt;Warning:&lt;/b&gt; When removing images or stylesheets, be aware that those files are not directly referenced by the .adp or .dcf file.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;&lt;b&gt;Попередження:&lt;/b&gt; При видаленні зображень чи таблиць стилів, майте на увазі, що на ці файли не має прямих посилань з файлу .adp чи .dcf.&lt;/p&gt;</translation>
     </message>
 </context>
 <context>
@@ -533,7 +533,7 @@ Reason:
         <translation>Налаштування фільтрів</translation>
     </message>
     <message>
-        <source>Specify the filter attributes for the documentation. If filter attributes are used, also define a custom filter for it. Both, the filter attributes and the custom filters are optional.</source>
+        <source>Specify the filter attributes for the documentation. If filter attributes are used, also define a custom filter for it. Both the filter attributes and the custom filters are optional.</source>
         <translation>Вкажіть атрибути фільтра для документації. Якщо використовуються атрибути фільтра, то, також, визначіть користувацький фільтр для нього. Як атрибути фільтра, так і користувацькі фільтри, є необов&apos;язковими.</translation>
     </message>
     <message>
@@ -648,6 +648,13 @@ Reason:
     <message>
         <source>The virtual folder contains some invalid characters.</source>
         <translation>Віртуальна тека містить деякі неприпустимі символи.</translation>
+    </message>
+</context>
+<context>
+    <name>HelpEngineWrapper</name>
+    <message>
+        <source>Unfiltered</source>
+        <translation>Без фільтра</translation>
     </message>
 </context>
 <context>

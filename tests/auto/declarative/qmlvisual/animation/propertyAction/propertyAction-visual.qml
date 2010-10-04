@@ -1,4 +1,4 @@
-import Qt 4.7
+import QtQuick 1.0
 
 /*
 This test starts with a red rectangle at 0,0. It should animate a color change to blue,
