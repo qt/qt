@@ -1,4 +1,4 @@
-import Qt 4.7
+import QtQuick 1.0
 
 QtObject {
     property variant test1: Qt.lighter(Qt.rgba(1, 0.8, 0.3))

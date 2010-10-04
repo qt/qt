@@ -895,6 +895,7 @@ Parsing grid layout minimum size values</extracomment>
     <name>FormEditorOptionsPage</name>
     <message>
         <source>%1 %</source>
+        <extracomment>Zoom percentage</extracomment>
         <translation>%1 %</translation>
     </message>
     <message>

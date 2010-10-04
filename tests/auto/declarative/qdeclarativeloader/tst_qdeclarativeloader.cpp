@@ -102,7 +102,7 @@ tst_QDeclarativeLoader::tst_QDeclarativeLoader()
 void tst_QDeclarativeLoader::url()
 {
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\nLoader { property int did_load: 0; onLoaded: did_load=123; source: \"Rect120x60.qml\" }"), TEST_FILE(""));
+    component.setData(QByteArray("import QtQuick 1.0\nLoader { property int did_load: 0; onLoaded: did_load=123; source: \"Rect120x60.qml\" }"), TEST_FILE(""));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader != 0);
     QVERIFY(loader->item());
@@ -140,7 +140,7 @@ void tst_QDeclarativeLoader::invalidUrl()
     QTest::ignoreMessage(QtWarningMsg, QString(QUrl::fromLocalFile(SRCDIR "/data/IDontExist.qml").toString() + ": File not found").toUtf8().constData());
 
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\nLoader { source: \"IDontExist.qml\" }"), TEST_FILE(""));
+    component.setData(QByteArray("import QtQuick 1.0\nLoader { source: \"IDontExist.qml\" }"), TEST_FILE(""));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader != 0);
     QVERIFY(loader->item() == 0);
@@ -156,7 +156,7 @@ void tst_QDeclarativeLoader::clear()
     {
         QDeclarativeComponent component(&engine);
         component.setData(QByteArray(
-                    "import Qt 4.7\n"
+                    "import QtQuick 1.0\n"
                     " Loader { id: loader\n"
                     "  source: 'Rect120x60.qml'\n"
                     "  Timer { interval: 200; running: true; onTriggered: loader.source = '' }\n"
@@ -220,7 +220,7 @@ void tst_QDeclarativeLoader::clear()
 void tst_QDeclarativeLoader::urlToComponent()
 {
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\n"
+    component.setData(QByteArray("import QtQuick 1.0\n"
                 "Loader {\n"
                 " id: loader\n"
                 " Component { id: myComp; Rectangle { width: 10; height: 10 } }\n"
@@ -445,7 +445,7 @@ void tst_QDeclarativeLoader::networkRequestUrl()
     server.serveDirectory(SRCDIR "/data");
 
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\nLoader { property int did_load : 0; source: \"http://127.0.0.1:14450/Rect120x60.qml\"; onLoaded: did_load=123 }"), QUrl::fromLocalFile(SRCDIR "/dummy.qml"));
+    component.setData(QByteArray("import QtQuick 1.0\nLoader { property int did_load : 0; source: \"http://127.0.0.1:14450/Rect120x60.qml\"; onLoaded: did_load=123 }"), QUrl::fromLocalFile(SRCDIR "/dummy.qml"));
     if (component.isError())
         qDebug() << component.errors();
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
@@ -470,7 +470,7 @@ void tst_QDeclarativeLoader::networkComponent()
 
     QDeclarativeComponent component(&engine);
     component.setData(QByteArray(
-                "import Qt 4.7\n"
+                "import QtQuick 1.0\n"
                 "import \"http://127.0.0.1:14450/\" as NW\n"
                 "Item {\n"
                 " Component { id: comp; NW.SlowRect {} }\n"
@@ -502,7 +502,7 @@ void tst_QDeclarativeLoader::failNetworkRequest()
     QTest::ignoreMessage(QtWarningMsg, "http://127.0.0.1:14450/IDontExist.qml: File not found");
 
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\nLoader { property int did_load: 123; source: \"http://127.0.0.1:14450/IDontExist.qml\"; onLoaded: did_load=456 }"), QUrl::fromLocalFile("http://127.0.0.1:14450/dummy.qml"));
+    component.setData(QByteArray("import QtQuick 1.0\nLoader { property int did_load: 123; source: \"http://127.0.0.1:14450/IDontExist.qml\"; onLoaded: did_load=456 }"), QUrl::fromLocalFile("http://127.0.0.1:14450/dummy.qml"));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader != 0);
 

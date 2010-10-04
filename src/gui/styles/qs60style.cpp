@@ -2001,7 +2001,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     case CE_ShapedFrame:
         if (const QTextEdit *textEdit = qobject_cast<const QTextEdit *>(widget)) {
             const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(option);
-            if (QS60StylePrivate::canDrawThemeBackground(frame->palette.base(), widget))
+            if (frame && QS60StylePrivate::canDrawThemeBackground(frame->palette.base(), widget))
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_Editor, painter, option->rect, flags);
             else
                 QCommonStyle::drawControl(element, option, painter, widget);

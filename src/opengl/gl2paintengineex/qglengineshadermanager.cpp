@@ -41,6 +41,7 @@
 
 #include "qglengineshadermanager_p.h"
 #include "qglengineshadersource_p.h"
+#include "qpaintengineex_opengl2_p.h"
 
 #if defined(QT_DEBUG)
 #include <QMetaEnum>
@@ -248,6 +249,7 @@ QByteArray QGLEngineSharedShaders::snippetNameStr(SnippetName name)
 #endif
 
 // The address returned here will only be valid until next time this function is called.
+// The program is return bound.
 QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineShaderProg &prog)
 {
     for (int i = 0; i < cachedPrograms.size(); ++i) {
@@ -255,6 +257,7 @@ QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineS
         if (*cachedProg == prog) {
             // Move the program to the top of the list as a poor-man's cache algo
             cachedPrograms.move(i, 0);
+            cachedProg->program->bind();
             return cachedProg;
         }
     }
@@ -355,6 +358,14 @@ QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineS
             qWarning() << error;
             break;
         }
+
+        newProg->program->bind();
+
+        if (newProg->maskFragShader != QGLEngineSharedShaders::NoMaskFragmentShader) {
+            GLuint location = newProg->program->uniformLocation("maskTexture");
+            newProg->program->setUniformValue(location, QT_MASK_TEXTURE_UNIT);
+        }
+
         if (cachedPrograms.count() > 30) {
             // The cache is full, so delete the last 5 programs in the list.
             // These programs will be least used, as a program us bumped to
@@ -769,10 +780,8 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
     // At this point, requiredProgram is fully populated so try to find the program in the cache
     currentShaderProg = sharedShaders->findProgramInCache(requiredProgram);
 
-    if (currentShaderProg) {
-        currentShaderProg->program->bind();
-        if (useCustomSrc)
-            customSrcStage->setUniforms(currentShaderProg->program);
+    if (currentShaderProg && useCustomSrc) {
+        customSrcStage->setUniforms(currentShaderProg->program);
     }
 
     // Make sure all the vertex attribute arrays the program uses are enabled (and the ones it

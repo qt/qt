@@ -89,7 +89,7 @@ function processNokiaData(response){
 /* fetch the responce from the server using page as the root element */
 	var propertyTags = response.getElementsByTagName('page');
 	/* reset counters */	
-	var lookupCount = 0;
+	var apiCount = 0;
 	var articleCount = 0;
 	var exampleCount = 0;
 	var full_li_element;
@@ -124,7 +124,7 @@ function processNokiaData(response){
 			/* adding the URL attribute*/
 			full_li_element += propertyTags[i].getElementsByTagName('pageUrl')[j].firstChild.nodeValue;
       		/* adding the link title and closing the link and list elements */
-			full_li_element += '">' + propertyTags[i].getElementsByTagName('pageTitle')[0].firstChild.nodeValue + '</a></li>';
+			full_li_element += '">' + propertyTags[i].getElementsByTagName('pageWords')[0].firstChild.nodeValue + '</a></li>';
 			/* appending the list element to the #resultlist div*/
 			$('#resultlist').append(full_li_element);
 		}
@@ -139,7 +139,12 @@ function processNokiaData(response){
 	  $('#apicount').html(apiCount);
 	  $('#articlecount').html(articleCount);
 	  $('#examplecount').html(exampleCount);
-  }
+	  
+	}
+	else {
+	  $('#pageType').addClass('red');
+	  }
+  
 
 
   // Filtering results in display
@@ -181,6 +186,7 @@ function CheckEmptyAndLoadList()
 	/* Start Extracting information for feedback and adding this to the feedback form */
 	var pageUrl = window.location.href;
 	var pageVal = $('title').html();
+	$('#pageType').removeClass('red');
 	$('#feedUrl').remove();
 	$('#pageVal').remove();
 	$('.menuAlert').remove();

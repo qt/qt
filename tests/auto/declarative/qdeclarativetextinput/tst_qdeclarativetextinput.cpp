@@ -144,7 +144,7 @@ void tst_qdeclarativetextinput::text()
 {
     {
         QDeclarativeComponent textinputComponent(&engine);
-        textinputComponent.setData("import Qt 4.7\nTextInput {  text: \"\"  }", QUrl());
+        textinputComponent.setData("import QtQuick 1.0\nTextInput {  text: \"\"  }", QUrl());
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
@@ -155,7 +155,7 @@ void tst_qdeclarativetextinput::text()
 
     for (int i = 0; i < standard.size(); i++)
     {
-        QString componentStr = "import Qt 4.7\nTextInput { text: \"" + standard.at(i) + "\" }";
+        QString componentStr = "import QtQuick 1.0\nTextInput { text: \"" + standard.at(i) + "\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
@@ -173,7 +173,7 @@ void tst_qdeclarativetextinput::width()
     // uses Font metrics to find the width for standard
     {
         QDeclarativeComponent textinputComponent(&engine);
-        textinputComponent.setData("import Qt 4.7\nTextInput {  text: \"\" }", QUrl());
+        textinputComponent.setData("import QtQuick 1.0\nTextInput {  text: \"\" }", QUrl());
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
@@ -188,7 +188,7 @@ void tst_qdeclarativetextinput::width()
         QFontMetricsF fm(f);
         qreal metricWidth = fm.width(standard.at(i));
 
-        QString componentStr = "import Qt 4.7\nTextInput { text: \"" + standard.at(i) + "\" }";
+        QString componentStr = "import QtQuick 1.0\nTextInput { text: \"" + standard.at(i) + "\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
@@ -205,7 +205,7 @@ void tst_qdeclarativetextinput::font()
 {
     //test size, then bold, then italic, then family
     { 
-        QString componentStr = "import Qt 4.7\nTextInput {  font.pointSize: 40; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 1.0\nTextInput {  font.pointSize: 40; text: \"Hello World\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
@@ -219,7 +219,7 @@ void tst_qdeclarativetextinput::font()
     }
 
     { 
-        QString componentStr = "import Qt 4.7\nTextInput {  font.bold: true; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 1.0\nTextInput {  font.bold: true; text: \"Hello World\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
@@ -232,7 +232,7 @@ void tst_qdeclarativetextinput::font()
     }
 
     { 
-        QString componentStr = "import Qt 4.7\nTextInput {  font.italic: true; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 1.0\nTextInput {  font.italic: true; text: \"Hello World\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
@@ -245,7 +245,7 @@ void tst_qdeclarativetextinput::font()
     }
  
     { 
-        QString componentStr = "import Qt 4.7\nTextInput {  font.family: \"Helvetica\"; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 1.0\nTextInput {  font.family: \"Helvetica\"; text: \"Hello World\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
@@ -259,7 +259,7 @@ void tst_qdeclarativetextinput::font()
     }
 
     { 
-        QString componentStr = "import Qt 4.7\nTextInput {  font.family: \"\"; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 1.0\nTextInput {  font.family: \"\"; text: \"Hello World\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
@@ -276,7 +276,7 @@ void tst_qdeclarativetextinput::color()
     //test color
     for (int i = 0; i < colorStrings.size(); i++)
     { 
-        QString componentStr = "import Qt 4.7\nTextInput {  color: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 1.0\nTextInput {  color: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
@@ -289,7 +289,7 @@ void tst_qdeclarativetextinput::color()
     //test selection color
     for (int i = 0; i < colorStrings.size(); i++)
     {
-        QString componentStr = "import Qt 4.7\nTextInput {  selectionColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 1.0\nTextInput {  selectionColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
@@ -302,7 +302,7 @@ void tst_qdeclarativetextinput::color()
     //test selected text color
     for (int i = 0; i < colorStrings.size(); i++)
     { 
-        QString componentStr = "import Qt 4.7\nTextInput {  selectedTextColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 1.0\nTextInput {  selectedTextColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
@@ -317,7 +317,7 @@ void tst_qdeclarativetextinput::color()
         QColor testColor("#001234");
         testColor.setAlpha(170);
 
-        QString componentStr = "import Qt 4.7\nTextInput {  color: \"" + colorStr + "\"; text: \"Hello World\" }";
+        QString componentStr = "import QtQuick 1.0\nTextInput {  color: \"" + colorStr + "\"; text: \"Hello World\" }";
         QDeclarativeComponent textinputComponent(&engine);
         textinputComponent.setData(componentStr.toLatin1(), QUrl());
         QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
@@ -332,7 +332,7 @@ void tst_qdeclarativetextinput::color()
 void tst_qdeclarativetextinput::selection()
 {
     QString testStr = standard[0];
-    QString componentStr = "import Qt 4.7\nTextInput {  text: \""+ testStr +"\"; }";
+    QString componentStr = "import QtQuick 1.0\nTextInput {  text: \""+ testStr +"\"; }";
     QDeclarativeComponent textinputComponent(&engine);
     textinputComponent.setData(componentStr.toLatin1(), QUrl());
     QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
@@ -509,7 +509,7 @@ void tst_qdeclarativetextinput::maxLength()
 void tst_qdeclarativetextinput::masks()
 {
     //Not a comprehensive test of the possible masks, that's done elsewhere (QLineEdit)
-    //QString componentStr = "import Qt 4.7\nTextInput {  inputMask: 'HHHHhhhh'; }";
+    //QString componentStr = "import QtQuick 1.0\nTextInput {  inputMask: 'HHHHhhhh'; }";
     QDeclarativeView *canvas = createView(SRCDIR "/data/masks.qml");
     canvas->show();
     canvas->setFocus();
@@ -713,7 +713,7 @@ void tst_qdeclarativetextinput::copyAndPaste() {
     }
 #endif
 
-    QString componentStr = "import Qt 4.7\nTextInput { text: \"Hello world!\" }";
+    QString componentStr = "import QtQuick 1.0\nTextInput { text: \"Hello world!\" }";
     QDeclarativeComponent textInputComponent(&engine);
     textInputComponent.setData(componentStr.toLatin1(), QUrl());
     QDeclarativeTextInput *textInput = qobject_cast<QDeclarativeTextInput*>(textInputComponent.create());
@@ -771,7 +771,7 @@ void tst_qdeclarativetextinput::copyAndPaste() {
 
 void tst_qdeclarativetextinput::passwordCharacter()
 {
-    QString componentStr = "import Qt 4.7\nTextInput { text: \"Hello world!\"; font.family: \"Helvetica\"; echoMode: TextInput.Password }";
+    QString componentStr = "import QtQuick 1.0\nTextInput { text: \"Hello world!\"; font.family: \"Helvetica\"; echoMode: TextInput.Password }";
     QDeclarativeComponent textInputComponent(&engine);
     textInputComponent.setData(componentStr.toLatin1(), QUrl());
     QDeclarativeTextInput *textInput = qobject_cast<QDeclarativeTextInput*>(textInputComponent.create());

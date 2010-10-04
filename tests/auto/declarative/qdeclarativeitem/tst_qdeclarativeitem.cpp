@@ -81,6 +81,8 @@ private slots:
     void resourcesProperty();
     void mouseFocus();
 
+    void transformCrash();
+
 private:
     template<typename T>
     T *findItem(QGraphicsObject *parent, const QString &objectName);
@@ -434,7 +436,7 @@ void tst_QDeclarativeItem::keyNavigation()
 void tst_QDeclarativeItem::smooth()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.7; Item { smooth: false; }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0; Item { smooth: false; }", QUrl::fromLocalFile(""));
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
     QSignalSpy spy(item, SIGNAL(smoothChanged(bool)));
 
@@ -463,7 +465,7 @@ void tst_QDeclarativeItem::smooth()
 void tst_QDeclarativeItem::clip()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.7\nItem { clip: false\n }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0\nItem { clip: false\n }", QUrl::fromLocalFile(""));
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
     QSignalSpy spy(item, SIGNAL(clipChanged(bool)));
 
@@ -570,7 +572,7 @@ void tst_QDeclarativeItem::transforms()
     QFETCH(QByteArray, qml);
     QFETCH(QMatrix, matrix);
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.7\nItem { transform: "+qml+"}", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0\nItem { transform: "+qml+"}", QUrl::fromLocalFile(""));
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(item->sceneMatrix(), matrix);
@@ -789,6 +791,16 @@ void tst_QDeclarativeItem::childrenRectBug3()
     canvas->show();
 
     //don't crash on delete
+    delete canvas;
+}
+
+// QTBUG-13893
+void tst_QDeclarativeItem::transformCrash()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/transformCrash.qml"));
+    canvas->show();
+
     delete canvas;
 }
 

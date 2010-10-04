@@ -46,7 +46,7 @@ technologies like HTML and CSS, but it's not required.
 QML looks like this:
 
 \code
-import Qt 4.7
+import QtQuick 1.0
 
 Rectangle {
     width: 200
