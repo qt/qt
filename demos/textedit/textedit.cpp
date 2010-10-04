@@ -262,7 +262,7 @@ void TextEdit::setupEditActions()
     tb->addAction(a);
     menu->addAction(a);
 #ifndef QT_NO_CLIPBOARD
-    actionPaste->setEnabled(!QApplication::clipboard()->text().isEmpty());
+    actionPaste->setEnabled(QApplication::clipboard()->mimeData()->hasText());
 #endif
 }
 
@@ -681,7 +681,7 @@ void TextEdit::cursorPositionChanged()
 void TextEdit::clipboardDataChanged()
 {
 #ifndef QT_NO_CLIPBOARD
-    actionPaste->setEnabled(!QApplication::clipboard()->text().isEmpty());
+    actionPaste->setEnabled(QApplication::clipboard()->mimeData()->hasText());
 #endif
 }
 
