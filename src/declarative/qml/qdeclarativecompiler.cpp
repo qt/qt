@@ -1286,7 +1286,7 @@ bool QDeclarativeCompiler::buildSubObject(Object *obj, const BindingContext &ctx
 
 int QDeclarativeCompiler::componentTypeRef()
 {
-    QDeclarativeType *t = QDeclarativeMetaType::qmlType("Qt/Component",4,7);
+    QDeclarativeType *t = QDeclarativeMetaType::qmlType("QtQuick/Component",1,0);
     for (int ii = output->types.count() - 1; ii >= 0; --ii) {
         if (output->types.at(ii).type == t)
             return ii;
@@ -1407,7 +1407,7 @@ bool QDeclarativeCompiler::buildProperty(QDeclarativeParser::Property *prop,
             COMPILE_EXCEPTION(prop, tr("Invalid attached object assignment"));
 
         Q_ASSERT(type->attachedPropertiesFunction());
-        prop->index = type->index();
+        prop->index = type->attachedPropertiesId();
         prop->value->metatype = type->attachedPropertiesType();
     } else {
         // Setup regular property data

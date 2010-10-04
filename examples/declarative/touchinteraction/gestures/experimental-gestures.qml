@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 import Qt.labs.gestures 1.0
 
 // Only works on platforms with Touch support.

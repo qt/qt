@@ -192,7 +192,7 @@ void tst_qdeclarativeimageprovider::runTest(bool async, QDeclarativeImageProvide
     engine.addImageProvider("test", provider);
     QVERIFY(engine.imageProvider("test") != 0);
 
-    QString componentStr = "import Qt 4.7\nImage { source: \"" + source + "\"; " 
+    QString componentStr = "import QtQuick 1.0\nImage { source: \"" + source + "\"; " 
             + (async ? "asynchronous: true; " : "")
             + properties + " }";
     QDeclarativeComponent component(&engine);
@@ -271,7 +271,7 @@ void tst_qdeclarativeimageprovider::requestPixmap_async()
     QVERIFY(engine.imageProvider("test") != 0);
 
     // pixmaps are loaded synchronously regardless of 'asynchronous' value
-    QString componentStr = "import Qt 4.7\nImage { asynchronous: true; source: \"image://test/pixmap-async-test.png\" }";
+    QString componentStr = "import QtQuick 1.0\nImage { asynchronous: true; source: \"image://test/pixmap-async-test.png\" }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
@@ -298,7 +298,7 @@ void tst_qdeclarativeimageprovider::removeProvider()
     QVERIFY(engine.imageProvider("test") != 0);
 
     // add provider, confirm it works
-    QString componentStr = "import Qt 4.7\nImage { source: \"" + newImageFileName() + "\" }";
+    QString componentStr = "import QtQuick 1.0\nImage { source: \"" + newImageFileName() + "\" }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
@@ -359,7 +359,7 @@ void tst_qdeclarativeimageprovider::threadTest()
     engine.addImageProvider("test_thread", provider);
     QVERIFY(engine.imageProvider("test_thread") != 0);
 
-    QString componentStr = "import Qt 4.7\nItem { \n"
+    QString componentStr = "import QtQuick 1.0\nItem { \n"
             "Image { source: \"image://test_thread/blue\";  asynchronous: true; }\n"
             "Image { source: \"image://test_thread/red\";  asynchronous: true; }\n"
             "Image { source: \"image://test_thread/green\";  asynchronous: true; }\n"
