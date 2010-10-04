@@ -7224,7 +7224,14 @@ if [ "$CFG_SCRIPTTOOLS" = "yes" -a "$CFG_SCRIPT" = "no" ]; then
     exit 1
 fi
 if [ "$CFG_SCRIPTTOOLS" = "auto" -a "$CFG_SCRIPT" != "no" ]; then
-    CFG_SCRIPTTOOLS="yes"
+    case "$XPLATFORM" in
+    symbian*)
+        CFG_SCRIPTTOOLS="no"
+        ;;
+    *)
+        CFG_SCRIPTTOOLS="yes"
+        ;;
+    esac
 elif [ "$CFG_SCRIPT" = "no" ]; then
     CFG_SCRIPTTOOLS="no"
 fi
