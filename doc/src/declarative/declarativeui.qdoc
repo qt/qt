@@ -30,7 +30,6 @@
 \page qtquick.html
 \ingroup qt-gui-concepts
 
-
 \brief Qt Quick provides a declarative framework for building highly
 dynamic, custom user interfaces.
 
@@ -74,6 +73,7 @@ Module.
 \section1 Getting Started
 
 \list
+\o \l{What's new in Qt Quick}
 \o \l{Introduction to the QML language}
 \o \l{QML for Qt Programmers}
 \o \l{Getting Started Programming with QML}

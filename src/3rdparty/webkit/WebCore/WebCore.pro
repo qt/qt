@@ -104,7 +104,7 @@ freebsd-*: DEFINES += HAVE_PTHREAD_NP_H
 DEFINES += BUILD_WEBKIT
 
 # Remove whole program optimizations due to miscompilations
-win32-msvc2005|win32-msvc2008:{
+win32-msvc2005|win32-msvc2008|wince*:{
     QMAKE_CFLAGS_RELEASE -= -GL
     QMAKE_CXXFLAGS_RELEASE -= -GL
 }
@@ -2860,13 +2860,13 @@ contains(DEFINES, ENABLE_SYMBIAN_DIALOG_PROVIDERS) {
     }
 }
 
-!symbian {
+!symbian-abld:!symbian-sbsv2 {
     modfile.files = $$moduleFile
     modfile.path = $$[QMAKE_MKSPECS]/modules
 
     INSTALLS += modfile
 } else {
-    # INSTALLS is not implemented in qmake's s60 generators, copy headers manually
+    # INSTALLS is not implemented in qmake's mmp generators, copy headers manually
 
     inst_modfile.commands = $$QMAKE_COPY ${QMAKE_FILE_NAME} ${QMAKE_FILE_OUT}
     inst_modfile.input = moduleFile
@@ -2952,7 +2952,7 @@ HEADERS += $$WEBKIT_API_HEADERS
     }
 }
 
-CONFIG(QTDIR_build) {
+!CONFIG(webkit-debug):CONFIG(QTDIR_build) {
     # Remove the following 2 lines if you want debug information in WebCore
     CONFIG -= separate_debug_info
     CONFIG += no_debug_info

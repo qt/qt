@@ -66,8 +66,7 @@ private slots:
     void initTestCase();
 
     void name();
-    void isEnabled();
-    void enabledChanged();
+    void status();
     void sendMessage();
     void idForObject();
     void objectForId();
@@ -77,7 +76,6 @@ private slots:
 void tst_QDeclarativeDebugService::initTestCase()
 {
     QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Waiting for connection on port 3769...");
-    qputenv("QML_DEBUG_SERVER_PORT", "3769");
     new QDeclarativeEngine(this);
 
     m_conn = new QDeclarativeDebugConnection(this);
@@ -98,31 +96,24 @@ void tst_QDeclarativeDebugService::name()
     QCOMPARE(service.name(), name);
 }
 
-void tst_QDeclarativeDebugService::isEnabled()
+void tst_QDeclarativeDebugService::status()
 {
-    QDeclarativeDebugTestService service("tst_QDeclarativeDebugService::isEnabled()", m_conn);
-    QCOMPARE(service.isEnabled(), false);
+    QDeclarativeDebugTestService service("tst_QDeclarativeDebugService::status()");
+    QCOMPARE(service.status(), QDeclarativeDebugService::Unavailable);
 
-    QDeclarativeDebugTestClient client("tst_QDeclarativeDebugService::isEnabled()", m_conn);
-    client.setEnabled(true);
-    QDeclarativeDebugTest::waitForSignal(&service, SIGNAL(enabledStateChanged()));
-    QCOMPARE(service.isEnabled(), true);
+    {
+        QDeclarativeDebugTestClient client("tst_QDeclarativeDebugService::status()", m_conn);
+        QTRY_COMPARE(client.status(), QDeclarativeDebugClient::Enabled);
+        QTRY_COMPARE(service.status(), QDeclarativeDebugService::Enabled);
+    }
 
-    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugService: Conflicting plugin name \"tst_QDeclarativeDebugService::isEnabled()\" ");
-    QDeclarativeDebugService duplicate("tst_QDeclarativeDebugService::isEnabled()", m_conn);
-    QCOMPARE(duplicate.isEnabled(), false);
-}
 
-void tst_QDeclarativeDebugService::enabledChanged()
-{
-    QDeclarativeDebugTestService service("tst_QDeclarativeDebugService::enabledChanged()");
-    QDeclarativeDebugTestClient client("tst_QDeclarativeDebugService::enabledChanged()", m_conn);
+    QTRY_COMPARE(service.status(), QDeclarativeDebugService::Unavailable);
 
-    QCOMPARE(service.enabled, false);
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugService: Conflicting plugin name \"tst_QDeclarativeDebugService::status()\" ");
 
-    client.setEnabled(true);
-    QDeclarativeDebugTest::waitForSignal(&service, SIGNAL(enabledStateChanged()));
-    QCOMPARE(service.enabled, true);
+    QDeclarativeDebugService duplicate("tst_QDeclarativeDebugService::status()");
+    QCOMPARE(duplicate.status(), QDeclarativeDebugService::NotConnected);
 }
 
 void tst_QDeclarativeDebugService::sendMessage()
@@ -131,6 +122,9 @@ void tst_QDeclarativeDebugService::sendMessage()
     QDeclarativeDebugTestClient client("tst_QDeclarativeDebugService::sendMessage()", m_conn);
 
     QByteArray msg = "hello!";
+
+    QTRY_COMPARE(client.status(), QDeclarativeDebugClient::Enabled);
+    QTRY_COMPARE(service.status(), QDeclarativeDebugService::Enabled);
 
     client.sendMessage(msg);
     QByteArray resp = client.waitForResponse();
@@ -184,6 +178,19 @@ void tst_QDeclarativeDebugService::objectToString()
     delete obj;
 }
 
-QTEST_MAIN(tst_QDeclarativeDebugService)
+
+int main(int argc, char *argv[])
+{
+    int _argc = argc + 1;
+    char **_argv = new char*[_argc];
+    for (int i = 0; i < argc; ++i)
+        _argv[i] = argv[i];
+    _argv[_argc - 1] = "-qmljsdebugger=port:3769";
+
+    QApplication app(_argc, _argv);
+    tst_QDeclarativeDebugService tc;
+    return QTest::qExec(&tc, _argc, _argv);
+    delete _argv;
+}
 
 #include "tst_qdeclarativedebugservice.moc"

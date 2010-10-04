@@ -57,6 +57,16 @@ Q_GLOBAL_STATIC_WITH_INITIALIZER(QStringList, fontFamiliesOnFontServer, {
 });
 #endif // QT_NO_FREETYPE
 
+QString QFont::lastResortFont() const
+{
+    // Symbian's font Api does not distinguish between font and family.
+    // Therefore we try to get a "Family" first, then fall back to "Sans".
+    static QString font = lastResortFamily();
+    if (font.isEmpty())
+        font = QLatin1String("Sans");
+    return font;
+}
+
 QString QFont::lastResortFamily() const
 {
 #ifdef QT_NO_FREETYPE

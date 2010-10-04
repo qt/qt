@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 import Qt.labs.particles 1.0
 import "qml"
 
@@ -188,7 +188,7 @@ Item {
                     font.pixelSize: 14
                     wrapMode: TextEdit.WordWrap
 
-                    text: "import Qt 4.7\nImage {\n    id: smile\n    x: 360 * Math.random()\n    y: 180 * Math.random() \n    source: 'images/face-smile.png'\n    NumberAnimation on opacity { \n        to: 0; duration: 1500\n    }\n    Component.onCompleted: smile.destroy(1500);\n}"
+                    text: "import QtQuick 1.0\nImage {\n    id: smile\n    x: 360 * Math.random()\n    y: 180 * Math.random() \n    source: 'images/face-smile.png'\n    NumberAnimation on opacity { \n        to: 0; duration: 1500\n    }\n    Component.onCompleted: smile.destroy(1500);\n}"
                 }
             }
 

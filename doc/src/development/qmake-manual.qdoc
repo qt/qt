@@ -1088,7 +1088,7 @@
 
     For example:
 
-    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 146
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 152
 
     This will add the specified statements to the \c prj_exports section of the 
     generated \c bld.inf file.
@@ -1601,6 +1601,9 @@
     build target to the list of existing resources to be installed:
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 36
+
+    Note that \c qmake will skip files that are executable. If you need to install
+    executable files, you can unset the files' executable flags.
 
     \target LEXIMPLS
     \section1 LEXIMPLS

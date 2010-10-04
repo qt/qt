@@ -243,7 +243,10 @@ QHostInfo QHostInfo::fromName(const QString &name)
     qDebug("QHostInfo::fromName(\"%s\")",name.toLatin1().constData());
 #endif
 
-    return QHostInfoAgent::fromName(name);
+    QHostInfo hostInfo = QHostInfoAgent::fromName(name);
+    QHostInfoLookupManager *manager = theHostInfoLookupManager();
+    manager->cache.put(name, hostInfo);
+    return hostInfo;
 }
 
 /*!
@@ -468,14 +471,17 @@ void QHostInfoRunnable::run()
     resultEmitter.emitResultsReady(hostInfo);
 
     // now also iterate through the postponed ones
-    QMutableListIterator<QHostInfoRunnable*> iterator(manager->postponedLookups);
-    while (iterator.hasNext()) {
-        QHostInfoRunnable* postponed = iterator.next();
-        if (toBeLookedUp == postponed->toBeLookedUp) {
-            // we can now emit
-            iterator.remove();
-            hostInfo.setLookupId(postponed->id);
-            postponed->resultEmitter.emitResultsReady(hostInfo);
+    {
+        QMutexLocker locker(&manager->mutex);
+        QMutableListIterator<QHostInfoRunnable*> iterator(manager->postponedLookups);
+        while (iterator.hasNext()) {
+            QHostInfoRunnable* postponed = iterator.next();
+            if (toBeLookedUp == postponed->toBeLookedUp) {
+                // we can now emit
+                iterator.remove();
+                hostInfo.setLookupId(postponed->id);
+                postponed->resultEmitter.emitResultsReady(hostInfo);
+            }
         }
     }
 

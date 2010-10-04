@@ -21,7 +21,7 @@ edition.DesktopLight.groups       = -graphicsview-api
 qhp.projects            = Qml
 
 qhp.Qml.file                = qml.qhp
-qhp.Qml.namespace           = com.trolltech.qml.470
+qhp.Qml.namespace           = com.trolltech.qml.471
 qhp.Qml.virtualFolder       = qdoc
 qhp.Qml.indexTitle          = Qml Reference
 
@@ -61,9 +61,9 @@ qhp.Qml.extraFiles            = images/bg_l.png \
                              style/style_ie8.css \
                              style/style.css
 
-qhp.Qml.filterAttributes    = qt 4.7.0 qtrefdoc
-qhp.Qml.customFilters.Qt.name = Qt 4.7.0
-qhp.Qml.customFilters.Qt.filterAttributes = qt 4.7.0
+qhp.Qml.filterAttributes    = qt 4.7.1 qtrefdoc
+qhp.Qml.customFilters.Qt.name = Qt 4.7.1
+qhp.Qml.customFilters.Qt.filterAttributes = qt 4.7.1
 qhp.Qml.subprojects         = classes
 qhp.Qml.subprojects.classes.title = Elements
 qhp.Qml.subprojects.classes.indexTitle = Qml Elements

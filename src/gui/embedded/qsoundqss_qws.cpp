@@ -286,7 +286,7 @@ public:
 	rightVolume = maxVolume>>1;
 	isPriority = false;
         samples_due = 0;
-	max1 = max2 = out = 0;//= sound_buffer_size;
+	max1 = max2 = out = 0;// = sound_buffer_size;
 	data = data1;
 	max = &max1;
 	sampleRunin = 0;

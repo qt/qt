@@ -302,7 +302,6 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #endif
 #include <qshortcut.h>
 #ifdef Q_WS_MAC
-#include <private/qunicodetables_p.h>
 #include <qmacstyle_mac.h>
 #endif
 QT_END_INCLUDE_NAMESPACE

@@ -692,12 +692,14 @@ QDeclarativeViewer::~QDeclarativeViewer()
 
 void QDeclarativeViewer::enableExperimentalGestures()
 {
+#ifndef QT_NO_GESTURES
     canvas->viewport()->grabGesture(Qt::TapGesture,Qt::DontStartGestureOnChildren|Qt::ReceivePartialGestures|Qt::IgnoredGesturesPropagateToParent);
     canvas->viewport()->grabGesture(Qt::TapAndHoldGesture,Qt::DontStartGestureOnChildren|Qt::ReceivePartialGestures|Qt::IgnoredGesturesPropagateToParent);
     canvas->viewport()->grabGesture(Qt::PanGesture,Qt::DontStartGestureOnChildren|Qt::ReceivePartialGestures|Qt::IgnoredGesturesPropagateToParent);
     canvas->viewport()->grabGesture(Qt::PinchGesture,Qt::DontStartGestureOnChildren|Qt::ReceivePartialGestures|Qt::IgnoredGesturesPropagateToParent);
     canvas->viewport()->grabGesture(Qt::SwipeGesture,Qt::DontStartGestureOnChildren|Qt::ReceivePartialGestures|Qt::IgnoredGesturesPropagateToParent);
     canvas->viewport()->setAttribute(Qt::WA_AcceptTouchEvents);
+#endif
 }
 
 QDeclarativeView *QDeclarativeViewer::view() const
@@ -1067,11 +1069,7 @@ void QDeclarativeViewer::loadDummyDataFiles(const QString& directory)
     QStringList list = dir.entryList();
     for (int i = 0; i < list.size(); ++i) {
         QString qml = list.at(i);
-        QFile f(dir.filePath(qml));
-        f.open(QIODevice::ReadOnly);
-        QByteArray data = f.readAll();
-        QDeclarativeComponent comp(canvas->engine());
-        comp.setData(data, QUrl());
+        QDeclarativeComponent comp(canvas->engine(), dir.filePath(qml));
         QObject *dummyData = comp.create();
 
         if(comp.isError()) {
@@ -1534,6 +1532,7 @@ void QDeclarativeViewer::registerTypes()
     if (!registered) {
         // registering only for exposing the DeviceOrientation::Orientation enum
         qmlRegisterUncreatableType<DeviceOrientation>("Qt",4,7,"Orientation","");
+        qmlRegisterUncreatableType<DeviceOrientation>("QtQuick",1,0,"Orientation","");
         registered = true;
     }
 }

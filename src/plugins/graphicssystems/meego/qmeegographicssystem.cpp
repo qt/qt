@@ -73,7 +73,6 @@ QWindowSurface* QMeeGoGraphicsSystem::createWindowSurface(QWidget *widget) const
 {
     QMeeGoGraphicsSystem::surfaceWasCreated = true;
     QWindowSurface *surface = new QGLWindowSurface(widget);
-    surface->window()->setAttribute(Qt::WA_NoSystemBackground);
     return surface;
 }
 

@@ -843,7 +843,7 @@ QDeclarativeObjectMethodScriptClass::Value QDeclarativeObjectMethodScriptClass::
         for (int ii = 0; ii < argTypeNames.count(); ++ii) {
             argTypes[ii] = QMetaType::type(argTypeNames.at(ii));
             if (argTypes[ii] == QVariant::Invalid) 
-                argTypes[ii] = enumType(method->object->metaObject(), argTypeNames.at(ii));
+                argTypes[ii] = enumType(method->object->metaObject(), QString::fromLatin1(argTypeNames.at(ii)));
             if (argTypes[ii] == QVariant::Invalid) 
                 return Value(ctxt, ctxt->throwError(QString::fromLatin1("Unknown method parameter type: %1").arg(QLatin1String(argTypeNames.at(ii)))));
         }
