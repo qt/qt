@@ -665,6 +665,10 @@
     \brief The QtHelp module provides classes for integrating
     online documentation in applications.
 
+    The classes and tools supplied with Qt to enable developers to include
+    online help and documentation in their applications are described in
+    more detail in \l{The Qt Help Framework} overview document.
+
     To include the definitions of the module's classes, use the
     following directive:
 

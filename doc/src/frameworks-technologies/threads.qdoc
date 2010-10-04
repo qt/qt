@@ -324,10 +324,6 @@
     post events to objects that "live" in other threads. This is
     possible because each thread is allowed to have its own event
     loop.
-    
-    Topics:
-
-    \tableofcontents
 
     \section1 QObject Reentrancy
 

@@ -51,7 +51,7 @@
        compiled with
     \o Reliable and clear description on how to reproduce the problem
     \endlist
-   
+
     If possible, please provide a test written using the QtTest module
     as this will improve the procedure of reproducing your problem and
     allow the developers to address the issue in a more efficient way.
