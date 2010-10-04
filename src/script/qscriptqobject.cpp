@@ -788,9 +788,8 @@ static v8::Handle<v8::Value> QtScriptDeclarativeClassObjectPropertyGetter(v8::Lo
         QScriptValue result = declarativeClassObject->scriptClass->property(declarativeClassObject->obj.data(), identifier.identifier)
         .toScriptValue(QScriptEnginePrivate::get(engine));
         QScriptValuePrivate* result_private = QScriptValuePrivate::get(result);
-        //FIXME: check the result value of assignEngine;
-        result_private->assignEngine(engine);
-        return *result_private;
+        if (result_private->assignEngine(engine))
+            return *result_private;
     }
     return v8::Handle<v8::Value>();
 }
