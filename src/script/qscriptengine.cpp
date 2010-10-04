@@ -1533,10 +1533,10 @@ static v8::Handle<v8::Integer> QtGlobalObjectNamedPropertyQuery(v8::Local<v8::St
     v8::HandleScope handleScope;
     v8::Local<v8::Array> data = v8::Local<v8::Array>::Cast(info.Data());
     v8::Local<v8::Object> customGlobalObject = v8::Local<v8::Object>::Cast(data->Get(0));
-    // FIXME how we can access attributes of a property?
-    Q_UNIMPLEMENTED();
+    QScriptEnginePrivate *engine = static_cast<QScriptEnginePrivate*>(v8::Local<v8::Object>::Cast(data->Get(1))->GetPointerFromInternalField(0));
+    int result = QScriptConverter::toPropertyAttributes(engine->getPropertyFlags(customGlobalObject, property, QScriptValue::ResolveLocal));
     // always intercepts
-    return handleScope.Close(v8::Integer::New(v8::None));
+    return handleScope.Close(v8::Integer::New(result));
 }
 
 static v8::Handle<v8::Boolean> QtGlobalObjectNamedPropertyDeleter(v8::Local<v8::String> property, const v8::AccessorInfo& info)
@@ -1590,10 +1590,10 @@ static v8::Handle<v8::Integer> QtGlobalObjectIndexedPropertyQuery(uint32_t index
     v8::Local<v8::Array> data = v8::Local<v8::Array>::Cast(info.Data());
     v8::Local<v8::Object> customGlobalObject = v8::Local<v8::Object>::Cast(data->Get(0));
 
-    // FIXME how we can access attributes of a property?
-    Q_UNIMPLEMENTED();
+    QScriptEnginePrivate *engine = static_cast<QScriptEnginePrivate*>(v8::Local<v8::Object>::Cast(data->Get(1))->GetPointerFromInternalField(0));
+    int result = QScriptConverter::toPropertyAttributes(engine->getPropertyFlags(customGlobalObject, v8::Integer::New(index), QScriptValue::ResolveLocal));
     // always intercepts
-    return handleScope.Close(v8::Integer::New(v8::None));
+    return handleScope.Close(v8::Integer::New(result));
 }
 
 static v8::Handle<v8::Boolean> QtGlobalObjectIndexedPropertyDeleter(uint32_t index, const v8::AccessorInfo& info)

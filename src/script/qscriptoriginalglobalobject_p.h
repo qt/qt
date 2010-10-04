@@ -54,7 +54,7 @@ public:
 
     inline bool isError(const QScriptValuePrivate* value) const;
     inline bool isInvalid(v8::Handle<v8::Value> value) const;
-    inline QScriptValue::PropertyFlags getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::String> property, const QScriptValue::ResolveFlags& mode);
+    inline QScriptValue::PropertyFlags getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property, const QScriptValue::ResolveFlags& mode);
     inline void installArgFunctionOnOrgStringPrototype(v8::Handle<v8::Function> arg);
 
     inline v8::Handle<v8::Value> invalid() const;
@@ -148,7 +148,7 @@ inline bool QScriptOriginalGlobalObject::isInvalid(v8::Handle<v8::Value> value) 
     return m_invalidValue->StrictEquals(value);
 }
 
-inline QScriptValue::PropertyFlags QScriptOriginalGlobalObject::getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::String> property, const QScriptValue::ResolveFlags& mode)
+inline QScriptValue::PropertyFlags QScriptOriginalGlobalObject::getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property, const QScriptValue::ResolveFlags& mode)
 {
     Q_ASSERT(object->IsObject());
     Q_ASSERT(!property.IsEmpty());

@@ -98,7 +98,7 @@ public:
     inline v8::Handle<v8::Value> makeJSValue(const QString& value);
     inline bool isError(const QScriptValuePrivate* value) const;
     inline bool isInvalid(v8::Handle<v8::Value> value) const;
-    inline QScriptValue::PropertyFlags getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::String> property, const QScriptValue::ResolveFlags& mode);
+    inline QScriptValue::PropertyFlags getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property, const QScriptValue::ResolveFlags& mode);
 
     QDateTime qtDateTimeFromJS(v8::Handle<v8::Date> jsDate);
     v8::Handle<v8::Value> qtDateTimeToJS(const QDateTime &dt);
@@ -238,7 +238,12 @@ inline bool QScriptEnginePrivate::isInvalid(v8::Handle<v8::Value> value) const
     return m_originalGlobalObject.isInvalid(value);
 }
 
-inline QScriptValue::PropertyFlags QScriptEnginePrivate::getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::String> property, const QScriptValue::ResolveFlags& mode)
+/*!
+  \internal
+  \note property can be index (v8::Integer) or a property (v8::String) name, according to ECMA script
+  property would be converted to a string.
+*/
+inline QScriptValue::PropertyFlags QScriptEnginePrivate::getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property, const QScriptValue::ResolveFlags& mode)
 {
     return m_originalGlobalObject.getPropertyFlags(object, property, mode);
 }
