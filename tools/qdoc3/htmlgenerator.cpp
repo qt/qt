@@ -943,10 +943,10 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             }
         }
         else {
-            out() << "<ol type=";
+            out() << "<ol class=";
             if (atom->string() == ATOM_LIST_UPPERALPHA) {
                 out() << "\"A\"";
-            } /* why type? */
+            } /* why type? changed to */
             else if (atom->string() == ATOM_LIST_LOWERALPHA) {
                 out() << "\"a\"";
             }
@@ -1966,7 +1966,7 @@ void HtmlGenerator::generateFooter(const Node *node)
     switch (application) {
     case Online:
         out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
-        out() << "  <!-- <script type=\"text/javascript\">\n";
+        out() << "  <script type=\"text/javascript\">\n";
         out() << "  var _gaq = _gaq || [];\n";
         out() << "  _gaq.push(['_setAccount', 'UA-4457116-5']);\n";
         out() << "  _gaq.push(['_trackPageview']);\n";
@@ -1977,7 +1977,7 @@ void HtmlGenerator::generateFooter(const Node *node)
         out() << "'.google-analytics.com/ga.js';\n";
         out() << "  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);\n";
         out() << "  })();\n";
-        out() << "  </script> -->\n";
+        out() << "  </script>\n";
         out() << "</body>\n";
 	break;
     case Creator:
@@ -4185,36 +4185,16 @@ void HtmlGenerator::generateQmlSummary(const Section& section,
                                        CodeMarker *marker)
 {
     if (!section.members.isEmpty()) {
-        NodeList::ConstIterator m;
-        int count = section.members.size();
-        bool twoColumn = false;
-        if (section.members.first()->type() == Node::QmlProperty) {
-            twoColumn = (count >= 5);
-            twoColumn = false;
-        }
-        if (twoColumn)
-            out() << "<table class=\"qmlsummary\">\n";
-			        if (++numTableRows % 2 == 1)
-				out() << "<tr class=\"odd topAlign\">";
-				else
-				out() << "<tr class=\"even topAlign\">";
-            //      << "<tr><td class=\"topAlign\">";
         out() << "<ul>\n";
-
-        int row = 0;
+        NodeList::ConstIterator m;
         m = section.members.begin();
         while (m != section.members.end()) {
-            if (twoColumn && row == (int) (count + 1) / 2)
-                out() << "</ul></td><td class=\"topAlign\"><ul>\n";
             out() << "<li class=\"fn\">";
             generateQmlItem(*m,relative,marker,true);
             out() << "</li>\n";
-            row++;
             ++m;
         }
         out() << "</ul>\n";
-        if (twoColumn)
-            out() << "</td></tr>\n</table>\n";
     }
 }
 

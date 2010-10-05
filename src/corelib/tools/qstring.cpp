@@ -3708,7 +3708,7 @@ QByteArray QString::toUtf8() const
     Returns a UCS-4/UTF-32 representation of the string as a QVector<uint>.
 
     UCS-4 is a Unicode codec and is lossless. All characters from this string
-    can be encoded in UCS-4.
+    can be encoded in UCS-4. The vector is not null terminated.
 
     \sa fromUtf8(), toAscii(), toLatin1(), toLocal8Bit(), QTextCodec, fromUcs4(), toWCharArray()
 */
@@ -3950,8 +3950,8 @@ QString QString::fromUtf8(const char *str, int size)
     This function checks for a Byte Order Mark (BOM). If it is missing,
     host byte order is assumed.
 
-    This function is comparatively slow.
-    Use QString(const ushort *, int) or QString(const ushort *) if possible.
+    This function is slow compared to the other Unicode conversions.
+    Use QString(const QChar *, int) or QString(const QChar *) if possible.
 
     QString makes a deep copy of the Unicode data.
 
@@ -6941,30 +6941,8 @@ QString QString::multiArg(int numArgs, const QString **args) const
     return result;
 }
 
-/*! \internal
- */
-void QString::updateProperties() const
+static bool isStringRightToLeft(const ushort *p, const ushort *end)
 {
-    ushort *p = d->data;
-    ushort *end = p + d->size;
-    d->simpletext = true;
-    while (p < end) {
-        ushort uc = *p;
-        // sort out regions of complex text formatting
-        if (uc > 0x058f && (uc < 0x1100 || uc > 0xfb0f)) {
-            d->simpletext = false;
-        }
-        p++;
-    }
-
-    d->righttoleft = isRightToLeft();
-    d->clean = true;
-}
-
-bool QString::isRightToLeft() const
-{
-    ushort *p = d->data;
-    const ushort * const end = p + d->size;
     bool righttoleft = false;
     while (p < end) {
         switch(QChar::direction(*p))
@@ -6982,6 +6960,31 @@ bool QString::isRightToLeft() const
     }
  end:
     return righttoleft;
+}
+
+/*! \internal
+ */
+void QString::updateProperties() const
+{
+    ushort *p = d->data;
+    ushort *end = p + d->size;
+    d->simpletext = true;
+    while (p < end) {
+        ushort uc = *p;
+        // sort out regions of complex text formatting
+        if (uc > 0x058f && (uc < 0x1100 || uc > 0xfb0f)) {
+            d->simpletext = false;
+        }
+        p++;
+    }
+
+    d->righttoleft = isStringRightToLeft(d->data, d->data + d->size);
+    d->clean = true;
+}
+
+bool QString::isRightToLeft() const
+{
+    return isStringRightToLeft(d->data, d->data + d->size);
 }
 
 /*! \fn bool QString::isSimpleText() const

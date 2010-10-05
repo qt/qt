@@ -126,7 +126,7 @@ int QualifiedNameParser::findScopeOperator(Direction direction)
 {
     int tokenIndex = currentIndex;
     QByteArray tokenText;
-    //loop until we get a token containg text or we pass the beginning/end of the source
+    //loop until we get a token containing text or we pass the beginning/end of the source
     tokenIndex += direction;
     while(tokenText.isEmpty() && isValidIndex(tokenIndex)) {
         tokenText = tokenContainer.text(tokenIndex).trimmed();
@@ -146,7 +146,7 @@ int QualifiedNameParser::nextScopeToken(Direction direction)
     if (tokenIndex == -1)
         return -1;
     QByteArray tokenText;
-   //loop until we get a token containg text or we pass the start of the source
+   //loop until we get a token containing text or we pass the start of the source
     tokenIndex += direction;
     while(tokenText.isEmpty() && isValidIndex(tokenIndex)) {
        tokenText = tokenContainer.text(tokenIndex).trimmed();
@@ -266,7 +266,7 @@ bool ScopedTokenReplacement::doReplace(const TokenContainer &tokenContainer, int
     if (!attributes->attribute(sourceIndex, "unknown").isEmpty())
         return false;
     // If nameUse is set we test if the nameUse refers to the correct declaration.
-    // This is done by checking the parentScope attriute, wich returns the scope
+    // This is done by checking the parentScope attribute, which returns the scope
     // for the declaration associated with this name use.
     const bool haveNameUseInfo = !attributes->attribute(sourceIndex, "nameUse").isEmpty();
     if (haveNameUseInfo) {
@@ -314,7 +314,7 @@ bool ScopedTokenReplacement::doReplace(const TokenContainer &tokenContainer, int
     const QByteArray sourceScope = tokenContainer.text(sourceScopeIndex);
 
     // If we have no name use info and the source and old scopes don't match,
-    // we generally dont't do a replace, unless the old scope is Qt and
+    // we generally don't do a replace, unless the old scope is Qt and
     // the source scope inherits Qt. For example, QWidget::ButtonState should
     // be renamed to Qt::ButtonState.
     if (!haveNameUseInfo && sourceScope != oldScope) {

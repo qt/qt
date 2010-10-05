@@ -47,21 +47,12 @@
 #include <private/qdeclarativeanimatedimage_p.h>
 
 #include "../shared/testhttpserver.h"
+#include "../../../shared/util.h"
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
 #define SRCDIR "."
 #endif
-
-#define TRY_WAIT(expr) \
-    do { \
-        for (int ii = 0; ii < 6; ++ii) { \
-            if ((expr)) break; \
-            QTest::qWait(50); \
-        } \
-        QVERIFY((expr)); \
-    } while (false)
-
 
 class tst_qdeclarativeanimatedimage : public QObject
 {
@@ -152,14 +143,14 @@ void tst_qdeclarativeanimatedimage::remote()
 
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine, QUrl("http://127.0.0.1:14449/" + fileName));
-    TRY_WAIT(component.isReady());
+    QTRY_VERIFY(component.isReady());
 
     QDeclarativeAnimatedImage *anim = qobject_cast<QDeclarativeAnimatedImage *>(component.create());
     QVERIFY(anim);
 
-    TRY_WAIT(anim->isPlaying());
+    QTRY_VERIFY(anim->isPlaying());
     if (paused) {
-        TRY_WAIT(anim->isPaused());
+        QTRY_VERIFY(anim->isPaused());
         QCOMPARE(anim->currentFrame(), 2);
     }
     QVERIFY(anim->status() != QDeclarativeAnimatedImage::Error);
@@ -201,7 +192,7 @@ void tst_qdeclarativeanimatedimage::invalidSource()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.7\n AnimatedImage { source: \"no-such-file.gif\" }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0\n AnimatedImage { source: \"no-such-file.gif\" }", QUrl::fromLocalFile(""));
     QVERIFY(component.isReady());
 
     QTest::ignoreMessage(QtWarningMsg, "file::2:2: QML AnimatedImage: Error Reading Animated Image File file:no-such-file.gif");

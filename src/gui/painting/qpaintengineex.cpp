@@ -517,7 +517,7 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
             QPainterPath painterPath = state()->matrix.map(path.convertToPainterPath());
             d->activeStroker->strokePath(painterPath, d->strokeHandler, QTransform());
         } else {
-            d->activeStroker->setCurveThresholdFromTransform(state()->matrix);
+            d->activeStroker->setCurveThresholdFromTransform(QTransform());
             d->activeStroker->begin(d->strokeHandler);
             if (types) {
                 while (points < lastPoint) {
@@ -768,7 +768,7 @@ void QPaintEngineEx::drawRoundedRect(const QRectF &rect, qreal xRadius, qreal yR
         x1, y2 - (1 - KAPPA) * yRadius,
         x1, y2 - yRadius,
         x1, y1 + yRadius,                   // LineTo
-        x1, y1 + KAPPA * yRadius,           // CurveTo
+        x1, y1 + (1 - KAPPA) * yRadius,           // CurveTo
         x1 + (1 - KAPPA) * xRadius, y1,
         x1 + xRadius, y1
     };

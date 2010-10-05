@@ -1199,7 +1199,7 @@ void QWidgetPrivate::adjustFlags(Qt::WindowFlags &flags, QWidget *w)
         flags |= Qt::WindowTitleHint;
     }
     if (customize)
-        ; // don't modify window flags if the user explicitely set them.
+        ; // don't modify window flags if the user explicitly set them.
     else if (type == Qt::Dialog || type == Qt::Sheet)
 #ifndef Q_WS_WINCE
         flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowContextHelpButtonHint | Qt::WindowCloseButtonHint;
@@ -7525,7 +7525,7 @@ void QWidgetPrivate::hide_helper()
     A hidden widget will only become visible when show() is called on
     it. It will not be automatically shown when the parent is shown.
 
-    To check visiblity, use !isVisible() instead (notice the exclamation mark).
+    To check visibility, use !isVisible() instead (notice the exclamation mark).
 
     isHidden() implies !isVisible(), but a widget can be not visible
     and not hidden at the same time. This is the case for widgets that are children of
@@ -11123,7 +11123,7 @@ void QWidget::updateMicroFocus()
 {
 #if !defined(QT_NO_IM) && (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN))
     Q_D(QWidget);
-    // and optimisation to update input context only it has already been created.
+    // and optimization to update input context only it has already been created.
     if (d->ic || qApp->d_func()->inputContext) {
         QInputContext *ic = inputContext();
         if (ic)
@@ -11868,8 +11868,8 @@ QWidget *QWidgetPrivate::widgetInNavigationDirection(Direction direction)
 
     Tells us if it there is currently a reachable widget by keypad navigation in
     a certain \a orientation.
-    If no navigation is possible, occuring key events in that \a orientation may
-    be used to interact with the value in the focussed widget, even though it
+    If no navigation is possible, occurring key events in that \a orientation may
+    be used to interact with the value in the focused widget, even though it
     currently has not the editFocus.
 
     \sa QWidgetPrivate::widgetInNavigationDirection(), QWidget::hasEditFocus()
@@ -11889,7 +11889,7 @@ bool QWidgetPrivate::canKeypadNavigate(Qt::Orientation orientation)
     one, left/right key events will be used to switch between tabs in keypad
     navigation. If there is no QTabWidget, the horizontal key events can be used
 to
-    interact with the value in the focussed widget, even though it currently has
+    interact with the value in the focused widget, even though it currently has
     not the editFocus.
 
     \sa QWidget::hasEditFocus()

@@ -69,7 +69,11 @@ class Q_DECLARATIVE_EXPORT QDeclarativeEngineDebug : public QObject
 {
 Q_OBJECT
 public:
-    QDeclarativeEngineDebug(QDeclarativeDebugConnection *, QObject * = 0);
+    enum Status { NotConnected, Unavailable, Enabled };
+
+    explicit QDeclarativeEngineDebug(QDeclarativeDebugConnection *, QObject * = 0);
+
+    Status status() const;
 
     QDeclarativeDebugPropertyWatch *addWatch(const QDeclarativeDebugPropertyReference &,
                             QObject *parent = 0);
@@ -101,6 +105,7 @@ public:
 
 Q_SIGNALS:
     void newObjects();
+    void statusChanged(Status status);
 
 private:
     Q_DECLARE_PRIVATE(QDeclarativeEngineDebug)
@@ -365,7 +370,6 @@ private:
     int m_queryId;
     QVariant m_expr;
     QVariant m_result;
-
 };
 
 QT_END_NAMESPACE

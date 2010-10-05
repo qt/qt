@@ -176,7 +176,6 @@
  */
 #include "qplatformdefs.h"
 #include "qurl.h"
-#include "private/qunicodetables_p.h"
 #include "qatomic.h"
 #include "qbytearray.h"
 #include "qdir.h"
@@ -3417,9 +3416,8 @@ QString QUrlPrivate::canonicalHost() const
             that->host = host.toLower();
     } else {
         that->host = qt_ACE_do(host, NormalizeAce);
-        if (that->host.isNull())
-            that->isHostValid = false;
     }
+    that->isHostValid = !that->host.isNull();
     return that->host;
 }
 
@@ -3734,6 +3732,10 @@ void QUrlPrivate::validate() const
 
     QString auth = authority(); // causes the non-encoded forms to be valid
 
+    // authority() calls canonicalHost() which sets this
+    if (!isHostValid)
+        return;
+
     if (scheme == QLatin1String("mailto")) {
         if (!host.isEmpty() || port != -1 || !userName.isEmpty() || !password.isEmpty()) {
             that->isValid = false;
@@ -3907,9 +3909,10 @@ QByteArray QUrlPrivate::toEncoded(QUrl::FormattingOptions options) const
         url += scheme.toLatin1();
         url += ':';
     }
+    QString savedHost = host;  // pre-validation, may be invalid!
     QString auth = authority();
     bool doFileScheme = scheme == QLatin1String("file") && encodedPath.startsWith('/');
-    if ((options & QUrl::RemoveAuthority) != QUrl::RemoveAuthority && (!auth.isEmpty() || doFileScheme)) {
+    if ((options & QUrl::RemoveAuthority) != QUrl::RemoveAuthority && (!auth.isEmpty() || doFileScheme || !savedHost.isEmpty())) {
         if (doFileScheme && !encodedPath.startsWith('/'))
             url += '/';
         url += "//";
@@ -3935,6 +3938,12 @@ QByteArray QUrlPrivate::toEncoded(QUrl::FormattingOptions options) const
             url += '[';
             url += host.toLatin1();
             url += ']';
+        } else if (host.isEmpty() && !savedHost.isEmpty()) {
+            // this case is only possible with an invalid URL
+            // it's here only so that we can keep the original, invalid hostname
+            // in encodedOriginal.
+            // QUrl::isValid() will return false, so toEncoded() can be anything (it's not valid)
+            url += savedHost.toUtf8();
         } else {
             url += QUrl::toAce(host);
         }
@@ -4054,7 +4063,7 @@ const QByteArray &QUrlPrivate::normalized() const
 
 QString QUrlPrivate::createErrorString()
 {
-    if (isValid)
+    if (isValid && isHostValid)
         return QString();
 
     QString errorString(QLatin1String(QT_TRANSLATE_NOOP(QUrl, "Invalid URL \"")));
@@ -4078,7 +4087,10 @@ QString QUrlPrivate::createErrorString()
         errorString += QLatin1String(QT_TRANSLATE_NOOP(QUrl, "\'"));
     } else {
         errorString += QLatin1String(QT_TRANSLATE_NOOP(QUrl, ": "));
-        errorString += QLatin1String(errorInfo._message);
+        if (isHostValid)
+            errorString += QLatin1String(errorInfo._message);
+        else
+            errorString += QLatin1String(QT_TRANSLATE_NOOP(QUrl, "invalid hostname"));
     }
     if (errorInfo._found) {
         errorString += QLatin1String(QT_TRANSLATE_NOOP(QUrl, ", but found \'"));
@@ -4441,7 +4453,7 @@ void QUrl::setAuthority(const QString &authority)
 
     if (!QURL_HASFLAG(d->stateFlags, QUrlPrivate::Parsed)) d->parse();
     detach();
-    QURL_UNSETFLAG(d->stateFlags, QUrlPrivate::Validated | QUrlPrivate::Normalized);
+    QURL_UNSETFLAG(d->stateFlags, QUrlPrivate::Validated | QUrlPrivate::Normalized | QUrlPrivate::HostCanonicalized);
     d->setAuthority(authority);
 }
 

@@ -915,25 +915,6 @@ const char *QPdf::paperSizeToString(QPrinter::PaperSize paperSize)
     return psToStr[paperSize];
 }
 
-
-Q_GUI_EXPORT QByteArray QPdf::stripSpecialCharacters(const QByteArray &string)
-{
-    QByteArray s = string;
-    s.replace(' ', "");
-    s.replace('(', "");
-    s.replace(')', "");
-    s.replace('<', "");
-    s.replace('>', "");
-    s.replace('[', "");
-    s.replace(']', "");
-    s.replace('{', "");
-    s.replace('}', "");
-    s.replace('/', "");
-    s.replace('%', "");
-    return s;
-}
-
-
 // -------------------------- base engine, shared code between PS and PDF -----------------------
 
 QPdfBaseEngine::QPdfBaseEngine(QPdfBaseEnginePrivate &dd, PaintEngineFeatures f)

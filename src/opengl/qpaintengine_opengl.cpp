@@ -506,12 +506,12 @@ struct QDrawQueueItem
 
 ////////// GL program cache: start
 
-typedef struct {
+struct GLProgram {
     int brush; // brush index or mask index
     int mode;  // composition mode index
     bool mask;
     GLuint program;
-} GLProgram;
+};
 
 typedef QMultiHash<const QGLContext *, GLProgram> QGLProgramHash;
 
@@ -921,6 +921,7 @@ static inline QPainterPath strokeForPath(const QPainterPath &path, const QPen &c
     stroker.setCapStyle(cpen.capStyle());
     stroker.setJoinStyle(cpen.joinStyle());
     stroker.setMiterLimit(cpen.miterLimit());
+    stroker.setDashOffset(cpen.dashOffset());
 
     qreal width = cpen.widthF();
     if (width == 0)
@@ -4734,9 +4735,11 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, QFontEngine *fontEngine,
         font_cache = new QGLFontGlyphHash;
 //         qDebug() << "new context" << context << font_cache;
         qt_context_cache.insert(context, font_cache);
-        if (context->isValid() && context->device()->devType() == QInternal::Widget) {
-            QWidget *widget = static_cast<QWidget *>(context->device());
-            connect(widget, SIGNAL(destroyed(QObject*)), SLOT(widgetDestroyed(QObject*)));
+        if (context->isValid()) {
+            if (context->device()->devType() == QInternal::Widget) {
+                QWidget *widget = static_cast<QWidget *>(context->device());
+                connect(widget, SIGNAL(destroyed(QObject*)), SLOT(widgetDestroyed(QObject*)));
+            }
             connect(QGLSignalProxy::instance(),
                     SIGNAL(aboutToDestroyContext(const QGLContext*)),
                     SLOT(cleanupContext(const QGLContext*)));

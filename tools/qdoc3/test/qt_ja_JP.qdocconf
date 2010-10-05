@@ -19,15 +19,15 @@ indexes                 = $QTDIR/doc/html/qt.index
 qhp.projects            = Qt
 
 qhp.Qt.file                = qt.qhp
-qhp.Qt.namespace           = com.trolltech.qt.470
+qhp.Qt.namespace           = com.trolltech.qt.471
 qhp.Qt.virtualFolder       = qdoc
 qhp.Qt.title               = Qt
 qhp.Qt.indexTitle          = Qt
 qhp.Qt.selectors           = fake:example
 
-qhp.Qt.filterAttributes    = qt 4.7.0 qtrefdoc ja_JP
-qhp.Qt.customFilters.Qt.name = Qt 4.7.0
-qhp.Qt.customFilters.Qt.filterAttributes = qt 4.7.0
+qhp.Qt.filterAttributes    = qt 4.7.1 qtrefdoc ja_JP
+qhp.Qt.customFilters.Qt.name = Qt 4.7.1
+qhp.Qt.customFilters.Qt.filterAttributes = qt 4.7.1
 
 # Files not referenced in any qdoc file (last four are needed by qtdemo)
 # See also extraimages.HTML

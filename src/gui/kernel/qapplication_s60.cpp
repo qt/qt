@@ -673,6 +673,9 @@ void QSymbianControl::HandleStatusPaneSizeChange()
 {
     QS60MainAppUi *s60AppUi = static_cast<QS60MainAppUi *>(S60->appUi());
     s60AppUi->HandleStatusPaneSizeChange();
+    // Send resize event to trigger desktopwidget workAreaResized signal
+    QResizeEvent e(qt_desktopWidget->size(), qt_desktopWidget->size());
+    QApplication::sendEvent(qt_desktopWidget, &e);
 }
 #endif
 
@@ -1341,6 +1344,10 @@ void QSymbianControl::setFocusSafely(bool focus)
     // focus in Symbian. If this is not executed, the control which happens to be on
     // the top of the stack may randomly be assigned focus by Symbian, for example
     // when creating new windows (specifically in CCoeAppUi::HandleStackChanged()).
+
+    // Close any popups.
+    CEikonEnv::Static()->EikAppUi()->StopDisplayingMenuBar();
+
     if (focus) {
         S60->appUi()->RemoveFromStack(this);
         // Symbian doesn't automatically remove focus from the last focused control, so we need to

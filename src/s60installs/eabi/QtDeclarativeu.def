@@ -552,9 +552,9 @@ EXPORTS
 	_ZN21QDeclarativeListModel6removeEi @ 551 NONAME
 	_ZN21QDeclarativeListModel7flattenEv @ 552 NONAME
 	_ZN21QDeclarativeListModelC1EP7QObject @ 553 NONAME
-	_ZN21QDeclarativeListModelC1EbP7QObject @ 554 NONAME
+	_ZN21QDeclarativeListModelC1EbP7QObject @ 554 NONAME ABSENT
 	_ZN21QDeclarativeListModelC2EP7QObject @ 555 NONAME
-	_ZN21QDeclarativeListModelC2EbP7QObject @ 556 NONAME
+	_ZN21QDeclarativeListModelC2EbP7QObject @ 556 NONAME ABSENT
 	_ZN21QDeclarativeListModelD0Ev @ 557 NONAME
 	_ZN21QDeclarativeListModelD1Ev @ 558 NONAME
 	_ZN21QDeclarativeListModelD2Ev @ 559 NONAME
@@ -673,7 +673,7 @@ EXPORTS
 	_ZN22QDeclarativeTransitionD0Ev @ 672 NONAME
 	_ZN22QDeclarativeTransitionD1Ev @ 673 NONAME
 	_ZN22QDeclarativeTransitionD2Ev @ 674 NONAME
-	_ZN23QDeclarativeDebugClient10setEnabledEb @ 675 NONAME
+	_ZN23QDeclarativeDebugClient10setEnabledEb @ 675 NONAME ABSENT
 	_ZN23QDeclarativeDebugClient11qt_metacallEN11QMetaObject4CallEiPPv @ 676 NONAME
 	_ZN23QDeclarativeDebugClient11qt_metacastEPKc @ 677 NONAME
 	_ZN23QDeclarativeDebugClient11sendMessageERK10QByteArray @ 678 NONAME
@@ -766,7 +766,7 @@ EXPORTS
 	_ZN24QDeclarativeDebugService11qt_metacallEN11QMetaObject4CallEiPPv @ 765 NONAME
 	_ZN24QDeclarativeDebugService11qt_metacastEPKc @ 766 NONAME
 	_ZN24QDeclarativeDebugService11sendMessageERK10QByteArray @ 767 NONAME
-	_ZN24QDeclarativeDebugService14enabledChangedEb @ 768 NONAME
+	_ZN24QDeclarativeDebugService14enabledChangedEb @ 768 NONAME ABSENT
 	_ZN24QDeclarativeDebugService14objectToStringEP7QObject @ 769 NONAME
 	_ZN24QDeclarativeDebugService15messageReceivedERK10QByteArray @ 770 NONAME
 	_ZN24QDeclarativeDebugService16staticMetaObjectE @ 771 NONAME DATA 16
@@ -1351,7 +1351,7 @@ EXPORTS
 	_ZNK21QDeclarativeDomObject8propertyERK10QByteArray @ 1350 NONAME
 	_ZNK21QDeclarativeListModel10metaObjectEv @ 1351 NONAME
 	_ZNK21QDeclarativeListModel3getEi @ 1352 NONAME
-	_ZNK21QDeclarativeListModel4dataEiRK5QListIiE @ 1353 NONAME
+	_ZNK21QDeclarativeListModel4dataEiRK5QListIiE @ 1353 NONAME ABSENT
 	_ZNK21QDeclarativeListModel4dataEii @ 1354 NONAME
 	_ZNK21QDeclarativeListModel5countEv @ 1355 NONAME
 	_ZNK21QDeclarativeListModel5rolesEv @ 1356 NONAME
@@ -1390,9 +1390,9 @@ EXPORTS
 	_ZNK22QDeclarativeTransition7toStateEv @ 1389 NONAME
 	_ZNK22QDeclarativeTransition9fromStateEv @ 1390 NONAME
 	_ZNK23QDeclarativeDebugClient10metaObjectEv @ 1391 NONAME
-	_ZNK23QDeclarativeDebugClient11isConnectedEv @ 1392 NONAME
+	_ZNK23QDeclarativeDebugClient11isConnectedEv @ 1392 NONAME ABSENT
 	_ZNK23QDeclarativeDebugClient4nameEv @ 1393 NONAME
-	_ZNK23QDeclarativeDebugClient9isEnabledEv @ 1394 NONAME
+	_ZNK23QDeclarativeDebugClient9isEnabledEv @ 1394 NONAME ABSENT
 	_ZNK23QDeclarativeDomDocument10rootObjectEv @ 1395 NONAME
 	_ZNK23QDeclarativeDomDocument6errorsEv @ 1396 NONAME
 	_ZNK23QDeclarativeDomDocument7importsEv @ 1397 NONAME
@@ -1427,7 +1427,7 @@ EXPORTS
 	_ZNK24QDeclarativeCustomParser12evaluateEnumERK10QByteArray @ 1426 NONAME
 	_ZNK24QDeclarativeDebugService10metaObjectEv @ 1427 NONAME
 	_ZNK24QDeclarativeDebugService4nameEv @ 1428 NONAME
-	_ZNK24QDeclarativeDebugService9isEnabledEv @ 1429 NONAME
+	_ZNK24QDeclarativeDebugService9isEnabledEv @ 1429 NONAME ABSENT
 	_ZNK24QDeclarativeDomComponent13componentRootEv @ 1430 NONAME
 	_ZNK24QDeclarativeScriptString11scopeObjectEv @ 1431 NONAME
 	_ZNK24QDeclarativeScriptString6scriptEv @ 1432 NONAME
@@ -1675,4 +1675,212 @@ EXPORTS
 	_ZrsR11QDataStreamRN29QDeclarativeEngineDebugServer22QDeclarativeObjectDataE @ 1674 NONAME
 	_ZrsR11QDataStreamRN29QDeclarativeEngineDebugServer26QDeclarativeObjectPropertyE @ 1675 NONAME
 	_ZN23QDeclarativeEngineDebug10newObjectsEv @ 1676 NONAME
+	_ZN17QDeclarativeState20addEntryToRevertListERK18QDeclarativeAction @ 1677 NONAME
+	_ZN17QDeclarativeState22addEntriesToRevertListERK5QListI18QDeclarativeActionE @ 1678 NONAME
+	_ZN17QDeclarativeState23changeValueInRevertListEP7QObjectRK10QByteArrayRK8QVariant @ 1679 NONAME
+	_ZN17QDeclarativeState25changeBindingInRevertListEP7QObjectRK10QByteArrayP27QDeclarativeAbstractBinding @ 1680 NONAME
+	_ZN17QDeclarativeState25removeEntryFromRevertListEP7QObjectRK10QByteArray @ 1681 NONAME
+	_ZN17QDeclarativeState30removeAllEntriesFromRevertListEP7QObject @ 1682 NONAME
+	_ZN23QDeclarativeItemPrivate10data_clearEP24QDeclarativeListPropertyI7QObjectE @ 1683 NONAME
+	_ZN23QDeclarativeItemPrivate10data_countEP24QDeclarativeListPropertyI7QObjectE @ 1684 NONAME
+	_ZN23QDeclarativeItemPrivate15resources_clearEP24QDeclarativeListPropertyI7QObjectE @ 1685 NONAME
+	_ZN23QDeclarativeItemPrivate7data_atEP24QDeclarativeListPropertyI7QObjectEi @ 1686 NONAME
+	_ZN26QDeclarativeStateOperation8setStateEP17QDeclarativeState @ 1687 NONAME
+	_ZN27QDeclarativeAbstractBinding11weakPointerEv @ 1688 NONAME
+	_ZN27QDeclarativePropertyChanges11changeValueERK10QByteArrayRK8QVariant @ 1689 NONAME
+	_ZN27QDeclarativePropertyChanges11qt_metacallEN11QMetaObject4CallEiPPv @ 1690 NONAME
+	_ZN27QDeclarativePropertyChanges11qt_metacastEPKc @ 1691 NONAME
+	_ZN27QDeclarativePropertyChanges13attachToStateEv @ 1692 NONAME
+	_ZN27QDeclarativePropertyChanges13setIsExplicitEb @ 1693 NONAME
+	_ZN27QDeclarativePropertyChanges14removePropertyERK10QByteArray @ 1694 NONAME
+	_ZN27QDeclarativePropertyChanges15detachFromStateEv @ 1695 NONAME
+	_ZN27QDeclarativePropertyChanges16changeExpressionERK10QByteArrayRK7QString @ 1696 NONAME
+	_ZN27QDeclarativePropertyChanges16staticMetaObjectE @ 1697 NONAME DATA 16
+	_ZN27QDeclarativePropertyChanges19getStaticMetaObjectEv @ 1698 NONAME
+	_ZN27QDeclarativePropertyChanges21setRestoreEntryValuesEb @ 1699 NONAME
+	_ZN27QDeclarativePropertyChanges7actionsEv @ 1700 NONAME
+	_ZN27QDeclarativePropertyChanges9setObjectEP7QObject @ 1701 NONAME
+	_ZN27QDeclarativePropertyChangesC1Ev @ 1702 NONAME
+	_ZN27QDeclarativePropertyChangesC2Ev @ 1703 NONAME
+	_ZN27QDeclarativePropertyChangesD0Ev @ 1704 NONAME
+	_ZN27QDeclarativePropertyChangesD1Ev @ 1705 NONAME
+	_ZN27QDeclarativePropertyChangesD2Ev @ 1706 NONAME
+	_ZNK17QDeclarativeState13isStateActiveEv @ 1707 NONAME
+	_ZNK17QDeclarativeState17valueInRevertListEP7QObjectRK10QByteArray @ 1708 NONAME
+	_ZNK17QDeclarativeState19bindingInRevertListEP7QObjectRK10QByteArray @ 1709 NONAME
+	_ZNK17QDeclarativeState28containsPropertyInRevertListEP7QObjectRK10QByteArray @ 1710 NONAME
+	_ZNK26QDeclarativeStateOperation5stateEv @ 1711 NONAME
+	_ZNK27QDeclarativePropertyChanges10expressionERK10QByteArray @ 1712 NONAME
+	_ZNK27QDeclarativePropertyChanges10isExplicitEv @ 1713 NONAME
+	_ZNK27QDeclarativePropertyChanges10metaObjectEv @ 1714 NONAME
+	_ZNK27QDeclarativePropertyChanges13containsValueERK10QByteArray @ 1715 NONAME
+	_ZNK27QDeclarativePropertyChanges16containsPropertyERK10QByteArray @ 1716 NONAME
+	_ZNK27QDeclarativePropertyChanges18containsExpressionERK10QByteArray @ 1717 NONAME
+	_ZNK27QDeclarativePropertyChanges18restoreEntryValuesEv @ 1718 NONAME
+	_ZNK27QDeclarativePropertyChanges5valueERK10QByteArray @ 1719 NONAME
+	_ZNK27QDeclarativePropertyChanges6objectEv @ 1720 NONAME
+	_ZNK27QDeclarativePropertyChanges8propertyERK10QByteArray @ 1721 NONAME
+	_ZTI27QDeclarativePropertyChanges @ 1722 NONAME
+	_ZTV27QDeclarativePropertyChanges @ 1723 NONAME
+	_ZN24QDeclarativeScriptAction10transitionER5QListI18QDeclarativeActionERS0_I20QDeclarativePropertyEN29QDeclarativeAbstractAnimation19TransitionDirectionE @ 1724 NONAME
+	_ZN24QDeclarativeScriptAction11qtAnimationEv @ 1725 NONAME
+	_ZN24QDeclarativeScriptAction11qt_metacallEN11QMetaObject4CallEiPPv @ 1726 NONAME
+	_ZN24QDeclarativeScriptAction11qt_metacastEPKc @ 1727 NONAME
+	_ZN24QDeclarativeScriptAction16staticMetaObjectE @ 1728 NONAME DATA 16
+	_ZN24QDeclarativeScriptAction19getStaticMetaObjectEv @ 1729 NONAME
+	_ZN24QDeclarativeScriptAction24setStateChangeScriptNameERK7QString @ 1730 NONAME
+	_ZN24QDeclarativeScriptAction9setScriptERK24QDeclarativeScriptString @ 1731 NONAME
+	_ZN24QDeclarativeScriptActionC1EP7QObject @ 1732 NONAME
+	_ZN24QDeclarativeScriptActionC2EP7QObject @ 1733 NONAME
+	_ZN24QDeclarativeScriptActionD0Ev @ 1734 NONAME
+	_ZN24QDeclarativeScriptActionD1Ev @ 1735 NONAME
+	_ZN24QDeclarativeScriptActionD2Ev @ 1736 NONAME
+	_ZNK24QDeclarativeScriptAction10metaObjectEv @ 1737 NONAME
+	_ZNK24QDeclarativeScriptAction21stateChangeScriptNameEv @ 1738 NONAME
+	_ZNK24QDeclarativeScriptAction6scriptEv @ 1739 NONAME
+	_ZTI24QDeclarativeScriptAction @ 1740 NONAME
+	_ZTV24QDeclarativeScriptAction @ 1741 NONAME
+	_ZThn12_N24QDeclarativeScriptActionD0Ev @ 1742 NONAME
+	_ZThn12_N24QDeclarativeScriptActionD1Ev @ 1743 NONAME
+	_ZThn8_N24QDeclarativeScriptActionD0Ev @ 1744 NONAME
+	_ZThn8_N24QDeclarativeScriptActionD1Ev @ 1745 NONAME
+	_ZN21QDeclarativeListModelC1EPKS_P32QDeclarativeListModelWorkerAgent @ 1746 NONAME
+	_ZN21QDeclarativeListModelC2EPKS_P32QDeclarativeListModelWorkerAgent @ 1747 NONAME
+	_ZNK21QDeclarativeListModel14inWorkerThreadEv @ 1748 NONAME
+	_ZN23QDeclarativeDebugHelper15getScriptEngineEP18QDeclarativeEngine @ 1749 NONAME
+	_ZN23QDeclarativeDebugHelper26setAnimationSlowDownFactorEf @ 1750 NONAME
+	_ZN17QDeclarativeTimer10classBeginEv @ 1751 NONAME
+	_ZN17QDeclarativeTimer10setRunningEb @ 1752 NONAME
+	_ZN17QDeclarativeTimer11qt_metacallEN11QMetaObject4CallEiPPv @ 1753 NONAME
+	_ZN17QDeclarativeTimer11qt_metacastEPKc @ 1754 NONAME
+	_ZN17QDeclarativeTimer11setIntervalEi @ 1755 NONAME
+	_ZN17QDeclarativeTimer12setRepeatingEb @ 1756 NONAME
+	_ZN17QDeclarativeTimer13repeatChangedEv @ 1757 NONAME
+	_ZN17QDeclarativeTimer14runningChangedEv @ 1758 NONAME
+	_ZN17QDeclarativeTimer15intervalChangedEv @ 1759 NONAME
+	_ZN17QDeclarativeTimer16staticMetaObjectE @ 1760 NONAME DATA 16
+	_ZN17QDeclarativeTimer17componentCompleteEv @ 1761 NONAME
+	_ZN17QDeclarativeTimer19getStaticMetaObjectEv @ 1762 NONAME
+	_ZN17QDeclarativeTimer19setTriggeredOnStartEb @ 1763 NONAME
+	_ZN17QDeclarativeTimer23triggeredOnStartChangedEv @ 1764 NONAME
+	_ZN17QDeclarativeTimer4stopEv @ 1765 NONAME
+	_ZN17QDeclarativeTimer5startEv @ 1766 NONAME
+	_ZN17QDeclarativeTimer6tickedEv @ 1767 NONAME
+	_ZN17QDeclarativeTimer6updateEv @ 1768 NONAME
+	_ZN17QDeclarativeTimer7restartEv @ 1769 NONAME
+	_ZN17QDeclarativeTimer8finishedEv @ 1770 NONAME
+	_ZN17QDeclarativeTimer9triggeredEv @ 1771 NONAME
+	_ZN17QDeclarativeTimerC1EP7QObject @ 1772 NONAME
+	_ZN17QDeclarativeTimerC2EP7QObject @ 1773 NONAME
+	_ZN23QDeclarativeDebugClient13statusChangedENS_6StatusE @ 1774 NONAME
+	_ZN23QDeclarativeDebugClientD0Ev @ 1775 NONAME
+	_ZN23QDeclarativeDebugClientD1Ev @ 1776 NONAME
+	_ZN23QDeclarativeDebugClientD2Ev @ 1777 NONAME
+	_ZN23QDeclarativeEngineDebug13statusChangedENS_6StatusE @ 1778 NONAME
+	_ZN24QDeclarativeDebugService13statusChangedENS_6StatusE @ 1779 NONAME
+	_ZN24QDeclarativeDebugServiceD0Ev @ 1780 NONAME
+	_ZN24QDeclarativeDebugServiceD1Ev @ 1781 NONAME
+	_ZN24QDeclarativeDebugServiceD2Ev @ 1782 NONAME
+	_ZN26QDeclarativeBasePositioner10addChangedEv @ 1783 NONAME
+	_ZN26QDeclarativeBasePositioner10itemChangeEN13QGraphicsItem18GraphicsItemChangeERK8QVariant @ 1784 NONAME
+	_ZN26QDeclarativeBasePositioner10setSpacingEi @ 1785 NONAME
+	_ZN26QDeclarativeBasePositioner11moveChangedEv @ 1786 NONAME
+	_ZN26QDeclarativeBasePositioner11qt_metacallEN11QMetaObject4CallEiPPv @ 1787 NONAME
+	_ZN26QDeclarativeBasePositioner11qt_metacastEPKc @ 1788 NONAME
+	_ZN26QDeclarativeBasePositioner14prePositioningEv @ 1789 NONAME
+	_ZN26QDeclarativeBasePositioner14spacingChangedEv @ 1790 NONAME
+	_ZN26QDeclarativeBasePositioner16staticMetaObjectE @ 1791 NONAME DATA 16
+	_ZN26QDeclarativeBasePositioner17componentCompleteEv @ 1792 NONAME
+	_ZN26QDeclarativeBasePositioner19getStaticMetaObjectEv @ 1793 NONAME
+	_ZN26QDeclarativeBasePositioner22finishApplyTransitionsEv @ 1794 NONAME
+	_ZN26QDeclarativeBasePositioner29graphicsWidgetGeometryChangedEv @ 1795 NONAME
+	_ZN26QDeclarativeBasePositioner6setAddEP22QDeclarativeTransition @ 1796 NONAME
+	_ZN26QDeclarativeBasePositioner7setMoveEP22QDeclarativeTransition @ 1797 NONAME
+	_ZN26QDeclarativeBasePositioner9positionXEiRKNS_14PositionedItemE @ 1798 NONAME
+	_ZN26QDeclarativeBasePositioner9positionYEiRKNS_14PositionedItemE @ 1799 NONAME
+	_ZN26QDeclarativeBasePositionerC2ENS_14PositionerTypeEP16QDeclarativeItem @ 1800 NONAME
+	_ZN26QDeclarativeBasePositionerC2ER33QDeclarativeBasePositionerPrivateNS_14PositionerTypeEP16QDeclarativeItem @ 1801 NONAME
+	_ZN26QDeclarativeBasePositionerD0Ev @ 1802 NONAME
+	_ZN26QDeclarativeBasePositionerD1Ev @ 1803 NONAME
+	_ZN26QDeclarativeBasePositionerD2Ev @ 1804 NONAME
+	_ZN27QDeclarativeDebugConnectionD0Ev @ 1805 NONAME
+	_ZN27QDeclarativeDebugConnectionD1Ev @ 1806 NONAME
+	_ZN27QDeclarativeDebugConnectionD2Ev @ 1807 NONAME
+	_ZN29QDeclarativeAbstractAnimation10classBeginEv @ 1808 NONAME
+	_ZN29QDeclarativeAbstractAnimation10setRunningEb @ 1809 NONAME
+	_ZN29QDeclarativeAbstractAnimation10transitionER5QListI18QDeclarativeActionERS0_I20QDeclarativePropertyENS_19TransitionDirectionE @ 1810 NONAME
+	_ZN29QDeclarativeAbstractAnimation11currentTimeEv @ 1811 NONAME
+	_ZN29QDeclarativeAbstractAnimation11qt_metacallEN11QMetaObject4CallEiPPv @ 1812 NONAME
+	_ZN29QDeclarativeAbstractAnimation11qt_metacastEPKc @ 1813 NONAME
+	_ZN29QDeclarativeAbstractAnimation13pausedChangedEb @ 1814 NONAME
+	_ZN29QDeclarativeAbstractAnimation14runningChangedEb @ 1815 NONAME
+	_ZN29QDeclarativeAbstractAnimation14setCurrentTimeEi @ 1816 NONAME
+	_ZN29QDeclarativeAbstractAnimation16loopCountChangedEi @ 1817 NONAME
+	_ZN29QDeclarativeAbstractAnimation16setDefaultTargetERK20QDeclarativeProperty @ 1818 NONAME
+	_ZN29QDeclarativeAbstractAnimation16staticMetaObjectE @ 1819 NONAME DATA 16
+	_ZN29QDeclarativeAbstractAnimation16timelineCompleteEv @ 1820 NONAME
+	_ZN29QDeclarativeAbstractAnimation17componentCompleteEv @ 1821 NONAME
+	_ZN29QDeclarativeAbstractAnimation17setAlwaysRunToEndEb @ 1822 NONAME
+	_ZN29QDeclarativeAbstractAnimation18componentFinalizedEv @ 1823 NONAME
+	_ZN29QDeclarativeAbstractAnimation19getStaticMetaObjectEv @ 1824 NONAME
+	_ZN29QDeclarativeAbstractAnimation20notifyRunningChangedEb @ 1825 NONAME
+	_ZN29QDeclarativeAbstractAnimation21alwaysRunToEndChangedEb @ 1826 NONAME
+	_ZN29QDeclarativeAbstractAnimation21setDisableUserControlEv @ 1827 NONAME
+	_ZN29QDeclarativeAbstractAnimation4stopEv @ 1828 NONAME
+	_ZN29QDeclarativeAbstractAnimation5pauseEv @ 1829 NONAME
+	_ZN29QDeclarativeAbstractAnimation5startEv @ 1830 NONAME
+	_ZN29QDeclarativeAbstractAnimation6resumeEv @ 1831 NONAME
+	_ZN29QDeclarativeAbstractAnimation7restartEv @ 1832 NONAME
+	_ZN29QDeclarativeAbstractAnimation7startedEv @ 1833 NONAME
+	_ZN29QDeclarativeAbstractAnimation8completeEv @ 1834 NONAME
+	_ZN29QDeclarativeAbstractAnimation8setGroupEP26QDeclarativeAnimationGroup @ 1835 NONAME
+	_ZN29QDeclarativeAbstractAnimation8setLoopsEi @ 1836 NONAME
+	_ZN29QDeclarativeAbstractAnimation9completedEv @ 1837 NONAME
+	_ZN29QDeclarativeAbstractAnimation9setPausedEb @ 1838 NONAME
+	_ZN29QDeclarativeAbstractAnimation9setTargetERK20QDeclarativeProperty @ 1839 NONAME
+	_ZN29QDeclarativeAbstractAnimationC2EP7QObject @ 1840 NONAME
+	_ZN29QDeclarativeAbstractAnimationC2ER36QDeclarativeAbstractAnimationPrivateP7QObject @ 1841 NONAME
+	_ZN29QDeclarativeAbstractAnimationD0Ev @ 1842 NONAME
+	_ZN29QDeclarativeAbstractAnimationD1Ev @ 1843 NONAME
+	_ZN29QDeclarativeAbstractAnimationD2Ev @ 1844 NONAME
+	_ZNK16QDeclarativeType20attachedPropertiesIdEv @ 1845 NONAME
+	_ZNK17QDeclarativeTimer10metaObjectEv @ 1846 NONAME
+	_ZNK17QDeclarativeTimer11isRepeatingEv @ 1847 NONAME
+	_ZNK17QDeclarativeTimer16triggeredOnStartEv @ 1848 NONAME
+	_ZNK17QDeclarativeTimer8intervalEv @ 1849 NONAME
+	_ZNK17QDeclarativeTimer9isRunningEv @ 1850 NONAME
+	_ZNK23QDeclarativeDebugClient6statusEv @ 1851 NONAME
+	_ZNK23QDeclarativeEngineDebug6statusEv @ 1852 NONAME
+	_ZNK24QDeclarativeDebugService6statusEv @ 1853 NONAME
+	_ZNK26QDeclarativeBasePositioner10metaObjectEv @ 1854 NONAME
+	_ZNK26QDeclarativeBasePositioner3addEv @ 1855 NONAME
+	_ZNK26QDeclarativeBasePositioner4moveEv @ 1856 NONAME
+	_ZNK26QDeclarativeBasePositioner7spacingEv @ 1857 NONAME
+	_ZNK29QDeclarativeAbstractAnimation10metaObjectEv @ 1858 NONAME
+	_ZNK29QDeclarativeAbstractAnimation14alwaysRunToEndEv @ 1859 NONAME
+	_ZNK29QDeclarativeAbstractAnimation5groupEv @ 1860 NONAME
+	_ZNK29QDeclarativeAbstractAnimation5loopsEv @ 1861 NONAME
+	_ZNK29QDeclarativeAbstractAnimation8isPausedEv @ 1862 NONAME
+	_ZNK29QDeclarativeAbstractAnimation9isRunningEv @ 1863 NONAME
+	_ZTI17QDeclarativeTimer @ 1864 NONAME
+	_ZTI26QDeclarativeBasePositioner @ 1865 NONAME
+	_ZTI29QDeclarativeAbstractAnimation @ 1866 NONAME
+	_ZTV17QDeclarativeTimer @ 1867 NONAME
+	_ZTV26QDeclarativeBasePositioner @ 1868 NONAME
+	_ZTV29QDeclarativeAbstractAnimation @ 1869 NONAME
+	_ZThn12_N29QDeclarativeAbstractAnimation10classBeginEv @ 1870 NONAME
+	_ZThn12_N29QDeclarativeAbstractAnimation17componentCompleteEv @ 1871 NONAME
+	_ZThn12_N29QDeclarativeAbstractAnimationD0Ev @ 1872 NONAME
+	_ZThn12_N29QDeclarativeAbstractAnimationD1Ev @ 1873 NONAME
+	_ZThn16_N26QDeclarativeBasePositioner17componentCompleteEv @ 1874 NONAME
+	_ZThn16_N26QDeclarativeBasePositionerD0Ev @ 1875 NONAME
+	_ZThn16_N26QDeclarativeBasePositionerD1Ev @ 1876 NONAME
+	_ZThn8_N17QDeclarativeTimer10classBeginEv @ 1877 NONAME
+	_ZThn8_N17QDeclarativeTimer17componentCompleteEv @ 1878 NONAME
+	_ZThn8_N26QDeclarativeBasePositioner10itemChangeEN13QGraphicsItem18GraphicsItemChangeERK8QVariant @ 1879 NONAME
+	_ZThn8_N26QDeclarativeBasePositionerD0Ev @ 1880 NONAME
+	_ZThn8_N26QDeclarativeBasePositionerD1Ev @ 1881 NONAME
+	_ZThn8_N29QDeclarativeAbstractAnimation9setTargetERK20QDeclarativeProperty @ 1882 NONAME
+	_ZThn8_N29QDeclarativeAbstractAnimationD0Ev @ 1883 NONAME
+	_ZThn8_N29QDeclarativeAbstractAnimationD1Ev @ 1884 NONAME
 

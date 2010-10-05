@@ -146,6 +146,7 @@ public:
     const QMetaObject *m_baseMetaObject;
     QDeclarativeAttachedPropertiesFunc m_attachedPropertiesFunc;
     const QMetaObject *m_attachedPropertiesType;
+    int m_attachedPropertiesId;
     int m_parserStatusCast;
     int m_propertyValueSourceCast;
     int m_propertyValueInterceptorCast;
@@ -155,7 +156,11 @@ public:
     QDeclarativeCustomParser *m_customParser;
     mutable volatile bool m_isSetup:1;
     mutable QList<QDeclarativeProxyMetaObject::ProxyData> m_metaObjects;
+
+    static QHash<const QMetaObject *, int> m_attachedPropertyIds;
 };
+
+QHash<const QMetaObject *, int> QDeclarativeTypePrivate::m_attachedPropertyIds;
 
 QDeclarativeTypePrivate::QDeclarativeTypePrivate()
 : m_isInterface(false), m_iid(0), m_typeId(0), m_listId(0), 
@@ -198,6 +203,14 @@ QDeclarativeType::QDeclarativeType(int index, const QDeclarativePrivate::Registe
     d->m_baseMetaObject = type.metaObject;
     d->m_attachedPropertiesFunc = type.attachedPropertiesFunction;
     d->m_attachedPropertiesType = type.attachedPropertiesMetaObject;
+    if (d->m_attachedPropertiesType) {
+        QHash<const QMetaObject *, int>::Iterator iter = d->m_attachedPropertyIds.find(d->m_baseMetaObject);
+        if (iter == d->m_attachedPropertyIds.end())
+            iter = d->m_attachedPropertyIds.insert(d->m_baseMetaObject, index);
+        d->m_attachedPropertiesId = *iter;
+    } else {
+        d->m_attachedPropertiesId = -1;
+    }
     d->m_parserStatusCast = type.parserStatusCast;
     d->m_propertyValueSourceCast = type.valueSourceCast;
     d->m_propertyValueInterceptorCast = type.valueInterceptorCast;
@@ -461,6 +474,16 @@ const QMetaObject *QDeclarativeType::attachedPropertiesType() const
     return d->m_attachedPropertiesType;
 }
 
+/*
+This is the id passed to qmlAttachedPropertiesById().  This is different from the index
+for the case that a single class is registered under two or more names (eg. Item in 
+Qt 4.7 and QtQuick 1.0).
+*/
+int QDeclarativeType::attachedPropertiesId() const
+{
+    return d->m_attachedPropertiesId;
+}
+
 int QDeclarativeType::parserStatusCast() const
 {
     return d->m_parserStatusCast;
@@ -662,7 +685,7 @@ int QDeclarativeMetaType::attachedPropertiesFuncId(const QMetaObject *mo)
 
     QDeclarativeType *type = data->metaObjectToType.value(mo);
     if (type && type->attachedPropertiesFunction())
-        return type->index();
+        return type->attachedPropertiesId();
     else
         return -1;
 }

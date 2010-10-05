@@ -509,6 +509,9 @@ QGLFormat::~QGLFormat()
     exchange the screen contents with the buffer. The result is
     flicker-free drawing and often better performance.
 
+    Note that single buffered contexts are currently not supported
+    with EGL.
+
     \sa doubleBuffer(), QGLContext::swapBuffers(),
     QGLWidget::swapBuffers()
 */

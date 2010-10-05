@@ -17,24 +17,24 @@ indexes                 = $QT_BUILD_TREE/doc-build/html-qt/qt.index
 qhp.projects            = Qt
 
 qhp.Qt.file                = qt.qhp
-qhp.Qt.namespace           = com.trolltech.qt.470
+qhp.Qt.namespace           = com.trolltech.qt.471
 qhp.Qt.virtualFolder       = qdoc
 qhp.Qt.title               = Qt
 qhp.Qt.indexTitle          = Qt
 qhp.Qt.selectors           = fake:example
 
-qhp.Qt.filterAttributes    = qt 4.7.0 qtrefdoc ja_JP
-qhp.Qt.customFilters.Qt.name = Qt 4.7.0
-qhp.Qt.customFilters.Qt.filterAttributes = qt 4.7.0
+qhp.Qt.filterAttributes    = qt 4.7.1 qtrefdoc ja_JP
+qhp.Qt.customFilters.Qt.name = Qt 4.7.1
+qhp.Qt.customFilters.Qt.filterAttributes = qt 4.7.1
 
 # Files not referenced in any qdoc file (last four are needed by qtdemo)
 # See also extraimages.HTML
 qhp.Qt.extraFiles          = index.html \
                              images/bg_l.png \
                              images/bg_l_blank.png \
-							 images/bg_ll_blank.png \
-							 images/bg_ul_blank.png \
-							 images/header_bg.png \
+                             images/bg_ll_blank.png \
+                             images/bg_ul_blank.png \
+                             images/header_bg.png \
                              images/bg_r.png \
                              images/box_bg.png \
                              images/breadcrumb.png \
@@ -73,6 +73,7 @@ excludedirs             = $QT_SOURCE_TREE/src/3rdparty/clucene \
                           $QT_SOURCE_TREE/src/3rdparty/freetype \
                           $QT_SOURCE_TREE/src/3rdparty/harfbuzz \
                           $QT_SOURCE_TREE/src/3rdparty/kdebase \
+                          $QT_SOURCE_TREE/src/3rdparty/libconninet \
                           $QT_SOURCE_TREE/src/3rdparty/libjpeg \
                           $QT_SOURCE_TREE/src/3rdparty/libmng \
                           $QT_SOURCE_TREE/src/3rdparty/libpng \

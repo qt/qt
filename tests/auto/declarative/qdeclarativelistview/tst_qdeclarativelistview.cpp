@@ -1016,6 +1016,8 @@ void tst_QDeclarativeListView::currentIndex()
     // no wrap
     listview->setCurrentIndex(0);
     QCOMPARE(listview->currentIndex(), 0);
+    // confirm that the velocity is updated
+    QTRY_VERIFY(listview->verticalVelocity() != 0.0);
 
     listview->incrementCurrentIndex();
     QCOMPARE(listview->currentIndex(), 1);
@@ -1414,10 +1416,10 @@ void tst_QDeclarativeListView::componentChanges()
     QTRY_VERIFY(listView);
 
     QDeclarativeComponent component(canvas->engine());
-    component.setData("import Qt 4.7; Rectangle { color: \"blue\"; }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0; Rectangle { color: \"blue\"; }", QUrl::fromLocalFile(""));
 
     QDeclarativeComponent delegateComponent(canvas->engine());
-    delegateComponent.setData("import Qt 4.7; Text { text: '<b>Name:</b> ' + name }", QUrl::fromLocalFile(""));
+    delegateComponent.setData("import QtQuick 1.0; Text { text: '<b>Name:</b> ' + name }", QUrl::fromLocalFile(""));
 
     QSignalSpy highlightSpy(listView, SIGNAL(highlightChanged()));
     QSignalSpy delegateSpy(listView, SIGNAL(delegateChanged()));

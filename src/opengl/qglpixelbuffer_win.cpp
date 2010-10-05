@@ -167,6 +167,15 @@ typedef BOOL (WINAPI * PFNWGLSETPBUFFERATTRIBARBPROC) (HPBUFFERARB hPbuffer, con
 #define WGL_FLOAT_COMPONENTS_NV        0x20B0
 #endif
 
+#ifndef WGL_ARB_multisample
+#define WGL_SAMPLE_BUFFERS_ARB         0x2041
+#define WGL_SAMPLES_ARB                0x2042
+#endif
+
+#ifndef GL_SAMPLES_ARB
+#define GL_SAMPLES_ARB 0x80A9
+#endif
+
 QGLFormat pfiToQGLFormat(HDC hdc, int pfi);
 
 static void qt_format_to_attrib_list(bool has_render_texture, const QGLFormat &f, int attribs[])
@@ -226,21 +235,18 @@ static void qt_format_to_attrib_list(bool has_render_texture, const QGLFormat &f
         attribs[i++] = WGL_FLOAT_COMPONENTS_NV;
         attribs[i++] = TRUE;
     }
-    // sample buffers doesn't work in conjunction with the render_texture extension
-    // so igonre that for now
-    // if (f.sampleBuffers()) {
-    //     attribs[i++] = WGL_SAMPLE_BUFFERS_ARB;
-    //     attribs[i++] = 1;
-    //     attribs[i++] = WGL_SAMPLES_ARB;
-    //     attribs[i++] = f.samples() == -1 ? 16 : f.samples();
-    // }
+    if (f.sampleBuffers()) {
+        attribs[i++] = WGL_SAMPLE_BUFFERS_ARB;
+        attribs[i++] = 1;
+        attribs[i++] = WGL_SAMPLES_ARB;
+        attribs[i++] = f.samples() == -1 ? 16 : f.samples();
+    }
     attribs[i] = 0;
 }
 
 bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidget *shareWidget)
 {
-    QGLWidget dmy;
-    dmy.makeCurrent(); // needed for wglGetProcAddress() to succeed
+    QGLTemporaryContext tempContext;
 
     PFNWGLCREATEPBUFFERARBPROC wglCreatePbufferARB =
         (PFNWGLCREATEPBUFFERARBPROC) wglGetProcAddress("wglCreatePbufferARB");
@@ -254,15 +260,19 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
     if (!wglCreatePbufferARB) // assumes that if one can be resolved, all of them can
         return false;
 
-    dc = GetDC(dmy.winId());
+    dc = wglGetCurrentDC();
     Q_ASSERT(dc);
+    has_render_texture = false;
 
-    PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB =
-        (PFNWGLGETEXTENSIONSSTRINGARBPROC) wglGetProcAddress("wglGetExtensionsStringARB");
+    // sample buffers doesn't work in conjunction with the render_texture extension
+    if (!f.sampleBuffers()) {
+        PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB =
+                (PFNWGLGETEXTENSIONSSTRINGARBPROC) wglGetProcAddress("wglGetExtensionsStringARB");
 
-    if (wglGetExtensionsStringARB) {
-        QString extensions(QLatin1String(wglGetExtensionsStringARB(dc)));
-        has_render_texture = extensions.contains(QLatin1String("WGL_ARB_render_texture"));
+        if (wglGetExtensionsStringARB) {
+            QString extensions(QLatin1String(wglGetExtensionsStringARB(dc)));
+            has_render_texture = extensions.contains(QLatin1String("WGL_ARB_render_texture"));
+        }
     }
 
     int attribs[40];
@@ -284,7 +294,6 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
 
     if (num_formats == 0) {
         qWarning("QGLPixelBuffer: Unable to find a pixel format with pbuffer  - giving up.");
-        ReleaseDC(dmy.winId(), dc);
         return false;
     }
     format = pfiToQGLFormat(dc, pixel_format);
@@ -297,25 +306,31 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
 
     pbuf = wglCreatePbufferARB(dc, pixel_format, size.width(), size.height(),
                                has_render_texture ? pb_attribs : 0);
-    if(!pbuf) {
+    if (!pbuf) {
         // try again without the render_texture extension
         pbuf = wglCreatePbufferARB(dc, pixel_format, size.width(), size.height(), 0);
         has_render_texture = false;
         if (!pbuf) {
             qWarning("QGLPixelBuffer: Unable to create pbuffer [w=%d, h=%d] - giving up.", size.width(), size.height());
-            ReleaseDC(dmy.winId(), dc);
             return false;
         }
     }
 
-    ReleaseDC(dmy.winId(), dc);
     dc = wglGetPbufferDCARB(pbuf);
     ctx = wglCreateContext(dc);
-
     if (!dc || !ctx) {
         qWarning("QGLPixelBuffer: Unable to create pbuffer context - giving up.");
         return false;
     }
+
+    // Explicitly disable the render_texture extension if we have a 
+    // multi-sampled pbuffer context. This seems to be a problem only with 
+    // ATI cards if multi-sampling is forced globally in the driver.
+    wglMakeCurrent(dc, ctx);
+    GLint samples = 0;
+    glGetIntegerv(GL_SAMPLES_ARB, &samples);
+    if (has_render_texture && samples != 0)
+        has_render_texture = false;
 
     HGLRC share_ctx = shareWidget ? shareWidget->d_func()->glcx->d_func()->rc : 0;
     if (share_ctx && !wglShareLists(share_ctx, ctx))

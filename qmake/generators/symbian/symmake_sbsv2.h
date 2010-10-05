@@ -65,12 +65,15 @@ public:
 
 private:
     void exportFlm();
-    QString gcceVersion();
-    QString configClause(QString &platform,
-                         QString &build,
-                         QString &winscwClauseTemplate,
-                         QString &gcceClauseTemplate,
-                         QString &genericClauseTemplate);
+    void findGcceVersions(QStringList *gcceVersionList, QString *defaultVersion);
+    void findRvctVersions(QStringList *rvctVersionList, QString *defaultVersion);
+    void findInstalledCompilerVersions(const QString &matchExpression,
+                                       const QString &versionPrefix,
+                                       QStringList *versionList);
+    QString configClause(const QString &platform,
+                         const QString &build,
+                         const QString &compilerVersion,
+                         const QString &clauseTemplate);
 
     void writeSbsDeploymentList(const DeploymentList& depList, QTextStream& t);
 

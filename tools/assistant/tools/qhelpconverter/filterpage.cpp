@@ -50,7 +50,7 @@ FilterPage::FilterPage(QWidget *parent)
     setTitle(tr("Filter Settings"));
     setSubTitle(tr("Specify the filter attributes for the "
         "documentation. If filter attributes are used, "
-        "also define a custom filter for it. Both, the "
+        "also define a custom filter for it. Both the "
         "filter attributes and the custom filters are "
         "optional."));
 

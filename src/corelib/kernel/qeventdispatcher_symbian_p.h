@@ -82,7 +82,7 @@ public:
     QActiveObject(TInt priority, QEventDispatcherSymbian *dispatcher);
     ~QActiveObject();
 
-    bool okToRun();
+    bool maybeQueueForLater();
 
     void reactivateAndComplete();
 
@@ -95,7 +95,7 @@ private:
     int m_iterationCount;
 };
 
-class QWakeUpActiveObject : public CActive
+class QWakeUpActiveObject : public QActiveObject
 {
 public:
     QWakeUpActiveObject(QEventDispatcherSymbian *dispatcher);
@@ -106,9 +106,6 @@ public:
 protected:
     void DoCancel();
     void RunL();
-
-private:
-    QEventDispatcherSymbian *m_dispatcher;
 };
 
 struct SymbianTimerInfo : public QSharedData
@@ -277,6 +274,7 @@ private:
     QAtomicInt m_wakeUpDone;
 
     unsigned char m_iterationCount;
+    bool m_insideTimerEvent;
     bool m_noSocketEvents;
     QList<QSocketActiveObject *> m_deferredSocketEvents;
 

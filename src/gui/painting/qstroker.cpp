@@ -190,6 +190,7 @@ static inline qreal adapted_angle_on_x(const QLineF &line)
 QStrokerOps::QStrokerOps()
     : m_elements(0)
     , m_curveThreshold(qt_real_to_fixed(0.25))
+    , m_dashThreshold(qt_real_to_fixed(0.25))
     , m_customData(0)
     , m_moveTo(0)
     , m_lineTo(0)
@@ -243,7 +244,7 @@ void QStrokerOps::strokePath(const QPainterPath &path, void *customData, const Q
     if (path.isEmpty())
         return;
 
-    setCurveThresholdFromTransform(matrix);
+    setCurveThresholdFromTransform(QTransform());
     begin(customData);
     int count = path.elementCount();
     if (matrix.isIdentity()) {
@@ -315,7 +316,7 @@ void QStrokerOps::strokePolygon(const QPointF *points, int pointCount, bool impl
     if (!pointCount)
         return;
 
-    setCurveThresholdFromTransform(matrix);
+    setCurveThresholdFromTransform(QTransform());
     begin(data);
     if (matrix.isIdentity()) {
         moveTo(qt_real_to_fixed(points[0].x()), qt_real_to_fixed(points[0].y()));
@@ -356,7 +357,7 @@ void QStrokerOps::strokeEllipse(const QRectF &rect, void *data, const QTransform
         }
     }
 
-    setCurveThresholdFromTransform(matrix);
+    setCurveThresholdFromTransform(QTransform());
     begin(data);
     moveTo(qt_real_to_fixed(start.x()), qt_real_to_fixed(start.y()));
     for (int i=0; i<12; i+=3) {
@@ -609,7 +610,7 @@ void QStroker::joinPoints(qfixed focal_x, qfixed focal_y, const QLineF &nextLine
             }
             QLineF miterLine(QPointF(qt_fixed_to_real(focal_x),
                                      qt_fixed_to_real(focal_y)), isect);
-            if (miterLine.length() > qt_fixed_to_real(m_strokeWidth * m_miterLimit) / 2) {
+            if (type == QLineF::NoIntersection || miterLine.length() > qt_fixed_to_real(m_strokeWidth * m_miterLimit) / 2) {
                 emitLineTo(qt_real_to_fixed(nextLine.x1()),
                            qt_real_to_fixed(nextLine.y1()));
             } else {
@@ -1142,7 +1143,7 @@ void QDashStroker::processCurrentSubpath()
 
     QPainterPath dashPath;
 
-    QSubpathFlatIterator it(&m_elements, m_curveThreshold);
+    QSubpathFlatIterator it(&m_elements, m_dashThreshold);
     qfixed2d prev = it.next();
 
     bool clipping = !m_clip_rect.isEmpty();

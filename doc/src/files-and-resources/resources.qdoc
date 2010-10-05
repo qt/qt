@@ -54,7 +54,7 @@
     The resource system is based on tight cooperation between \l qmake,
     \l rcc (Qt's resource compiler), and QFile. It obsoletes Qt 3's
     \c qembed tool and the
-    \l{http://doc.qt.nokia.com/qq/qq05-iconography.html}{image
+    \l{http://qt.nokia.com/doc/qq/qq05-iconography.html#imagestorage}{image
     collection} mechanism.
 
     \section1 Resource Collection Files (\c{.qrc})
@@ -155,6 +155,26 @@
     even on Windows and Mac OS X, where the operating system provides
     native support for resources. This might change in a future Qt
     release.
+
+    \section1 Compression
+
+    Resources are compressed by default (in the \c ZIP format). It is
+    possible to turn off compression. This can be useful if your
+    resources already contain a compressed format, such as \c .png
+    files. You do this by giving the \c {-no-compress} command line
+    argument.
+
+    \code
+        rcc -no-compress myresources.qrc 
+    \endcode
+
+    \c rcc also gives you some control over the compression. You can
+    specify the compression level and the threshold level to consider
+    while compressing files, for example:
+
+    \code
+        rcc -compress 2 -threshold 3 myresources.qrc
+    \endcode
 
     \section1 Using Resources in the Application
 

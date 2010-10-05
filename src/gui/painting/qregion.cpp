@@ -1699,8 +1699,8 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include <limits.h>
 QT_END_INCLUDE_NAMESPACE
 
-/*  1 if two BOXs overlap.
- *  0 if two BOXs do not overlap.
+/*  1 if two BOXes overlap.
+ *  0 if two BOXes do not overlap.
  *  Remember, x2 and y2 are not in the region
  */
 #define EXTENTCHECK(r1, r2) \

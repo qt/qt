@@ -851,7 +851,7 @@ void QWin32PrintEnginePrivate::strokePath_dev(const QPainterPath &path, const QC
 
     HPEN pen = ExtCreatePen(((penWidth == 0) ? PS_COSMETIC : PS_GEOMETRIC)
                             | PS_SOLID | capStyle | joinStyle,
-                            penWidth, &brush, 0, 0);
+                            (penWidth == 0) ? 1 : penWidth, &brush, 0, 0);
 
     HGDIOBJ old_pen = SelectObject(hdc, pen);
     StrokePath(hdc);

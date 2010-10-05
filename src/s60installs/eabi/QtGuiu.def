@@ -9389,7 +9389,7 @@ EXPORTS
 	_ZNK20QGraphicsItemPrivate19genericMapFromSceneERK7QPointFPK7QWidget @ 9388 NONAME
 	_ZNK20QGraphicsItemPrivate19maybeExtraItemCacheEv @ 9389 NONAME
 	_ZNK20QGraphicsItemPrivate20discardUpdateRequestEbbbb @ 9390 NONAME ABSENT
-	_ZNK20QGraphicsItemPrivate21effectiveBoundingRectEv @ 9391 NONAME
+	_ZNK20QGraphicsItemPrivate21effectiveBoundingRectEv @ 9391 NONAME ABSENT
 	_ZNK20QGraphicsItemPrivate22inputMethodQueryHelperEN2Qt16InputMethodQueryE @ 9392 NONAME
 	_ZNK20QGraphicsItemPrivate24combineTransformToParentEP10QTransformPKS0_ @ 9393 NONAME
 	_ZNK20QGraphicsItemPrivate26combineTransformFromParentEP10QTransformPKS0_ @ 9394 NONAME
@@ -12092,5 +12092,10 @@ EXPORTS
 	_ZN11QFontEngine16lastRightBearingERK12QGlyphLayoutb @ 12091 NONAME
 	_ZN18QTapAndHoldGesture10setTimeoutEi @ 12092 NONAME
 	_ZN18QTapAndHoldGesture7timeoutEv @ 12093 NONAME
-	_ZN20QGraphicsItemPrivate26childrenBoundingRectHelperEP10QTransformP6QRectFb @ 12094 NONAME
+	_ZN20QGraphicsItemPrivate26childrenBoundingRectHelperEP10QTransformP6QRectFb @ 12094 NONAME ABSENT
+	_ZN20QGraphicsItemPrivate14children_clearEP24QDeclarativeListPropertyI15QGraphicsObjectE @ 12095 NONAME
+	_ZN19QApplicationPrivate19qmljsDebugArgumentsE @ 12096 NONAME DATA 4
+	_ZN20QGraphicsItemPrivate26childrenBoundingRectHelperEP10QTransformP6QRectFP13QGraphicsItem @ 12097 NONAME
+	_ZNK20QGraphicsItemPrivate21effectiveBoundingRectEP13QGraphicsItem @ 12098 NONAME
+	_ZNK5QFont14lastResortFontEv @ 12099 NONAME
 

@@ -58,18 +58,21 @@ QBearerEngine::~QBearerEngine()
         it.value()->isValid = false;
         it.value()->id.clear();
     }
+    snapConfigurations.clear();
 
     for (it = accessPointConfigurations.begin(), end = accessPointConfigurations.end();
          it != end; ++it) {
         it.value()->isValid = false;
         it.value()->id.clear();
     }
+    accessPointConfigurations.clear();
 
     for (it = userChoiceConfigurations.begin(), end = userChoiceConfigurations.end();
          it != end; ++it) {
         it.value()->isValid = false;
         it.value()->id.clear();
     }
+    userChoiceConfigurations.clear();
 }
 
 bool QBearerEngine::requiresPolling() const

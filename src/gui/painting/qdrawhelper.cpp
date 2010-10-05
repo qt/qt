@@ -4835,7 +4835,7 @@ void QT_FASTCALL blendUntransformed_dest24(DST *dest, const SRC *src,
 
         if (SRC::hasAlpha()) {
             while (length >= 4) {
-                const quint32 alpha = BYTE_MUL(uint(alpha_4(src)), uint(coverage));
+                const quint32 alpha = QT_PREPEND_NAMESPACE(BYTE_MUL)(uint(alpha_4(src)), uint(coverage));
                 if (alpha)
                     interpolate_pixel_4(dest, src, alpha);
                 length -= 4;

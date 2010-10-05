@@ -305,6 +305,8 @@ void QDeclarativeAbstractAnimation::componentFinalized()
     animation will finish playing normally but not restart.
 
     By default, the alwaysRunToEnd property is not set.
+
+    \note alwaysRunToEnd has no effect on animations in a Transition.
 */
 bool QDeclarativeAbstractAnimation::alwaysRunToEnd() const
 {
@@ -2192,6 +2194,13 @@ void QDeclarativePropertyAnimation::setProperties(const QString &prop)
     The singular forms are slightly optimized, so if you do have only a single target/property
     to animate you should try to use them.
 
+    The \c targets property allows multiple targets to be set. For example, this animates the
+    \c x property of both \c itemA and \c itemB:
+
+    \qml
+    NumberAnimation { targets: [itemA, itemB]; properties: "x"; to: 500 }
+    \endqml
+
     In many cases these properties do not need to be explicitly specified, as they can be
     inferred from the animation framework:
 
@@ -2255,7 +2264,7 @@ void QDeclarativePropertyAnimation::setProperties(const QString &prop)
 
     As seen in the above example, properties is specified as a comma-separated string of property names to animate.
 
-    \sa exclude
+    \sa exclude, {QML Animation}
 */
 QDeclarativeListProperty<QObject> QDeclarativePropertyAnimation::targets()
 {
@@ -2699,14 +2708,15 @@ void QDeclarativeParentAnimation::transition(QDeclarativeStateActions &actions,
 
                 qreal scale = 1;
                 qreal rotation = 0;
-                if (ok && transform.type() != QTransform::TxRotate) {
+                bool isRotate = (transform.type() == QTransform::TxRotate) || (transform.m11() < 0);
+                if (ok && !isRotate) {
                     if (transform.m11() == transform.m22())
                         scale = transform.m11();
                     else {
                         qmlInfo(this) << QDeclarativeParentAnimation::tr("Unable to preserve appearance under non-uniform scale");
                         ok = false;
                     }
-                } else if (ok && transform.type() == QTransform::TxRotate) {
+                } else if (ok && isRotate) {
                     if (transform.m11() == transform.m22())
                         scale = qSqrt(transform.m11()*transform.m11() + transform.m12()*transform.m12());
                     else {

@@ -46,7 +46,7 @@
 
 #include <QtCore/qtimer.h>
 
-#include <maemo_icd.h>
+#include "maemo_icd.h"
 
 QT_BEGIN_NAMESPACE
 

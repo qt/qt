@@ -98,6 +98,10 @@ QT_BEGIN_NAMESPACE
 extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 #endif
 
+#ifdef Q_WS_MAC
+extern bool qt_applefontsmoothing_enabled;
+#endif
+
 extern QImage qt_imageForBrush(int brushStyle, bool invert);
 
 ////////////////////////////////// Private Methods //////////////////////////////////////////
@@ -612,8 +616,6 @@ void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
     }
 
     if (newMode == TextDrawingMode) {
-        setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, (GLfloat*)vertexCoordinateArray.data());
-        setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, (GLfloat*)textureCoordinateArray.data());
         shaderManager->setHasComplexGeometry(true);
     } else {
         shaderManager->setHasComplexGeometry(false);
@@ -1314,7 +1316,7 @@ void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, c
     QGLRect srcRect(src.left(), top, src.right(), bottom);
 
     bool isBitmap = pixmap.isQBitmap();
-    bool isOpaque = !isBitmap && !pixmap.hasAlphaChannel();
+    bool isOpaque = !isBitmap && !pixmap.hasAlpha();
 
     d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            state()->renderHints & QPainter::SmoothPixmapTransform, texture->id);
@@ -1444,7 +1446,7 @@ namespace {
     {
     public:
         QOpenGLStaticTextUserData()
-            : QStaticTextUserData(OpenGLUserData)
+            : QStaticTextUserData(OpenGLUserData), cacheSize(0, 0)
         {
         }
 
@@ -1452,6 +1454,7 @@ namespace {
         {
         }
 
+        QSize cacheSize;
         QGL2PEXVertexArray vertexCoordinateArray;
         QGL2PEXVertexArray textureCoordinateArray;
     };
@@ -1474,9 +1477,22 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         staticTextItem->fontEngine->setGlyphCache(ctx, cache);
     }
 
-    cache->setPaintEnginePrivate(this);
-    cache->populate(staticTextItem->fontEngine, staticTextItem->numGlyphs, staticTextItem->glyphs,
-                    staticTextItem->glyphPositions);
+    bool recreateVertexArrays = false;
+    if (staticTextItem->userDataNeedsUpdate)
+        recreateVertexArrays = true;
+    else if (staticTextItem->userData == 0)
+        recreateVertexArrays = true;
+    else if (staticTextItem->userData->type != QStaticTextUserData::OpenGLUserData)
+        recreateVertexArrays = true;
+
+    // We only need to update the cache with new glyphs if we are actually going to recreate the vertex arrays.
+    // If the cache size has changed, we do need to regenerate the vertices, but we don't need to repopulate the
+    // cache so this text is performed before we test if the cache size has changed.
+    if (recreateVertexArrays) {
+        cache->setPaintEnginePrivate(this);
+        cache->populate(staticTextItem->fontEngine, staticTextItem->numGlyphs, staticTextItem->glyphs,
+                        staticTextItem->glyphPositions);
+    }
 
     if (cache->width() == 0 || cache->height() == 0)
         return;
@@ -1487,14 +1503,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 
     GLfloat dx = 1.0 / cache->width();
     GLfloat dy = 1.0 / cache->height();
-
-    bool recreateVertexArrays = false;
-    if (staticTextItem->userDataNeedsUpdate)
-        recreateVertexArrays = true;
-    else if (staticTextItem->userData == 0)
-        recreateVertexArrays = true;
-    else if (staticTextItem->userData->type != QStaticTextUserData::OpenGLUserData)
-        recreateVertexArrays = true;
 
     // Use global arrays by default
     QGL2PEXVertexArray *vertexCoordinates = &vertexCoordinateArray;
@@ -1516,6 +1524,12 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         // Use cache if backend optimizations is turned on
         vertexCoordinates = &userData->vertexCoordinateArray;
         textureCoordinates = &userData->textureCoordinateArray;
+
+        QSize size(cache->width(), cache->height());
+        if (userData->cacheSize != size) {
+            recreateVertexArrays = true;
+            userData->cacheSize = size;
+        }
     }
 
 
@@ -1630,7 +1644,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
             glBindTexture(GL_TEXTURE_2D, cache->texture());
             updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
-            shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
 #if defined(QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO)
             glDrawElements(GL_TRIANGLE_STRIP, 6 * staticTextItem->numGlyphs, GL_UNSIGNED_SHORT, 0);
 #else
@@ -1660,13 +1673,26 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     }
     //### TODO: Gamma correction
 
-    glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
-    if (lastMaskTextureUsed != cache->texture()) {
-        glBindTexture(GL_TEXTURE_2D, cache->texture());
-        lastMaskTextureUsed = cache->texture();
+    QGLTextureGlyphCache::FilterMode filterMode = (s->matrix.type() > QTransform::TxTranslate)?QGLTextureGlyphCache::Linear:QGLTextureGlyphCache::Nearest;
+    if (lastMaskTextureUsed != cache->texture() || cache->filterMode() != filterMode) {
+
+        glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
+        if (lastMaskTextureUsed != cache->texture()) {
+            glBindTexture(GL_TEXTURE_2D, cache->texture());
+            lastMaskTextureUsed = cache->texture();
+        }
+
+        if (cache->filterMode() != filterMode) {
+            if (filterMode == QGLTextureGlyphCache::Linear) {
+                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            } else {
+                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            }
+            cache->setFilterMode(filterMode);
+        }
     }
-    updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, s->matrix.type() > QTransform::TxTranslate);
-    shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
 
 #if defined(QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO)
     glDrawElements(GL_TRIANGLE_STRIP, 6 * staticTextItem->numGlyphs, GL_UNSIGNED_SHORT, 0);
@@ -1765,7 +1791,7 @@ void QGL2PaintEngineExPrivate::drawPixmapFragments(const QPainter::PixmapFragmen
     transferMode(ImageArrayDrawingMode);
 
     bool isBitmap = pixmap.isQBitmap();
-    bool isOpaque = !isBitmap && (!pixmap.hasAlphaChannel() || (hints & QPainter::OpaqueHint)) && allOpaque;
+    bool isOpaque = !isBitmap && (!pixmap.hasAlpha() || (hints & QPainter::OpaqueHint)) && allOpaque;
 
     updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            q->state()->renderHints & QPainter::SmoothPixmapTransform, texture->id);
@@ -1845,6 +1871,9 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 #if !defined(QT_OPENGL_ES_2)
 #if defined(Q_WS_WIN)
     if (qt_cleartype_enabled)
+#endif
+#if defined(Q_WS_MAC)
+    if (qt_applefontsmoothing_enabled)
 #endif
         d->glyphCacheType = QFontEngineGlyphCache::Raster_RGBMask;
 #endif

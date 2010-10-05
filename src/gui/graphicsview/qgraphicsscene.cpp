@@ -1759,7 +1759,7 @@ void QGraphicsScene::render(QPainter *painter, const QRectF &target, const QRect
     painter->save();
 
     // Transform the painter.
-    painter->setClipRect(targetRect);
+    painter->setClipRect(targetRect, Qt::IntersectClip);
     QTransform painterTransform;
     painterTransform *= QTransform()
                         .translate(targetRect.left(), targetRect.top())
@@ -4751,7 +4751,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         ENSURE_TRANSFORM_PTR
         QRect viewBoundingRect = translateOnlyTransform ? brect.translated(transformPtr->dx(), transformPtr->dy()).toAlignedRect()
                                                         : transformPtr->mapRect(brect).toAlignedRect();
-        viewBoundingRect.adjust(-rectAdjust, -rectAdjust, rectAdjust, rectAdjust);
+        viewBoundingRect.adjust(-int(rectAdjust), -int(rectAdjust), rectAdjust, rectAdjust);
         if (widget)
             item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
         drawItem = exposedRegion ? exposedRegion->intersects(viewBoundingRect)
@@ -4814,6 +4814,27 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     }
 }
 
+static inline void setClip(QPainter *painter, QGraphicsItem *item)
+{
+    painter->save();
+    QRectF clipRect;
+    const QPainterPath clipPath(item->shape());
+    if (QPathClipper::pathToRect(clipPath, &clipRect))
+        painter->setClipRect(clipRect, Qt::IntersectClip);
+    else
+        painter->setClipPath(clipPath, Qt::IntersectClip);
+}
+
+static inline void setWorldTransform(QPainter *painter, const QTransform *const transformPtr,
+                                     const QTransform *effectTransform)
+{
+    Q_ASSERT(transformPtr);
+    if (effectTransform)
+        painter->setWorldTransform(*transformPtr * *effectTransform);
+    else
+        painter->setWorldTransform(*transformPtr);
+}
+
 void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const QTransform *const viewTransform,
                                  const QTransform *const transformPtr, QRegion *exposedRegion, QWidget *widget,
                                  qreal opacity, const QTransform *effectTransform,
@@ -4822,36 +4843,37 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
     const bool itemIsFullyTransparent = QGraphicsItemPrivate::isOpacityNull(opacity);
     const bool itemClipsChildrenToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
     const bool itemHasChildren = !item->d_ptr->children.isEmpty();
+    bool setChildClip = itemClipsChildrenToShape;
+    bool itemHasChildrenStackedBehind = false;
 
     int i = 0;
     if (itemHasChildren) {
+        if (itemClipsChildrenToShape)
+            setWorldTransform(painter, transformPtr, effectTransform);
+
         item->d_ptr->ensureSortedChildren();
+        // Items with the 'ItemStacksBehindParent' flag are put in front of the list
+        // so all we have to do is to check the first item.
+        itemHasChildrenStackedBehind = (item->d_ptr->children.at(0)->d_ptr->flags
+                                        & QGraphicsItem::ItemStacksBehindParent);
 
-        if (itemClipsChildrenToShape) {
-            painter->save();
-            Q_ASSERT(transformPtr);
-            if (effectTransform)
-                painter->setWorldTransform(*transformPtr * *effectTransform);
-            else
-                painter->setWorldTransform(*transformPtr);
-            QRectF clipRect;
-            const QPainterPath clipPath(item->shape());
-            if (QPathClipper::pathToRect(clipPath, &clipRect))
-                painter->setClipRect(clipRect, Qt::IntersectClip);
-            else
-                painter->setClipPath(clipPath, Qt::IntersectClip);
-        }
+        if (itemHasChildrenStackedBehind) {
+            if (itemClipsChildrenToShape) {
+                setClip(painter, item);
+                setChildClip = false;
+            }
 
-        // Draw children behind
-        for (i = 0; i < item->d_ptr->children.size(); ++i) {
-            QGraphicsItem *child = item->d_ptr->children.at(i);
-            if (wasDirtyParentSceneTransform)
-                child->d_ptr->dirtySceneTransform = 1;
-            if (!(child->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent))
-                break;
-            if (itemIsFullyTransparent && !(child->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity))
-                continue;
-            drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget, opacity, effectTransform);
+            // Draw children behind
+            for (i = 0; i < item->d_ptr->children.size(); ++i) {
+                QGraphicsItem *child = item->d_ptr->children.at(i);
+                if (wasDirtyParentSceneTransform)
+                    child->d_ptr->dirtySceneTransform = 1;
+                if (!(child->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent))
+                    break;
+                if (itemIsFullyTransparent && !(child->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity))
+                    continue;
+                drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget, opacity, effectTransform);
+            }
         }
     }
 
@@ -4864,38 +4886,50 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
                                      ? *exposedRegion : QRegion(), exposedRegion == 0);
 
         const bool itemClipsToShape = item->d_ptr->flags & QGraphicsItem::ItemClipsToShape;
-        const bool savePainter = itemClipsToShape || painterStateProtection;
-        if (savePainter)
-            painter->save();
+        bool restorePainterClip = false;
 
         if (!itemHasChildren || !itemClipsChildrenToShape) {
-            if (effectTransform)
-                painter->setWorldTransform(*transformPtr * *effectTransform);
-            else
-                painter->setWorldTransform(*transformPtr);
+            // Item does not have children or clip children to shape.
+            setWorldTransform(painter, transformPtr, effectTransform);
+            if ((restorePainterClip = itemClipsToShape))
+                setClip(painter, item);
+        } else if (itemHasChildrenStackedBehind){
+            // Item clips children to shape and has children stacked behind, which means
+            // the painter is already clipped to the item's shape.
+            if (itemClipsToShape) {
+                // The clip is already correct. Ensure correct world transform.
+                setWorldTransform(painter, transformPtr, effectTransform);
+            } else {
+                // Remove clip (this also ensures correct world transform).
+                painter->restore();
+                setChildClip = true;
+            }
+        } else if (itemClipsToShape) {
+            // Item clips children and itself to shape. It does not have hildren stacked
+            // behind, which means the clip has not yet been set. We set it now and re-use it
+            // for the children.
+            setClip(painter, item);
+            setChildClip = false;
         }
 
-        if (itemClipsToShape) {
-            QRectF clipRect;
-            const QPainterPath clipPath(item->shape());
-            if (QPathClipper::pathToRect(clipPath, &clipRect))
-                painter->setClipRect(clipRect, Qt::IntersectClip);
-            else
-                painter->setClipPath(clipPath, Qt::IntersectClip);
-        }
+        if (painterStateProtection && !restorePainterClip)
+            painter->save();
+
         painter->setOpacity(opacity);
-
         if (!item->d_ptr->cacheMode && !item->d_ptr->isWidget)
             item->paint(painter, &styleOptionTmp, widget);
         else
             drawItemHelper(item, painter, &styleOptionTmp, widget, painterStateProtection);
 
-        if (savePainter)
+        if (painterStateProtection || restorePainterClip)
             painter->restore();
     }
 
     // Draw children in front
     if (itemHasChildren) {
+        if (setChildClip)
+            setClip(painter, item);
+
         for (; i < item->d_ptr->children.size(); ++i) {
             QGraphicsItem *child = item->d_ptr->children.at(i);
             if (wasDirtyParentSceneTransform)
@@ -4904,11 +4938,11 @@ void QGraphicsScenePrivate::draw(QGraphicsItem *item, QPainter *painter, const Q
                 continue;
             drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget, opacity, effectTransform);
         }
-    }
 
-    // Restore child clip
-    if (itemHasChildren && itemClipsChildrenToShape)
-        painter->restore();
+        // Restore child clip
+        if (itemClipsChildrenToShape)
+            painter->restore();
+    }
 }
 
 void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, bool invalidateChildren,
@@ -4984,14 +5018,15 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
         return;
     }
 
-    bool hasNoContents = item->d_ptr->flags & QGraphicsItem::ItemHasNoContents
-                         && !item->d_ptr->graphicsEffect;
+    bool hasNoContents = item->d_ptr->flags & QGraphicsItem::ItemHasNoContents;
     if (!hasNoContents) {
         item->d_ptr->dirty = 1;
         if (fullItemUpdate)
             item->d_ptr->fullUpdatePending = 1;
         else if (!item->d_ptr->fullUpdatePending)
             item->d_ptr->needsRepaint |= rect;
+    } else if (item->d_ptr->graphicsEffect) {
+        invalidateChildren = true;
     }
 
     if (invalidateChildren) {
@@ -5270,7 +5305,7 @@ void QGraphicsScene::drawItems(QPainter *painter,
     if (!d->unpolishedItems.isEmpty())
         d->_q_polishItems();
 
-    d->updateAll = false;
+    const qreal opacity = painter->opacity();
     QTransform viewTransform = painter->worldTransform();
     Q_UNUSED(options);
 
@@ -5279,6 +5314,7 @@ void QGraphicsScene::drawItems(QPainter *painter,
     QRegion *expose = 0;
     const quint32 oldRectAdjust = d->rectAdjust;
     if (view) {
+        d->updateAll = false;
         expose = &view->d_func()->exposedRegion;
         if (view->d_func()->optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
             d->rectAdjust = 1;
@@ -5303,6 +5339,7 @@ void QGraphicsScene::drawItems(QPainter *painter,
         topLevelItems.at(i)->d_ptr->itemDiscovered = 0;
 
     painter->setWorldTransform(viewTransform);
+    painter->setOpacity(opacity);
 }
 
 /*!
@@ -6137,7 +6174,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
                                 << g << item.data();
                     }
                     // remember the first item that received the override event
-                    // as it most likely become a target if noone else accepts
+                    // as it most likely become a target if no one else accepts
                     // the override event
                     if (!gestureTargets.contains(g) && item)
                         gestureTargets.insert(g, item.data());

@@ -105,7 +105,7 @@ freebsd-*: DEFINES += HAVE_PTHREAD_NP_H
 DEFINES += BUILD_WEBKIT
 
 # Remove whole program optimizations due to miscompilations
-win32-msvc2005|win32-msvc2008:{
+win32-msvc2005|win32-msvc2008|wince*:{
     QMAKE_CFLAGS_RELEASE -= -GL
     QMAKE_CXXFLAGS_RELEASE -= -GL
 }
@@ -2193,6 +2193,9 @@ contains(DEFINES, ENABLE_NETSCAPE_PLUGIN_API=1) {
                     CONFIG += x11
                     LIBS += -lXrender
                 }
+                maemo5 {
+                    DEFINES += MOZ_PLATFORM_MAEMO=5
+                }
                 SOURCES += \
                     plugins/qt/PluginContainerQt.cpp \
                     plugins/qt/PluginPackageQt.cpp \
@@ -2884,7 +2887,7 @@ HEADERS += $$WEBKIT_API_HEADERS
     exists($$OUTPUT_DIR/include/QtWebKit/classheaders.pri): include($$OUTPUT_DIR/include/QtWebKit/classheaders.pri)
     WEBKIT_INSTALL_HEADERS = $$WEBKIT_API_HEADERS $$WEBKIT_CLASS_HEADERS
 
-    !symbian {
+    !symbian-abld:!symbian-sbsv2 {
         headers.files = $$WEBKIT_INSTALL_HEADERS
 
         !isEmpty(INSTALL_HEADERS): headers.path = $$INSTALL_HEADERS/QtWebKit
@@ -2895,7 +2898,7 @@ HEADERS += $$WEBKIT_API_HEADERS
 
         INSTALLS += target headers
     } else {
-        # INSTALLS is not implemented in qmake's s60 generators, copy headers manually
+        # INSTALLS is not implemented in qmake's mmp generators, copy headers manually
         inst_headers.commands = $$QMAKE_COPY ${QMAKE_FILE_NAME} ${QMAKE_FILE_OUT}
         inst_headers.input = WEBKIT_INSTALL_HEADERS
         inst_headers.CONFIG = no_clean
@@ -2950,7 +2953,7 @@ HEADERS += $$WEBKIT_API_HEADERS
     }
 }
 
-CONFIG(QTDIR_build) {
+!CONFIG(webkit-debug):CONFIG(QTDIR_build) {
     # Remove the following 2 lines if you want debug information in WebCore
     CONFIG -= separate_debug_info
     CONFIG += no_debug_info
