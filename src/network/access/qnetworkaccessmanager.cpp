@@ -946,16 +946,17 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     Q_D(QNetworkAccessManager);
 
     bool isLocalFile = req.url().isLocalFile();
+    QString scheme = req.url().scheme().toLower();
 
     // fast path for GET on file:// URLs
     // The QNetworkAccessFileBackend will right now only be used for PUT
     if ((op == QNetworkAccessManager::GetOperation || op == QNetworkAccessManager::HeadOperation)
-        && (isLocalFile || req.url().scheme() == QLatin1String("qrc"))) {
+        && (isLocalFile || scheme == QLatin1String("qrc"))) {
         return new QNetworkReplyFileImpl(this, req, op);
     }
 
     if ((op == QNetworkAccessManager::GetOperation || op == QNetworkAccessManager::HeadOperation)
-            && req.url().scheme().toLower() == QLatin1String("data")) {
+            && scheme == QLatin1String("data")) {
         return new QNetworkReplyDataImpl(this, req, op);
     }
 
