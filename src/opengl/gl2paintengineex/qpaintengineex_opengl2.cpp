@@ -646,7 +646,7 @@ struct QGL2PEVectorPathCache
     GLuint ibo;
 #else
     float *vertices;
-    quint32 *indices;
+    void *indices;
 #endif
     int vertexCount;
     int indexCount;
@@ -695,14 +695,6 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
         updateMatrix();
 
     const QPointF* const points = reinterpret_cast<const QPointF*>(path.points());
-
-    // ### Remove before release...
-#ifdef Q_OS_SYMBIAN
-    // ### There are some unresolved issues in Symbian vector path caching.
-    static bool do_vectorpath_cache = false;
-#else
-    static bool do_vectorpath_cache = true;
-#endif
 
     // Check to see if there's any hints
     if (path.shape() == QVectorPath::RectangleHint) {
@@ -774,8 +766,7 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
         } else {
       //        printf(" - Marking path as cachable...\n");
             // Tag it for later so that if the same path is drawn twice, it is assumed to be static and thus cachable
-            if (do_vectorpath_cache)
-                path.makeCacheable();
+            path.makeCacheable();
             vertexCoordinateArray.clear();
             vertexCoordinateArray.addPath(path, inverseScale, false);
             prepareForDraw(currentBrush.isOpaque());
@@ -828,13 +819,16 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
                 cache->indexCount = polys.indices.size();
                 cache->primitiveType = GL_TRIANGLES;
                 cache->iscale = inverseScale;
-
 #ifdef QT_OPENGL_CACHE_AS_VBOS
                 glGenBuffers(1, &cache->vbo);
                 glGenBuffers(1, &cache->ibo);
                 glBindBuffer(GL_ARRAY_BUFFER, cache->vbo);
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cache->ibo);
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quint32) * polys.indices.size(), polys.indices.data(), GL_STATIC_DRAW);
+
+                if (glSupportsElementIndexUint)
+                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quint32) * polys.indices.size(), polys.indices.data(), GL_STATIC_DRAW);
+                else
+                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quint16) * polys.indices.size(), polys.indices.data(), GL_STATIC_DRAW);
 
                 QVarLengthArray<float> vertices(polys.vertices.size());
                 for (int i = 0; i < polys.vertices.size(); ++i)
@@ -842,8 +836,13 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
                 glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
 #else
                 cache->vertices = (float *) qMalloc(sizeof(float) * polys.vertices.size());
-                cache->indices = (quint32 *) qMalloc(sizeof(quint32) * polys.indices.size());
-                memcpy(cache->indices, polys.indices.data(), sizeof(quint32) * polys.indices.size());
+                if (glSupportsElementIndexUint) {
+                    cache->indices = (quint32 *) qMalloc(sizeof(quint32) * polys.indices.size());
+                    memcpy(cache->indices, polys.indices.data(), sizeof(quint32) * polys.indices.size());
+                } else {
+                    cache->indices = (quint16 *) qMalloc(sizeof(quint16) * polys.indices.size());
+                    memcpy(cache->indices, polys.indices.data(), sizeof(quint16) * polys.indices.size());
+                }
                 for (int i = 0; i < polys.vertices.size(); ++i)
                     cache->vertices[i] = float(inverseScale * polys.vertices.at(i));
 #endif
@@ -854,19 +853,24 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
             glBindBuffer(GL_ARRAY_BUFFER, cache->vbo);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cache->ibo);
             setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, 0);
-            glDrawElements(cache->primitiveType, cache->indexCount, GL_UNSIGNED_INT, 0);
+            if (glSupportsElementIndexUint)
+                glDrawElements(cache->primitiveType, cache->indexCount, GL_UNSIGNED_INT, 0);
+            else
+                glDrawElements(cache->primitiveType, cache->indexCount, GL_UNSIGNED_SHORT, 0);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
 #else
             setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, cache->vertices);
-            glDrawElements(cache->primitiveType, cache->indexCount, GL_UNSIGNED_INT, cache->indices);
+            if (glSupportsElementIndexUint)
+                glDrawElements(cache->primitiveType, cache->indexCount, GL_UNSIGNED_INT, (qint32 *)cache->indices);
+            else
+                glDrawElements(cache->primitiveType, cache->indexCount, GL_UNSIGNED_SHORT, (qint16 *)cache->indices);
 #endif
 
         } else {
       //        printf(" - Marking path as cachable...\n");
             // Tag it for later so that if the same path is drawn twice, it is assumed to be static and thus cachable
-            if (do_vectorpath_cache)
-                path.makeCacheable();
+            path.makeCacheable();
 
             // The path is too complicated & needs the stencil technique
             vertexCoordinateArray.clear();
