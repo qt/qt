@@ -108,7 +108,7 @@ public:
 private:
     //void dump(QString) const;
 
-    QExplicitlySharedDataPointer<QScriptValuePrivate> m_object;
+    QScriptSharedDataPointer<QScriptValuePrivate> m_object;
     QList<Persistent<String> > m_names;
     QMutableListIterator<Persistent<String> > m_iterator;
 };

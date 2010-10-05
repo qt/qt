@@ -28,7 +28,8 @@
 
 #include <QtCore/qlist.h>
 #include <QtCore/qstringlist.h>
-#include <QtCore/qsharedpointer.h>
+
+#include "qscriptshareddata_p.h"
 
 QT_BEGIN_HEADER
 
@@ -87,7 +88,7 @@ public:
     bool operator!=(const QScriptContextInfo &other) const;
 
 private:
-    QExplicitlySharedDataPointer<QScriptContextInfoPrivate> d_ptr;
+    QScriptSharedDataPointer<QScriptContextInfoPrivate> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptContextInfo)
 };

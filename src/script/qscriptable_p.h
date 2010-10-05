@@ -56,7 +56,7 @@ public:
     inline int argumentCount() const;
     inline QScriptPassPointer<QScriptValuePrivate> argument(int index) const;
 private:
-    QExplicitlySharedDataPointer<QScriptEnginePrivate> m_engine;
+    QScriptSharedDataPointer<QScriptEnginePrivate> m_engine;
 };
 
 inline QScriptEnginePrivate* QScriptablePrivate::engine() const

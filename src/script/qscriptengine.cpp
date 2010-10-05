@@ -1768,7 +1768,7 @@ static v8::Handle<v8::Value> QtClassInstanceNamedPropertyGetter(v8::Local<v8::St
             return originalResult->m_value;
     }
 
-    QExplicitlySharedDataPointer<QScriptValuePrivate> object(new QScriptValuePrivate(scriptclass->engine(), info.This()));
+    QScriptSharedDataPointer<QScriptValuePrivate> object(new QScriptValuePrivate(scriptclass->engine(), info.This()));
     uint id;
     QScriptClass::QueryFlags userFlags = scriptclass->userCallback()->queryProperty(QScriptValuePrivate::get(object.data()),
                                                                 QScriptStringPrivate::get(new QScriptStringPrivate(QScriptConverter::toString(property))),

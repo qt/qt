@@ -37,7 +37,7 @@ QT_MODULE(Script)
 class QScriptStringPrivate;
 
 //internal typedef
-typedef QExplicitlySharedDataPointer<QScriptStringPrivate> QScriptStringPtr;
+typedef QScriptSharedDataPointer<QScriptStringPrivate> QScriptStringPtr;
 
 class Q_SCRIPT_EXPORT QScriptString
 {

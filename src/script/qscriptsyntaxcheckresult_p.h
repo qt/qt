@@ -31,7 +31,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QScriptSyntaxCheckResultPrivate
+class QScriptSyntaxCheckResultPrivate : public QScriptSharedData
 {
 public:
     static inline QScriptSyntaxCheckResult get(QScriptSyntaxCheckResultPrivate* p);
@@ -42,9 +42,6 @@ public:
     inline int errorLineNumber() const;
     inline int errorColumnNumber() const;
     inline QString errorMessage() const;
-
-    QBasicAtomicInt ref;
-
 private:
     int m_errorLineNumber;
     int m_errorColumnNumber;

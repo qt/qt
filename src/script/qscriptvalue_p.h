@@ -137,7 +137,7 @@ public:
 
     inline operator v8::Persistent<v8::Value>() const;
 
-    QExplicitlySharedDataPointer<QScriptEnginePrivate> m_engine;
+    QScriptSharedDataPointer<QScriptEnginePrivate> m_engine;
 
     // Please, update class documentation when you change the enum.
     enum State {

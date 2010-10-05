@@ -223,7 +223,7 @@ private:
 
 private:
     // FIXME check if it is BC and if we can reuse QObject::d_ptr
-    QExplicitlySharedDataPointer<QScriptEnginePrivate> d_ptr;
+    QScriptSharedDataPointer<QScriptEnginePrivate> d_ptr;
     Q_DECLARE_PRIVATE(QScriptEngine)
     Q_DISABLE_COPY(QScriptEngine)
 };

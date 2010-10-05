@@ -50,7 +50,7 @@ public:
     {
         init();
     }
-    inline QScriptIsolate(const QExplicitlySharedDataPointer<QScriptEnginePrivate>& engine, const OperationMode mode = Default)
+    inline QScriptIsolate(const QScriptSharedDataPointer<QScriptEnginePrivate>& engine, const OperationMode mode = Default)
         : m_engine(engine)
         , m_mode(mode)
     {
@@ -74,7 +74,7 @@ private:
     }
 
     Q_DISABLE_COPY(QScriptIsolate);
-    const QExplicitlySharedDataPointer<QScriptEnginePrivate> m_engine;
+    const QScriptSharedDataPointer<QScriptEnginePrivate> m_engine;
     const OperationMode m_mode;
 };
 
