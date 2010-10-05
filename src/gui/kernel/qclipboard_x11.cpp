@@ -838,7 +838,7 @@ static Atom send_selection(QClipboardData *d, Atom target, Window window, Atom p
                             ATOM(INCR), 32, PropModeReplace, (uchar *) &bytes, 1);
 
             (void)new QClipboardINCRTransaction(window, property, atomFormat, dataFormat, data, increment);
-            return ATOM(INCR);
+            return property;
         }
 
         // make sure we can perform the XChangeProperty in a single request
