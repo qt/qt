@@ -57,8 +57,8 @@
 
 #include <math.h>
 
-#include "qgl_p.h"
-#include "qglextensions_p.h"
+#include <private/qgl_p.h>
+#include <private/qglextensions_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -625,7 +625,7 @@ struct QRBTree
     // Return 1 if 'left' comes after 'right', 0 if equal, and -1 otherwise.
     // 'left' and 'right' cannot be null.
     int order(Node *left, Node *right);
-    inline bool verify() const;
+    inline bool validate() const;
 
 private:
     void rotateLeft(Node *node);
@@ -1038,7 +1038,7 @@ bool QRBTree<T>::checkRedBlackProperty(Node *top) const
 }
 
 template <class T>
-inline bool QRBTree<T>::verify() const
+inline bool QRBTree<T>::validate() const
 {
     return checkRedBlackProperty(root) && blackDepth(root) != -1;
 }
@@ -2854,7 +2854,7 @@ void QTriangulator<T>::SimpleToMonotone::monotoneDecomposition()
                 m_edges.at(j).node = node;
                 m_edges.at(j).helper = i;
                 m_edgeList.attachAfter(leftEdgeNode, node);
-                Q_ASSERT(m_edgeList.verify());
+                Q_ASSERT(m_edgeList.validate());
             } else  {
                 leftEdgeNode = searchEdgeLeftOfEdge(i);
                 QRBTree<int>::Node *node = m_edgeList.newNode();
@@ -2862,7 +2862,7 @@ void QTriangulator<T>::SimpleToMonotone::monotoneDecomposition()
                 m_edges.at(i).node = node;
                 m_edges.at(i).helper = i;
                 m_edgeList.attachAfter(leftEdgeNode, node);
-                Q_ASSERT(m_edgeList.verify());
+                Q_ASSERT(m_edgeList.validate());
             }
             break;
         case MergeVertex:
@@ -2881,7 +2881,7 @@ void QTriangulator<T>::SimpleToMonotone::monotoneDecomposition()
                     diagonals.add(QPair<int, int>(i, m_edges.at(i).helper));
                 if (m_edges.at(i).node) {
                     m_edgeList.deleteNode(m_edges.at(i).node);
-                    Q_ASSERT(m_edgeList.verify());
+                    Q_ASSERT(m_edgeList.validate());
                 } else {
                     qWarning("Inconsistent polygon. (#5)");
                 }
@@ -2890,7 +2890,7 @@ void QTriangulator<T>::SimpleToMonotone::monotoneDecomposition()
                     diagonals.add(QPair<int, int>(i, m_edges.at(j).helper));
                 if (m_edges.at(j).node) {
                     m_edgeList.deleteNode(m_edges.at(j).node);
-                    Q_ASSERT(m_edgeList.verify());
+                    Q_ASSERT(m_edgeList.validate());
                 } else {
                     qWarning("Inconsistent polygon. (#6)");
                 }
