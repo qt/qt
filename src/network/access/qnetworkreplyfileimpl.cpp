@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qfilenetworkreply_p.h"
+#include "qnetworkreplyfileimpl_p.h"
 
 #include "QtCore/qdatetime.h"
 #include <QtCore/QCoreApplication>
@@ -48,22 +48,22 @@
 
 QT_BEGIN_NAMESPACE
 
-QFileNetworkReplyPrivate::QFileNetworkReplyPrivate()
+QNetworkReplyFileImplPrivate::QNetworkReplyFileImplPrivate()
     : QNetworkReplyPrivate(), fileEngine(0), fileSize(0), filePos(0)
 {
 }
 
-QFileNetworkReplyPrivate::~QFileNetworkReplyPrivate()
+QNetworkReplyFileImplPrivate::~QNetworkReplyFileImplPrivate()
 {
     delete fileEngine;
 }
 
-QFileNetworkReply::~QFileNetworkReply()
+QNetworkReplyFileImpl::~QNetworkReplyFileImpl()
 {
 }
 
-QFileNetworkReply::QFileNetworkReply(QObject *parent, const QNetworkRequest &req, const QNetworkAccessManager::Operation op)
-    : QNetworkReply(*new QFileNetworkReplyPrivate(), parent)
+QNetworkReplyFileImpl::QNetworkReplyFileImpl(QObject *parent, const QNetworkRequest &req, const QNetworkAccessManager::Operation op)
+    : QNetworkReply(*new QNetworkReplyFileImplPrivate(), parent)
 {
     setRequest(req);
     setUrl(req.url());
@@ -71,7 +71,7 @@ QFileNetworkReply::QFileNetworkReply(QObject *parent, const QNetworkRequest &req
     setFinished(true);
     QNetworkReply::open(QIODevice::ReadOnly);
 
-    QFileNetworkReplyPrivate *d = (QFileNetworkReplyPrivate*) d_func();
+    QNetworkReplyFileImplPrivate *d = (QNetworkReplyFileImplPrivate*) d_func();
 
     QUrl url = req.url();
     if (url.host() == QLatin1String("localhost"))
@@ -143,48 +143,48 @@ QFileNetworkReply::QFileNetworkReply(QObject *parent, const QNetworkRequest &req
     QMetaObject::invokeMethod(this, "readyRead", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
 }
-void QFileNetworkReply::close()
+void QNetworkReplyFileImpl::close()
 {
-    Q_D(QFileNetworkReply);
+    Q_D(QNetworkReplyFileImpl);
     QNetworkReply::close();
     if (d->fileEngine)
         d->fileEngine->close();
 }
 
-void QFileNetworkReply::abort()
+void QNetworkReplyFileImpl::abort()
 {
-    Q_D(QFileNetworkReply);
+    Q_D(QNetworkReplyFileImpl);
     QNetworkReply::close();
     if (d->fileEngine)
         d->fileEngine->close();
 }
 
-qint64 QFileNetworkReply::bytesAvailable() const
+qint64 QNetworkReplyFileImpl::bytesAvailable() const
 {
-    Q_D(const QFileNetworkReply);
+    Q_D(const QNetworkReplyFileImpl);
     if (!d->fileEngine)
         return 0;
 
     return QNetworkReply::bytesAvailable() + d->fileSize - d->filePos;
 }
 
-bool QFileNetworkReply::isSequential () const
+bool QNetworkReplyFileImpl::isSequential () const
 {
     return true;
 }
 
-qint64 QFileNetworkReply::size() const
+qint64 QNetworkReplyFileImpl::size() const
 {
-    Q_D(const QFileNetworkReply);
+    Q_D(const QNetworkReplyFileImpl);
     return d->fileSize;
 }
 
 /*!
     \internal
 */
-qint64 QFileNetworkReply::readData(char *data, qint64 maxlen)
+qint64 QNetworkReplyFileImpl::readData(char *data, qint64 maxlen)
 {
-    Q_D(QFileNetworkReply);
+    Q_D(QNetworkReplyFileImpl);
     if (!d->fileEngine)
         return -1;
 
@@ -201,5 +201,5 @@ qint64 QFileNetworkReply::readData(char *data, qint64 maxlen)
 
 QT_END_NAMESPACE
 
-#include "moc_qfilenetworkreply_p.cpp"
+#include "moc_qnetworkreplyfileimpl_p.cpp"
 

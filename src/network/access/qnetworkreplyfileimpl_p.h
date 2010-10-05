@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QFILENETWORKREPLY_P_H
-#define QFILENETWORKREPLY_P_H
+#ifndef QNETWORKREPLYFILEIMPL_H
+#define QNETWORKREPLYFILEIMPL_H
 
 //
 //  W A R N I N G
@@ -62,13 +62,13 @@
 QT_BEGIN_NAMESPACE
 
 
-class QFileNetworkReplyPrivate;
-class QFileNetworkReply: public QNetworkReply
+class QNetworkReplyFileImplPrivate;
+class QNetworkReplyFileImpl: public QNetworkReply
 {
     Q_OBJECT
 public:
-    QFileNetworkReply(QObject *parent, const QNetworkRequest &req, const QNetworkAccessManager::Operation op);
-    ~QFileNetworkReply();
+    QNetworkReplyFileImpl(QObject *parent, const QNetworkRequest &req, const QNetworkAccessManager::Operation op);
+    ~QNetworkReplyFileImpl();
     virtual void abort();
 
     // reimplemented from QNetworkReply
@@ -79,22 +79,22 @@ public:
 
     virtual qint64 readData(char *data, qint64 maxlen);
 
-    Q_DECLARE_PRIVATE(QFileNetworkReply)
+    Q_DECLARE_PRIVATE(QNetworkReplyFileImpl)
 };
 
-class QFileNetworkReplyPrivate: public QNetworkReplyPrivate
+class QNetworkReplyFileImplPrivate: public QNetworkReplyPrivate
 {
 public:
-    QFileNetworkReplyPrivate();
-    ~QFileNetworkReplyPrivate();
+    QNetworkReplyFileImplPrivate();
+    ~QNetworkReplyFileImplPrivate();
 
     QAbstractFileEngine *fileEngine;
     qint64 fileSize;
     qint64 filePos;
 
-    Q_DECLARE_PUBLIC(QFileNetworkReply)
+    Q_DECLARE_PUBLIC(QNetworkReplyFileImpl)
 };
 
 QT_END_NAMESPACE
 
-#endif // QFILENETWORKREPLY_P_H
+#endif // QNETWORKREPLYFILEIMPL_H
