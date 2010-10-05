@@ -251,20 +251,38 @@ bool QAudioOutputPrivate::open()
     QTime now(QTime::currentTime());
     qDebug()<<now.second()<<"s "<<now.msec()<<"ms :open()";
 #endif
-    if (!(settings.frequency() >= 8000 && settings.frequency() <= 48000)) {
+
+    period_size = 0;
+
+    if (!settings.isValid()) {
+        qWarning("QAudioOutput: open error, invalid format.");
+    } else if (settings.channels() <= 0) {
+        qWarning("QAudioOutput: open error, invalid number of channels (%d).",
+                 settings.channels());
+    } else if (settings.sampleSize() <= 0) {
+        qWarning("QAudioOutput: open error, invalid sample size (%d).",
+                 settings.sampleSize());
+    } else if (settings.frequency() < 8000 || settings.frequency() > 48000) {
+        qWarning("QAudioOutput: open error, frequency out of range (%d).", settings.frequency());
+    } else if (buffer_size == 0) {
+        // Default buffer size, 200ms, default period size is 40ms
+        buffer_size
+                = (settings.frequency()
+                * settings.channels()
+                * settings.sampleSize()
+                + 39) / 40;
+        period_size = buffer_size / 5;
+    } else {
+        period_size = buffer_size / 5;
+    }
+
+    if (period_size == 0) {
         errorState = QAudio::OpenError;
         deviceState = QAudio::StoppedState;
         emit stateChanged(deviceState);
-        qWarning("QAudioOutput: open error, frequency out of range.");
         return false;
     }
-    if(buffer_size == 0) {
-        // Default buffer size, 200ms, default period size is 40ms
-        buffer_size = settings.frequency()*settings.channels()*(settings.sampleSize()/8)*0.2;
-	period_size = buffer_size/5;
-    } else {
-        period_size = buffer_size/5;
-    }
+
     waveBlocks = allocateBlocks(period_size, buffer_size/period_size);
 
     mutex.lock();

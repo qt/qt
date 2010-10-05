@@ -54,7 +54,7 @@
 #include "qnetworkaccessfilebackend_p.h"
 #include "qnetworkaccessdatabackend_p.h"
 #include "qnetworkaccessdebugpipebackend_p.h"
-#include "qfilenetworkreply_p.h"
+#include "qnetworkreplyfileimpl_p.h"
 
 #include "QtCore/qbuffer.h"
 #include "QtCore/qurl.h"
@@ -949,11 +949,10 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     bool isLocalFile = req.url().isLocalFile();
 
     // fast path for GET on file:// URLs
-    // The QNetworkAccessFileBackend will right now only be used
-    // for PUT or qrc://
+    // The QNetworkAccessFileBackend will right now only be used for PUT
     if ((op == QNetworkAccessManager::GetOperation || op == QNetworkAccessManager::HeadOperation)
-         && isLocalFile) {
-        return new QFileNetworkReply(this, req, op);
+        && (isLocalFile || req.url().scheme() == QLatin1String("qrc"))) {
+        return new QNetworkReplyFileImpl(this, req, op);
     }
 
 #ifndef QT_NO_BEARERMANAGEMENT

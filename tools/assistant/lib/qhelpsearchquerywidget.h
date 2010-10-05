@@ -68,7 +68,11 @@ public:
     QHelpSearchQueryWidget(QWidget *parent = 0);
     ~QHelpSearchQueryWidget();
 
+    void expandExtendedSearch();
+    void collapseExtendedSearch();
+
     QList<QHelpSearchQuery> query() const;
+    void setQuery(const QList<QHelpSearchQuery> &queryList);
 
 Q_SIGNALS:
     void search();

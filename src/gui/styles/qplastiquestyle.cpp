@@ -1362,11 +1362,8 @@ void QPlastiqueStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
         if (const QStyleOptionFrame *lineEdit = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
             // Panel of a line edit inside combo box or spin box is drawn in CC_ComboBox and CC_SpinBox
             if (widget) {
-#ifndef QT_NO_COMBOBOX
-                if (qobject_cast<const QComboBox *>(widget->parentWidget()))
-                    break;
-#endif
 #ifndef QT_NO_SPINBOX
+                // Spinbox doesn't need a separate palette for the lineedit
                 if (qobject_cast<const QAbstractSpinBox *>(widget->parentWidget()))
                     break;
 #endif

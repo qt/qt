@@ -66,8 +66,7 @@ private slots:
     void initTestCase();
 
     void name();
-    void isEnabled();
-    void enabledChanged();
+    void status();
     void sendMessage();
     void idForObject();
     void objectForId();
@@ -97,31 +96,24 @@ void tst_QDeclarativeDebugService::name()
     QCOMPARE(service.name(), name);
 }
 
-void tst_QDeclarativeDebugService::isEnabled()
+void tst_QDeclarativeDebugService::status()
 {
-    QDeclarativeDebugTestService service("tst_QDeclarativeDebugService::isEnabled()", m_conn);
-    QCOMPARE(service.isEnabled(), false);
+    QDeclarativeDebugTestService service("tst_QDeclarativeDebugService::status()");
+    QCOMPARE(service.status(), QDeclarativeDebugService::Unavailable);
 
-    QDeclarativeDebugTestClient client("tst_QDeclarativeDebugService::isEnabled()", m_conn);
-    client.setEnabled(true);
-    QDeclarativeDebugTest::waitForSignal(&service, SIGNAL(enabledStateChanged()));
-    QCOMPARE(service.isEnabled(), true);
+    {
+        QDeclarativeDebugTestClient client("tst_QDeclarativeDebugService::status()", m_conn);
+        QTRY_COMPARE(client.status(), QDeclarativeDebugClient::Enabled);
+        QTRY_COMPARE(service.status(), QDeclarativeDebugService::Enabled);
+    }
 
-    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugService: Conflicting plugin name \"tst_QDeclarativeDebugService::isEnabled()\" ");
-    QDeclarativeDebugService duplicate("tst_QDeclarativeDebugService::isEnabled()", m_conn);
-    QCOMPARE(duplicate.isEnabled(), false);
-}
 
-void tst_QDeclarativeDebugService::enabledChanged()
-{
-    QDeclarativeDebugTestService service("tst_QDeclarativeDebugService::enabledChanged()");
-    QDeclarativeDebugTestClient client("tst_QDeclarativeDebugService::enabledChanged()", m_conn);
+    QTRY_COMPARE(service.status(), QDeclarativeDebugService::Unavailable);
 
-    QCOMPARE(service.enabled, false);
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugService: Conflicting plugin name \"tst_QDeclarativeDebugService::status()\" ");
 
-    client.setEnabled(true);
-    QDeclarativeDebugTest::waitForSignal(&service, SIGNAL(enabledStateChanged()));
-    QCOMPARE(service.enabled, true);
+    QDeclarativeDebugService duplicate("tst_QDeclarativeDebugService::status()");
+    QCOMPARE(duplicate.status(), QDeclarativeDebugService::NotConnected);
 }
 
 void tst_QDeclarativeDebugService::sendMessage()
@@ -130,6 +122,9 @@ void tst_QDeclarativeDebugService::sendMessage()
     QDeclarativeDebugTestClient client("tst_QDeclarativeDebugService::sendMessage()", m_conn);
 
     QByteArray msg = "hello!";
+
+    QTRY_COMPARE(client.status(), QDeclarativeDebugClient::Enabled);
+    QTRY_COMPARE(service.status(), QDeclarativeDebugService::Enabled);
 
     client.sendMessage(msg);
     QByteArray resp = client.waitForResponse();

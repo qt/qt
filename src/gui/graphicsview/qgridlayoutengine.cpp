@@ -306,20 +306,19 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
                         ultimatePreferredSize = ultimatePreferredSize * 3 / 2;
                         ultimateSumPreferredSizes = ultimateSumPreferredSizes * 3 / 2;
 
-                        qreal ultimateFactor = (stretch * ultimateSumPreferredSizes
-                                                / sumStretches)
-                                               - (box.q_preferredSize);
-                        qreal transitionalFactor = sumCurrentAvailable
-                                                   * (ultimatePreferredSize - box.q_preferredSize)
-                                                   / (ultimateSumPreferredSizes
-                                                      - sumPreferredSizes);
-
-                        qreal alpha = qMin(sumCurrentAvailable,
-                                           ultimateSumPreferredSizes - sumPreferredSizes);
                         qreal beta = ultimateSumPreferredSizes - sumPreferredSizes;
+                        if (!beta) {
+                            factors[i] = 1;
+                        } else {
+                            qreal alpha = qMin(sumCurrentAvailable, beta);
+                            qreal ultimateFactor = (stretch * ultimateSumPreferredSizes / sumStretches)
+                                                   - (box.q_preferredSize);
+                            qreal transitionalFactor = sumCurrentAvailable * (ultimatePreferredSize - box.q_preferredSize) / beta;
 
-                        factors[i] = ((alpha * ultimateFactor)
-                                      + ((beta - alpha) * transitionalFactor)) / beta;
+                            factors[i] = ((alpha * ultimateFactor)
+                                          + ((beta - alpha) * transitionalFactor)) / beta;
+                        }
+
                     }
                     sumFactors += factors[i];
                     if (desired < sumCurrentAvailable)

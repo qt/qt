@@ -516,6 +516,8 @@ void QThread::start(Priority priority)
     d->running = true;
     d->finished = false;
     d->terminated = false;
+    d->returnCode = 0;
+    d->exited = false;
 
     pthread_attr_t attr;
     pthread_attr_init(&attr);

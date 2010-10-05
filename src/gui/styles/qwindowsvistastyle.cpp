@@ -588,10 +588,6 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                 if (QAbstractSpinBox *spinbox = qobject_cast<QAbstractSpinBox*>(widget->parentWidget()))
                     resolve_mask = spinbox->palette().resolve();
 #endif // QT_NO_SPINBOX
-#ifndef QT_NO_COMBOBOX
-                if (QComboBox *combobox = qobject_cast<QComboBox*>(widget->parentWidget()))
-                    resolve_mask = combobox->palette().resolve();
-#endif // QT_NO_COMBOBOX
             }
             if (resolve_mask & (1 << QPalette::Base)) {
                 // Base color is set for this widget, so use it

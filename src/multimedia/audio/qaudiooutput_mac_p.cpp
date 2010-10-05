@@ -60,11 +60,11 @@
 #include <QtCore/qtimer.h>
 #include <QtCore/qdebug.h>
 
-#include <QtMultimedia/qaudiodeviceinfo.h>
 #include <QtMultimedia/qaudiooutput.h>
 
 #include "qaudio_mac_p.h"
 #include "qaudiooutput_mac_p.h"
+#include "qaudiodeviceinfo_mac_p.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -278,6 +278,7 @@ QAudioOutputPrivate::QAudioOutputPrivate(const QByteArray& device, const QAudioF
     if (QAudio::Mode(mode) == QAudio::AudioInput)
         errorCode = QAudio::OpenError;
     else {
+        audioDeviceInfo = new QAudioDeviceInfoInternal(device, QAudio::AudioOutput);
         isOpen = false;
         audioDeviceId = AudioDeviceID(did);
         audioUnit = 0;
@@ -299,6 +300,7 @@ QAudioOutputPrivate::QAudioOutputPrivate(const QByteArray& device, const QAudioF
 
 QAudioOutputPrivate::~QAudioOutputPrivate()
 {
+    delete audioDeviceInfo;
     close();
 }
 
@@ -424,7 +426,7 @@ QIODevice* QAudioOutputPrivate::start(QIODevice* device)
 {
     QIODevice*  op = device;
 
-    if (!audioFormat.isValid() || !open()) {
+    if (!audioDeviceInfo->isFormatSupported(audioFormat) || !open()) {
         stateCode = QAudio::StoppedState;
         errorCode = QAudio::OpenError;
         return audioIO;

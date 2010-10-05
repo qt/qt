@@ -89,6 +89,7 @@ private slots:
     void recurseOnTimeoutAndStopTimer();
 
     void QTBUG13633_dontBlockEvents();
+    void postedEventsShouldNotStarveTimers();
 };
 
 class TimerHelper : public QObject
@@ -721,6 +722,32 @@ void tst_QTimer::QTBUG13633_dontBlockEvents()
     DontBlockEvents t;
     QTest::qWait(60);
     QVERIFY(t.total > 2);
+}
+
+class SlotRepeater : public QObject {
+    Q_OBJECT
+public:
+    SlotRepeater() {}
+
+public slots:
+    void repeatThisSlot()
+    {
+        QMetaObject::invokeMethod(this, "repeatThisSlot", Qt::QueuedConnection);
+    }
+};
+
+void tst_QTimer::postedEventsShouldNotStarveTimers()
+{
+    TimerHelper timerHelper;
+    QTimer timer;
+    connect(&timer, SIGNAL(timeout()), &timerHelper, SLOT(timeout()));
+    timer.setInterval(0);
+    timer.setSingleShot(false);
+    timer.start();
+    SlotRepeater slotRepeater;
+    slotRepeater.repeatThisSlot();
+    QTest::qWait(100);
+    QVERIFY(timerHelper.count > 5);
 }
 
 QTEST_MAIN(tst_QTimer)

@@ -456,8 +456,8 @@ QDeclarativeFlickable::~QDeclarativeFlickable()
 }
 
 /*!
-    \qmlproperty int Flickable::contentX
-    \qmlproperty int Flickable::contentY
+    \qmlproperty real Flickable::contentX
+    \qmlproperty real Flickable::contentY
 
     These properties hold the surface coordinate currently at the top-left
     corner of the Flickable. For example, if you flick an image up 100 pixels,
@@ -1046,10 +1046,16 @@ void QDeclarativeFlickable::cancelFlick()
 void QDeclarativeFlickablePrivate::data_append(QDeclarativeListProperty<QObject> *prop, QObject *o)
 {
     QGraphicsObject *i = qobject_cast<QGraphicsObject *>(o);
-    if (i)
-        i->setParentItem(static_cast<QDeclarativeFlickablePrivate*>(prop->data)->contentItem);
-    else
+    if (i) {
+        QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(i);
+        if (static_cast<QDeclarativeItemPrivate*>(d)->componentComplete) {
+            i->setParentItem(static_cast<QDeclarativeFlickablePrivate*>(prop->data)->contentItem);
+        } else {
+            d->setParentItemHelper(static_cast<QDeclarativeFlickablePrivate*>(prop->data)->contentItem, 0, 0);
+        }
+    } else {
         o->setParent(prop->object);
+    }
 }
 
 int QDeclarativeFlickablePrivate::data_count(QDeclarativeListProperty<QObject> *property)
@@ -1141,8 +1147,8 @@ void QDeclarativeFlickable::setBoundsBehavior(BoundsBehavior b)
 }
 
 /*!
-    \qmlproperty int Flickable::contentWidth
-    \qmlproperty int Flickable::contentHeight
+    \qmlproperty real Flickable::contentWidth
+    \qmlproperty real Flickable::contentHeight
 
     The dimensions of the content (the surface controlled by Flickable). Typically this
     should be set to the combined size of the items placed in the Flickable. Note this

@@ -2077,22 +2077,22 @@ to
     </message>
 </context>
 <context>
-    <name>QDeclarativeTypeData</name>
+    <name>QDeclarativeTypeLoader</name>
     <message>
         <source>Script %1 unavailable</source>
-        <translation type="unfinished"></translation>
+        <translation>Скрипт %1 недоступний</translation>
     </message>
     <message>
         <source>Type %1 unavailable</source>
-        <translation type="unfinished">Тип %1 недоступний</translation>
+        <translation>Тип %1 недоступний</translation>
     </message>
     <message>
         <source>Namespace %1 cannot be used as a type</source>
-        <translation type="unfinished">Простір імен %1 не може бути використаний як тип</translation>
+        <translation>Простір імен %1 не може бути використаний як тип</translation>
     </message>
     <message>
         <source>%1 %2</source>
-        <translation type="unfinished">%1 %2</translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -6123,7 +6123,7 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Voice Dial</source>
-        <extracomment>Button to trigger voice dialling</extracomment>
+        <extracomment>Button to trigger voice dialing</extracomment>
         <translation>Голосовий набір</translation>
     </message>
     <message>

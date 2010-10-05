@@ -66,6 +66,8 @@ private slots:
     void targetChanged();
     void unknownSignals_data();
     void unknownSignals();
+    void errors_data();
+    void errors();
 
 private:
     QDeclarativeEngine engine;
@@ -195,7 +197,36 @@ void tst_qdeclarativeconnection::unknownSignals()
     QDeclarativeConnections *connections = item->findChild<QDeclarativeConnections*>("connections");
     QVERIFY(connections);
 
+    if (file == "connection-unknownsignals-ignored.qml")
+        QVERIFY(connections->ignoreUnknownSignals());
+
     delete item;
+}
+
+void tst_qdeclarativeconnection::errors_data()
+{
+    QTest::addColumn<QString>("file");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("no \"on\"") << "error-property.qml" << "Cannot assign to non-existent property \"fakeProperty\"";
+    QTest::newRow("3rd letter lowercase") << "error-property2.qml" << "Cannot assign to non-existent property \"onfakeProperty\"";
+    QTest::newRow("child object") << "error-object.qml" << "Connections: nested objects not allowed";
+    QTest::newRow("grouped object") << "error-syntax.qml" << "Connections: syntax error";
+}
+
+void tst_qdeclarativeconnection::errors()
+{
+    QFETCH(QString, file);
+    QFETCH(QString, error);
+
+    QUrl url = QUrl::fromLocalFile(SRCDIR "/data/" + file);
+
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, url);
+    QVERIFY(c.isError() == true);
+    QList<QDeclarativeError> errors = c.errors();
+    QVERIFY(errors.count() == 1);
+    QCOMPARE(errors.at(0).description(), error);
 }
 
 QTEST_MAIN(tst_qdeclarativeconnection)

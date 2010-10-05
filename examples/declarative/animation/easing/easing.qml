@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 import "content"
 
 Rectangle {
@@ -137,7 +137,7 @@ Rectangle {
 
     Flickable {
         anchors.fill: parent
-        contentHeight: layout.height
+        contentHeight: layout.height+50
         Rectangle {
             id: titlePane
             color: "#444444"
