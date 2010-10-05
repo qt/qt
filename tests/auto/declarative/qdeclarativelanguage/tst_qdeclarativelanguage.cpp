@@ -128,6 +128,8 @@ private slots:
     void defaultPropertyListOrder();
     void declaredPropertyValues();
     void dontDoubleCallClassBegin();
+    void reservedWords_data();
+    void reservedWords();
 
     void basicRemote_data();
     void basicRemote();
@@ -1220,6 +1222,80 @@ void tst_qdeclarativelanguage::dontDoubleCallClassBegin()
     QCOMPARE(o2->componentCompleteCount(), 1);
 
     delete o;
+}
+
+void tst_qdeclarativelanguage::reservedWords_data()
+{
+    QTest::addColumn<QByteArray>("word");
+
+    QTest::newRow("abstract") << QByteArray("abstract");
+    QTest::newRow("as") << QByteArray("as");
+    QTest::newRow("boolean") << QByteArray("boolean");
+    QTest::newRow("break") << QByteArray("break");
+    QTest::newRow("byte") << QByteArray("byte");
+    QTest::newRow("case") << QByteArray("case");
+    QTest::newRow("catch") << QByteArray("catch");
+    QTest::newRow("char") << QByteArray("char");
+    QTest::newRow("class") << QByteArray("class");
+    QTest::newRow("continue") << QByteArray("continue");
+    QTest::newRow("const") << QByteArray("const");
+    QTest::newRow("debugger") << QByteArray("debugger");
+    QTest::newRow("default") << QByteArray("default");
+    QTest::newRow("delete") << QByteArray("delete");
+    QTest::newRow("do") << QByteArray("do");
+    QTest::newRow("double") << QByteArray("double");
+    QTest::newRow("else") << QByteArray("else");
+    QTest::newRow("enum") << QByteArray("enum");
+    QTest::newRow("export") << QByteArray("export");
+    QTest::newRow("extends") << QByteArray("extends");
+    QTest::newRow("false") << QByteArray("false");
+    QTest::newRow("final") << QByteArray("final");
+    QTest::newRow("finally") << QByteArray("finally");
+    QTest::newRow("float") << QByteArray("float");
+    QTest::newRow("for") << QByteArray("for");
+    QTest::newRow("function") << QByteArray("function");
+    QTest::newRow("goto") << QByteArray("goto");
+    QTest::newRow("if") << QByteArray("if");
+    QTest::newRow("implements") << QByteArray("implements");
+    QTest::newRow("import") << QByteArray("import");
+    QTest::newRow("in") << QByteArray("in");
+    QTest::newRow("instanceof") << QByteArray("instanceof");
+    QTest::newRow("int") << QByteArray("int");
+    QTest::newRow("interface") << QByteArray("interface");
+    QTest::newRow("long") << QByteArray("long");
+    QTest::newRow("native") << QByteArray("native");
+    QTest::newRow("new") << QByteArray("new");
+    QTest::newRow("null") << QByteArray("null");
+    QTest::newRow("package") << QByteArray("package");
+    QTest::newRow("private") << QByteArray("private");
+    QTest::newRow("protected") << QByteArray("protected");
+    QTest::newRow("public") << QByteArray("public");
+    QTest::newRow("return") << QByteArray("return");
+    QTest::newRow("short") << QByteArray("short");
+    QTest::newRow("static") << QByteArray("static");
+    QTest::newRow("super") << QByteArray("super");
+    QTest::newRow("switch") << QByteArray("switch");
+    QTest::newRow("synchronized") << QByteArray("synchronized");
+    QTest::newRow("this") << QByteArray("this");
+    QTest::newRow("throw") << QByteArray("throw");
+    QTest::newRow("throws") << QByteArray("throws");
+    QTest::newRow("transient") << QByteArray("transient");
+    QTest::newRow("true") << QByteArray("true");
+    QTest::newRow("try") << QByteArray("try");
+    QTest::newRow("typeof") << QByteArray("typeof");
+    QTest::newRow("var") << QByteArray("var");
+    QTest::newRow("void") << QByteArray("void");
+    QTest::newRow("volatile") << QByteArray("volatile");
+    QTest::newRow("while") << QByteArray("while");
+    QTest::newRow("with") << QByteArray("with");
+}
+
+void tst_qdeclarativelanguage::reservedWords()
+{
+    QFETCH(QByteArray, word);
+    QDeclarativeComponent component(&engine);
+    component.setData("import QtQuick 1.0\nQtObject { property string " + word + " }", QUrl());
+    QCOMPARE(component.errorString(), QLatin1String(":2 Expected token `identifier'\n"));
 }
 
 // Check that first child of qml is of given type. Empty type insists on error.
