@@ -38,7 +38,7 @@ QT_BEGIN_NAMESPACE
 
 class QScriptEnginePrivate;
 
-class QScriptProgramPrivate
+class QScriptProgramPrivate : public QScriptSharedData
 {
 public:
     inline static QScriptProgramPrivate* get(const QScriptProgram& program);
@@ -62,7 +62,6 @@ public:
     inline bool isCompiled() const;
     v8::Persistent<v8::Script> compiled(const QScriptEnginePrivate* engine);
 
-    QBasicAtomicInt ref;
     QString m_program;
     QString m_fileName;
     int m_line;

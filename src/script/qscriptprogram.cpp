@@ -151,11 +151,11 @@ v8::Persistent<v8::Script> QScriptProgramPrivate::compiled(const QScriptEnginePr
 
     if (m_engine) {
         //Different engine, we need to dicard the old handle with the other isolate
-        QScriptIsolate api(m_engine);
+        QScriptIsolate api(m_engine, QScriptIsolate::NotNullEngine);
+        Q_ASSERT(!m_compiled.IsEmpty());
         m_compiled.Dispose();
         m_compiled.Clear();
     }
-
     // Recompile the script
     // FIXME maybe we can reuse the same script?
     m_engine = const_cast<QScriptEnginePrivate*>(engine);
