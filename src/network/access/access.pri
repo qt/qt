@@ -12,7 +12,6 @@ HEADERS += \
     access/qnetworkaccessmanager_p.h \
     access/qnetworkaccesscache_p.h \
     access/qnetworkaccessbackend_p.h \
-    access/qnetworkaccessdatabackend_p.h \
     access/qnetworkaccessdebugpipebackend_p.h \
     access/qnetworkaccesshttpbackend_p.h \
     access/qnetworkaccessfilebackend_p.h \
@@ -45,7 +44,6 @@ SOURCES += \
     access/qnetworkaccessmanager.cpp \
     access/qnetworkaccesscache.cpp \
     access/qnetworkaccessbackend.cpp \
-    access/qnetworkaccessdatabackend.cpp \
     access/qnetworkaccessdebugpipebackend.cpp \
     access/qnetworkaccessfilebackend.cpp \
     access/qnetworkaccesscachebackend.cpp \

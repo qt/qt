@@ -52,7 +52,6 @@
 #include "qnetworkaccesshttpbackend_p.h"
 #include "qnetworkaccessftpbackend_p.h"
 #include "qnetworkaccessfilebackend_p.h"
-#include "qnetworkaccessdatabackend_p.h"
 #include "qnetworkaccessdebugpipebackend_p.h"
 #include "qnetworkreplydataimpl_p.h"
 #include "qnetworkreplyfileimpl_p.h"
@@ -70,7 +69,6 @@ QT_BEGIN_NAMESPACE
 Q_GLOBAL_STATIC(QNetworkAccessHttpBackendFactory, httpBackend)
 #endif // QT_NO_HTTP
 Q_GLOBAL_STATIC(QNetworkAccessFileBackendFactory, fileBackend)
-Q_GLOBAL_STATIC(QNetworkAccessDataBackendFactory, dataBackend)
 #ifndef QT_NO_FTP
 Q_GLOBAL_STATIC(QNetworkAccessFtpBackendFactory, ftpBackend)
 #endif // QT_NO_FTP
@@ -84,7 +82,7 @@ static void ensureInitialized()
 #ifndef QT_NO_HTTP
     (void) httpBackend();
 #endif // QT_NO_HTTP
-    (void) dataBackend();
+
 #ifndef QT_NO_FTP
     (void) ftpBackend();
 #endif
