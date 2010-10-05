@@ -6311,7 +6311,7 @@ void QPainter::drawText(const QRectF &r, int flags, const QString &str, QRectF *
 
     By default, QPainter draws text anti-aliased.
 
-    \note The y-position is used as the baseline of the font.
+    \note The y-position is used as the top of the font.
 
     \sa Qt::AlignmentFlag, Qt::TextFlag
 */
