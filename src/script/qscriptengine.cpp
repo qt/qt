@@ -1914,6 +1914,7 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newFunction(QScrip
 {
     Q_UNUSED(length);
 
+    // FIXME Valgrind said that we are leaking here!
     QScriptNativeFunctionData *data = new QScriptNativeFunctionData(this, fun);
     v8::Local<v8::Value> dataJS = v8::External::New(reinterpret_cast<void *>(data));
 
@@ -1940,6 +1941,7 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newFunction(QScrip
 QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newFunction(QScriptEngine::FunctionWithArgSignature fun, void *arg)
 {
     // See other newFunction() for commentary. They should have similar implementations.
+    // FIXME valgrind said that we are leaking here!
     QScriptNativeFunctionWithArgData *data = new QScriptNativeFunctionWithArgData(this, fun, arg);
     v8::Local<v8::Value> dataJS(v8::External::New(reinterpret_cast<void *>(data)));
 

@@ -1150,6 +1150,8 @@ v8::Handle<v8::Object> newQtObject(QScriptEnginePrivate *engine, QObject *object
     Q_ASSERT(!instanceTempl.IsEmpty());
     v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
     Q_ASSERT(instance->InternalFieldCount() == 1);
+
+    // FIXME We are leaking that!
     QtInstanceData *data = new QtInstanceData(engine, object, own, opt);
     instance->SetPointerInInternalField(0, data);
 
