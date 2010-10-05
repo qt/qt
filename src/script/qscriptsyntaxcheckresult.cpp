@@ -69,6 +69,7 @@ QScriptSyntaxCheckResult::QScriptSyntaxCheckResult(QScriptSyntaxCheckResultPriva
 QScriptSyntaxCheckResult::QScriptSyntaxCheckResult()
     : d_ptr(0)
 {
+    Q_ASSERT(false);
 }
 
 /*!
