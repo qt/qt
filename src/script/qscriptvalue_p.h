@@ -1003,7 +1003,7 @@ QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::call(QScriptValuePr
 
     if (result.IsEmpty()) {
         result = tryCatch.Exception();
-        e->setException(result);
+        e->setException(result, tryCatch.Message());
     }
 
     return new QScriptValuePrivate(e, result);
@@ -1024,7 +1024,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::construct(in
 
     if (result.IsEmpty()) {
         result = tryCatch.Exception();
-        e->setException(result);
+        e->setException(result, tryCatch.Message());
     }
 
     return new QScriptValuePrivate(e, result);

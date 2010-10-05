@@ -770,6 +770,8 @@ static inline v8::Isolate *createEnterIsolate()
     v8::V8::Initialize();
     v8::Isolate *isolate = v8::Isolate::New();
     isolate->Enter();
+    // FIXME It doesn't capture the stack, so backtrace test is failing.
+    v8::V8::SetCaptureStackTraceForUncaughtExceptions(/* capture */ true, /* frame_limit */ 50);
     return isolate;
 }
 
@@ -858,7 +860,7 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
         if (!(*i).IsEmpty())
             (*i).Dispose();
     }
-    m_exception.Dispose();
+    clearExceptions();
 
     m_v8Context->Exit();
     m_v8Context.Dispose();
@@ -876,14 +878,14 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(v8::Handl
     clearExceptions();
     if (script.IsEmpty()) {
         v8::Handle<v8::Value> exception = tryCatch.Exception();
-        setException(exception);
+        setException(exception, tryCatch.Message());
         m_isEvaluating = false;
         return new QScriptValuePrivate(this, exception);
     }
     v8::Handle<v8::Value> result = script->Run();
     if (result.IsEmpty()) {
         v8::Handle<v8::Value> exception = tryCatch.Exception();
-        setException(exception);
+        setException(exception, tryCatch.Message());
         m_isEvaluating = false;
         return new QScriptValuePrivate(this, exception);
     }
@@ -1078,7 +1080,7 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::uncaughtException(
 {
     if (!hasUncaughtException())
         return new QScriptValuePrivate();
-    return new QScriptValuePrivate(const_cast<QScriptEnginePrivate*>(this), m_exception);
+    return new QScriptValuePrivate(const_cast<QScriptEnginePrivate*>(this), static_cast<v8::Handle<v8::Value> >(m_exception));
 }
 
 
@@ -1103,8 +1105,10 @@ void QScriptEngine::clearExceptions()
 */
 int QScriptEngine::uncaughtExceptionLineNumber() const
 {
-    Q_UNIMPLEMENTED();
-    return -1;
+    Q_D(const QScriptEngine);
+    QScriptIsolate api(d_ptr, QScriptIsolate::NotNullEngine);
+    v8::HandleScope handleScope;
+    return d->uncaughtExceptionLineNumber();
 }
 
 /*!
@@ -1116,8 +1120,9 @@ int QScriptEngine::uncaughtExceptionLineNumber() const
 */
 QStringList QScriptEngine::uncaughtExceptionBacktrace() const
 {
-    Q_UNIMPLEMENTED();
-    return QStringList();
+    Q_D(const QScriptEngine);
+    QScriptIsolate api(d_ptr, QScriptIsolate::NotNullEngine);
+    return d->uncaughtExceptionBacktrace();
 }
 
 

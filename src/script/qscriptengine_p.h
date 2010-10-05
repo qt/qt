@@ -27,6 +27,7 @@
 #include <QtCore/qhash.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qset.h>
+#include <QtCore/qstringlist.h>
 
 #include <private/qobject_p.h>
 
@@ -50,6 +51,22 @@ class QScriptClassPrivate;
 class QScriptEnginePrivate
     : public QScriptSharedData
 {
+    class Exception
+    {
+        v8::Persistent<v8::Value> m_value;
+        v8::Persistent<v8::Message> m_message;
+        Q_DISABLE_COPY(Exception);
+    public:
+        inline Exception();
+        inline ~Exception();
+        inline void set(v8::Handle<v8::Value> value, v8::Handle<v8::Message> message);
+        inline void clear();
+        inline operator bool() const;
+        inline operator v8::Handle<v8::Value>() const;
+        inline int lineNumber() const;
+        inline QStringList backtrace() const;
+    };
+
     Q_DECLARE_PUBLIC(QScriptEngine)
 public:
     static QScriptEnginePrivate* get(QScriptEngine* q) { Q_ASSERT(q); return q->d_func(); }
@@ -143,8 +160,10 @@ public:
 
     inline operator v8::Persistent<v8::Context>();
     inline void clearExceptions();
-    inline void setException(v8::Handle<v8::Value> exception);
+    inline void setException(v8::Handle<v8::Value> value, v8::Handle<v8::Message> exception = v8::Handle<v8::Message>());
     inline bool hasUncaughtException() const;
+    inline int uncaughtExceptionLineNumber() const;
+    inline QStringList uncaughtExceptionBacktrace() const;
     QScriptPassPointer<QScriptValuePrivate> uncaughtException() const;
 
     v8::Handle<v8::String> qtDataId();
@@ -163,7 +182,7 @@ private:
     v8::Isolate *m_isolate;
     v8::Persistent<v8::Context> m_v8Context;
     QVarLengthArray<v8::Persistent<v8::Context>, 8> m_v8Contexts;
-    v8::Persistent<v8::Value> m_exception;
+    Exception m_exception;
     QScriptOriginalGlobalObject m_originalGlobalObject;
     v8::Persistent<v8::String> m_qtDataId;
 
@@ -286,23 +305,29 @@ void QScriptEnginePrivate::reportAdditionalMemoryCost(int cost)
         Q_UNIMPLEMENTED();
 }
 
-inline void QScriptEnginePrivate::setException(v8::Handle<v8::Value> exception)
+inline void QScriptEnginePrivate::setException(v8::Handle<v8::Value> value, v8::Handle<v8::Message> msg)
 {
-    if (!m_exception.IsEmpty())
-        m_exception.Dispose();
-
-    m_exception = v8::Persistent<v8::Value>::New(exception);
+    m_exception.set(value, msg);
 }
 
 inline void QScriptEnginePrivate::clearExceptions()
 {
-    m_exception.Dispose();
-    m_exception.Clear();
+    m_exception.clear();
 }
 
 inline bool QScriptEnginePrivate::hasUncaughtException() const
 {
-    return !m_exception.IsEmpty();
+    return m_exception;
+}
+
+inline int QScriptEnginePrivate::uncaughtExceptionLineNumber() const
+{
+    return m_exception.lineNumber();
+}
+
+inline QStringList QScriptEnginePrivate::uncaughtExceptionBacktrace() const
+{
+    return m_exception.backtrace();
 }
 
 inline void QScriptEnginePrivate::enterIsolate() const
@@ -336,6 +361,71 @@ QScriptContextPrivate* QScriptEnginePrivate::setCurrentQSContext(QScriptContextP
     qSwap(ctx, m_currentQsContext);
     return ctx;
 }
+
+QScriptEnginePrivate::Exception::Exception() {}
+
+QScriptEnginePrivate::Exception::~Exception() { clear(); }
+
+void QScriptEnginePrivate::Exception::set(v8::Handle<v8::Value> value, v8::Handle<v8::Message> message)
+{
+    clear();
+    m_value = v8::Persistent<v8::Value>::New(value);
+    m_message = v8::Persistent<v8::Message>::New(message);
+}
+
+void QScriptEnginePrivate::Exception::clear()
+{
+    if (!m_value.IsEmpty()) {
+        m_value.Dispose();
+        m_value.Clear();
+    }
+    if (!m_message.IsEmpty()) {
+        m_message.Dispose();
+        m_message.Clear();
+    }
+}
+
+QScriptEnginePrivate::Exception::operator bool() const
+{
+    return !m_value.IsEmpty();
+}
+
+QScriptEnginePrivate::Exception::operator v8::Handle<v8::Value>() const
+{
+    Q_ASSERT(*this);
+    return m_value;
+}
+
+int QScriptEnginePrivate::Exception::lineNumber() const
+{
+    if (m_message.IsEmpty())
+        return -1;
+    return m_message->GetLineNumber();
+}
+
+QStringList QScriptEnginePrivate::Exception::backtrace() const
+{
+    if (m_message.IsEmpty())
+        return QStringList();
+
+    QStringList backtrace;
+    v8::Handle<v8::StackTrace> trace = m_message->GetStackTrace();
+    if (trace.IsEmpty())
+        // FIXME it should not happen (SetCaptureStackTraceForUncaughtExceptions is called).
+        return QStringList();
+
+    for (int i = 0; i < trace->GetFrameCount(); ++i) {
+        v8::Local<v8::StackFrame> frame = trace->GetFrame(i);
+        backtrace.append(QScriptConverter::toString(frame->GetFunctionName()));
+        backtrace.append(QScriptConverter::toString(frame->GetFunctionName()));
+        backtrace.append(QString::fromAscii("()@"));
+        backtrace.append(QScriptConverter::toString(frame->GetScriptName()));
+        backtrace.append(QString::fromAscii(":"));
+        backtrace.append(QString::number(frame->GetLineNumber()));
+    }
+    return backtrace;
+}
+
 
 QT_END_NAMESPACE
 
