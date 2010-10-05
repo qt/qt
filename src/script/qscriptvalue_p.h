@@ -136,6 +136,7 @@ public:
     inline QScriptEnginePrivate* engine() const;
 
     inline operator v8::Persistent<v8::Value>() const;
+    inline v8::Handle<v8::Value> asV8Value(QScriptEnginePrivate* engine);
 
     QScriptSharedDataPointer<QScriptEnginePrivate> m_engine;
 
@@ -1066,7 +1067,10 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::construct(co
     return construct(argc, argv.data());
 }
 
-
+/*! \internal
+ * Make sure this value is associated with a v8 value belogning to this engine.
+ * If the value was invalid, or belogning to another engine, return false.
+ */
 bool QScriptValuePrivate::assignEngine(QScriptEnginePrivate* engine)
 {
     Q_ASSERT(engine);
@@ -1153,6 +1157,20 @@ inline QScriptValuePrivate::operator v8::Persistent<v8::Value>() const
     Q_ASSERT(isJSBased());
     return m_value;
 }
+
+/*!
+ * Return a v8::Handle, assign to the engine if needed.
+ */
+v8::Handle<v8::Value> QScriptValuePrivate::asV8Value(QScriptEnginePrivate* engine)
+{
+    if (!m_engine) {
+        if (!assignEngine(engine))
+            return v8::Handle<v8::Value>();
+    }
+    Q_ASSERT(isJSBased());
+    return m_value;
+}
+
 
 /*!
   \internal

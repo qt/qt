@@ -55,6 +55,7 @@ HEADERS += \
     $$PWD/qscriptable_p.h \
     $$PWD/qscriptisolate_p.h \
     $$PWD/qscriptshareddata_p.h \
+    $$PWD/qscriptv8objectwrapper_p.h \
 
 SOURCES += \
     $$PWD/qscriptdeclarativeclass.cpp \
@@ -63,7 +64,6 @@ SOURCES += \
 
 HEADERS += \
     $$PWD/qscriptdeclarativeclass_p.h \
-    $$PWD/qscriptdeclarativeobject_p.h \
     $$PWD/qscriptoriginalglobalobject_p.h \
     $$PWD/qscriptqobject_p.h \
     $$PWD/qscriptfunction_p.h
