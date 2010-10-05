@@ -638,7 +638,7 @@ UnixMakefileGenerator::processPrlFiles()
                        (Option::target_mode == Option::TARG_MACX_MODE && opt.startsWith("-F"))) {
                         if(!lflags[arch].contains(opt))
                             lflags[arch].append(opt);
-                    } else if(opt.startsWith("-l")) {
+                    } else if(opt.startsWith("-l") || opt == "-pthread") {
                         // Make sure we keep the dependency-order of libraries
                         if (lflags[arch].contains(opt))
                             lflags[arch].removeAll(opt);
