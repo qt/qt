@@ -1018,3 +1018,10 @@ DEPLOYMENT += my_note
 //! [154]
 DEPLOYMENT -= default_bin_deployment default_resource_deployment default_reg_deployment
 //! [154]
+
+//! [155]
+default_bin_deployment.flags += FILERUN RUNINSTALL
+dep_note.sources = install_note.txt
+dep_note.flags = FILETEXT TEXTEXIT
+DEPLOYMENT += dep_note
+//! [155]
