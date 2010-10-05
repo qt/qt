@@ -82,6 +82,19 @@ private:
     static QSet<QUrl> errors;
 };
 
+DEFINE_BOOL_CONFIG_OPTION(disableImageCache, QML_DISABLE_IMAGE_CACHE);
+
+QDeclarativeTextPrivate::QDeclarativeTextPrivate()
+: color((QRgb)0), style(QDeclarativeText::Normal),
+  hAlign(QDeclarativeText::AlignLeft), vAlign(QDeclarativeText::AlignTop), elideMode(QDeclarativeText::ElideNone),
+  imgDirty(true), dirty(true), richText(false), singleline(false), cache(true), internalWidthUpdate(false), doc(0),
+  format(QDeclarativeText::AutoText), wrapMode(QDeclarativeText::NoWrap)
+{
+    cache = !disableImageCache();
+    QGraphicsItemPrivate::acceptedMouseButtons = Qt::LeftButton;
+    QGraphicsItemPrivate::flags = QGraphicsItemPrivate::flags & ~QGraphicsItem::ItemHasNoContents;
+}
+
 QTextDocumentWithImageResources::QTextDocumentWithImageResources(QDeclarativeText *parent) 
 : QTextDocument(parent), outstanding(0)
 {
@@ -145,7 +158,6 @@ void QTextDocumentWithImageResources::requestFinished()
 void QTextDocumentWithImageResources::setText(const QString &text)
 {
     if (!m_resources.isEmpty()) {
-        qWarning("CLEAR");
         qDeleteAll(m_resources);
         m_resources.clear();
         outstanding = 0;
@@ -792,7 +804,7 @@ void QDeclarativeTextPrivate::updateSize()
 
         //setup instance of QTextLayout for all cases other than richtext
         if (!richText) {
-            size = setupTextLayout(&layout);
+            size = setupTextLayout();
             if (cachedLayoutSize != size) {
                 q->prepareGeometryChange();
                 cachedLayoutSize = size;
@@ -907,10 +919,10 @@ void QDeclarativeTextPrivate::drawOutline(int yOffset)
     imgCache = img;
 }
 
-QSize QDeclarativeTextPrivate::setupTextLayout(QTextLayout *layout)
+QSize QDeclarativeTextPrivate::setupTextLayout()
 {
     Q_Q(QDeclarativeText);
-    layout->setCacheEnabled(true);
+    layout.setCacheEnabled(true);
 
     int height = 0;
     qreal widthUsed = 0;
@@ -920,25 +932,25 @@ QSize QDeclarativeTextPrivate::setupTextLayout(QTextLayout *layout)
     if ((wrapMode != QDeclarativeText::NoWrap || elideMode != QDeclarativeText::ElideNone) && q->widthValid())
         lineWidth = q->width();
 
-    QTextOption textOption = layout->textOption();
+    QTextOption textOption = layout.textOption();
     textOption.setWrapMode(QTextOption::WrapMode(wrapMode));
-    layout->setTextOption(textOption);
+    layout.setTextOption(textOption);
 
-    layout->beginLayout();
+    layout.beginLayout();
 
     while (1) {
-        QTextLine line = layout->createLine();
+        QTextLine line = layout.createLine();
         if (!line.isValid())
             break;
 
         if ((wrapMode != QDeclarativeText::NoWrap || elideMode != QDeclarativeText::ElideNone) && q->widthValid())
             line.setLineWidth(lineWidth);
     }
-    layout->endLayout();
+    layout.endLayout();
 
     int x = 0;
-    for (int i = 0; i < layout->lineCount(); ++i) {
-        QTextLine line = layout->lineAt(i);
+    for (int i = 0; i < layout.lineCount(); ++i) {
+        QTextLine line = layout.lineAt(i);
         widthUsed = qMax(widthUsed, line.naturalTextWidth());
         line.setPosition(QPointF(0, height));
         height += int(line.height());
@@ -1000,7 +1012,7 @@ void QDeclarativeTextPrivate::drawWrappedText(QPainter *p, const QPointF &pos, b
     else
         p->setPen(color);
     p->setFont(font);
-    layout.draw(p, pos);
+    layout.draw(p , pos); 
 }
 
 QPixmap QDeclarativeTextPrivate::richTextImage(bool drawStyle)
@@ -1131,7 +1143,7 @@ void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWid
     } else {
         qreal y = boundingRect().y();
 
-        bool needClip = !clip() && (d->cachedLayoutSize.width() > width() ||
+        bool needClip = clip() && (d->cachedLayoutSize.width() > width() ||
                                     d->cachedLayoutSize.height() > height());
 
         if (needClip) {
