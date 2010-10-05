@@ -1654,9 +1654,6 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         }
         
         writeDetailedDescription(nsn, marker, false, QString("Detailed Description"));
-
-        // not included: <example> or <apiImpl>
-
         xmlWriter().writeEndElement(); // </cxxClassDetail>
 
         // not included: <related-links>
@@ -1666,6 +1663,15 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         detailSections = marker->sections(inner, CodeMarker::Detailed, CodeMarker::Okay);
         s = detailSections.begin();
         while (s != detailSections.end()) {
+            if ((*s).name == "Classes") {
+                writeNestedClasses((*s),nsn,marker);
+                break;
+            }
+            ++s;
+        }
+
+        s = detailSections.begin();
+        while (s != detailSections.end()) {
             if ((*s).name == "Function Documentation") {
                 writeFunctions((*s),nsn,marker);
             }
@@ -1673,20 +1679,14 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
                 writeEnumerations((*s),marker);
                 writeTypedefs((*s),marker);
             }
-            else if ((*s).name == "Variable Documentation") {
-                writeDataMembers((*s),marker);
-            }
-            else if ((*s).name == "Property Documentation") {
-                writeProperties((*s),marker);
+            else if ((*s).name == "Namespaces") {
+                qDebug() << "Nested namespaces" << outFileName();
             }
             else if ((*s).name == "Macro Documentation") {
                 writeMacros((*s),marker);
             }
             ++s;
         }
-
-        // not included: <cxxClassInherits>
-
         xmlWriter().writeEndElement(); // </cxxClass>
     }
     else if (inner->type() == Node::Class) {
@@ -4773,7 +4773,7 @@ void DitaXmlGenerator::writeDerivations(const ClassNode* cn, CodeMarker* marker)
 void DitaXmlGenerator::writeLocation(const Node* n)
 {
     QString s1, s2, s3;
-    if (n->type() == Node::Class) {
+    if (n->type() == Node::Class || n->type() == Node::Namespace) {
         s1 = CXXCLASSAPIITEMLOCATION;
         s2 = CXXCLASSDECLARATIONFILE;
         s3 = CXXCLASSDECLARATIONFILELINE;
@@ -5562,186 +5562,32 @@ void DitaXmlGenerator::writeDetailedDescription(const Node* node,
     inDetailedDescription = false;
 }
 
+/*!
+  Write the nested class elements.
+ */
+void DitaXmlGenerator::writeNestedClasses(const Section& s, 
+                                          const Node* n, 
+                                          CodeMarker* marker)
+{
+    if (s.members.isEmpty())
+        return;
+    xmlWriter().writeStartElement("cxxClassNested");
+    xmlWriter().writeStartElement("cxxClassNestedDetail");
+    
+    NodeList::ConstIterator m = s.members.begin();
+    while (m != s.members.end()) {
+        if ((*m)->type() == Node::Class) {
+            xmlWriter().writeStartElement("cxxClassNestedClass");
+            QString link = linkForNode((*m), n);
+            xmlWriter().writeAttribute("href", link);
+            QString name = n->name() + "::" + (*m)->name();
+            xmlWriter().writeCharacters(name);
+            xmlWriter().writeEndElement(); // <cxxClassNestedClass>
+        }
+        ++m;
+    }
+    xmlWriter().writeEndElement(); // <cxxClassNestedDetail>
+    xmlWriter().writeEndElement(); // <cxxClassNested>
+}
+
 QT_END_NAMESPACE
-
-#ifdef TO_BE_INCLUDED_IN_API_DESC
-zzzz
-    Text subtitleText;
-    if (rawTitle != fullTitle)
-        subtitleText << "(" << Atom(Atom::AutoLink, fullTitle) << ")"
-                     << Atom(Atom::LineBreak);
-
-    QString shortVersion;
-    shortVersion = project + " " + shortVersion + ": ";
-    shortVersion = myTree->version();
-    if (shortVersion.count(QChar('.')) == 2)
-        shortVersion.truncate(shortVersion.lastIndexOf(QChar('.')));
-    if (!shortVersion.isEmpty()) {
-        if (project == "QSA")
-            shortVersion = "QSA " + shortVersion + ": ";
-        else
-            shortVersion = "Qt " + shortVersion + ": ";
-    }
-
-    out() << "  <title>" << shortVersion << protectEnc(title) << "</title>\n";
-
-#if 0    
-    out() << QString(postHeader).replace("\\" + COMMAND_VERSION, myTree->version());
-    generateBreadCrumbs(title,node,marker);
-    out() << QString(postPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
-#endif    
-    
-    sections = marker->sections(inner, CodeMarker::Summary, CodeMarker::Okay);
-    generateTableOfContents(inner,marker,&sections);
-    generateTitle(title, subtitleText, SmallSubTitle, inner, marker);
-
-    if (cn && !cn->qmlElement().isEmpty()) {
-        generateInstantiatedBy(cn,marker);
-    }
-    
-    generateBrief(inner, marker);
-    generateIncludes(inner, marker);
-    generateStatus(inner, marker);
-    if (cn) {
-        generateInherits(cn, marker);
-        generateInheritedBy(cn, marker);
-    }
-    generateThreadSafeness(inner, marker);
-    generateSince(inner, marker);
-
-    out() << "<ul>\n";
-
-    QString membersLink = generateListOfAllMemberFile(inner, marker);
-    if (!membersLink.isEmpty())
-        out() << "<li><xref href=\"" << membersLink << "\">"
-              << "List of all members, including inherited members</xref></li>\n";
-
-    QString obsoleteLink = generateLowStatusMemberFile(inner,
-                                                       marker,
-                                                       CodeMarker::Obsolete);
-    if (!obsoleteLink.isEmpty())
-        out() << "<li><xref href=\"" << obsoleteLink << "\">"
-              << "Obsolete members</xref></li>\n";
-
-    QString compatLink = generateLowStatusMemberFile(inner,
-                                                     marker,
-                                                     CodeMarker::Compat);
-    if (!compatLink.isEmpty())
-        out() << "<li><xref href=\"" << compatLink << "\">"
-              << "Qt 3 support members</xref></li>\n";
-
-    out() << "</ul>\n";
-
-    bool needOtherSection = false;
-
-    /*
-      sections is built above for the call to generateTableOfContents().
-     */
-    s = sections.begin();
-    while (s != sections.end()) {
-        if (s->members.isEmpty() && s->reimpMembers.isEmpty()) {
-            if (!s->inherited.isEmpty())
-                needOtherSection = true;
-        }
-        else {
-            if (!s->members.isEmpty()) {
-                out() << "<hr />\n";
-                out() << "<a name=\""
-                      << registerRef((*s).name.toLower())
-                      << "\"></a>\n";
-                out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
-                generateSection(s->members, inner, marker, CodeMarker::Summary);
-            }
-            if (!s->reimpMembers.isEmpty()) {
-                QString name = QString("Reimplemented ") + (*s).name;
-                out() << "<hr />\n";
-                out() << "<a name=\""
-                      << registerRef(name.toLower())
-                      << "\"></a>\n";
-                out() << "<h2>" << protectEnc(name) << "</h2>\n";
-                generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
-            }
-            generateSectionInheritedList(*s, inner, marker, true);
-        }
-        ++s;
-    }
-
-    if (needOtherSection) {
-        out() << "<h3>Additional Inherited Members</h3>\n";
-        s = sections.begin();
-        while (s != sections.end()) {
-            if (s->members.isEmpty())
-                generateSectionInheritedList(*s, inner, marker);
-            ++s;
-        }
-    }
-
-    out() << "<a name=\"" << registerRef("details") << "\"></a>\n";
-
-    if (!inner->doc().isEmpty()) {
-        out() << "<hr />\n"
-              << "<div class=\"descr\"/>\n" // QTBUG-9504
-              << "<h2>" << "Detailed Description" << "</h2>\n";
-        generateBody(inner, marker);
-        out() << "</div>\n"; // QTBUG-9504
-        generateAlsoList(inner, marker);
-    }
-
-    sections = marker->sections(inner, CodeMarker::Detailed, CodeMarker::Okay);
-    s = sections.begin();
-    while (s != sections.end()) {
-        out() << "<hr />\n";
-        if (!(*s).divClass.isEmpty())
-            out() << "<div class=\"" << (*s).divClass << "\"/>\n"; // QTBUG-9504
-        out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
-
-        NodeList::ConstIterator m = (*s).members.begin();
-        while (m != (*s).members.end()) {
-            if ((*m)->access() != Node::Private) { // ### check necessary?
-                if ((*m)->type() != Node::Class)
-                    generateDetailedMember(*m, inner, marker);
-                else {
-                    out() << "<h3> class ";
-                    generateFullName(*m, inner, marker);
-                    out() << "</h3>";
-                    generateBrief(*m, marker, inner);
-                }
-
-                QStringList names;
-                names << (*m)->name();
-                if ((*m)->type() == Node::Function) {
-                    const FunctionNode *func = reinterpret_cast<const FunctionNode *>(*m);
-                    if (func->metaness() == FunctionNode::Ctor ||
-                        func->metaness() == FunctionNode::Dtor ||
-                        func->overloadNumber() != 1)
-                        names.clear();
-                }
-                else if ((*m)->type() == Node::Property) {
-                    const PropertyNode *prop = reinterpret_cast<const PropertyNode *>(*m);
-                    if (!prop->getters().isEmpty() &&
-                        !names.contains(prop->getters().first()->name()))
-                        names << prop->getters().first()->name();
-                    if (!prop->setters().isEmpty())
-                        names << prop->setters().first()->name();
-                    if (!prop->resetters().isEmpty())
-                        names << prop->resetters().first()->name();
-                }
-                else if ((*m)->type() == Node::Enum) {
-                    const EnumNode *enume = reinterpret_cast<const EnumNode*>(*m);
-                    if (enume->flagsType())
-                        names << enume->flagsType()->name();
-
-                    foreach (const QString &enumName,
-                             enume->doc().enumItemNames().toSet() -
-                             enume->doc().omitEnumItemNames().toSet())
-                        names << plainCode(marker->markedUpEnumValue(enumName,
-                                                                     enume));
-                }
-            }
-            ++m;
-        }
-        if (!(*s).divClass.isEmpty())
-            out() << "</div>\n"; // QTBUG-9504
-        ++s;
-    }
-#endif // TO_BE_INCLUDED_IN_API_DESC
