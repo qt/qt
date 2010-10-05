@@ -63,7 +63,6 @@
 #include <qbitmap.h>
 
 #include <private/qpainter_p.h>
-#include <private/qpdf_p.h>
 #include "qpaintengine.h"
 #include "qvarlengtharray.h"
 #include <private/qpaintengine_raster_p.h>
@@ -1039,9 +1038,7 @@ QFontEngine::Properties QFontEngineWin::properties() const
     p.italicAngle = otm->otmItalicAngle;
     p.postscriptName = QString::fromWCharArray((wchar_t *)((char *)otm + (quintptr)otm->otmpFamilyName)).toLatin1();
     p.postscriptName += QString::fromWCharArray((wchar_t *)((char *)otm + (quintptr)otm->otmpStyleName)).toLatin1();
-#ifndef QT_NO_PRINTER
-    p.postscriptName = QPdf::stripSpecialCharacters(p.postscriptName);
-#endif
+    p.postscriptName = QFontEngine::convertToPostscriptFontFamilyName(p.postscriptName);
     p.boundingBox = QRectF(otm->otmrcFontBox.left, -otm->otmrcFontBox.top,
                            otm->otmrcFontBox.right - otm->otmrcFontBox.left,
                            otm->otmrcFontBox.top - otm->otmrcFontBox.bottom);

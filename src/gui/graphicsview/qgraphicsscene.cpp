@@ -1759,7 +1759,7 @@ void QGraphicsScene::render(QPainter *painter, const QRectF &target, const QRect
     painter->save();
 
     // Transform the painter.
-    painter->setClipRect(targetRect);
+    painter->setClipRect(targetRect, Qt::IntersectClip);
     QTransform painterTransform;
     painterTransform *= QTransform()
                         .translate(targetRect.left(), targetRect.top())
