@@ -397,6 +397,15 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocB
     for (int i = 0; i < depList.size(); ++i)  {
         QString from = depList.at(i).from;
         QString to = depList.at(i).to;
+        QString flags;
+        bool showOnlyFile = false;
+        foreach(QString flag, depList.at(i).flags) {
+            if (flag == QLatin1String("FT")
+                || flag == QLatin1String("FILETEXT")) {
+                showOnlyFile = true;
+            }
+            flags.append(QLatin1Char(',')).append(flag);
+        }
 
         if (epocBuild) {
             // Deploy anything not already deployed from under epoc32 instead from under
@@ -410,8 +419,15 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocB
             }
         }
 
-        t << QString("\"%1\" - \"%2\"").arg(from.replace('\\','/')).arg(to) << endl;
-        ts << QString("\"\" - \"%1\"").arg(romPath(to)) << endl;
+        // Files with "FILETEXT"/"FT" flag are meant for showing only at installation time
+        // and therefore do not belong to the stub package and will not install the file into phone.
+        if (showOnlyFile)
+            to.clear();
+        else
+            ts << QString("\"\" - \"%1\"").arg(romPath(to)) << endl;
+
+        t << QString("\"%1\" - \"%2\"%3").arg(from.replace('\\','/')).arg(to).arg(flags) << endl;
+
     }
     t << endl;
     ts << endl;
