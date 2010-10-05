@@ -65,7 +65,7 @@ public:
     QString m_program;
     QString m_fileName;
     int m_line;
-    QExplicitlySharedDataPointer<QScriptEnginePrivate> m_engine;
+    QScriptSharedDataPointer<QScriptEnginePrivate> m_engine;
     v8::Persistent<v8::Script> m_compiled;
 };
 
