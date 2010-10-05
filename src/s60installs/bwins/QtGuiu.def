@@ -12892,4 +12892,6 @@ EXPORTS
 	?setTimeout@QTapAndHoldGesture@@SAXH@Z @ 12891 NONAME ; void QTapAndHoldGesture::setTimeout(int)
 	?qmljsDebugArguments@QApplicationPrivate@@2VQString@@A @ 12892 NONAME ; class QString QApplicationPrivate::qmljsDebugArguments
 	?effectiveBoundingRect@QGraphicsItemPrivate@@QBE?AVQRectF@@PAVQGraphicsItem@@@Z @ 12893 NONAME ; class QRectF QGraphicsItemPrivate::effectiveBoundingRect(class QGraphicsItem *) const
+	?maxTextureHeight@QTextureGlyphCache@@UBEHXZ @ 12894 NONAME ; int QTextureGlyphCache::maxTextureHeight(void) const
+	?maxTextureWidth@QTextureGlyphCache@@UBEHXZ @ 12895 NONAME ; int QTextureGlyphCache::maxTextureWidth(void) const
 
