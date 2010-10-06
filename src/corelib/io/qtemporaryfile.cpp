@@ -325,6 +325,9 @@ bool QTemporaryFileEngine::isReallyOpen()
     Q_D(QFSFileEngine);
 
     if (!((0 == d->fh) && (-1 == d->fd)
+#if defined (Q_OS_SYMBIAN)
+                && (0 == d->symbianFile.SubSessionHandle())
+#endif
 #if defined Q_OS_WIN
                 && (INVALID_HANDLE_VALUE == d->fileHandle)
 #endif
@@ -377,7 +380,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
             d->closeFileHandle = true;
 
             // Restore the file names (open() resets them).
-            d->fileEntry = QFileSystemEntry(QByteArray(filename), QFileSystemEntry::FromNativePath()); //changed now!
+            d->fileEntry = QFileSystemEntry(QString::fromLocal8Bit(filename)); //note that filename is NOT a native path
             filePathIsTemplate = false;
             delete [] filename;
             return true;
