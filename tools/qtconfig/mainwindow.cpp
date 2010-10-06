@@ -444,7 +444,7 @@ MainWindow::MainWindow()
                 if (sink) {
                     description = QLatin1String(gst_element_factory_get_description(GST_ELEMENT_FACTORY(feature)));
                     ui->audiosinkCombo->addItem(name, name);
-                    ui->audiosinkCombo->setItemData(audiosinkCombo->findText(name), description,
+                    ui->audiosinkCombo->setItemData(ui->audiosinkCombo->findText(name), description,
                                                     Qt::ToolTipRole);
                     gst_object_unref (sink);
                 }
