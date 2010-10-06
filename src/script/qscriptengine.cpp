@@ -87,6 +87,7 @@ static void QtVariantWeakCallback(v8::Persistent<v8::Value> val, void *arg)
 {
     Q_UNUSED(val);
     QtVariantData *data = static_cast<QtVariantData*>(arg);
+    val.Dispose();
     delete data;
 }
 

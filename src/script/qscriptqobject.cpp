@@ -987,6 +987,7 @@ static void QtMetaObjectWeakCallback(v8::Persistent<v8::Value> val, void *arg)
     Q_UNUSED(val);
     QtMetaObjectData *data = static_cast<QtMetaObjectData*>(arg);
     delete data;
+    val.Dispose();
 }
 
 v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *engine, const QMetaObject *mo)
