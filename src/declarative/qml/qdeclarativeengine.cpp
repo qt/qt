@@ -141,7 +141,7 @@ QT_BEGIN_NAMESPACE
     \qml
     // MyRect.qml
 
-    import Qt 4.7
+    import QtQuick 1.0
 
     Item {
         width: 200; height: 200
@@ -177,9 +177,15 @@ static bool qt_QmlQtModule_registered = false;
 
 void QDeclarativeEnginePrivate::defineModule()
 {
+    qmlRegisterType<QDeclarativeComponent>("QtQuick",1,0,"Component");
+    qmlRegisterType<QObject>("QtQuick",1,0,"QtObject");
+    qmlRegisterType<QDeclarativeWorkerScript>("QtQuick",1,0,"WorkerScript");
+
+#ifndef QT_NO_IMPORT_QT47_QML
     qmlRegisterType<QDeclarativeComponent>("Qt",4,7,"Component");
     qmlRegisterType<QObject>("Qt",4,7,"QtObject");
     qmlRegisterType<QDeclarativeWorkerScript>("Qt",4,7,"WorkerScript");
+#endif
 
     qmlRegisterType<QDeclarativeBinding>();
 }
@@ -198,10 +204,10 @@ with enums and functions.  To use it, call the members of the global \c Qt objec
 For example:
 
 \qml
-import Qt 4.7
+import QtQuick 1.0
 
 Text {
-    color: Qt.rgba(255, 0, 0, 1)
+    color: Qt.rgba(1, 0, 0, 1)
     text: Qt.md5("hello, world")
 }
 \endqml
@@ -278,9 +284,11 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
 QUrl QDeclarativeScriptEngine::resolvedUrl(QScriptContext *context, const QUrl& url)
 {
     if (p) {
-        QDeclarativeContextData *ctxt = QDeclarativeEnginePrivate::get(this)->getContext(context);
-        Q_ASSERT(ctxt);
-        return ctxt->resolvedUrl(url);
+        QDeclarativeContextData *ctxt = p->getContext(context);
+        if (ctxt)
+            return ctxt->resolvedUrl(url);
+        else
+            return p->getUrl(context).resolved(url);
     }
     return baseUrl.resolved(url);
 }
@@ -510,7 +518,7 @@ QDeclarativeWorkerScriptEngine *QDeclarativeEnginePrivate::getWorkerScriptEngine
   \code
   QDeclarativeEngine engine;
   QDeclarativeComponent component(&engine);
-  component.setData("import Qt 4.7\nText { text: \"Hello world!\" }", QUrl());
+  component.setData("import QtQuick 1.0\nText { text: \"Hello world!\" }", QUrl());
   QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(component.create());
 
   //add item to view, etc
@@ -1140,12 +1148,8 @@ QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt, QS
         QString arg = ctxt->argument(0).toString();
         if (arg.isEmpty())
             return engine->nullValue();
-        QUrl url;
+        QUrl url = QDeclarativeScriptEngine::get(engine)->resolvedUrl(ctxt, QUrl(arg));
         QDeclarativeContextData* context = activeEnginePriv->getContext(ctxt);
-        if (context)
-            url = QUrl(context->resolvedUrl(QUrl(arg)));
-        else
-            url = activeEnginePriv->getUrl(ctxt).resolved(QUrl(arg));
         QDeclarativeComponent *c = new QDeclarativeComponent(activeEngine, url, activeEngine);
         QDeclarativeComponentPrivate::get(c)->creationContext = context;
         QDeclarativeData::get(c, true)->setImplicitDestructible();
@@ -1629,7 +1633,7 @@ QScriptValue QDeclarativeEnginePrivate::desktopOpenUrl(QScriptContext *ctxt, QSc
         return QScriptValue(e, false);
     bool ret = false;
 #ifndef QT_NO_DESKTOPSERVICES
-    ret = QDesktopServices::openUrl(QUrl(ctxt->argument(0).toString()));
+    ret = QDesktopServices::openUrl(QDeclarativeScriptEngine::get(e)->resolvedUrl(ctxt, QUrl(ctxt->argument(0).toString())));
 #endif
     return QScriptValue(e, ret);
 }

@@ -456,8 +456,8 @@ QDeclarativeFlickable::~QDeclarativeFlickable()
 }
 
 /*!
-    \qmlproperty int Flickable::contentX
-    \qmlproperty int Flickable::contentY
+    \qmlproperty real Flickable::contentX
+    \qmlproperty real Flickable::contentY
 
     These properties hold the surface coordinate currently at the top-left
     corner of the Flickable. For example, if you flick an image up 100 pixels,
@@ -1046,10 +1046,16 @@ void QDeclarativeFlickable::cancelFlick()
 void QDeclarativeFlickablePrivate::data_append(QDeclarativeListProperty<QObject> *prop, QObject *o)
 {
     QGraphicsObject *i = qobject_cast<QGraphicsObject *>(o);
-    if (i)
-        i->setParentItem(static_cast<QDeclarativeFlickablePrivate*>(prop->data)->contentItem);
-    else
+    if (i) {
+        QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(i);
+        if (static_cast<QDeclarativeItemPrivate*>(d)->componentComplete) {
+            i->setParentItem(static_cast<QDeclarativeFlickablePrivate*>(prop->data)->contentItem);
+        } else {
+            d->setParentItemHelper(static_cast<QDeclarativeFlickablePrivate*>(prop->data)->contentItem, 0, 0);
+        }
+    } else {
         o->setParent(prop->object);
+    }
 }
 
 static inline int children_count_helper(QGraphicsObject *object)
@@ -1071,8 +1077,16 @@ static inline void children_clear_helper(QGraphicsObject *object)
 {
     QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(object);
     int childCount = d->children.count();
-    for (int index = 0 ;index < childCount; index++)
-        QGraphicsItemPrivate::get(d->children.at(0))->setParentItemHelper(0, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+    if (static_cast<QDeclarativeItemPrivate*>(d)->componentComplete) {
+        for (int index = 0 ;index < childCount; index++) {
+            d->children.at(0)->setParentItem(0);
+        }
+    } else {
+        for (int index = 0 ;index < childCount; index++) {
+            QGraphicsItemPrivate::get(d->children.at(0))->setParentItemHelper(0, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+        }
+    }
+
 }
 
 int QDeclarativeFlickablePrivate::data_count(QDeclarativeListProperty<QObject> *prop)
@@ -1154,8 +1168,8 @@ void QDeclarativeFlickable::setBoundsBehavior(BoundsBehavior b)
 }
 
 /*!
-    \qmlproperty int Flickable::contentWidth
-    \qmlproperty int Flickable::contentHeight
+    \qmlproperty real Flickable::contentWidth
+    \qmlproperty real Flickable::contentHeight
 
     The dimensions of the content (the surface controlled by Flickable). Typically this
     should be set to the combined size of the items placed in the Flickable. Note this

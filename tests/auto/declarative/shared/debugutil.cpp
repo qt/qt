@@ -60,7 +60,7 @@ bool QDeclarativeDebugTest::waitForSignal(QObject *receiver, const char *member,
 }
 
 QDeclarativeDebugTestService::QDeclarativeDebugTestService(const QString &s, QObject *parent)
-    : QDeclarativeDebugService(s, parent), enabled(false)
+    : QDeclarativeDebugService(s, parent)
 {
 }
 
@@ -69,10 +69,9 @@ void QDeclarativeDebugTestService::messageReceived(const QByteArray &ba)
     sendMessage(ba);
 }
 
-void QDeclarativeDebugTestService::enabledChanged(bool e)
+void QDeclarativeDebugTestService::statusChanged(Status)
 {
-    enabled = e;
-    emit enabledStateChanged();
+    emit statusHasChanged();
 }
 
 
@@ -92,9 +91,14 @@ QByteArray QDeclarativeDebugTestClient::waitForResponse()
     return lastMsg;
 }
 
+void QDeclarativeDebugTestClient::statusChanged(Status stat)
+{
+    QCOMPARE(stat, status());
+    emit statusHasChanged();
+}
+
 void QDeclarativeDebugTestClient::messageReceived(const QByteArray &ba)
 {
     lastMsg = ba;
     emit serverMessage(ba);
 }
-

@@ -227,6 +227,8 @@ public:
     static const uchar *getCMap(const uchar *table, uint tableSize, bool *isSymbolFont, int *cmapSize);
     static quint32 getTrueTypeGlyphIndex(const uchar *cmap, uint unicode);
 
+    static QByteArray convertToPostscriptFontFamilyName(const QByteArray &fontFamily);
+
     QAtomicInt ref;
     QFontDef fontDef;
     uint cache_cost; // amount of mem used in kb by the font

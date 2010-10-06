@@ -1,4 +1,4 @@
-import Qt 4.7
+import QtQuick 1.0
 Rectangle {
     color: "black"
     width: (runtime.orientation == Orientation.Landscape || runtime.orientation == Orientation.LandscapeInverted) ? 300 : 200

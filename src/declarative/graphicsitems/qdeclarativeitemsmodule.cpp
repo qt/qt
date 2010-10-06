@@ -97,7 +97,84 @@ void QDeclarativeItemModule::defineModule()
 {
     QDeclarativePrivate::RegisterAutoParent autoparent = { 0, &qgraphicsobject_autoParent };
     QDeclarativePrivate::qmlregister(QDeclarativePrivate::AutoParentRegistration, &autoparent);
+#ifdef QT_NO_MOVIE
+    qmlRegisterTypeNotAvailable("QtQuick",1,0,"AnimatedImage",
+        qApp->translate("QDeclarativeAnimatedImage","Qt was built without support for QMovie"));
+#else
+    qmlRegisterType<QDeclarativeAnimatedImage>("QtQuick",1,0,"AnimatedImage");
+#endif
+    qmlRegisterType<QDeclarativeBorderImage>("QtQuick",1,0,"BorderImage");
+    qmlRegisterType<QDeclarativeColumn>("QtQuick",1,0,"Column");
+    qmlRegisterType<QDeclarativeDrag>("QtQuick",1,0,"Drag");
+    qmlRegisterType<QDeclarativeFlickable>("QtQuick",1,0,"Flickable");
+    qmlRegisterType<QDeclarativeFlipable>("QtQuick",1,0,"Flipable");
+    qmlRegisterType<QDeclarativeFlow>("QtQuick",1,0,"Flow");
+    qmlRegisterType<QDeclarativeFocusPanel>("QtQuick",1,0,"FocusPanel");
+    qmlRegisterType<QDeclarativeFocusScope>("QtQuick",1,0,"FocusScope");
+    qmlRegisterType<QDeclarativeGradient>("QtQuick",1,0,"Gradient");
+    qmlRegisterType<QDeclarativeGradientStop>("QtQuick",1,0,"GradientStop");
+    qmlRegisterType<QDeclarativeGrid>("QtQuick",1,0,"Grid");
+    qmlRegisterType<QDeclarativeGridView>("QtQuick",1,0,"GridView");
+    qmlRegisterType<QDeclarativeImage>("QtQuick",1,0,"Image");
+    qmlRegisterType<QDeclarativeItem>("QtQuick",1,0,"Item");
+    qmlRegisterType<QDeclarativeLayoutItem>("QtQuick",1,0,"LayoutItem");
+    qmlRegisterType<QDeclarativeListView>("QtQuick",1,0,"ListView");
+    qmlRegisterType<QDeclarativeLoader>("QtQuick",1,0,"Loader");
+    qmlRegisterType<QDeclarativeMouseArea>("QtQuick",1,0,"MouseArea");
+    qmlRegisterType<QDeclarativePath>("QtQuick",1,0,"Path");
+    qmlRegisterType<QDeclarativePathAttribute>("QtQuick",1,0,"PathAttribute");
+    qmlRegisterType<QDeclarativePathCubic>("QtQuick",1,0,"PathCubic");
+    qmlRegisterType<QDeclarativePathLine>("QtQuick",1,0,"PathLine");
+    qmlRegisterType<QDeclarativePathPercent>("QtQuick",1,0,"PathPercent");
+    qmlRegisterType<QDeclarativePathQuad>("QtQuick",1,0,"PathQuad");
+    qmlRegisterType<QDeclarativePathView>("QtQuick",1,0,"PathView");
+#ifndef QT_NO_VALIDATOR
+    qmlRegisterType<QIntValidator>("QtQuick",1,0,"IntValidator");
+    qmlRegisterType<QDoubleValidator>("QtQuick",1,0,"DoubleValidator");
+    qmlRegisterType<QRegExpValidator>("QtQuick",1,0,"RegExpValidator");
+#endif
+    qmlRegisterType<QDeclarativeRectangle>("QtQuick",1,0,"Rectangle");
+    qmlRegisterType<QDeclarativeRepeater>("QtQuick",1,0,"Repeater");
+    qmlRegisterType<QGraphicsRotation>("QtQuick",1,0,"Rotation");
+    qmlRegisterType<QDeclarativeRow>("QtQuick",1,0,"Row");
+    qmlRegisterType<QDeclarativeTranslate>("QtQuick",1,0,"Translate");
+    qmlRegisterType<QGraphicsScale>("QtQuick",1,0,"Scale");
+    qmlRegisterType<QDeclarativeText>("QtQuick",1,0,"Text");
+    qmlRegisterType<QDeclarativeTextEdit>("QtQuick",1,0,"TextEdit");
+#ifndef QT_NO_LINEEDIT
+    qmlRegisterType<QDeclarativeTextInput>("QtQuick",1,0,"TextInput");
+#endif
+    qmlRegisterType<QDeclarativeViewSection>("QtQuick",1,0,"ViewSection");
+    qmlRegisterType<QDeclarativeVisualDataModel>("QtQuick",1,0,"VisualDataModel");
+    qmlRegisterType<QDeclarativeVisualItemModel>("QtQuick",1,0,"VisualItemModel");
 
+    qmlRegisterType<QDeclarativeAnchors>();
+    qmlRegisterType<QDeclarativeKeyEvent>();
+    qmlRegisterType<QDeclarativeMouseEvent>();
+    qmlRegisterType<QGraphicsObject>();
+    qmlRegisterType<QGraphicsWidget>("QtQuick",1,0,"QGraphicsWidget");
+    qmlRegisterExtendedType<QGraphicsWidget,QDeclarativeGraphicsWidget>("QtQuick",1,0,"QGraphicsWidget");
+    qmlRegisterType<QGraphicsTransform>();
+    qmlRegisterType<QDeclarativePathElement>();
+    qmlRegisterType<QDeclarativeCurve>();
+    qmlRegisterType<QDeclarativeScaleGrid>();
+#ifndef QT_NO_VALIDATOR
+    qmlRegisterType<QValidator>();
+#endif
+    qmlRegisterType<QDeclarativeVisualModel>();
+#ifndef QT_NO_ACTION
+    qmlRegisterType<QAction>();
+#endif
+    qmlRegisterType<QDeclarativePen>();
+    qmlRegisterType<QDeclarativeFlickableVisibleArea>();
+#ifndef QT_NO_GRAPHICSEFFECT
+    qmlRegisterType<QGraphicsEffect>();
+#endif
+
+    qmlRegisterUncreatableType<QDeclarativeKeyNavigationAttached>("QtQuick",1,0,"KeyNavigation",QDeclarativeKeyNavigationAttached::tr("KeyNavigation is only available via attached properties"));
+    qmlRegisterUncreatableType<QDeclarativeKeysAttached>("QtQuick",1,0,"Keys",QDeclarativeKeysAttached::tr("Keys is only available via attached properties"));
+
+#ifndef QT_NO_IMPORT_QT47_QML
 #ifdef QT_NO_MOVIE
     qmlRegisterTypeNotAvailable("Qt",4,7,"AnimatedImage",
         qApp->translate("QDeclarativeAnimatedImage","Qt was built without support for QMovie"));
@@ -149,29 +226,10 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativeVisualDataModel>("Qt",4,7,"VisualDataModel");
     qmlRegisterType<QDeclarativeVisualItemModel>("Qt",4,7,"VisualItemModel");
 
-    qmlRegisterType<QDeclarativeAnchors>();
-    qmlRegisterType<QDeclarativeKeyEvent>();
-    qmlRegisterType<QDeclarativeMouseEvent>();
-    qmlRegisterType<QGraphicsObject>();
     qmlRegisterType<QGraphicsWidget>("Qt",4,7,"QGraphicsWidget");
     qmlRegisterExtendedType<QGraphicsWidget,QDeclarativeGraphicsWidget>("Qt",4,7,"QGraphicsWidget");
-    qmlRegisterType<QGraphicsTransform>();
-    qmlRegisterType<QDeclarativePathElement>();
-    qmlRegisterType<QDeclarativeCurve>();
-    qmlRegisterType<QDeclarativeScaleGrid>();
-#ifndef QT_NO_VALIDATOR
-    qmlRegisterType<QValidator>();
-#endif
-    qmlRegisterType<QDeclarativeVisualModel>();
-#ifndef QT_NO_ACTION
-    qmlRegisterType<QAction>();
-#endif
-    qmlRegisterType<QDeclarativePen>();
-    qmlRegisterType<QDeclarativeFlickableVisibleArea>();
-#ifndef QT_NO_GRAPHICSEFFECT
-    qmlRegisterType<QGraphicsEffect>();
-#endif
 
     qmlRegisterUncreatableType<QDeclarativeKeyNavigationAttached>("Qt",4,7,"KeyNavigation",QDeclarativeKeyNavigationAttached::tr("KeyNavigation is only available via attached properties"));
     qmlRegisterUncreatableType<QDeclarativeKeysAttached>("Qt",4,7,"Keys",QDeclarativeKeysAttached::tr("Keys is only available via attached properties"));
+#endif
 }

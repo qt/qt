@@ -322,7 +322,8 @@ void tst_QDeclarativePositioners::test_grid()
     QCOMPARE(five->x(), 50.0);
     QCOMPARE(five->y(), 50.0);
 
-    QDeclarativeItem *grid = canvas->rootObject()->findChild<QDeclarativeItem*>("grid");
+    QDeclarativeGrid *grid = canvas->rootObject()->findChild<QDeclarativeGrid*>("grid");
+    QCOMPARE(grid->flow(), QDeclarativeGrid::LeftToRight);
     QCOMPARE(grid->width(), 120.0);
     QCOMPARE(grid->height(), 100.0);
 
@@ -355,7 +356,8 @@ void tst_QDeclarativePositioners::test_grid_topToBottom()
     QCOMPARE(five->x(), 50.0);
     QCOMPARE(five->y(), 50.0);
 
-    QDeclarativeItem *grid = canvas->rootObject()->findChild<QDeclarativeItem*>("grid");
+    QDeclarativeGrid *grid = canvas->rootObject()->findChild<QDeclarativeGrid*>("grid");
+    QCOMPARE(grid->flow(), QDeclarativeGrid::TopToBottom);
     QCOMPARE(grid->width(), 100.0);
     QCOMPARE(grid->height(), 120.0);
 
@@ -670,10 +672,12 @@ void tst_QDeclarativePositioners::test_flow_implicit_resize()
     QCOMPARE(flow->height(), 120.0);
 
     canvas->rootObject()->setProperty("leftToRight", true);
+    QCOMPARE(flow->flow(), QDeclarativeFlow::LeftToRight);
     QCOMPARE(flow->width(), 220.0);
     QCOMPARE(flow->height(), 50.0);
 
     canvas->rootObject()->setProperty("leftToRight", false);
+    QCOMPARE(flow->flow(), QDeclarativeFlow::TopToBottom);
     QCOMPARE(flow->width(), 100.0);
     QCOMPARE(flow->height(), 120.0);
 
@@ -694,80 +698,80 @@ void tst_QDeclarativePositioners::test_conflictinganchors()
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
 
-    component.setData("import Qt 4.7\nColumn { Item {} }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0\nColumn { Item {} }", QUrl::fromLocalFile(""));
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QVERIFY(warningMessage.isEmpty());
 
-    component.setData("import Qt 4.7\nRow { Item {} }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0\nRow { Item {} }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QVERIFY(warningMessage.isEmpty());
 
-    component.setData("import Qt 4.7\nGrid { Item {} }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0\nGrid { Item {} }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QVERIFY(warningMessage.isEmpty());
 
-    component.setData("import Qt 4.7\nFlow { Item {} }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0\nFlow { Item {} }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QVERIFY(warningMessage.isEmpty());
 
-    component.setData("import Qt 4.7\nColumn { Item { anchors.top: parent.top } }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0\nColumn { Item { anchors.top: parent.top } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(warningMessage, QString("file::2:1: QML Column: Cannot specify top, bottom, verticalCenter, fill or centerIn anchors for items inside Column"));
     warningMessage.clear();
 
-    component.setData("import Qt 4.7\nColumn { Item { anchors.centerIn: parent } }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0\nColumn { Item { anchors.centerIn: parent } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(warningMessage, QString("file::2:1: QML Column: Cannot specify top, bottom, verticalCenter, fill or centerIn anchors for items inside Column"));
     warningMessage.clear();
 
-    component.setData("import Qt 4.7\nColumn { Item { anchors.left: parent.left } }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0\nColumn { Item { anchors.left: parent.left } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QVERIFY(warningMessage.isEmpty());
     warningMessage.clear();
 
-    component.setData("import Qt 4.7\nRow { Item { anchors.left: parent.left } }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0\nRow { Item { anchors.left: parent.left } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(warningMessage, QString("file::2:1: QML Row: Cannot specify left, right, horizontalCenter, fill or centerIn anchors for items inside Row"));
     warningMessage.clear();
 
-    component.setData("import Qt 4.7\nRow { Item { anchors.fill: parent } }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0\nRow { Item { anchors.fill: parent } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(warningMessage, QString("file::2:1: QML Row: Cannot specify left, right, horizontalCenter, fill or centerIn anchors for items inside Row"));
     warningMessage.clear();
 
-    component.setData("import Qt 4.7\nRow { Item { anchors.top: parent.top } }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0\nRow { Item { anchors.top: parent.top } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QVERIFY(warningMessage.isEmpty());
     warningMessage.clear();
 
-    component.setData("import Qt 4.7\nGrid { Item { anchors.horizontalCenter: parent.horizontalCenter } }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0\nGrid { Item { anchors.horizontalCenter: parent.horizontalCenter } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(warningMessage, QString("file::2:1: QML Grid: Cannot specify anchors for items inside Grid"));
     warningMessage.clear();
 
-    component.setData("import Qt 4.7\nGrid { Item { anchors.centerIn: parent } }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0\nGrid { Item { anchors.centerIn: parent } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(warningMessage, QString("file::2:1: QML Grid: Cannot specify anchors for items inside Grid"));
     warningMessage.clear();
 
-    component.setData("import Qt 4.7\nFlow { Item { anchors.verticalCenter: parent.verticalCenter } }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0\nFlow { Item { anchors.verticalCenter: parent.verticalCenter } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(warningMessage, QString("file::2:1: QML Flow: Cannot specify anchors for items inside Flow"));
 
-    component.setData("import Qt 4.7\nFlow { Item { anchors.fill: parent } }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0\nFlow { Item { anchors.fill: parent } }", QUrl::fromLocalFile(""));
     item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item);
     QCOMPARE(warningMessage, QString("file::2:1: QML Flow: Cannot specify anchors for items inside Flow"));

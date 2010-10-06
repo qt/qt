@@ -101,6 +101,7 @@ private slots:
     void focusWidget_data();
     void focusWidget();
     void focusWidget2();
+    void focusWidget3();
     void focusPolicy_data();
     void focusPolicy();
     void font_data();
@@ -184,6 +185,7 @@ private slots:
     void task250119_shortcutContext();
     void QT_BUG_6544_tabFocusFirstUnsetWhenRemovingItems();
     void QT_BUG_12056_tabFocusFirstUnsetWhenRemovingItems();
+    void QT_BUG_13865_doublePaintWhenAddingASubItem();
 };
 
 
@@ -555,6 +557,39 @@ void tst_QGraphicsWidget::focusWidget2()
     QTRY_COMPARE(otherFocusOutSpy.count(), 1);
     QVERIFY(!scene.focusItem());
     QVERIFY(!widget->focusWidget());
+}
+
+class FocusWatchWidget : public QGraphicsWidget
+{
+public:
+    FocusWatchWidget(QGraphicsItem *parent = 0) : QGraphicsWidget(parent) { gotFocusInCount = 0; gotFocusOutCount = 0; }
+    int gotFocusInCount, gotFocusOutCount;
+protected:
+    void focusInEvent(QFocusEvent *fe) { gotFocusInCount++; QGraphicsWidget::focusInEvent(fe); }
+    void focusOutEvent(QFocusEvent *fe) { gotFocusOutCount++; QGraphicsWidget::focusOutEvent(fe); }
+};
+
+void tst_QGraphicsWidget::focusWidget3()
+{
+    QGraphicsScene scene;
+    QEvent windowActivate(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &windowActivate);
+
+    QGraphicsWidget *widget = new QGraphicsWidget;
+    FocusWatchWidget *subWidget = new FocusWatchWidget(widget);
+    subWidget->setFocusPolicy(Qt::StrongFocus);
+
+    scene.addItem(widget);
+    widget->show();
+
+    QTRY_VERIFY(!widget->hasFocus());
+    QTRY_VERIFY(!subWidget->hasFocus());
+
+    subWidget->setFocus();
+    QCOMPARE(subWidget->gotFocusInCount, 1);
+    QCOMPARE(subWidget->gotFocusOutCount, 0);
+    widget->hide();
+    QCOMPARE(subWidget->gotFocusOutCount, 1);
 }
 
 Q_DECLARE_METATYPE(Qt::FocusPolicy)
@@ -3320,6 +3355,46 @@ void tst_QGraphicsWidget::QT_BUG_12056_tabFocusFirstUnsetWhenRemovingItems()
 
     //This should not crash
 }
+
+
+struct GreenWidget : public QGraphicsWidget
+{
+    GreenWidget() : count(0)
+    {
+    }
+
+    void paint ( QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * )
+    {
+        count++;
+        painter->setPen(Qt::green);
+        painter->drawRect(option->rect.adjusted(0,0,-1,-1));
+    }
+
+    int count;
+};
+
+void tst_QGraphicsWidget::QT_BUG_13865_doublePaintWhenAddingASubItem()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    QGraphicsWidget *widget =  new QGraphicsWidget;
+    widget->resize(100, 100);
+    scene.addItem(widget);
+    QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(widget);
+
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QApplication::processEvents();
+
+
+    GreenWidget *sub =  new GreenWidget;
+    layout->addItem(sub);
+
+    QTest::qWait(100);
+    QCOMPARE(sub->count, 1); //it should only be painted once
+
+}
+
 
 QTEST_MAIN(tst_QGraphicsWidget)
 #include "tst_qgraphicswidget.moc"

@@ -6655,6 +6655,11 @@ bool QGraphicsItem::sceneEvent(QEvent *event)
         return true;
     }
 
+    if (event->type() == QEvent::FocusOut) {
+        focusOutEvent(static_cast<QFocusEvent *>(event));
+        return true;
+    }
+
     if (!d_ptr->visible) {
         // Eaten
         return true;
@@ -6663,9 +6668,6 @@ bool QGraphicsItem::sceneEvent(QEvent *event)
     switch (event->type()) {
     case QEvent::FocusIn:
         focusInEvent(static_cast<QFocusEvent *>(event));
-        break;
-    case QEvent::FocusOut:
-        focusOutEvent(static_cast<QFocusEvent *>(event));
         break;
     case QEvent::GraphicsSceneContextMenu:
         contextMenuEvent(static_cast<QGraphicsSceneContextMenuEvent *>(event));
@@ -7669,7 +7671,12 @@ void QGraphicsObject::updateMicroFocus()
 
 void QGraphicsItemPrivate::children_append(QDeclarativeListProperty<QGraphicsObject> *list, QGraphicsObject *item)
 {
-    QGraphicsItemPrivate::get(item)->setParentItemHelper(static_cast<QGraphicsObject *>(list->object), /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+    QGraphicsObject *graphicsObject = static_cast<QGraphicsObject *>(list->object);
+    if (QGraphicsItemPrivate::get(graphicsObject)->sendParentChangeNotification) {
+        item->setParentItem(graphicsObject);
+    } else {
+        QGraphicsItemPrivate::get(item)->setParentItemHelper(graphicsObject, 0, 0);
+    }
 }
 
 int QGraphicsItemPrivate::children_count(QDeclarativeListProperty<QGraphicsObject> *list)
@@ -7691,8 +7698,13 @@ void QGraphicsItemPrivate::children_clear(QDeclarativeListProperty<QGraphicsObje
 {
     QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(list->object));
     int childCount = d->children.count();
-    for (int index = 0; index < childCount; index++)
-        QGraphicsItemPrivate::get(d->children.at(0))->setParentItemHelper(0, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+    if (d->sendParentChangeNotification) {
+        for (int index = 0; index < childCount; index++)
+            d->children.at(0)->setParentItem(0);
+    } else {
+        for (int index = 0; index < childCount; index++)
+            QGraphicsItemPrivate::get(d->children.at(0))->setParentItemHelper(0, 0, 0);
+    }
 }
 
 /*!

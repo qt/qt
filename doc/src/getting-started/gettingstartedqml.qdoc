@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -71,9 +71,9 @@
     In QML, the basic visual item is the \l {Rectangle}{Rectangle} element. The 
     \c Rectangle element has properties to control the element's appearance and location. 
 
-    \snippet examples/tutorials/gettingStarted/gsQml/part0/Button.qml document
+    \snippet examples/tutorials/gettingStarted/gsQml/core/Button.qml document
 
-    First, the \c { import Qt 4.7 } allows the qmlviewer tool to import the QML elements
+    First, the \c { import QtQuick 1.0 } allows the qmlviewer tool to import the QML elements
     we will later use. This line must exist for every QML file. Notice that the version
     of Qt modules is included in the import statement.
 
@@ -122,7 +122,7 @@
     items can anchor to another item, creating robust layouts.
 
     The \c MouseArea has many signal handlers that are called during mouse movements within
-    the specfied \c MouseArea boundaries. One of them is \c onClicked and it is called
+    the specified \c MouseArea boundaries. One of them is \c onClicked and it is called
     whenever the acceptable mouse button is clicked, the left click being the default. We
     can bind actions to the onClicked handler. In our example, \c console.log() outputs text
     whenever the mouse area is clicked. The function \c console.log() is a useful tool for
@@ -209,7 +209,7 @@
     \c FileMenu.qml.
 
     \code
-        import Qt 4.7                \\import the main Qt QML module
+        import QtQuick 1.0                \\import the main Qt QML module
         import "folderName"            \\import the contents of the folder    
         import "script.js" as Script        \\import a Javascript file and name it as Script
     \endcode
@@ -546,7 +546,7 @@
     a certain easing curve. An easing curve controls the animation rates and
     interpolation behavior during state transitions. The easing curve we chose is
     \l{PropertyAnimation::easing.type}{Easing.OutQuint}, which slows the movement near
-    the end of the animation. Pleae read \l {qdeclarativeanimation.html}{QML's Animation}
+    the end of the animation. Please read \l {qdeclarativeanimation.html}{QML's Animation}
     article.
 
     \snippet examples/tutorials/gettingStarted/gsQml/texteditor.qml transitions
@@ -835,7 +835,7 @@
     \c QDeclarativeListProperty<File>. The template type, \c File, needs to be a
     \c QObject derivative. Further, to create the
     \l {QDeclarativeListProperty}{QDeclarativeListProperty}, the list's accessor
-    and modifiers need to be passed to the consructor as function pointers. The list,
+    and modifiers need to be passed to the constructor as function pointers. The list,
     a \c QList in our case,  also needs to be a list of \c File pointers.
 
     The constructor of \l {QDeclarativeListProperty}{QDeclarativeListProperty}
@@ -980,7 +980,7 @@
     Our \c FileMenu can now connect to their respective actions. The \c saveButton
     will transfer the text from the \c TextEdit onto the directory's \c fileContent
     property, then copy its file name from the editable text input. Finally, the button
-    calls the \c saveFile() function, saving the file. The \c sloadButton has a similar
+    calls the \c saveFile() function, saving the file. The \c loadButton has a similar
     execution. Also, the \c New action will empty the contents of the \c TextEdit. 
 
     Further, the \c EditMenu buttons are connected to the \c TextEdit functions to copy,

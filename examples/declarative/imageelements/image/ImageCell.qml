@@ -37,7 +37,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-import Qt 4.7
+import QtQuick 1.0
 
 Item {
     property alias mode: image.fillMode

@@ -648,22 +648,28 @@ static bool write_jpeg_image(const QImage &image, QIODevice *device, int sourceQ
                 break;
             case QImage::Format_RGB32:
             case QImage::Format_ARGB32:
-            case QImage::Format_ARGB32_Premultiplied: {
-                const QRgb* rgb = (const QRgb*)image.constScanLine(cinfo.next_scanline);
-                for (int i=0; i<w; i++) {
-                    *row++ = qRed(*rgb);
-                    *row++ = qGreen(*rgb);
-                    *row++ = qBlue(*rgb);
-                    ++rgb;
+            case QImage::Format_ARGB32_Premultiplied:
+                {
+                    const QRgb* rgb = (const QRgb*)image.constScanLine(cinfo.next_scanline);
+                    for (int i=0; i<w; i++) {
+                        *row++ = qRed(*rgb);
+                        *row++ = qGreen(*rgb);
+                        *row++ = qBlue(*rgb);
+                        ++rgb;
+                    }
                 }
                 break;
-            }
             default:
-                for (int i=0; i<w; i++) {
-                    QRgb pix = image.pixel(i, cinfo.next_scanline);
-                    *row++ = qRed(pix);
-                    *row++ = qGreen(pix);
-                    *row++ = qBlue(pix);
+                {
+                    // (Testing shows that this way is actually faster than converting to RGB888 + memcpy)
+                    QImage rowImg = image.copy(0, cinfo.next_scanline, w, 1).convertToFormat(QImage::Format_RGB32);
+                    const QRgb* rgb = (const QRgb*)rowImg.constScanLine(0);
+                    for (int i=0; i<w; i++) {
+                        *row++ = qRed(*rgb);
+                        *row++ = qGreen(*rgb);
+                        *row++ = qBlue(*rgb);
+                        ++rgb;
+                    }
                 }
                 break;
             }

@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 
 //
 // The QML runtime automatically loads a translation from the i18n subdirectory of the root

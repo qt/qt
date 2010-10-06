@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -118,7 +118,7 @@ For example, this QML document refers to a \c lottoNumbers property which does
 not actually exist within the document:
 
 \qml
-import Qt 4.7
+import QtQuick 1.0
 
 ListView {
     width: 200; height: 300
@@ -131,7 +131,7 @@ If within the document's directory, there is a "dummydata" directory which
 contains a \c lottoNumbers.qml file like this:
 
 \qml
-import Qt 4.7
+import QtQuick 1.0
 
 ListModel {
     ListElement { number: 23 }
@@ -146,7 +146,7 @@ Child properties are included when loaded from dummy data. The following documen
 refers to a \c clock.time property:
 
 \qml
-import Qt 4.7    
+import QtQuick 1.0    
 Text { text: clock.time }
 \endqml
     
@@ -154,7 +154,7 @@ The text value could be filled by a \c dummydata/clock.qml file with a \c time
 property in the root context:
 
 \qml
-import Qt 4.7    
+import QtQuick 1.0    
 QtObject { property int time: 54321 }
 \endqml
 

@@ -101,7 +101,7 @@ QT_BEGIN_NAMESPACE
     The following example moves the Y axis of the \l Rectangle elements while still allowing the \l Row element
     to lay the items out as if they had not been transformed:
     \qml
-    import Qt 4.7
+    import QtQuick 1.0
 
     Row {
         Rectangle {
@@ -729,41 +729,39 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event, bool post)
     \since 4.7
     \brief The Keys attached property provides key handling to Items.
 
-    All visual primitives support key handling via the \e Keys
-    attached property.  Keys can be handled via the \e onPressed
-    and \e onReleased signal properties.
+    All visual primitives support key handling via the Keys
+    attached property.  Keys can be handled via the onPressed
+    and onReleased signal properties.
 
     The signal properties have a \l KeyEvent parameter, named
     \e event which contains details of the event.  If a key is
     handled \e event.accepted should be set to true to prevent the
     event from propagating up the item hierarchy.
 
-    \code
-    Item {
-        focus: true
-        Keys.onPressed: {
-            if (event.key == Qt.Key_Left) {
-                console.log("move left");
-                event.accepted = true;
-            }
-        }
-    }
-    \endcode
+    \section1 Example Usage
+
+    The following example shows how the general onPressed handler can
+    be used to test for a certain key; in this case, the left cursor
+    key:
+
+    \snippet doc/src/snippets/declarative/keys/keys-pressed.qml key item
 
     Some keys may alternatively be handled via specific signal properties,
     for example \e onSelectPressed.  These handlers automatically set
     \e event.accepted to true.
 
-    \code
-    Item {
-        focus: true
-        Keys.onLeftPressed: console.log("move left")
-    }
-    \endcode
+    \snippet doc/src/snippets/declarative/keys/keys-handler.qml key item
 
-    See \l {Qt::Key}{Qt.Key} for the list of keyboard codes.
+    See \l{Qt::Key}{Qt.Key} for the list of keyboard codes.
 
-    If priority is Keys.BeforeItem (default) the order of key event processing is:
+    \section1 Key Handling Priorities
+
+    The Keys attached property can be configured to handle key events
+    before or after the item it is attached to. This makes it possible
+    to intercept events in order to override an item's default behavior,
+    or act as a fallback for keys not handled by the item.
+
+    If \l priority is Keys.BeforeItem (default) the order of key event processing is:
 
     \list 1
     \o Items specified in \c forwardTo
@@ -774,6 +772,7 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event, bool post)
     \endlist
 
     If priority is Keys.AfterItem the order of key event processing is:
+
     \list 1
     \o Item specific key handling, e.g. TextInput key handling
     \o Items specified in \c forwardTo
@@ -1614,7 +1613,13 @@ void QDeclarativeItemPrivate::data_append(QDeclarativeListProperty<QObject> *pro
     while (mo && mo != &QGraphicsObject::staticMetaObject) mo = mo->d.superdata;
 
     if (mo) {
-        QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(o))->setParentItemHelper(that, 0, 0);
+        QGraphicsObject *graphicsObject = static_cast<QGraphicsObject *>(o);
+        QDeclarativeItemPrivate *contentItemPrivate = static_cast<QDeclarativeItemPrivate *>(QGraphicsItemPrivate::get(graphicsObject));
+        if (contentItemPrivate->componentComplete) {
+            graphicsObject->setParentItem(that);
+        } else {
+            contentItemPrivate->setParentItemHelper(that, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+        }
     } else {
         o->setParent(that);
     }
@@ -1637,10 +1642,15 @@ static inline QObject *children_at_helper(QDeclarativeListProperty<QObject> *pro
 
 static inline void children_clear_helper(QDeclarativeListProperty<QObject> *prop)
 {
-    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(prop->object));
+    QDeclarativeItemPrivate *d = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(prop->object)));
     int childCount = d->children.count();
-    for (int index = 0 ;index < childCount; index++)
-        QGraphicsItemPrivate::get(d->children.at(0))->setParentItemHelper(0, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+    if (d->componentComplete) {
+        for (int index = 0 ;index < childCount; index++)
+            d->children.at(0)->setParentItem(0);
+    } else {
+        for (int index = 0 ;index < childCount; index++)
+            QGraphicsItemPrivate::get(d->children.at(0))->setParentItemHelper(0, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+    }
 }
 
 int QDeclarativeItemPrivate::data_count(QDeclarativeListProperty<QObject> *prop)
@@ -1705,7 +1715,7 @@ int QDeclarativeItemPrivate::transform_count(QDeclarativeListProperty<QGraphicsT
 void QDeclarativeItemPrivate::transform_append(QDeclarativeListProperty<QGraphicsTransform> *list, QGraphicsTransform *item)
 {
     QGraphicsObject *object = qobject_cast<QGraphicsObject *>(list->object);
-    if (object) // QGraphicsItem applies the list in the wrong order, so we prepend.
+    if (object && item) // QGraphicsItem applies the list in the wrong order, so we prepend.
         QGraphicsItemPrivate::get(object)->prependGraphicsTransform(item);
 }
 
@@ -1745,8 +1755,8 @@ void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeN
     \qmlproperty list<Object> Item::data
     \default
 
-    The data property is allows you to freely mix visual children and resources
-    of an item.  If you assign a visual item to the data list it becomes
+    The data property allows you to freely mix visual children and resources
+    in an item.  If you assign a visual item to the data list it becomes
     a child and if you assign any other object type, it is added as a resource.
 
     So you can write:

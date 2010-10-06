@@ -161,6 +161,7 @@ private slots:
     void nonscriptable();
     void deleteLater();
     void in();
+    void sharedAttachedObject();
 
     void include();
 
@@ -2576,6 +2577,16 @@ void tst_qdeclarativeecmascript::deleteLater()
 void tst_qdeclarativeecmascript::in()
 {
     QDeclarativeComponent component(&engine, TEST_FILE("in.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    QCOMPARE(o->property("test1").toBool(), true);
+    QCOMPARE(o->property("test2").toBool(), true);
+    delete o;
+}
+
+void tst_qdeclarativeecmascript::sharedAttachedObject()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("sharedAttachedObject.qml"));
     QObject *o = component.create();
     QVERIFY(o != 0);
     QCOMPARE(o->property("test1").toBool(), true);
