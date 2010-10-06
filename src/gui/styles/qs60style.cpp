@@ -2453,7 +2453,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_PanelItemViewRow: // ### Qt 5: remove
 #ifndef QT_NO_ITEMVIEWS
         if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option)) {
-            if (QS60StylePrivate::equalToThemePalette(vopt->palette.base().texture().cacheKey(), QPalette::Base)) {
+            if (!QS60StylePrivate::equalToThemePalette(vopt->palette.base().texture().cacheKey(), QPalette::Base)) {
                 //QPalette::Base has been changed, let commonstyle draw the item
                 commonStyleDraws = true;
             } else {
