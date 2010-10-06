@@ -982,7 +982,7 @@
 	min-width:250px;
 	line-height: 1.2;
 	min-width:100%;
-
+	min-height:15px;
 	}
 	
 	.flowList dd a{
