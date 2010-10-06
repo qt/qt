@@ -240,6 +240,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         if (err) {
             data.size_ = 0;
             data.modificationTime_ = TTime(0);
+            data.entryFlags &= ~(QFileSystemMetaData::SymbianTEntryFlags);
         }
     }
     return data.hasFlags(what);
