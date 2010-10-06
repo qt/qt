@@ -83,39 +83,6 @@ static bool isRelativePathSymbian(const QString& fileName)
              || (fileName.at(0) == QLatin1Char('/') && fileName.at(1) == QLatin1Char('/')))));
 }
 
-/*!
- \internal
- convert symbian error code to the one suitable for setError.
- example usage: setSymbianError(err, QFile::CopyError, QLatin1String("copy error"))
-*/
-void QFSFileEnginePrivate::setSymbianError(int symbianError, QFile::FileError defaultError, QString defaultString)
-{
-    Q_Q(QFSFileEngine);
-    switch (symbianError) {
-    case KErrNone:
-        q->setError(QFile::NoError, QLatin1String(""));
-        break;
-    case KErrAccessDenied:
-        q->setError(QFile::PermissionsError, QLatin1String("access denied"));
-        break;
-    case KErrPermissionDenied:
-        q->setError(QFile::PermissionsError, QLatin1String("permission denied"));
-        break;
-    case KErrAbort:
-        q->setError(QFile::AbortError, QLatin1String("aborted"));
-        break;
-    case KErrCancel:
-        q->setError(QFile::AbortError, QLatin1String("cancelled"));
-        break;
-    case KErrTimedOut:
-        q->setError(QFile::TimeOutError, QLatin1String("timed out"));
-        break;
-    default:
-        q->setError(defaultError, defaultString);
-        break;
-    }
-}
-
 #endif
 
 /*!
@@ -272,7 +239,7 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
     }
 
     if (r != KErrNone) {
-        setSymbianError(r, QFile::OpenError, QLatin1String("open error"));
+        q->setError(QFile::OpenError, QFileSystemEngine::errorString(r));
         symbianFile.Close();
         return false;
     }
@@ -418,7 +385,7 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 len)
         TInt r = symbianFile.Read(ptr);
         if (r != KErrNone)
         {
-            setSymbianError(r, QFile::ReadError, QLatin1String("read error"));
+            q->setError(QFile::ReadError, QFileSystemEngine::errorString(r));
             return -1;
         }
         return qint64(ptr.Length());
@@ -503,7 +470,7 @@ qint64 QFSFileEnginePrivate::nativeWrite(const char *data, qint64 len)
         TInt r = symbianFile.Write(ptr);
         if (r != KErrNone)
         {
-            setSymbianError(r, QFile::WriteError, QLatin1String("write error"));
+            q->setError(QFile::WriteError, QFileSystemEngine::errorString(r));
             return -1;
         }
         return len;
@@ -556,7 +523,7 @@ bool QFSFileEnginePrivate::nativeSeek(qint64 pos)
 #endif
         if (r != KErrNone)
         {
-            setSymbianError(r, QFile::PositionError, QLatin1String("seek failed"));
+            q->setError(QFile::PositionError, QFileSystemEngine::errorString(r));
             return false;
         }
         return true;
