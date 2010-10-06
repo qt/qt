@@ -20,13 +20,14 @@ QString HTMLPage::filePath()
     return path;
 }
 
-void HTMLPage::start(const QString &storagepath, const QString &runId, const PlatformInfo pinfo)
+void HTMLPage::start(const QString &storagepath, const QString &runId, const PlatformInfo pinfo, const ImageItemList &itemList)
 {
     end();
 
     id = runId;
     plat = pinfo;
     root = storagepath;
+    imageItems = itemList;
     QString dir = root + QLS("reports/");
     QDir cwd;
     if (!cwd.exists(dir))
@@ -52,20 +53,18 @@ void HTMLPage::writeHeader(const ImageItem &item)
     out << "<h3>Build key: " << plat.buildKey << "</h3>\n";
     out << "<h3>Engine: " << item.engineAsString() << "</h3>\n";
     out << "<h3>Format: " << item.formatAsString() << "</h3>\n\n";
-    out << "<h3><a href=\"/cgi-bin/server.cgi?update=all&id="<< id << "&host=" << plat.hostname
+    out << "<h3><a href=\"/cgi-bin/server.cgi?cmd=updateAllBaselines&id="<< id << "&host=" << plat.hostname
         << "&engine=" << item.engineAsString() << "&format=" << item.formatAsString()
         << "&url=" << pageUrl
-        << "\">Update all baselines</a></h3>\n\n";
+        << "\">Update all baselines</a><br>";
     out << "<table border=\"2\">\n"
            "<tr>\n"
            "<td><b>Script</b></td>\n"
            "<td><b>Baseline</b></td>\n"
            "<td><b>Rendered</b></td>\n"
            "<td><b>Comparison</b></td>\n"
-           "<td><b>Fuzzy Comparison</b></td>\n"
-           "<td><b>Score</b></td>\n"
-           "<td><b>Update</b></td>\n"
-           "</b></tr>\n\n";
+           "<td><b>Info/Action</b></td>\n"
+           "</b></tr><br>";
 }
 
 
@@ -82,23 +81,53 @@ void HTMLPage::addItem(const QString &baseline, const QString &rendered, const I
         headerWritten = true;
     }
     QString compared = generateCompared(baseline, rendered);
-    QString fuzzy = generateCompared(baseline, rendered, true);
     QString pageUrl = BaselineServer::baseUrl() + path;
 
     out << "<tr>\n";
     out << "<td>" << item.scriptName << "</td>\n";
-    QStringList images = QStringList() << baseline << rendered << compared << fuzzy;
+    QStringList images = QStringList() << baseline << rendered << compared;
     foreach(const QString& img, images)
         out << "<td><a href=\"/" << img << "\"><img src=\"/" << img << "\" width=240 height=240></a></td>\n";
-    out << "<td></td><td><a href=\"/cgi-bin/server.cgi?update=single&oldBaseline=" << baseline
-        << "&newBaseline=" << rendered << "&url=" << pageUrl << "\">Update baseline</a></td>\n";
+    out << "<td><a href=\"/cgi-bin/server.cgi?cmd=updateSingleBaseline&oldBaseline=" << baseline
+        << "&newBaseline=" << rendered << "&url=" << pageUrl << "\">Update baseline</a><br>"
+           "<a href=\"/cgi-bin/server.cgi?cmd=blacklist&scriptName=" << item.scriptName
+           << "&host=" << plat.hostname << "&engine=" << item.engineAsString()
+           << "&format=" << item.formatAsString()
+           << "&url=" << pageUrl << "\">Blacklist test</a></td>\n";
     out << "<tr>\n\n";
+
+    QMutableVectorIterator<ImageItem> it(imageItems);
+    while (it.hasNext()) {
+        it.next();
+        if (it.value().scriptName == item.scriptName) {
+            it.remove();
+            break;
+        }
+    }
 }
 
 
 void HTMLPage::end()
 {
     if (file.isOpen()) {
+        // Add the names of the scripts that passed the test, or were blacklisted
+        QString pageUrl = BaselineServer::baseUrl() + path;
+        for (int i=0; i<imageItems.count(); ++i) {
+            out << "<tr><td>" << imageItems.at(i).scriptName << "</td><td>N/A</td><td>N/A</td><td>N/A</td><td>";
+            if (imageItems.at(i).status == ImageItem::IgnoreItem) {
+                out << "<span style=\"background-color:yellow\">Blacklisted</span><br>"
+                       "<a href=\"/cgi-bin/server.cgi?cmd=whitelist&scriptName="
+                    << imageItems.at(i).scriptName << "&host=" << plat.hostname
+                    << "&engine=" << imageItems.at(i).engineAsString()
+                    << "&format=" << imageItems.at(i).formatAsString()
+                    << "&url=" << pageUrl
+                    << "\">Whitelist test</a>";
+            } else {
+                out << "<span style=\"color:green\">Test passed</span>";
+            }
+            out << "</td><tr>";
+        }
+
         writeFooter();
         out.flush();
         file.close();
@@ -132,14 +161,30 @@ void HTMLPage::handleCGIQuery(const QString &query)
 //      << "Contents of QUERY_STRING:<br>"
 //      << "Full string = " << query << "<br>";
 
-    if (cgiUrl.queryItemValue(QLS("update")) == QLS("single")) {
+    QString command(cgiUrl.queryItemValue("cmd"));
+
+    if (command == QLS("updateSingleBaseline")) {
         s << BaselineHandler::updateSingleBaseline(cgiUrl.queryItemValue(QLS("oldBaseline")),
                                                    cgiUrl.queryItemValue(QLS("newBaseline")));
-    } else {
+    } else if (command == QLS("updateAllBaselines")) {
         s << BaselineHandler::updateAllBaselines(cgiUrl.queryItemValue(QLS("host")),
                                                  cgiUrl.queryItemValue(QLS("id")),
                                                  cgiUrl.queryItemValue(QLS("engine")),
                                                  cgiUrl.queryItemValue(QLS("format")));
+    } else if (command == QLS("blacklist")) {
+        // blacklist a test
+        s << BaselineHandler::blacklistTest(cgiUrl.queryItemValue(QLS("scriptName")),
+                                                  cgiUrl.queryItemValue(QLS("host")),
+                                                  cgiUrl.queryItemValue(QLS("engine")),
+                                                  cgiUrl.queryItemValue(QLS("format")));
+    } else if (command == QLS("whitelist")) {
+        // whitelist a test
+        s << BaselineHandler::whitelistTest(cgiUrl.queryItemValue(QLS("scriptName")),
+                                                    cgiUrl.queryItemValue(QLS("host")),
+                                                    cgiUrl.queryItemValue(QLS("engine")),
+                                                    cgiUrl.queryItemValue(QLS("format")));
+    } else {
+        s << "Unknown query:<br>" << query << "<br>";
     }
     s << "<p><a href=\"" << cgiUrl.queryItemValue(QLS("url")) << "\">Back to report</a>";
     s << "</HTML>";

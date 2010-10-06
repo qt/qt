@@ -63,6 +63,10 @@ public:
     static QString updateAllBaselines(const QString &host, const QString &id,
                                       const QString &engine, const QString &format);
     static QString updateSingleBaseline(const QString &oldBaseline, const QString &newBaseline);
+    static QString blacklistTest(const QString &scriptName, const QString &host,
+                                 const QString &engine, const QString &format);
+    static QString whitelistTest(const QString &scriptName, const QString &host,
+                                 const QString &engine, const QString &format);
 
 private slots:
     void receiveRequest();
@@ -75,6 +79,8 @@ private:
     QString logtime();
     QString computeMismatchScore(const QImage& baseline, const QImage& rendered);
     QString engineForItem(const ImageItem &item);
+
+    static QString itemSubPath(const QString &engine, const QString &format, bool isBaseline = true);
 
     BaselineProtocol proto;
     PlatformInfo plat;

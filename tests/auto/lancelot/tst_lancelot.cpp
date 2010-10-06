@@ -189,10 +189,11 @@ void tst_Lancelot::testOpenGL_data()
 void tst_Lancelot::testOpenGL()
 {
     bool ok = false;
-    QGLWidget glWidget;    
+    QGLWidget glWidget;
     if (glWidget.isValid() && glWidget.format().directRendering()
         && ((QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0)
-            || (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0)))
+            || (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0))
+        && QGLFramebufferObject::hasOpenGLFramebufferObjects())
     {
         glWidget.makeCurrent();
         if (!QByteArray((const char *)glGetString(GL_VERSION)).contains("Mesa"))
@@ -272,13 +273,13 @@ ImageItem tst_Lancelot::render(const ImageItem &item)
     } else if (item.engine == ImageItem::OpenGL) {
         QGLWidget glWidget;
         if (glWidget.isValid()) {
-            glWidget.resize(800, 800);
-            glWidget.show();
-#ifdef Q_WS_X11
-            qt_x11_wait_for_window_manager(&glWidget);
-#endif
-            paint(&glWidget, script, QFileInfo(filePath).absoluteFilePath()); // eh yuck (filePath stuff)
-            res.image = glWidget.grabFrameBuffer().convertToFormat(item.renderFormat);
+            glWidget.makeCurrent();
+            QGLFramebufferObjectFormat fboFormat;
+            fboFormat.setSamples(16);
+            fboFormat.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+            QGLFramebufferObject fbo(800, 800, fboFormat);
+            paint(&fbo, script, QFileInfo(filePath).absoluteFilePath()); // eh yuck (filePath stuff)
+            res.image = fbo.toImage().convertToFormat(item.renderFormat);
             res.imageChecksums.append(ImageItem::computeChecksum(res.image));
         }
     }
@@ -290,6 +291,7 @@ void tst_Lancelot::paint(QPaintDevice *device, const QStringList &script, const 
 {
     QPainter p(device);
     PaintCommands pcmd(script, 800, 800);
+    pcmd.setType(ImageType);
     pcmd.setPainter(&p);
     pcmd.setFilePath(filePath);
     pcmd.runCommands();

@@ -143,11 +143,6 @@ void BaselineHandler::provideBaselineChecksums(const QByteArray &itemListBlock)
             << itemList.at(0).engineAsString() << "pixel format" << itemList.at(0).formatAsString();
 
     for (ImageItemList::iterator i = itemList.begin(); i != itemList.end(); ++i) {
-        if (i->scriptName.startsWith(QLS("porter_duff"))) {
-            // Example of blacklisting on server.
-            i->status = ImageItem::IgnoreItem;
-            continue;
-        }
         i->imageChecksums.clear();
         QString prefix = pathForItem(*i, true);
         QFile file(prefix + QLS("metadata"));
@@ -161,11 +156,29 @@ void BaselineHandler::provideBaselineChecksums(const QByteArray &itemListBlock)
             i->status = ImageItem::BaselineNotFound;
     }
 
+    // Find and mark blacklisted items
+    if (itemList.count() > 0) {
+        QString prefix = pathForItem(itemList.at(0), true).section(QLC('/'), 0, -2);
+        QFile file(prefix + QLS("/.blacklist"));
+        if (file.open(QIODevice::ReadOnly)) {
+            QTextStream in(&file);
+            do {
+                QString scriptName = in.readLine();
+                if (!scriptName.isNull()) {
+                    for (ImageItemList::iterator i = itemList.begin(); i != itemList.end(); ++i) {
+                        if (i->scriptName == scriptName)
+                            i->status = ImageItem::IgnoreItem;
+                    }
+                }
+            } while (!in.atEnd());
+        }
+    }
+
     QByteArray block;
     QDataStream ods(&block, QIODevice::WriteOnly);
     ods << itemList;
     proto.sendBlock(BaselineProtocol::Ack, block);
-    report.start(BaselineServer::storagePath(), runId, plat);
+    report.start(BaselineServer::storagePath(), runId, plat, itemList);
 }
 
 
@@ -216,6 +229,14 @@ void BaselineHandler::receiveDisconnect()
 }
 
 
+QString BaselineHandler::itemSubPath(const QString &engine, const QString &format, bool isBaseline)
+{
+    if (isBaseline)
+        return QString(QLS("baselines_%1_%2/")).arg(engine, format);
+    else
+        return QString(QLS("mismatches_%1_%2/")).arg(engine, format);
+}
+
 QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline, bool absolute)
 {
     if (pathForRun.isNull()) {
@@ -233,9 +254,9 @@ QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline, boo
 
     QString storePath = pathForRun;
     if (isBaseline)
-        storePath += QString(QLS("baselines_%1_%2/")).arg(item.engineAsString(), item.formatAsString());
+        storePath += itemSubPath(item.engineAsString(), item.formatAsString(), isBaseline);
     else
-        storePath += QString(QLS("mismatches_%1_%2/")).arg(item.engineAsString(), item.formatAsString()) + runId + QLC('/');
+        storePath += itemSubPath(item.engineAsString(), item.formatAsString(), isBaseline) + runId + QLC('/');
 
     QString itemName = item.scriptName;
     if (itemName.contains(QLC('.')))
@@ -253,11 +274,8 @@ QString BaselineHandler::updateAllBaselines(const QString &host, const QString &
                                             const QString &engine, const QString &format)
 {
     QString basePath(BaselineServer::storagePath());
-    QString srcDir(basePath + host + QLC('/')
-                   + QString(QLS("mismatches_%1_%2/")).arg(engine, format)
-                   + id);
-    QString dstDir(basePath + host + QLC('/')
-                   + QString(QLS("baselines_%1_%2/")).arg(engine, format));
+    QString srcDir(basePath + host + QLC('/') + itemSubPath(engine, format, false) + id);
+    QString dstDir(basePath + host + QLC('/') + itemSubPath(engine, format));
 
     QDir dir(srcDir);
     QStringList nameFilter;
@@ -305,6 +323,54 @@ QString BaselineHandler::updateSingleBaseline(const QString &oldBaseline, const 
                       "Command output: <pre>%2</pre>").arg(proc.errorString(), proc.readAll().constData());
 
     return res;
+}
+
+QString BaselineHandler::blacklistTest(const QString &scriptName, const QString &host, const QString &engine,
+                                       const QString &format)
+{
+    QString configFile(BaselineServer::storagePath() + host + QLC('/')
+                       + itemSubPath(engine, format) + QLS(".blacklist"));
+    QFile file(configFile);
+    if (file.open(QIODevice::Append)) {
+        QTextStream out(&file);
+        out << scriptName << endl;
+        return QLS("Blacklisted ") + scriptName;
+    } else {
+        return QLS("Unable to update blacklisted tests.");
+    }
+}
+
+QString BaselineHandler::whitelistTest(const QString &scriptName, const QString &host, const QString &engine,
+                                       const QString &format)
+{
+    QString configFile(BaselineServer::storagePath() + host + QLC('/')
+                       + itemSubPath(engine, format) + QLS(".blacklist"));
+    QFile file(configFile);
+    QStringList tests;
+    if (file.open(QIODevice::ReadOnly)) {
+        QTextStream in(&file);
+        do {
+            tests << in.readLine();
+        } while (!in.atEnd());
+        if (tests.count() != 0) {
+            QMutableStringListIterator it(tests);
+            while (it.hasNext()) {
+                it.next();
+                if (it.value() == scriptName)
+                    it.remove();
+            }
+        }
+        file.close();
+        if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            QTextStream out(&file);
+            for (int i=0; i<tests.count(); ++i)
+                out << tests.at(i);
+            return QLS("Whitelisted ") + scriptName;
+        } else {
+            QLS("Unable to whitelist ") + scriptName + QLS(". Unable to truncate blacklist file.");
+        }
+    }
+    return QLS("Unable to whitelist ") + scriptName + QLS(". Unable to open blacklist file.");
 }
 
 void BaselineHandler::testPathMapping()
