@@ -290,7 +290,7 @@ MainWindow::MainWindow()
     ui->cursorFlashTimeSpinBox->setValue(QApplication::cursorFlashTime());
     ui->wheelScrollLinesSpinBox->setValue(QApplication::wheelScrollLines());
     // #############
-//    resolveLinksCheckBox->setChecked(qt_resolve_symlinks);
+    // resolveLinksCheckBox->setChecked(qt_resolve_symlinks);
 
     ui->effectsCheckBox->setChecked(QApplication::isEffectEnabled(Qt::UI_General));
     ui->effectsFrame->setEnabled(ui->effectsCheckBox->isChecked());

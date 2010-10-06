@@ -61,7 +61,7 @@ public:
     bool eventFilter(QObject *, QEvent *);
 private:
     void closeEvent(QCloseEvent *);
-    Ui::PreviewWidget* ui;
+    Ui::PreviewWidget *ui;
 };
 
 QT_END_NAMESPACE

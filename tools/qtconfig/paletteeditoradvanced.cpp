@@ -117,12 +117,10 @@ void PaletteEditorAdvanced::paletteSelected(int p)
     if(p == 1) { // inactive
         ui->groupCentral->setDisabled(ui->checkBuildInactive->isChecked());
         ui->groupEffect->setDisabled(ui->checkBuildInactive->isChecked());
-    }
-    else if (p == 2) { // disabled
+    } else if (p == 2) { // disabled
         ui->groupCentral->setDisabled(ui->checkBuildDisabled->isChecked());
         ui->groupEffect->setDisabled(ui->checkBuildDisabled->isChecked());
-    }
-    else {
+    } else {
         ui->groupCentral->setEnabled(true);
         ui->groupEffect->setEnabled(true);
     }
@@ -263,8 +261,7 @@ QPalette PaletteEditorAdvanced::buildEffect(QPalette::ColorGroup colorGroup,
             result.setColor(colorGroup, effectRole,
                             calculatedPalette.color(colorGroup, effectRole));
         }
-    }
-    else {
+    } else {
         QColor btn = basePalette.color(colorGroup, QPalette::Button);
 
         result.setColor(colorGroup, QPalette::Light, btn.lighter());
