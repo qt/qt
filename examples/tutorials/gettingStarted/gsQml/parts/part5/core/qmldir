@@ -1,0 +1,13 @@
+
+Button ./Button.qml
+FileDialog ./FileDialog.qml
+TextArea ./TextArea.qml
+TextEditor ./TextEditor.qml
+EditMenu ./EditMenu.qml
+MenuBar ./MenuBar.qml
+
+plugin FileDialog ../plugins
+
+
+
+
