@@ -572,31 +572,6 @@ static void GenerateKeyStringCheck(MacroAssembler* masm,
 }
 
 
-// Picks out an array index from the hash field.
-static void GenerateIndexFromHash(MacroAssembler* masm,
-                                  Register key,
-                                  Register hash) {
-  // Register use:
-  //   key - holds the overwritten key on exit.
-  //   hash - holds the key's hash. Clobbered.
-
-  // The assert checks that the constants for the maximum number of digits
-  // for an array index cached in the hash field and the number of bits
-  // reserved for it does not conflict.
-  ASSERT(TenToThe(String::kMaxCachedArrayIndexLength) <
-         (1 << String::kArrayIndexValueBits));
-  // We want the smi-tagged index in key. Even if we subsequently go to
-  // the slow case, converting the key to a smi is always valid.
-  // key: string key
-  // hash: key's hash field, including its array index value.
-  __ and_(hash, Immediate(String::kArrayIndexValueMask));
-  __ shr(hash, Immediate(String::kHashShift));
-  // Here we actually clobber the key which will be used if calling into
-  // runtime later. However as the new key is the numeric value of a string key
-  // there is no difference in using either key.
-  __ Integer32ToSmi(key, hash);
-}
-
 
 void KeyedLoadIC::GenerateGeneric(MacroAssembler* masm) {
   // ----------- S t a t e -------------
@@ -743,7 +718,7 @@ void KeyedLoadIC::GenerateGeneric(MacroAssembler* masm) {
   __ ret(0);
 
   __ bind(&index_string);
-  GenerateIndexFromHash(masm, rax, rbx);
+  __ IndexFromHash(rbx, rax);
   __ jmp(&index_smi);
 }
 
@@ -755,7 +730,6 @@ void KeyedLoadIC::GenerateString(MacroAssembler* masm) {
   //  -- rsp[0] : return address
   // -----------------------------------
   Label miss;
-  Label index_out_of_range;
 
   Register receiver = rdx;
   Register index = rax;
@@ -770,17 +744,13 @@ void KeyedLoadIC::GenerateString(MacroAssembler* masm) {
                                           result,
                                           &miss,  // When not a string.
                                           &miss,  // When not a number.
-                                          &index_out_of_range,
+                                          &miss,  // When index out of range.
                                           STRING_INDEX_IS_ARRAY_INDEX);
   char_at_generator.GenerateFast(masm);
   __ ret(0);
 
   ICRuntimeCallHelper call_helper;
   char_at_generator.GenerateSlow(masm, call_helper);
-
-  __ bind(&index_out_of_range);
-  __ LoadRoot(rax, Heap::kUndefinedValueRootIndex);
-  __ ret(0);
 
   __ bind(&miss);
   GenerateMiss(masm);
@@ -872,7 +842,7 @@ void KeyedLoadIC::GenerateExternalArray(MacroAssembler* masm,
     // For the UnsignedInt array type, we need to see whether
     // the value can be represented in a Smi. If not, we need to convert
     // it to a HeapNumber.
-    Label box_int;
+    NearLabel box_int;
 
     __ JumpIfUIntNotValidSmiValue(rcx, &box_int);
 
@@ -1057,7 +1027,7 @@ void KeyedStoreIC::GenerateGeneric(MacroAssembler* masm) {
   // No more bailouts to slow case on this path, so key not needed.
   __ SmiToInteger32(rdi, rax);
   {  // Clamp the value to [0..255].
-    Label done;
+    NearLabel done;
     __ testl(rdi, Immediate(0xFFFFFF00));
     __ j(zero, &done);
     __ setcc(negative, rdi);  // 1 if negative, 0 if positive.
@@ -1107,7 +1077,7 @@ void KeyedStoreIC::GenerateGeneric(MacroAssembler* masm) {
   // rax: value
   // rbx: receiver's elements array (a FixedArray)
   // rcx: index
-  Label non_smi_value;
+  NearLabel non_smi_value;
   __ movq(FieldOperand(rbx, rcx, times_pointer_size, FixedArray::kHeaderSize),
           rax);
   __ JumpIfNotSmi(rax, &non_smi_value);
@@ -1129,7 +1099,7 @@ void KeyedStoreIC::GenerateExternalArray(MacroAssembler* masm,
   //  -- rdx     : receiver
   //  -- rsp[0]  : return address
   // -----------------------------------
-  Label slow, check_heap_number;
+  Label slow;
 
   // Check that the object isn't a smi.
   __ JumpIfSmi(rdx, &slow);
@@ -1170,6 +1140,7 @@ void KeyedStoreIC::GenerateExternalArray(MacroAssembler* masm,
   // rdx: receiver (a JSObject)
   // rbx: elements array
   // rdi: untagged key
+  NearLabel check_heap_number;
   __ JumpIfNotSmi(rax, &check_heap_number);
   // No more branches to slow case on this path.  Key and receiver not needed.
   __ SmiToInteger32(rdx, rax);
@@ -1515,7 +1486,7 @@ void KeyedCallIC::GenerateMegamorphic(MacroAssembler* masm, int argc) {
   // Get the receiver of the function from the stack; 1 ~ return address.
   __ movq(rdx, Operand(rsp, (argc + 1) * kPointerSize));
 
-  Label do_call, slow_call, slow_load, slow_reload_receiver;
+  Label do_call, slow_call, slow_load;
   Label check_number_dictionary, check_string, lookup_monomorphic_cache;
   Label index_smi, index_string;
 
@@ -1601,7 +1572,7 @@ void KeyedCallIC::GenerateMegamorphic(MacroAssembler* masm, int argc) {
   GenerateMiss(masm, argc);
 
   __ bind(&index_string);
-  GenerateIndexFromHash(masm, rcx, rbx);
+  __ IndexFromHash(rbx, rcx);
   // Now jump to the place where smi keys are handled.
   __ jmp(&index_smi);
 }
@@ -1758,6 +1729,14 @@ bool LoadIC::PatchInlinedLoad(Address address, Object* map, int offset) {
 }
 
 
+bool LoadIC::PatchInlinedContextualLoad(Address address,
+                                        Object* map,
+                                        Object* cell) {
+  // TODO(<bug#>): implement this.
+  return false;
+}
+
+
 // The offset from the inlined patch site to the start of the inlined
 // store instruction.
 const int StoreIC::kOffsetToStoreInstruction = 20;
@@ -1909,7 +1888,7 @@ void StoreIC::GenerateNormal(MacroAssembler* masm) {
   //  -- rsp[0] : return address
   // -----------------------------------
 
-  Label miss, restore_miss;
+  Label miss;
 
   GenerateStringDictionaryReceiverCheck(masm, rdx, rbx, rdi, &miss);
 

@@ -174,6 +174,10 @@ DEFINE_bool(enable_liveedit, true, "enable liveedit experimental feature")
 DEFINE_int(max_stack_trace_source_length, 300,
            "maximum length of function source code printed in a stack trace.")
 
+// full-codegen.cc
+DEFINE_bool(always_inline_smi_code, false,
+            "always inline smi code in non-opt code")
+
 // heap.cc
 DEFINE_int(max_new_space_size, 0, "max size of the new generation")
 DEFINE_int(max_old_space_size, 0, "max size of the old generation")
@@ -283,7 +287,7 @@ DEFINE_bool(remote_debugger, false, "Connect JavaScript debugger to the "
                                     "debugger agent in another process")
 DEFINE_bool(debugger_agent, false, "Enable debugger agent")
 DEFINE_int(debugger_port, 5858, "Port to use for remote debugging")
-DEFINE_string(map_counters, false, "Map counters to a file")
+DEFINE_string(map_counters, NULL, "Map counters to a file")
 DEFINE_args(js_arguments, JSArguments(),
             "Pass all remaining arguments to the script. Alias for \"--\".")
 

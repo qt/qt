@@ -242,16 +242,6 @@ void ExternalReferenceTable::PopulateTable(Isolate* isolate) {
       DEBUG_ADDRESS,
       Debug::k_restarter_frame_function_pointer << kDebugIdShift,
       "Debug::restarter_frame_function_pointer_address()");
-  const char* debug_register_format = "Debug::register_address(%i)";
-  int dr_format_length = StrLength(debug_register_format);
-  for (int i = 0; i < kNumJSCallerSaved; ++i) {
-    Vector<char> name = Vector<char>::New(dr_format_length + 1);
-    OS::SNPrintF(name, debug_register_format, i);
-    Add(Debug_Address(Debug::k_register_address, i).address(isolate),
-        DEBUG_ADDRESS,
-        Debug::k_register_address << kDebugIdShift | i,
-        name.start());
-  }
 #endif
 
   // Stat counters
@@ -696,15 +686,11 @@ void Deserializer::ReadObject(int space_number,
   }
   ReadChunk(current, limit, space_number, address);
 
-  if (space == HEAP->map_space()) {
+  if (space == space->heap()->map_space()) {
     ASSERT(size == Map::kSize);
     HeapObject* obj = HeapObject::FromAddress(address);
     Map* map = reinterpret_cast<Map*>(obj);
-    if (map->instance_type() == MAP_TYPE) {
-      // Meta map has Heap pointer instead of scavenger.
-      ASSERT(map == map->map());
-      map->set_heap(HEAP);
-    }
+    map->set_heap(space->heap());
   }
 }
 

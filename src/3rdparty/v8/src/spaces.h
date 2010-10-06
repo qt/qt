@@ -243,10 +243,13 @@ class Page {
   static const intptr_t kPageAlignmentMask = (1 << kPageSizeBits) - 1;
 
   static const int kPageHeaderSize = kPointerSize + kPointerSize + kIntSize +
-    kIntSize + kPointerSize;
+    kIntSize + kPointerSize + kPointerSize;
 
-  // The start offset of the object area in a page.
-  static const int kObjectStartOffset = MAP_POINTER_ALIGN(kPageHeaderSize);
+  // The start offset of the object area in a page. Aligned to both maps and
+  // code alignment to be suitabel for both.
+  static const int kObjectStartOffset =
+      CODE_POINTER_ALIGN(MAP_POINTER_ALIGN(kPageHeaderSize));
+
 
   // Object area size in bytes.
   static const int kObjectAreaSize = kPageSize - kObjectStartOffset;
@@ -286,7 +289,7 @@ class Page {
   // This invariant guarantees that after flipping flag meaning at the
   // beginning of scavenge all pages in use will be marked as having valid
   // watermark.
-  static inline void FlipMeaningOfInvalidatedWatermarkFlag();
+  static inline void FlipMeaningOfInvalidatedWatermarkFlag(Heap* heap);
 
   // Returns true if the page allocation watermark was not altered during
   // scavenge.
@@ -348,6 +351,8 @@ class Page {
   // During scavenge collection this field is used to store allocation watermark
   // if it is altered during scavenge.
   Address mc_first_forwarded;
+
+  Heap* heap_;
 };
 
 
@@ -355,10 +360,12 @@ class Page {
 // Space is the abstract superclass for all allocation spaces.
 class Space : public Malloced {
  public:
-  Space(AllocationSpace id, Executability executable)
-      : id_(id), executable_(executable) {}
+  Space(Heap* heap, AllocationSpace id, Executability executable)
+      : heap_(heap), id_(id), executable_(executable) {}
 
   virtual ~Space() {}
+
+  Heap* heap() const { return heap_; }
 
   // Does the space need executable memory?
   Executability executable() { return executable_; }
@@ -387,6 +394,7 @@ class Space : public Malloced {
   virtual bool ReserveSpace(int bytes) = 0;
 
  private:
+  Heap* heap_;
   AllocationSpace id_;
   Executability executable_;
 };
@@ -572,6 +580,15 @@ class MemoryAllocator {
   void FreeRawMemory(void* buf,
                      size_t length,
                      Executability executable);
+  void PerformAllocationCallback(ObjectSpace space,
+                                 AllocationAction action,
+                                 size_t size);
+
+  void AddMemoryAllocationCallback(MemoryAllocationCallback callback,
+                                   ObjectSpace space,
+                                   AllocationAction action);
+  void RemoveMemoryAllocationCallback(MemoryAllocationCallback callback);
+  bool MemoryAllocationCallbackRegistered(MemoryAllocationCallback callback);
 
   // Returns the maximum available bytes of heaps.
   int Available() { return capacity_ < size_ ? 0 : capacity_ - size_; }
@@ -580,7 +597,7 @@ class MemoryAllocator {
   int Size() { return size_; }
 
   // Returns allocated executable spaces in bytes.
-  static int SizeExecutable() { return size_executable_; }
+  int SizeExecutable() { return size_executable_; }
 
   // Returns maximum available bytes that the old space can have.
   int MaxAvailable() {
@@ -646,9 +663,24 @@ class MemoryAllocator {
   int capacity_;
 
   // Allocated executable space size in bytes.
-  static int size_executable_;
+  int size_executable_;
+
   // Allocated space size in bytes.
   int size_;
+
+  struct MemoryAllocationCallbackRegistration {
+    MemoryAllocationCallbackRegistration(MemoryAllocationCallback callback,
+                                         ObjectSpace space,
+                                         AllocationAction action)
+        : callback(callback), space(space), action(action) {
+    }
+    MemoryAllocationCallback callback;
+    ObjectSpace space;
+    AllocationAction action;
+  };
+  // A List of callback that are triggered when memory is allocated or free'd
+  List<MemoryAllocationCallbackRegistration>
+      memory_allocation_callbacks_;
 
   // The initial chunk of virtual memory.
   VirtualMemory* initial_chunk_;
@@ -659,7 +691,8 @@ class MemoryAllocator {
     ChunkInfo() : address_(NULL),
                   size_(0),
                   owner_(NULL),
-                  executable_(NOT_EXECUTABLE) {}
+                  executable_(NOT_EXECUTABLE),
+                  owner_identity_(FIRST_SPACE) {}
     inline void init(Address a, size_t s, PagedSpace* o);
     Address address() { return address_; }
     size_t size() { return size_; }
@@ -667,12 +700,14 @@ class MemoryAllocator {
     // We save executability of the owner to allow using it
     // when collecting stats after the owner has been destroyed.
     Executability executable() const { return executable_; }
+    AllocationSpace owner_identity() const { return owner_identity_; }
 
    private:
     Address address_;
     size_t size_;
     PagedSpace* owner_;
     Executability executable_;
+    AllocationSpace owner_identity_;
   };
 
   // Chunks_, free_chunk_ids_ and top_ act as a stack of free chunk ids.
@@ -772,6 +807,7 @@ class HeapObjectIterator: public ObjectIterator {
   HeapObjectIterator(PagedSpace* space,
                      Address start,
                      HeapObjectCallback size_func);
+  HeapObjectIterator(Page* page, HeapObjectCallback size_func);
 
   inline HeapObject* next() {
     return (cur_addr_ < cur_limit_) ? FromCurrentPage() : FromNextPage();
@@ -965,7 +1001,10 @@ class AllocationStats BASE_EMBEDDED {
 class PagedSpace : public Space {
  public:
   // Creates a space with a maximum capacity, and an id.
-  PagedSpace(int max_capacity, AllocationSpace id, Executability executable);
+  PagedSpace(Heap* heap,
+             int max_capacity,
+             AllocationSpace id,
+             Executability executable);
 
   virtual ~PagedSpace() {}
 
@@ -1055,6 +1094,11 @@ class PagedSpace : public Space {
   // Freed pages are moved to the end of page list.
   void FreePages(Page* prev, Page* last);
 
+  // Deallocates a block.
+  virtual void DeallocateBlock(Address start,
+                               int size_in_bytes,
+                               bool add_to_freelist) = 0;
+
   // Set space allocation info.
   void SetTop(Address top) {
     allocation_info_.top = top;
@@ -1112,6 +1156,8 @@ class PagedSpace : public Space {
 
   // Returns the page of the allocation pointer.
   Page* AllocationTopPage() { return TopPageOf(allocation_info_); }
+
+  void RelinkPageListInChunkOrder(bool deallocate_blocks);
 
  protected:
   // Maximum capacity of this space.
@@ -1247,7 +1293,7 @@ class HistogramInfo: public NumberAndSizeInfo {
 class SemiSpace : public Space {
  public:
   // Constructor.
-  SemiSpace() :Space(NEW_SPACE, NOT_EXECUTABLE) {
+  explicit SemiSpace(Heap* heap) : Space(heap, NEW_SPACE, NOT_EXECUTABLE) {
     start_ = NULL;
     age_mark_ = NULL;
   }
@@ -1414,7 +1460,10 @@ class SemiSpaceIterator : public ObjectIterator {
 class NewSpace : public Space {
  public:
   // Constructor.
-  NewSpace() : Space(NEW_SPACE, NOT_EXECUTABLE) {}
+  explicit NewSpace(Heap* heap)
+    : Space(heap, NEW_SPACE, NOT_EXECUTABLE),
+      to_space_(heap),
+      from_space_(heap) {}
 
   // Sets up the new space using the given chunk.
   bool Setup(Address start, int size);
@@ -1801,10 +1850,11 @@ class OldSpace : public PagedSpace {
  public:
   // Creates an old space object with a given maximum capacity.
   // The constructor does not allocate pages from OS.
-  explicit OldSpace(int max_capacity,
-                    AllocationSpace id,
-                    Executability executable)
-      : PagedSpace(max_capacity, id, executable), free_list_(id) {
+  OldSpace(Heap* heap,
+           int max_capacity,
+           AllocationSpace id,
+           Executability executable)
+      : PagedSpace(heap, max_capacity, id, executable), free_list_(id) {
     page_extra_ = 0;
   }
 
@@ -1829,6 +1879,10 @@ class OldSpace : public PagedSpace {
       accounting_stats_.WasteBytes(wasted_bytes);
     }
   }
+
+  virtual void DeallocateBlock(Address start,
+                               int size_in_bytes,
+                               bool add_to_freelist);
 
   // Prepare for full garbage collection.  Resets the relocation pointer and
   // clears the free list.
@@ -1867,11 +1921,12 @@ class OldSpace : public PagedSpace {
 
 class FixedSpace : public PagedSpace {
  public:
-  FixedSpace(int max_capacity,
+  FixedSpace(Heap* heap,
+             int max_capacity,
              AllocationSpace id,
              int object_size_in_bytes,
              const char* name)
-      : PagedSpace(max_capacity, id, NOT_EXECUTABLE),
+      : PagedSpace(heap, max_capacity, id, NOT_EXECUTABLE),
         object_size_in_bytes_(object_size_in_bytes),
         name_(name),
         free_list_(id, object_size_in_bytes) {
@@ -1904,6 +1959,9 @@ class FixedSpace : public PagedSpace {
 
   virtual void PutRestOfCurrentPageOnFreeList(Page* current_page);
 
+  virtual void DeallocateBlock(Address start,
+                               int size_in_bytes,
+                               bool add_to_freelist);
 #ifdef DEBUG
   // Reports statistic info of the space
   void ReportStatistics();
@@ -1939,8 +1997,11 @@ class FixedSpace : public PagedSpace {
 class MapSpace : public FixedSpace {
  public:
   // Creates a map space object with a maximum capacity.
-  MapSpace(int max_capacity, int max_map_space_pages, AllocationSpace id)
-      : FixedSpace(max_capacity, id, Map::kSize, "map"),
+  MapSpace(Heap* heap,
+           int max_capacity,
+           int max_map_space_pages,
+           AllocationSpace id)
+      : FixedSpace(heap, max_capacity, id, Map::kSize, "map"),
         max_map_space_pages_(max_map_space_pages) {
     ASSERT(max_map_space_pages < kMaxMapPageIndex);
   }
@@ -2044,8 +2105,9 @@ class MapSpace : public FixedSpace {
 class CellSpace : public FixedSpace {
  public:
   // Creates a property cell space object with a maximum capacity.
-  CellSpace(int max_capacity, AllocationSpace id)
-      : FixedSpace(max_capacity, id, JSGlobalPropertyCell::kSize, "cell") {}
+  CellSpace(Heap* heap, int max_capacity, AllocationSpace id)
+      : FixedSpace(heap, max_capacity, id, JSGlobalPropertyCell::kSize, "cell")
+  {}
 
  protected:
 #ifdef DEBUG
@@ -2119,7 +2181,7 @@ class LargeObjectChunk {
 
 class LargeObjectSpace : public Space {
  public:
-  explicit LargeObjectSpace(AllocationSpace id);
+  LargeObjectSpace(Heap* heap, AllocationSpace id);
   virtual ~LargeObjectSpace() {}
 
   // Initializes internal data structures.
@@ -2150,6 +2212,11 @@ class LargeObjectSpace : public Space {
   // if it is not found. The function iterates through all objects in this
   // space, may be slow.
   Object* FindObject(Address a);
+
+  // Finds a large object page containing the given pc, returns NULL
+  // if such a page doesn't exist.
+  LargeObjectChunk* FindChunkContainingPc(Address pc);
+
 
   // Iterates objects covered by dirty regions.
   void IterateDirtyRegions(ObjectSlotCallback func);

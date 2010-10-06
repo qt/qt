@@ -375,7 +375,7 @@ Isolate::Isolate()
   producer_heap_profile_ = NULL;
 #endif
 
-  handle_scope_data_.Initialize();
+  handle_scope_data_.Initialize(this);
 
 #define ISOLATE_INIT_EXECUTE(type, name, initial_value)                        \
   name##_ = (initial_value);
@@ -538,7 +538,7 @@ bool Isolate::PreInit() {
   bootstrapper_ = new Bootstrapper();
   cpu_features_ = new CpuFeatures();
   handle_scope_implementer_ = new HandleScopeImplementer();
-  stub_cache_ = new StubCache();
+  stub_cache_ = new StubCache(this);
   ast_sentinels_ = new AstSentinels();
   inline_runtime_functions_table_ = new InlineRuntimeFunctionsTable();
   regexp_stack_ = new RegExpStack();

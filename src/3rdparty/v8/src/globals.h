@@ -214,6 +214,12 @@ const intptr_t kMapAlignmentBits = kObjectAlignmentBits + 3;
 const intptr_t kMapAlignment = (1 << kMapAlignmentBits);
 const intptr_t kMapAlignmentMask = kMapAlignment - 1;
 
+// Desired alignment for generated code.
+// Code entry points are aligned to 32 bytes (cache line size in some CPUs).
+const int kCodeAlignmentBits = 5;
+const intptr_t kCodeAlignment = 1 << kCodeAlignmentBits;
+const intptr_t kCodeAlignmentMask = kCodeAlignment - 1;
+
 // Tag information for Failure.
 const int kFailureTag = 3;
 const int kFailureTagSize = 2;
@@ -244,10 +250,12 @@ const Address kHandleZapValue =
     reinterpret_cast<Address>(V8_UINT64_C(0x1baddead0baddead));
 const Address kFromSpaceZapValue =
     reinterpret_cast<Address>(V8_UINT64_C(0x1beefdad0beefdad));
+const uint64_t kDebugZapValue = 0xbadbaddbbadbaddb;
 #else
 const Address kZapValue = reinterpret_cast<Address>(0xdeadbeed);
 const Address kHandleZapValue = reinterpret_cast<Address>(0xbaddead);
 const Address kFromSpaceZapValue = reinterpret_cast<Address>(0xbeefdad);
+const uint32_t kDebugZapValue = 0xbadbaddb;
 #endif
 
 
@@ -587,6 +595,10 @@ enum StateTag {
 #define MAP_POINTER_ALIGN(value)                                \
   (((value) + kMapAlignmentMask) & ~kMapAlignmentMask)
 
+// CODE_POINTER_ALIGN returns the value aligned as a generated code segment.
+#define CODE_POINTER_ALIGN(value)                               \
+  (((value) + kCodeAlignmentMask) & ~kCodeAlignmentMask)
+
 // The expression OFFSET_OF(type, field) computes the byte-offset
 // of the specified field relative to the containing type. This
 // corresponds to 'offsetof' (in stddef.h), except that it doesn't
@@ -663,7 +675,7 @@ F FUNCTION_CAST(Address addr) {
 #define TRACK_MEMORY(name)
 #endif
 
-// define used for helping GCC to make better inlining. Don't bother for debug
+// Define used for helping GCC to make better inlining. Don't bother for debug
 // builds. On GCC 3.4.5 using __attribute__((always_inline)) causes compilation
 // errors in debug build.
 #if defined(__GNUC__) && !defined(DEBUG)
@@ -678,6 +690,14 @@ F FUNCTION_CAST(Address addr) {
 #define INLINE(header) inline header
 #define NO_INLINE(header) header
 #endif
+
+
+#if defined(__GNUC__) && __GNUC__ >= 4
+#define MUST_USE_RESULT __attribute__ ((warn_unused_result))
+#else
+#define MUST_USE_RESULT
+#endif
+
 
 // Feature flags bit positions. They are mostly based on the CPUID spec.
 // (We assign CPUID itself to one of the currently reserved bits --

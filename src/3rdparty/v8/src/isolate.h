@@ -40,6 +40,7 @@
 #include "heap.h"
 #include "regexp-stack.h"
 #include "runtime.h"
+#include "string-search.h"
 #include "zone.h"
 #include "../include/v8-debug.h"
 
@@ -188,9 +189,6 @@ class ThreadLocalTop BASE_EMBEDDED {
 #ifdef ENABLE_LOGGING_AND_PROFILING
   Address js_entry_sp_;  // the stack pointer of the bottom js entry frame
 #endif
-  bool stack_is_cooked_;
-  inline bool stack_is_cooked() { return stack_is_cooked_; }
-  inline void set_stack_is_cooked(bool value) { stack_is_cooked_ = value; }
 
   // Generated code scratch locations.
   int32_t formal_count_;
@@ -282,7 +280,6 @@ typedef List<HeapObject*, PreallocatedStorage> DebugObjectCache;
   /* State for Relocatable. */                                                 \
   V(Relocatable*, relocatable_top, NULL)                                       \
   /* State for CodeEntry in profile-generator. */                              \
-  V(unsigned, code_entry_next_call_uid, NULL)                                  \
   V(CodeGenerator*, current_code_generator, NULL)                              \
   V(bool, jump_target_compiling_deferred_code, false)                          \
   V(DebugObjectCache*, string_stream_debug_object_cache, NULL)                 \
@@ -296,6 +293,10 @@ typedef List<HeapObject*, PreallocatedStorage> DebugObjectCache;
   ISOLATE_DEBUGGER_INIT_LIST(V)
 
 class Isolate {
+  // These forward declarations are required to make the friend declarations in
+  // PerIsolateThreadData work on some older versions of gcc.
+  class ThreadDataTable;
+  class EntryStackItem;
  public:
   ~Isolate();
 
@@ -559,13 +560,6 @@ class Isolate {
   // exception.
   bool is_out_of_memory();
 
-
-  void MarkCompactPrologue(bool is_compacting);
-  void MarkCompactEpilogue(bool is_compacting);
-  void MarkCompactPrologue(bool is_compacting,
-                           char* archived_thread_data);
-  void MarkCompactEpilogue(bool is_compacting,
-                           char* archived_thread_data);
   void PrintCurrentStackTrace(FILE* out);
   void PrintStackTrace(FILE* out, char* thread_data);
   void PrintStack(StringStream* accumulator);
@@ -1107,8 +1101,10 @@ class ExecutionAccess BASE_EMBEDDED {
 // Support for checking for stack-overflows in C++ code.
 class StackLimitCheck BASE_EMBEDDED {
  public:
+  explicit StackLimitCheck(Isolate* isolate) : isolate_(isolate) { }
+
   bool HasOverflowed() const {
-    StackGuard* stack_guard = Isolate::Current()->stack_guard();
+    StackGuard* stack_guard = isolate_->stack_guard();
     // Stack has overflowed in C++ code only if stack pointer exceeds the C++
     // stack guard and the limits are not set to interrupt values.
     // TODO(214): Stack overflows are ignored if a interrupt is pending. This
@@ -1116,6 +1112,8 @@ class StackLimitCheck BASE_EMBEDDED {
     return (reinterpret_cast<uintptr_t>(this) < stack_guard->climit()) &&
            stack_guard->IsStackOverflow();
   }
+ private:
+  Isolate* isolate_;
 };
 
 

@@ -40,7 +40,19 @@ namespace internal {
 template<class T>
 Handle<T>::Handle(T* obj) {
   ASSERT(!obj->IsFailure());
-  location_ = HandleScope::CreateHandle(obj);
+  location_ = HandleScope::CreateHandle(obj, Isolate::Current());
+}
+
+template<class T>
+Handle<T>::Handle(HeapObject* obj) {
+  location_ = HandleScope::CreateHandle<T>(obj, obj->GetIsolate());
+}
+
+
+template<class T>
+Handle<T>::Handle(T* obj, Isolate* isolate) {
+  ASSERT(!obj->IsFailure());
+  location_ = HandleScope::CreateHandle(obj, isolate);
 }
 
 
@@ -52,16 +64,44 @@ inline T* Handle<T>::operator*() const {
 }
 
 
+// Helper class to zero out the number of extensions in the handle
+// scope data after it has been saved.
+// This is only necessary for HandleScope constructor to get the right
+// order of effects.
+class HandleScopeDataTransfer {
+ public:
+  typedef v8::ImplementationUtilities::HandleScopeData Data;
+
+  explicit HandleScopeDataTransfer(Data* data) : data_(data) {}
+  ~HandleScopeDataTransfer() { data_->extensions = 0; }
+
+  // Called before the destructor to get the data to save.
+  Data* data() { return data_; }
+
+ private:
+  Data* data_;
+
+  DISALLOW_COPY_AND_ASSIGN(HandleScopeDataTransfer);
+};
+
+
 HandleScope::HandleScope()
-    : previous_(*Isolate::Current()->handle_scope_data()) {
-  Isolate::Current()->handle_scope_data()->extensions = 0;
+    : previous_(*HandleScopeDataTransfer(
+        Isolate::Current()->handle_scope_data()).data()) {
+}
+
+
+HandleScope::HandleScope(Isolate* isolate)
+    : previous_(*HandleScopeDataTransfer(isolate->handle_scope_data()).data()) {
+  ASSERT(isolate == Isolate::Current());
 }
 
 
 template <typename T>
-T** HandleScope::CreateHandle(T* value) {
+T** HandleScope::CreateHandle(T* value, Isolate* isolate) {
+  ASSERT(isolate == Isolate::Current());
   v8::ImplementationUtilities::HandleScopeData* current =
-      Isolate::Current()->handle_scope_data();
+      isolate->handle_scope_data();
 
   internal::Object** cur = current->next;
   if (cur == current->limit) cur = Extend();
@@ -87,7 +127,8 @@ void HandleScope::Enter(
 
 void HandleScope::Leave(
     const v8::ImplementationUtilities::HandleScopeData* previous) {
-  Isolate* isolate = Isolate::Current();
+  Isolate* isolate = previous->isolate;
+  ASSERT(isolate == Isolate::Current());
   v8::ImplementationUtilities::HandleScopeData* current =
       isolate->handle_scope_data();
   if (current->extensions > 0) {

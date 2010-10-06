@@ -35,12 +35,14 @@
 #ifndef V8_OBJECTS_INL_H_
 #define V8_OBJECTS_INL_H_
 
-#include "memory.h"
+#include "objects.h"
 #include "contexts.h"
 #include "conversions-inl.h"
-#include "objects.h"
+#include "heap.h"
+#include "memory.h"
 #include "isolate.h"
 #include "property.h"
+#include "spaces.h"
 
 namespace v8 {
 namespace internal {
@@ -78,9 +80,17 @@ PropertyDetails PropertyDetails::AsDeleted() {
   type* holder::name() { return type::cast(READ_FIELD(this, offset)); } \
   void holder::set_##name(type* value, WriteBarrierMode mode) {         \
     WRITE_FIELD(this, offset, value);                                   \
-    CONDITIONAL_WRITE_BARRIER(this, offset, mode);                      \
+    CONDITIONAL_WRITE_BARRIER(GetHeap(), this, offset, mode);           \
   }
 
+
+// GC-safe accessors do not use HeapObject::GetHeap(), but access TLS instead.
+#define ACCESSORS_GCSAFE(holder, name, type, offset)                    \
+  type* holder::name() { return type::cast(READ_FIELD(this, offset)); } \
+  void holder::set_##name(type* value, WriteBarrierMode mode) {         \
+    WRITE_FIELD(this, offset, value);                                   \
+    CONDITIONAL_WRITE_BARRIER(HEAP, this, offset, mode);                \
+  }
 
 
 #define SMI_ACCESSORS(holder, name, offset)             \
@@ -763,13 +773,13 @@ Object* Object::GetProperty(String* key, PropertyAttributes* attributes) {
 
 // CONDITIONAL_WRITE_BARRIER must be issued after the actual
 // write due to the assert validating the written value.
-#define CONDITIONAL_WRITE_BARRIER(object, offset, mode) \
+#define CONDITIONAL_WRITE_BARRIER(heap, object, offset, mode) \
   if (mode == UPDATE_WRITE_BARRIER) { \
-    object->GetHeap()->RecordWrite(object->address(), offset); \
+    heap->RecordWrite(object->address(), offset); \
   } else { \
     ASSERT(mode == SKIP_WRITE_BARRIER); \
-    ASSERT(object->GetHeap()->InNewSpace(object) || \
-           !object->GetHeap()->InNewSpace(READ_FIELD(object, offset)) || \
+    ASSERT(heap->InNewSpace(object) || \
+           !heap->InNewSpace(READ_FIELD(object, offset)) || \
            Page::FromAddress(object->address())->           \
                IsRegionDirty(object->address() + offset));  \
   }
@@ -1070,7 +1080,14 @@ Heap* HeapObject::GetHeap() {
   // Assert that we are not in GC, implement GC code in a way that it doesn't
   // pull heap from the map.
   ASSERT(HEAP->is_safe_to_read_maps());
-  return map()->map()->heap();
+  return map()->heap();
+}
+
+
+Isolate* HeapObject::GetIsolate() {
+  Isolate* i = GetHeap()->isolate();
+  ASSERT(i == Isolate::Current());
+  return i;
 }
 
 
@@ -1205,7 +1222,7 @@ void JSObject::set_elements(HeapObject* value, WriteBarrierMode mode) {
   ASSERT(value->IsFixedArray() || value->IsPixelArray() ||
          value->IsExternalArray());
   WRITE_FIELD(this, kElementsOffset, value);
-  CONDITIONAL_WRITE_BARRIER(this, kElementsOffset, mode);
+  CONDITIONAL_WRITE_BARRIER(GetHeap(), this, kElementsOffset, mode);
 }
 
 
@@ -1364,14 +1381,14 @@ Object* JSObject::InObjectPropertyAtPut(int index,
   ASSERT(index < 0);
   int offset = map()->instance_size() + (index * kPointerSize);
   WRITE_FIELD(this, offset, value);
-  CONDITIONAL_WRITE_BARRIER(this, offset, mode);
+  CONDITIONAL_WRITE_BARRIER(GetHeap(), this, offset, mode);
   return value;
 }
 
 
 
-void JSObject::InitializeBody(int object_size) {
-  Object* value = GetHeap()->undefined_value();
+void JSObject::InitializeBody(int object_size, Object* value) {
+  ASSERT(!value->IsHeapObject() || !GetHeap()->InNewSpace(value));
   for (int offset = kHeaderSize; offset < object_size; offset += kPointerSize) {
     WRITE_FIELD(this, offset, value);
   }
@@ -1469,7 +1486,7 @@ void FixedArray::set(int index,
   ASSERT(index >= 0 && index < this->length());
   int offset = kHeaderSize + index * kPointerSize;
   WRITE_FIELD(this, offset, value);
-  CONDITIONAL_WRITE_BARRIER(this, offset, mode);
+  CONDITIONAL_WRITE_BARRIER(GetHeap(), this, offset, mode);
 }
 
 
@@ -1926,7 +1943,7 @@ Object* ConsString::unchecked_first() {
 
 void ConsString::set_first(String* value, WriteBarrierMode mode) {
   WRITE_FIELD(this, kFirstOffset, value);
-  CONDITIONAL_WRITE_BARRIER(this, kFirstOffset, mode);
+  CONDITIONAL_WRITE_BARRIER(GetHeap(), this, kFirstOffset, mode);
 }
 
 
@@ -1942,7 +1959,7 @@ Object* ConsString::unchecked_second() {
 
 void ConsString::set_second(String* value, WriteBarrierMode mode) {
   WRITE_FIELD(this, kSecondOffset, value);
-  CONDITIONAL_WRITE_BARRIER(this, kSecondOffset, mode);
+  CONDITIONAL_WRITE_BARRIER(GetHeap(), this, kSecondOffset, mode);
 }
 
 
@@ -2148,13 +2165,13 @@ void ExternalFloatArray::set(int index, float value) {
 
 
 int Map::visitor_id() {
-  if (instance_type() == MAP_TYPE) return kMapVisitorId;
-  return READ_INT_FIELD(this, kScavengerCallbackOffset);
+  return READ_BYTE_FIELD(this, kVisitorIdOffset);
 }
 
 
-void Map::set_visitor_id(int value) {
-  WRITE_INT_FIELD(this, kScavengerCallbackOffset, value);
+void Map::set_visitor_id(int id) {
+  ASSERT(0 <= id && id < 256);
+  WRITE_BYTE_FIELD(this, kVisitorIdOffset, static_cast<byte>(id));
 }
 
 
@@ -2317,6 +2334,23 @@ bool Map::is_extensible() {
 }
 
 
+void Map::set_attached_to_shared_function_info(bool value) {
+  if (value) {
+    set_bit_field2(bit_field2() | (1 << kAttachedToSharedFunctionInfo));
+  } else {
+    set_bit_field2(bit_field2() & ~(1 << kAttachedToSharedFunctionInfo));
+  }
+}
+
+bool Map::attached_to_shared_function_info() {
+  return ((1 << kAttachedToSharedFunctionInfo) & bit_field2()) != 0;
+}
+
+
+JSFunction* Map::unchecked_constructor() {
+  return reinterpret_cast<JSFunction*>(READ_FIELD(this, kConstructorOffset));
+}
+
 
 Code::Flags Code::flags() {
   return static_cast<Flags>(READ_INT_FIELD(this, kFlagsOffset));
@@ -2368,14 +2402,13 @@ int Code::arguments_count() {
 }
 
 
-CodeStub::Major Code::major_key() {
+int Code::major_key() {
   ASSERT(kind() == STUB || kind() == BINARY_OP_IC);
-  return static_cast<CodeStub::Major>(READ_BYTE_FIELD(this,
-                                                      kStubMajorKeyOffset));
+  return READ_BYTE_FIELD(this, kStubMajorKeyOffset);
 }
 
 
-void Code::set_major_key(CodeStub::Major major) {
+void Code::set_major_key(int major) {
   ASSERT(kind() == STUB || kind() == BINARY_OP_IC);
   ASSERT(0 <= major && major < 256);
   WRITE_BYTE_FIELD(this, kStubMajorKeyOffset, major);
@@ -2474,10 +2507,7 @@ Code* Code::GetCodeFromTargetAddress(Address address) {
 
 
 Heap* Map::heap() {
-  ASSERT(instance_type() == MAP_TYPE);
-  ASSERT(this == map());
-  Heap* heap = reinterpret_cast<Heap*>(
-      READ_INTPTR_FIELD(this, kScavengerCallbackOffset));
+  Heap* heap = reinterpret_cast<Heap*>(READ_INTPTR_FIELD(this, kHeapOffset));
   ASSERT(heap != NULL);
   ASSERT(heap->isolate() == Isolate::Current());
   return heap;
@@ -2487,11 +2517,8 @@ Heap* Map::heap() {
 void Map::set_heap(Heap* heap) {
   ASSERT(heap != NULL);
   ASSERT(heap->isolate() == Isolate::Current());
-  ASSERT(instance_type() == MAP_TYPE);
   // WRITE_FIELD does not invoke write barrier, but there is no need here.
-  WRITE_INTPTR_FIELD(this,
-                     kScavengerCallbackOffset,
-                     reinterpret_cast<intptr_t>(heap));
+  WRITE_INTPTR_FIELD(this, kHeapOffset, reinterpret_cast<intptr_t>(heap));
 }
 
 
@@ -2509,7 +2536,7 @@ Object* Map::prototype() {
 void Map::set_prototype(Object* value, WriteBarrierMode mode) {
   ASSERT(value->IsNull() || value->IsJSObject());
   WRITE_FIELD(this, kPrototypeOffset, value);
-  CONDITIONAL_WRITE_BARRIER(this, kPrototypeOffset, mode);
+  CONDITIONAL_WRITE_BARRIER(GetHeap(), this, kPrototypeOffset, mode);
 }
 
 
@@ -2631,7 +2658,8 @@ ACCESSORS(BreakPointInfo, break_point_objects, Object, kBreakPointObjectsIndex)
 #endif
 
 ACCESSORS(SharedFunctionInfo, name, Object, kNameOffset)
-ACCESSORS(SharedFunctionInfo, construct_stub, Code, kConstructStubOffset)
+ACCESSORS_GCSAFE(SharedFunctionInfo, construct_stub, Code, kConstructStubOffset)
+ACCESSORS_GCSAFE(SharedFunctionInfo, initial_map, Object, kInitialMapOffset)
 ACCESSORS(SharedFunctionInfo, instance_class_name, Object,
           kInstanceClassNameOffset)
 ACCESSORS(SharedFunctionInfo, function_data, Object, kFunctionDataOffset)
@@ -2723,6 +2751,37 @@ PSEUDO_SMI_ACCESSORS_LO(SharedFunctionInfo, this_property_assignments_count,
               kThisPropertyAssignmentsCountOffset)
 #endif
 
+
+int SharedFunctionInfo::construction_count() {
+  return READ_BYTE_FIELD(this, kConstructionCountOffset);
+}
+
+
+void SharedFunctionInfo::set_construction_count(int value) {
+  ASSERT(0 <= value && value < 256);
+  WRITE_BYTE_FIELD(this, kConstructionCountOffset, static_cast<byte>(value));
+}
+
+
+bool SharedFunctionInfo::live_objects_may_exist() {
+  return (compiler_hints() & (1 << kLiveObjectsMayExist)) != 0;
+}
+
+
+void SharedFunctionInfo::set_live_objects_may_exist(bool value) {
+  if (value) {
+    set_compiler_hints(compiler_hints() | (1 << kLiveObjectsMayExist));
+  } else {
+    set_compiler_hints(compiler_hints() & ~(1 << kLiveObjectsMayExist));
+  }
+}
+
+
+bool SharedFunctionInfo::IsInobjectSlackTrackingInProgress() {
+  return initial_map() != HEAP->undefined_value();
+}
+
+
 ACCESSORS(CodeCache, default_cache, FixedArray, kDefaultCacheOffset)
 ACCESSORS(CodeCache, normal_type_cache, Object, kNormalTypeCacheOffset)
 
@@ -2782,7 +2841,7 @@ SerializedScopeInfo* SharedFunctionInfo::scope_info() {
 void SharedFunctionInfo::set_scope_info(SerializedScopeInfo* value,
                                         WriteBarrierMode mode) {
   WRITE_FIELD(this, kScopeInfoOffset, reinterpret_cast<Object*>(value));
-  CONDITIONAL_WRITE_BARRIER(this, kScopeInfoOffset, mode);
+  CONDITIONAL_WRITE_BARRIER(GetHeap(), this, kScopeInfoOffset, mode);
 }
 
 
@@ -3200,9 +3259,9 @@ Object* JSObject::EnsureWritableFastElements() {
   ASSERT(HasFastElements());
   FixedArray* elems = FixedArray::cast(elements());
   if (elems->map() != HEAP->fixed_cow_array_map()) return elems;
-  Object* writable_elems = HEAP->CopyFixedArray(elems);
+  Object* writable_elems = HEAP->CopyFixedArrayWithMap(elems,
+                                                       HEAP->fixed_array_map());
   if (writable_elems->IsFailure()) return writable_elems;
-  FixedArray::cast(writable_elems)->set_map(HEAP->fixed_array_map());
   set_elements(FixedArray::cast(writable_elems));
   COUNTERS->cow_arrays_converted()->Increment();
   return writable_elems;

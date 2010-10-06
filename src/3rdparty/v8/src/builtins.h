@@ -65,6 +65,7 @@ enum BuiltinExtraArguments {
 #define BUILTIN_LIST_A(V)                                                 \
   V(ArgumentsAdaptorTrampoline, BUILTIN, UNINITIALIZED)                   \
   V(JSConstructCall,            BUILTIN, UNINITIALIZED)                   \
+  V(JSConstructStubCountdown,   BUILTIN, UNINITIALIZED)                   \
   V(JSConstructStubGeneric,     BUILTIN, UNINITIALIZED)                   \
   V(JSConstructStubApi,         BUILTIN, UNINITIALIZED)                   \
   V(JSEntryTrampoline,          BUILTIN, UNINITIALIZED)                   \
@@ -117,7 +118,10 @@ enum BuiltinExtraArguments {
   V(FunctionApply,              BUILTIN, UNINITIALIZED)                   \
                                                                           \
   V(ArrayCode,                  BUILTIN, UNINITIALIZED)                   \
-  V(ArrayConstructCode,         BUILTIN, UNINITIALIZED)
+  V(ArrayConstructCode,         BUILTIN, UNINITIALIZED)                   \
+                                                                          \
+  V(StringConstructCode,        BUILTIN, UNINITIALIZED)
+
 
 #ifdef ENABLE_DEBUGGER_SUPPORT
 // Define list of builtins used by the debugger implemented in assembly.
@@ -253,6 +257,7 @@ class Builtins {
                                CFunctionId id,
                                BuiltinExtraArguments extra_args);
   static void Generate_JSConstructCall(MacroAssembler* masm);
+  static void Generate_JSConstructStubCountdown(MacroAssembler* masm);
   static void Generate_JSConstructStubGeneric(MacroAssembler* masm);
   static void Generate_JSConstructStubApi(MacroAssembler* masm);
   static void Generate_JSEntryTrampoline(MacroAssembler* masm);
@@ -265,6 +270,8 @@ class Builtins {
 
   static void Generate_ArrayCode(MacroAssembler* masm);
   static void Generate_ArrayConstructCode(MacroAssembler* masm);
+
+  static void Generate_StringConstructCode(MacroAssembler* masm);
 
   static void InitBuiltinFunctionTable();
 

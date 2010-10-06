@@ -470,9 +470,11 @@ class V8EXPORT HandleScope {
     int extensions;
     internal::Object** next;
     internal::Object** limit;
-    inline void Initialize() {
+    internal::Isolate* isolate;
+    inline void Initialize(internal::Isolate* i) {
       extensions = -1;
       next = limit = NULL;
+      isolate = i;
     }
   };
 
@@ -2363,6 +2365,30 @@ typedef void* (*CreateHistogramCallback)(const char* name,
 
 typedef void (*AddHistogramSampleCallback)(void* histogram, int sample);
 
+// --- M e m o r y  A l l o c a t i o n   C a l l b a c k ---
+  enum ObjectSpace {
+    kObjectSpaceNewSpace = 1 << 0,
+    kObjectSpaceOldPointerSpace = 1 << 1,
+    kObjectSpaceOldDataSpace = 1 << 2,
+    kObjectSpaceCodeSpace = 1 << 3,
+    kObjectSpaceMapSpace = 1 << 4,
+    kObjectSpaceLoSpace = 1 << 5,
+
+    kObjectSpaceAll = kObjectSpaceNewSpace | kObjectSpaceOldPointerSpace |
+      kObjectSpaceOldDataSpace | kObjectSpaceCodeSpace | kObjectSpaceMapSpace |
+      kObjectSpaceLoSpace
+  };
+
+  enum AllocationAction {
+    kAllocationActionAllocate = 1 << 0,
+    kAllocationActionFree = 1 << 1,
+    kAllocationActionAll = kAllocationActionAllocate | kAllocationActionFree
+  };
+
+typedef void (*MemoryAllocationCallback)(ObjectSpace space,
+                                         AllocationAction action,
+                                         int size);
+
 // --- F a i l e d A c c e s s C h e c k C a l l b a c k ---
 typedef void (*FailedAccessCheckCallback)(Local<Object> target,
                                           AccessType type,
@@ -2665,6 +2691,20 @@ class V8EXPORT V8 {
    * operations will result in the allocation of objects.
    */
   static void SetGlobalGCEpilogueCallback(GCCallback);
+
+  /**
+   * Enables the host application to provide a mechanism to be notified
+   * and perform custom logging when V8 Allocates Executable Memory.
+   */
+  static void AddMemoryAllocationCallback(MemoryAllocationCallback callback,
+                                          ObjectSpace space,
+                                          AllocationAction action);
+
+  /**
+   * This function removes callback which was installed by
+   * AddMemoryAllocationCallback function.
+   */
+  static void RemoveMemoryAllocationCallback(MemoryAllocationCallback callback);
 
   /**
    * Allows the host application to group objects together. If one
@@ -3257,6 +3297,34 @@ class V8EXPORT Locker {
 };
 
 
+/**
+ * An interface for exporting data from V8, using "push" model.
+ */
+class V8EXPORT OutputStream {
+public:
+  enum OutputEncoding {
+    kAscii = 0  // 7-bit ASCII.
+  };
+  enum WriteResult {
+    kContinue = 0,
+    kAbort = 1
+  };
+  virtual ~OutputStream() {}
+  /** Notify about the end of stream. */
+  virtual void EndOfStream() = 0;
+  /** Get preferred output chunk size. Called only once. */
+  virtual int GetChunkSize() { return 1024; }
+  /** Get preferred output encoding. Called only once. */
+  virtual OutputEncoding GetOutputEncoding() { return kAscii; }
+  /**
+   * Writes the next chunk of snapshot data into the stream. Writing
+   * can be stopped by returning kAbort as function result. EndOfStream
+   * will not be called in case writing was aborted.
+   */
+  virtual WriteResult WriteAsciiChunk(char* data, int size) = 0;
+};
+
+
 
 // --- I m p l e m e n t a t i o n ---
 
@@ -3324,7 +3392,7 @@ class Internals {
   // These values match non-compiler-dependent values defined within
   // the implementation of v8.
   static const int kHeapObjectMapOffset = 0;
-  static const int kMapInstanceTypeOffset = sizeof(void*) + sizeof(int);
+  static const int kMapInstanceTypeOffset = 2 * sizeof(void*) + sizeof(int);
   static const int kStringResourceOffset =
       InternalConstants<sizeof(void*)>::kStringResourceOffset;
 

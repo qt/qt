@@ -44,6 +44,8 @@ class Handle {
  public:
   INLINE(explicit Handle(T** location)) { location_ = location; }
   INLINE(explicit Handle(T* obj));
+  INLINE(explicit Handle(HeapObject* obj));
+  INLINE(Handle(T* obj, Isolate* isolate));
 
   INLINE(Handle()) : location_(NULL) {}
 
@@ -108,6 +110,7 @@ class Handle {
 class HandleScope {
  public:
   inline HandleScope();
+  explicit inline HandleScope(Isolate* isolate);
 
   ~HandleScope() {
     Leave(&previous_);
@@ -118,7 +121,7 @@ class HandleScope {
 
   // Creates a new handle with the given value.
   template <typename T>
-  static inline T** CreateHandle(T* value);
+  static inline T** CreateHandle(T* value, Isolate* isolate);
 
   // Deallocates any extensions used by the current scope.
   static void DeleteExtensions(Isolate* isolate);

@@ -28,7 +28,8 @@
 #ifndef V8_HEAP_INL_H_
 #define V8_HEAP_INL_H_
 
-#include "log.h"
+#include "heap.h"
+#include "objects.h"
 #include "isolate.h"
 #include "v8-counters.h"
 
@@ -43,6 +44,16 @@ void PromotionQueue::insert(HeapObject* target, int size) {
 }
 
 
+void Heap::UpdateOldSpaceLimits() {
+  int old_gen_size = PromotedSpaceSize();
+  old_gen_promotion_limit_ =
+      old_gen_size + Max(kMinimumPromotionLimit, old_gen_size / 3);
+  old_gen_allocation_limit_ =
+      old_gen_size + Max(kMinimumAllocationLimit, old_gen_size / 2);
+  old_gen_exhausted_ = false;
+}
+
+
 int Heap::MaxObjectSizeInPagedSpace() {
   return Page::kMaxHeapObjectSize;
 }
@@ -54,6 +65,11 @@ Object* Heap::AllocateSymbol(Vector<const char> str,
   unibrow::Utf8InputBuffer<> buffer(str.start(),
                                     static_cast<unsigned>(str.length()));
   return AllocateInternalSymbol(&buffer, chars, hash_field);
+}
+
+
+Object* Heap::CopyFixedArray(FixedArray* src) {
+  return CopyFixedArrayWithMap(src, src->map());
 }
 
 
@@ -266,7 +282,7 @@ void Heap::CopyBlockToOldSpaceAndUpdateRegionMarks(Address dst,
        remaining--) {
     Memory::Object_at(dst) = Memory::Object_at(src);
 
-    if (Heap::InNewSpace(Memory::Object_at(dst))) {
+    if (InNewSpace(Memory::Object_at(dst))) {
       marks |= page->GetRegionMaskForAddress(dst);
     }
 
@@ -312,8 +328,13 @@ void Heap::MoveBlockToOldSpaceAndUpdateRegionMarks(Address dst,
 }
 
 
+void Heap::ScavengePointer(HeapObject** p) {
+  ScavengeObject(p, *p);
+}
+
+
 void Heap::ScavengeObject(HeapObject** p, HeapObject* object) {
-  ASSERT(InFromSpace(object));
+  ASSERT(HEAP->InFromSpace(object));
 
   // We use the first word (where the map pointer usually is) of a heap
   // object to record the forwarding pointer.  A forwarding pointer can
@@ -415,7 +436,7 @@ Isolate* Heap::isolate() {
     }                                                                     \
     if (!__object__->IsRetryAfterGC()) RETURN_EMPTY;                      \
     COUNTERS->gc_last_resort_from_handles()->Increment();                 \
-    HEAP->CollectAllGarbage(false);                                       \
+    HEAP->CollectAllAvailableGarbage();                                   \
     {                                                                     \
       AlwaysAllocateScope __scope__;                                      \
       __object__ = FUNCTION_CALL;                                         \

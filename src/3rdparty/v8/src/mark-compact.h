@@ -28,6 +28,8 @@
 #ifndef V8_MARK_COMPACT_H_
 #define V8_MARK_COMPACT_H_
 
+#include "spaces.h"
+
 namespace v8 {
 namespace internal {
 
@@ -35,15 +37,6 @@ namespace internal {
 // of the object is returned in size. It optionally updates the offset
 // to the first live object in the page (only used for old and map objects).
 typedef bool (*IsAliveFunction)(HeapObject* obj, int* size, int* offset);
-
-// Callback function for non-live blocks in the old generation.
-// If add_to_freelist is false then just accounting stats are updated and
-// no attempt to add area to free list is made.
-typedef void (*DeallocateFunction)(Address start,
-                                   int size_in_bytes,
-                                   bool add_to_freelist,
-                                   bool last_on_page);
-
 
 // Forward declarations.
 class GCTracer;
@@ -134,6 +127,9 @@ class MarkCompactCollector {
   // Type of functions to process non-live objects.
   typedef void (*ProcessNonLiveFunction)(HeapObject* object);
 
+  // Pointer to member function, used in IterateLiveObjects.
+  typedef int (MarkCompactCollector::*LiveObjectCallback)(HeapObject* obj);
+
   // Set the global force_compaction flag, it must be called before Prepare
   // to take effect.
   void SetForceCompaction(bool value) {
@@ -175,10 +171,16 @@ class MarkCompactCollector {
 #ifdef DEBUG
   // Checks whether performing mark-compact collection.
   bool in_use() { return state_ > PREPARE_GC; }
+  bool are_map_pointers_encoded() { return state_ == UPDATE_POINTERS; }
 #endif
 
   // Determine type of object and emit deletion log event.
   static void ReportDeleteIfNeeded(HeapObject* obj);
+
+  // Distinguishable invalid map encodings (for single word and multiple words)
+  // that indicate free regions.
+  static const uint32_t kSingleFreeEncoding = 0;
+  static const uint32_t kMultiFreeEncoding = 1;
 
  private:
   MarkCompactCollector();
@@ -234,7 +236,7 @@ class MarkCompactCollector {
   friend class CodeMarkingVisitor;
   friend class SharedFunctionInfoMarkingVisitor;
 
-  static void PrepareForCodeFlushing();
+  void PrepareForCodeFlushing();
 
   // Marking operations for objects reachable from roots.
   void MarkLiveObjects();
@@ -365,40 +367,13 @@ class MarkCompactCollector {
   // Iterates live objects in a space, passes live objects
   // to a callback function which returns the heap size of the object.
   // Returns the number of live objects iterated.
-  int IterateLiveObjects(NewSpace* space, HeapObjectCallback size_f);
-  int IterateLiveObjects(PagedSpace* space, HeapObjectCallback size_f);
+  int IterateLiveObjects(NewSpace* space, LiveObjectCallback size_f);
+  int IterateLiveObjects(PagedSpace* space, LiveObjectCallback size_f);
 
   // Iterates the live objects between a range of addresses, returning the
   // number of live objects.
   int IterateLiveObjectsInRange(Address start, Address end,
-                                HeapObjectCallback size_func);
-
-  // Callback functions for deallocating non-live blocks in the old
-  // generation.
-  static void DeallocateOldPointerBlock(Address start,
-                                        int size_in_bytes,
-                                        bool add_to_freelist,
-                                        bool last_on_page);
-
-  static void DeallocateOldDataBlock(Address start,
-                                     int size_in_bytes,
-                                     bool add_to_freelist,
-                                     bool last_on_page);
-
-  static void DeallocateCodeBlock(Address start,
-                                  int size_in_bytes,
-                                  bool add_to_freelist,
-                                  bool last_on_page);
-
-  static void DeallocateMapBlock(Address start,
-                                 int size_in_bytes,
-                                 bool add_to_freelist,
-                                 bool last_on_page);
-
-  static void DeallocateCellBlock(Address start,
-                                  int size_in_bytes,
-                                  bool add_to_freelist,
-                                  bool last_on_page);
+                                LiveObjectCallback size_func);
 
   // If we are not compacting the heap, we simply sweep the spaces except
   // for the large object space, clearing mark bits and adding unmarked
@@ -421,11 +396,11 @@ class MarkCompactCollector {
 
   // Updates pointers in an object in new space.
   // Returns the heap size of the object.
-  static int UpdatePointersInNewObject(HeapObject* obj);
+  int UpdatePointersInNewObject(HeapObject* obj);
 
   // Updates pointers in an object in old spaces.
   // Returns the heap size of the object.
-  static int UpdatePointersInOldObject(HeapObject* obj);
+  int UpdatePointersInOldObject(HeapObject* obj);
 
   // Calculates the forwarding address of an object in an old space.
   static Address GetForwardingAddressInOldSpace(HeapObject* obj);
@@ -446,24 +421,24 @@ class MarkCompactCollector {
   int ConvertCodeICTargetToAddress(HeapObject* obj);
 
   // Relocate a map object.
-  static int RelocateMapObject(HeapObject* obj);
+  int RelocateMapObject(HeapObject* obj);
 
   // Relocates an old object.
-  static int RelocateOldPointerObject(HeapObject* obj);
-  static int RelocateOldDataObject(HeapObject* obj);
+  int RelocateOldPointerObject(HeapObject* obj);
+  int RelocateOldDataObject(HeapObject* obj);
 
   // Relocate a property cell object.
-  static int RelocateCellObject(HeapObject* obj);
+  int RelocateCellObject(HeapObject* obj);
 
   // Helper function.
   inline int RelocateOldNonCodeObject(HeapObject* obj,
                                       PagedSpace* space);
 
   // Relocates an object in the code space.
-  static int RelocateCodeObject(HeapObject* obj);
+  int RelocateCodeObject(HeapObject* obj);
 
   // Copy a new object.
-  static int RelocateNewObject(HeapObject* obj);
+  int RelocateNewObject(HeapObject* obj);
 
 #ifdef DEBUG
   // -----------------------------------------------------------------------

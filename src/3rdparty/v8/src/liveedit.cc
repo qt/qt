@@ -622,9 +622,33 @@ class FunctionInfoListener {
     current_parent_index_ = info.GetParentIndex();
   }
 
-// TODO(LiveEdit): Move private method below.
-//     This private section was created here to avoid moving the function
-//      to keep already complex diff simpler.
+ public:
+  // Saves only function code, because for a script function we
+  // may never create a SharedFunctionInfo object.
+  void FunctionCode(Handle<Code> function_code) {
+    FunctionInfoWrapper info =
+        FunctionInfoWrapper::cast(result_->GetElement(current_parent_index_));
+    info.SetFunctionCode(function_code, Handle<Object>(HEAP->null_value()));
+  }
+
+  // Saves full information about a function: its code, its scope info
+  // and a SharedFunctionInfo object.
+  void FunctionInfo(Handle<SharedFunctionInfo> shared, Scope* scope) {
+    if (!shared->IsSharedFunctionInfo()) {
+      return;
+    }
+    FunctionInfoWrapper info =
+        FunctionInfoWrapper::cast(result_->GetElement(current_parent_index_));
+    info.SetFunctionCode(Handle<Code>(shared->code()),
+        Handle<Object>(shared->scope_info()));
+    info.SetSharedFunctionInfo(shared);
+
+    Handle<Object> scope_info_list(SerializeFunctionScope(scope));
+    info.SetOuterScopeInfo(scope_info_list);
+  }
+
+  Handle<JSArray> GetResult() { return result_; }
+
  private:
   Object* SerializeFunctionScope(Scope* scope) {
     HandleScope handle_scope;
@@ -681,36 +705,6 @@ class FunctionInfoListener {
     return *scope_info_list;
   }
 
- public:
-  // Saves only function code, because for a script function we
-  // may never create a SharedFunctionInfo object.
-  void FunctionCode(Handle<Code> function_code) {
-    FunctionInfoWrapper info =
-        FunctionInfoWrapper::cast(result_->GetElement(current_parent_index_));
-    info.SetFunctionCode(function_code, Handle<Object>(HEAP->null_value()));
-  }
-
-  // Saves full information about a function: its code, its scope info
-  // and a SharedFunctionInfo object.
-  void FunctionInfo(Handle<SharedFunctionInfo> shared, Scope* scope) {
-    if (!shared->IsSharedFunctionInfo()) {
-      return;
-    }
-    FunctionInfoWrapper info =
-        FunctionInfoWrapper::cast(result_->GetElement(current_parent_index_));
-    info.SetFunctionCode(Handle<Code>(shared->code()),
-        Handle<Object>(shared->scope_info()));
-    info.SetSharedFunctionInfo(shared);
-
-    Handle<Object> scope_info_list(SerializeFunctionScope(scope));
-    info.SetOuterScopeInfo(scope_info_list);
-  }
-
-  Handle<JSArray> GetResult() {
-    return result_;
-  }
-
- private:
   Handle<JSArray> result_;
   int len_;
   int current_parent_index_;
@@ -743,7 +737,7 @@ void LiveEdit::WrapSharedFunctionInfos(Handle<JSArray> array) {
     Handle<String> name_handle(String::cast(info->name()));
     info_wrapper.SetProperties(name_handle, info->start_position(),
                                info->end_position(), info);
-    array->SetElement(i, *(info_wrapper.GetJSArray()));
+    SetElement(array, i, info_wrapper.GetJSArray());
   }
 }
 
@@ -806,25 +800,6 @@ class ReferenceCollectorVisitor : public ObjectVisitor {
 };
 
 
-class FrameCookingThreadVisitor : public ThreadVisitor {
- public:
-  void VisitThread(ThreadLocalTop* top) {
-    StackFrame::CookFramesForThread(top);
-  }
-};
-
-class FrameUncookingThreadVisitor : public ThreadVisitor {
- public:
-  void VisitThread(ThreadLocalTop* top) {
-    StackFrame::UncookFramesForThread(top);
-  }
-};
-
-static void IterateAllThreads(ThreadVisitor* visitor) {
-  Isolate::Current()->IterateThread(visitor);
-  Isolate::Current()->thread_manager()->IterateArchivedThreads(visitor);
-}
-
 // Finds all references to original and replaces them with substitution.
 static void ReplaceCodeObject(Code* original, Code* substitution) {
   ASSERT(!HEAP->InNewSpace(substitution));
@@ -840,13 +815,7 @@ static void ReplaceCodeObject(Code* original, Code* substitution) {
   // so temporary replace the pointers with offset numbers
   // in prologue/epilogue.
   {
-    FrameCookingThreadVisitor cooking_visitor;
-    IterateAllThreads(&cooking_visitor);
-
     HEAP->IterateStrongRoots(&visitor, VISIT_ALL);
-
-    FrameUncookingThreadVisitor uncooking_visitor;
-    IterateAllThreads(&uncooking_visitor);
   }
 
   // Now iterate over all pointers of all objects, including code_target
@@ -1394,8 +1363,9 @@ static const char* DropActivationsInActiveThread(
   for (int i = 0; i < array_len; i++) {
     if (result->GetElement(i) ==
         Smi::FromInt(LiveEdit::FUNCTION_BLOCKED_ON_ACTIVE_STACK)) {
-      result->SetElement(i, Smi::FromInt(
-          LiveEdit::FUNCTION_REPLACED_ON_ACTIVE_STACK));
+      Handle<Object> replaced(
+          Smi::FromInt(LiveEdit::FUNCTION_REPLACED_ON_ACTIVE_STACK));
+      SetElement(result, i, replaced);
     }
   }
   return NULL;
@@ -1518,7 +1488,7 @@ void LiveEditFunctionTracker::RecordRootFunctionInfo(Handle<Code> code) {
 }
 
 
-bool LiveEditFunctionTracker::IsActive(Isolate*) {
+bool LiveEditFunctionTracker::IsActive() {
   return false;
 }
 

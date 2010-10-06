@@ -31,7 +31,6 @@
 #include "api.h"
 #include "arguments.h"
 #include "bootstrapper.h"
-#include "codegen.h"
 #include "compiler.h"
 #include "debug.h"
 #include "execution.h"
@@ -152,6 +151,13 @@ Handle<JSGlobalProxy> ReinitializeJSGlobalProxy(
 
 
 void SetExpectedNofProperties(Handle<JSFunction> func, int nof) {
+  // If objects constructed from this function exist then changing
+  // 'estimated_nof_properties' is dangerous since the previois value might
+  // have been compiled into the fast construct stub. More over, the inobject
+  // slack tracking logic might have adjusted the previous value, so even
+  // passing the same value is risky.
+  if (func->shared()->live_objects_may_exist()) return;
+
   func->shared()->set_expected_nof_properties(nof);
   if (func->has_initial_map()) {
     Handle<Map> new_initial_map =
@@ -168,16 +174,25 @@ void SetPrototypeProperty(Handle<JSFunction> func, Handle<JSObject> value) {
 
 
 static int ExpectedNofPropertiesFromEstimate(int estimate) {
-  // TODO(1231235): We need dynamic feedback to estimate the number
-  // of expected properties in an object. The static hack below
-  // is barely a solution.
-  if (estimate == 0) return 4;
-  return estimate + 2;
+  // If no properties are added in the constructor, they are more likely
+  // to be added later.
+  if (estimate == 0) estimate = 2;
+
+  // We do not shrink objects that go into a snapshot (yet), so we adjust
+  // the estimate conservatively.
+  if (Serializer::enabled()) return estimate + 2;
+
+  // Inobject slack tracking will reclaim redundant inobject space later,
+  // so we can afford to adjust the estimate generously.
+  return estimate + 6;
 }
 
 
 void SetExpectedNofPropertiesFromEstimate(Handle<SharedFunctionInfo> shared,
                                           int estimate) {
+  // See the comment in SetExpectedNofProperties.
+  if (shared->live_objects_may_exist()) return;
+
   shared->set_expected_nof_properties(
       ExpectedNofPropertiesFromEstimate(estimate));
 }
@@ -242,9 +257,10 @@ Handle<Object> SetProperty(Handle<Object> object,
                            Handle<Object> key,
                            Handle<Object> value,
                            PropertyAttributes attributes) {
-  Heap* heap = HEAP;
+  Isolate* isolate = Isolate::Current();
   CALL_HEAP_FUNCTION(
-      Runtime::SetObjectProperty(heap, object, key, value, attributes), Object);
+      Runtime::SetObjectProperty(isolate, object, key, value, attributes),
+      Object);
 }
 
 
@@ -252,8 +268,10 @@ Handle<Object> ForceSetProperty(Handle<JSObject> object,
                                 Handle<Object> key,
                                 Handle<Object> value,
                                 PropertyAttributes attributes) {
+  Isolate* isolate = object->GetIsolate();
   CALL_HEAP_FUNCTION(
-      Runtime::ForceSetObjectProperty(object, key, value, attributes), Object);
+      Runtime::ForceSetObjectProperty(isolate, object, key, value, attributes),
+      Object);
 }
 
 
@@ -268,8 +286,8 @@ Handle<Object> SetNormalizedProperty(Handle<JSObject> object,
 
 Handle<Object> ForceDeleteProperty(Handle<JSObject> object,
                                    Handle<Object> key) {
-  Heap* heap = HEAP;
-  CALL_HEAP_FUNCTION(Runtime::ForceDeleteObjectProperty(heap, object, key),
+  Isolate* isolate = object->GetIsolate();
+  CALL_HEAP_FUNCTION(Runtime::ForceDeleteObjectProperty(isolate, object, key),
                      Object);
 }
 
@@ -304,8 +322,8 @@ Handle<Object> GetProperty(Handle<JSObject> obj,
 
 Handle<Object> GetProperty(Handle<Object> obj,
                            Handle<Object> key) {
-  Heap* heap = HEAP;
-  CALL_HEAP_FUNCTION(Runtime::GetObjectProperty(heap, obj, key), Object);
+  Isolate* isolate = Isolate::Current();
+  CALL_HEAP_FUNCTION(Runtime::GetObjectProperty(isolate, obj, key), Object);
 }
 
 
@@ -483,7 +501,8 @@ void InitScriptLineEnds(Handle<Script> script) {
 
   if (!script->source()->IsString()) {
     ASSERT(script->source()->IsUndefined());
-    script->set_line_ends(*(Factory::NewFixedArray(0)));
+    Handle<FixedArray> empty = Factory::NewFixedArray(0);
+    script->set_line_ends(*empty);
     ASSERT(script->line_ends()->IsFixedArray());
     return;
   }

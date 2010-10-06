@@ -25,6 +25,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <limits.h>  // For LONG_MIN, LONG_MAX.
+
 #include "v8.h"
 
 #if defined(V8_TARGET_ARCH_ARM)
@@ -225,7 +227,7 @@ void MacroAssembler::And(Register dst, Register src1, const Operand& src2,
   }
   int32_t immediate = src2.immediate();
   if (immediate == 0) {
-    mov(dst, Operand(0), LeaveCC, cond);
+    mov(dst, Operand(0, RelocInfo::NONE), LeaveCC, cond);
     return;
   }
   if (IsPowerOf2(immediate + 1) && ((immediate & 1) != 0)) {
@@ -304,7 +306,7 @@ void MacroAssembler::Usat(Register dst, int satpos, const Operand& src,
     }
     tst(dst, Operand(~satval));
     b(eq, &done);
-    mov(dst, Operand(0), LeaveCC, mi);  // 0 if negative.
+    mov(dst, Operand(0, RelocInfo::NONE), LeaveCC, mi);  // 0 if negative.
     mov(dst, Operand(satval), LeaveCC, pl);  // satval if positive.
     bind(&done);
   } else {
@@ -514,7 +516,7 @@ void MacroAssembler::LeaveFrame(StackFrame::Type type) {
 }
 
 
-void MacroAssembler::EnterExitFrame(ExitFrame::Mode mode) {
+void MacroAssembler::EnterExitFrame() {
   // Compute the argv pointer and keep it in a callee-saved register.
   // r0 is argc.
   add(r6, sp, Operand(r0, LSL, kPointerSizeLog2));
@@ -557,16 +559,6 @@ void MacroAssembler::EnterExitFrame(ExitFrame::Mode mode) {
   // Setup argc and the builtin function in callee-saved registers.
   mov(r4, Operand(r0));
   mov(r5, Operand(r1));
-
-
-#ifdef ENABLE_DEBUGGER_SUPPORT
-  // Save the state of all registers to the stack from the memory
-  // location. This is needed to allow nested break points.
-  if (mode == ExitFrame::MODE_DEBUG) {
-    // Use sp as base to push.
-    CopyRegistersFromMemoryToStack(sp, kJSCallerSaved);
-  }
-#endif
 }
 
 
@@ -601,21 +593,9 @@ int MacroAssembler::ActivationFrameAlignment() {
 }
 
 
-void MacroAssembler::LeaveExitFrame(ExitFrame::Mode mode) {
-#ifdef ENABLE_DEBUGGER_SUPPORT
-  // Restore the memory copy of the registers by digging them out from
-  // the stack. This is needed to allow nested break points.
-  if (mode == ExitFrame::MODE_DEBUG) {
-    // This code intentionally clobbers r2 and r3.
-    const int kCallerSavedSize = kNumJSCallerSaved * kPointerSize;
-    const int kOffset = ExitFrameConstants::kCodeOffset - kCallerSavedSize;
-    add(r3, fp, Operand(kOffset));
-    CopyRegistersFromStackToMemory(r3, r2, kJSCallerSaved);
-  }
-#endif
-
+void MacroAssembler::LeaveExitFrame() {
   // Clear top frame.
-  mov(r3, Operand(0));
+  mov(r3, Operand(0, RelocInfo::NONE));
   mov(ip, Operand(ExternalReference(Isolate::k_c_entry_fp_address)));
   str(r3, MemOperand(ip));
 
@@ -781,69 +761,11 @@ void MacroAssembler::InvokeFunction(JSFunction* function,
   InvokeCode(code, expected, actual, RelocInfo::CODE_TARGET, flag);
 }
 
+
 #ifdef ENABLE_DEBUGGER_SUPPORT
-void MacroAssembler::SaveRegistersToMemory(RegList regs) {
-  ASSERT((regs & ~kJSCallerSaved) == 0);
-  // Copy the content of registers to memory location.
-  for (int i = 0; i < kNumJSCallerSaved; i++) {
-    int r = JSCallerSavedCode(i);
-    if ((regs & (1 << r)) != 0) {
-      Register reg = { r };
-      mov(ip, Operand(ExternalReference(Debug_Address::Register(i))));
-      str(reg, MemOperand(ip));
-    }
-  }
-}
-
-
-void MacroAssembler::RestoreRegistersFromMemory(RegList regs) {
-  ASSERT((regs & ~kJSCallerSaved) == 0);
-  // Copy the content of memory location to registers.
-  for (int i = kNumJSCallerSaved; --i >= 0;) {
-    int r = JSCallerSavedCode(i);
-    if ((regs & (1 << r)) != 0) {
-      Register reg = { r };
-      mov(ip, Operand(ExternalReference(Debug_Address::Register(i))));
-      ldr(reg, MemOperand(ip));
-    }
-  }
-}
-
-
-void MacroAssembler::CopyRegistersFromMemoryToStack(Register base,
-                                                    RegList regs) {
-  ASSERT((regs & ~kJSCallerSaved) == 0);
-  // Copy the content of the memory location to the stack and adjust base.
-  for (int i = kNumJSCallerSaved; --i >= 0;) {
-    int r = JSCallerSavedCode(i);
-    if ((regs & (1 << r)) != 0) {
-      mov(ip, Operand(ExternalReference(Debug_Address::Register(i))));
-      ldr(ip, MemOperand(ip));
-      str(ip, MemOperand(base, 4, NegPreIndex));
-    }
-  }
-}
-
-
-void MacroAssembler::CopyRegistersFromStackToMemory(Register base,
-                                                    Register scratch,
-                                                    RegList regs) {
-  ASSERT((regs & ~kJSCallerSaved) == 0);
-  // Copy the content of the stack to the memory location and adjust base.
-  for (int i = 0; i < kNumJSCallerSaved; i++) {
-    int r = JSCallerSavedCode(i);
-    if ((regs & (1 << r)) != 0) {
-      mov(ip, Operand(ExternalReference(Debug_Address::Register(i))));
-      ldr(scratch, MemOperand(base, 4, PostIndex));
-      str(scratch, MemOperand(ip));
-    }
-  }
-}
-
-
 void MacroAssembler::DebugBreak() {
   ASSERT(allow_stub_calls());
-  mov(r0, Operand(0));
+  mov(r0, Operand(0, RelocInfo::NONE));
   mov(r1, Operand(ExternalReference(Runtime::kDebugBreak)));
   CEntryStub ces(1);
   Call(ces.GetCode(), RelocInfo::DEBUG_BREAK);
@@ -879,7 +801,7 @@ void MacroAssembler::PushTryHandler(CodeLocation try_location,
     // The frame pointer does not point to a JS frame so we save NULL
     // for fp. We expect the code throwing an exception to check fp
     // before dereferencing it to restore the context.
-    mov(ip, Operand(0));  // To save a NULL frame pointer.
+    mov(ip, Operand(0, RelocInfo::NONE));  // To save a NULL frame pointer.
     mov(r6, Operand(StackHandler::ENTRY));
     ASSERT(StackHandlerConstants::kStateOffset == 1 * kPointerSize
            && StackHandlerConstants::kFPOffset == 2 * kPointerSize
@@ -918,7 +840,7 @@ void MacroAssembler::CheckAccessGlobalProxy(Register holder_reg,
   ldr(scratch, MemOperand(fp, StandardFrameConstants::kContextOffset));
   // In debug mode, make sure the lexical context is set.
 #ifdef DEBUG
-  cmp(scratch, Operand(0));
+  cmp(scratch, Operand(0, RelocInfo::NONE));
   Check(ne, "we should not have an empty lexical context");
 #endif
 
@@ -1322,20 +1244,26 @@ void MacroAssembler::TailCallStub(CodeStub* stub, Condition cond) {
 }
 
 
-void MacroAssembler::StubReturn(int argc, Condition cond) {
-  ASSERT(argc >= 1 && generating_stub());
-  if (argc > 1) {
-    add(sp, sp, Operand((argc - 1) * kPointerSize), LeaveCC, cond);
-  }
-  Ret(cond);
-}
-
-
 void MacroAssembler::IllegalOperation(int num_arguments) {
   if (num_arguments > 0) {
     add(sp, sp, Operand(num_arguments * kPointerSize));
   }
   LoadRoot(r0, Heap::kUndefinedValueRootIndex);
+}
+
+
+void MacroAssembler::IndexFromHash(Register hash, Register index) {
+  // If the hash field contains an array index pick it out. The assert checks
+  // that the constants for the maximum number of digits for an array index
+  // cached in the hash field and the number of bits reserved for it does not
+  // conflict.
+  ASSERT(TenToThe(String::kMaxCachedArrayIndexLength) <
+         (1 << String::kArrayIndexValueBits));
+  // We want the smi-tagged index in key.  kArrayIndexValueMask has zeros in
+  // the low kHashShift bits.
+  STATIC_ASSERT(kSmiTag == 0);
+  Ubfx(hash, hash, String::kHashShift, String::kArrayIndexValueBits);
+  mov(index, Operand(hash, LSL, kSmiTagSize));
 }
 
 
@@ -1397,6 +1325,104 @@ void MacroAssembler::SmiToDoubleVFPRegister(Register smi,
   mov(scratch1, Operand(smi, ASR, kSmiTagSize));
   vmov(scratch2, scratch1);
   vcvt_f64_s32(value, scratch2);
+}
+
+
+// Tries to get a signed int32 out of a double precision floating point heap
+// number. Rounds towards 0. Branch to 'not_int32' if the double is out of the
+// 32bits signed integer range.
+void MacroAssembler::ConvertToInt32(Register source,
+                                    Register dest,
+                                    Register scratch,
+                                    Register scratch2,
+                                    Label *not_int32) {
+  if (Isolate::Current()->cpu_features()->IsSupported(VFP3)) {
+    CpuFeatures::Scope scope(VFP3);
+    sub(scratch, source, Operand(kHeapObjectTag));
+    vldr(d0, scratch, HeapNumber::kValueOffset);
+    vcvt_s32_f64(s0, d0);
+    vmov(dest, s0);
+    // Signed vcvt instruction will saturate to the minimum (0x80000000) or
+    // maximun (0x7fffffff) signed 32bits integer when the double is out of
+    // range. When substracting one, the minimum signed integer becomes the
+    // maximun signed integer.
+    sub(scratch, dest, Operand(1));
+    cmp(scratch, Operand(LONG_MAX - 1));
+    // If equal then dest was LONG_MAX, if greater dest was LONG_MIN.
+    b(ge, not_int32);
+  } else {
+    // This code is faster for doubles that are in the ranges -0x7fffffff to
+    // -0x40000000 or 0x40000000 to 0x7fffffff. This corresponds almost to
+    // the range of signed int32 values that are not Smis.  Jumps to the label
+    // 'not_int32' if the double isn't in the range -0x80000000.0 to
+    // 0x80000000.0 (excluding the endpoints).
+    Label right_exponent, done;
+    // Get exponent word.
+    ldr(scratch, FieldMemOperand(source, HeapNumber::kExponentOffset));
+    // Get exponent alone in scratch2.
+    Ubfx(scratch2,
+            scratch,
+            HeapNumber::kExponentShift,
+            HeapNumber::kExponentBits);
+    // Load dest with zero.  We use this either for the final shift or
+    // for the answer.
+    mov(dest, Operand(0, RelocInfo::NONE));
+    // Check whether the exponent matches a 32 bit signed int that is not a Smi.
+    // A non-Smi integer is 1.xxx * 2^30 so the exponent is 30 (biased). This is
+    // the exponent that we are fastest at and also the highest exponent we can
+    // handle here.
+    const uint32_t non_smi_exponent = HeapNumber::kExponentBias + 30;
+    // The non_smi_exponent, 0x41d, is too big for ARM's immediate field so we
+    // split it up to avoid a constant pool entry.  You can't do that in general
+    // for cmp because of the overflow flag, but we know the exponent is in the
+    // range 0-2047 so there is no overflow.
+    int fudge_factor = 0x400;
+    sub(scratch2, scratch2, Operand(fudge_factor));
+    cmp(scratch2, Operand(non_smi_exponent - fudge_factor));
+    // If we have a match of the int32-but-not-Smi exponent then skip some
+    // logic.
+    b(eq, &right_exponent);
+    // If the exponent is higher than that then go to slow case.  This catches
+    // numbers that don't fit in a signed int32, infinities and NaNs.
+    b(gt, not_int32);
+
+    // We know the exponent is smaller than 30 (biased).  If it is less than
+    // 0 (biased) then the number is smaller in magnitude than 1.0 * 2^0, ie
+    // it rounds to zero.
+    const uint32_t zero_exponent = HeapNumber::kExponentBias + 0;
+    sub(scratch2, scratch2, Operand(zero_exponent - fudge_factor), SetCC);
+    // Dest already has a Smi zero.
+    b(lt, &done);
+
+    // We have an exponent between 0 and 30 in scratch2.  Subtract from 30 to
+    // get how much to shift down.
+    rsb(dest, scratch2, Operand(30));
+
+    bind(&right_exponent);
+    // Get the top bits of the mantissa.
+    and_(scratch2, scratch, Operand(HeapNumber::kMantissaMask));
+    // Put back the implicit 1.
+    orr(scratch2, scratch2, Operand(1 << HeapNumber::kExponentShift));
+    // Shift up the mantissa bits to take up the space the exponent used to
+    // take. We just orred in the implicit bit so that took care of one and
+    // we want to leave the sign bit 0 so we subtract 2 bits from the shift
+    // distance.
+    const int shift_distance = HeapNumber::kNonMantissaBitsInTopWord - 2;
+    mov(scratch2, Operand(scratch2, LSL, shift_distance));
+    // Put sign in zero flag.
+    tst(scratch, Operand(HeapNumber::kSignMask));
+    // Get the second half of the double. For some exponents we don't
+    // actually need this because the bits get shifted out again, but
+    // it's probably slower to test than just to do it.
+    ldr(scratch, FieldMemOperand(source, HeapNumber::kMantissaOffset));
+    // Shift down 22 bits to get the last 10 bits.
+    orr(scratch, scratch2, Operand(scratch, LSR, 32 - shift_distance));
+    // Move down according to the exponent.
+    mov(dest, Operand(scratch, LSR, dest));
+    // Fix sign if sign bit was set.
+    rsb(dest, dest, Operand(0, RelocInfo::NONE), LeaveCC, ne);
+    bind(&done);
+  }
 }
 
 
@@ -1786,7 +1812,7 @@ void MacroAssembler::CountLeadingZeros(Register zeros,   // Answer.
 #ifdef CAN_USE_ARMV5_INSTRUCTIONS
   clz(zeros, source);  // This instruction is only supported after ARM5.
 #else
-  mov(zeros, Operand(0));
+  mov(zeros, Operand(0, RelocInfo::NONE));
   Move(scratch, source);
   // Top 16.
   tst(scratch, Operand(0xffff0000));
@@ -1840,11 +1866,17 @@ void MacroAssembler::JumpIfInstanceTypeIsNotSequentialAscii(Register type,
   b(ne, failure);
 }
 
+static const int kRegisterPassedArguments = 4;
 
 void MacroAssembler::PrepareCallCFunction(int num_arguments, Register scratch) {
   int frame_alignment = ActivationFrameAlignment();
+
+  // Reserve space for Isolate address which is always passed as last parameter
+  num_arguments += 1;
+
   // Up to four simple arguments are passed in registers r0..r3.
-  int stack_passed_arguments = (num_arguments <= 4) ? 0 : num_arguments - 4;
+  int stack_passed_arguments = (num_arguments <= kRegisterPassedArguments) ?
+                               0 : num_arguments - kRegisterPassedArguments;
   if (frame_alignment > kPointerSize) {
     // Make stack end at alignment and make room for num_arguments - 4 words
     // and the original value of sp.
@@ -1861,12 +1893,36 @@ void MacroAssembler::PrepareCallCFunction(int num_arguments, Register scratch) {
 
 void MacroAssembler::CallCFunction(ExternalReference function,
                                    int num_arguments) {
-  mov(ip, Operand(function));
-  CallCFunction(ip, num_arguments);
+  CallCFunctionHelper(no_reg, function, ip, num_arguments);
+}
+
+void MacroAssembler::CallCFunction(Register function,
+                                   Register scratch,
+                                   int num_arguments) {
+  CallCFunctionHelper(function,
+                      ExternalReference::the_hole_value_location(),
+                      scratch,
+                      num_arguments);
 }
 
 
-void MacroAssembler::CallCFunction(Register function, int num_arguments) {
+void MacroAssembler::CallCFunctionHelper(Register function,
+                                         ExternalReference function_reference,
+                                         Register scratch,
+                                         int num_arguments) {
+  // Push Isolate address as the last argument.
+  if (num_arguments < kRegisterPassedArguments) {
+    Register arg_to_reg[] = {r0, r1, r2, r3};
+    Register r = arg_to_reg[num_arguments];
+    mov(r, Operand(ExternalReference::isolate_address()));
+  } else {
+    int stack_passed_arguments = num_arguments - kRegisterPassedArguments;
+    // Push Isolate address on the stack after the arguments.
+    mov(scratch, Operand(ExternalReference::isolate_address()));
+    str(scratch, MemOperand(sp, stack_passed_arguments * kPointerSize));
+  }
+  num_arguments += 1;
+
   // Make sure that the stack is aligned before calling a C function unless
   // running in the simulator. The simulator has its own alignment check which
   // provides more information.
@@ -1890,8 +1946,13 @@ void MacroAssembler::CallCFunction(Register function, int num_arguments) {
   // Just call directly. The function called cannot cause a GC, or
   // allow preemption, so the return address in the link register
   // stays correct.
+  if (function.is(no_reg)) {
+    mov(scratch, Operand(function_reference));
+    function = scratch;
+  }
   Call(function);
-  int stack_passed_arguments = (num_arguments <= 4) ? 0 : num_arguments - 4;
+  int stack_passed_arguments = (num_arguments <= kRegisterPassedArguments) ?
+                               0 : num_arguments - kRegisterPassedArguments;
   if (OS::ActivationFrameAlignment() > kPointerSize) {
     ldr(sp, MemOperand(sp, stack_passed_arguments * kPointerSize));
   } else {

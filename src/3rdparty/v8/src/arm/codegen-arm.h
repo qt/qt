@@ -28,8 +28,9 @@
 #ifndef V8_ARM_CODEGEN_ARM_H_
 #define V8_ARM_CODEGEN_ARM_H_
 
-#include "ic-inl.h"
 #include "ast.h"
+#include "code-stubs-arm.h"
+#include "ic-inl.h"
 
 namespace v8 {
 namespace internal {
@@ -270,12 +271,6 @@ class CodeGenerator: public AstVisitor {
 
   void AddDeferred(DeferredCode* code) { deferred_.Add(code); }
 
-  static const int kUnknownIntValue = -1;
-
-  // If the name is an inline runtime function call return the number of
-  // expected arguments. Otherwise return -1.
-  static int InlineRuntimeCallArgumentsCount(Handle<String> name);
-
   // Constants related to patching of inlined load/store.
   static int GetInlinedKeyedLoadInstructionsAfterPatch() {
     return FLAG_debug_code ? 32 : 13;
@@ -291,6 +286,12 @@ class CodeGenerator: public AstVisitor {
   }
 
  private:
+  // Type of a member function that generates inline code for a native function.
+  typedef void (CodeGenerator::*InlineFunctionGenerator)
+      (ZoneList<Expression*>*);
+
+  static const InlineFunctionGenerator kInlineFunctionGenerators[];
+
   // Construction/Destruction
   explicit CodeGenerator(MacroAssembler* masm);
 
@@ -420,7 +421,8 @@ class CodeGenerator: public AstVisitor {
   void GenericBinaryOperation(Token::Value op,
                               OverwriteMode overwrite_mode,
                               GenerateInlineSmi inline_smi,
-                              int known_rhs = kUnknownIntValue);
+                              int known_rhs =
+                                  GenericBinaryOpStub::kUnknownIntValue);
   void Comparison(Condition cc,
                   Expression* left,
                   Expression* right,
@@ -447,12 +449,10 @@ class CodeGenerator: public AstVisitor {
   void Branch(bool if_true, JumpTarget* target);
   void CheckStack();
 
-  static InlineRuntimeFunctionsTable::Entry* FindInlineRuntimeLUT(
-      Handle<String> name);
+  static InlineFunctionGenerator FindInlineFunctionGenerator(
+      Runtime::FunctionId function_id);
+
   bool CheckForInlineRuntimeCall(CallRuntime* node);
-  static bool PatchInlineRuntimeEntry(Handle<String> name,
-      const InlineRuntimeFunctionsTable::Entry& new_entry,
-      InlineRuntimeFunctionsTable::Entry* old_entry);
 
   static Handle<Code> ComputeLazyCompile(int argc);
   void ProcessDeclarations(ZoneList<Declaration*>* declarations);
@@ -544,6 +544,9 @@ class CodeGenerator: public AstVisitor {
   void GenerateMathSqrt(ZoneList<Expression*>* args);
 
   void GenerateIsRegExpEquivalent(ZoneList<Expression*>* args);
+
+  void GenerateHasCachedArrayIndex(ZoneList<Expression*>* args);
+  void GenerateGetCachedArrayIndex(ZoneList<Expression*>* args);
 
   // Simple condition analysis.
   enum ConditionAnalysis {

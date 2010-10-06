@@ -250,14 +250,14 @@ class MacroAssembler: public Assembler {
   void EnterConstructFrame() { EnterFrame(StackFrame::CONSTRUCT); }
   void LeaveConstructFrame() { LeaveFrame(StackFrame::CONSTRUCT); }
 
-  // Enter specific kind of exit frame; either normal or debug mode.
+  // Enter exit frame.
   // Expects the number of arguments in register r0 and
   // the builtin function to call in register r1. Exits with argc in
   // r4, argv in r6, and and the builtin function to call in r5.
-  void EnterExitFrame(ExitFrame::Mode mode);
+  void EnterExitFrame();
 
   // Leave the current exit frame. Expects the return value in r0.
-  void LeaveExitFrame(ExitFrame::Mode mode);
+  void LeaveExitFrame();
 
   // Get the actual activation frame alignment for target environment.
   static int ActivationFrameAlignment();
@@ -294,12 +294,6 @@ class MacroAssembler: public Assembler {
   // ---------------------------------------------------------------------------
   // Debugger Support
 
-  void SaveRegistersToMemory(RegList regs);
-  void RestoreRegistersFromMemory(RegList regs);
-  void CopyRegistersFromMemoryToStack(Register base, RegList regs);
-  void CopyRegistersFromStackToMemory(Register base,
-                                      Register scratch,
-                                      RegList regs);
   void DebugBreak();
 #endif
 
@@ -475,6 +469,12 @@ class MacroAssembler: public Assembler {
   // occurred.
   void IllegalOperation(int num_arguments);
 
+  // Picks out an array index from the hash field.
+  // Register use:
+  //   hash - holds the index's hash. Clobbered.
+  //   index - holds the overwritten index on exit.
+  void IndexFromHash(Register hash, Register index);
+
   // Get the number of least significant bits from a register
   void GetLeastBitsFromSmi(Register dst, Register src, int num_least_bits);
 
@@ -504,6 +504,15 @@ class MacroAssembler: public Assembler {
                               Register scratch1,
                               SwVfpRegister scratch2);
 
+  // Convert the HeapNumber pointed to by source to a 32bits signed integer
+  // dest. If the HeapNumber does not fit into a 32bits signed integer branch
+  // to not_int32 label.
+  void ConvertToInt32(Register source,
+                      Register dest,
+                      Register scratch,
+                      Register scratch2,
+                      Label *not_int32);
+
   // Count leading zeros in a 32 bit word.  On ARM5 and later it uses the clz
   // instruction.  On pre-ARM5 hardware this routine gives the wrong answer
   // for 0 (31 instead of 32).  Source and scratch can be the same in which case
@@ -521,9 +530,6 @@ class MacroAssembler: public Assembler {
 
   // Call a code stub.
   void TailCallStub(CodeStub* stub, Condition cond = al);
-
-  // Return from a code stub after popping its arguments.
-  void StubReturn(int argc, Condition cond = al);
 
   // Call a runtime routine.
   void CallRuntime(const Runtime::Function* f, int num_arguments);
@@ -563,7 +569,7 @@ class MacroAssembler: public Assembler {
   // return address (unless this is somehow accounted for by the called
   // function).
   void CallCFunction(ExternalReference function, int num_arguments);
-  void CallCFunction(Register function, int num_arguments);
+  void CallCFunction(Register function, Register scratch, int num_arguments);
 
   // Jump to a runtime routine.
   void JumpToExternalReference(const ExternalReference& builtin);
@@ -661,6 +667,11 @@ class MacroAssembler: public Assembler {
 
 
  private:
+  void CallCFunctionHelper(Register function,
+                           ExternalReference function_reference,
+                           Register scratch,
+                           int num_arguments);
+
   void Jump(intptr_t target, RelocInfo::Mode rmode, Condition cond = al);
   void Call(intptr_t target, RelocInfo::Mode rmode, Condition cond = al);
 

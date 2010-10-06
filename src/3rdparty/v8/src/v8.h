@@ -60,9 +60,6 @@
 #include "flags.h"
 
 // Objects & heap
-#include "objects.h"
-#include "spaces.h"
-#include "heap.h"
 #include "objects-inl.h"
 #include "spaces-inl.h"
 #include "heap-inl.h"
@@ -96,7 +93,7 @@ class V8 : public AllStatic {
                                       bool take_snapshot = false);
 
   // Random number generation support. Not cryptographically safe.
-  static uint32_t Random();
+  static uint32_t Random(Isolate* isolate);
   static Object* FillHeapNumberWithRandom(Object* heap_number);
 
   // Idle notification directly from the API.

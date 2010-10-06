@@ -68,11 +68,23 @@ class FunctionEntry BASE_EMBEDDED {
   void set_literal_count(int value) { backing_[kLiteralCountOffset] = value; }
 
   int property_count() { return backing_[kPropertyCountOffset]; }
-  void set_property_count(int value) { backing_[kPropertyCountOffset] = value; }
+  void set_property_count(int value) {
+    backing_[kPropertyCountOffset] = value;
+  }
+
+  int predata_function_skip() { return backing_[kPredataFunctionSkipOffset]; }
+  void set_predata_function_skip(int value) {
+    backing_[kPredataFunctionSkipOffset] = value;
+  }
+
+  int predata_symbol_skip() { return backing_[kPredataSymbolSkipOffset]; }
+  void set_predata_symbol_skip(int value) {
+    backing_[kPredataSymbolSkipOffset] = value;
+  }
 
   bool is_valid() { return backing_.length() > 0; }
 
-  static const int kSize = 4;
+  static const int kSize = 6;
 
  private:
   Vector<unsigned> backing_;
@@ -80,6 +92,8 @@ class FunctionEntry BASE_EMBEDDED {
   static const int kEndPosOffset = 1;
   static const int kLiteralCountOffset = 2;
   static const int kPropertyCountOffset = 3;
+  static const int kPredataFunctionSkipOffset = 4;
+  static const int kPredataSymbolSkipOffset = 5;
 };
 
 
@@ -87,46 +101,100 @@ class ScriptDataImpl : public ScriptData {
  public:
   explicit ScriptDataImpl(Vector<unsigned> store)
       : store_(store),
-        last_entry_(0) { }
+        owns_store_(true) { }
+
+  // Create an empty ScriptDataImpl that is guaranteed to not satisfy
+  // a SanityCheck.
+  ScriptDataImpl() : store_(Vector<unsigned>()), owns_store_(false) { }
+
   virtual ~ScriptDataImpl();
   virtual int Length();
   virtual const char* Data();
   virtual bool HasError();
-  FunctionEntry GetFunctionEnd(int start);
+
+  void Initialize();
+  void ReadNextSymbolPosition();
+
+  FunctionEntry GetFunctionEntry(int start);
+  int GetSymbolIdentifier();
+  void SkipFunctionEntry(int start);
   bool SanityCheck();
 
   Scanner::Location MessageLocation();
   const char* BuildMessage();
   Vector<const char*> BuildArgs();
 
+  int symbol_count() {
+    return (store_.length() > kHeaderSize) ? store_[kSymbolCountOffset] : 0;
+  }
+  // The following functions should only be called if SanityCheck has
+  // returned true.
   bool has_error() { return store_[kHasErrorOffset]; }
   unsigned magic() { return store_[kMagicOffset]; }
   unsigned version() { return store_[kVersionOffset]; }
 
-  static const unsigned kMagicNumber = 0xBadDead;
-  static const unsigned kCurrentVersion = 1;
+  // Skip forward in the preparser data by the given number
+  // of unsigned ints of function entries and the given number of bytes of
+  // symbol id encoding.
+  void Skip(int function_entries, int symbol_entries) {
+    ASSERT(function_entries >= 0);
+    ASSERT(function_entries
+           <= (static_cast<int>(store_[kFunctionsSizeOffset])
+               - (function_index_ - kHeaderSize)));
+    ASSERT(symbol_entries >= 0);
+    ASSERT(symbol_entries <= symbol_data_end_ - symbol_data_);
 
-  static const unsigned kMagicOffset = 0;
-  static const unsigned kVersionOffset = 1;
-  static const unsigned kHasErrorOffset = 2;
-  static const unsigned kSizeOffset = 3;
-  static const unsigned kHeaderSize = 4;
+    unsigned max_function_skip = store_[kFunctionsSizeOffset] -
+        static_cast<unsigned>(function_index_ - kHeaderSize);
+    function_index_ +=
+        Min(static_cast<unsigned>(function_entries), max_function_skip);
+    symbol_data_ +=
+        Min(static_cast<unsigned>(symbol_entries),
+            static_cast<unsigned>(symbol_data_end_ - symbol_data_));
+  }
+
+  static const unsigned kMagicNumber = 0xBadDead;
+  static const unsigned kCurrentVersion = 3;
+
+  static const int kMagicOffset = 0;
+  static const int kVersionOffset = 1;
+  static const int kHasErrorOffset = 2;
+  static const int kFunctionsSizeOffset = 3;
+  static const int kSymbolCountOffset = 4;
+  static const int kSizeOffset = 5;
+  static const int kHeaderSize = 6;
+
+  // If encoding a message, the following positions are fixed.
+  static const int kMessageStartPos = 0;
+  static const int kMessageEndPos = 1;
+  static const int kMessageArgCountPos = 2;
+  static const int kMessageTextPos = 3;
+
+  static const byte kNumberTerminator = 0x80u;
 
  private:
+  Vector<unsigned> store_;
+  unsigned char* symbol_data_;
+  unsigned char* symbol_data_end_;
+  int function_index_;
+  bool owns_store_;
+
   unsigned Read(int position);
   unsigned* ReadAddress(int position);
-  int EntryCount();
-  FunctionEntry nth(int n);
+  // Reads a number from the current symbols
+  int ReadNumber(byte** source);
 
-  Vector<unsigned> store_;
+  ScriptDataImpl(const char* backing_store, int length)
+      : store_(reinterpret_cast<unsigned*>(const_cast<char*>(backing_store)),
+               length / sizeof(unsigned)),
+        owns_store_(false) {
+    ASSERT_EQ(0, reinterpret_cast<intptr_t>(backing_store) % sizeof(unsigned));
+  }
 
   // Read strings written by ParserRecorder::WriteString.
   static const char* ReadString(unsigned* start, int* chars);
 
-  // The last entry returned.  This is used to make lookup faster:
-  // the next entry to return is typically the next entry so lookup
-  // will usually be much faster if we start from the last entry.
-  int last_entry_;
+  friend class ScriptData;
 };
 
 
@@ -139,10 +207,16 @@ FunctionLiteral* MakeAST(bool compile_in_global_context,
                          ScriptDataImpl* pre_data,
                          bool is_json = false);
 
-
+// Generic preparser generating full preparse data.
 ScriptDataImpl* PreParse(Handle<String> source,
                          unibrow::CharacterStream* stream,
                          v8::Extension* extension);
+
+// Preparser that only does preprocessing that makes sense if only used
+// immediately after.
+ScriptDataImpl* PartialPreParse(Handle<String> source,
+                                unibrow::CharacterStream* stream,
+                                v8::Extension* extension);
 
 
 bool ParseRegExp(FlatStringReader* input,
