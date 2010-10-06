@@ -511,9 +511,11 @@
     delivery at a later time.
 
     \value AutoConnection
-    	   (default) Same as DirectConnection, if the emitter and
-       	   receiver are in the same thread. Same as QueuedConnection,
-       	   if the emitter and receiver are in different threads.
+            (default) If the object sending the signal is in a different thread
+            than the receiving object, the signal is queued, behaving as
+            Qt::QueuedConnection. If both objects are in the same thread,
+            the slot is invoked directly, behaving as Qt::DirectConnection. The
+            type of connection is determined when the signal is emitted.
 
     \value DirectConnection
 	   The slot is invoked immediately, when the signal is
