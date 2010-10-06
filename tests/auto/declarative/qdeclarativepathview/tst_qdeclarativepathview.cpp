@@ -85,6 +85,7 @@ private slots:
     void pathUpdateOnStartChanged();
     void package();
     void emptyModel();
+    void pathUpdate();
 
 private:
     QDeclarativeView *createView();
@@ -786,6 +787,23 @@ void tst_QDeclarativePathView::emptyModel()
     delete canvas;
 }
 
+
+// QTBUG-14239
+void tst_QDeclarativePathView::pathUpdate()
+{
+    QDeclarativeView *canvas = createView();
+    QVERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/pathUpdate.qml"));
+
+    QDeclarativePathView *pathView = canvas->rootObject()->findChild<QDeclarativePathView*>("pathView");
+    QVERIFY(pathView);
+
+    QDeclarativeItem *item = findItem<QDeclarativeItem>(pathView, "wrapper", 0);
+    QVERIFY(item);
+    QCOMPARE(item->x(), 150.0);
+
+    delete canvas;
+}
 
 QDeclarativeView *tst_QDeclarativePathView::createView()
 {
