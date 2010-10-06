@@ -3238,90 +3238,19 @@ void DitaXmlGenerator::generateSection(const NodeList& nl,
                                        CodeMarker* marker,
                                        CodeMarker::SynopsisStyle style)
 {
-    bool name_alignment = true;
     if (!nl.isEmpty()) {
-        bool twoColumn = false;
-        if (style == CodeMarker::SeparateList) {
-            name_alignment = false;
-            twoColumn = (nl.count() >= 16);
-        }
-        else if (nl.first()->type() == Node::Property) {
-            twoColumn = (nl.count() >= 5);
-            name_alignment = false;
-        }
-        if (name_alignment) {
-            xmlWriter().writeStartElement("table");
-            xmlWriter().writeAttribute("outputclass","alignedsummary");
-            xmlWriter().writeStartElement("tgroup");
-            xmlWriter().writeAttribute("cols","2");
-            xmlWriter().writeStartElement("tbody");
-        }
-        else {
-            if (twoColumn) {
-                xmlWriter().writeStartElement("table");
-                xmlWriter().writeAttribute("outputclass","propsummary");
-                xmlWriter().writeStartElement("tgroup");
-                xmlWriter().writeAttribute("cols","1");
-                xmlWriter().writeStartElement("tbody");
-                xmlWriter().writeStartElement("row");
-                xmlWriter().writeStartElement("entry");
-                xmlWriter().writeAttribute("outputclass","topAlign");
-            }
-            xmlWriter().writeStartElement("ul");
-        }
-
-        int i = 0;
+        xmlWriter().writeStartElement("ul");
         NodeList::ConstIterator m = nl.begin();
         while (m != nl.end()) {
-            if ((*m)->access() == Node::Private) {
-                ++m;
-                continue;
-            }
-
-            if (name_alignment) {
-                xmlWriter().writeStartElement("row");
-                xmlWriter().writeStartElement("entry");
-                xmlWriter().writeAttribute("outputclass","memItemLeft rightAlign topAlign");
-            }
-            else {
-                if (twoColumn && i == (int) (nl.count() + 1) / 2) {
-                    xmlWriter().writeEndElement(); // </ul>
-                    xmlWriter().writeEndElement(); // </entry>
-                    xmlWriter().writeStartElement("entry");
-                    xmlWriter().writeAttribute("outputclass","topAlign");
-                    xmlWriter().writeStartElement("ul");
-                }
+            if ((*m)->access() != Node::Private) {
                 xmlWriter().writeStartElement("li");
-                xmlWriter().writeAttribute("outputclass","fn");
-            }
-
-            QString marked = getMarkedUpSynopsis(*m, relative, marker, style);
-            writeText(marked, marker, relative, name_alignment);
-            if (name_alignment) {
-                xmlWriter().writeEndElement(); // </entry>
-                xmlWriter().writeEndElement(); // </row>
-            }
-            else {
+                QString marked = getMarkedUpSynopsis(*m, relative, marker, style);
+                writeText(marked, marker, relative);
                 xmlWriter().writeEndElement(); // </li>
             }
-            i++;
             ++m;
         }
-        if (name_alignment) {
-            xmlWriter().writeEndElement(); // </tbody>
-            xmlWriter().writeEndElement(); // </tgroup>
-            xmlWriter().writeEndElement(); // </table>
-        }
-        else {
-            xmlWriter().writeEndElement(); // </ul>
-            if (twoColumn) {
-                xmlWriter().writeEndElement(); // </entry>
-                xmlWriter().writeEndElement(); // </row>
-                xmlWriter().writeEndElement(); // </tbody>
-                xmlWriter().writeEndElement(); // </tgroup>
-                xmlWriter().writeEndElement(); // </table>
-            }
-        }
+        xmlWriter().writeEndElement(); // </ul>
     }
 }
 
@@ -3416,8 +3345,7 @@ QString DitaXmlGenerator::getMarkedUpSynopsis(const Node* node,
  */
 void DitaXmlGenerator::writeText(const QString& markedCode,
                                  CodeMarker* marker,
-                                 const Node* relative,
-                                 bool nameAlignment)
+                                 const Node* relative)
 {
     QString src = markedCode;
     QString html;
@@ -3487,19 +3415,9 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
         // 0       1         2           3       4        5
         "link", "type", "headerfile", "func", "param", "extra"
     };
-    bool done = false;
+
     for (int i = 0, n = src.size(); i < n;) {
         if (src.at(i) == charLangle && src.at(i + 1) == charAt) {
-            if (nameAlignment && !done) {
-                if (!html.isEmpty()) {
-                    xmlWriter().writeCharacters(html);
-                    html.clear();
-                }
-                xmlWriter().writeEndElement(); // </<entry>
-                xmlWriter().writeStartElement("entry");
-                xmlWriter().writeAttribute("outputclass","memItemRight bottomAlign");
-                done = true;
-            }
             i += 2;
             bool handled = false;
             for (int k = 0; k != 6; ++k) {

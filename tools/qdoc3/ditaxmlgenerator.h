@@ -208,8 +208,7 @@ class DitaXmlGenerator : public PageGenerator
                                       CodeMarker* marker);
     void writeText(const QString& markedCode, 
                    CodeMarker* marker, 
-                   const Node* relative,
-                   bool nameAlignment = false);
+                   const Node* relative);
 
     void generateFullName(const Node* apparentNode, 
                           const Node* relative, 
