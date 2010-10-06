@@ -479,8 +479,7 @@ QScriptValue QScriptDeclarativeClass::newStaticScopeObject(
     QScriptEngine *engine, int propertyCount, const QString *names,
     const QScriptValue *values, const QScriptValue::PropertyFlags *flags)
 {
-    Q_UNUSED(engine);
-    QScriptValue result;
+    QScriptValue result = engine->newObject();
     for (int i = 0; i < propertyCount; ++i) {
         result.setProperty(names[i], values[i], flags[i]);
     }
