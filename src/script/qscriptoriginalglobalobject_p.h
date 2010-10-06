@@ -122,6 +122,7 @@ QScriptOriginalGlobalObject::~QScriptOriginalGlobalObject()
     Q_ASSERT_X(m_stringConstructor.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
     Q_ASSERT_X(m_stringPrototype.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
     Q_ASSERT_X(m_ownPropertyDescriptor.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
+    Q_ASSERT_X(m_ownPropertyNames.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
     Q_ASSERT_X(m_globalObject.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
     Q_ASSERT_X(m_invalidValue.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
 }
@@ -132,6 +133,7 @@ inline void QScriptOriginalGlobalObject::destroy()
     m_errorPrototype.Dispose();
     m_stringConstructor.Dispose();
     m_stringPrototype.Dispose();
+    m_ownPropertyNames.Dispose();
     m_ownPropertyDescriptor.Dispose();
     m_globalObject.Dispose();
     m_invalidValue.Dispose();
@@ -140,6 +142,7 @@ inline void QScriptOriginalGlobalObject::destroy()
     m_errorPrototype.Clear();
     m_stringConstructor.Clear();
     m_stringPrototype.Clear();
+    m_ownPropertyNames.Clear();
     m_ownPropertyDescriptor.Clear();
     m_globalObject.Clear();
     m_invalidValue.Clear();
