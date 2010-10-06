@@ -201,8 +201,6 @@ QScriptValue QScriptDeclarativeClass::scopeChainValue(QScriptContext *context, i
         chain.prepend(context->thisObject());
         context = context->parentContext();
     }
-    foreach(QScriptValue it, chain)
-        qDebug() << it.toVariant();
     if (index >= 0)
         return chain.value(index);
     else
