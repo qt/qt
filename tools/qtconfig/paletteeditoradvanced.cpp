@@ -182,7 +182,6 @@ QPalette::ColorGroup PaletteEditorAdvanced::groupFromIndex(int item)
     }
 }
 
-
 QPalette::ColorRole PaletteEditorAdvanced::centralFromIndex(int item)
 {
     switch( item ) {

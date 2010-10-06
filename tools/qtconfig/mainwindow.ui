@@ -40,8 +40,8 @@
 ** $QT_END_LICENSE$
 **
 *********************************************************************</comment>
- <class>MainWindowBase</class>
- <widget class="Q3MainWindow" name="MainWindowBase">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -54,14 +54,6 @@
    <string>Qt Configuration</string>
   </property>
   <widget class="QWidget" name="widget">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>26</y>
-     <width>815</width>
-     <height>690</height>
-    </rect>
-   </property>
    <layout class="QGridLayout" name="gridLayout">
     <property name="margin">
      <number>8</number>
@@ -222,7 +214,7 @@
               <item>
                <widget class="QLabel" name="labelMainColor">
                 <property name="text">
-                 <string>&amp;3-D Effects:</string>
+                 <string>&amp;Button Background:</string>
                 </property>
                 <property name="buddy">
                  <cstring>buttonMainColor</cstring>
@@ -233,7 +225,7 @@
                <widget class="ColorButton" name="buttonMainColor" native="true"/>
               </item>
               <item>
-               <widget class="QLabel" name="labelMainColor2">
+               <widget class="QLabel" name="labelWindowColor">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
                   <horstretch>0</horstretch>
@@ -262,12 +254,12 @@
                  <number>0</number>
                 </property>
                 <property name="buddy">
-                 <cstring>buttonMainColor2</cstring>
+                 <cstring>buttonWindowColor</cstring>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="ColorButton" name="buttonMainColor2" native="true"/>
+               <widget class="ColorButton" name="buttonWindowColor" native="true"/>
               </item>
               <item>
                <spacer name="spacer">
@@ -466,7 +458,7 @@
             </widget>
            </item>
            <item>
-            <widget class="Q3ListBox" name="sublistbox"/>
+            <widget class="QListWidget" name="sublistbox"/>
            </item>
            <item>
             <layout class="QHBoxLayout">
@@ -676,17 +668,8 @@
             </widget>
            </item>
            <item>
-            <widget class="Q3Frame" name="effectbase">
-             <property name="frameShape">
-              <enum>QFrame::NoFrame</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Plain</enum>
-             </property>
+            <widget class="QFrame" name="effectbase">
              <layout class="QGridLayout">
-              <property name="margin">
-               <number>0</number>
-              </property>
               <property name="spacing">
                <number>4</number>
               </property>
@@ -999,7 +982,7 @@
               </widget>
              </item>
              <item row="0" column="0" colspan="3">
-              <widget class="Q3ListBox" name="fontpathlistbox"/>
+              <widget class="QListWidget" name="fontpathlistbox"/>
              </item>
             </layout>
            </item>
@@ -1241,24 +1224,21 @@ p, li { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>815</width>
-     <height>26</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="PopupMenu">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>123</width>
-      <height>92</height>
+      <x>203</x>
+      <y>114</y>
+      <width>161</width>
+      <height>110</height>
      </rect>
     </property>
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <action name=""/>
-    <action name=""/>
-    <action name=""/>
     <addaction name="fileSaveAction"/>
     <addaction name="separator"/>
     <addaction name="fileExitAction"/>
@@ -1266,10 +1246,10 @@ p, li { white-space: pre-wrap; }
    <widget class="QMenu" name="PopupMenu_2">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>123</width>
-      <height>90</height>
+      <x>234</x>
+      <y>115</y>
+      <width>161</width>
+      <height>106</height>
      </rect>
     </property>
     <property name="title">
@@ -1278,9 +1258,6 @@ p, li { white-space: pre-wrap; }
     <addaction name="helpAboutAction"/>
     <addaction name="helpAboutQtAction"/>
    </widget>
-   <action name=""/>
-   <action name=""/>
-   <action name=""/>
    <addaction name="PopupMenu"/>
    <addaction name="separator"/>
    <addaction name="PopupMenu_2"/>
@@ -1304,7 +1281,7 @@ p, li { white-space: pre-wrap; }
     <string>Exit</string>
    </property>
    <property name="shortcut">
-    <string/>
+    <string>Ctrl+Q</string>
    </property>
   </action>
   <action name="helpAboutAction">
@@ -1328,23 +1305,6 @@ p, li { white-space: pre-wrap; }
   </action>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>Q3Frame</class>
-   <extends>QFrame</extends>
-   <header>Qt3Support/Q3Frame</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>Q3MainWindow</class>
-   <extends>QWidget</extends>
-   <header>q3mainwindow.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>Q3ListBox</class>
-   <extends>Q3Frame</extends>
-   <header>q3listbox.h</header>
-  </customwidget>
   <customwidget>
    <class>ColorButton</class>
    <extends></extends>
@@ -1380,5 +1340,38 @@ p, li { white-space: pre-wrap; }
   <tabstop>sublistbox</tabstop>
  </tabstops>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>effectcheckbox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>effectbase</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>417</x>
+     <y>257</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>578</x>
+     <y>379</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fontembeddingcheckbox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>GroupBox10</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>449</x>
+     <y>69</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>447</x>
+     <y>94</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

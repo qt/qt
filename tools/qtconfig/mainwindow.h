@@ -42,11 +42,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "mainwindowbase.h"
+#include "ui_mainwindow.h"
 
 QT_BEGIN_NAMESPACE
 
-class MainWindow : public MainWindowBase
+class MainWindow : public QMainWindow, public Ui::MainWindow
 {
     Q_OBJECT
 
@@ -83,16 +83,11 @@ public slots:
 
 
 private:
-    void buildActive();
-    void buildActiveEffect();
-    void buildInactive();
-    void buildInactiveEffect();
-    void buildDisabled();
-    void buildDisabledEffect();
-
     void updateColorButtons();
     void updateFontSample();
     void updateStyleLayout();
+
+    static QPalette::ColorGroup groupFromIndex(int);
 
     void setPreviewPalette(const QPalette &);
 
