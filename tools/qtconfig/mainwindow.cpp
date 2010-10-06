@@ -466,14 +466,9 @@ MainWindow::MainWindow()
                                     tr("Use X11 Overlays"), Qt::ToolTipRole);
 #endif
 #ifndef QT_NO_OPENGL
-<<<<<<< HEAD
-    videomodeCombo->addItem(tr("OpenGL"), QLatin1String("OpenGL"));
-    videomodeCombo->setItemData(videomodeCombo->findText(tr("OpenGL")), tr("Use OpenGL if available"), Qt::ToolTipRole);
-=======
     ui->videomodeCombo->addItem(tr("OpenGL"), QLatin1String("OpenGL"));
     ui->videomodeCombo->setItemData(ui->videomodeCombo->findText(tr("OpenGL")),
-                                    tr("Use OpenGL if avaiable"), Qt::ToolTipRole);
->>>>>>> Removed inheritance from UI file in qtconfig's MainWindow
+                                    tr("Use OpenGL if available"), Qt::ToolTipRole);
 #endif
     ui->videomodeCombo->addItem(tr("Software"), QLatin1String("Software"));
     ui->videomodeCombo->setItemData(ui->videomodeCombo->findText(tr("Software")),
