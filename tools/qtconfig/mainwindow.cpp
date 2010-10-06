@@ -231,7 +231,7 @@ MainWindow::MainWindow()
     gstyles.sort();
     gstylecombo->addItem(desktopThemeName);
     gstylecombo->setItemData(gstylecombo->findText(desktopThemeName),
-                                tr("Choose style and palette based on your desktop settings."), Qt::ToolTipRole);
+                             tr("Choose style and palette based on your desktop settings."), Qt::ToolTipRole);
     gstylecombo->addItems(gstyles);
 
     QSettings settings(QLatin1String("Trolltech"));
@@ -246,7 +246,7 @@ MainWindow::MainWindow()
         if (index != -1) {
             gstylecombo->setCurrentIndex(index);
         } else { // we give up
-            gstylecombo->addItem(QLatin1String("Unknown"));
+            gstylecombo->addItem(tr("Unknown"));
             gstylecombo->setCurrentIndex(gstylecombo->count() - 1);
         }
     }
@@ -436,7 +436,7 @@ MainWindow::MainWindow()
                     continue; //This is used implicitly from the auto setting
                 GstElement *sink = gst_element_factory_make (qPrintable(name), NULL);
                 if (sink) {
-                    description = QLatin1String(gst_element_factory_get_description (GST_ELEMENT_FACTORY(feature)));
+                    description = QLatin1String(gst_element_factory_get_description(GST_ELEMENT_FACTORY(feature)));
                     audiosinkCombo->addItem(name, name);
                     audiosinkCombo->setItemData(audiosinkCombo->findText(name), description, Qt::ToolTipRole);
                     gst_object_unref (sink);
@@ -539,11 +539,11 @@ void MainWindow::fileSave()
 #ifdef Q_WS_X11
         QString style = inputStyle->currentText();
         QString str = QLatin1String("On The Spot");
-        if (style == trUtf8("Over The Spot"))
+        if (style == tr("Over The Spot"))
             str = QLatin1String("Over The Spot");
-        else if (style == trUtf8("Off The Spot"))
+        else if (style == tr("Off The Spot"))
             str = QLatin1String("Off The Spot");
-        else if (style == trUtf8("Root"))
+        else if (style == tr("Root"))
             str = QLatin1String("Root");
         settings.setValue(QLatin1String("XIMInputStyle"), str);
 #endif
@@ -598,7 +598,7 @@ void MainWindow::fileSave()
 #endif // Q_WS_X11
 
     setModified(false);
-    statusBar()->showMessage(QLatin1String("Saved changes."));
+    statusBar()->showMessage(tr("Saved changes."));
 }
 
 void MainWindow::fileExit()
@@ -622,7 +622,7 @@ void MainWindow::buildPalette()
         temp = PaletteEditorAdvanced::buildEffect(QPalette::ColorGroup(i), temp);
 
     editPalette = temp;
-
+    setPreviewPalette(editPalette);
     updateColorButtons();
 
     setModified(true);
