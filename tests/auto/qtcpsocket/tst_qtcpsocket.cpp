@@ -2505,6 +2505,7 @@ void tst_QTcpSocket::proxyFactory()
     delete socket;
 }
 
+// there is a similar test inside tst_qtcpserver that uses the event loop instead
 void tst_QTcpSocket::qtbug14268_peek()
 {
     QFETCH_GLOBAL(bool, setProxy);
@@ -2519,22 +2520,22 @@ void tst_QTcpSocket::qtbug14268_peek()
     QVERIFY(incoming->state() == QTcpSocket::ConnectedState);
     QVERIFY(outgoing->state() == QTcpSocket::ConnectedState);
 
-    outgoing->write("abc");
+    outgoing->write("abc\n");
     QVERIFY(outgoing->waitForBytesWritten(2000));
     QVERIFY(incoming->waitForReadyRead(2000));
-    QVERIFY(incoming->peek(128*1024) == QByteArray("abc"));
+    QVERIFY(incoming->peek(128*1024) == QByteArray("abc\n"));
 
-    outgoing->write("def");
+    outgoing->write("def\n");
     QVERIFY(outgoing->waitForBytesWritten(2000));
     QVERIFY(incoming->waitForReadyRead(2000));
-    QVERIFY(incoming->peek(128*1024) == QByteArray("abcdef"));
+    QVERIFY(incoming->peek(128*1024) == QByteArray("abc\ndef\n"));
 
-    outgoing->write("ghi");
+    outgoing->write("ghi\n");
     QVERIFY(outgoing->waitForBytesWritten(2000));
     QVERIFY(incoming->waitForReadyRead(2000));
-    QVERIFY(incoming->peek(128*1024) == QByteArray("abcdefghi"));
+    QVERIFY(incoming->peek(128*1024) == QByteArray("abc\ndef\nghi\n"));
 
-    QVERIFY(incoming->read(128*1024) == QByteArray("abcdefghi"));
+    QVERIFY(incoming->read(128*1024) == QByteArray("abc\ndef\nghi\n"));
 }
 
 
