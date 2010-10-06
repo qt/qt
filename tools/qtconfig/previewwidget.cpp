@@ -44,15 +44,16 @@
 
 QT_BEGIN_NAMESPACE
 
-PreviewWidget::PreviewWidget( QWidget *parent, const char *name )
-    : PreviewWidgetBase( parent, name )
+PreviewWidget::PreviewWidget(QWidget *parent)
+    : QWidget(parent)
 {
+    setupUi(this);
+
     // install event filter on child widgets
-    QObjectList l = queryList("QWidget");
-    for (int i = 0; i < l.size(); ++i) {
-        QObject * obj = l.at(i);
-        obj->installEventFilter(this);
-        ((QWidget*)obj)->setFocusPolicy(Qt::NoFocus);
+    QList<QWidget*> l = findChildren<QWidget*>();
+    foreach(QWidget* w, l) {
+        w->installEventFilter(this);
+        w->setFocusPolicy(Qt::NoFocus);
     }
 }
 
