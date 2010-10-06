@@ -83,7 +83,7 @@ PaletteEditorAdvanced::~PaletteEditorAdvanced()
 {
 }
 
-void PaletteEditorAdvanced::onToggleBuildInactive( bool v )
+void PaletteEditorAdvanced::onToggleBuildInactive(bool v)
 {
     if (selectedPalette == 1) {
         groupCentral->setDisabled(v);
@@ -171,7 +171,7 @@ void PaletteEditorAdvanced::onToggleBuildEffects(bool on)
 
 QPalette::ColorGroup PaletteEditorAdvanced::groupFromIndex(int item)
 {
-    switch( item ) {
+    switch (item) {
     case 0:
     default:
         return QPalette::Active;
@@ -184,7 +184,7 @@ QPalette::ColorGroup PaletteEditorAdvanced::groupFromIndex(int item)
 
 QPalette::ColorRole PaletteEditorAdvanced::centralFromIndex(int item)
 {
-    switch( item ) {
+    switch (item) {
     case 0:
         return QPalette::Window;
     case 1:
@@ -220,7 +220,7 @@ QPalette::ColorRole PaletteEditorAdvanced::centralFromIndex(int item)
 
 QPalette::ColorRole PaletteEditorAdvanced::effectFromIndex(int item)
 {
-    switch( item ) {
+    switch (item) {
     case 0:
         return QPalette::Light;
     case 1:
@@ -327,7 +327,7 @@ void PaletteEditorAdvanced::setupBackgroundRole(QPalette::ColorRole role)
 {
     int initRole = 0;
 
-    switch(role) {
+    switch (role) {
     case QPalette::Window:
         initRole = 0;
         break;
@@ -385,8 +385,8 @@ QPalette PaletteEditorAdvanced::getPalette(bool *ok, const QPalette &init,
     PaletteEditorAdvanced *dlg = new PaletteEditorAdvanced(parent);
     dlg->setupBackgroundRole(backgroundRole);
 
-    if ( init != QPalette() )
-        dlg->setPal( init );
+    if (init != QPalette())
+        dlg->setPal(init);
     int resultCode = dlg->exec();
 
     QPalette result = init;

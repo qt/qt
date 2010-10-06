@@ -50,7 +50,7 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     setupUi(this);
 
     // install event filter on child widgets
-    QList<QWidget *> l = findChildren<QWidget*>();
+    QList<QWidget *> l = findChildren<QWidget *>();
     foreach(QWidget *w, l) {
         w->installEventFilter(this);
         w->setFocusPolicy(Qt::NoFocus);
@@ -66,7 +66,7 @@ void PreviewWidget::closeEvent(QCloseEvent *e)
 
 bool PreviewWidget::eventFilter(QObject *, QEvent *e)
 {
-    switch ( e->type() ) {
+    switch (e->type()) {
     case QEvent::MouseButtonPress:
     case QEvent::MouseButtonRelease:
     case QEvent::MouseButtonDblClick:

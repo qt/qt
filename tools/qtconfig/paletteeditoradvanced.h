@@ -55,9 +55,9 @@ public:
     PaletteEditorAdvanced(QWidget *parent = 0);
     ~PaletteEditorAdvanced();
 
-    static QPalette getPalette( bool *ok, const QPalette &pal,
-                                QPalette::ColorRole backgroundRole = QPalette::Window,
-                                QWidget *parent = 0 );
+    static QPalette getPalette(bool *ok, const QPalette &pal,
+                               QPalette::ColorRole backgroundRole = QPalette::Window,
+                               QWidget *parent = 0);
 
     static QPalette buildEffect(QPalette::ColorGroup colorGroup, const QPalette &basePalette);
 

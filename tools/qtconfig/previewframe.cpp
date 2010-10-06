@@ -82,7 +82,7 @@ void PreviewFrame::setPreviewVisible(bool visible)
     workspace->viewport()->update();
 }
 
-Workspace::Workspace(PreviewFrame* parent)
+Workspace::Workspace(PreviewFrame *parent)
     : QMdiArea(parent)
 {
     previewFrame = parent;
@@ -92,7 +92,7 @@ Workspace::Workspace(PreviewFrame* parent)
     frame->show();
 }
 
-void Workspace::paintEvent( QPaintEvent* )
+void Workspace::paintEvent(QPaintEvent *)
 {
     QPainter p(viewport());
     p.fillRect(rect(), palette().color(backgroundRole()).dark());

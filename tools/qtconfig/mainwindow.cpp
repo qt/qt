@@ -156,7 +156,7 @@ static const char *phonon_text =
 
 QPalette::ColorGroup MainWindow::groupFromIndex(int item)
 {
-    switch( item ) {
+    switch (item) {
     case 0:
     default:
         return QPalette::Active;
@@ -272,7 +272,7 @@ MainWindow::MainWindow()
     QStringList fs2 = QFont::substitutions();
     QStringList::Iterator fsit = fs2.begin();
     while (fsit != fs2.end()) {
-        if (! fs.contains(*fsit))
+        if (!fs.contains(*fsit))
             fs += *fsit;
         fsit++;
     }
@@ -306,8 +306,8 @@ MainWindow::MainWindow()
     else if (QApplication::isEffectEnabled(Qt::UI_AnimateTooltip))
         tooltipeffect->setCurrentIndex(1);
 
-    if ( QApplication::isEffectEnabled( Qt::UI_AnimateToolBox ) )
-        toolboxeffect->setCurrentIndex( 1 );
+    if (QApplication::isEffectEnabled(Qt::UI_AnimateToolBox))
+        toolboxeffect->setCurrentIndex(1);
 
     QSize globalStrut = QApplication::globalStrut();
     strutwidth->setValue(globalStrut.width());
@@ -526,7 +526,7 @@ void MainWindow::fileSave()
         settings.setValue(QLatin1String("style"), overrideDesktopSettings ? gstylecombo->currentText() : QString());
 
         settings.setValue(QLatin1String("doubleClickInterval"), dcispin->value());
-        settings.setValue(QLatin1String("cursorFlashTime"), cfispin->value() == 9 ? 0 : cfispin->value() );
+        settings.setValue(QLatin1String("cursorFlashTime"), cfispin->value() == 9 ? 0 : cfispin->value());
         settings.setValue(QLatin1String("wheelScrollLines"), wslspin->value());
         settings.setValue(QLatin1String("resolveSymlinks"), resolvelinks->isChecked());
 
@@ -539,13 +539,13 @@ void MainWindow::fileSave()
 #ifdef Q_WS_X11
         QString style = inputStyle->currentText();
         QString str = QLatin1String("On The Spot");
-        if ( style == trUtf8( "Over The Spot" ) )
+        if (style == trUtf8("Over The Spot"))
             str = QLatin1String("Over The Spot");
-        else if ( style == trUtf8( "Off The Spot" ) )
+        else if (style == trUtf8("Off The Spot"))
             str = QLatin1String("Off The Spot");
-        else if ( style == trUtf8( "Root" ) )
+        else if (style == trUtf8("Root"))
             str = QLatin1String("Root");
-        settings.setValue( QLatin1String("XIMInputStyle"), str );
+        settings.setValue(QLatin1String("XIMInputStyle"), str);
 #endif
 #if defined(Q_WS_X11) && !defined(QT_NO_XIM)
         settings.setValue(QLatin1String("DefaultInputMethod"), inputMethod->currentText());
@@ -574,7 +574,7 @@ void MainWindow::fileSave()
             case 2: effects << QLatin1String("fadetooltip"); break;
             }
 
-            switch ( toolboxeffect->currentIndex() ) {
+            switch (toolboxeffect->currentIndex()) {
             case 1: effects << QLatin1String("animatetoolbox"); break;
             }
         } else
@@ -618,8 +618,8 @@ void MainWindow::setModified(bool m)
 void MainWindow::buildPalette()
 {
     QPalette temp(buttonMainColor->color(), buttonWindowColor->color());
-    for (int i = 0; i<QPalette::NColorGroups; i++)
-        temp = PaletteEditorAdvanced::buildEffect( QPalette::ColorGroup(i), temp );
+    for (int i = 0; i < QPalette::NColorGroups; i++)
+        temp = PaletteEditorAdvanced::buildEffect(QPalette::ColorGroup(i), temp);
 
     editPalette = temp;
 
@@ -628,15 +628,15 @@ void MainWindow::buildPalette()
     setModified(true);
 }
 
-void MainWindow::setPreviewPalette( const QPalette& pal )
+void MainWindow::setPreviewPalette(const QPalette &pal)
 {
     QPalette::ColorGroup colorGroup = groupFromIndex(paletteCombo->currentIndex());
 
-    for (int i = 0; i<QPalette::NColorGroups; i++) {
+    for (int i = 0; i < QPalette::NColorGroups; i++) {
         for (int j = 0; j < QPalette::NColorRoles; j++) {
             QPalette::ColorGroup targetGroup = QPalette::ColorGroup(i);
             QPalette::ColorRole targetRole = QPalette::ColorRole(j);
-            previewPalette.setColor( targetGroup, targetRole, pal.color(colorGroup, targetRole) );
+            previewPalette.setColor(targetGroup, targetRole, pal.color(colorGroup, targetRole));
         }
     }
 
@@ -645,8 +645,8 @@ void MainWindow::setPreviewPalette( const QPalette& pal )
 
 void MainWindow::updateColorButtons()
 {
-    buttonMainColor->setColor( editPalette.color( QPalette::Active, QPalette::Button ));
-    buttonWindowColor->setColor( editPalette.color( QPalette::Active, QPalette::Window ));
+    buttonMainColor->setColor(editPalette.color(QPalette::Active, QPalette::Button));
+    buttonWindowColor->setColor(editPalette.color(QPalette::Active, QPalette::Window));
 }
 
 void MainWindow::tunePalette()
@@ -654,7 +654,7 @@ void MainWindow::tunePalette()
     bool ok;
     QPalette pal = PaletteEditorAdvanced::getPalette(&ok, editPalette,
                                                      backgroundRole(), this);
-    if (! ok)
+    if (!ok)
         return;
 
     editPalette = pal;
@@ -881,7 +881,7 @@ void MainWindow::helpAbout()
     QMessageBox box(this);
     box.setText(tr("<h3>%1</h3>"
                    "<br/>Version %2"
-                   "<br/><br/>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).")
+                   "<br/><br/>Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).")
                    .arg(tr("Qt Configuration")).arg(QLatin1String(QT_VERSION_STR)));
     box.setWindowTitle(tr("Qt Configuration"));
     box.setIcon(QMessageBox::NoIcon);
@@ -910,19 +910,20 @@ void MainWindow::pageChanged(QWidget *page)
 void MainWindow::closeEvent(QCloseEvent *e)
 {
     if (modified) {
-        switch(QMessageBox::warning(this, tr("Save Changes"),
-                                    tr("Save changes to settings?"),
-                                    tr("&Yes"), tr("&No"), tr("&Cancel"), 0, 2)) {
-        case 0: // save
+        switch (QMessageBox::warning(this, tr("Save Changes"),
+                                     tr("Save changes to settings?"),
+                                     (QMessageBox::Yes | QMessageBox::No
+                                     | QMessageBox::Cancel))) {
+        case QMessageBox::Yes: // save
             qApp->processEvents();
             fileSave();
 
             // fall through intended
-        case 1: // don't save
+        case QMessageBox::No: // don't save
             e->accept();
             break;
 
-        case 2: // cancel
+        case QMessageBox::Cancel: // cancel
             e->ignore();
             break;
 
