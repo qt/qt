@@ -119,6 +119,7 @@ private slots:
     void cppnamespace();
     void aliasProperties();
     void aliasPropertiesAndSignals();
+    void aliasPropertyChangeSignals();
     void componentCompositeType();
     void i18n();
     void i18n_data();
@@ -1814,6 +1815,20 @@ void tst_qdeclarativelanguage::initTestCase()
     QFile out(TEST_FILE(QString::fromUtf8("I18nType\303\201\303\242\303\243\303\244\303\245.qml")).toLocalFile());
     QVERIFY(out.open(QIODevice::WriteOnly));
     out.write(in.readAll());
+}
+
+void tst_qdeclarativelanguage::aliasPropertyChangeSignals()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("aliasPropertyChangeSignals.qml"));
+
+    VERIFY_ERRORS(0);
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QEXPECT_FAIL("", "QTBUG-14089", Abort);
+    QCOMPARE(o->property("test").toBool(), true);
+
+    delete o;
 }
 
 QTEST_MAIN(tst_qdeclarativelanguage)

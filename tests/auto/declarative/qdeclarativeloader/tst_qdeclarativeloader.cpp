@@ -89,6 +89,7 @@ private slots:
     void deleteComponentCrash();
     void nonItem();
     void vmeErrors();
+    void creationContext();
 
 private:
     QDeclarativeEngine engine;
@@ -560,6 +561,19 @@ void tst_QDeclarativeLoader::vmeErrors()
     QVERIFY(loader->item() == 0);
 
     delete loader;
+}
+
+// QTBUG-13481
+void tst_QDeclarativeLoader::creationContext()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("creationContext.qml"));
+
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test").toBool(), true);
+
+    delete o;
 }
 
 QTEST_MAIN(tst_QDeclarativeLoader)

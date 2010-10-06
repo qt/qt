@@ -417,7 +417,11 @@ void QDeclarativeTextInput::setCursorVisible(bool on)
         return;
     d->cursorVisible = on;
     d->control->setCursorBlinkPeriod(on?QApplication::cursorFlashTime():0);
-    //d->control should emit the cursor update regions
+    QRect r = d->control->cursorRect();
+    if (d->control->inputMask().isEmpty())
+        updateRect(r);
+    else
+        updateRect();
     emit cursorVisibleChanged(d->cursorVisible);
 }
 
