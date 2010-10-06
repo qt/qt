@@ -57,8 +57,8 @@
     The search order is the same as the order in DLL Safe search mode Windows,
     except that we don't search:
     * The current directory
-    * The 16-bit system directory. (normally c:\windows\system)
-    * The Windows directory.  (normally c:\windows)
+    * The 16-bit system directory. (normally \c{c:\windows\system})
+    * The Windows directory.  (normally \c{c:\windows})
 
     This means that the effective search order is:
     1. Application path.
@@ -77,6 +77,9 @@
     in the documentation for LoadLibrary for Windows CE at MSDN.
     (http://msdn.microsoft.com/en-us/library/ms886736.aspx)
 */
+
+QT_BEGIN_NAMESPACE
+
 #if defined(Q_OS_WINCE)
 HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirectory /* = true */)
 {
@@ -134,3 +137,5 @@ HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirect
 }
 
 #endif  //Q_OS_WINCE
+
+QT_END_NAMESPACE

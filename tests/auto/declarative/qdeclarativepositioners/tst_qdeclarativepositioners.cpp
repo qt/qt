@@ -322,7 +322,8 @@ void tst_QDeclarativePositioners::test_grid()
     QCOMPARE(five->x(), 50.0);
     QCOMPARE(five->y(), 50.0);
 
-    QDeclarativeItem *grid = canvas->rootObject()->findChild<QDeclarativeItem*>("grid");
+    QDeclarativeGrid *grid = canvas->rootObject()->findChild<QDeclarativeGrid*>("grid");
+    QCOMPARE(grid->flow(), QDeclarativeGrid::LeftToRight);
     QCOMPARE(grid->width(), 120.0);
     QCOMPARE(grid->height(), 100.0);
 
@@ -355,7 +356,8 @@ void tst_QDeclarativePositioners::test_grid_topToBottom()
     QCOMPARE(five->x(), 50.0);
     QCOMPARE(five->y(), 50.0);
 
-    QDeclarativeItem *grid = canvas->rootObject()->findChild<QDeclarativeItem*>("grid");
+    QDeclarativeGrid *grid = canvas->rootObject()->findChild<QDeclarativeGrid*>("grid");
+    QCOMPARE(grid->flow(), QDeclarativeGrid::TopToBottom);
     QCOMPARE(grid->width(), 100.0);
     QCOMPARE(grid->height(), 120.0);
 
@@ -670,10 +672,12 @@ void tst_QDeclarativePositioners::test_flow_implicit_resize()
     QCOMPARE(flow->height(), 120.0);
 
     canvas->rootObject()->setProperty("leftToRight", true);
+    QCOMPARE(flow->flow(), QDeclarativeFlow::LeftToRight);
     QCOMPARE(flow->width(), 220.0);
     QCOMPARE(flow->height(), 50.0);
 
     canvas->rootObject()->setProperty("leftToRight", false);
+    QCOMPARE(flow->flow(), QDeclarativeFlow::TopToBottom);
     QCOMPARE(flow->width(), 100.0);
     QCOMPARE(flow->height(), 120.0);
 

@@ -67,7 +67,6 @@ class Q_AUTOTEST_EXPORT QDeclarativeVisualModel : public QObject
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
-    QDeclarativeVisualModel(QObject *parent=0) : QObject(parent) {}
     virtual ~QDeclarativeVisualModel() {}
 
     enum ReleaseFlag { Referenced = 0x01, Destroyed = 0x02 };
@@ -79,7 +78,7 @@ public:
     virtual ReleaseFlags release(QDeclarativeItem *item) = 0;
     virtual bool completePending() const = 0;
     virtual void completeItem() = 0;
-    virtual QString stringValue(int, const QString &) { return QString(); }
+    virtual QString stringValue(int, const QString &) = 0;
 
     virtual int indexOf(QDeclarativeItem *item, QObject *objectContext) const = 0;
 

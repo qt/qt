@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -120,7 +120,7 @@ hand side of the following table shows what we would like to be able to write.
 Here we create two instances of our previously defined component, and set the
 second one to have focus.  The intention is that when the \e A, \e B, or \e C
 keys are pressed, the second of the two components receives the event and
-reponds accordingly.
+responds accordingly.
 
 \table
 \row
@@ -276,7 +276,7 @@ Focus scopes allow focus to allocation to be easily partitioned.  Several
 QML items use it to this effect.
 
 \l ListView, for example, is itself a focus scope.  Generally this isn't
-noticable as \l ListView doesn't usually have manually added visual children.
+noticeable as \l ListView doesn't usually have manually added visual children.
 By being a focus scope, \l ListView can focus the current list item without
 worrying about how that will effect the rest of the application.  This allows
 the current item delegate to react to key presses.
@@ -301,14 +301,4 @@ actually performs the work of handling the \e {Return} key.
 
 All of the QML view classes, such as \l PathView and \l GridView, behave
 in a similar manner to allow key handling in their respective delegates.
-
-\section1 Focus Panels
-
-Traditional UIs are composed of many top-level windows.  Windows actually
-perform two tasks - they act as the visual bounds for a widget, and they segment
-focus.  Each window has a separate focused widget, that becomes (to mix
-terminologies) the \e {active focus} widget when the window is the active
-window.
-
-### Focus panels do basically the same thing.
 */

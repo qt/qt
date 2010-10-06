@@ -3891,7 +3891,7 @@ QString QString::fromLocal8Bit(const char *str, int size)
 
 /*!
     Returns a QString initialized with the first \a size characters
-    of the 8-bit string \a str.
+    from the string \a str.
 
     If \a size is -1 (default), it is taken to be qstrlen(\a
     str).
