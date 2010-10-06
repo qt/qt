@@ -719,7 +719,7 @@ it in two steps, like this:
 \endcode
 
 If a default value is not supplied or set later in the file, each type has a
-default value for when none is explictly set. Below are the default values 
+default value for when none is explicitly set. Below are the default values
 of some of the types. For the remaining types the default values are undefined.
 
 \table
@@ -823,7 +823,7 @@ A property alias declaration looks a lot like a property definition:
 
 As the aliasing property has the same type as the aliased property, an explicit
 type is omitted, and the special "alias" keyword is used.  Instead of a default
-value, a property alias includes a compulsary alias reference.  The alias
+value, a property alias includes a compulsory alias reference.  The alias
 reference is used to locate the aliased property.  While similar to a property
 binding, the alias reference syntax is highly restricted.
 
@@ -993,7 +993,7 @@ Return values of type QVariant are also supported via Q_RETURN_ARG.
 \target components
 
 A component is a reusable type with a well-defined interface built entirely in
-QML.  Components appear as regular QML elements, and can be used interchangably
+QML.  Components appear as regular QML elements, and can be used interchangeably
 with core types.  Components allow developers to create new types to be reused
 in other projects without the use of C++.  Components can also help to reduce
 duplication inside one project by limiting the need for large numbers of
@@ -1086,7 +1086,7 @@ Methods and signals may be added in the same way.
 
 As all external methods, signals and properties are accessible to external
 users, developers should ensure that setting these properties does not have
-any undesirable side-effects.  For most resiliance, root level properties should
+any undesirable side-effects.  For most resilience, root level properties should
 only be used for literal default values.  When a root level property must be
 used inside the component - such as the children property - property aliases
 can be used to redirect this property to a "safe" location for external users.
