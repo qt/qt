@@ -655,7 +655,7 @@
         directory.
 
     \code
-    In cppPlugins.pro:
+    In filedialog.pro:
 
         TEMPLATE = lib
         CONFIG += qt plugin
@@ -881,7 +881,7 @@
     text files is in the application directory, get the file's name and content as a
     string, and be notified whenever there are changes in the directory contents.
 
-    To build the plugin, run \c qmake on the \c cppPlugins.pro project file, then run
+    To build the plugin, run \c qmake on the \c filedialog.pro project file, then run
     \c make to build and transfer the plugin to the \c plugins directory.
 
 
