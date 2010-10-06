@@ -178,7 +178,6 @@ static void setStyleHelper(QWidget *w, QStyle *s)
     w->setStyle(s);
 }
 
-
 MainWindow::MainWindow()
     : QMainWindow(), editPalette(palette()), previewPalette(palette()), previewstyle(0)
 {
@@ -477,7 +476,6 @@ MainWindow::MainWindow()
     updateStyleLayout();
 }
 
-
 MainWindow::~MainWindow()
 {
 }
@@ -603,12 +601,10 @@ void MainWindow::fileSave()
     statusBar()->showMessage(QLatin1String("Saved changes."));
 }
 
-
 void MainWindow::fileExit()
 {
     qApp->closeAllWindows();
 }
-
 
 void MainWindow::setModified(bool m)
 {
@@ -618,7 +614,6 @@ void MainWindow::setModified(bool m)
     modified = m;
     fileSaveAction->setEnabled(m);
 }
-
 
 void MainWindow::buildPalette()
 {
@@ -648,13 +643,11 @@ void MainWindow::setPreviewPalette( const QPalette& pal )
     previewFrame->setPreviewPalette(previewPalette);
 }
 
-
 void MainWindow::updateColorButtons()
 {
     buttonMainColor->setColor( editPalette.color( QPalette::Active, QPalette::Button ));
     buttonWindowColor->setColor( editPalette.color( QPalette::Active, QPalette::Window ));
 }
-
 
 void MainWindow::tunePalette()
 {
@@ -668,7 +661,6 @@ void MainWindow::tunePalette()
     setPreviewPalette(editPalette);
     setModified(true);
 }
-
 
 void MainWindow::paletteSelected(int)
 {
@@ -700,7 +692,6 @@ void MainWindow::styleSelected(const QString &stylename)
     updateStyleLayout();
 }
 
-
 void MainWindow::familySelected(const QString &family)
 {
     QFontDatabase db;
@@ -710,7 +701,6 @@ void MainWindow::familySelected(const QString &family)
     familysubcombo->addItem(family);
     buildFont();
 }
-
 
 void MainWindow::buildFont()
 {
@@ -722,14 +712,12 @@ void MainWindow::buildFont()
     setModified(true);
 }
 
-
 void MainWindow::substituteSelected(const QString &family)
 {
     QStringList subs = QFont::substitutes(family);
     sublistbox->clear();
     sublistbox->insertItems(0, subs);
 }
-
 
 void MainWindow::removeSubstitute()
 {
@@ -748,7 +736,6 @@ void MainWindow::removeSubstitute()
     QFont::insertSubstitutions(familysubcombo->currentText(), subs);
     setModified(true);
 }
-
 
 void MainWindow::addSubstitute()
 {
@@ -770,7 +757,6 @@ void MainWindow::addSubstitute()
     setModified(true);
 }
 
-
 void MainWindow::downSubstitute()
 {
     if (!sublistbox->currentItem() || sublistbox->currentRow() >= sublistbox->count())
@@ -788,7 +774,6 @@ void MainWindow::downSubstitute()
     QFont::insertSubstitutions(familysubcombo->currentText(), subs);
     setModified(true);
 }
-
 
 void MainWindow::upSubstitute()
 {
@@ -808,7 +793,6 @@ void MainWindow::upSubstitute()
     setModified(true);
 }
 
-
 void MainWindow::removeFontpath()
 {
     if (!fontpathlistbox->currentItem())
@@ -823,7 +807,6 @@ void MainWindow::removeFontpath()
     fontpathlistbox->setCurrentRow(row);
     setModified(true);
 }
-
 
 void MainWindow::addFontpath()
 {
@@ -847,11 +830,12 @@ void MainWindow::addFontpath()
     setModified(true);
 }
 
-
 void MainWindow::downFontpath()
 {
-    if (!fontpathlistbox->currentItem() || fontpathlistbox->currentRow() >= fontpathlistbox->count() - 1)
+    if (!fontpathlistbox->currentItem()
+        || fontpathlistbox->currentRow() >= (fontpathlistbox->count() - 1)) {
         return;
+    }
 
     int row = fontpathlistbox->currentRow();
     QString fam = fontpaths.at(row);
@@ -862,7 +846,6 @@ void MainWindow::downFontpath()
     fontpathlistbox->setCurrentRow(row + 1);
     setModified(true);
 }
-
 
 void MainWindow::upFontpath()
 {
@@ -879,7 +862,6 @@ void MainWindow::upFontpath()
     setModified(true);
 }
 
-
 void MainWindow::browseFontpath()
 {
     QString dirname = QFileDialog::getExistingDirectory(this, tr("Select a Directory"));
@@ -889,12 +871,10 @@ void MainWindow::browseFontpath()
    fontpathlineedit->setText(dirname);
 }
 
-
 void MainWindow::somethingModified()
 {
     setModified(true);
 }
-
 
 void MainWindow::helpAbout()
 {
@@ -908,12 +888,10 @@ void MainWindow::helpAbout()
     box.exec();
 }
 
-
 void MainWindow::helpAboutQt()
 {
     QMessageBox::aboutQt(this, tr("Qt Configuration"));
 }
-
 
 void MainWindow::pageChanged(QWidget *page)
 {
@@ -928,7 +906,6 @@ void MainWindow::pageChanged(QWidget *page)
     else if (page == tab4)
         helpview->setText(tr(phonon_text));
 }
-
 
 void MainWindow::closeEvent(QCloseEvent *e)
 {
