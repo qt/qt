@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-  <comment>*********************************************************************
+ <comment>*********************************************************************
 **
 ** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
@@ -67,7 +67,7 @@
     <number>11</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="unnamed">
+    <layout class="QHBoxLayout" name="horizontalLayout">
      <property name="spacing">
       <number>6</number>
      </property>
@@ -75,7 +75,7 @@
       <number>0</number>
      </property>
      <item>
-      <layout class="QVBoxLayout" name="unnamed">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
        <property name="spacing">
         <number>6</number>
        </property>
@@ -87,7 +87,7 @@
          <property name="title">
           <string>GroupBox</string>
          </property>
-         <layout class="QVBoxLayout" name="unnamed">
+         <layout class="QVBoxLayout" name="verticalLayout_3">
           <property name="spacing">
            <number>6</number>
           </property>
@@ -126,7 +126,7 @@
          <property name="title">
           <string>GroupBox2</string>
          </property>
-         <layout class="QVBoxLayout" name="unnamed">
+         <layout class="QVBoxLayout" name="verticalLayout_4">
           <property name="spacing">
            <number>6</number>
           </property>
@@ -163,7 +163,7 @@
       </layout>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="unnamed">
+      <layout class="QVBoxLayout" name="verticalLayout">
        <property name="spacing">
         <number>6</number>
        </property>
@@ -187,7 +187,7 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="unnamed">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
          <property name="spacing">
           <number>6</number>
          </property>
