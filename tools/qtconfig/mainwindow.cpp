@@ -181,7 +181,9 @@ static void setStyleHelper(QWidget *w, QStyle *s)
 }
 
 MainWindow::MainWindow()
-    : QMainWindow(), ui(new Ui::MainWindow), editPalette(palette()), previewPalette(palette()),
+    : ui(new Ui::MainWindow),
+      editPalette(palette()),
+      previewPalette(palette()),
       previewstyle(0)
 {
     ui->setupUi(this);
