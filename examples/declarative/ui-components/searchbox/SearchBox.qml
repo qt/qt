@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 
 FocusScope {
     id: focusScope
@@ -54,7 +54,7 @@ FocusScope {
         source: "images/lineedit-bg-focus.png"
         width: parent.width; height: parent.height
         border { left: 4; top: 4; right: 4; bottom: 4 }
-        visible: parent.wantsFocus ? true : false
+        visible: parent.activeFocus ? true : false
     }
 
     Text {

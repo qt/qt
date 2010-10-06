@@ -62,6 +62,7 @@ public:
 private slots:
     void resizemodedeclarativeitem();
     void resizemodegraphicswidget();
+    void errors();
 
 private:
     template<typename T>
@@ -252,6 +253,22 @@ void tst_QDeclarativeView::resizemodegraphicswidget()
     QCOMPARE(sceneResizedSpy2.count(), 3);
 
     window.show();
+    delete canvas;
+}
+
+static void silentErrorsMsgHandler(QtMsgType, const char *)
+{
+}
+
+void tst_QDeclarativeView::errors()
+{
+    QDeclarativeView *canvas = new QDeclarativeView;
+    QVERIFY(canvas);
+    QtMsgHandler old = qInstallMsgHandler(silentErrorsMsgHandler);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/error1.qml"));
+    qInstallMsgHandler(old);
+    QVERIFY(canvas->status() == QDeclarativeView::Error);
+    QVERIFY(canvas->errors().count() == 1);
     delete canvas;
 }
 

@@ -238,6 +238,7 @@ public:
         pendingPolish(0),
         mayHaveChildWithGraphicsEffect(0),
         isDeclarativeItem(0),
+        sendParentChangeNotification(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -584,7 +585,8 @@ public:
     quint32 pendingPolish : 1;
     quint32 mayHaveChildWithGraphicsEffect : 1;
     quint32 isDeclarativeItem : 1;
-    quint32 padding : 23;
+    quint32 sendParentChangeNotification : 1;
+    quint32 padding : 22;
 
     // Optional stacking order
     int globalStackingOrder;

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 import "TwitterCore" 1.0 as Twitter
 
 Item {

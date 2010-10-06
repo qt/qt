@@ -119,7 +119,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         HelpEngineWrapper::instance(collectionFile);
     BookmarkManager *bookMarkManager = BookmarkManager::instance();
 
-    if (!initHelpDB()) {
+    if (!initHelpDB(!cmdLine->collectionFileGiven())) {
         qDebug("Fatal error: Help engine initialization failed. "
             "Error message was: %s\nAssistant will now exit.",
             qPrintable(HelpEngineWrapper::instance().error()));
@@ -313,13 +313,18 @@ void MainWindow::closeEvent(QCloseEvent *e)
     QMainWindow::closeEvent(e);
 }
 
-bool MainWindow::initHelpDB()
+bool MainWindow::initHelpDB(bool registerInternalDoc)
 {
     TRACE_OBJ
     HelpEngineWrapper &helpEngineWrapper = HelpEngineWrapper::instance();
     if (!helpEngineWrapper.setupData())
         return false;
 
+    if (!registerInternalDoc) {
+        if (helpEngineWrapper.defaultHomePage() == QLatin1String("help"))
+            helpEngineWrapper.setDefaultHomePage(QLatin1String("about:blank"));
+        return true;
+    }
     bool assistantInternalDocRegistered = false;
     QString intern(QLatin1String("com.trolltech.com.assistantinternal-"));
     foreach (const QString &ns, helpEngineWrapper.registeredDocumentations()) {

@@ -26,3 +26,7 @@ include(qml/qml.pri)
 include(debugger/debugger.pri)
 
 symbian:TARGET.UID3=0x2001E623
+
+DEFINES += QT_NO_OPENTYPE
+INCLUDEPATH += ../3rdparty/harfbuzz/src
+

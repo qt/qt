@@ -14,7 +14,8 @@ symbian {
     CONFIG	-=  jpeg
     INCLUDEPATH	+=  tmp $$QMAKE_INCDIR_QT/QtCore $$MW_LAYER_SYSTEMINCLUDE
     SOURCES	 =  qts60main.cpp \
-                    qts60main_mcrt0.cpp
+                    qts60main_mcrt0.cpp \
+                    newallocator_hook.cpp
 
     # s60main needs to be built in ARM mode for GCCE to work.
     CONFIG += do_not_build_as_thumb

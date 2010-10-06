@@ -46,7 +46,7 @@ technologies like HTML and CSS, but it's not required.
 QML looks like this:
 
 \code
-import Qt 4.7
+import QtQuick 1.0
 
 Rectangle {
     width: 200
@@ -173,7 +173,7 @@ Item {
 }
 \endcode
 
-QML properties are what is known as \e typesafe. That is, they only allow you to assign a value that
+QML properties are what is known as \e type-safe. That is, they only allow you to assign a value that
 matches the property type. For example, the \c x property of item is a real, and if you try to assign
 a string to it you will get an error.
 
@@ -189,7 +189,7 @@ Each object can be given a special unique property called an \e id. No other obj
 same \l{QML Documents}{QML document} can have the same \c id value. Assigning an id enables the object
 to be referred to by other objects and scripts.
 
-The first Rectangle element below has an \e id, "myRect". The second Rectange element defines its
+The first Rectangle element below has an \e id, "myRect". The second Rectangle element defines its
 own width by referring to \tt myRect.width, which means it will have the same \tt width
 value as the first Rectangle element.
 

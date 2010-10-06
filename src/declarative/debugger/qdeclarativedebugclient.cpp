@@ -50,60 +50,9 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeDebugConnectionPrivate : public QObject
-{
-    Q_OBJECT
-public:
-    QDeclarativeDebugConnectionPrivate(QDeclarativeDebugConnection *c);
-    QDeclarativeDebugConnection *q;
-    QPacketProtocol *protocol;
-
-    QStringList enabled;
-    QHash<QString, QDeclarativeDebugClient *> plugins;
-public Q_SLOTS:
-    void connected();
-    void readyRead();
-};
-
-QDeclarativeDebugConnectionPrivate::QDeclarativeDebugConnectionPrivate(QDeclarativeDebugConnection *c)
-: QObject(c), q(c), protocol(0)
-{
-    protocol = new QPacketProtocol(q, this);
-    QObject::connect(c, SIGNAL(connected()), this, SLOT(connected()));
-    QObject::connect(protocol, SIGNAL(readyRead()), this, SLOT(readyRead()));
-}
-
-void QDeclarativeDebugConnectionPrivate::connected()
-{
-    QPacket pack;
-    pack << QString(QLatin1String("QDeclarativeDebugServer")) << enabled;
-    protocol->send(pack);
-}
-
-void QDeclarativeDebugConnectionPrivate::readyRead()
-{
-    QPacket pack = protocol->read();
-    QString name; QByteArray message;
-    pack >> name >> message;
-
-    QHash<QString, QDeclarativeDebugClient *>::Iterator iter = 
-        plugins.find(name);
-    if (iter == plugins.end()) {
-        qWarning() << "QDeclarativeDebugConnection: Message received for missing plugin" << name;
-    } else {
-        (*iter)->messageReceived(message);
-    }
-}
-
-QDeclarativeDebugConnection::QDeclarativeDebugConnection(QObject *parent)
-: QTcpSocket(parent), d(new QDeclarativeDebugConnectionPrivate(this))
-{
-}
-
-bool QDeclarativeDebugConnection::isConnected() const
-{
-    return state() == ConnectedState;
-}
+const int protocolVersion = 1;
+const QString serverId = QLatin1String("QDeclarativeDebugServer");
+const QString clientId = QLatin1String("QDeclarativeDebugClient");
 
 class QDeclarativeDebugClientPrivate : public QObjectPrivate
 {
@@ -113,11 +62,158 @@ public:
 
     QString name;
     QDeclarativeDebugConnection *client;
-    bool enabled;
 };
 
+class QDeclarativeDebugConnectionPrivate : public QObject
+{
+    Q_OBJECT
+public:
+    QDeclarativeDebugConnectionPrivate(QDeclarativeDebugConnection *c);
+    QDeclarativeDebugConnection *q;
+    QPacketProtocol *protocol;
+
+    bool gotHello;
+    QStringList serverPlugins;
+    QHash<QString, QDeclarativeDebugClient *> plugins;
+
+    void advertisePlugins();
+
+public Q_SLOTS:
+    void connected();
+    void readyRead();
+};
+
+QDeclarativeDebugConnectionPrivate::QDeclarativeDebugConnectionPrivate(QDeclarativeDebugConnection *c)
+: QObject(c), q(c), protocol(0), gotHello(false)
+{
+    protocol = new QPacketProtocol(q, this);
+    QObject::connect(c, SIGNAL(connected()), this, SLOT(connected()));
+    QObject::connect(protocol, SIGNAL(readyRead()), this, SLOT(readyRead()));
+}
+
+void QDeclarativeDebugConnectionPrivate::advertisePlugins()
+{
+    if (!q->isConnected() || !gotHello)
+        return;
+
+    QPacket pack;
+    pack << serverId << 1 << plugins.keys();
+    protocol->send(pack);
+    q->flush();
+}
+
+void QDeclarativeDebugConnectionPrivate::connected()
+{
+    QPacket pack;
+    pack << serverId << 0 << protocolVersion << plugins.keys();
+    protocol->send(pack);
+    q->flush();
+}
+
+void QDeclarativeDebugConnectionPrivate::readyRead()
+{
+    if (!gotHello) {
+        QPacket pack = protocol->read();
+        QString name;
+
+        pack >> name;
+
+        bool validHello = false;
+        if (name == clientId) {
+            int op = -1;
+            pack >> op;
+            if (op == 0) {
+                int version = -1;
+                pack >> version;
+                if (version == protocolVersion) {
+                    pack >> serverPlugins;
+                    validHello = true;
+                }
+            }
+        }
+
+        if (!validHello) {
+            qWarning("QDeclarativeDebugConnection: Invalid hello message");
+            QObject::disconnect(protocol, SIGNAL(readyRead()), this, SLOT(readyRead()));
+            return;
+        }
+
+        gotHello = true;
+
+        QHash<QString, QDeclarativeDebugClient *>::Iterator iter = plugins.begin();
+        for (; iter != plugins.end(); ++iter) {
+            QDeclarativeDebugClient::Status newStatus = QDeclarativeDebugClient::Unavailable;
+            if (serverPlugins.contains(iter.key()))
+                newStatus = QDeclarativeDebugClient::Enabled;
+            iter.value()->statusChanged(newStatus);
+        }
+    }
+
+    while (protocol->packetsAvailable()) {
+        QPacket pack = protocol->read();
+        QString name;
+        pack >> name;
+
+        if (name == clientId) {
+            int op = -1;
+            pack >> op;
+
+            if (op == 1) {
+                // Service Discovery
+                QStringList oldServerPlugins = serverPlugins;
+                pack >> serverPlugins;
+
+                QHash<QString, QDeclarativeDebugClient *>::Iterator iter = plugins.begin();
+                for (; iter != plugins.end(); ++iter) {
+                    const QString pluginName = iter.key();
+                    QDeclarativeDebugClient::Status newStatus = QDeclarativeDebugClient::Unavailable;
+                    if (serverPlugins.contains(pluginName))
+                        newStatus = QDeclarativeDebugClient::Enabled;
+
+                    if (oldServerPlugins.contains(pluginName)
+                            != serverPlugins.contains(pluginName)) {
+                        iter.value()->statusChanged(newStatus);
+                    }
+                }
+            } else {
+                qWarning() << "QDeclarativeDebugConnection: Unknown control message id" << op;
+            }
+        } else {
+            QByteArray message;
+            pack >> message;
+
+            QHash<QString, QDeclarativeDebugClient *>::Iterator iter =
+                plugins.find(name);
+            if (iter == plugins.end()) {
+                qWarning() << "QDeclarativeDebugConnection: Message received for missing plugin" << name;
+            } else {
+                (*iter)->messageReceived(message);
+            }
+        }
+    }
+}
+
+QDeclarativeDebugConnection::QDeclarativeDebugConnection(QObject *parent)
+: QTcpSocket(parent), d(new QDeclarativeDebugConnectionPrivate(this))
+{
+}
+
+QDeclarativeDebugConnection::~QDeclarativeDebugConnection()
+{
+    QHash<QString, QDeclarativeDebugClient*>::iterator iter = d->plugins.begin();
+    for (; iter != d->plugins.end(); ++iter) {
+         iter.value()->d_func()->client = 0;
+         iter.value()->statusChanged(QDeclarativeDebugClient::NotConnected);
+    }
+}
+
+bool QDeclarativeDebugConnection::isConnected() const
+{
+    return state() == ConnectedState;
+}
+
 QDeclarativeDebugClientPrivate::QDeclarativeDebugClientPrivate()
-: client(0), enabled(false)
+: client(0)
 {
 }
 
@@ -137,6 +233,16 @@ QDeclarativeDebugClient::QDeclarativeDebugClient(const QString &name,
         d->client = 0;
     } else {
         d->client->d->plugins.insert(name, this);
+        d->client->d->advertisePlugins();
+    }
+}
+
+QDeclarativeDebugClient::~QDeclarativeDebugClient()
+{
+    Q_D(const QDeclarativeDebugClient);
+    if (d->client && d->client->d) {
+        d->client->d->plugins.remove(d->name);
+        d->client->d->advertisePlugins();
     }
 }
 
@@ -146,56 +252,35 @@ QString QDeclarativeDebugClient::name() const
     return d->name;
 }
 
-bool QDeclarativeDebugClient::isEnabled() const
+QDeclarativeDebugClient::Status QDeclarativeDebugClient::status() const
 {
     Q_D(const QDeclarativeDebugClient);
-    return d->enabled;
-}
+    if (!d->client
+            || !d->client->isConnected()
+            || !d->client->d->gotHello)
+        return NotConnected;
 
-void QDeclarativeDebugClient::setEnabled(bool e)
-{
-    Q_D(QDeclarativeDebugClient);
-    if (e == d->enabled)
-        return;
+    if (d->client->d->serverPlugins.contains(d->name))
+        return Enabled;
 
-    d->enabled = e;
-
-    if (d->client) {
-        if (e) 
-            d->client->d->enabled.append(d->name);
-        else
-            d->client->d->enabled.removeAll(d->name);
-
-        if (d->client->state() == QTcpSocket::ConnectedState) {
-            QPacket pack;
-            pack << QString(QLatin1String("QDeclarativeDebugServer"));
-            if (e) pack << (int)1;
-            else pack << (int)2;
-            pack << d->name;
-            d->client->d->protocol->send(pack);
-        }
-    }
-}
-
-bool QDeclarativeDebugClient::isConnected() const
-{
-    Q_D(const QDeclarativeDebugClient);
-
-    if (!d->client)
-        return false;
-    return d->client->isConnected();
+    return Unavailable;
 }
 
 void QDeclarativeDebugClient::sendMessage(const QByteArray &message)
 {
     Q_D(QDeclarativeDebugClient);
 
-    if (!d->client || !d->client->isConnected())
+    if (status() != Enabled)
         return;
 
     QPacket pack;
     pack << d->name << message;
     d->client->d->protocol->send(pack);
+    d->client->d->q->flush();
+}
+
+void QDeclarativeDebugClient::statusChanged(Status)
+{
 }
 
 void QDeclarativeDebugClient::messageReceived(const QByteArray &)

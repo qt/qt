@@ -1,5 +1,5 @@
 TARGET    = configure
-DESTDIR   = ../..
+DESTDIR   = $$PWD/../..  # build directly in source dir
 
 CONFIG   += console flat
 CONFIG   -= moc qt

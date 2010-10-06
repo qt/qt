@@ -117,6 +117,7 @@ void tst_qdeclarativemoduleplugin::importsPlugin()
     QObject *object = component.create();
     QVERIFY(object != 0);
     QCOMPARE(object->property("value").toInt(),123);
+    delete object;
 }
 
 QTEST_MAIN(tst_qdeclarativemoduleplugin)

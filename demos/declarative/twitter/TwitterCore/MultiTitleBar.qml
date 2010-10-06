@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 
 Item {
     TitleBar { id: titleBar; width: parent.width; height: 60;

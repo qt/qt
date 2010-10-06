@@ -410,9 +410,6 @@ struct LibraryData {
     LibraryData() : settings(0) { }
     ~LibraryData() {
         delete settings;
-        foreach(QLibraryPrivate *lib, loadedLibs) {
-            lib->unload();
-        }
     }
 
     QSettings *settings;

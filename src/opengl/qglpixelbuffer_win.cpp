@@ -172,6 +172,10 @@ typedef BOOL (WINAPI * PFNWGLSETPBUFFERATTRIBARBPROC) (HPBUFFERARB hPbuffer, con
 #define WGL_SAMPLES_ARB                0x2042
 #endif
 
+#ifndef GL_SAMPLES_ARB
+#define GL_SAMPLES_ARB 0x80A9
+#endif
+
 QGLFormat pfiToQGLFormat(HDC hdc, int pfi);
 
 static void qt_format_to_attrib_list(bool has_render_texture, const QGLFormat &f, int attribs[])
@@ -258,11 +262,10 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
 
     dc = wglGetCurrentDC();
     Q_ASSERT(dc);
+    has_render_texture = false;
 
     // sample buffers doesn't work in conjunction with the render_texture extension
-    if (f.sampleBuffers()) {
-        has_render_texture = false;
-    } else {
+    if (!f.sampleBuffers()) {
         PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB =
                 (PFNWGLGETEXTENSIONSSTRINGARBPROC) wglGetProcAddress("wglGetExtensionsStringARB");
 
@@ -303,7 +306,7 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
 
     pbuf = wglCreatePbufferARB(dc, pixel_format, size.width(), size.height(),
                                has_render_texture ? pb_attribs : 0);
-    if(!pbuf) {
+    if (!pbuf) {
         // try again without the render_texture extension
         pbuf = wglCreatePbufferARB(dc, pixel_format, size.width(), size.height(), 0);
         has_render_texture = false;
@@ -315,11 +318,19 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
 
     dc = wglGetPbufferDCARB(pbuf);
     ctx = wglCreateContext(dc);
-
     if (!dc || !ctx) {
         qWarning("QGLPixelBuffer: Unable to create pbuffer context - giving up.");
         return false;
     }
+
+    // Explicitly disable the render_texture extension if we have a 
+    // multi-sampled pbuffer context. This seems to be a problem only with 
+    // ATI cards if multi-sampling is forced globally in the driver.
+    wglMakeCurrent(dc, ctx);
+    GLint samples = 0;
+    glGetIntegerv(GL_SAMPLES_ARB, &samples);
+    if (has_render_texture && samples != 0)
+        has_render_texture = false;
 
     HGLRC share_ctx = shareWidget ? shareWidget->d_func()->glcx->d_func()->rc : 0;
     if (share_ctx && !wglShareLists(share_ctx, ctx))

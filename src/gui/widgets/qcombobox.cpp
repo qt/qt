@@ -1089,6 +1089,8 @@ void QComboBoxPrivate::updateViewContainerPaletteAndOpacity()
         container->setPalette(q->palette());
         container->setWindowOpacity(1.0);
     }
+    if (lineEdit)
+        lineEdit->setPalette(q->palette());
 }
 
 /*!
