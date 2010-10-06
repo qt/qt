@@ -1178,10 +1178,6 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                 xmlWriter().writeStartElement("simpletable");
                 xmlWriter().writeAttribute("outputclass","valuelist");
                 xmlWriter().writeStartElement("sthead");
-                if (++numTableRows % 2 == 1)
-                    xmlWriter().writeAttribute("outputclass","odd");
-                else
-                    xmlWriter().writeAttribute("outputclass","even");
                 xmlWriter().writeStartElement("stentry");
                 xmlWriter().writeCharacters("Constant");
                 xmlWriter().writeEndElement(); // </stentry>
@@ -1234,14 +1230,12 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         else { // (atom->string() == ATOM_LIST_VALUE)
             xmlWriter().writeStartElement("strow");
             xmlWriter().writeStartElement("stentry");
-            xmlWriter().writeAttribute("outputclass","topAlign");
             xmlWriter().writeStartElement("tt");
             xmlWriter().writeCharacters(protectEnc(plainCode(marker->markedUpEnumValue(atom->next()->string(),
                                                                                   relative))));
             xmlWriter().writeEndElement(); // </tt>
             xmlWriter().writeEndElement(); // </stentry>
             xmlWriter().writeStartElement("stentry");
-            xmlWriter().writeAttribute("outputclass","topAlign");
 
             QString itemValue;
             if (relative->type() == Node::Enum) {
@@ -1271,7 +1265,6 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             if (threeColumnEnumValueTable) {
                 xmlWriter().writeEndElement(); // </stentry>
                 xmlWriter().writeStartElement("stentry");
-                xmlWriter().writeAttribute("outputclass","topAlign");
                 if (matchAhead(atom, Atom::ListItemRight))
                     xmlWriter().writeCharacters("&nbsp;");
             }
@@ -1378,7 +1371,6 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                 in_para = false;
             }
             xmlWriter().writeStartElement("table");
-            xmlWriter().writeAttribute("outputclass","generic");
             numTableRows = 0;
             if (tableColumnCount != 0) {
                 qDebug() << "ERROR: Nested tables!";
@@ -1428,10 +1420,6 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         }
         xmlWriter().writeStartElement("row");
         xmlWriter().writeAttribute("valign","top");
-        if (++numTableRows % 2 == 1)
-            xmlWriter().writeAttribute("outputclass","odd");
-        else
-            xmlWriter().writeAttribute("outputclass","even");
         break;
     case Atom::TableRowRight:
         xmlWriter().writeEndElement(); // </row>
@@ -1664,7 +1652,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         s = detailSections.begin();
         while (s != detailSections.end()) {
             if ((*s).name == "Classes") {
-                writeNestedClasses((*s),nsn,marker);
+                writeNestedClasses((*s),nsn);
                 break;
             }
             ++s;
@@ -2724,7 +2712,6 @@ void DitaXmlGenerator::generateAnnotatedList(const Node* relative,
     xmlWriter().writeAttribute("cols","2");
     xmlWriter().writeStartElement("tbody");
 
-    int row = 0;
     foreach (const QString& name, nodeMap.keys()) {
         const Node* node = nodeMap[name];
 
@@ -2732,10 +2719,6 @@ void DitaXmlGenerator::generateAnnotatedList(const Node* relative,
             continue;
 
         xmlWriter().writeStartElement("row");
-        if (++row % 2 == 1)
-            xmlWriter().writeAttribute("outputclass","odd topAlign");
-        else
-            xmlWriter().writeAttribute("outputclass","even topAlign");
         xmlWriter().writeStartElement("entry");
         xmlWriter().writeStartElement("p");
         generateFullName(node, relative, marker);
@@ -2919,7 +2902,7 @@ void DitaXmlGenerator::generateCompactList(const Node* relative,
       Output a <p> element to contain all the <dl> elements.
      */
     xmlWriter().writeStartElement("p");
-    xmlWriter().writeAttribute("outputclass","compactlist flowListDiv");
+    xmlWriter().writeAttribute("outputclass","compactlist");
 
     for (int i=0; i<classMap.count()-1; i++) {
         while ((curParNr < NumParagraphs) &&
@@ -2937,10 +2920,6 @@ void DitaXmlGenerator::generateCompactList(const Node* relative,
                 xmlWriter().writeEndElement(); // </dl>
             }
             xmlWriter().writeStartElement("dl");
-            if (++numTableRows % 2 == 1)
-                xmlWriter().writeAttribute("outputclass","flowList odd");
-            else
-                xmlWriter().writeAttribute("outputclass","flowList even");
             xmlWriter().writeStartElement("dlentry");
             xmlWriter().writeStartElement("dt");
             xmlWriter().writeAttribute("outputclass","alphaChar");
@@ -3267,7 +3246,6 @@ void DitaXmlGenerator::generateSectionInheritedList(const Section& section,
     QList<QPair<ClassNode*,int> >::ConstIterator p = section.inherited.begin();
     while (p != section.inherited.end()) {
         xmlWriter().writeStartElement("li");
-        xmlWriter().writeAttribute("outputclass","fn");
         QString text;
         text.setNum((*p).second);
         text += " ";
@@ -4416,7 +4394,6 @@ void DitaXmlGenerator::generateQmlSummary(const Section& section,
         m = section.members.begin();
         while (m != section.members.end()) {
             xmlWriter().writeStartElement("li");
-            xmlWriter().writeAttribute("outputclass", "fn");
             generateQmlItem(*m,relative,marker,true);
             xmlWriter().writeEndElement(); // </li>
             ++m;
@@ -5484,8 +5461,7 @@ void DitaXmlGenerator::writeDetailedDescription(const Node* node,
   Write the nested class elements.
  */
 void DitaXmlGenerator::writeNestedClasses(const Section& s, 
-                                          const Node* n, 
-                                          CodeMarker* marker)
+                                          const Node* n)
 {
     if (s.members.isEmpty())
         return;
