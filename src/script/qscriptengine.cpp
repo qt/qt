@@ -2240,7 +2240,7 @@ v8::Handle<v8::Value> QtTranslateFunctionQsTrId(const v8::Arguments& arguments)
     int n = -1;
     if (arguments.Length() > 1)
         n = arguments[1]->Int32Value();
-    return QScriptConverter::toString(qtTrId(QScriptConverter::toString(id).ascii(), n));
+    return QScriptConverter::toString(qtTrId(QScriptConverter::toString(id).toLatin1().constData(), n));
 }
 
 v8::Handle<v8::Value> QtTranslateFunctionQsTrIdNoOp(const v8::Arguments& arguments)
