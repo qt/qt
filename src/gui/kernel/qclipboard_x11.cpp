@@ -597,7 +597,7 @@ static inline int maxSelectionIncr(Display *dpy)
 { return XMaxRequestSize(dpy) > 65536 ? 65536*4 : XMaxRequestSize(dpy)*4 - 100; }
 
 bool QX11Data::clipboardReadProperty(Window win, Atom property, bool deleteProperty,
-                                     QByteArray *buffer, int *size, Atom *type, int *format, bool nullterm)
+                                     QByteArray *buffer, int *size, Atom *type, int *format)
 {
     int           maxsize = maxSelectionIncr(display);
     ulong  bytes_left; // bytes_after
@@ -643,13 +643,13 @@ bool QX11Data::clipboardReadProperty(Window win, Atom property, bool deletePrope
         break;
     }
 
-    int newSize = proplen + (nullterm ? 1 : 0);
+    int newSize = proplen;
     buffer->resize(newSize);
 
     bool ok = (buffer->size() == newSize);
     VDEBUG("QClipboard: read_property(): buffer resized to %d", buffer->size());
 
-    if (ok) {
+    if (ok && newSize) {
         // could allocate buffer
 
         while (bytes_left) {
@@ -685,23 +685,19 @@ bool QX11Data::clipboardReadProperty(Window win, Atom property, bool deletePrope
             XTextProperty textprop;
             textprop.encoding = *type;
             textprop.format = *format;
-            textprop.nitems = length;
+            textprop.nitems = buffer_offset;
             textprop.value = (unsigned char *) buffer->data();
 
             char **list_ret = 0;
             int count;
             if (XmbTextPropertyToTextList(display, &textprop, &list_ret,
                          &count) == Success && count && list_ret) {
-                offset = strlen(list_ret[0]);
-                buffer->resize(offset + (nullterm ? 1 : 0));
+                offset = buffer_offset = strlen(list_ret[0]);
+                buffer->resize(offset);
                 memcpy(buffer->data(), list_ret[0], offset);
             }
             if (list_ret) XFreeStringList(list_ret);
         }
-
-        // zero-terminate (for text)
-        if (nullterm)
-            buffer->data()[buffer_offset] = '\0';
     }
 
     // correct size, not 0-term.
@@ -744,7 +740,7 @@ QByteArray QX11Data::clipboardReadIncrementalProperty(Window win, Atom property,
         if (event.xproperty.atom != property ||
              event.xproperty.state != PropertyNewValue)
             continue;
-        if (X11->clipboardReadProperty(win, property, true, &tmp_buf, &length, 0, 0, false)) {
+        if (X11->clipboardReadProperty(win, property, true, &tmp_buf, &length, 0, 0)) {
             if (length == 0) {                // no more data, we're done
                 if (nullterm) {
                     buf.resize(offset+1);
@@ -1072,7 +1068,7 @@ bool QClipboard::event(QEvent *e)
                 QByteArray multi_data;
                 if (req->property == XNone
                     || !X11->clipboardReadProperty(req->requestor, req->property, false, &multi_data,
-                                                   0, &multi_type, &multi_format, 0)
+                                                   0, &multi_type, &multi_format)
                     || multi_format != 32) {
                     // MULTIPLE property not formatted correctly
                     XSendEvent(dpy, req->requestor, False, NoEventMask, &event);
@@ -1294,7 +1290,7 @@ QByteArray QClipboardWatcher::getDataInFormat(Atom fmtatom) const
     Atom   type;
     XSelectInput(dpy, win, PropertyChangeMask);
 
-    if (X11->clipboardReadProperty(win, ATOM(_QT_SELECTION), true, &buf, 0, &type, 0, false)) {
+    if (X11->clipboardReadProperty(win, ATOM(_QT_SELECTION), true, &buf, 0, &type, 0)) {
         if (type == ATOM(INCR)) {
             int nbytes = buf.size() >= 4 ? *((int*)buf.data()) : 0;
             buf = X11->clipboardReadIncrementalProperty(win, ATOM(_QT_SELECTION), nbytes, false);

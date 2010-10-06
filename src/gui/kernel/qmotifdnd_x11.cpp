@@ -766,7 +766,7 @@ QVariant QX11Data::motifdndObtainData(const char *mimeType)
     if (got) {
         Atom type;
 
-        if (X11->clipboardReadProperty(tw->internalWinId(), Dnd_selection, true, &result, 0, &type, 0, false)) {
+        if (X11->clipboardReadProperty(tw->internalWinId(), Dnd_selection, true, &result, 0, &type, 0)) {
         }
     }
 
