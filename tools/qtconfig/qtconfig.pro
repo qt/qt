@@ -5,7 +5,6 @@ build_all:!build_pass {
     CONFIG += release
 }
 LANGUAGE = C++
-QT += qt3support
 
 contains(QT_CONFIG, gstreamer):LIBS += $$QT_LIBS_GSTREAMER -lgstinterfaces-0.10 -lgstvideo-0.10 -lgstbase-0.10
 contains(QT_CONFIG, gstreamer):QMAKE_CXXFLAGS += $$QT_CFLAGS_GSTREAMER
