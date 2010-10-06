@@ -284,7 +284,7 @@ inline XmlOutput::xml_output attrX(const char *name, const QStringList &v, const
 QStringList VCToolBase::fixCommandLine(const QString &input)
 {
     // The splitting regexp is a bit bizarre for backwards compat reasons (why else ...).
-    return input.split(QRegExp(QLatin1String("\n\t|\r\\h|\r\n")));
+    return input.split(QRegExp(QLatin1String("\n\t|\r\\\\h|\r\n")));
 }
 
 static QString vcCommandSeparator()
