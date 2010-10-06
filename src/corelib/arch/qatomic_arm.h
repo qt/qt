@@ -107,7 +107,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndAddWaitFree()
 
 // kernel places a restartable cmpxchg implementation at a fixed address
 extern "C" typedef int (qt_atomic_eabi_cmpxchg_int_t)(int oldval, int newval, volatile int *ptr);
-extern "C" typedef int (qt_atomic_eabi_cmpxchg_ptr_t)(void *oldval, void *newval, volatile void *ptr);
+extern "C" typedef int (qt_atomic_eabi_cmpxchg_ptr_t)(const void *oldval, const void *newval, volatile void *ptr);
 #define qt_atomic_eabi_cmpxchg_int (*reinterpret_cast<qt_atomic_eabi_cmpxchg_int_t *>(0xffff0fc0))
 #define qt_atomic_eabi_cmpxchg_ptr (*reinterpret_cast<qt_atomic_eabi_cmpxchg_ptr_t *>(0xffff0fc0)) 
 
