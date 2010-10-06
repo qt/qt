@@ -320,7 +320,6 @@ QScriptValue QScriptDeclarativeClass::scopeChainValue(QScriptContext *context, i
     QScriptValueList chain;
     while (context) {
         chain = context->scopeChain() + chain;
-        chain.prepend(context->thisObject());
         context = context->parentContext();
     }
     if (index >= 0)
