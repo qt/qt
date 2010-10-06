@@ -155,6 +155,8 @@ tst_QDirIterator::tst_QDirIterator()
     createDirectory("foo/bar");
     createFile("foo/bar/readme.txt");
 
+    createDirectory("empty");
+
 #ifndef Q_NO_SYMLINKS
 #  if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
     // ### Sadly, this is a platform difference right now.
@@ -296,6 +298,20 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
 #endif
                    "entrylist/directory/dummy,"
                    "entrylist/writable").split(',');
+
+    QTest::newRow("empty, default")
+        << QString("empty") << QDirIterator::IteratorFlags(0)
+        << QDir::Filters(QDir::NoFilter) << QStringList("*")
+#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE)
+        << QStringList();
+#else
+        << QString("empty/.,empty/..").split(',');
+#endif
+
+        QTest::newRow("empty, QDir::NoDotAndDotDot")
+            << QString("empty") << QDirIterator::IteratorFlags(0)
+            << QDir::Filters(QDir::NoDotAndDotDot) << QStringList("*")
+            << QStringList();
 }
 
 void tst_QDirIterator::iterateRelativeDirectory()
