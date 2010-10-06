@@ -125,19 +125,15 @@ inline QScriptValueIteratorPrivate::QScriptValueIteratorPrivate(const QScriptVal
         v8::HandleScope scope;
         Handle<Value> tmp = *value;
         Handle<Object> obj = Handle<Object>::Cast(tmp);
-        Local<Array> names = obj->GetPropertyNames();
+        Local<Array> names = engine()->getOwnPropertyNames(obj);
         uint32_t count = names->Length();
         Local<String> name;
-        // Filter property names, we need only the real ones.
-        // FIXME it would be better to do it lazly
         m_names.reserve(count); // The count is the maximal count of values.
         for (uint32_t i = count - 1; i < count; --i) {
             name = names->Get(i)->ToString();
-            // FIXME we should get values marked as SkipInEnumeration too.
-            if (obj->HasRealNamedProperty(name)) {
-                m_names.append(Persistent<String>::New(name));
-            }
+            m_names.append(Persistent<String>::New(name));
         }
+
         // Reinitialize the iterator.
         m_iterator = m_names;
         //dump(QString::fromAscii("constr"));
@@ -147,6 +143,7 @@ inline QScriptValueIteratorPrivate::QScriptValueIteratorPrivate(const QScriptVal
 inline QScriptValueIteratorPrivate::~QScriptValueIteratorPrivate()
 {
     if (isValid()) {
+        QScriptIsolate api(engine(), QScriptIsolate::NotNullEngine);
         QList<Persistent<String> >::iterator i = m_names.begin();
         for (; i != m_names.end(); ++i) {
             (*i).Dispose();

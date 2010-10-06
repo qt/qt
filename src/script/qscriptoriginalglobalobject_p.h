@@ -54,6 +54,7 @@ public:
 
     inline bool isError(const QScriptValuePrivate* value) const;
     inline bool isInvalid(v8::Handle<v8::Value> value) const;
+    inline v8::Local<v8::Array> getOwnPropertyNames(v8::Handle<v8::Object> object) const;
     inline QScriptValue::PropertyFlags getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property, const QScriptValue::ResolveFlags& mode);
     inline void installArgFunctionOnOrgStringPrototype(v8::Handle<v8::Function> arg);
 
@@ -68,6 +69,7 @@ private:
     v8::Persistent<v8::Object> m_stringConstructor;
     v8::Persistent<v8::Value> m_stringPrototype;
     v8::Persistent<v8::Function> m_ownPropertyDescriptor;
+    v8::Persistent<v8::Function> m_ownPropertyNames;
     v8::Persistent<v8::Object> m_globalObject;
     v8::Persistent<v8::Value> m_invalidValue;
 };
@@ -80,13 +82,19 @@ QScriptOriginalGlobalObject::QScriptOriginalGlobalObject(v8::Handle<v8::Context>
     initializeMember(v8::String::New("prototype"), v8::String::New("Error"), m_errorConstructor, m_errorPrototype);
     initializeMember(v8::String::New("prototype"), v8::String::New("String"), m_stringConstructor, m_stringPrototype);
 
+    v8::Handle<v8::Value> objectConstructor = m_globalObject->Get(v8::String::New("Object"));
+    Q_ASSERT(objectConstructor->IsObject());
     {   // Initialize m_ownPropertyDescriptor.
-        v8::Handle<v8::Value> objectConstructor = m_globalObject->Get(v8::String::New("Object"));
-        Q_ASSERT(objectConstructor->IsObject());
         v8::Handle<v8::Value> ownPropertyDescriptor = objectConstructor->ToObject()->Get(v8::String::New("getOwnPropertyDescriptor"));
         Q_ASSERT(!ownPropertyDescriptor.IsEmpty());
         m_ownPropertyDescriptor = v8::Persistent<v8::Function>::New(v8::Handle<v8::Function>::Cast(ownPropertyDescriptor));
     }
+    {   // Initialize m_ownPropertyNames.
+        v8::Handle<v8::Value> ownPropertyNames = objectConstructor->ToObject()->Get(v8::String::New("getOwnPropertyNames"));
+        Q_ASSERT(!ownPropertyNames.IsEmpty());
+        m_ownPropertyNames= v8::Persistent<v8::Function>::New(v8::Handle<v8::Function>::Cast(ownPropertyNames));
+    }
+
     m_invalidValue = v8::Persistent<v8::Value>::New(v8::Object::New());
 }
 
@@ -146,6 +154,13 @@ inline bool QScriptOriginalGlobalObject::isError(const QScriptValuePrivate* valu
 inline bool QScriptOriginalGlobalObject::isInvalid(v8::Handle<v8::Value> value) const
 {
     return m_invalidValue->StrictEquals(value);
+}
+
+inline v8::Local<v8::Array> QScriptOriginalGlobalObject::getOwnPropertyNames(v8::Handle<v8::Object> object) const
+{
+    Q_ASSERT(!object.IsEmpty());
+    v8::Handle<v8::Value> argv[] = {object};
+    return v8::Local<v8::Array>::Cast(m_ownPropertyNames->Call(m_globalObject, /* argc */ 2, argv));
 }
 
 inline QScriptValue::PropertyFlags QScriptOriginalGlobalObject::getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property, const QScriptValue::ResolveFlags& mode)
