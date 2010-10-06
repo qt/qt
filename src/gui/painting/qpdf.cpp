@@ -915,7 +915,6 @@ const char *QPdf::paperSizeToString(QPrinter::PaperSize paperSize)
     return psToStr[paperSize];
 }
 
-
 // -------------------------- base engine, shared code between PS and PDF -----------------------
 
 QPdfBaseEngine::QPdfBaseEngine(QPdfBaseEnginePrivate &dd, PaintEngineFeatures f)
