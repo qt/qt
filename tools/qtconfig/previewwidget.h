@@ -51,10 +51,10 @@ class PreviewWidget : public QWidget, public Ui::PreviewWidget
     Q_OBJECT
 
 public:
-    PreviewWidget(QWidget* parent = 0);
+    PreviewWidget(QWidget *parent = 0);
 
-    void closeEvent(QCloseEvent*);
-    bool eventFilter(QObject*, QEvent*);
+    void closeEvent(QCloseEvent *);
+    bool eventFilter(QObject *, QEvent *);
 };
 
 QT_END_NAMESPACE

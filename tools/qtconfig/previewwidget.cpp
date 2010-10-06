@@ -50,8 +50,8 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     setupUi(this);
 
     // install event filter on child widgets
-    QList<QWidget*> l = findChildren<QWidget*>();
-    foreach(QWidget* w, l) {
+    QList<QWidget *> l = findChildren<QWidget*>();
+    foreach(QWidget *w, l) {
         w->installEventFilter(this);
         w->setFocusPolicy(Qt::NoFocus);
     }
