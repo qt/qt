@@ -346,6 +346,17 @@ struct QGLExtensionFuncs
         qt_glEGLImageTargetTexture2DOES = 0;
         qt_glEGLImageTargetRenderbufferStorageOES = 0;
 #endif
+
+        // OES_element_index_uint
+#if !defined(QT_OPENGL_ES)
+        qt_glSupportsElementIndexUint = true;
+#else
+        QString extensions = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
+        if (extensions.contains("GL_OES_element_index_uint"))
+            qt_glSupportsElementIndexUint = true;
+        else
+            qt_glSupportsElementIndexUint = false;
+#endif
     }
 
 
@@ -473,6 +484,7 @@ struct QGLExtensionFuncs
     _glEGLImageTargetRenderbufferStorageOES qt_glEGLImageTargetRenderbufferStorageOES;
 #endif
 
+    bool qt_glSupportsElementIndexUint;
 };
 
 
@@ -870,6 +882,8 @@ struct QGLExtensionFuncs
 #define glEGLImageTargetTexture2DOES QGLContextPrivate::extensionFuncs(ctx).qt_glEGLImageTargetTexture2DOES
 #define glEGLImageTargetRenderbufferStorageOES QGLContextPrivate::extensionFuncs(ctx).qt_glEGLImageTargetRenderbufferStorageOES
 #endif
+
+#define glSupportsElementIndexUint  QGLContextPrivate::extensionFuncs(ctx).qt_glSupportsElementIndexUint
 
 extern bool qt_resolve_framebufferobject_extensions(QGLContext *ctx);
 bool qt_resolve_buffer_extensions(QGLContext *ctx);
