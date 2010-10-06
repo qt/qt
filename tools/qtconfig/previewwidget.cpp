@@ -40,14 +40,15 @@
 ****************************************************************************/
 
 #include "previewwidget.h"
+#include "ui_previewwidget.h"
 #include <QtEvents>
 
 QT_BEGIN_NAMESPACE
 
 PreviewWidget::PreviewWidget(QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent), ui(new Ui::PreviewWidget)
 {
-    setupUi(this);
+    ui->setupUi(this);
 
     // install event filter on child widgets
     QList<QWidget *> l = findChildren<QWidget *>();
@@ -57,12 +58,10 @@ PreviewWidget::PreviewWidget(QWidget *parent)
     }
 }
 
-
-void PreviewWidget::closeEvent(QCloseEvent *e)
+PreviewWidget::~PreviewWidget()
 {
-    e->ignore();
+  delete ui;
 }
-
 
 bool PreviewWidget::eventFilter(QObject *, QEvent *e)
 {
@@ -80,6 +79,11 @@ bool PreviewWidget::eventFilter(QObject *, QEvent *e)
         break;
     }
     return false;
+}
+
+void PreviewWidget::closeEvent(QCloseEvent *e)
+{
+    e->ignore();
 }
 
 QT_END_NAMESPACE
