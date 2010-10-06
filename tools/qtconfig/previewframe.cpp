@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "previewframe.h"
+#include "previewwidget.h"
 
 #include <QBoxLayout>
 #include <QPainter>

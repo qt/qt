@@ -42,8 +42,6 @@
 #ifndef PREVIEWFRAME_H
 #define PREVIEWFRAME_H
 
-#include "previewwidget.h"
-
 #include <QMdiArea>
 
 QT_BEGIN_NAMESPACE
@@ -63,6 +61,7 @@ private:
     PreviewFrame *previewFrame;
 };
 
+class PreviewWidget;
 class PreviewFrame : public QFrame
 {
     Q_OBJECT
