@@ -42,13 +42,17 @@
 #ifndef PALETTEEDITORADVANCED_H
 #define PALETTEEDITORADVANCED_H
 
-#include "ui_paletteeditoradvanced.h"
+#include <QtGui/QDialog>
+
+namespace Ui {
+    class PaletteEditorAdvanced;
+}
 
 QT_BEGIN_NAMESPACE
 
 class ColorButton;
 
-class PaletteEditorAdvanced : public QDialog, public Ui::PaletteEditorAdvanced
+class PaletteEditorAdvanced : public QDialog
 {
     Q_OBJECT
 public:
@@ -89,6 +93,8 @@ private:
     static QPalette::ColorRole centralFromIndex(int);
     static QPalette::ColorRole effectFromIndex(int);
     QPalette editPalette;
+
+    Ui::PaletteEditorAdvanced *ui;
 
     int selectedPalette;
     ColorButton *buttonCentral;

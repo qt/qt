@@ -38,41 +38,41 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+#include "ui_paletteeditoradvanced.h"
 #include "paletteeditoradvanced.h"
 #include "colorbutton.h"
 
 QT_BEGIN_NAMESPACE
 
 PaletteEditorAdvanced::PaletteEditorAdvanced(QWidget *parent)
-    : QDialog(parent), selectedPalette(0)
+    : QDialog(parent), ui(new Ui::PaletteEditorAdvanced), selectedPalette(0)
 {
-    setupUi(this);
+    ui->setupUi(this);
 
     // create a ColorButton's
-    buttonCentral = new ColorButton(groupCentral);
+    buttonCentral = new ColorButton(ui->groupCentral);
     buttonCentral->setToolTip(tr("Choose a color"));
     buttonCentral->setWhatsThis(tr("Choose a color for the selected central color role."));
-    layoutCentral->addWidget(buttonCentral);
-    labelCentral->setBuddy(buttonCentral);
+    ui->layoutCentral->addWidget(buttonCentral);
+    ui->labelCentral->setBuddy(buttonCentral);
 
-    buttonEffect = new ColorButton(groupEffect);
+    buttonEffect = new ColorButton(ui->groupEffect);
     buttonEffect->setToolTip(tr("Choose a color"));
     buttonEffect->setWhatsThis(tr("Choose a color for the selected effect color role."));
     buttonEffect->setEnabled(false);
-    layoutEffect->addWidget(buttonEffect);
-    labelEffect->setBuddy(buttonEffect);
+    ui->layoutEffect->addWidget(buttonEffect);
+    ui->labelEffect->setBuddy(buttonEffect);
 
     // signals and slots connections
-    connect(paletteCombo, SIGNAL(activated(int)), SLOT(paletteSelected(int)));
-    connect(comboCentral, SIGNAL(activated(int)), SLOT(onCentral(int)));
+    connect(ui->paletteCombo, SIGNAL(activated(int)), SLOT(paletteSelected(int)));
+    connect(ui->comboCentral, SIGNAL(activated(int)), SLOT(onCentral(int)));
     connect(buttonCentral, SIGNAL(clicked()), SLOT(onChooseCentralColor()));
     connect(buttonEffect, SIGNAL(clicked()), SLOT(onChooseEffectColor()));
-    connect(comboEffect, SIGNAL(activated(int)), SLOT(onEffect(int)));
-    connect(checkBuildEffect, SIGNAL(toggled(bool)), SLOT(onToggleBuildEffects(bool)));
-    connect(checkBuildEffect, SIGNAL(toggled(bool)), buttonEffect, SLOT(setDisabled(bool)));
-    connect(checkBuildInactive, SIGNAL(toggled(bool)), SLOT(onToggleBuildInactive(bool)));
-    connect(checkBuildDisabled, SIGNAL(toggled(bool)), SLOT(onToggleBuildDisabled(bool)));
+    connect(ui->comboEffect, SIGNAL(activated(int)), SLOT(onEffect(int)));
+    connect(ui->checkBuildEffect, SIGNAL(toggled(bool)), SLOT(onToggleBuildEffects(bool)));
+    connect(ui->checkBuildEffect, SIGNAL(toggled(bool)), buttonEffect, SLOT(setDisabled(bool)));
+    connect(ui->checkBuildInactive, SIGNAL(toggled(bool)), SLOT(onToggleBuildInactive(bool)));
+    connect(ui->checkBuildDisabled, SIGNAL(toggled(bool)), SLOT(onToggleBuildDisabled(bool)));
 
     onToggleBuildEffects(true);
 
@@ -81,13 +81,14 @@ PaletteEditorAdvanced::PaletteEditorAdvanced(QWidget *parent)
 
 PaletteEditorAdvanced::~PaletteEditorAdvanced()
 {
+    delete ui;
 }
 
 void PaletteEditorAdvanced::onToggleBuildInactive(bool v)
 {
     if (selectedPalette == 1) {
-        groupCentral->setDisabled(v);
-        groupEffect->setDisabled(v);
+        ui->groupCentral->setDisabled(v);
+        ui->groupEffect->setDisabled(v);
     }
 
     if (v) {
@@ -99,8 +100,8 @@ void PaletteEditorAdvanced::onToggleBuildInactive(bool v)
 void PaletteEditorAdvanced::onToggleBuildDisabled(bool v)
 {
     if (selectedPalette == 2) {
-        groupCentral->setDisabled(v);
-        groupEffect->setDisabled(v);
+        ui->groupCentral->setDisabled(v);
+        ui->groupEffect->setDisabled(v);
     }
 
     if (v) {
@@ -114,16 +115,16 @@ void PaletteEditorAdvanced::paletteSelected(int p)
     selectedPalette = p;
 
     if(p == 1) { // inactive
-        groupCentral->setDisabled(checkBuildInactive->isChecked());
-        groupEffect->setDisabled(checkBuildInactive->isChecked());
+        ui->groupCentral->setDisabled(ui->checkBuildInactive->isChecked());
+        ui->groupEffect->setDisabled(ui->checkBuildInactive->isChecked());
     }
     else if (p == 2) { // disabled
-        groupCentral->setDisabled(checkBuildDisabled->isChecked());
-        groupEffect->setDisabled(checkBuildDisabled->isChecked());
+        ui->groupCentral->setDisabled(ui->checkBuildDisabled->isChecked());
+        ui->groupEffect->setDisabled(ui->checkBuildDisabled->isChecked());
     }
     else {
-        groupCentral->setEnabled(true);
-        groupEffect->setEnabled(true);
+        ui->groupCentral->setEnabled(true);
+        ui->groupEffect->setEnabled(true);
     }
     updateColorButtons();
 }
@@ -131,14 +132,14 @@ void PaletteEditorAdvanced::paletteSelected(int p)
 void PaletteEditorAdvanced::onChooseCentralColor()
 {
     QPalette::ColorGroup group = groupFromIndex(selectedPalette);
-    editPalette.setColor(group, centralFromIndex(comboCentral->currentIndex()),
+    editPalette.setColor(group, centralFromIndex(ui->comboCentral->currentIndex()),
                          buttonCentral->color());
 
     buildEffect(group);
     if (group == QPalette::Active) {
-        if(checkBuildInactive->isChecked())
+        if(ui->checkBuildInactive->isChecked())
             build(QPalette::Inactive);
-        if(checkBuildDisabled->isChecked())
+        if(ui->checkBuildDisabled->isChecked())
             build(QPalette::Disabled);
     }
 
@@ -148,13 +149,13 @@ void PaletteEditorAdvanced::onChooseCentralColor()
 void PaletteEditorAdvanced::onChooseEffectColor()
 {
     QPalette::ColorGroup group = groupFromIndex(selectedPalette);
-    editPalette.setColor(group, effectFromIndex(comboEffect->currentIndex()),
+    editPalette.setColor(group, effectFromIndex(ui->comboEffect->currentIndex()),
                          buttonEffect->color());
 
     if (group == QPalette::Active) {
-        if(checkBuildInactive->isChecked())
+        if(ui->checkBuildInactive->isChecked())
             build(QPalette::Inactive);
-        if(checkBuildDisabled->isChecked())
+        if(ui->checkBuildDisabled->isChecked())
             build(QPalette::Disabled);
     }
 
@@ -296,7 +297,7 @@ void PaletteEditorAdvanced::build(QPalette::ColorGroup colorGroup)
             editPalette.setColor(colorGroup, QPalette::HighlightedText, Qt::darkGray);
         }
 
-        if (checkBuildEffect->isChecked())
+        if (ui->checkBuildEffect->isChecked())
             buildEffect(colorGroup);
         else
             updateColorButtons();
@@ -307,9 +308,9 @@ void PaletteEditorAdvanced::updateColorButtons()
 {
     QPalette::ColorGroup colorGroup = groupFromIndex(selectedPalette);
     buttonCentral->setColor(editPalette.color(colorGroup,
-                                              centralFromIndex(comboCentral->currentIndex())));
+                                              centralFromIndex(ui->comboCentral->currentIndex())));
     buttonEffect->setColor(editPalette.color(colorGroup,
-                                             effectFromIndex(comboEffect->currentIndex())));
+                                             effectFromIndex(ui->comboEffect->currentIndex())));
 }
 
 void PaletteEditorAdvanced::setPal(const QPalette &pal)
@@ -376,7 +377,7 @@ void PaletteEditorAdvanced::setupBackgroundRole(QPalette::ColorRole role)
     }
 
     if (initRole != -1)
-        comboCentral->setCurrentIndex(initRole);
+        ui->comboCentral->setCurrentIndex(initRole);
 }
 
 QPalette PaletteEditorAdvanced::getPalette(bool *ok, const QPalette &init,
