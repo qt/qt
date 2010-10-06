@@ -356,6 +356,7 @@ void tst_QDeclarativeMouseArea::onMousePressRejected()
     canvas->show();
     canvas->setFocus();
     QVERIFY(canvas->rootObject() != 0);
+    QVERIFY(canvas->rootObject()->property("enabled").toBool());
 
     QVERIFY(!canvas->rootObject()->property("mr1_pressed").toBool());
     QVERIFY(!canvas->rootObject()->property("mr1_released").toBool());
