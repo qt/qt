@@ -518,6 +518,7 @@ qint64 QFSFileEnginePrivate::nativeWrite(const char *data, qint64 len)
 qint64 QFSFileEnginePrivate::nativePos() const
 {
 #ifdef Q_OS_SYMBIAN
+    const Q_Q(QFSFileEngine);
     if (symbianFile.SubSessionHandle()) {
 #ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
         qint64 pos = 0;
@@ -526,8 +527,7 @@ qint64 QFSFileEnginePrivate::nativePos() const
 #endif
         TInt err = symbianFile.Seek(ESeekCurrent, pos);
         if(err != KErrNone) {
-            //TODO: error reporting
-            //setSymbianError(err, QFile::PositionError, QLatin1String("seek failed"));
+            const_cast<QFSFileEngine*>(q)->setError(QFile::PositionError, QFileSystemEngine::errorString(err));
             return -1;
         }
         return pos;
@@ -635,6 +635,7 @@ bool QFSFileEngine::link(const QString &newName)
 qint64 QFSFileEnginePrivate::nativeSize() const
 {
 #ifdef Q_OS_SYMBIAN
+    const Q_Q(QFSFileEngine);
     if (symbianFile.SubSessionHandle()) {
 #ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
         qint64 size;
@@ -643,7 +644,7 @@ qint64 QFSFileEnginePrivate::nativeSize() const
 #endif
         TInt err = symbianFile.Size(size);
         if(err != KErrNone) {
-            //TODO: error reporting
+            const_cast<QFSFileEngine*>(q)->setError(QFile::PositionError, QFileSystemEngine::errorString(err));
             return 0;
         }
         return size;
