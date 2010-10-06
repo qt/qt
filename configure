@@ -5745,6 +5745,12 @@ if [ "$PLATFORM_X11" = "yes" ]; then
 	fi
     fi
 
+    # Additional check to decide if WebKit support will be included
+    if [ "$CFG_XRENDER" = "no" ] && [ "$CFG_WEBKIT" != "no" ]; then
+        echo "Warning: -no-xrender will disable the QtWebkit module."
+        CFG_WEBKIT="no"
+    fi
+
     # auto-detect MIT-SHM support
     if [ "$CFG_MITSHM" != "no" ]; then
 	if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/mitshm "mitshm" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then

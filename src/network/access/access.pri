@@ -12,7 +12,6 @@ HEADERS += \
     access/qnetworkaccessmanager_p.h \
     access/qnetworkaccesscache_p.h \
     access/qnetworkaccessbackend_p.h \
-    access/qnetworkaccessdatabackend_p.h \
     access/qnetworkaccessdebugpipebackend_p.h \
     access/qnetworkaccesshttpbackend_p.h \
     access/qnetworkaccessfilebackend_p.h \
@@ -27,6 +26,7 @@ HEADERS += \
     access/qnetworkreply.h \
     access/qnetworkreply_p.h \
     access/qnetworkreplyimpl_p.h \
+    access/qnetworkreplydataimpl_p.h \
     access/qnetworkreplyfileimpl_p.h \
     access/qabstractnetworkcache_p.h \
     access/qabstractnetworkcache.h \
@@ -44,7 +44,6 @@ SOURCES += \
     access/qnetworkaccessmanager.cpp \
     access/qnetworkaccesscache.cpp \
     access/qnetworkaccessbackend.cpp \
-    access/qnetworkaccessdatabackend.cpp \
     access/qnetworkaccessdebugpipebackend.cpp \
     access/qnetworkaccessfilebackend.cpp \
     access/qnetworkaccesscachebackend.cpp \
@@ -55,6 +54,7 @@ SOURCES += \
     access/qnetworkrequest.cpp \
     access/qnetworkreply.cpp \
     access/qnetworkreplyimpl.cpp \
+    access/qnetworkreplydataimpl.cpp \
     access/qnetworkreplyfileimpl.cpp \
     access/qabstractnetworkcache.cpp \
     access/qnetworkdiskcache.cpp
