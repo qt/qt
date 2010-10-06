@@ -41,6 +41,8 @@
 
 #include "qnetworkreplydataimpl_p.h"
 #include "private/qdataurl_p.h"
+#include <QtCore/QCoreApplication>
+#include <QtCore/QMetaObject>
 
 QT_BEGIN_NAMESPACE
 
