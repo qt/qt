@@ -14,11 +14,11 @@ contains(QT_CONFIG, phonon) {
     DEFINES += HAVE_PHONON
 }
 SOURCES        += colorbutton.cpp main.cpp previewframe.cpp previewwidget.cpp mainwindow.cpp paletteeditoradvanced.cpp \
-    mainwindowbase.cpp paletteeditoradvancedbase.cpp
+    mainwindowbase.cpp
 HEADERS        += colorbutton.h previewframe.h previewwidget.h mainwindow.h paletteeditoradvanced.h \
-    mainwindowbase.h paletteeditoradvancedbase.h
+    mainwindowbase.h
 
-FORMS        = mainwindowbase.ui paletteeditoradvancedbase.ui previewwidget.ui
+FORMS        = mainwindowbase.ui paletteeditoradvanced.ui previewwidget.ui
 RESOURCES    = qtconfig.qrc
 
 PROJECTNAME        = Qt Configuration

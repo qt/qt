@@ -753,9 +753,8 @@ void MainWindow::updateColorButtons()
 void MainWindow::tunePalette()
 {
     bool ok;
-    QPalette pal = PaletteEditorAdvanced::getPalette(&ok, editPalette,
-                                                     backgroundMode(), this);
-    if (! ok)
+    QPalette pal = PaletteEditorAdvanced::getPalette(&ok, editPalette, backgroundRole(), this);
+    if (!ok)
         return;
 
     editPalette = pal;
