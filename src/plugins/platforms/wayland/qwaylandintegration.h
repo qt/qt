@@ -53,6 +53,9 @@ QT_BEGIN_NAMESPACE
 
 class QWaylandInputDevice;
 
+QWaylandInputDevice *
+waylandInputDeviceCreate(struct wl_display *display, uint32_t id);
+
 class QWaylandDisplay : public QObject {
     Q_OBJECT;
 
