@@ -213,10 +213,18 @@ QWaylandWindow::QWaylandWindow(QWidget *window, QWaylandDisplay *display)
     , mSurface(0)
     , mDisplay(display)
 {
+    static WId id = 1;
+
+    mWindowId = id++;
 }
 
 QWaylandWindow::~QWaylandWindow()
 {
+}
+
+WId QWaylandWindow::winId() const
+{
+    return mWindowId;
 }
 
 void QWaylandWindow::setVisible(bool visible)

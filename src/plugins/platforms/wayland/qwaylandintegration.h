@@ -132,10 +132,12 @@ public:
     struct wl_surface *surface() { return mSurface; }
 
     void setVisible(bool visible);
+    WId winId() const;
 
 private:
     struct wl_surface *mSurface;
     QWaylandDisplay *mDisplay;
+    WId mWindowId;
 };
 
 class QWaylandIntegration : public QPlatformIntegration
