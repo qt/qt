@@ -392,7 +392,7 @@ QDeclarativeView::Status QDeclarativeView::status() const
 
 /*!
     Return the list of errors that occurred during the last compile or create
-    operation.  An empty list is returned if isError() is not set.
+    operation.  When the status is not Error, an empty list is returned.
 */
 QList<QDeclarativeError> QDeclarativeView::errors() const
 {

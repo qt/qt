@@ -133,11 +133,20 @@ public:
     void setContext(const QGLContext *context);
     inline const QGLContext *context() const { return ctx; }
 
+    enum FilterMode {
+        Nearest,
+        Linear
+    };
+    FilterMode filterMode() const { return m_filterMode; }
+    void setFilterMode(FilterMode m) { m_filterMode = m; }
+
 private:
     QGLContextGroupResource<QGLGlyphTexture> m_textureResource;
 
     const QGLContext *ctx;
     QGL2PaintEngineExPrivate *pex;
+    QGLShaderProgram *m_blitProgram;
+    FilterMode m_filterMode;
 };
 
 QT_END_NAMESPACE

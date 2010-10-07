@@ -687,7 +687,7 @@ void tst_QDeclarativePathView::componentChanges()
     QVERIFY(pathView);
 
     QDeclarativeComponent delegateComponent(canvas->engine());
-    delegateComponent.setData("import Qt 4.7; Text { text: '<b>Name:</b> ' + name }", QUrl::fromLocalFile(""));
+    delegateComponent.setData("import QtQuick 1.0; Text { text: '<b>Name:</b> ' + name }", QUrl::fromLocalFile(""));
 
     QSignalSpy delegateSpy(pathView, SIGNAL(delegateChanged()));
 

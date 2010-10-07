@@ -1532,6 +1532,7 @@ void QDeclarativeViewer::registerTypes()
     if (!registered) {
         // registering only for exposing the DeviceOrientation::Orientation enum
         qmlRegisterUncreatableType<DeviceOrientation>("Qt",4,7,"Orientation","");
+        qmlRegisterUncreatableType<DeviceOrientation>("QtQuick",1,0,"Orientation","");
         registered = true;
     }
 }

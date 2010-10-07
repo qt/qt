@@ -1,4 +1,4 @@
-import Qt 4.7
+import QtQuick 1.0
 
 /*
 Blue rect fills (with 10px margin) screen, then red, then green, then screen again.

@@ -200,7 +200,7 @@ void tst_qdeclarativeengine::clearComponentCache()
     {
         QFile file("temp.qml");
         QVERIFY(file.open(QIODevice::WriteOnly));
-        file.write("import Qt 4.7\nQtObject {\nproperty int test: 10\n}\n");
+        file.write("import QtQuick 1.0\nQtObject {\nproperty int test: 10\n}\n");
         file.close();
     }
 
@@ -217,7 +217,7 @@ void tst_qdeclarativeengine::clearComponentCache()
     {
         QFile file("temp.qml");
         QVERIFY(file.open(QIODevice::WriteOnly));
-        file.write("import Qt 4.7\nQtObject {\nproperty int test: 11\n}\n");
+        file.write("import QtQuick 1.0\nQtObject {\nproperty int test: 11\n}\n");
         file.close();
     }
 
@@ -256,7 +256,7 @@ void tst_qdeclarativeengine::outputWarningsToStandardError()
     QCOMPARE(engine.outputWarningsToStandardError(), true);
 
     QDeclarativeComponent c(&engine);
-    c.setData("import Qt 4.7; QtObject { property int a: undefined }", QUrl());
+    c.setData("import QtQuick 1.0; QtObject { property int a: undefined }", QUrl());
 
     QVERIFY(c.isReady() == true);
 
@@ -313,7 +313,7 @@ void tst_qdeclarativeengine::objectOwnership()
     {
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine);
-    c.setData("import Qt 4.7; QtObject { property QtObject object: QtObject {} }", QUrl());
+    c.setData("import QtQuick 1.0; QtObject { property QtObject object: QtObject {} }", QUrl());
 
     QObject *o = c.create();
     QVERIFY(o != 0);

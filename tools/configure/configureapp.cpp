@@ -2131,7 +2131,7 @@ bool Configure::checkAvailability(const QString &part)
         available = findFile("BuildConsole.exe") && findFile("xgConsole.exe");
     else if (part == "XMLPATTERNS")
         available = dictionary.value("EXCEPTIONS") == "yes";
-    } else if (part == "PHONON") {
+    else if (part == "PHONON") {
         if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
             available = true;
         } else {
@@ -2436,7 +2436,7 @@ void Configure::generateBuildKey()
                        + buildSymbianKey + "\"\n"
                        "#else\n"
                        // Debug builds
-                       "# if (!QT_NO_DEBUG)\n"
+                       "# if !defined(QT_NO_DEBUG)\n"
                        "#  if (defined(WIN64) || defined(_WIN64) || defined(__WIN64__))\n"
                        + build64Key.arg("debug") + "\"\n"
                        "#  else\n"

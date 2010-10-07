@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 import "content" as Content
 import "content/snake.js" as Logic
 

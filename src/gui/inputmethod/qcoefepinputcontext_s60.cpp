@@ -238,8 +238,10 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
         }
 
         QString widgetText = focusWidget()->inputMethodQuery(Qt::ImSurroundingText).toString();
-        int maxLength = focusWidget()->inputMethodQuery(Qt::ImMaximumTextLength).toInt();
-        if (!keyEvent->text().isEmpty() && widgetText.size() + m_preeditString.size() >= maxLength) {
+        bool validLength;
+        int maxLength = focusWidget()->inputMethodQuery(Qt::ImMaximumTextLength).toInt(&validLength);
+        if (!keyEvent->text().isEmpty() && validLength
+                && widgetText.size() + m_preeditString.size() >= maxLength) {
             // Don't send key events with string content if the widget is "full".
             return true;
         }

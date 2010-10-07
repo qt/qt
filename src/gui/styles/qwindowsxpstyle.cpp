@@ -2154,7 +2154,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
                 p->setPen(menuitem->palette.text().color());
                 p->setBrush(Qt::NoBrush);
                 if (checked)
-                    p->drawRect(vIconRect.adjusted(-1, -2, 1, 1));
+                    p->drawRect(vIconRect.adjusted(-1, -1, 0, 0));
                 p->drawPixmap(vIconRect.topLeft(), pixmap);
 
             // draw checkmark -------------------------------------------------

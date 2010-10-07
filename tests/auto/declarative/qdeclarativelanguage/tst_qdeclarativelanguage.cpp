@@ -376,6 +376,7 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("invalidOn") << "invalidOn.qml" << "invalidOn.errors.txt" << false;
     QTest::newRow("invalidProperty") << "invalidProperty.qml" << "invalidProperty.errors.txt" << false;
     QTest::newRow("nonScriptableProperty") << "nonScriptableProperty.qml" << "nonScriptableProperty.errors.txt" << false;
+    QTest::newRow("notAvailable") << "notAvailable.qml" << "notAvailable.errors.txt" << false;
 }
 
 
@@ -1384,12 +1385,12 @@ void tst_qdeclarativelanguage::importsLocal_data()
         << "QDeclarativeRectangle"
         << "";
     QTest::newRow("local import second")
-        << "import Qt 4.7\nimport \"subdir\"\n"
+        << "import QtQuick 1.0\nimport \"subdir\"\n"
            "Test {}"
         << "QDeclarativeRectangle"
         << "";
     QTest::newRow("local import subsubdir")
-        << "import Qt 4.7\nimport \"subdir/subsubdir\"\n"
+        << "import QtQuick 1.0\nimport \"subdir/subsubdir\"\n"
            "SubTest {}"
         << "QDeclarativeRectangle"
         << "";
@@ -1603,24 +1604,24 @@ void tst_qdeclarativelanguage::importsOrder_data()
 
     QTest::newRow("installed import versus builtin 1") <<
            "import com.nokia.installedtest 1.5\n"
-           "import Qt 4.7\n"
+           "import QtQuick 1.0\n"
            "Rectangle {}"
            << (!qmlCheckTypes()?"QDeclarativeRectangle":"")
            << (!qmlCheckTypes()?"":"Rectangle is ambiguous. Found in Qt and in lib/com/nokia/installedtest");
     QTest::newRow("installed import versus builtin 2") <<
-           "import Qt 4.7\n"
+           "import QtQuick 1.0\n"
            "import com.nokia.installedtest 1.5\n"
            "Rectangle {}"
            << (!qmlCheckTypes()?"QDeclarativeText":"")
            << (!qmlCheckTypes()?"":"Rectangle is ambiguous. Found in lib/com/nokia/installedtest and in Qt");
     QTest::newRow("namespaces cannot be overridden by types 1") <<
-           "import Qt 4.7 as Rectangle\n"
+           "import QtQuick 1.0 as Rectangle\n"
            "import com.nokia.installedtest 1.5\n"
            "Rectangle {}"
         << ""
         << "Namespace Rectangle cannot be used as a type";
     QTest::newRow("namespaces cannot be overridden by types 2") <<
-           "import Qt 4.7 as Rectangle\n"
+           "import QtQuick 1.0 as Rectangle\n"
            "import com.nokia.installedtest 1.5\n"
            "Rectangle.Image {}"
         << "QDeclarativeImage"
@@ -1675,7 +1676,7 @@ void tst_qdeclarativelanguage::qmlAttachedPropertiesObjectMethod()
 void tst_qdeclarativelanguage::crash1()
 {
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.7\nComponent {}", QUrl());
+    component.setData("import QtQuick 1.0\nComponent {}", QUrl());
 }
 
 void tst_qdeclarativelanguage::crash2()
@@ -1715,12 +1716,18 @@ void tst_qdeclarativelanguage::initTestCase()
 {
     registerTypes();
 
+    // Registering the TestType class in other modules should have no adverse effects
+    qmlRegisterType<TestType>("com.nokia.TestPre", 1, 0, "Test");
+
     qmlRegisterType<TestType>("com.nokia.Test", 0, 0, "TestTP");
     qmlRegisterType<TestType>("com.nokia.Test", 1, 0, "Test");
     qmlRegisterType<TestType>("com.nokia.Test", 1, 5, "Test");
     qmlRegisterType<TestType2>("com.nokia.Test", 1, 8, "Test");
     qmlRegisterType<TestType>("com.nokia.Test", 1, 9, "OldTest");
     qmlRegisterType<TestType2>("com.nokia.Test", 1, 12, "Test");
+
+    // Registering the TestType class in other modules should have no adverse effects
+    qmlRegisterType<TestType>("com.nokia.TestPost", 1, 0, "Test");
 
     // Create locale-specific file
     // For POSIX, this will just be data/I18nType.qml, since POSIX is 7-bit

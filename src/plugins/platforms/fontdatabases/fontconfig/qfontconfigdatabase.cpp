@@ -392,10 +392,13 @@ void QFontconfigDatabase::populateFontDatabase()
         ++f;
     }
 
-    const FcDefaultFont *s = defaults;
-    QFont font("Sans Serif");
-    font.setPointSize(9);
-    QApplication::setFont(font);
+    //Lighthouse has very lazy population of the font db. We want it to be initialized when
+    //QApplication is constructed, so that the population procedure can do something like this to
+    //set the default font
+//    const FcDefaultFont *s = defaults;
+//    QFont font("Sans Serif");
+//    font.setPointSize(9);
+//    QApplication::setFont(font);
 }
 
 QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QUnicodeTables::Script script, void *usrPtr)
