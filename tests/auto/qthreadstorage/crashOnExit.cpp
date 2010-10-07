@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the config.tests of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,17 +39,26 @@
 **
 ****************************************************************************/
 
-#include <wlancond.h>
+#include <QtCore/QtCore>
 
-#include <icd/dbus_api.h>
-#include <icd/network_api_defines.h>
-
-#include <icd/osso-ic.h>
-#include <icd/osso-ic-dbus.h>
-
-#include <conn_settings.h>
-
-int main(int, char **)
+class Class
 {
-    return 0;
+public:
+    ~Class()
+    {
+        // trigger creation of a new QThreadStorage, after the previous QThreadStorage from main() was destructed
+        static QThreadStorage<int *> threadstorage;
+        threadstorage.setLocalData(new int);
+        threadstorage.setLocalData(new int);
+    }
+};
+
+int main()
+{
+    // instantiate the class that will use QThreadStorage from its destructor, it's destructor will be run last
+    static Class instance;
+    // instantiate QThreadStorage, it's destructor (and the global destructors for QThreadStorages internals) will run first
+    static QThreadStorage<int *> threadstorage;
+    threadstorage.setLocalData(new int);
+    threadstorage.setLocalData(new int);
 }

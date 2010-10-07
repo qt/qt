@@ -94,6 +94,8 @@ void QDeclarativePropertyCache::Data::load(const QMetaMethod &m)
 {
     coreIndex = m.methodIndex();
     flags |= Data::IsFunction;
+    if (m.methodType() == QMetaMethod::Signal)
+        flags |= Data::IsSignal;
     propType = QVariant::Invalid;
 
     const char *returnType = m.typeName();
@@ -215,7 +217,7 @@ QDeclarativePropertyCache *QDeclarativePropertyCache::copy() const
 }
 
 void QDeclarativePropertyCache::append(QDeclarativeEngine *engine, const QMetaObject *metaObject, 
-                              Data::Flag propertyFlags, Data::Flag methodFlags)
+                                       Data::Flag propertyFlags, Data::Flag methodFlags, Data::Flag signalFlags)
 {
     QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(engine);
 
@@ -251,6 +253,8 @@ void QDeclarativePropertyCache::append(QDeclarativeEngine *engine, const QMetaOb
 
     int methodCount = metaObject->methodCount();
     int methodOffset = qMax(2, metaObject->methodOffset()); // 2 to block the destroyed signal
+
+    methodIndexCache.resize(methodCount);
     for (int ii = methodOffset; ii < methodCount; ++ii) {
         QMetaMethod m = metaObject->method(ii);
         if (m.access() == QMetaMethod::Private)
@@ -272,6 +276,10 @@ void QDeclarativePropertyCache::append(QDeclarativeEngine *engine, const QMetaOb
         data->load(m);
         if (m.methodType() == QMetaMethod::Slot || m.methodType() == QMetaMethod::Method) 
             data->flags |= methodFlags;
+        else if (m.methodType() == QMetaMethod::Signal)
+            data->flags |= signalFlags;
+
+        methodIndexCache[ii] = data;
 
         stringCache.insert(methodName, data);
         identifierCache.insert(data->identifier.identifier, data);
@@ -347,6 +355,15 @@ QDeclarativePropertyCache::property(int index) const
         return 0;
 
     return indexCache.at(index);
+}
+
+QDeclarativePropertyCache::Data *
+QDeclarativePropertyCache::method(int index) const
+{
+    if (index < 0 || index >= methodIndexCache.count())
+        return 0;
+
+    return methodIndexCache.at(index);
 }
 
 QDeclarativePropertyCache::Data *
