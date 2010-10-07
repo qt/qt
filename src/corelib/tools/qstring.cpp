@@ -4275,7 +4275,7 @@ QString& QString::fill(QChar ch, int size)
     Returns the number of characters in this string.  Equivalent to
     size().
 
-    \sa setLength()
+    \sa resize()
 */
 
 /*!

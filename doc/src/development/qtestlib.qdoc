@@ -750,9 +750,10 @@
     \section1 External Tools
 
     Tools for handling and visualizing test data are available as part of
-    the \l{qtestlib-tools} project on the Qt Labs Web site. These include
-    a tool for comparing performance data obtained from test runs and a
-    utility to generate Web-based graphs of performance data.
+    the qtestlib-tools project on the 
+	\l{http://labs.qt.nokia.com/}{http://labs.qt.nokia.com/}Qt Labs Web site.
+	These include a tool for comparing performance data obtained from test
+	runs and a utility to generate Web-based graphs of performance data.
 
     See the \l{qtestlib-tools Announcement} for more information on these
     tools and a simple graphing example.

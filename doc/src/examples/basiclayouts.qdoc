@@ -66,7 +66,7 @@
     horizontal layout. Next we use the \c createGridGroupBox() function
     to create a group box containing several line edits and a small text
     editor which are displayed in a grid layout. Finally, we use the
-    \c createFormGroupBox() function to createa a group box with
+    \c createFormGroupBox() function to create a group box with
     three labels and three input fields: a line edit, a combo box and
     a spin box.
 
