@@ -58,7 +58,58 @@
 
 QT_BEGIN_NAMESPACE
 
-#define Q_TRIANGULATE_END_OF_POLYGON quint32(-1)
+class QVertexIndexVector
+{
+public:
+    enum Type {
+        UnsignedInt,
+        UnsignedShort
+    };
+
+    inline Type type() const { return t; }
+
+    inline void setDataUint(const QVector<quint32> &data)
+    {
+        t = UnsignedInt;
+        indices32 = data;
+    }
+
+    inline void setDataUshort(const QVector<quint16> &data)
+    {
+        t = UnsignedShort;
+        indices16 = data;
+    }
+
+    inline const void* data() const
+    {
+        if (t == UnsignedInt)
+            return indices32.data();
+        return indices16.data();
+    }
+
+    inline int size() const
+    {
+        if (t == UnsignedInt)
+            return indices32.size();
+        return indices16.size();
+    }
+
+    inline QVertexIndexVector &operator = (const QVertexIndexVector &other)
+    {
+         if (t == UnsignedInt)
+           indices32 = other.indices32;
+         else
+           indices16 = other.indices16;
+
+         return *this;
+    }
+
+private:
+
+    Type t;
+    QVector<quint32> indices32;
+    QVector<quint16> indices16;
+};
 
 struct QTriangleSet
 {
@@ -68,7 +119,7 @@ struct QTriangleSet
 
     // The vertices of a triangle are given by: (x[i[n]], y[i[n]]), (x[j[n]], y[j[n]]), (x[k[n]], y[k[n]]), n = 0, 1, ...
     QVector<qreal> vertices; // [x[0], y[0], x[1], y[1], x[2], ...]
-    QVector<quint32> indices; // [i[0], j[0], k[0], i[1], j[1], k[1], i[2], ...]
+    QVertexIndexVector indices; // [i[0], j[0], k[0], i[1], j[1], k[1], i[2], ...]
 };
 
 struct QPolylineSet
@@ -78,8 +129,7 @@ struct QPolylineSet
     QPolylineSet &operator = (const QPolylineSet &other) {vertices = other.vertices; indices = other.indices; return *this;}
 
     QVector<qreal> vertices; // [x[0], y[0], x[1], y[1], x[2], ...]
-    QVector<quint32> indices;
-
+    QVertexIndexVector indices;
 };
 
 // The vertex coordinates of the returned triangle set will be rounded to a grid with a mesh size

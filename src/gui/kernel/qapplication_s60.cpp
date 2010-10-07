@@ -152,18 +152,12 @@ void QS60Data::controlVisibilityChanged(CCoeControl *control, bool visible)
                 if (backingStore.data()) {
                     backingStore.registerWidget(widget);
                 } else {
-#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
-                    S60->wsSession().SendEffectCommand(ETfxCmdRestoreLayer);
-#endif
                     backingStore.create(window);
                     backingStore.registerWidget(widget);
                     qt_widget_private(widget)->invalidateBuffer(widget->rect());
                     widget->repaint();
                 }
             } else {
-#ifdef  SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
-                S60->wsSession().SendEffectCommand(ETfxCmdDeallocateLayer);
-#endif
                 backingStore.unregisterWidget(widget);
                 // In order to ensure that any resources used by the window surface
                 // are immediately freed, we flush the WSERV command buffer.

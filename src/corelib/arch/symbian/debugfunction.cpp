@@ -549,7 +549,7 @@ void ResetAllocCellLevels(TAny* aPtr, RHybridHeap::TCellType aType, TAny* aCell,
     
     if (aType == RHybridHeap::EGoodAllocatedCell)
         {
-        RHybridHeap::SDebugCell* DbgCell = (RHybridHeap::SDebugCell*)((TUint8*)aCell-RHeap::EDebugHdrSize);
+        RHybridHeap::SDebugCell* DbgCell = (RHybridHeap::SDebugCell*)((TUint8*)aCell-RHybridHeap::EDebugHdrSize);
         DbgCell->nestingLevel = 0;
         }
 }
@@ -1105,7 +1105,7 @@ void RHybridHeap::DoCheckSlab(slab* aSlab, TAllocatorType aSlabType, TAny* aBfr)
    unsigned used = SlabHeaderUsedm4(h)+4;
    unsigned size = SlabHeaderSize(h);
    __HEAP_CORRUPTED_TEST( (used < SLABSIZE),ETHeapBadCellAddress, aBfr, aSlab);
-   __HEAP_CORRUPTED_TEST( ((size > 3 ) && (size < MAXSLABSIZE)), ETHeapBadCellAddress,aBfr,aSlab);         
+   __HEAP_CORRUPTED_TEST( ((size > 3 ) && (size <= MAXSLABSIZE)), ETHeapBadCellAddress,aBfr,aSlab);
 	unsigned count = 0;
 
 	switch ( aSlabType )

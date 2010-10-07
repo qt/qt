@@ -709,10 +709,9 @@ QEglContext *QVGEGLWindowSurfaceDirect::ensureContext(QWidget *widget)
 #if !defined(QVG_NO_PRESERVED_SWAP)
     // Try to force the surface back buffer to preserve its contents.
     if (needToSwap) {
-        eglGetError();  // Clear error state first.
-        eglSurfaceAttrib(QEgl::display(), windowSurface,
+        bool succeeded = eglSurfaceAttrib(QEgl::display(), windowSurface,
                 EGL_SWAP_BEHAVIOR, EGL_BUFFER_PRESERVED);
-        if (eglGetError() != EGL_SUCCESS) {
+        if (!succeeded && eglGetError() != EGL_SUCCESS) {
             qWarning("QVG: could not enable preserved swap");
         }
     }

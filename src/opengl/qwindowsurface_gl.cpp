@@ -534,8 +534,9 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
                 }
             }
 #endif
-            if (d_ptr->paintedRegion.boundingRect() != geometry() && 
-                hasPartialUpdateSupport()) {
+            if (hasPartialUpdateSupport() &&
+                d_ptr->paintedRegion.boundingRect().width() * d_ptr->paintedRegion.boundingRect().height() <
+                geometry().width() * geometry().height() * 0.2) {
                 context()->d_func()->swapRegion(&d_ptr->paintedRegion);             
             } else
                 context()->swapBuffers();
