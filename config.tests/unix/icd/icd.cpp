@@ -39,9 +39,15 @@
 **
 ****************************************************************************/
 
-#include <libicd-network-wlan-dev.h>
 #include <wlancond.h>
+
 #include <icd/dbus_api.h>
+#include <icd/network_api_defines.h>
+
+#include <icd/osso-ic.h>
+#include <icd/osso-ic-dbus.h>
+
+#include <conn_settings.h>
 
 int main(int, char **)
 {
