@@ -1,3 +1,0 @@
-#define R_DEFAULT_DOCUMENT_NAME                   0x55567002
-#define R_QT_WRAPPERAPP_MENUBAR                   0x55567004
-#define R_QT_WRAPPERAPP_MENU                      0x55567005
