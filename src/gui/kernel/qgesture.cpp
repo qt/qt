@@ -260,6 +260,27 @@ QGesture::GestureCancelPolicy QGesture::gestureCancelPolicy() const
 
 /*!
     \property QPanGesture::acceleration
+    \brief the acceleration in the motion of the touch point for this gesture
+*/
+
+/*!
+    \property QPanGesture::horizontalVelocity
+    \brief the horizontal component of the motion of the touch point for this
+    gesture
+    \since 4.7.1
+    \internal
+
+    \sa verticalVelocity, acceleration
+*/
+
+/*!
+    \property QPanGesture::verticalVelocity
+    \brief the vertical component of the motion of the touch point for this
+    gesture
+    \since 4.7.1
+    \internal
+
+    \sa horizontalVelocity, acceleration
 */
 
 /*!
@@ -630,6 +651,12 @@ void QPinchGesture::setRotationAngle(qreal value)
     \l{Coordinate System}{coordinate system}.
 
     \sa horizontalDirection, verticalDirection
+*/
+
+/*!
+    \property QSwipeGesture::velocity
+    \since 4.7.1
+    \internal
 */
 
 /*!
