@@ -1025,3 +1025,7 @@ dep_note.sources = install_note.txt
 dep_note.flags = FILETEXT TEXTEXIT
 DEPLOYMENT += dep_note
 //! [155]
+
+//! [156]
+DEPLOYMENT.display_name = My Qt App
+//! [156]
