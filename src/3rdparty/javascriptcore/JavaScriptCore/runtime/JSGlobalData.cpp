@@ -144,7 +144,6 @@ JSGlobalData::JSGlobalData(bool isShared)
     , firstStringifierToMark(0)
     , markStack(jsArrayVPtr)
     , cachedUTCOffset(NaN)
-    , weakRandom(static_cast<int>(currentTime()))
 #ifndef NDEBUG
     , mainThreadOnly(false)
 #endif

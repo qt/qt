@@ -134,13 +134,13 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
     create items as they are required.
 
     Also, note that Repeater is \l {Item}-based, and can only repeat \l {Item}-derived objects. 
-    For example, it cannot be used to repeat QObjects:
+    For example, it cannot be used to repeat QtObjects:
     \badcode
     Item {
-        //XXX does not work! Can't repeat QObject as it doesn't derive from Item.
+        //XXX does not work! Can't repeat QtObject as it doesn't derive from Item.
         Repeater {
             model: 10
-            QObject {}
+            QtObject {}
         }
     }
     \endcode

@@ -382,7 +382,7 @@ protected:
 
 public:
     // Variables
-    QString                 CommandLine;
+    QStringList             CommandLine;
     QString                 Description;
     triState                UseInBuild;
     QString                 EventName;
