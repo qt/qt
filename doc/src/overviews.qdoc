@@ -54,7 +54,7 @@
     \brief The Qt components for constructing native look & feel desktop UI's.
 
     These pages are about Qt's traditional set of GUI components for
-    building both native look ^ feel and custom UI's for the desktop
+    building both native look & feel and custom UI's for the desktop
     environment. Use \l{Qt Quick} for building UI's for mobile devices.
 
     \generatelist {related}
