@@ -1331,6 +1331,8 @@ void QDeclarativePathView::refill()
         if (idx >= d->modelCount)
             idx = 0;
     }
+    if (!d->items.count())
+        d->firstIndex = -1;
 
     if (d->modelCount) {
         // add items to beginning and end
