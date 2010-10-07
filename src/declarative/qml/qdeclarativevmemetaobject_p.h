@@ -126,6 +126,7 @@ public:
     QScriptValue vmeProperty(int index);
     void setVMEProperty(int index, const QScriptValue &);
 
+    void connectAliasSignal(int index);
 protected:
     virtual int metaCall(QMetaObject::Call _c, int _id, void **_a);
 
@@ -140,6 +141,7 @@ private:
 
     QDeclarativeVMEVariant *data;
 
+    void connectAlias(int aliasId);
     QBitArray aConnected;
     QBitArray aInterceptors;
     QHash<int, QPair<int, QDeclarativePropertyValueInterceptor*> > interceptors;
