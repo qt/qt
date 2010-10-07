@@ -1,3 +1,24 @@
+2010-08-24  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Geoff Garen.
+
+        Don't seed the JS random number generator from time()
+        https://bugs.webkit.org/show_bug.cgi?id=41868
+        <rdar://problem/8171025>
+
+        Switch to using the secure random number generator to
+        seed the fast random generator, and make the generator
+        be per global object.
+
+        * runtime/JSGlobalData.cpp:
+        (JSC::JSGlobalData::JSGlobalData):
+        * runtime/JSGlobalData.h:
+        * runtime/JSGlobalObject.h:
+        (JSC::JSGlobalObject::JSGlobalObjectData::JSGlobalObjectData):
+        (JSC::JSGlobalObject::weakRandomNumber):
+        * runtime/MathObject.cpp:
+        (JSC::mathProtoFuncRandom):
+
 2010-06-18  Tucker Jay  <jay.tucker@nokia.com>
 
         Reviewed by NOBODY (OOPS!).
@@ -93,6 +114,16 @@
         Thanks for Vanboxem Rruben for the investigation.
 
         * wtf/Platform.h:
+
+2010-05-06  Fumitoshi Ukai  <ukai@chromium.org>
+
+        Reviewed by Alexey Proskuryakov.
+
+        JavaScriptCore/wtf/RandomNumber.h should provide using WTF::*
+        https://bugs.webkit.org/show_bug.cgi?id=38719
+
+        * wtf/RandomNumber.h:
+          Add using directives.
 
 2010-04-28  Simon Hausmann  <simon.hausmann@nokia.com>, Kent Hansen <kent.hansen@nokia.com>
 

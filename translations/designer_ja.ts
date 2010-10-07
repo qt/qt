@@ -25,6 +25,49 @@
     </message>
 </context>
 <context>
+    <name>AbstractItemEditor</name>
+    <message>
+        <source>Selectable</source>
+        <translation>選択可能</translation>
+    </message>
+    <message>
+        <source>Editable</source>
+        <translation>編集可能</translation>
+    </message>
+    <message>
+        <source>DragEnabled</source>
+        <translation>ドラッグ可能</translation>
+    </message>
+    <message>
+        <source>DropEnabled</source>
+        <translation>ドロップ可能</translation>
+    </message>
+    <message>
+        <source>UserCheckable</source>
+        <translation>チェック可能</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>有効</translation>
+    </message>
+    <message>
+        <source>Tristate</source>
+        <translation>3択</translation>
+    </message>
+    <message>
+        <source>Unchecked</source>
+        <translation>チェックなし</translation>
+    </message>
+    <message>
+        <source>PartiallyChecked</source>
+        <translation>部分的にチェックあり</translation>
+    </message>
+    <message>
+        <source>Checked</source>
+        <translation>チェックあり</translation>
+    </message>
+</context>
+<context>
     <name>AddLinkDialog</name>
     <message>
         <source>Insert Link</source>
@@ -844,6 +887,7 @@ Parsing grid layout minimum size values</extracomment>
     <name>FormEditorOptionsPage</name>
     <message>
         <source>%1 %</source>
+        <extracomment>Zoom percentage</extracomment>
         <translation>%1 %</translation>
     </message>
     <message>
@@ -969,7 +1013,7 @@ Parsing grid layout minimum size values</extracomment>
     <message>
         <source>XX Icon Selected off</source>
         <extracomment>Sample string to determinate the width for the first column of the list item property browser</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>XX Icon Selected off</translation>
     </message>
 </context>
 <context>
@@ -2501,6 +2545,10 @@ Empty class name passed to widget factory method</extracomment>
 </context>
 <context>
     <name>QtLocalePropertyManager</name>
+    <message>
+        <source>&lt;Invalid&gt;</source>
+        <translation>&lt;無効&gt;</translation>
+    </message>
     <message>
         <source>%1, %2</source>
         <translation>%1, %2</translation>
@@ -4718,6 +4766,14 @@ Please select another name.</source>
     <message>
         <source>Scan for newly installed custom widget plugins.</source>
         <translation>新しくインストールされたカスタムウィジェットプラグインをスキャンします。</translation>
+    </message>
+    <message>
+        <source>Loaded Plugins</source>
+        <translation>ロード済みプラグイン</translation>
+    </message>
+    <message>
+        <source>Failed Plugins</source>
+        <translation>失敗したプラグイン</translation>
     </message>
     <message>
         <source>Qt Designer couldn&apos;t find any plugins</source>
