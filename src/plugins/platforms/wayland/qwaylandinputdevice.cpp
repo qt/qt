@@ -16,8 +16,8 @@ public:
 private:
     struct wl_display *mDisplay;
     struct wl_input_device *mInputDevice;
-    struct wl_surface *mPointerFocus;
-    struct wl_surface *mKeyboardFocus;
+    QWaylandWindow *mPointerFocus;
+    QWaylandWindow *mKeyboardFocus;
     static const struct wl_input_device_listener inputDeviceListener;
     Qt::MouseButtons mButtons;
     QPoint mSurfacePos;
@@ -65,9 +65,9 @@ void QWaylandInputDevice::inputHandleMotion(void *data,
 					    int32_t x, int32_t y,
 					    int32_t surface_x, int32_t surface_y)
 {
+    Q_UNUSED(input_device);
     QWaylandInputDevice *inputDevice = (QWaylandInputDevice *) data;
-    QWaylandWindow *window =
-	(QWaylandWindow *) wl_surface_get_user_data(inputDevice->mPointerFocus);
+    QWaylandWindow *window = inputDevice->mPointerFocus;
 
     inputDevice->mSurfacePos = QPoint(surface_x, surface_y);
     inputDevice->mGlobalPos = QPoint(x, y);
@@ -82,9 +82,9 @@ void QWaylandInputDevice::inputHandleButton(void *data,
 					    struct wl_input_device *input_device,
 					    uint32_t time, uint32_t button, uint32_t state)
 {
+    Q_UNUSED(input_device);
     QWaylandInputDevice *inputDevice = (QWaylandInputDevice *) data;
-    QWaylandWindow *window =
-	(QWaylandWindow *) wl_surface_get_user_data(inputDevice->mPointerFocus);
+    QWaylandWindow *window = inputDevice->mPointerFocus;
     Qt::MouseButton qt_button;
 
     switch (button) {
@@ -117,6 +117,9 @@ void QWaylandInputDevice::inputHandleKey(void *data,
 					 struct wl_input_device *input_device,
 					 uint32_t time, uint32_t key, uint32_t state)
 {
+    Q_UNUSED(input_device);
+    QWaylandInputDevice *inputDevice = (QWaylandInputDevice *) data;
+    QWaylandWindow *window = inputDevice->mKeyboardFocus;
 }
 
 void QWaylandInputDevice::inputHandlePointerFocus(void *data,
@@ -124,12 +127,14 @@ void QWaylandInputDevice::inputHandlePointerFocus(void *data,
 						  uint32_t time, struct wl_surface *surface,
 						  int32_t x, int32_t y, int32_t sx, int32_t sy)
 {
+    Q_UNUSED(input_device);
     QWaylandInputDevice *inputDevice = (QWaylandInputDevice *) data;
     QWaylandWindow *window;
 
+    qWarning("pointer focus %p", surface);
+
     if (inputDevice->mPointerFocus) {
-	window = (QWaylandWindow *)
-	    wl_surface_get_user_data(inputDevice->mPointerFocus);
+	window = inputDevice->mPointerFocus;
 	QWindowSystemInterface::handleLeaveEvent(window->widget());
 	inputDevice->mPointerFocus = NULL;
     }
@@ -137,7 +142,7 @@ void QWaylandInputDevice::inputHandlePointerFocus(void *data,
     if (surface) {
 	window = (QWaylandWindow *) wl_surface_get_user_data(surface);
 	QWindowSystemInterface::handleEnterEvent(window->widget());
-	inputDevice->mPointerFocus = surface;
+	inputDevice->mPointerFocus = window;
     }
 }
 
@@ -147,18 +152,18 @@ void QWaylandInputDevice::inputHandleKeyboardFocus(void *data,
 						   struct wl_surface *surface,
 						   struct wl_array *keys)
 {
+    Q_UNUSED(input_device);
     QWaylandInputDevice *inputDevice = (QWaylandInputDevice *) data;
     QWaylandWindow *window;
 
     if (inputDevice->mKeyboardFocus) {
-	window = (QWaylandWindow *)
-	    wl_surface_get_user_data(inputDevice->mKeyboardFocus);
+	window = inputDevice->mKeyboardFocus;
 	inputDevice->mKeyboardFocus = NULL;
     }
 
     if (surface) {
 	window = (QWaylandWindow *) wl_surface_get_user_data(surface);
-	inputDevice->mKeyboardFocus = surface;
+	inputDevice->mKeyboardFocus = window;
     }
 }
 
