@@ -66,8 +66,8 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Fi
     if (!nativePath.endsWith(QLatin1Char('\\')))
         nativePath.append(QLatin1Char('\\'));
     nativePath.append(QLatin1Char('*'));
-    if (!dirPath.endsWith(QLatin1Char('//')))
-        dirPath.append(QLatin1Char('//'));
+    if (!dirPath.endsWith(QLatin1Char('/')))
+        dirPath.append(QLatin1Char('/'));
     if ((filters & (QDir::Dirs|QDir::Drives)) && (!(filters & (QDir::Files))))
         onlyDirs = true;
 }

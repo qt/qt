@@ -421,59 +421,6 @@ bool QFileSystemEngine::uncListSharesOnServer(const QString &server, QStringList
     return false;
 }
 
-void QFileSystemMetaData::fillFromFileAttribute(DWORD fileAttribute,bool isDriveRoot)
-{
-    fileAttribute_ = fileAttribute;
-    // Ignore the hidden attribute for drives.
-    if (!isDriveRoot && (fileAttribute_ & FILE_ATTRIBUTE_HIDDEN))
-        entryFlags |= HiddenAttribute;
-    entryFlags |= ((fileAttribute & FILE_ATTRIBUTE_DIRECTORY) ? DirectoryType: FileType);
-    entryFlags |= ExistsAttribute;
-    knownFlagsMask |= FileType | DirectoryType | HiddenAttribute | ExistsAttribute;
-}
-
-void QFileSystemMetaData::fillFromFindData(WIN32_FIND_DATA &findData, bool setLinkType, bool isDriveRoot)
-{
-    fillFromFileAttribute(findData.dwFileAttributes, isDriveRoot);
-    creationTime_ = findData.ftCreationTime;
-    lastAccessTime_ = findData.ftLastAccessTime;
-    lastWriteTime_ = findData.ftLastWriteTime;
-    if (fileAttribute_ & FILE_ATTRIBUTE_DIRECTORY) {
-        size_ = 0;
-    } else {
-        size_ = findData.nFileSizeHigh;
-        size_ <<= 32;
-        size_ += findData.nFileSizeLow;
-    }
-    knownFlagsMask |=  Times | SizeAttribute;
-    if (setLinkType) {
-        knownFlagsMask |=  LinkType;
-        entryFlags &= ~LinkType;
-        if ((fileAttribute_ & FILE_ATTRIBUTE_REPARSE_POINT)
-            && (findData.dwReserved0 == IO_REPARSE_TAG_SYMLINK
-                || findData.dwReserved0 == IO_REPARSE_TAG_MOUNT_POINT)) {
-            entryFlags |= LinkType;
-        }
-
-    }
-}
-
-void QFileSystemMetaData::fillFromFindInfo(BY_HANDLE_FILE_INFORMATION &fileInfo)
-{
-    fillFromFileAttribute(fileInfo.dwFileAttributes);
-    creationTime_ = fileInfo.ftCreationTime;
-    lastAccessTime_ = fileInfo.ftLastAccessTime;
-    lastWriteTime_ = fileInfo.ftLastWriteTime;
-    if (fileAttribute_ & FILE_ATTRIBUTE_DIRECTORY) {
-        size_ = 0;
-    } else {
-        size_ = fileInfo.nFileSizeHigh;
-        size_ <<= 32;
-        size_ += fileInfo.nFileSizeLow;
-    }
-    knownFlagsMask |=  Times | SizeAttribute;
-}
-
 void QFileSystemEngine::clearWinStatData(QFileSystemMetaData &data)
 {
     data.size_ = 0;
