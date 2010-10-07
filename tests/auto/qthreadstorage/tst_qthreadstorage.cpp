@@ -297,7 +297,15 @@ void tst_QThreadStorage::ensureCleanupOrder()
 void tst_QThreadStorage::QTBUG13877_crashOnExit()
 {
     QProcess process;
+#ifdef Q_OS_WIN
+# ifdef QT_NO_DEBUG
+    process.start("release/crashOnExit");
+# else
+    process.start("debug/crashOnExit");
+# endif
+#else
     process.start("./crashOnExit");
+#endif
     QVERIFY(process.waitForFinished());
     QVERIFY(process.exitStatus() != QProcess::CrashExit);
 }
