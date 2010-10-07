@@ -42,21 +42,29 @@
 #ifndef PREVIEWWIDGET_H
 #define PREVIEWWIDGET_H
 
-#include "previewwidgetbase.h"
+#include <QtGui/QWidget>
 
 QT_BEGIN_NAMESPACE
 
-class PreviewWidget : public PreviewWidgetBase
+namespace Ui {
+  class PreviewWidget;
+}
+
+
+class PreviewWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    PreviewWidget( QWidget *parent = 0, const char *name = 0 );
+    PreviewWidget(QWidget *parent = 0);
+    ~PreviewWidget();
 
-    void closeEvent(QCloseEvent *);
     bool eventFilter(QObject *, QEvent *);
+private:
+    void closeEvent(QCloseEvent *);
+    Ui::PreviewWidget *ui;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // PREVIEWWIDGET_H
