@@ -871,7 +871,7 @@ void QDeclarativePathCubic::addToPath(QPainterPath &path)
 */
 
 /*!
-    \qmlproperty real value
+    \qmlproperty real PathPercent::value
     The proporation of items that should be laid out up to this point.
 
     This value should always be higher than the last value specified
