@@ -1227,8 +1227,11 @@ QScriptClass *QScriptValue::scriptClass() const
 */
 void QScriptValue::setScriptClass(QScriptClass *scriptclass)
 {
-    if (!scriptclass)
+    if (!scriptclass) {
+        // FIXME that should remove custom class.
+        Q_UNIMPLEMENTED();
         return;
+    }
     Q_D(QScriptValue);
     QScriptClassPrivate* dclass = QScriptClassPrivate::get(scriptclass);
     // Of course this->engine() need to be the same as scriptclass->engine(), we

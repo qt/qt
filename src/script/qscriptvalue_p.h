@@ -774,18 +774,13 @@ inline void QScriptValuePrivate::setScriptClass(QScriptClassPrivate *scriptclass
     // QSV obj2 = engine.evaluate("a");
     // obj1.setScriptClass(scriptclass);
     // QVERIFY(obj1.strictlyEquals(obj2);
+    Q_ASSERT(scriptclass);
+    Q_ASSERT(isObject());
     v8::HandleScope scope;
 
-    QScriptValuePrivate *previousValue = 0;
-    if (isObject()) {
-        previousValue = new QScriptValuePrivate(engine(), m_value);
-        m_value.Clear();
-        m_state = QScriptValuePrivate::CUndefined;
-    }
-    QScriptSharedDataPointer<QScriptValuePrivate> newObject(scriptclass->engine()->newScriptClassObject(scriptclass, previousValue));
+    v8::Handle<v8::Object> self = v8::Handle<v8::Object>::Cast(m_value);
+    QScriptSharedDataPointer<QScriptValuePrivate> newObject(scriptclass->engine()->newScriptClassObject(scriptclass, self));
     reinitialize(newObject->engine(), *newObject);
-    newObject->m_value.Clear();
-    newObject->m_state = QScriptValuePrivate::CUndefined;
 }
 
 inline void QScriptValuePrivate::setProperty(const QString& name, QScriptValuePrivate* value, v8::PropertyAttribute attribs)

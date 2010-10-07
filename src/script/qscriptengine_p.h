@@ -86,7 +86,7 @@ public:
 
     QScriptPassPointer<QScriptValuePrivate> newArray(uint length);
     QScriptPassPointer<QScriptValuePrivate> newObject();
-    QScriptPassPointer<QScriptValuePrivate> newScriptClassObject(QScriptClassPrivate* scriptclass, QScriptValuePrivate* previousValue = 0);
+    QScriptPassPointer<QScriptValuePrivate> newScriptClassObject(QScriptClassPrivate* scriptclass, v8::Handle<v8::Object> previousValue);
     QScriptPassPointer<QScriptValuePrivate> newObject(QScriptClassPrivate* scriptclass, QScriptValuePrivate* data);
     QScriptPassPointer<QScriptValuePrivate> newFunction(QScriptEngine::FunctionSignature fun, QScriptValuePrivate *prototype, int length);
     QScriptPassPointer<QScriptValuePrivate> newFunction(QScriptEngine::FunctionWithArgSignature fun, void *arg);
