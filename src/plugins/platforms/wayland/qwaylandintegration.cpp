@@ -64,7 +64,7 @@ void QWaylandDisplay::outputHandleGeometry(void *data,
     screen = new QWaylandScreen();
     screen->mGeometry = QRect(0, 0, width, height);
     screen->mDepth = 32;
-    screen->mFormat = QImage::Format_ARGB32;
+    screen->mFormat = QImage::Format_ARGB32_Premultiplied;
     screen->mOutput = output;
 
     qwd->mScreens.append(screen);
