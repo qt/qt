@@ -636,11 +636,13 @@ UnixMakefileGenerator::processPrlFiles()
 
                     if(opt.startsWith("-L") ||
                        (Option::target_mode == Option::TARG_MACX_MODE && opt.startsWith("-F"))) {
-                        if(lit == 0 || !lflags[arch].contains(opt))
+                        if(!lflags[arch].contains(opt))
                             lflags[arch].append(opt);
-                    } else if(opt.startsWith("-l")) {
-                        if(lit == l.size()-1 || !lflags[arch].contains(opt))
-                            lflags[arch].append(opt);
+                    } else if(opt.startsWith("-l") || opt == "-pthread") {
+                        // Make sure we keep the dependency-order of libraries
+                        if (lflags[arch].contains(opt))
+                            lflags[arch].removeAll(opt);
+                        lflags[arch].append(opt);
                     } else if(Option::target_mode == Option::TARG_MACX_MODE && opt.startsWith("-framework")) {
                         if(opt.length() > 11)
                             opt = opt.mid(11);
@@ -672,7 +674,7 @@ UnixMakefileGenerator::processPrlFiles()
                         lflags[arch].append(opt);
                     }
                 } else if(!opt.isNull()) {
-                    if(lit == 0 || l.lastIndexOf(opt, lit-1) == -1)
+                    if(!lflags[arch].contains(opt))
                         lflags[arch].append(opt);
                 }
             }
