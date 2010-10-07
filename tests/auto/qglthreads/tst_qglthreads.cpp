@@ -45,6 +45,10 @@
 #include <QtOpenGL/QtOpenGL>
 #include "tst_qglthreads.h"
 
+#ifdef Q_OS_SYMBIAN
+#include <unistd.h> // for usleep
+#endif
+
 #define RUNNING_TIME 5000
 
 tst_QGLThreads::tst_QGLThreads(QObject *parent)
@@ -203,6 +207,7 @@ public:
             p.drawText(image.rect(), Qt::AlignCenter, "This is an autotest");
             p.end();
             m_gl->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
+
             createdAndUploaded(image);
         }
     }

@@ -204,6 +204,10 @@
     {
         font-size: 13px;
     }
+	.red
+	{
+		color:red;
+	}
 /* end font style elements */
 
 /* global settings*/
@@ -627,17 +631,94 @@
 			background:url("../images/spinner.gif") no-repeat scroll right center transparent;
 	}
 
-.floatingResult{
-	z-index:1;
-	position:relative;
-	padding-top:0px;
-	background-color:white;
-	border:solid 1px black;
-	height:250px;
-	width:600px;
-	overflow-x:hidden;
-	overflow-y:auto;
-}
+	.sidebar .search form {
+		_height: 23px;
+		_width: 169px;
+	}
+
+	#resultdialog {
+	  display: none;
+	  position: absolute;
+	  *left: 30px;
+	  _left: 0;
+	  *top: 35px;
+	  _top: 30px;
+	  _zoom: 1;
+	  background-color: #fff;
+	  border: 1px solid #666;
+		z-index: 4;
+	  margin-top: 5px;
+	  _margin: 0 0 0 -20px;
+	  padding: 10px;
+	  width: 220px;
+	  _width: 196px;
+	  height: 250px;
+	  overflow: auto;
+		-webkit-border-radius: .5em;
+		-moz-border-radius: .5em;
+		border-radius: .5em;
+		-webkit-box-shadow: 0 4px 6px 0 rgba(0,0,0,.2);
+		-moz-box-shadow: 0 4px 6px 0 rgba(0,0,0,.2);
+		box-shadow: 0 4px 6px 0 rgba(0,0,0,.2);
+	}
+
+	#resultdialog.active {
+	  display: block;
+	}
+
+	#resultdialog #resultclose {
+	  float: right;
+	}
+
+	#resultdialog p,
+	#resultdialog ul {
+	  clear: both;
+	  margin: 3px 0;
+	}
+
+	p#searchcount span {
+		display: none;
+	}
+
+	p#searchcount.all span#resultcount,
+	p#searchcount.api span#apicount,
+	p#searchcount.article span#articlecount,
+	p#searchcount.example span#examplecount {
+		display: inline;
+	}
+
+	#resultlist li {
+		display: none;
+	}
+
+	#resultlist.api li.api,
+	#resultlist.article li.article,
+	#resultlist.example li.example,
+	#resultlist.all li {
+		display: block;
+	}
+
+	#resultlinks.api a#showapiresults,
+	#resultlinks.api a#showapiresults:hover,
+	#resultlinks.article a#showarticleresults,
+	#resultlinks.article a#showarticleresults:hover,
+	#resultlinks.example a#showexampleresults,
+	#resultlinks.example a#showexampleresults:hover,
+	#resultlinks.all a#showallresults,
+	#resultlinks.all a#showallresults:hover {
+		color: #B0ADAB;
+	}	
+	.floatingResult{
+		z-index:1;
+		position:relative;
+		padding-top:0px;
+		background-color:white;
+		border:solid 1px black;
+		height:250px;
+		width:600px;
+		overflow-x:hidden;
+		overflow-y:auto;
+	}
 
 	.floatingResult:hover{
 		display:block;
@@ -830,7 +911,6 @@
     .wrap .content table p
     {
         line-height: 20px;
-       /* padding: 0px;*/
     }	
     .wrap .content ul
     {
