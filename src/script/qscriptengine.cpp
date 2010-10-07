@@ -1750,8 +1750,7 @@ QScriptValue QScriptEngine::toObject(const QScriptValue& value)
 
 QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newObject()
 {
-    v8::Persistent<v8::Object> object(v8::Persistent<v8::Object>::New(v8::Object::New()));
-    return new QScriptValuePrivate(this, object);
+    return new QScriptValuePrivate(this, v8::Object::New());
 }
 
 static v8::Handle<v8::Value> QtClassInstanceNamedPropertyGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info)
