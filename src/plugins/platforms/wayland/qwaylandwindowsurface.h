@@ -57,6 +57,7 @@ public:
     QPaintDevice *paintDevice();
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
     void resize(const QSize &size);
+    void attach(void);
 
 private:
     QImage *mImage;
@@ -64,6 +65,7 @@ private:
     int mSize;
     int mStride;
     QWaylandDisplay *mDisplay;
+    struct wl_buffer *mBuffer;
 };
 
 QT_END_NAMESPACE

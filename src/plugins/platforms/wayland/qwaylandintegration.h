@@ -131,6 +131,8 @@ public:
     ~QWaylandWindow();
     struct wl_surface *surface() { return mSurface; }
 
+    void setVisible(bool visible);
+
 private:
     struct wl_surface *mSurface;
     QWaylandDisplay *mDisplay;

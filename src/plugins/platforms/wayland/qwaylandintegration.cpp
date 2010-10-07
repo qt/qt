@@ -210,15 +210,28 @@ QPixmapData *QWaylandIntegration::createPixmapData(QPixmapData::PixelType type) 
 
 QWaylandWindow::QWaylandWindow(QWidget *window, QWaylandDisplay *display)
     : QPlatformWindow(window)
+    , mSurface(0)
     , mDisplay(display)
 {
-    mSurface = mDisplay->createSurface();
-    wl_surface_set_user_data(mSurface, this);
 }
 
 QWaylandWindow::~QWaylandWindow()
 {
-    /* mDisplay->destroySurface() */
+}
+
+void QWaylandWindow::setVisible(bool visible)
+{
+    QWaylandWindowSurface *wws =
+	(QWaylandWindowSurface *) widget()->windowSurface();
+
+    if (visible) {
+	mSurface = mDisplay->createSurface();
+	wl_surface_set_user_data(mSurface, this);
+	wws->attach();
+    } else {
+	wl_surface_destroy(mSurface);
+	mSurface = NULL;
+    }
 }
 
 QPlatformWindow *QWaylandIntegration::createPlatformWindow(QWidget *widget, WId winId) const

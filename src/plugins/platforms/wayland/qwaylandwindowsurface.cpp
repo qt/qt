@@ -87,10 +87,19 @@ void QWaylandWindowSurface::flush(QWidget *widget, const QRegion &region, const 
     }
 }
 
+void QWaylandWindowSurface::attach(void)
+{
+    QWaylandWindow *ww = (QWaylandWindow *) window()->platformWindow();
+
+    if (ww->surface()) {
+	wl_surface_attach(ww->surface(), mBuffer);
+	wl_surface_map(ww->surface(), 0, 0, mImage->width(), mImage->height());
+    }
+}
+
 void QWaylandWindowSurface::resize(const QSize &size)
 {
     //qDebug() << "QWaylandWindowSurface::setGeometry:" << (long)this << rect;
-    QWaylandWindow *ww = (QWaylandWindow *) window()->platformWindow();
     QWindowSurface::resize(size);
     QImage::Format format = QApplicationPrivate::platformIntegration()->screens().first()->format();
 
@@ -100,6 +109,7 @@ void QWaylandWindowSurface::resize(const QSize &size)
     if (mImage != NULL) {
 	delete mImage;
 	munmap(mData, mSize);
+	wl_buffer_destroy(mBuffer);
     }
 
     mStride = size.width() * 4;
@@ -119,13 +129,11 @@ void QWaylandWindowSurface::resize(const QSize &size)
 
     mImage = new QImage(mData, size.width(), size.height(), mStride, format);
 
-    struct wl_buffer *buffer =
-	mDisplay->createShmBuffer(fd, size.width(), size.height(),
-				  mStride, mDisplay->argbVisual());
-    wl_surface_attach(ww->surface(), buffer);
-    wl_surface_map(ww->surface(), 0, 0, size.width(), size.height());
-    wl_buffer_destroy(buffer);
+    mBuffer = mDisplay->createShmBuffer(fd, size.width(), size.height(),
+					mStride, mDisplay->argbVisual());
     close(fd);
+
+    attach();
 }
 
 QT_END_NAMESPACE
