@@ -1252,7 +1252,8 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
         // At this point the backing store should already be destroyed
         // so we flush the command buffer to ensure that the freeing of
         // those resources and deleting the window can happen "atomically"
-        S60->wsSession().Flush();
+        if (qApp)
+            S60->wsSession().Flush();
     }
 }
 
