@@ -44,11 +44,12 @@
 
 #include <QtGui/QWidget>
 
+QT_BEGIN_NAMESPACE
+
 namespace Ui {
   class PreviewWidget;
 }
 
-QT_BEGIN_NAMESPACE
 
 class PreviewWidget : public QWidget
 {

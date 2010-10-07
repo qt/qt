@@ -44,11 +44,11 @@
 
 #include <QtGui/QDialog>
 
+QT_BEGIN_NAMESPACE
+
 namespace Ui {
     class PaletteEditorAdvanced;
 }
-
-QT_BEGIN_NAMESPACE
 
 class ColorButton;
 

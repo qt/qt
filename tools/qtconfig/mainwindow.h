@@ -42,13 +42,13 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-namespace Ui {
-    class MainWindow;
-}
-
 #include <QtGui/QMainWindow>
 
 QT_BEGIN_NAMESPACE
+
+namespace Ui {
+    class MainWindow;
+}
 
 class MainWindow : public QMainWindow
 {

@@ -421,7 +421,7 @@ MainWindow::MainWindow()
                                     tr("Experimental aRts support for GStreamer."),
                                     Qt::ToolTipRole);
 #ifdef HAVE_PHONON
-    phononVersionLabel->setText(QLatin1String(Phonon::phononVersion()));
+    ui->phononVersionLabel->setText(QLatin1String(Phonon::phononVersion()));
 #endif
 #ifndef QT_NO_GSTREAMER
     if (gst_init_check(0, 0, 0)) {
