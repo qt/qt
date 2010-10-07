@@ -40,8 +40,8 @@
 
     QVFb is an X11 application supplied with Qt for X11 that provides
     a virtual framebuffer for Qt for Embedded Linux to use. To use it,
-    you need to \l{Installing Qt on X11 Platforms}{configure and
-    install Qt on X11 platforms} appropriately. Further requirements
+    you need to \l{Installing Qt for X11 Platforms}{configure and
+    install Qt for X11 platforms} appropriately. Further requirements
     can be found in the \l{Qt for Embedded Linux Requirements}
     document.
 

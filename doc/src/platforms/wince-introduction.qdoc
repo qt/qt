@@ -29,7 +29,7 @@
     \group qtce
     \title Qt for Windows CE
     \ingroup qt-embedded
-    \brief Documents related to Qt on Windows CE
+    \brief Documents related to Qt for Windows CE
 
     Qt for Windows CE is a C++ framework for GUI and application development
     for embedded devices running Windows CE. It runs on a variety of processors,
@@ -41,7 +41,7 @@
     \o
      \list
         \o \l {Qt for Windows CE Requirements}
-        \o \l {Installing Qt on Windows CE}
+        \o \l {Installing Qt for Windows CE}
         \o \l {Windows CE - Introduction to using Qt}{Introduction to using Qt}
     \endlist
     \o
@@ -81,7 +81,7 @@
 
     \section1 Installing Qt
 
-    Follow the instructions found in \l{Installing Qt on Windows CE}.
+    Follow the instructions found in \l{Installing Qt for Windows CE}.
 
     \section1 Building your own applications
 

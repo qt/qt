@@ -33,7 +33,7 @@
 
     When working with a custom SDK for Windows CE, Qt provides an easy way
     to add support for it to your development environment. The following is
-    a tutorial that covers how to create a specification for Qt on Windows
+    a tutorial that covers how to create a specification for Qt for Windows
     CE platforms.
 
     \tableofcontents

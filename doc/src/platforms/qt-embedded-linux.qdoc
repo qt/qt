@@ -67,7 +67,7 @@
     \o
      \list
         \o \l {Qt for Embedded Linux Architecture}{Architecture Overview}
-        \o \l {Installing Qt on Embedded Linux}{Installation}
+        \o \l {Installing Qt for Embedded Linux}{Installation}
         \o \l {Running Qt for Embedded Linux Applications}{Running Applications}
         \o \l {Qt for Embedded Linux Examples}{Examples}
     \endlist
