@@ -664,6 +664,7 @@
 
 	#resultdialog.active {
 	  display: block;
+	  width:30%;
 	}
 
 	#resultdialog #resultclose {
