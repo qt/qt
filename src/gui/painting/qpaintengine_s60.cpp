@@ -59,44 +59,63 @@ bool QS60PaintEngine::begin(QPaintDevice *device)
 {
     Q_D(QS60PaintEngine);
 
-    pixmapData->beginDataAccess();
-    bool ret = QRasterPaintEngine::begin(device);
-    // Make sure QPaintEngine::paintDevice() returns the proper device.
-    // QRasterPaintEngine changes pdev to QImage in case of RasterClass QPixmapData
-    // which is incorrect in Symbian.
-    d->pdev = device;
-    return ret;
+    if (pixmapData->classId() == QPixmapData::RasterClass) {
+        pixmapData->beginDataAccess();
+        bool ret = QRasterPaintEngine::begin(device);
+        // Make sure QPaintEngine::paintDevice() returns the proper device.
+        // QRasterPaintEngine changes pdev to QImage in case of RasterClass QPixmapData
+        // which is incorrect in Symbian.
+        d->pdev = device;
+        return ret;
+    }
+
+    return QRasterPaintEngine::begin(device);
 }
 
 bool QS60PaintEngine::end()
 {
-    bool ret = QRasterPaintEngine::end();
-    pixmapData->endDataAccess();
-    return ret;
+    if (pixmapData->classId() == QPixmapData::RasterClass) {
+        bool ret = QRasterPaintEngine::end();
+        pixmapData->endDataAccess();
+        return ret;
+    }
+    return QRasterPaintEngine::end();
 }
 
 void QS60PaintEngine::drawPixmap(const QPointF &p, const QPixmap &pm)
 {
-    QS60PixmapData *srcData = static_cast<QS60PixmapData *>(pm.pixmapData());
-    srcData->beginDataAccess();
-    QRasterPaintEngine::drawPixmap(p, pm);
-    srcData->endDataAccess();
+    if (pm.pixmapData()->classId() == QPixmapData::RasterClass) {
+        QS60PixmapData *srcData = static_cast<QS60PixmapData *>(pm.pixmapData());
+        srcData->beginDataAccess();
+        QRasterPaintEngine::drawPixmap(p, pm);
+        srcData->endDataAccess();
+    } else {
+        QRasterPaintEngine::drawPixmap(p, pm);
+    }
 }
 
 void QS60PaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
 {
-    QS60PixmapData *srcData = static_cast<QS60PixmapData *>(pm.pixmapData());
-    srcData->beginDataAccess();
-    QRasterPaintEngine::drawPixmap(r, pm, sr);
-    srcData->endDataAccess();
+    if (pm.pixmapData()->classId() == QPixmapData::RasterClass) {
+        QS60PixmapData *srcData = static_cast<QS60PixmapData *>(pm.pixmapData());
+        srcData->beginDataAccess();
+        QRasterPaintEngine::drawPixmap(r, pm, sr);
+        srcData->endDataAccess();
+    } else {
+        QRasterPaintEngine::drawPixmap(r, pm, sr);
+    }
 }
 
 void QS60PaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, const QPointF &sr)
 {
-    QS60PixmapData *srcData = static_cast<QS60PixmapData *>(pm.pixmapData());
-    srcData->beginDataAccess();
-    QRasterPaintEngine::drawTiledPixmap(r, pm, sr);
-    srcData->endDataAccess();
+    if (pm.pixmapData()->classId() == QPixmapData::RasterClass) {
+        QS60PixmapData *srcData = static_cast<QS60PixmapData *>(pm.pixmapData());
+        srcData->beginDataAccess();
+        QRasterPaintEngine::drawTiledPixmap(r, pm, sr);
+        srcData->endDataAccess();
+    } else {
+        QRasterPaintEngine::drawTiledPixmap(r, pm, sr);
+    }
 }
 
 void QS60PaintEngine::prepare(QImage *image)
