@@ -1491,6 +1491,13 @@
     Additionally, some tools such as Runonphone may not work properly with sis
     packages that automatically run the application upon install.
 
+    On the Symbian platform, the default package name and the default name that
+    appears in application menu is derived from the \c TARGET variable.
+    Often the default is not optimal for displaying to end user. To set a better
+    display name for these purposes, use \c{DEPLOYMENT.display_name} variable:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 156
+
     On the Symbian platform, you can use \c{DEPLOYMENT.installer_header}
     variable to generate smart installer wrapper for your application.
     If you specify just UID of the installer package as the value, then
