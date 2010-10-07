@@ -59,6 +59,7 @@
 #ifndef QT_NO_CUPS
 #include <QtCore/qlibrary.h>
 #include <cups/cups.h>
+#include <cups/ppd.h>
 
 QT_BEGIN_NAMESPACE
 
