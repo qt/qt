@@ -586,7 +586,7 @@ bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSyst
     Q_UNUSED(source);
     Q_UNUSED(target);
     // # we can implement this using sendfile(2)
-    errorString = QLatin1String("Not implemented!")
+    errorString = QLatin1String("Not implemented!");
     return false;
 }
 
