@@ -4114,7 +4114,7 @@
 */
 
 /*!
-    \fn Phonon::VideoWidget::snapshot()
+    \fn Phonon::VideoWidget::snapshot() const
     \since 4.7
 
     Returns a snapshot of the current frame shown in the widget.
@@ -4309,6 +4309,16 @@
 /*!
     \fn virtual QWidget *Phonon::VideoWidgetInterface::widget() = 0
     \internal
+*/
+
+/*!
+    \class Phonon::VideoWidgetInterface44
+    \inmodule Phonon
+    \since 4.7
+*/
+
+/*!
+    \fn Phonon::VideoWidgetInterface44::snapshot() const
 */
 
 /*!
@@ -5076,11 +5086,32 @@
 */
 
 /*!
+    \fn int Phonon::AudioDataOutput::sampleRate() const
+
+    Returns the sample rate measured in Hertz, as reported by the backend.
+    If the backend is unavailable -1 is returned.
+*/
+
+/*!
+    \fn void Phonon::AudioDataOutput::endOfMedia(int remainingSamples)
+
+    This signal is emitted before the final dataReady() signal is emitted for
+    a media. The \a remainingSamples value sent by the signal contains the
+    number of samples that will be sent in the final dataReady() signal for
+    the media.
+*/
+
+/*!
     \fn Phonon::AudioDataOutput::dataReady(const QMap<Phonon::AudioDataOutput::Channel, QVector<qint16> > &data)
 
     This signal is emitted whenever there is data available to read. The
     \a data sent by the signal is supplied in the form of a map that holds the
     data for different output channels.
+*/
+
+/*!
+    \fn Phonon::AudioDataOutputPrivate::AudioDataOutputPrivate()
+    \internal
 */
 
 /*!
@@ -5090,11 +5121,26 @@
 */
 
 /*!
-    \fn Phonon::AudioDataOutputInterface::frontendObject()
+    \fn Phonon::AudioDataOutputInterface::frontendObject() const
+    \internal
+*/
+
+/*!
+    \fn Phonon::AudioDataOutputInterface::setFrontendObject(AudioDataOutput *)
+    \internal
+*/
+
+/*!
+    \fn Phonon::GlobalConfigPrivate::GlobalConfigPrivate()
     \internal
 */
 
 /*!
     \fn Phonon::GlobalConfigPrivate::~GlobalConfigPrivate()
+    \internal
+*/
+
+/*!
+    \fn Phonon::SwiftSlider::~SwiftSlider()
     \internal
 */
