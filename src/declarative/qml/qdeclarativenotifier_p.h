@@ -75,7 +75,7 @@ public:
     inline bool isConnected(QObject *source, int sourceSignal);
     inline bool isConnected(QDeclarativeNotifier *);
 
-    inline void connect(QObject *source, int sourceSignal);
+    void connect(QObject *source, int sourceSignal);
     inline void connect(QDeclarativeNotifier *);
     inline void disconnect();
 
@@ -173,21 +173,6 @@ bool QDeclarativeNotifierEndpoint::isConnected(QObject *source, int sourceSignal
 bool QDeclarativeNotifierEndpoint::isConnected(QDeclarativeNotifier *notifier)
 {
     return NotifierType == type && asNotifier()->notifier == notifier;
-}
-
-void QDeclarativeNotifierEndpoint::connect(QObject *source, int sourceSignal)
-{
-    Signal *s = toSignal();
-    
-    if (s->source == source && s->sourceSignal == sourceSignal)
-        return;
-
-    disconnect();
-
-    QMetaObject::connect(source, sourceSignal, target, targetMethod);
-
-    s->source = source;
-    s->sourceSignal = sourceSignal;
 }
 
 void QDeclarativeNotifierEndpoint::connect(QDeclarativeNotifier *notifier)

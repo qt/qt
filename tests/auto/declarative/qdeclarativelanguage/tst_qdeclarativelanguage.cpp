@@ -1825,7 +1825,6 @@ void tst_qdeclarativelanguage::aliasPropertyChangeSignals()
     QObject *o = component.create();
     QVERIFY(o != 0);
 
-    QEXPECT_FAIL("", "QTBUG-14089", Abort);
     QCOMPARE(o->property("test").toBool(), true);
 
     delete o;
