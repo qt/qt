@@ -42,65 +42,69 @@
 #ifndef PALETTEEDITORADVANCED_H
 #define PALETTEEDITORADVANCED_H
 
-#include <QtGui/QDialog>
+#include "paletteeditoradvancedbase.h"
 
 QT_BEGIN_NAMESPACE
 
-namespace Ui {
-    class PaletteEditorAdvanced;
-}
-
-class ColorButton;
-
-class PaletteEditorAdvanced : public QDialog
+class PaletteEditorAdvanced : public PaletteEditorAdvancedBase
 {
     Q_OBJECT
 public:
-    PaletteEditorAdvanced(QWidget *parent = 0);
+    PaletteEditorAdvanced( QWidget * parent=0, const char * name=0,
+                           bool modal=false, Qt::WindowFlags f=0 );
     ~PaletteEditorAdvanced();
 
-    static QPalette getPalette(bool *ok, const QPalette &pal,
-                               QPalette::ColorRole backgroundRole = QPalette::Window,
-                               QWidget *parent = 0);
-
-    static QPalette buildEffect(QPalette::ColorGroup colorGroup, const QPalette &basePalette);
+    static QPalette getPalette( bool *ok, const QPalette &pal, Qt::BackgroundMode mode = Qt::PaletteBackground,
+                                QWidget* parent = 0, const char* name = 0 );
 
 protected slots:
     void paletteSelected(int);
 
-    void onCentral(int);
-    void onEffect(int);
+    void onCentral( int );
+    void onEffect( int );
 
     void onChooseCentralColor();
     void onChooseEffectColor();
 
-    void onToggleBuildEffects(bool);
-    void onToggleBuildInactive(bool);
-    void onToggleBuildDisabled(bool);
+    void onToggleBuildEffects( bool );
+    void onToggleBuildInactive( bool );
+    void onToggleBuildDisabled( bool );
 
 protected:
-    void buildEffect(QPalette::ColorGroup);
-    void build(QPalette::ColorGroup);
+    void mapToActiveCentralRole( const QColor& );
+    void mapToActiveEffectRole( const QColor& );
+    void mapToActivePixmapRole( const QPixmap& );
+    void mapToInactiveCentralRole( const QColor& );
+    void mapToInactiveEffectRole( const QColor& );
+    void mapToInactivePixmapRole( const QPixmap& );
+    void mapToDisabledCentralRole( const QColor& );
+    void mapToDisabledEffectRole( const QColor& );
+    void mapToDisabledPixmapRole( const QPixmap& );
+
+
+    void buildPalette();
+    void buildActiveEffect();
+    void buildInactive();
+    void buildInactiveEffect();
+    void buildDisabled();
+    void buildDisabledEffect();
 
 private:
+    void setPreviewPalette( const QPalette& );
     void updateColorButtons();
-    void setupBackgroundRole(QPalette::ColorRole);
+    void setupBackgroundMode( Qt::BackgroundMode );
 
     QPalette pal() const;
-    void setPal(const QPalette &);
+    void setPal( const QPalette& );
 
-    static QPalette::ColorGroup groupFromIndex(int);
-    static QPalette::ColorRole centralFromIndex(int);
-    static QPalette::ColorRole effectFromIndex(int);
+    QColorGroup::ColorRole centralFromItem( int );
+    QColorGroup::ColorRole effectFromItem( int );
     QPalette editPalette;
-
-    Ui::PaletteEditorAdvanced *ui;
+    QPalette previewPalette;
 
     int selectedPalette;
-    ColorButton *buttonCentral;
-    ColorButton *buttonEffect;
 };
 
 QT_END_NAMESPACE
 
-#endif // PALETTEEDITORADVANCED_H
+#endif

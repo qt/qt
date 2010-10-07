@@ -39,24 +39,30 @@
 **
 ****************************************************************************/
 
-#ifndef PREVIEWWIDGET_H
-#define PREVIEWWIDGET_H
+#ifndef PREVIEWWIDGETBASE_H
+#define PREVIEWWIDGETBASE_H
 
-#include "previewwidgetbase.h"
+#include "ui_previewwidgetbase.h"
+#include <QVariant>
 
 QT_BEGIN_NAMESPACE
 
-class PreviewWidget : public PreviewWidgetBase
+class PreviewWidgetBase : public QWidget, public Ui::PreviewWidgetBase
 {
     Q_OBJECT
 
 public:
-    PreviewWidget( QWidget *parent = 0, const char *name = 0 );
+    PreviewWidgetBase(QWidget* parent = 0, const char* name = 0, Qt::WindowFlags fl = 0);
+    ~PreviewWidgetBase();
 
-    void closeEvent(QCloseEvent *);
-    bool eventFilter(QObject *, QEvent *);
+protected slots:
+    virtual void languageChange();
+
+    virtual void init();
+    virtual void destroy();
+
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // PREVIEWWIDGETBASE_H

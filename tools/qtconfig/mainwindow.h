@@ -42,15 +42,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtGui/QMainWindow>
+#include "mainwindowbase.h"
 
 QT_BEGIN_NAMESPACE
 
-namespace Ui {
-    class MainWindow;
-}
-
-class MainWindow : public QMainWindow
+class MainWindow : public MainWindowBase
 {
     Q_OBJECT
 
@@ -59,6 +55,7 @@ public:
     ~MainWindow();
 
     void closeEvent(QCloseEvent *);
+
 
 public slots:
     virtual void buildPalette();
@@ -86,17 +83,21 @@ public slots:
 
 
 private:
+    void buildActive();
+    void buildActiveEffect();
+    void buildInactive();
+    void buildInactiveEffect();
+    void buildDisabled();
+    void buildDisabledEffect();
+
     void updateColorButtons();
     void updateFontSample();
     void updateStyleLayout();
-
-    static QPalette::ColorGroup groupFromIndex(int);
 
     void setPreviewPalette(const QPalette &);
 
     void setModified(bool);
 
-    Ui::MainWindow *ui;
     QString desktopThemeName;
     QPalette editPalette, previewPalette;
     QStyle *previewstyle;

@@ -40,32 +40,32 @@
 ****************************************************************************/
 
 #include "previewwidget.h"
-#include "ui_previewwidget.h"
 #include <QtEvents>
 
 QT_BEGIN_NAMESPACE
 
-PreviewWidget::PreviewWidget(QWidget *parent)
-    : QWidget(parent), ui(new Ui::PreviewWidget)
+PreviewWidget::PreviewWidget( QWidget *parent, const char *name )
+    : PreviewWidgetBase( parent, name )
 {
-    ui->setupUi(this);
-
     // install event filter on child widgets
-    QList<QWidget *> l = findChildren<QWidget *>();
-    foreach(QWidget *w, l) {
-        w->installEventFilter(this);
-        w->setFocusPolicy(Qt::NoFocus);
+    QObjectList l = queryList("QWidget");
+    for (int i = 0; i < l.size(); ++i) {
+        QObject * obj = l.at(i);
+        obj->installEventFilter(this);
+        ((QWidget*)obj)->setFocusPolicy(Qt::NoFocus);
     }
 }
 
-PreviewWidget::~PreviewWidget()
+
+void PreviewWidget::closeEvent(QCloseEvent *e)
 {
-  delete ui;
+    e->ignore();
 }
+
 
 bool PreviewWidget::eventFilter(QObject *, QEvent *e)
 {
-    switch (e->type()) {
+    switch ( e->type() ) {
     case QEvent::MouseButtonPress:
     case QEvent::MouseButtonRelease:
     case QEvent::MouseButtonDblClick:
@@ -79,11 +79,6 @@ bool PreviewWidget::eventFilter(QObject *, QEvent *e)
         break;
     }
     return false;
-}
-
-void PreviewWidget::closeEvent(QCloseEvent *e)
-{
-    e->ignore();
 }
 
 QT_END_NAMESPACE

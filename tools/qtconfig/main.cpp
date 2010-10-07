@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "ui_previewwidgetbase.h"
 #include "mainwindow.h"
 #include <QApplication>
 #include <QLibraryInfo>

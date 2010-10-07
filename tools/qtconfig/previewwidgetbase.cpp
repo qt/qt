@@ -39,24 +39,50 @@
 **
 ****************************************************************************/
 
-#ifndef PREVIEWWIDGET_H
-#define PREVIEWWIDGET_H
-
 #include "previewwidgetbase.h"
+
+#include <QVariant>
 
 QT_BEGIN_NAMESPACE
 
-class PreviewWidget : public PreviewWidgetBase
+/*
+ *  Constructs a PreviewWidgetBase as a child of 'parent', with the
+ *  name 'name' and widget flags set to 'f'.
+ */
+PreviewWidgetBase::PreviewWidgetBase(QWidget* parent, const char* name, Qt::WindowFlags fl)
+    : QWidget(parent, name, fl)
 {
-    Q_OBJECT
+    setupUi(this);
 
-public:
-    PreviewWidget( QWidget *parent = 0, const char *name = 0 );
 
-    void closeEvent(QCloseEvent *);
-    bool eventFilter(QObject *, QEvent *);
-};
+    // signals and slots connections
+    init();
+}
+
+/*
+ *  Destroys the object and frees any allocated resources
+ */
+PreviewWidgetBase::~PreviewWidgetBase()
+{
+    destroy();
+    // no need to delete child widgets, Qt does it all for us
+}
+
+/*
+ *  Sets the strings of the subwidgets using the current
+ *  language.
+ */
+void PreviewWidgetBase::languageChange()
+{
+    retranslateUi(this);
+}
+
+void PreviewWidgetBase::init()
+{
+}
+
+void PreviewWidgetBase::destroy()
+{
+}
 
 QT_END_NAMESPACE
-
-#endif

@@ -38,74 +38,58 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "ui_paletteeditoradvanced.h"
+
 #include "paletteeditoradvanced.h"
 #include "colorbutton.h"
 
+#include <QCheckBox>
+#include <QComboBox>
+#include <QApplication>
+#include <QPushButton>
+#include <QPainter>
+#include <QGroupBox>
+
 QT_BEGIN_NAMESPACE
 
-PaletteEditorAdvanced::PaletteEditorAdvanced(QWidget *parent)
-    : QDialog(parent), ui(new Ui::PaletteEditorAdvanced), selectedPalette(0)
+PaletteEditorAdvanced::PaletteEditorAdvanced( QWidget * parent,
+                                              const char * name, bool modal, Qt::WindowFlags f )
+    : PaletteEditorAdvancedBase( parent, name, modal, f ), selectedPalette(0)
 {
-    ui->setupUi(this);
-
-    // create a ColorButton's
-    buttonCentral = new ColorButton(ui->groupCentral);
-    buttonCentral->setToolTip(tr("Choose a color"));
-    buttonCentral->setWhatsThis(tr("Choose a color for the selected central color role."));
-    ui->layoutCentral->addWidget(buttonCentral);
-    ui->labelCentral->setBuddy(buttonCentral);
-
-    buttonEffect = new ColorButton(ui->groupEffect);
-    buttonEffect->setToolTip(tr("Choose a color"));
-    buttonEffect->setWhatsThis(tr("Choose a color for the selected effect color role."));
+    // work around buggy UI file
+    comboEffect->setEnabled(false);
     buttonEffect->setEnabled(false);
-    ui->layoutEffect->addWidget(buttonEffect);
-    ui->labelEffect->setBuddy(buttonEffect);
-
-    // signals and slots connections
-    connect(ui->paletteCombo, SIGNAL(activated(int)), SLOT(paletteSelected(int)));
-    connect(ui->comboCentral, SIGNAL(activated(int)), SLOT(onCentral(int)));
-    connect(buttonCentral, SIGNAL(clicked()), SLOT(onChooseCentralColor()));
-    connect(buttonEffect, SIGNAL(clicked()), SLOT(onChooseEffectColor()));
-    connect(ui->comboEffect, SIGNAL(activated(int)), SLOT(onEffect(int)));
-    connect(ui->checkBuildEffect, SIGNAL(toggled(bool)), SLOT(onToggleBuildEffects(bool)));
-    connect(ui->checkBuildEffect, SIGNAL(toggled(bool)), buttonEffect, SLOT(setDisabled(bool)));
-    connect(ui->checkBuildInactive, SIGNAL(toggled(bool)), SLOT(onToggleBuildInactive(bool)));
-    connect(ui->checkBuildDisabled, SIGNAL(toggled(bool)), SLOT(onToggleBuildDisabled(bool)));
-
     onToggleBuildEffects(true);
 
     editPalette = QApplication::palette();
+    setPreviewPalette( editPalette );
 }
 
 PaletteEditorAdvanced::~PaletteEditorAdvanced()
 {
-    delete ui;
 }
 
-void PaletteEditorAdvanced::onToggleBuildInactive(bool v)
+void PaletteEditorAdvanced::onToggleBuildInactive( bool v )
 {
     if (selectedPalette == 1) {
-        ui->groupCentral->setDisabled(v);
-        ui->groupEffect->setDisabled(v);
+        groupCentral->setDisabled(v);
+        groupEffect->setDisabled(v);
     }
 
     if (v) {
-        build(QPalette::Inactive);
+        buildInactive();
         updateColorButtons();
     }
 }
 
-void PaletteEditorAdvanced::onToggleBuildDisabled(bool v)
+void PaletteEditorAdvanced::onToggleBuildDisabled( bool v )
 {
     if (selectedPalette == 2) {
-        ui->groupCentral->setDisabled(v);
-        ui->groupEffect->setDisabled(v);
+        groupCentral->setDisabled(v);
+        groupEffect->setDisabled(v);
     }
 
     if (v) {
-        build(QPalette::Disabled);
+        buildDisabled();
         updateColorButtons();
     }
 }
@@ -115,204 +99,402 @@ void PaletteEditorAdvanced::paletteSelected(int p)
     selectedPalette = p;
 
     if(p == 1) { // inactive
-        ui->groupCentral->setDisabled(ui->checkBuildInactive->isChecked());
-        ui->groupEffect->setDisabled(ui->checkBuildInactive->isChecked());
-    } else if (p == 2) { // disabled
-        ui->groupCentral->setDisabled(ui->checkBuildDisabled->isChecked());
-        ui->groupEffect->setDisabled(ui->checkBuildDisabled->isChecked());
-    } else {
-        ui->groupCentral->setEnabled(true);
-        ui->groupEffect->setEnabled(true);
+        groupCentral->setDisabled(checkBuildInactive->isChecked());
+        groupEffect->setDisabled(checkBuildInactive->isChecked());
+    }
+    else if (p == 2) { // disabled
+        groupCentral->setDisabled(checkBuildDisabled->isChecked());
+        groupEffect->setDisabled(checkBuildDisabled->isChecked());
+    }
+    else {
+        groupCentral->setEnabled(true);
+        groupEffect->setEnabled(true);
     }
     updateColorButtons();
 }
 
 void PaletteEditorAdvanced::onChooseCentralColor()
 {
-    QPalette::ColorGroup group = groupFromIndex(selectedPalette);
-    editPalette.setColor(group, centralFromIndex(ui->comboCentral->currentIndex()),
-                         buttonCentral->color());
-
-    buildEffect(group);
-    if (group == QPalette::Active) {
-        if(ui->checkBuildInactive->isChecked())
-            build(QPalette::Inactive);
-        if(ui->checkBuildDisabled->isChecked())
-            build(QPalette::Disabled);
+    switch(selectedPalette) {
+    case 0:
+    default:
+        mapToActiveCentralRole( buttonCentral->color() );
+        break;
+    case 1:
+        mapToInactiveCentralRole( buttonCentral->color() );
+        break;
+    case 2:
+        mapToDisabledCentralRole( buttonCentral->color() );
+        break;
     }
-
     updateColorButtons();
 }
 
 void PaletteEditorAdvanced::onChooseEffectColor()
 {
-    QPalette::ColorGroup group = groupFromIndex(selectedPalette);
-    editPalette.setColor(group, effectFromIndex(ui->comboEffect->currentIndex()),
-                         buttonEffect->color());
-
-    if (group == QPalette::Active) {
-        if(ui->checkBuildInactive->isChecked())
-            build(QPalette::Inactive);
-        if(ui->checkBuildDisabled->isChecked())
-            build(QPalette::Disabled);
+    switch(selectedPalette) {
+    case 0:
+    default:
+        mapToActiveEffectRole( buttonEffect->color() );
+        break;
+    case 1:
+        mapToInactiveEffectRole( buttonEffect->color() );
+        break;
+    case 2:
+        mapToDisabledEffectRole( buttonEffect->color() );
+        break;
     }
-
     updateColorButtons();
 }
 
-void PaletteEditorAdvanced::onToggleBuildEffects(bool on)
+void PaletteEditorAdvanced::onToggleBuildEffects( bool on )
 {
-    if (on) {
-        for (int i = 0; i < QPalette::NColorGroups; i++)
-            buildEffect(QPalette::ColorGroup(i));
+    if (!on) return;
+    buildActiveEffect();
+    buildInactiveEffect();
+    buildDisabledEffect();
+}
+
+QColorGroup::ColorRole PaletteEditorAdvanced::centralFromItem( int item )
+{
+    switch( item ) {
+        case 0:
+            return QColorGroup::Window;
+        case 1:
+            return QColorGroup::WindowText;
+        case 2:
+            return QColorGroup::Button;
+        case 3:
+            return QColorGroup::Base;
+        case 4:
+            return QColorGroup::Text;
+        case 5:
+            return QColorGroup::BrightText;
+        case 6:
+            return QColorGroup::ButtonText;
+        case 7:
+            return QColorGroup::Highlight;
+        case 8:
+            return QColorGroup::HighlightedText;
+        default:
+            return QColorGroup::NColorRoles;
     }
 }
 
-QPalette::ColorGroup PaletteEditorAdvanced::groupFromIndex(int item)
-{
-    switch (item) {
-    case 0:
-    default:
-        return QPalette::Active;
-    case 1:
-        return QPalette::Inactive;
-    case 2:
-        return QPalette::Disabled;
-    }
-}
+QColorGroup::ColorRole PaletteEditorAdvanced::effectFromItem( int item )
 
-QPalette::ColorRole PaletteEditorAdvanced::centralFromIndex(int item)
 {
-    switch (item) {
+    switch( item ) {
     case 0:
-        return QPalette::Window;
+        return QColorGroup::Light;
     case 1:
-        return QPalette::WindowText;
+        return QColorGroup::Midlight;
     case 2:
-        return QPalette::Base;
+        return QColorGroup::Mid;
     case 3:
-        return QPalette::AlternateBase;
+        return QColorGroup::Dark;
     case 4:
-        return QPalette::ToolTipBase;
-    case 5:
-        return QPalette::ToolTipText;
-    case 6:
-        return QPalette::Text;
-    case 7:
-        return QPalette::Button;
-    case 8:
-        return QPalette::ButtonText;
-    case 9:
-        return QPalette::BrightText;
-    case 10:
-        return QPalette::Highlight;
-    case 11:
-        return QPalette::HighlightedText;
-    case 12:
-        return QPalette::Link;
-    case 13:
-        return QPalette::LinkVisited;
+        return QColorGroup::Shadow;
     default:
-        return QPalette::NoRole;
+        return QColorGroup::NColorRoles;
     }
 }
 
-QPalette::ColorRole PaletteEditorAdvanced::effectFromIndex(int item)
+void PaletteEditorAdvanced::onCentral( int item )
 {
-    switch (item) {
+    QColor c;
+
+    switch(selectedPalette) {
     case 0:
-        return QPalette::Light;
-    case 1:
-        return QPalette::Midlight;
-    case 2:
-        return QPalette::Mid;
-    case 3:
-        return QPalette::Dark;
-    case 4:
-        return QPalette::Shadow;
     default:
-        return QPalette::NoRole;
+        c = editPalette.active().color( centralFromItem(item) );
+        break;
+    case 1:
+        c = editPalette.inactive().color( centralFromItem(item) );
+        break;
+    case 2:
+        c =  editPalette.disabled().color( centralFromItem(item) );
+        break;
     }
-}
 
-void PaletteEditorAdvanced::onCentral(int item)
-{
-    QColor c = editPalette.color(groupFromIndex(selectedPalette), centralFromIndex(item));
     buttonCentral->setColor(c);
 }
 
-void PaletteEditorAdvanced::onEffect(int item)
+void PaletteEditorAdvanced::onEffect( int item )
 {
-    QColor c = editPalette.color(groupFromIndex(selectedPalette), effectFromIndex(item));
+    QColor c;
+    switch(selectedPalette) {
+    case 0:
+    default:
+        c = editPalette.active().color( effectFromItem(item) );
+        break;
+    case 1:
+        editPalette.inactive().color( effectFromItem(item) );
+        break;
+    case 2:
+        editPalette.disabled().color( effectFromItem(item) );
+        break;
+    }
     buttonEffect->setColor(c);
 }
 
-QPalette PaletteEditorAdvanced::buildEffect(QPalette::ColorGroup colorGroup,
-                                            const QPalette &basePalette)
+void PaletteEditorAdvanced::mapToActiveCentralRole( const QColor& c )
 {
-    QPalette result(basePalette);
+    QColorGroup cg = editPalette.active();
+    cg.setColor( centralFromItem(comboCentral->currentItem()), c );
+    editPalette.setActive( cg );
 
-    if (colorGroup == QPalette::Active) {
-        QPalette calculatedPalette(basePalette.color(colorGroup, QPalette::Button),
-                                   basePalette.color(colorGroup, QPalette::Window));
+    buildActiveEffect();
+    if(checkBuildInactive->isChecked())
+        buildInactive();
+    if(checkBuildDisabled->isChecked())
+        buildDisabled();
 
-        for (int i = 0; i < 5; i++) {
-            QPalette::ColorRole effectRole = effectFromIndex(i);
-            result.setColor(colorGroup, effectRole,
-                            calculatedPalette.color(colorGroup, effectRole));
-        }
-    } else {
-        QColor btn = basePalette.color(colorGroup, QPalette::Button);
-
-        result.setColor(colorGroup, QPalette::Light, btn.lighter());
-        result.setColor(colorGroup, QPalette::Midlight, btn.lighter(115));
-        result.setColor(colorGroup, QPalette::Mid, btn.darker(150));
-        result.setColor(colorGroup, QPalette::Dark, btn.darker());
-        result.setColor(colorGroup, QPalette::Shadow, Qt::black);
-    }
-
-    return result;
+    setPreviewPalette( editPalette );
 }
 
-void PaletteEditorAdvanced::buildEffect(QPalette::ColorGroup colorGroup)
+void PaletteEditorAdvanced::mapToActiveEffectRole( const QColor& c )
 {
-    editPalette = buildEffect(colorGroup, editPalette);
+    QColorGroup cg = editPalette.active();
+    cg.setColor( effectFromItem(comboEffect->currentItem()), c );
+    editPalette.setActive( cg );
+
+    if(checkBuildInactive->isChecked())
+        buildInactive();
+    if(checkBuildDisabled->isChecked())
+        buildDisabled();
+
+    setPreviewPalette( editPalette );
+}
+
+void PaletteEditorAdvanced::mapToActivePixmapRole( const QPixmap& pm )
+{
+    QColorGroup::ColorRole role = centralFromItem(comboCentral->currentItem());
+    QColorGroup cg = editPalette.active();
+    if (  !pm.isNull()  )
+        cg.setBrush( role, QBrush( cg.color( role ), pm ) );
+    else
+        cg.setBrush( role, QBrush( cg.color( role ) ) );
+    editPalette.setActive( cg );
+
+
+    buildActiveEffect();
+    if(checkBuildInactive->isChecked())
+        buildInactive();
+    if(checkBuildDisabled->isChecked())
+        buildDisabled();
+
+    setPreviewPalette( editPalette );
+}
+
+void PaletteEditorAdvanced::mapToInactiveCentralRole( const QColor& c )
+{
+    QColorGroup cg = editPalette.inactive();
+    cg.setColor( centralFromItem(comboCentral->currentItem()), c );
+    editPalette.setInactive( cg );
+
+    buildInactiveEffect();
+
+    setPreviewPalette( editPalette );
+}
+
+void PaletteEditorAdvanced::mapToInactiveEffectRole( const QColor& c )
+{
+    QColorGroup cg = editPalette.inactive();
+    cg.setColor( effectFromItem(comboEffect->currentItem()), c );
+    editPalette.setInactive( cg );
+
+    setPreviewPalette( editPalette );
+}
+
+void PaletteEditorAdvanced::mapToInactivePixmapRole( const QPixmap& pm )
+{
+    QColorGroup::ColorRole role = centralFromItem(comboCentral->currentItem());
+    QColorGroup cg = editPalette.inactive();
+    if (  !pm.isNull()  )
+        cg.setBrush( role, QBrush( cg.color( role ), pm ) );
+    else
+        cg.setBrush( role, QBrush( cg.color( role ) ) );
+    editPalette.setInactive( cg );
+
+    setPreviewPalette( editPalette );
+}
+
+void PaletteEditorAdvanced::mapToDisabledCentralRole( const QColor& c )
+{
+    QColorGroup cg = editPalette.disabled();
+    cg.setColor( centralFromItem(comboCentral->currentItem()), c );
+    editPalette.setDisabled( cg );
+
+    buildDisabledEffect();
+
+    setPreviewPalette( editPalette );
+}
+
+void PaletteEditorAdvanced::mapToDisabledEffectRole( const QColor& c )
+{
+    QColorGroup cg = editPalette.disabled();
+    cg.setColor( effectFromItem(comboEffect->currentItem()), c );
+    editPalette.setDisabled( cg );
+
+    setPreviewPalette( editPalette );
+}
+
+void PaletteEditorAdvanced::mapToDisabledPixmapRole( const QPixmap& pm )
+{
+    QColorGroup::ColorRole role = centralFromItem(comboCentral->currentItem());
+    QColorGroup cg = editPalette.disabled();
+    if (  !pm.isNull()  )
+        cg.setBrush( role, QBrush( cg.color( role ), pm ) );
+    else
+        cg.setBrush( role, QBrush( cg.color( role ) ) );
+
+    editPalette.setDisabled( cg );
+
+    setPreviewPalette( editPalette );
+}
+
+void PaletteEditorAdvanced::buildActiveEffect()
+{
+    QColorGroup cg = editPalette.active();
+    QColor btn = cg.color( QColorGroup::Button );
+
+    QPalette temp( btn, btn );
+
+    for (int i = 0; i<5; i++)
+        cg.setColor( effectFromItem(i), temp.active().color( effectFromItem(i) ) );
+
+    editPalette.setActive( cg );
+    setPreviewPalette( editPalette );
+
     updateColorButtons();
 }
 
-void PaletteEditorAdvanced::build(QPalette::ColorGroup colorGroup)
+void PaletteEditorAdvanced::buildInactive()
 {
-    if (colorGroup != QPalette::Active) {
-        for (int i = 0; i < QPalette::NColorRoles; i++)
-            editPalette.setColor(colorGroup, QPalette::ColorRole(i),
-                                 editPalette.color(QPalette::Active, QPalette::ColorRole(i)));
-
-        if (colorGroup == QPalette::Disabled) {
-            editPalette.setColor(colorGroup, QPalette::ButtonText, Qt::darkGray);
-            editPalette.setColor(colorGroup, QPalette::WindowText, Qt::darkGray);
-            editPalette.setColor(colorGroup, QPalette::Text, Qt::darkGray);
-            editPalette.setColor(colorGroup, QPalette::HighlightedText, Qt::darkGray);
-        }
-
-        if (ui->checkBuildEffect->isChecked())
-            buildEffect(colorGroup);
-        else
-            updateColorButtons();
+    editPalette.setInactive( editPalette.active() );
+    if ( checkBuildEffect->isChecked() )
+        buildInactiveEffect();
+    else {
+        setPreviewPalette( editPalette );
+        updateColorButtons();
     }
+
+}
+
+void PaletteEditorAdvanced::buildInactiveEffect()
+{
+    QColorGroup cg = editPalette.inactive();
+
+    QColor light, midlight, mid, dark, shadow;
+    QColor btn = cg.color( QColorGroup::Button );
+
+    light = btn.light(150);
+    midlight = btn.light(115);
+    mid = btn.dark(150);
+    dark = btn.dark();
+    shadow = Qt::black;
+
+    cg.setColor( QColorGroup::Light, light );
+    cg.setColor( QColorGroup::Midlight, midlight );
+    cg.setColor( QColorGroup::Mid, mid );
+    cg.setColor( QColorGroup::Dark, dark );
+    cg.setColor( QColorGroup::Shadow, shadow );
+
+    editPalette.setInactive( cg );
+    setPreviewPalette( editPalette );
+    updateColorButtons();
+}
+
+void PaletteEditorAdvanced::buildDisabled()
+{
+    QColorGroup cg = editPalette.active();
+    cg.setColor( QColorGroup::ButtonText, Qt::darkGray );
+    cg.setColor( QColorGroup::WindowText, Qt::darkGray );
+    cg.setColor( QColorGroup::Text, Qt::darkGray );
+    cg.setColor( QColorGroup::HighlightedText, Qt::darkGray );
+    editPalette.setDisabled( cg );
+
+    if ( checkBuildEffect->isChecked() )
+        buildDisabledEffect();
+    else {
+        setPreviewPalette( editPalette );
+        updateColorButtons();
+    }
+}
+
+void PaletteEditorAdvanced::buildDisabledEffect()
+{
+    QColorGroup cg = editPalette.disabled();
+
+    QColor light, midlight, mid, dark, shadow;
+    QColor btn = cg.color( QColorGroup::Button );
+
+    light = btn.light(150);
+    midlight = btn.light(115);
+    mid = btn.dark(150);
+    dark = btn.dark();
+    shadow = Qt::black;
+
+    cg.setColor( QColorGroup::Light, light );
+    cg.setColor( QColorGroup::Midlight, midlight );
+    cg.setColor( QColorGroup::Mid, mid );
+    cg.setColor( QColorGroup::Dark, dark );
+    cg.setColor( QColorGroup::Shadow, shadow );
+
+    editPalette.setDisabled( cg );
+    setPreviewPalette( editPalette );
+    updateColorButtons();
+}
+
+void PaletteEditorAdvanced::setPreviewPalette( const QPalette& pal )
+{
+    QColorGroup cg;
+
+    switch (selectedPalette) {
+    case 0:
+    default:
+        cg = pal.active();
+        break;
+    case 1:
+        cg = pal.inactive();
+        break;
+    case 2:
+        cg = pal.disabled();
+        break;
+    }
+    previewPalette.setActive( cg );
+    previewPalette.setInactive( cg );
+    previewPalette.setDisabled( cg );
 }
 
 void PaletteEditorAdvanced::updateColorButtons()
 {
-    QPalette::ColorGroup colorGroup = groupFromIndex(selectedPalette);
-    buttonCentral->setColor(editPalette.color(colorGroup,
-                                              centralFromIndex(ui->comboCentral->currentIndex())));
-    buttonEffect->setColor(editPalette.color(colorGroup,
-                                             effectFromIndex(ui->comboEffect->currentIndex())));
+    QColor central, effect;
+    switch (selectedPalette) {
+    case 0:
+    default:
+        central = editPalette.active().color( centralFromItem( comboCentral->currentItem() ) );
+        effect = editPalette.active().color( effectFromItem( comboEffect->currentItem() ) );
+        break;
+    case 1:
+        central = editPalette.inactive().color( centralFromItem( comboCentral->currentItem() ) );
+        effect = editPalette.inactive().color( effectFromItem( comboEffect->currentItem() ) );
+        break;
+    case 2:
+        central = editPalette.disabled().color( centralFromItem( comboCentral->currentItem() ) );
+        effect = editPalette.disabled().color( effectFromItem( comboEffect->currentItem() ) );
+        break;
+    }
+
+    buttonCentral->setColor(central);
+    buttonEffect->setColor(effect);
 }
 
-void PaletteEditorAdvanced::setPal(const QPalette &pal)
+void PaletteEditorAdvanced::setPal( const QPalette& pal )
 {
     editPalette = pal;
+    setPreviewPalette( pal );
     updateColorButtons();
 }
 
@@ -321,51 +503,51 @@ QPalette PaletteEditorAdvanced::pal() const
     return editPalette;
 }
 
-void PaletteEditorAdvanced::setupBackgroundRole(QPalette::ColorRole role)
+void PaletteEditorAdvanced::setupBackgroundMode( Qt::BackgroundMode mode )
 {
     int initRole = 0;
 
-    switch (role) {
-    case QPalette::Window:
+    switch( mode ) {
+    case Qt::PaletteBackground:
         initRole = 0;
         break;
-    case QPalette::WindowText:
+    case Qt::PaletteForeground:
         initRole = 1;
         break;
-    case QPalette::Base:
+    case Qt::PaletteButton:
         initRole = 2;
         break;
-    case QPalette::AlternateBase:
+    case Qt::PaletteBase:
         initRole = 3;
         break;
-    case QPalette::ToolTipBase:
+    case Qt::PaletteText:
         initRole = 4;
         break;
-    case QPalette::ToolTipText:
+    case Qt::PaletteBrightText:
         initRole = 5;
         break;
-    case QPalette::Text:
+    case Qt::PaletteButtonText:
         initRole = 6;
         break;
-    case QPalette::Button:
+    case Qt::PaletteHighlight:
         initRole = 7;
         break;
-    case QPalette::ButtonText:
+    case Qt::PaletteHighlightedText:
         initRole = 8;
         break;
-    case QPalette::BrightText:
+    case Qt::PaletteLight:
         initRole = 9;
         break;
-    case QPalette::Highlight:
+    case Qt::PaletteMidlight:
         initRole = 10;
         break;
-    case QPalette::HighlightedText:
+    case Qt::PaletteDark:
         initRole = 11;
         break;
-    case QPalette::Link:
+    case Qt::PaletteMid:
         initRole = 12;
         break;
-    case QPalette::LinkVisited:
+    case Qt::PaletteShadow:
         initRole = 13;
         break;
     default:
@@ -373,27 +555,36 @@ void PaletteEditorAdvanced::setupBackgroundRole(QPalette::ColorRole role)
         break;
     }
 
-    if (initRole != -1)
-        ui->comboCentral->setCurrentIndex(initRole);
+    if ( initRole <= -1 ) return;
+
+    if (initRole > 8 ) {
+        comboEffect->setCurrentItem( initRole - 9 );
+    }
+    else {
+        comboCentral->setCurrentItem( initRole );
+    }
 }
 
-QPalette PaletteEditorAdvanced::getPalette(bool *ok, const QPalette &init,
-                                           QPalette::ColorRole backgroundRole, QWidget *parent)
+QPalette PaletteEditorAdvanced::getPalette( bool *ok, const QPalette &init,
+                                            Qt::BackgroundMode mode, QWidget* parent,
+                                            const char* name )
 {
-    PaletteEditorAdvanced *dlg = new PaletteEditorAdvanced(parent);
-    dlg->setupBackgroundRole(backgroundRole);
+    PaletteEditorAdvanced* dlg = new PaletteEditorAdvanced( parent, name, true );
+    dlg->setupBackgroundMode( mode );
 
-    if (init != QPalette())
-        dlg->setPal(init);
+    if ( init != QPalette() )
+        dlg->setPal( init );
     int resultCode = dlg->exec();
 
     QPalette result = init;
-    if (resultCode == QDialog::Accepted)
+    if ( resultCode == QDialog::Accepted ) {
+        if ( ok )
+            *ok = true;
         result = dlg->pal();
-
-    if (ok)
-        *ok = resultCode;
-
+    } else {
+        if ( ok )
+            *ok = false;
+    }
     delete dlg;
     return result;
 }

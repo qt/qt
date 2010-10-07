@@ -39,24 +39,40 @@
 **
 ****************************************************************************/
 
-#ifndef PREVIEWWIDGET_H
-#define PREVIEWWIDGET_H
+#ifndef PALETTEEDITORADVANCEDBASE_H
+#define PALETTEEDITORADVANCEDBASE_H
 
-#include "previewwidgetbase.h"
+#include "ui_paletteeditoradvancedbase.h"
+#include <QVariant>
 
 QT_BEGIN_NAMESPACE
 
-class PreviewWidget : public PreviewWidgetBase
+class ColorButton;
+
+class PaletteEditorAdvancedBase : public QDialog, public Ui::PaletteEditorAdvancedBase
 {
     Q_OBJECT
 
 public:
-    PreviewWidget( QWidget *parent = 0, const char *name = 0 );
+    PaletteEditorAdvancedBase(QWidget* parent = 0, const char* name = 0, bool modal = false, Qt::WindowFlags fl = 0);
+    ~PaletteEditorAdvancedBase();
 
-    void closeEvent(QCloseEvent *);
-    bool eventFilter(QObject *, QEvent *);
+protected slots:
+    virtual void languageChange();
+
+    virtual void init();
+    virtual void destroy();
+    virtual void onCentral(int);
+    virtual void onChooseCentralColor();
+    virtual void onChooseEffectColor();
+    virtual void onEffect(int);
+    virtual void onToggleBuildDisabled(bool);
+    virtual void onToggleBuildEffects(bool);
+    virtual void onToggleBuildInactive(bool);
+    virtual void paletteSelected(int);
+
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // PALETTEEDITORADVANCEDBASE_H
