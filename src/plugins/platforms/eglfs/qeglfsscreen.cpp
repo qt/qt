@@ -50,7 +50,7 @@
 
 QT_BEGIN_NAMESPACE
 
-//#define QEGL_EXTRA_DEBUG
+// #define QEGL_EXTRA_DEBUG
 
 #ifdef QEGL_EXTRA_DEBUG
 struct AttrInfo { EGLint attr; const char *name; };
@@ -116,12 +116,36 @@ QEglFSScreen::QEglFSScreen(EGLNativeDisplayType display)
     qWarning("Initialized display %d %d\n", major, minor);
 
     QPlatformWindowFormat platformFormat;
-    platformFormat.setDepth(32);
     platformFormat.setWindowApi(QPlatformWindowFormat::OpenGL);
-    platformFormat.setRedBufferSize(8);
-    platformFormat.setGreenBufferSize(8);
-    platformFormat.setBlueBufferSize(8);
-    platformFormat.setSwapInterval(1);
+
+    QByteArray depthString = qgetenv("QT_QPA_EGLFS_DEPTH");
+    if (depthString.toInt() == 16) {
+        platformFormat.setDepth(16);
+        platformFormat.setRedBufferSize(5);
+        platformFormat.setGreenBufferSize(6);
+        platformFormat.setBlueBufferSize(5);
+        m_depth = 16;
+        m_format = QImage::Format_RGB16;
+    } else {
+        platformFormat.setDepth(32);
+        platformFormat.setRedBufferSize(8);
+        platformFormat.setGreenBufferSize(8);
+        platformFormat.setBlueBufferSize(8);
+    }
+
+    if (!qgetenv("QT_QPA_EGLFS_MULTISAMPLE").isEmpty()) {
+        platformFormat.setSampleBuffers(true);
+    }
+
+    int swapInterval = 1;
+    QByteArray swapIntervalString = qgetenv("QT_QPA_EGLFS_SWAPINTERVAL");
+    if (!swapIntervalString.isEmpty()) {
+        bool ok;
+        swapInterval = swapIntervalString.toInt(&ok);
+        if (!ok)
+            swapInterval = 1;
+    }
+    platformFormat.setSwapInterval(swapInterval);
 
     EGLConfig config = q_configFromQPlatformWindowFormat(m_dpy, platformFormat);
 
