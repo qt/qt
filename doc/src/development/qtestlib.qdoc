@@ -320,7 +320,7 @@
     host computer and the device. Thus header files and libraries are needed to compile
     cetest and QtRemote successfully.
 
-    Prior to \l{Installing Qt on Windows CE}{installation} of Qt, you need to set your
+    Prior to \l{Installing Qt for Windows CE}{installation} of Qt, you need to set your
     \c INCLUDE and \c LIB environment variables properly.
 
     A default installation of Windows Mobile 5 for Pocket PC can be obtained by:

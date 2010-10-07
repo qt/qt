@@ -40,7 +40,7 @@ for your platform from the following list.
 */
 
 /*! \page install-x11.html
-\title Installing Qt on X11 Platforms
+\title Installing Qt for X11 Platforms
 \ingroup installation
 \brief How to install Qt on platforms with X11.
 \previouspage Installation
@@ -151,7 +151,7 @@ for your platform from the following list.
 
 /*!
 \page install-win.html
-\title Installing Qt on Windows
+\title Installing Qt for Windows
 \ingroup installation
 \brief How to install Qt on Windows.
 \previouspage Installation
@@ -269,7 +269,7 @@ for your platform from the following list.
 */
 
 /*! \page install-mac.html
-\title Installing Qt on Mac OS X
+\title Installing Qt for Mac OS X
 \ingroup installation
 \brief How to install Qt on Mac OS X.
 \previouspage Installation
@@ -563,7 +563,7 @@ in the \l{Qt for the Symbian platform Requirements} document.
 
 This document describes how to install and configure Qt for
 the Symbian platform from scratch. If you are using pre-built binaries, follow 
-the instructions given in the \l{Installing Qt on the Symbian platform from a 
+the instructions given in the \l{Installing Qt for the Symbian platform from a 
 Binary Package} document.
 
 \section1 Step 1: Set Up the Development Environment
