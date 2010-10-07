@@ -78,7 +78,7 @@
     In your Unix signal handlers, you write a byte to the \e write end
     of a socket pair and return. This will cause the corresponding
     QSocketNotifier to emit its activated() signal, which will in turn
-    cause the appropriate Qt slott function to run.
+    cause the appropriate Qt slot function to run.
 
     \snippet doc/src/snippets/code/doc_src_unix-signal-handlers.qdoc 3
 
