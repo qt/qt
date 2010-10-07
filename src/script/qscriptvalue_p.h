@@ -854,7 +854,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(con
     v8::Handle<v8::String> jsname = QScriptConverter::toString(name);
 
     if ( (mode != QScriptValue::ResolveLocal && !self->Has(jsname))
-        || (mode == QScriptValue::ResolveLocal && !self->HasRealNamedProperty(jsname)))
+        || (mode == QScriptValue::ResolveLocal && engine()->getOwnProperty(self, jsname).IsEmpty()))
         return new QScriptValuePrivate();
 
     v8::Handle<v8::Value> result = self->Get(jsname);

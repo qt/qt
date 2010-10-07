@@ -117,6 +117,7 @@ public:
     inline bool isInvalid(v8::Handle<v8::Value> value) const;
     inline v8::Local<v8::Array> getOwnPropertyNames(v8::Handle<v8::Object> object) const;
     inline QScriptValue::PropertyFlags getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property, const QScriptValue::ResolveFlags& mode);
+    inline v8::Local<v8::Value> getOwnProperty(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property) const;
 
     QDateTime qtDateTimeFromJS(v8::Handle<v8::Date> jsDate);
     v8::Handle<v8::Value> qtDateTimeToJS(const QDateTime &dt);
@@ -277,6 +278,11 @@ inline v8::Local<v8::Array> QScriptEnginePrivate::getOwnPropertyNames(v8::Handle
 inline QScriptValue::PropertyFlags QScriptEnginePrivate::getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property, const QScriptValue::ResolveFlags& mode)
 {
     return m_originalGlobalObject.getPropertyFlags(object, property, mode);
+}
+
+inline v8::Local<v8::Value> QScriptEnginePrivate::getOwnProperty(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property) const
+{
+    return m_originalGlobalObject.getOwnProperty(object, property);
 }
 
 QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(const QString& program, const QString& fileName, int lineNumber)
