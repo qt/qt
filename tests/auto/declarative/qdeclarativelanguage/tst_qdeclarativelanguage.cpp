@@ -380,6 +380,8 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("invalidProperty") << "invalidProperty.qml" << "invalidProperty.errors.txt" << false;
     QTest::newRow("nonScriptableProperty") << "nonScriptableProperty.qml" << "nonScriptableProperty.errors.txt" << false;
     QTest::newRow("notAvailable") << "notAvailable.qml" << "notAvailable.errors.txt" << false;
+    QTest::newRow("singularProperty") << "singularProperty.qml" << "singularProperty.errors.txt" << false;
+    QTest::newRow("singularProperty.2") << "singularProperty.2.qml" << "singularProperty.2.errors.txt" << false;
 }
 
 
