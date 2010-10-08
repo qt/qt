@@ -250,7 +250,8 @@ void initProjectDeploySymbian(QMakeProject* project,
 
         QStringList flags = project->values(item + ".flags");
 
-        foreach(QString source, project->values(item + ".sources")) {
+        // ### Qt 5: remove .sources, inconsistent with INSTALLS
+        foreach(QString source, project->values(item + ".sources") + project->values(item + ".files")) {
             source = Option::fixPathToLocalOS(source);
             QString nameFilter;
             QFileInfo info(source);
