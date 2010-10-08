@@ -229,7 +229,7 @@ symbian_resources_INCLUDES = $$replace(symbian_resources_INCLUDES, ",", " -I")
 symbian_resources_INCLUDES += $$join(INCLUDEPATH, " -I", "-I")
 symbian_resources_DEFINES = $$join(DEFINES, " -D", "-D")
 symbian_resources_RCC_DIR = $$replace(RCC_DIR, "/$", "")
-symbian_resources_INCLUDES += "-I $$symbian_resources_RCC_DIR"
+symbian_resources_INCLUDES += "-I$$symbian_resources_RCC_DIR"
 
 for(symbian_resource, SYMBIAN_RESOURCES) {
     symbian_resource = $$basename(symbian_resource)
@@ -245,7 +245,7 @@ symbianresources.commands = cpp -nostdinc -undef \
                             $$symbian_resources_INCLUDES \
                             $$symbian_resources_DEFINES \
                             ${QMAKE_FILE_NAME} \
-                            -o $${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rpp \
+                            > $${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rpp \
                             && rcomp -u -m045,046,047 \
                             -s$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rpp \
                             -o$${symbianDestdir}/${QMAKE_FILE_BASE}$${QT_LIBINFIX}.rsc \
@@ -265,7 +265,7 @@ contains(TEMPLATE, "app"):!contains(CONFIG, "no_icon") {
                                   $$symbian_resources_INCLUDES \
                                   $$symbian_resources_DEFINES \
                                   $${baseTarget}.rss \
-                                  -o $${symbian_resources_RCC_DIR}/$${baseTarget}.rpp \
+                                  > $${symbian_resources_RCC_DIR}/$${baseTarget}.rpp \
                                   && rcomp -u -m045,046,047 \
                                   -s$${symbian_resources_RCC_DIR}/$${baseTarget}.rpp \
                                   -o$${symbianDestdir}/$${baseTarget}.rsc \
@@ -284,7 +284,7 @@ contains(TEMPLATE, "app"):!contains(CONFIG, "no_icon") {
                                      $$symbian_resources_INCLUDES \
                                      $$symbian_resources_DEFINES \
                                      $${baseTarget}_reg.rss \
-                                     -o $${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rpp \
+                                     > $${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rpp \
                                      && rcomp -u -m045,046,047 \
                                      -s$${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rpp \
                                      -o$${symbianDestdir}/$${baseTarget}_reg.rsc \
