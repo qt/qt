@@ -395,7 +395,7 @@
 
     \section1 Tracking QObject
 
-    QWeakPointer can be used to track deletion classes derives from QObject,
+    QWeakPointer can be used to track deletion classes that derive from QObject,
     even if they are not managed by QSharedPointer. When used in that role,
     QWeakPointer replaces the older QPointer in all use-cases. QWeakPointer
     is also more efficient than QPointer, so it should be preferred in all
@@ -1163,7 +1163,7 @@
     \since 4.6
 
     \brief The qSharedPointerObjectCast function is for casting a shared pointer.
-    
+
     Returns a shared pointer to the pointer held by \a other, using a
     \l qobject_cast() to type \tt X to obtain an internal pointer of the
     appropriate type. If the \tt qobject_cast fails, the object
@@ -1432,7 +1432,7 @@ void QtSharedPointer::internalSafetyCheckAdd2(const void *d_ptr, const volatile 
     Q_ASSERT(!kp->dPointers.contains(d_ptr));
 
     //qDebug("Adding d=%p value=%p", d_ptr, ptr);
-    
+
     const void *other_d_ptr = kp->dataPointers.value(ptr, 0);
     if (other_d_ptr) {
 #  ifdef BACKTRACE_SUPPORTED

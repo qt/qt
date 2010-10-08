@@ -4,4 +4,5 @@ SUBDIRS = \
         kernel \
         thread \
         tools \
-	codecs
+	codecs \
+        plugin

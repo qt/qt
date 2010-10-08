@@ -333,7 +333,7 @@ static QStringList findAllLibSsl()
     paths = QString::fromLatin1(qgetenv("LD_LIBRARY_PATH"))
             .split(QLatin1Char(':'), QString::SkipEmptyParts);
 #  endif
-    paths << QLatin1String("/usr/lib") << QLatin1String("/usr/local/lib");
+    paths << QLatin1String("/lib") << QLatin1String("/usr/lib") << QLatin1String("/usr/local/lib");
 
     QStringList foundSsls;
     foreach (const QString &path, paths) {

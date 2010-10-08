@@ -1628,10 +1628,10 @@ bool QMenuBar::eventFilter(QObject *object, QEvent *event)
 }
 
 /*!
-  \internal
+  Returns the QAction at \a pt. Returns 0 if there is no action at \a pt or if
+the location has a separator.
 
-  Return the item at \a pt, or 0 if there is no item there or if it is
-  a separator item.
+    \sa addAction(), addSeparator()
 */
 QAction *QMenuBar::actionAt(const QPoint &pt) const
 {
@@ -1640,9 +1640,9 @@ QAction *QMenuBar::actionAt(const QPoint &pt) const
 }
 
 /*!
-  \internal
+  Returns the geometry of action \a act as a QRect.
 
-  Returns the geometry of action \a act.
+    \sa actionAt()
 */
 QRect QMenuBar::actionGeometry(QAction *act) const
 {
@@ -1836,10 +1836,17 @@ void QMenuBarPrivate::_q_updateLayout()
 }
 
 /*!
-  \internal
+    \fn void QMenuBar::setCornerWidget(QWidget *widget, Qt::Corner corner)
 
-  This sets widget \a w to be shown directly on the left of the first or
-  the right of the last menu item, depending on \a corner.
+    This sets the given \a widget to be shown directly on the left of the first
+    menu item, or on the right of the last menu item, depending on \a corner.
+
+    The menu bar takes ownership of \a widget, reparenting it into the menu bar.
+    However, if the \a corner already contains a widget, this previous widget
+    will no longer be managed and will still be a visible child of the menu bar.
+
+   \note Using a corner other than Qt::TopRightCorner or Qt::TopLeftCorner
+    will result in a warning.
 */
 void QMenuBar::setCornerWidget(QWidget *w, Qt::Corner corner)
 {
@@ -1869,10 +1876,11 @@ void QMenuBar::setCornerWidget(QWidget *w, Qt::Corner corner)
 }
 
 /*!
-  \internal
+    Returns the widget on the left of the first or on the right of the last menu
+    item, depending on \a corner.
 
-  Returns the widget in the left of the first or the right of the last menu
-  item, depending on \a corner.
+   \note Using a corner other than Qt::TopRightCorner or Qt::TopLeftCorner
+    will result in a warning.
 */
 QWidget *QMenuBar::cornerWidget(Qt::Corner corner) const
 {
