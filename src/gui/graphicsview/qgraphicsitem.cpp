@@ -2125,7 +2125,7 @@ void QGraphicsItem::setToolTip(const QString &toolTip)
 
     \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 2
 
-    If no cursor has been set, the parent's cursor is used.
+    If no cursor has been set, the cursor of the item beneath is used.
 
     \sa setCursor(), hasCursor(), unsetCursor(), QWidget::cursor,
     QApplication::overrideCursor()

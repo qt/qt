@@ -182,6 +182,7 @@ QColorGroup::ColorRole PaletteEditorAdvanced::centralFromItem( int item )
 }
 
 QColorGroup::ColorRole PaletteEditorAdvanced::effectFromItem( int item )
+
 {
     switch( item ) {
     case 0:
