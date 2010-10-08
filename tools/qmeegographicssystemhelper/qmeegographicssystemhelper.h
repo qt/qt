@@ -89,6 +89,13 @@ public:
      switching is 'meego'.
     */
     static bool isRunningMeeGo();
+    
+    //! Returns true if running with a 'runtime' graphicssystem.
+    /*!
+     This function can be used in combination with ::runningGraphicsSystemName to figure out
+     the existing situation. 
+    */
+    static bool isRunningRuntime();
 
     //! Switches to meego graphics system. 
     /*!
