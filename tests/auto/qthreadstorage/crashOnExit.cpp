@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,25 +39,26 @@
 **
 ****************************************************************************/
 
-#include "qmeegoliveimage.h"
+#include <QtCore/QtCore>
 
-#ifndef QMEEGOLIVEIMAGE_P_H
-#define QMEEGOLIVEIMAGE_P_H
-
-class QMeeGoLiveImagePrivate
+class Class
 {
 public:
-    Q_DECLARE_PUBLIC(QMeeGoLiveImage);
-    QMeeGoLiveImagePrivate();
-    virtual ~QMeeGoLiveImagePrivate();
-    void attachPixmap(QMeeGoLivePixmap* pixmap);
-    void detachPixmap(QMeeGoLivePixmap* pixmap);
-        
-    QList <QMeeGoLivePixmap*> attachedPixmaps;
-    QMeeGoLiveImage *q_ptr;
-    
-    friend class QMeeGoLivePixmap;
-    friend class QMeeGoLivePixmapPrivate;
+    ~Class()
+    {
+        // trigger creation of a new QThreadStorage, after the previous QThreadStorage from main() was destructed
+        static QThreadStorage<int *> threadstorage;
+        threadstorage.setLocalData(new int);
+        threadstorage.setLocalData(new int);
+    }
 };
 
-#endif
+int main()
+{
+    // instantiate the class that will use QThreadStorage from its destructor, it's destructor will be run last
+    static Class instance;
+    // instantiate QThreadStorage, it's destructor (and the global destructors for QThreadStorages internals) will run first
+    static QThreadStorage<int *> threadstorage;
+    threadstorage.setLocalData(new int);
+    threadstorage.setLocalData(new int);
+}

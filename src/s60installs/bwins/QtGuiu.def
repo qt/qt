@@ -12892,4 +12892,5 @@ EXPORTS
 	?setTimeout@QTapAndHoldGesture@@SAXH@Z @ 12891 NONAME ; void QTapAndHoldGesture::setTimeout(int)
 	?qmljsDebugArguments@QApplicationPrivate@@2VQString@@A @ 12892 NONAME ; class QString QApplicationPrivate::qmljsDebugArguments
 	?effectiveBoundingRect@QGraphicsItemPrivate@@QBE?AVQRectF@@PAVQGraphicsItem@@@Z @ 12893 NONAME ; class QRectF QGraphicsItemPrivate::effectiveBoundingRect(class QGraphicsItem *) const
+	?lastResortFont@QFont@@QBE?AVQString@@XZ @ 12894 NONAME ; class QString QFont::lastResortFont(void) const
 

@@ -26,37 +26,6 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "        </a></li>\n" \
 			  "      </ul>\n" \
 			  "     </div>\n" \
-			 " <ul class=\"sf-menu sf-js-enabled sf-shadow\" id=\"narrowmenu\"> \n" \
-			"		 <li><a href=\"#\">API Lookup</a> \n" \
-			"			 <ul id=\"topmenuLook\"> \n" \
-			"			   <li><a href=\"classes.html\">Class index</a></li> \n" \
-			" 			  <li><a href=\"functions.html\">Function index</a></li> \n" \
-			"			   <li><a href=\"modules.html\">Modules</a></li> \n" \
-			"			   <li><a href=\"namespaces.html\">Namespaces</a></li> \n" \
-			"			   <li><a href=\"qtglobal.html\">Global Declarations</a></li> \n" \
-			"			   <li><a href=\"licensing.html\">Licenses and Credits</a></li> \n" \
-			"			   </ul> \n" \
-			"		 </li> \n" \
-			"		 <li><a href=\"#\">Qt Topics</a> \n" \
-			"			 <ul id=\"topmenuTopic\"> \n" \
-			"			   <li><a href=\"qt-basic-concepts.html\">Programming with Qt</a></li> \n" \
-			"			   <li><a href=\"qtquick.html\">Device UIs &amp; Qt Quick</a></li> \n" \
-			"			   <li><a href=\"qt-gui-concepts.html\">UI Design with Qt</a></li> \n" \
-			"			   <li><a href=\"developing-with-qt.html\">Cross-platform and Platform-specific</a></li> \n" \
-			"			   <li><a href=\"platform-specific.html\">Platform-specific info</a></li> \n" \
-			"			   <li><a href=\"technology-apis.html\">Qt and Key Technologies</a></li> \n" \
-			"			   <li><a href=\"best-practices.html\">How-To's and Best Practices</a></li> \n" \
-			"			 </ul> \n" \
-			"		</li> \n" \
-			"		 <li><a href=\"#\">Examples</a> \n" \
-			"			 <ul id=\"topmenuexample\"> \n" \
-			"				 <li><a href=\"all-examples.html\">Examples</a></li> \n" \
-			"				 <li><a href=\"tutorials.html\">Tutorials</a></li> \n" \
-			"				 <li><a href=\"demos.html\">Demos</a></li> \n" \
-			"				 <li><a href=\"qdeclarativeexamples.html\">QML Examples</a></li> \n" \
-			"			 </ul> \n" \
-			"		 </li> \n" \
-			" </ul> \n" \
 			  "    </div>\n" \
 			  "  </div>\n" \
 			  "  <div class=\"wrapper\">\n" \
@@ -71,6 +40,13 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "          <form id=\"qtdocsearch\" action=\"\" onsubmit=\"return false;\">\n" \
 			  "            <fieldset>\n" \
 			  "              <input type=\"text\" name=\"searchstring\" id=\"pageType\" value=\"\" />\n" \
+			" <div id=\"resultdialog\"> \n" \
+			" <a href=\"#\" id=\"resultclose\">Close</a> \n" \
+			" <p id=\"resultlinks\" class=\"all\"><a href=\"#\" id=\"showallresults\">All</a> | <a href=\"#\" id=\"showapiresults\">API</a> | <a href=\"#\" id=\"showarticleresults\">Articles</a> | <a href=\"#\" id=\"showexampleresults\">Examples</a></p> \n" \
+			" <p id=\"searchcount\" class=\"all\"><span id=\"resultcount\"></span><span id=\"apicount\"></span><span id=\"articlecount\"></span><span id=\"examplecount\"></span>&nbsp;results:</p> \n" \
+			" <ul id=\"resultlist\" class=\"all\"> \n" \
+			" </ul> \n" \
+			" </div> \n" \
 			  "            </fieldset>\n" \
 			  "          </form>\n" \
 			  "        </div>\n" \
@@ -135,7 +111,7 @@ HTML.postpostheader     = "            </ul>\n" \
 			  "            </ul>\n" \
 			  "        </div>\n" \
 			  "        </div>\n" \
-			  "        <div class=\"content\">\n"
+			  "        <div class=\"content mainContent\">\n"
 
 HTML.footer             = "" \
 			  "        <div class=\"feedback t_button\">\n" \

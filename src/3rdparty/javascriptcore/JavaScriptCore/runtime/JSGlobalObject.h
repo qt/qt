@@ -31,6 +31,7 @@
 #include "StructureChain.h"
 #include <wtf/HashSet.h>
 #include <wtf/OwnPtr.h>
+#include <wtf/RandomNumber.h>
 
 namespace JSC {
 
@@ -91,6 +92,7 @@ namespace JSC {
                 , datePrototype(0)
                 , regExpPrototype(0)
                 , methodCallDummy(0)
+                , weakRandom(static_cast<unsigned>(randomNumber() * (std::numeric_limits<unsigned>::max() + 1.0)))
             {
             }
             
@@ -154,6 +156,7 @@ namespace JSC {
             RefPtr<JSGlobalData> globalData;
 
             HashSet<GlobalCodeBlock*> codeBlocks;
+            WeakRandom weakRandom;
         };
 
     public:
@@ -271,6 +274,7 @@ namespace JSC {
             return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
         }
 
+        double weakRandomNumber() { return d()->weakRandom.get(); }
     protected:
 
         static const unsigned StructureFlags = OverridesGetOwnPropertySlot | OverridesMarkChildren | OverridesGetPropertyNames | JSVariableObject::StructureFlags;

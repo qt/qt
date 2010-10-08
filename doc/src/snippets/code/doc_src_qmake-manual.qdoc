@@ -1014,3 +1014,18 @@ BLD_INF_RULES.prj_exports += my_exports
 my_note.pkg_postrules.installer = "\"myinstallnote.txt\" - \"\", FILETEXT, TEXTCONTINUE"
 DEPLOYMENT += my_note
 //! [153]
+
+//! [154]
+DEPLOYMENT -= default_bin_deployment default_resource_deployment default_reg_deployment
+//! [154]
+
+//! [155]
+default_bin_deployment.flags += FILERUN RUNINSTALL
+dep_note.sources = install_note.txt
+dep_note.flags = FILETEXT TEXTEXIT
+DEPLOYMENT += dep_note
+//! [155]
+
+//! [156]
+DEPLOYMENT.display_name = My Qt App
+//! [156]

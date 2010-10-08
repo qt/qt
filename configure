@@ -4915,9 +4915,8 @@ case "$XPLATFORM" in *symbian*)
         # Raptor does not support configure tests.
 
         # the main commands needed to compile;
-        (cd config.tests/symbian
-            mkdir -p rcomp
-            cd rcomp
+        (mkdir -p config.tests/symbian/rcomp
+            cd config.tests/symbian/rcomp
             rm -f rcomp_test.rsg
             touch rcomp_test.rpp rcomp_test.rsc rcomp_test.rss
             rcomp -u -m045,046,047 -s./rcomp_test.rpp -o./rcomp_test.rsc -h./rcomp_test.rsg -i./rcomp_test.rss 2>&1 > /dev/null
@@ -5499,8 +5498,8 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
     # auto-detect icd support
     if [ "$CFG_GLIB" = "yes" -a "$CFG_ICD" != "no" ]; then
         if [ -n "$PKG_CONFIG" ]; then
-            QT_CFLAGS_CONNSETTINGS=`$PKG_CONFIG --cflags connsettings 2>/dev/null`
-            QT_LIBS_CONNSETTINGS=`$PKG_CONFIG --libs connsettings 2>/dev/null`
+            QT_CFLAGS_CONNSETTINGS=`$PKG_CONFIG --cflags connsettings icd2 2>/dev/null`
+            QT_LIBS_CONNSETTINGS=`$PKG_CONFIG --libs connsettings icd2 2>/dev/null`
         fi
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/icd "ICD" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_CONNSETTINGS $QT_LIBS_CONNSETTINGS; then
             [ "$CFG_ICD" = "auto" ] && CFG_ICD=yes
@@ -7244,7 +7243,14 @@ if [ "$CFG_SCRIPTTOOLS" = "yes" -a "$CFG_SCRIPT" = "no" ]; then
     exit 1
 fi
 if [ "$CFG_SCRIPTTOOLS" = "auto" -a "$CFG_SCRIPT" != "no" ]; then
-    CFG_SCRIPTTOOLS="yes"
+    case "$XPLATFORM" in
+    symbian*)
+        CFG_SCRIPTTOOLS="no"
+        ;;
+    *)
+        CFG_SCRIPTTOOLS="yes"
+        ;;
+    esac
 elif [ "$CFG_SCRIPT" = "no" ]; then
     CFG_SCRIPTTOOLS="no"
 fi
