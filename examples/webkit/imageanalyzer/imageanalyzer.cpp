@@ -57,7 +57,7 @@
 
 //! [ ImageAnalyzer - Constructor ]
 ImageAnalyzer::ImageAnalyzer(QNetworkDiskCache* netcache, QObject* parent)
-: QObject(parent), m_cache(netcache), m_outstandingFetches(0)
+    : QObject(parent), m_cache(netcache), m_outstandingFetches(0)
 {
     /*  ImageAnalyzer only wants to receive http responses
         for requests that it makes, so that's why it has its own
@@ -69,11 +69,11 @@ ImageAnalyzer::ImageAnalyzer(QNetworkDiskCache* netcache, QObject* parent)
     m_network->setCache(m_cache);
 
     QObject::connect(m_network, SIGNAL(finished(QNetworkReply*)),
-            this, SLOT(handleReply(QNetworkReply*)));
+                     this, SLOT(handleReply(QNetworkReply*)));
     QObject::connect(m_watcher, SIGNAL(finished()),
-            this, SLOT(doneProcessing()));
+                     this, SLOT(doneProcessing()));
     QObject::connect(m_watcher, SIGNAL(progressValueChanged(int)),
-            this, SLOT(progressStatus(int)));
+                     this, SLOT(progressStatus(int)));
 }
 //! [ ImageAnalyzer - Constructor ]
 ImageAnalyzer::~ImageAnalyzer()
