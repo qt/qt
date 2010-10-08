@@ -631,14 +631,17 @@ QRectF QGridLayoutItem::geometryWithin(qreal x, qreal y, qreal width, qreal heig
         qreal cellWidth = width;
         qreal cellHeight = height;
 
-        QSize constraint;
+
+        QSizeF size = effectiveMaxSize(QSizeF(-1,-1));
         if (hasDynamicConstraint()) {
-            if (dynamicConstraintOrientation() == Qt::Vertical)
-                constraint.setWidth(cellWidth);
-            else
-                constraint.setHeight(cellHeight);
+            if (dynamicConstraintOrientation() == Qt::Vertical) {
+               if (size.width() > cellWidth)
+                   size = effectiveMaxSize(QSizeF(cellWidth, -1));
+            } else if(size.height() > cellHeight) {
+                size = effectiveMaxSize(QSizeF(-1, cellHeight));
+            }
         }
-        QSizeF size = effectiveMaxSize(constraint).boundedTo(QSizeF(cellWidth, cellHeight));
+        size = size.boundedTo(QSizeF(cellWidth, cellHeight));
         width = size.width();
         height = size.height();
 
@@ -714,7 +717,7 @@ QSizeF QGridLayoutItem::effectiveMaxSize(const QSizeF &constraint) const
     }
 
     if (!size.isValid()) {
-        QSizeF maxSize = layoutItem()->effectiveSizeHint(Qt::MaximumSize, constraint);
+        QSizeF maxSize = layoutItem()->effectiveSizeHint(Qt::MaximumSize, size);
         if (size.width() == -1)
             size.setWidth(maxSize.width());
         if (size.height() == -1)
