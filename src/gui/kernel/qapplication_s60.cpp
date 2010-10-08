@@ -1237,10 +1237,11 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
 #ifdef Q_WS_S60
         // If widget is fullscreen/minimized, hide status pane and button container otherwise show them.
-        const bool visible = !(qwidget->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
+        QWidget *const window = qwidget->window();
+        const bool visible = !(window->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
         const bool statusPaneVisibility = visible;
-        const bool isFullscreen = qwidget->windowState() & Qt::WindowFullScreen;
-        const bool cbaVisibilityHint = qwidget->windowFlags() & Qt::WindowSoftkeysVisibleHint;
+        const bool isFullscreen = window->windowState() & Qt::WindowFullScreen;
+        const bool cbaVisibilityHint = window->windowFlags() & Qt::WindowSoftkeysVisibleHint;
         const bool buttonGroupVisibility = (visible || (isFullscreen && cbaVisibilityHint));
         S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
 #endif
