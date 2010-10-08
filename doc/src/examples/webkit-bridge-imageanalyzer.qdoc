@@ -24,9 +24,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 /*!
     \example webkit/imageanalyzer
-    \startpage {index.html} {Qt Reference Documentation}
+    \startpage {index.html}{Qt Reference Documentation}
     \title The Webkit Bridge Tutorial - Hybrid Client Application
 
     In this example, we will show how to write a hybrid application using
@@ -84,7 +85,7 @@ page's mainFrame with \c addToJavaScriptWindowObject().
 
     \snippet examples/webkit/imageanalyzer/resources/index.html sample images
 
-    Clicking an image adds it to an images list.
+Clicking an image adds it to an images list.
 
     \snippet examples/webkit/imageanalyzer/resources/index.html addImage
 
