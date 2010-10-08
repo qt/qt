@@ -4960,8 +4960,8 @@ protected:
                                            int size, int opacity) const;
     uint *addCacheElement(quint64 hash_val, const QGradient &gradient, int opacity) {
         if (cache.size() == maxCacheSize()) {
-            int elem_to_remove = qrand() % maxCacheSize();
-            cache.remove(cache.keys()[elem_to_remove]); // may remove more than 1, but OK
+            // may remove more than 1, but OK
+            cache.erase(cache.begin() + (qrand() % maxCacheSize()));
         }
         CacheInfo cache_entry(gradient.stops(), opacity, gradient.interpolationMode());
         generateGradientColorTable(gradient, cache_entry.buffer, paletteSize(), opacity);
