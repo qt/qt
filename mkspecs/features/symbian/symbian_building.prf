@@ -89,12 +89,13 @@ count(splitVersion, 0) {
     decVersion = "10.0"
 } else {
     count(splitVersion, 3) {
-        hexVersion = $$system("sh -c 'printf %02x $$member(splitVersion, 0)'")
-        hexPart2 = $$system("sh -c 'printf %02x $$member(splitVersion, 1)'")"
-        hexPart2 = $$hexPart2$$system("sh -c 'printf %02x $$member(splitVersion, 2)'")"
-        decVersion = $$system("sh -c 'printf %1d 0x$$hexVersion'").
+        hexVersion = $$system("perl -e \"printf (\\\"%02x\\\", $$member(splitVersion, 0))\"")
+        hexPart2 = $$system("perl -e \"printf (\\\"%02x\\\", $$member(splitVersion, 1))\"")"
+        hexPart2 = $$hexPart2$$system("perl -e \"printf (\\\"%02x\\\", $$member(splitVersion, 2))\"")"
+        decVersion = $$system("perl -e \"printf (\\\"%1d\\\", 0x$$hexVersion)\"").
         hexVersion = $$hexVersion$$hexPart2
-        decVersion = $$decVersion$$system("sh -c 'printf %d 0x$$hexPart2'")
+        decVersion = $$decVersion$$system("perl -e \"printf (\\\"%d\\\", 0x$$hexPart2)\"")
+
         !contains(hexVersion, "[0-9a-f]{8}"):hexVersion = "00$${hexVersion}"
     } else {  # app code may have different numbering...
         hexVersion = $$VERSION
@@ -117,7 +118,9 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
     contains(CONFIG, plugin):QMAKE_ELF2E32_FLAGS += --definput=plugin_commonu.def
 
     !isEmpty(QMAKE_POST_LINK):QMAKE_POST_LINK = $$escape_expand(\\n\\t)$$QMAKE_POST_LINK
-    QMAKE_POST_LINK = $$QMAKE_MOVE $$symbianDestdir/$${baseTarget}.dll $$symbianDestdir/$${baseTarget}.sym \
+    moveCmd = $$QMAKE_MOVE $$symbianDestdir/$${baseTarget}.dll $$symbianDestdir/$${baseTarget}.sym
+    contains(QMAKE_HOST.os,Windows):moveCmd = $$replace(moveCmd, /, \\)
+    QMAKE_POST_LINK = $$moveCmd \
                       && $$QMAKE_ELF2E32_WRAPPER --version=$$decVersion \
                       --sid=$$TARGET.SID \
                       --uid1=0x10000079 \
@@ -167,7 +170,9 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
 
 contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@:.*") {
     !isEmpty(QMAKE_POST_LINK):QMAKE_POST_LINK = $$escape_expand(\\n\\t)$$QMAKE_POST_LINK
-    QMAKE_POST_LINK = $$QMAKE_MOVE $$symbianDestdir/$${baseTarget} $$symbianDestdir/$${baseTarget}.sym \
+    moveCmd = $$QMAKE_MOVE $$symbianDestdir/$${baseTarget} $$symbianDestdir/$${baseTarget}.sym
+    contains(QMAKE_HOST.os,Windows):moveCmd = $$replace(moveCmd, /, \\)
+    QMAKE_POST_LINK = $$moveCmd \
                       && $$QMAKE_ELF2E32_WRAPPER --version $$decVersion \
                       --sid=$$TARGET.SID \
                       --uid1=0x1000007a \
