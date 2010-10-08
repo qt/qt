@@ -27,8 +27,8 @@
 
 /*!
     \page platform-notes-vxworks.html
-    \title Platform Notes - VxWorks
-    \contentspage Platform Notes
+    \title Platform and Compiler Notes - VxWorks
+    \contentspage Platform and Compiler Notes
     \target VxWorks
 
     \note VxWorks is a community supported platform. See the
@@ -143,8 +143,8 @@
 
 /*!
     \page platform-notes-qnx.html
-    \title Platform Notes - QNX
-    \contentspage Platform Notes
+    \title Platform and Compiler Notes - QNX
+    \contentspage Platform and Compiler Notes
     \target QNX
 
     \note QNX is a community supported platform. See the

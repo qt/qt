@@ -81,8 +81,8 @@
         \o \l {Compiler Notes}
         \o \l {Developing Qt Applications for Mac OS X}
         \o \l {Known Issues}
-        \o \l {Platform Notes}
-        \o \l {Platform Notes - Symbian}
+        \o \l {Platform and Compiler Notes}
+        \o \l {Platform and Compiler Notes - Symbian}
         \o \l {ActiveX in Qt}
         \o \l {Qt for Embedded Linux Classes}
         \o \l {Qt for Embedded Platforms}
