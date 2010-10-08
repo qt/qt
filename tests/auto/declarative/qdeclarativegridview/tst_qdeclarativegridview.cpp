@@ -82,6 +82,7 @@ private slots:
     void QTBUG_8456();
     void manualHighlight();
     void footer();
+    void header();
 
 private:
     QDeclarativeView *createView();
@@ -1212,6 +1213,40 @@ void tst_QDeclarativeGridView::footer()
 
     model.clear();
     QTRY_COMPARE(footer->y(), 0.0);
+}
+
+void tst_QDeclarativeGridView::header()
+{
+    QDeclarativeView *canvas = createView();
+
+    TestModel model;
+    for (int i = 0; i < 7; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/header.qml"));
+    qApp->processEvents();
+
+    QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
+    QTRY_VERIFY(gridview != 0);
+
+    QDeclarativeItem *contentItem = gridview->contentItem();
+    QTRY_VERIFY(contentItem != 0);
+
+    QDeclarativeText *header = findItem<QDeclarativeText>(contentItem, "header");
+    QVERIFY(header);
+
+    QCOMPARE(header->y(), 0.0);
+    QCOMPARE(gridview->contentY(), 0.0);
+
+    QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", 0);
+    QVERIFY(item);
+    QCOMPARE(item->y(), 30.0);
+
+    model.clear();
+    QTRY_COMPARE(header->y(), 0.0);
 }
 
 
