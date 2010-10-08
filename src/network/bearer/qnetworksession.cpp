@@ -489,15 +489,15 @@ QString QNetworkSession::errorString() const
             configuration resolved to when \l open() was called; otherwise an empty string.
 
             The purpose of this key is to determine the real QNetworkConfiguration that the
-            session is using. This key is different to \i ActiveConfiguration in that
+            session is using. This key is different from \e ActiveConfiguration in that
             this key may return an identifier for either a
             \l {QNetworkConfiguration::ServiceNetwork}{service network} or a
-            \l {QNetworkConfiguration::InternetAccessPoint}{Internet access points} configurations
-            whereas \i ActiveConfiguration always returns identifiers to 
+            \l {QNetworkConfiguration::InternetAccessPoint}{Internet access points} configurations,
+            whereas \e ActiveConfiguration always returns identifiers to 
             \l {QNetworkConfiguration::InternetAccessPoint}{Internet access points} configurations.
         \row
             \o ConnectInBackground
-            \o Setting this property to \i true before calling \l open() implies that the connection attempt
+            \o Setting this property to \e true before calling \l open() implies that the connection attempt
             is made but if no connection can be established, the user is not connsulted and asked to select
             a suitable connection. This property is not set by default and support for it depends on the platform.
 

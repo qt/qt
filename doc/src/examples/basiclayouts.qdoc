@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -66,7 +66,7 @@
     horizontal layout. Next we use the \c createGridGroupBox() function
     to create a group box containing several line edits and a small text
     editor which are displayed in a grid layout. Finally, we use the
-    \c createFormGroupBox() function to createa a group box with
+    \c createFormGroupBox() function to create a group box with
     three labels and three input fields: a line edit, a combo box and
     a spin box.
 

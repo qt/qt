@@ -280,7 +280,7 @@ QVariant MyModel::data(const QModelIndex &item, int role) const
 void QSqlTableModel_snippets()
 {
 //! [24]
-    QSqlTableModel *model = new QSqlTableModel;
+    QSqlTableModel *model = new QSqlTableModel(parentObject, database);
     model->setTable("employee");
     model->setEditStrategy(QSqlTableModel::OnManualSubmit);
     model->select();
