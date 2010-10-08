@@ -63,7 +63,7 @@ for(libToProcess, libsToProcess) {
             qt_newLib = $$processSymbianLibrary($$qt_library)
             contains(qt_newLib, ".*\\.dso$")|contains(qt_newLib, ".*\\.lib$"):PRE_TARGETDEPS += $$qt_newLib
             symbian-gcce:qt_newLib = "-l:$$qt_newLib"
-            eval($$libToProcess += \$\$qt_newLib)
+            eval($$libToProcess *= \$\$qt_newLib)
         }
     }
 }
