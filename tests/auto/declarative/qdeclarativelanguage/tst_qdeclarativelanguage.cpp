@@ -144,6 +144,7 @@ private slots:
     void importsInstalled();
     void importsOrder_data();
     void importsOrder();
+    void importIncorrectCase();
 
     void qmlAttachedPropertiesObjectMethod();
     void customOnProperty();
@@ -382,6 +383,13 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("notAvailable") << "notAvailable.qml" << "notAvailable.errors.txt" << false;
     QTest::newRow("singularProperty") << "singularProperty.qml" << "singularProperty.errors.txt" << false;
     QTest::newRow("singularProperty.2") << "singularProperty.2.qml" << "singularProperty.2.errors.txt" << false;
+    QTest::newRow("incorrectCase") << "incorrectCase.qml" 
+#if defined(Q_OS_MAC) || defined(Q_OS_WIN)
+        << "incorrectCase.errors.insensitive.txt" 
+#else
+        << "incorrectCase.errors.sensitive.txt" 
+#endif
+        << false;
 }
 
 
@@ -1722,6 +1730,22 @@ void tst_qdeclarativelanguage::importsOrder()
     QFETCH(QString, type);
     QFETCH(QString, error);
     testType(qml,type,error);
+}
+
+void tst_qdeclarativelanguage::importIncorrectCase()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("importIncorrectCase.qml"));
+
+    QList<QDeclarativeError> errors = component.errors();
+    QCOMPARE(errors.count(), 1);
+
+#if defined(Q_OS_MAC) || defined(Q_OS_WIN)
+    QString expectedError = QLatin1String("cannot load module \"com.Nokia.installedtest\": File name case mismatch for \"") + QFileInfo(__FILE__).absoluteDir().filePath("data/lib/com/Nokia/installedtest/qmldir") + QLatin1String("\"");
+#else
+    QString expectedError = QLatin1String("module \"com.Nokia.installedtest\" is not installed");
+#endif
+
+    QCOMPARE(errors.at(0).description(), expectedError);
 }
 
 void tst_qdeclarativelanguage::qmlAttachedPropertiesObjectMethod()
