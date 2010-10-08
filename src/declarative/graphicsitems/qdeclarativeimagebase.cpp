@@ -46,8 +46,6 @@
 #include <qdeclarativeinfo.h>
 #include <qdeclarativepixmapcache_p.h>
 
-#include <QFile>
-
 QT_BEGIN_NAMESPACE
 
 QDeclarativeImageBase::QDeclarativeImageBase(QDeclarativeImageBasePrivate &dd, QDeclarativeItem *parent)
