@@ -2159,4 +2159,30 @@ const QMetaObject *QDeclarativeEnginePrivate::metaObjectForType(int t) const
     }
 }
 
+bool QDeclarative_isFileCaseCorrect(const QString &fileName)
+{
+#if defined(Q_OS_MAC) || defined(Q_OS_WIN)
+    QFileInfo info(fileName);
+
+    QString absolute = info.absoluteFilePath();
+    QString canonical = info.canonicalFilePath();
+
+    int absoluteLength = absolute.length();
+    int canonicalLength = canonical.length();
+
+    int length = qMin(absoluteLength, canonicalLength);
+    for (int ii = 0; ii < length; ++ii) {
+        const QChar &a = absolute.at(absoluteLength - 1 - ii);
+        const QChar &c = canonical.at(canonicalLength - 1 - ii);
+
+        if (a.toLower() != c.toLower())
+            return true;
+        if (a != c)
+            return false;
+    }
+#endif
+
+    return true;
+}
+
 QT_END_NAMESPACE

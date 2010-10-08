@@ -459,7 +459,7 @@ int QDeclarativeVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
             id -= propOffset;
 
             if (id < metaData->propertyCount) {
-                int t = (metaData->propertyData() + id)->propertyType;
+               int t = (metaData->propertyData() + id)->propertyType;
                 bool needActivate = false;
 
                 if (t == -1) {
@@ -586,11 +586,26 @@ int QDeclarativeVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
 
                 connectAlias(id);
 
-                if (d->propertyIdx == -1) {
+                if (d->isObjectAlias()) {
                     *reinterpret_cast<QObject **>(a[0]) = target;
                     return -1;
+                } else if (d->isValueTypeAlias()) {
+                    // Value type property
+                    QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(ctxt->engine);
+
+                    QDeclarativeValueType *valueType = ep->valueTypes[d->valueType()];
+                    Q_ASSERT(valueType);
+
+                    valueType->read(target, d->propertyIndex());
+                    int rv = QMetaObject::metacall(valueType, c, d->valueTypeIndex(), a);
+                    
+                    if (c == QMetaObject::WriteProperty)
+                        valueType->write(target, d->propertyIndex(), 0x00);
+
+                    return rv;
+
                 } else {
-                    return QMetaObject::metacall(target, c, d->propertyIdx, a);
+                    return QMetaObject::metacall(target, c, d->propertyIndex(), a);
                 }
 
             }
@@ -823,8 +838,8 @@ void QDeclarativeVMEMetaObject::connectAlias(int aliasId)
         int sigIdx = methodOffset + aliasId + metaData->propertyCount;
         QMetaObject::connect(context, d->contextIdx + ctxtPriv->notifyIndex, object, sigIdx);
 
-        if (d->propertyIdx != -1) {
-            QMetaProperty prop = target->metaObject()->property(d->propertyIdx);
+        if (!d->isObjectAlias()) {
+            QMetaProperty prop = target->metaObject()->property(d->propertyIndex());
             if (prop.hasNotifySignal())
                 QDeclarativePropertyPrivate::connect(target, prop.notifySignalIndex(), object, sigIdx);
         }

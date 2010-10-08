@@ -82,7 +82,7 @@ private:
     static QSet<QUrl> errors;
 };
 
-DEFINE_BOOL_CONFIG_OPTION(disableImageCache, QML_DISABLE_IMAGE_CACHE);
+DEFINE_BOOL_CONFIG_OPTION(enableImageCache, QML_ENABLE_TEXT_IMAGE_CACHE);
 
 QDeclarativeTextPrivate::QDeclarativeTextPrivate()
 : color((QRgb)0), style(QDeclarativeText::Normal),
@@ -90,7 +90,7 @@ QDeclarativeTextPrivate::QDeclarativeTextPrivate()
   imgDirty(true), dirty(true), richText(false), singleline(false), cache(true), internalWidthUpdate(false), doc(0),
   format(QDeclarativeText::AutoText), wrapMode(QDeclarativeText::NoWrap)
 {
-    cache = !disableImageCache();
+    cache = enableImageCache();
     QGraphicsItemPrivate::acceptedMouseButtons = Qt::LeftButton;
     QGraphicsItemPrivate::flags = QGraphicsItemPrivate::flags & ~QGraphicsItem::ItemHasNoContents;
 }
