@@ -475,6 +475,7 @@ public:
         for (QStringList::ConstIterator it=options.begin(); (it!=options.end()); it++)
             parseOption((*it).toLatin1());
     }
+    static QStringList fixCommandLine(const QString &input);
 };
 
 class VCConfiguration;
@@ -746,7 +747,7 @@ protected:
 
 public:
     // Variables
-    QString                 CommandLine;
+    QStringList             CommandLine;
     QString                 Description;
     triState                ExcludedFromBuild;
     QString                 ToolName;

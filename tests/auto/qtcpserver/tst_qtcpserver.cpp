@@ -105,6 +105,8 @@ private slots:
     void invalidProxy();
     void proxyFactory_data();
     void proxyFactory();
+
+    void qtbug14268_peek();
 };
 
 // Testing get/set functions
@@ -660,6 +662,57 @@ void tst_QTcpServer::proxyFactory()
     // note: the following test is not a hard failure.
     // Sometimes, error codes change for the better
     QTEST(int(server.serverError()), "expectedError");
+}
+
+class Qtbug14268Helper : public QObject
+{
+    Q_OBJECT
+public:
+    QByteArray lastDataPeeked;
+public slots:
+    void newConnection() {
+        QTcpServer* server=static_cast<QTcpServer*>(sender());
+        QTcpSocket* s=server->nextPendingConnection();
+        connect(s,SIGNAL(readyRead()),this,SLOT(onServerReadyRead()));
+    }
+    void onServerReadyRead() {
+        QTcpSocket* clientSocket=static_cast<QTcpSocket*>(sender());
+        lastDataPeeked = clientSocket->peek(128*1024).toHex();
+        QTestEventLoop::instance().exitLoop();
+    }
+};
+
+// there is a similar test inside tst_qtcpsocket that uses the waitFor* functions instead
+void tst_QTcpServer::qtbug14268_peek()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    QTcpServer server;
+    server.listen();
+
+    Qtbug14268Helper helper;
+    QObject::connect(&server, SIGNAL(newConnection()), &helper, SLOT(newConnection()));
+
+    QTcpSocket client;
+    client.connectToHost(QHostAddress::LocalHost, server.serverPort());
+    QVERIFY(client.waitForConnected(2000));
+
+    client.write("abc\n");
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(helper.lastDataPeeked == QByteArray("6162630a"));
+
+    client.write("def\n");
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(helper.lastDataPeeked == QByteArray("6162630a6465660a"));
+
+    client.write("ghi\n");
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(helper.lastDataPeeked == QByteArray("6162630a6465660a6768690a"));
 }
 
 QTEST_MAIN(tst_QTcpServer)

@@ -61,6 +61,9 @@ MMF::MediaObject::MediaObject(QObject *parent) : MMF::MediaNode::MediaNode(paren
     TRACE_CONTEXT(MediaObject::MediaObject, EAudioApi);
     TRACE_ENTRY_0();
 
+    const int err = m_fileServer.Connect();
+    QT_TRAP_THROWING(User::LeaveIfError(err));
+
     Q_UNUSED(parent);
 
     TRACE_EXIT_0();
@@ -99,12 +102,6 @@ bool MMF::MediaObject::openRecognizer()
             return false;
         }
 
-        err = m_fileServer.Connect();
-        if (KErrNone != err) {
-            TRACE("RFs::Connect error %d", err);
-            return false;
-        }
-
         // This must be called in order to be able to share file handles with
         // the recognizer server (see fileMediaType function).
         err = m_fileServer.ShareProtected();
@@ -127,13 +124,8 @@ MMF::MediaType MMF::MediaObject::fileMediaType
     MediaType result = MediaTypeUnknown;
 
     if (openRecognizer()) {
-
-        const QHBufC fileNameSymbian(QDir::toNativeSeparators(fileName));
-
-        Q_ASSERT(!m_file);
-        m_file = new RFile;
-        TInt err = m_file->Open(m_fileServer, *fileNameSymbian, EFileRead | EFileShareReadersOnly);
-
+        TInt err = openFileHandle(fileName);
+        const QHBufC nativeFileName(QDir::toNativeSeparators(fileName));
         if (KErrNone == err) {
             TDataRecognitionResult recognizerResult;
             err = m_recognizer.RecognizeData(*m_file, recognizerResult);
@@ -141,14 +133,28 @@ MMF::MediaType MMF::MediaObject::fileMediaType
                 const TPtrC mimeType = recognizerResult.iDataType.Des();
                 result = Utils::mimeTypeToMediaType(mimeType);
             } else {
-                TRACE("RApaLsSession::RecognizeData filename %S error %d", fileNameSymbian.data(), err);
+                TRACE("RApaLsSession::RecognizeData filename %S error %d", nativeFileName.data(), err);
             }
         } else {
-            TRACE("RFile::Open filename %S error %d", fileNameSymbian.data(), err);
+            TRACE("RFile::Open filename %S error %d", nativeFileName.data(), err);
         }
     }
 
     return result;
+}
+
+int MMF::MediaObject::openFileHandle(const QString &fileName)
+{
+    TRACE_CONTEXT(MediaObject::openFileHandle, EAudioInternal);
+    const QHBufC nativeFileName(QDir::toNativeSeparators(fileName));
+    TRACE_ENTRY("filename %S", nativeFileName.data());
+    if (m_file)
+        m_file->Close();
+    delete m_file;
+    m_file = 0;
+    m_file = new RFile;
+    TInt err = m_file->Open(m_fileServer, *nativeFileName, EFileRead | EFileShareReadersOrWriters);
+    return err;
 }
 
 MMF::MediaType MMF::MediaObject::bufferMediaType(const uchar *data, qint64 size)

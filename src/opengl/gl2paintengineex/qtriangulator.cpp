@@ -57,6 +57,9 @@
 
 #include <math.h>
 
+#include <private/qgl_p.h>
+#include <private/qglextensions_p.h>
+
 QT_BEGIN_NAMESPACE
 
 //#define Q_TRIANGULATOR_DEBUG
@@ -184,6 +187,18 @@ sort_loop_end:
     sort(array, low);
     sort(array + low + 1, count - low - 1);
 }
+
+template<typename T>
+struct QVertexSet
+{
+    inline QVertexSet() { }
+    inline QVertexSet(const QVertexSet<T> &other) : vertices(other.vertices), indices(other.indices) { }
+    QVertexSet<T> &operator = (const QVertexSet<T> &other) {vertices = other.vertices; indices = other.indices; return *this;}
+
+    // The vertices of a triangle are given by: (x[i[n]], y[i[n]]), (x[j[n]], y[j[n]]), (x[k[n]], y[k[n]]), n = 0, 1, ...
+    QVector<qreal> vertices; // [x[0], y[0], x[1], y[1], x[2], ...]
+    QVector<T> indices; // [i[0], j[0], k[0], i[1], j[1], k[1], i[2], ...]
+};
 
 //============================================================================//
 //                                 QFraction                                  //
@@ -610,7 +625,7 @@ struct QRBTree
     // Return 1 if 'left' comes after 'right', 0 if equal, and -1 otherwise.
     // 'left' and 'right' cannot be null.
     int order(Node *left, Node *right);
-    inline bool verify() const;
+    inline bool validate() const;
 
 private:
     void rotateLeft(Node *node);
@@ -1023,7 +1038,7 @@ bool QRBTree<T>::checkRedBlackProperty(Node *top) const
 }
 
 template <class T>
-inline bool QRBTree<T>::verify() const
+inline bool QRBTree<T>::validate() const
 {
     return checkRedBlackProperty(root) && blackDepth(root) != -1;
 }
@@ -1295,7 +1310,7 @@ inline void QRingBuffer<T>::enqueue(const T &x)
 //============================================================================//
 //                               QTriangulator                                //
 //============================================================================//
-
+template<typename T>
 class QTriangulator
 {
 public:
@@ -1308,7 +1323,7 @@ public:
     class ComplexToSimple
     {
     public:
-        inline ComplexToSimple(QTriangulator *parent) : m_parent(parent),
+        inline ComplexToSimple(QTriangulator<T> *parent) : m_parent(parent),
             m_edges(0), m_events(0), m_splits(0) { }
         void decompose();
     private:
@@ -1422,7 +1437,7 @@ public:
     class SimpleToMonotone
     {
     public:
-        inline SimpleToMonotone(QTriangulator *parent) : m_parent(parent), m_edges(0), m_upperVertex(0) { }
+        inline SimpleToMonotone(QTriangulator<T> *parent) : m_parent(parent), m_edges(0), m_upperVertex(0) { }
         void decompose();
     private:
         enum VertexType {MergeVertex, EndVertex, RegularVertex, StartVertex, SplitVertex};
@@ -1431,7 +1446,7 @@ public:
         {
             QRBTree<int>::Node *node;
             int helper, twin, next, previous;
-            quint32 from, to;
+            T from, to;
             VertexType type;
             bool pointingUp;
             int upper() const {return (pointingUp ? to : from);}
@@ -1478,20 +1493,20 @@ public:
     class MonotoneToTriangles
     {
     public:
-        inline MonotoneToTriangles(QTriangulator *parent) : m_parent(parent) { }
+        inline MonotoneToTriangles(QTriangulator<T> *parent) : m_parent(parent) { }
         void decompose();
     private:
-        inline quint32 indices(int index) const {return m_parent->m_indices.at(index + m_first);}
+        inline T indices(int index) const {return m_parent->m_indices.at(index + m_first);}
         inline int next(int index) const {return (index + 1) % m_length;}
         inline int previous(int index) const {return (index + m_length - 1) % m_length;}
-        inline bool less(int i, int j) const {return m_parent->m_vertices.at(indices(i)) < m_parent->m_vertices.at(indices(j));}
+        inline bool less(int i, int j) const {return m_parent->m_vertices.at((qint32)indices(i)) < m_parent->m_vertices.at(indices(j));}
         inline bool leftOfEdge(int i, int j, int k) const
         {
-            return qPointIsLeftOfLine(m_parent->m_vertices.at(indices(i)),
-                m_parent->m_vertices.at(indices(j)), m_parent->m_vertices.at(indices(k)));
+            return qPointIsLeftOfLine(m_parent->m_vertices.at((qint32)indices(i)),
+                m_parent->m_vertices.at((qint32)indices(j)), m_parent->m_vertices.at((qint32)indices(k)));
         }
 
-        QTriangulator *m_parent;
+        QTriangulator<T> *m_parent;
         int m_first;
         int m_length;
     };
@@ -1505,11 +1520,11 @@ public:
     // Call this only once.
     void initialize(const QPainterPath &path, const QTransform &matrix, qreal lod);
     // Call either triangulate() or polyline() only once.
-    QTriangleSet triangulate();
-    QPolylineSet polyline();
+    QVertexSet<T> triangulate();
+    QVertexSet<T> polyline();
 private:
     QDataBuffer<QPodPoint> m_vertices;
-    QVector<quint32> m_indices;
+    QVector<T> m_indices;
     uint m_hint;
 };
 
@@ -1517,7 +1532,8 @@ private:
 //                               QTriangulator                                //
 //============================================================================//
 
-QTriangleSet QTriangulator::triangulate()
+template <typename T>
+QVertexSet<T> QTriangulator<T>::triangulate()
 {
     for (int i = 0; i < m_vertices.size(); ++i) {
         Q_ASSERT(qAbs(m_vertices.at(i).x) < (1 << 21));
@@ -1536,7 +1552,7 @@ QTriangleSet QTriangulator::triangulate()
     MonotoneToTriangles m2t(this);
     m2t.decompose();
 
-    QTriangleSet result;
+    QVertexSet<T> result;
     result.indices = m_indices;
     result.vertices.resize(2 * m_vertices.size());
     for (int i = 0; i < m_vertices.size(); ++i) {
@@ -1546,9 +1562,10 @@ QTriangleSet QTriangulator::triangulate()
     return result;
 }
 
-QPolylineSet QTriangulator::polyline()
+template <typename T>
+QVertexSet<T> QTriangulator<T>::polyline()
 {
-    QPolylineSet result;
+    QVertexSet<T> result;
     result.indices = m_indices;
     result.vertices.resize(2 * m_vertices.size());
     for (int i = 0; i < m_vertices.size(); ++i) {
@@ -1558,7 +1575,8 @@ QPolylineSet QTriangulator::polyline()
     return result;
 }
 
-void QTriangulator::initialize(const qreal *polygon, int count, uint hint, const QTransform &matrix)
+template <typename T>
+void QTriangulator<T>::initialize(const qreal *polygon, int count, uint hint, const QTransform &matrix)
 {
     m_hint = hint;
     m_vertices.resize(count);
@@ -1570,10 +1588,11 @@ void QTriangulator::initialize(const qreal *polygon, int count, uint hint, const
         m_vertices.at(i).y = qRound(y * Q_FIXED_POINT_SCALE);
         m_indices[i] = i;
     }
-    m_indices[count] = Q_TRIANGULATE_END_OF_POLYGON;
+    m_indices[count] = T(-1); //Q_TRIANGULATE_END_OF_POLYGON
 }
 
-void QTriangulator::initialize(const QVectorPath &path, const QTransform &matrix, qreal lod)
+template <typename T>
+void QTriangulator<T>::initialize(const QVectorPath &path, const QTransform &matrix, qreal lod)
 {
     m_hint = path.hints();
     // Curved paths will be converted to complex polygons.
@@ -1586,10 +1605,10 @@ void QTriangulator::initialize(const QVectorPath &path, const QTransform &matrix
             switch (*e) {
             case QPainterPath::MoveToElement:
                 if (!m_indices.isEmpty())
-                    m_indices.push_back(Q_TRIANGULATE_END_OF_POLYGON);
+                    m_indices.push_back(T(-1)); // Q_TRIANGULATE_END_OF_POLYGON
                 // Fall through.
             case QPainterPath::LineToElement:
-                m_indices.push_back(quint32(m_vertices.size()));
+                m_indices.push_back(T(m_vertices.size()));
                 m_vertices.resize(m_vertices.size() + 1);
                 qreal x, y;
                 matrix.map(p[0], p[1], &x, &y);
@@ -1607,7 +1626,7 @@ void QTriangulator::initialize(const QVectorPath &path, const QTransform &matrix
                     QPolygonF poly = bezier.toPolygon();
                     // Skip first point, it already exists in 'm_vertices'.
                     for (int j = 1; j < poly.size(); ++j) {
-                        m_indices.push_back(quint32(m_vertices.size()));
+                        m_indices.push_back(T(m_vertices.size()));
                         m_vertices.resize(m_vertices.size() + 1);
                         m_vertices.last().x = qRound(poly.at(j).x() * Q_FIXED_POINT_SCALE / lod);
                         m_vertices.last().y = qRound(poly.at(j).y() * Q_FIXED_POINT_SCALE / lod);
@@ -1624,7 +1643,7 @@ void QTriangulator::initialize(const QVectorPath &path, const QTransform &matrix
         }
     } else {
         for (int i = 0; i < path.elementCount(); ++i, p += 2) {
-            m_indices.push_back(quint32(m_vertices.size()));
+            m_indices.push_back(T(m_vertices.size()));
             m_vertices.resize(m_vertices.size() + 1);
             qreal x, y;
             matrix.map(p[0], p[1], &x, &y);
@@ -1632,10 +1651,11 @@ void QTriangulator::initialize(const QVectorPath &path, const QTransform &matrix
             m_vertices.last().y = qRound(y * Q_FIXED_POINT_SCALE);
         }
     }
-    m_indices.push_back(Q_TRIANGULATE_END_OF_POLYGON);
+    m_indices.push_back(T(-1)); // Q_TRIANGULATE_END_OF_POLYGON
 }
 
-void QTriangulator::initialize(const QPainterPath &path, const QTransform &matrix, qreal lod)
+template <typename T>
+void QTriangulator<T>::initialize(const QPainterPath &path, const QTransform &matrix, qreal lod)
 {
     initialize(qtVectorPathForPath(path), matrix, lod);
 }
@@ -1643,8 +1663,8 @@ void QTriangulator::initialize(const QPainterPath &path, const QTransform &matri
 //============================================================================//
 //                       QTriangulator::ComplexToSimple                       //
 //============================================================================//
-
-void QTriangulator::ComplexToSimple::decompose()
+template <typename T>
+void QTriangulator<T>::ComplexToSimple::decompose()
 {
     m_initialPointCount = m_parent->m_vertices.size();
     initEdges();
@@ -1670,17 +1690,18 @@ void QTriangulator::ComplexToSimple::decompose()
             processed.setBit(i);
             i = m_edges.at(i).next; // CCW order
         } while (i != first);
-        m_parent->m_indices.push_back(Q_TRIANGULATE_END_OF_POLYGON);
+        m_parent->m_indices.push_back(T(-1)); // Q_TRIANGULATE_END_OF_POLYGON
     }
 }
 
-void QTriangulator::ComplexToSimple::initEdges()
+template <typename T>
+void QTriangulator<T>::ComplexToSimple::initEdges()
 {
     // Initialize edge structure.
     // 'next' and 'previous' are not being initialized at this point.
     int first = 0;
     for (int i = 0; i < m_parent->m_indices.size(); ++i) {
-        if (m_parent->m_indices.at(i) == Q_TRIANGULATE_END_OF_POLYGON) {
+        if (m_parent->m_indices.at(i) == T(-1)) { // Q_TRIANGULATE_END_OF_POLYGON
             if (m_edges.size() != first)
                 m_edges.last().to = m_edges.at(first).from;
             first = m_edges.size();
@@ -1700,15 +1721,16 @@ void QTriangulator::ComplexToSimple::initEdges()
 }
 
 // Return true if new intersection was found
-bool QTriangulator::ComplexToSimple::calculateIntersection(int left, int right)
+template <typename T>
+bool QTriangulator<T>::ComplexToSimple::calculateIntersection(int left, int right)
 {
     const Edge &e1 = m_edges.at(left);
     const Edge &e2 = m_edges.at(right);
 
-    const QPodPoint &u1 = m_parent->m_vertices.at(e1.from);
-    const QPodPoint &u2 = m_parent->m_vertices.at(e1.to);
-    const QPodPoint &v1 = m_parent->m_vertices.at(e2.from);
-    const QPodPoint &v2 = m_parent->m_vertices.at(e2.to);
+    const QPodPoint &u1 = m_parent->m_vertices.at((qint32)e1.from);
+    const QPodPoint &u2 = m_parent->m_vertices.at((qint32)e1.to);
+    const QPodPoint &v1 = m_parent->m_vertices.at((qint32)e2.from);
+    const QPodPoint &v2 = m_parent->m_vertices.at((qint32)e2.to);
     if (qMax(u1.x, u2.x) <= qMin(v1.x, v2.x))
         return false;
 
@@ -1734,7 +1756,8 @@ bool QTriangulator::ComplexToSimple::calculateIntersection(int left, int right)
     return true;
 }
 
-bool QTriangulator::ComplexToSimple::edgeIsLeftOfEdge(int leftEdgeIndex, int rightEdgeIndex) const
+template <typename T>
+bool QTriangulator<T>::ComplexToSimple::edgeIsLeftOfEdge(int leftEdgeIndex, int rightEdgeIndex) const
 {
     const Edge &leftEdge = m_edges.at(leftEdgeIndex);
     const Edge &rightEdge = m_edges.at(rightEdgeIndex);
@@ -1752,7 +1775,8 @@ bool QTriangulator::ComplexToSimple::edgeIsLeftOfEdge(int leftEdgeIndex, int rig
     return d < 0;
 }
 
-QRBTree<int>::Node *QTriangulator::ComplexToSimple::searchEdgeLeftOf(int edgeIndex) const
+template <typename T>
+QRBTree<int>::Node *QTriangulator<T>::ComplexToSimple::searchEdgeLeftOf(int edgeIndex) const
 {
     QRBTree<int>::Node *current = m_edgeList.root;
     QRBTree<int>::Node *result = 0;
@@ -1767,7 +1791,8 @@ QRBTree<int>::Node *QTriangulator::ComplexToSimple::searchEdgeLeftOf(int edgeInd
     return result;
 }
 
-QRBTree<int>::Node *QTriangulator::ComplexToSimple::searchEdgeLeftOf(int edgeIndex, QRBTree<int>::Node *after) const
+template <typename T>
+QRBTree<int>::Node *QTriangulator<T>::ComplexToSimple::searchEdgeLeftOf(int edgeIndex, QRBTree<int>::Node *after) const
 {
     if (!m_edgeList.root)
         return after;
@@ -1782,7 +1807,8 @@ QRBTree<int>::Node *QTriangulator::ComplexToSimple::searchEdgeLeftOf(int edgeInd
     return result;
 }
 
-QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator::ComplexToSimple::bounds(const QPodPoint &point) const
+template <typename T>
+QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator<T>::ComplexToSimple::bounds(const QPodPoint &point) const
 {
     QRBTree<int>::Node *current = m_edgeList.root;
     QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> result(0, 0);
@@ -1830,7 +1856,8 @@ QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator::ComplexToSimple
     return result;
 }
 
-QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator::ComplexToSimple::outerBounds(const QPodPoint &point) const
+template <typename T>
+QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator<T>::ComplexToSimple::outerBounds(const QPodPoint &point) const
 {
     QRBTree<int>::Node *current = m_edgeList.root;
     QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> result(0, 0);
@@ -1886,7 +1913,8 @@ QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator::ComplexToSimple
     return result;
 }
 
-void QTriangulator::ComplexToSimple::splitEdgeListRange(QRBTree<int>::Node *leftmost, QRBTree<int>::Node *rightmost, int vertex, const QIntersectionPoint &intersectionPoint)
+template <typename T>
+void QTriangulator<T>::ComplexToSimple::splitEdgeListRange(QRBTree<int>::Node *leftmost, QRBTree<int>::Node *rightmost, int vertex, const QIntersectionPoint &intersectionPoint)
 {
     Q_ASSERT(leftmost && rightmost);
 
@@ -1904,8 +1932,8 @@ void QTriangulator::ComplexToSimple::splitEdgeListRange(QRBTree<int>::Node *left
     }
 }
 
-
-void QTriangulator::ComplexToSimple::reorderEdgeListRange(QRBTree<int>::Node *leftmost, QRBTree<int>::Node *rightmost)
+template <typename T>
+void QTriangulator<T>::ComplexToSimple::reorderEdgeListRange(QRBTree<int>::Node *leftmost, QRBTree<int>::Node *rightmost)
 {
     Q_ASSERT(leftmost && rightmost);
 
@@ -1932,7 +1960,8 @@ void QTriangulator::ComplexToSimple::reorderEdgeListRange(QRBTree<int>::Node *le
         calculateIntersection(storeRightmost->data, rightmost->data);
 }
 
-void QTriangulator::ComplexToSimple::sortEdgeList(const QPodPoint eventPoint)
+template <typename T>
+void QTriangulator<T>::ComplexToSimple::sortEdgeList(const QPodPoint eventPoint)
 {
     QIntersectionPoint eventPoint2 = qIntersectionPoint(eventPoint);
     while (!m_topIntersection.isEmpty() && m_topIntersection.top().intersectionPoint < eventPoint2) {
@@ -1949,8 +1978,8 @@ void QTriangulator::ComplexToSimple::sortEdgeList(const QPodPoint eventPoint)
             if (!previous)
                 break;
             const Edge &edge = m_edges.at(previous->data);
-            const QPodPoint &u = m_parent->m_vertices.at(edge.from);
-            const QPodPoint &v = m_parent->m_vertices.at(edge.to);
+            const QPodPoint &u = m_parent->m_vertices.at((qint32)edge.from);
+            const QPodPoint &v = m_parent->m_vertices.at((qint32)edge.to);
             if (!currentIntersectionPoint.isOnLine(u, v)) {
                 Q_ASSERT(!currentIntersectionPoint.isAccurate() || qCross(currentIntersectionPoint.upperLeft - u, v - u) != 0);
                 break;
@@ -1963,8 +1992,8 @@ void QTriangulator::ComplexToSimple::sortEdgeList(const QPodPoint eventPoint)
             if (!next)
                 break;
             const Edge &edge = m_edges.at(next->data);
-            const QPodPoint &u = m_parent->m_vertices.at(edge.from);
-            const QPodPoint &v = m_parent->m_vertices.at(edge.to);
+            const QPodPoint &u = m_parent->m_vertices.at((qint32)edge.from);
+            const QPodPoint &v = m_parent->m_vertices.at((qint32)edge.to);
             if (!currentIntersectionPoint.isOnLine(u, v)) {
                 Q_ASSERT(!currentIntersectionPoint.isAccurate() || qCross(currentIntersectionPoint.upperLeft - u, v - u) != 0);
                 break;
@@ -1987,7 +2016,8 @@ void QTriangulator::ComplexToSimple::sortEdgeList(const QPodPoint eventPoint)
     }
 }
 
-void QTriangulator::ComplexToSimple::fillPriorityQueue()
+template <typename T>
+void QTriangulator<T>::ComplexToSimple::fillPriorityQueue()
 {
     m_events.reset();
     m_events.reserve(m_edges.size() * 2);
@@ -2010,7 +2040,8 @@ void QTriangulator::ComplexToSimple::fillPriorityQueue()
     sort(m_events.data(), m_events.size());
 }
 
-void QTriangulator::ComplexToSimple::calculateIntersections()
+template <typename T>
+void QTriangulator<T>::ComplexToSimple::calculateIntersections()
 {
     fillPriorityQueue();
 
@@ -2075,7 +2106,8 @@ void QTriangulator::ComplexToSimple::calculateIntersections()
 // The upper piece is pushed to the end of the 'm_edges' vector.
 // The lower piece replaces the old edge.
 // Return the edge whose 'from' is 'pointIndex'.
-int QTriangulator::ComplexToSimple::splitEdge(int splitIndex)
+template <typename T>
+int QTriangulator<T>::ComplexToSimple::splitEdge(int splitIndex)
 {
     const Split &split = m_splits.at(splitIndex);
     Edge &lowerEdge = m_edges.at(split.edge);
@@ -2105,7 +2137,8 @@ int QTriangulator::ComplexToSimple::splitEdge(int splitIndex)
     }
 }
 
-bool QTriangulator::ComplexToSimple::splitEdgesAtIntersections()
+template <typename T>
+bool QTriangulator<T>::ComplexToSimple::splitEdgesAtIntersections()
 {
     for (int i = 0; i < m_edges.size(); ++i)
         m_edges.at(i).mayIntersect = false;
@@ -2122,7 +2155,8 @@ bool QTriangulator::ComplexToSimple::splitEdgesAtIntersections()
     return checkForNewIntersections;
 }
 
-void QTriangulator::ComplexToSimple::insertEdgeIntoVectorIfWanted(ShortArray &orderedEdges, int i)
+template <typename T>
+void QTriangulator<T>::ComplexToSimple::insertEdgeIntoVectorIfWanted(ShortArray &orderedEdges, int i)
 {
     // Edges with zero length should not reach this part.
     Q_ASSERT(m_parent->m_vertices.at(m_edges.at(i).from) != m_parent->m_vertices.at(m_edges.at(i).to));
@@ -2152,7 +2186,8 @@ void QTriangulator::ComplexToSimple::insertEdgeIntoVectorIfWanted(ShortArray &or
     orderedEdges.append(i);
 }
 
-void QTriangulator::ComplexToSimple::removeUnwantedEdgesAndConnect()
+template <typename T>
+void QTriangulator<T>::ComplexToSimple::removeUnwantedEdgesAndConnect()
 {
     Q_ASSERT(m_edgeList.root == 0);
     // Initialize priority queue.
@@ -2290,7 +2325,8 @@ void QTriangulator::ComplexToSimple::removeUnwantedEdgesAndConnect()
     } // end while
 }
 
-void QTriangulator::ComplexToSimple::removeUnusedPoints() {
+template <typename T>
+void QTriangulator<T>::ComplexToSimple::removeUnusedPoints() {
     QBitArray used(m_parent->m_vertices.size(), false);
     for (int i = 0; i < m_edges.size(); ++i) {
         Q_ASSERT((m_edges.at(i).previous == -1) == (m_edges.at(i).next == -1));
@@ -2314,7 +2350,8 @@ void QTriangulator::ComplexToSimple::removeUnusedPoints() {
     }
 }
 
-bool QTriangulator::ComplexToSimple::CompareEdges::operator () (int i, int j) const
+template <typename T>
+bool QTriangulator<T>::ComplexToSimple::CompareEdges::operator () (int i, int j) const
 {
     int cmp = comparePoints(m_parent->m_parent->m_vertices.at(m_parent->m_edges.at(i).from),
         m_parent->m_parent->m_vertices.at(m_parent->m_edges.at(j).from));
@@ -2325,7 +2362,8 @@ bool QTriangulator::ComplexToSimple::CompareEdges::operator () (int i, int j) co
     return cmp > 0;
 }
 
-inline bool QTriangulator::ComplexToSimple::Event::operator < (const Event &other) const
+template <typename T>
+inline bool QTriangulator<T>::ComplexToSimple::Event::operator < (const Event &other) const
 {
     if (point == other.point)
         return type < other.type; // 'Lower' has higher priority than 'Upper'.
@@ -2337,8 +2375,8 @@ inline bool QTriangulator::ComplexToSimple::Event::operator < (const Event &othe
 //============================================================================//
 
 #ifdef Q_TRIANGULATOR_DEBUG
-
-QTriangulator::ComplexToSimple::DebugDialog::DebugDialog(ComplexToSimple *parent, int currentVertex)
+template <typename T>
+QTriangulator<T>::ComplexToSimple::DebugDialog::DebugDialog(ComplexToSimple *parent, int currentVertex)
     : m_parent(parent), m_vertex(currentVertex)
 {
     QDataBuffer<QPodPoint> &vertices = m_parent->m_parent->m_vertices;
@@ -2360,7 +2398,8 @@ QTriangulator::ComplexToSimple::DebugDialog::DebugDialog(ComplexToSimple *parent
     m_window = QRectF(minX - border, minY - border, (maxX - minX + 2 * border), (maxY - minY + 2 * border));
 }
 
-void QTriangulator::ComplexToSimple::DebugDialog::paintEvent(QPaintEvent *)
+template <typename T>
+void QTriangulator<T>::ComplexToSimple::DebugDialog::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing, true);
@@ -2426,7 +2465,8 @@ void QTriangulator::ComplexToSimple::DebugDialog::paintEvent(QPaintEvent *)
     }
 }
 
-void QTriangulator::ComplexToSimple::DebugDialog::wheelEvent(QWheelEvent *event)
+template <typename T>
+void QTriangulator<T>::ComplexToSimple::DebugDialog::wheelEvent(QWheelEvent *event)
 {
     qreal scale = exp(-0.001 * event->delta());
     QPointF center = m_window.center();
@@ -2436,7 +2476,8 @@ void QTriangulator::ComplexToSimple::DebugDialog::wheelEvent(QWheelEvent *event)
     update();
 }
 
-void QTriangulator::ComplexToSimple::DebugDialog::mouseMoveEvent(QMouseEvent *event)
+template <typename T>
+void QTriangulator<T>::ComplexToSimple::DebugDialog::mouseMoveEvent(QMouseEvent *event)
 {
     if (event->buttons() & Qt::LeftButton) {
         QPointF delta = event->pos() - m_lastMousePos;
@@ -2449,7 +2490,8 @@ void QTriangulator::ComplexToSimple::DebugDialog::mouseMoveEvent(QMouseEvent *ev
     }
 }
 
-void QTriangulator::ComplexToSimple::DebugDialog::mousePressEvent(QMouseEvent *event)
+template <typename T>
+void QTriangulator<T>::ComplexToSimple::DebugDialog::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton)
         m_lastMousePos = event->pos();
@@ -2462,8 +2504,8 @@ void QTriangulator::ComplexToSimple::DebugDialog::mousePressEvent(QMouseEvent *e
 //============================================================================//
 //                      QTriangulator::SimpleToMonotone                       //
 //============================================================================//
-
-void QTriangulator::SimpleToMonotone::decompose()
+template <typename T>
+void QTriangulator<T>::SimpleToMonotone::decompose()
 {
     setupDataStructures();
     removeZeroLengthEdges();
@@ -2482,12 +2524,13 @@ void QTriangulator::SimpleToMonotone::decompose()
             processed.setBit(i);
             i = m_edges.at(i).next;
         } while (i != first);
-        if (m_parent->m_indices.size() > 0 && m_parent->m_indices.back() != Q_TRIANGULATE_END_OF_POLYGON)
-            m_parent->m_indices.push_back(Q_TRIANGULATE_END_OF_POLYGON);
+        if (m_parent->m_indices.size() > 0 && m_parent->m_indices.back() != T(-1)) // Q_TRIANGULATE_END_OF_POLYGON
+            m_parent->m_indices.push_back(T(-1)); // Q_TRIANGULATE_END_OF_POLYGON
     }
 }
 
-void QTriangulator::SimpleToMonotone::setupDataStructures()
+template <typename T>
+void QTriangulator<T>::SimpleToMonotone::setupDataStructures()
 {
     int i = 0;
     Edge e;
@@ -2505,7 +2548,7 @@ void QTriangulator::SimpleToMonotone::setupDataStructures()
             m_edges.add(e);
             ++i;
             Q_ASSERT(i < m_parent->m_indices.size());
-        } while (m_parent->m_indices.at(i) != Q_TRIANGULATE_END_OF_POLYGON);
+        } while (m_parent->m_indices.at(i) != T(-1)); // Q_TRIANGULATE_END_OF_POLYGON
 
         m_edges.last().next = start;
         m_edges.at(start).previous = m_edges.size() - 1;
@@ -2519,7 +2562,8 @@ void QTriangulator::SimpleToMonotone::setupDataStructures()
     }
 }
 
-void QTriangulator::SimpleToMonotone::removeZeroLengthEdges()
+template <typename T>
+void QTriangulator<T>::SimpleToMonotone::removeZeroLengthEdges()
 {
     for (int i = 0; i < m_edges.size(); ++i) {
         if (m_parent->m_vertices.at(m_edges.at(i).from) == m_parent->m_vertices.at(m_edges.at(i).to)) {
@@ -2547,7 +2591,8 @@ void QTriangulator::SimpleToMonotone::removeZeroLengthEdges()
     }
 }
 
-void QTriangulator::SimpleToMonotone::fillPriorityQueue()
+template <typename T>
+void QTriangulator<T>::SimpleToMonotone::fillPriorityQueue()
 {
     m_upperVertex.reset();
     m_upperVertex.reserve(m_edges.size());
@@ -2561,7 +2606,8 @@ void QTriangulator::SimpleToMonotone::fillPriorityQueue()
     //}
 }
 
-bool QTriangulator::SimpleToMonotone::edgeIsLeftOfEdge(int leftEdgeIndex, int rightEdgeIndex) const
+template <typename T>
+bool QTriangulator<T>::SimpleToMonotone::edgeIsLeftOfEdge(int leftEdgeIndex, int rightEdgeIndex) const
 {
     const Edge &leftEdge = m_edges.at(leftEdgeIndex);
     const Edge &rightEdge = m_edges.at(rightEdgeIndex);
@@ -2575,7 +2621,8 @@ bool QTriangulator::SimpleToMonotone::edgeIsLeftOfEdge(int leftEdgeIndex, int ri
 }
 
 // Returns the rightmost edge not to the right of the given edge.
-QRBTree<int>::Node *QTriangulator::SimpleToMonotone::searchEdgeLeftOfEdge(int edgeIndex) const
+template <typename T>
+QRBTree<int>::Node *QTriangulator<T>::SimpleToMonotone::searchEdgeLeftOfEdge(int edgeIndex) const
 {
     QRBTree<int>::Node *current = m_edgeList.root;
     QRBTree<int>::Node *result = 0;
@@ -2591,7 +2638,8 @@ QRBTree<int>::Node *QTriangulator::SimpleToMonotone::searchEdgeLeftOfEdge(int ed
 }
 
 // Returns the rightmost edge left of the given point.
-QRBTree<int>::Node *QTriangulator::SimpleToMonotone::searchEdgeLeftOfPoint(int pointIndex) const
+template <typename T>
+QRBTree<int>::Node *QTriangulator<T>::SimpleToMonotone::searchEdgeLeftOfPoint(int pointIndex) const
 {
     QRBTree<int>::Node *current = m_edgeList.root;
     QRBTree<int>::Node *result = 0;
@@ -2609,7 +2657,8 @@ QRBTree<int>::Node *QTriangulator::SimpleToMonotone::searchEdgeLeftOfPoint(int p
     return result;
 }
 
-void QTriangulator::SimpleToMonotone::classifyVertex(int i)
+template <typename T>
+void QTriangulator<T>::SimpleToMonotone::classifyVertex(int i)
 {
     Edge &e2 = m_edges.at(i);
     const Edge &e1 = m_edges.at(e2.previous);
@@ -2638,13 +2687,15 @@ void QTriangulator::SimpleToMonotone::classifyVertex(int i)
     }
 }
 
-void QTriangulator::SimpleToMonotone::classifyVertices()
+template <typename T>
+void QTriangulator<T>::SimpleToMonotone::classifyVertices()
 {
     for (int i = 0; i < m_edges.size(); ++i)
         classifyVertex(i);
 }
 
-bool QTriangulator::SimpleToMonotone::pointIsInSector(const QPodPoint &p, const QPodPoint &v1, const QPodPoint &v2, const QPodPoint &v3)
+template <typename T>
+bool QTriangulator<T>::SimpleToMonotone::pointIsInSector(const QPodPoint &p, const QPodPoint &v1, const QPodPoint &v2, const QPodPoint &v3)
 {
     bool leftOfPreviousEdge = !qPointIsLeftOfLine(p, v2, v1);
     bool leftOfNextEdge = !qPointIsLeftOfLine(p, v3, v2);
@@ -2655,7 +2706,8 @@ bool QTriangulator::SimpleToMonotone::pointIsInSector(const QPodPoint &p, const 
         return leftOfPreviousEdge || leftOfNextEdge;
 }
 
-bool QTriangulator::SimpleToMonotone::pointIsInSector(int vertex, int sector)
+template <typename T>
+bool QTriangulator<T>::SimpleToMonotone::pointIsInSector(int vertex, int sector)
 {
     const QPodPoint &center = m_parent->m_vertices.at(m_edges.at(sector).from);
     // Handle degenerate edges.
@@ -2677,7 +2729,8 @@ bool QTriangulator::SimpleToMonotone::pointIsInSector(int vertex, int sector)
         return pointIsInSector(p, v1, center, v3);
 }
 
-int QTriangulator::SimpleToMonotone::findSector(int edge, int vertex)
+template <typename T>
+int QTriangulator<T>::SimpleToMonotone::findSector(int edge, int vertex)
 {
     while (!pointIsInSector(vertex, edge)) {
         edge = m_edges.at(m_edges.at(edge).previous).twin;
@@ -2686,7 +2739,8 @@ int QTriangulator::SimpleToMonotone::findSector(int edge, int vertex)
     return edge;
 }
 
-void QTriangulator::SimpleToMonotone::createDiagonal(int lower, int upper)
+template <typename T>
+void QTriangulator<T>::SimpleToMonotone::createDiagonal(int lower, int upper)
 {
     lower = findSector(lower, upper);
     upper = findSector(upper, lower);
@@ -2713,7 +2767,8 @@ void QTriangulator::SimpleToMonotone::createDiagonal(int lower, int upper)
     m_edges.add(e);
 }
 
-void QTriangulator::SimpleToMonotone::monotoneDecomposition()
+template <typename T>
+void QTriangulator<T>::SimpleToMonotone::monotoneDecomposition()
 {
     if (m_edges.isEmpty())
         return;
@@ -2729,8 +2784,8 @@ void QTriangulator::SimpleToMonotone::monotoneDecomposition()
     Q_ASSERT(i < m_edges.size());
     int j = m_edges.at(i).previous;
     Q_ASSERT(j < m_edges.size());
-    m_clockwiseOrder = qPointIsLeftOfLine(m_parent->m_vertices.at(m_edges.at(i).from),
-        m_parent->m_vertices.at(m_edges.at(j).from), m_parent->m_vertices.at(m_edges.at(i).to));
+    m_clockwiseOrder = qPointIsLeftOfLine(m_parent->m_vertices.at((quint32)m_edges.at(i).from),
+        m_parent->m_vertices.at((quint32)m_edges.at(j).from), m_parent->m_vertices.at((quint32)m_edges.at(i).to));
 
     classifyVertices();
     fillPriorityQueue();
@@ -2799,7 +2854,7 @@ void QTriangulator::SimpleToMonotone::monotoneDecomposition()
                 m_edges.at(j).node = node;
                 m_edges.at(j).helper = i;
                 m_edgeList.attachAfter(leftEdgeNode, node);
-                Q_ASSERT(m_edgeList.verify());
+                Q_ASSERT(m_edgeList.validate());
             } else  {
                 leftEdgeNode = searchEdgeLeftOfEdge(i);
                 QRBTree<int>::Node *node = m_edgeList.newNode();
@@ -2807,7 +2862,7 @@ void QTriangulator::SimpleToMonotone::monotoneDecomposition()
                 m_edges.at(i).node = node;
                 m_edges.at(i).helper = i;
                 m_edgeList.attachAfter(leftEdgeNode, node);
-                Q_ASSERT(m_edgeList.verify());
+                Q_ASSERT(m_edgeList.validate());
             }
             break;
         case MergeVertex:
@@ -2826,7 +2881,7 @@ void QTriangulator::SimpleToMonotone::monotoneDecomposition()
                     diagonals.add(QPair<int, int>(i, m_edges.at(i).helper));
                 if (m_edges.at(i).node) {
                     m_edgeList.deleteNode(m_edges.at(i).node);
-                    Q_ASSERT(m_edgeList.verify());
+                    Q_ASSERT(m_edgeList.validate());
                 } else {
                     qWarning("Inconsistent polygon. (#5)");
                 }
@@ -2835,7 +2890,7 @@ void QTriangulator::SimpleToMonotone::monotoneDecomposition()
                     diagonals.add(QPair<int, int>(i, m_edges.at(j).helper));
                 if (m_edges.at(j).node) {
                     m_edgeList.deleteNode(m_edges.at(j).node);
-                    Q_ASSERT(m_edgeList.verify());
+                    Q_ASSERT(m_edgeList.validate());
                 } else {
                     qWarning("Inconsistent polygon. (#6)");
                 }
@@ -2848,7 +2903,8 @@ void QTriangulator::SimpleToMonotone::monotoneDecomposition()
         createDiagonal(diagonals.at(i).first, diagonals.at(i).second);
 }
 
-bool QTriangulator::SimpleToMonotone::CompareVertices::operator () (int i, int j) const
+template <typename T>
+bool QTriangulator<T>::SimpleToMonotone::CompareVertices::operator () (int i, int j) const
 {
     if (m_parent->m_edges.at(i).from == m_parent->m_edges.at(j).from)
         return m_parent->m_edges.at(i).type > m_parent->m_edges.at(j).type;
@@ -2859,16 +2915,16 @@ bool QTriangulator::SimpleToMonotone::CompareVertices::operator () (int i, int j
 //============================================================================//
 //                     QTriangulator::MonotoneToTriangles                     //
 //============================================================================//
-
-void QTriangulator::MonotoneToTriangles::decompose()
+template <typename T>
+void QTriangulator<T>::MonotoneToTriangles::decompose()
 {
-    QVector<quint32> result;
+    QVector<T> result;
     QDataBuffer<int> stack(m_parent->m_indices.size());
     m_first = 0;
     // Require at least three more indices.
     while (m_first + 3 <= m_parent->m_indices.size()) {
         m_length = 0;
-        while (m_parent->m_indices.at(m_first + m_length) != Q_TRIANGULATE_END_OF_POLYGON) {
+        while (m_parent->m_indices.at(m_first + m_length) != T(-1)) { // Q_TRIANGULATE_END_OF_POLYGON
             ++m_length;
             Q_ASSERT(m_first + m_length < m_parent->m_indices.size());
         }
@@ -2955,39 +3011,115 @@ void QTriangulator::MonotoneToTriangles::decompose()
 //                                qTriangulate                                //
 //============================================================================//
 
-QTriangleSet qTriangulate(const qreal *polygon, int count, uint hint, const QTransform &matrix)
+QTriangleSet qTriangulate(const qreal *polygon,
+                          int count, uint hint, const QTransform &matrix)
 {
-    QTriangulator triangulator;
-    triangulator.initialize(polygon, count, hint, matrix);
-    return triangulator.triangulate();
+    QGLContext *ctx = 0; // Not really used but needs to be introduced for glSupportsElementIndexUint
+
+    QTriangleSet triangleSet;
+    if (glSupportsElementIndexUint) {
+        QTriangulator<quint32> triangulator;
+        triangulator.initialize(polygon, count, hint, matrix);
+        QVertexSet<quint32> vertexSet = triangulator.triangulate();
+        triangleSet.vertices = vertexSet.vertices;
+        triangleSet.indices.setDataUint(vertexSet.indices);
+
+    } else {
+        QTriangulator<quint16> triangulator;
+        triangulator.initialize(polygon, count, hint, matrix);
+        QVertexSet<quint16> vertexSet = triangulator.triangulate();
+        triangleSet.vertices = vertexSet.vertices;
+        triangleSet.indices.setDataUshort(vertexSet.indices);
+    }
+    return triangleSet;
 }
 
-QTriangleSet qTriangulate(const QVectorPath &path, const QTransform &matrix, qreal lod)
+QTriangleSet qTriangulate(const QVectorPath &path,
+                          const QTransform &matrix, qreal lod)
 {
-    QTriangulator triangulator;
-    triangulator.initialize(path, matrix, lod);
-    return triangulator.triangulate();
+    QGLContext *ctx = 0; // Not really used but needs to be introduced for glSupportsElementIndexUint
+
+    QTriangleSet triangleSet;
+    if (glSupportsElementIndexUint) {
+        QTriangulator<quint32> triangulator;
+        triangulator.initialize(path, matrix, lod);
+        QVertexSet<quint32> vertexSet = triangulator.triangulate();
+        triangleSet.vertices = vertexSet.vertices;
+        triangleSet.indices.setDataUint(vertexSet.indices);
+    } else {
+        QTriangulator<quint16> triangulator;
+        triangulator.initialize(path, matrix, lod);
+        QVertexSet<quint16> vertexSet = triangulator.triangulate();
+        triangleSet.vertices = vertexSet.vertices;
+        triangleSet.indices.setDataUshort(vertexSet.indices);
+    }
+    return triangleSet;
 }
 
-QTriangleSet qTriangulate(const QPainterPath &path, const QTransform &matrix, qreal lod)
+QTriangleSet qTriangulate(const QPainterPath &path,
+                          const QTransform &matrix, qreal lod)
 {
-    QTriangulator triangulator;
-    triangulator.initialize(path, matrix, lod);
-    return triangulator.triangulate();
+    QGLContext *ctx = 0; // Not really used but needs to be introduced for glSupportsElementIndexUint
+
+    QTriangleSet triangleSet;
+    if (glSupportsElementIndexUint) {
+        QTriangulator<quint32> triangulator;
+        triangulator.initialize(path, matrix, lod);
+        QVertexSet<quint32> vertexSet = triangulator.triangulate();
+        triangleSet.vertices = vertexSet.vertices;
+        triangleSet.indices.setDataUint(vertexSet.indices);
+    } else {
+        QTriangulator<quint16> triangulator;
+        triangulator.initialize(path, matrix, lod);
+        QVertexSet<quint16> vertexSet = triangulator.triangulate();
+        triangleSet.vertices = vertexSet.vertices;
+        triangleSet.indices.setDataUshort(vertexSet.indices);
+    }
+    return triangleSet;
 }
 
-QPolylineSet qPolyline(const QVectorPath &path, const QTransform &matrix, qreal lod)
+QPolylineSet qPolyline(const QVectorPath &path,
+                       const QTransform &matrix, qreal lod)
 {
-    QTriangulator triangulator;
-    triangulator.initialize(path, matrix, lod);
-    return triangulator.polyline();
+    QGLContext *ctx = 0; // Not really used but needs to be introduced for glSupportsElementIndexUint
+
+    QPolylineSet polyLineSet;
+    if (glSupportsElementIndexUint) {
+        QTriangulator<quint32> triangulator;
+        triangulator.initialize(path, matrix, lod);
+        QVertexSet<quint32> vertexSet = triangulator.polyline();
+        polyLineSet.vertices = vertexSet.vertices;
+        polyLineSet.indices.setDataUint(vertexSet.indices);
+    } else {
+        QTriangulator<quint16> triangulator;
+        triangulator.initialize(path, matrix, lod);
+        QVertexSet<quint16> vertexSet = triangulator.triangulate();
+        polyLineSet.vertices = vertexSet.vertices;
+        polyLineSet.indices.setDataUshort(vertexSet.indices);
+    }
+    return polyLineSet;
 }
 
-QPolylineSet qPolyline(const QPainterPath &path, const QTransform &matrix, qreal lod)
+QPolylineSet qPolyline(const QPainterPath &path,
+                       const QTransform &matrix, qreal lod)
 {
-    QTriangulator triangulator;
-    triangulator.initialize(path, matrix, lod);
-    return triangulator.polyline();
+    QGLContext *ctx = 0; // Not really used but needs to be introduced for glSupportsElementIndexUint
+
+    QPolylineSet polyLineSet;
+    if (glSupportsElementIndexUint) {
+        QTriangulator<quint32> triangulator;
+        triangulator.initialize(path, matrix, lod);
+        QVertexSet<quint32> vertexSet = triangulator.polyline();
+        polyLineSet.vertices = vertexSet.vertices;
+        polyLineSet.indices.setDataUint(vertexSet.indices);
+    } else {
+        QTriangulator<quint16> triangulator;
+        triangulator.initialize(path, matrix, lod);
+        QVertexSet<quint16> vertexSet = triangulator.triangulate();
+        polyLineSet.vertices = vertexSet.vertices;
+        polyLineSet.indices.setDataUshort(vertexSet.indices);
+    }
+    return polyLineSet;
 }
 
 QT_END_NAMESPACE

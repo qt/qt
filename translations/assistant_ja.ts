@@ -69,15 +69,15 @@ Reason:
     </message>
     <message>
         <source>Error reading collection file &apos;%1&apos;: %2.</source>
-        <translation>コレクションファイル &apos;%1&apos; の読み込み中にエラーが発生しました: %2</translation>
+        <translation>コレクションファイル &apos;%1&apos; の読み込み中にエラーが発生しました: %2。</translation>
     </message>
     <message>
         <source>Error creating collection file &apos;%1&apos;: %2.</source>
-        <translation>コレクションファイル &apos;%1&apos; の作成中にエラーが発生しました: %2</translation>
+        <translation>コレクションファイル &apos;%1&apos; の作成中にエラーが発生しました: %2。</translation>
     </message>
     <message>
         <source>Error reading collection file &apos;%1&apos;: %2</source>
-        <translation>コレクションファイル &apos;%1&apos; の読み込み中にエラーが発生しました: %2</translation>
+        <translation type="obsolete">コレクションファイル &apos;%1&apos; の読み込み中にエラーが発生しました: %2</translation>
     </message>
     <message>
         <source>Cannot load sqlite database driver!</source>
@@ -117,6 +117,17 @@ Reason:
     <message>
         <source>Rename Folder</source>
         <translation>フォルダの名前変更</translation>
+    </message>
+</context>
+<context>
+    <name>BookmarkItem</name>
+    <message>
+        <source>New Folder</source>
+        <translation>新しいフォルダ</translation>
+    </message>
+    <message>
+        <source>Untitled</source>
+        <translation>タイトルなし</translation>
     </message>
 </context>
 <context>
@@ -357,6 +368,60 @@ Reason:
 <context>
     <name>CmdLineParser</name>
     <message>
+        <source>Usage: assistant [Options]
+
+-collectionFile file       Uses the specified collection
+                           file instead of the default one
+-showUrl url               Shows the document with the
+                           url.
+-enableRemoteControl       Enables Assistant to be
+                           remotely controlled.
+-show widget               Shows the specified dockwidget
+                           which can be &quot;contents&quot;, &quot;index&quot;,
+                           &quot;bookmarks&quot; or &quot;search&quot;.
+-activate widget           Activates the specified dockwidget
+                           which can be &quot;contents&quot;, &quot;index&quot;,
+                           &quot;bookmarks&quot; or &quot;search&quot;.
+-hide widget               Hides the specified dockwidget
+                           which can be &quot;contents&quot;, &quot;index&quot;
+                           &quot;bookmarks&quot; or &quot;search&quot;.
+-register helpFile         Registers the specified help file
+                           (.qch) in the given collection
+                           file.
+-unregister helpFile       Unregisters the specified help file
+                           (.qch) from the give collection
+                           file.
+-setCurrentFilter filter   Set the filter as the active filter.
+-remove-search-index       Removes the full text search index.
+-rebuild-search-index      Re-builds the full text search index (potentially slow).
+-quiet                     Does not display any error or
+                           status message.
+-help                      Displays this help.
+</source>
+        <translation>使い方: assistant [オプション]
+
+-collectionFile file       デフォルトのコレクションファイルの代わりに使用する
+                           コレクションファイルを指定します。
+-showUrl url               表示するURLを指定します。
+-enableRemoteControl       Assistant をリモートから制御できるようにします。
+-show widget               表示するウィジェット(&quot;contents&quot;、&quot;index&quot;、
+                           &quot;bookmarks&quot;、&quot;search&quot;)を指定します。
+-activate widget           アクティブにするウィジェット(&quot;contents&quot;、
+                           &quot;index&quot;、&quot;bookmarks&quot;、&quot;search&quot;)を指定します。
+-hide widget               表示しないウィジェット(&quot;contents&quot;、&quot;index&quot;、
+                           &quot;bookmarks&quot;、&quot;search&quot;)を指定します。
+-register helpFile         コレクションファイルに登録する
+                           ヘルプファイル (.qch) を指定します。
+-unregister helpFile       コレクションファイルから登録を解除する
+                           ヘルプファイル (.qch) を指定します。
+-setCurrentFilter filter   フィルタをアクティブなフィルタとして設定します。
+-remove-search-index       全文検索インデックスを削除します。
+-rebuild-search-index      全文検索インデックスをリビルドします。(時間を要する場合があります)
+-quiet                     エラーやステータスメッセージを表示しません。
+-help                      このヘルプを表示します。
+</translation>
+    </message>
+    <message>
         <source>Unknown option: %1</source>
         <translation>不明なオプション: %1</translation>
     </message>
@@ -417,6 +482,56 @@ Reason:
     </message>
 </context>
 <context>
+    <name>ConversionWizard</name>
+    <message>
+        <source>Help Conversion Wizard</source>
+        <translation>ヘルプ変換ウィザード</translation>
+    </message>
+    <message>
+        <source>Converting %1...</source>
+        <translation>%1 を変換中...</translation>
+    </message>
+    <message>
+        <source>Writing help collection file...</source>
+        <translation>ヘルプコレクションファイルに書き出し中...</translation>
+    </message>
+    <message>
+        <source>Done.</source>
+        <translation>完了.</translation>
+    </message>
+</context>
+<context>
+    <name>FilesPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Form</translation>
+    </message>
+    <message>
+        <source>Files:</source>
+        <translation>ファイル:</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>削除</translation>
+    </message>
+    <message>
+        <source>Remove All</source>
+        <translation>すべて削除</translation>
+    </message>
+    <message>
+        <source>Unreferenced Files</source>
+        <translation>参照していないファイル</translation>
+    </message>
+    <message>
+        <source>Remove files which are neither referenced by a keyword nor by the TOC.</source>
+        <translation>キーワードと目次のどちらからも参照されていないファイルを削除します。</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;&lt;b&gt;Warning:&lt;/b&gt; When removing images or stylesheets, be aware that those files are not directly referenced by the .adp or .dcf file.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;&lt;b&gt;警告:&lt;/b&gt; 画像やスタイルシートを削除する時は、それらが .adp ファイルや .dcf ファイルから直接参照されていないか注意してください。&lt;/p&gt;</translation>
+    </message>
+</context>
+<context>
     <name>FilterNameDialogClass</name>
     <message>
         <source>Add Filter Name</source>
@@ -425,6 +540,66 @@ Reason:
     <message>
         <source>Filter Name:</source>
         <translation>フィルタ名:</translation>
+    </message>
+</context>
+<context>
+    <name>FilterPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Form</translation>
+    </message>
+    <message>
+        <source>Filter attributes for current documentation (comma separated list):</source>
+        <translation>現在のドキュメントのフィルタ属性 (カンマ区切りリスト):</translation>
+    </message>
+    <message>
+        <source>Custom Filters</source>
+        <translation>カスタム フィルタ</translation>
+    </message>
+    <message>
+        <source>1</source>
+        <translation>1</translation>
+    </message>
+    <message>
+        <source>2</source>
+        <translation>2</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation>追加</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>削除</translation>
+    </message>
+    <message>
+        <source>Filter Settings</source>
+        <translation>フィルタ設定</translation>
+    </message>
+    <message>
+        <source>Specify the filter attributes for the documentation. If filter attributes are used, also define a custom filter for it. Both the filter attributes and the custom filters are optional.</source>
+        <translation>ドキュメントのフィルタ属性を指定します。フィルタ属性を使用する場合、使用するカスタムフィルタもあわせて指定する必要があります。フィルタ属性もカスタムフィルタも必須ではありません。</translation>
+    </message>
+    <message>
+        <source>Filter Name</source>
+        <translation>フィルタ名</translation>
+    </message>
+    <message>
+        <source>Filter Attributes</source>
+        <translation>フィルタ属性</translation>
+    </message>
+    <message>
+        <source>The custom filter &apos;%1&apos; is defined multiple times.</source>
+        <translation>カスタムフィルタ &apos;%1&apos; が複数回定義されています。</translation>
+    </message>
+    <message>
+        <source>The attributes for custom filter &apos;%1&apos; are defined multiple times.</source>
+        <translation>カスタムフィルタ &apos;%1&apos; の属性が複数回定義されています。</translation>
+    </message>
+    <message>
+        <source>unfiltered</source>
+        <comment>list of available documentation</comment>
+        <translation>フィルタなし</translation>
     </message>
 </context>
 <context>
@@ -451,6 +626,17 @@ Reason:
     </message>
 </context>
 <context>
+    <name>FinishPage</name>
+    <message>
+        <source>Converting File</source>
+        <translation>ファイルを変換中</translation>
+    </message>
+    <message>
+        <source>Creating the new Qt help files from the old ADP file.</source>
+        <translation>古い ADP ファイルから新しい Qt ヘルプファイルを作成しています。</translation>
+    </message>
+</context>
+<context>
     <name>FontPanel</name>
     <message>
         <source>Font</source>
@@ -474,6 +660,59 @@ Reason:
     </message>
 </context>
 <context>
+    <name>GeneralPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Form</translation>
+    </message>
+    <message>
+        <source>Namespace:</source>
+        <translation>名前空間:</translation>
+    </message>
+    <message>
+        <source>Virtual Folder:</source>
+        <translation>仮想フォルダ:</translation>
+    </message>
+    <message>
+        <source>General Settings</source>
+        <translation>概要設定</translation>
+    </message>
+    <message>
+        <source>Specify the namespace and the virtual folder for the documentation.</source>
+        <translation>ドキュメントの名前空間や仮想フォルダを指定します。</translation>
+    </message>
+    <message>
+        <source>Namespace Error</source>
+        <translation>名前空間エラー</translation>
+    </message>
+    <message>
+        <source>The namespace contains some invalid characters.</source>
+        <translation>名前空間にいくつか無効な文字が含まれています。</translation>
+    </message>
+    <message>
+        <source>Virtual Folder Error</source>
+        <translation>仮想フォルダ エラー</translation>
+    </message>
+    <message>
+        <source>The virtual folder contains some invalid characters.</source>
+        <translation>仮想フォルダにいくつか無効な文字が含まれています。</translation>
+    </message>
+</context>
+<context>
+    <name>HelpEngineWrapper</name>
+    <message>
+        <source>Unfiltered</source>
+        <translation>フィルタなし</translation>
+    </message>
+</context>
+<context>
+    <name>HelpGenerator</name>
+    <message>
+        <source>Warning: %1</source>
+        <translation>警告: %1</translation>
+    </message>
+</context>
+<context>
     <name>HelpViewer</name>
     <message>
         <source>Help</source>
@@ -485,7 +724,7 @@ Reason:
     </message>
     <message>
         <source>&lt;title&gt;about:blank&lt;/title&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;title&gt;about:blank&lt;/title&gt;</translation>
     </message>
     <message>
         <source>&lt;title&gt;Error 404...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;The page could not be found&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</source>
@@ -511,6 +750,40 @@ Reason:
     </message>
 </context>
 <context>
+    <name>HelpWindow</name>
+    <message>
+        <source>&lt;center&gt;&lt;b&gt;Wizard Assistant&lt;/b&gt;&lt;/center&gt;</source>
+        <translation>&lt;center&gt;&lt;b&gt;ウィザード アシスタント&lt;/b&gt;&lt;/center&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>IdentifierPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Form</translation>
+    </message>
+    <message>
+        <source>Create identifiers</source>
+        <translation>IDを作成</translation>
+    </message>
+    <message>
+        <source>Global prefix:</source>
+        <translation>グローバルな接頭辞:</translation>
+    </message>
+    <message>
+        <source>Inherit prefix from file names</source>
+        <translation>ファイル名を受け継いだ接頭辞</translation>
+    </message>
+    <message>
+        <source>Identifiers</source>
+        <translation>ID</translation>
+    </message>
+    <message>
+        <source>This page allows you to create identifiers from the keywords found in the .adp or .dcf file.</source>
+        <translation>このページで .adp や .dcf ファイルに見つかったキーワードにIDを付与する事ができます。</translation>
+    </message>
+</context>
+<context>
     <name>IndexWindow</name>
     <message>
         <source>&amp;Look for:</source>
@@ -523,6 +796,53 @@ Reason:
     <message>
         <source>Open Link in New Tab</source>
         <translation>リンクを新しいタブで開く</translation>
+    </message>
+</context>
+<context>
+    <name>InputPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Form</translation>
+    </message>
+    <message>
+        <source>File name:</source>
+        <translation>ファイル名:</translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation>...</translation>
+    </message>
+    <message>
+        <source>Input File</source>
+        <translation>取り込むファイルの指定</translation>
+    </message>
+    <message>
+        <source>Specify the .adp or .dcf file you want to convert to the new Qt help project format and/or collection format.</source>
+        <translation>新たに Qt ヘルプ プロジェクト/コレクションフォーマットに変換したい .adp / .dcf ファイルを指定してください。</translation>
+    </message>
+    <message>
+        <source>Open file</source>
+        <translation>ファイルを開く</translation>
+    </message>
+    <message>
+        <source>Qt Help Files (*.adp *.dcf)</source>
+        <translation>Qt ヘルプ ファイル (*.adp *.dcf)</translation>
+    </message>
+    <message>
+        <source>File Open Error</source>
+        <translation>ファイル オープン エラー</translation>
+    </message>
+    <message>
+        <source>The specified file could not be opened!</source>
+        <translation>指定されたファイルを開く事ができません!</translation>
+    </message>
+    <message>
+        <source>File Parsing Error</source>
+        <translation>ファイル パース エラー</translation>
+    </message>
+    <message>
+        <source>Parsing error in line %1!</source>
+        <translation>%1 行目でパース エラーです!</translation>
     </message>
 </context>
 <context>
@@ -713,6 +1033,10 @@ Reason:
         <translation>ホーム(&amp;H)</translation>
     </message>
     <message>
+        <source>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Version %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;</source>
+        <translation>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;バージョン %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;</translation>
+    </message>
+    <message>
         <source>Could not register file &apos;%1&apos;: %2</source>
         <translation>ファイル &apos;%1&apos; を登録できませんでした: %2</translation>
     </message>
@@ -854,6 +1178,92 @@ Reason:
     </message>
 </context>
 <context>
+    <name>OutputPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Form</translation>
+    </message>
+    <message>
+        <source>Project file name:</source>
+        <translation>プロジェクト ファイル名:</translation>
+    </message>
+    <message>
+        <source>Collection file name:</source>
+        <translation>コレクション ファイル名:</translation>
+    </message>
+    <message>
+        <source>Output File Names</source>
+        <translation>出力するファイル名の指定</translation>
+    </message>
+    <message>
+        <source>Specify the file names for the output files.</source>
+        <translation>出力するファイルのファイル名を指定してください。</translation>
+    </message>
+    <message>
+        <source>Convert...</source>
+        <translation>変換...</translation>
+    </message>
+    <message>
+        <source>Qt Help Project File</source>
+        <translation>Qt ヘルプ プロジェクト ファイル</translation>
+    </message>
+    <message>
+        <source>Qt Help Collection Project File</source>
+        <translation>Qt ヘルプ コレクション プロジェクト ファイル</translation>
+    </message>
+    <message>
+        <source>The specified file %1 already exist.
+
+Do you want to remove it?</source>
+        <translation>指定されたファイル %1 は既に存在します。
+
+元々あったファイルを削除しますか?</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>削除</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>キャンセル</translation>
+    </message>
+</context>
+<context>
+    <name>PathPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Form</translation>
+    </message>
+    <message>
+        <source>File filters:</source>
+        <translation>ファイル フィルタ:</translation>
+    </message>
+    <message>
+        <source>Documentation source file paths:</source>
+        <translation>ドキュメントソースファイルパス:</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation>追加</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>削除</translation>
+    </message>
+    <message>
+        <source>Source File Paths</source>
+        <translation>ソースファイルのパス</translation>
+    </message>
+    <message>
+        <source>Specify the paths where the sources files are located. By default, all files in those directories matched by the file filter will be included.</source>
+        <translation>ソースファイルが格納されているパスを指定してください。デフォルトではファイルフィルタに一致したディレクトリ内のすべてのファイルが含まれます。</translation>
+    </message>
+    <message>
+        <source>Source File Path</source>
+        <translation>ソースファイルのパス</translation>
+    </message>
+</context>
+<context>
     <name>PreferencesDialog</name>
     <message>
         <source>Add Documentation</source>
@@ -985,6 +1395,175 @@ Reason:
     <message>
         <source>Blank Page</source>
         <translation>空白ページ</translation>
+    </message>
+</context>
+<context>
+    <name>QCollectionGenerator</name>
+    <message>
+        <source>Unknown token at line %1.</source>
+        <translation>%1 行目に未知のトークンがあります。</translation>
+    </message>
+    <message>
+        <source>Unknown token at line %1. Expected &quot;QtHelpCollectionProject&quot;.</source>
+        <translation>%1 行目の &quot;QtHelpCollectionProject&quot; が期待される箇所に未知のトークンがあります。</translation>
+    </message>
+    <message>
+        <source>Missing end tags.</source>
+        <translation>終了タグが不明です。</translation>
+    </message>
+    <message>
+        <source>Missing input or output file for help file generation.</source>
+        <translation>ヘルプファイルを生成する為の入力ファイルまたは出力ファイルが不明です。</translation>
+    </message>
+    <message>
+        <source>Missing output file name.</source>
+        <translation>出力先ファイル名が不明です。</translation>
+    </message>
+    <message>
+        <source>Qt Collection Generator version 1.0 (Qt %1)
+</source>
+        <translation>Qt コレクション ジェネレータ バージョン 1.0 (Qt %1)
+</translation>
+    </message>
+    <message>
+        <source>Missing collection config file.</source>
+        <translation>コレクション設定ファイルが見つかりません。</translation>
+    </message>
+    <message>
+        <source>
+Usage:
+
+qcollectiongenerator &lt;collection-config-file&gt; [options]
+
+  -o &lt;collection-file&gt;   Generates a collection file
+                         called &lt;collection-file&gt;. If
+                         this option is not specified
+                         a default name will be used.
+  -v                     Displays the version of
+                         qcollectiongenerator.
+
+</source>
+        <translation>
+使い方:
+
+qcollectiongenerator &lt;コレクション設定ファイル&gt; [オプション]
+
+  -o &lt;コレクションファイル&gt;   &lt;コレクションファイル&gt; という名前で
+                         コレクションファイルを生成します。
+                         このオプションが指定されていなかった場合は
+                         デフォルトのファイル名が使用されます。
+  -v                     qcollectiongenerator　のバージョンを表示します。
+
+</translation>
+    </message>
+    <message>
+        <source>Could not open %1.
+</source>
+        <translation>%1 を開けませんでした。
+</translation>
+    </message>
+    <message>
+        <source>Reading collection config file...
+</source>
+        <translation>コレクション設定ファイルを読み込んでいます...
+</translation>
+    </message>
+    <message>
+        <source>Collection config file error: %1
+</source>
+        <translation>コレクション設定ファイル エラー: %1
+</translation>
+    </message>
+    <message>
+        <source>Generating help for %1...
+</source>
+        <translation>%1 のヘルプを生成しています...
+</translation>
+    </message>
+    <message>
+        <source>Creating collection file...
+</source>
+        <translation>コレクションファイルを作成しています...
+</translation>
+    </message>
+    <message>
+        <source>The file %1 cannot be overwritten.
+</source>
+        <translation>ファイル %1 を上書きできません。
+</translation>
+    </message>
+    <message>
+        <source>Cannot open %1.
+</source>
+        <translation>%1 を開けません。
+</translation>
+    </message>
+    <message>
+        <source>Cannot open referenced image file %1.
+</source>
+        <translation>参照されている画像ファイル %1 を開けません。
+</translation>
+    </message>
+</context>
+<context>
+    <name>QHelpGenerator</name>
+    <message>
+        <source>Missing output file name.</source>
+        <translation>出力先ファイル名が不明です。</translation>
+    </message>
+    <message>
+        <source>Qt Help Generator version 1.0 (Qt %1)
+</source>
+        <translation>Qt ヘルプ ジェネレータ バージョン 1.0 (Qt %1)
+</translation>
+    </message>
+    <message>
+        <source>Missing Qt help project file.</source>
+        <translation>Qt ヘルプ プロジェクト ファイルが見つかりません。</translation>
+    </message>
+    <message>
+        <source>
+Usage:
+
+qhelpgenerator &lt;help-project-file&gt; [options]
+
+  -o &lt;compressed-file&gt;   Generates a Qt compressed help
+                         file called &lt;compressed-file&gt;.
+                         If this option is not specified
+                         a default name will be used.
+  -c                     Checks whether all links in HTML files
+                         point to files in this help project.
+  -v                     Displays the version of 
+                         qhelpgenerator.
+
+</source>
+        <translation>
+使い方:
+
+qhelpgenerator &lt;ヘルププロジェクトファイル&gt; [オプション]
+
+  -o &lt;圧縮ファイル&gt;   &lt;圧縮ファイル&gt; という名前で Qt 圧縮 ヘルプ
+                         ファイルを生成します。
+                         このオプションが指定されていなかった場合は
+                         デフォルトのファイル名が使用されます。
+  -c                    HTML ファイル内のすべてのリンクがこのヘルプ
+                         プロジェクト内のファイルを指しているかどうかを
+                         チェックします。
+  -v                     qhelpgenerator のバージョンを表示します。
+
+</translation>
+    </message>
+    <message>
+        <source>Could not open %1.
+</source>
+        <translation>%1 を開けませんでした。
+</translation>
+    </message>
+    <message>
+        <source>Could not create output directory: %1
+</source>
+        <translation>出力ディレクトリを作成できませんでした: %1
+</translation>
     </message>
 </context>
 <context>

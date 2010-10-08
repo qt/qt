@@ -945,7 +945,8 @@ void QDeclarativeCompiler::genObject(QDeclarativeParser::Object *obj)
             propertyCache = enginePrivate->cache(obj->metaObject()->superClass())->copy();
 
         propertyCache->append(engine, obj->metaObject(), QDeclarativePropertyCache::Data::NoFlags,
-                              QDeclarativePropertyCache::Data::IsVMEFunction);
+                              QDeclarativePropertyCache::Data::IsVMEFunction, 
+                              QDeclarativePropertyCache::Data::IsVMESignal);
 
         if (obj == unitRoot) {
             propertyCache->addref();
@@ -1098,7 +1099,8 @@ void QDeclarativeCompiler::genObjectBody(QDeclarativeParser::Object *obj)
             QDeclarativePropertyCache *propertyCache =
                 enginePrivate->cache(prop->value->metaObject()->superClass())->copy();
             propertyCache->append(engine, prop->value->metaObject(), QDeclarativePropertyCache::Data::NoFlags,
-                                  QDeclarativePropertyCache::Data::IsVMEFunction);
+                                  QDeclarativePropertyCache::Data::IsVMEFunction,
+                                  QDeclarativePropertyCache::Data::IsVMESignal);
 
             output->propertyCaches << propertyCache;
             output->bytecode << meta;

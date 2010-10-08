@@ -76,6 +76,7 @@ private slots:
     void autoDelete();
     void adoptedThreads();
     void ensureCleanupOrder();
+    void QTBUG13877_crashOnExit();
 };
 
 class Pointer
@@ -291,6 +292,22 @@ void tst_QThreadStorage::ensureCleanupOrder()
     thread.wait();
 
     QVERIFY(First::order < Second::order);
+}
+
+void tst_QThreadStorage::QTBUG13877_crashOnExit()
+{
+    QProcess process;
+#ifdef Q_OS_WIN
+# ifdef QT_NO_DEBUG
+    process.start("release/crashOnExit");
+# else
+    process.start("debug/crashOnExit");
+# endif
+#else
+    process.start("./crashOnExit");
+#endif
+    QVERIFY(process.waitForFinished());
+    QVERIFY(process.exitStatus() != QProcess::CrashExit);
 }
 
 QTEST_MAIN(tst_QThreadStorage)

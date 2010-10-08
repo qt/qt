@@ -565,7 +565,7 @@ const QString::Null QString::null = { };
     and join a list of strings into a single string with an optional
     separator using QStringList::join(). You can obtain a list of
     strings from a string list that contain a particular substring or
-    that match a particular QRegExp using the QStringList::find()
+    that match a particular QRegExp using the QStringList::filter()
     function.
 :
     \section1 Querying String Data
@@ -4275,7 +4275,7 @@ QString& QString::fill(QChar ch, int size)
     Returns the number of characters in this string.  Equivalent to
     size().
 
-    \sa setLength()
+    \sa resize()
 */
 
 /*!
