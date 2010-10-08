@@ -18,7 +18,7 @@ symbian {
 	# This is necessary because both epoc32/include and Phonon contain videoplayer.h.
 	# By making /epoc32/include the first SYSTEMINCLUDE, we ensure that
 	# '#include <videoplayer.h>' picks up the Symbian header, as intended.
-	PREPEND_INCLUDEPATH = /epoc32/include
+	PREPEND_INCLUDEPATH = $$EPOCROOT/epoc32/include
 
 	PREPEND_INCLUDEPATH += $$QT_SOURCE_TREE/src/3rdparty
 
@@ -113,7 +113,11 @@ symbian {
 	LIBS += -lmediaclientaudiostream  # For CMdaAudioOutputStream
 
 	# These are for effects.
-	LIBS += -lAudioEqualizerEffect -lBassBoostEffect -lDistanceAttenuationEffect -lDopplerBase -lEffectBase -lEnvironmentalReverbEffect -lListenerDopplerEffect -lListenerLocationEffect -lListenerOrientationEffect -lLocationBase -lLoudnessEffect -lOrientationBase -lSourceDopplerEffect -lSourceLocationEffect -lSourceOrientationEffect -lStereoWideningEffect
+        is_using_gnupoc {
+            LIBS += -laudioequalizereffect -lbassboosteffect -ldistanceattenuationeffect -ldopplerbase -leffectbase -lenvironmentalreverbeffect -llistenerdopplereffect -llistenerlocationeffect -llistenerorientationeffect -llocationbase -lloudnesseffect -lorientationbase -lsourcedopplereffect -lsourcelocationeffect -lsourceorientationeffect -lstereowideningeffect
+        } else {
+            LIBS += -lAudioEqualizerEffect -lBassBoostEffect -lDistanceAttenuationEffect -lDopplerBase -lEffectBase -lEnvironmentalReverbEffect -lListenerDopplerEffect -lListenerLocationEffect -lListenerOrientationEffect -lLocationBase -lLoudnessEffect -lOrientationBase -lSourceDopplerEffect -lSourceLocationEffect -lSourceOrientationEffect -lStereoWideningEffect
+        }
 
 	# This is needed for having the .qtplugin file properly created on Symbian.
 	QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/phonon_backend
