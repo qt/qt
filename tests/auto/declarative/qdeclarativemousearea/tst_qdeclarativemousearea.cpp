@@ -413,14 +413,19 @@ void tst_QDeclarativeMouseArea::doubleClick()
     releaseEvent.setButtons(Qt::LeftButton);
     QApplication::sendEvent(scene, &releaseEvent);
 
+    QCOMPARE(canvas->rootObject()->property("released").toInt(), 1);
+
     QGraphicsSceneMouseEvent dblClickEvent(QEvent::GraphicsSceneMouseDoubleClick);
     dblClickEvent.setScenePos(QPointF(100, 100));
     dblClickEvent.setButton(Qt::LeftButton);
     dblClickEvent.setButtons(Qt::LeftButton);
     QApplication::sendEvent(scene, &dblClickEvent);
 
+    QApplication::sendEvent(scene, &releaseEvent);
+
     QCOMPARE(canvas->rootObject()->property("clicked").toInt(), 1);
     QCOMPARE(canvas->rootObject()->property("doubleClicked").toInt(), 1);
+    QCOMPARE(canvas->rootObject()->property("released").toInt(), 2);
 }
 
 QTEST_MAIN(tst_QDeclarativeMouseArea)
