@@ -48,6 +48,17 @@
 
 QT_BEGIN_NAMESPACE
 
+class QWaylandDisplay;
+
+class QWaylandBuffer {
+public:
+    QWaylandBuffer(QWaylandDisplay *display,
+		   const QSize &size, QImage::Format format);
+    ~QWaylandBuffer();
+    QImage mImage;
+    struct wl_buffer *mBuffer;
+};
+
 class QWaylandWindowSurface : public QWindowSurface
 {
 public:
@@ -60,12 +71,8 @@ public:
     void attach(void);
 
 private:
-    QImage *mImage;
-    uchar *mData;
-    int mSize;
-    int mStride;
+    QWaylandBuffer *mBuffer;
     QWaylandDisplay *mDisplay;
-    struct wl_buffer *mBuffer;
 };
 
 QT_END_NAMESPACE

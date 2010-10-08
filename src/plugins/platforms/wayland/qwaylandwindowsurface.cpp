@@ -52,10 +52,46 @@
 
 QT_BEGIN_NAMESPACE
 
+QWaylandBuffer::QWaylandBuffer(QWaylandDisplay *display,
+			       const QSize &size, QImage::Format format)
+{
+    int stride = size.width() * 4;
+    int alloc = stride * size.height();
+    char filename[] = "/tmp/wayland-shm-XXXXXX";
+    int fd = mkstemp(filename);
+    if (fd < 0)
+	qWarning("open %s failed: %s", filename, strerror(errno));
+    if (ftruncate(fd, alloc) < 0) {
+	qWarning("ftruncate failed: %s", strerror(errno));
+	close(fd);
+	return;
+    }
+    uchar *data = (uchar *)
+	mmap(NULL, alloc, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    unlink(filename);
+
+    if (data == (uchar *) MAP_FAILED) {
+	qWarning("mmap /dev/zero failed: %s", strerror(errno));
+	close(fd);
+	return;
+    }
+
+    mImage = QImage(data, size.width(), size.height(), stride, format);
+    mBuffer = display->createShmBuffer(fd, size.width(), size.height(),
+				       stride, display->argbVisual());
+    close(fd);
+}
+
+QWaylandBuffer::~QWaylandBuffer(void)
+{
+    munmap((void *) mImage.constBits(), mImage.byteCount());
+    wl_buffer_destroy(mBuffer);
+}
+
 QWaylandWindowSurface::QWaylandWindowSurface(QWidget *window,
 					     QWaylandDisplay *display)
     : QWindowSurface(window)
-    , mImage(0)
+    , mBuffer(0)
     , mDisplay(display)
 {
     //qDebug() << "QWaylandWindowSurface::QWaylandWindowSurface:" << (long)this;
@@ -67,8 +103,7 @@ QWaylandWindowSurface::~QWaylandWindowSurface()
 
 QPaintDevice *QWaylandWindowSurface::paintDevice()
 {
-    //qDebug() << "QWaylandWindowSurface::paintDevice";
-    return mImage;
+    return &mBuffer->mImage;
 }
 
 void QWaylandWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
@@ -90,10 +125,12 @@ void QWaylandWindowSurface::flush(QWidget *widget, const QRegion &region, const 
 void QWaylandWindowSurface::attach(void)
 {
     QWaylandWindow *ww = (QWaylandWindow *) window()->platformWindow();
+    QRect geometry = window()->geometry();
 
-    if (ww->surface()) {
-	wl_surface_attach(ww->surface(), mBuffer);
-	wl_surface_map(ww->surface(), 0, 0, mImage->width(), mImage->height());
+    if (ww->surface() && mBuffer) {
+	wl_surface_attach(ww->surface(), mBuffer->mBuffer);
+	wl_surface_map(ww->surface(), geometry.x(), geometry.y(),
+		       mBuffer->mImage.width(), mBuffer->mImage.height());
     }
 }
 
@@ -103,35 +140,13 @@ void QWaylandWindowSurface::resize(const QSize &size)
     QWindowSurface::resize(size);
     QImage::Format format = QApplicationPrivate::platformIntegration()->screens().first()->format();
 
-    if (mImage != NULL && mImage->size() == size)
+    if (mBuffer != NULL && mBuffer->mImage.size() == size)
 	return;
 
-    if (mImage != NULL) {
-	delete mImage;
-	munmap(mData, mSize);
-	wl_buffer_destroy(mBuffer);
-    }
+    if (mBuffer != NULL)
+	delete mBuffer;
 
-    mStride = size.width() * 4;
-    mSize = mStride * size.height();
-    char filename[] = "/tmp/wayland-shm-XXXXXX";
-    int fd = mkstemp(filename);
-    if (fd < 0)
-	qWarning("open %s failed: %s", filename, strerror(errno));
-    if (ftruncate(fd, mSize) < 0)
-	qWarning("ftruncate failed: %s", strerror(errno));
-    mData = (uchar *)
-	mmap(NULL, mSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    unlink(filename);
-
-    if (mData == (uchar *) MAP_FAILED)
-	qWarning("mmap /dev/zero failed: %s", strerror(errno));
-
-    mImage = new QImage(mData, size.width(), size.height(), mStride, format);
-
-    mBuffer = mDisplay->createShmBuffer(fd, size.width(), size.height(),
-					mStride, mDisplay->argbVisual());
-    close(fd);
+    mBuffer = new QWaylandBuffer(mDisplay, size, format);
 
     attach();
 }

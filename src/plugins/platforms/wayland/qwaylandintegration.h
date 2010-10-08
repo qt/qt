@@ -48,13 +48,11 @@
 #include <QtGui/QPlatformScreen>
 
 #include <wayland-client.h>
+#include "qwaylandinputdevice.h"
 
 QT_BEGIN_NAMESPACE
 
-class QWaylandInputDevice;
-
-QWaylandInputDevice *
-waylandInputDeviceCreate(struct wl_display *display, uint32_t id);
+class QWaylandBuffer;
 
 class QWaylandDisplay : public QObject {
     Q_OBJECT;
@@ -70,6 +68,8 @@ public:
 				      struct wl_visual *visual);
     struct wl_visual *argbVisual();
 
+    void setCursor(QWaylandBuffer *buffer, int32_t x, int32_t y);
+
 public slots:
     void eventDispatcher(void);
     void flushRequests(void);
@@ -79,6 +79,7 @@ private:
     struct wl_compositor *mCompositor;
     struct wl_drm *mDrm;
     struct wl_shm *mShm;
+    struct wl_shell *mShell;
     char *mDeviceName;
     int mFd;
     bool mAuthenticated;
@@ -100,10 +101,17 @@ private:
 				     struct wl_output *output,
 				     int32_t width, int32_t height);
 
+    static void shellHandleConfigure(void *data, struct wl_shell *shell,
+				     uint32_t time, uint32_t edges,
+				     struct wl_surface *surface,
+				     int32_t x, int32_t y,
+				     int32_t width, int32_t height);
+
     static int sourceUpdate(uint32_t mask, void *data);
 
     static const struct wl_drm_listener drmListener;
     static const struct wl_output_listener outputListener;
+    static const struct wl_shell_listener shellListener;
 };
 
 class QWaylandScreen : public QPlatformScreen
@@ -132,6 +140,8 @@ public:
     struct wl_surface *surface() { return mSurface; }
 
     void setVisible(bool visible);
+    void configure(uint32_t time, uint32_t edges,
+		   int32_t x, int32_t y, int32_t width, int32_t height);
     WId winId() const;
 
 private:
