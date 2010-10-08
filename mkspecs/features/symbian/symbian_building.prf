@@ -129,7 +129,7 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
                       --tmpdso=$${symbianObjdir}/$${baseTarget}.dso \
                       --dso=$${symbianDestdir}/$${baseTarget}.dso \
                       --defoutput=$$symbianObjdir/$${baseTarget}.def \
-                      --linkas=$${baseTarget}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll \
+                      --linkas=\"$${baseTarget}{$${hexVersion}}[$${intUid3}].dll\" \
                       --heap=$$epoc_heap_size \
                       --stack=$$TARGET.EPOCSTACKSIZE \
                       $$elf2e32_LIBPATH \
@@ -143,8 +143,13 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
     QMAKE_CLEAN += $${symbianObjdir}/$${baseTarget}.def
 
     symbian-armcc: {
-        LIBS += usrt2_2.lib dfpaeabi.dso dfprvct2_2.dso drtaeabi.dso scppnwdl.dso drtrvct2_2.dso h_t__uf.l\\(switch8.o\\)
-        LIBS += -ledllstub.lib -ledll.lib\\(uc_dll_.o\\)
+        LIBS += usrt2_2.lib dfpaeabi.dso dfprvct2_2.dso drtaeabi.dso scppnwdl.dso drtrvct2_2.dso
+        # Quotation unfortunately is different on Windows and unix.
+        contains(QMAKE_HOST.os, Windows) {
+            LIBS += \"h_t__uf.l(switch8.o)\" edllstub.lib \"edll.lib(uc_dll_.o)\"
+        } else {
+            LIBS += h_t__uf.l\\(switch8.o\\) edllstub.lib edll.lib\\(uc_dll_.o\\)
+        }
     } else :symbian-gcce {
         LIBS += \
             -l:edllstub.lib \
@@ -157,7 +162,7 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
             -lgcc
     }
 
-    QMAKE_LFLAGS += --soname $${baseTarget}\\{$${hexVersion}\\}\\[$${intUid3}\\].dll
+    QMAKE_LFLAGS += --soname \"$${baseTarget}{$${hexVersion}}[$${intUid3}].dll\"
     DEFINES += __DLL__
 }
 
@@ -172,7 +177,7 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@:.*") {
                       --targettype=EXE \
                       --elfinput=$${symbianDestdir}/$${baseTarget}.sym \
                       --output=$${symbianDestdir}/$${baseTarget}.exe \
-                      --linkas=$${baseTarget}\\{$${hexVersion}\\}\\[$${intUid3}\\].exe \
+                      --linkas=\"$${baseTarget}{$${hexVersion}}[$${intUid3}].exe\" \
                       --heap=$$epoc_heap_size \
                       --stack=$$TARGET.EPOCSTACKSIZE \
                       $$elf2e32_LIBPATH \
@@ -220,7 +225,7 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@:.*") {
         QMAKE_LFLAGS += --shared
     }
 
-    QMAKE_LFLAGS += --soname $${baseTarget}\\{$${hexVersion}\\}\\[$${intUid3}\\].exe
+    QMAKE_LFLAGS += --soname \"$${baseTarget}{$${hexVersion}}[$${intUid3}].exe\"
     DEFINES += __EXE__
 }
 
