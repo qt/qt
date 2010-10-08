@@ -86,7 +86,7 @@ symbian {
 
     !contains(DEFINES, DISABLE_FFT) {
         # Include FFTReal DLL in the SIS file
-        fftreal.sources = ../fftreal.dll
+        fftreal.files = ../fftreal.dll
         fftreal.path = !:/sys/bin
         DEPLOYMENT += fftreal
     }

@@ -16,17 +16,17 @@ QT = core network
 RESOURCES += ../qnetworkreply.qrc
 
 wince*: {
-    addFiles.sources = ../empty ../rfc3252.txt ../resource
+    addFiles.files = ../empty ../rfc3252.txt ../resource
     addFiles.path = .
     DEPLOYMENT += addFiles
 }
 
 symbian:{
-    addFiles.sources = ../empty ../rfc3252.txt ../resource ../bigfile
+    addFiles.files = ../empty ../rfc3252.txt ../resource ../bigfile
     addFiles.path = .
     DEPLOYMENT += addFiles
 
-    certFiles.sources = ../certs
+    certFiles.files = ../certs
     certFiles.path    = .
     DEPLOYMENT += certFiles
 

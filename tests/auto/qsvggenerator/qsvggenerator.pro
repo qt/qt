@@ -8,7 +8,7 @@ QT += svg xml
 SOURCES += tst_qsvggenerator.cpp
 
 wince*|symbian {
-    addFiles.sources = referenceSvgs
+    addFiles.files = referenceSvgs
     addFiles.path = .
     DEPLOYMENT += addFiles
 }

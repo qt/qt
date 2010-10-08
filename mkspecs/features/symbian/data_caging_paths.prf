@@ -13,7 +13,7 @@
 #    
 #     # These variables are mostly useful when specifying deployment
 #
-#     myLib.sources = myLib.dll
+#     myLib.files = myLib.dll
 #     myLib.path = $$SHARED_LIB_DIR
 #     DEPLOYMENT += myLib
 #
@@ -21,7 +21,7 @@
 #     # $$QT_PUBLIC_PLUGINS_BASE specifies the public base directory for Qt
 #     # plugin stubs:
 #
-#     myPublicImageFormatPlugin.sources = myImageFormat.dll
+#     myPublicImageFormatPlugin.files = myImageFormat.dll
 #     myPublicImageFormatPlugin.path = $$QT_PLUGINS_BASE_DIR/imageformats
 #     DEPLOYMENT += myPublicImageFormatPlugin
 #

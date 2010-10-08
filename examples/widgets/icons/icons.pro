@@ -17,7 +17,7 @@ INSTALLS += target sources
 symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 
 wince*: {
-    imageFiles.sources = images/*
+    imageFiles.files = images/*
     wincewm*: {
         imageFiles.path = "/My Documents/My Pictures"
     } else {

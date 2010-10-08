@@ -3,21 +3,21 @@ SOURCES+= tst_qicoimageformat.cpp
 
 wince*: {
    DEFINES += SRCDIR=\\\".\\\"
-   addFiles.sources = icons
+   addFiles.files = icons
    addFiles.path = .
    CONFIG(debug, debug|release):{
-       addPlugins.sources = $$QT_BUILD_TREE/plugins/imageformats/qico4d.dll
+       addPlugins.files = $$QT_BUILD_TREE/plugins/imageformats/qico4d.dll
    } else {
-       addPlugins.sources = $$QT_BUILD_TREE/plugins/imageformats/qico4.dll
+       addPlugins.files = $$QT_BUILD_TREE/plugins/imageformats/qico4.dll
    }
    addPlugins.path = imageformats
    DEPLOYMENT += addFiles addPlugins
 } else:symbian {
-   addFiles.sources = icons
+   addFiles.files = icons
    addFiles.path = .
    DEPLOYMENT += addFiles
    qt_not_deployed {
-      addPlugins.sources = qico.dll
+      addPlugins.files = qico.dll
       addPlugins.path = imageformats
       DEPLOYMENT += addPlugins
    }

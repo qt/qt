@@ -3,22 +3,22 @@ CONFIG += qttest_p4
 SOURCES		+= tst_qdesktopservices.cpp
 TARGET		= tst_qdesktopservices
 symbian: {
-   dummy.sources = text\\testfile.txt
+   dummy.files = text\\testfile.txt
    dummy.path = .
 
-   text.sources = text\\*
+   text.files = text\\*
    text.path = \\data\\others
 
-   image.sources = image\\*
+   image.files = image\\*
    image.path = \\data\\images
 
-   audio.sources = audio\\*
+   audio.files = audio\\*
    audio.path = \\data\\sounds
 
-   video.sources = video\\*
+   video.files = video\\*
    video.path = \\data\\videos
 
-   install.sources = install\\*
+   install.files = install\\*
    install.path = \\data\\installs
 
    DEPLOYMENT += image audio video install

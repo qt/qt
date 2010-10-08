@@ -17,7 +17,7 @@ win32: {
 }
 
 wince*|symbian {
-   addFiles.sources = ../*.txt
+   addFiles.files = ../*.txt
    addFiles.path = .
    DEPLOYMENT += addFiles
    wince*|qt_not_deployed {

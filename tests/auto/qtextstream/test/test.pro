@@ -18,9 +18,9 @@ QT = core network
 
 
 wince*|symbian: {
-   addFiles.sources = ../rfc3261.txt ../shift-jis.txt ../task113817.txt ../qtextstream.qrc ../tst_qtextstream.cpp
+   addFiles.files = ../rfc3261.txt ../shift-jis.txt ../task113817.txt ../qtextstream.qrc ../tst_qtextstream.cpp
    addFiles.path = .
-   res.sources = ../resources
+   res.files = ../resources
    res.path = .
    DEPLOYMENT += addFiles
 }
@@ -30,7 +30,7 @@ wince*: {
 }else:symbian {
     # Symbian can't define SRCDIR meaningfully here
     qt_not_deployed {
-        codecs_plugins.sources = qcncodecs.dll qjpcodecs.dll qtwcodecs.dll qkrcodecs.dll
+        codecs_plugins.files = qcncodecs.dll qjpcodecs.dll qtwcodecs.dll qkrcodecs.dll
         codecs_plugins.path = $$QT_PLUGINS_BASE_DIR/codecs
         DEPLOYMENT += codecs_plugins
     }

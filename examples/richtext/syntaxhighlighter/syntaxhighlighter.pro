@@ -13,7 +13,7 @@ INSTALLS += target sources
 symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 
 wince*: {
-   addFiles.sources = main.cpp mainwindow.cpp
+   addFiles.files = main.cpp mainwindow.cpp
    addFiles.path = .
    DEPLOYMENT += addFiles
 }

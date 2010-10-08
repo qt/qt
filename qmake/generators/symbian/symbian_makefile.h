@@ -72,7 +72,9 @@ public:
         } else {
             const QStringList deployments = this->project->values("DEPLOYMENT");
             for (int i = 0; i < deployments.count(); ++i) {
-                if (!this->project->values(deployments.at(i) + ".sources").isEmpty()) {
+                // ### Qt 5: remove .sources, inconsistent with INSTALLS
+                if (!this->project->values(deployments.at(i) + ".sources").isEmpty() ||
+                    !this->project->values(deployments.at(i) + ".files").isEmpty()) {
                     generatePkg = true;
                     break;
                 }

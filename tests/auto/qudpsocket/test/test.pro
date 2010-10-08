@@ -15,7 +15,7 @@ win32 {
 }
 
 wince*|symbian: {
-    addApp.sources = ../clientserver/clientserver.exe
+    addApp.files = ../clientserver/clientserver.exe
     addApp.path = clientserver
     DEPLOYMENT += addApp
 }

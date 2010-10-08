@@ -4,7 +4,7 @@ QT = core
 
 
 symbian {
-    testData.sources = tst_qtemporaryfile.cpp
+    testData.files = tst_qtemporaryfile.cpp
     testData.path = .
     DEPLOYMENT += testData
 }else {

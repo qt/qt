@@ -2,7 +2,7 @@ SOURCES += main.cpp
 QT -= gui
 
 wince*|symbian:{
-   htmlfiles.sources = *.html
+   htmlfiles.files = *.html
    htmlfiles.path = .
    DEPLOYMENT += htmlfiles
 }

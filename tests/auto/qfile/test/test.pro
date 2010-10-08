@@ -3,11 +3,11 @@ SOURCES  += ../tst_qfile.cpp
 
 wince*|symbian {
     QT = core gui
-    files.sources += ..\\dosfile.txt ..\\noendofline.txt ..\\testfile.txt \
+    files.files += ..\\dosfile.txt ..\\noendofline.txt ..\\testfile.txt \
                      ..\\testlog.txt ..\\two.dots.file ..\\tst_qfile.cpp \
                      ..\\Makefile ..\\forCopying.txt ..\\forRenaming.txt
     files.path = .
-    resour.sources += ..\\resources\\file1.ext1
+    resour.files += ..\\resources\\file1.ext1
     resour.path = resources
 
     DEPLOYMENT = files resour

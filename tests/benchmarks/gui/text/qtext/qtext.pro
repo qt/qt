@@ -6,7 +6,7 @@ SOURCES += main.cpp
 
 symbian* {
    TARGET.CAPABILITY = ALL -TCB
-   addFiles.sources = bidi.txt
+   addFiles.files = bidi.txt
    addFiles.path = .
    DEPLOYMENT += addFiles
 } else {

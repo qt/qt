@@ -9,7 +9,7 @@ QT += sql
 #       memory on Windows Mobile 5.
 
 #wince*: {
-#   plugFiles.sources = $$QT_BUILD_TREE/plugins/sqldrivers/*.dll
+#   plugFiles.files = $$QT_BUILD_TREE/plugins/sqldrivers/*.dll
 #   plugFiles.path    = sqldrivers
 #   DEPLOYMENT += plugFiles 
 #}
@@ -19,7 +19,7 @@ symbian {
     qt_not_deployed {
         contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2)|contains(S60_VERSION, 5.0) {
             sqlite.path = /sys/bin
-            sqlite.sources = sqlite3.dll
+            sqlite.files = sqlite3.dll
             DEPLOYMENT += sqlite
         }
     }

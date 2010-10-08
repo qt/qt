@@ -6,7 +6,7 @@ HEADERS +=
 SOURCES += tst_qtextedit.cpp 
 
 wince*|symbian: {
-    addImages.sources = fullWidthSelection/*
+    addImages.files = fullWidthSelection/*
     addImages.path = fullWidthSelection
     DEPLOYMENT += addImages
 }

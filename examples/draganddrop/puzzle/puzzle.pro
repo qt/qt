@@ -18,12 +18,12 @@ INSTALLS += target sources
 symbian:{
    TARGET.UID3 = 0xA000CF65
    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
-   addFile.sources = example.jpg
+   addFile.files = example.jpg
    addFile.path = .
    DEPLOYMENT += addFile
 }
 wince*: {
-   addFile.sources = example.jpg
+   addFile.files = example.jpg
    addFile.path = .
    DEPLOYMENT += addFile
 }
