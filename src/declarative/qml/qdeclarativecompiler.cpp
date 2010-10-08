@@ -1932,6 +1932,9 @@ bool QDeclarativeCompiler::buildPropertyAssignment(QDeclarativeParser::Property 
 {
     obj->addValueProperty(prop);
 
+    if (prop->values.count() > 1)
+        COMPILE_EXCEPTION(prop->values.at(0), tr( "Cannot assign multiple values to a singular property") );
+
     for (int ii = 0; ii < prop->values.count(); ++ii) {
         Value *v = prop->values.at(ii);
         if (v->object) {
