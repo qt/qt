@@ -108,7 +108,7 @@ symbian {
                                   ../spectrum.app/Contents/MacOS/spectrum
         }
     } else {
-        unix: {
+        linux-g++*: {
             # Provide relative path from application to fftreal library
             QMAKE_LFLAGS += -Wl,--rpath=\\\$\$ORIGIN
         }
