@@ -10,7 +10,7 @@ contains(TEMPLATE, ".*app") {
         QMAKE_LIBS += $$QMAKE_LIBS_QT_ENTRY
     }
     
-    default_bin_deployment.sources += $$symbianRemoveSpecialCharacters($$basename(TARGET)).exe
+    default_bin_deployment.files += $$symbianRemoveSpecialCharacters($$basename(TARGET)).exe
     default_bin_deployment.path += /sys/bin
     
     load(application_icon.prf)

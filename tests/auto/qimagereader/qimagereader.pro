@@ -17,10 +17,10 @@ win32-msvc.net:QMAKE_CXXFLAGS -= -Zm300
 win32-msvc.net:QMAKE_CXXFLAGS += -Zm1100
 
 wince*: {
-    images.sources = images
+    images.files = images
     images.path = .
 
-    imagePlugins.sources = $$QT_BUILD_TREE/plugins/imageformats/*.dll
+    imagePlugins.files = $$QT_BUILD_TREE/plugins/imageformats/*.dll
     imagePlugins.path = imageformats
 
     DEPLOYMENT += images imagePlugins
@@ -28,13 +28,13 @@ wince*: {
 }
 
 symbian: {
-    images.sources = images
+    images.files = images
     images.path = .
 
     DEPLOYMENT += images
 
     qt_not_deployed {
-        imagePlugins.sources = qjpeg.dll qgif.dll qmng.dll
+        imagePlugins.files = qjpeg.dll qgif.dll qmng.dll
         imagePlugins.path = imageformats
 
         DEPLOYMENT += imagePlugins

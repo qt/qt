@@ -13,7 +13,7 @@ contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, o
 contains(QT_CONFIG, qt3support):QT += qt3support
 
 symbian*: {
-    testData.sources = $$QT_BUILD_TREE/tests/arthur/data/qps
+    testData.files = $$QT_BUILD_TREE/tests/arthur/data/qps
     testData.path = .
     DEPLOYMENT += testData
 }

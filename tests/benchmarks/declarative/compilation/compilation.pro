@@ -9,7 +9,7 @@ CONFIG += release
 SOURCES += tst_compilation.cpp
 
 symbian {
-  data.sources += data
+  data.files += data
   data.path = .
   DEPLOYMENT += data
 } else {

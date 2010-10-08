@@ -5,7 +5,7 @@ QT = core xml
 QT -= gui
 
 wince*|symbian: {
-   addFiles.sources = testdata doubleNamespaces.xml umlaut.xml
+   addFiles.files = testdata doubleNamespaces.xml umlaut.xml
    addFiles.path = .
    DEPLOYMENT += addFiles
 

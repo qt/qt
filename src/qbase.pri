@@ -198,7 +198,7 @@ symbian {
         pu_header = "; Partial upgrade package for testing $${TARGET} changes without reinstalling everything" \
                     "$${LITERAL_HASH}{\"$${TARGET}\"}, (0x2001E61C), $${QT_MAJOR_VERSION},$${QT_MINOR_VERSION},$${QT_PATCH_VERSION}, TYPE=PU"
         partial_upgrade.pkg_prerules = pu_header vendorinfo
-        partial_upgrade.sources = $$QMAKE_LIBDIR_QT/$${TARGET}.dll
+        partial_upgrade.files = $$QMAKE_LIBDIR_QT/$${TARGET}.dll
         partial_upgrade.path = c:/sys/bin
         DEPLOYMENT += partial_upgrade
     }

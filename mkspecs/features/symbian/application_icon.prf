@@ -23,9 +23,9 @@ contains(CONFIG, no_icon) {
         regZDir = $$resourceZDir
     }
 
-    default_resource_deployment.sources += $$resourceZDir/$${baseTarget}.rsc
+    default_resource_deployment.files += $$resourceZDir/$${baseTarget}.rsc
     default_resource_deployment.path = $$APP_RESOURCE_DIR
-    default_reg_deployment.sources += $$regZDir/$${baseTarget}_reg.rsc
+    default_reg_deployment.files += $$regZDir/$${baseTarget}_reg.rsc
     default_reg_deployment.path = $$REG_RESOURCE_IMPORT_DIR
 
     !isEmpty(ICON) {
@@ -70,7 +70,7 @@ contains(CONFIG, no_icon) {
         RSS_RULES.number_of_icons = $$size(ICON_backslashed)
         RSS_RULES.icon_file = $$APP_RESOURCE_DIR/$${baseTarget}.mif                
 
-        default_resource_deployment.sources += $$resourceZDir/$${baseTarget}.mif
+        default_resource_deployment.files += $$resourceZDir/$${baseTarget}.mif
     }
 }
 

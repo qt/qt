@@ -9,7 +9,7 @@ symbian: {
     HEADERS += ../../../include/qtgui/private/qfileinfogatherer_p.h
 
     # need to deploy something to create the private directory
-    dummyDeploy.sources = tst_qfilesystemmodel.cpp
+    dummyDeploy.files = tst_qfilesystemmodel.cpp
     dummyDeploy.path = .
     DEPLOYMENT += dummyDeploy
     LIBS += -lefsrv

@@ -113,7 +113,7 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
             CONFIG(debug, debug|release): QT_ITEM = $${QTPLUG}d4.dll
             else: QT_ITEM = $${QTPLUG}4.dll
 
-            eval(qt_additional_plugin_$${QTPLUG}.sources = $$[QT_INSTALL_PLUGINS]/$${QT_PLUGINPATH}/$${QT_ITEM})
+            eval(qt_additional_plugin_$${QTPLUG}.files = $$[QT_INSTALL_PLUGINS]/$${QT_PLUGINPATH}/$${QT_ITEM})
             eval(qt_additional_plugin_$${QTPLUG}.path = $${QT_PLUGINPATH})
 
             DEPLOYMENT *= qt_additional_plugin_$${QTPLUG}
@@ -121,7 +121,7 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
         isEqual(QT_CURRENT_VERIFY, DEPLOYMENT_PLUGIN):shared:symbian: {
             QT_ITEM = $${QTPLUG}.dll
 
-            eval(qt_additional_plugin_$${QTPLUG}.sources = $${QT_ITEM})
+            eval(qt_additional_plugin_$${QTPLUG}.files = $${QT_ITEM})
             eval(qt_additional_plugin_$${QTPLUG}.path = $${QT_PLUGINPATH})
 
             DEPLOYMENT *= qt_additional_plugin_$${QTPLUG}

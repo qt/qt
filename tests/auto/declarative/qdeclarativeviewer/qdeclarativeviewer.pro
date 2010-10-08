@@ -7,7 +7,7 @@ include(../../../../tools/qml/qml.pri)
 SOURCES += tst_qdeclarativeviewer.cpp
 
 symbian: {
-    importFiles.sources = data
+    importFiles.files = data
     importFiles.path = .
     DEPLOYMENT = importFiles
 } else {

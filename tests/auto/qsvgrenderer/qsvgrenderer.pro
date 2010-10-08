@@ -9,7 +9,7 @@ SOURCES += tst_qsvgrenderer.cpp
 RESOURCES += resources.qrc
 
 wince*|symbian {
-   addFiles.sources = *.svg *.svgz
+   addFiles.files = *.svg *.svgz
    addFiles.path = .
 
    DEPLOYMENT += addFiles
