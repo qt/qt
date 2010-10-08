@@ -82,6 +82,7 @@ QTOBJS= \
 	qutfcodec.o \
 	qstring.o \
 	qstringlist.o \
+	qsystemerror.o \
 	qsystemlibrary.o \
 	qtextstream.o \
 	quuid.o \
@@ -246,6 +247,9 @@ qdatetime.o: $(SOURCE_PATH)/src/corelib/tools/qdatetime.cpp
 
 qstringlist.o: $(SOURCE_PATH)/src/corelib/tools/qstringlist.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qstringlist.cpp
+
+qsystemerror.o: $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp
 
 qsystemlibrary.o: $(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp

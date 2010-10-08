@@ -1115,43 +1115,43 @@ QFileSystemEntry QFileSystemEngine::currentPath()
 }
 
 //static
-bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSystemEntry &target, QString &errorString)
+bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
 {
-    errorString = QLatin1String("not implemented");
-    return false; // TODO implement;
+    Q_ASSERT(false);
+    return false; // TODO implement; - code needs to be moved from qfsfileengine_win.cpp
 }
 
 //static
-bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QString &errorString)
+bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
 {
     bool ret = ::CopyFile((wchar_t*)source.nativeFilePath().utf16(),
                           (wchar_t*)target.nativeFilePath().utf16(), true) != 0;
     if(!ret)
-        errorString = qt_error_string(::GetLastError());
+        error = QSystemError(::GetLastError(), QSystemError::NativeError);
     return ret;
 }
 
 //static
-bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QString &errorString)
+bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
 {
     bool ret = ::MoveFile((wchar_t*)source.nativeFilePath().utf16(),
                           (wchar_t*)target.nativeFilePath().utf16()) != 0;
     if(!ret)
-        errorString = qt_error_string(::GetLastError());
+        error = QSystemError(::GetLastError(), QSystemError::NativeError);
     return ret;
 }
 
 //static
-bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry, QString &errorString)
+bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry, QSystemError &error)
 {
     bool ret = ::DeleteFile((wchar_t*)entry.nativeFilePath().utf16()) != 0;
     if(!ret)
-        errorString = qt_error_string(::GetLastError());
+        error = QSystemError(::GetLastError(), QSystemError::NativeError);
     return ret;
 }
 
 //static
-bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions, QString &errorString,
+bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions, QSystemError &error,
                                        QFileSystemMetaData *data)
 {
     Q_UNUSED(data);
@@ -1169,7 +1169,7 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
 
     bool ret = (::_wchmod((wchar_t*)entry.nativeFilePath().utf16(), mode) == 0);
     if(!ret)
-        errorString = qt_error_string(errno);
+        error = QSystemError(errno, QSystemError::StandardLibraryError);
     return ret;
 }
 

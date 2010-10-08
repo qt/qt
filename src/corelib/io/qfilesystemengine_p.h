@@ -56,6 +56,7 @@
 #include "qfile.h"
 #include "qfilesystementry_p.h"
 #include "qfilesystemmetadata_p.h"
+#include <QtCore/private/qsystemerror_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -91,9 +92,6 @@ public:
     static QString owner(const QFileSystemEntry &entry, QAbstractFileEngine::FileOwner own);
     static QString nativeAbsoluteFilePath(const QString &path);
 #endif
-#ifdef Q_OS_SYMBIAN
-    static QString errorString(int errorcode);
-#endif
     //homePath, rootPath and tempPath shall return clean paths
     static QString homePath();
     static QString rootPath();
@@ -102,13 +100,13 @@ public:
     static bool createDirectory(const QFileSystemEntry &entry, bool createParents);
     static bool removeDirectory(const QFileSystemEntry &entry, bool removeEmptyParents);
 
-    static bool createLink(const QFileSystemEntry &source, const QFileSystemEntry &target, QString &errorString);
+    static bool createLink(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error);
 
-    static bool copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QString &errorString);
-    static bool renameFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QString &errorString);
-    static bool removeFile(const QFileSystemEntry &entry, QString &errorString);
+    static bool copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error);
+    static bool renameFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error);
+    static bool removeFile(const QFileSystemEntry &entry, QSystemError &error);
 
-    static bool setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions, QString &errorString,
+    static bool setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions, QSystemError &error,
                                QFileSystemMetaData *data = 0);
 
     static bool setCurrentPath(const QFileSystemEntry &entry);

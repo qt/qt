@@ -69,6 +69,7 @@ SOURCES += \
            ../../corelib/io/qurl.cpp \
            ../../corelib/kernel/qmetatype.cpp \
            ../../corelib/kernel/qvariant.cpp \
+           ../../corelib/kernel/qsystemerror.cpp \
            ../../corelib/tools/qbitarray.cpp \
            ../../corelib/tools/qbytearray.cpp \
            ../../corelib/tools/qbytearraymatcher.cpp \
@@ -83,7 +84,7 @@ SOURCES += \
            ../../corelib/tools/qvector.cpp \
            ../../corelib/tools/qvsnprintf.cpp \
            ../../corelib/xml/qxmlutils.cpp \
-	   ../../corelib/xml/qxmlstream.cpp \
+           ../../corelib/xml/qxmlstream.cpp \
            ../../xml/dom/qdom.cpp \
            ../../xml/sax/qxml.cpp
 

@@ -20,7 +20,7 @@ QOBJS=qtextcodec.o qutfcodec.o qstring.o qtextstream.o qiodevice.o qmalloc.o qgl
       qfsfileengine_unix.o qfsfileengine.o \
       qfsfileengine_iterator.o qregexp.o qvector.o qbitarray.o qdir.o qdiriterator.o quuid.o qhash.o \
       qfileinfo.o qdatetime.o qstringlist.o qabstractfileengine.o qtemporaryfile.o \
-      qmap.o qmetatype.o qsettings.o qlibraryinfo.o qvariant.o qvsnprintf.o \
+      qmap.o qmetatype.o qsettings.o qsystemerror.o qlibraryinfo.o qvariant.o qvsnprintf.o \
       qlocale.o qlinkedlist.o qurl.o qnumeric.o qcryptographichash.o qxmlstream.o qxmlutils.o \
       $(QTOBJS)
 
@@ -65,6 +65,7 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   $(SOURCE_PATH)/src/corelib/tools/qvsnprintf.cpp $(SOURCE_PATH)/src/corelib/global/qnumeric.cpp \
 	   $(SOURCE_PATH)/src/corelib/xml/qxmlstream.cpp \
 	   $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp \
+	   $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp \
 	   $(QTSRCS)
 
 CPPFLAGS = -I. -Igenerators -Igenerators/unix -Igenerators/win32 -Igenerators/mac -Igenerators/symbian \
@@ -103,6 +104,9 @@ qvariant.o: $(SOURCE_PATH)/src/corelib/kernel/qvariant.cpp
 
 qsettings.o: $(SOURCE_PATH)/src/corelib/io/qsettings.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qsettings.cpp
+
+qsystemerror.o: $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp
 
 qlibraryinfo.o: $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp

@@ -185,10 +185,6 @@ public:
     int sysOpen(const QString &, int flags);
 #endif
 
-#ifdef Q_OS_SYMBIAN
-    void setSymbianError(int symbianError, QFile::FileError defaultError, QString defaultString);
-#endif
-
 protected:
     QFSFileEnginePrivate();
 

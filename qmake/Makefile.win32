@@ -103,6 +103,7 @@ QTOBJS= \
 	qutfcodec.obj \
 	qstring.obj \
 	qstringlist.obj \
+	qsystemerror.obj \
 	qtextstream.obj \
 	qdatastream.obj \
 	quuid.obj \

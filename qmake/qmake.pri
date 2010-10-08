@@ -82,6 +82,7 @@ bootstrap { #Qt code
         quuid.cpp \
         qsettings.cpp \
         qlibraryinfo.cpp \
+        qsystemerror.cpp \
         qvariant.cpp \
         qvector.cpp \
         qvsnprintf.cpp \
@@ -119,6 +120,7 @@ bootstrap { #Qt code
         qstring.h \
         qstringlist.h \
         qstringmatcher.h \
+        qsystemerror_p.h \
         qtemporaryfile.h \
         qtextstream.h \
         qurl.h \

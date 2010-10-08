@@ -239,7 +239,7 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
     }
 
     if (r != KErrNone) {
-        q->setError(QFile::OpenError, QFileSystemEngine::errorString(r));
+        q->setError(QFile::OpenError, QSystemError(r, QSystemError::NativeError).toString());
         symbianFile.Close();
         return false;
     }
@@ -385,7 +385,7 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 len)
         TInt r = symbianFile.Read(ptr);
         if (r != KErrNone)
         {
-            q->setError(QFile::ReadError, QFileSystemEngine::errorString(r));
+            q->setError(QFile::ReadError, QSystemError(r, QSystemError::NativeError).toString());
             return -1;
         }
         return qint64(ptr.Length());
@@ -470,7 +470,7 @@ qint64 QFSFileEnginePrivate::nativeWrite(const char *data, qint64 len)
         TInt r = symbianFile.Write(ptr);
         if (r != KErrNone)
         {
-            q->setError(QFile::WriteError, QFileSystemEngine::errorString(r));
+            q->setError(QFile::WriteError, QSystemError(r, QSystemError::NativeError).toString());
             return -1;
         }
         return len;
@@ -494,7 +494,7 @@ qint64 QFSFileEnginePrivate::nativePos() const
 #endif
         TInt err = symbianFile.Seek(ESeekCurrent, pos);
         if(err != KErrNone) {
-            const_cast<QFSFileEngine*>(q)->setError(QFile::PositionError, QFileSystemEngine::errorString(err));
+            const_cast<QFSFileEngine*>(q)->setError(QFile::PositionError, QSystemError(err, QSystemError::NativeError).toString());
             return -1;
         }
         return pos;
@@ -523,7 +523,7 @@ bool QFSFileEnginePrivate::nativeSeek(qint64 pos)
 #endif
         if (r != KErrNone)
         {
-            q->setError(QFile::PositionError, QFileSystemEngine::errorString(r));
+            q->setError(QFile::PositionError, QSystemError(r, QSystemError::NativeError).toString());
             return false;
         }
         return true;
@@ -555,11 +555,11 @@ bool QFSFileEnginePrivate::nativeIsSequential() const
 bool QFSFileEngine::remove()
 {
     Q_D(QFSFileEngine);
-    QString errorString;
-    bool ret = QFileSystemEngine::removeFile(d->fileEntry, errorString);
+    QSystemError error;
+    bool ret = QFileSystemEngine::removeFile(d->fileEntry, error);
     d->metaData.clear();
     if (!ret) {
-        setError(QFile::RemoveError, errorString);
+        setError(QFile::RemoveError, error.toString());
     }
     return ret;
 }
@@ -567,10 +567,10 @@ bool QFSFileEngine::remove()
 bool QFSFileEngine::copy(const QString &newName)
 {
     Q_D(QFSFileEngine);
-    QString error;
+    QSystemError error;
     bool ret = QFileSystemEngine::copyFile(d->fileEntry, QFileSystemEntry(newName), error);
     if (!ret) {
-        setError(QFile::CopyError, error);
+        setError(QFile::CopyError, error.toString());
     }
     return ret;
 }
@@ -578,11 +578,11 @@ bool QFSFileEngine::copy(const QString &newName)
 bool QFSFileEngine::rename(const QString &newName)
 {
     Q_D(QFSFileEngine);
-    QString error;
+    QSystemError error;
     bool ret = QFileSystemEngine::renameFile(d->fileEntry, QFileSystemEntry(newName), error);
 
     if (!ret) {
-        setError(QFile::RenameError, error);
+        setError(QFile::RenameError, error.toString());
     }
 
     return ret;
@@ -591,10 +591,10 @@ bool QFSFileEngine::rename(const QString &newName)
 bool QFSFileEngine::link(const QString &newName)
 {
     Q_D(QFSFileEngine);
-    QString error;
+    QSystemError error;
     bool ret = QFileSystemEngine::createLink(d->fileEntry, QFileSystemEntry(newName), error);
     if (!ret) {
-        setError(QFile::RenameError, error);
+        setError(QFile::RenameError, error.toString());
     }
     return ret;
 }
@@ -611,7 +611,7 @@ qint64 QFSFileEnginePrivate::nativeSize() const
 #endif
         TInt err = symbianFile.Size(size);
         if(err != KErrNone) {
-            const_cast<QFSFileEngine*>(q)->setError(QFile::PositionError, QFileSystemEngine::errorString(err));
+            const_cast<QFSFileEngine*>(q)->setError(QFile::PositionError, QSystemError(err, QSystemError::NativeError).toString());
             return 0;
         }
         return size;
@@ -850,9 +850,9 @@ QString QFSFileEngine::owner(FileOwner own) const
 bool QFSFileEngine::setPermissions(uint perms)
 {
     Q_D(QFSFileEngine);
-    QString error;
+    QSystemError error;
     if (!QFileSystemEngine::setPermissions(d->fileEntry, QFile::Permissions(perms), error, 0)) {
-        setError(QFile::PermissionsError, error);
+        setError(QFile::PermissionsError, error.toString());
         return false;
     }
     return true;
@@ -884,10 +884,12 @@ bool QFSFileEngine::setSize(qint64 size)
         ret = (err == KErrNone);
     }
     if (!ret) {
+        QSystemError error;
         if (err)
-            setError(QFile::ResizeError, QFileSystemEngine::errorString(err));
+            error = QSystemError(err, QSystemError::NativeError);
         else
-            setError(QFile::ResizeError, qt_error_string(errno));
+            error = QSystemError(errno, QSystemError::StandardLibraryError);
+        setError(QFile::ResizeError, error.toString());
     }
     return ret;
 }

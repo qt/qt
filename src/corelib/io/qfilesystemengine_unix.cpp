@@ -572,45 +572,45 @@ bool QFileSystemEngine::removeDirectory(const QFileSystemEntry &entry, bool remo
 }
 
 //static
-bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSystemEntry &target, QString &errorString)
+bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
 {
     if (::symlink(source.nativeFilePath().constData(), target.nativeFilePath().constData()) == 0)
         return true;
-    errorString = qt_error_string(errno);
+    error = QSystemError(errno, QSystemError::StandardLibraryError);
     return false;
 }
 
 //static
-bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QString &errorString)
+bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
 {
     Q_UNUSED(source);
     Q_UNUSED(target);
     // # we can implement this using sendfile(2)
-    errorString = QLatin1String("Not implemented!");
+    //when this function returns false, block copy is used in QFile which sets the error code.
     return false;
 }
 
 //static
-bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QString &errorString)
+bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
 {
     if (::rename(source.nativeFilePath().constData(), target.nativeFilePath().constData()) == 0)
         return true;
-    errorString = qt_error_string(errno);
+    error = QSystemError(errno, QSystemError::StandardLibraryError);
     return false;
 }
 
 //static
-bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry, QString &errorString)
+bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry, QSystemError &error)
 {
     if (unlink(entry.nativeFilePath().constData()) == 0)
         return true;
-    errorString = qt_error_string(errno);
+    error = QSystemError(errno, QSystemError::StandardLibraryError);
     return false;
 
 }
 
 //static
-bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions, QString &errorString, QFileSystemMetaData *data)
+bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions, QSystemError &error, QFileSystemMetaData *data)
 {
     mode_t mode = 0;
     if (permissions & QFile::ReadOwner)
@@ -645,7 +645,7 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
         data->knownFlagsMask |= QFileSystemMetaData::Permissions;
     }
     if (!success)
-        errorString = qt_error_string(errno);
+        error = QSystemError(errno, QSystemError::StandardLibraryError);
     return success;
 }
 
