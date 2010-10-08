@@ -35,3 +35,15 @@ DEFINES += SPECTRUM_ANALYSER_SEPARATE_THREAD
 # Suppress warnings about strncpy potentially being unsafe, emitted by MSVC
 win32: DEFINES += _CRT_SECURE_NO_WARNINGS
 
+win32 {
+    # spectrum_build_dir is defined with a leading slash so that it can
+    # be used in contexts such as
+    #     ..$${spectrum_build_dir}
+    # without the result having a trailing slash where spectrum_build_dir
+    # is undefined.
+    spectrum_build_dir = /release
+    if (!debug_and_release|build_pass): CONFIG(debug, debug|release) {
+        spectrum_build_dir = /debug
+    }
+}
+
