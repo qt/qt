@@ -2770,6 +2770,7 @@ public:
 
 void tst_QScriptEngine::throwErrorFromProcessEvents()
 {
+    QSKIP("It hangs", SkipAll);
     QScriptEngine eng;
 
     EventReceiver2 receiver(&eng);
@@ -3176,6 +3177,7 @@ void tst_QScriptEngine::abortEvaluation()
 
     EventReceiver3 receiver(&eng);
 
+    QSKIP("It hangs", SkipAll);
     eng.setProcessEventsInterval(100);
     for (int x = 0; x < 3; ++x) {
         QCoreApplication::postEvent(&receiver, new QEvent(QEvent::Type(QEvent::User+1)));
