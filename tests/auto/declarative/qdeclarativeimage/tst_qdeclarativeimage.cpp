@@ -84,6 +84,7 @@ private slots:
     void tiling_QTBUG_6716();
     void noLoading();
     void paintedWidthHeight();
+    void sourceSize_QTBUG_14303();
 
 private:
     template<typename T>
@@ -377,7 +378,7 @@ void tst_qdeclarativeimage::noLoading()
     QTRY_COMPARE(statusSpy.count(), 0);
 
     // Loading remote file
-    ctxt->setContextProperty("srcImage", QString(SERVER_ADDR) + "/oldcolors.png");
+    ctxt->setContextProperty("srcImage", QString(SERVER_ADDR) + "/heart200.png");
     QTRY_VERIFY(obj->status() == QDeclarativeImage::Loading);
     QTRY_VERIFY(obj->progress() == 0.0);
     QTRY_VERIFY(obj->status() == QDeclarativeImage::Ready);
@@ -388,7 +389,7 @@ void tst_qdeclarativeimage::noLoading()
 
     // Loading remote file again - should not go through 'Loading' state.
     ctxt->setContextProperty("srcImage", QUrl::fromLocalFile(SRCDIR "/data/colors.png"));
-    ctxt->setContextProperty("srcImage", QString(SERVER_ADDR) + "/oldcolors.png");
+    ctxt->setContextProperty("srcImage", QString(SERVER_ADDR) + "/heart200.png");
     QTRY_VERIFY(obj->status() == QDeclarativeImage::Ready);
     QTRY_VERIFY(obj->progress() == 1.0);
     QTRY_COMPARE(sourceSpy.count(), 4);
@@ -434,6 +435,35 @@ void tst_qdeclarativeimage::paintedWidthHeight()
 
         delete obj;
     }
+}
+
+void tst_qdeclarativeimage::sourceSize_QTBUG_14303()
+{
+    QString componentStr = "import QtQuick 1.0\nImage { source: srcImage }";
+    QDeclarativeContext *ctxt = engine.rootContext();
+    ctxt->setContextProperty("srcImage", QUrl::fromLocalFile(SRCDIR "/data/heart200.png"));
+    QDeclarativeComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
+
+    QSignalSpy sourceSizeSpy(obj, SIGNAL(sourceSizeChanged()));
+
+    QTRY_VERIFY(obj != 0);
+    QTRY_VERIFY(obj->status() == QDeclarativeImage::Ready);
+
+    QTRY_COMPARE(obj->sourceSize().width(), 200);
+    QTRY_COMPARE(obj->sourceSize().height(), 200);
+    QTRY_COMPARE(sourceSizeSpy.count(), 0);
+
+    ctxt->setContextProperty("srcImage", QUrl::fromLocalFile(SRCDIR "/data/colors.png"));
+    QTRY_COMPARE(obj->sourceSize().width(), 120);
+    QTRY_COMPARE(obj->sourceSize().height(), 120);
+    QTRY_COMPARE(sourceSizeSpy.count(), 1);
+
+    ctxt->setContextProperty("srcImage", QUrl::fromLocalFile(SRCDIR "/data/heart200.png"));
+    QTRY_COMPARE(obj->sourceSize().width(), 200);
+    QTRY_COMPARE(obj->sourceSize().height(), 200);
+    QTRY_COMPARE(sourceSizeSpy.count(), 2);
 }
 
 /*

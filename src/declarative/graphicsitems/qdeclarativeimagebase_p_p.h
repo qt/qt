@@ -69,6 +69,7 @@ public:
     QDeclarativeImageBasePrivate()
       : status(QDeclarativeImageBase::Null),
         progress(0.0),
+        explicitSourceSize(false),
         async(false)
     {
         QGraphicsItemPrivate::flags = QGraphicsItemPrivate::flags & ~QGraphicsItem::ItemHasNoContents;
@@ -79,6 +80,7 @@ public:
     QUrl url;
     qreal progress;
     QSize sourcesize;
+    bool explicitSourceSize : 1;
     bool async : 1;
 };
 
