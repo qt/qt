@@ -4526,4 +4526,17 @@ EXPORTS
 	?unlockInternal@QMutex@@AAEXXZ @ 4525 NONAME ; void QMutex::unlockInternal(void)
 	?waitForDone@QThreadPool@@QAE_NH@Z @ 4526 NONAME ; bool QThreadPool::waitForDone(int)
 	?app_compile_version@QCoreApplicationPrivate@@2HA @ 4527 NONAME ; int QCoreApplicationPrivate::app_compile_version
+	??0QFileInfo@@QAE@PAVQFileInfoPrivate@@@Z @ 4528 NONAME ; QFileInfo::QFileInfo(class QFileInfoPrivate *)
+	??0QSystemError@@QAE@HW4ErrorScope@0@@Z @ 4529 NONAME ; QSystemError::QSystemError(int, enum QSystemError::ErrorScope)
+	??0QSystemError@@QAE@XZ @ 4530 NONAME ; QSystemError::QSystemError(void)
+	?cast@QMetaObject@@QBEPBVQObject@@PBV2@@Z @ 4531 NONAME ; class QObject const * QMetaObject::cast(class QObject const *) const
+	?error@QSystemError@@QAEHXZ @ 4532 NONAME ; int QSystemError::error(void)
+	?qt_symbian_SetupThreadHeap@@YAHHAAUSStdEpocThreadCreateInfo@@@Z @ 4533 NONAME ; int qt_symbian_SetupThreadHeap(int, struct SStdEpocThreadCreateInfo &)
+	?scope@QSystemError@@QAE?AW4ErrorScope@1@XZ @ 4534 NONAME ; enum QSystemError::ErrorScope QSystemError::scope(void)
+	?toAscii@QStringRef@@QBE?AVQByteArray@@XZ @ 4535 NONAME ; class QByteArray QStringRef::toAscii(void) const
+	?toLatin1@QStringRef@@QBE?AVQByteArray@@XZ @ 4536 NONAME ; class QByteArray QStringRef::toLatin1(void) const
+	?toLocal8Bit@QStringRef@@QBE?AVQByteArray@@XZ @ 4537 NONAME ; class QByteArray QStringRef::toLocal8Bit(void) const
+	?toString@QSystemError@@QAE?AVQString@@XZ @ 4538 NONAME ; class QString QSystemError::toString(void)
+	?toUcs4@QStringRef@@QBE?AV?$QVector@I@@XZ @ 4539 NONAME ; class QVector<unsigned int> QStringRef::toUcs4(void) const
+	?toUtf8@QStringRef@@QBE?AVQByteArray@@XZ @ 4540 NONAME ; class QByteArray QStringRef::toUtf8(void) const
 
