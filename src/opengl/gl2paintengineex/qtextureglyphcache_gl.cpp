@@ -137,7 +137,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     if (ctx->d_ptr->workaround_brokenFBOReadBack) {
         QImageTextureGlyphCache::resizeTextureData(width, height);
         Q_ASSERT(image().depth() == 8);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, oldWidth, oldHeight, GL_ALPHA, GL_UNSIGNED_BYTE, image().constBits());
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, oldHeight, GL_ALPHA, GL_UNSIGNED_BYTE, image().constBits());
         glDeleteTextures(1, &oldTexture);
         return;
     }
