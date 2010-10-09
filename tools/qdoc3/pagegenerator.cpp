@@ -310,10 +310,10 @@ PageGenerator::generateInnerNode(const InnerNode* node, CodeMarker* marker)
         const FakeNode *fakeNode = static_cast<const FakeNode *>(node);
         if (fakeNode->subType() == Node::ExternalPage)
             return;
-#ifdef QDOC_QML            
+        if (fakeNode->subType() == Node::Image)
+            return;
         if (fakeNode->subType() == Node::QmlPropertyGroup)
             return;
-#endif            
         if (fakeNode->subType() == Node::Page) {
             if (node->count() > 0)
                 qDebug("PAGE %s HAS CHILDREN", qPrintable(fakeNode->title()));

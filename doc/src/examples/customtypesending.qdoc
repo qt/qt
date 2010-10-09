@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -34,10 +34,6 @@
 
     \image customtypesending-example.png
 
-    Contents:
-
-    \tableofcontents
-
     \section1 Overview
 
     In the \l{Custom Type Example}, we showed how to integrate custom types
@@ -51,7 +47,7 @@
     a \c Window class containing signals and slots whose signatures include
     \c Message arguments.
 
-    \section1 The Window Class Definition
+    \section1 The Window and Message Class Definitions
 
     We define a simple \c Window class with a signal and public slot that
     allow a \c Message object to be sent via a signal-slot connection:
@@ -63,6 +59,17 @@
     this, we also define the \c sendMessage() slot. We also keep a \c Message
     instance in the \c thisMessage private variable which holds the actual
     message to be sent.
+
+    The \c Message class is defined in the following way:
+    
+    \snippet examples/tools/customtypesending/message.h custom type definition
+
+    The type is declared to the meta-type system with the Q_DECLARE_METATYPE()
+    macro:
+
+    \snippet examples/tools/customtypesending/message.h custom type meta-type declaration
+
+    This will make the type available for use in direct signal-slot connections.
 
     \section1 The Window Class Implementation
 
