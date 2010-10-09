@@ -748,6 +748,9 @@ public:
     uint isMoved : 1;
     uint isGLWidget : 1;
     uint usesDoubleBufferedGLContext : 1;
+#ifndef QT_NO_IM
+    uint inheritsInputMethodHints : 1;
+#endif
 
     // *************************** Platform specific ************************************
 #if defined(Q_WS_X11) // <----------------------------------------------------------- X11
