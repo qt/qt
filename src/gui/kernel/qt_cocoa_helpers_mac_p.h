@@ -227,6 +227,8 @@ void qt_cocoaPostMessage(id target, SEL selector, int argCount=0, id arg1=0, id 
 
 void qt_mac_post_retranslateAppMenu();
 
+void qt_mac_display(QWidget *widget);
+
 QT_END_NAMESPACE
 
 #endif // QT_COCOA_HELPERS_MAC_P_H

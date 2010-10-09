@@ -241,8 +241,19 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool /*
     : image(width, height, format)
 {
 
-
     uint cgflags = kCGImageAlphaNoneSkipFirst;
+    switch (format) {
+    case QImage::Format_ARGB32:
+        cgflags = kCGImageAlphaFirst;
+        break;
+    case QImage::Format_ARGB32_Premultiplied:
+    case QImage::Format_ARGB8565_Premultiplied:
+    case QImage::Format_ARGB6666_Premultiplied:
+    case QImage::Format_ARGB8555_Premultiplied:
+    case QImage::Format_ARGB4444_Premultiplied:
+        cgflags = kCGImageAlphaPremultipliedFirst;
+        break;
+    }
 
 #ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
     cgflags |= kCGBitmapByteOrder32Host;
