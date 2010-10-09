@@ -1561,6 +1561,13 @@ void qt_cocoaStackChildWindowOnTopOfOtherChildren(QWidget *childWidget)
     }
 }
 
+void qt_mac_display(QWidget *widget)
+{
+    NSView *theNSView = qt_mac_nativeview_for(widget);
+    [theNSView display];
+    return;
+}
+
 #endif // QT_MAC_USE_COCOA
 
 QT_END_NAMESPACE
