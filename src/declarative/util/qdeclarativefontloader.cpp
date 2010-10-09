@@ -49,7 +49,6 @@
 #include <QDebug>
 #include <QNetworkRequest>
 #include <QNetworkReply>
-#include <QFile>
 #include <QFontDatabase>
 
 #include <private/qobject_p.h>

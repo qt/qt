@@ -218,7 +218,14 @@ public:
                 return visibleItems.last()->rowPos() + rows * rowSize();
             }
         } else {
-             return (modelIndex / columns) * rowSize();
+            qreal pos = (modelIndex / columns) * rowSize();
+            if (header) {
+                qreal headerSize = flow == QDeclarativeGridView::LeftToRight
+                                   ? header->item->height()
+                                   : header->item->width();
+                pos += headerSize;
+            }
+            return pos;
         }
         return 0;
     }
