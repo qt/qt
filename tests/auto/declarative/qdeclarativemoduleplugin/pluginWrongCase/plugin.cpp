@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,52 +38,46 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QStringList>
+#include <QtDeclarative/qdeclarativeextensionplugin.h>
+#include <QtDeclarative/qdeclarative.h>
+#include <QDebug>
 
-#ifndef QDECLARATIVEIMAGEBASE_P_H
-#define QDECLARATIVEIMAGEBASE_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "private/qdeclarativeitem_p.h"
-#include "private/qdeclarativepixmapcache_p.h"
-
-#include <QtCore/QPointer>
-
-QT_BEGIN_NAMESPACE
-
-class QNetworkReply;
-class QDeclarativeImageBasePrivate : public QDeclarativeItemPrivate
+class MyPluginType : public QObject
 {
-    Q_DECLARE_PUBLIC(QDeclarativeImageBase)
+    Q_OBJECT
+    Q_PROPERTY(int value READ value WRITE setValue)
 
 public:
-    QDeclarativeImageBasePrivate()
-      : status(QDeclarativeImageBase::Null),
-        progress(0.0),
-        explicitSourceSize(false),
-        async(false)
+    MyPluginType(QObject *parent=0) : QObject(parent)
     {
-        QGraphicsItemPrivate::flags = QGraphicsItemPrivate::flags & ~QGraphicsItem::ItemHasNoContents;
+        qWarning("import worked");
     }
 
-    QDeclarativePixmap pix;
-    QDeclarativeImageBase::Status status;
-    QUrl url;
-    qreal progress;
-    QSize sourcesize;
-    bool explicitSourceSize : 1;
-    bool async : 1;
+    int value() const { return v; }
+    void setValue(int i) { v = i; }
+
+private:
+    int v;
 };
 
-QT_END_NAMESPACE
 
-#endif
+class MyPlugin : public QDeclarativeExtensionPlugin
+{
+    Q_OBJECT
+public:
+    MyPlugin()
+    {
+        qWarning("plugin created");
+    }
+
+    void registerTypes(const char *uri)
+    {
+        Q_ASSERT(QLatin1String(uri) == "com.nokia.WrongCase");
+        qmlRegisterType<MyPluginType>(uri, 1, 0, "MyPluginType");
+    }
+};
+
+#include "plugin.moc"
+
+Q_EXPORT_PLUGIN2(plugin, MyPlugin);
