@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -392,10 +392,10 @@ must be run as root.
 */
 
 /*! \page install-wince.html
-\title Installing Qt on Windows CE
+\title Installing Qt for Windows CE
 \ingroup installation
 \ingroup qtce
-\brief How to install Qt on Windows CE.
+\brief How to install Qt for Windows CE.
 \previouspage Installation
 \tableofcontents
 
@@ -492,9 +492,9 @@ in the \l{Qt for Windows CE Requirements} document.
 */
 
 /*! \page install-Symbian-installer.html
-\title Installing Qt on the Symbian platform from a Binary Package
+\title Installing Qt for the Symbian platform from a Binary Package
 \ingroup qtsymbian
-\brief How to install Qt on the Symbian platform from a binary package.
+\brief How to install Qt for the Symbian platform from a binary package.
 \previouspage Installation
 
 \tableofcontents
@@ -551,10 +551,10 @@ Symbian platform,
 
 */
 /*! \page install-Symbian.html
-\title Installing Qt on the Symbian platform
+\title Installing Qt for the Symbian platform
 \ingroup installation
 \ingroup qtsymbian
-\brief How to install Qt on the Symbian platform.
+\brief How to install Qt for the Symbian platform.
 \previouspage Installation
 \tableofcontents
 
@@ -685,10 +685,10 @@ Binary Package} document.
 
 */
 /*! \page install-Symbian-linux.html
-\title Installing Qt on the Symbian platform using Linux (experimental)
+\title Installing Qt for the Symbian platform using Linux (experimental)
 \ingroup installation
 \ingroup qtsymbian
-\brief How to install Qt on the Symbian platform using Linux.
+\brief How to install Qt for the Symbian platform using Linux.
 \previouspage Installation
 \tableofcontents
 
