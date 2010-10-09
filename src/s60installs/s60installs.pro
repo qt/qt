@@ -11,10 +11,10 @@ symbian: {
 
     isEmpty(QT_LIBINFIX) {
         TARGET.UID3 = 0x2001E61C
-        
+
         # Sqlite3 is expected to be already found on phone if infixed configuration is built.
         # It is also expected that devices newer than those based on S60 5.0 all have sqlite3.dll.
-        contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2)|contains(S60_VERSION, 5.0) {            
+        contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2)|contains(S60_VERSION, 5.0) {
             BLD_INF_RULES.prj_exports += \
                 "sqlite3.sis /epoc32/data/qt/sis/sqlite3.sis" \
                 "sqlite3_selfsigned.sis /epoc32/data/qt/sis/sqlite3_selfsigned.sis"
@@ -34,15 +34,6 @@ symbian: {
         TARGET.UID3 = 0xE001E61C
     }
     VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
-
-    symbian-abld|symbian-sbsv2 {
-        qtresources.sources = $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/s60main$${QT_LIBINFIX}.rsc
-    } else {
-        qtresources.sources = $$QMAKE_LIBDIR_QT/s60main$${QT_LIBINFIX}.rsc
-        DESTDIR = $$QMAKE_LIBDIR_QT
-    }
-    qtresources.path = c:$$APP_RESOURCE_DIR
-    DEPLOYMENT += qtresources
 
     qtlibraries.sources = \
         $$QMAKE_LIBDIR_QT/QtCore$${QT_LIBINFIX}.dll \
@@ -109,9 +100,9 @@ symbian: {
 
     qtlibraries.pkg_prerules = vendorinfo
     qtlibraries.pkg_prerules += "; Dependencies of Qt libraries"
-    
+
     # It is expected that Symbian^3 and newer phones will have sufficiently new OpenC already installed
-    contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2)|contains(S60_VERSION, 5.0) {                
+    contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2)|contains(S60_VERSION, 5.0) {
         qtlibraries.pkg_prerules += "(0x20013851), 1, 5, 1, {\"PIPS Installer\"}"
         contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
             qtlibraries.pkg_prerules += "(0x200110CB), 1, 5, 1, {\"Open C LIBSSL Common\"}"

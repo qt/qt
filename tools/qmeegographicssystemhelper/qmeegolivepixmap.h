@@ -43,7 +43,6 @@
 #define QMEEGOLIVEPIXMAP_H
 
 #include <QPixmap>
-#include "qmeegoliveimage.h"
 
 class QMeeGoLivePixmapPrivate;
 class QSharedMemory;
@@ -56,13 +55,17 @@ class QImage;
 class QMeeGoLivePixmap : public QPixmap
 {
 public:
-    //! Creates new pixmap from the given QMeeGoLiveImage.
-    /*! 
-     The created QMeeGoLivePixmap will be attached to the given QMeeGoLiveImage. 
-     Updates to the QMeeGoLiveImage will be represented on this newly created
-     QMeeGoLivePixmap.
+    enum Format {
+        Format_RGB16,               //! 16bit, 5-6-5 RGB format.
+        Format_ARGB32_Premultiplied //! 32bit, AARRGGBB format. The typical Qt format.
+    };
+    
+    //! Creates and returns a new live pixmap with the given parameters.
+    /*!
+     The new pixmap is created with the given width w and the given height h. 
+     The format specifies the color format used by the pixmap.
     */
-    static QMeeGoLivePixmap* fromLiveImage(QMeeGoLiveImage *liveImage);
+    static QMeeGoLivePixmap* livePixmapWithSize(int w, int h, Format format);
     
     //! Creates a new QMeeGoLivePixmap from the specified handle.
     /*! 
@@ -75,24 +78,30 @@ public:
      The handle can be used to share QMeeGoLivePixmap cross-process.
     */
     Qt::HANDLE handle();
+
+    //! Locks the access to the pixmap. 
+    /*! 
+     The returned image can be used for direct access.
+     */
+    QImage* lock();
+    
+    //! Unlocks the access to the pixmap. 
+    /*! 
+     */
+    void release(QImage *img);
     
     //! Destroys the QMeeGoLivePixmap.
     /*! 
-     All QMeeGoLivePixmaps attached to a given QMeeGoLiveImage have to be destroyed 
-     before the QMeeGoLiveImage itself is destroyed.
     */
     virtual ~QMeeGoLivePixmap();
 
 private:
-    QMeeGoLivePixmap(QPixmapData *p);
+    QMeeGoLivePixmap(QPixmapData *p, Qt::HANDLE h);
     Q_DISABLE_COPY(QMeeGoLivePixmap)
     Q_DECLARE_PRIVATE(QMeeGoLivePixmap)
 
 protected:
     QScopedPointer<QMeeGoLivePixmapPrivate> d_ptr; //! Private bits.
-
-    friend class QMeeGoLiveImage;
-    friend class QMeeGoLiveImagePrivate;
 };
 
 #endif

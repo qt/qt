@@ -53,6 +53,7 @@
 #include <qscrollbar.h>
 #include <qprogressbar.h>
 #include <qtoolbutton.h>
+#include <qtoolbar.h>
 
 #include <qplastiquestyle.h>
 #include <qwindowsstyle.h>
@@ -146,6 +147,7 @@ private slots:
     void pixelMetric();
     void progressBarChangeStyle();
     void defaultFont();
+    void testDrawingShortcuts();
 private:
     void lineUpLayoutTest(QStyle *);
     QWidget *testWidget;
@@ -779,6 +781,55 @@ void tst_QStyle::defaultFont()
     button.show();
     qApp->processEvents();
     qApp->setFont(defaultFont);
+}
+
+class DrawTextStyle : public QProxyStyle
+{
+    Q_OBJECT
+public:
+    DrawTextStyle(QStyle *base = 0) : QProxyStyle(), alignment(0) { setBaseStyle(base); }
+    void drawItemText(QPainter *painter, const QRect &rect,
+                              int flags, const QPalette &pal, bool enabled,
+                              const QString &text, QPalette::ColorRole textRole = QPalette::NoRole) const
+    {
+        DrawTextStyle *that = (DrawTextStyle *)this;
+        that->alignment = flags;
+        QProxyStyle::drawItemText(painter, rect, flags, pal, enabled, text, textRole);
+    }
+    int alignment;
+};
+
+void tst_QStyle::testDrawingShortcuts()
+{
+    {   
+        QWidget w;
+        QToolButton *tb = new QToolButton(&w);
+        tb->setText("&abc");
+        DrawTextStyle *dts = new DrawTextStyle;
+        w.show();
+        tb->setStyle(dts);
+        QPixmap::grabWidget(tb);
+        QStyleOptionToolButton sotb;
+        sotb.initFrom(tb);
+        bool showMnemonic = dts->styleHint(QStyle::SH_UnderlineShortcut, &sotb, tb);
+        QVERIFY(dts->alignment & (showMnemonic ? Qt::TextShowMnemonic : Qt::TextHideMnemonic));
+        delete dts;
+    }
+    {
+        QToolBar w;
+        QToolButton *tb = new QToolButton(&w);
+        tb->setText("&abc");
+        DrawTextStyle *dts = new DrawTextStyle;
+        w.addWidget(tb);
+        w.show();
+        tb->setStyle(dts);
+        QPixmap::grabWidget(tb);
+        QStyleOptionToolButton sotb;
+        sotb.initFrom(tb);
+        bool showMnemonic = dts->styleHint(QStyle::SH_UnderlineShortcut, &sotb, tb);
+        QVERIFY(dts->alignment & (showMnemonic ? Qt::TextShowMnemonic : Qt::TextHideMnemonic));
+        delete dts;
+     }   
 }
 
 QTEST_MAIN(tst_QStyle)

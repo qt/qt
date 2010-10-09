@@ -79,6 +79,21 @@ QThreadStorageData::QThreadStorageData(void (*func)(void *))
 {
     QMutexLocker locker(mutex());
     DestructorMap *destr = destructors();
+    if (!destr) {
+        /*
+         the destructors vector has already been destroyed, yet a new
+         QThreadStorage is being allocated. this can only happen during global
+         destruction, at which point we assume that there is only one thread.
+         in order to keep QThreadStorage working, we need somewhere to store
+         the data, best place we have in this situation is at the tail of the
+         current thread's tls vector. the destructor is ignored, since we have
+         no where to store it, and no way to actually call it.
+         */
+        QThreadData *data = QThreadData::current();
+        id = data->tls.count();
+        DEBUG_MSG("QThreadStorageData: Allocated id %d, destructor %p cannot be stored", id, func);
+        return;
+    }
     for (id = 0; id < destr->count(); id++) {
         if (destr->at(id) == 0)
             break;
@@ -139,13 +154,15 @@ void **QThreadStorageData::set(void *p)
                 data->thread);
 
         QMutexLocker locker(mutex());
-        void (*destructor)(void *) = destructors()->value(id);
+        DestructorMap *destr = destructors();
+        void (*destructor)(void *) = destr ? destr->value(id) : 0;
         locker.unlock();
 
         void *q = value;
         value = 0;
 
-        destructor(q);
+        if (destructor)
+            destructor(q);
     }
 
     // store new data

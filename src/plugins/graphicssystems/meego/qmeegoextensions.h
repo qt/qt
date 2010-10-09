@@ -65,6 +65,18 @@ typedef void* EGLNativeSharedImageTypeNOK;
 #define EGL_FIXED_HEIGHT_NOK 0x30DC
 #endif
 
+#ifndef EGL_BITMAP_POINTER_KHR
+#define EGL_BITMAP_POINTER_KHR 0x30C6
+#define EGL_BITMAP_PITCH_KHR 0x30C7
+#endif
+
+#ifndef EGL_MAP_PRESERVE_PIXELS_KHR
+#define EGL_MAP_PRESERVE_PIXELS_KHR 0x30C4
+#define EGL_LOCK_USAGE_HINT_KHR 0x30C5
+#define EGL_READ_SURFACE_BIT_KHR 0x0001
+#define EGL_WRITE_SURFACE_BIT_KHR 0x0002
+#endif
+
 /* Class */
 
 class QMeeGoExtensions
@@ -76,6 +88,8 @@ public:
     static bool eglQueryImageNOK(EGLDisplay dpy, EGLImageKHR image, EGLint prop, EGLint *v);
     static bool eglDestroySharedImageNOK(EGLDisplay dpy, EGLNativeSharedImageTypeNOK img);
     static bool eglSetSurfaceScalingNOK(EGLDisplay dpy, EGLSurface surface, int x, int y, int width, int height);
+    static bool eglLockSurfaceKHR(EGLDisplay display, EGLSurface surface, const EGLint *attrib_list);
+    static bool eglUnlockSurfaceKHR(EGLDisplay display, EGLSurface surface);
 
 private:
     static void initialize();
@@ -83,6 +97,7 @@ private:
     static bool initialized;
     static bool hasImageShared;
     static bool hasSurfaceScaling;
+    static bool hasLockSurface;
 };
 
 #endif

@@ -41,8 +41,8 @@
 
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-#include <QWebView>
 
+#include <QWebView>
 
 class ImageAnalyzer;
 class QNetworkDiskCache;
@@ -50,14 +50,17 @@ class QNetworkDiskCache;
 class MainWin : public QWebView
 {
     Q_OBJECT
+    
+public:
+    explicit MainWin(QWidget * parent = 0);
 
-    public:
-        explicit MainWin(QWidget * parent = 0);
-    private:
-        ImageAnalyzer * m_analyzer;
-        QNetworkAccessManager * m_network;
-        QNetworkDiskCache * m_cache;
-    private slots:
-        void addJSObject();
+private:
+    ImageAnalyzer * m_analyzer;
+    QNetworkAccessManager * m_network;
+    QNetworkDiskCache * m_cache;
+
+private slots:
+    void addJSObject();
+
 };
 #endif
