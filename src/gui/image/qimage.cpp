@@ -6689,6 +6689,10 @@ bool QImageData::convertInPlace(QImage::Format newFormat, Qt::ImageConversionFla
     if (format == newFormat)
         return true;
 
+    // No in-place conversion if we have to detach
+    if (ref > 1)
+        return false;
+
     const InPlace_Image_Converter *const converterPtr = &inplace_converter_map[format][newFormat];
     InPlace_Image_Converter converter = *converterPtr;
     if (converter)
