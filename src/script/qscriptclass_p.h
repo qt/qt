@@ -36,6 +36,7 @@
 #define QSCRIPTCLASSPRIVATE_P_H
 
 #include "qscriptclass.h"
+#include <v8.h>
 
 class QScriptEnginePrivate;
 class QScriptValuePrivate;
@@ -87,5 +88,26 @@ inline QScriptClass* QScriptClassPrivate::userCallback() const
 {
     return q_ptr;
 }
+
+
+struct QScriptClassObject {
+    QScriptEnginePrivate *engine;
+    QScriptClassPrivate *scriptclass;
+    v8::Persistent<v8::Object> original;
+
+    ~QScriptClassObject()
+    {
+        if (!original.IsEmpty())
+            original.Dispose();
+    }
+
+    v8::Handle<v8::Value> property(v8::Local<v8::String> property);
+    v8::Handle<v8::Value> setProperty(v8::Local<v8::String> property, v8::Local<v8::Value> value);
+
+    static QScriptClassObject *safeGet(const QScriptValue &v);
+    static v8::Handle<v8::FunctionTemplate> functionTemplate(QScriptEnginePrivate *engine);
+    static v8::Handle<v8::Value> createInstance(QScriptClassPrivate* scriptclass, v8::Handle<v8::Object> previousValue);
+
+};
 
 #endif // QSCRIPTCLASSPRIVATE_P_H

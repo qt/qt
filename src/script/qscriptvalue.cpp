@@ -1208,8 +1208,8 @@ void QScriptValue::setData(const QScriptValue &value)
 */
 QScriptClass *QScriptValue::scriptClass() const
 {
-    Q_UNIMPLEMENTED();
-    return 0;
+    QScriptClassObject *o = QScriptClassObject::safeGet(*this);
+    return o ? QScriptClassPrivate::get(o->scriptclass) : 0;
 }
 
 /*!

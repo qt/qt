@@ -73,8 +73,7 @@ struct QScriptDeclarativeClassObject {
     v8::Handle<v8::Value> setProperty(v8::Local<v8::String> property, v8::Local<v8::Value> value)
     {
         QScriptDeclarativeClassPrivate* scriptDeclarativeClassP = QScriptDeclarativeClassPrivate::get(scriptClass);
-        QScriptContextPrivate qScriptContext(engine);
-        scriptDeclarativeClassP->context = &qScriptContext;
+        scriptDeclarativeClassP->context = engine->currentContext();
 
         QScriptDeclarativeClass::PersistentIdentifier identifier =
             scriptClass->createPersistentIdentifier(QScriptConverter::toString(property));
@@ -88,10 +87,9 @@ struct QScriptDeclarativeClassObject {
         return v8::Handle<v8::Value>();
     }
 
-    v8::Handle<v8::Value> call(const v8::Arguments& args)
+    v8::Handle<v8::Value> call()
     {
-        QScriptContextPrivate qScriptContext(engine, &args);
-        QScriptValue result = scriptClass->call(obj.data(), &qScriptContext).toScriptValue(QScriptEnginePrivate::get(engine));
+        QScriptValue result = scriptClass->call(obj.data(), engine->currentContext()).toScriptValue(QScriptEnginePrivate::get(engine));
         return QScriptValuePrivate::get(result)->asV8Value(engine);
     }
 

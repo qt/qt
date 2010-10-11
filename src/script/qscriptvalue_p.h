@@ -779,8 +779,8 @@ inline void QScriptValuePrivate::setScriptClass(QScriptClassPrivate *scriptclass
     v8::HandleScope scope;
 
     v8::Handle<v8::Object> self = v8::Handle<v8::Object>::Cast(m_value);
-    QScriptSharedDataPointer<QScriptValuePrivate> newObject(scriptclass->engine()->newScriptClassObject(scriptclass, self));
-    reinitialize(newObject->engine(), *newObject);
+    v8::Handle<v8::Value> newObject = QScriptClassObject::createInstance(scriptclass, v8::Handle<v8::Object>());
+    reinitialize(scriptclass->engine(), newObject);
 }
 
 inline void QScriptValuePrivate::setProperty(const QString& name, QScriptValuePrivate* value, v8::PropertyAttribute attribs)

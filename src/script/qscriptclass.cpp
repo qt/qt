@@ -24,10 +24,220 @@
 #include "qscriptclass_p.h"
 #include "qscriptclass.h"
 #include "qscriptengine_p.h"
-#include "qscriptstring.h"
+#include "qscriptstring_p.h"
 #include "qscriptvalue_p.h"
+#include "qscriptcontext_p.h"
+
+
+#include <v8.h>
+#include "qscriptv8objectwrapper_p.h"
+#include "qscriptisolate_p.h"
 
 QT_BEGIN_NAMESPACE
+
+
+v8::Handle<v8::Value> QScriptClassObject::property(v8::Local<v8::String> property)
+{
+    v8::HandleScope handleScope;
+    Q_ASSERT(scriptclass);
+    if (!original.IsEmpty() && !original->IsUndefined()) {
+        // For compatibility with the old back-end, normal JS properties are queried first.
+        v8::Handle<v8::Value> originalResult(scriptclass->engine()->getOwnProperty(original, property));
+        if (!originalResult.IsEmpty())
+            return handleScope.Close(originalResult);
+    }
+
+    QScriptString str = QScriptStringPrivate::get(new QScriptStringPrivate(QScriptConverter::toString(property)));
+    QScriptValue that = QScriptValuePrivate::get(engine->currentContext()->thisObject());
+
+    uint id = 0;
+    QScriptClass::QueryFlags userFlags =
+            scriptclass->userCallback()->queryProperty(that, str, QScriptClass::HandlesReadAccess, &id);
+
+    if (!(userFlags & QScriptClass::HandlesReadAccess))
+        return handleScope.Close(v8::Handle<v8::Value>());
+    QScriptValue userResult = scriptclass->userCallback()->property(that, str, id);
+    QScriptValuePrivate* result = QScriptValuePrivate::get(userResult);
+    return handleScope.Close(static_cast<v8::Handle<v8::Value> >(result->asV8Value(scriptclass->engine())));
+}
+
+
+v8::Handle<v8::Value> QScriptClassObject::setProperty(v8::Local<v8::String> property, v8::Local<v8::Value> value)
+{
+    v8::HandleScope handleScope;
+    Q_ASSERT(scriptclass);
+
+    QScriptString str = QScriptStringPrivate::get(new QScriptStringPrivate(QScriptConverter::toString(property)));
+    QScriptValue that = QScriptValuePrivate::get(engine->currentContext()->thisObject());
+
+    uint id = 0;
+    QScriptClass::QueryFlags userFlags =
+        scriptclass->userCallback()->queryProperty(that, str, QScriptClass::HandlesWriteAccess, &id);
+
+    if (!(userFlags & QScriptClass::HandlesWriteAccess))
+        return handleScope.Close(v8::Handle<v8::Value>());
+
+    scriptclass->userCallback()->setProperty(that, str, id, QScriptValuePrivate::get(new QScriptValuePrivate(scriptclass->engine(), value)));
+    return handleScope.Close(value);
+}
+/*
+static v8::Handle<v8::Integer> QtClassInstanceNamedPropertyQuery(v8::Local<v8::String> property, const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+
+    v8::Local<v8::Object> classdata = v8::Local<v8::Object>::Cast(info.Data());
+    QScriptClassPrivate *scriptclass = static_cast<QScriptClassPrivate *>(classdata->GetPointerFromInternalField(0));
+    Q_ASSERT(scriptclass);
+    v8::Handle<v8::Object> original = v8::Handle<v8::Object>::Cast(classdata->GetInternalField(1));
+    if (!original.IsEmpty() && !original->IsUndefined()) {
+        // for compatibility with the old back-end, normal JS properties
+        // are queried first.
+        QScriptValue::PropertyFlags flags = scriptclass->engine()->getPropertyFlags(original, property, QScriptValue::ResolveLocal);
+        return handleScope.Close(v8::Integer::New(QScriptConverter::toPropertyAttributes(flags)));
+    }
+
+    QScriptSharedDataPointer<QScriptValuePrivate> object(new QScriptValuePrivate(scriptclass->engine(), info.This()));
+    uint id;
+    QScriptClass::QueryFlags userFlags = scriptclass->userCallback()->queryProperty(QScriptValuePrivate::get(object.data()),
+                                                                QScriptStringPrivate::get(new QScriptStringPrivate(QScriptConverter::toString(property))),
+                                                                QScriptClass::HandlesReadAccess,
+                                                                &id);
+    if (!(userFlags & QScriptClass::HandlesReadAccess))
+        return handleScope.Close(v8::Handle<v8::Integer>());
+    QScriptValue::PropertyFlags flags = scriptclass->userCallback()->propertyFlags(QScriptValuePrivate::get(object.data()),
+                                                                QScriptStringPrivate::get(new QScriptStringPrivate(QScriptConverter::toString(property))),
+                                                                id);
+    return handleScope.Close(v8::Integer::New(QScriptConverter::toPropertyAttributes(flags)));
+}
+
+static v8::Handle<v8::Boolean> QtClassInstanceNamedPropertyDeleter(v8::Local<v8::String> property, const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+    // FIXME We need that interceptor probably only for QSV::setPropert(name, QScriptValue());
+    Q_UNIMPLEMENTED();
+    return handleScope.Close(v8::False());
+}
+
+static v8::Handle<v8::Array> QtClassInstanceNamedPropertyEnumerator(const v8::AccessorInfo& info)
+{
+    v8::HandleScope handleScope;
+
+    v8::Local<v8::Object> classdata = v8::Local<v8::Object>::Cast(info.Data());
+    QScriptClassPrivate *scriptclass = static_cast<QScriptClassPrivate *>(classdata->GetPointerFromInternalField(0));
+    Q_ASSERT(scriptclass);
+    v8::Handle<v8::Object> original = v8::Handle<v8::Object>::Cast(classdata->GetInternalField(1));
+
+    // FIXME This should go through QScriptClass iterator
+    if (original->IsUndefined())
+        return v8::Handle<v8::Array>();
+    Q_UNIMPLEMENTED();
+    return handleScope.Close(original->GetPropertyNames());
+}
+
+static v8::Handle<v8::Value> QtClassInstanceIndexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)
+{
+    // FIXME this code is not tested at all.
+    // FIXME this is not performing well.
+    return QtClassInstanceNamedPropertyGetter(v8::Integer::New(index)->ToString(), info);
+}
+
+static v8::Handle<v8::Value> QtClassInstanceIndexedPropertySetter(uint32_t index, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+{
+    // FIXME this code is not tested at all.
+    // FIXME this is not performing well.
+    return QtClassInstanceNamedPropertySetter(v8::Integer::New(index)->ToString(), value, info);
+}
+
+static v8::Handle<v8::Integer> QtClassInstanceIndexedPropertyQuery(uint32_t index, const v8::AccessorInfo& info)
+{
+    // FIXME this code is not tested at all.
+    // FIXME this is not performing well.
+    return QtClassInstanceNamedPropertyQuery(v8::Integer::New(index)->ToString(), info);
+}
+
+static v8::Handle<v8::Boolean> QtClassInstanceIndexedPropertyDeleter(uint32_t index, const v8::AccessorInfo& info)
+{
+    // FIXME this code is not tested at all.
+    // FIXME this is not performing well.
+    return QtClassInstanceNamedPropertyDeleter(v8::Integer::New(index)->ToString(), info);
+}
+
+static v8::Handle<v8::Array> QtClassInstanceIndexedPropertyEnumerator(const v8::AccessorInfo& info)
+{
+    // FIXME this code is not tested at all.
+    // FIXME this is not performing well.
+    return QtClassInstanceNamedPropertyEnumerator(info);
+}
+*/
+
+v8::Handle<v8::FunctionTemplate> QScriptClassObject::functionTemplate(QScriptEnginePrivate *engine)
+{
+    if (engine->scriptClassTemplate.IsEmpty()) {
+
+        v8::HandleScope handleScope;
+        v8::Handle<v8::FunctionTemplate> funcTempl = v8::FunctionTemplate::New();
+        v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
+        instTempl->SetInternalFieldCount(1);
+
+        instTempl->SetNamedPropertyHandler(QScriptV8ObjectWrapper::namedPropertyGetter<QScriptClassObject>, QScriptV8ObjectWrapper::namedPropertySetter<QScriptClassObject>);
+        //FIXME: implement
+        /*classDataTemplate->SetIndexedPropertyHandler(QtClassInstanceIndexedPropertyGetter,
+                                                 QtClassInstanceIndexedPropertySetter,
+                                                 QtClassInstanceIndexedPropertyQuery,
+                                                 QtClassInstanceIndexedPropertyDeleter,
+                                                 QtClassInstanceIndexedPropertyEnumerator,
+                                                 classdata);*/
+
+        engine->scriptClassTemplate = v8::Persistent<v8::FunctionTemplate>::New(funcTempl);
+    }
+    return engine->scriptClassTemplate;
+}
+
+
+v8::Handle<v8::Value> QScriptClassObject::createInstance(QScriptClassPrivate* scriptclass, v8::Handle<v8::Object> previousValue)
+{
+    v8::HandleScope handleScope;
+
+    QScriptClassObject *data = new QScriptClassObject;
+
+    data->engine = scriptclass->engine();
+    data->scriptclass = scriptclass;
+    if (!previousValue.IsEmpty() && !previousValue->IsUndefined())
+        data->original = v8::Persistent<v8::Object>::New(previousValue);
+
+    v8::Handle<v8::ObjectTemplate> classDataTemplate = functionTemplate(data->engine)->InstanceTemplate();
+    v8::Local<v8::Object> instance = classDataTemplate->NewInstance();
+    instance->SetPointerInInternalField(0, data);
+
+    v8::Persistent<v8::Object> persistent = v8::Persistent<v8::Object>::New(instance);
+    persistent.MakeWeak(data, QScriptV8ObjectWrapper::weakCallback<QScriptClassObject>);
+
+    QScriptValue prototype = QScriptClassPrivate::get(scriptclass)->prototype();
+    instance->SetPrototype(QScriptValuePrivate::get(prototype)->asV8Value(data->engine));
+
+    return handleScope.Close(instance);
+}
+
+QScriptClassObject *QScriptClassObject::safeGet(const QScriptValue &v)
+{
+    QScriptValuePrivate *p = QScriptValuePrivate::get(v);
+    if (!p->isJSBased())
+        return 0;
+    QScriptEnginePrivate *engine = p->engine();
+    QScriptIsolate api(engine);
+    v8::HandleScope handleScope;
+    v8::Handle<v8::Value> value = p->m_value;
+
+    v8::Handle<v8::FunctionTemplate> funcTmpl = engine->scriptClassTemplate;
+    if (funcTmpl.IsEmpty())
+        return 0;
+    if (!funcTmpl->HasInstance(value))
+        return 0;
+    v8::Local<v8::Object> object = v8::Object::Cast(*value);
+    Q_ASSERT(object->InternalFieldCount() == 1);
+    QScriptClassObject *data = reinterpret_cast<QScriptClassObject *>(object->GetPointerFromInternalField(0));
+    return data;
+}
 
 /*!
   \since 4.4

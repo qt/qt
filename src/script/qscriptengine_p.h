@@ -86,7 +86,6 @@ public:
 
     QScriptPassPointer<QScriptValuePrivate> newArray(uint length);
     QScriptPassPointer<QScriptValuePrivate> newObject();
-    QScriptPassPointer<QScriptValuePrivate> newScriptClassObject(QScriptClassPrivate* scriptclass, v8::Handle<v8::Object> previousValue);
     QScriptPassPointer<QScriptValuePrivate> newObject(QScriptClassPrivate* scriptclass, QScriptValuePrivate* data);
     QScriptPassPointer<QScriptValuePrivate> newFunction(QScriptEngine::FunctionSignature fun, QScriptValuePrivate *prototype, int length);
     QScriptPassPointer<QScriptValuePrivate> newFunction(QScriptEngine::FunctionWithArgSignature fun, void *arg);
@@ -181,6 +180,7 @@ public:
     v8::Handle<v8::Value> securityToken() { return m_v8Context->GetSecurityToken(); }
 
     v8::Persistent<v8::FunctionTemplate> declarativeClassTemplate;
+    v8::Persistent<v8::FunctionTemplate> scriptClassTemplate;
 private:
     QScriptEngine* q_ptr;
     v8::Isolate *m_isolate;

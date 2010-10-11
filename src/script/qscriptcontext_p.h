@@ -54,6 +54,7 @@ public:
     static QScriptContext *get(QScriptContextPrivate *d) { return d->q_func(); }
 
     inline QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args = 0);
+    inline QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::AccessorInfo *accessor);
     inline ~QScriptContextPrivate();
 
     inline QScriptPassPointer<QScriptValuePrivate> argument(int index) const;
@@ -63,6 +64,7 @@ public:
     QScriptContext* q_ptr;
     QScriptEnginePrivate *engine;
     const v8::Arguments *arguments;
+    const v8::AccessorInfo *accessorInfo;
     QScriptContextPrivate *parent;
     QVarLengthArray<QPair<v8::Persistent<v8::Context>, v8::Persistent<v8::Value> >, 4> v8Scopes;
 };
@@ -75,7 +77,12 @@ QT_END_INCLUDE_NAMESPACE
 
 
 inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args)
-: q_ptr(this), engine(engine), arguments(args), parent(engine->setCurrentQSContext(this))
+: q_ptr(this), engine(engine), arguments(args), accessorInfo(0), parent(engine->setCurrentQSContext(this))
+{
+}
+
+inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::AccessorInfo *accessor)
+: q_ptr(this), engine(engine), arguments(0), accessorInfo(accessor), parent(engine->setCurrentQSContext(this))
 {
 }
 
@@ -125,9 +132,10 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::thisObject
 {
     if (arguments) {
         return new QScriptValuePrivate(engine, arguments->This());
+    } else if (accessorInfo) {
+        return new QScriptValuePrivate(engine, accessorInfo->This());
     }
 
-    Q_UNIMPLEMENTED();
     return new QScriptValuePrivate();
 }
 

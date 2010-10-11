@@ -49,6 +49,7 @@ static v8::Handle<v8::Value> namedPropertyGetter(v8::Local<v8::String> property,
     Q_ASSERT(self->InternalFieldCount() == 1);
     T *data = reinterpret_cast<T *>(self->GetPointerFromInternalField(0));
     Q_ASSERT(data != 0);
+    QScriptContextPrivate qScriptContext(data->engine, &info);
     return handleScope.Close(data->property(property));
 }
 
@@ -63,6 +64,7 @@ static v8::Handle<v8::Value> namedPropertySetter(v8::Local<v8::String> property,
     Q_ASSERT(self->InternalFieldCount() == 1);
     T *data = reinterpret_cast<T *>(self->GetPointerFromInternalField(0));
     Q_ASSERT(data != 0);
+    QScriptContextPrivate qScriptContext(data->engine, &info);
     return handleScope.Close(data->setProperty(property, value));
 }
 
@@ -74,7 +76,8 @@ v8::Handle<v8::Value> callAsFunction(const v8::Arguments& args)
     Q_ASSERT(self->InternalFieldCount() == 1);
     T *data = reinterpret_cast<T *>(self->GetPointerFromInternalField(0));
     Q_ASSERT(data != 0);
-    return handleScope.Close(data->call(args));
+    QScriptContextPrivate qScriptContext(data->engine, &args);
+    return handleScope.Close(data->call());
 }
 
 }
