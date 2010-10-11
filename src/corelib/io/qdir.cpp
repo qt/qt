@@ -1356,8 +1356,11 @@ QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filter
 
     Returns true on success; otherwise returns false.
 
+    If the directory already exists when this function is called, it will return false.
+
     \sa rmdir()
 */
+// ### Qt5: behaviour when directory already exists should be made consistent for mkdir and mkpath
 bool QDir::mkdir(const QString &dirName) const
 {
     const QDirPrivate* d = d_ptr.constData();
@@ -1406,8 +1409,11 @@ bool QDir::rmdir(const QString &dirName) const
 
     Returns true if successful; otherwise returns false.
 
+    If the path already exists when this function is called, it will return true.
+
     \sa rmpath()
 */
+// ### Qt5: behaviour when directory already exists should be made consistent for mkdir and mkpath
 bool QDir::mkpath(const QString &dirPath) const
 {
     const QDirPrivate* d = d_ptr.constData();
