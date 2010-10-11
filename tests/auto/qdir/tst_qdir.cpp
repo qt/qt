@@ -175,6 +175,8 @@ private slots:
 
     void detachingOperations();
 
+    void testCaching();
+
 #if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
     void isRoot_data();
     void isRoot();
@@ -1661,6 +1663,17 @@ void tst_QDir::detachingOperations()
     QCOMPARE(dir1.filter(), filter);
     QCOMPARE(dir1.nameFilters(), nameFilters);
     QCOMPARE(dir1.sorting(), sorting);
+}
+
+void tst_QDir::testCaching()
+{
+    QString dirName = QString::fromLatin1("testCaching");
+    QDir::current().rmdir(dirName); // cleanup a previous run.
+    QDir dir(dirName);
+    QVERIFY(!dir.exists());
+    QDir::current().mkdir(dirName);
+    QVERIFY(QDir(dirName).exists()); // dir exists
+    QVERIFY(dir.exists()); // QDir doesn't cache the 'exist' between calls.
 }
 
 #if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
