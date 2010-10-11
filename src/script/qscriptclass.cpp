@@ -213,7 +213,7 @@ v8::Handle<v8::Value> QScriptClassObject::newInstance(QScriptClassPrivate* scrip
 
     v8::Handle<v8::Object> instance = createInstance(data);
 
-    QScriptValuePrivate *prototype = QScriptValuePrivate::get(QScriptClassPrivate::get(scriptclass)->prototype());
+    QScriptSharedDataPointer<QScriptValuePrivate> prototype(QScriptValuePrivate::get(QScriptClassPrivate::get(scriptclass)->prototype()));
     if (prototype->isValid() && (prototype->isObject() || prototype->isNull()))
         instance->SetPrototype(prototype->asV8Value(data->engine));
     return instance;
