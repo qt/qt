@@ -1569,6 +1569,7 @@ void tst_qdeclarativelanguage::basicRemote_data()
     QString serverdir = "http://127.0.0.1:14447/qtest/declarative/qmllanguage/";
 
     QTest::newRow("no need for qmldir") << QUrl(serverdir+"Test.qml") << "" << "";
+    QTest::newRow("absent qmldir") << QUrl(serverdir+"/noqmldir/Test.qml") << "" << "";
     QTest::newRow("need qmldir") << QUrl(serverdir+"TestLocal.qml") << "" << "";
 }
 
