@@ -767,6 +767,7 @@ inline void QScriptValuePrivate::setPrototype(QScriptValuePrivate* prototype)
 
 inline void QScriptValuePrivate::setScriptClass(QScriptClassPrivate *scriptclass)
 {
+    v8::HandleScope scope;
     // FIXME this algorithm is bad. It creates new value instead to add functionality to exiting one
     // This code would fail
     // engine.evaluate("a = new Object()");
@@ -774,12 +775,23 @@ inline void QScriptValuePrivate::setScriptClass(QScriptClassPrivate *scriptclass
     // QSV obj2 = engine.evaluate("a");
     // obj1.setScriptClass(scriptclass);
     // QVERIFY(obj1.strictlyEquals(obj2);
-    Q_ASSERT(scriptclass);
     Q_ASSERT(isObject());
-    v8::HandleScope scope;
+
+    QScriptClassObject *data = QScriptClassObject::safeGet(this);
+    if (data) {
+        data->scriptclass = scriptclass;
+        if (!scriptclass) {
+            if (data->original.IsEmpty())
+                data->setOriginal(v8::Object::New());
+            reinitialize(engine(), data->original);
+        }
+        return;
+    }
+    if (!scriptclass)
+        return;
 
     v8::Handle<v8::Object> self = v8::Handle<v8::Object>::Cast(m_value);
-    v8::Handle<v8::Value> newObject = QScriptClassObject::createInstance(scriptclass, v8::Handle<v8::Object>());
+    v8::Handle<v8::Value> newObject = QScriptClassObject::createInstance(scriptclass, self);
     reinitialize(scriptclass->engine(), newObject);
 }
 

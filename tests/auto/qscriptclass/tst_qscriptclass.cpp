@@ -68,6 +68,10 @@ private slots:
     void getAndSetProperty();
     void enumerate();
     void extension();
+    void originalProperties1();
+    void originalProperties2();
+    void originalProperties3();
+    void originalProperties4();
 };
 
 tst_QScriptClass::tst_QScriptClass()
@@ -609,7 +613,6 @@ void tst_QScriptClass::newInstance()
     obj3.setScriptClass(&cls);
     QCOMPARE(obj3.scriptClass(), (QScriptClass*)&cls);
 
-    QEXPECT_FAIL("", "setScriptClass(0) has not been implemented yet", Continue);
     obj3.setScriptClass(0);
     QCOMPARE(obj3.scriptClass(), (QScriptClass*)0);
     obj3.setScriptClass(&cls);
@@ -674,7 +677,6 @@ void tst_QScriptClass::getAndSetProperty()
             // shall not be queried about it again.
             cls.clearReceivedArgs();
             QVERIFY(o.property(s).strictlyEquals(num));
-            QEXPECT_FAIL("", "FIXME: This needs to be implemented", Continue);
             QVERIFY(!cls.lastQueryPropertyObject().isValid());
         }
     }
@@ -752,6 +754,7 @@ void tst_QScriptClass::getAndSetProperty()
 
 void tst_QScriptClass::enumerate()
 {
+    QEXPECT_FAIL("", "Iterating over a script class instance hasn't been implemented yet", Abort);
     QScriptEngine eng;
 
     TestClass cls(&eng);
@@ -783,7 +786,6 @@ void tst_QScriptClass::enumerate()
         QVERIFY(it.hasNext());
         it.next();
         QVERIFY(it.scriptName() == foo);
-        QEXPECT_FAIL("", "Iterating over a script class instance hasn't been implemented yet", Abort);
         QVERIFY(it.hasNext());
         it.next();
         QVERIFY(it.scriptName() == foo2);
@@ -1026,6 +1028,257 @@ void tst_QScriptClass::extension()
         }
     }
 }
+
+// tests made to match Qt 4.7 (JSC) behaviour
+void tst_QScriptClass::originalProperties1()
+{
+    QScriptEngine eng;
+
+    QScriptString orig1 = eng.toStringHandle("orig1");
+    QScriptString orig2 = eng.toStringHandle("orig2");
+    QScriptString orig3 = eng.toStringHandle("orig3");
+    QScriptString new1 = eng.toStringHandle("new1");
+    QScriptString new2 = eng.toStringHandle("new2");
+
+    {
+        TestClass cls1(&eng);
+        cls1.addCustomProperty(orig2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, 89);
+        cls1.addCustomProperty(new1, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, "hello");
+
+        TestClass cls2(&eng);
+        cls2.addCustomProperty(orig2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, 59);
+        cls2.addCustomProperty(new2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, "world");
+
+        QScriptValue obj1 = eng.newObject();
+        obj1.setProperty(orig1 , 42);
+        obj1.setProperty(orig2 , "foo");
+        obj1.prototype().setProperty(orig3, "bar");
+
+        QCOMPARE(obj1.property(orig1).toInt32(), 42);
+        QCOMPARE(obj1.property(orig2).toString(), QString::fromLatin1("foo"));
+        QCOMPARE(obj1.property(orig3).toString(), QString::fromLatin1("bar"));
+        QVERIFY(!obj1.property(new1).isValid());
+        QVERIFY(!obj1.property(new2).isValid());
+
+        eng.globalObject().setProperty("obj" , obj1);
+
+        obj1.setScriptClass(&cls1);
+        QCOMPARE(obj1.property(orig1).toInt32(), 42);
+        QCOMPARE(obj1.property(orig2).toString(), QString::fromLatin1("foo"));
+        QCOMPARE(obj1.property(orig3).toString(), QString::fromLatin1("bar"));
+        QCOMPARE(obj1.property(new1).toString(), QString::fromLatin1("hello"));
+        QVERIFY(!obj1.property(new2).isValid());
+
+        QScriptValue obj2 = eng.evaluate("obj");
+        QEXPECT_FAIL("", "Changing class of arbitrary script object does not propagate", Continue);
+        QCOMPARE(obj2.scriptClass(), &cls1);
+        QCOMPARE(obj2.property(orig1).toInt32(), 42);
+        QCOMPARE(obj2.property(orig2).toString(), QString::fromLatin1("foo"));
+        QCOMPARE(obj2.property(orig3).toString(), QString::fromLatin1("bar"));
+        QEXPECT_FAIL("", "Changing class of arbitrary script object does not propagate", Continue);
+        QCOMPARE(obj2.property(new1).toString(), QString::fromLatin1("hello"));
+        QVERIFY(!obj2.property(new2).isValid());
+
+        obj1.setScriptClass(&cls2);
+        QCOMPARE(obj1.property(orig1).toInt32(), 42);
+        QCOMPARE(obj1.property(orig2).toString(), QString::fromLatin1("foo"));
+        QCOMPARE(obj1.property(orig3).toString(), QString::fromLatin1("bar"));
+        QVERIFY(!obj1.property(new1).isValid());
+        QCOMPARE(obj1.property(new2).toString(), QString::fromLatin1("world"));
+
+        QEXPECT_FAIL("", "Changing class of arbitrary script object does not propagate", Continue);
+        QCOMPARE(obj2.scriptClass(), &cls2);
+        QCOMPARE(obj2.property(orig1).toInt32(), 42);
+        QCOMPARE(obj2.property(orig2).toString(), QString::fromLatin1("foo"));
+        QCOMPARE(obj2.property(orig3).toString(), QString::fromLatin1("bar"));
+        QVERIFY(!obj2.property(new1).isValid());
+        QEXPECT_FAIL("", "Changing class of arbitrary script object does not propagate", Continue);
+        QCOMPARE(obj2.property(new2).toString(), QString::fromLatin1("world"));
+
+        obj1.setScriptClass(0);
+        QCOMPARE(obj1.property(orig1).toInt32(), 42);
+        QCOMPARE(obj1.property(orig2).toString(), QString::fromLatin1("foo"));
+        QCOMPARE(obj1.property(orig3).toString(), QString::fromLatin1("bar"));
+        QVERIFY(!obj1.property(new1).isValid());
+        QVERIFY(!obj1.property(new2).isValid());
+    }
+}
+
+void tst_QScriptClass::originalProperties2()
+{
+    QScriptEngine eng;
+
+    QScriptString orig1 = eng.toStringHandle("orig1");
+    QScriptString orig2 = eng.toStringHandle("orig2");
+    QScriptString orig3 = eng.toStringHandle("orig3");
+    QScriptString new1 = eng.toStringHandle("new1");
+    QScriptString new2 = eng.toStringHandle("new2");
+
+    {
+        TestClass cls1(&eng);
+        cls1.addCustomProperty(orig2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, 89);
+        cls1.addCustomProperty(new1, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, "hello");
+
+        TestClass cls2(&eng);
+        cls2.addCustomProperty(orig2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, 59);
+        cls2.addCustomProperty(new2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, "world");
+
+        QScriptValue obj1 = eng.newObject();
+        obj1.setProperty(orig1 , 42);
+        obj1.setProperty(orig2 , "foo");
+        obj1.prototype().setProperty(orig3, "bar");
+
+        QCOMPARE(obj1.property(orig1).toInt32(), 42);
+        QCOMPARE(obj1.property(orig2).toString(), QString::fromLatin1("foo"));
+        QCOMPARE(obj1.property(orig3).toString(), QString::fromLatin1("bar"));
+        QVERIFY(!obj1.property(new1).isValid());
+        QVERIFY(!obj1.property(new2).isValid());
+
+        obj1.setScriptClass(&cls1);
+        obj1.setProperty(orig1 , QScriptValue(&eng, 852));
+        obj1.setProperty(orig2 , "oli");
+        obj1.setProperty(orig3 , "fu*c");
+        obj1.setProperty(new1 , "moo");
+        obj1.setProperty(new2 , "allo?");
+        QCOMPARE(obj1.property(orig1).toInt32(), 852);
+        QCOMPARE(obj1.property(orig2).toString(), QString::fromLatin1("foo"));
+        QCOMPARE(obj1.property(orig3).toString(), QString::fromLatin1("fu*c"));
+        QCOMPARE(obj1.property(new1).toString(), QString::fromLatin1("moo"));
+        QCOMPARE(obj1.property(new2).toString(), QString::fromLatin1("allo?"));
+
+        obj1.setScriptClass(&cls2);
+        QCOMPARE(obj1.property(orig1).toInt32(), 852);
+        QCOMPARE(obj1.property(orig2).toString(), QString::fromLatin1("foo"));
+        QCOMPARE(obj1.property(orig3).toString(), QString::fromLatin1("fu*c"));
+        QVERIFY(!obj1.property(new1).isValid());
+        QCOMPARE(obj1.property(new2).toString(), QString::fromLatin1("allo?"));
+
+        obj1.setScriptClass(0);
+        QCOMPARE(obj1.property(orig1).toInt32(), 852);
+        QCOMPARE(obj1.property(orig2).toString(), QString::fromLatin1("foo"));
+        QCOMPARE(obj1.property(orig3).toString(), QString::fromLatin1("fu*c"));
+        QVERIFY(!obj1.property(new1).isValid());
+        QCOMPARE(obj1.property(new2).toString(), QString::fromLatin1("allo?"));
+    }
+}
+
+void tst_QScriptClass::originalProperties3()
+{
+    QScriptEngine eng;
+
+    QScriptString orig1 = eng.toStringHandle("orig1");
+    QScriptString orig2 = eng.toStringHandle("orig2");
+    QScriptString orig3 = eng.toStringHandle("orig3");
+    QScriptString new1 = eng.toStringHandle("new1");
+    QScriptString new2 = eng.toStringHandle("new2");
+
+    {
+        TestClass cls1(&eng);
+        cls1.addCustomProperty(orig2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, 89);
+        cls1.addCustomProperty(new1, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, "hello");
+
+        TestClass cls2(&eng);
+        cls2.addCustomProperty(orig2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, 59);
+        cls2.addCustomProperty(new2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, "world");
+
+        QScriptValue obj1 = eng.newObject(&cls1);
+        QVERIFY(!obj1.property(orig1).isValid());
+        QCOMPARE(obj1.property(orig2).toInt32(), 89);
+        QCOMPARE(obj1.property(new1).toString(), QString::fromLatin1("hello"));
+        QVERIFY(!obj1.property(new2).isValid());
+        obj1.setProperty(orig1, 42);
+        QCOMPARE(obj1.property(orig1).toInt32(), 42);
+
+        eng.globalObject().setProperty("obj" , obj1);
+        obj1.setScriptClass(&cls2);
+        QCOMPARE(obj1.property(orig1).toInt32(), 42);
+        QCOMPARE(obj1.property(orig2).toInt32(), 59);
+        QVERIFY(!obj1.property(new1).isValid());
+        QCOMPARE(obj1.property(new2).toString(), QString::fromLatin1("world"));
+
+        QScriptValue obj2 = eng.evaluate("obj");
+        QCOMPARE(obj2.scriptClass(), &cls2);
+        QCOMPARE(obj2.property(orig1).toInt32(), 42);
+        QCOMPARE(obj2.property(orig2).toInt32(), 59);
+        QVERIFY(!obj2.property(new1).isValid());
+        QCOMPARE(obj2.property(new2).toString(), QString::fromLatin1("world"));
+
+        obj1.setScriptClass(0);
+        QCOMPARE(obj1.property(orig1).toInt32(), 42);
+        QVERIFY(!obj1.property(orig2).isValid());
+        QVERIFY(!obj1.property(new1).isValid());
+        QVERIFY(!obj1.property(new2).isValid());
+
+        QCOMPARE(obj2.scriptClass(), (QScriptClass *)0);
+        QCOMPARE(obj2.property(orig1).toInt32(), 42);
+        QVERIFY(!obj2.property(orig2).isValid());
+        QVERIFY(!obj2.property(new1).isValid());
+        QVERIFY(!obj2.property(new2).isValid());
+    }
+}
+
+void tst_QScriptClass::originalProperties4()
+{
+    QScriptEngine eng;
+
+    QScriptString orig1 = eng.toStringHandle("orig1");
+    QScriptString orig2 = eng.toStringHandle("orig2");
+    QScriptString orig3 = eng.toStringHandle("orig3");
+    QScriptString new1 = eng.toStringHandle("new1");
+    QScriptString new2 = eng.toStringHandle("new2");
+
+    {
+        TestClass cls1(&eng);
+        cls1.addCustomProperty(orig2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, 89);
+        cls1.addCustomProperty(new1, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, "hello");
+
+        TestClass cls2(&eng);
+        cls2.addCustomProperty(orig2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, 59);
+        cls2.addCustomProperty(new2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, "world");
+
+        QScriptValue obj1 = eng.newObject(&cls1);
+        QVERIFY(!obj1.property(orig1).isValid());
+        QCOMPARE(obj1.property(orig2).toInt32(), 89);
+        QCOMPARE(obj1.property(new1).toString(), QString::fromLatin1("hello"));
+        QVERIFY(!obj1.property(new2).isValid());
+
+        eng.globalObject().setProperty("obj" , obj1);
+
+        obj1.setScriptClass(0);
+        QVERIFY(obj1.isObject());
+        QVERIFY(!obj1.property(orig1).isValid());
+        QVERIFY(!obj1.property(orig2).isValid());
+        QVERIFY(!obj1.property(new1).isValid());
+        QVERIFY(!obj1.property(new2).isValid());
+        obj1.setProperty(orig1, 42);
+        QCOMPARE(obj1.property(orig1).toInt32(), 42);
+
+        QScriptValue obj2 = eng.evaluate("obj");
+        QCOMPARE(obj2.scriptClass(), (QScriptClass *)0);
+        QVERIFY(obj2.isObject());
+        QCOMPARE(obj2.property(orig1).toInt32(), 42);
+        QVERIFY(!obj2.property(orig2).isValid());
+        QVERIFY(!obj2.property(new1).isValid());
+        QVERIFY(!obj2.property(new2).isValid());
+
+        obj1.setScriptClass(&cls2);
+        QCOMPARE(obj1.property(orig1).toInt32(), 42);
+        QCOMPARE(obj1.property(orig2).toInt32(), 59);
+        QVERIFY(!obj1.property(new1).isValid());
+        QCOMPARE(obj1.property(new2).toString(), QString::fromLatin1("world"));
+
+        QEXPECT_FAIL("", "Changing class of arbitrary script object does not propagate", Continue);
+        QCOMPARE(obj2.scriptClass(), (QScriptClass *)(&cls2));
+        QCOMPARE(obj2.property(orig1).toInt32(), 42);
+        QEXPECT_FAIL("", "Changing class of arbitrary script object does not propagate", Continue);
+        QCOMPARE(obj2.property(orig2).toInt32(), 59);
+        QVERIFY(!obj2.property(new1).isValid());
+        QEXPECT_FAIL("", "Changing class of arbitrary script object does not propagate", Continue);
+        QCOMPARE(obj2.property(new2).toString(), QString::fromLatin1("world"));
+    }
+}
+
+
 
 QTEST_MAIN(tst_QScriptClass)
 #include "tst_qscriptclass.moc"

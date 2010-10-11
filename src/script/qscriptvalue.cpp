@@ -1208,8 +1208,8 @@ void QScriptValue::setData(const QScriptValue &value)
 */
 QScriptClass *QScriptValue::scriptClass() const
 {
-    QScriptClassObject *o = QScriptClassObject::safeGet(*this);
-    return o ? QScriptClassPrivate::get(o->scriptclass) : 0;
+    QScriptClassObject *data = QScriptClassObject::safeGet(*this);
+    return (data && data->scriptclass) ? QScriptClassPrivate::get(data->scriptclass) : 0;
 }
 
 /*!
@@ -1227,18 +1227,13 @@ QScriptClass *QScriptValue::scriptClass() const
 */
 void QScriptValue::setScriptClass(QScriptClass *scriptclass)
 {
-    if (!scriptclass) {
-        // FIXME that should remove custom class.
-        Q_UNIMPLEMENTED();
-        return;
-    }
     Q_D(QScriptValue);
-    QScriptClassPrivate* dclass = QScriptClassPrivate::get(scriptclass);
-    // Of course this->engine() need to be the same as scriptclass->engine(), we
-    // are not checking that because implementation use only engine from scriptclass.
-    // Note that this method works on QScriptClass's engine instance not QScriptValue one.
-    // QScriptClass is always bounded to engine, so we can use NotNullEngine flag.
-    QScriptIsolate api(dclass->engine(), QScriptIsolate::NotNullEngine);
+    //FIXME: check the engines are the same.
+    QScriptClassPrivate *dclass = scriptclass ? QScriptClassPrivate::get(scriptclass) : 0;
+    QScriptEnginePrivate *engine = dclass ? dclass->engine() : d->engine();
+    if (!engine)
+        return; //nothing to do (scriptclass is null and we are not an JSBased so we already have no scriptclass)
+    QScriptIsolate api(engine, QScriptIsolate::NotNullEngine);
     d->setScriptClass(dclass);
 }
 

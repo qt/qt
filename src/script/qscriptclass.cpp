@@ -39,13 +39,17 @@ QT_BEGIN_NAMESPACE
 v8::Handle<v8::Value> QScriptClassObject::property(v8::Local<v8::String> property)
 {
     v8::HandleScope handleScope;
-    Q_ASSERT(scriptclass);
-    if (!original.IsEmpty() && !original->IsUndefined()) {
+    if (!scriptclass || (!original.IsEmpty() && !original->IsUndefined())) {
         // For compatibility with the old back-end, normal JS properties are queried first.
-        v8::Handle<v8::Value> originalResult(scriptclass->engine()->getOwnProperty(original, property));
-        if (!originalResult.IsEmpty())
+        v8::Handle<v8::Value> originalResult = original->Get(property);
+        if (!scriptclass || (!originalResult.IsEmpty() && !originalResult->IsUndefined())) {
+            if (originalResult->IsUndefined() && !original->Has(property))
+                return handleScope.Close(engine->makeJSValue());
             return handleScope.Close(originalResult);
+        }
     }
+
+    Q_ASSERT(scriptclass);
 
     QScriptString str = QScriptStringPrivate::get(new QScriptStringPrivate(QScriptConverter::toString(property)));
     QScriptValue that = QScriptValuePrivate::get(engine->currentContext()->thisObject());
@@ -64,8 +68,13 @@ v8::Handle<v8::Value> QScriptClassObject::property(v8::Local<v8::String> propert
 
 v8::Handle<v8::Value> QScriptClassObject::setProperty(v8::Local<v8::String> property, v8::Local<v8::Value> value)
 {
+    if (!scriptclass) {
+        Q_ASSERT(!original.IsEmpty());
+        bool ret = original->Set(property, value);
+        return ret ? value : v8::Handle<v8::Value>();
+    }
+
     v8::HandleScope handleScope;
-    Q_ASSERT(scriptclass);
 
     QScriptString str = QScriptStringPrivate::get(new QScriptStringPrivate(QScriptConverter::toString(property)));
     QScriptValue that = QScriptValuePrivate::get(engine->currentContext()->thisObject());
@@ -74,8 +83,12 @@ v8::Handle<v8::Value> QScriptClassObject::setProperty(v8::Local<v8::String> prop
     QScriptClass::QueryFlags userFlags =
         scriptclass->userCallback()->queryProperty(that, str, QScriptClass::HandlesWriteAccess, &id);
 
-    if (!(userFlags & QScriptClass::HandlesWriteAccess))
-        return handleScope.Close(v8::Handle<v8::Value>());
+    if (!(userFlags & QScriptClass::HandlesWriteAccess)) {
+        if (original.IsEmpty())
+            setOriginal(v8::Object::New());
+        bool ret = original->Set(property, value);
+        return ret ? value : v8::Handle<v8::Value>();
+    }
 
     scriptclass->userCallback()->setProperty(that, str, id, QScriptValuePrivate::get(new QScriptValuePrivate(scriptclass->engine(), value)));
     return handleScope.Close(value);
@@ -203,7 +216,7 @@ v8::Handle<v8::Value> QScriptClassObject::createInstance(QScriptClassPrivate* sc
     data->engine = scriptclass->engine();
     data->scriptclass = scriptclass;
     if (!previousValue.IsEmpty() && !previousValue->IsUndefined())
-        data->original = v8::Persistent<v8::Object>::New(previousValue);
+        data->setOriginal(previousValue);
 
     v8::Handle<v8::ObjectTemplate> classDataTemplate = functionTemplate(data->engine)->InstanceTemplate();
     v8::Local<v8::Object> instance = classDataTemplate->NewInstance();
@@ -212,8 +225,9 @@ v8::Handle<v8::Value> QScriptClassObject::createInstance(QScriptClassPrivate* sc
     v8::Persistent<v8::Object> persistent = v8::Persistent<v8::Object>::New(instance);
     persistent.MakeWeak(data, QScriptV8ObjectWrapper::weakCallback<QScriptClassObject>);
 
-    QScriptValue prototype = QScriptClassPrivate::get(scriptclass)->prototype();
-    instance->SetPrototype(QScriptValuePrivate::get(prototype)->asV8Value(data->engine));
+    QScriptValuePrivate *prototype = QScriptValuePrivate::get(QScriptClassPrivate::get(scriptclass)->prototype());
+    if (prototype->isValid() && (prototype->isObject() || prototype->isNull()))
+        instance->SetPrototype(prototype->asV8Value(data->engine));
 
     return handleScope.Close(instance);
 }

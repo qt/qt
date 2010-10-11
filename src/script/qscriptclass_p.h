@@ -108,6 +108,11 @@ struct QScriptClassObject {
     static v8::Handle<v8::FunctionTemplate> functionTemplate(QScriptEnginePrivate *engine);
     static v8::Handle<v8::Value> createInstance(QScriptClassPrivate* scriptclass, v8::Handle<v8::Object> previousValue);
 
+    void setOriginal(v8::Handle<v8::Object> o)
+    {
+        original = v8::Persistent<v8::Object>::New(o);
+    }
+
 };
 
 #endif // QSCRIPTCLASSPRIVATE_P_H
