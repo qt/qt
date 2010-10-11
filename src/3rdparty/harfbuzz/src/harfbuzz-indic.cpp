@@ -37,7 +37,7 @@ static HB_Bool isLetter(HB_UChar16 ucs)
                      FLAG(HB_Letter_Titlecase) |
                      FLAG(HB_Letter_Modifier) |
                      FLAG(HB_Letter_Other);
-    return FLAG(HB_GetUnicodeCharCategory(ucs)) & test;
+    return (FLAG(HB_GetUnicodeCharCategory(ucs)) &  test) != 0;
 }
 
 static HB_Bool isMark(HB_UChar16 ucs)
@@ -660,18 +660,18 @@ static const unsigned char indicPosition[0xe00-0x900] = {
     None, None, None, None,
 
     None, None, None, None,
-    None, None, None, None,
-    None, None, None, None,
-    None, None, None, None,
+    None, Below, Below, Below,
+    Below, Below, Below, Below,
+    Below, Below, None, Below,
 
-    None, None, None, None,
-    Below, None, None, None,
-    Below, None, None, None,
+    Below, Below, Below, Below,
+    Below, Below, Below, Below,
+    Below, None, Below, Below,
     Below, Below, Below, Post,
 
     Below, None, Below, Below,
-    None, None, None, None,
-    None, None, None, None,
+    None, Below, Below, Below,
+    Below, Below, None, None,
     None, None, Post, Above,
 
     Post, Below, Below, Below,
@@ -1742,6 +1742,11 @@ static int indic_nextSyllableBoundary(HB_Script script, const HB_UChar16 *s, int
  	    if (state == Halant && uc[pos] == 0x200d /* ZWJ */)
   		break;
             // the control character should be the last char in the item
+ 	    if (state == Consonant && script == HB_Script_Bengali && uc[pos-1] == 0x09B0 && uc[pos] == 0x200d /* ZWJ */)
+  		break;
+ 	    if (state == Consonant && script == HB_Script_Kannada && uc[pos-1] == 0x0CB0 && uc[pos] == 0x200d /* ZWJ */)
+  		break;
+            // Bengali and Kannada has a special exception for rendering yaphala with ra (to avoid reph) see http://www.unicode.org/faq/indic.html#15
             ++pos;
             goto finish;
         case Consonant:
