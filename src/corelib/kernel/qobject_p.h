@@ -89,6 +89,7 @@ class Q_CORE_EXPORT QAbstractDeclarativeData
 public:
     static void (*destroyed)(QAbstractDeclarativeData *, QObject *);
     static void (*parentChanged)(QAbstractDeclarativeData *, QObject *, QObject *);
+    static void (*objectNameChanged)(QAbstractDeclarativeData *, QObject *);
 };
 
 class Q_CORE_EXPORT QObjectPrivate : public QObjectData

@@ -127,6 +127,7 @@ extern "C" Q_CORE_EXPORT void qt_removeObject(QObject *)
 
 void (*QAbstractDeclarativeData::destroyed)(QAbstractDeclarativeData *, QObject *) = 0;
 void (*QAbstractDeclarativeData::parentChanged)(QAbstractDeclarativeData *, QObject *, QObject *) = 0;
+void (*QAbstractDeclarativeData::objectNameChanged)(QAbstractDeclarativeData *, QObject *) = 0;
 
 QObjectData::~QObjectData() {}
 
@@ -1094,7 +1095,12 @@ QString QObject::objectName() const
 void QObject::setObjectName(const QString &name)
 {
     Q_D(QObject);
+    bool objectNameChanged = d->declarativeData && d->objectName != name;
+
     d->objectName = name;
+
+    if (objectNameChanged) 
+        d->declarativeData->objectNameChanged(d->declarativeData, this);
 }
 
 
