@@ -132,7 +132,12 @@ void tst_qdeclarativemoduleplugin::incorrectPluginCase()
     QCOMPARE(errors.count(), 1);
 
 #if defined(Q_OS_MAC) || defined(Q_OS_WIN)
-    QString expectedError = QLatin1String("plugin cannot be loaded for module \"com.nokia.WrongCase\": File name case mismatch for \"") + QFileInfo(__FILE__).absoluteDir().filePath("imports/com/nokia/WrongCase/libPluGin.dylib") + QLatin1String("\"");
+#if defined(Q_OS_MAC)
+    QString libname = "libPluGin.dylib";
+#elif defined(Q_OS_WIN)
+    QString libname = "PluGin.dll";
+#endif
+    QString expectedError = QLatin1String("plugin cannot be loaded for module \"com.nokia.WrongCase\": File name case mismatch for \"") + QFileInfo(__FILE__).absoluteDir().filePath("imports/com/nokia/WrongCase/" + libname) + QLatin1String("\"");
 #else
     QString expectedError = QLatin1String("module \"com.nokia.WrongCase\" plugin \"PluGin\" not found");
 #endif

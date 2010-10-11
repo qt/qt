@@ -2196,7 +2196,19 @@ bool QDeclarative_isFileCaseCorrect(const QString &fileName)
     QFileInfo info(fileName);
 
     QString absolute = info.absoluteFilePath();
+
+#if defined(Q_OS_MAC)
     QString canonical = info.canonicalFilePath();
+#elif defined(Q_OS_WIN)
+    wchar_t buffer[1024];
+
+    DWORD rv = ::GetShortPathName((wchar_t*)absolute.utf16(), buffer, 1024);
+    if (rv == 0 || rv >= 1024) return true;
+    rv = ::GetLongPathName(buffer, buffer, 1024);
+    if (rv == 0 || rv >= 1024) return true;
+
+    QString canonical((QChar *)buffer);
+#endif
 
     int absoluteLength = absolute.length();
     int canonicalLength = canonical.length();
