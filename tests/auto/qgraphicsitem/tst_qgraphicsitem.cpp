@@ -9065,6 +9065,9 @@ void tst_QGraphicsItem::focusScope()
     scope2->hide();
     scope2->show();
     QVERIFY(!scope2->hasFocus());
+    QVERIFY(scope1->hasFocus());
+    scope2->setFocus();
+    scope3->setFocus();
     QVERIFY(scope3->hasFocus());
 
     QGraphicsRectItem *rect4 = new QGraphicsRectItem;
