@@ -49,7 +49,6 @@
 #else
 #include <private/qcocoatoolbardelegate_mac_p.h>
 #import  <private/qcocoawindowdelegate_mac_p.h>
-#include <private/qunifiedtoolbarcontainer_mac_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
