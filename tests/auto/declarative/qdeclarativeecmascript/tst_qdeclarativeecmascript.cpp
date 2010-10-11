@@ -162,6 +162,7 @@ private slots:
     void deleteLater();
     void in();
     void sharedAttachedObject();
+    void objectName();
 
     void include();
 
@@ -2591,6 +2592,24 @@ void tst_qdeclarativeecmascript::sharedAttachedObject()
     QVERIFY(o != 0);
     QCOMPARE(o->property("test1").toBool(), true);
     QCOMPARE(o->property("test2").toBool(), true);
+    delete o;
+}
+
+// QTBUG-13999
+void tst_qdeclarativeecmascript::objectName()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("objectName.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test1").toString(), QString("hello"));
+    QCOMPARE(o->property("test2").toString(), QString("ell"));
+
+    o->setObjectName("world");
+
+    QCOMPARE(o->property("test1").toString(), QString("world"));
+    QCOMPARE(o->property("test2").toString(), QString("orl"));
+
     delete o;
 }
 

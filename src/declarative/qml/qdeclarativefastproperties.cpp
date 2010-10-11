@@ -51,10 +51,19 @@ QT_BEGIN_NAMESPACE
 // primarily read from bindings is a candidate for inclusion as a fast 
 // property.
 
+static void QObject_objectName(QObject *object, void *output, QDeclarativeNotifierEndpoint *endpoint)
+{
+    if (endpoint) 
+        endpoint->connect(QDeclarativeData::get(object, true)->objectNameNotifier());
+    *((QString *)output) = object->objectName();
+}
+
 QDeclarativeFastProperties::QDeclarativeFastProperties()
 {
     add(&QDeclarativeItem::staticMetaObject, QDeclarativeItem::staticMetaObject.indexOfProperty("parent"),
         QDeclarativeItemPrivate::parentProperty);
+    add(&QObject::staticMetaObject, QObject::staticMetaObject.indexOfProperty("objectName"),
+        QObject_objectName);    
 }
 
 int QDeclarativeFastProperties::accessorIndexForProperty(const QMetaObject *metaObject, int propertyIndex)
