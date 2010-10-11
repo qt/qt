@@ -33,7 +33,6 @@
 
 #include "qscriptshareddata_p.h"
 #include "qscriptvalue.h"
-#include "qscriptclass_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -178,6 +177,7 @@ public:
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "qscriptengine_p.h"
 #include "qscriptconverter_p.h"
+#include "qscriptclass_p.h"
 QT_END_INCLUDE_NAMESPACE
 
 QScriptValuePrivate* QScriptValuePrivate::get(const QScriptValue& q) { Q_ASSERT(q.d_ptr.data()); return q.d_ptr.data(); }
@@ -763,36 +763,6 @@ inline void QScriptValuePrivate::setPrototype(QScriptValuePrivate* prototype)
         if (!v8::Handle<v8::Object>::Cast(m_value)->SetPrototype(prototype->m_value))
             qWarning("QScriptValue::setPrototype() failed: cyclic prototype value");
     }
-}
-
-inline void QScriptValuePrivate::setScriptClass(QScriptClassPrivate *scriptclass)
-{
-    v8::HandleScope scope;
-    // FIXME this algorithm is bad. It creates new value instead to add functionality to exiting one
-    // This code would fail
-    // engine.evaluate("a = new Object()");
-    // QSV obj1 = engine.evaluate("a");
-    // QSV obj2 = engine.evaluate("a");
-    // obj1.setScriptClass(scriptclass);
-    // QVERIFY(obj1.strictlyEquals(obj2);
-    Q_ASSERT(isObject());
-
-    QScriptClassObject *data = QScriptClassObject::safeGet(this);
-    if (data) {
-        data->scriptclass = scriptclass;
-        if (!scriptclass) {
-            if (data->original.IsEmpty())
-                data->setOriginal(v8::Object::New());
-            reinitialize(engine(), data->original);
-        }
-        return;
-    }
-    if (!scriptclass)
-        return;
-
-    v8::Handle<v8::Object> self = v8::Handle<v8::Object>::Cast(m_value);
-    v8::Handle<v8::Value> newObject = QScriptClassObject::createInstance(scriptclass, self);
-    reinitialize(scriptclass->engine(), newObject);
 }
 
 inline void QScriptValuePrivate::setProperty(const QString& name, QScriptValuePrivate* value, v8::PropertyAttribute attribs)

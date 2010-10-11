@@ -183,74 +183,40 @@ static v8::Handle<v8::Array> QtClassInstanceIndexedPropertyEnumerator(const v8::
 }
 */
 
-v8::Handle<v8::FunctionTemplate> QScriptClassObject::functionTemplate(QScriptEnginePrivate *engine)
+v8::Handle<v8::FunctionTemplate> QScriptClassObject::createFunctionTemplate(QScriptEnginePrivate *engine)
 {
-    if (engine->scriptClassTemplate.IsEmpty()) {
+    v8::HandleScope handleScope;
+    v8::Handle<v8::FunctionTemplate> funcTempl = v8::FunctionTemplate::New();
+    v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
+    instTempl->SetInternalFieldCount(1);
 
-        v8::HandleScope handleScope;
-        v8::Handle<v8::FunctionTemplate> funcTempl = v8::FunctionTemplate::New();
-        v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
-        instTempl->SetInternalFieldCount(1);
+    instTempl->SetNamedPropertyHandler(QScriptV8ObjectWrapperHelper::namedPropertyGetter<QScriptClassObject>, QScriptV8ObjectWrapperHelper::namedPropertySetter<QScriptClassObject>);
+    //FIXME: implement
+    /*classDataTemplate->SetIndexedPropertyHandler(QtClassInstanceIndexedPropertyGetter,
+                                                QtClassInstanceIndexedPropertySetter,
+                                                QtClassInstanceIndexedPropertyQuery,
+                                                QtClassInstanceIndexedPropertyDeleter,
+                                                QtClassInstanceIndexedPropertyEnumerator,
+                                                classdata);*/
 
-        instTempl->SetNamedPropertyHandler(QScriptV8ObjectWrapper::namedPropertyGetter<QScriptClassObject>, QScriptV8ObjectWrapper::namedPropertySetter<QScriptClassObject>);
-        //FIXME: implement
-        /*classDataTemplate->SetIndexedPropertyHandler(QtClassInstanceIndexedPropertyGetter,
-                                                 QtClassInstanceIndexedPropertySetter,
-                                                 QtClassInstanceIndexedPropertyQuery,
-                                                 QtClassInstanceIndexedPropertyDeleter,
-                                                 QtClassInstanceIndexedPropertyEnumerator,
-                                                 classdata);*/
-
-        engine->scriptClassTemplate = v8::Persistent<v8::FunctionTemplate>::New(funcTempl);
-    }
-    return engine->scriptClassTemplate;
+    return handleScope.Close(funcTempl);
 }
 
 
-v8::Handle<v8::Value> QScriptClassObject::createInstance(QScriptClassPrivate* scriptclass, v8::Handle<v8::Object> previousValue)
+v8::Handle<v8::Value> QScriptClassObject::newInstance(QScriptClassPrivate* scriptclass, v8::Handle<v8::Object> previousValue)
 {
-    v8::HandleScope handleScope;
-
     QScriptClassObject *data = new QScriptClassObject;
-
     data->engine = scriptclass->engine();
     data->scriptclass = scriptclass;
     if (!previousValue.IsEmpty() && !previousValue->IsUndefined())
         data->setOriginal(previousValue);
 
-    v8::Handle<v8::ObjectTemplate> classDataTemplate = functionTemplate(data->engine)->InstanceTemplate();
-    v8::Local<v8::Object> instance = classDataTemplate->NewInstance();
-    instance->SetPointerInInternalField(0, data);
-
-    v8::Persistent<v8::Object> persistent = v8::Persistent<v8::Object>::New(instance);
-    persistent.MakeWeak(data, QScriptV8ObjectWrapper::weakCallback<QScriptClassObject>);
+    v8::Handle<v8::Object> instance = createInstance(data);
 
     QScriptValuePrivate *prototype = QScriptValuePrivate::get(QScriptClassPrivate::get(scriptclass)->prototype());
     if (prototype->isValid() && (prototype->isObject() || prototype->isNull()))
         instance->SetPrototype(prototype->asV8Value(data->engine));
-
-    return handleScope.Close(instance);
-}
-
-QScriptClassObject *QScriptClassObject::safeGet(const QScriptValue &v)
-{
-    QScriptValuePrivate *p = QScriptValuePrivate::get(v);
-    if (!p->isJSBased())
-        return 0;
-    QScriptEnginePrivate *engine = p->engine();
-    QScriptIsolate api(engine);
-    v8::HandleScope handleScope;
-    v8::Handle<v8::Value> value = p->m_value;
-
-    v8::Handle<v8::FunctionTemplate> funcTmpl = engine->scriptClassTemplate;
-    if (funcTmpl.IsEmpty())
-        return 0;
-    if (!funcTmpl->HasInstance(value))
-        return 0;
-    v8::Local<v8::Object> object = v8::Object::Cast(*value);
-    Q_ASSERT(object->InternalFieldCount() == 1);
-    QScriptClassObject *data = reinterpret_cast<QScriptClassObject *>(object->GetPointerFromInternalField(0));
-    return data;
+    return instance;
 }
 
 /*!

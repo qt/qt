@@ -36,7 +36,9 @@
 #define QSCRIPTCLASSPRIVATE_P_H
 
 #include "qscriptclass.h"
+#include "qscriptengine_p.h"
 #include <v8.h>
+#include "qscriptv8objectwrapper_p.h"
 
 class QScriptEnginePrivate;
 class QScriptValuePrivate;
@@ -90,8 +92,7 @@ inline QScriptClass* QScriptClassPrivate::userCallback() const
 }
 
 
-struct QScriptClassObject {
-    QScriptEnginePrivate *engine;
+struct QScriptClassObject : QScriptV8ObjectWrapper<QScriptClassObject, &QScriptEnginePrivate::scriptClassTemplate> {
     QScriptClassPrivate *scriptclass;
     v8::Persistent<v8::Object> original;
 
@@ -104,9 +105,8 @@ struct QScriptClassObject {
     v8::Handle<v8::Value> property(v8::Local<v8::String> property);
     v8::Handle<v8::Value> setProperty(v8::Local<v8::String> property, v8::Local<v8::Value> value);
 
-    static QScriptClassObject *safeGet(const QScriptValue &v);
-    static v8::Handle<v8::FunctionTemplate> functionTemplate(QScriptEnginePrivate *engine);
-    static v8::Handle<v8::Value> createInstance(QScriptClassPrivate* scriptclass, v8::Handle<v8::Object> previousValue);
+    static v8::Handle<v8::FunctionTemplate> createFunctionTemplate(QScriptEnginePrivate *engine);
+    static v8::Handle<v8::Value> newInstance(QScriptClassPrivate* scriptclass, v8::Handle<v8::Object> previousValue);
 
     void setOriginal(v8::Handle<v8::Object> o)
     {

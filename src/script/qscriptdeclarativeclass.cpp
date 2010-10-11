@@ -53,8 +53,7 @@ public:
 };
 
 
-struct QScriptDeclarativeClassObject {
-    QScriptEnginePrivate *engine;
+struct QScriptDeclarativeClassObject : QScriptV8ObjectWrapper<QScriptDeclarativeClassObject, &QScriptEnginePrivate::declarativeClassTemplate> {
     QScopedPointer<QScriptDeclarativeClass::Object> obj;
     QScriptDeclarativeClass* scriptClass;
 
@@ -93,43 +92,19 @@ struct QScriptDeclarativeClassObject {
         return QScriptValuePrivate::get(result)->asV8Value(engine);
     }
 
-    static QScriptDeclarativeClassObject *safeGet(const QScriptValue &v)
+    static v8::Handle<v8::FunctionTemplate> createFunctionTemplate(QScriptEnginePrivate *engine)
     {
-        QScriptValuePrivate *p = QScriptValuePrivate::get(v);
-        if (!p->isJSBased())
-            return 0;
-        QScriptEnginePrivate *engine = p->engine();
-        QScriptIsolate api(engine);
+        using namespace QScriptV8ObjectWrapperHelper;
         v8::HandleScope handleScope;
-        v8::Handle<v8::Value> value = p->m_value;
-
-        v8::Handle<v8::FunctionTemplate> funcTmpl = engine->declarativeClassTemplate;
-        if (funcTmpl.IsEmpty())
-            return 0;
-        if (!funcTmpl->HasInstance(value))
-            return 0;
-        v8::Local<v8::Object> object = v8::Object::Cast(*value);
-        Q_ASSERT(object->InternalFieldCount() == 1);
-        QScriptDeclarativeClassObject *data = reinterpret_cast<QScriptDeclarativeClassObject *>(object->GetPointerFromInternalField(0));
-        return data;
+        v8::Handle<v8::FunctionTemplate> funcTempl = v8::FunctionTemplate::New();
+        v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
+        instTempl->SetInternalFieldCount(1);
+        instTempl->SetCallAsFunctionHandler(callAsFunction<QScriptDeclarativeClassObject>);
+        instTempl->SetNamedPropertyHandler(namedPropertyGetter<QScriptDeclarativeClassObject>, namedPropertySetter<QScriptDeclarativeClassObject>);
+        return handleScope.Close(funcTempl);
     }
 
-    static v8::Handle<v8::FunctionTemplate> functionTemplate(QScriptEnginePrivate *engine)
-    {
-        if (engine->declarativeClassTemplate.IsEmpty()) {
-            using namespace QScriptV8ObjectWrapper;
-            v8::HandleScope handleScope;
-            v8::Handle<v8::FunctionTemplate> funcTempl = v8::FunctionTemplate::New();
-            v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
-            instTempl->SetInternalFieldCount(1);
-            instTempl->SetCallAsFunctionHandler(callAsFunction<QScriptDeclarativeClassObject>);
-            instTempl->SetNamedPropertyHandler(namedPropertyGetter<QScriptDeclarativeClassObject>, namedPropertySetter<QScriptDeclarativeClassObject>);
-            engine->declarativeClassTemplate = v8::Persistent<v8::FunctionTemplate>::New(funcTempl);
-        }
-        return engine->declarativeClassTemplate;
-    }
-
-    static v8::Handle<v8::Value> createInstance(QScriptEnginePrivate *engine, QScriptDeclarativeClass *scriptClass,
+    static v8::Handle<v8::Value> newInstance(QScriptEnginePrivate *engine, QScriptDeclarativeClass *scriptClass,
                                                 QScriptDeclarativeClass::Object *object)
     {
         v8::HandleScope handleScope;
@@ -137,15 +112,7 @@ struct QScriptDeclarativeClassObject {
         data->engine = engine;
         data->obj.reset(object);
         data->scriptClass = scriptClass;
-
-        v8::Handle<v8::ObjectTemplate> instanceTempl = functionTemplate(engine)->InstanceTemplate();
-        v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
-        Q_ASSERT(instance->InternalFieldCount() == 1);
-        instance->SetPointerInInternalField(0, data);
-
-        v8::Persistent<v8::Object> persistent = v8::Persistent<v8::Object>::New(instance);
-        persistent.MakeWeak(data, QScriptV8ObjectWrapper::weakCallback<QScriptDeclarativeClassObject>);
-        return handleScope.Close(instance);
+        return handleScope.Close(createInstance(data));
     }
 };
 
@@ -256,7 +223,7 @@ QScriptValue QScriptDeclarativeClass::newObject(QScriptEngine *engine,
     QScriptEnginePrivate *engine_p = QScriptEnginePrivate::get(engine);
     QScriptIsolate api(engine_p);
     v8::HandleScope handleScope;
-    v8::Handle<v8::Value> result = QScriptDeclarativeClassObject::createInstance(engine_p, scriptClass, object);
+    v8::Handle<v8::Value> result = QScriptDeclarativeClassObject::newInstance(engine_p, scriptClass, object);
     return QScriptValuePrivate::get(new QScriptValuePrivate(engine_p, result));
 }
 

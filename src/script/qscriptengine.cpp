@@ -1756,7 +1756,7 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newObject()
 QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newObject(QScriptClassPrivate* scriptclass, QScriptValuePrivate* data)
 {
     QScriptPassPointer<QScriptValuePrivate> object =
-        new QScriptValuePrivate(this, QScriptClassObject::createInstance(scriptclass, v8::Handle<v8::Object>()));
+        new QScriptValuePrivate(this, QScriptClassObject::newInstance(scriptclass, v8::Handle<v8::Object>()));
     object->setData(data);
     return object;
 }

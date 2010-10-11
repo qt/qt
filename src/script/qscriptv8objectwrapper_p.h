@@ -28,9 +28,13 @@
 #include "qscriptengine_p.h"
 #include "qscriptvalue.h"
 #include "qscriptvalue_p.h"
+#include "qscriptisolate_p.h"
 
+#include <v8.h>
 
-namespace QScriptV8ObjectWrapper {
+class QScriptEnginePrivate;
+
+namespace QScriptV8ObjectWrapperHelper {
 
 template <typename T>
 void weakCallback(v8::Persistent<v8::Value> object, void *parameter)
@@ -81,5 +85,51 @@ v8::Handle<v8::Value> callAsFunction(const v8::Arguments& args)
 }
 
 }
+
+
+//T must inherit from QScriptV8ObjectWrapper<T>
+template <typename T, v8::Persistent<v8::FunctionTemplate> QScriptEnginePrivate::*functionTemplate>
+struct QScriptV8ObjectWrapper
+{
+    QScriptEnginePrivate *engine;
+
+    static T *safeGet(const QScriptValue &v)
+    {
+        QScriptValuePrivate *p = QScriptValuePrivate::get(v);
+        if (!p->isJSBased())
+            return 0;
+        QScriptEnginePrivate *engine = p->engine();
+        QScriptIsolate api(engine);
+        v8::HandleScope handleScope;
+        v8::Handle<v8::Value> value = p->m_value;
+
+        v8::Handle<v8::FunctionTemplate> funcTmpl = engine->*functionTemplate;
+        if (funcTmpl.IsEmpty())
+            return 0;
+        if (!funcTmpl->HasInstance(value))
+            return 0;
+        v8::Local<v8::Object> object = v8::Object::Cast(*value);
+        Q_ASSERT(object->InternalFieldCount() == 1);
+        T *data = reinterpret_cast<T *>(object->GetPointerFromInternalField(0));
+        return data;
+    }
+
+    static v8::Handle<v8::Object> createInstance(T *data)
+    {
+        v8::HandleScope handleScope;
+        Q_ASSERT(data->engine);
+
+        if ((data->engine->*functionTemplate).IsEmpty())
+            data->engine->*functionTemplate = v8::Persistent<v8::FunctionTemplate>::New(T::createFunctionTemplate(data->engine));
+
+        v8::Handle<v8::ObjectTemplate> instanceTempl = (data->engine->*functionTemplate)->InstanceTemplate();
+        v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
+        Q_ASSERT(instance->InternalFieldCount() == 1);
+        instance->SetPointerInInternalField(0, data);
+        v8::Persistent<v8::Object> persistent = v8::Persistent<v8::Object>::New(instance);
+        persistent.MakeWeak(data, QScriptV8ObjectWrapperHelper::weakCallback<T>);
+        return handleScope.Close(instance);
+    }
+};
 
 #endif // QSCRIPTFUNCTION_P_H
