@@ -997,8 +997,8 @@ void tst_QFileSystemModel::dirsBeforeFiles()
         }
         dir.rmdir(dirPath);
     }
-    dir.mkpath(dirPath);
-    QVERIFY(dir.exists());
+    QVERIFY(dir.mkpath(dirPath));
+    QVERIFY(QDir(dirPath).exists());
 
     for (int i = 0; i < 3; ++i) {
         QLatin1Char c('a' + i);
