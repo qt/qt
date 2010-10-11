@@ -133,6 +133,7 @@ private slots:
     void task217070_scrollbarsAdjusted();
     void task258949_keypressHangup();
     void QTBUG8086_currentItemChangedOnClick();
+    void QTBUG14363_completerWithAnyKeyPressedEditTriggers();
 
 
 protected slots:
@@ -1647,6 +1648,45 @@ void tst_QListWidget::QTBUG8086_currentItemChangedOnClick()
     QCOMPARE(spy.count(), 1);
 
 }
+
+
+class ItemDelegate : public QItemDelegate
+{
+public:
+	ItemDelegate(QObject *parent = 0) : QItemDelegate(parent)
+	{}
+	virtual QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &) const
+	{
+		QLineEdit *lineEdit = new QLineEdit(parent);
+		lineEdit->setFrame(false);
+		QCompleter *completer = new QCompleter(QStringList() << "completer", lineEdit);
+		completer->setCompletionMode(QCompleter::InlineCompletion);
+		lineEdit->setCompleter(completer);
+		return lineEdit;
+	}
+};
+
+void tst_QListWidget::QTBUG14363_completerWithAnyKeyPressedEditTriggers()
+{
+	QListWidget listWidget;
+	listWidget.setEditTriggers(QAbstractItemView::AnyKeyPressed);
+    listWidget.setItemDelegate(new ItemDelegate);
+    QListWidgetItem *item = new QListWidgetItem(QLatin1String("select an item (don't start editing)"), &listWidget);
+    item->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable|Qt::ItemIsEditable);
+    new QListWidgetItem(QLatin1String("try to type the letter 'c'"), &listWidget);
+    new QListWidgetItem(QLatin1String("completer"), &listWidget);
+	listWidget.show();
+    listWidget.setCurrentItem(item);
+    QTest::qWaitForWindowShown(&listWidget);
+
+    QTest::keyClick(listWidget.viewport(), Qt::Key_C);
+
+    QLineEdit *le = qobject_cast<QLineEdit*>(listWidget.itemWidget(item));
+    QVERIFY(le);
+    QCOMPARE(le->text(), QString("completer"));
+    QCOMPARE(le->completer()->currentCompletion(), QString("completer"));
+}
+
 
 
 QTEST_MAIN(tst_QListWidget)

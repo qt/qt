@@ -4097,12 +4097,12 @@ bool QAbstractItemViewPrivate::openEditor(const QModelIndex &index, QEvent *even
     if (!w)
         return false;
 
-    if (event)
-        QApplication::sendEvent(w->focusProxy() ? w->focusProxy() : w, event);
-
     q->setState(QAbstractItemView::EditingState);
     w->show();
     w->setFocus();
+
+    if (event)
+        QApplication::sendEvent(w->focusProxy() ? w->focusProxy() : w, event);
 
     return true;
 }
