@@ -103,6 +103,8 @@ private slots:
     void mkdir_data();
     void mkdir();
 
+    void makedirReturnCode();
+
     void rmdir_data();
     void rmdir();
 
@@ -293,6 +295,17 @@ void tst_QDir::mkdir()
     //make sure it really exists (ie that mkdir returns the right value)
     QFileInfo fi(path);
     QVERIFY(fi.exists() && fi.isDir());
+}
+
+void tst_QDir::makedirReturnCode()
+{
+    QString dirName = QString::fromLatin1("makedirReturnCode");
+    QDir::current().rmdir(dirName); // cleanup a previous run.
+    QDir dir(dirName);
+    QVERIFY(!dir.exists());
+    QVERIFY(QDir::current().mkdir(dirName));
+    QVERIFY(!QDir::current().mkdir(dirName)); // calling mkdir on an existing dir will fail.
+    QVERIFY(QDir::current().mkpath(dirName)); // calling mkpath on an existing dir will pass
 }
 
 void tst_QDir::rmdir_data()
