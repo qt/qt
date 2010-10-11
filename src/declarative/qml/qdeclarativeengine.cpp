@@ -468,6 +468,10 @@ void QDeclarativeData::parentChanged(QAbstractDeclarativeData *d, QObject *o, QO
     static_cast<QDeclarativeData *>(d)->parentChanged(o, p);
 }
 
+void QDeclarativeData::objectNameChanged(QAbstractDeclarativeData *d, QObject *o)
+{
+}
+
 void QDeclarativeEnginePrivate::init()
 {
     Q_Q(QDeclarativeEngine);

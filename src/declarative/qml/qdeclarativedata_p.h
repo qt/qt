@@ -82,10 +82,12 @@ public:
     static inline void init() {
         QAbstractDeclarativeData::destroyed = destroyed;
         QAbstractDeclarativeData::parentChanged = parentChanged;
+        QAbstractDeclarativeData::objectNameChanged = objectNameChanged;
     }
 
     static void destroyed(QAbstractDeclarativeData *, QObject *);
     static void parentChanged(QAbstractDeclarativeData *, QObject *, QObject *);
+    static void objectNameChanged(QAbstractDeclarativeData *, QObject *);
 
     void destroyed(QObject *);
     void parentChanged(QObject *, QObject *);
