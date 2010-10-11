@@ -131,9 +131,8 @@ QDirPrivate::QDirPrivate(const QDirPrivate &copy)
 bool QDirPrivate::exists() const
 {
     if (fileEngine.isNull()) {
-        if (!metaData.hasFlags(QFileSystemMetaData::ExistsAttribute | QFileSystemMetaData::DirectoryType))
-            QFileSystemEngine::fillMetaData(dirEntry, metaData,
-                    QFileSystemMetaData::ExistsAttribute | QFileSystemMetaData::DirectoryType);
+        QFileSystemEngine::fillMetaData(dirEntry, metaData,
+                QFileSystemMetaData::ExistsAttribute | QFileSystemMetaData::DirectoryType); // always stat
         return metaData.exists() && metaData.isDirectory();
     }
     const QAbstractFileEngine::FileFlags info =
@@ -2094,6 +2093,7 @@ bool QDir::isRelativePath(const QString &path)
 void QDir::refresh() const
 {
     QDirPrivate *d = const_cast<QDir*>(this)->d_ptr.data();
+    d->metaData.clear();
     d->initFileEngine();
     d->clearFileLists();
 }
