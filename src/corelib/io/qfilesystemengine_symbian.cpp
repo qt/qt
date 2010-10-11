@@ -115,6 +115,7 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
     QString orig = entry.filePath();
     const bool isAbsolute = entry.isAbsolute();
     const bool isDirty = (orig.contains(QLatin1String("/../")) || orig.contains(QLatin1String("/./")) ||
+            orig.contains(QLatin1String("//")) ||
             orig.endsWith(QLatin1String("/..")) || orig.endsWith(QLatin1String("/.")));
     if (isAbsolute && !isDirty)
         return entry;
@@ -258,7 +259,9 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
         r = qt_s60GetRFs().MkDirAll(qt_QString2TPtrC(abspath));
     else
         r = qt_s60GetRFs().MkDir(qt_QString2TPtrC(abspath));
-    return (r == KErrNone || r == KErrAlreadyExists);
+    if (createParents && r == KErrAlreadyExists)
+        return true; //# Qt5 - QDir::mkdir returns false for existing dir, QDir::mkpath returns true (should be made consistent in Qt 5)
+    return (r == KErrNone);
 }
 
 //static
