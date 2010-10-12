@@ -356,8 +356,10 @@ qsreal QScriptValuePrivate::toNumber() const
         result = u.m_string->toInt(&ok, 0); // Try other bases.
         if (ok)
             return result;
-        if (*u.m_string == QLatin1String("Infinity") || *u.m_string == QLatin1String("-Infinity"))
+        if (*u.m_string == QLatin1String("Infinity"))
             return qInf();
+        if (*u.m_string == QLatin1String("-Infinity"))
+            return -qInf();
         return u.m_string->length() ? qQNaN() : 0;
     }
 

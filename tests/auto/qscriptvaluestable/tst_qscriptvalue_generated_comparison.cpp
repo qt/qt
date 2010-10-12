@@ -1184,22 +1184,6 @@ void tst_QScriptValue::equals()
     QFETCH(QScriptValue, value);
     QFETCH(QScriptValue, other);
     QFETCH(bool, expected);
-    QEXPECT_FAIL("QScriptValue(qInf()) <=> QScriptValue(\"-Infinity\")", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(qInf()) <=> QScriptValue(0, \"-Infinity\")", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(-qInf()) <=> QScriptValue(\"-Infinity\")", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(-qInf()) <=> QScriptValue(0, \"-Infinity\")", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(\"-Infinity\") <=> QScriptValue(qInf())", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(\"-Infinity\") <=> QScriptValue(-qInf())", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(\"-Infinity\") <=> QScriptValue(0, qInf())", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(\"-Infinity\") <=> QScriptValue(0, -qInf())", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(0, qInf()) <=> QScriptValue(\"-Infinity\")", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(0, qInf()) <=> QScriptValue(0, \"-Infinity\")", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(0, -qInf()) <=> QScriptValue(\"-Infinity\")", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(0, -qInf()) <=> QScriptValue(0, \"-Infinity\")", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(0, \"-Infinity\") <=> QScriptValue(qInf())", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(0, \"-Infinity\") <=> QScriptValue(-qInf())", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(0, \"-Infinity\") <=> QScriptValue(0, qInf())", "FIXME: WebKit bug 43038", Continue);
-    QEXPECT_FAIL("QScriptValue(0, \"-Infinity\") <=> QScriptValue(0, -qInf())", "FIXME: WebKit bug 43038", Continue);
     QCOMPARE(value.equals(other), expected);
 }
 
