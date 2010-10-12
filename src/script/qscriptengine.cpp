@@ -325,15 +325,13 @@ QVariantMap QScriptEnginePrivate::variantMapFromJS(v8::Handle<v8::Object> jsObje
 // Returns the value if conversion succeeded, an empty handle otherwise.
 v8::Handle<v8::Value> QScriptEnginePrivate::metaTypeToJS(int type, const void *data)
 {
+    Q_Q(QScriptEngine);
     Q_ASSERT(data != 0);
     v8::Handle<v8::Value> result;
-#if 0
-    QScriptEnginePrivate *eng = exec ? QScript::scriptEngineFromExec(exec) : 0;
-    QScriptTypeInfo *info = eng ? eng->m_typeInfos.value(type) : 0;
-    if (info && info->marshal) {
-        result = eng->scriptValueToJSCValue(info->marshal(eng->q_func(), data));
+    QScriptTypeInfo info = m_typeInfos.value(type);
+    if (info.marshal) {
+        result = QScriptValuePrivate::get(info.marshal(q, data))->asV8Value(this);
     } else {
-#endif
         // check if it's one of the types we know
         switch (QMetaType::Type(type)) {
         case QMetaType::Void:
@@ -399,37 +397,27 @@ v8::Handle<v8::Value> QScriptEnginePrivate::metaTypeToJS(int type, const void *d
             result = variantToJS(*reinterpret_cast<const QVariant*>(data));
             break;
         default:
-            ;
-#if 0
             if (type == qMetaTypeId<QScriptValue>()) {
-                result = eng->scriptValueToJSCValue(*reinterpret_cast<const QScriptValue*>(data));
-                if (!result)
-                    return JSC::jsUndefined();
+                return QScriptValuePrivate::get(*reinterpret_cast<const QScriptValue*>(data))->asV8Value(this);
             }
-#endif
-#if 0
             // lazy registration of some common list types
             else if (type == qMetaTypeId<QObjectList>()) {
-                qScriptRegisterSequenceMetaType<QObjectList>(eng->q_func());
-                return create(exec, type, data);
+                qScriptRegisterSequenceMetaType<QObjectList>(q);
+                return metaTypeToJS(type, data);
             }
             else if (type == qMetaTypeId<QList<int> >()) {
-                qScriptRegisterSequenceMetaType<QList<int> >(eng->q_func());
-                return create(exec, type, data);
-            }
-
-            else {
+                qScriptRegisterSequenceMetaType<QList<int> >(q);
+                return metaTypeToJS(type, data);
+            } else {
                 QByteArray typeName = QMetaType::typeName(type);
-                if (typeName.endsWith('*') && !*reinterpret_cast<void* const *>(data))
-                    return JSC::jsNull();
-                else
-#endif
+                if (typeName.endsWith('*') && !*reinterpret_cast<void* const *>(data)) {
+                    return v8::Null();
+                } else {
                     // Fall back to wrapping in a QVariant.
                     result = newVariant(QVariant(type, data));
-#if 0
+                }
             }
         }
-#endif
     }
 #if 0
     if (result && result.isObject() && info && info->prototype
@@ -785,6 +773,12 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine:
     , m_currentQsContext(0)
     , m_isEvaluating(false)
 {
+    qMetaTypeId<QScriptValue>();
+    qMetaTypeId<QList<int> >();
+#ifndef QT_NO_QOBJECT
+    qMetaTypeId<QObjectList>();
+#endif
+
     Q_ASSERT(!m_v8Context.IsEmpty());
     m_baseQsContext.reset(new QScriptContextPrivate(this));
     {
@@ -1952,11 +1946,12 @@ bool QScriptEngine::convertV2(const QScriptValue &value, int type, void *ptr)
 void QScriptEngine::registerCustomType(int type, MarshalFunction mf, DemarshalFunction df,
                                        const QScriptValue &prototype)
 {
-    Q_UNUSED(type);
-    Q_UNUSED(mf);
-    Q_UNUSED(df);
-    Q_UNUSED(prototype);
-    Q_UNIMPLEMENTED();
+    Q_D(QScriptEngine);
+    Q_UNUSED(prototype); //FIXME
+    QScriptEnginePrivate::QScriptTypeInfo &info = d->m_typeInfos[type];
+
+    info.marshal = mf;
+    info.demarshal = df;
 }
 
 QScriptContext *QScriptEngine::currentContext() const

@@ -40,6 +40,11 @@
 #include <v8.h>
 
 Q_DECLARE_METATYPE(QScriptValue)
+#ifndef QT_NO_QOBJECT
+Q_DECLARE_METATYPE(QObjectList)
+#endif
+Q_DECLARE_METATYPE(QList<int>)
+
 
 QT_BEGIN_NAMESPACE
 
@@ -181,6 +186,16 @@ public:
 
     v8::Persistent<v8::FunctionTemplate> declarativeClassTemplate;
     v8::Persistent<v8::FunctionTemplate> scriptClassTemplate;
+
+
+    class QScriptTypeInfo
+    {
+    public:
+        QScriptTypeInfo() : marshal(0), demarshal(0) { }
+        QScriptEngine::MarshalFunction marshal;
+        QScriptEngine::DemarshalFunction demarshal;
+    };
+    QHash<int, QScriptTypeInfo> m_typeInfos;
 private:
     QScriptEngine* q_ptr;
     v8::Isolate *m_isolate;
