@@ -817,9 +817,8 @@ static v8::Handle<v8::Value> QtMetaObjectCallback(const v8::Arguments& args)
     QScriptEnginePrivate *engine = data->engine();
     QScriptContextPrivate context(engine, &args);
 
-    const QMetaObject *meta = data->metaObject();
-    qDebug() << Q_FUNC_INFO << meta->className();
-
+//    const QMetaObject *meta = data->metaObject();
+//    qDebug() << Q_FUNC_INFO << meta->className();
 //     if (!args.IsConstructCall())
 //         return v8::Handle<v8::Value>();
 //
