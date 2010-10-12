@@ -428,9 +428,9 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocB
                     t << QString("\"%1epoc32/data/z%2\" - \"!:%3\"")
                          .arg(epocRoot())
                          .arg(iconFile)
-                         .arg(QDir::toNativeSeparators(iconFile)) << endl << endl;
+                         .arg(QString(iconFile).replace('/', '\\')) << endl << endl;
                     ts << QString("\"\" - \"%1\"")
-                         .arg(romPath(QDir::toNativeSeparators(iconFile))) << endl << endl;
+                         .arg(romPath(QString(iconFile).replace('/', '\\'))) << endl << endl;
                 } else {
                     QDir mifIconDir(project->first("DESTDIR"));
                     QFileInfo mifIcon(mifIconDir.relativeFilePath(project->first("TARGET")));
@@ -439,9 +439,9 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocB
                     t << QString("\"%1/%2\" - \"!:%3\"")
                          .arg(mifIcon.path())
                          .arg(mifIconFileName)
-                         .arg(QDir::toNativeSeparators(iconFile)) << endl << endl;
+                         .arg(QString(iconFile).replace('/', '\\')) << endl << endl;
                     ts << QString("\"\" - \"%1\"")
-                         .arg(romPath(QDir::toNativeSeparators(iconFile))) << endl << endl;
+                         .arg(romPath(QString(iconFile).replace('/', '\\'))) << endl << endl;
                 }
             }
         }

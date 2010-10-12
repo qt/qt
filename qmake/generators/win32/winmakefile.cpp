@@ -760,7 +760,8 @@ void Win32MakefileGenerator::writeRcFilePart(QTextStream &t)
         // since the compiler defines this symbol by itself, and we use it in the automatically
         // created rc file when VERSION is define the .pro file.
         t << res_file << ": " << rc_file << "\n\t"
-          << var("QMAKE_RC") << (project->isActiveConfig("debug") ? " -D_DEBUG" : "") << " $(DEFINES) -fo " << res_file << " " << rc_file;
+          << var("QMAKE_RC") << (project->isActiveConfig("debug") ? " -D_DEBUG" : "")
+          << " $(DEFINES) $(INCPATH) -fo " << res_file << " " << rc_file;
         t << endl << endl;
     }
 }
