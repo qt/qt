@@ -65,9 +65,9 @@
 QT_BEGIN_NAMESPACE
 
 
-#define QT_QPA_EXPERIMENTAL_MULTITOUCH
+//#define QT_QPA_EXPERIMENTAL_TOUCHEVENT
 
-#ifdef QT_QPA_EXPERIMENTAL_MULTITOUCH
+#ifdef QT_QPA_EXPERIMENTAL_TOUCHEVENT
 class QLinuxInputMouseHandlerData
 {
 public:
@@ -139,8 +139,15 @@ QLinuxInputMouseHandler::QLinuxInputMouseHandler(const QString &key,
     setObjectName(QLatin1String("LinuxInputSubsystem Mouse Handler"));
 
     QString dev = QLatin1String("/dev/input/event0");
-    if (specification.startsWith(QLatin1String("/dev/")))
-        dev = specification;
+    m_compression = true;
+    
+    QStringList args = specification.split(QLatin1Char(':'));
+    foreach (const QString &arg, args) {
+        if (arg == "nocompress")
+            m_compression = false;
+        else if (arg.startsWith(QLatin1String("/dev/")))
+            dev = arg;
+    }
 
     m_fd = QT_OPEN(dev.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
     if (m_fd >= 0) {
@@ -150,7 +157,7 @@ QLinuxInputMouseHandler::QLinuxInputMouseHandler(const QString &key,
         qWarning("Cannot open mouse input device '%s': %s", qPrintable(dev), strerror(errno));
         return;
     }
-#ifdef QT_QPA_EXPERIMENTAL_MULTITOUCH
+#ifdef QT_QPA_EXPERIMENTAL_TOUCHEVENT
     d = new QLinuxInputMouseHandlerData;
 #endif    
 }
@@ -160,7 +167,9 @@ QLinuxInputMouseHandler::~QLinuxInputMouseHandler()
 {
     if (m_fd >= 0)
         QT_CLOSE(m_fd);
+#ifdef QT_QPA_EXPERIMENTAL_TOUCHEVENT
     delete d;
+#endif
 }
 
 void QLinuxInputMouseHandler::readMouseData()
@@ -168,7 +177,7 @@ void QLinuxInputMouseHandler::readMouseData()
     struct ::input_event buffer[32];
     int n = 0;
     bool posChanged = false;
-
+    bool pendingMouseEvent = false;
     forever {
         n = QT_READ(m_fd, reinterpret_cast<char *>(buffer) + n, sizeof(buffer) - n);
 
@@ -204,7 +213,7 @@ void QLinuxInputMouseHandler::readMouseData()
                 //ignore for now...
             } else if (data->code == ABS_HAT0Y) {
                 //ignore for now...
-#ifdef QT_QPA_EXPERIMENTAL_MULTITOUCH
+#ifdef QT_QPA_EXPERIMENTAL_TOUCHEVENT
             } else if (data->code == ABS_MT_POSITION_X) {
                 d->currentX = data->value;
                 d->seenMT = true;
@@ -248,6 +257,7 @@ void QLinuxInputMouseHandler::readMouseData()
 
             QWindowSystemInterface::handleMouseEvent(0, QPoint(m_x, m_y),
                                                   QPoint(m_x, m_y), m_buttons);
+            pendingMouseEvent = false;
         } else if (data->type == EV_KEY && data->code >= BTN_LEFT && data->code <= BTN_MIDDLE) {
             Qt::MouseButton button = Qt::NoButton;
             switch (data->code) {
@@ -262,16 +272,19 @@ void QLinuxInputMouseHandler::readMouseData()
 
             QWindowSystemInterface::handleMouseEvent(0, QPoint(m_x, m_y),
                                                   QPoint(m_x, m_y), m_buttons);
+            pendingMouseEvent = false;
         } else if (data->type == EV_SYN && data->code == SYN_REPORT) {
             if (posChanged) {
                 posChanged = false;
                 QPoint pos(m_x, m_y);
-
-                QWindowSystemInterface::handleMouseEvent(0, pos, pos, m_buttons);
+                if (m_compression) 
+                    pendingMouseEvent = true;
+                else
+                    QWindowSystemInterface::handleMouseEvent(0, pos, pos, m_buttons);
             }
-#ifdef QT_QPA_EXPERIMENTAL_MULTITOUCH
+#ifdef QT_QPA_EXPERIMENTAL_TOUCHEVENT
             if (d->state == QEvent::TouchBegin && !d->seenMT) {
-                //no multi-touch events to send
+                //no multipoint-touch events to send
             } else {
                 if (!d->seenMT)
                     d->state = QEvent::TouchEnd;
@@ -316,9 +329,15 @@ void QLinuxInputMouseHandler::readMouseData()
         } else {
             unknown = true;
         }
+#ifdef QLINUXINPUT_EXTRA_DEBUG
         if (unknown) {
             qWarning("unknown mouse event type=%x, code=%x, value=%x", data->type, data->code, data->value);
         }
+#endif        
+    }
+    if (m_compression && pendingMouseEvent) {
+        QPoint pos(m_x, m_y);
+        QWindowSystemInterface::handleMouseEvent(0, pos, pos, m_buttons);
     }
 }
 

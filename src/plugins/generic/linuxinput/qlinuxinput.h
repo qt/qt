@@ -69,6 +69,7 @@ private:
     int                        m_fd;
     int                        m_x, m_y;
     Qt::MouseButtons           m_buttons;
+    bool m_compression;
     QLinuxInputMouseHandlerData *d;
 };
 
