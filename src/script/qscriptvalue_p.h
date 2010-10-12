@@ -109,6 +109,7 @@ public:
 
     inline bool equals(QScriptValuePrivate* other);
     inline bool strictlyEquals(QScriptValuePrivate* other);
+    inline bool lessThan(QScriptValuePrivate *other) const;
     inline bool instanceOf(QScriptValuePrivate*) const;
     inline bool instanceOf(v8::Handle<v8::Object> other) const;
 
@@ -732,6 +733,28 @@ inline bool QScriptValuePrivate::strictlyEquals(QScriptValuePrivate* other)
         return true;
 
     return false;
+}
+
+inline bool QScriptValuePrivate::lessThan(QScriptValuePrivate *other) const
+{
+    if (engine() != other->engine() && engine() && other->engine()) {
+        qWarning("QScriptValue::lessThan: cannot compare to a value created in a different engine");
+        return false;
+    }
+
+    if (!isValid() || !other->isValid())
+        return false;
+
+    if (isString() && other->isString())
+        return toString() < other->toString();
+
+    qsreal nthis = toNumber();
+    qsreal nother = other->toNumber();
+    if (qIsNaN(nthis) || qIsNaN(nother)) {
+        // Should return undefined in ECMA standard.
+        return false;
+    }
+    return nthis < nother;
 }
 
 inline bool QScriptValuePrivate::instanceOf(QScriptValuePrivate* other) const

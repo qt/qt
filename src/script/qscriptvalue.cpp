@@ -854,9 +854,10 @@ bool QScriptValue::strictlyEquals(const QScriptValue& other) const
 */
 bool QScriptValue::lessThan(const QScriptValue &other) const
 {
-    Q_UNIMPLEMENTED();
-    Q_UNUSED(other);
-    return false;
+    Q_D(const QScriptValue);
+    QScriptValuePrivate *o = QScriptValuePrivate::get(other);
+    QScriptIsolate api(d->engine() ? d->engine() : o->engine());
+    return d->lessThan(o);
 }
 
 /*!
