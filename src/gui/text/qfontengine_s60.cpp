@@ -360,13 +360,11 @@ glyph_metrics_t QFontEngineS60::boundingBox_const(glyph_t glyph) const
     const TUint8 *glyphBitmapBytes;
     TSize glyphBitmapSize;
     getCharacterData(glyph, metrics, glyphBitmapBytes, glyphBitmapSize);
-    TRect glyphBounds;
-    metrics.GetHorizBounds(glyphBounds);
     const glyph_metrics_t result(
-        glyphBounds.iTl.iX,
-        glyphBounds.iTl.iY,
-        glyphBounds.Width(),
-        glyphBounds.Height(),
+        metrics.HorizBearingX(),
+        -metrics.HorizBearingY(),
+        metrics.Width(),
+        metrics.Height(),
         metrics.HorizAdvance(),
         0
     );
