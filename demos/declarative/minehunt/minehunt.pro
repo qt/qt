@@ -19,6 +19,6 @@ symbian:{
     TARGET.EPOCHEAPSIZE = 0x20000 0x2000000
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     qmlminehuntfiles.sources = MinehuntCore minehunt.qml
-    DEPLOYMENT = qmlminehuntfiles
+    DEPLOYMENT += qmlminehuntfiles
 }
  

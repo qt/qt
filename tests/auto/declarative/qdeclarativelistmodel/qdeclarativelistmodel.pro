@@ -8,7 +8,7 @@ SOURCES += tst_qdeclarativelistmodel.cpp
 symbian: {
     importFiles.sources = data
     importFiles.path = .
-    DEPLOYMENT = importFiles
+    DEPLOYMENT += importFiles
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

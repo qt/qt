@@ -5,7 +5,7 @@ QT = core
 
 wince*|symbian: {
 deploy.sources += NormalizationTest.txt
-DEPLOYMENT = deploy
+DEPLOYMENT += deploy
 }
 
 symbian: {

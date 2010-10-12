@@ -10,7 +10,7 @@ wince*|symbian {
     resour.sources += ..\\resources\\file1.ext1
     resour.path = resources
 
-    DEPLOYMENT = files resour
+    DEPLOYMENT += files resour
 }
 
 wince* {

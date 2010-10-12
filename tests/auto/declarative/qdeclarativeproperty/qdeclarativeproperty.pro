@@ -7,7 +7,7 @@ SOURCES += tst_qdeclarativeproperty.cpp
 symbian: {
     importFiles.sources = data
     importFiles.path = .
-    DEPLOYMENT = importFiles
+    DEPLOYMENT += importFiles
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

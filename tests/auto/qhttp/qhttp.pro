@@ -11,7 +11,7 @@ wince*: {
     cgi.path = webserver/cgi-bin
     addFiles.sources = rfc3252.txt trolltech
     addFiles.path = .
-    DEPLOYMENT = addFiles webFiles cgi
+    DEPLOYMENT += addFiles webFiles cgi
     DEFINES += SRCDIR=\\\"\\\"
 } else:symbian {
     webFiles.sources = webserver/*
@@ -20,7 +20,7 @@ wince*: {
     cgi.path = webserver/cgi-bin
     addFiles.sources = rfc3252.txt trolltech
     addFiles.path = .
-    DEPLOYMENT = addFiles webFiles cgi
+    DEPLOYMENT += addFiles webFiles cgi
     TARGET.CAPABILITY = NetworkServices
 } else:vxworks*: {
     DEFINES += SRCDIR=\\\"\\\"

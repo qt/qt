@@ -10,7 +10,7 @@ SOURCES += tst_script.cpp
 symbian {
     importFiles.sources = data
     importFiles.path =
-    DEPLOYMENT = importFiles
+    DEPLOYMENT += importFiles
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

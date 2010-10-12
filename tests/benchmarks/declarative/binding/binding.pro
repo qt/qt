@@ -10,7 +10,7 @@ HEADERS += testtypes.h
 symbian {
     data.sources = data
     data.path = .
-    DEPLOYMENT = data
+    DEPLOYMENT += data
 } else {
     # Define SRCDIR equal to test's source directory
     DEFINES += SRCDIR=\\\"$$PWD\\\"
