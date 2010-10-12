@@ -308,6 +308,7 @@ void QFontEngineS60::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions,
         parseGlyphPathData(outlineChar, outlineEnd, *path, fontSizeInPixels,
                 positions[count++].toPointF(), false);
     } while(KErrNone == iterator.Next() && count <= nglyphs);
+    iterator.Close();
 #else // Q_SYMBIAN_HAS_GLYPHOUTLINE_API
     QFontEngine::addGlyphsToPath(glyphs, positions, nglyphs, path, flags);
 #endif //Q_SYMBIAN_HAS_GLYPHOUTLINE_API
