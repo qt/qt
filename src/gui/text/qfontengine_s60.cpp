@@ -303,10 +303,13 @@ bool QFontEngineS60::stringToCMap(const QChar *characters, int len, QGlyphLayout
 void QFontEngineS60::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlags flags) const
 {
     Q_UNUSED(flags);
+    TOpenFontCharMetrics metrics;
+    const TUint8 *glyphBitmapBytes;
+    TSize glyphBitmapSize;
     for (int i = 0; i < glyphs->numGlyphs; i++) {
-        const glyph_metrics_t bbox = boundingBox_const(glyphs->glyphs[i]);
-        glyphs->advances_x[i] = bbox.xoff;
-        glyphs->advances_y[i] = bbox.yoff;
+        getCharacterData(glyphs->glyphs[i], metrics, glyphBitmapBytes, glyphBitmapSize);
+        glyphs->advances_x[i] = metrics.HorizAdvance();
+        glyphs->advances_y[i] = 0;
     }
 }
 
