@@ -1053,7 +1053,9 @@ QObject *QScriptValue::toQObject() const
 */
 const QMetaObject *QScriptValue::toQMetaObject() const
 {
-    return d_ptr->toQMetaObject();
+    Q_D(const QScriptValue);
+    QScriptIsolate api(d->engine());
+    return d->toQMetaObject();
 }
 
 /*!
