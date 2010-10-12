@@ -318,6 +318,7 @@ static v8::Handle<v8::Value> QtMetaPropertyGetter(v8::Local<v8::String> property
     v8::Local<v8::Object> self = info.Holder();
     QtInstanceData *data = QtInstanceData::get(self);
     QScriptEnginePrivate *engine = data->engine();
+    QScriptContextPrivate context(engine, &info);
 
     QObject *qobject = data->cppObject();
     Q_ASSERT(qobject != 0);
@@ -344,6 +345,7 @@ static void QtMetaPropertySetter(v8::Local<v8::String> /*property*/,
     v8::Local<v8::Object> self = info.Holder(); // This?
     QtInstanceData *data = QtInstanceData::get(self);
     QScriptEnginePrivate *engine = data->engine();
+    QScriptContextPrivate context(engine, &info);
 
     QObject *qobject = data->cppObject();
     Q_ASSERT(qobject != 0);
@@ -385,6 +387,7 @@ static v8::Handle<v8::Value> QtDynamicPropertyGetter(v8::Local<v8::String> prope
     v8::Local<v8::Object> self = info.Holder(); // This?
     QtInstanceData *data = QtInstanceData::get(self);
     QScriptEnginePrivate *engine = data->engine();
+    QScriptContextPrivate context(engine, &info);
     QObject *qobject = data->cppObject();
 
     QByteArray name = QScriptConverter::toString(property).toLatin1();
@@ -408,6 +411,7 @@ static void QtDynamicPropertySetter(v8::Local<v8::String> property,
     v8::Local<v8::Object> self = info.Holder(); // This?
     QtInstanceData *data = QtInstanceData::get(self);
     QScriptEnginePrivate *engine = data->engine();
+    QScriptContextPrivate context(engine, &info);
     QObject *qobject = data->cppObject();
 
     QByteArray name = QScriptConverter::toString(property).toLatin1();
@@ -476,6 +480,7 @@ static v8::Handle<v8::Value> QtMetaMethodCallback(const v8::Arguments& args)
     QtInstanceData *instance = QtInstanceData::get(self);
 
     QScriptEnginePrivate *engine = instance->engine();
+    QScriptContextPrivate context(engine, &args);
     QObject *qobject = instance->cppObject();
     const QMetaObject *meta = qobject->metaObject();
 
@@ -653,6 +658,7 @@ static v8::Handle<v8::Value> QtOverloadedMetaMethodCallback(const v8::Arguments&
     v8::Local<v8::Object> self = args.Holder(); // This??
     QtInstanceData *instance = QtInstanceData::get(self);
     QScriptEnginePrivate *engine = instance->engine();
+    QScriptContextPrivate context(engine, &args);
 
     QObject *qobject = instance->cppObject();
     const QMetaObject *meta = qobject->metaObject();
@@ -675,6 +681,8 @@ static v8::Handle<v8::Value> QtVoidVoidMetaMethodCallback(const v8::Arguments& a
 {
     v8::Local<v8::Object> self = args.Holder(); // This??
     QtInstanceData *data = QtInstanceData::get(self);
+    QScriptEnginePrivate *engine = data->engine();
+    QScriptContextPrivate context(engine, &args);
     QObject *qobject = data->cppObject();
 
     int methodIndex = v8::Int32::Cast(*args.Data())->Value();
@@ -696,6 +704,7 @@ static v8::Handle<v8::Value> QtLazyPropertyGetter(v8::Local<v8::String> property
     v8::Local<v8::Object> self = info.This();
     QtInstanceData *data = QtInstanceData::get(self);
     QScriptEnginePrivate *engine = data->engine();
+    QScriptContextPrivate context(engine, &info);
     QObject *qobject = data->cppObject();
 
     QByteArray name = QScriptConverter::toString(property).toLatin1();
@@ -776,6 +785,8 @@ static v8::Handle<v8::Value> QtMetaObjectPropertyGetter(v8::Local<v8::String> pr
     Q_UNUSED(info);
     v8::Local<v8::Object> self = info.Holder();
     QtMetaObjectData *data = QtMetaObjectData::get(self);
+    QScriptEnginePrivate *engine = data->engine();
+    QScriptContextPrivate context(engine, &info);
 
     const QMetaObject *meta = data->metaObject();
     QString propertyName = QScriptConverter::toString(property);
@@ -805,6 +816,8 @@ static v8::Handle<v8::Value> QtMetaObjectCallback(const v8::Arguments& args)
 {
     v8::Local<v8::Object> self = args.Holder();
     QtMetaObjectData *data = QtMetaObjectData::get(self);
+    QScriptEnginePrivate *engine = data->engine();
+    QScriptContextPrivate context(engine, &args);
 
     const QMetaObject *meta = data->metaObject();
     qDebug() << Q_FUNC_INFO << meta->className();
@@ -892,33 +905,8 @@ static v8::Handle<v8::Value> QtDisconnectCallback(const v8::Arguments& args)
     return data->disconnect(v8::Handle<v8::Function>(v8::Function::Cast(*args[0])));
 }
 
-// v8 calls this function when a QObject wrapper object (val) is
-// garbage-collected.
-static void QtInstanceWeakCallback(v8::Persistent<v8::Value> val, void *arg)
-{
-    QtInstanceData *data = static_cast<QtInstanceData*>(arg);
-    delete data;
-
-    v8::HandleScope scope;
-    v8::Local<v8::Object> object = v8::Object::Cast(*val);
-    Q_ASSERT(!object.IsEmpty());
-    object->SetPointerInInternalField(0, 0);
-    val.Dispose();
-    val.Clear();
-}
-
-static void QtMetaObjectWeakCallback(v8::Persistent<v8::Value> val, void *arg)
-{
-    Q_UNUSED(val);
-    QtMetaObjectData *data = static_cast<QtMetaObjectData*>(arg);
-    delete data;
-    val.Dispose();
-}
-
 v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *engine, const QMetaObject *mo)
 {
-//    qDebug() << "Creating template for" << mo->className();
-
     v8::Handle<v8::FunctionTemplate> funcTempl = v8::FunctionTemplate::New();
     funcTempl->SetClassName(v8::String::New(mo->className()));
 
@@ -1022,7 +1010,7 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
         // meta-object-defined properties, and Q_INVOKABLE methods and slots).
         protoTempl->SetNamedPropertyHandler(QtLazyPropertyGetter,
                                             QtLazyPropertySetter);
-        Q_UNIMPLEMENTED();
+        //Q_UNIMPLEMENTED();
         // TODO: Add QObject prototype functions findChild(), findChildren() (compat)
     }
 
@@ -1072,7 +1060,6 @@ v8::Handle<v8::Object> newQtObject(QScriptEnginePrivate *engine, QObject *object
     v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
     Q_ASSERT(instance->InternalFieldCount() == 1);
 
-    // FIXME We are leaking that!
     QtInstanceData *data = new QtInstanceData(engine, object, own, opt);
     instance->SetPointerInInternalField(0, data);
 
@@ -1100,8 +1087,8 @@ v8::Handle<v8::Object> newQtObject(QScriptEnginePrivate *engine, QObject *object
     }
 
     v8::Persistent<v8::Object> persistent = v8::Persistent<v8::Object>::New(instance);
-    persistent.MakeWeak(data, QtInstanceWeakCallback);
-    return persistent;
+    persistent.MakeWeak(data, QScriptV8ObjectWrapperHelper::weakCallback<QtInstanceData>);
+    return handleScope.Close(instance);
 }
 
 QObject *toQtObject(QScriptEnginePrivate *engine, const v8::Handle<v8::Object> &object)
@@ -1129,8 +1116,8 @@ v8::Handle<v8::Object> QScriptEnginePrivate::newQMetaObject(const QMetaObject *m
     instance->SetPointerInInternalField(0, data);
 
     v8::Persistent<v8::Object> persistent = v8::Persistent<v8::Object>::New(instance);
-    persistent.MakeWeak(data, QtMetaObjectWeakCallback);
-    return persistent;
+    persistent.MakeWeak(data, QScriptV8ObjectWrapperHelper::weakCallback<QtMetaObjectData>);
+    return instance;
 }
 
 QT_END_NAMESPACE
