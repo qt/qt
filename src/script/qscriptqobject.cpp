@@ -773,7 +773,7 @@ static v8::Handle<v8::Value> QtLazyPropertySetter(v8::Local<v8::String> property
                                                   v8::Local<v8::Value> value,
                                                   const v8::AccessorInfo& info)
 {
-    Q_UNIMPLEMENTED();
+//    qDebug() << Q_FUNC_INFO << "UNIMPLETMENTED" << QScriptConverter::toString(property);
     return v8::Handle<v8::Value>();
 }
 
@@ -939,8 +939,8 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
             setter = QtMetaPropertySetter;
         }
         instTempl->SetAccessor(v8::String::New(prop.name()),
-                               getter, setter,
-                               v8::Int32::New(i));
+                               getter, setter, v8::Int32::New(i),
+                               v8::DEFAULT, v8::DontDelete);
     }
 
     // Figure out method names (own and inherited).
@@ -994,7 +994,7 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
                 // No overloads, so by-name and by-signature properties should be the same function object.
                 protoTempl->Set(v8::String::New(method.signature()), methodTempl);
             } else {
-                Q_UNIMPLEMENTED();
+               // Q_UNIMPLEMENTED();
                 // TODO: add unique by-signature properties for overloads.
             }
         }
@@ -1081,8 +1081,8 @@ v8::Handle<v8::Object> newQtObject(QScriptEnginePrivate *engine, QObject *object
             QObject *child = children.at(i);
             if (child->objectName().isEmpty())
                 continue;
-            // Install an accessor.
-            Q_UNIMPLEMENTED();
+            //FIXME Install an accessor.
+            //Q_UNIMPLEMENTED();
         }
     }
 
