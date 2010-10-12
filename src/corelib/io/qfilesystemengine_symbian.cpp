@@ -302,10 +302,11 @@ bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSyst
     CFileMan *fm = 0;
     TRAPD(err, fm = CFileMan::NewL(qt_s60GetRFs()));
     if (err == KErrNone) {
-        err = fm->Copy(qt_QString2TPtrC(source.nativeFilePath()), qt_QString2TPtrC(target.nativeFilePath()), 0);
+        err = fm->Copy(qt_QString2TPtrC(absoluteName(source).nativeFilePath()), qt_QString2TPtrC(absoluteName(target).nativeFilePath()), 0);
         delete fm;
-        return true;
     }
+    if (err == KErrNone)
+        return true;
     error = QSystemError(err, QSystemError::NativeError);
     return false;
 }
