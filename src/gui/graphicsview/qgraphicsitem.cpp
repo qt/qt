@@ -2365,7 +2365,7 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
                         while (fsi->d_ptr->focusScopeItem && fsi->d_ptr->focusScopeItem->isVisible())
                             fsi = fsi->d_ptr->focusScopeItem;
                         fsi->d_ptr->setFocusHelper(Qt::OtherFocusReason, /* climb = */ true,
-                                                   /* focusFromShow = */ true);
+                                                   /* focusFromHide = */ false);
                     }
                     break;
                 }
@@ -2375,6 +2375,10 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
                 QGraphicsItem *fi = subFocusItem;
                 if (fi && fi != scene->focusItem()) {
                     scene->setFocusItem(fi);
+                } else if (flags & QGraphicsItem::ItemIsFocusScope &&
+                           !scene->focusItem() &&
+                           q->isAncestorOf(scene->d_func()->lastFocusItem)) {
+                    q_ptr->setFocus();
                 }
             }
         } else {
@@ -2385,7 +2389,7 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
                     if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
                         if (p->d_ptr->visible) {
                             p->d_ptr->setFocusHelper(Qt::OtherFocusReason, /* climb = */ true,
-                                                     /* focusFromShow = */ true);
+                                                     /* focusFromHide = */ true);
                         }
                         break;
                     }
@@ -3245,13 +3249,13 @@ bool QGraphicsItem::hasFocus() const
 */
 void QGraphicsItem::setFocus(Qt::FocusReason focusReason)
 {
-    d_ptr->setFocusHelper(focusReason, /* climb = */ true, /* focusFromShow = */ false);
+    d_ptr->setFocusHelper(focusReason, /* climb = */ true, /* focusFromHide = */ false);
 }
 
 /*!
     \internal
 */
-void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool climb, bool focusFromShow)
+void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool climb, bool focusFromHide)
 {
     // Disabled / unfocusable items cannot accept focus.
     if (!q_ptr->isEnabled() || !(flags & QGraphicsItem::ItemIsFocusable))
@@ -3272,7 +3276,7 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
         if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
             QGraphicsItem *oldFocusScopeItem = p->d_ptr->focusScopeItem;
             p->d_ptr->focusScopeItem = q_ptr;
-            if (!p->focusItem() && !focusFromShow) {
+            if (!p->focusItem() && !focusFromHide) {
                 if (oldFocusScopeItem)
                     oldFocusScopeItem->d_ptr->focusScopeItemChange(false);
                 focusScopeItemChange(true);
@@ -3334,7 +3338,7 @@ void QGraphicsItemPrivate::clearFocusHelper(bool giveFocusToParent)
             while (p) {
                 if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
                     p->d_ptr->setFocusHelper(Qt::OtherFocusReason, /* climb = */ false,
-                                             /* focusFromShow = */ false);
+                                             /* focusFromHide = */ false);
                     return;
                 }
                 p = p->d_ptr->parent;
