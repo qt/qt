@@ -929,18 +929,6 @@ QScriptValue QScriptEnginePrivate::scriptValueFromInternal(v8::Handle<v8::Value>
 }
 
 /*!
-  Converts the given \a value to an internal (back-end-specific) value.
-  Returns an empty handle if the value is invalid.
-*/
-v8::Handle<v8::Value> QScriptEnginePrivate::scriptValueToInternal(const QScriptValue &value)
-{
-    QScriptValuePrivate *priv = QScriptValuePrivate::get(value);
-    if (!priv->isJSBased())
-        priv->assignEngine(this);
-    return priv->m_value;
-}
-
-/*!
     Constructs a QScriptEngine object.
 
     The globalObject() is initialized to have properties as described in

@@ -162,7 +162,6 @@ public:
     void installTranslatorFunctions(v8::Handle<v8::Value> object);
 
     QScriptValue scriptValueFromInternal(v8::Handle<v8::Value>);
-    v8::Handle<v8::Value> scriptValueToInternal(const QScriptValue &);
 
     inline operator v8::Persistent<v8::Context>();
     inline void clearExceptions();
