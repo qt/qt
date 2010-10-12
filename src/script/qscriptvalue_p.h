@@ -85,6 +85,7 @@ public:
     inline quint32 toUInt32() const;
     inline quint16 toUInt16() const;
     inline QDateTime toDataTime() const;
+    inline QRegExp toRegExp() const;
     inline QObject *toQObject() const;
     inline QVariant toVariant() const;
     inline const QMetaObject *toQMetaObject() const;
@@ -468,6 +469,15 @@ inline QDateTime QScriptValuePrivate::toDataTime() const
     v8::HandleScope handleScope;
     return engine()->qtDateTimeFromJS(v8::Handle<v8::Date>::Cast(m_value));
 
+}
+
+inline QRegExp QScriptValuePrivate::toRegExp() const
+{
+    if (!isRegExp())
+        return QRegExp();
+
+    v8::HandleScope handleScope;
+    return engine()->qtRegExpFromJS(v8::Handle<v8::Object>::Cast(m_value));
 }
 
 QObject* QScriptValuePrivate::toQObject() const

@@ -1082,11 +1082,7 @@ QRegExp QScriptValue::toRegExp() const
 {
     Q_D(const QScriptValue);
     QScriptIsolate api(d->engine());
-    if (!d_ptr->isRegExp())
-        return QRegExp();
-
-    v8::HandleScope handleScope;
-    return d_ptr->engine()->qtRegExpFromJS(v8::Handle<v8::Object>::Cast(d_ptr->m_value));
+    return d->toRegExp();
 }
 
 /*!
