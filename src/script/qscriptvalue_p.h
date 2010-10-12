@@ -871,7 +871,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(qui
     v8::Handle<v8::Object> self(v8::Object::Cast(*m_value));
 
     if ((mode != QScriptValue::ResolveLocal && !self->Has(index))
-        || (mode == QScriptValue::ResolveLocal && !self->HasRealIndexedProperty(index)))
+        || (mode == QScriptValue::ResolveLocal && engine()->getOwnProperty(self, v8::Integer::New(index)).IsEmpty()))
         return new QScriptValuePrivate();
 
     v8::Handle<v8::Value> result = self->Get(index);
