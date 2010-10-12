@@ -27,7 +27,6 @@
 #include "qscriptstring.h"
 #include "qscriptvalue.h"
 #include "qscriptvalue_p.h"
-#include <QtCore/qdatetime.h>
 #include <QtCore/qregexp.h>
 #include <QtCore/qstring.h>
 
@@ -1069,11 +1068,7 @@ QDateTime QScriptValue::toDateTime() const
 {
     Q_D(const QScriptValue);
     QScriptIsolate api(d->engine());
-    if (!d_ptr->isDate())
-        return QDateTime();
-
-    v8::HandleScope handleScope;
-    return d_ptr->engine()->qtDateTimeFromJS(v8::Handle<v8::Date>::Cast(d_ptr->m_value));
+    return d->toDataTime();
 }
 
 /*!

@@ -27,6 +27,7 @@
 #include <v8.h>
 
 #include <QtCore/qbytearray.h>
+#include <QtCore/qdatetime.h>
 #include <QtCore/qmath.h>
 #include <QtCore/qvarlengtharray.h>
 #include <qdebug.h>
@@ -83,6 +84,7 @@ public:
     inline qint32 toInt32() const;
     inline quint32 toUInt32() const;
     inline quint16 toUInt16() const;
+    inline QDateTime toDataTime() const;
     inline QObject *toQObject() const;
     inline QVariant toVariant() const;
     inline const QMetaObject *toQMetaObject() const;
@@ -456,6 +458,16 @@ QVariant QScriptValuePrivate::toVariant() const
 
     v8::HandleScope handleScope;
     return m_engine->variantFromJS(m_value);
+}
+
+inline QDateTime QScriptValuePrivate::toDataTime() const
+{
+    if (!isDate())
+        return QDateTime();
+
+    v8::HandleScope handleScope;
+    return engine()->qtDateTimeFromJS(v8::Handle<v8::Date>::Cast(m_value));
+
 }
 
 QObject* QScriptValuePrivate::toQObject() const
