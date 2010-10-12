@@ -119,6 +119,8 @@ private slots:
 
     void directoryModel_data();
     void directoryModel();
+    void fileSystemModel_data();
+    void fileSystemModel();
 
     void changingModel_data();
     void changingModel();
@@ -151,13 +153,14 @@ private slots:
     void task247560_keyboardNavigation();
 
 private:
-    void filter();
+    void filter(bool assync = false);
     void testRowCount();
     enum ModelType {
         CASE_SENSITIVELY_SORTED_MODEL,
         CASE_INSENSITIVELY_SORTED_MODEL,
         DIRECTORY_MODEL,
-        HISTORY_MODEL
+        HISTORY_MODEL,
+        FILESYSTEM_MODEL
     };
     void setSourceModel(ModelType);
 
@@ -233,12 +236,21 @@ void tst_QCompleter::setSourceModel(ModelType type)
         completer->setModel(new QDirModel(completer));
         completer->setCompletionColumn(0);
         break;
+    case FILESYSTEM_MODEL:
+        completer->setCsvCompletion(false);
+        {
+            QFileSystemModel *m = new QFileSystemModel(completer);
+            m->setRootPath("/");
+            completer->setModel(m);
+        }
+        completer->setCompletionColumn(0);
+        break;
     default:
         qDebug() << "Invalid type";
     }
 }
 
-void tst_QCompleter::filter()
+void tst_QCompleter::filter(bool assync)
 {
     QFETCH(QString, filterText);
     QFETCH(QString, step);
@@ -249,6 +261,9 @@ void tst_QCompleter::filter()
         completer->setCompletionMode(QCompleter::UnfilteredPopupCompletion);
         return;
     }
+
+    int times = 0;
+retry:
 
     completer->setCompletionPrefix(filterText);
 
@@ -265,9 +280,13 @@ void tst_QCompleter::filter()
         completer->setCurrentRow(row);
     }
 
-    //QModelIndex si = completer->currentIndex();
-    //QCOMPARE(completer->model()->data(si).toString(), completion);
-    QVERIFY(0 == QString::compare(completer->currentCompletion(), completionText, completer->caseSensitivity()));
+    int r = QString::compare(completer->currentCompletion(), completionText, completer->caseSensitivity());
+    if (assync && r && times < 10) {
+        times++;
+        QTest::qWait(50*times);
+        goto retry;
+    }
+    QVERIFY(!r);
 }
 
 // Testing get/set functions
@@ -597,6 +616,57 @@ void tst_QCompleter::directoryModel()
 {
     filter();
 }
+
+void tst_QCompleter::fileSystemModel_data()
+{
+    delete completer;
+    completer = new CsvCompleter;
+    completer->setModelSorting(QCompleter::CaseSensitivelySortedModel);
+    setSourceModel(FILESYSTEM_MODEL);
+    completer->setCaseSensitivity(Qt::CaseInsensitive);
+
+    QTest::addColumn<QString>("filterText");
+    QTest::addColumn<QString>("step");
+    QTest::addColumn<QString>("completion");
+    QTest::addColumn<QString>("completionText");
+
+    // NOTE: Add tests carefully, ensurely the paths exist on all systems
+    // Output is the sourceText; currentCompletionText()
+
+    for (int i = 0; i < 2; i++) {
+        if (i == 1)
+            QTest::newRow("FILTERING_OFF") << "FILTERING_OFF" << "" << "" << "";
+
+#if defined(Q_OS_WINCE)
+        QTest::newRow("()") << "" << "" << "/" << "/";
+        QTest::newRow("()") << "\\Program" << "" << "Program Files" << "\\Program Files";
+#elif defined(Q_OS_WIN)
+        QTest::newRow("()") << "C" << "" << "C:" << "C:";
+        QTest::newRow("()") << "C:\\Program" << "" << "Program Files" << "C:\\Program Files";
+#elif defined(Q_OS_SYMBIAN)
+        QTest::newRow("()") << "C" << "" << "C:" << "C:";
+        QTest::newRow("()") << "C:\\re" << "" << "resource" << "C:\\resource";
+#elif defined (Q_OS_MAC)
+        QTest::newRow("()") << "" << "" << "/" << "/";
+        QTest::newRow("(/a)") << "/a" << "" << "Applications" << "/Applications";
+        QTest::newRow("(/d)") << "/d" << "" << "Developer" << "/Developer";
+#else
+        QTest::newRow("()") << "" << "" << "/" << "/";
+#if !defined(Q_OS_IRIX) && !defined(Q_OS_AIX) && !defined(Q_OS_HPUX)
+        QTest::newRow("(/h)") << "/h" << "" << "home" << "/home";
+#endif
+        QTest::newRow("(/et)") << "/et" << "" << "etc" << "/etc";
+        QTest::newRow("(/etc/passw)") << "/etc/passw" << "" << "passwd" << "/etc/passwd";
+#endif
+    }
+}
+
+void tst_QCompleter::fileSystemModel()
+{
+    //QFileSystemModel is assync.
+    filter(true);
+}
+
 
 void tst_QCompleter::changingModel_data()
 {
