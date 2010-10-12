@@ -781,8 +781,6 @@ static v8::Handle<v8::Value> QtLazyPropertySetter(v8::Local<v8::String> property
 static v8::Handle<v8::Value> QtMetaObjectPropertyGetter(v8::Local<v8::String> property,
                                                         const v8::AccessorInfo& info)
 {
-    Q_UNUSED(property);
-    Q_UNUSED(info);
     v8::Local<v8::Object> self = info.Holder();
     QtMetaObjectData *data = QtMetaObjectData::get(self);
     QScriptEnginePrivate *engine = data->engine();
