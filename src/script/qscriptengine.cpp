@@ -433,16 +433,11 @@ v8::Handle<v8::Value> QScriptEnginePrivate::metaTypeToJS(int type, const void *d
 // Returns true if conversion succeeded, false otherwise.
 bool QScriptEnginePrivate::metaTypeFromJS(v8::Handle<v8::Value> value, int type, void *data)
 {
-#if 0
-    QScriptEnginePrivate *eng = exec ? QScript::scriptEngineFromExec(exec) : 0;
-    if (eng) {
-        QScriptTypeInfo *info = eng->m_typeInfos.value(type);
-        if (info && info->demarshal) {
-            info->demarshal(eng->scriptValueFromJSCValue(value), ptr);
-            return true;
-        }
+    QScriptTypeInfo info = m_typeInfos.value(type);
+    if (info.demarshal) {
+        info.demarshal(QScriptValuePrivate::get(new QScriptValuePrivate(this, value)), data);
+        return true;
     }
-#endif
     // check if it's one of the types we know
     switch (QMetaType::Type(type)) {
     case QMetaType::Bool:
@@ -604,37 +599,23 @@ bool QScriptEnginePrivate::metaTypeFromJS(v8::Handle<v8::Value> value, int type,
         *reinterpret_cast<void* *>(data) = 0;
         return true;
     } else if (type == qMetaTypeId<QScriptValue>()) {
-        Q_UNIMPLEMENTED();
-#if 0
-        if (!eng)
-            return false;
-        *reinterpret_cast<QScriptValue*>(data) = eng->scriptValueFromJSCValue(value);
+        *reinterpret_cast<QScriptValue*>(data) = QScriptValuePrivate::get(new QScriptValuePrivate(this, value));
         return true;
-#endif
     }
-
-#if 0
     // lazy registration of some common list types
     else if (type == qMetaTypeId<QObjectList>()) {
-        if (!eng)
-            return false;
-        qScriptRegisterSequenceMetaType<QObjectList>(eng->q_func());
-        return convertValue(exec, value, type, ptr);
+        qScriptRegisterSequenceMetaType<QObjectList>(q_ptr);
+        return metaTypeFromJS(value, type, data);
     }
     else if (type == qMetaTypeId<QList<int> >()) {
-        if (!eng)
-            return false;
-        qScriptRegisterSequenceMetaType<QList<int> >(eng->q_func());
-        return convertValue(exec, value, type, ptr);
+        qScriptRegisterSequenceMetaType<QList<int> >(q_ptr);
+        return metaTypeFromJS(value, type, data);
     }
-#endif
 
-#if 0
     if (!name.isEmpty()) {
         qWarning("QScriptEngine::convert: unable to convert value to type `%s'",
                  name.constData());
     }
-#endif
     return false;
 }
 
@@ -1925,22 +1906,71 @@ QScriptValue QScriptEngine::create(int type, const void *ptr)
     return d->scriptValueFromInternal(d->metaTypeToJS(type, ptr));
 }
 
+/*!
+    \internal
+    Called from inline code prior to Qt 4.5.
+*/
 bool QScriptEngine::convert(const QScriptValue &value, int type, void *ptr)
 {
-    Q_UNUSED(value);
-    Q_UNUSED(type);
-    Q_UNUSED(ptr);
-    Q_UNIMPLEMENTED();
-    return false;
+    return convertV2(value, type, ptr);
 }
 
+/*!
+    \internal
+    \since 4.5
+    convert \a value to \a type, store the result in \a ptr
+*/
 bool QScriptEngine::convertV2(const QScriptValue &value, int type, void *ptr)
 {
-    Q_UNUSED(value);
-    Q_UNUSED(type);
-    Q_UNUSED(ptr);
-    Q_UNIMPLEMENTED();
-    return false;
+    QScriptValuePrivate *vp = QScriptValuePrivate::get(value);
+    if (vp->isJSBased()) {
+        QScriptIsolate api(vp->engine());
+        return vp->engine()->metaTypeFromJS(*vp, type, ptr);
+    } else {
+        switch (type) {
+            case QMetaType::Bool:
+                *reinterpret_cast<bool*>(ptr) = vp->toBool();
+                return true;
+            case QMetaType::Int:
+                *reinterpret_cast<int*>(ptr) = vp->toInt32();
+                return true;
+            case QMetaType::UInt:
+                *reinterpret_cast<uint*>(ptr) = vp->toUInt32();
+                return true;
+            case QMetaType::LongLong:
+                *reinterpret_cast<qlonglong*>(ptr) = vp->toInteger();
+                return true;
+            case QMetaType::ULongLong:
+                *reinterpret_cast<qulonglong*>(ptr) = vp->toInteger();
+                return true;
+            case QMetaType::Double:
+                *reinterpret_cast<double*>(ptr) = vp->toNumber();
+                return true;
+            case QMetaType::QString:
+                *reinterpret_cast<QString*>(ptr) = vp->toString();
+                return true;
+            case QMetaType::Float:
+                *reinterpret_cast<float*>(ptr) = vp->toNumber();
+                return true;
+            case QMetaType::Short:
+                *reinterpret_cast<short*>(ptr) = vp->toInt32();
+                return true;
+            case QMetaType::UShort:
+                *reinterpret_cast<unsigned short*>(ptr) = vp->toUInt16();
+                return true;
+            case QMetaType::Char:
+                *reinterpret_cast<char*>(ptr) = vp->toInt32();
+                return true;
+            case QMetaType::UChar:
+                *reinterpret_cast<unsigned char*>(ptr) = vp->toUInt16();
+                return true;
+            case QMetaType::QChar:
+                *reinterpret_cast<QChar*>(ptr) = vp->toUInt16();
+                return true;
+            default:
+                return false;
+        }
+    }
 }
 
 void QScriptEngine::registerCustomType(int type, MarshalFunction mf, DemarshalFunction df,
