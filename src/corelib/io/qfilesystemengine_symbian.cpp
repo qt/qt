@@ -244,6 +244,9 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
             data.modificationTime_ = TTime(0);
             data.entryFlags &= ~(QFileSystemMetaData::SymbianTEntryFlags);
         }
+        //files in /sys/bin on any drive are executable, even though we don't normally have permission to check whether they exist or not
+        if(absentry.filePath().midRef(1,10).compare(QLatin1String(":/sys/bin/"), Qt::CaseInsensitive) == 0)
+            data.entryFlags |= QFileSystemMetaData::ExecutePermissions;
     }
     return data.hasFlags(what);
 }
