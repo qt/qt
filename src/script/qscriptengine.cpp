@@ -1935,10 +1935,11 @@ bool QScriptEngine::convert(const QScriptValue &value, int type, void *ptr)
 bool QScriptEngine::convertV2(const QScriptValue &value, int type, void *ptr)
 {
     QScriptValuePrivate *vp = QScriptValuePrivate::get(value);
-    if (vp->isJSBased()) {
-        QScriptIsolate api(vp->engine());
+    QScriptEnginePrivate *engine = vp->engine();
+    if (engine) {
+        QScriptIsolate api(engine, QScriptIsolate::NotNullEngine);
         v8::HandleScope handleScope;
-        return vp->engine()->metaTypeFromJS(*vp, type, ptr);
+        return engine->metaTypeFromJS(*vp, type, ptr);
     } else {
         switch (type) {
             case QMetaType::Bool:
