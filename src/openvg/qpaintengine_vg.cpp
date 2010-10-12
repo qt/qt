@@ -61,11 +61,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// vgDrawGlyphs() only exists in OpenVG 1.1 and higher.
-#if !defined(OPENVG_VERSION_1_1) && !defined(QVG_NO_DRAW_GLYPHS)
-#define QVG_NO_DRAW_GLYPHS 1
-#endif
-
 // vgRenderToMask() only exists in OpenVG 1.1 and higher.
 // Also, disable masking completely if we are using the scissor to clip.
 #if !defined(OPENVG_VERSION_1_1) && !defined(QVG_NO_RENDER_TO_MASK)
@@ -75,10 +70,10 @@ QT_BEGIN_NAMESPACE
 #define QVG_NO_RENDER_TO_MASK 1
 #endif
 
-#if !defined(QVG_NO_DRAW_GLYPHS)
-
 // use the same rounding as in qrasterizer.cpp (6 bit fixed point)
 static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
+
+#if !defined(QVG_NO_DRAW_GLYPHS)
 
 Q_DECL_IMPORT extern int qt_defaultDpiX();
 Q_DECL_IMPORT extern int qt_defaultDpiY();
