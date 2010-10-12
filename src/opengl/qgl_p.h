@@ -282,8 +282,7 @@ public:
         DDSTextureCompression   = 0x00008000,
         ETC1TextureCompression  = 0x00010000,
         PVRTCTextureCompression = 0x00020000,
-        FragmentShader          = 0x00040000,
-        ES2Compatibility        = 0x00080000
+        FragmentShader          = 0x00040000
     };
     Q_DECLARE_FLAGS(Extensions, Extension)
 
