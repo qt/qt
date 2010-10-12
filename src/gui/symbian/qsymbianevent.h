@@ -95,6 +95,10 @@ inline bool QSymbianEvent::isValid() const
     return m_type != InvalidEvent;
 }
 
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QSymbianEvent *o);
+#endif
+
 QT_END_NAMESPACE
 
 QT_END_HEADER

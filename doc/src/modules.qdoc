@@ -152,6 +152,7 @@
     \module QtOpenGL
     \title QtOpenGL Module
     \ingroup modules
+	\ingroup technology-apis
 
     \brief The QtOpenGL module offers classes that make it easy to
     use OpenGL in Qt applications.
@@ -202,6 +203,7 @@
     \title QtOpenVG Module
     \since 4.6
     \ingroup modules
+	\ingroup technology-apis
 
     \brief The QtOpenVG module is a plugin that provides support for
     OpenVG painting.
@@ -352,6 +354,8 @@
         \title QtSvg Module
         \since 4.1
         \ingroup modules
+		\ingroup technology-apis
+		\ingroup best-practices
 
         \brief The QtSvg module provides classes for displaying and creating SVG files.
 
@@ -400,6 +404,7 @@
     \module QtXml
     \title QtXml Module
     \ingroup modules
+	\ingroup technology-apis
 
     \brief The QtXml module provides a stream reader and writer for
     XML documents, and C++ implementations of SAX and DOM.
@@ -424,6 +429,7 @@
     \title QtXmlPatterns Module
     \since 4.4
     \ingroup modules
+	\ingroup technology-apis
 
     \brief The QtXmlPatterns module provides support for XPath,
     XQuery, XSLT and XML Schema validation.

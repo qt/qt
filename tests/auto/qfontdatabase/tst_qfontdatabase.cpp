@@ -70,6 +70,11 @@ private slots:
     void fixedPitch_data();
     void fixedPitch();
 
+#ifdef Q_WS_MAC
+    void trickyFonts_data();
+    void trickyFonts();
+#endif
+
     void widthTwoTimes_data();
     void widthTwoTimes();
 
@@ -131,10 +136,16 @@ void tst_QFontDatabase::fixedPitch_data()
 
     QTest::newRow( "Times New Roman" ) << QString( "Times New Roman" ) << false;
     QTest::newRow( "Arial" ) << QString( "Arial" ) << false;
-    QTest::newRow( "Script" ) << QString( "Script" ) << false;
+    QTest::newRow( "Andale Mono" ) << QString( "Andale Mono" ) << true;
     QTest::newRow( "Courier" ) << QString( "Courier" ) << true;
     QTest::newRow( "Courier New" ) << QString( "Courier New" ) << true;
+#ifndef Q_WS_MAC
+    QTest::newRow( "Script" ) << QString( "Script" ) << false;
     QTest::newRow( "Lucida Console" ) << QString( "Lucida Console" ) << true;
+#else
+    QTest::newRow( "Menlo" ) << QString( "Menlo" ) << true;
+    QTest::newRow( "Monaco" ) << QString( "Monaco" ) << true;
+#endif
 }
 
 void tst_QFontDatabase::fixedPitch()
@@ -155,6 +166,28 @@ void tst_QFontDatabase::fixedPitch()
     QFontInfo fi(qfont);
     QCOMPARE(fi.fixedPitch(), fixedPitch);
 }
+
+#ifdef Q_WS_MAC
+void tst_QFontDatabase::trickyFonts_data()
+{
+    QTest::addColumn<QString>("font");
+
+    QTest::newRow( "Geeza Pro" ) << QString( "Geeza Pro" );
+}
+
+void tst_QFontDatabase::trickyFonts()
+{
+    QFETCH(QString, font);
+
+    QFontDatabase fdb;
+    if (!fdb.families().contains(font))
+        QSKIP( "Font not installed", SkipSingle);
+
+    QFont qfont(font);
+    QFontInfo fi(qfont);
+    QCOMPARE(fi.family(), font);
+}
+#endif
 
 void tst_QFontDatabase::widthTwoTimes_data()
 {

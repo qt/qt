@@ -201,7 +201,7 @@ void tst_qdeclarativesqldatabase::testQml()
     QFETCH(QString, jsfile);
 
     QString qml=
-        "import Qt 4.7\n"
+        "import QtQuick 1.0\n"
         "import \""+jsfile+"\" as JS\n"
         "Text { text: JS.test() }";
 

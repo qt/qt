@@ -116,9 +116,6 @@ void QDeclarativeTranslate::setY(qreal y)
     emit yChanged();
 }
 
-/*!
-    \internal
-*/
 void QDeclarativeTranslate::applyTo(QMatrix4x4 *matrix) const
 {
     Q_D(const QDeclarativeTranslate);

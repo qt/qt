@@ -69,12 +69,12 @@ QString QWebViewPlugin::group() const
 
 QString QWebViewPlugin::toolTip() const
 {
-    return QString(QLatin1String(toolTipC));
+    return tr(toolTipC);
 }
 
 QString QWebViewPlugin::whatsThis() const
 {
-    return QString(QLatin1String(toolTipC));
+    return tr(toolTipC);
 }
 
 QString QWebViewPlugin::includeFile() const

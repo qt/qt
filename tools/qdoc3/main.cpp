@@ -148,7 +148,7 @@ static void printHelp()
  */
 static void printVersion()
 {
-    QString s = QString(tr("qdoc version ")) + QString(QT_VERSION_STR);
+    QString s = tr("qdoc version %1").arg(QT_VERSION_STR);
     Location::information(s);
 }
 

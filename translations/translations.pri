@@ -47,8 +47,8 @@ addTsTargets(qt, -I../include -I../include/Qt \
     xmlpatterns \
 )
 addTsTargets(designer, ../tools/designer/designer.pro)
-addTsTargets(linguist, ../tools/linguist/linguist/linguist.pro)
-addTsTargets(assistant, ../tools/assistant/tools/assistant/assistant.pro)
+addTsTargets(linguist, ../tools/linguist/linguist.pro)
+addTsTargets(assistant, ../tools/assistant/tools/tools.pro)
 addTsTargets(qt_help, ../tools/assistant/lib/lib.pro)
 addTsTargets(qtconfig, ../tools/qtconfig/qtconfig.pro)
 addTsTargets(qvfb, ../tools/qvfb/qvfb.pro)

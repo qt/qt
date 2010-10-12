@@ -317,6 +317,8 @@ void tst_lconvert::roundtrips_data()
     QTest::newRow("po-xliff-po (plural-2)") << "plural-2.po" << poXlfPo << noArgs;
     QTest::newRow("po-xliff-po (plural-3)") << "plural-3.po" << poXlfPo << noArgs;
 
+    QTest::newRow("po-ts-po (references)") << "test-refs.po" << poTsPo << noArgs;
+
     QTest::newRow("ts20-ts11-ts20 (utf8)") << "codec-utf8.ts" << tsTs11Ts << noArgs;
     QTest::newRow("ts20-ts11-ts20 (cp1252)") << "codec-cp1252.ts" << tsTs11Ts << noArgs;
     QTest::newRow("ts20-ts11-ts20 (dual-encoding)") << "dual-encoding.ts" << tsTs11Ts << noArgs;

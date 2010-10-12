@@ -526,6 +526,56 @@
     platform in use. If available, it is loaded in preference over the MMF
     plugin. If the Helix plugin fails to load, the MMF plugin, if present on
     the device, will be loaded instead.
+
+    \section1 UI Performance in devices prior to Symbian^3
+
+    Qt uses the QPainter class to perform low-level painting on widgets and
+    other paint devices. QPainter provides functions to draw complex shapes,
+    aligned text and pixmaps. It can also do vector path clipping, coordinate
+    transformations and Porter-Duff composition. If the underlying graphics
+    architecture does not support all of these operations then Qt uses the
+    raster graphics system for rendering.
+
+    Most of the Symbian devices prior to Symbian^3 use a non-ScreenPlay
+    graphics architecture which does not have native support for all functions
+    provided by QPainter. In non-ScreenPlay devices Qt uses the raster
+    graphics system by default which has a performance penalty when compared
+    to native Symbian rendering.
+
+    In order to be able to perform all functions provided by QPainter, the
+    raster graphics system needs to have pixel level framebuffer access. To
+    make this possible in non-ScreenPlay devices Qt has to create an
+    additional offscreen buffer that is the target for all Qt rendering
+    operations. Qt renders the widget tree to the offscreen buffer and the
+    offscreen buffer is blitted to the framebuffer via Symbian Window Server.
+
+    The following table shows the rendering stacks of native Symbian and Qt in
+    non-ScreenPlay devices.
+
+    \table
+    \header \o Symbian
+            \o Qt
+    \row    \o \image symbian-rendering-stack-non-screenplay.png
+            \o \image symbian-qt-rendering-stack-non-screenplay.png
+    \endtable
+
+    The following diagrams show a simplified sequence of drawing a pixmap in
+    a non-ScreenPlay device.
+
+    \table
+    \header \o Symbian
+    \row    \o \image symbian-draw-pixmap-sequence.png
+    \endtable
+
+    \table
+    \header \o Qt
+    \row    \o \image symbian-qt-draw-pixmap-sequence.png
+    \endtable
+
+    When compared to a native Symbian application, Qt does an additional blit
+    to the offscreen buffer before drawing to the framebuffer. That is the
+    performance penalty which needs to be paid to get all functionality
+    provided by QPainter in non-ScreenPlay architecture.
 */
 
 /*!

@@ -44,6 +44,7 @@
 
 #include "private/qdeclarativeevents_p_p.h"
 #include <private/qdeclarativeengine_p.h>
+#include <private/qgraphicsitem_p.h>
 
 #include <qdeclarativeengine.h>
 #include <qdeclarativeopenmetaobject_p.h>
@@ -69,6 +70,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Transform QGraphicsTransform
+    \ingroup qml-transform-elements
     \since 4.7
     \brief The Transform elements provide a way of building advanced transformations on Items.
 
@@ -90,6 +92,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Translate QDeclarativeTranslate
+    \ingroup qml-transform-elements
     \since 4.7
     \brief The Translate object provides a way to move an Item without changing its x or y properties.
 
@@ -98,7 +101,7 @@ QT_BEGIN_NAMESPACE
     The following example moves the Y axis of the \l Rectangle elements while still allowing the \l Row element
     to lay the items out as if they had not been transformed:
     \qml
-    import Qt 4.7
+    import QtQuick 1.0
 
     Row {
         Rectangle {
@@ -131,6 +134,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Scale QGraphicsScale
+    \ingroup qml-transform-elements
     \since 4.7
     \brief The Scale element provides a way to scale an Item.
 
@@ -172,6 +176,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Rotation QGraphicsRotation
+    \ingroup qml-transform-elements
     \since 4.7
     \brief The Rotation object provides a way to rotate an Item.
 
@@ -225,12 +230,6 @@ QT_BEGIN_NAMESPACE
     The angle to rotate, in degrees clockwise.
 */
 
-/*!
-    \internal
-    \class QDeclarativeContents
-    \brief The QDeclarativeContents class gives access to the height and width of an item's contents.
-
-*/
 QDeclarativeContents::QDeclarativeContents(QDeclarativeItem *item) : m_item(item), m_x(0), m_y(0), m_width(0), m_height(0)
 {
     //### optimize
@@ -419,6 +418,7 @@ void QDeclarativeItemKeyFilter::componentComplete()
 
 /*!
     \qmlclass KeyNavigation QDeclarativeKeyNavigationAttached
+    \ingroup qml-basic-interaction-elements
     \since 4.7
     \brief The KeyNavigation attached property supports key navigation by arrow keys.
 
@@ -725,6 +725,7 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event, bool post)
 
 /*!
     \qmlclass Keys QDeclarativeKeysAttached
+    \ingroup qml-basic-interaction-elements
     \since 4.7
     \brief The Keys attached property provides key handling to Items.
 
@@ -830,259 +831,259 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event, bool post)
 */
 
 /*!
-    \qmlsignal Keys::onPressed(event)
+    \qmlsignal Keys::onPressed(KeyEvent event)
 
     This handler is called when a key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onReleased(event)
+    \qmlsignal Keys::onReleased(KeyEvent event)
 
     This handler is called when a key has been released. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDigit0Pressed(event)
+    \qmlsignal Keys::onDigit0Pressed(KeyEvent event)
 
     This handler is called when the digit '0' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDigit1Pressed(event)
+    \qmlsignal Keys::onDigit1Pressed(KeyEvent event)
 
     This handler is called when the digit '1' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDigit2Pressed(event)
+    \qmlsignal Keys::onDigit2Pressed(KeyEvent event)
 
     This handler is called when the digit '2' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDigit3Pressed(event)
+    \qmlsignal Keys::onDigit3Pressed(KeyEvent event)
 
     This handler is called when the digit '3' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDigit4Pressed(event)
+    \qmlsignal Keys::onDigit4Pressed(KeyEvent event)
 
     This handler is called when the digit '4' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDigit5Pressed(event)
+    \qmlsignal Keys::onDigit5Pressed(KeyEvent event)
 
     This handler is called when the digit '5' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDigit6Pressed(event)
+    \qmlsignal Keys::onDigit6Pressed(KeyEvent event)
 
     This handler is called when the digit '6' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDigit7Pressed(event)
+    \qmlsignal Keys::onDigit7Pressed(KeyEvent event)
 
     This handler is called when the digit '7' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDigit8Pressed(event)
+    \qmlsignal Keys::onDigit8Pressed(KeyEvent event)
 
     This handler is called when the digit '8' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDigit9Pressed(event)
+    \qmlsignal Keys::onDigit9Pressed(KeyEvent event)
 
     This handler is called when the digit '9' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onLeftPressed(event)
+    \qmlsignal Keys::onLeftPressed(KeyEvent event)
 
     This handler is called when the Left arrow has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onRightPressed(event)
+    \qmlsignal Keys::onRightPressed(KeyEvent event)
 
     This handler is called when the Right arrow has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onUpPressed(event)
+    \qmlsignal Keys::onUpPressed(KeyEvent event)
 
     This handler is called when the Up arrow has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDownPressed(event)
+    \qmlsignal Keys::onDownPressed(KeyEvent event)
 
     This handler is called when the Down arrow has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onAsteriskPressed(event)
+    \qmlsignal Keys::onAsteriskPressed(KeyEvent event)
 
     This handler is called when the Asterisk '*' has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onEscapePressed(event)
+    \qmlsignal Keys::onEscapePressed(KeyEvent event)
 
     This handler is called when the Escape key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onReturnPressed(event)
+    \qmlsignal Keys::onReturnPressed(KeyEvent event)
 
     This handler is called when the Return key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onEnterPressed(event)
+    \qmlsignal Keys::onEnterPressed(KeyEvent event)
 
     This handler is called when the Enter key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onDeletePressed(event)
+    \qmlsignal Keys::onDeletePressed(KeyEvent event)
 
     This handler is called when the Delete key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onSpacePressed(event)
+    \qmlsignal Keys::onSpacePressed(KeyEvent event)
 
     This handler is called when the Space key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onBackPressed(event)
+    \qmlsignal Keys::onBackPressed(KeyEvent event)
 
     This handler is called when the Back key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onCancelPressed(event)
+    \qmlsignal Keys::onCancelPressed(KeyEvent event)
 
     This handler is called when the Cancel key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onSelectPressed(event)
+    \qmlsignal Keys::onSelectPressed(KeyEvent event)
 
     This handler is called when the Select key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onYesPressed(event)
+    \qmlsignal Keys::onYesPressed(KeyEvent event)
 
     This handler is called when the Yes key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onNoPressed(event)
+    \qmlsignal Keys::onNoPressed(KeyEvent event)
 
     This handler is called when the No key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onContext1Pressed(event)
+    \qmlsignal Keys::onContext1Pressed(KeyEvent event)
 
     This handler is called when the Context1 key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onContext2Pressed(event)
+    \qmlsignal Keys::onContext2Pressed(KeyEvent event)
 
     This handler is called when the Context2 key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onContext3Pressed(event)
+    \qmlsignal Keys::onContext3Pressed(KeyEvent event)
 
     This handler is called when the Context3 key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onContext4Pressed(event)
+    \qmlsignal Keys::onContext4Pressed(KeyEvent event)
 
     This handler is called when the Context4 key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onCallPressed(event)
+    \qmlsignal Keys::onCallPressed(KeyEvent event)
 
     This handler is called when the Call key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onHangupPressed(event)
+    \qmlsignal Keys::onHangupPressed(KeyEvent event)
 
     This handler is called when the Hangup key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onFlipPressed(event)
+    \qmlsignal Keys::onFlipPressed(KeyEvent event)
 
     This handler is called when the Flip key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onMenuPressed(event)
+    \qmlsignal Keys::onMenuPressed(KeyEvent event)
 
     This handler is called when the Menu key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onVolumeUpPressed(event)
+    \qmlsignal Keys::onVolumeUpPressed(KeyEvent event)
 
     This handler is called when the VolumeUp key has been pressed. The \a event
     parameter provides information about the event.
 */
 
 /*!
-    \qmlsignal Keys::onVolumeDownPressed(event)
+    \qmlsignal Keys::onVolumeDownPressed(KeyEvent event)
 
     This handler is called when the VolumeDown key has been pressed. The \a event
     parameter provides information about the event.
@@ -1310,6 +1311,7 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
 
 /*!
     \qmlclass Item QDeclarativeItem
+    \ingroup qml-basic-visual-elements
     \since 4.7
     \brief The Item is the most basic of all visual items in QML.
 
@@ -1612,10 +1614,66 @@ void QDeclarativeItemPrivate::data_append(QDeclarativeListProperty<QObject> *pro
     while (mo && mo != &QGraphicsObject::staticMetaObject) mo = mo->d.superdata;
 
     if (mo) {
-        QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(o))->setParentItemHelper(that, 0, 0);
+        QGraphicsObject *graphicsObject = static_cast<QGraphicsObject *>(o);
+        QDeclarativeItemPrivate *contentItemPrivate = static_cast<QDeclarativeItemPrivate *>(QGraphicsItemPrivate::get(graphicsObject));
+        if (contentItemPrivate->componentComplete) {
+            graphicsObject->setParentItem(that);
+        } else {
+            contentItemPrivate->setParentItemHelper(that, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+        }
     } else {
         o->setParent(that);
     }
+}
+
+static inline int children_count_helper(QDeclarativeListProperty<QObject> *prop)
+{
+    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(prop->object));
+    return d->children.count();
+}
+
+static inline QObject *children_at_helper(QDeclarativeListProperty<QObject> *prop, int index)
+{
+    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(prop->object));
+    if (index >= 0 && index < d->children.count())
+        return d->children.at(index)->toGraphicsObject();
+    else
+        return 0;
+}
+
+static inline void children_clear_helper(QDeclarativeListProperty<QObject> *prop)
+{
+    QDeclarativeItemPrivate *d = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(static_cast<QGraphicsObject *>(prop->object)));
+    int childCount = d->children.count();
+    if (d->componentComplete) {
+        for (int index = 0 ;index < childCount; index++)
+            d->children.at(0)->setParentItem(0);
+    } else {
+        for (int index = 0 ;index < childCount; index++)
+            QGraphicsItemPrivate::get(d->children.at(0))->setParentItemHelper(0, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+    }
+}
+
+int QDeclarativeItemPrivate::data_count(QDeclarativeListProperty<QObject> *prop)
+{
+    return resources_count(prop) + children_count_helper(prop);
+}
+
+QObject *QDeclarativeItemPrivate::data_at(QDeclarativeListProperty<QObject> *prop, int i)
+{
+    int resourcesCount = resources_count(prop);
+    if (i < resourcesCount)
+        return resources_at(prop, i);
+    const int j = i - resourcesCount;
+    if (j < children_count_helper(prop))
+        return children_at_helper(prop, j);
+    return 0;
+}
+
+void QDeclarativeItemPrivate::data_clear(QDeclarativeListProperty<QObject> *prop)
+{
+    resources_clear(prop);
+    children_clear_helper(prop);
 }
 
 QObject *QDeclarativeItemPrivate::resources_at(QDeclarativeListProperty<QObject> *prop, int index)
@@ -1637,6 +1695,13 @@ int QDeclarativeItemPrivate::resources_count(QDeclarativeListProperty<QObject> *
     return prop->object->children().count();
 }
 
+void QDeclarativeItemPrivate::resources_clear(QDeclarativeListProperty<QObject> *prop)
+{
+    const QObjectList children = prop->object->children();
+    for (int index = 0; index < children.count(); index++)
+        children.at(index)->setParent(0);
+}
+
 int QDeclarativeItemPrivate::transform_count(QDeclarativeListProperty<QGraphicsTransform> *list)
 {
     QGraphicsObject *object = qobject_cast<QGraphicsObject *>(list->object);
@@ -1651,7 +1716,7 @@ int QDeclarativeItemPrivate::transform_count(QDeclarativeListProperty<QGraphicsT
 void QDeclarativeItemPrivate::transform_append(QDeclarativeListProperty<QGraphicsTransform> *list, QGraphicsTransform *item)
 {
     QGraphicsObject *object = qobject_cast<QGraphicsObject *>(list->object);
-    if (object) // QGraphicsItem applies the list in the wrong order, so we prepend.
+    if (object && item) // QGraphicsItem applies the list in the wrong order, so we prepend.
         QGraphicsItemPrivate::get(object)->prependGraphicsTransform(item);
 }
 
@@ -1691,8 +1756,8 @@ void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeN
     \qmlproperty list<Object> Item::data
     \default
 
-    The data property is allows you to freely mix visual children and resources
-    of an item.  If you assign a visual item to the data list it becomes
+    The data property allows you to freely mix visual children and resources
+    in an item.  If you assign a visual item to the data list it becomes
     a child and if you assign any other object type, it is added as a resource.
 
     So you can write:
@@ -1721,10 +1786,13 @@ void QDeclarativeItemPrivate::parentProperty(QObject *o, void *rv, QDeclarativeN
     specify it.
  */
 
-/*! \internal */
 QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::data()
 {
-    return QDeclarativeListProperty<QObject>(q_func(), 0, QDeclarativeItemPrivate::data_append);
+    return QDeclarativeListProperty<QObject>(q_func(), 0, QDeclarativeItemPrivate::data_append,
+                                             QDeclarativeItemPrivate::data_count,
+                                             QDeclarativeItemPrivate::data_at,
+                                             QDeclarativeItemPrivate::data_clear
+                                             );
 }
 
 /*!
@@ -1883,6 +1951,12 @@ void QDeclarativeItem::geometryChanged(const QRectF &newGeometry,
         }
     }
 
+    for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
+        const QDeclarativeItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
+        if (change.types & QDeclarativeItemPrivate::Geometry)
+            change.listener->itemGeometryChanged(this, newGeometry, oldGeometry);
+    }
+
     if (newGeometry.x() != oldGeometry.x())
         emit xChanged();
     if (newGeometry.width() != oldGeometry.width())
@@ -1891,12 +1965,6 @@ void QDeclarativeItem::geometryChanged(const QRectF &newGeometry,
         emit yChanged();
     if (newGeometry.height() != oldGeometry.height())
         emit heightChanged();
-
-    for(int ii = 0; ii < d->changeListeners.count(); ++ii) {
-        const QDeclarativeItemPrivate::ChangeListener &change = d->changeListeners.at(ii);
-        if (change.types & QDeclarativeItemPrivate::Geometry)
-            change.listener->itemGeometryChanged(this, newGeometry, oldGeometry);
-    }
 }
 
 void QDeclarativeItemPrivate::removeItemChangeListener(QDeclarativeItemChangeListener *listener, ChangeTypes types)
@@ -2409,12 +2477,13 @@ void QDeclarativeItemPrivate::focusChanged(bool flag)
     emit q->focusChanged(flag);
 }
 
-/*! \internal */
 QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::resources()
 {
     return QDeclarativeListProperty<QObject>(q_func(), 0, QDeclarativeItemPrivate::resources_append,
                                              QDeclarativeItemPrivate::resources_count,
-                                             QDeclarativeItemPrivate::resources_at);
+                                             QDeclarativeItemPrivate::resources_at,
+                                             QDeclarativeItemPrivate::resources_clear
+                                             );
 }
 
 /*!
@@ -2434,7 +2503,6 @@ QDeclarativeListProperty<QObject> QDeclarativeItemPrivate::resources()
   \sa {qmlstate}{States}
 */
 
-/*! \internal */
 QDeclarativeListProperty<QDeclarativeState> QDeclarativeItemPrivate::states()
 {
     return _states()->statesProperty();
@@ -2458,7 +2526,6 @@ QDeclarativeListProperty<QDeclarativeState> QDeclarativeItemPrivate::states()
 */
 
 
-/*! \internal */
 QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transitions()
 {
     return _states()->transitionsProperty();
@@ -2487,7 +2554,7 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transi
 
 /*!
   \qmlproperty bool Item::clip
-  This property holds whether clipping is enabled.
+  This property holds whether clipping is enabled. The default clip value is \c false.
 
   If clipping is enabled, an item will clip its own painting, as well
   as the painting of its children, to its bounding rectangle.
@@ -2497,9 +2564,9 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transi
 
 /*!
   \property QDeclarativeItem::clip
-  This property holds whether clipping is enabled.
+  This property holds whether clipping is enabled. The default clip value is \c false.
 
-  if clipping is enabled, an item will clip its own painting, as well
+  If clipping is enabled, an item will clip its own painting, as well
   as the painting of its children, to its bounding rectangle. If you set
   clipping during an item's paint operation, remember to re-set it to 
   prevent clipping the rest of your scene.
@@ -2531,7 +2598,6 @@ QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeItemPrivate::transi
   \sa {qmlstates}{States}
 */
 
-/*! \internal */
 QString QDeclarativeItemPrivate::state() const
 {
     if (!_stateGroup)
@@ -2540,7 +2606,6 @@ QString QDeclarativeItemPrivate::state() const
         return _stateGroup->state();
 }
 
-/*! \internal */
 void QDeclarativeItemPrivate::setState(const QString &state)
 {
     _states()->setState(state);

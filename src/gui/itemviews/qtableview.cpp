@@ -2159,7 +2159,7 @@ int QTableView::sizeHintForRow(int row) const
             option.rect.setWidth(columnWidth(index.column()));
         }
         
-        QWidget *editor = d->editorForIndex(index).editor;
+        QWidget *editor = d->editorForIndex(index).widget.data();
         if (editor && d->persistent.contains(editor)) {
             hint = qMax(hint, editor->sizeHint().height());
             int min = editor->minimumSize().height();
@@ -2212,7 +2212,7 @@ int QTableView::sizeHintForColumn(int column) const
             continue;
         index = d->model->index(logicalRow, column, d->root);
         
-        QWidget *editor = d->editorForIndex(index).editor;
+        QWidget *editor = d->editorForIndex(index).widget.data();
         if (editor && d->persistent.contains(editor)) {
             hint = qMax(hint, editor->sizeHint().width());
             int min = editor->minimumSize().width();

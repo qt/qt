@@ -193,15 +193,15 @@ DEFINES += USE_MY_STUFF QT_DLL
 
 
 //! [28]
-myFiles.sources = path\*.png
+myFiles.files = path\*.png
 DEPLOYMENT += myFiles
 //! [28]
 
 
 //! [29]
-myFiles.sources = path\file1.ext1 path2\file2.ext1 path3\*
+myFiles.files = path\file1.ext1 path2\file2.ext1 path3\*
 myFiles.path = \some\path\on\device
-someother.sources = C:\additional\files\*
+someother.files = C:\additional\files\*
 someother.path = \myFiles\path2
 DEPLOYMENT += myFiles someother
 //! [29]
@@ -849,12 +849,12 @@ CONFIG(debug, debug|release) {
 //! [127]
 
 //! [128]
-customplugin.sources = customimageplugin.dll
-customplugin.sources += c:\myplugins\othercustomimageplugin.dll
+customplugin.files = customimageplugin.dll
+customplugin.files += c:\myplugins\othercustomimageplugin.dll
 customplugin.path = imageformats
-dynamiclibrary.sources = mylib.dll helper.exe
+dynamiclibrary.files = mylib.dll helper.exe
 dynamiclibrary.path = \sys\bin
-globalplugin.sources = someglobalimageplugin.dll
+globalplugin.files = someglobalimageplugin.dll
 globalplugin.path = \resource\qt\plugins\imageformats
 DEPLOYMENT += customplugin dynamiclibrary globalplugin
 //! [128]
@@ -923,7 +923,7 @@ MMP_RULES += myIfdefBlock
 //! [139]
 
 //! [140]
-somelib.sources = somelib.dll
+somelib.files = somelib.dll
 somelib.path = \sys\bin
 somelib.pkg_prerules = "(0x12345678), 2, 2, 0, {\"Some Package\"}" \
                   "(0x87654321), 1, *, * ~ 2, 2, 0, {\"Some Other Package\"}"
@@ -1002,3 +1002,30 @@ symbian {
 RSS_RULES.service_list += "uid = 0x12345678; datatype_list = \{\}; opaque_data = r_my_icon;"
 RSS_RULES.footer +="RESOURCE CAPTION_AND_ICON_INFO r_my_icon \{ icon_file =\"$$PWD/my_icon.svg\"; \}"
 //! [151]
+
+//! [152]
+my_exports = \
+    "foo.h /epoc32/include/mylib/foo.h" \
+    "bar.h /epoc32/include/mylib/bar.h"
+BLD_INF_RULES.prj_exports += my_exports
+//! [152]
+
+//! [153]
+my_note.pkg_postrules.installer = "\"myinstallnote.txt\" - \"\", FILETEXT, TEXTCONTINUE"
+DEPLOYMENT += my_note
+//! [153]
+
+//! [154]
+DEPLOYMENT -= default_bin_deployment default_resource_deployment default_reg_deployment
+//! [154]
+
+//! [155]
+default_bin_deployment.flags += FILERUN RUNINSTALL
+dep_note.files = install_note.txt
+dep_note.flags = FILETEXT TEXTEXIT
+DEPLOYMENT += dep_note
+//! [155]
+
+//! [156]
+DEPLOYMENT.display_name = My Qt App
+//! [156]

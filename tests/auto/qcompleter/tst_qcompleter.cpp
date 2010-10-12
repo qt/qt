@@ -1324,7 +1324,7 @@ void tst_QCompleter::task253125_lineEditCompletion()
 #endif
     QTest::qWait(10);
     QApplication::setActiveWindow(&edit);
-    QTRY_COMPARE(QApplication::activeWindow(), &edit);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&edit));
 
     QTest::keyClick(&edit, 'i');
     QCOMPARE(edit.completer()->currentCompletion(), QString("iota"));
@@ -1362,7 +1362,7 @@ void tst_QCompleter::task247560_keyboardNavigation()
 
     QTest::qWait(10);
     QApplication::setActiveWindow(&edit);
-    QTRY_COMPARE(QApplication::activeWindow(), &edit);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&edit));
 
     QTest::keyClick(&edit, 'r');
     QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);

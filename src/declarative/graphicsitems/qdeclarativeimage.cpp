@@ -51,32 +51,46 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmlclass Image QDeclarativeImage
     \since 4.7
-    \brief The Image element allows you to add bitmaps to a scene.
+    \ingroup qml-basic-visual-elements
+    \brief The Image element displays an image in a declarative user interface
     \inherits Item
 
-    An Image element displays a specified \l source image:
+    The Image element is used to display images in a declarative user interface.
 
-    \table
-    \row
-    \o \image declarative-qtlogo.png
-    \o \qml
-        import Qt 4.7
+    The source of the image is specified as a URL using the \l source property.
+    Images can be supplied in any of the standard image formats supported by Qt,
+    including bitmap formats such as PNG and JPEG, and vector graphics formats
+    such as SVG. If you need to display animated images, use the \l AnimatedImage
+    element.
 
-        Image { source: "qtlogo.png" }
-    \endqml
-    \endtable
+    If the \l{Item::width}{width} and \l{Item::height}{height} properties are not
+    specified, the Image element automatically uses the size of the loaded image.
+    By default, specifying the width and height of the element causes the image
+    to be scaled to that size. This behavior can be changed by setting the
+    \l fillMode property, allowing the image to be stretched and tiled instead.
 
-    If the \l {Item::width}{width} and \l{Item::height}{height} properties are not specified,
-    the Image element is automatically sized to the loaded image. Image elements can be 
-    stretched and tiled using the \l fillMode property.
+    \section1 Example Usage
+
+    The following example shows the simplest usage of the Image element.
+
+    \snippet doc/src/snippets/declarative/image.qml document
+
+    \beginfloatleft
+    \image declarative-qtlogo.png
+    \endfloat
+
+    \clearfloat
+
+    \section1 Performance
 
     By default, locally available images are loaded immediately, and the user interface
     is blocked until loading is complete. If a large image is to be loaded, it may be
     preferable to load the image in a low priority thread, by enabling the \l asynchronous
     property.
 
-    If the image is from a network rather than a local resource, it is automatically loaded
-    asynchronously, and the \l progress and \l status properties are updated as appropriate.  
+    If the image is obtained from a network rather than a local resource, it is
+    automatically loaded asynchronously, and the \l progress and \l status properties
+    are updated as appropriate.
 
     Images are cached and shared internally, so if several Image elements have the same \l source,
     only one copy of the image will be loaded.
@@ -87,19 +101,6 @@ QT_BEGIN_NAMESPACE
     that is loaded from external sources or provided by the user.
 
     \sa {declarative/imageelements/image}{Image example}, QDeclarativeImageProvider
-*/
-
-/*!
-    \internal
-    \class QDeclarativeImage Image
-    \brief The QDeclarativeImage class provides an image item that you can add to a QDeclarativeView.
-
-    Example:
-    \qml
-    Image { source: "pics/star.png" }
-    \endqml
-
-    A QDeclarativeImage object can be instantiated in QML using the tag \l Image.
 */
 
 QDeclarativeImage::QDeclarativeImage(QDeclarativeItem *parent)
@@ -252,6 +253,15 @@ void QDeclarativeImage::setFillMode(FillMode mode)
     emit fillModeChanged();
 }
 
+/*!
+
+    \qmlproperty real Image::paintedWidth
+    \qmlproperty real Image::paintedHeight
+
+    These properties hold the size of the image that is actually painted.
+    In most cases it is the same as \c width and \c height, but when using a \c fillMode like
+    \c PreserveAspectFit \c paintedWidth or \c paintedHeight can be smaller than \c width and \c height.
+*/
 qreal QDeclarativeImage::paintedWidth() const
 {
     Q_D(const QDeclarativeImage);
@@ -329,7 +339,7 @@ qreal QDeclarativeImage::paintedHeight() const
     Unlike the \l {Item::}{width} and \l {Item::}{height} properties, which scale
     the painting of the image, this property sets the actual number of pixels
     stored for the loaded image so that large images do not use more
-    memory than necessary. For example, this ensures the image is memory is no
+    memory than necessary. For example, this ensures the image in memory is no
     larger than 1024x1024 pixels, regardless of the Image's \l {Item::}{width} and 
     \l {Item::}{height} values:
 

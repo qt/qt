@@ -123,8 +123,8 @@ class Translator
 public:
     Translator();
 
-    bool load(const QString &filename, ConversionData &err, const QString &format /*= "auto"*/);
-    bool save(const QString &filename, ConversionData &err, const QString &format /*= "auto"*/) const;
+    bool load(const QString &filename, ConversionData &err, const QString &format /* = "auto" */);
+    bool save(const QString &filename, ConversionData &err, const QString &format /* = "auto" */) const;
     bool release(QFile *iod, ConversionData &cd) const;
 
     int find(const TranslatorMessage &msg) const;

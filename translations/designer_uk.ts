@@ -25,6 +25,49 @@
     </message>
 </context>
 <context>
+    <name>AbstractItemEditor</name>
+    <message>
+        <source>Selectable</source>
+        <translation>Можна вибирати</translation>
+    </message>
+    <message>
+        <source>Editable</source>
+        <translation>Можна редагувати</translation>
+    </message>
+    <message>
+        <source>DragEnabled</source>
+        <translation>Можна тягти</translation>
+    </message>
+    <message>
+        <source>DropEnabled</source>
+        <translation>Можна кидати</translation>
+    </message>
+    <message>
+        <source>UserCheckable</source>
+        <translation>Користувач може позначати</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>Увімкнено</translation>
+    </message>
+    <message>
+        <source>Tristate</source>
+        <translation>Три стани</translation>
+    </message>
+    <message>
+        <source>Unchecked</source>
+        <translation>Не позначено</translation>
+    </message>
+    <message>
+        <source>PartiallyChecked</source>
+        <translation>Частково позначено</translation>
+    </message>
+    <message>
+        <source>Checked</source>
+        <translation>Позначено</translation>
+    </message>
+</context>
+<context>
     <name>AddLinkDialog</name>
     <message>
         <source>Insert Link</source>
@@ -62,7 +105,7 @@
     </message>
     <message>
         <source>The font file &apos;%1&apos; could not be loaded.</source>
-        <translation>Неможливо завантажити файл шрифт &apos;%1&apos;.</translation>
+        <translation>Не вдалось завантажити файл шрифт &apos;%1&apos;.</translation>
     </message>
     <message>
         <source>&apos;%1&apos; is not a valid font id.</source>
@@ -74,7 +117,7 @@
     </message>
     <message>
         <source>The font &apos;%1&apos; (%2) could not be unloaded.</source>
-        <translation>Неможливо вивантажити шрифт &apos;%1&apos; (%2).</translation>
+        <translation>Не вдалось вивантажити шрифт &apos;%1&apos; (%2).</translation>
     </message>
 </context>
 <context>
@@ -639,7 +682,7 @@
     </message>
     <message>
         <source>The converted file could not be read.</source>
-        <translation>Неможливо прочитати конвертований файл.</translation>
+        <translation>Не вдалось прочитати конвертований файл.</translation>
     </message>
     <message>
         <source>This file was created using Designer from Qt-%1 and will be converted to a new form by Qt Designer.</source>
@@ -652,12 +695,12 @@
     <message>
         <source>This file was created using Designer from Qt-%1 and could not be read:
 %2</source>
-        <translation>Неможливо прочитати файл, бо його було створено з використанням Designer з Qt-%1:
+        <translation>Не вдалось прочитати файл, бо його було створено з використанням Designer з Qt-%1:
 %2</translation>
     </message>
     <message>
         <source>Please run it through &lt;b&gt;uic3&amp;nbsp;-convert&lt;/b&gt; to convert it to Qt-4&apos;s ui format.</source>
-        <translation>Будь-ласка, пропустіть його через &lt;b&gt;uic3&amp;nbsp;-convert&lt;/b&gt;, щоб сконвертувати до формату Qt-4.</translation>
+        <translation>Будь ласка, пропустіть його через &lt;b&gt;uic3&amp;nbsp;-convert&lt;/b&gt;, щоб сконвертувати до формату Qt-4.</translation>
     </message>
     <message>
         <source>This file cannot be read because the extra info extension failed to load.</source>
@@ -672,14 +715,14 @@
     </message>
     <message>
         <source>&apos;%1&apos; could not be converted to an enumeration value of type &apos;%2&apos;.</source>
-        <translation>Неможливо сконвертувати &apos;%1&apos;до типу значень переліку &apos;%2&apos;.</translation>
+        <translation>Не вдалось сконвертувати &apos;%1&apos;до типу значень переліку &apos;%2&apos;.</translation>
     </message>
 </context>
 <context>
     <name>DesignerMetaFlags</name>
     <message>
         <source>&apos;%1&apos; could not be converted to a flag value of type &apos;%2&apos;.</source>
-        <translation>&apos;%1&apos; не можу бути сконвертовано до прапорця типу &apos;%2&apos;.</translation>
+        <translation>Не вдалось перетворити &apos;%1&apos; прапорця типу &apos;%2&apos;.</translation>
     </message>
 </context>
 <context>
@@ -721,19 +764,19 @@
     <name>DeviceSkin</name>
     <message>
         <source>The image file &apos;%1&apos; could not be loaded.</source>
-        <translation>Неможливо завантажити файл зображення &apos;%1&apos;.</translation>
+        <translation>Не вдалось завантажити файл зображення &apos;%1&apos;.</translation>
     </message>
     <message>
         <source>The skin directory &apos;%1&apos; does not contain a configuration file.</source>
-        <translation>Тека обкладинки &apos;%1&apos; не містить конфігураційного файлу.</translation>
+        <translation>Тека обкладинки &apos;%1&apos; не містить файлу налаштувань.</translation>
     </message>
     <message>
         <source>The skin configuration file &apos;%1&apos; could not be opened.</source>
-        <translation>Неможливо відкрити конфігураційний файл &apos;%1&apos;.</translation>
+        <translation>Не вдалось відкрити файл налаштувань &apos;%1&apos;.</translation>
     </message>
     <message>
         <source>The skin configuration file &apos;%1&apos; could not be read: %2</source>
-        <translation>Неможливо прочитати конфігураційний файл &apos;%1&apos;: %2</translation>
+        <translation>Не вдалось прочитати файл налаштувань &apos;%1&apos;: %2</translation>
     </message>
     <message>
         <source>Syntax error: %1</source>
@@ -761,7 +804,7 @@
     </message>
     <message>
         <source>Mismatch in number of areas, expected %1, got %2.</source>
-        <translation>Не співпадає кількість областей, очікувалось %1, отримано %2.</translation>
+        <translation>Не збігається кількість областей, очікувалось %1, отримано %2.</translation>
     </message>
 </context>
 <context>
@@ -852,6 +895,7 @@ Parsing grid layout minimum size values</extracomment>
     <name>FormEditorOptionsPage</name>
     <message>
         <source>%1 %</source>
+        <extracomment>Zoom percentage</extracomment>
         <translation>%1 %</translation>
     </message>
     <message>
@@ -1044,11 +1088,11 @@ Parsing grid layout minimum size values</extracomment>
     </message>
     <message>
         <source>A temporary form file could not be created in %1.</source>
-        <translation>Неможливо створити тимчасовий файл форми в %1.</translation>
+        <translation>Не вдалось створити тимчасовий файл форми в %1.</translation>
     </message>
     <message>
         <source>The temporary form file %1 could not be written.</source>
-        <translation>Неможливо записати тимчасовий файл форми %1.</translation>
+        <translation>Не вдалось записати тимчасовий файл форми %1.</translation>
     </message>
 </context>
 <context>
@@ -1179,7 +1223,7 @@ This indicates an inconsistency in the ui-file.</source>
     </message>
     <message>
         <source>While applying tab stops: The widget &apos;%1&apos; could not be found.</source>
-        <translation>Під час застосування позицій табуляції: Неможливо знайти віджет &apos;%1&apos;.</translation>
+        <translation>Під час застосування позицій табуляції: Не вдалось знайти віджет &apos;%1&apos;.</translation>
     </message>
     <message>
         <source>Invalid QButtonGroup reference &apos;%1&apos; referenced by &apos;%2&apos;.</source>
@@ -1464,13 +1508,13 @@ Do you want to update the file location or generate a new form?</source>
     </message>
     <message>
         <source>Could not open file</source>
-        <translation>Неможливо відкрити файл</translation>
+        <translation>Не вдалось відкрити файл</translation>
     </message>
     <message>
         <source>The file %1 could not be opened.
 Reason: %2
 Would you like to retry or select a different file?</source>
-        <translation>Неможливо відкрити файл %1.
+        <translation>Не вдалось відкрити файл %1.
 Причина: %2
 Чи не хотіли б ви спробувати ще раз чи вибрати інший файл?</translation>
     </message>
@@ -1480,7 +1524,7 @@ Would you like to retry or select a different file?</source>
     </message>
     <message>
         <source>Could not write file</source>
-        <translation>Неможливо записати файл</translation>
+        <translation>Не вдалось записати файл</translation>
     </message>
     <message>
         <source>It was not possible to write the entire file %1 to disk.
@@ -1500,15 +1544,15 @@ Would you like to retry?</source>
     </message>
     <message>
         <source>The backup file %1 could not be written.</source>
-        <translation>Неможливо записати файл резервної копії %1.</translation>
+        <translation>Не вдалось записати файл резервної копії %1.</translation>
     </message>
     <message>
         <source>The backup directory %1 could not be created.</source>
-        <translation>Неможливо створити теку резервних копій %1.</translation>
+        <translation>Не вдалось створити теку резервних копій %1.</translation>
     </message>
     <message>
         <source>The temporary backup directory %1 could not be created.</source>
-        <translation>Неможливо створити тимчасову теку резервних копій %1.</translation>
+        <translation>Не вдалось створити тимчасову теку резервних копій %1.</translation>
     </message>
     <message>
         <source>Preview failed</source>
@@ -1528,11 +1572,11 @@ Would you like to retry?</source>
     </message>
     <message>
         <source>The file %1 could not be written.</source>
-        <translation>Неможливо записати файл %1.</translation>
+        <translation>Не вдалось записати файл %1.</translation>
     </message>
     <message>
         <source>Please close all forms to enable the loading of additional fonts.</source>
-        <translation>Будь-ласка, закрийте усі форми, щоб дозволити завантаження додаткових шрифтів.</translation>
+        <translation>Будь ласка, закрийте усі форми, щоб дозволити завантаження додаткових шрифтів.</translation>
     </message>
     <message>
         <source>Printed %1.</source>
@@ -1693,7 +1737,7 @@ Would you like to retry?</source>
     </message>
     <message>
         <source>The class attribute for the class %1 does not match the class name %2.</source>
-        <translation>Атрибут &quot;клас&quot; для класу %1 не співпадає з іменем класу %2.</translation>
+        <translation>Атрибут &quot;клас&quot; для класу %1 не збігається з іменем класу %2.</translation>
     </message>
 </context>
 <context>
@@ -1735,7 +1779,7 @@ Container pages should only be added by specifying them in XML returned by the d
     <name>QDesignerSharedSettings</name>
     <message>
         <source>The template path %1 could not be created.</source>
-        <translation>Неможливо створити шлях до шаблону %1.</translation>
+        <translation>Не вдалось створити шлях до шаблону %1.</translation>
     </message>
     <message>
         <source>An error has been encountered while parsing device profile XML: %1</source>
@@ -1845,7 +1889,7 @@ Container pages should only be added by specifying them in XML returned by the d
     </message>
     <message>
         <source>The file &lt;b&gt;%1&lt;/b&gt; could not be opened.</source>
-        <translation>Неможливо відкрити файл &lt;b&gt;%1&lt;/b&gt;.</translation>
+        <translation>Не вдалось відкрити файл &lt;b&gt;%1&lt;/b&gt;.</translation>
     </message>
     <message>
         <source>The file &lt;b&gt;%1&lt;/b&gt; is not a valid Designer UI file.</source>
@@ -1877,11 +1921,11 @@ Empty class name passed to widget factory method</extracomment>
     </message>
     <message>
         <source>The set-type property %1 could not be read.</source>
-        <translation>Неможливо прочитати властивість %1 типу &quot;множина&quot;.</translation>
+        <translation>Не вдалось прочитати властивість %1 типу &quot;множина&quot;.</translation>
     </message>
     <message>
         <source>The enumeration-type property %1 could not be read.</source>
-        <translation>Неможливо прочитати властивість %1 типу &quot;перелік&quot;.</translation>
+        <translation>Не вдалось прочитати властивість %1 типу &quot;перелік&quot;.</translation>
     </message>
     <message>
         <source>Reading properties of the type %1 is not supported yet.</source>
@@ -1889,7 +1933,7 @@ Empty class name passed to widget factory method</extracomment>
     </message>
     <message>
         <source>The property %1 could not be written. The type %2 is not supported yet.</source>
-        <translation>Неможливо записати властивість %1. Тип %2 ще не підтримується.</translation>
+        <translation>Не вдалось записати властивість %1. Тип %2 ще не підтримується.</translation>
     </message>
     <message>
         <source>The enumeration-value &apos;%1&apos; is invalid. The default value &apos;%2&apos; will be used instead.</source>
@@ -2513,6 +2557,10 @@ Empty class name passed to widget factory method</extracomment>
 <context>
     <name>QtLocalePropertyManager</name>
     <message>
+        <source>&lt;Invalid&gt;</source>
+        <translation>&lt;Неправильний&gt;</translation>
+    </message>
+    <message>
         <source>%1, %2</source>
         <translation>%1, %2</translation>
     </message>
@@ -2736,18 +2784,18 @@ This could for example be a language extension like &quot;_de&quot;.</source>
     </message>
     <message>
         <source>&lt;p&gt;The selected file:&lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;&lt;p&gt;is outside of the current resource file&apos;s directory:&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Please select another path within this directory.&lt;p&gt;</source>
-        <translation>&lt;p&gt;Обраний файл&lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;&lt;p&gt;знаходиться поза межами батьківської теки поточного файлу ресурсів.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;Будь-ласка, оберіть інший шлях всередині цієї теки.&lt;p&gt;&lt;p&gt;</translation>
+        <translation>&lt;p&gt;Обраний файл&lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;&lt;p&gt;знаходиться поза межами батьківської теки поточного файлу ресурсів.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;Будь ласка, оберіть інший шлях всередині цієї теки.&lt;p&gt;&lt;p&gt;</translation>
     </message>
     <message>
         <source>Could not overwrite %1.</source>
-        <translation>Неможливо перезаписати %1.</translation>
+        <translation>Не вдалось перезаписати %1.</translation>
     </message>
     <message>
         <source>Could not copy
 %1
 to
 %2</source>
-        <translation>Неможливо копіювати
+        <translation>Не вдалось скопіювати
 %1
 до
 %2</translation>
@@ -2764,7 +2812,7 @@ to
     </message>
     <message>
         <source>Could not write %1: %2</source>
-        <translation>Неможливо записати %1: %2</translation>
+        <translation>Не вдалось записати %1: %2</translation>
     </message>
     <message>
         <source>Edit Resources</source>
@@ -3480,11 +3528,11 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <source>A temporary form file could not be created in %1.</source>
-        <translation>Неможливо створити тимчасовий файл форми в %1.</translation>
+        <translation>Не вдалось створити тимчасовий файл форми в %1.</translation>
     </message>
     <message>
         <source>The temporary form file %1 could not be written.</source>
-        <translation>Неможливо записати тимчасовий файл форми %1.</translation>
+        <translation>Не вдалось записати тимчасовий файл форми %1.</translation>
     </message>
     <message>
         <source>%1 - [Code]</source>
@@ -3500,11 +3548,11 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <source>The file %1 could not be opened: %2</source>
-        <translation>Неможливо відкрити файл %1: %2</translation>
+        <translation>Не вдалось відкрити файл %1: %2</translation>
     </message>
     <message>
         <source>The file %1 could not be written: %2</source>
-        <translation>Неможливо записати файл %1: %2</translation>
+        <translation>Не вдалось записати файл %1: %2</translation>
     </message>
     <message>
         <source>%1 - Error</source>
@@ -3951,7 +3999,7 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <source>Cannot paste widgets. Designer could not find a container without a layout to paste into.</source>
-        <translation>Неможливо вставити віджети. Qt Designer не зміг знайти контейнер без розташування для вставки.</translation>
+        <translation>Неможливо вставити віджети. Qt Designer&apos;у не вдалось знайти контейнер без розташування для вставки.</translation>
     </message>
     <message>
         <source>Break the layout of the container you want to paste into, select this container and then paste again.</source>
@@ -4150,7 +4198,7 @@ Do you want overwrite the template?</source>
     <message>
         <source>Could not create form preview</source>
         <comment>Title of warning message box</comment>
-        <translation>Неможливо створити попередній перегляд форми</translation>
+        <translation>Не вдалось створити попередній перегляд форми</translation>
     </message>
     <message>
         <source>Form Settings - %1</source>
@@ -4225,7 +4273,7 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <source>The file &apos;%1&apos; could not be read: %2</source>
-        <translation>Неможливо прочитати файл &apos;%1&apos;: %2</translation>
+        <translation>Не вдалось прочитати файл &apos;%1&apos;: %2</translation>
     </message>
     <message>
         <source>Choose a Pixmap</source>
@@ -4480,13 +4528,13 @@ Do you want overwrite the template?</source>
         <source>The current object already has a property named &apos;%1&apos;.
 Please select another, unique one.</source>
         <translation>Поточний об&apos;єкт вже має властивість з іменем &apos;%1&apos;.
-Будь-ласка, оберіть інше, унікальне ім&apos;я.</translation>
+Будь ласка, оберіть інше, унікальне ім&apos;я.</translation>
     </message>
     <message>
         <source>The &apos;_q_&apos; prefix is reserved for the Qt library.
 Please select another name.</source>
         <translation>Префікс &apos;_q_&apos; зарезервовано для бібліотеки Qt.
-Будь-ласка, оберіть інше ім&apos;я.</translation>
+Будь ласка, оберіть інше ім&apos;я.</translation>
     </message>
 </context>
 <context>
@@ -4740,8 +4788,16 @@ Please select another name.</source>
         <translation>Шукати нові встановлені додатки користувацьких віджетів.</translation>
     </message>
     <message>
+        <source>Loaded Plugins</source>
+        <translation>Завантажені додатки</translation>
+    </message>
+    <message>
+        <source>Failed Plugins</source>
+        <translation>Проблемні додатки</translation>
+    </message>
+    <message>
         <source>Qt Designer couldn&apos;t find any plugins</source>
-        <translation>Qt Designer не зміг знайти жодного додатку</translation>
+        <translation>Qt Designer&apos;у не вдалось знайти жодного додатку</translation>
     </message>
     <message>
         <source>Qt Designer found the following plugins</source>
@@ -5014,7 +5070,7 @@ Class: %2</source>
     </message>
     <message>
         <source>The specified qrc file &lt;p&gt;&lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;could not be found. Do you want to update the file location?&lt;/p&gt;</source>
-        <translation>Неможливо знайти вказаний файл qrc &lt;p&gt;&lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;. Бажаєте оновити розташування файлу?&lt;/p&gt;</translation>
+        <translation>Не вдалось знайти вказаний файл qrc &lt;p&gt;&lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;. Бажаєте оновити розташування файлу?&lt;/p&gt;</translation>
     </message>
     <message>
         <source>New location for %1</source>
@@ -5152,7 +5208,7 @@ Class: %2</source>
     </message>
     <message>
         <source>A widget element could not be found.</source>
-        <translation>Неможливо знайти елемент віджета.</translation>
+        <translation>Не вдалось знайти елемент віджета.</translation>
     </message>
 </context>
 <context>
@@ -5715,7 +5771,7 @@ Class: %2</source>
     <name>qdesigner_internal::WidgetDataBase</name>
     <message>
         <source>A custom widget plugin whose class name (%1) matches that of an existing class has been found.</source>
-        <translation>Користувацький додаток віджета з іменем класу (%1) співпадає з існуючим класом.</translation>
+        <translation>Користувацький додаток віджета з іменем класу (%1) збігається з існуючим класом.</translation>
     </message>
 </context>
 <context>
@@ -5733,7 +5789,7 @@ Class: %2</source>
     </message>
     <message>
         <source>A class name mismatch occurred when creating a widget using the custom widget factory registered for widgets of class %1. It returned a widget of class %2.</source>
-        <translation>Сталося неспівпадіння імені класу під час створення віджета, використовуючи користувацьку фабрику віджетів, що зареєстрована для класу %1. Вона повернула віджет класу %2.</translation>
+        <translation>Сталася розбіжність імені класу під час створення віджета, використовуючи користувацьку фабрику віджетів, що зареєстрована для класу %1. Вона повернула віджет класу %2.</translation>
     </message>
     <message>
         <source>%1 Widget</source>
@@ -5741,7 +5797,7 @@ Class: %2</source>
     </message>
     <message>
         <source>The current page of the container &apos;%1&apos; (%2) could not be determined while creating a layout.This indicates an inconsistency in the ui-file, probably a layout being constructed on a container widget.</source>
-        <translation>Неможливо визначити поточну сторінку контейнера &apos;%1&apos; (%2) під час створення розташування. Це вказує на некоректність файлу UI, можливо, розташування було створене на контейнерному віджеті.</translation>
+        <translation>Не вдалось визначити поточну сторінку контейнера &apos;%1&apos; (%2) під час створення розташування. Це вказує на некоректність файлу UI, можливо, розташування було створене на контейнерному віджеті.</translation>
     </message>
     <message>
         <source>Attempt to add a layout to a widget &apos;%1&apos; (%2) which already has an unmanaged layout of type %3.

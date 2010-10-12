@@ -56,13 +56,13 @@
 #include "qdeclarative.h"
 #include "qdeclarativeerror.h"
 #include "private/qdeclarativeinstruction_p.h"
-#include "private/qdeclarativecompositetypemanager_p.h"
 #include "private/qdeclarativeparser_p.h"
 #include "private/qdeclarativeengine_p.h"
 #include "private/qbitfield_p.h"
 #include "private/qdeclarativepropertycache_p.h"
 #include "private/qdeclarativeintegercache_p.h"
 #include "private/qdeclarativetypenamecache_p.h"
+#include "private/qdeclarativetypeloader_p.h"
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qset.h>
@@ -152,7 +152,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeCompiler
 public:
     QDeclarativeCompiler();
 
-    bool compile(QDeclarativeEngine *, QDeclarativeCompositeTypeData *, QDeclarativeCompiledData *);
+    bool compile(QDeclarativeEngine *, QDeclarativeTypeData *, QDeclarativeCompiledData *);
 
     bool isError() const;
     QList<QDeclarativeError> errors() const;
@@ -338,7 +338,7 @@ private:
     QDeclarativeEngine *engine;
     QDeclarativeEnginePrivate *enginePrivate;
     QDeclarativeParser::Object *unitRoot;
-    QDeclarativeCompositeTypeData *unit;
+    QDeclarativeTypeData *unit;
 };
 QT_END_NAMESPACE
 

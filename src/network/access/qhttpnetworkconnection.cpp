@@ -746,7 +746,7 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
         return;
     // try to get a free AND connected socket
     for (int i = 0; i < channelCount; ++i) {
-        if (!channels[i].isSocketBusy() && channels[i].socket->state() == QAbstractSocket::ConnectedState) {
+        if (!channels[i].reply && !channels[i].isSocketBusy() && channels[i].socket->state() == QAbstractSocket::ConnectedState) {
             dequeueAndSendRequest(channels[i].socket);
         }
     }
@@ -756,7 +756,7 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
         return;
     // try to get a free unconnected socket
     for (int i = 0; i < channelCount; ++i) {
-        if (!channels[i].isSocketBusy()) {
+        if (!channels[i].reply && !channels[i].isSocketBusy()) {
             dequeueAndSendRequest(channels[i].socket);
         }
     }

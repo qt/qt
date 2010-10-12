@@ -106,8 +106,10 @@ public:
 
     virtual void createTextureData(int width, int height);
     virtual void resizeTextureData(int width, int height);
-    virtual void fillTexture(const Coord &c, glyph_t glyph);
+    virtual void fillTexture(const Coord &c, glyph_t glyph, QFixed subPixelPosition);
     virtual int glyphPadding() const;
+    virtual int maxTextureWidth() const;
+    virtual int maxTextureHeight() const;
 
     inline GLuint texture() const {
         QGLTextureGlyphCache *that = const_cast<QGLTextureGlyphCache *>(this);
@@ -131,11 +133,23 @@ public:
     void setContext(const QGLContext *context);
     inline const QGLContext *context() const { return ctx; }
 
+    enum FilterMode {
+        Nearest,
+        Linear
+    };
+    FilterMode filterMode() const { return m_filterMode; }
+    void setFilterMode(FilterMode m) { m_filterMode = m; }
+
 private:
     QGLContextGroupResource<QGLGlyphTexture> m_textureResource;
 
     const QGLContext *ctx;
     QGL2PaintEngineExPrivate *pex;
+    QGLShaderProgram *m_blitProgram;
+    FilterMode m_filterMode;
+
+    GLfloat m_vertexCoordinateArray[8];
+    GLfloat m_textureCoordinateArray[8];
 };
 
 QT_END_NAMESPACE

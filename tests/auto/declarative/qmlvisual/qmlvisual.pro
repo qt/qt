@@ -6,7 +6,7 @@ SOURCES += tst_qmlvisual.cpp
 
 symbian: {
     importFiles.path = .
-    importFiles.sources = animation \
+    importFiles.files = animation \
     fillmode \
     focusscope \
     ListView \

@@ -43,6 +43,9 @@
 
 #include <QApplication>
 #include <QRegExp>
+#include <QLibraryInfo>
+#include <QLocale>
+#include <QTranslator>
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
@@ -72,6 +75,16 @@ int runQVfb( int argc, char *argv[] )
     Q_INIT_RESOURCE(qvfb);
 
     QApplication app( argc, argv );
+
+    QTranslator translator;
+    QTranslator qtTranslator;
+    QString sysLocale = QLocale::system().name();
+    QString resourceDir = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    if (translator.load(QLatin1String("qvfb_") + sysLocale, resourceDir)
+        && qtTranslator.load(QLatin1String("qt_") + sysLocale, resourceDir)) {
+        app.installTranslator(&translator);
+        app.installTranslator(&qtTranslator);
+    }
 
     int width = 0;
     int height = 0;

@@ -74,6 +74,11 @@ function doOperation(op) {
         memory = display.text.valueOf()
     } else if (op == leftArrow) {
         display.text = display.text.toString().slice(0, -1)
+        if (display.text.length == 0) {
+            display.text = "0"
+        }
+    } else if (op == "Off") {
+        Qt.quit();
     } else if (op == "C") {
         display.text = "0"
     } else if (op == "AC") {
@@ -82,10 +87,5 @@ function doOperation(op) {
         lastOp = ""
         display.text ="0"
     }
-
-    if (op == rotateRight)
-        main.state = "orientation " + Orientation.Landscape
-    if (op == rotateLeft)
-        main.state = ''
 }
 

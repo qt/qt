@@ -41,10 +41,12 @@
 #ifndef RSSLISTING_H
 #define RSSLISTING_H
 
-#include <QHttp>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 #include <QWidget>
 #include <QBuffer>
 #include <QXmlStreamReader>
+#include <QUrl>
 
 QT_BEGIN_NAMESPACE
 class QLineEdit;
@@ -61,24 +63,26 @@ public:
 
 public slots:
     void fetch();
-    void finished(int id, bool error);
-    void readData(const QHttpResponseHeader &);
+    void finished(QNetworkReply *reply);
+    void readyRead();
+    void metaDataChanged();
     void itemActivated(QTreeWidgetItem * item);
+    void error(QNetworkReply::NetworkError);
 
 private:
     void parseXml();
+    void get(const QUrl &url);
 
     QXmlStreamReader xml;
     QString currentTag;
     QString linkString;
     QString titleString;
 
-    QHttp http;
-    int connectionId;
+    QNetworkAccessManager manager;
+    QNetworkReply *currentReply;
 
     QLineEdit *lineEdit;
     QTreeWidget *treeWidget;
-    QPushButton *abortButton;
     QPushButton *fetchButton;
 };
 

@@ -112,6 +112,7 @@ class MyQmlObject : public QObject, public MyInterface
     Q_PROPERTY(MyCustomVariantType customType READ customType WRITE setCustomType)
     Q_PROPERTY(MyQmlObject *qmlobjectProperty READ qmlobject WRITE setQmlobject)
     Q_PROPERTY(int propertyWithNotify READ propertyWithNotify WRITE setPropertyWithNotify NOTIFY oddlyNamedNotifySignal)
+    Q_PROPERTY(int nonScriptable READ nonScriptable WRITE setNonScriptable SCRIPTABLE false);
 
     Q_INTERFACES(MyInterface)
 public:
@@ -150,6 +151,9 @@ public:
 
     int propertyWithNotify() const { return m_propertyWithNotify; }
     void setPropertyWithNotify(int i) { m_propertyWithNotify = i; emit oddlyNamedNotifySignal(); }
+
+    int nonScriptable() const { return 0; }
+    void setNonScriptable(int) {}
 public slots:
     void basicSlot() { qWarning("MyQmlObject::basicSlot"); }
     void basicSlotWithArgs(int v) { qWarning("MyQmlObject::basicSlotWithArgs(%d)", v); }
@@ -169,7 +173,6 @@ private:
 };
 QML_DECLARE_TYPE(MyQmlObject)
 QML_DECLARE_TYPEINFO(MyQmlObject, QML_HAS_ATTACHED_PROPERTIES)
-
 
 class MyGroupedObject : public QObject
 {
@@ -505,6 +508,12 @@ public:
     }
 };
 
+class UnavailableType : public QObject
+{
+    Q_OBJECT
+public:
+    UnavailableType() {}
+};
 
 class MyDotPropertyObject : public QObject
 {
@@ -574,6 +583,22 @@ class MyCustomParserTypeParser : public QDeclarativeCustomParser
 public:
     QByteArray compile(const QList<QDeclarativeCustomParserProperty> &) { return QByteArray(); }
     void setCustomData(QObject *, const QByteArray &) {}
+};
+
+class MyParserStatus : public QObject, public QDeclarativeParserStatus
+{
+    Q_OBJECT
+public:
+    MyParserStatus() : m_cbc(0), m_ccc(0) {}
+
+    int classBeginCount() const { return m_cbc; }
+    int componentCompleteCount() const { return m_ccc; }
+
+    virtual void classBegin() { m_cbc++; }
+    virtual void componentComplete() { m_ccc++; }
+private:
+    int m_cbc;
+    int m_ccc;
 };
 
 void registerTypes();

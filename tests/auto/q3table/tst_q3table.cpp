@@ -502,7 +502,7 @@ void tst_Q3Table::pageUpDownNavigation()
 void tst_Q3Table::simpleKeyboardNavigation()
 {
     QApplication::setActiveWindow(testWidget);
-    QTRY_COMPARE(QApplication::activeWindow(), testWidget);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(testWidget));
     QWidget *w;
 
     // Test for task #24726
@@ -1208,7 +1208,7 @@ void tst_Q3Table::editCheck()
     table.show();
     QApplication::setActiveWindow(&table);
     QTest::qWaitForWindowShown(&table);
-    QTRY_COMPARE(QApplication::activeWindow(), &table);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&table));
     table.setCurrentCell(0, 0);
 #ifdef WAITS
     QTest::qWait(50);
@@ -1345,7 +1345,7 @@ void tst_Q3Table::valueChanged()
     testWidget->show();
     QApplication::setActiveWindow(testWidget);
     QTest::qWaitForWindowShown(testWidget);
-    QTRY_COMPARE(QApplication::activeWindow(), testWidget);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(testWidget));
 #ifdef WAITS
     QTest::qWait(50);
 #endif
@@ -1395,7 +1395,7 @@ void tst_Q3Table::dateTimeEdit()
     testWidget->show();
     QApplication::setActiveWindow(testWidget);
     QTest::qWaitForWindowShown(testWidget);
-    QTRY_COMPARE(QApplication::activeWindow(), testWidget);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(testWidget));
 #ifdef WAITS
     QTest::qWait(50);
 #endif

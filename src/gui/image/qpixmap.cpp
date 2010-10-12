@@ -579,7 +579,7 @@ int QPixmap::height() const
 */
 QSize QPixmap::size() const
 {
-    return data ? QSize(data->width(), data->height()) : QSize();
+    return data ? QSize(data->width(), data->height()) : QSize(0, 0);
 }
 
 /*!
@@ -664,14 +664,19 @@ void QPixmap::resize_helper(const QSize &s)
 
 #if defined(Q_WS_X11)
     if (x11Data && x11Data->x11_mask) {
-        QX11PixmapData *pmData = static_cast<QX11PixmapData*>(pd);
-        pmData->x11_mask = (Qt::HANDLE)XCreatePixmap(X11->display,
-                                                     RootWindow(x11Data->xinfo.display(),
-                                                                x11Data->xinfo.screen()),
-                                                      w, h, 1);
-        GC gc = XCreateGC(X11->display, pmData->x11_mask, 0, 0);
-        XCopyArea(X11->display, x11Data->x11_mask, pmData->x11_mask, gc, 0, 0, qMin(width(), w), qMin(height(), h), 0, 0);
-        XFreeGC(X11->display, gc);
+        QPixmapData *newPd = pm.pixmapData();
+        QX11PixmapData *pmData = (newPd && newPd->classId() == QPixmapData::X11Class)
+                                 ? static_cast<QX11PixmapData*>(newPd) : 0;
+        if (pmData) {
+            pmData->x11_mask = (Qt::HANDLE)XCreatePixmap(X11->display,
+                                                         RootWindow(x11Data->xinfo.display(),
+                                                                    x11Data->xinfo.screen()),
+                                                         w, h, 1);
+            GC gc = XCreateGC(X11->display, pmData->x11_mask, 0, 0);
+            XCopyArea(X11->display, x11Data->x11_mask, pmData->x11_mask, gc, 0, 0,
+                      qMin(width(), w), qMin(height(), h), 0, 0);
+            XFreeGC(X11->display, gc);
+        }
     }
 #endif
     *this = pm;
@@ -830,14 +835,16 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
         return false;
 
     QFileInfo info(fileName);
-    if (!info.exists())
-        return false;
-
     QString key = QLatin1Literal("qt_pixmap")
                   % info.absoluteFilePath()
                   % HexString<uint>(info.lastModified().toTime_t())
                   % HexString<quint64>(info.size())
                   % HexString<uint>(data ? data->pixelType() : QPixmapData::PixmapType);
+
+    // Note: If no extension is provided, we try to match the
+    // file against known plugin extensions
+    if (!info.completeSuffix().isEmpty() && !info.exists())
+        return false;
 
     if (QPixmapCache::find(key, *this))
         return true;
@@ -1168,15 +1175,24 @@ QPixmap QPixmap::grabWidget(QWidget * widget, const QRect &rect)
 
     \warning This function is X11 specific; using it is non-portable.
 
+    \warning Since 4.8, pixmaps do not have an X11 handle unless
+    created with \l {QPixmap::}{fromX11Pixmap()}, or if the native
+    graphics system is explicitly enabled.
+
     \sa detach()
+    \sa QApplication::setGraphicsSystem()
 */
 
 Qt::HANDLE QPixmap::handle() const
 {
 #if defined(Q_WS_X11)
     const QPixmapData *pd = pixmapData();
-    if (pd && pd->classId() == QPixmapData::X11Class)
-        return static_cast<const QX11PixmapData*>(pd)->handle();
+    if (pd) {
+        if (pd->classId() == QPixmapData::X11Class)
+            return static_cast<const QX11PixmapData*>(pd)->handle();
+        else
+            qWarning("QPixmap::handle(): Pixmap is not an X11 class pixmap");
+    }
 #endif
     return 0;
 }
@@ -1787,13 +1803,27 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     Returns true if this pixmap has an alpha channel, \e or has a
     mask, otherwise returns false.
 
-    \warning This is potentially an expensive operation.
-
     \sa hasAlphaChannel(), mask()
 */
 bool QPixmap::hasAlpha() const
 {
-    return data && (data->hasAlphaChannel() || !data->mask().isNull());
+#if defined(Q_WS_X11)
+    if (data && data->hasAlphaChannel())
+        return true;
+    QPixmapData *pd = pixmapData();
+    if (pd && pd->classId() == QPixmapData::X11Class) {
+        QX11PixmapData *x11Data = static_cast<QX11PixmapData*>(pd);
+#ifndef QT_NO_XRENDER
+        if (x11Data->picture && x11Data->d == 32)
+            return true;
+#endif
+        if (x11Data->d == 1 || x11Data->x11_mask)
+            return true;
+    }
+    return false;
+#else
+    return data && data->hasAlphaChannel();
+#endif
 }
 
 /*!

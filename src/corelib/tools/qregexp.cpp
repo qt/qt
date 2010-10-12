@@ -74,10 +74,6 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
 #define RXERR_INTERVAL   QT_TRANSLATE_NOOP("QRegExp", "invalid interval")
 #define RXERR_CATEGORY   QT_TRANSLATE_NOOP("QRegExp", "invalid category")
 
-/*
-  WARNING! Be sure to read qregexp.tex before modifying this file.
-*/
-
 /*!
     \class QRegExp
     \reentrant
@@ -4172,6 +4168,8 @@ int QRegExp::matchedLength() const
 }
 
 #ifndef QT_NO_REGEXP_CAPTURE
+
+#ifndef QT_NO_DEPRECATED
 /*!
   \obsolete
   Returns the number of captures contained in the regular expression.
@@ -4182,6 +4180,7 @@ int QRegExp::numCaptures() const
 {
     return captureCount();
 }
+#endif
 
 /*!
   \since 4.6

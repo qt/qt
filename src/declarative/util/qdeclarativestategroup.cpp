@@ -88,6 +88,7 @@ public:
 
 /*!
    \qmlclass StateGroup QDeclarativeStateGroup
+    \ingroup qml-state-elements
    \since 4.7
    \brief The StateGroup element provides state support for non-Item elements.
 
@@ -271,7 +272,7 @@ void QDeclarativeStateGroup::componentComplete()
         return;
     } else if (!d->currentState.isEmpty()) {
         QString cs = d->currentState;
-        d->currentState = QString();
+        d->currentState.clear();
         d->setCurrentStateInternal(cs, true);
     }
 }
@@ -313,7 +314,7 @@ bool QDeclarativeStateGroupPrivate::updateAutoState()
         }
     }
     if (revert) {
-        bool rv = currentState != QString();
+        bool rv = !currentState.isEmpty();
         q->setState(QString());
         return rv;
     } else {

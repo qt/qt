@@ -171,4 +171,8 @@ EXPORTS
 	?drawCachedGlyphs@QVGPaintEngine@@QAE_NHPBIABVQFont@@PAVQFontEngine@@ABVQPointF@@PBUQFixedPoint@@@Z @ 170 NONAME ; bool QVGPaintEngine::drawCachedGlyphs(int, unsigned int const *, class QFont const &, class QFontEngine *, class QPointF const &, struct QFixedPoint const *)
 	?drawPixmapFragments@QVGPaintEngine@@UAEXPBVPixmapFragment@QPainter@@HABVQPixmap@@V?$QFlags@W4PixmapFragmentHint@QPainter@@@@@Z @ 171 NONAME ; void QVGPaintEngine::drawPixmapFragments(class QPainter::PixmapFragment const *, int, class QPixmap const &, class QFlags<enum QPainter::PixmapFragmentHint>)
 	?drawStaticTextItem@QVGPaintEngine@@UAEXPAVQStaticTextItem@@@Z @ 172 NONAME ; void QVGPaintEngine::drawStaticTextItem(class QStaticTextItem *)
+	?fromFile@QVGPixmapData@@UAE_NABVQString@@PBDV?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 173 NONAME ; bool QVGPixmapData::fromFile(class QString const &, char const *, class QFlags<enum Qt::ImageConversionFlag>)
+	?createPixmapForImage@QVGPixmapData@@IAEXAAVQImage@@V?$QFlags@W4ImageConversionFlag@Qt@@@@_N@Z @ 174 NONAME ; void QVGPixmapData::createPixmapForImage(class QImage &, class QFlags<enum Qt::ImageConversionFlag>, bool)
+	?fromData@QVGPixmapData@@UAE_NPBEIPBDV?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 175 NONAME ; bool QVGPixmapData::fromData(unsigned char const *, unsigned int, char const *, class QFlags<enum Qt::ImageConversionFlag>)
+	?fromImageReader@QVGPixmapData@@UAEXPAVQImageReader@@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 176 NONAME ; void QVGPixmapData::fromImageReader(class QImageReader *, class QFlags<enum Qt::ImageConversionFlag>)
 

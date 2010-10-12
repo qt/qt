@@ -29,8 +29,8 @@
     \title Twitter Mobile
     \example demos/declarative/twitter
 
-    This demo shows how to write a mobile Twitter client in QML. Use it to
-    tweet us(@qtbynokia) how much you like our demos!
+    This demo shows how to write a mobile Twitter search client in QML. Use it to
+    see what people think about Qt Quick!
 
     \image qml-twitter-demo.png
 */

@@ -59,6 +59,9 @@
 
 QT_BEGIN_NAMESPACE
 
+// qmainwindow.cpp
+extern QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *mainWindow);
+
 QSize QToolBarAreaLayoutItem::minimumSize() const
 {
     if (skip())
@@ -872,7 +875,7 @@ void QToolBarAreaLayout::insertItem(QToolBar *before, QLayoutItem *item)
 
 void QToolBarAreaLayout::apply(bool animate)
 {
-    QMainWindowLayout *layout = qobject_cast<QMainWindowLayout*>(mainWindow->layout());
+    QMainWindowLayout *layout = qt_mainwindow_layout(mainWindow);
     Q_ASSERT(layout != 0);
 
     Qt::LayoutDirection dir = mainWindow->layoutDirection();

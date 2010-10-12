@@ -63,7 +63,6 @@ QT_BEGIN_NAMESPACE
 SearchWidget::SearchWidget(QHelpSearchEngine *engine, QWidget *parent)
     : QWidget(parent)
     , zoomCount(0)
-    , attached(false)
     , searchEngine(engine)
 {
     TRACE_OBJ
@@ -128,18 +127,6 @@ void SearchWidget::resetZoom()
         browser->zoomOut(zoomCount);
         zoomCount = 0;
     }
-}
-
-bool SearchWidget::isAttached() const
-{
-    TRACE_OBJ
-    return attached;
-}
-
-void SearchWidget::setAttached(bool state)
-{
-    TRACE_OBJ
-    attached = state;
 }
 
 void SearchWidget::search() const

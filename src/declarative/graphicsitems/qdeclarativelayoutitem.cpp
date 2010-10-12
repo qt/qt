@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass LayoutItem QDeclarativeLayoutItem
+    \ingroup qml-utility-elements
     \since 4.7
     \brief The LayoutItem element allows declarative UI elements to be placed inside Qt's Graphics View layouts.
 
@@ -63,13 +64,6 @@ QT_BEGIN_NAMESPACE
     demonstrates how a LayoutItem can be used within a \l{Graphics View Framework}{Graphics View}
     scene.
 */
-
-/*!
-    \internal
-    \class QDeclarativeLayoutItem
-    \brief The QDeclarativeLayoutItem class allows you to place your QML UI elements inside Qt's Graphics View layouts.
-*/
-
 
 /*!
     \qmlproperty QSizeF LayoutItem::maximumSize

@@ -248,7 +248,7 @@ void QDateTimeEdit::setDateTime(const QDateTime &datetime)
 
 /*!
   \property QDateTimeEdit::date
-  \brief the QDate that is set in the QDateTimeEdit
+  \brief the QDate that is set in the widget
 
   By default, this property contains a date that refers to January 1, 2000.
 
@@ -279,7 +279,7 @@ void QDateTimeEdit::setDate(const QDate &date)
 
 /*!
   \property QDateTimeEdit::time
-  \brief the QTime that is set in the QDateTimeEdit
+  \brief the QTime that is set in the widget
 
   By default, this property contains a time of 00:00:00 and 0 milliseconds.
 
@@ -1561,13 +1561,6 @@ QTimeEdit::QTimeEdit(const QTime &time, QWidget *parent)
 {
 }
 
-/*!
-    \property QTimeEdit::time
-    \brief the QTime that is shown in the widget
-
-    By default, this property contains a time of 00:00:00 and 0 milliseconds.
-*/
-
 
 /*!
   \class QDateEdit
@@ -1621,13 +1614,6 @@ QDateEdit::QDateEdit(const QDate &date, QWidget *parent)
     : QDateTimeEdit(date, QVariant::Date, parent)
 {
 }
-
-/*!
-    \property QDateEdit::date
-    \brief the QDate that is shown in the widget
-
-    By default, this property contains a date referring to January 1, 2000.
-*/
 
 
 // --- QDateTimeEditPrivate ---

@@ -62,7 +62,7 @@
 #include "QtCore/qbuffer.h"
 #include "private/qringbuffer_p.h"
 #include "private/qbytedata_p.h"
-#include <QVarLengthArray>
+#include <QSharedPointer>
 
 QT_BEGIN_NAMESPACE
 
@@ -173,8 +173,6 @@ public:
     void redirectionRequested(const QUrl &target);
     void sslErrors(const QList<QSslError> &errors);
 
-    bool isFinished() const;
-
     QNetworkAccessBackend *backend;
     QIODevice *outgoingData;
     QRingBuffer *outgoingDataBuffer;
@@ -208,9 +206,12 @@ public:
     State state;
 
     // only used when the "zero copy" style is used. Else readBuffer is used.
-    QSharedPointer< QVarLengthArray<char, 0> > downloadBufferArray;
+    // Please note that the whole "zero copy" download buffer API is private right now. Do not use it.
+    qint64 downloadBufferReadPosition;
+    qint64 downloadBufferCurrentSize;
+    qint64 downloadBufferMaximumSize;
+    QSharedPointer<char> downloadBufferPointer;
     char* downloadBuffer;
-    qint64 downloadBufferPosition;
 
     Q_DECLARE_PUBLIC(QNetworkReplyImpl)
 };

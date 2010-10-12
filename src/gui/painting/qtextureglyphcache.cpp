@@ -47,10 +47,6 @@
 #include "private/qnativeimage_p.h"
 #include "private/qfontengine_ft_p.h"
 
-#ifndef QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH
-#define QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH 256
-#endif
-
 QT_BEGIN_NAMESPACE
 
 // #define CACHE_DEBUG
@@ -69,8 +65,60 @@ static inline int qt_next_power_of_two(int v)
     return v;
 }
 
+int QTextureGlyphCache::calculateSubPixelPositionCount(glyph_t glyph) const
+{
+    // Test 12 different subpixel positions since it factors into 3*4 so it gives
+    // the coverage we need.
+
+    QList<QImage> images;
+    for (int i=0; i<12; ++i) {
+        QImage img = textureMapForGlyph(glyph, QFixed::fromReal(i / 12.0));
+
+        if (images.isEmpty()) {
+            QPainterPath path;
+            QFixedPoint point;
+            m_current_fontengine->addGlyphsToPath(&glyph, &point, 1, &path, QTextItem::RenderFlags());
+
+            // Glyph is space, return 0 to indicate that we need to keep trying
+            if (path.isEmpty())
+                break;
+
+            images.append(img);
+        } else {
+            bool found = false;
+            for (int j=0; j<images.size(); ++j) {
+                if (images.at(j) == img) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                images.append(img);
+        }
+    }
+
+    return images.size();
+}
+
+QFixed QTextureGlyphCache::subPixelPositionForX(QFixed x) const
+{
+    if (m_subPixelPositionCount == 0)
+        return QFixed();
+
+    QFixed subPixelPosition;
+    if (x != 0) {
+        subPixelPosition = x - x.floor();
+        QFixed fraction = (subPixelPosition / QFixed::fromReal(1.0 / m_subPixelPositionCount)).floor();
+
+        // Compensate for precision loss in fixed point to make sure we are always drawing at a subpixel position over
+        // the lower boundary for the selected rasterization by adding 1/64.
+        subPixelPosition = fraction / QFixed(m_subPixelPositionCount) + QFixed::fromReal(0.015625);
+    }
+    return subPixelPosition;
+}
+
 void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const glyph_t *glyphs,
-                                  const QFixedPoint *)
+                                                const QFixedPoint *positions)
 {
 #ifdef CACHE_DEBUG
     printf("Populating with %d glyphs\n", numGlyphs);
@@ -81,17 +129,42 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
     const int margin = glyphMargin();
     const int paddingDoubled = glyphPadding() * 2;
 
-    QHash<glyph_t, Coord> listItemCoordinates;
+    bool supportsSubPixelPositions = fontEngine->supportsSubPixelPositions();
+    if (m_subPixelPositionCount == 0) {
+        if (!supportsSubPixelPositions) {
+            m_subPixelPositionCount = 1;
+        } else {
+            int i = 0;
+            while (m_subPixelPositionCount == 0 && i < numGlyphs)
+                m_subPixelPositionCount = calculateSubPixelPositionCount(glyphs[i++]);
+        }
+    }
+
+    QHash<GlyphAndSubPixelPosition, Coord> listItemCoordinates;
     int rowHeight = 0;
+
+    QFontEngine::GlyphFormat format;
+    switch (m_type) {
+    case Raster_A8: format = QFontEngine::Format_A8; break;
+    case Raster_RGBMask: format = QFontEngine::Format_A32; break;
+    default: format = QFontEngine::Format_Mono; break;
+    }
 
     // check each glyph for its metrics and get the required rowHeight.
     for (int i=0; i < numGlyphs; ++i) {
         const glyph_t glyph = glyphs[i];
-        if (coords.contains(glyph))
+
+        QFixed subPixelPosition;
+        if (supportsSubPixelPositions) {
+            QFixed x = positions != 0 ? positions[i].x : QFixed();
+            subPixelPosition = subPixelPositionForX(x);
+        }
+
+        if (coords.contains(GlyphAndSubPixelPosition(glyph, subPixelPosition)))
             continue;
-        if (listItemCoordinates.contains(glyph))
+        if (listItemCoordinates.contains(GlyphAndSubPixelPosition(glyph, subPixelPosition)))
             continue;
-        glyph_metrics_t metrics = fontEngine->boundingBox(glyph, m_transform);
+        glyph_metrics_t metrics = fontEngine->alphaMapBoundingBox(glyph, m_transform, format);
 
 #ifdef CACHE_DEBUG
         printf("(%4x): w=%.2f, h=%.2f, xoff=%.2f, yoff=%.2f, x=%.2f, y=%.2f\n",
@@ -119,7 +192,7 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
                     metrics.x.round().truncate(),
                     -metrics.y.truncate() }; // baseline for horizontal scripts
 
-        listItemCoordinates.insert(glyph, c);
+        listItemCoordinates.insert(GlyphAndSubPixelPosition(glyph, subPixelPosition), c);
         rowHeight = qMax(rowHeight, glyph_height);
     }
     if (listItemCoordinates.isEmpty())
@@ -135,17 +208,25 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
     }
 
     // now actually use the coords and paint the wanted glyps into cache.
-    QHash<glyph_t, Coord>::iterator iter = listItemCoordinates.begin();
+    QHash<GlyphAndSubPixelPosition, Coord>::iterator iter = listItemCoordinates.begin();
+    int requiredWidth = m_w;
     while (iter != listItemCoordinates.end()) {
         Coord c = iter.value();
 
         m_currentRowHeight = qMax(m_currentRowHeight, c.h + margin * 2);
 
-        if (m_cx + c.w > m_w) {
-            // no room on the current line, start new glyph strip
-            m_cx = 0;
-            m_cy += m_currentRowHeight + paddingDoubled;
-            m_currentRowHeight = 0; // New row
+        if (m_cx + c.w > requiredWidth) {
+            int new_width = requiredWidth*2;
+            while (new_width < m_cx + c.w)
+                new_width *= 2;
+            if (new_width <= maxTextureWidth()) {
+                requiredWidth = new_width;
+            } else {
+                // no room on the current line, start new glyph strip
+                m_cx = 0;
+                m_cy += m_currentRowHeight + paddingDoubled;
+                m_currentRowHeight = 0; // New row
+            }
         }
 
         c.x = m_cx;
@@ -164,27 +245,30 @@ void QTextureGlyphCache::fillInPendingGlyphs()
     if (m_pendingGlyphs.isEmpty())
         return;
 
-    int requiredHeight = 0;
+    int requiredHeight = m_h;
+    int requiredWidth = m_w; // Use a minimum size to avoid a lot of initial reallocations
     {
-        QHash<glyph_t, Coord>::iterator iter = m_pendingGlyphs.begin();
+        QHash<GlyphAndSubPixelPosition, Coord>::iterator iter = m_pendingGlyphs.begin();
         while (iter != m_pendingGlyphs.end()) {
             Coord c = iter.value();
             requiredHeight = qMax(requiredHeight, c.y + c.h);
+            requiredWidth = qMax(requiredWidth, c.x + c.w);
             ++iter;
         }
     }
 
-    if (requiredHeight > m_h) {
+    if (isNull() || requiredHeight > m_h || requiredWidth > m_w) {
         if (isNull())
-            createCache(m_w, qt_next_power_of_two(requiredHeight));
+            createCache(qt_next_power_of_two(requiredWidth), qt_next_power_of_two(requiredHeight));
         else
-            resizeCache(m_w, qt_next_power_of_two(requiredHeight));
+            resizeCache(qt_next_power_of_two(requiredWidth), qt_next_power_of_two(requiredHeight));
     }
 
     {
-        QHash<glyph_t, Coord>::iterator iter = m_pendingGlyphs.begin();
+        QHash<GlyphAndSubPixelPosition, Coord>::iterator iter = m_pendingGlyphs.begin();
         while (iter != m_pendingGlyphs.end()) {
-            fillTexture(iter.value(), iter.key());
+            GlyphAndSubPixelPosition key = iter.key();
+            fillTexture(iter.value(), key.glyph, key.subPixelPosition);
 
             ++iter;
         }
@@ -193,7 +277,7 @@ void QTextureGlyphCache::fillInPendingGlyphs()
     m_pendingGlyphs.clear();
 }
 
-QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g) const
+QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g, QFixed subPixelPosition) const
 {
 #if defined(Q_WS_X11)
     if (m_transform.type() > QTransform::TxTranslate) {
@@ -226,7 +310,7 @@ QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g) const
     } else
 #endif
     if (m_type == QFontEngineGlyphCache::Raster_RGBMask)
-        return m_current_fontengine->alphaRGBMapForGlyph(g, glyphMargin(), m_transform);
+        return m_current_fontengine->alphaRGBMapForGlyph(g, subPixelPosition, glyphMargin(), m_transform);
     else
         return m_current_fontengine->alphaMapForGlyph(g, m_transform);
 
@@ -272,9 +356,9 @@ int QImageTextureGlyphCache::glyphMargin() const
 #endif
 }
 
-void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g)
+void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g, QFixed subPixelPosition)
 {
-    QImage mask = textureMapForGlyph(g);
+    QImage mask = textureMapForGlyph(g, subPixelPosition);
 
 #ifdef CACHE_DEBUG
     printf("fillTexture of %dx%d at %d,%d in the cache of %dx%d\n", c.w, c.h, c.x, c.y, m_image.width(), m_image.height());

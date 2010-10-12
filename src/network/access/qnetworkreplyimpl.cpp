@@ -49,14 +49,10 @@
 #include "QtNetwork/qnetworksession.h"
 #include "qnetworkaccesshttpbackend_p.h"
 #include "qnetworkaccessmanager_p.h"
-#include <QVarLengthArray>
 
 #include <QtCore/QCoreApplication>
 
-QT_BEGIN_NAMESPACE
-typedef QSharedPointer<QVarLengthArray<char, 0> > QVarLengthArraySharedPointer;
-QT_END_NAMESPACE
-Q_DECLARE_METATYPE(QVarLengthArraySharedPointer)
+Q_DECLARE_METATYPE(QSharedPointer<char>)
 
 QT_BEGIN_NAMESPACE
 
@@ -69,7 +65,9 @@ inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
       httpStatusCode(0),
       state(Idle)
       , downloadBuffer(0)
-      , downloadBufferPosition(0)
+      , downloadBufferReadPosition(0)
+      , downloadBufferCurrentSize(0)
+      , downloadBufferMaximumSize(0)
 {
 }
 
@@ -595,11 +593,17 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QIODevice *data)
 
 void QNetworkReplyImplPrivate::appendDownstreamData(const QByteArray &data)
 {
+    Q_UNUSED(data)
     // TODO implement
 
     // TODO call
 
     qFatal("QNetworkReplyImplPrivate::appendDownstreamData not implemented");
+}
+
+static void downloadBufferDeleter(char *ptr)
+{
+    delete[] ptr;
 }
 
 char* QNetworkReplyImplPrivate::getDownloadBuffer(qint64 size)
@@ -610,12 +614,12 @@ char* QNetworkReplyImplPrivate::getDownloadBuffer(qint64 size)
     if (!downloadBuffer) {
         QVariant bufferAllocationPolicy = request.attribute(QNetworkRequest::MaximumDownloadBufferSizeAttribute);
         if (bufferAllocationPolicy.isValid() && bufferAllocationPolicy.toLongLong() >= size) {
-            downloadBufferArray = QSharedPointer<QVarLengthArray<char, 0> >(new QVarLengthArray<char, 0>());
-            downloadBufferArray->reserve(size);
+            downloadBufferCurrentSize = 0;
+            downloadBufferMaximumSize = size;
+            downloadBuffer = new char[downloadBufferMaximumSize]; // throws if allocation fails
+            downloadBufferPointer = QSharedPointer<char>(downloadBuffer, downloadBufferDeleter);
 
-            downloadBuffer = downloadBufferArray->data();
-
-            q->setAttribute(QNetworkRequest::DownloadBufferAttribute, qVariantFromValue<QSharedPointer<QVarLengthArray<char, 0> > > (downloadBufferArray));
+            q->setAttribute(QNetworkRequest::DownloadBufferAttribute, qVariantFromValue<QSharedPointer<char> > (downloadBufferPointer));
         }
     }
 
@@ -643,12 +647,12 @@ void QNetworkReplyImplPrivate::appendDownstreamDataDownloadBuffer(qint64 bytesRe
     bytesDownloaded = bytesReceived;
     lastBytesDownloaded = bytesReceived;
 
-    // Update the array so our user (e.g. QtWebKit) knows the real size
-    if (bytesReceived > 0)
-        downloadBufferArray->resize(bytesReceived);
+    downloadBufferCurrentSize = bytesReceived;
 
     emit q->downloadProgress(bytesDownloaded, bytesTotal);
-    emit q->readyRead();
+    // Only emit readyRead when actual data is there
+    if (bytesDownloaded > 0)
+        emit q->readyRead();
 }
 
 void QNetworkReplyImplPrivate::finished()
@@ -689,6 +693,8 @@ void QNetworkReplyImplPrivate::finished()
     resumeNotificationHandling();
 
     state = Finished;
+    q->setFinished(true);
+
     pendingNotifications.clear();
 
     pauseNotificationHandling();
@@ -759,11 +765,6 @@ void QNetworkReplyImplPrivate::sslErrors(const QList<QSslError> &errors)
 #endif
 }
 
-bool QNetworkReplyImplPrivate::isFinished() const
-{
-    return (state == Finished || state == Aborted);
-}
-
 QNetworkReplyImpl::QNetworkReplyImpl(QObject *parent)
     : QNetworkReply(*new QNetworkReplyImplPrivate, parent)
 {
@@ -798,7 +799,7 @@ void QNetworkReplyImpl::abort()
     QNetworkReply::close();
 
     if (d->state != QNetworkReplyImplPrivate::Finished) {
-        // emit signals
+        // call finished which will emit signals
         d->error(OperationCanceledError, tr("Operation canceled"));
         d->finished();
     }
@@ -826,7 +827,7 @@ void QNetworkReplyImpl::close()
 
     QNetworkReply::close();
 
-    // emit signals
+    // call finished which will emit signals
     d->error(OperationCanceledError, tr("Operation canceled"));
     d->finished();
 }
@@ -848,7 +849,7 @@ qint64 QNetworkReplyImpl::bytesAvailable() const
     // Special case for the "zero copy" download buffer
     Q_D(const QNetworkReplyImpl);
     if (d->downloadBuffer) {
-        qint64 maxAvail = d->downloadBufferArray->size() - d->downloadBufferPosition;
+        qint64 maxAvail = d->downloadBufferCurrentSize - d->downloadBufferReadPosition;
         return QNetworkReply::bytesAvailable() + maxAvail;
     }
 
@@ -909,12 +910,12 @@ qint64 QNetworkReplyImpl::readData(char *data, qint64 maxlen)
 
     // Special case code if we have the "zero copy" download buffer
     if (d->downloadBuffer) {
-        qint64 maxAvail = qMin<qint64>(d->downloadBufferArray->size() - d->downloadBufferPosition, maxlen);
+        qint64 maxAvail = qMin<qint64>(d->downloadBufferCurrentSize - d->downloadBufferReadPosition, maxlen);
         if (maxAvail == 0)
             return d->state == QNetworkReplyImplPrivate::Finished ? -1 : 0;
         // FIXME what about "Aborted" state?
-        qMemCopy(data, d->downloadBuffer + d->downloadBufferPosition, maxAvail);
-        d->downloadBufferPosition += maxAvail;
+        qMemCopy(data, d->downloadBuffer + d->downloadBufferReadPosition, maxAvail);
+        d->downloadBufferReadPosition += maxAvail;
         return maxAvail;
     }
 

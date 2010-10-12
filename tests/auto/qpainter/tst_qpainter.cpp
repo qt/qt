@@ -118,12 +118,10 @@ private slots:
     void drawLine_task190634();
     void drawLine_task229459();
     void drawLine_task234891();
-    void drawHorizontalLineF();
 
     void drawRect_data() { fillData(); }
     void drawRect();
     void drawRect2();
-    void drawRectFHorizontalLine();
 
     void fillRect();
     void fillRect2();
@@ -223,6 +221,8 @@ private slots:
     void drawRect_task215378();
     void drawRect_task247505();
 
+    void drawText_subPixelPositionsInRaster_qtbug5053();
+
     void drawImage_data();
     void drawImage();
 
@@ -255,7 +255,8 @@ private slots:
     void setPenColorOnPixmap();
 
     void QTBUG5939_attachPainterPrivate();
-    void drawHorizontalLine();
+
+    void drawPointScaled();
 
 private:
     void fillData();
@@ -1223,26 +1224,6 @@ void tst_QPainter::drawLine_task234891()
     QCOMPARE(expected, img);
 }
 
-void tst_QPainter::drawHorizontalLineF()
-{
-    QPixmap pixmap(100, 3);
-    pixmap.fill();
-
-    {
-        QPainter painter(&pixmap);
-        painter.drawLine(QLineF(1.5f, 1.5f, 98.5f, 1.5f));
-    }
-
-    QImage refImage(100, 3, QImage::Format_ARGB32);
-    refImage.fill(0xFFFFFFFF);
-    {
-        QPainter painter(&refImage);
-        painter.drawLine(QLineF(1.5f, 1.5f, 98.5f, 1.5f));
-    }
-
-    QCOMPARE(pixmap.toImage().convertToFormat(QImage::Format_ARGB32), refImage);
-}
-
 void tst_QPainter::drawLine_task216948()
 {
     QImage img(1, 10, QImage::Format_ARGB32_Premultiplied);
@@ -1325,26 +1306,6 @@ void tst_QPainter::drawRect2()
         QRect stroke = getPaintedSize(image, Qt::white);
         QCOMPARE(stroke, fill.adjusted(0, 0, 1, 1));
     }
-}
-
-void tst_QPainter::drawRectFHorizontalLine()
-{
-    QPixmap pixmap(100, 3);
-    pixmap.fill();
-
-    {
-        QPainter painter(&pixmap);
-        painter.drawRect(QRectF(1.5f, 1.5f, 98.5f, 1.5f));
-    }
-
-    QImage refImage(100, 3, QImage::Format_ARGB32);
-    refImage.fill(0xFFFFFFFF);
-    {
-        QPainter painter(&refImage);
-        painter.drawRect(QRectF(1.5f, 1.5f, 98.5f, 1.5f));
-    }
-
-    QCOMPARE(pixmap.toImage().convertToFormat(QImage::Format_ARGB32), refImage);
 }
 
 void tst_QPainter::fillRect()
@@ -3215,7 +3176,6 @@ void fpe_steepSlopes()
     p.setRenderHint(QPainter::Antialiasing, antialiased);
     p.setTransform(transform);
 
-    QEXPECT_FAIL("steep line 3 aa", "needs to be fixed", Continue);
     p.drawLine(line);
 }
 
@@ -4584,6 +4544,14 @@ void tst_QPainter::clipBoundingRect()
     QVERIFY(p.clipBoundingRect().contains(QRect(120, 120, 20, 20)));
     QVERIFY(!p.clipBoundingRect().contains(QRectF(100, 100, 200, 100)));
 
+    // Test a basic float rectangle
+    p.setClipRect(QRectF(100, 100, 200, 100));
+    QVERIFY(p.clipBoundingRect().contains(QRectF(100, 100, 200, 100)));
+    QVERIFY(!p.clipBoundingRect().contains(QRectF(50, 50, 300, 200)));
+    p.setClipRect(QRectF(120, 120, 20, 20), Qt::IntersectClip);
+    QVERIFY(p.clipBoundingRect().contains(QRect(120, 120, 20, 20)));
+    QVERIFY(!p.clipBoundingRect().contains(QRectF(100, 100, 200, 100)));
+
     // Test a basic path + region
     QPainterPath path;
     path.addRect(100, 100, 200, 100);
@@ -4605,26 +4573,83 @@ void tst_QPainter::clipBoundingRect()
 
 }
 
-void tst_QPainter::drawHorizontalLine()
+void tst_QPainter::drawText_subPixelPositionsInRaster_qtbug5053()
 {
-    QPixmap pixmap(100, 3);
-    pixmap.fill();
+#if !defined(Q_WS_MAC) || !defined(QT_MAC_USE_COCOA)
+    QSKIP("Only Mac/Cocoa supports sub pixel positions in raster engine currently", SkipAll);
+#endif
 
+    int w = 10, h = 10;
+    QImage image(w, h, QImage::Format_RGB32);
+    image.fill(0xffffffff);
+    QPainter p(&image);
+    p.drawText(0, h, "X\\");
+    p.end();
+
+    bool foundNonGrayPixel = false;
+    const int *bits = (const int *) ((const QImage &) image).bits();
+    int bpl = image.bytesPerLine() / 4;
+    for (int y=0; y<w; ++y) {
+        for (int x=0; x<h; ++x) {
+            int r = qRed(bits[x]);
+            int g = qGreen(bits[x]);
+            int b = qBlue(bits[x]);
+            if (r != g || r != b) {
+                foundNonGrayPixel = true;
+                break;
+            }
+        }
+        bits += bpl;
+    }
+    if (!foundNonGrayPixel)
+        QSKIP("Font smoothing must be turned on for this test", SkipAll);
+
+    QFontMetricsF fm(qApp->font());
+
+    QImage baseLine(fm.width(QChar::fromLatin1('e')), fm.height(), QImage::Format_RGB32);
+    baseLine.fill(Qt::white);
     {
-        QPainter painter(&pixmap);
-        painter.translate(0.3, 0.3);
-        painter.drawLine(QLine(1, 1, 99, 1));
+        QPainter p(&baseLine);
+        p.drawText(0, fm.ascent(), QString::fromLatin1("e"));
     }
 
-    QImage refImage(100, 3, QImage::Format_ARGB32);
-    refImage.fill(0xFFFFFFFF);
-    {
-        QPainter painter(&refImage);
-        painter.translate(0.3, 0.3);
-        painter.drawLine(QLine(1, 1, 99, 1));
+    bool foundDifferentRasterization = false;
+    for (int i=1; i<12; ++i) {
+        QImage comparison(baseLine.size(), QImage::Format_RGB32);
+        comparison.fill(Qt::white);
+
+        {
+            QPainter p(&comparison);
+            p.drawText(QPointF(i / 12.0, fm.ascent()), QString::fromLatin1("e"));
+        }
+
+        if (comparison != baseLine) {
+            foundDifferentRasterization = true;
+            break;
+        }
     }
 
-    QCOMPARE(pixmap.toImage().convertToFormat(QImage::Format_ARGB32), refImage);
+    QVERIFY(foundDifferentRasterization);
+}
+
+void tst_QPainter::drawPointScaled()
+{
+    QImage image(32, 32, QImage::Format_RGB32);
+    image.fill(0xffffffff);
+
+    QPainter p(&image);
+
+    p.scale(0.1, 0.1);
+
+    QPen pen;
+    pen.setWidth(1000);
+    pen.setColor(Qt::red);
+
+    p.setPen(pen);
+    p.drawPoint(0, 0);
+    p.end();
+
+    QCOMPARE(image.pixel(16, 16), 0xffff0000);
 }
 
 QTEST_MAIN(tst_QPainter)

@@ -50,7 +50,7 @@ FilterPage::FilterPage(QWidget *parent)
     setTitle(tr("Filter Settings"));
     setSubTitle(tr("Specify the filter attributes for the "
         "documentation. If filter attributes are used, "
-        "also define a custom filter for it. Both, the "
+        "also define a custom filter for it. Both the "
         "filter attributes and the custom filters are "
         "optional."));
 
@@ -127,7 +127,7 @@ void FilterPage::addFilter()
 {
     QTreeWidgetItem *item = new QTreeWidgetItem(m_ui.customFilterWidget);
     item->setFlags(Qt::ItemIsEnabled|Qt::ItemIsEditable|Qt::ItemIsSelectable);
-    item->setText(0, QLatin1String("unfiltered"));
+    item->setText(0, tr("unfiltered", "list of available documentation"));
     item->setText(1, QLatin1String(""));
     m_ui.customFilterWidget->editItem(item, 0);
     m_ui.removeButton->setDisabled(false);

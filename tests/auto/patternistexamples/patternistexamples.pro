@@ -2,17 +2,17 @@ load(qttest_p4)
 SOURCES += tst_patternistexamples.cpp
 CONFIG += qtestlib
 wince*|symbian: {
-	snippets.sources = $$QT_SOURCE_TREE/doc/src/snippets/patternist/*
+	snippets.files = $$QT_SOURCE_TREE/doc/src/snippets/patternist/*
 	snippets.path = patternist
-	widgetRen.sources = $$QT_SOURCE_TREE/examples/xmlpatterns/xquery/widgetRenderer/*
+	widgetRen.files = $$QT_SOURCE_TREE/examples/xmlpatterns/xquery/widgetRenderer/*
 	widgetRen.path = widgetRenderer
-	globVar.sources = $$QT_SOURCE_TREE/examples/xmlpatterns/xquery/globalVariables/*
+	globVar.files = $$QT_SOURCE_TREE/examples/xmlpatterns/xquery/globalVariables/*
 	globVar.path = globalVariables
-	filetree.sources = $$QT_SOURCE_TREE/examples/xmlpatterns/filetree/*
+	filetree.files = $$QT_SOURCE_TREE/examples/xmlpatterns/filetree/*
 	filetree.path = filetree
-	recipes.sources = $$QT_SOURCE_TREE/examples/xmlpatterns/recipes/*
+	recipes.files = $$QT_SOURCE_TREE/examples/xmlpatterns/recipes/*
 	recipes.path = recipes
-	files.sources = $$QT_SOURCE_TREE/examples/xmlpatterns/recipes/files/*
+	files.files = $$QT_SOURCE_TREE/examples/xmlpatterns/recipes/files/*
 	files.path = recipes\\files
 
 	DEPLOYMENT += snippets widgetRen globVar filetree recipes files

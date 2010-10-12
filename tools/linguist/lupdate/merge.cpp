@@ -44,14 +44,18 @@
 #include "simtexth.h"
 #include "translator.h"
 
+#include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
 #include <QtCore/QMap>
 #include <QtCore/QStringList>
 #include <QtCore/QTextCodec>
 #include <QtCore/QVector>
 
-
 QT_BEGIN_NAMESPACE
+
+class LU {
+    Q_DECLARE_TR_FUNCTIONS(LUpdate)
+};
 
 static bool isDigitFriendly(QChar c)
 {
@@ -485,24 +489,24 @@ Translator merge(const Translator &tor, const Translator &virginTor,
 
     if (options & Verbose) {
         int totalFound = neww + known;
-        err += QObject::tr("    Found %n source text(s) (%1 new and %2 already existing)\n", 0, totalFound).arg(neww).arg(known);
+        err += LU::tr("    Found %n source text(s) (%1 new and %2 already existing)\n", 0, totalFound).arg(neww).arg(known);
 
         if (obsoleted) {
             if (options & NoObsolete) {
-                err += QObject::tr("    Removed %n obsolete entries\n", 0, obsoleted);
+                err += LU::tr("    Removed %n obsolete entries\n", 0, obsoleted);
             } else {
-                err += QObject::tr("    Kept %n obsolete entries\n", 0, obsoleted);
+                err += LU::tr("    Kept %n obsolete entries\n", 0, obsoleted);
             }
         }
 
         if (sameNumberHeuristicCount)
-            err += QObject::tr("    Number heuristic provided %n translation(s)\n",
+            err += LU::tr("    Number heuristic provided %n translation(s)\n",
                       0, sameNumberHeuristicCount);
         if (sameTextHeuristicCount)
-            err += QObject::tr("    Same-text heuristic provided %n translation(s)\n",
+            err += LU::tr("    Same-text heuristic provided %n translation(s)\n",
                       0, sameTextHeuristicCount);
         if (similarTextHeuristicCount)
-            err += QObject::tr("    Similar-text heuristic provided %n translation(s)\n",
+            err += LU::tr("    Similar-text heuristic provided %n translation(s)\n",
                       0, similarTextHeuristicCount);
     }
     return outTor;

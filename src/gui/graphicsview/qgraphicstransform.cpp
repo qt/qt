@@ -346,21 +346,24 @@ void QGraphicsScale::applyTo(QMatrix4x4 *matrix) const
 
 /*!
     \fn QGraphicsScale::xScaleChanged()
+    \since 4.7
 
-    QGraphicsScale emits this signal when its xScale changes.
+    This signal is emitted whenever the \l xScale property changes.
 */
 
 /*!
     \fn QGraphicsScale::yScaleChanged()
+    \since 4.7
 
-    QGraphicsScale emits this signal when its yScale changes.
+    This signal is emitted whenever the \l yScale property changes.
 */
 
 /*!
     \fn QGraphicsScale::zScaleChanged()
+    \since 4.7
 
-    QGraphicsScale emits this signal when its zScale changes.
-*/    
+    This signal is emitted whenever the \l zScale property changes.
+*/
 
 /*!
     \fn QGraphicsScale::scaleChanged()
@@ -581,27 +584,6 @@ void QGraphicsRotation::applyTo(QMatrix4x4 *matrix) const
     This signal is emitted whenever the axis of the object changes.
 
     \sa QGraphicsRotation::axis
-*/
-
-/*!
-    \fn QGraphicsScale::xScaleChanged()
-    \since 4.7
-
-    This signal is emitted whenever the \l xScale property changes.
-*/
-
-/*!
-    \fn QGraphicsScale::yScaleChanged()
-    \since 4.7
-
-    This signal is emitted whenever the \l yScale property changes.
-*/
-
-/*!
-    \fn QGraphicsScale::zScaleChanged()
-    \since 4.7
-
-    This signal is emitted whenever the \l zScale property changes.
 */
 
 #include "moc_qgraphicstransform.cpp"

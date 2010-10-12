@@ -120,6 +120,14 @@ public:
         TestFontEngine = 0x1000
     };
 
+    enum GlyphFormat {
+        Format_None,
+        Format_Render = Format_None,
+        Format_Mono,
+        Format_A8,
+        Format_A32
+    };
+
     QFontEngine();
     virtual ~QFontEngine();
 
@@ -155,6 +163,7 @@ public:
         SynthesizedStretch = 0x4
     };
     virtual int synthesized() const { return 0; }
+    virtual bool supportsSubPixelPositions() const { return false; }
 
     virtual QFixed emSquareSize() const { return ascent(); }
 
@@ -188,7 +197,12 @@ public:
      */
     virtual QImage alphaMapForGlyph(glyph_t);
     virtual QImage alphaMapForGlyph(glyph_t, const QTransform &t);
-    virtual QImage alphaRGBMapForGlyph(glyph_t, int margin, const QTransform &t);
+    virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
+
+    virtual glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, const QTransform &matrix, GlyphFormat /*format*/)
+    {
+        return boundingBox(glyph, matrix);
+    }
 
     virtual void removeGlyphFromCache(glyph_t);
 
@@ -231,6 +245,8 @@ public:
     static const uchar *getCMap(const uchar *table, uint tableSize, bool *isSymbolFont, int *cmapSize);
     static quint32 getTrueTypeGlyphIndex(const uchar *cmap, uint unicode);
 
+    static QByteArray convertToPostscriptFontFamilyName(const QByteArray &fontFamily);
+
     QAtomicInt ref;
     QFontDef fontDef;
     uint cache_cost; // amount of mem used in kb by the font
@@ -258,6 +274,7 @@ public:
 protected:
     QFont createExplicitFontWithName(const QString &familyName) const;
     static const QVector<QRgb> &grayPalette();
+    QFixed lastRightBearing(const QGlyphLayout &glyphs, bool round = false);
 
 private:
     struct GlyphCacheEntry {
@@ -447,6 +464,7 @@ public:
     virtual bool canRender(const QChar *string, int len);
 
     virtual int synthesized() const { return synthesisFlags; }
+    virtual bool supportsSubPixelPositions() const { return true; }
 
     virtual Type type() const { return QFontEngine::Mac; }
 
@@ -456,13 +474,13 @@ public:
     virtual bool getSfntTableData(uint /*tag*/, uchar * /*buffer*/, uint * /*length*/) const;
     virtual void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics);
     virtual QImage alphaMapForGlyph(glyph_t);
-    virtual QImage alphaRGBMapForGlyph(glyph_t, int margin, const QTransform &t);
+    virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
     virtual qreal minRightBearing() const;
     virtual qreal minLeftBearing() const;
     virtual QFont createExplicitFont() const;
 
 private:
-    QImage imageForGlyph(glyph_t glyph, int margin, bool colorful);
+    QImage imageForGlyph(glyph_t glyph, QFixed subPixelPosition, int margin, bool colorful);
     CTFontRef ctfont;
     CGFontRef cgFont;
     QCoreTextFontEngineMulti *parentEngine;
@@ -474,8 +492,7 @@ private:
 class QCoreTextFontEngineMulti : public QFontEngineMulti
 {
 public:
-    QCoreTextFontEngineMulti(const ATSFontFamilyRef &atsFamily, const ATSFontRef &atsFontRef,
-                             const QFontDef &fontDef, bool kerning);
+    QCoreTextFontEngineMulti(const QCFString &name, const QFontDef &fontDef, bool kerning);
     ~QCoreTextFontEngineMulti();
 
     virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs,
@@ -545,7 +562,7 @@ public:
     virtual Properties properties() const;
     virtual void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics);
     virtual QImage alphaMapForGlyph(glyph_t);
-    virtual QImage alphaRGBMapForGlyph(glyph_t, int margin, const QTransform &t);
+    virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
 
 private:
     QImage imageForGlyph(glyph_t glyph, int margin, bool colorful);

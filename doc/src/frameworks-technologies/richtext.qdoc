@@ -36,7 +36,8 @@
     \brief An overview of Qt's rich text processing, editing and display features.
 
     \ingroup frameworks-technologies
-
+    \ingroup qt-basic-concepts
+	
     \nextpage Rich Text Document Structure
 
     The Scribe framework provides a set of classes for reading and manipulating

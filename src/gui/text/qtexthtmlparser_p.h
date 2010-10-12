@@ -180,6 +180,8 @@ struct QTextHtmlParserNode {
     uint displayMode : 3; // QTextHtmlElement::DisplayMode
     uint hasHref : 1;
     QTextListFormat::Style listStyle;
+    QString textListNumberPrefix;
+    QString textListNumberSuffix;
     QString imageName;
     qreal imageWidth;
     qreal imageHeight;

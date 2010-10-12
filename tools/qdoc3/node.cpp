@@ -652,8 +652,14 @@ NodeList InnerNode::overloads(const QString &funcName) const
 InnerNode::InnerNode(Type type, InnerNode *parent, const QString& name)
     : Node(type, parent, name)
 {
-    if (type == Class)
+    switch (type) {
+    case Class:
+    case Namespace:
         setPageType(ApiPage);
+        break;
+    default:
+        break;
+    }
 }
 
 /*!
@@ -845,6 +851,19 @@ bool LeafNode::isInnerNode() const
 LeafNode::LeafNode(Type type, InnerNode *parent, const QString& name)
     : Node(type, parent, name)
 {
+    switch (type) {
+    case Enum:
+    case Function:
+    case Typedef:
+    case Variable:
+    case QmlProperty:
+    case QmlSignal:
+    case QmlMethod:
+        setPageType(ApiPage);
+        break;
+    default:
+        break;
+    }
 }
 
 /*!
@@ -1600,7 +1619,7 @@ QmlPropertyNode::QmlPropertyNode(QmlPropGroupNode *parent,
       des(Trool_Default),
       att(attached)
 {
-    // nothing.
+    setPageType(ApiPage);
 }
 
 /*!

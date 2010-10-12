@@ -51,17 +51,14 @@ QT_BEGIN_NAMESPACE
 /*!
    \qmlclass FocusPanel QDeclarativeFocusPanel
     \since 4.7
+    \ingroup qml-basic-interaction-elements
+
    \brief The FocusPanel item explicitly creates a focus panel.
    \inherits Item
 
     Focus panels assist in keyboard focus handling when building QML
     applications.  All the details are covered in the 
     \l {qmlfocus}{keyboard focus documentation}.
-*/
-
-/*!
-    \internal
-    \class QDeclarativeFocusPanel
 */
 
 QDeclarativeFocusPanel::QDeclarativeFocusPanel(QDeclarativeItem *parent) :

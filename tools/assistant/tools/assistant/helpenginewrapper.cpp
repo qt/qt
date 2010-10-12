@@ -72,6 +72,7 @@ namespace {
     const QString UseBrowserFontKey(QLatin1String("useBrowserFont"));
     const QString VersionKey(QString(QLatin1String("qtVersion%1$$$%2")).
                              arg(QLatin1String(QT_VERSION_STR)));
+    const QString ShowTabsKey(QLatin1String("showTabs"));
 } // anonymous namespace
 
 class TimeoutForwarder : public QObject
@@ -114,7 +115,7 @@ private:
     QMap<QString, RecentSignal> m_recentQchUpdates;
 };
 
-const QString HelpEngineWrapper::TrUnfiltered = tr("Unfiltered");
+const QString HelpEngineWrapper::TrUnfiltered = HelpEngineWrapper::tr("Unfiltered");
 
 HelpEngineWrapper *HelpEngineWrapper::helpEngineWrapper = 0;
 
@@ -147,7 +148,7 @@ HelpEngineWrapper::HelpEngineWrapper(const QString &collectionFile)
      * because we will start to index them, only to be interupted
      * by the next request. Also, there is a nasty SQLITE bug that will
      * cause the application to hang for minutes in that case.
-     * This call is reverted by initalDocSetupDone(), which must be
+     * This call is reverted by initialDocSetupDone(), which must be
      * called after the new docs have been installed.
      */
     disconnect(d->m_helpEngine, SIGNAL(setupFinished()),
@@ -692,11 +693,31 @@ void HelpEngineWrapper::setBrowserWritingSystem(QFontDatabase::WritingSystem sys
 
 void HelpEngineWrapper::handleCurrentFilterChanged(const QString &filter)
 {
+    TRACE_OBJ
     const QString &filterToReport
         = filter == Unfiltered ? TrUnfiltered : filter;
     emit currentFilterChanged(filterToReport);
 }
 
+bool HelpEngineWrapper::showTabs() const
+{
+    TRACE_OBJ
+    return d->m_helpEngine->customValue(ShowTabsKey, false).toBool();
+}
+
+void HelpEngineWrapper::setShowTabs(bool show)
+{
+    TRACE_OBJ
+    d->m_helpEngine->setCustomValue(ShowTabsKey, show);
+}
+
+bool HelpEngineWrapper::fullTextSearchFallbackEnabled() const
+{
+    TRACE_OBJ
+    return CollectionConfiguration::fullTextSearchFallbackEnabled(*d->m_helpEngine);
+}
+
+// -- TimeoutForwarder
 
 TimeoutForwarder::TimeoutForwarder(const QString &fileName)
     : m_fileName(fileName)
@@ -710,6 +731,7 @@ void TimeoutForwarder::forward()
     HelpEngineWrapper::instance().d->qchFileChanged(m_fileName, true);
 }
 
+// -- HelpEngineWrapperPrivate
 
 HelpEngineWrapperPrivate::HelpEngineWrapperPrivate(const QString &collectionFile)
     : m_helpEngine(new QHelpEngine(collectionFile, this)),
@@ -816,7 +838,6 @@ void HelpEngineWrapperPrivate::qchFileChanged(const QString &fileName,
     }
     m_recentQchUpdates.erase(it);
 }
-
 
 QT_END_NAMESPACE
 

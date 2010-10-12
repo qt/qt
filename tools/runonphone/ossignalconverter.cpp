@@ -42,6 +42,7 @@
 #include "ossignalconverter_p.h"
 #include <signal.h>
 #include <QTimer>
+#include <stdio.h>
 
 Q_GLOBAL_STATIC(OsSignalConverter, osSignalConverter);
 

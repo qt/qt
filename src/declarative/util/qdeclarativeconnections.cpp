@@ -71,6 +71,7 @@ public:
 
 /*!
     \qmlclass Connections QDeclarativeConnections
+  \ingroup qml-utility-elements
   \since 4.7
     \brief A Connections element describes generalized connections to signals.
 
@@ -122,13 +123,6 @@ public:
     \endqml
 
     \sa QtDeclarative
-*/
-
-/*!
-    \internal
-    \class QDeclarativeConnections
-    \brief The QDeclarativeConnections class describes generalized connections to signals.
-
 */
 QDeclarativeConnections::QDeclarativeConnections(QObject *parent) :
     QObject(*(new QDeclarativeConnectionsPrivate), parent)

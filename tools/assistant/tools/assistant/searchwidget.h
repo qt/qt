@@ -58,15 +58,12 @@ class SearchWidget : public QWidget
     Q_OBJECT
 
 public:
-    SearchWidget(QHelpSearchEngine *engine, QWidget *parent = 0);
+    explicit SearchWidget(QHelpSearchEngine *engine, QWidget *parent = 0);
     ~SearchWidget();
 
     void zoomIn();
     void zoomOut();
     void resetZoom();
-
-    bool isAttached() const;
-    void setAttached(bool state);
 
 signals:
     void requestShowLink(const QUrl &url);
@@ -84,7 +81,6 @@ private:
 
 private:
     int zoomCount;
-    bool attached;
     QHelpSearchEngine *searchEngine;
     QHelpSearchResultWidget *resultWidget;
 };

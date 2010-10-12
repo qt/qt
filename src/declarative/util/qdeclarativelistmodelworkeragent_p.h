@@ -57,6 +57,8 @@
 
 #include <QtScript/qscriptvalue.h>
 #include <QtGui/qevent.h>
+#include <QMutex>
+#include <QWaitCondition>
 
 QT_BEGIN_HEADER
 
@@ -65,6 +67,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativeListModel;
+class FlatListScriptClass;
 
 class QDeclarativeListModelWorkerAgent : public QObject
 {
@@ -113,6 +116,7 @@ protected:
 
 private:
     friend class QDeclarativeWorkerScriptEnginePrivate;
+    friend class FlatListScriptClass;
     QScriptEngine *m_engine;
 
     struct Change {
@@ -139,9 +143,13 @@ private:
         QDeclarativeListModel *list;
     };
 
+    void changedData(int index, int count);
+
     QAtomicInt m_ref;
     QDeclarativeListModel *m_orig;
     QDeclarativeListModel *m_copy;
+    QMutex mutex;
+    QWaitCondition syncDone;
 };
 
 QT_END_NAMESPACE

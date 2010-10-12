@@ -188,10 +188,9 @@ bool QphHandler::characters(const QString &ch)
 bool QphHandler::fatalError(const QXmlParseException &exception)
 {
     if (ferrorCount++ == 0) {
-        QString msg;
-        msg.sprintf("Parse error at line %d, column %d (%s).",
-            exception.lineNumber(), exception.columnNumber(),
-            exception.message().toLatin1().constData());
+        QString msg = PhraseBook::tr("Parse error at line %1, column %2 (%3).")
+            .arg(exception.lineNumber()).arg(exception.columnNumber())
+            .arg(exception.message());
         QMessageBox::information(0,
             QObject::tr("Qt Linguist"), msg);
     }

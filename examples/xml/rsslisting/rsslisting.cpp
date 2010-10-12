@@ -65,21 +65,19 @@ its operation, and also allows very large data sources to be read.
     Constructs an RSSListing widget with a simple user interface, and sets
     up the XML reader to use a custom handler class.
 
-    The user interface consists of a line edit, two push buttons, and a
+    The user interface consists of a line edit, a push button, and a
     list view widget. The line edit is used for entering the URLs of news
-    sources; the push buttons start and abort the process of reading the
+    sources; the push button starts the process of reading the
     news.
 */
 
 RSSListing::RSSListing(QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent), currentReply(0)
 {
     lineEdit = new QLineEdit(this);
     lineEdit->setText("http://labs.qt.nokia.com/blogs/feed");
 
     fetchButton = new QPushButton(tr("Fetch"), this);
-    abortButton = new QPushButton(tr("Abort"), this);
-    abortButton->setEnabled(false);
 
     treeWidget = new QTreeWidget(this);
     connect(treeWidget, SIGNAL(itemActivated(QTreeWidgetItem*,int)),
@@ -89,15 +87,11 @@ RSSListing::RSSListing(QWidget *parent)
     treeWidget->setHeaderLabels(headerLabels);
     treeWidget->header()->setResizeMode(QHeaderView::ResizeToContents);
 
-    connect(&http, SIGNAL(readyRead(QHttpResponseHeader)),
-             this, SLOT(readData(QHttpResponseHeader)));
-
-    connect(&http, SIGNAL(requestFinished(int,bool)),
-             this, SLOT(finished(int,bool)));
+    connect(&manager, SIGNAL(finished(QNetworkReply*)),
+             this, SLOT(finished(QNetworkReply*)));
 
     connect(lineEdit, SIGNAL(returnPressed()), this, SLOT(fetch()));
     connect(fetchButton, SIGNAL(clicked()), this, SLOT(fetch()));
-    connect(abortButton, SIGNAL(clicked()), &http, SLOT(abort()));
 
     QVBoxLayout *layout = new QVBoxLayout(this);
 
@@ -105,7 +99,6 @@ RSSListing::RSSListing(QWidget *parent)
 
     hboxLayout->addWidget(lineEdit);
     hboxLayout->addWidget(fetchButton);
-    hboxLayout->addWidget(abortButton);
 
     layout->addLayout(hboxLayout);
     layout->addWidget(treeWidget);
@@ -115,34 +108,53 @@ RSSListing::RSSListing(QWidget *parent)
 }
 
 /*
+    Starts the network request and connects the needed signals
+*/
+void RSSListing::get(const QUrl &url)
+{
+    QNetworkRequest request(url);
+    if (currentReply) {
+        currentReply->disconnect(this);
+        currentReply->deleteLater();
+    }
+    currentReply = manager.get(request);
+    connect(currentReply, SIGNAL(readyRead()), this, SLOT(readyRead()));
+    connect(currentReply, SIGNAL(metaDataChanged()), this, SLOT(metaDataChanged()));
+    connect(currentReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(error(QNetworkReply::NetworkError)));
+}
+
+/*
     Starts fetching data from a news source specified in the line
     edit widget.
 
     The line edit is made read only to prevent the user from modifying its
     contents during the fetch; this is only for cosmetic purposes.
-    The fetch button is disabled, and the abort button is enabled to allow
-    the user to interrupt processing. The list view is cleared, and we
+    The fetch button is disabled, the list view is cleared, and we
     define the last list view item to be 0, meaning that there are no
     existing items in the list.
 
-    The HTTP handler is supplied with the raw contents of the line edit and
-    a fetch is initiated. We keep the ID value returned by the HTTP handler
-    for future reference.
+    A URL is created with the raw contents of the line edit and
+    a get is initiated.
 */
 
 void RSSListing::fetch()
 {
     lineEdit->setReadOnly(true);
     fetchButton->setEnabled(false);
-    abortButton->setEnabled(true);
     treeWidget->clear();
 
     xml.clear();
 
     QUrl url(lineEdit->text());
+    get(url);
+}
 
-    http.setHost(url.host());
-    connectionId = http.get(url.path());
+void RSSListing::metaDataChanged()
+{
+    QUrl redirectionTarget = currentReply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
+    if (redirectionTarget.isValid()) {
+        get(redirectionTarget);
+    }
 }
 
 /*
@@ -150,16 +162,14 @@ void RSSListing::fetch()
 
     We read all the available data, and pass it to the XML
     stream reader. Then we call the XML parsing function.
-
-    If parsing fails for any reason, we abort the fetch.
 */
 
-void RSSListing::readData(const QHttpResponseHeader &resp)
+void RSSListing::readyRead()
 {
-    if (resp.statusCode() != 200)
-        http.abort();
-    else {
-        xml.addData(http.readAll());
+    int statusCode = currentReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    if (statusCode >= 200 && statusCode < 300) {
+        QByteArray data = currentReply->readAll();
+        xml.addData(data);
         parseXml();
     }
 }
@@ -177,19 +187,11 @@ void RSSListing::readData(const QHttpResponseHeader &resp)
     user interface available to the user for further input.
 */
 
-void RSSListing::finished(int id, bool error)
+void RSSListing::finished(QNetworkReply *reply)
 {
-    if (error) {
-        qWarning("Received error during HTTP fetch.");
-        lineEdit->setReadOnly(false);
-        abortButton->setEnabled(false);
-        fetchButton->setEnabled(true);
-    }
-    else if (id == connectionId) {
-        lineEdit->setReadOnly(false);
-        abortButton->setEnabled(false);
-        fetchButton->setEnabled(true);
-    }
+    Q_UNUSED(reply);
+    lineEdit->setReadOnly(false);
+    fetchButton->setEnabled(true);
 }
 
 
@@ -225,7 +227,6 @@ void RSSListing::parseXml()
     }
     if (xml.error() && xml.error() != QXmlStreamReader::PrematureEndOfDocumentError) {
         qWarning() << "XML ERROR:" << xml.lineNumber() << ": " << xml.errorString();
-        http.abort();
     }
 }
 
@@ -235,4 +236,12 @@ void RSSListing::parseXml()
 void RSSListing::itemActivated(QTreeWidgetItem * item)
 {
     QDesktopServices::openUrl(QUrl(item->text(1)));
+}
+
+void RSSListing::error(QNetworkReply::NetworkError)
+{
+    qWarning("error retrieving RSS feed");
+    currentReply->disconnect(this);
+    currentReply->deleteLater();
+    currentReply = 0;
 }

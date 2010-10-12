@@ -107,7 +107,7 @@ class tst_QMetaObject : public QObject
     Q_PROPERTY(QVariantList value5 WRITE setVal5 READ val5)
     Q_PROPERTY(int value6 READ value6 NOTIFY value6Changed)
     Q_PROPERTY(MyStruct value7 READ value7 WRITE setVal7 NOTIFY value7Changed)
-    Q_PROPERTY(int value8 READ value8 NOTIFY value8Changed)
+    Q_PROPERTY(int value8 READ value8)
     Q_PROPERTY(int value9 READ value9 CONSTANT)
     Q_PROPERTY(int value10 READ value10 FINAL)
 

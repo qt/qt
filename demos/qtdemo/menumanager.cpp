@@ -356,6 +356,7 @@ void MenuManager::launchExample(const QString &name)
 
 void MenuManager::launchQmlExample(const QString &name)
 {
+#ifndef QT_NO_DECLARATIVE
     if(!qmlRoot){
         exampleError(QProcess::UnknownError);
         return;
@@ -382,6 +383,15 @@ void MenuManager::launchQmlExample(const QString &name)
     qmlRoot->setProperty("qmlFile", QVariant(""));//unload component
     qmlRoot->setProperty("show", QVariant(true));
     qmlRoot->setProperty("qmlFile", QUrl::fromLocalFile(file.fileName()));
+#else
+    exampleError(QProcess::UnknownError);
+#endif
+}
+
+void MenuManager::quitQML()
+{
+    if(qmlRoot)
+        qmlRoot->setProperty("show", QVariant(false));
 }
 
 void MenuManager::exampleFinished()
@@ -427,21 +437,28 @@ void MenuManager::init(MainWindow *window)
         level2MenuNode = level2MenuNode.nextSibling();
     }
 
+    qmlRoot = 0;
+#ifndef QT_NO_DECLARATIVE
     // Create QML Loader
     declarativeEngine = new QDeclarativeEngine(this);
+    connect(declarativeEngine, SIGNAL(quit()),
+            this, SLOT(quitQML()));
 
     QDeclarativeComponent component(declarativeEngine, QUrl("qrc:qml/qmlShell.qml"), this);
-    qmlRoot = 0;
-    if(component.isReady())
-        qmlRoot = qobject_cast<QDeclarativeItem*>(component.create());
-    else
+    QDeclarativeItem* qmlRootItem = 0;
+    if(component.isReady()){
+        qmlRoot = component.create();
+        qmlRootItem = qobject_cast<QDeclarativeItem*>(qmlRoot);
+    }else{
         qDebug() << component.status() << component.errorString();
-    if(qmlRoot){
-        qmlRoot->setHeight(this->window->scene->sceneRect().height());
-        qmlRoot->setWidth(this->window->scene->sceneRect().width());
-        qmlRoot->setZValue(101);//Above other items
-        qmlRoot->setCursor(Qt::ArrowCursor);
-        window->scene->addItem(qmlRoot);
+    }
+
+    if(qmlRootItem){
+        qmlRootItem->setHeight(this->window->scene->sceneRect().height());
+        qmlRootItem->setWidth(this->window->scene->sceneRect().width());
+        qmlRootItem->setZValue(101);//Above other items
+        qmlRootItem->setCursor(Qt::ArrowCursor);
+        window->scene->addItem(qmlRootItem);
 
         //Note that QML adds key handling to the app.
         window->viewport()->setFocusPolicy(Qt::NoFocus);//Correct keyboard focus handling
@@ -451,6 +468,7 @@ void MenuManager::init(MainWindow *window)
     }else{
         qDebug() << "Error initializing QML subsystem, Declarative examples will not work";
     }
+#endif
 }
 
 void MenuManager::readInfoAboutExample(const QDomElement &example)
@@ -500,6 +518,7 @@ QString MenuManager::resolveExeFile(const QString &name)
     dir.cd(dirName);
     dir.cd(fileName);
 
+    fileName = fileName.split("/").last();
     QFile unixFile(dir.path() + "/" + fileName);
     if (unixFile.exists()) return unixFile.fileName();
     QFile winR(dir.path() + "\\release\\" + fileName + ".exe");

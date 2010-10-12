@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 
 Rectangle {
     id: page
@@ -87,14 +87,14 @@ Rectangle {
         color: "Lime"
         x: 2; width: 20; height: 90
         y: ball.direction == 'left' ? ball.y - 45 : page.height/2 -45;
-        Behavior on y { SpringAnimation{ spring: 1; damping: .1; } }
+        Behavior on y { SpringAnimation{ velocity: 300 } }
     }
     Rectangle {
         id: rightBat
         color: "Lime"
         x: page.width - 22; width: 20; height: 90
         y: ball.direction == 'right' ? ball.y - 45 : page.height/2 -45;
-        Behavior on y { SpringAnimation{ spring: 1; damping: .1; } }
+        Behavior on y { SpringAnimation{ velocity: 300 } }
     }
 
     // The rest, to make it look realistic, if neither ever scores...

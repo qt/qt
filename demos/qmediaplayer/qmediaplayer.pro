@@ -27,7 +27,7 @@ DEPLOYMENT_PLUGIN += phonon_ds9 phonon_waveout
 symbian {
     TARGET.UID3 = 0xA000C613
 
-     addFiles.sources = ../embedded/desktopservices/data/sax.mp3
+     addFiles.files = ../embedded/desktopservices/data/sax.mp3
      addFiles.path = /data/sounds/
      DEPLOYMENT += addFiles
 

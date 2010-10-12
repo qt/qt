@@ -2809,6 +2809,11 @@ public:
     inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
+    inline bool hasAttributeTheme() const { return m_has_attr_theme; }
+    inline QString attributeTheme() const { return m_attr_theme; }
+    inline void setAttributeTheme(const QString& a) { m_attr_theme = a; m_has_attr_theme = true; }
+    inline void clearAttributeTheme() { m_has_attr_theme = false; }
+
     inline bool hasAttributeResource() const { return m_has_attr_resource; }
     inline QString attributeResource() const { return m_attr_resource; }
     inline void setAttributeResource(const QString& a) { m_attr_resource = a; m_has_attr_resource = true; }
@@ -2868,6 +2873,9 @@ private:
     void clear(bool clear_all = true);
 
     // attribute data
+    QString m_attr_theme;
+    bool m_has_attr_theme;
+
     QString m_attr_resource;
     bool m_has_attr_resource;
 

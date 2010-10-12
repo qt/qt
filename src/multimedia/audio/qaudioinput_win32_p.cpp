@@ -214,18 +214,44 @@ bool QAudioInputPrivate::open()
     qDebug()<<now.second()<<"s "<<now.msec()<<"ms :open()";
 #endif
     header = 0;
-    if(buffer_size == 0) {
-        // Default buffer size, 200ms, default period size is 40ms
-        buffer_size = settings.frequency()*settings.channels()*(settings.sampleSize()/8)*0.2;
-	period_size = buffer_size/5;
+    period_size = 0;
+
+    if (!settings.isValid()) {
+        qWarning("QAudioInput: open error, invalid format.");
+    } else if (settings.channels() <= 0) {
+        qWarning("QAudioInput: open error, invalid number of channels (%d).",
+                 settings.channels());
+    } else if (settings.sampleSize() <= 0) {
+        qWarning("QAudioInput: open error, invalid sample size (%d).",
+                 settings.sampleSize());
+    } else if (settings.frequency() < 8000 || settings.frequency() > 48000) {
+        qWarning("QAudioInput: open error, frequency out of range (%d).", settings.frequency());
+    } else if (buffer_size == 0) {
+
+        buffer_size
+                = (settings.frequency()
+                * settings.channels()
+                * settings.sampleSize()
+#ifndef Q_OS_WINCE  // Default buffer size, 200ms, default period size is 40ms
+                + 39) / 40;
+        period_size = buffer_size / 5;
     } else {
-        period_size = buffer_size/5;
-    }
-#ifdef Q_OS_WINCE
-    // For wince reduce size to 40ms for buffer size and 20ms period
-    buffer_size = settings.sampleRate()*settings.channelCount()*(settings.sampleSize()/8)*0.04;
-    period_size = buffer_size/2;
+        period_size = buffer_size / 5;
+#else               // For wince reduce size to 40ms for buffer size and 20ms period
+                + 199) / 200;
+        period_size = buffer_size / 2;
+    } else {
+        period_size = buffer_size / 2;
 #endif
+    }
+
+    if (period_size == 0) {
+        errorState = QAudio::OpenError;
+        deviceState = QAudio::StoppedState;
+        emit stateChanged(deviceState);
+        return false;
+    }
+
     timeStamp.restart();
     elapsedTimeOffset = 0;
     wfx.nSamplesPerSec = settings.frequency();

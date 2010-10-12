@@ -94,30 +94,62 @@ public:
 
 /*!
     \qmlclass FolderListModel QDeclarativeFolderListModel
-    \brief The FolderListModel provides a model of the contents of a folder in a filesystem.
+    \ingroup qml-working-with-data
+    \brief The FolderListModel provides a model of the contents of a file system folder.
 
-    FolderListModel provides access to the local filesystem.  The \e folder property
-    specifies the folder to list.
+    FolderListModel provides access to information about the contents of a folder
+    in the local file system, exposing a list of files to views and other data components.
+
+    \note This type is made available by importing the \c Qt.labs.folderlistmodel module.
+    \e{Elements in the Qt.labs module are not guaranteed to remain compatible
+    in future versions.}
+
+    \bold{import Qt.labs.folderlistmodel 1.0}
+
+    The \l folder property specifies the folder to access. Information about the
+    files and directories in the folder is supplied via the model's interface.
+    Components access names and paths via the following roles:
+
+    \list
+    \o fileName
+    \o filePath
+    \endlist
+
+    Additionally a file entry can be differentiated from a folder entry via the
+    isFolder() method.
+
+    \section1 Filtering
+
+    Various properties can be set to filter the number of files and directories
+    exposed by the model.
+
+    The \l nameFilters property can be set to contain a list of wildcard filters
+    that are applied to names of files and directories, causing only those that
+    match the filters to be exposed.
+
+    Directories can be included or excluded using the \l showDirs property, and
+    navigation directories can also be excluded by setting the \l showDotAndDotDot
+    property to false.
+
+    It is sometimes useful to limit the files and directories exposed to those
+    that the user can access. The \l showOnlyReadable property can be set to
+    enable this feature.
+
+    \section1 Example Usage
+
+    The following example shows a FolderListModel being used to provide a list
+    of QML files in a \l ListView:
+
+    \snippet doc/src/snippets/declarative/folderlistmodel.qml 0
+
+    \section1 Path Separators
 
     Qt uses "/" as a universal directory separator in the same way that "/" is
     used as a path separator in URLs. If you always use "/" as a directory
     separator, Qt will translate your paths to conform to the underlying
     operating system.
 
-    This type is made available by importing the \c Qt.labs.folderlistmodel module.
-    \e {Elements in the Qt.labs module are not guaranteed to remain compatible
-    in future versions.}
-
-    \bold{import Qt.labs.folderlistmodel 1.0}
-
-    The roles available are:
-    \list
-    \o fileName
-    \o filePath
-    \endlist
-
-    Additionally a file entry can be differentiated from a folder entry
-    via the \l isFolder() method.
+    \sa {QML Data Models}
 */
 
 QDeclarativeFolderListModel::QDeclarativeFolderListModel(QObject *parent)
@@ -135,7 +167,7 @@ QDeclarativeFolderListModel::QDeclarativeFolderListModel(QObject *parent)
     connect(&d->model, SIGNAL(rowsRemoved(const QModelIndex&,int,int))
             , this, SLOT(removed(const QModelIndex&,int,int)));
     connect(&d->model, SIGNAL(dataChanged(const QModelIndex&,const QModelIndex&))
-            , this, SLOT(dataChanged(const QModelIndex&,const QModelIndex&)));
+            , this, SLOT(handleDataChanged(const QModelIndex&,const QModelIndex&)));
     connect(&d->model, SIGNAL(modelReset()), this, SLOT(refresh()));
     connect(&d->model, SIGNAL(layoutChanged()), this, SLOT(refresh()));
 }
@@ -167,9 +199,13 @@ int QDeclarativeFolderListModel::rowCount(const QModelIndex &parent) const
 /*!
     \qmlproperty string FolderListModel::folder
 
-    The \a folder property holds the folder the model is currently providing.
+    The \a folder property holds a URL for the folder that the model is
+    currently providing.
 
-    It is a URL, but must be a file: or qrc: URL (or relative to such a URL).
+    The value is a URL expressed as a string, and must be a \c file: or \c qrc:
+    URL, or a relative URL.
+
+    By default, the value is an invalid URL.
 */
 QUrl QDeclarativeFolderListModel::folder() const
 {
@@ -213,16 +249,18 @@ QUrl QDeclarativeFolderListModel::parentFolder() const
 /*!
     \qmlproperty list<string> FolderListModel::nameFilters
 
-    The \a nameFilters property contains a list of filename filters.
+    The \a nameFilters property contains a list of file name filters.
     The filters may include the ? and * wildcards.
 
     The example below filters on PNG and JPEG files:
 
-    \code
+    \qml
     FolderListModel {
         nameFilters: [ "*.png", "*.jpg" ]
     }
-    \endcode
+    \endqml
+
+    \note Directories are not excluded by filters.
 */
 QStringList QDeclarativeFolderListModel::nameFilters() const
 {
@@ -325,7 +363,7 @@ void QDeclarativeFolderListModel::removed(const QModelIndex &index, int start, i
     }
 }
 
-void QDeclarativeFolderListModel::dataChanged(const QModelIndex &start, const QModelIndex &end)
+void QDeclarativeFolderListModel::handleDataChanged(const QModelIndex &start, const QModelIndex &end)
 {
     if (start.parent() == d->folderIndex)
         emit dataChanged(index(start.row(),0), index(end.row(),0));
@@ -334,9 +372,14 @@ void QDeclarativeFolderListModel::dataChanged(const QModelIndex &start, const QM
 /*!
     \qmlproperty bool FolderListModel::showDirs
 
-    If true (the default), directories are included in the model.
+    If true, directories are included in the model; otherwise only files
+    are included.
 
-    Note that the nameFilters are ignored for directories.
+    By default, this property is true.
+
+    Note that the nameFilters are not applied to directories.
+
+    \sa showDotAndDotDot
 */
 bool QDeclarativeFolderListModel::showDirs() const
 {
@@ -356,9 +399,12 @@ void  QDeclarativeFolderListModel::setShowDirs(bool on)
 /*!
     \qmlproperty bool FolderListModel::showDotAndDotDot
 
-    If true, the "." and ".." directories are included in the model.
+    If true, the "." and ".." directories are included in the model; otherwise
+    they are excluded.
 
-    The default is false.
+    By default, this property is false.
+
+    \sa showDirs
 */
 bool QDeclarativeFolderListModel::showDotAndDotDot() const
 {
@@ -378,9 +424,12 @@ void  QDeclarativeFolderListModel::setShowDotAndDotDot(bool on)
 /*!
     \qmlproperty bool FolderListModel::showOnlyReadable
 
-    If true, only readable files and directories are shown.
+    If true, only readable files and directories are shown; otherwise all files
+    and directories are shown.
 
-    The default is false.
+    By default, this property is false.
+
+    \sa showDirs
 */
 bool QDeclarativeFolderListModel::showOnlyReadable() const
 {

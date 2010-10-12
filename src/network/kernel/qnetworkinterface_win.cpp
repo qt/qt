@@ -48,6 +48,7 @@
 #include <qhostinfo.h>
 #include <qhash.h>
 #include <qurl.h>
+#include <private/qsystemlibrary_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -66,7 +67,7 @@ static void resolveLibs()
     if (!done) {
         done = true;
 
-        HINSTANCE iphlpapiHnd = LoadLibrary(L"iphlpapi");
+        HINSTANCE iphlpapiHnd = QSystemLibrary::load(L"iphlpapi");
         if (iphlpapiHnd == NULL)
             return;
 

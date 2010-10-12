@@ -45,16 +45,45 @@
 #include "qbearerengine_p.h"
 
 #include <QtCore/qstringlist.h>
+#include <QtCore/qcoreapplication.h>
 
 #ifndef QT_NO_BEARERMANAGEMENT
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC(QNetworkConfigurationManagerPrivate, connManager);
+#define Q_GLOBAL_STATIC_QAPP_DESTRUCTION(TYPE, NAME)                    \
+    Q_GLOBAL_STATIC_INIT(TYPE, NAME);                                   \
+    static void NAME##_cleanup()                                        \
+    {                                                                   \
+        delete this_##NAME.pointer;                                     \
+        this_##NAME.pointer = 0;                                        \
+        this_##NAME.destroyed = true;                                   \
+    }                                                                   \
+    static TYPE *NAME()                                                 \
+    {                                                                   \
+        if (!this_##NAME.pointer && !this_##NAME.destroyed) {           \
+            TYPE *x = new TYPE;                                         \
+            if (!this_##NAME.pointer.testAndSetOrdered(0, x))           \
+                delete x;                                               \
+            else                                                        \
+                qAddPostRoutine(NAME##_cleanup);                        \
+        }                                                               \
+        return this_##NAME.pointer;                                     \
+    }
+
+Q_GLOBAL_STATIC_QAPP_DESTRUCTION(QNetworkConfigurationManagerPrivate, connManager);
 
 QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
 {
-    return connManager();
+    static bool initialized = false;
+
+    QNetworkConfigurationManagerPrivate *m = connManager();
+    if (!initialized) {
+        initialized = true;
+        m->updateConfigurations();
+    }
+
+    return m;
 }
 
 /*!
@@ -178,7 +207,7 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
 QNetworkConfigurationManager::QNetworkConfigurationManager( QObject* parent )
     : QObject(parent)
 {
-    QNetworkConfigurationManagerPrivate *priv = connManager();
+    QNetworkConfigurationManagerPrivate *priv = qNetworkConfigurationManagerPrivate();
 
     connect(priv, SIGNAL(configurationAdded(QNetworkConfiguration)),
             this, SIGNAL(configurationAdded(QNetworkConfiguration)));

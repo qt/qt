@@ -144,6 +144,8 @@
                                 Smart installer will attempt to download
                                 missing dependencies in addition to
                                 just installing the application.
+    \row \o \c unsigned_installer_sis \o Create unsigned \l{Smart Installer}{smart installer}
+                                         \c .sis file for project.
     \row \o \c stub_sis      \o Create a stub sis to allow upgradability of projects
                                 that are deployed in ROM
     \endtable
@@ -219,6 +221,7 @@
     \row \o -o                  \o Creates only unsigned package.
     \row \o -s                  \o Generates stub sis for ROM.
     \row \o -n <name>           \o Specifies the final sis name.
+    \row \o -g                  \o Treat gcce platform as armv5.
     \endtable
 
     Execute the \c{createpackage.pl} script without any

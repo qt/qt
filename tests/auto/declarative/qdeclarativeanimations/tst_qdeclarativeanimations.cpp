@@ -48,6 +48,8 @@
 #include <QVariantAnimation>
 #include <QEasingCurve>
 
+#include "../../../shared/util.h"
+
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
 #define SRCDIR "."
@@ -82,6 +84,7 @@ private slots:
     void easingProperties();
     void rotation();
     void runningTrueBug();
+    void nonTransitionBug();
 };
 
 #define QTIMED_COMPARE(lhs, rhs) do { \
@@ -671,7 +674,7 @@ void tst_qdeclarativeanimations::easingProperties()
 {
     {
         QDeclarativeEngine engine;
-        QString componentStr = "import Qt 4.7\nNumberAnimation { easing.type: \"InOutQuad\" }";
+        QString componentStr = "import QtQuick 1.0\nNumberAnimation { easing.type: \"InOutQuad\" }";
         QDeclarativeComponent animationComponent(&engine);
         animationComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QDeclarativePropertyAnimation *animObject = qobject_cast<QDeclarativePropertyAnimation*>(animationComponent.create());
@@ -682,7 +685,7 @@ void tst_qdeclarativeanimations::easingProperties()
 
     {
         QDeclarativeEngine engine;
-        QString componentStr = "import Qt 4.7\nPropertyAnimation { easing.type: \"OutBounce\"; easing.amplitude: 5.0 }";
+        QString componentStr = "import QtQuick 1.0\nPropertyAnimation { easing.type: \"OutBounce\"; easing.amplitude: 5.0 }";
         QDeclarativeComponent animationComponent(&engine);
         animationComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QDeclarativePropertyAnimation *animObject = qobject_cast<QDeclarativePropertyAnimation*>(animationComponent.create());
@@ -694,7 +697,7 @@ void tst_qdeclarativeanimations::easingProperties()
 
     {
         QDeclarativeEngine engine;
-        QString componentStr = "import Qt 4.7\nPropertyAnimation { easing.type: \"OutElastic\"; easing.amplitude: 5.0; easing.period: 3.0}";
+        QString componentStr = "import QtQuick 1.0\nPropertyAnimation { easing.type: \"OutElastic\"; easing.amplitude: 5.0; easing.period: 3.0}";
         QDeclarativeComponent animationComponent(&engine);
         animationComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QDeclarativePropertyAnimation *animObject = qobject_cast<QDeclarativePropertyAnimation*>(animationComponent.create());
@@ -707,7 +710,7 @@ void tst_qdeclarativeanimations::easingProperties()
 
     {
         QDeclarativeEngine engine;
-        QString componentStr = "import Qt 4.7\nPropertyAnimation { easing.type: \"InOutBack\"; easing.overshoot: 2 }";
+        QString componentStr = "import QtQuick 1.0\nPropertyAnimation { easing.type: \"InOutBack\"; easing.overshoot: 2 }";
         QDeclarativeComponent animationComponent(&engine);
         animationComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QDeclarativePropertyAnimation *animObject = qobject_cast<QDeclarativePropertyAnimation*>(animationComponent.create());
@@ -760,6 +763,34 @@ void tst_qdeclarativeanimations::runningTrueBug()
     QVERIFY(cloud);
     QTest::qWait(1000);
     QVERIFY(cloud->x() > qreal(0));
+}
+
+//QTBUG-12805
+void tst_qdeclarativeanimations::nonTransitionBug()
+{
+    //tests that the animation values from the previous transition are properly cleared
+    //in the case where an animation in the transition doesn't match anything (but previously did)
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent c(&engine, SRCDIR "/data/nonTransitionBug.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect != 0);
+    QDeclarativeItemPrivate *rectPrivate = QDeclarativeItemPrivate::get(rect);
+    QDeclarativeRectangle *mover = rect->findChild<QDeclarativeRectangle*>("mover");
+
+    mover->setX(100);
+    QCOMPARE(mover->x(), qreal(100));
+
+    rectPrivate->setState("left");
+    QTRY_COMPARE(mover->x(), qreal(0));
+
+    mover->setX(100);
+    QCOMPARE(mover->x(), qreal(100));
+
+    //make sure we don't try to animate back to 0
+    rectPrivate->setState("free");
+    QTest::qWait(300);
+    QCOMPARE(mover->x(), qreal(100));
 }
 
 QTEST_MAIN(tst_qdeclarativeanimations)

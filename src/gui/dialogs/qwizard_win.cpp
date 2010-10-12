@@ -43,7 +43,7 @@
 #ifndef QT_NO_STYLE_WINDOWSVISTA
 
 #include "qwizard_win_p.h"
-#include "qlibrary.h"
+#include <private/qsystemlibrary_p.h>
 #include "qwizard.h"
 #include "qpaintengine.h"
 #include "qapplication.h"
@@ -706,7 +706,7 @@ bool QVistaHelper::resolveSymbols()
     static bool tried = false;
     if (!tried) {
         tried = true;
-        QLibrary dwmLib(QString::fromAscii("dwmapi"));
+        QSystemLibrary dwmLib(L"dwmapi");
         pDwmIsCompositionEnabled =
             (PtrDwmIsCompositionEnabled)dwmLib.resolve("DwmIsCompositionEnabled");
         if (pDwmIsCompositionEnabled) {
@@ -714,7 +714,7 @@ bool QVistaHelper::resolveSymbols()
             pDwmExtendFrameIntoClientArea =
                 (PtrDwmExtendFrameIntoClientArea)dwmLib.resolve("DwmExtendFrameIntoClientArea");
         }
-        QLibrary themeLib(QString::fromAscii("uxtheme"));
+        QSystemLibrary themeLib(L"uxtheme");
         pIsAppThemed = (PtrIsAppThemed)themeLib.resolve("IsAppThemed");
         if (pIsAppThemed) {
             pDrawThemeBackground = (PtrDrawThemeBackground)themeLib.resolve("DrawThemeBackground");

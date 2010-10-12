@@ -293,8 +293,12 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     // previous versions
     family_list << QApplication::font().defaultFamily();
 
+#if defined(QT_MAC_USE_COCOA)
+    QCFString fontName = NULL, familyName = NULL;
+#else
     ATSFontFamilyRef familyRef = 0;
     ATSFontRef fontRef = 0;
+#endif
 
     QMutexLocker locker(fontDatabaseMutex());
     QFontDatabasePrivate *db = privateDb();
@@ -304,26 +308,20 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
         for (int k = 0; k < db->count; ++k) {
             if (db->families[k]->name.compare(family_list.at(i), Qt::CaseInsensitive) == 0) {
                 QByteArray family_name = db->families[k]->name.toUtf8();
+#if defined(QT_MAC_USE_COCOA)
+                QCFType<CTFontRef> ctFont = CTFontCreateWithName(QCFString(db->families[k]->name), 12, NULL);
+                if (ctFont) {
+                    fontName = CTFontCopyFullName(ctFont);
+                    familyName = CTFontCopyFamilyName(ctFont);
+                    goto FamilyFound;
+                }
+#else
                 familyRef = ATSFontFamilyFindFromName(QCFString(db->families[k]->name), kATSOptionFlagsDefault);
                 if (familyRef) {
                     fontRef = ATSFontFindFromName(QCFString(db->families[k]->name), kATSOptionFlagsDefault);
                     goto FamilyFound;
-                } else {
-#if defined(QT_MAC_USE_COCOA)
-                    // ATS and CT disagrees on what the family name should be,
-                    // use CT to look up the font if ATS fails.
-                    QCFString familyName = QString::fromAscii(family_name);
-                    QCFType<CTFontRef> CTfontRef = CTFontCreateWithName(familyName, 12, NULL);
-                    QCFType<CTFontDescriptorRef> fontDescriptor = CTFontCopyFontDescriptor(CTfontRef);
-                    QCFString displayName = (CFStringRef)CTFontDescriptorCopyAttribute(fontDescriptor, kCTFontDisplayNameAttribute);
-
-                    familyRef = ATSFontFamilyFindFromName(displayName, kATSOptionFlagsDefault);
-                    if (familyRef) {
-                        fontRef = ATSFontFindFromName(displayName, kATSOptionFlagsDefault);
-                        goto FamilyFound;
-                    }
-#endif
                 }
+#endif
             }
         }
     }
@@ -331,92 +329,18 @@ FamilyFound:
     //fill in the engine's font definition
     QFontDef fontDef = d->request; //copy..
     if(fontDef.pointSize < 0)
-	fontDef.pointSize = qt_mac_pointsize(fontDef, d->dpi);
+        fontDef.pointSize = qt_mac_pointsize(fontDef, d->dpi);
     else
-	fontDef.pixelSize = qt_mac_pixelsize(fontDef, d->dpi);
-#if 0
-    ItemCount name_count;
-    if(ATSUCountFontNames(fontID, &name_count) == noErr && name_count) {
-        ItemCount actualName_size;
-        if(ATSUGetIndFontName(fontID, 0, 0, 0, &actualName_size, 0, 0, 0, 0) == noErr && actualName_size) {
-            QByteArray actualName(actualName_size);
-            if(ATSUGetIndFontName(fontID, 0, actualName_size, actualName.data(), &actualName_size, 0, 0, 0, 0) == noErr && actualName_size)
-                fontDef.family = QString::fromUtf8(actualName);
-        }
-    }
-#else
-    {
-        QCFString actualName;
-        if(ATSFontFamilyGetName(familyRef, kATSOptionFlagsDefault, &actualName) == noErr)
-            fontDef.family = actualName;
-    }
-#endif
+        fontDef.pixelSize = qt_mac_pixelsize(fontDef, d->dpi);
 
 #ifdef QT_MAC_USE_COCOA
-    QFontEngine *engine = new QCoreTextFontEngineMulti(familyRef, fontRef, fontDef, d->kerning);
-#elif 1
-    QFontEngine *engine = new QFontEngineMacMulti(familyRef, fontRef, fontDef, d->kerning);
+    fontDef.family = familyName;
+    QFontEngine *engine = new QCoreTextFontEngineMulti(fontName, fontDef, d->kerning);
 #else
-    ATSFontFamilyRef atsFamily = familyRef;
-    ATSFontFamilyRef atsFontRef = fontRef;
-
-    FMFont fontID;
-    FMFontFamily fmFamily;
-    FMFontStyle fntStyle = 0;
-    fmFamily = FMGetFontFamilyFromATSFontFamilyRef(atsFamily);
-    if (fmFamily == kInvalidFontFamily) {
-        // Use the ATSFont then...
-        fontID = FMGetFontFromATSFontRef(atsFontRef);
-    } else {
-        if (fontDef.weight >= QFont::Bold)
-            fntStyle |= ::bold;
-        if (fontDef.style != QFont::StyleNormal)
-            fntStyle |= ::italic;
-
-        FMFontStyle intrinsicStyle;
-        FMFont fnt = 0;
-        if (FMGetFontFromFontFamilyInstance(fmFamily, fntStyle, &fnt, &intrinsicStyle) == noErr)
-           fontID = FMGetATSFontRefFromFont(fnt);
-    }
-
-    OSStatus status;
-
-    const int maxAttributeCount = 5;
-    ATSUAttributeTag tags[maxAttributeCount + 1];
-    ByteCount sizes[maxAttributeCount + 1];
-    ATSUAttributeValuePtr values[maxAttributeCount + 1];
-    int attributeCount = 0;
-
-    Fixed size = FixRatio(fontDef.pixelSize, 1);
-    tags[attributeCount] = kATSUSizeTag;
-    sizes[attributeCount] = sizeof(size);
-    values[attributeCount] = &size;
-    ++attributeCount;
-
-    tags[attributeCount] = kATSUFontTag;
-    sizes[attributeCount] = sizeof(fontID);
-    values[attributeCount] = &fontID;
-    ++attributeCount;
-
-    CGAffineTransform transform = CGAffineTransformIdentity;
-    if (fontDef.stretch != 100) {
-        transform = CGAffineTransformMakeScale(float(fontDef.stretch) / float(100), 1);
-        tags[attributeCount] = kATSUFontMatrixTag;
-        sizes[attributeCount] = sizeof(transform);
-        values[attributeCount] = &transform;
-        ++attributeCount;
-    }
-
-    ATSUStyle style;
-    status = ATSUCreateStyle(&style);
-    Q_ASSERT(status == noErr);
-
-    Q_ASSERT(attributeCount < maxAttributeCount + 1);
-    status = ATSUSetAttributes(style, attributeCount, tags, sizes, values);
-    Q_ASSERT(status == noErr);
-
-    QFontEngine *engine = new QFontEngineMac(style, fontID, fontDef, /*multiEngine*/ 0);
-    ATSUDisposeStyle(style);
+    QCFString actualName;
+    if (ATSFontFamilyGetName(familyRef, kATSOptionFlagsDefault, &actualName) == noErr)
+        fontDef.family = actualName;
+    QFontEngine *engine = new QFontEngineMacMulti(familyRef, fontRef, fontDef, d->kerning);
 #endif
     d->engineData->engine = engine;
     engine->ref.ref(); //a ref for the engineData->engine

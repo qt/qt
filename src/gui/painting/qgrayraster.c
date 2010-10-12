@@ -233,7 +233,7 @@
   /* new algorithms                                                       */
 
   typedef int   TCoord;   /* integer scanline/pixel coordinate */
-  typedef long  TPos;     /* sub-pixel coordinate              */
+  typedef int   TPos;     /* sub-pixel coordinate              */
 
   /* determine the type used to store cell areas.  This normally takes at */
   /* least PIXEL_BITS*2 + 1 bits.  On 16-bit systems, we need to use      */
@@ -317,6 +317,7 @@
     PCell*     ycells;
     int        ycount;
 
+    int        skip_spans;
   } TWorker, *PWorker;
 
 
@@ -324,13 +325,19 @@
   {
     void*    buffer;
     long     buffer_size;
+    long     buffer_allocated_size;
     int      band_size;
     void*    memory;
     PWorker  worker;
 
   } TRaster, *PRaster;
 
-
+  int q_gray_rendered_spans(TRaster *raster)
+  {
+    if ( raster && raster->worker )
+      return raster->worker->skip_spans > 0 ? 0 : -raster->worker->skip_spans;
+    return 0;
+  }
 
   /*************************************************************************/
   /*                                                                       */
@@ -538,7 +545,7 @@
                                  TCoord  y2 )
   {
     TCoord  ex1, ex2, fx1, fx2, delta;
-    long    p, first, dx;
+    int     p, first, dx;
     int     incr, lift, mod, rem;
 
 
@@ -643,7 +650,7 @@
   {
     TCoord  ey1, ey2, fy1, fy2;
     TPos    dx, dy, x, x2;
-    long    p, first;
+    int     p, first;
     int     delta, rem, mod, lift, incr;
 
 
@@ -956,53 +963,49 @@
                               const QT_FT_Vector*  control2,
                               const QT_FT_Vector*  to )
   {
-    TPos        dx, dy, da, db;
     int         top, level;
     int*        levels;
     QT_FT_Vector*  arc;
+    int         mid_x = ( DOWNSCALE( ras.x ) + to->x +
+                          3 * (control1->x + control2->x ) ) / 8;
+    int         mid_y = ( DOWNSCALE( ras.y ) + to->y +
+                          3 * (control1->y + control2->y ) ) / 8;
+    TPos        dx = DOWNSCALE( ras.x ) + to->x - ( mid_x << 1 );
+    TPos        dy = DOWNSCALE( ras.y ) + to->y - ( mid_y << 1 );
 
 
-    dx = DOWNSCALE( ras.x ) + to->x - ( control1->x << 1 );
     if ( dx < 0 )
       dx = -dx;
-    dy = DOWNSCALE( ras.y ) + to->y - ( control1->y << 1 );
     if ( dy < 0 )
       dy = -dy;
     if ( dx < dy )
       dx = dy;
-    da = dx;
-
-    dx = DOWNSCALE( ras.x ) + to->x - 3 * ( control1->x + control2->x );
-    if ( dx < 0 )
-      dx = -dx;
-    dy = DOWNSCALE( ras.y ) + to->y - 3 * ( control1->x + control2->y );
-    if ( dy < 0 )
-      dy = -dy;
-    if ( dx < dy )
-      dx = dy;
-    db = dx;
 
     level = 1;
-    da    = da / ras.cubic_level;
-    db    = db / ras.conic_level;
-    while ( da > 0 || db > 0 )
+    dx /= ras.cubic_level;
+    while ( dx > 0 )
     {
-      da >>= 2;
-      db >>= 3;
+      dx >>= 2;
       level++;
     }
 
     if ( level <= 1 )
     {
-      TPos   to_x, to_y, mid_x, mid_y;
+      TPos   to_x, to_y;
 
 
       to_x  = UPSCALE( to->x );
       to_y  = UPSCALE( to->y );
+
+      /* Recalculation of midpoint is needed only if */
+      /* UPSCALE and DOWNSCALE have any effect.      */
+
+#if ( PIXEL_BITS != 6 )
       mid_x = ( ras.x + to_x +
                 3 * UPSCALE( control1->x + control2->x ) ) / 8;
       mid_y = ( ras.y + to_y +
                 3 * UPSCALE( control1->y + control2->y ) ) / 8;
+#endif
 
       gray_render_line( RAS_VAR_ mid_x, mid_y );
       gray_render_line( RAS_VAR_ to_x, to_y );
@@ -1182,6 +1185,7 @@
   {
     QT_FT_Span*  span;
     int       coverage;
+    int       skip;
 
 
     /* compute the coverage line's coverage, depending on the    */
@@ -1232,9 +1236,16 @@
 
       if ( ras.num_gray_spans >= QT_FT_MAX_GRAY_SPANS )
       {
-        if ( ras.render_span )
-          ras.render_span( ras.num_gray_spans, ras.gray_spans,
+        if ( ras.render_span && ras.num_gray_spans > ras.skip_spans )
+        {
+          skip = ras.skip_spans > 0 ? ras.skip_spans : 0;
+          ras.render_span( ras.num_gray_spans - skip,
+                           ras.gray_spans + skip,
                            ras.render_span_data );
+        }
+
+        ras.skip_spans -= ras.num_gray_spans;
+
         /* ras.render_span( span->y, ras.gray_spans, count ); */
 
 #ifdef DEBUG_GRAYS
@@ -1359,10 +1370,6 @@
   /* <Input>                                                               */
   /*    outline        :: A pointer to the source target.                  */
   /*                                                                       */
-  /*    func_interface :: A table of `emitters', i.e,. function pointers   */
-  /*                      called during decomposition to indicate path     */
-  /*                      operations.                                      */
-  /*                                                                       */
   /*    user           :: A typeless pointer which is passed to each       */
   /*                      emitter during the decomposition.  It can be     */
   /*                      used to store the state during the               */
@@ -1373,15 +1380,10 @@
   /*                                                                       */
   static
   int  QT_FT_Outline_Decompose( const QT_FT_Outline*        outline,
-                             const QT_FT_Outline_Funcs*  func_interface,
                              void*                    user )
   {
 #undef SCALED
-#if 0
-#define SCALED( x )  ( ( (x) << shift ) - delta )
-#else
 #define SCALED( x )  (x)
-#endif
 
     QT_FT_Vector   v_last;
     QT_FT_Vector   v_control;
@@ -1395,12 +1397,6 @@
     int   first;     /* index of first point in contour */
     int   error;
     char  tag;       /* current point's state           */
-
-#if 0
-    int   shift = func_interface->shift;
-    TPos  delta = func_interface->delta;
-#endif
-
 
     first = 0;
 
@@ -1455,7 +1451,7 @@
         tags--;
       }
 
-      error = func_interface->move_to( &v_start, user );
+      error = gray_move_to( &v_start, user );
       if ( error )
         goto Exit;
 
@@ -1475,7 +1471,7 @@
             vec.x = SCALED( point->x );
             vec.y = SCALED( point->y );
 
-            error = func_interface->line_to( &vec, user );
+            error = gray_line_to( &vec, user );
             if ( error )
               goto Exit;
             continue;
@@ -1502,7 +1498,7 @@
 
               if ( tag == QT_FT_CURVE_TAG_ON )
               {
-                error = func_interface->conic_to( &v_control, &vec,
+                error = gray_conic_to( &v_control, &vec,
                                                   user );
                 if ( error )
                   goto Exit;
@@ -1515,7 +1511,7 @@
               v_middle.x = ( v_control.x + vec.x ) / 2;
               v_middle.y = ( v_control.y + vec.y ) / 2;
 
-              error = func_interface->conic_to( &v_control, &v_middle,
+              error = gray_conic_to( &v_control, &v_middle,
                                                 user );
               if ( error )
                 goto Exit;
@@ -1524,7 +1520,7 @@
               goto Do_Conic;
             }
 
-            error = func_interface->conic_to( &v_control, &v_start,
+            error = gray_conic_to( &v_control, &v_start,
                                               user );
             goto Close;
           }
@@ -1555,20 +1551,20 @@
               vec.x = SCALED( point->x );
               vec.y = SCALED( point->y );
 
-              error = func_interface->cubic_to( &vec1, &vec2, &vec, user );
+              error = gray_cubic_to( &vec1, &vec2, &vec, user );
               if ( error )
                 goto Exit;
               continue;
             }
 
-            error = func_interface->cubic_to( &vec1, &vec2, &v_start, user );
+            error = gray_cubic_to( &vec1, &vec2, &v_start, user );
             goto Close;
           }
         }
       }
 
       /* close the contour with a line segment */
-      error = func_interface->line_to( &v_start, user );
+      error = gray_line_to( &v_start, user );
 
    Close:
       if ( error )
@@ -1596,22 +1592,11 @@
   static int
   gray_convert_glyph_inner( RAS_ARG )
   {
-    static
-    const QT_FT_Outline_Funcs  func_interface =
-    {
-      (QT_FT_Outline_MoveTo_Func) gray_move_to,
-      (QT_FT_Outline_LineTo_Func) gray_line_to,
-      (QT_FT_Outline_ConicTo_Func)gray_conic_to,
-      (QT_FT_Outline_CubicTo_Func)gray_cubic_to,
-      0,
-      0
-    };
-
     volatile int  error = 0;
 
     if ( qt_ft_setjmp( ras.jump_buffer ) == 0 )
     {
-      error = QT_FT_Outline_Decompose( &ras.outline, &func_interface, &ras );
+      error = QT_FT_Outline_Decompose( &ras.outline, &ras );
       gray_record_cell( RAS_VAR );
     }
     else
@@ -1630,7 +1615,8 @@
     TBand* volatile  band;
     int volatile     n, num_bands;
     TPos volatile    min, max, max_y;
-    QT_FT_BBox*         clip;
+    QT_FT_BBox*      clip;
+    int              skip;
 
     ras.num_gray_spans = 0;
 
@@ -1700,7 +1686,7 @@
         {
           PCell  cells_max;
           int    yindex;
-          long   cell_start, cell_end, cell_mod;
+          int    cell_start, cell_end, cell_mod;
 
 
           ras.ycells = (PCell*)ras.buffer;
@@ -1771,9 +1757,15 @@
       }
     }
 
-    if ( ras.render_span && ras.num_gray_spans > 0 )
-        ras.render_span( ras.num_gray_spans,
-                         ras.gray_spans, ras.render_span_data );
+    if ( ras.render_span && ras.num_gray_spans > ras.skip_spans )
+    {
+        skip = ras.skip_spans > 0 ? ras.skip_spans : 0;
+        ras.render_span( ras.num_gray_spans - skip,
+                         ras.gray_spans + skip,
+                         ras.render_span_data );
+    }
+
+    ras.skip_spans -= ras.num_gray_spans;
 
     if ( ras.band_shoot > 8 && ras.band_size > 16 )
       ras.band_size = ras.band_size / 2;
@@ -1794,10 +1786,13 @@
     if ( !raster || !raster->buffer || !raster->buffer_size )
       return ErrRaster_Invalid_Argument;
 
+    if ( raster->worker )
+      raster->worker->skip_spans = params->skip_spans;
+
     // If raster object and raster buffer are allocated, but
     // raster size isn't of the minimum size, indicate out of
     // memory.
-    if (raster && raster->buffer && raster->buffer_size < MINIMUM_POOL_SIZE )
+    if (raster->buffer_allocated_size < MINIMUM_POOL_SIZE )
       return ErrRaster_OutOfMemory;
 
     /* return immediately if the outline is empty */
@@ -1936,6 +1931,7 @@
         rast->buffer_size = 0;
         rast->worker      = NULL;
       }
+      rast->buffer_allocated_size = pool_size;
     }
   }
 

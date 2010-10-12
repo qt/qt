@@ -524,7 +524,9 @@ void QGtkStylePrivate::initGtkWidgets() const
         QGtkStylePrivate::gtk_widget_realize(gtkWindow);
         if (displayDepth == -1)
             displayDepth = QGtkStylePrivate::gdk_drawable_get_depth(gtkWindow->window);
-        gtkWidgetMap()->insert(QHashableLatin1Literal::fromData(strdup("GtkWindow")), gtkWindow);
+        QHashableLatin1Literal widgetPath = QHashableLatin1Literal::fromData(strdup("GtkWindow"));
+        removeWidgetFromMap(widgetPath);
+        gtkWidgetMap()->insert(widgetPath, gtkWindow);
 
 
         // Make all other widgets. respect the text direction
@@ -576,6 +578,7 @@ void QGtkStylePrivate::initGtkWidgets() const
                 if (!strchr(it.key().data(), '.')) {
                     addAllSubWidgets(it.value());
                 }
+                free(const_cast<char *>(it.key().data()));
             }
         }
     } else {
@@ -743,19 +746,24 @@ void QGtkStylePrivate::setupGtkWidget(GtkWidget* widget)
     }
 }
 
+void QGtkStylePrivate::removeWidgetFromMap(const QHashableLatin1Literal &path)
+{
+    WidgetMap *map = gtkWidgetMap();
+    WidgetMap::iterator it = map->find(path);
+    if (it != map->end()) {
+        free(const_cast<char *>(it.key().data()));
+        map->erase(it);
+    }
+}
+
 void QGtkStylePrivate::addWidgetToMap(GtkWidget *widget)
 {
     if (Q_GTK_IS_WIDGET(widget)) {
         gtk_widget_realize(widget);
         QHashableLatin1Literal widgetPath = classPath(widget);
 
-        WidgetMap *map = gtkWidgetMap();
-        WidgetMap::iterator it = map->find(widgetPath);
-        if (it != map->end()) {
-            free(const_cast<char *>(it.key().data()));
-            map->erase(it);
-        }
-        map->insert(widgetPath, widget);
+        removeWidgetFromMap(widgetPath);
+        gtkWidgetMap()->insert(widgetPath, widget);
 #ifdef DUMP_GTK_WIDGET_TREE
         qWarning("Inserted Gtk Widget: %s", widgetPath.data());
 #endif

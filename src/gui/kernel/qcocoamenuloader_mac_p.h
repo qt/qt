@@ -88,6 +88,7 @@
 - (IBAction)hide:(id)sender;
 - (IBAction)qtDispatcherToQAction:(id)sender;
 - (void)qtUpdateMenubar;
+- (void)orderFrontCharacterPalette:(id)sender;
 @end
 
 #endif // QT_MAC_USE_COCOA

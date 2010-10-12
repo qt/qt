@@ -155,7 +155,7 @@ int QAudioOutputPrivate::xrun_recovery(int err)
 
 int QAudioOutputPrivate::setFormat()
 {
-    snd_pcm_format_t pcmformat = SND_PCM_FORMAT_S16;
+    snd_pcm_format_t pcmformat = SND_PCM_FORMAT_UNKNOWN;
 
     if(settings.sampleSize() == 8) {
         pcmformat = SND_PCM_FORMAT_U8;
@@ -208,7 +208,9 @@ int QAudioOutputPrivate::setFormat()
             pcmformat = SND_PCM_FORMAT_FLOAT64_BE;
     }
 
-    return snd_pcm_hw_params_set_format( handle, hwparams, pcmformat);
+    return pcmformat != SND_PCM_FORMAT_UNKNOWN
+            ? snd_pcm_hw_params_set_format( handle, hwparams, pcmformat)
+            : -1;
 }
 
 QIODevice* QAudioOutputPrivate::start(QIODevice* device)
@@ -275,9 +277,24 @@ bool QAudioOutputPrivate::open()
     elapsedTimeOffset = 0;
 
     int dir;
-    int err=-1;
+    int err = 0;
     int count=0;
     unsigned int freakuency=settings.frequency();
+
+    if (!settings.isValid()) {
+        qWarning("QAudioOutput: open error, invalid format.");
+    } else if (settings.frequency() <= 0) {
+        qWarning("QAudioOutput: open error, invalid sample rate (%d).",
+                 settings.frequency());
+    } else {
+        err = -1;
+    }
+
+    if (err == 0) {
+        errorState = QAudio::OpenError;
+        deviceState = QAudio::StoppedState;
+        return false;
+    }
 
     QString dev = QString(QLatin1String(m_device.constData()));
     QList<QByteArray> devices = QAudioDeviceInfoInternal::availableDevices(QAudio::AudioOutput);

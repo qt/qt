@@ -189,19 +189,6 @@ static int ucstricmp(const ushort *a, const ushort *ae, const uchar *b)
     return 1;
 }
 
-// Unicode case-insensitive comparison
-static int ucstrcmp(const QChar *a, int alen, const QChar *b, int blen)
-{
-    if (a == b && alen == blen)
-        return 0;
-    int l = qMin(alen, blen);
-    while (l-- && *a == *b)
-        a++,b++;
-    if (l == -1)
-        return (alen-blen);
-    return a->unicode() - b->unicode();
-}
-
 // Unicode case-sensitive compare two same-sized strings
 static int ucstrncmp(const QChar *a, const QChar *b, int l)
 {
@@ -212,28 +199,71 @@ static int ucstrncmp(const QChar *a, const QChar *b, int l)
     return a->unicode() - b->unicode();
 }
 
+// Unicode case-sensitive comparison
+static int ucstrcmp(const QChar *a, int alen, const QChar *b, int blen)
+{
+    if (a == b && alen == blen)
+        return 0;
+    int l = qMin(alen, blen);
+    int cmp = ucstrncmp(a, b, l);
+    return cmp ? cmp : (alen-blen);
+}
+
 // Unicode case-insensitive compare two same-sized strings
 static int ucstrnicmp(const ushort *a, const ushort *b, int l)
 {
     return ucstricmp(a, a + l, b, b + l);
 }
 
+// Benchmarking indicates that doing memcmp is much slower than
+// executing the comparison ourselves.
+//
+// The profiling was done on a population of calls to qMemEquals, generated
+// during a run of the demo browser. The profile of the data (32-bit x86
+// Linux) was:
+//
+//  total number of comparisons: 21353
+//  longest string compared: 95
+//  average comparison length: 14.8786
+//  cache-line crosses: 5661 (13.3%)
+//  alignment histogram:
+//   0xXXX0 = 512 (1.2%) strings, 0 (0.0%) of which same-aligned
+//   0xXXX2 = 15087 (35.3%) strings, 5145 (34.1%) of which same-aligned
+//   0xXXX4 = 525 (1.2%) strings, 0 (0.0%) of which same-aligned
+//   0xXXX6 = 557 (1.3%) strings, 6 (1.1%) of which same-aligned
+//   0xXXX8 = 509 (1.2%) strings, 0 (0.0%) of which same-aligned
+//   0xXXXa = 24358 (57.0%) strings, 9901 (40.6%) of which same-aligned
+//   0xXXXc = 557 (1.3%) strings, 0 (0.0%) of which same-aligned
+//   0xXXXe = 601 (1.4%) strings, 15 (2.5%) of which same-aligned
+//   total  = 42706 (100%) strings, 15067 (35.3%) of which same-aligned
+//
+// 92% of the strings have alignment of 2 or 10, which is due to malloc on
+// 32-bit Linux returning values aligned to 8 bytes, and offsetof(array, QString::Data) == 18.
+//
+// The profile on 64-bit will be different since offsetof(array, QString::Data) == 26.
+//
+// The benchmark results were, for a Core-i7 @ 2.67 GHz 32-bit, compiled with -O3 -funroll-loops:
+//   16-bit loads only:           872,301 CPU ticks [Qt 4.5 / memcmp]
+//   32- and 16-bit loads:        773,362 CPU ticks [Qt 4.6]
+//   SSE2 "movdqu" 128-bit loads: 618,736 CPU ticks
+//   SSE3 "lddqu" 128-bit loads:  619,954 CPU ticks
+//   SSSE3 "palignr" corrections: 852,147 CPU ticks
+//   SSE4.2 "pcmpestrm":          738,702 CPU ticks
+//
+// The same benchmark on an Atom N450 @ 1.66 GHz, is:
+//  16-bit loads only:            2,185,882 CPU ticks
+//  32- and 16-bit loads:         1,805,060 CPU ticks
+//  SSE2 "movdqu" 128-bit loads:  2,529,843 CPU ticks
+//  SSE3 "lddqu" 128-bit loads:   2,514,858 CPU ticks
+//  SSSE3 "palignr" corrections:  2,160,325 CPU ticks
+//  SSE4.2 not available
+//
+// The conclusion we reach is that alignment the SSE2 unaligned code can gain
+// 20% improvement in performance in some systems, but suffers a penalty due
+// to the unaligned loads on others.
+
 static bool qMemEquals(const quint16 *a, const quint16 *b, int length)
 {
-    // Benchmarking indicates that doing memcmp is much slower than
-    // executing the comparison ourselves.
-    // To make it even faster, we do a 32-bit comparison, comparing
-    // twice the amount of data as a normal word-by-word comparison.
-    //
-    // Benchmarking results on a 2.33 GHz Core2 Duo, with a 64-QChar
-    // block of data, with 4194304 iterations (per iteration):
-    //    operation             usec            cpu ticks
-    //     memcmp                330               710
-    //     16-bit                 79             167-171
-    //  32-bit aligned            49             105-109
-    //
-    // Testing also indicates that unaligned 32-bit loads are as
-    // performant as 32-bit aligned.
     if (a == b || !length)
         return true;
 
@@ -547,7 +577,7 @@ const QString::Null QString::null = { };
     and join a list of strings into a single string with an optional
     separator using QStringList::join(). You can obtain a list of
     strings from a string list that contain a particular substring or
-    that match a particular QRegExp using the QStringList::find()
+    that match a particular QRegExp using the QStringList::filter()
     function.
 :
     \section1 Querying String Data
@@ -927,6 +957,24 @@ QString QString::fromWCharArray(const wchar_t *string, int size)
     \sa utf16(), toAscii(), toLatin1(), toUtf8(), toLocal8Bit()
 */
 
+template<typename T> int toUcs4_helper(const unsigned short *uc, int length, T *out)
+{
+    int i = 0;
+    for (; i < length; ++i) {
+        uint u = uc[i];
+        if (QChar::isHighSurrogate(u) && i < length-1) {
+            ushort low = uc[i+1];
+            if (QChar::isLowSurrogate(low)) {
+                ++i;
+                u = QChar::surrogateToUcs4(u, low);
+            }
+        }
+        *out = T(u);
+        ++out;
+    }
+    return i;
+}
+
 /*!
   \since 4.2
 
@@ -951,21 +999,7 @@ int QString::toWCharArray(wchar_t *array) const
         memcpy(array, utf16(), sizeof(wchar_t)*length());
         return length();
     } else {
-        wchar_t *a = array;
-        const unsigned short *uc = utf16();
-        for (int i = 0; i < length(); ++i) {
-            uint u = uc[i];
-            if (QChar::isHighSurrogate(u) && i + 1 < length()) {
-                ushort low = uc[i+1];
-                if (QChar::isLowSurrogate(low)) {
-                    u = QChar::surrogateToUcs4(u, low);
-                    ++i;
-                }
-            }
-            *a = wchar_t(u);
-            ++a;
-        }
-        return a - array;
+        return toUcs4_helper<wchar_t>(utf16(), length(), array);
     }
 }
 
@@ -3701,7 +3735,7 @@ QByteArray QString::toUtf8() const
     Returns a UCS-4/UTF-32 representation of the string as a QVector<uint>.
 
     UCS-4 is a Unicode codec and is lossless. All characters from this string
-    can be encoded in UCS-4.
+    can be encoded in UCS-4. The vector is not null terminated.
 
     \sa fromUtf8(), toAscii(), toLatin1(), toLocal8Bit(), QTextCodec, fromUcs4(), toWCharArray()
 */
@@ -3709,20 +3743,8 @@ QVector<uint> QString::toUcs4() const
 {
     QVector<uint> v(length());
     uint *a = v.data();
-    const unsigned short *uc = utf16();
-    for (int i = 0; i < length(); ++i) {
-        uint u = uc[i];
-        if (QChar(u).isHighSurrogate() && i < length()-1) {
-            ushort low = uc[i+1];
-            if (QChar(low).isLowSurrogate()) {
-                ++i;
-                u = QChar::surrogateToUcs4(u, low);
-            }
-        }
-        *a = u;
-        ++a;
-    }
-    v.resize(a - v.data());
+    int len = toUcs4_helper<uint>(utf16(), length(), a);
+    v.resize(len);
     return v;
 }
 
@@ -3943,8 +3965,8 @@ QString QString::fromUtf8(const char *str, int size)
     This function checks for a Byte Order Mark (BOM). If it is missing,
     host byte order is assumed.
 
-    This function is comparatively slow.
-    Use QString(const ushort *, int) or QString(const ushort *) if possible.
+    This function is slow compared to the other Unicode conversions.
+    Use QString(const QChar *, int) or QString(const QChar *) if possible.
 
     QString makes a deep copy of the Unicode data.
 
@@ -6934,30 +6956,8 @@ QString QString::multiArg(int numArgs, const QString **args) const
     return result;
 }
 
-/*! \internal
- */
-void QString::updateProperties() const
+static bool isStringRightToLeft(const ushort *p, const ushort *end)
 {
-    ushort *p = d->data;
-    ushort *end = p + d->size;
-    d->simpletext = true;
-    while (p < end) {
-        ushort uc = *p;
-        // sort out regions of complex text formatting
-        if (uc > 0x058f && (uc < 0x1100 || uc > 0xfb0f)) {
-            d->simpletext = false;
-        }
-        p++;
-    }
-
-    d->righttoleft = isRightToLeft();
-    d->clean = true;
-}
-
-bool QString::isRightToLeft() const
-{
-    ushort *p = d->data;
-    const ushort * const end = p + d->size;
     bool righttoleft = false;
     while (p < end) {
         switch(QChar::direction(*p))
@@ -6975,6 +6975,31 @@ bool QString::isRightToLeft() const
     }
  end:
     return righttoleft;
+}
+
+/*! \internal
+ */
+void QString::updateProperties() const
+{
+    ushort *p = d->data;
+    ushort *end = p + d->size;
+    d->simpletext = true;
+    while (p < end) {
+        ushort uc = *p;
+        // sort out regions of complex text formatting
+        if (uc > 0x058f && (uc < 0x1100 || uc > 0xfb0f)) {
+            d->simpletext = false;
+        }
+        p++;
+    }
+
+    d->righttoleft = isStringRightToLeft(d->data, d->data + d->size);
+    d->clean = true;
+}
+
+bool QString::isRightToLeft() const
+{
+    return isStringRightToLeft(d->data, d->data + d->size);
 }
 
 /*! \fn bool QString::isSimpleText() const
@@ -8959,6 +8984,116 @@ static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
                 return false;
     }
     return true;
+}
+
+/*!
+    \since 4.8
+
+    Returns a Latin-1 representation of the string as a QByteArray.
+
+    The returned byte array is undefined if the string contains non-Latin1
+    characters. Those characters may be suppressed or replaced with a
+    question mark.
+
+    \sa toAscii(), toUtf8(), toLocal8Bit(), QTextCodec
+*/
+QByteArray QStringRef::toLatin1() const
+{
+    return toLatin1_helper(unicode(), length());
+}
+
+/*!
+    \since 4.8
+
+    Returns an 8-bit representation of the string as a QByteArray.
+
+    If a codec has been set using QTextCodec::setCodecForCStrings(),
+    it is used to convert Unicode to 8-bit char; otherwise this
+    function does the same as toLatin1().
+
+    Note that, despite the name, this function does not necessarily return an US-ASCII
+    (ANSI X3.4-1986) string and its result may not be US-ASCII compatible.
+
+    \sa toLatin1(), toUtf8(), toLocal8Bit(), QTextCodec
+*/
+QByteArray QStringRef::toAscii() const
+{
+#ifndef QT_NO_TEXTCODEC
+    if (QString::codecForCStrings)
+        return QString::codecForCStrings->fromUnicode(unicode(), length());
+#endif // QT_NO_TEXTCODEC
+    return toLatin1();
+}
+
+/*!
+    \since 4.8
+
+    Returns the local 8-bit representation of the string as a
+    QByteArray. The returned byte array is undefined if the string
+    contains characters not supported by the local 8-bit encoding.
+
+    QTextCodec::codecForLocale() is used to perform the conversion from
+    Unicode. If the locale encoding could not be determined, this function
+    does the same as toLatin1().
+
+    If this string contains any characters that cannot be encoded in the
+    locale, the returned byte array is undefined. Those characters may be
+    suppressed or replaced by another.
+
+    \sa toAscii(), toLatin1(), toUtf8(), QTextCodec
+*/
+QByteArray QStringRef::toLocal8Bit() const
+{
+#ifndef QT_NO_TEXTCODEC
+    if (QTextCodec::codecForLocale())
+        return QTextCodec::codecForLocale()->fromUnicode(unicode(), length());
+#endif // QT_NO_TEXTCODEC
+    return toLatin1();
+}
+
+/*!
+    \since 4.8
+
+    Returns a UTF-8 representation of the string as a QByteArray.
+
+    UTF-8 is a Unicode codec and can represent all characters in a Unicode
+    string like QString.
+
+    However, in the Unicode range, there are certain codepoints that are not
+    considered characters. The Unicode standard reserves the last two
+    codepoints in each Unicode Plane (U+FFFE, U+FFFF, U+1FFFE, U+1FFFF,
+    U+2FFFE, etc.), as well as 16 codepoints in the range U+FDD0..U+FDDF,
+    inclusive, as non-characters. If any of those appear in the string, they
+    may be discarded and will not appear in the UTF-8 representation, or they
+    may be replaced by one or more replacement characters.
+
+    \sa toAscii(), toLatin1(), toLocal8Bit(), QTextCodec
+*/
+QByteArray QStringRef::toUtf8() const
+{
+    if (isNull())
+        return QByteArray();
+
+    return QUtf8::convertFromUnicode(constData(), length(), 0);
+}
+
+/*!
+    \since 4.8
+
+    Returns a UCS-4/UTF-32 representation of the string as a QVector<uint>.
+
+    UCS-4 is a Unicode codec and is lossless. All characters from this string
+    can be encoded in UCS-4.
+
+    \sa fromUtf8(), toAscii(), toLatin1(), toLocal8Bit(), QTextCodec, fromUcs4(), toWCharArray()
+*/
+QVector<uint> QStringRef::toUcs4() const
+{
+    QVector<uint> v(length());
+    uint *a = v.data();
+    int len = toUcs4_helper<uint>(reinterpret_cast<const unsigned short *>(unicode()), length(), a);
+    v.resize(len);
+    return v;
 }
 
 QT_END_NAMESPACE

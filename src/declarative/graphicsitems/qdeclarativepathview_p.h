@@ -186,6 +186,7 @@ private Q_SLOTS:
     void modelReset();
     void createdItem(int index, QDeclarativeItem *item);
     void destroyingItem(QDeclarativeItem *item);
+    void pathUpdated();
 
 private:
     friend class QDeclarativePathViewAttached;
@@ -226,6 +227,7 @@ public:
             emit pathChanged();
         }
     }
+    qreal m_percent;
 
 Q_SIGNALS:
     void currentItemChanged();

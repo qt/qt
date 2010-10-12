@@ -220,10 +220,25 @@ void BearerMonitor::updateConfigurations()
         itemMap.insert(item->data(0, Qt::UserRole).toString(), item);
     }
 
+    QNetworkConfiguration defaultConfiguration = manager.defaultConfiguration();
+    QTreeWidgetItem *defaultItem = itemMap.take(defaultConfiguration.identifier());
+
+    if (defaultItem) {
+        updateItem(defaultItem, defaultConfiguration);
+
+        if (defaultConfiguration.type() == QNetworkConfiguration::ServiceNetwork)
+            updateSnapConfiguration(defaultItem, defaultConfiguration);
+    } else {
+        configurationAdded(defaultConfiguration);
+    }
+
     QList<QNetworkConfiguration> allConfigurations = manager.allConfigurations();
 
     while (!allConfigurations.isEmpty()) {
         QNetworkConfiguration config = allConfigurations.takeFirst();
+
+        if (config.identifier() == defaultConfiguration.identifier())
+            continue;
 
         QTreeWidgetItem *item = itemMap.take(config.identifier());
         if (item) {

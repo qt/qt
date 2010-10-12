@@ -46,7 +46,6 @@
 #include "qpainter.h"
 #include "qpainterpath.h"
 #include "qvarlengtharray.h"
-#include <private/qpdf_p.h>
 #include <qmath.h>
 #include <qendian.h>
 #include <private/qharfbuzz_p.h>
@@ -616,7 +615,7 @@ QImage QFontEngine::alphaMapForGlyph(glyph_t glyph, const QTransform &t)
     return i;
 }
 
-QImage QFontEngine::alphaRGBMapForGlyph(glyph_t glyph, int /* margin */, const QTransform &t)
+QImage QFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed /*subPixelPosition*/, int /* margin */, const QTransform &t)
 {
     QImage alphaMask = alphaMapForGlyph(glyph, t);
     QImage rgbMask(alphaMask.width(), alphaMask.height(), QImage::Format_RGB32);
@@ -645,10 +644,10 @@ QImage QFontEngine::alphaMapForGlyph(glyph_t glyph)
     if (glyph_width <= 0 || glyph_height <= 0)
         return QImage();
     QFixedPoint pt;
-    pt.x = 0;
+    pt.x = -glyph_x;
     pt.y = -glyph_y; // the baseline
     QPainterPath path;
-    QImage im(glyph_width + qAbs(glyph_x) + 4, glyph_height, QImage::Format_ARGB32_Premultiplied);
+    QImage im(glyph_width + 4, glyph_height, QImage::Format_ARGB32_Premultiplied);
     im.fill(Qt::transparent);
     QPainter p(&im);
     p.setRenderHint(QPainter::Antialiasing);
@@ -681,11 +680,7 @@ void QFontEngine::removeGlyphFromCache(glyph_t)
 QFontEngine::Properties QFontEngine::properties() const
 {
     Properties p;
-#ifndef QT_NO_PRINTER
-    QByteArray psname = QPdf::stripSpecialCharacters(fontDef.family.toUtf8());
-#else
-    QByteArray psname = fontDef.family.toUtf8();
-#endif
+    QByteArray psname = QFontEngine::convertToPostscriptFontFamilyName(fontDef.family.toUtf8());
     psname += '-';
     psname += QByteArray::number(fontDef.style);
     psname += '-';
@@ -737,7 +732,7 @@ void QFontEngine::setGlyphCache(void *key, QFontEngineGlyphCache *data)
         return;
 
     // Limit the glyph caches to 4. This covers all 90 degree rotations and limits
-    // memory use when there is continous or random rotation
+    // memory use when there is continuous or random rotation
     if (m_glyphCaches.size() == 4)
         m_glyphCaches.removeLast();
 
@@ -890,8 +885,8 @@ const uchar *QFontEngine::getCMap(const uchar *table, uint tableSize, bool *isSy
 
     enum {
         Invalid,
-        Symbol,
         AppleRoman,
+        Symbol,
         Unicode11,
         Unicode,
         MicrosoftUnicode,
@@ -955,7 +950,7 @@ const uchar *QFontEngine::getCMap(const uchar *table, uint tableSize, bool *isSy
         return 0;
 
 resolveTable:
-    *isSymbolFont = (score == Symbol);
+    *isSymbolFont = (symbolTable > -1);
 
     unsigned int unicode_table = qFromBigEndian<quint32>(maps + 8*tableToUse + 4);
 
@@ -1097,6 +1092,23 @@ quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, uint unicode)
     return 0;
 }
 
+QByteArray QFontEngine::convertToPostscriptFontFamilyName(const QByteArray &family)
+{
+    QByteArray f = family;
+    f.replace(' ', "");
+    f.replace('(', "");
+    f.replace(')', "");
+    f.replace('<', "");
+    f.replace('>', "");
+    f.replace('[', "");
+    f.replace(']', "");
+    f.replace('{', "");
+    f.replace('}', "");
+    f.replace('/', "");
+    f.replace('%', "");
+    return f;
+}
+
 Q_GLOBAL_STATIC_WITH_INITIALIZER(QVector<QRgb>, qt_grayPalette, {
     x->resize(256);
     QRgb *it = x->data();
@@ -1107,6 +1119,18 @@ Q_GLOBAL_STATIC_WITH_INITIALIZER(QVector<QRgb>, qt_grayPalette, {
 const QVector<QRgb> &QFontEngine::grayPalette()
 {
     return *qt_grayPalette();
+}
+
+QFixed QFontEngine::lastRightBearing(const QGlyphLayout &glyphs, bool round)
+{
+    if (glyphs.numGlyphs >= 1) {
+        glyph_t glyph = glyphs.glyphs[glyphs.numGlyphs - 1];
+        glyph_metrics_t gi = boundingBox(glyph);
+        if (gi.isValid())
+            return round ? QFixed(qRound(gi.xoff - gi.x - gi.width))
+                         : QFixed(gi.xoff - gi.x - gi.width);
+    }
+    return 0;
 }
 
 // ------------------------------------------------------------------

@@ -1037,10 +1037,12 @@ void QAbstractItemView::reset()
 {
     Q_D(QAbstractItemView);
     d->delayedReset.stop(); //make sure we stop the timer
-    QList<QEditorInfo>::const_iterator it = d->editors.constBegin();
-    for (; it != d->editors.constEnd(); ++it)
-        d->releaseEditor(it->editor);
-    d->editors.clear();
+    foreach (const QEditorInfo &info, d->indexEditorHash) {
+        if (info.widget)
+            d->releaseEditor(info.widget.data());
+    }
+    d->editorIndexHash.clear();
+    d->indexEditorHash.clear();
     d->persistent.clear();
     d->currentIndexSet = false;
     setState(NoState);
@@ -2271,9 +2273,11 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
             } else {
                 d->selectionModel->setCurrentIndex(newCurrent, command);
                 d->pressedPosition = visualRect(newCurrent).center() + d->offset();
-                // We copy the same behaviour as for mousePressEvent().
-                QRect rect(d->pressedPosition - d->offset(), QSize(1, 1));
-                setSelection(rect, command);
+                if (newCurrent.isValid()) {
+                    // We copy the same behaviour as for mousePressEvent().
+                    QRect rect(d->pressedPosition - d->offset(), QSize(1, 1));
+                    setSelection(rect, command);
+                }
             }
             event->accept();
             return;
@@ -2332,7 +2336,7 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Return:
         // Propagate the enter if you couldn't edit the item and there are no
         // current editors (if there are editors, the event was most likely propagated from it).
-        if (!edit(currentIndex(), EditKeyPressed, event) && d->editors.isEmpty())
+        if (!edit(currentIndex(), EditKeyPressed, event) && d->editorIndexHash.isEmpty())
             event->ignore();
         break;
 #else
@@ -2517,7 +2521,7 @@ bool QAbstractItemView::edit(const QModelIndex &index, EditTrigger trigger, QEve
     if (!d->isIndexValid(index))
         return false;
 
-    if (QWidget *w = (d->persistent.isEmpty() ? static_cast<QWidget*>(0) : d->editorForIndex(index).editor.data())) {
+    if (QWidget *w = (d->persistent.isEmpty() ? static_cast<QWidget*>(0) : d->editorForIndex(index).widget.data())) {
         if (w->focusPolicy() == Qt::NoFocus)
             return false;
         w->setFocus();
@@ -2577,15 +2581,15 @@ void QAbstractItemView::updateEditorData()
 void QAbstractItemView::updateEditorGeometries()
 {
     Q_D(QAbstractItemView);
-    if(d->editors.isEmpty())
+    if(d->editorIndexHash.isEmpty())
         return;
     QStyleOptionViewItemV4 option = d->viewOptionsV4();
-    QList<QEditorInfo>::iterator it = d->editors.begin();
+    QEditorIndexHash::iterator it = d->editorIndexHash.begin();
     QWidgetList editorsToRelease;
     QWidgetList editorsToHide;
-    while (it != d->editors.end()) {
-        QModelIndex index = it->index;
-        QWidget *editor = it->editor;
+    while (it != d->editorIndexHash.end()) {
+        QModelIndex index = it.value();
+        QWidget *editor = it.key();
         if (index.isValid() && editor) {
             option.rect = visualRect(index);
             if (option.rect.isValid()) {
@@ -2598,13 +2602,14 @@ void QAbstractItemView::updateEditorGeometries()
             }
             ++it;
         } else {
-            it = d->editors.erase(it);
+            d->indexEditorHash.remove(it.value());
+            it = d->editorIndexHash.erase(it);
             editorsToRelease << editor;
         }
     }
 
     //we hide and release the editor outside of the loop because it might change the focus and try
-    //to change the d->editors list.
+    //to change the editors hashes.
     for (int i = 0; i < editorsToHide.count(); ++i) {
         editorsToHide.at(i)->hide();
     }
@@ -2955,7 +2960,7 @@ int QAbstractItemView::sizeHintForRow(int row) const
     QModelIndex index;
     for (int c = 0; c < colCount; ++c) {
         index = d->model->index(row, c, d->root);
-        if (QWidget *editor = d->editorForIndex(index).editor)
+        if (QWidget *editor = d->editorForIndex(index).widget.data())
             height = qMax(height, editor->height());
         int hint = d->delegateForIndex(index)->sizeHint(option, index).height();
         height = qMax(height, hint);
@@ -2986,7 +2991,7 @@ int QAbstractItemView::sizeHintForColumn(int column) const
     QModelIndex index;
     for (int r = 0; r < rows; ++r) {
         index = d->model->index(r, column, d->root);
-        if (QWidget *editor = d->editorForIndex(index).editor)
+        if (QWidget *editor = d->editorForIndex(index).widget.data())
             width = qMax(width, editor->sizeHint().width());
         int hint = d->delegateForIndex(index)->sizeHint(option, index).width();
         width = qMax(width, hint);
@@ -3022,8 +3027,7 @@ void QAbstractItemView::openPersistentEditor(const QModelIndex &index)
 void QAbstractItemView::closePersistentEditor(const QModelIndex &index)
 {
     Q_D(QAbstractItemView);
-    QWidget *editor = d->editorForIndex(index).editor;
-    if (editor) {
+    if (QWidget *editor = d->editorForIndex(index).widget.data()) {
         if (index == selectionModel()->currentIndex())
             closeEditor(editor, QAbstractItemDelegate::RevertModelCache);
         d->persistent.remove(editor);
@@ -3087,9 +3091,11 @@ void QAbstractItemView::setIndexWidget(const QModelIndex &index, QWidget *widget
 QWidget* QAbstractItemView::indexWidget(const QModelIndex &index) const
 {
     Q_D(const QAbstractItemView);
-    if (!d->isIndexValid(index))
-        return 0;
-    return d->editorForIndex(index).editor;
+    if (d->isIndexValid(index))
+        if (QWidget *editor = d->editorForIndex(index).widget.data())
+            return editor;
+
+    return 0;
 }
 
 /*!
@@ -3151,12 +3157,12 @@ void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelInde
     // Single item changed
     Q_D(QAbstractItemView);
     if (topLeft == bottomRight && topLeft.isValid()) {
-        const QEditorInfo editorInfo = d->editorForIndex(topLeft);
+        const QEditorInfo &editorInfo = d->editorForIndex(topLeft);
         //we don't update the edit data if it is static
-        if (!editorInfo.isStatic && editorInfo.editor) {
+        if (!editorInfo.isStatic && editorInfo.widget) {
             QAbstractItemDelegate *delegate = d->delegateForIndex(topLeft);
             if (delegate) {
-                delegate->setEditorData(editorInfo.editor, topLeft);
+                delegate->setEditorData(editorInfo.widget.data(), topLeft);
             }
         }
         if (isVisible() && !d->delayedPendingLayout) {
@@ -3230,12 +3236,17 @@ void QAbstractItemView::rowsAboutToBeRemoved(const QModelIndex &parent, int star
     }
 
     // Remove all affected editors; this is more efficient than waiting for updateGeometries() to clean out editors for invalid indexes
-    for (int i = d->editors.size() - 1; i >= 0; --i) {
-        const QModelIndex index = d->editors.at(i).index;
-        QWidget *editor = d->editors.at(i).editor;
+    QEditorIndexHash::iterator i = d->editorIndexHash.begin();
+    while (i != d->editorIndexHash.end()) {
+        const QModelIndex index = i.value();
         if (index.row() >= start && index.row() <= end && d->model->parent(index) == parent) {
-            d->editors.removeAt(i);
-            d->releaseEditor(editor);
+            QWidget *editor = i.key();
+            QEditorInfo info = d->indexEditorHash.take(index);
+            i = d->editorIndexHash.erase(i);
+            if (info.widget)
+                d->releaseEditor(editor);
+        } else {
+            ++i;
         }
     }
 }
@@ -3292,17 +3303,20 @@ void QAbstractItemViewPrivate::_q_columnsAboutToBeRemoved(const QModelIndex &par
     }
 
     // Remove all affected editors; this is more efficient than waiting for updateGeometries() to clean out editors for invalid indexes
-    QList<QEditorInfo>::iterator it = editors.begin();
-    while (it != editors.end()) {
-        QModelIndex index = it->index;
+    QEditorIndexHash::iterator it = editorIndexHash.begin();
+    while (it != editorIndexHash.end()) {
+        QModelIndex index = it.value();
         if (index.column() <= start && index.column() >= end && model->parent(index) == parent) {
-            QWidget *editor = it->editor;
-            it = editors.erase(it);
-            releaseEditor(editor);
+            QWidget *editor = it.key();
+            QEditorInfo info = indexEditorHash.take(it.value());
+            it = editorIndexHash.erase(it);
+            if (info.widget)
+                releaseEditor(editor);
         } else {
             ++it;
         }
     }
+
 }
 
 /*!
@@ -3384,7 +3398,7 @@ void QAbstractItemView::currentChanged(const QModelIndex &current, const QModelI
 
     if (previous.isValid()) {
         QModelIndex buddy = d->model->buddy(previous);
-        QWidget *editor = d->editorForIndex(buddy).editor;
+        QWidget *editor = d->editorForIndex(buddy).widget.data();
         if (editor && !d->persistent.contains(editor)) {
             commitData(editor);
             if (current.row() != previous.row())
@@ -3910,7 +3924,7 @@ QWidget *QAbstractItemViewPrivate::editor(const QModelIndex &index,
                                           const QStyleOptionViewItem &options)
 {
     Q_Q(QAbstractItemView);
-    QWidget *w = editorForIndex(index).editor;
+    QWidget *w = editorForIndex(index).widget.data();
     if (!w) {
         QAbstractItemDelegate *delegate = delegateForIndex(index);
         if (!delegate)
@@ -3941,6 +3955,7 @@ QWidget *QAbstractItemViewPrivate::editor(const QModelIndex &index,
 #endif
         }
     }
+
     return w;
 }
 
@@ -3949,11 +3964,11 @@ void QAbstractItemViewPrivate::updateEditorData(const QModelIndex &tl, const QMo
     // we are counting on having relatively few editors
     const bool checkIndexes = tl.isValid() && br.isValid();
     const QModelIndex parent = tl.parent();
-    QList<QEditorInfo>::const_iterator it = editors.constBegin();
-    for (; it != editors.constEnd(); ++it) {
-        QWidget *editor = it->editor;
-        const QModelIndex index = it->index;
-        if (it->isStatic || editor == 0 || !index.isValid() ||
+    QIndexEditorHash::const_iterator it = indexEditorHash.constBegin();
+    for (; it != indexEditorHash.constEnd(); ++it) {
+        QWidget *editor = it.value().widget.data();
+        const QModelIndex index = it.key();
+        if (it.value().isStatic || !editor || !index.isValid() ||
             (checkIndexes
                 && (index.row() < tl.row() || index.row() > br.row()
                     || index.column() < tl.column() || index.column() > br.column()
@@ -4026,41 +4041,40 @@ void QAbstractItemViewPrivate::checkPersistentEditorFocus()
 }
 
 
-QEditorInfo QAbstractItemViewPrivate::editorForIndex(const QModelIndex &index) const
+const QEditorInfo & QAbstractItemViewPrivate::editorForIndex(const QModelIndex &index) const
 {
-    QList<QEditorInfo>::const_iterator it = editors.constBegin();
-    for (; it != editors.constEnd(); ++it) {
-        if (it->index == index)
-            return *it;
-    }
+    static QEditorInfo nullInfo;
 
-    return QEditorInfo();
+    QIndexEditorHash::const_iterator it = indexEditorHash.find(index);
+    if (it == indexEditorHash.end())
+        return nullInfo;
+
+    return it.value();
 }
 
 QModelIndex QAbstractItemViewPrivate::indexForEditor(QWidget *editor) const
 {
-    QList<QEditorInfo>::const_iterator it = editors.constBegin();
-    for (; it != editors.constEnd(); ++it) {
-        if (it->editor == editor)
-            return it->index;
-    }
-    return QModelIndex();
+   QEditorIndexHash::const_iterator it = editorIndexHash.find(editor);
+    if (it == editorIndexHash.end())
+        return QModelIndex();
+
+    return it.value();
 }
 
 void QAbstractItemViewPrivate::removeEditor(QWidget *editor)
 {
-    QList<QEditorInfo>::iterator it = editors.begin();
-    for (; it != editors.end(); ) {
-        if (it->editor == editor)
-            it = editors.erase(it);
-        else
-            ++it;
+   QEditorIndexHash::iterator it = editorIndexHash.find(editor);
+    if (it != editorIndexHash.end())
+    {
+        indexEditorHash.remove(it.value());
+        editorIndexHash.erase(it);
     }
 }
 
 void QAbstractItemViewPrivate::addEditor(const QModelIndex &index, QWidget *editor, bool isStatic)
 {
-    editors.append(QEditorInfo(index, editor, isStatic));
+    editorIndexHash.insert(editor, index);
+    indexEditorHash.insert(index, QEditorInfo(editor, isStatic));
 }
 
 bool QAbstractItemViewPrivate::sendDelegateEvent(const QModelIndex &index, QEvent *event) const
@@ -4087,12 +4101,12 @@ bool QAbstractItemViewPrivate::openEditor(const QModelIndex &index, QEvent *even
     if (!w)
         return false;
 
-    if (event)
-        QApplication::sendEvent(w->focusProxy() ? w->focusProxy() : w, event);
-
     q->setState(QAbstractItemView::EditingState);
     w->show();
     w->setFocus();
+
+    if (event)
+        QApplication::sendEvent(w->focusProxy() ? w->focusProxy() : w, event);
 
     return true;
 }

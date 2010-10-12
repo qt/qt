@@ -95,7 +95,8 @@ int main(int argc, char *argv[])
     view.engine()->setNetworkAccessManagerFactory(&networkAccessManagerFactory);
     view.setSource(QUrl(mainQmlApp));
     view.setResizeMode(QDeclarativeView::SizeRootObjectToView);
-
+    QObject::connect(view.engine(), SIGNAL(quit()), &application, SLOT(quit()));
+    
 #if defined(Q_OS_SYMBIAN)
     view.showFullScreen();
 #else // Q_OS_SYMBIAN

@@ -61,7 +61,7 @@ class InstallDialog : public QDialog
     Q_OBJECT
 
 public:
-    InstallDialog(QHelpEngineCore *helpEngine, QWidget *parent = 0,
+    explicit InstallDialog(QHelpEngineCore *helpEngine, QWidget *parent = 0,
         const QString &host = QString(), int port = -1);
     ~InstallDialog();
 

@@ -110,6 +110,10 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QTextCodecFactoryInterface_iid, QLatin1String("/codecs")))
 #endif
 
+//Cache for QTextCodec::codecForName and codecForMib.
+typedef QHash<QByteArray, QTextCodec *> QTextCodecCache;
+Q_GLOBAL_STATIC(QTextCodecCache, qTextCodecCache)
+
 
 static char qtolower(register char c)
 { if (c >= 'A' && c <= 'Z') return c + 0x20; return c; }
@@ -181,7 +185,6 @@ static QTextCodec *createForMib(int mib)
 }
 
 static QList<QTextCodec*> *all = 0;
-static int clearCaches = 0;  // flags specifying if caches should be invalided: 0x1 codecForName, 0x2 codecForMib
 #ifdef Q_DEBUG_TEXTCODEC
 static bool destroying_is_ok = false;
 #endif
@@ -1007,7 +1010,9 @@ QTextCodec::~QTextCodec()
         QMutexLocker locker(textCodecsMutex());
 #endif
         all->removeAll(this);
-        clearCaches = 0x1 | 0x2;
+        QTextCodecCache *cache = qTextCodecCache();
+        if (cache)
+            cache->clear();
     }
 }
 
@@ -1037,32 +1042,33 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
     if (!validCodecs())
         return 0;
 
-    static QHash <QByteArray, QTextCodec *> cache;
-    if (clearCaches & 0x1) {
-        cache.clear();
-        clearCaches &= ~0x1;
+    QTextCodecCache *cache = qTextCodecCache();
+    QTextCodec *codec;
+    if (cache) {
+        codec = cache->value(name);
+        if (codec)
+            return codec;
     }
-    QTextCodec *codec = cache.value(name);
-    if (codec)
-        return codec;
 
     for (int i = 0; i < all->size(); ++i) {
         QTextCodec *cursor = all->at(i);
         if (nameMatch(cursor->name(), name)) {
-            cache.insert(name, cursor);
+            if (cache)
+                cache->insert(name, cursor);
             return cursor;
         }
         QList<QByteArray> aliases = cursor->aliases();
         for (int y = 0; y < aliases.size(); ++y)
             if (nameMatch(aliases.at(y), name)) {
-                cache.insert(name, cursor);
+                if (cache)
+                    cache->insert(name, cursor);
                 return cursor;
             }
     }
 
     codec = createForName(name);
-    if (codec)
-        cache.insert(name, codec);
+    if (codec && cache)
+        cache->insert(name, codec);
     return codec;
 }
 
@@ -1081,20 +1087,18 @@ QTextCodec* QTextCodec::codecForMib(int mib)
     if (!validCodecs())
         return 0;
 
-    static QHash <int, QTextCodec *> cache;
-    if (clearCaches & 0x2) {
-        cache.clear();
-        clearCaches &= ~0x2;
-    }
-    QTextCodec *codec = cache.value(mib);
-    if (codec)
-        return codec;
+    QByteArray key = "MIB: " + QByteArray::number(mib);
+    QTextCodecCache *cache = qTextCodecCache();
+    QTextCodec *codec;
+    if (cache)
+        codec = cache->value(key);
 
     QList<QTextCodec*>::ConstIterator i;
     for (int i = 0; i < all->size(); ++i) {
         QTextCodec *cursor = all->at(i);
         if (cursor->mibEnum() == mib) {
-            cache.insert(mib, cursor);
+            if (cache)
+                cache->insert(key, cursor);
             return cursor;
         }
     }
@@ -1106,8 +1110,8 @@ QTextCodec* QTextCodec::codecForMib(int mib)
     if (!codec && mib == 1000)
         return codecForMib(1015);
 
-    if (codec)
-        cache.insert(mib, codec);
+    if (codec && cache)
+        cache->insert(key, codec);
     return codec;
 }
 

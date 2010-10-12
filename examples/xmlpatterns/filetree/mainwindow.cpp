@@ -140,7 +140,7 @@ void MainWindow::loadDirectory(const QString &directory)
     QXmlFormatter formatter(query, &buffer);
     query.evaluateTo(&formatter);
 
-    treeInfo->setText((QString(tr("Model of %1 output as XML.")).arg(directory)));
+    treeInfo->setText(tr("Model of %1 output as XML.").arg(directory));
     fileTree->setText(QString::fromLatin1(output.constData()));
     evaluateResult();
 //! [6]    

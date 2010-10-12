@@ -265,7 +265,8 @@
     
     \snippet examples/graphicsview/diagramscene/mainwindow.cpp 3
     
-    This slot deletes the selected item, if any, from the scene. If
+    This slot deletes the selected item, if any, from the scene. It
+    deletes the arrows first in order to avoid to delete them twice. If
     the item to be deleted is a \c DiagramItem, we also need to delete
     arrows connected to it; we don't want arrows in the scene that
     aren't connected to items in both ends.

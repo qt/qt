@@ -62,6 +62,7 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
 
 /*!
     \qmlclass Repeater QDeclarativeRepeater
+    \ingroup qml-utility-elements
     \since 4.7
     \inherits Item
 
@@ -77,9 +78,9 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
     The following Repeater creates three instances of a \l Rectangle item within
     a \l Row:
 
-    \snippet doc/src/snippets/declarative/repeater.qml import
+    \snippet doc/src/snippets/declarative/repeaters/repeater.qml import
     \codeline
-    \snippet doc/src/snippets/declarative/repeater.qml simple
+    \snippet doc/src/snippets/declarative/repeaters/repeater.qml simple
 
     \image repeater-simple.png
 
@@ -91,7 +92,7 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
     a Repeater to be used inside a layout. For example, the following Repeater's
     items are stacked between a red rectangle and a blue rectangle:
    
-    \snippet doc/src/snippets/declarative/repeater.qml layout
+    \snippet doc/src/snippets/declarative/repeaters/repeater.qml layout
 
     \image repeater.png
 
@@ -105,7 +106,7 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
 
     \table
     \row
-    \o \snippet doc/src/snippets/declarative/repeater.qml index
+    \o \snippet doc/src/snippets/declarative/repeaters/repeater.qml index
     \o \image repeater-index.png
     \endtable
 
@@ -114,7 +115,7 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
 
     \table
     \row
-    \o \snippet doc/src/snippets/declarative/repeater.qml modeldata
+    \o \snippet doc/src/snippets/declarative/repeaters/repeater.qml modeldata
     \o \image repeater-modeldata.png
     \endtable
 
@@ -133,35 +134,23 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
     create items as they are required.
 
     Also, note that Repeater is \l {Item}-based, and can only repeat \l {Item}-derived objects. 
-    For example, it cannot be used to repeat QObjects:
+    For example, it cannot be used to repeat QtObjects:
     \badcode
     Item {
-        //XXX does not work! Can't repeat QObject as it doesn't derive from Item.
+        //XXX does not work! Can't repeat QtObject as it doesn't derive from Item.
         Repeater {
             model: 10
-            QObject {}
+            QtObject {}
         }
     }
     \endcode
  */
 
-/*!
-    \internal
-    \class QDeclarativeRepeater
- */
-
-/*!
-    Create a new QDeclarativeRepeater instance.
- */
 QDeclarativeRepeater::QDeclarativeRepeater(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativeRepeaterPrivate), parent)
 {
 }
 
-/*!
-    Destroy the repeater instance.  All items it instantiated are also
-    destroyed.
- */
 QDeclarativeRepeater::~QDeclarativeRepeater()
 {
 }
@@ -245,8 +234,8 @@ void QDeclarativeRepeater::setModel(const QVariant &model)
         connect(d->model, SIGNAL(destroyingItem(QDeclarativeItem*)), this, SLOT(destroyingItem(QDeclarativeItem*)));
         */
         regenerate();
-        emit countChanged();
     }
+    emit countChanged();
 }
 
 /*!
@@ -300,18 +289,12 @@ int QDeclarativeRepeater::count() const
 }
 
 
-/*!
-    \internal
- */
 void QDeclarativeRepeater::componentComplete()
 {
     QDeclarativeItem::componentComplete();
     regenerate();
 }
 
-/*!
-    \internal
- */
 QVariant QDeclarativeRepeater::itemChange(GraphicsItemChange change,
                                        const QVariant &value)
 {
@@ -334,9 +317,6 @@ void QDeclarativeRepeater::clear()
     d->deletables.clear();
 }
 
-/*!
-    \internal
- */
 void QDeclarativeRepeater::regenerate()
 {
     Q_D(QDeclarativeRepeater);
@@ -377,6 +357,7 @@ void QDeclarativeRepeater::itemsInserted(int index, int count)
             d->deletables.insert(modelIndex, item);
         }
     }
+    emit countChanged();
 }
 
 void QDeclarativeRepeater::itemsRemoved(int index, int count)
@@ -391,6 +372,7 @@ void QDeclarativeRepeater::itemsRemoved(int index, int count)
         else
             break;
     }
+    emit countChanged();
 }
 
 void QDeclarativeRepeater::itemsMoved(int from, int to, int count)
@@ -420,6 +402,7 @@ void QDeclarativeRepeater::modelReset()
     if (!isComponentComplete())
         return;
     regenerate();
+    emit countChanged();
 }
 
 QT_END_NAMESPACE

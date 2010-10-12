@@ -202,7 +202,7 @@ QScriptValue QDeclarativeExpressionPrivate::evalInObjectScope(QDeclarativeContex
     For example, given a file \c main.qml like this:
 
     \qml
-    import Qt 4.7
+    import QtQuick 1.0
 
     Item {
         width: 200; height: 200

@@ -189,9 +189,9 @@ void MainWindow::deleteAlbum()
 
         QMessageBox::StandardButton button;
         button = QMessageBox::question(this, tr("Delete Album"),
-                                       QString(tr("Are you sure you want to " \
-                                                  "delete '%1' by '%2'?"))
-                                              .arg(title).arg(artist),
+                                       tr("Are you sure you want to "
+                                          "delete '%1' by '%2'?")
+                                       .arg(title, artist),
                                        QMessageBox::Yes | QMessageBox::No);
 
         if (button == QMessageBox::Yes) {

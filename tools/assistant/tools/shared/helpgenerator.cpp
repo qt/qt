@@ -73,12 +73,12 @@ QString HelpGenerator::error() const
 
 void HelpGenerator::printStatus(const QString &msg)
 {
-    fprintf(stdout, "%s\n", qPrintable(msg));
+    puts(qPrintable(msg));
 }
 
 void HelpGenerator::printWarning(const QString &msg)
 {
-    fprintf(stdout, "Warning: %s\n", qPrintable(msg));
+    puts(qPrintable(tr("Warning: %1").arg(msg)));
 }
 
 QT_END_NAMESPACE

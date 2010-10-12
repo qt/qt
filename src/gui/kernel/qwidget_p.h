@@ -110,17 +110,18 @@ class QWidgetItemV2;
 
 class QStyle;
 
-class Q_AUTOTEST_EXPORT QRefCountedWidgetBackingStore
+class Q_AUTOTEST_EXPORT QWidgetBackingStoreTracker
 {
+
 public:
-    QRefCountedWidgetBackingStore();
-    ~QRefCountedWidgetBackingStore();
+    QWidgetBackingStoreTracker();
+    ~QWidgetBackingStoreTracker();
 
     void create(QWidget *tlw);
     void destroy();
 
-    void ref();
-    void deref();
+    void registerWidget(QWidget *w);
+    void unregisterWidget(QWidget *w);
 
     inline QWidgetBackingStore* data()
     {
@@ -143,11 +144,11 @@ public:
     }
 
 private:
-    Q_DISABLE_COPY(QRefCountedWidgetBackingStore)
+    Q_DISABLE_COPY(QWidgetBackingStoreTracker)
 
 private:
     QWidgetBackingStore* m_ptr;
-    int m_count;
+    QSet<QWidget *> m_widgets;
 };
 
 struct QTLWExtra {
@@ -156,7 +157,7 @@ struct QTLWExtra {
     // Regular pointers (keep them together to avoid gaps on 64 bits architectures).
     QIcon *icon; // widget icon
     QPixmap *iconPixmap;
-    QRefCountedWidgetBackingStore backingStore;
+    QWidgetBackingStoreTracker backingStore;
     QWindowSurface *windowSurface;
     QPainter *sharedPainter;
 
@@ -748,6 +749,9 @@ public:
     uint isMoved : 1;
     uint isGLWidget : 1;
     uint usesDoubleBufferedGLContext : 1;
+#ifndef QT_NO_IM
+    uint inheritsInputMethodHints : 1;
+#endif
 
     // *************************** Platform specific ************************************
 #if defined(Q_WS_X11) // <----------------------------------------------------------- X11
@@ -839,6 +843,13 @@ public:
     bool originalDrawMethod;
     // Do we need to change the methods?
     bool changeMethods;
+    bool hasOwnContext;
+    CGContextRef cgContext;
+    QRegion ut_rg;
+    QPoint ut_pt;
+    bool isInUnifiedToolbar;
+    QWindowSurface *unifiedSurface;
+    QPoint toolbar_offset;
 #endif
     void determineWindowClass();
     void transferChildren();

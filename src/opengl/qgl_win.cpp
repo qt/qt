@@ -1042,7 +1042,7 @@ int QGLContext::choosePixelFormat(void* dummyPfd, HDC pdc)
         iAttributes[i++] = WGL_DRAW_TO_WINDOW_ARB;
         iAttributes[i++] = TRUE;
         iAttributes[i++] = WGL_COLOR_BITS_ARB;
-        iAttributes[i++] = 32;
+        iAttributes[i++] = 24;
         iAttributes[i++] = WGL_DOUBLE_BUFFER_ARB;
         iAttributes[i++] = d->glFormat.doubleBuffer();
         if (d->glFormat.stereo()) {

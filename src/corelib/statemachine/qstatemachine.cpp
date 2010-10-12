@@ -1389,7 +1389,7 @@ void QStateMachinePrivate::cancelAllDelayedEvents()
     delayedEvents.clear();
 }
 
-namespace {
+namespace _QStateMachine_Internal{
 
 class GoToStateTransition : public QAbstractTransition
 {
@@ -1403,7 +1403,9 @@ protected:
 };
 
 } // namespace
-
+// mingw compiler tries to export QObject::findChild<GoToStateTransition>(),
+// which doesn't work if its in an anonymous namespace.
+using namespace _QStateMachine_Internal;
 /*!
   \internal
 
@@ -2135,6 +2137,7 @@ void QStateMachine::endMicrostep(QEvent *event)
 
 /*!
   \reimp
+    This function will call start() to start the state machine.
 */
 void QStateMachine::onEntry(QEvent *event)
 {
@@ -2144,6 +2147,8 @@ void QStateMachine::onEntry(QEvent *event)
 
 /*!
   \reimp
+    This function will call stop() to stop the state machine and 
+    subsequently emit the stopped() signal.
 */
 void QStateMachine::onExit(QEvent *event)
 {

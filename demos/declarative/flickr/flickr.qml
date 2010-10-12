@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 import "common" as Common
 import "mobile" as Mobile
 
@@ -109,7 +109,7 @@ Item {
         states: State {
             name: "DetailedView"
             PropertyChanges { target: views; x: -parent.width }
-            PropertyChanges { target: toolBar; button1Label: "More..." }
+            PropertyChanges { target: toolBar; button1Label: "View..." }
             PropertyChanges {
                 target: toolBar
                 onButton1Clicked: if (imageDetails.state=='') imageDetails.state='Back'; else imageDetails.state=''

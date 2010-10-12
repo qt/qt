@@ -48,7 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 
-const QString CmdLineParser::m_helpMessage = QLatin1String(
+static const char helpMessage[] = QT_TRANSLATE_NOOP("CmdLineParser",
         "Usage: assistant [Options]\n\n"
         "-collectionFile file       Uses the specified collection\n"
         "                           file instead of the default one\n"
@@ -138,10 +138,10 @@ CmdLineParser::Result CmdLineParser::parse()
     }
 
     if (!m_error.isEmpty()) {
-        showMessage(m_error + QLatin1String("\n\n\n") + m_helpMessage, true);
+        showMessage(m_error + QLatin1String("\n\n\n") + tr(helpMessage), true);
         return Error;
     } else if (showHelp) {
-        showMessage(m_helpMessage, false);
+        showMessage(tr(helpMessage), false);
         return Help;
     }
     return Ok;
@@ -298,6 +298,13 @@ QString CmdLineParser::collectionFile() const
 {
     TRACE_OBJ
     return m_collectionFile;
+}
+
+bool CmdLineParser::collectionFileGiven() const
+{
+    TRACE_OBJ
+    return m_arguments.contains(QLatin1String("-collectionfile"),
+        Qt::CaseInsensitive);
 }
 
 QUrl CmdLineParser::url() const

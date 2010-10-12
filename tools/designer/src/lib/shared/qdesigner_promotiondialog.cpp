@@ -49,6 +49,7 @@
 #include <QtDesigner/QDesignerFormWindowInterface>
 #include <QtDesigner/QDesignerPromotionInterface>
 #include <QtDesigner/QDesignerWidgetDataBaseItemInterface>
+#include <QtDesigner/QDesignerIntegrationInterface>
 #include <abstractdialoggui_p.h>
 
 #include <QtCore/QTimer>
@@ -152,8 +153,13 @@ namespace qdesigner_internal {
     void NewPromotedClassPanel::slotNameChanged(const QString &className) {
         // Suggest a name
         if (!className.isEmpty()) {
-            QString suggestedHeader = className.toLower().replace(QLatin1String("::"), QString(QLatin1Char('_')));
-            suggestedHeader += QLatin1String(".h");
+            const QChar dot(QLatin1Char('.'));
+            QString suggestedHeader = m_promotedHeaderLowerCase ?
+                                      className.toLower() : className;
+            suggestedHeader.replace(QLatin1String("::"), QString(QLatin1Char('_')));
+            if (!m_promotedHeaderSuffix.startsWith(dot))
+                suggestedHeader += dot;
+            suggestedHeader += m_promotedHeaderSuffix;
 
             const bool blocked = m_includeFileEdit->blockSignals(true);
             m_includeFileEdit->setText(suggestedHeader);
@@ -248,6 +254,8 @@ namespace qdesigner_internal {
             preselectedBaseClass = baseClassNameList.indexOf(QLatin1String("QFrame"));
 
         NewPromotedClassPanel *newPromotedClassPanel = new NewPromotedClassPanel(baseClassNameList, preselectedBaseClass);
+        newPromotedClassPanel->setPromotedHeaderSuffix(core->integration()->headerSuffix());
+        newPromotedClassPanel->setPromotedHeaderLowerCase(core->integration()->isHeaderLowercase());
         connect(newPromotedClassPanel, SIGNAL(newPromotedClass(PromotionParameters,bool*)), this, SLOT(slotNewPromotedClass(PromotionParameters,bool*)));
         connect(this, SIGNAL(selectedBaseClassChanged(QString)),
                 newPromotedClassPanel, SLOT(chooseBaseClass(QString)));

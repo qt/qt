@@ -85,7 +85,11 @@ typedef HIObjectRef                     HIToolbarItemRef;
 typedef const void * CFTypeRef;
 typedef const struct __CFString * CFStringRef;
 
-#endif
+#  ifdef QT_MAC_USE_COCOA
+#include <private/qunifiedtoolbarsurface_mac_p.h>
+# endif // QT_MAC_USE_COCOA
+
+#endif // Q_WS_MAC
 
 QT_BEGIN_NAMESPACE
 
@@ -159,7 +163,7 @@ class Q_AUTOTEST_EXPORT QMainWindowLayout : public QLayout
 public:
     QMainWindowLayoutState layoutState, savedState;
 
-    explicit QMainWindowLayout(QMainWindow *mainwindow);
+    QMainWindowLayout(QMainWindow *mainwindow, QLayout *parentLayout);
     ~QMainWindowLayout();
 
     QMainWindow::DockOptions dockOptions;
@@ -337,7 +341,9 @@ public:
     bool useHIToolBar;
     void syncUnifiedToolbarVisibility();
     bool blockVisiblityCheck;
-#endif
+
+    QUnifiedToolbarSurface *unifiedSurface;
+#endif // Q_WS_MAC
 };
 QT_END_NAMESPACE
 

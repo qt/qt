@@ -7,7 +7,7 @@ HEADERS += TestNodeModel.h LoadingModel.h
 include (../xmlpatterns.pri)
 
 wince*: {
-   addFiles.sources = tree.xml
+   addFiles.files = tree.xml
    addFiles.path    = .
 
    DEPLOYMENT += addFiles

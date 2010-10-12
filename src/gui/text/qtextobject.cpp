@@ -616,6 +616,7 @@ void QTextFramePrivate::remove_me()
 
 /*!
     Returns an iterator pointing to the first document element inside the frame.
+    Please see the document \l{STL-style-Iterators} for more information.
 
     \sa end()
 */
@@ -628,8 +629,8 @@ QTextFrame::iterator QTextFrame::begin() const
 }
 
 /*!
-    Returns an iterator pointing to the last document element inside the frame.
-
+    Returns an iterator pointing to the position past the last document element inside the frame.
+    Please see the document \l{STL-Style Iterators} for more information.    
     \sa begin()
 */
 QTextFrame::iterator QTextFrame::end() const
@@ -1153,6 +1154,10 @@ int QTextBlock::charFormatIndex() const
 Qt::LayoutDirection QTextBlock::textDirection() const
 {
     Qt::LayoutDirection dir = blockFormat().layoutDirection();
+    if (dir != Qt::LayoutDirectionAuto)
+        return dir;
+
+    dir = p->defaultTextOption.textDirection();
     if (dir != Qt::LayoutDirectionAuto)
         return dir;
 

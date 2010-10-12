@@ -48,6 +48,7 @@
 #include <private/qdeclarativepropertychanges_p.h>
 #include <private/qdeclarativestategroup_p.h>
 #include <private/qdeclarativeitem_p.h>
+#include <private/qdeclarativeproperty_p.h>
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -122,6 +123,7 @@ private slots:
     void anchorChanges5();
     void anchorChangesCrash();
     void anchorRewindBug();
+    void anchorRewindBug2();
     void script();
     void restoreEntryValues();
     void explicitChanges();
@@ -140,6 +142,7 @@ private slots:
     void unnamedWhen();
     void returnToBase();
     void extendsBug();
+    void editProperties();
 };
 
 void tst_qdeclarativestates::initTestCase()
@@ -581,6 +584,21 @@ void tst_qdeclarativestates::parentChange()
         //do a non-qFuzzyCompare fuzzy compare
         QVERIFY(innerRect->y() < qreal(0.00001) && innerRect->y() > qreal(-0.00001));
     }
+
+    {
+        QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/parentChange6.qml");
+        QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QDeclarativeRectangle *innerRect = qobject_cast<QDeclarativeRectangle*>(rect->findChild<QDeclarativeRectangle*>("MyRect"));
+        QVERIFY(innerRect != 0);
+
+        QDeclarativeItemPrivate::get(rect)->setState("reparented");
+        QCOMPARE(innerRect->rotation(), qreal(180));
+        QCOMPARE(innerRect->scale(), qreal(1));
+        QCOMPARE(innerRect->x(), qreal(-105));
+        QCOMPARE(innerRect->y(), qreal(-105));
+    }
 }
 
 void tst_qdeclarativestates::parentChangeErrors()
@@ -839,6 +857,32 @@ void tst_qdeclarativestates::anchorRewindBug()
     QVERIFY(!QDeclarativeItemPrivate::get(column)->heightValid);
     QVERIFY(!QDeclarativeItemPrivate::get(column)->widthValid);
     QCOMPARE(column->height(), 200.0);
+
+    delete rect;
+}
+
+// QTBUG-11834
+void tst_qdeclarativestates::anchorRewindBug2()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/anchorRewindBug2.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QDeclarativeRectangle *mover = rect->findChild<QDeclarativeRectangle*>("mover");
+
+    QVERIFY(mover != 0);
+    QCOMPARE(mover->y(), qreal(0.0));
+    QCOMPARE(mover->width(), qreal(50.0));
+
+    QDeclarativeItemPrivate::get(rect)->setState("anchored");
+    QCOMPARE(mover->y(), qreal(250.0));
+    QCOMPARE(mover->width(), qreal(200.0));
+
+    QDeclarativeItemPrivate::get(rect)->setState("");
+    QCOMPARE(mover->y(), qreal(0.0));
+    QCOMPARE(mover->width(), qreal(50.0));
 
     delete rect;
 }
@@ -1201,6 +1245,134 @@ void tst_qdeclarativestates::extendsBug()
     rectPrivate->setState("b");
     QCOMPARE(greenRect->x(), qreal(100));
     QCOMPARE(greenRect->y(), qreal(100));
+}
+
+void tst_qdeclarativestates::editProperties()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent c(&engine, SRCDIR "/data/editProperties.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect != 0);
+
+    QDeclarativeItemPrivate *rectPrivate = QDeclarativeItemPrivate::get(rect);
+
+    QDeclarativeStateGroup *stateGroup = rectPrivate->_states();
+    QVERIFY(stateGroup != 0);
+    qmlExecuteDeferred(stateGroup);
+
+    QDeclarativeState *blueState = stateGroup->findState("blue");
+    QVERIFY(blueState != 0);
+    qmlExecuteDeferred(blueState);
+
+    QDeclarativePropertyChanges *propertyChangesBlue = qobject_cast<QDeclarativePropertyChanges*>(blueState->operationAt(0));
+    QVERIFY(propertyChangesBlue != 0);
+
+    QDeclarativeState *greenState = stateGroup->findState("green");
+    QVERIFY(greenState != 0);
+    qmlExecuteDeferred(greenState);
+
+    QDeclarativePropertyChanges *propertyChangesGreen = qobject_cast<QDeclarativePropertyChanges*>(greenState->operationAt(0));
+    QVERIFY(propertyChangesGreen != 0);
+
+    QDeclarativeRectangle *childRect = rect->findChild<QDeclarativeRectangle*>("rect2");
+    QVERIFY(childRect != 0);
+    QCOMPARE(childRect->width(), qreal(402));
+    QVERIFY(QDeclarativePropertyPrivate::binding(QDeclarativeProperty(childRect, "width")));
+    QCOMPARE(childRect->height(), qreal(200));
+
+    rectPrivate->setState("blue");
+    QCOMPARE(childRect->width(), qreal(50));
+    QCOMPARE(childRect->height(), qreal(40));
+    QVERIFY(!QDeclarativePropertyPrivate::binding(QDeclarativeProperty(childRect, "width")));
+    QVERIFY(blueState->bindingInRevertList(childRect, "width"));
+
+
+    rectPrivate->setState("green");
+    QCOMPARE(childRect->width(), qreal(200));
+    QCOMPARE(childRect->height(), qreal(100));
+    QVERIFY(greenState->bindingInRevertList(childRect, "width"));
+
+
+    rectPrivate->setState("");
+
+
+    QCOMPARE(propertyChangesBlue->actions().length(), 2);
+    QVERIFY(propertyChangesBlue->containsValue("width"));
+    QVERIFY(!propertyChangesBlue->containsProperty("x"));
+    QCOMPARE(propertyChangesBlue->value("width").toInt(), 50);
+    QVERIFY(!propertyChangesBlue->value("x").isValid());
+
+    propertyChangesBlue->changeValue("width", 60);
+    QCOMPARE(propertyChangesBlue->value("width").toInt(), 60);
+    QCOMPARE(propertyChangesBlue->actions().length(), 2);
+
+
+    propertyChangesBlue->changeExpression("width", "myRectangle.width / 2");
+    QVERIFY(!propertyChangesBlue->containsValue("width"));
+    QVERIFY(propertyChangesBlue->containsExpression("width"));
+    QCOMPARE(propertyChangesBlue->value("width").toInt(), 0);
+    QCOMPARE(propertyChangesBlue->actions().length(), 2);
+
+    propertyChangesBlue->changeValue("width", 50);
+    QVERIFY(propertyChangesBlue->containsValue("width"));
+    QVERIFY(!propertyChangesBlue->containsExpression("width"));
+    QCOMPARE(propertyChangesBlue->value("width").toInt(), 50);
+    QCOMPARE(propertyChangesBlue->actions().length(), 2);
+
+    QVERIFY(QDeclarativePropertyPrivate::binding(QDeclarativeProperty(childRect, "width")));
+    rectPrivate->setState("blue");
+    QCOMPARE(childRect->width(), qreal(50));
+    QCOMPARE(childRect->height(), qreal(40));
+
+    propertyChangesBlue->changeValue("width", 60);
+    QCOMPARE(propertyChangesBlue->value("width").toInt(), 60);
+    QCOMPARE(propertyChangesBlue->actions().length(), 2);
+    QCOMPARE(childRect->width(), qreal(60));
+    QVERIFY(!QDeclarativePropertyPrivate::binding(QDeclarativeProperty(childRect, "width")));
+
+    propertyChangesBlue->changeExpression("width", "myRectangle.width / 2");
+    QVERIFY(!propertyChangesBlue->containsValue("width"));
+    QVERIFY(propertyChangesBlue->containsExpression("width"));
+    QCOMPARE(propertyChangesBlue->value("width").toInt(), 0);
+    QCOMPARE(propertyChangesBlue->actions().length(), 2);
+    QVERIFY(QDeclarativePropertyPrivate::binding(QDeclarativeProperty(childRect, "width")));
+    QCOMPARE(childRect->width(), qreal(200));
+
+    propertyChangesBlue->changeValue("width", 50);
+    QCOMPARE(childRect->width(), qreal(50));
+
+    rectPrivate->setState("");
+    QCOMPARE(childRect->width(), qreal(402));
+    QVERIFY(QDeclarativePropertyPrivate::binding(QDeclarativeProperty(childRect, "width")));
+
+    QCOMPARE(propertyChangesGreen->actions().length(), 2);
+    rectPrivate->setState("green");
+    QCOMPARE(childRect->width(), qreal(200));
+    QCOMPARE(childRect->height(), qreal(100));
+    QVERIFY(QDeclarativePropertyPrivate::binding(QDeclarativeProperty(childRect, "width")));
+    QVERIFY(greenState->bindingInRevertList(childRect, "width"));
+    QCOMPARE(propertyChangesGreen->actions().length(), 2);
+
+
+    propertyChangesGreen->removeProperty("height");
+    QVERIFY(!QDeclarativePropertyPrivate::binding(QDeclarativeProperty(childRect, "height")));
+    QCOMPARE(childRect->height(), qreal(200));
+
+    QVERIFY(greenState->bindingInRevertList(childRect, "width"));
+    QVERIFY(greenState->containsPropertyInRevertList(childRect, "width"));
+    propertyChangesGreen->removeProperty("width");
+    QVERIFY(QDeclarativePropertyPrivate::binding(QDeclarativeProperty(childRect, "width")));
+    QCOMPARE(childRect->width(), qreal(402));
+    QVERIFY(!greenState->bindingInRevertList(childRect, "width"));
+    QVERIFY(!greenState->containsPropertyInRevertList(childRect, "width"));
+
+    propertyChangesBlue->removeProperty("width");
+    QCOMPARE(childRect->width(), qreal(402));
+
+    rectPrivate->setState("blue");
+    QCOMPARE(childRect->width(), qreal(402));
+    QCOMPARE(childRect->height(), qreal(40));
 }
 
 QTEST_MAIN(tst_qdeclarativestates)

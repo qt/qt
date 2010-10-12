@@ -57,6 +57,7 @@ class Q_DECLARATIVE_EXPORT QDeclarativeDebugConnection : public QTcpSocket
     Q_DISABLE_COPY(QDeclarativeDebugConnection)
 public:
     QDeclarativeDebugConnection(QObject * = 0);
+    ~QDeclarativeDebugConnection();
 
     bool isConnected() const;
 private:
@@ -73,18 +74,19 @@ class Q_DECLARATIVE_EXPORT QDeclarativeDebugClient : public QObject
     Q_DISABLE_COPY(QDeclarativeDebugClient)
 
 public:
+    enum Status { NotConnected, Unavailable, Enabled };
+
     QDeclarativeDebugClient(const QString &, QDeclarativeDebugConnection *parent);
+    ~QDeclarativeDebugClient();
 
     QString name() const;
 
-    bool isEnabled() const;
-    void setEnabled(bool);
-
-    bool isConnected() const;
+    Status status() const;
 
     void sendMessage(const QByteArray &);
 
 protected:
+    virtual void statusChanged(Status);
     virtual void messageReceived(const QByteArray &);
 
 private:

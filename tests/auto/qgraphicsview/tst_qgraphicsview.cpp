@@ -244,6 +244,9 @@ private slots:
     void QTBUG_4151_clipAndIgnore();
     void QTBUG_5859_exposedRect();
     void QTBUG_7438_cursor();
+
+public slots:
+    void dummySlot() {}
 };
 
 void tst_QGraphicsView::initTestCase()
@@ -2489,25 +2492,31 @@ void tst_QGraphicsView::optimizationFlags_dontSavePainterState()
 void tst_QGraphicsView::optimizationFlags_dontSavePainterState2_data()
 {
     QTest::addColumn<bool>("savePainter");
-    QTest::newRow("With painter state protection") << true;
-    QTest::newRow("Without painter state protection") << false;
+    QTest::addColumn<bool>("indirectPainting");
+    QTest::newRow("With painter state protection, without indirect painting") << true << false;
+    QTest::newRow("Without painter state protection, without indirect painting") << false << false;
+    QTest::newRow("With painter state protectionm, with indirect painting") << true << true;
+    QTest::newRow("Without painter state protection, with indirect painting") << false << true;
 }
 
 void tst_QGraphicsView::optimizationFlags_dontSavePainterState2()
 {
     QFETCH(bool, savePainter);
+    QFETCH(bool, indirectPainting);
 
     class MyScene : public QGraphicsScene
     {
     public:
         void drawBackground(QPainter *p, const QRectF &)
-        { transformInDrawBackground = p->worldTransform(); }
+        { transformInDrawBackground = p->worldTransform(); opacityInDrawBackground = p->opacity(); }
 
         void drawForeground(QPainter *p, const QRectF &)
-        { transformInDrawForeground = p->worldTransform(); }
+        { transformInDrawForeground = p->worldTransform(); opacityInDrawForeground = p->opacity(); }
 
         QTransform transformInDrawBackground;
         QTransform transformInDrawForeground;
+        qreal opacityInDrawBackground;
+        qreal opacityInDrawForeground;
     };
 
     MyScene scene;
@@ -2515,9 +2524,13 @@ void tst_QGraphicsView::optimizationFlags_dontSavePainterState2()
     scene.addRect(0, 0, 20, 20)->setTransform(QTransform::fromScale(2, 2));
     scene.addRect(50, 50, 20, 20)->setTransform(QTransform::fromTranslate(200, 200));
 
+    foreach (QGraphicsItem *item, scene.items())
+        item->setOpacity(0.6);
+
     CustomView view(&scene);
     if (!savePainter)
         view.setOptimizationFlag(QGraphicsView::DontSavePainterState);
+    view.setOptimizationFlag(QGraphicsView::IndirectPainting, indirectPainting);
     view.rotate(45);
     view.scale(1.5, 1.5);
     view.show();
@@ -2531,10 +2544,38 @@ void tst_QGraphicsView::optimizationFlags_dontSavePainterState2()
     QVERIFY(view.painted);
 
     // Make sure the painter's world transform is preserved after drawItems.
-    const QTransform expectedTransform = view.viewportTransform();
+    QTransform expectedTransform = view.viewportTransform();
     QVERIFY(!expectedTransform.isIdentity());
     QCOMPARE(scene.transformInDrawForeground, expectedTransform);
     QCOMPARE(scene.transformInDrawBackground, expectedTransform);
+
+    qreal expectedOpacity = 1.0;
+    QCOMPARE(scene.opacityInDrawBackground, expectedOpacity);
+    QCOMPARE(scene.opacityInDrawForeground, expectedOpacity);
+
+    // Trigger more painting, this time from QGraphicsScene::render.
+    QImage image(scene.sceneRect().size().toSize(), QImage::Format_RGB32);
+    QPainter painter(&image);
+    scene.render(&painter);
+    painter.end();
+
+    expectedTransform = QTransform();
+    QCOMPARE(scene.transformInDrawForeground, expectedTransform);
+    QCOMPARE(scene.transformInDrawBackground, expectedTransform);
+    QCOMPARE(scene.opacityInDrawBackground, expectedOpacity);
+    QCOMPARE(scene.opacityInDrawForeground, expectedOpacity);
+
+    // Trigger more painting with another opacity on the painter.
+    painter.begin(&image);
+    painter.setOpacity(0.4);
+    expectedOpacity = 0.4;
+    scene.render(&painter);
+    painter.end();
+
+    QCOMPARE(scene.transformInDrawForeground, expectedTransform);
+    QCOMPARE(scene.transformInDrawBackground, expectedTransform);
+    QCOMPARE(scene.opacityInDrawBackground, expectedOpacity);
+    QCOMPARE(scene.opacityInDrawForeground, expectedOpacity);
 }
 
 class LodItem : public QGraphicsRectItem
@@ -3202,14 +3243,18 @@ void tst_QGraphicsView::scrollAfterResize()
 void tst_QGraphicsView::moveItemWhileScrolling_data()
 {
     QTest::addColumn<bool>("adjustForAntialiasing");
+    QTest::addColumn<bool>("changedConnected");
 
-    QTest::newRow("no adjust") << false;
-    QTest::newRow("adjust") << true;
+    QTest::newRow("no adjust") << false << false;
+    QTest::newRow("adjust") << true << false;
+    QTest::newRow("no adjust changedConnected") << false << true;
+    QTest::newRow("adjust changedConnected") << true << true;
 }
 
 void tst_QGraphicsView::moveItemWhileScrolling()
 {
     QFETCH(bool, adjustForAntialiasing);
+    QFETCH(bool, changedConnected);
 
     class MoveItemScrollView : public QGraphicsView
     {
@@ -3253,6 +3298,8 @@ void tst_QGraphicsView::moveItemWhileScrolling()
     view.resize(200, 200);
     view.painted = false;
     view.show();
+    if (changedConnected)
+        QObject::connect(view.scene(), SIGNAL(changed(QList<QRectF>)), this, SLOT(dummySlot()));
     QTest::qWaitForWindowShown(&view);
     QApplication::processEvents();
     QTRY_VERIFY(view.painted);
@@ -3691,24 +3738,32 @@ void tst_QGraphicsView::update2_data()
 {
     QTest::addColumn<qreal>("penWidth");
     QTest::addColumn<bool>("antialiasing");
+    QTest::addColumn<bool>("changedConnected");
 
     // Anti-aliased.
-    QTest::newRow("pen width: 0.0, antialiasing: true") << 0.0 << true;
-    QTest::newRow("pen width: 1.5, antialiasing: true") << 1.5 << true;
-    QTest::newRow("pen width: 2.0, antialiasing: true") << 2.0 << true;
-    QTest::newRow("pen width: 3.0, antialiasing: true") << 3.0 << true;
+    QTest::newRow("pen width: 0.0, antialiasing: true") << 0.0 << true << false;
+    QTest::newRow("pen width: 1.5, antialiasing: true") << 1.5 << true << false;
+    QTest::newRow("pen width: 2.0, antialiasing: true") << 2.0 << true << false;
+    QTest::newRow("pen width: 3.0, antialiasing: true") << 3.0 << true << false;
 
     // Aliased.
-    QTest::newRow("pen width: 0.0, antialiasing: false") << 0.0 << false;
-    QTest::newRow("pen width: 1.5, antialiasing: false") << 1.5 << false;
-    QTest::newRow("pen width: 2.0, antialiasing: false") << 2.0 << false;
-    QTest::newRow("pen width: 3.0, antialiasing: false") << 3.0 << false;
+    QTest::newRow("pen width: 0.0, antialiasing: false") << 0.0 << false << false;
+    QTest::newRow("pen width: 1.5, antialiasing: false") << 1.5 << false << false;
+    QTest::newRow("pen width: 2.0, antialiasing: false") << 2.0 << false << false;
+    QTest::newRow("pen width: 3.0, antialiasing: false") << 3.0 << false << false;
+
+    // changed() connected
+    QTest::newRow("pen width: 0.0, antialiasing: false, changed") << 0.0 << false << true;
+    QTest::newRow("pen width: 1.5, antialiasing: true, changed") << 1.5 << true << true;
+    QTest::newRow("pen width: 2.0, antialiasing: false, changed") << 2.0 << false << true;
+    QTest::newRow("pen width: 3.0, antialiasing: true, changed") << 3.0 << true << true;
 }
 
 void tst_QGraphicsView::update2()
 {
     QFETCH(qreal, penWidth);
     QFETCH(bool, antialiasing);
+    QFETCH(bool, changedConnected);
 
     // Create a rect item.
     const QRectF rawItemRect(-50.4, -50.3, 100.2, 100.1);
@@ -3719,6 +3774,9 @@ void tst_QGraphicsView::update2()
 
     // Add item to a scene.
     QGraphicsScene scene(-100, -100, 200, 200);
+    if (changedConnected)
+        QObject::connect(&scene, SIGNAL(changed(QList<QRectF>)), this, SLOT(dummySlot()));
+
     scene.addItem(rect);
 
     // Create a view on the scene.

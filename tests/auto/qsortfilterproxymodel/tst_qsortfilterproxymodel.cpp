@@ -143,6 +143,7 @@ private slots:
     void taskQTBUG_10287_unnecessaryMapCreation();
 
     void testMultipleProxiesWithSelection();
+    void mapSelectionFromSource();
 
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
@@ -2795,10 +2796,12 @@ void tst_QSortFilterProxyModel::task252507_mapFromToSource()
     QCOMPARE(proxy.mapFromSource(QModelIndex()), QModelIndex());
     QCOMPARE(proxy.mapToSource(QModelIndex()), QModelIndex());
 
+#ifdef QT_NO_DEBUG  //if Qt is compiled in debug mode, this will assert
     QTest::ignoreMessage(QtWarningMsg, "QSortFilterProxyModel: index from wrong model passed to mapToSource ");
     QCOMPARE(proxy.mapToSource(source.index(2, 3)), QModelIndex());
     QTest::ignoreMessage(QtWarningMsg, "QSortFilterProxyModel: index from wrong model passed to mapFromSource ");
     QCOMPARE(proxy.mapFromSource(proxy.index(6, 2)), QModelIndex());
+#endif
 }
 
 static QStandardItem *addEntry(QStandardItem* pParent, const QString &description)
@@ -3073,6 +3076,44 @@ void tst_QSortFilterProxyModel::testMultipleProxiesWithSelection()
     // trick the proxy into emitting begin/end reset signals.
     proxy.setSourceModel(0);
 
+}
+
+static bool isValid(const QItemSelection &selection) {
+  foreach(const QItemSelectionRange &range, selection)
+    if (!range.isValid())
+      return false;
+    return true;
+}
+
+void tst_QSortFilterProxyModel::mapSelectionFromSource()
+{
+    QStringListModel model;
+    const QStringList initial = QString("bravo charlie delta echo").split(" ");
+    model.setStringList(initial);
+
+    QSortFilterProxyModel proxy;
+    proxy.setDynamicSortFilter(true);
+    proxy.setFilterRegExp("d.*");
+    proxy.setSourceModel(&model);
+
+    // Only "delta" remains.
+    QVERIFY(proxy.rowCount() == 1);
+
+    QItemSelection selection;
+    QModelIndex charlie = model.index(1, 0);
+    selection.append(QItemSelectionRange(charlie, charlie));
+    QModelIndex delta = model.index(2, 0);
+    selection.append(QItemSelectionRange(delta, delta));
+    QModelIndex echo = model.index(3, 0);
+    selection.append(QItemSelectionRange(echo, echo));
+
+    QVERIFY(isValid(selection));
+
+    QItemSelection proxiedSelection = proxy.mapSelectionFromSource(selection);
+
+    // Only "delta" is in the mapped result.
+    QVERIFY(proxiedSelection.size() == 1);
+    QVERIFY(isValid(proxiedSelection));
 }
 
 class Model10287 : public QStandardItemModel

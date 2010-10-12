@@ -8,7 +8,7 @@ RESOURCES += windowsmobile.qrc
 TARGET = ../tst_windowsmobile
 
 wincewm*: {
-   addFiles.sources = $$OUT_PWD/../testQMenuBar/*.exe
+   addFiles.files = $$OUT_PWD/../testQMenuBar/*.exe
                 
 
    addFiles.path = "\\Program Files\\tst_windowsmobile"

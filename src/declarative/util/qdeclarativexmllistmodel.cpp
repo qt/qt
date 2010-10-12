@@ -72,6 +72,7 @@ typedef QPair<int, int> QDeclarativeXmlListRange;
 
 /*!
     \qmlclass XmlRole QDeclarativeXmlListModelRole
+    \ingroup qml-working-with-data
   \since 4.7
     \brief The XmlRole element allows you to specify a role for an XmlListModel.
 
@@ -208,8 +209,9 @@ Q_SIGNALS:
 
 protected:
     void run() {
+        m_mutex.lock();
+
         while (!m_quit) {
-            m_mutex.lock();
             if (!m_jobs.isEmpty())
                 m_currentJob = m_jobs.dequeue();
             m_mutex.unlock();
@@ -229,12 +231,13 @@ protected:
             m_mutex.lock();
             if (m_currentJob.queryId != -1 && m_abortQueryId != m_currentJob.queryId)
                 emit queryCompleted(r);
-            if (m_jobs.isEmpty())
+            if (m_jobs.isEmpty() && !m_quit)
                 m_condition.wait(&m_mutex);
             m_currentJob.queryId = -1;
             m_abortQueryId = -1;
-            m_mutex.unlock();
         }
+
+        m_mutex.unlock();
     }
 
 private:
@@ -465,8 +468,6 @@ public:
     QList<QDeclarativeXmlListModelRole *> roleObjects;
     static void append_role(QDeclarativeListProperty<QDeclarativeXmlListModelRole> *list, QDeclarativeXmlListModelRole *role);
     static void clear_role(QDeclarativeListProperty<QDeclarativeXmlListModelRole> *list);
-    static void removeAt_role(QDeclarativeListProperty<QDeclarativeXmlListModelRole> *list, int i);
-    static void insert_role(QDeclarativeListProperty<QDeclarativeXmlListModelRole> *list, int i, QDeclarativeXmlListModelRole *role);
     QList<QList<QVariant> > data;
     int redirectCount;
 };
@@ -475,7 +476,7 @@ public:
 void QDeclarativeXmlListModelPrivate::append_role(QDeclarativeListProperty<QDeclarativeXmlListModelRole> *list, QDeclarativeXmlListModelRole *role)
 {
     QDeclarativeXmlListModel *_this = qobject_cast<QDeclarativeXmlListModel *>(list->object);
-    if (_this) {
+    if (_this && role) {
         int i = _this->d_func()->roleObjects.count();
         _this->d_func()->roleObjects.append(role);
         if (_this->d_func()->roleNames.contains(role->name())) {
@@ -499,12 +500,8 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
 }
 
 /*!
-    \class QDeclarativeXmlListModel
-    \internal
-*/
-
-/*!
     \qmlclass XmlListModel QDeclarativeXmlListModel
+    \ingroup qml-working-with-data
   \since 4.7
     \brief The XmlListModel element is used to specify a model using XPath expressions.
 
@@ -534,7 +531,7 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
     A XmlListModel could create a model from this data, like this:
 
     \qml
-    import Qt 4.7
+    import QtQuick 1.0
 
     XmlListModel {
         id: xmlModel

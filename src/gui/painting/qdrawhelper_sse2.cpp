@@ -43,7 +43,6 @@
 
 #ifdef QT_HAVE_SSE2
 
-#include <private/qsimd_p.h>
 #include <private/qdrawingprimitive_sse2_p.h>
 #include <private/qpaintengine_raster_p.h>
 
@@ -161,22 +160,6 @@ void QT_FASTCALL comp_func_SourceOver_sse2(uint *destPixels, const uint *srcPixe
     }
 }
 
-inline int comp_func_Plus_one_pixel_const_alpha(uint d, const uint s, const uint const_alpha, const uint one_minus_const_alpha)
-{
-#define MIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
-    const int result = (MIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
-#undef MIX
-    return INTERPOLATE_PIXEL_255(result, const_alpha, d, one_minus_const_alpha);
-}
-
-inline int comp_func_Plus_one_pixel(uint d, const uint s)
-{
-#define MIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
-    const int result = (MIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
-#undef MIX
-    return result;
-}
-
 void QT_FASTCALL comp_func_Plus_sse2(uint *dst, const uint *src, int length, uint const_alpha)
 {
     int x = 0;
@@ -283,10 +266,10 @@ void qt_memfill32_sse2(quint32 *dest, quint32 value, int count)
 
     int n = (count128 + 3) / 4;
     switch (count128 & 0x3) {
-    case 0: do { _mm_store_si128(dst128++, value128);
-    case 3:      _mm_store_si128(dst128++, value128);
-    case 2:      _mm_store_si128(dst128++, value128);
-    case 1:      _mm_store_si128(dst128++, value128);
+    case 0: do { _mm_stream_si128(dst128++, value128);
+    case 3:      _mm_stream_si128(dst128++, value128);
+    case 2:      _mm_stream_si128(dst128++, value128);
+    case 1:      _mm_stream_si128(dst128++, value128);
     } while (--n > 0);
     }
 
@@ -317,16 +300,91 @@ void QT_FASTCALL comp_func_solid_SourceOver_sse2(uint *destPixels, int length, u
         const __m128i half = _mm_set1_epi16(0x80);
         const __m128i minusAlphaOfColorVector = _mm_set1_epi16(minusAlphaOfColor);
 
+        ALIGNMENT_PROLOGUE_16BYTES(dst, x, length)
+            destPixels[x] = color + BYTE_MUL(destPixels[x], minusAlphaOfColor);
+
         for (; x < length-3; x += 4) {
-            __m128i dstVector = _mm_loadu_si128((__m128i *)&dst[x]);
+            __m128i dstVector = _mm_load_si128((__m128i *)&dst[x]);
             BYTE_MUL_SSE2(dstVector, dstVector, minusAlphaOfColorVector, colorMask, half);
             dstVector = _mm_add_epi8(colorVector, dstVector);
-            _mm_storeu_si128((__m128i *)&dst[x], dstVector);
+            _mm_store_si128((__m128i *)&dst[x], dstVector);
         }
         for (;x < length; ++x)
             destPixels[x] = color + BYTE_MUL(destPixels[x], minusAlphaOfColor);
     }
 }
+
+CompositionFunctionSolid qt_functionForModeSolid_onlySSE2[numCompositionFunctions] = {
+    comp_func_solid_SourceOver_sse2,
+    comp_func_solid_DestinationOver,
+    comp_func_solid_Clear,
+    comp_func_solid_Source,
+    comp_func_solid_Destination,
+    comp_func_solid_SourceIn,
+    comp_func_solid_DestinationIn,
+    comp_func_solid_SourceOut,
+    comp_func_solid_DestinationOut,
+    comp_func_solid_SourceAtop,
+    comp_func_solid_DestinationAtop,
+    comp_func_solid_XOR,
+    comp_func_solid_Plus,
+    comp_func_solid_Multiply,
+    comp_func_solid_Screen,
+    comp_func_solid_Overlay,
+    comp_func_solid_Darken,
+    comp_func_solid_Lighten,
+    comp_func_solid_ColorDodge,
+    comp_func_solid_ColorBurn,
+    comp_func_solid_HardLight,
+    comp_func_solid_SoftLight,
+    comp_func_solid_Difference,
+    comp_func_solid_Exclusion,
+    rasterop_solid_SourceOrDestination,
+    rasterop_solid_SourceAndDestination,
+    rasterop_solid_SourceXorDestination,
+    rasterop_solid_NotSourceAndNotDestination,
+    rasterop_solid_NotSourceOrNotDestination,
+    rasterop_solid_NotSourceXorDestination,
+    rasterop_solid_NotSource,
+    rasterop_solid_NotSourceAndDestination,
+    rasterop_solid_SourceAndNotDestination
+};
+
+CompositionFunction qt_functionForMode_onlySSE2[numCompositionFunctions] = {
+    comp_func_SourceOver_sse2,
+    comp_func_DestinationOver,
+    comp_func_Clear,
+    comp_func_Source_sse2,
+    comp_func_Destination,
+    comp_func_SourceIn,
+    comp_func_DestinationIn,
+    comp_func_SourceOut,
+    comp_func_DestinationOut,
+    comp_func_SourceAtop,
+    comp_func_DestinationAtop,
+    comp_func_XOR,
+    comp_func_Plus_sse2,
+    comp_func_Multiply,
+    comp_func_Screen,
+    comp_func_Overlay,
+    comp_func_Darken,
+    comp_func_Lighten,
+    comp_func_ColorDodge,
+    comp_func_ColorBurn,
+    comp_func_HardLight,
+    comp_func_SoftLight,
+    comp_func_Difference,
+    comp_func_Exclusion,
+    rasterop_SourceOrDestination,
+    rasterop_SourceAndDestination,
+    rasterop_SourceXorDestination,
+    rasterop_NotSourceAndNotDestination,
+    rasterop_NotSourceOrNotDestination,
+    rasterop_NotSourceXorDestination,
+    rasterop_NotSource,
+    rasterop_NotSourceAndDestination,
+    rasterop_SourceAndNotDestination
+};
 
 void qt_memfill16_sse2(quint16 *dest, quint16 value, int count)
 {

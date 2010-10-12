@@ -401,7 +401,7 @@ bool QSoftKeyManagerPrivateS60::handleCommand(int command)
                 foreach(QAction *menuAction, action->menu()->actions()) {
                     QMenu *menu = menuAction->menu();
                     if(menu)
-                        menuBar->addMenu(action->menu());
+                        menuBar->addMenu(menu);
                     else
                         menuBar->addAction(menuAction);
                 }

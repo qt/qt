@@ -1354,7 +1354,7 @@ QList<QSslCertificate> QSslSocket::defaultCaCertificates()
 */
 QList<QSslCertificate> QSslSocket::systemCaCertificates()
 {
-    QSslSocketPrivate::ensureInitialized();
+    // we are calling ensureInitialized() in the method below
     return QSslSocketPrivate::systemCaCertificates();
 }
 
@@ -1965,6 +1965,11 @@ void QSslConfigurationPrivate::deepCopyDefaultConfiguration(QSslConfigurationPri
     QSslSocketPrivate::ensureInitialized();
     QMutexLocker locker(&globalData()->mutex);
     const QSslConfigurationPrivate *global = globalData()->config.constData();
+
+    if (!global) {
+        ptr = 0;
+        return;
+    }
 
     ptr->ref = 1;
     ptr->peerCertificate = global->peerCertificate;

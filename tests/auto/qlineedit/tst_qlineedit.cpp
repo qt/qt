@@ -275,6 +275,7 @@ private slots:
 #endif
     void taskQTBUG_7395_readOnlyShortcut();
     void QTBUG697_paletteCurrentColorGroup();
+    void QTBUG13520_textNotVisible();
 
 #ifdef QT3_SUPPORT
     void validateAndSet_data();
@@ -3034,6 +3035,8 @@ public:
     };
 
     State state;
+
+    friend class tst_QLineEdit;
 };
 
 Q_DECLARE_METATYPE(LineEdit::State);
@@ -3740,6 +3743,22 @@ void tst_QLineEdit::QTBUG697_paletteCurrentColorGroup()
     le.render(&img);
     QCOMPARE(img.pixel(10, le.height()/2), QColor(Qt::red).rgb());
 }
+
+void tst_QLineEdit::QTBUG13520_textNotVisible()
+{
+    LineEdit le;
+    le.setAlignment( Qt::AlignRight | Qt::AlignVCenter);
+    le.show();
+    QTest::qWaitForWindowShown(&le);
+    le.setText("01-ST16-01SIL-MPL001wfgsdfgsdgsdfgsdfgsdfgsdfgsdfg");
+    le.setCursorPosition(0);
+    QTest::qWait(100); //just make sure we get he lineedit correcly painted
+
+    QVERIFY(le.cursorRect().center().x() < le.width() / 2);
+
+
+}
+
 
 QTEST_MAIN(tst_QLineEdit)
 #include "tst_qlineedit.moc"

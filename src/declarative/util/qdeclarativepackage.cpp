@@ -48,6 +48,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass Package QDeclarativePackage
+    \ingroup qml-working-with-data
     \brief Package provides a collection of named items.
 
     The Package class is used in conjunction with

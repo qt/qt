@@ -97,6 +97,10 @@ QNetworkManagerEngine::QNetworkManagerEngine(QObject *parent)
 
 QNetworkManagerEngine::~QNetworkManagerEngine()
 {
+    qDeleteAll(connections);
+    qDeleteAll(accessPoints);
+    qDeleteAll(wirelessDevices);
+    qDeleteAll(activeConnections);
 }
 
 void QNetworkManagerEngine::initialize()
@@ -389,7 +393,7 @@ void QNetworkManagerEngine::deviceRemoved(const QDBusObjectPath &path)
 {
     QMutexLocker locker(&mutex);
 
-    delete wirelessDevices.value(path.path());
+    delete wirelessDevices.take(path.path());
 }
 
 void QNetworkManagerEngine::newConnection(const QDBusObjectPath &path,
@@ -454,6 +458,8 @@ void QNetworkManagerEngine::removeConnection(const QString &path)
                                              connection->connectionInterface()->path()));
 
     QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.take(id);
+
+    connection->deleteLater();
 
     locker.unlock();
     emit configurationRemoved(ptr);
@@ -631,7 +637,8 @@ void QNetworkManagerEngine::removeAccessPoint(const QString &path,
 
                         locker.unlock();
                         emit configurationChanged(ptr);
-                        return;
+                        locker.relock();
+                        break;
                     }
                 }
             } else {

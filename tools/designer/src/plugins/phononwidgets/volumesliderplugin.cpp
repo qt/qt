@@ -66,12 +66,12 @@ QString VolumeSliderPlugin::group() const
 
 QString VolumeSliderPlugin::toolTip() const
 {
-    return QString(QLatin1String(toolTipC));
+    return tr(toolTipC);
 }
 
 QString VolumeSliderPlugin::whatsThis() const
 {
-    return QString(QLatin1String(toolTipC));
+    return tr(toolTipC);
 }
 
 QString VolumeSliderPlugin::includeFile() const

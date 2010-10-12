@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "private/qdeclarativenotifier_p.h"
+#include "private/qdeclarativeproperty_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -64,6 +65,21 @@ void QDeclarativeNotifier::emitNotify(QDeclarativeNotifierEndpoint *endpoint)
     } 
 
     if (oldDisconnected) *oldDisconnected = endpoint;
+}
+
+void QDeclarativeNotifierEndpoint::connect(QObject *source, int sourceSignal)
+{
+    Signal *s = toSignal();
+    
+    if (s->source == source && s->sourceSignal == sourceSignal)
+        return;
+
+    disconnect();
+
+    QDeclarativePropertyPrivate::connect(source, sourceSignal, target, targetMethod);
+
+    s->source = source;
+    s->sourceSignal = sourceSignal;
 }
 
 void QDeclarativeNotifierEndpoint::copyAndClear(QDeclarativeNotifierEndpoint &other)

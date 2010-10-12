@@ -47,6 +47,7 @@
 
 #include <translator.h>
 
+#include <QtCore/QCoreApplication>
 #include <QtCore/qdebug.h>
 #include <QtCore/qnumeric.h>
 #include <QtCore/qstring.h>
@@ -61,6 +62,10 @@
 #include <string.h>
 
 QT_BEGIN_NAMESPACE
+
+class LU {
+    Q_DECLARE_TR_FUNCTIONS(LUpdate)
+};
 
 class QScriptGrammar
 {
@@ -770,13 +775,16 @@ const int QScriptGrammar::action_check [] = {
 
 static void recordMessage(
     Translator *tor, const QString &context, const QString &text, const QString &comment,
-    const QString &extracomment, bool plural, const QString &fileName, int lineNo)
+    const QString &extracomment, const QString &msgid, const TranslatorMessage::ExtraData &extra,
+    bool plural, const QString &fileName, int lineNo)
 {
     TranslatorMessage msg(
         context, text, comment, QString(),
         fileName, lineNo, QStringList(),
         TranslatorMessage::Unfinished, plural);
     msg.setExtraComment(extracomment.simplified());
+    msg.setId(msgid);
+    msg.setExtras(extra);
     tor->extend(msg);
 }
 
@@ -784,15 +792,23 @@ static void recordMessage(
 namespace QScript
 {
 
+class CommentProcessor
+{
+public:
+    virtual ~CommentProcessor() {}
+    virtual void processComment(const QChar *chars, int length) = 0;
+};
+
 class Lexer
 {
 public:
-    Lexer();
+    Lexer(CommentProcessor *);
     ~Lexer();
 
-    void setCode(const QString &c, int lineno);
+    void setCode(const QString &c, const QString &fileName, int lineno);
     int lex();
 
+    QString fileName() const { return yyfilename; }
     int currentLineNo() const { return yylineno; }
     int currentColumnNo() const { return yycolumn; }
 
@@ -872,6 +888,7 @@ public:
         { err = NoError; }
 
 private:
+    QString yyfilename;
     int yylineno;
     bool done;
     char *buffer8;
@@ -925,6 +942,8 @@ private:
 
     void syncProhibitAutomaticSemicolon();
 
+    void processComment(const QChar *, int);
+
     const QChar *code;
     uint length;
     int yycolumn;
@@ -951,6 +970,8 @@ private:
     ParenthesesState parenthesesState;
     int parenthesesCount;
     bool prohibitAutomaticSemicolon;
+
+    CommentProcessor *commentProcessor;
 };
 
 } // namespace QScript
@@ -1027,7 +1048,7 @@ double integerFromString(const char *buf, int size, int radix)
 
 } // namespace QScript
 
-QScript::Lexer::Lexer()
+QScript::Lexer::Lexer(QScript::CommentProcessor *proc)
     :
       yylineno(0),
       size8(128), size16(128), restrKeyword(false),
@@ -1038,7 +1059,8 @@ QScript::Lexer::Lexer()
       err(NoError),
       check_reserved(true),
       parenthesesState(IgnoreParentheses),
-      prohibitAutomaticSemicolon(false)
+      prohibitAutomaticSemicolon(false),
+      commentProcessor(proc)
 {
     // allocate space for read buffers
     buffer8 = new char[size8];
@@ -1053,9 +1075,10 @@ QScript::Lexer::~Lexer()
     delete [] buffer16;
 }
 
-void QScript::Lexer::setCode(const QString &c, int lineno)
+void QScript::Lexer::setCode(const QString &c, const QString &fileName, int lineno)
 {
     errmsg = QString();
+    yyfilename = fileName;
     yylineno = lineno;
     yycolumn = 1;
     restrKeyword = false;
@@ -1404,10 +1427,12 @@ int QScript::Lexer::lex()
             } else if (current == '/' && next1 == '/') {
                 recordStartPos();
                 shift(1);
+                Q_ASSERT(pos16 == 0);
                 state = InSingleLineComment;
             } else if (current == '/' && next1 == '*') {
                 recordStartPos();
                 shift(1);
+                Q_ASSERT(pos16 == 0);
                 state = InMultiLineComment;
             } else if (current == 0) {
                 syncProhibitAutomaticSemicolon();
@@ -1466,7 +1491,7 @@ int QScript::Lexer::lex()
                 else {
                     setDone(Bad);
                     err = IllegalCharacter;
-                    errmsg = QLatin1String("Illegal character");
+                    errmsg = LU::tr("Illegal character");
                 }
             }
             break;
@@ -1477,7 +1502,7 @@ int QScript::Lexer::lex()
             } else if (current == 0 || isLineTerminator()) {
                 setDone(Bad);
                 err = UnclosedStringLiteral;
-                errmsg = QLatin1String("Unclosed string at end of line");
+                errmsg = LU::tr("Unclosed string at end of line");
             } else if (current == '\\') {
                 state = InEscapeSequence;
             } else {
@@ -1503,7 +1528,7 @@ int QScript::Lexer::lex()
                 } else {
                     setDone(Bad);
                     err = IllegalEscapeSequence;
-                    errmsg = QLatin1String("Illegal escape squence");
+                    errmsg = LU::tr("Illegal escape squence");
                 }
             } else if (current == 'x')
                 state = InHexEscape;
@@ -1542,14 +1567,17 @@ int QScript::Lexer::lex()
             } else {
                 setDone(Bad);
                 err = IllegalUnicodeEscapeSequence;
-                errmsg = QLatin1String("Illegal unicode escape sequence");
+                errmsg = LU::tr("Illegal unicode escape sequence");
             }
             break;
         case InSingleLineComment:
             if (isLineTerminator()) {
+                record16(current); // include newline
+                processComment(buffer16, pos16);
                 shiftWindowsLineBreak();
                 yylineno++;
                 yycolumn = 0;
+                pos16 = 0;
                 terminator = true;
                 bol = true;
                 if (restrKeyword) {
@@ -1559,19 +1587,25 @@ int QScript::Lexer::lex()
                     state = Start;
             } else if (current == 0) {
                 setDone(Eof);
+            } else {
+                record16(current);
             }
             break;
         case InMultiLineComment:
             if (current == 0) {
                 setDone(Bad);
                 err = UnclosedComment;
-                errmsg = QLatin1String("Unclosed comment at end of file");
+                errmsg = LU::tr("Unclosed comment at end of file");
             } else if (isLineTerminator()) {
                 shiftWindowsLineBreak();
                 yylineno++;
             } else if (current == '*' && next1 == '/') {
+                processComment(buffer16, pos16);
+                pos16 = 0;
                 state = Start;
                 shift(1);
+            } else {
+                record16(current);
             }
             break;
         case InIdentifier:
@@ -1649,7 +1683,7 @@ int QScript::Lexer::lex()
             } else {
                 setDone(Bad);
                 err = IllegalExponentIndicator;
-                errmsg = QLatin1String("Illegal syntax for exponential number");
+                errmsg = LU::tr("Illegal syntax for exponential number");
             }
             break;
         case InExponent:
@@ -1675,7 +1709,7 @@ int QScript::Lexer::lex()
          && isIdentLetter(current)) {
         state = Bad;
         err = IllegalIdentifier;
-        errmsg = QLatin1String("Identifier cannot start with numeric literal");
+        errmsg = LU::tr("Identifier cannot start with numeric literal");
     }
 
     // terminate string
@@ -1994,7 +2028,7 @@ bool QScript::Lexer::scanRegExp(RegExpBodyPrefix prefix)
 
     while (1) {
         if (isLineTerminator() || current == 0) {
-            errmsg = QLatin1String("Unterminated regular expression literal");
+            errmsg = LU::tr("Unterminated regular expression literal");
             return false;
         }
         else if (current != '/' || lastWasEscape == true)
@@ -2033,10 +2067,15 @@ void QScript::Lexer::syncProhibitAutomaticSemicolon()
     }
 }
 
+void QScript::Lexer::processComment(const QChar *chars, int length)
+{
+    commentProcessor->processComment(chars, length);
+}
+
 
 class Translator;
 
-class QScriptParser: protected QScriptGrammar
+class QScriptParser: protected QScriptGrammar, public QScript::CommentProcessor
 {
 public:
     QVariant val;
@@ -2052,10 +2091,12 @@ public:
     QScriptParser();
     ~QScriptParser();
 
-    bool parse(QScript::Lexer *lexer,
-               const QString &fileName,
-               Translator *translator);
+    void setLexer(QScript::Lexer *);
 
+    bool parse(Translator *translator);
+
+    QString fileName() const
+    { return lexer->fileName(); }
     inline QString errorMessage() const
     { return error_message; }
     inline int errorLineNumber() const
@@ -2072,6 +2113,10 @@ protected:
     inline Location &loc(int index)
     { return location_stack [tos + index - 2]; }
 
+    std::ostream &yyMsg(int line = 0);
+
+    virtual void processComment(const QChar *, int);
+
 protected:
     int tos;
     int stack_size;
@@ -2081,6 +2126,13 @@ protected:
     QString error_message;
     int error_lineno;
     int error_column;
+
+private:
+    QScript::Lexer *lexer;
+    QString extracomment;
+    QString msgid;
+    QString sourcetext;
+    TranslatorMessage::ExtraData extra;
 };
 
 inline void QScriptParser::reallocateStack()
@@ -2107,7 +2159,8 @@ QScriptParser::QScriptParser():
     stack_size(0),
     sym_stack(0),
     state_stack(0),
-    location_stack(0)
+    location_stack(0),
+    lexer(0)
 {
 }
 
@@ -2129,10 +2182,14 @@ static inline QScriptParser::Location location(QScript::Lexer *lexer)
     return loc;
 }
 
-bool QScriptParser::parse(QScript::Lexer *lexer,
-                    const QString &fileName,
-     	            Translator *translator)
+void QScriptParser::setLexer(QScript::Lexer *lex)
 {
+    lexer = lex;
+}
+
+bool QScriptParser::parse(Translator *translator)
+{
+  Q_ASSERT(lexer != 0);
   const int INITIAL_STATE = 0;
 
   int yytoken = -1;
@@ -2214,44 +2271,70 @@ case 8: {
 case 66: {
     QString name = sym(1).toString();
     if ((name == QLatin1String("qsTranslate")) || (name == QLatin1String("QT_TRANSLATE_NOOP"))) {
+        if (!sourcetext.isEmpty())
+            yyMsg(identLineNo) << qPrintable(LU::tr("//% cannot be used with %1(). Ignoring\n").arg(name));
         QVariantList args = sym(2).toList();
         if (args.size() < 2) {
-            std::cerr << qPrintable(fileName) << ':' << identLineNo << ": "
-                      << qPrintable(name) << "() requires at least two arguments.\n";
+            yyMsg(identLineNo) << qPrintable(LU::tr("%1() requires at least two arguments.\n").arg(name));
         } else {
             if ((args.at(0).type() != QVariant::String)
                 || (args.at(1).type() != QVariant::String)) {
-                std::cerr << qPrintable(fileName) << ':' << identLineNo << ": "
-                          << qPrintable(name) << "(): both arguments must be literal strings.\n";
+                yyMsg(identLineNo) << qPrintable(LU::tr("%1(): both arguments must be literal strings.\n").arg(name));
             } else {
                 QString context = args.at(0).toString();
                 QString text = args.at(1).toString();
                 QString comment = args.value(2).toString();
-                QString extracomment;
                 bool plural = (args.size() > 4);
                 recordMessage(translator, context, text, comment, extracomment,
-                              plural, fileName, identLineNo);
+                              msgid, extra, plural, fileName(), identLineNo);
             }
         }
+        sourcetext.clear();
+        extracomment.clear();
+        msgid.clear();
+        extra.clear();
     } else if ((name == QLatin1String("qsTr")) || (name == QLatin1String("QT_TR_NOOP"))) {
+        if (!sourcetext.isEmpty())
+            yyMsg(identLineNo) << qPrintable(LU::tr("//% cannot be used with %1(). Ignoring\n").arg(name));
         QVariantList args = sym(2).toList();
         if (args.size() < 1) {
-            std::cerr << qPrintable(fileName) << ':' << identLineNo << ": "
-                      << qPrintable(name) << "() requires at least one argument.\n";
+            yyMsg(identLineNo) << qPrintable(LU::tr("%1() requires at least one argument.\n").arg(name));
         } else {
             if (args.at(0).type() != QVariant::String) {
-                std::cerr << qPrintable(fileName) << ':' << identLineNo << ": "
-                          << qPrintable(name) << "(): text to translate must be a literal string.\n";
+                yyMsg(identLineNo) << qPrintable(LU::tr("%1(): text to translate must be a literal string.\n").arg(name));
             } else {
-                QString context = QFileInfo(fileName).baseName();
+                QString context = QFileInfo(fileName()).baseName();
                 QString text = args.at(0).toString();
                 QString comment = args.value(1).toString();
-                QString extracomment;
                 bool plural = (args.size() > 2);
                 recordMessage(translator, context, text, comment, extracomment,
-                              plural, fileName, identLineNo);
+                              msgid, extra, plural, fileName(), identLineNo);
             }
         }
+        sourcetext.clear();
+        extracomment.clear();
+        msgid.clear();
+        extra.clear();
+    } else if ((name == QLatin1String("qsTrId")) || (name == QLatin1String("QT_TRID_NOOP"))) {
+        if (!msgid.isEmpty())
+            yyMsg(identLineNo) << qPrintable(LU::tr("//= cannot be used with %1(). Ignoring\n").arg(name));
+        QVariantList args = sym(2).toList();
+        if (args.size() < 1) {
+            yyMsg(identLineNo) << qPrintable(LU::tr("%1() requires at least one argument.\n").arg(name));
+        } else {
+            if (args.at(0).type() != QVariant::String) {
+                yyMsg(identLineNo) << qPrintable(LU::tr("%1(): identifier must be a literal string.\n").arg(name));
+            } else {
+                msgid = args.at(0).toString();
+                bool plural = (args.size() > 1);
+                recordMessage(translator, QString(), sourcetext, QString(), extracomment,
+                              msgid, extra, plural, fileName(), identLineNo);
+            }
+        }
+        sourcetext.clear();
+        extracomment.clear();
+        msgid.clear();
+        extra.clear();
     }
 } break;
 
@@ -2277,6 +2360,44 @@ case 94: {
     else
         sym(1) = QVariant();
 } break;
+
+    case 171:
+
+    case 172:
+
+    case 173:
+
+    case 174:
+
+    case 175:
+
+    case 176:
+
+    case 177:
+
+    case 178:
+
+    case 179:
+
+    case 180:
+
+    case 181:
+
+    case 182:
+
+    case 183:
+
+    case 184:
+
+    case 185:
+    if (!sourcetext.isEmpty() || !extracomment.isEmpty() || !msgid.isEmpty() || !extra.isEmpty()) {
+        yyMsg() << qPrintable(LU::tr("Discarding unconsumed meta data\n"));
+        sourcetext.clear();
+        extracomment.clear();
+        msgid.clear();
+        extra.clear();
+    }
+    break;
 
           } // switch
 
@@ -2332,7 +2453,9 @@ case 94: {
               for (int s = 0; s < shifts; ++s)
                 {
                   if (first)
-                    error_message += QLatin1String ("Expected ");
+                    //: Beginning of the string that contains
+                    //: comma-separated list of expected tokens
+                    error_message += LU::tr("Expected ");
                   else
                     error_message += QLatin1String (", ");
 
@@ -2356,13 +2479,69 @@ case 94: {
     return false;
 }
 
+std::ostream &QScriptParser::yyMsg(int line)
+{
+    return std::cerr << qPrintable(fileName()) << ':' << (line ? line : lexer->startLineNo()) << ": ";
+}
+
+void QScriptParser::processComment(const QChar *chars, int length)
+{
+    if (!length)
+        return;
+    // Try to match the logic of the C++ parser.
+    if (*chars == QLatin1Char(':') && chars[1].isSpace()) {
+        extracomment += QString(chars+2, length-2);
+    } else if (*chars == QLatin1Char('=') && chars[1].isSpace()) {
+        msgid = QString(chars+2, length-2).simplified();
+    } else if (*chars == QLatin1Char('~') && chars[1].isSpace()) {
+        QString text = QString(chars+2, length-2).trimmed();
+        int k = text.indexOf(QLatin1Char(' '));
+        if (k > -1)
+            extra.insert(text.left(k), text.mid(k + 1).trimmed());
+    } else if (*chars == QLatin1Char('%') && chars[1].isSpace()) {
+        sourcetext.reserve(sourcetext.length() + length-2);
+        ushort *ptr = (ushort *)sourcetext.data() + sourcetext.length();
+        int p = 2, c;
+        forever {
+            if (p >= length)
+                break;
+            c = chars[p++].unicode();
+            if (isspace(c))
+                continue;
+            if (c != '"') {
+                yyMsg() << qPrintable(LU::tr("Unexpected character in meta string\n"));
+                break;
+            }
+            forever {
+                if (p >= length) {
+                  whoops:
+                    yyMsg() << qPrintable(LU::tr("Unterminated meta string\n"));
+                    break;
+                }
+                c = chars[p++].unicode();
+                if (c == '"')
+                    break;
+                if (c == '\\') {
+                    if (p >= length)
+                        goto whoops;
+                    c = chars[p++].unicode();
+                    if (c == '\n')
+                        goto whoops;
+                    *ptr++ = '\\';
+                }
+                *ptr++ = c;
+            }
+        }
+        sourcetext.resize(ptr - (ushort *)sourcetext.data());
+    }
+}
+
 
 bool loadQScript(Translator &translator, const QString &filename, ConversionData &cd)
 {
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly)) {
-        cd.appendError(QString::fromLatin1("Cannot open %1: %2")
-            .arg(filename, file.errorString()));
+        cd.appendError(LU::tr("Cannot open %1: %2").arg(filename, file.errorString()));
         return false;
     }
     QTextStream ts(&file);
@@ -2375,10 +2554,11 @@ bool loadQScript(Translator &translator, const QString &filename, ConversionData
     ts.setAutoDetectUnicode(true);
 
     QString code = ts.readAll();
-    QScript::Lexer lexer;
-    lexer.setCode(code, /*lineNumber=*/1);
     QScriptParser parser;
-    if (!parser.parse(&lexer, filename, &translator)) {
+    QScript::Lexer lexer(&parser);
+    lexer.setCode(code, filename, /*lineNumber=*/1);
+    parser.setLexer(&lexer);
+    if (!parser.parse(&translator)) {
         std::cerr << qPrintable(filename) << ':' << parser.errorLineNumber() << ": "
                   << qPrintable(parser.errorMessage()) << std::endl;
         return false;

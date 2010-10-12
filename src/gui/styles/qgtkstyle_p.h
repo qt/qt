@@ -502,6 +502,7 @@ protected:
     static void addWidgetToMap(GtkWidget* widget);
     static void addAllSubWidgets(GtkWidget *widget, gpointer v = 0);
     static void addWidget(GtkWidget *widget);
+    static void removeWidgetFromMap(const QHashableLatin1Literal &path);
 
     virtual void init();
 

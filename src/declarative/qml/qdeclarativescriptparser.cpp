@@ -387,7 +387,6 @@ bool ProcessAST::visit(AST::UiImport *node)
 
         if (uri.endsWith(QLatin1String(".js"))) {
             import.type = QDeclarativeScriptParser::Import::Script;
-            _parser->_refUrls << QUrl(uri);
         } else {
             import.type = QDeclarativeScriptParser::Import::File;
         }
@@ -543,7 +542,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
             QString typemodifier;
             if(node->typeModifier)
                 typemodifier = node->typeModifier->asString();
-            if (typemodifier == QString()) {
+            if (typemodifier.isEmpty()) {
                 type = Object::DynamicProperty::Custom;
             } else if(typemodifier == QLatin1String("list")) {
                 type = Object::DynamicProperty::CustomList;
@@ -878,11 +877,6 @@ QList<QDeclarativeScriptParser::TypeReference*> QDeclarativeScriptParser::refere
     return _refTypes;
 }
 
-QList<QUrl> QDeclarativeScriptParser::referencedResources() const
-{
-    return _refUrls;
-}
-
 Object *QDeclarativeScriptParser::tree() const
 {
     return root;
@@ -901,7 +895,7 @@ QList<QDeclarativeError> QDeclarativeScriptParser::errors() const
 static void replaceWithSpace(QString &str, int idx, int n) 
 {
     QChar *data = str.data() + idx;
-    QChar space(' ');
+    const QChar space(QLatin1Char(' '));
     for (int ii = 0; ii < n; ++ii)
         *data++ = space;
 }
@@ -953,6 +947,217 @@ QDeclarativeParser::Object::ScriptBlock::Pragmas QDeclarativeScriptParser::extra
         if (pragmaValue == QLatin1String("library")) {
             rv |= QDeclarativeParser::Object::ScriptBlock::Shared;
             replaceWithSpace(script, startOffset, endOffset - startOffset);
+        } else {
+            return rv;
+        }
+    }
+    return rv;
+}
+
+#define CHECK_LINE if(l.currentLineNo() != startLine) return rv;
+#define CHECK_TOKEN(t) if (token != QDeclarativeJSGrammar:: t) return rv;
+
+static const int uriTokens[] = {
+    QDeclarativeJSGrammar::T_IDENTIFIER, 
+    QDeclarativeJSGrammar::T_PROPERTY, 
+    QDeclarativeJSGrammar::T_SIGNAL, 
+    QDeclarativeJSGrammar::T_READONLY, 
+    QDeclarativeJSGrammar::T_ON, 
+    QDeclarativeJSGrammar::T_BREAK, 
+    QDeclarativeJSGrammar::T_CASE, 
+    QDeclarativeJSGrammar::T_CATCH, 
+    QDeclarativeJSGrammar::T_CONTINUE, 
+    QDeclarativeJSGrammar::T_DEFAULT, 
+    QDeclarativeJSGrammar::T_DELETE, 
+    QDeclarativeJSGrammar::T_DO, 
+    QDeclarativeJSGrammar::T_ELSE, 
+    QDeclarativeJSGrammar::T_FALSE, 
+    QDeclarativeJSGrammar::T_FINALLY, 
+    QDeclarativeJSGrammar::T_FOR, 
+    QDeclarativeJSGrammar::T_FUNCTION, 
+    QDeclarativeJSGrammar::T_IF, 
+    QDeclarativeJSGrammar::T_IN, 
+    QDeclarativeJSGrammar::T_INSTANCEOF, 
+    QDeclarativeJSGrammar::T_NEW, 
+    QDeclarativeJSGrammar::T_NULL, 
+    QDeclarativeJSGrammar::T_RETURN, 
+    QDeclarativeJSGrammar::T_SWITCH, 
+    QDeclarativeJSGrammar::T_THIS, 
+    QDeclarativeJSGrammar::T_THROW, 
+    QDeclarativeJSGrammar::T_TRUE, 
+    QDeclarativeJSGrammar::T_TRY, 
+    QDeclarativeJSGrammar::T_TYPEOF, 
+    QDeclarativeJSGrammar::T_VAR, 
+    QDeclarativeJSGrammar::T_VOID, 
+    QDeclarativeJSGrammar::T_WHILE, 
+    QDeclarativeJSGrammar::T_CONST, 
+    QDeclarativeJSGrammar::T_DEBUGGER, 
+    QDeclarativeJSGrammar::T_RESERVED_WORD, 
+    QDeclarativeJSGrammar::T_WITH, 
+
+    QDeclarativeJSGrammar::EOF_SYMBOL
+};
+static inline bool isUriToken(int token)
+{
+    const int *current = uriTokens;
+    while (*current != QDeclarativeJSGrammar::EOF_SYMBOL) {
+        if (*current == token)
+            return true;
+        ++current;
+    }
+    return false;
+}
+
+QDeclarativeScriptParser::JavaScriptMetaData QDeclarativeScriptParser::extractMetaData(QString &script)
+{
+    JavaScriptMetaData rv;
+
+    QDeclarativeParser::Object::ScriptBlock::Pragmas &pragmas = rv.pragmas;
+
+    const QString pragma(QLatin1String("pragma"));
+    const QString js(QLatin1String(".js"));
+    const QString library(QLatin1String("library"));
+
+    QDeclarativeJS::Lexer l(0);
+    l.setCode(script, 0);
+
+    int token = l.lex();
+
+    while (true) {
+        if (token != QDeclarativeJSGrammar::T_DOT)
+            return rv;
+
+        int startOffset = l.tokenOffset();
+        int startLine = l.currentLineNo();
+
+        token = l.lex();
+
+        CHECK_LINE;
+
+        if (token == QDeclarativeJSGrammar::T_IMPORT) {
+
+            // .import <URI> <Version> as <Identifier>
+            // .import <file.js> as <Identifier>
+
+            token = l.lex();
+
+            CHECK_LINE;
+
+            if (token == QDeclarativeJSGrammar::T_STRING_LITERAL) {
+
+                QString file(l.characterBuffer(), l.characterCount());
+                if (!file.endsWith(js))
+                    return rv;
+
+                token = l.lex();
+
+                CHECK_TOKEN(T_AS);
+                CHECK_LINE;
+
+                token = l.lex();
+
+                CHECK_TOKEN(T_IDENTIFIER);
+                CHECK_LINE;
+
+                int endOffset = l.tokenLength() + l.tokenOffset();
+
+                QString importId = script.mid(l.tokenOffset(), l.tokenLength());
+
+                if (!importId.at(0).isUpper())
+                    return rv;
+
+                token = l.lex();
+                if (l.currentLineNo() == startLine)
+                    return rv;
+
+                replaceWithSpace(script, startOffset, endOffset - startOffset);
+
+                Import import;
+                import.type = Import::Script;
+                import.uri = file;
+                import.qualifier = importId;
+
+                rv.imports << import;
+
+            } else {
+                // URI
+                QString uri;
+                QString version;
+
+                while (true) {
+                    if (!isUriToken(token))
+                        return rv;
+
+                    uri.append(QString(l.characterBuffer(), l.characterCount()));
+
+                    token = l.lex();
+                    CHECK_LINE;
+                    if (token != QDeclarativeJSGrammar::T_DOT)
+                        break;
+
+                    uri.append(QLatin1Char('.'));
+
+                    token = l.lex();
+                    CHECK_LINE;
+                }
+
+                CHECK_TOKEN(T_NUMERIC_LITERAL);
+                version = script.mid(l.tokenOffset(), l.tokenLength());
+
+                token = l.lex();
+
+                CHECK_TOKEN(T_AS);
+                CHECK_LINE;
+
+                token = l.lex();
+
+                CHECK_TOKEN(T_IDENTIFIER);
+                CHECK_LINE;
+
+                int endOffset = l.tokenLength() + l.tokenOffset();
+
+                QString importId = script.mid(l.tokenOffset(), l.tokenLength());
+
+                if (!importId.at(0).isUpper())
+                    return rv;
+
+                token = l.lex();
+                if (l.currentLineNo() == startLine)
+                    return rv;
+
+                replaceWithSpace(script, startOffset, endOffset - startOffset);
+
+                Import import;
+                import.type = Import::Library;
+                import.uri = uri;
+                import.version = version;
+                import.qualifier = importId;
+
+                rv.imports << import;
+            }
+
+        } else if (token == QDeclarativeJSGrammar::T_IDENTIFIER &&
+                   script.mid(l.tokenOffset(), l.tokenLength()) == pragma) {
+
+            token = l.lex();
+
+            CHECK_TOKEN(T_IDENTIFIER);
+            CHECK_LINE;
+
+            QString pragmaValue = script.mid(l.tokenOffset(), l.tokenLength());
+            int endOffset = l.tokenLength() + l.tokenOffset();
+
+            if (pragmaValue == QLatin1String("library")) {
+                pragmas |= QDeclarativeParser::Object::ScriptBlock::Shared;
+                replaceWithSpace(script, startOffset, endOffset - startOffset);
+            } else {
+                return rv;
+            }
+
+            token = l.lex();
+            if (l.currentLineNo() == startLine)
+                return rv;
+
         } else {
             return rv;
         }

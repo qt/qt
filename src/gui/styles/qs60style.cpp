@@ -106,8 +106,8 @@ const short QS60StylePrivate::data[][MAX_PIXELMETRICS] = {
 // *** generated pixel metrics ***
 {5,0,-909,0,0,2,0,0,-1,7,12,22,15,15,7,198,-909,-909,-909,20,13,2,0,0,21,7,18,30,3,3,1,-909,-909,0,1,0,0,12,20,15,15,18,18,1,115,18,0,-909,-909,-909,-909,0,0,16,2,-909,0,0,-909,16,-909,-909,-909,-909,32,18,55,24,55,4,4,4,9,13,-909,5,51,11,5,0,3,3,6,8,3,3,-909,2,-909,-909,-909,-909,5,5,3,1,106},
 {5,0,-909,0,0,1,0,0,-1,8,14,22,15,15,7,164,-909,-909,-909,19,15,2,0,0,21,8,27,28,4,4,1,-909,-909,0,7,6,0,13,23,17,17,21,21,7,115,21,0,-909,-909,-909,-909,0,0,15,1,-909,0,0,-909,15,-909,-909,-909,-909,32,21,65,27,65,3,3,5,10,15,-909,5,58,13,5,0,4,4,7,9,4,4,-909,2,-909,-909,-909,-909,6,6,3,1,106},
-{7,0,-909,0,0,2,0,0,-1,25,69,46,37,37,9,258,-909,-909,-909,23,19,26,0,0,32,25,72,44,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,13,13,6,8,19,-909,7,74,19,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1,135},
-{7,0,-909,0,0,2,0,0,-1,25,68,46,37,37,9,258,-909,-909,-909,31,19,6,0,0,32,25,60,52,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,96,35,96,12,12,6,8,19,-909,7,74,22,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1,135},
+{7,0,-909,0,0,2,0,0,-1,25,69,46,37,37,9,258,-909,-909,-909,23,19,26,0,0,32,25,72,44,5,5,2,-909,-909,0,7,21,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,25,2,-909,0,0,-909,25,-909,-909,-909,-909,87,27,77,35,77,13,3,6,8,19,-909,7,74,19,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1,135},
+{7,0,-909,0,0,2,0,0,-1,25,68,46,37,37,9,258,-909,-909,-909,31,19,6,0,0,32,25,60,52,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,96,35,96,12,3,6,8,19,-909,7,74,22,7,0,5,5,8,12,5,5,-909,3,-909,-909,-909,-909,7,7,3,1,135},
 {7,0,-909,0,0,2,0,0,-1,10,20,27,18,18,9,301,-909,-909,-909,29,18,5,0,0,35,7,32,30,5,5,2,-909,-909,0,2,8,0,16,28,21,21,26,26,2,170,26,0,-909,-909,-909,-909,0,0,21,6,-909,0,0,-909,-909,-909,-909,-909,-909,54,26,265,34,265,5,5,6,3,18,-909,7,72,19,7,0,5,6,8,11,6,5,-909,2,-909,-909,-909,-909,5,5,3,1,106}
 // *** End of generated data ***
 };
@@ -154,6 +154,9 @@ QS60StylePrivate::~QS60StylePrivate()
 {
     clearCaches(); //deletes also background image
     deleteThemePalette();
+#ifdef Q_WS_S60
+    removeAnimations();
+#endif
 }
 
 void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
@@ -486,6 +489,24 @@ void QS60StylePrivate::setThemePalette(QApplication *app) const
 QPalette* QS60StylePrivate::themePalette()
 {
     return m_themePalette;
+}
+
+bool QS60StylePrivate::equalToThemePalette(QColor color, QPalette::ColorRole role)
+{
+    if (!m_themePalette)
+        return false;
+    if (color == m_themePalette->color(role))
+        return true;
+    return false;
+}
+
+bool QS60StylePrivate::equalToThemePalette(qint64 cacheKey, QPalette::ColorRole role)
+{
+    if (!m_themePalette)
+        return false;
+    if (cacheKey == m_themePalette->brush(role).texture().cacheKey())
+        return true;
+    return false;
 }
 
 void QS60StylePrivate::setBackgroundTexture(QApplication *app) const
@@ -1097,8 +1118,7 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             }
             State mflags = bflags;
             if (toolBtn->state & State_Sunken) {
-                if (toolBtn->activeSubControls & SC_ToolButton)
-                    bflags |= State_Sunken;
+                bflags |= State_Sunken;
                 mflags |= State_Sunken;
             }
 
@@ -1114,11 +1134,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 if (bflags & (State_Sunken | State_On | State_Raised | State_Enabled)) {
                     tool.rect = button.unite(menuRect);
                     tool.state = bflags;
-                    const QToolButton *toolButtonWidget = qobject_cast<const QToolButton *>(widget);
-                    const QS60StylePrivate::SkinElements element =
-                        ((toolButtonWidget && toolButtonWidget->isDown()) || (option->state & State_Sunken)) ?
-                            QS60StylePrivate::SE_ToolBarButtonPressed : QS60StylePrivate::SE_ToolBarButton;
-                    QS60StylePrivate::drawSkinElement(element, painter, tool.rect, flags);
                     drawPrimitive(PE_PanelButtonTool, &tool, painter, widget);
                 }
                 if (toolBtn->subControls & SC_ToolButtonMenu) {
@@ -1433,11 +1448,25 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             const QRect iconRect = subElementRect(SE_ItemViewItemDecoration, &voptAdj, widget);
             QRect textRect = subElementRect(SE_ItemViewItemText, &voptAdj, widget);
             const QAbstractItemView *itemView = qobject_cast<const QAbstractItemView *>(widget);
+            const bool singleSelection =
+                (itemView->selectionMode() == QAbstractItemView::SingleSelection ||
+                 itemView->selectionMode() == QAbstractItemView::NoSelection);
+            const bool selectItems = (itemView->selectionBehavior() == QAbstractItemView::SelectItems);
 
-            // draw themed background for table unless background brush has been defined.
+            // draw themed background for itemview unless background brush has been defined.
             if (vopt->backgroundBrush == Qt::NoBrush) {
                 if (itemView) {
+                    //With single item selection, use highlight focus as selection indicator.
+                    if (singleSelection && isSelected){
+                        voptAdj.state = voptAdj.state | State_HasFocus;
+                        if (!hasFocus && selectItems) {
+                            painter->save();
+                            painter->setOpacity(0.5);
+                        }
+                    }
                     drawPrimitive(PE_PanelItemViewItem, &voptAdj, painter, widget);
+                    if (singleSelection && isSelected && !hasFocus && selectItems)
+                        painter->restore();
                 }
             } else { QCommonStyle::drawPrimitive(PE_PanelItemViewItem, &voptAdj, painter, widget);}
 
@@ -1446,28 +1475,20 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
              const QIcon::State state = (voptAdj.state & State_Open) ? QIcon::On : QIcon::Off;
              voptAdj.icon.paint(painter, iconRect, voptAdj.decorationAlignment, mode, state);
 
-             // Draw selection check mark. Show check mark only in multi selection modes.
-             if (itemView) {
-                 const bool singleSelection =
-                     (itemView->selectionMode() == QAbstractItemView::SingleSelection ||
-                      itemView->selectionMode() == QAbstractItemView::NoSelection)||
-                     (itemView->selectionModel()->selectedIndexes().count() < 2 );
-
-                 const bool selectItemsOnly = (itemView->selectionBehavior() == QAbstractItemView::SelectItems);
-
+             // Draw selection check mark or checkbox
+             if (itemView && (!singleSelection || (vopt->features & QStyleOptionViewItemV2::HasCheckIndicator))) {
                  const QRect selectionRect = subElementRect(SE_ItemViewItemCheckIndicator, &voptAdj, widget);
 
                  QStyleOptionViewItemV4 checkMarkOption(voptAdj);
                  if (selectionRect.isValid())
                      checkMarkOption.rect = selectionRect;
                  // Draw selection mark.
-                 if (isSelected && !singleSelection && selectItemsOnly) {
+                 if (isSelected && selectItems) {
                      proxy()->drawPrimitive(PE_IndicatorViewItemCheck, &checkMarkOption, painter, widget);
                      // @todo: this should happen in the rect retrievel i.e. subElementRect()
                      if (textRect.right() > selectionRect.left())
                          textRect.setRight(selectionRect.left());
-                 } else if (singleSelection &&
-                     voptAdj.features & QStyleOptionViewItemV2::HasCheckIndicator) {
+                 } else if (voptAdj.features & QStyleOptionViewItemV2::HasCheckIndicator) {
                      checkMarkOption.state = checkMarkOption.state & ~State_HasFocus;
 
                      switch (vopt->checkState) {
@@ -1487,7 +1508,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
 
              // draw the text
             if (!voptAdj.text.isEmpty()) {
-                if (isSelected || hasFocus )
+                if (hasFocus)
                     painter->setPen(voptAdj.palette.highlightedText().color());
                 else
                     painter->setPen(voptAdj.palette.text().color());
@@ -1980,7 +2001,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     case CE_ShapedFrame:
         if (const QTextEdit *textEdit = qobject_cast<const QTextEdit *>(widget)) {
             const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(option);
-            if (QS60StylePrivate::canDrawThemeBackground(frame->palette.base(), widget))
+            if (frame && QS60StylePrivate::canDrawThemeBackground(frame->palette.base(), widget))
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_Editor, painter, option->rect, flags);
             else
                 QCommonStyle::drawControl(element, option, painter, widget);
@@ -2047,7 +2068,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         }
         break;
     case CE_Splitter:
-        if (option->state & State_Sunken && option->state & State_Enabled) {
+        if (option->state & State_Sunken && option->state & State_Enabled && QS60StylePrivate::themePalette()) {
             painter->save();
             painter->setOpacity(0.5);
             painter->setBrush(QS60StylePrivate::themePalette()->light());
@@ -2074,7 +2095,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
         case PE_FrameFocusRect: {
             //Draw themed highlight to radiobuttons and checkboxes.
             //For other widgets skip, unless palette has been modified. In that case, draw with commonstyle.
-            if (option->palette.highlight().color() == QS60StylePrivate::themePalette()->highlight().color()) {
+            if (QS60StylePrivate::equalToThemePalette(option->palette.highlight().color(), QPalette::Highlight)) {
                 if ((qstyleoption_cast<const QStyleOptionFocusRect *>(option) &&
                     (qobject_cast<const QRadioButton *>(widget) || qobject_cast<const QCheckBox *>(widget))))
                         QS60StylePrivate::drawSkinElement(
@@ -2106,11 +2127,8 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 QS60StyleEnums::SP_QgnIndiCheckboxOn : QS60StyleEnums::SP_QgnIndiCheckboxOff;
             painter->save();
 
-            const QColor themeColor = QS60StylePrivate::themePalette()->windowText().color();
-            const QColor windowTextColor = option->palette.windowText().color();
-
-            if (themeColor != windowTextColor)
-                painter->setPen(windowTextColor);
+            if (QS60StylePrivate::equalToThemePalette(option->palette.windowText().color(), QPalette::WindowText))
+                painter->setPen(option->palette.windowText().color());
 
             QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect, flags | QS60StylePrivate::SF_ColorSkinned );
             painter->restore();
@@ -2174,9 +2192,12 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_PanelButtonBevel:
     case PE_FrameButtonBevel:
         if (QS60StylePrivate::canDrawThemeBackground(option->palette.base(), widget)) {
-            const bool isPressed = option->state & State_Sunken;
-            const QS60StylePrivate::SkinElements skinElement =
-                isPressed ? QS60StylePrivate::SE_ButtonPressed : QS60StylePrivate::SE_ButtonNormal;
+            const bool isPressed = (option->state & State_Sunken) || (option->state & State_On);
+            QS60StylePrivate::SkinElements skinElement;
+            if (element == PE_PanelButtonTool)
+                skinElement = isPressed ? QS60StylePrivate::SE_ToolBarButtonPressed : QS60StylePrivate::SE_ToolBarButton;
+            else
+                skinElement = isPressed ? QS60StylePrivate::SE_ButtonPressed : QS60StylePrivate::SE_ButtonNormal;
             QS60StylePrivate::drawSkinElement(skinElement, painter, option->rect, flags);
         } else {
             commonStyleDraws = true;
@@ -2260,8 +2281,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             ) {
             //Need extra check since dialogs have their own theme background
             if (QS60StylePrivate::canDrawThemeBackground(option->palette.base(), widget) &&
-                option->palette.window().texture().cacheKey() ==
-                    QS60StylePrivate::m_themePalette->window().texture().cacheKey())
+                QS60StylePrivate::equalToThemePalette(option->palette.window().texture().cacheKey(), QPalette::Window))
                 //todo: for combobox listviews, the background should include area for menu scrollers,
                 //but this produces drawing issues as we need to turn clipping off.
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_PopupBackground, painter, option->rect, flags);
@@ -2308,13 +2328,13 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             const bool hasFocus = (vopt->state & State_HasFocus);
             const bool isPressed = QS60StylePrivate::isWidgetPressed(widget);
 
-            if (option->palette.highlight().color() == QS60StylePrivate::themePalette()->highlight().color()) {
+            if (QS60StylePrivate::equalToThemePalette(option->palette.highlight().color(), QPalette::Highlight)) {
                 QRect highlightRect = vopt->rect.adjusted(1,1,-1,-1);
                 const QAbstractItemView *itemView = qobject_cast<const QAbstractItemView *>(widget);
                 QAbstractItemView::SelectionBehavior selectionBehavior =
                     itemView ? itemView->selectionBehavior() : QAbstractItemView::SelectItems;
                 // Set the draw area for highlights (focus, select rect or pressed rect)
-                if (hasFocus || isSelected || isPressed) {
+                if (hasFocus || isPressed) {
                     if (selectionBehavior != QAbstractItemView::SelectItems) {
                         // set highlight rect so that it is continuous from cell to cell, yet sligthly
                         // smaller than cell rect
@@ -2340,16 +2360,20 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                     tableView = true;
 
                 QS60StylePrivate::SkinElements element;
+                bool themeGraphicDefined = false;
                 QRect elementRect = option->rect;
 
                 //draw item is drawn as pressed, if it already has focus.
-                if (isPressed && (hasFocus || isSelected)) {
+                if (isPressed && hasFocus) {
+                    themeGraphicDefined = true;
                     element = tableView ? QS60StylePrivate::SE_TableItemPressed : QS60StylePrivate::SE_ListItemPressed;
                 } else if (hasFocus || (isSelected && selectionBehavior != QAbstractItemView::SelectItems)) {
                     element = QS60StylePrivate::SE_ListHighlight;
                     elementRect = highlightRect;
+                    themeGraphicDefined = true;
                 }
-                QS60StylePrivate::drawSkinElement(element, painter, elementRect, flags);
+                if (themeGraphicDefined)
+                    QS60StylePrivate::drawSkinElement(element, painter, elementRect, flags);
             } else {
                 QCommonStyle::drawPrimitive(element, option, painter, widget);
             }
@@ -2429,7 +2453,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_PanelItemViewRow: // ### Qt 5: remove
 #ifndef QT_NO_ITEMVIEWS
         if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option)) {
-            if (vopt->palette.base().texture().cacheKey() != QS60StylePrivate::m_themePalette->base().texture().cacheKey()) {
+            if (!QS60StylePrivate::equalToThemePalette(vopt->palette.base().texture().cacheKey(), QPalette::Base)) {
                 //QPalette::Base has been changed, let commonstyle draw the item
                 commonStyleDraws = true;
             } else {
@@ -2505,11 +2529,6 @@ int QS60Style::pixelMetric(PixelMetric metric, const QStyleOption *option, const
             //double the top layout margin for dialogs, it is very close to real value
             //without having to define custom pixel metric
             metricValue *= 2;
-
-    if (widget && (metric == PM_FocusFrameHMargin))
-        if (qobject_cast<const QTableView *>(widget))
-            //Halve the focus frame margin for table items
-            metricValue /= 2;
 
     return metricValue;
 }
@@ -2980,7 +2999,7 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
         case SE_ItemViewItemText:
         case SE_ItemViewItemDecoration:
             if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
-                const QListWidget *listItem = qobject_cast<const QListWidget *>(widget);
+                const QAbstractItemView *listItem = qobject_cast<const QAbstractItemView *>(widget);
                 const bool multiSelection = !listItem ? false :
                     listItem->selectionMode() == QAbstractItemView::MultiSelection ||
                     listItem->selectionMode() == QAbstractItemView::ExtendedSelection ||
@@ -3050,7 +3069,7 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
             break;
         case SE_ItemViewItemCheckIndicator:
             if (const QStyleOptionViewItemV2 *vopt = qstyleoption_cast<const QStyleOptionViewItemV2 *>(opt)) {
-                const QListWidget *listItem = qobject_cast<const QListWidget *>(widget);
+                const QAbstractItemView *listItem = qobject_cast<const QAbstractItemView *>(widget);
 
                 const bool singleSelection = listItem &&
                     (listItem->selectionMode() == QAbstractItemView::SingleSelection ||
@@ -3412,8 +3431,7 @@ bool QS60Style::eventFilter(QObject *object, QEvent *event)
             break;
         }
         case QEvent::MouseButtonRelease: {
-            const QWidget *w = QApplication::widgetAt(QCursor::pos());
-            if (w && d->m_pressedWidget) {
+            if (d->m_pressedWidget) {
                 d->m_pressedWidget->update();
                 d->m_pressedWidget = 0;
             }

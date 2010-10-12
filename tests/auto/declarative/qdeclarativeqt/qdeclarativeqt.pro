@@ -4,7 +4,7 @@ SOURCES += tst_qdeclarativeqt.cpp
 macx:CONFIG -= app_bundle
 
 symbian: {
-    importFiles.sources = data
+    importFiles.files = data
     importFiles.path = .
     DEPLOYMENT = importFiles
 } else {

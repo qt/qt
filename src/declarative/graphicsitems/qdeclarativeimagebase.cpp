@@ -50,13 +50,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
-/*!
-    \class QDeclarativeImageBase
-    \internal
-    \brief The base class for declarative images.
- */
-
 QDeclarativeImageBase::QDeclarativeImageBase(QDeclarativeImageBasePrivate &dd, QDeclarativeItem *parent)
   : QDeclarativeItem(dd, parent)
 {
@@ -136,25 +129,25 @@ QSize QDeclarativeImageBase::sourceSize() const
 void QDeclarativeImageBase::load()
 {
     Q_D(QDeclarativeImageBase);
-    if (d->progress != 0.0) {
-        d->progress = 0.0;
-        emit progressChanged(d->progress);
-    }
 
     if (d->url.isEmpty()) {
         d->pix.clear();
         d->status = Null;
+        d->progress = 0.0;
         setImplicitWidth(0);
         setImplicitHeight(0);
+        emit progressChanged(d->progress);
         emit statusChanged(d->status);
         pixmapChange();
         update();
     } else {
-        d->status = Loading;
-
         d->pix.load(qmlEngine(this), d->url, d->sourcesize, d->async);
 
         if (d->pix.isLoading()) {
+            d->progress = 0.0;
+            d->status = Loading;
+            emit progressChanged(d->progress);
+            emit statusChanged(d->status);
 
             static int thisRequestProgress = -1;
             static int thisRequestFinished = -1;
@@ -169,53 +162,40 @@ void QDeclarativeImageBase::load()
             d->pix.connectDownloadProgress(this, thisRequestProgress);
 
         } else {
-            QSize impsize = d->pix.implicitSize();
-            setImplicitWidth(impsize.width());
-            setImplicitHeight(impsize.height());
-
-            if (d->pix.isReady()) {
-                d->status = Ready;
-
-                if (!d->sourcesize.isValid())
-                    emit sourceSizeChanged();
-
-            } else {
-                d->status = Error;
-                qmlInfo(this) << d->pix.error();
-            }
-            d->progress = 1.0;
-            emit statusChanged(d->status);
-            emit progressChanged(d->progress);
-            pixmapChange();
-            update();
+            requestFinished();
         }
-
     }
-
-    emit statusChanged(d->status);
 }
 
 void QDeclarativeImageBase::requestFinished()
 {
     Q_D(QDeclarativeImageBase);
 
-    QSize impsize = d->pix.implicitSize();
+    QDeclarativeImageBase::Status oldStatus = d->status;
+    qreal oldProgress = d->progress;
 
     if (d->pix.isError()) {
         d->status = Error;
         qmlInfo(this) << d->pix.error();
+    } else {
+        d->status = Ready;
     }
 
-    setImplicitWidth(impsize.width());
-    setImplicitHeight(impsize.height());
-
-    if (d->status == Loading)
-        d->status = Ready;
     d->progress = 1.0;
-    emit statusChanged(d->status);
-    emit progressChanged(1.0);
-    if (!d->sourcesize.isValid())
+
+    setImplicitWidth(d->pix.width());
+    setImplicitHeight(d->pix.height());
+
+    if (d->sourcesize.width() != d->pix.width() || d->sourcesize.height() != d->pix.height()) {
+        d->sourcesize.setWidth(d->pix.width());
+        d->sourcesize.setHeight(d->pix.height());
         emit sourceSizeChanged();
+    }
+
+    if (d->status != oldStatus)
+        emit statusChanged(d->status);
+    if (d->progress != oldProgress)
+        emit progressChanged(d->progress);
     pixmapChange();
     update();
 }

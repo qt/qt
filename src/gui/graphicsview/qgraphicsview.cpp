@@ -2596,9 +2596,11 @@ void QGraphicsView::updateScene(const QList<QRectF> &rects)
 
     // Convert scene rects to viewport rects.
     foreach (const QRectF &rect, rects) {
-        QRect xrect = transform.mapRect(rect).toRect();
+        QRect xrect = transform.mapRect(rect).toAlignedRect();
         if (!(d->optimizationFlags & DontAdjustForAntialiasing))
             xrect.adjust(-2, -2, 2, 2);
+        else
+            xrect.adjust(-1, -1, 1, 1);
         if (!viewportRect.intersects(xrect))
             continue;
         dirtyViewportRects << xrect;
@@ -3473,7 +3475,8 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
         // IndirectPainting (the else branch), because in that case we always save()
         // and restore() in QGraphicsScene::drawItems().
         if (!d->scene->d_func()->painterStateProtection)
-            painter.setWorldTransform(viewTransform);
+            painter.setOpacity(1.0);
+        painter.setWorldTransform(viewTransform);
     } else {
         // Make sure we don't have unpolished items before we draw
         if (!d->scene->d_func()->unpolishedItems.isEmpty())

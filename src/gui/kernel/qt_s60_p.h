@@ -87,7 +87,7 @@ const TInt KInternalStatusPaneChange = 0x50000000;
 //this macro exists because EColor16MAP enum value doesn't exist in Symbian OS 9.2
 #define Q_SYMBIAN_ECOLOR16MAP TDisplayMode(13)
 
-class QS60ThreadLocalData
+class Q_AUTOTEST_EXPORT QS60ThreadLocalData
 {
 public:
     QS60ThreadLocalData();
@@ -142,6 +142,7 @@ public:
     int avkonComponentsSupportTransparency : 1;
     int menuBeingConstructed : 1;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
+    static CEikButtonGroupContainer *cba;
 
     enum ScanCodeState {
         Unpressed,
@@ -162,15 +163,17 @@ public:
     static inline CAknTitlePane* titlePane();
     static inline CAknContextPane* contextPane();
     static inline CEikButtonGroupContainer* buttonGroupContainer();
+    static inline void setButtonGroupContainer(CEikButtonGroupContainer* newCba);
     static void setStatusPaneAndButtonGroupVisibility(bool statusPaneVisible, bool buttonGroupVisible);
 #endif
+    static void controlVisibilityChanged(CCoeControl *control, bool visible);
 
 #ifdef Q_OS_SYMBIAN
     TTrapHandler *s60InstalledTrapHandler;
 #endif
 };
 
-QS60Data* qGlobalS60Data();
+Q_AUTOTEST_EXPORT QS60Data* qGlobalS60Data();
 #define S60 qGlobalS60Data()
 
 class QAbstractLongTapObserver
@@ -209,6 +212,8 @@ public:
     void CancelLongTapTimer();
 
     void setFocusSafely(bool focus);
+
+    bool isControlActive();
 
 #ifdef Q_WS_S60
     void FadeBehindPopup(bool fade){ popupFader.FadeBehindPopup( this, this, fade); }
@@ -380,7 +385,12 @@ inline CAknContextPane* QS60Data::contextPane()
 
 inline CEikButtonGroupContainer* QS60Data::buttonGroupContainer()
 {
-    return CEikonEnv::Static()->AppUiFactory()->Cba();
+    return QS60Data::cba;
+}
+
+inline void QS60Data::setButtonGroupContainer(CEikButtonGroupContainer *newCba)
+{
+    QS60Data::cba = newCba;
 }
 #endif // Q_WS_S60
 

@@ -54,7 +54,7 @@ class InputPage : public QWizardPage
     Q_OBJECT
 
 public:
-    InputPage(AdpReader *reader, QWidget *parent = 0);
+    explicit InputPage(AdpReader *reader, QWidget *parent = 0);
     
 private slots:
     void getFileName();

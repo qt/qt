@@ -136,6 +136,17 @@
   used is constructed using the form of the constructor that accepts a
   QPaintDevice argument.
 
+  \section1 Printing Widgets
+
+  To print a widget, you can use the QWidget::render() function. As mentioned,
+  the printer's resolution is usually higher than the screen resolution, so you
+  will have to scale the painter. You may also want to position the widget on the
+  page. The following code sample shows how this may look.
+
+  \snippet doc/src/snippets/widgetprinting.cpp 0
+
+  This will center the widget on the page and scale it so that it fits the page.
+
   \section1 Printing from Complex Widgets
 
   Certain widgets, such as QTextEdit and QGraphicsView, display rich content

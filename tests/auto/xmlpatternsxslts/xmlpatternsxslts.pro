@@ -18,7 +18,7 @@ INCLUDEPATH += $$(QTSRCDIR)/tests/auto/xmlpatternssdk  \
                ../xmlpatternssdk
 
 wince*: {
-    testdata.sources = XSLTS Baseline.xml
+    testdata.files = XSLTS Baseline.xml
     testdata.path = .
     DEPLOYMENT += testdata
 }

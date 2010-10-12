@@ -160,7 +160,7 @@ static void dumpLayout(QTextStream &qout, const QDockAreaLayout &layout, QString
 
 void qt_dumpLayout(QTextStream &qout, QMainWindow *window)
 {
-    QMainWindowLayout *layout = qobject_cast<QMainWindowLayout*>(window->layout());
+    QMainWindowLayout *layout = qt_mainwindow_layout(window);
     dumpLayout(qout, layout->layoutState.dockAreaLayout, QString());
 }
 
@@ -235,7 +235,7 @@ void QMainWindowLayoutState::apply(bool animated)
     dockAreaLayout.apply(animated);
 #else
     if (centralWidgetItem != 0) {
-        QMainWindowLayout *layout = qobject_cast<QMainWindowLayout*>(mainWindow->layout());
+        QMainWindowLayout *layout = qt_mainwindow_layout(mainWindow);
         Q_ASSERT(layout != 0);
         layout->widgetAnimator.animate(centralWidgetItem->widget(), centralWidgetRect, animated);
     }
@@ -1674,8 +1674,8 @@ void QMainWindowLayout::restore(bool keepSavedState)
     updateGapIndicator();
 }
 
-QMainWindowLayout::QMainWindowLayout(QMainWindow *mainwindow)
-    : QLayout(mainwindow)
+QMainWindowLayout::QMainWindowLayout(QMainWindow *mainwindow, QLayout *parentLayout)
+    : QLayout(parentLayout ? static_cast<QWidget *>(0) : mainwindow)
     , layoutState(mainwindow)
     , savedState(mainwindow)
     , dockOptions(QMainWindow::AnimatedDocks | QMainWindow::AllowTabbedDocks)
@@ -1698,6 +1698,9 @@ QMainWindowLayout::QMainWindowLayout(QMainWindow *mainwindow)
     , blockVisiblityCheck(false)
 #endif
 {
+    if (parentLayout)
+        setParent(parentLayout);
+
 #ifndef QT_NO_DOCKWIDGET
 #ifndef QT_NO_TABBAR
     sep = mainwindow->style()->pixelMetric(QStyle::PM_DockWidgetSeparatorExtent, 0, mainwindow);

@@ -82,6 +82,11 @@ void tst_qdeclarativelayoutitem::test_resizing()
     QDeclarativeEngine engine;
     QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/layoutItem.qml"));
     QDeclarativeLayoutItem* obj = static_cast<QDeclarativeLayoutItem*>(c.create());
+    QVERIFY(obj);
+    QCOMPARE(obj->minimumSize(), QSizeF(100,100));
+    QCOMPARE(obj->preferredSize(), QSizeF(200,200));
+    QCOMPARE(obj->maximumSize(), QSizeF(300,300));
+
     layout->addItem(obj);
     layout->setContentsMargins(0,0,0,0);
     widget->setContentsMargins(0,0,0,0);

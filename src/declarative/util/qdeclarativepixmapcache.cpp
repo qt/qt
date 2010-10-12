@@ -155,7 +155,7 @@ protected:
 private:
     friend class QDeclarativePixmapReaderThreadObject;
     void processJobs();
-    void processJob(QDeclarativePixmapReply *);
+    void processJob(QDeclarativePixmapReply *, const QUrl &, const QSize &);
     void networkRequestDone(QNetworkReply *);
 
     QList<QDeclarativePixmapReply*> jobs;
@@ -434,23 +434,24 @@ void QDeclarativePixmapReader::processJobs()
             QDeclarativePixmapReply *runningJob = jobs.takeLast();
             runningJob->loading = true;
 
+            QUrl url = runningJob->data->url;
+            QSize requestSize = runningJob->data->requestSize;
             locker.unlock();
-            processJob(runningJob);
+            processJob(runningJob, url, requestSize);
             locker.relock();
         }
     }
 }
 
-void QDeclarativePixmapReader::processJob(QDeclarativePixmapReply *runningJob)
+void QDeclarativePixmapReader::processJob(QDeclarativePixmapReply *runningJob, const QUrl &url, 
+                                          const QSize &requestSize)
 {
-    QUrl url = runningJob->data->url;
-
     // fetch
     if (url.scheme() == QLatin1String("image")) {
         // Use QmlImageProvider
         QSize readSize;
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
-        QImage image = ep->getImageFromProvider(url, &readSize, runningJob->data->requestSize);
+        QImage image = ep->getImageFromProvider(url, &readSize, requestSize);
 
         QDeclarativePixmapReply::ReadError errorCode = QDeclarativePixmapReply::NoError;
         QString errorStr;
@@ -472,7 +473,7 @@ void QDeclarativePixmapReader::processJob(QDeclarativePixmapReply *runningJob)
             QFile f(lf);
             QSize readSize;
             if (f.open(QIODevice::ReadOnly)) {
-                if (!readImage(url, &f, &image, &errorStr, &readSize, runningJob->data->requestSize))
+                if (!readImage(url, &f, &image, &errorStr, &readSize, requestSize))
                     errorCode = QDeclarativePixmapReply::Loading;
             } else {
                 errorStr = QDeclarativePixmap::tr("Cannot open: %1").arg(url.toString());
@@ -663,6 +664,7 @@ void QDeclarativePixmapStore::shrinkCache(int remove)
         data->prevUnreferenced = 0;
 
         remove -= data->cost();
+        m_unreferencedCost -= data->cost();
         data->removeFromCache();
         delete data;
     }

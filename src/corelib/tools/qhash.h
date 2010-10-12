@@ -283,6 +283,10 @@ public:
     inline ~QHash() { if (!d->ref.deref()) freeData(d); }
 
     QHash<Key, T> &operator=(const QHash<Key, T> &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QHash<Key, T> &operator=(QHash<Key, T> &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
 
     bool operator==(const QHash<Key, T> &other) const;
     inline bool operator!=(const QHash<Key, T> &other) const { return !(*this == other); }
@@ -586,10 +590,11 @@ template <class Key, class T>
 Q_INLINE_TEMPLATE QHash<Key, T> &QHash<Key, T>::operator=(const QHash<Key, T> &other)
 {
     if (d != other.d) {
-        other.d->ref.ref();
+        QHashData *o = other.d;
+        o->ref.ref();
         if (!d->ref.deref())
             freeData(d);
-        d = other.d;
+        d = o;
         if (!d->sharable)
             detach_helper();
     }

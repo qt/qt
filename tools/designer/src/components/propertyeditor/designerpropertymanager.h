@@ -180,6 +180,7 @@ private:
     QMap<QtProperty *, QMap<QPair<QIcon::Mode, QIcon::State>, QtProperty *> > m_propertyToIconSubProperties;
     QMap<QtProperty *, QPair<QIcon::Mode, QIcon::State> > m_iconSubPropertyToState;
     PropertyToPropertyMap m_iconSubPropertyToProperty;
+    PropertyToPropertyMap m_propertyToTheme;
 
     QMap<QtProperty *, qdesigner_internal::PropertySheetStringValue> m_stringValues;
     QMap<QtProperty *, QtProperty *> m_stringToComment;
@@ -221,6 +222,7 @@ private:
     PropertyIntMap m_stringAttributes;
     typedef QMap<QtProperty *, QFont>  PropertyFontMap;
     PropertyFontMap m_stringFontAttributes;
+    PropertyBoolMap m_stringThemeAttributes;
 
     BrushPropertyManager m_brushManager;
     FontPropertyManager m_fontManager;
@@ -261,6 +263,7 @@ private slots:
     void slotPaletteChanged(const QPalette &value);
     void slotPixmapChanged(const QString &value);
     void slotIconChanged(const QString &value);
+    void slotIconThemeChanged(const QString &value);
     void slotUintChanged(const QString &value);
     void slotLongLongChanged(const QString &value);
     void slotULongLongChanged(const QString &value);

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 import Qt.labs.particles 1.0
 
 Item  {
@@ -59,7 +59,6 @@ Item  {
         anchors.fill: parent
         source: "pics/cookie.png"
         opacity: 0
-        Behavior on opacity { NumberAnimation { duration: 100 } }
         Text {
             font.bold: true
             anchors.verticalCenter: parent.verticalCenter
@@ -85,6 +84,11 @@ Item  {
         State{ name: "DeathState"; when: dying == true
             StateChangeScript { script: particles.burst(50); }
             PropertyChanges { target: img; opacity: 0 }
+        }
+    ]
+    transitions: [
+        Transition {
+            NumberAnimation { target: img; property: "opacity"; duration: 100 }
         }
     ]
 }

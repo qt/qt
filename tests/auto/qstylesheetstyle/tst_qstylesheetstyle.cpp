@@ -698,20 +698,25 @@ void tst_QStyleSheetStyle::fontPrecedence()
     QCOMPARE(FONTSIZE(edit2), 26);
 }
 
-static bool testForColors(const QImage& image, const QColor& color)
+// Ensure primary will only return true if the color covers more than 50% of pixels
+static bool testForColors(const QImage& image, const QColor& color, bool ensurePrimary=false)
 {
     int count = 0;
     QRgb rgb = color.rgba();
+    int totalCount = image.height()*image.width();
     for (int y = 0; y < image.height(); ++y) {
         for (int x = 0; x < image.width(); ++x) {
             // Because of antialiasing we allow a certain range of errors here.
             QRgb pixel = image.pixel(x, y);
+
             if (qAbs((int)(pixel & 0xff) - (int)(rgb & 0xff)) +
                     qAbs((int)((pixel & 0xff00) >> 8) - (int)((rgb & 0xff00) >> 8)) +
                     qAbs((int)((pixel & 0xff0000) >> 16) - (int)((rgb & 0xff0000) >> 16)) <= 50) {
-                if (++count >= 10) {
+                count++;
+                if (!ensurePrimary && count >=10 )
                     return true;
-                }
+                else if (count > totalCount/2)
+                    return true;
             }
         }
     }
@@ -1528,6 +1533,15 @@ void tst_QStyleSheetStyle::task188195_baseBackground()
     tree.render(&image);
     QVERIFY(testForColors(image, tree.palette().base().color()));
     QVERIFY(!testForColors(image, QColor(0xab, 0x12, 0x51)));
+
+    QTableWidget table(12, 12);
+    table.setItem(0, 0, new QTableWidgetItem());
+    table.setStyleSheet( "QTableView {background-color: #ff0000}" );
+    table.show();
+    QTest::qWait(20);
+    image = QImage(table.width(), table.height(), QImage::Format_ARGB32);
+    table.render(&image);
+    QVERIFY(testForColors(image, Qt::red, true));
 }
 
 void tst_QStyleSheetStyle::task232085_spinBoxLineEditBg()

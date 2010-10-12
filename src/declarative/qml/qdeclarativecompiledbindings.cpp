@@ -438,7 +438,7 @@ struct Instr {
             qint8 output;
             qint8 reg;
             quint8 exceptionId;
-            quint32 index;
+            quint32 id;
         } attached;
         struct {
             QML_INSTR_HEADER
@@ -988,7 +988,7 @@ static void dumpInstruction(const Instr *instr)
         qWarning().nospace() << "\t" << "LoadRoot" << "\t\t" << instr->load.index << "\t" << instr->load.reg;
         break;
     case Instr::LoadAttached:
-        qWarning().nospace() << "\t" << "LoadAttached" << "\t\t" << instr->attached.output << "\t" << instr->attached.reg << "\t" << instr->attached.index;
+        qWarning().nospace() << "\t" << "LoadAttached" << "\t\t" << instr->attached.output << "\t" << instr->attached.reg << "\t" << instr->attached.id;
         break;
     case Instr::ConvertIntToReal:
         qWarning().nospace() << "\t" << "ConvertIntToReal" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
@@ -1225,7 +1225,7 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
             output.setUndefined();
         } else {
             QObject *attached = 
-                qmlAttachedPropertiesObjectById(instr->attached.index, 
+                qmlAttachedPropertiesObjectById(instr->attached.id, 
                                                 registers[instr->attached.reg].getQObject(), 
                                                 true);
             Q_ASSERT(attached);
@@ -1874,7 +1874,7 @@ bool QDeclarativeBindingCompilerPrivate::parseName(AST::Node *node, Result &type
                 return false;
 
             QDeclarativeImportedNamespace *ns = 0;
-            if (!engine->importDatabase.resolveType(imports, name.toUtf8(), &attachType, 0, 0, 0, &ns))
+            if (!imports.resolveType(name.toUtf8(), &attachType, 0, 0, 0, &ns))
                 return false;
             if (ns || !attachType || !attachType->attachedPropertiesType())
                 return false;
@@ -1895,7 +1895,7 @@ bool QDeclarativeBindingCompilerPrivate::parseName(AST::Node *node, Result &type
                 attach.common.type = Instr::LoadAttached;
                 attach.attached.output = reg;
                 attach.attached.reg = reg;
-                attach.attached.index = attachType->index();
+                attach.attached.id = attachType->attachedPropertiesId();
                 attach.attached.exceptionId = exceptionId(nameNodes.at(ii));
                 bytecode << attach;
 
@@ -2011,7 +2011,7 @@ bool QDeclarativeBindingCompilerPrivate::parseName(AST::Node *node, Result &type
                 attach.common.type = Instr::LoadAttached;
                 attach.attached.output = reg;
                 attach.attached.reg = reg;
-                attach.attached.index = attachType->index();
+                attach.attached.id = attachType->attachedPropertiesId();
                 bytecode << attach;
 
                 absType = 0;

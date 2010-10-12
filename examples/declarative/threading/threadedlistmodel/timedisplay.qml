@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -39,33 +39,37 @@
 ****************************************************************************/
 
 // ![0]
-import Qt 4.7
+import QtQuick 1.0
 
-ListView {
+Rectangle {
+    color: "white"
     width: 200
     height: 300
 
-    model: listModel
-    delegate: Component {
-        Text { text: time }
-    }
+    ListView {
+        anchors.fill: parent
+        model: listModel
+        delegate: Component {
+            Text { text: time }
+        }
 
-    ListModel { id: listModel }
+        ListModel { id: listModel }
 
-    WorkerScript {
-        id: worker
-        source: "dataloader.js"
-    }
+        WorkerScript {
+            id: worker
+            source: "dataloader.js"
+        }
 
-    Timer {
-        id: timer
-        interval: 2000; repeat: true
-        running: true
-        triggeredOnStart: true
+        Timer {
+            id: timer
+            interval: 2000; repeat: true
+            running: true
+            triggeredOnStart: true
 
-        onTriggered: {
-            var msg = {'action': 'appendCurrentTime', 'model': listModel};
-            worker.sendMessage(msg);
+            onTriggered: {
+                var msg = {'action': 'appendCurrentTime', 'model': listModel};
+                worker.sendMessage(msg);
+            }
         }
     }
 }

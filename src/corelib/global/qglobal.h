@@ -400,6 +400,19 @@ namespace QT_NAMESPACE {}
 #    undef QT_HAVE_3DNOW
 #  endif
 
+#if defined(Q_CC_MSVC) && _MSC_VER >= 1600
+#      define Q_COMPILER_RVALUE_REFS
+#      define Q_COMPILER_INITIALIZER_LISTS
+#      define Q_COMPILER_AUTO_TYPE
+#      define Q_COMPILER_LAMBDA
+//#      define Q_COMPILER_VARIADIC_TEMPLATES
+//#      define Q_COMPILER_CLASS_ENUM
+//#      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
+//#      define Q_COMPILER_UNICODE_STRINGS
+//#      define Q_COMPILER_EXTERN_TEMPLATES
+#  endif
+
+
 #elif defined(__BORLANDC__) || defined(__TURBOC__)
 #  define Q_CC_BOR
 #  define Q_INLINE_TEMPLATE
@@ -472,6 +485,26 @@ namespace QT_NAMESPACE {}
 #    define Q_NO_PACKED_REFERENCE
 #    ifndef __ARM_EABI__
 #      define QT_NO_ARM_EABI
+#    endif
+#  endif
+#  if defined(__GXX_EXPERIMENTAL_CXX0X__)
+#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403
+       /* C++0x features supported in GCC 4.3: */
+#      define Q_COMPILER_RVALUE_REFS
+#    endif
+#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 404
+       /* C++0x features supported in GCC 4.4: */
+#      define Q_COMPILER_VARIADIC_TEMPLATES
+#      define Q_COMPILER_AUTO_TYPE
+#      define Q_COMPILER_EXTERN_TEMPLATES
+#      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
+#      define Q_COMPILER_CLASS_ENUM
+#      define Q_COMPILER_INITIALIZER_LISTS
+#    endif
+#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
+       /* C++0x features supported in GCC 4.5: */
+#      define Q_COMPILER_LAMBDA
+#      define Q_COMPILER_UNICODE_STRINGS
 #    endif
 #  endif
 
@@ -1058,7 +1091,7 @@ redefine to built-in booleans to make autotests work properly */
 
 typedef int QNoImplicitBoolCast;
 
-#if defined(QT_ARCH_ARM) || defined(QT_ARCH_ARMV6) || defined(QT_ARCH_AVR32) || (defined(QT_ARCH_MIPS) && (defined(Q_WS_QWS) || defined(Q_OS_WINCE))) || defined(QT_ARCH_SH) || defined(QT_ARCH_SH4A)
+#if defined(QT_ARCH_ARM) || defined(QT_ARCH_AVR32) || (defined(QT_ARCH_MIPS) && (defined(Q_WS_QWS) || defined(Q_OS_WINCE))) || defined(QT_ARCH_SH) || defined(QT_ARCH_SH4A)
 #define QT_NO_FPU
 #endif
 
@@ -1503,7 +1536,7 @@ public:
 #endif
 #ifdef Q_OS_SYMBIAN
     enum SymbianVersion {
-        SV_Unknown = 0x0000,
+        SV_Unknown = 1000000, // Assume unknown is something newer than what is supported
         //These are the Symbian Ltd versions 9.2-9.4
         SV_9_2 = 10,
         SV_9_3 = 20,
@@ -1517,7 +1550,7 @@ public:
     static SymbianVersion symbianVersion();
     enum S60Version {
         SV_S60_None = 0,
-        SV_S60_Unknown = 1,
+        SV_S60_Unknown = SV_Unknown,
         SV_S60_3_1 = SV_9_2,
         SV_S60_3_2 = SV_9_3,
         SV_S60_5_0 = SV_9_4,
@@ -2406,7 +2439,6 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #endif
 #endif
 
-
 //Symbian does not support data imports from a DLL
 #define Q_NO_DATA_RELOCATION
 
@@ -2610,6 +2642,12 @@ QT_LICENSED_MODULE(DBus)
 #  define QT_NO_SHAREDMEMORY
 // QNX currently doesn't support forking in a thread, so disable QProcess
 #  define QT_NO_PROCESS
+#endif
+
+#if defined (__ELF__)
+#  if defined (Q_OS_LINUX) || defined (Q_OS_SOLARIS) || defined (Q_OS_FREEBSD) || defined (Q_OS_OPENBSD) || defined (Q_OS_IRIX)
+#    define Q_OF_ELF
+#  endif
 #endif
 
 QT_END_NAMESPACE

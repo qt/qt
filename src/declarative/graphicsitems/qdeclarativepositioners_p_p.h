@@ -94,8 +94,8 @@ public:
     QDeclarativeTransitionManager addTransitionManager;
     QDeclarativeTransitionManager moveTransitionManager;
 
-    void watchChanges(QDeclarativeItem *other);
-    void unwatchChanges(QDeclarativeItem* other);
+    void watchChanges(QGraphicsObject *other);
+    void unwatchChanges(QGraphicsObject* other);
     bool queuedPositioning : 1;
     bool doingPositioning : 1;
     bool anchorConflict : 1;
@@ -123,6 +123,7 @@ public:
         if (newGeometry.size() != oldGeometry.size())
             q->prePositioning();
     }
+
     virtual void itemVisibilityChanged(QDeclarativeItem *)
     {
         schedulePositioning();

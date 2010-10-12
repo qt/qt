@@ -148,15 +148,6 @@ static qreal adjustedPosition(QGraphicsObject *item, QDeclarativeAnchorLine::Anc
     return ret;
 }
 
-/*!
-    \internal
-    \class QDeclarativeAnchors
-    \since 4.7
-    \brief The QDeclarativeAnchors class provides a way to lay out items relative to other items.
-
-    \warning Currently, only anchoring to siblings or parent is supported.
-*/
-
 QDeclarativeAnchors::QDeclarativeAnchors(QObject *parent)
   : QObject(*new QDeclarativeAnchorsPrivate(0), parent)
 {

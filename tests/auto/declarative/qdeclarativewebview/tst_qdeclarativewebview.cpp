@@ -454,7 +454,7 @@ void tst_qdeclarativewebview::newWindowComponent()
     QTRY_COMPARE(wv->property("progress").toDouble(), 1.0);
 
     QDeclarativeComponent substituteComponent(&engine);
-    substituteComponent.setData("import Qt 4.7; WebView { objectName: 'newWebView'; url: 'basic.html'; }", QUrl::fromLocalFile(""));
+    substituteComponent.setData("import QtQuick 1.0; WebView { objectName: 'newWebView'; url: 'basic.html'; }", QUrl::fromLocalFile(""));
     QSignalSpy newWindowComponentSpy(wv, SIGNAL(newWindowComponentChanged()));
 
     wv->setProperty("newWindowComponent", QVariant::fromValue(&substituteComponent));

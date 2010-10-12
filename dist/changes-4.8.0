@@ -42,6 +42,7 @@ QtGui
 -----
 
  - QTabBar: reduced minimumSizeHint if ElideMode is set.
+ - QComboBox: Fixed a color propagation issue with the lineedit. [QTBUG-5950]
 
  QtOpenGL
  --------

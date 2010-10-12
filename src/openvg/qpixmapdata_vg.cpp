@@ -47,6 +47,9 @@
 #endif
 #include "qvg_p.h"
 #include "qvgimagepool_p.h"
+#include <QBuffer>
+#include <QImageReader>
+#include <QtGui/private/qimage_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -152,11 +155,59 @@ void QVGPixmapData::resize(int wid, int ht)
 void QVGPixmapData::fromImage
         (const QImage &image, Qt::ImageConversionFlags flags)
 {
+    QImage img = image;
+    createPixmapForImage(img, flags, false);
+}
+
+void QVGPixmapData::fromImageReader(QImageReader *imageReader,
+                                 Qt::ImageConversionFlags flags)
+{
+    QImage image = imageReader->read();
+    if (image.isNull())
+        return;
+
+    createPixmapForImage(image, flags, true);
+}
+
+bool QVGPixmapData::fromFile(const QString &filename, const char *format,
+                          Qt::ImageConversionFlags flags)
+{
+    QImage image = QImageReader(filename, format).read();
+    if (image.isNull())
+        return false;
+
+    createPixmapForImage(image, flags, true);
+
+    return !isNull();
+}
+
+bool QVGPixmapData::fromData(const uchar *buffer, uint len, const char *format,
+                      Qt::ImageConversionFlags flags)
+{
+    QByteArray a = QByteArray::fromRawData(reinterpret_cast<const char *>(buffer), len);
+    QBuffer b(&a);
+    b.open(QIODevice::ReadOnly);
+    QImage image = QImageReader(&b, format).read();
+    if (image.isNull())
+        return false;
+
+    createPixmapForImage(image, flags, true);
+
+    return !isNull();
+}
+
+void QVGPixmapData::createPixmapForImage(QImage &image, Qt::ImageConversionFlags flags, bool inPlace)
+{
     if (image.size() == QSize(w, h))
         setSerialNumber(++qt_vg_pixmap_serial);
     else
         resize(image.width(), image.height());
-    source = image.convertToFormat(sourceFormat(), flags);
+
+    if (inPlace && image.data_ptr()->convertInPlace(sourceFormat(), flags))
+        source = image;
+    else
+        source = image.convertToFormat(sourceFormat());
+
     recreate = true;
 }
 

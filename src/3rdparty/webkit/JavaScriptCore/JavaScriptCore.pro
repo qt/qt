@@ -208,6 +208,7 @@ SOURCES += \
     wtf/qt/ThreadingQt.cpp \
     wtf/RandomNumber.cpp \
     wtf/RefCountedLeakCounter.cpp \
+    wtf/symbian/RegisterFileAllocatorSymbian.cpp \
     wtf/symbian/BlockAllocatorSymbian.cpp \
     wtf/ThreadingNone.cpp \
     wtf/Threading.cpp \

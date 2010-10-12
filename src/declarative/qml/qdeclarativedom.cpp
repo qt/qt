@@ -42,7 +42,6 @@
 #include "private/qdeclarativedom_p.h"
 #include "private/qdeclarativedom_p_p.h"
 
-#include "private/qdeclarativecompositetypedata_p.h"
 #include "private/qdeclarativecompiler_p.h"
 #include "private/qdeclarativeengine_p.h"
 #include "private/qdeclarativescriptparser_p.h"
@@ -145,37 +144,23 @@ bool QDeclarativeDomDocument::load(QDeclarativeEngine *engine, const QByteArray 
     d->errors.clear();
     d->imports.clear();
 
-    QDeclarativeCompiledData *component = new QDeclarativeCompiledData(engine);
-    QDeclarativeCompiler compiler;
+    QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
+    QDeclarativeTypeData *td = ep->typeLoader.get(data, url, QDeclarativeTypeLoader::PreserveParser);
 
-    QDeclarativeCompositeTypeData *td = ((QDeclarativeEnginePrivate *)QDeclarativeEnginePrivate::get(engine))->typeManager.getImmediate(data, url);
-
-    if(td->status == QDeclarativeCompositeTypeData::Error) {
-        d->errors = td->errors;
+    if(td->isError()) {
+        d->errors = td->errors();
         td->release();
-        component->release();
         return false;
-    } else if(td->status == QDeclarativeCompositeTypeData::Waiting ||
-              td->status == QDeclarativeCompositeTypeData::WaitingResources) {
+    } else if(!td->isCompleteOrError()) {
         QDeclarativeError error;
         error.setDescription(QLatin1String("QDeclarativeDomDocument supports local types only"));
         d->errors << error;
         td->release();
-        component->release();
         return false;
     }
 
-    compiler.compile(engine, td, component);
-
-    if (compiler.isError()) {
-        d->errors = compiler.errors();
-        td->release();
-        component->release();
-        return false;
-    }
-
-    for (int i = 0; i < td->data.imports().size(); ++i) {
-        QDeclarativeScriptParser::Import parserImport = td->data.imports().at(i);
+    for (int i = 0; i < td->parser().imports().size(); ++i) {
+        QDeclarativeScriptParser::Import parserImport = td->parser().imports().at(i);
         QDeclarativeDomImport domImport;
         domImport.d->type = static_cast<QDeclarativeDomImportPrivate::Type>(parserImport.type);
         domImport.d->uri = parserImport.uri;
@@ -184,12 +169,12 @@ bool QDeclarativeDomDocument::load(QDeclarativeEngine *engine, const QByteArray 
         d->imports += domImport;
     }
 
-    if (td->data.tree()) {
-        d->root = td->data.tree();
+    if (td->parser().tree()) {
+        d->root = td->parser().tree();
         d->root->addref();
     }
 
-    component->release();
+    td->release();
     return true;
 }
 
@@ -911,7 +896,7 @@ QByteArray QDeclarativeDomObject::customTypeData() const
 */
 bool QDeclarativeDomObject::isComponent() const
 {
-    return (d->object && d->object->typeName == "Qt/Component");
+    return (d->object && (d->object->typeName == "Qt/Component" || d->object->typeName == "QtQuick/Component"));
 }
 
 /*!

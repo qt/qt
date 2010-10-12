@@ -63,9 +63,7 @@ QNetworkConfigurationManagerPrivate::QNetworkConfigurationManagerPrivate()
 :   pollTimer(0), mutex(QMutex::Recursive), forcedPolling(0), firstUpdate(true)
 {
     qRegisterMetaType<QNetworkConfiguration>("QNetworkConfiguration");
-
-    moveToThread(QCoreApplicationPrivate::mainThread());
-    updateConfigurations();
+    qRegisterMetaType<QNetworkConfigurationPrivatePointer>("QNetworkConfigurationPrivatePointer");
 }
 
 QNetworkConfigurationManagerPrivate::~QNetworkConfigurationManagerPrivate()
@@ -357,6 +355,13 @@ void QNetworkConfigurationManagerPrivate::updateConfigurations()
     if (firstUpdate) {
         if (sender())
             return;
+
+        if (thread() != QCoreApplicationPrivate::mainThread()) {
+            if (thread() != QThread::currentThread())
+                return;
+
+            moveToThread(QCoreApplicationPrivate::mainThread());
+        }
 
         updating = false;
 

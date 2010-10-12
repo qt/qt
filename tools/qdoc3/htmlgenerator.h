@@ -330,6 +330,7 @@ class HtmlGenerator : public PageGenerator
     NodeMap obsoleteClasses;
     NodeMap namespaceIndex;
     NodeMap serviceClasses;
+    NodeMap qmlClasses;
     QMap<QString, NodeMap > funcIndex;
     QMap<Text, const Node *> legaleseTexts;
     NewSinceMaps newSinceMaps;

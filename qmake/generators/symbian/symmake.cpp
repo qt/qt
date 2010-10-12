@@ -197,7 +197,9 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
         generatePkg = true;
     } else {
         foreach(QString item, project->values("DEPLOYMENT")) {
-            if (!project->values(item + ".sources").isEmpty()) {
+            // ### Qt 5: remove .sources, inconsistent with INSTALLS
+            if (!project->values(item + ".sources").isEmpty() ||
+                !project->values(item + ".files").isEmpty()) {
                 generatePkg = true;
                 break;
             }
@@ -272,7 +274,8 @@ void SymbianMakefileGenerator::init()
     project->values("QMAKE_LIBS") += escapeFilePaths(project->values("LIBS"));
     project->values("QMAKE_LIBS_PRIVATE") += escapeFilePaths(project->values("LIBS_PRIVATE"));
 
-    // bld.inf
+    // Disallow renaming of bld.inf.
+    project->values("MAKEFILE").clear();
     project->values("MAKEFILE") += BLD_INF_FILENAME;
 
     // .mmp
@@ -706,25 +709,13 @@ void SymbianMakefileGenerator::writeMmpFileLibraryPart(QTextStream& t)
         if (lib.startsWith("-l")) {
             lib.remove(0, 2);
             QString mmpStatement;
-            if (lib.endsWith(".dll")) {
-                lib.chop(4);
-                mmpStatement = "LIBRARY\t\t";
-            } else if (lib.endsWith(".lib")) {
+            if (lib.endsWith(".lib")) {
                 lib.chop(4);
                 mmpStatement = "STATICLIBRARY\t";
             } else {
-                // Hacky way to find out what kind of library it is. Check the
-                // ARMV5 build directory for library type. We default to shared
-                // library, since that is more common.
-                QString udebStaticLibLocation(epocRoot());
-                QString urelStaticLibLocation(udebStaticLibLocation);
-                udebStaticLibLocation += QString("epoc32/release/armv5/udeb/%1.lib").arg(lib);
-                urelStaticLibLocation += QString("epoc32/release/armv5/urel/%1.lib").arg(lib);
-                if (QFile::exists(udebStaticLibLocation) || QFile::exists(urelStaticLibLocation)) {
-                    mmpStatement = "STATICLIBRARY\t";
-                } else {
-                    mmpStatement = "LIBRARY\t\t";
-                }
+                if (lib.endsWith(".dll"))
+                    lib.chop(4);
+                mmpStatement = "LIBRARY\t\t";
             }
             t << mmpStatement <<  lib << ".lib" << endl;
         }

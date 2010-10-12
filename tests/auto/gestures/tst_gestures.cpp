@@ -41,6 +41,7 @@
 
 
 #include <QtTest/QtTest>
+#include <QtTest/qtesttouch.h>
 #include "../../shared/util.h"
 
 #include <qevent.h>
@@ -361,6 +362,7 @@ private slots:
     void partialGesturePropagation();
     void testQGestureRecognizerCleanup();
     void testReuseCanceledGestures();
+    void bug_13501_gesture_not_accepted();
 };
 
 tst_Gestures::tst_Gestures()
@@ -395,7 +397,12 @@ void tst_Gestures::customGesture()
 {
     GestureWidget widget;
     widget.grabGesture(CustomGesture::GestureType, Qt::DontStartGestureOnChildren);
+    widget.show();
+    QTest::qWaitForWindowShown(&widget);
+
     CustomEvent event;
+    event.hotSpot = widget.mapToGlobal(QPoint(5,5));
+    event.hasHotSpot = true;
     sendCustomGesture(&event, &widget);
 
     static const int TotalGestureEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialStartedThreshold + 1;
@@ -2299,6 +2306,30 @@ void tst_Gestures::conflictingGesturesInGraphicsView()
     QCOMPARE(item2->gestureEventsReceived, 0);
     QCOMPARE(item1->gestureOverrideEventsReceived, 1);
     QCOMPARE(item1->gestureEventsReceived, TotalGestureEventsCount);
+}
+
+class NoConsumeWidgetBug13501 :public QWidget
+{
+    Q_OBJECT
+protected:
+    bool event(QEvent *e) {
+        if(e->type() == QEvent::Gesture) {
+            return false;
+        }
+        return QWidget::event(e);
+    }
+};
+
+void tst_Gestures::bug_13501_gesture_not_accepted()
+{
+    // Create a gesture event that is not accepted by any widget
+    // make sure this does not lead to an assert in QGestureManager
+    NoConsumeWidgetBug13501 w;
+    w.grabGesture(Qt::TapGesture);
+    w.show();
+    QTest::qWaitForWindowShown(&w);
+    //QTest::mousePress(&ignoreEvent, Qt::LeftButton);
+    QTest::touchEvent(&w).press(0, QPoint(10, 10), &w);
 }
 
 QTEST_MAIN(tst_Gestures)

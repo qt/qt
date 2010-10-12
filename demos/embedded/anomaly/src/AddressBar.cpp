@@ -44,27 +44,11 @@
 #include <QtCore>
 #include <QtGui>
 
-class LineEdit: public QLineEdit
-{
-public:
-    LineEdit(QWidget *parent = 0): QLineEdit(parent) {}
-
-    void paintEvent(QPaintEvent *event) {
-        QLineEdit::paintEvent(event);
-        if (text().isEmpty()) {
-            QPainter p(this);
-            int flags = Qt::AlignLeft | Qt::AlignVCenter;
-            p.setPen(palette().color(QPalette::Disabled, QPalette::Text));
-            p.drawText(rect().adjusted(10, 0, 0, 0), flags, "Enter address or search terms");
-            p.end();
-        }
-    }
-};
-
 AddressBar::AddressBar(QWidget *parent)
     : QWidget(parent)
 {
-    m_lineEdit = new LineEdit(parent);
+    m_lineEdit = new QLineEdit(parent);
+    m_lineEdit->setPlaceholderText("Enter address or search terms");
     connect(m_lineEdit, SIGNAL(returnPressed()), SLOT(processAddress()));
     m_toolButton = new QToolButton(parent);
     m_toolButton->setText("Go");

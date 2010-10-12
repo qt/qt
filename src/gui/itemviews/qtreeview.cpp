@@ -1493,7 +1493,7 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
     // when the row contains an index widget which has focus,
     // we want to paint the entire row as active
     bool indexWidgetHasFocus = false;
-    if ((current.row() == index.row()) && !d->editors.isEmpty()) {
+    if ((current.row() == index.row()) && !d->editorIndexHash.isEmpty()) {
         const int r = index.row();
         QWidget *fw = QApplication::focusWidget();
         for (int c = 0; c < header->count(); ++c) {
@@ -2388,7 +2388,7 @@ void QTreeView::scrollContentsBy(int dx, int dy)
     int viewCount = d->viewport->height() / itemHeight;
     int maxDeltaY = qMin(d->viewItems.count(), viewCount);
     // no need to do a lot of work if we are going to redraw the whole thing anyway
-    if (qAbs(dy) > qAbs(maxDeltaY) && d->editors.isEmpty()) {
+    if (qAbs(dy) > qAbs(maxDeltaY) && d->editorIndexHash.isEmpty()) {
         verticalScrollBar()->update();
         d->viewport->update();
         return;
@@ -2718,7 +2718,7 @@ int QTreeView::sizeHintForColumn(int column) const
             continue; // we have no good size hint
         QModelIndex index = viewItems.at(i).index;
         index = index.sibling(index.row(), column);
-        QWidget *editor = d->editorForIndex(index).editor;
+        QWidget *editor = d->editorForIndex(index).widget.data();
         if (editor && d->persistent.contains(editor)) {
             w = qMax(w, editor->sizeHint().width());
             int min = editor->minimumSize().width();
@@ -2782,7 +2782,7 @@ int QTreeView::indexRowSizeHint(const QModelIndex &index) const
             continue;
         QModelIndex idx = d->model->index(index.row(), logicalColumn, parent);
         if (idx.isValid()) {
-            QWidget *editor = d->editorForIndex(idx).editor;
+            QWidget *editor = d->editorForIndex(idx).widget.data();
             if (editor && d->persistent.contains(editor)) {
                 height = qMax(height, editor->sizeHint().height());
                 int min = editor->minimumSize().height();
@@ -3031,9 +3031,9 @@ QPixmap QTreeViewPrivate::renderTreeToPixmapForAnimation(const QRect &rect) cons
 
     //and now let's render the editors the editors
     QStyleOptionViewItemV4 option = viewOptionsV4();
-    for (QList<QEditorInfo>::const_iterator it = editors.constBegin(); it != editors.constEnd(); ++it) {
-        QWidget *editor = it->editor;
-        QModelIndex index = it->index;
+    for (QEditorIndexHash::const_iterator it = editorIndexHash.constBegin(); it != editorIndexHash.constEnd(); ++it) {
+        QWidget *editor = it.key();
+        const QModelIndex &index = it.value();
         option.rect = q->visualRect(index);
         if (option.rect.isValid()) {
 
@@ -3425,6 +3425,10 @@ void QTreeViewPrivate::updateScrollBars()
     QSize viewportSize = viewport->size();
     if (!viewportSize.isValid())
         viewportSize = QSize(0, 0);
+
+    if (viewItems.isEmpty()) {
+        q->doItemsLayout();
+    }
 
     int itemsInViewport = 0;
     if (uniformRowHeights) {

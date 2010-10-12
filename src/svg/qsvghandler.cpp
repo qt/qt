@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
 static const char *qt_inherit_text = "inherit";
 #define QT_INHERIT QLatin1String(qt_inherit_text)
 
-Q_DECL_IMPORT double qstrtod(const char *s00, char const **se, bool *ok);
+Q_CORE_EXPORT double qstrtod(const char *s00, char const **se, bool *ok);
 
 // ======== duplicated from qcolor_p
 
@@ -1282,8 +1282,39 @@ static void parseFont(QSvgNode *node,
         fontStyle->setFamily(attributes.fontFamily.toString().trimmed());
 
     if (!attributes.fontSize.isEmpty() && attributes.fontSize != QT_INHERIT) {
+        // TODO: Support relative sizes 'larger' and 'smaller'.
         QSvgHandler::LengthType dummy; // should always be pixel size
-        fontStyle->setSize(parseLength(attributes.fontSize.toString(), dummy, handler));
+        qreal size = 0;
+        static const qreal sizeTable[] = { qreal(6.9), qreal(8.3), qreal(10.0), qreal(12.0), qreal(14.4), qreal(17.3), qreal(20.7) };
+        enum AbsFontSize { XXSmall, XSmall, Small, Medium, Large, XLarge, XXLarge };
+        switch (attributes.fontSize.at(0).unicode()) {
+        case 'x':
+            if (attributes.fontSize == QLatin1String("xx-small"))
+                size = sizeTable[XXSmall];
+            else if (attributes.fontSize == QLatin1String("x-small"))
+                size = sizeTable[XSmall];
+            else if (attributes.fontSize == QLatin1String("x-large"))
+                size = sizeTable[XLarge];
+            else if (attributes.fontSize == QLatin1String("xx-large"))
+                size = sizeTable[XXLarge];
+            break;
+        case 's':
+            if (attributes.fontSize == QLatin1String("small"))
+                size = sizeTable[Small];
+            break;
+        case 'm':
+            if (attributes.fontSize == QLatin1String("medium"))
+                size = sizeTable[Medium];
+            break;
+        case 'l':
+            if (attributes.fontSize == QLatin1String("large"))
+                size = sizeTable[Large];
+            break;
+        default:
+            size = parseLength(attributes.fontSize.toString(), dummy, handler);
+            break;
+        }
+        fontStyle->setSize(size);
     }
 
     if (!attributes.fontStyle.isEmpty() && attributes.fontStyle != QT_INHERIT) {

@@ -1,5 +1,5 @@
 import Test 1.0 as Namespace
-import Qt 4.7
+import QtQuick 1.0
 
 QtObject {
     Namespace.MadeUpClass.foo: 10

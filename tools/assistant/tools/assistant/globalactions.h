@@ -48,6 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 class QAction;
+class QMenu;
 
 class GlobalActions : public QObject
 {
@@ -69,6 +70,16 @@ public:
     Q_SLOT void updateActions();
     Q_SLOT void setCopyAvailable(bool available);
 
+#if !defined(QT_NO_WEBKIT)
+private slots:
+    void slotAboutToShowBackMenu();
+    void slotAboutToShowNextMenu();
+    void slotOpenActionUrl(QAction *action);
+#endif
+
+private:
+    void setupNavigationMenus(QAction *back, QAction *next, QWidget *parent);
+
 private:
     GlobalActions(QObject *parent);
 
@@ -84,6 +95,9 @@ private:
     QAction *m_findAction;
 
     QList<QAction *> m_actionList;
+
+    QMenu *m_backMenu;
+    QMenu *m_nextMenu;
 };
 
 QT_END_NAMESPACE

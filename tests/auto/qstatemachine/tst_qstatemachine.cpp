@@ -1112,7 +1112,7 @@ void tst_QStateMachine::machineWithParent()
     QObject object;
     QStateMachine *machine = new QStateMachine(&object);
     QCOMPARE(machine->parent(), &object);
-    QCOMPARE(machine->parentState(), (QObject*)0);
+    QCOMPARE(machine->parentState(), static_cast<QState*>(0));
 }
 
 void tst_QStateMachine::addAndRemoveState()

@@ -3019,8 +3019,8 @@ void QTextStream::setAutoDetectUnicode(bool enabled)
 }
 
 /*!
-    Returns true if automatic Unicode detection is enabled; otherwise
-    returns false.
+    Returns true if automatic Unicode detection is enabled, otherwise
+    returns false. Automatic Unicode detection is enabled by default.
 
     \sa setAutoDetectUnicode(), setCodec()
 */
@@ -3051,7 +3051,8 @@ void QTextStream::setGenerateByteOrderMark(bool generate)
 
 /*!
     Returns true if QTextStream is set to generate the UTF BOM (Byte Order
-    Mark) when using a UTF codec; otherwise returns false.
+    Mark) when using a UTF codec; otherwise returns false. UTF BOM generation is
+    set to false by default.
 
     \sa setGenerateByteOrderMark()
 */

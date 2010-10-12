@@ -61,16 +61,37 @@ static const QDeclarativeItemPrivate::ChangeTypes watchedChanges
     | QDeclarativeItemPrivate::Opacity
     | QDeclarativeItemPrivate::Destroyed;
 
-void QDeclarativeBasePositionerPrivate::watchChanges(QDeclarativeItem *other)
+void QDeclarativeBasePositionerPrivate::watchChanges(QGraphicsObject *other)
 {
-    QDeclarativeItemPrivate *otherPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(other));
-    otherPrivate->addItemChangeListener(this, watchedChanges);
+    if (QGraphicsItemPrivate::get(other)->isDeclarativeItem) {
+        QDeclarativeItemPrivate *otherPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(other));
+        otherPrivate->addItemChangeListener(this, watchedChanges);
+    } else {
+        Q_Q(QDeclarativeBasePositioner);
+        QObject::connect(other, SIGNAL(widthChanged()), q, SLOT(graphicsWidgetGeometryChanged()));
+        QObject::connect(other, SIGNAL(heightChanged()), q, SLOT(graphicsWidgetGeometryChanged()));
+        QObject::connect(other, SIGNAL(opacityChanged()), q, SLOT(graphicsWidgetGeometryChanged()));
+        QObject::connect(other, SIGNAL(visibleChanged()), q, SLOT(graphicsWidgetGeometryChanged()));
+    }
 }
 
-void QDeclarativeBasePositionerPrivate::unwatchChanges(QDeclarativeItem* other)
+void QDeclarativeBasePositionerPrivate::unwatchChanges(QGraphicsObject* other)
 {
-    QDeclarativeItemPrivate *otherPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(other));
-    otherPrivate->removeItemChangeListener(this, watchedChanges);
+    if (QGraphicsItemPrivate::get(other)->isDeclarativeItem) {
+        QDeclarativeItemPrivate *otherPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(other));
+        otherPrivate->removeItemChangeListener(this, watchedChanges);
+    } else {
+        Q_Q(QDeclarativeBasePositioner);
+        QObject::disconnect(other, SIGNAL(widthChanged()), q, SLOT(graphicsWidgetGeometryChanged()));
+        QObject::disconnect(other, SIGNAL(heightChanged()), q, SLOT(graphicsWidgetGeometryChanged()));
+        QObject::disconnect(other, SIGNAL(opacityChanged()), q, SLOT(graphicsWidgetGeometryChanged()));
+        QObject::disconnect(other, SIGNAL(visibleChanged()), q, SLOT(graphicsWidgetGeometryChanged()));
+    }
+}
+
+void QDeclarativeBasePositioner::graphicsWidgetGeometryChanged()
+{
+    prePositioning();
 }
 
 /*!
@@ -87,8 +108,7 @@ void QDeclarativeBasePositionerPrivate::unwatchChanges(QDeclarativeItem* other)
     You also need to set a PositionerType, to declare whether you are positioning the x, y or both
     for the child items. Depending on the chosen type, only x or y changes will be applied.
 
-    Note that the subclass is responsible for adding the
-    spacing in between items.
+    Note that the subclass is responsible for adding the spacing in between items.
 */
 QDeclarativeBasePositioner::QDeclarativeBasePositioner(PositionerType at, QDeclarativeItem *parent)
     : QDeclarativeItem(*(new QDeclarativeBasePositionerPrivate), parent)
@@ -174,16 +194,16 @@ QVariant QDeclarativeBasePositioner::itemChange(GraphicsItemChange change,
     Q_D(QDeclarativeBasePositioner);
     if (change == ItemChildAddedChange){
         QGraphicsItem* item = value.value<QGraphicsItem*>();
-        QDeclarativeItem* child = 0;
+        QGraphicsObject* child = 0;
         if(item)
-            child = qobject_cast<QDeclarativeItem*>(item->toGraphicsObject());
+            child = item->toGraphicsObject();
         if (child)
             prePositioning();
     } else if (change == ItemChildRemovedChange) {
         QGraphicsItem* item = value.value<QGraphicsItem*>();
-        QDeclarativeItem* child = 0;
+        QGraphicsObject* child = 0;
         if(item)
-            child = qobject_cast<QDeclarativeItem*>(item->toGraphicsObject());
+            child = item->toGraphicsObject();
         if (child) {
             QDeclarativeBasePositioner::PositionedItem posItem(child);
             int idx = positionedItems.find(posItem);
@@ -194,7 +214,6 @@ QVariant QDeclarativeBasePositioner::itemChange(GraphicsItemChange change,
             prePositioning();
         }
     }
-
     return QDeclarativeItem::itemChange(change, value);
 }
 
@@ -216,10 +235,10 @@ void QDeclarativeBasePositioner::prePositioning()
     QPODVector<PositionedItem,8> oldItems;
     positionedItems.copyAndClear(oldItems);
     for (int ii = 0; ii < children.count(); ++ii) {
-        QDeclarativeItem *child = qobject_cast<QDeclarativeItem *>(children.at(ii));
+        QGraphicsObject *child = children.at(ii)->toGraphicsObject();
         if (!child)
             continue;
-        QDeclarativeItemPrivate *childPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(child));
+        QGraphicsItemPrivate *childPrivate = static_cast<QGraphicsItemPrivate*>(QGraphicsItemPrivate::get(child));
         PositionedItem *item = 0;
         PositionedItem posItem(child);
         int wIdx = oldItems.find(posItem);
@@ -228,13 +247,13 @@ void QDeclarativeBasePositioner::prePositioning()
             positionedItems.append(posItem);
             item = &positionedItems[positionedItems.count()-1];
             item->isNew = true;
-            if (child->opacity() <= 0.0 || childPrivate->explicitlyHidden)
+            if (child->opacity() <= 0.0 || childPrivate->explicitlyHidden || !childPrivate->width() || !childPrivate->height())
                 item->isVisible = false;
         } else {
             item = &oldItems[wIdx];
             // Items are only omitted from positioning if they are explicitly hidden
             // i.e. their positioning is not affected if an ancestor is hidden.
-            if (child->opacity() <= 0.0 || childPrivate->explicitlyHidden) {
+            if (child->opacity() <= 0.0 || childPrivate->explicitlyHidden || !childPrivate->width() || !childPrivate->height()) {
                 item->isVisible = false;
             } else if (!item->isVisible) {
                 item->isVisible = true;
@@ -302,65 +321,67 @@ void QDeclarativeBasePositioner::finishApplyTransitions()
     d->moveActions.clear();
 }
 
-static inline bool isInvisible(QDeclarativeItem *child)
-{
-    QDeclarativeItemPrivate *childPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(child));
-    return child->opacity() == 0.0 || childPrivate->explicitlyHidden || !child->width() || !child->height();
-}
-
 /*!
   \qmlclass Column QDeclarativeColumn
-    \since 4.7
+  \ingroup qml-positioning-elements
+  \since 4.7
   \brief The Column item arranges its children vertically.
   \inherits Item
 
   The Column item positions its child items so that they are vertically
-    aligned and not overlapping. Spacing between items can be added.
+  aligned and not overlapping.
 
-  The below example positions differently shaped rectangles using a Column.
-  \table
-  \row
-  \o \image verticalpositioner_example.png
-  \o
+  Spacing between items can be added using the \l spacing property.
+  Transitions can be used for cases where items managed by a Column are
+  added or moved. These are stored in the \l add and \l move properties
+  respectively.
+
+  See \l{Using QML Positioner and Repeater Items} for more details about this item and other
+  related items.
+
+  \section1 Example Usage
+
+  The following example positions differently shaped rectangles using a Column
+  item.
+
+  \image verticalpositioner_example.png
+
+  \snippet doc/src/snippets/declarative/column/vertical-positioner.qml document
+
+  \section1 Using Transitions
+
+  Transitions can be used to animate items that are added to, moved within,
+  or removed from a Column item. The \l add and \l move properties can be set to
+  the transitions that will be applied when items are added to, removed from,
+  or re-positioned within a Column item.
+
+  The use of transitions with positioners is described in more detail in the
+  \l{Using QML Positioner and Repeater Items#Using Transitions}{Using QML
+  Positioner and Repeater Items} document.
+
+  \image verticalpositioner_transition.gif
+
   \qml
-Column {
-    spacing: 2
-    Rectangle { color: "red"; width: 50; height: 50 }
-    Rectangle { color: "green"; width: 20; height: 50 }
-    Rectangle { color: "blue"; width: 50; height: 20 }
-}
+  Column {
+      spacing: 2
+      add: ...
+      move: ...
+      ...
+  }
   \endqml
-  \endtable
 
-  Column also provides for transitions to be set when items are added, moved,
-  or removed in the positioner. Adding and removing apply both to items which are deleted
-  or have their position in the document changed so as to no longer be children of the positioner,
-  as well as to items which have their opacity set to or from zero so as to appear or disappear.
-
-  \table
-  \row
-  \o \image verticalpositioner_transition.gif
-  \o
-  \qml
-Column {
-    spacing: 2
-    add: ...
-    move: ...
-    ...
-}
-  \endqml
-  \endtable
+  \section1 Limitations
 
   Note that the positioner assumes that the x and y positions of its children
   will not change. If you manually change the x or y properties in script, bind
   the x or y properties, use anchors on a child of a positioner, or have the
   height of a child depend on the position of a child, then the
-  positioner may exhibit strange behaviour. If you need to perform any of these
+  positioner may exhibit strange behavior. If you need to perform any of these
   actions, consider positioning the items without the use of a Column.
 
   Items with a width or height of 0 will not be positioned.
 
-  \sa Row, {declarative/positioners}{Positioners example}
+  \sa Row, Grid, Flow, {declarative/positioners}{Positioners example}
 */
 /*!
     \qmlproperty Transition Column::add
@@ -368,60 +389,47 @@ Column {
     This property holds the transition to be applied when adding an
     item to the positioner. The transition will only be applied to the
     added item(s).  Positioner transitions will only affect the
-    position (x,y) of items.
+    position (x, y) of items.
 
-    Added can mean that either the object has been created or
-    reparented, and thus is now a child or the positioner, or that the
-    object has had its opacity increased from zero, and thus is now
-    visible.
+    For a positioner, adding an item can mean that either the object
+    has been created or reparented, and thus is now a child or the
+    positioner, or that the object has had its opacity increased from
+    zero, and thus is now visible.
 
-
+    \sa move
 */
 /*!
     \qmlproperty Transition Column::move
 
     This property holds the transition to apply when moving an item
     within the positioner.  Positioner transitions will only affect
-    the position (x,y) of items.
+    the position (x, y) of items.
 
-    This can happen when other items are added or removed from the
-    positioner, or when items resize themselves.
+    This transition can be performed when other items are added or removed
+    from the positioner, or when items resize themselves.
 
-    \table
-    \row
-    \o \image positioner-move.gif
-    \o
+    \image positioner-move.gif
+
     \qml
-Column {
-    move: Transition {
-        NumberAnimation {
-            properties: "y"
-            easing.type: Easing.OutBounce
+    Column {
+        move: Transition {
+            NumberAnimation {
+                properties: "y"
+                easing.type: Easing.OutBounce
+            }
         }
     }
-}
     \endqml
-    \endtable
+
+    \sa add, {declarative/positioners}{Positioners example}
 */
 /*!
   \qmlproperty int Column::spacing
 
-  spacing is the amount in pixels left empty between each adjacent
-  item, and defaults to 0.
+  The spacing is the amount in pixels left empty between adjacent
+  items. The default spacing is 0.
 
-  The below example places a \l Grid containing a red, a blue and a
-  green rectangle on a gray background. The area the grid positioner
-  occupies is colored white. The top positioner has the default of no spacing,
-  and the bottom positioner has its spacing set to 2.
-
-  \image spacing_a.png
-  \image spacing_b.png
-
-*/
-/*!
-    \internal
-    \class QDeclarativeColumn
-    \brief The QDeclarativeColumn class lines up items vertically.
+  \sa Grid::spacing
 */
 QDeclarativeColumn::QDeclarativeColumn(QDeclarativeItem *parent)
 : QDeclarativeBasePositioner(Vertical, parent)
@@ -434,15 +442,15 @@ void QDeclarativeColumn::doPositioning(QSizeF *contentSize)
 
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
-        if (!child.item || isInvisible(child.item))
+        if (!child.item || !child.isVisible)
             continue;
 
         if(child.item->y() != voffset)
             positionY(voffset, child);
 
-        contentSize->setWidth(qMax(contentSize->width(), child.item->width()));
+        contentSize->setWidth(qMax(contentSize->width(), QGraphicsItemPrivate::get(child.item)->width()));
 
-        voffset += child.item->height();
+        voffset += QGraphicsItemPrivate::get(child.item)->height();
         voffset += spacing();
     }
 
@@ -454,8 +462,8 @@ void QDeclarativeColumn::reportConflictingAnchors()
     QDeclarativeBasePositionerPrivate *d = static_cast<QDeclarativeBasePositionerPrivate*>(QDeclarativeBasePositionerPrivate::get(this));
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
-        if (child.item) {
-            QDeclarativeAnchors *anchors = QDeclarativeItemPrivate::get(child.item)->_anchors;
+        if (child.item && QGraphicsItemPrivate::get(child.item)->isDeclarativeItem) {
+            QDeclarativeAnchors *anchors = QDeclarativeItemPrivate::get(static_cast<QDeclarativeItem *>(child.item))->_anchors;
             if (anchors) {
                 QDeclarativeAnchors::Anchors usedAnchors = anchors->usedAnchors();
                 if (usedAnchors & QDeclarativeAnchors::TopAnchor ||
@@ -475,27 +483,37 @@ void QDeclarativeColumn::reportConflictingAnchors()
 
 /*!
   \qmlclass Row QDeclarativeRow
+  \ingroup qml-positioning-elements
   \since 4.7
   \brief The Row item arranges its children horizontally.
   \inherits Item
 
-  The Row item positions its child items so that they are
-  horizontally aligned and not overlapping. 
+  The Row item positions its child items so that they are horizontally
+  aligned and not overlapping. 
 
   Use \l spacing to set the spacing between items in a Row, and use the
   \l add and \l move properties to set the transitions that should be applied
   when items are added to, removed from, or re-positioned within the Row.
 
-  The below example lays out differently shaped rectangles using a Row.
-  \qml
-Row {
-    spacing: 2
-    Rectangle { color: "red"; width: 50; height: 50 }
-    Rectangle { color: "green"; width: 20; height: 50 }
-    Rectangle { color: "blue"; width: 50; height: 20 }
-}
-  \endqml
+  See \l{Using QML Positioner and Repeater Items} for more details about this item and other
+  related items.
+
+  \section1 Example Usage
+
+  The following example lays out differently shaped rectangles using a Row.
+
   \image horizontalpositioner_example.png
+
+  \snippet doc/src/snippets/declarative/row/row.qml document
+
+  \section1 Using Transitions
+
+  Transitions can be used to animate items that are added to, moved within,
+  or removed from a Grid item. The \l add and \l move properties can be set to
+  the transitions that will be applied when items are added to, removed from,
+  or re-positioned within a Row item.
+
+  \section1 Limitations
 
   Note that the positioner assumes that the x and y positions of its children
   will not change. If you manually change the x or y properties in script, bind
@@ -506,61 +524,54 @@ Row {
 
   Items with a width or height of 0 will not be positioned.
 
-  \sa Column, {declarative/positioners}{Positioners example}
+  \sa Column, Grid, Flow, {declarative/positioners}{Positioners example}
 */
 /*!
     \qmlproperty Transition Row::add
-    This property holds the transition to apply when adding an item to the positioner.
-    The transition will only be applied to the added item(s).
-    Positioner transitions will only affect the position (x,y) of items.
 
-    An object is considered to be added to the positioner if it has been
-    created or reparented and thus is now a child or the positioner, or if the
-    object has had its opacity increased from zero, and thus is now
-    visible.
+    This property holds the transition to be applied when adding an
+    item to the positioner. The transition will only be applied to the
+    added item(s).  Positioner transitions will only affect the
+    position (x, y) of items.
+
+    For a positioner, adding an item can mean that either the object
+    has been created or reparented, and thus is now a child or the
+    positioner, or that the object has had its opacity increased from
+    zero, and thus is now visible.
+
+    \sa move
 */
 /*!
     \qmlproperty Transition Row::move
 
-    This property holds the transition to apply when moving an item
-    within the positioner.  Positioner transitions will only affect
-    the position (x,y) of items.
+    This property holds the transition to be applied when moving an
+    item within the positioner. Positioner transitions will only affect
+    the position (x, y) of items.
 
-    This can happen when other items are added or removed from the
-    positioner, or when items resize themselves.
+    This transition can be performed when other items are added or removed
+    from the positioner, or when items resize themselves.
 
     \qml
-Row {
-    id: positioner
-    move: Transition {
-        NumberAnimation {
-            properties: "x"
-            ease: "easeOutBounce"
+    Row {
+        id: positioner
+        move: Transition {
+            NumberAnimation {
+                properties: "x"
+                ease: "easeOutBounce"
+            }
         }
     }
-}
     \endqml
 
+    \sa add, {declarative/positioners}{Positioners example}
 */
 /*!
   \qmlproperty int Row::spacing
 
-  spacing is the amount in pixels left empty between each adjacent
-  item, and defaults to 0.
+  The spacing is the amount in pixels left empty between adjacent
+  items. The default spacing is 0.
 
-  The below example places a \l Grid containing a red, a blue and a
-  green rectangle on a gray background. The area the grid positioner
-  occupies is colored white. The top positioner has the default of no spacing,
-  and the bottom positioner has its spacing set to 2.
-
-  \image spacing_a.png
-  \image spacing_b.png
-
-*/
-/*!
-    \internal
-    \class QDeclarativeRow
-    \brief The QDeclarativeRow class lines up items horizontally.
+  \sa Grid::spacing
 */
 QDeclarativeRow::QDeclarativeRow(QDeclarativeItem *parent)
 : QDeclarativeBasePositioner(Horizontal, parent)
@@ -573,15 +584,15 @@ void QDeclarativeRow::doPositioning(QSizeF *contentSize)
 
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
-        if (!child.item || isInvisible(child.item))
+        if (!child.item || !child.isVisible)
             continue;
 
         if(child.item->x() != hoffset)
             positionX(hoffset, child);
 
-        contentSize->setHeight(qMax(contentSize->height(), child.item->height()));
+        contentSize->setHeight(qMax(contentSize->height(), QGraphicsItemPrivate::get(child.item)->height()));
 
-        hoffset += child.item->width();
+        hoffset += QGraphicsItemPrivate::get(child.item)->width();
         hoffset += spacing();
     }
 
@@ -593,8 +604,8 @@ void QDeclarativeRow::reportConflictingAnchors()
     QDeclarativeBasePositionerPrivate *d = static_cast<QDeclarativeBasePositionerPrivate*>(QDeclarativeBasePositionerPrivate::get(this));
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
-        if (child.item) {
-            QDeclarativeAnchors *anchors = QDeclarativeItemPrivate::get(child.item)->_anchors;
+        if (child.item && QGraphicsItemPrivate::get(child.item)->isDeclarativeItem) {
+            QDeclarativeAnchors *anchors = QDeclarativeItemPrivate::get(static_cast<QDeclarativeItem *>(child.item))->_anchors;
             if (anchors) {
                 QDeclarativeAnchors::Anchors usedAnchors = anchors->usedAnchors();
                 if (usedAnchors & QDeclarativeAnchors::LeftAnchor ||
@@ -613,46 +624,46 @@ void QDeclarativeRow::reportConflictingAnchors()
 
 /*!
   \qmlclass Grid QDeclarativeGrid
+  \ingroup qml-positioning-elements
   \since 4.7
   \brief The Grid item positions its children in a grid.
   \inherits Item
 
   The Grid item positions its child items so that they are
   aligned in a grid and are not overlapping. 
-  
-  Spacing can be added
-  between child items. It also provides for transitions to be set when items are
-  added, moved, or removed in the positioner. Adding and removing apply
-  both to items which are deleted or have their position in the
-  document changed so as to no longer be children of the positioner, as
-  well as to items which have their opacity set to or from zero so
-  as to appear or disappear.
 
-  A Grid defaults to four columns, and as many rows as
-  are necessary to fit all child items. The number of rows
-  and/or the number of columns can be constrained by setting the \l rows
-  or \l columns properties. The grid positioner calculates a grid with
-  rectangular cells of sufficient size to hold all items, and then
-  places the items in the cells, going across then down, and
-  positioning each item at the (0,0) corner of the cell. The below
-  example demonstrates this.
+  The grid positioner calculates a grid of rectangular cells of sufficient
+  size to hold all items, placing the items in the cells, from left to right
+  and top to bottom. Each item is positioned in the top-left corner of its
+  cell with position (0, 0).
 
-  \table
-  \row
-  \o \image gridLayout_example.png
-  \o
-  \qml
-Grid {
-    columns: 3
-    spacing: 2
-    Rectangle { color: "red"; width: 50; height: 50 }
-    Rectangle { color: "green"; width: 20; height: 50 }
-    Rectangle { color: "blue"; width: 50; height: 20 }
-    Rectangle { color: "cyan"; width: 50; height: 50 }
-    Rectangle { color: "magenta"; width: 10; height: 10 }
-}
-  \endqml
-  \endtable
+  A Grid defaults to four columns, and as many rows as are necessary to
+  fit all child items. The number of rows and columns can be constrained
+  by setting the \l rows and \l columns properties.
+
+  Spacing can be added between child items by setting the \l spacing
+  property. The amount of spacing applied will be the same in the
+  horizontal and vertical directions.
+
+  See \l{Using QML Positioner and Repeater Items} for more details about this item and other
+  related items.
+
+  \section1 Example Usage
+
+  The following example demonstrates this.
+
+  \image gridLayout_example.png
+
+  \snippet doc/src/snippets/declarative/grid/grid.qml document
+
+  \section1 Using Transitions
+
+  Transitions can be used to animate items that are added to, moved within,
+  or removed from a Grid item. The \l add and \l move properties can be set to
+  the transitions that will be applied when items are added to, removed from,
+  or re-positioned within a Grid item.
+
+  \section1 Limitations
 
   Note that the positioner assumes that the x and y positions of its children
   will not change. If you manually change the x or y properties in script, bind
@@ -663,60 +674,62 @@ Grid {
 
   Items with a width or height of 0 will not be positioned.
 
-  \sa Flow, {declarative/positioners}{Positioners example}
+  \sa Flow, Row, Column, {declarative/positioners}{Positioners example}
 */
 /*!
     \qmlproperty Transition Grid::add
-    This property holds the transition to apply when adding an item to the positioner.
-    The transition is only applied to the added item(s).
-    Positioner transitions will only affect the position (x,y) of items,
-    as that is all the positioners affect. To animate other property change
-    you will have to do so based on how you have changed those properties.
 
-    An object is considered to be added to the positioner if it has been
-    created or reparented and thus is now a child or the positioner, or if the
-    object has had its opacity increased from zero, and thus is now
-    visible.
+    This property holds the transition to be applied when adding an
+    item to the positioner. The transition will only be applied to the
+    added item(s).  Positioner transitions will only affect the
+    position (x, y) of items.
+
+    For a positioner, adding an item can mean that either the object
+    has been created or reparented, and thus is now a child or the
+    positioner, or that the object has had its opacity increased from
+    zero, and thus is now visible.
+
+    \sa move
 */
 /*!
     \qmlproperty Transition Grid::move
-    This property holds the transition to apply when moving an item within the positioner.
-    Positioner transitions will only affect the position (x,y) of items.
 
-    This can happen when other items are added or removed from the positioner, or
-    when items resize themselves.
+    This property holds the transition to be applied when moving an
+    item within the positioner. Positioner transitions will only affect
+    the position (x, y) of items.
+
+    This transition can be performed when other items are added or removed
+    from the positioner, or when items resize themselves.
 
     \qml
-Grid {
-    move: Transition {
-        NumberAnimation {
-            properties: "x,y"
-            ease: "easeOutBounce"
+    Grid {
+        move: Transition {
+            NumberAnimation {
+                properties: "x,y"
+                ease: "easeOutBounce"
+            }
         }
     }
-}
     \endqml
 
+    \sa add, {declarative/positioners}{Positioners example}
 */
 /*!
   \qmlproperty int Grid::spacing
 
-  spacing is the amount in pixels left empty between each adjacent
-  item, and defaults to 0.
+  The spacing is the amount in pixels left empty between adjacent
+  items. The default spacing is 0.
 
   The below example places a Grid containing a red, a blue and a
   green rectangle on a gray background. The area the grid positioner
-  occupies is colored white. The top positioner has the default of no spacing,
-  and the bottom positioner has its spacing set to 2.
+  occupies is colored white. The positioner on the left has the
+  no spacing (the default), and the positioner on the right has
+  a spacing of 6.
 
-  \image spacing_a.png
-  \image spacing_b.png
+  \inlineimage qml-grid-no-spacing.png
+  \inlineimage qml-grid-spacing.png
 
-*/
-/*!
-    \internal
-    \class QDeclarativeGrid
-    \brief The QDeclarativeGrid class lays out items in a grid.
+  \sa rows, columns
 */
 QDeclarativeGrid::QDeclarativeGrid(QDeclarativeItem *parent) :
     QDeclarativeBasePositioner(Both, parent), m_rows(-1), m_columns(-1), m_flow(LeftToRight)
@@ -725,7 +738,9 @@ QDeclarativeGrid::QDeclarativeGrid(QDeclarativeItem *parent) :
 
 /*!
     \qmlproperty int Grid::columns
-    This property holds the number of columns in the grid.
+
+    This property holds the number of columns in the grid. The default
+    number of columns is 4.
 
     If the grid does not have enough items to fill the specified
     number of columns, some columns will be of zero width.
@@ -786,9 +801,17 @@ void QDeclarativeGrid::setFlow(Flow flow)
 
 void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
 {
+
     int c = m_columns;
     int r = m_rows;
-    int numVisible = positionedItems.count();
+    //Is allocating the extra QPODVector too much overhead?
+    QPODVector<PositionedItem, 8> visibleItems;//we aren't concerned with invisible items
+    visibleItems.reserve(positionedItems.count());
+    for(int i=0; i<positionedItems.count(); i++)
+        if(positionedItems[i].item && positionedItems[i].isVisible)
+            visibleItems.append(positionedItems[i]);
+
+    int numVisible = visibleItems.count();
     if (m_columns <= 0 && m_rows <= 0){
         c = 4;
         r = (numVisible+3)/4;
@@ -809,15 +832,15 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
                 if (i==0)
                     maxColWidth << 0;
 
-                if (childIndex == positionedItems.count())
-                    continue;
-                const PositionedItem &child = positionedItems.at(childIndex++);
-                if (!child.item || isInvisible(child.item))
-                    continue;
-                if (child.item->width() > maxColWidth[j])
-                    maxColWidth[j] = child.item->width();
-                if (child.item->height() > maxRowHeight[i])
-                    maxRowHeight[i] = child.item->height();
+                if (childIndex == visibleItems.count())
+                    break;
+
+                const PositionedItem &child = visibleItems.at(childIndex++);
+                QGraphicsItemPrivate *childPrivate = QGraphicsItemPrivate::get(child.item);
+                if (childPrivate->width() > maxColWidth[j])
+                    maxColWidth[j] = childPrivate->width();
+                if (childPrivate->height() > maxRowHeight[i])
+                    maxRowHeight[i] = childPrivate->height();
             }
         }
     } else {
@@ -829,14 +852,14 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
                     maxColWidth << 0;
 
                 if (childIndex == positionedItems.count())
-                    continue;
-                const PositionedItem &child = positionedItems.at(childIndex++);
-                if (!child.item || isInvisible(child.item))
-                    continue;
-                if (child.item->width() > maxColWidth[j])
-                    maxColWidth[j] = child.item->width();
-                if (child.item->height() > maxRowHeight[i])
-                    maxRowHeight[i] = child.item->height();
+                    break;
+
+                const PositionedItem &child = visibleItems.at(childIndex++);
+                QGraphicsItemPrivate *childPrivate = QGraphicsItemPrivate::get(child.item);
+                if (childPrivate->width() > maxColWidth[j])
+                    maxColWidth[j] = childPrivate->width();
+                if (childPrivate->height() > maxRowHeight[i])
+                    maxRowHeight[i] = childPrivate->height();
             }
         }
     }
@@ -845,17 +868,15 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
     int yoffset=0;
     int curRow =0;
     int curCol =0;
-    for (int i = 0; i < positionedItems.count(); ++i) {
-        const PositionedItem &child = positionedItems.at(i);
-        if (!child.item || isInvisible(child.item))
-            continue;
+    for (int i = 0; i < visibleItems.count(); ++i) {
+        const PositionedItem &child = visibleItems.at(i);
         if((child.item->x()!=xoffset)||(child.item->y()!=yoffset)){
             positionX(xoffset, child);
             positionY(yoffset, child);
         }
 
         if (m_flow == LeftToRight) {
-            contentSize->setWidth(qMax(contentSize->width(), xoffset + child.item->width()));
+            contentSize->setWidth(qMax(contentSize->width(), xoffset + QGraphicsItemPrivate::get(child.item)->width()));
             contentSize->setHeight(yoffset + maxRowHeight[curRow]);
 
             xoffset+=maxColWidth[curCol]+spacing();
@@ -869,7 +890,7 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
                     break;
             }
         } else {
-            contentSize->setHeight(qMax(contentSize->height(), yoffset + child.item->height()));
+            contentSize->setHeight(qMax(contentSize->height(), yoffset + QGraphicsItemPrivate::get(child.item)->height()));
             contentSize->setWidth(xoffset + maxColWidth[curCol]);
 
             yoffset+=maxRowHeight[curRow]+spacing();
@@ -891,8 +912,8 @@ void QDeclarativeGrid::reportConflictingAnchors()
     QDeclarativeBasePositionerPrivate *d = static_cast<QDeclarativeBasePositionerPrivate*>(QDeclarativeBasePositionerPrivate::get(this));
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
-        if (child.item) {
-            QDeclarativeAnchors *anchors = QDeclarativeItemPrivate::get(child.item)->_anchors;
+        if (child.item && QGraphicsItemPrivate::get(child.item)->isDeclarativeItem) {
+            QDeclarativeAnchors *anchors = QDeclarativeItemPrivate::get(static_cast<QDeclarativeItem *>(child.item))->_anchors;
             if (anchors && (anchors->usedAnchors() || anchors->fill() || anchors->centerIn())) {
                 d->anchorConflict = true;
                 break;
@@ -905,12 +926,43 @@ void QDeclarativeGrid::reportConflictingAnchors()
 
 /*!
   \qmlclass Flow QDeclarativeFlow
+  \ingroup qml-positioning-elements
   \since 4.7
   \brief The Flow item arranges its children side by side, wrapping as necessary.
   \inherits Item
 
-  The Flow item positions its child items so that they are side by side and are
-  not overlapping.
+  The Flow item positions its child items like words on a page, wrapping them
+  to create rows or columns of items that do not overlap.
+
+  Spacing between items can be added using the \l spacing property.
+  Transitions can be used for cases where items managed by a Column are
+  added or moved. These are stored in the \l add and \l move properties
+  respectively.
+
+  See \l{Using QML Positioner and Repeater Items} for more details about this item and other
+  related items.
+
+  \section1 Example Usage
+
+  The following example positions \l Text items within a parent item using
+  a Flow item.
+
+  \image qml-flow-snippet.png
+
+  \snippet doc/src/snippets/declarative/flow.qml flow item
+
+  \section1 Using Transitions
+
+  Transitions can be used to animate items that are added to, moved within,
+  or removed from a Flow item. The \l add and \l move properties can be set to
+  the transitions that will be applied when items are added to, removed from,
+  or re-positioned within a Flow item.
+
+  The use of transitions with positioners is described in more detail in the
+  \l{Using QML Positioner and Repeater Items#Using Transitions}{Using QML
+  Positioner and Repeater Items} document.
+
+  \section1 Limitations
 
   Note that the positioner assumes that the x and y positions of its children
   will not change. If you manually change the x or y properties in script, bind
@@ -921,38 +973,46 @@ void QDeclarativeGrid::reportConflictingAnchors()
 
   Items with a width or height of 0 will not be positioned.
 
-    \sa Grid, {declarative/positioners}{Positioners example}
+  \sa Column, Row, Grid, {declarative/positioners}{Positioners example}
 */
 /*!
     \qmlproperty Transition Flow::add
-    This property holds the transition to apply when adding an item to the positioner.
-    The transition will only be applied to the added item(s).
-    Positioner transitions will only affect the position (x,y) of items.
 
-    An object is considered to be added to the positioner if it has been
-    created or reparented and thus is now a child or the positioner, or if the
-    object has had its opacity increased from zero, and thus is now
-    visible.
+    This property holds the transition to be applied when adding an
+    item to the positioner. The transition will only be applied to the
+    added item(s).  Positioner transitions will only affect the
+    position (x, y) of items.
+
+    For a positioner, adding an item can mean that either the object
+    has been created or reparented, and thus is now a child or the
+    positioner, or that the object has had its opacity increased from
+    zero, and thus is now visible.
+
+    \sa move
 */
 /*!
     \qmlproperty Transition Flow::move
-    This property holds the transition to apply when moving an item within the positioner.
-    Positioner transitions will only affect the position (x,y) of items.
 
-    This can happen when other items are added or removed from the positioner, or when items resize themselves.
+    This property holds the transition to be applied when moving an
+    item within the positioner. Positioner transitions will only affect
+    the position (x, y) of items.
+
+    This transition can be performed when other items are added or removed
+    from the positioner, or when items resize themselves.
 
     \qml
-Flow {
-    id: positioner
-    move: Transition {
-        NumberAnimation {
-            properties: "x,y"
-            ease: "easeOutBounce"
+    Flow {
+        id: positioner
+        move: Transition {
+            NumberAnimation {
+                properties: "x,y"
+                ease: "easeOutBounce"
+            }
         }
     }
-}
     \endqml
 
+    \sa add, {declarative/positioners}{Positioners example}
 */
 /*!
   \qmlproperty int Flow::spacing
@@ -960,6 +1020,7 @@ Flow {
   spacing is the amount in pixels left empty between each adjacent
   item, and defaults to 0.
 
+  \sa Grid::spacing
 */
 
 class QDeclarativeFlowPrivate : public QDeclarativeBasePositionerPrivate
@@ -1023,17 +1084,18 @@ void QDeclarativeFlow::doPositioning(QSizeF *contentSize)
 
     for (int i = 0; i < positionedItems.count(); ++i) {
         const PositionedItem &child = positionedItems.at(i);
-        if (!child.item || isInvisible(child.item))
+        if (!child.item || !child.isVisible)
             continue;
 
+        QGraphicsItemPrivate *childPrivate = QGraphicsItemPrivate::get(child.item);
         if (d->flow == LeftToRight)  {
-            if (widthValid() && hoffset && hoffset + child.item->width() > width()) {
+            if (widthValid() && hoffset && hoffset + childPrivate->width() > width()) {
                 hoffset = 0;
                 voffset += linemax + spacing();
                 linemax = 0;
             }
         } else {
-            if (heightValid() && voffset && voffset + child.item->height() > height()) {
+            if (heightValid() && voffset && voffset + childPrivate->height() > height()) {
                 voffset = 0;
                 hoffset += linemax + spacing();
                 linemax = 0;
@@ -1045,17 +1107,17 @@ void QDeclarativeFlow::doPositioning(QSizeF *contentSize)
             positionY(voffset, child);
         }
 
-        contentSize->setWidth(qMax(contentSize->width(), hoffset + child.item->width()));
-        contentSize->setHeight(qMax(contentSize->height(), voffset + child.item->height()));
+        contentSize->setWidth(qMax(contentSize->width(), hoffset + childPrivate->width()));
+        contentSize->setHeight(qMax(contentSize->height(), voffset + childPrivate->height()));
 
         if (d->flow == LeftToRight)  {
-            hoffset += child.item->width();
+            hoffset += childPrivate->width();
             hoffset += spacing();
-            linemax = qMax(linemax, qCeil(child.item->height()));
+            linemax = qMax(linemax, qCeil(childPrivate->height()));
         } else {
-            voffset += child.item->height();
+            voffset += childPrivate->height();
             voffset += spacing();
-            linemax = qMax(linemax, qCeil(child.item->width()));
+            linemax = qMax(linemax, qCeil(childPrivate->width()));
         }
     }
 }
@@ -1065,8 +1127,8 @@ void QDeclarativeFlow::reportConflictingAnchors()
     Q_D(QDeclarativeFlow);
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
-        if (child.item) {
-            QDeclarativeAnchors *anchors = QDeclarativeItemPrivate::get(child.item)->_anchors;
+        if (child.item && QGraphicsItemPrivate::get(child.item)->isDeclarativeItem) {
+            QDeclarativeAnchors *anchors = QDeclarativeItemPrivate::get(static_cast<QDeclarativeItem *>(child.item))->_anchors;
             if (anchors && (anchors->usedAnchors() || anchors->fill() || anchors->centerIn())) {
                 d->anchorConflict = true;
                 break;

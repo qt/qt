@@ -84,8 +84,9 @@ void QDeclarativePen::setWidth(int w)
 
 /*!
     \qmlclass GradientStop QDeclarativeGradientStop
-  \since 4.7
-    \brief The GradientStop item defines the color at a position in a Gradient
+    \ingroup qml-basic-visual-elements
+    \since 4.7
+    \brief The GradientStop item defines the color at a position in a Gradient.
 
     \sa Gradient
 */
@@ -94,7 +95,12 @@ void QDeclarativePen::setWidth(int w)
     \qmlproperty real GradientStop::position
     \qmlproperty color GradientStop::color
 
-    Sets a \e color at a \e position in a gradient.
+    The position and color properties describe the color used at a given
+    position in a gradient, as represented by a gradient stop.
+
+    The default position is 0.0; the default color is black.
+
+    \sa Gradient
 */
 
 void QDeclarativeGradientStop::updateGradient()
@@ -105,20 +111,51 @@ void QDeclarativeGradientStop::updateGradient()
 
 /*!
     \qmlclass Gradient QDeclarativeGradient
-  \since 4.7
+    \ingroup qml-basic-visual-elements
+    \since 4.7
     \brief The Gradient item defines a gradient fill.
 
-    A gradient is defined by two or more colors, which will be blended seemlessly.  The
-    colors are specified at their position in the range 0.0 - 1.0 via
-    the GradientStop item.  For example, the following code paints a
-    rectangle with a gradient starting with red, blending to yellow at 1/3 of the
-    size of the rectangle, and ending with Green:
+    A gradient is defined by two or more colors, which will be blended seamlessly.
+
+    The colors are specified as a set of GradientStop child items, each of
+    which defines a position on the gradient from 0.0 to 1.0 and a color.
+    The position of each GradientStop is defined by setting its
+    \l{GradientStop::}{position} property; its color is defined using its
+    \l{GradientStop::}{color} property.
+
+    A gradient without any gradient stops is rendered as a solid white fill.
+
+    Note that this item is not a visual representation of a gradient. To display a
+    gradient, use a visual element (like \l Rectangle) which supports the use
+    of gradients.
+
+    \section1 Example Usage
+
+    \beginfloatright
+    \inlineimage qml-gradient.png
+    \endfloat
+
+    The following example declares a \l Rectangle item with a gradient starting
+    with red, blending to yellow at one third of the height of the rectangle,
+    and ending with green:
 
     \snippet doc/src/snippets/declarative/gradient.qml code
 
-    Note that this item is not a visual representation of a gradient. To display a
-    gradient use a visual item (like rectangle) which supports having a gradient set
-    on it for display.
+    \clearfloat
+    \section1 Performance and Limitations
+
+    Calculating gradients can be computationally expensive compared to the use
+    of solid color fills or images. Consider using gradients for static items
+    in a user interface.
+
+    In Qt 4.7, only vertical, linear gradients can be applied to items. If you
+    need to apply different orientations of gradients, a combination of rotation
+    and clipping will need to be applied to the relevant items. This can
+    introduce additional performance requirements for your application.
+
+    The use of animations involving gradient stops may not give the desired
+    result. An alternative way to animate gradients is to use pre-generated
+    images or SVG drawings containing gradients.
 
     \sa GradientStop
 */
@@ -126,6 +163,10 @@ void QDeclarativeGradientStop::updateGradient()
 /*!
     \qmlproperty list<GradientStop> Gradient::stops
     This property holds the gradient stops describing the gradient.
+
+    By default, this property contains an empty list.
+
+    To set the gradient stops, define them as children of the Gradient element.
 */
 
 const QGradient *QDeclarativeGradient::gradient() const
@@ -152,36 +193,51 @@ void QDeclarativeGradient::doUpdate()
 
 /*!
     \qmlclass Rectangle QDeclarativeRectangle
-  \since 4.7
-    \brief The Rectangle item allows you to add rectangles to a scene.
+    \ingroup qml-basic-visual-elements
+    \since 4.7
+    \brief The Rectangle item provides a filled rectangle with an optional border.
     \inherits Item
 
-    A Rectangle is painted using a solid fill (color) and an optional border.
-    You can also create rounded rectangles using the \l radius property.
+    Rectangle items are used to fill areas with solid color or gradients, and are
+    often used to hold other items.
 
-    \qml
-    import Qt 4.7
+    \section1 Appearance
 
-    Rectangle {
-        width: 100
-        height: 100
-        color: "red"
-        border.color: "black"
-        border.width: 5
-        radius: 10
-    }
-    \endqml
+    Each Rectangle item is painted using either a solid fill color, specified using
+    the \l color property, or a gradient, defined using a Gradient element and set
+    using the \l gradient property. If both a color and a gradient are specified,
+    the gradient is used.
 
-    \image declarative-rect.png
+    You can add an optional border to a rectangle with its own color and thickness
+    by settting the \l border.color and \l border.width properties.
+
+    You can also create rounded rectangles using the \l radius property. Since this
+    introduces curved edges to the corners of a rectangle, it may be appropriate to
+    set the \l smooth property to improve its appearance.
+
+    \section1 Example Usage
+
+    \beginfloatright
+    \inlineimage declarative-rect.png
+    \endfloat
+
+    The following example shows the effects of some of the common properties on a
+    Rectangle item, which in this case is used to create a square:
+
+    \snippet doc/src/snippets/declarative/rectangle/rectangle.qml document
+
+    \clearfloat
+    \section1 Performance
+
+    Using the \l smooth property improves the appearance of a rounded rectangle at
+    the cost of rendering performance. You should consider unsetting this property
+    for rectangles in motion, and only set it when they are stationary.
+
+    \sa Image
 */
 
 int QDeclarativeRectanglePrivate::doUpdateSlotIdx = -1;
 
-/*!
-    \internal
-    \class QDeclarativeRectangle
-    \brief The QDeclarativeRectangle class provides a rectangle item that you can add to a QDeclarativeView.
-*/
 QDeclarativeRectangle::QDeclarativeRectangle(QDeclarativeItem *parent)
   : QDeclarativeItem(*(new QDeclarativeRectanglePrivate), parent)
 {
@@ -209,13 +265,14 @@ void QDeclarativeRectangle::doUpdate()
     rectangle's boundaries, and the spare pixel is rendered to the right and below the
     rectangle (as documented for QRect rendering). This can cause unintended effects if 
     \c border.width is 1 and the rectangle is \l{Item::clip}{clipped} by a parent item:
-   
-    \table
-    \row
-    \o \snippet doc/src/snippets/declarative/rect-border-width.qml 0
-    \o \image rect-border-width.png
-    \endtable
 
+    \beginfloatright
+    \inlineimage rect-border-width.png
+    \endfloat
+
+    \snippet doc/src/snippets/declarative/rectangle/rect-border-width.qml 0
+
+    \clearfloat
     Here, the innermost rectangle's border is clipped on the bottom and right edges by its
     parent. To avoid this, the border width can be set to two instead of one.
 */
@@ -233,34 +290,12 @@ QDeclarativePen *QDeclarativeRectangle::border()
     This property allows for the construction of simple vertical gradients.
     Other gradients may by formed by adding rotation to the rectangle.
 
-    \table
-    \row
-    \o \image declarative-rect_gradient.png
-    \o
-    \qml
-    Rectangle {
-        y: 0; width: 80; height: 80
-        color: "lightsteelblue"
-    }
+    \beginfloatleft
+    \inlineimage declarative-rect_gradient.png
+    \endfloat
 
-    Rectangle {
-        y: 100; width: 80; height: 80
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: "lightsteelblue" }
-            GradientStop { position: 1.0; color: "blue" }
-        }
-    }
-
-    Rectangle {
-        y: 200; width: 80; height: 80
-        rotation: 90
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: "lightsteelblue" }
-            GradientStop { position: 1.0; color: "blue" }
-        }
-    }
-    \endqml
-    \endtable
+    \snippet doc/src/snippets/declarative/rectangle/rectangle-gradient.qml rectangles
+    \clearfloat
 
     If both a gradient and a color are specified, the gradient will be used.
 
@@ -321,17 +356,21 @@ void QDeclarativeRectangle::setRadius(qreal radius)
     \qmlproperty color Rectangle::color
     This property holds the color used to fill the rectangle.
 
-    \qml
-    // green rectangle using hexidecimal notation
-    Rectangle { color: "#00FF00" }
-
-    // steelblue rectangle using SVG color name
-    Rectangle { color: "steelblue" }
-    \endqml
-
     The default color is white.
 
+    \beginfloatright
+    \inlineimage rect-color.png
+    \endfloat
+
+    The following example shows rectangles with colors specified
+    using hexadecimal and named color notation:
+
+    \snippet doc/src/snippets/declarative/rectangle/rectangle-colors.qml rectangles
+
+    \clearfloat
     If both a gradient and a color are specified, the gradient will be used.
+
+    \sa gradient
 */
 QColor QDeclarativeRectangle::color() const
 {

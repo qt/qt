@@ -65,9 +65,10 @@ QT_BEGIN_NAMESPACE
 class QDeclarativeTypeNameCache;
 class QDeclarativeEngine;
 class QDir;
-
 class QDeclarativeImportedNamespace;
 class QDeclarativeImportsPrivate;
+class QDeclarativeImportDatabase;
+
 class QDeclarativeImports
 {
 public:
@@ -79,7 +80,24 @@ public:
     void setBaseUrl(const QUrl &url);
     QUrl baseUrl() const;
 
-    void cache(QDeclarativeTypeNameCache *cache, QDeclarativeEngine *) const;
+    bool resolveType(const QByteArray& type,
+                     QDeclarativeType** type_return, QUrl* url_return,
+                     int *version_major, int *version_minor,
+                     QDeclarativeImportedNamespace** ns_return,
+                     QString *errorString = 0) const;
+    bool resolveType(QDeclarativeImportedNamespace*, 
+                     const QByteArray& type,
+                     QDeclarativeType** type_return, QUrl* url_return,
+                     int *version_major, int *version_minor) const;
+
+    bool addImport(QDeclarativeImportDatabase *, 
+                   const QString& uri, const QString& prefix, int vmaj, int vmin, 
+                   QDeclarativeScriptParser::Import::Type importType,
+                   const QDeclarativeDirComponents &qmldircomponentsnetwork, 
+                   QString *errorString);
+
+    void populateCache(QDeclarativeTypeNameCache *cache, QDeclarativeEngine *) const;
+
 private:
     friend class QDeclarativeImportDatabase;
     QDeclarativeImportsPrivate *d;
@@ -101,21 +119,6 @@ public:
     QStringList pluginPathList() const;
     void setPluginPathList(const QStringList &paths);
     void addPluginPath(const QString& path);
-
-
-    bool addToImport(QDeclarativeImports*, const QDeclarativeDirComponents &qmldircomponentsnetwork, 
-                     const QString& uri, const QString& prefix, int vmaj, int vmin, 
-                     QDeclarativeScriptParser::Import::Type importType,
-                     QString *errorString);
-    bool resolveType(const QDeclarativeImports&, const QByteArray& type,
-                     QDeclarativeType** type_return, QUrl* url_return,
-                     int *version_major, int *version_minor,
-                     QDeclarativeImportedNamespace** ns_return,
-                     QString *errorString = 0) const;
-    bool resolveTypeInNamespace(QDeclarativeImportedNamespace*, const QByteArray& type,
-                                QDeclarativeType** type_return, QUrl* url_return,
-                                int *version_major, int *version_minor ) const;
-
 
 private:
     friend class QDeclarativeImportsPrivate;

@@ -129,11 +129,43 @@ void QS60Data::setStatusPaneAndButtonGroupVisibility(bool statusPaneVisible, boo
         statusPaneVisibilityChanged = (s->IsVisible() != statusPaneVisible);
         s->MakeVisible(statusPaneVisible);
     }
-    if (buttonGroupVisibilityChanged  && !statusPaneVisibilityChanged)
+    if (buttonGroupVisibilityChanged  || statusPaneVisibilityChanged) {
+        const QSize size = qt_TRect2QRect(static_cast<CEikAppUi*>(S60->appUi())->ClientRect()).size();
+        const QSize oldSize; // note that QDesktopWidget::resizeEvent ignores the QResizeEvent contents
+        QResizeEvent event(size, oldSize);
+        QApplication::instance()->sendEvent(QApplication::desktop(), &event);
+    }
+    if (buttonGroupVisibilityChanged  && !statusPaneVisibilityChanged && QApplication::activeWindow())
         // Ensure that control rectangle is updated
         static_cast<QSymbianControl *>(QApplication::activeWindow()->winId())->handleClientAreaChange();
 }
 #endif
+
+void QS60Data::controlVisibilityChanged(CCoeControl *control, bool visible)
+{
+    if (QWidgetPrivate::mapper && QWidgetPrivate::mapper->contains(control)) {
+        QWidget *const widget = QWidgetPrivate::mapper->value(control);
+        QWidget *const window = widget->window();
+        if (QTLWExtra *topData = qt_widget_private(window)->maybeTopData()) {
+            QWidgetBackingStoreTracker &backingStore = topData->backingStore;
+            if (visible) {
+                if (backingStore.data()) {
+                    backingStore.registerWidget(widget);
+                } else {
+                    backingStore.create(window);
+                    backingStore.registerWidget(widget);
+                    qt_widget_private(widget)->invalidateBuffer(widget->rect());
+                    widget->repaint();
+                }
+            } else {
+                backingStore.unregisterWidget(widget);
+                // In order to ensure that any resources used by the window surface
+                // are immediately freed, we flush the WSERV command buffer.
+                S60->wsSession().Flush();
+            }
+        }
+    }
+}
 
 bool qt_nograb()                                // application no-grab option
 {
@@ -635,6 +667,9 @@ void QSymbianControl::HandleStatusPaneSizeChange()
 {
     QS60MainAppUi *s60AppUi = static_cast<QS60MainAppUi *>(S60->appUi());
     s60AppUi->HandleStatusPaneSizeChange();
+    // Send resize event to trigger desktopwidget workAreaResized signal
+    QResizeEvent e(qt_desktopWidget->size(), qt_desktopWidget->size());
+    QApplication::sendEvent(qt_desktopWidget, &e);
 }
 #endif
 
@@ -1075,17 +1110,19 @@ void QSymbianControl::Draw(const TRect& controlRect) const
         CFbsBitmap *bitmap = s60Surface->symbianBitmap();
         CWindowGc &gc = SystemGc();
 
-        switch(qwidget->d_func()->extraData()->nativePaintMode) {
+        QWExtra::NativePaintMode nativePaintMode = qwidget->d_func()->extraData()->nativePaintMode;
+        if(qwidget->d_func()->paintOnScreen())
+            nativePaintMode = QWExtra::Disable;
+
+        switch(nativePaintMode) {
         case QWExtra::Disable:
             // Do nothing
             break;
-
         case QWExtra::Blit:
             if (qwidget->d_func()->isOpaque)
                 gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
             gc.BitBlt(controlRect.iTl, bitmap, backingStoreRect);
             break;
-
         case QWExtra::ZeroFill:
             if (Window().DisplayMode() == EColor16MA
                 || Window().DisplayMode() == Q_SYMBIAN_ECOLOR16MAP) {
@@ -1098,7 +1135,6 @@ void QSymbianControl::Draw(const TRect& controlRect) const
                 gc.Clear(controlRect);
             };
             break;
-
         default:
             Q_ASSERT(false);
         }
@@ -1201,25 +1237,37 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
 #ifdef Q_WS_S60
         // If widget is fullscreen/minimized, hide status pane and button container otherwise show them.
-        const bool visible = !(qwidget->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
+        QWidget *const window = qwidget->window();
+        const bool visible = !(window->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
         const bool statusPaneVisibility = visible;
-        const bool isFullscreen = qwidget->windowState() & Qt::WindowFullScreen;
-        const bool cbaVisibilityHint = qwidget->windowFlags() & Qt::WindowSoftkeysVisibleHint;
+        const bool isFullscreen = window->windowState() & Qt::WindowFullScreen;
+        const bool cbaVisibilityHint = window->windowFlags() & Qt::WindowSoftkeysVisibleHint;
         const bool buttonGroupVisibility = (visible || (isFullscreen && cbaVisibilityHint));
         S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
 #endif
     } else if (QApplication::activeWindow() == qwidget->window()) {
-        if (CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog() || S60->menuBeingConstructed) {
-            QWidget *fw = QApplication::focusWidget();
-            if (fw) {
-                QFocusEvent event(QEvent::FocusOut, Qt::PopupFocusReason);
-                QCoreApplication::sendEvent(fw, &event);
-            }
-            m_symbianPopupIsOpen = true;
-            return;
+        bool focusedControlFound = false;
+        WId winId = 0;
+        for (QWidget *w = qwidget->parentWidget(); w && (winId = w->internalWinId()); w = w->parentWidget()) {
+            if (winId->IsFocused() && winId->IsVisible()) {
+                focusedControlFound = true;
+                break;
+            } else if (w->isWindow())
+                break;
         }
+        if (!focusedControlFound) {
+            if (CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog() || S60->menuBeingConstructed) {
+                QWidget *fw = QApplication::focusWidget();
+                if (fw) {
+                    QFocusEvent event(QEvent::FocusOut, Qt::PopupFocusReason);
+                    QCoreApplication::sendEvent(fw, &event);
+                }
+                m_symbianPopupIsOpen = true;
+                return;
+            }
 
-        QApplication::setActiveWindow(0);
+            QApplication::setActiveWindow(0);
+        }
     }
     // else { We don't touch the active window unless we were explicitly activated or deactivated }
 }
@@ -1291,6 +1339,10 @@ void QSymbianControl::setFocusSafely(bool focus)
     // focus in Symbian. If this is not executed, the control which happens to be on
     // the top of the stack may randomly be assigned focus by Symbian, for example
     // when creating new windows (specifically in CCoeAppUi::HandleStackChanged()).
+
+    // Close any popups.
+    CEikonEnv::Static()->EikAppUi()->StopDisplayingMenuBar();
+
     if (focus) {
         S60->appUi()->RemoveFromStack(this);
         // Symbian doesn't automatically remove focus from the last focused control, so we need to
@@ -1309,6 +1361,11 @@ void QSymbianControl::setFocusSafely(bool focus)
             lastFocusedControl = 0;
         this->SetFocus(false);
     }
+}
+
+bool QSymbianControl::isControlActive()
+{
+    return IsActivated() ? true : false;
 }
 
 /*!
@@ -1475,6 +1532,8 @@ void qt_init(QApplicationPrivate * /* priv */, int)
             S60->avkonComponentsSupportTransparency = (value==1) ? true : false;
         }
     }
+    delete repository;
+    repository = 0;
 #endif
 
 #ifdef QT_KEYPAD_NAVIGATION
@@ -1920,35 +1979,10 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
             if (callSymbianEventFilters(symbianEvent))
                 return 1;
             const TWsVisibilityChangedEvent *visChangedEvent = event->VisibilityChanged();
-            QWidget *w = QWidgetPrivate::mapper->value(control);
-            QWidget *const window = w->window();
-            if (!window->d_func()->maybeTopData())
-                break;
-            QRefCountedWidgetBackingStore &backingStore = window->d_func()->maybeTopData()->backingStore;
-            if (visChangedEvent->iFlags & TWsVisibilityChangedEvent::ENotVisible) {
-#ifdef  SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
-                S60->wsSession().SendEffectCommand(ETfxCmdDeallocateLayer);
-#endif
-                // Decrement backing store reference count
-                backingStore.deref();
-                // In order to ensure that any resources used by the window surface
-                // are immediately freed, we flush the WSERV command buffer.
-                S60->wsSession().Flush();
-            } else if (visChangedEvent->iFlags & TWsVisibilityChangedEvent::EPartiallyVisible) {
-                if (backingStore.data()) {
-                    // Increment backing store reference count
-                    backingStore.ref();
-                } else {
-#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
-                    S60->wsSession().SendEffectCommand(ETfxCmdRestoreLayer);
-#endif
-                    // Create backing store with an initial reference count of 1
-                    backingStore.create(window);
-                    backingStore.ref();
-                    w->d_func()->invalidateBuffer(w->rect());
-                    w->repaint();
-                }
-            }
+            if (visChangedEvent->iFlags & TWsVisibilityChangedEvent::ENotVisible)
+                S60->controlVisibilityChanged(control, false);
+            else if (visChangedEvent->iFlags & TWsVisibilityChangedEvent::EPartiallyVisible)
+                S60->controlVisibilityChanged(control, true);
             return 1;
         }
         break;

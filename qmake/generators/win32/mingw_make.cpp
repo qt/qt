@@ -191,10 +191,7 @@ void createArObjectScriptFile(const QString &fileName, const QString &target, co
         QTextStream t(&file);
         t << "CREATE " << target << endl;
         for (QStringList::ConstIterator it = objList.constBegin(); it != objList.constEnd(); ++it) {
-            if (QDir::isRelativePath(*it))
-		t << "ADDMOD " << *it << endl;
-	    else
-		t << *it << endl;
+            t << "ADDMOD " << *it << endl;
         }
         t << "SAVE" << endl;
 	t.flush();

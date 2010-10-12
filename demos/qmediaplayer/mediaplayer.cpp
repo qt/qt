@@ -716,7 +716,7 @@ void MediaPlayer::openFile()
 
 void MediaPlayer::bufferStatus(int percent)
 {
-    if (percent == 0 || percent == 100)
+    if (percent == 100)
         progressLabel->setText(QString());
     else {
         QString str = QString::fromLatin1("(%1%)").arg(percent);

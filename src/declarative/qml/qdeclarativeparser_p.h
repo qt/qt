@@ -183,10 +183,9 @@ namespace QDeclarativeParser
             };
             Q_DECLARE_FLAGS(Pragmas, Pragma)
 
-            QStringList codes;
-            QStringList files;
-            QList<int> lineNumbers;
-            QList<Pragmas> pragmas;
+            QString code;
+            QString file;
+            Pragmas pragmas;
         };
 
         // The bytes to cast instances by to get to the QDeclarativeParserStatus 

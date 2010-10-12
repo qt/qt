@@ -38,13 +38,19 @@
 **
 ****************************************************************************/
 
+//! [Quoting ModelView Tutorial]
+// main.cpp
 #include <QtGui/QApplication>
-#include "modelview.h"
+#include <QtGui/QTableView>
+#include "mymodel.h"
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    ModelView w;
-    w.show();
+    QTableView tableView;
+    MyModel myModel(0);
+    tableView.setModel( &myModel );
+    tableView.show();
     return a.exec();
 }
+//! [Quoting ModelView Tutorial]

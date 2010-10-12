@@ -49,6 +49,7 @@
 #include <qtimer.h>
 #include <qwaitcondition.h>
 #include <qdebug.h>
+#include <qmetaobject.h>
 
 #ifdef Q_OS_UNIX
 #include <pthread.h>
@@ -103,6 +104,8 @@ private slots:
     void adoptedThreadExec();
     void adoptedThreadFinished();
     void adoptMultipleThreads();
+
+    void QTBUG13810_exitAndStart();
 
     void stressTest();
 };
@@ -932,6 +935,44 @@ void tst_QThread::stressTest()
         t.start();
         t.wait(one_minute);
     }
+}
+
+class Syncronizer : public QObject
+{ Q_OBJECT
+public slots:
+    void setProp(int p) {
+        if(m_prop != p) {
+            m_prop = p;
+            emit propChanged(p);
+        }
+    }
+signals:
+    void propChanged(int);
+public:
+    Syncronizer() : m_prop(42) {}
+    int m_prop;
+};
+
+void tst_QThread::QTBUG13810_exitAndStart()
+{
+    QThread thread;
+    thread.exit(555); //should do nothing
+
+    thread.start();
+
+    //test that the thread is running by executing queued connected signal there
+    Syncronizer sync1;
+    sync1.moveToThread(&thread);
+    Syncronizer sync2;
+    sync2.moveToThread(&thread);
+    connect(&sync2, SIGNAL(propChanged(int)), &sync1, SLOT(setProp(int)), Qt::QueuedConnection);
+    connect(&sync1, SIGNAL(propChanged(int)), &thread, SLOT(quit()), Qt::QueuedConnection);
+    QMetaObject::invokeMethod(&sync2, "setProp", Qt::QueuedConnection , Q_ARG(int, 89));
+    QTest::qWait(50);
+    while(!thread.wait(10))
+        QTest::qWait(10);
+    QCOMPARE(sync2.m_prop, 89);
+    QCOMPARE(sync1.m_prop, 89);
 }
 
 

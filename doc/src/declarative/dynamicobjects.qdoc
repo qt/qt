@@ -27,7 +27,7 @@
 
 /*!
 \page qdeclarativedynamicobjects.html
-\title Dynamic Object Management
+\title Dynamic Object Management in QML
 
 QML provides a number of ways to dynamically create and manage QML objects. 
 The \l{Loader}, \l{Repeater}, \l{ListView}, \l{GridView} and \l{PathView} elements

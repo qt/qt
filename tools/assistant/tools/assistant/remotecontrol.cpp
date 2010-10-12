@@ -58,6 +58,7 @@
 
 #include <QtHelp/QHelpEngine>
 #include <QtHelp/QHelpIndexWidget>
+#include <QtHelp/QHelpSearchQueryWidget>
 
 #ifdef Q_OS_WIN
 #   include "remotecontrol_win.h"
@@ -260,8 +261,25 @@ void RemoteControl::handleActivateKeywordCommand(const QString &arg)
         m_activateKeyword = arg;
     } else {
         m_mainWindow->setIndexString(arg);
-        if (!arg.isEmpty())
-            helpEngine.indexWidget()->activateCurrentItem();
+        if (!arg.isEmpty()) {
+            if (!helpEngine.indexWidget()->currentIndex().isValid()
+                && helpEngine.fullTextSearchFallbackEnabled()) {
+                if (QHelpSearchEngine *se = helpEngine.searchEngine()) {
+                    m_mainWindow->setSearchVisible(true);
+                    if (QHelpSearchQueryWidget *w = se->queryWidget()) {
+                        w->collapseExtendedSearch();
+                        QList<QHelpSearchQuery> queryList;
+                        queryList << QHelpSearchQuery(QHelpSearchQuery::DEFAULT,
+                            QStringList(arg));
+                        w->setQuery(queryList);
+                        se->search(queryList);
+                    }
+                }
+            } else {
+                m_mainWindow->setIndexVisible(true);
+                helpEngine.indexWidget()->activateCurrentItem();
+            }
+        }
     }
 }
 

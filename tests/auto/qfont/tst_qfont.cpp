@@ -76,6 +76,7 @@ private slots:
     void italicOblique();
     void insertAndRemoveSubstitutions();
     void serializeSpacing();
+    void lastResortFont();
 };
 
 // Testing get/set functions
@@ -591,6 +592,17 @@ void tst_QFont::serializeSpacing()
     QCOMPARE(font3.letterSpacing(), 105.);
     QCOMPARE(font3.letterSpacingType(), QFont::AbsoluteSpacing);
     QCOMPARE(font3.wordSpacing(), 50.);
+}
+
+void tst_QFont::lastResortFont()
+{
+#ifdef Q_WS_QWS
+    QSKIP("QFont::lastResortFont() may abort with qFatal() on QWS", SkipAll);
+    // ...if absolutely no font is found. Just as ducumented for QFont::lastResortFont().
+    // This happens on our CI machines which run QWS autotests.
+#endif
+    QFont font;
+    QVERIFY(!font.lastResortFont().isEmpty());
 }
 
 QTEST_MAIN(tst_QFont)

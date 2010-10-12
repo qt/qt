@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -37,7 +37,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-import Qt 4.7
+import QtQuick 1.0
 
 Item {
     property alias mode: image.fillMode
@@ -48,7 +48,7 @@ Item {
     Image {
         id: image
         width: parent.width; height: parent.height - captionItem.height
-        source: "face-smile.png"
+        source: "qt-logo.png"
         clip: true      // only makes a difference if mode is PreserveAspectCrop
         smooth: true
     }

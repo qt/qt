@@ -89,11 +89,7 @@ public:
         OperationNotSupportedError,
         InvalidConfigurationError
     };
-#ifndef QT_MOBILITY_BEARER
-    QNetworkSession(const QNetworkConfiguration& connConfig, QObject* parent =0);
-#else
 	explicit QNetworkSession(const QNetworkConfiguration& connConfig, QObject* parent =0);
-#endif
     virtual ~QNetworkSession();
 
     bool isOpen() const;

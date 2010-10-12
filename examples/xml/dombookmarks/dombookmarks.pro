@@ -14,7 +14,7 @@ INSTALLS += target sources
 symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 
 wince*: {
-     addFiles.sources = frank.xbel jennifer.xbel
+     addFiles.files = frank.xbel jennifer.xbel
      addFiles.path = "\\My Documents"
      DEPLOYMENT += addFiles
 }

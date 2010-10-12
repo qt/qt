@@ -83,6 +83,9 @@ public slots:
     void previousPage();
     void previousPageWithSwitcher();
 
+    void closePage(HelpViewer *page);
+    void setCurrentPage(HelpViewer *page);
+
 private slots:
     void setCurrentPage(const QModelIndex &index);
     void closePage(const QModelIndex &index);

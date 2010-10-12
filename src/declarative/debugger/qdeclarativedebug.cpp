@@ -55,10 +55,12 @@ public:
     QDeclarativeEngineDebugClient(QDeclarativeDebugConnection *client, QDeclarativeEngineDebugPrivate *p);
 
 protected:
+    virtual void statusChanged(Status status);
     virtual void messageReceived(const QByteArray &);
 
 private:
     QDeclarativeEngineDebugPrivate *priv;
+    friend class QDeclarativeEngineDebugPrivate;
 };
 
 class QDeclarativeEngineDebugPrivate : public QObjectPrivate
@@ -66,7 +68,9 @@ class QDeclarativeEngineDebugPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QDeclarativeEngineDebug)
 public:
     QDeclarativeEngineDebugPrivate(QDeclarativeDebugConnection *);
+    ~QDeclarativeEngineDebugPrivate();
 
+    void statusChanged(QDeclarativeEngineDebug::Status status);
     void message(const QByteArray &);
 
     QDeclarativeEngineDebugClient *client;
@@ -93,17 +97,29 @@ QDeclarativeEngineDebugClient::QDeclarativeEngineDebugClient(QDeclarativeDebugCo
                                            QDeclarativeEngineDebugPrivate *p)
 : QDeclarativeDebugClient(QLatin1String("QDeclarativeEngine"), client), priv(p)
 {
-    setEnabled(true);
+}
+
+void QDeclarativeEngineDebugClient::statusChanged(Status status)
+{
+    if (priv)
+        priv->statusChanged(static_cast<QDeclarativeEngineDebug::Status>(status));
 }
 
 void QDeclarativeEngineDebugClient::messageReceived(const QByteArray &data)
 {
-    priv->message(data);
+    if (priv)
+        priv->message(data);
 }
 
 QDeclarativeEngineDebugPrivate::QDeclarativeEngineDebugPrivate(QDeclarativeDebugConnection *c)
 : client(new QDeclarativeEngineDebugClient(c, this)), nextId(0)
 {
+}
+
+QDeclarativeEngineDebugPrivate::~QDeclarativeEngineDebugPrivate()
+{
+    if (client)
+        client->priv = 0;
 }
 
 int QDeclarativeEngineDebugPrivate::getId()
@@ -228,6 +244,11 @@ void QDeclarativeEngineDebugPrivate::decode(QDataStream &ds, QDeclarativeDebugCo
     }
 }
 
+void QDeclarativeEngineDebugPrivate::statusChanged(QDeclarativeEngineDebug::Status status)
+{
+    emit q_func()->statusChanged(status);
+}
+
 void QDeclarativeEngineDebugPrivate::message(const QByteArray &data)
 {
     QDataStream ds(data);
@@ -340,6 +361,8 @@ void QDeclarativeEngineDebugPrivate::message(const QByteArray &data)
         if (!watch)
             return;
         emit watch->valueChanged(name, value);
+    } else if (type == "OBJECT_CREATED") {
+        emit q_func()->newObjects();
     }
 }
 
@@ -348,12 +371,19 @@ QDeclarativeEngineDebug::QDeclarativeEngineDebug(QDeclarativeDebugConnection *cl
 {
 }
 
+QDeclarativeEngineDebug::Status QDeclarativeEngineDebug::status() const
+{
+    Q_D(const QDeclarativeEngineDebug);
+
+    return static_cast<QDeclarativeEngineDebug::Status>(d->client->status());
+}
+
 QDeclarativeDebugPropertyWatch *QDeclarativeEngineDebug::addWatch(const QDeclarativeDebugPropertyReference &property, QObject *parent)
 {
     Q_D(QDeclarativeEngineDebug);
 
     QDeclarativeDebugPropertyWatch *watch = new QDeclarativeDebugPropertyWatch(parent);
-    if (d->client->isConnected()) {
+    if (d->client->status() == QDeclarativeDebugClient::Enabled) {
         int queryId = d->getId();
         watch->m_queryId = queryId;
         watch->m_client = this;
@@ -382,7 +412,7 @@ QDeclarativeDebugObjectExpressionWatch *QDeclarativeEngineDebug::addWatch(const 
 {
     Q_D(QDeclarativeEngineDebug);
     QDeclarativeDebugObjectExpressionWatch *watch = new QDeclarativeDebugObjectExpressionWatch(parent);
-    if (d->client->isConnected()) {
+    if (d->client->status() == QDeclarativeDebugClient::Enabled) {
         int queryId = d->getId();
         watch->m_queryId = queryId;
         watch->m_client = this;
@@ -405,7 +435,7 @@ QDeclarativeDebugWatch *QDeclarativeEngineDebug::addWatch(const QDeclarativeDebu
     Q_D(QDeclarativeEngineDebug);
 
     QDeclarativeDebugWatch *watch = new QDeclarativeDebugWatch(parent);
-    if (d->client->isConnected()) {
+    if (d->client->status() == QDeclarativeDebugClient::Enabled) {
         int queryId = d->getId();
         watch->m_queryId = queryId;
         watch->m_client = this;
@@ -441,7 +471,7 @@ void QDeclarativeEngineDebug::removeWatch(QDeclarativeDebugWatch *watch)
     
     d->watched.remove(watch->queryId());
 
-    if (d->client && d->client->isConnected()) {
+    if (d->client && d->client->status() == QDeclarativeDebugClient::Enabled) {
         QByteArray message;
         QDataStream ds(&message, QIODevice::WriteOnly);
         ds << QByteArray("NO_WATCH") << watch->queryId();
@@ -454,7 +484,7 @@ QDeclarativeDebugEnginesQuery *QDeclarativeEngineDebug::queryAvailableEngines(QO
     Q_D(QDeclarativeEngineDebug);
 
     QDeclarativeDebugEnginesQuery *query = new QDeclarativeDebugEnginesQuery(parent);
-    if (d->client->isConnected()) {
+    if (d->client->status() == QDeclarativeDebugClient::Enabled) {
         query->m_client = this;
         int queryId = d->getId();
         query->m_queryId = queryId;
@@ -476,7 +506,7 @@ QDeclarativeDebugRootContextQuery *QDeclarativeEngineDebug::queryRootContexts(co
     Q_D(QDeclarativeEngineDebug);
 
     QDeclarativeDebugRootContextQuery *query = new QDeclarativeDebugRootContextQuery(parent);
-    if (d->client->isConnected() && engine.debugId() != -1) {
+    if (d->client->status() == QDeclarativeDebugClient::Enabled && engine.debugId() != -1) {
         query->m_client = this;
         int queryId = d->getId();
         query->m_queryId = queryId;
@@ -498,7 +528,7 @@ QDeclarativeDebugObjectQuery *QDeclarativeEngineDebug::queryObject(const QDeclar
     Q_D(QDeclarativeEngineDebug);
 
     QDeclarativeDebugObjectQuery *query = new QDeclarativeDebugObjectQuery(parent);
-    if (d->client->isConnected() && object.debugId() != -1) {
+    if (d->client->status() == QDeclarativeDebugClient::Enabled && object.debugId() != -1) {
         query->m_client = this;
         int queryId = d->getId();
         query->m_queryId = queryId;
@@ -507,7 +537,7 @@ QDeclarativeDebugObjectQuery *QDeclarativeEngineDebug::queryObject(const QDeclar
         QByteArray message;
         QDataStream ds(&message, QIODevice::WriteOnly);
         ds << QByteArray("FETCH_OBJECT") << queryId << object.debugId() 
-           << false;
+           << false << true;
         d->client->sendMessage(message);
     } else {
         query->m_state = QDeclarativeDebugQuery::Error;
@@ -521,7 +551,7 @@ QDeclarativeDebugObjectQuery *QDeclarativeEngineDebug::queryObjectRecursive(cons
     Q_D(QDeclarativeEngineDebug);
 
     QDeclarativeDebugObjectQuery *query = new QDeclarativeDebugObjectQuery(parent);
-    if (d->client->isConnected() && object.debugId() != -1) {
+    if (d->client->status() == QDeclarativeDebugClient::Enabled && object.debugId() != -1) {
         query->m_client = this;
         int queryId = d->getId();
         query->m_queryId = queryId;
@@ -530,7 +560,7 @@ QDeclarativeDebugObjectQuery *QDeclarativeEngineDebug::queryObjectRecursive(cons
         QByteArray message;
         QDataStream ds(&message, QIODevice::WriteOnly);
         ds << QByteArray("FETCH_OBJECT") << queryId << object.debugId() 
-           << true;
+           << true << true;
         d->client->sendMessage(message);
     } else {
         query->m_state = QDeclarativeDebugQuery::Error;
@@ -544,7 +574,7 @@ QDeclarativeDebugExpressionQuery *QDeclarativeEngineDebug::queryExpressionResult
     Q_D(QDeclarativeEngineDebug);
 
     QDeclarativeDebugExpressionQuery *query = new QDeclarativeDebugExpressionQuery(parent);
-    if (d->client->isConnected() && objectDebugId != -1) {
+    if (d->client->status() == QDeclarativeDebugClient::Enabled && objectDebugId != -1) {
         query->m_client = this;
         query->m_expr = expr;
         int queryId = d->getId();
@@ -568,7 +598,7 @@ bool QDeclarativeEngineDebug::setBindingForObject(int objectDebugId, const QStri
 {
     Q_D(QDeclarativeEngineDebug);
 
-    if (d->client->isConnected() && objectDebugId != -1) {
+    if (d->client->status() == QDeclarativeDebugClient::Enabled && objectDebugId != -1) {
         QByteArray message;
         QDataStream ds(&message, QIODevice::WriteOnly);
         ds << QByteArray("SET_BINDING") << objectDebugId << propertyName << bindingExpression << isLiteralValue;
@@ -583,7 +613,7 @@ bool QDeclarativeEngineDebug::resetBindingForObject(int objectDebugId, const QSt
 {
     Q_D(QDeclarativeEngineDebug);
 
-    if (d->client->isConnected() && objectDebugId != -1) {
+    if (d->client->status() == QDeclarativeDebugClient::Enabled && objectDebugId != -1) {
         QByteArray message;
         QDataStream ds(&message, QIODevice::WriteOnly);
         ds << QByteArray("RESET_BINDING") << objectDebugId << propertyName;
@@ -599,7 +629,7 @@ bool QDeclarativeEngineDebug::setMethodBody(int objectDebugId, const QString &me
 {
     Q_D(QDeclarativeEngineDebug);
 
-    if (d->client->isConnected() && objectDebugId != -1) {
+    if (d->client->status() == QDeclarativeDebugClient::Enabled && objectDebugId != -1) {
         QByteArray message;
         QDataStream ds(&message, QIODevice::WriteOnly);
         ds << QByteArray("SET_METHOD_BODY") << objectDebugId << methodName << methodBody;

@@ -1442,10 +1442,8 @@
     \endlist
 
     \note If you want a 3rd party library to be included in your
-    application bundle, then you must add an excplicit lib entry for
-    that library to your application's .pro file.  Otherwise, the
-    \c macdeployqt tool will not copy the 3rd party .dylib into the
-    bundle.
+    application bundle, then you must copy the library into the
+    bundle manually, after the bundle is created.
 
     \c macdeployqt supports the following options:
     \list

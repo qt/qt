@@ -1633,6 +1633,12 @@ QString QIODevice::errorString() const
     This function is called by QIODevice. Reimplement this function
     when creating a subclass of QIODevice.
 
+    When reimplementing this function it is important that this function
+    reads all the required data before returning. This is required in order
+    for QDataStream to be able to operate on the class. QDataStream assumes
+    all the requested information was read and therefore does not retry reading
+    if there was a problem.
+
     \sa read() readLine() writeData()
 */
 
@@ -1644,6 +1650,12 @@ QString QIODevice::errorString() const
 
     This function is called by QIODevice. Reimplement this function
     when creating a subclass of QIODevice.
+
+    When reimplementing this function it is important that this function
+    writes all the data available before returning. This is required in order
+    for QDataStream to be able to operate on the class. QDataStream assumes
+    all the information was written and therefore does not retry writing if
+    there was a problem.
 
     \sa read() write()
 */

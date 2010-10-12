@@ -48,7 +48,7 @@
 #include <private/qapplication_p.h>
 #include <private/qstylehelper_p.h>
 #include <private/qwidget_p.h>
-#include <qlibrary.h>
+#include <private/qsystemlibrary_p.h>
 #include <qpainter.h>
 #include <qpaintengine.h>
 #include <qwidget.h>
@@ -344,7 +344,7 @@ bool QWindowsXPStylePrivate::resolveSymbols()
     static bool tried = false;
     if (!tried) {
         tried = true;
-        QLibrary themeLib(QLatin1String("uxtheme"));
+        QSystemLibrary themeLib(QLatin1String("uxtheme"));
         pIsAppThemed = (PtrIsAppThemed)themeLib.resolve("IsAppThemed");
         if (pIsAppThemed) {
             pIsThemeActive          = (PtrIsThemeActive         )themeLib.resolve("IsThemeActive");
@@ -2154,7 +2154,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
                 p->setPen(menuitem->palette.text().color());
                 p->setBrush(Qt::NoBrush);
                 if (checked)
-                    p->drawRect(vIconRect.adjusted(-1, -2, 1, 1));
+                    p->drawRect(vIconRect.adjusted(-1, -1, 0, 0));
                 p->drawPixmap(vIconRect.topLeft(), pixmap);
 
             // draw checkmark -------------------------------------------------

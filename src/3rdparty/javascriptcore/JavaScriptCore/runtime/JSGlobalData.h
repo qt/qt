@@ -184,8 +184,6 @@ namespace JSC {
         
         UString cachedDateString;
         double cachedDateStringValue;
-        
-        WeakRandom weakRandom;
 
 #ifndef NDEBUG
         bool mainThreadOnly;

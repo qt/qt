@@ -305,50 +305,53 @@ void QScanThread::getUserConfigurations()
         SCDynamicStoreRef dynRef = SCDynamicStoreCreate(kCFAllocatorSystemDefault, (CFStringRef)@"Qt corewlan", nil, nil);
         NSDictionary * airportPlist = (NSDictionary *)SCDynamicStoreCopyValue(dynRef, (CFStringRef)[NSString stringWithFormat:@"Setup:/Network/Interface/%@/AirPort", nsInterfaceName]);
         CFRelease(dynRef);
+        if(airportPlist != nil) {
+            NSDictionary *prefNetDict = [airportPlist objectForKey:@"PreferredNetworks"];
 
-        NSDictionary *prefNetDict = [airportPlist objectForKey:@"PreferredNetworks"];
-
-        NSArray *thisSsidarray = [prefNetDict valueForKey:@"SSID_STR"];
-        for(NSString *ssidkey in thisSsidarray) {
-            QString thisSsid = qt_mac_NSStringToQString(ssidkey);
-            if(!userProfiles.contains(thisSsid)) {
-                QMap <QString,QString> map;
-                map.insert(thisSsid, qt_mac_NSStringToQString(nsInterfaceName));
-                userProfiles.insert(thisSsid, map);
+            NSArray *thisSsidarray = [prefNetDict valueForKey:@"SSID_STR"];
+            for(NSString *ssidkey in thisSsidarray) {
+                QString thisSsid = qt_mac_NSStringToQString(ssidkey);
+                if(!userProfiles.contains(thisSsid)) {
+                    QMap <QString,QString> map;
+                    map.insert(thisSsid, qt_mac_NSStringToQString(nsInterfaceName));
+                    userProfiles.insert(thisSsid, map);
+                }
             }
+            CFRelease(airportPlist);
         }
-        CFRelease(airportPlist);
 
         // 802.1X user profiles
         QString userProfilePath = QDir::homePath() + "/Library/Preferences/com.apple.eap.profiles.plist";
         NSDictionary* eapDict = [[[NSDictionary alloc] initWithContentsOfFile:qt_mac_QStringToNSString(userProfilePath)] autorelease];
-        NSString *profileStr= @"Profiles";
-        NSString *nameStr = @"UserDefinedName";
-        NSString *networkSsidStr = @"Wireless Network";
-        for (id profileKey in eapDict) {
-            if ([profileStr isEqualToString:profileKey]) {
-                NSDictionary *itemDict = [eapDict objectForKey:profileKey];
-                for (id itemKey in itemDict) {
+        if(eapDict != nil) {
+            NSString *profileStr= @"Profiles";
+            NSString *nameStr = @"UserDefinedName";
+            NSString *networkSsidStr = @"Wireless Network";
+            for (id profileKey in eapDict) {
+                if ([profileStr isEqualToString:profileKey]) {
+                    NSDictionary *itemDict = [eapDict objectForKey:profileKey];
+                    for (id itemKey in itemDict) {
 
-                    NSInteger dictSize = [itemKey count];
-                    id objects[dictSize];
-                    id keys[dictSize];
+                        NSInteger dictSize = [itemKey count];
+                        id objects[dictSize];
+                        id keys[dictSize];
 
-                    [itemKey getObjects:objects andKeys:keys];
-                    QString networkName;
-                    QString ssid;
-                    for(int i = 0; i < dictSize; i++) {
-                        if([nameStr isEqualToString:keys[i]]) {
-                            networkName = qt_mac_NSStringToQString(objects[i]);
-                        }
-                        if([networkSsidStr isEqualToString:keys[i]]) {
-                            ssid = qt_mac_NSStringToQString(objects[i]);
-                        }
-                        if(!userProfiles.contains(networkName)
-                            && !ssid.isEmpty()) {
-                            QMap<QString,QString> map;
-                            map.insert(ssid, qt_mac_NSStringToQString(nsInterfaceName));
-                            userProfiles.insert(networkName, map);
+                        [itemKey getObjects:objects andKeys:keys];
+                        QString networkName;
+                        QString ssid;
+                        for(int i = 0; i < dictSize; i++) {
+                            if([nameStr isEqualToString:keys[i]]) {
+                                networkName = qt_mac_NSStringToQString(objects[i]);
+                            }
+                            if([networkSsidStr isEqualToString:keys[i]]) {
+                                ssid = qt_mac_NSStringToQString(objects[i]);
+                            }
+                            if(!userProfiles.contains(networkName)
+                                && !ssid.isEmpty()) {
+                                QMap<QString,QString> map;
+                                map.insert(ssid, qt_mac_NSStringToQString(nsInterfaceName));
+                                userProfiles.insert(networkName, map);
+                            }
                         }
                     }
                 }
@@ -855,6 +858,8 @@ quint64 QCoreWlanEngine::startTime(const QString &id)
 
     NSString *filePath = @"/Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist";
     NSDictionary* plistDict = [[[NSDictionary alloc] initWithContentsOfFile:filePath] autorelease];
+    if(plistDict == nil)
+        return timestamp;
     NSString *input = @"KnownNetworks";
     NSString *timeStampStr = @"_timeStamp";
 
@@ -864,9 +869,13 @@ quint64 QCoreWlanEngine::startTime(const QString &id)
         if ([input isEqualToString:key]) {
 
             NSDictionary *knownNetworksDict = [plistDict objectForKey:key];
+            if(knownNetworksDict == nil)
+                return timestamp;
             for (id networkKey in knownNetworksDict) {
                 bool isFound = false;
                 NSDictionary *itemDict = [knownNetworksDict objectForKey:networkKey];
+                if(itemDict == nil)
+                    return timestamp;
                 NSInteger dictSize = [itemDict count];
                 id objects[dictSize];
                 id keys[dictSize];

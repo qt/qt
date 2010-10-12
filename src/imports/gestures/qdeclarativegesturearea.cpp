@@ -79,6 +79,8 @@ public:
 
 /*!
     \qmlclass GestureArea QDeclarativeGestureArea
+    \ingroup qml-basic-interaction-elements
+
     \brief The GestureArea item enables simple gesture handling.
     \inherits Item
 
@@ -90,7 +92,7 @@ public:
     \e {This element is only functional on devices with touch input.}
 
     \qml
-    import Qt.labs.gestures 0.1
+    import Qt.labs.gestures 1.0
 
     GestureArea {
         anchors.fill: parent

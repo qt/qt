@@ -119,6 +119,7 @@ QT_USE_NAMESPACE
 - (QString)removeExtensions:(const QString &)filter;
 - (void)createTextField;
 - (void)createPopUpButton:(const QString &)selectedFilter hideDetails:(BOOL)hideDetails;
+- (QStringList)findStrippedFilterWithVisualFilterName:(QString)name;
 - (void)createAccessory;
 
 @end
@@ -127,8 +128,6 @@ QT_USE_NAMESPACE
 
 - (id)initWithAcceptMode:(QT_PREPEND_NAMESPACE(QFileDialog::AcceptMode))acceptMode
     title:(const QString &)title
-    nameFilters:(const QStringList &)nameFilters
-    selectedNameFilter:(const QString &)selectedNameFilter
     hideNameFilterDetails:(bool)hideNameFilterDetails
     qDirFilter:(QT_PREPEND_NAMESPACE(QDir::Filters))qDirFilter
     fileOptions:(QT_PREPEND_NAMESPACE(QFileDialog::Options))fileOptions
@@ -158,8 +157,10 @@ QT_USE_NAMESPACE
     mPriv = priv;
     mLastFilterCheckPath = new QString;
     mQDirFilterEntryList = new QStringList;
-    mNameFilterDropDownList = new QStringList(nameFilters);
-    mSelectedNameFilter = new QStringList(qt_clean_filter_list(selectedNameFilter));
+    mNameFilterDropDownList = new QStringList(priv->nameFilters);
+    QString selectedVisualNameFilter = priv->qFileDialogUi->fileTypeCombo->currentText();
+    mSelectedNameFilter = new QStringList([self findStrippedFilterWithVisualFilterName:selectedVisualNameFilter]);
+
     QFileInfo sel(selectFile);
     if (sel.isDir()){
         mCurrentDir = [qt_mac_QStringToNSString(sel.absoluteFilePath()) retain];
@@ -168,8 +169,9 @@ QT_USE_NAMESPACE
         mCurrentDir = [qt_mac_QStringToNSString(sel.absolutePath()) retain];
         mCurrentSelection = new QString(sel.absoluteFilePath());
     }
+
     [mSavePanel setTitle:qt_mac_QStringToNSString(title)];
-    [self createPopUpButton:selectedNameFilter hideDetails:hideNameFilterDetails];
+    [self createPopUpButton:selectedVisualNameFilter hideDetails:hideNameFilterDetails];
     [self createTextField];
     [self createAccessory];
     [mSavePanel setAccessoryView:mNameFilterDropDownList->size() > 1 ? mAccessoryView : nil];
@@ -350,7 +352,7 @@ QT_USE_NAMESPACE
     // This mDelegate function is called when the _name_ filter changes.
     Q_UNUSED(sender);
     QString selection = mNameFilterDropDownList->value([mPopUpButton indexOfSelectedItem]);
-    *mSelectedNameFilter = QT_PREPEND_NAMESPACE(qt_clean_filter_list)(selection);
+    *mSelectedNameFilter = [self findStrippedFilterWithVisualFilterName:selection];
     [mSavePanel validateVisibleColumns];
     [self updateProperties];
     if (mPriv)
@@ -497,6 +499,15 @@ QT_USE_NAMESPACE
                 [mPopUpButton selectItemAtIndex:i];
         }
     }
+}
+
+- (QStringList) findStrippedFilterWithVisualFilterName:(QString)name
+{
+    for (int i=0; i<mNameFilterDropDownList->size(); ++i) {
+        if (mNameFilterDropDownList->at(i).startsWith(name))
+            return qt_clean_filter_list(mNameFilterDropDownList->at(i));
+    }
+    return QStringList();
 }
 
 - (void)createAccessory
@@ -1039,8 +1050,6 @@ void QFileDialogPrivate::createNSOpenSavePanelDelegate()
     QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = [[QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) alloc]
         initWithAcceptMode:acceptMode
         title:q->windowTitle()
-        nameFilters:q->nameFilters()
-        selectedNameFilter:q->selectedNameFilter()
         hideNameFilterDetails:q->testOption(QFileDialog::HideNameFilterDetails)
         qDirFilter:model->filter()
         fileOptions:opts

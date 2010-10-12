@@ -362,6 +362,7 @@ QModelIndex QSortFilterProxyModelPrivate::proxy_to_source(const QModelIndex &pro
         return QModelIndex(); // for now; we may want to be able to set a root index later
     if (proxy_index.model() != q_func()) {
         qWarning() << "QSortFilterProxyModel: index from wrong model passed to mapToSource";
+        Q_ASSERT(!"QSortFilterProxyModel: index from wrong model passed to mapToSource");
         return QModelIndex();
     }
     IndexMap::const_iterator it = index_to_iterator(proxy_index);
@@ -379,6 +380,7 @@ QModelIndex QSortFilterProxyModelPrivate::source_to_proxy(const QModelIndex &sou
         return QModelIndex(); // for now; we may want to be able to set a root index later
     if (source_index.model() != model) {
         qWarning() << "QSortFilterProxyModel: index from wrong model passed to mapFromSource";
+        Q_ASSERT(!"QSortFilterProxyModel: index from wrong model passed to mapFromSource");
         return QModelIndex();
     }
     QModelIndex source_parent = source_index.parent();
@@ -2229,6 +2231,14 @@ void QSortFilterProxyModel::setFilterFixedString(const QString &pattern)
     \property QSortFilterProxyModel::dynamicSortFilter
     \brief whether the proxy model is dynamically sorted and filtered
     whenever the contents of the source model change
+
+    Note that you should not update the source model through the proxy
+    model when dynamicSortFilter is true. For instance, if you set the
+    proxy model on a QComboBox, then using functions that update the
+    model, e.g., \l{QComboBox::}{addItem()}, will not work as
+    expected. An alternative is to set dynamicSortFilter to false and
+    call \l{QSortFilterProxyModel::}{sort()} after adding items to the
+    QComboBox.
 
     The default value is false.
 */

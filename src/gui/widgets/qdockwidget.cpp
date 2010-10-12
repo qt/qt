@@ -68,6 +68,9 @@ QT_BEGIN_NAMESPACE
 
 extern QString qt_setWindowTitle_helperHelper(const QString&, const QWidget*); // qwidget.cpp
 
+// qmainwindow.cpp
+extern QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *window);
+
 static inline bool hasFeature(const QDockWidgetPrivate *priv, QDockWidget::DockWidgetFeature feature)
 { return (priv->features & feature) == feature; }
 
@@ -690,7 +693,7 @@ void QDockWidgetPrivate::initDrag(const QPoint &pos, bool nca)
 
     QMainWindow *win = qobject_cast<QMainWindow*>(parent);
     Q_ASSERT(win != 0);
-    QMainWindowLayout *layout = qobject_cast<QMainWindowLayout*>(win->layout());
+    QMainWindowLayout *layout = qt_mainwindow_layout(win);
     Q_ASSERT(layout != 0);
     if (layout->pluggingWidget != 0) // the main window is animating a docking operation
         return;
@@ -711,8 +714,7 @@ void QDockWidgetPrivate::startDrag()
     if (state == 0 || state->dragging)
         return;
 
-    QMainWindowLayout *layout
-        = qobject_cast<QMainWindowLayout *>(q->parentWidget()->layout());
+    QMainWindowLayout *layout = qt_mainwindow_layout(qobject_cast<QMainWindow *>(q->parentWidget()));
     Q_ASSERT(layout != 0);
 
     state->widgetItem = layout->unplug(q);
@@ -739,8 +741,7 @@ void QDockWidgetPrivate::endDrag(bool abort)
     q->releaseMouse();
 
     if (state->dragging) {
-        QMainWindowLayout *mwLayout =
-            qobject_cast<QMainWindowLayout *>(q->parentWidget()->layout());
+        QMainWindowLayout *mwLayout = qt_mainwindow_layout(qobject_cast<QMainWindow *>(q->parentWidget()));
         Q_ASSERT(mwLayout != 0);
 
         if (abort || !mwLayout->plug(state->widgetItem)) {
@@ -780,8 +781,7 @@ bool QDockWidgetPrivate::isAnimating() const
     if (mainWin == 0)
         return false;
 
-    QMainWindowLayout *mainWinLayout
-        = qobject_cast<QMainWindowLayout*>(mainWin->layout());
+    QMainWindowLayout *mainWinLayout = qt_mainwindow_layout(mainWin);
     if (mainWinLayout == 0)
         return false;
 
@@ -847,9 +847,8 @@ bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
         return ret;
 
     QDockWidgetLayout *dwlayout
-        = qobject_cast<QDockWidgetLayout*>(layout);
-    QMainWindowLayout *mwlayout
-        = qobject_cast<QMainWindowLayout*>(q->parentWidget()->layout());
+        = qobject_cast<QDockWidgetLayout *>(layout);
+    QMainWindowLayout *mwlayout = qt_mainwindow_layout(qobject_cast<QMainWindow *>(q->parentWidget()));
     if (!dwlayout->nativeWindowDeco()) {
         if (!state->dragging
             && mwlayout->pluggingWidget == 0
@@ -943,8 +942,7 @@ void QDockWidgetPrivate::nonClientAreaMouseEvent(QMouseEvent *event)
             }
 #ifdef Q_OS_MAC
             else { // workaround for lack of mouse-grab on Mac
-                QMainWindowLayout *layout
-                    = qobject_cast<QMainWindowLayout *>(q->parentWidget()->layout());
+                QMainWindowLayout *layout = qt_mainwindow_layout(qobject_cast<QMainWindow *>(q->parentWidget()));
                 Q_ASSERT(layout != 0);
 
                 q->move(event->globalPos() - state->pressPos);
@@ -980,8 +978,7 @@ void QDockWidgetPrivate::moveEvent(QMoveEvent *event)
     if (state->ctrlDrag)
         return;
 
-    QMainWindowLayout *layout
-        = qobject_cast<QMainWindowLayout *>(q->parentWidget()->layout());
+    QMainWindowLayout *layout = qt_mainwindow_layout(qobject_cast<QMainWindow *>(q->parentWidget()));
     Q_ASSERT(layout != 0);
 
     QPoint globalMousePos = event->pos() + state->pressPos;
@@ -1009,7 +1006,7 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
     Q_Q(QDockWidget);
 
     if (!floating && parent) {
-        QMainWindowLayout *mwlayout = qobject_cast<QMainWindowLayout *>(q->parentWidget()->layout());
+        QMainWindowLayout *mwlayout = qt_mainwindow_layout(qobject_cast<QMainWindow *>(q->parentWidget()));
         if (mwlayout && mwlayout->dockWidgetArea(q) == Qt::NoDockWidgetArea)
             return; // this dockwidget can't be redocked
     }
@@ -1055,7 +1052,7 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
     if (floating != wasFloating) {
         emit q->topLevelChanged(floating);
         if (!floating && parent) {
-            QMainWindowLayout *mwlayout = qobject_cast<QMainWindowLayout *>(q->parentWidget()->layout());
+            QMainWindowLayout *mwlayout = qt_mainwindow_layout(qobject_cast<QMainWindow *>(q->parentWidget()));
             if (mwlayout)
                 emit q->dockLocationChanged(mwlayout->dockWidgetArea(q));
         }
@@ -1326,10 +1323,10 @@ void QDockWidget::changeEvent(QEvent *event)
 #ifndef QT_NO_TABBAR
         {
             QMainWindow *win = qobject_cast<QMainWindow*>(parentWidget());
-            if (QMainWindowLayout *winLayout =
-                (win ? qobject_cast<QMainWindowLayout*>(win->layout()) : 0))
+            if (QMainWindowLayout *winLayout = qt_mainwindow_layout(win)) {
                 if (QDockAreaLayoutInfo *info = winLayout->layoutState.dockAreaLayout.info(this))
                     info->updateTabBar();
+            }
         }
 #endif // QT_NO_TABBAR
         break;
@@ -1382,9 +1379,7 @@ bool QDockWidget::event(QEvent *event)
     Q_D(QDockWidget);
 
     QMainWindow *win = qobject_cast<QMainWindow*>(parentWidget());
-    QMainWindowLayout *layout = 0;
-    if (win != 0)
-        layout = qobject_cast<QMainWindowLayout*>(win->layout());
+    QMainWindowLayout *layout = qt_mainwindow_layout(win);
 
     switch (event->type()) {
 #ifndef QT_NO_ACTION

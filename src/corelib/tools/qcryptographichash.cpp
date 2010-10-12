@@ -147,7 +147,7 @@ void QCryptographicHash::addData(const char *data, int length)
 }
 
 /*!
-  /overload
+  \overload addData()
 */
 void QCryptographicHash::addData(const QByteArray &data)
 {

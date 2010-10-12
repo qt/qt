@@ -63,8 +63,12 @@ QtNetwork
 QtOpenGL
 --------
 
- - foo
-    * bar
+ - QGLShaderProgram
+    * [QTBUG-12478] Don't resolve GLSL extensions if no shaders.
+    * [QTBUG-12591] setUniformValue(QSize) was setting (w,w) not (w,h).
+    * [QTBUG-12862] Don't #define highp/mediump/lowp if the desktop OpenGL
+      implementation has the GL_ARB_ES2_compatibility extension.
+    * [QTBUG-12554] Wrong OpenGLVersionFlags on OpenGL 4.0 systems.
 
 QtScript
 --------

@@ -154,6 +154,7 @@ void QDeclarativeParticleMotion::destroy(QDeclarativeParticle &particle)
 
 /*!
     \qmlclass ParticleMotionLinear QDeclarativeParticleMotionLinear
+    \ingroup qml-particle-elements
     \since 4.7
     \brief The ParticleMotionLinear object moves particles linearly.
 
@@ -164,14 +165,6 @@ void QDeclarativeParticleMotion::destroy(QDeclarativeParticle &particle)
 
     It has no further properties.
 */
-
-/*!
-    \internal
-    \class QDeclarativeParticleMotionLinear
-    \ingroup group_effects
-    \brief The QDeclarativeParticleMotionLinear class moves the particles linearly.
-*/
-
 void QDeclarativeParticleMotionLinear::advance(QDeclarativeParticle &p, int interval)
 {
     p.x += interval * p.x_velocity;
@@ -180,6 +173,7 @@ void QDeclarativeParticleMotionLinear::advance(QDeclarativeParticle &p, int inte
 
 /*!
     \qmlclass ParticleMotionGravity QDeclarativeParticleMotionGravity
+    \ingroup qml-particle-elements
     \since 4.7
     \brief The ParticleMotionGravity object moves particles towards a point.
 
@@ -191,14 +185,6 @@ void QDeclarativeParticleMotionLinear::advance(QDeclarativeParticle &p, int inte
 
 
     \sa Particles
-*/
-
-/*!
-    \internal
-    \class QDeclarativeParticleMotionGravity
-    \ingroup group_effects
-    \brief The QDeclarativeParticleMotionGravity class moves the particles towards a point.
-
 */
 
 /*!
@@ -271,6 +257,7 @@ void QDeclarativeParticleMotionGravity::advance(QDeclarativeParticle &p, int int
 
 /*!
     \qmlclass ParticleMotionWander QDeclarativeParticleMotionWander
+    \ingroup qml-particle-elements
     \since 4.7
     \brief The ParticleMotionWander object moves particles in a somewhat random fashion.
 
@@ -305,16 +292,6 @@ Rectangle {
     \endqml
 
     \sa Particles
-*/
-
-/*!
-    \internal
-    \class QDeclarativeParticleMotionWander
-    \ingroup group_effects
-    \brief The QDeclarativeParticleMotionWander class moves particles in a somewhat random fashion.
-
-    The particles will continue roughly in the original direction, however will randomly
-    drift to each side.
 */
 
 /*!
@@ -634,6 +611,7 @@ void QDeclarativeParticlesPrivate::updateOpacity(QDeclarativeParticle &p, int ag
 
 /*!
     \qmlclass Particles QDeclarativeParticles
+    \ingroup qml-particle-elements
     \since 4.7
     \brief The Particles object generates and moves particles.
     \inherits Item
@@ -659,7 +637,7 @@ void QDeclarativeParticlesPrivate::updateOpacity(QDeclarativeParticle &p, int ag
     snow, the lower one has particles expelled up like a fountain.
 
     \qml
-import Qt 4.7
+import QtQuick 1.0
 import Qt.labs.particles 1.0
 
 Rectangle {
@@ -703,13 +681,6 @@ Rectangle {
 }
     \endqml
     \image particles.gif
-*/
-
-/*!
-    \internal
-    \class QDeclarativeParticles
-    \ingroup group_effects
-    \brief The QDeclarativeParticles class generates and moves particles.
 */
 
 QDeclarativeParticles::QDeclarativeParticles(QDeclarativeItem *parent)

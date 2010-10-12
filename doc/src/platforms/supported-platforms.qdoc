@@ -64,45 +64,44 @@
     \row    \o Linux (32 and 64-bit)
                                      \o gcc 4.2
     \row    \o Microsoft Windows XP
-                                     \o gcc 4.4 (MinGW) (32-bit), MSVC 2003, 2005 (32 and 64-bit)
+                                     \o gcc 4.4 (MinGW) (32-bit), MSVC 2005 (32 and 64-bit)
     \row    \o Microsoft Windows Vista
                                      \o MSVC 2005, 2008
     \row    \o Microsoft Windows Vista 64bit
                                      \o MSVC 2008
-    \row    \o Apple Mac OS X 10.5 "Leopard" x86_64 (Carbon, Cocoa 32 and 64bit)
+    \row    \o Microsoft Windows 7
+                                     \o MSVC 2008
+    \row    \o Apple Mac OS X 10.6 "Snow Leopard" 
+                                     \o As provided by Apple
+    \row    \o Apple Mac OS X 10.5 "Leopard" x86_64 (Cocoa 32 and 64bit)
                                      \o As provided by Apple
     \row    \o Embedded Linux QWS (ARM)
                                      \o gcc (\l{http://www.codesourcery.com/}{Codesourcery version)}
     \row    \o Windows CE 5.0 (ARMv4i, x86, MIPS)
                                      \o MSVC 2005 WinCE 5.0 Standard (x86, pocket, smart, mipsii)
-    \row    \o Symbian (Symbian/S60 3.1, 3.2 and 5.0)
+    \row    \o Symbian (Symbian/S60 5.0)
                                      \o RVCT 2.2 [build 686 or later], WINSCW 3.2.5 [build 482 or later], GCCE (for applications)
     \endtable
 
     \section1 Tier 2 Platforms
 
-    Tier 2 platforms are subjected to our unit test suite and other internal testing
-    tools prior to release of new product versions.  Qt users should note, however,
-    that errors may be present in released product versions for Tier 2 platforms and,
-    subject to resource availability, known errors in Tier 2 platforms may or may not
-    be corrected prior to new version releases.
+    Tier 2 platforms are subject to ad hoc and internal testing. However, Qt users
+	should note that errors may be present in released product versions for Tier 2
+	platforms and, subject to resource availability, known errors in Tier 2 platforms
+	may or may not be corrected prior to new version releases.
 
     \table
     \header \o Platform
                                      \o Compilers
-    \row    \o Windows XP, Vista
-                                     \o gcc 3.4.2 (MinGW)
     \row    \o Windows 7
-                                     \o MSVC 2008
-    \row    \o Apple Mac OS X 10.6 "Snow Leopard"
+                                     \o MSVC 2010
+    \row    \o Apple Mac OS X 10.4 "Tiger" (Carbon)
                                      \o As provided by Apple
-    \row    \o Apple Mac OS X 10.4 "Tiger"
+    \row    \o Apple Mac OS X 10.5 "Leopard" (Carbon)
                                      \o As provided by Apple
-    \row    \o HPUXi 11.11
-                                     \o aCC 3.57, gcc 3.4
     \row    \o HPUXi 11.23
                                      \o aCC 6.10
-    \row    \o Solaris 10 (UltraSparc, x86)
+    \row    \o Solaris 10 UltraSparc
                                      \o Sun Studio 12
     \row    \o AIX 6
                                      \o Power5 xlC 7
@@ -114,8 +113,14 @@
                                      \o gcc (\l{http://www.codesourcery.com/}{Codesourcery version)}
     \row    \o Embedded Linux X11 (ARM)
                                      \o gcc (\l{http://www.scratchbox.org/}{Scratchbox)}
+    \row    \o Windows CE 5.0 (ARMv4i, x86, MIPS)
+                                     \o MSVC 2005 WinCE 5.0 Standard (x86, pocket, smart, mipsii)
     \row    \o Windows CE 6.0 (ARMv4i, x86, MIPS)
                                      \o MSVC 2008 WinCE 6.0 Professional
+    \row    \o Maemo 5(Linux, ARM, X11)
+                                     \o gcc (\l{http://www.scratchbox.org/}{Scratchbox)}
+    \row    \o Symbian (Symbian/S60 3.1, 3.2)
+                                     \o RVCT 2.2 [build 686 or later], WINSCW 3.2.5 [build 482 or later], GCCE (for applications)
     \endtable
 
     \section1 Tier 3 Platforms (Not supported by Nokia)
@@ -142,20 +147,12 @@
     implied warranties of merchantability, fitness for a particular purpose, title and
     non-infringement with regard to the Licensed Software.
     
-    \section1 Planned Changes for Qt 4.7
+    \section1 Planned Changes for Qt 4.8
 
     The following changes to the list of supported platforms are at time of publishing
-    planned for Qt 4.7:
+    planned for Qt 4.8:
 
     \list
-    \o Upgrade Windows 7 to Tier 1
-    \o Upgrade Mac OS X 10.6 to Tier 1
-    \o Add support for Visual Studio 2010 (Tier 2)
-    \o Move support for Carbon implementation of Qt on Mac OS X from Tier 1 to Tier 2
-    \o Drop support for MinGW 3.4
-    \o Drop support for Visual Studio 2003
-    \o Drop support for HP-UX on PA-RISC
-    \o Drop support for Windows Mobile 5
-    \o Drop support for OpenGL ES Common Lite 1.0
+    \o Plans not yet released
     \endlist
 */

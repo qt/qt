@@ -40,16 +40,32 @@
 ****************************************************************************/
 
 #include "qfont.h"
+#include "qfont_p.h"
 #include <private/qt_s60_p.h>
 #include <private/qpixmap_s60_p.h>
 #include "qmutex.h"
 
 QT_BEGIN_NAMESPACE
 
-#if 1
 #ifdef QT_NO_FREETYPE
 Q_GLOBAL_STATIC(QMutex, lastResortFamilyMutex);
+extern QStringList qt_symbian_fontFamiliesOnFontServer(); // qfontdatabase_s60.cpp
+Q_GLOBAL_STATIC_WITH_INITIALIZER(QStringList, fontFamiliesOnFontServer, {
+    // We are only interested in the initial font families. No Application fonts.
+    // Therefore, we are allowed to cache the list.
+    x->append(qt_symbian_fontFamiliesOnFontServer());
+});
 #endif // QT_NO_FREETYPE
+
+QString QFont::lastResortFont() const
+{
+    // Symbian's font Api does not distinguish between font and family.
+    // Therefore we try to get a "Family" first, then fall back to "Sans".
+    static QString font = lastResortFamily();
+    if (font.isEmpty())
+        font = QLatin1String("Sans");
+    return font;
+}
 
 QString QFont::lastResortFamily() const
 {
@@ -70,7 +86,7 @@ QString QFont::lastResortFamily() const
         lock.relock();
     }
     return family;
-#else
+#else // QT_NO_FREETYPE
     // For the FreeType case we just hard code the face name, since otherwise on
     // East Asian systems we may get a name for a stroke based (non-ttf) font.
 
@@ -82,15 +98,24 @@ QString QFont::lastResortFamily() const
     return QLatin1String(isJapaneseOrChineseSystem?"Heisei Kaku Gothic S60":"Series 60 Sans");
 #endif // QT_NO_FREETYPE
 }
-#else // 0
-QString QFont::lastResortFamily() const
-{
-    return QLatin1String("Series 60 Sans");
-}
-#endif // 0
 
 QString QFont::defaultFamily() const
 {
+#ifdef QT_NO_FREETYPE
+    switch(d->request.styleHint) {
+        case QFont::SansSerif: {
+            static const char* const preferredSansSerif[] = {"Nokia Sans S60", "Series 60 Sans"};
+            for (int i = 0; i < sizeof preferredSansSerif / sizeof preferredSansSerif[0]; ++i) {
+                const QString sansSerif = QLatin1String(preferredSansSerif[i]);
+                if (fontFamiliesOnFontServer()->contains(sansSerif))
+                    return sansSerif;
+            }
+        }
+        // No break. Intentional fall through.
+        default:
+            return lastResortFamily();
+    }
+#endif // QT_NO_FREETYPE
     return lastResortFamily();
 }
 

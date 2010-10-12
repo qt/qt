@@ -213,6 +213,5 @@ void tst_QPen::stream()
     QCOMPARE(pen, cmp);
 }
 
-
 QTEST_APPLESS_MAIN(tst_QPen)
 #include "tst_qpen.moc"

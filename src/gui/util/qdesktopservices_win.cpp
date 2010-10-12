@@ -41,7 +41,7 @@
 
 #include <qsettings.h>
 #include <qdir.h>
-#include <qlibrary.h>
+#include <private/qsystemlibrary_p.h>
 #include <qurl.h>
 #include <qstringlist.h>
 #include <qprocess.h>
@@ -177,9 +177,9 @@ QString QDesktopServices::storageLocation(StandardLocation type)
     QString result;
 
 #ifndef Q_OS_WINCE
-        QLibrary library(QLatin1String("shell32"));
+        QSystemLibrary library(QLatin1String("shell32"));
 #else
-        QLibrary library(QLatin1String("coredll"));
+        QSystemLibrary library(QLatin1String("coredll"));
 #endif // Q_OS_WINCE
     typedef BOOL (WINAPI*GetSpecialFolderPath)(HWND, LPWSTR, int, BOOL);
     static GetSpecialFolderPath SHGetSpecialFolderPath =

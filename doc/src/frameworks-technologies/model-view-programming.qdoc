@@ -32,6 +32,7 @@
 
 /*!
     \page model-view-programming.html
+	\ingroup qt-basic-concepts
 
     \title Model/View Programming
     \brief A guide to Qt's extensible model/view architecture.

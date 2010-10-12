@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 import Qt.labs.particles 1.0
 
 Item { id:link
@@ -77,7 +77,12 @@ Item { id:link
                 id: actualImageRotation
                 origin.x: width/2; origin.y: height/2;
                 angle: rotation * 90
-                Behavior on angle { NumberAnimation { duration: spawned ? 200 : 0} }
+                Behavior on angle {
+                    RotationAnimation{
+                        direction: RotationAnimation.Shortest
+                        duration: spawned ? 200 : 0
+                    }
+                }
             }
         }
 
@@ -86,7 +91,6 @@ Item { id:link
         }
 
         opacity: 0
-        Behavior on opacity { NumberAnimation { duration: 200 } }
     }
 
 
@@ -114,4 +118,11 @@ Item { id:link
             PropertyChanges { target: img; opacity: 0 }
         }
     ]
+
+    transitions: [
+        Transition {
+            NumberAnimation { target: img; property: "opacity"; duration: 200 }
+        }
+    ]
+
 }

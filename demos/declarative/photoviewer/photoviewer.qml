@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 import "PhotoViewerCore"
 
 Rectangle {
@@ -79,6 +79,11 @@ Rectangle {
         Button {
             id: deleteButton; label: qsTr("Edit"); rotation: -2;
             onClicked: mainWindow.editMode = !mainWindow.editMode
+            anchors.horizontalCenter: parent.horizontalCenter
+        }
+        Button {
+            id: quitButton; label: qsTr("Quit"); rotation: -2;
+            onClicked: Qt.quit()
             anchors.horizontalCenter: parent.horizontalCenter
         }
     }

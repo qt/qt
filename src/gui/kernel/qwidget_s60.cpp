@@ -69,6 +69,7 @@ extern bool qt_nograb();
 
 QWidget *QWidgetPrivate::mouseGrabber = 0;
 QWidget *QWidgetPrivate::keyboardGrabber = 0;
+CEikButtonGroupContainer *QS60Data::cba = 0;
 
 static bool isEqual(const QList<QAction*>& a, const QList<QAction*>& b)
 {
@@ -368,7 +369,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
 
         // Symbian windows are always created in an inactive state
         // We perform this assignment for the case where the window is being re-created
-        // as aa result of a call to setParent_sys, on either this widget or one of its
+        // as a result of a call to setParent_sys, on either this widget or one of its
         // ancestors.
         extra->activated = 0;
 
@@ -414,7 +415,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
 
         // Symbian windows are always created in an inactive state
         // We perform this assignment for the case where the window is being re-created
-        // as aa result of a call to setParent_sys, on either this widget or one of its
+        // as a result of a call to setParent_sys, on either this widget or one of its
         // ancestors.
         extra->activated = 0;
 
@@ -486,44 +487,64 @@ void QWidgetPrivate::show_sys()
              activateSymbianWindow();
 
          QSymbianControl *id = static_cast<QSymbianControl *>(q->internalWinId());
+         const bool isFullscreen = q->windowState() & Qt::WindowFullScreen;
 
 #ifdef Q_WS_S60
         // Lazily initialize the S60 screen furniture when the first window is shown.
-        if (!QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes)
+        if (q->isWindow() && !QApplication::testAttribute(Qt::AA_S60DontConstructApplicationPanes)
                 && !S60->buttonGroupContainer() && !S60->statusPane()) {
-
-            bool isFullscreen = q->windowState() & Qt::WindowFullScreen;
 
             if (!q->testAttribute(Qt::WA_DontShowOnScreen)) {
 
                 // Create the status pane and CBA here
                 CEikAppUi *ui = static_cast<CEikAppUi *>(S60->appUi());
                 MEikAppUiFactory *factory = CEikonEnv::Static()->AppUiFactory();
-                TRAP_IGNORE(factory->ReadAppInfoResourceL(0, ui));
-                if (S60->buttonGroupContainer())
-                    S60->buttonGroupContainer()->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
+
+                QT_TRAP_THROWING(
+                    factory->CreateResourceIndependentFurnitureL(ui);
+
+                    TRect boundingRect = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+
+                    CEikButtonGroupContainer *cba = CEikButtonGroupContainer::NewL(CEikButtonGroupContainer::ECba,
+                        CEikButtonGroupContainer::EHorizontal,ui,R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
+
+                    CEikButtonGroupContainer *oldCba = CEikonEnv::Static()->AppUiFactory()->SwapButtonGroup(cba);
+                    Q_ASSERT(!oldCba);
+                    S60->setButtonGroupContainer(cba);
+
+                    CEikMenuBar *menuBar = new(ELeave) CEikMenuBar;
+                    menuBar->ConstructL(ui, 0, R_AVKON_MENUPANE_EMPTY);
+                    menuBar->SetMenuType(CEikMenuBar::EMenuOptions);
+                    S60->appUi()->AddToStackL(menuBar,ECoeStackPriorityMenu,ECoeStackFlagRefusesFocus);
+
+                    CEikMenuBar *oldMenu = CEikonEnv::Static()->AppUiFactory()->SwapMenuBar(menuBar);
+                    Q_ASSERT(!oldMenu);
+                )
 
                 if (S60->statusPane()) {
                     // Use QDesktopWidget as the status pane observer to proxy for the AppUi.
                     // Can't use AppUi directly because it privately inherits from MEikStatusPaneObserver.
                     QSymbianControl *desktopControl = static_cast<QSymbianControl *>(QApplication::desktop()->winId());
                     S60->statusPane()->SetObserver(desktopControl);
-
-                    // Hide the status pane if fullscreen OR
-                    // Fill client area if maximized OR
-                    // Put window below status pane unless the window has an explicit position.
                     if (isFullscreen) {
-                        S60->statusPane()->MakeVisible(false);
-                    } else if (q->windowState() & Qt::WindowMaximized) {
-                        TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
-                        id->SetExtent(r.iTl, r.Size());
-                    } else if (!q->testAttribute(Qt::WA_Moved)) {
-                        id->SetPosition(static_cast<CEikAppUi*>(S60->appUi())->ClientRect().iTl);
+                        const bool cbaVisible = S60->buttonGroupContainer() && S60->buttonGroupContainer()->IsVisible();
+                        S60->setStatusPaneAndButtonGroupVisibility(false, cbaVisible);
                     }
                 }
             }
         }
 #endif
+
+        // Fill client area if maximized OR
+        // Put window below status pane unless the window has an explicit position.
+        if (!isFullscreen) {
+            if (q->windowState() & Qt::WindowMaximized) {
+                TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+                id->SetExtent(r.iTl, r.Size());
+            } else if (!q->testAttribute(Qt::WA_Moved) && q->windowType() != Qt::Dialog) {
+                id->SetPosition(static_cast<CEikAppUi*>(S60->appUi())->ClientRect().iTl);
+            }
+        }
 
         id->MakeVisible(true);
 
@@ -688,6 +709,12 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     QSymbianControl *old_winid = static_cast<QSymbianControl *>(wasCreated ? data.winid : 0);
     if ((q->windowType() == Qt::Desktop))
         old_winid = 0;
+
+    // old_winid may not have received a 'not visible' visibility
+    // changed event before being destroyed; make sure that it is
+    // removed from the backing store's list of visible windows.
+    S60->controlVisibilityChanged(old_winid, false);
+
     setWinId(0);
 
     // hide and reparent our own window away. Otherwise we might get
@@ -952,7 +979,10 @@ void QWidgetPrivate::registerTouchWindow()
     Q_Q(QWidget);
     if (q->testAttribute(Qt::WA_WState_Created) && q->windowType() != Qt::Desktop) {
         RWindow *rwindow = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
-        rwindow->EnableAdvancedPointers();
+        QSymbianControl *window = static_cast<QSymbianControl *>(q->effectiveWinId());
+        //Enabling advanced pointer events for controls that already have active windows causes a panic.
+        if (!window->isControlActive())
+            rwindow->EnableAdvancedPointers();
     }
 #endif
 }
@@ -1226,7 +1256,8 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
         // At this point the backing store should already be destroyed
         // so we flush the command buffer to ensure that the freeing of
         // those resources and deleting the window can happen "atomically"
-        S60->wsSession().Flush();
+        if (qApp)
+            S60->wsSession().Flush();
     }
 }
 

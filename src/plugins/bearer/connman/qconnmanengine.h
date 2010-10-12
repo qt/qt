@@ -137,7 +137,8 @@ private:
     QMap<QString,QStringList> deviceMap; //tech path,  device path
     QMap<QString, QString> serviceNetworks; //service, network
 
-
+    QNetworkConfiguration::BearerType ofonoTechToBearerType(const QString &type);
+    bool isRoamingAllowed(const QString &context);
 protected:
     bool requiresPolling() const;
     QConnmanConnectThread *connThread;

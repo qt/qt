@@ -193,6 +193,7 @@ void macWindowToolbarShow(const QWidget *widget, bool show )
         }
     }
 #else
+    qt_widget_private(const_cast<QWidget *>(widget))->updateFrameStrut();
     ShowHideWindowToolbar(wnd, show, false);
 #endif
 }
@@ -1558,6 +1559,13 @@ void qt_cocoaStackChildWindowOnTopOfOtherChildren(QWidget *childWidget)
             d->setSubWindowStacking(true);
         }
     }
+}
+
+void qt_mac_display(QWidget *widget)
+{
+    NSView *theNSView = qt_mac_nativeview_for(widget);
+    [theNSView display];
+    return;
 }
 
 #endif // QT_MAC_USE_COCOA

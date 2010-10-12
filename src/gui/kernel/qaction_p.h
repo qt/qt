@@ -112,11 +112,11 @@ public:
     //for soft keys management
     uint forceEnabledInSoftkeys : 1;
     uint menuActionSoftkeys : 1;
-
-    QAction::MenuRole menuRole : 3;
-    QAction::SoftKeyRole softKeyRole : 2;
-    QAction::Priority priority : 14;
     int iconVisibleInMenu : 3;  // Only has values -1, 0, and 1
+
+    QAction::MenuRole menuRole;
+    QAction::SoftKeyRole softKeyRole;
+    QAction::Priority priority;
 
     QList<QWidget *> widgets;
 #ifndef QT_NO_GRAPHICSVIEW

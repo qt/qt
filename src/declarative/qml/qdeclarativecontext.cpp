@@ -85,7 +85,7 @@ QDeclarativeContextPrivate::QDeclarativeContextPrivate()
     context->setContextProperty("myModel", &modelData);
 
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.7\nListView { model: myModel }", QUrl());
+    component.setData("import QtQuick 1.0\nListView { model: myModel }", QUrl());
     component.create(context);
     \endcode
 
@@ -112,7 +112,7 @@ QDeclarativeContextPrivate::QDeclarativeContextPrivate()
     context->setContextObject(&myDataSet);
 
     QDeclarativeComponent component(&engine);
-    component.setData("import Qt 4.7\nListView { model: myModel }", QUrl());
+    component.setData("import QtQuick 1.0\nListView { model: myModel }", QUrl());
     component.create(context);
     \endcode
 
@@ -533,8 +533,21 @@ void QDeclarativeContextData::invalidate()
     parent = 0;
 }
 
-void QDeclarativeContextData::clearExpressions()
+void QDeclarativeContextData::clearContext()
 {
+    if (engine) {
+        while (componentAttached) {
+            QDeclarativeComponentAttached *a = componentAttached;
+            componentAttached = a->next;
+            if (componentAttached) componentAttached->prev = &componentAttached;
+
+            a->next = 0;
+            a->prev = 0;
+
+            emit a->destruction();
+        }
+    }
+
     QDeclarativeAbstractExpression *expression = expressions;
     while (expression) {
         QDeclarativeAbstractExpression *nextExpression = expression->m_nextExpression;
@@ -555,7 +568,7 @@ void QDeclarativeContextData::destroy()
 
     if (engine) invalidate();
 
-    clearExpressions();
+    clearContext();
 
     while (contextObjects) {
         QDeclarativeData *co = contextObjects;
@@ -647,14 +660,12 @@ void QDeclarativeContextData::addImportedScript(const QDeclarativeParser::Object
     if (!engine) 
         return;
 
-    Q_ASSERT(script.codes.count() == 1);
-
     QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(engine);
     QScriptEngine *scriptEngine = QDeclarativeEnginePrivate::getScriptEngine(engine);
 
-    const QString &code = script.codes.at(0);
-    const QString &url = script.files.at(0);
-    const QDeclarativeParser::Object::ScriptBlock::Pragmas &pragmas = script.pragmas.at(0);
+    const QString &code = script.code;
+    const QString &url = script.file;
+    const QDeclarativeParser::Object::ScriptBlock::Pragmas &pragmas = script.pragmas;
 
     Q_ASSERT(!url.isEmpty());
 

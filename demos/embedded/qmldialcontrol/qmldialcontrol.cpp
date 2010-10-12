@@ -42,6 +42,7 @@
 #include <QtCore/QFileInfo>
 #include <QtGui/QApplication>
 #include <QtDeclarative/QDeclarativeView>
+#include <QtDeclarative/QDeclarativeEngine>
 
 int main(int argc, char *argv[])
 {
@@ -51,6 +52,7 @@ int main(int argc, char *argv[])
     QDeclarativeView view;
     view.setSource(QUrl(mainQmlApp));
     view.setResizeMode(QDeclarativeView::SizeRootObjectToView);
+    QObject::connect(view.engine(), SIGNAL(quit()), &application, SLOT(quit()));
 
 #if defined(QT_KEYPAD_NAVIGATION)
     QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);

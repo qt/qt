@@ -73,6 +73,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 class QIODevice;
+class QAbstractAudioDeviceInfo;
 
 namespace QtMultimediaInternal
 {
@@ -101,6 +102,7 @@ public:
     QWaitCondition  threadFinished;
     QMutex          mutex;
     QTimer*         intervalTimer;
+    QAbstractAudioDeviceInfo *audioDeviceInfo;
 
     QAudio::Error    errorCode;
     QAudio::State    stateCode;

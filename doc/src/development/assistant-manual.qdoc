@@ -640,7 +640,12 @@
             QDesktopServices::DataLocation. The first form is useful for 
             collections that are used in a "mobile" way, e.g. carried around 
             on a USB stick.
-            
+        \row
+            \o \c{<enableFullTextSearchFallback>}
+            \o This tag describes the ability to fallback and use the full text
+            search if a keyword can't be found in the index. This functionality
+            can be used while remote controlling \QA. To make it available for
+            remote control set the tag value to \c{true}.
     \endtable
 
     In addition to those \QA specific tags, the tags for generating and registering

@@ -28,6 +28,7 @@
 /*!
     \page x11overlays.html
     \title How to Use X11 Overlays with Qt
+	\ingroup best-practices
 
     X11 overlays are a powerful mechanism for drawing
     annotations etc., on top of an image without destroying it, thus saving

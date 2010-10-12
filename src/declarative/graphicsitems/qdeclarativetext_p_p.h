@@ -55,6 +55,7 @@
 
 #include "qdeclarativeitem.h"
 #include "private/qdeclarativeitem_p.h"
+#include "private/qdeclarativetextlayout_p.h"
 
 #include <qdeclarative.h>
 
@@ -69,18 +70,7 @@ class QDeclarativeTextPrivate : public QDeclarativeItemPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeText)
 public:
-    QDeclarativeTextPrivate()
-      : color((QRgb)0), style(QDeclarativeText::Normal),
-        hAlign(QDeclarativeText::AlignLeft), vAlign(QDeclarativeText::AlignTop), elideMode(QDeclarativeText::ElideNone),
-        imgDirty(true), dirty(true), richText(false), singleline(false), cache(true), internalWidthUpdate(false), doc(0),
-        format(QDeclarativeText::AutoText), wrapMode(QDeclarativeText::NoWrap)
-    {
-#if defined(QML_NO_TEXT_CACHE)
-        cache = false;
-#endif
-        QGraphicsItemPrivate::acceptedMouseButtons = Qt::LeftButton;
-        QGraphicsItemPrivate::flags = QGraphicsItemPrivate::flags & ~QGraphicsItem::ItemHasNoContents;
-    }
+    QDeclarativeTextPrivate();
 
     ~QDeclarativeTextPrivate();
 
@@ -101,7 +91,7 @@ public:
     QPixmap wrappedTextImage(bool drawStyle);
     void drawWrappedText(QPainter *p, const QPointF &pos, bool drawStyle);
     QPixmap richTextImage(bool drawStyle);
-    QSize setupTextLayout(QTextLayout *layout);
+    QSize setupTextLayout();
 
     QString text;
     QFont font;
@@ -121,7 +111,7 @@ public:
     bool cache:1;
     bool internalWidthUpdate:1;
     QTextDocumentWithImageResources *doc;
-    QTextLayout layout;
+    QDeclarativeTextLayout layout;
     QSize cachedLayoutSize;
     QDeclarativeText::TextFormat format;
     QDeclarativeText::WrapMode wrapMode;

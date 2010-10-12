@@ -5,7 +5,7 @@ SOURCES += tst_qaudioinput.cpp
 QT = core multimedia
 
 wince* {
-    deploy.sources += 4.wav
+    deploy.files += 4.wav
     DEPLOYMENT = deploy
     DEFINES += SRCDIR=\\\"\\\"
     QT += gui

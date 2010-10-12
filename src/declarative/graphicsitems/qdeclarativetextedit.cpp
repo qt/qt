@@ -61,6 +61,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlclass TextEdit QDeclarativeTextEdit
+    \ingroup qml-basic-visual-elements
     \since 4.7
     \brief The TextEdit item displays multiple lines of editable formatted text.
     \inherits Item
@@ -102,23 +103,6 @@ TextEdit {
     \sa Text, TextInput, {declarative/text/textselection}{Text Selection example}
 */
 
-/*!
-    \internal
-    \class QDeclarativeTextEdit
-    \qmlclass TextEdit
-
-    \brief The QDeclarativeTextEdit class provides an editable formatted text item that you can add to a QDeclarativeView.
-
-    It can display both plain and rich text.
-
-    \image declarative-textedit.png
-
-    A QDeclarativeTextEdit object can be instantiated in QML using the tag \c &lt;TextEdit&gt;.
-*/
-
-/*!
-    Constructs a new QDeclarativeTextEdit.
-*/
 QDeclarativeTextEdit::QDeclarativeTextEdit(QDeclarativeItem *parent)
 : QDeclarativePaintedItem(*(new QDeclarativeTextEditPrivate), parent)
 {
@@ -571,7 +555,7 @@ QRectF QDeclarativeTextEdit::positionToRectangle(int pos) const
 }
 
 /*!
-    \qmlmethod int TextEdit::positionAt(x,y)
+    \qmlmethod int TextEdit::positionAt(int x, int y)
 
     Returns the text position closest to pixel position (\a x, \a y).
 
@@ -1034,7 +1018,7 @@ void QDeclarativeTextEdit::selectWord()
 }
 
 /*!
-    \qmlmethod void TextEdit::select(start,end)
+    \qmlmethod void TextEdit::select(int start, int end)
 
     Causes the text from \a start to \a end to be selected.
 
@@ -1438,7 +1422,7 @@ void QDeclarativeTextEditPrivate::updateDefaultTextOption()
     Only relevant on platforms, which provide virtual keyboards.
 
     \code
-        import Qt 4.7
+        import QtQuick 1.0
         TextEdit {
             id: textEdit
             text: "Hello world!"
@@ -1489,7 +1473,7 @@ void QDeclarativeTextEdit::openSoftwareInputPanel()
     Only relevant on platforms, which provide virtual keyboards.
 
     \code
-        import Qt 4.7
+        import QtQuick 1.0
         TextEdit {
             id: textEdit
             text: "Hello world!"

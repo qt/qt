@@ -52,6 +52,8 @@
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtCore/QTextCodec>
+#include <QtCore/QTranslator>
+#include <QtCore/QLibraryInfo>
 
 #include <iostream>
 
@@ -79,7 +81,7 @@ static void recursiveFileInfoList(const QDir &dir,
 
 static void printUsage()
 {
-    printOut(QObject::tr(
+    printOut(LU::tr(
         "Usage:\n"
         "    lupdate [options] [project-file]...\n"
         "    lupdate [options] [source-file|path|@lst-file]... -ts ts-files|@lst-file\n\n"
@@ -186,7 +188,7 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
         else if (options & AbsoluteLocations)
             tor.setLocationsType(Translator::AbsoluteLocations);
         if (options & Verbose)
-            printOut(QObject::tr("Updating '%1'...\n").arg(fn));
+            printOut(LU::tr("Updating '%1'...\n").arg(fn));
 
         UpdateOptions theseOptions = options;
         if (tor.locationsType() == Translator::NoLocations) // Could be set from file
@@ -201,7 +203,7 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
         }
         if (options & PluralOnly) {
             if (options & Verbose)
-                printOut(QObject::tr("Stripping non plural forms in '%1'...\n").arg(fn));
+                printOut(LU::tr("Stripping non plural forms in '%1'...\n").arg(fn));
             out.stripNonPluralForms();
         }
         if (options & NoObsolete)
@@ -359,12 +361,12 @@ static void processProjects(
         if (visitor.contains(QLatin1String("TRANSLATIONS"))) {
             if (parentTor) {
                 if (topLevel) {
-                    std::cerr << "lupdate warning: TS files from command line "
-                            "will override TRANSLATIONS in " << qPrintable(proFile) << ".\n";
+                    std::cerr << qPrintable(LU::tr("lupdate warning: TS files from command line "
+                                                   "will override TRANSLATIONS in %1.\n").arg(proFile));
                     goto noTrans;
                 } else if (nestComplain) {
-                    std::cerr << "lupdate warning: TS files from command line "
-                            "prevent recursing into " << qPrintable(proFile) << ".\n";
+                    std::cerr << qPrintable(LU::tr("lupdate warning: TS files from command line "
+                                                   "prevent recursing into %1.\n").arg(proFile));
                     continue;
                 }
             }
@@ -395,8 +397,8 @@ static void processProjects(
       noTrans:
         if (!parentTor) {
             if (topLevel)
-                std::cerr << "lupdate warning: no TS files specified. Only diagnostics "
-                        "will be produced for '" << qPrintable(proFile) << "'.\n";
+                std::cerr << qPrintable(LU::tr("lupdate warning: no TS files specified. Only diagnostics "
+                                               "will be produced for '%1'.\n").arg(proFile));
             Translator tor;
             processProject(nestComplain, pfi, visitor, options, codecForSource,
                            targetLanguage, sourceLanguage, &tor, fail);
@@ -410,6 +412,18 @@ static void processProjects(
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
+#ifndef Q_OS_WIN32
+    QTranslator translator;
+    QTranslator qtTranslator;
+    QString sysLocale = QLocale::system().name();
+    QString resourceDir = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    if (translator.load(QLatin1String("linguist_") + sysLocale, resourceDir)
+        && qtTranslator.load(QLatin1String("qt_") + sysLocale, resourceDir)) {
+        app.installTranslator(&translator);
+        app.installTranslator(&qtTranslator);
+    }
+#endif // Q_OS_WIN32
+
     m_defaultExtensions = QLatin1String("java,jui,ui,c,c++,cc,cpp,cxx,ch,h,h++,hh,hpp,hxx,js,qs,qml");
 
     QStringList args = app.arguments();
@@ -613,7 +627,7 @@ int main(int argc, char **argv)
                     proFiles << file;
                 } else if (fi.isDir()) {
                     if (options & Verbose)
-                        printOut(QObject::tr("Scanning directory '%1'...\n").arg(file));
+                        printOut(LU::tr("Scanning directory '%1'...\n").arg(file));
                     QDir dir = QDir(fi.filePath());
                     projectRoots.insert(dir.absolutePath() + QLatin1Char('/'));
                     if (extensionsNameFilters.isEmpty()) {

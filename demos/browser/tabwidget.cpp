@@ -67,12 +67,12 @@ TabBar::TabBar(QWidget *parent)
     connect(this, SIGNAL(customContextMenuRequested(QPoint)),
             this, SLOT(contextMenuRequested(QPoint)));
 
-    QString alt = QLatin1String("Alt+%1");
+    QString ctrl = QLatin1String("Ctrl+%1");
     for (int i = 1; i <= 10; ++i) {
         int key = i;
         if (key == 10)
             key = 0;
-        QShortcut *shortCut = new QShortcut(alt.arg(key), this);
+        QShortcut *shortCut = new QShortcut(ctrl.arg(key), this);
         m_tabShortcuts.append(shortCut);
         connect(shortCut, SIGNAL(activated()), this, SLOT(selectTabAction()));
     }

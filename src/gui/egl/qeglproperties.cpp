@@ -241,8 +241,10 @@ void QEglProperties::setRenderableType(QEgl::API api)
 // reductions in complexity are possible.
 bool QEglProperties::reduceConfiguration()
 {
+#ifdef EGL_SWAP_BEHAVIOR
     if (value(EGL_SWAP_BEHAVIOR) != EGL_DONT_CARE)
         removeValue(EGL_SWAP_BEHAVIOR);
+#endif
 
 #ifdef EGL_VG_ALPHA_FORMAT_PRE_BIT
     // For OpenVG, we sometimes try to create a surface using a pre-multiplied format. If we can't
@@ -258,7 +260,7 @@ bool QEglProperties::reduceConfiguration()
     // those with smaller (but faster) lower color depths. One
     // way around this is to set EGL_BUFFER_SIZE to 16, which
     // trumps the others. Of course, there may not be a 16-bit
-    // config avaliable, so it's the first restraint we remove.
+    // config available, so it's the first restraint we remove.
     if (value(EGL_BUFFER_SIZE) == 16) {
         removeValue(EGL_BUFFER_SIZE);
         return true;

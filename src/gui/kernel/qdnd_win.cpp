@@ -515,7 +515,7 @@ static inline Qt::MouseButtons keystate_to_mousebutton(DWORD grfKeyState)
 //---------------------------------------------------------------------
 //                    IDropSource Methods
 //---------------------------------------------------------------------
-STDMETHODIMP
+QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
 QOleDropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState)
 {
 #ifdef QDND_DEBUG
@@ -545,7 +545,7 @@ QOleDropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState)
     }
 }
 
-STDMETHODIMP
+QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
 QOleDropSource::GiveFeedback(DWORD dwEffect)
 {
     Qt::DropAction action = translateToQDragDropAction(dwEffect);
@@ -626,7 +626,7 @@ QOleDropTarget::Release(void)
 //                    IDropTarget Methods
 //---------------------------------------------------------------------
 
-STDMETHODIMP
+QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
 QOleDropTarget::DragEnter(LPDATAOBJECT pDataObj, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect)
 {
 #ifdef QDND_DEBUG
@@ -688,7 +688,7 @@ void QOleDropTarget::sendDragEnterEvent(QWidget *dragEnterWidget, DWORD grfKeySt
 
 }
 
-STDMETHODIMP
+QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
 QOleDropTarget::DragOver(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect)
 {
 #ifdef QDND_DEBUG
@@ -758,7 +758,7 @@ QOleDropTarget::DragOver(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect)
     return NOERROR;
 }
 
-STDMETHODIMP
+QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
 QOleDropTarget::DragLeave()
 {
 #ifdef QDND_DEBUG
@@ -785,7 +785,7 @@ QOleDropTarget::DragLeave()
 
 #define KEY_STATE_BUTTON_MASK (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)
 
-STDMETHODIMP
+QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
 QOleDropTarget::Drop(LPDATAOBJECT /*pDataObj*/, DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect)
 {
 #ifdef QDND_DEBUG

@@ -178,6 +178,8 @@ enum Property {
     OutlineBottomRightRadius,
     FontVariant,
     TextTransform,
+    QtListNumberPrefix,
+    QtListNumberSuffix,
     NumProperties
 };
 

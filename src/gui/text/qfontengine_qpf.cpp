@@ -578,8 +578,6 @@ bool QFontEngineQPF::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
     if (symbol) {
         for (int i = 0; i < len; ++i) {
             unsigned int uc = getChar(str, i, len);
-            if (mirrored)
-                uc = QChar::mirroredChar(uc);
             glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc);
             if(!glyphs->glyphs[glyph_pos] && uc < 0x100)
                 glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, uc + 0xf000);

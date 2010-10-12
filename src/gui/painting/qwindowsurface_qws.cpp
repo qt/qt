@@ -882,7 +882,11 @@ void QWSMemorySurface::beginPaint(const QRegion &rgn)
         const QVector<QRect> rects = rgn.rects();
         const QColor blank = Qt::transparent;
         for (QVector<QRect>::const_iterator it = rects.begin(); it != rects.end(); ++it) {
-            p.fillRect(*it, blank);
+            QRect r = *it;
+#ifdef Q_BACKINGSTORE_SUBSURFACES
+            r.translate(painterOffset());
+#endif
+            p.fillRect(r, blank);
         }
     }
     QWSWindowSurface::beginPaint(rgn);

@@ -1,0 +1,53 @@
+/****************************************************************************
+**
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in a
+** written agreement between you and Nokia.
+**
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of this
+** file.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page bughowto.html
+    \title 如何报告 Bug
+    \brief 关于报告 Qt 中 bug 方法的信息。
+
+    如果您认为您已经发现了 Qt 的一个 bug，我们非常高兴听到这个消息，因为在此之后我们可以修复它。
+
+    在报告 bug 之前，请检查 Qt 网站中的 \l{FAQs}{FAQ}、\l{Platform Notes}{平台备注}和 \l{Qt Bug Tracker}{Qt Bug 跟踪器}确认这个问题是否已知。
+
+    如果您还没有 \l{Qt Bug Tracker}{Qt Bug 跟踪器}的帐号，您要做的第一件事情就是注册一个。一旦您完成了这一步，您就可以提交并且跟踪您的 bug 报告，而且在您提交之后，公众就可以看到它们。
+
+    请在您的 bug 报告中包含以下信息：
+
+    \list 1
+    \o 您的编译器的名称和版本号
+    \o 您的操作系统的名称和版本号
+    \o 您所使用的 Qt 的版本号，以及它在被编译的时候所使用的配置选项
+    \o 关于如何重复这个问题的可靠并且清晰的描述
+    \endlist
+   
+    如果可能，请提供一个使用 QtTest 模块编写的测试程序，因为这样做可以加快我们重现您的这个问题的进程，并且可以让开发人员更有效率的确认这个问题。
+
+    另外，如果您的问题只是在运行时可见，请尽量创建一个可以运行并且显示这个问题的小测试程序。通常，您可以在众多 Qt 实例中选择一个进行少量修改就可以实现这一目的。
+
+    如果您已经实现了一个 bug 修复并且希望直接贡献这个修复，那么您需要通过\l{Public Qt Repository}{公共 Qt 代码仓库}来实现。
+*/

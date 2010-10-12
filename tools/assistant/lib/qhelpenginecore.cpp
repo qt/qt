@@ -706,7 +706,7 @@ QVariant QHelpEngineCore::metaData(const QString &documentationFileName,
 }
 
 /*!
-    Returns a description of the last error that occured.
+    Returns a description of the last error that occurred.
 */
 QString QHelpEngineCore::error() const
 {

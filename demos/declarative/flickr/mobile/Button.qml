@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 
 Item {
     id: container
@@ -66,7 +66,7 @@ Item {
     }
     Text {
         color: "white"
-        anchors.centerIn: buttonImage; font.bold: true
+        anchors.centerIn: buttonImage; font.bold: true; font.pixelSize: 15
         text: container.text; style: Text.Raised; styleColor: "black"
     }
     states: [

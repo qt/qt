@@ -622,31 +622,44 @@ UnixMakefileGenerator::processPrlFiles()
 
         //merge them into a logical order
         if(!project->isActiveConfig("no_smart_library_merge") && !project->isActiveConfig("no_lflags_merge")) {
-            QStringList lflags;
+            QHash<QString, QStringList> lflags;
             for(int lit = 0; lit < l.size(); ++lit) {
+                QString arch("default");
                 QString opt = l.at(lit).trimmed();
                 if(opt.startsWith("-")) {
+                    if (Option::target_mode == Option::TARG_MACX_MODE && opt.startsWith("-Xarch")) {
+                        if (opt.length() > 7) {
+                            arch = opt.mid(7);
+                            opt = l.at(++lit);
+                        }
+                    }
+
                     if(opt.startsWith("-L") ||
                        (Option::target_mode == Option::TARG_MACX_MODE && opt.startsWith("-F"))) {
-                        if(lit == 0 || l.lastIndexOf(opt, lit-1) == -1)
-                            lflags.append(opt);
-                    } else if(opt.startsWith("-l")) {
-                        if(lit == l.size()-1 || l.indexOf(opt, lit+1) == -1)
-                            lflags.append(opt);
+                        if(!lflags[arch].contains(opt))
+                            lflags[arch].append(opt);
+                    } else if(opt.startsWith("-l") || opt == "-pthread") {
+                        // Make sure we keep the dependency-order of libraries
+                        if (lflags[arch].contains(opt))
+                            lflags[arch].removeAll(opt);
+                        lflags[arch].append(opt);
                     } else if(Option::target_mode == Option::TARG_MACX_MODE && opt.startsWith("-framework")) {
                         if(opt.length() > 11)
                             opt = opt.mid(11);
-                        else
+                        else {
                             opt = l.at(++lit);
+                            if (Option::target_mode == Option::TARG_MACX_MODE && opt.startsWith("-Xarch"))
+                                opt = l.at(++lit); // The user has done the right thing and prefixed each part
+                        }
                         bool found = false;
-                        for(int x = lit+1; x < l.size(); ++x) {
-                            QString xf = l.at(x);
+                        for(int x = 0; x < lflags[arch].size(); ++x) {
+                            QString xf = lflags[arch].at(x);
                             if(xf.startsWith("-framework")) {
                                 QString framework;
                                 if(xf.length() > 11)
                                     framework = xf.mid(11);
                                 else
-                                    framework = l.at(++x);
+                                    framework = lflags[arch].at(++x);
                                 if(framework == opt) {
                                     found = true;
                                     break;
@@ -654,18 +667,30 @@ UnixMakefileGenerator::processPrlFiles()
                             }
                         }
                         if(!found) {
-                            lflags.append("-framework");
-                            lflags.append(opt);
+                            lflags[arch].append("-framework");
+                            lflags[arch].append(opt);
                         }
                     } else {
-                        lflags.append(opt);
+                        lflags[arch].append(opt);
                     }
                 } else if(!opt.isNull()) {
-                    if(lit == 0 || l.lastIndexOf(opt, lit-1) == -1)
-                        lflags.append(opt);
+                    if(!lflags[arch].contains(opt))
+                        lflags[arch].append(opt);
                 }
             }
-            l = lflags;
+
+            l =  lflags.take("default");
+
+            // Process architecture specific options (Xarch)
+            QHash<QString, QStringList>::const_iterator archIterator = lflags.constBegin();
+            while (archIterator != lflags.constEnd()) {
+                const QStringList archOptions = archIterator.value();
+                for (int i = 0; i < archOptions.size(); ++i) {
+                    l.append(QLatin1String("-Xarch_") + archIterator.key());
+                    l.append(archOptions.at(i));
+                }
+                ++archIterator;
+            }
         }
     }
 }

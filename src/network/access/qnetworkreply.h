@@ -163,6 +163,7 @@ protected:
     void setOperation(QNetworkAccessManager::Operation operation);
     void setRequest(const QNetworkRequest &request);
     void setError(NetworkError errorCode, const QString &errorString);
+    void setFinished(bool);
     void setUrl(const QUrl &url);
     void setHeader(QNetworkRequest::KnownHeaders header, const QVariant &value);
     void setRawHeader(const QByteArray &headerName, const QByteArray &value);

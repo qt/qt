@@ -69,7 +69,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(CmdLineParser *cmdLine, QWidget *parent = 0);
+    explicit MainWindow(CmdLineParser *cmdLine, QWidget *parent = 0);
     ~MainWindow();
 
     static void activateCurrentBrowser();
@@ -121,7 +121,7 @@ private slots:
     void documentationUpdated(const QString &namespaceName);
 
 private:
-    bool initHelpDB();
+    bool initHelpDB(bool registerInternalDoc);
     void setupActions();
     void closeEvent(QCloseEvent *e);
     void activateDockWidget(QWidget *w);

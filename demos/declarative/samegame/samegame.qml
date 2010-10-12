@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 import "SamegameCore"
 import "SamegameCore/samegame.js" as Logic
 
@@ -82,6 +82,7 @@ Rectangle {
         id: nameInputDialog
 
         property int initialWidth: 0
+        property alias name: nameInputText.text
 
         anchors.centerIn: parent
         z: 22;

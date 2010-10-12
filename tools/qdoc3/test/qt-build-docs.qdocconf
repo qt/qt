@@ -103,6 +103,7 @@ excludedirs             = $QT_SOURCE_TREE/src/3rdparty/clucene \
                           $QT_SOURCE_TREE/src/3rdparty/freetype \
                           $QT_SOURCE_TREE/src/3rdparty/harfbuzz \
                           $QT_SOURCE_TREE/src/3rdparty/kdebase \
+                          $QT_SOURCE_TREE/src/3rdparty/libconninet \
                           $QT_SOURCE_TREE/src/3rdparty/libjpeg \
                           $QT_SOURCE_TREE/src/3rdparty/libmng \
                           $QT_SOURCE_TREE/src/3rdparty/libpng \

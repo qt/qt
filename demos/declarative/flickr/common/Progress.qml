@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 
 Item {
     property variant progress: 0
@@ -68,6 +68,6 @@ Item {
         text: Math.round(progress * 100) + "%"
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.verticalCenter: parent.verticalCenter
-        color: "white"; font.bold: true
+        color: "white"; font.bold: true; font.pixelSize: 15
     }
 }

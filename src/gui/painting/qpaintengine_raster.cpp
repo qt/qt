@@ -3098,9 +3098,17 @@ void QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
 
     int margin = cache->glyphMargin();
 
+    bool supportsSubPixelPositions = fontEngine->supportsSubPixelPositions();
+
     const uchar *bits = image.bits();
     for (int i=0; i<numGlyphs; ++i) {
-        const QTextureGlyphCache::Coord &c = cache->coords.value(glyphs[i]);
+
+        QFixed subPixelPosition;
+        if (supportsSubPixelPositions)
+            subPixelPosition = cache->subPixelPositionForX(positions[i].x);
+        QTextureGlyphCache::GlyphAndSubPixelPosition glyph(glyphs[i], subPixelPosition);
+        const QTextureGlyphCache::Coord &c = cache->coords.value(glyph);
+
         int x = qFloor(positions[i].x) + c.baseLineX - margin;
         int y = qFloor(positions[i].y) - c.baseLineY - margin;
 
@@ -4128,6 +4136,10 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
     rasterize(outline, callback, (void *)spanData, rasterBuffer);
 }
 
+extern "C" {
+    int q_gray_rendered_spans(QT_FT_Raster raster);
+}
+
 void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
                                           ProcessSpans callback,
                                           void *userData, QRasterBuffer *)
@@ -4192,10 +4204,13 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
     bool done = false;
     int error;
 
+    int rendered_spans = 0;
+
     while (!done) {
 
         rasterParams.flags |= (QT_FT_RASTER_FLAG_AA | QT_FT_RASTER_FLAG_DIRECT);
         rasterParams.gray_spans = callback;
+        rasterParams.skip_spans = rendered_spans;
         error = qt_ft_grays_raster.raster_render(*grayRaster.data(), &rasterParams);
 
         // Out of memory, reallocate some more and try again...
@@ -4205,6 +4220,8 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
                 qWarning("QPainter: Rasterization of primitive failed");
                 break;
             }
+
+            rendered_spans += q_gray_rendered_spans(*grayRaster.data());
 
 #if defined(Q_WS_WIN64)
             _aligned_free(rasterPoolBase);
@@ -4943,8 +4960,8 @@ protected:
                                            int size, int opacity) const;
     uint *addCacheElement(quint64 hash_val, const QGradient &gradient, int opacity) {
         if (cache.size() == maxCacheSize()) {
-            int elem_to_remove = qrand() % maxCacheSize();
-            cache.remove(cache.keys()[elem_to_remove]); // may remove more than 1, but OK
+            // may remove more than 1, but OK
+            cache.erase(cache.begin() + (qrand() % maxCacheSize()));
         }
         CacheInfo cache_entry(gradient.stops(), opacity, gradient.interpolationMode());
         generateGradientColorTable(gradient, cache_entry.buffer, paletteSize(), opacity);

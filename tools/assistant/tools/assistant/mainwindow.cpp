@@ -117,6 +117,14 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     }
     HelpEngineWrapper &helpEngineWrapper =
         HelpEngineWrapper::instance(collectionFile);
+    BookmarkManager *bookMarkManager = BookmarkManager::instance();
+
+    if (!initHelpDB(!cmdLine->collectionFileGiven())) {
+        qDebug("Fatal error: Help engine initialization failed. "
+            "Error message was: %s\nAssistant will now exit.",
+            qPrintable(HelpEngineWrapper::instance().error()));
+        std::exit(1);
+    }
 
     m_centralWidget = new CentralWidget(this);
     setCentralWidget(m_centralWidget);
@@ -141,7 +149,6 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     searchDock->setWidget(m_searchWindow);
     addDockWidget(Qt::LeftDockWidgetArea, searchDock);
 
-    BookmarkManager *bookMarkManager = BookmarkManager::instance();
     QDockWidget *bookmarkDock = new QDockWidget(tr("Bookmarks"), this);
     bookmarkDock->setObjectName(QLatin1String("BookmarkWindow"));
     bookmarkDock->setWidget(m_bookmarkWidget
@@ -155,33 +162,25 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     openPagesDock->setWidget(openPagesManager->openPagesWidget());
     addDockWidget(Qt::LeftDockWidgetArea, openPagesDock);
 
-#if 0
+    connect(m_centralWidget, SIGNAL(addBookmark(QString, QString)),
+        bookMarkManager, SLOT(addBookmark(QString, QString)));
     connect(bookMarkManager, SIGNAL(escapePressed()), this,
             SLOT(activateCurrentCentralWidgetTab()));
     connect(bookMarkManager, SIGNAL(setSource(QUrl)), m_centralWidget,
             SLOT(setSource(QUrl)));
     connect(bookMarkManager, SIGNAL(setSourceInNewTab(QUrl)),
         openPagesManager, SLOT(createPage(QUrl)));
-    connect(m_centralWidget, SIGNAL(addBookmark(QString, QString)),
-        bookMarkManager, SLOT(addBookmark(QString, QString)));
 
     QHelpSearchEngine *searchEngine = helpEngineWrapper.searchEngine();
     connect(searchEngine, SIGNAL(indexingStarted()), this, SLOT(indexingStarted()));
     connect(searchEngine, SIGNAL(indexingFinished()), this, SLOT(indexingFinished()));
-#endif
 
     QString defWindowTitle = tr("Qt Assistant");
     setWindowTitle(defWindowTitle);
 
     setupActions();
     statusBar()->show();
-
-    if (!initHelpDB()) {
-        qDebug("Fatal error: Help engine initialization failed. "
-            "Error message was: %s\nAssistant will now exit.",
-            qPrintable(HelpEngineWrapper::instance().error()));
-        std::exit(1);
-    }
+    m_centralWidget->connectTabBar();
 
     setupFilterToolbar();
     setupAddressToolbar();
@@ -199,9 +198,16 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         qApp->setWindowIcon(appIcon);
     }
 
+    QToolBar *toolBar = addToolBar(tr("Bookmark Toolbar"));
+    bookMarkManager->setBookmarksToolbar(toolBar);
+
     // Show the widget here, otherwise the restore geometry and state won't work
     // on x11.
     show();
+
+    toolBar->hide();
+    toolBarMenu()->addAction(toolBar->toggleViewAction());
+
     QByteArray ba(helpEngineWrapper.mainWindow());
     if (!ba.isEmpty())
         restoreState(ba);
@@ -307,13 +313,18 @@ void MainWindow::closeEvent(QCloseEvent *e)
     QMainWindow::closeEvent(e);
 }
 
-bool MainWindow::initHelpDB()
+bool MainWindow::initHelpDB(bool registerInternalDoc)
 {
     TRACE_OBJ
     HelpEngineWrapper &helpEngineWrapper = HelpEngineWrapper::instance();
     if (!helpEngineWrapper.setupData())
         return false;
 
+    if (!registerInternalDoc) {
+        if (helpEngineWrapper.defaultHomePage() == QLatin1String("help"))
+            helpEngineWrapper.setDefaultHomePage(QLatin1String("about:blank"));
+        return true;
+    }
     bool assistantInternalDocRegistered = false;
     QString intern(QLatin1String("com.trolltech.com.assistantinternal-"));
     foreach (const QString &ns, helpEngineWrapper.registeredDocumentations()) {
@@ -529,7 +540,7 @@ void MainWindow::setupActions()
     connect(sct, SIGNAL(activated()), openPages, SLOT(previousPageWithSwitcher()));
 #endif
 
-    BookmarkManager::instance()->takeBookmarksMenu(menuBar()->addMenu(tr("&Bookmarks")));
+    BookmarkManager::instance()->setBookmarksMenu(menuBar()->addMenu(tr("&Bookmarks")));
 
     menu = menuBar()->addMenu(tr("&Help"));
     m_aboutAction = menu->addAction(tr("About..."), this, SLOT(showAboutDialog()));
@@ -736,6 +747,8 @@ void MainWindow::showPreferences()
         SLOT(updateApplicationFont()));
     connect(&dia, SIGNAL(updateBrowserFont()), m_centralWidget,
         SLOT(updateBrowserFont()));
+    connect(&dia, SIGNAL(updateUserInterface()), m_centralWidget,
+        SLOT(updateUserInterface()));
     dia.showDialog();
 }
 
@@ -791,7 +804,7 @@ void MainWindow::showAboutDialog()
         aboutDia.setWindowTitle(aboutDia.documentTitle());
     } else {
         QByteArray resources;
-        aboutDia.setText(QString::fromLatin1("<center>"
+        aboutDia.setText(tr("<center>"
             "<h3>%1</h3>"
             "<p>Version %2</p></center>"
             "<p>Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</p>")

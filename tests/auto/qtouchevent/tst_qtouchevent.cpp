@@ -109,6 +109,7 @@ class tst_QTouchEventGraphicsItem : public QGraphicsItem
 public:
     QList<QTouchEvent::TouchPoint> touchBeginPoints, touchUpdatePoints, touchEndPoints;
     bool seenTouchBegin, seenTouchUpdate, seenTouchEnd;
+    int touchBeginCounter, touchUpdateCounter, touchEndCounter;
     bool acceptTouchBegin, acceptTouchUpdate, acceptTouchEnd;
     bool deleteInTouchBegin, deleteInTouchUpdate, deleteInTouchEnd;
     tst_QTouchEventGraphicsItem **weakpointer;
@@ -131,6 +132,7 @@ public:
         touchUpdatePoints.clear();
         touchEndPoints.clear();
         seenTouchBegin = seenTouchUpdate = seenTouchEnd = false;
+        touchBeginCounter = touchUpdateCounter = touchEndCounter = 0;
         acceptTouchBegin = acceptTouchUpdate = acceptTouchEnd = true;
         deleteInTouchBegin = deleteInTouchUpdate = deleteInTouchEnd = false;
     }
@@ -146,6 +148,7 @@ public:
             if (seenTouchUpdate) qWarning("TouchBegin: TouchUpdate cannot happen before TouchBegin");
             if (seenTouchEnd) qWarning("TouchBegin: TouchEnd cannot happen before TouchBegin");
             seenTouchBegin = !seenTouchBegin && !seenTouchUpdate && !seenTouchEnd;
+            ++touchBeginCounter;
             touchBeginPoints = static_cast<QTouchEvent *>(event)->touchPoints();
             event->setAccepted(acceptTouchBegin);
             if (deleteInTouchBegin)
@@ -155,6 +158,7 @@ public:
             if (!seenTouchBegin) qWarning("TouchUpdate: have not seen TouchBegin");
             if (seenTouchEnd) qWarning("TouchUpdate: TouchEnd cannot happen before TouchUpdate");
             seenTouchUpdate = seenTouchBegin && !seenTouchEnd;
+            ++touchUpdateCounter;
             touchUpdatePoints = static_cast<QTouchEvent *>(event)->touchPoints();
             event->setAccepted(acceptTouchUpdate);
             if (deleteInTouchUpdate)
@@ -164,6 +168,7 @@ public:
             if (!seenTouchBegin) qWarning("TouchEnd: have not seen TouchBegin");
             if (seenTouchEnd) qWarning("TouchEnd: already seen a TouchEnd");
             seenTouchEnd = seenTouchBegin && !seenTouchEnd;
+            ++touchEndCounter;
             touchEndPoints = static_cast<QTouchEvent *>(event)->touchPoints();
             event->setAccepted(acceptTouchEnd);
             if (deleteInTouchEnd)
@@ -194,6 +199,7 @@ private slots:
     void deleteInEventHandler();
     void deleteInRawEventTranslation();
     void crashInQGraphicsSceneAfterNotHandlingTouchBegin();
+    void touchBeginWithGraphicsWidget();
 };
 
 void tst_QTouchEvent::touchDisabledByDefault()
@@ -1332,6 +1338,59 @@ void tst_QTouchEvent::crashInQGraphicsSceneAfterNotHandlingTouchBegin()
     // Touch outside of the button
     QTest::touchEvent(view.viewport()).press(0, view.mapFromScene(QPoint(10, 10)));
     QTest::touchEvent(view.viewport()).release(0, view.mapFromScene(QPoint(10, 10)));
+}
+
+void tst_QTouchEvent::touchBeginWithGraphicsWidget()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    tst_QTouchEventGraphicsItem *root;
+    root = new tst_QTouchEventGraphicsItem;
+    root->setAcceptTouchEvents(true);
+    scene.addItem(root);
+
+    QGraphicsWidget *glassWidget = new QGraphicsWidget;
+    glassWidget->setMinimumSize(100, 100);
+    scene.addItem(glassWidget);
+
+    view.resize(200, 200);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    view.fitInView(scene.sceneRect());
+
+    QTest::touchEvent()
+            .press(0, view.mapFromScene(root->mapToScene(3,3)), view.viewport());
+    QTest::touchEvent()
+            .stationary(0)
+            .press(1, view.mapFromScene(root->mapToScene(6,6)), view.viewport());
+    QTest::touchEvent()
+            .release(0, view.mapFromScene(root->mapToScene(3,3)), view.viewport())
+            .release(1, view.mapFromScene(root->mapToScene(6,6)), view.viewport());
+
+    QCOMPARE(root->touchBeginCounter, 1);
+    QCOMPARE(root->touchUpdateCounter, 1);
+    QCOMPARE(root->touchEndCounter, 1);
+    QCOMPARE(root->touchUpdatePoints.size(), 2);
+
+    root->reset();
+    glassWidget->setWindowFlags(Qt::Window); // make the glassWidget a panel
+
+    QTest::touchEvent()
+            .press(0, view.mapFromScene(root->mapToScene(3,3)), view.viewport());
+    QTest::touchEvent()
+            .stationary(0)
+            .press(1, view.mapFromScene(root->mapToScene(6,6)), view.viewport());
+    QTest::touchEvent()
+            .release(0, view.mapFromScene(root->mapToScene(3,3)), view.viewport())
+            .release(1, view.mapFromScene(root->mapToScene(6,6)), view.viewport());
+
+    QCOMPARE(root->touchBeginCounter, 0);
+    QCOMPARE(root->touchUpdateCounter, 0);
+    QCOMPARE(root->touchEndCounter, 0);
+
+
+    delete root;
+    delete glassWidget;
 }
 
 QTEST_MAIN(tst_QTouchEvent)

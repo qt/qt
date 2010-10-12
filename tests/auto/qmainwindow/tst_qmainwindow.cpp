@@ -109,6 +109,7 @@ private slots:
     void centralWidgetSize();
     void dockWidgetSize();
     void QTBUG2774_stylechange();
+    void toggleUnifiedTitleAndToolBarOnMac();
 };
 
 // Testing get/set functions
@@ -1449,8 +1450,7 @@ Q_DECLARE_METATYPE(MoveList)
 
 void MoveSeparator::apply(QMainWindow *mw) const
 {
-
-    QMainWindowLayout *l = qobject_cast<QMainWindowLayout*>(mw->layout());
+    QMainWindowLayout *l = qFindChild<QMainWindowLayout *>(mw);
     QVERIFY(l);
 
     QList<int> path;
@@ -1748,6 +1748,24 @@ void tst_QMainWindow::QTBUG2774_stylechange()
     }
 }
 
+void tst_QMainWindow::toggleUnifiedTitleAndToolBarOnMac()
+{
+#ifdef Q_OS_MAC
+    QMainWindow mw;
+    QToolBar *tb = new QToolBar;
+    tb->addAction("Test");
+    mw.addToolBar(tb);
+    mw.setUnifiedTitleAndToolBarOnMac(true);
+    mw.show();
+    QRect frameGeometry = mw.frameGeometry();
+    mw.setUnifiedTitleAndToolBarOnMac(false);
+    QVERIFY(frameGeometry.topLeft() == mw.frameGeometry().topLeft());
+    mw.setUnifiedTitleAndToolBarOnMac(true);
+    QVERIFY(frameGeometry.topLeft() == mw.frameGeometry().topLeft());
+#else
+    QSKIP("Mac specific test", SkipAll);
+#endif
+}
 
 
 QTEST_MAIN(tst_QMainWindow)

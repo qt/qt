@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include <QtCore/qdatetime.h>
+#include <QtCore/qelapsedtimer.h>
 #include "3rdparty/cycle_p.h"
 #include "qbenchmark.h"
 
@@ -87,7 +87,7 @@ public:
     bool needsWarmupIteration();
     QTest::QBenchmarkMetric metricType();
 private:
-    QTime time;
+    QElapsedTimer time;
 };
 
 #ifdef HAVE_TICK_COUNTER // defined in 3rdparty/cycle_p.h

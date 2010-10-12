@@ -124,7 +124,7 @@ The QML snippet shown above assigns a \c Person object to the \c BirthdayParty's
 
 QML can set properties of types that are more complex than basic intrinsics like
 integers and strings.  Properties can also be object pointers, Qt interface
-pointers,  lists of object points, and lists of Qt interface pointers.  As QML
+pointers,  lists of object pointers, and lists of Qt interface pointers.  As QML
 is typesafe it ensures that only valid types are assigned to these properties,
 just like it does for primitive types.
 
@@ -434,6 +434,23 @@ NOTIFY signal in C++.
 
 See also \l {Extending types from QML}.
 
+\section1 Methods
+
+Slots and methods marked Q_INVOKABLE may be called as functions in QML.
+
+\snippet examples/declarative/cppextensions/referenceexamples/methods/example.qml 0
+
+In this example an invitation is added via an \c {invite()} invokable method of
+the BirthdayParty element.  This function is available in QML by marking the \c {invite()}
+method with Q_INVOKABLE in the BirthdayParty class:
+
+\snippet examples/declarative/cppextensions/referenceexamples/methods/birthdayparty.h 0
+
+\l {Extending QML - Methods Example} shows the complete code used to
+implement the invite() method.
+
+The \c {invite()} method is similarly available if it is declared as a slot.
+
 \section1 Property Value Sources
 
 \snippet examples/declarative/cppextensions/referenceexamples/valuesource/example.qml 0
@@ -657,6 +674,16 @@ declaring a new property, and the corresponding C++ type.
 \row \o variant \o QVariant
 \endtable
 
+From QML you can also declare object and list properties using any element name
+like this:
+
+\code
+    property QtObject objectProperty
+    property Item itemProperty
+    property MyCustomType customProperty
+    property list<Item> listOfItemsProperty
+\endcode
+
 QML supports two methods for adding a new property to a type: a new property
 definition, and a property alias.
 
@@ -692,7 +719,7 @@ it in two steps, like this:
 \endcode
 
 If a default value is not supplied or set later in the file, each type has a
-default value for when none is explictly set. Below are the default values 
+default value for when none is explicitly set. Below are the default values
 of some of the types. For the remaining types the default values are undefined.
 
 \table
@@ -796,7 +823,7 @@ A property alias declaration looks a lot like a property definition:
 
 As the aliasing property has the same type as the aliased property, an explicit
 type is omitted, and the special "alias" keyword is used.  Instead of a default
-value, a property alias includes a compulsary alias reference.  The alias
+value, a property alias includes a compulsory alias reference.  The alias
 reference is used to locate the aliased property.  While similar to a property
 binding, the alias reference syntax is highly restricted.
 
@@ -948,11 +975,25 @@ Item {
 }
 \endcode
 
+This may be connected to via QObject::connect() or called directly from C++ using
+QMetaObject::invokeMethod():
+
+\code
+    QDeclarativeEngine engine;
+    QDeclarativeContext *context = new QDeclarativeContext(engine.rootContext());
+    QDeclarativeComponent component(&engine, QUrl::fromLocalFile("main.qml"));
+    QObject *object = component.create(context);
+    QVariant str("Hello");
+    QMetaObject::invokeMethod(object, "say", Q_ARG(QVariant, str));
+\endcode
+
+Return values of type QVariant are also supported via Q_RETURN_ARG.
+
 \section1 Defining new Components
 \target components
 
 A component is a reusable type with a well-defined interface built entirely in
-QML.  Components appear as regular QML elements, and can be used interchangably
+QML.  Components appear as regular QML elements, and can be used interchangeably
 with core types.  Components allow developers to create new types to be reused
 in other projects without the use of C++.  Components can also help to reduce
 duplication inside one project by limiting the need for large numbers of
@@ -1045,7 +1086,7 @@ Methods and signals may be added in the same way.
 
 As all external methods, signals and properties are accessible to external
 users, developers should ensure that setting these properties does not have
-any undesirable side-effects.  For most resiliance, root level properties should
+any undesirable side-effects.  For most resilience, root level properties should
 only be used for literal default values.  When a root level property must be
 used inside the component - such as the children property - property aliases
 can be used to redirect this property to a "safe" location for external users.

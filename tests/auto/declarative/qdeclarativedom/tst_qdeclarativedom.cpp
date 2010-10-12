@@ -86,7 +86,7 @@ private:
 
 void tst_qdeclarativedom::loadSimple()
 {
-    QByteArray qml = "import Qt 4.7\n"
+    QByteArray qml = "import QtQuick 1.0\n"
                       "Item {}";
 
     QDeclarativeDomDocument document;
@@ -97,15 +97,15 @@ void tst_qdeclarativedom::loadSimple()
     QVERIFY(rootObject.isValid());
     QVERIFY(!rootObject.isComponent());
     QVERIFY(!rootObject.isCustomType());
-    QVERIFY(rootObject.objectType() == "Qt/Item");
-    QVERIFY(rootObject.objectTypeMajorVersion() == 4);
-    QVERIFY(rootObject.objectTypeMinorVersion() == 7);
+    QVERIFY(rootObject.objectType() == "QtQuick/Item");
+    QVERIFY(rootObject.objectTypeMajorVersion() == 1);
+    QVERIFY(rootObject.objectTypeMinorVersion() == 0);
 }
 
 // Test regular properties
 void tst_qdeclarativedom::loadProperties()
 {
-    QByteArray qml = "import Qt 4.7\n"
+    QByteArray qml = "import QtQuick 1.0\n"
                      "Item { id : item; x : 300; visible : true }";
 
     QDeclarativeDomDocument document;
@@ -120,7 +120,7 @@ void tst_qdeclarativedom::loadProperties()
     QVERIFY(xProperty.propertyName() == "x");
     QCOMPARE(xProperty.propertyNameParts().count(), 1);
     QVERIFY(xProperty.propertyNameParts().at(0) == "x");
-    QCOMPARE(xProperty.position(), 32);
+    QCOMPARE(xProperty.position(), 37);
     QCOMPARE(xProperty.length(), 1);
     QVERIFY(xProperty.value().isLiteral());
     QVERIFY(xProperty.value().toLiteral().literal() == "300");
@@ -129,7 +129,7 @@ void tst_qdeclarativedom::loadProperties()
     QVERIFY(visibleProperty.propertyName() == "visible");
     QCOMPARE(visibleProperty.propertyNameParts().count(), 1);
     QVERIFY(visibleProperty.propertyNameParts().at(0) == "visible");
-    QCOMPARE(visibleProperty.position(), 41);
+    QCOMPARE(visibleProperty.position(), 46);
     QCOMPARE(visibleProperty.length(), 7);
     QVERIFY(visibleProperty.value().isLiteral());
     QVERIFY(visibleProperty.value().toLiteral().literal() == "true");
@@ -139,7 +139,7 @@ void tst_qdeclarativedom::loadProperties()
 void tst_qdeclarativedom::loadGroupedProperties()
 {
     {
-        QByteArray qml = "import Qt 4.7\n"
+        QByteArray qml = "import QtQuick 1.0\n"
                          "Item { anchors.left: parent.left; anchors.right: parent.right }";
 
         QDeclarativeDomDocument document;
@@ -166,7 +166,7 @@ void tst_qdeclarativedom::loadGroupedProperties()
         QCOMPARE(leftProperty.propertyNameParts().count(), 2);
         QVERIFY(leftProperty.propertyNameParts().at(0) == "anchors");
         QVERIFY(leftProperty.propertyNameParts().at(1) == "left");
-        QCOMPARE(leftProperty.position(), 21);
+        QCOMPARE(leftProperty.position(), 26);
         QCOMPARE(leftProperty.length(), 12);
         QVERIFY(leftProperty.value().isBinding());
         QVERIFY(leftProperty.value().toBinding().binding() == "parent.left");
@@ -175,14 +175,14 @@ void tst_qdeclarativedom::loadGroupedProperties()
         QCOMPARE(rightProperty.propertyNameParts().count(), 2);
         QVERIFY(rightProperty.propertyNameParts().at(0) == "anchors");
         QVERIFY(rightProperty.propertyNameParts().at(1) == "right");
-        QCOMPARE(rightProperty.position(), 48);
+        QCOMPARE(rightProperty.position(), 53);
         QCOMPARE(rightProperty.length(), 13);
         QVERIFY(rightProperty.value().isBinding());
         QVERIFY(rightProperty.value().toBinding().binding() == "parent.right");
     }
 
     {
-        QByteArray qml = "import Qt 4.7\n"
+        QByteArray qml = "import QtQuick 1.0\n"
                          "Item { \n"
                          "    anchors {\n"
                          "        left: parent.left\n"
@@ -214,7 +214,7 @@ void tst_qdeclarativedom::loadGroupedProperties()
         QCOMPARE(leftProperty.propertyNameParts().count(), 2);
         QVERIFY(leftProperty.propertyNameParts().at(0) == "anchors");
         QVERIFY(leftProperty.propertyNameParts().at(1) == "left");
-        QCOMPARE(leftProperty.position(), 44);
+        QCOMPARE(leftProperty.position(), 49);
         QCOMPARE(leftProperty.length(), 4);
         QVERIFY(leftProperty.value().isBinding());
         QVERIFY(leftProperty.value().toBinding().binding() == "parent.left");
@@ -223,7 +223,7 @@ void tst_qdeclarativedom::loadGroupedProperties()
         QCOMPARE(rightProperty.propertyNameParts().count(), 2);
         QVERIFY(rightProperty.propertyNameParts().at(0) == "anchors");
         QVERIFY(rightProperty.propertyNameParts().at(1) == "right");
-        QCOMPARE(rightProperty.position(), 70);
+        QCOMPARE(rightProperty.position(), 75);
         QCOMPARE(rightProperty.length(), 5);
         QVERIFY(rightProperty.value().isBinding());
         QVERIFY(rightProperty.value().toBinding().binding() == "parent.right");
@@ -233,7 +233,7 @@ void tst_qdeclarativedom::loadGroupedProperties()
 
 void tst_qdeclarativedom::loadChildObject()
 {
-    QByteArray qml = "import Qt 4.7\n"
+    QByteArray qml = "import QtQuick 1.0\n"
                      "Item { Item {} }";
 
     QDeclarativeDomDocument document;
@@ -252,7 +252,7 @@ void tst_qdeclarativedom::loadChildObject()
 
     QDeclarativeDomObject childItem = list.values().first().toObject();
     QVERIFY(childItem.isValid());
-    QVERIFY(childItem.objectType() == "Qt/Item");
+    QVERIFY(childItem.objectType() == "QtQuick/Item");
 }
 
 void tst_qdeclarativedom::loadComposite()
@@ -278,7 +278,7 @@ void tst_qdeclarativedom::loadComposite()
 
 void tst_qdeclarativedom::testValueSource()
 {
-    QByteArray qml = "import Qt 4.7\n"
+    QByteArray qml = "import QtQuick 1.0\n"
                      "Rectangle { SpringAnimation on height { spring: 1.4; damping: .15; to: Math.min(Math.max(-130, value*2.2 - 130), 133); }}";
 
     QDeclarativeEngine freshEngine;
@@ -295,7 +295,7 @@ void tst_qdeclarativedom::testValueSource()
     QDeclarativeDomObject valueSourceObject = valueSource.object();
     QVERIFY(valueSourceObject.isValid());
 
-    QVERIFY(valueSourceObject.objectType() == "Qt/SpringAnimation");
+    QVERIFY(valueSourceObject.objectType() == "QtQuick/SpringAnimation");
 
     const QDeclarativeDomValue springValue = valueSourceObject.property("spring").value();
     QVERIFY(!springValue.isInvalid());
@@ -310,7 +310,7 @@ void tst_qdeclarativedom::testValueSource()
 
 void tst_qdeclarativedom::testValueInterceptor()
 {
-    QByteArray qml = "import Qt 4.7\n"
+    QByteArray qml = "import QtQuick 1.0\n"
                      "Rectangle { Behavior on height { NumberAnimation { duration: 100 } } }";
 
     QDeclarativeEngine freshEngine;
@@ -327,7 +327,7 @@ void tst_qdeclarativedom::testValueInterceptor()
     QDeclarativeDomObject valueInterceptorObject = valueInterceptor.object();
     QVERIFY(valueInterceptorObject.isValid());
 
-    QVERIFY(valueInterceptorObject.objectType() == "Qt/Behavior");
+    QVERIFY(valueInterceptorObject.objectType() == "QtQuick/Behavior");
 
     const QDeclarativeDomValue animationValue = valueInterceptorObject.property("animation").value();
     QVERIFY(!animationValue.isInvalid());
@@ -337,7 +337,7 @@ void tst_qdeclarativedom::testValueInterceptor()
 // Test QDeclarativeDomDocument::imports()
 void tst_qdeclarativedom::loadImports()
 {
-    QByteArray qml = "import Qt 4.7\n"
+    QByteArray qml = "import QtQuick 1.0\n"
                      "import importlib.sublib 1.1\n"
                      "import importlib.sublib 1.0 as NewFoo\n"
                      "import 'import'\n"
@@ -353,9 +353,9 @@ void tst_qdeclarativedom::loadImports()
 
     QDeclarativeDomImport import = document.imports().at(0);
     QCOMPARE(import.type(), QDeclarativeDomImport::Library);
-    QCOMPARE(import.uri(), QLatin1String("Qt"));
+    QCOMPARE(import.uri(), QLatin1String("QtQuick"));
     QCOMPARE(import.qualifier(), QString());
-    QCOMPARE(import.version(), QLatin1String("4.7"));
+    QCOMPARE(import.version(), QLatin1String("1.0"));
 
     import = document.imports().at(1);
     QCOMPARE(import.type(), QDeclarativeDomImport::Library);
@@ -385,7 +385,7 @@ void tst_qdeclarativedom::loadImports()
 // Test loading a file with errors
 void tst_qdeclarativedom::loadErrors()
 {
-    QByteArray qml = "import Qt 4.7\n"
+    QByteArray qml = "import QtQuick 1.0\n"
                      "Item {\n"
                      "  foo: 12\n"
                      "}";
@@ -405,7 +405,7 @@ void tst_qdeclarativedom::loadErrors()
 // Test loading a file with syntax errors
 void tst_qdeclarativedom::loadSyntaxErrors()
 {
-    QByteArray qml = "import Qt 4.7\n"
+    QByteArray qml = "import QtQuick 1.0\n"
                      "asdf";
 
     QDeclarativeDomDocument document;
@@ -423,7 +423,7 @@ void tst_qdeclarativedom::loadSyntaxErrors()
 // Test attempting to load a file with remote references
 void tst_qdeclarativedom::loadRemoteErrors()
 {
-    QByteArray qml = "import Qt 4.7\n"
+    QByteArray qml = "import QtQuick 1.0\n"
                      "import \"http://localhost/exampleQmlScript.js\" as Script\n"
                      "Item {\n"
                      "}";
@@ -443,7 +443,7 @@ void tst_qdeclarativedom::loadRemoteErrors()
 void tst_qdeclarativedom::loadDynamicProperty()
 {
     {
-        QByteArray qml = "import Qt 4.7\n"
+        QByteArray qml = "import QtQuick 1.0\n"
                          "Item {\n"
                          "    property int a\n"
                          "    property bool b\n"
@@ -478,24 +478,26 @@ void tst_qdeclarativedom::loadDynamicProperty()
         QCOMPARE(d.length(), test_length); \
     } \
 
-        DP_TEST(0, a, QVariant::Int, 25, 14, "int");
-        DP_TEST(1, b, QVariant::Bool, 44, 15, "bool");
-        DP_TEST(2, c, QVariant::Double, 64, 17, "double");
-        DP_TEST(3, d, QMetaType::QReal, 86, 15, "real");
-        DP_TEST(4, e, QVariant::String, 106, 17, "string");
-        DP_TEST(5, f, QVariant::Url, 128, 14, "url");
-        DP_TEST(6, g, QVariant::Color, 147, 16, "color");
-        DP_TEST(7, h, QVariant::DateTime, 168, 15, "date");
-        DP_TEST(8, i, qMetaTypeId<QVariant>(), 188, 18, "variant");
-        DP_TEST(9, j, -1, 211, 19, "QtObject");
+        DP_TEST(0, a, QVariant::Int, 30, 14, "int");
+        DP_TEST(1, b, QVariant::Bool, 49, 15, "bool");
+        DP_TEST(2, c, QMetaType::QReal, 69, 17, "double");
+        DP_TEST(3, d, QMetaType::QReal, 91, 15, "real");
+        DP_TEST(4, e, QVariant::String, 111, 17, "string");
+        DP_TEST(5, f, QVariant::Url, 133, 14, "url");
+        DP_TEST(6, g, QVariant::Color, 152, 16, "color");
+        DP_TEST(7, h, QVariant::DateTime, 173, 15, "date");
+        DP_TEST(8, i, qMetaTypeId<QVariant>(), 193, 18, "variant");
+        DP_TEST(9, j, -1, 216, 19, "QtObject");
     }
 
     {
-        QByteArray qml = "import Qt 4.7\n"
+        QByteArray qml = "import QtQuick 1.0\n"
                          "Item {\n"
+                         "    id: item\n"
                          "    property int a: 12\n"
                          "    property int b: a + 6\n"
                          "    default property QtObject c\n"
+                         "    property alias d: item.a\n"
                          "}\n";
 
         QDeclarativeDomDocument document;
@@ -504,11 +506,12 @@ void tst_qdeclarativedom::loadDynamicProperty()
         QDeclarativeDomObject rootObject = document.rootObject();
         QVERIFY(rootObject.isValid());
 
-        QCOMPARE(rootObject.dynamicProperties().count(), 3);
+        QCOMPARE(rootObject.dynamicProperties().count(), 4);
 
         {
             QDeclarativeDomDynamicProperty d = rootObject.dynamicProperties().at(0);
             QVERIFY(d.isDefaultProperty() == false);
+            QVERIFY(d.isAlias() == false);
             QVERIFY(d.defaultValue().isValid());
             QVERIFY(d.defaultValue().propertyName() == "a");
             QVERIFY(d.defaultValue().value().isLiteral());
@@ -517,6 +520,7 @@ void tst_qdeclarativedom::loadDynamicProperty()
         {
             QDeclarativeDomDynamicProperty d = rootObject.dynamicProperties().at(1);
             QVERIFY(d.isDefaultProperty() == false);
+            QVERIFY(d.isAlias() == false);
             QVERIFY(d.defaultValue().isValid());
             QVERIFY(d.defaultValue().propertyName() == "b");
             QVERIFY(d.defaultValue().value().isBinding());
@@ -525,7 +529,14 @@ void tst_qdeclarativedom::loadDynamicProperty()
         {
             QDeclarativeDomDynamicProperty d = rootObject.dynamicProperties().at(2);
             QVERIFY(d.isDefaultProperty() == true);
+            QVERIFY(d.isAlias() == false);
             QVERIFY(d.defaultValue().isValid() == false);
+        }
+
+        {
+            QDeclarativeDomDynamicProperty d = rootObject.dynamicProperties().at(3);
+            QVERIFY(d.isDefaultProperty() == false);
+            QVERIFY(d.isAlias() == true);
         }
     }
 }
@@ -535,7 +546,7 @@ void tst_qdeclarativedom::loadComponent()
 {
     // Explicit component
     {
-        QByteArray qml = "import Qt 4.7\n"
+        QByteArray qml = "import QtQuick 1.0\n"
                          "Item {\n"
                          "    Component {\n"
                          "        id: myComponent\n"
@@ -564,9 +575,9 @@ void tst_qdeclarativedom::loadComponent()
 
         QDeclarativeDomComponent component = componentObject.toComponent();
         QVERIFY(component.isValid());
-        QVERIFY(component.objectType() == "Qt/Component");
-        QVERIFY(component.objectTypeMajorVersion() == 4);
-        QVERIFY(component.objectTypeMinorVersion() == 7);
+        QVERIFY(component.objectType() == "QtQuick/Component");
+        QVERIFY(component.objectTypeMajorVersion() == 1);
+        QVERIFY(component.objectTypeMinorVersion() == 0);
         QVERIFY(component.objectClassName() == "Component");
         QVERIFY(component.objectId() == "myComponent");
         QVERIFY(component.properties().isEmpty());
@@ -574,7 +585,7 @@ void tst_qdeclarativedom::loadComponent()
         QVERIFY(component.isCustomType() == false);
         QVERIFY(component.customTypeData() == "");
         QVERIFY(component.isComponent());
-        QCOMPARE(component.position(), 25);
+        QCOMPARE(component.position(), 30);
         QCOMPARE(component.length(), 57);
 
         QVERIFY(component.componentRoot().isValid());
@@ -583,7 +594,7 @@ void tst_qdeclarativedom::loadComponent()
 
     // Implicit component
     {
-        QByteArray qml = "import Qt 4.7\n"
+        QByteArray qml = "import QtQuick 1.0\n"
                          "ListView {\n"
                          "    delegate: Item {}\n"
                          "}";
@@ -604,7 +615,7 @@ void tst_qdeclarativedom::loadComponent()
 
         QDeclarativeDomComponent component = componentObject.toComponent();
         QVERIFY(component.isValid());
-        QVERIFY(component.objectType() == "Qt/Component");
+        QVERIFY(component.objectType() == "QtQuick/Component");
         QVERIFY(component.objectClassName() == "Component");
         QVERIFY(component.objectId() == "");
         QVERIFY(component.properties().isEmpty());
@@ -612,7 +623,7 @@ void tst_qdeclarativedom::loadComponent()
         QVERIFY(component.isCustomType() == false);
         QVERIFY(component.customTypeData() == "");
         QVERIFY(component.isComponent());
-        QCOMPARE(component.position(), 39);
+        QCOMPARE(component.position(), 44);
         QCOMPARE(component.length(), 7);
 
         QVERIFY(component.componentRoot().isValid());
@@ -633,7 +644,7 @@ void tst_qdeclarativedom::object_dynamicProperty()
 
     // Valid object, no dynamic properties
     {
-        QByteArray qml = "import Qt 4.7\n"
+        QByteArray qml = "import QtQuick 1.0\n"
                          "Item {}";
 
         QDeclarativeDomDocument document;
@@ -648,7 +659,7 @@ void tst_qdeclarativedom::object_dynamicProperty()
 
     // Valid object, dynamic properties
     {
-        QByteArray qml = "import Qt 4.7\n"
+        QByteArray qml = "import QtQuick 1.0\n"
                          "Item {\n"
                          "    property int a\n"
                          "}";
@@ -668,7 +679,7 @@ void tst_qdeclarativedom::object_dynamicProperty()
         QVERIFY(p.propertyType() == QVariant::Int);
         QVERIFY(p.propertyTypeName() == "int");
         QVERIFY(p.isDefaultProperty() == false);
-        QCOMPARE(p.position(), 25);
+        QCOMPARE(p.position(), 30);
         QCOMPARE(p.length(), 14);
     }
 
@@ -686,7 +697,7 @@ void tst_qdeclarativedom::object_property()
 
     // Valid object - no default
     {
-        QByteArray qml = "import Qt 4.7\n"
+        QByteArray qml = "import QtQuick 1.0\n"
                          "Item {\n"
                          "    x: 10\n"
                          "    y: 12\n"
@@ -709,7 +720,7 @@ void tst_qdeclarativedom::object_property()
         QVERIFY(x.isDefaultProperty() == false);
         QVERIFY(x.value().isLiteral());
         QVERIFY(x.value().toLiteral().literal() == "10");
-        QCOMPARE(x.position(), 25);
+        QCOMPARE(x.position(), 30);
         QCOMPARE(x.length(), 1);
 
         QDeclarativeDomProperty y = rootObject.property("y");
@@ -720,13 +731,13 @@ void tst_qdeclarativedom::object_property()
         QVERIFY(y.isDefaultProperty() == false);
         QVERIFY(y.value().isLiteral());
         QVERIFY(y.value().toLiteral().literal() == "12");
-        QCOMPARE(y.position(), 35);
+        QCOMPARE(y.position(), 40);
         QCOMPARE(y.length(), 1);
     }
 
     // Valid object - with default
     {
-        QByteArray qml = "import Qt 4.7\n"
+        QByteArray qml = "import QtQuick 1.0\n"
                          "Item {\n"
                          "    x: 10\n"
                          "    y: 12\n"
@@ -750,7 +761,7 @@ void tst_qdeclarativedom::object_property()
         QVERIFY(x.isDefaultProperty() == false);
         QVERIFY(x.value().isLiteral());
         QVERIFY(x.value().toLiteral().literal() == "10");
-        QCOMPARE(x.position(), 25);
+        QCOMPARE(x.position(), 30);
         QCOMPARE(x.length(), 1);
 
         QDeclarativeDomProperty y = rootObject.property("y");
@@ -761,7 +772,7 @@ void tst_qdeclarativedom::object_property()
         QVERIFY(y.isDefaultProperty() == false);
         QVERIFY(y.value().isLiteral());
         QVERIFY(y.value().toLiteral().literal() == "12");
-        QCOMPARE(y.position(), 35);
+        QCOMPARE(y.position(), 40);
         QCOMPARE(y.length(), 1);
 
         QDeclarativeDomProperty data = rootObject.property("data");
@@ -771,7 +782,7 @@ void tst_qdeclarativedom::object_property()
         QVERIFY(data.propertyNameParts().at(0) == "data");
         QVERIFY(data.isDefaultProperty() == true);
         QVERIFY(data.value().isList());
-        QCOMPARE(data.position(), 45);
+        QCOMPARE(data.position(), 50);
         QCOMPARE(data.length(), 0);
     }
 }
@@ -787,7 +798,7 @@ void tst_qdeclarativedom::object_url()
 
     // Valid builtin object
     {
-        QByteArray qml = "import Qt 4.7\n"
+        QByteArray qml = "import QtQuick 1.0\n"
                          "Item {}";
 
         QDeclarativeDomDocument document;
@@ -800,7 +811,7 @@ void tst_qdeclarativedom::object_url()
 
     // Valid composite object
     {
-        QByteArray qml = "import Qt 4.7\n"
+        QByteArray qml = "import QtQuick 1.0\n"
                          "MyItem {}";
 
         QUrl myUrl = QUrl::fromLocalFile(SRCDIR "/data/main.qml");
@@ -818,7 +829,7 @@ void tst_qdeclarativedom::object_url()
 // Test copy constructors and operators
 void tst_qdeclarativedom::copy()
 {
-    QByteArray qml = "import Qt 4.7\n"
+    QByteArray qml = "import QtQuick 1.0\n"
                      "MyItem {\n"
                      "    id: myItem\n"
                      "    property int a: 10\n"
@@ -1193,7 +1204,7 @@ void tst_qdeclarativedom::copy()
 // Tests the position/length of various elements
 void tst_qdeclarativedom::position()
 {
-    QByteArray qml = "import Qt 4.7\n"
+    QByteArray qml = "import QtQuick 1.0\n"
                      "Item {\n"
                      "    id: myItem\n"
                      "    property int a: 10\n"
@@ -1215,32 +1226,32 @@ void tst_qdeclarativedom::position()
 
     // All QDeclarativeDomDynamicProperty
     QDeclarativeDomDynamicProperty dynProp = root.dynamicProperty("a");
-    QCOMPARE(dynProp.position(), 40);
+    QCOMPARE(dynProp.position(), 45);
     QCOMPARE(dynProp.length(), 18);
 
     // All QDeclarativeDomProperty
     QDeclarativeDomProperty x = root.property("x");
-    QCOMPARE(x.position(), 63);
+    QCOMPARE(x.position(), 68);
     QCOMPARE(x.length(), 1);
 
     QDeclarativeDomProperty y = root.property("y");
-    QCOMPARE(y.position(), 73);
+    QCOMPARE(y.position(), 78);
     QCOMPARE(y.length(), 1);
 
     QDeclarativeDomProperty z = root.property("z");
-    QCOMPARE(z.position(), 106);
+    QCOMPARE(z.position(), 111);
     QCOMPARE(z.length(), 1);
 
     QDeclarativeDomProperty opacity = root.property("opacity");
-    QCOMPARE(opacity.position(), 127);
+    QCOMPARE(opacity.position(), 132);
     QCOMPARE(opacity.length(), 7);
 
     QDeclarativeDomProperty data = root.property("data");
-    QCOMPARE(data.position(), 142);
+    QCOMPARE(data.position(), 147);
     QCOMPARE(data.length(), 0);
 
     QDeclarativeDomProperty children = root.property("children");
-    QCOMPARE(children.position(), 179);
+    QCOMPARE(children.position(), 184);
     QCOMPARE(children.length(), 8);
 
     QDeclarativeDomList dataList = data.value().toList();
@@ -1249,64 +1260,64 @@ void tst_qdeclarativedom::position()
     QCOMPARE(childrenList.values().count(), 2);
 
     // All QDeclarativeDomObject
-    QCOMPARE(root.position(), 14);
+    QCOMPARE(root.position(), 19);
     QCOMPARE(root.length(), 195);
 
     QDeclarativeDomObject numberAnimation = z.value().toValueSource().object();
-    QCOMPARE(numberAnimation.position(), 87);
+    QCOMPARE(numberAnimation.position(), 92);
     QCOMPARE(numberAnimation.length(), 23);
 
     QDeclarativeDomObject behavior = opacity.value().toValueInterceptor().object();
-    QCOMPARE(behavior.position(), 115);
+    QCOMPARE(behavior.position(), 120);
     QCOMPARE(behavior.length(), 22);
 
     QDeclarativeDomObject component = dataList.values().at(0).toObject();
-    QCOMPARE(component.position(), 142);
+    QCOMPARE(component.position(), 147);
     QCOMPARE(component.length(), 32);
 
     QDeclarativeDomObject componentRoot = component.toComponent().componentRoot();
-    QCOMPARE(componentRoot.position(), 162);
+    QCOMPARE(componentRoot.position(), 167);
     QCOMPARE(componentRoot.length(), 6);
 
     QDeclarativeDomObject child1 = childrenList.values().at(0).toObject();
-    QCOMPARE(child1.position(), 191);
+    QCOMPARE(child1.position(), 196);
     QCOMPARE(child1.length(), 6);
 
     QDeclarativeDomObject child2 = childrenList.values().at(1).toObject();
-    QCOMPARE(child2.position(), 199);
+    QCOMPARE(child2.position(), 204);
     QCOMPARE(child2.length(), 6);
 
     // All QDeclarativeDomValue
     QDeclarativeDomValue xValue = x.value();
-    QCOMPARE(xValue.position(), 66);
+    QCOMPARE(xValue.position(), 71);
     QCOMPARE(xValue.length(), 2);
 
     QDeclarativeDomValue yValue = y.value();
-    QCOMPARE(yValue.position(), 76);
+    QCOMPARE(yValue.position(), 81);
     QCOMPARE(yValue.length(), 6);
 
     QDeclarativeDomValue zValue = z.value();
-    QCOMPARE(zValue.position(), 87);
+    QCOMPARE(zValue.position(), 92);
     QCOMPARE(zValue.length(), 23);
 
     QDeclarativeDomValue opacityValue = opacity.value();
-    QCOMPARE(opacityValue.position(), 115);
+    QCOMPARE(opacityValue.position(), 120);
     QCOMPARE(opacityValue.length(), 22);
 
     QDeclarativeDomValue dataValue = data.value();
-    QCOMPARE(dataValue.position(), 142);
+    QCOMPARE(dataValue.position(), 147);
     QCOMPARE(dataValue.length(), 32);
 
     QDeclarativeDomValue child1Value = childrenList.values().at(0);
-    QCOMPARE(child1Value.position(), 191);
+    QCOMPARE(child1Value.position(), 196);
     QCOMPARE(child1Value.length(), 6);
 
     QDeclarativeDomValue child2Value = childrenList.values().at(1);
-    QCOMPARE(child2Value.position(), 199);
+    QCOMPARE(child2Value.position(), 204);
     QCOMPARE(child2Value.length(), 6);
 
     // All QDeclarativeDomList
-    QCOMPARE(childrenList.position(), 189);
+    QCOMPARE(childrenList.position(), 194);
     QCOMPARE(childrenList.length(), 18);
 }
 

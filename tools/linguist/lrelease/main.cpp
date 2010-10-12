@@ -65,6 +65,17 @@ static void initBinaryDir(
         const char *argv0
 #endif
         );
+
+struct LR {
+    static inline QString tr(const char *sourceText, const char *comment = 0)
+    {
+        return QCoreApplication::translate("LRelease", sourceText, comment);
+    }
+};
+#else
+class LR {
+    Q_DECLARE_TR_FUNCTIONS(LRelease)
+};
 #endif
 
 static void printOut(const QString & out)
@@ -75,7 +86,7 @@ static void printOut(const QString & out)
 
 static void printUsage()
 {
-    printOut(QCoreApplication::tr(
+    printOut(LR::tr(
         "Usage:\n"
         "    lrelease [options] project-file\n"
         "    lrelease [options] ts-files [-qm qm-file]\n\n"
@@ -108,7 +119,7 @@ static bool loadTsFile(Translator &tor, const QString &tsFileName, bool /* verbo
     ConversionData cd;
     bool ok = tor.load(tsFileName, cd, QLatin1String("auto"));
     if (!ok) {
-        std::cerr << "lrelease error: " << qPrintable(cd.error());
+        std::cerr << qPrintable(LR::tr("lrelease error: %1").arg(cd.error()));
     } else {
         if (!cd.errors().isEmpty())
             printOut(cd.error());
@@ -123,17 +134,17 @@ static bool releaseTranslator(Translator &tor, const QString &qmFileName,
     tor.reportDuplicates(tor.resolveDuplicates(), qmFileName, cd.isVerbose());
 
     if (cd.isVerbose())
-        printOut(QCoreApplication::tr( "Updating '%1'...\n").arg(qmFileName));
+        printOut(LR::tr("Updating '%1'...\n").arg(qmFileName));
     if (removeIdentical) {
         if (cd.isVerbose())
-            printOut(QCoreApplication::tr( "Removing translations equal to source text in '%1'...\n").arg(qmFileName));
+            printOut(LR::tr("Removing translations equal to source text in '%1'...\n").arg(qmFileName));
         tor.stripIdenticalSourceTranslations();
     }
 
     QFile file(qmFileName);
     if (!file.open(QIODevice::WriteOnly)) {
-        std::cerr << "lrelease error: cannot create '" << qPrintable(qmFileName)
-                  << "': " << qPrintable(file.errorString()) << std::endl;
+        std::cerr << qPrintable(LR::tr("lrelease error: cannot create '%1': %2\n")
+                                .arg(qmFileName, file.errorString()));
         return false;
     }
 
@@ -142,8 +153,8 @@ static bool releaseTranslator(Translator &tor, const QString &qmFileName,
     file.close();
 
     if (!ok) {
-        std::cerr << "lrelease error: cannot save '" << qPrintable(qmFileName)
-                  << "': " << qPrintable(cd.error());
+        std::cerr << qPrintable(LR::tr("lrelease error: cannot save '%1': %2")
+                                .arg(qmFileName, cd.error()));
     } else if (!cd.errors().isEmpty()) {
         printOut(cd.error());
     }
@@ -180,10 +191,18 @@ int main(int argc, char **argv)
             );
 #else
     QCoreApplication app(argc, argv);
+#ifndef Q_OS_WIN32
     QTranslator translator;
-    if (translator.load(QLatin1String("lrelease_") + QLocale::system().name()))
+    QTranslator qtTranslator;
+    QString sysLocale = QLocale::system().name();
+    QString resourceDir = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+    if (translator.load(QLatin1String("linguist_") + sysLocale, resourceDir)
+        && qtTranslator.load(QLatin1String("qt_") + sysLocale, resourceDir)) {
         app.installTranslator(&translator);
-#endif
+        app.installTranslator(&qtTranslator);
+    }
+#endif // Q_OS_WIN32
+#endif // QT_BOOTSTRAPPED
 
     ConversionData cd;
     cd.m_verbose = true; // the default is true starting with Qt 4.2
@@ -221,7 +240,7 @@ int main(int argc, char **argv)
             cd.m_verbose = true;
             continue;
         } else if (!strcmp(argv[i], "-version")) {
-            printOut(QCoreApplication::tr( "lrelease version %1\n").arg(QLatin1String(QT_VERSION_STR)) );
+            printOut(LR::tr("lrelease version %1\n").arg(QLatin1String(QT_VERSION_STR)));
             return 0;
         } else if (!strcmp(argv[i], "-qm")) {
             if (i == argc - 1) {
@@ -255,20 +274,23 @@ int main(int argc, char **argv)
             visitor.setVerbose(cd.isVerbose());
 
             if (!visitor.queryProFile(&pro)) {
-                std::cerr << "lrelease error: cannot read project file '"
-                          << qPrintable(inputFile) << "'.\n";
+                std::cerr << qPrintable(LR::tr(
+                          "lrelease error: cannot read project file '%1'.\n")
+                          .arg(inputFile));
                 continue;
             }
             if (!visitor.accept(&pro)) {
-                std::cerr << "lrelease error: cannot process project file '"
-                          << qPrintable(inputFile) << "'.\n";
+                std::cerr << qPrintable(LR::tr(
+                          "lrelease error: cannot process project file '%1'.\n")
+                          .arg(inputFile));
                 continue;
             }
 
             QStringList translations = visitor.values(QLatin1String("TRANSLATIONS"));
             if (translations.isEmpty()) {
-                std::cerr << "lrelease warning: Met no 'TRANSLATIONS' entry in project file '"
-                          << qPrintable(inputFile) << "'\n";
+                std::cerr << qPrintable(LR::tr(
+                          "lrelease warning: Met no 'TRANSLATIONS' entry in project file '%1'\n")
+                          .arg(inputFile));
             } else {
                 QDir proDir(fi.absolutePath());
                 foreach (const QString &trans, translations)

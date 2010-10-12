@@ -43,7 +43,7 @@
 #include "qnetworksession_impl.h"
 
 #include <wlancond.h>
-#include <libicd-network-wlan-dev.h>
+#include <wlan-utils.h>
 #include <iapconf.h>
 #include <iapmonitor.h>
 
@@ -66,6 +66,10 @@ QString IcdNetworkConfigurationPrivate::bearerTypeName() const
 
     return iap_type;
 }
+
+/******************************************************************************/
+/** IapAddTimer specific                                                      */
+/******************************************************************************/
 
 /* The IapAddTimer is a helper class that makes sure we update
  * the configuration only after all db additions to certain
@@ -162,6 +166,9 @@ void IapAddTimer::del(QString& iap_id)
     }
 }
 
+/******************************************************************************/
+/** IAPMonitor specific                                                       */
+/******************************************************************************/
 
 class IapMonitor : public Maemo::IAPMonitor
 {
@@ -215,6 +222,11 @@ void IapMonitor::iapRemoved(const QString &iap_id)
     QString id = iap_id;
     d->deleteConfiguration(id);
 }
+
+
+/******************************************************************************/
+/** QIcdEngine implementation                                                 */
+/******************************************************************************/
 
 QIcdEngine::QIcdEngine(QObject *parent)
 :   QBearerEngine(parent), iapMonitor(0), m_dbusInterface(0),
@@ -275,6 +287,8 @@ void QIcdEngine::initialize()
     userChoiceConfigurations.insert(cpPriv->id, ptr);
 
     doRequestUpdate();
+
+    getIcdInitialState();
 }
 
 static inline QString network_attrs_to_security(uint network_attrs)
@@ -623,7 +637,11 @@ void QIcdEngine::doRequestUpdate(QList<Maemo::IcdScanResult> scanned)
                         changed = true;
                     }
 
-                    if (ptr->state != QNetworkConfiguration::Discovered) {
+                    /* If this config is the current active one, we do not set it
+                     * to discovered.
+                     */
+                    if ((ptr->state != QNetworkConfiguration::Discovered) &&
+                        (ptr->state != QNetworkConfiguration::Active)) {
                         ptr->state = QNetworkConfiguration::Discovered;
                         changed = true;
                     }
@@ -786,10 +804,48 @@ void QIcdEngine::startListeningStateSignalsForAllConnections()
                                           ICD_DBUS_API_INTERFACE,
                                           ICD_DBUS_API_STATE_SIG,
                                           this, SLOT(connectionStateSignalsSlot(QDBusMessage)));
+}
 
-    // Calling ICD_DBUS_API_STATE_REQ makes sure that initial state will be updated immediately
-    m_gettingInitialConnectionState = true;
-    m_dbusInterface->call(ICD_DBUS_API_STATE_REQ);
+void QIcdEngine::getIcdInitialState()
+{
+    /* Instead of requesting ICD status asynchronously, we ask it synchronously.
+     * It ensures that we always get right icd status BEFORE initialize() ends.
+     * If not, initialize()  might end before we got icd status and
+     * QNetworkConfigurationManager::updateConfigurations()
+     * call from user might also end before receiving icd status.
+     * In such case, we come up to a bug:
+     * QNetworkConfigurationManagerPrivate::isOnline() will be false even
+     * if we are connected.
+     */
+    Maemo::Icd icd;
+    QList<Maemo::IcdStateResult> state_results;
+    QNetworkConfigurationPrivatePointer ptr;
+
+    if (icd.state(state_results) && !state_results.isEmpty()) {
+
+        if (!(state_results.first().params.network_attrs == 0 &&
+              state_results.first().params.network_id.isEmpty())) {
+
+            switch (state_results.first().state) {
+            case ICD_STATE_CONNECTED:
+                m_onlineIapId = state_results.first().params.network_id;
+
+                ptr = accessPointConfigurations.value(m_onlineIapId);
+                if (ptr) {
+                    QMutexLocker configLocker(&ptr->mutex);
+                    ptr->state = QNetworkConfiguration::Active;
+                    configLocker.unlock();
+
+                    mutex.unlock();
+                    emit configurationChanged(ptr);
+                    mutex.lock();
+                }
+                break;
+            default:
+                break;
+            }
+        }
+    }
 }
 
 void QIcdEngine::connectionStateSignalsSlot(QDBusMessage msg)
@@ -814,12 +870,12 @@ void QIcdEngine::connectionStateSignalsSlot(QDBusMessage msg)
             ptr->type = QNetworkConfiguration::InternetAccessPoint;
             if (ptr->state != QNetworkConfiguration::Active) {
                 ptr->state = QNetworkConfiguration::Active;
-                if (!m_gettingInitialConnectionState) {
-                    configLocker.unlock();
-                    locker.unlock();
-                    emit configurationChanged(ptr);
-                    locker.relock();
-                }
+
+                configLocker.unlock();
+                locker.unlock();
+                emit configurationChanged(ptr);
+                locker.relock();
+
                 m_onlineIapId = iapid;
             }
         } else {
@@ -840,22 +896,21 @@ void QIcdEngine::connectionStateSignalsSlot(QDBusMessage msg)
             ptr->type = QNetworkConfiguration::InternetAccessPoint;
             if (ptr->state == QNetworkConfiguration::Active) {
                 ptr->state = QNetworkConfiguration::Discovered;
-                if (!m_gettingInitialConnectionState) {
-                    configLocker.unlock();
-                    locker.unlock();
-                    emit configurationChanged(ptr);
-                    locker.relock();
 
-                    // Note: If ICD switches used IAP from one to another:
-                    //       1) new IAP is reported to be online first
-                    //       2) old IAP is reported to be offline then
-                    // => Device can be reported to be offline only
-                    //    if last known online IAP is reported to be disconnected
-                    if (iapid == m_onlineIapId) {
-                        // It's known that there is only one global ICD connection
-                        // => Because ICD state was reported to be DISCONNECTED, Device is offline
-                        m_onlineIapId.clear();
-                    }
+                configLocker.unlock();
+                locker.unlock();
+                emit configurationChanged(ptr);
+                locker.relock();
+
+                // Note: If ICD switches used IAP from one to another:
+                //       1) new IAP is reported to be online first
+                //       2) old IAP is reported to be offline then
+                // => Device can be reported to be offline only
+                //    if last known online IAP is reported to be disconnected
+                if (iapid == m_onlineIapId) {
+                    // It's known that there is only one global ICD connection
+                    // => Because ICD state was reported to be DISCONNECTED, Device is offline
+                    m_onlineIapId.clear();
                 }
             }
         } else {
@@ -876,8 +931,6 @@ void QIcdEngine::connectionStateSignalsSlot(QDBusMessage msg)
     locker.unlock();
     emit iapStateChanged(iapid, icd_connection_state);
     locker.relock();
-
-    m_gettingInitialConnectionState = false;
 }
 
 void QIcdEngine::requestUpdate()

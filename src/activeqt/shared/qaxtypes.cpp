@@ -52,7 +52,7 @@
 #include <qobject.h>
 #ifdef QAX_SERVER
 #   include <qaxfactory.h>
-#   include <qlibrary.h>
+#   include <private/qsystemlibrary_p.h>
 #else
 #   include <quuid.h>
 #   include <qaxobject.h>
@@ -666,7 +666,7 @@ bool QVariantToVARIANT(const QVariant &var, VARIANT &arg, const QByteArray &type
             static bool resolved = false;
             if (!resolved) {
                 resolved = true;
-                pGetRecordInfoFromTypeInfo = (PGetRecordInfoFromTypeInfo)QLibrary::resolve(QLatin1String("oleaut32"),
+                pGetRecordInfoFromTypeInfo = (PGetRecordInfoFromTypeInfo)QSystemLibrary::resolve(QLatin1String("oleaut32"),
                                               "GetRecordInfoFromTypeInfo");
             }
             if (!pGetRecordInfoFromTypeInfo)
@@ -1376,8 +1376,10 @@ QVariant VARIANTToQVariant(const VARIANT &arg, const QByteArray &typeName, uint 
     }
     
     QVariant::Type proptype = (QVariant::Type)type;
-    if (proptype == QVariant::Invalid && !typeName.isEmpty())
-        proptype = QVariant::nameToType(typeName);
+    if (proptype == QVariant::Invalid && !typeName.isEmpty()) {
+        if (typeName != "QVariant")
+            proptype = QVariant::nameToType(typeName);
+    }
     if (proptype != QVariant::LastType && proptype != QVariant::Invalid && var.type() != proptype) {
         if (var.canConvert(proptype)) {
             QVariant oldvar = var;

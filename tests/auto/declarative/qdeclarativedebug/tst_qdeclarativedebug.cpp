@@ -279,11 +279,11 @@ void tst_QDeclarativeDebug::initTestCase()
     qRegisterMetaType<QDeclarativeDebugWatch::State>();
 
     QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Waiting for connection on port 3768...");
-    qputenv("QML_DEBUG_SERVER_PORT", "3768");
+
     m_engine = new QDeclarativeEngine(this);
 
     QList<QByteArray> qml;
-    qml << "import Qt 4.7\n"
+    qml << "import QtQuick 1.0\n"
             "Item {"
                 "width: 10; height: 20; scale: blueRect.scale;"
                 "Rectangle { id: blueRect; width: 500; height: 600; color: \"blue\"; }"
@@ -294,11 +294,11 @@ void tst_QDeclarativeDebug::initTestCase()
             "}";
 
     // add second component to test multiple root contexts
-    qml << "import Qt 4.7\n"
+    qml << "import QtQuick 1.0\n"
             "Item {}";
 
     // and a third to test methods
-    qml << "import Qt 4.7\n"
+    qml << "import QtQuick 1.0\n"
             "Item {"
                 "function myMethodNoArgs() { return 3; }\n"
                 "function myMethod(a) { return a + 9; }\n"
@@ -324,13 +324,16 @@ void tst_QDeclarativeDebug::initTestCase()
     bool ok = m_conn->waitForConnected();
     Q_ASSERT(ok);
     QTRY_VERIFY(QDeclarativeDebugService::hasDebuggingClient());
-
     m_dbg = new QDeclarativeEngineDebug(m_conn, this);
+    QTRY_VERIFY(m_dbg->status() == QDeclarativeEngineDebug::Enabled);
 }
 
 void tst_QDeclarativeDebug::cleanupTestCase()
 {
+    delete m_dbg;
+    delete m_conn;
     qDeleteAll(m_components);
+    delete m_engine;
 }
 
 void tst_QDeclarativeDebug::setMethodBody()
@@ -636,7 +639,7 @@ void tst_QDeclarativeDebug::queryRootContexts()
     QCOMPARE(context.objects()[0].properties().count(), 0);
     QCOMPARE(context.objects()[0].children().count(), 0);
 
-    QCOMPARE(context.contexts().count(), 1);
+    QCOMPARE(context.contexts().count(), 4);
     QVERIFY(context.contexts()[0].debugId() >= 0);
     QCOMPARE(context.contexts()[0].name(), QString("tst_QDeclarativeDebug_childContext"));
 
@@ -891,6 +894,18 @@ void tst_QDeclarativeDebug::tst_QDeclarativeDebugPropertyReference()
         compareProperties(r, ref);
 }
 
-QTEST_MAIN(tst_QDeclarativeDebug)
+int main(int argc, char *argv[])
+{
+    int _argc = argc + 1;
+    char **_argv = new char*[_argc];
+    for (int i = 0; i < argc; ++i)
+        _argv[i] = argv[i];
+    _argv[_argc - 1] = "-qmljsdebugger=port:3768";
+
+    QApplication app(_argc, _argv);
+    tst_QDeclarativeDebug tc;
+    return QTest::qExec(&tc, _argc, _argv);
+    delete _argv;
+}
 
 #include "tst_qdeclarativedebug.moc"

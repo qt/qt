@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 import "content" as Content
 import "content/snake.js" as Logic
 
@@ -86,7 +86,7 @@ Rectangle {
         onTriggered: { Logic.moveSkull() }
     }
     Timer {
-	id: startNewGameTimer;
+        id: startNewGameTimer;
         interval: 700;
         onTriggered: { Logic.startNewGame(); }
     }
@@ -94,10 +94,11 @@ Rectangle {
     Timer {
         id: startHeartbeatTimer;
         interval: 1000 ;
+        onTriggered: { state = "running"; heartbeat.running = true;}
     }
 
-
     Image {
+
         Image {
             id: title
             source: "content/pics/snake.jpg"
@@ -105,16 +106,29 @@ Rectangle {
             anchors.fill: parent
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
-            Behavior on opacity { NumberAnimation { duration: 500 } }
 
-            Text {
-                color: "white"
-                font.pointSize: 24
-                horizontalAlignment: Text.AlignHCenter
-                text: "Last Score:\t" + lastScore + "\nHighscore:\t" + highScores.topScore;
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: gridSize
+            Column {
+                spacing: 140
+                anchors.verticalCenter: parent.verticalCenter;
+                anchors.left:  parent.left;
+                anchors.right:  parent.right;
+
+                Text {
+                    color: "white"
+                    font.pointSize: 48
+                    font.italic: true;
+                    font.bold: true;
+                    text: "Snake"
+                    anchors.horizontalCenter: parent.horizontalCenter;
+                }
+
+                Text {
+                    color: "white"
+                    font.pointSize: 24
+                    anchors.horizontalCenter: parent.horizontalCenter;
+                    //horizontalAlignment: Text.AlignHCenter
+                    text: "Last Score:\t" + lastScore + "\nHighscore:\t" + highScores.topScore;
+                }
             }
         }
 
@@ -144,7 +158,7 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 onPressed: {
-                    if (!head || !heartbeat.running) {
+                    if (screen.state == "") {
                         Logic.startNewGame();
                         return;
                     }
@@ -193,6 +207,12 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
         }
 
+        Content.Button {
+            text: "Quit"
+            anchors { left: btnA.right; leftMargin: 3; verticalCenter: parent.verticalCenter }
+            onClicked: Qt.quit();
+        }
+
         Text {
             color: activePalette.text
             text: "Score: " + score; font.bold: true
@@ -207,21 +227,6 @@ Rectangle {
     Keys.onRightPressed: if (state == "starting" || direction != 3) Logic.scheduleDirection(1);
     Keys.onUpPressed: if (state == "starting" || direction != 2) Logic.scheduleDirection(0);
     Keys.onDownPressed: if (state == "starting" || direction != 0) Logic.scheduleDirection(2);
-
-    Connections {
-        target: startHeartbeatTimer
-        onRunningChanged: {
-            if (startHeartbeatTimer.running)
-                screen.state = "starting";
-            else
-                screen.state = "running"
-        }
-    }
-    Connections {
-        target: heartbeat
-        onRunningChanged: if (!heartbeat.running) screen.state = "";
-    }
-
 
     states: [
         State {
@@ -244,7 +249,12 @@ Rectangle {
             from: "*"
             to: "starting"
             NumberAnimation { target: progressIndicator; property: "width"; duration: 1000 }
-
+            NumberAnimation { property: "opacity"; duration: 200 }
+        },
+        Transition {
+            to: "starting"
+            NumberAnimation { target: progressIndicator; property: "width"; duration: 1000 }
+            NumberAnimation { property: "opacity"; duration: 200 }
         }
     ]
 

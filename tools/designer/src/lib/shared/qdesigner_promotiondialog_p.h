@@ -84,7 +84,13 @@ namespace qdesigner_internal {
                                        int selectedBaseClass = -1,
                                        QWidget *parent = 0);
 
-        signals:
+        QString promotedHeaderSuffix() const           { return m_promotedHeaderSuffix; }
+        void setPromotedHeaderSuffix(const QString &s) { m_promotedHeaderSuffix = s; }
+
+        bool isPromotedHeaderLowerCase() const    { return m_promotedHeaderLowerCase; }
+        void setPromotedHeaderLowerCase(bool l) { m_promotedHeaderLowerCase = l; }
+
+    signals:
         void newPromotedClass(const PromotionParameters &, bool *ok);
 
     public slots:
@@ -99,6 +105,9 @@ namespace qdesigner_internal {
     private:
         PromotionParameters promotionParameters() const;
         void enableButtons();
+
+        QString m_promotedHeaderSuffix;
+        bool m_promotedHeaderLowerCase;
 
         QComboBox *m_baseClassCombo;
         QLineEdit *m_classNameEdit;

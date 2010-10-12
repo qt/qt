@@ -44,12 +44,14 @@
 #include "findwidget.h"
 #include "helpenginewrapper.h"
 #include "helpviewer.h"
+#include "openpagesmanager.h"
 #include "tracer.h"
 #include "../shared/collectionconfiguration.h"
 
 #include <QtCore/QTimer>
 
 #include <QtGui/QKeyEvent>
+#include <QtGui/QMenu>
 #include <QtGui/QPageSetupDialog>
 #include <QtGui/QPrintDialog>
 #include <QtGui/QPrintPreviewDialog>
@@ -66,6 +68,124 @@ namespace {
     CentralWidget *staticCentralWidget = 0;
 }
 
+// -- TabBar
+
+TabBar::TabBar(QWidget *parent)
+    : QTabBar(parent)
+{
+    TRACE_OBJ
+#ifdef Q_OS_MAC
+    setDocumentMode(true);
+#endif
+    setMovable(true);
+    setShape(QTabBar::RoundedNorth);
+    setContextMenuPolicy(Qt::CustomContextMenu);
+    setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred,
+        QSizePolicy::TabWidget));
+    connect(this, SIGNAL(currentChanged(int)), this, SLOT(slotCurrentChanged(int)));
+    connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(slotTabCloseRequested(int)));
+    connect(this, SIGNAL(customContextMenuRequested(QPoint)), this,
+        SLOT(slotCustomContextMenuRequested(QPoint)));
+}
+
+TabBar::~TabBar()
+{
+    TRACE_OBJ
+}
+
+int TabBar::addNewTab(const QString &title)
+{
+    TRACE_OBJ
+    const int index = addTab(title);
+    setTabsClosable(count() > 1);
+    return index;
+}
+
+void TabBar::setCurrent(HelpViewer *viewer)
+{
+    TRACE_OBJ
+    for (int i = 0; i < count(); ++i) {
+        HelpViewer *data = tabData(i).value<HelpViewer*>();
+        if (data == viewer) {
+            setCurrentIndex(i);
+            break;
+        }
+    }
+}
+
+void TabBar::removeTabAt(HelpViewer *viewer)
+{
+    TRACE_OBJ
+    for (int i = 0; i < count(); ++i) {
+        HelpViewer *data = tabData(i).value<HelpViewer*>();
+        if (data == viewer) {
+            removeTab(i);
+            break;
+        }
+    }
+    setTabsClosable(count() > 1);
+}
+
+void TabBar::titleChanged()
+{
+    TRACE_OBJ
+    for (int i = 0; i < count(); ++i) {
+        HelpViewer *data = tabData(i).value<HelpViewer*>();
+        QString title = data->title();
+        title.replace(QLatin1Char('&'), QLatin1String("&&"));
+        setTabText(i, title.isEmpty() ? tr("(Untitled)") : title);
+    }
+}
+
+void TabBar::slotCurrentChanged(int index)
+{
+    TRACE_OBJ
+    emit currentTabChanged(tabData(index).value<HelpViewer*>());
+}
+
+void TabBar::slotTabCloseRequested(int index)
+{
+    TRACE_OBJ
+    OpenPagesManager::instance()->closePage(tabData(index).value<HelpViewer*>());
+}
+
+void TabBar::slotCustomContextMenuRequested(const QPoint &pos)
+{
+    TRACE_OBJ
+    const int tab = tabAt(pos);
+    if (tab < 0)
+        return;
+
+    QMenu menu(QLatin1String(""), this);
+    menu.addAction(tr("New &Tab"), OpenPagesManager::instance(), SLOT(createPage()));
+
+    const bool enableAction = count() > 1;
+    QAction *closePage = menu.addAction(tr("&Close Tab"));
+    closePage->setEnabled(enableAction);
+
+    QAction *closePages = menu.addAction(tr("Close Other Tabs"));
+    closePages->setEnabled(enableAction);
+
+    menu.addSeparator();
+
+    HelpViewer *viewer = tabData(tab).value<HelpViewer*>();
+    QAction *newBookmark = menu.addAction(tr("Add Bookmark for this Page..."));
+    const QString &url = viewer->source().toString();
+    if (url.isEmpty() || url == QLatin1String("about:blank"))
+        newBookmark->setEnabled(false);
+
+    QAction *pickedAction = menu.exec(mapToGlobal(pos));
+    if (pickedAction == closePage)
+        slotTabCloseRequested(tab);
+    else if (pickedAction == closePages) {
+        for (int i = count() - 1; i >= 0; --i) {
+            if (i != tab)
+                slotTabCloseRequested(i);
+        }
+    } else if (pickedAction == newBookmark)
+        emit addBookmark(viewer->title(), url);
+}
+
 // -- CentralWidget
 
 CentralWidget::CentralWidget(QWidget *parent)
@@ -75,12 +195,16 @@ CentralWidget::CentralWidget(QWidget *parent)
 #endif
     , m_findWidget(new FindWidget(this))
     , m_stackedWidget(new QStackedWidget(this))
+    , m_tabBar(new TabBar(this))
 {
     TRACE_OBJ
     staticCentralWidget = this;
     QVBoxLayout *vboxLayout = new QVBoxLayout(this);
 
     vboxLayout->setMargin(0);
+    vboxLayout->setSpacing(0);
+    vboxLayout->addWidget(m_tabBar);
+    m_tabBar->setVisible(HelpEngineWrapper::instance().showTabs());
     vboxLayout->addWidget(m_stackedWidget);
     vboxLayout->addWidget(m_findWidget);
     m_findWidget->hide();
@@ -90,6 +214,8 @@ CentralWidget::CentralWidget(QWidget *parent)
     connect(m_findWidget, SIGNAL(find(QString, bool, bool)), this,
         SLOT(find(QString, bool, bool)));
     connect(m_findWidget, SIGNAL(escapePressed()), this, SLOT(activateTab()));
+    connect(m_tabBar, SIGNAL(addBookmark(QString, QString)), this,
+        SIGNAL(addBookmark(QString, QString)));
 }
 
 CentralWidget::~CentralWidget()
@@ -170,7 +296,11 @@ void CentralWidget::addPage(HelpViewer *page, bool fromSearch)
     page->installEventFilter(this);
     page->setFocus(Qt::OtherFocusReason);
     connectSignals(page);
-    m_stackedWidget->addWidget(page);
+    const int index = m_stackedWidget->addWidget(page);
+    m_tabBar->setTabData(m_tabBar->addNewTab(page->title()),
+        QVariant::fromValue(viewerAt(index)));
+    connect (page, SIGNAL(titleChanged()), m_tabBar, SLOT(titleChanged()));
+
     if (fromSearch) {
         connect(currentHelpViewer(), SIGNAL(loadFinished(bool)), this,
             SLOT(highlightSearchTerms()));
@@ -181,6 +311,7 @@ void CentralWidget::removePage(int index)
 {
     TRACE_OBJ
     const bool currentChanged = index == currentIndex();
+    m_tabBar->removeTabAt(viewerAt(index));
     m_stackedWidget->removeWidget(m_stackedWidget->widget(index));
     if (currentChanged)
         emit currentViewerChanged();
@@ -195,8 +326,16 @@ int CentralWidget::currentIndex() const
 void CentralWidget::setCurrentPage(HelpViewer *page)
 {
     TRACE_OBJ
+    m_tabBar->setCurrent(page);
     m_stackedWidget->setCurrentWidget(page);
     emit currentViewerChanged();
+}
+
+void CentralWidget::connectTabBar()
+{
+    TRACE_OBJ
+    connect(m_tabBar, SIGNAL(currentTabChanged(HelpViewer*)),
+        OpenPagesManager::instance(), SLOT(setCurrentPage(HelpViewer*)));
 }
 
 // -- public slots
@@ -367,6 +506,11 @@ void CentralWidget::updateBrowserFont()
         viewerAt(i)->setViewerFont(font);
 }
 
+void CentralWidget::updateUserInterface()
+{
+    m_tabBar->setVisible(HelpEngineWrapper::instance().showTabs());
+}
+
 // -- protected
 
 void CentralWidget::keyPressEvent(QKeyEvent *e)
@@ -415,7 +559,7 @@ void CentralWidget::highlightSearchTerms()
             case QHelpSearchQuery::DEFAULT:
             case QHelpSearchQuery::ATLEAST:
                 foreach (QString term, query.wordList)
-                    terms.append(term.remove(QLatin1String("\"")));
+                    terms.append(term.remove(QLatin1Char('"')));
             }
         }
     }

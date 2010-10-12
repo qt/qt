@@ -219,6 +219,10 @@ class Q_CORE_EXPORT QVariant
     QVariant(Qt::GlobalColor color);
 
     QVariant& operator=(const QVariant &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QVariant &operator=(QVariant &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
 
     Type type() const;
     int userType() const;

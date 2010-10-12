@@ -25,7 +25,9 @@ DEFINES += \
         QT_NO_TEXTSTREAM \
         QT_NO_THREAD \
         QT_NO_UNICODETABLES \
-        QT_NO_USING_NAMESPACE
+        QT_NO_USING_NAMESPACE \
+        QT_NO_DEPRECATED
+
 win32:DEFINES += QT_NODLL
 
 INCLUDEPATH += $$QT_BUILD_TREE/include \
@@ -87,7 +89,8 @@ unix:SOURCES += ../../corelib/io/qfsfileengine_unix.cpp \
                 ../../corelib/io/qfsfileengine_iterator_unix.cpp
 
 win32:SOURCES += ../../corelib/io/qfsfileengine_win.cpp \
-                 ../../corelib/io/qfsfileengine_iterator_win.cpp
+                 ../../corelib/io/qfsfileengine_iterator_win.cpp \
+                 ../../corelib/plugin/qsystemlibrary.cpp \
 
 macx: {
    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.4 #enables weak linking for 10.4 (exported)

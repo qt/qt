@@ -192,7 +192,7 @@ QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &nam
     if (!(hints & ImplicitObject)) {
         local.coreIndex = -1;
         lastData = &local;
-        return QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess;
+        return QScriptClass::HandlesWriteAccess;
     }
 
     return 0;
@@ -625,11 +625,12 @@ private:
 
     char data[4 * sizeof(void *)];
     int type;
+    bool isObjectType;
 };
 }
 
 MetaCallArgument::MetaCallArgument()
-: type(QVariant::Invalid)
+: type(QVariant::Invalid), isObjectType(false)
 {
 }
 
@@ -744,12 +745,23 @@ void MetaCallArgument::fromScriptValue(int callType, QDeclarativeEngine *engine,
         new (&data) QVariant();
         type = -1;
 
-        QVariant v = QDeclarativeEnginePrivate::get(engine)->scriptValueToVariant(value);
+        QDeclarativeEnginePrivate *priv = QDeclarativeEnginePrivate::get(engine);
+        QVariant v = priv->scriptValueToVariant(value);
         if (v.userType() == callType) {
             *((QVariant *)&data) = v;
         } else if (v.canConvert((QVariant::Type)callType)) {
             *((QVariant *)&data) = v;
             ((QVariant *)&data)->convert((QVariant::Type)callType);
+        } else if (const QMetaObject *mo = priv->rawMetaObjectForType(callType)) {
+            QObject *obj = priv->toQObject(v);
+            
+            if (obj) {
+                const QMetaObject *objMo = obj->metaObject();
+                while (objMo && objMo != mo) objMo = objMo->superClass();
+                if (!objMo) obj = 0;
+            }
+
+            *((QVariant *)&data) = QVariant(callType, &obj);
         } else {
             *((QVariant *)&data) = QVariant(callType, (void *)0);
         }
@@ -831,7 +843,7 @@ QDeclarativeObjectMethodScriptClass::Value QDeclarativeObjectMethodScriptClass::
         for (int ii = 0; ii < argTypeNames.count(); ++ii) {
             argTypes[ii] = QMetaType::type(argTypeNames.at(ii));
             if (argTypes[ii] == QVariant::Invalid) 
-                argTypes[ii] = enumType(method->object->metaObject(), argTypeNames.at(ii));
+                argTypes[ii] = enumType(method->object->metaObject(), QString::fromLatin1(argTypeNames.at(ii)));
             if (argTypes[ii] == QVariant::Invalid) 
                 return Value(ctxt, ctxt->throwError(QString::fromLatin1("Unknown method parameter type: %1").arg(QLatin1String(argTypeNames.at(ii)))));
         }

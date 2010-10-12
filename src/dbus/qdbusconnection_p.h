@@ -160,6 +160,9 @@ public:
 
     struct WatchedServiceData {
         WatchedServiceData() : refcount(0) {}
+        WatchedServiceData(const QString &owner, int refcount = 0)
+            : owner(owner), refcount(refcount)
+        {}
         QString owner;
         int refcount;
     };

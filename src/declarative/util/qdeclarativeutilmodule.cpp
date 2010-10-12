@@ -75,6 +75,55 @@
 
 void QDeclarativeUtilModule::defineModule()
 {
+    qmlRegisterType<QDeclarativeAnchorAnimation>("QtQuick",1,0,"AnchorAnimation");
+    qmlRegisterType<QDeclarativeAnchorChanges>("QtQuick",1,0,"AnchorChanges");
+    qmlRegisterType<QDeclarativeBehavior>("QtQuick",1,0,"Behavior");
+    qmlRegisterType<QDeclarativeBind>("QtQuick",1,0,"Binding");
+    qmlRegisterType<QDeclarativeColorAnimation>("QtQuick",1,0,"ColorAnimation");
+    qmlRegisterType<QDeclarativeConnections>("QtQuick",1,0,"Connections");
+    qmlRegisterType<QDeclarativeSmoothedAnimation>("QtQuick",1,0,"SmoothedAnimation");
+    qmlRegisterType<QDeclarativeFontLoader>("QtQuick",1,0,"FontLoader");
+    qmlRegisterType<QDeclarativeListElement>("QtQuick",1,0,"ListElement");
+    qmlRegisterType<QDeclarativeNumberAnimation>("QtQuick",1,0,"NumberAnimation");
+    qmlRegisterType<QDeclarativePackage>("QtQuick",1,0,"Package");
+    qmlRegisterType<QDeclarativeParallelAnimation>("QtQuick",1,0,"ParallelAnimation");
+    qmlRegisterType<QDeclarativeParentAnimation>("QtQuick",1,0,"ParentAnimation");
+    qmlRegisterType<QDeclarativeParentChange>("QtQuick",1,0,"ParentChange");
+    qmlRegisterType<QDeclarativePauseAnimation>("QtQuick",1,0,"PauseAnimation");
+    qmlRegisterType<QDeclarativePropertyAction>("QtQuick",1,0,"PropertyAction");
+    qmlRegisterType<QDeclarativePropertyAnimation>("QtQuick",1,0,"PropertyAnimation");
+    qmlRegisterType<QDeclarativeRotationAnimation>("QtQuick",1,0,"RotationAnimation");
+    qmlRegisterType<QDeclarativeScriptAction>("QtQuick",1,0,"ScriptAction");
+    qmlRegisterType<QDeclarativeSequentialAnimation>("QtQuick",1,0,"SequentialAnimation");
+    qmlRegisterType<QDeclarativeSpringAnimation>("QtQuick",1,0,"SpringAnimation");
+    qmlRegisterType<QDeclarativeStateChangeScript>("QtQuick",1,0,"StateChangeScript");
+    qmlRegisterType<QDeclarativeStateGroup>("QtQuick",1,0,"StateGroup");
+    qmlRegisterType<QDeclarativeState>("QtQuick",1,0,"State");
+    qmlRegisterType<QDeclarativeSystemPalette>("QtQuick",1,0,"SystemPalette");
+    qmlRegisterType<QDeclarativeTimer>("QtQuick",1,0,"Timer");
+    qmlRegisterType<QDeclarativeTransition>("QtQuick",1,0,"Transition");
+    qmlRegisterType<QDeclarativeVector3dAnimation>("QtQuick",1,0,"Vector3dAnimation");
+#ifdef QT_NO_XMLPATTERNS
+    qmlRegisterTypeNotAvailable("QtQuick",1,0,"XmlListModel",
+        qApp->translate("QDeclarativeXmlListModel","Qt was built without support for xmlpatterns"));
+    qmlRegisterTypeNotAvailable("QtQuick",1,0,"XmlRole",
+        qApp->translate("QDeclarativeXmlListModel","Qt was built without support for xmlpatterns"));
+#else
+    qmlRegisterType<QDeclarativeXmlListModel>("QtQuick",1,0,"XmlListModel");
+    qmlRegisterType<QDeclarativeXmlListModelRole>("QtQuick",1,0,"XmlRole");
+#endif
+
+    qmlRegisterType<QDeclarativeAnchors>();
+    qmlRegisterType<QDeclarativeStateOperation>();
+    qmlRegisterType<QDeclarativeAnchorSet>();
+
+    qmlRegisterUncreatableType<QDeclarativeAbstractAnimation>("QtQuick",1,0,"Animation",QDeclarativeAbstractAnimation::tr("Animation is an abstract class"));
+
+    qmlRegisterCustomType<QDeclarativeListModel>("QtQuick",1,0,"ListModel", new QDeclarativeListModelParser);
+    qmlRegisterCustomType<QDeclarativePropertyChanges>("QtQuick",1,0,"PropertyChanges", new QDeclarativePropertyChangesParser);
+    qmlRegisterCustomType<QDeclarativeConnections>("QtQuick",1,0,"Connections", new QDeclarativeConnectionsParser);
+
+#ifndef QT_NO_IMPORT_QT47_QML
     qmlRegisterType<QDeclarativeAnchorAnimation>("Qt",4,7,"AnchorAnimation");
     qmlRegisterType<QDeclarativeAnchorChanges>("Qt",4,7,"AnchorChanges");
     qmlRegisterType<QDeclarativeBehavior>("Qt",4,7,"Behavior");
@@ -113,13 +162,10 @@ void QDeclarativeUtilModule::defineModule()
     qmlRegisterType<QDeclarativeXmlListModelRole>("Qt",4,7,"XmlRole");
 #endif
 
-    qmlRegisterType<QDeclarativeAnchors>();
-    qmlRegisterType<QDeclarativeStateOperation>();
-    qmlRegisterType<QDeclarativeAnchorSet>();
-
     qmlRegisterUncreatableType<QDeclarativeAbstractAnimation>("Qt",4,7,"Animation",QDeclarativeAbstractAnimation::tr("Animation is an abstract class"));
 
     qmlRegisterCustomType<QDeclarativeListModel>("Qt", 4,7, "ListModel", new QDeclarativeListModelParser);
     qmlRegisterCustomType<QDeclarativePropertyChanges>("Qt", 4, 7, "PropertyChanges", new QDeclarativePropertyChangesParser);
     qmlRegisterCustomType<QDeclarativeConnections>("Qt", 4, 7, "Connections", new QDeclarativeConnectionsParser);
+#endif
 }

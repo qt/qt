@@ -937,7 +937,9 @@ void QGraphicsWidget::setStyle(QStyle *style)
 QFont QGraphicsWidget::font() const
 {
     Q_D(const QGraphicsWidget);
-    return d->font;
+    QFont fnt = d->font;
+    fnt.resolve(fnt.resolve() | d->inheritedFontResolveMask);
+    return fnt;
 }
 void QGraphicsWidget::setFont(const QFont &font)
 {

@@ -16,7 +16,9 @@ SUBDIRS       = \
                 threadedfortuneserver \
                 googlesuggest \
                 torrent \
-                bearermonitor
+                bearermonitor \
+                multicastreceiver \
+                multicastsender
 
     contains(QT_CONFIG, svg) {
         SUBDIRS += bearercloud

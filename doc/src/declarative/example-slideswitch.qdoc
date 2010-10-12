@@ -35,7 +35,7 @@ The code for this example can be found in the \c $QTDIR/examples/declarative/ui-
 
 \section1 Overview
 
-The elements that composed the switch are:
+The elements that compose the switch are:
 
 \list
 \o a \c on property (the interface to interact with the switch),

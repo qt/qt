@@ -43,6 +43,8 @@
 #define CENTRALWIDGET_H
 
 #include <QtCore/QUrl>
+
+#include <QtGui/QTabBar>
 #include <QtGui/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -50,6 +52,30 @@ QT_BEGIN_NAMESPACE
 class FindWidget;
 class HelpViewer;
 class QStackedWidget;
+
+class TabBar : public QTabBar
+{
+    Q_OBJECT
+public:
+    TabBar(QWidget *parent = 0);
+    ~TabBar();
+
+    int addNewTab(const QString &title);
+    void setCurrent(HelpViewer *viewer);
+    void removeTabAt(HelpViewer *viewer);
+
+public slots:
+    void titleChanged();
+
+signals:
+    void currentTabChanged(HelpViewer *viewer);
+    void addBookmark(const QString &title, const QString &url);
+
+private slots:
+    void slotCurrentChanged(int index);
+    void slotTabCloseRequested(int index);
+    void slotCustomContextMenuRequested(const QPoint &pos);
+};
 
 class CentralWidget : public QWidget
 {
@@ -76,6 +102,8 @@ public:
 
     int currentIndex() const;
     void setCurrentPage(HelpViewer *page);
+
+    void connectTabBar();
 
 public slots:
     void copy();
@@ -105,6 +133,7 @@ public slots:
     void activateTab();
     void showTextSearch();
     void updateBrowserFont();
+    void updateUserInterface();
 
 signals:
     void currentViewerChanged();
@@ -135,6 +164,7 @@ private:
 #endif
     FindWidget *m_findWidget;
     QStackedWidget *m_stackedWidget;
+    TabBar *m_tabBar;
 };
 
 QT_END_NAMESPACE

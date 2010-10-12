@@ -1,3 +1,60 @@
+2010-08-24  Oliver Hunt  <oliver@apple.com>
+
+        Reviewed by Geoff Garen.
+
+        Don't seed the JS random number generator from time()
+        https://bugs.webkit.org/show_bug.cgi?id=41868
+        <rdar://problem/8171025>
+
+        Switch to using the secure random number generator to
+        seed the fast random generator, and make the generator
+        be per global object.
+
+        * runtime/JSGlobalData.cpp:
+        (JSC::JSGlobalData::JSGlobalData):
+        * runtime/JSGlobalData.h:
+        * runtime/JSGlobalObject.h:
+        (JSC::JSGlobalObject::JSGlobalObjectData::JSGlobalObjectData):
+        (JSC::JSGlobalObject::weakRandomNumber):
+        * runtime/MathObject.cpp:
+        (JSC::mathProtoFuncRandom):
+
+2010-06-18  Tucker Jay  <jay.tucker@nokia.com>
+
+        Reviewed by NOBODY (OOPS!).
+
+        [Symbian] Lazy commit of memory required in JSC register file
+        https://bugs.webkit.org/show_bug.cgi?id=34349
+
+        * JavaScriptCore.pro: Added 1 new Symbian source file
+        * interpreter/RegisterFile.cpp:
+        (JSC::RegisterFile::~RegisterFile):
+        * interpreter/RegisterFile.h:
+        (JSC::RegisterFile::):
+        (JSC::RegisterFile::start):
+        (JSC::RegisterFile::end):
+        (JSC::RegisterFile::size):
+        (JSC::RegisterFile::setNumGlobals):
+        (JSC::RegisterFile::numGlobals):
+        (JSC::RegisterFile::maxGlobals):
+        (JSC::RegisterFile::lastGlobal):
+        (JSC::RegisterFile::markGlobals):
+        (JSC::RegisterFile::markCallFrames):
+        (JSC::isPageAligned):
+        (JSC::RegisterFile::RegisterFile):
+        (JSC::RegisterFile::shrink):
+        (JSC::RegisterFile::grow):
+        * wtf/symbian/RegisterFileAllocatorSymbian.cpp: Added.
+        (WTF::RegisterFileAllocator::RegisterFileAllocator):
+        Helper class to allocate memory required by RegisterFile
+        more efficiently.
+        (WTF::RegisterFileAllocator::~RegisterFileAllocator):
+        (WTF::RegisterFileAllocator::buffer):
+        (WTF::RegisterFileAllocator::grow):
+        (WTF::RegisterFileAllocator::shrink):
+        * wtf/symbian/RegisterFileAllocatorSymbian.h: Added.
+        * wtf/symbian/SymbianDefines.h: Added.
+
 2010-06-19  Thiago Macieira <thiago.macieira@nokia.com>
 
         Reviewed by Kenneth Rohde Christiansen.
@@ -57,6 +114,16 @@
         Thanks for Vanboxem Rruben for the investigation.
 
         * wtf/Platform.h:
+
+2010-05-06  Fumitoshi Ukai  <ukai@chromium.org>
+
+        Reviewed by Alexey Proskuryakov.
+
+        JavaScriptCore/wtf/RandomNumber.h should provide using WTF::*
+        https://bugs.webkit.org/show_bug.cgi?id=38719
+
+        * wtf/RandomNumber.h:
+          Add using directives.
 
 2010-04-28  Simon Hausmann  <simon.hausmann@nokia.com>, Kent Hansen <kent.hansen@nokia.com>
 

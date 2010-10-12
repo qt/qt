@@ -88,6 +88,7 @@ private slots:
 
     void outOfMemory();
     void QTBUG6416_reserve();
+    void initializeList();
 };
 
 void tst_QVector::constructors() const
@@ -832,6 +833,20 @@ void tst_QVector::QTBUG6416_reserve()
         b.reserve(1);
     }
     QCOMPARE(fooCtor, fooDtor);
+}
+
+void tst_QVector::initializeList()
+{
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    QVector<int> v1{2,3,4};
+    QCOMPARE(v1, QVector<int>() << 2 << 3 << 4);
+    QCOMPARE(v1, (QVector<int>{2,3,4}));
+
+    QVector<QVector<int>> v2{ v1, {1}, QVector<int>(), {2,3,4}  };
+    QVector<QVector<int>> v3;
+    v3 << v1 << (QVector<int>() << 1) << QVector<int>() << v1;
+    QCOMPARE(v3, v2);
+#endif
 }
 
 QTEST_APPLESS_MAIN(tst_QVector)

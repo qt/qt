@@ -56,7 +56,18 @@
   \macro QML_DECLARE_TYPE()
   \relates QDeclarativeEngine
 
-  Equivalent to  Q_DECLARE_METATYPE(TYPE) and Q_DECLARE_METATYPE(QDeclarativeListProperty<TYPE>)
+  Equivalent to \c Q_DECLARE_METATYPE(TYPE) and \c Q_DECLARE_METATYPE(QDeclarativeListProperty<TYPE>)
+*/
+
+/*!
+  \macro QML_DECLARE_TYPEINFO(Type,Flags)
+  \relates QDeclarativeEngine
+
+  Declares additional properties of the given \a Type as described by the
+  specified \a Flags.
+  
+  Current the only supported type info is \c QML_HAS_ATTACHED_PROPERTIES which
+  declares that the \a Type supports \l {Attached Properties}.
 */
 
 
@@ -82,7 +93,7 @@
   specified module name and version number:
 
   \qml
-  imoprt com.mycompany.qmlcomponents 1.0
+  import com.mycompany.qmlcomponents 1.0
 
   Slider { ... }
   \endqml
@@ -136,7 +147,7 @@
 
   This will cause any QML which uses this module and attempts to use the type to produce an error message:
   \code
-fun.qml: Get back to work, slacker!
+  fun.qml: Get back to work, slacker!
      Game {
      ^
   \endcode
@@ -164,7 +175,6 @@ fun.qml: Get back to work, slacker!
 
   This template function registers the C++ type in the QML system
   under the name \a typeName.
-
 
   Returns the QML type id.
   */

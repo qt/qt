@@ -46,6 +46,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qnumeric.h>
 #include "qgraphicswidget_p.h"
+#include "qgraphicslayoutitem_p.h"
 #include "qgraphicslayout.h"
 #include "qgraphicsscene_p.h"
 #include <QtGui/qapplication.h>
@@ -254,7 +255,10 @@ void QGraphicsWidgetPrivate::setFont_helper(const QFont &font)
 
 void QGraphicsWidgetPrivate::resolveFont(uint inheritedMask)
 {
+    Q_Q(QGraphicsWidget);
     inheritedFontResolveMask = inheritedMask;
+    if (QGraphicsWidget *p = q->parentWidget())
+        inheritedFontResolveMask |= p->d_func()->inheritedFontResolveMask;
     QFont naturalFont = naturalWidgetFont();
     QFont resolvedFont = font.resolve(naturalFont);
     updateFont(resolvedFont);
@@ -412,8 +416,7 @@ static qreal minimumHeightForWidth(qreal width, qreal minh, qreal maxh,
                                    bool heightForWidth = true)
 {
     qreal minimumHeightForWidth = -1;
-    const QSizePolicy sp = widget->layout() ? widget->layout()->sizePolicy() : widget->sizePolicy();
-    const bool hasHFW = sp.hasHeightForWidth();
+    const bool hasHFW = QGraphicsLayoutItemPrivate::get(widget)->hasHeightForWidth();
     if (hasHFW == heightForWidth) {
         minimumHeightForWidth = hasHFW
                                 ? widget->effectiveSizeHint(Qt::MinimumSize, QSizeF(width, -1)).height()
@@ -502,21 +505,31 @@ static void _q_boundGeometryToSizeConstraints(const QRectF &startGeometry,
     qreal width = qBound(min.width(), proposedRect.width(), max.width());
     qreal height = qBound(min.height(), proposedRect.height(), max.height());
 
-    QSizePolicy sp = widget->sizePolicy();
-    if (const QGraphicsLayout *l = widget->layout()) {
-        sp = l->sizePolicy();
-    }
-    const bool hasHFW = sp.hasHeightForWidth(); // || sp.hasWidthForHeight();
+    const bool hasHFW = QGraphicsLayoutItemPrivate::get(widget)->hasHeightForWidth();
+    const bool hasWFH = QGraphicsLayoutItemPrivate::get(widget)->hasWidthForHeight();
 
-    const bool widthChanged = proposedRect.width() < widget->size().width();
-    const bool heightChanged = proposedRect.height() < widget->size().height();
+    const bool widthChanged = proposedRect.width() != widget->size().width();
+    const bool heightChanged = proposedRect.height() != widget->size().height();
 
-    if (hasHFW) {
+    if (hasHFW || hasWFH) {
         if (widthChanged || heightChanged) {
-            const qreal minh = min.height();
-            const qreal maxh = max.height();
-            const qreal proposedHFW = minimumHeightForWidth(width, minh, maxh, widget);
-            if (proposedHFW > proposedRect.height()) {
+            qreal minExtent;
+            qreal maxExtent;
+            qreal constraint;
+            qreal proposed;
+            if (hasHFW) {
+                minExtent = min.height();
+                maxExtent = max.height();
+                constraint = width;
+                proposed = proposedRect.height();
+            } else {
+                // width for height
+                minExtent = min.width();
+                maxExtent = max.width();
+                constraint = height;
+                proposed = proposedRect.width();
+            }
+            if (minimumHeightForWidth(constraint, minExtent, maxExtent, widget, hasHFW) > proposed) {
                 QSizeF effectiveSize = closestAcceptableSize(QSizeF(width, height), widget);
                 width = effectiveSize.width();
                 height = effectiveSize.height();

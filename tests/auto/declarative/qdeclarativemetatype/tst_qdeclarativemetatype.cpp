@@ -313,7 +313,7 @@ void tst_qdeclarativemetatype::qmlParserStatusCast()
     QVERIFY(reinterpret_cast<char *>((QObject *)&t) != reinterpret_cast<char *>((QDeclarativeParserStatus *)&t));
 
     QDeclarativeParserStatus *status = reinterpret_cast<QDeclarativeParserStatus *>(reinterpret_cast<char *>((QObject *)&t) + cast);
-    QCOMPARE(status, &t);
+    QCOMPARE(status, (QDeclarativeParserStatus*)&t);
 }
 
 void tst_qdeclarativemetatype::qmlPropertyValueSourceCast()
@@ -333,7 +333,7 @@ void tst_qdeclarativemetatype::qmlPropertyValueSourceCast()
     QVERIFY(reinterpret_cast<char *>((QObject *)&t) != reinterpret_cast<char *>((QDeclarativePropertyValueSource *)&t));
 
     QDeclarativePropertyValueSource *source = reinterpret_cast<QDeclarativePropertyValueSource *>(reinterpret_cast<char *>((QObject *)&t) + cast);
-    QCOMPARE(source, &t);
+    QCOMPARE(source, (QDeclarativePropertyValueSource*)&t);
 }
 
 void tst_qdeclarativemetatype::qmlPropertyValueInterceptorCast()
@@ -353,7 +353,7 @@ void tst_qdeclarativemetatype::qmlPropertyValueInterceptorCast()
     QVERIFY(reinterpret_cast<char *>((QObject *)&t) != reinterpret_cast<char *>((QDeclarativePropertyValueInterceptor *)&t));
 
     QDeclarativePropertyValueInterceptor *interceptor = reinterpret_cast<QDeclarativePropertyValueInterceptor *>(reinterpret_cast<char *>((QObject *)&t) + cast);
-    QCOMPARE(interceptor, &t);
+    QCOMPARE(interceptor, (QDeclarativePropertyValueInterceptor*)&t);
 }
 
 void tst_qdeclarativemetatype::isList()

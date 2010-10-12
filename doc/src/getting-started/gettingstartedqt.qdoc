@@ -28,8 +28,8 @@
 /*!
     \page gettingstartedqt.html
 
-    \title Getting Started programming with Qt
-	\ingroup gettingStarted
+    \title Getting Started Programming with Qt
+        \ingroup gettingStarted
 
     Welcome to the world of Qt--the cross-platform GUI toolkit. In
     this getting started guide, we teach basic Qt knowledge by
@@ -85,7 +85,7 @@
     other widgets), it is possible to show a single widget in its own
     window. Widgets are not visible by default; the function
     \l{QWidget::}{show()} makes the widget visible.
- 
+
     Line 11 makes the QApplication enter its event loop. When a Qt
     application is running, events are generated and sent to the
     widgets of the application. Examples of events are mouse presses

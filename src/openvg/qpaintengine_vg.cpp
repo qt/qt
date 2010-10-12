@@ -61,11 +61,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// vgDrawGlyphs() only exists in OpenVG 1.1 and higher.
-#if !defined(OPENVG_VERSION_1_1) && !defined(QVG_NO_DRAW_GLYPHS)
-#define QVG_NO_DRAW_GLYPHS 1
-#endif
-
 // vgRenderToMask() only exists in OpenVG 1.1 and higher.
 // Also, disable masking completely if we are using the scissor to clip.
 #if !defined(OPENVG_VERSION_1_1) && !defined(QVG_NO_RENDER_TO_MASK)
@@ -75,10 +70,10 @@ QT_BEGIN_NAMESPACE
 #define QVG_NO_RENDER_TO_MASK 1
 #endif
 
-#if !defined(QVG_NO_DRAW_GLYPHS)
-
 // use the same rounding as in qrasterizer.cpp (6 bit fixed point)
 static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
+
+#if !defined(QVG_NO_DRAW_GLYPHS)
 
 Q_DECL_IMPORT extern int qt_defaultDpiX();
 Q_DECL_IMPORT extern int qt_defaultDpiY();
@@ -246,7 +241,11 @@ public:
     inline void ensurePathTransform()
     {
         if (!pathTransformSet) {
-            setTransform(VG_MATRIX_PATH_USER_TO_SURFACE, pathTransform);
+            QTransform aliasedTransform = pathTransform;
+            if (renderingQuality == VG_RENDERING_QUALITY_NONANTIALIASED && currentPen != Qt::NoPen)
+                aliasedTransform = aliasedTransform
+                    * QTransform::fromTranslate(aliasedCoordinateDelta, -aliasedCoordinateDelta);
+            setTransform(VG_MATRIX_PATH_USER_TO_SURFACE, aliasedTransform);
             pathTransformSet = true;
         }
     }
@@ -304,6 +303,7 @@ inline void QVGPaintEnginePrivate::setRenderingQuality(VGRenderingQuality mode)
     if (renderingQuality != mode) {
         vgSeti(VG_RENDERING_QUALITY, mode);
         renderingQuality = mode;
+        pathTransformSet = false; // need to tweak transform for aliased stroking
     }
 }
 
@@ -958,7 +958,7 @@ VGPath QVGPaintEnginePrivate::roundedRectPath(const QRectF &rect, qreal xRadius,
         x1, y2 - (1 - KAPPA) * yRadius,
         x1, y2 - yRadius,
         x1, y1 + yRadius,                   // LineTo
-        x1, y1 + KAPPA * yRadius,           // CurveTo
+        x1, y1 + (1 - KAPPA) * yRadius,     // CurveTo
         x1 + (1 - KAPPA) * xRadius, y1,
         x1 + xRadius, y1
     };

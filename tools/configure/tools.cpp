@@ -91,8 +91,8 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
                 QStringList components = buffer.split( '=' );
                 if ( components.size() >= 2 ) {
                     QStringList::Iterator it = components.begin();
-                    QString key = (*it++).trimmed().replace( "\"", QString() ).toUpper();
-                    QString value = (*it++).trimmed().replace( "\"", QString() );
+                    QString key = (*it++).trimmed().remove('"').toUpper();
+                    QString value = (*it++).trimmed().remove('"');
                     licenseInfo[ key ] = value;
                 }
             }
@@ -111,7 +111,7 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
     // Verify license info...
     QString licenseKey = licenseInfo["LICENSEKEYEXT"];
     QByteArray clicenseKey = licenseKey.toLatin1();
-    //We check the licence
+    //We check the license
     static const char * const SEP = "-";
     char *licenseParts[NUMBER_OF_PARTS];
     int partNumber = 0;
@@ -218,7 +218,7 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
 
     if (QFile::exists(dictionary["QT_SOURCE_TREE"] + "/.LICENSE")) {
         // Generic, no-suffix license
-        dictionary["LICENSE_EXTENSION"] = QString();
+        dictionary["LICENSE_EXTENSION"].clear();
     } else if (dictionary["LICENSE_EXTENSION"].isEmpty()) {
         cout << "License file does not contain proper license key." << endl;
         dictionary["DONE"] = "error";
@@ -239,7 +239,7 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
         fromLicenseFile += "-US";
 
     if (!CopyFile((wchar_t*)QDir::toNativeSeparators(fromLicenseFile).utf16(),
-        (wchar_t*)QDir::toNativeSeparators(toLicenseFile).utf16(), FALSE)) {
+        (wchar_t*)QDir::toNativeSeparators(toLicenseFile).utf16(), false)) {
         cout << "Failed to copy license file (" << fromLicenseFile << ")";
         dictionary["DONE"] = "error";
         return;

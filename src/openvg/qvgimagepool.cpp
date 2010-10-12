@@ -154,16 +154,23 @@ bool QVGImagePool::reclaimSpace(VGImageFormat format,
     Q_UNUSED(width);
     Q_UNUSED(height);
 
-    if (data)
+    bool succeeded = false;
+    bool wasInLRU = false;
+    if (data) {
+        wasInLRU = data->inLRU;
         moveToHeadOfLRU(data);
+    }
 
     QVGPixmapData *lrudata = pixmapLRU();
     if (lrudata && lrudata != data) {
         lrudata->reclaimImages();
-        return true;
+        succeeded = true;
     }
 
-    return false;
+    if (data && !wasInLRU)
+        removeFromLRU(data);
+
+    return succeeded;
 }
 
 void QVGImagePool::hibernate()

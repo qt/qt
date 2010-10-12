@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 
 Item {
     id: titleBar
@@ -78,7 +78,7 @@ Item {
             }
             elide: Text.ElideLeft
             text: (rssModel.tags=="" ? untaggedString : taggedString + rssModel.tags)
-            font.bold: true; color: "White"; style: Text.Raised; styleColor: "Black"
+            font.bold: true; font.pixelSize: 15; color: "White"; style: Text.Raised; styleColor: "Black"
         }
 
         Button {

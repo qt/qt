@@ -724,7 +724,7 @@ SignalSlotEditorWindow::SignalSlotEditorWindow(QDesignerFormEditorInterface *cor
                                 | QAbstractItemView::EditKeyPressed);
     m_view->setRootIsDecorated(false);
     m_view->setTextElideMode (Qt::ElideMiddle);
-    connect(m_view, SIGNAL(activated(QModelIndex)), this, SLOT(updateUi()));
+    connect(m_view->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)), this, SLOT(updateUi()));
     connect(m_view->header(), SIGNAL(sectionDoubleClicked(int)), m_view, SLOT(resizeColumnToContents(int)));
 
     QVBoxLayout *layout = new QVBoxLayout(this);

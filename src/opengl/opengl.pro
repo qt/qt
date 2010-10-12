@@ -11,30 +11,30 @@ unix:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
 
 include(../qbase.pri)
 
-!win32:!embedded:!mac:CONFIG	   += x11
+!win32:!embedded:!mac:!symbian:CONFIG	   += x11
 contains(QT_CONFIG, opengl):CONFIG += opengl
 contains(QT_CONFIG, opengles1):CONFIG += opengles1
 contains(QT_CONFIG, opengles2):CONFIG += opengles2
 contains(QT_CONFIG, egl):CONFIG += egl
 
 HEADERS += qgl.h \
-	   qgl_p.h \
-	   qglcolormap.h \
+           qgl_p.h \
+           qglcolormap.h \
            qglfunctions.h \
-	   qglpixelbuffer.h \
+           qglpixelbuffer.h \
            qglpixelbuffer_p.h \
-	   qglframebufferobject.h  \
+           qglframebufferobject.h  \
            qglframebufferobject_p.h  \
            qglextensions_p.h \
            qglpaintdevice_p.h \
            qglbuffer.h \
 
 
-SOURCES	+= qgl.cpp \
-	   qglcolormap.cpp \
+SOURCES += qgl.cpp \
+           qglcolormap.cpp \
            qglfunctions.cpp \
-	   qglpixelbuffer.cpp \
-	   qglframebufferobject.cpp \
+           qglpixelbuffer.cpp \
+           qglframebufferobject.cpp \
            qglextensions.cpp \
            qglpaintdevice.cpp \
            qglbuffer.cpp \
@@ -121,7 +121,7 @@ mac {
 win32:!wince*: {
     DEFINES += QT_NO_EGL
     SOURCES += qgl_win.cpp \
-	       qglpixelbuffer_win.cpp
+	           qglpixelbuffer_win.cpp
 }
 wince*: {
     SOURCES += qgl_wince.cpp \
@@ -147,6 +147,16 @@ embedded {
     } else {
        DEFINES *= QT_NO_FREETYPE
     }
+}
+
+symbian {
+    SOURCES += qgl_symbian.cpp \
+               qglpixelbuffer_egl.cpp \
+               qgl_egl.cpp
+
+    HEADERS += qgl_egl_p.h
+
+    symbian:TARGET.UID3 = 0x2002131A
 }
 
 INCLUDEPATH += ../3rdparty/harfbuzz/src

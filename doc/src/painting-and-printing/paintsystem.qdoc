@@ -50,6 +50,8 @@
     \brief A system for painting on the screen or on print devices using the same API
     \ingroup qt-graphics
     \ingroup frameworks-technologies
+    \ingroup qt-basic-concepts
+	
 
     Qt's paint system enables painting on screen and print devices
     using the same API, and is primarily based on the QPainter,

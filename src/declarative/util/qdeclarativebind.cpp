@@ -72,6 +72,7 @@ public:
 
 /*!
     \qmlclass Binding QDeclarativeBind
+    \ingroup qml-working-with-data
     \since 4.7
     \brief The Binding element allows arbitrary property bindings to be created.
 
@@ -94,18 +95,7 @@ public:
     immediately pushed onto the new target.
 
     \sa QtDeclarative
-    */
-/*!
-    \internal
-    \class QDeclarativeBind
-    \brief The QDeclarativeBind class allows arbitrary property bindings to be created.
-
-    Simple bindings are usually earier to do in-place rather than creating a
-    QDeclarativeBind item. For that reason, QDeclarativeBind is usually used to transfer property information
-    from Qml to C++.
-
-    \sa cppqml
-    */
+*/
 QDeclarativeBind::QDeclarativeBind(QObject *parent)
     : QObject(*(new QDeclarativeBindPrivate), parent)
 {

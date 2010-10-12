@@ -58,26 +58,95 @@
 
 QT_BEGIN_NAMESPACE
 
+#define FONTLOADER_MAXIMUM_REDIRECT_RECURSION 16
+
+class QDeclarativeFontObject : public QObject
+{
+Q_OBJECT
+
+public:
+    QDeclarativeFontObject(int _id);
+
+    void download(const QUrl &url, QNetworkAccessManager *manager);
+
+Q_SIGNALS:
+    void fontDownloaded(const QString&, QDeclarativeFontLoader::Status);
+
+private Q_SLOTS:
+    void replyFinished();
+
+public:
+    int id;
+
+private:
+    QNetworkReply *reply;
+    int redirectCount;
+
+    Q_DISABLE_COPY(QDeclarativeFontObject)
+};
+
+QDeclarativeFontObject::QDeclarativeFontObject(int _id = -1)
+    : QObject(0), id(_id), reply(0), redirectCount(0) {}
+
+
+void QDeclarativeFontObject::download(const QUrl &url, QNetworkAccessManager *manager)
+{
+    QNetworkRequest req(url);
+    req.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
+    reply = manager->get(req);
+    QObject::connect(reply, SIGNAL(finished()), this, SLOT(replyFinished()));
+}
+
+void QDeclarativeFontObject::replyFinished()
+{
+    if (reply) {
+        redirectCount++;
+        if (redirectCount < FONTLOADER_MAXIMUM_REDIRECT_RECURSION) {
+            QVariant redirect = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+            if (redirect.isValid()) {
+                QUrl url = reply->url().resolved(redirect.toUrl());
+                QNetworkAccessManager *manager = reply->manager();
+                reply->deleteLater();
+                reply = 0;
+                download(url, manager);
+                return;
+            }
+        }
+        redirectCount = 0;
+
+        if (!reply->error()) {
+            id = QFontDatabase::addApplicationFontFromData(reply->readAll());
+            if (id != -1)
+                emit fontDownloaded(QFontDatabase::applicationFontFamilies(id).at(0), QDeclarativeFontLoader::Ready);
+            else
+                emit fontDownloaded(QString(), QDeclarativeFontLoader::Error);
+        } else {
+            emit fontDownloaded(QString(), QDeclarativeFontLoader::Error);
+        }
+        reply->deleteLater();
+        reply = 0;
+    }
+}
+
+
 class QDeclarativeFontLoaderPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeFontLoader)
 
 public:
-    QDeclarativeFontLoaderPrivate() : reply(0), status(QDeclarativeFontLoader::Null), redirectCount(0) {}
-
-    void addFontToDatabase(const QByteArray &);
+    QDeclarativeFontLoaderPrivate() : status(QDeclarativeFontLoader::Null) {}
 
     QUrl url;
     QString name;
-    QNetworkReply *reply;
     QDeclarativeFontLoader::Status status;
-    int redirectCount;
+    static QHash<QUrl, QDeclarativeFontObject*> fonts;
 };
 
-
+QHash<QUrl, QDeclarativeFontObject*> QDeclarativeFontLoaderPrivate::fonts;
 
 /*!
     \qmlclass FontLoader QDeclarativeFontLoader
+  \ingroup qml-utility-elements
     \since 4.7
     \brief The FontLoader element allows fonts to be loaded by name or URL.
 
@@ -88,7 +157,7 @@ public:
 
     For example:
     \qml
-    import Qt 4.7
+    import QtQuick 1.0
 
     Column { 
         FontLoader { id: fixedFont; name: "Courier" }
@@ -126,29 +195,61 @@ void QDeclarativeFontLoader::setSource(const QUrl &url)
     if (url == d->url)
         return;
     d->url = qmlContext(this)->resolvedUrl(url);
+    emit sourceChanged();
 
-    d->status = Loading;
-    emit statusChanged();
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
-    QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(d->url);
-    if (!lf.isEmpty()) {
-        int id = QFontDatabase::addApplicationFont(lf);
-        if (id != -1) {
-            d->name = QFontDatabase::applicationFontFamilies(id).at(0);
-            emit nameChanged();
-            d->status = QDeclarativeFontLoader::Ready;
+    QString localFile = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(d->url);
+    if (!localFile.isEmpty()) {
+        if (!d->fonts.contains(d->url)) {
+            int id = QFontDatabase::addApplicationFont(localFile);
+            if (id != -1) {
+                updateFontInfo(QFontDatabase::applicationFontFamilies(id).at(0), Ready);
+                QDeclarativeFontObject *fo = new QDeclarativeFontObject(id);
+                d->fonts[d->url] = fo;
+            } else {
+                updateFontInfo(QString(), Error);
+            }
         } else {
-            d->status = QDeclarativeFontLoader::Error;
-            qmlInfo(this) << "Cannot load font: \"" << url.toString() << "\"";
+            updateFontInfo(QFontDatabase::applicationFontFamilies(d->fonts[d->url]->id).at(0), Ready);
         }
-        emit statusChanged();
     } else
 #endif
     {
-        QNetworkRequest req(d->url);
-        req.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
-        d->reply = qmlEngine(this)->networkAccessManager()->get(req);
-        QObject::connect(d->reply, SIGNAL(finished()), this, SLOT(replyFinished()));
+        if (!d->fonts.contains(d->url)) {
+            QDeclarativeFontObject *fo = new QDeclarativeFontObject;
+            d->fonts[d->url] = fo;
+            fo->download(d->url, qmlEngine(this)->networkAccessManager());
+            d->status = Loading;
+            emit statusChanged();
+            QObject::connect(fo, SIGNAL(fontDownloaded(QString, QDeclarativeFontLoader::Status)),
+                this, SLOT(updateFontInfo(QString, QDeclarativeFontLoader::Status)));
+        } else {
+            QDeclarativeFontObject *fo = d->fonts[d->url];
+            if (fo->id == -1) {
+                d->status = Loading;
+                emit statusChanged();
+                QObject::connect(fo, SIGNAL(fontDownloaded(QString, QDeclarativeFontLoader::Status)),
+                    this, SLOT(updateFontInfo(QString, QDeclarativeFontLoader::Status)));
+            }
+            else
+                updateFontInfo(QFontDatabase::applicationFontFamilies(fo->id).at(0), Ready);
+        }
+    }
+}
+
+void QDeclarativeFontLoader::updateFontInfo(const QString& name, QDeclarativeFontLoader::Status status)
+{
+    Q_D(QDeclarativeFontLoader);
+
+    if (name != d->name) {
+        d->name = name;
+        emit nameChanged();
+    }
+    if (status != d->status) {
+        if (status == Error)
+            qmlInfo(this) << "Cannot load font: \"" << d->url.toString() << "\"";
+        d->status = status;
+        emit statusChanged();
     }
 }
 
@@ -175,7 +276,7 @@ QString QDeclarativeFontLoader::name() const
 void QDeclarativeFontLoader::setName(const QString &name)
 {
     Q_D(QDeclarativeFontLoader);
-    if (d->name == name )
+    if (d->name == name)
         return;
     d->name = name;
     emit nameChanged();
@@ -221,52 +322,6 @@ QDeclarativeFontLoader::Status QDeclarativeFontLoader::status() const
     return d->status;
 }
 
-#define FONTLOADER_MAXIMUM_REDIRECT_RECURSION 16
-
-void QDeclarativeFontLoader::replyFinished()
-{
-    Q_D(QDeclarativeFontLoader);
-    if (d->reply) {
-        d->redirectCount++;
-        if (d->redirectCount < FONTLOADER_MAXIMUM_REDIRECT_RECURSION) {
-            QVariant redirect = d->reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
-            if (redirect.isValid()) {
-                QUrl url = d->reply->url().resolved(redirect.toUrl());
-                d->reply->deleteLater();
-                d->reply = 0;
-                setSource(url);
-                return;
-            }
-        }
-        d->redirectCount=0;
-
-        if (!d->reply->error()) {
-            QByteArray ba = d->reply->readAll();
-            d->addFontToDatabase(ba);
-        } else {
-            d->status = Error;
-            qmlInfo(this) << "Cannot load font: \"" << d->reply->url().toString() << "\"";
-            emit statusChanged();
-        }
-        d->reply->deleteLater();
-        d->reply = 0;
-    }
-}
-
-void QDeclarativeFontLoaderPrivate::addFontToDatabase(const QByteArray &ba)
-{
-    Q_Q(QDeclarativeFontLoader);
-
-    int id = QFontDatabase::addApplicationFontFromData(ba);
-    if (id != -1) {
-        name = QFontDatabase::applicationFontFamilies(id).at(0);
-        emit q->nameChanged();
-        status = QDeclarativeFontLoader::Ready;
-    } else {
-        status = QDeclarativeFontLoader::Error;
-        qmlInfo(q) << "Cannot load font: \"" << url.toString() << "\"";
-    }
-    emit q->statusChanged();
-}
-
 QT_END_NAMESPACE
+
+#include <qdeclarativefontloader.moc>

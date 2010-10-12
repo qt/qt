@@ -61,15 +61,6 @@ inline QUrl TEST_FILE(const QString &filename)
     return QUrl::fromLocalFile(QLatin1String(SRCDIR) + QLatin1String("/data/") + filename);
 }
 
-#define TRY_WAIT(expr) \
-    do { \
-        for (int ii = 0; ii < 6; ++ii) { \
-            if ((expr)) break; \
-            QTest::qWait(50); \
-        } \
-        QVERIFY((expr)); \
-    } while (false)
-
 class tst_QDeclarativeLoader : public QObject
 
 {
@@ -98,6 +89,7 @@ private slots:
     void deleteComponentCrash();
     void nonItem();
     void vmeErrors();
+    void creationContext();
 
 private:
     QDeclarativeEngine engine;
@@ -111,7 +103,7 @@ tst_QDeclarativeLoader::tst_QDeclarativeLoader()
 void tst_QDeclarativeLoader::url()
 {
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\nLoader { property int did_load: 0; onLoaded: did_load=123; source: \"Rect120x60.qml\" }"), TEST_FILE(""));
+    component.setData(QByteArray("import QtQuick 1.0\nLoader { property int did_load: 0; onLoaded: did_load=123; source: \"Rect120x60.qml\" }"), TEST_FILE(""));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader != 0);
     QVERIFY(loader->item());
@@ -146,10 +138,10 @@ void tst_QDeclarativeLoader::component()
 
 void tst_QDeclarativeLoader::invalidUrl()
 {
-    QTest::ignoreMessage(QtWarningMsg, QString("<Unknown File>: File error for URL " + QUrl::fromLocalFile(SRCDIR "/data/IDontExist.qml").toString()).toUtf8().constData());
+    QTest::ignoreMessage(QtWarningMsg, QString(QUrl::fromLocalFile(SRCDIR "/data/IDontExist.qml").toString() + ": File not found").toUtf8().constData());
 
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\nLoader { source: \"IDontExist.qml\" }"), TEST_FILE(""));
+    component.setData(QByteArray("import QtQuick 1.0\nLoader { source: \"IDontExist.qml\" }"), TEST_FILE(""));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader != 0);
     QVERIFY(loader->item() == 0);
@@ -165,7 +157,7 @@ void tst_QDeclarativeLoader::clear()
     {
         QDeclarativeComponent component(&engine);
         component.setData(QByteArray(
-                    "import Qt 4.7\n"
+                    "import QtQuick 1.0\n"
                     " Loader { id: loader\n"
                     "  source: 'Rect120x60.qml'\n"
                     "  Timer { interval: 200; running: true; onTriggered: loader.source = '' }\n"
@@ -229,7 +221,7 @@ void tst_QDeclarativeLoader::clear()
 void tst_QDeclarativeLoader::urlToComponent()
 {
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\n"
+    component.setData(QByteArray("import QtQuick 1.0\n"
                 "Loader {\n"
                 " id: loader\n"
                 " Component { id: myComp; Rectangle { width: 10; height: 10 } }\n"
@@ -454,13 +446,13 @@ void tst_QDeclarativeLoader::networkRequestUrl()
     server.serveDirectory(SRCDIR "/data");
 
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\nLoader { property int did_load : 0; source: \"http://127.0.0.1:14450/Rect120x60.qml\"; onLoaded: did_load=123 }"), QUrl::fromLocalFile(SRCDIR "/dummy.qml"));
+    component.setData(QByteArray("import QtQuick 1.0\nLoader { property int did_load : 0; source: \"http://127.0.0.1:14450/Rect120x60.qml\"; onLoaded: did_load=123 }"), QUrl::fromLocalFile(SRCDIR "/dummy.qml"));
     if (component.isError())
         qDebug() << component.errors();
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader != 0);
 
-    TRY_WAIT(loader->status() == QDeclarativeLoader::Ready);
+    QTRY_VERIFY(loader->status() == QDeclarativeLoader::Ready);
 
     QVERIFY(loader->item());
     QCOMPARE(loader->progress(), 1.0);
@@ -479,7 +471,7 @@ void tst_QDeclarativeLoader::networkComponent()
 
     QDeclarativeComponent component(&engine);
     component.setData(QByteArray(
-                "import Qt 4.7\n"
+                "import QtQuick 1.0\n"
                 "import \"http://127.0.0.1:14450/\" as NW\n"
                 "Item {\n"
                 " Component { id: comp; NW.SlowRect {} }\n"
@@ -491,7 +483,7 @@ void tst_QDeclarativeLoader::networkComponent()
 
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(item->QGraphicsObject::children().at(1)); 
     QVERIFY(loader);
-    TRY_WAIT(loader->status() == QDeclarativeLoader::Ready);
+    QTRY_VERIFY(loader->status() == QDeclarativeLoader::Ready);
 
     QVERIFY(loader->item());
     QCOMPARE(loader->progress(), 1.0);
@@ -508,14 +500,14 @@ void tst_QDeclarativeLoader::failNetworkRequest()
     QVERIFY(server.isValid());
     server.serveDirectory(SRCDIR "/data");
 
-    QTest::ignoreMessage(QtWarningMsg, "<Unknown File>: Network error for URL http://127.0.0.1:14450/IDontExist.qml");
+    QTest::ignoreMessage(QtWarningMsg, "http://127.0.0.1:14450/IDontExist.qml: File not found");
 
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\nLoader { property int did_load: 123; source: \"http://127.0.0.1:14450/IDontExist.qml\"; onLoaded: did_load=456 }"), QUrl::fromLocalFile("http://127.0.0.1:14450/dummy.qml"));
+    component.setData(QByteArray("import QtQuick 1.0\nLoader { property int did_load: 123; source: \"http://127.0.0.1:14450/IDontExist.qml\"; onLoaded: did_load=456 }"), QUrl::fromLocalFile("http://127.0.0.1:14450/dummy.qml"));
     QDeclarativeLoader *loader = qobject_cast<QDeclarativeLoader*>(component.create());
     QVERIFY(loader != 0);
 
-    TRY_WAIT(loader->status() == QDeclarativeLoader::Error);
+    QTRY_VERIFY(loader->status() == QDeclarativeLoader::Error);
 
     QVERIFY(loader->item() == 0);
     QCOMPARE(loader->progress(), 0.0);
@@ -569,6 +561,19 @@ void tst_QDeclarativeLoader::vmeErrors()
     QVERIFY(loader->item() == 0);
 
     delete loader;
+}
+
+// QTBUG-13481
+void tst_QDeclarativeLoader::creationContext()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("creationContext.qml"));
+
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test").toBool(), true);
+
+    delete o;
 }
 
 QTEST_MAIN(tst_QDeclarativeLoader)

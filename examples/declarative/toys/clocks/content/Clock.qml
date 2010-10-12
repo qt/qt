@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 
 Item {
     id: clock
@@ -77,7 +77,7 @@ Item {
             origin.x: 7.5; origin.y: 73;
             angle: (clock.hours * 30) + (clock.minutes * 0.5)
             Behavior on angle {
-                RotationAnimation{ direction: RotationAnimation.Clockwise }
+                SpringAnimation { spring: 2; damping: 0.2; modulus: 360 }
             }
         }
     }
@@ -91,7 +91,7 @@ Item {
             origin.x: 6.5; origin.y: 83;
             angle: clock.minutes * 6
             Behavior on angle {
-                RotationAnimation{ direction: RotationAnimation.Clockwise }
+                SpringAnimation { spring: 2; damping: 0.2; modulus: 360 }
             }
         }
     }
@@ -105,7 +105,7 @@ Item {
             origin.x: 2.5; origin.y: 80;
             angle: clock.seconds * 6
             Behavior on angle {
-                RotationAnimation{ direction: RotationAnimation.Clockwise }
+                SpringAnimation { spring: 2; damping: 0.2; modulus: 360 }
             }
         }
     }

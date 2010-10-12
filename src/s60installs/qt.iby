@@ -20,6 +20,7 @@ file=ABI_DIR\BUILD_DIR\phonon.dll            SHARED_LIB_DIR\phonon.dll
 file=ABI_DIR\BUILD_DIR\QtMultimedia.dll      SHARED_LIB_DIR\QtMultimedia.dll
 file=ABI_DIR\BUILD_DIR\QtXmlPatterns.dll     SHARED_LIB_DIR\QtXmlPatterns.dll
 file=ABI_DIR\BUILD_DIR\QtDeclarative.dll     SHARED_LIB_DIR\QtDeclarative.dll
+file=ABI_DIR\BUILD_DIR\QtOpenGL.dll          SHARED_LIB_DIR\QtOpenGL.dll
 
 // imageformats
 file=ABI_DIR\BUILD_DIR\qgif.dll              SHARED_LIB_DIR\qgif.dll
@@ -50,6 +51,7 @@ file=ABI_DIR\BUILD_DIR\qaudio.dll            SHARED_LIB_DIR\qaudio.dll
 
 // graphicssystems
 file=ABI_DIR\BUILD_DIR\qvggraphicssystem.dll SHARED_LIB_DIR\qvggraphicssystem.dll
+file=ABI_DIR\BUILD_DIR\qglgraphicssystem.dll SHARED_LIB_DIR\qglgraphicssystem.dll
 
 // S60 version compatibility plugins for 5.0 (3.1 and 3.2 devices are never likely to have this in ROM,
 // so don't bother including those plugins
@@ -95,6 +97,7 @@ data=\epoc32\data\qt\qtlibspluginstubs\qaudio.qtplugin resource\qt\plugins\audio
 
 // graphicssystems
 data=\epoc32\data\z\resource\qt\plugins\graphicssystems\qvggraphicssystem.qtplugin      resource\qt\plugins\graphicssystems\qvggraphicssystem.qtplugin
+data=\epoc32\data\z\resource\qt\plugins\graphicssystems\qglgraphicssystem.qtplugin      resource\qt\plugins\graphicssystems\qglgraphicssystem.qtplugin
 
 // Stub sis file
 data=ZSYSTEM\install\qt_stub.sis    System\Install\qt_stub.sis

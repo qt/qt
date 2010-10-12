@@ -38,7 +38,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 #include "qplatformdefs.h"
 #include "qlibrary.h"
 
@@ -61,10 +60,9 @@
 #include <qdebug.h>
 #include <qvector.h>
 #include <qdir.h>
+#include "qelfparser_p.h"
 
 QT_BEGIN_NAMESPACE
-
-//#define QT_DEBUG_COMPONENT
 
 #ifdef QT_NO_DEBUG
 #  define QLIBRARY_AS_DEBUG false
@@ -295,14 +293,6 @@ static bool qt_parse_pattern(const char *s, uint *version, bool *debug, QByteArr
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_SYMBIAN) && !defined(QT_NO_PLUGIN_CHECK)
 
-#if defined(Q_OS_FREEBSD) || defined(Q_OS_LINUX)
-#  define USE_MMAP
-QT_BEGIN_INCLUDE_NAMESPACE
-#  include <sys/types.h>
-#  include <sys/mman.h>
-QT_END_INCLUDE_NAMESPACE
-#endif // Q_OS_FREEBSD || Q_OS_LINUX
-
 static long qt_find_pattern(const char *s, ulong s_len,
                              const char *pattern, ulong p_len)
 {
@@ -363,57 +353,51 @@ static bool qt_unix_query(const QString &library, uint *version, bool *debug, QB
     }
 
     QByteArray data;
-    char *filedata = 0;
-    ulong fdlen = 0;
-
-# ifdef USE_MMAP
-    char *mapaddr = 0;
-    size_t maplen = file.size();
-    mapaddr = (char *) mmap(mapaddr, maplen, PROT_READ, MAP_PRIVATE, file.handle(), 0);
-    if (mapaddr != MAP_FAILED) {
-        // mmap succeeded
-        filedata = mapaddr;
-        fdlen = maplen;
-    } else {
-        // mmap failed
-        if (qt_debug_component()) {
-            qWarning("mmap: %s", qPrintable(qt_error_string(errno)));
-        }
-        if (lib)
-            lib->errorString = QLibrary::tr("Could not mmap '%1': %2")
-                .arg(library)
-                .arg(qt_error_string());
-# endif // USE_MMAP
+    const char *filedata = 0;
+    ulong fdlen = file.size();
+    filedata = (char *) file.map(0, fdlen);
+    if (filedata == 0) {
         // try reading the data into memory instead
         data = file.readAll();
-        filedata = data.data();
+        filedata = data.constData();
         fdlen = data.size();
-# ifdef USE_MMAP
     }
-# endif // USE_MMAP
 
-    // verify that the pattern is present in the plugin
+    /*
+       ELF binaries on GNU, have .qplugin sections.
+    */
+    long pos = 0;
     const char pattern[] = "pattern=QT_PLUGIN_VERIFICATION_DATA";
     const ulong plen = qstrlen(pattern);
-    long pos = qt_find_pattern(filedata, fdlen, pattern, plen);
-
+#if defined (Q_OF_ELF) && defined(Q_CC_GNU)
+    int r = QElfParser().parse(filedata, fdlen, library, lib, &pos, &fdlen);
+    if (r == QElfParser::NoQtSection) {
+        if (pos > 0) {
+            // find inside .rodata
+            long rel = qt_find_pattern(filedata + pos, fdlen, pattern, plen);
+            if (rel < 0) {
+                pos = -1;
+            } else {
+                pos += rel;
+            }
+        } else {
+            pos = qt_find_pattern(filedata, fdlen, pattern, plen);
+        }
+    } else if (r != QElfParser::Ok) {
+        if (lib && qt_debug_component()) {
+            qWarning(qPrintable(lib->errorString));
+        }
+        return false;
+    }
+#else
+    pos = qt_find_pattern(filedata, fdlen, pattern, plen);
+#endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
     bool ret = false;
     if (pos >= 0)
         ret = qt_parse_pattern(filedata + pos, version, debug, key);
 
     if (!ret && lib)
         lib->errorString = QLibrary::tr("Plugin verification data mismatch in '%1'").arg(library);
-# ifdef USE_MMAP
-    if (mapaddr != MAP_FAILED && munmap(mapaddr, maplen) != 0) {
-        if (qt_debug_component())
-            qWarning("munmap: %s", qPrintable(qt_error_string(errno)));
-        if (lib)
-            lib->errorString = QLibrary::tr("Could not unmap '%1': %2")
-                .arg(library)
-                .arg( qt_error_string() );
-    }
-# endif // USE_MMAP
-
     file.close();
     return ret;
 }
@@ -426,9 +410,6 @@ struct LibraryData {
     LibraryData() : settings(0) { }
     ~LibraryData() {
         delete settings;
-        foreach(QLibraryPrivate *lib, loadedLibs) {
-            lib->unload();
-        }
     }
 
     QSettings *settings;
@@ -863,9 +844,15 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
             .arg(qt_version&0xff)
             .arg(debug ? QLatin1String("debug") : QLatin1String("release"));
     } else if (key != QT_BUILD_KEY
+               // we may have some compatibility keys, try them too:
 #ifdef QT_BUILD_KEY_COMPAT
-               // be sure to load plugins using an older but compatible build key
                && key != QT_BUILD_KEY_COMPAT
+#endif
+#ifdef QT_BUILD_KEY_COMPAT2
+               && key != QT_BUILD_KEY_COMPAT2
+#endif
+#ifdef QT_BUILD_KEY_COMPAT3
+               && key != QT_BUILD_KEY_COMPAT3
 #endif
                ) {
         if (qt_debug_component()) {
@@ -1290,15 +1277,11 @@ QLibrary::LoadHints QLibrary::loadHints() const
 /* Internal, for debugging */
 bool qt_debug_component()
 {
-#if defined(QT_DEBUG_COMPONENT)
-    return true;    //compatibility?
-#else
     static int debug_env = -1;
     if (debug_env == -1)
        debug_env = QT_PREPEND_NAMESPACE(qgetenv)("QT_DEBUG_PLUGINS").toInt();
 
     return debug_env != 0;
-#endif
 }
 
 QT_END_NAMESPACE

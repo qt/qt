@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 import "core"
 
 Rectangle {
@@ -100,6 +100,7 @@ Rectangle {
         }
     }
 
+//! [states]
     states:[
         State {
             name: "DRAWER_OPEN"
@@ -116,7 +117,9 @@ Rectangle {
             PropertyChanges { target: arrowIcon; rotation: 0 }
         }
     ]
+//! [states]
 
+//! [transitions]
     transitions: [
         Transition {
             to: "*"
@@ -125,4 +128,5 @@ Rectangle {
             NumberAnimation { target: drawer; properties: "y"; duration: 100; easing.type: Easing.OutExpo }
         }
     ]
+//! [transitions]
 }

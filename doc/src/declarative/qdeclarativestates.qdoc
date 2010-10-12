@@ -221,7 +221,7 @@ Rectangle {
 
 This \l Transition defines that if any \c x or \c y properties have changed
 during a state change within this item, their values should be animated over 500
-millliseconds.
+milliseconds.
 
 See the \l Transitions documentation for more information.
 

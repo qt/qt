@@ -45,6 +45,7 @@
 #include "diagramitem.h"
 #include "diagramscene.h"
 #include "diagramtextitem.h"
+#include "arrow.h"
 
 const int InsertTextButton = 10;
 
@@ -55,7 +56,7 @@ MainWindow::MainWindow()
     createToolBox();
     createMenus();
 
-    scene = new DiagramScene(itemMenu);
+    scene = new DiagramScene(itemMenu, this);
     scene->setSceneRect(QRectF(0, 0, 5000, 5000));
     connect(scene, SIGNAL(itemInserted(DiagramItem*)),
             this, SLOT(itemInserted(DiagramItem*)));
@@ -123,11 +124,22 @@ void MainWindow::buttonGroupClicked(int id)
 void MainWindow::deleteItem()
 {
     foreach (QGraphicsItem *item, scene->selectedItems()) {
-        if (item->type() == DiagramItem::Type) {
-            qgraphicsitem_cast<DiagramItem *>(item)->removeArrows();
+        if (item->type() == Arrow::Type) {
+            scene->removeItem(item);
+            Arrow *arrow = qgraphicsitem_cast<Arrow *>(item);
+            arrow->startItem()->removeArrow(arrow);
+            arrow->endItem()->removeArrow(arrow);
+            delete item;
         }
-        scene->removeItem(item);
     }
+
+    foreach (QGraphicsItem *item, scene->selectedItems()) {
+         if (item->type() == DiagramItem::Type) {
+             qgraphicsitem_cast<DiagramItem *>(item)->removeArrows();
+         }
+         scene->removeItem(item);
+         delete item;
+     }
 }
 //! [3]
 
@@ -313,7 +325,7 @@ void MainWindow::about()
 //! [21]
 void MainWindow::createToolBox()
 {
-    buttonGroup = new QButtonGroup;
+    buttonGroup = new QButtonGroup(this);
     buttonGroup->setExclusive(false);
     connect(buttonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(buttonGroupClicked(int)));
@@ -345,7 +357,7 @@ void MainWindow::createToolBox()
     QWidget *itemWidget = new QWidget;
     itemWidget->setLayout(layout);
 
-    backgroundButtonGroup = new QButtonGroup;
+    backgroundButtonGroup = new QButtonGroup(this);
     connect(backgroundButtonGroup, SIGNAL(buttonClicked(QAbstractButton*)),
             this, SLOT(backgroundButtonGroupClicked(QAbstractButton*)));
 
@@ -460,7 +472,6 @@ void MainWindow::createToolbars()
     editToolBar->addAction(sendBackAction);
 
     fontCombo = new QFontComboBox();
-    fontSizeCombo = new QComboBox();
     connect(fontCombo, SIGNAL(currentFontChanged(QFont)),
             this, SLOT(currentFontChanged(QFont)));
 
@@ -526,7 +537,7 @@ void MainWindow::createToolbars()
     linePointerButton->setCheckable(true);
     linePointerButton->setIcon(QIcon(":/images/linepointer.png"));
 
-    pointerTypeGroup = new QButtonGroup;
+    pointerTypeGroup = new QButtonGroup(this);
     pointerTypeGroup->addButton(pointerButton, int(DiagramScene::MoveItem));
     pointerTypeGroup->addButton(linePointerButton,
                                 int(DiagramScene::InsertLine));
@@ -605,7 +616,7 @@ QMenu *MainWindow::createColorMenu(const char *slot, QColor defaultColor)
     names << tr("black") << tr("white") << tr("red") << tr("blue")
           << tr("yellow");
 
-    QMenu *colorMenu = new QMenu;
+    QMenu *colorMenu = new QMenu(this);
     for (int i = 0; i < colors.count(); ++i) {
         QAction *action = new QAction(names.at(i), this);
         action->setData(colors.at(i));

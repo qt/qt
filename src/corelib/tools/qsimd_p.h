@@ -51,8 +51,13 @@ QT_BEGIN_HEADER
 #if defined(QT_NO_MAC_XARCH) || (defined(Q_OS_DARWIN) && (defined(__ppc__) || defined(__ppc64__)))
 // Disable MMX and SSE on Mac/PPC builds, or if the compiler
 // does not support -Xarch argument passing
-#undef QT_HAVE_SSE2
 #undef QT_HAVE_SSE
+#undef QT_HAVE_SSE2
+#undef QT_HAVE_SSE3
+#undef QT_HAVE_SSSE3
+#undef QT_HAVE_SSE4_1
+#undef QT_HAVE_SSE4_2
+#undef QT_HAVE_AVX
 #undef QT_HAVE_3DNOW
 #undef QT_HAVE_MMX
 #endif
@@ -85,6 +90,7 @@ QT_BEGIN_HEADER
 // SSE4.1 and SSE4.2 intrinsics
 #if (defined(QT_HAVE_SSE4_1) || defined(QT_HAVE_SSE4_2)) && (defined(__SSE4_1__) || defined(Q_CC_MSVC))
 #include <smmintrin.h>
+#include <nmmintrin.h>
 #endif
 
 // AVX intrinsics

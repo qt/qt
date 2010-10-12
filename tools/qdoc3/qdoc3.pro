@@ -6,6 +6,7 @@ DEFINES += QT_NO_CAST_TO_ASCII
 
 qdoc_bootstrapped {
     include(../../src/tools/bootstrap/bootstrap.pri)
+    SOURCES += ../../src/corelib/plugin/quuid.cpp
     DEFINES -= QT_NO_CAST_FROM_ASCII
     DEFINES += QT_NO_TRANSLATION
 } else {

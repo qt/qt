@@ -1963,8 +1963,8 @@ QString Tree::fullDocumentLocation(const Node *node) const
         if ((node->subType() == Node::QmlClass) ||
             (node->subType() == Node::QmlBasicType)) {
             QString fb = node->fileBase();
-            if (fb.startsWith(QLatin1String("QML:")))
-                return node->fileBase() + ".html";
+            if (fb.startsWith(QLatin1String("qml-")))
+                return fb + ".html";
             else
                 return "qml-" + node->fileBase() + ".html";
         } else
@@ -1981,7 +1981,7 @@ QString Tree::fullDocumentLocation(const Node *node) const
     else if ((parentNode = node->parent())) {
         if (parentNode->subType() == Node::QmlPropertyGroup) {
             parentNode = parentNode->parent();
-            parentName = "qml-" + parentNode->fileBase() + ".html";
+            parentName = fullDocumentLocation(parentNode);
         }
         else
             parentName = fullDocumentLocation(node->parent());

@@ -47,10 +47,10 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_DECL_IMPORT extern int qt_defaultDpi();
+Q_GUI_EXPORT int qt_defaultDpi();
 
 template<typename T>
-int qmlRegisterValueTypeEnums(const char *qmlName)
+int qmlRegisterValueTypeEnums(const char *uri, int versionMajor, int versionMinor, const char *qmlName)
 {
     QByteArray name(T::staticMetaObject.className());
 
@@ -63,7 +63,7 @@ int qmlRegisterValueTypeEnums(const char *qmlName)
 
         QString(),
 
-        "Qt", 4, 7, qmlName, &T::staticMetaObject,
+        uri, versionMajor, versionMinor, qmlName, &T::staticMetaObject,
 
         0, 0,
 
@@ -99,8 +99,12 @@ bool QDeclarativeValueTypeFactory::isValueType(int idx)
 
 void QDeclarativeValueTypeFactory::registerValueTypes()
 {
-    qmlRegisterValueTypeEnums<QDeclarativeEasingValueType>("Easing");
-    qmlRegisterValueTypeEnums<QDeclarativeFontValueType>("Font");
+    qmlRegisterValueTypeEnums<QDeclarativeEasingValueType>("QtQuick",1,0,"Easing");
+    qmlRegisterValueTypeEnums<QDeclarativeFontValueType>("QtQuick",1,0,"Font");
+#ifndef QT_NO_IMPORT_QT47_QML
+    qmlRegisterValueTypeEnums<QDeclarativeEasingValueType>("Qt",4,7,"Easing");
+    qmlRegisterValueTypeEnums<QDeclarativeFontValueType>("Qt",4,7,"Font");
+#endif
 }
 
 QDeclarativeValueType *QDeclarativeValueTypeFactory::valueType(int t)

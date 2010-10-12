@@ -238,6 +238,7 @@ public:
     bool testFunctionAttribute(Token tok, FunctionDef *def);
 
     void checkSuperClasses(ClassDef *def);
+    void checkProperties(ClassDef* cdef);
 };
 
 inline QByteArray noRef(const QByteArray &type)

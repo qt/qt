@@ -309,11 +309,14 @@ void tst_QDeclarativeRepeater::dataModel()
 
     QCOMPARE(container->childItems().count(), 4);
 
+    QSignalSpy repeaterSpy(repeater, SIGNAL(countChanged()));
     testModel.addItem("four", "4");
     QCOMPARE(container->childItems().count(), 5);
+    QCOMPARE(repeaterSpy.count(),1);
 
     testModel.removeItem(2);
     QCOMPARE(container->childItems().count(), 4);
+    QCOMPARE(repeaterSpy.count(),2);
 
     // Check that model changes are propagated
     QDeclarativeText *text = findItem<QDeclarativeText>(canvas->rootObject(), "myName", 1);
@@ -394,7 +397,7 @@ void tst_QDeclarativeRepeater::properties()
     QSignalSpy delegateSpy(repeater, SIGNAL(delegateChanged()));
 
     QDeclarativeComponent rectComponent(&engine);
-    rectComponent.setData("import Qt 4.7; Rectangle {}", QUrl::fromLocalFile(""));
+    rectComponent.setData("import QtQuick 1.0; Rectangle {}", QUrl::fromLocalFile(""));
 
     repeater->setDelegate(&rectComponent);
     QCOMPARE(delegateSpy.count(),1);

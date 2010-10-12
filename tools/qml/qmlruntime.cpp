@@ -85,6 +85,7 @@
 #include <QMenu>
 #include <QAction>
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QTimer>
 #include <QGraphicsObject>
 #include <QNetworkProxyFactory>
@@ -691,12 +692,14 @@ QDeclarativeViewer::~QDeclarativeViewer()
 
 void QDeclarativeViewer::enableExperimentalGestures()
 {
+#ifndef QT_NO_GESTURES
     canvas->viewport()->grabGesture(Qt::TapGesture,Qt::DontStartGestureOnChildren|Qt::ReceivePartialGestures|Qt::IgnoredGesturesPropagateToParent);
     canvas->viewport()->grabGesture(Qt::TapAndHoldGesture,Qt::DontStartGestureOnChildren|Qt::ReceivePartialGestures|Qt::IgnoredGesturesPropagateToParent);
     canvas->viewport()->grabGesture(Qt::PanGesture,Qt::DontStartGestureOnChildren|Qt::ReceivePartialGestures|Qt::IgnoredGesturesPropagateToParent);
     canvas->viewport()->grabGesture(Qt::PinchGesture,Qt::DontStartGestureOnChildren|Qt::ReceivePartialGestures|Qt::IgnoredGesturesPropagateToParent);
     canvas->viewport()->grabGesture(Qt::SwipeGesture,Qt::DontStartGestureOnChildren|Qt::ReceivePartialGestures|Qt::IgnoredGesturesPropagateToParent);
     canvas->viewport()->setAttribute(Qt::WA_AcceptTouchEvents);
+#endif
 }
 
 QDeclarativeView *QDeclarativeViewer::view() const
@@ -714,6 +717,9 @@ void QDeclarativeViewer::createMenu()
     QAction *openAction = new QAction(tr("&Open..."), this);
     openAction->setShortcuts(QKeySequence::Open);
     connect(openAction, SIGNAL(triggered()), this, SLOT(openFile()));
+
+    QAction *openUrlAction = new QAction(tr("Open &URL..."), this);
+    connect(openUrlAction, SIGNAL(triggered()), this, SLOT(openUrl()));
 
     QAction *reloadAction = new QAction(tr("&Reload"), this);
     reloadAction->setShortcuts(QKeySequence::Refresh);
@@ -789,6 +795,7 @@ void QDeclarativeViewer::createMenu()
 
 #if defined(Q_WS_MAEMO_5)
     menu->addAction(openAction);
+    menu->addAction(openUrlAction);
     menu->addAction(reloadAction);
 
     menu->addAction(snapshotAction);
@@ -809,6 +816,7 @@ void QDeclarativeViewer::createMenu()
 
     QMenu *fileMenu = menu->addMenu(tr("&File"));
     fileMenu->addAction(openAction);
+    fileMenu->addAction(openUrlAction);
     fileMenu->addAction(reloadAction);
     fileMenu->addSeparator();
     fileMenu->addAction(closeAction);
@@ -1021,6 +1029,14 @@ void QDeclarativeViewer::openFile()
     }
 }
 
+void QDeclarativeViewer::openUrl()
+{
+    QString cur = canvas->source().toLocalFile();
+    QString url= QInputDialog::getText(this, tr("Open QML file"), tr("URL of main QML file:"), QLineEdit::Normal, cur);
+    if (!url.isEmpty())
+        open(url);
+}
+
 void QDeclarativeViewer::statusChanged()
 {
     if (canvas->status() == QDeclarativeView::Error && tester)
@@ -1053,11 +1069,7 @@ void QDeclarativeViewer::loadDummyDataFiles(const QString& directory)
     QStringList list = dir.entryList();
     for (int i = 0; i < list.size(); ++i) {
         QString qml = list.at(i);
-        QFile f(dir.filePath(qml));
-        f.open(QIODevice::ReadOnly);
-        QByteArray data = f.readAll();
-        QDeclarativeComponent comp(canvas->engine());
-        comp.setData(data, QUrl());
+        QDeclarativeComponent comp(canvas->engine(), dir.filePath(qml));
         QObject *dummyData = comp.create();
 
         if(comp.isError()) {
@@ -1194,8 +1206,10 @@ bool QDeclarativeViewer::event(QEvent *event)
 {
     if (event->type() == QEvent::WindowActivate) {
         Runtime::instance()->setActiveWindow(true);
+        DeviceOrientation::instance()->resumeListening();
     } else if (event->type() == QEvent::WindowDeactivate) {
         Runtime::instance()->setActiveWindow(false);
+        DeviceOrientation::instance()->pauseListening();
     }
     return QWidget::event(event);
 }
@@ -1518,6 +1532,7 @@ void QDeclarativeViewer::registerTypes()
     if (!registered) {
         // registering only for exposing the DeviceOrientation::Orientation enum
         qmlRegisterUncreatableType<DeviceOrientation>("Qt",4,7,"Orientation","");
+        qmlRegisterUncreatableType<DeviceOrientation>("QtQuick",1,0,"Orientation","");
         registered = true;
     }
 }

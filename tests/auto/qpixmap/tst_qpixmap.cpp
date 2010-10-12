@@ -179,6 +179,7 @@ private slots:
     void fromImageReader_data();
     void fromImageReader();
 
+    void fromImageReaderAnimatedGif_data();
     void fromImageReaderAnimatedGif();
 
     void preserveDepth();
@@ -742,6 +743,11 @@ void tst_QPixmap::testMetrics()
     QCOMPARE(bitmap.width(), 100);
     QCOMPARE(bitmap.height(), 100);
     QCOMPARE(bitmap.depth(), 1);
+
+    QPixmap null;
+
+    QCOMPARE(null.size().width(), null.width());
+    QCOMPARE(null.size().height(), null.height());
 }
 
 void tst_QPixmap::createMaskFromColor()
@@ -1558,6 +1564,8 @@ void tst_QPixmap::loadFromDataImage_data()
     const QString prefix = QLatin1String(SRCDIR) + "/loadFromData";
 #endif
     QTest::newRow("designer_argb32.png") << prefix + "/designer_argb32.png";
+    // When no extension is provided we try all extensions that has been registered by image providers
+    QTest::newRow("designer_argb32") << prefix + "/designer_argb32.png";
     QTest::newRow("designer_indexed8_no_alpha.png") << prefix + "/designer_indexed8_no_alpha.png";
     QTest::newRow("designer_indexed8_with_alpha.png") << prefix + "/designer_indexed8_with_alpha.png";
     QTest::newRow("designer_rgb32.png") << prefix + "/designer_rgb32.png";
@@ -1598,6 +1606,8 @@ void tst_QPixmap::fromImageReader_data()
     QTest::newRow("designer_indexed8_no_alpha.gif") << prefix + "/designer_indexed8_no_alpha.gif";
     QTest::newRow("designer_indexed8_with_alpha.gif") << prefix + "/designer_indexed8_with_alpha.gif";
     QTest::newRow("designer_rgb32.jpg") << prefix + "/designer_rgb32.jpg";
+    QTest::newRow("designer_indexed8_with_alpha_animated") << prefix + "/designer_indexed8_with_alpha_animated.gif";
+    QTest::newRow("designer_indexed8_with_alpha_animated") << prefix + "/designer_indexed8_no_alpha_animated.gif";
 }
 
 void tst_QPixmap::fromImageReader()
@@ -1614,14 +1624,22 @@ void tst_QPixmap::fromImageReader()
     QVERIFY(pixmapsAreEqual(&pixmapWithCopy, &directLoadingPixmap));
 }
 
+void tst_QPixmap::fromImageReaderAnimatedGif_data()
+{
+    QTest::addColumn<QString>("imagePath");
+    QTest::newRow("gif with alpha") << QString::fromLatin1("/designer_indexed8_with_alpha_animated.gif");
+    QTest::newRow("gif without alpha") << QString::fromLatin1("/designer_indexed8_no_alpha_animated.gif");
+}
+
 void tst_QPixmap::fromImageReaderAnimatedGif()
 {
+    QFETCH(QString, imagePath);
 #ifdef Q_OS_SYMBIAN
     const QString prefix = QLatin1String(SRCDIR) + "loadFromData";
 #else
     const QString prefix = QLatin1String(SRCDIR) + "/loadFromData";
 #endif
-    const QString path = prefix + QString::fromLatin1("/designer_indexed8_with_alpha_animated.gif");
+    const QString path = prefix + imagePath;
 
     QImageReader referenceReader(path);
     QImageReader pixmapReader(path);
@@ -1673,31 +1691,39 @@ void tst_QPixmap::preserveDepth()
 void tst_QPixmap::loadAsBitmapOrPixmap()
 {
     QImage tmp(10, 10, QImage::Format_RGB32);
-    tmp.save("tmp.png");
+    tmp.save("temp_image.png");
 
     bool ok;
 
     // Check that we can load the pixmap as a pixmap and that it then turns into a pixmap
-    QPixmap pixmap("tmp.png");
+    QPixmap pixmap("temp_image.png");
     QVERIFY(!pixmap.isNull());
     QVERIFY(pixmap.depth() > 1);
     QVERIFY(!pixmap.isQBitmap());
 
     pixmap = QPixmap();
-    ok = pixmap.load("tmp.png");
+    ok = pixmap.load("temp_image.png");
+    QVERIFY(ok);
+    QVERIFY(!pixmap.isNull());
+    QVERIFY(pixmap.depth() > 1);
+    QVERIFY(!pixmap.isQBitmap());
+
+    //now we can try to load it without an extension
+    pixmap = QPixmap();
+    ok = pixmap.load("temp_image");
     QVERIFY(ok);
     QVERIFY(!pixmap.isNull());
     QVERIFY(pixmap.depth() > 1);
     QVERIFY(!pixmap.isQBitmap());
 
     // The do the same check for bitmaps..
-    QBitmap bitmap("tmp.png");
+    QBitmap bitmap("temp_image.png");
     QVERIFY(!bitmap.isNull());
     QVERIFY(bitmap.depth() == 1);
     QVERIFY(bitmap.isQBitmap());
 
     bitmap = QBitmap();
-    ok = bitmap.load("tmp.png");
+    ok = bitmap.load("temp_image.png");
     QVERIFY(ok);
     QVERIFY(!bitmap.isNull());
     QVERIFY(bitmap.depth() == 1);

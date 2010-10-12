@@ -288,6 +288,24 @@ triState operator!(const triState &rhs)
     return lhs;
 }
 
+// VCToolBase -------------------------------------------------
+QStringList VCToolBase::fixCommandLine(const QString &input)
+{
+    // The splitting regexp is a bit bizarre for backwards compat reasons (why else ...).
+    return input.split(QRegExp(QLatin1String("\n\t|\r\\\\h|\r\n")));
+}
+
+static QString vcCommandSeparator()
+{
+    // MSVC transforms the build tree into a single batch file, simply pasting the contents
+    // of the custom commands into it, and putting an "if errorlevel goto" statement behind it.
+    // As we want every sub-command to be error-checked (as is done by makefile-based
+    // backends), we insert the checks ourselves, using the undocumented jump target.
+    static QString cmdSep =
+    QLatin1String("&#x000D;&#x000A;if errorlevel 1 goto VCReportError&#x000D;&#x000A;");
+    return cmdSep;
+}
+
 // VCCLCompilerTool -------------------------------------------------
 VCCLCompilerTool::VCCLCompilerTool()
     :        AssemblerOutput(asmListingNone),
@@ -1499,7 +1517,8 @@ bool VCLinkerTool::parseOption(const char* option)
         break;
     case 0x0034160: // /MAP[:filename]
         GenerateMapFile = _True;
-        MapFileName = option+5;
+        if (option[4] == ':')
+            MapFileName = option+5;
         break;
     case 0x164e1ef: // /MAPINFO:{EXPORTS|LINES}
         if(*(option+9) == 'E')
@@ -2271,7 +2290,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
         if (!CustomBuildTool.Description.isEmpty())
             CustomBuildTool.Description += " & ";
         CustomBuildTool.Description += cmd_name;
-        CustomBuildTool.CommandLine += cmd.trimmed().split("\n", QString::SkipEmptyParts);
+        CustomBuildTool.CommandLine += VCToolBase::fixCommandLine(cmd.trimmed());
         int space = cmd.indexOf(' ');
         QFileInfo finf(cmd.left(space));
         if (CustomBuildTool.ToolPath.isEmpty())
@@ -2604,35 +2623,10 @@ void VCProjectWriter::write(XmlOutput &xml, const VCMIDLTool &tool)
 
 void VCProjectWriter::write(XmlOutput &xml, const VCCustomBuildTool &tool)
 {
-    // The code below offers two ways to split custom build step commands.
-    // Normally the $$escape_expand(\n\t) is used in a project file, which is correctly translated
-    // in all generators. However, if you use $$escape_expand(\n\r) (or \n\h) instead, the VCPROJ
-    // generator will instead of binding the commands with " && " will insert a proper newline into
-    // the VCPROJ file. We sometimes use this method of splitting commands if the custom buildstep
-    // contains a command-line which is too big to run on certain OS.
-    QString cmds;
-    int end = tool.CommandLine.count();
-    for(int i = 0; i < end; ++i) {
-        QString cmdl = tool.CommandLine.at(i);
-        if (cmdl.contains("\r\t")) {
-            if (i == end - 1)
-                cmdl = cmdl.trimmed();
-            cmdl.replace("\r\t", " && ");
-        } else if (cmdl.contains("\r\n")) {
-            ;
-        } else if (cmdl.contains("\r\\h")) {
-            // The above \r\n should work, but doesn't, so we have this hack
-            cmdl.replace("\r\\h", "\r\n");
-        } else {
-            if (i < end - 1)
-                cmdl += " && ";
-        }
-        cmds += cmdl;
-    }
     xml << tag(_Tool)
             << attrS(_Name, tool.ToolName)
             << attrX(_AdditionalDependencies, tool.AdditionalDependencies, ";")
-            << attrS(_CommandLine, cmds)
+            << attrS(_CommandLine, tool.CommandLine.join(vcCommandSeparator()))
             << attrS(_Description, tool.Description)
             << attrX(_Outputs, tool.Outputs, ";")
             << attrS(_Path, tool.ToolPath)
@@ -2680,7 +2674,7 @@ void VCProjectWriter::write(XmlOutput &xml, const VCEventTool &tool)
         << tag(_Tool)
             << attrS(_Name, tool.ToolName)
             << attrS(_Path, tool.ToolPath)
-            << attrS(_CommandLine, tool.CommandLine)
+            << attrS(_CommandLine, tool.CommandLine.join(vcCommandSeparator()))
             << attrS(_Description, tool.Description)
             << attrT(_ExcludedFromBuild, tool.ExcludedFromBuild)
         << closetag(_Tool);

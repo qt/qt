@@ -93,7 +93,7 @@
     </message>
     <message>
         <source>Qt Configuration</source>
-        <translation>Конфігурація Qt</translation>
+        <translation>Налаштування Qt</translation>
     </message>
     <message>
         <source>Save Changes</source>
@@ -120,7 +120,7 @@
     <name>MainWindowBase</name>
     <message>
         <source>Qt Configuration</source>
-        <translation>Конфігурація Qt</translation>
+        <translation>Налаштування Qt</translation>
     </message>
     <message>
         <source>Appearance</source>
@@ -172,7 +172,7 @@
     </message>
     <message>
         <source>Please use the KDE Control Center to set the palette.</source>
-        <translation>Будь-ласка, використовуйте Системні параметри KDE, щоб встановити палітру.</translation>
+        <translation>Будь ласка, використовуйте Системні параметри KDE, щоб встановити палітру.</translation>
     </message>
     <message>
         <source>Fonts</source>
@@ -527,7 +527,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>&lt;b&gt;Select a color role.&lt;/b&gt;&lt;p&gt;Available central roles are: &lt;ul&gt; &lt;li&gt;Window - general background color.&lt;/li&gt; &lt;li&gt;WindowText - general foreground color. &lt;/li&gt; &lt;li&gt;Base - used as background color for e.g. text entry widgets, usually white or another light color. &lt;/li&gt; &lt;li&gt;Text - the foreground color used with Base. Usually this is the same as WindowText, in what case it must provide good contrast both with Window and Base. &lt;/li&gt; &lt;li&gt;Button - general button background color, where buttons need a background different from Window, as in the Macintosh style. &lt;/li&gt; &lt;li&gt;ButtonText - a foreground color used with the Button color. &lt;/li&gt; &lt;li&gt;Highlight - a color to indicate a selected or highlighted item. &lt;/li&gt; &lt;li&gt;HighlightedText - a text color that contrasts to Highlight. &lt;/li&gt; &lt;li&gt;BrightText - a text color that is very different from WindowText and contrasts well with e.g. black. &lt;/li&gt; &lt;/ul&gt; &lt;/p&gt;</source>
-        <translation>&lt;b&gt;Вибір кольорової ролі.&lt;/b&gt;&lt;p&gt;Доступні наступні головні ролі: &lt;ul&gt; &lt;li&gt;Вікно - загальний колір фону.&lt;/li&gt; &lt;li&gt;Текст вікна - загальний колір переднього плану. &lt;/li&gt; &lt;li&gt;Базовий - використовується як колір фону, наприклад, для віджетів для введення тексту, зазвичай білий або інший світлий колір. &lt;/li&gt; &lt;li&gt;Текст - колір переднього плану, що використовується разом з базовим. Зазвичай співпадає з &quot;Текст вікна&quot;, і в цьому випадку має забезпечувати гарний контраст і з &quot;Вікном&quot;, і з &quot;Базовим&quot;. &lt;/li&gt; &lt;li&gt;Кнопка - загальний колір фону кнопки, там де кнопки потребуються інший від &quot;Вікна&quot; фон, як в стилі Macintosh. &lt;/li&gt; &lt;li&gt;Текст кнопки - колір переднього плану, що застосовується разом з кольором &quot;Кнопки&quot;. &lt;/li&gt; &lt;li&gt;Підсвічений - колір для індикації виділеного чи підсвіченого елементу. &lt;/li&gt; &lt;li&gt;Підсвічений текст - колір тексту, що контрастує з &quot;Підсвіченим&quot;. &lt;/li&gt; &lt;li&gt;Яскравий текст - колір тексту, що суттєво відрізняється від &quot;Тексту вікна&quot; та добре контрастує з чорним, наприклад. &lt;/li&gt; &lt;/ul&gt; &lt;/p&gt;</translation>
+        <translation>&lt;b&gt;Вибір кольорової ролі.&lt;/b&gt;&lt;p&gt;Доступні наступні головні ролі: &lt;ul&gt; &lt;li&gt;Вікно - загальний колір фону.&lt;/li&gt; &lt;li&gt;Текст вікна - загальний колір переднього плану. &lt;/li&gt; &lt;li&gt;Базовий - використовується як колір фону, наприклад, для віджетів для введення тексту, зазвичай білий або інший світлий колір. &lt;/li&gt; &lt;li&gt;Текст - колір переднього плану, що використовується разом з базовим. Зазвичай збігається з &quot;Текст вікна&quot;, і в цьому випадку має забезпечувати гарний контраст і з &quot;Вікном&quot;, і з &quot;Базовим&quot;. &lt;/li&gt; &lt;li&gt;Кнопка - загальний колір фону кнопки, там де кнопки потребуються інший від &quot;Вікна&quot; фон, як в стилі Macintosh. &lt;/li&gt; &lt;li&gt;Текст кнопки - колір переднього плану, що застосовується разом з кольором &quot;Кнопки&quot;. &lt;/li&gt; &lt;li&gt;Підсвічений - колір для індикації виділеного чи підсвіченого елементу. &lt;/li&gt; &lt;li&gt;Підсвічений текст - колір тексту, що контрастує з &quot;Підсвіченим&quot;. &lt;/li&gt; &lt;li&gt;Яскравий текст - колір тексту, що суттєво відрізняється від &quot;Тексту вікна&quot; та добре контрастує з чорним, наприклад. &lt;/li&gt; &lt;/ul&gt; &lt;/p&gt;</translation>
     </message>
     <message>
         <source>Window</source>

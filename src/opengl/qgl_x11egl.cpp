@@ -97,7 +97,6 @@ QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
     XVisualInfo visualInfo;
     XVisualInfo *vi;
     int numVisuals;
-    EGLint id = 0;
 
     visualInfo.visualid = QEgl::getCompatibleVisualId(config);
     vi = XGetVisualInfo(X11->display, VisualIDMask, &visualInfo, &numVisuals);
@@ -346,7 +345,7 @@ void QGLWidgetPrivate::recreateEglSurface()
     // old surface before re-creating a new one. Note: This should not be the case as the
     // surface should be deleted before the old window id.
     if (glcx->d_func()->eglSurface != EGL_NO_SURFACE && (currentId != eglSurfaceWindowId)) {
-        qWarning("EGL surface for deleted window %x was not destroyed", eglSurfaceWindowId);
+        qWarning("EGL surface for deleted window %lx was not destroyed", eglSurfaceWindowId);
         glcx->d_func()->destroyEglSurfaceForDevice();
     }
 

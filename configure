@@ -685,7 +685,8 @@ CFG_MULTIMEDIA=auto
 CFG_AUDIO_BACKEND=auto
 CFG_SVG=auto
 CFG_DECLARATIVE=auto
-CFG_WEBKIT=auto # (yes|no|auto)
+CFG_DECLARATIVE_DEBUG=yes
+CFG_WEBKIT=auto # (yes|no|auto|debug)
 CFG_JAVASCRIPTCORE_JIT=auto
 
 CFG_GFX_AVAILABLE="linuxfb transformed qvfb vnc multiscreen directfb"
@@ -938,13 +939,26 @@ while [ "$#" -gt 0 ]; do
         VAR=`echo $1 | sed "s,^-[^-]*-\(.*\),\1,"`
         VAL=`echo $1 | sed "s,^-\([^-]*\).*,\1,"`
         ;;
+    #WebKit options
+    -webkit)
+        VAR="webkit"
+        VAL="yes"
+        ;;
+    -webkit-debug)
+        VAR="webkit"
+        VAL="debug"
+        ;;
+    -no-webkit)
+        VAR="webkit"
+        VAL="no"
+        ;;
     #Qt style no options
     -no-*)
         VAR=`echo $1 | sed "s,^-no-\(.*\),\1,"`
         VAL=no
         ;;
     #Qt style yes options
-        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-declarative|-webkit|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60|-usedeffiles)
+        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xsync|-xinput|-egl|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-carbon|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-audio-backend|-svg|-declarative|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config|-s60|-usedeffiles)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1430,9 +1444,6 @@ while [ "$#" -gt 0 ]; do
             ;;
         reliant-64)
             PLATFORM=reliant-cds-64
-            ;;
-        solaris-64)
-            PLATFORM=solaris-cc-64
             ;;
         solaris-64)
             PLATFORM=solaris-cc-64
@@ -2000,16 +2011,20 @@ while [ "$#" -gt 0 ]; do
             fi
         fi
 	;;
-    webkit)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ]; then
-            CFG_WEBKIT="yes"
+    declarative-debug)
+        if [ "$VAL" = "yes" ]; then
+            CFG_DECLARATIVE_DEBUG="yes"
         else
             if [ "$VAL" = "no" ]; then
-                CFG_WEBKIT="no"
+                CFG_DECLARATIVE_DEBUG="no"
             else
                 UNKNOWN_OPT=yes
             fi
         fi
+        ;;
+    webkit)
+        [ "$VAL" = "auto" ] && VAL="yes"
+        CFG_WEBKIT="$VAL"
         ;;
     javascript-jit)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ] || [ "$VAL" = "no" ]; then 
@@ -2328,7 +2343,7 @@ fi
 
 # detect build style
 if [ "$CFG_DEBUG" = "auto" ]; then
-    if [ "$PLATFORM_MAC" = "yes" ]; then
+    if [ "$PLATFORM_MAC" = "yes" -o "$XPLATFORM_MINGW" = "yes" ]; then
         CFG_DEBUG_RELEASE=yes
         CFG_DEBUG=yes
     elif [ "$CFG_DEV" = "yes" ]; then
@@ -2411,13 +2426,26 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     ln -s "$relpath"/mkspecs/* "$outpath/mkspecs"
     rm -f "$outpath/mkspecs/default"
 
+    ShadowMkspecs()
+    {
+        rm -rf "$outpath/mkspecs/$1"
+        if [ "$UNAME_SYSTEM" = "Linux" ]; then
+            # This works with GNU coreutils, and is needed for ScratchBox
+            cp -rs "$relpath/mkspecs/$1" "$outpath/mkspecs/$1"
+        else
+            # A simple "cp -rs" doesn't work on Mac. :(
+            find "$relpath/mkspecs/$1" -type d | sed "s,^$relpath,$outpath," | xargs mkdir -p
+            find "$relpath/mkspecs/$1" -type f | sed "s,^$relpath/,," | xargs -n 1 -I % ln -s "$relpath/%" "$outpath/%"
+        fi
+    }
+
     # Special case for mkspecs/features directory.
     # To be able to place .prf files into a shadow build directory,
     # we're creating links for files only. The directory structure is reproduced.
-    # A simple "cp -rs" doesn't work on Mac. :(
-    rm -rf "$outpath/mkspecs/features"
-    find "$relpath/mkspecs/features" -type d | sed "s,^$relpath,$outpath," | xargs mkdir -p
-    find "$relpath/mkspecs/features" -type f | sed "s,^$relpath/,," | xargs -n 1 -I % ln -s "$relpath/%" "$outpath/%"
+    ShadowMkspecs features
+
+    # The modules dir is special, too.
+    ShadowMkspecs modules
 
     # symlink the doc directory
     rm -rf "$outpath/doc"
@@ -2857,7 +2885,7 @@ if [ -z "${CFG_HOST_ARCH}" ]; then
             ;;
         i86pc)
 	    case "$PLATFORM" in
-	    *-64)
+	    *-64*)
                 if [ "$OPT_VERBOSE" = "yes" ]; then
 	            echo "    64-bit AMD 80x86 (x86_64)"
                 fi
@@ -2991,6 +3019,9 @@ if [ "$PLATFORM" != "$XPLATFORM" -a "$CFG_EMBEDDED" != "no" ]; then
     sh4al)
         CFG_ARCH=sh4a
         ;;
+    arm*)
+        CFG_ARCH=arm
+        ;;
     *)
         CFG_ARCH="$CFG_EMBEDDED"
         ;;
@@ -3002,6 +3033,16 @@ elif echo "$XPLATFORM" | grep symbian > /dev/null; then
 elif [ "$PLATFORM_MAC" = "yes" ] || [ -z "$CFG_ARCH" ]; then
     CFG_ARCH=$CFG_HOST_ARCH
 fi
+
+# for compatibility
+COMPAT_ARCH=
+case "$CFG_ARCH" in
+arm*)
+    # previously, armv6 was a different arch
+    CFG_ARCH=arm
+    COMPAT_ARCH=armv6
+    ;;
+esac
 
 if [ -d "$relpath/src/corelib/arch/$CFG_ARCH" ]; then
     if [ "$OPT_VERBOSE" = "yes" ]; then
@@ -3027,9 +3068,9 @@ if [ "$CFG_HOST_ARCH" != "$CFG_ARCH" ]; then
 fi
 
 if [ "$OPT_VERBOSE" = "yes" ]; then
-    echo "System architecture: '$CFG_ARCH'"
+    echo "Target architecture: '$CFG_ARCH'"
     if [ "$PLATFORM_QWS" = "yes" ]; then
-	echo "Host architecture: '$CFG_HOST_ARCH'"
+       echo "Host architecture: '$CFG_HOST_ARCH'"
     fi
 fi
 
@@ -3513,9 +3554,10 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-no-multimedia] [-multimedia] [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
         [-no-media-backend] [-media-backend] [-no-audio-backend] [-audio-backend] 
         [-no-openssl] [-openssl] [-openssl-linked]
-        [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg] [-no-webkit] [-webkit] [-no-javascript-jit] [-javascript-jit]
-        [-no-script] [-script] [-no-scripttools] [-scripttools] [-no-declarative] [-declarative]
-
+        [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg] [-no-webkit] [-webkit] [-webkit-debug]
+        [-no-javascript-jit] [-javascript-jit]
+        [-no-script] [-script] [-no-scripttools] [-scripttools] 
+	[-no-declarative] [-declarative][-no-declarative-debug] [-declarative-debug]
         [additional platform specific options (see below)]
 
 
@@ -3667,6 +3709,7 @@ fi
     -no-webkit ......... Do not build the WebKit module.
  +  -webkit ............ Build the WebKit module.
                          WebKit is built if a decent C++ compiler is used.
+    -webkit-debug ...... Build the WebKit module with debug symbols.
 
     -no-javascript-jit . Do not build the JavaScriptCore JIT compiler.
  +  -javascript-jit .... Build the JavaScriptCore JIT compiler.
@@ -3677,8 +3720,11 @@ fi
     -no-scripttools .... Do not build the QtScriptTools module.
  +  -scripttools ....... Build the QtScriptTools module.
 
- +  -no-declarative .....Do not build the declarative module.
-    -declarative ....... Build the declarative module.
+    -no-declarative ..... Do not build the declarative module.
+ +  -declarative ....... Build the declarative module.
+
+    -no-declarative-debug ..... Do not build the declarative debugging support.
+ +  -declarative-debug ....... Build the declarative debugging support.
 
     -platform target ... The operating system and compiler you are building
                          on ($PLATFORM).
@@ -4816,7 +4862,7 @@ if [ "$CFG_IWMMXT" = "yes" ]; then
 fi
 
 # detect neon support
-if ( [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ] ) && [ "${CFG_NEON}" = "auto" ]; then
+if [ "$CFG_ARCH" = "arm" ] && [ "${CFG_NEON}" = "auto" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/neon "neon" $L_FLAGS $I_FLAGS $l_FLAGS "-mfpu=neon"; then
 	CFG_NEON=yes
     else
@@ -4869,9 +4915,8 @@ case "$XPLATFORM" in *symbian*)
         # Raptor does not support configure tests.
 
         # the main commands needed to compile;
-        (cd config.tests/symbian
-            mkdir -p rcomp
-            cd rcomp
+        (mkdir -p config.tests/symbian/rcomp
+            cd config.tests/symbian/rcomp
             rm -f rcomp_test.rsg
             touch rcomp_test.rpp rcomp_test.rsc rcomp_test.rss
             rcomp -u -m045,046,047 -s./rcomp_test.rpp -o./rcomp_test.rsc -h./rcomp_test.rsg -i./rcomp_test.rss 2>&1 > /dev/null
@@ -5453,8 +5498,8 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
     # auto-detect icd support
     if [ "$CFG_GLIB" = "yes" -a "$CFG_ICD" != "no" ]; then
         if [ -n "$PKG_CONFIG" ]; then
-            QT_CFLAGS_CONNSETTINGS=`$PKG_CONFIG --cflags connsettings 2>/dev/null`
-            QT_LIBS_CONNSETTINGS=`$PKG_CONFIG --libs connsettings 2>/dev/null`
+            QT_CFLAGS_CONNSETTINGS=`$PKG_CONFIG --cflags connsettings icd2 2>/dev/null`
+            QT_LIBS_CONNSETTINGS=`$PKG_CONFIG --libs connsettings icd2 2>/dev/null`
         fi
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/icd "ICD" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_CONNSETTINGS $QT_LIBS_CONNSETTINGS; then
             [ "$CFG_ICD" = "auto" ] && CFG_ICD=yes
@@ -5697,6 +5742,12 @@ if [ "$PLATFORM_X11" = "yes" ]; then
 		CFG_XRENDER=no
 	    fi
 	fi
+    fi
+
+    # Additional check to decide if WebKit support will be included
+    if [ "$CFG_XRENDER" = "no" ] && [ "$CFG_WEBKIT" != "no" ]; then
+        echo "Warning: -no-xrender will disable the QtWebkit module."
+        CFG_WEBKIT="no"
     fi
 
     # auto-detect MIT-SHM support
@@ -6198,9 +6249,13 @@ fi
 
 # find if the platform supports IPv6
 if [ "$CFG_IPV6" != "no" ]; then
-    if [ "$XPLATFORM" = "symbian-sbsv2" ]; then
-        #IPV6 should always be enabled for Symbian release
-        CFG_IPV6=yes
+    #
+    # We accidently enabled IPv6 for Qt Symbian in 4.6.x. However the underlying OpenC does not fully support IPV6.
+    # Therefore for 4.7.1 and following we disable it until OpenC either supports it or we have the native Qt
+    # symbian socket engine.
+    #
+    if echo "$XPLATFORM" | grep symbian > /dev/null; then
+        CFG_IPV6=no
     elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/ipv6 "IPv6" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         CFG_IPV6=yes
     else
@@ -6407,7 +6462,7 @@ elif [ "$XPLATFORM" = "symbian-sbsv2" ]; then
 fi
 
 if [ "$CFG_JAVASCRIPTCORE_JIT" = "yes" ] || [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then 
-    if [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]; then
+    if [ "$CFG_ARCH" = "arm" ]; then
        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/javascriptcore-jit "javascriptcore-jit" $L_FLAGS $I_FLAGS $l_FLAGS
         if [ $? != "0" ]; then
            CFG_JAVASCRIPTCORE_JIT=no
@@ -6677,7 +6732,11 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG embedded"
     rm -f "src/.moc/$QMAKE_OUTDIR/allmoc.cpp" # needs remaking if config changes
 fi
-QMakeVar set PRECOMPILED_DIR ".pch/$QMAKE_OUTDIR"
+if [ "$XPLATFORM_MINGW" != "yes" ]; then
+    # Do not set this here for Windows. Let qmake do it so
+    # debug and release precompiled headers are kept separate.
+    QMakeVar set PRECOMPILED_DIR ".pch/$QMAKE_OUTDIR"
+fi
 QMakeVar set OBJECTS_DIR ".obj/$QMAKE_OUTDIR"
 QMakeVar set MOC_DIR ".moc/$QMAKE_OUTDIR"
 QMakeVar set RCC_DIR ".rcc/$QMAKE_OUTDIR"
@@ -7033,7 +7092,7 @@ case "$XPLATFORM" in
                 canBuildQtXmlPatterns="no"
                 canBuildQtConcurrent="no"
                 ;;
-            5.9)
+            5.*)
                 canBuildWebKit="no"
                 canBuildQtConcurrent="no"
                 ;;
@@ -7157,12 +7216,15 @@ if [ "$CFG_WEBKIT" = "auto" ]; then
     CFG_WEBKIT="$canBuildWebKit"
 fi
 
-if [ "$CFG_WEBKIT" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG webkit"
+if [ "$CFG_WEBKIT" != "no" ]; then
+    # This include takes care of adding "webkit" to QT_CONFIG.
+    cp -f "$relpath/src/3rdparty/webkit/WebKit/qt/qt_webkit_version.pri" "$outpath/mkspecs/modules/qt_webkit_version.pri"
     # The reason we set CFG_WEBKIT, is such that the printed overview of what will be enabled, shows correctly.
-    CFG_WEBKIT="yes"
+    if [ "$CFG_WEBKIT" = "debug" ]; then
+        QMAKE_CONFIG="$QMAKE_CONFIG webkit-debug"
+    fi
 else
-    CFG_WEBKIT="no"
+    rm -f "$outpath/mkspecs/modules/qt_webkit_version.pri"
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_WEBKIT"
 fi
 
@@ -7181,7 +7243,14 @@ if [ "$CFG_SCRIPTTOOLS" = "yes" -a "$CFG_SCRIPT" = "no" ]; then
     exit 1
 fi
 if [ "$CFG_SCRIPTTOOLS" = "auto" -a "$CFG_SCRIPT" != "no" ]; then
-    CFG_SCRIPTTOOLS="yes"
+    case "$XPLATFORM" in
+    symbian*)
+        CFG_SCRIPTTOOLS="no"
+        ;;
+    *)
+        CFG_SCRIPTTOOLS="yes"
+        ;;
+    esac
 elif [ "$CFG_SCRIPT" = "no" ]; then
     CFG_SCRIPTTOOLS="no"
 fi
@@ -7209,6 +7278,9 @@ fi
 
 if [ "$CFG_DECLARATIVE" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG declarative"
+    if [ "$CFG_DECLARATIVE_DEBUG" = "no" ]; then
+        QCONFIG_FLAGS="$QCONFIG_FLAGS QDECLARATIVE_NO_DEBUG_PROTOCOL"
+    fi
 else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_DECLARATIVE"
 fi
@@ -7272,6 +7344,7 @@ fi
 
 # some compilers generate binary incompatible code between different versions,
 # so we need to generate a build key that is different between these compilers
+COMPAT_COMPILER=
 case "$COMPILER" in
 g++*)
     # GNU C++
@@ -7304,6 +7377,22 @@ g++*)
         ;;
     esac
     [ '!' -z "$COMPILER_VERSION" ] && COMPILER="g++-${COMPILER_VERSION}"
+    ;;
+icc*)
+    # The Intel CC compiler on Unix systems matches the ABI of the g++
+    # that is found on PATH
+    COMPAT_COMPILER="icc"
+    COMPILER="g++-4"
+    case "`g++ -dumpversion` 2>/dev/null" in
+    2.95.*)
+        COMPILER="g++-2.95.*"
+        ;;
+    3.*)
+a        COMPILER="g++-3.*"
+        ;;
+    *)
+        ;;
+    esac
     ;;
 *)
     #
@@ -7447,9 +7536,30 @@ if [ "$QT_CROSS_COMPILE" = "no" ]; then
         QT_BUILD_KEY_COMPAT="$QT_BUILD_KEY_COMPAT $QT_NAMESPACE"
     fi
 fi
+
+# is this compiler compatible with some other "standard" build key
+QT_BUILD_KEY_COMPAT_COMPILER=
+if [ ! -z "$COMPAT_COMPILER" ]; then
+    QT_BUILD_KEY_COMPAT_COMPILER="$CFG_USER_BUILD_KEY $CFG_ARCH $TARGET_OPERATING_SYSTEM $COMPAT_COMPILER $BUILD_OPTIONS"
+    if [ -n "$QT_NAMESPACE" ]; then
+        QT_BUILD_KEY_COMPAT_COMPILER="$QT_BUILD_KEY_COMPAT_COMPILER $QT_NAMESPACE"
+    fi
+fi
+
+# is this arch compatible with some other "standard" build key
+QT_BUILD_KEY_COMPAT_ARCH=
+if [ ! -z "$COMPAT_ARCH" ]; then
+    QT_BUILD_KEY_COMPAT_ARCH="$CFG_USER_BUILD_KEY $COMPAT_ARCH $TARGET_OPERATING_SYSTEM $COMPILER $BUILD_OPTIONS"
+    if [ -n "$QT_NAMESPACE" ]; then
+        QT_BUILD_KEY_COMPAT_COMPILER="$QT_BUILD_KEY_COMPAT_ARCH $QT_NAMESPACE"
+    fi
+fi
+
 # strip out leading/trailing/extra whitespace
 QT_BUILD_KEY=`echo $QT_BUILD_KEY | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
 QT_BUILD_KEY_COMPAT=`echo $QT_BUILD_KEY_COMPAT | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
+QT_BUILD_KEY_COMPAT_COMPILER=`echo $QT_BUILD_KEY_COMPAT_COMPILER | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
+QT_BUILD_KEY_COMPAT_ARCH=`echo $QT_BUILD_KEY_COMPAT_ARCH | sed -e "s,  *, ,g" -e "s,^  *,," -e "s,  *$,,"`
 
 #-------------------------------------------------------------------------------
 # part of configuration information goes into qconfig.h
@@ -7498,6 +7608,15 @@ if [ -n "$QT_BUILD_KEY_COMPAT" ]; then
     echo "#define QT_BUILD_KEY_COMPAT \"$QT_BUILD_KEY_COMPAT\"" \
         >> "$outpath/src/corelib/global/qconfig.h.new"
 fi
+if [ -n "$QT_BUILD_KEY_COMPAT_COMPILER" ]; then
+    echo "#define QT_BUILD_KEY_COMPAT2 \"$QT_BUILD_KEY_COMPAT_COMPILER\"" \
+        >> "$outpath/src/corelib/global/qconfig.h.new"
+fi
+if [ -n "$QT_BUILD_KEY_COMPAT_ARCH" ]; then
+    echo "#define QT_BUILD_KEY_COMPAT3 \"$QT_BUILD_KEY_COMPAT_ARCH\"" \
+        >> "$outpath/src/corelib/global/qconfig.h.new"
+fi
+
 echo "" >>"$outpath/src/corelib/global/qconfig.h.new"
 
 echo "#ifdef QT_BOOTSTRAPPED" >>"$outpath/src/corelib/global/qconfig.h.new"
@@ -8059,7 +8178,7 @@ EOF
 *) ;;
 esac
 
-if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_DWARF2" = "no" ]  && [ "$CFG_WEBKIT" = "yes" ] && [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
+if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_DWARF2" = "no" ]  && [ "$CFG_WEBKIT" != "no" ] && [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
     cat <<EOF
         WARNING: DWARF2 debug symbols are not enabled. Linking webkit
         in debug mode will run out of memory on systems with 2GB or less.
@@ -8136,8 +8255,12 @@ echo "QtXmlPatterns module ... $CFG_XMLPATTERNS"
 echo "Phonon module .......... $CFG_PHONON"
 echo "Multimedia module ...... $CFG_MULTIMEDIA"
 echo "SVG module ............. $CFG_SVG"
-echo "WebKit module .......... $CFG_WEBKIT"
-if [ "$CFG_WEBKIT" = "yes" ]; then 
+case "$CFG_WEBKIT" in
+    yes)   echo "WebKit module .......... yes" ;;
+    debug) echo "WebKit module .......... yes (debug)" ;;
+    no)    echo "WebKit module .......... no" ;;
+esac
+if [ "$CFG_WEBKIT" != "no" ]; then
     if [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
         echo "JavaScriptCore JIT ..... To be decided by JavaScriptCore"
     else
@@ -8145,6 +8268,7 @@ if [ "$CFG_WEBKIT" = "yes" ]; then
     fi
 fi
 echo "Declarative module ..... $CFG_DECLARATIVE"
+echo "Declarative debugging ...$CFG_DECLARATIVE_DEBUG"
 echo "Support for S60 ........ $CFG_S60"
 echo "Symbian DEF files ...... $CFG_SYMBIAN_DEFFILES"
 echo "STL support ............ $CFG_STL"

@@ -71,6 +71,10 @@ public:
     ~QFontMetrics();
 
     QFontMetrics &operator=(const QFontMetrics &);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QFontMetrics &operator=(QFontMetrics &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
 
     int ascent() const;
     int descent() const;
@@ -149,7 +153,10 @@ public:
 
     QFontMetricsF &operator=(const QFontMetricsF &);
     QFontMetricsF &operator=(const QFontMetrics &);
-
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QFontMetricsF &operator=(QFontMetricsF &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
     qreal ascent() const;
     qreal descent() const;
     qreal height() const;

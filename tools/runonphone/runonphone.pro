@@ -31,4 +31,5 @@ else {
     SOURCES += serenum_stub.cpp
 }
 
-
+target.path=$$[QT_INSTALL_BINS]
+INSTALLS        += target

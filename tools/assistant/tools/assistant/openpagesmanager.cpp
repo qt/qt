@@ -209,6 +209,17 @@ HelpViewer *OpenPagesManager::createNewPageFromSearch(const QUrl &url)
     return createPage(url, true);
 }
 
+void OpenPagesManager::closePage(HelpViewer *viewer)
+{
+    TRACE_OBJ
+    for (int i = 0; i < m_model->rowCount(); ++i) {
+        if (m_model->pageAt(i) == viewer) {
+            removePage(i);
+            break;
+        }
+    }
+}
+
 void OpenPagesManager::closePage(const QModelIndex &index)
 {
     TRACE_OBJ
@@ -264,7 +275,13 @@ void OpenPagesManager::setCurrentPage(const QModelIndex &index)
 void OpenPagesManager::setCurrentPage(int index)
 {
     TRACE_OBJ
-    CentralWidget::instance()->setCurrentPage(m_model->pageAt(index));
+    setCurrentPage(m_model->pageAt(index));
+}
+
+void OpenPagesManager::setCurrentPage(HelpViewer *page)
+{
+    TRACE_OBJ
+    CentralWidget::instance()->setCurrentPage(page);
     m_openPagesWidget->selectCurrentPage();
 }
 

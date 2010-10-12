@@ -75,8 +75,7 @@
 
 #include "../network-settings.h"
 
-typedef QSharedPointer<QVarLengthArray<char, 0> > QVarLengthArraySharedPointer;
-Q_DECLARE_METATYPE(QVarLengthArraySharedPointer)
+Q_DECLARE_METATYPE(QSharedPointer<char>)
 Q_DECLARE_METATYPE(QNetworkReply*)
 Q_DECLARE_METATYPE(QAuthenticator*)
 Q_DECLARE_METATYPE(QNetworkProxy)
@@ -292,10 +291,13 @@ private Q_SLOTS:
 
     void getFromHttpIntoBuffer_data();
     void getFromHttpIntoBuffer();
+    void getFromHttpIntoBuffer2_data();
+    void getFromHttpIntoBuffer2();
 
     void ioGetFromHttpWithoutContentLength();
 
     void ioGetFromHttpBrokenChunkedEncoding();
+    void qtbug12908compressedHttpReply();
 
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
@@ -4296,6 +4298,7 @@ void tst_QNetworkReply::getFromHttpIntoBuffer_data()
     QTest::newRow("rfc-internal") << QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
 }
 
+// Please note that the whole "zero copy" download buffer API is private right now. Do not use it.
 void tst_QNetworkReply::getFromHttpIntoBuffer()
 {
     QFETCH(QUrl, url);
@@ -4318,9 +4321,11 @@ void tst_QNetworkReply::getFromHttpIntoBuffer()
 
     // Compare the memory buffer
     QVariant downloadBufferAttribute = reply->attribute(QNetworkRequest::DownloadBufferAttribute);
+    QVERIFY(downloadBufferAttribute.isValid());
+    QSharedPointer<char> sharedPointer = downloadBufferAttribute.value<QSharedPointer<char> >();
     bool memoryComparison =
             (0 == memcmp(static_cast<void*>(reference.readAll().data()),
-                         downloadBufferAttribute.value<QSharedPointer<QVarLengthArray<char, 0> > >()->constData(), reference.size()));
+                         sharedPointer.data(), reference.size()));
     QVERIFY(memoryComparison);
 
     // Make sure the normal reading works
@@ -4333,6 +4338,174 @@ void tst_QNetworkReply::getFromHttpIntoBuffer()
     QCOMPARE(reply->readAll(), reference.readAll());
     QVERIFY(reply->atEnd());
 }
+
+// FIXME we really need to consolidate all those server implementations
+class GetFromHttpIntoBuffer2Server : QObject {
+    Q_OBJECT;
+    qint64 dataSize;
+    qint64 dataSent;
+    QTcpServer server;
+    QTcpSocket *client;
+    bool serverSendsContentLength;
+    bool chunkedEncoding;
+
+public:
+    GetFromHttpIntoBuffer2Server (qint64 ds, bool sscl, bool ce) : dataSize(ds), dataSent(0),
+    client(0), serverSendsContentLength(sscl), chunkedEncoding(ce) {
+        server.listen();
+        connect(&server, SIGNAL(newConnection()), this, SLOT(newConnectionSlot()));
+    }
+
+    int serverPort() {
+        return server.serverPort();
+    }
+
+public slots:
+
+    void newConnectionSlot() {
+        client = server.nextPendingConnection();
+        client->setParent(this);
+        connect(client, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
+        connect(client, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWrittenSlot(qint64)));
+    }
+
+    void readyReadSlot() {
+        client->readAll();
+        client->write("HTTP/1.0 200 OK\n");
+        if (serverSendsContentLength)
+            client->write(QString("Content-Length: " + QString::number(dataSize) + "\n").toAscii());
+        if (chunkedEncoding)
+            client->write(QString("Transfer-Encoding: chunked\n").toAscii());
+        client->write("Connection: close\n\n");
+    }
+
+    void bytesWrittenSlot(qint64 amount) {
+        Q_UNUSED(amount);
+        if (dataSent == dataSize && client) {
+            // close eventually
+
+            // chunked encoding: we have to send a last "empty" chunk
+            if (chunkedEncoding)
+                client->write(QString("0\r\n\r\n").toAscii());
+
+            client->disconnectFromHost();
+            server.close();
+            client = 0;
+            return;
+        }
+
+        // send data
+        if (client && client->bytesToWrite() < 100*1024 && dataSent < dataSize) {
+            qint64 amount = qMin(qint64(16*1024), dataSize - dataSent);
+            QByteArray data(amount, '@');
+
+            if (chunkedEncoding) {
+                client->write(QString(QString("%1").arg(amount,0,16).toUpper() + "\r\n").toAscii());
+                client->write(data.constData(), amount);
+                client->write(QString("\r\n").toAscii());
+            } else {
+                client->write(data.constData(), amount);
+            }
+
+            dataSent += amount;
+        }
+    }
+};
+
+class GetFromHttpIntoBuffer2Client : QObject {
+    Q_OBJECT
+private:
+    bool useDownloadBuffer;
+    QNetworkReply *reply;
+    qint64 uploadSize;
+    QList<qint64> bytesAvailableList;
+public:
+    GetFromHttpIntoBuffer2Client (QNetworkReply *reply, bool useDownloadBuffer, qint64 uploadSize)
+        : useDownloadBuffer(useDownloadBuffer), reply(reply), uploadSize(uploadSize)
+    {
+        connect(reply, SIGNAL(metaDataChanged()), this, SLOT(metaDataChangedSlot()));
+        connect(reply, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
+        connect(reply, SIGNAL(finished()), this, SLOT(finishedSlot()));
+    }
+
+    public slots:
+    void metaDataChangedSlot() {
+        if (useDownloadBuffer) {
+            QSharedPointer<char> sharedPointer = qvariant_cast<QSharedPointer<char> >(reply->attribute(QNetworkRequest::DownloadBufferAttribute));
+            QVERIFY(!sharedPointer.isNull()); // It will be 0 if it failed
+        }
+
+        // metaDataChanged needs to come before everything else
+        QVERIFY(bytesAvailableList.isEmpty());
+    }
+
+    void readyReadSlot() {
+        QVERIFY(!reply->isFinished());
+
+        qint64 bytesAvailable = reply->bytesAvailable();
+
+        // bytesAvailable must never be 0
+        QVERIFY(bytesAvailable != 0);
+
+        if (bytesAvailableList.length() < 5) {
+            // We assume that the first few times the bytes available must be less than the complete size, e.g.
+            // the bytesAvailable() function works correctly in case of a downloadBuffer.
+            QVERIFY(bytesAvailable < uploadSize);
+        }
+        if (!bytesAvailableList.isEmpty()) {
+            // Also check that the same bytesAvailable is not coming twice in a row
+            QVERIFY(bytesAvailableList.last() != bytesAvailable);
+        }
+
+        bytesAvailableList.append(bytesAvailable);
+        // Add bytesAvailable to a list an parse
+    }
+
+    void finishedSlot() {
+        // We should have already received all readyRead
+        QVERIFY(bytesAvailableList.last() == uploadSize);
+    }
+};
+
+void tst_QNetworkReply::getFromHttpIntoBuffer2_data()
+{
+    QTest::addColumn<bool>("useDownloadBuffer");
+
+    QTest::newRow("use-download-buffer") << true;
+    QTest::newRow("do-not-use-download-buffer") << false;
+}
+
+// This test checks mostly that signal emissions are in correct order
+// Please note that the whole "zero copy" download buffer API is private right now. Do not use it.
+void tst_QNetworkReply::getFromHttpIntoBuffer2()
+{
+    QFETCH(bool, useDownloadBuffer);
+
+    // On my Linux Desktop the results are already visible with 128 kB, however we use this to have good results.
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_WINCE_WM)
+    // Show some mercy to non-desktop platform/s
+    enum {UploadSize = 4*1024*1024}; // 4 MB
+#else
+    enum {UploadSize = 32*1024*1024}; // 32 MB
+#endif
+
+    GetFromHttpIntoBuffer2Server server(UploadSize, true, false);
+
+    QNetworkRequest request(QUrl("http://127.0.0.1:" + QString::number(server.serverPort()) + "/?bare=1"));
+    if (useDownloadBuffer)
+        request.setAttribute(QNetworkRequest::MaximumDownloadBufferSizeAttribute, 1024*1024*128); // 128 MB is max allowed
+
+    QNetworkAccessManager manager;
+    QNetworkReplyPtr reply = manager.get(request);
+
+    GetFromHttpIntoBuffer2Client client(reply, useDownloadBuffer, UploadSize);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
+    QTestEventLoop::instance().enterLoop(40);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+}
+
 
 // Is handled somewhere else too, introduced this special test to have it more accessible
 void tst_QNetworkReply::ioGetFromHttpWithoutContentLength()
@@ -4375,6 +4548,30 @@ void tst_QNetworkReply::ioGetFromHttpBrokenChunkedEncoding()
     QCOMPARE(reply->error(), QNetworkReply::NoError);
 }
 
+// TODO:
+// Prepare a gzip that has one chunk that expands to the size mentioned in the bugreport.
+// Then have a custom HTTP server that waits after this chunk so the returning gets
+// triggered.
+void tst_QNetworkReply::qtbug12908compressedHttpReply()
+{
+    QString header("HTTP/1.0 200 OK\r\nContent-Encoding: gzip\r\nContent-Length: 63\r\n\r\n");
+
+    // dd if=/dev/zero of=qtbug-12908 bs=16384  count=1 && gzip qtbug-12908 && base64 -w 0 qtbug-12908.gz
+    QString encodedFile("H4sICDdDaUwAA3F0YnVnLTEyOTA4AO3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA");
+    QByteArray decodedFile = QByteArray::fromBase64(encodedFile.toAscii());
+
+    MiniHttpServer server(header.toAscii() + decodedFile);
+    server.doClose = true;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+}
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!
 void tst_QNetworkReply::parentingRepliesToTheApp()

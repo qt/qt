@@ -58,6 +58,8 @@
 #include <QtCore/qstack.h>
 #include <QtCore/qdebug.h>
 
+#include <QtCore/QStringBuilder>
+
 #ifndef QT_NO_XMLSTREAMREADER
 
 // From DOM-Level-3-Core spec
@@ -965,8 +967,9 @@ public:
     QScriptValue send(QScriptValue *me, const QByteArray &);
     QScriptValue abort(QScriptValue *me);
 
-    QString responseBody() const;
+    QString responseBody();
     const QByteArray & rawResponseBody() const;
+    bool receivedXml() const;
 private slots:
     void downloadProgress(qint64);
     void error(QNetworkReply::NetworkError);
@@ -989,6 +992,15 @@ private:
     HeadersList m_headersList;
     void fillHeadersList();
 
+    bool m_gotXml;
+    QByteArray m_mime;
+    QByteArray m_charset;
+    QTextCodec *m_textCodec;
+#ifndef QT_NO_TEXTCODEC
+    QTextCodec* findTextCodec() const;
+#endif
+    void readEncoding();
+
     QScriptValue m_me; // Set to the data object while a send() is ongoing (to access the callback)
 
     QScriptValue dispatchCallback(QScriptValue *me);
@@ -1006,7 +1018,7 @@ private:
 
 QDeclarativeXMLHttpRequest::QDeclarativeXMLHttpRequest(QNetworkAccessManager *manager)
 : m_state(Unsent), m_errorFlag(false), m_sendFlag(false),
-  m_redirectCount(0), m_network(0), m_nam(manager)
+  m_redirectCount(0), m_gotXml(false), m_textCodec(0), m_network(0), m_nam(manager)
 {
 }
 
@@ -1080,10 +1092,9 @@ QString QDeclarativeXMLHttpRequest::headers()
 
     foreach (const HeaderPair &header, m_headersList) {
         if (ret.length())
-            ret.append(QString::fromUtf8("\r\n"));
-        ret.append(QString::fromUtf8(header.first));
-        ret.append(QString::fromUtf8(": "));
-        ret.append(QString::fromUtf8(header.second));
+            ret.append(QLatin1String("\r\n"));
+        ret = ret % QString::fromUtf8(header.first) % QLatin1String(": ")
+                % QString::fromUtf8(header.second);
     }
     return ret;
 }
@@ -1095,9 +1106,9 @@ void QDeclarativeXMLHttpRequest::fillHeadersList()
     m_headersList.clear();
     foreach (const QByteArray &header, headerList) {
         HeaderPair pair (header.toLower(), m_network->rawHeader(header));
-	if (pair.first == "set-cookie" ||
-	    pair.first == "set-cookie2") 
-	    continue;
+        if (pair.first == "set-cookie" ||
+            pair.first == "set-cookie2")
+            continue;
 
         m_headersList << pair;
     }
@@ -1277,6 +1288,7 @@ void QDeclarativeXMLHttpRequest::finished()
         if (cbv.isError()) printError(cbv);
     }
     m_responseEntityBody.append(m_network->readAll());
+    readEncoding();
 
     if (xhrDump()) {
         qWarning().nospace() << "XMLHttpRequest: RESPONSE " << qPrintable(m_url.toString());
@@ -1302,15 +1314,72 @@ void QDeclarativeXMLHttpRequest::finished()
 }
 
 
-QString QDeclarativeXMLHttpRequest::responseBody() const
+void QDeclarativeXMLHttpRequest::readEncoding()
 {
-    QXmlStreamReader reader(m_responseEntityBody);
-    reader.readNext();
+    foreach (const HeaderPair &header, m_headersList) {
+        if (header.first == "content-type") {
+            int separatorIdx = header.second.indexOf(';');
+            if (separatorIdx == -1) {
+                m_mime == header.second;
+            } else {
+                m_mime = header.second.mid(0, separatorIdx);
+                int charsetIdx = header.second.indexOf("charset=");
+                if (charsetIdx != -1) {
+                    charsetIdx += 8;
+                    separatorIdx = header.second.indexOf(';', charsetIdx);
+                    m_charset = header.second.mid(charsetIdx, separatorIdx >= 0 ? separatorIdx : header.second.length());
+                }
+            }
+            break;
+        }
+    }
+
+    if (m_mime.isEmpty() || m_mime == "text/xml" || m_mime == "application/xml" || m_mime.endsWith("+xml")) 
+        m_gotXml = true;
+}
+
+bool QDeclarativeXMLHttpRequest::receivedXml() const
+{
+    return m_gotXml;
+}
+
+
 #ifndef QT_NO_TEXTCODEC
-    QTextCodec *codec = QTextCodec::codecForName(reader.documentEncoding().toString().toUtf8());
-    if (codec)
-        return codec->toUnicode(m_responseEntityBody);
+QTextCodec* QDeclarativeXMLHttpRequest::findTextCodec() const
+{
+    QTextCodec *codec = 0;
+
+    if (!m_charset.isEmpty()) 
+        codec = QTextCodec::codecForName(m_charset);
+
+    if (!codec && m_gotXml) {
+        QXmlStreamReader reader(m_responseEntityBody);
+        reader.readNext();
+        codec = QTextCodec::codecForName(reader.documentEncoding().toString().toUtf8());
+    }
+
+    if (!codec && m_mime == "text/html") 
+        codec = QTextCodec::codecForHtml(m_responseEntityBody, 0);
+
+    if (!codec)
+        codec = QTextCodec::codecForUtfText(m_responseEntityBody, 0);
+
+    if (!codec)
+        codec = QTextCodec::codecForName("UTF-8");
+    return codec;
+}
 #endif
+
+
+QString QDeclarativeXMLHttpRequest::responseBody()
+{
+#ifndef QT_NO_TEXTCODEC
+    if (!m_textCodec)
+        m_textCodec = findTextCodec();
+    if (m_textCodec)
+        return m_textCodec->toUnicode(m_responseEntityBody);
+#endif
+
     return QString::fromUtf8(m_responseEntityBody);
 }
 
@@ -1571,8 +1640,9 @@ static QScriptValue qmlxmlhttprequest_responseXML(QScriptContext *context, QScri
     if (!request) 
         THROW_REFERENCE("Not an XMLHttpRequest object");
 
-    if (request->readyState() != QDeclarativeXMLHttpRequest::Loading &&
-        request->readyState() != QDeclarativeXMLHttpRequest::Done)
+    if (!request->receivedXml() ||
+        (request->readyState() != QDeclarativeXMLHttpRequest::Loading &&
+         request->readyState() != QDeclarativeXMLHttpRequest::Done))
         return engine->nullValue();
     else  
         return Document::load(engine, request->rawResponseBody());

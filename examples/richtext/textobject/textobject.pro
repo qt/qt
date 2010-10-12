@@ -12,7 +12,7 @@ sources.files = $$SOURCES $$HEADERS *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/richtext/textobject
 INSTALLS += target sources
 
-filesToDeploy.sources = files/*.svg
+filesToDeploy.files = files/*.svg
 filesToDeploy.path = files
 DEPLOYMENT += filesToDeploy
 

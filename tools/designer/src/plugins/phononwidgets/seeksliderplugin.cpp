@@ -66,12 +66,12 @@ QString SeekSliderPlugin::group() const
 
 QString SeekSliderPlugin::toolTip() const
 {
-    return QString(QLatin1String(toolTipC));
+    return tr(toolTipC);
 }
 
 QString SeekSliderPlugin::whatsThis() const
 {
-    return QString(QLatin1String(toolTipC));
+    return tr(toolTipC);
 }
 
 QString SeekSliderPlugin::includeFile() const

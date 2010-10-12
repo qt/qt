@@ -173,7 +173,7 @@ void QHelpSearchIndexReaderClucene::run()
             QCLuceneDocument document;
             const QStringList namespaceList = engine.registeredDocumentations();
 
-            foreach (QSharedPointer<QCLuceneHits> hits, cluceneHitsList) {
+            foreach (const QSharedPointer<QCLuceneHits> &hits, cluceneHitsList) {
                 for (qint32 i = 0; i < hits->length(); i++) {
                     document = hits->document(i);
                     const QString path = document.get(PathField);
@@ -415,7 +415,7 @@ bool QHelpSearchIndexReaderClucene::addAttributesQuery(
 void QHelpSearchIndexReaderClucene::boostSearchHits(const QHelpEngineCore &engine,
     QList<QHelpSearchEngine::SearchHit> &hitList, const QList<QHelpSearchQuery> &queryList)
 {
-    foreach (const QHelpSearchQuery query, queryList) {
+    foreach (const QHelpSearchQuery &query, queryList) {
         if (query.fieldName != QHelpSearchQuery::DEFAULT)
             continue;
 

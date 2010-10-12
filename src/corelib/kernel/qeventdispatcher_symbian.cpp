@@ -127,9 +127,9 @@ private:
  * cannot change active objects that we do not own, but the active objects that Qt owns will use
  * this as a base class with convenience functions.
  *
- * Here is how it works: On every RunL, the deriving class should call okToRun(). This will allow
- * exactly one run of the active object, and mark it as such. If it is called again, it will return
- * false, and add the object to a queue so it can be run later.
+ * Here is how it works: On every RunL, the deriving class should call maybeQueueForLater().
+ * This will return whether the active object has been queued, or whether it should run immediately.
+ * Queued objects will run again after other events have been processed.
  *
  * The QCompleteDeferredAOs class is a special object that runs after all others, which will
  * reactivate the objects that were previously not run.
@@ -149,7 +149,7 @@ QActiveObject::~QActiveObject()
         m_dispatcher->removeDeferredActiveObject(this);
 }
 
-bool QActiveObject::okToRun()
+bool QActiveObject::maybeQueueForLater()
 {
     Q_ASSERT(!m_hasRunAgain);
 
@@ -157,12 +157,12 @@ bool QActiveObject::okToRun()
         // First occurrence of this event in this iteration.
         m_hasAlreadyRun = true;
         m_iterationCount = m_dispatcher->iterationCount();
-        return true;
+        return false;
     } else {
         // The event has already occurred.
         m_dispatcher->addDeferredActiveObject(this);
         m_hasRunAgain = true;
-        return false;
+        return true;
     }
 }
 
@@ -178,8 +178,7 @@ void QActiveObject::reactivateAndComplete()
 }
 
 QWakeUpActiveObject::QWakeUpActiveObject(QEventDispatcherSymbian *dispatcher)
-    : CActive(WAKE_UP_PRIORITY),
-      m_dispatcher(dispatcher)
+    : QActiveObject(WAKE_UP_PRIORITY, dispatcher)
 {
     CActiveScheduler::Add(this);
     iStatus = KRequestPending;
@@ -201,6 +200,9 @@ void QWakeUpActiveObject::DoCancel()
 
 void QWakeUpActiveObject::RunL()
 {
+    if (maybeQueueForLater())
+        return;
+
     iStatus = KRequestPending;
     SetActive();
     QT_TRYCATCH_LEAVING(m_dispatcher->wakeUpWasCalled());
@@ -232,8 +234,12 @@ void QTimerActiveObject::DoCancel()
 
 void QTimerActiveObject::RunL()
 {
-    int error;
-    QT_TRYCATCH_ERROR(error, Run());
+    int error = KErrNone;
+    if (iStatus == KErrNone) {
+        QT_TRYCATCH_ERROR(error, Run());
+    } else {
+        error = iStatus.Int();
+    }
     // All Symbian error codes are negative.
     if (error < 0) {
         CActiveScheduler::Current()->Error(error);  // stop and report here, as this timer will be deleted on scope exit
@@ -266,7 +272,7 @@ void QTimerActiveObject::Run()
         return;
     }
 
-    if (!okToRun())
+    if (maybeQueueForLater())
         return;
 
     if (m_timerInfo->interval > 0) {
@@ -626,7 +632,7 @@ void QSocketActiveObject::DoCancel()
 
 void QSocketActiveObject::RunL()
 {
-    if (!okToRun())
+    if (maybeQueueForLater())
         return;
 
     QT_TRYCATCH_LEAVING(m_dispatcher->socketFired(this));
@@ -718,6 +724,7 @@ QEventDispatcherSymbian::QEventDispatcherSymbian(QObject *parent)
       m_interrupt(false),
       m_wakeUpDone(0),
       m_iterationCount(0),
+      m_insideTimerEvent(false),
       m_noSocketEvents(false)
 {
 #ifdef QT_SYMBIAN_PRIORITY_DROP
@@ -768,6 +775,9 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
 {
     bool handledAnyEvent = false;
     bool oldNoSocketEventsValue = m_noSocketEvents;
+    bool oldInsideTimerEventValue = m_insideTimerEvent;
+
+    m_insideTimerEvent = false;
 
     QT_TRY {
         Q_D(QAbstractEventDispatcher);
@@ -858,6 +868,7 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
     }
 
     m_noSocketEvents = oldNoSocketEventsValue;
+    m_insideTimerEvent = oldInsideTimerEventValue;
 
     return handledAnyEvent;
 }
@@ -878,10 +889,13 @@ void QEventDispatcherSymbian::timerFired(int timerId)
     }
 
     timerInfo->inTimerEvent = true;
+    bool oldInsideTimerEventValue = m_insideTimerEvent;
+    m_insideTimerEvent = true;
 
     QTimerEvent event(timerInfo->timerId);
     QCoreApplication::sendEvent(timerInfo->receiver, &event);
 
+    m_insideTimerEvent = oldInsideTimerEventValue;
     timerInfo->inTimerEvent = false;
 
     return;
@@ -1049,6 +1063,14 @@ void QEventDispatcherSymbian::registerTimer ( int timerId, int interval, QObject
     m_timerList.insert(timerId, timer);
 
     timer->timerAO->Start();
+
+    if (m_insideTimerEvent)
+        // If we are inside a timer event, we need to prevent event starvation
+        // by preventing newly created timers from running in the same event processing
+        // iteration. Do this by calling the maybeQueueForLater() function to "fake" that we have
+        // already run once. This will cause the next run to be added to the deferred
+        // queue instead.
+        timer->timerAO->maybeQueueForLater();
 }
 
 bool QEventDispatcherSymbian::unregisterTimer ( int timerId )

@@ -33,7 +33,7 @@ wince*{
         BUILD_DIR = debug
     }
 
-    executables.sources = \
+    executables.files = \
         $$QT_BUILD_TREE/demos/embedded/embeddedsvgviewer/$${BUILD_DIR}/embeddedsvgviewer.exe \
         $$QT_BUILD_TREE/demos/embedded/styledemo/$${BUILD_DIR}/styledemo.exe \
         $$QT_BUILD_TREE/demos/deform/$${BUILD_DIR}/deform.exe \
@@ -45,10 +45,10 @@ wince*{
 
     executables.path = .
 
-    files.sources = $$PWD/screenshots $$PWD/slides $$PWD/../embeddedsvgviewer/shapes.svg
+    files.files = $$PWD/screenshots $$PWD/slides $$PWD/../embeddedsvgviewer/shapes.svg
     files.path = .
 
-    config.sources = $$PWD/config_wince/config.xml
+    config.files = $$PWD/config_wince/config.xml
     config.path = .
 
     DEPLOYMENT += config files executables
@@ -79,7 +79,7 @@ symbian {
         }
     }
 
-    executables.sources = \
+    executables.files = \
         $$QT_BUILD_TREE/demos/embedded/styledemo/styledemo.exe \
         $$QT_BUILD_TREE/demos/deform/deform.exe \
         $$QT_BUILD_TREE/demos/pathstroke/pathstroke.exe \
@@ -97,7 +97,7 @@ symbian {
 
     executables.path = /sys/bin
 
-    reg_resource.sources = \
+    reg_resource.files = \
         $$regResourceDir(demos/embedded/styledemo/styledemo_reg.rsc) \
         $$regResourceDir(demos/deform/deform_reg.rsc) \
         $$regResourceDir(demos/pathstroke/pathstroke_reg.rsc) \
@@ -114,17 +114,17 @@ symbian {
         $$regResourceDir(demos/embedded/flightinfo/flightinfo_reg.rsc)
 
     contains(QT_CONFIG, phonon) {
-        reg_resource.sources += $$regResourceDir(demos/qmediaplayer/qmediaplayer_reg.rsc)
+        reg_resource.files += $$regResourceDir(demos/qmediaplayer/qmediaplayer_reg.rsc)
     }
 
     contains(QT_CONFIG, multimedia) {
-        reg_resource.sources += $$regResourceDir(demos/spectrum/app/spectrum_reg.rsc)
+        reg_resource.files += $$regResourceDir(demos/spectrum/app/spectrum_reg.rsc)
     }
 
 
     reg_resource.path = $$REG_RESOURCE_IMPORT_DIR
 
-    resource.sources = \
+    resource.files = \
         $$appResourceDir(demos/embedded/styledemo/styledemo.rsc) \
         $$appResourceDir(demos/deform/deform.rsc) \
         $$appResourceDir(demos/pathstroke/pathstroke.rsc) \
@@ -143,7 +143,7 @@ symbian {
 
     resource.path = $$APP_RESOURCE_DIR
 
-    mifs.sources = \
+    mifs.files = \
         $$appResourceDir(demos/embedded/fluidlauncher/fluidlauncher.mif) \
         $$appResourceDir(demos/embedded/styledemo/styledemo.mif) \
         $$appResourceDir(demos/deform/deform.mif) \
@@ -162,28 +162,28 @@ symbian {
     mifs.path = $$APP_RESOURCE_DIR
 
     contains(QT_CONFIG, svg) {
-        executables.sources += \
+        executables.files += \
             $$QT_BUILD_TREE/demos/embedded/embeddedsvgviewer/embeddedsvgviewer.exe \
             $$QT_BUILD_TREE/demos/embedded/weatherinfo/weatherinfo.exe
 
-        reg_resource.sources += \
+        reg_resource.files += \
             $$regResourceDir(demos/embedded/embeddedsvgviewer/embeddedsvgviewer_reg.rsc) \
             $$regResourceDir(demos/embedded/weatherinfo/weatherinfo_reg.rsc)
 
-        resource.sources += \
+        resource.files += \
             $$appResourceDir(demos/embedded/embeddedsvgviewer/embeddedsvgviewer.rsc) \
             $$appResourceDir(demos/embedded/weatherinfo/weatherinfo.rsc)
 
-        mifs.sources += \
+        mifs.files += \
             $$appResourceDir(demos/embedded/embeddedsvgviewer/embeddedsvgviewer.mif) \
             $$appResourceDir(demos/embedded/weatherinfo/weatherinfo.mif)
 
     }
     contains(QT_CONFIG, webkit) {
-        executables.sources += $$QT_BUILD_TREE/demos/embedded/anomaly/anomaly.exe
-        reg_resource.sources += $$regResourceDir(demos/embedded/anomaly/anomaly_reg.rsc)
-        resource.sources += $$appResourceDir(demos/embedded/anomaly/anomaly.rsc)
-        mifs.sources += \
+        executables.files += $$QT_BUILD_TREE/demos/embedded/anomaly/anomaly.exe
+        reg_resource.files += $$regResourceDir(demos/embedded/anomaly/anomaly_reg.rsc)
+        resource.files += $$appResourceDir(demos/embedded/anomaly/anomaly.rsc)
+        mifs.files += \
             $$appResourceDir(demos/embedded/anomaly/anomaly.mif)
 
         isEmpty(QT_LIBINFIX) {
@@ -195,61 +195,61 @@ symbian {
     }
 
     contains(QT_CONFIG, phonon) {
-        executables.sources += $$QT_BUILD_TREE/demos/qmediaplayer/qmediaplayer.exe
-        resource.sources += $$appResourceDir(demos/qmediaplayer/qmediaplayer.rsc)
-        mifs.sources += \
+        executables.files += $$QT_BUILD_TREE/demos/qmediaplayer/qmediaplayer.exe
+        resource.files += $$appResourceDir(demos/qmediaplayer/qmediaplayer.rsc)
+        mifs.files += \
             $$appResourceDir(demos/qmediaplayer/qmediaplayer.mif)
     }
 
     contains(QT_CONFIG, multimedia) {
-        executables.sources += $$QT_BUILD_TREE/demos/spectrum/app/spectrum.exe
-        executables.sources += $$QT_BUILD_TREE/demos/spectrum/3rdparty/fftreal/fftreal.dll
-        resource.sources += $$appResourceDir(demos/spectrum/app/spectrum.rsc)
-        mifs.sources += \
+        executables.files += $$QT_BUILD_TREE/demos/spectrum/app/spectrum.exe
+        executables.files += $$QT_BUILD_TREE/demos/spectrum/3rdparty/fftreal/fftreal.dll
+        resource.files += $$appResourceDir(demos/spectrum/app/spectrum.rsc)
+        mifs.files += \
             $$appResourceDir(demos/spectrum/app/spectrum.mif)
     }
 
     contains(QT_CONFIG, script) {
-        executables.sources += $$QT_BUILD_TREE/examples/script/context2d/context2d.exe
-        reg_resource.sources += $$regResourceDir(examples/script/context2d/context2d_reg.rsc)
-        resource.sources += $$appResourceDir(examples/script/context2d/context2d.rsc)
-        mifs.sources += \
+        executables.files += $$QT_BUILD_TREE/examples/script/context2d/context2d.exe
+        reg_resource.files += $$regResourceDir(examples/script/context2d/context2d_reg.rsc)
+        resource.files += $$appResourceDir(examples/script/context2d/context2d.rsc)
+        mifs.files += \
             $$appResourceDir(examples/script/context2d/context2d.mif)
     }
 
     qmldemos = qmlcalculator qmlclocks qmldialcontrol qmleasing qmlflickr qmlphotoviewer qmltwitter
     contains(QT_CONFIG, declarative) {
         for(qmldemo, qmldemos) {
-            executables.sources += $$QT_BUILD_TREE/demos/embedded/$${qmldemo}/$${qmldemo}.exe
-            reg_resource.sources += $$regResourceDir(demos/embedded/$${qmldemo}/$${qmldemo}_reg.rsc)
-            resource.sources += $$appResourceDir(demos/embedded/$${qmldemo}/$${qmldemo}.rsc)
-            mifs.sources += $$appResourceDir(demos/embedded/$${qmldemo}/$${qmldemo}.mif)
+            executables.files += $$QT_BUILD_TREE/demos/embedded/$${qmldemo}/$${qmldemo}.exe
+            reg_resource.files += $$regResourceDir(demos/embedded/$${qmldemo}/$${qmldemo}_reg.rsc)
+            resource.files += $$appResourceDir(demos/embedded/$${qmldemo}/$${qmldemo}.rsc)
+            mifs.files += $$appResourceDir(demos/embedded/$${qmldemo}/$${qmldemo}.mif)
         }
     }
 
-    files.sources = $$PWD/screenshots $$PWD/slides
+    files.files = $$PWD/screenshots $$PWD/slides
     files.path = .
 
-    config.sources = $$PWD/config_s60/config.xml
+    config.files = $$PWD/config_s60/config.xml
     config.path = .
 
-    viewerimages.sources = $$PWD/../embeddedsvgviewer/shapes.svg
+    viewerimages.files = $$PWD/../embeddedsvgviewer/shapes.svg
     viewerimages.path = /data/images/qt/demos/embeddedsvgviewer
 
     # demos/mediaplayer make also use of these files.
-    desktopservices_music.sources = \
+    desktopservices_music.files = \
         $$PWD/../desktopservices/data/*.mp3 \
         $$PWD/../desktopservices/data/*.wav
     desktopservices_music.path = /data/sounds
 
-    desktopservices_images.sources = $$PWD/../desktopservices/data/*.png
+    desktopservices_images.files = $$PWD/../desktopservices/data/*.png
     desktopservices_images.path = /data/images
 
-    saxbookmarks.sources = $$PWD/../../../examples/xml/saxbookmarks/frank.xbel
-    saxbookmarks.sources += $$PWD/../../../examples/xml/saxbookmarks/jennifer.xbel
+    saxbookmarks.files = $$PWD/../../../examples/xml/saxbookmarks/frank.xbel
+    saxbookmarks.files += $$PWD/../../../examples/xml/saxbookmarks/jennifer.xbel
     saxbookmarks.path = /data/qt/saxbookmarks
 
-    fluidbackup.sources = backup_registration.xml
+    fluidbackup.files = backup_registration.xml
     fluidbackup.path = /private/$$replace(TARGET.UID3, 0x,)
 
     DEPLOYMENT += config files executables viewerimages saxbookmarks reg_resource resource \

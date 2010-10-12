@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
 <TS version="2.0" language="sl">
-    <extra-po-header-po_revision_date>2010-08-05 12:59+0200</extra-po-header-po_revision_date>
+    <extra-po-header-po_revision_date>2010-08-29 00:26+0200</extra-po-header-po_revision_date>
     <extra-po-headers>MIME-Version,Content-Type,Content-Transfer-Encoding,Plural-Forms,X-Language,X-Qt-Contexts,Last-Translator,PO-Revision-Date,Project-Id-Version,Language-Team,X-Generator</extra-po-headers>
     <extra-po-header-x_generator>Lokalize 1.1</extra-po-header-x_generator>
     <extra-po-header-language_team>Slovenian &lt;lugos-slo@lugos.si&gt;</extra-po-header-language_team>
@@ -382,13 +382,13 @@ da je nameščen paket libgstreamer-plugins-base.</translation>
         <source>Decay HF ratio (%)</source>
         <extracomment>DecayHFRatio: Ratio of high-frequency decay time to the value specified by DecayTime.
 </extracomment>
-        <translation type="unfinished"></translation>
+        <translation>VF razmerje zamrtja (%)</translation>
     </message>
     <message>
         <source>Decay time (ms)</source>
         <extracomment>DecayTime: Time over which reverberation is diminished.
 </extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Čas zamrtja (ms)</translation>
     </message>
     <message>
         <source>Density (%)</source>
@@ -1328,855 +1328,874 @@ v
     <name>QDeclarativeAnchors</name>
     <message>
         <source>Possible anchor loop detected on fill.</source>
-        <translation type="unfinished">Ob zapolnjevanju je bila zaznana možna zanka sidra.</translation>
+        <translation>Ob zapolnjevanju je bila zaznana možna zanka sidra.</translation>
     </message>
     <message>
         <source>Possible anchor loop detected on centerIn.</source>
-        <translation type="unfinished">Ob usrediščanju je bila zaznana možna zanka sidra.</translation>
+        <translation>Ob usrediščanju je bila zaznana možna zanka sidra.</translation>
     </message>
     <message>
         <source>Cannot anchor to an item that isn&apos;t a parent or sibling.</source>
-        <translation type="unfinished">Na objekt, ki ni nadrejen ali enakovreden, se ni moč zasidrati.</translation>
+        <translation>Na objekt, ki ni nadrejen ali enakovreden, se ni moč zasidrati.</translation>
     </message>
     <message>
         <source>Possible anchor loop detected on vertical anchor.</source>
-        <translation type="unfinished">Ob navpičnem sidru je bila zaznana možna zanka sidra.</translation>
+        <translation>Ob navpičnem sidru je bila zaznana možna zanka sidra.</translation>
     </message>
     <message>
         <source>Possible anchor loop detected on horizontal anchor.</source>
-        <translation type="unfinished">Ob vodoravnem sidru je bila zaznana možna zanka sidra.</translation>
+        <translation>Ob vodoravnem sidru je bila zaznana možna zanka sidra.</translation>
     </message>
     <message>
         <source>Cannot specify left, right, and hcenter anchors.</source>
-        <translation type="unfinished">Levih, desnih in vodoravno sredinskih sider ni moč določiti.</translation>
+        <translation>Levih, desnih in vodoravno sredinskih sider ni moč določiti.</translation>
     </message>
     <message>
         <source>Cannot anchor to a null item.</source>
-        <translation type="unfinished">Na ničelni objekt se ni moč zasidrati.</translation>
+        <translation>Na neobstoječ objekt se ni moč zasidrati.</translation>
     </message>
     <message>
         <source>Cannot anchor a horizontal edge to a vertical edge.</source>
-        <translation type="unfinished">Vodoravnega roba ni moč zasidrati na navpični rob.</translation>
+        <translation>Vodoravnega roba ni moč zasidrati na navpični rob.</translation>
     </message>
     <message>
         <source>Cannot anchor item to self.</source>
-        <translation type="unfinished">Objekta ni moč zasidrati samega nase.</translation>
+        <translation>Objekta ni moč zasidrati samega nase.</translation>
     </message>
     <message>
         <source>Cannot specify top, bottom, and vcenter anchors.</source>
-        <translation type="unfinished">Vrhnjih, spodnjih in navpično sredinskih sider ni moč določiti.</translation>
+        <translation>Vrhnjih, spodnjih in navpično sredinskih sider ni moč določiti.</translation>
     </message>
     <message>
         <source>Baseline anchor cannot be used in conjunction with top, bottom, or vcenter anchors.</source>
-        <translation type="unfinished">Sidra na osnovnici ni moč uporabiti skupaj z vrhnjimi, spodnjimi ali navpično sredinskimi sidri.</translation>
+        <translation>Sidra na osnovnici ni moč uporabiti skupaj z vrhnjimi, spodnjimi ali navpično sredinskimi sidri.</translation>
     </message>
     <message>
         <source>Cannot anchor a vertical edge to a horizontal edge.</source>
-        <translation type="unfinished">Navpičnega roba ni moč zasidrati na vodoravni rob.</translation>
+        <translation>Navpičnega roba ni moč zasidrati na vodoravni rob.</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeAnimatedImage</name>
     <message>
         <source>Qt was built without support for QMovie</source>
-        <translation type="unfinished">Qt je bil zgrajen brez podpore za QMovie</translation>
+        <translation>Qt je bil zgrajen brez podpore za QMovie</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeBehavior</name>
     <message>
         <source>Cannot change the animation assigned to a Behavior.</source>
-        <translation type="unfinished">Animacije, ki je prirejena obnašanju, ni moč spremeniti.</translation>
+        <translation>Animacije, ki je prirejena obnašanju, ni moč spremeniti.</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeBinding</name>
     <message>
         <source>Binding loop detected for property &quot;%1&quot;</source>
-        <translation type="unfinished">Za lastnost »%1« je bila zaznana zanka vezave</translation>
+        <translation>Za lastnost »%1« je bila zaznana zanka vezave</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeCompiledBindings</name>
     <message>
         <source>Binding loop detected for property &quot;%1&quot;</source>
-        <translation type="unfinished">Za lastnost »%1« je bila zaznana zanka vezave</translation>
+        <translation>Za lastnost »%1« je bila zaznana zanka vezave</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeCompiler</name>
     <message>
         <source>Invalid property assignment: &quot;%1&quot; is a read-only property</source>
-        <translation type="unfinished">Neveljavna prireditev lastnosti: »%1« je lastnost, ki je samo za branje</translation>
+        <translation>Neveljavna prireditev lastnosti: »%1« je lastnost, ki je samo za branje</translation>
     </message>
     <message>
         <source>Invalid property assignment: unknown enumeration</source>
-        <translation type="unfinished">Neveljavna prireditev lastnosti: neznano oštevilčenje</translation>
+        <translation>Neveljavna prireditev lastnosti: neznano oštevilčenje</translation>
     </message>
     <message>
         <source>Invalid property assignment: string expected</source>
-        <translation type="unfinished">Neveljavna prireditev lastnosti: pričakovan je niz</translation>
+        <translation>Neveljavna prireditev lastnosti: pričakovan je niz</translation>
     </message>
     <message>
         <source>Invalid property assignment: url expected</source>
-        <translation type="unfinished">Neveljavna prireditev lastnosti: pričakovan je URL</translation>
+        <translation>Neveljavna prireditev lastnosti: pričakovan je URL</translation>
     </message>
     <message>
         <source>Invalid property assignment: unsigned int expected</source>
-        <translation type="unfinished">Neveljavna prireditev lastnosti: pričakovano je nepredznačeno celo število</translation>
+        <translation>Neveljavna prireditev lastnosti: pričakovano je nepredznačeno celo število</translation>
     </message>
     <message>
         <source>Invalid property assignment: int expected</source>
-        <translation type="unfinished">Neveljavna prireditev lastnosti: pričakovano je celo število</translation>
+        <translation>Neveljavna prireditev lastnosti: pričakovano je celo število</translation>
     </message>
     <message>
         <source>Invalid property assignment: number expected</source>
-        <translation type="unfinished">Neveljavna prireditev lastnosti: pričakovano je število</translation>
+        <translation>Neveljavna prireditev lastnosti: pričakovano je število</translation>
     </message>
     <message>
         <source>Invalid property assignment: color expected</source>
-        <translation type="unfinished">Neveljavna prireditev lastnosti: pričakovana je barva</translation>
+        <translation>Neveljavna prireditev lastnosti: pričakovana je barva</translation>
     </message>
     <message>
         <source>Invalid property assignment: date expected</source>
-        <translation type="unfinished">Neveljavna prireditev lastnosti: pričakovan je datum</translation>
+        <translation>Neveljavna prireditev lastnosti: pričakovan je datum</translation>
     </message>
     <message>
         <source>Invalid property assignment: time expected</source>
-        <translation type="unfinished">Neveljavna prireditev lastnosti: pričakovan je čas</translation>
+        <translation>Neveljavna prireditev lastnosti: pričakovan je čas</translation>
     </message>
     <message>
         <source>Invalid property assignment: datetime expected</source>
-        <translation type="unfinished">Neveljavna prireditev lastnosti: pričakovana sta datum in čas</translation>
+        <translation>Neveljavna prireditev lastnosti: pričakovana sta datum in čas</translation>
     </message>
     <message>
         <source>Invalid property assignment: point expected</source>
-        <translation type="unfinished">Neveljavna prireditev lastnosti: pričakovana je točka</translation>
+        <translation>Neveljavna prireditev lastnosti: pričakovana je točka</translation>
     </message>
     <message>
         <source>Invalid property assignment: size expected</source>
-        <translation type="unfinished">Neveljavna prireditev lastnosti: pričakovana je velikost</translation>
+        <translation>Neveljavna prireditev lastnosti: pričakovana je velikost</translation>
     </message>
     <message>
         <source>Invalid property assignment: rect expected</source>
-        <translation type="unfinished">Neveljavna prireditev lastnosti: pričakovan je pravokotnik</translation>
+        <translation>Neveljavna prireditev lastnosti: pričakovan je pravokotnik</translation>
     </message>
     <message>
         <source>Invalid property assignment: boolean expected</source>
-        <translation type="unfinished">Neveljavna prireditev lastnosti: pričakovana je logična vrednost</translation>
+        <translation>Neveljavna prireditev lastnosti: pričakovana je logična vrednost</translation>
     </message>
     <message>
         <source>Invalid property assignment: 3D vector expected</source>
-        <translation type="unfinished">Neveljavna prireditev lastnosti: pričakovan je 3D vektor</translation>
+        <translation>Neveljavna prireditev lastnosti: pričakovan je 3D vektor</translation>
     </message>
     <message>
         <source>Invalid property assignment: unsupported type &quot;%1&quot;</source>
-        <translation type="unfinished">Neveljavna prireditev lastnosti: nepodprta vrsta »%1«</translation>
+        <translation>Neveljavna prireditev lastnosti: nepodprta vrsta »%1«</translation>
     </message>
     <message>
         <source>Element is not creatable.</source>
-        <translation type="unfinished">Elementa ni moč ustvariti.</translation>
+        <translation>Elementa ni moč ustvariti.</translation>
     </message>
     <message>
         <source>Component elements may not contain properties other than id</source>
-        <translation type="unfinished">Elementi komponent ne smejo vsebovati drugih lastnosti kot ID</translation>
+        <translation>Elementi komponent ne smejo vsebovati drugih lastnosti kot ID</translation>
     </message>
     <message>
         <source>Invalid component id specification</source>
-        <translation type="unfinished">Neveljavno določen ID komponente</translation>
+        <translation>Neveljavno določen ID komponente</translation>
     </message>
     <message>
         <source>id is not unique</source>
-        <translation type="unfinished">ID ni edinstven</translation>
+        <translation>ID ni edinstven</translation>
     </message>
     <message>
         <source>Invalid component body specification</source>
-        <translation type="unfinished">Neveljavno določeno telo komponente</translation>
+        <translation>Neveljavno določeno telo komponente</translation>
     </message>
     <message>
         <source>Component objects cannot declare new properties.</source>
-        <translation type="unfinished">Objekti komponent ne morejo deklarirati novih lastnosti.</translation>
+        <translation>Objekti komponent ne morejo deklarirati novih lastnosti.</translation>
     </message>
     <message>
         <source>Component objects cannot declare new signals.</source>
-        <translation type="unfinished">Objekti komponent ne morejo deklarirati novih signalov.</translation>
+        <translation>Objekti komponent ne morejo deklarirati novih signalov.</translation>
     </message>
     <message>
         <source>Component objects cannot declare new functions.</source>
-        <translation type="unfinished">Objekti komponent ne morejo deklarirati novih funkcij.</translation>
+        <translation>Objekti komponent ne morejo deklarirati novih funkcij.</translation>
     </message>
     <message>
         <source>Cannot create empty component specification</source>
-        <translation type="unfinished">Prazne specifikacije komponente ni moč ustvariti</translation>
+        <translation>Prazne specifikacije komponente ni moč ustvariti</translation>
     </message>
     <message>
         <source>Incorrectly specified signal assignment</source>
-        <translation type="unfinished">Napačno določena prireditev signalu</translation>
+        <translation>Napačno določena prireditev signalu</translation>
     </message>
     <message>
         <source>Cannot assign a value to a signal (expecting a script to be run)</source>
-        <translation type="unfinished">Signalu ni moč prirediti vrednosti (pričakovan je skript, ki bo zagnan)</translation>
+        <translation>Signalu ni moč prirediti vrednosti (pričakovan je skript, ki bo zagnan)</translation>
     </message>
     <message>
         <source>Empty signal assignment</source>
-        <translation type="unfinished">Prazna prireditev signalu</translation>
+        <translation>Prazna prireditev signalu</translation>
     </message>
     <message>
         <source>Empty property assignment</source>
-        <translation type="unfinished">Prazna prireditev lastnosti</translation>
+        <translation>Prazna prireditev lastnosti</translation>
     </message>
     <message>
         <source>Attached properties cannot be used here</source>
-        <translation type="unfinished">Pripete lastnosti tu ne morejo biti uporabljene</translation>
+        <translation>Pripete lastnosti tu ne morejo biti uporabljene</translation>
     </message>
     <message>
         <source>Non-existent attached object</source>
-        <translation type="unfinished">Neobstoječ pripet objekt</translation>
+        <translation>Neobstoječ pripet objekt</translation>
     </message>
     <message>
         <source>Invalid attached object assignment</source>
-        <translation type="unfinished">Neveljavna prireditev pripetega objekta</translation>
+        <translation>Neveljavna prireditev pripetega objekta</translation>
     </message>
     <message>
         <source>Cannot assign to non-existent default property</source>
-        <translation type="unfinished">Neobstoječi privzeti lastnosti ni moč prirediti</translation>
+        <translation>Neobstoječi privzeti lastnosti ni moč prirediti</translation>
     </message>
     <message>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
-        <translation type="unfinished">Neobstoječi lastnosti »%1« ni moč prirediti</translation>
+        <translation>Neobstoječi lastnosti »%1« ni moč prirediti</translation>
     </message>
     <message>
         <source>Invalid use of namespace</source>
-        <translation type="unfinished">Napačna raba imenskega prostora</translation>
+        <translation>Napačna raba imenskega prostora</translation>
     </message>
     <message>
         <source>Not an attached property name</source>
-        <translation type="unfinished">Ni ime pripete lastnosti</translation>
+        <translation>Ni ime pripete lastnosti</translation>
     </message>
     <message>
         <source>Invalid use of id property</source>
-        <translation type="unfinished">Napačna raba lastnosti ID</translation>
+        <translation>Napačna raba lastnosti ID</translation>
     </message>
     <message>
         <source>Property has already been assigned a value</source>
-        <translation type="unfinished">Lastnosti je že bila prirejena vrednost</translation>
+        <translation>Lastnosti je že bila prirejena vrednost</translation>
     </message>
     <message>
         <source>Invalid grouped property access</source>
-        <translation type="unfinished">Neveljaven dostop do skupinske lastnosti</translation>
+        <translation>Neveljaven dostop do skupinske lastnosti</translation>
     </message>
     <message>
         <source>Cannot assign a value directly to a grouped property</source>
-        <translation type="unfinished">Skupinski lastnosti ni moč neposredno prirediti vrednosti</translation>
+        <translation>Skupinski lastnosti ni moč neposredno prirediti vrednosti</translation>
     </message>
     <message>
         <source>Invalid property use</source>
-        <translation type="unfinished">Neveljavna raba lastnosti</translation>
+        <translation>Neveljavna raba lastnosti</translation>
     </message>
     <message>
         <source>Property assignment expected</source>
-        <translation type="unfinished">Pričakovana je prireditev lastnosti</translation>
+        <translation>Pričakovana je prireditev lastnosti</translation>
     </message>
     <message>
         <source>Single property assignment expected</source>
-        <translation type="unfinished">Pričakovana je enojna prireditev lastnosti</translation>
+        <translation>Pričakovana je enojna prireditev lastnosti</translation>
     </message>
     <message>
         <source>Unexpected object assignment</source>
-        <translation type="unfinished">Nepričakovana prireditev objekta</translation>
+        <translation>Nepričakovana prireditev objekta</translation>
     </message>
     <message>
         <source>Cannot assign object to list</source>
-        <translation type="unfinished">Objekta ni moč prirediti seznamu</translation>
+        <translation>Objekta ni moč prirediti seznamu</translation>
     </message>
     <message>
         <source>Can only assign one binding to lists</source>
-        <translation type="unfinished">Seznamom je moč prirediti le eno vezavo</translation>
+        <translation>Seznamom je moč prirediti le eno vezavo</translation>
     </message>
     <message>
         <source>Cannot assign primitives to lists</source>
-        <translation type="unfinished">Seznamom ni moč prirediti osnovnih tipov</translation>
+        <translation>Seznamom ni moč prirediti osnovnih tipov</translation>
     </message>
     <message>
         <source>Cannot assign multiple values to a script property</source>
-        <translation type="unfinished"></translation>
+        <translation>Lastnosti »script« ni moč prirediti več vrednosti</translation>
     </message>
     <message>
         <source>Invalid property assignment: script expected</source>
-        <translation type="unfinished">Neveljavna prireditev lastnosti: pričakovan je skript</translation>
+        <translation>Neveljavna prireditev lastnosti: pričakovan je skript</translation>
     </message>
     <message>
         <source>Cannot assign object to property</source>
-        <translation type="unfinished">Objekta ni moč prirediti lastnosti</translation>
+        <translation>Objekta ni moč prirediti lastnosti</translation>
     </message>
     <message>
         <source>&quot;%1&quot; cannot operate on &quot;%2&quot;</source>
-        <translation type="unfinished">»%1« ne more delovati na »%2«</translation>
+        <translation>»%1« ne more delovati na »%2«</translation>
     </message>
     <message>
         <source>Duplicate default property</source>
-        <translation type="unfinished">Podvojena privzeta lastnost</translation>
+        <translation>Podvojena privzeta lastnost</translation>
     </message>
     <message>
         <source>Duplicate property name</source>
-        <translation type="unfinished">Podvojeno ime lastnosti</translation>
+        <translation>Podvojeno ime lastnosti</translation>
     </message>
     <message>
         <source>Property names cannot begin with an upper case letter</source>
-        <translation type="unfinished">Imena lastnosti se ne smejo začeti z veliko črko</translation>
+        <translation>Imena lastnosti se ne smejo začeti z veliko črko</translation>
     </message>
     <message>
         <source>Illegal property name</source>
-        <translation type="unfinished">Neveljavno ime lastnosti</translation>
+        <translation>Neveljavno ime lastnosti</translation>
     </message>
     <message>
         <source>Duplicate signal name</source>
-        <translation type="unfinished">Podvojeno ime signala</translation>
+        <translation>Podvojeno ime signala</translation>
     </message>
     <message>
         <source>Signal names cannot begin with an upper case letter</source>
-        <translation type="unfinished">Imena signalov se ne smejo začeti z veliko črko</translation>
+        <translation>Imena signalov se ne smejo začeti z veliko črko</translation>
     </message>
     <message>
         <source>Illegal signal name</source>
-        <translation type="unfinished">Neveljavno ime signala</translation>
+        <translation>Neveljavno ime signala</translation>
     </message>
     <message>
         <source>Duplicate method name</source>
-        <translation type="unfinished">Podvojeno ime metode</translation>
+        <translation>Podvojeno ime metode</translation>
     </message>
     <message>
         <source>Method names cannot begin with an upper case letter</source>
-        <translation type="unfinished">Imena metod se ne smejo začeti z veliko črko</translation>
+        <translation>Imena metod se ne smejo začeti z veliko črko</translation>
     </message>
     <message>
         <source>Illegal method name</source>
-        <translation type="unfinished">Neveljavno ime metode</translation>
+        <translation>Neveljavno ime metode</translation>
     </message>
     <message>
         <source>Property value set multiple times</source>
-        <translation type="unfinished">Vrednost lastnosti je bila nastavljena večkrat</translation>
+        <translation>Vrednost lastnosti je bila nastavljena večkrat</translation>
     </message>
     <message>
         <source>Invalid property nesting</source>
-        <translation type="unfinished">Neveljavno gnezdenje lastnosti</translation>
+        <translation>Neveljavno gnezdenje lastnosti</translation>
     </message>
     <message>
         <source>Cannot override FINAL property</source>
-        <translation type="unfinished">Lastnosti FINAL ni moč povoziti</translation>
+        <translation>Lastnosti FINAL ni moč povoziti</translation>
     </message>
     <message>
         <source>Invalid property type</source>
-        <translation type="unfinished">Neveljavna vrsta lastnosti</translation>
+        <translation>Neveljavna vrsta lastnosti</translation>
     </message>
     <message>
         <source>Invalid empty ID</source>
-        <translation type="unfinished">Neveljaven prazen ID</translation>
+        <translation>Neveljaven prazen ID</translation>
     </message>
     <message>
         <source>IDs cannot start with an uppercase letter</source>
-        <translation type="unfinished">ID-ji se ne smejo začeti z veliko črko</translation>
+        <translation>ID-ji se ne smejo začeti z veliko črko</translation>
     </message>
     <message>
         <source>IDs must start with a letter or underscore</source>
-        <translation type="unfinished">ID-ji se morajo začeti s črko ali podčrtajem</translation>
+        <translation>ID-ji se morajo začeti s črko ali podčrtajem</translation>
     </message>
     <message>
         <source>IDs must contain only letters, numbers, and underscores</source>
-        <translation type="unfinished">ID-ji lahko vsebujejo le črke, števke in podčrtaje</translation>
+        <translation>ID-ji lahko vsebujejo le črke, števke in podčrtaje</translation>
     </message>
     <message>
         <source>ID illegally masks global JavaScript property</source>
-        <translation type="unfinished">ID neveljavno zakriva globalno lastnost JavaScripta</translation>
+        <translation>ID neveljavno zakriva globalno lastnost JavaScripta</translation>
     </message>
     <message>
         <source>No property alias location</source>
-        <translation type="unfinished">Brez lokacije aliasa lastnosti</translation>
+        <translation>Brez lokacije aliasa lastnosti</translation>
     </message>
     <message>
         <source>Invalid alias location</source>
-        <translation type="unfinished">Neveljavna lokacija aliasa</translation>
+        <translation>Neveljavna lokacija aliasa</translation>
     </message>
     <message>
         <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt; or &lt;id&gt;.&lt;property&gt;</source>
-        <translation type="unfinished">Neveljavna referenca aliasa. Referenca aliasa mora biti določena kot &lt;id&gt; ali &lt;id&gt;.&lt;lastnost&gt;</translation>
+        <translation>Neveljavna referenca aliasa. Referenca aliasa mora biti določena kot &lt;id&gt; ali &lt;id&gt;.&lt;lastnost&gt;</translation>
     </message>
     <message>
         <source>Invalid alias reference. Unable to find id &quot;%1&quot;</source>
-        <translation type="unfinished">Neveljavna referenca aliasa. ID-ja »%1« ni moč najti</translation>
+        <translation>Neveljavna referenca aliasa. ID-ja »%1« ni moč najti</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeComponent</name>
     <message>
         <source>Invalid empty URL</source>
-        <translation type="unfinished">Neveljaven prazen URL</translation>
+        <translation>Neveljaven prazen URL</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeCompositeTypeManager</name>
     <message>
         <source>Resource %1 unavailable</source>
-        <translation type="unfinished">Vir %1 ni na voljo</translation>
+        <translation type="obsolete">Vir %1 ni na voljo</translation>
     </message>
     <message>
         <source>Namespace %1 cannot be used as a type</source>
-        <translation type="unfinished">Imenskega prostora %1 ni moč uporabiti kot vrste</translation>
+        <translation type="obsolete">Imenskega prostora %1 ni moč uporabiti kot vrste</translation>
     </message>
     <message>
         <source>%1 %2</source>
-        <translation type="unfinished">%1 % {1 %2?}</translation>
+        <translation type="obsolete">%1 %2</translation>
     </message>
     <message>
         <source>Type %1 unavailable</source>
-        <translation type="unfinished">Vrsta %1 ni na voljo</translation>
+        <translation type="obsolete">Vrsta %1 ni na voljo</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeConnections</name>
     <message>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
-        <translation type="unfinished">Neobstoječi lastnosti »%1« ni moč prirediti</translation>
+        <translation>Neobstoječi lastnosti »%1« ni moč prirediti</translation>
     </message>
     <message>
         <source>Connections: nested objects not allowed</source>
-        <translation type="unfinished">Povezave: gnezdeni objekti niso dovoljeni</translation>
+        <translation>Povezave: gnezdeni objekti niso dovoljeni</translation>
     </message>
     <message>
         <source>Connections: syntax error</source>
-        <translation type="unfinished">Povezave: napaka v skladnji</translation>
+        <translation>Povezave: napaka v skladnji</translation>
     </message>
     <message>
         <source>Connections: script expected</source>
-        <translation type="unfinished">Povezave: pričakovan je skript</translation>
+        <translation>Povezave: pričakovan je skript</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeEngine</name>
     <message>
         <source>executeSql called outside transaction()</source>
-        <translation type="unfinished">executeSql je bil klican izven transaction()</translation>
+        <translation>executeSql je bil klican izven transaction()</translation>
     </message>
     <message>
         <source>Read-only Transaction</source>
-        <translation type="unfinished">Transakcija samo za branje</translation>
+        <translation>Transakcija samo za branje</translation>
     </message>
     <message>
         <source>Version mismatch: expected %1, found %2</source>
-        <translation type="unfinished">Neujemanje različic: pričakovana %1, najdena %2</translation>
+        <translation>Neujemanje različic: pričakovana %1, najdena %2</translation>
     </message>
     <message>
         <source>SQL transaction failed</source>
-        <translation type="unfinished">Transakcija SQL ni uspela</translation>
+        <translation>Transakcija SQL ni uspela</translation>
     </message>
     <message>
         <source>transaction: missing callback</source>
-        <translation type="unfinished">transaction: manjka povratni klic</translation>
+        <translation>transaction: manjka povratni klic</translation>
     </message>
     <message>
         <source>SQL: database version mismatch</source>
-        <translation type="unfinished">SQL: neujemanje različice podatkovne zbirke</translation>
+        <translation>SQL: neujemanje različice podatkovne zbirke</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeFlipable</name>
     <message>
         <source>front is a write-once property</source>
-        <translation type="unfinished">front je lastnost, ki se jo lahko zapiše samo enkrat</translation>
+        <translation>front je lastnost, ki se jo lahko zapiše samo enkrat</translation>
     </message>
     <message>
         <source>back is a write-once property</source>
-        <translation type="unfinished">back je lastnost, ki se jo lahko zapiše samo enkrat</translation>
+        <translation>back je lastnost, ki se jo lahko zapiše samo enkrat</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeImportDatabase</name>
     <message>
         <source>module &quot;%1&quot; definition &quot;%2&quot; not readable</source>
-        <translation type="unfinished">definicije »%2« modula »%1« ni moč brati</translation>
+        <translation>definicije »%2« modula »%1« ni moč brati</translation>
     </message>
     <message>
         <source>plugin cannot be loaded for module &quot;%1&quot;: %2</source>
-        <translation type="unfinished">vstavka za modul »%1« ni moč naložiti: %2</translation>
+        <translation>vstavka za modul »%1« ni moč naložiti: %2</translation>
     </message>
     <message>
         <source>module &quot;%1&quot; plugin &quot;%2&quot; not found</source>
-        <translation type="unfinished">vstavek »%2« modula »%1« ni bil najden</translation>
+        <translation>vstavek »%2« modula »%1« ni bil najden</translation>
     </message>
     <message>
         <source>module &quot;%1&quot; version %2.%3 is not installed</source>
-        <translation type="unfinished">modul »%1« različice %2.%3 ni nameščen</translation>
+        <translation>modul »%1« različice %2.%3 ni nameščen</translation>
     </message>
     <message>
         <source>module &quot;%1&quot; is not installed</source>
-        <translation type="unfinished">modul »%1« ni nameščen</translation>
+        <translation>modul »%1« ni nameščen</translation>
     </message>
     <message>
         <source>&quot;%1&quot;: no such directory</source>
-        <translation type="unfinished">»%1«: mapa ne obstaja</translation>
+        <translation>»%1«: mapa ne obstaja</translation>
     </message>
     <message>
         <source>import &quot;%1&quot; has no qmldir and no namespace</source>
-        <translation type="unfinished"></translation>
+        <translation>uvoz »%1« nima niti qmldir-a niti imenskega prostora</translation>
     </message>
     <message>
         <source>- %1 is not a namespace</source>
-        <translation type="unfinished">– %1 ni imenski prostor</translation>
+        <translation>– %1 ni imenski prostor</translation>
     </message>
     <message>
         <source>- nested namespaces not allowed</source>
-        <translation type="unfinished">– gnezdeni imenski prostori niso dovoljeni</translation>
+        <translation>– gnezdeni imenski prostori niso dovoljeni</translation>
     </message>
     <message>
         <source>local directory</source>
-        <translation type="unfinished">krajevna mapa</translation>
+        <translation>krajevna mapa</translation>
     </message>
     <message>
         <source>is ambiguous. Found in %1 and in %2</source>
-        <translation type="unfinished">je dvoumno. Najdeno v %1 in %2</translation>
+        <translation>je dvoumno. Najdeno v %1 in %2</translation>
     </message>
     <message>
         <source>is ambiguous. Found in %1 in version %2.%3 and %4.%5</source>
-        <translation type="unfinished">je dvoumno. Najdeno v %1 v različicah %2.%3 in %4.%5</translation>
+        <translation>je dvoumno. Najdeno v %1 v različicah %2.%3 in %4.%5</translation>
     </message>
     <message>
         <source>is instantiated recursively</source>
-        <translation type="unfinished">je instanciran rekurzivno</translation>
+        <translation>je instanciran rekurzivno</translation>
     </message>
     <message>
         <source>is not a type</source>
-        <translation type="unfinished">ni vrsta</translation>
+        <translation>ni vrsta</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeKeyNavigationAttached</name>
     <message>
         <source>KeyNavigation is only available via attached properties</source>
-        <translation type="unfinished">KeyNavigation je na voljo samo s pripetimi lastnostmi</translation>
+        <translation>KeyNavigation je na voljo samo s pripetimi lastnostmi</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeKeysAttached</name>
     <message>
         <source>Keys is only available via attached properties</source>
-        <translation type="unfinished">Keys je na voljo samo s pripetimi lastnostmi</translation>
+        <translation>Keys je na voljo samo s pripetimi lastnostmi</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeListModel</name>
     <message>
         <source>remove: index %1 out of range</source>
-        <translation type="unfinished">remove: indeks %1 je izven obsega</translation>
+        <translation>remove: indeks %1 je izven obsega</translation>
     </message>
     <message>
         <source>insert: value is not an object</source>
-        <translation type="unfinished">insert: vrednost ni objekt</translation>
+        <translation>insert: vrednost ni objekt</translation>
     </message>
     <message>
         <source>insert: index %1 out of range</source>
-        <translation type="unfinished">insert: indeks %1 je izven obsega</translation>
+        <translation>insert: indeks %1 je izven obsega</translation>
     </message>
     <message>
         <source>move: out of range</source>
-        <translation type="unfinished">move: izven obsega</translation>
+        <translation>move: izven obsega</translation>
     </message>
     <message>
         <source>append: value is not an object</source>
-        <translation type="unfinished">append: vrednost ni objekt</translation>
+        <translation>append: vrednost ni objekt</translation>
     </message>
     <message>
         <source>set: value is not an object</source>
-        <translation type="unfinished">set: vrednost ni objekt</translation>
+        <translation>set: vrednost ni objekt</translation>
     </message>
     <message>
         <source>set: index %1 out of range</source>
-        <translation type="unfinished">set: indeks %1 je izven obsega</translation>
+        <translation>set: indeks %1 je izven obsega</translation>
     </message>
     <message>
         <source>ListElement: cannot contain nested elements</source>
-        <translation type="unfinished"></translation>
+        <translation>ListElement: ni moč vsebovati gnezdenih elementov</translation>
     </message>
     <message>
         <source>ListElement: cannot use reserved &quot;id&quot; property</source>
-        <translation type="unfinished">ListElement: ne more uporabiti rezervirane lastnosti »id«</translation>
+        <translation>ListElement: ne more uporabiti rezervirane lastnosti »id«</translation>
     </message>
     <message>
         <source>ListElement: cannot use script for property value</source>
-        <translation type="unfinished">ListElement: ne more uporabiti skripta za vrednost lastnosti</translation>
+        <translation>ListElement: ne more uporabiti skripta za vrednost lastnosti</translation>
     </message>
     <message>
         <source>ListModel: undefined property &apos;%1&apos;</source>
-        <translation type="unfinished">ListModel: nedoločena lastnost »%1«</translation>
+        <translation>ListModel: nedoločena lastnost »%1«</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeLoader</name>
     <message>
         <source>Loader does not support loading non-visual elements.</source>
-        <translation type="unfinished">Loader ne podpira nalaganja elementov, ki niso vidni.</translation>
+        <translation>Loader ne podpira nalaganja elementov, ki niso vidni.</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeParentAnimation</name>
     <message>
         <source>Unable to preserve appearance under complex transform</source>
-        <translation type="unfinished"></translation>
+        <translation>Pod kompleksnim preoblikovanjem ni moč obdržati videza</translation>
     </message>
     <message>
         <source>Unable to preserve appearance under non-uniform scale</source>
-        <translation type="unfinished"></translation>
+        <translation>Pod ne-enakovrednim povečevanjem ni moč obdržati videza</translation>
     </message>
     <message>
         <source>Unable to preserve appearance under scale of 0</source>
-        <translation type="unfinished"></translation>
+        <translation>Pod povečavo 0 ni moč obdržati videza</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeParentChange</name>
     <message>
         <source>Unable to preserve appearance under complex transform</source>
-        <translation type="unfinished"></translation>
+        <translation>Pod kompleksnim preoblikovanjem ni moč obdržati videza</translation>
     </message>
     <message>
         <source>Unable to preserve appearance under non-uniform scale</source>
-        <translation type="unfinished"></translation>
+        <translation>Pod ne-enakovrednim povečevanjem ni moč obdržati videza</translation>
     </message>
     <message>
         <source>Unable to preserve appearance under scale of 0</source>
-        <translation type="unfinished"></translation>
+        <translation>Pod povečavo 0 ni moč obdržati videza</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeParser</name>
     <message>
         <source>Illegal unicode escape sequence</source>
-        <translation type="unfinished">Neveljavno ubežno zaporedje Unicode</translation>
+        <translation>Neveljavno ubežno zaporedje Unicode</translation>
     </message>
     <message>
         <source>Illegal character</source>
-        <translation type="unfinished">Neveljaven znak</translation>
+        <translation>Neveljaven znak</translation>
     </message>
     <message>
         <source>Unclosed string at end of line</source>
-        <translation type="unfinished">Nezaprt niz na koncu vrstice</translation>
+        <translation>Nezaprt niz na koncu vrstice</translation>
     </message>
     <message>
         <source>Illegal escape squence</source>
-        <translation type="unfinished">Neveljavno ubežno zaporedje</translation>
+        <translation>Neveljavno ubežno zaporedje</translation>
     </message>
     <message>
         <source>Unclosed comment at end of file</source>
-        <translation type="unfinished">Nezaprt komentar na koncu datoteke</translation>
+        <translation>Nezaprt komentar na koncu datoteke</translation>
     </message>
     <message>
         <source>Illegal syntax for exponential number</source>
-        <translation type="unfinished">Neveljavna skladnja za eksponentno število</translation>
+        <translation>Neveljavna skladnja za eksponentno število</translation>
     </message>
     <message>
         <source>Identifier cannot start with numeric literal</source>
-        <translation type="unfinished"></translation>
+        <translation>Identifikator se ne sme začeti s številskim literalom</translation>
     </message>
     <message>
         <source>Unterminated regular expression literal</source>
-        <translation type="unfinished"></translation>
+        <translation>Nezaključen literal regularnega izraza</translation>
     </message>
     <message>
         <source>Invalid regular expression flag &apos;%0&apos;</source>
-        <translation type="unfinished">Neveljavna zastavica »%0« regularnega izraza</translation>
+        <translation>Neveljavna zastavica »%0« regularnega izraza</translation>
     </message>
     <message>
         <source>Unterminated regular expression backslash sequence</source>
-        <translation type="unfinished"></translation>
+        <translation>Nezaključeno zaporedij poševnic nazaj v regularnem izrazu</translation>
     </message>
     <message>
         <source>Unterminated regular expression class</source>
-        <translation type="unfinished"></translation>
+        <translation>Nezaključen razred regularnega izraza</translation>
     </message>
     <message>
         <source>Syntax error</source>
-        <translation type="unfinished">Skladenjska napaka</translation>
+        <translation>Skladenjska napaka</translation>
     </message>
     <message>
         <source>Unexpected token `%1&apos;</source>
-        <translation type="unfinished">Nepričakovan žeton »%1«</translation>
+        <translation>Nepričakovan žeton »%1«</translation>
     </message>
     <message>
         <source>Expected token `%1&apos;</source>
-        <translation type="unfinished">Pričakovan žeton »%1«</translation>
+        <translation>Pričakovan žeton »%1«</translation>
     </message>
     <message>
         <source>Property value set multiple times</source>
-        <translation type="unfinished">Vrednost lastnosti je bila nastavljena večkrat</translation>
+        <translation>Vrednost lastnosti je bila nastavljena večkrat</translation>
     </message>
     <message>
         <source>Expected type name</source>
-        <translation type="unfinished"></translation>
+        <translation>Pričakovano ime vrste</translation>
     </message>
     <message>
         <source>Invalid import qualifier ID</source>
-        <translation type="unfinished"></translation>
+        <translation>Neveljaven ID kvalifikatorja uvoza</translation>
     </message>
     <message>
         <source>Reserved name &quot;Qt&quot; cannot be used as an qualifier</source>
-        <translation type="unfinished"></translation>
+        <translation>Rezerviranega imena »Qt« ni moč uporabiti kot kvalifikatorja</translation>
     </message>
     <message>
         <source>Script import qualifiers must be unique.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kvalifikatorji uvozov skriptov morajo biti edinstveni.</translation>
     </message>
     <message>
         <source>Script import requires a qualifier</source>
-        <translation type="unfinished"></translation>
+        <translation>Uvozi skriptov potrebujejo kvalifikator</translation>
     </message>
     <message>
         <source>Library import requires a version</source>
-        <translation type="unfinished"></translation>
+        <translation>Uvozi knjižnic potrebujejo različico</translation>
     </message>
     <message>
         <source>Expected parameter type</source>
-        <translation type="unfinished"></translation>
+        <translation>Pričakovana vrsta parametra</translation>
     </message>
     <message>
         <source>Invalid property type modifier</source>
-        <translation type="unfinished"></translation>
+        <translation>Neveljaven modifikator vrste lastnosti</translation>
     </message>
     <message>
         <source>Unexpected property type modifier</source>
-        <translation type="unfinished"></translation>
+        <translation>Nepričakovan modifikator vrste lastnosti</translation>
     </message>
     <message>
         <source>Expected property type</source>
-        <translation type="unfinished"></translation>
+        <translation>Pričakovana vrsta lastnosti</translation>
     </message>
     <message>
         <source>Readonly not yet supported</source>
-        <translation type="unfinished"></translation>
+        <translation>Tisti, ki so samo za branje, še niso podprti</translation>
     </message>
     <message>
         <source>JavaScript declaration outside Script element</source>
-        <translation type="unfinished"></translation>
+        <translation>Deklaracija JavaScripta izven elementa Script</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativePauseAnimation</name>
     <message>
         <source>Cannot set a duration of &lt; 0</source>
-        <translation type="unfinished">Trajanja, ki je krajše od 0, ni moč nastaviti</translation>
+        <translation>Trajanja, ki je krajše od 0, ni moč nastaviti</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativePixmap</name>
     <message>
         <source>Error decoding: %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Napaka dekodiranja: %1: %2</translation>
     </message>
     <message>
         <source>Failed to get image from provider: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Od ponudnika ni bilo moč dobiti slike: %1</translation>
     </message>
     <message>
         <source>Cannot open: %1</source>
-        <translation type="unfinished">Ni moč odpreti %1: %2</translation>
+        <translation>Ni moč odpreti %1:</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativePropertyAnimation</name>
     <message>
         <source>Cannot set a duration of &lt; 0</source>
-        <translation type="unfinished">Trajanja, ki je krajše od 0, ni moč nastaviti</translation>
+        <translation>Trajanja, ki je krajše od 0, ni moč nastaviti</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativePropertyChanges</name>
     <message>
         <source>PropertyChanges does not support creating state-specific objects.</source>
-        <translation type="unfinished"></translation>
+        <translation>PropertyChanges ne podpira ustvarjanja objektov sprecifičnih za stanje.</translation>
     </message>
     <message>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
-        <translation type="unfinished">Neobstoječi lastnosti »%1« ni moč prirediti</translation>
+        <translation>Neobstoječi lastnosti »%1« ni moč prirediti</translation>
     </message>
     <message>
         <source>Cannot assign to read-only property &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>Ni moč prirediti lastnosti »%1«, ki je samo za branje</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeTextInput</name>
     <message>
         <source>Could not load cursor delegate</source>
-        <translation type="unfinished"></translation>
+        <translation>Ni bilo moč naložiti delegata za kazalec</translation>
     </message>
     <message>
         <source>Could not instantiate cursor delegate</source>
-        <translation type="unfinished"></translation>
+        <translation>Ni bilo moč instancirati delegata za kazalec</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeTypeData</name>
+    <message>
+        <source>Script %1 unavailable</source>
+        <translation>Skript %1 ni na voljo</translation>
+    </message>
+    <message>
+        <source>Type %1 unavailable</source>
+        <translation>Vrsta %1 ni na voljo</translation>
+    </message>
+    <message>
+        <source>Namespace %1 cannot be used as a type</source>
+        <translation>Imenskega prostora %1 ni moč uporabiti kot vrste</translation>
+    </message>
+    <message>
+        <source>%1 %2</source>
+        <translation>%1 %2</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeVME</name>
     <message>
         <source>Unable to create object of type %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Ni moč ustvariti objekta vrste %1</translation>
     </message>
     <message>
         <source>Cannot assign value %1 to property %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Lastnosti %2 ni moč prirediti vrednosti %1</translation>
     </message>
     <message>
         <source>Cannot assign object type %1 with no default method</source>
-        <translation type="unfinished"></translation>
+        <translation>Ni moč prirediti objekta vrste %1 brez privzete metode</translation>
     </message>
     <message>
         <source>Cannot connect mismatched signal/slot %1 %vs. %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Ni moč povezati neujemajočih signalov in rež: %1 in %2</translation>
     </message>
     <message>
         <source>Cannot assign an object to signal property %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Objekta ni moč prirediti lastnosi signala %1</translation>
     </message>
     <message>
         <source>Cannot assign object to list</source>
-        <translation type="unfinished">Objekta ni moč prirediti seznamu</translation>
+        <translation>Objekta ni moč prirediti seznamu</translation>
     </message>
     <message>
         <source>Cannot assign object to interface property</source>
-        <translation type="unfinished"></translation>
+        <translation>Objekta ni moč prirediti lastnosti vmesnika</translation>
     </message>
     <message>
         <source>Unable to create attached object</source>
-        <translation type="unfinished"></translation>
+        <translation>Ni moč ustvariti pripetega objekta</translation>
     </message>
     <message>
         <source>Cannot set properties on %1 as it is null</source>
-        <translation type="unfinished"></translation>
+        <translation>Ni moč nastaviti lastnosti za %1, saj ne obstaja</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeVisualDataModel</name>
     <message>
         <source>Delegate component must be Item type.</source>
-        <translation type="unfinished"></translation>
+        <translation>Komponenta delegata mora biti vrste Item.</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeXmlListModel</name>
     <message>
         <source>Qt was built without support for xmlpatterns</source>
-        <translation type="unfinished"></translation>
+        <translation>Qt je bil zgrajen brez podpore za xmlpatterns</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeXmlListModelRole</name>
     <message>
         <source>An XmlRole query must not start with &apos;/&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Poizvedba XmlRole se ne sme začeti z »/«</translation>
     </message>
 </context>
 <context>
     <name>QDeclarativeXmlRoleList</name>
     <message>
         <source>An XmlListModel query must start with &apos;/&apos; or &quot;//&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>Poizvedba XmlListModel se mora začeti z »/« ali »//«</translation>
     </message>
 </context>
 <context>
@@ -2593,27 +2612,27 @@ Ali jo kljub temu želite izbrisati?</translation>
     </message>
     <message>
         <source>Go back</source>
-        <translation type="unfinished">Vrni se nazaj</translation>
+        <translation>Vrni se nazaj</translation>
     </message>
     <message>
         <source>Go forward</source>
-        <translation type="unfinished">Napreduj naprej</translation>
+        <translation>Napreduj naprej</translation>
     </message>
     <message>
         <source>Go to the parent directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Pojdi v matično mapo</translation>
     </message>
     <message>
         <source>Create a New Folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Ustvari novo mapo</translation>
     </message>
     <message>
         <source>Change to list view mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Preklopi v način prikaza seznama</translation>
     </message>
     <message>
         <source>Change to detail view mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Preklopi v način prikaza podrobnosti</translation>
     </message>
 </context>
 <context>
@@ -2678,14 +2697,14 @@ Ali jo kljub temu želite izbrisati?</translation>
     </message>
     <message>
         <source>%1 byte(s)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 B</translation>
     </message>
 </context>
 <context>
     <name>QFontDatabase</name>
     <message>
         <source>Normal</source>
-        <translation>Normalno</translation>
+        <translation>Običajno</translation>
     </message>
     <message>
         <source>Bold</source>
@@ -2697,7 +2716,7 @@ Ali jo kljub temu želite izbrisati?</translation>
     </message>
     <message>
         <source>Black</source>
-        <translation type="unfinished">Črna</translation>
+        <translation>Krepko</translation>
     </message>
     <message>
         <source>Demi</source>
@@ -2849,7 +2868,7 @@ Ali jo kljub temu želite izbrisati?</translation>
     </message>
     <message>
         <source>N&apos;Ko</source>
-        <translation type="unfinished"></translation>
+        <translation>N&apos;Ko</translation>
     </message>
 </context>
 <context>
@@ -2924,7 +2943,7 @@ Ali jo kljub temu želite izbrisati?</translation>
     <message>
         <source>Connecting to host failed:
 %1</source>
-        <translation>Povezovanje z gostiteljem %1 ni uspelo:
+        <translation>Povezovanje z gostiteljem ni uspelo:
 %1</translation>
     </message>
     <message>
@@ -3004,7 +3023,7 @@ Ali jo kljub temu želite izbrisati?</translation>
     </message>
     <message>
         <source>No host name given</source>
-        <translation type="unfinished">Podano ni bilo nobeno ime gostitelja</translation>
+        <translation>Podano ni bilo nobeno ime gostitelja</translation>
     </message>
 </context>
 <context>
@@ -3331,7 +3350,7 @@ Ali jo kljub temu želite izbrisati?</translation>
     <name>QLibrary</name>
     <message>
         <source>Could not mmap &apos;%1&apos;: %2</source>
-        <translation>Ni bilo moč izvesti funkcije mmap za »%1«: %2</translation>
+        <translation type="obsolete">Ni bilo moč izvesti funkcije mmap za »%1«: %2</translation>
     </message>
     <message>
         <source>Plugin verification data mismatch in &apos;%1&apos;</source>
@@ -3339,7 +3358,7 @@ Ali jo kljub temu želite izbrisati?</translation>
     </message>
     <message>
         <source>Could not unmap &apos;%1&apos;: %2</source>
-        <translation>Ni bilo moč izvesti funkcije unmap za »%1«: %2</translation>
+        <translation type="obsolete">Ni bilo moč izvesti funkcije unmap za »%1«: %2</translation>
     </message>
     <message>
         <source>The plugin &apos;%1&apos; uses incompatible Qt library. (%2.%3.%4) [%5]</source>
@@ -3665,7 +3684,7 @@ Ali jo kljub temu želite izbrisati?</translation>
     </message>
     <message>
         <source>&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;&lt;p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;Qt je skupek gradnikov C++ za razvoj programov, ki tečejo na več platformah.&lt;/p&gt;&lt;p&gt;Qt omogoča isto kodo prenašati med platformami Linux, Mac&amp;nbsp;OS&amp;nbsp;X, Windows in vsemi večjimi variantami UNIX-a. Qt je na voljo tudi za vgrajene naprave in sicer kot Qt for Embedded Linux in Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt je na voljo pod tremi možnimi licenčnimi pogoji, ki ustrezajo različnim željam uporabnikov.&lt;/p&gt;&lt;p&gt;Qt pod licenco GNU General Public License različice 3.0 (&lt;a href=&quot;http://www.gnu.org/licenses/gpl-3.0.html&quot;&gt;GPLv3.0&lt;/a&gt;) je primeren za razvoj programov Qt, ki so povsem &lt;a href=&quot;http://www.gnu.org/philosophy/free-sw.html&quot;&gt;prosti in odprto-kodni&lt;/a&gt;. S to licenco se uporabnikom programa zagotovijo vse pravice in svoboščine, kot jih je imel izdelovalec programa.&lt;/p&gt;&lt;p&gt;Qt pod licenco GNU Lesser General Public License različice 2.1 (&lt;a href=&quot;http://www.gnu.org/licenses/lgpl-2.1.html&quot;&gt;LGPLv2.1&lt;/a&gt;) omogoča tudi razvoj programov, ki uporabnikom ne zagotavljajo vseh pravic in svoboščin, kot jih je imel izdelovalec. Omogoča na primer tudi razvoj zaprto-kodnih programov.&lt;/p&gt;&lt;p&gt;Qt pod posebno komercialno licenco je namenjen razvoju lastniških in zaprto-kodnih programov, kjer izdelovalec z uporabniki noče deliti nič izvorne kode ter pravic in svoboščin, ali pa ne more ustreči pogojem licenc GPLv3.0 ali LGPLv2.1.&lt;/p&gt;&lt;p&gt;Za pregled licenčnih možnosti si oglejte spletno stran &lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Avtorske pravice © 2009 Nokia Corporation in/ali podružnice ter zunanji prispevajoči.&lt;/p&gt;&lt;p&gt;Qt je proizvod podjetja Nokia. Za dodatne podatke si oglejte &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt;.&lt;/p&gt;</translation>
+        <translation>&lt;p&gt;Qt je skupek gradnikov C++ za razvoj programov, ki tečejo na več platformah.&lt;/p&gt;&lt;p&gt;Qt omogoča isto kodo prenašati med platformami Linux, Mac&amp;nbsp;OS&amp;nbsp;X, Windows in vsemi večjimi variantami UNIX-a. Qt je na voljo tudi za vgrajene naprave in sicer kot Qt for Embedded Linux in Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt je na voljo pod tremi možnimi licenčnimi pogoji, ki ustrezajo različnim željam uporabnikov.&lt;/p&gt;&lt;p&gt;Qt pod licenco GNU General Public License različice 3.0 (&lt;a href=&quot;http://www.gnu.org/licenses/gpl-3.0.html&quot;&gt;GPLv3.0&lt;/a&gt;) je primeren za razvoj programov Qt, ki so povsem &lt;a href=&quot;http://www.gnu.org/philosophy/free-sw.html&quot;&gt;prosti in odprto-kodni&lt;/a&gt;. S to licenco se uporabnikom programa zagotovijo vse pravice in svoboščine, kot jih je imel izdelovalec programa.&lt;/p&gt;&lt;p&gt;Qt pod licenco GNU Lesser General Public License različice 2.1 (&lt;a href=&quot;http://www.gnu.org/licenses/lgpl-2.1.html&quot;&gt;LGPLv2.1&lt;/a&gt;) omogoča tudi razvoj programov, ki uporabnikom ne zagotavljajo vseh pravic in svoboščin, kot jih je imel izdelovalec. Omogoča na primer tudi razvoj zaprto-kodnih programov.&lt;/p&gt;&lt;p&gt;Qt pod posebno komercialno licenco je namenjen razvoju lastniških in zaprto-kodnih programov, kjer izdelovalec z uporabniki noče deliti nič izvorne kode ter pravic in svoboščin, ali pa ne more ustreči pogojem licenc GPLv3.0 ali LGPLv2.1.&lt;/p&gt;&lt;p&gt;Za pregled licenčnih možnosti si oglejte spletno stran &lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Avtorske pravice © 2009 Nokia Corporation in/ali podružnice ter zunanji prispevajoči.&lt;/p&gt;&lt;p&gt;Qt je proizvod podjetja Nokia. Za dodatne podatke si oglejte &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Prevedel: &lt;a href=&quot;mailto:jlp@holodeck1.com&quot;&gt;Jure Repinc&lt;/a&gt;, &lt;a href=&quot;http://www.lugos.si/&quot;&gt;LUGOS&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
         <source>About Qt</source>
@@ -3816,11 +3835,11 @@ Ali jo kljub temu želite izbrisati?</translation>
     <name>QNetworkAccessDataBackend</name>
     <message>
         <source>Operation not supported on %1</source>
-        <translation type="unfinished">Dejanje na %1 ni podprto</translation>
+        <translation>Dejanje na %1 ni podprto</translation>
     </message>
     <message>
         <source>Invalid URI: %1</source>
-        <translation type="unfinished">Neveljaven URI: %1</translation>
+        <translation>Neveljaven URI: %1</translation>
     </message>
 </context>
 <context>
@@ -3831,11 +3850,11 @@ Ali jo kljub temu želite izbrisati?</translation>
     </message>
     <message>
         <source>Socket error on %1: %2</source>
-        <translation type="unfinished">Napaka vtičnice na %1: %2</translation>
+        <translation>Napaka vtičnice na %1: %2</translation>
     </message>
     <message>
         <source>Remote host closed the connection prematurely on %1</source>
-        <translation type="unfinished">Oddaljen gostitelj je predčasno prekinil povezavo na %1</translation>
+        <translation>Oddaljen gostitelj je predčasno prekinil povezavo na %1</translation>
     </message>
 </context>
 <context>
@@ -3895,7 +3914,7 @@ Ali jo kljub temu želite izbrisati?</translation>
     <name>QNetworkAccessManager</name>
     <message>
         <source>Network access is disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Omrežni dostop je onemogočen.</translation>
     </message>
 </context>
 <context>
@@ -3910,11 +3929,11 @@ Ali jo kljub temu želite izbrisati?</translation>
     </message>
     <message>
         <source>Network session error.</source>
-        <translation type="unfinished"></translation>
+        <translation>Napaka omrežne seje.</translation>
     </message>
     <message>
         <source>Temporary network failure.</source>
-        <translation type="unfinished"></translation>
+        <translation>Začasna omrežna napaka.</translation>
     </message>
 </context>
 <context>
@@ -3928,42 +3947,42 @@ Ali jo kljub temu želite izbrisati?</translation>
     <name>QNetworkSession</name>
     <message>
         <source>Invalid configuration.</source>
-        <translation type="unfinished"></translation>
+        <translation>Neveljavna nastavitev.</translation>
     </message>
 </context>
 <context>
     <name>QNetworkSessionPrivateImpl</name>
     <message>
         <source>Roaming error</source>
-        <translation type="unfinished"></translation>
+        <translation>Napaka potovanja</translation>
     </message>
     <message>
         <source>Session aborted by user or system</source>
-        <translation type="unfinished"></translation>
+        <translation>Sejo je preklical uporabnik ali pa sistem</translation>
     </message>
     <message>
         <source>Unidentified Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Neznana napaka</translation>
     </message>
     <message>
         <source>Unknown session error.</source>
-        <translation type="unfinished"></translation>
+        <translation>Neznana napaka seje.</translation>
     </message>
     <message>
         <source>The session was aborted by the user or system.</source>
-        <translation type="unfinished"></translation>
+        <translation>Sejo je preklical uporabnik ali pa sistem.</translation>
     </message>
     <message>
         <source>The requested operation is not supported by the system.</source>
-        <translation type="unfinished"></translation>
+        <translation>Sistem ne podpira zahtevanega dejanja.</translation>
     </message>
     <message>
         <source>The specified configuration cannot be used.</source>
-        <translation type="unfinished"></translation>
+        <translation>Navedenih nastavitev ni moč uporabiti.</translation>
     </message>
     <message>
         <source>Roaming was aborted or is not possible.</source>
-        <translation type="unfinished"></translation>
+        <translation>Potovanje je bilo preklicano ali pa ni možno.</translation>
     </message>
 </context>
 <context>
@@ -4095,15 +4114,15 @@ Ali jo kljub temu želite izbrisati?</translation>
     <name>QObject</name>
     <message>
         <source>PulseAudio Sound Server</source>
-        <translation type="unfinished">Zvočni strežnik PulseAudio</translation>
+        <translation>Zvočni strežnik PulseAudio</translation>
     </message>
     <message>
         <source>&quot;%1&quot; duplicates a previous role name and will be disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>»%1« podvaja obstoječe ime vloge in bo onemogočena.</translation>
     </message>
     <message>
         <source>invalid query: &quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>neveljavna poizvedba: »%1«</translation>
     </message>
 </context>
 <context>
@@ -4385,7 +4404,7 @@ Ali jo kljub temu želite izbrisati?</translation>
     </message>
     <message>
         <source>Print current page</source>
-        <translation type="unfinished"></translation>
+        <translation>Natisni trenutno stran</translation>
     </message>
     <message>
         <source>OK</source>
@@ -4618,15 +4637,15 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>First page</source>
-        <translation>&amp;Prva stran</translation>
+        <translation>Prva stran</translation>
     </message>
     <message>
         <source>Last page</source>
-        <translation>&amp;Zadnja stran</translation>
+        <translation>Zadnja stran</translation>
     </message>
     <message>
         <source>Fit width</source>
-        <translation>Prilagodi &amp;širini</translation>
+        <translation>Prilagodi širini</translation>
     </message>
     <message>
         <source>Fit page</source>
@@ -4670,7 +4689,7 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>Close</source>
-        <translation type="unfinished">Zapri</translation>
+        <translation>Zapri</translation>
     </message>
     <message>
         <source>Export to PDF</source>
@@ -4776,7 +4795,7 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>Current Page</source>
-        <translation type="unfinished"></translation>
+        <translation>Trenutna stran</translation>
     </message>
 </context>
 <context>
@@ -5444,7 +5463,7 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>Backtab</source>
-        <translation type="unfinished"></translation>
+        <translation>Tabulator nazaj</translation>
     </message>
     <message>
         <source>Backspace</source>
@@ -5602,13 +5621,13 @@ Izberite drugo ime datoteke.</translation>
         <source>Media Pause</source>
         <extracomment>Media player pause button
 </extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Prekini večpredstavnost</translation>
     </message>
     <message>
         <source>Toggle Media Play/Pause</source>
         <extracomment>Media player button to toggle between playing and paused
 </extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Preklopi predvajanje/prekinitev večpredstavnosti</translation>
     </message>
     <message>
         <source>Favorites</source>
@@ -5700,111 +5719,111 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>Monitor Brightness Up</source>
-        <translation type="unfinished">Povečaj svetlost zaslon</translation>
+        <translation>Povečaj svetlost zaslona</translation>
     </message>
     <message>
         <source>Monitor Brightness Down</source>
-        <translation type="unfinished">Zmanjšaj svetlost zaslona</translation>
+        <translation>Zmanjšaj svetlost zaslona</translation>
     </message>
     <message>
         <source>Keyboard Light On/Off</source>
-        <translation type="unfinished">Vklop/izklop lučk na tipkovnici</translation>
+        <translation>Vklop/izklop lučk na tipkovnici</translation>
     </message>
     <message>
         <source>Keyboard Brightness Up</source>
-        <translation type="unfinished"></translation>
+        <translation>Povečaj svetlost tipkovnice</translation>
     </message>
     <message>
         <source>Keyboard Brightness Down</source>
-        <translation type="unfinished"></translation>
+        <translation>Zmanjšaj svetlost tipkovnice</translation>
     </message>
     <message>
         <source>Power Off</source>
-        <translation type="unfinished">Izklopi</translation>
+        <translation>Izklopi</translation>
     </message>
     <message>
         <source>Wake Up</source>
-        <translation type="unfinished">Zbudi se</translation>
+        <translation>Zbudi</translation>
     </message>
     <message>
         <source>Eject</source>
-        <translation type="unfinished">Izvrzi</translation>
+        <translation>Izvrzi</translation>
     </message>
     <message>
         <source>Screensaver</source>
-        <translation type="unfinished">Ohranjevalnik zaslona</translation>
+        <translation>Ohranjevalnik zaslona</translation>
     </message>
     <message>
         <source>WWW</source>
-        <translation type="unfinished">WWW</translation>
+        <translation>Svetovni splet</translation>
     </message>
     <message>
         <source>Sleep</source>
-        <translation type="unfinished">V pripravljenost</translation>
+        <translation>V pripravljenost</translation>
     </message>
     <message>
         <source>LightBulb</source>
-        <translation type="unfinished">Žarnica</translation>
+        <translation>Žarnica</translation>
     </message>
     <message>
         <source>Shop</source>
-        <translation type="unfinished"></translation>
+        <translation>Trgovina</translation>
     </message>
     <message>
         <source>History</source>
-        <translation type="unfinished">Zgodovina</translation>
+        <translation>Zgodovina</translation>
     </message>
     <message>
         <source>Add Favorite</source>
-        <translation type="unfinished">Dodaj najljubšo</translation>
+        <translation>Dodaj priljubljeno</translation>
     </message>
     <message>
         <source>Hot Links</source>
-        <translation type="unfinished">Vroče povezave</translation>
+        <translation>Vroče povezave</translation>
     </message>
     <message>
         <source>Adjust Brightness</source>
-        <translation type="unfinished">Prilagodi svetlost</translation>
+        <translation>Prilagodi svetlost</translation>
     </message>
     <message>
         <source>Finance</source>
-        <translation type="unfinished">Finance</translation>
+        <translation>Finance</translation>
     </message>
     <message>
         <source>Community</source>
-        <translation type="unfinished">Skupnost</translation>
+        <translation>Skupnost</translation>
     </message>
     <message>
         <source>Audio Rewind</source>
-        <translation type="unfinished">Samodejno previj</translation>
+        <translation>Previj zvok</translation>
     </message>
     <message>
         <source>Back Forward</source>
-        <translation type="unfinished"></translation>
+        <translation>Nazaj naprej</translation>
     </message>
     <message>
         <source>Application Left</source>
-        <translation type="unfinished"></translation>
+        <translation>Program levo</translation>
     </message>
     <message>
         <source>Application Right</source>
-        <translation type="unfinished"></translation>
+        <translation>Program desno</translation>
     </message>
     <message>
         <source>Book</source>
-        <translation type="unfinished">Knjiga</translation>
+        <translation>Knjiga</translation>
     </message>
     <message>
         <source>CD</source>
-        <translation type="unfinished">CD</translation>
+        <translation>CD</translation>
     </message>
     <message>
         <source>Calculator</source>
-        <translation type="unfinished">Računalo</translation>
+        <translation>Računalo</translation>
     </message>
     <message>
         <source>Clear</source>
-        <translation type="unfinished">Počisti</translation>
+        <translation>Počisti</translation>
     </message>
     <message>
         <source>Clear Grab</source>
@@ -5812,15 +5831,15 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>Close</source>
-        <translation type="unfinished">Zapri</translation>
+        <translation>Zapri</translation>
     </message>
     <message>
         <source>Copy</source>
-        <translation type="unfinished">Kopiraj</translation>
+        <translation>Skopiraj</translation>
     </message>
     <message>
         <source>Cut</source>
-        <translation type="unfinished">Izreži</translation>
+        <translation>Izreži</translation>
     </message>
     <message>
         <source>Display</source>
@@ -5828,23 +5847,23 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>DOS</source>
-        <translation type="unfinished">DOS</translation>
+        <translation>DOS</translation>
     </message>
     <message>
         <source>Documents</source>
-        <translation type="unfinished">Dokumenti</translation>
+        <translation>Dokumenti</translation>
     </message>
     <message>
         <source>Spreadsheet</source>
-        <translation type="unfinished">Preglednica</translation>
+        <translation>Preglednica</translation>
     </message>
     <message>
         <source>Browser</source>
-        <translation type="unfinished">Brskalnik</translation>
+        <translation>Brskalnik</translation>
     </message>
     <message>
         <source>Game</source>
-        <translation type="unfinished">Igra</translation>
+        <translation>Igra</translation>
     </message>
     <message>
         <source>Go</source>
@@ -5852,19 +5871,19 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>iTouch</source>
-        <translation type="unfinished">iTouch</translation>
+        <translation>iTouch</translation>
     </message>
     <message>
         <source>Logoff</source>
-        <translation type="unfinished">Odjava</translation>
+        <translation>Odjavi</translation>
     </message>
     <message>
         <source>Market</source>
-        <translation type="unfinished"></translation>
+        <translation>Trg</translation>
     </message>
     <message>
         <source>Meeting</source>
-        <translation type="unfinished">Srečanje</translation>
+        <translation>Srečanje</translation>
     </message>
     <message>
         <source>Keyboard Menu</source>
@@ -5876,39 +5895,39 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>My Sites</source>
-        <translation type="unfinished">Moje strani</translation>
+        <translation>Moje strani</translation>
     </message>
     <message>
         <source>News</source>
-        <translation type="unfinished">Novice</translation>
+        <translation>Novice</translation>
     </message>
     <message>
         <source>Home Office</source>
-        <translation type="unfinished">Domača pisarna</translation>
+        <translation>Domača pisarna</translation>
     </message>
     <message>
         <source>Option</source>
-        <translation type="unfinished">Možnost</translation>
+        <translation>Možnost</translation>
     </message>
     <message>
         <source>Paste</source>
-        <translation type="unfinished">Prilepi</translation>
+        <translation>Prilepi</translation>
     </message>
     <message>
         <source>Phone</source>
-        <translation type="unfinished">Telefon</translation>
+        <translation>Telefon</translation>
     </message>
     <message>
         <source>Reply</source>
-        <translation type="unfinished">Odgovori</translation>
+        <translation>Odgovori</translation>
     </message>
     <message>
         <source>Reload</source>
-        <translation type="unfinished">Znova naloži</translation>
+        <translation>Znova naloži</translation>
     </message>
     <message>
         <source>Rotate Windows</source>
-        <translation type="unfinished">Zavrti okna</translation>
+        <translation>Zavrti okna</translation>
     </message>
     <message>
         <source>Rotation PB</source>
@@ -5920,23 +5939,23 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation type="unfinished">Shrani</translation>
+        <translation>Shrani</translation>
     </message>
     <message>
         <source>Send</source>
-        <translation type="unfinished">Pošlji</translation>
+        <translation>Pošlji</translation>
     </message>
     <message>
         <source>Spellchecker</source>
-        <translation type="unfinished">Črkovalnik</translation>
+        <translation>Črkovalnik</translation>
     </message>
     <message>
         <source>Split Screen</source>
-        <translation type="unfinished">Razdeli zaslon</translation>
+        <translation>Razdeli zaslon</translation>
     </message>
     <message>
         <source>Support</source>
-        <translation type="unfinished">Podpora</translation>
+        <translation>Podpora</translation>
     </message>
     <message>
         <source>Task Panel</source>
@@ -5944,23 +5963,23 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>Terminal</source>
-        <translation type="unfinished">Terminal</translation>
+        <translation>Konzola</translation>
     </message>
     <message>
         <source>Tools</source>
-        <translation type="unfinished">Orodja</translation>
+        <translation>Orodja</translation>
     </message>
     <message>
         <source>Travel</source>
-        <translation type="unfinished">Potovanje</translation>
+        <translation>Potovanje</translation>
     </message>
     <message>
         <source>Video</source>
-        <translation type="unfinished">Video</translation>
+        <translation>Video</translation>
     </message>
     <message>
         <source>Word Processor</source>
-        <translation type="unfinished">Urejevalnik besedila</translation>
+        <translation>Urejevalnik besedil</translation>
     </message>
     <message>
         <source>XFer</source>
@@ -5968,47 +5987,47 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>Zoom In</source>
-        <translation type="unfinished">Približaj</translation>
+        <translation>Povečaj</translation>
     </message>
     <message>
         <source>Zoom Out</source>
-        <translation type="unfinished">Oddalji</translation>
+        <translation>Zmanjšaj</translation>
     </message>
     <message>
         <source>Away</source>
-        <translation type="unfinished">Odsoten</translation>
+        <translation>Odsoten</translation>
     </message>
     <message>
         <source>Messenger</source>
-        <translation type="unfinished">Sporočilnik</translation>
+        <translation>Sporočilnik</translation>
     </message>
     <message>
         <source>WebCam</source>
-        <translation type="unfinished">Spletna kamera</translation>
+        <translation>Spletna kamera</translation>
     </message>
     <message>
         <source>Mail Forward</source>
-        <translation type="unfinished">Posreduj sporočilo naprej</translation>
+        <translation>Posreduj sporočilo</translation>
     </message>
     <message>
         <source>Pictures</source>
-        <translation type="unfinished">Slike</translation>
+        <translation>Slike</translation>
     </message>
     <message>
         <source>Music</source>
-        <translation type="unfinished">Glasba</translation>
+        <translation>Glasba</translation>
     </message>
     <message>
         <source>Battery</source>
-        <translation type="unfinished">Baterija</translation>
+        <translation>Baterija</translation>
     </message>
     <message>
         <source>Bluetooth</source>
-        <translation type="unfinished">Bluetooth</translation>
+        <translation>Bluetooth</translation>
     </message>
     <message>
         <source>Wireless</source>
-        <translation type="unfinished">Brezžično</translation>
+        <translation>Brezžično</translation>
     </message>
     <message>
         <source>Ultra Wide Band</source>
@@ -6016,19 +6035,19 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>Audio Forward</source>
-        <translation type="unfinished"></translation>
+        <translation>Zvok naprej</translation>
     </message>
     <message>
         <source>Audio Repeat</source>
-        <translation type="unfinished"></translation>
+        <translation>Zvok ponavljanje</translation>
     </message>
     <message>
         <source>Audio Random Play</source>
-        <translation type="unfinished"></translation>
+        <translation>Zvok naključno</translation>
     </message>
     <message>
         <source>Subtitle</source>
-        <translation type="unfinished">Podnaslov</translation>
+        <translation>Podnaslov</translation>
     </message>
     <message>
         <source>Audio Cycle Track</source>
@@ -6036,19 +6055,19 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>Time</source>
-        <translation type="unfinished">Čas</translation>
+        <translation>Čas</translation>
     </message>
     <message>
         <source>View</source>
-        <translation type="unfinished">Pogled</translation>
+        <translation>Prikaz</translation>
     </message>
     <message>
         <source>Top Menu</source>
-        <translation type="unfinished">Vrhnji meni</translation>
+        <translation>Vrhnji meni</translation>
     </message>
     <message>
         <source>Suspend</source>
-        <translation type="unfinished">Ustavi</translation>
+        <translation>Ustavi</translation>
     </message>
     <message>
         <source>Hibernate</source>
@@ -6142,7 +6161,7 @@ Izberite drugo ime datoteke.</translation>
         <source>Toggle Call/Hangup</source>
         <extracomment>Button that will hang up if we&apos;re in call, or make a call if we&apos;re not.
 </extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Preklopi pokliči/odloži</translation>
     </message>
     <message>
         <source>Flip</source>
@@ -6152,13 +6171,13 @@ Izberite drugo ime datoteke.</translation>
         <source>Voice Dial</source>
         <extracomment>Button to trigger voice dialling
 </extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Glasovni klic</translation>
     </message>
     <message>
         <source>Last Number Redial</source>
         <extracomment>Button to redial the last number called
 </extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Ponovni klic zadnje številke</translation>
     </message>
     <message>
         <source>Camera Shutter</source>
@@ -6170,11 +6189,11 @@ Izberite drugo ime datoteke.</translation>
         <source>Camera Focus</source>
         <extracomment>Button to focus the camera
 </extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Fokus fotoaparata</translation>
     </message>
     <message>
         <source>Kanji</source>
-        <translation type="unfinished"></translation>
+        <translation>Kanji</translation>
     </message>
     <message>
         <source>Muhenkan</source>
@@ -6190,11 +6209,11 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>Hiragana</source>
-        <translation type="unfinished">Hiragana</translation>
+        <translation>Hiragana</translation>
     </message>
     <message>
         <source>Katakana</source>
-        <translation type="unfinished">Katakana</translation>
+        <translation>Katakana</translation>
     </message>
     <message>
         <source>Hiragana Katakana</source>
@@ -6238,7 +6257,7 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>Code input</source>
-        <translation type="unfinished"></translation>
+        <translation>Vnos kode</translation>
     </message>
     <message>
         <source>Multiple Candidate</source>
@@ -6266,7 +6285,7 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>Hangul Jamo</source>
-        <translation type="unfinished">Hangul Jamo</translation>
+        <translation>Hangul Jamo</translation>
     </message>
     <message>
         <source>Hangul Romaja</source>
@@ -6469,7 +6488,7 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>Save edits?</source>
-        <translation>&amp;Shranmi urejan?.</translation>
+        <translation>Ali shranim urejanja?.</translation>
     </message>
     <message>
         <source>Cancel</source>
@@ -6492,7 +6511,7 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>Unable to decrypt data: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Ni moč dešifrirati podatkov: %1</translation>
     </message>
     <message>
         <source>Error while reading: %1</source>
@@ -6512,7 +6531,7 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>Private key does not certify public key, %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Zasebni ključ ne potrjuje javnega ključa: %1</translation>
     </message>
     <message>
         <source>Error creating SSL session, %1</source>
@@ -6536,59 +6555,59 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>No error</source>
-        <translation type="unfinished">Brez napake</translation>
+        <translation>Brez napake</translation>
     </message>
     <message>
         <source>The issuer certificate could not be found</source>
-        <translation type="unfinished"></translation>
+        <translation>Potrdila izdajatelja ni bilo moč najti</translation>
     </message>
     <message>
         <source>The certificate signature could not be decrypted</source>
-        <translation type="unfinished"></translation>
+        <translation>Podpisa potrdila ni bilo moč dešifrirati</translation>
     </message>
     <message>
         <source>The public key in the certificate could not be read</source>
-        <translation type="unfinished"></translation>
+        <translation>Javnega ključa iz potrdila ni bilo moč prebrati</translation>
     </message>
     <message>
         <source>The signature of the certificate is invalid</source>
-        <translation type="unfinished"></translation>
+        <translation>Podpis potrdila ni veljaven</translation>
     </message>
     <message>
         <source>The certificate is not yet valid</source>
-        <translation type="unfinished"></translation>
+        <translation>Potrdilo še ni veljavno</translation>
     </message>
     <message>
         <source>The certificate has expired</source>
-        <translation type="unfinished">Potrdilo je preteklo</translation>
+        <translation>Potrdilo je preteklo</translation>
     </message>
     <message>
         <source>The certificate&apos;s notBefore field contains an invalid time</source>
-        <translation type="unfinished"></translation>
+        <translation>Polje notBefore (ne pred) potrdila vsebuje neveljaven čas</translation>
     </message>
     <message>
         <source>The certificate&apos;s notAfter field contains an invalid time</source>
-        <translation type="unfinished"></translation>
+        <translation>Polje notAfter (ne po) potrdila vsebuje neveljaven čas</translation>
     </message>
     <message>
         <source>The certificate is self-signed, and untrusted</source>
-        <translation type="unfinished"></translation>
+        <translation>Potrdilo je samo-podpisano in nezaupano</translation>
     </message>
     <message>
         <source>The root certificate of the certificate chain is self-signed, and untrusted</source>
-        <translation type="unfinished"></translation>
+        <translation>Vrhnje potrdilo verige potrdil je samo-podpisano in nezaupano</translation>
     </message>
     <message>
         <source>The issuer certificate of a locally looked up certificate could not be found</source>
-        <translation type="unfinished"></translation>
+        <translation>Potrdila izdajatelja za krajevno najdeno potrdilo ni bilo moč najti</translation>
     </message>
     <message>
         <source>No certificates could be verified</source>
-        <translation type="unfinished"></translation>
+        <translation>Preveriti ni bilo moč nobenega potrdila</translation>
     </message>
     <message>
         <source>One of the CA certificates is invalid</source>
-        <translation type="unfinished"></translation>
+        <translation>Eno izmed potrdil avtoritete za potrdila ni veljavno</translation>
     </message>
     <message>
         <source>The basicConstraints path length parameter has been exceeded</source>
@@ -6596,15 +6615,15 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>The supplied certificate is unsuitable for this purpose</source>
-        <translation type="unfinished"></translation>
+        <translation>Predloženo potrdilo ni primerno za ta namen</translation>
     </message>
     <message>
         <source>The root CA certificate is not trusted for this purpose</source>
-        <translation type="unfinished"></translation>
+        <translation>Potrdilo vrhovne avtoritete za potrdila ni zaupano za ta namen</translation>
     </message>
     <message>
         <source>The root CA certificate is marked to reject the specified purpose</source>
-        <translation type="unfinished"></translation>
+        <translation>Potrdilo vrhovne avtoritete za potrdila je označeno za zavrnitev navedenega namena</translation>
     </message>
     <message>
         <source>The current candidate issuer certificate was rejected because its subject name did not match the issuer name of the current certificate</source>
@@ -6616,15 +6635,15 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>The peer did not present any certificate</source>
-        <translation type="unfinished">Vrstnik ni predložil nobenega potrdila</translation>
+        <translation>Vrstnik ni predložil nobenega potrdila</translation>
     </message>
     <message>
         <source>The host name did not match any of the valid hosts for this certificate</source>
-        <translation type="unfinished"></translation>
+        <translation>Ime gostitelja se ne ujema z nobenim izmed veljavnih gostiteljev za to potrdilo</translation>
     </message>
     <message>
         <source>Unknown error</source>
-        <translation type="unfinished">Neznana napaka</translation>
+        <translation>Neznana napaka</translation>
     </message>
 </context>
 <context>
@@ -6858,7 +6877,7 @@ Izberite drugo ime datoteke.</translation>
     <name>QWebPage</name>
     <message>
         <source>Redirection limit reached</source>
-        <translation type="unfinished"></translation>
+        <translation>Dosežena je bila omejitev preusmeritev</translation>
     </message>
     <message>
         <source>Bad HTTP request</source>
@@ -7082,7 +7101,7 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <source>Missing Plug-in</source>
         <comment>Label text to be used when a plug-in is missing</comment>
-        <translation type="unfinished"></translation>
+        <translation>Manjkajoč vstavek</translation>
     </message>
     <message>
         <source>Loading...</source>
@@ -7779,23 +7798,23 @@ Izberite drugo ime datoteke.</translation>
     <name>QXmlPatternistCLI</name>
     <message>
         <source>Warning in %1, at line %2, column %3: %4</source>
-        <translation type="unfinished"></translation>
+        <translation>Opozorilo v %1, vrstica %2, stolpec %3: %4</translation>
     </message>
     <message>
         <source>Warning in %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Opozorilo v %1: %2</translation>
     </message>
     <message>
         <source>Unknown location</source>
-        <translation type="unfinished">Neznana lokacija</translation>
+        <translation>Neznana lokacija</translation>
     </message>
     <message>
         <source>Error %1 in %2, at line %3, column %4: %5</source>
-        <translation type="unfinished"></translation>
+        <translation>Napaka %1 v %2, vrstica %3, stolpec %4: %5</translation>
     </message>
     <message>
         <source>Error %1 in %2: %3</source>
-        <translation type="unfinished">Napaka %1 v %2: %3</translation>
+        <translation>Napaka %1 v %2: %3</translation>
     </message>
 </context>
 <context>
@@ -7826,7 +7845,7 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>Unexpected character &apos;%1&apos; in public id literal.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nepričakovan znak »%1« v javnem literalu ID-ja.</translation>
     </message>
     <message>
         <source>Invalid XML version string.</source>
@@ -7846,7 +7865,7 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>Standalone accepts only yes or no.</source>
-        <translation type="unfinished"></translation>
+        <translation>Samostojni (standalone) sprejema samo da (yes) ali ne (no).</translation>
     </message>
     <message>
         <source>Invalid attribute in XML declaration.</source>
@@ -7890,7 +7909,7 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>NDATA in parameter entity declaration.</source>
-        <translation type="unfinished"></translation>
+        <translation>NDATA v parametru deklaracije entitete.</translation>
     </message>
     <message>
         <source>%1 is an invalid processing instruction name.</source>
@@ -7938,7 +7957,7 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>%1 is an invalid PUBLIC identifier.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ni veljaven javni identifikator.</translation>
     </message>
 </context>
 <context>
@@ -7949,7 +7968,7 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>Element %1 can&apos;t be serialized because it appears outside the document element.</source>
-        <translation type="unfinished"></translation>
+        <translation>Elementa %1 ni moč serializirati, ker se nahaja zunaj elementa dokumenta.</translation>
     </message>
     <message>
         <source>Year %1 is invalid because it begins with %2.</source>
@@ -8235,7 +8254,7 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>%1 is not a whole number of minutes.</source>
-        <translation type="unfinished">%1 ni celovito število minut,</translation>
+        <translation>%1 ni celovito število minut.</translation>
     </message>
     <message>
         <source>Required cardinality is %1; got cardinality %2.</source>
@@ -9339,7 +9358,7 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <source>Component with ID %1 has been defined previously.</source>
-        <translation type="unfinished">Komponenta z ID-jem %1 je že bila definirana.</translation>
+        <translation>Komponenta z ID-jem %1 je že bila definirana.</translation>
     </message>
     <message>
         <source>Element %1 already defined.</source>
@@ -9768,430 +9787,6 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <source>&apos;%1&apos; attribute contains invalid QName content: %2.</source>
         <translation>Lastnost »%1« vsebuje neveljavno vsebino QName: %2.</translation>
-    </message>
-</context>
-<context>
-    <name></name>
-    <message>
-        <source>Remaining move time</source>
-        <comment>QWebPage~|Media controller element</comment>
-        <translation type="obsolete">Preostali čas filma</translation>
-    </message>
-    <message>
-        <source>attribute group %1 contains attribute %2 twice</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">skupina lastnosti %1 dvakrat vsebuje lastnost %2</translation>
-    </message>
-    <message>
-        <source>complex type %1 contains attribute %2 twice</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">kompleksna vrsta %1 dvakrat vsebuje lastnost %2</translation>
-    </message>
-    <message>
-        <source>element %1 exists twice with different types</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">element %1 obstaja dvakrat, z različnima vrstama</translation>
-    </message>
-    <message>
-        <source>can not process unknown element %1, expected elements are: %2</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">ni moč obdelati neznanega elementa %1, pričakovani elementi so: %2</translation>
-    </message>
-    <message>
-        <source>element %1 is not allowed in this scope, possible elements are: %2</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">element %1 v tem obsegu ni dovoljen, možni elementi so: %2</translation>
-    </message>
-    <message>
-        <source>child element is missing in that scope, possible child elements are: %1</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">v tem obsegu manjka podelement, možni podelementi so: %1</translation>
-    </message>
-    <message>
-        <source>document is not a XML schema</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">dokument ni shema XML</translation>
-    </message>
-    <message>
-        <source>%1 attribute of %2 element contains invalid content: {%3} is not a value of type %4</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">lastnost %1 elementa %2 vsebuje neveljavno vsebino: {%3} ni vrednost vrste %4</translation>
-    </message>
-    <message>
-        <source>%1 attribute of %2 element contains invalid content: {%3}</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">lastnost %1 elementa %2 vsebuje neveljavno vsebino: {%3}</translation>
-    </message>
-    <message>
-        <source>%1 element is not allowed inside %2 element if %3 attribute is present</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">element %1 znotraj elementa %2 ni dovoljen, če je prisotna lastnost %3</translation>
-    </message>
-    <message>
-        <source>%1 element has neither %2 attribute nor %3 child element</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">element %1 nima niti lastnosti %2 niti podelementa %3</translation>
-    </message>
-    <message>
-        <source>%1 element with %2 child element must not have a %3 attribute</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">element %1 s podelementom %2 ne sme imeti lastnosti %3</translation>
-    </message>
-    <message>
-        <source>%1 attribute of %2 element must be %3 or %4</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">lastnost %1 elementa %2 mora biti %3 ali %4</translation>
-    </message>
-    <message>
-        <source>%1 attribute of %2 element must have a value of %3</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">lastnost %1 elementa %2 mora imeti vrednost %3</translation>
-    </message>
-    <message>
-        <source>%1 attribute of %2 element must have a value of %3 or %4</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">lastnost %1 elementa %2 mora imeti vrednost %3 ali %4</translation>
-    </message>
-    <message>
-        <source>%1 element must not have %2 and %3 attribute together</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">element %1 hkrati ne sme imeti lastnosti %2 in %3</translation>
-    </message>
-    <message>
-        <source>content of %1 attribute of %2 element must not be from namespace %3</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">vsebina lastnosti %1 elementa %2 ne sme biti iz imenskega prostora %3</translation>
-    </message>
-    <message>
-        <source>%1 attribute of %2 element must not be %3</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">lastnost %1 elementa %2 ne sme biti %3</translation>
-    </message>
-    <message>
-        <source>%1 element must have either %2 or %3 attribute</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">element %1 mora imeti lastnost %2 ali %3</translation>
-    </message>
-    <message>
-        <source>%1 element requires either %2 or %3 attribute</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">element %1 potrebuje vsaj lastnost %2 ali %3</translation>
-    </message>
-    <message>
-        <source>%1 element is not allowed in this context</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">element %1 v tem kontekstu ni dovoljen</translation>
-    </message>
-    <message>
-        <source>component with id %1 has been defined previously</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">komponenta z ID-jem %1 je že bila definirana</translation>
-    </message>
-    <message>
-        <source>element %1 already defined</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">element %1 je že definiran</translation>
-    </message>
-    <message>
-        <source>attribute %1 already defined</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">lastnost %1 je že definirana</translation>
-    </message>
-    <message>
-        <source>type %1 already defined</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">vrsta %1 je že definirana</translation>
-    </message>
-    <message>
-        <source>attribute group %1 already defined</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">skupina lastnosti %1 je že definirana</translation>
-    </message>
-    <message>
-        <source>element group %1 already defined</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">skupina elementov %1 je že definirana</translation>
-    </message>
-    <message>
-        <source>notation %1 already defined</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">zapis %1 je že definiran</translation>
-    </message>
-    <message>
-        <source>type of %1 element must be a simple type, %2 is not</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">vrsta elementa %1 mora biti preprosta, %2 to ni</translation>
-    </message>
-    <message>
-        <source>duplicated element names %1 in %2 element</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">podvojeni imeni elementov %1 v elementu %2</translation>
-    </message>
-    <message>
-        <source>%1 is not valid according to %2</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">%1 glede na %2 ni veljaven</translation>
-    </message>
-    <message>
-        <source>invalid QName content: %1</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">neveljavna vsebina QName: %1</translation>
-    </message>
-    <message>
-        <source>data of type %1 are not allowed to be empty</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">podatki vrste %1 ne smejo biti prazni</translation>
-    </message>
-    <message>
-        <source>element %1 is missing child element</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">elementu %1 manjka podelement</translation>
-    </message>
-    <message>
-        <source>%1 contains invalid data</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">%1 vsebuje neveljavne podatke</translation>
-    </message>
-    <message>
-        <source>no definition for element %1 available</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">definicija za element %1 ni na voljo</translation>
-    </message>
-    <message>
-        <source>element %1 is not defined in this scope</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">element %1 v tem obsegu ni definiran</translation>
-    </message>
-    <message>
-        <source>declaration for element %1 does not exist</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">deklaracija elementa %1 ne obstaja</translation>
-    </message>
-    <message>
-        <source>element %1 contains invalid content</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">element %1 vsebuje neveljavno vsebino</translation>
-    </message>
-    <message>
-        <source>element %1 is declared as abstract</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">element %1 je deklariran kot abstrakten</translation>
-    </message>
-    <message>
-        <source>complex type %1 is not allowed to be abstract</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">kompleksna vrsta %1 ne sme biti abstraktna</translation>
-    </message>
-    <message>
-        <source>element %1 contains not allowed attributes</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">element %1 vsebuje nedovoljene lastnosti</translation>
-    </message>
-    <message>
-        <source>element %1 contains not allowed child element</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">element %1 vsebuje nedovoljen podelement</translation>
-    </message>
-    <message>
-        <source>content of element %1 does not match its type definition: %2</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">vsebina elementa %1 ne ustreza zanj določeni vrsti: %2</translation>
-    </message>
-    <message>
-        <source>element %1 contains not allowed child content</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">element %1 vsebuje nedovoljeno vsebino v podelementih</translation>
-    </message>
-    <message>
-        <source>element %1 contains not allowed text content</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">element %1 vsebuje nedovoljeno besedilno vsebino</translation>
-    </message>
-    <message>
-        <source>element %1 can not contain other elements, as it has a fixed content</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">element %1 ne more vsebovati drugih elementov, ker ima fiksno vsebino</translation>
-    </message>
-    <message>
-        <source>element %1 is missing required attribute %2</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">elementu %1 manjka obvezna lastnost %2</translation>
-    </message>
-    <message>
-        <source>declaration for attribute %1 does not exist</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">deklaracija lastnosti %1 ne obstaja</translation>
-    </message>
-    <message>
-        <source>element %1 contains two attributes of type %2</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">element %1 vsebuje dve lastnosti vrste %2</translation>
-    </message>
-    <message>
-        <source>attribute %1 contains invalid content</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">lastnost %1 vsebuje neveljavno vsebino</translation>
-    </message>
-    <message>
-        <source>element %1 contains unknown attribute %2</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">element %1 vsebuje neznano lastnost %2</translation>
-    </message>
-    <message>
-        <source>more than one value found for field %1</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">za polje %1 je bila najdena več kot ena vrednost</translation>
-    </message>
-    <message>
-        <source>field %1 has no simple type</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">polje %1 nima preproste vrste</translation>
-    </message>
-    <message>
-        <source>ID value &apos;%1&apos; is not unique</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">Vrednost ID »%1« ni edinstvena</translation>
-    </message>
-    <message>
-        <source>&apos;%1&apos; attribute contains invalid QName content: %2</source>
-        <comment>QtXmlPatterns~|</comment>
-        <translation type="obsolete">Lastnost »%1« vsebuje neveljavno vsebino QName: %2</translation>
-    </message>
-    <message>
-        <source>Cannot start playback. 
-
-Check your Gstreamer installation and make sure you 
-have libgstreamer-plugins-base installed.</source>
-        <comment>Phonon::Gstreamer::MediaObject|</comment>
-        <translation type="obsolete">Ni moč začeti predvajanja.
-
-Preverite namestitev GStreamerja in se prepričajte, 
-da je nameščen paket libgstreamer-plugins-base.</translation>
-    </message>
-    <message>
-        <source>Frequency band, %1 Hz</source>
-        <comment>Phonon::MMF::AudioEqualizer|</comment>
-        <translation type="obsolete">Frekvenčni pas, %1 Hz</translation>
-    </message>
-    <message>
-        <source>audio equalizer</source>
-        <comment>Phonon::MMF::EffectFactory|</comment>
-        <translation type="obsolete">izenačevalnik zvoka</translation>
-    </message>
-    <message>
-        <source>Bass boost</source>
-        <comment>Phonon::MMF::EffectFactory|</comment>
-        <translation type="obsolete">Ojačanje basov</translation>
-    </message>
-    <message>
-        <source>Distance Attenuation</source>
-        <comment>Phonon::MMF::EffectFactory|</comment>
-        <translation type="obsolete">Utišanje zaradi razdalje</translation>
-    </message>
-    <message>
-        <source>Environmental Reverb</source>
-        <comment>Phonon::MMF::EffectFactory|</comment>
-        <translation type="obsolete">Okoljsko odmevanje</translation>
-    </message>
-    <message>
-        <source>Loudness</source>
-        <comment>Phonon::MMF::EffectFactory|</comment>
-        <translation type="obsolete">Glasnost</translation>
-    </message>
-    <message>
-        <source>Source Orientation</source>
-        <comment>Phonon::MMF::EffectFactory|</comment>
-        <translation type="obsolete">Usmerjenost vira</translation>
-    </message>
-    <message>
-        <source>Stereo Widening</source>
-        <comment>Phonon::MMF::EffectFactory|</comment>
-        <translation type="obsolete">Razširitev sterea</translation>
-    </message>
-    <message>
-        <source>Invalid hostname</source>
-        <comment>QObject|</comment>
-        <translation type="obsolete">Neveljavno ime gostitelja</translation>
-    </message>
-    <message>
-        <source>Operation not supported on %1</source>
-        <comment>QObject|</comment>
-        <translation type="obsolete">Dejanje na %1 ni podprto</translation>
-    </message>
-    <message>
-        <source>Invalid URI: %1</source>
-        <comment>QObject|</comment>
-        <translation type="obsolete">Neveljaven URI: %1</translation>
-    </message>
-    <message>
-        <source>Socket error on %1: %2</source>
-        <comment>QObject|</comment>
-        <translation type="obsolete">Napaka vtičnice na %1: %2</translation>
-    </message>
-    <message>
-        <source>Remote host closed the connection prematurely on %1</source>
-        <comment>QObject|</comment>
-        <translation type="obsolete">Oddaljen gostitelj je predčasno prekinil povezavo na %1</translation>
-    </message>
-    <message>
-        <source>No host name given</source>
-        <comment>QObject|</comment>
-        <translation type="obsolete">Podano ni bilo nobeno ime gostitelja</translation>
-    </message>
-    <message>
-        <source>Private key does not certificate public key, %1</source>
-        <comment>QSslSocket|</comment>
-        <translation type="obsolete">Zasebni ključ ne potrjuje javnega ključa, %1</translation>
-    </message>
-    <message>
-        <source>No variable by name %1 exists</source>
-        <comment>QtXmlPatterns|</comment>
-        <translation type="obsolete">Spremenljivka z imenom %1 ne obstaja</translation>
-    </message>
-    <message>
-        <source>No value is available for the external variable by name %1.</source>
-        <comment>QtXmlPatterns|</comment>
-        <translation type="obsolete">Za zunanjo spremenljivko z imenom %1 ni na voljo nobene vrednosti.</translation>
-    </message>
-    <message>
-        <source>A template by name %1 has already been declared.</source>
-        <comment>QtXmlPatterns|</comment>
-        <translation type="obsolete">Predloga z imenom %1 je že bila deklarirana.</translation>
-    </message>
-    <message>
-        <source>The value of attribute %1 must of type %2, which %3 isn&apos;t.</source>
-        <comment>QtXmlPatterns|</comment>
-        <translation type="obsolete">Vrednost lastnosti %1 mora biti vrste %2, %3 pa to ni.</translation>
-    </message>
-    <message>
-        <source>A variable by name %1 has already been declared.</source>
-        <comment>QtXmlPatterns|</comment>
-        <translation type="obsolete">Spremenljivka z imenom %1 je že bila deklarirana.</translation>
-    </message>
-    <message>
-        <source>An argument by name %1 has already been declared. Every argument name must be unique.</source>
-        <comment>QtXmlPatterns|</comment>
-        <translation type="obsolete">Argument z imenom %1 je že bil deklariran. Vsako ime argumenta mora biti edinstveno.</translation>
-    </message>
-    <message>
-        <source>No function by name %1 is available.</source>
-        <comment>QtXmlPatterns|</comment>
-        <translation type="obsolete">Na voljo ni nobene funkcije z imenom %1.</translation>
-    </message>
-    <message>
-        <source>An attribute by name %1 has already appeared on this element.</source>
-        <comment>QtXmlPatterns|</comment>
-        <translation type="obsolete">Atribut z imenom %1 se je v tem elementu že pojavil.</translation>
-    </message>
-    <message>
-        <source>Component with id %1 has been defined previously.</source>
-        <comment>QtXmlPatterns|</comment>
-        <translation type="obsolete">Komponenta z ID-jem %1 je že bila definirana.</translation>
-    </message>
-    <message>
-        <source>Element %1 can not contain other elements, as it has a fixed content.</source>
-        <comment>QtXmlPatterns|</comment>
-        <translation type="obsolete">Element %1 ne more vsebovati drugih elementov, ker ima fiksno vsebino.</translation>
     </message>
 </context>
 </TS>

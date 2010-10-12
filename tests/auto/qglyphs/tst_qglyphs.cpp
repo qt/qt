@@ -347,10 +347,6 @@ void tst_QGlyphs::drawMultiScriptText1()
 
 void tst_QGlyphs::drawMultiScriptText2()
 {
-#if defined(Q_WS_MAC)
-    QSKIP("Unstable because of QTBUG-11145", SkipAll);
-#endif
-
     QString text;
     text += QChar(0x0621); // Arabic, Hamza
     text += QChar(0x03D0); // Greek, beta
@@ -530,10 +526,6 @@ void tst_QGlyphs::drawUnderlinedText()
 
 void tst_QGlyphs::drawRightToLeft()
 {
-#if defined(Q_WS_MAC)
-    QSKIP("Unstable because of QTBUG-11145", SkipAll);
-#endif
-
     QString s;
     s.append(QChar(1575));
     s.append(QChar(1578));

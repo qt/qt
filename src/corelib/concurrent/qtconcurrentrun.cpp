@@ -99,7 +99,7 @@
     functions; passing by pointer is useful for calling non-const member
     functions that modify the instance.
     
-    For example, calling QString::split() (a const member function) in a
+    For example, calling QByteArray::split() (a const member function) in a
     separate thread is done like this:
     
     \snippet doc/src/snippets/code/src_corelib_concurrent_qtconcurrentrun.cpp 4

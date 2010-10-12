@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "qsymbianevent.h"
+#include <qdebug.h>
+
+#include <w32std.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -139,5 +142,35 @@ int QSymbianEvent::resourceChangeType() const
 {
     return (m_type == ResourceChangeEvent) ? m_eventValue : 0;
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QSymbianEvent *o)
+{
+    if (!o) {
+        dbg << "QSymbianEvent(0x0)";
+        return dbg;
+    }
+    dbg.nospace() << "QSymbianEvent(";
+    switch (o->type()) {
+    case QSymbianEvent::InvalidEvent:
+        dbg << "InvalidEvent";
+        break;
+    case QSymbianEvent::WindowServerEvent:
+        dbg << "WindowServerEvent, Type = " << o->windowServerEvent()->Type();
+        break;
+    case QSymbianEvent::CommandEvent:
+        dbg << "CommandEvent, command = " << o->command();
+        break;
+    case QSymbianEvent::ResourceChangeEvent:
+        dbg << "ResourceChangeEvent, resourceChangeType = " << o->resourceChangeType();
+        break;
+    default:
+        dbg << "Unknown event type";
+        break;
+    }
+    dbg << ")";
+    return dbg.space();
+}
+#endif
 
 QT_END_NAMESPACE

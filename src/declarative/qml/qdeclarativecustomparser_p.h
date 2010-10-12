@@ -117,7 +117,7 @@ public:
         NoFlag                    = 0x00000000,
         AcceptsAttachedProperties = 0x00000001
     };
-    Q_DECLARE_FLAGS(Flags, Flag);
+    Q_DECLARE_FLAGS(Flags, Flag)
 
     QDeclarativeCustomParser() : compiler(0), object(0), m_flags(NoFlag) {}
     QDeclarativeCustomParser(Flags f) : compiler(0), object(0), m_flags(f) {}

@@ -219,9 +219,9 @@ void MediaObject::noMorePadsAvailable ()
         if ( status != GST_INSTALL_PLUGINS_STARTED_OK )
         {
             if( status == GST_INSTALL_PLUGINS_HELPER_MISSING )
-                setError(QString(tr("Missing codec helper script assistant.")), Phonon::FatalError );
+                setError(tr("Missing codec helper script assistant."), Phonon::FatalError );
             else
-                setError(QString(tr("Plugin codec installation failed for codec: %0"))
+                setError(tr("Plugin codec installation failed for codec: %0")
                         .arg(m_missingCodecs[0].split("|")[3]), error);
         }
         m_missingCodecs.clear();
@@ -232,7 +232,7 @@ void MediaObject::noMorePadsAvailable ()
             m_hasVideo = false;
             emit hasVideoChanged(false);
         }
-        setError(QString(tr("A required codec is missing. You need to install the following codec(s) to play this content: %0")).arg(codecs), error);
+        setError(tr("A required codec is missing. You need to install the following codec(s) to play this content: %0").arg(codecs), error);
         m_missingCodecs.clear();
 #endif
     }

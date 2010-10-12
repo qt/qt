@@ -151,7 +151,8 @@ function victoryCheck()
         gameDuration = new Date() - gameDuration;
         nameInputDialog.show("You won! Please enter your name:                 ");
         nameInputDialog.initialWidth = nameInputDialog.text.width + 20;
-        nameInputDialog.width = nameInputDialog.initialWidth;
+        if(nameInputDialog.name == "")
+            nameInputDialog.width = nameInputDialog.initialWidth;
         nameInputDialog.text.opacity = 0;//Just a spacer
     }
 }

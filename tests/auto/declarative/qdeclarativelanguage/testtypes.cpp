@@ -50,9 +50,12 @@ void registerTypes()
     qmlRegisterType<MyDotPropertyObject>("Test",1,0,"MyDotPropertyObject");
     qmlRegisterType<MyNamespace::MyNamespacedType>("Test",1,0,"MyNamespacedType");
     qmlRegisterType<MyNamespace::MySecondNamespacedType>("Test",1,0,"MySecondNamespacedType");
+    qmlRegisterType<MyParserStatus>("Test",1,0,"MyParserStatus");
     qmlRegisterType<MyGroupedObject>();
 
     qmlRegisterCustomType<MyCustomParserType>("Test", 1, 0, "MyCustomParserType", new MyCustomParserTypeParser);
+
+    qmlRegisterTypeNotAvailable("Test",1,0,"UnavailableType", "UnavailableType is unavailable for testing");
 }
 
 QVariant myCustomVariantTypeConverter(const QString &data)

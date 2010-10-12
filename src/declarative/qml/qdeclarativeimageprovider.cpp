@@ -161,7 +161,9 @@ QDeclarativeImageProvider::QDeclarativeImageProvider(ImageType type)
 }
 
 /*!
-   \internal
+    Destroys the QDeclarativeImageProvider
+
+    \note The destructor of your derived class need to be thread safe.
 */
 QDeclarativeImageProvider::~QDeclarativeImageProvider()
 {

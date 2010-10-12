@@ -50,12 +50,17 @@
 #include <QtCore/QStack>
 #include <QtCore/QString>
 #include <QtCore/QTextCodec>
+#include <QtCore/QCoreApplication>
 
 #include <iostream>
 
 #include <ctype.h>
 
 QT_BEGIN_NAMESPACE
+
+class LU {
+    Q_DECLARE_TR_FUNCTIONS(LUpdate)
+};
 
 enum { Tok_Eof, Tok_class, Tok_return, Tok_tr,
        Tok_translate, Tok_Ident, Tok_Package,
@@ -196,7 +201,7 @@ static int getToken()
                     while ( !metAsterSlash ) {
                         yyCh = getChar();
                         if ( yyCh == EOF ) {
-                            yyMsg() << "Unterminated Java comment.\n";
+                            yyMsg() << qPrintable(LU::tr("Unterminated Java comment.\n"));
                             return Tok_Comment;
                         }
 
@@ -232,7 +237,7 @@ static int getToken()
                                 else {
                                     int sub(yyCh.toLower().toAscii() - 87);
                                     if( sub > 15 || sub < 10) {
-                                        yyMsg() << "Invalid Unicode value.\n";
+                                        yyMsg() << qPrintable(LU::tr("Invalid Unicode value.\n"));
                                         break;
                                     }
                                     unicode += sub;
@@ -255,7 +260,7 @@ static int getToken()
                 }
 
                 if ( yyCh != QLatin1Char('"') )
-                    yyMsg() << "Unterminated string.\n";
+                    yyMsg() << qPrintable(LU::tr("Unterminated string.\n"));
 
                 yyCh = getChar();
 
@@ -368,8 +373,9 @@ static bool matchString( QString &s )
         if (yyTok == Tok_String)
             s += yyString;
         else {
-            yyMsg() << "String used in translation can contain only literals"
-                       " concatenated with other literals, not expressions or numbers.\n";
+            yyMsg() << qPrintable(LU::tr(
+                "String used in translation can contain only literals"
+                " concatenated with other literals, not expressions or numbers.\n"));
             return false;
         }
         yyTok = getToken();
@@ -477,7 +483,7 @@ static void parse( Translator *tor )
                 yyScope.push(new Scope(yyIdent, Scope::Clazz, yyLineNo));
             }
             else {
-                yyMsg() << "'class' must be followed by a class name.\n";
+                yyMsg() << qPrintable(LU::tr("'class' must be followed by a class name.\n"));
                 break;
             }
             while (!match(Tok_LeftBrace)) {
@@ -549,7 +555,7 @@ static void parse( Translator *tor )
 
         case Tok_RightBrace:
             if ( yyScope.isEmpty() ) {
-                yyMsg() << "Excess closing brace.\n";
+                yyMsg() << qPrintable(LU::tr("Excess closing brace.\n"));
             }
             else
                 delete (yyScope.pop());
@@ -578,7 +584,7 @@ static void parse( Translator *tor )
                         yyPackage.append(QLatin1String("."));
                         break;
                     default:
-                         yyMsg() << "'package' must be followed by package name.\n";
+                         yyMsg() << qPrintable(LU::tr("'package' must be followed by package name.\n"));
                          break;
                 }
                 yyTok = getToken();
@@ -591,9 +597,9 @@ static void parse( Translator *tor )
     }
 
     if ( !yyScope.isEmpty() )
-        yyMsg(yyScope.top()->line) << "Unbalanced opening brace.\n";
+        yyMsg(yyScope.top()->line) << qPrintable(LU::tr("Unbalanced opening brace.\n"));
     else if ( yyParenDepth != 0 )
-        yyMsg(yyParenLineNo) << "Unbalanced opening parenthesis.\n";
+        yyMsg(yyParenLineNo) << qPrintable(LU::tr("Unbalanced opening parenthesis.\n"));
 }
 
 
@@ -601,8 +607,7 @@ bool loadJava(Translator &translator, const QString &filename, ConversionData &c
 {
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly)) {
-        cd.appendError(QString::fromLatin1("Cannot open %1: %2")
-            .arg(filename, file.errorString()));
+        cd.appendError(LU::tr("Cannot open %1: %2").arg(filename, file.errorString()));
         return false;
     }
 

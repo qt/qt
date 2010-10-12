@@ -727,7 +727,8 @@ bool QStyledItemDelegate::editorEvent(QEvent *event,
 
     // make sure that we have the right event type
     if ((event->type() == QEvent::MouseButtonRelease)
-        || (event->type() == QEvent::MouseButtonDblClick)) {
+        || (event->type() == QEvent::MouseButtonDblClick)
+        || (event->type() == QEvent::MouseButtonPress)) {
         QStyleOptionViewItemV4 viewOpt(option);
         initStyleOption(&viewOpt, index);
         QRect checkRect = style->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &viewOpt, widget);
@@ -735,8 +736,8 @@ bool QStyledItemDelegate::editorEvent(QEvent *event,
         if (me->button() != Qt::LeftButton || !checkRect.contains(me->pos()))
             return false;
 
-        // eat the double click events inside the check rect
-        if (event->type() == QEvent::MouseButtonDblClick)
+        if ((event->type() == QEvent::MouseButtonPress)
+            || (event->type() == QEvent::MouseButtonDblClick))
             return true;
 
     } else if (event->type() == QEvent::KeyPress) {

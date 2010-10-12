@@ -95,6 +95,12 @@ public:
         return QObjectPrivate::get(q)->isSignalConnected(idx);
     }
 
+    bool isDoubleClickConnected() {
+        Q_Q(QDeclarativeMouseArea);
+        static int idx = QObjectPrivate::get(q)->signalIndex("doubleClicked(QDeclarativeMouseEvent*)");
+        return QObjectPrivate::get(q)->isSignalConnected(idx);
+    }
+
     bool absorb : 1;
     bool hovered : 1;
     bool pressed : 1;

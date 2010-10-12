@@ -48,6 +48,7 @@
 #include <QtGui/QStyle>
 #include <QtGui/QTreeView>
 
+const quint32 VERSION = 0xe53798;
 const QLatin1String MIMETYPE("application/bookmarks.assistant");
 
 BookmarkModel::BookmarkModel()
@@ -68,8 +69,9 @@ BookmarkModel::bookmarks() const
 {
     QByteArray ba;
     QDataStream stream(&ba, QIODevice::WriteOnly);
+    stream << qint32(VERSION);
 
-    const QModelIndex &root = index(0,0, QModelIndex());
+    const QModelIndex &root = index(0,0, QModelIndex()).parent();
     for (int i = 0; i < rowCount(root); ++i)
         collectItems(index(i, 0, root), 0, &stream);
 
@@ -87,24 +89,35 @@ BookmarkModel::setBookmarks(const QByteArray &bookmarks)
 
     rootItem = new BookmarkItem(DataVector() << tr("Name") << tr("Address")
         << true);
-    BookmarkItem* item = new BookmarkItem(DataVector() << tr("Bookmarks Menu")
-        << QLatin1String("Folder") << true);
-    rootItem->addChild(item);
 
     QStack<BookmarkItem*> parents;
-    parents.push(item);
+    QDataStream stream(bookmarks);
+
+    qint32 version;
+    stream >> version;
+    if (version < VERSION) {
+        stream.device()->seek(0);
+        BookmarkItem* toolbar = new BookmarkItem(DataVector() << tr("Toolbar Menu")
+            << QLatin1String("Folder") << true);
+        rootItem->addChild(toolbar);
+
+        BookmarkItem* menu = new BookmarkItem(DataVector() << tr("Bookmarks Menu")
+            << QLatin1String("Folder") << true);
+        rootItem->addChild(menu);
+        parents.push(menu);
+    } else {
+        parents.push(rootItem);
+    }
 
     qint32 depth;
     bool expanded;
     QString name, url;
-    QDataStream stream(bookmarks);
     while (!stream.atEnd()) {
         stream >> depth >> name >> url >> expanded;
-
         while ((parents.count() - 1) != depth)
             parents.pop();
 
-        item = new BookmarkItem(DataVector() << name << url << expanded);
+        BookmarkItem *item = new BookmarkItem(DataVector() << name << url << expanded);
         if (url == QLatin1String("Folder")) {
             parents.top()->addChild(item);
             parents.push(item);
@@ -114,11 +127,7 @@ BookmarkModel::setBookmarks(const QByteArray &bookmarks)
     }
 
     cache.clear();
-    const QModelIndex &root = index(0,0, QModelIndex());
-
-    setupCache(root);
-    cache.insert(static_cast<BookmarkItem*> (root.internalPointer()), root);
-
+    setupCache(index(0,0, QModelIndex().parent()));
     endResetModel();
 }
 

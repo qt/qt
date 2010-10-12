@@ -22,9 +22,8 @@ SOURCES += \
     $$PWD/qdeclarativerefcount.cpp \
     $$PWD/qdeclarativemetatype.cpp \
     $$PWD/qdeclarativestringconverters.cpp \
-    $$PWD/qdeclarativeclassfactory.cpp \
     $$PWD/qdeclarativeparserstatus.cpp \
-    $$PWD/qdeclarativecompositetypemanager.cpp \
+    $$PWD/qdeclarativetypeloader.cpp \
     $$PWD/qdeclarativeinfo.cpp \
     $$PWD/qdeclarativeerror.cpp \
     $$PWD/qdeclarativescriptparser.cpp \
@@ -89,13 +88,11 @@ HEADERS += \
     $$PWD/qdeclarativecontext.h \
     $$PWD/qdeclarativeexpression.h \
     $$PWD/qdeclarativestringconverters_p.h \
-    $$PWD/qdeclarativeclassfactory_p.h \
     $$PWD/qdeclarativeinfo.h \
     $$PWD/qdeclarativeproperty_p.h \
     $$PWD/qdeclarativecontext_p.h \
     $$PWD/qdeclarativeinclude_p.h \
-    $$PWD/qdeclarativecompositetypedata_p.h \
-    $$PWD/qdeclarativecompositetypemanager_p.h \
+    $$PWD/qdeclarativetypeloader_p.h \
     $$PWD/qdeclarativelist.h \
     $$PWD/qdeclarativelist_p.h \
     $$PWD/qdeclarativedata_p.h \
