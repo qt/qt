@@ -735,6 +735,31 @@ v8::Handle<v8::Object> QScriptEnginePrivate::newVariant(const QVariant &value)
     return persistent;
 }
 
+static v8::Handle<v8::Value> functionPrint(const v8::Arguments& args)
+{
+    QString result;
+    for (int i = 0; i < args.Length(); ++i) {
+        if (i != 0)
+            result.append(QLatin1Char(' '));
+        QString s = QScriptConverter::toString(args[i]->ToString());
+        result.append(s);
+    }
+    qDebug("%s", qPrintable(result));
+    return v8::Handle<v8::Value>();
+}
+
+static v8::Handle<v8::Value> functionGC(const v8::Arguments& args)
+{
+    QScriptEnginePrivate *engine = static_cast<QScriptEnginePrivate *>(v8::External::Unwrap(args.Data()));
+    engine->collectGarbage();
+    return v8::Handle<v8::Value>();
+}
+
+static v8::Handle<v8::Value> functionVersion(const v8::Arguments& args)
+{
+    return v8::Number::New(1);
+}
+
 static inline v8::Isolate *createEnterIsolate()
 {
     v8::V8::Initialize();
@@ -768,8 +793,12 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine:
         m_signalTemplate = v8::Persistent<v8::FunctionTemplate>::New(createSignalTemplate());
         m_metaObjectTemplate = v8::Persistent<v8::FunctionTemplate>::New(createMetaObjectTemplate());
         m_variantTemplate = v8::Persistent<v8::FunctionTemplate>::New(createVariantTemplate());
+
+        v8::Local<v8::Value> that = v8::External::Wrap(this);
+        globalObject()->Set(v8::String::New("print") , v8::FunctionTemplate::New(functionPrint, that)->GetFunction());
+        globalObject()->Set(v8::String::New("gc") , v8::FunctionTemplate::New(functionGC, that)->GetFunction());
+        globalObject()->Set(v8::String::New("version") , v8::FunctionTemplate::New(functionVersion, that)->GetFunction());
     }
-    qRegisterMetaType<QScriptValue>();
     m_isolate->Exit();
 }
 
@@ -1479,11 +1508,6 @@ QScriptValue QScriptEngine::globalObject() const
     QScriptIsolate api(d_ptr);
     v8::HandleScope handleScope;
     return QScriptValuePrivate::get(new QScriptValuePrivate(const_cast<QScriptEnginePrivate*>(d), d->globalObject()));
-}
-
-v8::Handle<v8::Value> QScriptEnginePrivate::globalObject() const
-{
-    return m_v8Context->Global();
 }
 
 static v8::Handle<v8::Value> QtGlobalObjectNamedPropertyGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info)

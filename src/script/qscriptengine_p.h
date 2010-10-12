@@ -86,7 +86,7 @@ public:
     inline bool isEvaluating() const;
     inline void collectGarbage();
     inline void reportAdditionalMemoryCost(int cost);
-    v8::Handle<v8::Value> globalObject() const;
+    v8::Handle<v8::Object> globalObject() const;
     void setGlobalObject(QScriptValuePrivate* newGlobalObjectValue);
 
     QScriptPassPointer<QScriptValuePrivate> newArray(uint length);
@@ -393,6 +393,11 @@ QScriptContextPrivate* QScriptEnginePrivate::setCurrentQSContext(QScriptContextP
 {
     qSwap(ctx, m_currentQsContext);
     return ctx;
+}
+
+inline v8::Handle<v8::Object> QScriptEnginePrivate::globalObject() const
+{
+    return m_v8Context->Global();
 }
 
 QScriptEnginePrivate::Exception::Exception() {}
