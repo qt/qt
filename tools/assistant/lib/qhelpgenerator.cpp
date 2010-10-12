@@ -712,14 +712,15 @@ bool QHelpGenerator::insertKeywords(const QList<QHelpDataIndexItem> &keywords,
     d->query->exec(QLatin1String("BEGIN"));
     QSet<QString> indices;
     foreach (const QHelpDataIndexItem &itm, keywords) {
-
-        /*
-         * Identical ids make no sense and just confuse the Assistant user,
-         * so we ignore all repetitions.
-         */
+         // Identical ids make no sense and just confuse the Assistant user,
+         // so we ignore all repetitions.
         if (indices.contains(itm.identifier))
             continue;
-        indices.insert(itm.identifier);
+
+        // Still empty ids should be ignored, as otherwise we will include only
+        // the first keyword with an empty id.
+        if (!itm.identifier.isEmpty())
+            indices.insert(itm.identifier);
 
         pos = itm.reference.indexOf(QLatin1Char('#'));
         fileName = itm.reference.left(pos);
