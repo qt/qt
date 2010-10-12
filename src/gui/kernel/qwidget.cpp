@@ -273,6 +273,9 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , isMoved(0)
       , isGLWidget(0)
       , usesDoubleBufferedGLContext(0)
+#ifndef QT_NO_IM
+      , inheritsInputMethodHints(0)
+#endif
 #if defined(Q_WS_X11)
       , picture(0)
 #elif defined(Q_WS_WIN)
@@ -9228,9 +9231,13 @@ QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
 */
 Qt::InputMethodHints QWidget::inputMethodHints() const
 {
-    Q_D(const QWidget);
 #ifndef QT_NO_IM
-    return d->imHints;
+    const QWidgetPrivate *priv = d_func();
+    while (priv->inheritsInputMethodHints) {
+        priv = priv->q_func()->parentWidget()->d_func();
+        Q_ASSERT(priv);
+    }
+    return priv->imHints;
 #else //QT_NO_IM
     return 0;
 #endif //QT_NO_IM

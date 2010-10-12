@@ -74,6 +74,7 @@ private slots:
     void getItem_data();
     void getItem();
     void task256299_getTextReturnNullStringOnRejected();
+    void inputMethodHintsOfChildWidget();
 };
 
 QString stripFraction(const QString &s)
@@ -402,6 +403,25 @@ void tst_QInputDialog::getItem()
     QVERIFY(ok);
     QCOMPARE(result, items[index]);
     delete parent;
+}
+
+void tst_QInputDialog::inputMethodHintsOfChildWidget()
+{
+    QInputDialog dialog;
+    dialog.setInputMode(QInputDialog::TextInput);
+    QList<QObject *> children = dialog.children();
+    QLineEdit *editWidget = 0;
+    for (int c = 0; c < children.size(); c++) {
+        editWidget = qobject_cast<QLineEdit *>(children.at(c));
+        if (editWidget)
+            break;
+    }
+    QVERIFY(editWidget);
+    QCOMPARE(editWidget->inputMethodHints(), dialog.inputMethodHints());
+    QCOMPARE(editWidget->inputMethodHints(), Qt::ImhNone);
+    dialog.setInputMethodHints(Qt::ImhDigitsOnly);
+    QCOMPARE(editWidget->inputMethodHints(), dialog.inputMethodHints());
+    QCOMPARE(editWidget->inputMethodHints(), Qt::ImhDigitsOnly);
 }
 
 QTEST_MAIN(tst_QInputDialog)

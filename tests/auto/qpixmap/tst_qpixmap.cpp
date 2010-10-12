@@ -179,6 +179,7 @@ private slots:
     void fromImageReader_data();
     void fromImageReader();
 
+    void fromImageReaderAnimatedGif_data();
     void fromImageReaderAnimatedGif();
 
     void preserveDepth();
@@ -1605,6 +1606,8 @@ void tst_QPixmap::fromImageReader_data()
     QTest::newRow("designer_indexed8_no_alpha.gif") << prefix + "/designer_indexed8_no_alpha.gif";
     QTest::newRow("designer_indexed8_with_alpha.gif") << prefix + "/designer_indexed8_with_alpha.gif";
     QTest::newRow("designer_rgb32.jpg") << prefix + "/designer_rgb32.jpg";
+    QTest::newRow("designer_indexed8_with_alpha_animated") << prefix + "/designer_indexed8_with_alpha_animated.gif";
+    QTest::newRow("designer_indexed8_with_alpha_animated") << prefix + "/designer_indexed8_no_alpha_animated.gif";
 }
 
 void tst_QPixmap::fromImageReader()
@@ -1621,14 +1624,22 @@ void tst_QPixmap::fromImageReader()
     QVERIFY(pixmapsAreEqual(&pixmapWithCopy, &directLoadingPixmap));
 }
 
+void tst_QPixmap::fromImageReaderAnimatedGif_data()
+{
+    QTest::addColumn<QString>("imagePath");
+    QTest::newRow("gif with alpha") << QString::fromLatin1("/designer_indexed8_with_alpha_animated.gif");
+    QTest::newRow("gif without alpha") << QString::fromLatin1("/designer_indexed8_no_alpha_animated.gif");
+}
+
 void tst_QPixmap::fromImageReaderAnimatedGif()
 {
+    QFETCH(QString, imagePath);
 #ifdef Q_OS_SYMBIAN
     const QString prefix = QLatin1String(SRCDIR) + "loadFromData";
 #else
     const QString prefix = QLatin1String(SRCDIR) + "/loadFromData";
 #endif
-    const QString path = prefix + QString::fromLatin1("/designer_indexed8_with_alpha_animated.gif");
+    const QString path = prefix + imagePath;
 
     QImageReader referenceReader(path);
     QImageReader pixmapReader(path);

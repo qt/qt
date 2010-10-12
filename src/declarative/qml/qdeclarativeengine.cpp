@@ -68,6 +68,7 @@
 #include "private/qdeclarativelist_p.h"
 #include "private/qdeclarativetypenamecache_p.h"
 #include "private/qdeclarativeinclude_p.h"
+#include "private/qdeclarativenotifier_p.h"
 
 #include <QtCore/qmetaobject.h>
 #include <QScriptClass>
@@ -466,6 +467,11 @@ void QDeclarativeData::destroyed(QAbstractDeclarativeData *d, QObject *o)
 void QDeclarativeData::parentChanged(QAbstractDeclarativeData *d, QObject *o, QObject *p)
 {
     static_cast<QDeclarativeData *>(d)->parentChanged(o, p);
+}
+
+void QDeclarativeData::objectNameChanged(QAbstractDeclarativeData *d, QObject *o)
+{
+    static_cast<QDeclarativeData *>(d)->objectNameChanged(o);
 }
 
 void QDeclarativeEnginePrivate::init()
@@ -949,7 +955,7 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool cre
     if (!data)
         return 0; // Attached properties are only on objects created by QML
 
-    QObject *rv = data->attachedProperties?data->attachedProperties->value(id):0;
+    QObject *rv = data->extendedData?data->attachedProperties()->value(id):0;
     if (rv || !create)
         return rv;
 
@@ -959,11 +965,8 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool cre
 
     rv = pf(const_cast<QObject *>(object));
 
-    if (rv) {
-        if (!data->attachedProperties)
-            data->attachedProperties = new QHash<int, QObject *>();
-        data->attachedProperties->insert(id, rv);
-    }
+    if (rv) 
+        data->attachedProperties()->insert(id, rv);
 
     return rv;
 }
@@ -984,8 +987,6 @@ void QDeclarativeData::destroyed(QObject *object)
 {
     if (deferredComponent)
         deferredComponent->release();
-    if (attachedProperties)
-        delete attachedProperties;
 
     if (nextContextObject)
         nextContextObject->prevContextObject = prevContextObject;
@@ -1019,6 +1020,9 @@ void QDeclarativeData::destroyed(QObject *object)
     if (scriptValue)
         delete scriptValue;
 
+    if (extendedData)
+        delete extendedData;
+
     if (ownMemory)
         delete this;
 }
@@ -1026,6 +1030,11 @@ void QDeclarativeData::destroyed(QObject *object)
 void QDeclarativeData::parentChanged(QObject *, QObject *parent)
 {
     if (!parent && scriptValue) { delete scriptValue; scriptValue = 0; }
+}
+
+void QDeclarativeData::objectNameChanged(QObject *)
+{
+    if (extendedData) objectNameNotifier()->notify();
 }
 
 bool QDeclarativeData::hasBindingBit(int bit) const
@@ -1062,6 +1071,28 @@ void QDeclarativeData::setBindingBit(QObject *obj, int bit)
     }
 
     bindingBits[bit / 32] |= (1 << (bit % 32));
+}
+
+QDeclarativeData::ExtendedData::ExtendedData()
+: objectNameNotifier(0)
+{
+}
+
+QDeclarativeData::ExtendedData::~ExtendedData()
+{
+    ((QDeclarativeNotifier *)&objectNameNotifier)->~QDeclarativeNotifier();
+}
+
+QDeclarativeNotifier *QDeclarativeData::objectNameNotifier() const
+{
+    if (!extendedData) extendedData = new ExtendedData;
+    return (QDeclarativeNotifier *)&extendedData->objectNameNotifier;
+}
+
+QHash<int, QObject *> *QDeclarativeData::attachedProperties() const
+{
+    if (!extendedData) extendedData = new ExtendedData;
+    return &extendedData->attachedProperties;
 }
 
 /*!
@@ -2165,7 +2196,19 @@ bool QDeclarative_isFileCaseCorrect(const QString &fileName)
     QFileInfo info(fileName);
 
     QString absolute = info.absoluteFilePath();
+
+#if defined(Q_OS_MAC)
     QString canonical = info.canonicalFilePath();
+#elif defined(Q_OS_WIN)
+    wchar_t buffer[1024];
+
+    DWORD rv = ::GetShortPathName((wchar_t*)absolute.utf16(), buffer, 1024);
+    if (rv == 0 || rv >= 1024) return true;
+    rv = ::GetLongPathName(buffer, buffer, 1024);
+    if (rv == 0 || rv >= 1024) return true;
+
+    QString canonical((QChar *)buffer);
+#endif
 
     int absoluteLength = absolute.length();
     int canonicalLength = canonical.length();
