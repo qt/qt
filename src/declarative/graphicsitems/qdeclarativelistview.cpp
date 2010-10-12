@@ -775,7 +775,6 @@ void QDeclarativeListViewPrivate::layout()
         setPosition(0);
         return;
     }
-    updateSections();
     if (!visibleItems.isEmpty()) {
         qreal oldEnd = visibleItems.last()->endPosition();
         qreal pos = visibleItems.first()->endPosition() + spacing + 1;
@@ -934,6 +933,7 @@ void QDeclarativeListViewPrivate::createSection(FxListItem *listItem)
         return;
     if (listItem->attached->m_prevSection != listItem->attached->m_section) {
         if (!listItem->section) {
+            qreal pos = listItem->position();
             int i = sectionCacheSize-1;
             while (i >= 0 && !sectionCache[i])
                 --i;
@@ -961,8 +961,10 @@ void QDeclarativeListViewPrivate::createSection(FxListItem *listItem)
                     delete context;
                 }
             }
+            listItem->setPosition(pos);
         }
     } else if (listItem->section) {
+        qreal pos = listItem->position();
         int i = 0;
         do {
             if (!sectionCache[i]) {
@@ -975,12 +977,13 @@ void QDeclarativeListViewPrivate::createSection(FxListItem *listItem)
         } while (i < sectionCacheSize);
         delete listItem->section;
         listItem->section = 0;
+        listItem->setPosition(pos);
     }
 }
 
 void QDeclarativeListViewPrivate::updateSections()
 {
-    if (sectionCriteria) {
+    if (sectionCriteria && !visibleItems.isEmpty()) {
         QString prevSection;
         if (visibleIndex > 0)
             prevSection = sectionAt(visibleIndex-1);
@@ -990,6 +993,8 @@ void QDeclarativeListViewPrivate::updateSections()
             if (visibleItems.at(i)->index != -1) {
                 QDeclarativeListViewAttached *attached = visibleItems.at(i)->attached;
                 attached->setPrevSection(prevSection);
+                QString propValue = model->stringValue(visibleItems.at(i)->index, sectionCriteria->property());
+                attached->setSection(sectionCriteria->sectionString(propValue));
                 if (prevAtt)
                     prevAtt->setNextSection(attached->section());
                 createSection(visibleItems.at(i));
@@ -1560,6 +1565,7 @@ void QDeclarativeListView::setModel(const QVariant &model)
         disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
         disconnect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
+        disconnect(d->model, SIGNAL(itemsChanged(int,int)), this, SLOT(itemsChanged(int,int)));
         disconnect(d->model, SIGNAL(modelReset()), this, SLOT(modelReset()));
         disconnect(d->model, SIGNAL(createdItem(int, QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
         disconnect(d->model, SIGNAL(destroyingItem(QDeclarativeItem*)), this, SLOT(destroyingItem(QDeclarativeItem*)));
@@ -1590,6 +1596,7 @@ void QDeclarativeListView::setModel(const QVariant &model)
     if (d->model) {
         d->bufferMode = QDeclarativeListViewPrivate::BufferBefore | QDeclarativeListViewPrivate::BufferAfter;
         if (isComponentComplete()) {
+            updateSections();
             refill();
             if (d->currentIndex >= d->model->count() || d->currentIndex < 0) {
                 setCurrentIndex(0);
@@ -1605,6 +1612,7 @@ void QDeclarativeListView::setModel(const QVariant &model)
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
         connect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
+        connect(d->model, SIGNAL(itemsChanged(int,int)), this, SLOT(itemsChanged(int,int)));
         connect(d->model, SIGNAL(modelReset()), this, SLOT(modelReset()));
         connect(d->model, SIGNAL(createdItem(int, QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
         connect(d->model, SIGNAL(destroyingItem(QDeclarativeItem*)), this, SLOT(destroyingItem(QDeclarativeItem*)));
@@ -1662,6 +1670,7 @@ void QDeclarativeListView::setDelegate(QDeclarativeComponent *delegate)
             d->visibleItems.clear();
             d->releaseItem(d->currentItem);
             d->currentItem = 0;
+            updateSections();
             refill();
             d->moveReason = QDeclarativeListViewPrivate::SetIndex;
             d->updateCurrent(d->currentIndex);
@@ -2075,8 +2084,10 @@ void QDeclarativeListView::setCacheBuffer(int b)
 QDeclarativeViewSection *QDeclarativeListView::sectionCriteria()
 {
     Q_D(QDeclarativeListView);
-    if (!d->sectionCriteria)
+    if (!d->sectionCriteria) {
         d->sectionCriteria = new QDeclarativeViewSection(this);
+        connect(d->sectionCriteria, SIGNAL(propertyChanged()), this, SLOT(updateSections()));
+    }
     return d->sectionCriteria;
 }
 
@@ -2669,6 +2680,7 @@ void QDeclarativeListView::componentComplete()
 {
     Q_D(QDeclarativeListView);
     QDeclarativeFlickable::componentComplete();
+    updateSections();
     if (d->isValid()) {
         refill();
         d->moveReason = QDeclarativeListViewPrivate::SetIndex;
@@ -2682,6 +2694,18 @@ void QDeclarativeListView::componentComplete()
         }
         d->moveReason = QDeclarativeListViewPrivate::Other;
         d->fixupPosition();
+    }
+}
+
+void QDeclarativeListView::updateSections()
+{
+    Q_D(QDeclarativeListView);
+    if (isComponentComplete() && d->model) {
+        QList<QByteArray> roles;
+        if (d->sectionCriteria && !d->sectionCriteria->property().isEmpty())
+            roles << d->sectionCriteria->property().toUtf8();
+        d->model->setWatchedRoles(roles);
+        d->updateSections();
     }
 }
 
@@ -2894,6 +2918,7 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
     for (int j = 0; j < added.count(); ++j)
         added.at(j)->attached->emitAdd();
 
+    d->updateSections();
     d->itemCount += count;
     emit countChanged();
 }
@@ -2986,6 +3011,7 @@ void QDeclarativeListView::itemsRemoved(int modelIndex, int count)
         }
     }
 
+    d->updateSections();
     emit countChanged();
 }
 
@@ -3107,6 +3133,14 @@ void QDeclarativeListView::itemsMoved(int from, int to, int count)
     // Ensure we don't cause an ugly list scroll.
     d->visibleItems.first()->setPosition(d->visibleItems.first()->position() + moveBy);
 
+    d->updateSections();
+    d->layout();
+}
+
+void QDeclarativeListView::itemsChanged(int, int)
+{
+    Q_D(QDeclarativeListView);
+    d->updateSections();
     d->layout();
 }
 
