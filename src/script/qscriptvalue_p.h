@@ -139,7 +139,7 @@ public:
 
     inline operator v8::Persistent<v8::Value>() const;
     inline v8::Handle<v8::Value> asV8Value(QScriptEnginePrivate* engine);
-
+private:
     QScriptSharedDataPointer<QScriptEnginePrivate> m_engine;
 
     // Please, update class documentation when you change the enum.

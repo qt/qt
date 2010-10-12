@@ -96,12 +96,12 @@ struct QScriptV8ObjectWrapper
     static T *safeGet(const QScriptValue &v)
     {
         QScriptValuePrivate *p = QScriptValuePrivate::get(v);
-        if (!p->isJSBased())
-            return 0;
         QScriptEnginePrivate *engine = p->engine();
-        QScriptIsolate api(engine);
+        if (!engine)
+            return 0;
+        QScriptIsolate api(engine, QScriptIsolate::NotNullEngine);
         v8::HandleScope handleScope;
-        v8::Handle<v8::Value> value = p->m_value;
+        v8::Handle<v8::Value> value = *p;
 
         v8::Handle<v8::FunctionTemplate> funcTmpl = engine->*functionTemplate;
         if (funcTmpl.IsEmpty())
