@@ -764,7 +764,7 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine:
     m_baseQsContext.reset(new QScriptContextPrivate(this));
     {
         m_v8Context->Enter();
-        v8::HandleScope handle_scope;
+        v8::HandleScope handleScope;
         m_signalTemplate = v8::Persistent<v8::FunctionTemplate>::New(createSignalTemplate());
         m_metaObjectTemplate = v8::Persistent<v8::FunctionTemplate>::New(createMetaObjectTemplate());
         m_variantTemplate = v8::Persistent<v8::FunctionTemplate>::New(createVariantTemplate());
@@ -1925,6 +1925,7 @@ bool QScriptEngine::convertV2(const QScriptValue &value, int type, void *ptr)
     QScriptValuePrivate *vp = QScriptValuePrivate::get(value);
     if (vp->isJSBased()) {
         QScriptIsolate api(vp->engine());
+        v8::HandleScope handleScope;
         return vp->engine()->metaTypeFromJS(*vp, type, ptr);
     } else {
         switch (type) {
