@@ -168,9 +168,10 @@ private:
         CValue(QString* string) : m_string(string) {}
     } u;
 
+public: // FIXME it shouldn't be public it is an implementation detail.
     // v8::Persistent is not a POD, so can't be part of the union.
     v8::Persistent<v8::Value> m_value;
-
+private:
     inline bool isJSBased() const;
     inline bool isNumberBased() const;
     inline bool isStringBased() const;
