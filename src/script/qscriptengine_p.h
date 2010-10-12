@@ -40,9 +40,7 @@
 #include <v8.h>
 
 Q_DECLARE_METATYPE(QScriptValue)
-#ifndef QT_NO_QOBJECT
 Q_DECLARE_METATYPE(QObjectList)
-#endif
 Q_DECLARE_METATYPE(QList<int>)
 
 

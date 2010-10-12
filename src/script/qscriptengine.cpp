@@ -781,9 +781,7 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine:
 {
     qMetaTypeId<QScriptValue>();
     qMetaTypeId<QList<int> >();
-#ifndef QT_NO_QOBJECT
     qMetaTypeId<QObjectList>();
-#endif
 
     Q_ASSERT(!m_v8Context.IsEmpty());
     m_baseQsContext.reset(new QScriptContextPrivate(this));
