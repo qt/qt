@@ -185,10 +185,11 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         QImage::Format format = qt_TDisplayMode2Format(displayMode);
 
         TSize size = bitmap->SizeInPixels();
+        int bytesPerLine = bitmap->ScanLineLength(size.iWidth, displayMode);
 
         bitmap->BeginDataAccess();
         uchar *bytes = (uchar*)bitmap->DataAddress();
-        QImage img = QImage(bytes, size.iWidth, size.iHeight, format);
+        QImage img = QImage(bytes, size.iWidth, size.iHeight, bytesPerLine, format);
         img = img.copy();
         bitmap->EndDataAccess();
 
