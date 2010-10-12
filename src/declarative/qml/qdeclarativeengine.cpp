@@ -105,6 +105,7 @@
 #ifdef Q_OS_WIN // for %APPDATA%
 #include <qt_windows.h>
 #include <qlibrary.h>
+#include <windows.h>
 
 #define CSIDL_APPDATA		0x001a	// <username>\Application Data
 #endif
@@ -2202,9 +2203,7 @@ bool QDeclarative_isFileCaseCorrect(const QString &fileName)
 #elif defined(Q_OS_WIN)
     wchar_t buffer[1024];
 
-    DWORD rv = ::GetShortPathName((wchar_t*)absolute.utf16(), buffer, 1024);
-    if (rv == 0 || rv >= 1024) return true;
-    rv = ::GetLongPathName(buffer, buffer, 1024);
+    DWORD rv = ::GetLongPathName((wchar_t*)absolute.utf16(), buffer, 1024);
     if (rv == 0 || rv >= 1024) return true;
 
     QString canonical((QChar *)buffer);
