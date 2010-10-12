@@ -41,6 +41,7 @@
 
 #include "qfontengine_s60_p.h"
 #include "qtextengine_p.h"
+#include "qendian.h"
 #include "qglobal.h"
 #include <private/qapplication_p.h>
 #include "qimage.h"
@@ -176,6 +177,24 @@ CFont *QSymbianTypeFaceExtras::fontOwner() const
     return m_cFont;
 }
 
+QFixed QSymbianTypeFaceExtras::unitsPerEm() const
+{
+    if (m_unitsPerEm.value() != 0)
+        return m_unitsPerEm;
+    const QByteArray head = getSfntTable(MAKE_TAG('h', 'e', 'a', 'd'));
+    const int unitsPerEmOffset = 18;
+    if (head.size() > unitsPerEmOffset + sizeof(quint16)) {
+        const uchar* tableData = reinterpret_cast<const uchar*>(head.constData());
+        const uchar* unitsPerEm = tableData + unitsPerEmOffset;
+        m_unitsPerEm = qFromBigEndian<quint16>(unitsPerEm);
+    } else {
+        // Bitmap font? Corrupt font?
+        // We return -1 and let the QFontEngineS60 return the pixel size.
+        m_unitsPerEm = -1;
+    }
+    return m_unitsPerEm;
+}
+
 // duplicated from qfontengine_xyz.cpp
 static inline unsigned int getChar(const QChar *str, int &i, const int len)
 {
@@ -246,6 +265,13 @@ QFontEngineS60::~QFontEngineS60()
 {
     releaseFont(m_originalFont);
     releaseFont(m_scaledFont);
+}
+
+QFixed QFontEngineS60::emSquareSize() const
+{
+    const QFixed unitsPerEm = m_extras->unitsPerEm();
+    return unitsPerEm.toInt() == -1 ?
+                QFixed::fromReal(m_originalFontSizeInPixels) : unitsPerEm;
 }
 
 bool QFontEngineS60::stringToCMap(const QChar *characters, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const
