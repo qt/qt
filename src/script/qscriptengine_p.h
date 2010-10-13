@@ -178,6 +178,8 @@ public:
     QScriptPassPointer<QScriptValuePrivate> popScope();
 
     inline void registerCustomType(int type, QScriptEngine::MarshalFunction mf, QScriptEngine::DemarshalFunction df, const QScriptValuePrivate *prototype);
+    void setDefaultPrototype(int metaTypeId, const QScriptValuePrivate *prototype);
+    QScriptPassPointer<QScriptValuePrivate> defaultPrototype(int metaTypeId);
 
     inline QScriptContextPrivate *setCurrentQSContext(QScriptContextPrivate *ctx);
     inline QScriptContextPrivate *currentContext() { return m_currentQsContext; }
@@ -186,11 +188,19 @@ public:
     v8::Persistent<v8::FunctionTemplate> declarativeClassTemplate;
     v8::Persistent<v8::FunctionTemplate> scriptClassTemplate;
 
-    struct TypeInfo
+    class TypeInfo
     {
-        TypeInfo() : marshal(0), demarshal(0) { }
+    public:
+        inline TypeInfo() : marshal(0), demarshal(0) { }
+        inline ~TypeInfo();
+
         QScriptEngine::MarshalFunction marshal;
         QScriptEngine::DemarshalFunction demarshal;
+
+        inline void setPrototype(v8::Handle<v8::Object> object);
+        inline v8::Handle<v8::Object> prototype() const;
+    private:
+        v8::Persistent<v8::Object> m_prototype;
     };
 private:
     QScriptEngine* q_ptr;
@@ -468,6 +478,26 @@ QStringList QScriptEnginePrivate::Exception::backtrace() const
     return backtrace;
 }
 
+QScriptEnginePrivate::TypeInfo::~TypeInfo()
+{
+    if (!m_prototype.IsEmpty())
+        m_prototype.Dispose();
+}
+
+void QScriptEnginePrivate::TypeInfo::setPrototype(v8::Handle<v8::Object> object)
+{
+    if (!m_prototype.IsEmpty())
+        m_prototype.Dispose();
+    if (!object.IsEmpty())
+        m_prototype = v8::Persistent<v8::Object>::New(object);
+    else
+        m_prototype.Clear();
+}
+
+v8::Handle<v8::Object> QScriptEnginePrivate::TypeInfo::prototype() const
+{
+    return m_prototype;
+}
 
 QT_END_NAMESPACE
 

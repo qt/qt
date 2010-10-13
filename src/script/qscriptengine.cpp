@@ -419,6 +419,9 @@ v8::Handle<v8::Value> QScriptEnginePrivate::metaTypeToJS(int type, const void *d
             }
         }
     }
+
+    if (!result.IsEmpty() && result->IsObject() && !info.prototype().IsEmpty())
+        v8::Object::Cast(*result)->SetPrototype(info.prototype());
 #if 0
     if (result && result.isObject() && info && info->prototype
         && JSC::JSValue::strictEqual(exec, JSC::asObject(result)->prototype(), eng->originalGlobalObject()->objectPrototype())) {
@@ -726,6 +729,11 @@ v8::Handle<v8::Object> QScriptEnginePrivate::newVariant(const QVariant &value)
 {
     v8::Handle<v8::ObjectTemplate> instanceTempl = m_variantTemplate->InstanceTemplate();
     v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
+
+    TypeInfo info = m_typeInfos.value(value.userType());
+    if (!info.prototype().IsEmpty())
+        instance->SetPrototype(info.prototype());
+
     Q_ASSERT(instance->InternalFieldCount() == 1);
     QtVariantData *data = new QtVariantData(value);
     instance->SetPointerInInternalField(0, data);
@@ -1688,9 +1696,8 @@ void QScriptEngine::setGlobalObject(const QScriptValue &object)
 */
 QScriptValue QScriptEngine::defaultPrototype(int metaTypeId) const
 {
-    Q_UNUSED(metaTypeId);
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    QScriptIsolate api(d_ptr, QScriptIsolate::NotNullEngine);
+    return QScriptValuePrivate::get(d_ptr->defaultPrototype(metaTypeId));
 }
 
 /*!
@@ -1715,9 +1722,27 @@ QScriptValue QScriptEngine::defaultPrototype(int metaTypeId) const
 */
 void QScriptEngine::setDefaultPrototype(int metaTypeId, const QScriptValue &prototype)
 {
-    Q_UNUSED(metaTypeId);
-    Q_UNUSED(prototype);
-    Q_UNIMPLEMENTED();
+    Q_D(QScriptEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
+    d->setDefaultPrototype(metaTypeId, QScriptValuePrivate::get(prototype));
+}
+
+void QScriptEnginePrivate::setDefaultPrototype(int metaTypeId, const QScriptValuePrivate *prototype)
+{
+    TypeInfo &info = m_typeInfos[metaTypeId];
+    if (prototype->isObject())
+        info.setPrototype(v8::Handle<v8::Object>::Cast(static_cast<v8::Handle<v8::Value> >(*prototype)));
+    if (!prototype->isValid() || prototype->isNull()) {
+        info.setPrototype(v8::Handle<v8::Object>());
+    }
+}
+
+QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::defaultPrototype(int metaTypeId)
+{
+    TypeInfo info = m_typeInfos.value(metaTypeId);
+    if (info.prototype().IsEmpty())
+        return new QScriptValuePrivate();
+    return new QScriptValuePrivate(this, info.prototype());
 }
 
 QScriptString QScriptEngine::toStringHandle(const QString& str)
