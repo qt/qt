@@ -365,7 +365,6 @@ void VcxprojGenerator::initResourceTool()
 {
     VCXConfiguration &conf = vcxProject.Configuration;
     conf.resource.PreprocessorDefinitions = conf.compiler.PreprocessorDefinitions;
-    conf.resource.AdditionalIncludeDirectories = conf.compiler.AdditionalIncludeDirectories;
 
     // We need to add _DEBUG for the debug version of the project, since the normal compiler defines
     // do not contain it. (The compiler defines this symbol automatically, which is wy we don't need
