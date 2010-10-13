@@ -404,12 +404,16 @@ QLinuxInputKeyboardHandler::QLinuxInputKeyboardHandler(const QString &key, const
     int repeat_delay = -1;
     int repeat_rate = -1;
 
+    bool ttymode = false;
+
     QStringList args = specification.split(QLatin1Char(':'));
     foreach (const QString &arg, args) {
         if (arg.startsWith(QLatin1String("repeat-delay=")))
             repeat_delay = arg.mid(13).toInt();
         else if (arg.startsWith(QLatin1String("repeat-rate=")))
             repeat_rate = arg.mid(12).toInt();
+        else if (arg.startsWith(QLatin1String("ttymode")))
+            ttymode = true;
         else if (arg.startsWith(QLatin1String("/dev/")))
             dev = arg;
     }
@@ -427,34 +431,36 @@ QLinuxInputKeyboardHandler::QLinuxInputKeyboardHandler(const QString &key, const
         notifier = new QSocketNotifier(m_fd, QSocketNotifier::Read, this);
         connect(notifier, SIGNAL(activated(int)), this, SLOT(readKeycode()));
 
-        // play nice in case we are started from a shell (e.g. for debugging)
-        m_tty_fd = isatty(0) ? 0 : -1;
+        if (ttymode) {
+            // play nice in case we are started from a shell (e.g. for debugging)
+            m_tty_fd = isatty(0) ? 0 : -1;
 
-        if (m_tty_fd >= 0) {
-            // save tty config for restore.
-            tcgetattr(m_tty_fd, &m_tty_attr);
+            if (m_tty_fd >= 0) {
+                // save tty config for restore.
+                tcgetattr(m_tty_fd, &m_tty_attr);
 
-            struct ::termios termdata;
-            tcgetattr(m_tty_fd, &termdata);
+                struct ::termios termdata;
+                tcgetattr(m_tty_fd, &termdata);
 
-            // record the original mode so we can restore it again in the destructor.
-            ::ioctl(m_tty_fd, KDGKBMODE, &m_orig_kbmode);
+                // record the original mode so we can restore it again in the destructor.
+                ::ioctl(m_tty_fd, KDGKBMODE, &m_orig_kbmode);
 
-            // setting this tranlation mode is even needed in INPUT mode to prevent
-            // the shell from also interpreting codes, if the process has a tty
-            // attached: e.g. Ctrl+C wouldn't copy, but kill the application.
-            ::ioctl(m_tty_fd, KDSKBMODE, K_MEDIUMRAW);
+                // setting this tranlation mode is even needed in INPUT mode to prevent
+                // the shell from also interpreting codes, if the process has a tty
+                // attached: e.g. Ctrl+C wouldn't copy, but kill the application.
+                ::ioctl(m_tty_fd, KDSKBMODE, K_MEDIUMRAW);
 
-            // set the tty layer to pass-through
-            termdata.c_iflag = (IGNPAR | IGNBRK) & (~PARMRK) & (~ISTRIP);
-            termdata.c_oflag = 0;
-            termdata.c_cflag = CREAD | CS8;
-            termdata.c_lflag = 0;
-            termdata.c_cc[VTIME]=0;
-            termdata.c_cc[VMIN]=1;
-            cfsetispeed(&termdata, 9600);
-            cfsetospeed(&termdata, 9600);
-            tcsetattr(m_tty_fd, TCSANOW, &termdata);
+                // set the tty layer to pass-through
+                termdata.c_iflag = (IGNPAR | IGNBRK) & (~PARMRK) & (~ISTRIP);
+                termdata.c_oflag = 0;
+                termdata.c_cflag = CREAD | CS8;
+                termdata.c_lflag = 0;
+                termdata.c_cc[VTIME]=0;
+                termdata.c_cc[VMIN]=1;
+                cfsetispeed(&termdata, 9600);
+                cfsetospeed(&termdata, 9600);
+                tcsetattr(m_tty_fd, TCSANOW, &termdata);
+            }
         }
     } else {
         qWarning("Cannot open keyboard input device '%s': %s", qPrintable(dev), strerror(errno));
