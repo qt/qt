@@ -345,29 +345,17 @@ void QFontEngineS60::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions,
 
 QImage QFontEngineS60::alphaMapForGlyph(glyph_t glyph)
 {
+    // Note: On some Symbian versions (apparently <= Symbian^1), this
+    // function will return gray values 0x00, 0x10 ... 0xe0, 0xf0 due
+    // to a bug. The glyphs are nowhere perfectly opaque.
+    // This has been fixed for Symbian^3.
+
     TOpenFontCharMetrics metrics;
     const TUint8 *glyphBitmapBytes;
     TSize glyphBitmapSize;
     getCharacterData(glyph, metrics, glyphBitmapBytes, glyphBitmapSize);
     QImage result(glyphBitmapBytes, glyphBitmapSize.iWidth, glyphBitmapSize.iHeight, glyphBitmapSize.iWidth, QImage::Format_Indexed8);
     result.setColorTable(grayPalette());
-
-    // The above setColorTable() call detached the image data anyway, so why not shape tha data a bit, while we can.
-    // CFont::GetCharacterData() returns 8-bit data that obviously was 4-bit data before, and converted to 8-bit incorrectly.
-    // The data values are 0x00, 0x10 ... 0xe0, 0xf0. So, a real opaque 0xff is never reached, which we get punished
-    // for every time we want to blit this glyph in the raster paint engine.
-    // "Fix" is to convert all 0xf0 to 0xff. Is fine, quality wise, and I assume faster than correcting all values.
-    // Blitting is however, evidentially faster now.
-    const int bpl = result.bytesPerLine();
-    for (int row = 0; row < result.height(); ++row) {
-        uchar *scanLine = result.scanLine(row);
-        for (int column = 0; column < bpl; ++column) {
-            if (*scanLine == 0xf0)
-                *scanLine = 0xff;
-            scanLine++;
-        }
-    }
-
     return result;
 }
 
