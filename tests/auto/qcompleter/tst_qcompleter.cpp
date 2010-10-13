@@ -119,6 +119,8 @@ private slots:
 
     void directoryModel_data();
     void directoryModel();
+    void fileSystemModel_data();
+    void fileSystemModel();
 
     void changingModel_data();
     void changingModel();
@@ -149,15 +151,17 @@ private slots:
     void task253125_lineEditCompletion_data();
     void task253125_lineEditCompletion();
     void task247560_keyboardNavigation();
+    void QTBUG_14292_filesystem();
 
 private:
-    void filter();
+    void filter(bool assync = false);
     void testRowCount();
     enum ModelType {
         CASE_SENSITIVELY_SORTED_MODEL,
         CASE_INSENSITIVELY_SORTED_MODEL,
         DIRECTORY_MODEL,
-        HISTORY_MODEL
+        HISTORY_MODEL,
+        FILESYSTEM_MODEL
     };
     void setSourceModel(ModelType);
 
@@ -233,12 +237,21 @@ void tst_QCompleter::setSourceModel(ModelType type)
         completer->setModel(new QDirModel(completer));
         completer->setCompletionColumn(0);
         break;
+    case FILESYSTEM_MODEL:
+        completer->setCsvCompletion(false);
+        {
+            QFileSystemModel *m = new QFileSystemModel(completer);
+            m->setRootPath("/");
+            completer->setModel(m);
+        }
+        completer->setCompletionColumn(0);
+        break;
     default:
         qDebug() << "Invalid type";
     }
 }
 
-void tst_QCompleter::filter()
+void tst_QCompleter::filter(bool assync)
 {
     QFETCH(QString, filterText);
     QFETCH(QString, step);
@@ -249,6 +262,9 @@ void tst_QCompleter::filter()
         completer->setCompletionMode(QCompleter::UnfilteredPopupCompletion);
         return;
     }
+
+    int times = 0;
+retry:
 
     completer->setCompletionPrefix(filterText);
 
@@ -265,9 +281,13 @@ void tst_QCompleter::filter()
         completer->setCurrentRow(row);
     }
 
-    //QModelIndex si = completer->currentIndex();
-    //QCOMPARE(completer->model()->data(si).toString(), completion);
-    QVERIFY(0 == QString::compare(completer->currentCompletion(), completionText, completer->caseSensitivity()));
+    int r = QString::compare(completer->currentCompletion(), completionText, completer->caseSensitivity());
+    if (assync && r && times < 10) {
+        times++;
+        QTest::qWait(50*times);
+        goto retry;
+    }
+    QVERIFY(!r);
 }
 
 // Testing get/set functions
@@ -552,6 +572,7 @@ void tst_QCompleter::csMatchingOnCiSortedModel()
 void tst_QCompleter::directoryModel_data()
 {
     delete completer;
+
     completer = new CsvCompleter;
     completer->setModelSorting(QCompleter::CaseSensitivelySortedModel);
     setSourceModel(DIRECTORY_MODEL);
@@ -597,6 +618,57 @@ void tst_QCompleter::directoryModel()
 {
     filter();
 }
+
+void tst_QCompleter::fileSystemModel_data()
+{
+    delete completer;
+    completer = new CsvCompleter;
+    completer->setModelSorting(QCompleter::CaseSensitivelySortedModel);
+    setSourceModel(FILESYSTEM_MODEL);
+    completer->setCaseSensitivity(Qt::CaseInsensitive);
+
+    QTest::addColumn<QString>("filterText");
+    QTest::addColumn<QString>("step");
+    QTest::addColumn<QString>("completion");
+    QTest::addColumn<QString>("completionText");
+
+    // NOTE: Add tests carefully, ensurely the paths exist on all systems
+    // Output is the sourceText; currentCompletionText()
+
+    for (int i = 0; i < 2; i++) {
+        if (i == 1)
+            QTest::newRow("FILTERING_OFF") << "FILTERING_OFF" << "" << "" << "";
+
+#if defined(Q_OS_WINCE)
+        QTest::newRow("()") << "" << "" << "/" << "/";
+        QTest::newRow("()") << "\\Program" << "" << "Program Files" << "\\Program Files";
+#elif defined(Q_OS_WIN)
+        QTest::newRow("()") << "C" << "" << "C:" << "C:";
+        QTest::newRow("()") << "C:\\Program" << "" << "Program Files" << "C:\\Program Files";
+#elif defined(Q_OS_SYMBIAN)
+        QTest::newRow("()") << "C" << "" << "C:" << "C:";
+        QTest::newRow("()") << "C:\\re" << "" << "resource" << "C:\\resource";
+#elif defined (Q_OS_MAC)
+        QTest::newRow("()") << "" << "" << "/" << "/";
+        QTest::newRow("(/a)") << "/a" << "" << "Applications" << "/Applications";
+        QTest::newRow("(/d)") << "/d" << "" << "Developer" << "/Developer";
+#else
+        QTest::newRow("()") << "" << "" << "/" << "/";
+#if !defined(Q_OS_IRIX) && !defined(Q_OS_AIX) && !defined(Q_OS_HPUX)
+        QTest::newRow("(/h)") << "/h" << "" << "home" << "/home";
+#endif
+        QTest::newRow("(/et)") << "/et" << "" << "etc" << "/etc";
+        QTest::newRow("(/etc/passw)") << "/etc/passw" << "" << "passwd" << "/etc/passwd";
+#endif
+    }
+}
+
+void tst_QCompleter::fileSystemModel()
+{
+    //QFileSystemModel is assync.
+    filter(true);
+}
+
 
 void tst_QCompleter::changingModel_data()
 {
@@ -1379,6 +1451,78 @@ void tst_QCompleter::task247560_keyboardNavigation()
     QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
 
     QCOMPARE(edit.text(), QString("row 3 column 1"));
+}
+
+void tst_QCompleter::QTBUG_14292_filesystem()
+{
+    QDir tmpDir = QDir::temp();
+    qsrand(QTime::currentTime().msec());
+    QString d = "tst_QCompleter_" + QString::number(qrand());
+    QVERIFY(tmpDir.mkdir(d));
+
+#if 0
+    struct Cleanup {
+        QString dir;
+        ~Cleanup() {
+            qDebug() << dir <<
+            QFile::remove(dir); }
+    } cleanup;
+    cleanup.dir = tmpDir.absolutePath()+"/" +d;
+#endif
+
+    QVERIFY(tmpDir.cd(d));
+    QVERIFY(tmpDir.mkdir("hello"));
+    QVERIFY(tmpDir.mkdir("holla"));
+
+    QLineEdit edit;
+    QCompleter comp;
+    QFileSystemModel model;
+    model.setRootPath(tmpDir.path());
+    comp.setModel(&model);
+    edit.setCompleter(&comp);
+
+    edit.show();
+    QApplication::setActiveWindow(&edit);
+    QTest::qWaitForWindowShown(&edit);
+    QTRY_VERIFY(QApplication::activeWindow() == &edit);
+
+    QVERIFY(!comp.popup()->isVisible());
+    edit.setText(tmpDir.path());
+    QTest::keyClick(&edit, '/');
+    QTRY_VERIFY(comp.popup()->isVisible());
+    QCOMPARE(comp.popup()->model()->rowCount(), 2);
+    QTest::keyClick(&edit, 'h');
+    QCOMPARE(comp.popup()->model()->rowCount(), 2);
+    QTest::keyClick(&edit, 'e');
+    QCOMPARE(comp.popup()->model()->rowCount(), 1);
+    QTest::keyClick(&edit, 'r');
+    QTRY_VERIFY(!comp.popup()->isVisible());
+    QVERIFY(tmpDir.mkdir("hero"));
+    QTRY_VERIFY(comp.popup()->isVisible());
+    QCOMPARE(comp.popup()->model()->rowCount(), 1);
+    QTest::keyClick(comp.popup(), Qt::Key_Escape);
+    QTRY_VERIFY(!comp.popup()->isVisible());
+    QVERIFY(tmpDir.mkdir("nothingThere"));
+    //there is no reason creating a file should open a popup, it did in Qt 4.7.0
+    QTest::qWait(60);
+    QVERIFY(!comp.popup()->isVisible());
+
+    QTest::keyClick(&edit, Qt::Key_Backspace);
+    QTRY_VERIFY(comp.popup()->isVisible());
+    QCOMPARE(comp.popup()->model()->rowCount(), 2);
+    QTest::keyClick(&edit, 'm');
+    QTRY_VERIFY(!comp.popup()->isVisible());
+
+    QWidget w;
+    w.show();
+    QApplication::setActiveWindow(&w);
+    QTest::qWaitForWindowShown(&w);
+    QTRY_VERIFY(!edit.hasFocus() && !comp.popup()->hasFocus());
+
+    QVERIFY(tmpDir.mkdir("hemo"));
+    //there is no reason creating a file should open a popup, it did in Qt 4.7.0
+    QTest::qWait(60);
+    QVERIFY(!comp.popup()->isVisible());
 }
 
 QTEST_MAIN(tst_QCompleter)

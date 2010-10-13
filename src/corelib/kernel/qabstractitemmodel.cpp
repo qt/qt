@@ -2637,8 +2637,6 @@ void QAbstractItemModel::endMoveRows()
     QAbstractItemModelPrivate::Change insertChange = d->changes.pop();
     QAbstractItemModelPrivate::Change removeChange = d->changes.pop();
 
-    d->itemsMoved(removeChange.parent, removeChange.first, removeChange.last, insertChange.parent, insertChange.first, Qt::Vertical);
-
     QModelIndex adjustedSource = removeChange.parent;
     QModelIndex adjustedDestination = insertChange.parent;
 
@@ -2648,6 +2646,8 @@ void QAbstractItemModel::endMoveRows()
 
     if (removeChange.needsAdjust)
       adjustedSource = createIndex(adjustedSource.row() + numMoved, adjustedSource.column(), adjustedSource.internalPointer());
+
+    d->itemsMoved(adjustedSource, removeChange.first, removeChange.last, adjustedDestination, insertChange.first, Qt::Vertical);
 
     emit rowsMoved(adjustedSource, removeChange.first, removeChange.last, adjustedDestination, insertChange.first);
     emit layoutChanged();
@@ -2861,8 +2861,6 @@ void QAbstractItemModel::endMoveColumns()
     QAbstractItemModelPrivate::Change insertChange = d->changes.pop();
     QAbstractItemModelPrivate::Change removeChange = d->changes.pop();
 
-    d->itemsMoved(removeChange.parent, removeChange.first, removeChange.last, insertChange.parent, insertChange.first, Qt::Horizontal);
-
     QModelIndex adjustedSource = removeChange.parent;
     QModelIndex adjustedDestination = insertChange.parent;
 
@@ -2872,6 +2870,8 @@ void QAbstractItemModel::endMoveColumns()
 
     if (removeChange.needsAdjust)
       adjustedSource = createIndex(adjustedSource.row(), adjustedSource.column() + numMoved, adjustedSource.internalPointer());
+
+    d->itemsMoved(adjustedSource, removeChange.first, removeChange.last, adjustedDestination, insertChange.first, Qt::Horizontal);
 
     emit columnsMoved(adjustedSource, removeChange.first, removeChange.last, adjustedDestination, insertChange.first);
     emit layoutChanged();
