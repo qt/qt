@@ -381,8 +381,8 @@ void tst_QScriptValue::toString_old()
     QCOMPARE(qscriptvalue_cast<QString>(object), QString("[object Object]"));
 
     QScriptValue fun = eng.newFunction(myFunction);
-    QCOMPARE(fun.toString(), QString("function () {\n    [native code]\n}"));
-    QCOMPARE(qscriptvalue_cast<QString>(fun), QString("function () {\n    [native code]\n}"));
+    QCOMPARE(fun.toString().simplified(), QString("function () { [native code] }"));
+    QCOMPARE(qscriptvalue_cast<QString>(fun).simplified(), QString("function () { [native code] }"));
 
     // toString() that throws exception
     {
@@ -406,7 +406,7 @@ void tst_QScriptValue::toString_old()
             "})()");
         QVERIFY(!eng.hasUncaughtException());
         QVERIFY(objectObject.isObject());
-        QCOMPARE(objectObject.toString(), QString::fromLatin1("TypeError: Function.prototype.toString called on incompatible object"));
+        QCOMPARE(objectObject.toString(), QString::fromLatin1("TypeError: Function.prototype.toString is not generic"));
         QVERIFY(eng.hasUncaughtException());
         eng.clearExceptions();
     }

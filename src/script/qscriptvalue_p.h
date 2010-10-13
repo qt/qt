@@ -431,7 +431,13 @@ QString QScriptValuePrivate::toString() const
     case JSValue:
         Q_ASSERT(!m_value.IsEmpty());
         v8::HandleScope handleScope;
-        return QScriptConverter::toString(m_value->ToString());
+        v8::TryCatch tryCatch;
+        v8::Local<v8::String> result = m_value->ToString();
+        if (result.IsEmpty()) {
+            result = tryCatch.Exception()->ToString();
+            m_engine->setException(tryCatch.Exception(), tryCatch.Message());
+        }
+        return QScriptConverter::toString(result);
     }
 
     Q_ASSERT_X(false, "toString()", "Not all states are included in the previous switch statement.");
