@@ -169,7 +169,7 @@ void QMeeGoPixmapData::fromEGLSharedImage(Qt::HANDLE handle, const QImage &si)
         
     if (textureIsBound) {
         fromTexture(newTextureId, newWidth, newHeight, 
-                    si.hasAlphaChannel());
+                    (si.hasAlphaChannel() && const_cast<QImage &>(si).data_ptr()->checkForAlphaPixels()));
         texture()->options &= ~QGLContext::InvertedYBindOption;
         softImage = si;
         QMeeGoPixmapData::registerSharedImage(handle, softImage);
@@ -191,12 +191,12 @@ Qt::HANDLE QMeeGoPixmapData::imageToEGLSharedImage(const QImage &image)
 
     glGenTextures(1, &textureId);
     glBindTexture(GL_TEXTURE_2D, textureId);
-    if (image.hasAlphaChannel()) {
-        QImage convertedImage = image.convertToFormat(QImage::Format_ARGB4444_Premultiplied, Qt::NoOpaqueDetection);
+    if (image.hasAlphaChannel() && (image.hasAlphaChannel() && const_cast<QImage &>(image).data_ptr()->checkForAlphaPixels())) {
+        QImage convertedImage = image.convertToFormat(QImage::Format_ARGB4444_Premultiplied, Qt::DiffuseAlphaDither | Qt::DiffuseDither | Qt::PreferDither);
         qARGBA4ToRGBA4(&convertedImage);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width(), image.height(), 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, convertedImage.bits());
     } else {
-        QImage convertedImage = image.convertToFormat(QImage::Format_RGB16, Qt::NoOpaqueDetection);
+        QImage convertedImage = image.convertToFormat(QImage::Format_RGB16, Qt::DiffuseAlphaDither | Qt::DiffuseDither | Qt::PreferDither);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.width(), image.height(), 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, convertedImage.bits());
     }
 
