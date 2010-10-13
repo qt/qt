@@ -1272,8 +1272,10 @@ inline void QScriptValuePrivate::setScriptClass(QScriptClassPrivate *scriptclass
 */
 qint64 QScriptValue::objectId() const
 {
-    Q_UNIMPLEMENTED();
-    return -1;
+    Q_D(const QScriptValue);
+    if (!d->isObject())
+        return -1;
+    return *reinterpret_cast<quintptr *>(*(d->m_value));
 }
 
 QT_END_NAMESPACE

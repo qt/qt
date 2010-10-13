@@ -1925,10 +1925,25 @@ QScriptValue QScriptEngine::newActivationObject()
     return QScriptValue();
 }
 
-QScriptValue QScriptEngine::objectById(qint64) const
+/*!
+  \internal
+
+  Returns the object with the given \a id, or an invalid
+  QScriptValue if there is no object with that id.
+
+  \note This will crash or return wrong value if the garbage collector has been run.
+
+  \sa QScriptValue::objectId()
+*/
+QScriptValue QScriptEngine::objectById(qint64 id) const
 {
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    if(id == -1)
+        return QScriptValue();
+    quintptr ptr = id;
+    quintptr *ptrptr = &ptr;
+    QScriptIsolate api(d_ptr);
+    v8::HandleScope handleScope;
+    return const_cast<QScriptEnginePrivate *>(d_ptr.data())->scriptValueFromInternal(v8::Handle<v8::Value>(*reinterpret_cast<v8::Value **>(&ptrptr)));
 }
 
 /*!
