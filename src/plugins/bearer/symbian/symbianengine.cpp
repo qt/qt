@@ -1365,16 +1365,12 @@ void AccessPointsAvailabilityScanner::StartScanning()
         // don't need time-consuming scans (WLAN).
         // Note: EBearerIdWCDMA covers also GPRS bearer
         iConnectionMonitor.GetPckgAttribute(EBearerIdWCDMA, 0, KIapAvailability, iIapBuf, iStatus);
-        User::WaitForRequest(iStatus);
-        if (iStatus.Int() == KErrNone) {
-            iOwner.accessPointScanningReady(true,iIapBuf());
-        }
     } else {
         iConnectionMonitor.GetPckgAttribute(EBearerIdAll, 0, KIapAvailability, iIapBuf, iStatus);
-        if (!IsActive()) {
-            SetActive();
-        }
     }
+
+    if (!IsActive())
+        SetActive();
 }
 
 void AccessPointsAvailabilityScanner::RunL()
