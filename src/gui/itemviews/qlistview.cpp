@@ -1496,19 +1496,20 @@ void QListView::updateGeometries()
 
     // if the scroll bars are turned off, we resize the contents to the viewport
     if (d->movement == Static && !d->isWrapping()) {
-        d->layoutChildren(); // we need the viewport size to be updated
+        const QSize maxSize = maximumViewportSize();
         if (d->flow == TopToBottom) {
             if (horizontalScrollBarPolicy() == Qt::ScrollBarAlwaysOff) {
-                d->setContentsSize(viewport()->width(), contentsSize().height());
+                d->setContentsSize(maxSize.width(), contentsSize().height());
                 horizontalScrollBar()->setRange(0, 0); // we see all the contents anyway
             }
         } else { // LeftToRight
             if (verticalScrollBarPolicy() == Qt::ScrollBarAlwaysOff) {
-                d->setContentsSize(contentsSize().width(), viewport()->height());
+                d->setContentsSize(contentsSize().width(), maxSize.height());
                 verticalScrollBar()->setRange(0, 0); // we see all the contents anyway
             }
         }
     }
+
 }
 
 /*!
