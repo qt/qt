@@ -70,6 +70,7 @@ private:
     int                        m_fd;
     int                        m_x, m_y;
     int m_prevx, m_prevy;
+    int m_xoffset, m_yoffset;
     int m_smoothx, m_smoothy;
     Qt::MouseButtons           m_buttons;
     bool m_compression;

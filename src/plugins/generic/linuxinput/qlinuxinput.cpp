@@ -131,7 +131,7 @@ private:
 
 QLinuxInputMouseHandler::QLinuxInputMouseHandler(const QString &key,
                                                  const QString &specification)
-    : m_notify(0), m_x(0), m_y(0), m_prevx(0), m_prevy(0), m_buttons(0), d(0)
+    : m_notify(0), m_x(0), m_y(0), m_prevx(0), m_prevy(0), m_xoffset(0), m_yoffset(0), m_buttons(0), d(0)
 {
     qDebug() << "QLinuxInputMouseHandler" << key << specification;
 
@@ -149,6 +149,10 @@ QLinuxInputMouseHandler::QLinuxInputMouseHandler(const QString &key,
             m_compression = false;
         else if (arg.startsWith("dejitter="))
             jitterLimit = arg.mid(9).toInt();
+        else if (arg.startsWith("xoffset="))
+            m_xoffset = arg.mid(8).toInt();
+        else if (arg.startsWith("yoffset="))
+            m_yoffset = arg.mid(8).toInt();
         else if (arg.startsWith(QLatin1String("/dev/")))
             dev = arg;
     }
@@ -179,7 +183,7 @@ QLinuxInputMouseHandler::~QLinuxInputMouseHandler()
 
 void QLinuxInputMouseHandler::sendMouseEvent(int x, int y, Qt::MouseButtons buttons)
 {
-    QPoint pos(x, y);
+    QPoint pos(x+m_xoffset, y+m_yoffset);
     QWindowSystemInterface::handleMouseEvent(0, pos, pos, m_buttons);
     m_prevx = x;
     m_prevy = y;
