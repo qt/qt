@@ -78,7 +78,7 @@ public:
     QScriptEnginePrivate(QScriptEngine*, QScriptEngine::ContextOwnership ownership = QScriptEngine::CreateNewContext);
     ~QScriptEnginePrivate();
 
-    inline QScriptPassPointer<QScriptValuePrivate> evaluate(const QString& program, const QString& fileName, int lineNumber);
+    inline QScriptPassPointer<QScriptValuePrivate> evaluate(const QString &program, const QString &fileName = QString(), int lineNumber = 1);
     inline QScriptPassPointer<QScriptValuePrivate> evaluate(QScriptProgramPrivate* program);
     QScriptPassPointer<QScriptValuePrivate> evaluate(v8::Handle<v8::Script> script, v8::TryCatch& tryCatch);
     inline bool isEvaluating() const;

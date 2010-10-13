@@ -748,6 +748,18 @@ inline bool QScriptValuePrivate::lessThan(QScriptValuePrivate *other) const
     if (isString() && other->isString())
         return toString() < other->toString();
 
+    if (isObject() || other->isObject()) {
+        v8::HandleScope handleScope;
+        QScriptEnginePrivate *eng = m_engine ? engine() : other->engine();
+        Q_ASSERT(eng);
+        QScriptSharedDataPointer<QScriptValuePrivate> cmp(eng->evaluate(QString::fromLatin1("(function(a,b){return a<b})")));
+        Q_ASSERT(cmp->isFunction());
+        v8::Handle<v8::Value> args[2];
+        cmp->prepareArgumentsForCall(args, QScriptValueList() << QScriptValuePrivate::get(this) << QScriptValuePrivate::get(other));
+        QScriptSharedDataPointer<QScriptValuePrivate> result(cmp->call(0, 2, args));
+        return result->toBool();
+    }
+
     qsreal nthis = toNumber();
     qsreal nother = other->toNumber();
     if (qIsNaN(nthis) || qIsNaN(nother)) {
