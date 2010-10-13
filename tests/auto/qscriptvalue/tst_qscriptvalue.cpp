@@ -2283,11 +2283,8 @@ void tst_QScriptValue::getSetScriptClass()
         QVERIFY(!eng.hasUncaughtException());
         QVERIFY(obj.isObject());
         QCOMPARE(obj.scriptClass(), (QScriptClass*)0);
-        QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setScriptClass() failed: cannot change class of non-QScriptObject");
         obj.setScriptClass(&testClass);
-        QEXPECT_FAIL("", "With JSC back-end, the class of a plain object created in JS can't be changed", Continue);
         QCOMPARE(obj.scriptClass(), (QScriptClass*)&testClass);
-        QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setScriptClass() failed: cannot change class of non-QScriptObject");
         obj.setScriptClass(0);
         QCOMPARE(obj.scriptClass(), (QScriptClass*)0);
     }
@@ -2311,6 +2308,16 @@ void tst_QScriptValue::getSetScriptClass()
         QVERIFY(obj.isObject());
         QVERIFY(!obj.isQObject());
         QVERIFY(obj.toQObject() == 0);
+    }
+
+    {
+        inv.setScriptClass(&testClass);
+        QCOMPARE(inv.scriptClass(), (QScriptClass*)0);
+        num.setScriptClass(&testClass);
+        QCOMPARE(num.scriptClass(), (QScriptClass*)0);
+        QScriptValue ass(&eng, 12);
+        ass.setScriptClass(&testClass);
+        QCOMPARE(ass.scriptClass(), (QScriptClass*)0);
     }
 }
 

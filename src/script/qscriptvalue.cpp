@@ -1222,12 +1222,11 @@ QScriptClass *QScriptValue::scriptClass() const
 void QScriptValue::setScriptClass(QScriptClass *scriptclass)
 {
     Q_D(QScriptValue);
-    //FIXME: check the engines are the same.
+    if (!d->isObject())
+        return;
+    Q_ASSERT(d->engine());
     QScriptClassPrivate *dclass = scriptclass ? QScriptClassPrivate::get(scriptclass) : 0;
-    QScriptEnginePrivate *engine = dclass ? dclass->engine() : d->engine();
-    if (!engine)
-        return; //nothing to do (scriptclass is null and we are not an JSBased so we already have no scriptclass)
-    QScriptIsolate api(engine, QScriptIsolate::NotNullEngine);
+    QScriptIsolate api(d->engine(), QScriptIsolate::NotNullEngine);
     d->setScriptClass(dclass);
 }
 
