@@ -151,6 +151,7 @@ private slots:
     void task253125_lineEditCompletion_data();
     void task253125_lineEditCompletion();
     void task247560_keyboardNavigation();
+    void QTBUG_14292_filesystem();
 
 private:
     void filter(bool assync = false);
@@ -571,6 +572,7 @@ void tst_QCompleter::csMatchingOnCiSortedModel()
 void tst_QCompleter::directoryModel_data()
 {
     delete completer;
+
     completer = new CsvCompleter;
     completer->setModelSorting(QCompleter::CaseSensitivelySortedModel);
     setSourceModel(DIRECTORY_MODEL);
@@ -1449,6 +1451,78 @@ void tst_QCompleter::task247560_keyboardNavigation()
     QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
 
     QCOMPARE(edit.text(), QString("row 3 column 1"));
+}
+
+void tst_QCompleter::QTBUG_14292_filesystem()
+{
+    QDir tmpDir = QDir::temp();
+    qsrand(QTime::currentTime().msec());
+    QString d = "tst_QCompleter_" + QString::number(qrand());
+    QVERIFY(tmpDir.mkdir(d));
+
+#if 0
+    struct Cleanup {
+        QString dir;
+        ~Cleanup() {
+            qDebug() << dir <<
+            QFile::remove(dir); }
+    } cleanup;
+    cleanup.dir = tmpDir.absolutePath()+"/" +d;
+#endif
+
+    QVERIFY(tmpDir.cd(d));
+    QVERIFY(tmpDir.mkdir("hello"));
+    QVERIFY(tmpDir.mkdir("holla"));
+
+    QLineEdit edit;
+    QCompleter comp;
+    QFileSystemModel model;
+    model.setRootPath(tmpDir.path());
+    comp.setModel(&model);
+    edit.setCompleter(&comp);
+
+    edit.show();
+    QApplication::setActiveWindow(&edit);
+    QTest::qWaitForWindowShown(&edit);
+    QTRY_VERIFY(QApplication::activeWindow() == &edit);
+
+    QVERIFY(!comp.popup()->isVisible());
+    edit.setText(tmpDir.path());
+    QTest::keyClick(&edit, '/');
+    QTRY_VERIFY(comp.popup()->isVisible());
+    QCOMPARE(comp.popup()->model()->rowCount(), 2);
+    QTest::keyClick(&edit, 'h');
+    QCOMPARE(comp.popup()->model()->rowCount(), 2);
+    QTest::keyClick(&edit, 'e');
+    QCOMPARE(comp.popup()->model()->rowCount(), 1);
+    QTest::keyClick(&edit, 'r');
+    QTRY_VERIFY(!comp.popup()->isVisible());
+    QVERIFY(tmpDir.mkdir("hero"));
+    QTRY_VERIFY(comp.popup()->isVisible());
+    QCOMPARE(comp.popup()->model()->rowCount(), 1);
+    QTest::keyClick(comp.popup(), Qt::Key_Escape);
+    QTRY_VERIFY(!comp.popup()->isVisible());
+    QVERIFY(tmpDir.mkdir("nothingThere"));
+    //there is no reason creating a file should open a popup, it did in Qt 4.7.0
+    QTest::qWait(60);
+    QVERIFY(!comp.popup()->isVisible());
+
+    QTest::keyClick(&edit, Qt::Key_Backspace);
+    QTRY_VERIFY(comp.popup()->isVisible());
+    QCOMPARE(comp.popup()->model()->rowCount(), 2);
+    QTest::keyClick(&edit, 'm');
+    QTRY_VERIFY(!comp.popup()->isVisible());
+
+    QWidget w;
+    w.show();
+    QApplication::setActiveWindow(&w);
+    QTest::qWaitForWindowShown(&w);
+    QTRY_VERIFY(!edit.hasFocus() && !comp.popup()->hasFocus());
+
+    QVERIFY(tmpDir.mkdir("hemo"));
+    //there is no reason creating a file should open a popup, it did in Qt 4.7.0
+    QTest::qWait(60);
+    QVERIFY(!comp.popup()->isVisible());
 }
 
 QTEST_MAIN(tst_QCompleter)
