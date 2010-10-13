@@ -65,11 +65,16 @@ private slots:
     void readMouseData();
 
 private:
+    void sendMouseEvent(int x, int y, Qt::MouseButtons buttons);
     QSocketNotifier *          m_notify;
     int                        m_fd;
     int                        m_x, m_y;
+    int m_prevx, m_prevy;
+    int m_smoothx, m_smoothy;
     Qt::MouseButtons           m_buttons;
     bool m_compression;
+    bool m_smooth;
+    int m_jitterLimitSquared;
     QLinuxInputMouseHandlerData *d;
 };
 

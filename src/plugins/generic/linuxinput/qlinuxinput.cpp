@@ -131,7 +131,7 @@ private:
 
 QLinuxInputMouseHandler::QLinuxInputMouseHandler(const QString &key,
                                                  const QString &specification)
-    : m_notify(0), m_x(0), m_y(0), m_buttons(0), d(0)
+    : m_notify(0), m_x(0), m_y(0), m_prevx(0), m_prevy(0), m_buttons(0), d(0)
 {
     qDebug() << "QLinuxInputMouseHandler" << key << specification;
 
@@ -140,15 +140,20 @@ QLinuxInputMouseHandler::QLinuxInputMouseHandler(const QString &key,
 
     QString dev = QLatin1String("/dev/input/event0");
     m_compression = true;
+    m_smooth = false;
+    int jitterLimit = 0;
     
     QStringList args = specification.split(QLatin1Char(':'));
     foreach (const QString &arg, args) {
         if (arg == "nocompress")
             m_compression = false;
+        else if (arg.startsWith("dejitter="))
+            jitterLimit = arg.mid(9).toInt();
         else if (arg.startsWith(QLatin1String("/dev/")))
             dev = arg;
     }
-
+    m_jitterLimitSquared = jitterLimit*jitterLimit; 
+    
     m_fd = QT_OPEN(dev.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
     if (m_fd >= 0) {
         m_notify = new QSocketNotifier(m_fd, QSocketNotifier::Read, this);
@@ -172,12 +177,21 @@ QLinuxInputMouseHandler::~QLinuxInputMouseHandler()
 #endif
 }
 
+void QLinuxInputMouseHandler::sendMouseEvent(int x, int y, Qt::MouseButtons buttons)
+{
+    QPoint pos(x, y);
+    QWindowSystemInterface::handleMouseEvent(0, pos, pos, m_buttons);
+    m_prevx = x;
+    m_prevy = y;
+}
+
 void QLinuxInputMouseHandler::readMouseData()
 {
     struct ::input_event buffer[32];
     int n = 0;
     bool posChanged = false;
     bool pendingMouseEvent = false;
+    int eventCompressCount = 0;
     forever {
         n = QT_READ(m_fd, reinterpret_cast<char *>(buffer) + n, sizeof(buffer) - n);
 
@@ -255,8 +269,7 @@ void QLinuxInputMouseHandler::readMouseData()
         } else if (data->type == EV_KEY && data->code == BTN_TOUCH) {
             m_buttons = data->value ? Qt::LeftButton : Qt::NoButton;
 
-            QWindowSystemInterface::handleMouseEvent(0, QPoint(m_x, m_y),
-                                                  QPoint(m_x, m_y), m_buttons);
+            sendMouseEvent(m_x, m_y, m_buttons);
             pendingMouseEvent = false;
         } else if (data->type == EV_KEY && data->code >= BTN_LEFT && data->code <= BTN_MIDDLE) {
             Qt::MouseButton button = Qt::NoButton;
@@ -269,18 +282,17 @@ void QLinuxInputMouseHandler::readMouseData()
                 m_buttons |= button;
             else
                 m_buttons &= ~button;
-
-            QWindowSystemInterface::handleMouseEvent(0, QPoint(m_x, m_y),
-                                                  QPoint(m_x, m_y), m_buttons);
+            sendMouseEvent(m_x, m_y, m_buttons);
             pendingMouseEvent = false;
         } else if (data->type == EV_SYN && data->code == SYN_REPORT) {
             if (posChanged) {
                 posChanged = false;
-                QPoint pos(m_x, m_y);
-                if (m_compression) 
+                if (m_compression) {
                     pendingMouseEvent = true;
-                else
-                    QWindowSystemInterface::handleMouseEvent(0, pos, pos, m_buttons);
+                    eventCompressCount++;
+                } else {
+                    sendMouseEvent(m_x, m_y, m_buttons);
+                }
             }
 #ifdef QT_QPA_EXPERIMENTAL_TOUCHEVENT
             if (d->state == QEvent::TouchBegin && !d->seenMT) {
@@ -336,8 +348,9 @@ void QLinuxInputMouseHandler::readMouseData()
 #endif        
     }
     if (m_compression && pendingMouseEvent) {
-        QPoint pos(m_x, m_y);
-        QWindowSystemInterface::handleMouseEvent(0, pos, pos, m_buttons);
+        int distanceSquared = (m_x - m_prevx)*(m_x - m_prevx) + (m_y - m_prevy)*(m_y - m_prevy);
+        if (distanceSquared > m_jitterLimitSquared)
+            sendMouseEvent(m_x, m_y, m_buttons);
     }
 }
 
@@ -531,3 +544,4 @@ void QLinuxInputKeyboardHandler::readKeycode()
 
 
 QT_END_NAMESPACE
+
