@@ -459,6 +459,7 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
                         tmp_vcproj.setProjectFile(&tmp_proj);
                         Option::qmake_mode = old_mode;
                         if(Option::debug_level) {
+                            debug_msg(1, "Dumping all variables:");
                             QMap<QString, QStringList> &vars = tmp_proj.variables();
                             for(QMap<QString, QStringList>::Iterator it = vars.begin();
                                 it != vars.end(); ++it) {
