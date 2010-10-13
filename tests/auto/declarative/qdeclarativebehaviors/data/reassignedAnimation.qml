@@ -7,9 +7,9 @@ Rectangle {
         objectName: "MyRect"
         width: 100; height: 100; color: "green"
         Behavior on x {
+            id: myBehavior
             objectName: "MyBehavior"
             NumberAnimation {id: na1; duration: 200 }
-            NumberAnimation {id: na2; duration: 1000 }
         }
     }
     MouseArea {
@@ -23,5 +23,10 @@ Rectangle {
             target: rect
             x: 200
         }
+    }
+
+    NumberAnimation {id: na2; duration: 1000 }
+    Component.onCompleted: {
+        myBehavior.animation = na2;
     }
 }
