@@ -412,6 +412,7 @@ void tst_QFileInfo::exists_data()
     QTest::newRow("data9") << SRCDIR "resources/file?.ext1" << false;
     QTest::newRow("data10") << "." << true;
     QTest::newRow("data11") << ". " << false;
+    QTest::newRow("empty") << "" << false;
 
     QTest::newRow("simple dir") << SRCDIR "resources" << true;
     QTest::newRow("simple dir with slash") << SRCDIR "resources/" << true;
