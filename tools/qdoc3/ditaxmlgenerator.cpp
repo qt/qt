@@ -4412,7 +4412,7 @@ void DitaXmlGenerator::generateDetailedQmlMember(const Node* node,
                                                  CodeMarker* marker)
 {
     QString marked;
-    QmlPropertyNode* qpn = 0;
+    const QmlPropertyNode* qpn = 0;
     if (node->subType() == Node::QmlPropertyGroup) {
         const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(node);
         NodeList::ConstIterator p = qpgn->childNodes().begin();
@@ -4421,7 +4421,7 @@ void DitaXmlGenerator::generateDetailedQmlMember(const Node* node,
             if ((*p)->type() == Node::QmlProperty) {
                 qpn = static_cast<const QmlPropertyNode*>(*p);
                 xmlWriter().writeStartElement("li");
-                writeGuidAttribute(qpn);
+                writeGuidAttribute((Node*)qpn);
                 QString attr;
                 if (!qpn->isWritable(myTree))
                     attr = "read-only";
