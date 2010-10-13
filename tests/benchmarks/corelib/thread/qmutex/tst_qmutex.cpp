@@ -218,22 +218,31 @@ void tst_QMutex::contendedNative_data()
 {
     QTest::addColumn<int>("iterations");
     QTest::addColumn<int>("msleepDuration");
-    QTest::newRow("baseline")    <<    0 <<  -1;
-    QTest::newRow("no msleep")   << 1000 <<  -1;
-    QTest::newRow("msleep(0)")   << 1000 <<   0;
-    QTest::newRow("msleep(1)")   <<   10 <<   1;
-    QTest::newRow("msleep(2)")   <<   10 <<   2;
-    QTest::newRow("msleep(10)")  <<   10 <<  10;
+    QTest::addColumn<bool>("use2mutexes");
+
+    QTest::newRow("baseline")               <<    0 <<  -1 << false;
+
+    QTest::newRow("no msleep, 1 mutex")     << 1000 <<  -1 << false;
+    QTest::newRow("no msleep, 2 mutexes")   << 1000 <<  -1 << true;
+    QTest::newRow("msleep(0), 1 mutex")     << 1000 <<   0 << false;
+    QTest::newRow("msleep(0), 2 mutexes")   << 1000 <<   0 << true;
+    QTest::newRow("msleep(1), 1 mutex")     <<   10 <<   1 << false;
+    QTest::newRow("msleep(1), 2 mutexes")   <<   10 <<   1 << true;
+    QTest::newRow("msleep(2), 1 mutex")     <<   10 <<   2 << false;
+    QTest::newRow("msleep(2), 2 mutexes")   <<   10 <<   2 << true;
+    QTest::newRow("msleep(10), 1 mutex")    <<   10 <<  10 << false;
+    QTest::newRow("msleep(10), 2 mutexes")  <<   10 <<  10 << true;
 }
 
 class NativeMutexThread : public QThread
 {
-    NativeMutexType *mutex;
+    NativeMutexType *mutex1, *mutex2;
     int iterations, msleepDuration;
+    bool use2mutexes;
 public:
     bool done;
-    NativeMutexThread(NativeMutexType *mutex, int iterations, int msleepDuration)
-        : mutex(mutex), iterations(iterations), msleepDuration(msleepDuration), done(false)
+    NativeMutexThread(NativeMutexType *mutex1, NativeMutexType *mutex2, int iterations, int msleepDuration, bool use2mutexes)
+        : mutex1(mutex1), mutex2(mutex2), iterations(iterations), msleepDuration(msleepDuration), use2mutexes(use2mutexes), done(false)
     { }
     void run() {
         forever {
@@ -242,10 +251,14 @@ public:
             if (done)
                 break;
             for (int i = 0; i < iterations; ++i) {
-                NativeMutexLock(mutex);
+                NativeMutexLock(mutex1);
+                if (use2mutexes)
+                    NativeMutexLock(mutex2);
                 if (msleepDuration >= 0)
                     msleep(msleepDuration);
-                NativeMutexUnlock(mutex);
+                if (use2mutexes)
+                    NativeMutexUnlock(mutex2);
+                NativeMutexUnlock(mutex1);
 
                 QThread::yieldCurrentThread();
             }
@@ -259,13 +272,15 @@ void tst_QMutex::contendedNative()
 {
     QFETCH(int, iterations);
     QFETCH(int, msleepDuration);
+    QFETCH(bool, use2mutexes);
 
-    NativeMutexType mutex;
-    NativeMutexInitialize(&mutex);
+    NativeMutexType mutex1, mutex2;
+    NativeMutexInitialize(&mutex1);
+    NativeMutexInitialize(&mutex2);
 
     QVector<NativeMutexThread *> threads(threadCount);
     for (int i = 0; i < threads.count(); ++i) {
-        threads[i] = new NativeMutexThread(&mutex, iterations, msleepDuration);
+        threads[i] = new NativeMutexThread(&mutex1, &mutex2, iterations, msleepDuration, use2mutexes);
         threads[i]->start();
     }
 
@@ -284,17 +299,19 @@ void tst_QMutex::contendedNative()
         threads[i]->wait();
     qDeleteAll(threads);
 
-    NativeMutexDestroy(&mutex);
+    NativeMutexDestroy(&mutex1);
+    NativeMutexDestroy(&mutex2);
 }
 
 class QMutexThread : public QThread
 {
-    QMutex *mutex;
+    QMutex *mutex1, *mutex2;
     int iterations, msleepDuration;
+    bool use2mutexes;
 public:
     bool done;
-    QMutexThread(QMutex *mutex, int iterations, int msleepDuration)
-        : mutex(mutex), iterations(iterations), msleepDuration(msleepDuration), done(false)
+    QMutexThread(QMutex *mutex1, QMutex *mutex2, int iterations, int msleepDuration, bool use2mutexes)
+        : mutex1(mutex1), mutex2(mutex2), iterations(iterations), msleepDuration(msleepDuration), use2mutexes(use2mutexes), done(false)
     { }
     void run() {
         forever {
@@ -303,10 +320,14 @@ public:
             if (done)
                 break;
             for (int i = 0; i < iterations; ++i) {
-                mutex->lock();
+                mutex1->lock();
+                if (use2mutexes)
+                    mutex2->lock();
                 if (msleepDuration >= 0)
                     msleep(msleepDuration);
-                mutex->unlock();
+                if (use2mutexes)
+                    mutex2->unlock();
+                mutex1->unlock();
 
                 QThread::yieldCurrentThread();
             }
@@ -320,12 +341,13 @@ void tst_QMutex::contendedQMutex()
 {
     QFETCH(int, iterations);
     QFETCH(int, msleepDuration);
+    QFETCH(bool, use2mutexes);
 
-    QMutex mutex;
+    QMutex mutex1, mutex2;
 
     QVector<QMutexThread *> threads(threadCount);
     for (int i = 0; i < threads.count(); ++i) {
-        threads[i] = new QMutexThread(&mutex, iterations, msleepDuration);
+        threads[i] = new QMutexThread(&mutex1, &mutex2, iterations, msleepDuration, use2mutexes);
         threads[i]->start();
     }
 
@@ -347,12 +369,13 @@ void tst_QMutex::contendedQMutex()
 
 class QMutexLockerThread : public QThread
 {
-    QMutex *mutex;
+    QMutex *mutex1, *mutex2;
     int iterations, msleepDuration;
+    bool use2mutexes;
 public:
     bool done;
-    QMutexLockerThread(QMutex *mutex, int iterations, int msleepDuration)
-        : mutex(mutex), iterations(iterations), msleepDuration(msleepDuration), done(false)
+    QMutexLockerThread(QMutex *mutex1, QMutex *mutex2, int iterations, int msleepDuration, bool use2mutexes)
+        : mutex1(mutex1), mutex2(mutex2), iterations(iterations), msleepDuration(msleepDuration), use2mutexes(use2mutexes), done(false)
     { }
     void run() {
         forever {
@@ -362,7 +385,8 @@ public:
                 break;
             for (int i = 0; i < iterations; ++i) {
                 {
-                    QMutexLocker locker(mutex1);
+                    QMutexLocker locker1(mutex1);
+                    QMutexLocker locker2(use2mutexes ? mutex2 : 0);
                     if (msleepDuration >= 0)
                         msleep(msleepDuration);
                 }
@@ -379,12 +403,13 @@ void tst_QMutex::contendedQMutexLocker()
 {
     QFETCH(int, iterations);
     QFETCH(int, msleepDuration);
+    QFETCH(bool, use2mutexes);
 
-    QMutex mutex;
+    QMutex mutex1, mutex2;
 
     QVector<QMutexLockerThread *> threads(threadCount);
     for (int i = 0; i < threads.count(); ++i) {
-        threads[i] = new QMutexLockerThread(&mutex, iterations, msleepDuration);
+        threads[i] = new QMutexLockerThread(&mutex1, &mutex2, iterations, msleepDuration, use2mutexes);
         threads[i]->start();
     }
 
