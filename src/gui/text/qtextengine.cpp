@@ -1949,9 +1949,11 @@ void QTextEngine::justify(const QScriptLine &line)
                 if (kashida_pos >= 0) {
 //                     qDebug("kashida position at %d in word", kashida_pos);
                     set(&justificationPoints[nPoints], kashida_type, g.mid(kashida_pos), fontEngine(si));
-                    minKashida = qMin(minKashida, justificationPoints[nPoints].kashidaWidth);
-                    maxJustify = qMax(maxJustify, justificationPoints[nPoints].type);
-                    ++nPoints;
+                    if (justificationPoints[nPoints].kashidaWidth > 0) {
+                        minKashida = qMin(minKashida, justificationPoints[nPoints].kashidaWidth);
+                        maxJustify = qMax(maxJustify, justificationPoints[nPoints].type);
+                        ++nPoints;
+                    }
                 }
                 kashida_pos = -1;
                 kashida_type = HB_Arabic_Normal;
@@ -1975,9 +1977,11 @@ void QTextEngine::justify(const QScriptLine &line)
         }
         if (kashida_pos >= 0) {
             set(&justificationPoints[nPoints], kashida_type, g.mid(kashida_pos), fontEngine(si));
-            minKashida = qMin(minKashida, justificationPoints[nPoints].kashidaWidth);
-            maxJustify = qMax(maxJustify, justificationPoints[nPoints].type);
-            ++nPoints;
+            if (justificationPoints[nPoints].kashidaWidth > 0) {
+                minKashida = qMin(minKashida, justificationPoints[nPoints].kashidaWidth);
+                maxJustify = qMax(maxJustify, justificationPoints[nPoints].type);
+                ++nPoints;
+            }
         }
     }
 

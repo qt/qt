@@ -56,9 +56,13 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/private/qfontengine_p.h>
 
+#include <qvg_p.h>
+
 QT_BEGIN_NAMESPACE
 
 class QVGPaintEnginePrivate;
+
+#ifndef QVG_NO_DRAW_GLYPHS
 
 class QVGFontGlyphCache
 {
@@ -88,6 +92,8 @@ public:
                      QFontEngine *fontEngine,
                      const glyph_t *g, int count);
 };
+#endif
+
 #endif
 
 QT_END_NAMESPACE
