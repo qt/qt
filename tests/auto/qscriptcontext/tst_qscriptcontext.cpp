@@ -965,7 +965,7 @@ void tst_QScriptContext::pushScopeCall()
     engine.currentContext()->pushScope(object);
     object.setProperty("bar", 4321);
     thisObject.setProperty("bar", "bar");
-    QVERIFY(function.call(QScriptValue(), QScriptValueList() << "foo").equals(1234));
+    QVERIFY(!function.call(QScriptValue(), QScriptValueList() << "foo").isValid());
     QVERIFY(function.call(QScriptValue(), QScriptValueList() << "bar").equals(4321));
     QVERIFY(function.call(thisObject, QScriptValueList() << "foo").equals("foo"));
     QVERIFY(function.call(thisObject, QScriptValueList() << "bar").equals("bar"));
