@@ -328,7 +328,7 @@ v8::Handle<v8::Value> QScriptEnginePrivate::metaTypeToJS(int type, const void *d
     Q_Q(QScriptEngine);
     Q_ASSERT(data != 0);
     v8::Handle<v8::Value> result;
-    QScriptTypeInfo info = m_typeInfos.value(type);
+    TypeInfo info = m_typeInfos.value(type);
     if (info.marshal) {
         result = QScriptValuePrivate::get(info.marshal(q, data))->asV8Value(this);
     } else {
@@ -433,7 +433,7 @@ v8::Handle<v8::Value> QScriptEnginePrivate::metaTypeToJS(int type, const void *d
 // Returns true if conversion succeeded, false otherwise.
 bool QScriptEnginePrivate::metaTypeFromJS(v8::Handle<v8::Value> value, int type, void *data)
 {
-    QScriptTypeInfo info = m_typeInfos.value(type);
+    TypeInfo info = m_typeInfos.value(type);
     if (info.demarshal) {
         info.demarshal(QScriptValuePrivate::get(new QScriptValuePrivate(this, value)), data);
         return true;
@@ -1989,11 +1989,7 @@ void QScriptEngine::registerCustomType(int type, MarshalFunction mf, DemarshalFu
                                        const QScriptValue &prototype)
 {
     Q_D(QScriptEngine);
-    Q_UNUSED(prototype); //FIXME
-    QScriptEnginePrivate::QScriptTypeInfo &info = d->m_typeInfos[type];
-
-    info.marshal = mf;
-    info.demarshal = df;
+    d->registerCustomType(type, mf, df, QScriptValuePrivate::get(prototype));
 }
 
 QScriptContext *QScriptEngine::currentContext() const

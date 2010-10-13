@@ -177,6 +177,8 @@ public:
     void pushScope(QScriptValuePrivate* value);
     QScriptPassPointer<QScriptValuePrivate> popScope();
 
+    inline void registerCustomType(int type, QScriptEngine::MarshalFunction mf, QScriptEngine::DemarshalFunction df, const QScriptValuePrivate *prototype);
+
     inline QScriptContextPrivate *setCurrentQSContext(QScriptContextPrivate *ctx);
     inline QScriptContextPrivate *currentContext() { return m_currentQsContext; }
     v8::Handle<v8::Value> securityToken() { return m_v8Context->GetSecurityToken(); }
@@ -184,15 +186,12 @@ public:
     v8::Persistent<v8::FunctionTemplate> declarativeClassTemplate;
     v8::Persistent<v8::FunctionTemplate> scriptClassTemplate;
 
-
-    class QScriptTypeInfo
+    struct TypeInfo
     {
-    public:
-        QScriptTypeInfo() : marshal(0), demarshal(0) { }
+        TypeInfo() : marshal(0), demarshal(0) { }
         QScriptEngine::MarshalFunction marshal;
         QScriptEngine::DemarshalFunction demarshal;
     };
-    QHash<int, QScriptTypeInfo> m_typeInfos;
 private:
     QScriptEngine* q_ptr;
     v8::Isolate *m_isolate;
@@ -211,6 +210,7 @@ private:
     QScopedPointer<QScriptContextPrivate> m_baseQsContext;
     QSet<int> visitedConversionObjects;
     bool m_isEvaluating;
+    QHash<int, TypeInfo> m_typeInfos;
 };
 
 v8::Handle<v8::Value> QScriptEnginePrivate::makeJSValue()
@@ -383,6 +383,13 @@ inline bool QScriptEnginePrivate::isQtSignal(v8::Handle<v8::Value> value) const
 inline bool QScriptEnginePrivate::isQtMetaObject(v8::Handle<v8::Value> value) const
 {
     return m_metaObjectTemplate->HasInstance(value);
+}
+
+inline void QScriptEnginePrivate::registerCustomType(int type, QScriptEngine::MarshalFunction mf, QScriptEngine::DemarshalFunction df, const QScriptValuePrivate *prototype)
+{
+    TypeInfo &info = m_typeInfos[type];
+    info.marshal = mf;
+    info.demarshal = df;
 }
 
 /* set the current QScriptContext, and return the old value */
