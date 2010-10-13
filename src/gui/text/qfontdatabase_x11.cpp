@@ -1462,6 +1462,7 @@ void qt_addPatternProps(FcPattern *pattern, int screen, int script, const QFontD
         weight_value = FC_WEIGHT_DEMIBOLD;
     else if (request.weight < (QFont::Bold + QFont::Black) / 2)
         weight_value = FC_WEIGHT_BOLD;
+    FcPatternDel(pattern, FC_WEIGHT);
     FcPatternAddInteger(pattern, FC_WEIGHT, weight_value);
 
     int slant_value = FC_SLANT_ROMAN;
@@ -1469,20 +1470,25 @@ void qt_addPatternProps(FcPattern *pattern, int screen, int script, const QFontD
         slant_value = FC_SLANT_ITALIC;
     else if (request.style == QFont::StyleOblique)
         slant_value = FC_SLANT_OBLIQUE;
+    FcPatternDel(pattern, FC_SLANT);
     FcPatternAddInteger(pattern, FC_SLANT, slant_value);
 
     double size_value = qMax(qreal(1.), request.pixelSize);
+    FcPatternDel(pattern, FC_PIXEL_SIZE);
     FcPatternAddDouble(pattern, FC_PIXEL_SIZE, size_value);
 
     int stretch = request.stretch;
     if (!stretch)
         stretch = 100;
+    FcPatternDel(pattern, FC_WIDTH);
     FcPatternAddInteger(pattern, FC_WIDTH, stretch);
 
     if (X11->display && QX11Info::appDepth(screen) <= 8) {
+        FcPatternDel(pattern, FC_ANTIALIAS);
         // can't do antialiasing on 8bpp
         FcPatternAddBool(pattern, FC_ANTIALIAS, false);
     } else if (request.styleStrategy & (QFont::PreferAntialias|QFont::NoAntialias)) {
+        FcPatternDel(pattern, FC_ANTIALIAS);
         FcPatternAddBool(pattern, FC_ANTIALIAS,
                          !(request.styleStrategy & QFont::NoAntialias));
     }
@@ -1491,6 +1497,7 @@ void qt_addPatternProps(FcPattern *pattern, int screen, int script, const QFontD
         Q_ASSERT(script < QUnicodeTables::ScriptCount);
         FcLangSet *ls = FcLangSetCreate();
         FcLangSetAdd(ls, (const FcChar8*)specialLanguages[script]);
+        FcPatternDel(pattern, FC_LANG);
         FcPatternAddLangSet(pattern, FC_LANG, ls);
         FcLangSetDestroy(ls);
     }
