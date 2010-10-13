@@ -222,7 +222,9 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         RFs& fs(qt_s60GetRFs());
         TInt err;
         QFileSystemEntry absentry(absoluteName(entry));
-        if (absentry.isRoot()) {
+        if (entry.isEmpty()) {
+            err = KErrNotFound;
+        } else if (absentry.isRoot()) {
             //Root directories don't have an entry, and Entry() returns KErrBadName.
             //Therefore get information about the volume instead.
             TInt drive;
