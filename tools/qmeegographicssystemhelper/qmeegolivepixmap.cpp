@@ -118,20 +118,20 @@ QImage* QMeeGoLivePixmap::lock()
 
     void *data = NULL; 
     int pitch = 0;
+    QImage::Format format;
 
     if (! QMeeGoRuntime::lockLiveTexture(d->handle)) {
         qWarning("Failed to lock a live texture!");
         return new QImage();    
     }
 
-    QMeeGoRuntime::queryLiveTexture(d->handle, &data, &pitch);
+    QMeeGoRuntime::queryLiveTexture(d->handle, &data, &pitch, &format);
     if (data == NULL || pitch == 0) {
         qWarning("Failed to query the live texture!");
         return new QImage();
     }
 
-    // FIXME Bug here! FIX FIX FIX FIX FIX FIX
-    return new QImage((uchar *) data, width(), height(), QImage::Format_RGB16);
+    return new QImage((uchar *) data, width(), height(), format);
 }
     
 void QMeeGoLivePixmap::release(QImage *img)

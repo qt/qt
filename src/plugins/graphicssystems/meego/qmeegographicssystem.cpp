@@ -275,7 +275,7 @@ bool QMeeGoGraphicsSystem::unlockLiveTexture(Qt::HANDLE h)
     }
 }
 
-void QMeeGoGraphicsSystem::queryLiveTexture(Qt::HANDLE h, void **data, int *pitch)
+void QMeeGoGraphicsSystem::queryLiveTexture(Qt::HANDLE h, void **data, int *pitch, QImage::Format *f)
 {
     // FIXME Only allow this on locked surfaces
     if (! liveTexturePixmaps.contains(h)) {
@@ -289,6 +289,14 @@ void QMeeGoGraphicsSystem::queryLiveTexture(Qt::HANDLE h, void **data, int *pitc
     EGLSurface surface = getSurfaceForLiveTexturePixmap(liveTexturePixmaps.value(h));
     eglQuerySurface(QEgl::display(), surface, EGL_BITMAP_POINTER_KHR, (EGLint*) data);
     eglQuerySurface(QEgl::display(), surface, EGL_BITMAP_PITCH_KHR, (EGLint*) pitch);
+
+    // Ok, here we know we just support those two formats. Real solution would be:
+    // in liveTexturePixmaps store a small structure containing the pixmap and the
+    // original Qt format.
+    if (liveTexturePixmaps.value(h)->depth() > 16)
+        *f = QImage::Format_ARGB32_Premultiplied;
+    else
+        *f = QImage::Format_RGB16;
 }
 
 Qt::HANDLE QMeeGoGraphicsSystem::liveTextureToEGLImage(Qt::HANDLE h)
@@ -441,9 +449,9 @@ bool qt_meego_live_texture_unlock(Qt::HANDLE h)
     return QMeeGoGraphicsSystem::unlockLiveTexture(h);
 }
 
-void qt_meego_live_texture_query(Qt::HANDLE h, void **data, int *pitch)
+void qt_meego_live_texture_query(Qt::HANDLE h, void **data, int *pitch, QImage::Format *f)
 {
-    return QMeeGoGraphicsSystem::queryLiveTexture(h, data, pitch);
+    return QMeeGoGraphicsSystem::queryLiveTexture(h, data, pitch, f);
 }
 
 Qt::HANDLE qt_meego_live_texture_to_egl_image(Qt::HANDLE h)
