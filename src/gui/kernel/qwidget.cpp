@@ -731,9 +731,9 @@ void QWidget::setAutoFillBackground(bool enabled)
     \list
         \i  mouseMoveEvent() is called whenever the mouse moves while a mouse
             button is held down. This can be useful during drag and drop
-            operations. If you call setMouseTracking(true), you get mouse move
-            events even when no buttons are held down. (See also the \l{Drag
-            and Drop} guide.)
+            operations. If you call \l{setMouseTracking()}{setMouseTracking}(true),
+            you get mouse move events even when no buttons are held down.
+            (See also the \l{Drag and Drop} guide.)
         \i  keyReleaseEvent() is called whenever a key is released and while it
             is held down (if the key is auto-repeating). In that case, the
             widget will receive a pair of key release and key press event for
@@ -8667,8 +8667,8 @@ bool QWidget::event(QEvent *event)
 /*!
   This event handler can be reimplemented to handle state changes.
 
-  The state being changed in this event can be retrieved through event \a
-  event.
+  The state being changed in this event can be retrieved through the \a event
+  supplied.
 
   Change events include: QEvent::ToolBarChange,
   QEvent::ActivationChange, QEvent::EnabledChange, QEvent::FontChange,
