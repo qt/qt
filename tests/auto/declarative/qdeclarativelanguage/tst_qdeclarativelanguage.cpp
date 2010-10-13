@@ -387,7 +387,7 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("singularProperty") << "singularProperty.qml" << "singularProperty.errors.txt" << false;
     QTest::newRow("singularProperty.2") << "singularProperty.2.qml" << "singularProperty.2.errors.txt" << false;
     QTest::newRow("incorrectCase") << "incorrectCase.qml" 
-#if defined(Q_OS_MAC) || defined(Q_OS_WIN)
+#if defined(Q_OS_MAC) || defined(Q_OS_WIN32)
         << "incorrectCase.errors.insensitive.txt" 
 #else
         << "incorrectCase.errors.sensitive.txt" 
@@ -1784,7 +1784,7 @@ void tst_qdeclarativelanguage::importIncorrectCase()
     QList<QDeclarativeError> errors = component.errors();
     QCOMPARE(errors.count(), 1);
 
-#if defined(Q_OS_MAC) || defined(Q_OS_WIN)
+#if defined(Q_OS_MAC) || defined(Q_OS_WIN32)
     QString expectedError = QLatin1String("cannot load module \"com.Nokia.installedtest\": File name case mismatch for \"") + QFileInfo(__FILE__).absoluteDir().filePath("data/lib/com/Nokia/installedtest/qmldir") + QLatin1String("\"");
 #else
     QString expectedError = QLatin1String("module \"com.Nokia.installedtest\" is not installed");
