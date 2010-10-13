@@ -167,7 +167,8 @@ void OpenPagesManager::setupInitialPages(bool defaultCollection,
         m_model->addPage(helpEngine.homePage());
     for (int i = 0; i < m_model->rowCount(); ++i)
         CentralWidget::instance()->addPage(m_model->pageAt(i));
-    setCurrentPage(initialPage);
+    setCurrentPage((initialPage >= m_model->rowCount())
+        ? m_model->rowCount() - 1 : initialPage);
     m_openPagesSwitcher->selectCurrentPage();
 }
 
