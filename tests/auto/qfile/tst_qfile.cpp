@@ -170,6 +170,7 @@ private slots:
     void encodeName();
     void truncate();
     void seekToPos();
+    void seekAfterEndOfFile();
     void FILEReadWrite();
     void i18nFileName_data();
     void i18nFileName();
@@ -1644,6 +1645,36 @@ void tst_QFile::seekToPos()
 
 }
 
+void tst_QFile::seekAfterEndOfFile()
+{
+    QLatin1String filename("seekAfterEof.dat");
+    QFile::remove(filename);
+    {
+        QFile file(filename);
+        QVERIFY(file.open(QFile::WriteOnly));
+        file.write("abcd");
+        QCOMPARE(file.size(), qint64(4));
+        file.seek(8);
+        file.write("ijkl");
+        QCOMPARE(file.size(), qint64(12));
+        file.seek(4);
+        file.write("efgh");
+        QCOMPARE(file.size(), qint64(12));
+        file.seek(16);
+        file.write("----");
+        QCOMPARE(file.size(), qint64(20));
+        file.flush();
+    }
+
+    QFile file(filename);
+    QVERIFY(file.open(QFile::ReadOnly));
+    QByteArray contents = file.readAll();
+    QCOMPARE(contents.left(12), QByteArray("abcdefghijkl", 12));
+    //bytes 12-15 are uninitialised so we don't care what they read as.
+    QCOMPARE(contents.mid(16), QByteArray("----", 4));
+    file.close();
+    QFile::remove(filename);
+}
 
 void tst_QFile::FILEReadWrite()
 {
