@@ -82,6 +82,7 @@ private slots:
     void pushAndPopGlobalObject();
     void pushAndPopIterative();
     void pushAndPopScope();
+    void pushPopScope();
     void getSetActivationObject();
     void inheritActivationAndThisObject();
     void toString();
@@ -1094,6 +1095,50 @@ void tst_QScriptContext::pushAndPopScope()
     QVERIFY(ctx->scopeChain().isEmpty());
 
     QVERIFY(!ctx->popScope().isValid());
+}
+
+void tst_QScriptContext::pushPopScope()
+{
+    /* This test implements somthing similar to:
+       o = new Object()
+       o.objectProperty = 12345;
+       o.__proto__.prototypeProperty = 54321;
+       with (o) {
+            undefinedProperty = 'a';
+            objectProperty = 'b';
+            prototypeProperty = 'c';
+       }
+    */
+    QScriptEngine engine;
+    QScriptValue object = engine.newObject();
+    QScriptValue prototype = engine.newObject();
+    object.setPrototype(prototype);
+
+    QScriptString objectPropertyName = engine.toStringHandle("objectProperty");
+    QScriptString prototypePropertyName = engine.toStringHandle("prototypeProperty");
+
+    engine.currentContext()->pushScope(object);
+
+    object.setProperty(objectPropertyName, 12345);
+    prototype.setProperty(prototypePropertyName, 54321);
+
+    QVERIFY(object.property(objectPropertyName, QScriptValue::ResolveLocal).isValid());
+    QVERIFY(prototype.property(prototypePropertyName, QScriptValue::ResolveLocal).isValid());
+    QVERIFY(object.property(prototypePropertyName).isValid());
+
+    engine.evaluate("undefinedProperty = 'a'");
+    engine.evaluate("objectProperty = 'b'");
+    // prototypeProperty property exist only in prototype chain of the object, then an assign to the
+    // property should create a new property, owned byt the object.
+    engine.evaluate("prototypeProperty = 'c'");
+
+    engine.currentContext()->popScope();
+
+    QCOMPARE(object.property(objectPropertyName, QScriptValue::ResolveLocal).toString(), QString::fromLatin1("b"));
+    QCOMPARE(object.property(prototypePropertyName, QScriptValue::ResolveLocal).toString(), QString::fromLatin1("c"));
+    QCOMPARE(prototype.property(prototypePropertyName, QScriptValue::ResolveLocal).toInt32(), 54321);
+    QVERIFY(!object.property("undefinedProperty").isValid());
+    QCOMPARE(engine.globalObject().property("undefinedProperty").toString(), QString::fromLatin1("a"));
 }
 
 static QScriptValue get_activationObject(QScriptContext *ctx, QScriptEngine *)
