@@ -217,6 +217,7 @@ BuildsMetaMakefileGenerator::write(const QString &oldpwd)
 
         // debugging
         if(Option::debug_level) {
+            debug_msg(1, "Dumping all variables:");
             QMap<QString, QStringList> &vars = project->variables();
             for(QMap<QString, QStringList>::Iterator it = vars.begin(); it != vars.end(); ++it) {
                 if(!it.key().startsWith(".") && !it.value().isEmpty())
