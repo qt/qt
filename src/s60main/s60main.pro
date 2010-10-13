@@ -31,6 +31,9 @@ symbian {
     # against GCCE apps, so remove it
     MMP_RULES -= $$MMP_RULES_DONT_EXPORT_ALL_CLASS_IMPEDIMENTA
     linux-armcc:QMAKE_CXXFLAGS *= --export_all_vtbl
+
+    # Flag if exports are not frozen to avoid lookup of qtcore allocator creation function by ordinal
+    contains(CONFIG, def_files_disabled): DEFINES += QT_EXPORTS_NOT_FROZEN
 } else {
     error("$$_FILE_ is intended only for Symbian!")
 }

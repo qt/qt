@@ -55,6 +55,11 @@
 // We mean it.
 //
 
+// vgDrawGlyphs() only exists in OpenVG 1.1 and higher.
+#if !defined(OPENVG_VERSION_1_1) && !defined(QVG_NO_DRAW_GLYPHS)
+#define QVG_NO_DRAW_GLYPHS 1
+#endif
+
 #include <QtGui/qimage.h>
 
 #if !defined(QT_NO_EGL)

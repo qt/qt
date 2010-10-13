@@ -1683,10 +1683,13 @@ void FormWindow::cut()
 // for cases like QMainWindow (central widget is an inner container) or QStackedWidget (page is an inner container)
 QWidget *FormWindow::innerContainer(QWidget *outerContainer) const
 {
-    bool isContainer = m_core->widgetDataBase()->isContainer(outerContainer);
-    if (isContainer)
-        if (QDesignerContainerExtension *container = qt_extension<QDesignerContainerExtension*>(m_core->extensionManager(), outerContainer))
-            return container->widget(container->currentIndex());
+    if (m_core->widgetDataBase()->isContainer(outerContainer))
+        if (const QDesignerContainerExtension *container = qt_extension<QDesignerContainerExtension*>(m_core->extensionManager(), outerContainer)) {
+            const int currentIndex = container->currentIndex();
+            return currentIndex >= 0 ?
+                        container->widget(currentIndex) :
+                        static_cast<QWidget *>(0);
+        }
     return outerContainer;
 }
 
@@ -1706,8 +1709,10 @@ QWidget *FormWindow::containerForPaste() const
         QWidget *containerOfW = findContainer(selection.first(), /* exclude layouts */ true);
         if (!containerOfW || containerOfW == mainContainer())
             break;
-        // No layouts, must be container
+        // No layouts, must be container. No empty page-based containers.
         containerOfW = innerContainer(containerOfW);
+        if (!containerOfW)
+            break;
         if (LayoutInfo::layoutType(m_core, containerOfW) != LayoutInfo::NoLayout || !m_core->widgetDataBase()->isContainer(containerOfW))
             break;
         w = containerOfW;
@@ -1716,6 +1721,8 @@ QWidget *FormWindow::containerForPaste() const
     // and the like as the central widget has the layout).
 
     w = innerContainer(w);
+    if (!w)
+        return 0;
     if (LayoutInfo::layoutType(m_core, w) != LayoutInfo::NoLayout)
         return 0;
     // Go up via container extension (also includes step from QMainWindow to its central widget)
