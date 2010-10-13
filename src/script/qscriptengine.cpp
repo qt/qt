@@ -98,6 +98,8 @@ static v8::Handle<v8::Value> QtVariantToStringCallback(const v8::Arguments& args
 //    if (!thisValue.inherits(&QScriptObject::info))
 //        return throwError(exec, JSC::TypeError, "This object is not a QVariant");
     const QVariant &v = QtVariantData::get(args.This())->value();
+    if (!v.isValid())
+        return v8::String::New("undefined");
     QString result = v.toString();
     if (result.isEmpty() && !v.canConvert(QVariant::String))
         result = QString::fromLatin1("QVariant(%0)").arg(QString::fromLatin1(v.typeName()));
