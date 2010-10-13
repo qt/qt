@@ -363,7 +363,9 @@ EGLSurface QMeeGoGraphicsSystem::getSurfaceForLiveTexturePixmap(QPixmap *pixmap)
         pixmapData->gl_surface = (void*)QEgl::createSurface(pixmap, config);
         
         if (hasAlpha)
-            pixmapData->flags = pixmapData->flags | QX11PixmapData::GlSurfaceCreatedWithAlpha;
+            pixmapData->flags |= QX11PixmapData::GlSurfaceCreatedWithAlpha;
+        else
+            pixmapData->flags &= ~QX11PixmapData::GlSurfaceCreatedWithAlpha;
             
         if (pixmapData->gl_surface == (void*)EGL_NO_SURFACE)
             return NULL;
