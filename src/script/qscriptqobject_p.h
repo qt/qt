@@ -44,8 +44,9 @@ class QtConnection : public QObject
 {
 public:
     QtConnection(QtSignalData *signal);
+    ~QtConnection();
 
-    bool connect(v8::Handle<v8::Function> callback, Qt::ConnectionType type);
+    bool connect(v8::Handle<v8::Object> receiver,  v8::Handle<v8::Function> callback, Qt::ConnectionType type);
     bool disconnect();
 
     v8::Handle<v8::Function> callback() const
@@ -64,6 +65,7 @@ public:
 private:
     QtSignalData *m_signal;
     v8::Persistent<v8::Function> m_callback;
+    v8::Persistent<v8::Object> m_receiver;
 };
 
 // Data associated with a signal JS wrapper object.
@@ -101,7 +103,10 @@ public:
         m_index(index), m_resolveMode(mode)
     { }
     ~QtSignalData()
-    { }
+    {
+        if (!m_object.IsEmpty())
+            m_object.Dispose();
+    }
 
     // Gets the QtSignalData pointer from the given object.
     // Assumes that the object is a Qt signal wrapper.
@@ -122,7 +127,8 @@ public:
     ResolveMode resolveMode() const
     { return ResolveMode(m_resolveMode); }
 
-    v8::Handle<v8::Value> connect(v8::Handle<v8::Function> callback,
+    v8::Handle<v8::Value> connect(v8::Handle<v8::Object> receiver,
+                                  v8::Handle<v8::Function> slot,
                                   Qt::ConnectionType type = Qt::AutoConnection);
     v8::Handle<v8::Value> disconnect(v8::Handle<v8::Function> callback);
 

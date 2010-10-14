@@ -62,11 +62,13 @@ QtInstanceData::~QtInstanceData()
 
 
 // Connects this signal to the given callback.
+// receiver might be empty
 // Returns undefined if the connection succeeded, otherwise throws an error.
-v8::Handle<v8::Value> QtSignalData::connect(v8::Handle<v8::Function> callback, Qt::ConnectionType type)
+v8::Handle<v8::Value> QtSignalData::connect(v8::Handle<v8::Object> receiver,
+                                            v8::Handle<v8::Function> slot, Qt::ConnectionType type)
 {
      QtConnection *connection = new QtConnection(this);
-     if (!connection->connect(callback, type)) {
+     if (!connection->connect(receiver, slot, type)) {
          delete connection;
          return v8::ThrowException(v8::Exception::Error(v8::String::New("QtSignal.connect(): failed to connect")));
      }
@@ -97,18 +99,28 @@ QtConnection::QtConnection(QtSignalData *signal)
 {
 }
 
+QtConnection::~QtConnection()
+{
+    if (!m_callback.IsEmpty())
+        m_callback.Dispose();
+    if (!m_receiver.IsEmpty())
+        m_receiver.Dispose();
+}
+
+
 // Connects to this connection's signal, and binds this connection to the
 // given callback.
 // Returns true if the connection succeeded, otherwise returns false.
-bool QtConnection::connect(v8::Handle<v8::Function> callback, Qt::ConnectionType type)
+bool QtConnection::connect(v8::Handle<v8::Object> receiver, v8::Handle<v8::Function> callback, Qt::ConnectionType type)
 {
-    Q_UNUSED(type); // ###
     Q_ASSERT(m_callback.IsEmpty());
     QtInstanceData *instance = QtInstanceData::get(m_signal->object());
     bool ok = QMetaObject::connect(instance->cppObject(), m_signal->index(),
-                                   this, staticMetaObject.methodOffset());
-    if (ok)
+                                   this, staticMetaObject.methodOffset(), type);
+    if (ok) {
         m_callback = v8::Persistent<v8::Function>::New(callback);
+        m_receiver = v8::Persistent<v8::Object>::New(receiver);
+    }
     return ok;
 }
 
@@ -162,7 +174,9 @@ void QtConnection::onSignal(void **argv)
     }
 
     v8::TryCatch tryCatch;
-    v8::Handle<v8::Object> receiver = m_signal->object();
+    v8::Handle<v8::Object> receiver = m_receiver;
+    if (receiver.IsEmpty())
+        receiver = v8::Context::GetCurrent()->Global();
     v8::Handle<v8::Value> result = m_callback->Call(receiver, argc, const_cast<v8::Handle<v8::Value>*>(jsArgv.constData()));
     if (result.IsEmpty()) {
         // ### emit signalHandlerException()
@@ -908,6 +922,7 @@ static v8::Handle<v8::Value> QtSignalCallback(const v8::Arguments& args)
 // when the C++ object emits the signal.
 static v8::Handle<v8::Value> QtConnectCallback(const v8::Arguments& args)
 {
+    v8::HandleScope handleScope;
     v8::Local<v8::Object> self = args.Holder();
     QtSignalData *data = QtSignalData::get(self);
 
@@ -920,12 +935,30 @@ static v8::Handle<v8::Value> QtConnectCallback(const v8::Arguments& args)
         // Can probably figure this out at class/instance construction time
     }
 
-    // ### Should be able to take any [[Callable]], but there is no v8 API for that.
-    if (!args[0]->IsFunction())
-        return v8::ThrowException(v8::Exception::TypeError(v8::String::New("QtSignal.connect(): argument is not a function")));
 
-    v8::Handle<v8::Function> callback(v8::Function::Cast(*args[0]));
-    Q_ASSERT(!callback.IsEmpty());
+    //QScriptEnginePrivate *engine = data->;
+
+    v8::Handle<v8::Object> receiver;
+    v8::Handle<v8::Function> slot;
+    if (args.Length() < 2) {
+        //simple function
+        if (!args[0]->IsFunction())
+            return handleScope.Close(v8::ThrowException(v8::Exception::TypeError(v8::String::New("QtSignal.connect(): argument is not a function"))));
+        slot = v8::Handle<v8::Function>(v8::Function::Cast(*args[0]));
+    } else {
+        receiver = v8::Handle<v8::Object>(v8::Object::Cast(*args[0]));
+        v8::Local<v8::Value> arg1 = args[1];
+        if (arg1->IsFunction()) {
+            slot = v8::Handle<v8::Function>(v8::Function::Cast(*arg1));
+        } else if (!receiver.IsEmpty() && arg1->IsString()) {
+            v8::Local<v8::String> propertyName = arg1->ToString();
+            slot = v8::Handle<v8::Function>(v8::Function::Cast(*receiver->Get(propertyName)));
+        }
+    }
+
+    if (slot.IsEmpty()) {
+        return handleScope.Close(v8::ThrowException(v8::Exception::TypeError(v8::String::New("QtSignal.connect(): target is not a function"))));
+    }
 
     // Options:
     // 1) Connection manager per C++ object.
@@ -937,7 +970,7 @@ static v8::Handle<v8::Value> QtConnectCallback(const v8::Arguments& args)
     // of that signal only, for that wrapper only.
 
     // qDebug() << "connect" << data->object() << data->index();
-    return data->connect(callback);
+    return handleScope.Close(data->connect(receiver, slot));
 }
 
 // This callback implements the disconnect() method of signal wrapper objects.
