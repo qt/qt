@@ -562,6 +562,15 @@ signals:
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(MyTypeObject::MyFlags)
 
+class MyDerivedObject : public MyTypeObject
+{
+    Q_OBJECT
+public:
+    Q_INVOKABLE bool intProperty() const {
+        return true;
+    }
+};
+
 Q_DECLARE_METATYPE(QScriptValue);
 class MyInvokableObject : public QObject
 {

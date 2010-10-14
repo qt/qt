@@ -182,7 +182,8 @@ public:
         , bufferMode(BufferBefore | BufferAfter)
         , ownModel(false), wrap(false), autoHighlight(true), haveHighlightRange(false)
         , correctFlick(false), inFlickCorrection(false), lazyRelease(false)
-        , deferredRelease(false), layoutScheduled(false), minExtentDirty(true), maxExtentDirty(true)
+        , deferredRelease(false), layoutScheduled(false), currentIndexSet(false)
+        , minExtentDirty(true), maxExtentDirty(true)
     {}
 
     void init();
@@ -544,6 +545,7 @@ public:
     bool lazyRelease : 1;
     bool deferredRelease : 1;
     bool layoutScheduled : 1;
+    bool currentIndexSet : 1;
     mutable bool minExtentDirty : 1;
     mutable bool maxExtentDirty : 1;
 };
@@ -881,6 +883,7 @@ void QDeclarativeListViewPrivate::createHighlight()
                 } else {
                     highlight->item->setWidth(currentItem->item->width());
                 }
+                highlight->setPosition(currentItem->itemPosition());
             }
             QDeclarativeItemPrivate *itemPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(item));
             itemPrivate->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
@@ -1045,8 +1048,11 @@ void QDeclarativeListViewPrivate::updateCurrent(int modelIndex)
             currentItem->attached->setIsCurrentItem(false);
             releaseItem(currentItem);
             currentItem = 0;
-            currentIndex = -1;
+            currentIndex = modelIndex;
+            emit q->currentIndexChanged();
             updateHighlight();
+        } else if (currentIndex != modelIndex) {
+            currentIndex = modelIndex;
             emit q->currentIndexChanged();
         }
         return;
@@ -1598,7 +1604,7 @@ void QDeclarativeListView::setModel(const QVariant &model)
         if (isComponentComplete()) {
             updateSections();
             refill();
-            if (d->currentIndex >= d->model->count() || d->currentIndex < 0) {
+            if ((d->currentIndex >= d->model->count() || d->currentIndex < 0) && !d->currentIndexSet) {
                 setCurrentIndex(0);
             } else {
                 d->moveReason = QDeclarativeListViewPrivate::SetIndex;
@@ -1708,10 +1714,13 @@ void QDeclarativeListView::setCurrentIndex(int index)
     Q_D(QDeclarativeListView);
     if (d->requestedIndex >= 0)  // currently creating item
         return;
-    if (isComponentComplete() && d->isValid() && index != d->currentIndex && index < d->model->count() && index >= 0) {
+    d->currentIndexSet = true;
+    if (index == d->currentIndex)
+        return;
+    if (isComponentComplete() && d->isValid()) {
         d->moveReason = QDeclarativeListViewPrivate::SetIndex;
         d->updateCurrent(index);
-    } else if (index != d->currentIndex) {
+    } else {
         d->currentIndex = index;
         emit currentIndexChanged();
     }
@@ -2523,16 +2532,18 @@ void QDeclarativeListView::geometryChanged(const QRectF &newGeometry,
 
     Increments the current index.  The current index will wrap
     if keyNavigationWraps is true and it is currently at the end.
+    This method has no effect if the \l count is zero.
 
     \bold Note: methods should only be called after the Component has completed.
 */
 void QDeclarativeListView::incrementCurrentIndex()
 {
     Q_D(QDeclarativeListView);
-    if (currentIndex() < d->model->count() - 1 || d->wrap) {
+    int count = d->model ? d->model->count() : 0;
+    if (count && (currentIndex() < count - 1 || d->wrap)) {
         d->moveReason = QDeclarativeListViewPrivate::SetIndex;
         int index = currentIndex()+1;
-        d->updateCurrent(index < d->model->count() ? index : 0);
+        d->updateCurrent((index >= 0 && index < count) ? index : 0);
     }
 }
 
@@ -2541,16 +2552,18 @@ void QDeclarativeListView::incrementCurrentIndex()
 
     Decrements the current index.  The current index will wrap
     if keyNavigationWraps is true and it is currently at the beginning.
+    This method has no effect if the \l count is zero.
 
     \bold Note: methods should only be called after the Component has completed.
 */
 void QDeclarativeListView::decrementCurrentIndex()
 {
     Q_D(QDeclarativeListView);
-    if (currentIndex() > 0 || d->wrap) {
+    int count = d->model ? d->model->count() : 0;
+    if (count && (currentIndex() > 0 || d->wrap)) {
         d->moveReason = QDeclarativeListViewPrivate::SetIndex;
         int index = currentIndex()-1;
-        d->updateCurrent(index >= 0 ? index : d->model->count()-1);
+        d->updateCurrent((index >= 0 && index < count) ? index : count-1);
     }
 }
 
@@ -2684,7 +2697,7 @@ void QDeclarativeListView::componentComplete()
     if (d->isValid()) {
         refill();
         d->moveReason = QDeclarativeListViewPrivate::SetIndex;
-        if (d->currentIndex < 0)
+        if (d->currentIndex < 0 && !d->currentIndexSet)
             d->updateCurrent(0);
         else
             d->updateCurrent(d->currentIndex);
@@ -2790,7 +2803,7 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
             if (d->currentItem)
                 d->currentItem->index = d->currentIndex;
             emit currentIndexChanged();
-        } else if (d->currentIndex < 0) {
+        } else if (d->currentIndex < 0 && !d->currentIndexSet) {
             d->updateCurrent(0);
         }
         d->itemCount += count;
