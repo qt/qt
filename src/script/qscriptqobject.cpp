@@ -992,6 +992,56 @@ static v8::Handle<v8::Value> QtDisconnectCallback(const v8::Arguments& args)
     return data->disconnect(v8::Handle<v8::Function>(v8::Function::Cast(*args[0])));
 }
 
+static v8::Handle<v8::Value> findChildCallback(const v8::Arguments& args)
+{
+    v8::HandleScope handleScope;
+    QScriptEnginePrivate *engine = reinterpret_cast<QScriptEnginePrivate *>(v8::External::Unwrap(args.Data()));
+    Q_ASSERT(engine);
+    v8::Local<v8::Object> self = args.This();
+    if (!engine->qtClassTemplate(&QObject::staticMetaObject)->HasInstance(self))
+        return v8::Handle<v8::Value>(); //the QObject prototype is being used on another object.
+        QtInstanceData *data = QtInstanceData::get(self);
+    Q_ASSERT(engine == data->engine());
+    QScriptContextPrivate context(engine, &args);
+    QObject *qobject = data->cppObject();
+
+    QString name;
+    if (args.Length() != 0)
+        name = QScriptConverter::toString(args[0]->ToString());
+    QObject *child = qobject->findChild<QObject *>(name);
+    QScriptEngine::QObjectWrapOptions opt = QScriptEngine::PreferExistingWrapperObject;
+    return handleScope.Close(engine->newQObject(child, QScriptEngine::QtOwnership, opt));
+}
+
+static v8::Handle<v8::Value> findChildrenCallback(const v8::Arguments& args)
+{
+    v8::HandleScope handleScope;
+    QScriptEnginePrivate *engine = reinterpret_cast<QScriptEnginePrivate *>(v8::External::Unwrap(args.Data()));
+    Q_ASSERT(engine);
+    v8::Local<v8::Object> self = args.This();
+    if (!engine->qtClassTemplate(&QObject::staticMetaObject)->HasInstance(self))
+        return v8::Handle<v8::Value>(); //the QObject prototype is being used on another object.
+        QtInstanceData *data = QtInstanceData::get(self);
+    Q_ASSERT(engine == data->engine());
+    QScriptContextPrivate context(engine, &args);
+    QObject *qobject = data->cppObject();
+
+    QString name;
+    if (args.Length() != 0) {
+        if (args[0]->IsRegExp()) {
+            Q_UNIMPLEMENTED();
+        }
+        name = QScriptConverter::toString(args[0]->ToString());
+    }
+    const QList<QObject *> children = qobject->findChildren<QObject *>(name);
+    v8::Local<v8::Array> array = v8::Array::New(children.length());
+    const QScriptEngine::QObjectWrapOptions opt = QScriptEngine::PreferExistingWrapperObject;
+    for (int i = 0; i < children.length(); i++) {
+        array->Set(i , engine->newQObject(children.at(i), QScriptEngine::QtOwnership, opt));
+    }
+    return handleScope.Close(array);
+}
+
 v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *engine, const QMetaObject *mo)
 {
     v8::Handle<v8::FunctionTemplate> funcTempl = v8::FunctionTemplate::New();
@@ -1088,6 +1138,12 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
     }
 
     if (mo == &QObject::staticMetaObject) {
+
+        v8::Local<v8::Value> wEngine = v8::External::Wrap(engine);
+
+        protoTempl->Set(v8::String::New("findChild"), v8::FunctionTemplate::New(findChildCallback, wEngine));
+        protoTempl->Set(v8::String::New("findChildren"), v8::FunctionTemplate::New(findChildrenCallback, wEngine));
+
         // Install QObject interceptor.
         // This interceptor will only get called if the access is not handled by the instance
         // itself nor other objects in the prototype chain.
@@ -1098,9 +1154,7 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
         protoTempl->SetNamedPropertyHandler(QtLazyPropertyGetter,
                                             QtLazyPropertySetter,
                                             0, 0, 0,
-                                            /*data=*/ v8::External::Wrap(engine));
-        //Q_UNIMPLEMENTED();
-        // TODO: Add QObject prototype functions findChild(), findChildren() (compat)
+                                            /*data=*/wEngine);
     }
 
     return funcTempl;
