@@ -12,7 +12,7 @@ HEADERS =   qwaylandintegration.h \
             qwaylandwindowsurface.h
 
 INCLUDEPATH += /usr/include/libdrm
-LIBS += -lwayland-client -ldrm -lxkbcommon
+LIBS += -lwayland-client -ldrm -lxkbcommon -lEGL -lGLESv2
 
 include (../fontdatabases/fontconfig/fontconfig.pri)
 

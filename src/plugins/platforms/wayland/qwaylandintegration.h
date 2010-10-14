@@ -50,6 +50,11 @@
 #include <wayland-client.h>
 #include "qwaylandinputdevice.h"
 
+#define MESA_EGL_NO_X11_HEADERS
+#define EGL_EGLEXT_PROTOTYPES
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+
 QT_BEGIN_NAMESPACE
 
 class QWaylandBuffer;
@@ -67,6 +72,7 @@ public:
 				      uint32_t stride,
 				      struct wl_visual *visual);
     struct wl_visual *argbVisual();
+    EGLDisplay eglDisplay() { return mEglDisplay; }
 
     void setCursor(QWaylandBuffer *buffer, int32_t x, int32_t y);
 
@@ -82,11 +88,11 @@ private:
     struct wl_shell *mShell;
     char *mDeviceName;
     int mFd;
-    bool mAuthenticated;
     QList<QPlatformScreen *> mScreens;
     QList<QWaylandInputDevice *> mInputDevices;
     QSocketNotifier *mReadNotifier;
     QSocketNotifier *mWriteNotifier;
+    EGLDisplay mEglDisplay;
 
     static void displayHandleGlobal(struct wl_display *display,
 				    uint32_t id,
@@ -143,10 +149,12 @@ public:
     void configure(uint32_t time, uint32_t edges,
 		   int32_t x, int32_t y, int32_t width, int32_t height);
     WId winId() const;
+    QPlatformGLContext *glContext() const;
 
 private:
     struct wl_surface *mSurface;
     QWaylandDisplay *mDisplay;
+    QPlatformGLContext *mGLContext;
     WId mWindowId;
 };
 

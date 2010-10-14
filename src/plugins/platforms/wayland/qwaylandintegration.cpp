@@ -1,12 +1,17 @@
+#include "qfontconfigdatabase.h"
+
 #include <QImageReader>
 #include <QWindowSystemInterface>
 #include <QPlatformCursor>
-#include "qwaylandintegration.h"
-#include "qwaylandwindowsurface.h"
-#include "qfontconfigdatabase.h"
+
+#include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformWindowFormat>
 
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/QPlatformWindow>
+
+#include "qwaylandintegration.h"
+#include "qwaylandwindowsurface.h"
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -182,16 +187,50 @@ void QWaylandDisplay::drmHandleDevice(void *data,
 {
     Q_UNUSED(drm);
     QWaylandDisplay *qwd = (QWaylandDisplay *) data;
+    drm_magic_t magic;
 
     qwd->mDeviceName = strdup(device);
+
+    qwd->mFd = open(qwd->mDeviceName, O_RDWR);
+    if (qwd->mFd < 0) {
+	qWarning("drm open failed: %m");
+	return;
+    }
+
+    if (drmGetMagic(qwd->mFd, &magic)) {
+	qWarning("DRI2: failed to get drm magic");
+	return;
+    }
+
+    wl_drm_authenticate(qwd->mDrm, magic);
 }
 
 void QWaylandDisplay::drmHandleAuthenticated(void *data, struct wl_drm *drm)
 {
     Q_UNUSED(drm);
     QWaylandDisplay *qwd = (QWaylandDisplay *) data;
+    EGLint major, minor;
+    const char *extensions;
 
-    qwd->mAuthenticated = true;
+    qwd->mEglDisplay = eglGetDRMDisplayMESA(qwd->mFd);
+    if (qwd->mEglDisplay == NULL) {
+	qWarning("failed to create display");
+	return;
+    }
+
+    if (!eglInitialize(qwd->mEglDisplay, &major, &minor)) {
+	qWarning("failed to initialize display");
+	qwd->mEglDisplay = NULL;
+	return;
+    }
+
+    extensions = eglQueryString(qwd->mEglDisplay, EGL_EXTENSIONS);
+    if (!strstr(extensions, "EGL_KHR_surfaceless_gles2")) {
+	qWarning("EGL_KHR_surfaceless_opengles2 not available");
+	eglTerminate(qwd->mEglDisplay);
+	qwd->mEglDisplay = NULL;
+	return;
+    }
 }
 
 const struct wl_drm_listener QWaylandDisplay::drmListener = {
@@ -265,11 +304,22 @@ void QWaylandDisplay::displayHandleGlobal(struct wl_display *display,
     }
 }
 
-static void initial_roundtrip(void *data)
+static void roundtripCallback(void *data)
 {
     bool *done = (bool *) data;
 
     *done = true;
+}
+
+static void forceRoundtrip(struct wl_display *display)
+{
+    bool done;
+
+    wl_display_sync_callback(display, roundtripCallback, &done);
+    wl_display_iterate(display, WL_DISPLAY_WRITABLE);
+    done = false;
+    while (!done)
+	wl_display_iterate(display, WL_DISPLAY_READABLE);
 }
 
 static const char socket_name[] = "\0wayland";
@@ -304,9 +354,6 @@ void QWaylandDisplay::flushRequests(void)
 QWaylandDisplay::QWaylandDisplay(void)
     : mWriteNotifier(0)
 {
-    drm_magic_t magic;
-    bool done;
-
     mDisplay = wl_display_create(socket_name, sizeof socket_name);
     if (mDisplay == NULL) {
 	fprintf(stderr, "failed to create display: %m\n");
@@ -317,28 +364,17 @@ QWaylandDisplay::QWaylandDisplay(void)
 				   QWaylandDisplay::displayHandleGlobal, this);
 
     /* Process connection events. */
-    wl_display_sync_callback(mDisplay, initial_roundtrip, &done);
-    wl_display_iterate(mDisplay, WL_DISPLAY_WRITABLE);
-    done = false;
-    while (!done)
-	wl_display_iterate(mDisplay, WL_DISPLAY_READABLE);
+    wl_display_iterate(mDisplay, WL_DISPLAY_READABLE);
+    if (!mShm || !mDeviceName)
+	forceRoundtrip(mDisplay);
 
-    mFd = open(mDeviceName, O_RDWR);
-    if (mFd < 0) {
-	qWarning("drm open failed: %m\n");
-	return;
-    }
-
-    if (drmGetMagic(mFd, &magic)) {
-	qWarning("DRI2: failed to get drm magic");
-	return;
-    }
-
-    /* Wait for authenticated event */
-    wl_drm_authenticate(mDrm, magic);
-    wl_display_iterate(mDisplay, WL_DISPLAY_WRITABLE);
-    while (!mAuthenticated)
-	wl_display_iterate(mDisplay, WL_DISPLAY_READABLE);
+    /* Force a roundtrip to finish the drm authentication so we
+     * initialize EGL before proceeding */
+    forceRoundtrip(mDisplay);
+    if (mEglDisplay == NULL)
+	qWarning("EGL not available");
+    else
+	qWarning("EGL initialized");
 
     int fd = wl_display_get_fd(mDisplay, sourceUpdate, this);
     mReadNotifier = new QSocketNotifier(fd, QSocketNotifier::Read, this);
@@ -415,6 +451,73 @@ void QWaylandWindow::configure(uint32_t time, uint32_t edges,
     QRect geometry = QRect(x, y, width, height);
 
     QWindowSystemInterface::handleGeometryChange(widget(), geometry);
+}
+
+class QWaylandGLContext : public QPlatformGLContext {
+public:
+    QWaylandGLContext(QWaylandDisplay *wd, const QPlatformWindowFormat &format);
+    ~QWaylandGLContext();
+    void makeCurrent();
+    void doneCurrent();
+    void swapBuffers();
+    void* getProcAddress(const QString&);
+    QPlatformWindowFormat platformWindowFormat() const { return mFormat; }
+
+private:
+    EGLContext mContext;
+    QPlatformWindowFormat mFormat;
+    QWaylandDisplay *mDisplay;
+};
+
+QWaylandGLContext::QWaylandGLContext(QWaylandDisplay *wd, const QPlatformWindowFormat &format)
+    : QPlatformGLContext()
+    , mContext(0)
+    , mFormat(format)
+    , mDisplay(wd)
+{
+    EGLDisplay eglDisplay;
+    static const EGLint contextAttribs[] = {
+	EGL_CONTEXT_CLIENT_VERSION, 2,
+	EGL_NONE
+    };
+
+    eglBindAPI(EGL_OPENGL_ES_API);
+    eglDisplay = mDisplay->eglDisplay();
+    mContext = eglCreateContext(eglDisplay, NULL,
+				EGL_NO_CONTEXT, contextAttribs);
+}
+
+QWaylandGLContext::~QWaylandGLContext()
+{
+    if (mContext)
+        eglDestroyContext(mDisplay->eglDisplay(), mContext);
+}
+
+void QWaylandGLContext::makeCurrent()
+{
+}
+
+void QWaylandGLContext::doneCurrent()
+{
+}
+
+void QWaylandGLContext::swapBuffers()
+{
+}
+
+void *QWaylandGLContext::getProcAddress(const QString &string)
+{
+    return (void *) eglGetProcAddress(string.toLatin1().data());
+}
+
+QPlatformGLContext *QWaylandWindow::glContext() const
+{
+    if (!mGLContext) {
+        QWaylandWindow *that = const_cast<QWaylandWindow *>(this);
+        that->mGLContext = new QWaylandGLContext(mDisplay, widget()->platformWindowFormat());
+    }
+
+    return mGLContext;
 }
 
 QPlatformWindow *QWaylandIntegration::createPlatformWindow(QWidget *widget, WId winId) const
