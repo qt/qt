@@ -1483,8 +1483,10 @@ void tst_QCompleter::QTBUG_14292_filesystem()
 
     edit.show();
     QApplication::setActiveWindow(&edit);
+    edit.setFocus();
     QTest::qWaitForWindowShown(&edit);
     QTRY_VERIFY(QApplication::activeWindow() == &edit);
+    QTRY_VERIFY(edit.hasFocus());
 
     QVERIFY(!comp.popup()->isVisible());
     edit.setText(tmpDir.path());
