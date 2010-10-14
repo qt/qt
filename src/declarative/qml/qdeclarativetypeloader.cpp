@@ -719,7 +719,7 @@ void QDeclarativeTypeLoader::clearCache()
 QDeclarativeTypeData::QDeclarativeTypeData(const QUrl &url, QDeclarativeTypeLoader::Options options, 
                                            QDeclarativeTypeLoader *manager)
 : QDeclarativeDataBlob(url, QmlFile), m_options(options), m_typesResolved(false), 
-  m_compiledData(0), m_component(0), m_typeLoader(manager)
+  m_compiledData(0), m_typeLoader(manager)
 {
 }
 
@@ -766,23 +766,6 @@ QDeclarativeCompiledData *QDeclarativeTypeData::compiledData() const
         m_compiledData->addref();
 
     return m_compiledData;
-}
-
-QDeclarativeComponent *QDeclarativeTypeData::component() const
-{
-    if (!m_component) {
-
-        if (m_compiledData) {
-            m_component = new QDeclarativeComponent(typeLoader()->engine(), m_compiledData, -1, -1, 0);
-        } else {
-            m_component = new QDeclarativeComponent(typeLoader()->engine());
-            QDeclarativeComponentPrivate::get(m_component)->url = finalUrl();
-            QDeclarativeComponentPrivate::get(m_component)->state.errors = errors();
-        }
-
-    }
-
-    return m_component;
 }
 
 void QDeclarativeTypeData::registerCallback(TypeDataCallback *callback)
