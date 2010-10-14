@@ -754,10 +754,13 @@ static v8::Handle<v8::Value> QtVoidVoidMetaMethodCallback(const v8::Arguments& a
 static v8::Handle<v8::Value> QtLazyPropertyGetter(v8::Local<v8::String> property,
                                                   const v8::AccessorInfo& info)
 {
-//    qDebug() << "QtLazyPropertyGetter(" << qtStringFromJS(property) << ")";
+    QScriptEnginePrivate *engine = reinterpret_cast<QScriptEnginePrivate *>(v8::External::Unwrap(info.Data()));
+    Q_ASSERT(engine);
     v8::Local<v8::Object> self = info.This();
+    if (!engine->qtClassTemplate(&QObject::staticMetaObject)->HasInstance(self))
+        return v8::Handle<v8::Value>(); //the QObject prototype is being used on another object.
     QtInstanceData *data = QtInstanceData::get(self);
-    QScriptEnginePrivate *engine = data->engine();
+    Q_ASSERT(engine == data->engine());
     QScriptContextPrivate context(engine, &info);
     QObject *qobject = data->cppObject();
 
@@ -1060,7 +1063,9 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
         // is to avoid "slow" interceptor calls in what should be the common cases (accessing
         // meta-object-defined properties, and Q_INVOKABLE methods and slots).
         protoTempl->SetNamedPropertyHandler(QtLazyPropertyGetter,
-                                            QtLazyPropertySetter);
+                                            QtLazyPropertySetter,
+                                            0, 0, 0,
+                                            /*data=*/ v8::External::Wrap(engine));
         //Q_UNIMPLEMENTED();
         // TODO: Add QObject prototype functions findChild(), findChildren() (compat)
     }
