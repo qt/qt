@@ -651,7 +651,7 @@ void tst_QCompleter::fileSystemModel_data()
 #elif defined (Q_OS_MAC)
         QTest::newRow("()") << "" << "" << "/" << "/";
         QTest::newRow("(/a)") << "/a" << "" << "Applications" << "/Applications";
-        QTest::newRow("(/d)") << "/d" << "" << "Developer" << "/Developer";
+//        QTest::newRow("(/d)") << "/d" << "" << "Developer" << "/Developer";
 #else
         QTest::newRow("()") << "" << "" << "/" << "/";
 #if !defined(Q_OS_IRIX) && !defined(Q_OS_AIX) && !defined(Q_OS_HPUX)
