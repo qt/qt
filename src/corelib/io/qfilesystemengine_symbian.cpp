@@ -148,7 +148,7 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
         result.append(orig);
     }
 
-    return QFileSystemEntry(symbianCleanAbsolutePath(result));
+    return QFileSystemEntry(symbianCleanAbsolutePath(result), QFileSystemEntry::FromInternalPath());
 }
 
 //static

@@ -140,7 +140,7 @@ QFSFileEngine::QFSFileEngine(const QString &file)
     : QAbstractFileEngine(*new QFSFileEnginePrivate)
 {
     Q_D(QFSFileEngine);
-    d->fileEntry = QFileSystemEntry(QDir::fromNativeSeparators(file));
+    d->fileEntry = QFileSystemEntry(file);
 }
 
 /*!
@@ -189,7 +189,7 @@ void QFSFileEngine::setFileName(const QString &file)
 {
     Q_D(QFSFileEngine);
     d->init();
-    d->fileEntry = QFileSystemEntry(QDir::fromNativeSeparators(file));
+    d->fileEntry = QFileSystemEntry(file);
 }
 
 /*!

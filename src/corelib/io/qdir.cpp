@@ -177,7 +177,7 @@ inline void QDirPrivate::setPath(const QString &path)
             p.truncate(p.length() - 1);
     }
 
-    dirEntry = QFileSystemEntry(p);
+    dirEntry = QFileSystemEntry(p, QFileSystemEntry::FromInternalPath());
     metaData.clear();
     initFileEngine();
     clearFileLists();
@@ -198,7 +198,7 @@ inline void QDirPrivate::resolveAbsoluteEntry() const
 
     if (dirEntry.isRelative()) {
         QFileSystemEntry answer = QFileSystemEngine::absoluteName(dirEntry);
-        absoluteDirEntry = QFileSystemEntry(QDir::cleanPath(answer.filePath()));
+        absoluteDirEntry = QFileSystemEntry(QDir::cleanPath(answer.filePath()), QFileSystemEntry::FromInternalPath());
     } else {
         absoluteDirEntry = dirEntry;
     }
@@ -1757,7 +1757,7 @@ QChar QDir::separator()
 */
 bool QDir::setCurrent(const QString &path)
 {
-    return QFileSystemEngine::setCurrentPath(QFileSystemEntry(fromNativeSeparators(path)));
+    return QFileSystemEngine::setCurrentPath(QFileSystemEntry(path));
 }
 
 /*!

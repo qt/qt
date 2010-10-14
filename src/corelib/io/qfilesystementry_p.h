@@ -72,10 +72,12 @@ public:
     typedef QString NativePath;
 #endif
     struct FromNativePath{};
+    struct FromInternalPath{};
 
     QFileSystemEntry();
     explicit QFileSystemEntry(const QString &filePath);
 
+    QFileSystemEntry(const QString &filePath, FromInternalPath dummy);
     QFileSystemEntry(const NativePath &nativeFilePath, FromNativePath dummy);
     QFileSystemEntry(const QString &filePath, const NativePath &nativeFilePath);
 

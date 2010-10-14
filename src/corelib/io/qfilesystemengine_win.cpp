@@ -444,7 +444,7 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link,
         ret = readLink(link);
     else if (data.isLink())
         ret = readSymLink(link);
-    return QFileSystemEntry(QDir::fromNativeSeparators(ret));
+    return QFileSystemEntry(ret);
 }
 
 //static

@@ -640,7 +640,7 @@ bool QFSFileEngine::caseSensitive() const
 
 bool QFSFileEngine::setCurrentPath(const QString &path)
 {
-    return QFileSystemEngine::setCurrentPath(QFileSystemEntry(QDir::fromNativeSeparators(path)));
+    return QFileSystemEngine::setCurrentPath(QFileSystemEntry(path));
 }
 
 QString QFSFileEngine::currentPath(const QString &)
