@@ -85,6 +85,7 @@ private slots:
 
     void itemList();
     void currentIndex();
+    void noCurrentIndex();
     void enforceRange();
     void spacing();
     void sections();
@@ -1087,7 +1088,50 @@ void tst_QDeclarativeListView::currentIndex()
     model.insertItem(0, "Foo", "1111");
     QTRY_COMPARE(canvas->rootObject()->property("current").toInt(), 29);
 
+    // check removing highlight by setting currentIndex to -1;
+    listview->setCurrentIndex(-1);
+
+    QCOMPARE(listview->currentIndex(), -1);
+    QVERIFY(!listview->highlightItem());
+    QVERIFY(!listview->currentItem());
+
     delete canvas;
+}
+
+void tst_QDeclarativeListView::noCurrentIndex()
+{
+    TestModel model;
+    for (int i = 0; i < 30; i++)
+        model.addItem("Item" + QString::number(i), QString::number(i));
+
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->setFixedSize(240,320);
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    QString filename(SRCDIR "/data/listview-noCurrent.qml");
+    canvas->setSource(QUrl::fromLocalFile(filename));
+
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
+    QTRY_VERIFY(listview != 0);
+
+    QDeclarativeItem *contentItem = listview->contentItem();
+    QTRY_VERIFY(contentItem != 0);
+
+    // current index should be -1 at startup
+    // and we should not have a currentItem or highlightItem
+    QCOMPARE(listview->currentIndex(), -1);
+    QCOMPARE(listview->contentY(), 0.0);
+    QVERIFY(!listview->highlightItem());
+    QVERIFY(!listview->currentItem());
+
+    listview->setCurrentIndex(2);
+    QCOMPARE(listview->currentIndex(), 2);
+    QVERIFY(listview->highlightItem());
+    QVERIFY(listview->currentItem());
 }
 
 void tst_QDeclarativeListView::itemList()
