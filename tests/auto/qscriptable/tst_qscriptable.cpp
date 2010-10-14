@@ -346,16 +346,14 @@ void tst_QScriptable::thisObject()
     {
         {
             QScriptValue ret = m_engine.evaluate("scriptable.sig.connect(o, scriptable.setX)");
-            QEXPECT_FAIL("", "FIXME: connect not yet implemented", Continue);
             QVERIFY(ret.isUndefined());
         }
         QVERIFY(m_engine.evaluate("o.x").strictlyEquals(QScriptValue(&m_engine, 456)));
         m_scriptable.emitSig(654321);
-        QEXPECT_FAIL("", "FIXME: connect not yet implemented", Continue);
         QVERIFY(m_engine.evaluate("o.x").strictlyEquals(QScriptValue(&m_engine, 654321)));
         {
             QScriptValue ret = m_engine.evaluate("scriptable.sig.disconnect(o, scriptable.setX)");
-            QEXPECT_FAIL("", "FIXME: connect not yet implemented", Continue);
+            QEXPECT_FAIL("", "FIXME: disconnect not yet implemented", Continue);
             QVERIFY(ret.isUndefined());
         }
     }
