@@ -1483,9 +1483,9 @@ void tst_QCompleter::QTBUG_14292_filesystem()
 
     edit.show();
     QApplication::setActiveWindow(&edit);
-    edit.setFocus();
     QTest::qWaitForWindowShown(&edit);
     QTRY_VERIFY(QApplication::activeWindow() == &edit);
+    edit.setFocus();
     QTRY_VERIFY(edit.hasFocus());
 
     QVERIFY(!comp.popup()->isVisible());
@@ -1493,6 +1493,7 @@ void tst_QCompleter::QTBUG_14292_filesystem()
     QTest::keyClick(&edit, '/');
     QTRY_VERIFY(comp.popup()->isVisible());
     QCOMPARE(comp.popup()->model()->rowCount(), 2);
+    QApplication::processEvents();
     QTest::keyClick(&edit, 'h');
     QCOMPARE(comp.popup()->model()->rowCount(), 2);
     QTest::keyClick(&edit, 'e');
