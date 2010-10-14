@@ -32,6 +32,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QScriptable;
+
 // A C++ signal-to-JS handler connection.
 //
 // Acts as a middle-man; intercepts a C++ signal,
@@ -167,6 +169,14 @@ public:
         void *ptr = object->GetPointerFromInternalField(0);
         Q_ASSERT(ptr != 0);
         return static_cast<QtInstanceData*>(ptr);
+    }
+
+    //returns a QScriptable if the object is a QScriptable, else, return 0
+    QScriptable *toQScriptable()
+    {
+        Q_ASSERT(m_cppObject);
+        void *ptr = m_cppObject->qt_metacast("QScriptable");
+        return reinterpret_cast<QScriptable*>(ptr);
     }
 
 private:

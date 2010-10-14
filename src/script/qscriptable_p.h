@@ -38,6 +38,7 @@
 #include <QtCore/qobjectdefs.h>
 #include "qscriptengine_p.h"
 #include "qscriptcontext_p.h"
+#include "qscriptable.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -55,13 +56,15 @@ public:
     inline QScriptPassPointer<QScriptValuePrivate> thisObject() const;
     inline int argumentCount() const;
     inline QScriptPassPointer<QScriptValuePrivate> argument(int index) const;
+
+    inline QScriptEnginePrivate *swapEngine(QScriptEnginePrivate *);
 private:
-    QScriptSharedDataPointer<QScriptEnginePrivate> m_engine;
+    QScriptEnginePrivate *m_engine;
 };
 
 inline QScriptEnginePrivate* QScriptablePrivate::engine() const
 {
-    return m_engine.data();
+    return m_engine;
 }
 
 inline QScriptContextPrivate* QScriptablePrivate::context() const
@@ -86,6 +89,13 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptablePrivate::argument(int 
 {
     return context()->argument(index);
 }
+
+QScriptEnginePrivate *QScriptablePrivate::swapEngine(QScriptEnginePrivate* newEngine)
+{
+    qSwap(newEngine, m_engine);
+    return newEngine;
+}
+
 
 QT_END_NAMESPACE
 

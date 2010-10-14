@@ -33,6 +33,7 @@
 #include "qscriptvalue_p.h"
 #include "qscriptcontext_p.h"
 #include "qscriptisolate_p.h"
+#include "qscriptable_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -329,7 +330,15 @@ static v8::Handle<v8::Value> QtMetaPropertyGetter(v8::Local<v8::String> property
     QMetaProperty prop = meta->property(propertyIndex);
     Q_ASSERT(prop.isReadable());
 
+    QScriptEnginePrivate *oldEngine = 0;
+    QScriptable *scriptable = data->toQScriptable();
+    if (scriptable)
+        oldEngine = QScriptablePrivate::get(scriptable)->swapEngine(data->engine());
+
     QVariant value = prop.read(qobject);
+
+    if (scriptable)
+        QScriptablePrivate::get(scriptable)->swapEngine(oldEngine);
 
     return engine->variantToJS(value);
 }
@@ -378,7 +387,15 @@ static void QtMetaPropertySetter(v8::Local<v8::String> /*property*/,
         }
     }
 
+    QScriptEnginePrivate *oldEngine = 0;
+    QScriptable *scriptable = data->toQScriptable();
+    if (scriptable)
+        oldEngine = QScriptablePrivate::get(scriptable)->swapEngine(data->engine());
+
     prop.write(qobject, cppValue);
+
+    if (scriptable)
+        QScriptablePrivate::get(scriptable)->swapEngine(oldEngine);
 }
 
 // This callback implements reading a presumably existing dynamic property.
@@ -491,7 +508,17 @@ static v8::Handle<v8::Value> QtMetaMethodCallback(const v8::Arguments& args)
 
     int methodIndex = v8::Int32::Cast(*args.Data())->Value();
 
-    return callQtMetaMethod(engine, qobject, meta, methodIndex, args);
+    QScriptEnginePrivate *oldEngine = 0;
+    QScriptable *scriptable = instance->toQScriptable();
+    if (scriptable)
+        oldEngine = QScriptablePrivate::get(scriptable)->swapEngine(instance->engine());
+
+    v8::Handle<v8::Value> result = callQtMetaMethod(engine, qobject, meta, methodIndex, args);
+
+    if (scriptable)
+        QScriptablePrivate::get(scriptable)->swapEngine(oldEngine);
+
+    return result;
 }
 
 static inline bool methodNameEquals(const QMetaMethod &method,
@@ -675,7 +702,21 @@ static v8::Handle<v8::Value> QtOverloadedMetaMethodCallback(const v8::Arguments&
         Q_ASSERT(0);
     }
 
-    return callQtMetaMethod(engine, qobject, meta, methodIndex, args);
+
+    QScriptEnginePrivate *oldEngine = 0;
+    QScriptable *scriptable = instance->toQScriptable();
+    if (scriptable)
+        oldEngine = QScriptablePrivate::get(scriptable)->swapEngine(instance->engine());
+
+    v8::Handle<v8::Value> result = callQtMetaMethod(engine, qobject, meta, methodIndex, args);
+
+    if (scriptable)
+        QScriptablePrivate::get(scriptable)->swapEngine(oldEngine);
+
+
+    return result;
+
+
 }
 
 // This callback implements calls of meta-methods that have no arguments and
@@ -692,7 +733,15 @@ static v8::Handle<v8::Value> QtVoidVoidMetaMethodCallback(const v8::Arguments& a
 
     int methodIndex = v8::Int32::Cast(*args.Data())->Value();
 
+    QScriptEnginePrivate *oldEngine = 0;
+    QScriptable *scriptable = data->toQScriptable();
+    if (scriptable)
+        oldEngine = QScriptablePrivate::get(scriptable)->swapEngine(data->engine());
+
     QMetaObject::metacall(qobject, QMetaObject::InvokeMetaMethod, methodIndex, 0);
+
+    if (scriptable)
+        QScriptablePrivate::get(scriptable)->swapEngine(oldEngine);
 
     return v8::Undefined();
 }
