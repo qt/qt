@@ -139,6 +139,7 @@ private slots:
     void strictlyEquals();
     void compiled();
     void numberAssignment();
+    void propertySplicing();
 
     void bug1();
     void bug2();
@@ -2171,6 +2172,18 @@ void tst_qdeclarativeecmascript::numberAssignment()
     QCOMPARE(object->property("test10"), QVariant((unsigned int)7));
     QCOMPARE(object->property("test11"), QVariant((unsigned int)6));
     QCOMPARE(object->property("test12"), QVariant((unsigned int)6));
+
+    delete object;
+}
+
+void tst_qdeclarativeecmascript::propertySplicing()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("propertySplicing.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test").toBool(), true);
 
     delete object;
 }

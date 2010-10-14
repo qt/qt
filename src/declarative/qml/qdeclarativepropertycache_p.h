@@ -96,7 +96,7 @@ public:
                     IsVMEFunction     = 0x00000400,
                     HasArguments      = 0x00000800,
                     IsSignal          = 0x00001000,
-                    IsVMESignal       = 0x00002000,
+                    IsVMESignal       = 0x00002000
         };
         Q_DECLARE_FLAGS(Flags, Flag)
 
@@ -105,7 +105,10 @@ public:
         Flags flags;
         int propType;
         int coreIndex;
-        int notifyIndex;
+        union {
+            int notifyIndex; // When !IsFunction
+            int relatedIndex; // When IsFunction
+        };
 
         static Flags flagsForProperty(const QMetaProperty &, QDeclarativeEngine *engine = 0);
         void load(const QMetaProperty &, QDeclarativeEngine *engine = 0);
@@ -151,6 +154,8 @@ private:
     typedef QVector<RData *> IndexCache;
     typedef QHash<QString, RData *> StringCache;
     typedef QHash<QScriptDeclarativeClass::Identifier, RData *> IdentifierCache;
+
+    void updateRecur(QDeclarativeEngine *, const QMetaObject *);
 
     QDeclarativeEngine *engine;
     IndexCache indexCache;
