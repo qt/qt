@@ -117,7 +117,8 @@ QScriptEngine *QScriptable::engine() const
 QScriptContext *QScriptable::context() const
 {
     Q_D(const QScriptable);
-    return QScriptContextPrivate::get(d->context());
+    QScriptContextPrivate* c = d->context();
+    return c ? QScriptContextPrivate::get(c) : 0;
 }
 
 /*!
@@ -130,6 +131,8 @@ QScriptValue QScriptable::thisObject() const
 {
     Q_D(const QScriptable);
     QScriptContextPrivate *c = d->context();
+    if (!c)
+        return QScriptValue();
     return QScriptValuePrivate::get(c->thisObject());
 }
 
