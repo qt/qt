@@ -979,6 +979,17 @@ void tst_QDeclarativeListView::sections()
     QTRY_VERIFY(item);
     QTRY_COMPARE(item->height(), 20.0);
 
+    // check that headers change when item changes
+    listview->setContentY(0);
+    model.modifyItem(0, "changed", "2");
+
+    canvas->show();
+    qApp->exec();
+
+    item = findItem<QDeclarativeItem>(contentItem, "wrapper", 1);
+    QTRY_VERIFY(item);
+    QTRY_COMPARE(item->height(), 40.0);
+
     delete canvas;
 }
 

@@ -79,7 +79,8 @@ public:
     virtual ReleaseFlags release(QDeclarativeItem *item) = 0;
     virtual bool completePending() const = 0;
     virtual void completeItem() = 0;
-    virtual QString stringValue(int, const QString &) { return QString(); }
+    virtual QString stringValue(int, const QString &) = 0;
+    virtual void setWatchedRoles(QList<QByteArray> roles) = 0;
 
     virtual int indexOf(QDeclarativeItem *item, QObject *objectContext) const = 0;
 
@@ -88,6 +89,7 @@ Q_SIGNALS:
     void itemsInserted(int index, int count);
     void itemsRemoved(int index, int count);
     void itemsMoved(int from, int to, int count);
+    void itemsChanged(int index, int count);
     void modelReset();
     void createdItem(int index, QDeclarativeItem *item);
     void destroyingItem(QDeclarativeItem *item);
@@ -121,6 +123,7 @@ public:
     virtual bool completePending() const;
     virtual void completeItem();
     virtual QString stringValue(int index, const QString &role);
+    virtual void setWatchedRoles(QList<QByteArray>) {}
 
     virtual int indexOf(QDeclarativeItem *item, QObject *objectContext) const;
 
@@ -175,6 +178,7 @@ public:
     bool completePending() const;
     void completeItem();
     virtual QString stringValue(int index, const QString &role);
+    virtual void setWatchedRoles(QList<QByteArray> roles);
 
     int indexOf(QDeclarativeItem *item, QObject *objectContext) const;
 
