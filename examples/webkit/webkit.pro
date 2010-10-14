@@ -4,6 +4,7 @@ SUBDIRS +=  domtraversal \
             previewer \
             fancybrowser \
             simpleselector \
+            imageanalyzer \
             framecapture
 
 contains(QT_CONFIG, openssl):SUBDIRS += googlechat
