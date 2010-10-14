@@ -81,7 +81,7 @@ QT_BEGIN_NAMESPACE
 // external use ignore them
 // extern bool Q_CORE_EXPORT qt_resolve_symlinks;
 
-static const char *appearance_text =
+static const char *appearance_text = QT_TRANSLATE_NOOP("MainWindow",
 "<p><b><font size+=2>Appearance</font></b></p>"
 "<hr>"
 "<p>Use this tab to customize the appearance of your Qt applications.</p>"
@@ -95,9 +95,9 @@ static const char *appearance_text =
 "To customize colors further, press the Tune Palette button to open "
 "the advanced palette editor."
 "<p>The Preview Window shows what the selected Style and colors look "
-"like.";
+"like.");
 
-static const char *font_text =
+static const char *font_text = QT_TRANSLATE_NOOP("MainWindow",
 "<p><b><font size+=2>Fonts</font></b></p>"
 "<hr>"
 "<p>Use this tab to select the default font for your Qt applications. "
@@ -114,9 +114,9 @@ static const char *font_text =
 "Korean characters that are not found in the Lucida font will be taken "
 "from the Mincho font.  Because the font substitutions are "
 "lists, you can also select multiple families, such as Song Ti (for "
-"use with Chinese text).";
+"use with Chinese text).");
 
-static const char *interface_text =
+static const char *interface_text = QT_TRANSLATE_NOOP("MainWindow",
 "<p><b><font size+=2>Interface</font></b></p>"
 "<hr>"
 "<p>Use this tab to customize the feel of your Qt applications.</p>"
@@ -131,10 +131,10 @@ static const char *interface_text =
 "at 0 will disable the Global Strut feature</p>"
 "<p>XIM (Extended Input Methods) are used for entering characters in "
 "languages that have large character sets, for example, Chinese and "
-"Japanese.";
+"Japanese.");
 // ### What does the 'Enhanced support for languages written R2L do?
 
-static const char *printer_text =
+static const char *printer_text = QT_TRANSLATE_NOOP("MainWindow",
 "<p><b><font size+=2>Printer</font></b></p>"
 "<hr>"
 "<p>Use this tab to configure the way Qt generates output for the printer."
@@ -145,14 +145,14 @@ static const char *printer_text =
 "size will be bigger."
 "<p>When using font embedding you can select additional directories where "
 "Qt should search for embeddable font files.  By default, the X "
-"server font path is used.";
+"server font path is used.");
 
-static const char *phonon_text =
+static const char *phonon_text = QT_TRANSLATE_NOOP("MainWindow",
 "<p><b><font size+=2>Phonon</font></b></p>"
 "<hr>"
 "<p>Use this tab to configure the Phonon GStreamer multimedia backend. "
 "<p>It is reccommended to leave all settings on \"Auto\" to let "
-"Phonon determine your settings automatically.";
+"Phonon determine your settings automatically.");
 
 static QColorGroup::ColorRole centralFromItem( int item )
 {

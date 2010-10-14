@@ -450,6 +450,8 @@ void QWSKeyboardHandler::endAutoRepeat()
 /*!
     \fn QWSKeyboardHandler::KeycodeAction QWSKeyboardHandler::processKeycode(quint16 keycode, bool isPress, bool autoRepeat)
 
+	\since 4.6
+	
     Maps \a keycode according to a keymap and sends that key event to the
     \l{Qt for Embedded Linux} server application.
  
