@@ -1108,6 +1108,8 @@ v8::Handle<v8::Object> newQtObject(QScriptEnginePrivate *engine, QObject *object
                                    QScriptEngine::ValueOwnership own,
                                    const QScriptEngine::QObjectWrapOptions &opt)
 {
+    if (!object)
+        return v8::Handle<v8::Object>();
     v8::HandleScope handleScope;
     v8::Handle<v8::FunctionTemplate> templ = engine->qtClassTemplate(object->metaObject());
     Q_ASSERT(!templ.IsEmpty());
