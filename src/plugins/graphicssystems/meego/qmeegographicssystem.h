@@ -71,7 +71,7 @@ public:
     static void destroyLiveTexture(Qt::HANDLE h);
     static bool lockLiveTexture(Qt::HANDLE h);
     static bool unlockLiveTexture(Qt::HANDLE h);
-    static void queryLiveTexture(Qt::HANDLE h, void **data, int *pitch);
+    static void queryLiveTexture(Qt::HANDLE h, void **data, int *pitch, QImage::Format *format);
     static Qt::HANDLE liveTextureToEGLImage(Qt::HANDLE h);
 
 private:
@@ -99,7 +99,7 @@ extern "C" {
     Q_DECL_EXPORT void m_live_texture_destroy(Qt::HANDLE h);
     Q_DECL_EXPORT bool m_live_texture_lock(Qt::HANDLE h);
     Q_DECL_EXPORT bool m_live_texture_unlock(Qt::HANDLE h);
-    Q_DECL_EXPORT void m_live_texture_query(Qt::HANDLE h, void **data, int *pitch);
+    Q_DECL_EXPORT void m_live_texture_query(Qt::HANDLE h, void **data, int *pitch, QImage::Format *f);
     Q_DECL_EXPORT Qt::HANDLE m_live_texture_to_egl_image(Qt::HANDLE h);
 }
 
