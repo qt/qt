@@ -488,6 +488,15 @@ v8::Handle<v8::Value> callQtMetaMethod(QScriptEnginePrivate *engine, QObject *qo
             Q_UNIMPLEMENTED();
 
         v8::Handle<v8::Value> actual = args[i];
+
+        if(engine->isQtVariant(actual)) {
+            const QVariant &var = engine->variantValue(actual);
+            if (var.userType() == atype) {
+                cppArgs[1+i] = var;
+                continue;
+            }
+        }
+
         QVariant v(atype, (void *)0);
         if (!engine->metaTypeFromJS(actual, atype, v.data())) {
             // Throw TypeError.
