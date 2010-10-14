@@ -140,6 +140,10 @@ void QDeclarativePropertyCache::clear()
         if (indexCache.at(ii)) indexCache.at(ii)->release();
     }
 
+    for (int ii = 0; ii < methodIndexCache.count(); ++ii) {
+        if (methodIndexCache.at(ii)) methodIndexCache.at(ii)->release();
+    }
+
     for (StringCache::ConstIterator iter = stringCache.begin(); 
             iter != stringCache.end(); ++iter)
         (*iter)->release();
@@ -234,11 +238,10 @@ void QDeclarativePropertyCache::append(QDeclarativeEngine *engine, const QMetaOb
 
         RData *data = new RData;
         data->identifier = enginePriv->objectClass->createPersistentIdentifier(propName);
+        indexCache[ii] = data;
 
         data->load(p, engine);
         data->flags |= propertyFlags;
-
-        indexCache[ii] = data;
 
         if (stringCache.contains(propName)) {
             stringCache[propName]->release();
@@ -268,6 +271,7 @@ void QDeclarativePropertyCache::append(QDeclarativeEngine *engine, const QMetaOb
 
         RData *data = new RData;
         data->identifier = enginePriv->objectClass->createPersistentIdentifier(methodName);
+        methodIndexCache[ii] = data;
 
         data->load(m);
         if (m.methodType() == QMetaMethod::Slot || m.methodType() == QMetaMethod::Method) 
@@ -280,10 +284,9 @@ void QDeclarativePropertyCache::append(QDeclarativeEngine *engine, const QMetaOb
             identifierCache[data->identifier.identifier]->release();
         }
 
-        methodIndexCache[ii] = data;
-
         stringCache.insert(methodName, data);
         identifierCache.insert(data->identifier.identifier, data);
+        data->addref();
         data->addref();
     }
 }
