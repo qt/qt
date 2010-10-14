@@ -47,6 +47,7 @@
 #include "codeparser.h"
 #include "ditaxmlgenerator.h"
 #include "node.h"
+#include "quoter.h"
 #include "separator.h"
 #include "tree.h"
 #include <ctype.h>
@@ -1983,7 +1984,19 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
         return;
     }
 
-    if (!fake->doc().isEmpty()) {
+    if (fake->doc().isEmpty()) {
+        if (fake->subType() == Node::File) {
+            xmlWriter().writeStartElement("body");
+            Text text;
+            Quoter quoter;
+            Doc::quoteFromFile(fake->doc().location(), quoter, fake->name());
+            QString code = quoter.quoteTo(fake->location(), "", "");
+            text << Atom(Atom::Code, code);
+            generateText(text, fake, marker);
+            xmlWriter().writeEndElement(); // </body>
+        }
+    }
+    else {
         xmlWriter().writeStartElement("body");
         if (fake->subType() == Node::Module) {
             writeDetailedDescription(fake, marker, false, QString("Detailed Description"));
@@ -2000,7 +2013,6 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
             }
             generateAnnotatedList(fake, marker, groupMembersMap);
         }
-
         xmlWriter().writeEndElement(); // </body>
     }
     xmlWriter().writeEndElement(); // </topic>
