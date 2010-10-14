@@ -40,7 +40,7 @@ symbian {
 macx {
     CONFIG += lib_bundle
 } else {
-    !symbian: DESTDIR = ../..
+    !symbian: DESTDIR = ../..$${spectrum_build_dir}
 }
 
 # Install

@@ -48,13 +48,20 @@ public:
     static void initialize();
 
     static Qt::HANDLE imageToEGLSharedImage(const QImage &image);
-    static QPixmap pixmapFromEGLSharedImage(Qt::HANDLE handle, const QImage &softImage);
-    static QPixmap pixmapWithGLTexture(int w, int h);
+    static QPixmapData* pixmapDataFromEGLSharedImage(Qt::HANDLE handle, const QImage &softImage);
+    static QPixmapData* pixmapDataFromEGLImage(Qt::HANDLE handle);
+    static QPixmapData* pixmapDataWithGLTexture(int w, int h);
     static bool destroyEGLSharedImage(Qt::HANDLE handle);
     static void updateEGLSharedImagePixmap(QPixmap *p);
     static void setSurfaceFixedSize(int w, int h);
     static void setSurfaceScaling(int x, int y, int w, int h);
     static void setTranslucent(bool translucent);
+    static Qt::HANDLE createLiveTexture(int w, int h, QImage::Format format);
+    static bool lockLiveTexture(Qt::HANDLE h);
+    static bool unlockLiveTexture(Qt::HANDLE h);
+    static void destroyLiveTexture(Qt::HANDLE h);
+    static void queryLiveTexture(Qt::HANDLE h, void **data, int *pitch);
+    static Qt::HANDLE liveTextureToEGLImage(Qt::HANDLE);
 
 private:
     static bool initialized;

@@ -4362,6 +4362,50 @@ static void _q_paintIntoCache(QPixmap *pix, QGraphicsItem *item, const QRegion &
     }
 }
 
+// Copied from qpaintengine_vg.cpp
+// Returns true for 90, 180, and 270 degree rotations.
+static inline bool transformIsSimple(const QTransform& transform)
+{
+    QTransform::TransformationType type = transform.type();
+    if (type == QTransform::TxNone || type == QTransform::TxTranslate) {
+        return true;
+    } else if (type == QTransform::TxScale) {
+        // Check for 0 and 180 degree rotations.
+        // (0 might happen after 4 rotations of 90 degrees).
+        qreal m11 = transform.m11();
+        qreal m12 = transform.m12();
+        qreal m21 = transform.m21();
+        qreal m22 = transform.m22();
+        if (m12 == 0.0f && m21 == 0.0f) {
+            if (m11 == 1.0f && m22 == 1.0f)
+                return true; // 0 degrees
+            else if (m11 == -1.0f && m22 == -1.0f)
+                return true; // 180 degrees.
+            if(m11 == 1.0f && m22 == -1.0f)
+                return true; // 0 degrees inverted y.
+            else if(m11 == -1.0f && m22 == 1.0f)
+                return true; // 180 degrees inverted y.
+        }
+    } else if (type == QTransform::TxRotate) {
+        // Check for 90, and 270 degree rotations.
+        qreal m11 = transform.m11();
+        qreal m12 = transform.m12();
+        qreal m21 = transform.m21();
+        qreal m22 = transform.m22();
+        if (m11 == 0.0f && m22 == 0.0f) {
+            if (m12 == 1.0f && m21 == -1.0f)
+                return true; // 90 degrees.
+            else if (m12 == -1.0f && m21 == 1.0f)
+                return true; // 270 degrees.
+            else if (m12 == -1.0f && m21 == -1.0f)
+                return true; // 90 degrees inverted y.
+            else if (m12 == 1.0f && m21 == 1.0f)
+                return true; // 270 degrees inverted y.
+        }
+    }
+    return false;
+}
+
 /*!
     \internal
 
@@ -4530,32 +4574,28 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         if (invertable)
             diff *= painter->worldTransform();
         deviceData->lastTransform = painter->worldTransform();
-        if (!invertable
-            || diff.type() > QTransform::TxTranslate
-            || painter->worldTransform().type() > QTransform::TxScale) {
+        bool allowPartialCacheExposure = false;
+        bool simpleTransform = invertable && diff.type() <= QTransform::TxTranslate
+                               && transformIsSimple(painter->worldTransform());
+        if (!simpleTransform) {
             pixModified = true;
             itemCache->allExposed = true;
             itemCache->exposed.clear();
+            deviceData->cacheIndent = QPoint();
             pix = QPixmap();
+        } else {
+            allowPartialCacheExposure = deviceData->cacheIndent != QPoint();
         }
 
-        // ### This is a pretty bad way to determine when to start partial
-        // exposure for DeviceCoordinateCache but it's the least intrusive
-        // approach for now.
-#if 0
-        // Only if the device rect isn't fully contained.
-        bool allowPartialCacheExposure = !viewRect.contains(deviceRect);
-#else
-        // Only if deviceRect is 20% taller or wider than the desktop.
-        bool allowPartialCacheExposure = false;
-        if (widget) {
-            QRect desktopRect = QApplication::desktop()->availableGeometry(widget);
-            allowPartialCacheExposure = (desktopRect.width() * 1.2 < deviceRect.width()
-                                         || desktopRect.height() * 1.2 < deviceRect.height());
+        // Allow partial cache exposure if the device rect isn't fully contained and
+        // deviceRect is 20% taller or wider than the viewRect.
+        if (!allowPartialCacheExposure && !viewRect.contains(deviceRect)) {
+            allowPartialCacheExposure = (viewRect.width() * 1.2 < deviceRect.width())
+                                         || (viewRect.height() * 1.2 < deviceRect.height());
         }
-#endif
+
         QRegion scrollExposure;
-        if (deviceData->cacheIndent != QPoint() || allowPartialCacheExposure) {
+        if (allowPartialCacheExposure) {
             // Part of pixmap is drawn. Either device contains viewrect (big
             // item covers whole screen) or parts of device are outside the
             // viewport. In either case the device rect must be the intersect

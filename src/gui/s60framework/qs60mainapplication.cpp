@@ -58,7 +58,6 @@ CApaApplication *newS60Application()
     return new QS60MainApplication;
 }
 
-_LIT(KQtWrapperResourceFile, "\\resource\\apps\\s60main" QT_LIBINFIX_UNICODE L".rsc");
 
 /*!
   \class QS60MainApplication
@@ -129,10 +128,6 @@ TUid QS60MainApplication::AppDllUid() const
  */
 TFileName QS60MainApplication::ResourceFileName() const
 {
-    TFindFile finder(iCoeEnv->FsSession());
-    TInt err = finder.FindByDir(KQtWrapperResourceFile, KNullDesC);
-    if (err == KErrNone)
-        return finder.File();
     return KNullDesC();
 }
 

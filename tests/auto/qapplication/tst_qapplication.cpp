@@ -147,6 +147,10 @@ private slots:
     void symbianNeedForTraps();
     void symbianLeaveThroughMain();
     void qtbug_12673();
+
+
+
+    void globalStaticObjectDestruction(); // run this last
 };
 
 class EventSpy : public QObject
@@ -2255,6 +2259,42 @@ void tst_QApplication::qtbug_12673()
     QVERIFY(testProcess.waitForFinished(20000));
     QCOMPARE(testProcess.exitStatus(), QProcess::NormalExit);
 #endif //  Q_OS_SYMBIAN
+}
+
+/*
+    This test is meant to ensure that certain objects (public & commonly used)
+    can safely be used in a Q_GLOBAL_STATIC such that their destructors are
+    executed *after* the destruction of QApplication.
+ */
+Q_GLOBAL_STATIC(QLocale, tst_qapp_locale);
+Q_GLOBAL_STATIC(QProcess, tst_qapp_process);
+Q_GLOBAL_STATIC(QFileSystemWatcher, tst_qapp_fileSystemWatcher);
+Q_GLOBAL_STATIC(QSharedMemory, tst_qapp_sharedMemory);
+Q_GLOBAL_STATIC(QElapsedTimer, tst_qapp_elapsedTimer);
+Q_GLOBAL_STATIC(QMutex, tst_qapp_mutex);
+Q_GLOBAL_STATIC(QWidget, tst_qapp_widget);
+Q_GLOBAL_STATIC(QPixmap, tst_qapp_pixmap);
+Q_GLOBAL_STATIC(QFont, tst_qapp_font);
+Q_GLOBAL_STATIC(QRegion, tst_qapp_region);
+Q_GLOBAL_STATIC(QFontDatabase, tst_qapp_fontDatabase);
+Q_GLOBAL_STATIC(QCursor, tst_qapp_cursor);
+
+void tst_QApplication::globalStaticObjectDestruction()
+{
+    int argc = 1;
+    QApplication app(argc, &argv0, QApplication::GuiServer);
+    QVERIFY(tst_qapp_locale());
+    QVERIFY(tst_qapp_process());
+    QVERIFY(tst_qapp_fileSystemWatcher());
+    QVERIFY(tst_qapp_sharedMemory());
+    QVERIFY(tst_qapp_elapsedTimer());
+    QVERIFY(tst_qapp_mutex());
+    QVERIFY(tst_qapp_widget());
+    QVERIFY(tst_qapp_pixmap());
+    QVERIFY(tst_qapp_font());
+    QVERIFY(tst_qapp_region());
+    QVERIFY(tst_qapp_fontDatabase());
+    QVERIFY(tst_qapp_cursor());
 }
 
 //QTEST_APPLESS_MAIN(tst_QApplication)

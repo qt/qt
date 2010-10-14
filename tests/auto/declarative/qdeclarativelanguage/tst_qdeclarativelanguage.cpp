@@ -144,6 +144,7 @@ private slots:
     void importsInstalled();
     void importsOrder_data();
     void importsOrder();
+    void importIncorrectCase();
 
     void qmlAttachedPropertiesObjectMethod();
     void customOnProperty();
@@ -348,6 +349,9 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("invalidAlias.5") << "invalidAlias.5.qml" << "invalidAlias.5.errors.txt" << false;
     QTest::newRow("invalidAlias.6") << "invalidAlias.6.qml" << "invalidAlias.6.errors.txt" << false;
     QTest::newRow("invalidAlias.7") << "invalidAlias.7.qml" << "invalidAlias.7.errors.txt" << false;
+    QTest::newRow("invalidAlias.8") << "invalidAlias.8.qml" << "invalidAlias.8.errors.txt" << false;
+    QTest::newRow("invalidAlias.9") << "invalidAlias.9.qml" << "invalidAlias.9.errors.txt" << false;
+    QTest::newRow("invalidAlias.10") << "invalidAlias.10.qml" << "invalidAlias.10.errors.txt" << false;
 
     QTest::newRow("invalidAttachedProperty.1") << "invalidAttachedProperty.1.qml" << "invalidAttachedProperty.1.errors.txt" << false;
     QTest::newRow("invalidAttachedProperty.2") << "invalidAttachedProperty.2.qml" << "invalidAttachedProperty.2.errors.txt" << false;
@@ -380,6 +384,15 @@ void tst_qdeclarativelanguage::errors_data()
     QTest::newRow("invalidProperty") << "invalidProperty.qml" << "invalidProperty.errors.txt" << false;
     QTest::newRow("nonScriptableProperty") << "nonScriptableProperty.qml" << "nonScriptableProperty.errors.txt" << false;
     QTest::newRow("notAvailable") << "notAvailable.qml" << "notAvailable.errors.txt" << false;
+    QTest::newRow("singularProperty") << "singularProperty.qml" << "singularProperty.errors.txt" << false;
+    QTest::newRow("singularProperty.2") << "singularProperty.2.qml" << "singularProperty.2.errors.txt" << false;
+    QTest::newRow("incorrectCase") << "incorrectCase.qml" 
+#if defined(Q_OS_MAC) || defined(Q_OS_WIN32)
+        << "incorrectCase.errors.insensitive.txt" 
+#else
+        << "incorrectCase.errors.sensitive.txt" 
+#endif
+        << false;
 }
 
 
@@ -1054,6 +1067,47 @@ void tst_qdeclarativelanguage::aliasProperties()
 
         delete object;
     }
+
+    // Valuetype alias
+    // Simple "int" alias
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("alias.10.qml"));
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        // Read through alias
+        QCOMPARE(object->property("valueAlias").toRect(), QRect(10, 11, 9, 8));
+        object->setProperty("rectProperty", QVariant(QRect(33, 12, 99, 100)));
+        QCOMPARE(object->property("valueAlias").toRect(), QRect(33, 12, 99, 100));
+
+        // Write throught alias
+        object->setProperty("valueAlias", QVariant(QRect(3, 3, 4, 9)));
+        QCOMPARE(object->property("valueAlias").toRect(), QRect(3, 3, 4, 9));
+        QCOMPARE(object->property("rectProperty").toRect(), QRect(3, 3, 4, 9));
+
+        delete object;
+    }
+
+    // Valuetype sub-alias
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("alias.11.qml"));
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        // Read through alias
+        QCOMPARE(object->property("aliasProperty").toInt(), 19);
+        object->setProperty("rectProperty", QVariant(QRect(33, 8, 102, 111)));
+        QCOMPARE(object->property("aliasProperty").toInt(), 33);
+
+        // Write throught alias
+        object->setProperty("aliasProperty", QVariant(4));
+        QCOMPARE(object->property("aliasProperty").toInt(), 4);
+        QCOMPARE(object->property("rectProperty").toRect(), QRect(4, 8, 102, 111));
+
+        delete object;
+    }
 }
 
 // QTBUG-13374 Test that alias properties and signals can coexist
@@ -1515,6 +1569,7 @@ void tst_qdeclarativelanguage::basicRemote_data()
     QString serverdir = "http://127.0.0.1:14447/qtest/declarative/qmllanguage/";
 
     QTest::newRow("no need for qmldir") << QUrl(serverdir+"Test.qml") << "" << "";
+    QTest::newRow("absent qmldir") << QUrl(serverdir+"/noqmldir/Test.qml") << "" << "";
     QTest::newRow("need qmldir") << QUrl(serverdir+"TestLocal.qml") << "" << "";
 }
 
@@ -1720,6 +1775,22 @@ void tst_qdeclarativelanguage::importsOrder()
     QFETCH(QString, type);
     QFETCH(QString, error);
     testType(qml,type,error);
+}
+
+void tst_qdeclarativelanguage::importIncorrectCase()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("importIncorrectCase.qml"));
+
+    QList<QDeclarativeError> errors = component.errors();
+    QCOMPARE(errors.count(), 1);
+
+#if defined(Q_OS_MAC) || defined(Q_OS_WIN32)
+    QString expectedError = QLatin1String("cannot load module \"com.Nokia.installedtest\": File name case mismatch for \"") + QFileInfo(__FILE__).absoluteDir().filePath("data/lib/com/Nokia/installedtest/qmldir") + QLatin1String("\"");
+#else
+    QString expectedError = QLatin1String("module \"com.Nokia.installedtest\" is not installed");
+#endif
+
+    QCOMPARE(errors.at(0).description(), expectedError);
 }
 
 void tst_qdeclarativelanguage::qmlAttachedPropertiesObjectMethod()

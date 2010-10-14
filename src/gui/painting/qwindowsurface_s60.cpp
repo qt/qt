@@ -101,9 +101,11 @@ QS60WindowSurface::~QS60WindowSurface()
             // Issue empty redraw to clear the UI surface
 
             QWidget *w = window();
-            RWindow *const window = static_cast<RWindow *>(w->winId()->DrawableWindow());
-            window->BeginRedraw();
-            window->EndRedraw();
+            if (w->testAttribute(Qt::WA_WState_Created)) {
+                RWindow *const window = static_cast<RWindow *>(w->winId()->DrawableWindow());
+                window->BeginRedraw();
+                window->EndRedraw();
+            }
         }
     }
 #endif

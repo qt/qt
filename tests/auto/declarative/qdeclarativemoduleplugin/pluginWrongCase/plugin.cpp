@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,26 +38,46 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QStringList>
+#include <QtDeclarative/qdeclarativeextensionplugin.h>
+#include <QtDeclarative/qdeclarative.h>
+#include <QDebug>
 
-#include "qmeegoliveimage.h"
-
-#ifndef QMEEGOLIVEIMAGE_P_H
-#define QMEEGOLIVEIMAGE_P_H
-
-class QMeeGoLiveImagePrivate
+class MyPluginType : public QObject
 {
+    Q_OBJECT
+    Q_PROPERTY(int value READ value WRITE setValue)
+
 public:
-    Q_DECLARE_PUBLIC(QMeeGoLiveImage);
-    QMeeGoLiveImagePrivate();
-    virtual ~QMeeGoLiveImagePrivate();
-    void attachPixmap(QMeeGoLivePixmap* pixmap);
-    void detachPixmap(QMeeGoLivePixmap* pixmap);
-        
-    QList <QMeeGoLivePixmap*> attachedPixmaps;
-    QMeeGoLiveImage *q_ptr;
-    
-    friend class QMeeGoLivePixmap;
-    friend class QMeeGoLivePixmapPrivate;
+    MyPluginType(QObject *parent=0) : QObject(parent)
+    {
+        qWarning("import worked");
+    }
+
+    int value() const { return v; }
+    void setValue(int i) { v = i; }
+
+private:
+    int v;
 };
 
-#endif
+
+class MyPlugin : public QDeclarativeExtensionPlugin
+{
+    Q_OBJECT
+public:
+    MyPlugin()
+    {
+        qWarning("plugin created");
+    }
+
+    void registerTypes(const char *uri)
+    {
+        Q_ASSERT(QLatin1String(uri) == "com.nokia.WrongCase");
+        qmlRegisterType<MyPluginType>(uri, 1, 0, "MyPluginType");
+    }
+};
+
+#include "plugin.moc"
+
+Q_EXPORT_PLUGIN2(plugin, MyPlugin);

@@ -68,6 +68,11 @@ bool QMeeGoGraphicsSystemHelper::isRunningMeeGo()
     return (runningGraphicsSystemName() == QLatin1String("meego"));
 }
 
+bool QMeeGoGraphicsSystemHelper::isRunningRuntime()
+{
+    return (QApplicationPrivate::instance()->graphics_system_name == QLatin1String("runtime"));
+}
+
 void QMeeGoGraphicsSystemHelper::switchToMeeGo()
 {
     if (isRunningMeeGo())
@@ -105,13 +110,13 @@ QPixmap QMeeGoGraphicsSystemHelper::pixmapFromEGLSharedImage(Qt::HANDLE handle, 
     // This function is supported when not running meego too. A raster-backed
     // pixmap will be created... but when you switch back to 'meego', it'll 
     // be replaced with a EGL shared image backing.
-    return QMeeGoRuntime::pixmapFromEGLSharedImage(handle, softImage);
+    return QPixmap(QMeeGoRuntime::pixmapDataFromEGLSharedImage(handle, softImage));
 }
 
 QPixmap QMeeGoGraphicsSystemHelper::pixmapWithGLTexture(int w, int h)
 {
     ENSURE_RUNNING_MEEGO;
-    return QMeeGoRuntime::pixmapWithGLTexture(w, h);
+    return QPixmap(QMeeGoRuntime::pixmapDataWithGLTexture(w, h));
 }
 
 bool QMeeGoGraphicsSystemHelper::destroyEGLSharedImage(Qt::HANDLE handle)

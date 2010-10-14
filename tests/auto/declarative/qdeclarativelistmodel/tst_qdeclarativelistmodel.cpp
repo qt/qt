@@ -320,11 +320,16 @@ void tst_qdeclarativelistmodel::dynamic()
     if (!warning.isEmpty())
         QTest::ignoreMessage(QtWarningMsg, warning.toLatin1());
 
+    QSignalSpy spyCount(&model, SIGNAL(countChanged()));
+
     int actual = e.evaluate().toInt();
     if (e.hasError())
         qDebug() << e.error(); // errors not expected
 
     QCOMPARE(actual,result);
+
+    if (model.count() > 0)
+        QVERIFY(spyCount.count() > 0);
 }
 
 void tst_qdeclarativelistmodel::dynamic_worker_data()
@@ -351,6 +356,8 @@ void tst_qdeclarativelistmodel::dynamic_worker()
     QDeclarativeItem *item = createWorkerTest(&eng, &component, &model);
     QVERIFY(item != 0);
 
+    QSignalSpy spyCount(&model, SIGNAL(countChanged()));
+
     if (script[0] == QLatin1Char('{') && script[script.length()-1] == QLatin1Char('}'))
         script = script.mid(1, script.length() - 2);
     QVariantList operations;
@@ -366,6 +373,9 @@ void tst_qdeclarativelistmodel::dynamic_worker()
             Q_ARG(QVariant, operations)));
     waitForWorker(item);
     QCOMPARE(QDeclarativeProperty(item, "result").read().toInt(), result);
+
+    if (model.count() > 0)
+        QVERIFY(spyCount.count() > 0);
 
     delete item;
     qApp->processEvents();
