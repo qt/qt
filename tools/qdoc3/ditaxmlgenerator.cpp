@@ -1986,11 +1986,17 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
 
     if (fake->doc().isEmpty()) {
         if (fake->subType() == Node::File) {
-            xmlWriter().writeStartElement("body");
             Text text;
             Quoter quoter;
+            xmlWriter().writeStartElement("body");
+            xmlWriter().writeStartElement("p");
+            xmlWriter().writeAttribute("outputclass", "small-subtitle");
+            text << fake->subTitle();
+            generateText(text, fake, marker);
+            xmlWriter().writeEndElement(); // </p>
             Doc::quoteFromFile(fake->doc().location(), quoter, fake->name());
             QString code = quoter.quoteTo(fake->location(), "", "");
+            text.clear();
             text << Atom(Atom::Code, code);
             generateText(text, fake, marker);
             xmlWriter().writeEndElement(); // </body>
