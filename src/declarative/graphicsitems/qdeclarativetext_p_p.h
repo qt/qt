@@ -74,24 +74,8 @@ public:
 
     ~QDeclarativeTextPrivate();
 
-    void ensureDoc();
     void updateSize();
     void updateLayout();
-    void markImgDirty() {
-        Q_Q(QDeclarativeText);
-        imgDirty = true;
-        if (q->isComponentComplete())
-            q->update();
-    }
-    void checkImgCache();
-
-    void drawOutline();
-    void drawOutline(int yOffset);
-
-    QPixmap wrappedTextImage(bool drawStyle);
-    void drawWrappedText(QPainter *p, const QPointF &pos, bool drawStyle);
-    QPixmap richTextImage(bool drawStyle);
-    QSize setupTextLayout();
 
     QString text;
     QFont font;
@@ -99,23 +83,37 @@ public:
     QDeclarativeText::TextStyle style;
     QColor  styleColor;
     QString activeLink;
-    QPixmap imgCache;
-    QPixmap imgStyleCache;
     QDeclarativeText::HAlignment hAlign;
     QDeclarativeText::VAlignment vAlign;
     QDeclarativeText::TextElideMode elideMode;
-    bool imgDirty:1;
-    bool dirty:1;
-    bool richText:1;
-    bool singleline:1;
-    bool cache:1;
-    bool internalWidthUpdate:1;
-    QTextDocumentWithImageResources *doc;
-    QDeclarativeTextLayout layout;
-    QSize cachedLayoutSize;
     QDeclarativeText::TextFormat format;
     QDeclarativeText::WrapMode wrapMode;
+
+    void invalidateImageCache();
+    void checkImageCache();
+    QPixmap imageCache;
+
+    bool imageCacheDirty:1;
+    bool updateOnComponentComplete:1;
+    bool richText:1;
+    bool singleline:1;
+    bool cacheAllTextAsImage:1;
+    bool internalWidthUpdate:1;
+
+    QSize layedOutTextSize;
     
+    void ensureDoc();
+    QPixmap textDocumentImage(bool drawStyle);
+    QTextDocumentWithImageResources *doc;
+
+    QSize setupTextLayout();
+    QPixmap textLayoutImage(bool drawStyle);
+    void drawTextLayout(QPainter *p, const QPointF &pos, bool drawStyle);
+    QDeclarativeTextLayout layout;
+
+    static QPixmap drawOutline(const QPixmap &source, const QPixmap &styleSource);
+    static QPixmap drawOutline(const QPixmap &source, const QPixmap &styleSource, int yOffset);
+
     static inline QDeclarativeTextPrivate *get(QDeclarativeText *t) {
         return t->d_func();
     }
