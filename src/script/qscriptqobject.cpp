@@ -366,10 +366,15 @@ static void QtMetaPropertySetter(v8::Local<v8::String> /*property*/,
     } else
 #endif
     {
-        cppValue = QVariant(prop.userType(), (void *)0);
-        if (!engine->metaTypeFromJS(value, cppValue.userType(), cppValue.data())) {
-            // Needs more magic.
-            Q_UNIMPLEMENTED();
+        if (prop.userType() == -1)
+            // -1 is a QVariant.
+            cppValue = engine->variantFromJS(value);
+        else  {
+            cppValue = QVariant(prop.userType(), (void *)0);
+            if (!engine->metaTypeFromJS(value, cppValue.userType(), cppValue.data())) {
+                // Needs more magic.
+                Q_UNIMPLEMENTED();
+            }
         }
     }
 
