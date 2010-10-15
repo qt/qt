@@ -1556,8 +1556,7 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     gif)
-        [ "$VAL" = "qt" ] && VAL=auto
-        if [ "$VAL" = "auto" ] || [ "$VAL" = "no" ]; then
+        if [ "$VAL" = "no" ]; then
             CFG_GIF="$VAL"
         else
             UNKNOWN_OPT=yes
@@ -3541,7 +3540,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-accessibility] [-no-stl] [-stl] [-no-sql-<driver>] [-sql-<driver>]
         [-plugin-sql-<driver>] [-system-sqlite] [-no-qt3support] [-qt3support]
         [-platform] [-D <string>] [-I <string>] [-L <string>] [-help]
-        [-qt-zlib] [-system-zlib] [-no-gif] [-qt-gif] [-no-libtiff] [-qt-libtiff] [-system-libtiff]
+        [-qt-zlib] [-system-zlib] [-no-gif] [-no-libtiff] [-qt-libtiff] [-system-libtiff]
         [-no-libpng] [-qt-libpng] [-system-libpng] [-no-libmng] [-qt-libmng]
         [-system-libmng] [-no-libjpeg] [-qt-libjpeg] [-system-libjpeg] [-make <part>]
         [-nomake <part>] [-R <string>]  [-l <string>] [-no-rpath]  [-rpath] [-continue]
@@ -3769,8 +3768,6 @@ Third Party Libraries:
                          See http://www.gzip.org/zlib
 
     -no-gif ............ Do not compile GIF reading support.
- *  -qt-gif ............ Compile GIF reading support.
-                         See also src/gui/image/qgifhandler_p.h
 
     -no-libtiff ........ Do not compile TIFF support.
     -qt-libtiff ........ Use the libtiff bundled with Qt.
