@@ -926,6 +926,15 @@
         color: #4c0033;
         text-decoration: underline;
     }
+	descr p a
+    {
+        text-decoration: underline;
+    }
+	
+    .descr p a:visited
+    {
+        text-decoration: underline;
+    }
     .feedback
     {
         float: none;
