@@ -85,7 +85,7 @@ QT_USE_NAMESPACE
 
 @class QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate);
 
-@interface QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) : NSObject<NSOpenSavePanelDelegate> {
+@interface QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) : NSObject {
     @public
     NSOpenPanel *mOpenPanel;
     NSSavePanel *mSavePanel;
