@@ -68,6 +68,7 @@
 # include "qt_cocoa_helpers_mac_p.h"
 # include "qmainwindow.h"
 # include "qtoolbar.h"
+# include <private/qmainwindowlayout_p.h>
 #endif
 #if defined(Q_WS_QWS)
 # include "qwsdisplay_qws.h"
@@ -2866,6 +2867,15 @@ bool QWidget::isFullScreen() const
 */
 void QWidget::showFullScreen()
 {
+#ifdef Q_WS_MAC
+    // If the unified toolbar is enabled, we have to disable it before going fullscreen.
+    QMainWindow *mainWindow = qobject_cast<QMainWindow*>(this);
+    if (mainWindow && mainWindow->unifiedTitleAndToolBarOnMac()) {
+        mainWindow->setUnifiedTitleAndToolBarOnMac(false);
+        QMainWindowLayout *mainLayout = qobject_cast<QMainWindowLayout*>(mainWindow->layout());
+        mainLayout->activateUnifiedToolbarAfterFullScreen = true;
+    }
+#endif // Q_WS_MAC
     ensurePolished();
 #ifdef QT3_SUPPORT
     if (parent())
@@ -2898,6 +2908,18 @@ void QWidget::showMaximized()
 
     setWindowState((windowState() & ~(Qt::WindowMinimized | Qt::WindowFullScreen))
                    | Qt::WindowMaximized);
+#ifdef Q_WS_MAC
+    // If the unified toolbar was enabled before going fullscreen, we have to enable it back.
+    QMainWindow *mainWindow = qobject_cast<QMainWindow*>(this);
+    if (mainWindow)
+    {
+        QMainWindowLayout *mainLayout = qobject_cast<QMainWindowLayout*>(mainWindow->layout());
+        if (mainLayout->activateUnifiedToolbarAfterFullScreen) {
+            mainWindow->setUnifiedTitleAndToolBarOnMac(true);
+            mainLayout->activateUnifiedToolbarAfterFullScreen = false;
+        }
+    }
+#endif // Q_WS_MAC
     show();
 }
 
@@ -2919,6 +2941,18 @@ void QWidget::showNormal()
     setWindowState(windowState() & ~(Qt::WindowMinimized
                                      | Qt::WindowMaximized
                                      | Qt::WindowFullScreen));
+#ifdef Q_WS_MAC
+    // If the unified toolbar was enabled before going fullscreen, we have to enable it back.
+    QMainWindow *mainWindow = qobject_cast<QMainWindow*>(this);
+    if (mainWindow)
+    {
+        QMainWindowLayout *mainLayout = qobject_cast<QMainWindowLayout*>(mainWindow->layout());
+        if (mainLayout->activateUnifiedToolbarAfterFullScreen) {
+            mainWindow->setUnifiedTitleAndToolBarOnMac(true);
+            mainLayout->activateUnifiedToolbarAfterFullScreen = false;
+        }
+    }
+#endif // Q_WS_MAC
     show();
 }
 
