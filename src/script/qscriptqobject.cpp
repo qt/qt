@@ -1053,6 +1053,7 @@ static v8::Handle<v8::Value> findChildrenCallback(const v8::Arguments& args)
 
 v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *engine, const QMetaObject *mo)
 {
+    v8::HandleScope handleScope;
     v8::Handle<v8::FunctionTemplate> funcTempl = v8::FunctionTemplate::New();
     funcTempl->SetClassName(v8::String::New(mo->className()));
 
@@ -1149,9 +1150,8 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
     if (mo == &QObject::staticMetaObject) {
 
         v8::Local<v8::Value> wEngine = v8::External::Wrap(engine);
-
-        protoTempl->Set(v8::String::New("findChild"), v8::FunctionTemplate::New(findChildCallback, wEngine));
-        protoTempl->Set(v8::String::New("findChildren"), v8::FunctionTemplate::New(findChildrenCallback, wEngine));
+        protoTempl->Set(v8::String::New("findChild"), v8::FunctionTemplate::New(findChildCallback, wEngine)->GetFunction());
+        protoTempl->Set(v8::String::New("findChildren"), v8::FunctionTemplate::New(findChildrenCallback, wEngine)->GetFunction());
 
         // Install QObject interceptor.
         // This interceptor will only get called if the access is not handled by the instance
@@ -1166,7 +1166,7 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
                                             /*data=*/wEngine);
     }
 
-    return funcTempl;
+    return handleScope.Close(funcTempl);
 }
 
 v8::Handle<v8::FunctionTemplate> createQtSignalTemplate()
