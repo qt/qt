@@ -838,9 +838,19 @@ QDeclarativeObjectMethodScriptClass::Value QDeclarativeObjectMethodScriptClass::
 {
     MethodData *method = static_cast<MethodData *>(o);
 
-    if (method->data.flags & QDeclarativePropertyCache::Data::HasArguments) {
+    if (method->data.relatedIndex == -1)
+        return callPrecise(method->object, method->data, ctxt);
+    else
+        return callOverloaded(method, ctxt);
+}
 
-        QMetaMethod m = method->object->metaObject()->method(method->data.coreIndex);
+QDeclarativeObjectMethodScriptClass::Value 
+QDeclarativeObjectMethodScriptClass::callPrecise(QObject *object, const QDeclarativePropertyCache::Data &data, 
+                                                 QScriptContext *ctxt)
+{
+    if (data.flags & QDeclarativePropertyCache::Data::HasArguments) {
+
+        QMetaMethod m = object->metaObject()->method(data.coreIndex);
         QList<QByteArray> argTypeNames = m.parameterTypes();
         QVarLengthArray<int, 9> argTypes(argTypeNames.count());
 
@@ -848,7 +858,7 @@ QDeclarativeObjectMethodScriptClass::Value QDeclarativeObjectMethodScriptClass::
         for (int ii = 0; ii < argTypeNames.count(); ++ii) {
             argTypes[ii] = QMetaType::type(argTypeNames.at(ii));
             if (argTypes[ii] == QVariant::Invalid) 
-                argTypes[ii] = enumType(method->object->metaObject(), QString::fromLatin1(argTypeNames.at(ii)));
+                argTypes[ii] = enumType(object->metaObject(), QString::fromLatin1(argTypeNames.at(ii)));
             if (argTypes[ii] == QVariant::Invalid) 
                 return Value(ctxt, ctxt->throwError(QString::fromLatin1("Unknown method parameter type: %1").arg(QLatin1String(argTypeNames.at(ii)))));
         }
@@ -856,39 +866,301 @@ QDeclarativeObjectMethodScriptClass::Value QDeclarativeObjectMethodScriptClass::
         if (argTypes.count() > ctxt->argumentCount())
             return Value(ctxt, ctxt->throwError(QLatin1String("Insufficient arguments")));
 
-        QVarLengthArray<MetaCallArgument, 9> args(argTypes.count() + 1);
-        args[0].initAsType(method->data.propType, engine);
+        return callMethod(object, data.coreIndex, data.propType, argTypes.count(), argTypes.data(), ctxt);
 
-        for (int ii = 0; ii < argTypes.count(); ++ii)
+    } else {
+
+        return callMethod(object, data.coreIndex, data.propType, 0, 0, ctxt);
+
+    }
+}
+
+QDeclarativeObjectMethodScriptClass::Value 
+QDeclarativeObjectMethodScriptClass::callMethod(QObject *object, int index, 
+                                                int returnType, int argCount, int *argTypes, 
+                                                QScriptContext *ctxt)
+{
+    if (argCount > 0) {
+
+        QVarLengthArray<MetaCallArgument, 9> args(argCount + 1);
+        args[0].initAsType(returnType, engine);
+
+        for (int ii = 0; ii < argCount; ++ii)
             args[ii + 1].fromScriptValue(argTypes[ii], engine, ctxt->argument(ii));
 
         QVarLengthArray<void *, 9> argData(args.count());
         for (int ii = 0; ii < args.count(); ++ii)
             argData[ii] = args[ii].dataPtr();
 
-        QMetaObject::metacall(method->object, QMetaObject::InvokeMetaMethod, method->data.coreIndex, argData.data());
+        QMetaObject::metacall(object, QMetaObject::InvokeMetaMethod, index, argData.data());
 
         return args[0].toValue(engine);
 
-    } else if (method->data.propType != 0) {
-
+    } else if (returnType != 0) {
+        
         MetaCallArgument arg;
-        arg.initAsType(method->data.propType, engine);
+        arg.initAsType(returnType, engine);
 
         void *args[] = { arg.dataPtr() };
 
-        QMetaObject::metacall(method->object, QMetaObject::InvokeMetaMethod, method->data.coreIndex, args);
+        QMetaObject::metacall(object, QMetaObject::InvokeMetaMethod, index, args);
 
         return arg.toValue(engine);
 
     } else {
 
         void *args[] = { 0 };
-        QMetaObject::metacall(method->object, QMetaObject::InvokeMetaMethod, method->data.coreIndex, args);
+        QMetaObject::metacall(object, QMetaObject::InvokeMetaMethod, index, args);
         return Value();
 
     }
-    return Value();
+}
+
+/*!
+Resolve the overloaded method to call.  The algorithm works conceptually like this:
+    1.  Resolve the set of overloads it is *possible* to call.
+        Impossible overloads include those that have too many parameters or have parameters 
+        of unknown type.  
+    2.  Filter the set of overloads to only contain those with the closest number of 
+        parameters.
+        For example, if we are called with 3 parameters and there are 2 overloads that
+        take 2 parameters and one that takes 3, eliminate the 2 parameter overloads.
+    3.  Find the best remaining overload based on its match score.  
+        If two or more overloads have the same match score, call the last one.  The match
+        score is constructed by adding the matchScore() result for each of the parameters.
+*/
+QDeclarativeObjectMethodScriptClass::Value
+QDeclarativeObjectMethodScriptClass::callOverloaded(MethodData *method, QScriptContext *ctxt)
+{
+    int argumentCount = ctxt->argumentCount();
+
+    QDeclarativePropertyCache::Data *best = 0;
+    int bestParameterScore = INT_MAX;
+    int bestMatchScore = INT_MAX;
+
+    QDeclarativePropertyCache::Data dummy;
+    QDeclarativePropertyCache::Data *attempt = &method->data;
+
+    do {
+        QList<QByteArray> methodArgTypeNames;
+
+        if (attempt->flags & QDeclarativePropertyCache::Data::HasArguments)
+            methodArgTypeNames = method->object->metaObject()->method(attempt->coreIndex).parameterTypes();
+
+        int methodArgumentCount = methodArgTypeNames.count();
+
+        if (methodArgumentCount > argumentCount)
+            continue; // We don't have sufficient arguments to call this method
+
+        int methodParameterScore = argumentCount - methodArgumentCount;
+        if (methodParameterScore > bestParameterScore)
+            continue; // We already have a better option
+
+        int methodMatchScore = 0;
+        QVarLengthArray<int, 9> methodArgTypes(methodArgumentCount);
+
+        bool unknownArgument = false;
+        for (int ii = 0; ii < methodArgumentCount; ++ii) {
+            methodArgTypes[ii] = QMetaType::type(methodArgTypeNames.at(ii));
+            if (methodArgTypes[ii] == QVariant::Invalid) 
+                methodArgTypes[ii] = enumType(method->object->metaObject(), 
+                                              QString::fromLatin1(methodArgTypeNames.at(ii)));
+            if (methodArgTypes[ii] == QVariant::Invalid) {
+                unknownArgument = true;
+                break;
+            }
+            methodMatchScore += matchScore(ctxt->argument(ii), methodArgTypes[ii], methodArgTypeNames.at(ii));
+        }
+        if (unknownArgument)
+            continue; // We don't understand all the parameters
+
+        if (bestParameterScore > methodParameterScore || bestMatchScore > methodMatchScore) {
+            best = attempt;
+            bestParameterScore = methodParameterScore;
+            bestMatchScore = methodMatchScore;
+        }
+
+        if (bestParameterScore == 0 && bestMatchScore == 0)
+            break; // We can't get better than that
+
+    } while((attempt = relatedMethod(method->object, attempt, dummy)) != 0);
+
+    if (best) {
+        return callPrecise(method->object, *best, ctxt);
+    } else {
+        QString error = QLatin1String("Unable to determine callable overload.  Candidates are:");
+        QDeclarativePropertyCache::Data *candidate = &method->data;
+        while (candidate) {
+            error += QLatin1String("\n    ") + QString::fromUtf8(method->object->metaObject()->method(candidate->coreIndex).signature());
+            candidate = relatedMethod(method->object, candidate, dummy);
+        }
+        return Value(ctxt, ctxt->throwError(error));
+    }
+}
+
+/*!
+    Returns the match score for converting \a actual to be of type \a conversionType.  A 
+    zero score means "perfect match" whereas a higher score is worse.
+
+    The conversion table is copied out of the QtScript callQtMethod() function.
+*/
+int QDeclarativeObjectMethodScriptClass::matchScore(const QScriptValue &actual, int conversionType, 
+                                                    const QByteArray &conversionTypeName)
+{
+    if (actual.isNumber()) {
+        switch (conversionType) {
+        case QMetaType::Double:
+            return 0;
+        case QMetaType::Float:
+            return 1;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            return 2;
+        case QMetaType::Long:
+        case QMetaType::ULong:
+            return 3;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            return 4;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            return 5;
+            break;
+        case QMetaType::Char:
+        case QMetaType::UChar:
+            return 6;
+        default:
+            return 10;
+        }
+    } else if (actual.isString()) {
+        switch (conversionType) {
+        case QMetaType::QString:
+            return 0;
+        default:
+            return 10;
+        }
+    } else if (actual.isBoolean()) {
+        switch (conversionType) {
+        case QMetaType::Bool:
+            return 0;
+        default:
+            return 10;
+        }
+    } else if (actual.isDate()) {
+        switch (conversionType) {
+        case QMetaType::QDateTime:
+            return 0;
+        case QMetaType::QDate:
+            return 1;
+        case QMetaType::QTime:
+            return 2;
+        default:
+            return 10;
+        }
+    } else if (actual.isRegExp()) {
+        switch (conversionType) {
+        case QMetaType::QRegExp:
+            return 0;
+        default:
+            return 10;
+        }
+    } else if (actual.isVariant()) {
+        if (conversionType == qMetaTypeId<QVariant>())
+            return 0;
+        else if (actual.toVariant().userType() == conversionType)
+            return 0;
+        else
+            return 10;
+    } else if (actual.isArray()) {
+        switch (conversionType) {
+        case QMetaType::QStringList:
+        case QMetaType::QVariantList:
+            return 5;
+        default:
+            return 10;
+        }
+    } else if (actual.isQObject()) {
+        switch (conversionType) {
+        case QMetaType::QObjectStar:
+            return 0;
+        default:
+            return 10;
+        }
+    } else if (actual.isNull()) {
+        switch (conversionType) {
+        case QMetaType::VoidStar:
+        case QMetaType::QObjectStar:
+            return 0;
+        default:
+            if (!conversionTypeName.endsWith('*'))
+                return 10;
+            else
+                return 0;
+        }
+    } else {
+        return 10;
+    }
+}
+
+static inline int QMetaObject_methods(const QMetaObject *metaObject)
+{
+    struct Private
+    {
+        int revision;
+        int className;
+        int classInfoCount, classInfoData;
+        int methodCount, methodData;
+    };
+
+    return reinterpret_cast<const Private *>(metaObject->d.data)->methodCount;
+}
+
+static QByteArray QMetaMethod_name(const QMetaMethod &m)
+{
+    QByteArray sig = m.signature();
+    int paren = sig.indexOf('(');
+    if (paren == -1)
+        return sig;
+    else
+        return sig.left(paren);
+}
+
+/*!
+Returns the next related method, if one, or 0.
+*/
+QDeclarativePropertyCache::Data *
+QDeclarativeObjectMethodScriptClass::relatedMethod(QObject *object, QDeclarativePropertyCache::Data *current, 
+                                                   QDeclarativePropertyCache::Data &dummy)
+{
+    QDeclarativePropertyCache *cache = QDeclarativeData::get(object)->propertyCache;
+    if (current->relatedIndex == -1)
+        return 0;
+
+    if (cache) {
+        return cache->method(current->relatedIndex);
+    } else {
+        const QMetaObject *mo = object->metaObject();
+        int methodOffset = mo->methodCount() - QMetaObject_methods(mo);
+
+        while (methodOffset > current->relatedIndex) {
+            mo = mo->superClass();
+            methodOffset -= QMetaObject_methods(mo);
+        }
+
+        QMetaMethod method = mo->method(current->relatedIndex);
+        dummy.load(method);
+        
+        // Look for overloaded methods
+        QByteArray methodName = QMetaMethod_name(method);
+        for (int ii = current->relatedIndex - 1; ii >= methodOffset; --ii) {
+            if (methodName == QMetaMethod_name(mo->method(ii))) {
+                dummy.relatedIndex = ii;
+                return &dummy;
+            }
+        }
+
+        return &dummy;
+    }
 }
 
 QT_END_NAMESPACE
