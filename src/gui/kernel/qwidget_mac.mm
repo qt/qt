@@ -2803,8 +2803,8 @@ void QWidgetPrivate::setSubWindowStacking(bool set)
     // a tool window, since it will normally hide when you deactivate the
     // application, Cocoa will hide the parent upon deactivate as well. The result often
     // being no more visible windows on screen. So, to make a long story short, we only
-    // allow parent-child relationships between windows that both are on the NSNormalWindowLevel
-    // (because Cocoa will also use the window level to decide upon strange behaviour).
+    // allow parent-child relationships between windows that both are either a plain window
+    // or a dialog.
 
     Q_Q(QWidget);
     if (!q->isWindow())
@@ -2812,7 +2812,8 @@ void QWidgetPrivate::setSubWindowStacking(bool set)
     NSWindow *qwin = [qt_mac_nativeview_for(q) window];
     if (!qwin)
         return;
-    if (set && [qwin level] != NSNormalWindowLevel)
+    Qt::WindowType qtype = q->windowType();
+    if (set && !(qtype == Qt::Window || qtype == Qt::Dialog))
         return;
     if (set && ![qwin isVisible])
         return;
@@ -2820,7 +2821,8 @@ void QWidgetPrivate::setSubWindowStacking(bool set)
     if (QWidget *parent = q->parentWidget()) {
         if (NSWindow *pwin = [qt_mac_nativeview_for(parent) window]) {
             if (set) {
-                if ([pwin isVisible] && [pwin level] == NSNormalWindowLevel && ![qwin parentWindow])
+                Qt::WindowType ptype = parent->window()->windowType();
+                if ([pwin isVisible] && (ptype == Qt::Window || ptype == Qt::Dialog) && ![qwin parentWindow])
                     [pwin addChildWindow:qwin ordered:NSWindowAbove];
             } else {
                 [pwin removeChildWindow:qwin];
@@ -2834,7 +2836,8 @@ void QWidgetPrivate::setSubWindowStacking(bool set)
         if (child && child->isWindow()) {
             if (NSWindow *cwin = [qt_mac_nativeview_for(child) window]) {
                 if (set) {
-                    if ([cwin isVisible] && [cwin level] == NSNormalWindowLevel && ![cwin parentWindow])
+                    Qt::WindowType ctype = child->window()->windowType();
+                    if ([cwin isVisible] && (ctype == Qt::Window || ctype == Qt::Dialog) && ![cwin parentWindow])
                         [qwin addChildWindow:cwin ordered:NSWindowAbove];
                 } else {
                     [qwin removeChildWindow:qt_mac_window_for(child)];
