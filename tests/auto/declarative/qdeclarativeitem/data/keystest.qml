@@ -17,6 +17,7 @@ Item {
 
     Item {
         id: item2
+        visible: forwardeeVisible
         Keys.onPressed: keysTestObject.forwardedKey(event.key)
         Keys.onReleased: keysTestObject.forwardedKey(event.key)
     }

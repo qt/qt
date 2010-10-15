@@ -3712,4 +3712,5 @@ EXPORTS
 	_ZltRK13QElapsedTimerS1_ @ 3711 NONAME
 	_ZrsR11QDataStreamR12QEasingCurve @ 3712 NONAME
 	_Z26qt_symbian_SetupThreadHeapiR24SStdEpocThreadCreateInfo @ 3713 NONAME
+	_ZN24QAbstractDeclarativeData17objectNameChangedE @ 3714 NONAME DATA 4
 
