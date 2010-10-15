@@ -63,6 +63,7 @@
 #include <qdesktopwidget.h>
 #include <stdlib.h>
 #include <qabstracteventdispatcher.h>
+#import <AppKit/NSSavePanel.h>
 #include "ui_qfiledialog.h"
 
 QT_BEGIN_NAMESPACE

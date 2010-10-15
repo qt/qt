@@ -1417,7 +1417,7 @@ static int qCocoaViewCount = 0;
     if (!selectedText.isEmpty()) {
         QCFString string(selectedText.mid(theRange.location, theRange.length));
         const NSString *tmpString = reinterpret_cast<const NSString *>((CFStringRef)string);
-        return [[[NSAttributedString alloc]  initWithString:tmpString] autorelease];
+        return [[[NSAttributedString alloc]  initWithString:const_cast<NSString *>(tmpString)] autorelease];
     } else {
         return nil;
     }

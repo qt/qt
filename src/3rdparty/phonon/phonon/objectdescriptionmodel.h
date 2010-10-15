@@ -141,10 +141,11 @@ namespace Phonon
 
 /* Required to ensure template class vtables are exported on both symbian
 and existing builds. */
-#if defined(Q_OS_SYMBIAN) && defined(Q_CC_RVCT)
+#if (defined(Q_OS_SYMBIAN) && defined(Q_CC_RVCT)) || defined(Q_CC_CLANG)
 // RVCT compiler (2.2.686) requires the export declaration to be on the class to export vtables
 // MWC compiler works both ways
 // GCCE compiler is unknown (it can't compile QtCore yet)
+// Clang also requires the export declaration to be on the class to export vtables
 #define PHONON_TEMPLATE_CLASS_EXPORT PHONON_EXPORT
 #define PHONON_TEMPLATE_CLASS_MEMBER_EXPORT
 #else
