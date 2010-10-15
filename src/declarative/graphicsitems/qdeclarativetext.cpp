@@ -270,6 +270,7 @@ void QDeclarativeTextPrivate::updateSize()
     internalWidthUpdate = false;
     q->setImplicitHeight(size.height());
     emit q->paintedSizeChanged();
+    q->update();
 }
 
 /*!
