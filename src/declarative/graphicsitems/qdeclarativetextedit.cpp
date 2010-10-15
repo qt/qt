@@ -319,6 +319,7 @@ void QDeclarativeTextEdit::setTextFormat(TextFormat format)
         updateSize();
     }
     d->format = format;
+    d->control->setAcceptRichText(d->format != PlainText);
     emit textFormatChanged(d->format);
 }
 
