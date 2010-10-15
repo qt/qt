@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDRAWHELPER_ARMV6_P_H
-#define QDRAWHELPER_ARMV6_P_H
+#ifndef QDRAWHELPER_ARM_SIMD_P_H
+#define QDRAWHELPER_ARM_SIMD_P_H
 
 //
 //  W A R N I N G
@@ -57,25 +57,20 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_CC_RVCT) && defined(QT_HAVE_ARMV6)
+#if defined(QT_HAVE_ARM_SIMD)
 
-extern "C" void qt_blend_rgb32_on_rgb32_armv6(uchar *destPixels, int dbpl,
+void qt_blend_argb32_on_argb32_arm_simd(uchar *destPixels, int dbpl,
                                             const uchar *srcPixels, int sbpl,
                                             int w, int h,
                                             int const_alpha);
 
-extern "C" void qt_blend_argb32_on_argb32_armv6(uchar *destPixels, int dbpl,
+void qt_blend_rgb32_on_rgb32_arm_simd(uchar *destPixels, int dbpl,
                                             const uchar *srcPixels, int sbpl,
                                             int w, int h,
                                             int const_alpha);
 
-extern "C" void qt_memfill32_armv6(quint32 *dest, quint32 value, int count);
-
-extern "C" void comp_func_Source_armv6(uint *dest, const uint *src, int length, uint const_alpha);
-extern "C" void comp_func_SourceOver_armv6(uint *dest, const uint *src, int length, uint const_alpha);
-
-#endif // QT_HAVE_ARMV6
+#endif // QT_HAVE_ARM_SIMD
 
 QT_END_NAMESPACE
 
-#endif // QDRAWHELPER_ARMV6_P_H
+#endif // QDRAWHELPER_ARM_SIMD_P_H
