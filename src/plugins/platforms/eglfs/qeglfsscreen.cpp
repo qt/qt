@@ -145,9 +145,9 @@ QEglFSScreen::QEglFSScreen(EGLNativeDisplayType display)
         if (!ok)
             swapInterval = 1;
     }
-    platformFormat.setSwapInterval(swapInterval);
 
     EGLConfig config = q_configFromQPlatformWindowFormat(m_dpy, platformFormat);
+    eglSwapInterval(display, swapInterval);
 
     EGLNativeWindowType eglWindow = 0;
 #ifdef Q_OPENKODE
