@@ -936,7 +936,7 @@ void **QListData::erase(void **xi)
     This function requires the value type to have an implementation of
     \c operator==().
 
-    Note that QList uses 0-based indexes, just like C++ arrays. Negative 
+    Note that QList uses 0-based indexes, just like C++ arrays. Negative
     indexes are not supported with the exception of the value mentioned
     above.
 

@@ -78,6 +78,7 @@ public:
         : layout(0), explicitIconSize(false), toolButtonStyle(Qt::ToolButtonIconOnly)
 #ifdef Q_WS_MAC
             , useHIToolBar(false)
+            , activateUnifiedToolbarAfterFullScreen(false)
 #endif
 #if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_CURSOR)
             , hasOldCursor(false) , cursorAdjusted(false)
@@ -89,6 +90,7 @@ public:
     Qt::ToolButtonStyle toolButtonStyle;
 #ifdef Q_WS_MAC
     bool useHIToolBar;
+    bool activateUnifiedToolbarAfterFullScreen;
 #endif
     void init();
     QList<int> hoverSeparator;
@@ -1501,8 +1503,6 @@ bool QMainWindow::event(QEvent *event)
     \i Before Qt 4.5, if you called showFullScreen() on the main window, the QToolbar would
         disappear since it is considered to be part of the title bar. Qt 4.5 and up will now work around this by pulling
         the toolbars out and back into the regular toolbar and vice versa when you swap out.
-        However, a good practice would be that turning off the unified toolbar before you call
-        showFullScreen() and restoring it after you call showNormal().
     \endlist
 
     Setting this back to false will remove these restrictions.
