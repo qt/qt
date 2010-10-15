@@ -60,7 +60,7 @@ public:
     static bool lockLiveTexture(Qt::HANDLE h);
     static bool unlockLiveTexture(Qt::HANDLE h);
     static void destroyLiveTexture(Qt::HANDLE h);
-    static void queryLiveTexture(Qt::HANDLE h, void **data, int *pitch);
+    static void queryLiveTexture(Qt::HANDLE h, void **data, int *pitch, QImage::Format *format);
     static Qt::HANDLE liveTextureToEGLImage(Qt::HANDLE);
 
 private:

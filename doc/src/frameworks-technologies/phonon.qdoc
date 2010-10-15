@@ -524,24 +524,5 @@
     the QtOpenGL shared library. If this is not what you want, it is
     possible to configure Qt without OpenGL support. In that case, you
     need to run \c configure with the \c -no-opengl option.
-
-    \section1 Work in Progress
-
-    Phonon and its Qt backends, though fully functional for
-    multimedia playback, are still under development. Functionality to
-    come is the possibility to capture media and more processors for
-    both music and video files.
-
-    Another important consideration is to implement support for
-    storing media to files; i.e., not playing back media directly.
-
-    We also hope in the future to be able to support direct
-    manipulation of media streams. This will give the programmer more
-    freedom to manipulate streams than just through processors.
-
-    Currently, the multimedia framework supports one input source. It will be
-    possible to include several sources. This is useful in, for example, audio
-    mixer applications where several audio sources can be sent, processed and
-    output as a single audio stream.
 */
 
