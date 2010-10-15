@@ -47,6 +47,9 @@
 #include "qs60mainapplication.h"
 #include <bautils.h>
 #include <coemain.h>
+#ifndef Q_WS_S60
+# include <eikserverapp.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -152,7 +155,11 @@ CDictionaryStore *QS60MainApplication::OpenIniFileLC(RFs &aFs) const
 */
 void QS60MainApplication::NewAppServerL(CApaAppServer *&aAppServer)
 {
+#ifdef Q_WS_S60
     QS60MainApplicationBase::NewAppServerL(aAppServer);
+#else
+    aAppServer = new(ELeave) CEikAppServer;
+#endif
 }
 
 QT_END_NAMESPACE

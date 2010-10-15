@@ -44,6 +44,7 @@
 #include <private/qdeclarativeengine_p.h>
 #include <private/qdeclarativecompiler_p.h>
 #include <private/qdeclarativecomponent_p.h>
+#include <private/qdeclarativeglobal_p.h>
 
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <QtCore/qdebug.h>
@@ -493,6 +494,13 @@ void QDeclarativeDataLoader::load(QDeclarativeDataBlob *blob)
     QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(blob->m_url);
 
     if (!lf.isEmpty()) {
+        if (!QDeclarative_isFileCaseCorrect(lf)) {
+            QDeclarativeError error;
+            error.setUrl(blob->m_url);
+            error.setDescription(QLatin1String("File name case mismatch"));
+            blob->setError(error);
+            return;
+        }
         QFile file(lf);
         if (file.open(QFile::ReadOnly)) {
             QByteArray data = file.readAll();

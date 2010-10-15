@@ -56,7 +56,6 @@
 
 #include <QDebug>
 #include <QPen>
-#include <QFile>
 #include <QEvent>
 #include <QGraphicsSceneMouseEvent>
 #include <QtCore/qnumeric.h>
@@ -1180,7 +1179,7 @@ void QDeclarativeKeysAttached::keyPressed(QKeyEvent *event, bool post)
         d->inPress = true;
         for (int ii = 0; ii < d->targets.count(); ++ii) {
             QGraphicsItem *i = d->finalFocusProxy(d->targets.at(ii));
-            if (i) {
+            if (i && i->isVisible()) {
                 d->item->scene()->sendEvent(i, event);
                 if (event->isAccepted()) {
                     d->inPress = false;
@@ -1222,7 +1221,7 @@ void QDeclarativeKeysAttached::keyReleased(QKeyEvent *event, bool post)
         d->inRelease = true;
         for (int ii = 0; ii < d->targets.count(); ++ii) {
             QGraphicsItem *i = d->finalFocusProxy(d->targets.at(ii));
-            if (i) {
+            if (i && i->isVisible()) {
                 d->item->scene()->sendEvent(i, event);
                 if (event->isAccepted()) {
                     d->inRelease = false;
@@ -1247,7 +1246,7 @@ void QDeclarativeKeysAttached::inputMethodEvent(QInputMethodEvent *event, bool p
         d->inIM = true;
         for (int ii = 0; ii < d->targets.count(); ++ii) {
             QGraphicsItem *i = d->finalFocusProxy(d->targets.at(ii));
-            if (i && (i->flags() & QGraphicsItem::ItemAcceptsInputMethod)) {
+            if (i && i->isVisible() && (i->flags() & QGraphicsItem::ItemAcceptsInputMethod)) {
                 d->item->scene()->sendEvent(i, event);
                 if (event->isAccepted()) {
                     d->imeItem = i;
@@ -1275,7 +1274,7 @@ QVariant QDeclarativeKeysAttached::inputMethodQuery(Qt::InputMethodQuery query) 
     if (d->item) {
         for (int ii = 0; ii < d->targets.count(); ++ii) {
                 QGraphicsItem *i = d->finalFocusProxy(d->targets.at(ii));
-            if (i && (i->flags() & QGraphicsItem::ItemAcceptsInputMethod) && i == d->imeItem) { //### how robust is i == d->imeItem check?
+            if (i && i->isVisible() && (i->flags() & QGraphicsItem::ItemAcceptsInputMethod) && i == d->imeItem) { //### how robust is i == d->imeItem check?
                 QVariant v = static_cast<QDeclarativeItemAccessor *>(i)->doInputMethodQuery(query);
                 if (v.userType() == QVariant::RectF)
                     v = d->item->mapRectFromItem(i, v.toRectF());  //### cost?

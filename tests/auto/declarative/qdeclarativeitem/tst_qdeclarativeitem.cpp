@@ -204,6 +204,7 @@ void tst_QDeclarativeItem::keys()
     canvas->rootContext()->setContextProperty("keysTestObject", testObject);
 
     canvas->rootContext()->setContextProperty("enableKeyHanding", QVariant(true));
+    canvas->rootContext()->setContextProperty("forwardeeVisible", QVariant(true));
 
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/keystest.qml"));
     canvas->show();
@@ -284,6 +285,17 @@ void tst_QDeclarativeItem::keys()
     QCOMPARE(testObject->mText, QLatin1String("Backtab"));
     QVERIFY(testObject->mModifiers == Qt::NoModifier);
     QVERIFY(key.isAccepted());
+
+    testObject->reset();
+
+    canvas->rootContext()->setContextProperty("forwardeeVisible", QVariant(false));
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_A, Qt::NoModifier, "A", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QCOMPARE(testObject->mKey, int(Qt::Key_A));
+    QCOMPARE(testObject->mForwardedKey, 0);
+    QCOMPARE(testObject->mText, QLatin1String("A"));
+    QVERIFY(testObject->mModifiers == Qt::NoModifier);
+    QVERIFY(!key.isAccepted());
 
     testObject->reset();
 

@@ -46,8 +46,6 @@
 #include <qdeclarativeinfo.h>
 #include <qdeclarativepixmapcache_p.h>
 
-#include <QFile>
-
 QT_BEGIN_NAMESPACE
 
 QDeclarativeImageBase::QDeclarativeImageBase(QDeclarativeImageBasePrivate &dd, QDeclarativeItem *parent)
@@ -115,6 +113,7 @@ void QDeclarativeImageBase::setSourceSize(const QSize& size)
         return;
 
     d->sourcesize = size;
+    d->explicitSourceSize = true;
     emit sourceSizeChanged();
     if (isComponentComplete())
         load();
@@ -123,7 +122,10 @@ void QDeclarativeImageBase::setSourceSize(const QSize& size)
 QSize QDeclarativeImageBase::sourceSize() const
 {
     Q_D(const QDeclarativeImageBase);
-    return d->sourcesize.isValid() ? d->sourcesize : QSize(implicitWidth(),implicitHeight());
+
+    int width = d->sourcesize.width();
+    int height = d->sourcesize.height();
+    return QSize(width != -1 ? width : implicitWidth(), height != -1 ? height : implicitHeight());
 }
 
 void QDeclarativeImageBase::load()
@@ -141,7 +143,7 @@ void QDeclarativeImageBase::load()
         pixmapChange();
         update();
     } else {
-        d->pix.load(qmlEngine(this), d->url, d->sourcesize, d->async);
+        d->pix.load(qmlEngine(this), d->url, d->explicitSourceSize ? sourceSize() : QSize(), d->async);
 
         if (d->pix.isLoading()) {
             d->progress = 0.0;
@@ -186,11 +188,8 @@ void QDeclarativeImageBase::requestFinished()
     setImplicitWidth(d->pix.width());
     setImplicitHeight(d->pix.height());
 
-    if (d->sourcesize.width() != d->pix.width() || d->sourcesize.height() != d->pix.height()) {
-        d->sourcesize.setWidth(d->pix.width());
-        d->sourcesize.setHeight(d->pix.height());
+    if (d->sourcesize.width() != d->pix.width() || d->sourcesize.height() != d->pix.height())
         emit sourceSizeChanged();
-    }
 
     if (d->status != oldStatus)
         emit statusChanged(d->status);
