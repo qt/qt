@@ -1143,9 +1143,10 @@ QRectF QDeclarativeText::boundingRect() const
 void QDeclarativeText::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     Q_D(QDeclarativeText);
-    if (!d->internalWidthUpdate && newGeometry.width() != oldGeometry.width() &&
-        (d->wrapMode != QDeclarativeText::NoWrap || d->elideMode != QDeclarativeText::ElideNone)) {
-
+    if ((!d->internalWidthUpdate && newGeometry.width() != oldGeometry.width())
+            && (d->wrapMode != QDeclarativeText::NoWrap
+                || d->elideMode != QDeclarativeText::ElideNone
+                || d->hAlign != Qt::AlignLeft)) {
         if (d->singleline && d->elideMode != QDeclarativeText::ElideNone && widthValid()) {
             // We need to re-elide
             d->updateLayout();
