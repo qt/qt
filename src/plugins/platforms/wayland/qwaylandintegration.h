@@ -71,6 +71,10 @@ public:
     struct wl_buffer *createShmBuffer(int fd, int width, int height,
 				      uint32_t stride,
 				      struct wl_visual *visual);
+    struct wl_buffer *createDrmBuffer(int name, int width, int height,
+				      uint32_t stride,
+				      struct wl_visual *visual);
+
     struct wl_visual *argbVisual();
     EGLDisplay eglDisplay() { return mEglDisplay; }
 
@@ -150,12 +154,15 @@ public:
 		   int32_t x, int32_t y, int32_t width, int32_t height);
     WId winId() const;
     QPlatformGLContext *glContext() const;
+    void attach(QWaylandBuffer *buffer);
 
 private:
     struct wl_surface *mSurface;
     QWaylandDisplay *mDisplay;
     QPlatformGLContext *mGLContext;
     WId mWindowId;
+
+    QWaylandBuffer *mBuffer;
 };
 
 class QWaylandIntegration : public QPlatformIntegration

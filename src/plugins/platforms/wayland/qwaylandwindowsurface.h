@@ -52,26 +52,31 @@ class QWaylandDisplay;
 
 class QWaylandBuffer {
 public:
-    QWaylandBuffer(QWaylandDisplay *display,
-		   const QSize &size, QImage::Format format);
-    ~QWaylandBuffer();
-    QImage mImage;
+    QWaylandBuffer() { }
+    virtual ~QWaylandBuffer() { }
     struct wl_buffer *mBuffer;
 };
 
-class QWaylandWindowSurface : public QWindowSurface
+class QWaylandShmBuffer : public QWaylandBuffer {
+public:
+    QWaylandShmBuffer(QWaylandDisplay *display,
+		   const QSize &size, QImage::Format format);
+    ~QWaylandShmBuffer();
+    QImage mImage;
+};
+
+class QWaylandShmWindowSurface : public QWindowSurface
 {
 public:
-    QWaylandWindowSurface(QWidget *window, QWaylandDisplay *display);
-    ~QWaylandWindowSurface();
+    QWaylandShmWindowSurface(QWidget *window, QWaylandDisplay *display);
+    ~QWaylandShmWindowSurface();
 
     QPaintDevice *paintDevice();
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
     void resize(const QSize &size);
-    void attach(void);
 
 private:
-    QWaylandBuffer *mBuffer;
+    QWaylandShmBuffer *mBuffer;
     QWaylandDisplay *mDisplay;
 };
 

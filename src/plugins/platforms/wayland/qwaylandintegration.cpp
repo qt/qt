@@ -28,7 +28,7 @@ public:
 	, mDisplay(display) { }
 
     void changeCursor(QCursor *cursor, QWidget *widget);
-    QWaylandBuffer *mBuffer;
+    QWaylandShmBuffer *mBuffer;
     QWaylandDisplay *mDisplay;
 };
 
@@ -145,8 +145,8 @@ void QWaylandCursor::changeCursor(QCursor *cursor, QWidget *widget)
 	if (mBuffer)
 	    delete mBuffer;
 
-	mBuffer = new QWaylandBuffer(mDisplay, reader.size(),
-				     QImage::Format_ARGB32);
+	mBuffer = new QWaylandShmBuffer(mDisplay, reader.size(),
+					QImage::Format_ARGB32);
     }
 
     reader.read(&mBuffer->mImage);
@@ -175,6 +175,14 @@ struct wl_buffer *QWaylandDisplay::createShmBuffer(int fd,
 						   struct wl_visual *visual)
 {
     return wl_shm_create_buffer(mShm, fd, width, height, stride, visual);
+}
+
+struct wl_buffer *QWaylandDisplay::createDrmBuffer(int name,
+						   int width, int height,
+						   uint32_t stride,
+						   struct wl_visual *visual)
+{
+    return wl_drm_create_buffer(mDrm, name, width, height, stride, visual);
 }
 
 struct wl_visual *QWaylandDisplay::argbVisual()
@@ -431,16 +439,25 @@ WId QWaylandWindow::winId() const
 
 void QWaylandWindow::setVisible(bool visible)
 {
-    QWaylandWindowSurface *wws =
-	(QWaylandWindowSurface *) widget()->windowSurface();
-
     if (visible) {
 	mSurface = mDisplay->createSurface();
 	wl_surface_set_user_data(mSurface, this);
-	wws->attach();
+	attach(mBuffer);
     } else {
 	wl_surface_destroy(mSurface);
 	mSurface = NULL;
+    }
+}
+
+void QWaylandWindow::attach(QWaylandBuffer *buffer)
+{
+    QRect geometry = widget()->geometry();
+
+    mBuffer = buffer;
+    if (mSurface) {
+	wl_surface_attach(mSurface, mBuffer->mBuffer);
+	wl_surface_map(mSurface, geometry.x(), geometry.y(),
+		       geometry.width(), geometry.height());
     }
 }
 
@@ -529,7 +546,7 @@ QPlatformWindow *QWaylandIntegration::createPlatformWindow(QWidget *widget, WId 
 QWindowSurface *QWaylandIntegration::createWindowSurface(QWidget *widget, WId winId) const
 {
     Q_UNUSED(winId);
-    return new QWaylandWindowSurface(widget, mDisplay);
+    return new QWaylandShmWindowSurface(widget, mDisplay);
 }
 
 QPlatformFontDatabase *QWaylandIntegration::fontDatabase() const

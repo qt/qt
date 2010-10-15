@@ -50,10 +50,19 @@
 #include <errno.h>
 #include <sys/mman.h>
 
+#define GL_GLEXT_PROTOTYPES
+#define EGL_EGLEXT_PROTOTYPES
+#define MESA_EGL_NO_X11_HEADERS
+
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+
 QT_BEGIN_NAMESPACE
 
-QWaylandBuffer::QWaylandBuffer(QWaylandDisplay *display,
-			       const QSize &size, QImage::Format format)
+QWaylandShmBuffer::QWaylandShmBuffer(QWaylandDisplay *display,
+				     const QSize &size, QImage::Format format)
 {
     int stride = size.width() * 4;
     int alloc = stride * size.height();
@@ -82,31 +91,30 @@ QWaylandBuffer::QWaylandBuffer(QWaylandDisplay *display,
     close(fd);
 }
 
-QWaylandBuffer::~QWaylandBuffer(void)
+QWaylandShmBuffer::~QWaylandShmBuffer(void)
 {
     munmap((void *) mImage.constBits(), mImage.byteCount());
     wl_buffer_destroy(mBuffer);
 }
 
-QWaylandWindowSurface::QWaylandWindowSurface(QWidget *window,
-					     QWaylandDisplay *display)
+QWaylandShmWindowSurface::QWaylandShmWindowSurface(QWidget *window,
+						   QWaylandDisplay *display)
     : QWindowSurface(window)
     , mBuffer(0)
     , mDisplay(display)
 {
-    //qDebug() << "QWaylandWindowSurface::QWaylandWindowSurface:" << (long)this;
 }
 
-QWaylandWindowSurface::~QWaylandWindowSurface()
+QWaylandShmWindowSurface::~QWaylandShmWindowSurface()
 {
 }
 
-QPaintDevice *QWaylandWindowSurface::paintDevice()
+QPaintDevice *QWaylandShmWindowSurface::paintDevice()
 {
     return &mBuffer->mImage;
 }
 
-void QWaylandWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
+void QWaylandShmWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(widget);
     Q_UNUSED(offset);
@@ -122,21 +130,9 @@ void QWaylandWindowSurface::flush(QWidget *widget, const QRegion &region, const 
     }
 }
 
-void QWaylandWindowSurface::attach(void)
+void QWaylandShmWindowSurface::resize(const QSize &size)
 {
     QWaylandWindow *ww = (QWaylandWindow *) window()->platformWindow();
-    QRect geometry = window()->geometry();
-
-    if (ww->surface() && mBuffer) {
-	wl_surface_attach(ww->surface(), mBuffer->mBuffer);
-	wl_surface_map(ww->surface(), geometry.x(), geometry.y(),
-		       mBuffer->mImage.width(), mBuffer->mImage.height());
-    }
-}
-
-void QWaylandWindowSurface::resize(const QSize &size)
-{
-    //qDebug() << "QWaylandWindowSurface::setGeometry:" << (long)this << rect;
     QWindowSurface::resize(size);
     QImage::Format format = QApplicationPrivate::platformIntegration()->screens().first()->format();
 
@@ -146,9 +142,95 @@ void QWaylandWindowSurface::resize(const QSize &size)
     if (mBuffer != NULL)
 	delete mBuffer;
 
-    mBuffer = new QWaylandBuffer(mDisplay, size, format);
+    mBuffer = new QWaylandShmBuffer(mDisplay, size, format);
 
-    attach();
+    ww->attach(mBuffer);
+}
+
+
+class QWaylandDrmBuffer : public QWaylandBuffer {
+public:
+    QWaylandDrmBuffer(QWaylandDisplay *display,
+		       const QSize &size, QImage::Format format);
+    ~QWaylandDrmBuffer();
+    EGLImageKHR mImage;
+    GLuint mTexture;
+    QWaylandDisplay *mDisplay;
+};
+
+class QWaylandDrmWindowSurface : public QWindowSurface
+{
+public:
+    QWaylandDrmWindowSurface(QWidget *window, QWaylandDisplay *display);
+    ~QWaylandDrmWindowSurface();
+
+    QPaintDevice *paintDevice();
+    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+    void resize(const QSize &size);
+
+private:
+    QWaylandDrmBuffer *mBuffer;
+    QWaylandDisplay *mDisplay;
+};
+
+QWaylandDrmBuffer::QWaylandDrmBuffer(QWaylandDisplay *display,
+				     const QSize &size, QImage::Format format)
+    : mDisplay(display)
+{
+    EGLint name, stride;
+    EGLint imageAttribs[] = {
+	EGL_WIDTH,			0,
+	EGL_HEIGHT,			0,
+	EGL_DRM_BUFFER_FORMAT_MESA,	EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
+	EGL_DRM_BUFFER_USE_MESA,	EGL_DRM_BUFFER_USE_SCANOUT_MESA,
+	EGL_NONE
+    };
+
+    imageAttribs[1] = size.width();
+    imageAttribs[3] = size.height();
+    mImage = eglCreateDRMImageMESA(mDisplay->eglDisplay(), imageAttribs);
+    glGenTextures(1, &mTexture);
+    glBindTexture(GL_TEXTURE_2D, mTexture);
+    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, mImage);
+
+    eglExportDRMImageMESA(mDisplay->eglDisplay(),
+			  mImage, &name, NULL, &stride);
+
+    mBuffer = display->createDrmBuffer(name, size.width(), size.height(),
+				       stride, display->argbVisual());
+}
+
+QWaylandDrmBuffer::~QWaylandDrmBuffer(void)
+{
+    glDeleteTextures(1, &mTexture);
+    eglDestroyImageKHR(mDisplay->eglDisplay(), mImage);
+    wl_buffer_destroy(mBuffer);
+}
+
+
+QWaylandDrmWindowSurface::QWaylandDrmWindowSurface(QWidget *window,
+						   QWaylandDisplay *display)
+    : QWindowSurface(window)
+    , mBuffer(0)
+    , mDisplay(display)
+{
+}
+
+QWaylandDrmWindowSurface::~QWaylandDrmWindowSurface()
+{
+}
+
+QPaintDevice *QWaylandDrmWindowSurface::paintDevice()
+{
+    return NULL;
+}
+
+void QWaylandDrmWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
+{
+}
+
+void QWaylandDrmWindowSurface::resize(const QSize &size)
+{
 }
 
 QT_END_NAMESPACE
