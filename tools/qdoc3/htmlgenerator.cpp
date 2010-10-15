@@ -4234,7 +4234,7 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
                 if (qpgn->isDefault())
                     out() << "<span class=\"qmldefault\">default</span>";
                 generateQmlItem(qpn, relative, marker, false);
-                out() << "</td></tr>";
+                out() << "</p></td></tr>";
             }
             ++p;
         }

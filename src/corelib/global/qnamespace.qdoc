@@ -511,11 +511,11 @@
     delivery at a later time.
 
     \value AutoConnection
-            (default) If the object sending the signal is in a different thread
-            than the receiving object, the signal is queued, behaving as
-            Qt::QueuedConnection. If both objects are in the same thread,
-            the slot is invoked directly, behaving as Qt::DirectConnection. The
-            type of connection is determined when the signal is emitted.
+            (default) If the signal is emitted from a different thread than the
+            receiving object, the signal is queued, behaving as
+            Qt::QueuedConnection. Otherwise, the slot is invoked directly,
+            behaving as Qt::DirectConnection. The type of connection is
+            determined when the signal is emitted.
 
     \value DirectConnection
 	   The slot is invoked immediately, when the signal is
