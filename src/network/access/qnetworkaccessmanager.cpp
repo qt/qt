@@ -944,6 +944,22 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 {
     Q_D(QNetworkAccessManager);
 
+    // 4.7 only hotfix fast path for data:// URLs
+    // In 4.8 this is solved with QNetworkReplyDataImpl and will work there
+    // This hotfix is done for not needing a QNetworkSession for data://
+    if ((op == QNetworkAccessManager::GetOperation || op == QNetworkAccessManager::HeadOperation)
+             && (req.url().scheme() == QLatin1String("data"))) {
+        QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
+        QNetworkReplyImplPrivate *priv = reply->d_func();
+        priv->manager = this;
+        priv->backend = new QNetworkAccessDataBackend();
+        priv->backend->manager = this->d_func();
+        priv->backend->setParent(reply);
+        priv->backend->reply = priv;
+        priv->setup(op, req, outgoingData);
+        return reply;
+    }
+
     // fast path for GET on file:// URLs
     // Also if the scheme is empty we consider it a file.
     // The QNetworkAccessFileBackend will right now only be used for PUT

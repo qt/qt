@@ -1336,13 +1336,12 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     layoutChanged(). In other words, when the structure changes:
 
     \list
-        \o  Call beginLayoutChanged()
+        \o  emit layoutAboutToBeChanged
         \o  Remember the QModelIndex that will change
         \o  Update your internal data
         \o  Call changePersistentIndex()
-        \o  Call endLayoutChanged()
+        \o  emit layoutChanged
     \endlist
-
 
     \sa layoutAboutToBeChanged(), dataChanged(), headerDataChanged(), modelReset(),
         changePersistentIndex()

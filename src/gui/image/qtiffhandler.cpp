@@ -608,6 +608,7 @@ QVariant QTiffHandler::option(ImageOption option) const
             TIFFGetField(tiff, TIFFTAG_IMAGEWIDTH, &width);
             TIFFGetField(tiff, TIFFTAG_IMAGELENGTH, &height);
             imageSize = QSize(width, height);
+            TIFFClose(tiff);
         }
         device()->seek(pos);
         if (imageSize.isValid())
