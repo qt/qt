@@ -1895,49 +1895,66 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
     generateHeader(fake, fullTitle);
     
     generateBrief(fake, marker); // <shortdesc>
+    xmlWriter().writeStartElement("body");
     if (fake->subType() == Node::Module) {
         generateStatus(fake, marker);
         if (moduleNamespaceMap.contains(fake->name())) {
-            writeTargetAndHeader("namespaces","Namespaces","h2");
+            xmlWriter().writeStartElement("section");
+            xmlWriter().writeAttribute("outputclass","namespaces");
+            xmlWriter().writeStartElement("ttitle");
+            xmlWriter().writeAttribute("outputclass","h2");
+            xmlWriter().writeCharacters("Namespaces");
+            xmlWriter().writeEndElement(); // </title>
             generateAnnotatedList(fake, marker, moduleNamespaceMap[fake->name()]);
+            xmlWriter().writeEndElement(); // </section>
         }
         if (moduleClassMap.contains(fake->name())) {
-            writeTargetAndHeader("classes","Classes","h2");
+            xmlWriter().writeStartElement("section");
+            xmlWriter().writeAttribute("outputclass","classes");
+            xmlWriter().writeStartElement("title");
+            xmlWriter().writeAttribute("outputclass","h2");
+            xmlWriter().writeCharacters("Classes");
+            xmlWriter().writeEndElement(); // </title>
             generateAnnotatedList(fake, marker, moduleClassMap[fake->name()]);
+            xmlWriter().writeEndElement(); // </section>
         }
     }
     else if (fake->subType() == Node::HeaderFile) {
         generateStatus(fake, marker);
-        xmlWriter().writeStartElement("ul");
-
         QString membersLink = generateListOfAllMemberFile(fake, marker);
-        if (!membersLink.isEmpty()) {
-            writeXrefListItem(membersLink,"List of all members, including inherited members");
-        }
-
         QString obsoleteLink = generateLowStatusMemberFile(fake,
                                                            marker,
                                                            CodeMarker::Obsolete);
-        if (!obsoleteLink.isEmpty()) {
-            writeXrefListItem(obsoleteLink,"Obsolete members");
-        }
-
         QString compatLink = generateLowStatusMemberFile(fake,
                                                          marker,
                                                          CodeMarker::Compat);
-        if (!compatLink.isEmpty()) {
-            writeXrefListItem(compatLink,"Qt 3 support members");
-        }
 
-        xmlWriter().writeEndElement(); // </ul>
+        if (!membersLink.isEmpty() || !obsoleteLink.isEmpty() || !compatLink.isEmpty()) {
+            xmlWriter().writeStartElement("section");
+            xmlWriter().writeAttribute("outputclass","member-lists");
+            xmlWriter().writeStartElement("ul");
+            if (!membersLink.isEmpty()) {
+                writeXrefListItem(membersLink,"List of all members, including inherited members");
+            }
+            if (!obsoleteLink.isEmpty()) {
+                writeXrefListItem(obsoleteLink,"Obsolete members");
+            }
+            if (!compatLink.isEmpty()) {
+                writeXrefListItem(compatLink,"Qt 3 support members");
+            }
+            xmlWriter().writeEndElement(); // </ul>
+            xmlWriter().writeEndElement(); // </section>
+        }
     }
     else if (fake->subType() == Node::QmlClass) {
         const QmlClassNode* qml_cn = static_cast<const QmlClassNode*>(fake);
         const ClassNode* cn = qml_cn->classNode();
-        generateQmlInherits(qml_cn, marker);
+        xmlWriter().writeStartElement("section");
+        xmlWriter().writeAttribute("outputclass","apidesc");
         generateQmlInstantiates(qml_cn, marker);
-        generateBrief(qml_cn, marker);
+        generateQmlInherits(qml_cn, marker);
         generateQmlInheritedBy(qml_cn, marker);
+        xmlWriter().writeEndElement(); // </section>
         sections = marker->qmlSections(qml_cn,CodeMarker::Summary,0);
         s = sections.begin();
         while (s != sections.end()) {
@@ -1981,6 +1998,7 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
             }
             ++s;
         }
+        xmlWriter().writeEndElement(); // </body>
         return;
     }
 
@@ -1988,7 +2006,6 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
         if (fake->subType() == Node::File) {
             Text text;
             Quoter quoter;
-            xmlWriter().writeStartElement("body");
             xmlWriter().writeStartElement("p");
             xmlWriter().writeAttribute("outputclass", "small-subtitle");
             text << fake->subTitle();
@@ -1999,11 +2016,9 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
             text.clear();
             text << Atom(Atom::Code, code);
             generateText(text, fake, marker);
-            xmlWriter().writeEndElement(); // </body>
         }
     }
     else {
-        xmlWriter().writeStartElement("body");
         if (fake->subType() == Node::Module) {
             writeDetailedDescription(fake, marker, false, QString("Detailed Description"));
         }
@@ -2019,8 +2034,8 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
             }
             generateAnnotatedList(fake, marker, groupMembersMap);
         }
-        xmlWriter().writeEndElement(); // </body>
     }
+    xmlWriter().writeEndElement(); // </body>
     xmlWriter().writeEndElement(); // </topic>
 }
 
@@ -2219,13 +2234,13 @@ void DitaXmlGenerator::generateHeader(const Node* node,
         case Node::File:
             outputclass = "file";
             break;
-        case Node::Image:
+        case Node::Image:  // not used
             outputclass = "image";
             break;
         case Node::Module:
             outputclass = "module";
             break;
-        case Node::ExternalPage:
+        case Node::ExternalPage: // not used
             outputclass = "externalpage";
             break;
         case Node::QmlClass:
@@ -2261,9 +2276,9 @@ void DitaXmlGenerator::generateHeader(const Node* node,
     xmlWriter().writeAttribute("id",node->guid());
     if (!outputclass.isEmpty())
         xmlWriter().writeAttribute("outputclass",outputclass);
-    xmlWriter().writeStartElement(nameElement);
+    xmlWriter().writeStartElement(nameElement); // <title> or <apiName>
     xmlWriter().writeCharacters(name);
-    xmlWriter().writeEndElement(); // <nameElement>
+    xmlWriter().writeEndElement(); // </title> or </apiName> 
 }
 
 /*!
