@@ -44,7 +44,6 @@
 
 #include <QDebug>
 #include <QPen>
-#include <QFile>
 #include <QEvent>
 #include <QApplication>
 #include <QGraphicsSceneMouseEvent>

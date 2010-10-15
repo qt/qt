@@ -56,6 +56,8 @@
 #include <QDir>
 #include <QStyle>
 #include <QInputContext>
+#include <QClipboard>
+#include <QMimeData>
 #include <private/qapplication_p.h>
 #include <private/qtextcontrol_p.h>
 
@@ -119,6 +121,8 @@ private slots:
     void openInputPanelOnClick();
     void openInputPanelOnFocus();
     void geometrySignals();
+    void pastingRichText_QTBUG_14003();
+
 private:
     void simulateKey(QDeclarativeView *, int key);
     QDeclarativeView *createView(const QString &filename);
@@ -1172,6 +1176,27 @@ void tst_qdeclarativetextedit::geometrySignals()
     QCOMPARE(o->property("bindingWidth").toInt(), 400);
     QCOMPARE(o->property("bindingHeight").toInt(), 500);
     delete o;
+}
+
+void tst_qdeclarativetextedit::pastingRichText_QTBUG_14003()
+{
+#ifndef QT_NO_CLIPBOARD
+    QString componentStr = "import QtQuick 1.0\nTextEdit { textFormat: TextEdit.PlainText }";
+    QDeclarativeComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeTextEdit *obj = qobject_cast<QDeclarativeTextEdit*>(component.create());
+
+    QTRY_VERIFY(obj != 0);
+    QTRY_VERIFY(obj->textFormat() == QDeclarativeTextEdit::PlainText);
+
+    QMimeData *mData = new QMimeData;
+    mData->setHtml("<font color=\"red\">Hello</font>");
+    QApplication::clipboard()->setMimeData(mData);
+
+    obj->paste();
+    QTRY_VERIFY(obj->text() == "");
+    QTRY_VERIFY(obj->textFormat() == QDeclarativeTextEdit::PlainText);
+#endif
 }
 
 QTEST_MAIN(tst_qdeclarativetextedit)
