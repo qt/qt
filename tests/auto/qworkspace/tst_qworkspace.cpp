@@ -44,7 +44,6 @@
 #include <qapplication.h>
 #include <qmainwindow.h>
 #include <qmenubar.h>
-#include <qlayout.h>
 #include <qworkspace.h>
 #if defined(QT3_SUPPORT)
 #include <q3popupmenu.h>
@@ -592,25 +591,16 @@ void tst_QWorkspace::childSize()
 
     MyChild *child = new MyChild(&ws);
     child->show();
-    ws.addWindow(child);
     QCOMPARE(child->size(), child->sizeHint());
     delete child;
 
     child = new MyChild(&ws);
     child->setFixedSize(200, 200);
     child->show();
-    ws.addWindow(child);
     QCOMPARE(child->size(), child->minimumSize());
-    QCOMPARE(child->parentWidget()->metaObject()->className(), "QWorkspaceChild");
-    QVERIFY(child->parentWidget()->width() >= 200);
-    // check that the minimum size is respected, using closestAcceptableSize
-    // like QSizeGrip does.
-    const QSize newSize = QLayout::closestAcceptableSize(child->parentWidget(), QSize(100, 100));
-    QVERIFY(newSize.width() >= 200);
     delete child;
 
     child = new MyChild(&ws);
-    ws.addWindow(child);
     child->resize(150, 150);
     child->show();
     QCOMPARE(child->size(), QSize(150,150));
