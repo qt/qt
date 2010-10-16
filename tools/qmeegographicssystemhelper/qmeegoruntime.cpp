@@ -62,7 +62,7 @@ typedef Qt::HANDLE (*QMeeGoLiveTextureCreateFunc) (int w, int h, QImage::Format 
 typedef bool (*QMeeGoLiveTextureLockFunc) (Qt::HANDLE h);
 typedef bool (*QMeeGoLiveTextureUnlockFunc) (Qt::HANDLE h);
 typedef void (*QMeeGoLiveTextureDestroyFunc) (Qt::HANDLE h);
-typedef void (*QMeeGoLiveTextureQueryFunc) (Qt::HANDLE h, void **data, int *pitch);
+typedef void (*QMeeGoLiveTextureQueryFunc) (Qt::HANDLE h, void **data, int *pitch, QImage::Format *format);
 typedef Qt::HANDLE (*QMeeGoLiveTextureToEglImageFunc) (Qt::HANDLE h);
 
 static QMeeGoImageToEglSharedImageFunc qt_meego_image_to_egl_shared_image = NULL;
@@ -216,11 +216,11 @@ void QMeeGoRuntime::destroyLiveTexture(Qt::HANDLE h)
     qt_meego_live_texture_destroy(h);
 }
 
-void QMeeGoRuntime::queryLiveTexture(Qt::HANDLE h, void **data, int *pitch)
+void QMeeGoRuntime::queryLiveTexture(Qt::HANDLE h, void **data, int *pitch, QImage::Format *format)
 {
     ENSURE_INITIALIZED;
     Q_ASSERT(qt_meego_live_texture_query);
-    qt_meego_live_texture_query(h, data, pitch);
+    qt_meego_live_texture_query(h, data, pitch, format);
 }
 
 Qt::HANDLE QMeeGoRuntime::liveTextureToEGLImage(Qt::HANDLE handle)
