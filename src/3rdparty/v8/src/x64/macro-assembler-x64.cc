@@ -1218,22 +1218,14 @@ void MacroAssembler::Move(Register dst, Register src) {
 
 void MacroAssembler::Move(Register dst, Handle<Object> source) {
   ASSERT(!source->IsFailure());
-  if (source->IsSmi()) {
-    Move(dst, Smi::cast(*source));
-  } else {
-    movq(dst, source, RelocInfo::EMBEDDED_OBJECT);
-  }
+  movq(dst, source, RelocInfo::EMBEDDED_OBJECT);
 }
 
 
 void MacroAssembler::Move(const Operand& dst, Handle<Object> source) {
   ASSERT(!source->IsFailure());
-  if (source->IsSmi()) {
-    Move(dst, Smi::cast(*source));
-  } else {
-    movq(kScratchRegister, source, RelocInfo::EMBEDDED_OBJECT);
-    movq(dst, kScratchRegister);
-  }
+  movq(kScratchRegister, source, RelocInfo::EMBEDDED_OBJECT);
+  movq(dst, kScratchRegister);
 }
 
 
