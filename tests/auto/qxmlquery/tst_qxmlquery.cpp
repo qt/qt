@@ -455,6 +455,7 @@ void tst_QXmlQuery::assignmentOperator() const
     class ReturnURI : public QAbstractUriResolver
     {
     public:
+        ReturnURI() {}
         virtual QUrl resolve(const QUrl &relative,
                              const QUrl &baseURI) const
         {
@@ -2858,6 +2859,7 @@ void tst_QXmlQuery::useUriResolver() const
                           , private TestFundament
     {
     public:
+        TestUriResolver() {}
         virtual QUrl resolve(const QUrl &relative,
                              const QUrl &baseURI) const
         {
