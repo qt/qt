@@ -885,6 +885,21 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     m_isolate->Dispose();
 }
 
+QScriptContextPrivate *QScriptEnginePrivate::pushContext()
+{
+    return new QScriptContextPrivate(this, v8::Context::NewFunctionContext());
+}
+
+void QScriptEnginePrivate::popContext()
+{
+    QScriptContextPrivate *ctx = currentContext();
+    if (!ctx->parentContext() || ctx->arguments) {
+        qWarning("QScriptEngine::popContext() doesn't match with pushContext()");
+    } else {
+        delete ctx;
+    }
+}
+
 QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(v8::Handle<v8::Script> script, v8::TryCatch& tryCatch)
 {
     v8::HandleScope handleScope;
@@ -2048,17 +2063,17 @@ QScriptContext *QScriptEngine::currentContext() const
 QScriptContext *QScriptEngine::pushContext()
 {
     Q_D(QScriptEngine);
-    return new QScriptContextPrivate(d);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
+    v8::HandleScope handleScope;
+    return d->pushContext();
 }
 
 void QScriptEngine::popContext()
 {
-    QScriptContextPrivate *ctx = d_ptr->currentContext();
-    if (!ctx->parentContext() || ctx->arguments) {
-        qWarning("QScriptEngine::popContext() doesn't match with pushContext()");
-    } else {
-        delete ctx;
-    }
+    Q_D(QScriptEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
+    v8::HandleScope handleScope;
+    d->popContext();
 }
 
 void QScriptEngine::installTranslatorFunctions(const QScriptValue &object)

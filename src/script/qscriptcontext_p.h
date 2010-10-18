@@ -55,6 +55,7 @@ public:
 
     inline QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args = 0);
     inline QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::AccessorInfo *accessor);
+    inline QScriptContextPrivate(QScriptEnginePrivate *engine, v8::Handle<v8::Context> context);
     inline ~QScriptContextPrivate();
 
     inline QScriptPassPointer<QScriptValuePrivate> argument(int index) const;
@@ -62,12 +63,20 @@ public:
     inline QScriptPassPointer<QScriptValuePrivate> thisObject() const;
     inline QScriptPassPointer<QScriptValuePrivate> callee() const;
 
+    inline QScriptPassPointer<QScriptValuePrivate> activationObject() const;
+    inline QScriptValueList scopeChain() const;
+    inline void pushScope(QScriptValuePrivate *object);
+    inline QScriptPassPointer<QScriptValuePrivate> popScope();
+    inline void setInheritedScope(v8::Handle<v8::Context>);
+
     QScriptContext* q_ptr;
     QScriptEnginePrivate *engine;
     const v8::Arguments *arguments;
     const v8::AccessorInfo *accessorInfo;
+    v8::Persistent<v8::Context> context;
+    QList<v8::Persistent<v8::Context> > scopes;
+    v8::Persistent<v8::Context> inheritedScope;
     QScriptContextPrivate *parent;
-    QVarLengthArray<QPair<v8::Persistent<v8::Context>, v8::Persistent<v8::Value> >, 4> v8Scopes;
 };
 
 
@@ -87,6 +96,13 @@ inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine
 {
 }
 
+inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, v8::Handle<v8::Context> context)
+    : q_ptr(this), engine(engine), arguments(0), accessorInfo(0),
+      context(v8::Persistent<v8::Context>::New(context)), parent(engine->setCurrentQSContext(this))
+{
+    context->Enter();
+}
+
 QScriptContextPrivate::~QScriptContextPrivate()
 {
     if (!parent)
@@ -97,8 +113,17 @@ QScriptContextPrivate::~QScriptContextPrivate()
         old->parent = 0;
         //old is most likely leaking.
     }
-    while (!v8Scopes.isEmpty())
-        popScope();
+
+    while (!scopes.isEmpty())
+        QScriptValuePrivate::get(popScope());
+
+    if (!inheritedScope.IsEmpty())
+        inheritedScope.Dispose();
+
+    if (!context.IsEmpty()) {
+        context->Exit();
+        context.Dispose();
+    }
 }
 
 
@@ -147,6 +172,71 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::callee() c
 
     Q_UNIMPLEMENTED();
     return new QScriptValuePrivate();
+}
+
+inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::activationObject() const
+{
+    if (!parent)
+        return new QScriptValuePrivate(engine, engine->globalObject());
+    Q_ASSERT(!context.IsEmpty());
+    return new QScriptValuePrivate(engine, context->GetExtensionObject());
+}
+
+inline QScriptValueList QScriptContextPrivate::scopeChain() const
+{
+    QScriptValueList list;
+    for (int i = 0; i < scopes.size(); ++i) {
+        v8::Handle<v8::Object> object = scopes.at(i)->GetExtensionObject();
+        list.append(QScriptValuePrivate::get(new QScriptValuePrivate(engine, object)));
+    }
+
+    if (!context.IsEmpty())
+        list.append(QScriptValuePrivate::get(activationObject()));
+
+    if (!inheritedScope.IsEmpty()) {
+        v8::Handle<v8::Context> current = inheritedScope;
+        do {
+            v8::Handle<v8::Object> object = current->GetExtensionObject();
+            list.append(QScriptValuePrivate::get(new QScriptValuePrivate(engine, object)));
+            current = current->GetPrevious();
+        } while (!current.IsEmpty());
+    }
+
+    if (parentContext()) {
+        // Implicit global context
+        list.append(QScriptValuePrivate::get(new QScriptValuePrivate(engine, engine->globalObject())));
+    }
+
+    return list;
+}
+
+inline void QScriptContextPrivate::pushScope(QScriptValuePrivate *object)
+{
+    v8::Handle<v8::Object> objectHandle(v8::Object::Cast(*object->asV8Value(engine)));
+    v8::Handle<v8::Context> scopeContext = v8::Context::NewScopeContext(objectHandle);
+    scopes.append(v8::Persistent<v8::Context>::New(scopeContext));
+    scopeContext->Enter();
+}
+
+inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::popScope()
+{
+    if (scopes.isEmpty()) {
+        // In the old back-end, this would pop the activation object
+        // from the scope chain.
+        Q_UNIMPLEMENTED();
+        return new QScriptValuePrivate();
+    }
+    v8::Persistent<v8::Context> scopeContext = scopes.takeFirst();
+    v8::Handle<v8::Object> object = scopeContext->GetExtensionObject();
+    scopeContext->Exit();
+    scopeContext.Dispose();
+    return new QScriptValuePrivate(engine, object);
+}
+
+inline void QScriptContextPrivate::setInheritedScope(v8::Handle<v8::Context> object)
+{
+    Q_ASSERT(inheritedScope.IsEmpty());
+    inheritedScope = v8::Persistent<v8::Context>::New(object);
 }
 
 QT_END_NAMESPACE
