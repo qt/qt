@@ -55,22 +55,6 @@ Rectangle {
         source: "content/pics/board.png"
     }
 
-    Text {
-        id: messageDisplay
-        anchors.centerIn: parent
-        color: "blue"
-        style: Text.Outline; styleColor: "white"
-        font.pixelSize: 50; font.bold: true
-        visible: false
-
-        Timer {
-            running: messageDisplay.visible
-            onTriggered: { 
-                messageDisplay.visible = false;
-                Logic.restartGame();
-            }
-        }
-    }
 
     Column {
         id: display
@@ -115,6 +99,24 @@ Rectangle {
                 text: "Easy"
                 pressed: game.difficulty == 0.2
                 onClicked: { game.difficulty = 0.2 }
+            }
+        }
+    }
+
+
+    Text {
+        id: messageDisplay
+        anchors.centerIn: parent
+        color: "blue"
+        style: Text.Outline; styleColor: "white"
+        font.pixelSize: 50; font.bold: true
+        visible: false
+
+        Timer {
+            running: messageDisplay.visible
+            onTriggered: {
+                messageDisplay.visible = false;
+                Logic.restartGame();
             }
         }
     }
