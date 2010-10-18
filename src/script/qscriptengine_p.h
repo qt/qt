@@ -320,9 +320,25 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(const QSt
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(QScriptProgramPrivate* program)
 {
-    v8::TryCatch tryCatch;
-    v8::Handle<v8::Script> script = program->compiled(this);
-    return evaluate(script, tryCatch);
+    // FIXME: We cannot use v8::Script::Compile() because it compiles
+    // the script in the current (global) context, and uses _the
+    // original_ context when the script is evaluated later; the
+    // semantics of evaluate(QScriptProgram) is that it should
+    // evaluate the program in the current context, even if that is
+    // different from the one where the program was evaluated the
+    // first time.
+    //
+    // We cannot use v8::Script::New() because it compiles the script
+    // as if it's evaluated in a (not necessarily the current) global
+    // context. We need something like v8::Script::NewEval().
+    //
+    // For now, fall back to evaluating the program from source every
+    // time to enforce the right semantics.
+
+//    v8::TryCatch tryCatch;
+//    v8::Handle<v8::Script> script = program->compiled(this);
+//    return evaluate(script, tryCatch);
+    return evaluate(program->m_program, program->m_fileName, program->m_line);
 }
 
 inline bool QScriptEnginePrivate::isEvaluating() const
