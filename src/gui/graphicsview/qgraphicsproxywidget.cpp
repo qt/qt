@@ -266,8 +266,8 @@ void QGraphicsProxyWidgetPrivate::sendWidgetMouseEvent(QGraphicsSceneMouseEvent 
     }
 
     if (!lastWidgetUnderMouse) {
-        QApplicationPrivate::dispatchEnterLeave(embeddedMouseGrabber ? embeddedMouseGrabber : widget, 0);
-        lastWidgetUnderMouse = widget;
+        QApplicationPrivate::dispatchEnterLeave(embeddedMouseGrabber ? embeddedMouseGrabber : receiver, 0);
+        lastWidgetUnderMouse = receiver;
     }
 
     // Map event position from us to the receiver
