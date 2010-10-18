@@ -64,6 +64,7 @@ SOURCES += \
 
 HEADERS += \
     $$PWD/qscriptdeclarativeclass_p.h \
+    $$PWD/qscriptdeclarativeclassobject_p.h \
     $$PWD/qscriptoriginalglobalobject_p.h \
     $$PWD/qscriptqobject_p.h \
     $$PWD/qscriptfunction_p.h

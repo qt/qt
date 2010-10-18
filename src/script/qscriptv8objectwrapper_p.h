@@ -93,9 +93,8 @@ struct QScriptV8ObjectWrapper
 {
     QScriptEnginePrivate *engine;
 
-    static T *safeGet(const QScriptValue &v)
+    static T *safeGet(const QScriptValuePrivate *p)
     {
-        QScriptValuePrivate *p = QScriptValuePrivate::get(v);
         QScriptEnginePrivate *engine = p->engine();
         if (!engine)
             return 0;

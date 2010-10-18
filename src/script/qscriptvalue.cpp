@@ -27,6 +27,7 @@
 #include "qscriptstring.h"
 #include "qscriptvalue.h"
 #include "qscriptvalue_p.h"
+#include "qscriptdeclarativeclassobject_p.h"
 #include <QtCore/qregexp.h>
 #include <QtCore/qstring.h>
 
@@ -1042,6 +1043,9 @@ QObject *QScriptValue::toQObject() const
 {
     Q_D(const QScriptValue);
     QScriptIsolate api(d->engine());
+    QScriptDeclarativeClass *cls = QScriptDeclarativeClassObject::declarativeClass(d);
+    if (cls)
+        return cls->toQObject(QScriptDeclarativeClassObject::object(d));
     return d->toQObject();
 }
 
@@ -1125,6 +1129,9 @@ bool QScriptValue::isQObject() const
 {
     Q_D(const QScriptValue);
     QScriptIsolate api(d->engine());
+    QScriptDeclarativeClass *cls = QScriptDeclarativeClassObject::declarativeClass(d);
+    if (cls)
+        return cls->isQObject();
     return d->isQObject();
 }
 
@@ -1202,7 +1209,8 @@ void QScriptValue::setData(const QScriptValue &value)
 */
 QScriptClass *QScriptValue::scriptClass() const
 {
-    QScriptClassObject *data = QScriptClassObject::safeGet(*this);
+    Q_D(const QScriptValue);
+    QScriptClassObject *data = QScriptClassObject::safeGet(d);
     return (data && data->scriptclass) ? QScriptClassPrivate::get(data->scriptclass) : 0;
 }
 

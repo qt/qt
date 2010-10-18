@@ -30,93 +30,10 @@
 #include <private/qscriptvalue_p.h>
 #include <private/qscriptqobject_p.h>
 #include <QtCore/qstringlist.h>
-#include "qscriptv8objectwrapper_p.h"
+#include "qscriptdeclarativeclassobject_p.h"
 #include "qscriptisolate_p.h"
 
 QT_BEGIN_NAMESPACE
-
-class QScriptDeclarativeClassPrivate
-{
-public:
-    QScriptDeclarativeClassPrivate() : engine(0), q_ptr(0), context(0), supportsCall(false) {}
-
-    QScriptEngine *engine;
-    QScriptDeclarativeClass *q_ptr;
-    QScriptContext *context;
-    //FIXME: avoid global statics
-    static QSet<QString> identifiers;
-    bool supportsCall:1;
-
-    static QScriptDeclarativeClassPrivate *get(QScriptDeclarativeClass *c) {
-        return c->d_ptr.data();
-    }
-};
-
-
-struct QScriptDeclarativeClassObject : QScriptV8ObjectWrapper<QScriptDeclarativeClassObject, &QScriptEnginePrivate::declarativeClassTemplate> {
-    QScopedPointer<QScriptDeclarativeClass::Object> obj;
-    QScriptDeclarativeClass* scriptClass;
-
-    v8::Handle<v8::Value> property(v8::Local<v8::String> property)
-    {
-        QScriptDeclarativeClass::PersistentIdentifier identifier =
-            scriptClass->createPersistentIdentifier(QScriptConverter::toString(property));
-        QScriptClass::QueryFlags fl = scriptClass->queryProperty(obj.data(), identifier.identifier, QScriptClass::HandlesReadAccess);
-        if (fl & QScriptClass::HandlesReadAccess) {
-            QScriptValue result = scriptClass->property(obj.data(), identifier.identifier).toScriptValue(QScriptEnginePrivate::get(engine));
-            return QScriptValuePrivate::get(result)->asV8Value(engine);
-        }
-        return v8::Handle<v8::Value>();
-    }
-
-    v8::Handle<v8::Value> setProperty(v8::Local<v8::String> property, v8::Local<v8::Value> value)
-    {
-        QScriptDeclarativeClassPrivate* scriptDeclarativeClassP = QScriptDeclarativeClassPrivate::get(scriptClass);
-        scriptDeclarativeClassP->context = engine->currentContext();
-
-        QScriptDeclarativeClass::PersistentIdentifier identifier =
-            scriptClass->createPersistentIdentifier(QScriptConverter::toString(property));
-        QScriptClass::QueryFlags fl = scriptClass->queryProperty(obj.data(), identifier.identifier, QScriptClass::HandlesWriteAccess);
-        if (fl & QScriptClass::HandlesWriteAccess) {
-            scriptClass->setProperty(obj.data(), identifier.identifier, QScriptValuePrivate::get(new QScriptValuePrivate(engine, value)));
-            scriptDeclarativeClassP->context = 0;
-            return value;
-        }
-        scriptDeclarativeClassP->context = 0;
-        return v8::Handle<v8::Value>();
-    }
-
-    v8::Handle<v8::Value> call()
-    {
-        QScriptValue result = scriptClass->call(obj.data(), engine->currentContext()).toScriptValue(QScriptEnginePrivate::get(engine));
-        return QScriptValuePrivate::get(result)->asV8Value(engine);
-    }
-
-    static v8::Handle<v8::FunctionTemplate> createFunctionTemplate(QScriptEnginePrivate *engine)
-    {
-        using namespace QScriptV8ObjectWrapperHelper;
-        v8::HandleScope handleScope;
-        v8::Handle<v8::FunctionTemplate> funcTempl = v8::FunctionTemplate::New();
-        v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
-        instTempl->SetInternalFieldCount(1);
-        instTempl->SetCallAsFunctionHandler(callAsFunction<QScriptDeclarativeClassObject>);
-        instTempl->SetNamedPropertyHandler(namedPropertyGetter<QScriptDeclarativeClassObject>, namedPropertySetter<QScriptDeclarativeClassObject>);
-        return handleScope.Close(funcTempl);
-    }
-
-    static v8::Handle<v8::Value> newInstance(QScriptEnginePrivate *engine, QScriptDeclarativeClass *scriptClass,
-                                                QScriptDeclarativeClass::Object *object)
-    {
-        v8::HandleScope handleScope;
-        QScriptDeclarativeClassObject *data = new QScriptDeclarativeClassObject;
-        data->engine = engine;
-        data->obj.reset(object);
-        data->scriptClass = scriptClass;
-        return handleScope.Close(createInstance(data));
-    }
-};
-
-
 
 /*!
 \class QScriptDeclarativeClass::Value
@@ -239,18 +156,12 @@ QScriptDeclarativeClass::newObjectValue(QScriptEngine *engine,
 
 QScriptDeclarativeClass *QScriptDeclarativeClass::scriptClass(const QScriptValue &v)
 {
-    QScriptDeclarativeClassObject *o = QScriptDeclarativeClassObject::safeGet(v);
-    if (o)
-        return o->scriptClass;
-    return 0;
+    return QScriptDeclarativeClassObject::declarativeClass(QScriptValuePrivate::get(v));
 }
 
 QScriptDeclarativeClass::Object *QScriptDeclarativeClass::object(const QScriptValue &v)
 {
-    QScriptDeclarativeClassObject *o = QScriptDeclarativeClassObject::safeGet(v);
-    if (o)
-        return o->obj.data();
-    return 0;
+    return QScriptDeclarativeClassObject::object(QScriptValuePrivate::get(v));
 }
 
 QScriptValue QScriptDeclarativeClass::function(const QScriptValue &v, const Identifier &name)
