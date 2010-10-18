@@ -78,6 +78,9 @@ private slots:
     void translation();
     void readScopeProperty_data();
     void readScopeProperty();
+    void evaluateInNewContext();
+    void evaluateInNewContextWithScope();
+    void evaluateBindingExpression();
 };
 
 tst_QScriptEngine::tst_QScriptEngine()
@@ -337,6 +340,48 @@ void tst_QScriptEngine::readScopeProperty()
     QVERIFY(fun.isFunction());
     QBENCHMARK {
         fun.call();
+    }
+}
+
+void tst_QScriptEngine::evaluateInNewContext()
+{
+    QScriptEngine engine;
+    QBENCHMARK {
+        engine.pushContext();
+        engine.evaluate("var a = 10");
+        engine.popContext();
+    }
+}
+
+void tst_QScriptEngine::evaluateInNewContextWithScope()
+{
+    QScriptEngine engine;
+    QScriptValue scope = engine.newObject();
+    scope.setProperty("foo", 123);
+    QBENCHMARK {
+        QScriptContext *ctx = engine.pushContext();
+        ctx->pushScope(scope);
+        engine.evaluate("foo");
+        engine.popContext();
+    }
+}
+
+// Binding expressions in QML are implemented as anonymous functions
+// with custom scopes.
+void tst_QScriptEngine::evaluateBindingExpression()
+{
+    QScriptEngine engine;
+    QScriptContext *ctx = engine.pushContext();
+    QScriptValue scope = engine.newObject();
+    scope.setProperty("foo", 123);
+    ctx->pushScope(scope);
+    QScriptValue fun = engine.evaluate("(function() { return foo; })");
+    QVERIFY(fun.isFunction());
+    engine.popContext();
+    QVERIFY(fun.call().equals(scope.property("foo")));
+    QScriptValue receiver = engine.globalObject();
+    QBENCHMARK {
+        fun.call(receiver);
     }
 }
 
