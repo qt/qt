@@ -1050,7 +1050,7 @@ SeeAlso: ???
 Feature: HTTP
 Description: Supports HTTP file access.
 Section: Networking
-Requires: HOSTINFO
+Requires: HOSTINFO NETWORKPROXY
 Name: Hyper Text Transfer Protocol
 SeeAlso: ???
 

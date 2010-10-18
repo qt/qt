@@ -152,7 +152,7 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
     // ... but Linux with uClibc does not have it
 #if !defined(__UCLIBC__)
     char *ret = 0;
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MAC) && !defined(QT_NO_CORESERVICES)
     // Mac OS X 10.5.x doesn't support the realpath(X,0) extension we use here.
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6) {
         ret = realpath(path.toLocal8Bit().constData(), (char*)0);

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the config.tests of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,59 +39,10 @@
 **
 ****************************************************************************/
 
-#ifndef FILEWATCHER_KQUEUE_P_H
-#define FILEWATCHER_KQUEUE_P_H
+#include <CoreServices/CoreServices.h>
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of the QLibrary class.  This header file may change from
-// version to version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qfilesystemwatcher_p.h"
-
-#include <QtCore/qhash.h>
-#include <QtCore/qmutex.h>
-#include <QtCore/qthread.h>
-#include <QtCore/qvector.h>
-
-#ifndef QT_NO_FILESYSTEMWATCHER
-struct kevent;
-
-QT_BEGIN_NAMESPACE
-
-class QKqueueFileSystemWatcherEngine : public QFileSystemWatcherEngine
+int main()
 {
-    Q_OBJECT
-public:
-    ~QKqueueFileSystemWatcherEngine();
-
-    static QKqueueFileSystemWatcherEngine *create();
-
-    QStringList addPaths(const QStringList &paths, QStringList *files, QStringList *directories);
-    QStringList removePaths(const QStringList &paths, QStringList *files, QStringList *directories);
-
-    void stop();
-
-private:
-    QKqueueFileSystemWatcherEngine(int kqfd);
-
-    void run();
-
-    int kqfd;
-    int kqpipe[2];
-
-    QMutex mutex;
-    QHash<QString, int> pathToID;
-    QHash<int, QString> idToPath;
-};
-
-QT_END_NAMESPACE
-
-#endif //QT_NO_FILESYSTEMWATCHER
-#endif // FILEWATCHER_KQUEUE_P_H
+    FSRef ref;
+    return 0;
+}
