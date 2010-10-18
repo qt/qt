@@ -428,10 +428,10 @@ void QtResourceModelPrivate::removeOldPaths(QtResourceSet *resourceSet, const QS
 
 void QtResourceModelPrivate::setWatcherEnabled(const QString &path, bool enable)
 {
-    m_fileWatcher->removePath(path);
-
-    if (!enable)
+    if (!enable) {
+        m_fileWatcher->removePath(path);
         return;
+    }
 
     QFileInfo fi(path);
     if (fi.exists())
