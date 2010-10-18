@@ -95,6 +95,9 @@ public:
     QStringList mimeTypes() const;
     Qt::DropActions supportedDropActions() const;
 
+protected slots:
+    void resetInternalData();
+
 protected:
     QAbstractProxyModel(QAbstractProxyModelPrivate &, QObject *parent);
 
