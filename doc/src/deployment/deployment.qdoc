@@ -756,6 +756,7 @@
     \snippet doc/src/snippets/code/doc_src_deployment.qdoc 21
 
     to your .pro file. The \c embed_manifest_dll option is enabled by default.
+	The \c embed_manifest_exe option is NOT enabled by default.
 
     You can find more information about manifest files and side-by-side
     assemblies at the
