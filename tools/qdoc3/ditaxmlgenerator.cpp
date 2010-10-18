@@ -559,7 +559,8 @@ QString DitaXmlGenerator::lookupGuid(QString text)
     QMap<QString, QString>::const_iterator i = name2guidMap.find(text);
     if (i != name2guidMap.end())
         return i.value();
-    QString guid = QUuid::createUuid().toString();
+    QString t = QUuid::createUuid().toString();
+    QString guid = "id-" + t.mid(1,t.length()-2);
     name2guidMap.insert(text,guid);
     return guid;
 }
@@ -578,7 +579,8 @@ QString DitaXmlGenerator::lookupGuid(const QString& fileName, const QString& tex
     GuidMap::const_iterator i = gm->find(text);
     if (i != gm->end())
         return i.value();
-    QString guid = QUuid::createUuid().toString();
+    QString t = QUuid::createUuid().toString();
+    QString guid = "id-" + t.mid(1,t.length()-2);
     gm->insert(text,guid);
     return guid;
 }
@@ -1837,25 +1839,6 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         xmlWriter().writeEndElement(); // </cxxClass>
     }
-}
-
-/*!
-  Write a paragraph for the \a target and a poaragraph for
-  the \a header. Use the \a attribute for the \a header.
- */
-void DitaXmlGenerator::writeTargetAndHeader(const QString& target,
-                                            const QString& header,
-                                            const QString& attribute)
-{
-    xmlWriter().writeStartElement("p");
-    writeGuidAttribute(registerRef(target));
-    xmlWriter().writeAttribute("outputclass","target");
-    xmlWriter().writeCharacters(header);
-    xmlWriter().writeEndElement(); // </p>
-    xmlWriter().writeStartElement("p");
-    xmlWriter().writeAttribute("outputclass",attribute);
-    xmlWriter().writeCharacters(header);
-    xmlWriter().writeEndElement(); // </p>
 }
 
 /*!

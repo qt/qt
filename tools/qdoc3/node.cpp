@@ -46,6 +46,7 @@
 #include "node.h"
 #include "tree.h"
 #include "codemarker.h"
+#include <QUuid>
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -103,7 +104,6 @@ Node::Node(Type type, InnerNode *parent, const QString& name)
 {
     if (par)
         par->addChild(this);
-    //uuid = QUuid::createUuid();
 }
 
 /*!
@@ -270,14 +270,16 @@ QString Node::fileBase() const
 }
 
 /*!
-  Returns this node's Universally Unique IDentifier.
-  If its UUID has not yet been created, it is created
-  first.
+  Returns this node's Universally Unique IDentifier as a
+  QString. Creates the UUID first, if it has not been created.
  */
-QUuid Node::guid() const
+QString Node::guid() const
 {
-    if (uuid.isNull())
-        uuid = QUuid::createUuid();
+    if (uuid.isEmpty()) {
+        QUuid quuid = QUuid::createUuid();
+        QString t = quuid.toString();
+        uuid = "id-" + t.mid(1,t.length()-2);
+    }
     return uuid;
 }
 

@@ -56,6 +56,7 @@
 #include <qlist.h>
 #include <qiterator.h>
 #include <qtextcodec.h>
+#include <QUuid>
 
 QT_BEGIN_NAMESPACE
 
