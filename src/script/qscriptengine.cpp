@@ -892,8 +892,12 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(v8::Handl
     clearExceptions();
     if (script.IsEmpty()) {
         v8::Handle<v8::Value> exception = tryCatch.Exception();
-        setException(exception, tryCatch.Message());
         m_isEvaluating = false;
+        if (exception.IsEmpty()) {
+            // This is possible on syntax errors like { a:12, b:21 } <- missing "(", ")" around expression.
+            return new QScriptValuePrivate();
+        }
+        setException(exception, tryCatch.Message());
         return new QScriptValuePrivate(this, exception);
     }
     v8::Handle<v8::Value> result = script->Run();
