@@ -60,6 +60,7 @@ public:
     inline QScriptPassPointer<QScriptValuePrivate> argument(int index) const;
     inline int argumentCount() const;
     inline QScriptPassPointer<QScriptValuePrivate> thisObject() const;
+    inline QScriptPassPointer<QScriptValuePrivate> callee() const;
 
     QScriptContext* q_ptr;
     QScriptEnginePrivate *engine;
@@ -136,6 +137,15 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::thisObject
         return new QScriptValuePrivate(engine, accessorInfo->This());
     }
 
+    return new QScriptValuePrivate();
+}
+
+inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::callee() const
+{
+    if (arguments)
+        return new QScriptValuePrivate(engine, arguments->Callee());
+
+    Q_UNIMPLEMENTED();
     return new QScriptValuePrivate();
 }
 
