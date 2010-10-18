@@ -15,12 +15,15 @@ struct PlatformInfo
 {
     PlatformInfo(bool useLocal = false);
 
-    QString buildKey;
+    QString hostName;
+    QString osName;
+    int     osVersion;
     QString qtVersion;
-    QString hostname;
+    QString buildKey;
+    QString gitCommit;
 };
-QDataStream & operator<< (QDataStream &stream, const PlatformInfo &pinfo);
-QDataStream & operator>> (QDataStream& stream, PlatformInfo& pinfo);
+QDataStream & operator<< (QDataStream &stream, const PlatformInfo &p);
+QDataStream & operator>> (QDataStream& stream, PlatformInfo& p);
 
 struct ImageItem
 {

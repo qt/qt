@@ -3,25 +3,53 @@
 #include <QImage>
 #include <QBuffer>
 #include <QHostInfo>
+#include <QSysInfo>
+#include <QProcess>
 
 PlatformInfo::PlatformInfo(bool useLocal)
 {
     if (useLocal) {
         buildKey = QLibraryInfo::buildKey();
         qtVersion = QLatin1String(qVersion());
-        hostname = QHostInfo::localHostName();
+        hostName = QHostInfo::localHostName();
+        osVersion = -1;
+#if defined(Q_OS_LINUX)
+        osName = QLatin1String("Linux");
+#elif defined(Q_OS_WINCE)
+        osName = QLatin1String("WinCE");
+        osVersion = QSysInfo::windowsVersion();
+#elif defined(Q_OS_WIN)
+        osName = QLatin1String("Windows");
+        osVersion = QSysInfo::windowsVersion();
+#elif defined(Q_OS_MAC)
+        osName = QLatin1String("MacOS");
+        osVersion = qMacVersion();
+#elif defined(Q_OS_SYMBIAN)
+        osName = QLatin1String("Symbian");
+        osVersion = QSysInfo::symbianVersion();
+#else
+        osName = QLatin1String("Other");
+#endif
+
+        QProcess git;
+        git.start(QLS("git"), QStringList() << QLS("log") << QLS("--max-count=1") << QLS("--pretty=%H"));
+        git.waitForFinished(3000);
+        if (!git.exitCode())
+            gitCommit = QString::fromLocal8Bit(git.readAllStandardOutput().constData()).trimmed();
+        else
+            gitCommit = QLS("Unknown");
     }
 }
 
-QDataStream & operator<< (QDataStream &stream, const PlatformInfo &pinfo)
+QDataStream & operator<< (QDataStream &stream, const PlatformInfo &p)
 {
-    stream << pinfo.buildKey << pinfo.qtVersion << pinfo.hostname;
+    stream << p.hostName << p.osName << p.osVersion << p.qtVersion << p.buildKey << p.gitCommit;
     return stream;
 }
 
-QDataStream & operator>> (QDataStream& stream, PlatformInfo& pinfo)
+QDataStream & operator>> (QDataStream& stream, PlatformInfo& p)
 {
-    stream >> pinfo.buildKey >> pinfo.qtVersion >> pinfo.hostname;
+    stream >> p.hostName >> p.osName >> p.osVersion >> p.qtVersion >> p.buildKey >> p.gitCommit;
     return stream;
 }
 

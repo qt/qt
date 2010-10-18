@@ -48,12 +48,12 @@ void HTMLPage::writeHeader(const ImageItem &item)
     out.setDevice(&file);
 
     out << "<html><body><h1>Lancelot results from run " << id << "</h1>\n\n";
-    out << "<h3>Host: " << plat.hostname << "</h3>\n";
+    out << "<h3>Host: " << plat.hostName << "</h3>\n";
     out << "<h3>Qt version: " << plat.qtVersion << "</h3>\n";
     out << "<h3>Build key: " << plat.buildKey << "</h3>\n";
     out << "<h3>Engine: " << item.engineAsString() << "</h3>\n";
     out << "<h3>Format: " << item.formatAsString() << "</h3>\n\n";
-    out << "<h3><a href=\"/cgi-bin/server.cgi?cmd=updateAllBaselines&id="<< id << "&host=" << plat.hostname
+    out << "<h3><a href=\"/cgi-bin/server.cgi?cmd=updateAllBaselines&id="<< id << "&host=" << plat.hostName
         << "&engine=" << item.engineAsString() << "&format=" << item.formatAsString()
         << "&url=" << pageUrl
         << "\">Update all baselines</a><br>";
@@ -91,7 +91,7 @@ void HTMLPage::addItem(const QString &baseline, const QString &rendered, const I
     out << "<td><a href=\"/cgi-bin/server.cgi?cmd=updateSingleBaseline&oldBaseline=" << baseline
         << "&newBaseline=" << rendered << "&url=" << pageUrl << "\">Update baseline</a><br>"
            "<a href=\"/cgi-bin/server.cgi?cmd=blacklist&scriptName=" << item.scriptName
-           << "&host=" << plat.hostname << "&engine=" << item.engineAsString()
+           << "&host=" << plat.hostName << "&engine=" << item.engineAsString()
            << "&format=" << item.formatAsString()
            << "&url=" << pageUrl << "\">Blacklist test</a></td>\n";
     out << "<tr>\n\n";
@@ -117,7 +117,7 @@ void HTMLPage::end()
             if (imageItems.at(i).status == ImageItem::IgnoreItem) {
                 out << "<span style=\"background-color:yellow\">Blacklisted</span><br>"
                        "<a href=\"/cgi-bin/server.cgi?cmd=whitelist&scriptName="
-                    << imageItems.at(i).scriptName << "&host=" << plat.hostname
+                    << imageItems.at(i).scriptName << "&host=" << plat.hostName
                     << "&engine=" << imageItems.at(i).engineAsString()
                     << "&format=" << imageItems.at(i).formatAsString()
                     << "&url=" << pageUrl
