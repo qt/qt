@@ -57,7 +57,7 @@ QT_MODULE(Declarative)
 
 class QDeclarativeAbstractAnimation;
 class QDeclarativeBehaviorPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeBehavior : public QObject, public QDeclarativePropertyValueInterceptor
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeBehavior : public QObject, public QDeclarativePropertyValueInterceptor
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDeclarativeBehavior)

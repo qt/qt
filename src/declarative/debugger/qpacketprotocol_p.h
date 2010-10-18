@@ -45,6 +45,8 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qdatastream.h>
 
+#include <private/qdeclarativeglobal_p.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -57,7 +59,7 @@ class QPacket;
 class QPacketAutoSend;
 class QPacketProtocolPrivate;
 
-class Q_DECLARATIVE_EXPORT QPacketProtocol : public QObject
+class Q_DECLARATIVE_PRIVATE_EXPORT QPacketProtocol : public QObject
 {
 Q_OBJECT
 public:
@@ -87,7 +89,7 @@ private:
 };
 
 
-class Q_DECLARATIVE_EXPORT QPacket : public QDataStream
+class Q_DECLARATIVE_PRIVATE_EXPORT QPacket : public QDataStream
 {
 public:
     QPacket();
@@ -104,7 +106,7 @@ protected:
     QBuffer * buf;
 };
 
-class Q_DECLARATIVE_EXPORT QPacketAutoSend : public QPacket
+class Q_DECLARATIVE_PRIVATE_EXPORT QPacketAutoSend : public QPacket
 {
 public:
     virtual ~QPacketAutoSend();
