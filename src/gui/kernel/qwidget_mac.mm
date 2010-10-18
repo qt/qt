@@ -2834,9 +2834,9 @@ void QWidgetPrivate::setSubWindowStacking(bool set)
         }
     }
 
-    QList<QWidget *> widgets = q->findChildren<QWidget *>();
+    QObjectList widgets = q->children();
     for (int i=0; i<widgets.size(); ++i) {
-        QWidget *child = widgets.at(i);
+        QWidget *child = qobject_cast<QWidget *>(widgets.at(i));
         if (child && child->isWindow()) {
             if (NSWindow *cwin = [qt_mac_nativeview_for(child) window]) {
                 if (set) {
