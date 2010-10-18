@@ -193,11 +193,7 @@ the value last in the scope chain.
 */
 QScriptValue QScriptDeclarativeClass::scopeChainValue(QScriptContext *context, int index)
 {
-    QScriptValueList chain;
-    while (context) {
-        chain = context->scopeChain() + chain;
-        context = context->parentContext();
-    }
+    QScriptValueList chain = context->scopeChain();
     if (index >= 0)
         return chain.value(index);
     else
