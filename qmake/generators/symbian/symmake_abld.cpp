@@ -205,8 +205,11 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
 #ifdef Q_OS_WIN32
     t << "XCOPY             = xcopy /d /f /h /r /y /i" << endl;
     t << "ABLD              = ABLD.BAT" << endl;
+#elif defined(Q_OS_MAC)
+    t << "XCOPY             = cp -R -v" << endl;
+    t << "ABLD              = abld" << endl;
 #else
-    t << "XCOPY             = cp -u -v" << endl;
+    t << "XCOPY             = cp -R -u -v" << endl;
     t << "ABLD              = abld" << endl;
 #endif
     t << "DEBUG_PLATFORMS   = " << debugPlatforms.join(" ") << endl;
