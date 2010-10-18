@@ -932,6 +932,7 @@ v8::Handle<v8::Object> QScriptEnginePrivate::newSignal(v8::Handle<v8::Object> ob
     v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
     Q_ASSERT(instance->InternalFieldCount() == 1);
     QtSignalData *data = new QtSignalData(object, index, resolveMode);
+    data->engine = this;
     instance->SetPointerInInternalField(0, data);
     return instance;
 }
@@ -2041,7 +2042,6 @@ void QScriptEngine::registerCustomType(int type, MarshalFunction mf, DemarshalFu
 
 QScriptContext *QScriptEngine::currentContext() const
 {
-    Q_UNIMPLEMENTED();
     return d_ptr->currentContext();
 }
 

@@ -37,6 +37,11 @@
 
 QT_BEGIN_NAMESPACE
 
+static v8::Handle<v8::Value> callQtMetaMethod(QScriptEnginePrivate *engine, QObject *qobject,
+                                              const QMetaObject *meta, int methodIndex,
+                                              const v8::Arguments& args);
+
+
 QtInstanceData::QtInstanceData(QScriptEnginePrivate *engine, QObject *object,
                                QScriptEngine::ValueOwnership own,
                                const QScriptEngine::QObjectWrapOptions &opt)
@@ -93,6 +98,24 @@ v8::Handle<v8::Value> QtSignalData::disconnect(v8::Handle<v8::Function> callback
     return v8::ThrowException(v8::Exception::Error(v8::String::New("QtSignal.disconnect(): function not connected to this signal")));
 }
 
+//Call the signal dirrectly
+v8::Handle<v8::Value> QtSignalData::call()
+{
+    QtInstanceData *instance = QtInstanceData::get(object());
+    QObject *qobject = instance->cppObject();
+
+    QScriptEnginePrivate *oldEngine = 0;
+    QScriptable *scriptable = instance->toQScriptable();
+    if (scriptable)
+        oldEngine = QScriptablePrivate::get(scriptable)->swapEngine(instance->engine());
+
+    v8::Handle<v8::Value> result = callQtMetaMethod(engine, qobject, qobject->metaObject(), m_index, *engine->currentContext()->arguments);
+
+    if (scriptable)
+        QScriptablePrivate::get(scriptable)->swapEngine(oldEngine);
+
+    return result;
+}
 
 QtConnection::QtConnection(QtSignalData *signal)
     : m_signal(signal)
@@ -464,9 +487,9 @@ static void QtDynamicPropertySetter(v8::Local<v8::String> property,
 
 // Generic implementation of Qt meta-method invocation.
 // Uses QMetaType and friends to resolve types and convert arguments.
-v8::Handle<v8::Value> callQtMetaMethod(QScriptEnginePrivate *engine, QObject *qobject,
-                                       const QMetaObject *meta, int methodIndex,
-                                       const v8::Arguments& args)
+static v8::Handle<v8::Value> callQtMetaMethod(QScriptEnginePrivate *engine, QObject *qobject,
+                                              const QMetaObject *meta, int methodIndex,
+                                              const v8::Arguments& args)
 {
     QMetaMethod method = meta->method(methodIndex);
     QList<QByteArray> parameterTypeNames = method.parameterTypes();
@@ -915,14 +938,6 @@ static v8::Handle<v8::Value> QtMetaObjectCallback(const v8::Arguments& args)
     return v8::Handle<v8::Value>();
 }
 
-// This callback implements call-as-function for signal wrapper objects.
-static v8::Handle<v8::Value> QtSignalCallback(const v8::Arguments& args)
-{
-    Q_UNUSED(args);
-    Q_UNIMPLEMENTED();
-    return v8::Handle<v8::Value>();
-}
-
 // This callback implements the connect() method of signal wrapper objects.
 // The this-object is a QtSignal wrapper.
 // If the connect succeeds, this function returns undefined; otherwise,
@@ -1175,7 +1190,7 @@ v8::Handle<v8::FunctionTemplate> createQtSignalTemplate()
     funcTempl->SetClassName(v8::String::New("QtSignal"));
 
     v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
-    instTempl->SetCallAsFunctionHandler(QtSignalCallback);
+    instTempl->SetCallAsFunctionHandler(QScriptV8ObjectWrapperHelper::callAsFunction<QtSignalData>);
     instTempl->SetInternalFieldCount(1); // QtSignalData*
 
     v8::Handle<v8::ObjectTemplate> protoTempl = funcTempl->PrototypeTemplate();

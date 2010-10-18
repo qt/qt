@@ -93,6 +93,8 @@ private:
 class QtSignalData
 {
 public:
+    QScriptEnginePrivate *engine;
+
     enum ResolveMode {
         ResolvedByName = 0,
         ResolvedBySignature = 1
@@ -131,6 +133,8 @@ public:
                                   v8::Handle<v8::Function> slot,
                                   Qt::ConnectionType type = Qt::AutoConnection);
     v8::Handle<v8::Value> disconnect(v8::Handle<v8::Function> callback);
+
+    v8::Handle<v8::Value> call();
 
 private:
     QList<QtConnection*> m_connections;
