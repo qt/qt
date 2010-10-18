@@ -70,6 +70,7 @@ private slots:
     void forceFocus();
     void noParentFocus();
     void signalEmission();
+    void qtBug13380();
 };
 
 /*
@@ -396,6 +397,31 @@ void tst_qdeclarativefocusscope::signalEmission()
     QCOMPARE(item2->property("color"), red);
     QCOMPARE(item3->property("color"), blue);
     QCOMPARE(item4->property("color"), red);
+
+    delete view;
+}
+
+void tst_qdeclarativefocusscope::qtBug13380()
+{
+    QDeclarativeView *view = new QDeclarativeView;
+    view->setSource(QUrl::fromLocalFile(SRCDIR "/data/qtBug13380.qml"));
+
+    view->show();
+    QVERIFY(view->rootObject());
+    qApp->setActiveWindow(view);
+    qApp->processEvents();
+
+#ifdef Q_WS_X11
+    // to be safe and avoid failing setFocus with window managers
+    qt_x11_wait_for_window_manager(view);
+#endif
+
+    QVERIFY(view->hasFocus());
+    QVERIFY(view->scene()->hasFocus());
+    QVERIFY(view->rootObject()->property("noFocus").toBool());
+
+    view->rootObject()->setProperty("showRect", true);
+    QVERIFY(view->rootObject()->property("noFocus").toBool());
 
     delete view;
 }
