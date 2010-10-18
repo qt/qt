@@ -308,6 +308,7 @@ class DitaXmlGenerator : public PageGenerator
     static bool inApiDesc;
     static bool inSection;
     static bool inDetailedDescription;
+    static bool inLegaleseText;
 
     QStack<QXmlStreamWriter*> xmlWriterStack;
 };

@@ -64,6 +64,7 @@ int DitaXmlGenerator::id = 0;
 bool DitaXmlGenerator::inApiDesc = false;
 bool DitaXmlGenerator::inSection = false;
 bool DitaXmlGenerator::inDetailedDescription = false;
+bool DitaXmlGenerator::inLegaleseText = false;
 
 #define cxxapi_d_xref                      	Doc::alias("cxxapi-d-xref")
 #define cxxclass                           	Doc::alias("cxxclass")
@@ -1122,11 +1123,10 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         // nothing
         break;
     case Atom::LegaleseLeft:
-        xmlWriter().writeStartElement("p");
-        xmlWriter().writeAttribute("outputclass","legalese");
+        inLegaleseText = true;
         break;
     case Atom::LegaleseRight:
-        xmlWriter().writeEndElement(); // </p>
+        inLegaleseText = false;
         break;
     case Atom::LineBreak:
         xmlWriter().writeEmptyElement("br");
@@ -1309,6 +1309,8 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::ParaLeft:
         xmlWriter().writeStartElement("p");
+        if (inLegaleseText)
+            xmlWriter().writeAttribute("outputclass","legalese");
         in_para = true;
         break;
     case Atom::ParaRight:
@@ -4547,9 +4549,17 @@ void DitaXmlGenerator::writeLocation(const Node* n)
         s3 = CXXCLASSDECLARATIONFILELINE;
     }
     else if (n->type() == Node::Function) {
-        s1 = CXXFUNCTIONAPIITEMLOCATION;
-        s2 = CXXFUNCTIONDECLARATIONFILE;
-        s3 = CXXFUNCTIONDECLARATIONFILELINE;
+        FunctionNode* fn = const_cast<FunctionNode*>(static_cast<const FunctionNode*>(n));
+        if (fn->isMacro()) {
+            s1 = CXXDEFINEAPIITEMLOCATION;
+            s2 = CXXDEFINEDECLARATIONFILE;
+            s3 = CXXDEFINEDECLARATIONFILELINE;
+        }
+        else {
+            s1 = CXXFUNCTIONAPIITEMLOCATION;
+            s2 = CXXFUNCTIONDECLARATIONFILE;
+            s3 = CXXFUNCTIONDECLARATIONFILELINE;
+        }
     }
     else if (n->type() == Node::Enum) {
         s1 = CXXENUMERATIONAPIITEMLOCATION;
