@@ -41,6 +41,7 @@
 
 #include "qmeegopixmapdata.h"
 #include "qmeegoextensions.h"
+#include "qmeegorasterpixmapdata.h"
 #include <private/qimage_p.h>
 #include <private/qwindowsurface_gl_p.h>
 #include <private/qeglcontext_p.h>
@@ -265,4 +266,9 @@ void QMeeGoPixmapData::registerSharedImage(Qt::HANDLE handle, const QImage &si)
         if (info->handle != handle || info->rawFormat != si.format())
             qWarning("Inconsistency detected: overwriting entry in sharedImagesMap but handle/format different");
     }
+}
+
+QPixmapData *QMeeGoPixmapData::createCompatiblePixmapData() const
+{
+    return new QMeeGoRasterPixmapData(pixelType());
 }

@@ -39,37 +39,17 @@
 **
 ****************************************************************************/
 
-#ifndef MPIXMAPDATA_H
-#define MPIXMAPDATA_H
+#ifndef MRASTERPIXMAPDATA_H
+#define MRASTERPIXMAPDATA_H
 
-#include <private/qpixmapdata_gl_p.h>
+#include <private/qpixmap_raster_p.h>
 
-struct QMeeGoImageInfo
-{
-    Qt::HANDLE handle;
-    QImage::Format rawFormat;
-};
-
-class QMeeGoPixmapData : public QGLPixmapData
+class QMeeGoRasterPixmapData : public QRasterPixmapData
 {
 public:
-    QMeeGoPixmapData();
-    void fromTexture(GLuint textureId, int w, int h, bool alpha);
-    QPixmapData *createCompatiblePixmapData() const;
-
-    virtual void fromEGLImage(Qt::HANDLE handle);
-    virtual void fromEGLSharedImage(Qt::HANDLE handle, const QImage &softImage);
-    virtual void fromImage (const QImage &image, Qt::ImageConversionFlags flags);
-    virtual QImage toImage() const;
-    virtual void updateFromSoftImage();
-
-    QImage softImage;
-
-    static QHash <void*, QMeeGoImageInfo*> sharedImagesMap;
-
-    static Qt::HANDLE imageToEGLSharedImage(const QImage &image);
-    static bool destroyEGLSharedImage(Qt::HANDLE h);
-    static void registerSharedImage(Qt::HANDLE handle, const QImage &si);
+    QMeeGoRasterPixmapData();
+    QMeeGoRasterPixmapData(QPixmapData::PixelType t);
+    void copy(const QPixmapData *data, const QRect &rect);
 };
 
 #endif
