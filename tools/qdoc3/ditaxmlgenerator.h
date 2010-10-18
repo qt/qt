@@ -133,9 +133,6 @@ class DitaXmlGenerator : public PageGenerator
                                   const Node* relative,
                                   CodeMarker* marker, 
                                   const Atom* atom = 0);
-    void generateBreadCrumbs(const QString& title,
-                             const Node* node,
-                             CodeMarker* marker);
     void generateHeader(const Node* node, 
                         const QString& name,
                         bool subpage = false);

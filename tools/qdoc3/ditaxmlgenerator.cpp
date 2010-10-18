@@ -2022,155 +2022,12 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
     xmlWriter().writeEndElement(); // </topic>
 }
 
-#if 0
-zzz
-    /*
-      Generate the TOC for the new doc format.
-      Don't generate a TOC for the home page.
-    */
-    if (fake->name() != QString("index.html"))
-        generateTableOfContents(fake,marker,0);
-
-    generateTitle(fullTitle,
-                  Text() << fake->subTitle(),
-                  subTitleSize,
-                  fake,
-                  marker);
-    
-
-#endif
-
-#if 0
-zzz
-    sections = marker->sections(fake, CodeMarker::Summary, CodeMarker::Okay);
-    s = sections.begin();
-    while (s != sections.end()) {
-        out() << "<a name=\"" << registerRef((*s).name) << "\"></a>\n";
-        out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
-        generateSection(s->members, fake, marker, CodeMarker::Summary);
-        generateSectionInheritedList(*s, relative, marker, name_alignment);
-        ++s;
-    }
-
-    Text brief = fake->doc().briefText();
-    if (fake->subType() == Node::Module && !brief.isEmpty()) {
-        out() << "<a name=\"" << registerRef("details") << "\"></a>\n";
-        out() << "<div class=\"descr\"/>\n"; // QTBUG-9504
-        out() << "<h2>" << "Detailed Description" << "</h2>\n";
-    }
-    else
-        out() << "<div class=\"descr\"/>\n"; // QTBUG-9504
-
-    sections = marker->sections(fake, CodeMarker::Detailed, CodeMarker::Okay);
-    s = sections.begin();
-    while (s != sections.end()) {
-        out() << "<hr />\n";
-        out() << "<h2>" << protectEnc((*s).name) << "</h2>\n";
-
-        NodeList::ConstIterator m = (*s).members.begin();
-        while (m != (*s).members.end()) {
-            generateDetailedMember(*m, fake, marker);
-            ++m;
-        }
-        ++s;
-    }
-#endif
-
 /*!
   Returns "xml" for this subclass of class Generator.
  */
 QString DitaXmlGenerator::fileExtension(const Node * /* node */) const
 {
     return "xml";
-}
-
-/*!
-  zzz
-  Output breadcrumb list in the html file.
- */
-void DitaXmlGenerator::generateBreadCrumbs(const QString& title,
-                                           const Node *node,
-                                           CodeMarker *marker)
-{
-    Text breadcrumb;
-    if (node->type() == Node::Class) {
-        const ClassNode* cn = static_cast<const ClassNode*>(node);
-        QString name =  node->moduleName();
-        out() << "              <li><xref href=\"modules.html\">All Modules</xref></li>";
-        if (!name.isEmpty()) {
-            out() << "              <li>";
-            breadcrumb << Atom(Atom::AutoLink,name);
-            generateText(breadcrumb, node, marker);
-            out() << "</li>\n";
-        }
-        breadcrumb.clear();
-        if (!cn->name().isEmpty()) {
-            out() << "              <li>";
-            breadcrumb << Atom(Atom::AutoLink,cn->name());
-            generateText(breadcrumb, 0, marker);
-            out() << "</li>\n";
-        }
-    }
-    else if (node->type() == Node::Fake) {
-        const FakeNode* fn = static_cast<const FakeNode*>(node);
-        if (node->subType() == Node::Module) {
-            out() << "              <li><xref href=\"modules.html\">All Modules</xref></li>";
-            QString name =  node->name();
-            if (!name.isEmpty()) {
-                out() << "              <li>";
-                breadcrumb << Atom(Atom::AutoLink,name);
-                generateText(breadcrumb, 0, marker);
-                out() << "</li>\n";
-            }
-        }
-        else if (node->subType() == Node::Group) {
-            if (fn->name() == QString("modules"))
-                out() << "              <li><xref href=\"modules.html\">All Modules</xref></li>";
-            else {
-                out() << "              <li><xref href=\"" << fn->name() << "\">" << title
-                      << "</xref></li>";
-            }
-        }
-        else if (node->subType() == Node::Page) {
-            if (fn->name() == QString("examples.html")) {
-                out() << "              <li><xref href=\"all-examples.html\">Examples</xref></li>";
-            }
-            else if (fn->name().startsWith("examples-")) {
-                out() << "              <li><xref href=\"all-examples.html\">Examples</xref></li>";
-                out() << "              <li><xref href=\"" << fn->name() << "\">" << title
-                      << "</xref></li>";
-            }
-            else if (fn->name() == QString("namespaces.html")) {
-                out() << "              <li><xref href=\"namespaces.html\">All Namespaces</xref></li>";
-            }
-            else {
-                out() << "              <li><xref href=\"" << fn->name() << "\">" << title
-                      << "</xref></li>";
-            }
-        }
-        else if (node->subType() == Node::QmlClass) {
-            out() << "              <li><xref href=\"qdeclarativeelements.html\">QML Elements</xref></li>";
-            out() << "              <li><xref href=\"" << fn->name() << "\">" << title
-                  << "</xref></li>";
-        }
-        else if (node->subType() == Node::Example) {
-            out() << "              <li><xref href=\"all-examples.html\">Examples</xref></li>";
-            QStringList sl = fn->name().split('/');
-            QString name = "examples-" + sl.at(0) + ".html";
-            QString t = CodeParser::titleFromName(name);
-            out() << "              <li><xref href=\"" << name << "\">"
-                  << t << "</xref></li>";
-            out() << "              <li><xref href=\"" << sl.at(0)
-                  << "-" << sl.at(sl.size()-1) << ".html\">"
-                  << title << "</xref></li>";
-        }
-    }
-    else if (node->type() == Node::Namespace) {
-        const NamespaceNode* nsn = static_cast<const NamespaceNode*>(node);
-        out() << "              <li><xref href=\"namespaces.html\">All Namespaces</xref></li>";
-        out() << "              <li><xref href=\"" << fileName(nsn) << "\">" << title
-              << "</xref></li>";
-    }
 }
 
 /*!
@@ -4683,7 +4540,7 @@ void DitaXmlGenerator::writeDerivations(const ClassNode* cn, CodeMarker* marker)
  */
 void DitaXmlGenerator::writeLocation(const Node* n)
 {
-    QString s1, s2, s3;
+    QString s1, s2, s3, s4, s5, s6;
     if (n->type() == Node::Class || n->type() == Node::Namespace) {
         s1 = CXXCLASSAPIITEMLOCATION;
         s2 = CXXCLASSDECLARATIONFILE;
@@ -4698,6 +4555,9 @@ void DitaXmlGenerator::writeLocation(const Node* n)
         s1 = CXXENUMERATIONAPIITEMLOCATION;
         s2 = CXXENUMERATIONDECLARATIONFILE;
         s3 = CXXENUMERATIONDECLARATIONFILELINE;
+        s4 = CXXENUMERATIONDEFINITIONFILE;
+        s5 = CXXENUMERATIONDEFINITIONFILELINESTART;
+        s6 = CXXENUMERATIONDEFINITIONFILELINEEND;
     }
     else if (n->type() == Node::Typedef) {
         s1 = CXXTYPEDEFAPIITEMLOCATION;
@@ -4720,9 +4580,23 @@ void DitaXmlGenerator::writeLocation(const Node* n)
     QString lineNr;
     xmlWriter().writeAttribute("value",lineNr.setNum(n->location().lineNo()));
     xmlWriter().writeEndElement(); // </cxx<s3>DeclarationFileLine>
+    if (!s4.isEmpty()) { // zzz This stuff is temporary, I think.
+        xmlWriter().writeStartElement(s4);
+        xmlWriter().writeAttribute("name","filePath");
+        xmlWriter().writeAttribute("value",n->location().filePath());
+        xmlWriter().writeEndElement(); // </cxx<s4>DefinitionFile>
+        xmlWriter().writeStartElement(s5);
+        xmlWriter().writeAttribute("name","lineNumber");
+        xmlWriter().writeAttribute("value",lineNr.setNum(n->location().lineNo()));
+        xmlWriter().writeEndElement(); // </cxx<s5>DefinitionFileLineStart>
+        xmlWriter().writeStartElement(s6);
+        xmlWriter().writeAttribute("name","lineNumber");
+        xmlWriter().writeAttribute("value",lineNr.setNum(n->location().lineNo()));
+        xmlWriter().writeEndElement(); // </cxx<s6>DefinitionFileLineEnd>
+    }
 
-    // not included: <cxxXXXDefinitionFile>, <cxxXXXDefinitionFileSTart>,
-    //               and <cxxXXXDefinitionFileEnd>
+    // not included: <cxxXXXDefinitionFile>, <cxxXXXDefinitionFileLineStart>,
+    //               and <cxxXXXDefinitionFileLineEnd>
 
     xmlWriter().writeEndElement(); // </cxx<s1>ApiItemLocation>
 }
