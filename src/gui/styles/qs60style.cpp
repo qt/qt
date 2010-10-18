@@ -2620,6 +2620,8 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
             break;
     }
+    if (!sz.isValid())
+        sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);
     return sz;
 }
 
