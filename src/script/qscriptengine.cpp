@@ -2326,4 +2326,11 @@ Q_AUTOTEST_EXPORT bool qt_script_isJITEnabled()
 }
 #endif
 
+void QScriptEnginePrivate::emitSignalHandlerException()
+{
+    Q_Q(QScriptEngine);
+    emit q->signalHandlerException(QScriptValuePrivate::get(uncaughtException()));
+}
+
+
 QT_END_NAMESPACE

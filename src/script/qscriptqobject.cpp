@@ -201,9 +201,10 @@ void QtConnection::onSignal(void **argv)
     if (receiver.IsEmpty())
         receiver = v8::Context::GetCurrent()->Global();
     v8::Handle<v8::Value> result = m_callback->Call(receiver, argc, const_cast<v8::Handle<v8::Value>*>(jsArgv.constData()));
-    if (result.IsEmpty()) {
-        // ### emit signalHandlerException()
-        Q_UNIMPLEMENTED();
+    if (tryCatch.HasCaught()) {
+        result = tryCatch.Exception();
+        engine->setException(result, tryCatch.Message());
+        engine->emitSignalHandlerException();
     }
 }
 
@@ -1156,8 +1157,10 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
                 // No overloads, so by-name and by-signature properties should be the same function object.
                 protoTempl->Set(v8::String::New(method.signature()), methodTempl);
             } else {
-               // Q_UNIMPLEMENTED();
-                // TODO: add unique by-signature properties for overloads.
+                foreach(int idx, indexes) {
+                    //TODO: we should not use QtOverloadedMetaMethodCallback call here, because we know the right index
+                    protoTempl->Set(v8::String::New(mo->method(idx).signature()), methodTempl);
+                }
             }
         }
     }

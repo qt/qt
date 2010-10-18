@@ -184,6 +184,7 @@ public:
     inline QScriptContextPrivate *setCurrentQSContext(QScriptContextPrivate *ctx);
     inline QScriptContextPrivate *currentContext() { return m_currentQsContext; }
     v8::Handle<v8::Value> securityToken() { return m_v8Context->GetSecurityToken(); }
+    void emitSignalHandlerException();
 
     v8::Persistent<v8::FunctionTemplate> declarativeClassTemplate;
     v8::Persistent<v8::FunctionTemplate> scriptClassTemplate;
