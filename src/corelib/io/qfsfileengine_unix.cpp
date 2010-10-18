@@ -382,12 +382,13 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 len)
             return -1;
         }
         TPtr8 ptr(reinterpret_cast<TUint8*>(data), static_cast<TInt>(len));
-        TInt r = symbianFile.Read(ptr);
+        TInt r = symbianFile.Read(symbianFilePos, ptr);
         if (r != KErrNone)
         {
             q->setError(QFile::ReadError, QSystemError(r, QSystemError::NativeError).toString());
             return -1;
         }
+        symbianFilePos += ptr.Length();
         return qint64(ptr.Length());
     }
 #endif
@@ -467,12 +468,28 @@ qint64 QFSFileEnginePrivate::nativeWrite(const char *data, qint64 len)
             return -1;
         }
         const TPtrC8 ptr(reinterpret_cast<const TUint8*>(data), static_cast<TInt>(len));
-        TInt r = symbianFile.Write(ptr);
-        if (r != KErrNone)
-        {
+#ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
+        TInt64 eofpos = 0;
+#else
+        TInt eofpos = 0;
+#endif
+        //The end of file position is not cached because QFile is read/write sharable, therefore another
+        //process may have altered the file size.
+        TInt r = symbianFile.Seek(ESeekEnd, eofpos);
+        if (r == KErrNone && symbianFilePos > eofpos) {
+            //seek position is beyond end of file so file needs to be extended before write.
+            //note that SetSize does not zero-initialise (c.f. posix lseek)
+            r = symbianFile.SetSize(symbianFilePos);
+        }
+        if (r == KErrNone) {
+            //write to specific position in the file (i.e. use our own cursor rather than calling seek)
+            r = symbianFile.Write(symbianFilePos, ptr);
+        }
+        if (r != KErrNone) {
             q->setError(QFile::WriteError, QSystemError(r, QSystemError::NativeError).toString());
             return -1;
         }
+        symbianFilePos += len;
         return len;
     }
 #endif
@@ -487,17 +504,7 @@ qint64 QFSFileEnginePrivate::nativePos() const
 #ifdef Q_OS_SYMBIAN
     const Q_Q(QFSFileEngine);
     if (symbianFile.SubSessionHandle()) {
-#ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
-        qint64 pos = 0;
-#else
-        TInt pos = 0;
-#endif
-        TInt err = symbianFile.Seek(ESeekCurrent, pos);
-        if(err != KErrNone) {
-            const_cast<QFSFileEngine*>(q)->setError(QFile::PositionError, QSystemError(err, QSystemError::NativeError).toString());
-            return -1;
-        }
-        return pos;
+        return symbianFilePos;
     }
 #endif
     return posFdFh();
@@ -511,21 +518,13 @@ bool QFSFileEnginePrivate::nativeSeek(qint64 pos)
 #ifdef Q_OS_SYMBIAN
     Q_Q(QFSFileEngine);
     if (symbianFile.SubSessionHandle()) {
-#ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
-        TInt r = symbianFile.Seek(ESeekStart, pos);
-#else
+#ifndef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
         if(pos > KMaxTInt) {
             q->setError(QFile::PositionError, QLatin1String("Maximum 2GB file position on this platform"));
             return false;
         }
-        TInt pos32(pos);
-        TInt r = symbianFile.Seek(ESeekStart, pos32);
 #endif
-        if (r != KErrNone)
-        {
-            q->setError(QFile::PositionError, QSystemError(r, QSystemError::NativeError).toString());
-            return false;
-        }
+        symbianFilePos = pos;
         return true;
     }
 #endif
@@ -867,6 +866,8 @@ bool QFSFileEngine::setSize(qint64 size)
     if (d->symbianFile.SubSessionHandle()) {
         TInt err = d->symbianFile.SetSize(size);
         ret = (err == KErrNone);
+        if (ret && d->symbianFilePos > size)
+            d->symbianFilePos = size;
     }
     else if (d->fd != -1)
         ret = QT_FTRUNCATE(d->fd, size) == 0;
