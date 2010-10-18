@@ -314,7 +314,7 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(const QSt
 {
     Q_UNUSED(lineNumber);
     v8::TryCatch tryCatch;
-    v8::Handle<v8::Script> script = v8::Script::Compile(QScriptConverter::toString(program), QScriptConverter::toString(fileName));
+    v8::Handle<v8::Script> script = v8::Script::CompileEval(QScriptConverter::toString(program), QScriptConverter::toString(fileName));
     return evaluate(script, tryCatch);
 }
 
