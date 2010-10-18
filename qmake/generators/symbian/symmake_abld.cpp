@@ -450,6 +450,11 @@ bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t, bool i
         t << "\t-$(XCOPY) \"" << depList.at(i).from << "\" \""
           << depList.at(i).to.left(depList.at(i).to.lastIndexOf("\\") + 1) << "\"" << endl;
 #else
+        QString dirExists = var("QMAKE_CHK_DIR_EXISTS");
+        QString mkdir = var("QMAKE_MKDIR");
+        QString dir = QFileInfo(depList.at(i).to).dir().path();
+        t << "\t-@ " << dirExists << " \""  << dir << "\" || "
+                      << mkdir << " \"" << dir << "\"" << endl;
         t << "\t-$(XCOPY) \"" << QDir::toNativeSeparators(depList.at(i).from) << "\" \""
           << QDir::toNativeSeparators(depList.at(i).to) << "\"" << endl;
 #endif
