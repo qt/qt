@@ -873,6 +873,7 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
         if (!(*i).IsEmpty())
             (*i).Dispose();
     }
+    m_typeInfos.clear();
     clearExceptions();
 
     m_v8Context->Exit();
