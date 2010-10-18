@@ -205,8 +205,11 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
 #ifdef Q_OS_WIN32
     t << "XCOPY             = xcopy /d /f /h /r /y /i" << endl;
     t << "ABLD              = ABLD.BAT" << endl;
+#elif defined(Q_OS_MAC)
+    t << "XCOPY             = cp -R -v" << endl;
+    t << "ABLD              = abld" << endl;
 #else
-    t << "XCOPY             = cp -u -v" << endl;
+    t << "XCOPY             = cp -R -u -v" << endl;
     t << "ABLD              = abld" << endl;
 #endif
     t << "DEBUG_PLATFORMS   = " << debugPlatforms.join(" ") << endl;
@@ -447,6 +450,11 @@ bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t, bool i
         t << "\t-$(XCOPY) \"" << depList.at(i).from << "\" \""
           << depList.at(i).to.left(depList.at(i).to.lastIndexOf("\\") + 1) << "\"" << endl;
 #else
+        QString dirExists = var("QMAKE_CHK_DIR_EXISTS");
+        QString mkdir = var("QMAKE_MKDIR");
+        QString dir = QFileInfo(depList.at(i).to).dir().path();
+        t << "\t-@ " << dirExists << " \""  << dir << "\" || "
+                      << mkdir << " \"" << dir << "\"" << endl;
         t << "\t-$(XCOPY) \"" << QDir::toNativeSeparators(depList.at(i).from) << "\" \""
           << QDir::toNativeSeparators(depList.at(i).to) << "\"" << endl;
 #endif
