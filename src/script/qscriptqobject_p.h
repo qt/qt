@@ -24,126 +24,13 @@
 #ifndef QSCRIPTQOBJECT_P_H
 #define QSCRIPTQOBJECT_P_H
 
-#include "qscriptengine.h"
-
-#include <QtCore/qpointer.h>
+#include <QtCore/qmetaobject.h>
+#include "qscriptengine_p.h"
 
 #include <v8.h>
 
 QT_BEGIN_NAMESPACE
-
 class QScriptable;
-
-// A C++ signal-to-JS handler connection.
-//
-// Acts as a middle-man; intercepts a C++ signal,
-// and invokes a JS callback function.
-//
-class QtSignalData;
-class QtConnection : public QObject
-{
-public:
-    QtConnection(QtSignalData *signal);
-    ~QtConnection();
-
-    bool connect(v8::Handle<v8::Object> receiver,  v8::Handle<v8::Function> callback, Qt::ConnectionType type);
-    bool disconnect();
-
-    v8::Handle<v8::Function> callback() const
-    { return m_callback; }
-
-    // This class implements qt_metacall() and friends manually; moc should
-    // not process it. But then the Q_OBJECT macro must be manually expanded:
-    static const QMetaObject staticMetaObject;
-    virtual const QMetaObject *metaObject() const;
-    virtual void *qt_metacast(const char *);
-    virtual int qt_metacall(QMetaObject::Call, int, void **);
-
-    // Slot.
-    void onSignal(void **);
-
-private:
-    Q_DISABLE_COPY(QtConnection);
-    QtSignalData *m_signal;
-    v8::Persistent<v8::Function> m_callback;
-    v8::Persistent<v8::Object> m_receiver;
-};
-
-// Data associated with a signal JS wrapper object.
-//
-// A signal wrapper is bound to the particular Qt wrapper object
-// where it was looked up as a member, i.e. signal wrappers are
-// _per instance_, not per class (prototype). This is in order
-// to support the connect() and disconnect() syntax:
-//
-// button1.clicked.connect(...);
-// button2.clicked.connect(...);
-//
-// When connect() is called, the this-object will be the signal
-// wrapper, not the QObject. Hence, in order to know which object's
-// clicked() signal to connect to, the signal must be bound to
-// that object.
-//
-// - object: The Qt wrapper object that this signal is bound to.
-//
-// - index: The index of the C++ signal.
-//
-// - resolve mode: How the signal was resolved; by name or signature.
-//   If it was resolved by name, there's a chance the signal might have overloads.
-//
-class QtSignalData
-{
-public:
-    QScriptEnginePrivate *engine;
-
-    enum ResolveMode {
-        ResolvedByName = 0,
-        ResolvedBySignature = 1
-    };
-
-    QtSignalData(v8::Handle<v8::Object> object, int index, ResolveMode mode)
-        : m_object(v8::Persistent<v8::Object>::New(object)),
-        m_index(index), m_resolveMode(mode)
-    { }
-    ~QtSignalData()
-    {
-        if (!m_object.IsEmpty())
-            m_object.Dispose();
-    }
-
-    // Gets the QtSignalData pointer from the given object.
-    // Assumes that the object is a Qt signal wrapper.
-    static QtSignalData *get(v8::Handle<v8::Object> object)
-    {
-        void *ptr = object->GetPointerFromInternalField(0);
-        Q_ASSERT(ptr != 0);
-        return static_cast<QtSignalData*>(ptr);
-    }
-
-    // The QObject wrapper object that this signal is bound to.
-    v8::Handle<v8::Object> object() const
-    { return m_object; }
-
-    int index() const
-    { return m_index; }
-
-    ResolveMode resolveMode() const
-    { return ResolveMode(m_resolveMode); }
-
-    v8::Handle<v8::Value> connect(v8::Handle<v8::Object> receiver,
-                                  v8::Handle<v8::Function> slot,
-                                  Qt::ConnectionType type = Qt::AutoConnection);
-    v8::Handle<v8::Value> disconnect(v8::Handle<v8::Function> callback);
-
-    v8::Handle<v8::Value> call();
-
-private:
-    Q_DISABLE_COPY(QtSignalData);
-    QList<QtConnection*> m_connections;
-    v8::Persistent<v8::Object> m_object;
-    uint m_index:31;
-    uint m_resolveMode:1;
-};
 
 // Data associated with a QObject JS wrapper object.
 //
@@ -230,7 +117,6 @@ private:
 };
 
 v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *, const QMetaObject *);
-v8::Handle<v8::FunctionTemplate> createQtSignalTemplate();
 v8::Handle<v8::FunctionTemplate> createQtMetaObjectTemplate();
 
 v8::Handle<v8::Object> newQtObject(QScriptEnginePrivate *engine, QObject *object,
@@ -238,6 +124,8 @@ v8::Handle<v8::Object> newQtObject(QScriptEnginePrivate *engine, QObject *object
                                    const QScriptEngine::QObjectWrapOptions &opt);
 
 QObject *toQtObject(QScriptEnginePrivate *engine, const v8::Handle<v8::Object> &object);
+
+
 
 
 QT_END_NAMESPACE

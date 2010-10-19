@@ -27,8 +27,6 @@
 #include "qscriptengine.h"
 #include "qscriptengine_p.h"
 #include "qscriptvalue.h"
-#include "qscriptvalue_p.h"
-#include "qscriptisolate_p.h"
 
 #include <v8.h>
 
@@ -86,32 +84,13 @@ v8::Handle<v8::Value> callAsFunction(const v8::Arguments& args)
 
 }
 
-
 //T must inherit from QScriptV8ObjectWrapper<T>
 template <typename T, v8::Persistent<v8::FunctionTemplate> QScriptEnginePrivate::*functionTemplate>
 struct QScriptV8ObjectWrapper
 {
     QScriptEnginePrivate *engine;
 
-    static T *safeGet(const QScriptValuePrivate *p)
-    {
-        QScriptEnginePrivate *engine = p->engine();
-        if (!engine)
-            return 0;
-        QScriptIsolate api(engine, QScriptIsolate::NotNullEngine);
-        v8::HandleScope handleScope;
-        v8::Handle<v8::Value> value = *p;
-
-        v8::Handle<v8::FunctionTemplate> funcTmpl = engine->*functionTemplate;
-        if (funcTmpl.IsEmpty())
-            return 0;
-        if (!funcTmpl->HasInstance(value))
-            return 0;
-        v8::Local<v8::Object> object = v8::Object::Cast(*value);
-        Q_ASSERT(object->InternalFieldCount() == 1);
-        T *data = reinterpret_cast<T *>(object->GetPointerFromInternalField(0));
-        return data;
-    }
+    static T *safeGet(const QScriptValuePrivate *p);
 
     static v8::Handle<v8::Object> createInstance(T *data)
     {
@@ -130,5 +109,33 @@ struct QScriptV8ObjectWrapper
         return handleScope.Close(instance);
     }
 };
+
+
+QT_BEGIN_INCLUDE_NAMESPACE
+#include "qscriptvalue_p.h"
+#include "qscriptisolate_p.h"
+QT_END_INCLUDE_NAMESPACE
+
+template <typename T, v8::Persistent<v8::FunctionTemplate> QScriptEnginePrivate::*functionTemplate>
+T* QScriptV8ObjectWrapper<T, functionTemplate>::safeGet(const QScriptValuePrivate* p)
+{
+    QScriptEnginePrivate *engine = p->engine();
+    if (!engine)
+        return 0;
+    QScriptIsolate api(engine, QScriptIsolate::NotNullEngine);
+    v8::HandleScope handleScope;
+    v8::Handle<v8::Value> value = *p;
+
+    v8::Handle<v8::FunctionTemplate> funcTmpl = engine->*functionTemplate;
+    if (funcTmpl.IsEmpty())
+        return 0;
+    if (!funcTmpl->HasInstance(value))
+        return 0;
+    v8::Local<v8::Object> object = v8::Object::Cast(*value);
+    Q_ASSERT(object->InternalFieldCount() == 1);
+    T *data = reinterpret_cast<T *>(object->GetPointerFromInternalField(0));
+    return data;
+}
+
 
 #endif // QSCRIPTFUNCTION_P_H

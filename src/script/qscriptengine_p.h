@@ -31,9 +31,10 @@
 
 #include <private/qobject_p.h>
 
+#include "qscriptengine.h"
 #include "qscriptconverter_p.h"
 #include "qscriptshareddata_p.h"
-#include "qscriptqobject_p.h"
+
 #include "qscriptoriginalglobalobject_p.h"
 #include "qscriptvalue.h"
 #include "qscriptprogram_p.h"
@@ -96,12 +97,10 @@ public:
     v8::Handle<v8::Object> newQObject(
         QObject *object, QScriptEngine::ValueOwnership own = QScriptEngine::QtOwnership,
         const QScriptEngine::QObjectWrapOptions &opt = 0);
-    v8::Handle<v8::Object> newSignal(v8::Handle<v8::Object>, int index, QtSignalData::ResolveMode);
 
     v8::Handle<v8::Object> newVariant(const QVariant &value);
     v8::Handle<v8::Object> newQMetaObject(const QMetaObject* mo, const QScriptValue &ctor);
 
-    v8::Handle<v8::FunctionTemplate> createSignalTemplate();
     v8::Handle<v8::FunctionTemplate> createMetaObjectTemplate();
     v8::Handle<v8::FunctionTemplate> createVariantTemplate();
 
@@ -151,7 +150,6 @@ public:
                                 void **result);
 
     inline bool isQtVariant(v8::Handle<v8::Value> value) const;
-    inline bool isQtSignal(v8::Handle<v8::Value> value) const;
     inline bool isQtMetaObject(v8::Handle<v8::Value> value) const;
     QVariant &variantValue(v8::Handle<v8::Value> value);
 
@@ -189,6 +187,8 @@ public:
 
     v8::Persistent<v8::FunctionTemplate> declarativeClassTemplate;
     v8::Persistent<v8::FunctionTemplate> scriptClassTemplate;
+    v8::Persistent<v8::FunctionTemplate> metaMethodTemplate;
+    v8::Persistent<v8::FunctionTemplate> signalTemplate;
 
     class TypeInfos
     {
@@ -221,7 +221,6 @@ private:
     v8::Persistent<v8::String> m_qtDataId;
 
     QHash<const QMetaObject *, v8::Persistent<v8::FunctionTemplate> > m_qtClassTemplates;
-    v8::Persistent<v8::FunctionTemplate> m_signalTemplate;
     v8::Persistent<v8::FunctionTemplate> m_variantTemplate;
     v8::Persistent<v8::FunctionTemplate> m_metaObjectTemplate;
     v8::Persistent<v8::ObjectTemplate> m_globalObjectTemplate;
@@ -408,11 +407,6 @@ inline void QScriptEnginePrivate::exitIsolate() const
 inline bool QScriptEnginePrivate::isQtVariant(v8::Handle<v8::Value> value) const
 {
     return m_variantTemplate->HasInstance(value);
-}
-
-inline bool QScriptEnginePrivate::isQtSignal(v8::Handle<v8::Value> value) const
-{
-    return m_signalTemplate->HasInstance(value);
 }
 
 inline bool QScriptEnginePrivate::isQtMetaObject(v8::Handle<v8::Value> value) const

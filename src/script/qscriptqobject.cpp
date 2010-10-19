@@ -25,6 +25,7 @@
 #include "qscriptengine.h"
 #include "qscriptengine_p.h"
 #include "qscriptqobject_p.h"
+#include "qscriptv8objectwrapper_p.h"
 
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qvarlengtharray.h>
@@ -35,35 +36,395 @@
 #include "qscriptisolate_p.h"
 #include "qscriptable_p.h"
 
+#include <v8.h>
+
 QT_BEGIN_NAMESPACE
 
+// Generic implementation of Qt meta-method invocation.
+// Uses QMetaType and friends to resolve types and convert arguments.
 static v8::Handle<v8::Value> callQtMetaMethod(QScriptEnginePrivate *engine, QObject *qobject,
                                               const QMetaObject *meta, int methodIndex,
-                                              const v8::Arguments& args);
-
-
-QtInstanceData::QtInstanceData(QScriptEnginePrivate *engine, QObject *object,
-                               QScriptEngine::ValueOwnership own,
-                               const QScriptEngine::QObjectWrapOptions &opt)
-    : m_engine(engine), m_cppObject(object), m_own(own), m_opt(opt)
+                                              const v8::Arguments& args)
 {
-}
+    QMetaMethod method = meta->method(methodIndex);
+    QList<QByteArray> parameterTypeNames = method.parameterTypes();
 
-QtInstanceData::~QtInstanceData()
-{
-//    qDebug("~QtInstanceData()");
-    switch (m_own) {
-    case QScriptEngine::QtOwnership:
-        break;
-    case QScriptEngine::AutoOwnership:
-        if (m_cppObject && m_cppObject->parent())
-            break;
-    case QScriptEngine::ScriptOwnership:
-        delete m_cppObject;
-        break;
+    if (args.Length() < parameterTypeNames.size()) {
+        // Throw error: too few args.
+        Q_UNIMPLEMENTED();
     }
+
+    int rtype = QMetaType::type(method.typeName());
+
+    QVarLengthArray<QVariant, 10> cppArgs(1 + parameterTypeNames.size());
+    cppArgs[0] = QVariant(rtype, (void *)0);
+
+    // Convert arguments to C++ types.
+    for (int i = 0; i < parameterTypeNames.size(); ++i) {
+        int atype = QMetaType::type(parameterTypeNames.at(i));
+        if (!atype)
+            Q_UNIMPLEMENTED();
+
+        v8::Handle<v8::Value> actual = args[i];
+
+        if(engine->isQtVariant(actual)) {
+            const QVariant &var = engine->variantValue(actual);
+            if (var.userType() == atype) {
+                cppArgs[1+i] = var;
+                continue;
+            }
+        }
+
+        QVariant v(atype, (void *)0);
+        if (!engine->metaTypeFromJS(actual, atype, v.data())) {
+            // Throw TypeError.
+            Q_UNIMPLEMENTED();
+        }
+        cppArgs[1+i] = v;
+    }
+
+    // Prepare void** array for metacall.
+    QVarLengthArray<void *, 10> argv(cppArgs.size());
+    void **argvData = argv.data();
+    for (int i = 0; i < cppArgs.size(); ++i)
+        argvData[i] = const_cast<void *>(cppArgs[i].constData());
+
+    // Call the C++ method!
+    QMetaObject::metacall(qobject, QMetaObject::InvokeMetaMethod, methodIndex, argvData);
+
+    // Convert and return result.
+    return engine->metaTypeToJS(rtype, argvData[0]);
 }
 
+static inline bool methodNameEquals(const QMetaMethod &method,
+                                    const char *signature, int nameLength)
+{
+    const char *otherSignature = method.signature();
+    return !qstrncmp(otherSignature, signature, nameLength)
+        && (otherSignature[nameLength] == '(');
+}
+
+static inline int methodNameLength(const char *signature)
+{
+    const char *s = signature;
+    while (*s && (*s != '('))
+        ++s;
+    return s - signature;
+}
+
+static int conversionDistance(QScriptEnginePrivate *engine, v8::Handle<v8::Value> actual, int targetType)
+{
+    if (actual->IsNumber()) {
+        switch (targetType) {
+        case QMetaType::Double:
+            // perfect
+            return 0;
+        case QMetaType::Float:
+            return 1;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            return 2;
+        case QMetaType::Long:
+        case QMetaType::ULong:
+            return 3;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            return 4;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            return 5;
+        case QMetaType::Char:
+        case QMetaType::UChar:
+            return 6;
+        default:
+            return 10;
+        }
+    } else if (actual->IsString()) {
+        switch (targetType) {
+        case QMetaType::QString:
+            // perfect
+            return 0;
+        default:
+            return 10;
+        }
+    } else if (actual->IsBoolean()) {
+        switch (targetType) {
+        case QMetaType::Bool:
+            // perfect
+            return 0;
+        default:
+            return 10;
+        }
+    } else if (actual->IsDate()) {
+        switch (targetType) {
+        case QMetaType::QDateTime:
+            return 0;
+        case QMetaType::QDate:
+            return 1;
+        case QMetaType::QTime:
+            return 2;
+        default:
+            return 10;
+        }
+    }
+#if 0
+    else if (actual->IsRegExp()) {
+        switch (targetType) {
+        case QMetaType::QRegExp:
+            // perfect
+            return 0;
+        default:
+            return 10;
+        }
+    }
+#endif
+    else if (engine->isQtVariant(actual)) {
+        if ((targetType == QMetaType::QVariant)
+            || (engine->variantFromJS(actual).userType() == targetType)) {
+            // perfect
+            return 0;
+        }
+        return 10;
+    } else if (actual->IsArray()) {
+        switch (targetType) {
+        case QMetaType::QStringList:
+        case QMetaType::QVariantList:
+            return 5;
+        default:
+            return 10;
+        }
+    } else if (engine->isQtObject(actual)) {
+        switch (targetType) {
+        case QMetaType::QObjectStar:
+        case QMetaType::QWidgetStar:
+            // perfect
+            return 0;
+        default:
+            return 10;
+        }
+    } else if (actual->IsNull()) {
+        switch (targetType) {
+        case QMetaType::VoidStar:
+        case QMetaType::QObjectStar:
+        case QMetaType::QWidgetStar:
+            // perfect
+            return 0;
+        default:
+            return 10;
+        }
+    }
+    return 100;
+}
+
+static int resolveOverloadedQtMetaMethodCall(QScriptEnginePrivate *engine, const QMetaObject *meta, int initialIndex, const v8::Arguments& args)
+{
+    int bestIndex = -1;
+    int bestDistance = INT_MAX;
+    int nameLength = 0;
+    const char *initialMethodSignature = 0;
+    for (int index = initialIndex; index >= 0; --index) {
+        QMetaMethod method = meta->method(index);
+        if (index == initialIndex) {
+            initialMethodSignature = method.signature();
+            nameLength = methodNameLength(initialMethodSignature);
+        } else {
+            if (!methodNameEquals(method, initialMethodSignature, nameLength))
+                continue;
+        }
+
+        QList<QByteArray> parameterTypeNames = method.parameterTypes();
+        int parameterCount = parameterTypeNames.size();
+        if (args.Length() != parameterCount)
+            continue;
+
+        int distance = 0;
+        for (int i = 0; (distance < bestDistance) && (i < parameterCount); ++i) {
+            int targetType = QMetaType::type(parameterTypeNames.at(i));
+            Q_ASSERT(targetType != 0);
+            distance += conversionDistance(engine, args[i], targetType);
+        }
+
+        if (distance == 0) {
+            // Perfect match, no need to look further.
+            return index;
+        }
+
+        if (distance < bestDistance) {
+            bestIndex = index;
+            bestDistance = distance;
+        }
+    }
+    return bestIndex;
+}
+
+// A C++ signal-to-JS handler connection.
+//
+// Acts as a middle-man; intercepts a C++ signal,
+// and invokes a JS callback function.
+//
+class QtSignalData;
+class QtConnection : public QObject
+{
+public:
+    QtConnection(QtSignalData *signal);
+    ~QtConnection();
+
+    bool connect(v8::Handle<v8::Object> receiver,  v8::Handle<v8::Function> callback, Qt::ConnectionType type);
+    bool disconnect();
+
+    v8::Handle<v8::Function> callback() const
+    { return m_callback; }
+
+    // This class implements qt_metacall() and friends manually; moc should
+    // not process it. But then the Q_OBJECT macro must be manually expanded:
+    static const QMetaObject staticMetaObject;
+    virtual const QMetaObject *metaObject() const;
+    virtual void *qt_metacast(const char *);
+    virtual int qt_metacall(QMetaObject::Call, int, void **);
+
+    // Slot.
+    void onSignal(void **);
+
+private:
+    QtSignalData *m_signal;
+    v8::Persistent<v8::Function> m_callback;
+    v8::Persistent<v8::Object> m_receiver;
+};
+
+template <typename T, v8::Persistent<v8::FunctionTemplate> QScriptEnginePrivate::*functionTemplate>
+class QScriptGenericMetaMethodData : public QScriptV8ObjectWrapper<T, functionTemplate> {
+public:
+    enum ResolveMode {
+        ResolvedByName = 0,
+        ResolvedBySignature = 1
+    };
+
+    QScriptGenericMetaMethodData(QScriptEnginePrivate *eng, v8::Handle<v8::Object> object, int index,
+                                 ResolveMode mode , bool overload, bool voidvoid)
+        : m_object(v8::Persistent<v8::Object>::New(object)), m_index(index), m_resolveMode(mode)
+        , m_overloaded(overload) , m_voidvoid(voidvoid)
+    { this->engine = eng; }
+    ~QScriptGenericMetaMethodData()
+    {
+        if (!m_object.IsEmpty())
+            m_object.Dispose();
+    }
+
+    // The QObject wrapper object that this signal is bound to.
+    v8::Handle<v8::Object> object() const
+    { return m_object; }
+
+    int index() const
+    { return m_index; }
+
+    ResolveMode resolveMode() const
+    { return ResolveMode(m_resolveMode); }
+
+    v8::Handle<v8::Value> call();
+
+    v8::Persistent<v8::Object> m_object;
+    uint m_index:29;
+    uint m_resolveMode:1;
+    uint m_overloaded : 1;
+    uint m_voidvoid : 1;
+};
+
+class QtMetaMethodData : public QScriptGenericMetaMethodData<QtMetaMethodData, &QScriptEnginePrivate::metaMethodTemplate>
+{
+    typedef QScriptGenericMetaMethodData<QtMetaMethodData, &QScriptEnginePrivate::metaMethodTemplate> Base;
+public:
+    QtMetaMethodData(QScriptEnginePrivate *engine, v8::Handle<v8::Object> object, int index,
+                     ResolveMode mode, bool overload, bool voidvoid)
+    : Base(engine, object, index, mode, overload, voidvoid)
+    { }
+
+    static v8::Handle<v8::FunctionTemplate> createFunctionTemplate(QScriptEnginePrivate *engine);
+};
+
+// Data associated with a signal JS wrapper object.
+//
+// A signal wrapper is bound to the particular Qt wrapper object
+// where it was looked up as a member, i.e. signal wrappers are
+// _per instance_, not per class (prototype). This is in order
+// to support the connect() and disconnect() syntax:
+//
+// button1.clicked.connect(...);
+// button2.clicked.connect(...);
+//
+// When connect() is called, the this-object will be the signal
+// wrapper, not the QObject. Hence, in order to know which object's
+// clicked() signal to connect to, the signal must be bound to
+// that object.
+//
+// - object: The Qt wrapper object that this signal is bound to.
+//
+// - index: The index of the C++ signal.
+//
+// - resolve mode: How the signal was resolved; by name or signature.
+//   If it was resolved by name, there's a chance the signal might have overloads.
+//
+class QtSignalData : public QScriptGenericMetaMethodData<QtSignalData, &QScriptEnginePrivate::signalTemplate>
+{
+    typedef QScriptGenericMetaMethodData<QtSignalData, &QScriptEnginePrivate::signalTemplate> Base;
+public:
+
+    QtSignalData(QScriptEnginePrivate *engine, v8::Handle<v8::Object> object, int index,
+                 ResolveMode mode, bool overload, bool voidvoid)
+        : Base(engine, object, index, mode, overload, voidvoid)
+    { }
+
+    static v8::Handle<v8::FunctionTemplate> createFunctionTemplate(QScriptEnginePrivate *engine);
+
+    v8::Handle<v8::Value> connect(v8::Handle<v8::Object> receiver,
+                                  v8::Handle<v8::Function> slot,
+                                  Qt::ConnectionType type = Qt::AutoConnection);
+    v8::Handle<v8::Value> disconnect(v8::Handle<v8::Function> callback);
+
+    static QtSignalData *get(v8::Handle<v8::Object> object)
+    {
+        void *ptr = object->GetPointerFromInternalField(0);
+        Q_ASSERT(ptr != 0);
+        return static_cast<QtSignalData*>(ptr);
+    }
+
+private:
+    static v8::Handle<v8::Value> QtConnectCallback(const v8::Arguments& args);
+    static v8::Handle<v8::Value> QtDisconnectCallback(const v8::Arguments& args);
+    QList<QtConnection*> m_connections;
+};
+
+
+
+v8::Handle<v8::FunctionTemplate> QtSignalData::createFunctionTemplate(QScriptEnginePrivate* engine)
+{
+    v8::HandleScope handleScope;
+    v8::Handle<v8::FunctionTemplate> funcTempl = v8::FunctionTemplate::New();
+    funcTempl->SetClassName(v8::String::New("QtSignal"));
+
+    v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
+    instTempl->SetCallAsFunctionHandler(QScriptV8ObjectWrapperHelper::callAsFunction<QtSignalData>);
+    instTempl->SetInternalFieldCount(1); // QtSignalData*
+
+    v8::Handle<v8::ObjectTemplate> protoTempl = funcTempl->PrototypeTemplate();
+    v8::Handle<v8::Signature> sig = v8::Signature::New(funcTempl);
+    protoTempl->Set(v8::String::New("connect"), v8::FunctionTemplate::New(QtConnectCallback, v8::Handle<v8::Value>(), sig));
+    protoTempl->Set(v8::String::New("disconnect"), v8::FunctionTemplate::New(QtDisconnectCallback, v8::Handle<v8::Value>(), sig));
+
+    return handleScope.Close(funcTempl);
+}
+
+v8::Handle<v8::FunctionTemplate> QtMetaMethodData::createFunctionTemplate(QScriptEnginePrivate* engine)
+{
+    v8::HandleScope handleScope;
+    v8::Handle<v8::FunctionTemplate> funcTempl = v8::FunctionTemplate::New();
+    funcTempl->SetClassName(v8::String::New("QtMetaMethod"));
+
+    v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
+    instTempl->SetCallAsFunctionHandler(QScriptV8ObjectWrapperHelper::callAsFunction<QtMetaMethodData>);
+    instTempl->SetInternalFieldCount(1);
+
+    return handleScope.Close(funcTempl);
+}
 
 
 // Connects this signal to the given callback.
@@ -98,18 +459,32 @@ v8::Handle<v8::Value> QtSignalData::disconnect(v8::Handle<v8::Function> callback
     return v8::ThrowException(v8::Exception::Error(v8::String::New("QtSignal.disconnect(): function not connected to this signal")));
 }
 
-//Call the signal dirrectly
-v8::Handle<v8::Value> QtSignalData::call()
+//Call the method
+template <typename T,  v8::Persistent<v8::FunctionTemplate> QScriptEnginePrivate::*functionTemplate>
+v8::Handle<v8::Value> QScriptGenericMetaMethodData<T, functionTemplate>::call()
 {
     QtInstanceData *instance = QtInstanceData::get(object());
     QObject *qobject = instance->cppObject();
+    const QMetaObject *meta = qobject->metaObject();
+    const v8::Arguments *args = this->engine->currentContext()->arguments;
+
+    int methodIndex = m_index;
+    if (m_overloaded)
+        methodIndex = resolveOverloadedQtMetaMethodCall(this->engine, meta, methodIndex, *args);
+
+    Q_ASSERT(methodIndex >= 0); // Ambiguous call.
 
     QScriptEnginePrivate *oldEngine = 0;
     QScriptable *scriptable = instance->toQScriptable();
     if (scriptable)
         oldEngine = QScriptablePrivate::get(scriptable)->swapEngine(instance->engine());
 
-    v8::Handle<v8::Value> result = callQtMetaMethod(engine, qobject, qobject->metaObject(), m_index, *engine->currentContext()->arguments);
+    v8::Handle<v8::Value> result;
+    if (m_voidvoid) {
+        QMetaObject::metacall(qobject, QMetaObject::InvokeMetaMethod, methodIndex, 0);
+    } else {
+        result = callQtMetaMethod(this->engine, qobject, meta, methodIndex, *args);
+    }
 
     if (scriptable)
         QScriptablePrivate::get(scriptable)->swapEngine(oldEngine);
@@ -208,7 +583,6 @@ void QtConnection::onSignal(void **argv)
     }
 }
 
-
 // moc-generated code.
 // DO NOT EDIT!
 
@@ -271,6 +645,30 @@ int QtConnection::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     }
     return _id;
 }
+
+
+QtInstanceData::QtInstanceData(QScriptEnginePrivate *engine, QObject *object,
+                               QScriptEngine::ValueOwnership own,
+                               const QScriptEngine::QObjectWrapOptions &opt)
+    : m_engine(engine), m_cppObject(object), m_own(own), m_opt(opt)
+{
+}
+
+QtInstanceData::~QtInstanceData()
+{
+//    qDebug("~QtInstanceData()");
+    switch (m_own) {
+    case QScriptEngine::QtOwnership:
+        break;
+    case QScriptEngine::AutoOwnership:
+        if (m_cppObject && m_cppObject->parent())
+            break;
+    case QScriptEngine::ScriptOwnership:
+        delete m_cppObject;
+        break;
+    }
+}
+
 
 
 
@@ -486,313 +884,6 @@ static void QtDynamicPropertySetter(v8::Local<v8::String> property,
     qobject->setProperty(name, cppValue);
 }
 
-// Generic implementation of Qt meta-method invocation.
-// Uses QMetaType and friends to resolve types and convert arguments.
-static v8::Handle<v8::Value> callQtMetaMethod(QScriptEnginePrivate *engine, QObject *qobject,
-                                              const QMetaObject *meta, int methodIndex,
-                                              const v8::Arguments& args)
-{
-    QMetaMethod method = meta->method(methodIndex);
-    QList<QByteArray> parameterTypeNames = method.parameterTypes();
-
-    if (args.Length() < parameterTypeNames.size()) {
-        // Throw error: too few args.
-        Q_UNIMPLEMENTED();
-    }
-
-    int rtype = QMetaType::type(method.typeName());
-
-    QVarLengthArray<QVariant, 10> cppArgs(1 + parameterTypeNames.size());
-    cppArgs[0] = QVariant(rtype, (void *)0);
-
-    // Convert arguments to C++ types.
-    for (int i = 0; i < parameterTypeNames.size(); ++i) {
-        int atype = QMetaType::type(parameterTypeNames.at(i));
-        if (!atype)
-            Q_UNIMPLEMENTED();
-
-        v8::Handle<v8::Value> actual = args[i];
-
-        if(engine->isQtVariant(actual)) {
-            const QVariant &var = engine->variantValue(actual);
-            if (var.userType() == atype) {
-                cppArgs[1+i] = var;
-                continue;
-            }
-        }
-
-        QVariant v(atype, (void *)0);
-        if (!engine->metaTypeFromJS(actual, atype, v.data())) {
-            // Throw TypeError.
-            Q_UNIMPLEMENTED();
-        }
-        cppArgs[1+i] = v;
-    }
-
-    // Prepare void** array for metacall.
-    QVarLengthArray<void *, 10> argv(cppArgs.size());
-    void **argvData = argv.data();
-    for (int i = 0; i < cppArgs.size(); ++i)
-        argvData[i] = const_cast<void *>(cppArgs[i].constData());
-
-    // Call the C++ method!
-    QMetaObject::metacall(qobject, QMetaObject::InvokeMetaMethod, methodIndex, argvData);
-
-    // Convert and return result.
-    return engine->metaTypeToJS(rtype, argvData[0]);
-}
-
-// This callback implements a Qt slot or Q_INVOKABLE call (non-overloaded).
-static v8::Handle<v8::Value> QtMetaMethodCallback(const v8::Arguments& args)
-{
-    v8::Local<v8::Object> self = args.Holder(); // This??
-    QtInstanceData *instance = QtInstanceData::get(self);
-
-    QScriptEnginePrivate *engine = instance->engine();
-    QScriptContextPrivate context(engine, &args);
-    QObject *qobject = instance->cppObject();
-    const QMetaObject *meta = qobject->metaObject();
-
-    int methodIndex = v8::Int32::Cast(*args.Data())->Value();
-
-    QScriptEnginePrivate *oldEngine = 0;
-    QScriptable *scriptable = instance->toQScriptable();
-    if (scriptable)
-        oldEngine = QScriptablePrivate::get(scriptable)->swapEngine(instance->engine());
-
-    v8::Handle<v8::Value> result = callQtMetaMethod(engine, qobject, meta, methodIndex, args);
-
-    if (scriptable)
-        QScriptablePrivate::get(scriptable)->swapEngine(oldEngine);
-
-    return result;
-}
-
-static inline bool methodNameEquals(const QMetaMethod &method,
-                                    const char *signature, int nameLength)
-{
-    const char *otherSignature = method.signature();
-    return !qstrncmp(otherSignature, signature, nameLength)
-        && (otherSignature[nameLength] == '(');
-}
-
-static inline int methodNameLength(const char *signature)
-{
-    const char *s = signature;
-    while (*s && (*s != '('))
-        ++s;
-    return s - signature;
-}
-
-static int conversionDistance(QScriptEnginePrivate *engine, v8::Handle<v8::Value> actual, int targetType)
-{
-    if (actual->IsNumber()) {
-        switch (targetType) {
-        case QMetaType::Double:
-            // perfect
-            return 0;
-        case QMetaType::Float:
-            return 1;
-        case QMetaType::LongLong:
-        case QMetaType::ULongLong:
-            return 2;
-        case QMetaType::Long:
-        case QMetaType::ULong:
-            return 3;
-        case QMetaType::Int:
-        case QMetaType::UInt:
-            return 4;
-        case QMetaType::Short:
-        case QMetaType::UShort:
-            return 5;
-        case QMetaType::Char:
-        case QMetaType::UChar:
-            return 6;
-        default:
-            return 10;
-        }
-    } else if (actual->IsString()) {
-        switch (targetType) {
-        case QMetaType::QString:
-            // perfect
-            return 0;
-        default:
-            return 10;
-        }
-    } else if (actual->IsBoolean()) {
-        switch (targetType) {
-        case QMetaType::Bool:
-            // perfect
-            return 0;
-        default:
-            return 10;
-        }
-    } else if (actual->IsDate()) {
-        switch (targetType) {
-        case QMetaType::QDateTime:
-            return 0;
-        case QMetaType::QDate:
-            return 1;
-        case QMetaType::QTime:
-            return 2;
-        default:
-            return 10;
-        }
-    }
-#if 0
-    else if (actual->IsRegExp()) {
-        switch (targetType) {
-        case QMetaType::QRegExp:
-            // perfect
-            return 0;
-        default:
-            return 10;
-        }
-    }
-#endif
-    else if (engine->isQtVariant(actual)) {
-        if ((targetType == QMetaType::QVariant)
-            || (engine->variantFromJS(actual).userType() == targetType)) {
-            // perfect
-            return 0;
-        }
-        return 10;
-    } else if (actual->IsArray()) {
-        switch (targetType) {
-        case QMetaType::QStringList:
-        case QMetaType::QVariantList:
-            return 5;
-        default:
-            return 10;
-        }
-    } else if (engine->isQtObject(actual)) {
-        switch (targetType) {
-        case QMetaType::QObjectStar:
-        case QMetaType::QWidgetStar:
-            // perfect
-            return 0;
-        default:
-            return 10;
-        }
-    } else if (actual->IsNull()) {
-        switch (targetType) {
-        case QMetaType::VoidStar:
-        case QMetaType::QObjectStar:
-        case QMetaType::QWidgetStar:
-            // perfect
-            return 0;
-        default:
-            return 10;
-        }
-    }
-    return 100;
-}
-
-static int resolveOverloadedQtMetaMethodCall(QScriptEnginePrivate *engine, const QMetaObject *meta, int initialIndex, const v8::Arguments& args)
-{
-    int bestIndex = -1;
-    int bestDistance = INT_MAX;
-    int nameLength = 0;
-    const char *initialMethodSignature = 0;
-    for (int index = initialIndex; index >= 0; --index) {
-        QMetaMethod method = meta->method(index);
-        if (index == initialIndex) {
-            initialMethodSignature = method.signature();
-            nameLength = methodNameLength(initialMethodSignature);
-        } else {
-            if (!methodNameEquals(method, initialMethodSignature, nameLength))
-                continue;
-        }
-
-        QList<QByteArray> parameterTypeNames = method.parameterTypes();
-        int parameterCount = parameterTypeNames.size();
-        if (args.Length() != parameterCount)
-            continue;
-
-        int distance = 0;
-        for (int i = 0; (distance < bestDistance) && (i < parameterCount); ++i) {
-            int targetType = QMetaType::type(parameterTypeNames.at(i));
-            Q_ASSERT(targetType != 0);
-            distance += conversionDistance(engine, args[i], targetType);
-        }
-
-        if (distance == 0) {
-            // Perfect match, no need to look further.
-            return index;
-        }
-
-        if (distance < bestDistance) {
-            bestIndex = index;
-            bestDistance = distance;
-        }
-    }
-    return bestIndex;
-}
-
-// This callback implements a Qt slot or Q_INVOKABLE call (overloaded).
-// In this case the types of the actual arguments must be taken into
-// account to decide which C++ overload should be called.
-static v8::Handle<v8::Value> QtOverloadedMetaMethodCallback(const v8::Arguments& args)
-{
-    v8::Local<v8::Object> self = args.Holder(); // This??
-    QtInstanceData *instance = QtInstanceData::get(self);
-    QScriptEnginePrivate *engine = instance->engine();
-    QScriptContextPrivate context(engine, &args);
-
-    QObject *qobject = instance->cppObject();
-    const QMetaObject *meta = qobject->metaObject();
-
-    int methodIndex = v8::Int32::Cast(*args.Data())->Value();
-    methodIndex = resolveOverloadedQtMetaMethodCall(engine, meta, methodIndex, args);
-    if (methodIndex == -1) {
-        // Ambiguous call.
-        Q_ASSERT(0);
-    }
-
-
-    QScriptEnginePrivate *oldEngine = 0;
-    QScriptable *scriptable = instance->toQScriptable();
-    if (scriptable)
-        oldEngine = QScriptablePrivate::get(scriptable)->swapEngine(instance->engine());
-
-    v8::Handle<v8::Value> result = callQtMetaMethod(engine, qobject, meta, methodIndex, args);
-
-    if (scriptable)
-        QScriptablePrivate::get(scriptable)->swapEngine(oldEngine);
-
-
-    return result;
-
-
-}
-
-// This callback implements calls of meta-methods that have no arguments and
-// return void.
-// Having a specialized callback allows us to avoid performing type resolution
-// and such.
-static v8::Handle<v8::Value> QtVoidVoidMetaMethodCallback(const v8::Arguments& args)
-{
-    v8::Local<v8::Object> self = args.Holder(); // This??
-    QtInstanceData *data = QtInstanceData::get(self);
-    QScriptEnginePrivate *engine = data->engine();
-    QScriptContextPrivate context(engine, &args);
-    QObject *qobject = data->cppObject();
-
-    int methodIndex = v8::Int32::Cast(*args.Data())->Value();
-
-    QScriptEnginePrivate *oldEngine = 0;
-    QScriptable *scriptable = data->toQScriptable();
-    if (scriptable)
-        oldEngine = QScriptablePrivate::get(scriptable)->swapEngine(data->engine());
-
-    QMetaObject::metacall(qobject, QMetaObject::InvokeMetaMethod, methodIndex, 0);
-
-    if (scriptable)
-        QScriptablePrivate::get(scriptable)->swapEngine(oldEngine);
-
-    return v8::Undefined();
-}
-
 // This callback implements a fallback property getter for Qt wrapper objects.
 // This is only called if the property is not a QMetaObject-defined property,
 // Q_INVOKABLE method or slot. It handles signals (which are methods that must
@@ -846,7 +937,7 @@ static v8::Handle<v8::Value> QtLazyPropertyGetter(v8::Local<v8::String> property
         }
     }
 
-    // Look up signal by name or signature.
+  /*  // Look up signal by name or signature.
     bool hasParens = name.indexOf('(') != -1;
     const QMetaObject *meta = qobject->metaObject();
     for (int index = meta->methodCount() - 1; index >= 0; --index) {
@@ -868,7 +959,7 @@ static v8::Handle<v8::Value> QtLazyPropertyGetter(v8::Local<v8::String> property
             self->ForceSet(property, signal);
             return signal;
         }
-    }
+    }*/
 
     return v8::Handle<v8::Value>();
 }
@@ -945,7 +1036,7 @@ static v8::Handle<v8::Value> QtMetaObjectCallback(const v8::Arguments& args)
 // an error is thrown.
 // If the connect succeeds, the associated JS function will be invoked
 // when the C++ object emits the signal.
-static v8::Handle<v8::Value> QtConnectCallback(const v8::Arguments& args)
+v8::Handle<v8::Value> QtSignalData::QtConnectCallback(const v8::Arguments& args)
 {
     v8::HandleScope handleScope;
     v8::Local<v8::Object> self = args.Holder();
@@ -1002,7 +1093,7 @@ static v8::Handle<v8::Value> QtConnectCallback(const v8::Arguments& args)
 // The this-object is a QtSignal wrapper.
 // If the disconnect succeeds, this function returns undefined; otherwise,
 // an error is thrown.
-static v8::Handle<v8::Value> QtDisconnectCallback(const v8::Arguments& args)
+v8::Handle<v8::Value> QtSignalData::QtDisconnectCallback(const v8::Arguments& args)
 {
     v8::Local<v8::Object> self = args.Holder();
     QtSignalData *data = QtSignalData::get(self);
@@ -1015,6 +1106,35 @@ static v8::Handle<v8::Value> QtDisconnectCallback(const v8::Arguments& args)
         return v8::ThrowException(v8::Exception::TypeError(v8::String::New("QtSignal.disconnect(): argument is not a function")));
 
     return data->disconnect(v8::Handle<v8::Function>(v8::Function::Cast(*args[0])));
+}
+
+static v8::Handle<v8::Value> QtGetMetaMethod(v8::Local<v8::String> /*property*/,
+                                             const v8::AccessorInfo& info)
+{
+    v8::Local<v8::Object> self = info.This();
+    QtInstanceData *instance = QtInstanceData::get(self);
+    QScriptEnginePrivate *engine = instance->engine();
+    //QScriptContextPrivate context(engine, &info);
+    QObject *qobject = instance->cppObject();
+    const QMetaObject *meta = qobject->metaObject();
+    uint intData = v8::Uint32::Cast(*info.Data())->Value();
+    int methodIndex = intData & 0x3fffffff;
+    bool overload = intData & (1 << 30);
+    bool voidvoid = intData & (1 << 31);
+
+    const QMetaMethod method = meta->method(methodIndex);
+
+    if (method.methodType() == QMetaMethod::Signal) {
+        QtSignalData *data = new QtSignalData(engine, self, methodIndex,
+                                              (intData & 0x40000000) ? QtSignalData::ResolvedBySignature : QtSignalData::ResolvedByName,
+                                              overload, voidvoid);
+        return QtSignalData::createInstance(data);
+    } else {
+        QtMetaMethodData *data = new QtMetaMethodData(engine, self, methodIndex,
+                                                      (intData & 0x40000000) ? QtMetaMethodData::ResolvedBySignature : QtMetaMethodData::ResolvedByName,
+                                                      overload, voidvoid);
+        return QtMetaMethodData::createInstance(data);
+    }
 }
 
 static v8::Handle<v8::Value> findChildCallback(const v8::Arguments& args)
@@ -1116,10 +1236,6 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
         if (method.access() == QMetaMethod::Private)
             continue;
 
-        // Ignore signals, they're handled dynamically.
-        if (method.methodType() == QMetaMethod::Signal)
-            continue;
-
         QByteArray signature = method.signature();
         QByteArray name = signature.left(signature.indexOf('('));
         if (i >= methodOffset)
@@ -1134,34 +1250,21 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
         for (it = ownMethodNameToIndexes.constBegin(); it != ownMethodNameToIndexes.constEnd(); ++it) {
             QByteArray name = it.key();
             QList<int> indexes = it.value();
-            int methodIndex = indexes.last(); // The largest index by that name.
             bool overloaded = methodNameToIndexes[name].size() > 1;
-            QMetaMethod method = mo->method(methodIndex);
 
             // Choose appropriate callback based on return type and parameter types.
-            v8::InvocationCallback callback = 0;
-            if (overloaded) {
-                // Generic handler for methods.
-                callback = QtOverloadedMetaMethodCallback;
-            } else if (!qstrlen(method.typeName()) && method.parameterTypes().isEmpty())
-                callback = QtVoidVoidMetaMethodCallback;
-
-            if (!callback) {
-                // Generic handler for non-overloaded methods.
-                callback = QtMetaMethodCallback;
+            bool voidvoid = false;
+            QMetaMethod method;
+            foreach(int methodIndex, indexes) {
+                method = mo->method(methodIndex);
+                voidvoid = !method.typeName()[0] && method.parameterTypes().isEmpty();
+                quint32 data = (methodIndex & 0x3ffffff) | (voidvoid << 31) | (1 << 29);
+                protoTempl->SetAccessor(v8::String::New(method.signature()), QtGetMetaMethod, 0, v8::Uint32::New(data));
             }
+            int methodIndex = indexes.last(); // The largest index by that name.
+            quint32 data = (methodIndex & 0x3ffffff) | (voidvoid << 31) | (overloaded << 30);
+            protoTempl->SetAccessor(v8::String::New(name), QtGetMetaMethod, 0, v8::Uint32::New(data));
 
-            v8::Handle<v8::FunctionTemplate> methodTempl = v8::FunctionTemplate::New(callback, v8::Int32::New(methodIndex), sig);
-            protoTempl->Set(v8::String::New(name), methodTempl);
-            if (indexes.count() == 1) {
-                // No overloads, so by-name and by-signature properties should be the same function object.
-                protoTempl->Set(v8::String::New(method.signature()), methodTempl);
-            } else {
-                foreach(int idx, indexes) {
-                    //TODO: we should not use QtOverloadedMetaMethodCallback call here, because we know the right index
-                    protoTempl->Set(v8::String::New(mo->method(idx).signature()), methodTempl);
-                }
-            }
         }
     }
 
@@ -1185,23 +1288,6 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
     }
 
     return handleScope.Close(funcTempl);
-}
-
-v8::Handle<v8::FunctionTemplate> createQtSignalTemplate()
-{
-    v8::Handle<v8::FunctionTemplate> funcTempl = v8::FunctionTemplate::New();
-    funcTempl->SetClassName(v8::String::New("QtSignal"));
-
-    v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
-    instTempl->SetCallAsFunctionHandler(QScriptV8ObjectWrapperHelper::callAsFunction<QtSignalData>);
-    instTempl->SetInternalFieldCount(1); // QtSignalData*
-
-    v8::Handle<v8::ObjectTemplate> protoTempl = funcTempl->PrototypeTemplate();
-    v8::Handle<v8::Signature> sig = v8::Signature::New(funcTempl);
-    protoTempl->Set(v8::String::New("connect"), v8::FunctionTemplate::New(QtConnectCallback, v8::Handle<v8::Value>(), sig));
-    protoTempl->Set(v8::String::New("disconnect"), v8::FunctionTemplate::New(QtDisconnectCallback, v8::Handle<v8::Value>(), sig));
-
-    return funcTempl;
 }
 
 v8::Handle<v8::FunctionTemplate> createQtMetaObjectTemplate()

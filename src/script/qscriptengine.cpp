@@ -718,7 +718,6 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine:
     {
         m_v8Context->Enter();
         v8::HandleScope handleScope;
-        m_signalTemplate = v8::Persistent<v8::FunctionTemplate>::New(createSignalTemplate());
         m_metaObjectTemplate = v8::Persistent<v8::FunctionTemplate>::New(createMetaObjectTemplate());
         m_variantTemplate = v8::Persistent<v8::FunctionTemplate>::New(createVariantTemplate());
 
@@ -728,15 +727,6 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine:
         globalObject()->Set(v8::String::New("version") , v8::FunctionTemplate::New(functionVersion, that)->GetFunction());
     }
     m_isolate->Exit();
-}
-
-// Creates a template for Qt signal wrapper objects.
-// Qt signal wrapper objects have a single internal field that
-// contains a pointer to a QtSignalData object.
-// The Qt signal prototype object has functions connect() and disconnect().
-v8::Handle<v8::FunctionTemplate> QScriptEnginePrivate::createSignalTemplate()
-{
-    return createQtSignalTemplate();
 }
 
 // Creates a template for QMetaObject wrapper objects.
@@ -780,8 +770,6 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     m_isolate->Enter();
     // FIXME Do we really need to dispose all persistent handlers before context destruction?
     m_originalGlobalObject.destroy();
-    if (!m_signalTemplate.IsEmpty())
-        m_signalTemplate.Dispose();
     if (!m_variantTemplate.IsEmpty())
         m_variantTemplate.Dispose();
     if (!m_metaObjectTemplate.IsEmpty())
@@ -859,17 +847,6 @@ v8::Handle<v8::Object> QScriptEnginePrivate::newQObject(
         const QScriptEngine::QObjectWrapOptions &opt)
 {
     return newQtObject(this, object, own, opt);
-}
-
-v8::Handle<v8::Object> QScriptEnginePrivate::newSignal(v8::Handle<v8::Object> object, int index, QtSignalData::ResolveMode resolveMode)
-{
-    v8::Handle<v8::ObjectTemplate> instanceTempl = m_signalTemplate->InstanceTemplate();
-    v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
-    Q_ASSERT(instance->InternalFieldCount() == 1);
-    QtSignalData *data = new QtSignalData(object, index, resolveMode);
-    data->engine = this;
-    instance->SetPointerInInternalField(0, data);
-    return instance;
 }
 
 QScriptValue QScriptEnginePrivate::scriptValueFromInternal(v8::Handle<v8::Value> value)

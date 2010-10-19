@@ -189,6 +189,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "qscriptengine_p.h"
 #include "qscriptconverter_p.h"
 #include "qscriptclass_p.h"
+#include "qscriptqobject_p.h"
 QT_END_INCLUDE_NAMESPACE
 
 QScriptValuePrivate* QScriptValuePrivate::get(const QScriptValue& q) { Q_ASSERT(q.d_ptr.data()); return q.d_ptr.data(); }
