@@ -53,6 +53,8 @@
 // We mean it.
 //
 
+#ifdef QT_MAC_USE_COCOA
+
 #include <private/qwindowsurface_raster_p.h>
 #include <QWidget>
 #include <private/qwidget_p.h>
@@ -91,5 +93,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_MAC_USE_COCOA
 
 #endif // QUNIFIEDTOOLBARSURFACE_MAC_P_H

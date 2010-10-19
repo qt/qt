@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#ifdef QT_MAC_USE_COCOA
+
 #include "qunifiedtoolbarsurface_mac_p.h"
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qbackingstore_p.h>
@@ -231,3 +233,5 @@ void QUnifiedToolbarSurface::prepareBuffer(QImage::Format format, QWidget *widge
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_MAC_USE_COCOA
