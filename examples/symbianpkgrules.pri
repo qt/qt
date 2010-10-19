@@ -13,4 +13,4 @@ vendorinfo = \
 examples_deployment.pkg_prerules += vendorinfo
 DEPLOYMENT += examples_deployment
 
-isEmpty(ICON):ICON = $$QT_SOURCE_TREE/src/s60installs/qt.svg
+contains(TEMPLATE,app):isEmpty(ICON):ICON = $$QT_SOURCE_TREE/src/s60installs/qt.svg
