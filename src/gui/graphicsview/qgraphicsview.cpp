@@ -2790,6 +2790,9 @@ bool QGraphicsView::viewportEvent(QEvent *event)
                 d->scene->d_func()->removePopup(d->scene->d_func()->popupWidgets.first());
         }
         d->useLastMouseEvent = false;
+        // a hack to pass a viewport pointer to the scene inside the leave event
+        Q_ASSERT(event->d == 0);
+        event->d = reinterpret_cast<QEventPrivate *>(viewport());
         QApplication::sendEvent(d->scene, event);
         break;
 #ifndef QT_NO_TOOLTIP
