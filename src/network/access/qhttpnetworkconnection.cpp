@@ -145,10 +145,11 @@ void QHttpNetworkConnectionPrivate::resumeConnection()
             QSslSocketPrivate::resumeSocketNotifiers(static_cast<QSslSocket*>(channels[i].socket));
         else
             QAbstractSocketPrivate::resumeSocketNotifiers(channels[i].socket);
-    }
 
-    // Resume uploads
-    // FIXME
+        // Resume pending upload if needed
+        if (channels[i].state == QHttpNetworkConnectionChannel::WritingState)
+            QMetaObject::invokeMethod(&channels[i], "_q_uploadDataReadyRead", Qt::QueuedConnection);
+    }
 
     // queue _q_startNextRequest
     QMetaObject::invokeMethod(this->q_func(), "_q_startNextRequest", Qt::QueuedConnection);
