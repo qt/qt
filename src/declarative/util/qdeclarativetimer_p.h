@@ -47,6 +47,8 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qabstractanimation.h>
 
+#include <private/qdeclarativeglobal_p.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -54,7 +56,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativeTimerPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeTimer : public QObject, public QDeclarativeParserStatus
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeTimer : public QObject, public QDeclarativeParserStatus
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDeclarativeTimer)

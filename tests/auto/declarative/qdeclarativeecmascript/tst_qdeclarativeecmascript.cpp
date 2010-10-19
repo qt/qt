@@ -803,8 +803,8 @@ void tst_qdeclarativeecmascript::scope()
 
         QCOMPARE(object->property("test1").toInt(), 19);
         QCOMPARE(object->property("test2").toInt(), 19);
-        QCOMPARE(object->property("test3").toInt(), 11);
-        QCOMPARE(object->property("test4").toInt(), 11);
+        QCOMPARE(object->property("test3").toInt(), 14);
+        QCOMPARE(object->property("test4").toInt(), 14);
         QCOMPARE(object->property("test5").toInt(), 24);
         QCOMPARE(object->property("test6").toInt(), 24);
     }
