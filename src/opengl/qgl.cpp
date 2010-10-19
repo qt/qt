@@ -5292,6 +5292,12 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
 #if defined(QT_OPENGL_ES)
     if (extensions.match("GL_OES_packed_depth_stencil"))
         glExtensions |= PackedDepthStencil;
+    if (extensions.match("GL_OES_element_index_uint"))
+        glExtensions |= ElementIndexUint;
+    if (extensions.match("GL_OES_depth24"))
+        glExtensions |= Depth24;
+#else
+    glExtensions |= ElementIndexUint;
 #endif
     if (extensions.match("GL_ARB_framebuffer_object")) {
         // ARB_framebuffer_object also includes EXT_framebuffer_blit.
