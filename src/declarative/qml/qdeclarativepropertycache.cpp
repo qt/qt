@@ -236,35 +236,6 @@ void QDeclarativePropertyCache::append(QDeclarativeEngine *engine, const QMetaOb
 {
     QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(engine);
 
-    int propCount = metaObject->propertyCount();
-    int propOffset = metaObject->propertyOffset();
-
-    indexCache.resize(propCount);
-    for (int ii = propOffset; ii < propCount; ++ii) {
-        QMetaProperty p = metaObject->property(ii);
-        if (!p.isScriptable())  
-            continue;
-        
-        QString propName = QString::fromUtf8(p.name());
-
-        RData *data = new RData;
-        data->identifier = enginePriv->objectClass->createPersistentIdentifier(propName);
-        indexCache[ii] = data;
-
-        data->load(p, engine);
-        data->flags |= propertyFlags;
-
-        if (stringCache.contains(propName)) {
-            stringCache[propName]->release();
-            identifierCache[data->identifier.identifier]->release();
-        }
-
-        stringCache.insert(propName, data);
-        identifierCache.insert(data->identifier.identifier, data);
-        data->addref();
-        data->addref();
-    }
-
     int methodCount = metaObject->methodCount();
     // 3 to block the destroyed signal and the deleteLater() slot
     int methodOffset = qMax(3, metaObject->methodOffset()); 
@@ -300,6 +271,35 @@ void QDeclarativePropertyCache::append(QDeclarativeEngine *engine, const QMetaOb
         }
 
         stringCache.insert(methodName, data);
+        identifierCache.insert(data->identifier.identifier, data);
+        data->addref();
+        data->addref();
+    }
+
+    int propCount = metaObject->propertyCount();
+    int propOffset = metaObject->propertyOffset();
+
+    indexCache.resize(propCount);
+    for (int ii = propOffset; ii < propCount; ++ii) {
+        QMetaProperty p = metaObject->property(ii);
+        if (!p.isScriptable())
+            continue;
+
+        QString propName = QString::fromUtf8(p.name());
+
+        RData *data = new RData;
+        data->identifier = enginePriv->objectClass->createPersistentIdentifier(propName);
+        indexCache[ii] = data;
+
+        data->load(p, engine);
+        data->flags |= propertyFlags;
+
+        if (stringCache.contains(propName)) {
+            stringCache[propName]->release();
+            identifierCache[data->identifier.identifier]->release();
+        }
+
+        stringCache.insert(propName, data);
         identifierCache.insert(data->identifier.identifier, data);
         data->addref();
         data->addref();
