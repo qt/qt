@@ -22,6 +22,7 @@ SOURCES += \
     $$V8DIR/src/ast.cc \
     $$V8DIR/src/bootstrapper.cc \
     $$V8DIR/src/builtins.cc \
+    $$V8DIR/src/cached-powers.cc \
     $$V8DIR/src/checks.cc \
     $$V8DIR/src/circular-queue.cc \
     $$V8DIR/src/code-stubs.cc \
@@ -81,7 +82,9 @@ SOURCES += \
     $$V8DIR/src/serialize.cc \
     $$V8DIR/src/snapshot-common.cc \
     $$V8DIR/src/spaces.cc \
+    $$V8DIR/src/string-search.cc \
     $$V8DIR/src/string-stream.cc \
+    $$V8DIR/src/strtod.cc \
     $$V8DIR/src/stub-cache.cc \
     $$V8DIR/src/token.cc \
     $$V8DIR/src/top.cc \

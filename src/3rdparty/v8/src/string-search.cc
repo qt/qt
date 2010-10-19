@@ -25,19 +25,21 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef V8_CACHED_POWERS_H_
-#define V8_CACHED_POWERS_H_
-
-#include "diy-fp.h"
+#include "v8.h"
+#include "string-search.h"
 
 namespace v8 {
 namespace internal {
 
-void GetCachedPowerForBinaryExponentRange(int min_exponent,
-                                          int max_exponent,
-                                          DiyFp* power,
-                                          int* decimal_exponent);
+// Storage for constants used by string-search.
 
-} }  // namespace v8::internal
+// Now in Isolate:
+// bad_char_shift_table()
+// good_suffix_shift_table()
+// suffix_table()
 
-#endif  // V8_CACHED_POWERS_H_
+//int StringSearchBase::kBadCharShiftTable[kUC16AlphabetSize];
+//int StringSearchBase::kGoodSuffixShiftTable[kBMMaxShift + 1];
+//int StringSearchBase::kSuffixTable[kBMMaxShift + 1];
+
+}}  // namespace v8::internal

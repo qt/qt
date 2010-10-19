@@ -152,11 +152,11 @@ Handle<String> Isolate::StackTraceString() {
     OS::PrintError(
       "If you are lucky you may find a partial stack dump on stdout.\n\n");
     incomplete_message_->OutputToStdOut();
-    return Factory::empty_symbol();
+    return factory()->empty_symbol();
   } else {
     OS::Abort();
     // Unreachable
-    return Factory::empty_symbol();
+    return factory()->empty_symbol();
   }
 }
 
@@ -165,29 +165,34 @@ Handle<JSArray> Isolate::CaptureCurrentStackTrace(
     int frame_limit, StackTrace::StackTraceOptions options) {
   // Ensure no negative values.
   int limit = Max(frame_limit, 0);
-  Handle<JSArray> stack_trace = Factory::NewJSArray(frame_limit);
+  Handle<JSArray> stack_trace = factory()->NewJSArray(frame_limit);
 
-  Handle<String> column_key =  Factory::LookupAsciiSymbol("column");
-  Handle<String> line_key =  Factory::LookupAsciiSymbol("lineNumber");
-  Handle<String> script_key =  Factory::LookupAsciiSymbol("scriptName");
-  Handle<String> function_key =  Factory::LookupAsciiSymbol("functionName");
-  Handle<String> eval_key =  Factory::LookupAsciiSymbol("isEval");
-  Handle<String> constructor_key =  Factory::LookupAsciiSymbol("isConstructor");
+  Handle<String> column_key =  factory()->LookupAsciiSymbol("column");
+  Handle<String> line_key =  factory()->LookupAsciiSymbol("lineNumber");
+  Handle<String> script_key =  factory()->LookupAsciiSymbol("scriptName");
+  Handle<String> name_or_source_url_key =
+      factory()->LookupAsciiSymbol("nameOrSourceURL");
+  Handle<String> script_name_or_source_url_key =
+      factory()->LookupAsciiSymbol("scriptNameOrSourceURL");
+  Handle<String> function_key =  factory()->LookupAsciiSymbol("functionName");
+  Handle<String> eval_key =  factory()->LookupAsciiSymbol("isEval");
+  Handle<String> constructor_key =
+      factory()->LookupAsciiSymbol("isConstructor");
 
   StackTraceFrameIterator it;
   int frames_seen = 0;
   while (!it.done() && (frames_seen < limit)) {
     // Create a JSObject to hold the information for the StackFrame.
-    Handle<JSObject> stackFrame = Factory::NewJSObject(object_function());
+    Handle<JSObject> stackFrame = factory()->NewJSObject(object_function());
 
     JavaScriptFrame* frame = it.frame();
-    JSFunction* fun(JSFunction::cast(frame->function()));
-    Script* script = Script::cast(fun->shared()->script());
+    Handle<JSFunction> fun(JSFunction::cast(frame->function()));
+    Handle<Script> script(Script::cast(fun->shared()->script()));
 
     if (options & StackTrace::kLineNumber) {
       int script_line_offset = script->line_offset()->value();
       int position = frame->code()->SourcePosition(frame->pc());
-      int line_number = GetScriptLineNumber(Handle<Script>(script), position);
+      int line_number = GetScriptLineNumber(script, position);
       // line_number is already shifted by the script_line_offset.
       int relative_line_number = line_number - script_line_offset;
       if (options & StackTrace::kColumnOffset && relative_line_number >= 0) {
@@ -211,6 +216,22 @@ Handle<JSArray> Isolate::CaptureCurrentStackTrace(
       SetProperty(stackFrame, script_key, script_name, NONE);
     }
 
+    if (options & StackTrace::kScriptNameOrSourceURL) {
+      Handle<Object> script_name(script->name());
+      Handle<JSValue> script_wrapper = GetScriptWrapper(script);
+      Handle<Object> property = GetProperty(script_wrapper,
+                                            name_or_source_url_key);
+      ASSERT(property->IsJSFunction());
+      Handle<JSFunction> method = Handle<JSFunction>::cast(property);
+      bool caught_exception;
+      Handle<Object> result = Execution::TryCall(method, script_wrapper, 0,
+                                                 NULL, &caught_exception);
+      if (caught_exception) {
+        result = factory()->undefined_value();
+      }
+      SetProperty(stackFrame, script_name_or_source_url_key, result, NONE);
+    }
+
     if (options & StackTrace::kFunctionName) {
       Handle<Object> fun_name(fun->shared()->name());
       if (fun_name->ToBoolean()->IsFalse()) {
@@ -222,13 +243,13 @@ Handle<JSArray> Isolate::CaptureCurrentStackTrace(
     if (options & StackTrace::kIsEval) {
       int type = Smi::cast(script->compilation_type())->value();
       Handle<Object> is_eval = (type == Script::COMPILATION_TYPE_EVAL) ?
-          Factory::true_value() : Factory::false_value();
+          factory()->true_value() : factory()->false_value();
       SetProperty(stackFrame, eval_key, is_eval, NONE);
     }
 
     if (options & StackTrace::kIsConstructor) {
       Handle<Object> is_constructor = (frame->IsConstructor()) ?
-          Factory::true_value() : Factory::false_value();
+          factory()->true_value() : factory()->false_value();
       SetProperty(stackFrame, constructor_key, is_constructor, NONE);
     }
 
@@ -461,13 +482,13 @@ bool Isolate::MayIndexedAccess(JSObject* receiver,
 }
 
 
-const char* Isolate::kStackOverflowMessage =
+const char* const Isolate::kStackOverflowMessage =
   "Uncaught RangeError: Maximum call stack size exceeded";
 
 
 Failure* Isolate::StackOverflow() {
   HandleScope scope;
-  Handle<String> key = Factory::stack_overflow_symbol();
+  Handle<String> key = factory()->stack_overflow_symbol();
   Handle<JSObject> boilerplate =
       Handle<JSObject>::cast(GetProperty(js_builtins_object(), key));
   Handle<Object> exception = Copy(boilerplate);
@@ -537,8 +558,8 @@ void Isolate::PrintCurrentStackTrace(FILE* out) {
     // current frame is the top-level frame.
     it.Advance();
     Handle<Object> is_top_level = it.done()
-        ? Factory::true_value()
-        : Factory::false_value();
+        ? factory()->true_value()
+        : factory()->false_value();
     // Generate and print stack trace line.
     Handle<String> line =
         Execution::GetStackTraceLine(recv, fun, pos_obj, is_top_level);

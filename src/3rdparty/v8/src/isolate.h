@@ -40,7 +40,6 @@
 #include "heap.h"
 #include "regexp-stack.h"
 #include "runtime.h"
-#include "string-search.h"
 #include "zone.h"
 #include "../include/v8-debug.h"
 
@@ -71,6 +70,7 @@ class CpuProfiler;
 class Deserializer;
 class EmptyStatement;
 class ExternalReferenceTable;
+class Factory;
 class FunctionInfoListener;
 class HandleScopeImplementer;
 class HeapProfiler;
@@ -254,6 +254,9 @@ class HashMap;
   /* SerializerDeserializer state. */                                          \
   V(Object*, serialize_partial_snapshot_cache, kPartialSnapshotCacheCapacity)  \
   V(int, jsregexp_static_offsets_vector, kJSRegexpStaticOffsetsVectorSize)     \
+  V(int, bad_char_shift_table, kUC16AlphabetSize)                              \
+  V(int, good_suffix_shift_table, (kBMMaxShift + 1))                           \
+  V(int, suffix_table, (kBMMaxShift + 1))                                      \
   ISOLATE_INIT_DEBUG_ARRAY_LIST(V)
 
 typedef List<HeapObject*, PreallocatedStorage> DebugObjectCache;
@@ -633,7 +636,10 @@ class Isolate {
   char* ArchiveThread(char* to);
   char* RestoreThread(char* from);
 
-  static const char* kStackOverflowMessage;
+  static const char* const kStackOverflowMessage;
+
+  static const int kUC16AlphabetSize = 256; // See StringSearchBase.
+  static const int kBMMaxShift = 250;       // See StringSearchBase.
 
   // Accessors.
 #define GLOBAL_ACCESSOR(type, name, initialvalue)                              \
@@ -822,6 +828,8 @@ class Isolate {
   /* A stack of VM states. */
   AtomicWord* vm_state() { return &vm_state_; }
 
+  Factory* factory() { return reinterpret_cast<Factory*>(this); }
+
   // SerializerDeserializer state.
   static const int kPartialSnapshotCacheCapacity = 1400;
 
@@ -885,6 +893,9 @@ class Isolate {
   bool PreInit();
 
   void Deinit();
+
+  static void SetIsolateThreadLocals(Isolate* isolate,
+                                     PerIsolateThreadData* data);
 
   enum State {
     UNINITIALIZED,    // Some components may not have been allocated.
@@ -1138,9 +1149,11 @@ class PostponeInterruptsScope BASE_EMBEDDED {
 };
 
 
-// Temporary macros for accessing fields off the global isolate. Define these
-// when reformatting code would become burdensome.
+// Temporary macros for accessing current isolate and its subobjects.
+// They provide better readability, especially when used a lot in the code.
 #define HEAP (v8::internal::Isolate::Current()->heap())
+#define FACTORY (v8::internal::Isolate::Current()->factory())
+#define ISOLATE (v8::internal::Isolate::Current())
 #define ZONE (v8::internal::Isolate::Current()->zone())
 #define LOGGER (v8::internal::Isolate::Current()->logger())
 

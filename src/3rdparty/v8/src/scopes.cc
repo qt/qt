@@ -1,4 +1,4 @@
-// Copyright 2006-2008 the V8 project authors. All rights reserved.
+// Copyright 2010 the V8 project authors. All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
@@ -27,9 +27,12 @@
 
 #include "v8.h"
 
+#include "scopes.h"
+
+#include "bootstrapper.h"
+#include "compiler.h"
 #include "prettyprinter.h"
 #include "scopeinfo.h"
-#include "scopes.h"
 
 namespace v8 {
 namespace internal {
@@ -114,7 +117,7 @@ Scope::Scope(Type type)
   : outer_scope_(NULL),
     inner_scopes_(0),
     type_(type),
-    scope_name_(Factory::empty_symbol()),
+    scope_name_(FACTORY->empty_symbol()),
     variables_(false),
     temps_(0),
     params_(0),
@@ -142,7 +145,7 @@ Scope::Scope(Scope* outer_scope, Type type)
   : outer_scope_(outer_scope),
     inner_scopes_(4),
     type_(type),
-    scope_name_(Factory::empty_symbol()),
+    scope_name_(FACTORY->empty_symbol()),
     temps_(4),
     params_(4),
     dynamics_(NULL),
@@ -170,6 +173,25 @@ Scope::Scope(Scope* outer_scope, Type type)
 }
 
 
+bool Scope::Analyze(CompilationInfo* info) {
+  ASSERT(info->function() != NULL);
+  Scope* top = info->function()->scope();
+  while (top->outer_scope() != NULL) top = top->outer_scope();
+  top->AllocateVariables(info->calling_context());
+
+#ifdef DEBUG
+  if (info->isolate()->bootstrapper()->IsActive()
+          ? FLAG_print_builtin_scopes
+          : FLAG_print_scopes) {
+    info->function()->scope()->Print();
+  }
+#endif
+
+  info->SetScope(info->function()->scope());
+  return true;  // Can not fail.
+}
+
+
 void Scope::Initialize(bool inside_with) {
   // Add this scope as a new inner scope of the outer scope.
   if (outer_scope_ != NULL) {
@@ -188,7 +210,7 @@ void Scope::Initialize(bool inside_with) {
   // such parameter is 'this' which is passed on the stack when
   // invoking scripts
   Variable* var =
-      variables_.Declare(this, Factory::this_symbol(), Variable::VAR,
+      variables_.Declare(this, FACTORY->this_symbol(), Variable::VAR,
                          false, Variable::THIS);
   var->rewrite_ = new Slot(var, Slot::PARAMETER, -1);
   receiver_ = var;
@@ -197,11 +219,10 @@ void Scope::Initialize(bool inside_with) {
     // Declare 'arguments' variable which exists in all functions.
     // Note that it might never be accessed, in which case it won't be
     // allocated during variable allocation.
-    variables_.Declare(this, Factory::arguments_symbol(), Variable::VAR,
+    variables_.Declare(this, FACTORY->arguments_symbol(), Variable::VAR,
                        true, Variable::ARGUMENTS);
   }
 }
-
 
 
 Variable* Scope::LocalLookup(Handle<String> name) {
@@ -762,7 +783,7 @@ bool Scope::MustAllocateInContext(Variable* var) {
 
 bool Scope::HasArgumentsParameter() {
   for (int i = 0; i < params_.length(); i++) {
-    if (params_[i]->name().is_identical_to(Factory::arguments_symbol()))
+    if (params_[i]->name().is_identical_to(FACTORY->arguments_symbol()))
       return true;
   }
   return false;
@@ -781,7 +802,7 @@ void Scope::AllocateHeapSlot(Variable* var) {
 
 void Scope::AllocateParameterLocals() {
   ASSERT(is_function_scope());
-  Variable* arguments = LocalLookup(Factory::arguments_symbol());
+  Variable* arguments = LocalLookup(FACTORY->arguments_symbol());
   ASSERT(arguments != NULL);  // functions have 'arguments' declared implicitly
   if (MustAllocate(arguments) && !HasArgumentsParameter()) {
     // 'arguments' is used. Unless there is also a parameter called
@@ -812,8 +833,7 @@ void Scope::AllocateParameterLocals() {
 
     // We are using 'arguments'. Tell the code generator that is needs to
     // allocate the arguments object by setting 'arguments_'.
-    arguments_ = new VariableProxy(Factory::arguments_symbol(), false, false);
-    arguments_->BindTo(arguments);
+    arguments_ = arguments;
 
     // We also need the '.arguments' shadow variable. Declare it and create
     // and bind the corresponding proxy. It's ok to declare it only now
@@ -824,13 +844,13 @@ void Scope::AllocateParameterLocals() {
     // NewTemporary() because the mode needs to be INTERNAL since this
     // variable may be allocated in the heap-allocated context (temporaries
     // are never allocated in the context).
-    Variable* arguments_shadow =
-        new Variable(this, Factory::arguments_shadow_symbol(),
-                     Variable::INTERNAL, true, Variable::ARGUMENTS);
-    arguments_shadow_ =
-        new VariableProxy(Factory::arguments_shadow_symbol(), false, false);
-    arguments_shadow_->BindTo(arguments_shadow);
-    temps_.Add(arguments_shadow);
+    arguments_shadow_ = new Variable(this,
+                                     FACTORY->arguments_shadow_symbol(),
+                                     Variable::INTERNAL,
+                                     true,
+                                     Variable::ARGUMENTS);
+    arguments_shadow_->set_is_used(true);
+    temps_.Add(arguments_shadow_);
 
     // Allocate the parameters by rewriting them into '.arguments[i]' accesses.
     for (int i = 0; i < params_.length(); i++) {
@@ -841,14 +861,13 @@ void Scope::AllocateParameterLocals() {
           // It is ok to set this only now, because arguments is a local
           // variable that is allocated after the parameters have been
           // allocated.
-          arguments_shadow->is_accessed_from_inner_scope_ = true;
+          arguments_shadow_->is_accessed_from_inner_scope_ = true;
         }
         var->rewrite_ =
-          new Property(arguments_shadow_,
-                       new Literal(Handle<Object>(Smi::FromInt(i))),
-                       RelocInfo::kNoPosition,
-                       Property::SYNTHETIC);
-        if (var->is_used()) arguments_shadow->set_is_used(true);
+            new Property(new VariableProxy(arguments_shadow_),
+                         new Literal(Handle<Object>(Smi::FromInt(i))),
+                         RelocInfo::kNoPosition,
+                         Property::SYNTHETIC);
       }
     }
 
@@ -864,7 +883,8 @@ void Scope::AllocateParameterLocals() {
       if (MustAllocate(var)) {
         if (MustAllocateInContext(var)) {
           ASSERT(var->rewrite_ == NULL ||
-                 (var->slot() != NULL && var->slot()->type() == Slot::CONTEXT));
+                 (var->AsSlot() != NULL &&
+                  var->AsSlot()->type() == Slot::CONTEXT));
           if (var->rewrite_ == NULL) {
             // Only set the heap allocation if the parameter has not
             // been allocated yet.
@@ -872,8 +892,8 @@ void Scope::AllocateParameterLocals() {
           }
         } else {
           ASSERT(var->rewrite_ == NULL ||
-                 (var->slot() != NULL &&
-                  var->slot()->type() == Slot::PARAMETER));
+                 (var->AsSlot() != NULL &&
+                  var->AsSlot()->type() == Slot::PARAMETER));
           // Set the parameter index always, even if the parameter
           // was seen before! (We need to access the actual parameter
           // supplied for the last occurrence of a multiply declared
@@ -889,8 +909,8 @@ void Scope::AllocateParameterLocals() {
 void Scope::AllocateNonParameterLocal(Variable* var) {
   ASSERT(var->scope() == this);
   ASSERT(var->rewrite_ == NULL ||
-         (!var->IsVariable(Factory::result_symbol())) ||
-         (var->slot() == NULL || var->slot()->type() != Slot::LOCAL));
+         (!var->IsVariable(FACTORY->result_symbol())) ||
+         (var->AsSlot() == NULL || var->AsSlot()->type() != Slot::LOCAL));
   if (var->rewrite_ == NULL && MustAllocate(var)) {
     if (MustAllocateInContext(var)) {
       AllocateHeapSlot(var);

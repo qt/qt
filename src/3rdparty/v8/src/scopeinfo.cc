@@ -37,8 +37,8 @@ namespace internal {
 
 
 static int CompareLocal(Variable* const* v, Variable* const* w) {
-  Slot* s = (*v)->slot();
-  Slot* t = (*w)->slot();
+  Slot* s = (*v)->AsSlot();
+  Slot* t = (*w)->AsSlot();
   // We may have rewritten parameters (that are in the arguments object)
   // and which may have a NULL slot... - find a better solution...
   int x = (s != NULL ? s->index() : 0);
@@ -50,7 +50,7 @@ static int CompareLocal(Variable* const* v, Variable* const* w) {
 
 template<class Allocator>
 ScopeInfo<Allocator>::ScopeInfo(Scope* scope)
-    : function_name_(Factory::empty_symbol()),
+    : function_name_(FACTORY->empty_symbol()),
       calls_eval_(scope->calls_eval()),
       parameters_(scope->num_parameters()),
       stack_slots_(scope->num_stack_slots()),
@@ -83,7 +83,7 @@ ScopeInfo<Allocator>::ScopeInfo(Scope* scope)
   for (int i = 0; i < locals.length(); i++) {
     Variable* var = locals[i];
     if (var->is_used()) {
-      Slot* slot = var->slot();
+      Slot* slot = var->AsSlot();
       if (slot != NULL) {
         switch (slot->type()) {
           case Slot::PARAMETER:
@@ -112,9 +112,9 @@ ScopeInfo<Allocator>::ScopeInfo(Scope* scope)
   if (scope->num_heap_slots() > 0) {
     // Add user-defined slots.
     for (int i = 0; i < heap_locals.length(); i++) {
-      ASSERT(heap_locals[i]->slot()->index() - Context::MIN_CONTEXT_SLOTS ==
+      ASSERT(heap_locals[i]->AsSlot()->index() - Context::MIN_CONTEXT_SLOTS ==
              context_slots_.length());
-      ASSERT(heap_locals[i]->slot()->index() - Context::MIN_CONTEXT_SLOTS ==
+      ASSERT(heap_locals[i]->AsSlot()->index() - Context::MIN_CONTEXT_SLOTS ==
              context_modes_.length());
       context_slots_.Add(heap_locals[i]->name());
       context_modes_.Add(heap_locals[i]->mode());
@@ -131,17 +131,17 @@ ScopeInfo<Allocator>::ScopeInfo(Scope* scope)
     Variable* var = scope->function();
     if (var != NULL &&
         var->is_used() &&
-        var->slot()->type() == Slot::CONTEXT) {
+        var->AsSlot()->type() == Slot::CONTEXT) {
       function_name_ = var->name();
       // Note that we must not find the function name in the context slot
       // list - instead it must be handled separately in the
       // Contexts::Lookup() function. Thus record an empty symbol here so we
       // get the correct number of context slots.
-      ASSERT(var->slot()->index() - Context::MIN_CONTEXT_SLOTS ==
+      ASSERT(var->AsSlot()->index() - Context::MIN_CONTEXT_SLOTS ==
              context_slots_.length());
-      ASSERT(var->slot()->index() - Context::MIN_CONTEXT_SLOTS ==
+      ASSERT(var->AsSlot()->index() - Context::MIN_CONTEXT_SLOTS ==
              context_modes_.length());
-      context_slots_.Add(Factory::empty_symbol());
+      context_slots_.Add(FACTORY->empty_symbol());
       context_modes_.Add(Variable::INTERNAL);
     }
   }
@@ -239,7 +239,7 @@ static Object** ReadList(Object** p,
 
 template<class Allocator>
 ScopeInfo<Allocator>::ScopeInfo(SerializedScopeInfo* data)
-  : function_name_(Factory::empty_symbol()),
+  : function_name_(FACTORY->empty_symbol()),
     parameters_(4),
     stack_slots_(8),
     context_slots_(8),
@@ -310,7 +310,7 @@ Handle<SerializedScopeInfo> ScopeInfo<Allocator>::Serialize() {
                stack_slots_.length();
 
   Handle<SerializedScopeInfo> data(
-      SerializedScopeInfo::cast(*Factory::NewFixedArray(length, TENURED)));
+      SerializedScopeInfo::cast(*FACTORY->NewFixedArray(length, TENURED)));
   AssertNoAllocation nogc;
 
   Object** p0 = data->data_start();

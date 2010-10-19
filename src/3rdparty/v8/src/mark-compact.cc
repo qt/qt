@@ -167,8 +167,8 @@ void MarkCompactCollector::Finish() {
   // reclaiming the waste and free list blocks).
   static const int kFragmentationLimit = 15;        // Percent.
   static const int kFragmentationAllowed = 1 * MB;  // Absolute.
-  int old_gen_recoverable = 0;
-  int old_gen_used = 0;
+  intptr_t old_gen_recoverable = 0;
+  intptr_t old_gen_used = 0;
 
   OldSpaces spaces;
   for (OldSpace* space = spaces.next(); space != NULL; space = spaces.next()) {
@@ -234,7 +234,8 @@ static inline HeapObject* ShortCircuitConsString(Object** p) {
   if ((type & kShortcutTypeMask) != kShortcutTypeTag) return object;
 
   Object* second = reinterpret_cast<ConsString*>(object)->unchecked_second();
-  if (second != HEAP->raw_unchecked_empty_string()) {
+  Heap* heap = map_word.ToMap()->heap();
+  if (second != heap->raw_unchecked_empty_string()) {
     return object;
   }
 
@@ -242,7 +243,7 @@ static inline HeapObject* ShortCircuitConsString(Object** p) {
   // page dirty marks. Therefore, we only replace the string with its left
   // substring when page dirty marks do not change.
   Object* first = reinterpret_cast<ConsString*>(object)->unchecked_first();
-  if (!HEAP->InNewSpace(object) && HEAP->InNewSpace(first)) return object;
+  if (!heap->InNewSpace(object) && heap->InNewSpace(first)) return object;
 
   *p = first;
   return HeapObject::cast(first);
@@ -1264,59 +1265,71 @@ void EncodeFreeRegion(Address free_start, int free_size) {
 // Try to promote all objects in new space.  Heap numbers and sequential
 // strings are promoted to the code space, large objects to large object space,
 // and all others to the old space.
-inline Object* MCAllocateFromNewSpace(HeapObject* object, int object_size) {
+inline Object* MCAllocateFromNewSpace(Heap* heap,
+                                      HeapObject* object,
+                                      int object_size) {
   Object* forwarded;
-  if (object_size > HEAP->MaxObjectSizeInPagedSpace()) {
+  if (object_size > heap->MaxObjectSizeInPagedSpace()) {
     forwarded = Failure::Exception();
   } else {
-    OldSpace* target_space = HEAP->TargetSpace(object);
-    ASSERT(target_space == HEAP->old_pointer_space() ||
-           target_space == HEAP->old_data_space());
+    OldSpace* target_space = heap->TargetSpace(object);
+    ASSERT(target_space == heap->old_pointer_space() ||
+           target_space == heap->old_data_space());
     forwarded = target_space->MCAllocateRaw(object_size);
   }
   if (forwarded->IsFailure()) {
-    forwarded = HEAP->new_space()->MCAllocateRaw(object_size);
+    forwarded = heap->new_space()->MCAllocateRaw(object_size);
   }
   return forwarded;
 }
 
 
 // Allocation functions for the paged spaces call the space's MCAllocateRaw.
-inline Object* MCAllocateFromOldPointerSpace(HeapObject* ignore,
+inline Object* MCAllocateFromOldPointerSpace(Heap* heap,
+                                             HeapObject* ignore,
                                              int object_size) {
-  return HEAP->old_pointer_space()->MCAllocateRaw(object_size);
+  return heap->old_pointer_space()->MCAllocateRaw(object_size);
 }
 
 
-inline Object* MCAllocateFromOldDataSpace(HeapObject* ignore, int object_size) {
-  return HEAP->old_data_space()->MCAllocateRaw(object_size);
+inline Object* MCAllocateFromOldDataSpace(Heap* heap,
+                                          HeapObject* ignore,
+                                          int object_size) {
+  return heap->old_data_space()->MCAllocateRaw(object_size);
 }
 
 
-inline Object* MCAllocateFromCodeSpace(HeapObject* ignore, int object_size) {
-  return HEAP->code_space()->MCAllocateRaw(object_size);
+inline Object* MCAllocateFromCodeSpace(Heap* heap,
+                                       HeapObject* ignore,
+                                       int object_size) {
+  return heap->code_space()->MCAllocateRaw(object_size);
 }
 
 
-inline Object* MCAllocateFromMapSpace(HeapObject* ignore, int object_size) {
-  return HEAP->map_space()->MCAllocateRaw(object_size);
+inline Object* MCAllocateFromMapSpace(Heap* heap,
+                                      HeapObject* ignore,
+                                      int object_size) {
+  return heap->map_space()->MCAllocateRaw(object_size);
 }
 
 
-inline Object* MCAllocateFromCellSpace(HeapObject* ignore, int object_size) {
-  return HEAP->cell_space()->MCAllocateRaw(object_size);
+inline Object* MCAllocateFromCellSpace(Heap* heap,
+                                       HeapObject* ignore,
+                                       int object_size) {
+  return heap->cell_space()->MCAllocateRaw(object_size);
 }
 
 
 // The forwarding address is encoded at the same offset as the current
 // to-space object, but in from space.
-inline void EncodeForwardingAddressInNewSpace(HeapObject* old_object,
+inline void EncodeForwardingAddressInNewSpace(Heap* heap,
+                                              HeapObject* old_object,
                                               int object_size,
                                               Object* new_object,
                                               int* ignored) {
   int offset =
-      HEAP->new_space()->ToSpaceOffsetForAddress(old_object->address());
-  Memory::Address_at(HEAP->new_space()->FromSpaceLow() + offset) =
+      heap->new_space()->ToSpaceOffsetForAddress(old_object->address());
+  Memory::Address_at(heap->new_space()->FromSpaceLow() + offset) =
       HeapObject::cast(new_object)->address();
 }
 
@@ -1324,7 +1337,8 @@ inline void EncodeForwardingAddressInNewSpace(HeapObject* old_object,
 // The forwarding address is encoded in the map pointer of the object as an
 // offset (in terms of live bytes) from the address of the first live object
 // in the page.
-inline void EncodeForwardingAddressInPagedSpace(HeapObject* old_object,
+inline void EncodeForwardingAddressInPagedSpace(Heap* heap,
+                                                HeapObject* old_object,
                                                 int object_size,
                                                 Object* new_object,
                                                 int* offset) {
@@ -1381,10 +1395,10 @@ inline void EncodeForwardingAddressesInRange(MarkCompactCollector* collector,
       collector->tracer()->decrement_marked_count();
       object_size = object->Size();
 
-      Object* forwarded = Alloc(object, object_size);
+      Object* forwarded = Alloc(collector->heap(), object, object_size);
       // Allocation cannot fail, because we are compacting the space.
       ASSERT(!forwarded->IsFailure());
-      Encode(object, object_size, forwarded, offset);
+      Encode(collector->heap(), object, object_size, forwarded, offset);
 
 #ifdef DEBUG
       if (FLAG_gc_verbose) {
@@ -1420,8 +1434,8 @@ void MarkCompactCollector::EncodeForwardingAddressesInNewSpace() {
                                    EncodeForwardingAddressInNewSpace,
                                    IgnoreNonLiveObject>(
       this,
-      HEAP->new_space()->bottom(),
-      HEAP->new_space()->top(),
+      heap_->new_space()->bottom(),
+      heap_->new_space()->top(),
       &ignored);
 }
 
@@ -1831,24 +1845,24 @@ void MarkCompactCollector::EncodeForwardingAddresses() {
   // Objects in the active semispace of the young generation may be
   // relocated to the inactive semispace (if not promoted).  Set the
   // relocation info to the beginning of the inactive semispace.
-  HEAP->new_space()->MCResetRelocationInfo();
+  heap_->new_space()->MCResetRelocationInfo();
 
   // Compute the forwarding pointers in each space.
   EncodeForwardingAddressesInPagedSpace<MCAllocateFromOldPointerSpace,
                                         ReportDeleteIfNeeded>(
-      HEAP->old_pointer_space());
+      heap_->old_pointer_space());
 
   EncodeForwardingAddressesInPagedSpace<MCAllocateFromOldDataSpace,
                                         IgnoreNonLiveObject>(
-      HEAP->old_data_space());
+      heap_->old_data_space());
 
   EncodeForwardingAddressesInPagedSpace<MCAllocateFromCodeSpace,
                                         ReportDeleteIfNeeded>(
-      HEAP->code_space());
+      heap_->code_space());
 
   EncodeForwardingAddressesInPagedSpace<MCAllocateFromCellSpace,
                                         IgnoreNonLiveObject>(
-      HEAP->cell_space());
+      heap_->cell_space());
 
 
   // Compute new space next to last after the old and code spaces have been
@@ -1860,16 +1874,16 @@ void MarkCompactCollector::EncodeForwardingAddresses() {
   // non-live map pointers to get the sizes of non-live objects.
   EncodeForwardingAddressesInPagedSpace<MCAllocateFromMapSpace,
                                         IgnoreNonLiveObject>(
-      HEAP->map_space());
+      heap_->map_space());
 
   // Write relocation info to the top page, so we can use it later.  This is
   // done after promoting objects from the new space so we get the correct
   // allocation top.
-  HEAP->old_pointer_space()->MCWriteRelocationInfoToPage();
-  HEAP->old_data_space()->MCWriteRelocationInfoToPage();
-  HEAP->code_space()->MCWriteRelocationInfoToPage();
-  HEAP->map_space()->MCWriteRelocationInfoToPage();
-  HEAP->cell_space()->MCWriteRelocationInfoToPage();
+  heap_->old_pointer_space()->MCWriteRelocationInfoToPage();
+  heap_->old_data_space()->MCWriteRelocationInfoToPage();
+  heap_->code_space()->MCWriteRelocationInfoToPage();
+  heap_->map_space()->MCWriteRelocationInfoToPage();
+  heap_->cell_space()->MCWriteRelocationInfoToPage();
 }
 
 
@@ -2012,9 +2026,8 @@ class MapCompact {
 
     ASSERT(Map::kSize % 4 == 0);
 
-    HEAP->CopyBlockToOldSpaceAndUpdateRegionMarks(vacant_map->address(),
-                                                  map_to_evacuate->address(),
-                                                  Map::kSize);
+    map_to_evacuate->heap()->CopyBlockToOldSpaceAndUpdateRegionMarks(
+        vacant_map->address(), map_to_evacuate->address(), Map::kSize);
 
     ASSERT(vacant_map->IsMap());  // Due to memcpy above.
 
@@ -2047,8 +2060,10 @@ class MapCompact {
 
 #ifdef DEBUG
       if (FLAG_gc_verbose) {
-        PrintF("update %p : %p -> %p\n", obj->address(),
-              map, new_map);
+        PrintF("update %p : %p -> %p\n",
+               obj->address(),
+               reinterpret_cast<void*>(map),
+               reinterpret_cast<void*>(new_map));
       }
 #endif
     }
@@ -2106,8 +2121,8 @@ void MarkCompactCollector::SweepSpaces() {
                              &UpdatePointerToNewGen,
                              heap_->WATERMARK_SHOULD_BE_VALID);
 
-  int live_maps_size = heap_->map_space()->Size();
-  int live_maps = live_maps_size / Map::kSize;
+  intptr_t live_maps_size = heap_->map_space()->Size();
+  int live_maps = static_cast<int>(live_maps_size / Map::kSize);
   ASSERT(live_map_objects_size_ == live_maps_size);
 
   if (heap_->map_space()->NeedsCompaction(live_maps)) {
@@ -2564,7 +2579,10 @@ int MarkCompactCollector::RelocateOldNonCodeObject(HeapObject* obj,
 
   HeapObject* copied_to = HeapObject::FromAddress(new_addr);
   if (copied_to->IsJSFunction()) {
-    PROFILE(FunctionMoveEvent(old_addr, new_addr));
+    PROFILE(FunctionMoveEvent(heap_, old_addr, new_addr));
+    PROFILE(FunctionCreateEventFromMove(heap_,
+                                        JSFunction::cast(copied_to),
+                                        obj));
   }
   HEAP_PROFILE(heap_, ObjectMoveEvent(old_addr, new_addr));
 
@@ -2656,7 +2674,10 @@ int MarkCompactCollector::RelocateNewObject(HeapObject* obj) {
 
   HeapObject* copied_to = HeapObject::FromAddress(new_addr);
   if (copied_to->IsJSFunction()) {
-    PROFILE(FunctionMoveEvent(old_addr, new_addr));
+    PROFILE(FunctionMoveEvent(heap_, old_addr, new_addr));
+    PROFILE(FunctionCreateEventFromMove(heap_,
+                                        JSFunction::cast(copied_to),
+                                        obj));
   }
   HEAP_PROFILE(heap_, ObjectMoveEvent(old_addr, new_addr));
 

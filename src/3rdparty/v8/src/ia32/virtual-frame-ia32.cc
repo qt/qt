@@ -500,7 +500,7 @@ void VirtualFrame::AllocateStackSlots() {
     // them later.  First sync everything above the stack pointer so we can
     // use pushes to allocate and initialize the locals.
     SyncRange(stack_pointer_ + 1, element_count() - 1);
-    Handle<Object> undefined = Factory::undefined_value();
+    Handle<Object> undefined = FACTORY->undefined_value();
     FrameElement initial_value =
         FrameElement::ConstantElement(undefined, FrameElement::SYNCED);
     if (count == 1) {
@@ -823,7 +823,7 @@ void VirtualFrame::UntaggedPushFrameSlotAt(int index) {
         __ bind(&not_smi);
         if (!original.type_info().IsNumber()) {
           __ cmp(FieldOperand(fresh_reg, HeapObject::kMapOffset),
-                 Factory::heap_number_map());
+                 FACTORY->heap_number_map());
           cgen()->unsafe_bailout_->Branch(not_equal);
         }
 
@@ -1318,7 +1318,7 @@ void VirtualFrame::Push(Expression* expr) {
 
   VariableProxy* proxy = expr->AsVariableProxy();
   if (proxy != NULL) {
-    Slot* slot = proxy->var()->slot();
+    Slot* slot = proxy->var()->AsSlot();
     if (slot->type() == Slot::LOCAL) {
       PushLocalAt(slot->index());
       return;

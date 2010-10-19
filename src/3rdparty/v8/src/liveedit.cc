@@ -29,13 +29,15 @@
 #include "v8.h"
 
 #include "liveedit.h"
+
 #include "compiler.h"
-#include "oprofile-agent.h"
-#include "scopes.h"
-#include "scopeinfo.h"
-#include "global-handles.h"
 #include "debug.h"
+#include "global-handles.h"
 #include "memory.h"
+#include "oprofile-agent.h"
+#include "parser.h"
+#include "scopeinfo.h"
+#include "scopes.h"
 
 namespace v8 {
 namespace internal {
@@ -354,7 +356,7 @@ class LineArrayCompareInput : public Comparator::Input {
 class LineArrayCompareOutput : public Comparator::Output {
  public:
   LineArrayCompareOutput(LineEndsWrapper line_ends1, LineEndsWrapper line_ends2)
-      : array_(Factory::NewJSArray(10)), current_size_(0),
+      : array_(FACTORY->NewJSArray(10)), current_size_(0),
         line_ends1_(line_ends1), line_ends2_(line_ends2) {
   }
 
@@ -400,44 +402,30 @@ Handle<JSArray> LiveEdit::CompareStringsLinewise(Handle<String> s1,
 
 
 static void CompileScriptForTracker(Isolate* isolate, Handle<Script> script) {
-  const bool is_eval = false;
-  const bool is_global = true;
   // TODO(635): support extensions.
-  Extension* extension = NULL;
-
   PostponeInterruptsScope postpone;
 
-  // Only allow non-global compiles for eval.
-  ASSERT(is_eval || is_global);
-
   // Build AST.
-  ScriptDataImpl* pre_data = NULL;
-  FunctionLiteral* lit = MakeAST(is_global, script, extension, pre_data);
-
-  // Check for parse errors.
-  if (lit == NULL) {
-    ASSERT(isolate->has_pending_exception());
-    return;
+  CompilationInfo info(script);
+  info.MarkAsGlobal();
+  if (Parser::Parse(&info)) {
+    // Compile the code.
+    LiveEditFunctionTracker tracker(info.isolate(), info.function());
+    if (Compiler::MakeCodeForLiveEdit(&info)) {
+      ASSERT(!info.code().is_null());
+      tracker.RecordRootFunctionInfo(info.code());
+    } else {
+      info.isolate()->StackOverflow();
+    }
   }
-
-  // Compile the code.
-  CompilationInfo info(lit, script, is_eval);
-
-  LiveEditFunctionTracker tracker(isolate, lit);
-  Handle<Code> code = MakeCodeForLiveEdit(&info);
-
-  // Check for stack-overflow exceptions.
-  if (code.is_null()) {
-    isolate->StackOverflow();
-    return;
-  }
-  tracker.RecordRootFunctionInfo(code);
 }
+
 
 // Unwraps JSValue object, returning its field "value"
 static Handle<Object> UnwrapJSValue(Handle<JSValue> jsValue) {
   return Handle<Object>(jsValue->value());
 }
+
 
 // Wraps any object into a OpaqueReference, that will hide the object
 // from JavaScript.
@@ -445,10 +433,11 @@ static Handle<JSValue> WrapInJSValue(Object* object) {
   Handle<JSFunction> constructor =
       Isolate::Current()->opaque_reference_function();
   Handle<JSValue> result =
-      Handle<JSValue>::cast(Factory::NewJSObject(constructor));
+      Handle<JSValue>::cast(FACTORY->NewJSObject(constructor));
   result->set_value(object);
   return result;
 }
+
 
 // Simple helper class that creates more or less typed structures over
 // JSArray object. This is an adhoc method of passing structures from C++
@@ -457,7 +446,7 @@ template<typename S>
 class JSArrayBasedStruct {
  public:
   static S Create() {
-    Handle<JSArray> array = Factory::NewJSArray(S::kSize_);
+    Handle<JSArray> array = FACTORY->NewJSArray(S::kSize_);
     return S(array);
   }
   static S cast(Object* object) {
@@ -470,6 +459,7 @@ class JSArrayBasedStruct {
   Handle<JSArray> GetJSArray() {
     return array_;
   }
+
  protected:
   void SetField(int field_position, Handle<Object> value) {
     SetElement(array_, field_position, value);
@@ -484,6 +474,7 @@ class JSArrayBasedStruct {
     Object* res = GetField(field_position);
     return Smi::cast(res)->value();
   }
+
  private:
   Handle<JSArray> array_;
 };
@@ -556,6 +547,7 @@ class FunctionInfoWrapper : public JSArrayBasedStruct<FunctionInfoWrapper> {
   friend class JSArrayBasedStruct<FunctionInfoWrapper>;
 };
 
+
 // Wraps SharedFunctionInfo along with some of its fields for passing it
 // back to JavaScript. SharedFunctionInfo object itself is additionally
 // wrapped into BlindReference for sanitizing reasons.
@@ -596,12 +588,13 @@ class SharedInfoWrapper : public JSArrayBasedStruct<SharedInfoWrapper> {
   friend class JSArrayBasedStruct<SharedInfoWrapper>;
 };
 
+
 class FunctionInfoListener {
  public:
   FunctionInfoListener() {
     current_parent_index_ = -1;
     len_ = 0;
-    result_ = Factory::NewJSArray(10);
+    result_ = FACTORY->NewJSArray(10);
   }
 
   void FunctionStarted(FunctionLiteral* fun) {
@@ -622,7 +615,6 @@ class FunctionInfoListener {
     current_parent_index_ = info.GetParentIndex();
   }
 
- public:
   // Saves only function code, because for a script function we
   // may never create a SharedFunctionInfo object.
   void FunctionCode(Handle<Code> function_code) {
@@ -653,7 +645,7 @@ class FunctionInfoListener {
   Object* SerializeFunctionScope(Scope* scope) {
     HandleScope handle_scope;
 
-    Handle<JSArray> scope_info_list = Factory::NewJSArray(10);
+    Handle<JSArray> scope_info_list = FACTORY->NewJSArray(10);
     int scope_info_length = 0;
 
     // Saves some description of scope. It stores name and indexes of
@@ -669,7 +661,7 @@ class FunctionInfoListener {
       int j = 0;
       for (int i = 0; i < list.length(); i++) {
         Variable* var1 = list[i];
-        Slot* slot = var1->slot();
+        Slot* slot = var1->AsSlot();
         if (slot != NULL && slot->type() == Slot::CONTEXT) {
           if (j != i) {
             list[j] = var1;
@@ -682,7 +674,7 @@ class FunctionInfoListener {
       for (int k = 1; k < j; k++) {
         int l = k;
         for (int m = k + 1; m < j; m++) {
-          if (list[l]->slot()->index() > list[m]->slot()->index()) {
+          if (list[l]->AsSlot()->index() > list[m]->AsSlot()->index()) {
             l = m;
           }
         }
@@ -692,7 +684,7 @@ class FunctionInfoListener {
         SetElement(scope_info_list, scope_info_length, list[i]->name());
         scope_info_length++;
         SetElement(scope_info_list, scope_info_length,
-                   Handle<Smi>(Smi::FromInt(list[i]->slot()->index())));
+                   Handle<Smi>(Smi::FromInt(list[i]->AsSlot()->index())));
         scope_info_length++;
       }
       SetElement(scope_info_list, scope_info_length,
@@ -709,6 +701,7 @@ class FunctionInfoListener {
   int len_;
   int current_parent_index_;
 };
+
 
 JSArray* LiveEdit::GatherCompileInfo(Handle<Script> script,
                                      Handle<String> source) {
@@ -861,7 +854,7 @@ Object* LiveEdit::ReplaceFunctionCode(Handle<JSArray> new_compile_info_array,
   if (shared_info->debug_info()->IsDebugInfo()) {
     Handle<DebugInfo> debug_info(DebugInfo::cast(shared_info->debug_info()));
     Handle<Code> new_original_code =
-        Factory::CopyCode(compile_info_wrapper.GetFunctionCode());
+        FACTORY->CopyCode(compile_info_wrapper.GetFunctionCode());
     debug_info->set_original_code(*new_original_code);
   }
 
@@ -1030,7 +1023,7 @@ static Handle<Code> PatchPositionsInCode(Handle<Code> code,
     // Relocation info section now has different size. We cannot simply
     // rewrite it inside code object. Instead we have to create a new
     // code object.
-    Handle<Code> result(Factory::CopyCode(code, buffer));
+    Handle<Code> result(FACTORY->CopyCode(code, buffer));
     return result;
   }
 }
@@ -1078,7 +1071,7 @@ Object* LiveEdit::PatchFunctionPositions(
 static Handle<Script> CreateScriptCopy(Handle<Script> original) {
   Handle<String> original_source(String::cast(original->source()));
 
-  Handle<Script> copy = Factory::NewScript(original_source);
+  Handle<Script> copy = FACTORY->NewScript(original_source);
 
   copy->set_name(original->name());
   copy->set_line_offset(original->line_offset());
@@ -1401,7 +1394,7 @@ Handle<JSArray> LiveEdit::CheckAndDropActivations(
     Handle<JSArray> shared_info_array, bool do_drop) {
   int len = Smi::cast(shared_info_array->length())->value();
 
-  Handle<JSArray> result = Factory::NewJSArray(len);
+  Handle<JSArray> result = FACTORY->NewJSArray(len);
 
   // Fill the default values.
   for (int i = 0; i < len; i++) {
@@ -1425,7 +1418,7 @@ Handle<JSArray> LiveEdit::CheckAndDropActivations(
   if (error_message != NULL) {
     // Add error message as an array extra element.
     Vector<const char> vector_message(error_message, StrLength(error_message));
-    Handle<String> str = Factory::NewStringFromAscii(vector_message);
+    Handle<String> str = FACTORY->NewStringFromAscii(vector_message);
     SetElement(result, len, str);
   }
   return result;

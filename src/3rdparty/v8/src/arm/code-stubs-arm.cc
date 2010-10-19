@@ -401,7 +401,7 @@ static void EmitIdenticalObjectComparison(MacroAssembler* masm,
   // The two objects are identical.  If we know that one of them isn't NaN then
   // we now know they test equal.
   if (cc != eq || !never_nan_nan) {
-    // Test for NaN. Sadly, we can't just compare to Factory::nan_value(),
+    // Test for NaN. Sadly, we can't just compare to FACTORY->nan_value(),
     // so we do the second best thing - test it ourselves.
     // They are both equal and they are not both Smis so both of them are not
     // Smis.  If it's not a heap number, then return equal.
@@ -935,7 +935,7 @@ void CompareStub::Generate(MacroAssembler* masm) {
     __ orr(r2, r1, r0);
     __ tst(r2, Operand(kSmiTagMask));
     __ b(ne, &not_two_smis);
-    __ sub(r0, r1, r0);
+    __ sub(r0, r1, r0, SetCC);
     __ b(vc, &smi_done);
     // Correct the sign in case of overflow.
     __ rsb(r0, r0, Operand(0, RelocInfo::NONE));
@@ -2679,7 +2679,7 @@ void CEntryStub::GenerateCore(MacroAssembler* masm,
 
   // Special handling of termination exceptions which are uncatchable
   // by javascript code.
-  __ cmp(r0, Operand(Factory::termination_exception()));
+  __ cmp(r0, Operand(FACTORY->termination_exception()));
   __ b(eq, throw_termination_exception);
 
   // Handle normal exception.
@@ -3378,7 +3378,7 @@ void RegExpExecStub::Generate(MacroAssembler* masm) {
   __ b(eq, &runtime);
   __ bind(&failure);
   // For failure and exception return null.
-  __ mov(r0, Operand(Factory::null_value()));
+  __ mov(r0, Operand(FACTORY->null_value()));
   __ add(sp, sp, Operand(4 * kPointerSize));
   __ Ret();
 

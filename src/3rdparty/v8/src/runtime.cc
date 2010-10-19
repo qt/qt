@@ -53,12 +53,6 @@ namespace v8 {
 namespace internal {
 
 
-RuntimeState::RuntimeState()
-    : algorithm_(SIMPLE_SEARCH) {
-  memset(bad_char_occurrence_, 0,
-         sizeof(bad_char_occurrence_[0]) * kBMAlphabetSize);
-}
-
 #define RUNTIME_ASSERT(value) \
   if (!(value)) return isolate->ThrowIllegalOperation();
 
@@ -230,6 +224,7 @@ static Handle<Map> ComputeObjectLiteralMap(
     Handle<Context> context,
     Handle<FixedArray> constant_properties,
     bool* is_result_from_cache) {
+  Isolate* isolate = context->GetIsolate();
   int properties_length = constant_properties->length();
   int number_of_properties = properties_length / 2;
   if (FLAG_canonicalize_object_literal_maps) {
@@ -256,7 +251,8 @@ static Handle<Map> ComputeObjectLiteralMap(
     if ((number_of_symbol_keys == number_of_properties) &&
         (number_of_symbol_keys < kMaxKeys)) {
       // Create the fixed array with the key.
-      Handle<FixedArray> keys = Factory::NewFixedArray(number_of_symbol_keys);
+      Handle<FixedArray> keys =
+          isolate->factory()->NewFixedArray(number_of_symbol_keys);
       if (number_of_symbol_keys > 0) {
         int index = 0;
         for (int p = 0; p < properties_length; p += 2) {
@@ -268,11 +264,11 @@ static Handle<Map> ComputeObjectLiteralMap(
         ASSERT(index == number_of_symbol_keys);
       }
       *is_result_from_cache = true;
-      return Factory::ObjectLiteralMapFromCache(context, keys);
+      return isolate->factory()->ObjectLiteralMapFromCache(context, keys);
     }
   }
   *is_result_from_cache = false;
-  return Factory::CopyMap(
+  return isolate->factory()->CopyMap(
       Handle<Map>(context->object_function()->initial_map()),
       number_of_properties);
 }
@@ -303,7 +299,7 @@ static Handle<Object> CreateObjectLiteralBoilerplate(
                                             constant_properties,
                                             &is_result_from_cache);
 
-  Handle<JSObject> boilerplate = Factory::NewJSObjectFromMap(map);
+  Handle<JSObject> boilerplate = isolate->factory()->NewJSObjectFromMap(map);
 
   // Normalize the elements of the boilerplate to save space if needed.
   if (!should_have_fast_elements) NormalizeElements(boilerplate);
@@ -340,7 +336,8 @@ static Handle<Object> CreateObjectLiteralBoilerplate(
         char arr[100];
         Vector<char> buffer(arr, ARRAY_SIZE(arr));
         const char* str = DoubleToCString(num, buffer);
-        Handle<String> name = Factory::NewStringFromAscii(CStrVector(str));
+        Handle<String> name =
+            isolate->factory()->NewStringFromAscii(CStrVector(str));
         result = SetProperty(boilerplate, name, value, NONE);
       }
       // If setting the property on the boilerplate throws an
@@ -362,12 +359,12 @@ static Handle<Object> CreateArrayLiteralBoilerplate(
   // Create the JSArray.
   Handle<JSFunction> constructor(
       JSFunction::GlobalContextFromLiterals(*literals)->array_function());
-  Handle<Object> object = Factory::NewJSObject(constructor);
+  Handle<Object> object = isolate->factory()->NewJSObject(constructor);
 
   const bool is_cow =
       (elements->map() == isolate->heap()->fixed_cow_array_map());
   Handle<FixedArray> copied_elements =
-      is_cow ? elements : Factory::CopyFixedArray(elements);
+      is_cow ? elements : isolate->factory()->CopyFixedArray(elements);
 
   Handle<FixedArray> content = Handle<FixedArray>::cast(copied_elements);
   if (is_cow) {
@@ -665,11 +662,11 @@ static Object* Runtime_GetOwnProperty(RUNTIME_CALLING_CONVENTION) {
   ASSERT(args.length() == 2);
   Heap* heap = isolate->heap();
   HandleScope scope(isolate);
-  Handle<FixedArray> elms = Factory::NewFixedArray(DESCRIPTOR_SIZE);
-  Handle<JSArray> desc = Factory::NewJSArrayWithElements(elms);
+  Handle<FixedArray> elms = isolate->factory()->NewFixedArray(DESCRIPTOR_SIZE);
+  Handle<JSArray> desc = isolate->factory()->NewJSArrayWithElements(elms);
   LookupResult result;
-  CONVERT_CHECKED(JSObject, obj, args[0]);
-  CONVERT_CHECKED(String, name, args[1]);
+  CONVERT_ARG_CHECKED(JSObject, obj, 0);
+  CONVERT_ARG_CHECKED(String, name, 1);
 
   // This could be an element.
   uint32_t index;
@@ -683,10 +680,12 @@ static Object* Runtime_GetOwnProperty(RUNTIME_CALLING_CONVENTION) {
         // 15.5.5.2. Note that this might be a string object with elements
         // other than the actual string value. This is covered by the
         // subsequent cases.
-        JSValue* js_value = JSValue::cast(obj);
-        String* str = String::cast(js_value->value());
+        Handle<JSValue> js_value = Handle<JSValue>::cast(obj);
+        Handle<String> str(String::cast(js_value->value()));
+        Handle<String> substr = SubString(str, index, index+1, NOT_TENURED);
+
         elms->set(IS_ACCESSOR_INDEX, heap->false_value());
-        elms->set(VALUE_INDEX, str->SubString(index, index+1));
+        elms->set(VALUE_INDEX, *substr);
         elms->set(WRITABLE_INDEX, heap->false_value());
         elms->set(ENUMERABLE_INDEX,  heap->false_value());
         elms->set(CONFIGURABLE_INDEX, heap->false_value());
@@ -694,13 +693,15 @@ static Object* Runtime_GetOwnProperty(RUNTIME_CALLING_CONVENTION) {
       }
 
       case JSObject::INTERCEPTED_ELEMENT:
-      case JSObject::FAST_ELEMENT:
+      case JSObject::FAST_ELEMENT: {
         elms->set(IS_ACCESSOR_INDEX, heap->false_value());
-        elms->set(VALUE_INDEX, obj->GetElement(index));
+        Handle<Object> element = GetElement(Handle<Object>(obj), index);
+        elms->set(VALUE_INDEX, *element);
         elms->set(WRITABLE_INDEX, heap->true_value());
         elms->set(ENUMERABLE_INDEX,  heap->true_value());
         elms->set(CONFIGURABLE_INDEX, heap->true_value());
         return *desc;
+      }
 
       case JSObject::DICTIONARY_ELEMENT: {
         NumberDictionary* dictionary = obj->element_dictionary();
@@ -735,7 +736,7 @@ static Object* Runtime_GetOwnProperty(RUNTIME_CALLING_CONVENTION) {
   }
 
   // Use recursive implementation to also traverse hidden prototypes
-  GetOwnPropertyImplementation(obj, name, &result);
+  GetOwnPropertyImplementation(*obj, *name, &result);
 
   if (!result.IsProperty()) {
     return heap->undefined_value();
@@ -746,7 +747,8 @@ static Object* Runtime_GetOwnProperty(RUNTIME_CALLING_CONVENTION) {
       // Property that is internally implemented as a callback or
       // an API defined callback.
       Object* value = obj->GetPropertyWithCallback(
-          obj, structure, name, result.holder());
+          *obj, structure, *name, result.holder());
+      if (value->IsFailure()) return value;
       elms->set(IS_ACCESSOR_INDEX, heap->false_value());
       elms->set(VALUE_INDEX, value);
       elms->set(WRITABLE_INDEX, heap->ToBoolean(!result.IsReadOnly()));
@@ -804,7 +806,7 @@ static Object* Runtime_CreateApiFunction(RUNTIME_CALLING_CONVENTION) {
   HandleScope scope(isolate);
   ASSERT(args.length() == 1);
   CONVERT_ARG_CHECKED(FunctionTemplateInfo, data, 0);
-  return *Factory::CreateApiFunction(data);
+  return *isolate->factory()->CreateApiFunction(data);
 }
 
 
@@ -877,10 +879,11 @@ static Object* ThrowRedeclarationError(Isolate* isolate,
                                        const char* type,
                                        Handle<String> name) {
   HandleScope scope(isolate);
-  Handle<Object> type_handle = Factory::NewStringFromAscii(CStrVector(type));
+  Handle<Object> type_handle =
+      isolate->factory()->NewStringFromAscii(CStrVector(type));
   Handle<Object> args[2] = { type_handle, name };
   Handle<Object> error =
-      Factory::NewTypeError("redeclaration", HandleVector(args, 2));
+      isolate->factory()->NewTypeError("redeclaration", HandleVector(args, 2));
   return isolate->Throw(*error);
 }
 
@@ -959,7 +962,9 @@ static Object* Runtime_DeclareGlobals(RUNTIME_CALLING_CONVENTION) {
       Handle<SharedFunctionInfo> shared =
           Handle<SharedFunctionInfo>::cast(value);
       Handle<JSFunction> function =
-          Factory::NewFunctionFromSharedFunctionInfo(shared, context, TENURED);
+          isolate->factory()->NewFunctionFromSharedFunctionInfo(shared,
+                                                                context,
+                                                                TENURED);
       value = function;
     }
 
@@ -1065,7 +1070,7 @@ static Object* Runtime_DeclareContextSlot(RUNTIME_CALLING_CONVENTION) {
     } else {
       // The function context's extension context does not exists - allocate
       // it.
-      context_ext = Factory::NewJSObject(
+      context_ext = isolate->factory()->NewJSObject(
           isolate->context_extension_function());
       // And store it in the extension slot.
       context->set_extension(*context_ext);
@@ -1566,13 +1571,14 @@ static Handle<JSFunction> InstallBuiltin(Isolate* isolate,
                                          Handle<JSObject> holder,
                                          const char* name,
                                          Builtins::Name builtin_name) {
-  Handle<String> key = Factory::LookupAsciiSymbol(name);
+  Handle<String> key = isolate->factory()->LookupAsciiSymbol(name);
   Handle<Code> code(isolate->builtins()->builtin(builtin_name));
-  Handle<JSFunction> optimized = Factory::NewFunction(key,
-                                                      JS_OBJECT_TYPE,
-                                                      JSObject::kHeaderSize,
-                                                      code,
-                                                      false);
+  Handle<JSFunction> optimized =
+      isolate->factory()->NewFunction(key,
+                                      JS_OBJECT_TYPE,
+                                      JSObject::kHeaderSize,
+                                      code,
+                                      false);
   optimized->shared()->DontAdaptArguments();
   SetProperty(holder, key, optimized, NONE);
   return optimized;
@@ -1823,7 +1829,7 @@ static Object* Runtime_SetCode(RUNTIME_CALLING_CONVENTION) {
     // cross context contamination.
     int number_of_literals = fun->NumberOfLiterals();
     Handle<FixedArray> literals =
-        Factory::NewFixedArray(number_of_literals, TENURED);
+        isolate->factory()->NewFixedArray(number_of_literals, TENURED);
     if (number_of_literals > 0) {
       // Insert the object, regexp and array functions in the literals
       // array prefix.  These are the functions that will be used when
@@ -1910,8 +1916,8 @@ static Object* Runtime_CharFromCode(RUNTIME_CALLING_CONVENTION) {
 
 class FixedArrayBuilder {
  public:
-  explicit FixedArrayBuilder(int initial_capacity)
-      : array_(Factory::NewFixedArrayWithHoles(initial_capacity)),
+  explicit FixedArrayBuilder(Isolate* isolate, int initial_capacity)
+      : array_(isolate->factory()->NewFixedArrayWithHoles(initial_capacity)),
         length_(0) {
     // Require a non-zero initial size. Ensures that doubling the size to
     // extend the array will work.
@@ -1941,7 +1947,7 @@ class FixedArrayBuilder {
         new_length *= 2;
       } while (new_length < required_length);
       Handle<FixedArray> extended_array =
-          Factory::NewFixedArrayWithHoles(new_length);
+          FACTORY->NewFixedArrayWithHoles(new_length);
       array_->CopyTo(0, *extended_array, 0, length_);
       array_ = extended_array;
     }
@@ -1972,7 +1978,7 @@ class FixedArrayBuilder {
   }
 
   Handle<JSArray> ToJSArray() {
-    Handle<JSArray> result_array = Factory::NewJSArrayWithElements(array_);
+    Handle<JSArray> result_array = FACTORY->NewJSArrayWithElements(array_);
     result_array->set_length(Smi::FromInt(length_));
     return result_array;
   }
@@ -2013,7 +2019,7 @@ class ReplacementStringBuilder {
                            Handle<String> subject,
                            int estimated_part_count)
       : heap_(heap),
-        array_builder_(estimated_part_count),
+        array_builder_(heap->isolate(), estimated_part_count),
         subject_(subject),
         character_count_(0),
         is_ascii_(subject->IsAsciiRepresentation()) {
@@ -2065,7 +2071,7 @@ class ReplacementStringBuilder {
 
   Handle<String> ToString() {
     if (array_builder_.length() == 0) {
-      return Factory::empty_string();
+      return FACTORY->empty_string();
     }
 
     Handle<String> joined_string;
@@ -2102,19 +2108,22 @@ class ReplacementStringBuilder {
 
   Handle<JSArray> GetParts() {
     Handle<JSArray> result =
-        Factory::NewJSArrayWithElements(array_builder_.array());
+        heap_->isolate()->factory()->NewJSArrayWithElements(
+            array_builder_.array());
     result->set_length(Smi::FromInt(array_builder_.length()));
     return result;
   }
 
  private:
   Handle<String> NewRawAsciiString(int size) {
-    CALL_HEAP_FUNCTION(heap_->AllocateRawAsciiString(size), String);
+    CALL_HEAP_FUNCTION(heap_->isolate(),
+                       heap_->AllocateRawAsciiString(size), String);
   }
 
 
   Handle<String> NewRawTwoByteString(int size) {
-    CALL_HEAP_FUNCTION(heap_->AllocateRawTwoByteString(size), String);
+    CALL_HEAP_FUNCTION(heap_->isolate(),
+                       heap_->AllocateRawTwoByteString(size), String);
   }
 
 
@@ -2335,6 +2344,7 @@ void CompiledReplacement::Compile(Handle<String> replacement,
                             capture_count,
                             subject_length);
   }
+  Isolate* isolate = replacement->GetIsolate();
   // Find substrings of replacement string and create them as String objects.
   int substring_index = 0;
   for (int i = 0, n = parts_.length(); i < n; i++) {
@@ -2342,7 +2352,8 @@ void CompiledReplacement::Compile(Handle<String> replacement,
     if (tag <= 0) {  // A replacement string slice.
       int from = -tag;
       int to = parts_[i].data;
-      replacement_substrings_.Add(Factory::NewSubString(replacement, from, to));
+      replacement_substrings_.Add(
+          isolate->factory()->NewSubString(replacement, from, to));
       parts_[i].tag = REPLACEMENT_SUBSTRING;
       parts_[i].data = substring_index;
       substring_index++;
@@ -2543,10 +2554,12 @@ static Object* StringReplaceRegExpWithEmptyString(Isolate* isolate,
   Handle<ResultSeqString> answer;
   if (ResultSeqString::kHasAsciiEncoding) {
     answer =
-        Handle<ResultSeqString>::cast(Factory::NewRawAsciiString(new_length));
+        Handle<ResultSeqString>::cast(
+            isolate->factory()->NewRawAsciiString(new_length));
   } else {
     answer =
-        Handle<ResultSeqString>::cast(Factory::NewRawTwoByteString(new_length));
+        Handle<ResultSeqString>::cast(
+            isolate->factory()->NewRawTwoByteString(new_length));
   }
 
   // If the regexp isn't global, only match once.
@@ -2681,7 +2694,7 @@ static Object* Runtime_StringReplaceRegExpWithString(
 // Perform string match of pattern on subject, starting at start index.
 // Caller must ensure that 0 <= start_index <= sub->length(),
 // and should check that pat->length() + start_index <= sub->length()
-int Runtime::StringMatch(RuntimeState* runtime_state,
+int Runtime::StringMatch(Isolate* isolate,
                          Handle<String> sub,
                          Handle<String> pat,
                          int start_index) {
@@ -2708,24 +2721,24 @@ int Runtime::StringMatch(RuntimeState* runtime_state,
   if (seq_pat->IsAsciiRepresentation()) {
     Vector<const char> pat_vector = seq_pat->ToAsciiVector();
     if (seq_sub->IsAsciiRepresentation()) {
-      return StringSearch(runtime_state,
+      return SearchString(isolate,
                           seq_sub->ToAsciiVector(),
                           pat_vector,
                           start_index);
     }
-    return StringSearch(runtime_state,
+    return SearchString(isolate,
                         seq_sub->ToUC16Vector(),
                         pat_vector,
                         start_index);
   }
   Vector<const uc16> pat_vector = seq_pat->ToUC16Vector();
   if (seq_sub->IsAsciiRepresentation()) {
-    return StringSearch(runtime_state,
+    return SearchString(isolate,
                         seq_sub->ToAsciiVector(),
                         pat_vector,
                         start_index);
   }
-  return StringSearch(runtime_state,
+  return SearchString(isolate,
                       seq_sub->ToUC16Vector(),
                       pat_vector,
                       start_index);
@@ -2746,7 +2759,7 @@ static Object* Runtime_StringIndexOf(RUNTIME_CALLING_CONVENTION) {
 
   RUNTIME_ASSERT(start_index <= static_cast<uint32_t>(sub->length()));
   int position =
-      Runtime::StringMatch(isolate->runtime_state(), sub, pat, start_index);
+      Runtime::StringMatch(isolate, sub, pat, start_index);
   return Smi::FromInt(position);
 }
 
@@ -2960,14 +2973,14 @@ static Object* Runtime_StringMatch(RUNTIME_CALLING_CONVENTION) {
     }
   } while (!match->IsNull());
   int matches = offsets.length() / 2;
-  Handle<FixedArray> elements = Factory::NewFixedArray(matches);
+  Handle<FixedArray> elements = isolate->factory()->NewFixedArray(matches);
   for (int i = 0; i < matches ; i++) {
     int from = offsets.at(i * 2);
     int to = offsets.at(i * 2 + 1);
-    Handle<String> match = Factory::NewSubString(subject, from, to);
+    Handle<String> match = isolate->factory()->NewSubString(subject, from, to);
     elements->set(i, *match);
   }
-  Handle<JSArray> result = Factory::NewJSArrayWithElements(elements);
+  Handle<JSArray> result = isolate->factory()->NewJSArrayWithElements(elements);
   result->set_length(Smi::FromInt(matches));
   return *result;
 }
@@ -2993,68 +3006,40 @@ static void SetLastMatchInfoNoCaptures(Handle<String> subject,
 }
 
 
-template <typename schar, typename pchar>
-static bool SearchStringMultiple(RuntimeState* state,
-                                 Vector<schar> subject,
-                                 String* pattern,
-                                 Vector<pchar> pattern_string,
+template <typename SubjectChar, typename PatternChar>
+static bool SearchStringMultiple(Isolate* isolate,
+                                 Vector<const SubjectChar> subject,
+                                 Vector<const PatternChar> pattern,
+                                 String* pattern_string,
                                  FixedArrayBuilder* builder,
                                  int* match_pos) {
   int pos = *match_pos;
   int subject_length = subject.length();
-  int pattern_length = pattern_string.length();
+  int pattern_length = pattern.length();
   int max_search_start = subject_length - pattern_length;
-  bool is_ascii = (sizeof(schar) == 1);
-  StringSearchStrategy strategy =
-      InitializeStringSearch(state, pattern_string, is_ascii);
-  switch (strategy) {
-    case SEARCH_FAIL: break;
-    case SEARCH_SHORT:
-      while (pos <= max_search_start) {
-        if (!builder->HasCapacity(kMaxBuilderEntriesPerRegExpMatch)) {
-          *match_pos = pos;
-          return false;
-        }
-        // Position of end of previous match.
-        int match_end = pos + pattern_length;
-        int new_pos = SimpleIndexOf(subject, pattern_string, match_end);
-        if (new_pos >= 0) {
-          // A match.
-          if (new_pos > match_end) {
-            ReplacementStringBuilder::AddSubjectSlice(builder,
-                                                      match_end,
-                                                      new_pos);
-          }
-          pos = new_pos;
-          builder->Add(pattern);
-        } else {
-          break;
-        }
+  StringSearch<PatternChar, SubjectChar> search(isolate, pattern);
+  while (pos <= max_search_start) {
+    if (!builder->HasCapacity(kMaxBuilderEntriesPerRegExpMatch)) {
+      *match_pos = pos;
+      return false;
+    }
+    // Position of end of previous match.
+    int match_end = pos + pattern_length;
+    int new_pos = search.Search(subject, match_end);
+    if (new_pos >= 0) {
+      // A match.
+      if (new_pos > match_end) {
+        ReplacementStringBuilder::AddSubjectSlice(builder,
+            match_end,
+            new_pos);
       }
+      pos = new_pos;
+      builder->Add(pattern_string);
+    } else {
       break;
-    case SEARCH_LONG:
-      while (pos  <= max_search_start) {
-        if (!builder->HasCapacity(kMaxBuilderEntriesPerRegExpMatch)) {
-          *match_pos = pos;
-          return false;
-        }
-        int match_end = pos + pattern_length;
-        int new_pos = ComplexIndexOf(state, subject, pattern_string, match_end);
-        if (new_pos >= 0) {
-          // A match has been found.
-          if (new_pos > match_end) {
-            ReplacementStringBuilder::AddSubjectSlice(builder,
-                                                      match_end,
-                                                      new_pos);
-          }
-          pos = new_pos;
-          builder->Add(pattern);
-        } else {
-         break;
-        }
-      }
-      break;
+    }
   }
+
   if (pos < max_search_start) {
     ReplacementStringBuilder::AddSubjectSlice(builder,
                                               pos + pattern_length,
@@ -3065,7 +3050,7 @@ static bool SearchStringMultiple(RuntimeState* state,
 }
 
 
-static bool SearchStringMultiple(RuntimeState* state,
+static bool SearchStringMultiple(Isolate* isolate,
                                  Handle<String> subject,
                                  Handle<String> pattern,
                                  Handle<JSArray> last_match_info,
@@ -3082,34 +3067,34 @@ static bool SearchStringMultiple(RuntimeState* state,
     if (subject->IsAsciiRepresentation()) {
       Vector<const char> subject_vector = subject->ToAsciiVector();
       if (pattern->IsAsciiRepresentation()) {
-        if (SearchStringMultiple(state,
+        if (SearchStringMultiple(isolate,
                                  subject_vector,
-                                 *pattern,
                                  pattern->ToAsciiVector(),
+                                 *pattern,
                                  builder,
                                  &match_pos)) break;
       } else {
-        if (SearchStringMultiple(state,
+        if (SearchStringMultiple(isolate,
                                  subject_vector,
-                                 *pattern,
                                  pattern->ToUC16Vector(),
+                                 *pattern,
                                  builder,
                                  &match_pos)) break;
       }
     } else {
       Vector<const uc16> subject_vector = subject->ToUC16Vector();
       if (pattern->IsAsciiRepresentation()) {
-        if (SearchStringMultiple(state,
+        if (SearchStringMultiple(isolate,
                                  subject_vector,
-                                 *pattern,
                                  pattern->ToAsciiVector(),
+                                 *pattern,
                                  builder,
                                  &match_pos)) break;
       } else {
-        if (SearchStringMultiple(state,
+        if (SearchStringMultiple(isolate,
                                  subject_vector,
-                                 *pattern,
                                  pattern->ToUC16Vector(),
+                                 *pattern,
                                  builder,
                                  &match_pos)) break;
       }
@@ -3160,7 +3145,9 @@ static RegExpImpl::IrregexpResult SearchRegExpNoCaptureMultiple(
       }
       match_end = register_vector[1];
       HandleScope loop_scope(isolate);
-      builder->Add(*Factory::NewSubString(subject, match_start, match_end));
+      builder->Add(*isolate->factory()->NewSubString(subject,
+                                                     match_start,
+                                                     match_end));
       if (match_start != match_end) {
         pos = match_end;
       } else {
@@ -3240,19 +3227,20 @@ static RegExpImpl::IrregexpResult SearchRegExpMultiple(
         HandleScope temp_scope(isolate);
         // Arguments array to replace function is match, captures, index and
         // subject, i.e., 3 + capture count in total.
-        Handle<FixedArray> elements = Factory::NewFixedArray(3 + capture_count);
-        Handle<String> match = Factory::NewSubString(subject,
-                                                     match_start,
-                                                     match_end);
+        Handle<FixedArray> elements =
+            isolate->factory()->NewFixedArray(3 + capture_count);
+        Handle<String> match = isolate->factory()->NewSubString(subject,
+                                                                match_start,
+                                                                match_end);
         elements->set(0, *match);
         for (int i = 1; i <= capture_count; i++) {
           int start = register_vector[i * 2];
           if (start >= 0) {
             int end = register_vector[i * 2 + 1];
             ASSERT(start <= end);
-            Handle<String> substring = Factory::NewSubString(subject,
-                                                             start,
-                                                             end);
+            Handle<String> substring = isolate->factory()->NewSubString(subject,
+                                                                        start,
+                                                                        end);
             elements->set(i, *substring);
           } else {
             ASSERT(register_vector[i * 2 + 1] < 0);
@@ -3261,7 +3249,7 @@ static RegExpImpl::IrregexpResult SearchRegExpMultiple(
         }
         elements->set(capture_count + 1, Smi::FromInt(match_start));
         elements->set(capture_count + 2, *subject);
-        builder->Add(*Factory::NewJSArrayWithElements(elements));
+        builder->Add(*isolate->factory()->NewJSArrayWithElements(elements));
       }
       // Swap register vectors, so the last successful match is in
       // prev_register_vector.
@@ -3330,7 +3318,7 @@ static Object* Runtime_RegExpExecMultiple(RUNTIME_CALLING_CONVENTION) {
     result_elements =
         Handle<FixedArray>(FixedArray::cast(result_array->elements()));
   } else {
-    result_elements = Factory::NewFixedArrayWithHoles(16);
+    result_elements = isolate->factory()->NewFixedArrayWithHoles(16);
   }
   FixedArrayBuilder builder(result_elements);
 
@@ -3338,7 +3326,7 @@ static Object* Runtime_RegExpExecMultiple(RUNTIME_CALLING_CONVENTION) {
     Handle<String> pattern(
         String::cast(regexp->DataAt(JSRegExp::kAtomPatternIndex)));
     if (!pattern->IsFlat()) FlattenString(pattern);
-    if (SearchStringMultiple(isolate->runtime_state(), subject, pattern,
+    if (SearchStringMultiple(isolate, subject, pattern,
                              last_match_info, &builder)) {
       return *builder.ToJSArray(result_array);
     }
@@ -3533,8 +3521,8 @@ Object* Runtime::GetObjectProperty(Isolate* isolate,
   if (object->IsUndefined() || object->IsNull()) {
     Handle<Object> args[2] = { key, object };
     Handle<Object> error =
-        Factory::NewTypeError("non_object_property_load",
-                              HandleVector(args, 2));
+        isolate->factory()->NewTypeError("non_object_property_load",
+                                         HandleVector(args, 2));
     return isolate->Throw(*error);
   }
 
@@ -3743,8 +3731,8 @@ Object* Runtime::SetObjectProperty(Isolate* isolate,
   if (object->IsUndefined() || object->IsNull()) {
     Handle<Object> args[2] = { key, object };
     Handle<Object> error =
-        Factory::NewTypeError("non_object_property_store",
-                              HandleVector(args, 2));
+        isolate->factory()->NewTypeError("non_object_property_store",
+                                         HandleVector(args, 2));
     return isolate->Throw(*error);
   }
 
@@ -4112,7 +4100,7 @@ static Object* Runtime_GetLocalPropertyNames(RUNTIME_CALLING_CONVENTION) {
                                  isolate->heap()->undefined_value(),
                                  v8::ACCESS_KEYS)) {
       isolate->ReportFailedAccessCheck(*obj, v8::ACCESS_KEYS);
-      return *Factory::NewJSArray(0);
+      return *isolate->factory()->NewJSArray(0);
     }
     obj = Handle<JSObject>(JSObject::cast(obj->GetPrototype()));
   }
@@ -4131,7 +4119,7 @@ static Object* Runtime_GetLocalPropertyNames(RUNTIME_CALLING_CONVENTION) {
                                  isolate->heap()->undefined_value(),
                                  v8::ACCESS_KEYS)) {
       isolate->ReportFailedAccessCheck(*jsproto, v8::ACCESS_KEYS);
-      return *Factory::NewJSArray(0);
+      return *isolate->factory()->NewJSArray(0);
     }
     int n;
     n = jsproto->NumberOfLocalProperties(static_cast<PropertyAttributes>(NONE));
@@ -4143,7 +4131,8 @@ static Object* Runtime_GetLocalPropertyNames(RUNTIME_CALLING_CONVENTION) {
   }
 
   // Allocate an array with storage for all the property names.
-  Handle<FixedArray> names = Factory::NewFixedArray(total_property_count);
+  Handle<FixedArray> names =
+      isolate->factory()->NewFixedArray(total_property_count);
 
   // Get the property names.
   jsproto = obj;
@@ -4162,7 +4151,7 @@ static Object* Runtime_GetLocalPropertyNames(RUNTIME_CALLING_CONVENTION) {
   // Filter out name of hidden propeties object.
   if (proto_with_hidden_properties > 0) {
     Handle<FixedArray> old_names = names;
-    names = Factory::NewFixedArray(
+    names = isolate->factory()->NewFixedArray(
         names->length() - proto_with_hidden_properties);
     int dest_pos = 0;
     for (int i = 0; i < total_property_count; i++) {
@@ -4174,7 +4163,7 @@ static Object* Runtime_GetLocalPropertyNames(RUNTIME_CALLING_CONVENTION) {
     }
   }
 
-  return *Factory::NewJSArrayWithElements(names);
+  return *isolate->factory()->NewJSArrayWithElements(names);
 }
 
 
@@ -4190,9 +4179,9 @@ static Object* Runtime_GetLocalElementNames(RUNTIME_CALLING_CONVENTION) {
   CONVERT_ARG_CHECKED(JSObject, obj, 0);
 
   int n = obj->NumberOfLocalElements(static_cast<PropertyAttributes>(NONE));
-  Handle<FixedArray> names = Factory::NewFixedArray(n);
+  Handle<FixedArray> names = isolate->factory()->NewFixedArray(n);
   obj->GetLocalElementKeys(*names, static_cast<PropertyAttributes>(NONE));
-  return *Factory::NewJSArrayWithElements(names);
+  return *isolate->factory()->NewJSArrayWithElements(names);
 }
 
 
@@ -4261,7 +4250,7 @@ static Object* Runtime_LocalKeys(RUNTIME_CALLING_CONVENTION) {
   // property array and since the result is mutable we have to create
   // a fresh clone on each invocation.
   int length = contents->length();
-  Handle<FixedArray> copy = Factory::NewFixedArray(length);
+  Handle<FixedArray> copy = isolate->factory()->NewFixedArray(length);
   for (int i = 0; i < length; i++) {
     Object* entry = contents->get(i);
     if (entry->IsString()) {
@@ -4270,11 +4259,12 @@ static Object* Runtime_LocalKeys(RUNTIME_CALLING_CONVENTION) {
       ASSERT(entry->IsNumber());
       HandleScope scope(isolate);
       Handle<Object> entry_handle(entry, isolate);
-      Handle<Object> entry_str = Factory::NumberToString(entry_handle);
+      Handle<Object> entry_str =
+          isolate->factory()->NumberToString(entry_handle);
       copy->set(i, *entry_str);
     }
   }
-  return *Factory::NewJSArrayWithElements(copy);
+  return *isolate->factory()->NewJSArrayWithElements(copy);
 }
 
 
@@ -4966,46 +4956,24 @@ static Object* Runtime_StringTrim(RUNTIME_CALLING_CONVENTION) {
 }
 
 
-template <typename schar, typename pchar>
-void FindStringIndices(RuntimeState* state,
-                       Vector<const schar> subject,
-                       Vector<const pchar> pattern,
+template <typename SubjectChar, typename PatternChar>
+void FindStringIndices(Isolate* isolate,
+                       Vector<const SubjectChar> subject,
+                       Vector<const PatternChar> pattern,
                        ZoneList<int>* indices,
                        unsigned int limit) {
   ASSERT(limit > 0);
   // Collect indices of pattern in subject, and the end-of-string index.
   // Stop after finding at most limit values.
-  StringSearchStrategy strategy =
-      InitializeStringSearch(state, pattern, sizeof(schar) == 1);
-  switch (strategy) {
-    case SEARCH_FAIL: return;
-    case SEARCH_SHORT: {
-      int pattern_length = pattern.length();
-      int index = 0;
-      while (limit > 0) {
-        index = SimpleIndexOf(subject, pattern, index);
-        if (index < 0) return;
-        indices->Add(index);
-        index += pattern_length;
-        limit--;
-      }
-      return;
-    }
-    case SEARCH_LONG: {
-      int pattern_length = pattern.length();
-      int index = 0;
-      while (limit > 0) {
-        index = ComplexIndexOf(state, subject, pattern, index);
-        if (index < 0) return;
-        indices->Add(index);
-        index += pattern_length;
-        limit--;
-      }
-      return;
-    }
-    default:
-      UNREACHABLE();
-      return;
+  StringSearch<PatternChar, SubjectChar> search(isolate, pattern);
+  int pattern_length = pattern.length();
+  int index = 0;
+  while (limit > 0) {
+    index = search.Search(subject, index);
+    if (index < 0) return;
+    indices->Add(index);
+    index += pattern_length;
+    limit--;
   }
 }
 
@@ -5043,13 +5011,13 @@ static Object* Runtime_StringSplit(RUNTIME_CALLING_CONVENTION) {
     if (subject->IsAsciiRepresentation()) {
       Vector<const char> subject_vector = subject->ToAsciiVector();
       if (pattern->IsAsciiRepresentation()) {
-        FindStringIndices(isolate->runtime_state(),
+        FindStringIndices(isolate,
                           subject_vector,
                           pattern->ToAsciiVector(),
                           &indices,
                           limit);
       } else {
-        FindStringIndices(isolate->runtime_state(),
+        FindStringIndices(isolate,
                           subject_vector,
                           pattern->ToUC16Vector(),
                           &indices,
@@ -5058,13 +5026,13 @@ static Object* Runtime_StringSplit(RUNTIME_CALLING_CONVENTION) {
     } else {
       Vector<const uc16> subject_vector = subject->ToUC16Vector();
       if (pattern->IsAsciiRepresentation()) {
-        FindStringIndices(isolate->runtime_state(),
+        FindStringIndices(isolate,
                           subject_vector,
                           pattern->ToAsciiVector(),
                           &indices,
                           limit);
       } else {
-        FindStringIndices(isolate->runtime_state(),
+        FindStringIndices(isolate,
                           subject_vector,
                           pattern->ToUC16Vector(),
                           &indices,
@@ -5082,7 +5050,7 @@ static Object* Runtime_StringSplit(RUNTIME_CALLING_CONVENTION) {
   // Create JSArray of substrings separated by separator.
   int part_count = indices.length();
 
-  Handle<JSArray> result = Factory::NewJSArray(part_count);
+  Handle<JSArray> result = isolate->factory()->NewJSArray(part_count);
   result->set_length(Smi::FromInt(part_count));
 
   ASSERT(result->HasFastElements());
@@ -5098,7 +5066,7 @@ static Object* Runtime_StringSplit(RUNTIME_CALLING_CONVENTION) {
     HandleScope local_loop_handle;
     int part_end = indices.at(i);
     Handle<String> substring =
-        Factory::NewSubString(subject, part_start, part_end);
+        isolate->factory()->NewSubString(subject, part_start, part_end);
     elements->set(i, *substring);
     part_start = part_end + pattern_length;
   }
@@ -5170,7 +5138,7 @@ static Object* Runtime_StringToArray(RUNTIME_CALLING_CONVENTION) {
       elements->set(i, *str);
     }
   } else {
-    elements = Factory::NewFixedArray(length);
+    elements = isolate->factory()->NewFixedArray(length);
     for (int i = 0; i < length; ++i) {
       Handle<Object> str = LookupSingleCharacterStringFromCode(s->Get(i));
       elements->set(i, *str);
@@ -5183,7 +5151,7 @@ static Object* Runtime_StringToArray(RUNTIME_CALLING_CONVENTION) {
   }
 #endif
 
-  return *Factory::NewJSArrayWithElements(elements);
+  return *isolate->factory()->NewJSArrayWithElements(elements);
 }
 
 
@@ -6516,7 +6484,9 @@ static Object* Runtime_NewClosure(RUNTIME_CALLING_CONVENTION) {
       ? TENURED       // Allocate global closures in old space.
       : NOT_TENURED;  // Allocate local closures in new space.
   Handle<JSFunction> result =
-      Factory::NewFunctionFromSharedFunctionInfo(shared, context, pretenure);
+      isolate->factory()->NewFunctionFromSharedFunctionInfo(shared,
+                                                            context,
+                                                            pretenure);
   return *result;
 }
 
@@ -6550,7 +6520,7 @@ static Object* Runtime_NewObjectFromBound(RUNTIME_CALLING_CONVENTION) {
 
 static void TrySettingInlineConstructStub(Isolate* isolate,
                                           Handle<JSFunction> function) {
-  Handle<Object> prototype = Factory::null_value();
+  Handle<Object> prototype = isolate->factory()->null_value();
   if (function->has_instance_prototype()) {
     prototype = Handle<Object>(function->instance_prototype(), isolate);
   }
@@ -6575,7 +6545,7 @@ static Object* Runtime_NewObject(RUNTIME_CALLING_CONVENTION) {
   if (!constructor->IsJSFunction()) {
     Vector< Handle<Object> > arguments = HandleVector(&constructor, 1);
     Handle<Object> type_error =
-        Factory::NewTypeError("not_constructor", arguments);
+        isolate->factory()->NewTypeError("not_constructor", arguments);
     return isolate->Throw(*type_error);
   }
 
@@ -6586,7 +6556,7 @@ static Object* Runtime_NewObject(RUNTIME_CALLING_CONVENTION) {
   if (!function->should_have_prototype()) {
     Vector< Handle<Object> > arguments = HandleVector(&constructor, 1);
     Handle<Object> type_error =
-        Factory::NewTypeError("not_constructor", arguments);
+        isolate->factory()->NewTypeError("not_constructor", arguments);
     return isolate->Throw(*type_error);
   }
 
@@ -6604,7 +6574,7 @@ static Object* Runtime_NewObject(RUNTIME_CALLING_CONVENTION) {
       // called using 'new' and creates a new JSFunction object that
       // is returned.  The receiver object is only used for error
       // reporting if an error occurs when constructing the new
-      // JSFunction. Factory::NewJSObject() should not be used to
+      // JSFunction. FACTORY->NewJSObject() should not be used to
       // allocate JSFunctions since it does not properly initialize
       // the shared part of the function. Since the receiver is
       // ignored anyway, we use the global object as the receiver
@@ -6629,7 +6599,7 @@ static Object* Runtime_NewObject(RUNTIME_CALLING_CONVENTION) {
   }
 
   bool first_allocation = !shared->live_objects_may_exist();
-  Handle<JSObject> result = Factory::NewJSObject(function);
+  Handle<JSObject> result = isolate->factory()->NewJSObject(function);
   // Delay setting the stub if inobject slack tracking is in progress.
   if (first_allocation && !shared->IsInobjectSlackTrackingInProgress()) {
     TrySettingInlineConstructStub(isolate, function);
@@ -6677,7 +6647,7 @@ static Object* Runtime_LazyCompile(RUNTIME_CALLING_CONVENTION) {
   // this means that things called through constructors are never known to
   // be in loops.  We compile them as if they are in loops here just in case.
   ASSERT(!function->is_compiled());
-  if (!CompileLazyInLoop(function, Handle<Object>::null(), KEEP_EXCEPTION)) {
+  if (!CompileLazyInLoop(function, KEEP_EXCEPTION)) {
     return Failure::Exception();
   }
 
@@ -6730,7 +6700,8 @@ static Object* PushContextHelper(Isolate* isolate,
       HandleScope scope(isolate);
       Handle<Object> handle(object, isolate);
       Handle<Object> result =
-          Factory::NewTypeError("with_expression", HandleVector(&handle, 1));
+          isolate->factory()->NewTypeError("with_expression",
+                                           HandleVector(&handle, 1));
       return isolate->Throw(*result);
     }
   }
@@ -6898,7 +6869,8 @@ static ObjectPair LoadContextSlotHelper(Arguments args,
   if (throw_error) {
     // The property doesn't exist - throw exception.
     Handle<Object> reference_error =
-        Factory::NewReferenceError("not_defined", HandleVector(&name, 1));
+        isolate->factory()->NewReferenceError("not_defined",
+                                              HandleVector(&name, 1));
     return MakePair(isolate->Throw(*reference_error), NULL);
   } else {
     // The property doesn't exist - return undefined
@@ -7015,7 +6987,8 @@ static Object* Runtime_ThrowReferenceError(RUNTIME_CALLING_CONVENTION) {
 
   Handle<Object> name(args[0], isolate);
   Handle<Object> reference_error =
-    Factory::NewReferenceError("not_defined", HandleVector(&name, 1));
+    isolate->factory()->NewReferenceError("not_defined",
+                                          HandleVector(&name, 1));
   return isolate->Throw(*reference_error);
 }
 
@@ -7064,7 +7037,7 @@ static void PrintObject(Object* obj) {
   } else if (obj->IsFalse()) {
     PrintF("<false>");
   } else {
-    PrintF("%p", obj);
+    PrintF("%p", reinterpret_cast<void*>(obj));
   }
 }
 
@@ -7278,7 +7251,9 @@ static Object* Runtime_CompileString(RUNTIME_CALLING_CONVENTION) {
                                                             validate);
   if (shared.is_null()) return Failure::Exception();
   Handle<JSFunction> fun =
-      Factory::NewFunctionFromSharedFunctionInfo(shared, context, NOT_TENURED);
+      isolate->factory()->NewFunctionFromSharedFunctionInfo(shared,
+                                                            context,
+                                                            NOT_TENURED);
   return *fun;
 }
 
@@ -7294,10 +7269,9 @@ static ObjectPair CompileGlobalEval(Isolate* isolate,
       isolate->context()->IsGlobalContext(),
       Compiler::DONT_VALIDATE_JSON);
   if (shared.is_null()) return MakePair(Failure::Exception(), NULL);
-  Handle<JSFunction> compiled = Factory::NewFunctionFromSharedFunctionInfo(
-      shared,
-      Handle<Context>(isolate->context()),
-      NOT_TENURED);
+  Handle<JSFunction> compiled =
+      isolate->factory()->NewFunctionFromSharedFunctionInfo(
+          shared, Handle<Context>(isolate->context()), NOT_TENURED);
   return MakePair(*compiled, *receiver);
 }
 
@@ -7329,7 +7303,8 @@ static ObjectPair Runtime_ResolvePossiblyDirectEval(
   int index = -1;
   PropertyAttributes attributes = ABSENT;
   while (true) {
-    receiver = context->Lookup(Factory::eval_symbol(), FOLLOW_PROTOTYPE_CHAIN,
+    receiver = context->Lookup(isolate->factory()->eval_symbol(),
+                               FOLLOW_PROTOTYPE_CHAIN,
                                &index, &attributes);
     // Stop search when eval is found or when the global context is
     // reached.
@@ -7344,9 +7319,10 @@ static ObjectPair Runtime_ResolvePossiblyDirectEval(
   // If eval could not be resolved, it has been deleted and we need to
   // throw a reference error.
   if (attributes == ABSENT) {
-    Handle<Object> name = Factory::eval_symbol();
+    Handle<Object> name = isolate->factory()->eval_symbol();
     Handle<Object> reference_error =
-        Factory::NewReferenceError("not_defined", HandleVector(&name, 1));
+        isolate->factory()->NewReferenceError("not_defined",
+                                              HandleVector(&name, 1));
     return MakePair(isolate->Throw(*reference_error), NULL);
   }
 
@@ -7487,7 +7463,9 @@ class ArrayConcatVisitor {
     } else {
       Handle<NumberDictionary> dict = Handle<NumberDictionary>::cast(storage_);
       Handle<NumberDictionary> result =
-          Factory::DictionaryAtNumberPut(dict, index, elm);
+          storage_->GetIsolate()->factory()->DictionaryAtNumberPut(dict,
+                                                                   index,
+                                                                   elm);
       if (!result.is_identical_to(dict))
         storage_ = result;
     }
@@ -7540,14 +7518,14 @@ static uint32_t IterateExternalArrayElements(Isolate* isolate,
             visitor->visit(j, e);
           } else {
             Handle<Object> e =
-                Factory::NewNumber(static_cast<ElementType>(val));
+                isolate->factory()->NewNumber(static_cast<ElementType>(val));
             visitor->visit(j, e);
           }
         }
       }
     } else {
       for (uint32_t j = 0; j < len; j++) {
-        Handle<Object> e = Factory::NewNumber(array->get(j));
+        Handle<Object> e = isolate->factory()->NewNumber(array->get(j));
         visitor->visit(j, e);
       }
     }
@@ -7819,7 +7797,7 @@ static Object* Runtime_ArrayConcat(RUNTIME_CALLING_CONVENTION) {
   }
 
   // Allocate an empty array, will set length and content later.
-  Handle<JSArray> result = Factory::NewJSArray(0);
+  Handle<JSArray> result = isolate->factory()->NewJSArray(0);
 
   uint32_t estimate_nof_elements = IterateArguments(isolate, arguments, NULL);
   // If estimated number of elements is more than half of length, a
@@ -7831,18 +7809,23 @@ static Object* Runtime_ArrayConcat(RUNTIME_CALLING_CONVENTION) {
   if (fast_case) {
     // The backing storage array must have non-existing elements to
     // preserve holes across concat operations.
-    storage = Factory::NewFixedArrayWithHoles(result_length);
-    result->set_map(*Factory::GetFastElementsMap(Handle<Map>(result->map())));
+    storage = isolate->factory()->NewFixedArrayWithHoles(result_length);
+    Handle<Map> fast_map =
+        isolate->factory()->GetFastElementsMap(Handle<Map>(result->map()));
+    result->set_map(*fast_map);
   } else {
     // TODO(126): move 25% pre-allocation logic into Dictionary::Allocate
     uint32_t at_least_space_for = estimate_nof_elements +
                                   (estimate_nof_elements >> 2);
     storage = Handle<FixedArray>::cast(
-                  Factory::NewNumberDictionary(at_least_space_for));
-    result->set_map(*Factory::GetSlowElementsMap(Handle<Map>(result->map())));
+                  isolate->factory()->NewNumberDictionary(at_least_space_for));
+    Handle<Map> slow_map =
+        isolate->factory()->GetSlowElementsMap(Handle<Map>(result->map()));
+    result->set_map(*slow_map);
   }
 
-  Handle<Object> len = Factory::NewNumber(static_cast<double>(result_length));
+  Handle<Object> len =
+      isolate->factory()->NewNumber(static_cast<double>(result_length));
 
   ArrayConcatVisitor visitor(storage, result_length, fast_case);
 
@@ -7978,19 +7961,19 @@ static Object* Runtime_GetArrayKeys(RUNTIME_CALLING_CONVENTION) {
         keys->set_undefined(i);
       }
     }
-    return *Factory::NewJSArrayWithElements(keys);
+    return *isolate->factory()->NewJSArrayWithElements(keys);
   } else {
     ASSERT(array->HasFastElements());
-    Handle<FixedArray> single_interval = Factory::NewFixedArray(2);
+    Handle<FixedArray> single_interval = isolate->factory()->NewFixedArray(2);
     // -1 means start of array.
     single_interval->set(0, Smi::FromInt(-1));
     uint32_t actual_length =
         static_cast<uint32_t>(FixedArray::cast(array->elements())->length());
     uint32_t min_length = actual_length < length ? actual_length : length;
     Handle<Object> length_object =
-        Factory::NewNumber(static_cast<double>(min_length));
+        isolate->factory()->NewNumber(static_cast<double>(min_length));
     single_interval->set(1, *length_object);
-    return *Factory::NewJSArrayWithElements(single_interval);
+    return *isolate->factory()->NewJSArrayWithElements(single_interval);
   }
 }
 
@@ -8173,13 +8156,13 @@ static Object* Runtime_DebugGetPropertyDetails(RUNTIME_CALLING_CONVENTION) {
   // if so.
   uint32_t index;
   if (name->AsArrayIndex(&index)) {
-    Handle<FixedArray> details = Factory::NewFixedArray(2);
+    Handle<FixedArray> details = isolate->factory()->NewFixedArray(2);
     Object* element_or_char = Runtime::GetElementOrCharAt(isolate,
                                                           obj,
                                                           index);
     details->set(0, element_or_char);
     details->set(1, PropertyDetails(NONE, NORMAL).AsSmi());
-    return *Factory::NewJSArrayWithElements(details);
+    return *isolate->factory()->NewJSArrayWithElements(details);
   }
 
   // Find the number of objects making up this.
@@ -8214,7 +8197,7 @@ static Object* Runtime_DebugGetPropertyDetails(RUNTIME_CALLING_CONVENTION) {
       bool hasJavaScriptAccessors = result_type == CALLBACKS &&
                                     result_callback_obj->IsFixedArray();
       Handle<FixedArray> details =
-          Factory::NewFixedArray(hasJavaScriptAccessors ? 5 : 2);
+          isolate->factory()->NewFixedArray(hasJavaScriptAccessors ? 5 : 2);
       details->set(0, *value);
       details->set(1, property_details);
       if (hasJavaScriptAccessors) {
@@ -8225,7 +8208,7 @@ static Object* Runtime_DebugGetPropertyDetails(RUNTIME_CALLING_CONVENTION) {
         details->set(4, FixedArray::cast(*result_callback_obj)->get(1));
       }
 
-      return *Factory::NewJSArrayWithElements(details);
+      return *isolate->factory()->NewJSArrayWithElements(details);
     }
     if (i < length - 1) {
       jsproto = Handle<JSObject>(JSObject::cast(jsproto->GetPrototype()));
@@ -8442,7 +8425,8 @@ static Object* Runtime_GetFrameDetails(RUNTIME_CALLING_CONVENTION) {
   // TODO(1240907): Hide compiler-introduced stack variables
   // (e.g. .result)?  For users of the debugger, they will probably be
   // confusing.
-  Handle<FixedArray> locals = Factory::NewFixedArray(info.NumberOfLocals() * 2);
+  Handle<FixedArray> locals =
+      isolate->factory()->NewFixedArray(info.NumberOfLocals() * 2);
   for (int i = 0; i < info.NumberOfLocals(); i++) {
     // Name of the local.
     locals->set(i * 2, *info.LocalName(i));
@@ -8470,7 +8454,7 @@ static Object* Runtime_GetFrameDetails(RUNTIME_CALLING_CONVENTION) {
 
   // If positioned just before return find the value to be returned and add it
   // to the frame information.
-  Handle<Object> return_value = Factory::undefined_value();
+  Handle<Object> return_value = isolate->factory()->undefined_value();
   if (at_return) {
     StackFrameIterator it2;
     Address internal_frame_sp = NULL;
@@ -8517,7 +8501,7 @@ static Object* Runtime_GetFrameDetails(RUNTIME_CALLING_CONVENTION) {
   int details_size = kFrameDetailsFirstDynamicIndex +
                      2 * (argument_count + info.NumberOfLocals()) +
                      (at_return ? 1 : 0);
-  Handle<FixedArray> details = Factory::NewFixedArray(details_size);
+  Handle<FixedArray> details = isolate->factory()->NewFixedArray(details_size);
 
   // Add the frame id.
   details->set(kFrameDetailsFrameIdIndex, *frame_id);
@@ -8593,12 +8577,13 @@ static Object* Runtime_GetFrameDetails(RUNTIME_CALLING_CONVENTION) {
     it.Advance();
     Handle<Context> calling_frames_global_context(
         Context::cast(Context::cast(it.frame()->context())->global_context()));
-    receiver = Factory::ToObject(receiver, calling_frames_global_context);
+    receiver =
+        isolate->factory()->ToObject(receiver, calling_frames_global_context);
   }
   details->set(kFrameDetailsReceiverIndex, *receiver);
 
   ASSERT_EQ(details_size, details_index);
-  return *Factory::NewJSArrayWithElements(details);
+  return *isolate->factory()->NewJSArrayWithElements(details);
 }
 
 
@@ -8639,7 +8624,7 @@ static Handle<JSObject> MaterializeLocalScope(Isolate* isolate,
   // Allocate and initialize a JSObject with all the arguments, stack locals
   // heap locals and extension properties of the debugged function.
   Handle<JSObject> local_scope =
-      Factory::NewJSObject(isolate->object_function());
+      isolate->factory()->NewJSObject(isolate->object_function());
 
   // First fill all parameters.
   for (int i = 0; i < scope_info.number_of_parameters(); ++i) {
@@ -8693,7 +8678,7 @@ static Handle<JSObject> MaterializeClosure(Isolate* isolate,
   // Allocate and initialize a JSObject with all the content of theis function
   // closure.
   Handle<JSObject> closure_scope =
-      Factory::NewJSObject(isolate->object_function());
+      isolate->factory()->NewJSObject(isolate->object_function());
 
   // Check whether the arguments shadow object exists.
   int arguments_shadow_index =
@@ -9007,14 +8992,14 @@ static Object* Runtime_GetScopeDetails(RUNTIME_CALLING_CONVENTION) {
 
   // Calculate the size of the result.
   int details_size = kScopeDetailsSize;
-  Handle<FixedArray> details = Factory::NewFixedArray(details_size);
+  Handle<FixedArray> details = isolate->factory()->NewFixedArray(details_size);
 
   // Fill in scope details.
   details->set(kScopeDetailsTypeIndex, Smi::FromInt(it.Type()));
   Handle<JSObject> scope_object = it.ScopeObject();
   details->set(kScopeDetailsObjectIndex, *scope_object);
 
-  return *Factory::NewJSArrayWithElements(details);
+  return *isolate->factory()->NewJSArrayWithElements(details);
 }
 
 
@@ -9054,14 +9039,16 @@ static Object* Runtime_GetCFrames(RUNTIME_CALLING_CONVENTION) {
     return isolate->heap()->undefined_value();
   }
 
-  Handle<String> address_str = Factory::LookupAsciiSymbol("address");
-  Handle<String> text_str = Factory::LookupAsciiSymbol("text");
-  Handle<FixedArray> frames_array = Factory::NewFixedArray(frames_count);
+  Handle<String> address_str = isolate->factory()->LookupAsciiSymbol("address");
+  Handle<String> text_str = isolate->factory()->LookupAsciiSymbol("text");
+  Handle<FixedArray> frames_array =
+      isolate->factory()->NewFixedArray(frames_count);
   for (int i = 0; i < frames_count; i++) {
     Handle<JSObject> frame_value =
-        Factory::NewJSObject(isolate->object_function());
+        isolate->factory()->NewJSObject(isolate->object_function());
     Handle<Object> frame_address =
-        Factory::NewNumberFromInt(reinterpret_cast<int>(frames[i].address));
+        isolate->factory()->NewNumberFromInt(
+            reinterpret_cast<int>(frames[i].address));
 
     frame_value->SetProperty(*address_str, *frame_address, NONE);
 
@@ -9070,7 +9057,7 @@ static Object* Runtime_GetCFrames(RUNTIME_CALLING_CONVENTION) {
     int frame_text_length = StrLength(frames[i].text);
     if (frame_text_length > 0) {
       Vector<const char> str(frames[i].text, frame_text_length);
-      frame_text = Factory::NewStringFromAscii(str);
+      frame_text = isolate->factory()->NewStringFromAscii(str);
     }
 
     if (!frame_text.is_null()) {
@@ -9079,7 +9066,7 @@ static Object* Runtime_GetCFrames(RUNTIME_CALLING_CONVENTION) {
 
     frames_array->set(i, *frame_value);
   }
-  return *Factory::NewJSArrayWithElements(frames_array);
+  return *isolate->factory()->NewJSArrayWithElements(frames_array);
 #endif  // V8_HOST_ARCH_64_BIT
 }
 
@@ -9129,7 +9116,8 @@ static Object* Runtime_GetThreadDetails(RUNTIME_CALLING_CONVENTION) {
   CONVERT_NUMBER_CHECKED(int, index, Int32, args[1]);
 
   // Allocate array for result.
-  Handle<FixedArray> details = Factory::NewFixedArray(kThreadDetailsSize);
+  Handle<FixedArray> details =
+      isolate->factory()->NewFixedArray(kThreadDetailsSize);
 
   // Thread index 0 is current thread.
   if (index == 0) {
@@ -9159,7 +9147,7 @@ static Object* Runtime_GetThreadDetails(RUNTIME_CALLING_CONVENTION) {
   }
 
   // Convert to JS array and return.
-  return *Factory::NewJSArrayWithElements(details);
+  return *isolate->factory()->NewJSArrayWithElements(details);
 }
 
 
@@ -9186,7 +9174,7 @@ static Object* Runtime_GetBreakLocations(RUNTIME_CALLING_CONVENTION) {
   Handle<Object> break_locations = Debug::GetSourceBreakLocations(shared);
   if (break_locations->IsUndefined()) return isolate->heap()->undefined_value();
   // Return array as JS array
-  return *Factory::NewJSArrayWithElements(
+  return *isolate->factory()->NewJSArrayWithElements(
       Handle<FixedArray>::cast(break_locations));
 }
 
@@ -9444,10 +9432,9 @@ static Handle<Context> CopyWithContextChain(Handle<Context> context_chain,
   // Recursively copy the with contexts.
   Handle<Context> previous(context_chain->previous());
   Handle<JSObject> extension(JSObject::cast(context_chain->extension()));
-  return Factory::NewWithContext(
-      CopyWithContextChain(function_context, previous),
-      extension,
-      context_chain->IsCatchContext());
+  Handle<Context> context = CopyWithContextChain(function_context, previous);
+  return context->GetIsolate()->factory()->NewWithContext(
+      context, extension, context_chain->IsCatchContext());
 }
 
 
@@ -9479,8 +9466,9 @@ static Handle<Object> GetArgumentsObject(Isolate* isolate,
   }
 
   const int length = frame->GetProvidedParametersCount();
-  Handle<JSObject> arguments = Factory::NewArgumentsObject(function, length);
-  Handle<FixedArray> array = Factory::NewFixedArray(length);
+  Handle<JSObject> arguments =
+      isolate->factory()->NewArgumentsObject(function, length);
+  Handle<FixedArray> array = isolate->factory()->NewFixedArray(length);
 
   AssertNoAllocation no_gc;
   WriteBarrierMode mode = array->GetWriteBarrierMode(no_gc);
@@ -9549,7 +9537,8 @@ static Object* Runtime_DebugEvaluate(RUNTIME_CALLING_CONVENTION) {
   // in Context::Lookup, where context slots for parameters and local variables
   // are looked at before the extension object.
   Handle<JSFunction> go_between =
-      Factory::NewFunction(Factory::empty_string(), Factory::undefined_value());
+      isolate->factory()->NewFunction(isolate->factory()->empty_string(),
+                                      isolate->factory()->undefined_value());
   go_between->set_context(function->context());
 #ifdef DEBUG
   ScopeInfo<> go_between_sinfo(go_between->shared()->scope_info());
@@ -9563,7 +9552,8 @@ static Object* Runtime_DebugEvaluate(RUNTIME_CALLING_CONVENTION) {
   // Allocate a new context for the debug evaluation and set the extension
   // object build.
   Handle<Context> context =
-      Factory::NewFunctionContext(Context::MIN_CONTEXT_SLOTS, go_between);
+      isolate->factory()->NewFunctionContext(Context::MIN_CONTEXT_SLOTS,
+                                             go_between);
   context->set_extension(*local_scope);
   // Copy any with contexts present and chain them in front of this context.
   Handle<Context> frame_context(Context::cast(frame->context()));
@@ -9578,8 +9568,8 @@ static Object* Runtime_DebugEvaluate(RUNTIME_CALLING_CONVENTION) {
   ASSERT(source_str_length == StrLength(source_str));
 
   Handle<String> function_source =
-      Factory::NewStringFromAscii(Vector<const char>(source_str,
-                                                     source_str_length));
+      isolate->factory()->NewStringFromAscii(
+          Vector<const char>(source_str, source_str_length));
   Handle<SharedFunctionInfo> shared =
       Compiler::CompileEval(function_source,
                             context,
@@ -9587,7 +9577,7 @@ static Object* Runtime_DebugEvaluate(RUNTIME_CALLING_CONVENTION) {
                             Compiler::DONT_VALIDATE_JSON);
   if (shared.is_null()) return Failure::Exception();
   Handle<JSFunction> compiled_function =
-      Factory::NewFunctionFromSharedFunctionInfo(shared, context);
+      isolate->factory()->NewFunctionFromSharedFunctionInfo(shared, context);
 
   // Invoke the result of the compilation to get the evaluation function.
   bool has_pending_exception;
@@ -9657,8 +9647,9 @@ static Object* Runtime_DebugEvaluateGlobal(RUNTIME_CALLING_CONVENTION) {
                             Compiler::DONT_VALIDATE_JSON);
   if (shared.is_null()) return Failure::Exception();
   Handle<JSFunction> compiled_function =
-      Handle<JSFunction>(Factory::NewFunctionFromSharedFunctionInfo(shared,
-                                                                    context));
+      Handle<JSFunction>(
+          isolate->factory()->NewFunctionFromSharedFunctionInfo(shared,
+                                                                context));
 
   // Invoke the result of the compilation to get the evaluation function.
   bool has_pending_exception;
@@ -9692,7 +9683,8 @@ static Object* Runtime_DebugGetLoadedScripts(RUNTIME_CALLING_CONVENTION) {
   }
 
   // Return result as a JS array.
-  Handle<JSObject> result = Factory::NewJSObject(isolate->array_function());
+  Handle<JSObject> result =
+      isolate->factory()->NewJSObject(isolate->array_function());
   Handle<JSArray>::cast(result)->SetContent(*instances);
   return *result;
 }
@@ -9986,14 +9978,14 @@ static Object* Runtime_LiveEditFindSharedFunctionInfosForScript(
   const int kBufferSize = 32;
 
   Handle<FixedArray> array;
-  array = Factory::NewFixedArray(kBufferSize);
+  array = isolate->factory()->NewFixedArray(kBufferSize);
   int number = FindSharedFunctionInfosForScript(*script, *array);
   if (number > kBufferSize) {
-    array = Factory::NewFixedArray(number);
+    array = isolate->factory()->NewFixedArray(number);
     FindSharedFunctionInfosForScript(*script, *array);
   }
 
-  Handle<JSArray> result = Factory::NewJSArrayWithElements(array);
+  Handle<JSArray> result = isolate->factory()->NewJSArrayWithElements(array);
   result->set_length(Smi::FromInt(number));
 
   LiveEdit::WrapSharedFunctionInfos(result);
@@ -10271,7 +10263,7 @@ static Handle<Object> Runtime_GetScriptFromScriptName(
   }
 
   // If no script with the requested script data is found return undefined.
-  if (script.is_null()) return Factory::undefined_value();
+  if (script.is_null()) return FACTORY->undefined_value();
 
   // Return the script found.
   return GetScriptWrapper(script);
@@ -10337,7 +10329,7 @@ static Object* Runtime_CollectStackTrace(RUNTIME_CALLING_CONVENTION) {
 
   limit = Max(limit, 0);  // Ensure that limit is not negative.
   int initial_size = Min(limit, 10);
-  Handle<JSArray> result = Factory::NewJSArray(initial_size * 3);
+  Handle<JSArray> result = isolate->factory()->NewJSArray(initial_size * 3);
 
   StackFrameIterator iter;
   // If the caller parameter is a function we skip frames until we're
@@ -10507,7 +10499,7 @@ static Object* Runtime_ListNatives(RUNTIME_CALLING_CONVENTION) {
   RUNTIME_GET_ISOLATE;
   ASSERT(args.length() == 0);
   HandleScope scope(isolate);
-  Handle<JSArray> result = Factory::NewJSArray(0);
+  Handle<JSArray> result = isolate->factory()->NewJSArray(0);
   int index = 0;
   bool inline_runtime_functions = false;
 #define ADD_ENTRY(Name, argc, ressize)                                       \
@@ -10516,13 +10508,13 @@ static Object* Runtime_ListNatives(RUNTIME_CALLING_CONVENTION) {
     Handle<String> name;                                                     \
     /* Inline runtime functions have an underscore in front of the name. */  \
     if (inline_runtime_functions) {                                          \
-      name = Factory::NewStringFromAscii(                                    \
+      name = isolate->factory()->NewStringFromAscii(                         \
           Vector<const char>("_" #Name, StrLength("_" #Name)));              \
     } else {                                                                 \
-      name = Factory::NewStringFromAscii(                                    \
+      name = isolate->factory()->NewStringFromAscii(                         \
           Vector<const char>(#Name, StrLength(#Name)));                      \
     }                                                                        \
-    Handle<JSArray> pair = Factory::NewJSArray(0);                           \
+    Handle<JSArray> pair = isolate->factory()->NewJSArray(0);                \
     SetElement(pair, 0, name);                                               \
     SetElement(pair, 1, Handle<Smi>(Smi::FromInt(argc)));                    \
     SetElement(result, index++, pair);                                       \
