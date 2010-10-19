@@ -257,6 +257,13 @@ void QHttpNetworkConnectionPrivate::copyCredentials(int fromChannel, QAuthentica
 {
     Q_ASSERT(auth);
 
+    // NTLM is a multi phase authentication. Copying credentials between authenticators would mess things up.
+    if (!isProxy && channels[fromChannel].authMehtod == QAuthenticatorPrivate::Ntlm)
+        return;
+    if (isProxy && channels[fromChannel].proxyAuthMehtod == QAuthenticatorPrivate::Ntlm)
+        return;
+
+
     // select another channel
     QAuthenticator* otherAuth = 0;
     for (int i = 0; i < channelCount; ++i) {
