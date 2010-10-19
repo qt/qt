@@ -1932,6 +1932,9 @@ bool QDeclarativeCompiler::buildPropertyAssignment(QDeclarativeParser::Property 
 {
     obj->addValueProperty(prop);
 
+    if (prop->values.count() > 1)
+        COMPILE_EXCEPTION(prop->values.at(0), tr( "Cannot assign multiple values to a singular property") );
+
     for (int ii = 0; ii < prop->values.count(); ++ii) {
         Value *v = prop->values.at(ii);
         if (v->object) {
@@ -2562,8 +2565,8 @@ bool QDeclarativeCompiler::compileAlias(QMetaObjectBuilder &builder,
 
     QStringList alias = astNodeToStringList(node);
 
-    if (alias.count() != 1 && alias.count() != 2)
-        COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias reference. An alias reference must be specified as <id> or <id>.<property>"));
+    if (alias.count() < 1 || alias.count() > 3)
+        COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias reference. An alias reference must be specified as <id>, <id>.<property> or <id>.<value property>.<property>"));
 
     if (!compileState.ids.contains(alias.at(0)))
         COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias reference. Unable to find id \"%1\"").arg(alias.at(0)));
@@ -2575,17 +2578,36 @@ bool QDeclarativeCompiler::compileAlias(QMetaObjectBuilder &builder,
     int propIdx = -1;
     int flags = 0;
     bool writable = false;
-    if (alias.count() == 2) {
+    if (alias.count() == 2 || alias.count() == 3) {
         propIdx = idObject->metaObject()->indexOfProperty(alias.at(1).toUtf8().constData());
 
-        if (-1 == propIdx)
+        if (-1 == propIdx) {
             COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias location"));
+        } else if (propIdx > 0xFFFF) {
+            COMPILE_EXCEPTION(prop.defaultValue, tr("Alias property exceeds alias bounds"));
+        }
 
         QMetaProperty aliasProperty = idObject->metaObject()->property(propIdx);
         if (!aliasProperty.isScriptable())
             COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias location"));
 
         writable = aliasProperty.isWritable();
+
+        if (alias.count() == 3) {
+            QDeclarativeValueType *valueType = enginePrivate->valueTypes[aliasProperty.type()];
+            if (!valueType)
+                COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias location"));
+
+            propIdx |= ((unsigned int)aliasProperty.type()) << 24;
+
+            int valueTypeIndex = valueType->metaObject()->indexOfProperty(alias.at(2).toUtf8().constData());
+            if (valueTypeIndex == -1)
+                COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias location"));
+            Q_ASSERT(valueTypeIndex <= 0xFF);
+            
+            aliasProperty = valueType->metaObject()->property(valueTypeIndex);
+            propIdx |= (valueTypeIndex << 16);
+        }
 
         if (aliasProperty.isEnumType()) 
             typeName = "int";  // Avoid introducing a dependency on the aliased metaobject

@@ -466,7 +466,7 @@ QDeclarativeFlickable::~QDeclarativeFlickable()
 qreal QDeclarativeFlickable::contentX() const
 {
     Q_D(const QDeclarativeFlickable);
-    return -d->hData.move.value();
+    return -d->contentItem->x();
 }
 
 void QDeclarativeFlickable::setContentX(qreal pos)
@@ -484,7 +484,7 @@ void QDeclarativeFlickable::setContentX(qreal pos)
 qreal QDeclarativeFlickable::contentY() const
 {
     Q_D(const QDeclarativeFlickable);
-    return -d->vData.move.value();
+    return -d->contentItem->y();
 }
 
 void QDeclarativeFlickable::setContentY(qreal pos)

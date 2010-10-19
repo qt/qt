@@ -1112,16 +1112,16 @@ void QDeclarativePathViewPrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent 
     if (!interactive || !lastPosTime.isValid())
         return;
 
+    qreal newPc;
+    QPointF pathPoint = pointNear(event->pos(), &newPc);
     if (!stealMouse) {
-        QPointF delta = event->pos() - startPoint;
+        QPointF delta = pathPoint - startPoint;
         if (qAbs(delta.x()) > QApplication::startDragDistance() || qAbs(delta.y()) > QApplication::startDragDistance())
             stealMouse = true;
     }
 
     if (stealMouse) {
         moveReason = QDeclarativePathViewPrivate::Mouse;
-        qreal newPc;
-        pointNear(event->pos(), &newPc);
         qreal diff = (newPc - startPc)*modelCount*mappedRange;
         if (diff) {
             setOffset(offset + diff);

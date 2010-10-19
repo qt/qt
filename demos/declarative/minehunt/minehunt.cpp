@@ -195,6 +195,7 @@ bool MinehuntGame::flip(int row, int col)
         won = false;
         hasWonChanged();
         setPlaying(false);
+        return true;
     }
 
     remaining--;
@@ -202,6 +203,7 @@ bool MinehuntGame::flip(int row, int col)
         won = true;
         hasWonChanged();
         setPlaying(false);
+        return true;
     }
     return true;
 }
@@ -209,7 +211,7 @@ bool MinehuntGame::flip(int row, int col)
 bool MinehuntGame::flag(int row, int col)
 {
     TileData *t = tile(row, col);
-    if(!t)
+    if(!t || !playing)
         return false;
 
     t->setHasFlag(!t->hasFlag());

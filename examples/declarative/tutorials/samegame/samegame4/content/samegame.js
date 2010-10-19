@@ -145,7 +145,7 @@ function shuffleDown() {
                     obj = board[index(column, row)];
                     if (obj == null)
                         continue;
-                    obj.x = (fallDist - column) * gameCanvas.blockSize;
+                    obj.x = (column - fallDist) * gameCanvas.blockSize;
                     board[index(column - fallDist, row)] = obj;
                     board[index(column, row)] = null;
                 }

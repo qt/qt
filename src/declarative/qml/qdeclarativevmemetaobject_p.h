@@ -84,6 +84,25 @@ struct QDeclarativeVMEMetaData
         int contextIdx;
         int propertyIdx;
         int flags;
+
+        bool isObjectAlias() const {
+            return propertyIdx == -1;
+        }
+        bool isPropertyAlias() const {
+            return !isObjectAlias() && !(propertyIdx & 0xFF000000);
+        }
+        bool isValueTypeAlias() const {
+            return !isObjectAlias() && (propertyIdx & 0xFF000000);
+        }
+        int propertyIndex() const {
+            return propertyIdx & 0x0000FFFF;
+        }
+        int valueTypeIndex() const {
+            return (propertyIdx & 0x00FF0000) >> 16;
+        }
+        int valueType() const {
+            return ((unsigned int)propertyIdx) >> 24;
+        }
     };
     
     struct PropertyData {
