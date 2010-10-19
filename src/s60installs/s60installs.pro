@@ -35,6 +35,8 @@ symbian: {
     }
     VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 
+    DESTDIR = $$QMAKE_LIBDIR_QT
+
     qtlibraries.sources = \
         $$QMAKE_LIBDIR_QT/QtCore$${QT_LIBINFIX}.dll \
         $$QMAKE_LIBDIR_QT/QtXml$${QT_LIBINFIX}.dll \
