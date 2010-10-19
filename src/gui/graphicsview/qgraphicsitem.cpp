@@ -3322,8 +3322,7 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
 */
 void QGraphicsItem::clearFocus()
 {
-    if (hasFocus())
-        d_ptr->clearFocusHelper(/* giveFocusToParent = */ true);
+    d_ptr->clearFocusHelper(/* giveFocusToParent = */ true);
 }
 
 /*!
@@ -3337,8 +3336,14 @@ void QGraphicsItemPrivate::clearFocusHelper(bool giveFocusToParent)
             QGraphicsItem *p = parent;
             while (p) {
                 if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
-                    p->d_ptr->setFocusHelper(Qt::OtherFocusReason, /* climb = */ false,
-                                             /* focusFromHide = */ false);
+                    if (p->d_ptr->focusScopeItem == q_ptr) {
+                        p->d_ptr->focusScopeItem = 0;
+                        if (!q_ptr->hasFocus()) //if it has focus, focusScopeItemChange is called elsewhere
+                            focusScopeItemChange(false);
+                    }
+                    if (q_ptr->hasFocus())
+                        p->d_ptr->setFocusHelper(Qt::OtherFocusReason, /* climb = */ false,
+                                                 /* focusFromHide = */ false);
                     return;
                 }
                 p = p->d_ptr->parent;
@@ -3346,10 +3351,10 @@ void QGraphicsItemPrivate::clearFocusHelper(bool giveFocusToParent)
         }
     }
 
-    // Invisible items with focus must explicitly clear subfocus.
-    clearSubFocus(q_ptr);
-
     if (q_ptr->hasFocus()) {
+        // Invisible items with focus must explicitly clear subfocus.
+        clearSubFocus(q_ptr);
+
         // If this item has the scene's input focus, clear it.
         scene->setFocusItem(0);
     }
