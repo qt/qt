@@ -220,7 +220,7 @@ QModelIndex QCompletionModel::mapToSource(const QModelIndex& index) const
 {
     Q_D(const QCompletionModel);
     if (!index.isValid())
-        return QModelIndex();
+        return engine->curParent;
 
     int row;
     QModelIndex parent = engine->curParent;
