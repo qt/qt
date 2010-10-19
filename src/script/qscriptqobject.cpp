@@ -269,10 +269,10 @@ public:
     QtConnection(QtSignalData *signal);
     ~QtConnection();
 
-    bool connect(v8::Handle<v8::Object> receiver,  v8::Handle<v8::Function> callback, Qt::ConnectionType type);
+    bool connect(v8::Handle<v8::Object> receiver, v8::Handle<v8::Object> callback, Qt::ConnectionType type);
     bool disconnect();
 
-    v8::Handle<v8::Function> callback() const
+    v8::Handle<v8::Object> callback() const
     { return m_callback; }
 
     // This class implements qt_metacall() and friends manually; moc should
@@ -287,7 +287,7 @@ public:
 
 private:
     QtSignalData *m_signal;
-    v8::Persistent<v8::Function> m_callback;
+    v8::Persistent<v8::Object> m_callback;
     v8::Persistent<v8::Object> m_receiver;
 };
 
@@ -376,7 +376,7 @@ public:
     static v8::Handle<v8::FunctionTemplate> createFunctionTemplate(QScriptEnginePrivate *engine);
 
     v8::Handle<v8::Value> connect(v8::Handle<v8::Object> receiver,
-                                  v8::Handle<v8::Function> slot,
+                                  v8::Handle<v8::Object> slot,
                                   Qt::ConnectionType type = Qt::AutoConnection);
     v8::Handle<v8::Value> disconnect(v8::Handle<v8::Function> callback);
 
@@ -431,7 +431,7 @@ v8::Handle<v8::FunctionTemplate> QtMetaMethodData::createFunctionTemplate(QScrip
 // receiver might be empty
 // Returns undefined if the connection succeeded, otherwise throws an error.
 v8::Handle<v8::Value> QtSignalData::connect(v8::Handle<v8::Object> receiver,
-                                            v8::Handle<v8::Function> slot, Qt::ConnectionType type)
+                                            v8::Handle<v8::Object> slot, Qt::ConnectionType type)
 {
      QtConnection *connection = new QtConnection(this);
      if (!connection->connect(receiver, slot, type)) {
@@ -509,14 +509,14 @@ QtConnection::~QtConnection()
 // Connects to this connection's signal, and binds this connection to the
 // given callback.
 // Returns true if the connection succeeded, otherwise returns false.
-bool QtConnection::connect(v8::Handle<v8::Object> receiver, v8::Handle<v8::Function> callback, Qt::ConnectionType type)
+bool QtConnection::connect(v8::Handle<v8::Object> receiver, v8::Handle<v8::Object> callback, Qt::ConnectionType type)
 {
     Q_ASSERT(m_callback.IsEmpty());
     QtInstanceData *instance = QtInstanceData::get(m_signal->object());
     bool ok = QMetaObject::connect(instance->cppObject(), m_signal->index(),
                                    this, staticMetaObject.methodOffset(), type);
     if (ok) {
-        m_callback = v8::Persistent<v8::Function>::New(callback);
+        m_callback = v8::Persistent<v8::Object>::New(callback);
         m_receiver = v8::Persistent<v8::Object>::New(receiver);
     }
     return ok;
@@ -575,9 +575,10 @@ void QtConnection::onSignal(void **argv)
     v8::Handle<v8::Object> receiver = m_receiver;
     if (receiver.IsEmpty())
         receiver = v8::Context::GetCurrent()->Global();
-    v8::Handle<v8::Value> result = m_callback->Call(receiver, argc, const_cast<v8::Handle<v8::Value>*>(jsArgv.constData()));
+    v8::Function::Cast(*m_callback)->Call(receiver, argc, const_cast<v8::Handle<v8::Value>*>(jsArgv.constData()));
+
     if (tryCatch.HasCaught()) {
-        result = tryCatch.Exception();
+        v8::Local<v8::Value> result = tryCatch.Exception();
         engine->setException(result, tryCatch.Message());
         engine->emitSignalHandlerException();
     }
@@ -1055,20 +1056,20 @@ v8::Handle<v8::Value> QtSignalData::QtConnectCallback(const v8::Arguments& args)
     //QScriptEnginePrivate *engine = data->;
 
     v8::Handle<v8::Object> receiver;
-    v8::Handle<v8::Function> slot;
-    if (args.Length() < 2) {
+    v8::Handle<v8::Object> slot;
+    if (args.Length() == 1) {
         //simple function
-        if (!args[0]->IsFunction())
+        if (!args[0]->IsObject()) //FIXME: should be isCallable
             return handleScope.Close(v8::ThrowException(v8::Exception::TypeError(v8::String::New("QtSignal.connect(): argument is not a function"))));
-        slot = v8::Handle<v8::Function>(v8::Function::Cast(*args[0]));
+        slot = v8::Handle<v8::Object>(v8::Object::Cast(*args[0]));
     } else {
         receiver = v8::Handle<v8::Object>(v8::Object::Cast(*args[0]));
         v8::Local<v8::Value> arg1 = args[1];
-        if (arg1->IsFunction()) {
-            slot = v8::Handle<v8::Function>(v8::Function::Cast(*arg1));
+        if (arg1->IsObject() && !arg1->IsString()) { //FIXME: should be isCallable
+            slot = v8::Handle<v8::Object>(v8::Object::Cast(*arg1));
         } else if (!receiver.IsEmpty() && arg1->IsString()) {
             v8::Local<v8::String> propertyName = arg1->ToString();
-            slot = v8::Handle<v8::Function>(v8::Function::Cast(*receiver->Get(propertyName)));
+            slot = v8::Handle<v8::Object>(v8::Object::Cast(*receiver->Get(propertyName)));
         }
     }
 
