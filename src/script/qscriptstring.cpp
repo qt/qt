@@ -24,6 +24,7 @@
 #include "qscriptstring.h"
 
 #include "qscriptstring_p.h"
+#include "qscriptisolate_p.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -92,6 +93,7 @@ bool QScriptString::isValid() const
 */
 bool QScriptString::operator==(const QScriptString& other) const
 {
+    QScriptIsolate api(d_ptr->m_engine);
     return d_ptr == other.d_ptr || *d_ptr == *(other.d_ptr);
 }
 
@@ -101,6 +103,7 @@ bool QScriptString::operator==(const QScriptString& other) const
 */
 bool QScriptString::operator!=(const QScriptString& other) const
 {
+    QScriptIsolate api(d_ptr->m_engine);
     return d_ptr != other.d_ptr || *d_ptr != *(other.d_ptr);
 }
 
@@ -113,6 +116,7 @@ bool QScriptString::operator!=(const QScriptString& other) const
 */
 quint32 QScriptString::toArrayIndex(bool* ok) const
 {
+    QScriptIsolate api(d_ptr->m_engine);
     return d_ptr->toArrayIndex(ok);
 }
 
@@ -124,6 +128,7 @@ quint32 QScriptString::toArrayIndex(bool* ok) const
 */
 QString QScriptString::toString() const
 {
+    QScriptIsolate api(d_ptr->m_engine);
     return d_ptr->toString();
 }
 
@@ -135,6 +140,7 @@ QString QScriptString::toString() const
 */
 QScriptString::operator QString() const
 {
+    QScriptIsolate api(d_ptr->m_engine);
     return d_ptr->toString();
 }
 

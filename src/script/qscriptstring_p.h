@@ -37,6 +37,7 @@
 
 #include "qscriptshareddata_p.h"
 #include "qscriptconverter_p.h"
+#include "qscriptengine_p.h"
 #include "qscriptstring.h"
 #include <QtCore/qnumeric.h>
 #include <QtCore/qshareddata.h>
@@ -51,7 +52,7 @@ public:
     static inline QScriptStringPrivate* get(const QScriptString& p);
 
     inline QScriptStringPrivate();
-    inline QScriptStringPrivate(const QString& qtstring);
+    inline QScriptStringPrivate(QScriptEnginePrivate *, v8::Handle<v8::String>);
     inline ~QScriptStringPrivate();
 
     inline bool operator==(const QScriptStringPrivate& other) const;
@@ -63,20 +64,22 @@ public:
     inline quint64 id() const;
 
 private:
-    // FIXME this should not be QString!
-    QString m_string;
+    QScriptSharedDataPointer<QScriptEnginePrivate> m_engine;
+    v8::Persistent<v8::String> m_string;
+    friend class QScriptString;
 };
 
 
 QScriptStringPrivate::QScriptStringPrivate()
 {}
 
-QScriptStringPrivate::QScriptStringPrivate(const QString& qtstring)
-    : m_string(qtstring)
+QScriptStringPrivate::QScriptStringPrivate(QScriptEnginePrivate *engine, v8::Handle<v8::String> str)
+    : m_engine(engine), m_string(v8::Persistent<v8::String>::New(str))
 {}
 
 QScriptStringPrivate::~QScriptStringPrivate()
 {
+    m_string.Dispose();
 }
 
 QScriptString QScriptStringPrivate::get(QScriptStringPrivate* d)
@@ -98,22 +101,30 @@ QScriptStringPrivate* QScriptStringPrivate::get(const QScriptString& p)
 
 bool QScriptStringPrivate::isValid() const
 {
-    return !m_string.isNull();
+    return !m_string.IsEmpty();
 }
 
 bool QScriptStringPrivate::operator==(const QScriptStringPrivate& other) const
 {
-    return isValid() && other.isValid() && m_string == other.m_string;
+    v8::HandleScope handleScope;
+    return isValid() && other.isValid() && m_string->Equals(other.m_string);
 }
 
 bool QScriptStringPrivate::operator!=(const QScriptStringPrivate& other) const
 {
-    return isValid() && other.isValid() && m_string != other.m_string;
+    v8::HandleScope handleScope;
+    return isValid() && other.isValid() && !m_string->Equals(other.m_string);
 }
 
 quint32 QScriptStringPrivate::toArrayIndex(bool* ok) const
 {
-    quint32 idx = QScriptConverter::toArrayIndex(m_string);
+    quint32 idx = 0xffffffff;
+    if (isValid()) {
+        v8::HandleScope handleScope;
+        v8::Handle<v8::Uint32> converted = m_string->ToArrayIndex();
+        if (!converted.IsEmpty())
+            idx = converted->Uint32Value();
+    }
     if (ok)
         *ok = (idx != 0xffffffff);
     return idx;
@@ -121,12 +132,12 @@ quint32 QScriptStringPrivate::toArrayIndex(bool* ok) const
 
 QString QScriptStringPrivate::toString() const
 {
-    return m_string;
+    return QScriptConverter::toString(m_string);
 }
 
 quint64 QScriptStringPrivate::id() const
 {
-    return qHash(m_string);
+    return m_string->Hash();
 }
 
 QT_END_NAMESPACE

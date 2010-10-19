@@ -191,8 +191,7 @@ inline QScriptPassPointer<QScriptStringPrivate> QScriptValueIteratorPrivate::scr
     //dump("scriptName");
     if (!isValid())
         return new QScriptStringPrivate();
-    // FIXME it should be faster then QString version!
-    return new QScriptStringPrivate(QScriptConverter::toString(m_iterator.value()));
+    return new QScriptStringPrivate(engine(), m_iterator.value());
 }
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptValueIteratorPrivate::value() const

@@ -51,7 +51,7 @@ v8::Handle<v8::Value> QScriptClassObject::property(v8::Local<v8::String> propert
 
     Q_ASSERT(scriptclass);
 
-    QScriptString str = QScriptStringPrivate::get(new QScriptStringPrivate(QScriptConverter::toString(property)));
+    QScriptString str = QScriptStringPrivate::get(new QScriptStringPrivate(engine, property));
     QScriptValue that = QScriptValuePrivate::get(engine->currentContext()->thisObject());
 
     uint id = 0;
@@ -76,7 +76,7 @@ v8::Handle<v8::Value> QScriptClassObject::setProperty(v8::Local<v8::String> prop
 
     v8::HandleScope handleScope;
 
-    QScriptString str = QScriptStringPrivate::get(new QScriptStringPrivate(QScriptConverter::toString(property)));
+    QScriptString str = QScriptStringPrivate::get(new QScriptStringPrivate(engine, property));
     QScriptValue that = QScriptValuePrivate::get(engine->currentContext()->thisObject());
 
     uint id = 0;

@@ -1770,7 +1770,10 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::defaultPrototype(i
 
 QScriptString QScriptEngine::toStringHandle(const QString& str)
 {
-    return QScriptStringPrivate::get(new QScriptStringPrivate(str));
+    Q_D(QScriptEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
+    v8::HandleScope handleScope;
+    return QScriptStringPrivate::get(new QScriptStringPrivate(d, QScriptConverter::toString(str)));
 }
 
 QScriptValue QScriptEngine::toObject(const QScriptValue& value)
