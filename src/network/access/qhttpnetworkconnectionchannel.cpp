@@ -1035,7 +1035,11 @@ void QHttpNetworkConnectionChannel::_q_sslErrors(const QList<QSslError> &errors)
     if (!socket)
         return;
     //QNetworkReply::NetworkError errorCode = QNetworkReply::ProtocolFailure;
+    // Also pause the connection because socket notifiers may fire while an user
+    // dialog is displaying
+    connection->d_func()->pauseConnection();
     emit connection->sslErrors(errors);
+    connection->d_func()->resumeConnection();
 }
 
 void QHttpNetworkConnectionChannel::_q_encryptedBytesWritten(qint64 bytes)
