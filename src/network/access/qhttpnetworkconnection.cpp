@@ -45,6 +45,7 @@
 #include <private/qnetworkrequest_p.h>
 #include <private/qobject_p.h>
 #include <private/qauthenticator_p.h>
+#include <private/qabstractsocket_p.h>
 #include <qnetworkproxy.h>
 #include <qauthenticator.h>
 
@@ -56,6 +57,7 @@
 #ifndef QT_NO_HTTP
 
 #ifndef QT_NO_OPENSSL
+#    include <private/qsslsocket_p.h>
 #    include <QtNetwork/qsslkey.h>
 #    include <QtNetwork/qsslcipher.h>
 #    include <QtNetwork/qsslconfiguration.h>
@@ -79,9 +81,9 @@ const int QHttpNetworkConnectionPrivate::defaultRePipelineLength = 2;
 
 
 QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt)
-: hostName(hostName), port(port), encrypt(encrypt),
-  channelCount(defaultChannelCount),
-  pendingAuthSignal(false), pendingProxyAuthSignal(false)
+: state(RunningState),
+  hostName(hostName), port(port), encrypt(encrypt),
+  channelCount(defaultChannelCount)
 #ifndef QT_NO_NETWORKPROXY
   , networkProxy(QNetworkProxy::NoProxy)
 #endif
@@ -90,9 +92,9 @@ QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &host
 }
 
 QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(quint16 channelCount, const QString &hostName, quint16 port, bool encrypt)
-: hostName(hostName), port(port), encrypt(encrypt),
-  channelCount(channelCount),
-  pendingAuthSignal(false), pendingProxyAuthSignal(false)
+: state(RunningState),
+  hostName(hostName), port(port), encrypt(encrypt),
+  channelCount(channelCount)
 #ifndef QT_NO_NETWORKPROXY
   , networkProxy(QNetworkProxy::NoProxy)
 #endif
@@ -119,6 +121,37 @@ void QHttpNetworkConnectionPrivate::init()
         channels[i].setConnection(this->q_func());
         channels[i].init();
     }
+}
+
+void QHttpNetworkConnectionPrivate::pauseConnection()
+{
+    state = PausedState;
+
+    // Disable all socket notifiers
+    for (int i = 0; i < channelCount; i++) {
+        if (encrypt)
+            QSslSocketPrivate::pauseSocketNotifiers(static_cast<QSslSocket*>(channels[i].socket));
+        else
+            QAbstractSocketPrivate::pauseSocketNotifiers(channels[i].socket);
+    }
+}
+
+void QHttpNetworkConnectionPrivate::resumeConnection()
+{
+    state = RunningState;
+    // Enable all socket notifiers
+    for (int i = 0; i < channelCount; i++) {
+        if (encrypt)
+            QSslSocketPrivate::resumeSocketNotifiers(static_cast<QSslSocket*>(channels[i].socket));
+        else
+            QAbstractSocketPrivate::resumeSocketNotifiers(channels[i].socket);
+    }
+
+    // Resume uploads
+    // FIXME
+
+    // queue _q_startNextRequest
+    QMetaObject::invokeMethod(this->q_func(), "_q_startNextRequest", Qt::QueuedConnection);
 }
 
 int QHttpNetworkConnectionPrivate::indexOf(QAbstractSocket *socket) const
@@ -315,35 +348,19 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
         priv->parseHttpResponse(fields, isProxy);
 
         if (priv->phase == QAuthenticatorPrivate::Done) {
-            if ((isProxy && pendingProxyAuthSignal) ||(!isProxy && pendingAuthSignal)) {
-                // drop the request
-                reply->d_func()->eraseData();
-                channels[i].close();
-                channels[i].lastStatus = 0;
-                channels[i].state =  QHttpNetworkConnectionChannel::Wait4AuthState;
-                return false;
-            }
-            // cannot use this socket until the slot returns
-            channels[i].state = QHttpNetworkConnectionChannel::WaitingState;
-            socket->blockSignals(true);
+            pauseConnection();
             if (!isProxy) {
-                pendingAuthSignal = true;
                 emit q->authenticationRequired(reply->request(), auth, q);
-                pendingAuthSignal = false;
 #ifndef QT_NO_NETWORKPROXY
             } else {
-                pendingProxyAuthSignal = true;
                 emit q->proxyAuthenticationRequired(networkProxy, auth, q);
-                pendingProxyAuthSignal = false;
 #endif
             }
-            socket->blockSignals(false);
-            // socket free to use
-            channels[i].state = QHttpNetworkConnectionChannel::IdleState;
+            resumeConnection();
+
             if (priv->phase != QAuthenticatorPrivate::Done) {
                 // send any pending requests
                 copyCredentials(i,  auth, isProxy);
-                QMetaObject::invokeMethod(q, "_q_restartAuthPendingRequests", Qt::QueuedConnection);
             }
         }
         // - Changing values in QAuthenticator will reset the 'phase'. Therefore if it is still "Done"
@@ -729,6 +746,10 @@ void QHttpNetworkConnectionPrivate::removeReply(QHttpNetworkReply *reply)
 // although it is called _q_startNextRequest, it will actually start multiple requests when possible
 void QHttpNetworkConnectionPrivate::_q_startNextRequest()
 {
+    // If the QHttpNetworkConnection is currently paused then bail out immediatly
+    if (state == PausedState)
+        return;
+
     //resend the necessary ones.
     for (int i = 0; i < channelCount; ++i) {
         if (channels[i].resendCurrent) {
@@ -779,17 +800,6 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
             fillPipeline(channels[i].socket);
 }
 
-void QHttpNetworkConnectionPrivate::_q_restartAuthPendingRequests()
-{
-    // send the request using the idle socket
-    for (int i = 0 ; i < channelCount; ++i) {
-        if (channels[i].state ==  QHttpNetworkConnectionChannel::Wait4AuthState) {
-            channels[i].state = QHttpNetworkConnectionChannel::IdleState;
-            if (channels[i].reply)
-                channels[i].sendRequest();
-        }
-    }
-}
 
 void QHttpNetworkConnectionPrivate::readMoreLater(QHttpNetworkReply *reply)
 {
