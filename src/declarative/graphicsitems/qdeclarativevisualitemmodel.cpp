@@ -403,6 +403,8 @@ public:
     QDeclarativeListAccessor *m_listAccessor;
 
     QModelIndex m_root;
+    QList<QByteArray> watchedRoles;
+    QList<int> watchedRoleIds;
 };
 
 class QDeclarativeVisualDataModelDataMetaObject : public QDeclarativeOpenMetaObject
@@ -1170,10 +1172,25 @@ int QDeclarativeVisualDataModel::indexOf(QDeclarativeItem *item, QObject *) cons
     return -1;
 }
 
+void QDeclarativeVisualDataModel::setWatchedRoles(QList<QByteArray> roles)
+{
+    Q_D(QDeclarativeVisualDataModel);
+    d->watchedRoles = roles;
+    d->watchedRoleIds.clear();
+}
+
 void QDeclarativeVisualDataModel::_q_itemsChanged(int index, int count,
                                          const QList<int> &roles)
 {
     Q_D(QDeclarativeVisualDataModel);
+    bool changed = false;
+    if (!d->watchedRoles.isEmpty() && d->watchedRoleIds.isEmpty()) {
+        foreach (QByteArray r, d->watchedRoles) {
+            if (d->m_roleNames.contains(r))
+                d->watchedRoleIds << d->m_roleNames.value(r);
+        }
+    }
+
     for (QHash<int,QDeclarativeVisualDataModelPrivate::ObjectRef>::ConstIterator iter = d->m_cache.begin();
         iter != d->m_cache.end(); ++iter) {
         const int idx = iter.key();
@@ -1183,6 +1200,8 @@ void QDeclarativeVisualDataModel::_q_itemsChanged(int index, int count,
             QDeclarativeVisualDataModelData *data = d->data(objRef.obj);
             for (int roleIdx = 0; roleIdx < roles.count(); ++roleIdx) {
                 int role = roles.at(roleIdx);
+                if (!changed && !d->watchedRoleIds.isEmpty() && d->watchedRoleIds.contains(role))
+                    changed = true;
                 int propId = data->propForRole(role);
                 if (propId != -1) {
                     if (data->hasValue(propId)) {
@@ -1217,6 +1236,8 @@ void QDeclarativeVisualDataModel::_q_itemsChanged(int index, int count,
             }
         }
     }
+    if (changed)
+        emit itemsChanged(index, count);
 }
 
 void QDeclarativeVisualDataModel::_q_itemsInserted(int index, int count)

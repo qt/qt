@@ -21,7 +21,7 @@ CLEAN_TARGET:=$(1)
 
 $(1): $(2)
 	$(call startrule,qmake_emulator_deployment) \
-	$(GNUCP) --no-preserve=mode $(2) "$$@" && \
+	$(GNUCP) --remove-destination --no-preserve=mode $(2) "$$@" && \
 	$(GNUCHMOD) a+rw "$$@" \
 	$(call endrule,qmake_emulator_deployment) 	
 endef

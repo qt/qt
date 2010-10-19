@@ -250,11 +250,13 @@ protected:
     virtual void componentComplete();
 
 private Q_SLOTS:
+    void updateSections();
     void refill();
     void trackedPositionChanged();
     void itemsInserted(int index, int count);
     void itemsRemoved(int index, int count);
     void itemsMoved(int from, int to, int count);
+    void itemsChanged(int index, int count);
     void modelReset();
     void destroyRemoved();
     void createdItem(int index, QDeclarativeItem *item);
