@@ -57,7 +57,7 @@ public:
 public Q_SLOTS:
     void finishedReply();
     void finishedWithError(QNetworkReply::NetworkError errorCode, const QString &detail);
-    void challenge401(const QHttpNetworkRequest &request, QAuthenticator *authenticator, const QHttpNetworkConnection *connection);
+    void challenge401(const QHttpNetworkReply*, const QHttpNetworkRequest &request, QAuthenticator *authenticator, const QHttpNetworkConnection *connection);
 #ifndef QT_NO_OPENSSL
     void sslErrors(const QList<QSslError> &errors);
 #endif
@@ -495,7 +495,7 @@ void tst_QHttpNetworkConnection::_connect()
     QVERIFY(false);
 }
 
-void tst_QHttpNetworkConnection::challenge401(const QHttpNetworkRequest &request,
+void tst_QHttpNetworkConnection::challenge401(const QHttpNetworkReply*, const QHttpNetworkRequest &request,
                                                         QAuthenticator *authenticator,
                                                         const QHttpNetworkConnection *connection)
 {
@@ -552,8 +552,8 @@ void tst_QHttpNetworkConnection::get401()
     if (encrypt)
         connection.enableEncryption();
     QCOMPARE(connection.isEncrypted(), encrypt);
-    connect(&connection, SIGNAL(authenticationRequired(const QHttpNetworkRequest&, QAuthenticator *, const QHttpNetworkConnection*)),
-                SLOT(challenge401(const QHttpNetworkRequest&, QAuthenticator *, const QHttpNetworkConnection*)));
+    connect(&connection, SIGNAL(authenticationRequired(const QHttpNetworkReply*, const QHttpNetworkRequest&, QAuthenticator *, const QHttpNetworkConnection*)),
+                           SLOT(challenge401(const QHttpNetworkReply*, const QHttpNetworkRequest&, QAuthenticator *, const QHttpNetworkConnection*)));
     connection.setProperty("setCredentials", setCredentials);
     connection.setProperty("username", username);
     connection.setProperty("password", password);

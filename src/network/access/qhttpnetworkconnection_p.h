@@ -131,7 +131,7 @@ Q_SIGNALS:
     void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator,
                                      const QHttpNetworkConnection *connection = 0);
 #endif
-    void authenticationRequired(const QHttpNetworkRequest &request, QAuthenticator *authenticator,
+    void authenticationRequired(const QHttpNetworkReply*, const QHttpNetworkRequest &request, QAuthenticator *authenticator,
                                 const QHttpNetworkConnection *connection = 0);
     void cacheCredentials(const QHttpNetworkRequest &request, QAuthenticator *authenticator,
                                 const QHttpNetworkConnection *connection = 0);

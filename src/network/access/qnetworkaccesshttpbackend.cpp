@@ -344,8 +344,8 @@ void QNetworkAccessHttpBackend::setupConnection()
     connect(http, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
             SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 #endif
-    connect(http, SIGNAL(authenticationRequired(QHttpNetworkRequest,QAuthenticator*)),
-            SLOT(httpAuthenticationRequired(QHttpNetworkRequest,QAuthenticator*)));
+    connect(http, SIGNAL(authenticationRequired(const QHttpNetworkReply*, QHttpNetworkRequest,QAuthenticator*,const QHttpNetworkConnection*)),
+                SLOT(httpAuthenticationRequired(const QHttpNetworkReply*, QHttpNetworkRequest,QAuthenticator*)));
     connect(http, SIGNAL(cacheCredentials(QHttpNetworkRequest,QAuthenticator*)),
             SLOT(httpCacheCredentials(QHttpNetworkRequest,QAuthenticator*)));
     connect(http, SIGNAL(error(QNetworkReply::NetworkError,QString)),
@@ -862,10 +862,13 @@ void QNetworkAccessHttpBackend::replyHeaderChanged()
     metaDataChanged();
 }
 
-void QNetworkAccessHttpBackend::httpAuthenticationRequired(const QHttpNetworkRequest &,
+void QNetworkAccessHttpBackend::httpAuthenticationRequired(const QHttpNetworkReply *reply,
+                                                           const QHttpNetworkRequest &,
                                                            QAuthenticator *auth)
 {
-    authenticationRequired(auth);
+    // Only process this signal when it is for the QHttpNetworkReply that we actually have
+    if (reply == this->httpReply)
+        authenticationRequired(auth);
 }
 
 void QNetworkAccessHttpBackend::httpCacheCredentials(const QHttpNetworkRequest &,
