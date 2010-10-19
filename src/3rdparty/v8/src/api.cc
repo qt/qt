@@ -3451,10 +3451,9 @@ Local<Context> v8::Context::NewScopeContext(v8::Handle<Object> scope_object) {
 
   ENTER_V8;
   i::Isolate* isolate = i::Isolate::Current();
-  i::Handle<i::Object> obj = Utils::OpenHandle(*scope_object);
-  i::Object* result = isolate->heap()->AllocateWithContext(
-      isolate->context(), i::JSObject::cast(*obj), /*is_catch_context=*/false);
-  i::Handle<i::Context> context(i::Context::cast(result));
+  i::Handle<i::JSObject> obj = Utils::OpenHandle(*scope_object);
+  i::Handle<i::Context> current(isolate->context());
+  i::Handle<i::Context> context = FACTORY->NewWithContext(current, obj, /*is_catch_context=*/false);
   return Utils::ToLocal(context);
 }
 
@@ -3466,9 +3465,9 @@ Local<Context> v8::Context::NewFunctionContext() {
 
   ENTER_V8;
   i::Isolate* isolate = i::Isolate::Current();
-  i::Object* result = isolate->heap()->AllocateFunctionContext(i::Context::MIN_CONTEXT_SLOTS,
-                                                               isolate->global_context()->closure());
-  i::Handle<i::Context> context(i::Context::cast(result));
+  i::Handle<i::JSFunction> closure(isolate->global_context()->closure());
+  i::Handle<i::Context> context = FACTORY->NewFunctionContext(i::Context::MIN_CONTEXT_SLOTS,
+                                                              closure);
   return Utils::ToLocal(context);
 }
 
