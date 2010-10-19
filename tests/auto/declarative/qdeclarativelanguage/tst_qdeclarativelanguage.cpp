@@ -1890,15 +1890,30 @@ void tst_qdeclarativelanguage::initTestCase()
 
 void tst_qdeclarativelanguage::aliasPropertyChangeSignals()
 {
-    QDeclarativeComponent component(&engine, TEST_FILE("aliasPropertyChangeSignals.qml"));
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("aliasPropertyChangeSignals.qml"));
 
-    VERIFY_ERRORS(0);
-    QObject *o = component.create();
-    QVERIFY(o != 0);
+        VERIFY_ERRORS(0);
+        QObject *o = component.create();
+        QVERIFY(o != 0);
 
-    QCOMPARE(o->property("test").toBool(), true);
+        QCOMPARE(o->property("test").toBool(), true);
 
-    delete o;
+        delete o;
+    }
+
+    // QTCREATORBUG-2769
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("aliasPropertyChangeSignals.2.qml"));
+
+        VERIFY_ERRORS(0);
+        QObject *o = component.create();
+        QVERIFY(o != 0);
+
+        QCOMPARE(o->property("test").toBool(), true);
+
+        delete o;
+    }
 }
 
 QTEST_MAIN(tst_qdeclarativelanguage)

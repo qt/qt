@@ -163,7 +163,6 @@ Q_SIGNALS:
     void horizontalVelocityChanged();
     void verticalVelocityChanged();
     void isAtBoundaryChanged();
-    void pageChanged();
     void flickableDirectionChanged();
     void interactiveChanged();
     void boundsBehaviorChanged();

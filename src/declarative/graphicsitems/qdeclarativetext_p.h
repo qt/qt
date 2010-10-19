@@ -45,13 +45,15 @@
 #include <QtGui/qtextoption.h>
 #include "qdeclarativeitem.h"
 
+#include <private/qdeclarativeglobal_p.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 class QDeclarativeTextPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeText : public QDeclarativeItem
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeText : public QDeclarativeItem
 {
     Q_OBJECT
     Q_ENUMS(HAlignment)
