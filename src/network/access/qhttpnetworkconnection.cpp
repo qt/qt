@@ -969,7 +969,11 @@ void QHttpNetworkConnection::ignoreSslErrors(const QList<QSslError> &errors, int
 void QHttpNetworkConnectionPrivate::emitProxyAuthenticationRequired(const QHttpNetworkConnectionChannel *chan, const QNetworkProxy &proxy, QAuthenticator* auth)
 {
     Q_Q(QHttpNetworkConnection);
+    // Also pause the connection because socket notifiers may fire while an user
+    // dialog is displaying
+    pauseConnection();
     emit q->proxyAuthenticationRequired(proxy, auth, q);
+    resumeConnection();
     int i = indexOf(chan->socket);
     copyCredentials(i, auth, true);
 }
