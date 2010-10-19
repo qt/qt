@@ -250,8 +250,10 @@ QScriptValue QScriptContext::callee() const
 */
 QScriptValue QScriptContext::argumentsObject() const
 {
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(const QScriptContext);
+    QScriptIsolate api(d->engine);
+    v8::HandleScope handleScope;
+    return QScriptValuePrivate::get(d->argumentsObject());
 }
 
 /*!
