@@ -1025,16 +1025,8 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     priv->manager = this;
 
     // second step: fetch cached credentials
-    if (static_cast<QNetworkRequest::LoadControl>
-        (request.attribute(QNetworkRequest::AuthenticationReuseAttribute,
-                           QNetworkRequest::Automatic).toInt()) == QNetworkRequest::Automatic) {
-        QNetworkAuthenticationCredential *cred = d->fetchCachedCredentials(url);
-        if (cred) {
-            url.setUserName(cred->user);
-            url.setPassword(cred->password);
-            priv->urlForLastAuthentication = url;
-        }
-    }
+    // This is not done for the time being, we should use signal emissions to request
+    // the credentials from cache.
 
     // third step: find a backend
     priv->backend = d->findBackend(op, request);
@@ -1116,7 +1108,9 @@ void QNetworkAccessManagerPrivate::authenticationRequired(QNetworkAccessBackend 
 
     // don't try the cache for the same URL twice in a row
     // being called twice for the same URL means the authentication failed
-    if (url != backend->reply->urlForLastAuthentication) {
+    // also called when last URL is empty, e.g. on first call
+    if (backend->reply->urlForLastAuthentication.isEmpty()
+            || url != backend->reply->urlForLastAuthentication) {
         QNetworkAuthenticationCredential *cred = fetchCachedCredentials(url, authenticator);
         if (cred) {
             authenticator->setUser(cred->user);
