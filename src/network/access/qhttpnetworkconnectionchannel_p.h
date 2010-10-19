@@ -108,8 +108,8 @@ public:
     int lastStatus; // last status received on this channel
     bool pendingEncrypt; // for https (send after encrypted)
     int reconnectAttempts; // maximum 2 reconnection attempts
-    QAuthenticatorPrivate::Method authMehtod;
-    QAuthenticatorPrivate::Method proxyAuthMehtod;
+    QAuthenticatorPrivate::Method authMethod;
+    QAuthenticatorPrivate::Method proxyAuthMethod;
     QAuthenticator authenticator;
     QAuthenticator proxyAuthenticator;
 #ifndef QT_NO_OPENSSL

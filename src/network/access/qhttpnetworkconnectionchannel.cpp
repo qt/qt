@@ -68,8 +68,8 @@ QHttpNetworkConnectionChannel::QHttpNetworkConnectionChannel()
     , lastStatus(0)
     , pendingEncrypt(false)
     , reconnectAttempts(2)
-    , authMehtod(QAuthenticatorPrivate::None)
-    , proxyAuthMehtod(QAuthenticatorPrivate::None)
+    , authMethod(QAuthenticatorPrivate::None)
+    , proxyAuthMethod(QAuthenticatorPrivate::None)
 #ifndef QT_NO_OPENSSL
     , ignoreAllSslErrors(false)
 #endif
