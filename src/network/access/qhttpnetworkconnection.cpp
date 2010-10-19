@@ -338,13 +338,9 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
                 copyCredentials(i,  auth, isProxy);
                 QMetaObject::invokeMethod(q, "_q_restartAuthPendingRequests", Qt::QueuedConnection);
             }
-        } else if (priv->phase == QAuthenticatorPrivate::Start) {
-            // If the url's authenticator has a 'user' set we will end up here (phase is only set to 'Done' by
-            // parseHttpResponse above if 'user' is empty). So if credentials were supplied with the request,
-            // such as in the case of an XMLHttpRequest, this is our only opportunity to cache them.
-            emit q->cacheCredentials(reply->request(), auth, q);
         }
-        // - Changing values in QAuthenticator will reset the 'phase'.
+        // - Changing values in QAuthenticator will reset the 'phase'. Therefore if it is still "Done"
+        //   then nothing was filled in by the user or the cache
         // - If withCredentials has been set to false (e.g. by QtWebKit for a cross-origin XMLHttpRequest) then
         //   we need to bail out if authentication is required.
         if (priv->phase == QAuthenticatorPrivate::Done || !reply->request().withCredentials()) {
@@ -380,6 +376,7 @@ void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket,
 
     int i = indexOf(socket);
 
+    // Send "Authorization" header, but not if it's NTLM and the socket is already authenticated.
     if (channels[i].authMehtod != QAuthenticatorPrivate::None) {
         if (!(channels[i].authMehtod == QAuthenticatorPrivate::Ntlm && channels[i].lastStatus != 401)) {
             QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(channels[i].authenticator);
@@ -389,6 +386,8 @@ void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket,
             }
         }
     }
+
+    // Send "Proxy-Authorization" header, but not if it's NTLM and the socket is already authenticated.
     if (channels[i].proxyAuthMehtod != QAuthenticatorPrivate::None) {
         if (!(channels[i].proxyAuthMehtod == QAuthenticatorPrivate::Ntlm && channels[i].lastStatus != 407)) {
             QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(channels[i].proxyAuthenticator);

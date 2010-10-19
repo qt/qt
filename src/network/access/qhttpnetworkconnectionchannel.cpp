@@ -190,6 +190,7 @@ bool QHttpNetworkConnectionChannel::sendRequest()
                 || (!url.password().isEmpty() && url.password() != auth.password())) {
                 auth.setUser(url.userName());
                 auth.setPassword(url.password());
+                emit connection->cacheCredentials(request, &auth, connection);
                 connection->d_func()->copyCredentials(connection->d_func()->indexOf(socket), &auth, false);
             }
             // clear the userinfo,  since we use the same request for resending
