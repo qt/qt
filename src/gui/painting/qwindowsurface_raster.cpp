@@ -251,6 +251,7 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
 
 #ifdef Q_WS_MAC
 
+#ifdef QT_MAC_USE_COCOA
     // Unified toolbar hack.
     QMainWindow* mWindow = qobject_cast<QMainWindow*>(widget->window());
     if (mWindow) {
@@ -267,6 +268,7 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
             }
         }
     }
+#endif // QT_MAC_USE_COCOA
 
     Q_UNUSED(offset);
     // Get a context for the widget.
@@ -338,7 +340,8 @@ void QRasterWindowSurface::setGeometry(const QRect &rect)
             prepareBuffer(QNativeImage::systemFormat(), window());
     }
     d->inSetGeometry = false;
-#ifdef Q_WS_MAC
+
+#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
     QMainWindow* mWindow = qobject_cast<QMainWindow*>(window());
     if (mWindow) {
         QMainWindowLayout *mLayout = qobject_cast<QMainWindowLayout*>(mWindow->layout());
@@ -354,7 +357,8 @@ void QRasterWindowSurface::setGeometry(const QRect &rect)
             }
         }
     }
-#endif // Q_WS_MAC
+#endif // Q_WS_MAC && QT_MAC_USE_COCOA
+
 }
 
 // from qwindowsurface.cpp

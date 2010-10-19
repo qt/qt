@@ -452,7 +452,9 @@ void QMainWindowLayout::insertIntoMacToolbar(QToolBar *before, QToolBar *toolbar
         for (int i = 0; i < beforeIndex; ++i) {
             offset.setX(offset.x() + qtoolbarsInUnifiedToolbarList.at(i)->size().width());
         }
+#ifdef QT_MAC_USE_COCOA
         unifiedSurface->insertToolbar(toolbar, offset);
+#endif // QT_MAC_USE_COCOA
     }
 
 #ifndef QT_MAC_USE_COCOA
