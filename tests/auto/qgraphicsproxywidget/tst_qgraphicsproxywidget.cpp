@@ -3632,6 +3632,9 @@ public slots:
 
 void tst_QGraphicsProxyWidget::QTBUG_6986_sendMouseEventToAlienWidget()
 {
+#if defined(Q_OS_MAC) || defined(Q_OS_WIN) || defined(QT_NO_CURSOR)
+    QSKIP("Test case unstable on this platform", SkipAll);
+#endif
     QGraphicsView view;
     Scene scene;
     view.setScene(&scene);
