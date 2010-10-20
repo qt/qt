@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -29,12 +29,13 @@
   \page qdeclarativeelements.html
   \target elements
   \title QML Elements
+  \brief A dictionary of standard QML elements.
 
-  This is a dictionary of all the QML elements available in the \l
-  {QtDeclarative} {Qt Declarative} module. 
+  This is a dictionary of all standard QML elements made available
+  in the QtDeclarative module.
 
-  To see the QML elements listed by
-  functional area, \l{Groups Of Related QML Elements} {look here}.
+  To see the QML elements listed by functional area, see the
+  \l{Groups Of Related QML Elements} page.
 
   \generatelist qmlclasses
 

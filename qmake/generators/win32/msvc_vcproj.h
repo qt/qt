@@ -130,7 +130,6 @@ protected:
     QList<VcprojGenerator*> mergedProjects;
 
 private:
-    QString fixCommandLine(DotNET version, const QString &input) const;
     QUuid increaseUUID(const QUuid &id);
     friend class VCFilter;
 };

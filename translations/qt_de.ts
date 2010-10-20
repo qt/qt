@@ -1707,19 +1707,19 @@ nach
     <name>QDeclarativeCompositeTypeManager</name>
     <message>
         <source>Resource %1 unavailable</source>
-        <translation>Auf die Ressource %1 konnte nicht zugegriffen werden</translation>
+        <translation type="obsolete">Auf die Ressource %1 konnte nicht zugegriffen werden</translation>
     </message>
     <message>
         <source>Namespace %1 cannot be used as a type</source>
-        <translation>Der Namensraum %1 kann nicht als Typangabe verwendet werden</translation>
+        <translation type="obsolete">Der Namensraum %1 kann nicht als Typangabe verwendet werden</translation>
     </message>
     <message>
         <source>%1 %2</source>
-        <translation>%1 %2</translation>
+        <translation type="obsolete">%1 %2</translation>
     </message>
     <message>
         <source>Type %1 unavailable</source>
-        <translation>Der Typ  %1 ist nicht verfügbar</translation>
+        <translation type="obsolete">Der Typ  %1 ist nicht verfügbar</translation>
     </message>
 </context>
 <context>
@@ -2119,6 +2119,40 @@ nach
     <message>
         <source>Could not instantiate cursor delegate</source>
         <translation>Cursor-Delegate konnte angelegt werden</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeTypeData</name>
+    <message>
+        <source>Type %1 unavailable</source>
+        <translation type="obsolete">Der Typ  %1 ist nicht verfügbar</translation>
+    </message>
+    <message>
+        <source>Namespace %1 cannot be used as a type</source>
+        <translation type="obsolete">Der Namensraum %1 kann nicht als Typangabe verwendet werden</translation>
+    </message>
+    <message>
+        <source>%1 %2</source>
+        <translation type="obsolete">%1 %2</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeTypeLoader</name>
+    <message>
+        <source>Script %1 unavailable</source>
+        <translation>Das Skript %1 ist nicht verfügbar</translation>
+    </message>
+    <message>
+        <source>Type %1 unavailable</source>
+        <translation>Der Typ %1 ist nicht verfügbar</translation>
+    </message>
+    <message>
+        <source>Namespace %1 cannot be used as a type</source>
+        <translation>Der Namensraum %1 kann nicht als Typangabe verwendet werden</translation>
+    </message>
+    <message>
+        <source>%1 %2</source>
+        <translation>%1 %2</translation>
     </message>
 </context>
 <context>
@@ -3340,7 +3374,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     <name>QLibrary</name>
     <message>
         <source>Could not mmap &apos;%1&apos;: %2</source>
-        <translation>Operation mmap fehlgeschlagen für &apos;%1&apos;: %2</translation>
+        <translation type="obsolete">Operation mmap fehlgeschlagen für &apos;%1&apos;: %2</translation>
     </message>
     <message>
         <source>Plugin verification data mismatch in &apos;%1&apos;</source>
@@ -3348,7 +3382,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     </message>
     <message>
         <source>Could not unmap &apos;%1&apos;: %2</source>
-        <translation>Operation unmap fehlgeschlagen für &apos;%1&apos;: %2</translation>
+        <translation type="obsolete">Operation unmap fehlgeschlagen für &apos;%1&apos;: %2</translation>
     </message>
     <message>
         <source>The plugin &apos;%1&apos; uses incompatible Qt library. (%2.%3.%4) [%5]</source>

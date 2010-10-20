@@ -57,6 +57,7 @@ QGLTextureGlyphCache::QGLTextureGlyphCache(QGLContext *context, QFontEngineGlyph
     , ctx(context)
     , m_width(0)
     , m_height(0)
+    , m_filterMode(Nearest)
 {
     // broken FBO readback is a bug in the SGX 1.3 and 1.4 drivers for the N900 where
     // copying between FBO's is broken if the texture is either GL_ALPHA or POT. The
@@ -114,6 +115,9 @@ void QGLTextureGlyphCache::createTextureData(int width, int height)
 
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_filterMode = Nearest;
 }
 
 void QGLTextureGlyphCache::resizeTextureData(int width, int height)
@@ -129,11 +133,11 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 
     GLuint oldTexture = m_texture;
     createTextureData(width, height);
-    
+
     if (ctx->d_ptr->workaround_brokenFBOReadBack) {
         QImageTextureGlyphCache::resizeTextureData(width, height);
         Q_ASSERT(image().depth() == 8);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, oldWidth, oldHeight, GL_ALPHA, GL_UNSIGNED_BYTE, image().constBits());
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, oldHeight, GL_ALPHA, GL_UNSIGNED_BYTE, image().constBits());
         glDeleteTextures(1, &oldTexture);
         return;
     }
@@ -152,6 +156,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    m_filterMode = Nearest;
     glBindTexture(GL_TEXTURE_2D, 0);
     glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
                            GL_TEXTURE_2D, tmp_texture, 0);
@@ -281,4 +286,13 @@ int QGLTextureGlyphCache::glyphPadding() const
     return 1;
 }
 
+int QGLTextureGlyphCache::maxTextureWidth() const
+{
+    return ctx->d_ptr->maxTextureSize();
+}
+
+int QGLTextureGlyphCache::maxTextureHeight() const
+{
+    return ctx->d_ptr->maxTextureSize();
+}
 QT_END_NAMESPACE

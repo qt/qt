@@ -8,11 +8,7 @@ SOURCES += tst_qdeclarativeimageprovider.cpp
 # QMAKE_CXXFLAGS = -fprofile-arcs -ftest-coverage
 # LIBS += -lgcov
 
-symbian: {
-    importFiles.sources = data
-    importFiles.path = .
-    DEPLOYMENT = importFiles
-} else {
+!symbian: {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }
 

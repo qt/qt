@@ -7,7 +7,8 @@ HEADERS += \
 	plugin/qlibrary_p.h \
 	plugin/qplugin.h \
 	plugin/quuid.h \
-	plugin/qfactoryloader_p.h 
+	plugin/qfactoryloader_p.h \
+	plugin/qsystemlibrary_p.h
 
 SOURCES += \
 	plugin/qpluginloader.cpp \
@@ -16,7 +17,9 @@ SOURCES += \
 	plugin/qlibrary.cpp
 
 win32 {
-	SOURCES += plugin/qlibrary_win.cpp
+	SOURCES += \
+		plugin/qlibrary_win.cpp \
+		plugin/qsystemlibrary.cpp
 }
 
 unix {

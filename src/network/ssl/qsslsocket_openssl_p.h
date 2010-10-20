@@ -120,66 +120,55 @@ public:
 };
 
 #if defined(Q_OS_SYMBIAN)
+
+#include <QByteArray>
+#include <e32base.h>
+#include <f32file.h>
 #include <unifiedcertstore.h>     // link against certstore.lib
 #include <ccertattributefilter.h> // link against ctframework.lib
 
-class QCertificateRetriever;
+// The purpose of this class is to wrap the asynchronous API of Symbian certificate store to one
+// synchronizable call. The user of this class needs to provide a TRequestStatus object which can
+// be used with User::WaitForRequest() unlike with the calls of the certificate store API.
+// A thread is used instead of a CActiveSchedulerWait scheme, because that would make the call
+// asynchronous (other events might be processed during the call even though the call would be seemingly
+// synchronous).
 
-class QCertificateConsumer : public QObject
-{
-    Q_OBJECT
-public:
-    QCertificateConsumer(QObject* parent = 0);
-    ~QCertificateConsumer();
-
-    void finish();
-
-    void addEncodedCertificate(const QByteArray& certificate)
-    { certificates.append(certificate); }
-    QList<QByteArray> encodedCertificates() const { return certificates; }
-
-public slots:
-    void start();
-
-signals:
-    void finished();
-
-private:
-    QList<QByteArray> certificates;
-    QCertificateRetriever *retriever;
-};
-
-
-class QCertificateRetriever : public CActive
+class CSymbianCertificateRetriever : public CActive
 {
 public:
-    QCertificateRetriever(QCertificateConsumer* consumer);
-    ~QCertificateRetriever();
+    static CSymbianCertificateRetriever* NewL();
+    ~CSymbianCertificateRetriever();
 
-    void fetch();
+    int GetCertificates(QList<QByteArray> &aCertificates);
 
 private:
-    virtual void RunL();
-    virtual void DoCancel();
+    void ConstructL();
+    CSymbianCertificateRetriever();
+    static TInt ThreadEntryPoint(TAny* aParams);
+    void doThreadEntryL();
+    void GetCertificateL();
+    void DoCancel();
+    void RunL();
+    TInt RunError(TInt aError);
 
-    void run();
-    void list();
-    void retrieveNextCertificate();
-
+private:
     enum {
         Initializing,
         Listing,
         RetrievingCertificates
-    } state;
+    } iState;
 
-    CUnifiedCertStore* certStore;
-    RMPointerArray<CCTCertInfo> certs;
-    CCertAttributeFilter* certFilter;
-    QCertificateConsumer* consumer;
-    int currentCertificateIndex;
-    QByteArray currentCertificate;
-    TPtr8 certDescriptor;
+    RThread iThread;
+    CUnifiedCertStore* iCertStore;
+    RMPointerArray<CCTCertInfo> iCertInfos;
+    CCertAttributeFilter* iCertFilter;
+    TInt iCurrentCertIndex;
+    QByteArray iCertificateData;
+    QList<QByteArray>* iCertificates;
+    TInt iSequenceError;
 };
+
 
 #endif
 

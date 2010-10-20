@@ -259,7 +259,7 @@ EGLConfig QEgl::defaultConfig(int devType, API api, ConfigOptions options)
 
     // Add paint engine requirements
     if (api == OpenVG) {
-#ifndef QVG_SCISSOR_CLIP
+#if !defined(QVG_SCISSOR_CLIP) && defined(EGL_ALPHA_MASK_SIZE)
         configAttribs.setValue(EGL_ALPHA_MASK_SIZE, 1);
 #endif
     } else {

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 //! [document]
-import Qt 4.7
+import QtQuick 1.0
 
 Rectangle {
     id: mainRec
@@ -49,14 +49,14 @@ Rectangle {
 
     Image {
         id: image1
-        source: "images/qt-logo.png"
+        source: "images/qt-logo.svg"
         x: 20; y: 20 ; z: 1
         width: 100; height: 100
     }
 
     Image {
         id: image2
-        source: "images/qt-logo.png"
+        source: "images/qt-logo.svg"
         width: 100; height: 100
         x: (mainRec.width - 100)/2; y: (mainRec.height - 100)/2
         z: 2

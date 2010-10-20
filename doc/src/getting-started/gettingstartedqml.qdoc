@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -34,6 +34,16 @@
     Started guide, we will create a simple text editor application using QML.
     After reading this guide, you should be ready to develop your own applications
     using QML and Qt C++.
+
+    \section1 Installation
+
+    First, we would need to install the latest version of Qt that includes \l{Qt
+    Quick}, which is Qt 4.7. The \l{Installation} {installation} guide contains
+    installation instructions and requirements for different platforms.
+
+    Qt Quick includes a declarative language called
+    \l{Introduction to the QML language}{QML}, the \l{QtDeclarative Module}, and
+    \l{QML Viewer}.
 
     \section1 QML to Build User Interfaces
 
@@ -68,25 +78,12 @@
     We start our text editor by building a button. Functionally, a button has a mouse
     sensitive area and a label. Buttons perform actions when a user presses the button.
 
-    In QML, the basic visual item is the \l {Rectangle}{Rectangle} element. The 
-    \c Rectangle element has properties to control the element's appearance and location. 
+    In QML, the basic visual item is the \l {Rectangle}{Rectangle} element. The
+    \c Rectangle element has properties to control the element's appearance and location.
 
-    \code
-        import Qt 4.7
-        Rectangle {
-            id: simplebutton
-            color: "grey"
-            width: 150; height: 75
+    \snippet examples/tutorials/gettingStarted/gsQml/core/Button.qml document
 
-            Text{
-                id: buttonLabel
-                anchors.centerIn: parent
-                text: "button label"    
-            }
-        }
-    \endcode
-
-    First, the \c { import Qt 4.7 } allows the qmlviewer tool to import the QML elements
+    First, the \c { import QtQuick 1.0 } allows the qmlviewer tool to import the QML elements
     we will later use. This line must exist for every QML file. Notice that the version
     of Qt modules is included in the import statement.
 
@@ -101,7 +98,7 @@
     \c text property. The label is contained within the Rectangle and in order to center
     it in the middle, we assign the \c anchors of the Text element to its parent, which
     is called \c simplebutton. Anchors may bind to other items' anchors, allowing layout
-    assignments simpler. 
+    assignments simpler.
 
     We shall save this code as \c SimpleButton.qml. Running qmlviewer with the file as the
     argument will display the grey rectangle with a text label.
@@ -117,7 +114,7 @@
             id:simplebutton
             ...
 
-            MouseArea{ 
+            MouseArea{
                 id: buttonMouseArea
 
                 anchors.fill: parent //anchor all sides of the mouse area to the rectangle's anchors
@@ -135,11 +132,11 @@
     items can anchor to another item, creating robust layouts.
 
     The \c MouseArea has many signal handlers that are called during mouse movements within
-    the specfied \c MouseArea boundaries. One of them is \c onClicked and it is called
+    the specified \c MouseArea boundaries. One of them is \c onClicked and it is called
     whenever the acceptable mouse button is clicked, the left click being the default. We
     can bind actions to the onClicked handler. In our example, \c console.log() outputs text
     whenever the mouse area is clicked. The function \c console.log() is a useful tool for
-    debugging purposes and for outputting text. 
+    debugging purposes and for outputting text.
 
     The code in \c SimpleButton.qml is sufficient to display a button on the screen and
     output text whenever it is clicked with a mouse.
@@ -149,7 +146,7 @@
             id:Button
             ...
 
-            property color buttonColor: "lightblue"    
+            property color buttonColor: "lightblue"
             property color onHoverColor: "gold"
             property color borderColor: "white"
 
@@ -158,8 +155,8 @@
                 console.log(buttonLabel.text + " clicked" )
             }
 
-            MouseArea{ 
-                onClicked: buttonClick()    
+            MouseArea{
+                onClicked: buttonClick()
                 hoverEnabled: true
                 onEntered: parent.border.color = onHoverColor
                 onExited:  parent.border.color = borderColor
@@ -222,13 +219,13 @@
     \c FileMenu.qml.
 
     \code
-        import Qt 4.7                \\import the main Qt QML module
-        import "folderName"            \\import the contents of the folder    
+        import QtQuick 1.0                \\import the main Qt QML module
+        import "folderName"            \\import the contents of the folder
         import "script.js" as Script        \\import a Javascript file and name it as Script
     \endcode
 
     The syntax shown above shows how to use the \c import keyword. This is required to
-    use JavaScript files, or QML files that are not within the same directory. Since 
+    use JavaScript files, or QML files that are not within the same directory. Since
     \c Button.qml is in the same directory as \c FileMenu.qml, we do not need to import
     the \c Button.qml file to use it. We can directly create a \c Button element by declaring
     \c Button{}, similar to a \c Rectangle{} declaration.
@@ -255,7 +252,7 @@
                 label: "Exit"
                 buttonColor: "darkgrey"
 
-                onButtonClick: Qt.quit() 
+                onButtonClick: Qt.quit()
             }
         }
     \endcode
@@ -279,7 +276,7 @@
     The declaration of the edit menu is very similar at this stage. The menu has
     buttons that have the labels: \c Copy, \c Paste, and \c {Select All}.
 
-    \image qml-texteditor1_editmenu.png      
+    \image qml-texteditor1_editmenu.png
 
     Armed with our knowledge of importing and customizing previously made
     components, we may now combine these menu pages to create a menu bar,
@@ -296,8 +293,8 @@
 
     \section2  Using Data Models and Views
 
-    QML has different \l {Data Models}{data views} that display
-    \l {Data Models}{data models}. Our menu bar will display the menus in a list,
+    QML has different \l{QML Data Models}{data views} that display
+    \l{QML Data Models}{data models}. Our menu bar will display the menus in a list,
     with a header that displays a row of menu names. The list of menus are declared
     inside a \c VisualItemModel. The \l{VisualItemModel}{\c VisualItemModel}
     element contains items that already have views such as \c Rectangle elements
@@ -346,7 +343,7 @@
             //control the movement of the menu switching
             snapMode: ListView.SnapOneItem
             orientation: ListView.Horizontal
-            boundsBehavior: Flickable.StopAtBounds 
+            boundsBehavior: Flickable.StopAtBounds
             flickDeceleration: 5000
             highlightFollowsCurrentItem: true
             highlightMoveDuration:240
@@ -359,7 +356,7 @@
     code above sets \c Flickable properties to create the desired flicking movement
     to our view. In particular,the property \c highlightMoveDuration changes the
     duration of the flick transition. A higher \c highlightMoveDuration value
-    results in slower menu switching. 
+    results in slower menu switching.
 
     The \c ListView maintains the model items through an \c index and each visual
     item in the model is accessible through the \c index, in the order of the
@@ -393,7 +390,7 @@
                     id: editButton
                     label: "Edit"
                     ...
-                    onButtonClick:    menuListView.currentIndex = 1    
+                    onButtonClick:    menuListView.currentIndex = 1
                 }
             }
         }
@@ -402,7 +399,7 @@
     The menu bar we just created can be flicked to access the menus or by clicking
     on the menu names at the top. Switching menu screens feel intuitive and responsive.
 
-    \image qml-texteditor2_menubar.png 
+    \image qml-texteditor2_menubar.png
 
     \section1 Building a Text Editor
 
@@ -415,14 +412,14 @@
 
     \code
         TextEdit{
-            id: textEditor 
+            id: textEditor
             anchors.fill:parent
             width:parent.width; height:parent.height
             color:"midnightblue"
             focus: true
 
             wrapMode: TextEdit.Wrap
-        
+
             onCursorRectangleChanged: flickArea.ensureVisible(cursorRectangle)
         }
     \endcode
@@ -446,7 +443,7 @@
                 contentY = r.y+r.height-height;
         }
     \endcode
-        
+
     \section2 Combining Components for the Text Editor
 
     We are now ready to create the layout of our text editor using QML. The text
@@ -464,7 +461,7 @@
 
             //the screen is partitioned into the MenuBar and TextArea. 1/3 of the screen is assigned to the MenuBar
             property int partition: height/3
-            
+
             MenuBar{
                 id:menuBar
                 height: partition
@@ -488,14 +485,14 @@
     that already have defined behaviors. Using this approach, application layouts
     and UI components can be created easily.
 
-    \image qml-texteditor3_texteditor.png 
+    \image qml-texteditor3_texteditor.png
 
     \section1 Decorating the Text Editor
     \section2 Implementing a Drawer Interface
 
     Our text editor looks simple and we need to decorate it. Using QML, we can declare
     transitions and animate our text editor. Our menu bar is occupying one-third of the
-    screen and it would be nice to have it only appear when we want it. 
+    screen and it would be nice to have it only appear when we want it.
 
     We can add a drawer interface, that will contract or expand the menu bar when clicked.
     In our implementation, we have a thin rectangle that responds to mouse clicks. The
@@ -543,34 +540,14 @@
     the \c drawer, and the drawer's icon will undergo property changes to meet the
     current state.
 
-    \code
-
-        states:[
-            State{
-                name: "DRAWER_OPEN"
-                PropertyChanges { target: menuBar; y:0}
-                PropertyChanges { target: textArea; y: partition + drawer.height}
-                PropertyChanges { target: drawer; y: partition}
-                PropertyChanges { target: arrowIcon; rotation: 180} 
-            },
-            State{
-                name: "DRAWER_CLOSED"
-                PropertyChanges { target: menuBar; y:-partition}
-                PropertyChanges { target: textArea; y: drawer.height; height: screen.height - drawer.height}
-                PropertyChanges { target: drawer; y: 0}
-                PropertyChanges { target: arrowIcon; rotation: 0} 
-            }
-
-        ]
-
-    \endcode
+    \snippet examples/tutorials/gettingStarted/gsQml/texteditor.qml states
 
     State changes are abrupt and needs smoother transitions. Transitions between states
     are defined using the \l {Transition}{Transition} element, which can then bind to
     the item's \c transitions property. Our text editor has a state transition whenever
     the state changes to either \c DRAWER_OPEN or \c DRAWER_CLOSED. Importantly, the
     transition needs a \c from and a \c to state but for our transitions, we can use
-    the wild card \c * symbol to denote that the transition applies to all state changes. 
+    the wild card \c * symbol to denote that the transition applies to all state changes.
 
     During transitions, we can assign animations to the property changes. Our
     \c menuBar switches position from \c {y:0} to \c {y:-partition} and we can animate
@@ -579,19 +556,10 @@
     a certain easing curve. An easing curve controls the animation rates and
     interpolation behavior during state transitions. The easing curve we chose is
     \l{PropertyAnimation::easing.type}{Easing.OutQuint}, which slows the movement near
-    the end of the animation. Pleae read \l {qdeclarativeanimation.html}{QML's Animation}
+    the end of the animation. Please read \l {qdeclarativeanimation.html}{QML's Animation}
     article.
 
-    \code
-        transitions: [
-            Transition{
-                to: "*"
-                NumberAnimation { target: textArea; properties: "y, height"; duration: 100; easing.type: Easing.OutQuint }
-                NumberAnimation { target: menuBar; properties: "y"; duration: 100;easing.type: Easing.OutQuint }
-                NumberAnimation { target: drawer; properties: "y"; duration: 100;easing.type: Easing.OutQuint }
-            }
-        ]
-    \endcode
+    \snippet examples/tutorials/gettingStarted/gsQml/texteditor.qml transitions
 
     Another way of animating property changes is by declaring a \l {Behavior}{Behavior}
     element. A transition only works during state changes and \c Behavior can set an
@@ -603,7 +571,7 @@
 
         Behavior{
             NumberAnimation{property: "rotation";easing.type: Easing.OutExpo }
-        }    
+        }
     \endcode
 
     Going back to our components with knowledge of states and animations, we can improve
@@ -649,9 +617,9 @@
         We are finished building the user interface of a very simple text editor.
         Going forward, the user interface is complete, and we can implement the
         application logic using regular Qt and C++. QML works nicely as a prototyping
-        tool, separating the application logic away from the UI design. 
+        tool, separating the application logic away from the UI design.
 
-    \image qml-texteditor4_texteditor.png  
+    \image qml-texteditor4_texteditor.png
 
     \section2 Extending QML using Qt C++
 
@@ -664,7 +632,7 @@
     we shall implement the load and save functions in C++ and export it as a plugin.
     This way, we only need to load the QML file directly instead of running an executable.
 
-    \section3 Exposing C++ Classes to QML 
+    \section3 Exposing C++ Classes to QML
 
     We will be implementing file loading and saving using Qt and C++. C++ classes
     and functions can be used in QML by registering them. The class also needs to be
@@ -687,7 +655,7 @@
         directory.
 
     \code
-    In cppPlugins.pro:
+    In filedialog.pro:
 
         TEMPLATE = lib
         CONFIG += qt plugin
@@ -804,7 +772,7 @@
     Similarly, we have the other properties declared according to their uses. The
     \c filesCount property indicates the number of files in a directory. The filename
     property is set to the currently selected file's name and the loaded/saved file
-    content is stored in \c fileContent property. 
+    content is stored in \c fileContent property.
 
     \code
         Q_PROPERTY(QDeclarativeListProperty<File> files READ files CONSTANT )
@@ -812,11 +780,11 @@
 
     The \c files list property is a list of all the filtered files in a directory.
     The \c Directory class is implemented to filter out invalid text files; only
-    files with a \c .txt extension are valid. Further, \l {QLists}{QLists} can be
-    used in QML files by declaring them as a \c QDeclarativeListProperty in C++.
-    The templated object needs to inherit from a \l {QObject}{QObject}, therefore,
-    the \c File class must also inherit from \c QObject. In the \c Directory class,
-    the list of \c File objects is stored in a \c QList called \c m_fileList.
+    files with a \c .txt extension are valid. Further, \l{QList}s can be
+    used in QML files by declaring them as a QDeclarativeListProperty in C++.
+    The templated object needs to inherit from a QObject, therefore,
+    the \c File class must also inherit from QObject. In the \c Directory class,
+    the list of \c File objects is stored in a QList called \c m_fileList.
 
     \code
         class File : public QObject{
@@ -853,10 +821,10 @@
     Regular C++ functions are also accessible from QML. The file loading and saving
     functions are implemented in C++ and declared using the
     \l {Q_INVOKABLE}{Q_INVOKABLE} macro. Alternatively, we can declare the functions
-    as a \c slot and the functions will be accessible from QML. 
+    as a \c slot and the functions will be accessible from QML.
 
     \code
-    In Directory.h: 
+    In Directory.h:
 
         Q_INVOKABLE void saveFile();
         Q_INVOKABLE void loadFile();
@@ -877,7 +845,7 @@
     \c QDeclarativeListProperty<File>. The template type, \c File, needs to be a
     \c QObject derivative. Further, to create the
     \l {QDeclarativeListProperty}{QDeclarativeListProperty}, the list's accessor
-    and modifiers need to be passed to the consructor as function pointers. The list,
+    and modifiers need to be passed to the constructor as function pointers. The list,
     a \c QList in our case,  also needs to be a list of \c File pointers.
 
     The constructor of \l {QDeclarativeListProperty}{QDeclarativeListProperty}
@@ -890,9 +858,9 @@
     The constructor passes pointers to functions that will append the list, count
     the list, retrieve the item using an index, and empty the list. Only the append
     function is mandatory. Note that the function pointers must match the definition
-    of \l {QDeclarativeListProperty::AppendFunction}{AppendFunction}, 
-    \l {QDeclarativeListProperty::CountFunction}{CountFunction}, 
-    \l {QDeclarativeListProperty::AtFunction}{AtFunction}, or 
+    of \l {QDeclarativeListProperty::AppendFunction}{AppendFunction},
+    \l {QDeclarativeListProperty::CountFunction}{CountFunction},
+    \l {QDeclarativeListProperty::AtFunction}{AtFunction}, or
     \l {QDeclarativeListProperty::ClearFunction}{ClearFunction}.
 
     \code
@@ -913,7 +881,7 @@
     text files is in the application directory, get the file's name and content as a
     string, and be notified whenever there are changes in the directory contents.
 
-    To build the plugin, run \c qmake on the \c cppPlugins.pro project file, then run
+    To build the plugin, run \c qmake on the \c filedialog.pro project file, then run
     \c make to build and transfer the plugin to the \c plugins directory.
 
 
@@ -925,7 +893,7 @@
         plugins and other resources.
 
     \code
-    In qmldir: 
+    In qmldir:
 
         Button ./Button.qml
         FileDialog ./FileDialog.qml
@@ -937,7 +905,7 @@
     \endcode
 
     The plugin we just created is called \c FileDialog, as indicated by the
-    \c TARGET field in the project file. The compiled plugin is in the \c plugins directory. 
+    \c TARGET field in the project file. The compiled plugin is in the \c plugins directory.
 
 
     \section3 Integrating a File Dialog into the File Menu
@@ -952,7 +920,7 @@
     \c FileDialog element that the directory refreshed its contents. This notification
     is performed in the signal handler, \c onDirectoryChanged.
 
-    \code 
+    \code
     In FileMenu.qml:
 
         Directory{
@@ -964,7 +932,7 @@
 
     Keeping with the simplicity of our application, the file dialog will always be
     visible and will not display invalid text files, which do not have a \c .txt
-    extension to their filenames. 
+    extension to their filenames.
 
     \code
     In FileDialog.qml:
@@ -1022,11 +990,11 @@
     Our \c FileMenu can now connect to their respective actions. The \c saveButton
     will transfer the text from the \c TextEdit onto the directory's \c fileContent
     property, then copy its file name from the editable text input. Finally, the button
-    calls the \c saveFile() function, saving the file. The \c sloadButton has a similar
-    execution. Also, the \c New action will empty the contents of the \c TextEdit. 
+    calls the \c saveFile() function, saving the file. The \c loadButton has a similar
+    execution. Also, the \c New action will empty the contents of the \c TextEdit.
 
     Further, the \c EditMenu buttons are connected to the \c TextEdit functions to copy,
-    paste, and select all the text in the text editor. 
+    paste, and select all the text in the text editor.
 
     \image qml-texteditor5_filemenu.png
 

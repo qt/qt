@@ -53,6 +53,7 @@
 #include "private/qdeclarativestringconverters_p.h"
 #include "private/qdeclarativelist_p.h"
 #include "private/qdeclarativecompiler_p.h"
+#include "private/qdeclarativevmemetaobject_p.h"
 
 #include <QStringList>
 #include <QtCore/qdebug.h>
@@ -220,7 +221,7 @@ void QDeclarativePropertyPrivate::initProperty(QObject *obj, const QString &name
                 QDeclarativeAttachedPropertiesFunc func = data->type->attachedPropertiesFunction();
                 if (!func) return; // Not an attachable type
 
-                currentObject = qmlAttachedPropertiesObjectById(data->type->index(), currentObject);
+                currentObject = qmlAttachedPropertiesObjectById(data->type->attachedPropertiesId(), currentObject);
                 if (!currentObject) return; // Something is broken with the attachable type
             } else {
                 Q_ASSERT(data->typeNamespace);
@@ -232,7 +233,7 @@ void QDeclarativePropertyPrivate::initProperty(QObject *obj, const QString &name
                 QDeclarativeAttachedPropertiesFunc func = data->type->attachedPropertiesFunction();
                 if (!func) return; // Not an attachable type
 
-                currentObject = qmlAttachedPropertiesObjectById(data->type->index(), currentObject);
+                currentObject = qmlAttachedPropertiesObjectById(data->type->attachedPropertiesId(), currentObject);
                 if (!currentObject) return; // Something is broken with the attachable type
             }
         } else {
@@ -1212,7 +1213,7 @@ bool QDeclarativeProperty::connectNotifySignal(QObject *dest, int method) const
 
     QMetaProperty prop = d->object->metaObject()->property(d->core.coreIndex);
     if (prop.hasNotifySignal()) {
-        return QMetaObject::connect(d->object, prop.notifySignalIndex(), dest, method, Qt::DirectConnection);
+        return QDeclarativePropertyPrivate::connect(d->object, prop.notifySignalIndex(), dest, method, Qt::DirectConnection);
     } else {
         return false;
     }
@@ -1381,6 +1382,59 @@ QMetaMethod QDeclarativePropertyPrivate::findSignalByName(const QMetaObject *mo,
     }
 
     return QMetaMethod();
+}
+
+static inline int QMetaObject_methods(const QMetaObject *metaObject)
+{
+    struct Private
+    {
+        int revision;
+        int className;
+        int classInfoCount, classInfoData;
+        int methodCount, methodData;
+    };
+
+    return reinterpret_cast<const Private *>(metaObject->d.data)->methodCount;
+}
+
+static inline void flush_vme_signal(const QObject *object, int index)
+{
+    QDeclarativeData *data = static_cast<QDeclarativeData *>(QObjectPrivate::get(const_cast<QObject *>(object))->declarativeData);
+    if (data && data->propertyCache) {
+        QDeclarativePropertyCache::Data *property = data->propertyCache->method(index);
+
+        if (property && property->flags & QDeclarativePropertyCache::Data::IsVMESignal) {
+            const QMetaObject *metaObject = object->metaObject();
+            int methodOffset = metaObject->methodOffset();
+
+            while (methodOffset > index) {
+                methodOffset -= QMetaObject_methods(metaObject);
+                metaObject = metaObject->d.superdata;
+            }
+
+            QDeclarativeVMEMetaObject *vme = 
+                static_cast<QDeclarativeVMEMetaObject *>(const_cast<QMetaObject *>(metaObject));
+
+            vme->connectAliasSignal(index);
+        }
+    }
+}
+
+/*!
+Connect \a sender \a signal_index to \a receiver \a method_index with the specified 
+\a type and \a types.  This behaves identically to QMetaObject::connect() except that
+it connects any lazy "proxy" signal connections set up by QML.
+
+It is possible that this logic should be moved to QMetaObject::connect().
+*/
+bool QDeclarativePropertyPrivate::connect(const QObject *sender, int signal_index,
+                                          const QObject *receiver, int method_index,
+                                          int type, int *types)
+{
+    flush_vme_signal(sender, signal_index);
+    flush_vme_signal(receiver, method_index);
+
+    return QMetaObject::connect(sender, signal_index, receiver, method_index, type, types);
 }
 
 QT_END_NAMESPACE

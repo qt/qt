@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 
 Rectangle {
     id: parentItem
@@ -48,7 +48,7 @@ Rectangle {
     
     function createIt() {
 //![0]
-var newObject = Qt.createQmlObject('import Qt 4.7; Rectangle {color: "red"; width: 20; height: 20}',
+var newObject = Qt.createQmlObject('import QtQuick 1.0; Rectangle {color: "red"; width: 20; height: 20}',
     parentItem, "dynamicSnippet1");
 //![0]
 

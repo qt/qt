@@ -300,6 +300,13 @@ QString CmdLineParser::collectionFile() const
     return m_collectionFile;
 }
 
+bool CmdLineParser::collectionFileGiven() const
+{
+    TRACE_OBJ
+    return m_arguments.contains(QLatin1String("-collectionfile"),
+        Qt::CaseInsensitive);
+}
+
 QUrl CmdLineParser::url() const
 {
     TRACE_OBJ

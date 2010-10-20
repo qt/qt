@@ -58,6 +58,8 @@ QT_BEGIN_NAMESPACE
 extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.mm
 extern QPointer<QWidget> qt_button_down; //qapplication_mac.cpp
 extern const QStringList& qEnabledDraggedTypes(); // qmime_mac.cpp
+extern void qt_event_request_window_change(QWidget *); // qapplication_mac.mm
+extern void qt_mac_send_posted_gl_updates(QWidget *widget); // qapplication_mac.mm
 
 Q_GLOBAL_STATIC(QPointer<QWidget>, currentDragTarget);
 
@@ -225,6 +227,19 @@ QT_END_NAMESPACE
         qt_mac_dispatchNCMouseMessage(self, event, [self QT_MANGLE_NAMESPACE(qt_qwidget)], leftButtonIsRightButton);
 
     [self release];
+}
+
+- (void)setInitialFirstResponder:(NSView *)view
+{
+    // This method is called the first time the window is placed on screen and
+    // is the earliest point in time we can connect OpenGL contexts to NSViews.
+    QWidget *qwidget = [[QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate] qt_qwidgetForWindow:self];
+    if (qwidget) {
+        qt_event_request_window_change(qwidget);
+        qt_mac_send_posted_gl_updates(qwidget);
+    }
+
+    [super setInitialFirstResponder:view];
 }
 
 - (BOOL)makeFirstResponder:(NSResponder *)responder

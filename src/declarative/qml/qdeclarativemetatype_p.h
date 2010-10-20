@@ -137,6 +137,7 @@ public:
 
     QDeclarativeAttachedPropertiesFunc attachedPropertiesFunction() const;
     const QMetaObject *attachedPropertiesType() const;
+    int attachedPropertiesId() const;
 
     int parserStatusCast() const;
     QVariant fromObject(QObject *) const;

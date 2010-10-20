@@ -40,6 +40,8 @@ RegisterFile::~RegisterFile()
     VirtualFree(m_buffer, DWORD(m_commitEnd) - DWORD(m_buffer), MEM_DECOMMIT);
 #endif
     VirtualFree(m_buffer, 0, MEM_RELEASE);
+#elif OS(SYMBIAN)
+    delete m_registerFileAllocator;
 #else
     fastFree(m_buffer);
 #endif

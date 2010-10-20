@@ -29,6 +29,11 @@ symbian:!contains(S60_VERSION, 3.1):!contains(S60_VERSION, 3.2) {
     SOURCES += $$PWD/deviceorientation_maemo5.cpp
     FORMS = $$PWD/recopts_maemo5.ui \
             $$PWD/proxysettings_maemo5.ui
+} else:linux-g++-maemo {
+    QT += dbus
+    SOURCES += $$PWD/deviceorientation_harmattan.cpp
+    FORMS = $$PWD/recopts.ui \
+            $$PWD/proxysettings.ui
 } else {
     SOURCES += $$PWD/deviceorientation.cpp
     FORMS = $$PWD/recopts.ui \

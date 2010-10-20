@@ -64,7 +64,7 @@ void SourceCodeView::setSourceContext(const QString &fileName, const int lineNum
     m_fileToLoad.clear();
     setToolTip(fileName);
 
-    if (fileName.isNull()) {
+    if (fileName.isEmpty()) {
         clear();
         m_currentFileName.clear();
         appendHtml(tr("<i>Source code not available</i>"));

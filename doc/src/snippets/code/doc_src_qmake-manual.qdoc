@@ -1002,3 +1002,10 @@ symbian {
 RSS_RULES.service_list += "uid = 0x12345678; datatype_list = \{\}; opaque_data = r_my_icon;"
 RSS_RULES.footer +="RESOURCE CAPTION_AND_ICON_INFO r_my_icon \{ icon_file =\"$$PWD/my_icon.svg\"; \}"
 //! [151]
+
+//! [152]
+my_exports = \
+    "foo.h /epoc32/include/mylib/foo.h" \
+    "bar.h /epoc32/include/mylib/bar.h"
+BLD_INF_RULES.prj_exports += my_exports
+//! [152]

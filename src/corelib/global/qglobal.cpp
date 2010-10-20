@@ -86,7 +86,8 @@
 # include "private/qcore_symbian_p.h"
 
 _LIT(qt_S60Filter, "Series60v?.*.sis");
-_LIT(qt_S60SystemInstallDir, "z:\\system\\install\\");
+_LIT(qt_symbianFilter, "Symbianv*.sis");
+_LIT(qt_symbianSystemInstallDir, "z:\\system\\install\\");
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -1813,12 +1814,12 @@ const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion()
 #endif
 
 #ifdef Q_OS_SYMBIAN
-static QSysInfo::S60Version cachedS60Version = QSysInfo::S60Version(-1);
+static QSysInfo::SymbianVersion cachedSymbianVersion = QSysInfo::SymbianVersion(-1);
 
-QSysInfo::S60Version QSysInfo::s60Version()
+QSysInfo::SymbianVersion QSysInfo::symbianVersion()
 {
-    if (cachedS60Version != -1)
-        return cachedS60Version;
+    if (cachedSymbianVersion != -1)
+        return cachedSymbianVersion;
 
     // Use pure Symbian code, because if done using QDir, there will be a call back
     // to this method, resulting doing this expensive operation twice before the cache kicks in.
@@ -1826,7 +1827,22 @@ QSysInfo::S60Version QSysInfo::s60Version()
     RFs rfs = qt_s60GetRFs();
     TFindFile fileFinder(rfs);
     CDir* contents;
-    TInt err = fileFinder.FindWildByDir(qt_S60Filter, qt_S60SystemInstallDir, contents);
+
+    // Check for Symbian4
+    TInt err = fileFinder.FindWildByDir(qt_symbianFilter, qt_symbianSystemInstallDir, contents);
+    if (err == KErrNone) {
+        QScopedPointer<CDir> contentsDeleter(contents);
+        err = contents->Sort(EDescending|ESortByName);
+        if (err == KErrNone && contents->Count() > 0 && (*contents)[0].iName.Length() >= 9) {
+            TInt major = (*contents)[0].iName[8] - '0';
+            if (major == 4) {
+                return cachedSymbianVersion = SV_SF_4;
+            }
+        }
+    }
+
+    // Check for S60 and Symbian3 platforms, which use older .sis naming scheme
+    err = fileFinder.FindWildByDir(qt_S60Filter, qt_symbianSystemInstallDir, contents);
     if (err == KErrNone) {
         QScopedPointer<CDir> contentsDeleter(contents);
         err = contents->Sort(EDescending|ESortByName);
@@ -1835,19 +1851,19 @@ QSysInfo::S60Version QSysInfo::s60Version()
             TInt minor = (*contents)[0].iName[11] - '0';
             if (major == 3) {
                 if (minor == 1) {
-                    return cachedS60Version = SV_S60_3_1;
+                    return cachedSymbianVersion = SV_9_2;
                 } else if (minor == 2) {
-                    return cachedS60Version = SV_S60_3_2;
+                    return cachedSymbianVersion = SV_9_3;
                 }
             } else if (major == 5) {
                 if (minor == 0) {
-                    return cachedS60Version = SV_S60_5_0;
+                    return cachedSymbianVersion = SV_9_4;
                 }
                 else if (minor == 1) {
-                    return cachedS60Version = SV_S60_5_1;
+                    return cachedSymbianVersion = SV_SF_2;
                 }
                 else if (minor == 2) {
-                    return cachedS60Version = SV_S60_5_2;
+                    return cachedSymbianVersion = SV_SF_3;
                 }
             }
         }
@@ -1855,33 +1871,40 @@ QSysInfo::S60Version QSysInfo::s60Version()
 
 #  ifdef Q_CC_NOKIAX86
     // Some emulator environments may not contain the version specific .sis files, so
-    // simply hardcode the version on those environments.
+    // simply hardcode the version on those environments. Note that can't use
+    // SYMBIAN_VERSION_* defines for S60 3.x/5.0 platforms, as they do not define them
+    // right anyway in case .sis files are not found.
 #   if defined(__SERIES60_31__)
-    return cachedS60Version = SV_S60_3_1;
+    return cachedSymbianVersion = SV_9_2;
 #   elif defined(__S60_32__)
-    return cachedS60Version = SV_S60_3_2;
+    return cachedSymbianVersion = SV_9_3;
 #   elif defined(__S60_50__)
-    return cachedS60Version = SV_S60_5_0;
+    return cachedSymbianVersion = SV_9_4;
+#   elif defined(SYMBIAN_VERSION_SYMBIAN3)
+    return cachedSymbianVersion = SV_SF_3;
+#   elif defined(SYMBIAN_VERSION_SYMBIAN4)
+    return cachedSymbianVersion = SV_SF_4;
 #   endif
 #  endif
     //If reaching here, it was not possible to determine the version
-    return cachedS60Version = SV_S60_Unknown;
+    return cachedSymbianVersion = SV_Unknown;
 }
-QSysInfo::SymbianVersion QSysInfo::symbianVersion()
+
+QSysInfo::S60Version QSysInfo::s60Version()
 {
-    switch (s60Version()) {
-    case SV_S60_3_1:
-        return SV_9_2;
-    case SV_S60_3_2:
-        return SV_9_3;
-    case SV_S60_5_0:
-        return SV_9_4;
-    case SV_S60_5_1:
-        return SV_SF_2;
-    case SV_S60_5_2:
-        return SV_SF_3;
+    switch (symbianVersion()) {
+    case SV_9_2:
+        return SV_S60_3_1;
+    case SV_9_3:
+        return SV_S60_3_2;
+    case SV_9_4:
+        return SV_S60_5_0;
+    case SV_SF_2:
+        return SV_S60_5_1;
+    case SV_SF_3:
+        return SV_S60_5_2;
     default:
-        return SV_Unknown;
+        return SV_S60_Unknown;
     }
 }
 #endif // ifdef Q_OS_SYMBIAN

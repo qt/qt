@@ -713,7 +713,7 @@ void PaintCommands::runCommands()
         QPainter pt(&pm);
         pt.fillRect(0, 0, 10, 10, QColor::fromRgba(0xffdfdfdf));
         pt.fillRect(10, 10, 10, 10, QColor::fromRgba(0xffdfdfdf));
-
+        pt.end();
         m_painter->drawTiledPixmap(0, 0, width, height, pm);
     } else {
         m_painter->fillRect(0, 0, width, height, Qt::white);

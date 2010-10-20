@@ -2717,7 +2717,7 @@ void QPainter::setClipRect(const QRectF &rect, Qt::ClipOperation op)
     Q_D(QPainter);
 
     if (d->extended) {
-        if (!hasClipping() && (op == Qt::IntersectClip || op == Qt::UniteClip))
+        if ((!d->state->clipEnabled && op != Qt::NoClip) || (d->state->clipOperation == Qt::NoClip && op == Qt::UniteClip))
             op = Qt::ReplaceClip;
 
         if (!d->engine) {
@@ -2775,7 +2775,7 @@ void QPainter::setClipRect(const QRect &rect, Qt::ClipOperation op)
         return;
     }
 
-    if (!hasClipping() && (op == Qt::IntersectClip || op == Qt::UniteClip))
+    if ((!d->state->clipEnabled && op != Qt::NoClip) || (d->state->clipOperation == Qt::NoClip && op == Qt::UniteClip))
         op = Qt::ReplaceClip;
 
     if (d->extended) {
@@ -2830,7 +2830,7 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
         return;
     }
 
-    if (!hasClipping() && (op == Qt::IntersectClip || op == Qt::UniteClip))
+    if ((!d->state->clipEnabled && op != Qt::NoClip) || (d->state->clipOperation == Qt::NoClip && op == Qt::UniteClip))
         op = Qt::ReplaceClip;
 
     if (d->extended) {
@@ -3235,7 +3235,7 @@ void QPainter::setClipPath(const QPainterPath &path, Qt::ClipOperation op)
         return;
     }
 
-    if (!hasClipping() && (op == Qt::IntersectClip || op == Qt::UniteClip))
+    if ((!d->state->clipEnabled && op != Qt::NoClip) || (d->state->clipOperation == Qt::NoClip && op == Qt::UniteClip))
         op = Qt::ReplaceClip;
 
     if (d->extended) {
@@ -6185,7 +6185,7 @@ void QPainter::drawText(const QRectF &r, int flags, const QString &str, QRectF *
 
     By default, QPainter draws text anti-aliased.
 
-    \note The y-position is used as the baseline of the font.
+    \note The y-position is used as the top of the font.
 
     \sa Qt::AlignmentFlag, Qt::TextFlag
 */
@@ -8798,7 +8798,7 @@ QPainterPath QPaintEngineState::clipPath() const
 }
 
 /*!
-    Returns wether clipping is enabled or not in the current paint
+    Returns whether clipping is enabled or not in the current paint
     engine state.
 
     This variable should only be used when the state() returns a

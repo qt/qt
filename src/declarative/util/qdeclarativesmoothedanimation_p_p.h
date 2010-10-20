@@ -123,6 +123,7 @@ class QDeclarativeSmoothedAnimationPrivate : public QDeclarativePropertyAnimatio
     Q_DECLARE_PUBLIC(QDeclarativeSmoothedAnimation)
 public:
     QDeclarativeSmoothedAnimationPrivate();
+    void updateRunningAnimations();
 
     QParallelAnimationGroup *wrapperGroup;
     QSmoothedAnimation *anim;

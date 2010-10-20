@@ -52,6 +52,7 @@
 #include <private/qdeclarativeglobalscriptclass_p.h>
 #include "testtypes.h"
 #include "testhttpserver.h"
+#include "../../../shared/util.h"
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -160,10 +161,14 @@ private slots:
     void nonscriptable();
     void deleteLater();
     void in();
+    void sharedAttachedObject();
+    void objectName();
 
     void include();
 
     void callQtInvokables();
+    void invokableObjectArg();
+    void invokableObjectRet();
 private:
     QDeclarativeEngine engine;
 };
@@ -1733,6 +1738,31 @@ void tst_qdeclarativeecmascript::callQtInvokables()
     QCOMPARE(o.actuals().at(0), QVariant(9));
 }
 
+// QTBUG-13047 (check that you can pass registered object types as args)
+void tst_qdeclarativeecmascript::invokableObjectArg()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("invokableObjectArg.qml"));
+
+    QObject *o = component.create();
+    QVERIFY(o);
+    MyQmlObject *qmlobject = qobject_cast<MyQmlObject *>(o);
+    QVERIFY(qmlobject);
+    QCOMPARE(qmlobject->myinvokableObject, qmlobject);
+
+    delete o;
+}
+
+// QTBUG-13047 (check that you can return registered object types from methods)
+void tst_qdeclarativeecmascript::invokableObjectRet()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("invokableObjectRet.qml"));
+
+    QObject *o = component.create();
+    QVERIFY(o);
+    QCOMPARE(o->property("test").toBool(), true);
+    delete o;
+}
+
 // QTBUG-5675
 void tst_qdeclarativeecmascript::listToVariant()
 {
@@ -2389,15 +2419,6 @@ void tst_qdeclarativeecmascript::function()
     delete o;
 }
 
-#define TRY_WAIT(expr) \
-    do { \
-        for (int ii = 0; ii < 6; ++ii) { \
-            if ((expr)) break; \
-            QTest::qWait(50); \
-        } \
-        QVERIFY((expr)); \
-    } while (false) 
-
 // Test the "Qt.include" method
 void tst_qdeclarativeecmascript::include()
 {
@@ -2469,8 +2490,8 @@ void tst_qdeclarativeecmascript::include()
     QObject *o = component.create();
     QVERIFY(o != 0);
 
-    TRY_WAIT(o->property("done").toBool() == true);
-    TRY_WAIT(o->property("done2").toBool() == true);
+    QTRY_VERIFY(o->property("done").toBool() == true);
+    QTRY_VERIFY(o->property("done2").toBool() == true);
 
     QCOMPARE(o->property("test1").toBool(), true);
     QCOMPARE(o->property("test2").toBool(), true);
@@ -2497,7 +2518,7 @@ void tst_qdeclarativeecmascript::include()
     QObject *o = component.create();
     QVERIFY(o != 0);
 
-    TRY_WAIT(o->property("done").toBool() == true);
+    QTRY_VERIFY(o->property("done").toBool() == true);
 
     QCOMPARE(o->property("test1").toBool(), true);
     QCOMPARE(o->property("test2").toBool(), true);
@@ -2561,6 +2582,34 @@ void tst_qdeclarativeecmascript::in()
     QVERIFY(o != 0);
     QCOMPARE(o->property("test1").toBool(), true);
     QCOMPARE(o->property("test2").toBool(), true);
+    delete o;
+}
+
+void tst_qdeclarativeecmascript::sharedAttachedObject()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("sharedAttachedObject.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    QCOMPARE(o->property("test1").toBool(), true);
+    QCOMPARE(o->property("test2").toBool(), true);
+    delete o;
+}
+
+// QTBUG-13999
+void tst_qdeclarativeecmascript::objectName()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("objectName.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test1").toString(), QString("hello"));
+    QCOMPARE(o->property("test2").toString(), QString("ell"));
+
+    o->setObjectName("world");
+
+    QCOMPARE(o->property("test1").toString(), QString("world"));
+    QCOMPARE(o->property("test2").toString(), QString("orl"));
+
     delete o;
 }
 

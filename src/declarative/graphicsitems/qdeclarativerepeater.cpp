@@ -78,9 +78,9 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
     The following Repeater creates three instances of a \l Rectangle item within
     a \l Row:
 
-    \snippet doc/src/snippets/declarative/repeater.qml import
+    \snippet doc/src/snippets/declarative/repeaters/repeater.qml import
     \codeline
-    \snippet doc/src/snippets/declarative/repeater.qml simple
+    \snippet doc/src/snippets/declarative/repeaters/repeater.qml simple
 
     \image repeater-simple.png
 
@@ -92,7 +92,7 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
     a Repeater to be used inside a layout. For example, the following Repeater's
     items are stacked between a red rectangle and a blue rectangle:
    
-    \snippet doc/src/snippets/declarative/repeater.qml layout
+    \snippet doc/src/snippets/declarative/repeaters/repeater.qml layout
 
     \image repeater.png
 
@@ -106,7 +106,7 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
 
     \table
     \row
-    \o \snippet doc/src/snippets/declarative/repeater.qml index
+    \o \snippet doc/src/snippets/declarative/repeaters/repeater.qml index
     \o \image repeater-index.png
     \endtable
 
@@ -115,7 +115,7 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
 
     \table
     \row
-    \o \snippet doc/src/snippets/declarative/repeater.qml modeldata
+    \o \snippet doc/src/snippets/declarative/repeaters/repeater.qml modeldata
     \o \image repeater-modeldata.png
     \endtable
 
@@ -134,13 +134,13 @@ QDeclarativeRepeaterPrivate::~QDeclarativeRepeaterPrivate()
     create items as they are required.
 
     Also, note that Repeater is \l {Item}-based, and can only repeat \l {Item}-derived objects. 
-    For example, it cannot be used to repeat QObjects:
+    For example, it cannot be used to repeat QtObjects:
     \badcode
     Item {
-        //XXX does not work! Can't repeat QObject as it doesn't derive from Item.
+        //XXX does not work! Can't repeat QtObject as it doesn't derive from Item.
         Repeater {
             model: 10
-            QObject {}
+            QtObject {}
         }
     }
     \endcode

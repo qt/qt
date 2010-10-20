@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -26,7 +26,6 @@
 ****************************************************************************/
 
 /*!
-
 \page qml-extending-tutorial-index.html
 \title Tutorial: Writing QML extensions with C++
 
@@ -291,19 +290,13 @@ enum-type property to store a display mode for each chart:
 \endcode
 
 We can also use various other property types. QML has built-in support for the following
-types:
+types listed in the \l{Extending Types from QML} document, including the following:
 
 \list
-\o bool
-\o unsigned int, int
-\o float, double, qreal
-\o QString
-\o QUrl
-\o QColor
+\o bool, unsigned int, int, float, double, qreal
+\o QString, QUrl, QColor
 \o QDate, QTime, QDateTime
-\o QPoint, QPointF
-\o QSize, QSizeF
-\o QRect, QRectF
+\o QPoint, QPointF, QSize, QSizeF, QRect, QRectF
 \o QVariant
 \endlist
 

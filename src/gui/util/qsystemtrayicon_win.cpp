@@ -54,7 +54,7 @@
 #include <windowsx.h>
 #include <commctrl.h>
 
-#include <QLibrary>
+#include <private/qsystemlibrary_p.h>
 #include <QApplication>
 #include <QSettings>
 
@@ -155,14 +155,14 @@ QSystemTrayIconSys::QSystemTrayIconSys(QSystemTrayIcon *object)
 
     // Allow the WM_TASKBARCREATED message through the UIPI filter on Windows Vista and higher
     static PtrChangeWindowMessageFilterEx pChangeWindowMessageFilterEx =
-        (PtrChangeWindowMessageFilterEx)QLibrary::resolve(QLatin1String("user32"), "ChangeWindowMessageFilterEx");
+        (PtrChangeWindowMessageFilterEx)QSystemLibrary::resolve(QLatin1String("user32"), "ChangeWindowMessageFilterEx");
 
     if (pChangeWindowMessageFilterEx) {
         // Call the safer ChangeWindowMessageFilterEx API if available
         pChangeWindowMessageFilterEx(winId(), MYWM_TASKBARCREATED, Q_MSGFLT_ALLOW, 0);
     } else {
         static PtrChangeWindowMessageFilter pChangeWindowMessageFilter =
-            (PtrChangeWindowMessageFilter)QLibrary::resolve(QLatin1String("user32"), "ChangeWindowMessageFilter");
+            (PtrChangeWindowMessageFilter)QSystemLibrary::resolve(QLatin1String("user32"), "ChangeWindowMessageFilter");
 
         if (pChangeWindowMessageFilter) {
             // Call the deprecated ChangeWindowMessageFilter API otherwise
@@ -350,7 +350,7 @@ void QSystemTrayIconPrivate::install_sys()
 QRect QSystemTrayIconSys::findIconGeometry(const int iconId)
 {
     static PtrShell_NotifyIconGetRect Shell_NotifyIconGetRect =
-        (PtrShell_NotifyIconGetRect)QLibrary::resolve(QLatin1String("shell32"), "Shell_NotifyIconGetRect");
+        (PtrShell_NotifyIconGetRect)QSystemLibrary::resolve(QLatin1String("shell32"), "Shell_NotifyIconGetRect");
 
     if (Shell_NotifyIconGetRect) {
         Q_NOTIFYICONIDENTIFIER nid;

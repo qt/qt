@@ -1,4 +1,4 @@
-import Qt 4.7
+import QtQuick 1.0
 
 QtObject {
     property string test1: Qt.md5()

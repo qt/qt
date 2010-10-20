@@ -1,17 +1,15 @@
+/* This function generates menus and search box in narrow/slim fit mode */
 var narrowInit = function() {
-  /* TODO:
-  Could probably be more efficient, not hardcoding each element to be created
-  */
-  // 1: Create search form
+  /* 1: Create search form */ 
   var narrowSearch = $('<div id="narrowsearch"></div>');
   var searchform = $("#qtdocsearch");
   narrowSearch.append(searchform);
   $("#qtdocheader .content .qtref").after(narrowSearch);
 
-  // 2: Create dropdowns
+  /* 2: Create dropdowns */ 
   var narrowmenu = $('<ul id="narrowmenu" class="sf-menu"></ul>');
 
-  // Lookup
+  /* Lookup */ 
   var lookuptext = $("#lookup h2").attr("title");
   $("#lookup ul").removeAttr("id");
   $("#lookup ul li").removeAttr("class");
@@ -24,7 +22,7 @@ var narrowInit = function() {
   lookuplist.append(lookupul);
   narrowmenu.append(lookuplist);
 
-  // Topics
+  /* Topics */ 
   var topicstext = $("#topics h2").attr("title");
   $("#topics ul").removeAttr("id");
   $("#topics ul li").removeAttr("class");
@@ -37,7 +35,7 @@ var narrowInit = function() {
   topicslist.append(topicsul);
   narrowmenu.append(topicslist);
 
-  // Examples
+  /* Examples */ 
   var examplestext = $("#examples h2").attr("title");
   $("#examples ul").removeAttr("id");
   $("#examples ul li").removeAttr("class");
@@ -58,32 +56,78 @@ var narrowInit = function() {
   });
 }
 
+/* Executes on doc ready */
 $(document).ready(function(){
-/*   if ($('body').hasClass('narrow')) {
-    narrowInit();
-  }
- */
- if($(window).width()<600) {
-    $('body').addClass('narrow');
-
-    if ($("#narrowsearch").length == 0) {
-      narrowInit();
-    }
-  }
-  else {
-    $('body').removeClass('narrow');
-  }
+	/* check if body has the narrow class */
+	if ($('body').hasClass('narrow')) {
+		/* run narrowInit */
+		narrowInit();
+	}
+ 
+	/* messure window width and add class if it is smaller than 600 px */
+	if($(window).width()<600) {
+		$('body').addClass('narrow');
+		/* if the search box contains */
+		if ($("#narrowsearch").length == 0) {
+			/* run narrowInit */
+			narrowInit();
+		}
+	  }
+	  else { /* if the window is wider than 600 px, narrow is removed */
+		$('body').removeClass('narrow');
+		if ($("#narrowsearch").length == 0) {
+		}
+	}
 });
-
+/* binding resize event to this funciton */
 $(window).bind('resize', function () {
-  if($(window).width()<600) {
-    $('body').addClass('narrow');
-
-    if ($("#narrowsearch").length == 0) {
-      narrowInit();
-    }
-  }
-  else {
-    $('body').removeClass('narrow');
+	/*  if the window is wider than 600 px, narrow class is added */
+	if($(window).width()<600) {
+		$('body').addClass('narrow');
+		if ($("#narrowsearch").length == 0) {
+		  narrowInit();
+		}
+	}
+	else {
+		/* else we remove the narrow class */
+		$('body').removeClass('narrow');
   }
 });
+
+	$('#narrowsearch').keyup(function () {
+		/* extract the search box content */
+	  var searchString = $('#narrowsearch').val();
+	  /* if the string is less than three characters */
+	  if ((searchString == null) || (searchString.length < 3)) {
+			/* remove classes and elements*/
+			$('#narrowsearch').removeClass('loading');
+			$('.searching').remove(); 
+			/*  run CheckEmptyAndLoadList */
+			CheckEmptyAndLoadList();
+			
+			$('.report').remove();
+			return;
+	   }
+	   /* if timer checks out */
+		if (this.timer) clearTimeout(this.timer);
+		this.timer = setTimeout(function () {
+			/* add loading image by adding loading class */
+			$('#narrowsearch').addClass('loading');
+			$('.searching').remove(); 
+
+			/* run the actual search */
+		   $.ajax({
+			contentType: "application/x-www-form-urlencoded",
+			url: 'http://' + location.host + '/nokiasearch/GetDataServlet',
+			data: 'searchString='+searchString,
+			dataType:'xml',
+			type: 'post',	 
+			success: function (response, textStatus) {
+				/* on success remove loading img */
+				$('.searching').remove(); 
+				$('#narrowsearch').removeClass('loading');
+				processNokiaData(response);
+			}     
+		  });
+		}, 500); /* timer set to 500 ms */
+	});

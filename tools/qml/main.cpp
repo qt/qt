@@ -89,6 +89,9 @@ QString warnings;
 void showWarnings()
 {
     if (!warnings.isEmpty()) {
+        int argc = 0; char **argv = 0;
+        QApplication application(argc, argv); // QApplication() in main has been destroyed already.
+        Q_UNUSED(application)
         QMessageBox::warning(0, QApplication::tr("Qt QML Viewer"), warnings);
     }
 }
@@ -441,6 +444,7 @@ static QDeclarativeViewer *createViewer()
 
     QDeclarativeViewer *viewer = new QDeclarativeViewer(0, wflags);
     viewer->setAttribute(Qt::WA_DeleteOnClose, true);
+    viewer->setUseGL(opts.useGL);
 
     if (!opts.scriptopts.isEmpty()) {
         viewer->setScriptOptions(opts.scriptOptions);
@@ -492,8 +496,6 @@ void showViewer(QDeclarativeViewer *viewer)
         viewer->showMaximized();
     else
         viewer->show();
-
-    viewer->setUseGL(opts.useGL);
     viewer->raise();
 }
 
@@ -517,7 +519,7 @@ int main(int argc, char ** argv)
 
 #if defined (Q_OS_WIN)
     // Debugging output is not visible by default on Windows -
-    // therefore show modal dialog with errors instad.
+    // therefore show modal dialog with errors instead.
     atexit(showWarnings);
 #endif
 

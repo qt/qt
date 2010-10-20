@@ -1,3 +1,108 @@
+2010-06-18  Tucker Jay  <jay.tucker@nokia.com>
+
+        Reviewed by NOBODY (OOPS!).
+
+        [Symbian] Lazy commit of memory required in JSC register file
+        https://bugs.webkit.org/show_bug.cgi?id=34349
+
+        * JavaScriptCore.pro: Added 1 new Symbian source file
+        * interpreter/RegisterFile.cpp:
+        (JSC::RegisterFile::~RegisterFile):
+        * interpreter/RegisterFile.h:
+        (JSC::RegisterFile::):
+        (JSC::RegisterFile::start):
+        (JSC::RegisterFile::end):
+        (JSC::RegisterFile::size):
+        (JSC::RegisterFile::setNumGlobals):
+        (JSC::RegisterFile::numGlobals):
+        (JSC::RegisterFile::maxGlobals):
+        (JSC::RegisterFile::lastGlobal):
+        (JSC::RegisterFile::markGlobals):
+        (JSC::RegisterFile::markCallFrames):
+        (JSC::isPageAligned):
+        (JSC::RegisterFile::RegisterFile):
+        (JSC::RegisterFile::shrink):
+        (JSC::RegisterFile::grow):
+        * wtf/symbian/RegisterFileAllocatorSymbian.cpp: Added.
+        (WTF::RegisterFileAllocator::RegisterFileAllocator):
+        Helper class to allocate memory required by RegisterFile
+        more efficiently.
+        (WTF::RegisterFileAllocator::~RegisterFileAllocator):
+        (WTF::RegisterFileAllocator::buffer):
+        (WTF::RegisterFileAllocator::grow):
+        (WTF::RegisterFileAllocator::shrink):
+        * wtf/symbian/RegisterFileAllocatorSymbian.h: Added.
+        * wtf/symbian/SymbianDefines.h: Added.
+
+2010-06-16  Thiago Macieira <thiago.macieira@nokia.com>
+
+        Reviewed by NOBODY (OOPS!).
+
+        Reindent the asm code I've moved to inside the function
+        (previous commit)
+
+        * jit/JITStubs.cpp:
+
+2010-06-16  Thiago Macieira <thiago.macieira@nokia.com>
+
+        Reviewed by NOBODY (OOPS!).
+
+        Fix the JIT compilation with the Intel 32-bit C++ compiler.
+
+        ICC doesn't understand the use of "asm" statements outside of
+        function bodies, so move the assembly code inside a dummy
+        function (and mark it so that the compiler doesn't remove it
+        altogether).
+
+        Also removed the ".text" entry that I had added because now
+        the assembly code is properly inside a code section (fixes
+        compilation with -ffunction-sections).
+
+        * jit/JITStubs.cpp:
+
+2010-06-16  Thiago Macieira <thiago.macieira@nokia.com>
+
+        Reviewed by NOBODY (OOPS!).
+
+        Don't use __attribute__((may_alias)) with the Intel compiler,
+        as it doesn't understand it.
+
+        * wtf/Vector.h:
+
+2010-06-16  Thiago Macieira <thiago.macieira@nokia.com>
+
+        Reviewed by NOBODY (OOPS!).
+
+        Fix compilation with the Intel C++ compiler (11.1.072).
+
+        Like RVCT, label pointers must be void*, not const void*.
+
+        * bytecode/Opcode.h:
+
+2010-06-16  Thiago Macieira <thiago.macieira@nokia.com>
+
+        Reviewed by NOBODY (OOPS!).
+
+        Add the WTF_COMPILER_INTEL for when the Intel compiler is used
+        for building. Usually, the Intel compiler masquerades as
+        another compiler in the system and gets away with it, but some
+        times specific fixes are required (such as when using language
+        extensions).
+
+        * wtf/Platform.h:
+
+2010-07-08  Andreas Kling  <andreas.kling@nokia.com>
+
+        Reviewed by Oliver Hunt.
+
+        Interpreter: Crash in op_load_varargs on 64-bit
+        https://bugs.webkit.org/show_bug.cgi?id=41795
+
+        Added missing cast of argCount to int32_t in op_load_varargs.
+
+        * interpreter/Interpreter.cpp:
+        (JSC::Interpreter::privateExecute):
+
 2010-07-02  Peter Varga  <pvarga@inf.u-szeged.hu>
 
         Reviewed by Oliver Hunt.

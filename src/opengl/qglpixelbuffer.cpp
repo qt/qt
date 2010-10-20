@@ -67,7 +67,13 @@
        when the pbuffer contents change, eliminating the need for
        additional copy operations. This is supported only on Windows
        and Mac OS X systems that provide the \c render_texture
-       extension.
+       extension. Note that under Windows, a multi-sampled pbuffer
+       can't be used in conjunction with the \c render_texture
+       extension. If a multi-sampled pbuffer is requested under
+       Windows, the \c render_texture extension is turned off for that
+       pbuffer.
+
+
     \endlist
 
     Pbuffers are provided by the OpenGL \c pbuffer extension; call

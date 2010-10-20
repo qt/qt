@@ -187,8 +187,12 @@ QItemSelection QAbstractProxyModel::mapSelectionToSource(const QItemSelection &p
 {
     QModelIndexList proxyIndexes = proxySelection.indexes();
     QItemSelection sourceSelection;
-    for (int i = 0; i < proxyIndexes.size(); ++i)
-        sourceSelection << QItemSelectionRange(mapToSource(proxyIndexes.at(i)));
+    for (int i = 0; i < proxyIndexes.size(); ++i) {
+        const QModelIndex proxyIdx = mapToSource(proxyIndexes.at(i));
+        if (!proxyIdx.isValid())
+            continue;
+        sourceSelection << QItemSelectionRange(proxyIdx);
+    }
     return sourceSelection;
 }
 
@@ -201,8 +205,12 @@ QItemSelection QAbstractProxyModel::mapSelectionFromSource(const QItemSelection 
 {
     QModelIndexList sourceIndexes = sourceSelection.indexes();
     QItemSelection proxySelection;
-    for (int i = 0; i < sourceIndexes.size(); ++i)
-        proxySelection << QItemSelectionRange(mapFromSource(sourceIndexes.at(i)));
+    for (int i = 0; i < sourceIndexes.size(); ++i) {
+        const QModelIndex srcIdx = mapFromSource(sourceIndexes.at(i));
+        if (!srcIdx.isValid())
+            continue;
+        proxySelection << QItemSelectionRange(srcIdx);
+    }
     return proxySelection;
 }
 

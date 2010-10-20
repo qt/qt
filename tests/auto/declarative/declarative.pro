@@ -69,7 +69,8 @@ SUBDIRS += \
            qdeclarativexmlhttprequest \
            qdeclarativexmllistmodel \
            qmlvisual \
-           qpacketprotocol
+           qpacketprotocol \
+           moduleqt47
 
 contains(QT_CONFIG, webkit) {
     SUBDIRS += \

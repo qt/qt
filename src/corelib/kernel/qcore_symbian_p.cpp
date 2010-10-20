@@ -131,7 +131,6 @@ public:
 private:
     void init()
     {
-#ifdef Q_OS_SYMBIAN
         _LIT(KLibName_3_1, "qts60plugin_3_1" QT_LIBINFIX_UNICODE L".dll");
         _LIT(KLibName_3_2, "qts60plugin_3_2" QT_LIBINFIX_UNICODE L".dll");
         _LIT(KLibName_5_0, "qts60plugin_5_0" QT_LIBINFIX_UNICODE L".dll");
@@ -157,7 +156,12 @@ private:
 
         TUidType libUid(KDynamicLibraryUid, KSharedLibraryUid, TUid::Uid(uidValue));
         lib.Load(libName, libUid);
-#endif
+
+        // Duplicate lib handle to enable process wide access to it. Since Duplicate overwrites
+        // existing handle without closing it, store original for subsequent closing.
+        RLibrary origHandleCloser = lib;
+        lib.Duplicate(RThread(), EOwnerProcess);
+        origHandleCloser.Close();
     }
 
     RLibrary lib;

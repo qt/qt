@@ -156,8 +156,6 @@ namespace QPdf {
     PaperSize paperSize(QPrinter::PaperSize paperSize);
     const char *paperSizeToString(QPrinter::PaperSize paperSize);
 
-
-    QByteArray stripSpecialCharacters(const QByteArray &string);
 }
 
 

@@ -172,6 +172,8 @@ private slots:
     void equalOperator() const;
     void equalOperatorWithDifferentSlashes() const;
     void notEqualOperator() const;
+
+    void detachingOperations();
 };
 
 tst_QFileInfo::tst_QFileInfo()
@@ -228,13 +230,13 @@ void tst_QFileInfo::copy()
     QFileInfo info2(info);
     QFileInfoPrivate *privateInfo = getPrivate(info);
     QFileInfoPrivate *privateInfo2 = getPrivate(info2);
-    QCOMPARE(privateInfo->data, privateInfo2->data);
+    QCOMPARE(privateInfo, privateInfo2);
 
     //operator =
     QFileInfo info3 = info;
     QFileInfoPrivate *privateInfo3 = getPrivate(info3);
-    QCOMPARE(privateInfo->data, privateInfo3->data);
-    QCOMPARE(privateInfo2->data, privateInfo3->data);
+    QCOMPARE(privateInfo, privateInfo3);
+    QCOMPARE(privateInfo2, privateInfo3);
 
     //refreshing info3 will detach it
     QFile file(info.absoluteFilePath());
@@ -256,9 +258,10 @@ void tst_QFileInfo::copy()
     QTest::qWait(5000);
 #endif
     info3.refresh();
-    QVERIFY(privateInfo->data != privateInfo3->data);
-    QVERIFY(privateInfo2->data != privateInfo3->data);
-    QCOMPARE(privateInfo->data, privateInfo2->data);
+    privateInfo3 = getPrivate(info3);
+    QVERIFY(privateInfo != privateInfo3);
+    QVERIFY(privateInfo2 != privateInfo3);
+    QCOMPARE(privateInfo, privateInfo2);
 }
 
 void tst_QFileInfo::isFile_data()
@@ -1182,8 +1185,8 @@ void tst_QFileInfo::isLocalFs()
 
     QFileInfo info(path);
     QFileInfoPrivate *privateInfo = getPrivate(info);
-    QVERIFY(privateInfo->data->fileEngine);
-    QCOMPARE(bool(privateInfo->data->fileEngine->fileFlags(QAbstractFileEngine::LocalDiskFlag)
+    QVERIFY(privateInfo->fileEngine);
+    QCOMPARE(bool(privateInfo->fileEngine->fileFlags(QAbstractFileEngine::LocalDiskFlag)
                   & QAbstractFileEngine::LocalDiskFlag), isLocalFs);
 }
 
@@ -1374,6 +1377,52 @@ void tst_QFileInfo::notEqualOperator() const
     /* Compare two default constructed values. Yes, to me it seems it should be the opposite too, but
      * this is how the code was written. */
     QVERIFY(QFileInfo() != QFileInfo());
+}
+
+void tst_QFileInfo::detachingOperations()
+{
+    QFileInfo info1;
+    QVERIFY(info1.caching());
+    info1.setCaching(false);
+
+    {
+        QFileInfo info2 = info1;
+
+        QVERIFY(!info1.caching());
+        QVERIFY(!info2.caching());
+
+        info2.setCaching(true);
+        QVERIFY(info2.caching());
+
+        info1.setFile("foo");
+        QVERIFY(!info1.caching());
+    }
+
+    {
+        QFile file("foo");
+        info1.setFile(file);
+        QVERIFY(!info1.caching());
+    }
+
+    info1.setFile(QDir(), "foo");
+    QVERIFY(!info1.caching());
+
+    {
+        QFileInfo info3;
+        QVERIFY(info3.caching());
+
+        info3 = info1;
+        QVERIFY(!info3.caching());
+    }
+
+    info1.refresh();
+    QVERIFY(!info1.caching());
+
+    QVERIFY(info1.makeAbsolute());
+    QVERIFY(!info1.caching());
+
+    info1.detach();
+    QVERIFY(!info1.caching());
 }
 
 QTEST_MAIN(tst_QFileInfo)

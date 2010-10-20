@@ -41,7 +41,7 @@
 
 /*!
     \class QPointer
-    \brief The QPointer class is a template class that provides guarded pointers to QObjects.
+    \brief The QPointer class is a template class that provides guarded pointers to QObject.
 
     \ingroup objectmodel
 

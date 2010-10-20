@@ -68,7 +68,7 @@ class QDeclarativeMouseAreaPrivate : public QDeclarativeItemPrivate
 public:
     QDeclarativeMouseAreaPrivate()
       : absorb(true), hovered(false), pressed(false), longPress(false),
-      moved(false), stealMouse(false), drag(0)
+      moved(false), stealMouse(false), doubleClick(false), drag(0)
     {
     }
 
@@ -95,6 +95,12 @@ public:
         return QObjectPrivate::get(q)->isSignalConnected(idx);
     }
 
+    bool isDoubleClickConnected() {
+        Q_Q(QDeclarativeMouseArea);
+        static int idx = QObjectPrivate::get(q)->signalIndex("doubleClicked(QDeclarativeMouseEvent*)");
+        return QObjectPrivate::get(q)->isSignalConnected(idx);
+    }
+
     bool absorb : 1;
     bool hovered : 1;
     bool pressed : 1;
@@ -103,6 +109,7 @@ public:
     bool dragX : 1;
     bool dragY : 1;
     bool stealMouse : 1;
+    bool doubleClick : 1;
     QDeclarativeDrag *drag;
     QPointF startScene;
     qreal startX;

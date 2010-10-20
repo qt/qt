@@ -51,7 +51,6 @@
 #include "qabstractfileengine.h"
 #include "qthreadstorage.h"
 #include <qmath.h>
-#include <private/qpdf_p.h>
 #include <private/qharfbuzz_p.h>
 
 #include "qfontengine_ft_p.h"
@@ -1196,10 +1195,7 @@ QFontEngine::Properties QFontEngineFT::properties() const
 {
     Properties p = freetype->properties();
     if (p.postscriptName.isEmpty()) {
-        p.postscriptName = fontDef.family.toUtf8();
-#ifndef QT_NO_PRINTER
-        p.postscriptName = QPdf::stripSpecialCharacters(p.postscriptName);
-#endif
+        p.postscriptName = QFontEngine::convertToPostscriptFontFamilyName(fontDef.family.toUtf8());
     }
 
     return freetype->properties();
@@ -1565,8 +1561,6 @@ bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs
         FT_Face face = freetype->face;
         for ( int i = 0; i < len; ++i ) {
             unsigned int uc = getChar(str, i, len);
-            if (mirrored)
-                uc = QChar::mirroredChar(uc);
             glyphs->glyphs[glyph_pos] = uc < QFreetypeFace::cmapCacheSize ? freetype->cmapCache[uc] : 0;
             if ( !glyphs->glyphs[glyph_pos] ) {
                 glyph_t glyph;

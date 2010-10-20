@@ -107,7 +107,7 @@ void SessionWidget::updateSession()
 
     if (session->state() == QNetworkSession::Connected)
         statsTimer = startTimer(1000);
-    else
+    else if (statsTimer != -1)
         killTimer(statsTimer);
 
     if (session->configuration().type() == QNetworkConfiguration::InternetAccessPoint)

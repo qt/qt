@@ -3243,16 +3243,16 @@ void tst_QObject::overloads()
     QCOMPARE(obj2.s_num, 101);
     emit obj1.sig(&obj2, &obj3); //this signal is connected
     QCOMPARE(obj1.s_num, 11);
-    QCOMPARE(obj1.o1_obj, &obj2);
+    QCOMPARE(obj1.o1_obj, (QObject *)&obj2);
     QCOMPARE(obj1.o2_obj, &obj3);
     QCOMPARE(obj1.o3_obj, (QObject *)0); //default arg of the signal
-    QCOMPARE(obj1.o4_obj, qApp); //default arg of the slot
+    QCOMPARE(obj1.o4_obj, (QObject *)qApp); //default arg of the slot
 
     QCOMPARE(obj2.s_num, 111);
-    QCOMPARE(obj2.o1_obj, &obj2);
+    QCOMPARE(obj2.o1_obj, (QObject *)&obj2);
     QCOMPARE(obj2.o2_obj, &obj3);
     QCOMPARE(obj2.o3_obj, (QObject *)0); //default arg of the signal
-    QCOMPARE(obj2.o4_obj, qApp); //default arg of the slot
+    QCOMPARE(obj2.o4_obj, (QObject *)qApp); //default arg of the slot
 }
 
 class ManySignals : public QObject

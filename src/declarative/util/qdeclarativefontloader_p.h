@@ -79,7 +79,7 @@ public:
     Status status() const;
 
 private Q_SLOTS:
-    void replyFinished();
+    void updateFontInfo(const QString&, QDeclarativeFontLoader::Status);
 
 Q_SIGNALS:
     void sourceChanged();

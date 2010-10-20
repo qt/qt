@@ -635,7 +635,7 @@ QSize QLabelPrivate::sizeForWidth(int w) const
         br = movie->currentPixmap().rect();
 #endif
     else if (isTextLabel) {
-        int align = QStyle::visualAlignment(q->layoutDirection(), QFlag(this->align));
+        int align = QStyle::visualAlignment(textDirection(), QFlag(this->align));
         // Add indentation
         int m = indent;
 
@@ -1059,7 +1059,8 @@ void QLabel::paintEvent(QPaintEvent *)
     drawFrame(&painter);
     QRect cr = contentsRect();
     cr.adjust(d->margin, d->margin, -d->margin, -d->margin);
-    int align = QStyle::visualAlignment(layoutDirection(), QFlag(d->align));
+    int align = QStyle::visualAlignment(d->isTextLabel ? d->textDirection()
+                                                       : layoutDirection(), QFlag(d->align));
 
 #ifndef QT_NO_MOVIE
     if (d->movie) {
@@ -1119,7 +1120,8 @@ void QLabel::paintEvent(QPaintEvent *)
             d->control->drawContents(&painter, QRectF(), this);
             painter.restore();
         } else {
-            int flags = align;
+            int flags = align | (d->textDirection() == Qt::LeftToRight ? Qt::TextForceLeftToRight
+                                                                       : Qt::TextForceRightToLeft);
             if (d->hasShortcut) {
                 flags |= Qt::TextShowMnemonic;
                 if (!style->styleHint(QStyle::SH_UnderlineShortcut, &opt, this))
@@ -1447,10 +1449,6 @@ void QLabel::changeEvent(QEvent *ev)
         d->control->setPalette(palette());
     } else if (ev->type() == QEvent::ContentsRectChange) {
         d->updateLabel();
-    } else if (ev->type() == QEvent::LayoutDirectionChange) {
-        if (d->isTextLabel && d->control) {
-            d->sendControlEvent(ev);
-        }
     }
     QFrame::changeEvent(ev);
 }
@@ -1486,6 +1484,15 @@ void QLabel::setScaledContents(bool enable)
     update(contentsRect());
 }
 
+Qt::LayoutDirection QLabelPrivate::textDirection() const
+{
+    if (control) {
+        QTextOption opt = control->document()->defaultTextOption();
+        return opt.textDirection();
+    }
+
+    return text.isRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight;
+}
 
 /*!
     \fn void QLabel::setAlignment(Qt::AlignmentFlag flag)
@@ -1503,7 +1510,8 @@ QRect QLabelPrivate::documentRect() const
     Q_ASSERT_X(isTextLabel, "documentRect", "document rect called for label that is not a text label!");
     QRect cr = q->contentsRect();
     cr.adjust(margin, margin, -margin, -margin);
-    const int align = QStyle::visualAlignment(q->layoutDirection(), QFlag(this->align));
+    const int align = QStyle::visualAlignment(isTextLabel ? textDirection()
+                                                          : q->layoutDirection(), QFlag(this->align));
     int m = indent;
     if (m < 0 && q->frameWidth()) // no indent, but we do have a frame
         m = q->fontMetrics().width(QLatin1Char('x')) / 2 - margin;
@@ -1564,7 +1572,6 @@ void QLabelPrivate::ensureTextLayouted() const
     if (!textLayoutDirty)
         return;
     ensureTextPopulated();
-    Q_Q(const QLabel);
     if (control) {
         QTextDocument *doc = control->document();
         QTextOption opt = doc->defaultTextOption();
@@ -1575,8 +1582,6 @@ void QLabelPrivate::ensureTextLayouted() const
             opt.setWrapMode(QTextOption::WordWrap);
         else
             opt.setWrapMode(QTextOption::ManualWrap);
-
-        opt.setTextDirection(q->layoutDirection());
 
         doc->setDefaultTextOption(opt);
 

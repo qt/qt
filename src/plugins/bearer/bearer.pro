@@ -3,9 +3,9 @@ TEMPLATE = subdirs
 contains(QT_CONFIG, dbus) {
     contains(QT_CONFIG, icd) {
         SUBDIRS += icd
-    } else {
+    } else:linux* {
         SUBDIRS += generic
-        linux*:SUBDIRS += connman networkmanager
+        SUBDIRS += connman networkmanager
     }
 }
 
@@ -16,4 +16,4 @@ macx:contains(QT_CONFIG, corewlan):SUBDIRS += corewlan
 macx:SUBDIRS += generic
 symbian:SUBDIRS += symbian
 
-isEmpty(SUBDIRS):SUBDIRS += generic
+isEmpty(SUBDIRS):SUBDIRS = generic

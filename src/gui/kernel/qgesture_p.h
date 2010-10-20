@@ -88,14 +88,21 @@ class QPanGesturePrivate : public QGesturePrivate
 
 public:
     QPanGesturePrivate()
-        : acceleration(0)
+        : acceleration(0), xVelocity(0), yVelocity(0)
     {
     }
+
+    qreal horizontalVelocity() const { return xVelocity; }
+    void setHorizontalVelocity(qreal value) { xVelocity = value; }
+    qreal verticalVelocity() const { return yVelocity; }
+    void setVerticalVelocity(qreal value) { yVelocity = value; }
 
     QPointF lastOffset;
     QPointF offset;
     QPoint startPosition;
     qreal acceleration;
+    qreal xVelocity;
+    qreal yVelocity;
 };
 
 class QPinchGesturePrivate : public QGesturePrivate
@@ -105,7 +112,7 @@ class QPinchGesturePrivate : public QGesturePrivate
 public:
     QPinchGesturePrivate()
         : totalChangeFlags(0), changeFlags(0),
-          totalScaleFactor(0), lastScaleFactor(0), scaleFactor(0),
+          totalScaleFactor(1), lastScaleFactor(1), scaleFactor(1),
           totalRotationAngle(0), lastRotationAngle(0), rotationAngle(0),
           isNewSequence(true)
     {
@@ -139,9 +146,12 @@ public:
         : horizontalDirection(QSwipeGesture::NoDirection),
           verticalDirection(QSwipeGesture::NoDirection),
           swipeAngle(0),
-          started(false), speed(0)
+          started(false), velocityValue(0)
     {
     }
+
+    qreal velocity() const { return velocityValue; }
+    void setVelocity(qreal value) { velocityValue = value; }
 
     QSwipeGesture::SwipeDirection horizontalDirection;
     QSwipeGesture::SwipeDirection verticalDirection;
@@ -149,7 +159,7 @@ public:
 
     QPoint lastPositions[3];
     bool started;
-    qreal speed;
+    qreal velocityValue;
     QElapsedTimer time;
 };
 

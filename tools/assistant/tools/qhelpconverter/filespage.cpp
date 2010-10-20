@@ -59,8 +59,8 @@ FilesPage::FilesPage(QWidget *parent)
     connect(m_ui.removeAllButton, SIGNAL(clicked()),
         this, SLOT(removeAllFiles()));
 
-    m_ui.fileLabel->setText(tr("<p><b>Warning:</b> Be aware "
-        "when removing images or stylesheets since those files "
+    m_ui.fileLabel->setText(tr("<p><b>Warning:</b> "
+        "When removing images or stylesheets, be aware that those files "
         "are not directly referenced by the .adp or .dcf "
         "file.</p>"));
 }

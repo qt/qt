@@ -316,6 +316,7 @@ int main(int argc, char *argv[])
     TRACE_OBJ
     QApplication a(argc, argv, useGui(argc, argv));
     a.addLibraryPath(a.applicationDirPath() + QLatin1String("/plugins"));
+    setupTranslations();
 
     // Parse arguments.
     CmdLineParser cmd(a.arguments());
@@ -419,18 +420,18 @@ int main(int argc, char *argv[])
         cachedCollection.setCurrentFilter(cmd.currentFilter());
     }
 
-    setupTranslations();
+    if (collectionFileGiven)
+        cmd.setCollectionFile(cachedCollectionFile);
+
+    MainWindow *w = new MainWindow(&cmd);
+    w->show();
+    a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
 
     /*
      * We need to be careful here: The main window has to be deleted before
      * the help engine wrapper, which has to be deleted before the
      * QApplication.
      */
-    if (collectionFileGiven)
-        cmd.setCollectionFile(cachedCollectionFile);
-    MainWindow *w = new MainWindow(&cmd);
-    w->show();
-    a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
     const int retval = a.exec();
     delete w;
     HelpEngineWrapper::removeInstance();

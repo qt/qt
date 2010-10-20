@@ -895,7 +895,7 @@ QList<QDeclarativeError> QDeclarativeScriptParser::errors() const
 static void replaceWithSpace(QString &str, int idx, int n) 
 {
     QChar *data = str.data() + idx;
-    QChar space(' ');
+    const QChar space(QLatin1Char(' '));
     for (int ii = 0; ii < n; ++ii)
         *data++ = space;
 }

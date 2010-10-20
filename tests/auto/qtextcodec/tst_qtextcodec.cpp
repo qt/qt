@@ -2236,6 +2236,15 @@ void tst_QTextCodec::moreToFromUnicode()
     QCOMPARE(testData, cStr);
 }
 
+struct DontCrashAtExit {
+    ~DontCrashAtExit() {
+        QTextCodec *c = QTextCodec::codecForName("utf8");
+        if (c)
+            c->toUnicode("azerty");
+
+    }
+} dontCrashAtExit;
+
 
 QTEST_MAIN(tst_QTextCodec)
 #include "tst_qtextcodec.moc"

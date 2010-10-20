@@ -135,6 +135,7 @@ private slots:
     void numberParsing();
     void automaticSemicolonInsertion();
     void abortEvaluation();
+    void abortEvaluation_QTBUG9433();
     void isEvaluating();
     void printFunctionWithCustomHandler();
     void printThrowsException();
@@ -175,6 +176,10 @@ private slots:
     void reentrency();
     void newFixedStaticScopeObject();
     void newGrowingStaticScopeObject();
+    void dateRoundtripJSQtJS();
+    void dateRoundtripQtJSQt();
+    void dateConversionJSQt();
+    void dateConversionQtJS();
 };
 
 tst_QScriptEngine::tst_QScriptEngine()
@@ -3126,7 +3131,8 @@ public:
     enum AbortionResult {
         None = 0,
         String = 1,
-        Error = 2
+        Error = 2,
+        Number = 3
     };
 
     EventReceiver3(QScriptEngine *eng) {
@@ -3146,6 +3152,8 @@ public:
             case Error:
                 engine->abortEvaluation(engine->currentContext()->throwError("AbortedWithError"));
                 break;
+            case Number:
+                engine->abortEvaluation(QScriptValue(1234));
             }
         }
         return QObject::event(e);
@@ -3179,7 +3187,7 @@ void tst_QScriptEngine::abortEvaluation()
 
     QSKIP("It hangs", SkipAll);
     eng.setProcessEventsInterval(100);
-    for (int x = 0; x < 3; ++x) {
+    for (int x = 0; x < 4; ++x) {
         QCoreApplication::postEvent(&receiver, new QEvent(QEvent::Type(QEvent::User+1)));
         receiver.resultType = EventReceiver3::AbortionResult(x);
         QScriptValue ret = eng.evaluate(QString::fromLatin1("while (1) { }"));
@@ -3187,6 +3195,11 @@ void tst_QScriptEngine::abortEvaluation()
         case EventReceiver3::None:
             QVERIFY(!eng.hasUncaughtException());
             QVERIFY(!ret.isValid());
+            break;
+        case EventReceiver3::Number:
+            QVERIFY(!eng.hasUncaughtException());
+            QVERIFY(ret.isNumber());
+            QCOMPARE(ret.toInt32(), 1234);
             break;
         case EventReceiver3::String:
             QVERIFY(!eng.hasUncaughtException());
@@ -3202,7 +3215,7 @@ void tst_QScriptEngine::abortEvaluation()
     }
 
     // scripts cannot intercept the abortion with try/catch
-    for (int y = 0; y < 3; ++y) {
+    for (int y = 0; y < 4; ++y) {
         QCoreApplication::postEvent(&receiver, new QEvent(QEvent::Type(QEvent::User+1)));
         receiver.resultType = EventReceiver3::AbortionResult(y);
         QScriptValue ret = eng.evaluate(QString::fromLatin1(
@@ -3217,6 +3230,11 @@ void tst_QScriptEngine::abortEvaluation()
         case EventReceiver3::None:
             QVERIFY(!eng.hasUncaughtException());
             QVERIFY(!ret.isValid());
+            break;
+        case EventReceiver3::Number:
+            QVERIFY(!eng.hasUncaughtException());
+            QVERIFY(ret.isNumber());
+            QCOMPARE(ret.toInt32(), 1234);
             break;
         case EventReceiver3::String:
             QVERIFY(!eng.hasUncaughtException());
@@ -3236,6 +3254,46 @@ void tst_QScriptEngine::abortEvaluation()
         QScriptValue ret = eng.evaluate("myFunctionAbortingEvaluation()");
         QVERIFY(!ret.isValid());
     }
+}
+
+class ThreadedEngine : public QThread {
+    Q_OBJECT;
+
+private:
+    QScriptEngine* m_engine;
+protected:
+    void run() {
+        m_engine = new QScriptEngine();
+        m_engine->setGlobalObject(m_engine->newQObject(this));
+        m_engine->evaluate("while(1) { sleep(); }");
+        delete m_engine;
+    }
+
+public slots:
+    void sleep()
+    {
+        QTest::qSleep(25);
+        m_engine->abortEvaluation();
+    }
+};
+
+void tst_QScriptEngine::abortEvaluation_QTBUG9433()
+{
+    ThreadedEngine engine;
+    engine.start();
+    QVERIFY(engine.isRunning());
+    QTest::qSleep(50);
+    for (uint i = 0; i < 50; ++i) { // up to ~2500 ms
+        if (engine.isFinished())
+            return;
+        QTest::qSleep(50);
+    }
+    if (!engine.isFinished()) {
+        engine.terminate();
+        engine.wait(7000);
+        QFAIL("abortEvaluation doesn't work");
+    }
+
 }
 
 static QScriptValue myFunctionReturningIsEvaluating(QScriptContext *, QScriptEngine *eng)
@@ -5160,6 +5218,68 @@ void tst_QScriptEngine::qRegExpInport()
     rx.indexIn(string);
     for (int i = 0; i <= rx.captureCount(); i++)  {
         QCOMPARE(result.property(i).toString(), rx.cap(i));
+    }
+}
+
+// QScriptValue::toDateTime() returns a local time, whereas JS dates
+// are always stored as UTC. QtScript must respect the current time
+// zone, and correctly adjust for daylight saving time that may be in
+// effect at a given date (QTBUG-9770).
+void tst_QScriptEngine::dateRoundtripJSQtJS()
+{
+    uint secs = QDateTime(QDate(2009, 1, 1)).toUTC().toTime_t();
+    QScriptEngine eng;
+    for (int i = 0; i < 8000; ++i) {
+        QScriptValue jsDate = eng.evaluate(QString::fromLatin1("new Date(%0)").arg(secs * 1000.0));
+        QDateTime qtDate = jsDate.toDateTime();
+        QScriptValue jsDate2 = eng.newDate(qtDate);
+        if (jsDate2.toNumber() != jsDate.toNumber())
+            QFAIL(qPrintable(jsDate.toString()));
+        secs += 2*60*60;
+    }
+}
+
+void tst_QScriptEngine::dateRoundtripQtJSQt()
+{
+    QDateTime qtDate = QDateTime(QDate(2009, 1, 1));
+    QScriptEngine eng;
+    for (int i = 0; i < 8000; ++i) {
+        QScriptValue jsDate = eng.newDate(qtDate);
+        QDateTime qtDate2 = jsDate.toDateTime();
+        if (qtDate2 != qtDate)
+            QFAIL(qPrintable(qtDate.toString()));
+        qtDate = qtDate.addSecs(2*60*60);
+    }
+}
+
+void tst_QScriptEngine::dateConversionJSQt()
+{
+    uint secs = QDateTime(QDate(2009, 1, 1)).toUTC().toTime_t();
+    QScriptEngine eng;
+    for (int i = 0; i < 8000; ++i) {
+        QScriptValue jsDate = eng.evaluate(QString::fromLatin1("new Date(%0)").arg(secs * 1000.0));
+        QDateTime qtDate = jsDate.toDateTime();
+        QString qtUTCDateStr = qtDate.toUTC().toString(Qt::ISODate);
+        QString jsUTCDateStr = jsDate.property("toISOString").call(jsDate).toString();
+        jsUTCDateStr.chop(5); // get rid of milliseconds (".000Z")
+        if (qtUTCDateStr != jsUTCDateStr)
+            QFAIL(qPrintable(jsDate.toString()));
+        secs += 2*60*60;
+    }
+}
+
+void tst_QScriptEngine::dateConversionQtJS()
+{
+    QDateTime qtDate = QDateTime(QDate(2009, 1, 1));
+    QScriptEngine eng;
+    for (int i = 0; i < 8000; ++i) {
+        QScriptValue jsDate = eng.newDate(qtDate);
+        QString jsUTCDateStr = jsDate.property("toISOString").call(jsDate).toString();
+        jsUTCDateStr.chop(5); // get rid of milliseconds (".000Z")
+        QString qtUTCDateStr = qtDate.toUTC().toString(Qt::ISODate);
+        if (jsUTCDateStr != qtUTCDateStr)
+            QFAIL(qPrintable(qtDate.toString()));
+        qtDate = qtDate.addSecs(2*60*60);
     }
 }
 

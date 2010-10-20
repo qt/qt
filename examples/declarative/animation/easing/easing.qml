@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 import "content"
 
 Rectangle {
@@ -94,36 +94,37 @@ Rectangle {
         id: delegate
 
         Item {
-            height: 42; width: window.width
+            height: 56; width: window.width
 
             Text { text: name; anchors.centerIn: parent; color: "White" }
 
             Rectangle {
-                id: slot1; color: "#121212"; x: 30; height: 32; width: 32
-                border.color: "#343434"; border.width: 1; radius: 8
+                id: slot1; color: "#121212"; x: 30; height: 46; width: 46
+                border.color: "#343434"; border.width: 1; radius: 12
                 anchors.verticalCenter: parent.verticalCenter
             }
 
             Rectangle {
-                id: slot2; color: "#121212"; x: window.width - 62; height: 32; width: 32
-                border.color: "#343434"; border.width: 1; radius: 8
+                id: slot2; color: "#121212"; x: window.width - 76; height: 46; width: 46
+                border.color: "#343434"; border.width: 1; radius: 12
                 anchors.verticalCenter: parent.verticalCenter
             }
 
             Rectangle {
                 id: rect; x: 30; color: "#454545"
                 border.color: "White"; border.width: 2
-                height: 32; width: 32; radius: 8
+                height: 46; width: 46; radius: 12
                 anchors.verticalCenter: parent.verticalCenter
 
                 MouseArea {
                     onClicked: if (rect.state == '') rect.state = "right"; else rect.state = ''
                     anchors.fill: parent
+                    anchors.margins: -5 // Make MouseArea bigger than the rectangle, itself
                 }
 
                 states : State {
                     name: "right"
-                    PropertyChanges { target: rect; x: window.width - 62; color: ballColor }
+                    PropertyChanges { target: rect; x: window.width - 76; color: ballColor }
                 }
 
                 transitions: Transition {
@@ -136,7 +137,7 @@ Rectangle {
 
     Flickable {
         anchors.fill: parent
-        contentHeight: layout.height
+        contentHeight: layout.height+50
         Rectangle {
             id: titlePane
             color: "#444444"

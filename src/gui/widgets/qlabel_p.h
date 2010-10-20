@@ -132,6 +132,7 @@ public:
     QRectF layoutRect() const;
     QRect documentRect() const;
     QPoint layoutPoint(const QPoint& p) const;
+    Qt::LayoutDirection textDirection() const;
 #ifndef QT_NO_CONTEXTMENU
     QMenu *createStandardContextMenu(const QPoint &pos);
 #endif

@@ -77,6 +77,10 @@ public:
     QStringList keys() const;
     QObject *instance(const QString &key) const;
 
+#ifdef Q_WS_X11
+    QLibraryPrivate *library(const QString &key) const;
+#endif
+
     void update();
 
     static void refreshAll();

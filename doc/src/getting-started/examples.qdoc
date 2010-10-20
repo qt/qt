@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -32,7 +32,7 @@
    Qt includes a set of examples that cover nearly every aspect of Qt
    development. They aren't meant to be impressive when you run them,
    but in each case the source code has been carefully written to
-   illustrate one or more best Qt programming practices. 
+   illustrate one or more best Qt programming practices.
 
    You can run the examples from the \l{Examples and Demos Launcher}
    application (except see \l{QML Examples and Demos} {QML Examples}
@@ -273,7 +273,7 @@
     \page examples-painting.html
     \ingroup all-examples
     \title Painting Examples
-    \brief How to use the Qt painting system
+    \brief How to use the Qt painting system.
 
     \image painting-examples.png
 
@@ -303,7 +303,7 @@
     \page examples-richtext.html
     \ingroup all-examples
     \title Rich Text Examples
-    \brief Using the document-oriented rich text engine
+    \brief Using the document-oriented rich text engine.
 
     \image richtext-examples.png
 
@@ -324,7 +324,7 @@
     \page examples-desktop.html
     \ingroup all-examples
     \title Desktop Examples
-    \brief Integrating your Qt application with your favorite desktop
+    \brief Integrating your Qt application with your favorite desktop.
 
     \image desktop-examples.png
 
@@ -371,7 +371,7 @@
     \page examples-threadandconcurrent.html
     \ingroup all-examples
     \title Threading and Concurrent Programming Examples
-    \brief Threading and concurrent programming in Qt
+    \brief Threading and concurrent programming in Qt.
 
     \image thread-examples.png
 
@@ -409,7 +409,7 @@
     \page examples.tools.html
     \ingroup all-examples
     \title Tools Examples
-    \brief Using Qt's containers, iterators, and other tool classes
+    \brief Using Qt's containers, iterators, and other tool classes.
 
     \image tool-examples.png
 
@@ -445,7 +445,7 @@
     \page examples-network.html
     \ingroup all-examples
     \title Network Examples
-    \brief How to do network programming in Qt
+    \brief How to do network programming in Qt.
 
     \image network-examples.png
 
@@ -482,7 +482,7 @@
     \page examples-ipc.html
     \ingroup all-examples
     \title IPC Examples
-    \brief Inter-Process Communication with Qt
+    \brief Inter-Process Communication with Qt.
 
     \image ipc-examples.png
 
@@ -497,7 +497,7 @@
     \page examples-opengl.html
     \ingroup all-examples
     \title OpenGL Examples
-    \brief Accessing OpenGL from Qt
+    \brief Accessing OpenGL from Qt.
 
     \image opengl-examples.png
 
@@ -529,7 +529,7 @@
     \page examples-openvg.html
     \ingroup all-examples
     \title OpenVG Examples
-    \brief Accessing OpenVG from Qt
+    \brief Accessing OpenVG from Qt.
 
     \image opengl-examples.png
 
@@ -548,7 +548,7 @@
     \page examples-multimedia.html
     \ingroup all-examples
     \title Multimedia Examples
-    \brief Audio, video, and Phonon with Qt
+    \brief Audio, video, and Phonon with Qt.
 
     \image phonon-examples.png
 
@@ -595,7 +595,7 @@
     \page examples-sql.html
     \ingroup all-examples
     \title SQL Examples
-    \brief Accessing your SQL database from Qt
+    \brief Accessing your SQL database from Qt.
 
     \image sql-examples.png
 
@@ -623,7 +623,7 @@
     \page examples-xml.html
     \ingroup all-examples
     \title XML Examples
-    \brief Using XML with Qt
+    \brief Using XML with Qt.
 
     \image xml-examples.png XML
 
@@ -658,7 +658,7 @@
     \page examples-designer.html
     \ingroup all-examples
     \title Qt Designer Examples
-    \brief Using Qt Designer to build your UI
+    \brief Using Qt Designer to build your UI.
 
     \image designer-examples.png QtDesigner
 
@@ -681,7 +681,7 @@
     \page examples-uitools.html
     \ingroup all-examples
     \title UiTools Examples
-    \brief Using the QtUiTools module
+    \brief Using the QtUiTools module.
 
     \image uitools-examples.png UiTools
 
@@ -695,7 +695,7 @@
     \page examples-linguist.html
     \ingroup all-examples
     \title Qt Linguist Examples
-    \brief Using Qt Linguist to internationalize your Qt application
+    \brief Using Qt Linguist to internationalize your Qt application.
 
     \image linguist-examples.png
 
@@ -713,7 +713,7 @@
     \page examples-script.html
     \ingroup all-examples
     \title Qt Script Examples
-    \brief Using the Qt scripting environment
+    \brief Using the Qt scripting environment.
 
     \image qtscript-examples.png QtScript
 
@@ -740,7 +740,7 @@
     \page examples-webkit.html
     \ingroup all-examples
     \title WebKit Examples
-    \brief Using WebKit in your Qt application
+    \brief Using WebKit in your Qt application.
 
     \image webkit-examples.png WebKit
 
@@ -764,6 +764,9 @@
     \row \o \l{webkit/googlechat}{Google Chat}
     \o A real-world example that shows how an existing Web-based service can be accessed
     using QtWebKit.
+    \row \o \l{webkit/imageanalyzer}{Image Analyzer}\raisedaster
+    \o A \l{The QtWebKit Bridge}{QtWebKit bridge} application which contains a
+    web interface and client-side processing.
     \row \o \l{webkit/previewer}{Previewer}\raisedaster
     \o Shows how to make a simple Web page previewer by using Qt's text input widgets
     together with a QWebView widget.
@@ -776,10 +779,10 @@
 */
 
 /*!
-    \page examples-helpsystem.html 
+    \page examples-helpsystem.html
     \ingroup all-examples
     \title Help System Examples
-    \brief Adding interactive help to your Qt application
+    \brief Adding interactive help to your Qt application.
 
     \image assistant-examples.png HelpSystem
 
@@ -800,7 +803,7 @@
     \page examples-statemachine.html
     \ingroup all-examples
     \title State Machine Examples
-    \brief Using Qt's finite state machine classes
+    \brief Using Qt's finite state machine classes.
 
     \image statemachine-examples.png StateMachine
 
@@ -824,7 +827,7 @@
     \page examples-animation.html
     \ingroup all-examples
     \title Animation Framework Examples
-    \brief Doing animations with Qt
+    \brief Doing animations with Qt.
 
     \image animation-examples.png Animation
 
@@ -844,7 +847,7 @@
     \page examples-touch.html
     \ingroup all-examples
     \title Touch Input Examples
-    \brief Using Qt's touch input capability
+    \brief Using Qt's touch input capability.
 
     Support for touch input makes it possible for developers to create
     extensible and intuitive user interfaces.
@@ -861,7 +864,7 @@
     \page examples-gestures.html
     \ingroup all-examples
     \title Gestures Examples
-    \brief Gesture programming examples
+    \brief Gesture programming examples.
 
     The API of the gesture framework is not yet finalized and
     still subject to change.
@@ -875,7 +878,7 @@
     \page examples-dbus.html
     \ingroup all-examples
     \title D-Bus Examples
-    \brief Using D-Bus from Qt applications
+    \brief Using D-Bus from Qt applications.
 
     \list
     \o \l{dbus/dbus-chat}{Chat}
@@ -892,7 +895,7 @@
     \page examples-embeddedlinux.html
     \ingroup all-examples
     \title Qt for Embedded Linux Examples
-    \brief Using Qt in Embedded Linux
+    \brief Using Qt in Embedded Linux.
 
     \image qt-embedded-examples.png QtEmbedded
 
@@ -912,7 +915,7 @@
     \page examples-activeqt.html
     \ingroup all-examples
     \title ActiveQt Examples
-    \brief Using ActiveX from Qt applications
+    \brief Using ActiveX from Qt applications.
 
     \image activeqt-examples.png ActiveQt
 

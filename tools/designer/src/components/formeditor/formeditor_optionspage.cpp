@@ -86,9 +86,11 @@ ZoomSettingsWidget::ZoomSettingsWidget(QWidget *parent) :
     m_zoomCombo->setEditable(false);
     const IntList zoomValues = ZoomMenu::zoomValues();
     const IntList::const_iterator cend = zoomValues.constEnd();
-    //: Zoom percentage
-    for (IntList::const_iterator it = zoomValues.constBegin(); it != cend; ++it)
+
+    for (IntList::const_iterator it = zoomValues.constBegin(); it != cend; ++it) {
+        //: Zoom percentage
         m_zoomCombo->addItem(QCoreApplication::translate("FormEditorOptionsPage", "%1 %").arg(*it), QVariant(*it));
+    }
 
     // Layout
     setCheckable(true);

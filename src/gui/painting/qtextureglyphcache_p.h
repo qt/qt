@@ -64,6 +64,10 @@
 #  undef m_type
 #endif
 
+#ifndef QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH
+#define QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH 256
+#endif
+
 struct glyph_metrics_t;
 typedef unsigned int glyph_t;
 
@@ -113,6 +117,8 @@ public:
     QHash<glyph_t, Coord> coords;
 
     QImage textureMapForGlyph(glyph_t g) const;
+    virtual int maxTextureWidth() const { return QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH; }
+    virtual int maxTextureHeight() const { return 32768; }
 
 protected:
     QFontEngine *m_current_fontengine;

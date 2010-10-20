@@ -114,6 +114,9 @@
 
 QT_BEGIN_NAMESPACE
 
+// qmainwindow.cpp
+extern QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *window);
+
 #define XCOORD_MAX 16383
 #define WRECT_MAX 8191
 
@@ -2375,7 +2378,8 @@ void QWidgetPrivate::recreateMacWindow()
     HIViewRemoveFromSuperview(myView);
     determineWindowClass();
     createWindow_sys();
-    if (QMainWindowLayout *mwl = qobject_cast<QMainWindowLayout *>(q->layout())) {
+
+    if (QMainWindowLayout *mwl = qt_mainwindow_layout(qobject_cast<QMainWindow *>(q))) {
         mwl->updateHIToolBarStatus();
     }
 
@@ -2912,7 +2916,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
             // We do this down below for wasCreated, so avoid doing this twice
             // (only for performance, it gets called a lot anyway).
             if (!wasCreated) {
-                if (QMainWindowLayout *mwl = qobject_cast<QMainWindowLayout *>(q->layout())) {
+                if (QMainWindowLayout *mwl = qt_mainwindow_layout(qobject_cast<QMainWindow *>(q))) {
                     mwl->updateHIToolBarStatus();
                 }
             }
@@ -2937,7 +2941,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
         // If we were a unified window, We just transfered our toolbars out of the unified toolbar.
         // So redo the status one more time. It apparently is not an issue with Cocoa.
         if (q->isWindow()) {
-            if (QMainWindowLayout *mwl = qobject_cast<QMainWindowLayout *>(q->layout())) {
+            if (QMainWindowLayout *mwl = qt_mainwindow_layout(qobject_cast<QMainWindow *>(q))) {
                 mwl->updateHIToolBarStatus();
             }
         }
@@ -5138,7 +5142,7 @@ void QWidgetPrivate::macUpdateMetalAttribute()
             return;
         recreateMacWindow();
 #else
-        QMainWindowLayout *layout = qobject_cast<QMainWindowLayout *>(q->layout());
+        QMainWindowLayout *layout = qt_mainwindow_layout(qobject_cast<QMainWindow *>(q));
         if (q->testAttribute(Qt::WA_MacBrushedMetal)) {
             if (layout)
                 layout->updateHIToolBarStatus();

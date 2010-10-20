@@ -41,6 +41,7 @@
 
 #include "qfontengine_s60_p.h"
 #include "qtextengine_p.h"
+#include "qendian.h"
 #include "qglobal.h"
 #include <private/qapplication_p.h>
 #include "qimage.h"
@@ -166,9 +167,32 @@ const uchar *QSymbianTypeFaceExtras::cmap() const
     return reinterpret_cast<const uchar *>(m_cmapTable.constData());
 }
 
+bool QSymbianTypeFaceExtras::isSymbolCMap() const
+{
+    return m_symbolCMap;
+}
+
 CFont *QSymbianTypeFaceExtras::fontOwner() const
 {
     return m_cFont;
+}
+
+QFixed QSymbianTypeFaceExtras::unitsPerEm() const
+{
+    if (m_unitsPerEm.value() != 0)
+        return m_unitsPerEm;
+    const QByteArray head = getSfntTable(MAKE_TAG('h', 'e', 'a', 'd'));
+    const int unitsPerEmOffset = 18;
+    if (head.size() > unitsPerEmOffset + sizeof(quint16)) {
+        const uchar* tableData = reinterpret_cast<const uchar*>(head.constData());
+        const uchar* unitsPerEm = tableData + unitsPerEmOffset;
+        m_unitsPerEm = qFromBigEndian<quint16>(unitsPerEm);
+    } else {
+        // Bitmap font? Corrupt font?
+        // We return -1 and let the QFontEngineS60 return the pixel size.
+        m_unitsPerEm = -1;
+    }
+    return m_unitsPerEm;
 }
 
 // duplicated from qfontengine_xyz.cpp
@@ -243,6 +267,13 @@ QFontEngineS60::~QFontEngineS60()
     releaseFont(m_scaledFont);
 }
 
+QFixed QFontEngineS60::emSquareSize() const
+{
+    const QFixed unitsPerEm = m_extras->unitsPerEm();
+    return unitsPerEm.toInt() == -1 ?
+                QFixed::fromReal(m_originalFontSizeInPixels) : unitsPerEm;
+}
+
 bool QFontEngineS60::stringToCMap(const QChar *characters, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const
 {
     if (*nglyphs < len) {
@@ -256,7 +287,7 @@ bool QFontEngineS60::stringToCMap(const QChar *characters, int len, QGlyphLayout
     for (int i = 0; i < len; ++i) {
         const unsigned int uc = getChar(characters, i, len);
         *g++ = QFontEngine::getTrueTypeGlyphIndex(cmap,
-        		isRtl ? QChar::mirroredChar(uc) : uc);
+                        (isRtl && !m_extras->isSymbolCMap()) ? QChar::mirroredChar(uc) : uc);
     }
 
     glyphs->numGlyphs = g - glyphs->glyphs;
@@ -272,10 +303,13 @@ bool QFontEngineS60::stringToCMap(const QChar *characters, int len, QGlyphLayout
 void QFontEngineS60::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlags flags) const
 {
     Q_UNUSED(flags);
+    TOpenFontCharMetrics metrics;
+    const TUint8 *glyphBitmapBytes;
+    TSize glyphBitmapSize;
     for (int i = 0; i < glyphs->numGlyphs; i++) {
-        const glyph_metrics_t bbox = boundingBox_const(glyphs->glyphs[i]);
-        glyphs->advances_x[i] = bbox.xoff;
-        glyphs->advances_y[i] = bbox.yoff;
+        getCharacterData(glyphs->glyphs[i], metrics, glyphBitmapBytes, glyphBitmapSize);
+        glyphs->advances_x[i] = metrics.HorizAdvance();
+        glyphs->advances_y[i] = 0;
     }
 }
 
@@ -303,6 +337,7 @@ void QFontEngineS60::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions,
         parseGlyphPathData(outlineChar, outlineEnd, *path, fontSizeInPixels,
                 positions[count++].toPointF(), false);
     } while(KErrNone == iterator.Next() && count <= nglyphs);
+    iterator.Close();
 #else // Q_SYMBIAN_HAS_GLYPHOUTLINE_API
     QFontEngine::addGlyphsToPath(glyphs, positions, nglyphs, path, flags);
 #endif //Q_SYMBIAN_HAS_GLYPHOUTLINE_API
@@ -310,29 +345,17 @@ void QFontEngineS60::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions,
 
 QImage QFontEngineS60::alphaMapForGlyph(glyph_t glyph)
 {
+    // Note: On some Symbian versions (apparently <= Symbian^1), this
+    // function will return gray values 0x00, 0x10 ... 0xe0, 0xf0 due
+    // to a bug. The glyphs are nowhere perfectly opaque.
+    // This has been fixed for Symbian^3.
+
     TOpenFontCharMetrics metrics;
     const TUint8 *glyphBitmapBytes;
     TSize glyphBitmapSize;
     getCharacterData(glyph, metrics, glyphBitmapBytes, glyphBitmapSize);
     QImage result(glyphBitmapBytes, glyphBitmapSize.iWidth, glyphBitmapSize.iHeight, glyphBitmapSize.iWidth, QImage::Format_Indexed8);
     result.setColorTable(grayPalette());
-
-    // The above setColorTable() call detached the image data anyway, so why not shape tha data a bit, while we can.
-    // CFont::GetCharacterData() returns 8-bit data that obviously was 4-bit data before, and converted to 8-bit incorrectly.
-    // The data values are 0x00, 0x10 ... 0xe0, 0xf0. So, a real opaque 0xff is never reached, which we get punished
-    // for every time we want to blit this glyph in the raster paint engine.
-    // "Fix" is to convert all 0xf0 to 0xff. Is fine, quality wise, and I assume faster than correcting all values.
-    // Blitting is however, evidentially faster now.
-    const int bpl = result.bytesPerLine();
-    for (int row = 0; row < result.height(); ++row) {
-        uchar *scanLine = result.scanLine(row);
-        for (int column = 0; column < bpl; ++column) {
-            if (*scanLine == 0xf0)
-                *scanLine = 0xff;
-            scanLine++;
-        }
-    }
-
     return result;
 }
 
@@ -354,13 +377,11 @@ glyph_metrics_t QFontEngineS60::boundingBox_const(glyph_t glyph) const
     const TUint8 *glyphBitmapBytes;
     TSize glyphBitmapSize;
     getCharacterData(glyph, metrics, glyphBitmapBytes, glyphBitmapSize);
-    TRect glyphBounds;
-    metrics.GetHorizBounds(glyphBounds);
     const glyph_metrics_t result(
-        glyphBounds.iTl.iX,
-        glyphBounds.iTl.iY,
-        glyphBounds.Width(),
-        glyphBounds.Height(),
+        metrics.HorizBearingX(),
+        -metrics.HorizBearingY(),
+        metrics.Width(),
+        metrics.Height(),
         metrics.HorizAdvance(),
         0
     );

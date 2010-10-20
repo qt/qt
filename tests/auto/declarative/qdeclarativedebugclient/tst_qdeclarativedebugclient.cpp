@@ -66,9 +66,7 @@ private slots:
     void initTestCase();
 
     void name();
-    void isEnabled();
-    void setEnabled();
-    void isConnected();
+    void status();
     void sendMessage();
 };
 
@@ -76,10 +74,13 @@ void tst_QDeclarativeDebugClient::initTestCase()
 {
     QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Waiting for connection on port 3770...");
 
-    qputenv("QML_DEBUG_SERVER_PORT", "3770");
     new QDeclarativeEngine(this);
 
     m_conn = new QDeclarativeDebugConnection(this);
+
+    QDeclarativeDebugTestClient client("tst_QDeclarativeDebugClient::handshake()", m_conn);
+    QDeclarativeDebugTestService service("tst_QDeclarativeDebugClient::handshake()");
+
     m_conn->connectToHost("127.0.0.1", 3770);
 
     QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Connection established");
@@ -87,6 +88,7 @@ void tst_QDeclarativeDebugClient::initTestCase()
     Q_ASSERT(ok);
 
     QTRY_VERIFY(QDeclarativeDebugService::hasDebuggingClient());
+    QTRY_COMPARE(client.status(), QDeclarativeDebugClient::Enabled);
 }
 
 void tst_QDeclarativeDebugClient::name()
@@ -97,46 +99,31 @@ void tst_QDeclarativeDebugClient::name()
     QCOMPARE(client.name(), name);
 }
 
-void tst_QDeclarativeDebugClient::isEnabled()
+void tst_QDeclarativeDebugClient::status()
 {
-    QDeclarativeDebugClient client("tst_QDeclarativeDebugClient::isEnabled()", m_conn);
-    QCOMPARE(client.isEnabled(), false);
-}
+    {
+        QDeclarativeDebugConnection dummyConn;
+        QDeclarativeDebugClient client("tst_QDeclarativeDebugClient::status()", &dummyConn);
+        QCOMPARE(client.status(), QDeclarativeDebugClient::NotConnected);
+    }
 
-void tst_QDeclarativeDebugClient::setEnabled()
-{
-    QDeclarativeDebugTestService service("tst_QDeclarativeDebugClient::setEnabled()");
-    QDeclarativeDebugTestClient client("tst_QDeclarativeDebugClient::setEnabled()", m_conn);
+    QDeclarativeDebugTestClient client("tst_QDeclarativeDebugClient::status()", m_conn);
+    QCOMPARE(client.status(), QDeclarativeDebugClient::Unavailable);
 
-    QCOMPARE(service.isEnabled(), false);
+    {
+        QDeclarativeDebugTestService service("tst_QDeclarativeDebugClient::status()");
+        QTRY_COMPARE(client.status(), QDeclarativeDebugClient::Enabled);
+    }
 
-    client.setEnabled(true);
-    QCOMPARE(client.isEnabled(), true);
-    QDeclarativeDebugTest::waitForSignal(&service, SIGNAL(enabledStateChanged()));
-    QCOMPARE(service.isEnabled(), true);
-
-    client.setEnabled(false);
-    QCOMPARE(client.isEnabled(), false);
-    QDeclarativeDebugTest::waitForSignal(&service, SIGNAL(enabledStateChanged()));
-    QCOMPARE(service.isEnabled(), false);
-}
-
-void tst_QDeclarativeDebugClient::isConnected()
-{
-    QDeclarativeDebugClient client1("tst_QDeclarativeDebugClient::isConnected() A", m_conn);
-    QCOMPARE(client1.isConnected(), true);
-
-    QDeclarativeDebugConnection conn;
-    QDeclarativeDebugClient client2("tst_QDeclarativeDebugClient::isConnected() B", &conn);
-    QCOMPARE(client2.isConnected(), false);
-
-    QDeclarativeDebugClient client3("tst_QDeclarativeDebugClient::isConnected() C", 0);
-    QCOMPARE(client3.isConnected(), false);
+    QTRY_COMPARE(client.status(), QDeclarativeDebugClient::Unavailable);
 
     // duplicate plugin name
-    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugClient: Conflicting plugin name \"tst_QDeclarativeDebugClient::isConnected() A\" ");
-    QDeclarativeDebugClient client4("tst_QDeclarativeDebugClient::isConnected() A", m_conn);
-    QCOMPARE(client4.isConnected(), false);
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugClient: Conflicting plugin name \"tst_QDeclarativeDebugClient::status()\" ");
+    QDeclarativeDebugClient client2("tst_QDeclarativeDebugClient::status()", m_conn);
+    QCOMPARE(client2.status(), QDeclarativeDebugClient::NotConnected);
+
+    QDeclarativeDebugClient client3("tst_QDeclarativeDebugClient::status3()", 0);
+    QCOMPARE(client3.status(), QDeclarativeDebugClient::NotConnected);
 }
 
 void tst_QDeclarativeDebugClient::sendMessage()
@@ -146,12 +133,26 @@ void tst_QDeclarativeDebugClient::sendMessage()
 
     QByteArray msg = "hello!";
 
+    QTRY_COMPARE(client.status(), QDeclarativeDebugClient::Enabled);
+
     client.sendMessage(msg);
     QByteArray resp = client.waitForResponse();
     QCOMPARE(resp, msg);
 }
 
-QTEST_MAIN(tst_QDeclarativeDebugClient)
+int main(int argc, char *argv[])
+{
+    int _argc = argc + 1;
+    char **_argv = new char*[_argc];
+    for (int i = 0; i < argc; ++i)
+        _argv[i] = argv[i];
+    _argv[_argc - 1] = "-qmljsdebugger=port:3770";
+
+    QApplication app(_argc, _argv);
+    tst_QDeclarativeDebugClient tc;
+    return QTest::qExec(&tc, _argc, _argv);
+    delete _argv;
+}
 
 #include "tst_qdeclarativedebugclient.moc"
 

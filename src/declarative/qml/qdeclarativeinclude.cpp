@@ -173,7 +173,7 @@ void QDeclarativeInclude::callback(QScriptEngine *engine, QScriptValue &callback
 }
 
 /*!
-\qmlmethod object Qt::include(url, callback)
+\qmlmethod object Qt::include(string url, jsobject callback)
 
 Include another JavaScript file.  This method can only be used from within JavaScript files, 
 and not regular QML files.

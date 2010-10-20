@@ -126,8 +126,9 @@ void WriteIncludes::acceptUI(DomUI *node)
 
     if (m_uic->hasExternalPixmap() && m_uic->pixmapFunction() == QLatin1String("qPixmapFromMimeSource")) {
 #ifdef QT_NO_QT3_SUPPORT
-        qWarning("Warning: The form file has external pixmaps or qPixmapFromMimeSource() set as a pixmap function. "
-                 "This requires Qt 3 support, which is disabled. The resulting code will not compile.");
+        qWarning("%s: Warning: The form file has external pixmaps or qPixmapFromMimeSource() set as a pixmap function. "
+                 "This requires Qt 3 support, which is disabled. The resulting code will not compile.",
+                 qPrintable(m_uic->option().messagePrefix()));
 #endif
         add(QLatin1String("Q3MimeSourceFactory"));
     }
@@ -212,8 +213,9 @@ void WriteIncludes::insertIncludeForClass(const QString &className, QString head
         header = lowerClassName;
         header += QLatin1String(".h");
         if (warnHeaderGeneration) {
-            qWarning("Warning: generated header '%s' for class '%s'.", qPrintable(header),
-                     qPrintable(className));
+            qWarning("%s: Warning: generated header '%s' for class '%s'.",
+                     qPrintable(m_uic->option().messagePrefix()),
+                     qPrintable(header), qPrintable(className));
 
         }
 

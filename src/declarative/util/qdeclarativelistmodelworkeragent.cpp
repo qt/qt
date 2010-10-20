@@ -83,11 +83,11 @@ void QDeclarativeListModelWorkerAgent::Data::changedChange(int index, int count)
 }
 
 QDeclarativeListModelWorkerAgent::QDeclarativeListModelWorkerAgent(QDeclarativeListModel *model)
-: m_engine(0), m_ref(1), m_orig(model), m_copy(new QDeclarativeListModel(true, this))
+    : m_engine(0), 
+      m_ref(1), 
+      m_orig(model), 
+      m_copy(new QDeclarativeListModel(model, this))
 {
-    m_copy->m_flat->m_roles = m_orig->m_flat->m_roles;
-    m_copy->m_flat->m_strings = m_orig->m_flat->m_strings;
-    m_copy->m_flat->m_values = m_orig->m_flat->m_values;
 }
 
 QDeclarativeListModelWorkerAgent::~QDeclarativeListModelWorkerAgent()
@@ -194,6 +194,11 @@ void QDeclarativeListModelWorkerAgent::sync()
     mutex.unlock();
 }
 
+void QDeclarativeListModelWorkerAgent::changedData(int index, int count)
+{
+    data.changedChange(index, count);
+}
+
 bool QDeclarativeListModelWorkerAgent::event(QEvent *e)
 {
     if (e->type() == QEvent::User) {
@@ -203,7 +208,7 @@ bool QDeclarativeListModelWorkerAgent::event(QEvent *e)
         const QList<Change> &changes = s->data.changes;
 
         if (m_copy) {
-            bool cc = m_copy->count() != s->list->count();
+            bool cc = m_orig->count() != s->list->count();
 
             FlatListModel *orig = m_orig->m_flat;
             FlatListModel *copy = s->list->m_flat;
@@ -215,6 +220,24 @@ bool QDeclarativeListModelWorkerAgent::event(QEvent *e)
             orig->m_roles = copy->m_roles;
             orig->m_strings = copy->m_strings;
             orig->m_values = copy->m_values;
+
+            // update the orig->m_nodeData list
+            for (int ii = 0; ii < changes.count(); ++ii) {
+                const Change &change = changes.at(ii);
+                switch (change.type) {
+                case Change::Inserted:
+                    orig->insertedNode(change.index);
+                    break;
+                case Change::Removed:
+                    orig->removedNode(change.index);
+                    break;
+                case Change::Moved:
+                    orig->moveNodes(change.index, change.to, change.count);
+                    break;
+                case Change::Changed:
+                    break;
+                }
+            }
 
             syncDone.wakeAll();
             locker.unlock();
@@ -232,7 +255,7 @@ bool QDeclarativeListModelWorkerAgent::event(QEvent *e)
                     emit m_orig->itemsMoved(change.index, change.to, change.count);
                     break;
                 case Change::Changed:
-                    emit m_orig->itemsMoved(change.index, change.to, change.count);
+                    emit m_orig->itemsChanged(change.index, change.count, orig->m_roles.keys());
                     break;
                 }
             }

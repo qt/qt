@@ -505,17 +505,26 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                             code=oldcode;
                         }
                         while (code>=clear_code+2) {
+                            if (code >= max_code) {
+                                state = Error;
+                                return -1;
+                            }
                             *sp++=table[1][code];
                             if (code==table[0][code]) {
                                 state=Error;
-                                break;
+                                return -1;
                             }
                             if (sp-stack>=(1<<(max_lzw_bits))*2) {
                                 state=Error;
-                                break;
+                                return -1;
                             }
                             code=table[0][code];
                         }
+                        if (code < 0) {
+                            state = Error;
+                            return -1;
+                        }
+
                         *sp++=firstcode=table[1][code];
                         code=max_code;
                         if (code<(1<<max_lzw_bits)) {

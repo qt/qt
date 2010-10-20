@@ -319,6 +319,7 @@ void QDeclarativeTextEdit::setTextFormat(TextFormat format)
         updateSize();
     }
     d->format = format;
+    d->control->setAcceptRichText(d->format != PlainText);
     emit textFormatChanged(d->format);
 }
 
@@ -555,7 +556,7 @@ QRectF QDeclarativeTextEdit::positionToRectangle(int pos) const
 }
 
 /*!
-    \qmlmethod int TextEdit::positionAt(x,y)
+    \qmlmethod int TextEdit::positionAt(int x, int y)
 
     Returns the text position closest to pixel position (\a x, \a y).
 
@@ -1018,7 +1019,7 @@ void QDeclarativeTextEdit::selectWord()
 }
 
 /*!
-    \qmlmethod void TextEdit::select(start,end)
+    \qmlmethod void TextEdit::select(int start, int end)
 
     Causes the text from \a start to \a end to be selected.
 
@@ -1422,7 +1423,7 @@ void QDeclarativeTextEditPrivate::updateDefaultTextOption()
     Only relevant on platforms, which provide virtual keyboards.
 
     \code
-        import Qt 4.7
+        import QtQuick 1.0
         TextEdit {
             id: textEdit
             text: "Hello world!"
@@ -1473,7 +1474,7 @@ void QDeclarativeTextEdit::openSoftwareInputPanel()
     Only relevant on platforms, which provide virtual keyboards.
 
     \code
-        import Qt 4.7
+        import QtQuick 1.0
         TextEdit {
             id: textEdit
             text: "Hello world!"

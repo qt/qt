@@ -121,7 +121,7 @@ private slots:
     void documentationUpdated(const QString &namespaceName);
 
 private:
-    bool initHelpDB();
+    bool initHelpDB(bool registerInternalDoc);
     void setupActions();
     void closeEvent(QCloseEvent *e);
     void activateDockWidget(QWidget *w);

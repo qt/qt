@@ -2091,7 +2091,8 @@ QStringList QCoreApplication::arguments()
                 l1arg == "-stylesheet" ||
                 l1arg == "-widgetcount")
                 ;
-            else if (l1arg.startsWith("-style="))
+            else if (l1arg.startsWith("-style=") ||
+                     l1arg.startsWith("-qmljsdebugger="))
                 ;
             else if (l1arg == "-style" ||
                      l1arg == "-session" ||

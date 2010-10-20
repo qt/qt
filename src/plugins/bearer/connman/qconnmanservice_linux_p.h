@@ -331,6 +331,7 @@ public:
     QString getInterface();
     quint32 getReceivedByteCount();
     quint32 getTransmittedByteCount();
+    quint64 getTimeOnline();
 
 private:
     QConnmanCounterInterfacePrivate *d;

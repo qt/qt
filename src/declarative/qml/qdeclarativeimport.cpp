@@ -351,7 +351,11 @@ bool QDeclarativeImportsPrivate::importExtension(const QString &absoluteFilePath
 {
     QFile file(absoluteFilePath);
     QString filecontent;
-    if (file.open(QFile::ReadOnly)) {
+    if (!QDeclarative_isFileCaseCorrect(absoluteFilePath)) {
+        if (errorString)
+            *errorString = QDeclarativeImportDatabase::tr("cannot load module \"%1\": File name case mismatch for \"%2\"").arg(uri).arg(absoluteFilePath);
+        return false;
+    } else if (file.open(QFile::ReadOnly)) {
         filecontent = QString::fromUtf8(file.readAll());
         if (qmlImportTrace())
             qDebug().nospace() << "QDeclarativeImports(" << qPrintable(base.toString()) << "::importExtension: "
@@ -876,6 +880,7 @@ void QDeclarativeImportDatabase::addImportPath(const QString& path)
         cPath = dir.canonicalPath();
     } else {
         cPath = path;
+        cPath.replace(QLatin1Char('\\'), QLatin1Char('/'));
     }
 
     if (!cPath.isEmpty()
@@ -912,6 +917,11 @@ bool QDeclarativeImportDatabase::importPlugin(const QString &filePath, const QSt
     }
 
     if (!engineInitialized || !typesRegistered) {
+        if (!QDeclarative_isFileCaseCorrect(absoluteFilePath)) {
+            if (errorString) 
+                *errorString = tr("File name case mismatch for \"%2\"").arg(absoluteFilePath);
+            return false;
+        }
         QPluginLoader loader(absoluteFilePath);
 
         if (!loader.load()) {

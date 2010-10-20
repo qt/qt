@@ -87,7 +87,8 @@ unix:SOURCES += ../../corelib/io/qfsfileengine_unix.cpp \
                 ../../corelib/io/qfsfileengine_iterator_unix.cpp
 
 win32:SOURCES += ../../corelib/io/qfsfileengine_win.cpp \
-                 ../../corelib/io/qfsfileengine_iterator_win.cpp
+                 ../../corelib/io/qfsfileengine_iterator_win.cpp \
+                 ../../corelib/plugin/qsystemlibrary.cpp \
 
 macx: {
    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.4 #enables weak linking for 10.4 (exported)

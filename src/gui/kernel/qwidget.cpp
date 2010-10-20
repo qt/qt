@@ -273,6 +273,9 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , isMoved(0)
       , isGLWidget(0)
       , usesDoubleBufferedGLContext(0)
+#ifndef QT_NO_IM
+      , inheritsInputMethodHints(0)
+#endif
 #if defined(Q_WS_X11)
       , picture(0)
 #elif defined(Q_WS_WIN)
@@ -728,9 +731,9 @@ void QWidget::setAutoFillBackground(bool enabled)
     \list
         \i  mouseMoveEvent() is called whenever the mouse moves while a mouse
             button is held down. This can be useful during drag and drop
-            operations. If you call setMouseTracking(true), you get mouse move
-            events even when no buttons are held down. (See also the \l{Drag
-            and Drop} guide.)
+            operations. If you call \l{setMouseTracking()}{setMouseTracking}(true),
+            you get mouse move events even when no buttons are held down.
+            (See also the \l{Drag and Drop} guide.)
         \i  keyReleaseEvent() is called whenever a key is released and while it
             is held down (if the key is auto-repeating). In that case, the
             widget will receive a pair of key release and key press event for
@@ -1194,7 +1197,7 @@ void QWidgetPrivate::adjustFlags(Qt::WindowFlags &flags, QWidget *w)
         flags |= Qt::WindowTitleHint;
     }
     if (customize)
-        ; // don't modify window flags if the user explicitely set them.
+        ; // don't modify window flags if the user explicitly set them.
     else if (type == Qt::Dialog || type == Qt::Sheet)
 #ifndef Q_WS_WINCE
         flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowContextHelpButtonHint | Qt::WindowCloseButtonHint;
@@ -7500,7 +7503,7 @@ void QWidgetPrivate::hide_helper()
     A hidden widget will only become visible when show() is called on
     it. It will not be automatically shown when the parent is shown.
 
-    To check visiblity, use !isVisible() instead (notice the exclamation mark).
+    To check visibility, use !isVisible() instead (notice the exclamation mark).
 
     isHidden() implies !isVisible(), but a widget can be not visible
     and not hidden at the same time. This is the case for widgets that are children of
@@ -8664,8 +8667,8 @@ bool QWidget::event(QEvent *event)
 /*!
   This event handler can be reimplemented to handle state changes.
 
-  The state being changed in this event can be retrieved through event \a
-  event.
+  The state being changed in this event can be retrieved through the \a event
+  supplied.
 
   Change events include: QEvent::ToolBarChange,
   QEvent::ActivationChange, QEvent::EnabledChange, QEvent::FontChange,
@@ -9228,9 +9231,13 @@ QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
 */
 Qt::InputMethodHints QWidget::inputMethodHints() const
 {
-    Q_D(const QWidget);
 #ifndef QT_NO_IM
-    return d->imHints;
+    const QWidgetPrivate *priv = d_func();
+    while (priv->inheritsInputMethodHints) {
+        priv = priv->q_func()->parentWidget()->d_func();
+        Q_ASSERT(priv);
+    }
+    return priv->imHints;
 #else //QT_NO_IM
     return 0;
 #endif //QT_NO_IM
@@ -11099,7 +11106,7 @@ void QWidget::updateMicroFocus()
 {
 #if !defined(QT_NO_IM) && (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN))
     Q_D(QWidget);
-    // and optimisation to update input context only it has already been created.
+    // and optimization to update input context only it has already been created.
     if (d->ic || qApp->d_func()->inputContext) {
         QInputContext *ic = inputContext();
         if (ic)
@@ -11844,8 +11851,8 @@ QWidget *QWidgetPrivate::widgetInNavigationDirection(Direction direction)
 
     Tells us if it there is currently a reachable widget by keypad navigation in
     a certain \a orientation.
-    If no navigation is possible, occuring key events in that \a orientation may
-    be used to interact with the value in the focussed widget, even though it
+    If no navigation is possible, occurring key events in that \a orientation may
+    be used to interact with the value in the focused widget, even though it
     currently has not the editFocus.
 
     \sa QWidgetPrivate::widgetInNavigationDirection(), QWidget::hasEditFocus()
@@ -11865,7 +11872,7 @@ bool QWidgetPrivate::canKeypadNavigate(Qt::Orientation orientation)
     one, left/right key events will be used to switch between tabs in keypad
     navigation. If there is no QTabWidget, the horizontal key events can be used
 to
-    interact with the value in the focussed widget, even though it currently has
+    interact with the value in the focused widget, even though it currently has
     not the editFocus.
 
     \sa QWidget::hasEditFocus()

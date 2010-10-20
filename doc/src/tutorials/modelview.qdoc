@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -30,7 +30,7 @@
 
     \startpage {index.html}{Qt Reference Documentation}
 
-    \title Model/View Contents
+    \title Model/View Tutorial
     \brief An introduction to ModelView programming
 
     Every UI developer should know about ModelView programming and the goal of
@@ -103,13 +103,13 @@
     Let's have a closer look at a standard table widget. A table widget is a 2D
     array of the data elements that the user can change. The table widget can be
     integrated into a program flow by reading and writing the data elements that
-    the table widget provides. This method is very intuitive and useful in many
-    applications.
-
-    Displaying and editing a database table with a standard table widget can be
-    problematic. Two copies of the data have to be coordinated: one outside the
+    the table widget provides. 
+    
+    This method is very intuitive and useful in many applications, but displaying 
+    and editing a database table with a standard table widget can be problematic.
+    Two copies of the data have to be coordinated: one outside the
     widget; one inside the widget. The developer is responsible for
-    synchronizing both versions. The tight coupling of presentation and data
+    synchronizing both versions. Besides this, the tight coupling of presentation and data
     makes it harder to write unit tests.
 
     \section2 1.2 Model/View to the Rescue
@@ -184,7 +184,13 @@
 
 
     \section1 2. A Simple Model/View Application
-    If you want to develop a model/view application, where should you start? We recommend starting with a simple example and extending it step-by-step. This makes understanding the architecture a lot easier. Trying to understand the model/view architecture in detail before invoking the IDE has proven to be less convenient for many developers. It is substantially easier to start with a simple model/view application that has demo data. Give it a try! Simply replace the data in the examples below with your own.
+    If you want to develop a model/view application, where should you start? 
+    We recommend starting with a simple example and extending it step-by-step. 
+    This makes understanding the architecture a lot easier. Trying to understand 
+    the model/view architecture in detail before invoking the IDE has proven 
+    to be less convenient for many developers. It is substantially easier to 
+    start with a simple model/view application that has demo data. Give it a 
+    try! Simply replace the data in the examples below with your own.
 
     Below are 7 very simple and independent applications that show different
     sides of model/view programming. The source code can be found inside the
@@ -596,20 +602,22 @@
     \list 1
        \o \bold{C++ GUI Programming with Qt 4} / Jasmin Blanchette, Mark Summerfield,
           \e{Prentice Hall, 2nd edition}, ISBN 0-13-235416-0. Also available in
-          German: C++ GUI Programmierung mit Qt 4: Die offizielle Einführung,
+          German: \bold{C++ GUI Programmierung mit Qt 4: Die offizielle Einführung},
           \e{Addison-Wesley}, ISBN 3-827327-29-6
        \o \bold{The Book of Qt4, The Art of Building Qt Applications} / Daniel Molkentin,
           \e{Open Source Press}, ISBN 1-59327-147-6.
           Translated from \bold{Qt 4, Einführung in die Applikationsentwicklung},
           \e{Open Source Press}, ISBN 3-937514-12-0.
        \o \bold{Foundations of Qt Development} / Johan Thelin, \e{Apress}, ISBN 1-59059-831-8.
+       \o \bold{Advanced Qt Programming} / Mark Summerfield, \e{Prentice Hall}, ISBN 0-321-63590-6. 
+          This book covers Model/View programming on more than 150 pages. 
     \endlist
 
     More information about these books is available on the
     \l{Books about Qt Programming}{Qt Web site}.
 
-    The following list provides an overview of example programs contained in the
-    books above. Some of them make very good templates for developing similar
+    The following list provides an overview of example programs contained in the first three
+    books listed above. Some of them make very good templates for developing similar
     applications.
 
     \table

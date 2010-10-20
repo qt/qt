@@ -63,6 +63,45 @@ QT_BEGIN_NAMESPACE
 const uchar qt_pixmap_bit_mask[] = { 0x01, 0x02, 0x04, 0x08,
                                      0x10, 0x20, 0x40, 0x80 };
 
+static bool cleanup_function_registered = false;
+static QS60PixmapData *firstPixmap = 0;
+
+// static
+void QS60PixmapData::qt_symbian_register_pixmap(QS60PixmapData *pd)
+{
+    if (!cleanup_function_registered) {
+        qAddPostRoutine(qt_symbian_release_pixmaps);
+        cleanup_function_registered = true;
+    }
+
+    pd->next = firstPixmap;
+    pd->prev = 0;
+    if (firstPixmap)
+        firstPixmap->prev = pd;
+    firstPixmap = pd;
+}
+
+// static
+void QS60PixmapData::qt_symbian_unregister_pixmap(QS60PixmapData *pd)
+{
+    if (pd->next)
+        pd->next->prev = pd->prev;
+    if (pd->prev)
+        pd->prev->next = pd->next;
+    else
+        firstPixmap = pd->next;
+}
+
+// static
+void QS60PixmapData::qt_symbian_release_pixmaps()
+{
+    // Scan all QS60PixmapData objects in the system and destroy them.
+    QS60PixmapData *pd = firstPixmap;
+    while (pd != 0) {
+        pd->release();
+        pd = pd->next;
+    }
+}
 
 /*
     \class QSymbianFbsClient
@@ -356,15 +395,18 @@ QS60PixmapData::QS60PixmapData(PixelType type) : QRasterPixmapData(type),
     cfbsBitmap(0),
     pengine(0),
     bytes(0),
-    formatLocked(false)
+    formatLocked(false),
+    next(0),
+    prev(0)
 {
-
+    qt_symbian_register_pixmap(this);
 }
 
 QS60PixmapData::~QS60PixmapData()
 {
     release();
     delete symbianBitmapDataAccess;
+    qt_symbian_unregister_pixmap(this);
 }
 
 void QS60PixmapData::resize(int width, int height)
@@ -789,7 +831,6 @@ void* QS60PixmapData::toNativeType(NativeType type)
         bool convertToArgb32 = false;
         bool needsCopy = false;
 
-        QSysInfo::SymbianVersion symbianVersion = QSysInfo::symbianVersion();
         if (!(S60->supportsPremultipliedAlpha)) {
             // Convert argb32_premultiplied to argb32 since Symbian 9.2 does
             // not support premultipied format.
@@ -927,11 +968,12 @@ void QS60PixmapData::fromNativeType(void* pixmap, NativeType nativeType)
         if (needsCopy) {
 
             TSize size = sourceBitmap->SizeInPixels();
+            int bytesPerLine = sourceBitmap->ScanLineLength(size.iWidth, displayMode);
 
             QSymbianBitmapDataAccess da;
             da.beginDataAccess(sourceBitmap);
             uchar *bytes = (uchar*)sourceBitmap->DataAddress();
-            QImage img = QImage(bytes, size.iWidth, size.iHeight, format);
+            QImage img = QImage(bytes, size.iWidth, size.iHeight, bytesPerLine, format);
             img = img.copy();
             da.endDataAccess(sourceBitmap);
 

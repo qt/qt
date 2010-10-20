@@ -110,7 +110,8 @@ src_webkit_declarative.target = sub-webkitdeclarative
    contains(QT_CONFIG, opengl):src_multimedia.depends += src_opengl
    src_tools_activeqt.depends = src_tools_idc src_gui
    src_declarative.depends = src_gui src_script src_network
-   src_plugins.depends = src_gui src_sql src_svg src_multimedia
+   src_plugins.depends = src_gui src_sql src_svg
+   contains(QT_CONFIG, multimedia):src_plugins.depends += src_multimedia
    src_s60installs.depends = $$TOOLS_SUBDIRS $$SRC_SUBDIRS
    src_s60installs.depends -= src_s60installs
    src_imports.depends = src_gui src_declarative
@@ -118,7 +119,10 @@ src_webkit_declarative.target = sub-webkitdeclarative
       src_webkit.depends = src_gui src_sql src_network
       contains(QT_CONFIG, xmlpatterns): src_webkit.depends += src_xmlpatterns
       src_imports.depends += src_webkit
-      exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro): src_webkit.depends += src_javascriptcore
+      exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro) {
+         src_webkit.depends += src_javascriptcore
+         src_javascriptcore.depends = src_corelib
+      }
    }
    contains(QT_CONFIG, qt3support): src_plugins.depends += src_qt3support
    contains(QT_CONFIG, dbus):{

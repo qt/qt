@@ -55,7 +55,6 @@
 
 #include "qdeclarativeengine.h"
 
-#include "private/qdeclarativeclassfactory_p.h"
 #include "private/qdeclarativetypeloader_p.h"
 #include "private/qdeclarativeimport_p.h"
 #include "private/qpodvector_p.h"

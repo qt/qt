@@ -1440,8 +1440,8 @@ EXPORTS
 	?d_func@QBuffer@@ABEPBVQBufferPrivate@@XZ @ 1439 NONAME ; class QBufferPrivate const * QBuffer::d_func(void) const
 	?d_func@QCoreApplication@@AAEPAVQCoreApplicationPrivate@@XZ @ 1440 NONAME ; class QCoreApplicationPrivate * QCoreApplication::d_func(void)
 	?d_func@QCoreApplication@@ABEPBVQCoreApplicationPrivate@@XZ @ 1441 NONAME ; class QCoreApplicationPrivate const * QCoreApplication::d_func(void) const
-	?d_func@QDir@@AAEPAVQDirPrivate@@XZ @ 1442 NONAME ; class QDirPrivate * QDir::d_func(void)
-	?d_func@QDir@@ABEPBVQDirPrivate@@XZ @ 1443 NONAME ; class QDirPrivate const * QDir::d_func(void) const
+	?d_func@QDir@@AAEPAVQDirPrivate@@XZ @ 1442 NONAME ABSENT ; class QDirPrivate * QDir::d_func(void)
+	?d_func@QDir@@ABEPBVQDirPrivate@@XZ @ 1443 NONAME ABSENT ; class QDirPrivate const * QDir::d_func(void) const
 	?d_func@QEventDispatcherSymbian@@AAEPAVQAbstractEventDispatcherPrivate@@XZ @ 1444 NONAME ; class QAbstractEventDispatcherPrivate * QEventDispatcherSymbian::d_func(void)
 	?d_func@QEventDispatcherSymbian@@ABEPBVQAbstractEventDispatcherPrivate@@XZ @ 1445 NONAME ; class QAbstractEventDispatcherPrivate const * QEventDispatcherSymbian::d_func(void) const
 	?d_func@QEventLoop@@AAEPAVQEventLoopPrivate@@XZ @ 1446 NONAME ; class QEventLoopPrivate * QEventLoop::d_func(void)
@@ -4482,4 +4482,6 @@ EXPORTS
 	?textDirection@QLocale@@QBE?AW4LayoutDirection@Qt@@XZ @ 4481 NONAME ; enum Qt::LayoutDirection QLocale::textDirection(void) const
 	?msecsSinceReference@QElapsedTimer@@QBE_JXZ @ 4482 NONAME ; long long QElapsedTimer::msecsSinceReference(void) const
 	?selectThread@QEventDispatcherSymbian@@AAEAAVQSelectThread@@XZ @ 4483 NONAME ; class QSelectThread & QEventDispatcherSymbian::selectThread(void)
+	?qt_symbian_SetupThreadHeap@@YAHHAAUSStdEpocThreadCreateInfo@@@Z @ 4484 NONAME ; int qt_symbian_SetupThreadHeap(int, struct SStdEpocThreadCreateInfo &)
+	?objectNameChanged@QAbstractDeclarativeData@@2P6AXPAV1@PAVQObject@@@ZA @ 4485 NONAME ; void (*QAbstractDeclarativeData::objectNameChanged)(class QAbstractDeclarativeData *, class QObject *)
 

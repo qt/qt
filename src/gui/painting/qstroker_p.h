@@ -168,7 +168,7 @@ public:
     {
         qreal scale;
         qt_scaleForTransform(transform, &scale);
-        setCurveThreshold(scale == 0 ? qreal(0.5) : (qreal(0.5) / scale));
+        m_dashThreshold = scale == 0 ? qreal(0.5) : (qreal(0.5) / scale);
     }
 
     void setCurveThreshold(qfixed threshold) { m_curveThreshold = threshold; }
@@ -184,6 +184,7 @@ protected:
 
     QRectF m_clip_rect;
     qfixed m_curveThreshold;
+    qfixed m_dashThreshold;
 
     void *m_customData;
     qStrokerMoveToHook m_moveTo;

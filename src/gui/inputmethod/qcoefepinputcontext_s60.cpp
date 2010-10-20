@@ -47,6 +47,7 @@
 #include <qgraphicsview.h>
 #include <qgraphicsscene.h>
 #include <qgraphicswidget.h>
+#include <qsymbianevent.h>
 #include <private/qcore_symbian_p.h>
 
 #include <fepitfr.h>
@@ -237,8 +238,10 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
         }
 
         QString widgetText = focusWidget()->inputMethodQuery(Qt::ImSurroundingText).toString();
-        int maxLength = focusWidget()->inputMethodQuery(Qt::ImMaximumTextLength).toInt();
-        if (!keyEvent->text().isEmpty() && widgetText.size() + m_preeditString.size() >= maxLength) {
+        bool validLength;
+        int maxLength = focusWidget()->inputMethodQuery(Qt::ImMaximumTextLength).toInt(&validLength);
+        if (!keyEvent->text().isEmpty() && validLength
+                && widgetText.size() + m_preeditString.size() >= maxLength) {
             // Don't send key events with string content if the widget is "full".
             return true;
         }
@@ -283,6 +286,18 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
         }
         return true;
     }
+
+    return false;
+}
+
+bool QCoeFepInputContext::symbianFilterEvent(QWidget *keyWidget, const QSymbianEvent *event)
+{
+    Q_UNUSED(keyWidget);
+    if (event->type() == QSymbianEvent::CommandEvent)
+        // A command basically means the same as a button being pushed. With Qt buttons
+        // that would normally result in a reset of the input method due to the focus change.
+        // This should also happen for commands.
+        reset();
 
     return false;
 }
@@ -369,6 +384,9 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     const bool anytextmodes = hints & (ImhUppercaseOnly | ImhLowercaseOnly | ImhEmailCharactersOnly | ImhUrlCharactersOnly);
     const bool numbersOnly = anynumbermodes && !anytextmodes;
     const bool noOnlys = !(hints & ImhExclusiveInputMask);
+    // if alphanumeric input, or if multiple incompatible number modes are selected;
+    // then make all symbols available in numeric mode too.
+    const bool needsCharMap= !numbersOnly || ((hints & ImhFormattedNumbersOnly) && (hints & ImhDialableCharactersOnly));
     TInt flags;
     Qt::InputMethodHints oldHints = hints;
 
@@ -468,9 +486,7 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
     if (hints & ImhNoPredictiveText || hints & ImhHiddenText) {
         flags |= EAknEditorFlagNoT9;
     }
-    // if alphanumeric input, or if multiple incompatible number modes are selected;
-    // then make all symbols available in numeric mode too.
-    if (!numbersOnly || ((hints & ImhFormattedNumbersOnly) && (hints & ImhDialableCharactersOnly)))
+    if (needsCharMap)
         flags |= EAknEditorFlagUseSCTNumericCharmap;
     m_fepState->SetFlags(flags);
     ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateFlagsUpdate);
@@ -495,8 +511,10 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_URL_SPECIAL_CHARACTER_TABLE_DIALOG);
     } else if (hints & ImhEmailCharactersOnly) {
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_EMAIL_ADDR_SPECIAL_CHARACTER_TABLE_DIALOG);
-    } else {
+    } else if (needsCharMap) {
         m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG);
+    } else {
+        m_fepState->SetSpecialCharacterTableResourceId(0);
     }
 
     if (hints & ImhHiddenText) {
@@ -651,7 +669,7 @@ void QCoeFepInputContext::UpdateFepInlineTextL(const TDesC& aNewInlineText,
     QInputMethodEvent event(newPreeditString, attributes);
     if (newPreeditString.isEmpty() && m_preeditString.isEmpty()) {
         // In Symbian world this means "erase last character".
-        event.setCommitString("", -1, 1);
+        event.setCommitString(QLatin1String(""), -1, 1);
     }
     m_preeditString = newPreeditString;
     sendEvent(event);
@@ -823,8 +841,6 @@ void QCoeFepInputContext::DoCommitFepInlineEditL()
 
 void QCoeFepInputContext::commitCurrentString(bool cancelFepTransaction)
 {
-    int longPress = 0;
-
     QList<QInputMethodEvent::Attribute> attributes;
     QInputMethodEvent event(QLatin1String(""), attributes);
     event.setCommitString(m_preeditString, 0, 0);

@@ -50,6 +50,7 @@
 #include <QVector3D>
 #include <QCryptographicHash>
 #include <QDeclarativeItem>
+#include <QSignalSpy>
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -74,6 +75,7 @@ private slots:
     void darker();
     void tint();
     void openUrlExternally();
+    void openUrlExternally_pragmaLibrary();
     void md5();
     void createComponent();
     void createComponent_pragmaLibrary();
@@ -84,6 +86,7 @@ private slots:
     void btoa();
     void atob();
     void fontFamilies();
+    void quit();
 
 private:
     QDeclarativeEngine engine;
@@ -319,6 +322,7 @@ void tst_qdeclarativeqt::openUrlExternally()
     MyUrlHandler handler;
 
     QDesktopServices::setUrlHandler("test", &handler, "noteCall");
+    QDesktopServices::setUrlHandler("file", &handler, "noteCall");
 
     QDeclarativeComponent component(&engine, TEST_FILE("openUrlExternally.qml"));
     QObject *object = component.create();
@@ -326,7 +330,35 @@ void tst_qdeclarativeqt::openUrlExternally()
     QCOMPARE(handler.called,1);
     QCOMPARE(handler.last, QUrl("test:url"));
 
+    object->setProperty("testFile", true);
+
+    QCOMPARE(handler.called,2);
+    QCOMPARE(handler.last, TEST_FILE("test.html"));
+
     QDesktopServices::unsetUrlHandler("test");
+    QDesktopServices::unsetUrlHandler("file");
+}
+
+void tst_qdeclarativeqt::openUrlExternally_pragmaLibrary()
+{
+    MyUrlHandler handler;
+
+    QDesktopServices::setUrlHandler("test", &handler, "noteCall");
+    QDesktopServices::setUrlHandler("file", &handler, "noteCall");
+
+    QDeclarativeComponent component(&engine, TEST_FILE("openUrlExternally_lib.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QCOMPARE(handler.called,1);
+    QCOMPARE(handler.last, QUrl("test:url"));
+
+    object->setProperty("testFile", true);
+
+    QCOMPARE(handler.called,2);
+    QCOMPARE(handler.last, TEST_FILE("test.html"));
+
+    QDesktopServices::unsetUrlHandler("test");
+    QDesktopServices::unsetUrlHandler("file");
 }
 
 void tst_qdeclarativeqt::md5()
@@ -514,6 +546,18 @@ void tst_qdeclarativeqt::fontFamilies()
 
     QFontDatabase database;
     QCOMPARE(object->property("test2"), QVariant::fromValue(database.families()));
+
+    delete object;
+}
+
+void tst_qdeclarativeqt::quit()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("quit.qml"));
+
+    QSignalSpy spy(&engine, SIGNAL(quit()));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QCOMPARE(spy.count(), 1);
 
     delete object;
 }

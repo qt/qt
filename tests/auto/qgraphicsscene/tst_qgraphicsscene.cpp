@@ -287,6 +287,7 @@ private slots:
     void taskQTBUG_5904_crashWithDeviceCoordinateCache();
     void taskQT657_paintIntoCacheWithTransparentParts();
     void taskQTBUG_7863_paintIntoCacheWithTransparentParts();
+    void taskQT_3674_doNotCrash();
 };
 
 void tst_QGraphicsScene::initTestCase()
@@ -2616,59 +2617,70 @@ void tst_QGraphicsScene::render_data()
     QTest::addColumn<QRectF>("sourceRect");
     QTest::addColumn<Qt::AspectRatioMode>("aspectRatioMode");
     QTest::addColumn<QMatrix>("matrix");
+    QTest::addColumn<QPainterPath>("clip");
+
+    QPainterPath clip_rect;
+    clip_rect.addRect(50, 100, 200, 150);
+
+    QPainterPath clip_ellipse;
+    clip_ellipse.addEllipse(100,50,150,200);
 
     QTest::newRow("all-all-untransformed") << QRectF() << QRectF()
-                                           << Qt::IgnoreAspectRatio << QMatrix();
+                                           << Qt::IgnoreAspectRatio << QMatrix() << QPainterPath();
     QTest::newRow("all-topleft-untransformed") << QRectF(0, 0, 150, 150)
-                                               << QRectF() << Qt::IgnoreAspectRatio << QMatrix();
+                                               << QRectF() << Qt::IgnoreAspectRatio << QMatrix() << QPainterPath();
     QTest::newRow("all-topright-untransformed") << QRectF(150, 0, 150, 150)
-                                                << QRectF() << Qt::IgnoreAspectRatio << QMatrix();
+                                                << QRectF() << Qt::IgnoreAspectRatio << QMatrix() << QPainterPath();
     QTest::newRow("all-bottomleft-untransformed") << QRectF(0, 150, 150, 150)
-                                                  << QRectF() << Qt::IgnoreAspectRatio << QMatrix();
+                                                  << QRectF() << Qt::IgnoreAspectRatio << QMatrix() << QPainterPath();
     QTest::newRow("all-bottomright-untransformed") << QRectF(150, 150, 150, 150)
-                                                   << QRectF() << Qt::IgnoreAspectRatio << QMatrix();
+                                                   << QRectF() << Qt::IgnoreAspectRatio << QMatrix() << QPainterPath();
     QTest::newRow("topleft-all-untransformed") << QRectF() << QRectF(-10, -10, 10, 10)
-                                               << Qt::IgnoreAspectRatio << QMatrix();
+                                               << Qt::IgnoreAspectRatio << QMatrix() << QPainterPath();
     QTest::newRow("topright-all-untransformed") << QRectF() << QRectF(0, -10, 10, 10)
-                                                << Qt::IgnoreAspectRatio << QMatrix();
+                                                << Qt::IgnoreAspectRatio << QMatrix() << QPainterPath();
     QTest::newRow("bottomleft-all-untransformed") << QRectF() << QRectF(-10, 0, 10, 10)
-                                                  << Qt::IgnoreAspectRatio << QMatrix();
+                                                  << Qt::IgnoreAspectRatio << QMatrix() << QPainterPath();
     QTest::newRow("bottomright-all-untransformed") << QRectF() << QRectF(0, 0, 10, 10)
-                                                   << Qt::IgnoreAspectRatio << QMatrix();
+                                                   << Qt::IgnoreAspectRatio << QMatrix() << QPainterPath();
     QTest::newRow("topleft-topleft-untransformed") << QRectF(0, 0, 150, 150) << QRectF(-10, -10, 10, 10)
-                                                   << Qt::IgnoreAspectRatio << QMatrix();
+                                                   << Qt::IgnoreAspectRatio << QMatrix() << QPainterPath();
     QTest::newRow("topright-topleft-untransformed") << QRectF(150, 0, 150, 150) << QRectF(-10, -10, 10, 10)
-                                                    << Qt::IgnoreAspectRatio << QMatrix();
+                                                    << Qt::IgnoreAspectRatio << QMatrix() << QPainterPath();
     QTest::newRow("bottomleft-topleft-untransformed") << QRectF(0, 150, 150, 150) << QRectF(-10, -10, 10, 10)
-                                                      << Qt::IgnoreAspectRatio << QMatrix();
+                                                      << Qt::IgnoreAspectRatio << QMatrix() << QPainterPath();
     QTest::newRow("bottomright-topleft-untransformed") << QRectF(150, 150, 150, 150) << QRectF(-10, -10, 10, 10)
-                                                       << Qt::IgnoreAspectRatio << QMatrix();
+                                                       << Qt::IgnoreAspectRatio << QMatrix() << QPainterPath();
     QTest::newRow("top-topleft-untransformed") << QRectF(0, 0, 300, 150) << QRectF(-10, -10, 10, 10)
-                                               << Qt::IgnoreAspectRatio << QMatrix();
+                                               << Qt::IgnoreAspectRatio << QMatrix() << QPainterPath();
     QTest::newRow("bottom-topleft-untransformed") << QRectF(0, 150, 300, 150) << QRectF(-10, -10, 10, 10)
-                                                  << Qt::IgnoreAspectRatio << QMatrix();
+                                                  << Qt::IgnoreAspectRatio << QMatrix() << QPainterPath();
     QTest::newRow("left-topleft-untransformed") << QRectF(0, 0, 150, 300) << QRectF(-10, -10, 10, 10)
-                                                << Qt::IgnoreAspectRatio << QMatrix();
+                                                << Qt::IgnoreAspectRatio << QMatrix() << QPainterPath();
     QTest::newRow("right-topleft-untransformed") << QRectF(150, 0, 150, 300) << QRectF(-10, -10, 10, 10)
-                                                 << Qt::IgnoreAspectRatio << QMatrix();
+                                                 << Qt::IgnoreAspectRatio << QMatrix() << QPainterPath();
     QTest::newRow("top-bottomright-untransformed") << QRectF(0, 0, 300, 150) << QRectF(0, 0, 10, 10)
-                                                   << Qt::IgnoreAspectRatio << QMatrix();
+                                                   << Qt::IgnoreAspectRatio << QMatrix() << QPainterPath();
     QTest::newRow("bottom-bottomright-untransformed") << QRectF(0, 150, 300, 150) << QRectF(0, 0, 10, 10)
-                                                      << Qt::IgnoreAspectRatio << QMatrix();
+                                                      << Qt::IgnoreAspectRatio << QMatrix() << QPainterPath();
     QTest::newRow("left-bottomright-untransformed") << QRectF(0, 0, 150, 300) << QRectF(0, 0, 10, 10)
-                                                    << Qt::IgnoreAspectRatio << QMatrix();
+                                                    << Qt::IgnoreAspectRatio << QMatrix() << QPainterPath();
     QTest::newRow("right-bottomright-untransformed") << QRectF(150, 0, 150, 300) << QRectF(0, 0, 10, 10)
-                                                     << Qt::IgnoreAspectRatio << QMatrix();
+                                                     << Qt::IgnoreAspectRatio << QMatrix() << QPainterPath();
     QTest::newRow("all-all-45-deg-right") << QRectF() << QRectF()
-                                          << Qt::IgnoreAspectRatio << QMatrix().rotate(-45);
+                                          << Qt::IgnoreAspectRatio << QMatrix().rotate(-45) << QPainterPath();
     QTest::newRow("all-all-45-deg-left") << QRectF() << QRectF()
-                                         << Qt::IgnoreAspectRatio << QMatrix().rotate(45);
+                                         << Qt::IgnoreAspectRatio << QMatrix().rotate(45) << QPainterPath();
     QTest::newRow("all-all-scale-2x") << QRectF() << QRectF()
-                                      << Qt::IgnoreAspectRatio << QMatrix().scale(2, 2);
+                                      << Qt::IgnoreAspectRatio << QMatrix().scale(2, 2) << QPainterPath();
     QTest::newRow("all-all-translate-50-0") << QRectF() << QRectF()
-                                            << Qt::IgnoreAspectRatio << QMatrix().translate(50, 0);
+                                            << Qt::IgnoreAspectRatio << QMatrix().translate(50, 0) << QPainterPath();
     QTest::newRow("all-all-translate-0-50") << QRectF() << QRectF()
-                                            << Qt::IgnoreAspectRatio << QMatrix().translate(0, 50);
+                                            << Qt::IgnoreAspectRatio << QMatrix().translate(0, 50) << QPainterPath();
+    QTest::newRow("all-all-untransformed-clip-rect") << QRectF() << QRectF()
+                                           << Qt::IgnoreAspectRatio << QMatrix() << clip_rect;
+    QTest::newRow("all-all-untransformed-clip-ellipse") << QRectF() << QRectF()
+                                           << Qt::IgnoreAspectRatio << QMatrix() << clip_ellipse;
 }
 
 void tst_QGraphicsScene::render()
@@ -2677,6 +2689,7 @@ void tst_QGraphicsScene::render()
     QFETCH(QRectF, sourceRect);
     QFETCH(Qt::AspectRatioMode, aspectRatioMode);
     QFETCH(QMatrix, matrix);
+    QFETCH(QPainterPath, clip);
 
     QPixmap pix(30, 30);
     pix.fill(Qt::blue);
@@ -2702,6 +2715,7 @@ void tst_QGraphicsScene::render()
     painter.drawLine(0, 150, 300, 150);
     painter.drawLine(150, 0, 150, 300);
     painter.setMatrix(matrix);
+    if (!clip.isEmpty()) painter.setClipPath(clip);
     scene.render(&painter, targetRect, sourceRect, aspectRatioMode);
     painter.end();
 
@@ -4563,6 +4577,25 @@ void tst_QGraphicsScene::taskQTBUG_7863_paintIntoCacheWithTransparentParts()
 
         delete view;
     }
+}
+
+void tst_QGraphicsScene::taskQT_3674_doNotCrash()
+{
+    QGraphicsScene scene;
+
+    QGraphicsView view(&scene);
+    view.resize(200, 200);
+
+    QPixmap pixmap(view.size());
+    QPainter painter(&pixmap);
+    view.render(&painter);
+    painter.end();
+
+    scene.addItem(new QGraphicsWidget);
+    scene.setBackgroundBrush(Qt::green);
+
+    QApplication::processEvents();
+    QApplication::processEvents();
 }
 
 void tst_QGraphicsScene::zeroScale()

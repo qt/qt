@@ -43,7 +43,7 @@
 #include "qnetworksession_impl.h"
 
 #include <wlancond.h>
-#include <libicd-network-wlan-dev.h>
+#include <wlan-utils.h>
 #include <iapconf.h>
 #include <iapmonitor.h>
 
@@ -66,6 +66,10 @@ QString IcdNetworkConfigurationPrivate::bearerTypeName() const
 
     return iap_type;
 }
+
+/******************************************************************************/
+/** IapAddTimer specific                                                      */
+/******************************************************************************/
 
 /* The IapAddTimer is a helper class that makes sure we update
  * the configuration only after all db additions to certain
@@ -162,6 +166,9 @@ void IapAddTimer::del(QString& iap_id)
     }
 }
 
+/******************************************************************************/
+/** IAPMonitor specific                                                       */
+/******************************************************************************/
 
 class IapMonitor : public Maemo::IAPMonitor
 {
@@ -215,6 +222,11 @@ void IapMonitor::iapRemoved(const QString &iap_id)
     QString id = iap_id;
     d->deleteConfiguration(id);
 }
+
+
+/******************************************************************************/
+/** QIcdEngine implementation                                                 */
+/******************************************************************************/
 
 QIcdEngine::QIcdEngine(QObject *parent)
 :   QBearerEngine(parent), iapMonitor(0), m_dbusInterface(0),

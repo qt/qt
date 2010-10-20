@@ -3336,6 +3336,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     if (needText) {
                         QPalette pal = tb->palette;
                         QPalette::ColorRole role = QPalette::NoRole;
+                        if (!proxy()->styleHint(SH_UnderlineShortcut, tb, w))
+                            alignment |= Qt::TextHideMnemonic;
                         if (down)
                             cr.translate(shiftX, shiftY);
                         if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5
@@ -3353,13 +3355,13 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                                 role = QPalette::HighlightedText;
                             }
                         }
-                        drawItemText(p, cr, alignment, pal,
-                                     tb->state & State_Enabled, tb->text, role);
+                        proxy()->drawItemText(p, cr, alignment, pal,
+                                              tb->state & State_Enabled, tb->text, role);
                         if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_5 &&
                             (tb->state & State_Sunken)) {
                             // Draw a "drop shadow" in earlier versions.
-                            drawItemText(p, cr.adjusted(0, 1, 0, 1), alignment,
-                                         tb->palette, tb->state & State_Enabled, tb->text);
+                            proxy()->drawItemText(p, cr.adjusted(0, 1, 0, 1), alignment,
+                                                  tb->palette, tb->state & State_Enabled, tb->text);
                         }
                     }
                 } else {

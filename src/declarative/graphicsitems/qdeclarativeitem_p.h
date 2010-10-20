@@ -176,11 +176,15 @@ public:
 
     // data property
     static void data_append(QDeclarativeListProperty<QObject> *, QObject *);
+    static int data_count(QDeclarativeListProperty<QObject> *);
+    static QObject *data_at(QDeclarativeListProperty<QObject> *, int);
+    static void data_clear(QDeclarativeListProperty<QObject> *);
 
     // resources property
     static QObject *resources_at(QDeclarativeListProperty<QObject> *, int);
     static void resources_append(QDeclarativeListProperty<QObject> *, QObject *);
     static int resources_count(QDeclarativeListProperty<QObject> *);
+    static void resources_clear(QDeclarativeListProperty<QObject> *);
 
     // transform property
     static int transform_count(QDeclarativeListProperty<QGraphicsTransform> *list);

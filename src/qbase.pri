@@ -4,7 +4,7 @@ INCLUDEPATH *= $$QMAKE_INCDIR_QT/$$TARGET #just for today to have some compat
 isEmpty(QT_ARCH):!isEmpty(ARCH):QT_ARCH=$$ARCH #another compat that will rot for change #215700
 TEMPLATE	= lib
 isEmpty(QT_MAJOR_VERSION) {
-   VERSION=4.7.0
+   VERSION=4.7.1
 } else {
    VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 }
@@ -183,3 +183,23 @@ QMAKE_PKGCONFIG_VARIABLES += moc_dir uic_dir rcc_dir lupdate_dir lrelease_dir
 include(qt_targets.pri)
 
 win32:DEFINES+=_USE_MATH_DEFINES
+
+symbian {
+    # Make partial upgrade SIS file for all dll's except webkit
+    !contains(TARGET.UID3, 0x200267C2):!contains(TARGET.UID3, 0xE00267C2) {
+        # Partial upgrade SIS file
+        vendorinfo = \
+            "; Localised Vendor name" \
+            "%{\"Nokia, Qt\"}" \
+            " " \
+            "; Unique Vendor name" \
+            ":\"Nokia, Qt\"" \
+            " "
+        pu_header = "; Partial upgrade package for testing $${TARGET} changes without reinstalling everything" \
+                    "$${LITERAL_HASH}{\"$${TARGET}\"}, (0x2001E61C), $${QT_MAJOR_VERSION},$${QT_MINOR_VERSION},$${QT_PATCH_VERSION}, TYPE=PU"
+        partial_upgrade.pkg_prerules = pu_header vendorinfo
+        partial_upgrade.sources = $$QMAKE_LIBDIR_QT/$${TARGET}.dll
+        partial_upgrade.path = c:/sys/bin
+        DEPLOYMENT += partial_upgrade
+    }
+}

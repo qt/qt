@@ -151,7 +151,7 @@ QStringList QIconLoader::themeSearchPaths() const
 {
     if (m_iconDirs.isEmpty()) {
         m_iconDirs = qt_guiPlatformPlugin()->iconThemeSearchPaths();
-        // Allways add resource directory as search path
+        // Always add resource directory as search path
         m_iconDirs.append(QLatin1String(":/icons"));
     }
     return m_iconDirs;
@@ -266,7 +266,7 @@ QThemeIconEntries QIconLoader::findIconHelper(const QString &themeName,
             PixmapEntry *iconEntry = new PixmapEntry;
             iconEntry->dir = dirInfo;
             iconEntry->filename = currentDir.filePath(iconName + pngext);
-            // Notice we ensure that pixmap entries allways come before
+            // Notice we ensure that pixmap entries always come before
             // scalable to preserve search order afterwards
             entries.prepend(iconEntry);
         } else if (m_supportsSvg &&

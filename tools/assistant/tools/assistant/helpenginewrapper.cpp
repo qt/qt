@@ -114,7 +114,7 @@ private:
     QMap<QString, RecentSignal> m_recentQchUpdates;
 };
 
-const QString HelpEngineWrapper::TrUnfiltered = tr("Unfiltered");
+const QString HelpEngineWrapper::TrUnfiltered = HelpEngineWrapper::tr("Unfiltered");
 
 HelpEngineWrapper *HelpEngineWrapper::helpEngineWrapper = 0;
 

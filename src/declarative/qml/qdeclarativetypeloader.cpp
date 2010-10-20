@@ -44,6 +44,7 @@
 #include <private/qdeclarativeengine_p.h>
 #include <private/qdeclarativecompiler_p.h>
 #include <private/qdeclarativecomponent_p.h>
+#include <private/qdeclarativeglobal_p.h>
 
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <QtCore/qdebug.h>
@@ -65,6 +66,9 @@ The QDeclarativeDataLoader invokes callbacks on the QDeclarativeDataBlob as data
 /*!
 \enum QDeclarativeDataBlob::Status
 
+This enum describes the status of the data blob.
+
+\list
 \o Null The blob has not yet been loaded by a QDeclarativeDataLoader
 \o Loading The blob is loading network data.  The QDeclarativeDataBlob::setData() callback has not yet been
 invoked or has not yet returned.
@@ -73,13 +77,19 @@ only occurs after the QDeclarativeDataBlob::setData() callback has been made, an
 dependencies.
 \o Complete The blob's data has been loaded and all dependencies are done.
 \o Error An error has been set on this blob.
+\endlist
 */
 
 /*!
 \enum QDeclarativeDataBlob::Type
+
+This enum describes the type of the data blob.
+
+\list
 \o QmlFile This is a QDeclarativeTypeData
 \o JavaScriptFile This is a QDeclarativeScriptData
 \o QmldirFile This is a QDeclarativeQmldirData
+\endlist
 */
 
 /*!
@@ -215,7 +225,7 @@ void QDeclarativeDataBlob::setError(const QDeclarativeError &errors)
 }
 
 /*!
-\override
+\overload
 */
 void QDeclarativeDataBlob::setError(const QList<QDeclarativeError> &errors)
 {
@@ -484,6 +494,13 @@ void QDeclarativeDataLoader::load(QDeclarativeDataBlob *blob)
     QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(blob->m_url);
 
     if (!lf.isEmpty()) {
+        if (!QDeclarative_isFileCaseCorrect(lf)) {
+            QDeclarativeError error;
+            error.setUrl(blob->m_url);
+            error.setDescription(QLatin1String("File name case mismatch"));
+            blob->setError(error);
+            return;
+        }
         QFile file(lf);
         if (file.open(QFile::ReadOnly)) {
             QByteArray data = file.readAll();
@@ -795,7 +812,7 @@ void QDeclarativeTypeData::done()
             error.setUrl(finalUrl());
             error.setLine(script.location.line);
             error.setColumn(script.location.column);
-            error.setDescription(typeLoader()->tr("Script %1 unavailable").arg(script.script->url().toString()));
+            error.setDescription(QDeclarativeTypeLoader::tr("Script %1 unavailable").arg(script.script->url().toString()));
             errors.prepend(error);
             setError(errors);
         }
@@ -813,7 +830,7 @@ void QDeclarativeTypeData::done()
             error.setUrl(finalUrl());
             error.setLine(type.location.line);
             error.setColumn(type.location.column);
-            error.setDescription(typeLoader()->tr("Type %1 unavailable").arg(typeName));
+            error.setDescription(QDeclarativeTypeLoader::tr("Type %1 unavailable").arg(typeName));
             errors.prepend(error);
             setError(errors);
         }
@@ -986,9 +1003,9 @@ void QDeclarativeTypeData::resolveTypes()
             QString userTypeName = parserRef->name;
             userTypeName.replace(QLatin1Char('/'),QLatin1Char('.'));
             if (typeNamespace)
-                error.setDescription(typeLoader()->tr("Namespace %1 cannot be used as a type").arg(userTypeName));
+                error.setDescription(QDeclarativeTypeLoader::tr("Namespace %1 cannot be used as a type").arg(userTypeName));
             else
-                error.setDescription(typeLoader()->tr("%1 %2").arg(userTypeName).arg(errorString));
+                error.setDescription(QDeclarativeTypeLoader::tr("%1 %2").arg(userTypeName).arg(errorString));
 
             if (!parserRef->refObjects.isEmpty()) {
                 QDeclarativeParser::Object *obj = parserRef->refObjects.first();

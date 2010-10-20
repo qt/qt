@@ -42,7 +42,7 @@
 #include "qdesktopwidget.h"
 #include "qt_windows.h"
 #include "qapplication_p.h"
-#include "qlibrary.h"
+#include <private/qsystemlibrary_p.h>
 #include <qvector.h>
 #include <limits.h>
 #ifdef Q_WS_WINCE
@@ -155,7 +155,7 @@ void QDesktopWidgetPrivate::init(QDesktopWidget *that)
     screenCount = 0;
 
 #ifndef Q_OS_WINCE
-    QLibrary user32Lib(QLatin1String("user32"));
+    QSystemLibrary user32Lib(QLatin1String("user32"));
     if (user32Lib.load()) {
         enumDisplayMonitors = (EnumFunc)user32Lib.resolve("EnumDisplayMonitors");
         getMonitorInfo = (InfoFunc)user32Lib.resolve("GetMonitorInfoW");
@@ -173,7 +173,7 @@ void QDesktopWidgetPrivate::init(QDesktopWidget *that)
     enumDisplayMonitors = 0;
     getMonitorInfo = 0;
 #else
-    QLibrary coreLib(QLatin1String("coredll"));
+    QSystemLibrary coreLib(QLatin1String("coredll"));
     if (coreLib.load()) {
         // CE >= 4.0 case
         enumDisplayMonitors = (EnumFunc)coreLib.resolve("EnumDisplayMonitors");

@@ -35,7 +35,7 @@ symbianDestdir=$$DESTDIR
 isEmpty(symbianDestdir) {
     symbianDestdir = .
 }
-baseTarget = $$basename(TARGET)
+baseTarget = $$symbianRemoveSpecialCharacters($$basename(TARGET))
 !equals(TARGET, "$$baseTarget"):symbianDestdir = $$symbianDestdir/$$dirname(TARGET)
 
 contains(QMAKE_CFLAGS, "--thumb")|contains(QMAKE_CXXFLAGS, "--thumb")|contains(QMAKE_CFLAGS, "-mthumb")|contains(QMAKE_CXXFLAGS, "-mthumb") {
@@ -50,22 +50,22 @@ defineReplace(processSymbianLibrary) {
     return($$qt_library)
 }
 
-qt_libraries = $$split(LIBS, " ")
-LIBS =
-for(qt_library, qt_libraries) {
-    qt_newLib = $$processSymbianLibrary($$qt_library)
-    contains(qt_newLib, ".*\\.dso$")|contains(qt_newLib, ".*\\.lib$"):PRE_TARGETDEPS += $$qt_newLib
-    linux-gcce:qt_newLib = "-l:$$qt_newLib"
-    LIBS += $$qt_newLib
-}
-
-qt_libraries = $$split(QMAKE_LIBS, " ")
-QMAKE_LIBS =
-for(qt_library, qt_libraries) {
-    qt_newLib = $$processSymbianLibrary($$qt_library)
-    contains(qt_newLib, ".*\\.dso$")|contains(qt_newLib, ".*\\.lib$"):PRE_TARGETDEPS += $$qt_newLib
-    linux-gcce:qt_newLib = "-l:$$qt_newLib"
-    QMAKE_LIBS += $$qt_newLib
+# This part turn "-llibc" into "libc.dso", and moves -L entries to QMAKE_LIBDIR.
+libsToProcess = LIBS QMAKE_LIBS
+for(libToProcess, libsToProcess) {
+    qt_libraries = $$split($$libToProcess, " ")
+    eval($$libToProcess =)
+    for(qt_library, qt_libraries) {
+        contains(qt_library, "^-L.*") {
+            qt_library = $$replace(qt_library, "^-L", "")
+            QMAKE_LIBDIR += $$qt_library
+        } else {
+            qt_newLib = $$processSymbianLibrary($$qt_library)
+            contains(qt_newLib, ".*\\.dso$")|contains(qt_newLib, ".*\\.lib$"):PRE_TARGETDEPS += $$qt_newLib
+            linux-gcce:qt_newLib = "-l:$$qt_newLib"
+            eval($$libToProcess += \$\$qt_newLib)
+        }
+    }
 }
 
 elf2e32_LIBPATH =
@@ -187,9 +187,11 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@:.*") {
     linux-armcc: {
         QMAKE_LIBS += usrt2_2.lib dfpaeabi.dso dfprvct2_2.dso drtaeabi.dso scppnwdl.dso drtrvct2_2.dso h_t__uf.l\\(switch8.o\\)
         QMAKE_LIBS += -leexe.lib\\(uc_exe_.o\\)
-        contains(CONFIG, "qt"):contains(QT, "core") { #if linking with QtCore
+        contains(CONFIG, "qt"):contains(QT, "gui") { #if linking with QtCore
+            QMAKE_LIBS -= -lqtmain$${QT_LIBINFIX}.lib
             QMAKE_LIBS += -lqtmain$${QT_LIBINFIX}.lib
         } else {
+            QMAKE_LIBS -= -llibcrt0.lib
             QMAKE_LIBS += -llibcrt0.lib
         }
     } else :linux-gcce {
@@ -197,9 +199,12 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@:.*") {
         QMAKE_LIBS += \
             -l:eexe.lib \
             -l:usrt2_2.lib
-        contains(CONFIG, "qt"):contains(QT, "core") { #if linking with QtCore
+        contains(CONFIG, "qt"):contains(QT, "gui") { #if linking with QtCore
+            QMAKE_LIBS -= -l:qtmain$${QT_LIBINFIX}.lib
             QMAKE_LIBS += -l:qtmain$${QT_LIBINFIX}.lib
         } else {
+            QMAKE_LIBS -= -l:libcrt0.lib
+            QMAKE_LIBS -= -l:libcrt0_gcce.lib
             QMAKE_LIBS += -l:libcrt0_gcce.lib
         }
         QMAKE_LIBS += \
@@ -224,7 +229,7 @@ symbian_resources_INCLUDES = $$replace(symbian_resources_INCLUDES, ",", " -I")
 symbian_resources_INCLUDES += $$join(INCLUDEPATH, " -I", "-I")
 symbian_resources_DEFINES = $$join(DEFINES, " -D", "-D")
 symbian_resources_RCC_DIR = $$replace(RCC_DIR, "/$", "")
-symbian_resources_INCLUDES += "-I $$symbian_resources_RCC_DIR"
+symbian_resources_INCLUDES += "-I$$symbian_resources_RCC_DIR"
 
 for(symbian_resource, SYMBIAN_RESOURCES) {
     symbian_resource = $$basename(symbian_resource)
@@ -240,7 +245,7 @@ symbianresources.commands = cpp -nostdinc -undef \
                             $$symbian_resources_INCLUDES \
                             $$symbian_resources_DEFINES \
                             ${QMAKE_FILE_NAME} \
-                            -o $${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rpp \
+                            > $${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rpp \
                             && rcomp -u -m045,046,047 \
                             -s$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rpp \
                             -o$${symbianDestdir}/${QMAKE_FILE_BASE}$${QT_LIBINFIX}.rsc \
@@ -253,49 +258,45 @@ symbianresources.CONFIG = no_link target_predeps
 QMAKE_EXTRA_COMPILERS += symbianresources
 
 contains(TEMPLATE, "app"):!contains(CONFIG, "no_icon") {
-    baseResourceTarget = $$basename(TARGET)
-    # If you change this, also see application_icon.prf
-    baseResourceTarget = $$replace(baseResourceTarget, " ",_)
-
     # Make our own extra target in order to get dependencies for generated
     # files right. This also avoids the warning about files not found.
-    symbianGenResource.target = $${symbian_resources_RCC_DIR}/$${baseResourceTarget}.rsg
+    symbianGenResource.target = $${symbian_resources_RCC_DIR}/$${baseTarget}.rsg
     symbianGenResource.commands = cpp -nostdinc -undef \
                                   $$symbian_resources_INCLUDES \
                                   $$symbian_resources_DEFINES \
-                                  $${baseResourceTarget}.rss \
-                                  -o $${symbian_resources_RCC_DIR}/$${baseResourceTarget}.rpp \
+                                  $${baseTarget}.rss \
+                                  > $${symbian_resources_RCC_DIR}/$${baseTarget}.rpp \
                                   && rcomp -u -m045,046,047 \
-                                  -s$${symbian_resources_RCC_DIR}/$${baseResourceTarget}.rpp \
-                                  -o$${symbianDestdir}/$${baseResourceTarget}.rsc \
-                                  -h$${symbian_resources_RCC_DIR}/$${baseResourceTarget}.rsg \
-                                  -i$${baseResourceTarget}.rss
-    silent:symbianGenResource.commands = @echo rcomp $${baseResourceTarget}.rss && $$symbianGenResource.commands
-    symbianGenResource.depends = $${baseResourceTarget}.rss
-    PRE_TARGETDEPS += $${symbian_resources_RCC_DIR}/$${baseResourceTarget}.rsg
-    QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${baseResourceTarget}.rsg
-    QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${baseResourceTarget}.rpp
-    QMAKE_DISTCLEAN += $${baseResourceTarget}.rss
-    QMAKE_DISTCLEAN += $${symbianDestdir}/$${baseResourceTarget}.rsc
+                                  -s$${symbian_resources_RCC_DIR}/$${baseTarget}.rpp \
+                                  -o$${symbianDestdir}/$${baseTarget}.rsc \
+                                  -h$${symbian_resources_RCC_DIR}/$${baseTarget}.rsg \
+                                  -i$${baseTarget}.rss
+    silent:symbianGenResource.commands = @echo rcomp $${baseTarget}.rss && $$symbianGenResource.commands
+    symbianGenResource.depends = $${baseTarget}.rss
+    PRE_TARGETDEPS += $${symbian_resources_RCC_DIR}/$${baseTarget}.rsg
+    QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${baseTarget}.rsg
+    QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${baseTarget}.rpp
+    QMAKE_DISTCLEAN += $${baseTarget}.rss
+    QMAKE_DISTCLEAN += $${symbianDestdir}/$${baseTarget}.rsc
 
-    symbianGenRegResource.target = $${symbian_resources_RCC_DIR}/$${baseResourceTarget}_reg.rsg
+    symbianGenRegResource.target = $${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rsg
     symbianGenRegResource.commands = cpp -nostdinc -undef \
                                      $$symbian_resources_INCLUDES \
                                      $$symbian_resources_DEFINES \
-                                     $${baseResourceTarget}_reg.rss \
-                                     -o $${symbian_resources_RCC_DIR}/$${baseResourceTarget}_reg.rpp \
+                                     $${baseTarget}_reg.rss \
+                                     > $${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rpp \
                                      && rcomp -u -m045,046,047 \
-                                     -s$${symbian_resources_RCC_DIR}/$${baseResourceTarget}_reg.rpp \
-                                     -o$${symbianDestdir}/$${baseResourceTarget}_reg.rsc \
-                                     -h$${symbian_resources_RCC_DIR}/$${baseResourceTarget}_reg.rsg \
-                                     -i$${baseResourceTarget}_reg.rss
-    silent:symbianGenRegResource.commands = @echo rcomp $${baseResourceTarget}_reg.rss && $$symbianGenRegResource.commands
-    symbianGenRegResource.depends = $${baseResourceTarget}_reg.rss $${symbian_resources_RCC_DIR}/$${baseResourceTarget}.rsg
-    PRE_TARGETDEPS += $${symbian_resources_RCC_DIR}/$${baseResourceTarget}_reg.rsg
-    QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${baseResourceTarget}_reg.rsg
-    QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${baseResourceTarget}_reg.rpp
-    QMAKE_DISTCLEAN += $${baseResourceTarget}_reg.rss
-    QMAKE_DISTCLEAN += $${symbianDestdir}/$${baseResourceTarget}_reg.rsc
+                                     -s$${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rpp \
+                                     -o$${symbianDestdir}/$${baseTarget}_reg.rsc \
+                                     -h$${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rsg \
+                                     -i$${baseTarget}_reg.rss
+    silent:symbianGenRegResource.commands = @echo rcomp $${baseTarget}_reg.rss && $$symbianGenRegResource.commands
+    symbianGenRegResource.depends = $${baseTarget}_reg.rss $${symbian_resources_RCC_DIR}/$${baseTarget}.rsg
+    PRE_TARGETDEPS += $${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rsg
+    QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rsg
+    QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${baseTarget}_reg.rpp
+    QMAKE_DISTCLEAN += $${baseTarget}_reg.rss
+    QMAKE_DISTCLEAN += $${symbianDestdir}/$${baseTarget}_reg.rsc
 
     # Trick to get qmake to create the RCC_DIR for us.
     symbianRccDirCreation.input = SOURCES
@@ -312,3 +313,5 @@ contains(TEMPLATE, "app"):!contains(CONFIG, "no_icon") {
 # Generated pkg files
 
 QMAKE_DISTCLEAN += $${baseTarget}_template.pkg
+QMAKE_DISTCLEAN += $${baseTarget}_installer.pkg
+QMAKE_DISTCLEAN += $${baseTarget}_stub.pkg

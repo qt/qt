@@ -176,7 +176,6 @@
  */
 #include "qplatformdefs.h"
 #include "qurl.h"
-#include "private/qunicodetables_p.h"
 #include "qatomic.h"
 #include "qbytearray.h"
 #include "qdir.h"
@@ -3399,23 +3398,26 @@ QString QUrlPrivate::canonicalHost() const
     if (host.contains(QLatin1Char(':'))) {
         // This is an IP Literal, use _IPLiteral to validate
         QByteArray ba = host.toLatin1();
+        bool needsBraces = false;
         if (!ba.startsWith('[')) {
             // surround the IP Literal with [ ] if it's not already done so
             ba.reserve(ba.length() + 2);
             ba.prepend('[');
             ba.append(']');
+            needsBraces = true;
         }
 
         const char *ptr = ba.constData();
         if (!_IPLiteral(&ptr))
             that->host.clear();
+        else if (needsBraces)
+            that->host = QString::fromLatin1(ba.toLower());
         else
             that->host = host.toLower();
     } else {
         that->host = qt_ACE_do(host, NormalizeAce);
-        if (that->host.isNull())
-            that->isHostValid = false;
     }
+    that->isHostValid = !that->host.isNull();
     return that->host;
 }
 
@@ -3730,6 +3732,10 @@ void QUrlPrivate::validate() const
 
     QString auth = authority(); // causes the non-encoded forms to be valid
 
+    // authority() calls canonicalHost() which sets this
+    if (!isHostValid)
+        return;
+
     if (scheme == QLatin1String("mailto")) {
         if (!host.isEmpty() || port != -1 || !userName.isEmpty() || !password.isEmpty()) {
             that->isValid = false;
@@ -3903,9 +3909,10 @@ QByteArray QUrlPrivate::toEncoded(QUrl::FormattingOptions options) const
         url += scheme.toLatin1();
         url += ':';
     }
+    QString savedHost = host;  // pre-validation, may be invalid!
     QString auth = authority();
     bool doFileScheme = scheme == QLatin1String("file") && encodedPath.startsWith('/');
-    if ((options & QUrl::RemoveAuthority) != QUrl::RemoveAuthority && (!auth.isEmpty() || doFileScheme)) {
+    if ((options & QUrl::RemoveAuthority) != QUrl::RemoveAuthority && (!auth.isEmpty() || doFileScheme || !savedHost.isEmpty())) {
         if (doFileScheme && !encodedPath.startsWith('/'))
             url += '/';
         url += "//";
@@ -3931,6 +3938,12 @@ QByteArray QUrlPrivate::toEncoded(QUrl::FormattingOptions options) const
             url += '[';
             url += host.toLatin1();
             url += ']';
+        } else if (host.isEmpty() && !savedHost.isEmpty()) {
+            // this case is only possible with an invalid URL
+            // it's here only so that we can keep the original, invalid hostname
+            // in encodedOriginal.
+            // QUrl::isValid() will return false, so toEncoded() can be anything (it's not valid)
+            url += savedHost.toUtf8();
         } else {
             url += QUrl::toAce(host);
         }
@@ -4050,7 +4063,7 @@ const QByteArray &QUrlPrivate::normalized() const
 
 QString QUrlPrivate::createErrorString()
 {
-    if (isValid)
+    if (isValid && isHostValid)
         return QString();
 
     QString errorString(QLatin1String(QT_TRANSLATE_NOOP(QUrl, "Invalid URL \"")));
@@ -4074,7 +4087,10 @@ QString QUrlPrivate::createErrorString()
         errorString += QLatin1String(QT_TRANSLATE_NOOP(QUrl, "\'"));
     } else {
         errorString += QLatin1String(QT_TRANSLATE_NOOP(QUrl, ": "));
-        errorString += QLatin1String(errorInfo._message);
+        if (isHostValid)
+            errorString += QLatin1String(errorInfo._message);
+        else
+            errorString += QLatin1String(QT_TRANSLATE_NOOP(QUrl, "invalid hostname"));
     }
     if (errorInfo._found) {
         errorString += QLatin1String(QT_TRANSLATE_NOOP(QUrl, ", but found \'"));
@@ -4437,7 +4453,7 @@ void QUrl::setAuthority(const QString &authority)
 
     if (!QURL_HASFLAG(d->stateFlags, QUrlPrivate::Parsed)) d->parse();
     detach();
-    QURL_UNSETFLAG(d->stateFlags, QUrlPrivate::Validated | QUrlPrivate::Normalized);
+    QURL_UNSETFLAG(d->stateFlags, QUrlPrivate::Validated | QUrlPrivate::Normalized | QUrlPrivate::HostCanonicalized);
     d->setAuthority(authority);
 }
 
@@ -4958,6 +4974,10 @@ void QUrl::setEncodedQuery(const QByteArray &query)
     pairDelimiter(), and the key and value are delimited by
     valueDelimiter().
 
+    \note This method does not encode spaces (ASCII 0x20) as plus (+) signs,
+    like HTML forms do. If you need that kind of encoding, you must encode
+    the value yourself and use QUrl::setEncodedQueryItems.
+
     \sa setQueryDelimiters(), queryItems(), setEncodedQueryItems()
 */
 void QUrl::setQueryItems(const QList<QPair<QString, QString> > &query)
@@ -5028,6 +5048,10 @@ void QUrl::setEncodedQueryItems(const QList<QPair<QByteArray, QByteArray> > &que
     character returned by valueDelimiter(). Each key/value pair is 
     delimited by the character returned by pairDelimiter().
 
+    \note This method does not encode spaces (ASCII 0x20) as plus (+) signs,
+    like HTML forms do. If you need that kind of encoding, you must encode
+    the value yourself and use QUrl::addEncodedQueryItem.
+
     \sa addEncodedQueryItem()
 */
 void QUrl::addQueryItem(const QString &key, const QString &value)
@@ -5083,6 +5107,10 @@ void QUrl::addEncodedQueryItem(const QByteArray &key, const QByteArray &value)
 
 /*!
     Returns the query string of the URL, as a map of keys and values.
+
+    \note This method does not decode spaces plus (+) signs as spaces (ASCII
+    0x20), like HTML forms do. If you need that kind of decoding, you must
+    use QUrl::encodedQueryItems and decode the data yourself.
 
     \sa setQueryItems(), setEncodedQuery()
 */
@@ -5188,6 +5216,10 @@ bool QUrl::hasEncodedQueryItem(const QByteArray &key) const
     Returns the first query string value whose key is equal to \a key
     from the URL.
 
+    \note This method does not decode spaces plus (+) signs as spaces (ASCII
+    0x20), like HTML forms do. If you need that kind of decoding, you must
+    use QUrl::encodedQueryItemValue and decode the data yourself.
+
     \sa allQueryItemValues()
 */
 QString QUrl::queryItemValue(const QString &key) const
@@ -5231,6 +5263,10 @@ QByteArray QUrl::encodedQueryItemValue(const QByteArray &key) const
 /*!
     Returns the a list of query string values whose key is equal to
     \a key from the URL.
+
+    \note This method does not decode spaces plus (+) signs as spaces (ASCII
+    0x20), like HTML forms do. If you need that kind of decoding, you must
+    use QUrl::allEncodedQueryItemValues and decode the data yourself.
 
     \sa queryItemValue()
 */
@@ -5610,7 +5646,7 @@ QString QUrl::toString(FormattingOptions options) const
     if ((options & QUrl::RemoveAuthority) != QUrl::RemoveAuthority) {
         bool doFileScheme = d->scheme == QLatin1String("file") && ourPath.startsWith(QLatin1Char('/'));
         QString tmp = d->authority(options);
-        if (!tmp.isEmpty() || doFileScheme) {
+        if (!tmp.isNull() || doFileScheme) {
             if (doFileScheme && !ourPath.startsWith(QLatin1Char('/')))
                 url += QLatin1Char('/');
             url += QLatin1String("//");

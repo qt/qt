@@ -373,52 +373,52 @@ libgstreamer-plugins-base はインストールされていますか。</transla
     <message>
         <source>Decay HF ratio (%)</source>
         <extracomment>DecayHFRatio: Ratio of high-frequency decay time to the value specified by DecayTime.</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>高周波減衰率 (%)</translation>
     </message>
     <message>
         <source>Decay time (ms)</source>
         <extracomment>DecayTime: Time over which reverberation is diminished.</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>減衰時間 (ms)</translation>
     </message>
     <message>
         <source>Density (%)</source>
         <extracomment>Density Delay between first and subsequent reflections. Note that the S60 platform documentation does not make clear the distinction between this value and the Diffusion value.</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>密度 (%)</translation>
     </message>
     <message>
         <source>Diffusion (%)</source>
         <extracomment>Diffusion: Delay between first and subsequent reflections. Note that the S60 platform documentation does not make clear the distinction between this value and the Density value.</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>拡散度 (%)</translation>
     </message>
     <message>
         <source>Reflections delay (ms)</source>
         <extracomment>ReflectionsDelay: Amount of delay between the arrival the direct path from the source and the arrival of the first reflection.</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>反射遅延 (ms)</translation>
     </message>
     <message>
         <source>Reflections level (mB)</source>
         <extracomment>ReflectionsLevel: Amplitude of reflections. This value is corrected by the RoomLevel to give the final reflection amplitude.</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>反射レベル (mB)</translation>
     </message>
     <message>
         <source>Reverb delay (ms)</source>
         <extracomment>ReverbDelay: Amount of time between arrival of the first reflection and start of the late reverberation.</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>リバーブ遅延 (ms)</translation>
     </message>
     <message>
         <source>Reverb level (mB)</source>
         <extracomment>ReverbLevel Amplitude of reverberations. This value is corrected by the RoomLevel to give the final reverberation amplitude.</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>リバーブ レベル (mB)</translation>
     </message>
     <message>
         <source>Room HF level</source>
         <extracomment>RoomHFLevel: Amplitude of low-pass filter used to attenuate the high frequency component of reflected sound.</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>高周波室内レベル</translation>
     </message>
     <message>
         <source>Room level (mB)</source>
         <extracomment>RoomLevel: Master volume control for all reflected sound.</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>室内レベル (mB)</translation>
     </message>
 </context>
 <context>
@@ -1531,7 +1531,7 @@ to
     </message>
     <message>
         <source>Invalid use of namespace</source>
-        <translation>無効なネームスペースの使用法です</translation>
+        <translation>無効な名前空間の使用法です</translation>
     </message>
     <message>
         <source>Not an attached property name</source>
@@ -1701,19 +1701,19 @@ to
     <name>QDeclarativeCompositeTypeManager</name>
     <message>
         <source>Resource %1 unavailable</source>
-        <translation>リソース %1 が利用できません</translation>
+        <translation type="obsolete">リソース %1 が利用できません</translation>
     </message>
     <message>
         <source>Namespace %1 cannot be used as a type</source>
-        <translation>ネームスペース %1 を型として使用することはできません</translation>
+        <translation type="obsolete">名前空間 %1 を型として使用することはできません</translation>
     </message>
     <message>
         <source>%1 %2</source>
-        <translation>%1 %2</translation>
+        <translation type="obsolete">%1 %2</translation>
     </message>
     <message>
         <source>Type %1 unavailable</source>
-        <translation>型 %1 が利用できません</translation>
+        <translation type="obsolete">型 %1 が利用できません</translation>
     </message>
 </context>
 <context>
@@ -1801,15 +1801,15 @@ to
     </message>
     <message>
         <source>import &quot;%1&quot; has no qmldir and no namespace</source>
-        <translation>import する &quot;%1&quot; に qmldir もネームスペースもありません</translation>
+        <translation>import する &quot;%1&quot; に qmldir も名前空間もありません</translation>
     </message>
     <message>
         <source>- %1 is not a namespace</source>
-        <translation>- %1 はネームスペースではありません</translation>
+        <translation>- %1 は名前空間ではありません</translation>
     </message>
     <message>
         <source>- nested namespaces not allowed</source>
-        <translation>- ネームスペースのネストは許可されていません</translation>
+        <translation>- 名前空間のネストは許可されていません</translation>
     </message>
     <message>
         <source>local directory</source>
@@ -1878,7 +1878,7 @@ to
     </message>
     <message>
         <source>ListElement: cannot contain nested elements</source>
-        <translation>ListElement: ネストしたエレメントは保持できません</translation>
+        <translation>ListElement: ネストした要素は保持できません</translation>
     </message>
     <message>
         <source>ListElement: cannot use reserved &quot;id&quot; property</source>
@@ -1998,19 +1998,19 @@ to
     </message>
     <message>
         <source>Invalid import qualifier ID</source>
-        <translation>import するネームスペースの ID が無効です</translation>
+        <translation>import する名前空間の ID が無効です</translation>
     </message>
     <message>
         <source>Reserved name &quot;Qt&quot; cannot be used as an qualifier</source>
-        <translation>予約語 &quot;Qt&quot; を import するネームスペースに使用することはできません</translation>
+        <translation>予約語 &quot;Qt&quot; を import する名前空間に使用することはできません</translation>
     </message>
     <message>
         <source>Script import qualifiers must be unique.</source>
-        <translation>スクリプトを import するネームスペースは一意である必要があります。</translation>
+        <translation>スクリプトを import する名前空間は一意である必要があります。</translation>
     </message>
     <message>
         <source>Script import requires a qualifier</source>
-        <translation>スクリプトを import する際にはネームスペースの指定が必要です</translation>
+        <translation>スクリプトを import する際には名前空間の指定が必要です</translation>
     </message>
     <message>
         <source>Library import requires a version</source>
@@ -2094,6 +2094,44 @@ to
     <message>
         <source>Could not instantiate cursor delegate</source>
         <translation>カーソルデリゲートのインスタンスを作成できません</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeTypeData</name>
+    <message>
+        <source>Script %1 unavailable</source>
+        <translation type="obsolete">スクリプト %1 が利用できません</translation>
+    </message>
+    <message>
+        <source>Type %1 unavailable</source>
+        <translation type="obsolete">型 %1 が利用できません</translation>
+    </message>
+    <message>
+        <source>Namespace %1 cannot be used as a type</source>
+        <translation type="obsolete">名前空間 %1 を型として使用することはできません</translation>
+    </message>
+    <message>
+        <source>%1 %2</source>
+        <translation type="obsolete">%1 %2</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeTypeLoader</name>
+    <message>
+        <source>Script %1 unavailable</source>
+        <translation>スクリプト %1 が利用できません</translation>
+    </message>
+    <message>
+        <source>Type %1 unavailable</source>
+        <translation>型 %1 が利用できません</translation>
+    </message>
+    <message>
+        <source>Namespace %1 cannot be used as a type</source>
+        <translation>名前空間 %1 を型として使用することはできません</translation>
+    </message>
+    <message>
+        <source>%1 %2</source>
+        <translation>%1 %2</translation>
     </message>
 </context>
 <context>
@@ -3316,7 +3354,7 @@ Do you want to delete it anyway?</source>
     <name>QLibrary</name>
     <message>
         <source>Could not mmap &apos;%1&apos;: %2</source>
-        <translation>&apos;%1&apos; をメモリにマッピングできませんでした: %2</translation>
+        <translation type="obsolete">&apos;%1&apos; をメモリにマッピングできませんでした: %2</translation>
     </message>
     <message>
         <source>Plugin verification data mismatch in &apos;%1&apos;</source>
@@ -3324,7 +3362,7 @@ Do you want to delete it anyway?</source>
     </message>
     <message>
         <source>Could not unmap &apos;%1&apos;: %2</source>
-        <translation>&apos;%1&apos; のマッピングを解除できませんでした: %2</translation>
+        <translation type="obsolete">&apos;%1&apos; のマッピングを解除できませんでした: %2</translation>
     </message>
     <message>
         <source>The plugin &apos;%1&apos; uses incompatible Qt library. (%2.%3.%4) [%5]</source>
@@ -3663,7 +3701,7 @@ Do you want to delete it anyway?</source>
     </message>
     <message>
         <source>&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;&lt;p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;p&gt;Qt はクロスプラットフォームアプリケーション開発用の C++ ツールキットです。&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;&lt;p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt ライセンスについての概要は &lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; をご覧ください。&lt;/p&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt は Nokia 社の製品です。詳しい情報は &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; をご覧ください。&lt;/p&gt;</translation>
     </message>
 </context>
 <context>
@@ -5751,7 +5789,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Hot Links</source>
-        <translation type="unfinished"></translation>
+        <translation>人気のリンク</translation>
     </message>
     <message>
         <source>Adjust Brightness</source>
@@ -5771,15 +5809,15 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Back Forward</source>
-        <translation type="unfinished"></translation>
+        <translation>戻る</translation>
     </message>
     <message>
         <source>Application Left</source>
-        <translation type="unfinished"></translation>
+        <translation>Application Left</translation>
     </message>
     <message>
         <source>Application Right</source>
-        <translation type="unfinished"></translation>
+        <translation>Application Right</translation>
     </message>
     <message>
         <source>Book</source>
@@ -5799,7 +5837,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Clear Grab</source>
-        <translation type="unfinished"></translation>
+        <translation>Clear Grab</translation>
     </message>
     <message>
         <source>Close</source>
@@ -5839,11 +5877,11 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Go</source>
-        <translation type="unfinished"></translation>
+        <translation>Go</translation>
     </message>
     <message>
         <source>iTouch</source>
-        <translation type="unfinished"></translation>
+        <translation>iTouch</translation>
     </message>
     <message>
         <source>Logoff</source>
@@ -5863,7 +5901,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Menu PB</source>
-        <translation type="unfinished"></translation>
+        <translation>Menu PB</translation>
     </message>
     <message>
         <source>My Sites</source>
@@ -5899,15 +5937,15 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Rotate Windows</source>
-        <translation type="unfinished"></translation>
+        <translation>Rotate Windows</translation>
     </message>
     <message>
         <source>Rotation PB</source>
-        <translation type="unfinished"></translation>
+        <translation>Rotation PB</translation>
     </message>
     <message>
         <source>Rotation KB</source>
-        <translation type="unfinished"></translation>
+        <translation>Rotation KB</translation>
     </message>
     <message>
         <source>Save</source>
@@ -6023,7 +6061,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Audio Cycle Track</source>
-        <translation type="unfinished"></translation>
+        <translation>Audio Cycle Track</translation>
     </message>
     <message>
         <source>Time</source>
@@ -6130,7 +6168,7 @@ Please choose a different file name.</source>
     <message>
         <source>Toggle Call/Hangup</source>
         <extracomment>Button that will hang up if we&apos;re in call, or make a call if we&apos;re not.</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>通話/終話の切替</translation>
     </message>
     <message>
         <source>Flip</source>
@@ -6138,7 +6176,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Voice Dial</source>
-        <extracomment>Button to trigger voice dialling</extracomment>
+        <extracomment>Button to trigger voice dialing</extracomment>
         <translation>ボイスダイアル</translation>
     </message>
     <message>
@@ -6238,43 +6276,43 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Hangul Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Hangul Start</translation>
     </message>
     <message>
         <source>Hangul End</source>
-        <translation type="unfinished"></translation>
+        <translation>Hangul End</translation>
     </message>
     <message>
         <source>Hangul Hanja</source>
-        <translation type="unfinished"></translation>
+        <translation>ハングル 漢字</translation>
     </message>
     <message>
         <source>Hangul Jamo</source>
-        <translation type="unfinished"></translation>
+        <translation>ハングル 字母</translation>
     </message>
     <message>
         <source>Hangul Romaja</source>
-        <translation type="unfinished"></translation>
+        <translation>ハングル ローマ字入力</translation>
     </message>
     <message>
         <source>Hangul Jeonja</source>
-        <translation type="unfinished"></translation>
+        <translation>Hangul Jeonja</translation>
     </message>
     <message>
         <source>Hangul Banja</source>
-        <translation type="unfinished"></translation>
+        <translation>Hangul Banja</translation>
     </message>
     <message>
         <source>Hangul PreHanja</source>
-        <translation type="unfinished"></translation>
+        <translation>Hangul PreHanja</translation>
     </message>
     <message>
         <source>Hangul PostHanja</source>
-        <translation type="unfinished"></translation>
+        <translation>Hangul PostHanja</translation>
     </message>
     <message>
         <source>Hangul Special</source>
-        <translation type="unfinished"></translation>
+        <translation>Hangul Special</translation>
     </message>
     <message>
         <source>Ctrl</source>
@@ -6469,7 +6507,7 @@ Please choose a different file name.</source>
     <name>QSslSocket</name>
     <message>
         <source>Error creating SSL context (%1)</source>
-        <translation>SSL content の作成に失敗しました (%1)</translation>
+        <translation>SSL context の作成に失敗しました (%1)</translation>
     </message>
     <message>
         <source>Invalid or empty cipher list (%1)</source>
@@ -7223,12 +7261,12 @@ Please choose a different file name.</source>
     <message>
         <source>Seek quickly back</source>
         <comment>Media controller element</comment>
-        <translation type="unfinished"></translation>
+        <translation>少し戻る</translation>
     </message>
     <message>
         <source>Seek quickly forward</source>
         <comment>Media controller element</comment>
-        <translation type="unfinished"></translation>
+        <translation>少し進む</translation>
     </message>
     <message>
         <source>Indefinite time</source>
@@ -7794,7 +7832,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Sequence &apos;]]&gt;&apos; not allowed in content.</source>
-        <translation>このコンテキストでは、&apos;]]&gt;&apos; は許可されていません。</translation>
+        <translation>このコンテンツでは、&apos;]]&gt;&apos; は許可されていません。</translation>
     </message>
     <message>
         <source>Encountered incorrectly encoded content.</source>
@@ -7944,7 +7982,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Element %1 can&apos;t be serialized because it appears outside the document element.</source>
-        <translation>エレメント %1 はシリアライズできません。このドキュメントの範囲を越えるエレメントを含んでいます。</translation>
+        <translation>要素 %1 はシリアライズできません。このドキュメントの範囲を越える要素を含んでいます。</translation>
     </message>
     <message>
         <source>Attribute %1 can&apos;t be serialized because it appears at the top level.</source>
@@ -7952,7 +7990,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Year %1 is invalid because it begins with %2.</source>
-        <translation>%1 年はむこうです。%2 で始まっています。</translation>
+        <translation>%1 年は無効です。%2 で始まっています。</translation>
     </message>
     <message>
         <source>Day %1 is outside the range %2..%3.</source>
@@ -7992,7 +8030,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>%1 is not a valid value of type %2.</source>
-        <translation>%1 は、%2 の型に対して有効な値ではありません。</translation>
+        <translation>%1 は、型 %2 の値として無効です。</translation>
     </message>
     <message>
         <source>When casting to %1 from %2, the source value cannot be %3.</source>
@@ -8044,7 +8082,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>%1 is not valid as a value of type %2.</source>
-        <translation>型 %2 に対して、値 %1 は有効ではありません。</translation>
+        <translation>値 %1 は、型 %2 の値として無効です。</translation>
     </message>
     <message>
         <source>Ambiguous rule match.</source>
@@ -8084,7 +8122,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>In a namespace constructor, the value for a namespace cannot be an empty string.</source>
-        <translation>名前空間のスントラクトにおいて、空白の文字列を名前空間の値として使用することはできません。</translation>
+        <translation>名前空間のコンストラクタにおいて、空白の文字列を名前空間の値として使用することはできません。</translation>
     </message>
     <message>
         <source>The prefix must be a valid %1, which %2 is not.</source>
@@ -8136,11 +8174,11 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>No namespace binding exists for the prefix %1</source>
-        <translation>プレフィックス %1 にバインドされたネームスペースがありません</translation>
+        <translation>プレフィックス %1 にバインドされた名前空間がありません</translation>
     </message>
     <message>
         <source>No namespace binding exists for the prefix %1 in %2</source>
-        <translation>%2 におけるプレフィックス %1 にバインディングされたネームスペースが存在しません</translation>
+        <translation>%2 におけるプレフィックス %1 にバインディングされた名前空間が存在しません</translation>
     </message>
     <message>
         <source>%1 is an invalid %2</source>
@@ -8180,7 +8218,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>%1 is not a valid XML 1.0 character.</source>
-        <translation>%1 は XML 1.0 において有効な文字ではありません。</translation>
+        <translation>%1 は、XML 1.0 文字として無効です。</translation>
     </message>
     <message>
         <source>The root node of the second argument to function %1 must be a document node. %2 is not a document node.</source>
@@ -8224,7 +8262,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>%1 is an invalid regular expression pattern: %2</source>
-        <translation>%1 は有効な正規表現ではありません。: %2</translation>
+        <translation>%1 は有効な正規表現ではありません: %2</translation>
     </message>
     <message>
         <source>%1 is an invalid flag for regular expressions. Valid flags are:</source>
@@ -8276,15 +8314,15 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>W3C XML Schema identity constraint selector</source>
-        <translation type="unfinished"></translation>
+        <translation>W3C XML スキーマ ID制約 selector</translation>
     </message>
     <message>
         <source>W3C XML Schema identity constraint field</source>
-        <translation type="unfinished"></translation>
+        <translation>W3C XML スキーマ ID制約 field</translation>
     </message>
     <message>
         <source>A construct was encountered which is disallowed in the current language(%1).</source>
-        <translation type="unfinished"></translation>
+        <translation>現在の言語 (%1) では許可されていない構造が検出されました。</translation>
     </message>
     <message>
         <source>%1 is an unknown schema type.</source>
@@ -8488,11 +8526,11 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>An attribute with name %1 has already appeared on this element.</source>
-        <translation>属性名 &apos;%1&apos; は、すでにこのエレメントで使用されています。</translation>
+        <translation>属性名 &apos;%1&apos; は、すでにこの要素で使用されています。</translation>
     </message>
     <message>
         <source>A direct element constructor is not well-formed. %1 is ended with %2.</source>
-        <translation>直積的な指定のエレメントがwell formedではありません。&apos;%1&apos; が、&apos;%2&apos; で終わっています。</translation>
+        <translation>直積的な指定の要素がwell formedではありません。&apos;%1&apos; が、&apos;%2&apos; で終わっています。</translation>
     </message>
     <message>
         <source>The name %1 does not refer to any schema type.</source>
@@ -8520,7 +8558,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Element %1 is not allowed at this location.</source>
-        <translation>この場所にエレメント &apos;%1&apos; をおくことは許可されていません。</translation>
+        <translation>この場所に要素 %1 をおくことは許可されていません。</translation>
     </message>
     <message>
         <source>Text nodes are not allowed at this location.</source>
@@ -8552,31 +8590,31 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>If element %1 has no attribute %2, it cannot have attribute %3 or %4.</source>
-        <translation>エレメント &apos;%1&apos; が属性 &apos;%2&apos; を持たない場合は、属性 &apos;%3&apos; や &apos;%4&apos; を使用することはできません。</translation>
+        <translation>要素 &apos;%1&apos; が属性 &apos;%2&apos; を持たない場合は、属性 &apos;%3&apos; や &apos;%4&apos; を使用することはできません。</translation>
     </message>
     <message>
         <source>Element %1 must have at least one of the attributes %2 or %3.</source>
-        <translation>エレメント &apos;%1&apos; は、属性 &apos;%2&apos; か &apos;%3&apos; のいずれかを持たなければなりません。</translation>
+        <translation>要素 &apos;%1&apos; は、属性 &apos;%2&apos; か &apos;%3&apos; のいずれかを持たなければなりません。</translation>
     </message>
     <message>
         <source>At least one mode must be specified in the %1-attribute on element %2.</source>
-        <translation>エレメント &apos;%2&apos; において、&apos;%1&apos; 属性は少くとも一つのモードを指定しなければなりません。</translation>
+        <translation>要素 &apos;%2&apos; において、&apos;%1&apos; 属性は少くとも一つのモードを指定しなければなりません。</translation>
     </message>
     <message>
         <source>Element %1 must come last.</source>
-        <translation>エレメント %1 は最後になければなりません。</translation>
+        <translation>要素 %1 は最後になければなりません。</translation>
     </message>
     <message>
         <source>At least one %1-element must occur before %2.</source>
-        <translation>%2 の前に、少くとも一つは %1 エレメントが存在しなければなりません。</translation>
+        <translation>%2 の前に、少くとも一つは %1 要素が存在しなければなりません。</translation>
     </message>
     <message>
         <source>Only one %1-element can appear.</source>
-        <translation>%1 エレメントは一つのみ存在しなければなりません。</translation>
+        <translation>%1 要素は一つのみ存在しなければなりません。</translation>
     </message>
     <message>
         <source>At least one %1-element must occur inside %2.</source>
-        <translation>%2 の内側には、少くとも一つの &apos;%1&apos; エレメントが存在しなければなりません。</translation>
+        <translation>%2 の内側には、少くとも一つの &apos;%1&apos; 要素が存在しなければなりません。</translation>
     </message>
     <message>
         <source>When attribute %1 is present on %2, a sequence constructor cannot be used.</source>
@@ -8584,7 +8622,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Element %1 must have either a %2-attribute or a sequence constructor.</source>
-        <translation>エレメント %1 には、%2 属性またはsequence constructorがなければなりません。</translation>
+        <translation>要素 %1 には、%2 属性またはsequence constructorがなければなりません。</translation>
     </message>
     <message>
         <source>When a parameter is required, a default value cannot be supplied through a %1-attribute or a sequence constructor.</source>
@@ -8592,11 +8630,11 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Element %1 cannot have children.</source>
-        <translation>エレメント %1 は、子要素を持つことができません。</translation>
+        <translation>要素 %1 は、子要素を持つことができません。</translation>
     </message>
     <message>
         <source>Element %1 cannot have a sequence constructor.</source>
-        <translation>エレメント %1 は、sequence constructor を含むことができません。</translation>
+        <translation>要素 %1 は、sequence constructor を含むことができません。</translation>
     </message>
     <message>
         <source>The attribute %1 cannot appear on %2, when it is a child of %3.</source>
@@ -8612,11 +8650,11 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Top level stylesheet elements must be in a non-null namespace, which %1 isn&apos;t.</source>
-        <translation>トップレベルのスタイルシートのエレメントは、non-nullな名前空間を持っていなければなりません。しかし、%1 はそうではありません。</translation>
+        <translation>トップレベルのスタイルシートの要素は、non-nullな名前空間を持っていなければなりません。しかし、%1 はそうではありません。</translation>
     </message>
     <message>
         <source>The value for attribute %1 on element %2 must either be %3 or %4, not %5.</source>
-        <translation>エレメント %2 の属性 %1 の値は、%3 または %4 でなければなりません。%5 は異なります。</translation>
+        <translation>要素 %2 の属性 %1 の値は、%3 または %4 でなければなりません。%5 は異なります。</translation>
     </message>
     <message>
         <source>Attribute %1 cannot have the value %2.</source>
@@ -8624,1083 +8662,1083 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>The attribute %1 can only appear on the first %2 element.</source>
-        <translation>属性 %1 は、最初の %2 エレメントにのみ指定できます。</translation>
+        <translation>属性 %1 は、最初の %2 要素にのみ指定できます。</translation>
     </message>
     <message>
         <source>At least one %1 element must appear as child of %2.</source>
-        <translation>%2 の子要素としては、少くとも一つは %1 エレメントがなければなりません。</translation>
+        <translation>%2 の子要素としては、少くとも一つは %1 要素がなければなりません。</translation>
     </message>
     <message>
         <source>Empty particle cannot be derived from non-empty particle.</source>
-        <translation>空ではない particle から空の particle を得ることはできません。</translation>
+        <translation>空ではないパーティクルから空のパーティクルを派生させることはできません。</translation>
     </message>
     <message>
         <source>Derived particle is missing element %1.</source>
-        <translation>取得した particle に要素 %1 がありません。</translation>
+        <translation>派生パーティクル に要素 %1 がありません。</translation>
     </message>
     <message>
         <source>Derived element %1 is missing value constraint as defined in base particle.</source>
-        <translation type="unfinished"></translation>
+        <translation>派生要素 %1 は基底パーティクルで値制約が定義されていません。</translation>
     </message>
     <message>
         <source>Derived element %1 has weaker value constraint than base particle.</source>
-        <translation type="unfinished"></translation>
+        <translation>派生要素 %1 は基底パーティクルよりも弱い値制約を持っています。</translation>
     </message>
     <message>
         <source>Fixed value constraint of element %1 differs from value constraint in base particle.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 の固定値制約は基底パーティクルの値制約と異なっています。</translation>
     </message>
     <message>
         <source>Derived element %1 cannot be nillable as base element is not nillable.</source>
-        <translation type="unfinished"></translation>
+        <translation>基底要素が null を許可していない為、派生要素 %1 に null を許可させる事はできません。</translation>
     </message>
     <message>
         <source>Block constraints of derived element %1 must not be more weaker than in the base element.</source>
-        <translation type="unfinished"></translation>
+        <translation>派生要素 %1 の Block 制約は、基底要素よりも弱くできません。</translation>
     </message>
     <message>
         <source>Simple type of derived element %1 cannot be validly derived from base element.</source>
-        <translation type="unfinished"></translation>
+        <translation>派生要素 %1 の単純型は、基底要素から適切に派生できません。</translation>
     </message>
     <message>
         <source>Complex type of derived element %1 cannot be validly derived from base element.</source>
-        <translation type="unfinished"></translation>
+        <translation>派生要素 %1 の複合型は、基底要素から適切に派生できません。</translation>
     </message>
     <message>
         <source>Element %1 is missing in derived particle.</source>
-        <translation type="unfinished"></translation>
+        <translation>派生パーティクルに要素 %1 がありません。</translation>
     </message>
     <message>
         <source>Element %1 does not match namespace constraint of wildcard in base particle.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 は基底パーティクルのワイルドカードの名前空間制約にマッチしません。</translation>
     </message>
     <message>
         <source>Wildcard in derived particle is not a valid subset of wildcard in base particle.</source>
-        <translation type="unfinished"></translation>
+        <translation>派生パーティクルにあるワイルドカードは、基底パーティクルのワイルドカードのサブセットとして無効です。</translation>
     </message>
     <message>
         <source>processContent of wildcard in derived particle is weaker than wildcard in base particle.</source>
-        <translation type="unfinished"></translation>
+        <translation>派生パーティクルのワイルドカードの processContent は基底パーティクルのワイルドカードよりも弱いです。</translation>
     </message>
     <message>
         <source>Derived particle allows content that is not allowed in the base particle.</source>
-        <translation type="unfinished"></translation>
+        <translation>派生パーティクルはコンテンツを許可していますが、基底パーティクルでは許可していません。</translation>
     </message>
     <message>
         <source>%1 has inheritance loop in its base type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 は、基底型 %2 で継承ループしています。</translation>
     </message>
     <message>
         <source>Circular inheritance of base type %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>基底型 %1 を循環継承しています。</translation>
     </message>
     <message>
         <source>Circular inheritance of union %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>union %1 を循環継承しています。</translation>
     </message>
     <message>
         <source>%1 is not allowed to derive from %2 by restriction as the latter defines it as final.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 は最終的に定義される制約により %2 を派生する事は許可されていません。</translation>
     </message>
     <message>
         <source>%1 is not allowed to derive from %2 by extension as the latter defines it as final.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 は最終的に定義される拡張により %2 を派生する事は許可されていません。</translation>
     </message>
     <message>
         <source>Base type of simple type %1 cannot be complex type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>単純型 %1 の基底型は複合型 %2 にはできません。</translation>
     </message>
     <message>
         <source>Simple type %1 cannot have direct base type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>単純型 %1 は基底型 %2 を直接持つ事はできません。</translation>
     </message>
     <message>
         <source>Simple type %1 is not allowed to have base type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>単純型 %1 は基底型 %2 を持つ事は許可されていません。</translation>
     </message>
     <message>
         <source>Simple type %1 can only have simple atomic type as base type.</source>
-        <translation type="unfinished"></translation>
+        <translation>単純型 %1 は基底型として単純なアトミック型のみ持つ事ができます。</translation>
     </message>
     <message>
         <source>Simple type %1 cannot derive from %2 as the latter defines restriction as final.</source>
-        <translation type="unfinished"></translation>
+        <translation>単純型 %1 は最終的に定義される制約により %2 を派生できません。</translation>
     </message>
     <message>
         <source>Variety of item type of %1 must be either atomic or union.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 の各アイテム型は atomic か union である必要があります。</translation>
     </message>
     <message>
         <source>Variety of member types of %1 must be atomic.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 の各メンバーの型は atomic である必要があります。</translation>
     </message>
     <message>
         <source>%1 is not allowed to derive from %2 by list as the latter defines it as final.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 は最終的に定義されるリストにより %2 を派生する事は許可されていません。</translation>
     </message>
     <message>
         <source>Simple type %1 is only allowed to have %2 facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>単純型 %1 は %2 ファセットのみ持つ事ができます。</translation>
     </message>
     <message>
         <source>Base type of simple type %1 must have variety of type list.</source>
-        <translation type="unfinished"></translation>
+        <translation>単純型 %1 の基底型は各型のリストを持っていなければなりません。</translation>
     </message>
     <message>
         <source>Base type of simple type %1 has defined derivation by restriction as final.</source>
-        <translation type="unfinished"></translation>
+        <translation>単純型 %1 の基底型は最終的に制約により派生として定義されています。</translation>
     </message>
     <message>
         <source>Item type of base type does not match item type of %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>基底型のアイテム型が %1 のアイテム型にマッチしていません。</translation>
     </message>
     <message>
         <source>Simple type %1 contains not allowed facet type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>単純型 %1 がファセット型 %2 を含む事は許可されていません。</translation>
     </message>
     <message>
         <source>%1 is not allowed to derive from %2 by union as the latter defines it as final.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 は最終的に定義される union により %2 を派生する事は許可されていません。</translation>
     </message>
     <message>
         <source>%1 is not allowed to have any facets.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 はどんなファセットも持つ事を許可されていません。</translation>
     </message>
     <message>
         <source>Base type %1 of simple type %2 must have variety of union.</source>
-        <translation type="unfinished"></translation>
+        <translation>単純型 %2 の基底型 %1 は各型の uinon を持っていなければなりません。</translation>
     </message>
     <message>
         <source>Base type %1 of simple type %2 is not allowed to have restriction in %3 attribute.</source>
-        <translation type="unfinished"></translation>
+        <translation>単純型 %2 の基底型 %1 は %3 属性内に制約を持つ事を許可されていません。</translation>
     </message>
     <message>
         <source>Member type %1 cannot be derived from member type %2 of %3&apos;s base type %4.</source>
-        <translation type="unfinished"></translation>
+        <translation>メンバ型 %1 は %3 の基底型 %4 のメンバ型 %2 から派生する事はできません。</translation>
     </message>
     <message>
         <source>Derivation method of %1 must be extension because the base type %2 is a simple type.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 の派生メソッドは基底型 %2 が単純型の為、拡張でなければなりません。</translation>
     </message>
     <message>
         <source>Complex type %1 has duplicated element %2 in its content model.</source>
-        <translation type="unfinished"></translation>
+        <translation>複合形 %1 は自身のコンテンツ モデル内で要素 %2 を重複させています。</translation>
     </message>
     <message>
         <source>Complex type %1 has non-deterministic content.</source>
-        <translation type="unfinished"></translation>
+        <translation>複合型 %1 は非決定性コンテンツを所有しています。</translation>
     </message>
     <message>
         <source>Attributes of complex type %1 are not a valid extension of the attributes of base type %2: %3.</source>
-        <translation type="unfinished"></translation>
+        <translation>複合型 %1 の属性は、基底型 %2 の属性の拡張として無効です: %3。</translation>
     </message>
     <message>
         <source>Content model of complex type %1 is not a valid extension of content model of %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>複合型 %1 のコンテンツ モデルは、%2 のコンテンツ モデルの拡張として無効です。</translation>
     </message>
     <message>
         <source>Complex type %1 must have simple content.</source>
-        <translation type="unfinished"></translation>
+        <translation>複合型 %1 は単純コンテンツを持たなければなりません。</translation>
     </message>
     <message>
         <source>Complex type %1 must have the same simple type as its base class %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>複合型 %1 は基底クラス %2 のような単純型を持たなければなりません。</translation>
     </message>
     <message>
         <source>Complex type %1 cannot be derived from base type %2%3.</source>
-        <translation type="unfinished"></translation>
+        <translation>複合型 %1 は基底型 %2 から派生する事はできません %3。</translation>
     </message>
     <message>
         <source>Attributes of complex type %1 are not a valid restriction from the attributes of base type %2: %3.</source>
-        <translation type="unfinished"></translation>
+        <translation>複合型 %1 の属性は、基底型 %2 の属性の制約として無効です: %3。</translation>
     </message>
     <message>
         <source>Complex type %1 with simple content cannot be derived from complex base type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>単純コンテンツの複合型 %1 は複合基底型 %2 を派生する事はできません。</translation>
     </message>
     <message>
         <source>Item type of simple type %1 cannot be a complex type.</source>
-        <translation type="unfinished"></translation>
+        <translation>単純型 %1 のアイテム型を複合型にする事はできません。</translation>
     </message>
     <message>
         <source>Member type of simple type %1 cannot be a complex type.</source>
-        <translation type="unfinished"></translation>
+        <translation>単純型 %1 のメンバー型を複合型にする事はできません。</translation>
     </message>
     <message>
         <source>%1 is not allowed to have a member type with the same name as itself.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 は自身と同名のメンバー型を所有する事を許可していません。</translation>
     </message>
     <message>
         <source>%1 facet collides with %2 facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ファセットと %2 ファセットが衝突しています。</translation>
     </message>
     <message>
         <source>%1 facet must have the same value as %2 facet of base type.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ファセットは基底型の %2 ファセットと同値を所有しなければなりません。</translation>
     </message>
     <message>
         <source>%1 facet must be equal or greater than %2 facet of base type.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ファセットは基底型の %2 ファセットと同じかそれ以上でなければなりません。</translation>
     </message>
     <message>
         <source>%1 facet must be less than or equal to %2 facet of base type.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ファセットは基底型の %2 ファセット以下でなければなりません。</translation>
     </message>
     <message>
         <source>%1 facet contains invalid regular expression</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ファセットは無効な正規表現を含んでいます</translation>
     </message>
     <message>
         <source>Unknown notation %1 used in %2 facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>未知の表記法 %1 が %2 ファセットで使われています。</translation>
     </message>
     <message>
         <source>%1 facet contains invalid value %2: %3.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ファセットは無効な値 %2 を含んでいます: %3。</translation>
     </message>
     <message>
         <source>%1 facet cannot be %2 or %3 if %4 facet of base type is %5.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ファセットは、%4 ファセットの基底型が %5 の場合に %2 や %3 にする事はできません。</translation>
     </message>
     <message>
         <source>%1 facet cannot be %2 if %3 facet of base type is %4.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ファセットは、%3 ファセットの基底型が %4 の場合に %2 にする事はできません。</translation>
     </message>
     <message>
         <source>%1 facet must be less than or equal to %2 facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ファセットは %2 ファセット以下でなければなりません。</translation>
     </message>
     <message>
         <source>%1 facet must be less than %2 facet of base type.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ファセットは基底型の %2 ファセット以下でなければなりません。</translation>
     </message>
     <message>
         <source>%1 facet and %2 facet cannot appear together.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ファセットと %2 ファセットを同時に現す事はできません。</translation>
     </message>
     <message>
         <source>%1 facet must be greater than %2 facet of base type.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ファセットは基底型の %2 ファセット以上でなければなりません。</translation>
     </message>
     <message>
         <source>%1 facet must be less than %2 facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ファセットは %2 ファセット以下でなければなりません。</translation>
     </message>
     <message>
         <source>%1 facet must be greater than or equal to %2 facet of base type.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 ファセットは基底型の %2 ファセット以上でなければなりません。</translation>
     </message>
     <message>
         <source>Simple type contains not allowed facet %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>単純型がファセット %1 を含む事は許可されていません。</translation>
     </message>
     <message>
         <source>%1, %2, %3, %4, %5 and %6 facets are not allowed when derived by list.</source>
-        <translation type="unfinished"></translation>
+        <translation>list に派生される場合、%1, %2, %3, %4, %5, %6 ファセットは許可されていません。</translation>
     </message>
     <message>
         <source>Only %1 and %2 facets are allowed when derived by union.</source>
-        <translation type="unfinished"></translation>
+        <translation>union に派生される場合、%1 と %2 ファセットだけが許可されます。</translation>
     </message>
     <message>
         <source>%1 contains %2 facet with invalid data: %3.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 は無効なデータを含んだ %2 ファセットが含まれています: %3。</translation>
     </message>
     <message>
         <source>Attribute group %1 contains attribute %2 twice.</source>
-        <translation type="unfinished"></translation>
+        <translation>属性グループ %1 は属性 %2 を2重に含んでいます。</translation>
     </message>
     <message>
         <source>Attribute group %1 contains two different attributes that both have types derived from %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>属性グループ %1 はどちらも %2 から派生した型を持つ2つの異なる属性を含んでいます。</translation>
     </message>
     <message>
         <source>Attribute group %1 contains attribute %2 that has value constraint but type that inherits from %3.</source>
-        <translation type="unfinished"></translation>
+        <translation>属性グループ %1 は %3 を継承した型の値制約を持つ属性 %2 を含んでいます。</translation>
     </message>
     <message>
         <source>Complex type %1 contains attribute %2 twice.</source>
-        <translation type="unfinished"></translation>
+        <translation>複合型 %1 は属性 %2 を2回含んでいます。</translation>
     </message>
     <message>
         <source>Complex type %1 contains two different attributes that both have types derived from %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>複合型 %1 はどちらも %2 から派生した型を持つ2つの異なる属性を含んでいます。</translation>
     </message>
     <message>
         <source>Complex type %1 contains attribute %2 that has value constraint but type that inherits from %3.</source>
-        <translation type="unfinished"></translation>
+        <translation>複合型 %1 は %3 を継承した型の値制約を持つ属性 %2 を含んでいます。</translation>
     </message>
     <message>
         <source>Element %1 is not allowed to have a value constraint if its base type is complex.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 は自身の基底型が複合型の場合に値制約を持つ事を許可されていません。</translation>
     </message>
     <message>
         <source>Element %1 is not allowed to have a value constraint if its type is derived from %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 は、自身が %2 を派生している場合に値制約を持つ事を許可されていません。</translation>
     </message>
     <message>
         <source>Value constraint of element %1 is not of elements type: %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 の値制約は要素型のものではありません: %2。</translation>
     </message>
     <message>
         <source>Element %1 is not allowed to have substitution group affiliation as it is no global element.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 はグローバル要素ではない代替グループ関係を持つ事を許可されていません。</translation>
     </message>
     <message>
         <source>Type of element %1 cannot be derived from type of substitution group affiliation.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 の型は代替グループ関係の型を派生する事はできません。</translation>
     </message>
     <message>
         <source>Value constraint of attribute %1 is not of attributes type: %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>属性 %1 の値制約は属性型のものではありません: %2。</translation>
     </message>
     <message>
         <source>Attribute %1 has value constraint but has type derived from %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>属性 %1 は %2 から派生した型を持つ値制約を持っています。</translation>
     </message>
     <message>
         <source>%1 attribute in derived complex type must be %2 like in base type.</source>
-        <translation type="unfinished"></translation>
+        <translation>派生複合型の %1 属性は基底型のように %2 でなければなりません。</translation>
     </message>
     <message>
         <source>Attribute %1 in derived complex type must have %2 value constraint like in base type.</source>
-        <translation type="unfinished"></translation>
+        <translation>派生複合型の属性 %1 は基底型のように %2 値制約を持たなければなりません。</translation>
     </message>
     <message>
         <source>Attribute %1 in derived complex type must have the same %2 value constraint like in base type.</source>
-        <translation type="unfinished"></translation>
+        <translation>派生複合型の属性 %1 は、基底型と同様に %2 値制約を持たなければなりません。</translation>
     </message>
     <message>
         <source>Attribute %1 in derived complex type must have %2 value constraint.</source>
-        <translation type="unfinished"></translation>
+        <translation>派生複合型の属性 %1 は %2 値制約を持たなければなりません。</translation>
     </message>
     <message>
         <source>processContent of base wildcard must be weaker than derived wildcard.</source>
-        <translation type="unfinished"></translation>
+        <translation>基底ワイルドカードの processContent は派生ワイルドカードよりも弱くなければなりません。</translation>
     </message>
     <message>
         <source>Element %1 exists twice with different types.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 が異なる型で2つ存在しています。</translation>
     </message>
     <message>
         <source>Particle contains non-deterministic wildcards.</source>
-        <translation type="unfinished"></translation>
+        <translation>パーティクルは非決定性ワイルドカードを含んでいます。</translation>
     </message>
     <message>
         <source>Base attribute %1 is required but derived attribute is not.</source>
-        <translation type="unfinished"></translation>
+        <translation>基底属性 %1 は必須ですが派生属性はそうなっていません。</translation>
     </message>
     <message>
         <source>Type of derived attribute %1 cannot be validly derived from type of base attribute.</source>
-        <translation type="unfinished"></translation>
+        <translation>派生属性 %1 の型は基底属性の型を有効に派生する事はできません。</translation>
     </message>
     <message>
         <source>Value constraint of derived attribute %1 does not match value constraint of base attribute.</source>
-        <translation type="unfinished"></translation>
+        <translation>派生属性 %1 の値制約は基底属性の値制約にマッチしません。</translation>
     </message>
     <message>
         <source>Derived attribute %1 does not exist in the base definition.</source>
-        <translation type="unfinished"></translation>
+        <translation>派生属性 %1 は基底定義の中に存在しません。</translation>
     </message>
     <message>
         <source>Derived attribute %1 does not match the wildcard in the base definition.</source>
-        <translation type="unfinished"></translation>
+        <translation>派生属性 %1 は基底定義のワイルドカードにマッチしません。</translation>
     </message>
     <message>
         <source>Base attribute %1 is required but missing in derived definition.</source>
-        <translation type="unfinished"></translation>
+        <translation>基底属性 %1 は必須ですが派生定義内に見つかりません。</translation>
     </message>
     <message>
         <source>Derived definition contains an %1 element that does not exists in the base definition</source>
-        <translation type="unfinished"></translation>
+        <translation>派生定義は %1 要素を含んでいますが基底定義内で存在していません</translation>
     </message>
     <message>
         <source>Derived wildcard is not a subset of the base wildcard.</source>
-        <translation type="unfinished"></translation>
+        <translation>派生ワイルドカードは基底ワイルドカードのサブセットではありません。</translation>
     </message>
     <message>
         <source>%1 of derived wildcard is not a valid restriction of %2 of base wildcard</source>
-        <translation type="unfinished"></translation>
+        <translation>派生ワイルドカードの %1 は、基底ワイルドカードの %2 の制約として無効です</translation>
     </message>
     <message>
         <source>Attribute %1 from base type is missing in derived type.</source>
-        <translation type="unfinished"></translation>
+        <translation>派生型で基底型の属性 %1 が見つかりません。</translation>
     </message>
     <message>
         <source>Type of derived attribute %1 differs from type of base attribute.</source>
-        <translation type="unfinished"></translation>
+        <translation>派生属性 %1 の型が基底属性の型と異なっています。</translation>
     </message>
     <message>
         <source>Base definition contains an %1 element that is missing in the derived definition</source>
-        <translation type="unfinished"></translation>
+        <translation>基底定義は %1 要素を含んでいますが派生定義内で見つかりません</translation>
     </message>
     <message>
         <source>Can not process unknown element %1, expected elements are: %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>未知の要素 %1 を処理できません、期待する要素は以下のものです: %2。</translation>
     </message>
     <message>
         <source>Element %1 is not allowed in this scope, possible elements are: %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 はこのスコープ内で許可されていません、使用可能な要素は次のものです: %2。</translation>
     </message>
     <message>
         <source>Child element is missing in that scope, possible child elements are: %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>子要素がそのスコープ内で見つかりません、使用可能な子要素は次のものです: %1。</translation>
     </message>
     <message>
         <source>Document is not a XML schema.</source>
-        <translation type="unfinished"></translation>
+        <translation>ドキュメントは XML スキーマではありません。</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element contains invalid content: {%3} is not a value of type %4.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 要素の %1 属性は不正なコンテンツを含んでいます: {%3} は型 %4 の値ではありません。</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element contains invalid content: {%3}.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 要素の %1 属性は不正なコンテンツを含んでいます: {%3}。</translation>
     </message>
     <message>
         <source>Target namespace %1 of included schema is different from the target namespace %2 as defined by the including schema.</source>
-        <translation type="unfinished"></translation>
+        <translation>インクルードしているスキーマの対象名前空間 %1 はインクルードしようとしているスキーマで定義されている対象名前空間 %2 と異なっています。</translation>
     </message>
     <message>
         <source>Target namespace %1 of imported schema is different from the target namespace %2 as defined by the importing schema.</source>
-        <translation type="unfinished"></translation>
+        <translation>インポートしているスキーマの対象名前空間 %1 はインポートしようとしているスキーマで定義されている対象名前空間 %2 と異なっています。</translation>
     </message>
     <message>
         <source>%1 element is not allowed to have the same %2 attribute value as the target namespace %3.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 要素は対象名前空間 %3 として %2 属性値を持つ事を許可されていません。</translation>
     </message>
     <message>
         <source>%1 element without %2 attribute is not allowed inside schema without target namespace.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 属性なし %1 要素は対象名前空間なしのスキーマ内にある事を許可されていません。</translation>
     </message>
     <message>
         <source>%1 element is not allowed inside %2 element if %3 attribute is present.</source>
-        <translation type="unfinished"></translation>
+        <translation>%3 属性が存在している場合、%2 要素内で %1 要素は許可されていません。</translation>
     </message>
     <message>
         <source>%1 element has neither %2 attribute nor %3 child element.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 要素は %2 属性も %3 子要素のどちらも持っていません。</translation>
     </message>
     <message>
         <source>%1 element with %2 child element must not have a %3 attribute.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 子要素付き %1 要素は %3 属性を持ってはいけません。</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element must be %3 or %4.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 要素の %1 属性は %3 か %4 でなければなりません。</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element must have a value of %3.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 要素の %1 属性の値は %3 でなければなりません。</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element must have a value of %3 or %4.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 要素の %1 属性の値は %3 か %4 でなければなりません。</translation>
     </message>
     <message>
         <source>%1 element must not have %2 and %3 attribute together.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 要素は %2 と %3 属性を同時に持っていてはいけません。</translation>
     </message>
     <message>
         <source>Content of %1 attribute of %2 element must not be from namespace %3.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 要素の %1 属性のコンテンツは名前空間 %3 のものであってはいけません。</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element must not be %3.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 要素の %1 属性は %3 であってはいけません。</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element must have the value %3 because the %4 attribute is set.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 要素の %1 属性は %4 属性がセットされているので値 %3 を持たなければなりません。</translation>
     </message>
     <message>
         <source>Specifying use=&apos;prohibited&apos; inside an attribute group has no effect.</source>
-        <translation type="unfinished"></translation>
+        <translation>属性グループ内で定義されている use = &apos;prohibited&apos; は効果がありません。</translation>
     </message>
     <message>
         <source>%1 element must have either %2 or %3 attribute.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 要素は %2 か %3 属性のどちらかを持たなければなりません。</translation>
     </message>
     <message>
         <source>%1 element must have either %2 attribute or %3 or %4 as child element.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 要素は %2 属性や子要素として %3 や %4 のどちらも持っていてはいけません。</translation>
     </message>
     <message>
         <source>%1 element requires either %2 or %3 attribute.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 要素は %2 か %3 属性を必要とします。</translation>
     </message>
     <message>
         <source>Text or entity references not allowed inside %1 element</source>
-        <translation type="unfinished"></translation>
+        <translation>テキストまたはエンティティ参照は %1 要素内で許可されていません</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element must contain %3, %4 or a list of URIs.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 要素の %1 属性は %3、%4 または URI のリストを含んでいなければなりません。</translation>
     </message>
     <message>
         <source>%1 element is not allowed in this context.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 要素はこのコンテキストで許可されていません。</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element has larger value than %3 attribute.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 要素の %1 属性は %3 属性よりも大きな値になっています。</translation>
     </message>
     <message>
         <source>Prefix of qualified name %1 is not defined.</source>
-        <translation type="unfinished"></translation>
+        <translation>修飾名 %1 のプレフィックスが定義されていません。</translation>
     </message>
     <message>
         <source>%1 attribute of %2 element must either contain %3 or the other values.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 要素の %1 属性は %3 や他の値を含んではいけません。</translation>
     </message>
     <message>
         <source>Component with ID %1 has been defined previously.</source>
-        <translation type="unfinished"></translation>
+        <translation>ID %1 のコンポーネントは以前に定義されています。</translation>
     </message>
     <message>
         <source>Element %1 already defined.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 はすでに定義されています。</translation>
     </message>
     <message>
         <source>Attribute %1 already defined.</source>
-        <translation type="unfinished"></translation>
+        <translation>属性 %1 はすでに定義されています。</translation>
     </message>
     <message>
         <source>Type %1 already defined.</source>
-        <translation type="unfinished"></translation>
+        <translation>型 %1 はすでに定義されています。</translation>
     </message>
     <message>
         <source>Attribute group %1 already defined.</source>
-        <translation type="unfinished"></translation>
+        <translation>属性グループ %1 はすでに定義されています。</translation>
     </message>
     <message>
         <source>Element group %1 already defined.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素グループ %1 はすでに定義されています。</translation>
     </message>
     <message>
         <source>Notation %1 already defined.</source>
-        <translation type="unfinished"></translation>
+        <translation>表記法 %1 はすでに定義されています。</translation>
     </message>
     <message>
         <source>Identity constraint %1 already defined.</source>
-        <translation type="unfinished"></translation>
+        <translation>ID制約 %1 はすでに定義されています。</translation>
     </message>
     <message>
         <source>Duplicated facets in simple type %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>単純型 %1 内でファセットが重複しています。</translation>
     </message>
     <message>
         <source>%1 references unknown %2 or %3 element %4.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 は未知の %2 か %3 要素 %4 を参照しています。</translation>
     </message>
     <message>
         <source>%1 references identity constraint %2 that is no %3 or %4 element.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 は %3 でも %4 要素でもないID制約 %2 を参照しています。</translation>
     </message>
     <message>
         <source>%1 has a different number of fields from the identity constraint %2 that it references.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 のフィールド数が、自身が参照しているID制約 %2 のフィールド数と異なっています。</translation>
     </message>
     <message>
         <source>Base type %1 of %2 element cannot be resolved.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 要素の基底型 %1 を解決できませんでした。</translation>
     </message>
     <message>
         <source>Item type %1 of %2 element cannot be resolved.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 要素のアイテム型 %1 を解決できませんでした。</translation>
     </message>
     <message>
         <source>Member type %1 of %2 element cannot be resolved.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 要素のメンバー型 %1 を解決できませんでした。</translation>
     </message>
     <message>
         <source>Type %1 of %2 element cannot be resolved.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 要素の型 %1 を解決できませんでした。</translation>
     </message>
     <message>
         <source>Base type %1 of complex type cannot be resolved.</source>
-        <translation type="unfinished"></translation>
+        <translation>複合型の基底型 %1 を解決できませんでした。</translation>
     </message>
     <message>
         <source>%1 cannot have complex base type that has a %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 は %2 を持った複合基底型を持つ事はできません。</translation>
     </message>
     <message>
         <source>Content model of complex type %1 contains %2 element so it cannot be derived by extension from a non-empty type.</source>
-        <translation type="unfinished"></translation>
+        <translation>複合型 %1 のコンテンツモデルは %2 要素を含んでいますが非 empty 型を派生した拡張にする事はできません。</translation>
     </message>
     <message>
         <source>Complex type %1 cannot be derived by extension from %2 as the latter contains %3 element in its content model.</source>
-        <translation type="unfinished"></translation>
+        <translation>複合型 %1 は、%3 要素をコンテンツモデルに含んでいる %2 の拡張にする事はできません。</translation>
     </message>
     <message>
         <source>Type of %1 element must be a simple type, %2 is not.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 要素の型は %2 ではなく単純型にしなくてはいけません。</translation>
     </message>
     <message>
         <source>Substitution group %1 of %2 element cannot be resolved.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 要素の代替グループ %1 を解決できませんでした。</translation>
     </message>
     <message>
         <source>Substitution group %1 has circular definition.</source>
-        <translation type="unfinished"></translation>
+        <translation>代替グループ %1 が循環参照しています。</translation>
     </message>
     <message>
         <source>Duplicated element names %1 in %2 element.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 要素内で要素名 %1 が重複しています。</translation>
     </message>
     <message>
         <source>Reference %1 of %2 element cannot be resolved.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 要素の参照 %1 を解決できませんでした。</translation>
     </message>
     <message>
         <source>Circular group reference for %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>グループ参照 %1 が循環しています。</translation>
     </message>
     <message>
         <source>%1 element is not allowed in this scope</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 要素はこのスコープ内で許可されていません</translation>
     </message>
     <message>
         <source>%1 element cannot have %2 attribute with value other than %3.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 要素は %3 以外の値の %2 属性を持つ事はできません。</translation>
     </message>
     <message>
         <source>%1 element cannot have %2 attribute with value other than %3 or %4.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 要素は %3 や %4 以外の値の %2 属性を持つ事はできません。</translation>
     </message>
     <message>
         <source>%1 or %2 attribute of reference %3 does not match with the attribute declaration %4.</source>
-        <translation type="unfinished"></translation>
+        <translation>参照 %3 の %1 や %2 属性は属性宣言 %4 にマッチしません。</translation>
     </message>
     <message>
         <source>Attribute group %1 has circular reference.</source>
-        <translation type="unfinished"></translation>
+        <translation>属性グループ %1 が循環参照しています。</translation>
     </message>
     <message>
         <source>%1 attribute in %2 must have %3 use like in base type %4.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 の属性 %1 は基底型 %4 のように %3 を所有しなくてはいけません。</translation>
     </message>
     <message>
         <source>Attribute wildcard of %1 is not a valid restriction of attribute wildcard of base type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 の属性ワイルドカードは、基底型 %2 の属性ワイルドカードの制約として無効です。</translation>
     </message>
     <message>
         <source>%1 has attribute wildcard but its base type %2 has not.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 はワイルドカードを使用した属性を所有していますが基底型 %2 は所有していません。</translation>
     </message>
     <message>
         <source>Union of attribute wildcard of type %1 and attribute wildcard of its base type %2 is not expressible.</source>
-        <translation type="unfinished"></translation>
+        <translation>型 %1 の属性ワイルドカードの union と基底型 %2 の属性ワイルドカードは表現可能ではありません。</translation>
     </message>
     <message>
         <source>Enumeration facet contains invalid content: {%1} is not a value of type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>列挙型ファセットが不正なコンテンツを含んでいます: {%1} は、型 %2 の値ではありません。</translation>
     </message>
     <message>
         <source>Namespace prefix of qualified name %1 is not defined.</source>
-        <translation type="unfinished"></translation>
+        <translation>修飾名 %1 の名前空間プレフィックスが定義されていません。</translation>
     </message>
     <message>
         <source>%1 element %2 is not a valid restriction of the %3 element it redefines: %4.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 要素 %2 は %3 要素が再定義している制約として無効です: %4。</translation>
     </message>
     <message>
         <source>%1 is not valid according to %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 によると %1 は妥当ではありません。</translation>
     </message>
     <message>
         <source>String content does not match the length facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>string コンテンツが length ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>String content does not match the minLength facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>string コンテンツが minLength ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>String content does not match the maxLength facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>string コンテンツが maxLength ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>String content does not match pattern facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>string コンテンツがパターンファセットにマッチしません。</translation>
     </message>
     <message>
         <source>String content is not listed in the enumeration facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>string コンテンツが列挙型ファセット内の一覧にありません。</translation>
     </message>
     <message>
         <source>Signed integer content does not match the maxInclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>signed integer コンテンツが maxInclusive ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Signed integer content does not match the maxExclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>signed integer コンテンツが maxExclusive ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Signed integer content does not match the minInclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>signed integer コンテンツが minInclusive ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Signed integer content does not match the minExclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>signed integer コンテンツが minExclusive ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Signed integer content is not listed in the enumeration facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>signed integer コンテンツが列挙型ファセット内の一覧にありません。</translation>
     </message>
     <message>
         <source>Signed integer content does not match pattern facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>signed integer コンテンツがパターンファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Signed integer content does not match in the totalDigits facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>signed integer コンテンツが totalDigits ファセットで指定される値の範囲にマッチしません。</translation>
     </message>
     <message>
         <source>Unsigned integer content does not match the maxInclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>unsigned integer コンテンツが maxInclusive ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Unsigned integer content does not match the maxExclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>unsigned integer コンテンツが maxExclusive ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Unsigned integer content does not match the minInclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>unsigned integer コンテンツが minInclusive ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Unsigned integer content does not match the minExclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>unsigned integer コンテンツが minExclusive ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Unsigned integer content is not listed in the enumeration facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>unsigned integer コンテンツが列挙型ファセット内の一覧にありません。</translation>
     </message>
     <message>
         <source>Unsigned integer content does not match pattern facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>unsigned integer コンテンツがパターンファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Unsigned integer content does not match in the totalDigits facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>unsigned integer コンテンツが totalDigits ファセットで指定される値の範囲にマッチしません。</translation>
     </message>
     <message>
         <source>Double content does not match the maxInclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>double コンテンツが maxInclusive ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Double content does not match the maxExclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>double コンテンツが maxExclusive ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Double content does not match the minInclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>double コンテンツが minInclusive ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Double content does not match the minExclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>double コンテンツが minExclusive ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Double content is not listed in the enumeration facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>double コンテンツが列挙型ファセット内の一覧にありません。</translation>
     </message>
     <message>
         <source>Double content does not match pattern facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>double コンテンツがパターンファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Decimal content does not match in the fractionDigits facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>decimal コンテンツが fractionDigits ファセットで指定される値の範囲にマッチしません。</translation>
     </message>
     <message>
         <source>Decimal content does not match in the totalDigits facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>decimal コンテンツが totalDigits ファセットで指定される値の範囲にマッチしません。</translation>
     </message>
     <message>
         <source>Date time content does not match the maxInclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>date time コンテンツが maxInclusive ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Date time content does not match the maxExclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>date time コンテンツが maxExclusive ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Date time content does not match the minInclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>date time コンテンツが minInclusive ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Date time content does not match the minExclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>date time コンテンツが minExclusive ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Date time content is not listed in the enumeration facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>date time コンテンツが列挙型ファセット内の一覧にありません。</translation>
     </message>
     <message>
         <source>Date time content does not match pattern facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>date time コンテンツがパターンファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Duration content does not match the maxInclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>duration コンテンツが maxInclusive ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Duration content does not match the maxExclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>duration コンテンツが maxExclusive ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Duration content does not match the minInclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>duration コンテンツが minInclusive ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Duration content does not match the minExclusive facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>duration コンテンツが minExclusive ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Duration content is not listed in the enumeration facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>duration コンテンツが列挙型ファセット内の一覧にありません。</translation>
     </message>
     <message>
         <source>Duration content does not match pattern facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>duration コンテンツがパターンファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Boolean content does not match pattern facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>boolean コンテンツがパターンファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Binary content does not match the length facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>binary コンテンツが length ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Binary content does not match the minLength facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>binary コンテンツが minLength ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Binary content does not match the maxLength facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>binary コンテンツが maxLength ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Binary content is not listed in the enumeration facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>binary コンテンツが列挙型ファセット内の一覧にありません。</translation>
     </message>
     <message>
         <source>Invalid QName content: %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>無効な QName コンテンツ: %1。</translation>
     </message>
     <message>
         <source>QName content is not listed in the enumeration facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>QName コンテンツが列挙型ファセット内の一覧にありません。</translation>
     </message>
     <message>
         <source>QName content does not match pattern facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>QName コンテンツがパターンファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Notation content is not listed in the enumeration facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>notation コンテンツが列挙型ファセット内の一覧にありません。</translation>
     </message>
     <message>
         <source>List content does not match length facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>list コンテンツが length ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>List content does not match minLength facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>list コンテンツが minLength ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>List content does not match maxLength facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>list コンテンツが maxLength ファセットにマッチしません。</translation>
     </message>
     <message>
         <source>List content is not listed in the enumeration facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>list コンテンツが列挙型ファセット内の一覧にありません。</translation>
     </message>
     <message>
         <source>List content does not match pattern facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>list コンテンツがパターンファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Union content is not listed in the enumeration facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>union コンテンツが列挙型ファセット内の一覧にありません。</translation>
     </message>
     <message>
         <source>Union content does not match pattern facet.</source>
-        <translation type="unfinished"></translation>
+        <translation>union コンテンツがパターンファセットにマッチしません。</translation>
     </message>
     <message>
         <source>Data of type %1 are not allowed to be empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>型 %1 のデータは空にする事を許容されていません。</translation>
     </message>
     <message>
         <source>Element %1 is missing child element.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 に子要素がありません。</translation>
     </message>
     <message>
         <source>There is one IDREF value with no corresponding ID: %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>ID %1 に対応するIDREFがありません。</translation>
     </message>
     <message>
         <source>Loaded schema file is invalid.</source>
-        <translation type="unfinished"></translation>
+        <translation>読み込まれているスキーマファイルは無効です。</translation>
     </message>
     <message>
         <source>%1 contains invalid data.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 は無効なデータを含んでいます。</translation>
     </message>
     <message>
         <source>xsi:schemaLocation namespace %1 has already appeared earlier in the instance document.</source>
-        <translation type="unfinished"></translation>
+        <translation>xsi:schemaLocation 名前空間 %1 はインスタンスドキュメントの前に既に現れています。</translation>
     </message>
     <message>
         <source>xsi:noNamespaceSchemaLocation cannot appear after the first no-namespace element or attribute.</source>
-        <translation type="unfinished"></translation>
+        <translation>先頭の namespace ではない要素または属性の後に xsi:noNamespaceSchemaLocation を使用できません。</translation>
     </message>
     <message>
         <source>No schema defined for validation.</source>
-        <translation type="unfinished"></translation>
+        <translation>妥当性検証の為のスキーマが定義されていません。</translation>
     </message>
     <message>
         <source>No definition for element %1 available.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 は使用できるように定義されていません。</translation>
     </message>
     <message>
         <source>Specified type %1 is not known to the schema.</source>
-        <translation type="unfinished"></translation>
+        <translation>指定された型 %1 はスキーマで未知です。</translation>
     </message>
     <message>
         <source>Element %1 is not defined in this scope.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 がこのスコープ内で定義されていません。</translation>
     </message>
     <message>
         <source>Declaration for element %1 does not exist.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 の宣言が存在しません。</translation>
     </message>
     <message>
         <source>Element %1 contains invalid content.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 は不正な内容を含んでいます。</translation>
     </message>
     <message>
         <source>Element %1 is declared as abstract.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 は抽象型として宣言されています。</translation>
     </message>
     <message>
         <source>Element %1 is not nillable.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 は null を許可していません。</translation>
     </message>
     <message>
         <source>Attribute %1 contains invalid data: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>属性 %1 は不正なデータを含んでいます: %2</translation>
     </message>
     <message>
         <source>Element contains content although it is nillable.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素は null が許容されていますが内容を含んでいます。</translation>
     </message>
     <message>
         <source>Fixed value constraint not allowed if element is nillable.</source>
-        <translation type="unfinished"></translation>
+        <translation>null が許容されている要素への固定値制約は許容されていません。</translation>
     </message>
     <message>
         <source>Specified type %1 is not validly substitutable with element type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>指定された型 %1 は有効に置換できる要素型 %2 ではありません。</translation>
     </message>
     <message>
         <source>Complex type %1 is not allowed to be abstract.</source>
-        <translation type="unfinished"></translation>
+        <translation>複合型 %1 を抽象化する事は許可されていません。</translation>
     </message>
     <message>
         <source>Element %1 contains not allowed attributes.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 は属性を含む事を許可されていません。</translation>
     </message>
     <message>
         <source>Element %1 contains not allowed child element.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 は子要素を含む事を許可されていません。</translation>
     </message>
     <message>
         <source>Content of element %1 does not match its type definition: %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 の内容が自身の型の定義とマッチしていません: %2。</translation>
     </message>
     <message>
         <source>Content of element %1 does not match defined value constraint.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 の内容が定義されている値制約にマッチしていません。</translation>
     </message>
     <message>
         <source>Element %1 contains not allowed child content.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 は子の内容を含む事を許可されていません。</translation>
     </message>
     <message>
         <source>Element %1 contains not allowed text content.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 はテキストを含む事を許可されていません。</translation>
     </message>
     <message>
         <source>Element %1 cannot contain other elements, as it has a fixed content.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 は固定値を持った他の要素を含む事はできません。</translation>
     </message>
     <message>
         <source>Element %1 is missing required attribute %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 に要求された属性 %2 がありません。</translation>
     </message>
     <message>
         <source>Attribute %1 does not match the attribute wildcard.</source>
-        <translation type="unfinished"></translation>
+        <translation>属性 %1 は属性ワイルドカードにマッチしていません。</translation>
     </message>
     <message>
         <source>Declaration for attribute %1 does not exist.</source>
-        <translation type="unfinished"></translation>
+        <translation>属性 %1 の宣言が存在していません。</translation>
     </message>
     <message>
         <source>Element %1 contains two attributes of type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 が型 %2 の属性を2個含んでいます。</translation>
     </message>
     <message>
         <source>Attribute %1 contains invalid content.</source>
-        <translation type="unfinished"></translation>
+        <translation>属性 %1 は不正な内容を含んでいます。</translation>
     </message>
     <message>
         <source>Element %1 contains unknown attribute %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>要素 %1 は未知の属性 %2 を含んでいます。</translation>
     </message>
     <message>
         <source>Content of attribute %1 does not match its type definition: %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>属性 %1 の内容が自身の型の定義にマッチしていません: %2。</translation>
     </message>
     <message>
         <source>Content of attribute %1 does not match defined value constraint.</source>
-        <translation type="unfinished"></translation>
+        <translation>属性 %1 の内容が値制約の定義にマッチしていません。</translation>
     </message>
     <message>
         <source>Non-unique value found for constraint %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>制約 %1 に一意ではない値が見つかりました。</translation>
     </message>
     <message>
         <source>Key constraint %1 contains absent fields.</source>
-        <translation type="unfinished"></translation>
+        <translation>キー制約 %1 は欠落したフィールドを含んでいます。</translation>
     </message>
     <message>
         <source>Key constraint %1 contains references nillable element %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>キー制約 %1 は null を許容する要素 %2 の参照を含んでいます。</translation>
     </message>
     <message>
         <source>No referenced value found for key reference %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>キー参照 %1 によって参照される値が見つかりません。</translation>
     </message>
     <message>
         <source>More than one value found for field %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>フィールド %1 に2個以上の値があります。</translation>
     </message>
     <message>
         <source>Field %1 has no simple type.</source>
-        <translation type="unfinished"></translation>
+        <translation>フィールド %1 が単純型を持っていません。</translation>
     </message>
     <message>
         <source>ID value &apos;%1&apos; is not unique.</source>
-        <translation type="unfinished"></translation>
+        <translation>ID 値 &apos;%1&apos; が一意ではありません。</translation>
     </message>
     <message>
         <source>&apos;%1&apos; attribute contains invalid QName content: %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>&apos;%1&apos; 属性は不正な QName の内容を含んでいます: %2。</translation>
     </message>
     <message>
         <source>empty</source>

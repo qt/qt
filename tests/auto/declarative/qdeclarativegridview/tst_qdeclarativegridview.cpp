@@ -82,6 +82,7 @@ private slots:
     void QTBUG_8456();
     void manualHighlight();
     void footer();
+    void header();
 
 private:
     QDeclarativeView *createView();
@@ -604,6 +605,8 @@ void tst_QDeclarativeGridView::currentIndex()
     // no wrap
     gridview->setCurrentIndex(0);
     QCOMPARE(gridview->currentIndex(), 0);
+    // confirm that the velocity is updated
+    QTRY_VERIFY(gridview->verticalVelocity() != 0.0);
 
     gridview->moveCurrentIndexUp();
     QCOMPARE(gridview->currentIndex(), 0);
@@ -850,10 +853,10 @@ void tst_QDeclarativeGridView::componentChanges()
     QTRY_VERIFY(gridView);
 
     QDeclarativeComponent component(canvas->engine());
-    component.setData("import Qt 4.7; Rectangle { color: \"blue\"; }", QUrl::fromLocalFile(""));
+    component.setData("import QtQuick 1.0; Rectangle { color: \"blue\"; }", QUrl::fromLocalFile(""));
 
     QDeclarativeComponent delegateComponent(canvas->engine());
-    delegateComponent.setData("import Qt 4.7; Text { text: '<b>Name:</b> ' + name }", QUrl::fromLocalFile(""));
+    delegateComponent.setData("import QtQuick 1.0; Text { text: '<b>Name:</b> ' + name }", QUrl::fromLocalFile(""));
 
     QSignalSpy highlightSpy(gridView, SIGNAL(highlightChanged()));
     QSignalSpy delegateSpy(gridView, SIGNAL(delegateChanged()));
@@ -1210,6 +1213,40 @@ void tst_QDeclarativeGridView::footer()
 
     model.clear();
     QTRY_COMPARE(footer->y(), 0.0);
+}
+
+void tst_QDeclarativeGridView::header()
+{
+    QDeclarativeView *canvas = createView();
+
+    TestModel model;
+    for (int i = 0; i < 7; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/header.qml"));
+    qApp->processEvents();
+
+    QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
+    QTRY_VERIFY(gridview != 0);
+
+    QDeclarativeItem *contentItem = gridview->contentItem();
+    QTRY_VERIFY(contentItem != 0);
+
+    QDeclarativeText *header = findItem<QDeclarativeText>(contentItem, "header");
+    QVERIFY(header);
+
+    QCOMPARE(header->y(), 0.0);
+    QCOMPARE(gridview->contentY(), 0.0);
+
+    QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", 0);
+    QVERIFY(item);
+    QCOMPARE(item->y(), 30.0);
+
+    model.clear();
+    QTRY_COMPARE(header->y(), 0.0);
 }
 
 

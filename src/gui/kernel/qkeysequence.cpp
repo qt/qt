@@ -590,7 +590,7 @@ static const struct {
     //: Button that will hang up if we're in call, or make a call if we're not.
     { Qt::Key_ToggleCallHangup, QT_TRANSLATE_NOOP("QShortcut", "Toggle Call/Hangup") },
     { Qt::Key_Flip,             QT_TRANSLATE_NOOP("QShortcut", "Flip") },
-    //: Button to trigger voice dialling
+    //: Button to trigger voice dialing
     { Qt::Key_VoiceDial,        QT_TRANSLATE_NOOP("QShortcut", "Voice Dial") },
     //: Button to redial the last number called
     { Qt::Key_LastNumberRedial, QT_TRANSLATE_NOOP("QShortcut", "Last Number Redial") },

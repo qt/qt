@@ -52,6 +52,7 @@
 #include <qdeclarativeguard_p.h>
 #include <qdeclarativeproperty_p.h>
 #include <qdeclarativecontext_p.h>
+#include <qdeclarativestate_p_p.h>
 
 #include <QtCore/qdebug.h>
 
@@ -200,14 +201,14 @@ public:
 };
 
 
-class QDeclarativePropertyChangesPrivate : public QObjectPrivate
+class QDeclarativePropertyChangesPrivate : public QDeclarativeStateOperationPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativePropertyChanges)
 public:
-    QDeclarativePropertyChangesPrivate() : object(0), decoded(true), restore(true),
+    QDeclarativePropertyChangesPrivate() : decoded(true), restore(true),
                                 isExplicit(false) {}
 
-    QObject *object;
+    QDeclarativeGuard<QObject> object;
     QByteArray data;
 
     bool decoded : 1;
@@ -495,6 +496,274 @@ void QDeclarativePropertyChanges::setIsExplicit(bool e)
 {
     Q_D(QDeclarativePropertyChanges);
     d->isExplicit = e;
+}
+
+bool QDeclarativePropertyChanges::containsValue(const QByteArray &name) const
+{
+    Q_D(const QDeclarativePropertyChanges);
+    typedef QPair<QByteArray, QVariant> PropertyEntry;
+
+    QListIterator<PropertyEntry> propertyIterator(d->properties);
+    while (propertyIterator.hasNext()) {
+        const PropertyEntry &entry = propertyIterator.next();
+        if (entry.first == name) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool QDeclarativePropertyChanges::containsExpression(const QByteArray &name) const
+{
+    Q_D(const QDeclarativePropertyChanges);
+    typedef QPair<QByteArray, QDeclarativeExpression *> ExpressionEntry;
+
+    QListIterator<ExpressionEntry> expressionIterator(d->expressions);
+    while (expressionIterator.hasNext()) {
+        const ExpressionEntry &entry = expressionIterator.next();
+        if (entry.first == name) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool QDeclarativePropertyChanges::containsProperty(const QByteArray &name) const
+{
+    return containsValue(name) || containsExpression(name);
+}
+
+void QDeclarativePropertyChanges::changeValue(const QByteArray &name, const QVariant &value)
+{
+    Q_D(QDeclarativePropertyChanges);
+    typedef QPair<QByteArray, QVariant> PropertyEntry;
+    typedef QPair<QByteArray, QDeclarativeExpression *> ExpressionEntry;
+
+    QMutableListIterator<ExpressionEntry> expressionIterator(d->expressions);
+    while (expressionIterator.hasNext()) {
+        const ExpressionEntry &entry = expressionIterator.next();
+        if (entry.first == name) {
+            expressionIterator.remove();
+            if (state() && state()->isStateActive()) {
+                QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::binding(d->property(name));
+                if (oldBinding) {
+                    QDeclarativePropertyPrivate::setBinding(d->property(name), 0);
+                    oldBinding->destroy();
+                }
+                d->property(name).write(value);
+            }
+
+            d->properties.append(PropertyEntry(name, value));
+            return;
+        }
+    }
+
+    QMutableListIterator<PropertyEntry> propertyIterator(d->properties);
+    while (propertyIterator.hasNext()) {
+        PropertyEntry &entry = propertyIterator.next();
+        if (entry.first == name) {
+            entry.second = value;
+            if (state() && state()->isStateActive())
+                d->property(name).write(value);
+            return;
+        }
+    }
+
+    QDeclarativeAction action;
+    action.restore = restoreEntryValues();
+    action.property = d->property(name);
+    action.fromValue = action.property.read();
+    action.specifiedObject = object();
+    action.specifiedProperty = QString::fromUtf8(name);
+    action.toValue = value;
+
+    propertyIterator.insert(PropertyEntry(name, value));
+    if (state() && state()->isStateActive()) {
+        state()->addEntryToRevertList(action);
+        QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::binding(action.property);
+        if (oldBinding)
+            oldBinding->setEnabled(false, QDeclarativePropertyPrivate::DontRemoveBinding | QDeclarativePropertyPrivate::BypassInterceptor);
+        d->property(name).write(value);
+    }
+}
+
+void QDeclarativePropertyChanges::changeExpression(const QByteArray &name, const QString &expression)
+{
+    Q_D(QDeclarativePropertyChanges);
+    typedef QPair<QByteArray, QVariant> PropertyEntry;
+    typedef QPair<QByteArray, QDeclarativeExpression *> ExpressionEntry;
+
+    bool hadValue = false;
+
+    QMutableListIterator<PropertyEntry> propertyIterator(d->properties);
+    while (propertyIterator.hasNext()) {
+        PropertyEntry &entry = propertyIterator.next();
+        if (entry.first == name) {
+            propertyIterator.remove();
+            hadValue = true;
+            break;
+        }
+    }
+
+    QMutableListIterator<ExpressionEntry> expressionIterator(d->expressions);
+    while (expressionIterator.hasNext()) {
+        const ExpressionEntry &entry = expressionIterator.next();
+        if (entry.first == name) {
+            entry.second->setExpression(expression);
+            if (state() && state()->isStateActive()) {
+                QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::binding(d->property(name));
+                if (oldBinding) {
+                       QDeclarativePropertyPrivate::setBinding(d->property(name), 0);
+                       oldBinding->destroy();
+                }
+
+                QDeclarativeBinding *newBinding = new QDeclarativeBinding(expression, object(), qmlContext(this));
+                newBinding->setTarget(d->property(name));
+                QDeclarativePropertyPrivate::setBinding(d->property(name), newBinding, QDeclarativePropertyPrivate::DontRemoveBinding | QDeclarativePropertyPrivate::BypassInterceptor);
+            }
+            return;
+        }
+    }
+
+    QDeclarativeExpression *newExpression = new QDeclarativeExpression(qmlContext(this), d->object, expression);
+    expressionIterator.insert(ExpressionEntry(name, newExpression));
+
+    if (state() && state()->isStateActive()) {
+        if (hadValue) {
+            QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::binding(d->property(name));
+            if (oldBinding) {
+                oldBinding->setEnabled(false, QDeclarativePropertyPrivate::DontRemoveBinding | QDeclarativePropertyPrivate::BypassInterceptor);
+                state()->changeBindingInRevertList(object(), name, oldBinding);
+            }
+
+            QDeclarativeBinding *newBinding = new QDeclarativeBinding(expression, object(), qmlContext(this));
+            newBinding->setTarget(d->property(name));
+            QDeclarativePropertyPrivate::setBinding(d->property(name), newBinding, QDeclarativePropertyPrivate::DontRemoveBinding | QDeclarativePropertyPrivate::BypassInterceptor);
+        } else {
+            QDeclarativeAction action;
+            action.restore = restoreEntryValues();
+            action.property = d->property(name);
+            action.fromValue = action.property.read();
+            action.specifiedObject = object();
+            action.specifiedProperty = QString::fromUtf8(name);
+
+
+            if (d->isExplicit) {
+                action.toValue = newExpression->evaluate();
+            } else {
+                QDeclarativeBinding *newBinding = new QDeclarativeBinding(newExpression->expression(), object(), qmlContext(this));
+                newBinding->setTarget(d->property(name));
+                action.toBinding = newBinding;
+                action.deletableToBinding = true;
+
+                state()->addEntryToRevertList(action);
+                QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::binding(action.property);
+                if (oldBinding)
+                    oldBinding->setEnabled(false, QDeclarativePropertyPrivate::DontRemoveBinding | QDeclarativePropertyPrivate::BypassInterceptor);
+
+                QDeclarativePropertyPrivate::setBinding(action.property, newBinding, QDeclarativePropertyPrivate::DontRemoveBinding | QDeclarativePropertyPrivate::BypassInterceptor);
+            }
+        }
+    }
+    // what about the signal handler?
+}
+
+QVariant QDeclarativePropertyChanges::property(const QByteArray &name) const
+{
+    Q_D(const QDeclarativePropertyChanges);
+    typedef QPair<QByteArray, QVariant> PropertyEntry;
+    typedef QPair<QByteArray, QDeclarativeExpression *> ExpressionEntry;
+
+    QListIterator<PropertyEntry> propertyIterator(d->properties);
+    while (propertyIterator.hasNext()) {
+        const PropertyEntry &entry = propertyIterator.next();
+        if (entry.first == name) {
+            return entry.second;
+        }
+    }
+
+    QListIterator<ExpressionEntry> expressionIterator(d->expressions);
+    while (expressionIterator.hasNext()) {
+        const ExpressionEntry &entry = expressionIterator.next();
+        if (entry.first == name) {
+            return QVariant(entry.second->expression());
+        }
+    }
+
+    return QVariant();
+}
+
+void QDeclarativePropertyChanges::removeProperty(const QByteArray &name)
+{
+    Q_D(QDeclarativePropertyChanges);
+    typedef QPair<QByteArray, QVariant> PropertyEntry;
+    typedef QPair<QByteArray, QDeclarativeExpression *> ExpressionEntry;
+
+    QMutableListIterator<ExpressionEntry> expressionIterator(d->expressions);
+    while (expressionIterator.hasNext()) {
+        const ExpressionEntry &entry = expressionIterator.next();
+        if (entry.first == name) {
+            expressionIterator.remove();
+            state()->removeEntryFromRevertList(object(), name);
+            return;
+        }
+    }
+
+    QMutableListIterator<PropertyEntry> propertyIterator(d->properties);
+    while (propertyIterator.hasNext()) {
+        const PropertyEntry &entry = propertyIterator.next();
+        if (entry.first == name) {
+            propertyIterator.remove();
+            state()->removeEntryFromRevertList(object(), name);
+            return;
+        }
+    }
+}
+
+QVariant QDeclarativePropertyChanges::value(const QByteArray &name) const
+{
+    Q_D(const QDeclarativePropertyChanges);
+    typedef QPair<QByteArray, QVariant> PropertyEntry;
+
+    QListIterator<PropertyEntry> propertyIterator(d->properties);
+    while (propertyIterator.hasNext()) {
+        const PropertyEntry &entry = propertyIterator.next();
+        if (entry.first == name) {
+            return entry.second;
+        }
+    }
+
+    return QVariant();
+}
+
+QString QDeclarativePropertyChanges::expression(const QByteArray &name) const
+{
+    Q_D(const QDeclarativePropertyChanges);
+    typedef QPair<QByteArray, QDeclarativeExpression *> ExpressionEntry;
+
+    QListIterator<ExpressionEntry> expressionIterator(d->expressions);
+    while (expressionIterator.hasNext()) {
+        const ExpressionEntry &entry = expressionIterator.next();
+        if (entry.first == name) {
+            return entry.second->expression();
+        }
+    }
+
+    return QString();
+}
+
+void QDeclarativePropertyChanges::detachFromState()
+{
+    if (state())
+        state()->removeAllEntriesFromRevertList(object());
+}
+
+void QDeclarativePropertyChanges::attachToState()
+{
+    if (state())
+        state()->addEntriesToRevertList(actions());
 }
 
 QT_END_NAMESPACE

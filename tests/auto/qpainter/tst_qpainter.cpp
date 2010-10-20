@@ -252,6 +252,8 @@ private slots:
 
     void QTBUG5939_attachPainterPrivate();
 
+    void drawPointScaled();
+
 private:
     void fillData();
     void setPenColor(QPainter& p);
@@ -3170,7 +3172,6 @@ void fpe_steepSlopes()
     p.setRenderHint(QPainter::Antialiasing, antialiased);
     p.setTransform(transform);
 
-    QEXPECT_FAIL("steep line 3 aa", "needs to be fixed", Continue);
     p.drawLine(line);
 }
 
@@ -4520,6 +4521,26 @@ void tst_QPainter::QTBUG5939_attachPainterPrivate()
 
     QVERIFY(widget->worldTransform.isIdentity());
     QCOMPARE(widget->deviceTransform, proxy->deviceTransform);
+}
+
+void tst_QPainter::drawPointScaled()
+{
+    QImage image(32, 32, QImage::Format_RGB32);
+    image.fill(0xffffffff);
+
+    QPainter p(&image);
+
+    p.scale(0.1, 0.1);
+
+    QPen pen;
+    pen.setWidth(1000);
+    pen.setColor(Qt::red);
+
+    p.setPen(pen);
+    p.drawPoint(0, 0);
+    p.end();
+
+    QCOMPARE(image.pixel(16, 16), 0xffff0000);
 }
 
 QTEST_MAIN(tst_QPainter)

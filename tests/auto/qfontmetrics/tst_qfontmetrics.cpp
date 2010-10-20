@@ -74,6 +74,7 @@ private slots:
     void bypassShaping();
     void elidedMultiLength();
     void elidedMultiLengthF();
+    void lineWidth();
 };
 
 tst_QFontMetrics::tst_QFontMetrics()
@@ -264,6 +265,23 @@ void tst_QFontMetrics::elidedMultiLength()
 void tst_QFontMetrics::elidedMultiLengthF()
 {
     elidedMultiLength_helper<QFontMetricsF>();
+}
+
+void tst_QFontMetrics::lineWidth()
+{
+    // QTBUG-13009, QTBUG-13011
+    QFont smallFont;
+    smallFont.setPointSize(8);
+    smallFont.setWeight(QFont::Light);
+    const QFontMetrics smallFontMetrics(smallFont);
+
+    QFont bigFont;
+    bigFont.setPointSize(40);
+    bigFont.setWeight(QFont::Black);
+    const QFontMetrics bigFontMetrics(bigFont);
+
+    QVERIFY(smallFontMetrics.lineWidth() >= 1);
+    QVERIFY(smallFontMetrics.lineWidth() < bigFontMetrics.lineWidth());
 }
 
 QTEST_MAIN(tst_QFontMetrics)

@@ -126,7 +126,7 @@ private:
 class QGLFramebufferObjectPrivate
 {
 public:
-    QGLFramebufferObjectPrivate() : fbo_guard(0), texture(0), depth_stencil_buffer(0)
+    QGLFramebufferObjectPrivate() : fbo_guard(0), texture(0), depth_buffer(0), stencil_buffer(0)
                                   , color_buffer(0), valid(false), engine(0) {}
     ~QGLFramebufferObjectPrivate() {}
 
@@ -136,7 +136,8 @@ public:
     bool checkFramebufferStatus() const;
     QGLSharedResourceGuard fbo_guard;
     GLuint texture;
-    GLuint depth_stencil_buffer;
+    GLuint depth_buffer;
+    GLuint stencil_buffer;
     GLuint color_buffer;
     GLenum target;
     QSize size;

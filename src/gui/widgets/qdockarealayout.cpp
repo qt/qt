@@ -60,6 +60,9 @@
 
 QT_BEGIN_NAMESPACE
 
+// qmainwindow.cpp
+extern QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *window);
+
 enum { StateFlagVisible = 1, StateFlagFloating = 2 };
 
 /******************************************************************************
@@ -1480,7 +1483,7 @@ QList<int> QDockAreaLayoutInfo::indexOf(QWidget *widget) const
 
 QMainWindowLayout *QDockAreaLayoutInfo::mainWindowLayout() const
 {
-    QMainWindowLayout *result = qobject_cast<QMainWindowLayout*>(mainWindow->layout());
+    QMainWindowLayout *result = qt_mainwindow_layout(mainWindow);
     Q_ASSERT(result != 0);
     return result;
 }
@@ -3070,8 +3073,7 @@ void QDockAreaLayout::splitDockWidget(QDockWidget *after,
 
 void QDockAreaLayout::apply(bool animate)
 {
-    QWidgetAnimator &widgetAnimator
-        = qobject_cast<QMainWindowLayout*>(mainWindow->layout())->widgetAnimator;
+    QWidgetAnimator &widgetAnimator = qt_mainwindow_layout(mainWindow)->widgetAnimator;
 
     for (int i = 0; i < QInternal::DockCount; ++i)
         docks[i].apply(animate);
@@ -3176,7 +3178,7 @@ void QDockAreaLayout::updateSeparatorWidgets() const
         if (j < separatorWidgets.size()) {
             sepWidget = separatorWidgets.at(j);
         } else {
-            sepWidget = qobject_cast<QMainWindowLayout*>(mainWindow->layout())->getSeparatorWidget();
+            sepWidget = qt_mainwindow_layout(mainWindow)->getSeparatorWidget();
             separatorWidgets.append(sepWidget);
         }
         j++;

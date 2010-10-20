@@ -48,7 +48,7 @@
 //! [0]
 MainWindow::MainWindow()
 {
-    undoStack = new QUndoStack();
+    undoStack = new QUndoStack(this);
 
     createActions();
     createMenus();

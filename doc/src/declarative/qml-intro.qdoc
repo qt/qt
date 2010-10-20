@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -58,12 +58,12 @@ would be a property.
 
 The basic syntax of an \l{QML Elements}{element} is
 
-\code
+\qml
 SomeElement {
     id: myObject
     ... some other things here ...
 }
-\endcode
+\endqml
 
 Here we are defining a new object. We specify its 'type' first as SomeElement.
 Then within matching braces { ... } we specify the various parts of our 
@@ -262,7 +262,7 @@ myRectangle.top         // Correct
 We can transform a graphical object to get additional effects. Rotate a
 piece of text by 180 degrees to display upside-down text. Rotate an image
 by 90 degrees to lay it on its side. These transformations require
-additonal information.
+additional information.
 
 For rotation, the additional information includes: the origin relative to
 the object being rotated, the axis of rotation, and the angle in degrees to
@@ -583,7 +583,7 @@ rectangle. The \c value attribute of 'dial' is set to a value based on the
 the rotation of the needle image. Notice this piece of code in Dial where
 the change in \c value modifies the position of the needle.
 
-\snippet examples/declarative/ui-components/dialcontrol/Dial.qml  needle angle
+\snippet examples/declarative/ui-components/dialcontrol/content/Dial.qml  needle angle
 
 This is part of the \c needleRotation that rotates the needle and causes the
 rotation of its shadow. \l SpringAnimation is an element that modifies the value

@@ -64,7 +64,6 @@ class QVariant;
 
 class Q_GUI_EXPORT QTransform
 {
-    Q_ENUMS(TransformationType)
 public:
     enum TransformationType {
         TxNone      = 0x00,

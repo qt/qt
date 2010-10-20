@@ -73,6 +73,8 @@ public:
     virtual void resizeTextureData(int width, int height);
     virtual void fillTexture(const Coord &c, glyph_t glyph);
     virtual int glyphPadding() const;
+    virtual int maxTextureWidth() const;
+    virtual int maxTextureHeight() const;
 
     inline GLuint texture() const { return m_texture; }
 
@@ -81,6 +83,12 @@ public:
 
     inline void setPaintEnginePrivate(QGL2PaintEngineExPrivate *p) { pex = p; }
 
+    enum FilterMode {
+        Nearest,
+        Linear
+    };
+    FilterMode filterMode() const { return m_filterMode; }
+    void setFilterMode(FilterMode m) { m_filterMode = m; }
 
 public Q_SLOTS:
     void contextDestroyed(const QGLContext *context) {
@@ -115,6 +123,8 @@ private:
     int m_height;
 
     QGLShaderProgram *m_program;
+
+    FilterMode m_filterMode;
 };
 
 QT_END_NAMESPACE

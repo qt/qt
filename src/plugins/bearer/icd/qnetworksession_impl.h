@@ -58,6 +58,7 @@
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qtimer.h>
+#include <QtCore/quuid.h>
 
 #include <QtDBus/qdbusconnection.h>
 #include <QtDBus/qdbusinterface.h>
@@ -98,7 +99,9 @@ public:
         m_stopTimer.setSingleShot(true);
         connect(&m_stopTimer, SIGNAL(timeout()), this, SLOT(finishStopBySendingClosedSignal()));
 
-        QDBusConnection systemBus = QDBusConnection::systemBus();
+        QDBusConnection systemBus = QDBusConnection::connectToBus(
+            QDBusConnection::SystemBus,
+            QUuid::createUuid().toString());
 
         m_dbusInterface = new QDBusInterface(ICD_DBUS_API_INTERFACE,
                                          ICD_DBUS_API_PATH,
@@ -123,6 +126,8 @@ public:
     ~QNetworkSessionPrivateImpl()
     {
         cleanupSession();
+
+        QDBusConnection::disconnectFromBus(m_dbusInterface->connection().name());
     }
 
     //called by QNetworkSession constructor and ensures

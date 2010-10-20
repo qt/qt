@@ -45,7 +45,7 @@
 #include "qfont_p.h"
 #include "qfontengine_p.h"
 #include "qpaintdevice.h"
-#include "qlibrary.h"
+#include <private/qsystemlibrary_p.h>
 #include "qabstractfileengine.h"
 #include "qendian.h"
 
@@ -1049,7 +1049,7 @@ static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
 {
     if(!fnt->data.isEmpty()) {
 #ifndef Q_OS_WINCE
-        PtrAddFontMemResourceEx ptrAddFontMemResourceEx = (PtrAddFontMemResourceEx)QLibrary::resolve(QLatin1String("gdi32"),
+        PtrAddFontMemResourceEx ptrAddFontMemResourceEx = (PtrAddFontMemResourceEx)QSystemLibrary::resolve(QLatin1String("gdi32"),
                                                                                                      "AddFontMemResourceEx");
         if (!ptrAddFontMemResourceEx)
             return;
@@ -1111,7 +1111,7 @@ static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
         if (AddFontResource((LPCWSTR)fnt->fileName.utf16()) == 0)
             return;
 #else
-        PtrAddFontResourceExW ptrAddFontResourceExW = (PtrAddFontResourceExW)QLibrary::resolve(QLatin1String("gdi32"),
+        PtrAddFontResourceExW ptrAddFontResourceExW = (PtrAddFontResourceExW)QSystemLibrary::resolve(QLatin1String("gdi32"),
                                                                                                "AddFontResourceExW");
         if (!ptrAddFontResourceExW
             || ptrAddFontResourceExW((wchar_t*)fnt->fileName.utf16(), FR_PRIVATE, 0) == 0)
@@ -1140,7 +1140,7 @@ bool QFontDatabase::removeApplicationFont(int handle)
         if (!removeSucceeded)
             return false;
 #else
-        PtrRemoveFontMemResourceEx ptrRemoveFontMemResourceEx = (PtrRemoveFontMemResourceEx)QLibrary::resolve(QLatin1String("gdi32"),
+        PtrRemoveFontMemResourceEx ptrRemoveFontMemResourceEx = (PtrRemoveFontMemResourceEx)QSystemLibrary::resolve(QLatin1String("gdi32"),
                                                                                                               "RemoveFontMemResourceEx");
         if (!ptrRemoveFontMemResourceEx
             || !ptrRemoveFontMemResourceEx(font.handle))
@@ -1151,7 +1151,7 @@ bool QFontDatabase::removeApplicationFont(int handle)
         if (!RemoveFontResource((LPCWSTR)font.fileName.utf16()))
             return false;
 #else
-        PtrRemoveFontResourceExW ptrRemoveFontResourceExW = (PtrRemoveFontResourceExW)QLibrary::resolve(QLatin1String("gdi32"),
+        PtrRemoveFontResourceExW ptrRemoveFontResourceExW = (PtrRemoveFontResourceExW)QSystemLibrary::resolve(QLatin1String("gdi32"),
                                                                                                         "RemoveFontResourceExW");
         if (!ptrRemoveFontResourceExW
             || !ptrRemoveFontResourceExW((LPCWSTR)font.fileName.utf16(), FR_PRIVATE, 0))

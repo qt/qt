@@ -472,13 +472,42 @@ bool QGLPixmapData::scroll(int dx, int dy, const QRect &rect)
 
 void QGLPixmapData::copy(const QPixmapData *data, const QRect &rect)
 {
-    if (data->classId() != QPixmapData::OpenGLClass) {
+    if (data->classId() != QPixmapData::OpenGLClass || !static_cast<const QGLPixmapData *>(data)->useFramebufferObjects()) {
         QPixmapData::copy(data, rect);
         return;
     }
 
-    // can be optimized to do a framebuffer blit or similar ...
-    QPixmapData::copy(data, rect);
+    const QGLPixmapData *other = static_cast<const QGLPixmapData *>(data);
+    if (other->m_renderFbo) {
+        QGLShareContextScope ctx(qt_gl_share_widget()->context());
+
+        resize(rect.width(), rect.height());
+        m_hasAlpha = other->m_hasAlpha;
+        ensureCreated();
+
+        if (!ctx->d_ptr->fbo)
+            glGenFramebuffers(1, &ctx->d_ptr->fbo);
+
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, ctx->d_ptr->fbo);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                GL_TEXTURE_2D, m_texture.id, 0);
+
+        if (!other->m_renderFbo->isBound())
+            glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, other->m_renderFbo->handle());
+
+        glDisable(GL_SCISSOR_TEST);
+        if (ctx->d_ptr->active_engine && ctx->d_ptr->active_engine->type() == QPaintEngine::OpenGL2)
+            static_cast<QGL2PaintEngineEx *>(ctx->d_ptr->active_engine)->invalidateState();
+
+        glBlitFramebufferEXT(rect.x(), rect.y(), rect.x() + rect.width(), rect.y() + rect.height(),
+                0, 0, w, h,
+                GL_COLOR_BUFFER_BIT,
+                GL_NEAREST);
+
+        glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->current_fbo);
+    } else {
+        QPixmapData::copy(data, rect);
+    }
 }
 
 void QGLPixmapData::fill(const QColor &color)
@@ -623,11 +652,12 @@ void QGLPixmapData::copyBackFromRenderFbo(bool keepCurrentFboBound) const
     }
 }
 
-bool QGLPixmapData::useFramebufferObjects()
+bool QGLPixmapData::useFramebufferObjects() const
 {
     return QGLFramebufferObject::hasOpenGLFramebufferObjects()
            && QGLFramebufferObject::hasOpenGLFramebufferBlit()
-           && qt_gl_preferGL2Engine();
+           && qt_gl_preferGL2Engine()
+           && (w * h > 32*32); // avoid overhead of FBOs for small pixmaps
 }
 
 QPaintEngine* QGLPixmapData::paintEngine() const

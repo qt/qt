@@ -218,7 +218,14 @@ public:
                 return visibleItems.last()->rowPos() + rows * rowSize();
             }
         } else {
-             return (modelIndex / columns) * rowSize();
+            qreal pos = (modelIndex / columns) * rowSize();
+            if (header) {
+                qreal headerSize = flow == QDeclarativeGridView::LeftToRight
+                                   ? header->item->height()
+                                   : header->item->width();
+                pos += headerSize;
+            }
+            return pos;
         }
         return 0;
     }
@@ -1070,27 +1077,41 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     GridView are laid out horizontally or vertically. Grid views are inherently flickable
     as GridView inherits from \l Flickable.
 
-    For example, if there is a simple list model defined in a file \c ContactModel.qml like this:
+    \section1 Example Usage
+
+    The following example shows the definition of a simple list model defined
+    in a file called \c ContactModel.qml:
 
     \snippet doc/src/snippets/declarative/gridview/ContactModel.qml 0
 
-    Another component can display this model data in a GridView, like this:
+    \beginfloatright
+    \inlineimage gridview-simple.png
+    \endfloat
 
+    This model can be referenced as \c ContactModel in other QML files. See \l{QML Modules}
+    for more information about creating reusable components like this.
+
+    Another component can display this model data in a GridView, as in the following
+    example, which creates a \c ContactModel component for its model, and a \l Column element
+    (containing \l Image and \l Text elements) for its delegate.
+
+    \clearfloat
     \snippet doc/src/snippets/declarative/gridview/gridview.qml import
     \codeline
     \snippet doc/src/snippets/declarative/gridview/gridview.qml classdocs simple
-    \image gridview-simple.png
 
-    Here, the GridView creates a \c ContactModel component for its model, and a \l Column element
-    (containing \l Image and \ Text elements) for its delegate. The view will create a new delegate 
-    for each item in the model. Notice the delegate is able to access the model's \c name and 
-    \c portrait data directly.
+    \beginfloatright
+    \inlineimage gridview-highlight.png
+    \endfloat
+
+    The view will create a new delegate for each item in the model. Note that the delegate
+    is able to access the model's \c name and \c portrait data directly.
 
     An improved grid view is shown below. The delegate is visually improved and is moved 
     into a separate \c contactDelegate component.
-    
+
+    \clearfloat
     \snippet doc/src/snippets/declarative/gridview/gridview.qml classdocs advanced
-    \image gridview-highlight.png
 
     The currently selected item is highlighted with a blue \l Rectangle using the \l highlight property,
     and \c focus is set to \c true to enable keyboard navigation for the grid view.
@@ -1099,10 +1120,10 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     Delegates are instantiated as needed and may be destroyed at any time.
     State should \e never be stored in a delegate.
 
-    \note Views do not enable \e clip automatically.  If the view
-    is not clipped by another item or the screen, it will be necessary
-    to set \e {clip: true} in order to have the out of view items clipped
-    nicely.
+    \note Views do not set the \l{Item::}{clip} property automatically.
+    If the view is not clipped by another item or the screen, it will be necessary
+    to set this property to true in order to clip the items that are partially or
+    fully outside the view.
 
     \sa {declarative/modelviews/gridview}{GridView example}
 */
@@ -2241,7 +2262,9 @@ void QDeclarativeGridView::trackedPositionChanged()
         }
         if (viewPos != pos) {
             cancelFlick();
+            d->calcVelocity = true;
             d->setPosition(pos);
+            d->calcVelocity = false;
         }
     }
 }
@@ -2575,7 +2598,7 @@ void QDeclarativeGridView::itemsMoved(int from, int to, int count)
     while (moved.count()) {
         int idx = moved.begin().key();
         FxGridItem *item = moved.take(idx);
-        if (item->item == d->currentItem->item)
+        if (d->currentItem && item->item == d->currentItem->item)
             item->setPosition(d->colPosAt(idx), d->rowPosAt(idx));
         d->releaseItem(item);
     }

@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -172,6 +172,40 @@ handler to execute at startup, they are run sequentially in an undefined order.
 
 Likewise, the \l {Component::onDestruction} attached property is triggered on
 component destruction.
+
+
+\section1 Property Assignment vs Property Binding
+
+When working with both QML and JavaScript, it is important to differentiate between
+QML \l {Property Binding} and JavaScript value assignment. In QML, a property 
+binding is created using the \e {property: value} syntax:
+
+\code
+Rectangle {
+    width: otherItem.width
+}
+\endcode
+
+The \c width of the above \l Rectangle is updated whenever \c otherItem.width changes. On the other
+hand, take the following JavaScript code snippet, that runs when the \l Rectangle is created:
+
+\code
+Rectangle {
+
+    Component.onCompleted: {
+        width = otherItem.width;
+    }
+}
+\endcode
+
+The \c width of this \l Rectangle is \e assigned the value of \c otherItem.width using the
+\e {property = value} syntax in JavaScript. Unlike the QML \e {property: value} syntax, this
+does not invoke QML property binding; the \c rectangle.width property is set to the value
+of \c otherItem.width at the time of the assignment and will not be updated if that value
+changes.
+
+See \l {Property Binding} for more information.
+
 
 \section1 QML JavaScript Restrictions
 

@@ -67,6 +67,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativeListModel;
+class FlatListScriptClass;
 
 class QDeclarativeListModelWorkerAgent : public QObject
 {
@@ -115,6 +116,7 @@ protected:
 
 private:
     friend class QDeclarativeWorkerScriptEnginePrivate;
+    friend class FlatListScriptClass;
     QScriptEngine *m_engine;
 
     struct Change {
@@ -140,6 +142,8 @@ private:
         Data data;
         QDeclarativeListModel *list;
     };
+
+    void changedData(int index, int count);
 
     QAtomicInt m_ref;
     QDeclarativeListModel *m_orig;

@@ -50,7 +50,7 @@
 #include "qt_windows.h"
 #include <private/qapplication_p.h>
 
-#include <qlibrary.h>
+#include <private/qsystemlibrary_p.h>
 #include <qpaintdevice.h>
 #include <qpainter.h>
 #include <limits.h>
@@ -63,7 +63,6 @@
 #include <qbitmap.h>
 
 #include <private/qpainter_p.h>
-#include <private/qpdf_p.h>
 #include "qpaintengine.h"
 #include "qvarlengtharray.h"
 #include <private/qpaintengine_raster_p.h>
@@ -140,7 +139,7 @@ static void resolveGetCharWidthI()
     if (resolvedGetCharWidthI)
         return;
     resolvedGetCharWidthI = true;
-    ptrGetCharWidthI = (PtrGetCharWidthI)QLibrary::resolve(QLatin1String("gdi32"), "GetCharWidthI");
+    ptrGetCharWidthI = (PtrGetCharWidthI)QSystemLibrary::resolve(QLatin1String("gdi32"), "GetCharWidthI");
 }
 #endif // !defined(Q_WS_WINCE)
 
@@ -1039,9 +1038,7 @@ QFontEngine::Properties QFontEngineWin::properties() const
     p.italicAngle = otm->otmItalicAngle;
     p.postscriptName = QString::fromWCharArray((wchar_t *)((char *)otm + (quintptr)otm->otmpFamilyName)).toLatin1();
     p.postscriptName += QString::fromWCharArray((wchar_t *)((char *)otm + (quintptr)otm->otmpStyleName)).toLatin1();
-#ifndef QT_NO_PRINTER
-    p.postscriptName = QPdf::stripSpecialCharacters(p.postscriptName);
-#endif
+    p.postscriptName = QFontEngine::convertToPostscriptFontFamilyName(p.postscriptName);
     p.boundingBox = QRectF(otm->otmrcFontBox.left, -otm->otmrcFontBox.top,
                            otm->otmrcFontBox.right - otm->otmrcFontBox.left,
                            otm->otmrcFontBox.top - otm->otmrcFontBox.bottom);
@@ -1296,6 +1293,7 @@ QFontEngineMultiWin::QFontEngineMultiWin(QFontEngineWin *first, const QStringLis
     engines[0] = first;
     first->ref.ref();
     fontDef = engines[0]->fontDef;
+    cache_cost = first->cache_cost;
 }
 
 void QFontEngineMultiWin::loadEngine(int at)
@@ -1317,6 +1315,8 @@ void QFontEngineMultiWin::loadEngine(int at)
     engines[at] = new QFontEngineWin(fam, hfont, stockFont, lf);
     engines[at]->ref.ref();
     engines[at]->fontDef = fontDef;
+
+    // TODO: increase cost in QFontCache for the font engine loaded here
 }
 
 QT_END_NAMESPACE

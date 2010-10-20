@@ -16,6 +16,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#include <QDir>
 #include <QUrl>
 
 #include "audioplayer.h"
@@ -109,6 +110,13 @@ int MMF::AudioPlayer::setDeviceVolume(int mmfVolume)
 #endif
 }
 
+int MMF::AudioPlayer::openFile(const QString &fileName)
+{
+    const QHBufC nativeFileName(QDir::toNativeSeparators(fileName));
+    TRAPD(err, m_player->OpenFileL(*nativeFileName));
+    return err;
+}
+
 int MMF::AudioPlayer::openFile(RFile& file)
 {
     TRAPD(err, m_player->OpenFileL(file));
@@ -150,7 +158,7 @@ int MMF::AudioPlayer::bufferStatus() const
     return result;
 }
 
-void MMF::AudioPlayer::close()
+void MMF::AudioPlayer::doClose()
 {
     m_player->Close();
 }
@@ -160,9 +168,9 @@ bool MMF::AudioPlayer::hasVideo() const
     return false;
 }
 
-qint64 MMF::AudioPlayer::currentTime() const
+qint64 MMF::AudioPlayer::getCurrentTime() const
 {
-    TRACE_CONTEXT(AudioPlayer::currentTime, EAudioApi);
+    TRACE_CONTEXT(AudioPlayer::getCurrentTime, EAudioApi);
 
     TTimeIntervalMicroSeconds us;
     const TInt err = m_player->GetPosition(us);
@@ -203,7 +211,9 @@ void MMF::AudioPlayer::MapcInitComplete(TInt aError,
     TRACE_CONTEXT(AudioPlayer::MapcInitComplete, EAudioInternal);
     TRACE_ENTRY("state %d error %d", state(), aError);
 
-    __ASSERT_ALWAYS(LoadingState == state(), Utils::panic(InvalidStatePanic));
+    __ASSERT_ALWAYS(LoadingState == state() ||
+                    progressiveDownloadStalled() && BufferingState == state(),
+                    Utils::panic(InvalidStatePanic));
 
     if (KErrNone == aError) {
         maxVolumeChanged(m_player->MaxVolume());

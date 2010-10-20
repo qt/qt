@@ -190,7 +190,10 @@ public:
     QGLWidget *shareWidget() {
         if (!initializing && !widget && !cleanedUp) {
             initializing = true;
-            widget = new QGLWidget;
+
+            widget = new QGLWidget(QGLFormat(QGL::SingleBuffer | QGL::NoDepthBuffer | QGL::NoStencilBuffer));
+            widget->resize(1, 1);
+
             // We dont need this internal widget to appear in QApplication::topLevelWidgets()
             if (QWidgetPrivate::allWidgets)
                 QWidgetPrivate::allWidgets->remove(widget);
@@ -342,12 +345,14 @@ QGLWindowSurface::~QGLWindowSurface()
 
 void QGLWindowSurface::deleted(QObject *object)
 {
-    // Make sure that the fbo is destroyed before destroying its context.
-    delete d_ptr->fbo;
-    d_ptr->fbo = 0;
-
     QWidget *widget = qobject_cast<QWidget *>(object);
     if (widget) {
+        if (widget == window()) {
+            // Make sure that the fbo is destroyed before destroying its context.
+            delete d_ptr->fbo;
+            d_ptr->fbo = 0;
+        }
+
         QWidgetPrivate *widgetPrivate = widget->d_func();
         if (widgetPrivate->extraData()) {
             union { QGLContext **ctxPtr; void **voidPtr; };
@@ -419,6 +424,8 @@ QPaintDevice *QGLWindowSurface::paintDevice()
 
     QGLContext *ctx = reinterpret_cast<QGLContext *>(window()->d_func()->extraData()->glContext);
     ctx->makeCurrent();
+
+    Q_ASSERT(d_ptr->fbo);
     return d_ptr->fbo;
 }
 
@@ -527,8 +534,9 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
                 }
             }
 #endif
-            if (d_ptr->paintedRegion.boundingRect() != geometry() && 
-                hasPartialUpdateSupport()) {
+            if (hasPartialUpdateSupport() &&
+                d_ptr->paintedRegion.boundingRect().width() * d_ptr->paintedRegion.boundingRect().height() <
+                geometry().width() * geometry().height() * 0.2) {
                 context()->d_func()->swapRegion(&d_ptr->paintedRegion);             
             } else
                 context()->swapBuffers();
@@ -574,7 +582,9 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         const int ty1 = parent->height() - rect.top();
 
         if (window() == parent || d_ptr->fbo->format().samples() <= 1) {
-            // glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, 0);
+            if (ctx->d_ptr->current_fbo != 0)
+                glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, 0);
+
             glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, d_ptr->fbo->handle());
 
             glBlitFramebufferEXT(sx0, sy0, sx1, sy1,
@@ -607,6 +617,8 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
 
             qgl_fbo_pool()->release(temp);
         }
+
+        ctx->d_ptr->current_fbo = 0;
     }
 #if !defined(QT_OPENGL_ES_2)
     else {

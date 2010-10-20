@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -59,7 +59,7 @@ from QML's import loading mechanisms.
 For example, for a simple QML file like this:
 
 \qml
-import Qt 4.7
+import QtQuick 1.0
 
 Rectangle { width: 100; height: 100 }
 \endqml
@@ -79,20 +79,8 @@ QDeclarativeImportDatabase::resolveType "Rectangle" = "QDeclarativeRectangle"
 \section1 Debugging with Qt Creator
 
 \l{http://qt.nokia.com/products/developer-tools}{Qt Creator} provides built-in
-support for QML debugging. Open a QML project in Creator and enter Debug mode,
-or click the "Start Debugging" option from the menu, and Creator will
-show QML debugging information and options for your application, including
-object inspection, property monitoring and application frame-rate analysis.
-
-Creator can be used to debug both local and remote QML applications. To
-enable remote debugging, start the \l {QML Viewer}
-on the remote device with a debugging port defined, like this:
-
-\code
-    QML_DEBUG_SERVER_PORT=3768 qmlviewer myqmlfile.qml
-\endcode
-
-In Creator, open the project settings pane and set the server and port
-details for the remote device, then start debugging.
+support for QML debugging. QML projects and standalone C++ applications that
+utilize QML can be debugged on desktops as well as on remote devices.
+For more information, see the Qt Creator Manual.
 
 */

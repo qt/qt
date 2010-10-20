@@ -177,7 +177,7 @@
     </message>
     <message>
         <source>The referenced file %1 must be inside or within a subdirectory of (%2). Skipping it.</source>
-        <translation>Sklicana datoteka %1 se mora nahajti v mapi (%1) ali njeni podmapi. Preskakujem jo.</translation>
+        <translation>Sklicana datoteka %1 se mora nahajti v mapi (%2) ali njeni podmapi. Preskakujem jo.</translation>
     </message>
     <message>
         <source>The file %1 does not exist! Skipping it.</source>

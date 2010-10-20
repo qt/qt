@@ -549,18 +549,22 @@ int QTimerInfoList::activateTimers()
     if (qt_disable_lowpriority_timers || isEmpty())
         return 0; // nothing to do
 
-    bool firstTime = true;
-    timeval currentTime;
-    int n_act = 0, maxCount = count();
+    int n_act = 0, maxCount = 0;
     firstTimerInfo = 0;
 
-    while (maxCount--) {
-        currentTime = updateCurrentTime();
-        if (firstTime) {
-            repairTimersIfNeeded();
-            firstTime = false;
-        }
+    timeval currentTime = updateCurrentTime();
+    repairTimersIfNeeded();
 
+
+    // Find out how many timer have expired
+    for (QTimerInfoList::const_iterator it = constBegin(); it != constEnd(); ++it) {
+        if (currentTime < (*it)->timeout)
+            break;
+        maxCount++;
+    }
+
+    //fire the timers.
+    while (maxCount--) {
         if (isEmpty())
             break;
 

@@ -186,6 +186,13 @@ void QSplashScreen::repaint()
     Draws the \a message text onto the splash screen with color \a
     color and aligns the text according to the flags in \a alignment.
 
+    To make sure the splash screen is repainted immediately, you can
+    call \l{QCoreApplication}'s
+    \l{QCoreApplication::}{processEvents()} after the call to
+    showMessage(). You usually want this to make sure that the message
+    is kept up to date with what your application is doing (e.g.,
+    loading files).
+
     \sa Qt::Alignment, clearMessage()
 */
 void QSplashScreen::showMessage(const QString &message, int alignment,

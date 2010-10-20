@@ -106,7 +106,7 @@
     <name>QHelpEngineCore</name>
     <message>
         <source>Cannot open documentation file %1: %2!</source>
-        <translation>Не можу відкрити файл документації %1: %2!</translation>
+        <translation>Неможливо відкрити файл документації %1: %2!</translation>
     </message>
     <message>
         <source>The specified namespace does not exist!</source>
@@ -256,7 +256,7 @@
     </message>
     <message>
         <source>The input file %1 could not be opened!</source>
-        <translation>Неможливо відкрити вхідний файл %1!</translation>
+        <translation>Не вдалось відкрити вхідний файл %1!</translation>
     </message>
 </context>
 <context>

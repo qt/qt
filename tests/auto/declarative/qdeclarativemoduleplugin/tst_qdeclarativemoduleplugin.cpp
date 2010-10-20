@@ -54,6 +54,7 @@ public:
 
 private slots:
     void importsPlugin();
+    void incorrectPluginCase();
 };
 
 #ifdef Q_OS_SYMBIAN
@@ -117,6 +118,31 @@ void tst_qdeclarativemoduleplugin::importsPlugin()
     QObject *object = component.create();
     QVERIFY(object != 0);
     QCOMPARE(object->property("value").toInt(),123);
+    delete object;
+}
+
+void tst_qdeclarativemoduleplugin::incorrectPluginCase()
+{
+    QDeclarativeEngine engine;
+    engine.addImportPath(QLatin1String(SRCDIR) + QDir::separator() + QLatin1String("imports"));
+
+    QDeclarativeComponent component(&engine, TEST_FILE("data/incorrectCase.qml"));
+
+    QList<QDeclarativeError> errors = component.errors();
+    QCOMPARE(errors.count(), 1);
+
+#if defined(Q_OS_MAC) || defined(Q_OS_WIN32)
+#if defined(Q_OS_MAC)
+    QString libname = "libPluGin.dylib";
+#elif defined(Q_OS_WIN32)
+    QString libname = "PluGin.dll";
+#endif
+    QString expectedError = QLatin1String("plugin cannot be loaded for module \"com.nokia.WrongCase\": File name case mismatch for \"") + QFileInfo(__FILE__).absoluteDir().filePath("imports/com/nokia/WrongCase/" + libname) + QLatin1String("\"");
+#else
+    QString expectedError = QLatin1String("module \"com.nokia.WrongCase\" plugin \"PluGin\" not found");
+#endif
+
+    QCOMPARE(errors.at(0).description(), expectedError);
 }
 
 QTEST_MAIN(tst_qdeclarativemoduleplugin)

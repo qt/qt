@@ -97,7 +97,10 @@ QFileNetworkReply::QFileNetworkReply(QObject *parent, const QNetworkRequest &req
 
     QString fileName = url.toLocalFile();
     if (fileName.isEmpty()) {
-        fileName = url.toString(QUrl::RemoveAuthority | QUrl::RemoveFragment | QUrl::RemoveQuery);
+        if (url.scheme() == QLatin1String("qrc"))
+            fileName = QLatin1Char(':') + url.path();
+        else
+            fileName = url.toString(QUrl::RemoveAuthority | QUrl::RemoveFragment | QUrl::RemoveQuery);
     }
 
     QFileInfo fi(fileName);

@@ -2849,7 +2849,8 @@ void QComboBox::mousePressEvent(QMouseEvent *e)
         if (sc == QStyle::SC_ComboBoxArrow)
             d->updateArrow(QStyle::State_Sunken);
 #ifdef QT_KEYPAD_NAVIGATION
-        if (!d->lineEdit) {
+        //if the container already exists, then d->viewContainer() is safe to call
+        if (d->container) {
 #endif
             // We've restricted the next couple of lines, because by not calling
             // viewContainer(), we avoid creating the QComboBoxPrivateContainer.

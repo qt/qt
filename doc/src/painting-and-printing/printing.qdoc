@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -135,6 +135,17 @@
   you construct QFontMetrics and QFontMetricsF objects, or ensure that each QFont
   used is constructed using the form of the constructor that accepts a
   QPaintDevice argument.
+
+  \section1 Printing Widgets
+
+  To print a widget, you can use the QWidget::render() function. As mentioned,
+  the printer's resolution is usually higher than the screen resolution, so you
+  will have to scale the painter. You may also want to position the widget on the
+  page. The following code sample shows how this may look.
+
+  \snippet doc/src/snippets/widgetprinting.cpp 0
+
+  This will center the widget on the page and scale it so that it fits the page.
 
   \section1 Printing from Complex Widgets
 

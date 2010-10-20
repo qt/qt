@@ -508,6 +508,12 @@ public:
     }
 };
 
+class UnavailableType : public QObject
+{
+    Q_OBJECT
+public:
+    UnavailableType() {}
+};
 
 class MyDotPropertyObject : public QObject
 {

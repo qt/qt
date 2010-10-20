@@ -69,6 +69,7 @@ extern bool qt_nograb();
 
 QWidget *QWidgetPrivate::mouseGrabber = 0;
 QWidget *QWidgetPrivate::keyboardGrabber = 0;
+CEikButtonGroupContainer *QS60Data::cba = 0;
 
 static bool isEqual(const QList<QAction*>& a, const QList<QAction*>& b)
 {
@@ -494,17 +495,37 @@ void QWidgetPrivate::show_sys()
                 // Create the status pane and CBA here
                 CEikAppUi *ui = static_cast<CEikAppUi *>(S60->appUi());
                 MEikAppUiFactory *factory = CEikonEnv::Static()->AppUiFactory();
-                TRAP_IGNORE(factory->ReadAppInfoResourceL(0, ui));
-                if (S60->buttonGroupContainer())
-                    S60->buttonGroupContainer()->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
+
+                QT_TRAP_THROWING(
+                    factory->CreateResourceIndependentFurnitureL(ui);
+
+                    TRect boundingRect = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+
+                    CEikButtonGroupContainer *cba = CEikButtonGroupContainer::NewL(CEikButtonGroupContainer::ECba,
+                        CEikButtonGroupContainer::EHorizontal,ui,R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
+
+                    CEikButtonGroupContainer *oldCba = CEikonEnv::Static()->AppUiFactory()->SwapButtonGroup(cba);
+                    Q_ASSERT(!oldCba);
+                    S60->setButtonGroupContainer(cba);
+
+                    CEikMenuBar *menuBar = new(ELeave) CEikMenuBar;
+                    menuBar->ConstructL(ui, 0, R_AVKON_MENUPANE_EMPTY);
+                    menuBar->SetMenuType(CEikMenuBar::EMenuOptions);
+                    S60->appUi()->AddToStackL(menuBar,ECoeStackPriorityMenu,ECoeStackFlagRefusesFocus);
+
+                    CEikMenuBar *oldMenu = CEikonEnv::Static()->AppUiFactory()->SwapMenuBar(menuBar);
+                    Q_ASSERT(!oldMenu);
+                )
 
                 if (S60->statusPane()) {
                     // Use QDesktopWidget as the status pane observer to proxy for the AppUi.
                     // Can't use AppUi directly because it privately inherits from MEikStatusPaneObserver.
                     QSymbianControl *desktopControl = static_cast<QSymbianControl *>(QApplication::desktop()->winId());
                     S60->statusPane()->SetObserver(desktopControl);
-                    if (isFullscreen)
-                        S60->statusPane()->MakeVisible(false);
+                    if (isFullscreen) {
+                        const bool cbaVisible = S60->buttonGroupContainer() && S60->buttonGroupContainer()->IsVisible();
+                        S60->setStatusPaneAndButtonGroupVisibility(false, cbaVisible);
+                    }
                 }
             }
         }
@@ -516,7 +537,7 @@ void QWidgetPrivate::show_sys()
             if (q->windowState() & Qt::WindowMaximized) {
                 TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
                 id->SetExtent(r.iTl, r.Size());
-            } else if (!q->testAttribute(Qt::WA_Moved)) {
+            } else if (!q->testAttribute(Qt::WA_Moved) && q->windowType() != Qt::Dialog) {
                 id->SetPosition(static_cast<CEikAppUi*>(S60->appUi())->ClientRect().iTl);
             }
         }
@@ -1231,7 +1252,8 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
         // At this point the backing store should already be destroyed
         // so we flush the command buffer to ensure that the freeing of
         // those resources and deleting the window can happen "atomically"
-        S60->wsSession().Flush();
+        if (qApp)
+            S60->wsSession().Flush();
     }
 }
 

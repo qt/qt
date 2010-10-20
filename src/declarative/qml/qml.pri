@@ -22,7 +22,6 @@ SOURCES += \
     $$PWD/qdeclarativerefcount.cpp \
     $$PWD/qdeclarativemetatype.cpp \
     $$PWD/qdeclarativestringconverters.cpp \
-    $$PWD/qdeclarativeclassfactory.cpp \
     $$PWD/qdeclarativeparserstatus.cpp \
     $$PWD/qdeclarativetypeloader.cpp \
     $$PWD/qdeclarativeinfo.cpp \
@@ -89,7 +88,6 @@ HEADERS += \
     $$PWD/qdeclarativecontext.h \
     $$PWD/qdeclarativeexpression.h \
     $$PWD/qdeclarativestringconverters_p.h \
-    $$PWD/qdeclarativeclassfactory_p.h \
     $$PWD/qdeclarativeinfo.h \
     $$PWD/qdeclarativeproperty_p.h \
     $$PWD/qdeclarativecontext_p.h \

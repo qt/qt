@@ -571,6 +571,7 @@ public:
     void startAnimation(QS60StyleEnums::SkinParts animation);
     void stopAnimation(QS60StyleEnums::SkinParts animation);
     static QS60StyleAnimation* animationDefinition(QS60StyleEnums::SkinParts part);
+    static void removeAnimations();
 
 #endif
 
@@ -597,6 +598,8 @@ private:
     void setThemePaletteHash(QPalette *palette) const;
     static void storeThemePalette(QPalette *palette);
     static void deleteThemePalette();
+    static bool equalToThemePalette(QColor color, QPalette::ColorRole role);
+    static bool equalToThemePalette(qint64 cacheKey, QPalette::ColorRole role);
 
     static QSize partSize(QS60StyleEnums::SkinParts part,
         SkinElementFlags flags = KDefaultSkinElementFlags);

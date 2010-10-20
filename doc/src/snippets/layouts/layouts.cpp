@@ -66,7 +66,9 @@ int main(int argc, char *argv[])
     layout->addWidget(button5);
 
     window->setLayout(layout);
-//! [4] //! [5]
+//! [4]
+    window->setWindowTitle("QHBoxLayout");
+//! [5]
     window->show();
 //! [5]
     }
@@ -93,7 +95,9 @@ int main(int argc, char *argv[])
     layout->addWidget(button5);
 
     window->setLayout(layout);
-//! [10] //! [11]
+//! [10]
+    window->setWindowTitle("QVBoxLayout");
+//! [11]
     window->show();
 //! [11]
     }
@@ -120,9 +124,41 @@ int main(int argc, char *argv[])
     layout->addWidget(button5, 2, 1);
 
     window->setLayout(layout);
-//! [16] //! [17]
+//! [16]
+    window->setWindowTitle("QGridLayout");
+//! [17]
     window->show();
 //! [17]
+    }
+
+    {
+//! [18]
+    QWidget *window = new QWidget;
+//! [18]
+//! [19]
+    QPushButton *button1 = new QPushButton("One");
+    QLineEdit *lineEdit1 = new QLineEdit();
+//! [19]
+//! [20]
+    QPushButton *button2 = new QPushButton("Two");
+    QLineEdit *lineEdit2 = new QLineEdit();
+    QPushButton *button3 = new QPushButton("Three");
+    QLineEdit *lineEdit3 = new QLineEdit();
+//! [20]
+//! [21]
+    QFormLayout *layout = new QFormLayout;
+//! [21]
+//! [22]
+    layout->addRow(button1, lineEdit1);
+    layout->addRow(button2, lineEdit2);
+    layout->addRow(button3, lineEdit3);
+
+    window->setLayout(layout);
+//! [22]
+    window->setWindowTitle("QFormLayout");
+//! [23]
+    window->show();
+//! [23]    
     }
 
     return app.exec();

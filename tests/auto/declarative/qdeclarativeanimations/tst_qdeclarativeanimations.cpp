@@ -674,7 +674,7 @@ void tst_qdeclarativeanimations::easingProperties()
 {
     {
         QDeclarativeEngine engine;
-        QString componentStr = "import Qt 4.7\nNumberAnimation { easing.type: \"InOutQuad\" }";
+        QString componentStr = "import QtQuick 1.0\nNumberAnimation { easing.type: \"InOutQuad\" }";
         QDeclarativeComponent animationComponent(&engine);
         animationComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QDeclarativePropertyAnimation *animObject = qobject_cast<QDeclarativePropertyAnimation*>(animationComponent.create());
@@ -685,7 +685,7 @@ void tst_qdeclarativeanimations::easingProperties()
 
     {
         QDeclarativeEngine engine;
-        QString componentStr = "import Qt 4.7\nPropertyAnimation { easing.type: \"OutBounce\"; easing.amplitude: 5.0 }";
+        QString componentStr = "import QtQuick 1.0\nPropertyAnimation { easing.type: \"OutBounce\"; easing.amplitude: 5.0 }";
         QDeclarativeComponent animationComponent(&engine);
         animationComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QDeclarativePropertyAnimation *animObject = qobject_cast<QDeclarativePropertyAnimation*>(animationComponent.create());
@@ -697,7 +697,7 @@ void tst_qdeclarativeanimations::easingProperties()
 
     {
         QDeclarativeEngine engine;
-        QString componentStr = "import Qt 4.7\nPropertyAnimation { easing.type: \"OutElastic\"; easing.amplitude: 5.0; easing.period: 3.0}";
+        QString componentStr = "import QtQuick 1.0\nPropertyAnimation { easing.type: \"OutElastic\"; easing.amplitude: 5.0; easing.period: 3.0}";
         QDeclarativeComponent animationComponent(&engine);
         animationComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QDeclarativePropertyAnimation *animObject = qobject_cast<QDeclarativePropertyAnimation*>(animationComponent.create());
@@ -710,7 +710,7 @@ void tst_qdeclarativeanimations::easingProperties()
 
     {
         QDeclarativeEngine engine;
-        QString componentStr = "import Qt 4.7\nPropertyAnimation { easing.type: \"InOutBack\"; easing.overshoot: 2 }";
+        QString componentStr = "import QtQuick 1.0\nPropertyAnimation { easing.type: \"InOutBack\"; easing.overshoot: 2 }";
         QDeclarativeComponent animationComponent(&engine);
         animationComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
         QDeclarativePropertyAnimation *animObject = qobject_cast<QDeclarativePropertyAnimation*>(animationComponent.create());

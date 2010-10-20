@@ -12,7 +12,7 @@ wince* {
 }
 
 symbian: {
-  additional.sources = ../desktopsettingsaware/desktopsettingsaware.exe
+  additional.sources = $$OUT_PWD/../desktopsettingsaware/desktopsettingsaware.exe
   additional.path = desktopsettingsaware
   someTest.sources = test.pro
   someTest.path = test

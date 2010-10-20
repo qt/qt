@@ -240,6 +240,7 @@ private slots:
     void taskQTBUG_6450_selectAllWith1stColumnHidden();
     void taskQTBUG_9216_setSizeAndUniformRowHeightsWrongRepaint();
     void taskQTBUG_11466_keyboardNavigationRegression();
+    void taskQTBUG_13567_removeLastItemRegression();
 };
 
 class QtTestModel: public QAbstractItemModel
@@ -3908,6 +3909,27 @@ void tst_QTreeView::taskQTBUG_11466_keyboardNavigationRegression()
     QTest::keyPress(treeView.viewport(), Qt::Key_Down);
     QTest::qWait(10);
     QTRY_COMPARE(treeView.currentIndex(), treeView.selectionModel()->selection().indexes().first());
+}
+
+void tst_QTreeView::taskQTBUG_13567_removeLastItemRegression()
+{
+    QtTestModel model(200, 1);
+
+    QTreeView view;
+    view.setSelectionMode(QAbstractItemView::ExtendedSelection);
+    view.setModel(&model);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    view.scrollToBottom();
+    QTest::qWait(10);
+    CHECK_VISIBLE(199, 0);
+
+    view.setCurrentIndex(model.index(199, 0));
+    model.removeLastRow();
+    QTest::qWait(10);
+    QCOMPARE(view.currentIndex(), model.index(198, 0));
+    CHECK_VISIBLE(198, 0);
 }
 
 QTEST_MAIN(tst_QTreeView)

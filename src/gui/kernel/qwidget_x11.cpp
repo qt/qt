@@ -889,8 +889,10 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
                 q->setWindowOpacity(maybeTopData()->opacity/255.);
 
         }
-    } else if (q->testAttribute(Qt::WA_SetCursor) && q->internalWinId()) {
+    } else if (q->internalWinId()) {
         qt_x11_enforce_cursor(q);
+        if (QWidget *p = q->parentWidget()) // reset the cursor on the native parent
+            qt_x11_enforce_cursor(p);
     }
 
     if (extra && !extra->mask.isEmpty() && q->internalWinId())
@@ -1931,20 +1933,27 @@ void QWidgetPrivate::show_sys()
         if (flags & Qt::WindowStaysOnTopHint) {
             if (flags & Qt::WindowStaysOnBottomHint)
                 qWarning() << "QWidget: Incompatible window flags: the window can't be on top and on bottom at the same time";
-            netWmState.append(ATOM(_NET_WM_STATE_ABOVE));
-            netWmState.append(ATOM(_NET_WM_STATE_STAYS_ON_TOP));
+            if (!netWmState.contains(ATOM(_NET_WM_STATE_ABOVE)))
+                netWmState.append(ATOM(_NET_WM_STATE_ABOVE));
+            if (!netWmState.contains(ATOM(_NET_WM_STATE_STAYS_ON_TOP)))
+                netWmState.append(ATOM(_NET_WM_STATE_STAYS_ON_TOP));
         } else if (flags & Qt::WindowStaysOnBottomHint) {
-            netWmState.append(ATOM(_NET_WM_STATE_BELOW));
+            if (!netWmState.contains(ATOM(_NET_WM_STATE_BELOW)))
+                netWmState.append(ATOM(_NET_WM_STATE_BELOW));
         }
         if (q->isFullScreen()) {
-            netWmState.append(ATOM(_NET_WM_STATE_FULLSCREEN));
+            if (!netWmState.contains(ATOM(_NET_WM_STATE_FULLSCREEN)))
+                netWmState.append(ATOM(_NET_WM_STATE_FULLSCREEN));
         }
         if (q->isMaximized()) {
-            netWmState.append(ATOM(_NET_WM_STATE_MAXIMIZED_HORZ));
-            netWmState.append(ATOM(_NET_WM_STATE_MAXIMIZED_VERT));
+            if (!netWmState.contains(ATOM(_NET_WM_STATE_MAXIMIZED_HORZ)))
+                netWmState.append(ATOM(_NET_WM_STATE_MAXIMIZED_HORZ));
+            if (!netWmState.contains(ATOM(_NET_WM_STATE_MAXIMIZED_VERT)))
+                netWmState.append(ATOM(_NET_WM_STATE_MAXIMIZED_VERT));
         }
         if (data.window_modality != Qt::NonModal) {
-            netWmState.append(ATOM(_NET_WM_STATE_MODAL));
+            if (!netWmState.contains(ATOM(_NET_WM_STATE_MODAL)))
+                netWmState.append(ATOM(_NET_WM_STATE_MODAL));
         }
 
         if (!netWmState.isEmpty()) {

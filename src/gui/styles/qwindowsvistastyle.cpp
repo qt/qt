@@ -42,6 +42,7 @@
 #include "qwindowsvistastyle.h"
 #include "qwindowsvistastyle_p.h"
 #include <private/qstylehelper_p.h>
+#include <private/qsystemlibrary_p.h>
 
 #if !defined(QT_NO_STYLE_WINDOWSVISTA) || defined(QT_PLUGIN)
 
@@ -2574,7 +2575,7 @@ bool QWindowsVistaStylePrivate::resolveSymbols()
     static bool tried = false;
     if (!tried) {
         tried = true;
-        QLibrary themeLib(QLatin1String("uxtheme"));
+        QSystemLibrary themeLib(QLatin1String("uxtheme"));
         pSetWindowTheme         = (PtrSetWindowTheme        )themeLib.resolve("SetWindowTheme");
         pIsThemePartDefined     = (PtrIsThemePartDefined    )themeLib.resolve("IsThemePartDefined");
         pGetThemePartSize       = (PtrGetThemePartSize      )themeLib.resolve("GetThemePartSize");

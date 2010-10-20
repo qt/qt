@@ -159,7 +159,7 @@ class Q_AUTOTEST_EXPORT QMainWindowLayout : public QLayout
 public:
     QMainWindowLayoutState layoutState, savedState;
 
-    explicit QMainWindowLayout(QMainWindow *mainwindow);
+    QMainWindowLayout(QMainWindow *mainwindow, QLayout *parentLayout);
     ~QMainWindowLayout();
 
     QMainWindow::DockOptions dockOptions;

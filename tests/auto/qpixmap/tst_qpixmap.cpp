@@ -179,6 +179,7 @@ private slots:
     void fromImageReader_data();
     void fromImageReader();
 
+    void fromImageReaderAnimatedGif_data();
     void fromImageReaderAnimatedGif();
 
     void preserveDepth();
@@ -742,6 +743,11 @@ void tst_QPixmap::testMetrics()
     QCOMPARE(bitmap.width(), 100);
     QCOMPARE(bitmap.height(), 100);
     QCOMPARE(bitmap.depth(), 1);
+
+    QPixmap null;
+
+    QCOMPARE(null.size().width(), null.width());
+    QCOMPARE(null.size().height(), null.height());
 }
 
 void tst_QPixmap::createMaskFromColor()
@@ -1154,6 +1160,8 @@ void tst_QPixmap::fromSymbianCFbsBitmap_data()
     const int smallHeight = 20;
     const int largeWidth = 240;
     const int largeHeight = 320;
+    const int notAlignedWidth = 250;
+    const int notAlignedHeight = 250;
 
     // Indexed Color Formats - Disabled since images seem to be blank -> no palette?
 //    QTest::newRow("EGray2 small") << EGray2 << smallWidth << smallHeight << QColor(Qt::black);
@@ -1166,14 +1174,19 @@ void tst_QPixmap::fromSymbianCFbsBitmap_data()
     // Direct Color Formats
     QTest::newRow("EColor4K small") << EColor4K << smallWidth << smallHeight << QColor(Qt::red);
     QTest::newRow("EColor4K big") << EColor4K << largeWidth << largeHeight << QColor(Qt::red);
+    QTest::newRow("EColor4K not aligned") << EColor4K << notAlignedWidth << notAlignedHeight << QColor(Qt::red);
     QTest::newRow("EColor64K small") << EColor64K << smallWidth << smallHeight << QColor(Qt::green);
     QTest::newRow("EColor64K big") << EColor64K << largeWidth << largeHeight << QColor(Qt::green);
+    QTest::newRow("EColor64K not aligned") << EColor64K << notAlignedWidth << notAlignedHeight << QColor(Qt::green);
     QTest::newRow("EColor16M small") << EColor16M << smallWidth << smallHeight << QColor(Qt::yellow);
     QTest::newRow("EColor16M big") << EColor16M << largeWidth << largeHeight << QColor(Qt::yellow);
+    QTest::newRow("EColor16M not aligned") << EColor16M << notAlignedWidth << notAlignedHeight << QColor(Qt::yellow);
     QTest::newRow("EColor16MU small") << EColor16MU << smallWidth << smallHeight << QColor(Qt::red);
     QTest::newRow("EColor16MU big") << EColor16MU << largeWidth << largeHeight << QColor(Qt::red);
+    QTest::newRow("EColor16MU not aligned") << EColor16MU << notAlignedWidth << notAlignedHeight << QColor(Qt::red);
     QTest::newRow("EColor16MA small opaque") << EColor16MA << smallWidth << smallHeight << QColor(255, 255, 0);
     QTest::newRow("EColor16MA big opaque") << EColor16MA << largeWidth << largeHeight << QColor(255, 255, 0);
+    QTest::newRow("EColor16MA not aligned opaque") << EColor16MA << notAlignedWidth << notAlignedHeight << QColor(255, 255, 0);
 
     // Semi-transparent Colors - Disabled for now, since the QCOMPARE fails, but visually confirmed to work
 //    QTest::newRow("EColor16MA small semi") << EColor16MA << smallWidth << smallHeight << QColor(255, 255, 0, 127);
@@ -1231,6 +1244,10 @@ void tst_QPixmap::fromSymbianCFbsBitmap()
 
         QColor actualColor(image.pixel(1, 1));
         QCOMPARE(actualColor, color);
+
+        QImage shouldBe(pixmap.width(), pixmap.height(), image.format());
+        shouldBe.fill(color.rgba());
+        QCOMPARE(image, shouldBe);
     }
     __UHEAP_MARKEND;
 
@@ -1600,6 +1617,8 @@ void tst_QPixmap::fromImageReader_data()
     QTest::newRow("designer_indexed8_no_alpha.gif") << prefix + "/designer_indexed8_no_alpha.gif";
     QTest::newRow("designer_indexed8_with_alpha.gif") << prefix + "/designer_indexed8_with_alpha.gif";
     QTest::newRow("designer_rgb32.jpg") << prefix + "/designer_rgb32.jpg";
+    QTest::newRow("designer_indexed8_with_alpha_animated") << prefix + "/designer_indexed8_with_alpha_animated.gif";
+    QTest::newRow("designer_indexed8_with_alpha_animated") << prefix + "/designer_indexed8_no_alpha_animated.gif";
 }
 
 void tst_QPixmap::fromImageReader()
@@ -1616,14 +1635,22 @@ void tst_QPixmap::fromImageReader()
     QVERIFY(pixmapsAreEqual(&pixmapWithCopy, &directLoadingPixmap));
 }
 
+void tst_QPixmap::fromImageReaderAnimatedGif_data()
+{
+    QTest::addColumn<QString>("imagePath");
+    QTest::newRow("gif with alpha") << QString::fromLatin1("/designer_indexed8_with_alpha_animated.gif");
+    QTest::newRow("gif without alpha") << QString::fromLatin1("/designer_indexed8_no_alpha_animated.gif");
+}
+
 void tst_QPixmap::fromImageReaderAnimatedGif()
 {
+    QFETCH(QString, imagePath);
 #ifdef Q_OS_SYMBIAN
     const QString prefix = QLatin1String(SRCDIR) + "loadFromData";
 #else
     const QString prefix = QLatin1String(SRCDIR) + "/loadFromData";
 #endif
-    const QString path = prefix + QString::fromLatin1("/designer_indexed8_with_alpha_animated.gif");
+    const QString path = prefix + imagePath;
 
     QImageReader referenceReader(path);
     QImageReader pixmapReader(path);

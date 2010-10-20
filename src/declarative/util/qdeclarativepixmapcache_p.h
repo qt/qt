@@ -98,7 +98,7 @@ public:
     bool connectDownloadProgress(QObject *, int);
 
 private:
-    Q_DISABLE_COPY(QDeclarativePixmap);
+    Q_DISABLE_COPY(QDeclarativePixmap)
     QDeclarativePixmapData *d;
 };
 

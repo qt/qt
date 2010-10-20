@@ -68,6 +68,7 @@
 #include "private/qdeclarativelist_p.h"
 #include "private/qdeclarativetypenamecache_p.h"
 #include "private/qdeclarativeinclude_p.h"
+#include "private/qdeclarativenotifier_p.h"
 
 #include <QtCore/qmetaobject.h>
 #include <QScriptClass>
@@ -104,6 +105,7 @@
 #ifdef Q_OS_WIN // for %APPDATA%
 #include <qt_windows.h>
 #include <qlibrary.h>
+#include <windows.h>
 
 #define CSIDL_APPDATA		0x001a	// <username>\Application Data
 #endif
@@ -141,7 +143,7 @@ QT_BEGIN_NAMESPACE
     \qml
     // MyRect.qml
 
-    import Qt 4.7
+    import QtQuick 1.0
 
     Item {
         width: 200; height: 200
@@ -177,9 +179,15 @@ static bool qt_QmlQtModule_registered = false;
 
 void QDeclarativeEnginePrivate::defineModule()
 {
+    qmlRegisterType<QDeclarativeComponent>("QtQuick",1,0,"Component");
+    qmlRegisterType<QObject>("QtQuick",1,0,"QtObject");
+    qmlRegisterType<QDeclarativeWorkerScript>("QtQuick",1,0,"WorkerScript");
+
+#ifndef QT_NO_IMPORT_QT47_QML
     qmlRegisterType<QDeclarativeComponent>("Qt",4,7,"Component");
     qmlRegisterType<QObject>("Qt",4,7,"QtObject");
     qmlRegisterType<QDeclarativeWorkerScript>("Qt",4,7,"WorkerScript");
+#endif
 
     qmlRegisterType<QDeclarativeBinding>();
 }
@@ -198,10 +206,10 @@ with enums and functions.  To use it, call the members of the global \c Qt objec
 For example:
 
 \qml
-import Qt 4.7
+import QtQuick 1.0
 
 Text {
-    color: Qt.rgba(255, 0, 0, 1)
+    color: Qt.rgba(1, 0, 0, 1)
     text: Qt.md5("hello, world")
 }
 \endqml
@@ -272,15 +280,17 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
 }
 
 /*!
-  \qmlmethod url Qt::resolvedUrl(url)
-  Returns \c url resolved relative to the URL of the caller.
+  \qmlmethod url Qt::resolvedUrl(url url)
+  Returns \a url resolved relative to the URL of the caller.
 */
 QUrl QDeclarativeScriptEngine::resolvedUrl(QScriptContext *context, const QUrl& url)
 {
     if (p) {
-        QDeclarativeContextData *ctxt = QDeclarativeEnginePrivate::get(this)->getContext(context);
-        Q_ASSERT(ctxt);
-        return ctxt->resolvedUrl(url);
+        QDeclarativeContextData *ctxt = p->getContext(context);
+        if (ctxt)
+            return ctxt->resolvedUrl(url);
+        else
+            return p->getUrl(context).resolved(url);
     }
     return baseUrl.resolved(url);
 }
@@ -460,6 +470,11 @@ void QDeclarativeData::parentChanged(QAbstractDeclarativeData *d, QObject *o, QO
     static_cast<QDeclarativeData *>(d)->parentChanged(o, p);
 }
 
+void QDeclarativeData::objectNameChanged(QAbstractDeclarativeData *d, QObject *o)
+{
+    static_cast<QDeclarativeData *>(d)->objectNameChanged(o);
+}
+
 void QDeclarativeEnginePrivate::init()
 {
     Q_Q(QDeclarativeEngine);
@@ -510,7 +525,7 @@ QDeclarativeWorkerScriptEngine *QDeclarativeEnginePrivate::getWorkerScriptEngine
   \code
   QDeclarativeEngine engine;
   QDeclarativeComponent component(&engine);
-  component.setData("import Qt 4.7\nText { text: \"Hello world!\" }", QUrl());
+  component.setData("import QtQuick 1.0\nText { text: \"Hello world!\" }", QUrl());
   QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(component.create());
 
   //add item to view, etc
@@ -906,7 +921,7 @@ QDeclarativeEngine::ObjectOwnership QDeclarativeEngine::objectOwnership(QObject 
         return ddata->indestructible?CppOwnership:JavaScriptOwnership;
 }
 
-void qmlExecuteDeferred(QObject *object)
+Q_AUTOTEST_EXPORT void qmlExecuteDeferred(QObject *object)
 {
     QDeclarativeData *data = QDeclarativeData::get(object);
 
@@ -941,7 +956,7 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool cre
     if (!data)
         return 0; // Attached properties are only on objects created by QML
 
-    QObject *rv = data->attachedProperties?data->attachedProperties->value(id):0;
+    QObject *rv = data->extendedData?data->attachedProperties()->value(id):0;
     if (rv || !create)
         return rv;
 
@@ -951,11 +966,8 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool cre
 
     rv = pf(const_cast<QObject *>(object));
 
-    if (rv) {
-        if (!data->attachedProperties)
-            data->attachedProperties = new QHash<int, QObject *>();
-        data->attachedProperties->insert(id, rv);
-    }
+    if (rv) 
+        data->attachedProperties()->insert(id, rv);
 
     return rv;
 }
@@ -976,8 +988,6 @@ void QDeclarativeData::destroyed(QObject *object)
 {
     if (deferredComponent)
         deferredComponent->release();
-    if (attachedProperties)
-        delete attachedProperties;
 
     if (nextContextObject)
         nextContextObject->prevContextObject = prevContextObject;
@@ -1011,6 +1021,9 @@ void QDeclarativeData::destroyed(QObject *object)
     if (scriptValue)
         delete scriptValue;
 
+    if (extendedData)
+        delete extendedData;
+
     if (ownMemory)
         delete this;
 }
@@ -1018,6 +1031,11 @@ void QDeclarativeData::destroyed(QObject *object)
 void QDeclarativeData::parentChanged(QObject *, QObject *parent)
 {
     if (!parent && scriptValue) { delete scriptValue; scriptValue = 0; }
+}
+
+void QDeclarativeData::objectNameChanged(QObject *)
+{
+    if (extendedData) objectNameNotifier()->notify();
 }
 
 bool QDeclarativeData::hasBindingBit(int bit) const
@@ -1054,6 +1072,28 @@ void QDeclarativeData::setBindingBit(QObject *obj, int bit)
     }
 
     bindingBits[bit / 32] |= (1 << (bit % 32));
+}
+
+QDeclarativeData::ExtendedData::ExtendedData()
+: objectNameNotifier(0)
+{
+}
+
+QDeclarativeData::ExtendedData::~ExtendedData()
+{
+    ((QDeclarativeNotifier *)&objectNameNotifier)->~QDeclarativeNotifier();
+}
+
+QDeclarativeNotifier *QDeclarativeData::objectNameNotifier() const
+{
+    if (!extendedData) extendedData = new ExtendedData;
+    return (QDeclarativeNotifier *)&extendedData->objectNameNotifier;
+}
+
+QHash<int, QObject *> *QDeclarativeData::attachedProperties() const
+{
+    if (!extendedData) extendedData = new ExtendedData;
+    return &extendedData->attachedProperties;
 }
 
 /*!
@@ -1140,12 +1180,8 @@ QScriptValue QDeclarativeEnginePrivate::createComponent(QScriptContext *ctxt, QS
         QString arg = ctxt->argument(0).toString();
         if (arg.isEmpty())
             return engine->nullValue();
-        QUrl url;
+        QUrl url = QDeclarativeScriptEngine::get(engine)->resolvedUrl(ctxt, QUrl(arg));
         QDeclarativeContextData* context = activeEnginePriv->getContext(ctxt);
-        if (context)
-            url = QUrl(context->resolvedUrl(QUrl(arg)));
-        else
-            url = activeEnginePriv->getUrl(ctxt).resolved(QUrl(arg));
         QDeclarativeComponent *c = new QDeclarativeComponent(activeEngine, url, activeEngine);
         QDeclarativeComponentPrivate::get(c)->creationContext = context;
         QDeclarativeData::get(c, true)->setImplicitDestructible();
@@ -1629,7 +1665,7 @@ QScriptValue QDeclarativeEnginePrivate::desktopOpenUrl(QScriptContext *ctxt, QSc
         return QScriptValue(e, false);
     bool ret = false;
 #ifndef QT_NO_DESKTOPSERVICES
-    ret = QDesktopServices::openUrl(QUrl(ctxt->argument(0).toString()));
+    ret = QDesktopServices::openUrl(QDeclarativeScriptEngine::get(e)->resolvedUrl(ctxt, QUrl(ctxt->argument(0).toString())));
 #endif
     return QScriptValue(e, ret);
 }
@@ -1783,7 +1819,9 @@ void QDeclarativeEnginePrivate::warning(QDeclarativeEnginePrivate *engine, const
 /*!
 \qmlmethod Qt::quit()
 This function causes the QDeclarativeEngine::quit() signal to be emitted.
-Within the \l {QML Viewer}, this causes the launcher application to exit.
+Within the \l {QML Viewer}, this causes the launcher application to exit;
+to quit a C++ application when this method is called, connect the
+QDeclarativeEngine::quit() signal to the QCoreApplication::quit() slot.
 */
 
 QScriptValue QDeclarativeEnginePrivate::quit(QScriptContext * /*ctxt*/, QScriptEngine *e)
@@ -2113,7 +2151,7 @@ bool QDeclarativeEnginePrivate::isQObject(int t)
 QObject *QDeclarativeEnginePrivate::toQObject(const QVariant &v, bool *ok) const
 {
     int t = v.userType();
-    if (m_compositeTypes.contains(t)) {
+    if (t == QMetaType::QObjectStar || m_compositeTypes.contains(t)) {
         if (ok) *ok = true;
         return *(QObject **)(v.constData());
     } else {
@@ -2151,6 +2189,44 @@ const QMetaObject *QDeclarativeEnginePrivate::metaObjectForType(int t) const
         QDeclarativeType *type = QDeclarativeMetaType::qmlType(t);
         return type?type->metaObject():0;
     }
+}
+
+bool QDeclarative_isFileCaseCorrect(const QString &fileName)
+{
+#if defined(Q_OS_MAC) || defined(Q_OS_WIN32)
+    QFileInfo info(fileName);
+
+    QString absolute = info.absoluteFilePath();
+
+#if defined(Q_OS_MAC)
+    QString canonical = info.canonicalFilePath();
+#elif defined(Q_OS_WIN32)
+    wchar_t buffer[1024];
+
+    DWORD rv = ::GetShortPathName((wchar_t*)absolute.utf16(), buffer, 1024);
+    if (rv == 0 || rv >= 1024) return true;
+    rv = ::GetLongPathName(buffer, buffer, 1024);
+    if (rv == 0 || rv >= 1024) return true;
+
+    QString canonical((QChar *)buffer);
+#endif
+
+    int absoluteLength = absolute.length();
+    int canonicalLength = canonical.length();
+
+    int length = qMin(absoluteLength, canonicalLength);
+    for (int ii = 0; ii < length; ++ii) {
+        const QChar &a = absolute.at(absoluteLength - 1 - ii);
+        const QChar &c = canonical.at(canonicalLength - 1 - ii);
+
+        if (a.toLower() != c.toLower())
+            return true;
+        if (a != c)
+            return false;
+    }
+#endif
+
+    return true;
 }
 
 QT_END_NAMESPACE

@@ -67,6 +67,8 @@ QT_BEGIN_NAMESPACE
 class Q_DECLARATIVE_EXPORT QDeclarativeAbstractBinding
 {
 public:
+    typedef QWeakPointer<QDeclarativeAbstractBinding> Pointer;
+
     QDeclarativeAbstractBinding();
 
     virtual void destroy();
@@ -86,21 +88,26 @@ public:
     void addToObject(QObject *);
     void removeFromObject();
 
+    static Pointer getPointer(QDeclarativeAbstractBinding *p) { return p ? p->weakPointer() : Pointer(); }
+
 protected:
     virtual ~QDeclarativeAbstractBinding();
     void clear();
 
 private:
+    Pointer weakPointer();
 
     friend class QDeclarativeData;
     friend class QDeclarativeValueTypeProxyBinding;
     friend class QDeclarativePropertyPrivate;
     friend class QDeclarativeVME;
+    friend class QtSharedPointer::ExternalRefCount<QDeclarativeAbstractBinding>;
 
     QObject *m_object;
     QDeclarativeAbstractBinding **m_mePtr;
     QDeclarativeAbstractBinding **m_prevBinding;
     QDeclarativeAbstractBinding  *m_nextBinding;
+    QSharedPointer<QDeclarativeAbstractBinding> m_selfPointer;
 };
 
 class QDeclarativeValueTypeProxyBinding : public QDeclarativeAbstractBinding

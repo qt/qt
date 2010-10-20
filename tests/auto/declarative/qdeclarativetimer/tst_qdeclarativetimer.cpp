@@ -100,7 +100,7 @@ void tst_qdeclarativetimer::notRepeating()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\nTimer { interval: 100; running: true }"), QUrl::fromLocalFile(""));
+    component.setData(QByteArray("import QtQuick 1.0\nTimer { interval: 100; running: true }"), QUrl::fromLocalFile(""));
     QDeclarativeTimer *timer = qobject_cast<QDeclarativeTimer*>(component.create());
     QVERIFY(timer != 0);
     QVERIFY(timer->isRunning());
@@ -121,7 +121,7 @@ void tst_qdeclarativetimer::notRepeatingStart()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\nTimer { interval: 100 }"), QUrl::fromLocalFile(""));
+    component.setData(QByteArray("import QtQuick 1.0\nTimer { interval: 100 }"), QUrl::fromLocalFile(""));
     QDeclarativeTimer *timer = qobject_cast<QDeclarativeTimer*>(component.create());
     QVERIFY(timer != 0);
     QVERIFY(!timer->isRunning());
@@ -146,7 +146,7 @@ void tst_qdeclarativetimer::repeat()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\nTimer { interval: 100; repeat: true; running: true }"), QUrl::fromLocalFile(""));
+    component.setData(QByteArray("import QtQuick 1.0\nTimer { interval: 100; repeat: true; running: true }"), QUrl::fromLocalFile(""));
     QDeclarativeTimer *timer = qobject_cast<QDeclarativeTimer*>(component.create());
     QVERIFY(timer != 0);
 
@@ -188,7 +188,7 @@ void tst_qdeclarativetimer::triggeredOnStart()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\nTimer { interval: 100; running: true; triggeredOnStart: true }"), QUrl::fromLocalFile(""));
+    component.setData(QByteArray("import QtQuick 1.0\nTimer { interval: 100; running: true; triggeredOnStart: true }"), QUrl::fromLocalFile(""));
     QDeclarativeTimer *timer = qobject_cast<QDeclarativeTimer*>(component.create());
     QVERIFY(timer != 0);
     QVERIFY(timer->triggeredOnStart());
@@ -223,7 +223,7 @@ void tst_qdeclarativetimer::triggeredOnStartRepeat()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\nTimer { interval: 100; running: true; triggeredOnStart: true; repeat: true }"), QUrl::fromLocalFile(""));
+    component.setData(QByteArray("import QtQuick 1.0\nTimer { interval: 100; running: true; triggeredOnStart: true; repeat: true }"), QUrl::fromLocalFile(""));
     QDeclarativeTimer *timer = qobject_cast<QDeclarativeTimer*>(component.create());
     QVERIFY(timer != 0);
 
@@ -247,7 +247,7 @@ void tst_qdeclarativetimer::noTriggerIfNotRunning()
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
     component.setData(QByteArray(
-        "import Qt 4.7\n"
+        "import QtQuick 1.0\n"
         "Item { property bool ok: true\n"
             "Timer { id: t1; interval: 100; repeat: true; running: true; onTriggered: if (!running) ok=false }"
             "Timer { interval: 10; running: true; onTriggered: t1.running=false }"
@@ -265,7 +265,7 @@ void tst_qdeclarativetimer::changeDuration()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\nTimer { interval: 200; repeat: true; running: true }"), QUrl::fromLocalFile(""));
+    component.setData(QByteArray("import QtQuick 1.0\nTimer { interval: 200; repeat: true; running: true }"), QUrl::fromLocalFile(""));
     QDeclarativeTimer *timer = qobject_cast<QDeclarativeTimer*>(component.create());
     QVERIFY(timer != 0);
 
@@ -301,7 +301,7 @@ void tst_qdeclarativetimer::restart()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\nTimer { interval: 500; repeat: true; running: true }"), QUrl::fromLocalFile(""));
+    component.setData(QByteArray("import QtQuick 1.0\nTimer { interval: 500; repeat: true; running: true }"), QUrl::fromLocalFile(""));
     QDeclarativeTimer *timer = qobject_cast<QDeclarativeTimer*>(component.create());
     QVERIFY(timer != 0);
 
@@ -328,7 +328,7 @@ void tst_qdeclarativetimer::parentProperty()
 {
     QDeclarativeEngine engine;
     QDeclarativeComponent component(&engine);
-    component.setData(QByteArray("import Qt 4.7\nItem { Timer { objectName: \"timer\"; running: parent.visible } }"), QUrl::fromLocalFile(""));
+    component.setData(QByteArray("import QtQuick 1.0\nItem { Timer { objectName: \"timer\"; running: parent.visible } }"), QUrl::fromLocalFile(""));
     QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
     QVERIFY(item != 0);
     QDeclarativeTimer *timer = item->findChild<QDeclarativeTimer*>("timer");

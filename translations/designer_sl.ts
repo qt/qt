@@ -32,6 +32,49 @@
     </message>
 </context>
 <context>
+    <name>AbstractItemEditor</name>
+    <message>
+        <source>Selectable</source>
+        <translation>Moč izbrati</translation>
+    </message>
+    <message>
+        <source>Editable</source>
+        <translation>Moč urejati</translation>
+    </message>
+    <message>
+        <source>DragEnabled</source>
+        <translation>Omogočena vleka</translation>
+    </message>
+    <message>
+        <source>DropEnabled</source>
+        <translation>Omogočeno spuščanje</translation>
+    </message>
+    <message>
+        <source>UserCheckable</source>
+        <translation>Uporabnik lahko omogoči</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>Omogočeno</translation>
+    </message>
+    <message>
+        <source>Tristate</source>
+        <translation>Tri stanja</translation>
+    </message>
+    <message>
+        <source>Unchecked</source>
+        <translation>Neomogočeno</translation>
+    </message>
+    <message>
+        <source>PartiallyChecked</source>
+        <translation>Delno omogočeno</translation>
+    </message>
+    <message>
+        <source>Checked</source>
+        <translation>Omogočeno</translation>
+    </message>
+</context>
+<context>
     <name>AddLinkDialog</name>
     <message>
         <source>Insert Link</source>
@@ -2546,6 +2589,10 @@ Empty class name passed to widget factory method
 <context>
     <name>QtLocalePropertyManager</name>
     <message>
+        <source>&lt;Invalid&gt;</source>
+        <translation>&lt;neveljavno&gt;</translation>
+    </message>
+    <message>
         <source>%1, %2</source>
         <translation>%1, %2</translation>
     </message>
@@ -3658,7 +3705,7 @@ Ali želite nadomestiti predlogo?</translation>
     </message>
     <message>
         <source>Page</source>
-        <translation>Stran %1</translation>
+        <translation>Stran</translation>
     </message>
     <message>
         <source>Page %1 of %2</source>
@@ -3843,7 +3890,7 @@ Ali želite nadomestiti predlogo?</translation>
     </message>
     <message>
         <source>Delete String</source>
-        <translation>Z&amp;briši niz</translation>
+        <translation>Zbriši niz</translation>
     </message>
     <message>
         <source>&amp;Delete</source>
@@ -3962,7 +4009,7 @@ Ali želite nadomestiti predlogo?</translation>
     </message>
     <message>
         <source>Key Resize</source>
-        <translation type="unfinished"></translation>
+        <translation>Sprememba velikosti s tipko</translation>
     </message>
     <message>
         <source>Cannot paste widgets. Designer could not find a container without a layout to paste into.</source>
@@ -4632,7 +4679,7 @@ Please select another name.</source>
     <name>qdesigner_internal::ObjectInspector</name>
     <message>
         <source>Change Current Page</source>
-        <translation type="unfinished">Spreminjanje trenutne strani</translation>
+        <translation>Spremeni trenutno stran</translation>
     </message>
     <message>
         <source>&amp;Find in Text...</source>
@@ -4780,6 +4827,14 @@ Please select another name.</source>
         <translation>Preveri razpoložljivost na novo nameščenih vstavkov za gradnike po meri.</translation>
     </message>
     <message>
+        <source>Loaded Plugins</source>
+        <translation>Naloženi vstavki</translation>
+    </message>
+    <message>
+        <source>Failed Plugins</source>
+        <translation>Neuspeli vstavki</translation>
+    </message>
+    <message>
         <source>Qt Designer couldn&apos;t find any plugins</source>
         <translation>Qt Designer ni našel nobenega vstavka</translation>
     </message>
@@ -4815,7 +4870,7 @@ Please select another name.</source>
     </message>
     <message>
         <source>Load Custom Device Skin</source>
-        <translation type="unfinished">Naloži temo za napravo po meri</translation>
+        <translation>Naloži temo za napravo po meri</translation>
     </message>
     <message>
         <source>All QVFB Skins (*.%1)</source>
@@ -5824,51 +5879,6 @@ To nakazuje na neskladnost v datoteki *.ui.</translation>
     <message>
         <source>&amp;Zoom</source>
         <translation>&amp;Povečava</translation>
-    </message>
-</context>
-<context>
-    <name></name>
-    <message>
-        <source>&lt;Filter&gt;</source>
-        <comment>qdesigner_internal::FilterWidget|</comment>
-        <translation type="obsolete">&lt;filter&gt;</translation>
-    </message>
-    <message>
-        <source>Change Current Page</source>
-        <comment>qdesigner_internal::ObjectInspector::ObjectInspectorPrivate|</comment>
-        <translation type="obsolete">Spreminjanje trenutne strani</translation>
-    </message>
-    <message>
-        <source>Load Custom Device Skin</source>
-        <comment>qdesigner_internal::PreviewConfigurationWidget::PreviewConfigurationWidgetPrivate|</comment>
-        <translation type="obsolete">Naloži temo za napravo po meri</translation>
-    </message>
-    <message>
-        <source>All QVFB Skins (*.%1)</source>
-        <comment>qdesigner_internal::PreviewConfigurationWidget::PreviewConfigurationWidgetPrivate|</comment>
-        <translation type="obsolete">Vse teme za QVFB (*.%1)</translation>
-    </message>
-    <message>
-        <source>%1 - Duplicate Skin</source>
-        <comment>qdesigner_internal::PreviewConfigurationWidget::PreviewConfigurationWidgetPrivate|</comment>
-        <translation type="obsolete">%1 - podvojena tema</translation>
-    </message>
-    <message>
-        <source>The skin &apos;%1&apos; already exists.</source>
-        <comment>qdesigner_internal::PreviewConfigurationWidget::PreviewConfigurationWidgetPrivate|</comment>
-        <translation type="obsolete">Tema »%1« že obstaja.</translation>
-    </message>
-    <message>
-        <source>%1 - Error</source>
-        <comment>qdesigner_internal::PreviewConfigurationWidget::PreviewConfigurationWidgetPrivate|</comment>
-        <translation type="obsolete">%1 - napaka</translation>
-    </message>
-    <message>
-        <source>%1 is not a valid skin directory:
-%2</source>
-        <comment>qdesigner_internal::PreviewConfigurationWidget::PreviewConfigurationWidgetPrivate|</comment>
-        <translation type="obsolete">%1 ni veljavna mapa s temo:
-%2</translation>
     </message>
 </context>
 </TS>

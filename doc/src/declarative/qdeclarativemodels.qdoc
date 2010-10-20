@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -28,7 +28,7 @@
 /*!
 \page qdeclarativemodels.html
 \target qmlmodels
-\title Data Models
+\title QML Data Models
 
 QML items such as ListView, GridView and \l Repeater require Data Models 
 that provide the data to be displayed.
@@ -41,30 +41,7 @@ delegate may bind to. Here is a ListModel with two roles, \e type and \e age,
 and a ListView with a delegate that binds to these roles to display their 
 values:
 
-\qml
-import Qt 4.7
-
-Item {
-    width: 200; height: 250
-
-    ListModel {
-        id: myModel
-        ListElement { type: "Dog"; age: 8 }
-        ListElement { type: "Cat"; age: 5 }
-    }
-
-    Component {
-        id: myDelegate
-        Text { text: type + ", " + age }
-    }
-
-    ListView {
-        anchors.fill: parent
-        model: myModel
-        delegate: myDelegate
-    }
-}
-\endqml
+\snippet doc/src/snippets/declarative/qml-data-models/listmodel-listview.qml document
 
 If there is a naming clash between the model's properties and the delegate's
 properties, the roles can be accessed with the qualified \e model name instead.
@@ -91,6 +68,10 @@ QML provides several types of data models among the built-in set of
 QML elements. In addition, models can be created with C++ and then
 made available to QML components.
 
+The views used to access data models are described in \l{Presenting Data with QML}.
+The use of positioner items to arrange items from a model is covered in
+\l{Using QML Positioner and Repeater Items}.
+
 
 \section1 QML Data Models
 
@@ -99,38 +80,12 @@ made available to QML components.
 ListModel is a simple hierarchy of elements specified in QML.  The
 available roles are specified by the \l ListElement properties.
 
-\code
-ListModel {
-    id: fruitModel
-
-    ListElement {
-        name: "Apple"
-        cost: 2.45
-    }
-    ListElement {
-        name: "Orange"
-        cost: 3.25
-    }
-    ListElement {
-        name: "Banana"
-        cost: 1.95
-    }
-}
-\endcode
+\snippet doc/src/snippets/declarative/qml-data-models/listelements.qml model
 
 The above model has two roles, \e name and \e cost.  These can be bound
 to by a ListView delegate, for example:
 
-\code
-ListView {
-    width: 200; height: 250
-    model: fruitModel
-    delegate: Row {
-        Text { text: "Fruit: " + name }
-        Text { text: "Cost: $" + cost }
-    }
-}
-\endcode
+\snippet doc/src/snippets/declarative/qml-data-models/listelements.qml view
 
 ListModel provides methods to manipulate the ListModel directly via JavaScript.
 In this case, the first item inserted determines the roles available
@@ -138,16 +93,9 @@ to any views that are using the model. For example, if an empty ListModel is
 created and populated via JavaScript, the roles provided by the first
 insertion are the only roles that will be shown in the view:
 
-\code
-Item {
-    ListModel { id: fruitModel }
-
-    MouseArea {
-        anchors.fill: parent
-        onClicked: fruitModel.append({"cost": 5.95, "name":"Pizza"})
-    }
-}
-\endcode
+\snippet doc/src/snippets/declarative/qml-data-models/dynamic-listmodel.qml model
+\dots
+\snippet doc/src/snippets/declarative/qml-data-models/dynamic-listmodel.qml mouse area
 
 When the MouseArea is clicked, \c fruitModel will have two roles, \e cost and \e name.
 Even if subsequent roles are added, only the first two will be handled by views
@@ -514,4 +462,85 @@ a function in the model, e.g.:
 ...assuming that \e{field} holds the name of the field which should be
 updated, and that \e{value} holds the new value.
 
+*/
+
+/*!
+\page qml-presenting-data.html
+\title Presenting Data with QML
+
+\section1 Introduction
+
+Qt Quick contains a set of standard items that can be used to present data in a
+number of different ways. For simple user interfaces,
+\l{Using QML Positioner and Repeater Items#Repeaters}{Repeaters} can be used
+in combination with
+\l{Using QML Positioner and Repeater Items#Positioners}{Positioners}
+to obtain pieces of data and arrange them in a user interface. However, when
+large quantities of data are involved, it is often better to use models with
+the standard views since these contain many built-in display and navigation
+features.
+
+\section1 Views
+
+Views are scrolling containers for collections of items. They are feature-rich,
+supporting many of the use cases found in typical applications, and can be
+customized to meet requirements on style and behavior.
+
+A set of standard views are provided in the basic set of Qt Quick
+graphical elements:
+
+\list
+\o \l{#ListView}{ListView} arranges items in a horizontal or vertical list
+\o \l{#GridView}{GridView} arranges items in a grid within the available space
+\o \l{#PathView}{PathView} arranges items on a path
+\endlist
+
+Unlike these items, \l WebView is not a fully-featured view item, and needs
+to be combined with a \l Flickable item to create a view that performs like
+a Web browser.
+
+\section2 ListView
+
+\l ListView shows a classic list of items with horizontal or vertical placing
+of items.
+
+\beginfloatright
+\inlineimage qml-listview-snippet.png
+\endfloat
+
+The following example shows a minimal ListView displaying a sequence of
+numbers (using an \l{QML Data Models#An Integer}{integer as a model}).
+A simple delegate is used to define an items for each piece of data in the
+model.
+
+\clearfloat
+\snippet doc/src/snippets/declarative/listview/listview-snippet.qml document
+
+
+
+\section2 GridView
+
+\l GridView displays items in a grid like an file manager's icon view.
+
+\section2 PathView
+
+\l PathView displays items on a path, where the selection remains in
+the same place and the items move around it.
+
+\section1 Decorating Views
+
+\section2 Headers and Footers
+
+\section2 Sections
+
+\section2 Navigation
+
+In traditional user interfaces, views can be scrolled using standard
+controls, such as scroll bars and arrow buttons. In some situations, it
+is also possible to drag the view directly by pressing and holding a
+mouse button while moving the cursor. In touch-based user interfaces,
+this dragging action is often complemented with a flicking action, where
+scrolling continues after the user has stopped touching the view.
+
+\section1 Further Reading
 */

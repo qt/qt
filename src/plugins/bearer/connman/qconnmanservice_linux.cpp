@@ -984,12 +984,17 @@ QConnmanCounterInterface::~QConnmanCounterInterface()
 
 quint32 QConnmanCounterInterface::getReceivedByteCount()
 {
-return 0;
+    return 0;
 }
 
 quint32 QConnmanCounterInterface::getTransmittedByteCount()
 {
-return 0;
+    return 0;
+}
+
+quint64 QConnmanCounterInterface::getTimeOnline()
+{
+    return 0;
 }
 
 /////////////////////////////////////////

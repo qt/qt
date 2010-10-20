@@ -55,6 +55,7 @@
 
 #include "qdeclarativeitem.h"
 #include "private/qdeclarativeitem_p.h"
+#include "private/qdeclarativetextlayout_p.h"
 
 #include <qdeclarative.h>
 
@@ -69,39 +70,12 @@ class QDeclarativeTextPrivate : public QDeclarativeItemPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeText)
 public:
-    QDeclarativeTextPrivate()
-      : color((QRgb)0), style(QDeclarativeText::Normal),
-        hAlign(QDeclarativeText::AlignLeft), vAlign(QDeclarativeText::AlignTop), elideMode(QDeclarativeText::ElideNone),
-        imgDirty(true), dirty(true), richText(false), singleline(false), cache(true), internalWidthUpdate(false), doc(0),
-        format(QDeclarativeText::AutoText), wrapMode(QDeclarativeText::NoWrap)
-    {
-#if defined(QML_NO_TEXT_CACHE)
-        cache = false;
-#endif
-        QGraphicsItemPrivate::acceptedMouseButtons = Qt::LeftButton;
-        QGraphicsItemPrivate::flags = QGraphicsItemPrivate::flags & ~QGraphicsItem::ItemHasNoContents;
-    }
+    QDeclarativeTextPrivate();
 
     ~QDeclarativeTextPrivate();
 
-    void ensureDoc();
     void updateSize();
     void updateLayout();
-    void markImgDirty() {
-        Q_Q(QDeclarativeText);
-        imgDirty = true;
-        if (q->isComponentComplete())
-            q->update();
-    }
-    void checkImgCache();
-
-    void drawOutline();
-    void drawOutline(int yOffset);
-
-    QPixmap wrappedTextImage(bool drawStyle);
-    void drawWrappedText(QPainter *p, const QPointF &pos, bool drawStyle);
-    QPixmap richTextImage(bool drawStyle);
-    QSize setupTextLayout(QTextLayout *layout);
 
     QString text;
     QFont font;
@@ -109,23 +83,37 @@ public:
     QDeclarativeText::TextStyle style;
     QColor  styleColor;
     QString activeLink;
-    QPixmap imgCache;
-    QPixmap imgStyleCache;
     QDeclarativeText::HAlignment hAlign;
     QDeclarativeText::VAlignment vAlign;
     QDeclarativeText::TextElideMode elideMode;
-    bool imgDirty:1;
-    bool dirty:1;
-    bool richText:1;
-    bool singleline:1;
-    bool cache:1;
-    bool internalWidthUpdate:1;
-    QTextDocumentWithImageResources *doc;
-    QTextLayout layout;
-    QSize cachedLayoutSize;
     QDeclarativeText::TextFormat format;
     QDeclarativeText::WrapMode wrapMode;
+
+    void invalidateImageCache();
+    void checkImageCache();
+    QPixmap imageCache;
+
+    bool imageCacheDirty:1;
+    bool updateOnComponentComplete:1;
+    bool richText:1;
+    bool singleline:1;
+    bool cacheAllTextAsImage:1;
+    bool internalWidthUpdate:1;
+
+    QSize layedOutTextSize;
     
+    void ensureDoc();
+    QPixmap textDocumentImage(bool drawStyle);
+    QTextDocumentWithImageResources *doc;
+
+    QSize setupTextLayout();
+    QPixmap textLayoutImage(bool drawStyle);
+    void drawTextLayout(QPainter *p, const QPointF &pos, bool drawStyle);
+    QDeclarativeTextLayout layout;
+
+    static QPixmap drawOutline(const QPixmap &source, const QPixmap &styleSource);
+    static QPixmap drawOutline(const QPixmap &source, const QPixmap &styleSource, int yOffset);
+
     static inline QDeclarativeTextPrivate *get(QDeclarativeText *t) {
         return t->d_func();
     }

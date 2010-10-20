@@ -69,7 +69,7 @@
 
 #ifdef Q_OS_WIN // for homedirpath reading from registry
 #include "qt_windows.h"
-#include "qlibrary.h"
+#include <private/qsystemlibrary_p.h>
 
 #endif // Q_OS_WIN
 #endif // QT_NO_QOBJECT
@@ -1046,9 +1046,9 @@ static QString windowsConfigPath(int type)
     // We can't use QLibrary if there is QT_NO_QOBJECT is defined
     // This only happens when bootstrapping qmake.
 #ifndef Q_OS_WINCE
-    QLibrary library(QLatin1String("shell32"));
+    QSystemLibrary library(QLatin1String("shell32"));
 #else
-    QLibrary library(QLatin1String("coredll"));
+    QSystemLibrary library(QLatin1String("coredll"));
 #endif // Q_OS_WINCE
     typedef BOOL (WINAPI*GetSpecialFolderPath)(HWND, LPWSTR, int, BOOL);
     GetSpecialFolderPath SHGetSpecialFolderPath = (GetSpecialFolderPath)library.resolve("SHGetSpecialFolderPathW");

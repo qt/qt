@@ -3475,7 +3475,8 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
         // IndirectPainting (the else branch), because in that case we always save()
         // and restore() in QGraphicsScene::drawItems().
         if (!d->scene->d_func()->painterStateProtection)
-            painter.setWorldTransform(viewTransform);
+            painter.setOpacity(1.0);
+        painter.setWorldTransform(viewTransform);
     } else {
         // Make sure we don't have unpolished items before we draw
         if (!d->scene->d_func()->unpolishedItems.isEmpty())

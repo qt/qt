@@ -14,20 +14,7 @@ contains( CONFIG, no_icon ) {
             warning("Only first icon specified in ICON variable is used: $$ICON")
         }
 
-        # Try to produce indentical string to fixedTarget in SymbianMakefileGenerator, replaced chars taken
-        # from SymbianCommonGenerator::removeSpecialCharacters.
-        #
-        # Note: it is not a major problem even baseTarget is not 100% identical to fixedTarget since qmake
-        # only uses filename from RSS_RULES.icon_file when referring to icon file name.
-        baseTarget = $$basename(TARGET)
-        baseTarget = $$replace(baseTarget, /,_)
-        baseTarget = $$replace(baseTarget, \\\\,_)
-        baseTarget = $$replace(baseTarget, " ",_)
-        symbian-abld|symbian-sbsv2 {
-            baseTarget = $$replace(baseTarget, -,_)
-            baseTarget = $$replace(baseTarget, \\.,_)
-            baseTarget = $$replace(baseTarget, :,_)
-        }
+        baseTarget = $$symbianRemoveSpecialCharacters($$basename(TARGET))
 
         # Note: symbian-sbsv2 builds can't utilize extra compiler for mifconv, so ICON handling is done in code
         !symbian-sbsv2 {

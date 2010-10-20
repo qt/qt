@@ -1,4 +1,4 @@
-import Qt 4.7
+import QtQuick 1.0
 
 PathView {
     id: pathview
@@ -21,6 +21,7 @@ PathView {
         Rectangle {
             id: wrapper
             objectName: "wrapper"
+            property bool onPath: PathView.onPath
             width: 20; height: 20; color: name
             Text {
                 objectName: "myText"

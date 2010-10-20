@@ -128,8 +128,8 @@ QDeclarativeFlickablePrivate::QDeclarativeFlickablePrivate()
     , flickingHorizontally(false), flickingVertically(false)
     , hMoved(false), vMoved(false)
     , movingHorizontally(false), movingVertically(false)
-    , stealMouse(false), pressed(false)
-    , interactive(true), deceleration(500), maxVelocity(2000), reportedVelocitySmoothing(100)
+    , stealMouse(false), pressed(false), interactive(true), calcVelocity(false)
+    , deceleration(500), maxVelocity(2000), reportedVelocitySmoothing(100)
     , delayedPressEvent(0), delayedPressTarget(0), pressDelay(0), fixupDuration(600)
     , vTime(0), visibleArea(0)
     , flickableDirection(QDeclarativeFlickable::AutoFlickDirection)
@@ -350,24 +350,35 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
     \brief The Flickable item provides a surface that can be "flicked".
     \inherits Item
 
-    Flickable places its children on a surface that can be dragged and flicked.
+    The Flickable item places its children on a surface that can be dragged
+    and flicked, causing the view onto the child items to scroll. This
+    behavior forms the basis of Items that are designed to show large numbers
+    of child items, such as \l ListView and \l GridView.
 
-    \code
-    import Qt 4.7
+    In traditional user interfaces, views can be scrolled using standard
+    controls, such as scroll bars and arrow buttons. In some situations, it
+    is also possible to drag the view directly by pressing and holding a
+    mouse button while moving the cursor. In touch-based user interfaces,
+    this dragging action is often complemented with a flicking action, where
+    scrolling continues after the user has stopped touching the view.
 
-    Flickable {
-        width: 200; height: 200
-        contentWidth: image.width; contentHeight: image.height
+    Flickable does not automatically clip its contents. If it is not used as
+    a full-screen item, you should consider setting the \l{Item::}{clip} property
+    to true.
 
-        Image { id: image; source: "bigImage.png" }
-    }
-    \endcode
+    \section1 Example Usage
 
-    \image flickable.gif
+    \beginfloatright
+    \inlineimage flickable.gif
+    \endfloat
 
-    Flickable does not automatically clip its contents. If
-    it is not full-screen it is likely that \l {Item::clip}{clip} should be set
-    to \c true.
+    The following example shows a small view onto a large image in which the
+    user can drag or flick the image in order to view different parts of it.
+
+    \snippet doc/src/snippets/declarative/flickable.qml document
+
+    \clearfloat
+    \section1 Limitations
 
     \note Due to an implementation detail, items placed inside a Flickable cannot anchor to it by
     \c id. Use \c parent instead.
@@ -445,8 +456,8 @@ QDeclarativeFlickable::~QDeclarativeFlickable()
 }
 
 /*!
-    \qmlproperty int Flickable::contentX
-    \qmlproperty int Flickable::contentY
+    \qmlproperty real Flickable::contentX
+    \qmlproperty real Flickable::contentY
 
     These properties hold the surface coordinate currently at the top-left
     corner of the Flickable. For example, if you flick an image up 100 pixels,
@@ -455,7 +466,7 @@ QDeclarativeFlickable::~QDeclarativeFlickable()
 qreal QDeclarativeFlickable::contentX() const
 {
     Q_D(const QDeclarativeFlickable);
-    return -d->hData.move.value();
+    return -d->contentItem->x();
 }
 
 void QDeclarativeFlickable::setContentX(qreal pos)
@@ -473,7 +484,7 @@ void QDeclarativeFlickable::setContentX(qreal pos)
 qreal QDeclarativeFlickable::contentY() const
 {
     Q_D(const QDeclarativeFlickable);
-    return -d->vData.move.value();
+    return -d->contentItem->y();
 }
 
 void QDeclarativeFlickable::setContentY(qreal pos)
@@ -491,12 +502,15 @@ void QDeclarativeFlickable::setContentY(qreal pos)
 /*!
     \qmlproperty bool Flickable::interactive
 
-    This property holds whether the user can interact with the Flickable. A user
-    cannot drag or flick a Flickable that is not interactive.
+    This property describes whether the user can interact with the Flickable.
+    A user cannot drag or flick a Flickable that is not interactive.
+
+    By default, this property is true.
 
     This property is useful for temporarily disabling flicking. This allows
-    special interaction with Flickable's children: for example, you might want to
-    freeze a flickable map while scrolling through a pop-up dialog that is a child of the Flickable.
+    special interaction with Flickable's children; for example, you might want
+    to freeze a flickable map while scrolling through a pop-up dialog that
+    is a child of the Flickable.
 */
 bool QDeclarativeFlickable::isInteractive() const
 {
@@ -968,7 +982,7 @@ void QDeclarativeFlickable::viewportMoved()
     qreal prevY = d->lastFlickablePosition.x();
     qreal prevX = d->lastFlickablePosition.y();
     d->velocityTimeline.clear();
-    if (d->pressed) {
+    if (d->pressed || d->calcVelocity) {
         int elapsed = QDeclarativeItemPrivate::restart(d->velocityTime);
         if (elapsed > 0) {
             qreal horizontalVelocity = (prevX - d->hData.move.value()) * 1000 / elapsed;
@@ -1032,16 +1046,83 @@ void QDeclarativeFlickable::cancelFlick()
 void QDeclarativeFlickablePrivate::data_append(QDeclarativeListProperty<QObject> *prop, QObject *o)
 {
     QGraphicsObject *i = qobject_cast<QGraphicsObject *>(o);
-    if (i)
-        i->setParentItem(static_cast<QDeclarativeFlickablePrivate*>(prop->data)->contentItem);
-    else
+    if (i) {
+        QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(i);
+        if (static_cast<QDeclarativeItemPrivate*>(d)->componentComplete) {
+            i->setParentItem(static_cast<QDeclarativeFlickablePrivate*>(prop->data)->contentItem);
+        } else {
+            d->setParentItemHelper(static_cast<QDeclarativeFlickablePrivate*>(prop->data)->contentItem, 0, 0);
+        }
+    } else {
         o->setParent(prop->object);
+    }
+}
+
+static inline int children_count_helper(QGraphicsObject *object)
+{
+    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(object);
+    return d->children.count();
+}
+
+static inline QObject *children_at_helper(QGraphicsObject *object, int index)
+{
+    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(object);
+    if (index >= 0 && index < d->children.count())
+        return d->children.at(index)->toGraphicsObject();
+    else
+        return 0;
+}
+
+static inline void children_clear_helper(QGraphicsObject *object)
+{
+    QGraphicsItemPrivate *d = QGraphicsItemPrivate::get(object);
+    int childCount = d->children.count();
+    if (static_cast<QDeclarativeItemPrivate*>(d)->componentComplete) {
+        for (int index = 0 ;index < childCount; index++) {
+            d->children.at(0)->setParentItem(0);
+        }
+    } else {
+        for (int index = 0 ;index < childCount; index++) {
+            QGraphicsItemPrivate::get(d->children.at(0))->setParentItemHelper(0, /*newParentVariant=*/0, /*thisPointerVariant=*/0);
+        }
+    }
+
+}
+
+int QDeclarativeFlickablePrivate::data_count(QDeclarativeListProperty<QObject> *prop)
+{
+    return QDeclarativeItemPrivate::resources_count(prop) +
+           children_count_helper(static_cast<QDeclarativeFlickablePrivate*>(prop->data)->contentItem);
+}
+
+QObject *QDeclarativeFlickablePrivate::data_at(QDeclarativeListProperty<QObject> *prop, int i)
+{
+    int resourcesCount = QDeclarativeItemPrivate::resources_count(prop);
+    if (i < resourcesCount)
+        return QDeclarativeItemPrivate::resources_at(prop, i);
+    const int j = i - resourcesCount;
+    QGraphicsObject *contentObject = static_cast<QDeclarativeFlickablePrivate*>(prop->data)->contentItem;
+    if (j < children_count_helper(contentObject))
+        return children_at_helper(contentObject, j);
+    return 0;
+}
+
+void QDeclarativeFlickablePrivate::data_clear(QDeclarativeListProperty<QObject> *prop)
+{
+    QDeclarativeItemPrivate::resources_clear(prop);
+   QGraphicsObject *contentObject =
+            static_cast<QDeclarativeFlickablePrivate*>(prop->data)->contentItem;
+    children_clear_helper(contentObject);
 }
 
 QDeclarativeListProperty<QObject> QDeclarativeFlickable::flickableData()
 {
     Q_D(QDeclarativeFlickable);
-    return QDeclarativeListProperty<QObject>(this, (void *)d, QDeclarativeFlickablePrivate::data_append);
+    return QDeclarativeListProperty<QObject>(this, (void *)d, QDeclarativeFlickablePrivate::data_append,
+                                             QDeclarativeFlickablePrivate::data_count,
+                                             QDeclarativeFlickablePrivate::data_at,
+                                             QDeclarativeFlickablePrivate::data_clear
+                                             );
 }
 
 QDeclarativeListProperty<QGraphicsObject> QDeclarativeFlickable::flickableChildren()
@@ -1087,8 +1168,8 @@ void QDeclarativeFlickable::setBoundsBehavior(BoundsBehavior b)
 }
 
 /*!
-    \qmlproperty int Flickable::contentWidth
-    \qmlproperty int Flickable::contentHeight
+    \qmlproperty real Flickable::contentWidth
+    \qmlproperty real Flickable::contentHeight
 
     The dimensions of the content (the surface controlled by Flickable). Typically this
     should be set to the combined size of the items placed in the Flickable. Note this
@@ -1333,8 +1414,8 @@ bool QDeclarativeFlickable::isFlicking() const
     \qmlproperty bool Flickable::flickingHorizontally
     \qmlproperty bool Flickable::flickingVertically
 
-    These properties hold whether the view is currently moving horizontally
-    or vertically due to the user flicking the view.
+    These properties describe whether the view is currently moving horizontally,
+    vertically or in either direction, due to the user flicking the view.
 */
 bool QDeclarativeFlickable::isFlickingHorizontally() const
 {
@@ -1386,8 +1467,9 @@ bool QDeclarativeFlickable::isMoving() const
     \qmlproperty bool Flickable::movingHorizontally
     \qmlproperty bool Flickable::movingVertically
 
-    These properties hold whether the view is currently moving horizontally
-    or vertically due to the user either dragging or flicking the view.
+    These properties describe whether the view is currently moving horizontally,
+    vertically or in either direction, due to the user either dragging or
+    flicking the view.
 */
 bool QDeclarativeFlickable::isMovingHorizontally() const
 {

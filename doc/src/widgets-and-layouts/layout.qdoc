@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -116,7 +116,7 @@
     \section2 Laying Out Widgets in Code
 
     The following code creates a QHBoxLayout that manages the geometry of five
-    \l{QPushButton}s, as shown on the first screenshot above:
+    \l{QPushButton}{QPushButtons}, as shown on the first screenshot above:
 
     \snippet doc/src/snippets/layouts/layouts.cpp 0
     \snippet doc/src/snippets/layouts/layouts.cpp 1
@@ -141,7 +141,19 @@
     The third QPushButton spans 2 columns. This is possible by specifying 2 as
     the fifth argument to QGridLayout::addWidget().
 
-    Finally, the code for QFormLayout is ..
+    QFormLayout will add two widgets on a row, commonly a QLabel and a QLineEdit
+    to create forms. Adding a QLabel and a QLineEdit on the same row will set 
+    the QLineEdit as the QLabel's buddy. The following code will use the 
+    QFormLayout to place three \l{QPushButton}{QPushButtons} and a corresponding
+    QLineEdit on a row. 
+    
+    \snippet doc/src/snippets/layouts/layouts.cpp 18
+    \snippet doc/src/snippets/layouts/layouts.cpp 19
+    \snippet doc/src/snippets/layouts/layouts.cpp 20
+    \codeline
+    \snippet doc/src/snippets/layouts/layouts.cpp 21
+    \snippet doc/src/snippets/layouts/layouts.cpp 22
+    \snippet doc/src/snippets/layouts/layouts.cpp 23
 
 
     \section2 Tips for Using Layouts

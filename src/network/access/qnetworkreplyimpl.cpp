@@ -588,6 +588,7 @@ void QNetworkReplyImplPrivate::appendDownstreamData(QIODevice *data)
 
 void QNetworkReplyImplPrivate::appendDownstreamData(const QByteArray &data)
 {
+    Q_UNUSED(data)
     // TODO implement
 
     // TODO call

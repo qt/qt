@@ -1077,10 +1077,10 @@ void tst_Moc::qprivateslots()
 class PrivatePropertyTest : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int foo READ foo WRITE setFoo);
-    Q_PRIVATE_PROPERTY(d, int bar READ bar WRITE setBar);
-    Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, int plop READ plop WRITE setPlop);
-    Q_PRIVATE_PROPERTY(PrivatePropertyTest::d_func(), int baz READ baz WRITE setBaz);
+    Q_PROPERTY(int foo READ foo WRITE setFoo)
+    Q_PRIVATE_PROPERTY(d, int bar READ bar WRITE setBar)
+    Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, int plop READ plop WRITE setPlop)
+    Q_PRIVATE_PROPERTY(PrivatePropertyTest::d_func(), int baz READ baz WRITE setBaz)
     class MyDPointer {
     public:
         MyDPointer() : mBar(0), mPlop(0) {}

@@ -149,6 +149,7 @@ void tst_Bic::initTestCase_data()
     QTest::newRow("QtDBus") << "QtDBus";
 #endif
     QTest::newRow("QtDesigner") << "QtDesigner";
+    QTest::newRow("QtDeclarative") << "QtDeclarative";
     QTest::newRow("QtMultimedia") << "QtMultimedia";
     QTest::newRow("QtNetwork") << "QtNetwork";
     QTest::newRow("QtOpenGL") << "QtOpenGL";

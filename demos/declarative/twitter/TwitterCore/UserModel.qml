@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-import Qt 4.7
+import QtQuick 1.0
 
 //This "model" gets the user information about the searched user. Mainly for the icon.
 

@@ -2135,6 +2135,7 @@ void QStateMachine::endMicrostep(QEvent *event)
 
 /*!
   \reimp
+    This function will call start() to start the state machine.
 */
 void QStateMachine::onEntry(QEvent *event)
 {
@@ -2144,6 +2145,8 @@ void QStateMachine::onEntry(QEvent *event)
 
 /*!
   \reimp
+    This function will call stop() to stop the state machine and 
+    subsequently emit the stopped() signal.
 */
 void QStateMachine::onExit(QEvent *event)
 {

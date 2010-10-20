@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -87,10 +87,6 @@
          \o \bold {Easily extendable}
          \o Custom types can easily be added to the test data and test output.
     \endtable
-
-    Note: For higher-level GUI and application testing needs, please
-    see the \l{Third-Party Tools}{Qt testing products provided by
-    Nokia partners}.
 
 
     \section1 QTestLib API
@@ -218,12 +214,12 @@
 
     \section2 Creating a Benchmark
     
-    To create a benchmark, follow the instructions for crating a test and then add a
+    To create a benchmark, follow the instructions for creating a test and then add a
     QBENCHMARK macro to the test function that you want to benchmark.
     
     \snippet doc/src/snippets/code/doc_src_qtestlib.qdoc 12
     
-    The code insde the QBENCHMARK macro will be measured, and possibly also repeated
+    The code inside the QBENCHMARK macro will be measured, and possibly also repeated
     several times in order to get an accurate measurement. This depends on the selected
     measurement back-end. Several back-ends are available. They can be selected on the
     command line:
@@ -753,9 +749,10 @@
     \section1 External Tools
 
     Tools for handling and visualizing test data are available as part of
-    the \l{qtestlib-tools} project on the Qt Labs Web site. These include
-    a tool for comparing performance data obtained from test runs and a
-    utility to generate Web-based graphs of performance data.
+    the qtestlib-tools project on the 
+	\l{http://labs.qt.nokia.com/}{http://labs.qt.nokia.com/}Qt Labs Web site.
+	These include a tool for comparing performance data obtained from test
+	runs and a utility to generate Web-based graphs of performance data.
 
     See the \l{qtestlib-tools Announcement} for more information on these
     tools and a simple graphing example.

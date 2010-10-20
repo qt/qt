@@ -165,7 +165,7 @@ void QBenchmarkTestMethodData::setResult(
     }
 
     // Test the result directly without calling the measurer if the minimum time 
-    // has been specifed on the command line with -minimumvalue.
+    // has been specified on the command line with -minimumvalue.
     else if (QBenchmarkGlobalData::current->walltimeMinimum != -1)
         accepted = (value > QBenchmarkGlobalData::current->walltimeMinimum);
     else

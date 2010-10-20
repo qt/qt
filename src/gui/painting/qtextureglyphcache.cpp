@@ -47,10 +47,6 @@
 #include "private/qnativeimage_p.h"
 #include "private/qfontengine_ft_p.h"
 
-#ifndef QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH
-#define QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH 256
-#endif
-
 QT_BEGIN_NAMESPACE
 
 // #define CACHE_DEBUG
@@ -137,10 +133,18 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
         m_currentRowHeight = qMax(m_currentRowHeight, c.h + margin * 2);
 
         if (m_cx + c.w > m_w) {
-            // no room on the current line, start new glyph strip
-            m_cx = 0;
-            m_cy += m_currentRowHeight + paddingDoubled;
-            m_currentRowHeight = 0; // New row
+            int new_width = m_w*2;
+            while (new_width < m_cx + c.w)
+                new_width *= 2;
+            if (new_width <= maxTextureWidth()) {
+                resizeTextureData(new_width, m_h);
+                m_w = new_width;
+            } else {
+                // no room on the current line, start new glyph strip
+                m_cx = 0;
+                m_cy += m_currentRowHeight + paddingDoubled;
+                m_currentRowHeight = 0; // New row
+            }
         }
         if (m_cy + c.h > m_h) {
             int new_height = m_h*2;

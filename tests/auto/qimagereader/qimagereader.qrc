@@ -63,5 +63,6 @@
         <file>images/rect.svgz</file>
         <file>images/corrupt.svg</file>
         <file>images/corrupt.svgz</file>
+        <file>images/qtbug13653-no_eoi.jpg</file>
     </qresource>
 </RCC>

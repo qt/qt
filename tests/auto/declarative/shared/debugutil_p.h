@@ -62,15 +62,13 @@ class QDeclarativeDebugTestService : public QDeclarativeDebugService
     Q_OBJECT
 public:
     QDeclarativeDebugTestService(const QString &s, QObject *parent = 0);
-    bool enabled;
 
 signals:
-    void enabledStateChanged();
+    void statusHasChanged();
 
 protected:
     virtual void messageReceived(const QByteArray &ba);
-
-    virtual void enabledChanged(bool e);
+    virtual void statusChanged(Status status);
 };
 
 class QDeclarativeDebugTestClient : public QDeclarativeDebugClient
@@ -82,9 +80,11 @@ public:
     QByteArray waitForResponse();
 
 signals:
+    void statusHasChanged();
     void serverMessage(const QByteArray &);
 
 protected:
+    virtual void statusChanged(Status status);
     virtual void messageReceived(const QByteArray &ba);
 
 private:

@@ -41,6 +41,7 @@
 
 #include "qplatformdefs.h"
 #include "qbytearray.h"
+#include <private/qsystemlibrary_p.h>
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE) || defined(Q_OS_CYGWIN)
 # include "qt_windows.h"
 #else
@@ -2299,7 +2300,7 @@ void Q3Dns::doResInit()
     bool gotNetworkParams = false;
     // try the API call GetNetworkParams() first and use registry lookup only
     // as a fallback
-    HINSTANCE hinstLib = LoadLibrary( L"iphlpapi" );
+    HINSTANCE hinstLib = QSystemLibrary::load( L"iphlpapi" );
     if ( hinstLib != 0 ) {
 #ifdef Q_OS_WINCE
 	GNP getNetworkParams = (GNP) GetProcAddress( hinstLib, L"GetNetworkParams" );

@@ -62,6 +62,7 @@ private slots:
     void updateMouseAreaPosOnResize();
     void noOnClickedWithPressAndHold();
     void onMousePressRejected();
+    void doubleClick();
 
 private:
     QDeclarativeView *createView();
@@ -355,6 +356,7 @@ void tst_QDeclarativeMouseArea::onMousePressRejected()
     canvas->show();
     canvas->setFocus();
     QVERIFY(canvas->rootObject() != 0);
+    QVERIFY(canvas->rootObject()->property("enabled").toBool());
 
     QVERIFY(!canvas->rootObject()->property("mr1_pressed").toBool());
     QVERIFY(!canvas->rootObject()->property("mr1_released").toBool());
@@ -388,6 +390,42 @@ void tst_QDeclarativeMouseArea::onMousePressRejected()
     QVERIFY(canvas->rootObject()->property("mr1_released").toBool());
     QVERIFY(!canvas->rootObject()->property("mr1_canceled").toBool());
     QVERIFY(!canvas->rootObject()->property("mr2_released").toBool());
+}
+
+void tst_QDeclarativeMouseArea::doubleClick()
+{
+    QDeclarativeView *canvas = createView();
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/doubleclick.qml"));
+    canvas->show();
+    canvas->setFocus();
+    QVERIFY(canvas->rootObject() != 0);
+
+    QGraphicsScene *scene = canvas->scene();
+    QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
+    pressEvent.setScenePos(QPointF(100, 100));
+    pressEvent.setButton(Qt::LeftButton);
+    pressEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &pressEvent);
+
+    QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
+    releaseEvent.setScenePos(QPointF(100, 100));
+    releaseEvent.setButton(Qt::LeftButton);
+    releaseEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &releaseEvent);
+
+    QCOMPARE(canvas->rootObject()->property("released").toInt(), 1);
+
+    QGraphicsSceneMouseEvent dblClickEvent(QEvent::GraphicsSceneMouseDoubleClick);
+    dblClickEvent.setScenePos(QPointF(100, 100));
+    dblClickEvent.setButton(Qt::LeftButton);
+    dblClickEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &dblClickEvent);
+
+    QApplication::sendEvent(scene, &releaseEvent);
+
+    QCOMPARE(canvas->rootObject()->property("clicked").toInt(), 1);
+    QCOMPARE(canvas->rootObject()->property("doubleClicked").toInt(), 1);
+    QCOMPARE(canvas->rootObject()->property("released").toInt(), 2);
 }
 
 QTEST_MAIN(tst_QDeclarativeMouseArea)

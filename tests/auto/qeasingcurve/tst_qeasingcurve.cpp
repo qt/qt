@@ -153,19 +153,19 @@ void tst_QEasingCurve::propertyDefaults()
     QEasingCurve curve(QEasingCurve::InElastic);
     QCOMPARE(curve.period(), 0.3);
     QCOMPARE(curve.amplitude(), 1.0);
-    QCOMPARE(curve.overshoot(), qreal(1.70158f));
+    QCOMPARE(curve.overshoot(), qreal(1.70158));
     curve.setType(QEasingCurve::InBounce);
     QCOMPARE(curve.period(), 0.3);
     QCOMPARE(curve.amplitude(), 1.0);
-    QCOMPARE(curve.overshoot(), qreal(1.70158f));
+    QCOMPARE(curve.overshoot(), qreal(1.70158));
     curve.setType(QEasingCurve::Linear);
     QCOMPARE(curve.period(), 0.3);
     QCOMPARE(curve.amplitude(), 1.0);
-    QCOMPARE(curve.overshoot(), qreal(1.70158f));
+    QCOMPARE(curve.overshoot(), qreal(1.70158));
     curve.setType(QEasingCurve::InElastic);
     QCOMPARE(curve.period(), 0.3);
     QCOMPARE(curve.amplitude(), 1.0);
-    QCOMPARE(curve.overshoot(), qreal(1.70158f));
+    QCOMPARE(curve.overshoot(), qreal(1.70158));
     curve.setPeriod(0.4);
     curve.setAmplitude(0.6);
     curve.setOvershoot(1.0);
@@ -490,7 +490,7 @@ void tst_QEasingCurve::operators()
     // operator==
     curve.setType(QEasingCurve::InBack);
     curve2 = curve;
-    curve2.setOvershoot(qreal(1.70158f));
+    curve2.setOvershoot(qreal(1.70158));
     QCOMPARE(curve.overshoot(), curve2.overshoot());
     QVERIFY(curve2 == curve);
 
@@ -505,6 +505,15 @@ void tst_QEasingCurve::operators()
     curve2.setType(QEasingCurve::InBack);
     QCOMPARE(curve.overshoot(), curve2.overshoot());
     QVERIFY(curve2 == curve);
+
+    QEasingCurve curve3;
+    QEasingCurve curve4;
+    curve4.setAmplitude(curve4.amplitude());
+    QEasingCurve curve5;
+    curve5.setAmplitude(0.12345);
+    QVERIFY(curve3 == curve4); // default value and not assigned
+    QVERIFY(curve3 != curve5); // unassinged and other value
+    QVERIFY(curve4 != curve5);
 }
 
 class tst_QEasingProperties : public QObject
@@ -527,7 +536,7 @@ void tst_QEasingCurve::properties()
     tst_QEasingProperties obj;
 
     QEasingCurve inOutBack(QEasingCurve::InOutBack);
-    qreal overshoot = 1.5f;
+    qreal overshoot = 1.5;
     inOutBack.setOvershoot(overshoot);
     qreal amplitude = inOutBack.amplitude();
     qreal period = inOutBack.period();

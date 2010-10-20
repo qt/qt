@@ -49,20 +49,14 @@ scriptdirs              = $QT_SOURCE_TREE/doc/src/template/scripts
 styledirs               = $QT_SOURCE_TREE/doc/src/template/style
 
 scripts.HTML		= functions.js \
-			     shBrushCpp.js \
-			     shCore.js \
-			     shLegacy.js \
 			     narrow.js \
 			     superfish.js \
 			  jquery.js
 
 styles.HTML		= style.css \
-			     shCore.css \
-			     shThemeDefault.css \
 			     narrow.css \
 			     superfish.css \
 			     superfish_skin.css \
-				 OfflineStyle.css \
 			  style_ie6.css \
 			  style_ie7.css \
 			  style_ie8.css

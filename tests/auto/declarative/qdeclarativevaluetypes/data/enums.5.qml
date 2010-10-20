@@ -1,5 +1,5 @@
 import Test 1.0
-import Qt 4.7 as MyQt
+import QtQuick 1.0 as MyQt
 
 MyTypeObject {
     MyQt.Component.onCompleted: {

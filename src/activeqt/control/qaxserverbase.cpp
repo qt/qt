@@ -2730,6 +2730,19 @@ HRESULT WINAPI QAxServerBase::Load(IStream *pStm)
 	qtarray.resize(stat.cbSize.LowPart);
         ULONG read;
 	pStm->Read(qtarray.data(), stat.cbSize.LowPart, &read);
+    } else if (hres == E_NOTIMPL) {
+        ULONG read = 0;
+        while (hres != S_FALSE) {
+            QByteArray arrayRead;
+            arrayRead.resize(4098);
+            hres = pStm->Read(arrayRead.data(), arrayRead.size(), &read);
+            if (hres != S_OK && hres != S_FALSE) {
+                qtarray.resize(0);
+                break;
+            } else if (read == 0)
+                break;
+            qtarray.append(arrayRead);
+        }
     }
     const QMetaObject *mo = qt.object->metaObject();
 

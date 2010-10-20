@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -68,7 +68,7 @@
     \endtable
 
     * WebKit is only supported as a dynamically built library. Static linkage is not supported.
-
+    
     \target GCC
     \section1 GCC
 
@@ -115,6 +115,7 @@
     \section2 Solaris
 
     Please use GCC 3.4.2 or later.
+	Please not that WebKit is not supported for Solaris, regardless of which compiler is used.
 
     \section2 Mac OS X
 
@@ -266,8 +267,9 @@
     for more information.
     
     There currently is a problem when compiling Qt with Visual Studio 2010 for 64-bit.
-    Its optimizer causes trouble and crashes for the release builds and it is not supported
-    in that configuration. See task http://bugreports.qt.nokia.com/browse/QTBUG-11445.
+    Its optimizer causes trouble and generates code that crashes for the release builds.
+    To avoid the crashes, You need to apply the hotfix in the following article
+    http://support.microsoft.com/kb/2280741.
 
     \section1 IBM xlC (AIX)
 

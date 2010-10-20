@@ -173,19 +173,6 @@ static int ucstricmp(const ushort *a, const ushort *ae, const uchar *b)
     return 1;
 }
 
-// Unicode case-sensitive comparison
-static int ucstrcmp(const QChar *a, int alen, const QChar *b, int blen)
-{
-    if (a == b && alen == blen)
-        return 0;
-    int l = qMin(alen, blen);
-    while (l-- && *a == *b)
-        a++,b++;
-    if (l == -1)
-        return (alen-blen);
-    return a->unicode() - b->unicode();
-}
-
 // Unicode case-sensitive compare two same-sized strings
 static int ucstrncmp(const QChar *a, const QChar *b, int l)
 {
@@ -194,6 +181,16 @@ static int ucstrncmp(const QChar *a, const QChar *b, int l)
     if (l==-1)
         return 0;
     return a->unicode() - b->unicode();
+}
+
+// Unicode case-sensitive comparison
+static int ucstrcmp(const QChar *a, int alen, const QChar *b, int blen)
+{
+    if (a == b && alen == blen)
+        return 0;
+    int l = qMin(alen, blen);
+    int cmp = ucstrncmp(a, b, l);
+    return cmp ? cmp : (alen-blen);
 }
 
 // Unicode case-insensitive compare two same-sized strings
@@ -568,7 +565,7 @@ const QString::Null QString::null = { };
     and join a list of strings into a single string with an optional
     separator using QStringList::join(). You can obtain a list of
     strings from a string list that contain a particular substring or
-    that match a particular QRegExp using the QStringList::find()
+    that match a particular QRegExp using the QStringList::filter()
     function.
 :
     \section1 Querying String Data
@@ -3711,7 +3708,7 @@ QByteArray QString::toUtf8() const
     Returns a UCS-4/UTF-32 representation of the string as a QVector<uint>.
 
     UCS-4 is a Unicode codec and is lossless. All characters from this string
-    can be encoded in UCS-4.
+    can be encoded in UCS-4. The vector is not null terminated.
 
     \sa fromUtf8(), toAscii(), toLatin1(), toLocal8Bit(), QTextCodec, fromUcs4(), toWCharArray()
 */
@@ -3894,7 +3891,7 @@ QString QString::fromLocal8Bit(const char *str, int size)
 
 /*!
     Returns a QString initialized with the first \a size characters
-    of the 8-bit string \a str.
+    from the string \a str.
 
     If \a size is -1 (default), it is taken to be qstrlen(\a
     str).
@@ -3953,8 +3950,8 @@ QString QString::fromUtf8(const char *str, int size)
     This function checks for a Byte Order Mark (BOM). If it is missing,
     host byte order is assumed.
 
-    This function is comparatively slow.
-    Use QString(const ushort *, int) or QString(const ushort *) if possible.
+    This function is slow compared to the other Unicode conversions.
+    Use QString(const QChar *, int) or QString(const QChar *) if possible.
 
     QString makes a deep copy of the Unicode data.
 
@@ -4278,7 +4275,7 @@ QString& QString::fill(QChar ch, int size)
     Returns the number of characters in this string.  Equivalent to
     size().
 
-    \sa setLength()
+    \sa resize()
 */
 
 /*!
@@ -6944,30 +6941,8 @@ QString QString::multiArg(int numArgs, const QString **args) const
     return result;
 }
 
-/*! \internal
- */
-void QString::updateProperties() const
+static bool isStringRightToLeft(const ushort *p, const ushort *end)
 {
-    ushort *p = d->data;
-    ushort *end = p + d->size;
-    d->simpletext = true;
-    while (p < end) {
-        ushort uc = *p;
-        // sort out regions of complex text formatting
-        if (uc > 0x058f && (uc < 0x1100 || uc > 0xfb0f)) {
-            d->simpletext = false;
-        }
-        p++;
-    }
-
-    d->righttoleft = isRightToLeft();
-    d->clean = true;
-}
-
-bool QString::isRightToLeft() const
-{
-    ushort *p = d->data;
-    const ushort * const end = p + d->size;
     bool righttoleft = false;
     while (p < end) {
         switch(QChar::direction(*p))
@@ -6985,6 +6960,31 @@ bool QString::isRightToLeft() const
     }
  end:
     return righttoleft;
+}
+
+/*! \internal
+ */
+void QString::updateProperties() const
+{
+    ushort *p = d->data;
+    ushort *end = p + d->size;
+    d->simpletext = true;
+    while (p < end) {
+        ushort uc = *p;
+        // sort out regions of complex text formatting
+        if (uc > 0x058f && (uc < 0x1100 || uc > 0xfb0f)) {
+            d->simpletext = false;
+        }
+        p++;
+    }
+
+    d->righttoleft = isStringRightToLeft(d->data, d->data + d->size);
+    d->clean = true;
+}
+
+bool QString::isRightToLeft() const
+{
+    return isStringRightToLeft(d->data, d->data + d->size);
 }
 
 /*! \fn bool QString::isSimpleText() const

@@ -36,3 +36,8 @@ equals(use_libstdcppv5, true) {
 } else {
     LIBS *= -llibstdcpp.dll
 }
+
+# use the runtime support for nested exceptions, if a library is available
+exists($${EPOCROOT}epoc32/release/armv5/urel/usrt_nx_*.lib) {
+    CONFIG += nested_exceptions
+}

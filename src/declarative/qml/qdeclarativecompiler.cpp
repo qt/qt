@@ -945,7 +945,8 @@ void QDeclarativeCompiler::genObject(QDeclarativeParser::Object *obj)
             propertyCache = enginePrivate->cache(obj->metaObject()->superClass())->copy();
 
         propertyCache->append(engine, obj->metaObject(), QDeclarativePropertyCache::Data::NoFlags,
-                              QDeclarativePropertyCache::Data::IsVMEFunction);
+                              QDeclarativePropertyCache::Data::IsVMEFunction, 
+                              QDeclarativePropertyCache::Data::IsVMESignal);
 
         if (obj == unitRoot) {
             propertyCache->addref();
@@ -1098,7 +1099,8 @@ void QDeclarativeCompiler::genObjectBody(QDeclarativeParser::Object *obj)
             QDeclarativePropertyCache *propertyCache =
                 enginePrivate->cache(prop->value->metaObject()->superClass())->copy();
             propertyCache->append(engine, prop->value->metaObject(), QDeclarativePropertyCache::Data::NoFlags,
-                                  QDeclarativePropertyCache::Data::IsVMEFunction);
+                                  QDeclarativePropertyCache::Data::IsVMEFunction,
+                                  QDeclarativePropertyCache::Data::IsVMESignal);
 
             output->propertyCaches << propertyCache;
             output->bytecode << meta;
@@ -1286,7 +1288,7 @@ bool QDeclarativeCompiler::buildSubObject(Object *obj, const BindingContext &ctx
 
 int QDeclarativeCompiler::componentTypeRef()
 {
-    QDeclarativeType *t = QDeclarativeMetaType::qmlType("Qt/Component",4,7);
+    QDeclarativeType *t = QDeclarativeMetaType::qmlType("QtQuick/Component",1,0);
     for (int ii = output->types.count() - 1; ii >= 0; --ii) {
         if (output->types.at(ii).type == t)
             return ii;
@@ -1407,7 +1409,7 @@ bool QDeclarativeCompiler::buildProperty(QDeclarativeParser::Property *prop,
             COMPILE_EXCEPTION(prop, tr("Invalid attached object assignment"));
 
         Q_ASSERT(type->attachedPropertiesFunction());
-        prop->index = type->index();
+        prop->index = type->attachedPropertiesId();
         prop->value->metatype = type->attachedPropertiesType();
     } else {
         // Setup regular property data
@@ -1764,9 +1766,7 @@ bool QDeclarativeCompiler::buildGroupedProperty(QDeclarativeParser::Property *pr
     Q_ASSERT(prop->index != -1);
 
     if (QDeclarativeValueTypeFactory::isValueType(prop->type)) {
-        QDeclarativeEnginePrivate *ep =
-            static_cast<QDeclarativeEnginePrivate *>(QObjectPrivate::get(engine));
-        if (prop->type >= 0 /* QVariant == -1 */ && ep->valueTypes[prop->type]) {
+        if (prop->type >= 0 /* QVariant == -1 */ && enginePrivate->valueTypes[prop->type]) {
 
             if (prop->values.count()) {
                 if (prop->values.at(0)->location < prop->value->location) {
@@ -1780,7 +1780,7 @@ bool QDeclarativeCompiler::buildGroupedProperty(QDeclarativeParser::Property *pr
                 COMPILE_EXCEPTION(prop, tr( "Invalid property assignment: \"%1\" is a read-only property").arg(QString::fromUtf8(prop->name)));
             }
 
-            COMPILE_CHECK(buildValueTypeProperty(ep->valueTypes[prop->type],
+            COMPILE_CHECK(buildValueTypeProperty(enginePrivate->valueTypes[prop->type],
                                                  prop->value, obj, ctxt.incr()));
             obj->addValueTypeProperty(prop);
         } else {
@@ -1931,6 +1931,9 @@ bool QDeclarativeCompiler::buildPropertyAssignment(QDeclarativeParser::Property 
                                           const BindingContext &ctxt)
 {
     obj->addValueProperty(prop);
+
+    if (prop->values.count() > 1)
+        COMPILE_EXCEPTION(prop->values.at(0), tr( "Cannot assign multiple values to a singular property") );
 
     for (int ii = 0; ii < prop->values.count(); ++ii) {
         Value *v = prop->values.at(ii);
@@ -2211,7 +2214,7 @@ bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
         if (propName.at(0).isUpper())
             COMPILE_EXCEPTION(&prop, tr("Property names cannot begin with an upper case letter"));
 
-        if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(propName))
+        if (enginePrivate->globalClass->illegalNames().contains(propName))
             COMPILE_EXCEPTION(&prop, tr("Illegal property name"));
 
         propNames.insert(prop.name);
@@ -2224,7 +2227,7 @@ bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
         QString nameStr = QString::fromUtf8(name);
         if (nameStr.at(0).isUpper())
             COMPILE_EXCEPTION(obj, tr("Signal names cannot begin with an upper case letter"));
-        if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(nameStr))
+        if (enginePrivate->globalClass->illegalNames().contains(nameStr))
             COMPILE_EXCEPTION(obj, tr("Illegal signal name"));
         methodNames.insert(name);
     }
@@ -2235,7 +2238,7 @@ bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)
         QString nameStr = QString::fromUtf8(name);
         if (nameStr.at(0).isUpper())
             COMPILE_EXCEPTION(obj, tr("Method names cannot begin with an upper case letter"));
-        if (QDeclarativeEnginePrivate::get(engine)->globalClass->illegalNames().contains(nameStr))
+        if (enginePrivate->globalClass->illegalNames().contains(nameStr))
             COMPILE_EXCEPTION(obj, tr("Illegal method name"));
         methodNames.insert(name);
     }
@@ -2416,13 +2419,17 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
         propBuilder.setWritable(!readonly);
     }
 
-    if (mode == ResolveAliases) {
-        for (int ii = 0; ii < obj->dynamicProperties.count(); ++ii) {
-            const Object::DynamicProperty &p = obj->dynamicProperties.at(ii);
+    for (int ii = 0; ii < obj->dynamicProperties.count(); ++ii) {
+        const Object::DynamicProperty &p = obj->dynamicProperties.at(ii);
 
-            if (p.type == Object::DynamicProperty::Alias) {
+        if (p.type == Object::DynamicProperty::Alias) {
+            if (mode == ResolveAliases) {
                 ((QDeclarativeVMEMetaData *)dynamicData.data())->aliasCount++;
                 compileAlias(builder, dynamicData, obj, p);
+            } else {
+                // Need a fake signal so that the metaobject remains consistent across
+                // the resolve and non-resolve alias runs
+                builder.addSignal(p.name + "Changed()");
             }
         }
     }
@@ -2558,8 +2565,8 @@ bool QDeclarativeCompiler::compileAlias(QMetaObjectBuilder &builder,
 
     QStringList alias = astNodeToStringList(node);
 
-    if (alias.count() != 1 && alias.count() != 2)
-        COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias reference. An alias reference must be specified as <id> or <id>.<property>"));
+    if (alias.count() < 1 || alias.count() > 3)
+        COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias reference. An alias reference must be specified as <id>, <id>.<property> or <id>.<value property>.<property>"));
 
     if (!compileState.ids.contains(alias.at(0)))
         COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias reference. Unable to find id \"%1\"").arg(alias.at(0)));
@@ -2571,17 +2578,36 @@ bool QDeclarativeCompiler::compileAlias(QMetaObjectBuilder &builder,
     int propIdx = -1;
     int flags = 0;
     bool writable = false;
-    if (alias.count() == 2) {
+    if (alias.count() == 2 || alias.count() == 3) {
         propIdx = idObject->metaObject()->indexOfProperty(alias.at(1).toUtf8().constData());
 
-        if (-1 == propIdx)
+        if (-1 == propIdx) {
             COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias location"));
+        } else if (propIdx > 0xFFFF) {
+            COMPILE_EXCEPTION(prop.defaultValue, tr("Alias property exceeds alias bounds"));
+        }
 
         QMetaProperty aliasProperty = idObject->metaObject()->property(propIdx);
         if (!aliasProperty.isScriptable())
             COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias location"));
 
         writable = aliasProperty.isWritable();
+
+        if (alias.count() == 3) {
+            QDeclarativeValueType *valueType = enginePrivate->valueTypes[aliasProperty.type()];
+            if (!valueType)
+                COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias location"));
+
+            propIdx |= ((unsigned int)aliasProperty.type()) << 24;
+
+            int valueTypeIndex = valueType->metaObject()->indexOfProperty(alias.at(2).toUtf8().constData());
+            if (valueTypeIndex == -1)
+                COMPILE_EXCEPTION(prop.defaultValue, tr("Invalid alias location"));
+            Q_ASSERT(valueTypeIndex <= 0xFF);
+            
+            aliasProperty = valueType->metaObject()->property(valueTypeIndex);
+            propIdx |= (valueTypeIndex << 16);
+        }
 
         if (aliasProperty.isEnumType()) 
             typeName = "int";  // Avoid introducing a dependency on the aliased metaobject

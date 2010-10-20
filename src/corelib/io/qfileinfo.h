@@ -44,7 +44,7 @@
 
 #include <QtCore/qfile.h>
 #include <QtCore/qlist.h>
-#include <QtCore/qscopedpointer.h>
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_HEADER
 
@@ -166,10 +166,20 @@ public:
 #endif
 
 protected:
-    QScopedPointer<QFileInfoPrivate> d_ptr;
+    QSharedDataPointer<QFileInfoPrivate> d_ptr;
 private:
-    Q_DECLARE_PRIVATE(QFileInfo)
+    inline QFileInfoPrivate* d_func()
+    {
+        detach();
+        return const_cast<QFileInfoPrivate *>(d_ptr.constData());
+    }
+
+    inline const QFileInfoPrivate* d_func() const
+    {
+        return d_ptr.constData();
+    }
 };
+
 Q_DECLARE_TYPEINFO(QFileInfo, Q_MOVABLE_TYPE);
 
 #ifdef QT3_SUPPORT
