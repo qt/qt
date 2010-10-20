@@ -279,7 +279,7 @@ void tst_QFiledialog::filesSelectedSignal()
     QNonNativeFileDialog fd;
     fd.setViewMode(QFileDialog::List);
     fd.setOptions(QFileDialog::DontUseNativeDialog);
-    QDir testDir(SRCDIR"/../../..");
+    QDir testDir(SRCDIR);
     fd.setDirectory(testDir);
     QFETCH(QFileDialog::FileMode, fileMode);
     fd.setFileMode(fileMode);
@@ -1308,6 +1308,10 @@ QString saveName(QWidget *, const QString &, const QString &, const QString &, Q
 
 void tst_QFiledialog::hooks()
 {
+#ifdef Q_OS_SYMBIAN
+    if(QSysInfo::symbianVersion() < QSysInfo::SV_SF_3)
+        QSKIP("writing to data exports in paged dll not supported and crashes on symbian versions prior to ^3", SkipAll);
+#endif
     qt_filedialog_existing_directory_hook = &existing;
     qt_filedialog_save_filename_hook = &saveName;
     qt_filedialog_open_filename_hook = &openName;
