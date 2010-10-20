@@ -913,8 +913,9 @@ QScriptValue QScriptValue::property(const QString& name, const ResolveFlags& mod
 */
 QScriptValue QScriptValue::property(const QScriptString& name, const ResolveFlags& mode) const
 {
-    // FIXME it should be faster, not slower!
-    return property(name.toString(), mode);
+    Q_D(const QScriptValue);
+    QScriptIsolate api(d->engine());
+    return QScriptValuePrivate::get(d->property(QScriptStringPrivate::get(name)->m_string, mode));
 }
 
 /*!
@@ -1000,8 +1001,9 @@ void QScriptValue::setProperty(quint32 arrayIndex, const QScriptValue& value, co
 */
 void QScriptValue::setProperty(const QScriptString& name, const QScriptValue& value, const PropertyFlags& flags)
 {
-    // FIXME this should be faster, not slower!
-    setProperty(name.toString(), value, flags);
+    Q_D(QScriptValue);
+    QScriptIsolate api(d->engine());
+    d->setProperty(QScriptStringPrivate::get(name)->m_string, QScriptValuePrivate::get(value), QScriptConverter::toPropertyAttributes(flags));
 }
 
 /*!
@@ -1025,8 +1027,9 @@ QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QString& name, con
 */
 QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QScriptString& name, const ResolveFlags& mode) const
 {
-    // FIXME it have to be faster!
-    return propertyFlags(name.toString(), mode);
+    Q_D(const QScriptValue);
+    QScriptIsolate api(d->engine());
+    return d->propertyFlags(QScriptStringPrivate::get(name)->m_string, mode);
 }
 
 /*!

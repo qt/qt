@@ -34,6 +34,7 @@
 
 #include "qscriptshareddata_p.h"
 #include "qscriptvalue.h"
+#include "qscriptstring_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -118,11 +119,14 @@ public:
     inline void setScriptClass(QScriptClassPrivate* scriptclass);
 
     inline void setProperty(const QString& name, QScriptValuePrivate *value, v8::PropertyAttribute attribs = v8::None);
+    inline void setProperty(v8::Handle<v8::String> name, QScriptValuePrivate *value, v8::PropertyAttribute attribs = v8::None);
     inline void setProperty(quint32 index, QScriptValuePrivate *value, v8::PropertyAttribute attribs = v8::None);
     inline QScriptPassPointer<QScriptValuePrivate> property(const QString& name, const QScriptValue::ResolveFlags& mode) const;
+    inline QScriptPassPointer<QScriptValuePrivate> property(v8::Handle<v8::String> name, const QScriptValue::ResolveFlags& mode) const;
     inline QScriptPassPointer<QScriptValuePrivate> property(quint32 index, const QScriptValue::ResolveFlags& mode) const;
     inline bool deleteProperty(const QString& name);
     inline QScriptValue::PropertyFlags propertyFlags(const QString& name, const QScriptValue::ResolveFlags& mode) const;
+    inline QScriptValue::PropertyFlags propertyFlags(v8::Handle<v8::String> name, const QScriptValue::ResolveFlags& mode) const;
     inline void setData(QScriptValuePrivate* value) const;
     inline QScriptPassPointer<QScriptValuePrivate> data() const;
 
@@ -855,6 +859,28 @@ inline void QScriptValuePrivate::setProperty(const QString& name, QScriptValuePr
     v8::Object::Cast(*m_value)->Set(QScriptConverter::toString(name), value->m_value, attribs);
 }
 
+inline void QScriptValuePrivate::setProperty(v8::Handle<v8::String> name, QScriptValuePrivate* value, v8::PropertyAttribute attribs)
+{
+    if (!isObject())
+        return;
+
+    if (!value->isJSBased())
+        value->assignEngine(engine());
+
+    if (!value->isValid()) {
+        // Remove the property.
+        v8::Object::Cast(*m_value)->Delete(name);
+        return;
+    }
+
+    if (engine() != value->engine()) {
+        qWarning("QScriptValue::setProperty() failed: cannot set value created in a different engine");
+        return;
+    }
+
+    v8::Object::Cast(*m_value)->Set(name, value->m_value, attribs);
+}
+
 inline void QScriptValuePrivate::setProperty(quint32 index, QScriptValuePrivate* value, v8::PropertyAttribute attribs)
 {
     if (!isObject())
@@ -907,6 +933,26 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(con
     return new QScriptValuePrivate(engine(), result);
 }
 
+inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(v8::Handle<v8::String> name, const QScriptValue::ResolveFlags& mode) const
+{
+    if (!isObject() || name.IsEmpty())
+        return new QScriptValuePrivate();
+
+    v8::HandleScope handleScope;
+    v8::Handle<v8::Object> self(v8::Object::Cast(*m_value));
+
+    v8::Handle<v8::Value> result = self->Get(name);
+    if (result->IsUndefined() && !self->Has(name)) {
+        // In QtScript we make a distinction between a property that exists and has value undefined,
+        // and a property that doesn't exist; in the latter case, we should return an invalid value.
+        return new QScriptValuePrivate();
+    }
+    if ((mode == QScriptValue::ResolveLocal) && engine()->getOwnProperty(self, name).IsEmpty())
+        return new QScriptValuePrivate();
+
+    return new QScriptValuePrivate(engine(), result);
+}
+
 inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(quint32 index, const QScriptValue::ResolveFlags& mode) const
 {
     if (!isObject())
@@ -944,6 +990,15 @@ inline QScriptValue::PropertyFlags QScriptValuePrivate::propertyFlags(const QStr
 
     v8::HandleScope handleScope;
     return engine()->getPropertyFlags(v8::Handle<v8::Object>::Cast(m_value), QScriptConverter::toString(name), mode);
+}
+
+inline QScriptValue::PropertyFlags QScriptValuePrivate::propertyFlags(v8::Handle<v8::String> name, const QScriptValue::ResolveFlags& mode) const
+{
+    if (!isObject())
+        return QScriptValue::PropertyFlags(0);
+
+    v8::HandleScope handleScope;
+    return engine()->getPropertyFlags(v8::Handle<v8::Object>::Cast(m_value), name, mode);
 }
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::data() const
