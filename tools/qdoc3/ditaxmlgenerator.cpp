@@ -1094,11 +1094,11 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             if (atom->next() != 0)
                 text = atom->next()->string();
             if (fileName.isEmpty()) {
-                xmlWriter().writeStartElement("font");
-                xmlWriter().writeAttribute("color","red");
+                xmlWriter().writeStartElement("p");
+                xmlWriter().writeAttribute("outputclass","error");
                 xmlWriter().writeCharacters("[Missing image: ");
                 xmlWriter().writeCharacters(protectEnc(atom->string()));
-                xmlWriter().writeEndElement(); // </font>
+                xmlWriter().writeEndElement(); // </p>
             }
             else {
                 xmlWriter().writeStartElement("fig");
@@ -1333,7 +1333,6 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         xmlWriter().writeEndElement(); // </blockquote>
         break;
     case Atom::RawString:
-        qDebug() << "RAW:" << atom->string();
         xmlWriter().writeCharacters(atom->string());
         break;
     case Atom::SectionLeft:
