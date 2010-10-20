@@ -86,6 +86,9 @@ private slots:
     void errors_data();
     void errors();
 
+    void insertedSemicolon_data();
+    void insertedSemicolon();
+
     void simpleObject();
     void simpleContainer();
     void interfaceProperty();
@@ -209,6 +212,31 @@ inline QUrl TEST_FILE(const char *filename)
 void tst_qdeclarativelanguage::cleanupTestCase()
 {
     QVERIFY(QFile::remove(TEST_FILE(QString::fromUtf8("I18nType\303\201\303\242\303\243\303\244\303\245.qml")).toLocalFile()));
+}
+
+void tst_qdeclarativelanguage::insertedSemicolon_data()
+{
+    QTest::addColumn<QString>("file");
+    QTest::addColumn<QString>("errorFile");
+    QTest::addColumn<bool>("create");
+
+    QTest::newRow("insertedSemicolon.1") << "insertedSemicolon.1.qml" << "insertedSemicolon.1.errors.txt" << false;
+}
+
+void tst_qdeclarativelanguage::insertedSemicolon()
+{
+    QFETCH(QString, file);
+    QFETCH(QString, errorFile);
+    QFETCH(bool, create);
+
+    QDeclarativeComponent component(&engine, TEST_FILE(file));
+
+    if(create) {
+        QObject *object = component.create();
+        QVERIFY(object == 0);
+    }
+
+    VERIFY_ERRORS(errorFile.toLatin1().constData());
 }
 
 void tst_qdeclarativelanguage::errors_data()
