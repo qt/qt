@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,37 +39,38 @@
 **
 ****************************************************************************/
 
-#ifndef MPIXMAPDATA_H
-#define MPIXMAPDATA_H
+#ifndef QDRAWHELPER_ARM_SIMD_P_H
+#define QDRAWHELPER_ARM_SIMD_P_H
 
-#include <private/qpixmapdata_gl_p.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-struct QMeeGoImageInfo
-{
-    Qt::HANDLE handle;
-    QImage::Format rawFormat;
-};
+#include <private/qdrawhelper_p.h>
 
-class QMeeGoPixmapData : public QGLPixmapData
-{
-public:
-    QMeeGoPixmapData();
-    void fromTexture(GLuint textureId, int w, int h, bool alpha);
-    QPixmapData *createCompatiblePixmapData() const;
+QT_BEGIN_NAMESPACE
 
-    virtual void fromEGLImage(Qt::HANDLE handle);
-    virtual void fromEGLSharedImage(Qt::HANDLE handle, const QImage &softImage);
-    virtual void fromImage (const QImage &image, Qt::ImageConversionFlags flags);
-    virtual QImage toImage() const;
-    virtual void updateFromSoftImage();
+#if defined(QT_HAVE_ARM_SIMD)
 
-    QImage softImage;
+void qt_blend_argb32_on_argb32_arm_simd(uchar *destPixels, int dbpl,
+                                            const uchar *srcPixels, int sbpl,
+                                            int w, int h,
+                                            int const_alpha);
 
-    static QHash <void*, QMeeGoImageInfo*> sharedImagesMap;
+void qt_blend_rgb32_on_rgb32_arm_simd(uchar *destPixels, int dbpl,
+                                            const uchar *srcPixels, int sbpl,
+                                            int w, int h,
+                                            int const_alpha);
 
-    static Qt::HANDLE imageToEGLSharedImage(const QImage &image);
-    static bool destroyEGLSharedImage(Qt::HANDLE h);
-    static void registerSharedImage(Qt::HANDLE handle, const QImage &si);
-};
+#endif // QT_HAVE_ARM_SIMD
 
-#endif
+QT_END_NAMESPACE
+
+#endif // QDRAWHELPER_ARM_SIMD_P_H

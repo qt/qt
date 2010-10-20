@@ -590,7 +590,7 @@ bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
                 COMPILE_EXCEPTION(parserRef->refObjects.first(), err);
             }
         } else if (tref.typeData) {
-            ref.component = tref.typeData->component();
+            ref.component = tref.typeData->compiledData();
             ref.ref = tref.typeData;
             ref.ref->addref();
         }
@@ -722,7 +722,7 @@ bool QDeclarativeCompiler::buildObject(Object *obj, const BindingContext &ctxt)
     obj->metatype = tr.metaObject();
 
     if (tr.component)
-        obj->url = tr.component->url();
+        obj->url = tr.component->url;
     if (tr.type)
         obj->typeName = tr.type->qmlTypeName();
     obj->className = tr.className;
@@ -940,7 +940,7 @@ void QDeclarativeCompiler::genObject(QDeclarativeParser::Object *obj)
         // ### Surely the creation of this property cache could be more efficient
         QDeclarativePropertyCache *propertyCache = 0;
         if (tr.component)
-            propertyCache = QDeclarativeComponentPrivate::get(tr.component)->cc->rootPropertyCache->copy();
+            propertyCache = tr.component->rootPropertyCache->copy();
         else
             propertyCache = enginePrivate->cache(obj->metaObject()->superClass())->copy();
 
@@ -957,7 +957,7 @@ void QDeclarativeCompiler::genObject(QDeclarativeParser::Object *obj)
         output->bytecode << meta;
     } else if (obj == unitRoot) {
         if (tr.component)
-            output->rootPropertyCache = QDeclarativeComponentPrivate::get(tr.component)->cc->rootPropertyCache;
+            output->rootPropertyCache = tr.component->rootPropertyCache;
         else
             output->rootPropertyCache = enginePrivate->cache(obj->metaObject());
 

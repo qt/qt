@@ -39,37 +39,22 @@
 **
 ****************************************************************************/
 
-#ifndef MPIXMAPDATA_H
-#define MPIXMAPDATA_H
+#include "qmeegorasterpixmapdata.h"
 
-#include <private/qpixmapdata_gl_p.h>
+/* Public */
 
-struct QMeeGoImageInfo
+QMeeGoRasterPixmapData::QMeeGoRasterPixmapData() : QRasterPixmapData(QPixmapData::PixmapType)
 {
-    Qt::HANDLE handle;
-    QImage::Format rawFormat;
-};
+}
 
-class QMeeGoPixmapData : public QGLPixmapData
+QMeeGoRasterPixmapData::QMeeGoRasterPixmapData(QPixmapData::PixelType t) : QRasterPixmapData(t)
 {
-public:
-    QMeeGoPixmapData();
-    void fromTexture(GLuint textureId, int w, int h, bool alpha);
-    QPixmapData *createCompatiblePixmapData() const;
+}
 
-    virtual void fromEGLImage(Qt::HANDLE handle);
-    virtual void fromEGLSharedImage(Qt::HANDLE handle, const QImage &softImage);
-    virtual void fromImage (const QImage &image, Qt::ImageConversionFlags flags);
-    virtual QImage toImage() const;
-    virtual void updateFromSoftImage();
-
-    QImage softImage;
-
-    static QHash <void*, QMeeGoImageInfo*> sharedImagesMap;
-
-    static Qt::HANDLE imageToEGLSharedImage(const QImage &image);
-    static bool destroyEGLSharedImage(Qt::HANDLE h);
-    static void registerSharedImage(Qt::HANDLE handle, const QImage &si);
-};
-
-#endif
+void QMeeGoRasterPixmapData::copy(const QPixmapData *data, const QRect &rect)
+{
+    if (data->classId() == QPixmapData::OpenGLClass)
+        fromImage(data->toImage(rect).copy(), Qt::NoOpaqueDetection);
+    else
+        QRasterPixmapData::copy(data, rect);
+}

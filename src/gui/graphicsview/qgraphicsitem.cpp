@@ -3706,6 +3706,8 @@ void QGraphicsItem::setPos(const QPointF &pos)
         d_ptr->setPosHelper(pos);
         if (d_ptr->isWidget)
             static_cast<QGraphicsWidget *>(this)->d_func()->setGeometryFromSetPos();
+        if (d_ptr->scenePosDescendants)
+            d_ptr->sendScenePosChange();
         return;
     }
 
@@ -4388,8 +4390,10 @@ void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
         return;
 
     // Update and set the new transformation.
-    if (!(d_ptr->flags & ItemSendsGeometryChanges)) {
+    if (!(d_ptr->flags & (ItemSendsGeometryChanges | ItemSendsScenePositionChanges))) {
         d_ptr->setTransformHelper(newTransform);
+        if (d_ptr->scenePosDescendants)
+            d_ptr->sendScenePosChange();
         return;
     }
 

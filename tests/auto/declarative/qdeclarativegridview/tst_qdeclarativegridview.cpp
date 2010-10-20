@@ -71,6 +71,7 @@ private slots:
     void moved();
     void changeFlow();
     void currentIndex();
+    void noCurrentIndex();
     void defaultValues();
     void properties();
     void propertyChanges();
@@ -696,7 +697,49 @@ void tst_QDeclarativeGridView::currentIndex()
     model.insertItem(0, "Foo", "1111");
     QTRY_COMPARE(canvas->rootObject()->property("current").toInt(), 29);
 
+    // check removing highlight by setting currentIndex to -1;
+    gridview->setCurrentIndex(-1);
+
+    QCOMPARE(gridview->currentIndex(), -1);
+    QVERIFY(!gridview->highlightItem());
+    QVERIFY(!gridview->currentItem());
+
     delete canvas;
+}
+
+void tst_QDeclarativeGridView::noCurrentIndex()
+{
+    TestModel model;
+    for (int i = 0; i < 60; i++)
+        model.addItem("Item" + QString::number(i), QString::number(i));
+
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->setFixedSize(240,320);
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    QString filename(SRCDIR "/data/gridview-noCurrent.qml");
+    canvas->setSource(QUrl::fromLocalFile(filename));
+
+    qApp->processEvents();
+
+    QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
+    QVERIFY(gridview != 0);
+
+    QDeclarativeItem *contentItem = gridview->contentItem();
+    QVERIFY(contentItem != 0);
+
+    // current index should be -1
+    QCOMPARE(gridview->currentIndex(), -1);
+    QVERIFY(!gridview->currentItem());
+    QVERIFY(!gridview->highlightItem());
+    QCOMPARE(gridview->contentY(), 0.0);
+
+    gridview->setCurrentIndex(5);
+    QCOMPARE(gridview->currentIndex(), 5);
+    QVERIFY(gridview->currentItem());
+    QVERIFY(gridview->highlightItem());
 }
 
 void tst_QDeclarativeGridView::changeFlow()

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,43 +39,17 @@
 **
 ****************************************************************************/
 
-#ifndef QDRAWHELPER_ARMV6_P_H
-#define QDRAWHELPER_ARMV6_P_H
+#ifndef MRASTERPIXMAPDATA_H
+#define MRASTERPIXMAPDATA_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <private/qpixmap_raster_p.h>
 
-#include <private/qdrawhelper_p.h>
+class QMeeGoRasterPixmapData : public QRasterPixmapData
+{
+public:
+    QMeeGoRasterPixmapData();
+    QMeeGoRasterPixmapData(QPixmapData::PixelType t);
+    void copy(const QPixmapData *data, const QRect &rect);
+};
 
-QT_BEGIN_NAMESPACE
-
-#if defined(Q_CC_RVCT) && defined(QT_HAVE_ARMV6)
-
-extern "C" void qt_blend_rgb32_on_rgb32_armv6(uchar *destPixels, int dbpl,
-                                            const uchar *srcPixels, int sbpl,
-                                            int w, int h,
-                                            int const_alpha);
-
-extern "C" void qt_blend_argb32_on_argb32_armv6(uchar *destPixels, int dbpl,
-                                            const uchar *srcPixels, int sbpl,
-                                            int w, int h,
-                                            int const_alpha);
-
-extern "C" void qt_memfill32_armv6(quint32 *dest, quint32 value, int count);
-
-extern "C" void comp_func_Source_armv6(uint *dest, const uint *src, int length, uint const_alpha);
-extern "C" void comp_func_SourceOver_armv6(uint *dest, const uint *src, int length, uint const_alpha);
-
-#endif // QT_HAVE_ARMV6
-
-QT_END_NAMESPACE
-
-#endif // QDRAWHELPER_ARMV6_P_H
+#endif
