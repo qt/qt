@@ -1383,6 +1383,8 @@ void QDeclarativeViewer::appAboutToQuit()
     // avoid crashes if messages are received after app has closed
     delete loggerWindow;
     loggerWindow = 0;
+    delete tester;
+    tester = 0;
 }
 
 void QDeclarativeViewer::autoStartRecording()
