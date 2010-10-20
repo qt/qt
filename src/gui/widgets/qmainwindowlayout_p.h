@@ -342,7 +342,10 @@ public:
     void syncUnifiedToolbarVisibility();
     bool blockVisiblityCheck;
 
+#ifdef QT_MAC_USE_COCOA
     QUnifiedToolbarSurface *unifiedSurface;
+#endif // QT_MAC_USE_COCOA
+
 #endif // Q_WS_MAC
 };
 QT_END_NAMESPACE

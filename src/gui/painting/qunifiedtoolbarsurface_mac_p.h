@@ -53,12 +53,12 @@
 // We mean it.
 //
 
-#ifdef QT_MAC_USE_COCOA
-
 #include <private/qwindowsurface_raster_p.h>
 #include <QWidget>
 #include <private/qwidget_p.h>
 #include <private/qnativeimage_p.h>
+
+#ifdef QT_MAC_USE_COCOA
 
 QT_BEGIN_NAMESPACE
 

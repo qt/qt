@@ -39,13 +39,13 @@
 **
 ****************************************************************************/
 
-#ifdef QT_MAC_USE_COCOA
-
 #include "qunifiedtoolbarsurface_mac_p.h"
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qbackingstore_p.h>
 
 #include <QDebug>
+
+#ifdef QT_MAC_USE_COCOA
 
 QT_BEGIN_NAMESPACE
 
