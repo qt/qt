@@ -102,7 +102,7 @@ extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 extern bool qt_applefontsmoothing_enabled;
 #endif
 
-extern QImage qt_imageForBrush(int brushStyle, bool invert);
+Q_DECL_IMPORT extern QImage qt_imageForBrush(int brushStyle, bool invert);
 
 ////////////////////////////////// Private Methods //////////////////////////////////////////
 
