@@ -1333,6 +1333,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         xmlWriter().writeEndElement(); // </blockquote>
         break;
     case Atom::RawString:
+        qDebug() << "RAW:" << atom->string();
         xmlWriter().writeCharacters(atom->string());
         break;
     case Atom::SectionLeft:
@@ -2597,6 +2598,8 @@ void DitaXmlGenerator::generateAnnotatedList(const Node* relative,
                                              CodeMarker* marker,
                                              const NodeMap& nodeMap)
 {
+    if (nodeMap.isEmpty())
+        return;
     xmlWriter().writeStartElement("table");
     xmlWriter().writeAttribute("outputclass","annotated");
     xmlWriter().writeStartElement("tgroup");
