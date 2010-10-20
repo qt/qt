@@ -895,11 +895,15 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(con
     v8::Handle<v8::Object> self(v8::Object::Cast(*m_value));
     v8::Handle<v8::String> jsname = QScriptConverter::toString(name);
 
-    if ( (mode != QScriptValue::ResolveLocal && !self->Has(jsname))
-        || (mode == QScriptValue::ResolveLocal && engine()->getOwnProperty(self, jsname).IsEmpty()))
+    v8::Handle<v8::Value> result = self->Get(jsname);
+    if (result->IsUndefined() && !self->Has(jsname)) {
+        // In QtScript we make a distinction between a property that exists and has value undefined,
+        // and a property that doesn't exist; in the latter case, we should return an invalid value.
+        return new QScriptValuePrivate();
+    }
+    if ((mode == QScriptValue::ResolveLocal) && engine()->getOwnProperty(self, jsname).IsEmpty())
         return new QScriptValuePrivate();
 
-    v8::Handle<v8::Value> result = self->Get(jsname);
     return new QScriptValuePrivate(engine(), result);
 }
 
@@ -911,11 +915,15 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(qui
     v8::HandleScope handleScope;
     v8::Handle<v8::Object> self(v8::Object::Cast(*m_value));
 
-    if ((mode != QScriptValue::ResolveLocal && !self->Has(index))
-        || (mode == QScriptValue::ResolveLocal && engine()->getOwnProperty(self, v8::Integer::New(index)).IsEmpty()))
+    v8::Handle<v8::Value> result = self->Get(index);
+    if (result->IsUndefined() && !self->Has(index)) {
+        // In QtScript we make a distinction between a property that exists and has value undefined,
+        // and a property that doesn't exist; in the latter case, we should return an invalid value.
+        return new QScriptValuePrivate();
+    }
+    if ((mode == QScriptValue::ResolveLocal) && engine()->getOwnProperty(self, v8::Integer::New(index)).IsEmpty())
         return new QScriptValuePrivate();
 
-    v8::Handle<v8::Value> result = self->Get(index);
     return new QScriptValuePrivate(engine(), result);
 }
 
