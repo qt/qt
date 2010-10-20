@@ -182,7 +182,7 @@ public:
         , bufferMode(BufferBefore | BufferAfter)
         , ownModel(false), wrap(false), autoHighlight(true), haveHighlightRange(false)
         , correctFlick(false), inFlickCorrection(false), lazyRelease(false)
-        , deferredRelease(false), layoutScheduled(false), currentIndexSet(false)
+        , deferredRelease(false), layoutScheduled(false), currentIndexCleared(false)
         , minExtentDirty(true), maxExtentDirty(true)
     {}
 
@@ -520,7 +520,7 @@ public:
     bool lazyRelease : 1;
     bool deferredRelease : 1;
     bool layoutScheduled : 1;
-    bool currentIndexSet : 1;
+    bool currentIndexCleared : 1;
     mutable bool minExtentDirty : 1;
     mutable bool maxExtentDirty : 1;
 };
@@ -1579,7 +1579,7 @@ void QDeclarativeListView::setModel(const QVariant &model)
         if (isComponentComplete()) {
             updateSections();
             refill();
-            if ((d->currentIndex >= d->model->count() || d->currentIndex < 0) && !d->currentIndexSet) {
+            if ((d->currentIndex >= d->model->count() || d->currentIndex < 0) && !d->currentIndexCleared) {
                 setCurrentIndex(0);
             } else {
                 d->moveReason = QDeclarativeListViewPrivate::SetIndex;
@@ -1669,7 +1669,8 @@ void QDeclarativeListView::setDelegate(QDeclarativeComponent *delegate)
     \qmlproperty Item ListView::currentItem
 
     The \c currentIndex property holds the index of the current item, and
-    \c currentItem holds the current item. 
+    \c currentItem holds the current item.   Setting the currentIndex to -1
+    will clear the highlight and set currentItem to null.
 
     If highlightFollowsCurrentItem is \c true, setting either of these 
     properties will smoothly scroll the ListView so that the current 
@@ -1689,7 +1690,7 @@ void QDeclarativeListView::setCurrentIndex(int index)
     Q_D(QDeclarativeListView);
     if (d->requestedIndex >= 0)  // currently creating item
         return;
-    d->currentIndexSet = true;
+    d->currentIndexCleared = (index == -1);
     if (index == d->currentIndex)
         return;
     if (isComponentComplete() && d->isValid()) {
@@ -2304,6 +2305,8 @@ void QDeclarativeListView::viewportMoved()
 {
     Q_D(QDeclarativeListView);
     QDeclarativeFlickable::viewportMoved();
+    if (!d->itemCount)
+        return;
     d->lazyRelease = true;
     refill();
     if (d->flickingHorizontally || d->flickingVertically || d->movingHorizontally || d->movingVertically)
@@ -2518,7 +2521,7 @@ void QDeclarativeListView::incrementCurrentIndex()
     if (count && (currentIndex() < count - 1 || d->wrap)) {
         d->moveReason = QDeclarativeListViewPrivate::SetIndex;
         int index = currentIndex()+1;
-        d->updateCurrent((index >= 0 && index < count) ? index : 0);
+        setCurrentIndex((index >= 0 && index < count) ? index : 0);
     }
 }
 
@@ -2538,7 +2541,7 @@ void QDeclarativeListView::decrementCurrentIndex()
     if (count && (currentIndex() > 0 || d->wrap)) {
         d->moveReason = QDeclarativeListViewPrivate::SetIndex;
         int index = currentIndex()-1;
-        d->updateCurrent((index >= 0 && index < count) ? index : count-1);
+        setCurrentIndex((index >= 0 && index < count) ? index : count-1);
     }
 }
 
@@ -2672,7 +2675,7 @@ void QDeclarativeListView::componentComplete()
     if (d->isValid()) {
         refill();
         d->moveReason = QDeclarativeListViewPrivate::SetIndex;
-        if (d->currentIndex < 0 && !d->currentIndexSet)
+        if (d->currentIndex < 0 && !d->currentIndexCleared)
             d->updateCurrent(0);
         else
             d->updateCurrent(d->currentIndex);
@@ -2772,13 +2775,13 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
     d->moveReason = QDeclarativeListViewPrivate::Other;
     if (!d->visibleItems.count() || d->model->count() <= 1) {
         d->scheduleLayout();
-        if (d->currentIndex >= modelIndex) {
+        if (d->itemCount && d->currentIndex >= modelIndex) {
             // adjust current item index
             d->currentIndex += count;
             if (d->currentItem)
                 d->currentItem->index = d->currentIndex;
             emit currentIndexChanged();
-        } else if (d->currentIndex < 0 && !d->currentIndexSet) {
+        } else if (!d->currentIndex || (d->currentIndex < 0 && !d->currentIndexCleared)) {
             d->updateCurrent(0);
         }
         d->itemCount += count;
@@ -2884,7 +2887,7 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
         }
         diff = pos - initialPos;
     }
-    if (d->currentIndex >= modelIndex) {
+    if (d->itemCount && d->currentIndex >= modelIndex) {
         // adjust current item index
         d->currentIndex += count;
         if (d->currentItem) {
