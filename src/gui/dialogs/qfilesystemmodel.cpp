@@ -1290,7 +1290,7 @@ QString QFileSystemModelPrivate::filePath(const QModelIndex &index) const
     if ((fullPath.length() > 2) && fullPath[0] == QLatin1Char('/') && fullPath[1] == QLatin1Char('/'))
         fullPath = fullPath.mid(1);
 #endif
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
     if (fullPath.length() == 2 && fullPath.endsWith(QLatin1Char(':')))
         fullPath.append(QLatin1Char('/'));
 #endif
