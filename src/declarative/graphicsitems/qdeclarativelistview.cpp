@@ -394,42 +394,17 @@ public:
     }
 
     // map a model index to visibleItems index.
-    // These may differ if removed items are still present in the visible list,
-    // e.g. doing a removal animation
     int mapFromModel(int modelIndex) const {
         if (modelIndex < visibleIndex || modelIndex >= visibleIndex + visibleItems.count())
             return -1;
         for (int i = 0; i < visibleItems.count(); ++i) {
             FxListItem *listItem = visibleItems.at(i);
             if (listItem->index == modelIndex)
-                return i + visibleIndex;
+                return i;
             if (listItem->index > modelIndex)
                 return -1;
         }
         return -1; // Not in visibleList
-    }
-
-    bool mapRangeFromModel(int &index, int &count) const {
-        if (index + count < visibleIndex)
-            return false;
-
-        int lastIndex = -1;
-        for (int i = visibleItems.count()-1; i >= 0; --i) {
-            FxListItem *listItem = visibleItems.at(i);
-            if (listItem->index != -1) {
-                lastIndex = listItem->index;
-                break;
-            }
-        }
-
-        if (index > lastIndex)
-            return false;
-
-        int last = qMin(index + count - 1, lastIndex);
-        index = qMax(index, visibleIndex);
-        count = last - index + 1;
-
-        return true;
     }
 
     void updateViewport() {
@@ -2811,15 +2786,15 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
         return;
     }
 
-    int overlapCount = count;
-    if (!d->mapRangeFromModel(modelIndex, overlapCount)) {
+    int index = d->mapFromModel(modelIndex);
+    if (index < 0) {
         int i = d->visibleItems.count() - 1;
         while (i > 0 && d->visibleItems.at(i)->index == -1)
             --i;
         if (d->visibleItems.at(i)->index + 1 == modelIndex
             && d->visibleItems.at(i)->endPosition() < d->buffer+d->position()+d->size()-1) {
             // Special case of appending an item to the model.
-            modelIndex = d->visibleIndex + d->visibleItems.count();
+            index = d->visibleItems.count();
         } else {
             if (modelIndex < d->visibleIndex) {
                 // Insert before visible items
@@ -2846,7 +2821,6 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
 
     // At least some of the added items will be visible
 
-    int index = modelIndex - d->visibleIndex;
     // index can be the next item past the end of the visible items list (i.e. appended)
     int pos = index < d->visibleItems.count() ? d->visibleItems.at(index)->position()
                                                 : d->visibleItems.at(index-1)->endPosition()+d->spacing+1;
