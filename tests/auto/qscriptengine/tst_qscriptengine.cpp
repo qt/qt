@@ -5224,6 +5224,12 @@ void tst_QScriptEngine::qRegExpInport()
     for (int i = 0; i <= rx.captureCount(); i++)  {
         QCOMPARE(result.property(i).toString(), rx.cap(i));
     }
+
+    QScriptValue result2 = rexp.call(QScriptValue(), QScriptValueList() << QScriptValue(string));
+    QVERIFY(result2.isArray());
+    for (int i = 0; i <= rx.captureCount(); i++)  {
+        QCOMPARE(result2.property(i).toString(), rx.cap(i));
+    }
 }
 
 // QScriptValue::toDateTime() returns a local time, whereas JS dates
