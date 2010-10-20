@@ -1113,14 +1113,14 @@ void QPainterPrivate::updateState(QPainterState *newState)
     the range of available patterns.
 
     \table
-    \row
-    \o \inlineimage qpainter-vectordeformation.png
-    \o \inlineimage qpainter-gradients.png
-    \o \inlineimage qpainter-pathstroking.png
     \header
     \o \l {demos/deform}{Vector Deformation}
     \o \l {demos/gradients}{Gradients}
     \o \l {demos/pathstroke}{Path Stroking}
+    \row
+    \o \inlineimage qpainter-vectordeformation.png
+    \o \inlineimage qpainter-gradients.png
+    \o \inlineimage qpainter-pathstroking.png
     \endtable
 
 
@@ -1193,13 +1193,13 @@ void QPainterPrivate::updateState(QPainterState *newState)
     coordinate transformations.
 
     \table
+    \header
+    \o  nop \o rotate() \o scale() \o translate()
     \row
     \o \inlineimage qpainter-clock.png
     \o \inlineimage qpainter-rotation.png
     \o \inlineimage qpainter-scale.png
     \o \inlineimage qpainter-translation.png
-    \header
-    \o  nop \o rotate() \o scale() \o translate()
     \endtable
 
     The most commonly used transformations are scaling, rotation,
