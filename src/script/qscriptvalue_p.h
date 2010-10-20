@@ -888,7 +888,6 @@ inline void QScriptValuePrivate::setProperty(quint32 index, QScriptValuePrivate*
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(const QString& name, const QScriptValue::ResolveFlags& mode) const
 {
-    Q_UNUSED(mode);
     if (!isObject())
         return new QScriptValuePrivate();
 
@@ -906,7 +905,6 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(con
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(quint32 index, const QScriptValue::ResolveFlags& mode) const
 {
-    Q_UNUSED(mode);
     if (!isObject())
         return new QScriptValuePrivate();
 
