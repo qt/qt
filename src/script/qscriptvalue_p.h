@@ -562,7 +562,7 @@ inline bool QScriptValuePrivate::isBool() const
 
 inline bool QScriptValuePrivate::isCallable() const
 {
-    return isFunction() || isRegExp() || isQMetaObject();
+    return isFunction() || (isObject() && v8::Object::Cast(*m_value)->IsCallable());
 }
 
 inline bool QScriptValuePrivate::isError() const
@@ -1052,7 +1052,7 @@ inline int QScriptValuePrivate::convertArguments(QVarLengthArray<v8::Handle<v8::
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::call(QScriptValuePrivate* thisObject, const QScriptValueList& args)
 {
-    if (!isFunction())
+    if (!isCallable())
         return new QScriptValuePrivate();
 
     v8::HandleScope handleScope;
@@ -1070,7 +1070,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::call(QScript
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::call(QScriptValuePrivate* thisObject, const QScriptValue& arguments)
 {
-    if (!isFunction())
+    if (!isCallable())
         return new QScriptValuePrivate();
 
     v8::HandleScope handleScope;
@@ -1106,7 +1106,7 @@ QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::call(QScriptValuePr
 
     v8::TryCatch tryCatch;
 
-    v8::Handle<v8::Value> result = v8::Function::Cast(*m_value)->Call(recv, argc, argv);
+    v8::Handle<v8::Value> result = v8::Object::Cast(*m_value)->Call(recv, argc, argv);
 
     if (result.IsEmpty()) {
         result = tryCatch.Exception();
