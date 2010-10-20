@@ -2621,9 +2621,9 @@ const Text& Doc::body() const
     return priv == 0 ? dummy : priv->text;
 }
 
-Text Doc::briefText() const
+Text Doc::briefText(bool inclusive) const
 {
-    return body().subText(Atom::BriefLeft, Atom::BriefRight);
+    return body().subText(Atom::BriefLeft, Atom::BriefRight, 0, inclusive);
 }
 
 Text Doc::trimmedBriefText(const QString &className) const

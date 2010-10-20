@@ -337,8 +337,6 @@ bool DitaXmlGenerator::inLegaleseText = false;
 #define APIMAP		        		Doc::alias("apiMap")
 #define APIITEMREF		        	Doc::alias("apiItemRef")
 
-#define SHORTDESC                               Doc::alias("shortdesc")
-
 QString DitaXmlGenerator::sinceTitles[] =
     {
         "    New Namespaces",
@@ -677,7 +675,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                                    CodeMarker *marker)
 {
     int skipAhead = 0;
-    QString hx;
+    QString hx, str;
     static bool in_para = false;
     QString guid, hc;
 
@@ -710,15 +708,30 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             skipAhead = skipAtoms(atom, Atom::BriefRight);
             break;
         }
-        if (inApiDesc || inSection)
+        if (inApiDesc || inSection) {
             xmlWriter().writeStartElement("p");
+            xmlWriter().writeAttribute("outputclass","brief");
+        }
         else {
             noLinks = true;
-            xmlWriter().writeStartElement(SHORTDESC);
+            xmlWriter().writeStartElement("shortdesc");
         }
         if (relative->type() == Node::Property ||
             relative->type() == Node::Variable) {
-            QString str;
+            xmlWriter().writeCharacters("This ");
+            if (relative->type() == Node::Property)
+                xmlWriter().writeCharacters("property");
+            else if (relative->type() == Node::Variable)
+                xmlWriter().writeCharacters("variable");
+            QStringList words = str.split(" ");
+            if (!(words.first() == "contains" || words.first() == "specifies"
+                || words.first() == "describes" || words.first() == "defines"
+                || words.first() == "holds" || words.first() == "determines"))
+                xmlWriter().writeCharacters(" holds ");
+            else
+                xmlWriter().writeCharacters(" ");
+        }
+        if (noLinks) {
             atom = atom->next();
             while (atom != 0 && atom->type() != Atom::BriefRight) {
                 if (atom->type() == Atom::String ||
@@ -730,26 +743,14 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             str[0] = str[0].toLower();
             if (str.right(1) == ".")
                 str.truncate(str.length() - 1);
-            xmlWriter().writeCharacters("This ");
-            if (relative->type() == Node::Property)
-                xmlWriter().writeCharacters("property");
-            else
-                xmlWriter().writeCharacters("variable");
-            QStringList words = str.split(" ");
-            if (!(words.first() == "contains" || words.first() == "specifies"
-                || words.first() == "describes" || words.first() == "defines"
-                || words.first() == "holds" || words.first() == "determines"))
-                xmlWriter().writeCharacters(" holds ");
-            else
-                xmlWriter().writeCharacters(" ");
+            str[0] = str[0].toUpper();
             xmlWriter().writeCharacters(str + ".");
         }
         break;
     case Atom::BriefRight:
-        if (relative->type() != Node::Fake) {
+        if (relative->type() != Node::Fake) 
             xmlWriter().writeEndElement(); // </shortdesc> or </p>
-            noLinks = false;
-        }
+        noLinks = false;
         break;
     case Atom::C:
         xmlWriter().writeStartElement(formattingLeftMap()[ATOM_FORMATTING_TELETYPE]);
@@ -1141,8 +1142,13 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                         .arg(marker->plainFullName(relative)));
             }
 #if 0            
-            else
-                qDebug() << "MYLINK:" << myLink << outFileName();;
+            else if (noLinks) {
+                //xmlWriter().writeCharacters(atom->string());
+                qDebug() << "MYLINK:" << myLink << outFileName() << atom->string();
+            }
+            else {
+                beginLink(myLink, node, relative, marker);
+            }
 #endif            
             beginLink(myLink, node, relative, marker);
             skipAhead = 1;
@@ -1556,7 +1562,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         xmlWriter().writeStartElement(APIDESC);
         xmlWriter().writeAttribute("spectitle",title);
-        Text brief = nsn->doc().briefText();
+        Text brief = nsn->doc().briefText(); // zzz
         if (!brief.isEmpty()) {
             xmlWriter().writeStartElement("p");
             generateText(brief, nsn, marker);
@@ -1713,7 +1719,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 
         xmlWriter().writeStartElement(APIDESC);
         xmlWriter().writeAttribute("spectitle",title);
-        Text brief = cn->doc().briefText();
+        Text brief = cn->doc().briefText(); // zzz
         if (!brief.isEmpty()) {
             xmlWriter().writeStartElement("p");
             generateText(brief, cn, marker);
@@ -2107,7 +2113,7 @@ void DitaXmlGenerator::generateHeader(const Node* node,
         dtd = "dtd/cxxClass.dtd";
         version = "0.6.0";
         doctype = "<!DOCTYPE " + mainElement +
-            " PUBLIC \"-//NOKIA//DTD DITA C++ API Namespace Reference Type v" +
+            " PUBLIC \"-//NOKIA//DTD DITA C++ API Class Reference Type v" +
             version + "//EN\" \"" + dtd + "\">";
         outputclass = "namespace";
     }
@@ -2160,13 +2166,9 @@ void DitaXmlGenerator::generateTitle(const QString& title,
  */
 void DitaXmlGenerator::generateBrief(const Node* node, CodeMarker* marker)
 {
-    Text brief = node->doc().briefText();
+    Text brief = node->doc().briefText(true); // zzz
     if (!brief.isEmpty()) {
-        noLinks = true;
-        xmlWriter().writeStartElement(SHORTDESC);
         generateText(brief, node, marker);
-        xmlWriter().writeEndElement(); // </shortdesc>
-        noLinks = false;
     }
 }
 
@@ -2613,7 +2615,7 @@ void DitaXmlGenerator::generateAnnotatedList(const Node* relative,
         else {
             xmlWriter().writeStartElement("entry");
             xmlWriter().writeStartElement("p");
-            xmlWriter().writeCharacters(protectEnc(node->doc().briefText().toString()));
+            xmlWriter().writeCharacters(protectEnc(node->doc().briefText().toString())); // zzz
             xmlWriter().writeEndElement(); // </p>
             xmlWriter().writeEndElement(); // <entry>
         }
