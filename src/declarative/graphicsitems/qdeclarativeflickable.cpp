@@ -85,7 +85,11 @@ qreal QDeclarativeFlickableVisibleArea::yPosition() const
 void QDeclarativeFlickableVisibleArea::updateVisible()
 {
     QDeclarativeFlickablePrivate *p = static_cast<QDeclarativeFlickablePrivate *>(QGraphicsItemPrivate::get(flickable));
-    bool pageChange = false;
+
+    bool changeX = false;
+    bool changeY = false;
+    bool changeWidth = false;
+    bool changeHeight = false;
 
     // Vertical
     const qreal viewheight = flickable->height();
@@ -95,11 +99,11 @@ void QDeclarativeFlickableVisibleArea::updateVisible()
 
     if (pageSize != m_heightRatio) {
         m_heightRatio = pageSize;
-        pageChange = true;
+        changeHeight = true;
     }
     if (pagePos != m_yPosition) {
         m_yPosition = pagePos;
-        pageChange = true;
+        changeY = true;
     }
 
     // Horizontal
@@ -110,14 +114,21 @@ void QDeclarativeFlickableVisibleArea::updateVisible()
 
     if (pageSize != m_widthRatio) {
         m_widthRatio = pageSize;
-        pageChange = true;
+        changeWidth = true;
     }
     if (pagePos != m_xPosition) {
         m_xPosition = pagePos;
-        pageChange = true;
+        changeX = true;
     }
-    if (pageChange)
-        emit pageChanged();
+
+    if (changeX)
+        emit xPositionChanged(m_xPosition);
+    if (changeY)
+        emit yPositionChanged(m_yPosition);
+    if (changeWidth)
+        emit widthRatioChanged(m_widthRatio);
+    if (changeHeight)
+        emit heightRatioChanged(m_heightRatio);
 }
 
 

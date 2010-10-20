@@ -9068,6 +9068,7 @@ void tst_QGraphicsItem::focusScope()
     QVERIFY(!scope2->hasFocus());
     QVERIFY(scope1->hasFocus());
     scope2->setFocus();
+    QVERIFY(scope2->hasFocus());
     scope3->setFocus();
     QVERIFY(scope3->hasFocus());
 

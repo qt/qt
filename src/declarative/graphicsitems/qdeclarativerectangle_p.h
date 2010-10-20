@@ -46,12 +46,14 @@
 
 #include <QtGui/qbrush.h>
 
+#include <private/qdeclarativeglobal_p.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-class Q_DECLARATIVE_EXPORT QDeclarativePen : public QObject
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativePen : public QObject
 {
     Q_OBJECT
 
@@ -131,7 +133,7 @@ private:
 };
 
 class QDeclarativeRectanglePrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeRectangle : public QDeclarativeItem
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeRectangle : public QDeclarativeItem
 {
     Q_OBJECT
 

@@ -58,6 +58,8 @@
 #include <QtCore/qdatastream.h>
 #include <QtCore/qmap.h>
 
+#include <private/qdeclarativeglobal_p.h>
+
 QT_BEGIN_NAMESPACE
 
 class QMetaObjectBuilderPrivate;
@@ -68,7 +70,7 @@ class QMetaPropertyBuilderPrivate;
 class QMetaEnumBuilder;
 class QMetaEnumBuilderPrivate;
 
-class Q_DECLARATIVE_EXPORT QMetaObjectBuilder
+class Q_DECLARATIVE_PRIVATE_EXPORT QMetaObjectBuilder
 {
 public:
     enum AddMember
@@ -193,7 +195,7 @@ private:
     friend class QMetaEnumBuilder;
 };
 
-class Q_DECLARATIVE_EXPORT QMetaMethodBuilder
+class Q_DECLARATIVE_PRIVATE_EXPORT QMetaMethodBuilder
 {
 public:
     QMetaMethodBuilder() : _mobj(0), _index(0) {}
@@ -231,7 +233,7 @@ private:
     QMetaMethodBuilderPrivate *d_func() const;
 };
 
-class Q_DECLARATIVE_EXPORT QMetaPropertyBuilder
+class Q_DECLARATIVE_PRIVATE_EXPORT QMetaPropertyBuilder
 {
 public:
     QMetaPropertyBuilder() : _mobj(0), _index(0) {}
@@ -282,7 +284,7 @@ private:
     QMetaPropertyBuilderPrivate *d_func() const;
 };
 
-class Q_DECLARATIVE_EXPORT QMetaEnumBuilder
+class Q_DECLARATIVE_PRIVATE_EXPORT QMetaEnumBuilder
 {
 public:
     QMetaEnumBuilder() : _mobj(0), _index(0) {}
