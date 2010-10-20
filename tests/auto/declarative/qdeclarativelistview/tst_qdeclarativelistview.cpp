@@ -673,6 +673,15 @@ void tst_QDeclarativeListView::removed(bool animated)
         QTRY_COMPARE(item->y(),80+i*20.0);
     }
 
+    model.removeItems(1, 17);
+//    QTest::qWait(300);
+
+    model.removeItems(2, 1);
+    model.addItem("New", "1");
+
+    QTRY_VERIFY(name = findItem<QDeclarativeText>(contentItem, "textName", model.count()-1));
+    QCOMPARE(name->text(), QString("New"));
+
     delete canvas;
 }
 
