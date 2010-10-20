@@ -78,6 +78,8 @@ extern uint qGlobalPostedEventsCount();
 #ifndef QT_NO_GESTURES
 #ifndef WM_GESTURE
 #  define WM_GESTURE 0x0119
+#endif
+#ifndef WM_GESTURENOTIFY
 #  define WM_GESTURENOTIFY 0x011A
 #endif
 #endif // QT_NO_GESTURES
