@@ -1403,6 +1403,19 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         tableColumnCount = 0;
         break;
     case Atom::TableHeaderLeft:
+        if (inTableBody) {
+            xmlWriter().writeEndElement(); // </tbody>
+            xmlWriter().writeEndElement(); // </tgroup>
+            xmlWriter().writeEndElement(); // </table>
+            inTableHeader = false;
+            inTableBody = false;
+            tableColumnCount = 0;
+            xmlWriter().writeStartElement("table");
+            numTableRows = 0;
+            tableColumnCount = countTableColumns(atom);
+            xmlWriter().writeStartElement("tgroup");
+            xmlWriter().writeAttribute("cols",QString::number(tableColumnCount));
+        }
         xmlWriter().writeStartElement("thead");
         xmlWriter().writeAttribute("valign","top");
         xmlWriter().writeStartElement("row");
@@ -1446,8 +1459,6 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                     QString s = "span(" + spans[0] + "," + spans[1] + ")";
                     xmlWriter().writeAttribute("outputclass",s);
                 }
-                if (!inTableHeader)
-                    xmlWriter().writeStartElement("p");
             }
             if (matchAhead(atom, Atom::ParaLeft))
                 skipAhead = 1;
@@ -1457,7 +1468,6 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         if (inTableHeader)
             xmlWriter().writeEndElement(); // </entry>
         else {
-            xmlWriter().writeEndElement(); // </p>
             xmlWriter().writeEndElement(); // </entry>
         }
         if (matchAhead(atom, Atom::ParaLeft))
@@ -1493,10 +1503,14 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         }
         break;
     case Atom::Target:
+        if (in_para) {
+            xmlWriter().writeEndElement(); // </p>
+            in_para = false;
+        }
         xmlWriter().writeStartElement("p");
         writeGuidAttribute(Doc::canonicalTitle(atom->string()));
         xmlWriter().writeAttribute("outputclass","target");
-        xmlWriter().writeCharacters(protectEnc(atom->string()));
+        //xmlWriter().writeCharacters(protectEnc(atom->string()));
         xmlWriter().writeEndElement(); // </p>
         break;
     case Atom::UnhandledFormat:
