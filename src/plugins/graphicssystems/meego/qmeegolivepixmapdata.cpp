@@ -48,6 +48,7 @@
 #include <private/qapplication_p.h>
 #include <private/qgraphicssystem_runtime_p.h>
 #include <private/qpixmap_x11_p.h>
+#include <stdio.h>
 
 static EGLint lock_attribs[] = {
     EGL_MAP_PRESERVE_PIXELS_KHR, EGL_TRUE,
@@ -59,6 +60,54 @@ static EGLint preserved_attribs[] = {
     EGL_IMAGE_PRESERVED_KHR, EGL_TRUE,
     EGL_NONE
 };
+
+// as copied from qwindowsurface.cpp
+void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset)
+{
+    // make sure we don't detach
+    uchar *mem = const_cast<uchar*>(const_cast<const QImage &>(img).bits());
+
+    int lineskip = img.bytesPerLine();
+    int depth = img.depth() >> 3;
+
+    const QRect imageRect(0, 0, img.width(), img.height());
+    const QRect r = rect & imageRect & imageRect.translated(-offset);
+    const QPoint p = rect.topLeft() + offset;
+
+    if (r.isEmpty())
+        return;
+
+    const uchar *src;
+    uchar *dest;
+
+    if (r.top() < p.y()) {
+        src = mem + r.bottom() * lineskip + r.left() * depth;
+        dest = mem + (p.y() + r.height() - 1) * lineskip + p.x() * depth;
+        lineskip = -lineskip;
+    } else {
+        src = mem + r.top() * lineskip + r.left() * depth;
+        dest = mem + p.y() * lineskip + p.x() * depth;
+    }
+
+    const int w = r.width();
+    int h = r.height();
+    const int bytes = w * depth;
+
+    // overlapping segments?
+    if (offset.y() == 0 && qAbs(offset.x()) < w) {
+        do {
+            ::memmove(dest, src, bytes);
+            dest += lineskip;
+            src += lineskip;
+        } while (--h);
+    } else {
+        do {
+            ::memcpy(dest, src, bytes);
+            dest += lineskip;
+            src += lineskip;
+        } while (--h);
+    }
+}
 
 /* Public */
 
@@ -118,6 +167,7 @@ void QMeeGoLivePixmapData::initializeThroughEGLImage()
 
 QPixmapData *QMeeGoLivePixmapData::createCompatiblePixmapData() const
 {
+    qWarning("Create compatible called on live pixmap! Expect fail soon...");
     return new QMeeGoRasterPixmapData(pixelType());
 }
 
@@ -130,11 +180,12 @@ QImage* QMeeGoLivePixmapData::lock()
     int pitch = 0;
     EGLSurface surface = 0;
     QImage::Format format;
+    lockedImage = QImage();
 
     surface = getSurfaceForBackingPixmap();
     if (! QMeeGoExtensions::eglLockSurfaceKHR(QEgl::display(), surface, lock_attribs)) {
         qWarning("Failed to lock surface (live texture)!");
-        return new QImage();
+        return &lockedImage;
     }
 
     eglQuerySurface(QEgl::display(), surface, EGL_BITMAP_POINTER_KHR, (EGLint*) &data);
@@ -149,10 +200,11 @@ QImage* QMeeGoLivePixmapData::lock()
 
     if (data == NULL || pitch == 0) {
         qWarning("Failed to query the live texture!");
-        return new QImage();
+        return &lockedImage;
     }
 
-    return new QImage((uchar *) data, width(), height(), format);
+    lockedImage = QImage((uchar *) data, width(), height(), format);
+    return &lockedImage;
 }
 
 bool QMeeGoLivePixmapData::release(QImage* /*img*/)
@@ -161,9 +213,11 @@ bool QMeeGoLivePixmapData::release(QImage* /*img*/)
     QMeeGoExtensions::ensureInitialized();
 
     if (QMeeGoExtensions::eglUnlockSurfaceKHR(QEgl::display(), getSurfaceForBackingPixmap())) {
+        lockedImage = QImage();
         glFinish();
         return true;
     } else {
+        lockedImage = QImage();
         return false;
     }
 }
@@ -171,6 +225,17 @@ bool QMeeGoLivePixmapData::release(QImage* /*img*/)
 Qt::HANDLE QMeeGoLivePixmapData::handle()
 {
     return backingX11Pixmap->handle();
+}
+
+bool QMeeGoLivePixmapData::scroll(int dx, int dy, const QRect &rect)
+{
+    lock();
+
+    if (!lockedImage.isNull())
+        qt_scrollRectInImage(lockedImage, rect, QPoint(dx, dy));
+
+    release(&lockedImage);
+    return true;
 }
 
 EGLSurface QMeeGoLivePixmapData::getSurfaceForBackingPixmap()

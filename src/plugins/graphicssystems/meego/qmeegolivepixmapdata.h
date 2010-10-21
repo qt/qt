@@ -52,6 +52,7 @@ public:
     ~QMeeGoLivePixmapData();
     
     QPixmapData *createCompatiblePixmapData() const;
+    bool scroll(int dx, int dy, const QRect &rect);
 
     void initializeThroughEGLImage();
         
@@ -63,6 +64,7 @@ public:
     void destroySurfaceForPixmapData(QPixmapData* pmd);
 
     QPixmap *backingX11Pixmap;
+    QImage lockedImage;
 };
 
 #endif
