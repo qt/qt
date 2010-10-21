@@ -95,7 +95,7 @@ public:
     QStringList mimeTypes() const;
     Qt::DropActions supportedDropActions() const;
 
-protected slots:
+protected Q_SLOTS:
     void resetInternalData();
 
 protected:
