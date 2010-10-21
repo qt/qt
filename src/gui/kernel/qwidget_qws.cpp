@@ -1017,6 +1017,30 @@ int QWidget::metric(PaintDeviceMetric m) const
             return static_cast<QWidget *>(d->parent)->metric(m);
         const QScreen *screen = d->getScreen();
         return qRound(screen->height() / double(screen->physicalHeight() / 25.4));
+    } else if (m == PdmNumColors) {
+        QScreen *screen = d->getScreen();
+        int ret = screen->colorCount();
+        if (!ret) {
+            const int depth = qwsDisplay()->depth();
+            switch (depth) {
+            case 1:
+                ret = 2;
+                break;
+            case 8:
+                ret = 256;
+                break;
+            case 16:
+                ret = 65536;
+                break;
+            case 24:
+                ret = 16777216;
+                break;
+            case 32:
+                ret = 2147483647;
+                break;
+            }
+        }
+        return ret;
     } else {
         val = QPaintDevice::metric(m);// XXX
     }
