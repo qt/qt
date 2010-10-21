@@ -483,7 +483,6 @@ qreal QDeclarativeFlickable::contentX() const
 void QDeclarativeFlickable::setContentX(qreal pos)
 {
     Q_D(QDeclarativeFlickable);
-    pos = qRound(pos);
     d->timeline.reset(d->hData.move);
     d->vTime = d->timeline.time();
     movementXEnding();
@@ -502,7 +501,6 @@ qreal QDeclarativeFlickable::contentY() const
 void QDeclarativeFlickable::setContentY(qreal pos)
 {
     Q_D(QDeclarativeFlickable);
-    pos = qRound(pos);
     d->timeline.reset(d->vData.move);
     d->vTime = d->timeline.time();
     movementYEnding();
