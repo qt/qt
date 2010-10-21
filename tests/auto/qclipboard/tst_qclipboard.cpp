@@ -52,6 +52,9 @@
 #include "txtetext.h"
 #include <baclipb.h>
 #endif
+#ifdef SYMBIAN_ENABLE_SPLIT_HEADERS
+#include "txtclipboard.h"
+#endif
 
 //TESTED_CLASS=
 //TESTED_FILES=

@@ -50,6 +50,9 @@
 #include "qwidget.h"
 #include "qevent.h"
 #include "private/qcore_symbian_p.h"
+#ifdef SYMBIAN_ENABLE_SPLIT_HEADERS
+#include "txtclipboard.h"
+#endif
 #include "txtetext.h"
 #include <QtDebug>
 
