@@ -52,7 +52,7 @@ class QImage;
 /*!
 */
 
-class QMeeGoLivePixmap : public QPixmap
+class Q_DECL_EXPORT QMeeGoLivePixmap : public QPixmap
 {
 public:
     enum Format {
@@ -96,7 +96,7 @@ public:
     virtual ~QMeeGoLivePixmap();
 
 private:
-    QMeeGoLivePixmap(QPixmapData *p, Qt::HANDLE h);
+    QMeeGoLivePixmap(QPixmapData *p);
     Q_DISABLE_COPY(QMeeGoLivePixmap)
     Q_DECLARE_PRIVATE(QMeeGoLivePixmap)
 
