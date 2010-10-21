@@ -69,6 +69,10 @@
 #define SECURITY_WIN32
 #include <security.h>
 
+#ifndef SPI_GETPLATFORMTYPE
+#define SPI_GETPLATFORMTYPE 257
+#endif
+
 #ifndef _INTPTR_T_DEFINED
 #ifdef  _WIN64
 typedef __int64             intptr_t;
