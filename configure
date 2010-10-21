@@ -3161,7 +3161,7 @@ else
     CFG_FRAMEWORK=no
 fi
 
-QMAKE_CONF_COMPILER=`getQMakeConf "$XQMAKESPEC" | grep "\(^\|\s\)QMAKE_CXX[^_A-Z0-9]" | sed "s,.* *= *\(.*\)$,\1," | tail -1`
+QMAKE_CONF_COMPILER=`getQMakeConf "$XQMAKESPEC" | grep "\(^\| \)QMAKE_CXX[^_A-Z0-9]" | sed "s,.* *= *\(.*\)$,\1," | tail -1`
 TEST_COMPILER="$CXX"
 
 [ -z "$TEST_COMPILER" ] && TEST_COMPILER=$QMAKE_CONF_COMPILER

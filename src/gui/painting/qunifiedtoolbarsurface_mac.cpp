@@ -45,6 +45,8 @@
 
 #include <QDebug>
 
+#ifdef QT_MAC_USE_COCOA
+
 QT_BEGIN_NAMESPACE
 
 QUnifiedToolbarSurface::QUnifiedToolbarSurface(QWidget *widget)
@@ -231,3 +233,5 @@ void QUnifiedToolbarSurface::prepareBuffer(QImage::Format format, QWidget *widge
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_MAC_USE_COCOA

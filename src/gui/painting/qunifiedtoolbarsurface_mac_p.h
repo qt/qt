@@ -58,6 +58,8 @@
 #include <private/qwidget_p.h>
 #include <private/qnativeimage_p.h>
 
+#ifdef QT_MAC_USE_COCOA
+
 QT_BEGIN_NAMESPACE
 
 class QNativeImage;
@@ -91,5 +93,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_MAC_USE_COCOA
 
 #endif // QUNIFIEDTOOLBARSURFACE_MAC_P_H
