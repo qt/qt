@@ -80,18 +80,6 @@ QT_BEGIN_NAMESPACE
     directories. In the simplest case, it can be used with a suitable display
     widget as part of a browser or filter.
 
-    QFileSystemModel will not fetch any files or directories until setRootPath
-    is called.  This will prevent any unnecessary querying on the file system
-    until that point such as listing the drives on Windows.
-
-    Unlike the QDirModel, QFileSystemModel uses a separate thread to populate
-    itself so it will not cause the main thread to hang as the file system
-    is being queried.  Calls to rowCount() will return 0 until the model
-    populates a directory.
-
-    QFileSystemModel keeps a cache with file information. The cache is
-    automatically kept up to date using the QFileSystemWatcher.
-
     QFileSystemModel can be accessed using the standard interface provided by
     QAbstractItemModel, but it also provides some convenience functions that are
     specific to a directory model.
@@ -100,6 +88,41 @@ QT_BEGIN_NAMESPACE
     Directories can be created and removed using mkdir(), rmdir().
 
     \note QFileSystemModel requires an instance of a GUI application.
+
+    \section1 Example Usage
+
+    A directory model that displays the contents of a default directory
+    is usually constructed with a parent object:
+
+    \snippet doc/src/snippets/shareddirmodel/main.cpp 2
+
+    A tree view can be used to display the contents of the model
+
+    \snippet doc/src/snippets/shareddirmodel/main.cpp 4
+
+    and the contents of a particular directory can be displayed by
+    setting the tree view's root index:
+
+    \snippet doc/src/snippets/shareddirmodel/main.cpp 7
+
+    The view's root index can be used to control how much of a
+    hierarchical model is displayed. QDirModel provides a convenience
+    function that returns a suitable model index for a path to a
+    directory within the model.
+
+    \section1 Caching and Performance
+
+    QFileSystemModel will not fetch any files or directories until setRootPath()
+    is called.  This will prevent any unnecessary querying on the file system
+    until that point such as listing the drives on Windows.
+
+    Unlike QDirModel, QFileSystemModel uses a separate thread to populate
+    itself so it will not cause the main thread to hang as the file system
+    is being queried.  Calls to rowCount() will return 0 until the model
+    populates a directory.
+
+    QFileSystemModel keeps a cache with file information. The cache is
+    automatically kept up to date using the QFileSystemWatcher.
 
     \sa {Model Classes}
 */
