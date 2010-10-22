@@ -1672,8 +1672,7 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     gif)
-        [ "$VAL" = "qt" ] && VAL=auto
-        if [ "$VAL" = "auto" ] || [ "$VAL" = "no" ]; then
+        if [ "$VAL" = "no" ]; then
             CFG_GIF="$VAL"
         else
             UNKNOWN_OPT=yes
@@ -3285,7 +3284,7 @@ else
     CFG_FRAMEWORK=no
 fi
 
-QMAKE_CONF_COMPILER=`getQMakeConf "$XQMAKESPEC" | grep "^QMAKE_CXX[^_A-Z0-9]" | sed "s,.* *= *\(.*\)$,\1," | tail -1`
+QMAKE_CONF_COMPILER=`getQMakeConf "$XQMAKESPEC" | grep "\(^\| \)QMAKE_CXX[^_A-Z0-9]" | sed "s,.* *= *\(.*\)$,\1," | tail -1`
 TEST_COMPILER="$CXX"
 
 [ -z "$TEST_COMPILER" ] && TEST_COMPILER=$QMAKE_CONF_COMPILER
@@ -3671,7 +3670,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-accessibility] [-no-stl] [-stl] [-no-sql-<driver>] [-sql-<driver>]
         [-plugin-sql-<driver>] [-system-sqlite] [-no-qt3support] [-qt3support]
         [-platform] [-D <string>] [-I <string>] [-L <string>] [-help]
-        [-qt-zlib] [-system-zlib] [-no-gif] [-qt-gif] [-no-libtiff] [-qt-libtiff] [-system-libtiff]
+        [-qt-zlib] [-system-zlib] [-no-gif] [-no-libtiff] [-qt-libtiff] [-system-libtiff]
         [-no-libpng] [-qt-libpng] [-system-libpng] [-no-libmng] [-qt-libmng]
         [-system-libmng] [-no-libjpeg] [-qt-libjpeg] [-system-libjpeg] [-make <part>]
         [-nomake <part>] [-R <string>]  [-l <string>] [-no-rpath]  [-rpath] [-continue]
@@ -3899,8 +3898,6 @@ Third Party Libraries:
                          See http://www.gzip.org/zlib
 
     -no-gif ............ Do not compile GIF reading support.
- *  -qt-gif ............ Compile GIF reading support.
-                         See also src/gui/image/qgifhandler_p.h
 
     -no-libtiff ........ Do not compile TIFF support.
     -qt-libtiff ........ Use the libtiff bundled with Qt.
@@ -5049,9 +5046,8 @@ case "$XPLATFORM" in *symbian*)
         # Raptor does not support configure tests.
 
         # the main commands needed to compile;
-        (cd config.tests/symbian
-            mkdir -p rcomp
-            cd rcomp
+        (mkdir -p config.tests/symbian/rcomp
+            cd config.tests/symbian/rcomp
             rm -f rcomp_test.rsg
             touch rcomp_test.rpp rcomp_test.rsc rcomp_test.rss
             rcomp -u -m045,046,047 -s./rcomp_test.rpp -o./rcomp_test.rsc -h./rcomp_test.rsg -i./rcomp_test.rss 2>&1 > /dev/null
@@ -5633,8 +5629,8 @@ if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" -o "$PLATFORM_QPA" = "ye
     # auto-detect icd support
     if [ "$CFG_GLIB" = "yes" -a "$CFG_ICD" != "no" ]; then
         if [ -n "$PKG_CONFIG" ]; then
-            QT_CFLAGS_CONNSETTINGS=`$PKG_CONFIG --cflags connsettings 2>/dev/null`
-            QT_LIBS_CONNSETTINGS=`$PKG_CONFIG --libs connsettings 2>/dev/null`
+            QT_CFLAGS_CONNSETTINGS=`$PKG_CONFIG --cflags connsettings icd2 2>/dev/null`
+            QT_LIBS_CONNSETTINGS=`$PKG_CONFIG --libs connsettings icd2 2>/dev/null`
         fi
         if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/icd "ICD" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_CONNSETTINGS $QT_LIBS_CONNSETTINGS; then
             [ "$CFG_ICD" = "auto" ] && CFG_ICD=yes
@@ -5877,6 +5873,12 @@ if [ "$PLATFORM_X11" = "yes" ]; then
 		CFG_XRENDER=no
 	    fi
 	fi
+    fi
+
+    # Additional check to decide if WebKit support will be included
+    if [ "$CFG_XRENDER" = "no" ] && [ "$CFG_WEBKIT" != "no" ]; then
+        echo "Warning: -no-xrender will disable the QtWebkit module."
+        CFG_WEBKIT="no"
     fi
 
     # auto-detect MIT-SHM support
@@ -7480,7 +7482,14 @@ if [ "$CFG_SCRIPTTOOLS" = "yes" -a "$CFG_SCRIPT" = "no" ]; then
     exit 1
 fi
 if [ "$CFG_SCRIPTTOOLS" = "auto" -a "$CFG_SCRIPT" != "no" ]; then
-    CFG_SCRIPTTOOLS="yes"
+    case "$XPLATFORM" in
+    symbian*)
+        CFG_SCRIPTTOOLS="no"
+        ;;
+    *)
+        CFG_SCRIPTTOOLS="yes"
+        ;;
+    esac
 elif [ "$CFG_SCRIPT" = "no" ]; then
     CFG_SCRIPTTOOLS="no"
 fi

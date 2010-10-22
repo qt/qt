@@ -320,5 +320,10 @@ static void cleanupCocoaApplicationDelegate()
     [NSApp terminate:self];
 }
 
+- (void)qtDispatcherToQAction:(id)sender
+{
+    [[NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)] qtDispatcherToQAction:sender];
+}
+
 @end
 #endif

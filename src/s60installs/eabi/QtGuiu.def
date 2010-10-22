@@ -12098,4 +12098,5 @@ EXPORTS
 	_ZN20QGraphicsItemPrivate26childrenBoundingRectHelperEP10QTransformP6QRectFP13QGraphicsItem @ 12097 NONAME
 	_ZNK20QGraphicsItemPrivate21effectiveBoundingRectEP13QGraphicsItem @ 12098 NONAME
 	_ZNK5QFont14lastResortFontEv @ 12099 NONAME
+	_ZN11QFontEngine33convertToPostscriptFontFamilyNameERK10QByteArray @ 12100 NONAME
 

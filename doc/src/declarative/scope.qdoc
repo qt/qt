@@ -174,7 +174,7 @@ PathView {
 }
 \endcode
 
-If the \l Image element omitted the \c root prefix, it would inadvertantly access 
+If the \l Image element omitted the \c root prefix, it would inadvertently access
 the unset \c {PathView.scale} attached property on itself.
 
 \section1 Component Scope

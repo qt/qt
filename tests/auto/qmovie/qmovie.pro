@@ -7,19 +7,19 @@ MOC_DIR=tmp
 !contains(QT_CONFIG, no-mng):DEFINES += QTEST_HAVE_MNG
 
 wince*: {
-   addFiles.sources = animations\\*
+   addFiles.files = animations\\*
    addFiles.path = animations
    DEPLOYMENT += addFiles
 }
 
 
 symbian: {
-   addFiles.sources = animations\\*
+   addFiles.files = animations\\*
    addFiles.path = animations
    DEPLOYMENT += addFiles
 
    qt_not_deployed {
-      imagePlugins.sources = qjpeg.dll qgif.dll qmng.dll
+      imagePlugins.files = qjpeg.dll qgif.dll qmng.dll
       imagePlugins.path = imageformats
       DEPLOYMENT += imagePlugins
    }

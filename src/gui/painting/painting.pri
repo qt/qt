@@ -257,6 +257,12 @@ symbian {
         QMAKE_CXXFLAGS.ARMCC *= -O3
 }
 
+mac {
+       HEADERS += painting/qunifiedtoolbarsurface_mac_p.h
+       SOURCES += painting/qunifiedtoolbarsurface_mac.cpp
+}
+
+
 NEON_SOURCES += painting/qdrawhelper_neon.cpp
 NEON_HEADERS += painting/qdrawhelper_neon_p.h
 NEON_ASM += ../3rdparty/pixman/pixman-arm-neon-asm.S painting/qdrawhelper_neon_asm.S

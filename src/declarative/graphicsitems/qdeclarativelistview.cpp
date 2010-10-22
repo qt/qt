@@ -1014,18 +1014,27 @@ void QDeclarativeListViewPrivate::updateSections()
 
 void QDeclarativeListViewPrivate::updateCurrentSection()
 {
+    Q_Q(QDeclarativeListView);
     if (!sectionCriteria || visibleItems.isEmpty()) {
-        currentSection.clear();
+        if (!currentSection.isEmpty()) {
+            currentSection.clear();
+            emit q->currentSectionChanged();
+        }
         return;
     }
     int index = 0;
     while (index < visibleItems.count() && visibleItems.at(index)->endPosition() < position())
         ++index;
 
+    QString newSection = currentSection;
     if (index < visibleItems.count())
-        currentSection = visibleItems.at(index)->attached->section();
+        newSection = visibleItems.at(index)->attached->section();
     else
-        currentSection = visibleItems.first()->attached->section();
+        newSection = visibleItems.first()->attached->section();
+    if (newSection != currentSection) {
+        currentSection = newSection;
+        emit q->currentSectionChanged();
+    }
 }
 
 void QDeclarativeListViewPrivate::updateCurrent(int modelIndex)
@@ -3116,7 +3125,7 @@ void QDeclarativeListView::itemsMoved(int from, int to, int count)
     while (moved.count()) {
         int idx = moved.begin().key();
         FxListItem *item = moved.take(idx);
-        if (item->item == d->currentItem->item)
+        if (d->currentItem && item->item == d->currentItem->item)
             item->setPosition(d->positionAt(idx));
         d->releaseItem(item);
     }

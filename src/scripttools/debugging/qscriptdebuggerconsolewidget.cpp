@@ -163,10 +163,10 @@ private:
     InputEdit *inputEdit;
 };
 
-class OutputEdit : public QPlainTextEdit
+class QScriptDebuggerConsoleWidgetOutputEdit : public QPlainTextEdit
 {
 public:
-    OutputEdit(QWidget *parent = 0)
+    QScriptDebuggerConsoleWidgetOutputEdit(QWidget *parent = 0)
         : QPlainTextEdit(parent)
     {
         setFrameShape(QFrame::NoFrame);
@@ -206,7 +206,7 @@ public:
     void _q_onCompletionTaskFinished();
 
     CommandLine *commandLine;
-    OutputEdit *outputEdit;
+    QScriptDebuggerConsoleWidgetOutputEdit *outputEdit;
     int historyIndex;
     QString newInput;
 };
@@ -320,7 +320,7 @@ QScriptDebuggerConsoleWidget::QScriptDebuggerConsoleWidget(QWidget *parent)
     Q_D(QScriptDebuggerConsoleWidget);
     d->commandLine = new CommandLine();
     d->commandLine->setPrompt(QString::fromLatin1("qsdb>"));
-    d->outputEdit = new OutputEdit();
+    d->outputEdit = new QScriptDebuggerConsoleWidgetOutputEdit();
     QVBoxLayout *vbox = new QVBoxLayout(this);
     vbox->setSpacing(0);
     vbox->setMargin(0);

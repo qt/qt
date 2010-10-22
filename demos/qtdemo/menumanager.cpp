@@ -518,6 +518,7 @@ QString MenuManager::resolveExeFile(const QString &name)
     dir.cd(dirName);
     dir.cd(fileName);
 
+    fileName = fileName.split("/").last();
     QFile unixFile(dir.path() + "/" + fileName);
     if (unixFile.exists()) return unixFile.fileName();
     QFile winR(dir.path() + "\\release\\" + fileName + ".exe");

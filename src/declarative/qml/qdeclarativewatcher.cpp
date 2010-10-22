@@ -46,6 +46,7 @@
 #include "qdeclarative.h"
 
 #include <qdeclarativedebugservice_p.h>
+#include "private/qdeclarativeproperty_p.h"
 
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qdebug.h>
@@ -103,7 +104,7 @@ QDeclarativeWatchProxy::QDeclarativeWatchProxy(int id,
         refreshIdx = QDeclarativeWatchProxy::staticMetaObject.indexOfMethod("notifyValueChanged()");
 
     if (prop.hasNotifySignal())
-        QMetaObject::connect(m_object, prop.notifySignalIndex(), this, refreshIdx);
+        QDeclarativePropertyPrivate::connect(m_object, prop.notifySignalIndex(), this, refreshIdx);
 }
 
 void QDeclarativeWatchProxy::notifyValueChanged()

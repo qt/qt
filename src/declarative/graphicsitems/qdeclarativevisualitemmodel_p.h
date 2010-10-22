@@ -67,7 +67,6 @@ class Q_AUTOTEST_EXPORT QDeclarativeVisualModel : public QObject
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
-    QDeclarativeVisualModel(QObject *parent=0) : QObject(parent) {}
     virtual ~QDeclarativeVisualModel() {}
 
     enum ReleaseFlag { Referenced = 0x01, Destroyed = 0x02 };

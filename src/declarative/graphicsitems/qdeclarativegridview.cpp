@@ -218,7 +218,14 @@ public:
                 return visibleItems.last()->rowPos() + rows * rowSize();
             }
         } else {
-             return (modelIndex / columns) * rowSize();
+            qreal pos = (modelIndex / columns) * rowSize();
+            if (header) {
+                qreal headerSize = flow == QDeclarativeGridView::LeftToRight
+                                   ? header->item->height()
+                                   : header->item->width();
+                pos += headerSize;
+            }
+            return pos;
         }
         return 0;
     }
@@ -2591,7 +2598,7 @@ void QDeclarativeGridView::itemsMoved(int from, int to, int count)
     while (moved.count()) {
         int idx = moved.begin().key();
         FxGridItem *item = moved.take(idx);
-        if (item->item == d->currentItem->item)
+        if (d->currentItem && item->item == d->currentItem->item)
             item->setPosition(d->colPosAt(idx), d->rowPosAt(idx));
         d->releaseItem(item);
     }

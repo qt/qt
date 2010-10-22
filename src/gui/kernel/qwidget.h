@@ -102,6 +102,8 @@ class QPlatformWindow;
 class QLocale;
 class QGraphicsProxyWidget;
 class QGraphicsEffect;
+class QRasterWindowSurface;
+class QUnifiedToolbarSurface;
 #if defined(Q_WS_X11)
 class QX11Info;
 #endif
@@ -773,6 +775,8 @@ private:
     friend OSViewRef qt_mac_nativeview_for(const QWidget *w);
     friend void qt_event_request_window_change(QWidget *widget);
     friend bool qt_mac_sendMacEventToWidget(QWidget *widget, EventRef ref);
+    friend class QRasterWindowSurface;
+    friend class QUnifiedToolbarSurface;
 #endif
 #ifdef Q_WS_QWS
     friend class QWSBackingStore;

@@ -7,8 +7,8 @@ SOURCES += desktopwidget.cpp contenttab.cpp linktab.cpp main.cpp
 
 RESOURCES += desktopservices.qrc
 
-music.sources = data/*.mp3 data/*.wav
-image.sources = data/*.png
+music.files = data/*.mp3 data/*.wav
+image.files = data/*.png
 
 target.path = $$[QT_INSTALL_DEMOS]/embedded/desktopservices
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro

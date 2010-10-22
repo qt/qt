@@ -46,6 +46,7 @@
 bool QMeeGoExtensions::initialized = false;
 bool QMeeGoExtensions::hasImageShared = false;
 bool QMeeGoExtensions::hasSurfaceScaling = false;
+bool QMeeGoExtensions::hasLockSurface = false;
 
 /* Extension funcs */
 
@@ -53,11 +54,15 @@ typedef EGLBoolean (EGLAPIENTRY *eglQueryImageNOKFunc)(EGLDisplay, EGLImageKHR, 
 typedef EGLNativeSharedImageTypeNOK (EGLAPIENTRY *eglCreateSharedImageNOKFunc)(EGLDisplay, EGLImageKHR, EGLint*);
 typedef EGLBoolean (EGLAPIENTRY *eglDestroySharedImageNOKFunc)(EGLDisplay, EGLNativeSharedImageTypeNOK);
 typedef EGLBoolean (EGLAPIENTRY *eglSetSurfaceScalingNOKFunc)(EGLDisplay, EGLSurface, EGLint, EGLint, EGLint, EGLint);
+typedef EGLBoolean (EGLAPIENTRY *eglLockSurfaceKHRFunc)(EGLDisplay display, EGLSurface surface, const EGLint *attrib_list);
+typedef EGLBoolean (EGLAPIENTRY *eglUnlockSurfaceKHRFunc)(EGLDisplay display, EGLSurface surface);
 
 static eglQueryImageNOKFunc _eglQueryImageNOK = 0;
 static eglCreateSharedImageNOKFunc _eglCreateSharedImageNOK = 0;
 static eglDestroySharedImageNOKFunc _eglDestroySharedImageNOK = 0;
 static eglSetSurfaceScalingNOKFunc _eglSetSurfaceScalingNOK = 0;
+static eglLockSurfaceKHRFunc _eglLockSurfaceKHR = 0;
+static eglUnlockSurfaceKHRFunc _eglUnlockSurfaceKHR = 0;
 
 /* Public */
 
@@ -101,6 +106,22 @@ bool QMeeGoExtensions::eglSetSurfaceScalingNOK(EGLDisplay dpy, EGLSurface surfac
    return _eglSetSurfaceScalingNOK(dpy, surface, x, y, width, height);
 }
 
+bool QMeeGoExtensions::eglLockSurfaceKHR(EGLDisplay display, EGLSurface surface, const EGLint *attrib_list)
+{
+    if (! hasLockSurface)
+        qFatal("EGL_KHR_lock_surface2 not found but trying to use capability!");
+
+    return _eglLockSurfaceKHR(display, surface, attrib_list);
+}
+
+bool QMeeGoExtensions::eglUnlockSurfaceKHR(EGLDisplay display, EGLSurface surface)
+{
+    if (! hasLockSurface)
+        qFatal("EGL_KHR_lock_surface2 not found but trying to use capability!");
+
+    return _eglUnlockSurfaceKHR(display, surface);
+}
+
 /* Private */
 
 void QMeeGoExtensions::initialize()
@@ -113,6 +134,8 @@ void QMeeGoExtensions::initialize()
         _eglQueryImageNOK = (eglQueryImageNOKFunc) eglGetProcAddress("eglQueryImageNOK");
         _eglCreateSharedImageNOK = (eglCreateSharedImageNOKFunc) eglGetProcAddress("eglCreateSharedImageNOK");
         _eglDestroySharedImageNOK = (eglDestroySharedImageNOKFunc) eglGetProcAddress("eglDestroySharedImageNOK");
+        _eglLockSurfaceKHR = (eglLockSurfaceKHRFunc) eglGetProcAddress("eglLockSurfaceKHR");
+        _eglUnlockSurfaceKHR = (eglUnlockSurfaceKHRFunc) eglGetProcAddress("eglUnlockSurfaceKHR");
         
         Q_ASSERT(_eglQueryImageNOK && _eglCreateSharedImageNOK && _eglDestroySharedImageNOK);
         hasImageShared = true;
@@ -124,6 +147,15 @@ void QMeeGoExtensions::initialize()
         
         Q_ASSERT(_eglSetSurfaceScalingNOK);
         hasSurfaceScaling = true;
+    }
+
+    if (QEgl::hasExtension("EGL_KHR_lock_surface2")) {
+        qDebug("MeegoGraphics: found EGL_KHR_lock_surface2");
+        _eglLockSurfaceKHR = (eglLockSurfaceKHRFunc) eglGetProcAddress("eglLockSurfaceKHR");
+        _eglUnlockSurfaceKHR = (eglUnlockSurfaceKHRFunc) eglGetProcAddress("eglUnlockSurfaceKHR");
+         
+        Q_ASSERT(_eglLockSurfaceKHR && _eglUnlockSurfaceKHR);
+        hasLockSurface = true;
     }
 }
 

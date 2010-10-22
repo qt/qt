@@ -1365,11 +1365,11 @@ QString qt_mac_get_pasteboardString(OSPasteboardRef paste)
     QMacCocoaAutoReleasePool pool;
     NSPasteboard *pb = nil;
     CFStringRef pbname;
-    if (PasteboardCopyName (paste, &pbname)) {
-        pb = [NSPasteboard generalPasteboard];
+    if (PasteboardCopyName(paste, &pbname) == noErr) {
+        pb = [NSPasteboard pasteboardWithName:const_cast<NSString *>(reinterpret_cast<const NSString *>(pbname))];
+        CFRelease(pbname);
     } else {
-        pb = [NSPasteboard pasteboardWithName:reinterpret_cast<const NSString *>(pbname)];
-        CFRelease (pbname);
+        pb = [NSPasteboard generalPasteboard];
     }
     if (pb) {
         NSString *text = [pb stringForType:NSStringPboardType];
@@ -1559,6 +1559,13 @@ void qt_cocoaStackChildWindowOnTopOfOtherChildren(QWidget *childWidget)
             d->setSubWindowStacking(true);
         }
     }
+}
+
+void qt_mac_display(QWidget *widget)
+{
+    NSView *theNSView = qt_mac_nativeview_for(widget);
+    [theNSView display];
+    return;
 }
 
 #endif // QT_MAC_USE_COCOA

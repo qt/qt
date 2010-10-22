@@ -87,6 +87,36 @@ void QMeeGoPixmapData::fromImage(const QImage &image,
     }
 }
 
+void QMeeGoPixmapData::fromEGLImage(Qt::HANDLE handle)
+{
+    QGLShareContextScope ctx(qt_gl_share_widget()->context());
+    QMeeGoExtensions::ensureInitialized();
+ 
+    bool textureIsBound = false;
+    GLuint newTextureId;
+    GLint newWidth, newHeight;
+
+    glGenTextures(1, &newTextureId);
+    glBindTexture(GL_TEXTURE_2D, newTextureId);
+   
+    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, (EGLImageKHR) handle);
+    GLint err = glGetError();
+    if (err == GL_NO_ERROR)
+        textureIsBound = true;
+        
+    QMeeGoExtensions::eglQueryImageNOK(QEgl::display(), (EGLImageKHR) handle, EGL_WIDTH, &newWidth);
+    QMeeGoExtensions::eglQueryImageNOK(QEgl::display(), (EGLImageKHR) handle, EGL_HEIGHT, &newHeight);
+          
+    if (textureIsBound) {
+        // FIXME Remove this ugly hasAlphaChannel check when Qt lands the NoOpaqueCheck flag fix
+        // for QGLPixmapData.
+        fromTexture(newTextureId, newWidth, newHeight, true); 
+    } else {
+        qWarning("Failed to create a texture from an egl image!");
+        glDeleteTextures(1, &newTextureId);
+    }
+}
+
 void QMeeGoPixmapData::fromEGLSharedImage(Qt::HANDLE handle, const QImage &si)
 {
     if (si.isNull())

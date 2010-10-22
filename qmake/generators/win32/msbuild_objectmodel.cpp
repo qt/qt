@@ -313,6 +313,16 @@ inline XmlOutput::xml_output valueTagT( const triState v)
     return valueTag(v == _True ? "true" : "false");
 }
 
+static QString vcxCommandSeparator()
+{
+    // MSBuild puts the contents of the custom commands into a batch file and calls it.
+    // As we want every sub-command to be error-checked (as is done by makefile-based
+    // backends), we insert the checks ourselves, using the undocumented jump target.
+    static QString cmdSep =
+    QLatin1String("&#x000D;&#x000A;if errorlevel 1 goto VCEnd&#x000D;&#x000A;");
+    return cmdSep;
+}
+
 // Tree file generation ---------------------------------------------
 void XTreeNode::generateXML(XmlOutput &xml, XmlOutput &xmlFilter, const QString &tagName, VCProject &tool, const QString &filter) {
 
@@ -1423,32 +1433,6 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCMIDLTool &tool)
 
 void VCXProjectWriter::write(XmlOutput &xml, const VCCustomBuildTool &tool)
 {
-    // The code below offers two ways to split custom build step commands.
-    // Normally the $$escape_expand(\n\t) is used in a project file, which is correctly translated
-    // in all generators. However, if you use $$escape_expand(\n\r) (or \n\h) instead, the VCPROJ
-    // generator will instead of binding the commands with " && " will insert a proper newline into
-    // the VCPROJ file. We sometimes use this method of splitting commands if the custom buildstep
-    // contains a command-line which is too big to run on certain OS.
-    QString cmds;
-    int end = tool.CommandLine.count();
-    for(int i = 0; i < end; ++i) {
-        QString cmdl = tool.CommandLine.at(i);
-        if (cmdl.contains("\r\t")) {
-            if (i == end - 1)
-                cmdl = cmdl.trimmed();
-            cmdl.replace("\r\t", " && ");
-        } else if (cmdl.contains("\r\n")) {
-            ;
-        } else if (cmdl.contains("\r\\h")) {
-            // The above \r\n should work, but doesn't, so we have this hack
-            cmdl.replace("\r\\h", "\r\n");
-        } else {
-            if (i < end - 1)
-                cmdl += " && ";
-        }
-        cmds += cmdl;
-    }
-
     const QString &configName = tool.config->Name;
 
     if ( !tool.AdditionalDependencies.isEmpty() )
@@ -1458,11 +1442,11 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCCustomBuildTool &tool)
             << valueTagDefX(tool.AdditionalDependencies, "AdditionalInputs", ";");
     }
 
-    if( !cmds.isEmpty() )
+    if( !tool.CommandLine.isEmpty() )
     {
         xml << tag("Command")
             << attrTag("Condition", QString("'$(Configuration)|$(Platform)'=='%1'").arg(configName))
-            << valueTag(cmds);
+            << valueTag(tool.CommandLine.join(vcxCommandSeparator()));
     }
 
     if ( !tool.Description.isEmpty() )
@@ -1528,7 +1512,7 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCEventTool &tool)
 {
     xml
         << tag(tool.EventName)
-        << attrTagS(_Command, tool.CommandLine)
+        << attrTagS(_Command, tool.CommandLine.join(vcxCommandSeparator()))
         << attrTagS(_Message, tool.Description)
         << closetag(tool.EventName);
 }

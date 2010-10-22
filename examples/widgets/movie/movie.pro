@@ -11,7 +11,7 @@ INSTALLS += target sources
 symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 
 wince*: {
-   addFiles.sources += *.mng
+   addFiles.files += *.mng
    addFiles.path = .
    DEPLOYMENT += addFiles
    DEPLOYMENT_PLUGIN += qmng

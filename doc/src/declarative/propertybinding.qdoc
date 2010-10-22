@@ -48,7 +48,7 @@ Rectangle {
 QML extends a standards compliant JavaScript engine, so any valid JavaScript expression can be 
 used as a property binding.  Bindings can access object properties, make function calls and even
 use builtin JavaScript objects like \e {Date} and \e {Math}.  Assigning a constant value to a 
-property can even be thought of as a binding - afterall, a constant is a valid JavaScript 
+property can even be thought of as a binding - after all, a constant is a valid JavaScript
 expression!  Here are some examples of more complex bindings:
 
 \code

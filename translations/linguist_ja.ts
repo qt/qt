@@ -256,6 +256,186 @@ Will assume a single universal form.</source>
     </message>
 </context>
 <context>
+    <name>LConvert</name>
+    <message>
+        <source>
+Usage:
+    lconvert [options] &lt;infile&gt; [&lt;infile&gt;...]
+
+lconvert is part of Qt&apos;s Linguist tool chain. It can be used as a
+stand-alone tool to convert and filter translation data files.
+The following file formats are supported:
+
+%1
+If multiple input files are specified, they are merged with
+translations from later files taking precedence.
+
+Options:
+    -h
+    --help  Display this information and exit.
+
+    -i &lt;infile&gt;
+    --input-file &lt;infile&gt;
+           Specify input file. Use if &lt;infile&gt; might start with a dash.
+           This option can be used several times to merge inputs.
+           May be &apos;-&apos; (standard input) for use in a pipe.
+
+    -o &lt;outfile&gt;
+    --output-file &lt;outfile&gt;
+           Specify output file. Default is &apos;-&apos; (standard output).
+
+    -if &lt;informat&gt;
+    --input-format &lt;format&gt;
+           Specify input format for subsequent &lt;infile&gt;s.
+           The format is auto-detected from the file name and defaults to &apos;ts&apos;.
+
+    -of &lt;outformat&gt;
+    --output-format &lt;outformat&gt;
+           Specify output format. See -if.
+
+    --input-codec &lt;codec&gt;
+           Specify encoding for QM and PO input files. Default is &apos;Latin1&apos;
+           for QM and &apos;UTF-8&apos; for PO files. UTF-8 is always tried as well for
+           QM, corresponding to the possible use of the trUtf8() function.
+
+    --output-codec &lt;codec&gt;
+           Specify encoding for PO output files. Default is &apos;UTF-8&apos;.
+
+    --drop-tags &lt;regexp&gt;
+           Drop named extra tags when writing TS or XLIFF files.
+           May be specified repeatedly.
+
+    --drop-translations
+           Drop existing translations and reset the status to &apos;unfinished&apos;.
+           Note: this implies --no-obsolete.
+
+    --source-language &lt;language&gt;[_&lt;region&gt;]
+           Specify/override the language of the source strings. Defaults to
+           POSIX if not specified and the file does not name it yet.
+
+    --target-language &lt;language&gt;[_&lt;region&gt;]
+           Specify/override the language of the translation.
+           The target language is guessed from the file name if this option
+           is not specified and the file contents name no language yet.
+
+    --no-obsolete
+           Drop obsolete messages.
+
+    --no-finished
+           Drop finished messages.
+
+    --sort-contexts
+           Sort contexts in output TS file alphabetically.
+
+    --locations {absolute|relative|none}
+           Override how source code references are saved in TS files.
+           Default is absolute.
+
+    --no-ui-lines
+           Drop line numbers from references to UI files.
+
+    --verbose
+           be a bit more verbose
+
+Long options can be specified with only one leading dash, too.
+
+Return value:
+    0 on success
+    1 on command line parse failures
+    2 on read failures
+    3 on write failures
+</source>
+        <translation type="unfinished">
+使い方:
+    lconvert [オプション] &lt;入力ファイル&gt; [&lt;入力ファイル&gt;...]
+
+lconvert は Qt Linguist ツールチェインの一部です。
+翻訳データファイルを変換したりフィルタリングしたりする事が
+できるスタンドアロンのツールです。
+サポートしているファイル形式は以下の通りです:
+
+%1
+入力ファイルが複数個指定された場合、末尾のファイルほど
+優先度が高いものとして翻訳データをマージします。
+
+オプション:
+    -h
+    --help  このヘルプを表示して終了します。
+
+    -i &lt;入力ファイル&gt;
+    --input-file &lt;入力ファイル&gt;
+           入力ファイルを指定します。&lt;入力ファイル&gt; の指定はダッシュ記号で始まっていてもよいです。
+           This option can be used several times to merge inputs.
+           May be &apos;-&apos; (標準入力) for use in a pipe.
+
+    -o &lt;出力ファイル&gt;
+    --output-file &lt;出力ファイル&gt;
+           出力ファイルを指定します。デフォルトは &apos;-&apos; (標準出力) です。
+
+    -if &lt;入力形式&gt;
+    --input-format &lt;入力形式&gt;
+           後続の &lt;入力ファイル&gt; の入力形式を指定します。
+           形式はファイル名から自動検知され、デフォルトでは &apos;ts&apos; となります。
+
+    -of &lt;出力形式&gt;
+    --output-format &lt;出力形式&gt;
+           出力形式を指定します。-if を参照してください。
+
+    --input-codec &lt;コーデック&gt;
+           Specify encoding for QM and PO input files. Default is &apos;Latin1&apos;
+           for QM and &apos;UTF-8&apos; for PO files. UTF-8 is always tried as well for
+           QM, corresponding to the possible use of the trUtf8() function.
+
+    --output-codec &lt;コーデック&gt;
+           Specify encoding for PO output files.デフォルトは &apos;UTF-8&apos; です。
+
+    --drop-tags &lt;正規表現&gt;
+           Drop named extra tags when writing TS or XLIFF files.
+           May be specified repeatedly.
+
+    --drop-translations
+           Drop existing translations and reset the status to &apos;unfinished&apos;.
+           注意: --no-obsolete と同等です。
+
+    --source-language &lt;language&gt;[_&lt;region&gt;]
+           Specify/override the language of the source strings. Defaults to
+           POSIX if not specified and the file does not name it yet.
+
+    --target-language &lt;language&gt;[_&lt;region&gt;]
+           Specify/override the language of the translation.
+           The target language is guessed from the file name if this option
+           is not specified and the file contents name no language yet.
+
+    --no-obsolete
+           未使用のメッセージを取り除きます。
+
+    --no-finished
+           完了しているメッセージを取り除きます。
+
+    --sort-contexts
+           出力する TS ファイル内のコンテキストをアルファベット順にソートします。
+
+    --locations {absolute|relative|none}
+           Override how source code references are saved in TS files.
+           Default is absolute.
+
+    --no-ui-lines
+           UI ファイルを参照している行番号を取り除きます。
+
+    --verbose
+           be a bit more verbose
+
+長すぎるオプションの指定はダッシュ記号で括る事で1つにできます。
+
+戻り値:
+    0 成功
+    1 コマンドラインパース失敗
+    2 読み込み失敗
+    3 書き込み失敗
+</translation>
+    </message>
+</context>
+<context>
     <name>LRelease</name>
     <message numerus="yes">
         <source>Dropped %n message(s) which had no ID.</source>
@@ -280,6 +460,735 @@ Will assume a single universal form.</source>
         <translation>
             <numerusform>     %n 件の未翻訳のソーステキストを無視しました</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>Usage:
+    lrelease [options] project-file
+    lrelease [options] ts-files [-qm qm-file]
+
+lrelease is part of Qt&apos;s Linguist tool chain. It can be used as a
+stand-alone tool to convert XML-based translations files in the TS
+format into the &apos;compiled&apos; QM format used by QTranslator objects.
+
+Options:
+    -help  Display this information and exit
+    -idbased
+           Use IDs instead of source strings for message keying
+    -compress
+           Compress the QM files
+    -nounfinished
+           Do not include unfinished translations
+    -removeidentical
+           If the translated text is the same as
+           the source text, do not include the message
+    -markuntranslated &lt;prefix&gt;
+           If a message has no real translation, use the source text
+           prefixed with the given string instead
+    -silent
+           Do not explain what is being done
+    -version
+           Display the version of lrelease and exit
+</source>
+        <translation type="unfinished">使い方:
+    lrelease [オプション] project-file
+    lrelease [オプション] ts-files [-qm qm-file]
+
+lrelease is part of Qt&apos;s Linguist tool chain. It can be used as a
+stand-alone tool to convert XML-based translations files in the TS
+format into the &apos;compiled&apos; QM format used by QTranslator objects.
+
+オプション:
+    -help  このヘルプを表示して終了します
+    -idbased
+           メッセージのキーとして、ソース中の文字列を使用する代わりにIDを使用します
+    -compress
+           QM ファイルを圧縮します
+    -nounfinished
+           未完了の翻訳をインクルードしません
+    -removeidentical
+           If the translated text is the same as
+           the source text, do not include the message
+    -markuntranslated &lt;プレフィクス&gt;
+           If a message has no real translation, use the source text
+           prefixed with the given string instead
+    -silent
+           完了した事を通知しません
+    -version
+           lrelease のバージョンを表示して終了します
+</translation>
+    </message>
+    <message>
+        <source>lrelease error: %1</source>
+        <translation>lrelease エラー: %1</translation>
+    </message>
+    <message>
+        <source>Updating &apos;%1&apos;...
+</source>
+        <translation>&apos;%1&apos; を更新しています...
+</translation>
+    </message>
+    <message>
+        <source>Removing translations equal to source text in &apos;%1&apos;...
+</source>
+        <translation>&apos;%1&apos; のソーステキストと等しい翻訳を削除しています...
+</translation>
+    </message>
+    <message>
+        <source>lrelease error: cannot create &apos;%1&apos;: %2
+</source>
+        <translation>lrelease エラー: &apos;%1&apos; を作成できません: %2
+</translation>
+    </message>
+    <message>
+        <source>lrelease error: cannot save &apos;%1&apos;: %2</source>
+        <translation>lrelease エラー: &apos;%1&apos; を保存できません: %2</translation>
+    </message>
+    <message>
+        <source>lrelease version %1
+</source>
+        <translation>lrelease バージョン %1
+</translation>
+    </message>
+    <message>
+        <source>lrelease error: cannot read project file &apos;%1&apos;.
+</source>
+        <translation>lrelease エラー: プロジェクトファイル &apos;%1&apos; が読めません。
+</translation>
+    </message>
+    <message>
+        <source>lrelease error: cannot process project file &apos;%1&apos;.
+</source>
+        <translation>lrelease エラー: プロジェクトファイル &apos;%1&apos; を処理できません。
+</translation>
+    </message>
+    <message>
+        <source>lrelease warning: Met no &apos;TRANSLATIONS&apos; entry in project file &apos;%1&apos;
+</source>
+        <translation>lrelease 警告: プロジェクトファイル &apos;%1&apos; に &apos;TRANSLATIONS&apos; エントリが見つかりません
+</translation>
+    </message>
+</context>
+<context>
+    <name>LUpdate</name>
+    <message>
+        <source>Parenthesis/bracket/brace mismatch between #if and #else branches; using #if branch
+</source>
+        <translation>#if を使っている部分で、#if 〜 #else の間の丸括弧/角括弧/中括弧の個数が一致していません
+</translation>
+    </message>
+    <message>
+        <source>Parenthesis/brace mismatch between #if and #else branches; using #if branch
+</source>
+        <translation>#if を使っている部分で、#if 〜 #else の間の丸括弧/中括弧の個数が一致していません
+</translation>
+    </message>
+    <message>
+        <source>Unterminated C++ comment
+</source>
+        <translation>終了していないC++ コメント
+</translation>
+    </message>
+    <message>
+        <source>Unterminated C++ string
+</source>
+        <translation>終了していない C++ 文字列
+</translation>
+    </message>
+    <message>
+        <source>Excess closing brace in C++ code (or abuse of the C++ preprocessor)
+</source>
+        <translation>C++ コード内で閉じ中括弧の数が一致していません (もしくは C++ プリプロセッサが乱用されています)
+</translation>
+    </message>
+    <message>
+        <source>Excess closing parenthesis in C++ code (or abuse of the C++ preprocessor)
+</source>
+        <translation>C++ コード内で閉じ丸括弧の数が一致していません (もしくは C++ プリプロセッサが乱用されています)
+</translation>
+    </message>
+    <message>
+        <source>Excess closing bracket in C++ code (or abuse of the C++ preprocessor)
+</source>
+        <translation>C++ コード内で閉じ角括弧の数が一致していません (もしくは C++ プリプロセッサが乱用されています)
+</translation>
+    </message>
+    <message>
+        <source>circular inclusion of %1
+</source>
+        <translation>%1 を循環インクルードしています
+</translation>
+    </message>
+    <message>
+        <source>Cannot open %1: %2
+</source>
+        <translation>%1 を開けません: %2
+</translation>
+    </message>
+    <message>
+        <source>//% cannot be used with tr() / QT_TR_NOOP(). Ignoring
+</source>
+        <translation>//% は tr() または QT_TR_NOOP() と併用できません。無視します
+</translation>
+    </message>
+    <message>
+        <source>Qualifying with unknown namespace/class %1::%2
+</source>
+        <translation>未知の名前空間またはクラス %1::%2 で修飾されています
+</translation>
+    </message>
+    <message>
+        <source>tr() cannot be called without context
+</source>
+        <translation>コンテキストなしで tr() は呼び出せません
+</translation>
+    </message>
+    <message>
+        <source>Class &apos;%1&apos; lacks Q_OBJECT macro
+</source>
+        <translation>クラス &apos;%1&apos; は Q_OBJECT マクロが不足しています
+</translation>
+    </message>
+    <message>
+        <source>It is not recommended to call tr() from within a constructor &apos;%1::%2&apos;
+</source>
+        <translation>コンストラクタ &apos;%1::%2&apos; 内での tr() 呼び出しは推奨されていません
+</translation>
+    </message>
+    <message>
+        <source>//% cannot be used with translate() / QT_TRANSLATE_NOOP(). Ignoring
+</source>
+        <translation>//% は translate() または QT_TRANSLATE_NOOP() と併用できません。無視します
+</translation>
+    </message>
+    <message>
+        <source>//= cannot be used with qtTrId() / QT_TRID_NOOP(). Ignoring
+</source>
+        <translation>//= は qtTrId() または QT_TRID_NOOP() と併用できません。無視します
+</translation>
+    </message>
+    <message>
+        <source>Unexpected character in meta string
+</source>
+        <translation>メタ文字列内に予期せぬ文字
+</translation>
+    </message>
+    <message>
+        <source>Unterminated meta string
+</source>
+        <translation>終了していない メタ文字列
+</translation>
+    </message>
+    <message>
+        <source>Cannot invoke tr() like this
+</source>
+        <translation>this のように tr() を呼び出す事はできません
+</translation>
+    </message>
+    <message>
+        <source>Discarding unconsumed meta data
+</source>
+        <translation>未使用のメタデータを破棄しています
+</translation>
+    </message>
+    <message>
+        <source>Unbalanced opening brace in C++ code (or abuse of the C++ preprocessor)
+</source>
+        <translation>C++ コード内で開き中括弧の数が一致していません (もしくは C++ プリプロセッサが乱用されています)
+</translation>
+    </message>
+    <message>
+        <source>Unbalanced opening parenthesis in C++ code (or abuse of the C++ preprocessor)
+</source>
+        <translation>C++ コード内で開き丸括弧の数が一致していません (もしくは C++ プリプロセッサが乱用されています)
+</translation>
+    </message>
+    <message>
+        <source>Unbalanced opening bracket in C++ code (or abuse of the C++ preprocessor)
+</source>
+        <translation>C++ コード内で開き角括弧の数が一致していません (もしくは C++ プリプロセッサが乱用されています)
+</translation>
+    </message>
+    <message>
+        <source>Cannot open %1: %2</source>
+        <translation>%1 を開けません: %2</translation>
+    </message>
+    <message>
+        <source>Unterminated Java comment.
+</source>
+        <translation>終了していない Java コメント。
+</translation>
+    </message>
+    <message>
+        <source>Invalid Unicode value.
+</source>
+        <translation>不正な Unicode 値です。
+</translation>
+    </message>
+    <message>
+        <source>Unterminated string.
+</source>
+        <translation>終了していない文字列。
+</translation>
+    </message>
+    <message>
+        <source>String used in translation can contain only literals concatenated with other literals, not expressions or numbers.
+</source>
+        <translation>翻訳で使用される文字列は、式や数字以外の他のリテラルと連結されたリテラルだけを含む事ができます。
+</translation>
+    </message>
+    <message>
+        <source>&apos;class&apos; must be followed by a class name.
+</source>
+        <translation>&apos;class&apos; に続くのはクラス名でなければなりません。
+</translation>
+    </message>
+    <message>
+        <source>Excess closing brace.
+</source>
+        <translation>余分な閉じ括弧です。
+</translation>
+    </message>
+    <message>
+        <source>&apos;package&apos; must be followed by package name.
+</source>
+        <translation>&apos;package&apos; に続くのはパッケージ名でなければなりません。
+</translation>
+    </message>
+    <message>
+        <source>Unbalanced opening brace.
+</source>
+        <translation>開き括弧が一致していません。
+</translation>
+    </message>
+    <message>
+        <source>Unbalanced opening parenthesis.
+</source>
+        <translation>開き丸括弧が一致していません。
+</translation>
+    </message>
+    <message>
+        <source>Usage:
+    lupdate [options] [project-file]...
+    lupdate [options] [source-file|path|@lst-file]... -ts ts-files|@lst-file
+
+lupdate is part of Qt&apos;s Linguist tool chain. It extracts translatable
+messages from Qt UI files, C++, Java and JavaScript/QtScript source code.
+Extracted messages are stored in textual translation source files (typically
+Qt TS XML). New and modified messages can be merged into existing TS files.
+
+Options:
+    -help  Display this information and exit.
+    -no-obsolete
+           Drop all obsolete strings.
+    -extensions &lt;ext&gt;[,&lt;ext&gt;]...
+           Process files with the given extensions only.
+           The extension list must be separated with commas, not with whitespace.
+           Default: &apos;%1&apos;.
+    -pluralonly
+           Only include plural form messages.
+    -silent
+           Do not explain what is being done.
+    -no-sort
+           Do not sort contexts in TS files.
+    -no-recursive
+           Do not recursively scan the following directories.
+    -recursive
+           Recursively scan the following directories (default).
+    -I &lt;includepath&gt; or -I&lt;includepath&gt;
+           Additional location to look for include files.
+           May be specified multiple times.
+    -locations {absolute|relative|none}
+           Specify/override how source code references are saved in TS files.
+           Default is absolute.
+    -no-ui-lines
+           Do not record line numbers in references to UI files.
+    -disable-heuristic {sametext|similartext|number}
+           Disable the named merge heuristic. Can be specified multiple times.
+    -pro &lt;filename&gt;
+           Name of a .pro file. Useful for files with .pro file syntax but
+           different file suffix. Projects are recursed into and merged.
+    -source-language &lt;language&gt;[_&lt;region&gt;]
+           Specify the language of the source strings for new files.
+           Defaults to POSIX if not specified.
+    -target-language &lt;language&gt;[_&lt;region&gt;]
+           Specify the language of the translations for new files.
+           Guessed from the file name if not specified.
+    -ts &lt;ts-file&gt;...
+           Specify the output file(s). This will override the TRANSLATIONS
+           and nullify the CODECFORTR from possibly specified project files.
+    -codecfortr &lt;codec&gt;
+           Specify the codec assumed for tr() calls. Effective only with -ts.
+    -version
+           Display the version of lupdate and exit.
+    @lst-file
+           Read additional file names (one per line) from lst-file.
+</source>
+        <translation type="unfinished">使い方:
+    lupdate [オプション] [プロジェクトファイル]...
+    lupdate [オプション] [source-file|path|@lst-file]... -ts ts-files|@lst-file
+
+lupdate は Qt&apos; Linguist ツールチェインの一部です。Qt UI ファイル、C++ 、Java、
+JavaScript/QtScript のソースコードからメッセージを抽出します。
+Extracted messages are stored in textual translation source files (typically
+Qt TS XML). 新しく追加されたり変更されたメッセージは既存の TS ファイル内のメッセージから
+マージされます。
+
+オプション:
+    -help  このヘルプを表示して終了します。
+    -no-obsolete
+           すべての未使用の文字列を取り除きます。
+    -extensions &lt;ext&gt;[,&lt;ext&gt;]...
+           与えられた拡張子のファイルだけ処理します。
+           拡張子のリストはカンマで区切り、空白スペースを含んではいけません。
+           デフォルト: &apos;%1&apos;
+    -pluralonly
+           複数形のメッセージだけインクルードします。
+    -silent
+           完了した事を通知しません
+    -no-sort
+           TS ファイル内のコンテキストをソートしません。
+    -no-recursive
+           ディレクトリ内を再帰的に処理しません。
+    -recursive
+           ディレクトリ内を再帰的に処理します。(デフォルト)
+    -I &lt;includepath&gt; or -I&lt;includepath&gt;
+           Additional location to look for include files.
+           May be specified multiple times.
+    -locations {absolute|relative|none}
+           Specify/override how source code references are saved in TS files.
+           Default is absolute.
+    -no-ui-lines
+           UI ファイルを参照する行番号を記録しません。
+    -disable-heuristic {sametext|similartext|number}
+           Disable the named merge heuristic. Can be specified multiple times.
+    -pro &lt;ファイル名&gt;
+           .pro ファイルの名前を指定します。Useful for files with .pro file syntax but
+           different file suffix. Projects are recursed into and merged.
+    -source-language &lt;language&gt;[_&lt;region&gt;]
+           Specify the language of the source strings for new files.
+           Defaults to POSIX if not specified.
+    -target-language &lt;language&gt;[_&lt;region&gt;]
+           Specify the language of the translations for new files.
+           Guessed from the file name if not specified.
+    -ts &lt;ts-file&gt;...
+           出力ファイルを指定します。This will override the TRANSLATIONS
+           and nullify the CODECFORTR from possibly specified project files.
+    -codecfortr &lt;codec&gt;
+           Specify the codec assumed for tr() calls. Effective only with -ts.
+    -version
+           lupdate のバージョン情報を表示して終了します。
+    @lst-file
+           Read additional file names (one per line) from lst-file.
+</translation>
+    </message>
+    <message>
+        <source>lupdate warning: Codec for tr() &apos;%1&apos; disagrees with existing file&apos;s codec &apos;%2&apos;. Expect trouble.
+</source>
+        <translation>lupdate 警告: tr() &apos;%1&apos; のコーデックと既存のファイルのコーデック &apos;%2&apos; が一致しません。問題が発生したようです。
+</translation>
+    </message>
+    <message>
+        <source>lupdate warning: Specified target language &apos;%1&apos; disagrees with existing file&apos;s language &apos;%2&apos;. Ignoring.
+</source>
+        <translation>lupdate 警告: 指定されたターゲット言語 &apos;%1&apos; と既存のファイルの言語 &apos;%2&apos; が一致しません。無視されます。
+</translation>
+    </message>
+    <message>
+        <source>lupdate warning: Specified source language &apos;%1&apos; disagrees with existing file&apos;s language &apos;%2&apos;. Ignoring.
+</source>
+        <translation>lupdate 警告: 指定されたソース言語 &apos;%1&apos; と既存のファイルの言語 &apos;%2&apos; が一致しません。無視されます。
+</translation>
+    </message>
+    <message>
+        <source>Updating &apos;%1&apos;...
+</source>
+        <translation>&apos;%1&apos; を更新しています...
+</translation>
+    </message>
+    <message>
+        <source>Stripping non plural forms in &apos;%1&apos;...
+</source>
+        <translation>&apos;%1&apos; 内の複数形以外のメッセージを取り除いています...
+</translation>
+    </message>
+    <message>
+        <source>lupdate warning: Codec for source &apos;%1&apos; is invalid. Falling back to codec for tr().
+</source>
+        <translation>lupdate 警告: ソース &apos;%1&apos; のコーデックは不正です。コーデックを元に戻します。
+</translation>
+    </message>
+    <message>
+        <source>lupdate warning: TS files from command line will override TRANSLATIONS in %1.
+</source>
+        <translation>lupdate 警告: コマンドラインで指定された TS ファイルは %1 の TRANSLATIONS を上書きます。
+</translation>
+    </message>
+    <message>
+        <source>lupdate warning: TS files from command line prevent recursing into %1.
+</source>
+        <translation>lupdate 警告: コマンドラインで指定された TS ファイルは %1 内で再起的に処理するのを妨げます。
+</translation>
+    </message>
+    <message>
+        <source>lupdate warning: no TS files specified. Only diagnostics will be produced for &apos;%1&apos;.
+</source>
+        <translation>lupdate 警告: TS ファイルが指定されていません。&apos;%1&apos; は診断のみ行われます。
+</translation>
+    </message>
+    <message>
+        <source>The option -target-language requires a parameter.
+</source>
+        <translation>パラメータに -target-language オプションが必要です。
+</translation>
+    </message>
+    <message>
+        <source>The option -source-language requires a parameter.
+</source>
+        <translation>パラメータに -source-language オプションが必要です。
+</translation>
+    </message>
+    <message>
+        <source>The option -disable-heuristic requires a parameter.
+</source>
+        <translation>パラメーターに -disable-heuristic オプションが必要です。
+</translation>
+    </message>
+    <message>
+        <source>Invalid heuristic name passed to -disable-heuristic.
+</source>
+        <translation>-disable-heuristic に不正なヒューリスティック名が渡されています。
+</translation>
+    </message>
+    <message>
+        <source>The option -locations requires a parameter.
+</source>
+        <translation>パラメータに -locations オプションが必要です。
+</translation>
+    </message>
+    <message>
+        <source>Invalid parameter passed to -locations.
+</source>
+        <translation>-locations に不正なパラメータが渡されています。
+</translation>
+    </message>
+    <message>
+        <source>The -codecfortr option should be followed by a codec name.
+</source>
+        <translation>-codecfortr オプションの後ろに続けてコーデック名があるべきです。
+</translation>
+    </message>
+    <message>
+        <source>The -extensions option should be followed by an extension list.
+</source>
+        <translation>-extensions オプションの後ろに続けて拡張リストがあるべきです。
+</translation>
+    </message>
+    <message>
+        <source>The -pro option should be followed by a filename of .pro file.
+</source>
+        <translation>-pro オプションの後ろに続けて .pro ファイルのファイル名があるべきです。
+</translation>
+    </message>
+    <message>
+        <source>The -I option should be followed by a path.
+</source>
+        <translation>-l オプションの後ろに続けてパスがあるべきです。
+</translation>
+    </message>
+    <message>
+        <source>Unrecognized option &apos;%1&apos;.
+</source>
+        <translation>&apos;%1&apos; は認識できないオプションです。
+</translation>
+    </message>
+    <message>
+        <source>lupdate error: List file &apos;%1&apos; is not readable.
+</source>
+        <translation>lupdate エラー: リストファイル &apos;%1&apos; が読めません。
+</translation>
+    </message>
+    <message>
+        <source>lupdate warning: For some reason, &apos;%1&apos; is not writable.
+</source>
+        <translation>lupdate 警告: いくつかの理由により &apos;%1&apos; は書き込みできません。
+</translation>
+    </message>
+    <message>
+        <source>lupdate error: File &apos;%1&apos; has no recognized extension.
+</source>
+        <translation>lupdate エラー: ファイル &apos;%1&apos; は拡張として認識できません。
+</translation>
+    </message>
+    <message>
+        <source>lupdate error: File &apos;%1&apos; does not exist.
+</source>
+        <translation>lupdate エラー: ファイル &apos;%1&apos; が存在しません。
+</translation>
+    </message>
+    <message>
+        <source>Scanning directory &apos;%1&apos;...
+</source>
+        <translation>ディレクトリ &apos;%1&apos; をスキャンしています...
+</translation>
+    </message>
+    <message>
+        <source>lupdate warning: -target-language usually only makes sense with exactly one TS file.
+</source>
+        <translation>lupdate 警告: -target-language は通常1つの TS ファイルにだけ意味を持ちます。
+</translation>
+    </message>
+    <message>
+        <source>lupdate warning: -codecfortr has no effect without -ts.
+</source>
+        <translation>lupdate 警告: -ts 指定なしでは -codecfortr は何の効果もありません。
+</translation>
+    </message>
+    <message>
+        <source>lupdate warning: no TS files specified. Only diagnostics will be produced.
+</source>
+        <translation>lupdate 警告: TS ファイルが指定されていません。診断のみ行われます。
+</translation>
+    </message>
+    <message>
+        <source>lupdate error: Both project and source files / include paths specified.
+</source>
+        <translation>lupdate エラー: プロジェクトとソースファイルまたはインクルードパスの両方が指定されています。
+</translation>
+    </message>
+    <message numerus="yes">
+        <source>    Found %n source text(s) (%1 new and %2 already existing)
+</source>
+        <translation>
+            <numerusform>    %n 件のソーステキストが見つかりました (新規: %1 件、既存: %2 件)
+</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>    Removed %n obsolete entries
+</source>
+        <translation>
+            <numerusform>    %n 件の未使用のエントリを削除しました
+</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>    Kept %n obsolete entries
+</source>
+        <translation>
+            <numerusform>    %n 件の未使用のエントリを残しました
+</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>    Number heuristic provided %n translation(s)
+</source>
+        <translation>
+            <numerusform>    数値ヒューリスティックは %n 件の翻訳を提供しました
+</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>    Same-text heuristic provided %n translation(s)
+</source>
+        <translation>
+            <numerusform>    同一テキスト ヒューリスティックは %n 件の翻訳を提供しました
+</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>    Similar-text heuristic provided %n translation(s)
+</source>
+        <translation>
+            <numerusform>    類似ヒューリスティックは %n 件の翻訳を提供しました
+</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Illegal character</source>
+        <translation>無効な文字</translation>
+    </message>
+    <message>
+        <source>Unclosed string at end of line</source>
+        <translation>ファイルの終端までに閉じられていない文字列</translation>
+    </message>
+    <message>
+        <source>Illegal escape squence</source>
+        <translation>無効なエスケープシーケンス</translation>
+    </message>
+    <message>
+        <source>Illegal unicode escape sequence</source>
+        <translation>無効な Unicode エスケープシーケンス</translation>
+    </message>
+    <message>
+        <source>Unclosed comment at end of file</source>
+        <translation>ファイルの終端までに閉じられていないコメント</translation>
+    </message>
+    <message>
+        <source>Illegal syntax for exponential number</source>
+        <translation>指数番号の構文が不正です</translation>
+    </message>
+    <message>
+        <source>Identifier cannot start with numeric literal</source>
+        <translation>識別子の先頭に数字を使用する事はできません</translation>
+    </message>
+    <message>
+        <source>Unterminated regular expression literal</source>
+        <translation>終了していない正規表現リテラル</translation>
+    </message>
+    <message>
+        <source>//% cannot be used with %1(). Ignoring
+</source>
+        <translation>//% は %1() と併用できません。無視します
+</translation>
+    </message>
+    <message>
+        <source>%1() requires at least two arguments.
+</source>
+        <translation>%1() には最低でも2個の引数が必要です。
+</translation>
+    </message>
+    <message>
+        <source>%1(): both arguments must be literal strings.
+</source>
+        <translation>%1(): 両方の引数は文字列リテラルである必要があります。
+</translation>
+    </message>
+    <message>
+        <source>%1() requires at least one argument.
+</source>
+        <translation>%1() は最低でも1個の引数が必要です。
+</translation>
+    </message>
+    <message>
+        <source>%1(): text to translate must be a literal string.
+</source>
+        <translation>%1(): 翻訳するテキストはリテラル文字列である必要があります。
+</translation>
+    </message>
+    <message>
+        <source>//= cannot be used with %1(). Ignoring
+</source>
+        <translation>//= は %1() と併用できません。無視します
+</translation>
+    </message>
+    <message>
+        <source>%1(): identifier must be a literal string.
+</source>
+        <translation>%1(): 識別子は文字列リテラルである必要があります。
+</translation>
+    </message>
+    <message>
+        <source>Expected </source>
+        <extracomment>Beginning of the string that contains comma-separated list of expected tokens</extracomment>
+        <translation>期待されるトークン </translation>
+    </message>
+    <message>
+        <source>XML error: Parse error at line %1, column %2 (%3).</source>
+        <translation>XML エラー: %1 行目、%2 列目でパースエラー (%3)。</translation>
+    </message>
+    <message>
+        <source>Parse error in UI file</source>
+        <translation>UI ファイルでパースエラー</translation>
     </message>
 </context>
 <context>
@@ -918,7 +1827,7 @@ All files (*)</source>
     </message>
     <message>
         <source>Save changes made to this Qt translation source file</source>
-        <translation>この Qt 翻訳ソースファイルに対して行われた変更を保存します。</translation>
+        <translation>この Qt 翻訳ソースファイルに対して行われた変更を保存します</translation>
     </message>
     <message>
         <source>Save changes made to this Qt translation source file into a new file.</source>
@@ -1279,6 +2188,13 @@ Line: %2</source>
     </message>
 </context>
 <context>
+    <name>PhraseBook</name>
+    <message>
+        <source>Parse error at line %1, column %2 (%3).</source>
+        <translation>%1 行目、%2 列目でパースエラー (%3)。</translation>
+    </message>
+</context>
+<context>
     <name>PhraseBookBox</name>
     <message>
         <source>(New Entry)</source>
@@ -1449,6 +2365,12 @@ Line: %2</source>
     <message>
         <source>Qt Linguist &apos;Phrase Book&apos;</source>
         <translation>Qt Linguist &apos;フレーズ ブック&apos;</translation>
+    </message>
+    <message>
+        <source>lupdate version %1
+</source>
+        <translation>lupdate バージョン %1
+</translation>
     </message>
 </context>
 <context>

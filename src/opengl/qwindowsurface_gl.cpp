@@ -355,12 +355,12 @@ void QGLWindowSurface::deleted(QObject *object)
 
         QWidgetPrivate *widgetPrivate = widget->d_func();
         if (widgetPrivate->extraData()) {
-            union { QGLContext **ctxPtr; void **voidPtr; };
-            voidPtr = &widgetPrivate->extraData()->glContext;
-            int index = d_ptr->contexts.indexOf(ctxPtr);
+            union { QGLContext **ctxPtrPtr; void **voidPtrPtr; };
+            voidPtrPtr = &widgetPrivate->extraData()->glContext;
+            int index = d_ptr->contexts.indexOf(ctxPtrPtr);
             if (index != -1) {
-                delete *ctxPtr;
-                *ctxPtr = 0;
+                delete *ctxPtrPtr;
+                *ctxPtrPtr = 0;
                 d_ptr->contexts.removeAt(index);
             }
         }
@@ -400,12 +400,12 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
 
     widgetPrivate->extraData()->glContext = ctx;
 
-    union { QGLContext **ctxPtr; void **voidPtr; };
+    union { QGLContext **ctxPtrPtr; void **voidPtrPtr; };
 
     connect(widget, SIGNAL(destroyed(QObject*)), this, SLOT(deleted(QObject*)));
 
-    voidPtr = &widgetPrivate->extraData()->glContext;
-    d_ptr->contexts << ctxPtr;
+    voidPtrPtr = &widgetPrivate->extraData()->glContext;
+    d_ptr->contexts << ctxPtrPtr;
     qDebug() << "hijackWindow() context created for" << widget << d_ptr->contexts.size();
 }
 
@@ -541,8 +541,9 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
                 }
             }
 #endif
-            if (d_ptr->paintedRegion.boundingRect() != geometry() && 
-                hasPartialUpdateSupport()) {
+            if (hasPartialUpdateSupport() &&
+                d_ptr->paintedRegion.boundingRect().width() * d_ptr->paintedRegion.boundingRect().height() <
+                geometry().width() * geometry().height() * 0.2) {
                 context()->d_func()->swapRegion(&d_ptr->paintedRegion);             
             } else
                 context()->swapBuffers();

@@ -96,6 +96,8 @@ private slots:
     void threading_data();
     void propertyChanges();
 
+    void roleCrash();
+
 private:
     QString makeItemXmlAndData(const QString &data, QDeclarativeXmlModelData *modelData = 0) const
     {
@@ -822,6 +824,15 @@ void tst_qdeclarativexmllistmodel::propertyChanges()
     QCOMPARE(namespaceDeclarationsSpy.count(),1);
 
     QTRY_VERIFY(model->count() == 1);
+    delete model;
+}
+
+void tst_qdeclarativexmllistmodel::roleCrash()
+{
+    // don't crash
+    QDeclarativeComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/roleCrash.qml"));
+    QDeclarativeXmlListModel *model = qobject_cast<QDeclarativeXmlListModel*>(component.create());
+    QVERIFY(model != 0);
     delete model;
 }
 

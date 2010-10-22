@@ -2454,10 +2454,12 @@ QString QFontDatabase::writingSystemSample(WritingSystem writingSystem)
         sample += QChar(0x4f8b);
         break;
     case Japanese:
-        sample += QChar(0x3050);
-        sample += QChar(0x3060);
-        sample += QChar(0x30b0);
-        sample += QChar(0x30c0);
+        sample += QChar(0x30b5);
+        sample += QChar(0x30f3);
+        sample += QChar(0x30d7);
+        sample += QChar(0x30eb);
+        sample += QChar(0x3067);
+        sample += QChar(0x3059);
         break;
     case Korean:
         sample += QChar(0xac00);

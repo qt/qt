@@ -51,12 +51,15 @@
 #include <private/qimage_p.h>
 #include <private/qeglproperties_p.h>
 #include <private/qeglcontext_p.h>
+#include <private/qpixmap_x11_p.h>
 
 #include "qmeegopixmapdata.h"
 #include "qmeegographicssystem.h"
 #include "qmeegoextensions.h"
 
 bool QMeeGoGraphicsSystem::surfaceWasCreated = false;
+
+QHash <Qt::HANDLE, QPixmap*> QMeeGoGraphicsSystem::liveTexturePixmaps;
 
 QMeeGoGraphicsSystem::QMeeGoGraphicsSystem()
 {
@@ -170,6 +173,22 @@ QPixmapData *QMeeGoGraphicsSystem::pixmapDataFromEGLSharedImage(Qt::HANDLE handl
     }
 }
 
+QPixmapData *QMeeGoGraphicsSystem::pixmapDataFromEGLImage(Qt::HANDLE handle)
+{
+    if (QMeeGoGraphicsSystem::meeGoRunning()) {
+        QMeeGoPixmapData *pmd = new QMeeGoPixmapData;
+        pmd->fromEGLImage(handle);
+
+        // FIXME Ok. This is a bit BAD BAD BAD. We're abusing here the fact that we KNOW
+        // that this function is used for the live pixmap...
+        pmd->texture()->options &= ~QGLContext::InvertedYBindOption;
+        return QMeeGoGraphicsSystem::wrapPixmapData(pmd);
+    } else {
+        qFatal("Can't create from EGL image when not running meego graphics system!");
+        return NULL;
+    }
+}
+
 void QMeeGoGraphicsSystem::updateEGLSharedImagePixmap(QPixmap *pixmap)
 {
     QMeeGoPixmapData *pmd = (QMeeGoPixmapData *) pixmap->pixmapData();
@@ -188,6 +207,109 @@ QPixmapData *QMeeGoGraphicsSystem::pixmapDataWithGLTexture(int w, int h)
     return QMeeGoGraphicsSystem::wrapPixmapData(pmd);
 }
 
+Qt::HANDLE QMeeGoGraphicsSystem::createLiveTexture(int w, int h, QImage::Format format)
+{
+    // No need to wrap the QPixmapData here. This QPixmap(Data) is a 
+    // internal implementation and we don't migrate it between 
+    // graphics system switching.
+    
+    // We use a bit ugly way of enforcing a color format on the X pixmap -- we create 
+    // a local QImage and fromImage from there. This is quite redundant (extra overhead of creating 
+    // the useless image only to delete it) but shouldn't be too bad for now... you're not expected
+    // to call createLiveTexture too often anyways. Would be great if QX11PixmapData had a way to 
+    // force the X format upon creation or resize.
+    
+    QImage image(w, h, format);
+    QX11PixmapData *pmd = new QX11PixmapData(QPixmapData::PixmapType);
+    pmd->fromImage(image, Qt::NoOpaqueDetection);
+    QPixmap *p = new QPixmap(pmd);
+    
+    liveTexturePixmaps.insert(p->handle(), p);
+    return p->handle();
+}
+
+void QMeeGoGraphicsSystem::destroyLiveTexture(Qt::HANDLE h)
+{
+    if (liveTexturePixmaps.contains(h)) {
+        QPixmap *p = liveTexturePixmaps.value(h);
+        delete p;
+        liveTexturePixmaps.remove(h);
+    } else
+        qWarning("Trying to destroy live texture %ld which was not found!", h);
+}
+
+bool QMeeGoGraphicsSystem::lockLiveTexture(Qt::HANDLE h)
+{
+    if (! liveTexturePixmaps.contains(h)) {
+        qWarning("Trying to lock live texture %ld which was not found!", h);
+        return false;
+    }
+
+    EGLint attribs[] = {
+        EGL_MAP_PRESERVE_PIXELS_KHR, EGL_TRUE,
+        EGL_LOCK_USAGE_HINT_KHR, EGL_READ_SURFACE_BIT_KHR | EGL_WRITE_SURFACE_BIT_KHR, 
+        EGL_NONE
+    };
+
+    QGLShareContextScope ctx(qt_gl_share_widget()->context());
+    EGLSurface surface = getSurfaceForLiveTexturePixmap(liveTexturePixmaps.value(h));
+    return QMeeGoExtensions::eglLockSurfaceKHR(QEgl::display(), surface, attribs);
+}
+
+bool QMeeGoGraphicsSystem::unlockLiveTexture(Qt::HANDLE h)
+{
+    if (! liveTexturePixmaps.contains(h)) {
+        qWarning("Trying to lock live texture %ld which was not found!", h);
+        return false;
+    }
+
+    QGLShareContextScope ctx(qt_gl_share_widget()->context());
+    QMeeGoExtensions::ensureInitialized();
+
+    EGLSurface surface = getSurfaceForLiveTexturePixmap(liveTexturePixmaps.value(h));
+    if (QMeeGoExtensions::eglUnlockSurfaceKHR(QEgl::display(), surface)) {
+        glFinish();
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void QMeeGoGraphicsSystem::queryLiveTexture(Qt::HANDLE h, void **data, int *pitch)
+{
+    // FIXME Only allow this on locked surfaces
+    if (! liveTexturePixmaps.contains(h)) {
+        qWarning("Trying to query live texture %ld which was not found!", h);
+        return;
+    }
+
+    QGLShareContextScope ctx(qt_gl_share_widget()->context());
+    QMeeGoExtensions::ensureInitialized();
+
+    EGLSurface surface = getSurfaceForLiveTexturePixmap(liveTexturePixmaps.value(h));
+    eglQuerySurface(QEgl::display(), surface, EGL_BITMAP_POINTER_KHR, (EGLint*) data);
+    eglQuerySurface(QEgl::display(), surface, EGL_BITMAP_PITCH_KHR, (EGLint*) pitch);
+}
+
+Qt::HANDLE QMeeGoGraphicsSystem::liveTextureToEGLImage(Qt::HANDLE h)
+{
+    QGLShareContextScope ctx(qt_gl_share_widget()->context());
+    QMeeGoExtensions::ensureInitialized();
+
+    EGLint attribs[] = {
+        EGL_IMAGE_PRESERVED_KHR, EGL_TRUE,
+        EGL_NONE
+    };
+
+    EGLImageKHR eglImage = QEgl::eglCreateImageKHR(QEgl::display(), EGL_NO_CONTEXT, EGL_NATIVE_PIXMAP_KHR,
+                                                   (EGLClientBuffer) h, attribs);
+
+    if (eglImage == EGL_NO_IMAGE_KHR) 
+        qWarning("eglCreateImageKHR failed!");
+
+    return (Qt::HANDLE) eglImage;
+}
+
 bool QMeeGoGraphicsSystem::meeGoRunning()
 {
     if (! QApplicationPrivate::instance()) {
@@ -204,6 +326,52 @@ bool QMeeGoGraphicsSystem::meeGoRunning()
     return (name == "meego");
 }
 
+void QMeeGoGraphicsSystem::destroySurfaceForLiveTexturePixmap(QPixmapData* pmd)
+{
+    Q_ASSERT(pmd->classId() == QPixmapData::X11Class);
+    QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(pmd);
+    if (pixmapData->gl_surface) {
+        eglDestroySurface(QEgl::display(), (EGLSurface)pixmapData->gl_surface);
+        pixmapData->gl_surface = 0;
+    }
+}
+
+EGLSurface QMeeGoGraphicsSystem::getSurfaceForLiveTexturePixmap(QPixmap *pixmap)
+{
+    // This code is a crative remix of the stuff that can be found in the 
+    // Qt's TFP implementation in /src/opengl/qgl_x11egl.cpp ::bindiTextureFromNativePixmap
+    QX11PixmapData *pixmapData = static_cast<QX11PixmapData*>(pixmap->data_ptr().data());
+    Q_ASSERT(pixmapData->classId() == QPixmapData::X11Class);
+    bool hasAlpha = pixmapData->hasAlphaChannel();
+   
+    if (pixmapData->gl_surface &&
+        hasAlpha == (pixmapData->flags & QX11PixmapData::GlSurfaceCreatedWithAlpha))
+        return pixmapData->gl_surface;
+
+    // Check to see if the surface is still valid
+    if (pixmapData->gl_surface &&
+        hasAlpha != ((pixmapData->flags & QX11PixmapData::GlSurfaceCreatedWithAlpha) > 0)) {
+        // Surface is invalid!
+        QMeeGoGraphicsSystem::destroySurfaceForLiveTexturePixmap(pixmapData);
+    }
+
+    if (pixmapData->gl_surface == 0) {
+        EGLConfig config = QEgl::defaultConfig(QInternal::Pixmap,
+                                               QEgl::OpenGL,
+                                               hasAlpha ? QEgl::Translucent : QEgl::NoOptions);
+
+        pixmapData->gl_surface = (void*)QEgl::createSurface(pixmap, config);
+        
+        if (hasAlpha)
+            pixmapData->flags = pixmapData->flags | QX11PixmapData::GlSurfaceCreatedWithAlpha;
+            
+        if (pixmapData->gl_surface == (void*)EGL_NO_SURFACE)
+            return NULL;
+    }
+
+    return pixmapData->gl_surface;
+}
+
 /* C API */
 
 int qt_meego_image_to_egl_shared_image(const QImage &image)
@@ -214,6 +382,11 @@ int qt_meego_image_to_egl_shared_image(const QImage &image)
 QPixmapData* qt_meego_pixmapdata_from_egl_shared_image(Qt::HANDLE handle, const QImage &softImage)
 {
     return QMeeGoGraphicsSystem::pixmapDataFromEGLSharedImage(handle, softImage);
+}
+
+QPixmapData* qt_meego_pixmapdata_from_egl_image(Qt::HANDLE handle)
+{
+    return QMeeGoGraphicsSystem::pixmapDataFromEGLImage(handle);
 }
 
 QPixmapData* qt_meego_pixmapdata_with_gl_texture(int w, int h)
@@ -244,4 +417,34 @@ void qt_meego_set_translucent(bool translucent)
 void qt_meego_update_egl_shared_image_pixmap(QPixmap *pixmap)
 {
     QMeeGoGraphicsSystem::updateEGLSharedImagePixmap(pixmap);
+}
+
+Qt::HANDLE qt_meego_live_texture_create(int w, int h, QImage::Format format)
+{
+    return QMeeGoGraphicsSystem::createLiveTexture(w, h, format);
+}
+
+void qt_meego_live_texture_destroy(Qt::HANDLE h)
+{
+    QMeeGoGraphicsSystem::destroyLiveTexture(h);
+}
+
+bool qt_meego_live_texture_lock(Qt::HANDLE h)
+{
+    return QMeeGoGraphicsSystem::lockLiveTexture(h);
+}
+
+bool qt_meego_live_texture_unlock(Qt::HANDLE h)
+{
+    return QMeeGoGraphicsSystem::unlockLiveTexture(h);
+}
+
+void qt_meego_live_texture_query(Qt::HANDLE h, void **data, int *pitch)
+{
+    return QMeeGoGraphicsSystem::queryLiveTexture(h, data, pitch);
+}
+
+Qt::HANDLE qt_meego_live_texture_to_egl_image(Qt::HANDLE h)
+{
+    return QMeeGoGraphicsSystem::liveTextureToEGLImage(h); 
 }

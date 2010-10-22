@@ -152,18 +152,12 @@ void QS60Data::controlVisibilityChanged(CCoeControl *control, bool visible)
                 if (backingStore.data()) {
                     backingStore.registerWidget(widget);
                 } else {
-#ifdef SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
-                    S60->wsSession().SendEffectCommand(ETfxCmdRestoreLayer);
-#endif
                     backingStore.create(window);
                     backingStore.registerWidget(widget);
                     qt_widget_private(widget)->invalidateBuffer(widget->rect());
                     widget->repaint();
                 }
             } else {
-#ifdef  SYMBIAN_GRAPHICS_WSERV_QT_EFFECTS
-                S60->wsSession().SendEffectCommand(ETfxCmdDeallocateLayer);
-#endif
                 backingStore.unregisterWidget(widget);
                 // In order to ensure that any resources used by the window surface
                 // are immediately freed, we flush the WSERV command buffer.
@@ -1243,10 +1237,11 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
 #ifdef Q_WS_S60
         // If widget is fullscreen/minimized, hide status pane and button container otherwise show them.
-        const bool visible = !(qwidget->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
+        QWidget *const window = qwidget->window();
+        const bool visible = !(window->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
         const bool statusPaneVisibility = visible;
-        const bool isFullscreen = qwidget->windowState() & Qt::WindowFullScreen;
-        const bool cbaVisibilityHint = qwidget->windowFlags() & Qt::WindowSoftkeysVisibleHint;
+        const bool isFullscreen = window->windowState() & Qt::WindowFullScreen;
+        const bool cbaVisibilityHint = window->windowFlags() & Qt::WindowSoftkeysVisibleHint;
         const bool buttonGroupVisibility = (visible || (isFullscreen && cbaVisibilityHint));
         S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
 #endif

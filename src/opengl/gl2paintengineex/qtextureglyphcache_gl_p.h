@@ -147,6 +147,9 @@ private:
     QGL2PaintEngineExPrivate *pex;
     QGLShaderProgram *m_blitProgram;
     FilterMode m_filterMode;
+
+    GLfloat m_vertexCoordinateArray[8];
+    GLfloat m_textureCoordinateArray[8];
 };
 
 QT_END_NAMESPACE

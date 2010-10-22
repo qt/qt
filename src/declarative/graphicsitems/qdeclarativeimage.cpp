@@ -253,6 +253,15 @@ void QDeclarativeImage::setFillMode(FillMode mode)
     emit fillModeChanged();
 }
 
+/*!
+
+    \qmlproperty real Image::paintedWidth
+    \qmlproperty real Image::paintedHeight
+
+    These properties hold the size of the image that is actually painted.
+    In most cases it is the same as \c width and \c height, but when using a \c fillMode like
+    \c PreserveAspectFit \c paintedWidth or \c paintedHeight can be smaller than \c width and \c height.
+*/
 qreal QDeclarativeImage::paintedWidth() const
 {
     Q_D(const QDeclarativeImage);

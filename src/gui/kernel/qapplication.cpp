@@ -478,11 +478,14 @@ bool Q_GUI_EXPORT qt_tab_all_widgets = true;
 bool qt_in_tab_key_event = false;
 int qt_antialiasing_threshold = -1;
 static int drag_time = 500;
+#ifndef QT_GUI_DRAG_DISTANCE
+#define QT_GUI_DRAG_DISTANCE 4
+#endif
 #ifdef Q_OS_SYMBIAN
 // The screens are a bit too small to for your thumb when using only 4 pixels drag distance.
-static int drag_distance = 12;
+static int drag_distance = 12; //XXX move to qplatformdefs.h
 #else
-static int drag_distance = 4;
+static int drag_distance = QT_GUI_DRAG_DISTANCE;
 #endif
 static Qt::LayoutDirection layout_direction = Qt::LeftToRight;
 QSize QApplicationPrivate::app_strut = QSize(0,0); // no default application strut

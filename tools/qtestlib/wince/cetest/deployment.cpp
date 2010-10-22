@@ -227,9 +227,9 @@ void DeploymentHandler::initProjectDeploy(QMakeProject* project, DeploymentList 
         return;
 
     for (int it = 0; it < list.size(); ++it) {
-        QString argSource = list.at(it) + QString(".sources");
+        QString argSource = list.at(it);
         QString argPath = list.at(it) + QString(".path");
-        if ((project->values(argSource).isEmpty() || project->values(argPath).isEmpty()) && list.at(it) != "deploy") {
+        if (((project->values(argSource + QString(".files")).isEmpty() && project->values(argSource + QString(".sources")).isEmpty()) || project->values(argPath).isEmpty()) && list.at(it) != "deploy") {
             debugOutput(QString::fromLatin1("cannot deploy \"%1\" because of missing data.").arg(list.at(it)), 0);
             continue;
         }
@@ -240,7 +240,7 @@ void DeploymentHandler::initProjectDeploy(QMakeProject* project, DeploymentList 
         if (!addPath.startsWith("/") && !addPath.startsWith(QLatin1String("\\")))
             addPath = targetPath + "/" + addPath;
 
-        QStringList addSources = project->values(argSource);
+        QStringList addSources = project->values(argSource + QString(".files")) + project->values(argSource + QString(".sources"));
         addSources.replaceInStrings(QLatin1String("/"), QLatin1String("\\"));
         for(int index=0; index < addSources.size(); ++index) {
             QString dirstr = qmake_getpwd();
@@ -264,7 +264,7 @@ void DeploymentHandler::initProjectDeploy(QMakeProject* project, DeploymentList 
                         continue;
                     }
                     QString appendedQmakeDeploy = QString::fromLatin1("_q_make_additional_deploy_%1").arg(addQMakeDeployCounter++);
-                    project->parse(appendedQmakeDeploy + QLatin1String(".sources = \"") + wildInfo.absoluteFilePath());
+                    project->parse(appendedQmakeDeploy + QLatin1String(".files = \"") + wildInfo.absoluteFilePath());
                     project->parse(appendedQmakeDeploy + QLatin1String(".path    = \"") + addPath);
                     list.append(appendedQmakeDeploy);
                 }
@@ -276,7 +276,7 @@ void DeploymentHandler::initProjectDeploy(QMakeProject* project, DeploymentList 
                 QStringList additionalEntries = additionalDir.entryList(QDir::NoDotAndDotDot | QDir::AllEntries | QDir::NoSymLinks);
                 foreach(QString item, additionalEntries) {
                 QString appendedDeploy = QString::fromLatin1("_q_make_additional_deploy_%1").arg(addQMakeDeployCounter++);
-                    project->parse(appendedDeploy + QLatin1String(".sources = \"") + Option::fixPathToLocalOS(additionalDir.absoluteFilePath(item)) + QLatin1String("\""));
+                    project->parse(appendedDeploy + QLatin1String(".files = \"") + Option::fixPathToLocalOS(additionalDir.absoluteFilePath(item)) + QLatin1String("\""));
                     QString appendTargetPath = project->values(argPath).join(QLatin1String(" "));
                     if (appendTargetPath == QLatin1String("."))
                         appendTargetPath = filestr;

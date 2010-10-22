@@ -276,6 +276,9 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , isMoved(0)
       , isGLWidget(0)
       , usesDoubleBufferedGLContext(0)
+#ifndef QT_NO_IM
+      , inheritsInputMethodHints(0)
+#endif
 #if defined(Q_WS_X11)
       , picture(0)
 #elif defined(Q_WS_WIN)
@@ -306,6 +309,9 @@ QWidgetPrivate::QWidgetPrivate(int version)
     drawRectOriginalAdded = false;
     originalDrawMethod = true;
     changeMethods = false;
+    hasOwnContext = false;
+    isInUnifiedToolbar = false;
+    unifiedSurface = 0;
 #endif // QT_MAC_USE_COCOA
 #ifdef QWIDGET_EXTRA_DEBUG
     static int count = 0;
@@ -5341,6 +5347,14 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
     if (rgn.isEmpty())
         return;
 
+#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+    // We disable the rendering of QToolBar in the backingStore if
+    // it's supposed to be in the unified toolbar on Mac OS X.
+    if (backingStore && isInUnifiedToolbar)
+        return;
+#endif // Q_WS_MAC && QT_MAC_USE_COCOA
+
+
     Q_Q(QWidget);
 #ifndef QT_NO_GRAPHICSEFFECT
     if (graphicsEffect && graphicsEffect->isEnabled()) {
@@ -5403,6 +5417,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             QPaintEngine *paintEngine = pdev->paintEngine();
             if (paintEngine) {
                 setRedirected(pdev, -offset);
+
 #ifdef Q_WS_MAC
                 // (Alien support) Special case for Mac when redirecting: If the paint device
                 // is of the Widget type we need to set WA_WState_InPaintEvent since painting
@@ -5445,7 +5460,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             //actually send the paint event
             QPaintEvent e(toBePainted);
             QCoreApplication::sendSpontaneousEvent(q, &e);
-#if !defined(Q_WS_MAC) && !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
+#if !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
             if (backingStore && !onScreen && !asRoot && (q->internalWinId() || !q->nativeParentWidget()->isWindow()))
                 backingStore->markDirtyOnScreen(toBePainted, q, offset);
 #endif
@@ -9242,9 +9257,13 @@ QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
 */
 Qt::InputMethodHints QWidget::inputMethodHints() const
 {
-    Q_D(const QWidget);
 #ifndef QT_NO_IM
-    return d->imHints;
+    const QWidgetPrivate *priv = d_func();
+    while (priv->inheritsInputMethodHints) {
+        priv = priv->q_func()->parentWidget()->d_func();
+        Q_ASSERT(priv);
+    }
+    return priv->imHints;
 #else //QT_NO_IM
     return 0;
 #endif //QT_NO_IM

@@ -476,7 +476,7 @@ public:
 void QDeclarativeXmlListModelPrivate::append_role(QDeclarativeListProperty<QDeclarativeXmlListModelRole> *list, QDeclarativeXmlListModelRole *role)
 {
     QDeclarativeXmlListModel *_this = qobject_cast<QDeclarativeXmlListModel *>(list->object);
-    if (_this) {
+    if (_this && role) {
         int i = _this->d_func()->roleObjects.count();
         _this->d_func()->roleObjects.append(role);
         if (_this->d_func()->roleNames.contains(role->name())) {

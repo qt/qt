@@ -5,7 +5,7 @@ SOURCES += tst_qtextboundaryfinder.cpp
 !symbian:*:DEFINES += SRCDIR=\\\"$$PWD\\\"
 
 wince*|symbian:{
-   addFiles.sources = data
+   addFiles.files = data
    addFiles.path = .
    DEPLOYMENT += addFiles
 }

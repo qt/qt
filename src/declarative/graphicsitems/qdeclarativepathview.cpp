@@ -300,6 +300,19 @@ void QDeclarativePathViewPrivate::setHighlightPosition(qreal pos)
     }
 }
 
+void QDeclarativePathView::pathUpdated()
+{
+    Q_D(QDeclarativePathView);
+    QList<QDeclarativeItem*>::iterator it = d->items.begin();
+    while (it != d->items.end()) {
+        QDeclarativeItem *item = *it;
+        if (QDeclarativePathViewAttached *att = d->attached(item))
+            att->m_percent = -1;
+        ++it;
+    }
+    refill();
+}
+
 void QDeclarativePathViewPrivate::updateItem(QDeclarativeItem *item, qreal percent)
 {
     if (QDeclarativePathViewAttached *att = attached(item)) {
@@ -526,9 +539,9 @@ void QDeclarativePathView::setPath(QDeclarativePath *path)
     if (d->path == path)
         return;
     if (d->path)
-        disconnect(d->path, SIGNAL(changed()), this, SLOT(refill()));
+        disconnect(d->path, SIGNAL(changed()), this, SLOT(pathUpdated()));
     d->path = path;
-    connect(d->path, SIGNAL(changed()), this, SLOT(refill()));
+    connect(d->path, SIGNAL(changed()), this, SLOT(pathUpdated()));
     if (d->isValid() && isComponentComplete()) {
         d->clear();
         if (d->attType) {
@@ -1099,16 +1112,16 @@ void QDeclarativePathViewPrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent 
     if (!interactive || !lastPosTime.isValid())
         return;
 
+    qreal newPc;
+    QPointF pathPoint = pointNear(event->pos(), &newPc);
     if (!stealMouse) {
-        QPointF delta = event->pos() - startPoint;
+        QPointF delta = pathPoint - startPoint;
         if (qAbs(delta.x()) > QApplication::startDragDistance() || qAbs(delta.y()) > QApplication::startDragDistance())
             stealMouse = true;
     }
 
     if (stealMouse) {
         moveReason = QDeclarativePathViewPrivate::Mouse;
-        qreal newPc;
-        pointNear(event->pos(), &newPc);
         qreal diff = (newPc - startPc)*modelCount*mappedRange;
         if (diff) {
             setOffset(offset + diff);
@@ -1318,6 +1331,8 @@ void QDeclarativePathView::refill()
         if (idx >= d->modelCount)
             idx = 0;
     }
+    if (!d->items.count())
+        d->firstIndex = -1;
 
     if (d->modelCount) {
         // add items to beginning and end

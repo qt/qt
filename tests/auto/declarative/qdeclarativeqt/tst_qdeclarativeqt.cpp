@@ -75,6 +75,7 @@ private slots:
     void darker();
     void tint();
     void openUrlExternally();
+    void openUrlExternally_pragmaLibrary();
     void md5();
     void createComponent();
     void createComponent_pragmaLibrary();
@@ -321,6 +322,7 @@ void tst_qdeclarativeqt::openUrlExternally()
     MyUrlHandler handler;
 
     QDesktopServices::setUrlHandler("test", &handler, "noteCall");
+    QDesktopServices::setUrlHandler("file", &handler, "noteCall");
 
     QDeclarativeComponent component(&engine, TEST_FILE("openUrlExternally.qml"));
     QObject *object = component.create();
@@ -328,7 +330,35 @@ void tst_qdeclarativeqt::openUrlExternally()
     QCOMPARE(handler.called,1);
     QCOMPARE(handler.last, QUrl("test:url"));
 
+    object->setProperty("testFile", true);
+
+    QCOMPARE(handler.called,2);
+    QCOMPARE(handler.last, TEST_FILE("test.html"));
+
     QDesktopServices::unsetUrlHandler("test");
+    QDesktopServices::unsetUrlHandler("file");
+}
+
+void tst_qdeclarativeqt::openUrlExternally_pragmaLibrary()
+{
+    MyUrlHandler handler;
+
+    QDesktopServices::setUrlHandler("test", &handler, "noteCall");
+    QDesktopServices::setUrlHandler("file", &handler, "noteCall");
+
+    QDeclarativeComponent component(&engine, TEST_FILE("openUrlExternally_lib.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QCOMPARE(handler.called,1);
+    QCOMPARE(handler.last, QUrl("test:url"));
+
+    object->setProperty("testFile", true);
+
+    QCOMPARE(handler.called,2);
+    QCOMPARE(handler.last, TEST_FILE("test.html"));
+
+    QDesktopServices::unsetUrlHandler("test");
+    QDesktopServices::unsetUrlHandler("file");
 }
 
 void tst_qdeclarativeqt::md5()

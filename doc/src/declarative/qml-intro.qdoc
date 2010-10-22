@@ -262,7 +262,7 @@ myRectangle.top         // Correct
 We can transform a graphical object to get additional effects. Rotate a
 piece of text by 180 degrees to display upside-down text. Rotate an image
 by 90 degrees to lay it on its side. These transformations require
-additonal information.
+additional information.
 
 For rotation, the additional information includes: the origin relative to
 the object being rotated, the axis of rotation, and the angle in degrees to

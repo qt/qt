@@ -64,6 +64,24 @@ QGLTextureGlyphCache::QGLTextureGlyphCache(const QGLContext *context, QFontEngin
     qDebug(" -> QGLTextureGlyphCache() %p for context %p.", this, ctx);
 #endif
     setContext(context);
+
+    m_vertexCoordinateArray[0] = -1.0f;
+    m_vertexCoordinateArray[1] = -1.0f;
+    m_vertexCoordinateArray[2] =  1.0f;
+    m_vertexCoordinateArray[3] = -1.0f;
+    m_vertexCoordinateArray[4] =  1.0f;
+    m_vertexCoordinateArray[5] =  1.0f;
+    m_vertexCoordinateArray[6] = -1.0f;
+    m_vertexCoordinateArray[7] =  1.0f;
+
+    m_textureCoordinateArray[0] = 0.0f;
+    m_textureCoordinateArray[1] = 0.0f;
+    m_textureCoordinateArray[2] = 1.0f;
+    m_textureCoordinateArray[3] = 0.0f;
+    m_textureCoordinateArray[4] = 1.0f;
+    m_textureCoordinateArray[5] = 1.0f;
+    m_textureCoordinateArray[6] = 0.0f;
+    m_textureCoordinateArray[7] = 1.0f;
 }
 
 QGLTextureGlyphCache::~QGLTextureGlyphCache()
@@ -146,7 +164,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     if (ctx->d_ptr->workaround_brokenFBOReadBack) {
         QImageTextureGlyphCache::resizeTextureData(width, height);
         Q_ASSERT(image().depth() == 8);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, oldWidth, oldHeight, GL_ALPHA, GL_UNSIGNED_BYTE, image().constBits());
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, oldHeight, GL_ALPHA, GL_UNSIGNED_BYTE, image().constBits());
         glDeleteTextures(1, &oldTexture);
         return;
     }
@@ -183,26 +201,6 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 
     glViewport(0, 0, oldWidth, oldHeight);
 
-    GLfloat vertexCoordinateArray[8];
-    vertexCoordinateArray[0] = -1.0f;
-    vertexCoordinateArray[1] = -1.0f;
-    vertexCoordinateArray[2] =  1.0f;
-    vertexCoordinateArray[3] = -1.0f;
-    vertexCoordinateArray[4] =  1.0f;
-    vertexCoordinateArray[5] =  1.0f;
-    vertexCoordinateArray[6] = -1.0f;
-    vertexCoordinateArray[7] =  1.0f;
-
-    GLfloat textureCoordinateArray[8];
-    textureCoordinateArray[0] = 0.0f;
-    textureCoordinateArray[1] = 0.0f;
-    textureCoordinateArray[2] = 1.0f;
-    textureCoordinateArray[3] = 0.0f;
-    textureCoordinateArray[4] = 1.0f;
-    textureCoordinateArray[5] = 1.0f;
-    textureCoordinateArray[6] = 0.0f;
-    textureCoordinateArray[7] = 1.0f;
-
     QGLShaderProgram *blitProgram = 0;
     if (pex == 0) {
         if (m_blitProgram == 0) {
@@ -236,8 +234,8 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
             m_blitProgram->link();
         }
 
-        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray);
-        glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray);
+        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, m_vertexCoordinateArray);
+        glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, m_textureCoordinateArray);
 
         m_blitProgram->bind();
         QGLContextPrivate* ctx_d = const_cast<QGLContextPrivate *>(ctx->d_func());
@@ -247,8 +245,8 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
         blitProgram = m_blitProgram;
 
     } else {
-        pex->setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, vertexCoordinateArray);
-        pex->setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, textureCoordinateArray);
+        pex->setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, m_vertexCoordinateArray);
+        pex->setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, m_textureCoordinateArray);
 
         pex->shaderManager->useBlitProgram();
         blitProgram = pex->shaderManager->blitProgram();

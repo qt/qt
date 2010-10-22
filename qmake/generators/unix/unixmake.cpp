@@ -206,6 +206,33 @@ UnixMakefileGenerator::init()
                 // icc style
                 pchFlags = pchFlags.replace("${QMAKE_PCH_OUTPUT}",
                                             pchBaseName + project->first("QMAKE_PCH_OUTPUT_EXT"));
+            } else {
+                // gcc style (including clang_pch_style)
+                QString headerPrefix = project->first("QMAKE_PRECOMP_PREFIX");
+                QString headerSuffix;
+                if (project->isActiveConfig("clang_pch_style"))
+                    headerSuffix = project->first("QMAKE_PCH_OUTPUT_EXT");
+                else
+                    pchBaseName += project->first("QMAKE_PCH_OUTPUT_EXT");
+
+                pchBaseName += Option::dir_sep;
+                QString pchOutputFile;
+
+                if(comps[i] == "C") {
+                    pchOutputFile = "c";
+                } else if(comps[i] == "CXX") {
+                    pchOutputFile = "c++";
+                } else if(project->isActiveConfig("objective_c")) {
+                    if(comps[i] == "OBJC")
+                        pchOutputFile = "objective-c";
+                    else if(comps[i] == "OBJCXX")
+                        pchOutputFile = "objective-c++";
+                }
+
+                if(!pchOutputFile.isEmpty()) {
+                    pchFlags = pchFlags.replace("${QMAKE_PCH_OUTPUT}",
+                            pchBaseName + pchOutputFile + headerSuffix);
+                }
             }
 
             if (!pchFlags.isEmpty())
@@ -379,7 +406,9 @@ QStringList
         QString header_prefix;
         if(!project->isEmpty("PRECOMPILED_DIR"))
             header_prefix = project->first("PRECOMPILED_DIR");
-        header_prefix += project->first("QMAKE_ORIG_TARGET") + project->first("QMAKE_PCH_OUTPUT_EXT");
+        header_prefix += project->first("QMAKE_ORIG_TARGET");
+        if (!project->isActiveConfig("clang_pch_style"))
+            header_prefix += project->first("QMAKE_PCH_OUTPUT_EXT");
         if (project->isActiveConfig("icc_pch_style")) {
             // icc style
             for(QStringList::Iterator it = Option::cpp_ext.begin(); it != Option::cpp_ext.end(); ++it) {
@@ -389,23 +418,25 @@ QStringList
                 }
             }
         } else {
-            // gcc style
+            // gcc style (including clang_pch_style)
+            QString header_suffix = project->isActiveConfig("clang_pch_style")
+                    ? project->first("QMAKE_PCH_OUTPUT_EXT") : "";
             header_prefix += Option::dir_sep + project->first("QMAKE_PRECOMP_PREFIX");
             for(QStringList::Iterator it = Option::c_ext.begin(); it != Option::c_ext.end(); ++it) {
                 if(file.endsWith(*it)) {
                     if(!project->isEmpty("QMAKE_CFLAGS_PRECOMPILE")) {
-                        QString precomp_c_h = header_prefix + "c";
+                        QString precomp_c_h = header_prefix + "c" + header_suffix;
                         if(!ret.contains(precomp_c_h))
                             ret += precomp_c_h;
                     }
                     if(project->isActiveConfig("objective_c")) {
                         if(!project->isEmpty("QMAKE_OBJCFLAGS_PRECOMPILE")) {
-                            QString precomp_objc_h = header_prefix + "objective-c";
+                            QString precomp_objc_h = header_prefix + "objective-c" + header_suffix;
                             if(!ret.contains(precomp_objc_h))
                                 ret += precomp_objc_h;
                         }
                         if(!project->isEmpty("QMAKE_OBJCXXFLAGS_PRECOMPILE")) {
-                            QString precomp_objcpp_h = header_prefix + "objective-c++";
+                            QString precomp_objcpp_h = header_prefix + "objective-c++" + header_suffix;
                             if(!ret.contains(precomp_objcpp_h))
                                 ret += precomp_objcpp_h;
                         }
@@ -416,13 +447,13 @@ QStringList
             for(QStringList::Iterator it = Option::cpp_ext.begin(); it != Option::cpp_ext.end(); ++it) {
                 if(file.endsWith(*it)) {
                     if(!project->isEmpty("QMAKE_CXXFLAGS_PRECOMPILE")) {
-                        QString precomp_cpp_h = header_prefix + "c++";
+                        QString precomp_cpp_h = header_prefix + "c++" + header_suffix;
                         if(!ret.contains(precomp_cpp_h))
                             ret += precomp_cpp_h;
                     }
                     if(project->isActiveConfig("objective_c")) {
                         if(!project->isEmpty("QMAKE_OBJCXXFLAGS_PRECOMPILE")) {
-                            QString precomp_objcpp_h = header_prefix + "objective-c++";
+                            QString precomp_objcpp_h = header_prefix + "objective-c++" + header_suffix;
                             if(!ret.contains(precomp_objcpp_h))
                                 ret += precomp_objcpp_h;
                         }
@@ -636,11 +667,13 @@ UnixMakefileGenerator::processPrlFiles()
 
                     if(opt.startsWith("-L") ||
                        (Option::target_mode == Option::TARG_MACX_MODE && opt.startsWith("-F"))) {
-                        if(lit == 0 || !lflags[arch].contains(opt))
+                        if(!lflags[arch].contains(opt))
                             lflags[arch].append(opt);
-                    } else if(opt.startsWith("-l")) {
-                        if(lit == l.size()-1 || !lflags[arch].contains(opt))
-                            lflags[arch].append(opt);
+                    } else if(opt.startsWith("-l") || opt == "-pthread") {
+                        // Make sure we keep the dependency-order of libraries
+                        if (lflags[arch].contains(opt))
+                            lflags[arch].removeAll(opt);
+                        lflags[arch].append(opt);
                     } else if(Option::target_mode == Option::TARG_MACX_MODE && opt.startsWith("-framework")) {
                         if(opt.length() > 11)
                             opt = opt.mid(11);
@@ -672,7 +705,7 @@ UnixMakefileGenerator::processPrlFiles()
                         lflags[arch].append(opt);
                     }
                 } else if(!opt.isNull()) {
-                    if(lit == 0 || l.lastIndexOf(opt, lit-1) == -1)
+                    if(!lflags[arch].contains(opt))
                         lflags[arch].append(opt);
                 }
             }

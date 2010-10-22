@@ -94,8 +94,9 @@ public:
 
                     // Apply only to IsFunctions
                     IsVMEFunction     = 0x00000400,
-                    HasArguments      = 0x00000800
-
+                    HasArguments      = 0x00000800,
+                    IsSignal          = 0x00001000,
+                    IsVMESignal       = 0x00002000,
         };
         Q_DECLARE_FLAGS(Flags, Flag)
 
@@ -125,7 +126,7 @@ public:
 
     QDeclarativePropertyCache *copy() const;
     void append(QDeclarativeEngine *, const QMetaObject *, Data::Flag propertyFlags = Data::NoFlags,
-                Data::Flag methodFlags = Data::NoFlags);
+                Data::Flag methodFlags = Data::NoFlags, Data::Flag signalFlags = Data::NoFlags);
 
     static QDeclarativePropertyCache *create(QDeclarativeEngine *, const QMetaObject *);
     static Data create(const QMetaObject *, const QString &);
@@ -133,6 +134,7 @@ public:
     inline Data *property(const QScriptDeclarativeClass::Identifier &id) const;
     Data *property(const QString &) const;
     Data *property(int) const;
+    Data *method(int) const;
     QStringList propertyNames() const;
 
     inline QDeclarativeEngine *qmlEngine() const;
@@ -152,6 +154,7 @@ private:
 
     QDeclarativeEngine *engine;
     IndexCache indexCache;
+    IndexCache methodIndexCache;
     StringCache stringCache;
     IdentifierCache identifierCache;
 };

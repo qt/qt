@@ -172,6 +172,8 @@ Flipable {
     states: State {
         name: "Back"
         PropertyChanges { target: itemRotation; angle: 180 }
+        PropertyChanges { target: toolBar; button2Visible: false }
+        PropertyChanges { target: toolBar; button1Label: "Back" }
     }
 
     transitions: Transition {

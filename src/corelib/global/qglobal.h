@@ -358,6 +358,7 @@ namespace QT_NAMESPACE {}
      GCCE     - GCCE (Symbian GCCE builds)
      RVCT     - ARM Realview Compiler Suite
      NOKIAX86 - Nokia x86 (Symbian WINSCW builds)
+     CLANG    - C++ front-end for the LLVM compiler
 
 
    Should be sorted most to least authoritative.
@@ -453,6 +454,10 @@ namespace QT_NAMESPACE {}
 /* Intel C++ also masquerades as GCC 3.2.0 */
 #    define Q_CC_INTEL
 #    define Q_NO_TEMPLATE_FRIENDS
+#  endif
+#  if defined(__clang__)
+/* Clang also masquerades as GCC 4.2.1 */
+#    define Q_CC_CLANG
 #  endif
 #  ifdef __APPLE__
 #    define Q_NO_DEPRECATED_CONSTRUCTORS

@@ -122,7 +122,7 @@
     items can anchor to another item, creating robust layouts.
 
     The \c MouseArea has many signal handlers that are called during mouse movements within
-    the specfied \c MouseArea boundaries. One of them is \c onClicked and it is called
+    the specified \c MouseArea boundaries. One of them is \c onClicked and it is called
     whenever the acceptable mouse button is clicked, the left click being the default. We
     can bind actions to the onClicked handler. In our example, \c console.log() outputs text
     whenever the mouse area is clicked. The function \c console.log() is a useful tool for
@@ -546,7 +546,7 @@
     a certain easing curve. An easing curve controls the animation rates and
     interpolation behavior during state transitions. The easing curve we chose is
     \l{PropertyAnimation::easing.type}{Easing.OutQuint}, which slows the movement near
-    the end of the animation. Pleae read \l {qdeclarativeanimation.html}{QML's Animation}
+    the end of the animation. Please read \l {qdeclarativeanimation.html}{QML's Animation}
     article.
 
     \snippet examples/tutorials/gettingStarted/gsQml/texteditor.qml transitions
@@ -835,7 +835,7 @@
     \c QDeclarativeListProperty<File>. The template type, \c File, needs to be a
     \c QObject derivative. Further, to create the
     \l {QDeclarativeListProperty}{QDeclarativeListProperty}, the list's accessor
-    and modifiers need to be passed to the consructor as function pointers. The list,
+    and modifiers need to be passed to the constructor as function pointers. The list,
     a \c QList in our case,  also needs to be a list of \c File pointers.
 
     The constructor of \l {QDeclarativeListProperty}{QDeclarativeListProperty}
@@ -980,7 +980,7 @@
     Our \c FileMenu can now connect to their respective actions. The \c saveButton
     will transfer the text from the \c TextEdit onto the directory's \c fileContent
     property, then copy its file name from the editable text input. Finally, the button
-    calls the \c saveFile() function, saving the file. The \c sloadButton has a similar
+    calls the \c saveFile() function, saving the file. The \c loadButton has a similar
     execution. Also, the \c New action will empty the contents of the \c TextEdit. 
 
     Further, the \c EditMenu buttons are connected to the \c TextEdit functions to copy,

@@ -51,10 +51,10 @@ QT_BEGIN_NAMESPACE
 
 namespace {
 
-class OutputEdit : public QPlainTextEdit
+class QScriptDebugOutputWidgetOutputEdit : public QPlainTextEdit
 {
 public:
-    OutputEdit(QWidget *parent = 0)
+    QScriptDebugOutputWidgetOutputEdit(QWidget *parent = 0)
         : QPlainTextEdit(parent)
     {
         setReadOnly(true);
@@ -85,7 +85,7 @@ public:
     QScriptDebugOutputWidgetPrivate();
     ~QScriptDebugOutputWidgetPrivate();
 
-    OutputEdit *outputEdit;
+    QScriptDebugOutputWidgetOutputEdit *outputEdit;
 };
 
 QScriptDebugOutputWidgetPrivate::QScriptDebugOutputWidgetPrivate()
@@ -100,7 +100,7 @@ QScriptDebugOutputWidget::QScriptDebugOutputWidget(QWidget *parent)
     : QScriptDebugOutputWidgetInterface(*new QScriptDebugOutputWidgetPrivate, parent, 0)
 {
     Q_D(QScriptDebugOutputWidget);
-    d->outputEdit = new OutputEdit();
+    d->outputEdit = new QScriptDebugOutputWidgetOutputEdit();
     QVBoxLayout *vbox = new QVBoxLayout(this);
     vbox->setMargin(0);
     vbox->setSpacing(0);

@@ -120,6 +120,14 @@ public:
         TestFontEngine = 0x1000
     };
 
+    enum GlyphFormat {
+        Format_None,
+        Format_Render = Format_None,
+        Format_Mono,
+        Format_A8,
+        Format_A32
+    };
+
     QFontEngine();
     virtual ~QFontEngine();
 
@@ -190,6 +198,11 @@ public:
     virtual QImage alphaMapForGlyph(glyph_t);
     virtual QImage alphaMapForGlyph(glyph_t, const QTransform &t);
     virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
+
+    virtual glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, const QTransform &matrix, GlyphFormat /*format*/)
+    {
+        return boundingBox(glyph, matrix);
+    }
 
     virtual void removeGlyphFromCache(glyph_t);
 

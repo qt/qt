@@ -7,9 +7,9 @@ win32:!wince*: LIBS += -lUser32
 DEFINES += QT_NO_CAST_TO_ASCII
 
 wince*|symbian: {
-   rootFiles.sources = Ash_European.jpg graphicsScene_selection.data
+   rootFiles.files = Ash_European.jpg graphicsScene_selection.data
    rootFiles.path = .
-   renderFiles.sources = testData\\render\\*
+   renderFiles.files = testData\\render\\*
    renderFiles.path = testData\\render
    DEPLOYMENT += rootFiles renderFiles
 }

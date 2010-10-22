@@ -755,6 +755,9 @@ public:
     uint isMoved : 1;
     uint isGLWidget : 1;
     uint usesDoubleBufferedGLContext : 1;
+#ifndef QT_NO_IM
+    uint inheritsInputMethodHints : 1;
+#endif
 
     // *************************** Platform specific ************************************
 #if defined(Q_WS_X11) // <----------------------------------------------------------- X11
@@ -846,6 +849,13 @@ public:
     bool originalDrawMethod;
     // Do we need to change the methods?
     bool changeMethods;
+    bool hasOwnContext;
+    CGContextRef cgContext;
+    QRegion ut_rg;
+    QPoint ut_pt;
+    bool isInUnifiedToolbar;
+    QWindowSurface *unifiedSurface;
+    QPoint toolbar_offset;
 #endif
     void determineWindowClass();
     void transferChildren();

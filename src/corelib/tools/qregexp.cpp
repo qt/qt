@@ -74,10 +74,6 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
 #define RXERR_INTERVAL   QT_TRANSLATE_NOOP("QRegExp", "invalid interval")
 #define RXERR_CATEGORY   QT_TRANSLATE_NOOP("QRegExp", "invalid category")
 
-/*
-  WARNING! Be sure to read qregexp.tex before modifying this file.
-*/
-
 /*!
     \class QRegExp
     \reentrant

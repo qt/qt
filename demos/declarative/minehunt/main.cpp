@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     canvas.setResizeMode(QDeclarativeView::SizeRootObjectToView);
 #endif
     canvas.engine()->rootContext()->setContextObject(game);        
-    canvas.setSource(QString("minehunt.qml"));
+    canvas.setSource(QString("qrc:minehunt.qml"));
     QObject::connect(canvas.engine(), SIGNAL(quit()), &app, SLOT(quit()));
     
 #ifdef Q_OS_SYMBIAN

@@ -51,10 +51,15 @@ MMF::AbstractMediaPlayer::AbstractMediaPlayer
         ,   m_parent(parent)
         ,   m_pending(NothingPending)
         ,   m_positionTimer(new QTimer(this))
+        ,   m_position(0)
         ,   m_bufferStatusTimer(new QTimer(this))
         ,   m_mmfMaxVolume(NullMaxVolume)
         ,   m_prefinishMarkSent(false)
         ,   m_aboutToFinishSent(false)
+#ifdef PHONON_MMF_PROGRESSIVE_DOWNLOAD
+        ,   m_download(0)
+        ,   m_downloadStalled(false)
+#endif
 {
     connect(m_positionTimer.data(), SIGNAL(timeout()), this, SLOT(positionTick()));
     connect(m_bufferStatusTimer.data(), SIGNAL(timeout()), this, SLOT(bufferStatusTick()));
@@ -183,6 +188,7 @@ void MMF::AbstractMediaPlayer::seek(qint64 ms)
         }
 
         doSeek(ms);
+        m_position = ms;
         resetMarksIfRewound();
 
         if(wasPlaying && state() != ErrorState) {
@@ -205,6 +211,11 @@ void MMF::AbstractMediaPlayer::seek(qint64 ms)
 bool MMF::AbstractMediaPlayer::isSeekable() const
 {
     return true;
+}
+
+qint64 MMF::AbstractMediaPlayer::currentTime() const
+{
+    return m_position;
 }
 
 void MMF::AbstractMediaPlayer::doSetTickInterval(qint32 interval)
@@ -247,7 +258,19 @@ void MMF::AbstractMediaPlayer::open()
             symbianErr = openFile(*file);
             if (KErrNone != symbianErr)
                 errorMessage = tr("Error opening file");
-        } else {
+        }
+#ifdef PHONON_MMF_PROGRESSIVE_DOWNLOAD
+        else if (url.scheme() == QLatin1String("http")) {
+            Q_ASSERT(!m_download);
+            m_download = new Download(url, this);
+            connect(m_download, SIGNAL(lengthChanged(qint64)),
+                    this, SLOT(downloadLengthChanged(qint64)));
+            connect(m_download, SIGNAL(stateChanged(Download::State)),
+                    this, SLOT(downloadStateChanged(Download::State)));
+            m_download->start();
+        }
+#endif
+        else {
             symbianErr = openUrl(url.toString());
             if (KErrNone != symbianErr)
                 errorMessage = tr("Error opening URL");
@@ -286,6 +309,16 @@ void MMF::AbstractMediaPlayer::open()
     }
 
     TRACE_EXIT_0();
+}
+
+void MMF::AbstractMediaPlayer::close()
+{
+    doClose();
+#ifdef PHONON_MMF_PROGRESSIVE_DOWNLOAD
+    delete m_download;
+    m_download = 0;
+#endif
+    m_position = 0;
 }
 
 void MMF::AbstractMediaPlayer::volumeChanged(qreal volume)
@@ -374,7 +407,8 @@ void MMF::AbstractMediaPlayer::bufferingComplete()
 {
     stopBufferStatusTimer();
     emit MMF::AbstractPlayer::bufferStatus(100);
-    changeState(m_stateBeforeBuffering);
+    if (!progressiveDownloadStalled())
+        changeState(m_stateBeforeBuffering);
 }
 
 void MMF::AbstractMediaPlayer::maxVolumeChanged(int mmfMaxVolume)
@@ -385,13 +419,30 @@ void MMF::AbstractMediaPlayer::maxVolumeChanged(int mmfMaxVolume)
 
 void MMF::AbstractMediaPlayer::loadingComplete(int error)
 {
-    Q_ASSERT(Phonon::LoadingState == state());
-
-    if (KErrNone == error) {
-        updateMetaData();
-        changeState(StoppedState);
+    TRACE_CONTEXT(AbstractMediaPlayer::loadingComplete, EAudioApi);
+    TRACE_ENTRY("state %d error %d", state(), error);
+    if (progressiveDownloadStalled()) {
+        Q_ASSERT(Phonon::BufferingState == state());
+        if (KErrNone == error) {
+            bufferingComplete();
+            doSeek(m_position);
+            startPlayback();
+#ifdef PHONON_MMF_PROGRESSIVE_DOWNLOAD
+            m_downloadStalled = false;
+#endif
+        }
     } else {
-        setError(tr("Loading clip failed"), error);
+        Q_ASSERT(Phonon::LoadingState == state());
+        if (KErrNone == error) {
+            updateMetaData();
+            changeState(StoppedState);
+        } else {
+            if (isProgressiveDownload() && KErrCorrupt == error) {
+                setProgressiveDownloadStalled();
+            } else {
+                setError(tr("Loading clip failed"), error);
+            }
+        }
     }
 }
 
@@ -415,8 +466,12 @@ void MMF::AbstractMediaPlayer::playbackComplete(int error)
         QMetaObject::invokeMethod(m_parent, "switchToNextSource", Qt::QueuedConnection);
     }
     else {
-        setError(tr("Playback complete"), error);
-        emit finished();
+        if (isProgressiveDownload() && KErrCorrupt == error) {
+            setProgressiveDownloadStalled();
+        } else {
+            setError(tr("Playback complete"), error);
+            emit finished();
+        }
     }
 }
 
@@ -425,15 +480,36 @@ qint64 MMF::AbstractMediaPlayer::toMilliSeconds(const TTimeIntervalMicroSeconds 
     return in.Int64() / 1000;
 }
 
+bool MMF::AbstractMediaPlayer::isProgressiveDownload() const
+{
+#ifdef PHONON_MMF_PROGRESSIVE_DOWNLOAD
+    return (0 != m_download);
+#else
+    return false;
+#endif
+}
+
+bool MMF::AbstractMediaPlayer::progressiveDownloadStalled() const
+{
+#ifdef PHONON_MMF_PROGRESSIVE_DOWNLOAD
+    return m_downloadStalled;
+#else
+    return false;
+#endif
+}
+
 //-----------------------------------------------------------------------------
 // Slots
 //-----------------------------------------------------------------------------
 
 void MMF::AbstractMediaPlayer::positionTick()
 {
-    const qint64 current = currentTime();
-    emitMarksIfReached(current);
-    emit MMF::AbstractPlayer::tick(current);
+    const qint64 pos = getCurrentTime();
+    if (pos > m_position) {
+        m_position = pos;
+        emitMarksIfReached(m_position);
+        emit MMF::AbstractPlayer::tick(m_position);
+    }
 }
 
 void MMF::AbstractMediaPlayer::emitMarksIfReached(qint64 current)
@@ -458,7 +534,7 @@ void MMF::AbstractMediaPlayer::emitMarksIfReached(qint64 current)
 
 void MMF::AbstractMediaPlayer::resetMarksIfRewound()
 {
-    const qint64 current = currentTime();
+    const qint64 current = getCurrentTime();
     const qint64 total = totalTime();
     const qint64 remaining = total - current;
 
@@ -487,10 +563,74 @@ void MMF::AbstractMediaPlayer::startPlayback()
     changeState(PlayingState);
 }
 
+void MMF::AbstractMediaPlayer::setProgressiveDownloadStalled()
+{
+#ifdef PHONON_MMF_PROGRESSIVE_DOWNLOAD
+    TRACE_CONTEXT(AbstractMediaPlayer::setProgressiveDownloadStalled, EAudioApi);
+    TRACE_ENTRY("state %d", state());
+    Q_ASSERT(isProgressiveDownload());
+    m_downloadStalled = true;
+    doClose();
+    bufferingStarted();
+    // Video player loses window handle when closed - need to reapply it here
+    videoOutputChanged();
+    m_download->resume();
+#endif
+}
+
 void MMF::AbstractMediaPlayer::bufferStatusTick()
 {
-    emit MMF::AbstractPlayer::bufferStatus(bufferStatus());
+    // During progressive download, there is no way to detect the buffering status.
+    // Phonon does not support a "buffering; amount unknown" signal, therefore we
+    // return a buffering status of zero.
+    const int status = progressiveDownloadStalled() ? 0 : bufferStatus();
+    emit MMF::AbstractPlayer::bufferStatus(status);
 }
+
+#ifdef PHONON_MMF_PROGRESSIVE_DOWNLOAD
+void MMF::AbstractMediaPlayer::downloadLengthChanged(qint64 length)
+{
+    TRACE_CONTEXT(AbstractMediaPlayer::downloadLengthChanged, EAudioApi);
+    TRACE_ENTRY("length %Ld", length);
+    Q_UNUSED(length)
+    if (m_downloadStalled) {
+        bufferingComplete();
+        int err = m_parent->openFileHandle(m_download->targetFileName());
+        if (KErrNone == err)
+            err = openFile(*m_parent->file());
+        if (KErrNone != err)
+            setError(tr("Error opening file"));
+    }
+}
+
+void MMF::AbstractMediaPlayer::downloadStateChanged(Download::State state)
+{
+    TRACE_CONTEXT(AbstractMediaPlayer::downloadStateChanged, EAudioApi);
+    TRACE_ENTRY("state %d", state);
+    switch (state) {
+    case Download::Idle:
+    case Download::Initializing:
+        break;
+    case Download::Downloading:
+        {
+        int err = m_parent->openFileHandle(m_download->targetFileName());
+        if (KErrNone == err)
+            err = openFile(*m_parent->file());
+        else if (KErrCorrupt == err)
+            // Insufficient data downloaded - enter Buffering state
+            setProgressiveDownloadStalled();
+        if (KErrNone != err)
+            setError(tr("Error opening file"));
+        }
+        break;
+    case Download::Complete:
+        break;
+    case Download::Error:
+        setError(tr("Download error"));
+        break;
+    }
+}
+#endif // PHONON_MMF_PROGRESSIVE_DOWNLOAD
 
 Phonon::State MMF::AbstractMediaPlayer::phononState(PrivateState state) const
 {

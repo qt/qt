@@ -3155,10 +3155,8 @@ void QRasterPaintEngine::drawGlyphsS60(const QPointF &p, const QTextItemInt &ti)
         const TUint8 *glyphBitmapBytes;
         TSize glyphBitmapSize;
         fe->getCharacterData(glyphs[i], tmetrics, glyphBitmapBytes, glyphBitmapSize);
-        const glyph_metrics_t metrics = ti.fontEngine->boundingBox(glyphs[i]);
-        const int x = qFloor(positions[i].x + metrics.x);
-        const int y = qFloor(positions[i].y + metrics.y);
-
+        const int x = qFloor(positions[i].x + tmetrics.HorizBearingX());
+        const int y = qFloor(positions[i].y - tmetrics.HorizBearingY());
         alphaPenBlt(glyphBitmapBytes, glyphBitmapSize.iWidth, 8, x, y, glyphBitmapSize.iWidth, glyphBitmapSize.iHeight);
     }
 
@@ -4989,8 +4987,8 @@ protected:
                                            int size, int opacity) const;
     uint *addCacheElement(quint64 hash_val, const QGradient &gradient, int opacity) {
         if (cache.size() == maxCacheSize()) {
-            int elem_to_remove = qrand() % maxCacheSize();
-            cache.remove(cache.keys()[elem_to_remove]); // may remove more than 1, but OK
+            // may remove more than 1, but OK
+            cache.erase(cache.begin() + (qrand() % maxCacheSize()));
         }
         CacheInfo cache_entry(gradient.stops(), opacity, gradient.interpolationMode());
         generateGradientColorTable(gradient, cache_entry.buffer, paletteSize(), opacity);

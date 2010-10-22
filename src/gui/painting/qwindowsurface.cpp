@@ -118,11 +118,11 @@ public:
 /*!
     Constructs an empty surface for the given top-level \a window.
 */
-QWindowSurface::QWindowSurface(QWidget *window)
+QWindowSurface::QWindowSurface(QWidget *window, bool setDefaultSurface)
     : d_ptr(new QWindowSurfacePrivate(window))
 {
     if (!QApplicationPrivate::runtime_graphics_system) {
-        if(window)
+        if(setDefaultSurface && window)
             window->setWindowSurface(this);
     }
 }

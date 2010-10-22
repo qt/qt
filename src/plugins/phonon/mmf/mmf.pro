@@ -75,25 +75,37 @@ symbian {
 			   $$PHONON_MMF_DIR/utils.cpp                \
 			   $$PHONON_MMF_DIR/videowidget.cpp
 
-	# Test for whether the build environment supports video rendering to graphics
-	# surfaces.
-	symbian:exists($${EPOCROOT}epoc32/include/platform/videoplayer2.h) {
-		HEADERS +=                                       \
-			   $$PHONON_MMF_DIR/videooutput_surface.h    \
-			   $$PHONON_MMF_DIR/videoplayer_surface.h
-		SOURCES +=                                       \
-			   $$PHONON_MMF_DIR/videooutput_surface.cpp  \
-			   $$PHONON_MMF_DIR/videoplayer_surface.cpp
-		DEFINES += PHONON_MMF_VIDEO_SURFACES
-	} else {
-		HEADERS +=                                       \
-			   $$PHONON_MMF_DIR/ancestormovemonitor.h    \
-			   $$PHONON_MMF_DIR/videooutput_dsa.h        \
-			   $$PHONON_MMF_DIR/videoplayer_dsa.h
-		SOURCES +=                                       \
-			   $$PHONON_MMF_DIR/ancestormovemonitor.cpp  \
-			   $$PHONON_MMF_DIR/videooutput_dsa.cpp      \
-			   $$PHONON_MMF_DIR/videoplayer_dsa.cpp      \
+	symbian {
+		# Test for whether the build environment supports video rendering to graphics
+		# surfaces.
+		exists($${EPOCROOT}epoc32/include/platform/videoplayer2.h) {
+			HEADERS +=                                       \
+				   $$PHONON_MMF_DIR/videooutput_surface.h    \
+				   $$PHONON_MMF_DIR/videoplayer_surface.h
+			SOURCES +=                                       \
+				   $$PHONON_MMF_DIR/videooutput_surface.cpp  \
+				   $$PHONON_MMF_DIR/videoplayer_surface.cpp
+			DEFINES += PHONON_MMF_VIDEO_SURFACES
+		} else {
+			HEADERS +=                                       \
+				   $$PHONON_MMF_DIR/ancestormovemonitor.h    \
+				   $$PHONON_MMF_DIR/videooutput_dsa.h        \
+				   $$PHONON_MMF_DIR/videoplayer_dsa.h
+			SOURCES +=                                       \
+				   $$PHONON_MMF_DIR/ancestormovemonitor.cpp  \
+				   $$PHONON_MMF_DIR/videooutput_dsa.cpp      \
+				   $$PHONON_MMF_DIR/videoplayer_dsa.cpp      \
+		}
+
+		# Test whether the build environment includes support for the Download Manager
+		# API, required for Progressive Download
+		exists($${EPOCROOT}epoc32/include/downloadmgrclient.h) | \
+		exists($${EPOCROOT}epoc32/include/mw/downloadmgrclient.h) {
+			HEADERS += $$PHONON_MMF_DIR/download.h
+			SOURCES += $$PHONON_MMF_DIR/download.cpp
+			LIBS += -ldownloadmgr
+			DEFINES += PHONON_MMF_PROGRESSIVE_DOWNLOAD
+		}
 	}
 
 	LIBS += -lcone

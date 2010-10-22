@@ -937,6 +937,8 @@ void tst_QDeclarativeListView::sections()
         QCOMPARE(next->text().toInt(), (i+1)/5);
     }
 
+    QSignalSpy currentSectionChangedSpy(listview, SIGNAL(currentSectionChanged()));
+
     // Remove section boundary
     model.removeItem(5);
 
@@ -972,8 +974,12 @@ void tst_QDeclarativeListView::sections()
     listview->setContentY(140);
     QTRY_COMPARE(listview->currentSection(), QString("1"));
 
+    QTRY_COMPARE(currentSectionChangedSpy.count(), 1);
+
     listview->setContentY(20);
     QTRY_COMPARE(listview->currentSection(), QString("0"));
+
+    QTRY_COMPARE(currentSectionChangedSpy.count(), 2);
 
     item = findItem<QDeclarativeItem>(contentItem, "wrapper", 1);
     QTRY_VERIFY(item);

@@ -1246,7 +1246,7 @@ void qt_init(QApplicationPrivate *priv, int)
     qt_redirectNSApplicationSendEvent();
 
     QMacCocoaAutoReleasePool pool;
-    NSObject *oldDelegate = [cocoaApp delegate];
+    id oldDelegate = [cocoaApp delegate];
     QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) *newDelegate = [QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate];
     Q_ASSERT(newDelegate);
     [newDelegate setQtPrivate:priv];

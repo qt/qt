@@ -120,7 +120,10 @@ src_webkit_declarative.target = sub-webkitdeclarative
       src_webkit.depends = src_gui src_sql src_network
       contains(QT_CONFIG, xmlpatterns): src_webkit.depends += src_xmlpatterns
       src_imports.depends += src_webkit
-      exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro): src_webkit.depends += src_javascriptcore
+      exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro) {
+         src_webkit.depends += src_javascriptcore
+         src_javascriptcore.depends = src_corelib
+      }
    }
    contains(QT_CONFIG, qt3support): src_plugins.depends += src_qt3support
    contains(QT_CONFIG, dbus):{

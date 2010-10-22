@@ -204,6 +204,7 @@ void tst_QDeclarativeItem::keys()
     canvas->rootContext()->setContextProperty("keysTestObject", testObject);
 
     canvas->rootContext()->setContextProperty("enableKeyHanding", QVariant(true));
+    canvas->rootContext()->setContextProperty("forwardeeVisible", QVariant(true));
 
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/keystest.qml"));
     canvas->show();
@@ -213,6 +214,9 @@ void tst_QDeclarativeItem::keys()
     QApplication::sendEvent(canvas, &wa);
     QFocusEvent fe(QEvent::FocusIn);
     QApplication::sendEvent(canvas, &fe);
+
+    QVERIFY(canvas->rootObject());
+    QCOMPARE(canvas->rootObject()->property("isEnabled").toBool(), true);
 
     QKeyEvent key(QEvent::KeyPress, Qt::Key_A, Qt::NoModifier, "A", false, 1);
     QApplication::sendEvent(canvas, &key);
@@ -284,7 +288,19 @@ void tst_QDeclarativeItem::keys()
 
     testObject->reset();
 
+    canvas->rootContext()->setContextProperty("forwardeeVisible", QVariant(false));
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_A, Qt::NoModifier, "A", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QCOMPARE(testObject->mKey, int(Qt::Key_A));
+    QCOMPARE(testObject->mForwardedKey, 0);
+    QCOMPARE(testObject->mText, QLatin1String("A"));
+    QVERIFY(testObject->mModifiers == Qt::NoModifier);
+    QVERIFY(!key.isAccepted());
+
+    testObject->reset();
+
     canvas->rootContext()->setContextProperty("enableKeyHanding", QVariant(false));
+    QCOMPARE(canvas->rootObject()->property("isEnabled").toBool(), false);
 
     key = QKeyEvent(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier, "", false, 1);
     QApplication::sendEvent(canvas, &key);
@@ -292,6 +308,7 @@ void tst_QDeclarativeItem::keys()
     QVERIFY(!key.isAccepted());
 
     canvas->rootContext()->setContextProperty("enableKeyHanding", QVariant(true));
+    QCOMPARE(canvas->rootObject()->property("isEnabled").toBool(), true);
 
     key = QKeyEvent(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier, "", false, 1);
     QApplication::sendEvent(canvas, &key);

@@ -52,8 +52,8 @@
 #include "qnetworkaccesshttpbackend_p.h"
 #include "qnetworkaccessftpbackend_p.h"
 #include "qnetworkaccessfilebackend_p.h"
-#include "qnetworkaccessdatabackend_p.h"
 #include "qnetworkaccessdebugpipebackend_p.h"
+#include "qnetworkreplydataimpl_p.h"
 #include "qnetworkreplyfileimpl_p.h"
 
 #include "QtCore/qbuffer.h"
@@ -69,7 +69,6 @@ QT_BEGIN_NAMESPACE
 Q_GLOBAL_STATIC(QNetworkAccessHttpBackendFactory, httpBackend)
 #endif // QT_NO_HTTP
 Q_GLOBAL_STATIC(QNetworkAccessFileBackendFactory, fileBackend)
-Q_GLOBAL_STATIC(QNetworkAccessDataBackendFactory, dataBackend)
 #ifndef QT_NO_FTP
 Q_GLOBAL_STATIC(QNetworkAccessFtpBackendFactory, ftpBackend)
 #endif // QT_NO_FTP
@@ -83,7 +82,7 @@ static void ensureInitialized()
 #ifndef QT_NO_HTTP
     (void) httpBackend();
 #endif // QT_NO_HTTP
-    (void) dataBackend();
+
 #ifndef QT_NO_FTP
     (void) ftpBackend();
 #endif
@@ -947,12 +946,18 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     Q_D(QNetworkAccessManager);
 
     bool isLocalFile = req.url().isLocalFile();
+    QString scheme = req.url().scheme().toLower();
 
     // fast path for GET on file:// URLs
     // The QNetworkAccessFileBackend will right now only be used for PUT
     if ((op == QNetworkAccessManager::GetOperation || op == QNetworkAccessManager::HeadOperation)
-        && (isLocalFile || req.url().scheme() == QLatin1String("qrc"))) {
+        && (isLocalFile || scheme == QLatin1String("qrc"))) {
         return new QNetworkReplyFileImpl(this, req, op);
+    }
+
+    if ((op == QNetworkAccessManager::GetOperation || op == QNetworkAccessManager::HeadOperation)
+            && scheme == QLatin1String("data")) {
+        return new QNetworkReplyDataImpl(this, req, op);
     }
 
 #ifndef QT_NO_BEARERMANAGEMENT

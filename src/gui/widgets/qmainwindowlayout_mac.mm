@@ -408,6 +408,7 @@ void QMainWindowLayout::insertIntoMacToolbar(QToolBar *before, QToolBar *toolbar
         beforeIndex = qtoolbarsInUnifiedToolbarList.size();
 
     int toolbarIndex = qtoolbarsInUnifiedToolbarList.indexOf(toolbar);
+
 #ifndef QT_MAC_USE_COCOA
     HIToolbarRef macToolbar = NULL;
     if ((GetWindowToolbar(window, &macToolbar) == noErr) && !macToolbar) {
@@ -444,6 +445,18 @@ void QMainWindowLayout::insertIntoMacToolbar(QToolBar *before, QToolBar *toolbar
 #endif
     }
     qtoolbarsInUnifiedToolbarList.insert(beforeIndex, toolbar);
+
+    // Adding to the unified toolbar surface for the raster engine.
+    if (layoutState.mainWindow->windowSurface()) {
+        QPoint offset(0, 0);
+        for (int i = 0; i < beforeIndex; ++i) {
+            offset.setX(offset.x() + qtoolbarsInUnifiedToolbarList.at(i)->size().width());
+        }
+#ifdef QT_MAC_USE_COCOA
+        unifiedSurface->insertToolbar(toolbar, offset);
+#endif // QT_MAC_USE_COCOA
+    }
+
 #ifndef QT_MAC_USE_COCOA
     QCFType<HIToolbarItemRef> outItem;
     const QObject *stupidArray[] = { toolbar, this };

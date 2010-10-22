@@ -85,6 +85,8 @@ private slots:
     void pathUpdateOnStartChanged();
     void package();
     void emptyModel();
+    void closed();
+    void pathUpdate();
 
 private:
     QDeclarativeView *createView();
@@ -349,6 +351,10 @@ void tst_QDeclarativePathView::dataModel()
     model.addItem("yellow", "7");
     model.addItem("thistle", "8");
     model.addItem("cyan", "9");
+    model.addItem("peachpuff", "10");
+    model.addItem("powderblue", "11");
+    model.addItem("gold", "12");
+    model.addItem("sandybrown", "13");
 
     ctxt->setContextProperty("testData", &model);
 
@@ -369,7 +375,7 @@ void tst_QDeclarativePathView::dataModel()
     model.insertItem(4, "orange", "10");
     QTest::qWait(100);
 
-    QTRY_COMPARE(findItems<QDeclarativeItem>(pathview, "wrapper").count(), 10);
+    QTRY_COMPARE(findItems<QDeclarativeItem>(pathview, "wrapper").count(), 14);
 
     QVERIFY(pathview->currentIndex() == 0);
 
@@ -417,6 +423,11 @@ void tst_QDeclarativePathView::dataModel()
     foreach (QDeclarativeItem *item, items) {
         QVERIFY(item->property("onPath").toBool());
     }
+
+    // QTBUG-14199
+    pathview->setOffset(7);
+    pathview->setOffset(0);
+    QCOMPARE(findItems<QDeclarativeItem>(pathview, "wrapper").count(), 5);
 
     delete canvas;
 }
@@ -786,6 +797,43 @@ void tst_QDeclarativePathView::emptyModel()
     delete canvas;
 }
 
+void tst_QDeclarativePathView::closed()
+{
+    QDeclarativeEngine engine;
+
+    {
+        QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/openPath.qml"));
+        QDeclarativePath *obj = qobject_cast<QDeclarativePath*>(c.create());
+        QVERIFY(obj);
+        QCOMPARE(obj->isClosed(), false);
+        delete obj;
+    }
+
+    {
+        QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/closedPath.qml"));
+        QDeclarativePath *obj = qobject_cast<QDeclarativePath*>(c.create());
+        QVERIFY(obj);
+        QCOMPARE(obj->isClosed(), true);
+        delete obj;
+    }
+}
+
+// QTBUG-14239
+void tst_QDeclarativePathView::pathUpdate()
+{
+    QDeclarativeView *canvas = createView();
+    QVERIFY(canvas);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/pathUpdate.qml"));
+
+    QDeclarativePathView *pathView = canvas->rootObject()->findChild<QDeclarativePathView*>("pathView");
+    QVERIFY(pathView);
+
+    QDeclarativeItem *item = findItem<QDeclarativeItem>(pathView, "wrapper", 0);
+    QVERIFY(item);
+    QCOMPARE(item->x(), 150.0);
+
+    delete canvas;
+}
 
 QDeclarativeView *tst_QDeclarativePathView::createView()
 {

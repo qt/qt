@@ -18,7 +18,7 @@
     <example filename="boxes" name="Boxes" />
     <example filename="sub-attaq" name="Sub-attaq" />
     <example filename="spectrum" name="Spectrum Analyzer" />
-    <example filename="declarative/minehunt" name="Minehunt" executable="false" qml="true"/>
+    <example filename="declarative/minehunt" name="Minehunt"/>
     <example filename="declarative/snake" name="Snake" executable="false" qml="true"/>
     <example filename="deform" name="Vector Deformation" />
     <example filename="books" name="Books" />

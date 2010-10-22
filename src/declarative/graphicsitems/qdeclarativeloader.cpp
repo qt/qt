@@ -337,7 +337,9 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
             return;
         }
 
-        QDeclarativeContext *ctxt = new QDeclarativeContext(qmlContext(q));
+        QDeclarativeContext *creationContext = component->creationContext();
+        if (!creationContext) creationContext = qmlContext(q);
+        QDeclarativeContext *ctxt = new QDeclarativeContext(creationContext);
         ctxt->setContextObject(q);
 
         QDeclarativeComponent *c = component;

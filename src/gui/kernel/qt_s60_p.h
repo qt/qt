@@ -142,6 +142,7 @@ public:
     int avkonComponentsSupportTransparency : 1;
     int menuBeingConstructed : 1;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
+    static CEikButtonGroupContainer *cba;
 
     enum ScanCodeState {
         Unpressed,
@@ -162,6 +163,7 @@ public:
     static inline CAknTitlePane* titlePane();
     static inline CAknContextPane* contextPane();
     static inline CEikButtonGroupContainer* buttonGroupContainer();
+    static inline void setButtonGroupContainer(CEikButtonGroupContainer* newCba);
     static void setStatusPaneAndButtonGroupVisibility(bool statusPaneVisible, bool buttonGroupVisible);
 #endif
     static void controlVisibilityChanged(CCoeControl *control, bool visible);
@@ -383,7 +385,12 @@ inline CAknContextPane* QS60Data::contextPane()
 
 inline CEikButtonGroupContainer* QS60Data::buttonGroupContainer()
 {
-    return CEikonEnv::Static()->AppUiFactory()->Cba();
+    return QS60Data::cba;
+}
+
+inline void QS60Data::setButtonGroupContainer(CEikButtonGroupContainer *newCba)
+{
+    QS60Data::cba = newCba;
 }
 #endif // Q_WS_S60
 

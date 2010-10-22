@@ -1389,7 +1389,7 @@ void QStateMachinePrivate::cancelAllDelayedEvents()
     delayedEvents.clear();
 }
 
-namespace {
+namespace _QStateMachine_Internal{
 
 class GoToStateTransition : public QAbstractTransition
 {
@@ -1403,7 +1403,9 @@ protected:
 };
 
 } // namespace
-
+// mingw compiler tries to export QObject::findChild<GoToStateTransition>(),
+// which doesn't work if its in an anonymous namespace.
+using namespace _QStateMachine_Internal;
 /*!
   \internal
 

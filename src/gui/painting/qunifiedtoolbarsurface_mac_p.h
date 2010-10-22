@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,25 +39,61 @@
 **
 ****************************************************************************/
 
-#include "qmeegoliveimage.h"
+#ifndef QUNIFIEDTOOLBARSURFACE_MAC_P_H
+#define QUNIFIEDTOOLBARSURFACE_MAC_P_H
 
-#ifndef QMEEGOLIVEIMAGE_P_H
-#define QMEEGOLIVEIMAGE_P_H
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-class QMeeGoLiveImagePrivate
+#include <private/qwindowsurface_raster_p.h>
+#include <QWidget>
+#include <private/qwidget_p.h>
+#include <private/qnativeimage_p.h>
+
+#ifdef QT_MAC_USE_COCOA
+
+QT_BEGIN_NAMESPACE
+
+class QNativeImage;
+
+
+class QUnifiedToolbarSurfacePrivate
 {
 public:
-    Q_DECLARE_PUBLIC(QMeeGoLiveImage);
-    QMeeGoLiveImagePrivate();
-    virtual ~QMeeGoLiveImagePrivate();
-    void attachPixmap(QMeeGoLivePixmap* pixmap);
-    void detachPixmap(QMeeGoLivePixmap* pixmap);
-        
-    QList <QMeeGoLivePixmap*> attachedPixmaps;
-    QMeeGoLiveImage *q_ptr;
-    
-    friend class QMeeGoLivePixmap;
-    friend class QMeeGoLivePixmapPrivate;
+    QNativeImage *image;
+    uint inSetGeometry : 1;
 };
 
-#endif
+class Q_GUI_EXPORT QUnifiedToolbarSurface : public QRasterWindowSurface
+{
+public:
+    QUnifiedToolbarSurface(QWidget *widget);
+    ~QUnifiedToolbarSurface();
+
+    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+    void setGeometry(const QRect &rect);
+    void beginPaint(const QRegion &rgn);
+    void insertToolbar(QWidget *toolbar, const QPoint &offset);
+
+private:
+    QPaintDevice *paintDevice();
+    void prepareBuffer(QImage::Format format, QWidget *widget);
+    void recursiveRedirect(QObject *widget, const QPoint &offset);
+
+    Q_DECLARE_PRIVATE(QUnifiedToolbarSurface)
+    QScopedPointer<QUnifiedToolbarSurfacePrivate> d_ptr;
+};
+
+QT_END_NAMESPACE
+
+#endif // QT_MAC_USE_COCOA
+
+#endif // QUNIFIEDTOOLBARSURFACE_MAC_P_H

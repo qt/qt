@@ -445,6 +445,7 @@ private slots:
     void textItem_shortcuts();
     void scroll();
     void stopClickFocusPropagation();
+    void deviceCoordinateCache_simpleRotations();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -9064,6 +9065,9 @@ void tst_QGraphicsItem::focusScope()
     scope2->hide();
     scope2->show();
     QVERIFY(!scope2->hasFocus());
+    QVERIFY(scope1->hasFocus());
+    scope2->setFocus();
+    scope3->setFocus();
     QVERIFY(scope3->hasFocus());
 
     QGraphicsRectItem *rect4 = new QGraphicsRectItem;
@@ -10558,6 +10562,81 @@ void tst_QGraphicsItem::stopClickFocusPropagation()
 
     sendMousePress(&scene, mousePressPoint);
     QVERIFY(itemWithFocus->hasFocus());
+}
+
+void tst_QGraphicsItem::deviceCoordinateCache_simpleRotations()
+{
+    // Make sure we don't invalidate the cache when applying simple
+    // (90, 180, 270, 360) rotation transforms to the item.
+    QGraphicsRectItem *item = new QGraphicsRectItem(0, 0, 300, 200);
+    item->setBrush(Qt::red);
+    item->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+
+    QGraphicsScene scene;
+    scene.setSceneRect(0, 0, 300, 200);
+    scene.addItem(item);
+
+    MyGraphicsView view(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QTRY_VERIFY(view.repaints > 0);
+
+    QGraphicsItemCache *itemCache = QGraphicsItemPrivate::get(item)->extraItemCache();
+    Q_ASSERT(itemCache);
+    QPixmapCache::Key currentKey = itemCache->deviceData.value(view.viewport()).key;
+
+    // Trigger an update and verify that the cache is unchanged.
+    QPixmapCache::Key oldKey = currentKey;
+    view.reset();
+    view.viewport()->update();
+    QTRY_VERIFY(view.repaints > 0);
+    currentKey = itemCache->deviceData.value(view.viewport()).key;
+    QCOMPARE(currentKey, oldKey);
+
+    // Check 90, 180, 270 and 360 degree rotations.
+    for (int angle = 90; angle <= 360; angle += 90) {
+        // Rotate item and verify that the cache was invalidated.
+        oldKey = currentKey;
+        view.reset();
+        QTransform transform;
+        transform.translate(150, 100);
+        transform.rotate(angle);
+        transform.translate(-150, -100);
+        item->setTransform(transform);
+        QTRY_VERIFY(view.repaints > 0);
+        currentKey = itemCache->deviceData.value(view.viewport()).key;
+        QVERIFY(currentKey != oldKey);
+
+        // IMPORTANT PART:
+        // Trigger an update and verify that the cache is unchanged.
+        oldKey = currentKey;
+        view.reset();
+        view.viewport()->update();
+        QTRY_VERIFY(view.repaints > 0);
+        currentKey = itemCache->deviceData.value(view.viewport()).key;
+        QCOMPARE(currentKey, oldKey);
+    }
+
+    // 45 degree rotation.
+    oldKey = currentKey;
+    view.reset();
+    QTransform transform;
+    transform.translate(150, 100);
+    transform.rotate(45);
+    transform.translate(-150, -100);
+    item->setTransform(transform);
+    QTRY_VERIFY(view.repaints > 0);
+    currentKey = itemCache->deviceData.value(view.viewport()).key;
+    QVERIFY(currentKey != oldKey);
+
+    // Trigger an update and verify that the cache was invalidated.
+    // We should always invalidate the cache for non-trivial transforms.
+    oldKey = currentKey;
+    view.reset();
+    view.viewport()->update();
+    QTRY_VERIFY(view.repaints > 0);
+    currentKey = itemCache->deviceData.value(view.viewport()).key;
+    QVERIFY(currentKey != oldKey);
 }
 
 void tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()

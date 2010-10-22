@@ -50,16 +50,6 @@
 #endif
 #include <barsread.h>
 #include <qconfig.h>
-#ifdef Q_WS_S60
-#  if defined(QT_LIBINFIX_UNQUOTED)
-// Two level macro needed for proper expansion of libinfix
-#    define QT_S60MAIN_RSG_2(x) <s60main##x##.rsg>
-#    define QT_S60MAIN_RSG(x) QT_S60MAIN_RSG_2(x)
-#    include QT_S60MAIN_RSG(QT_LIBINFIX_UNQUOTED)
-#  else
-#    include <s60main.rsg>
-#  endif
-#endif
 
 #include "qs60mainappui.h"
 #include <QtGui/qapplication.h>
@@ -125,8 +115,8 @@ void QS60MainAppUi::ConstructL()
 #ifdef Q_WS_S60
     flags |= CAknAppUi::EAknEnableSkin;
     // After 5th Edition S60, native side supports animated wallpapers.
-	// However, there is no support for that feature on Qt side, so indicate to
-	// native UI framework that this application will not support background animations.
+    // However, there is no support for that feature on Qt side, so indicate to
+    // native UI framework that this application will not support background animations.
     if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0)
         flags |= KAknDisableAnimationBackground;
 #endif
@@ -244,7 +234,7 @@ void QS60MainAppUi::DynInitMenuBarL(TInt /* resourceId */, CEikMenuBar * /* menu
 void QS60MainAppUi::DynInitMenuPaneL(TInt resourceId, CEikMenuPane *menuPane)
 {
 #ifdef Q_WS_S60
-    if (resourceId == R_QT_WRAPPERAPP_MENU) {
+    if (resourceId == R_AVKON_MENUPANE_EMPTY) {
         if (menuPane->NumberOfItemsInPane() <= 1)
             QT_TRYCATCH_LEAVING(qt_symbian_show_toplevel(menuPane));
 
@@ -274,7 +264,17 @@ void QS60MainAppUi::RestoreMenuL(CCoeControl *menuWindow, TInt resourceId, TMenu
             DynInitMenuPaneL(resourceId, (CEikMenuPane*)menuWindow);
         else
             DynInitMenuBarL(resourceId, (CEikMenuBar*)menuWindow);
-    } else
+    } else if(resourceId == R_AVKON_MENUPANE_EMPTY) {
+        CEikMenuBarTitle *title = new(ELeave) CEikMenuBarTitle;
+        CleanupStack::PushL(title);
+
+        title->iData.iMenuPaneResourceId = R_AVKON_MENUPANE_EMPTY;
+        title->iTitleFlags = 0;
+
+        S60->menuBar()->TitleArray()->AddTitleL(title);
+        CleanupStack::Pop( title );
+    }
+    else
 #endif
     {
         QS60MainAppUiBase::RestoreMenuL(menuWindow, resourceId, menuType);

@@ -2,7 +2,7 @@ TEMPLATE = subdirs
 
 SUBDIRS	*= sqldrivers script bearer
 unix:!symbian {
-        contains(QT_CONFIG,iconv)|contains(QT_CONFIG,gnu-libiconv):SUBDIRS *= codecs
+        contains(QT_CONFIG,iconv)|contains(QT_CONFIG,gnu-libiconv)|contains(QT_CONFIG,sun-libiconv):SUBDIRS *= codecs
 } else {
         SUBDIRS *= codecs
 }

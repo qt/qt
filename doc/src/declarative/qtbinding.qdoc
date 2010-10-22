@@ -134,7 +134,7 @@ the window text will update accordingly.
 To detect when a C++ property value - in this case the \c CustomPalette's \c text property - 
 changes, the property must have a corresponding NOTIFY signal.  The NOTIFY signal specifies a signal
 that is emitted whenever the property changes value.  Implementers should take care to only emit the
-signal if the value \e changes to prevent loops from occuring.  Accessing a property from a 
+signal if the value \e changes to prevent loops from occurring.  Accessing a property from a
 binding that does not have a NOTIFY signal will cause QML to issue a warning at runtime.
 
 \section2 Dynamic Structured Data
@@ -256,7 +256,7 @@ For example:
 \snippet doc/src/snippets/declarative/qtbinding/resources/main.qml 0
 
 Note that the resource system cannot be accessed from QML directly. If the main QML file is
-loaded as a resource, all files specifed as relative paths in QML will also be loaded from
+loaded as a resource, all files specified as relative paths in QML will also be loaded from
 the resource system. Using the resource system is completely transparent to the QML layer.
 This also means that if the main QML file is not loaded as a resource then files in the resource
 system cannot be accessed from QML.

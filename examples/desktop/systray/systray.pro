@@ -14,10 +14,10 @@ symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 
 wince* {
 	CONFIG(debug, release|debug) {
-		addPlugins.sources = $$QT_BUILD_TREE/plugins/imageformats/qsvgd4.dll
+		addPlugins.files = $$QT_BUILD_TREE/plugins/imageformats/qsvgd4.dll
 	}
 	CONFIG(release, release|debug) {
-		addPlugins.sources = $$QT_BUILD_TREE/plugins/imageformats/qsvg4.dll
+		addPlugins.files = $$QT_BUILD_TREE/plugins/imageformats/qsvg4.dll
 	}
 	addPlugins.path = imageformats
 	DEPLOYMENT += addPlugins

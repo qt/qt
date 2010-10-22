@@ -47,6 +47,9 @@
 #include "qs60mainapplication.h"
 #include <bautils.h>
 #include <coemain.h>
+#ifndef Q_WS_S60
+# include <eikserverapp.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -58,7 +61,6 @@ CApaApplication *newS60Application()
     return new QS60MainApplication;
 }
 
-_LIT(KQtWrapperResourceFile, "\\resource\\apps\\s60main" QT_LIBINFIX_UNICODE L".rsc");
 
 /*!
   \class QS60MainApplication
@@ -129,10 +131,6 @@ TUid QS60MainApplication::AppDllUid() const
  */
 TFileName QS60MainApplication::ResourceFileName() const
 {
-    TFindFile finder(iCoeEnv->FsSession());
-    TInt err = finder.FindByDir(KQtWrapperResourceFile, KNullDesC);
-    if (err == KErrNone)
-        return finder.File();
     return KNullDesC();
 }
 
@@ -157,7 +155,11 @@ CDictionaryStore *QS60MainApplication::OpenIniFileLC(RFs &aFs) const
 */
 void QS60MainApplication::NewAppServerL(CApaAppServer *&aAppServer)
 {
+#ifdef Q_WS_S60
     QS60MainApplicationBase::NewAppServerL(aAppServer);
+#else
+    aAppServer = new(ELeave) CEikAppServer;
+#endif
 }
 
 QT_END_NAMESPACE

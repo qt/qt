@@ -459,6 +459,7 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
                         tmp_vcproj.setProjectFile(&tmp_proj);
                         Option::qmake_mode = old_mode;
                         if(Option::debug_level) {
+                            debug_msg(1, "Dumping all variables:");
                             QMap<QString, QStringList> &vars = tmp_proj.variables();
                             for(QMap<QString, QStringList>::Iterator it = vars.begin();
                                 it != vars.end(); ++it) {
@@ -1068,37 +1069,23 @@ void VcprojGenerator::initPreBuildEventTools()
 {
 }
 
-QString VcprojGenerator::fixCommandLine(DotNET version, const QString &input) const
-{
-    QString result = input;
-
-    if (version >= NET2005)
-        result = result.replace(QLatin1Char('\n'), QLatin1String("&#x000D;&#x000A;"));
-
-    return result;
-}
-
 void VcprojGenerator::initPostBuildEventTools()
 {
     VCConfiguration &conf = vcProject.Configuration;
     if(!project->values("QMAKE_POST_LINK").isEmpty()) {
-        QString cmdline = fixCommandLine(conf.CompilerVersion, var("QMAKE_POST_LINK"));
+        QStringList cmdline = VCToolBase::fixCommandLine(var("QMAKE_POST_LINK"));
         conf.postBuild.CommandLine = cmdline;
-        if (conf.CompilerVersion < NET2005)
-            cmdline = cmdline.replace("\n", "&&");
-        conf.postBuild.Description = cmdline;
+        conf.postBuild.Description = cmdline.join(QLatin1String("\r\n"));
     }
 
     QString signature = !project->isEmpty("SIGNATURE_FILE") ? var("SIGNATURE_FILE") : var("DEFAULT_SIGNATURE");
     bool useSignature = !signature.isEmpty() && !project->isActiveConfig("staticlib") &&
                         !project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH");
     if(useSignature)
-        conf.postBuild.CommandLine.prepend(QLatin1String("signtool sign /F ") + signature + " \"$(TargetPath)\"\n" +
-            (!conf.postBuild.CommandLine.isEmpty() ? " && " : ""));
+        conf.postBuild.CommandLine.prepend(
+                QLatin1String("signtool sign /F ") + signature + QLatin1String(" \"$(TargetPath)\""));
 
     if(!project->values("MSVCPROJ_COPY_DLL").isEmpty()) {
-        if(!conf.postBuild.CommandLine.isEmpty())
-            conf.postBuild.CommandLine += " && ";
         conf.postBuild.Description += var("MSVCPROJ_COPY_DLL_DESC");
         conf.postBuild.CommandLine += var("MSVCPROJ_COPY_DLL");
     }
@@ -1188,7 +1175,8 @@ void VcprojGenerator::initDeploymentTool()
             devicePath = Option::fixPathToLocalOS(QDir::cleanPath(targetPath + QLatin1Char('\\') + devicePath));
         }
         // foreach d in item.sources
-        foreach(QString source, project->values(item + ".sources")) {
+        // ### Qt 5: remove .sources, inconsistent with INSTALLS
+        foreach(QString source, project->values(item + ".sources") + project->values(item + ".files")) {
             QString itemDevicePath = devicePath;
             source = Option::fixPathToLocalOS(source);
             QString nameFilter;
@@ -1227,9 +1215,9 @@ void VcprojGenerator::initPreLinkEventTools()
 {
     VCConfiguration &conf = vcProject.Configuration;
     if(!project->values("QMAKE_PRE_LINK").isEmpty()) {
-        QString cmdline = fixCommandLine(conf.CompilerVersion, var("QMAKE_PRE_LINK"));
-        conf.preLink.Description = cmdline;
+        QStringList cmdline = VCToolBase::fixCommandLine(var("QMAKE_PRE_LINK"));
         conf.preLink.CommandLine = cmdline;
+        conf.preLink.Description = cmdline.join(QLatin1String("\r\n"));
     }
 }
 
