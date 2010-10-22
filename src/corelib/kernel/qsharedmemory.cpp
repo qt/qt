@@ -73,14 +73,13 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
     QString part1 = key;
     part1.replace(QRegExp(QLatin1String("[^A-Za-z]")), QString());
     result.append(part1);
-#ifdef Q_OS_SYMBIAN
-    return result.left(KMaxKernelName);
-#endif
 
     QByteArray hex = QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha1).toHex();
     result.append(QLatin1String(hex));
 #ifdef Q_OS_WIN
     return result;
+#elif defined(Q_OS_SYMBIAN)
+    return result.left(KMaxKernelName);
 #else
     return QDir::tempPath() + QLatin1Char('/') + result;
 #endif
