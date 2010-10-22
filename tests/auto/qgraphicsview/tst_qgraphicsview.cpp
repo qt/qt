@@ -4437,7 +4437,7 @@ void tst_QGraphicsView::hoverLeave()
     view.show();
     QTest::qWaitForWindowShown(&view);
 
-    QPoint pos = view.mapToGlobal(view.viewport()->mapToGlobal(view.mapFromScene(item->mapToScene(10, 10))));
+    QPoint pos = view.viewport()->mapToGlobal(view.mapFromScene(item->mapToScene(10, 10)));
     QCursor::setPos(pos);
     QTest::qWait(200);
     QVERIFY(item->receivedEnterEvent);
