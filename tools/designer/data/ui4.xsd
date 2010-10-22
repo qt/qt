@@ -207,6 +207,7 @@
                 <xs:attribute name="column" type="xs:integer" />
                 <xs:attribute name="rowspan" type="xs:integer" />
                 <xs:attribute name="colspan" type="xs:integer" />
+		<xs:attribute name="alignment" type="xs:string" />
         </xs:complexType>
 
 <!-- item view begin -->
