@@ -252,6 +252,10 @@ void QWaylandDisplay::shellHandleConfigure(void *data, struct wl_shell *shell,
 					   int32_t x, int32_t y,
 					   int32_t width, int32_t height)
 {
+    Q_UNUSED(data);
+    Q_UNUSED(shell);
+    Q_UNUSED(time);
+    Q_UNUSED(edges);
     QWaylandWindow *ww = (QWaylandWindow *) wl_surface_get_user_data(surface);
 
     ww->configure(time, edges, x, y, width, height);
@@ -380,9 +384,9 @@ QWaylandDisplay::QWaylandDisplay(void)
      * initialize EGL before proceeding */
     forceRoundtrip(mDisplay);
     if (mEglDisplay == NULL)
-	qWarning("EGL not available");
+	qDebug("EGL not available");
     else
-	qWarning("EGL initialized");
+	qDebug("EGL initialized");
 
     int fd = wl_display_get_fd(mDisplay, sourceUpdate, this);
     mReadNotifier = new QSocketNotifier(fd, QSocketNotifier::Read, this);
@@ -465,6 +469,8 @@ void QWaylandWindow::configure(uint32_t time, uint32_t edges,
 			       int32_t x, int32_t y,
 			       int32_t width, int32_t height)
 {
+    Q_UNUSED(time);
+    Q_UNUSED(edges);
     QRect geometry = QRect(x, y, width, height);
 
     QWindowSystemInterface::handleGeometryChange(widget(), geometry);
@@ -546,6 +552,8 @@ QPlatformWindow *QWaylandIntegration::createPlatformWindow(QWidget *widget, WId 
 QWindowSurface *QWaylandIntegration::createWindowSurface(QWidget *widget, WId winId) const
 {
     Q_UNUSED(winId);
+    Q_UNUSED(winId);
+
     return new QWaylandShmWindowSurface(widget, mDisplay);
 }
 

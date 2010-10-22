@@ -177,6 +177,8 @@ QWaylandDrmBuffer::QWaylandDrmBuffer(QWaylandDisplay *display,
 				     const QSize &size, QImage::Format format)
     : mDisplay(display)
 {
+    Q_UNUSED(format);
+
     EGLint name, stride;
     EGLint imageAttribs[] = {
 	EGL_WIDTH,			0,
