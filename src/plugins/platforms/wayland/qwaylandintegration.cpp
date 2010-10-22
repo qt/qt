@@ -3,12 +3,16 @@
 #include <QImageReader>
 #include <QWindowSystemInterface>
 #include <QPlatformCursor>
+#include <QPaintEngine>
 
 #include <QtGui/QPlatformGLContext>
 #include <QtGui/QPlatformWindowFormat>
 
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/QPlatformWindow>
+
+#include <private/qwindowsurface_gl_p.h>
+#include <private/qpixmapdata_gl_p.h>
 
 #include "qwaylandintegration.h"
 #include "qwaylandwindowsurface.h"
@@ -405,9 +409,10 @@ QWaylandDisplay::~QWaylandDisplay(void)
     wl_display_destroy(mDisplay);
 }
 
-QWaylandIntegration::QWaylandIntegration()
+QWaylandIntegration::QWaylandIntegration(bool useOpenGL)
     : mFontDb(new QFontconfigDatabase())
     , mDisplay(new QWaylandDisplay())
+    , mUseOpenGL(useOpenGL)
 {
 }
 
@@ -419,6 +424,8 @@ QWaylandIntegration::screens() const
 
 QPixmapData *QWaylandIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
+    if (mUseOpenGL)
+	return new QGLPixmapData(type);
     return new QRasterPixmapData(type);
 }
 
@@ -426,6 +433,7 @@ QWaylandWindow::QWaylandWindow(QWidget *window, QWaylandDisplay *display)
     : QPlatformWindow(window)
     , mSurface(0)
     , mDisplay(display)
+    , mGLContext(0)
 {
     static WId id = 1;
 
@@ -434,6 +442,8 @@ QWaylandWindow::QWaylandWindow(QWidget *window, QWaylandDisplay *display)
 
 QWaylandWindow::~QWaylandWindow()
 {
+    if (mGLContext)
+	delete mGLContext;
 }
 
 WId QWaylandWindow::winId() const
@@ -508,6 +518,7 @@ QWaylandGLContext::QWaylandGLContext(QWaylandDisplay *wd, const QPlatformWindowF
     eglDisplay = mDisplay->eglDisplay();
     mContext = eglCreateContext(eglDisplay, NULL,
 				EGL_NO_CONTEXT, contextAttribs);
+    eglMakeCurrent(eglDisplay, NULL, NULL, mContext);
 }
 
 QWaylandGLContext::~QWaylandGLContext()
@@ -518,10 +529,12 @@ QWaylandGLContext::~QWaylandGLContext()
 
 void QWaylandGLContext::makeCurrent()
 {
+    eglMakeCurrent(mDisplay->eglDisplay(), 0, 0, mContext);
 }
 
 void QWaylandGLContext::doneCurrent()
 {
+    eglMakeCurrent(mDisplay->eglDisplay(), 0, 0, mContext);
 }
 
 void QWaylandGLContext::swapBuffers()
@@ -554,6 +567,8 @@ QWindowSurface *QWaylandIntegration::createWindowSurface(QWidget *widget, WId wi
     Q_UNUSED(winId);
     Q_UNUSED(winId);
 
+    if (mUseOpenGL)
+	return new QWaylandDrmWindowSurface(widget, mDisplay);
     return new QWaylandShmWindowSurface(widget, mDisplay);
 }
 

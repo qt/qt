@@ -39,25 +39,24 @@
 **
 ****************************************************************************/
 
-#include "qwaylandintegration.h"
-#include "qwaylandwindowsurface.h"
+#define GL_GLEXT_PROTOTYPES
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+
+#include <QGLFramebufferObject>
 #include <QtCore/qdebug.h>
 #include <QtGui/private/qapplication_p.h>
+#include <QtOpenGL/private/qgl_p.h>
+#include <QtOpenGL/private/qglpaintdevice_p.h>
+
+#include "qwaylandintegration.h"
+#include "qwaylandwindowsurface.h"
 
 #include <wayland-client.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/mman.h>
-
-#define GL_GLEXT_PROTOTYPES
-#define EGL_EGLEXT_PROTOTYPES
-#define MESA_EGL_NO_X11_HEADERS
-
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -147,35 +146,77 @@ void QWaylandShmWindowSurface::resize(const QSize &size)
     ww->attach(mBuffer);
 }
 
-
-class QWaylandDrmBuffer : public QWaylandBuffer {
-public:
-    QWaylandDrmBuffer(QWaylandDisplay *display,
-		       const QSize &size, QImage::Format format);
-    ~QWaylandDrmBuffer();
-    EGLImageKHR mImage;
-    GLuint mTexture;
-    QWaylandDisplay *mDisplay;
-};
-
-class QWaylandDrmWindowSurface : public QWindowSurface
+class QWaylandPaintDevice : public QGLPaintDevice
 {
 public:
-    QWaylandDrmWindowSurface(QWidget *window, QWaylandDisplay *display);
-    ~QWaylandDrmWindowSurface();
+    QWaylandPaintDevice(QWaylandDisplay *display, QWidget *widget)
+	: QGLPaintDevice(), mDisplay(display), mWidget(widget)
+	{
+	    QGLFormat format;
+	    mContext = new QGLContext(format, widget);
+	    mContext->create();
+	    glGenFramebuffers(1, &mFbo);
+	    glGenRenderbuffers(1, &mRbo);
+	}
+    ~QWaylandPaintDevice()
+	{
+	    glDeleteFramebuffers(1, &mFbo);
+	    glDeleteRenderbuffers(1, &mRbo);
+	}
 
-    QPaintDevice *paintDevice();
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
-    void resize(const QSize &size);
+    QSize size() const { return mWidget->size(); }
+    QGLContext *context() const { return mContext; }
+    QPaintEngine *paintEngine() const { return qt_qgl_paint_engine(); }
 
+    void beginPaint();
+    void endPaint();
 private:
-    QWaylandDrmBuffer *mBuffer;
     QWaylandDisplay *mDisplay;
+    QWidget *mWidget;
+    QGLContext *mContext;
+    GLuint mFbo, mRbo;
 };
 
+void QWaylandPaintDevice::beginPaint(void)
+{
+    QWaylandWindow *mWindow = (QWaylandWindow *)mWidget->platformWindow();
+    QWaylandDrmBuffer *mBuffer = (QWaylandDrmBuffer *)mWindow->getBuffer();
+    QPlatformGLContext *ctx = mWindow->glContext();
+    QRect geometry = mWidget->geometry();
+
+    QGLPaintDevice::beginPaint();
+
+    ctx->makeCurrent();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, mRbo);
+    glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER, mBuffer->mImage);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+				 GL_RENDERBUFFER, mRbo);
+}
+
+void QWaylandPaintDevice::endPaint(void)
+{
+    QWaylandWindow *mWindow = (QWaylandWindow *)mWidget->platformWindow();
+    QPlatformGLContext *ctx = mWindow->glContext();
+    QRect geometry = mWidget->geometry();
+
+    wl_surface_damage(mWindow->surface(), 0, 0,
+		      geometry.width(), geometry.height());
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    ctx->doneCurrent();
+
+    QGLPaintDevice::endPaint();
+}
+
+/*
+ * Shared DRM surface for GL based drawing
+ */
 QWaylandDrmBuffer::QWaylandDrmBuffer(QWaylandDisplay *display,
 				     const QSize &size, QImage::Format format)
     : mDisplay(display)
+    , mSize(size)
 {
     Q_UNUSED(format);
 
@@ -216,23 +257,62 @@ QWaylandDrmWindowSurface::QWaylandDrmWindowSurface(QWidget *window,
     , mBuffer(0)
     , mDisplay(display)
 {
+    mPaintDevice = new QWaylandPaintDevice(display, window);
 }
 
 QWaylandDrmWindowSurface::~QWaylandDrmWindowSurface()
 {
+    delete mPaintDevice;
 }
 
 QPaintDevice *QWaylandDrmWindowSurface::paintDevice()
 {
-    return NULL;
+    return mPaintDevice;
 }
 
 void QWaylandDrmWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
 {
+    Q_UNUSED(region);
+    Q_UNUSED(offset);
+    Q_UNUSED(widget);
+#if 0
+    GLuint surf_rbo, surf_fbo;
+    QWaylandWindow *mWindow = (QWaylandWindow *)widget->platformWindow();
+    QPlatformGLContext *ctx = mWindow->glContext();
+    QRect geometry = widget->geometry();
+
+    ctx->makeCurrent();
+
+    glGenFramebuffers(1, &surf_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, surf_fbo);
+    glGenRenderbuffers(1, &surf_rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, surf_rbo);
+    glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER, mBuffer->mImage);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+				 GL_RENDERBUFFER, surf_rbo);
+
+    wl_surface_damage(mWindow->surface(), 0, 0,
+		      geometry.width(), geometry.height());
+
+    ctx->doneCurrent();
+#endif
 }
 
 void QWaylandDrmWindowSurface::resize(const QSize &size)
 {
+    QWaylandWindow *ww = (QWaylandWindow *) window()->platformWindow();
+    QWindowSurface::resize(size);
+    QImage::Format format = QApplicationPrivate::platformIntegration()->screens().first()->format();
+
+    if (mBuffer != NULL && mBuffer->mSize == size)
+	return;
+
+    if (mBuffer != NULL)
+	delete mBuffer;
+
+    mBuffer = new QWaylandDrmBuffer(mDisplay, size, format);
+
+    ww->attach(mBuffer);
 }
 
 QT_END_NAMESPACE

@@ -46,6 +46,7 @@
 #include <QObject>
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QPlatformScreen>
+#include "qgl.h"
 
 #include <wayland-client.h>
 #include "qwaylandinputdevice.h"
@@ -155,6 +156,7 @@ public:
     WId winId() const;
     QPlatformGLContext *glContext() const;
     void attach(QWaylandBuffer *buffer);
+    QWaylandBuffer *getBuffer(void) { return mBuffer; }
 
 private:
     struct wl_surface *mSurface;
@@ -168,7 +170,7 @@ private:
 class QWaylandIntegration : public QPlatformIntegration
 {
 public:
-    QWaylandIntegration();
+    QWaylandIntegration(bool useOpenGL = false);
 
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
@@ -181,6 +183,7 @@ public:
 private:
     QPlatformFontDatabase *mFontDb;
     QWaylandDisplay *mDisplay;
+    bool mUseOpenGL;
 };
 
 QT_END_NAMESPACE
