@@ -139,6 +139,8 @@ public:
      */
     TInt symbianFilePos;
 #endif
+    mutable int fileHandleForMaps;
+    int getMapHandle();
 #endif
 
 #ifdef Q_WS_WIN

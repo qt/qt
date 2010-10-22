@@ -2800,10 +2800,6 @@ void tst_QFile::map()
     QFETCH(int, size);
     QFETCH(QFile::FileError, error);
 
-#ifdef Q_OS_SYMBIAN
-    QSKIP("memory mapped files not supported on this platform", SkipAll);
-#endif
-
     QString fileName = QDir::currentPath() + '/' + "qfile_map_testfile";
 
 #ifdef Q_WS_WINCE
@@ -2925,10 +2921,6 @@ void tst_QFile::mapResource()
     QFETCH(int, size);
     QFETCH(QFile::FileError, error);
 
-#ifdef Q_OS_SYMBIAN
-    QSKIP("memory mapped files not supported on this platform", SkipAll);
-#endif
-
     QFile file(fileName);
     uchar *memory = file.map(offset, size);
     QCOMPARE(file.error(), error);
@@ -2953,10 +2945,6 @@ void tst_QFile::mapOpenMode()
 {
     QFETCH(int, openMode);
     static const qint64 fileSize = 4096;
-
-#ifdef Q_OS_SYMBIAN
-    QSKIP("memory mapped files not supported on this platform", SkipAll);
-#endif
 
     QByteArray pattern(fileSize, 'A');
 

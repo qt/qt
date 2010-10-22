@@ -85,6 +85,7 @@ static bool isRelativePathSymbian(const QString& fileName)
 
 #endif
 
+#ifndef Q_OS_SYMBIAN
 /*!
     \internal
 
@@ -124,6 +125,7 @@ static inline QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QF
 
     return mode;
 }
+#endif
 
 /*!
     \internal
@@ -153,6 +155,7 @@ static inline int openModeToOpenFlags(QIODevice::OpenMode mode)
     return oflags;
 }
 
+#ifndef Q_OS_SYMBIAN
 /*!
     \internal
 
@@ -163,6 +166,7 @@ static inline bool setCloseOnExec(int fd)
 {
     return fd != -1 && fcntl(fd, F_SETFD, FD_CLOEXEC) != -1;
 }
+#endif
 
 #ifdef Q_OS_SYMBIAN
 /*!
@@ -538,6 +542,22 @@ int QFSFileEnginePrivate::nativeHandle() const
 {
     return fh ? fileno(fh) : fd;
 }
+
+#ifdef Q_OS_SYMBIAN
+int QFSFileEnginePrivate::getMapHandle()
+{
+    if (symbianFile.SubSessionHandle()) {
+        // Symbian file handle can't be used for open C mmap() so open the file with open C as well.
+        if (fileHandleForMaps < 0) {
+            int flags = openModeToOpenFlags(openMode);
+            flags &= ~(O_CREAT | O_TRUNC);
+            fileHandleForMaps = ::wopen((wchar_t*)(fileEntry.nativeFilePath().utf16()), flags, 0666);
+        }
+        return fileHandleForMaps;
+    }
+    return nativeHandle();
+}
+#endif
 
 /*!
     \internal
@@ -921,30 +941,6 @@ QDateTime QFSFileEngine::fileTime(FileTime time) const
     return QDateTime();
 }
 
-#ifdef Q_OS_SYMBIAN
-uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFlags flags)
-{
-    //Q_Q(QFSFileEngine);
-    Q_UNUSED(flags)
-    Q_UNUSED(offset)
-    Q_UNUSED(size)
-    return 0;
-    //TODO: use RFileMap when available in symbian^4
-}
-
-bool QFSFileEnginePrivate::unmap(uchar *ptr)
-{
-    //TODO: RFileMap as the value in maps, unmap it here when API is available...
-    //Q_Q(QFSFileEngine);
-    //if (!maps.contains(ptr)) {
-    //    q->setError(QFile::PermissionsError, qt_error_string(EACCES));
-    //    return false;
-    //}
-    Q_UNUSED(ptr)
-
-    return false;
-}
-#else
 uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFlags flags)
 {
     Q_Q(QFSFileEngine);
@@ -985,7 +981,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
 #ifdef Q_OS_SYMBIAN
     void *mapAddress;
     TRAPD(err,     mapAddress = QT_MMAP((void*)0, realSize,
-                   access, MAP_SHARED, nativeHandle(), realOffset));
+                   access, MAP_SHARED, getMapHandle(), realOffset));
     if (err != KErrNone) {
         qWarning("OpenC bug: leave from mmap %d", err);
         mapAddress = MAP_FAILED;
@@ -1035,7 +1031,6 @@ bool QFSFileEnginePrivate::unmap(uchar *ptr)
     maps.remove(ptr);
     return true;
 }
-#endif
 
 QT_END_NAMESPACE
 

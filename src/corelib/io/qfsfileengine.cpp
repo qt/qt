@@ -120,6 +120,9 @@ void QFSFileEnginePrivate::init()
     openMode = QIODevice::NotOpen;
     fd = -1;
     fh = 0;
+#ifdef Q_OS_SYMBIAN
+    fileHandleForMaps = -1;
+#endif
     lastIOCommand = IOFlushCommand;
     lastFlushFailed = false;
     closeFileHandle = false;
@@ -355,6 +358,7 @@ bool QFSFileEnginePrivate::closeFdFh()
     if (fd == -1 && !fh
 #ifdef Q_OS_SYMBIAN
         && !symbianFile.SubSessionHandle()
+        && fileHandleForMaps == -1
 #endif
         )
         return false;
@@ -363,6 +367,14 @@ bool QFSFileEnginePrivate::closeFdFh()
     bool flushed = !fh || (!lastFlushFailed && q->flush());
     bool closed = true;
     tried_stat = 0;
+
+#ifdef Q_OS_SYMBIAN
+    // Map handle is always owned by us so always close it
+    if (fileHandleForMaps >= 0) {
+        QT_CLOSE(fileHandleForMaps);
+        fileHandleForMaps = -1;
+    }
+#endif
 
     // Close the file if we created the handle.
     if (closeFileHandle) {

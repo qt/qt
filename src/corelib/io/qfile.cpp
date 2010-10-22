@@ -48,6 +48,7 @@
 #include "qfileinfo.h"
 #include "private/qiodevice_p.h"
 #include "private/qfile_p.h"
+#include "private/qsystemerror_p.h"
 #if defined(QT_BUILD_CORE_LIB)
 # include "qcoreapplication.h"
 #endif
@@ -1223,6 +1224,7 @@ bool QFile::unmap(uchar *address)
             d->setError(d->fileEngine->error(), d->fileEngine->errorString());
         return success;
     }
+    d->setError(PermissionsError, QSystemError(EACCES, QSystemError::StandardLibraryError).toString());
     return false;
 }
 
