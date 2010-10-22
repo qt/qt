@@ -110,6 +110,7 @@ static Qt::KeyboardModifiers translateModifiers(int s)
 
 static uint32_t translateKey(uint32_t sym, char *string, size_t size)
 {
+    Q_UNUSED(size);
     string[0] = '\0';
 
     switch (sym) {
@@ -204,6 +205,10 @@ void QWaylandInputDevice::inputHandlePointerFocus(void *data,
 						  int32_t x, int32_t y, int32_t sx, int32_t sy)
 {
     Q_UNUSED(input_device);
+    Q_UNUSED(x);
+    Q_UNUSED(y);
+    Q_UNUSED(sx);
+    Q_UNUSED(sy);
     QWaylandInputDevice *inputDevice = (QWaylandInputDevice *) data;
     QWaylandWindow *window;
 
@@ -229,6 +234,8 @@ void QWaylandInputDevice::inputHandleKeyboardFocus(void *data,
 						   struct wl_array *keys)
 {
     Q_UNUSED(input_device);
+    Q_UNUSED(time);
+    Q_UNUSED(keys);
     QWaylandInputDevice *inputDevice = (QWaylandInputDevice *) data;
     QWaylandWindow *window;
 
