@@ -343,7 +343,7 @@ public:
 
     void setVertexAttribArrayEnabled(int arrayIndex, bool enabled = true);
     void syncGlState(); // Makes sure the GL context's state is what we think it is
-    void swapRegion(const QRegion *region);
+    void swapRegion(const QRegion &region);
 
 #if defined(Q_WS_WIN)
     void updateFormatVersion();
