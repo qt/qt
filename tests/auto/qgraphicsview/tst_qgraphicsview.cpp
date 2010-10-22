@@ -244,6 +244,7 @@ private slots:
     void QTBUG_4151_clipAndIgnore();
     void QTBUG_5859_exposedRect();
     void QTBUG_7438_cursor();
+    void hoverLeave();
 
 public slots:
     void dummySlot() {}
@@ -4392,6 +4393,60 @@ void tst_QGraphicsView::QTBUG_7438_cursor()
     sendMouseRelease(view.viewport(), view.mapFromScene(0, 0));
     QCOMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
 #endif
+}
+
+class GraphicsItemWithHover : public QGraphicsRectItem
+{
+public:
+    GraphicsItemWithHover()
+        : receivedEnterEvent(false), receivedLeaveEvent(false),
+          enterWidget(0), leaveWidget(0)
+    {
+        setRect(0, 0, 100, 100);
+        setAcceptHoverEvents(true);
+    }
+
+    bool sceneEvent(QEvent *event)
+    {
+        if (event->type() == QEvent::GraphicsSceneHoverEnter) {
+            receivedEnterEvent = true;
+            enterWidget = static_cast<QGraphicsSceneHoverEvent *>(event)->widget();
+        } else if (event->type() == QEvent::GraphicsSceneHoverLeave) {
+            receivedLeaveEvent = true;
+            leaveWidget = static_cast<QGraphicsSceneHoverEvent *>(event)->widget();
+        }
+        return QGraphicsRectItem::sceneEvent(event);
+    }
+
+    bool receivedEnterEvent;
+    bool receivedLeaveEvent;
+    QWidget *enterWidget;
+    QWidget *leaveWidget;
+};
+
+void tst_QGraphicsView::hoverLeave()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    GraphicsItemWithHover *item = new GraphicsItemWithHover;
+    scene.addItem(item);
+
+    // move the cursor out of the way
+    QCursor::setPos(1,1);
+
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QPoint pos = view.viewport()->mapToGlobal(view.mapFromScene(item->mapToScene(10, 10)));
+    QCursor::setPos(pos);
+    QTest::qWait(200);
+    QVERIFY(item->receivedEnterEvent);
+    QCOMPARE(item->enterWidget, view.viewport());
+
+    QCursor::setPos(0,0);
+    QTest::qWait(200);
+    QVERIFY(item->receivedLeaveEvent);
+    QCOMPARE(item->leaveWidget, view.viewport());
 }
 
 QTEST_MAIN(tst_QGraphicsView)
