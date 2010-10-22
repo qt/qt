@@ -39,28 +39,32 @@
 **
 ****************************************************************************/
 
-#include <QPixmap>
-#include <QImage>
+#ifndef MLIVEPIXMAPDATA_H
+#define MLIVEPIXMAPDATA_H
 
-class QMeeGoRuntime
+#include <private/qpixmapdata_gl_p.h>
+
+class QMeeGoLivePixmapData : public QGLPixmapData
 {
 public:
-    static void initialize();
+    QMeeGoLivePixmapData(int w, int h, QImage::Format format);
+    QMeeGoLivePixmapData(Qt::HANDLE h);
+    ~QMeeGoLivePixmapData();
+    
+    QPixmapData *createCompatiblePixmapData() const;
+    bool scroll(int dx, int dy, const QRect &rect);
 
-    static Qt::HANDLE imageToEGLSharedImage(const QImage &image);
-    static QPixmapData* pixmapDataFromEGLSharedImage(Qt::HANDLE handle, const QImage &softImage);
-    static QPixmapData* pixmapDataWithGLTexture(int w, int h);
-    static bool destroyEGLSharedImage(Qt::HANDLE handle);
-    static void updateEGLSharedImagePixmap(QPixmap *p);
-    static void setSurfaceFixedSize(int w, int h);
-    static void setSurfaceScaling(int x, int y, int w, int h);
-    static void setTranslucent(bool translucent);
-    static QPixmapData* pixmapDataWithNewLiveTexture(int w, int h, QImage::Format format);
-    static QPixmapData* pixmapDataFromLiveTextureHandle(Qt::HANDLE h);
-    static QImage* lockLiveTexture(QPixmap *pixmap);
-    static bool releaseLiveTexture(QPixmap *pixmap, QImage *image);
-    static Qt::HANDLE getLiveTextureHandle(QPixmap *pixmap);
+    void initializeThroughEGLImage();
+        
+    QImage* lock();
+    bool release(QImage *img);
+    Qt::HANDLE handle();
+    
+    EGLSurface getSurfaceForBackingPixmap();
+    void destroySurfaceForPixmapData(QPixmapData* pmd);
 
-private:
-    static bool initialized;
+    QPixmap *backingX11Pixmap;
+    QImage lockedImage;
 };
+
+#endif
