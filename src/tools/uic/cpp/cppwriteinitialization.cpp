@@ -1096,6 +1096,8 @@ void WriteInitialization::acceptLayoutItem(DomLayoutItem *node)
         const int colSpan = node->hasAttributeColSpan() ? node->attributeColSpan() : 1;
 
         addArgs = QString::fromLatin1("%1, %2, %3, %4, %5").arg(itemName).arg(row).arg(col).arg(rowSpan).arg(colSpan);
+        if (!node->attributeAlignment().isEmpty())
+            addArgs += QLatin1String(", ") + node->attributeAlignment();
     } else {
         if (layout->attributeClass() == QLatin1String("QFormLayout")) {
             methodPrefix = QLatin1String("set");
@@ -1105,6 +1107,8 @@ void WriteInitialization::acceptLayoutItem(DomLayoutItem *node)
             addArgs = QString::fromLatin1("%1, %2, %3").arg(row).arg(role).arg(itemName);
         } else {
             addArgs = itemName;
+            if (layout->attributeClass().contains(QLatin1String("Box")) && !node->attributeAlignment().isEmpty())
+                addArgs += QLatin1String(", 0, ") + node->attributeAlignment();
         }
     }
 

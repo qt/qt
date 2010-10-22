@@ -794,6 +794,69 @@ static inline QFormLayout::ItemRole formLayoutRole(int column, int colspan)
 }
 #endif
 
+static inline QString alignmentValue(Qt::Alignment a)
+{
+    QString h,v;
+    switch (a & Qt::AlignHorizontal_Mask) {
+    case Qt::AlignLeft:
+        h = QLatin1String("Qt::AlignLeft");
+        break;
+    case Qt::AlignRight:
+        h = QLatin1String("Qt::AlignRight");
+        break;
+    case Qt::AlignHCenter:
+        h = QLatin1String("Qt::AlignHCenter");
+        break;
+    case Qt::AlignJustify:
+        h = QLatin1String("Qt::AlignJustify");
+        break;
+    }
+    switch (a & Qt::AlignVertical_Mask) {
+    case Qt::AlignTop:
+        v = QLatin1String("Qt::AlignTop");
+        break;
+    case Qt::AlignBottom:
+        v = QLatin1String("Qt::AlignBottom");
+        break;
+    case Qt::AlignVCenter:
+        v = QLatin1String("Qt::AlignVCenter");
+        break;
+    }
+    if (h.isEmpty() && v.isEmpty())
+        return QString();
+    if (!v.isEmpty()) {
+        if (!h.isEmpty())
+            h += QLatin1Char('|');
+        h += v;
+    }
+    return h;
+}
+
+static inline Qt::Alignment alignmentFromDom(const QString &in)
+{
+    Qt::Alignment rc = 0;
+    if (!in.isEmpty()) {
+        foreach (const QString &f, in.split(QLatin1Char('|'))) {
+            if (f == QLatin1String("Qt::AlignLeft")) {
+                rc |= Qt::AlignLeft;
+            } else if (f == QLatin1String("Qt::AlignRight")) {
+                rc |= Qt::AlignRight;
+            } else if (f == QLatin1String("Qt::AlignHCenter")) {
+                rc |= Qt::AlignHCenter;
+            } else if (f == QLatin1String("Qt::AlignJustify")) {
+                rc |= Qt::AlignJustify;
+            } else if (f == QLatin1String("Qt::AlignTop")) {
+                rc |= Qt::AlignTop;
+            } else if (f == QLatin1String("Qt::AlignBottom")) {
+                rc |= Qt::AlignBottom;
+            } else if (f == QLatin1String("Qt::AlignVCenter")) {
+                rc |= Qt::AlignVCenter;
+            }
+        }
+    }
+    return rc;
+}
+
 /*!
     \internal
 */
@@ -838,12 +901,15 @@ QLayoutItem *QAbstractFormBuilder::create(DomLayoutItem *ui_layoutItem, QLayout 
 {
     switch (ui_layoutItem->kind()) {
     case DomLayoutItem::Widget: {
-        if (QWidget *w = create(ui_layoutItem->elementWidget(), parentWidget))
+        if (QWidget *w = create(ui_layoutItem->elementWidget(), parentWidget)) {
 #ifdef QFORMINTERNAL_NAMESPACE // uilib
-            return new QWidgetItemV2(w);
+            QWidgetItem *item = new QWidgetItemV2(w);
 #else                         // Within Designer: Use factory method that returns special items that refuse to shrink to 0,0
-            return QLayoutPrivate::createWidgetItem(layout, w);
+            QWidgetItem *item = QLayoutPrivate::createWidgetItem(layout, w);
 #endif
+            item->setAlignment(alignmentFromDom(ui_layoutItem->attributeAlignment()));
+            return item;
+        }
         qWarning() << QCoreApplication::translate("QAbstractFormBuilder", "Empty widget item in %1 '%2'.").arg(QString::fromUtf8(layout->metaObject()->className()), layout->objectName());
         return 0;
     }
@@ -1384,13 +1450,14 @@ DomActionRef *QAbstractFormBuilder::createActionRefDom(QAction *action)
 // Struct to store layout item parameters for saving layout items
 struct FormBuilderSaveLayoutEntry {
     explicit FormBuilderSaveLayoutEntry(QLayoutItem *li = 0) :
-        item(li), row(-1), column(-1), rowSpan(0), columnSpan(0) {}
+        item(li), row(-1), column(-1), rowSpan(0), columnSpan(0), alignment(0) {}
 
     QLayoutItem *item;
     int row;
     int column;
     int rowSpan;
     int columnSpan;
+    Qt::Alignment alignment;
 };
 
 // Create list from standard box layout
@@ -1401,7 +1468,9 @@ static QList<FormBuilderSaveLayoutEntry> saveLayoutEntries(const QLayout *layout
         rc.reserve(count);
         for (int idx = 0; idx < count; ++idx) {
             QLayoutItem *item = layout->itemAt(idx);
-            rc.append(FormBuilderSaveLayoutEntry(item));
+            FormBuilderSaveLayoutEntry entry(item);
+            entry.alignment = item->alignment();
+            rc.append(entry);
         }
     }
     return rc;
@@ -1417,6 +1486,7 @@ static QList<FormBuilderSaveLayoutEntry> saveGridLayoutEntries(QGridLayout *grid
             QLayoutItem *item = gridLayout->itemAt(idx);
             FormBuilderSaveLayoutEntry entry(item);
             gridLayout->getItemPosition(idx, &entry.row, &entry.column, &entry.rowSpan,&entry.columnSpan);
+            entry.alignment = item->alignment();
             rc.append(entry);
         }
     }
@@ -1490,6 +1560,8 @@ DomLayout *QAbstractFormBuilder::createDom(QLayout *layout, DomLayout *ui_layout
                 ui_item->setAttributeRowSpan(item.rowSpan);
             if (item.columnSpan > 1)
                 ui_item->setAttributeColSpan(item.columnSpan);
+            if (item.alignment)
+                ui_item->setAttributeAlignment(alignmentValue(item.alignment));
             ui_items.append(ui_item);
         }
     }

@@ -3673,6 +3673,7 @@ void DomLayoutItem::clear(bool clear_all)
     m_attr_rowSpan = 0;
     m_has_attr_colSpan = false;
     m_attr_colSpan = 0;
+    m_has_attr_alignment = false;
     }
 
     m_kind = Unknown;
@@ -3694,6 +3695,7 @@ DomLayoutItem::DomLayoutItem()
     m_attr_rowSpan = 0;
     m_has_attr_colSpan = false;
     m_attr_colSpan = 0;
+    m_has_attr_alignment = false;
     m_widget = 0;
     m_layout = 0;
     m_spacer = 0;
@@ -3725,6 +3727,10 @@ void DomLayoutItem::read(QXmlStreamReader &reader)
         }
         if (name == QLatin1String("colspan")) {
             setAttributeColSpan(attribute.value().toString().toInt());
+            continue;
+        }
+        if (name == QLatin1String("alignment")) {
+            setAttributeAlignment(attribute.value().toString());
             continue;
         }
         reader.raiseError(QLatin1String("Unexpected attribute ") + name.toString());
@@ -3779,6 +3785,8 @@ void DomLayoutItem::read(const QDomElement &node)
         setAttributeRowSpan(node.attribute(QLatin1String("rowspan")).toInt());
     if (node.hasAttribute(QLatin1String("colspan")))
         setAttributeColSpan(node.attribute(QLatin1String("colspan")).toInt());
+    if (node.hasAttribute(QLatin1String("alignment")))
+        setAttributeAlignment(node.attribute(QLatin1String("alignment")));
 
     for (QDomNode n = node.firstChild(); !n.isNull(); n = n.nextSibling()) {
         if (!n.isElement())
@@ -3827,6 +3835,9 @@ void DomLayoutItem::write(QXmlStreamWriter &writer, const QString &tagName) cons
 
     if (hasAttributeColSpan())
         writer.writeAttribute(QLatin1String("colspan"), QString::number(attributeColSpan()));
+
+    if (hasAttributeAlignment())
+        writer.writeAttribute(QLatin1String("alignment"), attributeAlignment());
 
     switch (kind()) {
         case Widget: {
