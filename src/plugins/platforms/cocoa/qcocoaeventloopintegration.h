@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,59 +39,36 @@
 **
 ****************************************************************************/
 
-#ifndef FILEWATCHER_KQUEUE_P_H
-#define FILEWATCHER_KQUEUE_P_H
+#ifndef QCOCAEVENTLOOPINTEGRATION_H
+#define QCOCAEVENTLOOPINTEGRATION_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of the QLibrary class.  This header file may change from
-// version to version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <Cocoa/Cocoa.h>
 
-#include "qfilesystemwatcher_p.h"
+#include <QPlatformEventLoopIntegration>
 
-#include <QtCore/qhash.h>
-#include <QtCore/qmutex.h>
-#include <QtCore/qthread.h>
-#include <QtCore/qvector.h>
-
-#ifndef QT_NO_FILESYSTEMWATCHER
-struct kevent;
-
-QT_BEGIN_NAMESPACE
-
-class QKqueueFileSystemWatcherEngine : public QFileSystemWatcherEngine
+@interface OurApplication: NSApplication
 {
-    Q_OBJECT
+    bool shouldKeepRunning;
+}
+
+- (void) run;
+- (void) processEvents: (int) msec;
+
+@end
+
+class QCocoaEventLoopIntegration : public QPlatformEventLoopIntegration
+{
 public:
-    ~QKqueueFileSystemWatcherEngine();
+    QCocoaEventLoopIntegration();
+    void processEvents( qint64 msec );
+    void wakeup();
 
-    static QKqueueFileSystemWatcherEngine *create();
-
-    QStringList addPaths(const QStringList &paths, QStringList *files, QStringList *directories);
-    QStringList removePaths(const QStringList &paths, QStringList *files, QStringList *directories);
-
-    void stop();
-
+    static int wakeupEventId;
 private:
-    QKqueueFileSystemWatcherEngine(int kqfd);
-
-    void run();
-
-    int kqfd;
-    int kqpipe[2];
-
-    QMutex mutex;
-    QHash<QString, int> pathToID;
-    QHash<int, QString> idToPath;
+    OurApplication *app;
 };
 
-QT_END_NAMESPACE
 
-#endif //QT_NO_FILESYSTEMWATCHER
-#endif // FILEWATCHER_KQUEUE_P_H
+
+#endif // QCOCAEVENTLOOPINTEGRATION_H
+

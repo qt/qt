@@ -83,7 +83,9 @@
 #   define old_qDebug qDebug
 #   undef qDebug
 # endif
+#ifndef QT_NO_CORESERVICES
 # include <CoreServices/CoreServices.h>
+#endif //QT_NO_CORESERVICES
 
 # ifdef old_qDebug
 #   undef qDebug
@@ -358,7 +360,7 @@ int QThread::idealThreadCount()
 {
     int cores = -1;
 
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_MAC) && !defined(Q_WS_QPA)
     // Mac OS X
     cores = MPProcessorsScheduled();
 #elif defined(Q_OS_HPUX)

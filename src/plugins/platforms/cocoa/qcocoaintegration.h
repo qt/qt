@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,59 +39,60 @@
 **
 ****************************************************************************/
 
-#ifndef FILEWATCHER_KQUEUE_P_H
-#define FILEWATCHER_KQUEUE_P_H
+#ifndef QPLATFORMINTEGRATION_COCOA_H
+#define QPLATFORMINTEGRATION_COCOA_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of the QLibrary class.  This header file may change from
-// version to version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <Cocoa/Cocoa.h>
 
-#include "qfilesystemwatcher_p.h"
+#include "qcocoaautoreleasepool.h"
 
-#include <QtCore/qhash.h>
-#include <QtCore/qmutex.h>
-#include <QtCore/qthread.h>
-#include <QtCore/qvector.h>
-
-#ifndef QT_NO_FILESYSTEMWATCHER
-struct kevent;
+#include <QtGui/QPlatformIntegration>
 
 QT_BEGIN_NAMESPACE
 
-class QKqueueFileSystemWatcherEngine : public QFileSystemWatcherEngine
+class QCocoaScreen : public QPlatformScreen
 {
-    Q_OBJECT
 public:
-    ~QKqueueFileSystemWatcherEngine();
+    QCocoaScreen(int screenIndex);
+    ~QCocoaScreen();
 
-    static QKqueueFileSystemWatcherEngine *create();
+    QRect geometry() const { return m_geometry; }
+    int depth() const { return m_depth; }
+    QImage::Format format() const { return m_format; }
+    QSize physicalSize() const { return m_physicalSize; }
 
-    QStringList addPaths(const QStringList &paths, QStringList *files, QStringList *directories);
-    QStringList removePaths(const QStringList &paths, QStringList *files, QStringList *directories);
+public:
+    NSScreen *m_screen;
+    QRect m_geometry;
+    int m_depth;
+    QImage::Format m_format;
+    QSize m_physicalSize;
+};
 
-    void stop();
+class QCocoaIntegration : public QPlatformIntegration
+{
+public:
+    QCocoaIntegration();
+    ~QCocoaIntegration();
+
+    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
+    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const;
+    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
+
+    QList<QPlatformScreen *> screens() const { return mScreens; }
+
+    QPlatformFontDatabase *fontDatabase() const;
+
+    QPlatformEventLoopIntegration *createEventLoopIntegration() const;
 
 private:
-    QKqueueFileSystemWatcherEngine(int kqfd);
+    QList<QPlatformScreen *> mScreens;
+    QPlatformFontDatabase *mFontDb;
 
-    void run();
-
-    int kqfd;
-    int kqpipe[2];
-
-    QMutex mutex;
-    QHash<QString, int> pathToID;
-    QHash<int, QString> idToPath;
+    QCocoaAutoReleasePool *mPool;
 };
 
 QT_END_NAMESPACE
 
-#endif //QT_NO_FILESYSTEMWATCHER
-#endif // FILEWATCHER_KQUEUE_P_H
+#endif
+

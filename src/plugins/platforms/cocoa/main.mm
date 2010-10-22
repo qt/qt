@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,59 +39,36 @@
 **
 ****************************************************************************/
 
-#ifndef FILEWATCHER_KQUEUE_P_H
-#define FILEWATCHER_KQUEUE_P_H
+#include <Cocoa/Cocoa.h>
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of the QLibrary class.  This header file may change from
-// version to version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qfilesystemwatcher_p.h"
-
-#include <QtCore/qhash.h>
-#include <QtCore/qmutex.h>
-#include <QtCore/qthread.h>
-#include <QtCore/qvector.h>
-
-#ifndef QT_NO_FILESYSTEMWATCHER
-struct kevent;
+#include <QtGui/QPlatformIntegrationPlugin>
+#include "qcocoaintegration.h"
 
 QT_BEGIN_NAMESPACE
 
-class QKqueueFileSystemWatcherEngine : public QFileSystemWatcherEngine
+class QCocoaIntegrationPlugin : public QPlatformIntegrationPlugin
 {
-    Q_OBJECT
 public:
-    ~QKqueueFileSystemWatcherEngine();
-
-    static QKqueueFileSystemWatcherEngine *create();
-
-    QStringList addPaths(const QStringList &paths, QStringList *files, QStringList *directories);
-    QStringList removePaths(const QStringList &paths, QStringList *files, QStringList *directories);
-
-    void stop();
-
-private:
-    QKqueueFileSystemWatcherEngine(int kqfd);
-
-    void run();
-
-    int kqfd;
-    int kqpipe[2];
-
-    QMutex mutex;
-    QHash<QString, int> pathToID;
-    QHash<int, QString> idToPath;
+    QStringList keys() const;
+    QPlatformIntegration *create(const QString&, const QStringList&);
 };
 
-QT_END_NAMESPACE
+QStringList QCocoaIntegrationPlugin::keys() const
+{
+    QStringList list;
+    list << "Cocoa";
+    return list;
+}
 
-#endif //QT_NO_FILESYSTEMWATCHER
-#endif // FILEWATCHER_KQUEUE_P_H
+QPlatformIntegration * QCocoaIntegrationPlugin::create(const QString& system, const QStringList& paramList)
+{
+    Q_UNUSED(paramList);
+    if (system.toLower() == "cocoa")
+        return new QCocoaIntegration;
+
+    return 0;
+}
+
+Q_EXPORT_PLUGIN2(Cocoa, QCocoaIntegrationPlugin)
+
+QT_END_NAMESPACE

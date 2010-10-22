@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,59 +39,41 @@
 **
 ****************************************************************************/
 
-#ifndef FILEWATCHER_KQUEUE_P_H
-#define FILEWATCHER_KQUEUE_P_H
+#ifndef QNSVIEW_H
+#define QNSVIEW_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of the QLibrary class.  This header file may change from
-// version to version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <Cocoa/Cocoa.h>
 
-#include "qfilesystemwatcher_p.h"
+#include <QtGui/QImage>
 
-#include <QtCore/qhash.h>
-#include <QtCore/qmutex.h>
-#include <QtCore/qthread.h>
-#include <QtCore/qvector.h>
+@interface QNSView : NSView {
+    CGImageRef m_cgImage;
+    QWidget *m_widget;
+    Qt::MouseButtons m_buttons;
+}
 
-#ifndef QT_NO_FILESYSTEMWATCHER
-struct kevent;
+- (id)init;
+- (id)initWithWidget:(QWidget *)widget;
 
-QT_BEGIN_NAMESPACE
+- (void)setImage:(QImage *)image;
+- (void)drawRect:(NSRect)dirtyRect;
 
-class QKqueueFileSystemWatcherEngine : public QFileSystemWatcherEngine
-{
-    Q_OBJECT
-public:
-    ~QKqueueFileSystemWatcherEngine();
+- (BOOL)isFlipped;
 
-    static QKqueueFileSystemWatcherEngine *create();
+- (void)handleMouseEvent:(NSEvent *)theEvent;
+- (void)mouseDown:(NSEvent *)theEvent;
+- (void)mouseDragged:(NSEvent *)theEvent;
+- (void)mouseUp:(NSEvent *)theEvent;
+- (void)mouseMoved:(NSEvent *)theEvent;
+- (void)mouseEntered:(NSEvent *)theEvent;
+- (void)mouseExited:(NSEvent *)theEvent;
+- (void)rightMouseDown:(NSEvent *)theEvent;
+- (void)rightMouseDragged:(NSEvent *)theEvent;
+- (void)rightMouseUp:(NSEvent *)theEvent;
+- (void)otherMouseDown:(NSEvent *)theEvent;
+- (void)otherMouseDragged:(NSEvent *)theEvent;
+- (void)otherMouseUp:(NSEvent *)theEvent;
 
-    QStringList addPaths(const QStringList &paths, QStringList *files, QStringList *directories);
-    QStringList removePaths(const QStringList &paths, QStringList *files, QStringList *directories);
+@end
 
-    void stop();
-
-private:
-    QKqueueFileSystemWatcherEngine(int kqfd);
-
-    void run();
-
-    int kqfd;
-    int kqpipe[2];
-
-    QMutex mutex;
-    QHash<QString, int> pathToID;
-    QHash<int, QString> idToPath;
-};
-
-QT_END_NAMESPACE
-
-#endif //QT_NO_FILESYSTEMWATCHER
-#endif // FILEWATCHER_KQUEUE_P_H
+#endif //QNSVIEW_H
