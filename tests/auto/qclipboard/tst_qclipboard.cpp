@@ -380,8 +380,8 @@ void tst_QClipboard::pasteCopySymbian()
     CleanupStack::PopAndDestroy(cb);
 
     QCOMPARE(string, storeString);
-#endif
 }
+#endif
 
 /*
     Test that text copied to symbian clipboard
@@ -414,8 +414,8 @@ void tst_QClipboard::copyPasteSymbian()
     CleanupStack::PopAndDestroy(2, cb);
 
     QCOMPARE(QApplication::clipboard()->text(), string);
-#endif
 }
+#endif
 
 QTEST_MAIN(tst_QClipboard)
 
