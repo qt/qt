@@ -17,6 +17,8 @@ wince*|symbian: {
   paster.path = paster
   
   symbian: {
+    LIBS += -lbafl -lestor -letext
+
     load(data_caging_paths)
     rsc.sources = $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/copier.rsc
     rsc.sources += $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/paster.rsc
