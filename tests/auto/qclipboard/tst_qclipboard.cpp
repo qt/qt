@@ -47,6 +47,14 @@
 #ifdef Q_WS_MAC
 #include <Carbon/Carbon.h>
 #endif
+#ifdef Q_OS_SYMBIAN
+#include "private/qcore_symbian_p.h"
+#include "txtetext.h"
+#include <baclipb.h>
+#endif
+#ifdef SYMBIAN_ENABLE_SPLIT_HEADERS
+#include "txtclipboard.h"
+#endif
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -62,6 +70,10 @@ private slots:
     void testSignals();
     void setMimeData();
     void clearBeforeSetText();
+#ifdef Q_OS_SYMBIAN
+    void pasteCopySymbian();
+    void copyPasteSymbian();
+#endif
 
 private:
     bool nativeClipboardWorking();
@@ -334,6 +346,76 @@ void tst_QClipboard::clearBeforeSetText()
     QApplication::processEvents();
     QCOMPARE(QApplication::clipboard()->text(), text);
 }
+
+/*
+    Test that text copied from qt application
+    can be pasted with symbian clipboard
+*/
+#ifdef Q_OS_SYMBIAN
+// ### This test case only makes sense in symbian
+void tst_QClipboard::pasteCopySymbian()
+{
+    if (!nativeClipboardWorking())
+        QSKIP("Native clipboard not working in this setup", SkipAll);
+    const QString string("Test string symbian.");
+    QApplication::clipboard()->setText(string);
+
+    const TInt KPlainTextBegin = 0;
+    RFs fs = qt_s60GetRFs();
+    CClipboard* cb = CClipboard::NewForReadingLC(fs);
+
+    CPlainText* text = CPlainText::NewL();
+    CleanupStack::PushL(text);
+    TInt dataLength = text->PasteFromStoreL(cb->Store(), cb->StreamDictionary(),
+                                            KPlainTextBegin);
+    if (dataLength == 0) {
+        User::Leave(KErrNotFound);
+    }
+    HBufC* hBuf = HBufC::NewL(dataLength);
+    TPtr buf = hBuf->Des();
+    text->Extract(buf, KPlainTextBegin, dataLength);
+
+    QString storeString = qt_TDesC2QString(buf);
+    CleanupStack::PopAndDestroy(text);
+    CleanupStack::PopAndDestroy(cb);
+
+    QCOMPARE(string, storeString);
+}
+#endif
+
+/*
+    Test that text copied to symbian clipboard
+    can be pasted to qt clipboard
+*/
+#ifdef Q_OS_SYMBIAN
+// ### This test case only makes sense in symbian
+void tst_QClipboard::copyPasteSymbian()
+{
+    if (!nativeClipboardWorking())
+        QSKIP("Native clipboard not working in this setup", SkipAll);
+    const QString string("Test string symbian.");
+    const TInt KPlainTextBegin = 0;
+
+    RFs fs = qt_s60GetRFs();
+    CClipboard* cb = CClipboard::NewForWritingLC(fs);
+    CStreamStore& store = cb->Store();
+    CStreamDictionary& dict = cb->StreamDictionary();
+    RStoreWriteStream symbianStream;
+    TStreamId symbianStId = symbianStream.CreateLC(cb->Store());
+
+    CPlainText* text = CPlainText::NewL();
+    CleanupStack::PushL(text);
+    TPtrC textPtr(qt_QString2TPtrC(string));
+    text->InsertL(KPlainTextBegin, textPtr);
+    text->CopyToStoreL(store, dict, KPlainTextBegin, textPtr.Length());
+    CleanupStack::PopAndDestroy(text);
+    (cb->StreamDictionary()).AssignL(KClipboardUidTypePlainText, symbianStId);
+    cb->CommitL();
+    CleanupStack::PopAndDestroy(2, cb);
+
+    QCOMPARE(QApplication::clipboard()->text(), string);
+}
+#endif
 
 QTEST_MAIN(tst_QClipboard)
 
