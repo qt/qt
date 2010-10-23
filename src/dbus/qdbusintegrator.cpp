@@ -801,7 +801,7 @@ bool QDBusConnectionPrivate::activateCall(QObject* object, int flags, const QDBu
         ++cacheIt;
     if (cacheIt == slotCache.hash.constEnd() || cacheIt.key() != cacheKey)
     {
-        // not cached, analyse the meta object
+        // not cached, analyze the meta object
         const QMetaObject *mo = object->metaObject();
         QByteArray memberName = msg.member().toUtf8();
 

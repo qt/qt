@@ -3742,7 +3742,7 @@ int QApplication::x11ProcessEvent(XEvent* event)
                 // toplevel reparented...
                 QWidget *newparent = QWidget::find(event->xreparent.parent);
                 if (! newparent || (newparent->windowType() == Qt::Desktop)) {
-                    // we dont' know about the new parent (or we've been
+                    // we don't know about the new parent (or we've been
                     // reparented to root), perhaps a window manager
                     // has been (re)started?  reset the focus model to unknown
                     X11->focus_model = QX11Data::FM_Unknown;

@@ -772,7 +772,7 @@ void QItemSelectionModelPrivate::_q_layoutAboutToBeChanged()
     savedPersistentIndexes.clear();
     savedPersistentCurrentIndexes.clear();
 
-    // optimisation for when all indexes are selected
+    // optimization for when all indexes are selected
     // (only if there is lots of items (1000) because this is not entirely correct)
     if (ranges.isEmpty() && currentSelection.count() == 1) {
         QItemSelectionRange range = currentSelection.first();

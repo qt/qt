@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 QPixmapData *QWSGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
 {
     if (screen->pixmapDataFactory())
-        return screen->pixmapDataFactory()->create(type); //### For 4.4 compatability
+        return screen->pixmapDataFactory()->create(type); //### For 4.4 compatibility
     else
         return new QRasterPixmapData(type);
 }

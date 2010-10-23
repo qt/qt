@@ -749,7 +749,7 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, EventHandlerCallRef e
         }
         return false;
     }
-    // Once we process the key down , we dont need to send the saved event again from
+    // Once we process the key down , we don't need to send the saved event again from
     // kEventTextInputUnicodeForKeyEvent, so clear it.
     if (currentContext && ekind == kEventRawKeyDown) {
         QMacInputContext *context = qobject_cast<QMacInputContext*>(currentContext);

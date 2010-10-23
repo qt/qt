@@ -74,7 +74,7 @@ public:
     DemoTextItem *fpsLabel;
 
 protected:
-    // Overidden methods:
+    // Overridden methods:
     void showEvent(QShowEvent *event);
     void keyPressEvent(QKeyEvent *event);
     void resizeEvent(QResizeEvent *event);
