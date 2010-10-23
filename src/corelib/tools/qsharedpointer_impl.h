@@ -378,6 +378,13 @@ namespace QtSharedPointer {
 
         inline ExternalRefCount() : d(0) { }
         inline ExternalRefCount(Qt::Initialization i) : Basic<T>(i) { }
+
+        inline ExternalRefCount(T *ptr) : Basic<T>(Qt::Uninitialized) // throws
+        { internalConstruct(ptr); }
+        template <typename Deleter>
+        inline ExternalRefCount(T *ptr, Deleter d) : Basic<T>(Qt::Uninitialized) // throws
+        { internalConstruct(ptr, d); }
+
         inline ExternalRefCount(const ExternalRefCount<T> &other) : Basic<T>(other), d(other.d)
         { if (d) ref(); }
         template <class X>
@@ -448,11 +455,12 @@ public:
     inline QSharedPointer() { }
     // inline ~QSharedPointer() { }
 
-    inline explicit QSharedPointer(T *ptr) : BaseClass(Qt::Uninitialized)
-    { BaseClass::internalConstruct(ptr); }
+    inline explicit QSharedPointer(T *ptr) : BaseClass(ptr) // throws
+    { }
 
     template <typename Deleter>
-    inline QSharedPointer(T *ptr, Deleter d) { BaseClass::internalConstruct(ptr, d); }
+    inline QSharedPointer(T *ptr, Deleter d) : BaseClass(ptr, d) // throws
+    { }
 
     inline QSharedPointer(const QSharedPointer<T> &other) : BaseClass(other) { }
     inline QSharedPointer<T> &operator=(const QSharedPointer<T> &other)
