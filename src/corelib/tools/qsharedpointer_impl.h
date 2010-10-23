@@ -382,8 +382,8 @@ namespace QtSharedPointer {
         inline ExternalRefCount(T *ptr) : Basic<T>(Qt::Uninitialized) // throws
         { internalConstruct(ptr); }
         template <typename Deleter>
-        inline ExternalRefCount(T *ptr, Deleter d) : Basic<T>(Qt::Uninitialized) // throws
-        { internalConstruct(ptr, d); }
+        inline ExternalRefCount(T *ptr, Deleter deleter) : Basic<T>(Qt::Uninitialized) // throws
+        { internalConstruct(ptr, deleter); }
 
         inline ExternalRefCount(const ExternalRefCount<T> &other) : Basic<T>(other), d(other.d)
         { if (d) ref(); }
