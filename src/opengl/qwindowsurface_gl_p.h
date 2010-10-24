@@ -107,6 +107,7 @@ private slots:
 
 private:
     void hijackWindow(QWidget *widget);
+    bool initializeOffscreenTexture(const QSize &size);
 
     QGLWindowSurfacePrivate *d_ptr;
 };

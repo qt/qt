@@ -1554,9 +1554,8 @@ void QDirectFBScreen::exposeRegion(QRegion r, int)
                                 : (DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA);
         }
     }
-    if (!region.isEmpty()) {
-        solidFill(d_ptr->backgroundColor, region);
-    }
+
+    solidFill(d_ptr->backgroundColor, region);
 
     while (idx > 0) {
         const PaintCommand &cmd = commands[--idx];
@@ -1629,29 +1628,34 @@ void QDirectFBScreen::solidFill(const QColor &color, const QRegion &region)
     Q_UNUSED(color);
     Q_UNUSED(region);
 #else
+    QDirectFBScreen::solidFill(d_ptr->primarySurface, color, region);
+#endif
+}
+
+static inline void clearRect(IDirectFBSurface *surface, const QColor &color, const QRect &rect)
+{
+    Q_ASSERT(surface);
+    const DFBRegion region = { rect.left(), rect.top(), rect.right(), rect.bottom() };
+    // could just reinterpret_cast this to a DFBRegion
+    surface->SetClip(surface, &region);
+    surface->Clear(surface, color.red(), color.green(), color.blue(), color.alpha());
+}
+
+void QDirectFBScreen::solidFill(IDirectFBSurface *surface, const QColor &color, const QRegion &region)
+{
     if (region.isEmpty())
         return;
 
-    d_ptr->primarySurface->SetColor(d_ptr->primarySurface,
-                                    color.red(), color.green(), color.blue(),
-                                    color.alpha());
     const int n = region.rectCount();
     if (n == 1) {
-        const QRect r = region.boundingRect();
-        d_ptr->primarySurface->FillRectangle(d_ptr->primarySurface, r.x(), r.y(), r.width(), r.height());
+        clearRect(surface, color, region.boundingRect());
     } else {
         const QVector<QRect> rects = region.rects();
-        QVarLengthArray<DFBRectangle, 32> rectArray(n);
         for (int i=0; i<n; ++i) {
-            const QRect &r = rects.at(i);
-            rectArray[i].x = r.x();
-            rectArray[i].y = r.y();
-            rectArray[i].w = r.width();
-            rectArray[i].h = r.height();
+            clearRect(surface, color, rects.at(i));
         }
-        d_ptr->primarySurface->FillRectangles(d_ptr->primarySurface, rectArray.constData(), n);
     }
-#endif
+    surface->SetClip(surface, 0);
 }
 
 QImage::Format QDirectFBScreen::alphaPixmapFormat() const
