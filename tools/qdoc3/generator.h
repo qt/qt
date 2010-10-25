@@ -114,7 +114,7 @@ class Generator
     void generateThreadSafeness(const Node *node, CodeMarker *marker);
     void generateSince(const Node *node, CodeMarker *marker);
     void generateStatus(const Node *node, CodeMarker *marker);
-    const Atom *generateAtomList(const Atom *atom, 
+    const Atom* generateAtomList(const Atom *atom, 
                                  const Node *relative,
                                  CodeMarker *marker, 
                                  bool generate,

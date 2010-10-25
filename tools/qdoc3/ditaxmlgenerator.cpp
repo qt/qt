@@ -1282,7 +1282,10 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         xmlWriter().writeEndElement(); // </lq>
         break;
     case Atom::RawString:
+        xmlWriter().writeStartElement("pre");
+        xmlWriter().writeAttribute("outputclass","raw-html");
         xmlWriter().writeCharacters(atom->string());
+        xmlWriter().writeEndElement(); // </pre>
         break;
     case Atom::SectionLeft:
         if (inSection || inApiDesc) {
@@ -5676,6 +5679,14 @@ DitaXmlGenerator::generateInnerNode(const InnerNode* node, CodeMarker* marker)
 	    generateInnerNode((const InnerNode*) *c, marker);
 	++c;
     }
+}
+
+/*!
+  Returns true if \a format is "XML" or "HTML" .
+ */
+bool DitaXmlGenerator::canHandleFormat(const QString& format)
+{
+    return (format == "HTML") || (format == this->format());
 }
 
 QT_END_NAMESPACE
