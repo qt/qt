@@ -508,17 +508,26 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
         Q_ASSERT(glIsRenderbuffer(depth_buffer));
         if (samples != 0 && glRenderbufferStorageMultisampleEXT) {
 #ifdef QT_OPENGL_ES
-#define GL_DEPTH_COMPONENT16 0x81A5
-            glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples,
-                GL_DEPTH_COMPONENT16, size.width(), size.height());
+            if (QGLExtensions::glExtensions() & QGLExtensions::Depth24) {
+                glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples,
+                    GL_DEPTH_COMPONENT24_OES, size.width(), size.height());
+            } else {
+                glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples,
+                    GL_DEPTH_COMPONENT16, size.width(), size.height());
+            }
 #else
             glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, samples,
                 GL_DEPTH_COMPONENT, size.width(), size.height());
 #endif
         } else {
 #ifdef QT_OPENGL_ES
-#define GL_DEPTH_COMPONENT16 0x81A5
-            glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT16, size.width(), size.height());
+            if (QGLExtensions::glExtensions() & QGLExtensions::Depth24) {
+                glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24_OES, 
+                                        size.width(), size.height());
+            } else {
+                glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT16, 
+                                        size.width(), size.height());
+            }
 #else
             glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, size.width(), size.height());
 #endif
@@ -1169,8 +1178,8 @@ void QGLFramebufferObject::drawTexture(const QPointF &point, QMacCompatGLuint te
 }
 #endif
 
-extern int qt_defaultDpiX();
-extern int qt_defaultDpiY();
+Q_DECL_IMPORT extern int qt_defaultDpiX();
+Q_DECL_IMPORT extern int qt_defaultDpiY();
 
 /*! \reimp */
 int QGLFramebufferObject::metric(PaintDeviceMetric metric) const

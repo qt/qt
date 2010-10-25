@@ -299,6 +299,8 @@ private Q_SLOTS:
     void ioGetFromHttpBrokenChunkedEncoding();
     void qtbug12908compressedHttpReply();
 
+    void getFromUnreachableIp();
+
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 };
@@ -4571,6 +4573,20 @@ void tst_QNetworkReply::qtbug12908compressedHttpReply()
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(reply->error(), QNetworkReply::NoError);
+}
+
+void tst_QNetworkReply::getFromUnreachableIp()
+{
+    QNetworkAccessManager manager;
+
+    QNetworkRequest request(QUrl("http://255.255.255.255/42/23/narf/narf/narf"));
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(5);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QVERIFY(reply->error() != QNetworkReply::NoError);
 }
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!

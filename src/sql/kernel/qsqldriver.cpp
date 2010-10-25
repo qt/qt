@@ -396,7 +396,7 @@ QString QSqlDriver::escapeIdentifier(const QString &identifier, IdentifierType) 
     \a identifier can either be a table name or field name, dependent
     on \a type.
 
-    \warning Because of binary compatability constraints, this function is not virtual.
+    \warning Because of binary compatibility constraints, this function is not virtual.
     If you want to provide your own implementation in your QSqlDriver subclass,
     reimplement the isIdentifierEscapedImplementation() slot in your subclass instead.
     The isIdentifierEscapedFunction() will dynamically detect the slot and call it.
@@ -421,7 +421,7 @@ bool QSqlDriver::isIdentifierEscaped(const QString &identifier, IdentifierType t
     and trailing delimiter characters, \a identifier is returned without
     modification.
 
-    \warning Because of binary compatability constraints, this function is not virtual,
+    \warning Because of binary compatibility constraints, this function is not virtual,
     If you want to provide your own implementation in your QSqlDriver subclass,
     reimplement the stripDelimitersImplementation() slot in your subclass instead.
     The stripDelimiters() function will dynamically detect the slot and call it.
@@ -871,7 +871,7 @@ QStringList QSqlDriver::subscribedToNotificationsImplementation() const
     \a identifier can either be a table name or field name, dependent
     on \a type.
 
-    Because of binary compatability constraints, isIdentifierEscaped() function
+    Because of binary compatibility constraints, isIdentifierEscaped() function
     (introduced in Qt 4.5) is not virtual.  Instead, isIdentifierEscaped() will
     dynamically detect and call \e this slot.  The default implementation
     assumes the escape/delimiter character is a double quote.  Reimplement this
@@ -896,7 +896,7 @@ bool QSqlDriver::isIdentifierEscapedImplementation(const QString &identifier, Id
     If \a identifier does not have leading and trailing delimiter characters, \a
     identifier is returned without modification.
 
-    Because of binary compatability constraints, the stripDelimiters() function
+    Because of binary compatibility constraints, the stripDelimiters() function
     (introduced in Qt 4.5) is not virtual.  Instead, stripDelimiters() will
     dynamically detect and call \e this slot.  It generally unnecessary
     to reimplement this slot.

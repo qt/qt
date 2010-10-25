@@ -201,7 +201,7 @@ QAudioInput::~QAudioInput()
 
 /*!
      Uses the \a device as the QIODevice to transfer data.
-     Passing a QIODevice allows the data to be transfered without any extra code.
+     Passing a QIODevice allows the data to be transferred without any extra code.
      All that is required is to open the QIODevice.
 
      If able to successfully get audio data from the systems audio device the

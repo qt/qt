@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -36,18 +36,14 @@
 
     \QD has been completely re-written based on our experience with
     the previous versions of the product for Qt 3. One of the main new
-    ideas behind this new version is to release the application as a
+    ideas is to release the application as a
     collection of interchangeable components that include the property
     editor, the widget box, and other useful tools for creating
     graphical user interfaces with Qt. These components can either be
     used together in the \QD application, or independently integrated
     into other systems.  As a result, certain features such as the
     project editor and code editor have been removed from the version
-    included with this release.
-
-    The current version of \QD is near feature complete and can be used for
-    many tasks. However, it is still under continuous development. This
-    document will explain what is already in place.
+    included with release 4.
 
     See also the \l{Qt Designer Manual}.
 
@@ -128,7 +124,7 @@
     \row
     \i \bold{Widget Editing Mode}
 
-    The new \QD allows widgets to be dropped into existing layouts on
+    \QD now allows widgets to be dropped into existing layouts on
     the form. Previously, it was necessary to break layouts in order
     to add new widgets to them.
 
@@ -189,7 +185,7 @@
     \row
     \i \bold{The Resource Editor}
 
-    The new \QD fully supports The Qt Resource System, and provide the
+    \QD now fully supports The Qt Resource System, and provides the
     Resource Editor to help designers and developers manage the
     resources that are needed by their applications.
 
@@ -210,8 +206,8 @@
     \i \inlineimage designer-action-editor.png
     \i \bold{The Action Editor}
 
-    With the release of Qt 4.1, \QD introduces the Action Editor
-    simplifying the management of actions when creating main window
+    With the release of Qt 4.1, \QD the Action Editor was introduced
+    to simplify the management of actions when creating main window
     applications.
 
     When creating a main window, you can add a menu bar and toolbars
@@ -261,7 +257,7 @@
 
     \section1 Run-Time Support for Forms
 
-    With the Qt 4.1 release, the new QtUiTools module is introduced to
+    With the Qt 4.1 release, the new QtUiTools module was introduced to
     provide classes handling forms created with \QD.
 
     Currently the module only contains the QUiLoader class.

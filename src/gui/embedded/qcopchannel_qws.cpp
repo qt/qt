@@ -502,7 +502,7 @@ void QCopChannel::answer(QWSClient *cl, const QString& ch,
             bool known = qcopServerMap && qcopServerMap->contains(c)
                         && !((*qcopServerMap)[c]).isEmpty();
             // Yes, it's a typo, it's not user-visible, and we choose not to fix it for compatibility
-            QLatin1String ans = QLatin1String(known ? "known" : "unkown");
+            QLatin1String ans = QLatin1String(known ? "known" : "unknown");
             QWSServerPrivate::sendQCopEvent(cl, QLatin1String(""),
                                             ans, data, true);
             return;

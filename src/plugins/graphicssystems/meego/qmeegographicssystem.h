@@ -67,12 +67,11 @@ public:
     static QPixmapData *pixmapDataWithGLTexture(int w, int h);
     static void updateEGLSharedImagePixmap(QPixmap *pixmap);
 
-    static Qt::HANDLE createLiveTexture(int w, int h, QImage::Format format);
-    static void destroyLiveTexture(Qt::HANDLE h);
-    static bool lockLiveTexture(Qt::HANDLE h);
-    static bool unlockLiveTexture(Qt::HANDLE h);
-    static void queryLiveTexture(Qt::HANDLE h, void **data, int *pitch);
-    static Qt::HANDLE liveTextureToEGLImage(Qt::HANDLE h);
+    static QPixmapData *pixmapDataWithNewLiveTexture(int w, int h, QImage::Format format);
+    static QPixmapData *pixmapDataFromLiveTextureHandle(Qt::HANDLE handle);
+    static QImage *lockLiveTexture(QPixmap* pixmap);
+    static bool releaseLiveTexture(QPixmap *pixmap, QImage *image);
+    static Qt::HANDLE getLiveTextureHandle(QPixmap *pixmap);
 
 private:
     static bool meeGoRunning();
@@ -88,19 +87,17 @@ private:
 extern "C" {
     Q_DECL_EXPORT int qt_meego_image_to_egl_shared_image(const QImage &image);
     Q_DECL_EXPORT QPixmapData* qt_meego_pixmapdata_from_egl_shared_image(Qt::HANDLE handle, const QImage &softImage);
-    Q_DECL_EXPORT QPixmapData* qt_meego_pixmapdata_from_egl_image(Qt::HANDLE handle);
     Q_DECL_EXPORT QPixmapData* qt_meego_pixmapdata_with_gl_texture(int w, int h);
     Q_DECL_EXPORT void qt_meego_update_egl_shared_image_pixmap(QPixmap *pixmap);
     Q_DECL_EXPORT bool qt_meego_destroy_egl_shared_image(Qt::HANDLE handle);
     Q_DECL_EXPORT void qt_meego_set_surface_fixed_size(int width, int height);
     Q_DECL_EXPORT void qt_meego_set_surface_scaling(int x, int y, int width, int height);
-    Q_DECL_EXPORT void qt_meego_set_translucent(bool translucent);
-    Q_DECL_EXPORT Qt::HANDLE m_live_texture_create(int w, int h, QImage::Format format);
-    Q_DECL_EXPORT void m_live_texture_destroy(Qt::HANDLE h);
-    Q_DECL_EXPORT bool m_live_texture_lock(Qt::HANDLE h);
-    Q_DECL_EXPORT bool m_live_texture_unlock(Qt::HANDLE h);
-    Q_DECL_EXPORT void m_live_texture_query(Qt::HANDLE h, void **data, int *pitch);
-    Q_DECL_EXPORT Qt::HANDLE m_live_texture_to_egl_image(Qt::HANDLE h);
+    Q_DECL_EXPORT void qt_meego_set_translucent(bool translucent);    
+    Q_DECL_EXPORT QPixmapData* qt_meego_pixmapdata_with_new_live_texture(int w, int h, QImage::Format format);
+    Q_DECL_EXPORT QPixmapData* qt_meego_pixmapdata_from_live_texture_handle(Qt::HANDLE handle);
+    Q_DECL_EXPORT QImage* qt_meego_live_texture_lock(QPixmap *pixmap);
+    Q_DECL_EXPORT bool qt_meego_live_texture_release(QPixmap *pixmap, QImage *image);
+    Q_DECL_EXPORT Qt::HANDLE qt_meego_live_texture_get_handle(QPixmap *pixmap);
 }
 
 #endif 

@@ -560,7 +560,7 @@ void QDBusAbstractInterface::connectNotify(const char *signal)
     if (!d->isValid)
         return;
 
-    // we end up recursing here, so optimise away
+    // we end up recursing here, so optimize away
     if (qstrcmp(signal + 1, "destroyed(QObject*)") == 0)
         return;
 

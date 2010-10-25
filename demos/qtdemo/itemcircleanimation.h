@@ -61,7 +61,7 @@ public:
     ItemCircleAnimation(QGraphicsScene *scene = 0, QGraphicsItem *parent = 0);
     virtual ~ItemCircleAnimation();
 
-    // overidden methods:
+    // overridden methods:
     QRectF boundingRect() const;
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget * = 0);
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);

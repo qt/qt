@@ -589,7 +589,7 @@ void MediaPlayer::configureEffect()
         effectDialog.exec();
 
         if (effectDialog.result() != QDialog::Accepted) {
-            //we need to restore the paramaters values
+            //we need to restore the parameters values
             int currentIndex = 0;
             foreach(Phonon::EffectParameter param, nextEffect->parameters()) {
                 nextEffect->setParameterValue(param, savedParamValues.at(currentIndex++));

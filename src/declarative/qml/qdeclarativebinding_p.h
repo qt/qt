@@ -64,7 +64,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_DECLARATIVE_EXPORT QDeclarativeAbstractBinding
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeAbstractBinding
 {
 public:
     typedef QWeakPointer<QDeclarativeAbstractBinding> Pointer;
@@ -138,7 +138,7 @@ private:
 
 class QDeclarativeContext;
 class QDeclarativeBindingPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeBinding : public QDeclarativeExpression, public QDeclarativeAbstractBinding
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeBinding : public QDeclarativeExpression, public QDeclarativeAbstractBinding
 {
 Q_OBJECT
 public:

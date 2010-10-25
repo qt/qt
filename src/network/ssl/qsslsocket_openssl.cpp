@@ -647,7 +647,7 @@ TInt CSymbianCertificateRetriever::ThreadEntryPoint(TAny* aParams)
     if (err)
         return err;
     else
-        return self->iSequenceError;    // return any error that occured during the retrieval
+        return self->iSequenceError;    // return any error that occurred during the retrieval
 }
 
 void CSymbianCertificateRetriever::ConstructL()

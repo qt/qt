@@ -750,6 +750,22 @@ QSizeF QGraphicsWidget::sizeHint(Qt::SizeHint which, const QSizeF &constraint) c
 /*!
     \property QGraphicsWidget::layout
     \brief The layout of the widget
+
+    Any existing layout manager is deleted before the new layout is assigned. If
+     \a layout is 0, the widget is left without a layout. Existing subwidgets'
+    geometries will remain unaffected.
+
+    QGraphicsWidget takes ownership of \a layout.
+
+    All widgets that are currently managed by \a layout or all of its
+    sublayouts, are automatically reparented to this item. The layout is then
+    invalidated, and the child widget geometries are adjusted according to
+    this item's geometry() and contentsMargins(). Children who are not
+    explicitly managed by \a layout remain unaffected by the layout after
+    it has been assigned to this widget.
+
+    If no layout is currently managing this widget, layout() will return 0.
+
 */
 
 /*!

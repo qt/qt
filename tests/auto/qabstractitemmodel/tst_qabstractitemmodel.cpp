@@ -1167,6 +1167,7 @@ void tst_QAbstractItemModel::testMoveToGrandParent_data()
 
     // Moving everything from one parent to another
     QTest::newRow("move12") << 0 << 9 << 10;
+    QTest::newRow("move13") << 0 << 9 << 0;
 }
 
 void tst_QAbstractItemModel::testMoveToGrandParent()
@@ -1314,6 +1315,11 @@ void tst_QAbstractItemModel::testMoveToSibling_data()
     QTest::newRow("move09") << 8 << 8 << 4;
     QTest::newRow("move10") << 8 << 8 << 5;
     QTest::newRow("move11") << 8 << 8 << 6;
+
+    // Move such that the destination parent no longer valid after the move.
+    // The destination parent is always QMI(5, 0), but after this move the
+    // row count is 5, so (5, 0) (used internally in QAIM) no longer refers to a valid index.
+    QTest::newRow("move12") << 0 << 4 << 0;
 }
 
 void tst_QAbstractItemModel::testMoveToSibling()
