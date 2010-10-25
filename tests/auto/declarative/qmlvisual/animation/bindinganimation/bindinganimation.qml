@@ -14,14 +14,11 @@ Rectangle {
     }
     states: [
         State {
+            when: myMouseArea.pressed
             name: "hello"
             PropertyChanges {
                 target: myRectangle
                 x: 50 + 50
-            }
-            PropertyChanges {
-                target: myMouseArea
-                onClicked: page.state = ''
             }
         }
     ]
@@ -35,6 +32,5 @@ Rectangle {
     MouseArea {
         id: myMouseArea
         anchors.fill: parent
-        onClicked: { page.state= 'hello' }
     }
 }

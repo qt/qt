@@ -43,7 +43,7 @@
 #include <private/qpaintengine_raster_p.h>
 #include <private/qpainter_p.h>
 #include <private/qdrawhelper_x86_p.h>
-#include <private/qdrawhelper_armv6_p.h>
+#include <private/qdrawhelper_arm_simd_p.h>
 #include <private/qdrawhelper_neon_p.h>
 #include <private/qmath_p.h>
 #include <qmath.h>
@@ -7678,96 +7678,6 @@ static void qt_memfill16_setup(quint16 *dest, quint16 value, int count);
 qt_memfill32_func qt_memfill32 = qt_memfill32_setup;
 qt_memfill16_func qt_memfill16 = qt_memfill16_setup;
 
-#if defined(Q_CC_RVCT) && defined(QT_HAVE_ARMV6)
-// Move these to qdrawhelper_arm.c when all
-// functions are implemented using arm assembly.
-static CompositionFunctionSolid qt_functionForModeSolid_ARMv6[numCompositionFunctions] = {
-        comp_func_solid_SourceOver,
-        comp_func_solid_DestinationOver,
-        comp_func_solid_Clear,
-        comp_func_solid_Source,
-        comp_func_solid_Destination,
-        comp_func_solid_SourceIn,
-        comp_func_solid_DestinationIn,
-        comp_func_solid_SourceOut,
-        comp_func_solid_DestinationOut,
-        comp_func_solid_SourceAtop,
-        comp_func_solid_DestinationAtop,
-        comp_func_solid_XOR,
-        comp_func_solid_Plus,
-        comp_func_solid_Multiply,
-        comp_func_solid_Screen,
-        comp_func_solid_Overlay,
-        comp_func_solid_Darken,
-        comp_func_solid_Lighten,
-        comp_func_solid_ColorDodge,
-        comp_func_solid_ColorBurn,
-        comp_func_solid_HardLight,
-        comp_func_solid_SoftLight,
-        comp_func_solid_Difference,
-        comp_func_solid_Exclusion,
-        rasterop_solid_SourceOrDestination,
-        rasterop_solid_SourceAndDestination,
-        rasterop_solid_SourceXorDestination,
-        rasterop_solid_NotSourceAndNotDestination,
-        rasterop_solid_NotSourceOrNotDestination,
-        rasterop_solid_NotSourceXorDestination,
-        rasterop_solid_NotSource,
-        rasterop_solid_NotSourceAndDestination,
-        rasterop_solid_SourceAndNotDestination
-};
-
-static CompositionFunction qt_functionForMode_ARMv6[numCompositionFunctions] = {
-        comp_func_SourceOver_armv6,
-        comp_func_DestinationOver,
-        comp_func_Clear,
-        comp_func_Source_armv6,
-        comp_func_Destination,
-        comp_func_SourceIn,
-        comp_func_DestinationIn,
-        comp_func_SourceOut,
-        comp_func_DestinationOut,
-        comp_func_SourceAtop,
-        comp_func_DestinationAtop,
-        comp_func_XOR,
-        comp_func_Plus,
-        comp_func_Multiply,
-        comp_func_Screen,
-        comp_func_Overlay,
-        comp_func_Darken,
-        comp_func_Lighten,
-        comp_func_ColorDodge,
-        comp_func_ColorBurn,
-        comp_func_HardLight,
-        comp_func_SoftLight,
-        comp_func_Difference,
-        comp_func_Exclusion,
-        rasterop_SourceOrDestination,
-        rasterop_SourceAndDestination,
-        rasterop_SourceXorDestination,
-        rasterop_NotSourceAndNotDestination,
-        rasterop_NotSourceOrNotDestination,
-        rasterop_NotSourceXorDestination,
-        rasterop_NotSource,
-        rasterop_NotSourceAndDestination,
-        rasterop_SourceAndNotDestination
-};
-
-static void qt_blend_color_argb_armv6(int count, const QSpan *spans, void *userData)
-{
-    QSpanData *data = reinterpret_cast<QSpanData *>(userData);
-
-    CompositionFunctionSolid func = qt_functionForModeSolid_ARMv6[data->rasterBuffer->compositionMode];
-    while (count--) {
-        uint *target = ((uint *)data->rasterBuffer->scanLine(spans->y)) + spans->x;
-        func(target, spans->len, data->solid.color, spans->coverage);
-        ++spans;
-    }
-}
-
-#endif // Q_CC_RVCT && QT_HAVE_ARMV6
-
-
 void qInitDrawhelperAsm()
 {
 
@@ -7938,46 +7848,39 @@ void qInitDrawhelperAsm()
     }
 #endif // IWMMXT
 
-#if defined(Q_CC_RVCT) && defined(QT_HAVE_ARMV6)
-        functionForModeAsm = qt_functionForMode_ARMv6;
-        functionForModeSolidAsm = qt_functionForModeSolid_ARMv6;
-
-        qt_memfill32 = qt_memfill32_armv6;
-
-        qDrawHelper[QImage::Format_ARGB32_Premultiplied].blendColor = qt_blend_color_argb_armv6;
-
-        qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_armv6;
-        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_armv6;
-        qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_armv6;
-        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_armv6;
+#if defined(QT_HAVE_ARM_SIMD)
+    qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_arm_simd;
+    qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_arm_simd;
+    qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_arm_simd;
+    qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_arm_simd;
 #elif defined(QT_HAVE_NEON)
-        if (features & NEON) {
-            qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
-            qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
-            qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_neon;
-            qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_neon;
-            qBlendFunctions[QImage::Format_RGB16][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_rgb16_neon;
-            qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB16] = qt_blend_rgb16_on_argb32_neon;
-            qBlendFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_blend_rgb16_on_rgb16_neon;
+    if (features & NEON) {
+        qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
+        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
+        qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_neon;
+        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_neon;
+        qBlendFunctions[QImage::Format_RGB16][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_rgb16_neon;
+        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB16] = qt_blend_rgb16_on_argb32_neon;
+        qBlendFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_blend_rgb16_on_rgb16_neon;
 
-            qScaleFunctions[QImage::Format_RGB16][QImage::Format_ARGB32_Premultiplied] = qt_scale_image_argb32_on_rgb16_neon;
-            qScaleFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_scale_image_rgb16_on_rgb16_neon;
+        qScaleFunctions[QImage::Format_RGB16][QImage::Format_ARGB32_Premultiplied] = qt_scale_image_argb32_on_rgb16_neon;
+        qScaleFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_scale_image_rgb16_on_rgb16_neon;
 
-            qTransformFunctions[QImage::Format_RGB16][QImage::Format_ARGB32_Premultiplied] = qt_transform_image_argb32_on_rgb16_neon;
-            qTransformFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_transform_image_rgb16_on_rgb16_neon;
+        qTransformFunctions[QImage::Format_RGB16][QImage::Format_ARGB32_Premultiplied] = qt_transform_image_argb32_on_rgb16_neon;
+        qTransformFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_transform_image_rgb16_on_rgb16_neon;
 
-            qDrawHelper[QImage::Format_RGB16].alphamapBlit = qt_alphamapblit_quint16_neon;
+        qDrawHelper[QImage::Format_RGB16].alphamapBlit = qt_alphamapblit_quint16_neon;
 
-            functionForMode_C[QPainter::CompositionMode_SourceOver] = qt_blend_argb32_on_argb32_scanline_neon;
-            functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_neon;
-            functionForMode_C[QPainter::CompositionMode_Plus] = comp_func_Plus_neon;
-            destFetchProc[QImage::Format_RGB16] = qt_destFetchRGB16_neon;
-            destStoreProc[QImage::Format_RGB16] = qt_destStoreRGB16_neon;
+        functionForMode_C[QPainter::CompositionMode_SourceOver] = qt_blend_argb32_on_argb32_scanline_neon;
+        functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_neon;
+        functionForMode_C[QPainter::CompositionMode_Plus] = comp_func_Plus_neon;
+        destFetchProc[QImage::Format_RGB16] = qt_destFetchRGB16_neon;
+        destStoreProc[QImage::Format_RGB16] = qt_destStoreRGB16_neon;
 
-            qMemRotateFunctions[QImage::Format_RGB16][0] = qt_memrotate90_16_neon;
-            qMemRotateFunctions[QImage::Format_RGB16][2] = qt_memrotate270_16_neon;
-            qt_memfill32 = qt_memfill32_neon;
-        }
+        qMemRotateFunctions[QImage::Format_RGB16][0] = qt_memrotate90_16_neon;
+        qMemRotateFunctions[QImage::Format_RGB16][2] = qt_memrotate270_16_neon;
+        qt_memfill32 = qt_memfill32_neon;
+    }
 #endif
 
     if (functionForModeSolidAsm) {

@@ -398,6 +398,12 @@ void tst_qdeclarativefocusscope::signalEmission()
     QCOMPARE(item3->property("color"), blue);
     QCOMPARE(item4->property("color"), red);
 
+    item4->setFocus(false);
+    QCOMPARE(item1->property("color"), blue);
+    QCOMPARE(item2->property("color"), red);
+    QCOMPARE(item3->property("color"), blue);
+    QCOMPARE(item4->property("color"), blue);
+
     delete view;
 }
 

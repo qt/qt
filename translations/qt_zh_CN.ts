@@ -921,7 +921,7 @@ to
     <message>
         <location line="-8"/>
         <source>&amp;Select All</source>
-        <translation>选择关部(&amp;S)</translation>
+        <translation>选择全部(&amp;S)</translation>
     </message>
 </context>
 <context>

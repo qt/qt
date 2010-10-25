@@ -1,6 +1,7 @@
 # handle pkg-config files
+isEmpty(PKG_CONFIG):PKG_CONFIG = pkg-config
 for(PKGCONFIG_LIB, $$list($$unique(PKGCONFIG))) {
-    QMAKE_CXXFLAGS += $$system(pkg-config --cflags $$PKGCONFIG_LIB)
-    QMAKE_CFLAGS += $$system(pkg-config --cflags $$PKGCONFIG_LIB)
-    LIBS += $$system(pkg-config --libs $$PKGCONFIG_LIB)
+    QMAKE_CXXFLAGS += $$system($$PKG_CONFIG --cflags $$PKGCONFIG_LIB)
+    QMAKE_CFLAGS += $$system($$PKG_CONFIG --cflags $$PKGCONFIG_LIB)
+    LIBS += $$system($$PKG_CONFIG --libs $$PKGCONFIG_LIB)
 }

@@ -103,12 +103,22 @@ void QHttpNetworkConnectionChannel::init()
     QObject::connect(socket, SIGNAL(readyRead()),
                      this, SLOT(_q_readyRead()),
                      Qt::DirectConnection);
+
+    // The disconnected() and error() signals may already come
+    // while calling connectToHost().
+    // In case of a cached hostname or an IP this
+    // will then emit a signal to the user of QNetworkReply
+    // but cannot be caught because the user did not have a chance yet
+    // to connect to QNetworkReply's signals.
+    qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
     QObject::connect(socket, SIGNAL(disconnected()),
                      this, SLOT(_q_disconnected()),
-                     Qt::DirectConnection);
+                     Qt::QueuedConnection);
     QObject::connect(socket, SIGNAL(error(QAbstractSocket::SocketError)),
                      this, SLOT(_q_error(QAbstractSocket::SocketError)),
-                     Qt::DirectConnection);
+                     Qt::QueuedConnection);
+
+
 #ifndef QT_NO_NETWORKPROXY
     QObject::connect(socket, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                      this, SLOT(_q_proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),

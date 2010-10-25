@@ -93,10 +93,11 @@ public:
 
         QByteArray className;
         QDeclarativeType *type;
-        QDeclarativeComponent *component;
+//        QDeclarativeComponent *component;
+        QDeclarativeCompiledData *component;
 
         QDeclarativeRefCount *ref;
-        QObject *createInstance(QDeclarativeContextData *, const QBitField &) const;
+        QObject *createInstance(QDeclarativeContextData *, const QBitField &, QList<QDeclarativeError> *) const;
         const QMetaObject *metaObject() const;
     };
     QList<TypeReference> types;

@@ -44,6 +44,7 @@
 #include <private/qlibrary_p.h>
 #include <private/qfactoryloader_p.h>
 #include <private/qgraphicssystemplugin_p.h>
+#include <stdio.h>
 
 #define ENSURE_INITIALIZED {if (!initialized) initialize();}
 
@@ -51,36 +52,31 @@ bool QMeeGoRuntime::initialized = false;
 
 typedef int (*QMeeGoImageToEglSharedImageFunc) (const QImage&);
 typedef QPixmapData* (*QMeeGoPixmapDataFromEglSharedImageFunc) (Qt::HANDLE handle, const QImage&);
-typedef QPixmapData* (*QMeeGoPixmapDataFromEglImageFunc) (Qt::HANDLE handle);
 typedef QPixmapData* (*QMeeGoPixmapDataWithGLTextureFunc) (int w, int h);
 typedef bool (*QMeeGoDestroyEGLSharedImageFunc) (Qt::HANDLE handle);
 typedef void (*QMeeGoUpdateEglSharedImagePixmapFunc) (QPixmap*);
 typedef void (*QMeeGoSetSurfaceFixedSizeFunc) (int w, int h);
 typedef void (*QMeeGoSetSurfaceScalingFunc) (int x, int y, int w, int h);
 typedef void (*QMeeGoSetTranslucentFunc) (bool translucent);
-typedef Qt::HANDLE (*QMeeGoLiveTextureCreateFunc) (int w, int h, QImage::Format format);
-typedef bool (*QMeeGoLiveTextureLockFunc) (Qt::HANDLE h);
-typedef bool (*QMeeGoLiveTextureUnlockFunc) (Qt::HANDLE h);
-typedef void (*QMeeGoLiveTextureDestroyFunc) (Qt::HANDLE h);
-typedef void (*QMeeGoLiveTextureQueryFunc) (Qt::HANDLE h, void **data, int *pitch);
-typedef Qt::HANDLE (*QMeeGoLiveTextureToEglImageFunc) (Qt::HANDLE h);
+typedef QPixmapData* (*QMeeGoPixmapDataWithNewLiveTextureFunc) (int w, int h, QImage::Format format);
+typedef QPixmapData* (*QMeeGoPixmapDataFromLiveTextureHandleFunc) (Qt::HANDLE h);
+typedef QImage* (*QMeeGoLiveTextureLockFunc) (QPixmap*);
+typedef bool (*QMeeGoLiveTextureReleaseFunc) (QPixmap*, QImage *i);
+typedef Qt::HANDLE (*QMeeGoLiveTextureGetHandleFunc) (QPixmap*);
 
 static QMeeGoImageToEglSharedImageFunc qt_meego_image_to_egl_shared_image = NULL;
 static QMeeGoPixmapDataFromEglSharedImageFunc qt_meego_pixmapdata_from_egl_shared_image = NULL;
-static QMeeGoPixmapDataFromEglImageFunc qt_meego_pixmapdata_from_egl_image = NULL;
 static QMeeGoPixmapDataWithGLTextureFunc qt_meego_pixmapdata_with_gl_texture = NULL;
 static QMeeGoDestroyEGLSharedImageFunc qt_meego_destroy_egl_shared_image = NULL;
 static QMeeGoUpdateEglSharedImagePixmapFunc qt_meego_update_egl_shared_image_pixmap = NULL;
 static QMeeGoSetSurfaceFixedSizeFunc qt_meego_set_surface_fixed_size = NULL;
 static QMeeGoSetSurfaceScalingFunc qt_meego_set_surface_scaling = NULL;
 static QMeeGoSetTranslucentFunc qt_meego_set_translucent = NULL;
-static QMeeGoLiveTextureCreateFunc qt_meego_live_texture_create = NULL;
+static QMeeGoPixmapDataWithNewLiveTextureFunc qt_meego_pixmapdata_with_new_live_texture = NULL;
+static QMeeGoPixmapDataFromLiveTextureHandleFunc qt_meego_pixmapdata_from_live_texture_handle = NULL;
 static QMeeGoLiveTextureLockFunc qt_meego_live_texture_lock = NULL;
-static QMeeGoLiveTextureUnlockFunc qt_meego_live_texture_unlock = NULL;
-static QMeeGoLiveTextureDestroyFunc qt_meego_live_texture_destroy = NULL;
-static QMeeGoLiveTextureQueryFunc qt_meego_live_texture_query = NULL;
-static QMeeGoLiveTextureToEglImageFunc qt_meego_live_texture_to_egl_image = NULL;
-
+static QMeeGoLiveTextureReleaseFunc qt_meego_live_texture_release = NULL;
+static QMeeGoLiveTextureGetHandleFunc qt_meego_live_texture_get_handle = NULL;
 
 void QMeeGoRuntime::initialize()
 {
@@ -96,27 +92,27 @@ void QMeeGoRuntime::initialize()
     if (success) {
         qt_meego_image_to_egl_shared_image = (QMeeGoImageToEglSharedImageFunc) library.resolve("qt_meego_image_to_egl_shared_image");
         qt_meego_pixmapdata_from_egl_shared_image = (QMeeGoPixmapDataFromEglSharedImageFunc) library.resolve("qt_meego_pixmapdata_from_egl_shared_image");
-        qt_meego_pixmapdata_from_egl_image = (QMeeGoPixmapDataFromEglImageFunc) library.resolve("qt_meego_pixmapdata_from_egl_image");
         qt_meego_pixmapdata_with_gl_texture = (QMeeGoPixmapDataWithGLTextureFunc) library.resolve("qt_meego_pixmapdata_with_gl_texture");
         qt_meego_destroy_egl_shared_image = (QMeeGoDestroyEGLSharedImageFunc) library.resolve("qt_meego_destroy_egl_shared_image");
         qt_meego_update_egl_shared_image_pixmap = (QMeeGoUpdateEglSharedImagePixmapFunc) library.resolve("qt_meego_update_egl_shared_image_pixmap");
         qt_meego_set_surface_fixed_size = (QMeeGoSetSurfaceFixedSizeFunc) library.resolve("qt_meego_set_surface_fixed_size");
         qt_meego_set_surface_scaling = (QMeeGoSetSurfaceScalingFunc) library.resolve("qt_meego_set_surface_scaling");
         qt_meego_set_translucent = (QMeeGoSetTranslucentFunc) library.resolve("qt_meego_set_translucent");
-        qt_meego_live_texture_create = (QMeeGoLiveTextureCreateFunc) library.resolve("qt_meego_live_texture_create");
+        qt_meego_pixmapdata_with_new_live_texture = (QMeeGoPixmapDataWithNewLiveTextureFunc) library.resolve("qt_meego_pixmapdata_with_new_live_texture");
+        qt_meego_pixmapdata_from_live_texture_handle = (QMeeGoPixmapDataFromLiveTextureHandleFunc) library.resolve("qt_meego_pixmapdata_from_live_texture_handle");
         qt_meego_live_texture_lock = (QMeeGoLiveTextureLockFunc) library.resolve("qt_meego_live_texture_lock");
-        qt_meego_live_texture_unlock = (QMeeGoLiveTextureUnlockFunc) library.resolve("qt_meego_live_texture_unlock");
-        qt_meego_live_texture_destroy = (QMeeGoLiveTextureDestroyFunc) library.resolve("qt_meego_live_texture_destroy");
-        qt_meego_live_texture_query = (QMeeGoLiveTextureQueryFunc) library.resolve("qt_meego_live_texture_query");
-        qt_meego_live_texture_to_egl_image = (QMeeGoLiveTextureToEglImageFunc) library.resolve("qt_meego_live_texture_to_egl_image");
+        qt_meego_live_texture_release = (QMeeGoLiveTextureReleaseFunc) library.resolve("qt_meego_live_texture_release");
+        qt_meego_live_texture_get_handle = (QMeeGoLiveTextureGetHandleFunc) library.resolve("qt_meego_live_texture_get_handle");
 
-        if (qt_meego_image_to_egl_shared_image && qt_meego_pixmapdata_from_egl_shared_image && qt_meego_pixmapdata_from_egl_image && 
+        if (qt_meego_image_to_egl_shared_image && qt_meego_pixmapdata_from_egl_shared_image && 
             qt_meego_pixmapdata_with_gl_texture && qt_meego_destroy_egl_shared_image && qt_meego_update_egl_shared_image_pixmap && 
             qt_meego_set_surface_fixed_size && qt_meego_set_surface_scaling && qt_meego_set_translucent && 
-            qt_meego_live_texture_create && qt_meego_live_texture_lock && qt_meego_live_texture_unlock && 
-            qt_meego_live_texture_destroy && qt_meego_live_texture_query && qt_meego_live_texture_to_egl_image)
+            qt_meego_pixmapdata_with_new_live_texture && qt_meego_pixmapdata_from_live_texture_handle &&
+            qt_meego_live_texture_lock && qt_meego_live_texture_release && qt_meego_live_texture_get_handle)
         {
             qDebug("Successfully resolved MeeGo graphics system: %s %s\n", qPrintable(libraryPrivate->fileName), qPrintable(libraryPrivate->fullVersion));
+        } else {
+            Q_ASSERT(false);
         }
     } else {
         Q_ASSERT(false);
@@ -137,13 +133,6 @@ QPixmapData* QMeeGoRuntime::pixmapDataFromEGLSharedImage(Qt::HANDLE handle, cons
     ENSURE_INITIALIZED;
     Q_ASSERT(qt_meego_pixmapdata_from_egl_shared_image);
     return qt_meego_pixmapdata_from_egl_shared_image(handle, softImage);
-}
-
-QPixmapData* QMeeGoRuntime::pixmapDataFromEGLImage(Qt::HANDLE handle)
-{
-    ENSURE_INITIALIZED;
-    Q_ASSERT(qt_meego_pixmapdata_from_egl_image);
-    return qt_meego_pixmapdata_from_egl_image(handle);
 }
 
 QPixmapData* QMeeGoRuntime::pixmapDataWithGLTexture(int w, int h)
@@ -188,45 +177,37 @@ void QMeeGoRuntime::setTranslucent(bool translucent)
     qt_meego_set_translucent(translucent);
 }
 
-Qt::HANDLE QMeeGoRuntime::createLiveTexture(int w, int h, QImage::Format format)
+QPixmapData* QMeeGoRuntime::pixmapDataWithNewLiveTexture(int w, int h, QImage::Format format)
 {
     ENSURE_INITIALIZED;
-    Q_ASSERT(qt_meego_live_texture_create);
-    return qt_meego_live_texture_create(w, h, format);
+    Q_ASSERT(qt_meego_pixmapdata_with_new_live_texture);
+    return qt_meego_pixmapdata_with_new_live_texture(w, h, format);
 }
 
-bool QMeeGoRuntime::lockLiveTexture(Qt::HANDLE h)
+QPixmapData* QMeeGoRuntime::pixmapDataFromLiveTextureHandle(Qt::HANDLE h)
+{
+    ENSURE_INITIALIZED;
+    Q_ASSERT(qt_meego_pixmapdata_from_live_texture_handle);
+    return qt_meego_pixmapdata_from_live_texture_handle(h);
+}
+
+QImage* QMeeGoRuntime::lockLiveTexture(QPixmap *p)
 {
     ENSURE_INITIALIZED;
     Q_ASSERT(qt_meego_live_texture_lock);
-    return qt_meego_live_texture_lock(h);
+    return qt_meego_live_texture_lock(p);
 }
 
-bool QMeeGoRuntime::unlockLiveTexture(Qt::HANDLE h)
+bool QMeeGoRuntime::releaseLiveTexture(QPixmap *p, QImage *i)
 {
     ENSURE_INITIALIZED;
-    Q_ASSERT(qt_meego_live_texture_unlock);
-    return qt_meego_live_texture_unlock(h);
+    Q_ASSERT(qt_meego_live_texture_release);
+    return qt_meego_live_texture_release(p, i);
 }
 
-void QMeeGoRuntime::destroyLiveTexture(Qt::HANDLE h)
+Qt::HANDLE QMeeGoRuntime::getLiveTextureHandle(QPixmap *pixmap)
 {
     ENSURE_INITIALIZED;
-    Q_ASSERT(qt_meego_live_texture_destroy);
-    qt_meego_live_texture_destroy(h);
+    Q_ASSERT(qt_meego_live_texture_get_handle);
+    return qt_meego_live_texture_get_handle(pixmap);
 }
-
-void QMeeGoRuntime::queryLiveTexture(Qt::HANDLE h, void **data, int *pitch)
-{
-    ENSURE_INITIALIZED;
-    Q_ASSERT(qt_meego_live_texture_query);
-    qt_meego_live_texture_query(h, data, pitch);
-}
-
-Qt::HANDLE QMeeGoRuntime::liveTextureToEGLImage(Qt::HANDLE handle)
-{
-    ENSURE_INITIALIZED;
-    Q_ASSERT(qt_meego_live_texture_to_egl_image);
-    return qt_meego_live_texture_to_egl_image(handle);
-}
-

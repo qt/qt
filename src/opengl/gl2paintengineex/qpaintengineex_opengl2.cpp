@@ -102,7 +102,7 @@ extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 extern bool qt_applefontsmoothing_enabled;
 #endif
 
-extern QImage qt_imageForBrush(int brushStyle, bool invert);
+Q_DECL_IMPORT extern QImage qt_imageForBrush(int brushStyle, bool invert);
 
 ////////////////////////////////// Private Methods //////////////////////////////////////////
 
@@ -825,7 +825,7 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
                 glBindBuffer(GL_ARRAY_BUFFER, cache->vbo);
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cache->ibo);
 
-                if (glSupportsElementIndexUint)
+                if (QGLExtensions::glExtensions() & QGLExtensions::ElementIndexUint)
                     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quint32) * polys.indices.size(), polys.indices.data(), GL_STATIC_DRAW);
                 else
                     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quint16) * polys.indices.size(), polys.indices.data(), GL_STATIC_DRAW);
@@ -836,7 +836,7 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
                 glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
 #else
                 cache->vertices = (float *) qMalloc(sizeof(float) * polys.vertices.size());
-                if (glSupportsElementIndexUint) {
+                if (QGLExtensions::glExtensions() & QGLExtensions::ElementIndexUint) {
                     cache->indices = (quint32 *) qMalloc(sizeof(quint32) * polys.indices.size());
                     memcpy(cache->indices, polys.indices.data(), sizeof(quint32) * polys.indices.size());
                 } else {
@@ -853,7 +853,7 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
             glBindBuffer(GL_ARRAY_BUFFER, cache->vbo);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cache->ibo);
             setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, 0);
-            if (glSupportsElementIndexUint)
+            if (QGLExtensions::glExtensions() & QGLExtensions::ElementIndexUint)
                 glDrawElements(cache->primitiveType, cache->indexCount, GL_UNSIGNED_INT, 0);
             else
                 glDrawElements(cache->primitiveType, cache->indexCount, GL_UNSIGNED_SHORT, 0);
@@ -861,7 +861,7 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
             glBindBuffer(GL_ARRAY_BUFFER, 0);
 #else
             setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, cache->vertices);
-            if (glSupportsElementIndexUint)
+            if (QGLExtensions::glExtensions() & QGLExtensions::ElementIndexUint)
                 glDrawElements(cache->primitiveType, cache->indexCount, GL_UNSIGNED_INT, (qint32 *)cache->indices);
             else
                 glDrawElements(cache->primitiveType, cache->indexCount, GL_UNSIGNED_SHORT, (qint16 *)cache->indices);

@@ -1130,11 +1130,11 @@ int main(int argc, char **argv)
     static code representing those interfaces, which can then be used to make calls to remote
     objects or implement said interfaces.
 
-    \c qdbusxml2dcpp has two modes of operation, that correspond to the two possible outputs it can
+    \c qdbusxml2cpp has two modes of operation, that correspond to the two possible outputs it can
     produce: the interface (proxy) class or the adaptor class. The latter consists of both a C++
     header and a source file, which are meant to be edited and adapted to your needs.
 
-    The \c qdbusxml2dcpp tool is not meant to be run every time you compile your
+    The \c qdbusxml2cpp tool is not meant to be run every time you compile your
     application. Instead, it's meant to be used when developing the code or when the interface
     changes.
 

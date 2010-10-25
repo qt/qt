@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -466,14 +466,17 @@
     \value TextWordWrap Breaks lines at appropriate points, e.g. at word
            boundaries.
     \value TextWrapAnywhere Breaks lines anywhere, even within words.
-    \value TextHideMnemonic Same as Qt::TextShowMnemonic but doesn't draw the underlines.
-    \value TextDontPrint Treat this text as "hidden" and don't print
-    it.
-    \value IncludeTrailingSpaces When this option is set, QTextLine::naturalTextWidth() and naturalTextRect() will
-                                 return a value that includes the width of trailing spaces in the text; otherwise
-                                 this width is excluded.
+    \value TextHideMnemonic Same as Qt::TextShowMnemonic but doesn't draw
+           the underlines.
+    \value TextDontPrint Treat this text as "hidden" and don't print it.
+    \value IncludeTrailingSpaces When this option is set,
+           QTextLine::naturalTextWidth() and naturalTextRect() will
+           return a value that includes the width of trailing spaces in the
+           text; otherwise this width is excluded.
     \value TextIncludeTrailingSpaces Same as IncludeTrailingSpaces
     \value TextJustificationForced Ensures that text lines are justified.
+    \value TextLongestVariant Ensures that the longest variant is always used
+           when computing the size of a multi-variant string.
 
     \omitvalue TextBypassShaping
     \omitvalue BreakAnywhere
@@ -487,7 +490,6 @@
     \omitvalue WordBreak
     \omitvalue TextForceLeftToRight
     \omitvalue TextForceRightToLeft
-    \omitvalue TextLongestVariant Always use the longest variant when computing the size of a multi-variant string.
 
     You can use as many modifier flags as you want, except that
     Qt::TextSingleLine and Qt::TextWordWrap cannot be combined.
@@ -514,9 +516,11 @@
     delivery at a later time.
 
     \value AutoConnection
-    	   (default) Same as DirectConnection, if the emitter and
-       	   receiver are in the same thread. Same as QueuedConnection,
-       	   if the emitter and receiver are in different threads.
+            (default) If the signal is emitted from a different thread than the
+            receiving object, the signal is queued, behaving as
+            Qt::QueuedConnection. Otherwise, the slot is invoked directly,
+            behaving as Qt::DirectConnection. The type of connection is
+            determined when the signal is emitted.
 
     \value DirectConnection
 	   The slot is invoked immediately, when the signal is

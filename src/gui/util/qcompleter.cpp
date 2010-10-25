@@ -782,7 +782,8 @@ QMatchData QUnsortedModelEngine::filter(const QString& part, const QModelIndex& 
 ///////////////////////////////////////////////////////////////////////////////
 QCompleterPrivate::QCompleterPrivate()
 : widget(0), proxy(0), popup(0), cs(Qt::CaseSensitive), role(Qt::EditRole), column(0),
-  maxVisibleItems(7), sorting(QCompleter::UnsortedModel), wrap(true), eatFocusOut(true)
+  maxVisibleItems(7), sorting(QCompleter::UnsortedModel), wrap(true), eatFocusOut(true),
+  hiddenBecauseNoMatch(false)
 {
 }
 
@@ -921,12 +922,14 @@ void QCompleterPrivate::showPopup(const QRect& rect)
 void QCompleterPrivate::_q_fileSystemModelDirectoryLoaded(const QString &path)
 {
     Q_Q(QCompleter);
-#ifndef QT_NO_LINEEDIT
-    QLineEdit *lineEdit = qobject_cast<QLineEdit *>(widget);
-    //the path given by QFileSystemModel does not end with /
-    if (lineEdit && !lineEdit->text().isEmpty() && !q->completionPrefix().isEmpty() && q->completionPrefix() != path + QLatin1Char('/'))
+    // Slot called when QFileSystemModel has finished loading.
+    // If we hide the popup because there was no match because the model was not loaded yet,
+    // we re-start the completion when we get the results
+    if (hiddenBecauseNoMatch
+        && prefix.startsWith(path) && prefix != (path + '/')
+        && widget) {
         q->complete();
-#endif
+    }
 }
 
 /*!
@@ -1200,6 +1203,7 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
     Q_D(QCompleter);
 
     if (d->eatFocusOut && o == d->widget && e->type() == QEvent::FocusOut) {
+        d->hiddenBecauseNoMatch = false;
         if (d->popup && d->popup->isVisible())
             return true;
     }
@@ -1378,6 +1382,7 @@ void QCompleter::complete(const QRect& rect)
 {
     Q_D(QCompleter);
     QModelIndex idx = d->proxy->currentIndex(false);
+    d->hiddenBecauseNoMatch = false;
     if (d->mode == QCompleter::InlineCompletion) {
         if (idx.isValid())
             d->_q_complete(idx, true);
@@ -1389,6 +1394,7 @@ void QCompleter::complete(const QRect& rect)
         || (d->mode == QCompleter::UnfilteredPopupCompletion && d->proxy->rowCount() == 0)) {
         if (d->popup)
             d->popup->hide(); // no suggestion, hide
+        d->hiddenBecauseNoMatch = true;
         return;
     }
 

@@ -54,7 +54,6 @@
 //
 
 #include "qdeclarative.h"
-#include "private/qdeclarativerefcount_p.h"
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qlist.h>
@@ -63,6 +62,8 @@
 #include <QtCore/qstringlist.h>
 
 #include <private/qobject_p.h>
+#include <private/qdeclarativerefcount_p.h>
+#include <private/qdeclarativeglobal_p.h>
 
 QT_BEGIN_HEADER
 
