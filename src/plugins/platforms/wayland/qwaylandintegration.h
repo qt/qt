@@ -154,6 +154,7 @@ public:
     void configure(uint32_t time, uint32_t edges,
 		   int32_t x, int32_t y, int32_t width, int32_t height);
     WId winId() const;
+    void setParent(const QPlatformWindow *parent);
     QPlatformGLContext *glContext() const;
     void attach(QWaylandBuffer *buffer);
     QWaylandBuffer *getBuffer(void) { return mBuffer; }

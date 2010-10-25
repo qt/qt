@@ -1,3 +1,7 @@
+#define GL_GLEXT_PROTOTYPES
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+
 #include "qfontconfigdatabase.h"
 
 #include <QImageReader>
@@ -434,6 +438,7 @@ QWaylandWindow::QWaylandWindow(QWidget *window, QWaylandDisplay *display)
     , mSurface(0)
     , mDisplay(display)
     , mGLContext(0)
+    , mBuffer(0)
 {
     static WId id = 1;
 
@@ -449,6 +454,14 @@ QWaylandWindow::~QWaylandWindow()
 WId QWaylandWindow::winId() const
 {
     return mWindowId;
+}
+
+void QWaylandWindow::setParent(const QPlatformWindow *parent)
+{
+    QWaylandWindow *wParent = (QWaylandWindow *)parent;
+
+    mSurface = wParent->surface();
+    wParent->attach(mBuffer);
 }
 
 void QWaylandWindow::setVisible(bool visible)
@@ -488,7 +501,7 @@ void QWaylandWindow::configure(uint32_t time, uint32_t edges,
 
 class QWaylandGLContext : public QPlatformGLContext {
 public:
-    QWaylandGLContext(QWaylandDisplay *wd, const QPlatformWindowFormat &format);
+    QWaylandGLContext(QWaylandDisplay *wd, QWaylandWindow *window, const QPlatformWindowFormat &format);
     ~QWaylandGLContext();
     void makeCurrent();
     void doneCurrent();
@@ -500,13 +513,16 @@ private:
     EGLContext mContext;
     QPlatformWindowFormat mFormat;
     QWaylandDisplay *mDisplay;
+    QWaylandWindow *mWindow;
+    GLuint mFbo, mRbo;
 };
 
-QWaylandGLContext::QWaylandGLContext(QWaylandDisplay *wd, const QPlatformWindowFormat &format)
+QWaylandGLContext::QWaylandGLContext(QWaylandDisplay *wd, QWaylandWindow *window, const QPlatformWindowFormat &format)
     : QPlatformGLContext()
     , mContext(0)
     , mFormat(format)
     , mDisplay(wd)
+    , mWindow(window)
 {
     EGLDisplay eglDisplay;
     static const EGLint contextAttribs[] = {
@@ -519,26 +535,50 @@ QWaylandGLContext::QWaylandGLContext(QWaylandDisplay *wd, const QPlatformWindowF
     mContext = eglCreateContext(eglDisplay, NULL,
 				EGL_NO_CONTEXT, contextAttribs);
     eglMakeCurrent(eglDisplay, NULL, NULL, mContext);
+
+    glGenFramebuffers(1, &mFbo);
+    glGenRenderbuffers(1, &mRbo);
 }
 
 QWaylandGLContext::~QWaylandGLContext()
 {
     if (mContext)
         eglDestroyContext(mDisplay->eglDisplay(), mContext);
+    glDeleteFramebuffers(1, &mFbo);
+    glDeleteRenderbuffers(1, &mRbo);
 }
 
 void QWaylandGLContext::makeCurrent()
 {
+    QWaylandDrmBuffer *mBuffer = (QWaylandDrmBuffer *)mWindow->getBuffer();
+    QRect geometry = mWindow->geometry();
+
     eglMakeCurrent(mDisplay->eglDisplay(), 0, 0, mContext);
+    if (!mBuffer)
+	return;
+    glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, mRbo);
+    glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER, mBuffer->mImage);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+				 GL_RENDERBUFFER, mRbo);
 }
 
 void QWaylandGLContext::doneCurrent()
 {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
     eglMakeCurrent(mDisplay->eglDisplay(), 0, 0, mContext);
 }
 
 void QWaylandGLContext::swapBuffers()
 {
+    QRect geometry = mWindow->geometry();
+
+    if (!mWindow->surface())
+	return;
+
+    wl_surface_damage(mWindow->surface(), 0, 0,
+		      geometry.width(), geometry.height());
 }
 
 void *QWaylandGLContext::getProcAddress(const QString &string)
@@ -550,7 +590,7 @@ QPlatformGLContext *QWaylandWindow::glContext() const
 {
     if (!mGLContext) {
         QWaylandWindow *that = const_cast<QWaylandWindow *>(this);
-        that->mGLContext = new QWaylandGLContext(mDisplay, widget()->platformWindowFormat());
+        that->mGLContext = new QWaylandGLContext(mDisplay, that, widget()->platformWindowFormat());
     }
 
     return mGLContext;

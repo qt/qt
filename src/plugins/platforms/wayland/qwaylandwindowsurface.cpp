@@ -155,13 +155,6 @@ public:
 	    QGLFormat format;
 	    mContext = new QGLContext(format, widget);
 	    mContext->create();
-	    glGenFramebuffers(1, &mFbo);
-	    glGenRenderbuffers(1, &mRbo);
-	}
-    ~QWaylandPaintDevice()
-	{
-	    glDeleteFramebuffers(1, &mFbo);
-	    glDeleteRenderbuffers(1, &mRbo);
 	}
 
     QSize size() const { return mWidget->size(); }
@@ -174,25 +167,16 @@ private:
     QWaylandDisplay *mDisplay;
     QWidget *mWidget;
     QGLContext *mContext;
-    GLuint mFbo, mRbo;
 };
 
 void QWaylandPaintDevice::beginPaint(void)
 {
     QWaylandWindow *mWindow = (QWaylandWindow *)mWidget->platformWindow();
-    QWaylandDrmBuffer *mBuffer = (QWaylandDrmBuffer *)mWindow->getBuffer();
     QPlatformGLContext *ctx = mWindow->glContext();
-    QRect geometry = mWidget->geometry();
 
     QGLPaintDevice::beginPaint();
 
     ctx->makeCurrent();
-
-    glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, mRbo);
-    glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER, mBuffer->mImage);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-				 GL_RENDERBUFFER, mRbo);
 }
 
 void QWaylandPaintDevice::endPaint(void)
@@ -201,10 +185,6 @@ void QWaylandPaintDevice::endPaint(void)
     QPlatformGLContext *ctx = mWindow->glContext();
     QRect geometry = mWidget->geometry();
 
-    wl_surface_damage(mWindow->surface(), 0, 0,
-		      geometry.width(), geometry.height());
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
     ctx->doneCurrent();
 
     QGLPaintDevice::endPaint();
@@ -272,30 +252,17 @@ QPaintDevice *QWaylandDrmWindowSurface::paintDevice()
 
 void QWaylandDrmWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
 {
-    Q_UNUSED(region);
     Q_UNUSED(offset);
-    Q_UNUSED(widget);
-#if 0
-    GLuint surf_rbo, surf_fbo;
-    QWaylandWindow *mWindow = (QWaylandWindow *)widget->platformWindow();
-    QPlatformGLContext *ctx = mWindow->glContext();
-    QRect geometry = widget->geometry();
+    QWaylandWindow *ww = (QWaylandWindow *) widget->platformWindow();
+    QVector<QRect> rects = region.rects();
+    const QRect *r;
+    int i;
 
-    ctx->makeCurrent();
-
-    glGenFramebuffers(1, &surf_fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, surf_fbo);
-    glGenRenderbuffers(1, &surf_rbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, surf_rbo);
-    glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER, mBuffer->mImage);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-				 GL_RENDERBUFFER, surf_rbo);
-
-    wl_surface_damage(mWindow->surface(), 0, 0,
-		      geometry.width(), geometry.height());
-
-    ctx->doneCurrent();
-#endif
+    for (i = 0; i < rects.size(); i++) {
+	r = &rects.at(i);
+	wl_surface_damage(ww->surface(),
+			  r->x(), r->y(), r->width(), r->height());
+    }
 }
 
 void QWaylandDrmWindowSurface::resize(const QSize &size)

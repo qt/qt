@@ -11,7 +11,9 @@ SOURCES =   main.cpp \
 HEADERS =   qwaylandintegration.h \
             qwaylandwindowsurface.h
 
-INCLUDEPATH += /usr/include/libdrm
+contains(QT_CONFIG, opengl) {
+    QT += opengl
+}
 LIBS += -lwayland-client -ldrm -lxkbcommon -lEGL -lGLESv2
 
 include (../fontdatabases/fontconfig/fontconfig.pri)
