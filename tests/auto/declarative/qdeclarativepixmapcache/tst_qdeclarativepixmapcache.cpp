@@ -74,7 +74,7 @@ private slots:
     void massive();
     void cancelcrash();
     void shrinkcache();
-
+    void networkCrash();
 private:
     QDeclarativeEngine engine;
     QUrl thisfile;
@@ -335,6 +335,7 @@ public:
     : QDeclarativeImageProvider(Pixmap) {}
 
     virtual QPixmap requestPixmap(const QString &d, QSize *, const QSize &) {
+        Q_UNUSED(d)
         QPixmap pix(800, 600);
         pix.fill(Qt::red);
         return pix;
@@ -351,6 +352,30 @@ void tst_qdeclarativepixmapcache::shrinkcache()
         QUrl url("image://mypixmaps/" + QString::number(ii));
         QDeclarativePixmap p(&engine, url);
     }
+}
+
+void createNetworkServer()
+{
+   QEventLoop eventLoop;
+   TestHTTPServer server(14453);
+   server.serveDirectory(SRCDIR "/data/http");
+   QTimer::singleShot(100, &eventLoop, SLOT(quit()));
+   eventLoop.exec();
+}
+
+// QT-3957
+void tst_qdeclarativepixmapcache::networkCrash()
+{
+    QFuture<void> future = QtConcurrent::run(createNetworkServer);
+    QDeclarativeEngine engine;
+    for (int ii = 0; ii < 100 ; ++ii) {
+        QDeclarativePixmap* pixmap = new QDeclarativePixmap;
+        pixmap->load(&engine,  QUrl(QString("http://127.0.0.1:14453/exists.png")));
+        QTest::qSleep(1);
+        pixmap->clear();
+        delete pixmap;
+    }
+    future.cancel();
 }
 
 QTEST_MAIN(tst_qdeclarativepixmapcache)

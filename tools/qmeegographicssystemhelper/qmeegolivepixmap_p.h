@@ -48,11 +48,9 @@ class QMeeGoLivePixmapPrivate
 {
 public:
     Q_DECLARE_PUBLIC(QMeeGoLivePixmap);
-    QMeeGoLivePixmapPrivate(Qt::HANDLE handle);
+    QMeeGoLivePixmapPrivate();
     virtual ~QMeeGoLivePixmapPrivate();
-    
-    Qt::HANDLE handle;
-    
+
     QMeeGoLivePixmap *q_ptr;
 };
 

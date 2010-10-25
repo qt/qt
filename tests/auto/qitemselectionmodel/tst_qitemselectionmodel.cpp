@@ -95,6 +95,8 @@ private slots:
     void QTBUG5671_layoutChangedWithAllSelected();
     void QTBUG2804_layoutChangedTreeSelection();
 
+    void testValidRangesInSelectionsAfterReset();
+
 private:
     QAbstractItemModel *model;
     QItemSelectionModel *selection;
@@ -2353,6 +2355,70 @@ void tst_QItemSelectionModel::QTBUG2804_layoutChangedTreeSelection()
     QCOMPARE(selModel.selectedIndexes().count(), 4);
 }
 
+class SelectionObserver : public QObject
+{
+  Q_OBJECT
+public:
+    SelectionObserver(QAbstractItemModel *model, QObject *parent = 0)
+      : QObject(parent), m_model(model), m_selectionModel(0)
+    {
+        connect(model, SIGNAL(modelReset()), SLOT(modelReset()));
+    }
+
+    void setSelectionModel(QItemSelectionModel *selectionModel)
+    {
+        m_selectionModel = selectionModel;
+        connect(m_selectionModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(selectionChanged(QItemSelection,QItemSelection)));
+    }
+
+  private slots:
+    void modelReset()
+    {
+        const QModelIndex idx = m_model->index(2, 0);
+        QVERIFY(idx.isValid());
+        m_selectionModel->select(QItemSelection(idx, idx), QItemSelectionModel::Clear);
+    }
+
+    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
+    {
+        foreach(const QItemSelectionRange &range, selected)
+            QVERIFY(range.isValid());
+        foreach(const QItemSelectionRange &range, deselected)
+            QVERIFY(range.isValid());
+    }
+
+private:
+    QAbstractItemModel *m_model;
+    QItemSelectionModel *m_selectionModel;
+};
+
+void tst_QItemSelectionModel::testValidRangesInSelectionsAfterReset()
+{
+    QStringListModel model;
+
+    QStringList strings;
+    strings << "one"
+            << "two"
+            << "three"
+            << "four"
+            << "five";
+
+    model.setStringList(strings);
+
+    SelectionObserver observer(&model);
+
+    QItemSelectionModel selectionModel(&model);
+
+    selectionModel.select(QItemSelection(model.index(1, 0), model.index(3, 0)), QItemSelectionModel::Select);
+
+    // Cause d->ranges to contain something.
+    model.insertRows(2, 1);
+
+    observer.setSelectionModel(&selectionModel);
+
+    model.setStringList(strings);
+
+}
 
 QTEST_MAIN(tst_QItemSelectionModel)
 #include "tst_qitemselectionmodel.moc"

@@ -112,7 +112,7 @@ public:
     , bufferMode(BufferBefore | BufferAfter), snapMode(QDeclarativeGridView::NoSnap)
     , ownModel(false), wrap(false), autoHighlight(true)
     , fixCurrentVisibility(false), lazyRelease(false), layoutScheduled(false)
-    , deferredRelease(false), haveHighlightRange(false), currentIndexSet(false) {}
+    , deferredRelease(false), haveHighlightRange(false), currentIndexCleared(false) {}
 
     void init();
     void clear();
@@ -392,7 +392,7 @@ public:
     bool layoutScheduled : 1;
     bool deferredRelease : 1;
     bool haveHighlightRange : 1;
-    bool currentIndexSet : 1;
+    bool currentIndexCleared : 1;
 };
 
 void QDeclarativeGridViewPrivate::init()
@@ -1242,7 +1242,7 @@ void QDeclarativeGridView::setModel(const QVariant &model)
         d->bufferMode = QDeclarativeGridViewPrivate::BufferBefore | QDeclarativeGridViewPrivate::BufferAfter;
         if (isComponentComplete()) {
             refill();
-            if ((d->currentIndex >= d->model->count() || d->currentIndex < 0) && !d->currentIndexSet) {
+            if ((d->currentIndex >= d->model->count() || d->currentIndex < 0) && !d->currentIndexCleared) {
                 setCurrentIndex(0);
             } else {
                 d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
@@ -1330,7 +1330,8 @@ void QDeclarativeGridView::setDelegate(QDeclarativeComponent *delegate)
   \qmlproperty Item GridView::currentItem
 
     The \c currentIndex property holds the index of the current item, and
-    \c currentItem holds the current item. 
+    \c currentItem holds the current item.  Setting the currentIndex to -1
+    will clear the highlight and set currentItem to null.
 
     If highlightFollowsCurrentItem is \c true, setting either of these 
     properties will smoothly scroll the GridView so that the current 
@@ -1350,7 +1351,7 @@ void QDeclarativeGridView::setCurrentIndex(int index)
     Q_D(QDeclarativeGridView);
     if (d->requestedIndex >= 0) // currently creating item
         return;
-    d->currentIndexSet = true;
+    d->currentIndexCleared = (index == -1);
     if (index == d->currentIndex)
         return;
     if (isComponentComplete() && d->isValid()) {
@@ -1831,6 +1832,8 @@ void QDeclarativeGridView::viewportMoved()
 {
     Q_D(QDeclarativeGridView);
     QDeclarativeFlickable::viewportMoved();
+    if (!d->itemCount)
+        return;
     d->lazyRelease = true;
     if (d->flickingHorizontally || d->flickingVertically) {
         if (yflick()) {
@@ -2222,7 +2225,7 @@ void QDeclarativeGridView::componentComplete()
     if (d->isValid()) {
         refill();
         d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
-        if (d->currentIndex < 0 && !d->currentIndexSet)
+        if (d->currentIndex < 0 && !d->currentIndexCleared)
             d->updateCurrent(0);
         else
             d->updateCurrent(d->currentIndex);
@@ -2297,13 +2300,13 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
         return;
     if (!d->visibleItems.count() || d->model->count() <= 1) {
         d->scheduleLayout();
-        if (d->currentIndex >= modelIndex) {
+        if (d->itemCount && d->currentIndex >= modelIndex) {
             // adjust current item index
             d->currentIndex += count;
             if (d->currentItem)
                 d->currentItem->index = d->currentIndex;
             emit currentIndexChanged();
-        } else if (d->currentIndex < 0 && !d->currentIndexSet) {
+        } else if (!d->currentIndex || (d->currentIndex < 0 && !d->currentIndexCleared)) {
             d->updateCurrent(0);
         }
         d->itemCount += count;
@@ -2411,7 +2414,7 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
         }
     }
 
-    if (d->currentIndex >= modelIndex) {
+    if (d->itemCount && d->currentIndex >= modelIndex) {
         // adjust current item index
         d->currentIndex += count;
         if (d->currentItem) {
@@ -2498,8 +2501,8 @@ void QDeclarativeGridView::itemsRemoved(int modelIndex, int count)
 
     if (removedVisible && d->visibleItems.isEmpty()) {
         d->timeline.clear();
-        d->setPosition(0);
         if (d->itemCount == 0) {
+            d->setPosition(0);
             d->updateHeader();
             d->updateFooter();
             update();

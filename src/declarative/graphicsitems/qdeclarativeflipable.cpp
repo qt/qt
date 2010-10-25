@@ -83,27 +83,28 @@ public:
 
     \section1 Example Usage
 
-    \beginfloatright
-    \inlineimage flipable.gif
-    \endfloat
-
     The following example shows a Flipable item that flips whenever it is
     clicked, rotating about the y-axis.
 
-    The \l Rotation element is used to specify the angle and axis of the flip.
-    When \c flipped is true, the item changes to the "back" state, where
-    the angle is changed to 180 degrees to produce the flipping effect. 
+    This flipable item has a \c flipped boolean property that is toggled 
+    whenever the MouseArea within the flipable is clicked. When 
+    \c flipped is true, the item changes to the "back" state; in this 
+    state, the \c angle of the \l Rotation item is changed to 180
+    degrees to produce the flipping effect. When \c flipped is false, the
+    item reverts to the default state, in which the \c angle value is 0. 
+   
+    \snippet doc/src/snippets/declarative/flipable/flipable.qml 0
 
-    \clearfloat
-    \snippet doc/src/snippets/declarative/flipable/flipable-snippet.qml 0
+    \image flipable.gif
 
-    The \l Transition creates the animation that changes the angle over the
-    duration of one second. When the item changes between its "back" and
+    The \l Transition creates the animation that changes the angle over
+    four seconds. When the item changes between its "back" and
     default states, the NumberAnimation animates the angle between
     its old and new values.
 
-    See the \l {QML States} and \l {QML Animation} documentation for more
-    details on state changes and how animations work within transitions.
+    See \l {QML States} for details on state changes and the default
+    state, and \l {QML Animation} for more information on how animations
+    work within transitions.
 
     \sa {declarative/ui-components/flipable}{Flipable example}
 */

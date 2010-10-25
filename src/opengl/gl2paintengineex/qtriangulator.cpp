@@ -58,7 +58,6 @@
 #include <math.h>
 
 #include <private/qgl_p.h>
-#include <private/qglextensions_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -3014,10 +3013,8 @@ void QTriangulator<T>::MonotoneToTriangles::decompose()
 QTriangleSet qTriangulate(const qreal *polygon,
                           int count, uint hint, const QTransform &matrix)
 {
-    QGLContext *ctx = 0; // Not really used but needs to be introduced for glSupportsElementIndexUint
-
     QTriangleSet triangleSet;
-    if (glSupportsElementIndexUint) {
+    if (QGLExtensions::glExtensions() & QGLExtensions::ElementIndexUint) {
         QTriangulator<quint32> triangulator;
         triangulator.initialize(polygon, count, hint, matrix);
         QVertexSet<quint32> vertexSet = triangulator.triangulate();
@@ -3037,10 +3034,8 @@ QTriangleSet qTriangulate(const qreal *polygon,
 QTriangleSet qTriangulate(const QVectorPath &path,
                           const QTransform &matrix, qreal lod)
 {
-    QGLContext *ctx = 0; // Not really used but needs to be introduced for glSupportsElementIndexUint
-
     QTriangleSet triangleSet;
-    if (glSupportsElementIndexUint) {
+    if (QGLExtensions::glExtensions() & QGLExtensions::ElementIndexUint) {
         QTriangulator<quint32> triangulator;
         triangulator.initialize(path, matrix, lod);
         QVertexSet<quint32> vertexSet = triangulator.triangulate();
@@ -3059,10 +3054,8 @@ QTriangleSet qTriangulate(const QVectorPath &path,
 QTriangleSet qTriangulate(const QPainterPath &path,
                           const QTransform &matrix, qreal lod)
 {
-    QGLContext *ctx = 0; // Not really used but needs to be introduced for glSupportsElementIndexUint
-
     QTriangleSet triangleSet;
-    if (glSupportsElementIndexUint) {
+    if (QGLExtensions::glExtensions() & QGLExtensions::ElementIndexUint) {
         QTriangulator<quint32> triangulator;
         triangulator.initialize(path, matrix, lod);
         QVertexSet<quint32> vertexSet = triangulator.triangulate();
@@ -3081,10 +3074,8 @@ QTriangleSet qTriangulate(const QPainterPath &path,
 QPolylineSet qPolyline(const QVectorPath &path,
                        const QTransform &matrix, qreal lod)
 {
-    QGLContext *ctx = 0; // Not really used but needs to be introduced for glSupportsElementIndexUint
-
     QPolylineSet polyLineSet;
-    if (glSupportsElementIndexUint) {
+    if (QGLExtensions::glExtensions() & QGLExtensions::ElementIndexUint) {
         QTriangulator<quint32> triangulator;
         triangulator.initialize(path, matrix, lod);
         QVertexSet<quint32> vertexSet = triangulator.polyline();
@@ -3103,10 +3094,8 @@ QPolylineSet qPolyline(const QVectorPath &path,
 QPolylineSet qPolyline(const QPainterPath &path,
                        const QTransform &matrix, qreal lod)
 {
-    QGLContext *ctx = 0; // Not really used but needs to be introduced for glSupportsElementIndexUint
-
     QPolylineSet polyLineSet;
-    if (glSupportsElementIndexUint) {
+    if (QGLExtensions::glExtensions() & QGLExtensions::ElementIndexUint) {
         QTriangulator<quint32> triangulator;
         triangulator.initialize(path, matrix, lod);
         QVertexSet<quint32> vertexSet = triangulator.polyline();
