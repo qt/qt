@@ -647,8 +647,7 @@ const QString::Null QString::null = { };
 
     \table 100 %
     \header
-    \o
-    \section1 Note for C Programmers
+    \o Note for C Programmers
 
     \row
     \o
