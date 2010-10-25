@@ -44,9 +44,8 @@
 
     \tableofcontents
 
-    Information about the specific platforms Qt runs on can be found on the
-    \l{Platform Notes} page. Information about the compilers used on each platform
-    can be found on the \l{Compiler Notes} page.
+    Information about the specific platforms Qt runs on, and the compilers used
+    on each platform, can be found on the \l{Platform and Compiler Notes} page.
 
     \section1 Tier 1 Platforms
 
