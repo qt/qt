@@ -695,7 +695,7 @@ bool QFSFileEnginePrivate::doStat() const
         } else if (fd == -1) {
             // ### actually covers two cases: d->fh and when the file is not open
 #if defined(Q_OS_SYMBIAN)
-            // Optimisation for Symbian where fileFlags() calls both doStat() and isSymlink(), but rarely on real links.
+            // Optimization for Symbian where fileFlags() calls both doStat() and isSymlink(), but rarely on real links.
             // When the filename is not a link, lstat will return the same info as stat, but this also removes
             // any need for a further call to lstat to check if the file is a link.
             need_lstat = false;

@@ -146,7 +146,7 @@ unsigned short* convertRGB32_to_RGB565(const unsigned char *in, int width, int h
                 // >> 7 because the values in accumulator are stored * 128
                 component[c] += accumulator[c][x] >> 7;
 
-                // Make sure we're not over the boundries.
+                // Make sure we're not over the boundaries.
                 CLAMP_256(component[c]);
 
                 // For green component we use 6 bits. Otherwise 5 bits.
@@ -177,7 +177,7 @@ unsigned short* convertRGB32_to_RGB565(const unsigned char *in, int width, int h
 }
 
 // Converts incoming RGBA32 (QImage::Format_ARGB32_Premultiplied) to RGB565. Returns the newly allocated data.
-// This function is similiar (yet different) to the _565 variant but it makes sense to duplicate it here for simplicity.
+// This function is similar (yet different) to the _565 variant but it makes sense to duplicate it here for simplicity.
 unsigned short* convertARGB32_to_RGBA4444(const unsigned char *in, int width, int height, int stride)
 {
     // Will store output
@@ -242,7 +242,7 @@ unsigned short* convertARGB32_to_RGBA4444(const unsigned char *in, int width, in
                 // >> 7 because the values in accumulator are stored * 128
                 component[c] += accumulator[c][x] >> 7;
 
-                // Make sure we're not over the boundries.
+                // Make sure we're not over the boundaries.
                 CLAMP_256(component[c]);
 
                 // Store the difference from converting 8bit => 4bit and the orig pixel.
