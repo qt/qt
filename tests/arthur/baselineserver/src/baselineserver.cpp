@@ -24,13 +24,10 @@ QString BaselineServer::storagePath()
 {
     if (storage.isEmpty()) {
         QByteArray envDir = qgetenv("QT_LANCELOT_DIR");
-        if (!envDir.isEmpty()) {
+        if (!envDir.isEmpty())
             storage = QLS(envDir.append('/'));
-        } else {
-            QDir dir(QCoreApplication::applicationDirPath());
-            dir.cdUp();
-            storage =  dir.path() + QLS("/storage/");
-        }
+        else
+            storage =  QLS("/var/www/");
     }
     return storage;
 }
