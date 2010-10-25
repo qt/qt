@@ -134,7 +134,7 @@ The constant can be changed at ROM build time using patchdata OBY keyword.
 
 @deprecated Patching this constant no longer has any effect.
 */
-#ifdef __X86GCC__	// For X86GCC we dont use the proper data import attribute
+#ifdef __X86GCC__	// For X86GCC we don't use the proper data import attribute
 #undef IMPORT_D		// since the constants are not really imported. GCC doesn't 
 #define IMPORT_D	// allow imports from self.
 #endif
@@ -451,7 +451,7 @@ TInt RHybridHeap::ConstructLock(TUint32 aMode)
 
 void RHybridHeap::Init(TInt aBitmapSlab, TInt aPagePower)
 {
-	/*Moved code which does initilization */
+	/*Moved code which does initialization */
 	iTop  = (TUint8*)this + iMinLength;
 	iBase = Ceiling(iBase, ECellAlignment);	// Align iBase address 
 	
@@ -874,7 +874,7 @@ available in the largest free block.
 Note that this function exists mainly for compatibility reasons.  In a modern
 heap implementation such as that present in Symbian it is not appropriate to
 concern oneself with details such as the amount of free memory available on a
-heap and its largeset free block, because the way that a modern heap implmentation
+heap and its largeset free block, because the way that a modern heap implementation
 works is not simple.  The amount of available virtual memory != physical memory
 and there are multiple allocation strategies used internally, which makes all
 memory usage figures "fuzzy" at best.
@@ -1616,7 +1616,7 @@ void* RHybridHeap::DlMalloc(size_t bytes)
 void RHybridHeap::DlFree(void* mem)
 {
 	/*
-	Consolidate freed chunks with preceeding or succeeding bordering
+	Consolidate freed chunks with preceding or succeeding bordering
 	free chunks, if they exist, and then place in a bin.	Intermixed
 	with special cases for iTop, iDv, mmapped chunks, and usage errors.
 */

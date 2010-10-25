@@ -320,7 +320,7 @@ void QTextDocumentPrivate::setLayout(QAbstractTextDocumentLayout *layout)
 
 void QTextDocumentPrivate::insert_string(int pos, uint strPos, uint length, int format, QTextUndoCommand::Operation op)
 {
-    // ##### optimise when only appending to the fragment!
+    // ##### optimize when only appending to the fragment!
     Q_ASSERT(noBlockInString(text.mid(strPos, length)));
 
     split(pos);
@@ -1446,7 +1446,7 @@ void QTextDocumentPrivate::clearFrame(QTextFrame *f)
 
 void QTextDocumentPrivate::scan_frames(int pos, int charsRemoved, int charsAdded)
 {
-    // ###### optimise
+    // ###### optimize
     Q_UNUSED(pos);
     Q_UNUSED(charsRemoved);
     Q_UNUSED(charsAdded);

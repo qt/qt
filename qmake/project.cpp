@@ -76,7 +76,7 @@
 
 QT_BEGIN_NAMESPACE
 
-//expand fucntions
+//expand functions
 enum ExpandFunc { E_MEMBER=1, E_FIRST, E_LAST, E_CAT, E_FROMFILE, E_EVAL, E_LIST,
                   E_SPRINTF, E_JOIN, E_SPLIT, E_BASENAME, E_DIRNAME, E_SECTION,
                   E_FIND, E_SYSTEM, E_UNIQUE, E_QUOTE, E_ESCAPE_EXPAND,
@@ -1063,7 +1063,7 @@ QMakeProject::parse(const QString &t, QMap<QString, QStringList> &place, int num
 #undef SKIP_WS
 
     doVariableReplace(var, place);
-    var = varMap(var); //backwards compatability
+    var = varMap(var); //backwards compatibility
     if(!var.isEmpty() && Option::mkfile::do_preprocess) {
         static QString last_file("*none*");
         if(parser.file != last_file) {

@@ -760,7 +760,7 @@ void QNetworkSessionPrivateImpl::Error(TInt /*aError*/)
 {
 #ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
     qDebug() << "QNS this : " << QString::number((uint)this) << " - "
-            << "roaming Error() occured, isOpen is: " << isOpen;
+            << "roaming Error() occurred, isOpen is: " << isOpen;
 #endif
     if (isOpen) {
         isOpen = false;
