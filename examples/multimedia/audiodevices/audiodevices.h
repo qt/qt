@@ -38,6 +38,8 @@
 **
 ****************************************************************************/
 
+#ifndef AUDIODEVICES_H
+#define AUDIODEVICES_H
 
 #include <QObject>
 #include <QMainWindow>
@@ -76,4 +78,6 @@ private slots:
     void populateTable();
 
 };
+
+#endif
 
