@@ -2091,8 +2091,7 @@
 
 
     \row
-        \o \bold{\c messagebox-text- \target messagebox-text-interaction-flags-prop
-           \BR \c interaction-flags}*
+        \o \bold{\c messagebox-text-interaction-flags*} \target messagebox-text-interaction-flags-prop
         \o \l{#Number}{Number}
         \o The interaction behavior for text in a message box.
            Possible values are based on Qt::TextInteractionFlags.
