@@ -149,6 +149,8 @@ void QX11WindowSurface::setGeometry(const QRect &rect)
         return;
 #ifndef QT_NO_XRENDER
     if (d_ptr->translucentBackground) {
+        QPixmap::x11SetDefaultScreen(d_ptr->widget->x11Info().screen());
+
         QX11PixmapData *data = new QX11PixmapData(QPixmapData::PixmapType);
         data->xinfo = d_ptr->widget->x11Info();
         data->resize(size.width(), size.height());
