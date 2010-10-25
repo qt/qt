@@ -1276,10 +1276,10 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         }
         break;
     case Atom::QuotationLeft:
-        xmlWriter().writeStartElement("blockquote");
+        xmlWriter().writeStartElement("lq");
         break;
     case Atom::QuotationRight:
-        xmlWriter().writeEndElement(); // </blockquote>
+        xmlWriter().writeEndElement(); // </lq>
         break;
     case Atom::RawString:
         xmlWriter().writeCharacters(atom->string());
@@ -1991,20 +1991,6 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
                 //generateSectionInheritedList(*s, inner, marker);
                 xmlWriter().writeEndElement(); // </section>
             }
-            if (!s->reimpMembers.isEmpty()) {
-                qDebug() << "GOT HEAH!";
-                QString name = QString("Reimplemented ") + (*s).name;
-                attr = cleanRef(name).toLower() + " redundant";
-                xmlWriter().writeStartElement("section");
-                xmlWriter().writeAttribute("outputclass",attr);
-                xmlWriter().writeStartElement("title");
-                xmlWriter().writeAttribute("outputclass","h2");
-                xmlWriter().writeCharacters(protectEnc(name));
-                xmlWriter().writeEndElement(); // </title>
-                generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
-                generateSectionInheritedList(*s, inner, marker);
-                xmlWriter().writeEndElement(); // </section>
-            }
             ++s;
         }
         
@@ -2018,6 +2004,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
         while (s != detailSections.end()) {
             if (!s->members.isEmpty()) {
                 QString attr;
+                inSection = true;
                 xmlWriter().writeStartElement("section");
                 attr = cleanRef((*s).name).toLower();
                 xmlWriter().writeAttribute("outputclass",attr);
@@ -2031,6 +2018,7 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
                     ++m;
                 }
                 xmlWriter().writeEndElement(); // </section>
+                inSection = false;
             }
             ++s;
         }
