@@ -1122,7 +1122,7 @@ void QNetworkAccessManagerPrivate::authenticationRequired(QNetworkAccessBackend 
 
     backend->reply->urlForLastAuthentication = url;
     emit q->authenticationRequired(backend->reply->q_func(), authenticator);
-    addCredentials(url, authenticator);
+    cacheCredentials(url, authenticator);
 }
 
 #ifndef QT_NO_NETWORKPROXY
@@ -1139,7 +1139,7 @@ void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(QNetworkAccessBac
     // possible solution: some tracking inside the authenticator
     //      or a new function proxyAuthenticationSucceeded(true|false)
     if (proxy != backend->reply->lastProxyAuthentication) {
-        QNetworkAuthenticationCredential *cred = fetchCachedCredentials(proxy);
+        QNetworkAuthenticationCredential *cred = fetchCachedProxyCredentials(proxy);
         if (cred) {
             authenticator->setUser(cred->user);
             authenticator->setPassword(cred->password);
@@ -1149,10 +1149,10 @@ void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(QNetworkAccessBac
 
     backend->reply->lastProxyAuthentication = proxy;
     emit q->proxyAuthenticationRequired(proxy, authenticator);
-    addCredentials(proxy, authenticator);
+    cacheProxyCredentials(proxy, authenticator);
 }
 
-void QNetworkAccessManagerPrivate::addCredentials(const QNetworkProxy &p,
+void QNetworkAccessManagerPrivate::cacheProxyCredentials(const QNetworkProxy &p,
                                                   const QAuthenticator *authenticator)
 {
     Q_ASSERT(authenticator);
@@ -1189,7 +1189,7 @@ void QNetworkAccessManagerPrivate::addCredentials(const QNetworkProxy &p,
 }
 
 QNetworkAuthenticationCredential *
-QNetworkAccessManagerPrivate::fetchCachedCredentials(const QNetworkProxy &p,
+QNetworkAccessManagerPrivate::fetchCachedProxyCredentials(const QNetworkProxy &p,
                                                      const QAuthenticator *authenticator)
 {
     QNetworkProxy proxy = p;
@@ -1241,7 +1241,7 @@ QList<QNetworkProxy> QNetworkAccessManagerPrivate::queryProxy(const QNetworkProx
 }
 #endif
 
-void QNetworkAccessManagerPrivate::addCredentials(const QUrl &url,
+void QNetworkAccessManagerPrivate::cacheCredentials(const QUrl &url,
                                                   const QAuthenticator *authenticator)
 {
     Q_ASSERT(authenticator);
