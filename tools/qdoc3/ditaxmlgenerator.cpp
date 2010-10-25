@@ -1282,10 +1282,16 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         xmlWriter().writeEndElement(); // </lq>
         break;
     case Atom::RawString:
-        xmlWriter().writeStartElement("pre");
-        xmlWriter().writeAttribute("outputclass","raw-html");
-        xmlWriter().writeCharacters(atom->string());
-        xmlWriter().writeEndElement(); // </pre>
+        if (atom->string() == " ")
+            break;
+        if (atom->string().startsWith("&"))
+            xmlWriter().writeCharacters(atom->string());
+        else {
+            xmlWriter().writeStartElement("pre");
+            xmlWriter().writeAttribute("outputclass","raw-html");
+            xmlWriter().writeCharacters(atom->string());
+            xmlWriter().writeEndElement(); // </pre>
+        }
         break;
     case Atom::SectionLeft:
         if (inSection || inApiDesc) {
