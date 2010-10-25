@@ -132,7 +132,7 @@ void setupOwner()
     requestor = new QWidget(0);
     requestor->createWinId();
     requestor->setObjectName(QLatin1String("internal clipboard requestor"));
-    // We dont need this internal widgets to appear in QApplication::topLevelWidgets()
+    // We don't need this internal widgets to appear in QApplication::topLevelWidgets()
     if (QWidgetPrivate::allWidgets) {
         QWidgetPrivate::allWidgets->remove(owner);
         QWidgetPrivate::allWidgets->remove(requestor);
@@ -769,7 +769,7 @@ QByteArray QX11Data::clipboardReadIncrementalProperty(Window win, Atom property,
     delete requestor;
     requestor = new QWidget(0);
     requestor->setObjectName(QLatin1String("internal clipboard requestor"));
-    // We dont need this internal widget to appear in QApplication::topLevelWidgets()
+    // We don't need this internal widget to appear in QApplication::topLevelWidgets()
     if (QWidgetPrivate::allWidgets)
         QWidgetPrivate::allWidgets->remove(requestor);
 

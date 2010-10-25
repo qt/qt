@@ -194,7 +194,7 @@ public:
             widget = new QGLWidget(QGLFormat(QGL::SingleBuffer | QGL::NoDepthBuffer | QGL::NoStencilBuffer));
             widget->resize(1, 1);
 
-            // We dont need this internal widget to appear in QApplication::topLevelWidgets()
+            // We don't need this internal widget to appear in QApplication::topLevelWidgets()
             if (QWidgetPrivate::allWidgets)
                 QWidgetPrivate::allWidgets->remove(widget);
             initializing = false;

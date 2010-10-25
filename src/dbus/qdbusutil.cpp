@@ -309,7 +309,7 @@ namespace QDBusUtil
         Returns true if \a connName is a valid unique connection name.
 
         Unique connection names start with a colon (":") and are followed by a list of dot-separated
-        components composed of ASCII letters, digits, the hypen or the underscore ("_") character.
+        components composed of ASCII letters, digits, the hyphen or the underscore ("_") character.
     */
     bool isValidUniqueConnectionName(const QString &connName)
     {

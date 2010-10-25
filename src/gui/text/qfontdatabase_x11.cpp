@@ -2006,7 +2006,7 @@ static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
 
     FcFontSet *set = FcConfigGetFonts(config, FcSetApplication);
     if (!set) {
-        FcConfigAppFontAddFile(config, (const FcChar8 *)":/non-existant");
+        FcConfigAppFontAddFile(config, (const FcChar8 *)":/non-existent");
         set = FcConfigGetFonts(config, FcSetApplication); // try again
         if (!set)
             return;

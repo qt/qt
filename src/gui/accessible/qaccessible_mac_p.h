@@ -122,7 +122,7 @@ private:
     QAccessibleInterfaceWrapper wrapper class.
 
     It has the same API as QAccessibleInterface, minus the child parameter
-    in the funcitons.
+    in the functions.
 */
 class Q_AUTOTEST_EXPORT QAInterface : public QAccessible
 {
@@ -432,7 +432,7 @@ public:
 /*
     QAccessibleHierarchyManager bridges the Mac and Qt accessibility hierarchies.
     There is a one-to-one relationship between QAElements on the Mac side
-    and QAInterfaces on the Qt side, and this class provies lookup funcitons
+    and QAInterfaces on the Qt side, and this class provides lookup functions
     that translates between these to items.
 
     The identity of a QAInterface is determined by its QAccessibleInterface and

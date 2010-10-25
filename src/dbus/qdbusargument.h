@@ -172,7 +172,7 @@ template<typename T> inline T qdbus_cast(const QVariant &v
         return qvariant_cast<T>(v);
 }
 
-// specialise for QVariant, allowing it to be used in place of QDBusVariant
+// specialize for QVariant, allowing it to be used in place of QDBusVariant
 template<> inline QVariant qdbus_cast<QVariant>(const QDBusArgument &arg, QVariant *)
 {
     QDBusVariant item;

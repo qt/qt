@@ -48,7 +48,7 @@ QVERIFY(1 + 1 == 2);
 
 
 //! [1]
-QVERIFY2(1 + 1 == 2, "A breach in basic arithmetic occured.");
+QVERIFY2(1 + 1 == 2, "A breach in basic arithmetic occurred.");
 //! [1]
 
 

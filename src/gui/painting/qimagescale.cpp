@@ -304,7 +304,7 @@ QImageScaleInfo* QImageScale::qimageCalcScaleInfo(const QImage &img,
     return(isi);
 }
 
-/* FIXME: NEED to optimise ScaleAARGBA - currently its "ok" but needs work*/
+/* FIXME: NEED to optimize ScaleAARGBA - currently its "ok" but needs work*/
 
 /* scale by area sampling */
 static void qt_qimageScaleAARGBA(QImageScaleInfo *isi, unsigned int *dest,

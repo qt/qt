@@ -581,7 +581,7 @@ void QWidgetPrivate::hide_sys()
     QSymbianControl *id = static_cast<QSymbianControl *>(q->internalWinId());
 
     if (id) {
-        //Incorrect optimisation - for popup windows, Qt's focus is moved before
+        //Incorrect optimization - for popup windows, Qt's focus is moved before
         //hide_sys is called, resulting in the popup window keeping its elevated
         //position in the CONE control stack.
         //This can result in keyboard focus being in an invisible widget in some

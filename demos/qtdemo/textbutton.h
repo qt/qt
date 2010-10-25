@@ -61,7 +61,7 @@ public:
         QGraphicsScene *scene = 0, QGraphicsItem *parent = 0, BUTTONTYPE color = SIDEBAR);
     virtual ~TextButton();
 
-    // overidden methods:
+    // overridden methods:
     virtual QRectF boundingRect() const;
     virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget * = 0){};
     virtual void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
