@@ -234,13 +234,14 @@ embedded {
 
 
 symbian {
-        HEADERS += painting/qwindowsurface_s60_p.h
+        HEADERS += painting/qwindowsurface_s60_p.h \
+                    painting/qdrawhelper_arm_simd_p.h
         SOURCES += painting/qwindowsurface_s60.cpp
         armccIfdefBlock = \
         "$${LITERAL_HASH}if defined(ARMV6)" \
+        "MACRO QT_HAVE_ARM_SIMD" \
         "SOURCEPATH 	painting" \
-        "SOURCE			qblendfunctions_armv6_rvct.s" \
-        "SOURCE			qdrawhelper_armv6_rvct.s" \
+        "SOURCE			qdrawhelper_arm_simd.cpp" \
         "$${LITERAL_HASH}endif"
 
         MMP_RULES += armccIfdefBlock

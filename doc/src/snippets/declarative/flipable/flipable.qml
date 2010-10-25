@@ -46,26 +46,27 @@ Flipable {
     width: 240
     height: 240
 
-    property int angle: 0
     property bool flipped: false
 
-    front: Image { source: "front.png" }
-    back: Image { source: "back.png" }
+    front: Image { source: "front.png"; anchors.centerIn: parent }
+    back: Image { source: "back.png"; anchors.centerIn: parent }
 
     transform: Rotation {
-        origin.x: flipable.width/2; origin.y: flipable.height/2
-        axis.x: 0; axis.y: 1; axis.z: 0     // rotate around y-axis
-        angle: flipable.angle
+        id: rotation
+        origin.x: flipable.width/2
+        origin.y: flipable.height/2
+        axis.x: 0; axis.y: 1; axis.z: 0     // set axis.y to 1 to rotate around y-axis
+        angle: 0    // the default angle
     }
 
     states: State {
         name: "back"
-        PropertyChanges { target: flipable; angle: 180 }
+        PropertyChanges { target: rotation; angle: 180 }
         when: flipable.flipped
     }
 
     transitions: Transition {
-        NumberAnimation { properties: "angle"; duration: 1000 }
+        NumberAnimation { target: rotation; property: "angle"; duration: 4000 }
     }
 
     MouseArea {

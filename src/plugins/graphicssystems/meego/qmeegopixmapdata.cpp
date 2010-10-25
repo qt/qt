@@ -41,6 +41,7 @@
 
 #include "qmeegopixmapdata.h"
 #include "qmeegoextensions.h"
+#include "qmeegorasterpixmapdata.h"
 #include <private/qimage_p.h>
 #include <private/qwindowsurface_gl_p.h>
 #include <private/qeglcontext_p.h>
@@ -105,34 +106,6 @@ void QMeeGoPixmapData::fromImage(const QImage &image,
     }
 }
 
-void QMeeGoPixmapData::fromEGLImage(Qt::HANDLE handle)
-{
-    QGLShareContextScope ctx(qt_gl_share_widget()->context());
-    QMeeGoExtensions::ensureInitialized();
- 
-    bool textureIsBound = false;
-    GLuint newTextureId;
-    GLint newWidth, newHeight;
-
-    glGenTextures(1, &newTextureId);
-    glBindTexture(GL_TEXTURE_2D, newTextureId);
-   
-    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, (EGLImageKHR) handle);
-    GLint err = glGetError();
-    if (err == GL_NO_ERROR)
-        textureIsBound = true;
-        
-    QMeeGoExtensions::eglQueryImageNOK(QEgl::display(), (EGLImageKHR) handle, EGL_WIDTH, &newWidth);
-    QMeeGoExtensions::eglQueryImageNOK(QEgl::display(), (EGLImageKHR) handle, EGL_HEIGHT, &newHeight);
-          
-    if (textureIsBound) {
-        fromTexture(newTextureId, newWidth, newHeight, true); 
-    } else {
-        qWarning("Failed to create a texture from an egl image!");
-        glDeleteTextures(1, &newTextureId);
-    }
-}
-
 void QMeeGoPixmapData::fromEGLSharedImage(Qt::HANDLE handle, const QImage &si)
 {
     if (si.isNull())
@@ -149,12 +122,10 @@ void QMeeGoPixmapData::fromEGLSharedImage(Qt::HANDLE handle, const QImage &si)
     glGenTextures(1, &newTextureId);
     glBindTexture(GL_TEXTURE_2D, newTextureId);
     
-    glFinish();
     EGLImageKHR image = QEgl::eglCreateImageKHR(QEgl::display(), EGL_NO_CONTEXT, EGL_SHARED_IMAGE_NOK,
                                                 (EGLClientBuffer)handle, preserved_image_attribs);
 
     if (image != EGL_NO_IMAGE_KHR) {
-        glFinish();
         glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, image);
         GLint err = glGetError();
         if (err == GL_NO_ERROR)
@@ -164,7 +135,6 @@ void QMeeGoPixmapData::fromEGLSharedImage(Qt::HANDLE handle, const QImage &si)
         QMeeGoExtensions::eglQueryImageNOK(QEgl::display(), image, EGL_HEIGHT, &newHeight);
           
         QEgl::eglDestroyImageKHR(QEgl::display(), image);
-        glFinish();
     }
         
     if (textureIsBound) {
@@ -185,13 +155,11 @@ Qt::HANDLE QMeeGoPixmapData::imageToEGLSharedImage(const QImage &image)
 
     QMeeGoExtensions::ensureInitialized();
 
-    glFinish();
-
     GLuint textureId;
 
     glGenTextures(1, &textureId);
     glBindTexture(GL_TEXTURE_2D, textureId);
-    if (image.hasAlphaChannel() && (image.hasAlphaChannel() && const_cast<QImage &>(image).data_ptr()->checkForAlphaPixels())) {
+    if (image.hasAlphaChannel() && const_cast<QImage &>(image).data_ptr()->checkForAlphaPixels()) {
         QImage convertedImage = image.convertToFormat(QImage::Format_ARGB4444_Premultiplied, Qt::DiffuseAlphaDither | Qt::DiffuseDither | Qt::PreferDither);
         qARGBA4ToRGBA4(&convertedImage);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width(), image.height(), 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, convertedImage.bits());
@@ -203,20 +171,15 @@ Qt::HANDLE QMeeGoPixmapData::imageToEGLSharedImage(const QImage &image)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-    glFinish();
-
     glBindTexture(GL_TEXTURE_2D, textureId);
     EGLImageKHR eglimage = QEgl::eglCreateImageKHR(QEgl::display(), QEglContext::currentContext(QEgl::OpenGL)->context(),
                                                                                                 EGL_GL_TEXTURE_2D_KHR,
                                                                                                 (EGLClientBuffer) textureId,
                                                                                                 preserved_image_attribs);
     glDeleteTextures(1, &textureId);
-    glFinish();
-
     if (eglimage) {
         EGLNativeSharedImageTypeNOK handle = QMeeGoExtensions::eglCreateSharedImageNOK(QEgl::display(), eglimage, NULL);
         QEgl::eglDestroyImageKHR(QEgl::display(), eglimage);
-        glFinish();
         return (Qt::HANDLE) handle;
     } else {
         qWarning("Failed to create shared image from pixmap/texture!");
@@ -265,4 +228,9 @@ void QMeeGoPixmapData::registerSharedImage(Qt::HANDLE handle, const QImage &si)
         if (info->handle != handle || info->rawFormat != si.format())
             qWarning("Inconsistency detected: overwriting entry in sharedImagesMap but handle/format different");
     }
+}
+
+QPixmapData *QMeeGoPixmapData::createCompatiblePixmapData() const
+{
+    return new QMeeGoRasterPixmapData(pixelType());
 }

@@ -548,7 +548,7 @@ void QWidgetPrivate::show_sys()
 
         id->MakeVisible(true);
 
-        if(q->isWindow())
+        if(q->isWindow()&&!q->testAttribute(Qt::WA_ShowWithoutActivating))
             id->setFocusSafely(true);
     }
 

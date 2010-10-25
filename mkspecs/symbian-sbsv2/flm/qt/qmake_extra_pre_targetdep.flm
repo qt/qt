@@ -12,6 +12,10 @@ SINGLETON:=$(call sanitise,TARGET_$(PREDEP_TARGET))
 
 $(call makepathfor,$(PREDEP_TARGET))
 
+ifeq ($(patsubst /epoc32/%,MATCH,$(firstword $(COMMAND))),MATCH)
+COMMAND:=$(EPOCROOT)$(COMMAND)
+endif
+
 define qmake_extra_pre_targetdep
 EXPORT:: $(PREDEP_TARGET)
 

@@ -42,7 +42,8 @@
 #include <QDebug>
 #include <QEvent>
 #include <QMouseEvent>
-#include <QCoreApplication>
+#include <QApplication>
+#include <QDesktopWidget>
 #include "qmeegooverlaywidget.h"
 #include "qmeegographicssystemhelper.h"
 #include "qmeegoruntime.h"
@@ -54,10 +55,12 @@ QMeeGoOverlayWidget::QMeeGoOverlayWidget(int surfaceWidth, int surfaceHeight, QW
     if (! QMeeGoGraphicsSystemHelper::isRunningMeeGo())
         qFatal("QMeeGoOverlayWidget can only be used when running with 'meego' graphics system!");
 
+    const QRect desktop = QApplication::desktop()->screenGeometry(parent);
+
     QMeeGoRuntime::setSurfaceFixedSize(surfaceWidth, surfaceHeight);
 
-    scaleW = sw / 864.0;
-    scaleH = sh / 480.0;
+    scaleW = sw / desktop.width();
+    scaleH = sh / desktop.height();
     installEventFilter(this);
 }
 

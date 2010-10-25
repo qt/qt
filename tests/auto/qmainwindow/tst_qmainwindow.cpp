@@ -701,10 +701,12 @@ void tst_QMainWindow::statusBar()
         // deleting the status bar should remove it from the main window
         QMainWindow mw;
         QStatusBar *sb = mw.statusBar();
-        int indexOfSb = mw.layout()->indexOf(sb);
+        QMainWindowLayout *l = qFindChild<QMainWindowLayout *>(&mw);
+        QVERIFY(l);
+        int indexOfSb = l->indexOf(sb);
         QVERIFY(indexOfSb != -1);
         delete sb;
-        indexOfSb = mw.layout()->indexOf(sb);
+        indexOfSb = l->indexOf(sb);
         QVERIFY(indexOfSb == -1);
     }
 }

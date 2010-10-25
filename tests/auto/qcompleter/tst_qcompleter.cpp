@@ -651,7 +651,7 @@ void tst_QCompleter::fileSystemModel_data()
 #elif defined (Q_OS_MAC)
         QTest::newRow("()") << "" << "" << "/" << "/";
         QTest::newRow("(/a)") << "/a" << "" << "Applications" << "/Applications";
-        QTest::newRow("(/d)") << "/d" << "" << "Developer" << "/Developer";
+//        QTest::newRow("(/d)") << "/d" << "" << "Developer" << "/Developer";
 #else
         QTest::newRow("()") << "" << "" << "/" << "/";
 #if !defined(Q_OS_IRIX) && !defined(Q_OS_AIX) && !defined(Q_OS_HPUX)
@@ -1485,12 +1485,15 @@ void tst_QCompleter::QTBUG_14292_filesystem()
     QApplication::setActiveWindow(&edit);
     QTest::qWaitForWindowShown(&edit);
     QTRY_VERIFY(QApplication::activeWindow() == &edit);
+    edit.setFocus();
+    QTRY_VERIFY(edit.hasFocus());
 
     QVERIFY(!comp.popup()->isVisible());
     edit.setText(tmpDir.path());
     QTest::keyClick(&edit, '/');
     QTRY_VERIFY(comp.popup()->isVisible());
     QCOMPARE(comp.popup()->model()->rowCount(), 2);
+    QApplication::processEvents();
     QTest::keyClick(&edit, 'h');
     QCOMPARE(comp.popup()->model()->rowCount(), 2);
     QTest::keyClick(&edit, 'e');
