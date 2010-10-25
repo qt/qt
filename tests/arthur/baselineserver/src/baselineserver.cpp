@@ -23,9 +23,14 @@ BaselineServer::BaselineServer(QObject *parent)
 QString BaselineServer::storagePath()
 {
     if (storage.isEmpty()) {
-        QDir dir(QCoreApplication::applicationDirPath());
-        dir.cdUp();
-        storage =  dir.path() + QLS("/storage/");
+        QByteArray envDir = qgetenv("QT_LANCELOT_DIR");
+        if (!envDir.isEmpty()) {
+            storage = QLS(envDir.append('/'));
+        } else {
+            QDir dir(QCoreApplication::applicationDirPath());
+            dir.cdUp();
+            storage =  dir.path() + QLS("/storage/");
+        }
     }
     return storage;
 }

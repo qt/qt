@@ -168,10 +168,9 @@ BaselineProtocol::~BaselineProtocol()
 bool BaselineProtocol::connect()
 {
     errMsg.clear();
-    //###TBD: determine server address; for now local devhost
     QByteArray serverName(qgetenv("QT_LANCELOT_SERVER"));
     if (serverName.isNull())
-        serverName = "chimera.europe.nokia.com";
+        serverName = "lancelot.test.qt.nokia.com";
 
     socket.connectToHost(serverName, ServerPort);
     if (!socket.waitForConnected(Timeout)) {
