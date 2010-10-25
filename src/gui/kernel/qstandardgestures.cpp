@@ -224,7 +224,7 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
                 startAngle -= 360;
             const qreal rotationAngle = startAngle - angle;
             if (d->isNewSequence)
-                d->lastRotationAngle = rotationAngle;
+                d->lastRotationAngle = 0.0;
             else
                 d->lastRotationAngle = d->rotationAngle;
             d->rotationAngle = rotationAngle;
