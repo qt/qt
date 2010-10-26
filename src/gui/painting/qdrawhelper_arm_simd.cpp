@@ -47,7 +47,26 @@
 #ifdef QT_HAVE_ARM_SIMD
 
 #if defined(Q_OS_SYMBIAN)
-#include <u32std.h>
+#if !defined(__SWITCH_TO_ARM)
+#ifdef __MARM_THUMB__
+#ifndef __ARMCC__
+#define __SWITCH_TO_ARM      asm("push {r0} ");\
+                             asm("add r0, pc, #4 ");\
+                             asm("bx r0 ");\
+                             asm("nop ");\
+                             asm(".align 2 ");\
+                             asm(".code 32 ");\
+                             asm("ldr r0, [sp], #4 ")
+#define __END_ARM            asm(".code 16 ")
+#else
+#define __SWITCH_TO_ARM      asm(".code 32 ");
+#define __END_ARM
+#endif // __ARMCC__
+#else
+#define __SWITCH_TO_ARM
+#define __END_ARM
+#endif //__MARM_THUMB__
+#endif
 #endif
 
 #if defined(Q_OS_SYMBIAN) && defined(Q_CC_RVCT)
