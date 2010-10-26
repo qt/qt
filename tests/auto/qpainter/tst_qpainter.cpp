@@ -251,6 +251,8 @@ private slots:
 
     void QTBUG5939_attachPainterPrivate();
 
+    void QTBUG14614_gradientCacheRaceCondition();
+
 private:
     void fillData();
     void setPenColor(QPainter& p);
@@ -4456,6 +4458,36 @@ void tst_QPainter::QTBUG5939_attachPainterPrivate()
 
     QVERIFY(widget->worldTransform.isIdentity());
     QCOMPARE(widget->deviceTransform, proxy->deviceTransform);
+}
+
+class GradientProducer : public QThread
+{
+protected:
+    void run();
+};
+
+void GradientProducer::run()
+{
+    QImage image(1, 1, QImage::Format_RGB32);
+    QPainter p(&image);
+
+    for (int i = 0; i < 1000; ++i) {
+        QLinearGradient g;
+        g.setColorAt(0, QColor(i % 256, 0, 0));
+        g.setColorAt(1, Qt::white);
+
+        p.fillRect(image.rect(), g);
+    }
+}
+
+void tst_QPainter::QTBUG14614_gradientCacheRaceCondition()
+{
+    const int threadCount = 16;
+    GradientProducer producers[threadCount];
+    for (int i = 0; i < threadCount; ++i)
+        producers[i].start();
+    for (int i = 0; i < threadCount; ++i)
+        producers[i].wait();
 }
 
 QTEST_MAIN(tst_QPainter)
