@@ -784,8 +784,10 @@ L_FLAGS=
 RPATH_FLAGS=
 l_FLAGS=
 QCONFIG_FLAGS=
-XPLATFORM=              # This seems to be the QMAKESPEC, like "linux-g++" or "symbian/linux-gcce"
+XPLATFORM=              # This seems to be the QMAKESPEC, like "linux-g++" or "symbian-gcce"
 XPLATFORM_MINGW=no      # Whether target platform is MinGW (win32-g++*)
+XPLATFORM_SYMBIAN=no    # Whether target platform is SYMBIAN (*symbian*)
+XPLATFORM_SYMBIAN_SBSV2=no # Whether target platform is SYMBIAN_SBSV2 (symbian-sbsv2)
 PLATFORM=$QMAKESPEC
 QT_CROSS_COMPILE=no
 OPT_CONFIRM_LICENSE=no
@@ -1478,6 +1480,8 @@ while [ "$#" -gt 0 ]; do
     xplatform)
         XPLATFORM="$VAL"
         case `basename "$XPLATFORM"` in win32-g++*) XPLATFORM_MINGW=yes;; esac
+        case "$XPLATFORM" in *symbian*) XPLATFORM_SYMBIAN=yes;; esac
+        case "$XPLATFORM" in symbian-sbsv2) XPLATFORM_SYMBIAN_SBSV2=yes;; esac
         ;;
     debug-and-release)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -2749,6 +2753,8 @@ fi
 [ -z "$XPLATFORM" ] && XPLATFORM="$PLATFORM"
 
 case `basename "$XPLATFORM"` in win32-g++*) XPLATFORM_MINGW=yes;; esac
+case "$XPLATFORM" in *symbian*) XPLATFORM_SYMBIAN=yes;; esac
+case "$XPLATFORM" in symbian-sbsv2) XPLATFORM_SYMBIAN_SBSV2=yes;; esac
 
 if [ -d "$PLATFORM" ]; then
   QMAKESPEC="$PLATFORM"
@@ -3027,7 +3033,7 @@ if [ "$PLATFORM" != "$XPLATFORM" -a "$CFG_EMBEDDED" != "no" ]; then
     esac
 elif [ "$XPLATFORM_MINGW" = "yes" ]; then
     [ -z "$CFG_ARCH" ] && CFG_ARCH="windows"
-elif echo "$XPLATFORM" | grep symbian > /dev/null; then
+elif [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
     CFG_ARCH=symbian
 elif [ "$PLATFORM_MAC" = "yes" ] || [ -z "$CFG_ARCH" ]; then
     CFG_ARCH=$CFG_HOST_ARCH
@@ -3165,7 +3171,7 @@ QMAKE_CONF_COMPILER=`getQMakeConf "$XQMAKESPEC" | grep "\(^\| \)QMAKE_CXX[^_A-Z0
 TEST_COMPILER="$CXX"
 
 [ -z "$TEST_COMPILER" ] && TEST_COMPILER=$QMAKE_CONF_COMPILER
-if [ "$XPLATFORM" != "symbian-sbsv2" ]; then
+if [ "$XPLATFORM_SYMBIAN_SBSV2" = "no" ]; then
     #for Symbian we don't need this checking
     if [ -z "$TEST_COMPILER" ]; then
         echo "ERROR: Cannot set the compiler for the configuration tests"
@@ -3333,18 +3339,17 @@ if [ -z "$QT_INSTALL_PREFIX" ]; then
             QT_INSTALL_PREFIX="${QT_INSTALL_PREFIX}-${CFG_ARCH}"
         fi
     elif [ -d "$EPOCROOT" ]; then
-        case "$XPLATFORM" in *symbian*)
+        if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
             QT_INSTALL_PREFIX="$EPOCROOT/epoc32/"
             QT_INSTALL_LIBS="$EPOCROOT/epoc32/release/armv5/lib/"
-            ;;
-        esac
+        fi
     else
         QT_INSTALL_PREFIX="/usr/local/Trolltech/Qt-${QT_VERSION}" # the default install prefix is /usr/local/Trolltech/Qt-$QT_VERSION
     fi
 fi
 QT_INSTALL_PREFIX=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_PREFIX"`
 
-if echo $XPLATFORM | grep symbian > /dev/null; then
+if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
     [ -z "$QT_HOST_PREFIX" ] && QT_HOST_PREFIX="$QT_INSTALL_PREFIX"
     [ -z "$QT_INSTALL_DOCS" ] && QT_INSTALL_DOCS=
     [ -z "$QT_INSTALL_HEADERS" ] && QT_INSTALL_HEADERS=
@@ -4201,7 +4206,7 @@ if [ "$PLATFORM_QWS" = "yes" -o "$PLATFORM_X11" = "yes" ]; then
 EOF
 fi
 
-case "$XPLATFORM" in *symbian*)
+if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
     cat << EOF
 
 Qt for Symbian only:
@@ -4213,9 +4218,7 @@ Qt for Symbian only:
     -no-usedeffiles .... Disable the usage of DEF files.
  *  -usedeffiles ....... Enable the usage of DEF files.
 EOF
-;;
-esac
-
+fi
    [ "x$ERROR" = "xyes" ] && exit 1
    exit 0
 fi # Help
@@ -4227,10 +4230,10 @@ fi # Help
 
 if [ "$PLATFORM_QWS" = "yes" ]; then
     Platform="Qt for Embedded Linux"
+elif [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
+    Platform="Qt for Symbian"
 elif [ "$PLATFORM_MAC" = "yes" ]; then
     Platform="Qt for Mac OS X"
-elif echo "$XPLATFORM" | grep "symbian" > /dev/null ; then
-    Platform="Qt for Symbian"
 elif [ "$XPLATFORM_MINGW" = "yes" ]; then
     Platform="Qt for Windows"
 elif [ '!' -z "`getQMakeConf \"$XQMAKESPEC\" | grep QMAKE_LIBS_X11 | awk '{print $3;}'`" ]; then
@@ -4615,7 +4618,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
 
     #mkspecs/default is used as a (gasp!) default mkspec so QMAKESPEC needn't be set once configured
     rm -rf mkspecs/default
-    if echo "$XPLATFORM" | grep "symbian-sbsv2" > /dev/null ; then
+    if [ "$XPLATFORM_SYMBIAN_SBSV2" = "yes" ]; then
 #Link is not supported for Symbian build system
         cp -a mkspecs/`echo $XQMAKESPEC | sed "s,^${relpath}/mkspecs/,,"` mkspecs/default
     else
@@ -4867,33 +4870,12 @@ if [ "$CFG_ARCH" = "arm" ] && [ "${CFG_NEON}" = "auto" ]; then
     fi
 fi
 
-# detect zlib
-if [ "$CFG_ZLIB" = "no" ]; then
-    # Note: Qt no longer support builds without zlib
-    # So we force a "no" to be "auto" here.
-    # If you REALLY really need no zlib support, you can still disable
-    # it by doing the following:
-    #   add "no-zlib" to mkspecs/qconfig.pri
-    #   #define QT_NO_COMPRESS (probably by adding to src/corelib/global/qconfig.h)
-    #
-    # There's no guarantee that Qt will build under those conditions
-
-    CFG_ZLIB=auto
-    ZLIB_FORCED=yes
-fi
-if [ "$CFG_ZLIB" = "auto" ]; then
-    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/zlib "zlib" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
-       CFG_ZLIB=system
-    else
-       CFG_ZLIB=yes
-    fi
-fi
-
 [ "$XPLATFORM_MINGW" = "yes" ] && QMakeVar add styles "windowsxp windowsvista"
 
-case "$XPLATFORM" in *symbian*)
+if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
     QMakeVar set styles "windows s60"   #overwrite previous default
     CFG_LIBFREETYPE=no
+    CFG_ZLIB=yes
 
     if [ "$CFG_LARGEFILE" = auto ]; then
         CFG_LARGEFILE=no
@@ -4908,7 +4890,7 @@ case "$XPLATFORM" in *symbian*)
         exit 1
     fi
 
-    if ! echo $XPLATFORM | grep symbian-sbsv2 > /dev/null; then
+    if [ "$XPLATFORM_SYMBIAN_SBSV2" = "no" ]; then
         # Raptor does not support configure tests.
 
         # the main commands needed to compile;
@@ -4932,8 +4914,29 @@ case "$XPLATFORM" in *symbian*)
             exit 1;
         fi
     fi
-    ;;
-esac
+fi
+
+# detect zlib
+if [ "$CFG_ZLIB" = "no" ]; then
+    # Note: Qt no longer support builds without zlib
+    # So we force a "no" to be "auto" here.
+    # If you REALLY really need no zlib support, you can still disable
+    # it by doing the following:
+    #   add "no-zlib" to mkspecs/qconfig.pri
+    #   #define QT_NO_COMPRESS (probably by adding to src/corelib/global/qconfig.h)
+    #
+    # There's no guarantee that Qt will build under those conditions
+
+    CFG_ZLIB=auto
+    ZLIB_FORCED=yes
+fi
+if [ "$CFG_ZLIB" = "auto" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/zlib "zlib" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
+       CFG_ZLIB=system
+    else
+       CFG_ZLIB=yes
+    fi
+fi
 
 if [ "$CFG_LARGEFILE" = "auto" ]; then
     #Large files should be enabled for all Linux systems
@@ -4942,7 +4945,7 @@ fi
 
 
 if [ "$CFG_S60" = "auto" ]; then
-    if echo "$XPLATFORM" | grep symbian > /dev/null; then
+    if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
         CFG_S60=yes
     else
         CFG_S60=no
@@ -4950,7 +4953,7 @@ if [ "$CFG_S60" = "auto" ]; then
 fi
 
 if [ "$CFG_QS60STYLE" = "auto" ]; then
-    if echo "$XPLATFORM" | grep symbian > /dev/null; then
+    if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
         CFG_QS60STYLE=qt
     else
         CFG_QS60STYLE=no
@@ -4958,7 +4961,7 @@ if [ "$CFG_QS60STYLE" = "auto" ]; then
 fi
 
 if [ "$CFG_SYMBIAN_DEFFILES" = "auto" ]; then
-    if echo "$XPLATFORM" | grep symbian > /dev/null && [ "$CFG_DEV" = "no" ]; then
+    if [ "$XPLATFORM_SYMBIAN" = "yes" ] && [ "$CFG_DEV" = "no" ]; then
         CFG_SYMBIAN_DEFFILES=yes
     else
         CFG_SYMBIAN_DEFFILES=no
@@ -5037,14 +5040,12 @@ fi
 
 # detect accessibility
 if [ "$CFG_ACCESSIBILITY" = "auto" ]; then
-    case "$XPLATFORM" in
-    symbian*)
+    if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
         # accessibility is currently unsupported
         CFG_ACCESSIBILITY=no
-    ;;
-    *)
+    else
         CFG_ACCESSIBILITY=yes
-    esac
+    fi
 fi
 
 # auto-detect SQL-modules support
@@ -5256,15 +5257,13 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
             ;;
         sqlite)
             if [ "$CFG_SQL_sqlite" = "auto" ]; then # the default
-                case "$XPLATFORM" in
-                    symbian*)
+                if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
                     # sqlite on symbian is typically not build in Qt but deployed as a pre-existing sis file and should be marked as driver.
                     # Configuration parameters should be set
                     CFG_SQL_sqlite=qt
                     QT_LFLAGS_SQLITE=-lsqlite3
                     QMAKE_CONFIG="$QMAKE_CONFIG system-sqlite"
-                    ;;
-                esac
+                fi
             fi
             if [ "$CFG_SQL_sqlite" != "no" ]; then
                 SQLITE_AUTODETECT_FAILED="no"
@@ -6135,10 +6134,10 @@ fi
 if [ "$CFG_ENDIAN" = "auto" ]; then
     if [ "$XPLATFORM_MINGW" = "yes" ]; then
         CFG_ENDIAN="Q_LITTLE_ENDIAN"
-    elif [ "$PLATFORM_MAC" = "yes" ]; then
-	true #leave as auto
-    elif [ "$XPLATFORM" = "symbian-sbsv2" ]; then
+    elif [ "$XPLATFORM_SYMBIAN_SBSV2" = "yes" ]; then
         CFG_ENDIAN="Q_LITTLE_ENDIAN"
+    elif [ "$PLATFORM_MAC" = "yes" ] && [ "$XPLATFORM_SYMBIAN" = "no" ]; then
+        true #leave as auto
     else
         "$unixtests/endian.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath"
 	F="$?"
@@ -6224,7 +6223,7 @@ if [ "$CFG_DOUBLEFORMAT" = "auto" ]; then
 fi
 
 HAVE_STL=no
-if echo "$XPLATFORM" | grep symbian > /dev/null || "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/stl "STL" $L_FLAGS $I_FLAGS $l_FLAGS; then
+if [ "$XPLATFORM_SYMBIAN" = "yes" ] || "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/stl "STL" $L_FLAGS $I_FLAGS $l_FLAGS; then
     HAVE_STL=yes
 fi
 
@@ -6251,7 +6250,7 @@ if [ "$CFG_IPV6" != "no" ]; then
     # Therefore for 4.7.1 and following we disable it until OpenC either supports it or we have the native Qt
     # symbian socket engine.
     #
-    if echo "$XPLATFORM" | grep symbian > /dev/null; then
+    if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
         CFG_IPV6=no
     elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/ipv6 "IPv6" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         CFG_IPV6=yes
@@ -6366,7 +6365,7 @@ if [ "$CFG_GETIFADDRS" != "no" ]; then
 fi
 
 # detect OpenSSL
-if [ "$CFG_OPENSSL" != "no" ] && [ "$XPLATFORM" != "symbian-sbsv2" ]; then
+if [ "$CFG_OPENSSL" != "no" ] && [ "$XPLATFORM_SYMBIAN_SBSV2" = "no" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/openssl "OpenSSL" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_CONFIG_TEST_COMMANDLINE; then
         if [ "$CFG_OPENSSL" = "auto" ]; then
             CFG_OPENSSL=yes
@@ -6383,14 +6382,14 @@ if [ "$CFG_OPENSSL" != "no" ] && [ "$XPLATFORM" != "symbian-sbsv2" ]; then
         fi
     fi
 else
-    if [ "$CFG_OPENSSL" = "auto" ] && [ "$XPLATFORM" = "symbian-sbsv2" ]; then
+    if [ "$CFG_OPENSSL" = "auto" ] && [ "$XPLATFORM_SYMBIAN_SBSV2" = "yes" ]; then
         #OpenSSl should be enabled for Symbian release
         CFG_OPENSSL=yes
     fi
 fi
 
 # detect OpenVG support
-if [ "$CFG_OPENVG" != "no" ] && [ "$XPLATFORM" != "symbian-sbsv2" ]; then
+if [ "$CFG_OPENVG" != "no" ] && [ "$XPLATFORM_SYMBIAN_SBSV2" = "no" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/openvg" "OpenVG" $L_FLAGS $I_FLAGS $l_FLAGS $CONFIG_ARG; then
         if [ "$CFG_OPENVG" = "auto" ]; then
             CFG_OPENVG=yes
@@ -6447,13 +6446,13 @@ if [ "$CFG_PTMALLOC" != "no" ]; then
     QMakeVar add QMAKE_LFLAGS "$outpath/lib/libptmalloc3.a"
 fi
 
-if [ "$CFG_ALSA" = "auto" ] && [ "$XPLATFORM" != "symbian-sbsv2" ]; then
+if [ "$CFG_ALSA" = "auto" ] && [ "$XPLATFORM_SYMBIAN_SBSV2" = "no" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/alsa "alsa" $L_FLAGS $I_FLAGS $l_FLAGS; then
         CFG_ALSA=yes
     else
         CFG_ALSA=no
     fi
-elif [ "$XPLATFORM" = "symbian-sbsv2" ]; then
+elif [ "$XPLATFORM_SYMBIAN_SBSV2" = "yes" ]; then
     # Disabled for Symbian release
     CFG_ALSA=no
 fi
@@ -6474,7 +6473,7 @@ elif [ "$CFG_JAVASCRIPTCORE_JIT" = "no" ]; then
 fi
 
 if [ "$CFG_AUDIO_BACKEND" = "auto" ]; then
-    if echo "$XPLATFORM" | grep symbian > /dev/null 2>&1; then
+    if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
          if "$symbiantests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/symbian/audio "audio" $L_FLAGS $I_FLAGS $l_FLAGS ; then
             CFG_AUDIO_BACKEND=yes
          fi
@@ -6486,7 +6485,7 @@ fi
 if [ "$CFG_LARGEFILE" != "yes" ] && [ "$XPLATFORM_MINGW" = "yes" ]; then
     echo "Warning: largefile support cannot be disabled for win32."
     CFG_LARGEFILE="yes"
-elif [ "$CFG_LARGEFILE" != "no" ] && echo "$XPLATFORM" | grep "symbian" > /dev/null; then
+elif [ "$CFG_LARGEFILE" != "no" ] && [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
     echo "Warning: largefile support cannot be enabled for symbian."
     CFG_LARGEFILE="no"
 fi
@@ -6593,8 +6592,9 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
     fi
 fi
 
-# but disable Cocoa if cross-building for mingw
+# but disable Cocoa if cross-building for mingw and symbian
 [ "$XPLATFORM_MINGW" = "yes" ] && CFG_MAC_COCOA="no"
+[ "$XPLATFORM_SYMBIAN" = "yes" ] && CFG_MAC_COCOA="no"
 
 # set the global Mac deployment target. This is overridden on an arch-by-arch basis
 # in some cases, see code further down
@@ -6672,11 +6672,9 @@ else
 fi
 
 # Disable OpenGL on Symbian.
-case "$XPLATFORM" in
-    symbian*)
+if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
         CFG_OPENGL="no"
-        ;;
-esac
+fi
 
 # enable opengl
 if [ "$CFG_OPENGL" = "no" ]; then
@@ -6860,7 +6858,7 @@ else
 fi
 
 
-if [ "x$PLATFORM_MAC" = "xyes" ] && [ "$XPLATFORM_MINGW" != "yes" ]; then
+if [ "x$PLATFORM_MAC" = "xyes" ] && [ "$XPLATFORM_MINGW" != "yes" ] && [ "$XPLATFORM_SYMBIAN" != "yes" ]; then
     #On Mac we implicitly link against libz, so we
     #never use the 3rdparty stuff.
     [ "$CFG_ZLIB" = "yes" ] && CFG_ZLIB="system"
@@ -7499,14 +7497,11 @@ rm -f .options
 BUILD_OPTIONS="$BUILD_CONFIG $BUILD_OPTIONS"
 # extract the operating system from the XPLATFORM
 TARGET_OPERATING_SYSTEM=`echo $XPLATFORM | cut -f 2- -d/ | cut -f -1 -d-`
-case "$XPLATFORM" in
-symbian*)
+if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
     QT_BUILD_KEY_SYSTEM_PART="Symbian"
-    ;;
-*)
+else
     QT_BUILD_KEY_SYSTEM_PART="$CFG_ARCH $TARGET_OPERATING_SYSTEM $COMPILER"
-    ;;
-esac
+fi
 
 # when cross-compiling, don't include build-host information (build key is target specific)
 QT_BUILD_KEY="$CFG_USER_BUILD_KEY $QT_BUILD_KEY_SYSTEM_PART $BUILD_OPTIONS"
@@ -7853,8 +7848,7 @@ fi
 [ '!' -z "$AWK" ] && QCONFIG_FLAGS=`echo $QCONFIG_FLAGS | $AWK '{ gsub(" ", "\n"); print }' | sort | uniq`
 QCONFIG_FLAGS=`echo $QCONFIG_FLAGS`
 
-if echo $XPLATFORM | grep symbian >/dev/null
-then
+if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
     # Enable Symbian DLLs and export rules.
     # We cannot use Linux's default export rules since they export everything.
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_DLL"
@@ -7934,7 +7928,7 @@ else
     mv "$outpath/src/corelib/global/qconfig.h.new" "$outpath/src/corelib/global/qconfig.h"
     chmod -w "$outpath/src/corelib/global/qconfig.h"
     for conf in "$outpath/include/QtCore/qconfig.h" "$outpath/include/Qt/qconfig.h"; do
-        if echo "$XPLATFORM" | grep "symbian-sbsv2" > /dev/null 2>&1 ; then
+        if [ "$XPLATFORM_SYMBIAN_SBSV2" = "yes" ]; then
             [ -e "$conf" ] && rm -rf "$conf"
             cp -a "$outpath/src/corelib/global/qconfig.h" "$conf"
         elif [ '!' -f "$conf" ]; then
@@ -8011,7 +8005,7 @@ if [ -n "$QT_GCC_MAJOR_VERSION" ]; then
     echo "QT_GCC_MINOR_VERSION = $QT_GCC_MINOR_VERSION" >> "$QTCONFIG.tmp"
     echo "QT_GCC_PATCH_VERSION = $QT_GCC_PATCH_VERSION" >> "$QTCONFIG.tmp"
 fi
-if echo "$XPLATFORM" | grep "symbian-sbsv2" > /dev/null 2>&1; then
+if [ "$XPLATFORM_SYMBIAN_SBSV2" = "yes" ]; then
     echo "#Qt for symbian FPU settings" >> "$QTCONFIG.tmp"
     echo "MMP_RULES += \"ARMFPU softvfp\"" >> "$QTCONFIG.tmp"
 fi
@@ -8599,9 +8593,9 @@ for file in .projects .projects.3; do
         *winmain/winmain.pro)
             [ "$XPLATFORM_MINGW" = "yes" ] || continue
             SPEC=$XQMAKESPEC ;;
-        *s60main/s60main.pro) if [ -z "`echo "$XPLATFORM" | grep "symbian" >/dev/null`" ]; then
-                continue
-            fi;;
+        *s60main/s60main.pro)
+            [ "$XPLATFORM_SYMBIAN" = "yes" ] || continue
+            ;;
         *examples/activeqt/*) continue ;;
         */qmake/qmake.pro) continue ;;
         *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*|*linguist/lrelease*) SPEC=$QMAKESPEC ;;
