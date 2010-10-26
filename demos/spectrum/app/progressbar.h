@@ -57,13 +57,13 @@ public:
     void paintEvent(QPaintEvent *event);
 
 public slots:
-    void bufferDurationChanged(qint64 bufferSize);
+    void bufferLengthChanged(qint64 length);
     void recordPositionChanged(qint64 recordPosition);
     void playPositionChanged(qint64 playPosition);
     void windowChanged(qint64 position, qint64 length);
 
 private:
-    qint64 m_bufferDuration;
+    qint64 m_bufferLength;
     qint64 m_recordPosition;
     qint64 m_playPosition;
     qint64 m_windowPosition;
