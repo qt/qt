@@ -112,10 +112,6 @@ public:
     void enableEncryption();
     bool isEncrypted() const;
 
-    //authentication parameters
-    void setProxyAuthentication(QAuthenticator *authenticator);
-    void setAuthentication(const QString &domain, QAuthenticator *authenticator);
-
 #ifndef QT_NO_OPENSSL
     void setSslConfiguration(const QSslConfiguration &config);
     void ignoreSslErrors(int channel = -1);

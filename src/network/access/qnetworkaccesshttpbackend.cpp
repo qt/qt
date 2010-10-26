@@ -878,29 +878,6 @@ void QNetworkAccessHttpBackend::httpError(QNetworkReply::NetworkError errorCode,
 #if defined(QNETWORKACCESSHTTPBACKEND_DEBUG)
     qDebug() << "http error!" << errorCode << errorString;
 #endif
-#if 0
-    static const QNetworkReply::NetworkError conversionTable[] = {
-        QNetworkReply::ConnectionRefusedError,
-        QNetworkReply::RemoteHostClosedError,
-        QNetworkReply::HostNotFoundError,
-        QNetworkReply::UnknownNetworkError, // SocketAccessError
-        QNetworkReply::UnknownNetworkError, // SocketResourceError
-        QNetworkReply::TimeoutError,        // SocketTimeoutError
-        QNetworkReply::UnknownNetworkError, // DatagramTooLargeError
-        QNetworkReply::UnknownNetworkError, // NetworkError
-        QNetworkReply::UnknownNetworkError, // AddressInUseError
-        QNetworkReply::UnknownNetworkError, // SocketAddressNotAvailableError
-        QNetworkReply::UnknownNetworkError, // UnsupportedSocketOperationError
-        QNetworkReply::UnknownNetworkError, // UnfinishedSocketOperationError
-        QNetworkReply::ProxyAuthenticationRequiredError
-    };
-    QNetworkReply::NetworkError code;
-    if (int(errorCode) >= 0 &&
-        uint(errorCode) < (sizeof conversionTable / sizeof conversionTable[0]))
-        code = conversionTable[errorCode];
-    else
-        code = QNetworkReply::UnknownNetworkError;
-#endif
     error(errorCode, errorString);
     finished();
 }

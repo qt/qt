@@ -856,21 +856,6 @@ bool QHttpNetworkConnection::isEncrypted() const
     return d->encrypt;
 }
 
-void QHttpNetworkConnection::setProxyAuthentication(QAuthenticator *authenticator)
-{
-    Q_D(QHttpNetworkConnection);
-    for (int i = 0; i < d->channelCount; ++i)
-        d->channels[i].proxyAuthenticator = *authenticator;
-}
-
-void QHttpNetworkConnection::setAuthentication(const QString &domain, QAuthenticator *authenticator)
-{
-    Q_UNUSED(domain); // ### domain ?
-    Q_D(QHttpNetworkConnection);
-    for (int i = 0; i < d->channelCount; ++i)
-        d->channels[i].authenticator = *authenticator;
-}
-
 #ifndef QT_NO_NETWORKPROXY
 void QHttpNetworkConnection::setCacheProxy(const QNetworkProxy &networkProxy)
 {
