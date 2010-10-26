@@ -175,11 +175,9 @@ void tst_QHttpNetworkConnection::head()
     QFETCH(QString, statusString);
     QFETCH(int, contentLength);
 
-    QHttpNetworkConnection connection(host);
+    QHttpNetworkConnection connection(host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
-    if (encrypt)
-        connection.enableEncryption();
     QCOMPARE(connection.isEncrypted(), encrypt);
 
     QHttpNetworkRequest request(protocol + host + path, QHttpNetworkRequest::Head);
@@ -235,11 +233,9 @@ void tst_QHttpNetworkConnection::get()
     QFETCH(int, contentLength);
     QFETCH(int, downloadSize);
 
-    QHttpNetworkConnection connection(host);
+    QHttpNetworkConnection connection(host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
-    if (encrypt)
-        connection.enableEncryption();
     QCOMPARE(connection.isEncrypted(), encrypt);
 
     QHttpNetworkRequest request(protocol + host + path);
@@ -315,11 +311,9 @@ void tst_QHttpNetworkConnection::put()
     QFETCH(QString, data);
     QFETCH(bool, succeed);
 
-    QHttpNetworkConnection connection(host);
+    QHttpNetworkConnection connection(host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
-    if (encrypt)
-        connection.enableEncryption();
     QCOMPARE(connection.isEncrypted(), encrypt);
 
     QHttpNetworkRequest request(protocol + host + path, QHttpNetworkRequest::Put);
@@ -407,11 +401,9 @@ void tst_QHttpNetworkConnection::post()
     QFETCH(int, contentLength);
     QFETCH(int, downloadSize);
 
-    QHttpNetworkConnection connection(host);
+    QHttpNetworkConnection connection(host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
-    if (encrypt)
-        connection.enableEncryption();
     QCOMPARE(connection.isEncrypted(), encrypt);
 
     QHttpNetworkRequest request(protocol + host + path, QHttpNetworkRequest::Post);
@@ -549,8 +541,6 @@ void tst_QHttpNetworkConnection::get401()
     QHttpNetworkConnection connection(host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
-    if (encrypt)
-        connection.enableEncryption();
     QCOMPARE(connection.isEncrypted(), encrypt);
     connection.setProperty("setCredentials", setCredentials);
     connection.setProperty("username", username);
@@ -618,11 +608,9 @@ void tst_QHttpNetworkConnection::compression()
     QFETCH(bool, autoCompress);
     QFETCH(QString, contentCoding);
 
-    QHttpNetworkConnection connection(host);
+    QHttpNetworkConnection connection(host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
-    if (encrypt)
-        connection.enableEncryption();
     QCOMPARE(connection.isEncrypted(), encrypt);
 
     QHttpNetworkRequest request(protocol + host + path);
@@ -713,8 +701,6 @@ void tst_QHttpNetworkConnection::ignoresslerror()
     QHttpNetworkConnection connection(host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
-    if (encrypt)
-        connection.enableEncryption();
     if (ignoreInit)
         connection.ignoreSslErrors();
     QCOMPARE(connection.isEncrypted(), encrypt);
@@ -771,8 +757,6 @@ void tst_QHttpNetworkConnection::nossl()
     QHttpNetworkConnection connection(host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
-    if (encrypt)
-        connection.enableEncryption();
 
     QHttpNetworkRequest request(protocol + host + path);
     QHttpNetworkReply *reply = connection.sendRequest(request);

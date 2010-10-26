@@ -108,8 +108,6 @@ public:
     QNetworkProxy transparentProxy() const;
 #endif
 
-    //enable encryption
-    void enableEncryption();
     bool isEncrypted() const;
 
 #ifndef QT_NO_OPENSSL

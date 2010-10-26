@@ -844,12 +844,6 @@ QHttpNetworkReply* QHttpNetworkConnection::sendRequest(const QHttpNetworkRequest
     return d->queueRequest(request);
 }
 
-void QHttpNetworkConnection::enableEncryption()
-{
-    Q_D(QHttpNetworkConnection);
-    d->encrypt = true;
-}
-
 bool QHttpNetworkConnection::isEncrypted() const
 {
     Q_D(const QHttpNetworkConnection);
