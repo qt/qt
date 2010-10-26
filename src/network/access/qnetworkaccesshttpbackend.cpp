@@ -346,8 +346,6 @@ void QNetworkAccessHttpBackend::setupConnection()
 #endif
     connect(http, SIGNAL(authenticationRequired(const QHttpNetworkReply*, QHttpNetworkRequest,QAuthenticator*,const QHttpNetworkConnection*)),
                 SLOT(httpAuthenticationRequired(const QHttpNetworkReply*, QHttpNetworkRequest,QAuthenticator*)));
-    connect(http, SIGNAL(cacheCredentials(QHttpNetworkRequest,QAuthenticator*)),
-            SLOT(httpCacheCredentials(QHttpNetworkRequest,QAuthenticator*)));
     connect(http, SIGNAL(error(QNetworkReply::NetworkError,QString)),
             SLOT(httpError(QNetworkReply::NetworkError,QString)));
 }
@@ -598,6 +596,8 @@ void QNetworkAccessHttpBackend::postRequest()
     connect(httpReply, SIGNAL(finishedWithError(QNetworkReply::NetworkError,QString)),
             SLOT(httpError(QNetworkReply::NetworkError,QString)));
     connect(httpReply, SIGNAL(headerChanged()), SLOT(replyHeaderChanged()));
+    connect(httpReply, SIGNAL(cacheCredentials(QHttpNetworkRequest,QAuthenticator*)),
+            SLOT(httpCacheCredentials(QHttpNetworkRequest,QAuthenticator*)));
 }
 
 void QNetworkAccessHttpBackend::invalidateCache()

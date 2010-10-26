@@ -130,8 +130,6 @@ Q_SIGNALS:
 #endif
     void authenticationRequired(const QHttpNetworkReply*, const QHttpNetworkRequest &request, QAuthenticator *authenticator,
                                 const QHttpNetworkConnection *connection = 0);
-    void cacheCredentials(const QHttpNetworkRequest &request, QAuthenticator *authenticator,
-                                const QHttpNetworkConnection *connection = 0);
     void error(QNetworkReply::NetworkError errorCode, const QString &detail = QString());
 
 private:

@@ -151,6 +151,7 @@ Q_SIGNALS:
     void headerChanged();
     void dataReadProgress(int done, int total);
     void dataSendProgress(qint64 done, qint64 total);
+    void cacheCredentials(const QHttpNetworkRequest &request, QAuthenticator *authenticator);
 
 private:
     Q_DECLARE_PRIVATE(QHttpNetworkReply)
