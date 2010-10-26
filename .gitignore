@@ -51,6 +51,7 @@ Makefile*
 *.prl
 *.app
 *.pro.user
+*.qmlproject.user
 *.gcov
 bin/Qt*.dll
 bin/assistant*

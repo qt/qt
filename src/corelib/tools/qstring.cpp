@@ -579,7 +579,7 @@ const QString::Null QString::null = { };
     strings from a string list that contain a particular substring or
     that match a particular QRegExp using the QStringList::filter()
     function.
-:
+
     \section1 Querying String Data
 
     If you want to see if a QString starts or ends with a particular
@@ -3906,7 +3906,7 @@ QString QString::fromLocal8Bit(const char *str, int size)
 
 /*!
     Returns a QString initialized with the first \a size characters
-    of the 8-bit string \a str.
+    from the string \a str.
 
     If \a size is -1 (default), it is taken to be qstrlen(\a
     str).
@@ -4290,7 +4290,7 @@ QString& QString::fill(QChar ch, int size)
     Returns the number of characters in this string.  Equivalent to
     size().
 
-    \sa setLength()
+    \sa resize()
 */
 
 /*!

@@ -1553,10 +1553,10 @@ QString VcprojGenerator::fixFilename(QString ofile) const
     if(slashfind == -1) {
         ofile = ofile.replace('-', '_');
     } else {
-        int hypenfind = ofile.indexOf('-', slashfind);
-        while (hypenfind != -1 && slashfind < hypenfind) {
-            ofile = ofile.replace(hypenfind, 1, '_');
-            hypenfind = ofile.indexOf('-', hypenfind + 1);
+        int hyphenfind = ofile.indexOf('-', slashfind);
+        while (hyphenfind != -1 && slashfind < hyphenfind) {
+            ofile = ofile.replace(hyphenfind, 1, '_');
+            hyphenfind = ofile.indexOf('-', hyphenfind + 1);
         }
     }
     return ofile;

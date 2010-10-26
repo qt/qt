@@ -242,7 +242,7 @@ bool QDBusMetaType::marshall(QDBusArgument &arg, int id, const void *data)
         QReadLocker locker(customTypesLock());
         QVector<QDBusCustomTypeInfo> *ct = customTypes();
         if (id >= ct->size())
-            return false;       // non-existant
+            return false;       // non-existent
 
         const QDBusCustomTypeInfo &info = (*ct).at(id);
         if (!info.marshall) {
@@ -271,7 +271,7 @@ bool QDBusMetaType::demarshall(const QDBusArgument &arg, int id, void *data)
         QReadLocker locker(customTypesLock());
         QVector<QDBusCustomTypeInfo> *ct = customTypes();
         if (id >= ct->size())
-            return false;       // non-existant
+            return false;       // non-existent
 
         const QDBusCustomTypeInfo &info = (*ct).at(id);
         if (!info.demarshall) {

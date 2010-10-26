@@ -601,7 +601,7 @@ QRect LayoutHelper::itemInfo(QLayout *lt, const QWidget *widget) const
         }
     }
 
-    // Grid Layout state. Datatypically store the state of a GridLayout as a map of
+    // Grid Layout state. Datatype storing the state of a GridLayout as a map of
     // widgets to QRect(columns, rows) and size. Used to store the state for undo operations
     // that do not change the widgets within the layout; also provides some manipulation
     // functions and ability to apply the state to a layout provided its widgets haven't changed.
@@ -634,7 +634,11 @@ QRect LayoutHelper::itemInfo(QLayout *lt, const QWidget *widget) const
         static CellStates cellStates(const QList<QRect> &rects, int numRows, int numColumns);
 
         typedef QMap<QWidget *, QRect> WidgetItemMap;
+        typedef QMap<QWidget *, Qt::Alignment> WidgetAlignmentMap;
+
         WidgetItemMap widgetItemMap;
+        WidgetAlignmentMap widgetAlignmentMap;
+
         int rowCount;
         int colCount;
     };
@@ -706,8 +710,11 @@ QRect LayoutHelper::itemInfo(QLayout *lt, const QWidget *widget) const
         const int count = l->count();
         for (int i = 0; i < count; i++) {
             QLayoutItem *item = l->itemAt(i);
-            if (!LayoutInfo::isEmptyItem(item))
+            if (!LayoutInfo::isEmptyItem(item)) {
                 widgetItemMap.insert(item->widget(), gridItemInfo(l, i));
+                if (item->alignment())
+                    widgetAlignmentMap.insert(item->widget(), item->alignment());
+            }
         }
     }
 
@@ -743,7 +750,8 @@ QRect LayoutHelper::itemInfo(QLayout *lt, const QWidget *widget) const
         const LayoutItemRectMap::const_iterator icend = itemMap.constEnd();
         for (LayoutItemRectMap::const_iterator it = itemMap.constBegin(); it != icend; ++it) {
             const QRect info = it.value();
-            grid->addItem(it.key(), info.y(), info.x(), info.height(), info.width());
+            const Qt::Alignment alignment = widgetAlignmentMap.value(it.key()->widget(), Qt::Alignment(0));
+            grid->addItem(it.key(), info.y(), info.x(), info.height(), info.width(), alignment);
         }
         // create spacers
         const CellStates cs = cellStates(itemMap.values(), rowCount, colCount);

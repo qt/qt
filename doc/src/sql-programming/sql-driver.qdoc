@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -153,7 +153,7 @@
 
     \snippet doc/src/snippets/code/doc_src_sql-driver.qdoc 3
 
-    After installing Qt, as described in the \l{Installing Qt on X11
+    After installing Qt, as described in the \l{Installing Qt for X11
     Platforms} document, you also need to install the plugin in the
     standard location:
 
@@ -478,7 +478,7 @@
 
     \snippet doc/src/snippets/code/doc_src_sql-driver.qdoc 13
 
-    After installing Qt, as described in the \l{Installing Qt on X11 Platforms} document,
+    After installing Qt, as described in the \l{Installing Qt for X11 Platforms} document,
     you also need to install the plugin in the standard location:
 
     \snippet doc/src/snippets/code/doc_src_sql-driver.qdoc 14
@@ -565,7 +565,7 @@
 
     \snippet doc/src/snippets/code/doc_src_sql-driver.qdoc 18
 
-    After installing Qt, as described in the \l{Installing Qt on X11 Platforms} document,
+    After installing Qt, as described in the \l{Installing Qt for X11 Platforms} document,
     you also need to install the plugin in the standard location:
 
     \snippet doc/src/snippets/code/doc_src_sql-driver.qdoc 19
@@ -638,7 +638,7 @@
 
     \snippet doc/src/snippets/code/doc_src_sql-driver.qdoc 21
 
-    After installing Qt, as described in the \l{Installing Qt on X11 Platforms} document,
+    After installing Qt, as described in the \l{Installing Qt for X11 Platforms} document,
     you also need to install the plugin in the standard location:
 
     \snippet doc/src/snippets/code/doc_src_sql-driver.qdoc 22

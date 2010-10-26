@@ -93,6 +93,7 @@ public:
 
     QDeclarativePixmapData *data;
     QDeclarativePixmapReader *reader;
+    QSize requestSize;
 
     bool loading;
     int redirectCount;
@@ -366,7 +367,7 @@ void QDeclarativePixmapReader::networkRequestDone(QNetworkReply *reply)
             QByteArray all = reply->readAll();
             QBuffer buff(&all);
             buff.open(QIODevice::ReadOnly);
-            if (!readImage(reply->url(), &buff, &image, &errorString, &readSize, job->data->requestSize)) {
+            if (!readImage(reply->url(), &buff, &image, &errorString, &readSize, job->requestSize)) {
                 error = QDeclarativePixmapReply::Decoding;
             }
         }
@@ -683,7 +684,7 @@ void QDeclarativePixmapStore::timerEvent(QTimerEvent *)
 }
 
 QDeclarativePixmapReply::QDeclarativePixmapReply(QDeclarativePixmapData *d)
-: data(d), reader(0), loading(false), redirectCount(0)
+: data(d), reader(0), loading(false), redirectCount(0), requestSize(d->requestSize)
 {
     if (finishedIndex == -1) {
         finishedIndex = QDeclarativePixmapReply::staticMetaObject.indexOfSignal("finished()");

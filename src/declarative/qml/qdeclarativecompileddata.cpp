@@ -205,7 +205,7 @@ const QMetaObject *QDeclarativeCompiledData::TypeReference::metaObject() const
         return type->metaObject();
     } else {
         Q_ASSERT(component);
-        return static_cast<QDeclarativeComponentPrivate *>(QObjectPrivate::get(component))->cc->root;
+        return component->root;
     }
 }
 

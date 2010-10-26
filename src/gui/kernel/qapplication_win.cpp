@@ -115,12 +115,25 @@ extern void qt_wince_hide_taskbar(HWND hwnd); //defined in qguifunctions_wince.c
 #  if defined(Q_WS_WINCE)
 #    include <bldver.h>
 #  endif
-#  include <winable.h>
+#  if !defined(Q_WS_WINCE)
+#    include <winable.h>
+#  endif
+#endif
+
+#ifndef QT_NO_GESTURES
+#  ifndef GID_ZOOM
+#    define GID_ZOOM              3
+#    define GID_TWOFINGERTAP      6
+#    define GID_PRESSANDTAP       7
+#    define GID_ROLLOVER          GID_PRESSANDTAP
+#  endif
 #endif
 
 #ifndef WM_TOUCH
 #  define WM_TOUCH 0x0240
+#endif
 
+#ifndef TOUCHEVENTF_MOVE
 #  define TOUCHEVENTF_MOVE       0x0001
 #  define TOUCHEVENTF_DOWN       0x0002
 #  define TOUCHEVENTF_UP         0x0004

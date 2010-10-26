@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -27,8 +27,8 @@
 
 /*!
     \page platform-notes-vxworks.html
-    \title Platform Notes - VxWorks
-    \contentspage Platform Notes
+    \title Platform and Compiler Notes - VxWorks
+    \contentspage Platform and Compiler Notes
     \target VxWorks
 
     \note VxWorks is a community supported platform. See the
@@ -143,8 +143,8 @@
 
 /*!
     \page platform-notes-qnx.html
-    \title Platform Notes - QNX
-    \contentspage Platform Notes
+    \title Platform and Compiler Notes - QNX
+    \contentspage Platform and Compiler Notes
     \target QNX
 
     \note QNX is a community supported platform. See the

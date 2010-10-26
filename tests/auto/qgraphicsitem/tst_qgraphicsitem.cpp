@@ -466,6 +466,7 @@ private slots:
     void doNotMarkFullUpdateIfNotInScene();
     void itemDiesDuringDraggingOperation();
     void QTBUG_12112_focusItem();
+    void QTBUG_13473_sceneposchange();
 
 private:
     QList<QGraphicsItem *> paintedItems;
@@ -9067,6 +9068,7 @@ void tst_QGraphicsItem::focusScope()
     QVERIFY(!scope2->hasFocus());
     QVERIFY(scope1->hasFocus());
     scope2->setFocus();
+    QVERIFY(scope2->hasFocus());
     scope3->setFocus();
     QVERIFY(scope3->hasFocus());
 
@@ -11016,6 +11018,32 @@ void tst_QGraphicsItem::QTBUG_12112_focusItem()
     item2->setFocus();
     QVERIFY(!item1->focusItem());
     QVERIFY(item2->focusItem());
+}
+
+void tst_QGraphicsItem::QTBUG_13473_sceneposchange()
+{
+    ScenePosChangeTester* parent = new ScenePosChangeTester;
+    ScenePosChangeTester* child = new ScenePosChangeTester(parent);
+
+    // parent's disabled ItemSendsGeometryChanges flag must not affect
+    // child's scene pos change notifications
+    parent->setFlag(QGraphicsItem::ItemSendsGeometryChanges, false);
+    child->setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
+
+    QGraphicsScene scene;
+    scene.addItem(parent);
+
+    // ignore uninteresting changes
+    parent->clear();
+    child->clear();
+
+    // move
+    parent->moveBy(1.0, 1.0);
+    QCOMPARE(child->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
+
+    // transform
+    parent->setTransform(QTransform::fromScale(0.5, 0.5));
+    QCOMPARE(child->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 2);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

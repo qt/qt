@@ -8,7 +8,6 @@ isEmpty(QT_MAJOR_VERSION) {
 } else {
    VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 }
-mac:!contains(QMAKE_EXT_C, .mm):QMAKE_EXT_C += .mm
 
 #load up the headers info
 CONFIG += qt_install_headers
@@ -185,8 +184,8 @@ include(qt_targets.pri)
 win32:DEFINES+=_USE_MATH_DEFINES
 
 symbian {
-    # Make partial upgrade SIS file for all dll's except webkit
-    !contains(TARGET.UID3, 0x200267C2):!contains(TARGET.UID3, 0xE00267C2) {
+    # Make partial upgrade SIS file for all dll's except webkit and s60main
+    !contains(TARGET.UID3, 0x200267C2):!contains(TARGET.UID3, 0xE00267C2):!contains(TARGET.UID3, 0x2001E61F):!contains(TARGET.UID3, 0xE001E61F) {
         # Partial upgrade SIS file
         vendorinfo = \
             "; Localised Vendor name" \
@@ -195,8 +194,11 @@ symbian {
             "; Unique Vendor name" \
             ":\"Nokia, Qt\"" \
             " "
+        isEmpty(QT_LIBINFIX): PARTIAL_UPGRADE_UID = 0x2001E61C
+        else: PARTIAL_UPGRADE_UID = 0xE001E61C
+
         pu_header = "; Partial upgrade package for testing $${TARGET} changes without reinstalling everything" \
-                    "$${LITERAL_HASH}{\"$${TARGET}\"}, (0x2001E61C), $${QT_MAJOR_VERSION},$${QT_MINOR_VERSION},$${QT_PATCH_VERSION}, TYPE=PU"
+                    "$${LITERAL_HASH}{\"$${TARGET}\"}, ($$PARTIAL_UPGRADE_UID), $${QT_MAJOR_VERSION},$${QT_MINOR_VERSION},$${QT_PATCH_VERSION}, TYPE=PU"
         partial_upgrade.pkg_prerules = pu_header vendorinfo
         partial_upgrade.files = $$QMAKE_LIBDIR_QT/$${TARGET}.dll
         partial_upgrade.path = c:/sys/bin

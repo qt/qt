@@ -77,6 +77,7 @@ public:
 private:
     QAudioFormat m_format;
     qint64 m_dataLength;
+    qint64 m_dataPosition;
 };
 
 #endif

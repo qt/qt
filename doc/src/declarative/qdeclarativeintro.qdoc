@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -37,7 +37,7 @@ interface is specified as a tree of objects with properties.
 
 This introduction is meant for those with little or no programming
 experience. JavaScript is used as a scripting language in QML, so you may want
-to learn a bit more about it (\l{JavaScript: The Definitive Guide}) before diving
+to learn a bit more about it (\l{Javascript Guide}) before diving
 deeper into QML. It's also helpful to have a basic understanding of other web
 technologies like HTML and CSS, but it's not required.
 
@@ -65,8 +65,8 @@ types always begin with a capital letter. In the above example, there are
 two objects, a \l Rectangle, and an \l Image. Between the braces, we can specify
 information about the object, such as its properties.
 
-Properties are specified as \c {property: value}. In the above example, we 
-can see the Image has a property named \c source, which has been assigned the 
+Properties are specified as \c {property: value}. In the above example, we
+can see the Image has a property named \c source, which has been assigned the
 value \c "pics/logo.png". The property and its value are separated by a colon.
 
 Properties can be specified one-per-line:

@@ -1687,7 +1687,7 @@ void QTextLine::setLineWidth(qreal width)
     if (line.length
         && line.textWidth <= line.width
         && line.from + line.length == eng->layoutData->string.length())
-        // no need to do anything if the line is already layouted and the last one. This optimisation helps
+        // no need to do anything if the line is already layouted and the last one. This optimization helps
         // when using things in a single line layout.
         return;
     line.length = 0;

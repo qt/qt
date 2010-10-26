@@ -2,7 +2,7 @@ import QtQuick 1.0
 
 Item {
     property int a: 0
-    property int b: 0
+    property int b: 14
 
     function b() { return 11; }
     function c() { return 33; }
@@ -21,7 +21,7 @@ Item {
         id: nested
         property int a: 1
         property int test: a.value
-        property int test2: b()
+        property int test2: b
         property int test3: c.value
     }
 
@@ -30,8 +30,8 @@ Item {
     property int test1: a.value 
     property alias test2: nested.test
 
-    // methods takes precedence over local, and root properties
-    property int test3: b()
+    // properties takes precedence over local, and root methods
+    property int test3: b
     property alias test4: nested.test2
 
     // id takes precedence over methods

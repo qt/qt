@@ -140,11 +140,9 @@ QSizeF *QGraphicsLayoutItemPrivate::effectiveSizeHints(const QSizeF &constraint)
     if (!sizeHintCacheDirty && cachedConstraint == constraint)
         return cachedSizeHints;
 
-    const bool hasConstraint = constraint.width() >= 0 || constraint.height() >= 0;
-
     for (int i = 0; i < Qt::NSizeHints; ++i) {
         cachedSizeHints[i] = constraint;
-        if (userSizeHints && !hasConstraint)
+        if (userSizeHints)
             combineSize(cachedSizeHints[i], userSizeHints[i]);
     }
 

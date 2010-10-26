@@ -70,7 +70,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_DECLARATIVE_EXPORT QDeclarativeValueType : public QObject
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeValueType : public QObject
 {
     Q_OBJECT
 public:
@@ -81,7 +81,7 @@ public:
     virtual void setValue(QVariant) = 0;
 };
 
-class Q_DECLARATIVE_EXPORT QDeclarativeValueTypeFactory
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeValueTypeFactory
 {
 public:
     QDeclarativeValueTypeFactory();

@@ -37,6 +37,8 @@ Third party components
 QtCore
 ------
  - Removed support for QT_NO_THREAD define for QHostInfo.
+ - Optimized plugin loading on ELF platforms.
+   Print failure reason at runtime with QT_DEBUG_PLUGINS=1 in environment.
 
 QtGui
 -----

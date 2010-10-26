@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 
 #define NS_NLA 15
 
+#ifndef NLA_NAMESPACE_GUID
 enum NLA_BLOB_DATA_TYPE {
     NLA_RAW_DATA = 0,
     NLA_INTERFACE = 1,
@@ -115,6 +116,8 @@ struct NLA_BLOB {
         } ICS;
     } data;
 };
+#endif // NLA_NAMESPACE_GUID
+
 #endif
 
 enum NDIS_MEDIUM {

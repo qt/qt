@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -157,7 +157,7 @@
        \l{QtUiTools}{dynamic user interface building}.
     \o New \l{Proxy Models}{proxy models} to enable view-specific sorting and
        filtering of data displayed using item views.
-    \o Support for \l{Installing Qt on Mac OS X}{universal binaries} on Mac OS X.
+    \o Support for \l{Installing Qt for Mac OS X}{universal binaries} on Mac OS X.
     \o Additional features for developers using \l{QtOpenGL}{OpenGL}, such as
     support for pixel and sample buffers.
     \o A flexible \l{QSyntaxHighlighter}{syntax highlighting class} based on the

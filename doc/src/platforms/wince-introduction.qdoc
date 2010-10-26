@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -29,7 +29,7 @@
     \group qtce
     \title Qt for Windows CE
     \ingroup qt-embedded
-    \brief Documents related to Qt on Windows CE
+    \brief Documents related to Qt for Windows CE
 
     Qt for Windows CE is a C++ framework for GUI and application development
     for embedded devices running Windows CE. It runs on a variety of processors,
@@ -41,7 +41,7 @@
     \o
      \list
         \o \l {Qt for Windows CE Requirements}
-        \o \l {Installing Qt on Windows CE}
+        \o \l {Installing Qt for Windows CE}
         \o \l {Windows CE - Introduction to using Qt}{Introduction to using Qt}
     \endlist
     \o
@@ -81,7 +81,7 @@
 
     \section1 Installing Qt
 
-    Follow the instructions found in \l{Installing Qt on Windows CE}.
+    Follow the instructions found in \l{Installing Qt for Windows CE}.
 
     \section1 Building your own applications
 

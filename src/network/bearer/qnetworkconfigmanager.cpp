@@ -229,8 +229,8 @@ QNetworkConfigurationManager::QNetworkConfigurationManager( QObject* parent )
 QNetworkConfigurationManager::~QNetworkConfigurationManager()
 {
     QNetworkConfigurationManagerPrivate *priv = connManager();
-
-    priv->disablePolling();
+    if (priv)
+        priv->disablePolling();
 }
 
 
@@ -245,7 +245,11 @@ QNetworkConfigurationManager::~QNetworkConfigurationManager()
 */
 QNetworkConfiguration QNetworkConfigurationManager::defaultConfiguration() const
 {
-    return connManager()->defaultConfiguration();
+    QNetworkConfigurationManagerPrivate *priv = connManager();
+    if (priv)
+        return priv->defaultConfiguration();
+
+    return QNetworkConfiguration();
 }
 
 /*!
@@ -275,7 +279,11 @@ QNetworkConfiguration QNetworkConfigurationManager::defaultConfiguration() const
 */
 QList<QNetworkConfiguration> QNetworkConfigurationManager::allConfigurations(QNetworkConfiguration::StateFlags filter) const
 {
-    return connManager()->allConfigurations(filter);
+    QNetworkConfigurationManagerPrivate *priv = connManager();
+    if (priv)
+        return priv->allConfigurations(filter);
+
+    return QList<QNetworkConfiguration>();
 }
 
 /*!
@@ -286,7 +294,11 @@ QList<QNetworkConfiguration> QNetworkConfigurationManager::allConfigurations(QNe
 */
 QNetworkConfiguration QNetworkConfigurationManager::configurationFromIdentifier(const QString &identifier) const
 {
-    return connManager()->configurationFromIdentifier(identifier);
+    QNetworkConfigurationManagerPrivate *priv = connManager();
+    if (priv)
+        return priv->configurationFromIdentifier(identifier);
+
+    return QNetworkConfiguration();
 }
 
 /*!
@@ -301,7 +313,11 @@ QNetworkConfiguration QNetworkConfigurationManager::configurationFromIdentifier(
 */
 bool QNetworkConfigurationManager::isOnline() const
 {
-    return connManager()->isOnline();
+    QNetworkConfigurationManagerPrivate *priv = connManager();
+    if (priv)
+        return priv->isOnline();
+
+    return false;
 }
 
 /*!
@@ -309,7 +325,11 @@ bool QNetworkConfigurationManager::isOnline() const
 */
 QNetworkConfigurationManager::Capabilities QNetworkConfigurationManager::capabilities() const
 {
-    return connManager()->capabilities();
+    QNetworkConfigurationManagerPrivate *priv = connManager();
+    if (priv)
+        return priv->capabilities();
+
+    return QNetworkConfigurationManager::Capabilities(0);
 }
 
 /*!
@@ -328,7 +348,9 @@ QNetworkConfigurationManager::Capabilities QNetworkConfigurationManager::capabil
 */
 void QNetworkConfigurationManager::updateConfigurations()
 {
-    connManager()->performAsyncConfigurationUpdate();
+    QNetworkConfigurationManagerPrivate *priv = connManager();
+    if (priv)
+        priv->performAsyncConfigurationUpdate();
 }
 
 #include "moc_qnetworkconfigmanager.cpp"

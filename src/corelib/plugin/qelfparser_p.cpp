@@ -139,7 +139,7 @@ int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library
     qelfhalf_t e_shtrndx   = read<qelfhalf_t> (data);
     data += sizeof(qelfhalf_t); // e_shtrndx
 
-    if ((e_shnum * e_shentsize) > fdlen) {
+    if ((quint32)(e_shnum * e_shentsize) > fdlen) {
         if (lib)
             lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(library)
                                .arg(QLatin1String("announced %2 sections, each %3 bytes, exceed file size"))
@@ -165,7 +165,7 @@ int QElfParser::parse(const char *dataStart, ulong fdlen, const QString &library
     parseSectionHeader(dataStart + soff, &strtab);
     m_stringTableFileOffset = strtab.offset;
 
-    if ((m_stringTableFileOffset + e_shentsize) >= fdlen || m_stringTableFileOffset == 0) {
+    if ((quint32)(m_stringTableFileOffset + e_shentsize) >= fdlen || m_stringTableFileOffset == 0) {
         if (lib)
             lib->errorString = QLibrary::tr("'%1' is an invalid ELF object (%2)").arg(library)
                                .arg(QLatin1String("string table seems to be at %1"))

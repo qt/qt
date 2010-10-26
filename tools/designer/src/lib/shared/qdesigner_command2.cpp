@@ -154,6 +154,68 @@ QString MorphLayoutCommand::formatDescription(QDesignerFormEditorInterface * /* 
     return QApplication::translate("Command", "Change layout of '%1' from %2 to %3").arg(widgetName, oldName, newName);
 }
 
+LayoutAlignmentCommand::LayoutAlignmentCommand(QDesignerFormWindowInterface *formWindow) :
+    QDesignerFormWindowCommand(QApplication::translate("Command", "Change layout alignment"), formWindow),
+    m_newAlignment(0), m_oldAlignment(0), m_widget(0)
+{
+}
+
+bool LayoutAlignmentCommand::init(QWidget *w, Qt::Alignment alignment)
+{
+    bool enabled;
+    m_newAlignment = alignment;
+    m_oldAlignment = LayoutAlignmentCommand::alignmentOf(core(), w, &enabled);
+    m_widget = w;
+    return enabled;
+}
+
+void LayoutAlignmentCommand::redo()
+{
+    LayoutAlignmentCommand::applyAlignment(core(), m_widget, m_newAlignment);
+}
+
+void LayoutAlignmentCommand::undo()
+{
+    LayoutAlignmentCommand::applyAlignment(core(), m_widget, m_oldAlignment);
+}
+
+// Find out alignment and return whether command is enabled.
+Qt::Alignment LayoutAlignmentCommand::alignmentOf(const QDesignerFormEditorInterface *core, QWidget *w, bool *enabledIn)
+{
+    bool managed;
+    QLayout *layout;
+
+    if (enabledIn)
+        *enabledIn = false;
+    // Can only work on a managed layout
+    const LayoutInfo::Type type = LayoutInfo::laidoutWidgetType(core, w, &managed, &layout);
+    const bool enabled = layout && managed &&
+                         (type == LayoutInfo::HBox || type == LayoutInfo::VBox
+                          || type == LayoutInfo::Grid);
+    if (!enabled)
+        return Qt::Alignment(0);
+    // Get alignment
+    const int index = layout->indexOf(w);
+    Q_ASSERT(index >= 0);
+    if (enabledIn)
+        *enabledIn = true;
+    return layout->itemAt(index)->alignment();
+}
+
+void LayoutAlignmentCommand::applyAlignment(const QDesignerFormEditorInterface *core, QWidget *w, Qt::Alignment a)
+{
+    // Find layout and apply to item
+    QLayout *layout;
+    LayoutInfo::laidoutWidgetType(core, w, 0, &layout);
+    if (layout) {
+        const int index = layout->indexOf(w);
+        if (index >= 0) {
+            layout->itemAt(index)->setAlignment(a);
+            layout->update();
+        }
+    }
+}
+
 } // namespace qdesigner_internal
 
 QT_END_NAMESPACE

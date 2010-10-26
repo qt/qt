@@ -3504,7 +3504,7 @@ void QSettings::setPath(Format format, Scope scope, const QString &path)
     \threadsafe
 
     Registers a custom storage format. On success, returns a special
-    Format value that can then be passed to the QSettings constuctor.
+    Format value that can then be passed to the QSettings constructor.
     On failure, returns InvalidFormat.
 
     The \a extension is the file

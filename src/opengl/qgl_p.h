@@ -286,7 +286,9 @@ public:
         DDSTextureCompression   = 0x00008000,
         ETC1TextureCompression  = 0x00010000,
         PVRTCTextureCompression = 0x00020000,
-        FragmentShader          = 0x00040000
+        FragmentShader          = 0x00040000,
+        ElementIndexUint        = 0x00080000,
+        Depth24                 = 0x00100000
     };
     Q_DECLARE_FLAGS(Extensions, Extension)
 
@@ -345,7 +347,7 @@ public:
 
     void setVertexAttribArrayEnabled(int arrayIndex, bool enabled = true);
     void syncGlState(); // Makes sure the GL context's state is what we think it is
-    void swapRegion(const QRegion *region);
+    void swapRegion(const QRegion &region);
 
 #if defined(Q_WS_WIN)
     void updateFormatVersion();

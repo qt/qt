@@ -144,6 +144,39 @@ static void destroy_current_thread_data_key()
 }
 Q_DESTRUCTOR_FUNCTION(destroy_current_thread_data_key)
 
+
+// Utility functions for getting, setting and clearing thread specific data.
+// In Symbian, TLS access is significantly faster than pthread_getspecific.
+// However Symbian does not have the thread destruction cleanup functionality
+// that pthread has, so pthread_setspecific is also used.
+static QThreadData *get_thread_data()
+{
+#ifdef Q_OS_SYMBIAN
+    return reinterpret_cast<QThreadData *>(Dll::Tls());
+#else
+    pthread_once(&current_thread_data_once, create_current_thread_data_key);
+    return reinterpret_cast<QThreadData *>(pthread_getspecific(current_thread_data_key));
+#endif
+}
+
+static void set_thread_data(QThreadData *data)
+{
+#ifdef Q_OS_SYMBIAN
+    qt_symbian_throwIfError(Dll::SetTls(data));
+#endif
+    pthread_once(&current_thread_data_once, create_current_thread_data_key);
+    pthread_setspecific(current_thread_data_key, data);
+}
+
+static void clear_thread_data()
+{
+#ifdef Q_OS_SYMBIAN
+    Dll::FreeTls();
+#endif
+    pthread_setspecific(current_thread_data_key, 0);
+}
+
+
 #ifdef Q_OS_SYMBIAN
 static void init_symbian_thread_handle(RThread &thread)
 {
@@ -160,26 +193,24 @@ static void init_symbian_thread_handle(RThread &thread)
 
 QThreadData *QThreadData::current()
 {
-    pthread_once(&current_thread_data_once, create_current_thread_data_key);
-
-    QThreadData *data = reinterpret_cast<QThreadData *>(pthread_getspecific(current_thread_data_key));
+    QThreadData *data = get_thread_data();
     if (!data) {
         void *a;
         if (QInternal::activateCallbacks(QInternal::AdoptCurrentThread, &a)) {
             QThread *adopted = static_cast<QThread*>(a);
             Q_ASSERT(adopted);
             data = QThreadData::get2(adopted);
-            pthread_setspecific(current_thread_data_key, data);
+            set_thread_data(data);
             adopted->d_func()->running = true;
             adopted->d_func()->finished = false;
             static_cast<QAdoptedThread *>(adopted)->init();
         } else {
             data = new QThreadData;
-            pthread_setspecific(current_thread_data_key, data);
             QT_TRY {
+                set_thread_data(data);
                 data->thread = new QAdoptedThread(data);
             } QT_CATCH(...) {
-                pthread_setspecific(current_thread_data_key, 0);
+                clear_thread_data();
                 data->deref();
                 data = 0;
                 QT_RETHROW;
@@ -270,8 +301,7 @@ void *QThreadPrivate::start(void *arg)
     User::SetCritical(User::EProcessCritical);
 #endif
 
-    pthread_once(&current_thread_data_once, create_current_thread_data_key);
-    pthread_setspecific(current_thread_data_key, data);
+    set_thread_data(data);
 
     data->ref();
     data->quitNow = false;

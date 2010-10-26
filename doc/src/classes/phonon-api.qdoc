@@ -4114,6 +4114,13 @@
 */
 
 /*!
+    \fn Phonon::VideoWidget::snapshot() const
+    \since 4.7
+
+    Returns a snapshot of the current frame shown in the widget.
+*/
+
+/*!
     \enum Phonon::VideoWidget::ScaleMode
 
     The ScaleMode enum describes how to treat aspect ratio during
@@ -4302,6 +4309,22 @@
 /*!
     \fn virtual QWidget *Phonon::VideoWidgetInterface::widget() = 0
     \internal
+*/
+
+/*!
+    \class Phonon::VideoWidgetInterface44
+    \inmodule Phonon
+    \since 4.7
+*/
+
+/*!
+    \fn Phonon::VideoWidgetInterface44::snapshot() const
+*/
+
+/*!
+    \typedef Phonon::VideoWidgetInterfaceLatest
+    \inmodule Phonon
+    \since 4.7
 */
 
 /*!
@@ -5021,3 +5044,103 @@
     \internal
 */
 
+/*!
+    \class Phonon::PulseSupport
+    \inmodule Phonon
+    \since 4.7
+    \internal
+*/
+
+/*!
+    \class Phonon::AudioDataOutput
+    \inmodule Phonon
+    \since 4.7
+
+    \brief The AudioDataOutput class provides access to audio data.
+
+    This class is used to obtain audio data, typically for the purpose of
+    visualizing it.
+
+    Although it is not designed for realtime performance, the latencies
+    associated with accessing the data should be low enough for applications
+    that provide visualizations of the data. This class can also be used to
+    save the audio data for further processing.
+*/
+
+/*!
+    \enum Phonon::AudioDataOutput::Channel
+
+    This enum describes the channel audio data belongs to.
+
+    \value LeftChannel
+    \value RightChannel
+    \value CenterChannel
+    \value LeftSurroundChannel
+    \value RightSurroundChannel
+    \value SubwooferChannel
+*/
+
+/*!
+    \property Phonon::AudioDataOutput::dataSize
+    \brief the number of samples passed via the dataReady() signal.
+*/
+
+/*!
+    \fn int Phonon::AudioDataOutput::sampleRate() const
+
+    Returns the sample rate measured in Hertz, as reported by the backend.
+    If the backend is unavailable -1 is returned.
+*/
+
+/*!
+    \fn void Phonon::AudioDataOutput::endOfMedia(int remainingSamples)
+
+    This signal is emitted before the final dataReady() signal is emitted for
+    a media. The \a remainingSamples value sent by the signal contains the
+    number of samples that will be sent in the final dataReady() signal for
+    the media.
+*/
+
+/*!
+    \fn Phonon::AudioDataOutput::dataReady(const QMap<Phonon::AudioDataOutput::Channel, QVector<qint16> > &data)
+
+    This signal is emitted whenever there is data available to read. The
+    \a data sent by the signal is supplied in the form of a map that holds the
+    data for different output channels.
+*/
+
+/*!
+    \fn Phonon::AudioDataOutputPrivate::AudioDataOutputPrivate()
+    \internal
+*/
+
+/*!
+    \fn Phonon::AudioDataOutputInterface::~AudioDataOutputInterface()
+
+    Destroys the data interface.
+*/
+
+/*!
+    \fn Phonon::AudioDataOutputInterface::frontendObject() const
+    \internal
+*/
+
+/*!
+    \fn Phonon::AudioDataOutputInterface::setFrontendObject(AudioDataOutput *)
+    \internal
+*/
+
+/*!
+    \fn Phonon::GlobalConfigPrivate::GlobalConfigPrivate()
+    \internal
+*/
+
+/*!
+    \fn Phonon::GlobalConfigPrivate::~GlobalConfigPrivate()
+    \internal
+*/
+
+/*!
+    \fn Phonon::SwiftSlider::~SwiftSlider()
+    \internal
+*/

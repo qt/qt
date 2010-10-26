@@ -65,6 +65,7 @@ class QDeclarativeEngine;
 class QScriptContext;
 class QScriptEngine;
 class QDeclarativeContextData;
+class MethodData;
 
 class Q_AUTOTEST_EXPORT QDeclarativeObjectMethodScriptClass : public QScriptDeclarativeClass
 {
@@ -81,6 +82,14 @@ protected:
 
 private:
     int enumType(const QMetaObject *, const QString &);
+
+    Value callPrecise(QObject *, const QDeclarativePropertyCache::Data &, QScriptContext *);
+    Value callOverloaded(MethodData *, QScriptContext *);
+    Value callMethod(QObject *, int index, int returnType, int argCount, int *argTypes, QScriptContext *ctxt);
+
+    int matchScore(const QScriptValue &, int, const QByteArray &);
+    QDeclarativePropertyCache::Data *relatedMethod(QObject *, QDeclarativePropertyCache::Data *current, 
+                                                   QDeclarativePropertyCache::Data &dummy);
 
     PersistentIdentifier m_connectId;
     PersistentIdentifier m_disconnectId;

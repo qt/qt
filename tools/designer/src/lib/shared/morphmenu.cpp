@@ -193,7 +193,7 @@ static QStringList classesOfCategory(MorphCategory cat)
                 << QLatin1String("QSpinBox") << QLatin1String("QDoubleSpinBox");
             break;
         case MorphTextEdit:
-             l << QLatin1String("QTextEdit") << QLatin1String("QPlainTextEdit");
+             l << QLatin1String("QTextEdit") << QLatin1String("QPlainTextEdit") << QLatin1String("QTextBrowser");
             break;
         }
     }

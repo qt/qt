@@ -112,6 +112,9 @@ struct AygSIPINFO
 #ifndef SPI_GETSIPINFO
 #define SPI_GETSIPINFO 225
 #endif
+#ifndef SPI_GETPLATFORMTYPE
+#define SPI_GETPLATFORMTYPE 257
+#endif
 
 typedef BOOL (*AygInitDialog)(AygSHINITDLGINFO*);
 typedef BOOL (*AygFullScreen)(HWND, DWORD);

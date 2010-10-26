@@ -59,7 +59,12 @@
 static QString fixPathToEpocOS(const QString &src)
 {
     QString ret = Option::fixPathToTargetOS(src);
-    return ret.replace('/', '\\');
+
+    bool pathHasDriveLetter = false;
+    if (ret.size() > 1)
+        pathHasDriveLetter = (ret.at(1) == QLatin1Char(':'));
+
+    return pathHasDriveLetter ? ret.replace('/', '\\') : QDir::toNativeSeparators(ret);
 }
 
 static bool isPlugin(const QFileInfo& info, const QString& devicePath)

@@ -837,11 +837,8 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
         s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QLineEdit");
     QApplication::setPalette(widgetPalette, "QTextEdit");
-    widgetPalette = *palette;
-
-    widgetPalette.setColor(QPalette::HighlightedText,
-        s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QComboBox");
+    QApplication::setPalette(widgetPalette, "QSpinBox");
     widgetPalette = *palette;
 
     widgetPalette.setColor(QPalette::WindowText, s60Color(QS60StyleEnums::CL_QsnTextColors, 7, 0));
@@ -2620,6 +2617,8 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
             break;
     }
+    if (!sz.isValid())
+        sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);
     return sz;
 }
 

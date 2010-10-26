@@ -64,7 +64,7 @@ class NestedListModel;
 class QDeclarativeListModelWorkerAgent;
 struct ModelNode;
 class FlatListScriptClass;
-class Q_DECLARATIVE_EXPORT QDeclarativeListModel : public QListModelInterface
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeListModel : public QListModelInterface
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
