@@ -299,7 +299,7 @@ void CPixelMetricsMapperAppUi::HandleCommandL( TInt aCommand )
                 TInt height = screenRect.Height();
                 TInt width = screenRect.Width();
                 TBuf16<32> tgt;
-                // HEIGTH
+                // HEIGHT
                 tgt.Append(_L("height: \t"));
                 tgt.AppendNum(height, EDecimal); // put max height into text file
                 ShowL( tgt, last );

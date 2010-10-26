@@ -1038,7 +1038,7 @@ void AnimationSaveWidget::convertToMpeg(QString filename)
 
     // ### can't use QProcess, not in Qt 2.3
     // ### but it's certainly in Qt 4! use it?
-    // Execute the ppmtompeg command as a seperate process to do the encoding
+    // Execute the ppmtompeg command as a separate process to do the encoding
     pid_t pid = ::fork();
     if ( !pid ) {
 	// Child process
