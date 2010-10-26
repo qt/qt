@@ -349,17 +349,35 @@ void QFileSystemMetaData::fillFromDirEnt(const QT_DIRENT &entry)
 //static
 QString QFileSystemEngine::resolveUserName(const QFileSystemEntry &entry, QFileSystemMetaData &metaData)
 {
+#if defined (Q_OS_SYMBIAN)
+    Q_UNUSED(entry);
+    Q_UNUSED(metaData);
+    return QString();
+#elif defined(Q_OS_WIN)
+    Q_UNUSED(metaData);
+    return QFileSystemEngine::owner(entry, QAbstractFileEngine::OwnerUser);
+#else //(Q_OS_UNIX)
     if (!metaData.hasFlags(QFileSystemMetaData::UserId))
         QFileSystemEngine::fillMetaData(entry, metaData, QFileSystemMetaData::UserId);
     return resolveGroupName(metaData.userId());
+#endif
 }
 
 //static
 QString QFileSystemEngine::resolveGroupName(const QFileSystemEntry &entry, QFileSystemMetaData &metaData)
 {
+#if defined (Q_OS_SYMBIAN)
+    Q_UNUSED(entry);
+    Q_UNUSED(metaData);
+    return QString();
+#elif defined(Q_OS_WIN)
+    Q_UNUSED(metaData);
+    return QFileSystemEngine::owner(entry, QAbstractFileEngine::OwnerGroup);
+#else //(Q_OS_UNIX)
     if (!metaData.hasFlags(QFileSystemMetaData::GroupId))
         QFileSystemEngine::fillMetaData(entry, metaData, QFileSystemMetaData::GroupId);
     return resolveGroupName(metaData.groupId());
+#endif
 }
 
 QT_END_NAMESPACE
