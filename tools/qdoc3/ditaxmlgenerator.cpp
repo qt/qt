@@ -1157,7 +1157,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                 xmlWriter().writeStartElement("stentry");
                 xmlWriter().writeCharacters("Value");
                 xmlWriter().writeEndElement(); // </stentry>
-                xmlWriter().writeEndElement(); // </stentry>
+                xmlWriter().writeEndElement(); // </sthead>
             }
         }
         else {
@@ -1223,8 +1223,6 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             if (threeColumnEnumValueTable) {
                 xmlWriter().writeEndElement(); // </stentry>
                 xmlWriter().writeStartElement("stentry");
-                if (matchAhead(atom, Atom::ListItemRight))
-                    xmlWriter().writeCharacters("&nbsp;");
             }
         }
         else {

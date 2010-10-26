@@ -1682,7 +1682,7 @@ bool DocParser::closeCommand(int endCmd)
 
 void DocParser::startSection(Doc::SectioningUnit unit, int cmd)
 {
-    leavePara();
+    leaveValueList();
 
     if (currentSectioningUnit == Doc::Book) {
 #if 0
