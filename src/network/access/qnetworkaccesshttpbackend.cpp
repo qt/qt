@@ -340,10 +340,6 @@ void QNetworkAccessHttpBackend::finished()
 
 void QNetworkAccessHttpBackend::setupConnection()
 {
-#ifndef QT_NO_NETWORKPROXY
-    connect(http, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
-            SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
-#endif
     connect(http, SIGNAL(authenticationRequired(const QHttpNetworkReply*, QHttpNetworkRequest,QAuthenticator*,const QHttpNetworkConnection*)),
                 SLOT(httpAuthenticationRequired(const QHttpNetworkReply*, QHttpNetworkRequest,QAuthenticator*)));
     connect(http, SIGNAL(error(QNetworkReply::NetworkError,QString)),
@@ -598,6 +594,10 @@ void QNetworkAccessHttpBackend::postRequest()
     connect(httpReply, SIGNAL(headerChanged()), SLOT(replyHeaderChanged()));
     connect(httpReply, SIGNAL(cacheCredentials(QHttpNetworkRequest,QAuthenticator*)),
             SLOT(httpCacheCredentials(QHttpNetworkRequest,QAuthenticator*)));
+#ifndef QT_NO_NETWORKPROXY
+    connect(httpReply, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
+            SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
+#endif
 }
 
 void QNetworkAccessHttpBackend::invalidateCache()

@@ -152,7 +152,9 @@ Q_SIGNALS:
     void dataReadProgress(int done, int total);
     void dataSendProgress(qint64 done, qint64 total);
     void cacheCredentials(const QHttpNetworkRequest &request, QAuthenticator *authenticator);
-
+#ifndef QT_NO_NETWORKPROXY
+    void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator);
+#endif
 private:
     Q_DECLARE_PRIVATE(QHttpNetworkReply)
     friend class QHttpNetworkConnection;

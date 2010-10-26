@@ -354,7 +354,7 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
                 emit q->authenticationRequired(reply, reply->request(), auth, q);
 #ifndef QT_NO_NETWORKPROXY
             } else {
-                emit q->proxyAuthenticationRequired(networkProxy, auth, q);
+                emit reply->proxyAuthenticationRequired(networkProxy, auth);
 #endif
             }
             resumeConnection();
@@ -963,11 +963,10 @@ void QHttpNetworkConnection::ignoreSslErrors(const QList<QSslError> &errors, int
 // e.g. it is for SOCKS proxies which require authentication.
 void QHttpNetworkConnectionPrivate::emitProxyAuthenticationRequired(const QHttpNetworkConnectionChannel *chan, const QNetworkProxy &proxy, QAuthenticator* auth)
 {
-    Q_Q(QHttpNetworkConnection);
     // Also pause the connection because socket notifiers may fire while an user
     // dialog is displaying
     pauseConnection();
-    emit q->proxyAuthenticationRequired(proxy, auth, q);
+    emit chan->reply->proxyAuthenticationRequired(proxy, auth);
     resumeConnection();
     int i = indexOf(chan->socket);
     copyCredentials(i, auth, true);

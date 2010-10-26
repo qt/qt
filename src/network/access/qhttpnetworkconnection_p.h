@@ -123,11 +123,6 @@ public:
 #endif
 
 Q_SIGNALS:
-#ifndef QT_NO_NETWORKPROXY
-    //cannot be used with queued connection.
-    void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator,
-                                     const QHttpNetworkConnection *connection = 0);
-#endif
     void authenticationRequired(const QHttpNetworkReply*, const QHttpNetworkRequest &request, QAuthenticator *authenticator,
                                 const QHttpNetworkConnection *connection = 0);
     void error(QNetworkReply::NetworkError errorCode, const QString &detail = QString());
