@@ -123,8 +123,6 @@ public:
 #endif
 
 Q_SIGNALS:
-    void authenticationRequired(const QHttpNetworkReply*, const QHttpNetworkRequest &request, QAuthenticator *authenticator,
-                                const QHttpNetworkConnection *connection = 0);
     void error(QNetworkReply::NetworkError errorCode, const QString &detail = QString());
 
 private:

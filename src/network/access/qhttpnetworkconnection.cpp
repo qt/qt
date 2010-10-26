@@ -351,7 +351,7 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
         if (priv->phase == QAuthenticatorPrivate::Done) {
             pauseConnection();
             if (!isProxy) {
-                emit q->authenticationRequired(reply, reply->request(), auth, q);
+                emit reply->authenticationRequired(reply->request(), auth);
 #ifndef QT_NO_NETWORKPROXY
             } else {
                 emit reply->proxyAuthenticationRequired(networkProxy, auth);
