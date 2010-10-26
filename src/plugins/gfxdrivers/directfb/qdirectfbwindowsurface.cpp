@@ -380,10 +380,17 @@ void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
     flushPending = false;
 }
 
-void QDirectFBWindowSurface::beginPaint(const QRegion &)
+void QDirectFBWindowSurface::beginPaint(const QRegion &region)
 {
     if (!engine) {
         engine = new QDirectFBPaintEngine(this);
+    }
+
+    if (dfbSurface) {
+        const QWidget *win = window();
+        if (win && win->testAttribute(Qt::WA_NoSystemBackground)) {
+            QDirectFBScreen::solidFill(dfbSurface, Qt::transparent, region);
+        }
     }
     flushPending = true;
 }
