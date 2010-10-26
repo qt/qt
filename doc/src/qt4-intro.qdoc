@@ -157,7 +157,7 @@
        \l{QtUiTools}{dynamic user interface building}.
     \o New \l{Proxy Models}{proxy models} to enable view-specific sorting and
        filtering of data displayed using item views.
-    \o Support for \l{Installing Qt on Mac OS X}{universal binaries} on Mac OS X.
+    \o Support for \l{Installing Qt for Mac OS X}{universal binaries} on Mac OS X.
     \o Additional features for developers using \l{QtOpenGL}{OpenGL}, such as
     support for pixel and sample buffers.
     \o A flexible \l{QSyntaxHighlighter}{syntax highlighting class} based on the

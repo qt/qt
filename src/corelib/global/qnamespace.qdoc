@@ -475,9 +475,9 @@
            text; otherwise this width is excluded.
     \value TextIncludeTrailingSpaces Same as IncludeTrailingSpaces
     \value TextJustificationForced Ensures that text lines are justified.
-    \value TextLongestVariant Ensures that the longest variant is always used
-           when computing the size of a multi-variant string.
 
+    \omitvalue TextLongestVariant Ensures that the longest variant is always used
+           when computing the size of a multi-variant string. (Internal)
     \omitvalue TextBypassShaping
     \omitvalue BreakAnywhere
     \omitvalue DontClip

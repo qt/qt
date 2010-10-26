@@ -17,8 +17,8 @@ maemo5|maemo6 {
           sessionwidget.ui
 }
 
-win32:!wince*:LIBS += -lWs2_32
-wince*:LIBS += -lWs2
+win32:!wince*:LIBS += -lws2_32
+wince*:LIBS += -lws2
 
 CONFIG += console
 

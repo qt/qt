@@ -63,7 +63,7 @@
     \row
     \o
     Provided that the environment variables are adjusted properly
-    during the \l {Installing Qt on Embedded Linux}{installation process}, you
+    during the \l {Installing Qt for Embedded Linux}{installation process}, you
     should see the \l {Text Edit} demo appear.
 
     It might be that the hardware drivers must be specified explicitly
