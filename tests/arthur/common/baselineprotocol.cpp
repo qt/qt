@@ -32,7 +32,16 @@ PlatformInfo::PlatformInfo(bool useLocal)
 #endif
 
         QProcess git;
-        git.start(QLS("git"), QStringList() << QLS("log") << QLS("--max-count=1") << QLS("--pretty=%H"));
+        QString cmd;
+        QStringList args;
+#if defined(Q_OS_WIN)
+        cmd = QLS("cmd.exe");
+        args << QLS("/c") << QLS("git");
+#else
+        cmd = QLS("git");
+#endif
+        args << QLS("log") << QLS("--max-count=1") << QLS("--pretty=%H");
+        git.start(cmd, args);
         git.waitForFinished(3000);
         if (!git.exitCode())
             gitCommit = QString::fromLocal8Bit(git.readAllStandardOutput().constData()).trimmed();
