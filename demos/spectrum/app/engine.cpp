@@ -453,44 +453,50 @@ bool Engine::initialize()
 {
     bool result = false;
 
-    reset();
+    QAudioFormat format = m_format;
 
     if (selectFormat()) {
-        const qint64 bufferLength = audioLength(m_format, BufferDurationUs);
-        m_buffer.resize(bufferLength);
-        m_buffer.fill(0);
-        emit bufferDurationChanged(BufferDurationUs);
+        if (m_format != format) {
+            format = m_format;
+            reset();
+            m_format = format;
 
-        if (m_generateTone) {
-            if (0 == m_tone.endFreq) {
-                const qreal nyquist = nyquistFrequency(m_format);
-                m_tone.endFreq = qMin(qreal(SpectrumHighFreq), nyquist);
-            }
+            const qint64 bufferLength = audioLength(m_format, BufferDurationUs);
+            m_buffer.resize(bufferLength);
+            m_buffer.fill(0);
+            emit bufferDurationChanged(BufferDurationUs);
 
-            // Call function defined in utils.h, at global scope
-            ::generateTone(m_tone, m_format, m_buffer);
-            m_dataLength = m_buffer.size();
-            emit dataDurationChanged(bufferDuration());
-            setRecordPosition(bufferDuration());
-            result = true;
-        } else if (m_file) {
-            const qint64 length = m_wavFile.readData(*m_file, m_buffer, m_format);
-            if (length) {
-                m_dataLength = length;
-                emit dataDurationChanged(dataDuration());
-                setRecordPosition(dataDuration());
+            if (m_generateTone) {
+                if (0 == m_tone.endFreq) {
+                    const qreal nyquist = nyquistFrequency(m_format);
+                    m_tone.endFreq = qMin(qreal(SpectrumHighFreq), nyquist);
+                }
+
+                // Call function defined in utils.h, at global scope
+                ::generateTone(m_tone, m_format, m_buffer);
+                m_dataLength = m_buffer.size();
+                emit dataDurationChanged(bufferDuration());
+                setRecordPosition(bufferDuration());
+                result = true;
+            } else if (m_file) {
+                const qint64 length = m_wavFile.readData(*m_file, m_buffer, m_format);
+                if (length) {
+                    m_dataLength = length;
+                    emit dataDurationChanged(dataDuration());
+                    setRecordPosition(dataDuration());
+                    result = true;
+                }
+            } else {
+                m_audioInput = new QAudioInput(m_audioInputDevice, m_format, this);
+                m_audioInput->setNotifyInterval(NotifyIntervalMs);
                 result = true;
             }
-        } else {
-            m_audioInput = new QAudioInput(m_audioInputDevice, m_format, this);
-            m_audioInput->setNotifyInterval(NotifyIntervalMs);
-            result = true;
-        }
 
-        m_audioOutput = new QAudioOutput(m_audioOutputDevice, m_format, this);
-        m_audioOutput->setNotifyInterval(NotifyIntervalMs);
-        m_spectrumLengthBytes = SpectrumLengthSamples *
-                                (m_format.sampleSize() / 8) * m_format.channels();
+            m_audioOutput = new QAudioOutput(m_audioOutputDevice, m_format, this);
+            m_audioOutput->setNotifyInterval(NotifyIntervalMs);
+            m_spectrumLengthBytes = SpectrumLengthSamples *
+                                    (m_format.sampleSize() / 8) * m_format.channels();
+        }
     } else {
         if (m_file)
             emit errorMessage(tr("Audio format not supported"),
@@ -510,12 +516,14 @@ bool Engine::selectFormat()
 {
     bool foundSupportedFormat = false;
 
-    if (m_file) {
-        // Header is read from the WAV file; just need to check whether
-        // it is supported by the audio output device
-        QAudioFormat format = m_wavFile.format();
-        if (m_audioOutputDevice.isFormatSupported(m_wavFile.format())) {
-            setFormat(m_wavFile.format());
+    if (m_file || QAudioFormat() != m_format) {
+        QAudioFormat format = m_format;
+        if (m_file)
+            // Header is read from the WAV file; just need to check whether
+            // it is supported by the audio output device
+            format = m_wavFile.format();
+        if (m_audioOutputDevice.isFormatSupported(format)) {
+            setFormat(format);
             foundSupportedFormat = true;
         } else {
             // Try flipping mono <-> stereo

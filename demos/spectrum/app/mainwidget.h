@@ -89,6 +89,7 @@ private slots:
     void showToneGeneratorDialog();
     void initializeRecord();
     void dataDurationChanged(qint64 duration);
+    void updateModeMenu();
 
 private:
     void createUi();

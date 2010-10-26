@@ -200,19 +200,20 @@ void MainWidget::dataDurationChanged(qint64 duration)
 
 void MainWidget::showFileDialog()
 {
-    reset();
     const QString dir;
     const QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Open WAV file"), dir, "*.wav");
     if (fileNames.count()) {
+        reset();
         setMode(LoadFileMode);
         m_engine->loadFile(fileNames.front());
         updateButtonStates();
+    } else {
+        updateModeMenu();
     }
 }
 
 void MainWidget::showSettingsDialog()
 {
-    reset();
     m_settingsDialog->exec();
     if (m_settingsDialog->result() == QDialog::Accepted) {
         m_engine->setAudioInputDevice(m_settingsDialog->inputDevice());
@@ -223,9 +224,9 @@ void MainWidget::showSettingsDialog()
 
 void MainWidget::showToneGeneratorDialog()
 {
-    reset();
     m_toneGeneratorDialog->exec();
     if (m_toneGeneratorDialog->result() == QDialog::Accepted) {
+        reset();
         setMode(GenerateToneMode);
         const qreal amplitude = m_toneGeneratorDialog->amplitude();
         if (m_toneGeneratorDialog->isFrequencySweepEnabled()) {
@@ -236,6 +237,8 @@ void MainWidget::showToneGeneratorDialog()
             m_engine->generateTone(tone);
             updateButtonStates();
         }
+    } else {
+        updateModeMenu();
     }
 }
 
@@ -445,10 +448,14 @@ void MainWidget::reset()
 
 void MainWidget::setMode(Mode mode)
 {
-
     m_mode = mode;
-    m_loadFileAction->setChecked(LoadFileMode == mode);
-    m_generateToneAction->setChecked(GenerateToneMode == mode);
-    m_recordAction->setChecked(RecordMode == mode);
+    updateModeMenu();
+}
+
+void MainWidget::updateModeMenu()
+{
+    m_loadFileAction->setChecked(LoadFileMode == m_mode);
+    m_generateToneAction->setChecked(GenerateToneMode == m_mode);
+    m_recordAction->setChecked(RecordMode == m_mode);
 }
 
