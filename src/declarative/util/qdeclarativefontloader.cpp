@@ -220,15 +220,15 @@ void QDeclarativeFontLoader::setSource(const QUrl &url)
             fo->download(d->url, qmlEngine(this)->networkAccessManager());
             d->status = Loading;
             emit statusChanged();
-            QObject::connect(fo, SIGNAL(fontDownloaded(QString, QDeclarativeFontLoader::Status)),
-                this, SLOT(updateFontInfo(QString, QDeclarativeFontLoader::Status)));
+            QObject::connect(fo, SIGNAL(fontDownloaded(QString,QDeclarativeFontLoader::Status)),
+                this, SLOT(updateFontInfo(QString,QDeclarativeFontLoader::Status)));
         } else {
             QDeclarativeFontObject *fo = d->fonts[d->url];
             if (fo->id == -1) {
                 d->status = Loading;
                 emit statusChanged();
-                QObject::connect(fo, SIGNAL(fontDownloaded(QString, QDeclarativeFontLoader::Status)),
-                    this, SLOT(updateFontInfo(QString, QDeclarativeFontLoader::Status)));
+                QObject::connect(fo, SIGNAL(fontDownloaded(QString,QDeclarativeFontLoader::Status)),
+                    this, SLOT(updateFontInfo(QString,QDeclarativeFontLoader::Status)));
             }
             else
                 updateFontInfo(QFontDatabase::applicationFontFamilies(fo->id).at(0), Ready);
