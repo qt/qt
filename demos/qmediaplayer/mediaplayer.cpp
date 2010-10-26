@@ -152,12 +152,10 @@ void MediaVideoWidget::dragEnterEvent(QDragEnterEvent *e) {
 }
 
 
-MediaPlayer::MediaPlayer(const QString &filePath,
-                         const bool hasSmallScreen) :
+MediaPlayer::MediaPlayer() :
         playButton(0), nextEffect(0), settingsDialog(0), ui(0),
             m_AudioOutput(Phonon::VideoCategory),
-            m_videoWidget(new MediaVideoWidget(this)),
-            m_hasSmallScreen(hasSmallScreen)
+            m_videoWidget(new MediaVideoWidget(this))
 {
     setWindowTitle(tr("Media Player"));
     setContextMenuPolicy(Qt::CustomContextMenu);
@@ -346,8 +344,6 @@ MediaPlayer::MediaPlayer(const QString &filePath,
     m_audioOutputPath = Phonon::createPath(&m_MediaObject, &m_AudioOutput);
     Phonon::createPath(&m_MediaObject, m_videoWidget);
 
-    if (!filePath.isEmpty())
-        setFile(filePath);
     resize(minimumSizeHint());
 }
 
@@ -358,7 +354,7 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
     if (oldstate == Phonon::LoadingState) {
         QRect videoHintRect = QRect(QPoint(0, 0), m_videoWindow.sizeHint());
         QRect newVideoRect = QApplication::desktop()->screenGeometry().intersected(videoHintRect);
-        if (!m_hasSmallScreen) {
+        if (!m_smallScreen) {
             if (m_MediaObject.hasVideo()) {
                 // Flush event que so that sizeHint takes the
                 // recently shown/hidden m_videoWindow into account:
@@ -464,6 +460,16 @@ void MediaPlayer::initSettingsDialog()
     }
     connect(ui->audioEffectsCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(effectChanged()));
 
+}
+
+void MediaPlayer::setVolume(qreal volume)
+{
+    m_AudioOutput.setVolume(volume);
+}
+
+void MediaPlayer::setSmallScreen(bool smallScreen)
+{
+    m_smallScreen = smallScreen;
 }
 
 void MediaPlayer::effectChanged()
@@ -685,7 +691,7 @@ bool MediaPlayer::playPauseForDialog()
     // If we're running on a small screen, we want to pause the video when
     // popping up dialogs. We neither want to tamper with the state if the
     // user has paused.
-    if (m_hasSmallScreen && m_MediaObject.hasVideo()) {
+    if (m_smallScreen && m_MediaObject.hasVideo()) {
         if (Phonon::PlayingState == m_MediaObject.state()) {
             m_MediaObject.pause();
             return true;
