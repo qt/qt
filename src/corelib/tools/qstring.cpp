@@ -7460,31 +7460,17 @@ QDataStream &operator<<(QDataStream &out, const QString &str)
         out << str.toLatin1();
     } else {
         if (!str.isNull() || out.version() < 3) {
-            int byteOrder = out.byteOrder();
-            const QChar* ub = str.unicode();
-            static const uint auto_size = 1024;
-            char t[auto_size];
-            char *b;
-            if (str.length()*sizeof(QChar) > auto_size) {
-                b = new char[str.length()*sizeof(QChar)];
+            if ((out.byteOrder() == QDataStream::BigEndian) == (QSysInfo::ByteOrder == QSysInfo::BigEndian)) {
+                out.writeBytes(reinterpret_cast<const char *>(str.unicode()), sizeof(QChar) * str.length());
             } else {
-                b = t;
-            }
-            int l = str.length();
-            char *c=b;
-            while (l--) {
-                if (byteOrder == QDataStream::BigEndian) {
-                    *c++ = (char)ub->row();
-                    *c++ = (char)ub->cell();
-                } else {
-                    *c++ = (char)ub->cell();
-                    *c++ = (char)ub->row();
+                QVarLengthArray<ushort> buffer(str.length());
+                const ushort *data = reinterpret_cast<const ushort *>(str.constData());
+                for (int i = 0; i < str.length(); i++) {
+                    buffer[i] = qbswap(*data);
+                    ++data;
                 }
-                ub++;
+                out.writeBytes(reinterpret_cast<const char *>(buffer.data()), sizeof(ushort) * buffer.size());
             }
-            out.writeBytes(b, sizeof(QChar)*str.length());
-            if (str.length()*sizeof(QChar) > auto_size)
-                delete [] b;
         } else {
             // write null marker
             out << (quint32)0xffffffff;
