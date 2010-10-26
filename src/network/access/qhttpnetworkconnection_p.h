@@ -120,9 +120,6 @@ public:
     void setSslConfiguration(const QSslConfiguration &config);
     void ignoreSslErrors(int channel = -1);
     void ignoreSslErrors(const QList<QSslError> &errors, int channel = -1);
-
-Q_SIGNALS:
-    void sslErrors(const QList<QSslError> &errors);
 #endif
 
 Q_SIGNALS:

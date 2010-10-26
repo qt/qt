@@ -205,6 +205,11 @@ bool QHttpNetworkReply::isPipeliningUsed() const
     return d_func()->pipeliningUsed;
 }
 
+QHttpNetworkConnection* QHttpNetworkReply::connection()
+{
+    return d_func()->connection;
+}
+
 
 QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
     : QHttpNetworkHeaderPrivate(newUrl), state(NothingDoneState), statusCode(100),

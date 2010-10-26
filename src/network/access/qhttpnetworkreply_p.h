@@ -132,6 +132,8 @@ public:
 
     bool isPipeliningUsed() const;
 
+    QHttpNetworkConnection* connection();
+
 #ifndef QT_NO_OPENSSL
     QSslConfiguration sslConfiguration() const;
     void setSslConfiguration(const QSslConfiguration &config);

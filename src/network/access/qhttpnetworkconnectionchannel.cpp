@@ -1037,7 +1037,7 @@ void QHttpNetworkConnectionChannel::_q_sslErrors(const QList<QSslError> &errors)
     // Also pause the connection because socket notifiers may fire while an user
     // dialog is displaying
     connection->d_func()->pauseConnection();
-    emit connection->sslErrors(errors);
+    emit reply->sslErrors(errors);
     connection->d_func()->resumeConnection();
 }
 

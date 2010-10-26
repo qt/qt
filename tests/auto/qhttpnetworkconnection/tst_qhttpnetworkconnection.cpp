@@ -668,8 +668,10 @@ void tst_QHttpNetworkConnection::sslErrors(const QList<QSslError> &errors)
 {
     Q_UNUSED(errors)
 
-    QHttpNetworkConnection *connection = qobject_cast<QHttpNetworkConnection*>(sender());
-    if (connection) {
+    QHttpNetworkReply *reply = qobject_cast<QHttpNetworkReply*>(sender());
+    if (reply) {
+        QHttpNetworkConnection *connection = reply->connection();
+
         QVariant val = connection->property("ignoreFromSignal");
         if (val.toBool())
             connection->ignoreSslErrors();
@@ -716,12 +718,12 @@ void tst_QHttpNetworkConnection::ignoresslerror()
     if (ignoreInit)
         connection.ignoreSslErrors();
     QCOMPARE(connection.isEncrypted(), encrypt);
-    connect(&connection, SIGNAL(sslErrors(const QList<QSslError>&)),
-        SLOT(sslErrors(const QList<QSslError>&)));
     connection.setProperty("ignoreFromSignal", ignoreFromSignal);
 
     QHttpNetworkRequest request(protocol + host + path);
     QHttpNetworkReply *reply = connection.sendRequest(request);
+    connect(reply, SIGNAL(sslErrors(const QList<QSslError>&)),
+        SLOT(sslErrors(const QList<QSslError>&)));
 
     finishedWithErrorCalled = false;
 

@@ -350,10 +350,6 @@ void QNetworkAccessHttpBackend::setupConnection()
             SLOT(httpCacheCredentials(QHttpNetworkRequest,QAuthenticator*)));
     connect(http, SIGNAL(error(QNetworkReply::NetworkError,QString)),
             SLOT(httpError(QNetworkReply::NetworkError,QString)));
-#ifndef QT_NO_OPENSSL
-    connect(http, SIGNAL(sslErrors(QList<QSslError>)),
-            SLOT(sslErrors(QList<QSslError>)));
-#endif
 }
 
 /*
@@ -593,6 +589,8 @@ void QNetworkAccessHttpBackend::postRequest()
     if (pendingIgnoreAllSslErrors)
         httpReply->ignoreSslErrors();
     httpReply->ignoreSslErrors(pendingIgnoreSslErrorsList);
+    connect(httpReply, SIGNAL(sslErrors(QList<QSslError>)),
+            SLOT(sslErrors(QList<QSslError>)));
 #endif
 
     connect(httpReply, SIGNAL(readyRead()), SLOT(replyReadyRead()));
