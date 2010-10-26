@@ -310,7 +310,6 @@ bool QHttpNetworkConnectionChannel::sendRequest()
         break;
     }
     case QHttpNetworkConnectionChannel::ReadingState:
-    case QHttpNetworkConnectionChannel::Wait4AuthState:
         // ignore _q_bytesWritten in these states
         // fall through
     default:

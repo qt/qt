@@ -95,8 +95,7 @@ public:
         WritingState = 2,       // writing the data
         WaitingState = 4,       // waiting for reply
         ReadingState = 8,       // reading the reply
-        Wait4AuthState = 0x10,  // blocked for send till the current authentication slot is done
-        BusyState = (ConnectingState|WritingState|WaitingState|ReadingState|Wait4AuthState)
+        BusyState = (ConnectingState|WritingState|WaitingState|ReadingState)
     };
     QAbstractSocket *socket;
     ChannelState state;

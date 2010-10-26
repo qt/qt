@@ -381,11 +381,6 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
             emit channels[i].reply->finished();
             // ### at this point the reply could be deleted
             socket->close();
-            // remove pending request on the other channels
-            for (int j = 0; j < channelCount; ++j) {
-                if (j != i && channels[j].state ==  QHttpNetworkConnectionChannel::Wait4AuthState)
-                    channels[j].state = QHttpNetworkConnectionChannel::IdleState;
-            }
             return true;
         }
         //resend the request
