@@ -3006,24 +3006,24 @@ void DitaXmlGenerator::generateCompactList(const Node* relative,
 
     int curParNr = 0;
     int curParOffset = 0;
+    QMap<QChar,QString> cmap;
 
     /*
       Output the alphabet as a row of links.
      */
     if (includeAlphabet) {
         xmlWriter().writeStartElement("p");
-        xmlWriter().writeAttribute("outputclass","centerAlign functionIndex");
-        xmlWriter().writeStartElement("b");
+        xmlWriter().writeAttribute("outputclass","alphabet");
         for (int i = 0; i < 26; i++) {
             QChar ch('a' + i);
             if (usedParagraphNames.contains(char('a' + i))) {
                 xmlWriter().writeStartElement("xref");
-                xmlWriter().writeAttribute("href",QString("#%1").arg(ch));
+                QString guid = lookupGuid(outFileName(),QString(ch));
+                xmlWriter().writeAttribute("href",QString("#%1").arg(guid));
                 xmlWriter().writeCharacters(QString(ch.toUpper()));
                 xmlWriter().writeEndElement(); // </xref>
             }
         }
-        xmlWriter().writeEndElement(); // </b>
         xmlWriter().writeEndElement(); // </p>
     }
 
@@ -3051,15 +3051,12 @@ void DitaXmlGenerator::generateCompactList(const Node* relative,
             xmlWriter().writeStartElement("dl");
             xmlWriter().writeStartElement("dlentry");
             xmlWriter().writeStartElement("dt");
-            xmlWriter().writeAttribute("outputclass","alphaChar");
             if (includeAlphabet) {
                 QChar c = paragraphName[curParNr][0].toLower();
-                xmlWriter().writeStartElement("a");
-                xmlWriter().writeAttribute("name",c);
+                writeGuidAttribute(QString(c));
             }
-            xmlWriter().writeStartElement("b");
+            xmlWriter().writeAttribute("outputclass","sublist-header");
             xmlWriter().writeCharacters(paragraphName[curParNr]);
-            xmlWriter().writeEndElement(); // </b>
             xmlWriter().writeEndElement(); // </dt>
         }
 
