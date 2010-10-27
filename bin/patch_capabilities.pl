@@ -269,6 +269,9 @@ if (@ARGV)
             if (@capabilitiesSpecified)
             {
                 $commandToExecute = sprintf($baseCommandToExecute, join(" ", @capabilitiesSpecified));
+                $executeNeeded = 1;
+                my $capString = join(" ", @capabilitiesSpecified);
+                print ("Patching: Patching the the Vendor ID to 0 and the capabilities used to: \"$capString\" in \"$binaryBaseName\".\n");
             } else {
                 # Test which capabilities are present and then restrict them to the allowed set.
                 # This avoid raising the capabilities of apps that already have none.

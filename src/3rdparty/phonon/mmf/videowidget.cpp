@@ -65,6 +65,8 @@ MMF::VideoWidget::VideoWidget(QWidget *parent)
     TRACE_CONTEXT(VideoWidget::VideoWidget, EVideoApi);
     TRACE_ENTRY_0();
 
+    parent->setProperty("_q_DummyWindowSurface", true);
+
     TRACE_EXIT_0();
 }
 

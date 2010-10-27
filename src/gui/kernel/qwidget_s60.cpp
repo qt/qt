@@ -713,7 +713,8 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     // old_winid may not have received a 'not visible' visibility
     // changed event before being destroyed; make sure that it is
     // removed from the backing store's list of visible windows.
-    S60->controlVisibilityChanged(old_winid, false);
+    if (old_winid)
+        S60->controlVisibilityChanged(old_winid, false);
 
     setWinId(0);
 
