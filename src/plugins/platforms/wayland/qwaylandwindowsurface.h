@@ -99,7 +99,7 @@ public:
     QWaylandDisplay *mDisplay;
     QGLFramebufferObject *pdev;
     QSize mSize;
-    GLuint mFbo, mRbo;
+    GLuint mFbo;
 };
 
 class QWaylandDrmWindowSurface : public QWindowSurface

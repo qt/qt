@@ -222,7 +222,6 @@ QWaylandDrmBuffer::QWaylandDrmBuffer(QWaylandDisplay *display,
     imageAttribs[3] = size.height();
     mImage = eglCreateDRMImageMESA(mDisplay->eglDisplay(), imageAttribs);
     glGenFramebuffers(1, &mFbo);
-    glGenRenderbuffers(1, &mRbo);
     glGenTextures(1, &mTexture);
     glBindTexture(GL_TEXTURE_2D, mTexture);
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, mImage);
@@ -237,7 +236,6 @@ QWaylandDrmBuffer::QWaylandDrmBuffer(QWaylandDisplay *display,
 QWaylandDrmBuffer::~QWaylandDrmBuffer(void)
 {
     glDeleteFramebuffers(1, &mFbo);
-    glDeleteRenderbuffers(1, &mRbo);
     glDeleteTextures(1, &mTexture);
     eglDestroyImageKHR(mDisplay->eglDisplay(), mImage);
     wl_buffer_destroy(mBuffer);

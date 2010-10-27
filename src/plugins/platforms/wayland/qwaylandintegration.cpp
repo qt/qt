@@ -538,10 +538,10 @@ void QWaylandGLContext::makeCurrent()
     eglMakeCurrent(mDisplay->eglDisplay(), 0, 0, mBuffer->mContext);
 
     glBindFramebuffer(GL_FRAMEBUFFER, mBuffer->mFbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, mBuffer->mRbo);
-    glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER, mBuffer->mImage);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-				 GL_RENDERBUFFER, mBuffer->mRbo);
+    glBindTexture(GL_TEXTURE_2D, mBuffer->mTexture);
+    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, mBuffer->mImage);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+			   GL_TEXTURE_2D, mBuffer->mTexture, 0);
 }
 
 void QWaylandGLContext::doneCurrent()
