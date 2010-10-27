@@ -23,9 +23,11 @@ BaselineServer::BaselineServer(QObject *parent)
 QString BaselineServer::storagePath()
 {
     if (storage.isEmpty()) {
-        QDir dir(QCoreApplication::applicationDirPath());
-        dir.cdUp();
-        storage =  dir.path() + QLS("/storage/");
+        QByteArray envDir = qgetenv("QT_LANCELOT_DIR");
+        if (!envDir.isEmpty())
+            storage = QLS(envDir.append('/'));
+        else
+            storage =  QLS("/var/www/");
     }
     return storage;
 }
@@ -105,8 +107,10 @@ void BaselineHandler::receiveRequest()
             return;
         }
         connectionEstablished = true;
-        qDebug() << runId << logtime() << "Connection established with" << plat.hostname << proto.socket.peerAddress().toString() << "Qt version:" << plat.qtVersion << plat.buildKey;
-        return;
+        qDebug() << runId << logtime() << "Connection established with" << plat.hostName << "[" << proto.socket.peerAddress().toString() << "]"
+                 << "OS:" << plat.osName << "[" << plat.osVersion << "]" << "Qt version:" << plat.qtVersion << "[" << plat.buildKey << "]"
+                 << "git commit:" << plat.gitCommit;
+                    return;
     }
 
     QByteArray block;
@@ -140,7 +144,7 @@ void BaselineHandler::provideBaselineChecksums(const QByteArray &itemListBlock)
     QDataStream ds(itemListBlock);
     ds >> itemList;
     qDebug() << runId << logtime() << "Received request for checksums for" << itemList.count() << "items, engine"
-            << itemList.at(0).engineAsString() << "pixel format" << itemList.at(0).formatAsString();
+             << itemList.at(0).engineAsString() << "pixel format" << itemList.at(0).formatAsString();
 
     for (ImageItemList::iterator i = itemList.begin(); i != itemList.end(); ++i) {
         i->imageChecksums.clear();
@@ -240,7 +244,7 @@ QString BaselineHandler::itemSubPath(const QString &engine, const QString &forma
 QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline, bool absolute)
 {
     if (pathForRun.isNull()) {
-        QString host = plat.hostname.section(QLC('.'), 0, 0);  // Filter away domain, if any
+        QString host = plat.hostName.section(QLC('.'), 0, 0);  // Filter away domain, if any
         if (host.isEmpty() || host == QLS("localhost")) {
             host = proto.socket.peerAddress().toString();
             if (host.isEmpty())
@@ -379,13 +383,13 @@ void BaselineHandler::testPathMapping()
 
     QStringList hosts;
     hosts << QLS("bq-ubuntu910-x86-01")
-            << QLS("bq-ubuntu910-x86-15")
-            << QLS("osl-mac-master-5.test.qt.nokia.com")
-            << QLS("osl-mac-master-6.test.qt.nokia.com")
-            << QLS("sv-xp-vs-010")
-            << QLS("sv-xp-vs-011")
-            << QLS("chimera")
-            << QLS("localhost");
+          << QLS("bq-ubuntu910-x86-15")
+          << QLS("osl-mac-master-5.test.qt.nokia.com")
+          << QLS("osl-mac-master-6.test.qt.nokia.com")
+          << QLS("sv-xp-vs-010")
+          << QLS("sv-xp-vs-011")
+          << QLS("chimera")
+          << QLS("localhost");
 
     ImageItem item;
     item.scriptName = QLS("arcs.qps");
@@ -398,7 +402,7 @@ void BaselineHandler::testPathMapping()
     plat.buildKey = QLS("(nobuildkey)");
     foreach(const QString& host, hosts) {
         pathForRun = QString();
-        plat.hostname = host;
+        plat.hostName = host;
         qDebug() << "Baseline from" << host << "->" << pathForItem(item, true).remove(BaselineServer::storagePath());
         qDebug() << "Mismatch from" << host << "->" << pathForItem(item, false).remove(BaselineServer::storagePath());
     }

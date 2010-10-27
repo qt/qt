@@ -135,7 +135,7 @@ void tst_Lancelot::initTestCase()
 
 void tst_Lancelot::testRasterARGB32PM_data()
 {
-    QStringList localBlacklist = QStringList() << QLatin1String("sizes.qps");
+    QStringList localBlacklist;
     if (!setupTestSuite(ImageItem::Raster, QImage::Format_ARGB32_Premultiplied, localBlacklist))
         QSKIP("Communication with baseline image server failed.", SkipAll);
 }
@@ -149,7 +149,7 @@ void tst_Lancelot::testRasterARGB32PM()
 
 void tst_Lancelot::testRasterRGB32_data()
 {
-    QStringList localBlacklist = QStringList() << QLatin1String("sizes.qps");
+    QStringList localBlacklist;
     if (!setupTestSuite(ImageItem::Raster, QImage::Format_RGB32, localBlacklist))
         QSKIP("Communication with baseline image server failed.", SkipAll);
 }
@@ -163,7 +163,7 @@ void tst_Lancelot::testRasterRGB32()
 
 void tst_Lancelot::testRasterRGB16_data()
 {
-    QStringList localBlacklist = QStringList() << QLatin1String("sizes.qps");
+    QStringList localBlacklist;
     if (!setupTestSuite(ImageItem::Raster, QImage::Format_RGB16, localBlacklist))
         QSKIP("Communication with baseline image server failed.", SkipAll);
 }
@@ -177,10 +177,7 @@ void tst_Lancelot::testRasterRGB16()
 
 void tst_Lancelot::testOpenGL_data()
 {
-#if defined(Q_OS_MAC)
-    QSKIP("OpenGL testing not supported on this platform.", SkipAll);
-#endif
-    QStringList localBlacklist = QStringList() << QLatin1String("sizes.qps") << QLatin1String("rasterops.qps");
+    QStringList localBlacklist = QStringList() << QLatin1String("rasterops.qps");
     if (!setupTestSuite(ImageItem::OpenGL, QImage::Format_RGB32, localBlacklist))
         QSKIP("Communication with baseline image server failed.", SkipAll);
 }

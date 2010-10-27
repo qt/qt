@@ -13,7 +13,7 @@
 #include "htmlpage.h"
 
 // #seconds between update checks
-#define HEARTBEAT 5
+#define HEARTBEAT 10
 
 class BaselineServer : public QTcpServer
 {
