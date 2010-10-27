@@ -1021,7 +1021,6 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                                 xmlWriter().writeEndElement(); // </p>
 
                                 generateSection(nlist, 0, marker, CodeMarker::Summary);
-                                xmlWriter().writeEmptyElement("br");
                                 ++pmap;
                             }
                         }
@@ -1079,7 +1078,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         inLegaleseText = false;
         break;
     case Atom::LineBreak:
-        xmlWriter().writeEmptyElement("br");
+        //xmlWriter().writeEmptyElement("br");
         break;
     case Atom::Link:
         {
