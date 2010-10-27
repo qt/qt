@@ -238,10 +238,10 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
         glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, m_textureCoordinateArray);
 
         m_blitProgram->bind();
-        QGLContextPrivate* ctx_d = const_cast<QGLContextPrivate *>(ctx->d_func());
-        ctx_d->setVertexAttribArrayEnabled(QT_VERTEX_COORDS_ATTR, true);
-        ctx_d->setVertexAttribArrayEnabled(QT_TEXTURE_COORDS_ATTR, true);
-        ctx_d->setVertexAttribArrayEnabled(QT_OPACITY_ATTR, false);
+        m_blitProgram->enableAttributeArray(int(QT_VERTEX_COORDS_ATTR));
+        m_blitProgram->enableAttributeArray(int(QT_TEXTURE_COORDS_ATTR));
+        m_blitProgram->disableAttributeArray(int(QT_OPACITY_ATTR));
+
         blitProgram = m_blitProgram;
 
     } else {
