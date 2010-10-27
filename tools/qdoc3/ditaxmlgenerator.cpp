@@ -2801,6 +2801,8 @@ void DitaXmlGenerator::generateClassHierarchy(const Node* relative,
         if (stack.top().isEmpty()) {
             stack.pop();
             xmlWriter().writeEndElement(); // </ul>
+            if (!stack.isEmpty())
+                xmlWriter().writeEndElement(); // </li>
         }
         else {
             const ClassNode *child =
@@ -2817,6 +2819,7 @@ void DitaXmlGenerator::generateClassHierarchy(const Node* relative,
             }
             if (!newTop.isEmpty()) {
                 stack.push(newTop);
+                xmlWriter().writeStartElement("li");
                 xmlWriter().writeStartElement("ul");
             }
         }
