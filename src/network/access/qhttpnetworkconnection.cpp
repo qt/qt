@@ -377,8 +377,7 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
                 ? QNetworkReply::ProxyAuthenticationRequiredError
                 : QNetworkReply::AuthenticationRequiredError;
             reply->d_func()->errorString = errorDetail(errorCode, socket);
-            emit q->error(errorCode, reply->d_func()->errorString);
-            emit channels[i].reply->finished();
+            emit reply->finishedWithError(errorCode, reply->d_func()->errorString);
             // ### at this point the reply could be deleted
             socket->close();
             return true;

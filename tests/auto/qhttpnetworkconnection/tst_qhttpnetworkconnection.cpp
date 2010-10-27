@@ -330,8 +330,6 @@ void tst_QHttpNetworkConnection::put()
     connect(reply, SIGNAL(finished()), SLOT(finishedReply()));
     connect(reply, SIGNAL(finishedWithError(QNetworkReply::NetworkError, const QString &)),
         SLOT(finishedWithError(QNetworkReply::NetworkError, const QString &)));
-    connect(&connection, SIGNAL(error(QNetworkReply::NetworkError, const QString &)),
-        SLOT(finishedWithError(QNetworkReply::NetworkError, const QString &)));
 
     QTime stopWatch;
     stopWatch.start();

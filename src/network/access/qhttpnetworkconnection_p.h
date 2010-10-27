@@ -116,9 +116,6 @@ public:
     void ignoreSslErrors(const QList<QSslError> &errors, int channel = -1);
 #endif
 
-Q_SIGNALS:
-    void error(QNetworkReply::NetworkError errorCode, const QString &detail = QString());
-
 private:
     Q_DECLARE_PRIVATE(QHttpNetworkConnection)
     Q_DISABLE_COPY(QHttpNetworkConnection)

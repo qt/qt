@@ -338,12 +338,6 @@ void QNetworkAccessHttpBackend::finished()
     QNetworkAccessBackend::finished();
 }
 
-void QNetworkAccessHttpBackend::setupConnection()
-{
-    connect(http, SIGNAL(error(QNetworkReply::NetworkError,QString)),
-            SLOT(httpError(QNetworkReply::NetworkError,QString)));
-}
-
 /*
     For a given httpRequest
     1) If AlwaysNetwork, return
@@ -672,7 +666,6 @@ void QNetworkAccessHttpBackend::open()
         cache->addEntry(cacheKey, http);
     }
 
-    setupConnection();
     postRequest();
 }
 

@@ -797,8 +797,7 @@ void QHttpNetworkConnectionChannel::handleStatus()
                 ? QNetworkReply::ProxyAuthenticationRequiredError
                 : QNetworkReply::AuthenticationRequiredError;
             reply->d_func()->errorString = connection->d_func()->errorDetail(errorCode, socket);
-            emit connection->error(errorCode, reply->d_func()->errorString);
-            emit reply->finished();
+            emit reply->finishedWithError(errorCode, reply->d_func()->errorString);
         }
         break;
     default:
@@ -945,7 +944,6 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
 {
     if (!socket)
         return;
-    bool send2Reply = false;
     QNetworkReply::NetworkError errorCode = QNetworkReply::UnknownNetworkError;
 
     switch (socketError) {
@@ -963,7 +961,6 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
                 closeAndResendCurrentRequest();
                 return;
             } else {
-                send2Reply = true;
                 errorCode = QNetworkReply::RemoteHostClosedError;
             }
         } else {
@@ -976,7 +973,6 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
             closeAndResendCurrentRequest();
             return;
         }
-        send2Reply = true;
         errorCode = QNetworkReply::TimeoutError;
         break;
     case QAbstractSocket::ProxyAuthenticationRequiredError:
@@ -992,18 +988,14 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
     }
     QPointer<QHttpNetworkConnection> that = connection;
     QString errorString = connection->d_func()->errorDetail(errorCode, socket, socket->errorString());
-    if (send2Reply) {
-        if (reply) {
-            reply->d_func()->errorString = errorString;
-            // this error matters only to this reply
-            emit reply->finishedWithError(errorCode, errorString);
-        }
-        // send the next request
-        QMetaObject::invokeMethod(that, "_q_startNextRequest", Qt::QueuedConnection);
-    } else {
-        // the failure affects all requests.
-        emit connection->error(errorCode, errorString);
+
+    if (reply) {
+        reply->d_func()->errorString = errorString;
+        emit reply->finishedWithError(errorCode, errorString);
     }
+    // send the next request
+    QMetaObject::invokeMethod(that, "_q_startNextRequest", Qt::QueuedConnection);
+
     if (that) //signal emission triggered event loop
         close();
 }
