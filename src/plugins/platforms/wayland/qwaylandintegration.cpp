@@ -17,6 +17,7 @@
 
 #include <private/qwindowsurface_gl_p.h>
 #include <private/qpixmapdata_gl_p.h>
+#include <private/qpaintengineex_opengl2_p.h>
 
 #include "qwaylandintegration.h"
 #include "qwaylandwindowsurface.h"
@@ -547,14 +548,106 @@ void QWaylandGLContext::doneCurrent()
 {
 }
 
+static void drawTexture(const QRectF &rect, GLuint tex_id,
+			const QSize &texSize, const QRectF &br)
+{
+    QRectF src = br.isEmpty()
+        ? QRectF(QPointF(), texSize)
+        : QRectF(QPointF(br.x(), texSize.height() - br.bottom()), br.size());
+    qreal width = texSize.width();
+    qreal height = texSize.height();
+
+    src.setLeft(src.left() / width);
+    src.setRight(src.right() / width);
+    src.setTop(src.top() / height);
+    src.setBottom(src.bottom() / height);
+
+    const GLfloat tx1 = src.left();
+    const GLfloat tx2 = src.right();
+    const GLfloat ty1 = src.top();
+    const GLfloat ty2 = src.bottom();
+
+    GLfloat texCoordArray[4*2] = {
+        tx1, ty2, tx2, ty2, tx2, ty1, tx1, ty1
+    };
+
+    GLfloat vertexArray[4*2];
+    extern void qt_add_rect_to_array(const QRectF &r, GLfloat *array);
+    qt_add_rect_to_array(rect, vertexArray);
+
+    glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexArray);
+    glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, texCoordArray);
+
+    glBindTexture(GL_TEXTURE_2D, tex_id);
+
+    glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+    glEnableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
+    glDisableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 void QWaylandGLContext::swapBuffers()
 {
-    QRect geometry = mWindow->geometry();
+    QWaylandWindow *mParentWindow = mWindow->getParentWindow();
+    QWaylandDrmBuffer *mBuffer, *mParentBuffer;
+    QRect geometry = mWindow->geometry(), parentGeometry;
+    GLuint parentFbo, parentRbo;
 
-    if (!mWindow->surface())
+    if (!mParentWindow) {
+	qDebug("swap without parent widget?\n");
 	return;
+    }
 
-    wl_surface_damage(mWindow->surface(), 0, 0,
+    if (!mParentWindow->surface()) {
+	qDebug("parent has no surface??\n");
+	return;
+    }
+
+    parentGeometry = mParentWindow->geometry();
+    mBuffer = (QWaylandDrmBuffer *)mWindow->getBuffer();
+    mParentBuffer = (QWaylandDrmBuffer *)mParentWindow->getBuffer();
+
+    qDebug("copying from texture image %d, texture %d to image %d, texture %d\n",
+	   mBuffer->mImage, mBuffer->mTexture, mParentBuffer->mImage, mParentBuffer->mTexture);
+
+    glDisable(GL_DEPTH_TEST);
+
+    glGenFramebuffers(1, &parentFbo);
+    glGenRenderbuffers(1, &parentRbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, parentFbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, parentRbo);
+    glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER, mParentBuffer->mImage);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+			      GL_RENDERBUFFER, parentRbo);
+    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, mBuffer->mImage);
+    glViewport(0, 0, geometry.width(), geometry.height());
+
+    QGLShaderProgram *blitProgram =
+	QGLEngineSharedShaders::shadersForContext(QGLContext::currentContext())->blitProgram();
+    blitProgram->bind();
+    blitProgram->setUniformValue("imageTexture", 0 /*QT_IMAGE_TEXTURE_UNIT*/);
+    // The shader manager's blit program does not multiply the
+    // vertices by the pmv matrix, so we need to do the effect
+    // of the orthographic projection here ourselves.
+    QRectF r;
+    qreal w = geometry.width() ? geometry.width() : 1.0f;
+    qreal h = geometry.height() ? geometry.height() : 1.0f;
+    r.setLeft((geometry.left() / w) * 2.0f - 1.0f);
+    if (geometry.right() == (geometry.width() - 1))
+	r.setRight(1.0f);
+    else
+	r.setRight((geometry.right() / w) * 2.0f - 1.0f);
+    r.setBottom((geometry.top() / h) * 2.0f - 1.0f);
+    if (geometry.bottom() == (geometry.height() - 1))
+	r.setTop(1.0f);
+    else
+	r.setTop((geometry.bottom() / w) * 2.0f - 1.0f);
+    drawTexture(r, mBuffer->mTexture, mWindow->widget()->size(), geometry);
+
+    wl_surface_damage(mParentWindow->surface(), 0, 0,
 		      geometry.width(), geometry.height());
 }
 

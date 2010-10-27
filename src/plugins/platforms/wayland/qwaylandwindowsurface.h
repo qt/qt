@@ -97,7 +97,6 @@ public:
     EGLImageKHR mImage;
     GLuint mTexture;
     QWaylandDisplay *mDisplay;
-    QGLFramebufferObject *pdev;
     QSize mSize;
     GLuint mFbo;
 };
