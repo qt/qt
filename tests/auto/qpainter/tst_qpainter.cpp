@@ -49,6 +49,7 @@
 #include <qfontmetrics.h>
 #include <qbitmap.h>
 #include <qimage.h>
+#include <qthread.h>
 #include <limits.h>
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
 #include <qprinter.h>
