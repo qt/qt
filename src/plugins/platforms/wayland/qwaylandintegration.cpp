@@ -510,42 +510,21 @@ public:
     QPlatformWindowFormat platformWindowFormat() const { return mFormat; }
 
 private:
-    EGLContext mContext;
     QPlatformWindowFormat mFormat;
     QWaylandDisplay *mDisplay;
     QWaylandWindow *mWindow;
-    GLuint mFbo, mRbo;
 };
 
 QWaylandGLContext::QWaylandGLContext(QWaylandDisplay *wd, QWaylandWindow *window, const QPlatformWindowFormat &format)
     : QPlatformGLContext()
-    , mContext(0)
     , mFormat(format)
     , mDisplay(wd)
     , mWindow(window)
 {
-    EGLDisplay eglDisplay;
-    static const EGLint contextAttribs[] = {
-	EGL_CONTEXT_CLIENT_VERSION, 2,
-	EGL_NONE
-    };
-
-    eglBindAPI(EGL_OPENGL_ES_API);
-    eglDisplay = mDisplay->eglDisplay();
-    mContext = eglCreateContext(eglDisplay, NULL,
-				EGL_NO_CONTEXT, contextAttribs);
-    eglMakeCurrent(eglDisplay, NULL, NULL, mContext);
-
-    glGenFramebuffers(1, &mFbo);
-    glGenRenderbuffers(1, &mRbo);
 }
 
 QWaylandGLContext::~QWaylandGLContext()
 {
-    if (mContext)
-        eglDestroyContext(mDisplay->eglDisplay(), mContext);
-    glDeleteFramebuffers(1, &mFbo);
-    glDeleteRenderbuffers(1, &mRbo);
 }
 
 void QWaylandGLContext::makeCurrent()
@@ -553,21 +532,20 @@ void QWaylandGLContext::makeCurrent()
     QWaylandDrmBuffer *mBuffer = (QWaylandDrmBuffer *)mWindow->getBuffer();
     QRect geometry = mWindow->geometry();
 
-    eglMakeCurrent(mDisplay->eglDisplay(), 0, 0, mContext);
     if (!mBuffer)
 	return;
-    glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, mRbo);
+
+    eglMakeCurrent(mDisplay->eglDisplay(), 0, 0, mBuffer->mContext);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, mBuffer->mFbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, mBuffer->mRbo);
     glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER, mBuffer->mImage);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-				 GL_RENDERBUFFER, mRbo);
+				 GL_RENDERBUFFER, mBuffer->mRbo);
 }
 
 void QWaylandGLContext::doneCurrent()
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
-    eglMakeCurrent(mDisplay->eglDisplay(), 0, 0, mContext);
 }
 
 void QWaylandGLContext::swapBuffers()

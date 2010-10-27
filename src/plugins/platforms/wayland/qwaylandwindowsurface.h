@@ -93,11 +93,13 @@ public:
     QWaylandDrmBuffer(QWaylandDisplay *display,
 		       const QSize &size, QImage::Format format);
     ~QWaylandDrmBuffer();
+    EGLContext mContext;
     EGLImageKHR mImage;
     GLuint mTexture;
     QWaylandDisplay *mDisplay;
     QGLFramebufferObject *pdev;
     QSize mSize;
+    GLuint mFbo, mRbo;
 };
 
 class QWaylandDrmWindowSurface : public QWindowSurface

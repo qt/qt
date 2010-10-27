@@ -201,6 +201,10 @@ QWaylandDrmBuffer::QWaylandDrmBuffer(QWaylandDisplay *display,
     Q_UNUSED(format);
 
     EGLint name, stride;
+    static const EGLint contextAttribs[] = {
+	EGL_CONTEXT_CLIENT_VERSION, 2,
+	EGL_NONE
+    };
     EGLint imageAttribs[] = {
 	EGL_WIDTH,			0,
 	EGL_HEIGHT,			0,
@@ -209,9 +213,16 @@ QWaylandDrmBuffer::QWaylandDrmBuffer(QWaylandDisplay *display,
 	EGL_NONE
     };
 
+    eglBindAPI(EGL_OPENGL_ES_API);
+    mContext = eglCreateContext(mDisplay->eglDisplay(), NULL,
+				EGL_NO_CONTEXT, contextAttribs);
+    eglMakeCurrent(mDisplay->eglDisplay(), 0, 0, mContext);
+
     imageAttribs[1] = size.width();
     imageAttribs[3] = size.height();
     mImage = eglCreateDRMImageMESA(mDisplay->eglDisplay(), imageAttribs);
+    glGenFramebuffers(1, &mFbo);
+    glGenRenderbuffers(1, &mRbo);
     glGenTextures(1, &mTexture);
     glBindTexture(GL_TEXTURE_2D, mTexture);
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, mImage);
@@ -225,9 +236,12 @@ QWaylandDrmBuffer::QWaylandDrmBuffer(QWaylandDisplay *display,
 
 QWaylandDrmBuffer::~QWaylandDrmBuffer(void)
 {
+    glDeleteFramebuffers(1, &mFbo);
+    glDeleteRenderbuffers(1, &mRbo);
     glDeleteTextures(1, &mTexture);
     eglDestroyImageKHR(mDisplay->eglDisplay(), mImage);
     wl_buffer_destroy(mBuffer);
+    eglDestroyContext(mDisplay->eglDisplay(), mContext);
 }
 
 
@@ -237,7 +251,12 @@ QWaylandDrmWindowSurface::QWaylandDrmWindowSurface(QWidget *window,
     , mBuffer(0)
     , mDisplay(display)
 {
+    QWaylandWindow *ww = (QWaylandWindow *) window->platformWindow();
+    QImage::Format format = QApplicationPrivate::platformIntegration()->screens().first()->format();
+
     mPaintDevice = new QWaylandPaintDevice(display, window);
+    mBuffer = new QWaylandDrmBuffer(mDisplay, window->size(), format);
+    ww->attach(mBuffer);
 }
 
 QWaylandDrmWindowSurface::~QWaylandDrmWindowSurface()
