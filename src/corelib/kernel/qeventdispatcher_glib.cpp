@@ -180,6 +180,8 @@ static gboolean timerSourceCheck(GSource *source)
 static gboolean timerSourceDispatch(GSource *source, GSourceFunc, gpointer)
 {
     GTimerSource *timerSource = reinterpret_cast<GTimerSource *>(source);
+    if (timerSource->processEventsFlags & QEventLoop::X11ExcludeTimers)
+        return true;
     timerSource->runWithIdlePriority = true;
     (void) timerSource->timerList.activateTimers();
     return true; // ??? don't remove, right again?
