@@ -29,12 +29,14 @@
 #include <QtCore/qnumeric.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qvarlengtharray.h>
+#include <QtCore/qregexp.h>
 
 #include <v8.h>
 
 QT_BEGIN_NAMESPACE
 
 extern char *qdtoa(double d, int mode, int ndigits, int *decpt, int *sign, char **rve, char **digits_str);
+Q_CORE_EXPORT QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
 
 /*
   \internal
@@ -149,6 +151,70 @@ public:
             attr |= v8::DontEnum;
         return v8::PropertyAttribute(attr);
     }
+
+#ifndef QT_NO_REGEXP
+    // Converts a JS RegExp to a QRegExp.
+    // The conversion is not 100% exact since ECMA regexp and QRegExp
+    // have different semantics/flags, but we try to do our best.
+    static QRegExp toRegExp(v8::Handle<v8::RegExp> jsRegExp)
+    {
+        QString pattern = QScriptConverter::toString(jsRegExp->GetSource());
+        Qt::CaseSensitivity caseSensitivity = Qt::CaseSensitive;
+        if (jsRegExp->GetFlags() & v8::RegExp::kIgnoreCase)
+            caseSensitivity = Qt::CaseInsensitive;
+        return QRegExp(pattern, caseSensitivity, QRegExp::RegExp2);
+    }
+
+    // Converts a QRegExp to a JS RegExp.
+    // The conversion is not 100% exact since ECMA regexp and QRegExp
+    // have different semantics/flags, but we try to do our best.
+    static v8::Handle<v8::RegExp> toRegExp(const QRegExp &re)
+    {
+        // Convert the pattern to a ECMAScript pattern.
+        QString pattern = qt_regexp_toCanonical(re.pattern(), re.patternSyntax());
+        if (re.isMinimal()) {
+            QString ecmaPattern;
+            int len = pattern.length();
+            ecmaPattern.reserve(len);
+            int i = 0;
+            const QChar *wc = pattern.unicode();
+            bool inBracket = false;
+            while (i < len) {
+                QChar c = wc[i++];
+                ecmaPattern += c;
+                switch (c.unicode()) {
+                case '?':
+                case '+':
+                case '*':
+                case '}':
+                    if (!inBracket)
+                        ecmaPattern += QLatin1Char('?');
+                    break;
+                case '\\':
+                    if (i < len)
+                        ecmaPattern += wc[i++];
+                    break;
+                case '[':
+                    inBracket = true;
+                    break;
+                case ']':
+                    inBracket = false;
+                    break;
+                default:
+                    break;
+                }
+            }
+            pattern = ecmaPattern;
+        }
+
+        int flags = v8::RegExp::kNone;
+        if (re.caseSensitivity() == Qt::CaseInsensitive)
+            flags |= v8::RegExp::kIgnoreCase;
+
+        return v8::RegExp::New(QScriptConverter::toString(pattern), static_cast<v8::RegExp::Flags>(flags));
+    }
+
+#endif
 };
 
 QT_END_NAMESPACE

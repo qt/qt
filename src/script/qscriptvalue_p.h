@@ -491,7 +491,7 @@ inline QRegExp QScriptValuePrivate::toRegExp() const
         return QRegExp();
 
     v8::HandleScope handleScope;
-    return engine()->qtRegExpFromJS(v8::Handle<v8::Object>::Cast(m_value));
+    return QScriptConverter::toRegExp(v8::Handle<v8::RegExp>::Cast(m_value));
 }
 
 QObject* QScriptValuePrivate::toQObject() const

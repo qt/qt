@@ -151,86 +151,6 @@ v8::Handle<v8::Value> QScriptEnginePrivate::qtDateTimeToJS(const QDateTime &dt)
     return v8::Date::New(date);
 }
 
-#ifndef QT_NO_REGEXP
-// Converts a JS RegExp to a QRegExp.
-// The conversion is not 100% exact since ECMA regexp and QRegExp
-// have different semantics/flags, but we try to do our best.
-QRegExp QScriptEnginePrivate::qtRegExpFromJS(v8::Handle<v8::Object> jsRegExp)
-{
-    QString pattern = QScriptConverter::toString(jsRegExp->Get(v8::String::New("source"))->ToString());
-    Qt::CaseSensitivity kase = Qt::CaseSensitive;
-    if (jsRegExp->Get(v8::String::New("ignoreCase"))->ToBoolean()->IsTrue())
-        kase = Qt::CaseInsensitive;
-    return QRegExp(pattern, kase, QRegExp::RegExp2);
-}
-
-Q_CORE_EXPORT QString qt_regexp_toCanonical(const QString &, QRegExp::PatternSyntax);
-
-// Converts a QRegExp to a JS RegExp.
-// The conversion is not 100% exact since ECMA regexp and QRegExp
-// have different semantics/flags, but we try to do our best.
-v8::Handle<v8::Object> QScriptEnginePrivate::qtRegExpToJS(const QRegExp &re)
-{
-    // Convert the pattern to a ECMAScript pattern.
-    QString pattern = qt_regexp_toCanonical(re.pattern(), re.patternSyntax());
-    if (re.isMinimal()) {
-        QString ecmaPattern;
-        int len = pattern.length();
-        ecmaPattern.reserve(len);
-        int i = 0;
-        const QChar *wc = pattern.unicode();
-        bool inBracket = false;
-        while (i < len) {
-            QChar c = wc[i++];
-            ecmaPattern += c;
-            switch (c.unicode()) {
-            case '?':
-            case '+':
-            case '*':
-            case '}':
-                if (!inBracket)
-                    ecmaPattern += QLatin1Char('?');
-                break;
-            case '\\':
-                if (i < len)
-                    ecmaPattern += wc[i++];
-                break;
-            case '[':
-                inBracket = true;
-                break;
-            case ']':
-                inBracket = false;
-               break;
-            default:
-                break;
-            }
-        }
-        pattern = ecmaPattern;
-    }
-
-    QString flags;
-    if (re.caseSensitivity() == Qt::CaseInsensitive)
-        flags.append(QLatin1Char('i'));
-
-    return qtRegExpToJS(pattern, flags);
-}
-
-v8::Handle<v8::Object> QScriptEnginePrivate::qtRegExpToJS(const QString &pattern, const QString &flags)
-{
-    // TODO: Use v8::RegExp API when/if it becomes available.
-    v8::Handle<v8::Value> regExpCtor = v8::Context::GetCurrent()->Global()->Get(v8::String::New("RegExp"));
-    v8::Handle<v8::Function> fun = v8::Handle<v8::Function>::Cast(regExpCtor);
-
-    v8::Handle<v8::Value> argv[2];
-    argv[0] = QScriptConverter::toString(pattern);
-    argv[1] = QScriptConverter::toString(flags);
-    v8::Handle<v8::Object> result = fun->NewInstance(2, argv);
-
-    return result;
-}
-
-#endif
-
 // Converts a QStringList to JS.
 // The result is a new Array object with length equal to the length
 // of the QStringList, and the elements being the QStringList's
@@ -388,7 +308,7 @@ v8::Handle<v8::Value> QScriptEnginePrivate::metaTypeToJS(int type, const void *d
             break;
 #ifndef QT_NO_REGEXP
         case QMetaType::QRegExp:
-            result = qtRegExpToJS(*reinterpret_cast<const QRegExp *>(data));
+            result = QScriptConverter::toRegExp(*reinterpret_cast<const QRegExp *>(data));
             break;
 #endif
         case QMetaType::QObjectStar:
@@ -504,8 +424,8 @@ bool QScriptEnginePrivate::metaTypeFromJS(v8::Handle<v8::Value> value, int type,
         } break;
 #if !defined(QT_NO_REGEXP)
     case QMetaType::QRegExp:
-        if (1 /*value->IsRegExp()*/) { // FIXME when IsRegExp() is in trunk
-            *reinterpret_cast<QRegExp *>(data) = qtRegExpFromJS(v8::Handle<v8::Object>::Cast(value));
+        if (value->IsRegExp()) {
+            *reinterpret_cast<QRegExp *>(data) = QScriptConverter::toRegExp(v8::Handle<v8::RegExp>::Cast(value));
             return true;
         } break;
 #endif
@@ -657,7 +577,7 @@ QVariant QScriptEnginePrivate::variantFromJS(v8::Handle<v8::Value> value)
         return qtDateTimeFromJS(v8::Handle<v8::Date>::Cast(value));
 #ifndef QT_NO_REGEXP
     if (value->IsRegExp())
-        return qtRegExpFromJS(v8::Handle<v8::Object>::Cast(value));
+        return QScriptConverter::toRegExp(v8::Handle<v8::RegExp>::Cast(value));
 #endif
     if (isQtVariant(value))
         return variantValue(value);
@@ -1894,7 +1814,7 @@ QScriptValue QScriptEngine::newRegExp(const QRegExp &regexp)
     Q_D(QScriptEngine);
     QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
-    return d->scriptValueFromInternal(v8::Handle<v8::Value>(d_ptr->qtRegExpToJS(regexp)));
+    return QScriptValuePrivate::get(d->newRegExp(regexp));
 }
 
 /*!
@@ -1906,18 +1826,42 @@ QScriptValue QScriptEngine::newRegExp(const QRegExp &regexp)
 */
 QScriptValue QScriptEngine::newRegExp(const QString &pattern, const QString &flags)
 {
-    QString strippedFlags;
-    if (flags.contains(QLatin1Char('i')))
-        strippedFlags += QLatin1Char('i');
-    if (flags.contains(QLatin1Char('m')))
-        strippedFlags += QLatin1Char('m');
-    if (flags.contains(QLatin1Char('g')))
-        strippedFlags += QLatin1Char('g');
-
     Q_D(QScriptEngine);
     QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
-    return d->scriptValueFromInternal(v8::Handle<v8::Value>(d_ptr->qtRegExpToJS(pattern, strippedFlags)));
+    return QScriptValuePrivate::get(d->newRegExp(pattern, flags));
+}
+
+QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newRegExp(const QString &pattern, const QString &flags)
+{
+    int f = v8::RegExp::kNone;
+
+    QString::const_iterator i = flags.constBegin();
+    for (; i != flags.constEnd(); ++i) {
+        switch (i->unicode()) {
+        case 'i':
+            f |= v8::RegExp::kIgnoreCase;
+            break;
+        case 'm':
+            f |= v8::RegExp::kMultiline;
+            break;
+        case 'g':
+            f |= v8::RegExp::kGlobal;
+            break;
+        default:
+            {
+                // ignore a Syntax Error.
+            }
+        }
+    }
+
+    v8::Handle<v8::RegExp> regexp = v8::RegExp::New(QScriptConverter::toString(pattern), static_cast<v8::RegExp::Flags>(f));
+    return new QScriptValuePrivate(this, regexp);
+}
+
+QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newRegExp(const QRegExp &regexp)
+{
+    return new QScriptValuePrivate(this, QScriptConverter::toRegExp(regexp));
 }
 
 /*!
