@@ -39,5 +39,5 @@
 **
 ****************************************************************************/
 
-#include "../../common/symbian/qplatformdefs.h"
+#include "../common/symbian/qplatformdefs.h"
 
