@@ -13,6 +13,8 @@ wince*:|symbian: {
     DEPLOYMENT += deploy res
 }
 
+win32*:LIBS += -ladvapi32 -lnetapi32
+
 symbian {
     TARGET.CAPABILITY=AllFiles
     LIBS *= -lefsrv

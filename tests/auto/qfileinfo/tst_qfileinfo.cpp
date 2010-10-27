@@ -59,6 +59,7 @@
 #define _WIN32_WINNT  0x500
 #include <qt_windows.h>
 #include <qlibrary.h>
+#include <lm.h>
 #endif
 #include <qplatformdefs.h>
 #include <qdebug.h>
@@ -184,6 +185,10 @@ private slots:
     void notEqualOperator() const;
 
     void detachingOperations();
+
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+    void owner();
+#endif
 };
 
 tst_QFileInfo::tst_QFileInfo()
@@ -1598,6 +1603,67 @@ void tst_QFileInfo::detachingOperations()
     info1.detach();
     QVERIFY(!info1.caching());
 }
+
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+void tst_QFileInfo::owner()
+{
+    QString userName;
+#if defined(Q_OS_UNIX)
+    char *usernameBuf = getlogin();
+    if (usernameBuf) {
+        userName = QString::fromLocal8Bit(usernameBuf);
+    }
+#endif
+#if defined(Q_OS_WIN)
+    wchar_t  usernameBuf[1024];
+    DWORD  bufSize = 1024;
+    if (GetUserNameW(usernameBuf, &bufSize)) {
+        userName = QString::fromWCharArray(usernameBuf, bufSize);
+        // Special case : If the user is a member of Adminstrators group, all files
+        // created by the current user are owned by the Admistrators group.
+        LPLOCALGROUP_USERS_INFO_0 pBuf = NULL;
+        DWORD dwLevel = 0;
+        DWORD dwFlags = LG_INCLUDE_INDIRECT ;
+        DWORD dwPrefMaxLen = MAX_PREFERRED_LENGTH;
+        DWORD dwEntriesRead = 0;
+        DWORD dwTotalEntries = 0;
+        NET_API_STATUS nStatus;
+        nStatus = NetUserGetLocalGroups(0, usernameBuf, dwLevel, dwFlags, (LPBYTE *) &pBuf,
+                                        dwPrefMaxLen, &dwEntriesRead, &dwTotalEntries);
+        // Check if the current user is a member of Adminstrators group
+        if (nStatus == NERR_Success && pBuf){
+            for (int i = 0; i < dwEntriesRead; i++) {
+                QString groupName = QString::fromWCharArray(pBuf[i].lgrui0_name);
+                if (!groupName.compare(QLatin1String("Administrators")))
+                    userName = groupName;
+            }
+        }
+        if (pBuf != NULL)
+            NetApiBufferFree(pBuf);
+    }
+    extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
+    qt_ntfs_permission_lookup = 1;
+#endif
+    if (userName.isEmpty())
+        QSKIP("Can't retrieve the user name", SkipAll);
+    QString fileName("ownertest.txt");
+    if (QFile::exists(fileName))
+        QFile::remove(fileName);
+    QFile testFile(fileName);
+    QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Text));
+    QByteArray testData("testfile");
+    QVERIFY(testFile.write(testData) != -1);
+    testFile.close();
+    QFileInfo fi(fileName);
+    QVERIFY(fi.exists());
+    QCOMPARE(userName, fi.owner());
+    if (QFile::exists(fileName))
+        QFile::remove(fileName);
+#if defined(Q_OS_WIN)
+    qt_ntfs_permission_lookup = 0;
+#endif
+}
+#endif
 
 QTEST_MAIN(tst_QFileInfo)
 #include "tst_qfileinfo.moc"
