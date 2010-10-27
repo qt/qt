@@ -165,7 +165,7 @@ inline v8::Local<v8::Array> QScriptOriginalGlobalObject::getOwnPropertyNames(v8:
 {
     Q_ASSERT(!object.IsEmpty());
     v8::Handle<v8::Value> argv[] = {object};
-    return v8::Local<v8::Array>::Cast(m_ownPropertyNames->Call(m_globalObject, /* argc */ 2, argv));
+    return v8::Local<v8::Array>::Cast(m_ownPropertyNames->Call(m_globalObject, /* argc */ 1, argv));
 }
 
 inline QScriptValue::PropertyFlags QScriptOriginalGlobalObject::getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property, const QScriptValue::ResolveFlags& mode)
