@@ -39,13 +39,13 @@
 **
 ****************************************************************************/
 
+#include <private/qabstractsocket_p.h>
 #include "qhttpnetworkconnection_p.h"
 #include "qhttpnetworkconnectionchannel_p.h"
 #include "private/qnoncontiguousbytedevice_p.h"
 #include <private/qnetworkrequest_p.h>
 #include <private/qobject_p.h>
 #include <private/qauthenticator_p.h>
-#include <private/qabstractsocket_p.h>
 #include <qnetworkproxy.h>
 #include <qauthenticator.h>
 
@@ -129,9 +129,11 @@ void QHttpNetworkConnectionPrivate::pauseConnection()
 
     // Disable all socket notifiers
     for (int i = 0; i < channelCount; i++) {
+#ifndef QT_NO_OPENSSL
         if (encrypt)
             QSslSocketPrivate::pauseSocketNotifiers(static_cast<QSslSocket*>(channels[i].socket));
         else
+#endif
             QAbstractSocketPrivate::pauseSocketNotifiers(channels[i].socket);
     }
 }
@@ -141,9 +143,11 @@ void QHttpNetworkConnectionPrivate::resumeConnection()
     state = RunningState;
     // Enable all socket notifiers
     for (int i = 0; i < channelCount; i++) {
+#ifndef QT_NO_OPENSSL
         if (encrypt)
             QSslSocketPrivate::resumeSocketNotifiers(static_cast<QSslSocket*>(channels[i].socket));
         else
+#endif
             QAbstractSocketPrivate::resumeSocketNotifiers(channels[i].socket);
 
         // Resume pending upload if needed
