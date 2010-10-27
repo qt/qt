@@ -216,7 +216,8 @@ QDeclarativeLoader::~QDeclarativeLoader()
     cannot load non-visual components.
 
     To unload the currently loaded item, set this property to an empty string,
-    or set \l sourceComponent to \c undefined.
+    or set \l sourceComponent to \c undefined. Setting \c source to a
+    new URL will also cause the item created by the previous URL to be unloaded.
 
     \sa sourceComponent, status, progress
 */
