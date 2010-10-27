@@ -1090,16 +1090,15 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                         .arg(atom->string())
                         .arg(marker->plainFullName(relative)));
             }
-#if 0            
-            else if (noLinks) {
-                //xmlWriter().writeCharacters(atom->string());
-                qDebug() << "MYLINK:" << myLink << outFileName() << atom->string();
-            }
-            else {
+            else if (!inSectionHeading) {
                 beginLink(myLink, node, relative, marker);
             }
-#endif            
-            beginLink(myLink, node, relative, marker);
+#if 0
+            else {
+                //xmlWriter().writeCharacters(atom->string());
+                //qDebug() << "MYLINK:" << myLink << outFileName() << atom->string();
+            }
+#endif
             skipAhead = 1;
         }
         break;
