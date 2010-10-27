@@ -49,7 +49,7 @@
  * This class operates as follows:
  * Parent calls the slot startAnalysis which shoves a list of QStrings into URLQueue and then calls fetchURLs.
  * FetchURLs sends out HTTP GETs for each image it can't get out of the cache.
- * As the responses come in, handleReply trys to create an image out of each and pushes those images into imageQueue.
+ * As the responses come in, handleReply tries to create an image out of each and pushes those images into imageQueue.
  * On the last (detected by no outstandingFetches and URLQueue.isEmpty()) call to queueImage (from handleReply)
  * a thread is forked to process all the images. When it finishes, it emits a finished signal that is received
  * by our JavaScript code.

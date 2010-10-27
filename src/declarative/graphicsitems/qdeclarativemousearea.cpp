@@ -335,7 +335,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 
     If the \e accepted property of the \l {MouseEvent}{mouse} parameter is set to false
     in the handler, the onPressed/onReleased/onClicked handlers will be called for the second
-    click; otherwise they are supressed.  The accepted property defaults to true.
+    click; otherwise they are suppressed.  The accepted property defaults to true.
 */
 
 /*!

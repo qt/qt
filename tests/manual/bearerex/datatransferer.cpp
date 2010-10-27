@@ -121,7 +121,7 @@ void DataTransfererQTcp::readyRead()
 
     qDebug() << "BearerEx DataTransferQTcp data received: " << data;
     m_dataTransferOngoing = false;
-    // m_qsocket.error() returns uninitialized value in case no error has occured,
+    // m_qsocket.error() returns uninitialized value in case no error has occurred,
     // so emit '0'
     emit finished(0, bytesAvailable, "QAbstractSocket::SocketError");
 }

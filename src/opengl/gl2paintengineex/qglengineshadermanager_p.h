@@ -457,7 +457,7 @@ public:
         AttributeOpacity
     };
 
-    // There are optimisations we can do, depending on the brush transform:
+    // There are optimizations we can do, depending on the brush transform:
     //    1) May not have to apply perspective-correction
     //    2) Can use lower precision for matrix
     void optimiseForBrushTransform(QTransform::TransformationType transformType);

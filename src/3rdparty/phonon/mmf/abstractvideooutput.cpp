@@ -161,24 +161,10 @@ void MMF::AbstractVideoOutput::dump() const
 {
 #ifndef QT_NO_DEBUG
     TRACE_CONTEXT(AbstractVideoOutput::dump, EVideoInternal);
-
     QScopedPointer<ObjectDump::QVisitor> visitor(new ObjectDump::QVisitor);
     visitor->setPrefix("Phonon::MMF"); // to aid searchability of logs
     ObjectDump::addDefaultAnnotators(*visitor);
-
-    if (QWidget *window = QApplication::activeWindow()) {
-        TRACE("Dumping from root window 0x%08x:", window);
-        ObjectDump::dumpTreeFromLeaf(*window, *visitor);
-    }
-
-    TRACE("Dumping tree from leaf 0x%08x:", this);
     ObjectDump::dumpTreeFromLeaf(*this, *visitor);
-
-    QScopedPointer<ObjectDump::QDumper> dumper(new ObjectDump::QDumper);
-    dumper->setPrefix("Phonon::MMF"); // to aid searchability of logs
-    ObjectDump::addDefaultAnnotators(*dumper);
-    TRACE_0("Dumping AbstractVideoOutput:");
-    dumper->dumpObject(*this);
 #endif
 }
 

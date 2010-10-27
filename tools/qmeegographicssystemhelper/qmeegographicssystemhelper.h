@@ -147,7 +147,7 @@ public:
     //! Destroys an EGL shared image. 
     /*!
      Destroys an EGLSharedImage previously created with an ::imageToEGLSharedImage call.
-     Returns true if the image was found and the destruction was successfull. Notice that
+     Returns true if the image was found and the destruction was successful. Notice that
      this destroys the image for all processes using it. 
     */
     static bool destroyEGLSharedImage(Qt::HANDLE handle);

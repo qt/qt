@@ -227,7 +227,7 @@ signals:
      * Level changed
      * \param rmsLevel RMS level in range 0.0 - 1.0
      * \param peakLevel Peak level in range 0.0 - 1.0
-     * \param numSamples Number of audio samples analysed
+     * \param numSamples Number of audio samples analyzed
      */
     void levelChanged(qreal rmsLevel, qreal peakLevel, int numSamples);
 

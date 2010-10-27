@@ -104,8 +104,7 @@ class MediaPlayer :
 {
     Q_OBJECT
 public:
-    MediaPlayer(const QString &,
-                const bool hasSmallScreen);
+    MediaPlayer();
 
     void dragEnterEvent(QDragEnterEvent *e);
     void dragMoveEvent(QDragMoveEvent *e);
@@ -115,6 +114,8 @@ public:
     void setLocation(const QString &location);
     void initVideoWindow();
     void initSettingsDialog();
+    void setVolume(qreal volume);
+    void setSmallScreen(bool smallScreen);
 
 public slots:
     void openFile();
@@ -171,7 +172,7 @@ private:
     Phonon::AudioOutput m_AudioOutput;
     MediaVideoWidget *m_videoWidget;
     Phonon::Path m_audioOutputPath;
-    const bool m_hasSmallScreen;
+    bool m_smallScreen;
 };
 
 #endif //MEDIAPLAYER_H
