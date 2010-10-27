@@ -263,7 +263,8 @@ QRectF QBlittablePixmapData::clipAndTransformRect(const QRectF &rect) const
     return transformationRect;
 }
 
-QT_END_NAMESPACE
 #endif //QT_BLITTER_RASTEROVERLAY
+
+QT_END_NAMESPACE
 
 #endif //QT_NO_BLITTABLE
