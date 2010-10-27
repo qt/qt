@@ -75,26 +75,102 @@ while (1) {
         last;
     }
 
-    if ($buildingLibrary) {
+    if ($buildingLibrary && $runCount == 1) {
         my $tmpDefFile;
-        my $defFile;
-        open($defFile, "< $defoutput[1]") or die("Could not open $defoutput[1]");
+        my $newDefFile;
+        my $origDefFile;
+        my $savedNewDefFileLine = "";
+        open($origDefFile, "< $definput[1]") or die("Could not open $definput[1]");
+        open($newDefFile, "< $defoutput[1]") or die("Could not open $defoutput[1]");
         open($tmpDefFile, "> $defoutput[1].tmp") or die("Could not open $defoutput[1].tmp");
+        print($tmpDefFile "EXPORTS\n");
         $fixupFile = "$defoutput[1].tmp";
-        while (<$defFile>) {
-            s/\r//;
-            s/\n//;
-            next if (/; NEW:/);
-            if (/([a-z0-9_]+) @/i) {
-                if (exists($fixupSymbols{$1})) {
-                    s/ ABSENT//;
-                } elsif (s/; MISSING://) {
-                    s/$/ ABSENT/;
+        while (1) {
+            my $origDefLine;
+            my $origSym;
+            my $origOrdinal;
+            my $origExtraData;
+            my $newDefLine;
+            my $newSym;
+            my $newOrdinal;
+            my $newExtraData;
+            my $defLine;
+            my $sym;
+            my $ordinal;
+            my $extraData;
+            # Read from original def file, and skip non-symbol lines
+            while (1) {
+                $origDefLine = <$origDefFile>;
+                if (defined($origDefLine)) {
+                    $origDefLine =~ s/[\n\r]//;
+                    if ($origDefLine =~ /([a-z0-9_]+) +\@ ([0-9]+) (.*)/i) {
+                        $origSym = $1;
+                        $origOrdinal = $2;
+                        $origExtraData = $3;
+                        last;
+                    }
+                } else {
+                    last;
                 }
             }
-            print($tmpDefFile "$_\n");
+
+            if ($savedNewDefFileLine) {
+                # This happens if the new def file was missing an entry.
+                $newDefLine = $savedNewDefFileLine;
+                $newDefLine =~ /([a-z0-9_]+) +\@ ([0-9]+) (.*)/i or die("$0: Shouldn't happen");
+                $newSym = $1;
+                $newOrdinal = $2;
+                $newExtraData = $3;
+            } else {
+                # Read from new def file, and skip non-symbol lines
+                while (1) {
+                    $newDefLine = <$newDefFile>;
+                    if (defined($newDefLine)) {
+                        $newDefLine =~ s/[\n\r]//;
+                        if ($newDefLine =~ /([a-z0-9_]+) +\@ ([0-9]+) (.*)/i) {
+                            $newSym = $1;
+                            $newOrdinal = $2;
+                            $newExtraData = $3;
+                            last;
+                        }
+                    } else {
+                        last;
+                    }
+                }
+            }
+            $savedNewDefFileLine = "";
+            last if (!defined($origDefLine) && !defined($newDefLine));
+
+            if (defined($origOrdinal) && (!defined($newOrdinal) || $origOrdinal != $newOrdinal)) {
+                # If the symbol is missing from the new def file, use the original symbol.
+                $savedNewDefFileLine = $newDefLine;
+                $defLine = $origDefLine;
+                $sym = $origSym;
+                $ordinal = $origOrdinal;
+                $extraData = $origExtraData;
+            } else {
+                $defLine = $newDefLine;
+                $sym = $newSym;
+                $ordinal = $newOrdinal;
+                if ($newExtraData =~ /ABSENT/) {
+                    # Special case to keep "DATA [0-9]+" data in absent entries.
+                    $extraData = $origExtraData;
+                } else {
+                    $extraData = $newExtraData;
+                }
+            }
+            if (exists($fixupSymbols{$sym})) {
+                # Fix symbols that have returned after first being marked ABSENT.
+                $extraData =~ s/ ABSENT//;
+            } elsif ($defLine =~ s/; MISSING://) {
+                # Auto-absent symbols.
+                $extraData .= " ABSENT";
+            }
+            print($tmpDefFile "\t$sym \@ $ordinal $extraData\n");
         }
-        close($defFile);
+        print($tmpDefFile "\n");
+        close($origDefFile);
+        close($newDefFile);
         close($tmpDefFile);
 
         $definput[1] = "$defoutput[1].tmp";
