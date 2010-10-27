@@ -158,6 +158,7 @@ public:
     QPlatformGLContext *glContext() const;
     void attach(QWaylandBuffer *buffer);
     QWaylandBuffer *getBuffer(void) { return mBuffer; }
+    QWaylandWindow *getParentWindow(void) { return mParentWindow; }
 
 private:
     struct wl_surface *mSurface;
@@ -166,6 +167,7 @@ private:
     WId mWindowId;
 
     QWaylandBuffer *mBuffer;
+    QWaylandWindow *mParentWindow;
 };
 
 class QWaylandIntegration : public QPlatformIntegration

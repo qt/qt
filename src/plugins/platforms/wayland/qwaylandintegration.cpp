@@ -460,8 +460,7 @@ void QWaylandWindow::setParent(const QPlatformWindow *parent)
 {
     QWaylandWindow *wParent = (QWaylandWindow *)parent;
 
-    mSurface = wParent->surface();
-    wParent->attach(mBuffer);
+    mParentWindow = wParent;
 }
 
 void QWaylandWindow::setVisible(bool visible)
