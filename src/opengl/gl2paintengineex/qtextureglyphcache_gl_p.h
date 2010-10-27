@@ -98,7 +98,7 @@ struct QGLGlyphTexture
     int m_height;
 };
 
-class Q_OPENGL_EXPORT QGLTextureGlyphCache : public QImageTextureGlyphCache
+class Q_OPENGL_EXPORT QGLTextureGlyphCache : public QImageTextureGlyphCache, public QGLContextGroupResourceBase
 {
 public:
     QGLTextureGlyphCache(const QGLContext *context, QFontEngineGlyphCache::Type type, const QTransform &matrix);
@@ -139,6 +139,8 @@ public:
     };
     FilterMode filterMode() const { return m_filterMode; }
     void setFilterMode(FilterMode m) { m_filterMode = m; }
+
+    void freeResource(void *) { ctx = 0; }
 
 private:
     QGLContextGroupResource<QGLGlyphTexture> m_textureResource;
