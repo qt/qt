@@ -714,6 +714,8 @@ bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &a, quint16 port)
             address = QHostAddress(QHostAddress::Any);
         }
         break;
+    default:
+        break;
     }
 
     struct sockaddr_in sockAddrIPv4;

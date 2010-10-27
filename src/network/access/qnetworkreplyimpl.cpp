@@ -64,10 +64,10 @@ inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
       bytesDownloaded(0), lastBytesDownloaded(-1), bytesUploaded(-1), preMigrationDownloaded(-1),
       httpStatusCode(0),
       state(Idle)
-      , downloadBuffer(0)
       , downloadBufferReadPosition(0)
       , downloadBufferCurrentSize(0)
       , downloadBufferMaximumSize(0)
+      , downloadBuffer(0)
 {
 }
 
