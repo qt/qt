@@ -784,6 +784,16 @@ inline void qSwap(QSharedPointer<T> &p1, QSharedPointer<T> &p2)
     p1.swap(p2);
 }
 
+#ifndef QT_NO_STL
+QT_END_NAMESPACE
+namespace std {
+    template <class T>
+    inline void swap(QSharedPointer<T> &p1, QSharedPointer<T> &p2)
+    { p1.swap(p2); }
+}
+QT_BEGIN_NAMESPACE
+#endif
+
 namespace QtSharedPointer {
 // helper functions:
     template <class X, class T>

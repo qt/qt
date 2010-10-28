@@ -43,6 +43,9 @@
 #define QGLOBAL_H
 
 #include <stddef.h>
+#ifndef QT_NO_STL
+#include <algorithm>
+#endif
 
 #define QT_VERSION_STR   "4.8.0"
 /*
@@ -2062,9 +2065,14 @@ Q_DECLARE_TYPEINFO_BODY(TYPE, FLAGS)
 template <typename T>
 inline void qSwap(T &value1, T &value2)
 {
+#ifdef QT_NO_STL
     const T t = value1;
     value1 = value2;
     value2 = t;
+#else
+    using std::swap;
+    swap(value1, value2);
+#endif
 }
 
 /*
@@ -2076,12 +2084,23 @@ inline void qSwap(T &value1, T &value2)
    types must declare a 'bool isDetached(void) const;' member for this
    to work.
 */
+#ifdef QT_NO_STL
+#define Q_DECLARE_SHARED_STL(TYPE)
+#else
+#define Q_DECLARE_SHARED_STL(TYPE) \
+QT_END_NAMESPACE \
+namespace std { \
+    template<> inline void swap<TYPE>(TYPE &value1, TYPE &value2) \
+    { swap(value1.data_ptr(), value2.data_ptr()); } \
+} \
+QT_BEGIN_NAMESPACE
+#endif
+
 #define Q_DECLARE_SHARED(TYPE)                                          \
 template <> inline bool qIsDetached<TYPE>(TYPE &t) { return t.isDetached(); } \
 template <> inline void qSwap<TYPE>(TYPE &value1, TYPE &value2) \
-{ \
-    qSwap(value1.data_ptr(), value2.data_ptr()); \
-}
+{ qSwap(value1.data_ptr(), value2.data_ptr()); } \
+Q_DECLARE_SHARED_STL(TYPE)
 
 /*
    QTypeInfo primitive specializations
