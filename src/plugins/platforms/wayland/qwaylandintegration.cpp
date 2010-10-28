@@ -513,6 +513,7 @@ private:
     QPlatformWindowFormat mFormat;
     QWaylandDisplay *mDisplay;
     QWaylandWindow *mWindow;
+    GLuint parentFbo, parentRbo;
 };
 
 QWaylandGLContext::QWaylandGLContext(QWaylandDisplay *wd, QWaylandWindow *window, const QPlatformWindowFormat &format)
@@ -520,11 +521,15 @@ QWaylandGLContext::QWaylandGLContext(QWaylandDisplay *wd, QWaylandWindow *window
     , mFormat(format)
     , mDisplay(wd)
     , mWindow(window)
+    , parentFbo(0)
+    , parentRbo(0)
 {
 }
 
 QWaylandGLContext::~QWaylandGLContext()
 {
+    glDeleteRenderbuffers(1, &parentRbo);
+    glDeleteFramebuffers(1, &parentFbo);
 }
 
 void QWaylandGLContext::makeCurrent()
@@ -594,7 +599,10 @@ void QWaylandGLContext::swapBuffers()
     QWaylandWindow *mParentWindow = mWindow->getParentWindow();
     QWaylandDrmBuffer *mBuffer, *mParentBuffer;
     QRect geometry = mWindow->geometry(), parentGeometry;
-    GLuint parentFbo, parentRbo;
+    QGLShaderProgram *blitProgram;
+    QRectF r;
+    qreal w;
+    qreal h;
 
     if (!mParentWindow) {
 	qDebug("swap without parent widget?\n");
@@ -610,31 +618,33 @@ void QWaylandGLContext::swapBuffers()
     mBuffer = (QWaylandDrmBuffer *)mWindow->getBuffer();
     mParentBuffer = (QWaylandDrmBuffer *)mParentWindow->getBuffer();
 
-    qDebug("copying from texture image %d, texture %d to image %d, texture %d\n",
-	   mBuffer->mImage, mBuffer->mTexture, mParentBuffer->mImage, mParentBuffer->mTexture);
-
     glDisable(GL_DEPTH_TEST);
 
-    glGenFramebuffers(1, &parentFbo);
-    glGenRenderbuffers(1, &parentRbo);
+    w = geometry.width() ? geometry.width() : 1.0f;
+    h = geometry.height() ? geometry.height() : 1.0f;
+
+    /* These need to be generated against the src context */
+    if (!parentFbo)
+	glGenFramebuffers(1, &parentFbo);
+    if (!parentRbo)
+	glGenRenderbuffers(1, &parentRbo);
+
     glBindFramebuffer(GL_FRAMEBUFFER, parentFbo);
     glBindRenderbuffer(GL_RENDERBUFFER, parentRbo);
-    glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER, mParentBuffer->mImage);
+    glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER,
+					   mParentBuffer->mImage);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 			      GL_RENDERBUFFER, parentRbo);
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, mBuffer->mImage);
     glViewport(0, 0, geometry.width(), geometry.height());
 
-    QGLShaderProgram *blitProgram =
-	QGLEngineSharedShaders::shadersForContext(QGLContext::currentContext())->blitProgram();
+    blitProgram = QGLEngineSharedShaders::shadersForContext(QGLContext::currentContext())->blitProgram();
     blitProgram->bind();
-    blitProgram->setUniformValue("imageTexture", 0 /*QT_IMAGE_TEXTURE_UNIT*/);
+    blitProgram->setUniformValue("imageTexture", 0);
+
     // The shader manager's blit program does not multiply the
     // vertices by the pmv matrix, so we need to do the effect
     // of the orthographic projection here ourselves.
-    QRectF r;
-    qreal w = geometry.width() ? geometry.width() : 1.0f;
-    qreal h = geometry.height() ? geometry.height() : 1.0f;
     r.setLeft((geometry.left() / w) * 2.0f - 1.0f);
     if (geometry.right() == (geometry.width() - 1))
 	r.setRight(1.0f);
@@ -649,6 +659,8 @@ void QWaylandGLContext::swapBuffers()
 
     wl_surface_damage(mParentWindow->surface(), 0, 0,
 		      geometry.width(), geometry.height());
+    /* restore things to the last valid GL state */
+    makeCurrent();
 }
 
 void *QWaylandGLContext::getProcAddress(const QString &string)
