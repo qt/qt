@@ -654,7 +654,8 @@ void QWaylandGLContext::swapBuffers()
     if (geometry.bottom() == (geometry.height() - 1))
 	r.setTop(1.0f);
     else
-	r.setTop((geometry.bottom() / w) * 2.0f - 1.0f);
+	r.setTop((geometry.bottom() / h) * 2.0f - 1.0f);
+
     drawTexture(r, mBuffer->mTexture, mWindow->widget()->size(), geometry);
 
     wl_surface_damage(mParentWindow->surface(), 0, 0,
