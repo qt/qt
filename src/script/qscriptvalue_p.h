@@ -821,7 +821,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::prototype() 
 
 inline void QScriptValuePrivate::setPrototype(QScriptValuePrivate* prototype)
 {
-    if (isObject() && prototype->isValid() && (prototype->isObject() || prototype->isNull())) {
+    if (isObject() && (prototype->isObject() || prototype->isNull())) {
         if (engine() != prototype->engine()) {
             if (prototype->engine()) {
                 qWarning("QScriptValue::setPrototype() failed: cannot set a prototype created in a different engine");
@@ -830,7 +830,7 @@ inline void QScriptValuePrivate::setPrototype(QScriptValuePrivate* prototype)
             prototype->assignEngine(engine());
         }
         v8::HandleScope handleScope;
-        if (!v8::Handle<v8::Object>::Cast(m_value)->SetPrototype(prototype->m_value))
+        if (!v8::Handle<v8::Object>::Cast(m_value)->SetPrototype(*prototype))
             qWarning("QScriptValue::setPrototype() failed: cyclic prototype value");
     }
 }
