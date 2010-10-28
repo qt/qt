@@ -653,10 +653,10 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     case Atom::BaseName:
         break;
     case Atom::BriefLeft:
-        if (relative->type() == Node::Fake) {
-            skipAhead = skipAtoms(atom, Atom::BriefRight);
-            break;
-        }
+        //if (relative->type() == Node::Fake) {
+        //skipAhead = skipAtoms(atom, Atom::BriefRight);
+        //break;
+        //}
         if (inApiDesc || inSection) {
             xmlWriter().writeStartElement("p");
             xmlWriter().writeAttribute("outputclass","brief");
@@ -697,8 +697,8 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         }
         break;
     case Atom::BriefRight:
-        if (relative->type() != Node::Fake) 
-            xmlWriter().writeEndElement(); // </shortdesc> or </p>
+        //        if (relative->type() != Node::Fake) 
+        xmlWriter().writeEndElement(); // </shortdesc> or </p>
         noLinks = false;
         break;
     case Atom::C:
@@ -2413,6 +2413,18 @@ void DitaXmlGenerator::generateTitle(const QString& title,
 void DitaXmlGenerator::generateBrief(const Node* node, CodeMarker* marker)
 {
     Text brief = node->doc().briefText(true); // zzz
+    if (outFileName() == "requirements-x11.xml") {
+        if (brief.isEmpty())
+            qDebug() << "EMPTY BRIEF";
+        else {
+            qDebug() << "NON-EMPTY BRIEF";
+            Atom* a = brief.firstAtom();
+            while (a != 0) {
+                qDebug() << "  " << a->type() << a->typeString() << a->string();
+                a = a->next();
+            }
+        }
+    }
     if (!brief.isEmpty()) {
         generateText(brief, node, marker);
     }
