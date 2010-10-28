@@ -56,6 +56,8 @@
 #include <qendian.h>
 #include <qglobal.h>
 
+#if defined (Q_OF_ELF) && defined(Q_CC_GNU)
+
 QT_BEGIN_NAMESPACE
 
 class QString;
@@ -99,5 +101,6 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QELFPARSER_P_H
+#endif // defined(Q_OF_ELF) && defined(Q_CC_GNU)
 
+#endif // QELFPARSER_P_H
