@@ -745,7 +745,7 @@ void QHttpNetworkConnectionPrivate::removeReply(QHttpNetworkReply *reply)
 // although it is called _q_startNextRequest, it will actually start multiple requests when possible
 void QHttpNetworkConnectionPrivate::_q_startNextRequest()
 {
-    // If the QHttpNetworkConnection is currently paused then bail out immediatly
+    // If the QHttpNetworkConnection is currently paused then bail out immediately
     if (state == PausedState)
         return;
 
