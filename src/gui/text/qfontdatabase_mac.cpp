@@ -45,6 +45,8 @@
 #include <qabstractfileengine.h>
 #include <stdlib.h>
 #include <qendian.h>
+#include <private/qfontengine_coretext_p.h>
+#include <private/qfontengine_mac_p.h>
 
 QT_BEGIN_NAMESPACE
 
