@@ -542,6 +542,7 @@ void QWaylandGLContext::makeCurrent()
 
     eglMakeCurrent(mDisplay->eglDisplay(), 0, 0, mBuffer->mContext);
 
+    glViewport(0, 0, geometry.width(), geometry.height());
     glBindFramebuffer(GL_FRAMEBUFFER, mBuffer->mFbo);
     glBindTexture(GL_TEXTURE_2D, mBuffer->mTexture);
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, mBuffer->mImage);
@@ -553,6 +554,12 @@ void QWaylandGLContext::doneCurrent()
 {
 }
 
+/* drawTexture - Draw from a texture into a the current framebuffer
+ * @rect: GL normalized coords for drawing (between -1.0f and 1.0f)
+ * @tex_id: texture source
+ * @texSize: size of source rectangle in Qt coords
+ * @br: bounding rect for drawing
+ */
 static void drawTexture(const QRectF &rect, GLuint tex_id,
 			const QSize &texSize, const QRectF &br)
 {
@@ -584,6 +591,11 @@ static void drawTexture(const QRectF &rect, GLuint tex_id,
     glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, texCoordArray);
 
     glBindTexture(GL_TEXTURE_2D, tex_id);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
     glEnableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
@@ -620,9 +632,6 @@ void QWaylandGLContext::swapBuffers()
 
     glDisable(GL_DEPTH_TEST);
 
-    w = geometry.width() ? geometry.width() : 1.0f;
-    h = geometry.height() ? geometry.height() : 1.0f;
-
     /* These need to be generated against the src context */
     if (!parentFbo)
 	glGenFramebuffers(1, &parentFbo);
@@ -636,32 +645,36 @@ void QWaylandGLContext::swapBuffers()
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 			      GL_RENDERBUFFER, parentRbo);
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, mBuffer->mImage);
-    glViewport(0, 0, geometry.width(), geometry.height());
+    glViewport(0, 0, parentGeometry.width(), parentGeometry.height());
 
     blitProgram = QGLEngineSharedShaders::shadersForContext(QGLContext::currentContext())->blitProgram();
     blitProgram->bind();
     blitProgram->setUniformValue("imageTexture", 0);
 
-    // The shader manager's blit program does not multiply the
-    // vertices by the pmv matrix, so we need to do the effect
-    // of the orthographic projection here ourselves.
+    /* Transform the target rect to the appropriate coords on the parent */
+    w = parentGeometry.width();
+    h = parentGeometry.height();
+
     r.setLeft((geometry.left() / w) * 2.0f - 1.0f);
-    if (geometry.right() == (geometry.width() - 1))
+    if (geometry.right() == (parentGeometry.width() - 1))
 	r.setRight(1.0f);
     else
 	r.setRight((geometry.right() / w) * 2.0f - 1.0f);
-    r.setBottom((geometry.top() / h) * 2.0f - 1.0f);
-    if (geometry.bottom() == (geometry.height() - 1))
-	r.setTop(1.0f);
+
+    r.setTop((geometry.top() / h) * 2.0f - 1.0f);
+    if (geometry.bottom() == (parentGeometry.height() - 1))
+       r.setBottom(-1.0f);
     else
-	r.setTop((geometry.bottom() / h) * 2.0f - 1.0f);
+	r.setBottom((geometry.bottom() / h) * 2.0f - 1.0f);
 
-    drawTexture(r, mBuffer->mTexture, mWindow->widget()->size(), geometry);
+    drawTexture(r, mBuffer->mTexture, mParentWindow->widget()->size(), parentGeometry);
 
-    wl_surface_damage(mParentWindow->surface(), 0, 0,
-		      geometry.width(), geometry.height());
+    wl_surface_damage(mParentWindow->surface(), geometry.left(), geometry.top(),
+		      geometry.right(), geometry.bottom());
     /* restore things to the last valid GL state */
     makeCurrent();
+    /* hack: avoid tight swapBuffers loops */
+    usleep(20000);
 }
 
 void *QWaylandGLContext::getProcAddress(const QString &string)
