@@ -36,9 +36,10 @@ Item {
             if(cursorRectangle.y < topMargin - textEdit.y){//Cursor went off the front
                 textEdit.y = topMargin - Math.max(0, cursorRectangle.y);
             }else if(cursorRectangle.y > parent.height - topMargin - bottomMargin - textEdit.y){//Cursor went off the end
-                textEdit.y = topMargin - Math.max(0, cursorRectangle.y - (parent.height - topMargin - bottomMargin)) - cursorRectangle.height;
+                textEdit.y = topMargin - Math.max(0, cursorRectangle.y - (parent.height - topMargin - bottomMargin) + cursorRectangle.height);
             }
         }
+        onHeightChanged: y=topMargin//reset scroll
 
         text:""
         horizontalAlignment: TextInput.AlignLeft

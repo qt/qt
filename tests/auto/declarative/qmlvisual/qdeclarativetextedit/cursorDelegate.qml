@@ -3,17 +3,16 @@ import QtQuick 1.0
     resources: [
         Component { id: cursorA
             Item { id: cPage;
-                x: Behavior { NumberAnimation { } }
-                y: Behavior { NumberAnimation { } }
-                height: Behavior { NumberAnimation { duration: 200 } }
+                Behavior on x { NumberAnimation { } }
+                Behavior on y { NumberAnimation { } }
+                Behavior on height { NumberAnimation { duration: 200 } }
                 Rectangle { id: cRectangle; color: "black"; y: 1; width: 1; height: parent.height-2;
                     Rectangle { id:top; color: "black"; width: 3; height: 1; x: -1; y:0}
                     Rectangle { id:bottom; color: "black"; width: 3; height: 1; x: -1; anchors.bottom: parent.bottom;}
-                    opacity: 1
-                    opacity: SequentialAnimation { running: cPage.parent.focus == true; loops: Animation.Infinite;
-                                NumberAnimation { properties: "opacity"; to: 1; duration: 500; easing.type: "InQuad"}
-                                NumberAnimation { properties: "opacity"; to: 0; duration: 500; easing.type: "OutQuad"}
-                             }
+                }
+                SequentialAnimation on opacity { running: true; loops: Animation.Infinite;
+                    NumberAnimation { to: 0; duration: 500; easing.type: "OutQuad"}
+                    NumberAnimation { to: 1; duration: 500; easing.type: "InQuad"}
                 }
                 width: 1;
             }
