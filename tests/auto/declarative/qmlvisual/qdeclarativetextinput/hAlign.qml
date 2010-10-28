@@ -4,6 +4,7 @@ Item{
     width:600;
     height:300;
     Column{
+        //Because they have auto width, these three should look the same
         TextInput{ 
             text: "Jackdaws love my big sphinx of quartz"; 
             horizontalAlignment: TextInput.AlignLeft;

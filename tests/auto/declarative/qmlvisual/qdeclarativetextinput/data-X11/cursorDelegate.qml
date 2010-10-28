@@ -427,7 +427,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777249
-        modifiers: 67108864
+        modifiers: 0
         text: ""
         autorep: false
         count: 1
@@ -439,7 +439,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777248
-        modifiers: 100663296
+        modifiers: 67108864
         text: ""
         autorep: false
         count: 1
@@ -615,7 +615,7 @@ VisualTest {
     Key {
         type: 7
         key: 16777248
-        modifiers: 67108864
+        modifiers: 100663296
         text: ""
         autorep: false
         count: 1
@@ -627,7 +627,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777248
-        modifiers: 100663296
+        modifiers: 67108864
         text: ""
         autorep: false
         count: 1
@@ -675,7 +675,7 @@ VisualTest {
     Key {
         type: 7
         key: 16777249
-        modifiers: 33554432
+        modifiers: 100663296
         text: ""
         autorep: false
         count: 1
@@ -687,7 +687,7 @@ VisualTest {
     Key {
         type: 7
         key: 16777248
-        modifiers: 0
+        modifiers: 33554432
         text: ""
         autorep: false
         count: 1
@@ -787,7 +787,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777249
-        modifiers: 67108864
+        modifiers: 0
         text: ""
         autorep: false
         count: 1
@@ -795,7 +795,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777248
-        modifiers: 100663296
+        modifiers: 67108864
         text: ""
         autorep: false
         count: 1
@@ -1171,7 +1171,7 @@ VisualTest {
     Key {
         type: 7
         key: 16777249
-        modifiers: 33554432
+        modifiers: 100663296
         text: ""
         autorep: false
         count: 1
@@ -1187,7 +1187,7 @@ VisualTest {
     Key {
         type: 7
         key: 16777248
-        modifiers: 0
+        modifiers: 33554432
         text: ""
         autorep: false
         count: 1
