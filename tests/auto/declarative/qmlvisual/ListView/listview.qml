@@ -49,7 +49,7 @@ Rectangle {
 
     Component {
         id: myHighlight
-        Rectangle { color: "black" }
+        Rectangle { width: 200; height: 50; color: "black" }
     }
 
     ListView {
