@@ -116,14 +116,25 @@ class DitaXmlGenerator : public PageGenerator
     void writeLocation(const Node* n);
     void writeFunctions(const Section& s, 
                         const Node* n, 
-                        CodeMarker* marker);
+                        CodeMarker* marker,
+                        const QString& attribute = QString());
     void writeNestedClasses(const Section& s, const Node* n);
     void writeParameters(const FunctionNode* fn);
-    void writeEnumerations(const Section& s, CodeMarker* marker);
-    void writeTypedefs(const Section& s, CodeMarker* marker);
-    void writeDataMembers(const Section& s, CodeMarker* marker);
-    void writeProperties(const Section& s, CodeMarker* marker);
-    void writeMacros(const Section& s, CodeMarker* marker);
+    void writeEnumerations(const Section& s, 
+                           CodeMarker* marker,
+                           const QString& attribute = QString());
+    void writeTypedefs(const Section& s, 
+                       CodeMarker* marker,
+                       const QString& attribute = QString());
+    void writeDataMembers(const Section& s, 
+                          CodeMarker* marker,
+                          const QString& attribute = QString());
+    void writeProperties(const Section& s, 
+                         CodeMarker* marker,
+                         const QString& attribute = QString());
+    void writeMacros(const Section& s, 
+                     CodeMarker* marker,
+                     const QString& attribute = QString());
     void writePropertyParameter(const QString& tag, const NodeList& nlist);
 
  private:
@@ -153,6 +164,9 @@ class DitaXmlGenerator : public PageGenerator
                                  CodeMarker* marker, 
                                  QList<Section>* sections = 0);
     QString generateListOfAllMemberFile(const InnerNode* inner, CodeMarker* marker);
+    void generateLowStatusMembers(const InnerNode* inner,
+                                  CodeMarker* marker,
+                                  CodeMarker::Status status);
     QString generateLowStatusMemberFile(const InnerNode* inner, 
                                         CodeMarker* marker,
                                         CodeMarker::Status status);
