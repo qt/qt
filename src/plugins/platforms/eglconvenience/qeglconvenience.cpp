@@ -39,7 +39,7 @@ QVector<EGLint> q_createConfigAttributesFromFormat(const QPlatformWindowFormat &
     // put in the list before 32-bit configs. So, to make sure 16-bit is preffered over 32-bit,
     // we must set the red/green/blue sizes to zero. This has an unfortunate consequence that
     // if the application sets the red/green/blue size to 5/6/5 on the QPlatformWindowFormat,
-    // they will probably get a 32-bit config, even when there's an RGB565 config avaliable.
+    // they will probably get a 32-bit config, even when there's an RGB565 config available.
 
     // Now normalize the values so -1 becomes 0
     redSize   = redSize   > 0 ? redSize   : 0;
@@ -111,7 +111,7 @@ bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes)
     // those with smaller (but faster) lower color depths. One
     // way around this is to set EGL_BUFFER_SIZE to 16, which
     // trumps the others. Of course, there may not be a 16-bit
-    // config avaliable, so it's the first restraint we remove.
+    // config available, so it's the first restraint we remove.
     i = configAttributes->indexOf(EGL_BUFFER_SIZE);
     if (i >= 0) {
         if (configAttributes->at(i+1) == 16) {

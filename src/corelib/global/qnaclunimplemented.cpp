@@ -51,7 +51,7 @@
 
     There are two main classes of functions:
 
-    - Fuctions that are called but can have no effect:
+    - Functions that are called but can have no effect:
     For these we simply give an empty implementation
 
     - Functions that are referenced in the source code, but

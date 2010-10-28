@@ -445,7 +445,7 @@ QLinuxInputKeyboardHandler::QLinuxInputKeyboardHandler(const QString &key, const
                 // record the original mode so we can restore it again in the destructor.
                 ::ioctl(m_tty_fd, KDGKBMODE, &m_orig_kbmode);
 
-                // setting this tranlation mode is even needed in INPUT mode to prevent
+                // setting this translation mode is even needed in INPUT mode to prevent
                 // the shell from also interpreting codes, if the process has a tty
                 // attached: e.g. Ctrl+C wouldn't copy, but kill the application.
                 ::ioctl(m_tty_fd, KDSKBMODE, K_MEDIUMRAW);
