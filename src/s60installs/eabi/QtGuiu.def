@@ -12099,4 +12099,6 @@ EXPORTS
 	_ZNK20QGraphicsItemPrivate21effectiveBoundingRectEP13QGraphicsItem @ 12098 NONAME
 	_ZN19QApplicationPrivate21qmljs_debug_argumentsE @ 12099 NONAME DATA 4
 	_ZN19QApplicationPrivate25qmljsDebugArgumentsStringEv @ 12100 NONAME
+	_ZNK5QFont14lastResortFontEv @ 12101 NONAME
+	_ZN11QFontEngine33convertToPostscriptFontFamilyNameERK10QByteArray @ 12102 NONAME
 
