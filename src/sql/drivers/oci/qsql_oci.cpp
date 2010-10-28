@@ -291,6 +291,14 @@ int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, in
                          sizeof(uint),
                          SQLT_UIN, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
         break;
+    case QVariant::LongLong:
+        r = OCIBindByPos(sql, hbnd, err,
+                           pos + 1,
+                           // if it's an out value, the data is already detached
+                           // so the const cast is safe.
+                           const_cast<void *>(data),
+                           sizeof(OCINumber),
+                           SQLT_VNU, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
     case QVariant::Double:
         r = OCIBindByPos(sql, hbnd, err,
                          pos + 1,

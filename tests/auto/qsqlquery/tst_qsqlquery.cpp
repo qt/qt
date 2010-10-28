@@ -211,6 +211,8 @@ private slots:
     void QTBUG_5765();
     void QTBUG_14132_data() { generic_data("QOCI"); }
     void QTBUG_14132();
+    void QTBUG_14640_data() { generic_data("QOCI"); }
+    void QTBUG_14640();
     void sqlite_constraint_data() { generic_data("QSQLITE"); }
     void sqlite_constraint();
 
@@ -329,7 +331,8 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
                << qTableName( "Planet", __FILE__ )
                << qTableName( "task_250026", __FILE__ )
                << qTableName( "task_234422", __FILE__ )
-               << qTableName("test141895", __FILE__);
+               << qTableName("test141895", __FILE__)
+               << qTableName("qtest_QTBUG14640", __FILE__);
 
     if ( db.driverName().startsWith("QPSQL") )
         tablenames << qTableName("task_233829", __FILE__);
@@ -3099,6 +3102,32 @@ void tst_QSqlQuery::QTBUG_5765()
     QCOMPARE(q.value(0).toInt(), 12);
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(0).toInt(), 123);
+}
+
+void tst_QSqlQuery::QTBUG_14640()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+    const QString qtest_QTBUG14640(qTableName("qtest_QTBUG14640", __FILE__));
+
+    QSqlQuery q( db );
+    q.setForwardOnly( true );
+    QVERIFY_SQL( q, exec( "create table " + qtest_QTBUG14640 +
+                            " (col1 number, col2 number)" ) );
+    QVERIFY_SQL( q, exec( "insert into " + qtest_QTBUG14640 + " values (1, 1111)" ) );
+    QVERIFY_SQL( q, exec( "insert into " + qtest_QTBUG14640 + " values (2, 2222)" ) );
+    QVERIFY_SQL( q, exec( "insert into " + qtest_QTBUG14640 + " values (3, 3333)" ) );
+
+    QString sqlStr = "select * from " + qtest_QTBUG14640 +  " where col1 == :bindValue0 AND col2 == :bindValue1";
+    q.prepare(sqlStr);
+    q.bindValue(":bindValue0", qlonglong(1), QSql::In);
+    q.bindValue(":bindValue1", qlonglong(1111), QSql::In);
+    QVERIFY_SQL( q, exec() );
+
+    QVERIFY( q.next() );
+    QCOMPARE(q.boundValue( 0 ).toLongLong(),  qlonglong(1));
+    QCOMPARE(q.boundValue( 1 ).toLongLong(),  qlonglong(1111));
 }
 
 void tst_QSqlQuery::sqlite_constraint()
