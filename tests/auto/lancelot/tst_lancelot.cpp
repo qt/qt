@@ -39,11 +39,6 @@
 **
 ****************************************************************************/
 
-// Generalization dimensions TBD:
-// ImageFormat: Rendering to different bit formats
-// Engine: Rendering with different engines
-// Painter renderhints? (set in qps itself)
-
 #include <QtTest/QtTest>
 #include <paintcommands.h>
 #include <QPainter>
