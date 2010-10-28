@@ -45,7 +45,7 @@
 #include "qcocoawindowsurface.h"
 #include "qcocoaeventloopintegration.h"
 
-#include "qgenericunixfontdatabase.h"
+#include "qcoretextfontdatabase.h"
 
 #include <QtGui/QApplication>
 
@@ -74,7 +74,7 @@ QCocoaScreen::~QCocoaScreen()
 }
 
 QCocoaIntegration::QCocoaIntegration()
-    : mFontDb(new QGenericUnixFontDatabase())
+    : mFontDb(new QCoreTextFontDatabase())
 {
     mPool = new QCocoaAutoReleasePool;
 

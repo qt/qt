@@ -23,7 +23,7 @@ OBJECTIVE_HEADERS = qcocoaintegration.h \
 LIBS += -lz
 LIBS += -framework cocoa
 
-include(../fontdatabases/genericunix/genericunix.pri)
+include(../fontdatabases/coretext/coretext.pri)
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
 
