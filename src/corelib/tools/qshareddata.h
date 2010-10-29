@@ -263,6 +263,20 @@ template <class T>
 Q_INLINE_TEMPLATE void qSwap(QExplicitlySharedDataPointer<T> &p1, QExplicitlySharedDataPointer<T> &p2)
 { p1.swap(p2); }
 
+#ifndef QT_NO_STL
+QT_END_NAMESPACE
+namespace std {
+    template <class T>
+    Q_INLINE_TEMPLATE void swap(QSharedDataPointer<T> &p1, QSharedDataPointer<T> &p2)
+    { p1.swap(p2); }
+
+    template <class T>
+    Q_INLINE_TEMPLATE void swap(QExplicitlySharedDataPointer<T> &p1, QExplicitlySharedDataPointer<T> &p2)
+    { p1.swap(p2); }
+}
+QT_BEGIN_NAMESPACE
+#endif
+
 QT_END_NAMESPACE
 
 QT_END_HEADER
