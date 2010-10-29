@@ -788,7 +788,7 @@ inline void qSwap(QSharedPointer<T> &p1, QSharedPointer<T> &p2)
 QT_END_NAMESPACE
 namespace std {
     template <class T>
-    inline void swap(QSharedPointer<T> &p1, QSharedPointer<T> &p2)
+    inline void swap(QT_PREPEND_NAMESPACE(QSharedPointer)<T> &p1, QT_PREPEND_NAMESPACE(QSharedPointer)<T> &p2)
     { p1.swap(p2); }
 }
 QT_BEGIN_NAMESPACE
