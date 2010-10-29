@@ -1,5 +1,6 @@
 import QtQuick 1.0
 
+// Broken - QTBUG-14794
 Rectangle {
     width: 600; height: 300; color: "white"
 
