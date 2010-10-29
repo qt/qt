@@ -180,7 +180,7 @@ Rectangle {
                 GradientStop { id: t1; position: 0.0; color: palette.highlight }
                 GradientStop { id: t2; position: 1.0; color: Qt.lighter(palette.highlight) }
             }
-            width: view1.currentItem.width
+            width: view1.currentItem == null ? 0 : view1.currentItem.width
         }
         highlightMoveSpeed: 1000
         pressDelay: 100
@@ -230,7 +230,7 @@ Rectangle {
                 GradientStop { id: t1; position: 0.0; color: palette.highlight }
                 GradientStop { id: t2; position: 1.0; color: Qt.lighter(palette.highlight) }
             }
-            width: view1.currentItem.width
+            width: view1.currentItem == null ? 0 : view1.currentItem.width
         }
         highlightMoveSpeed: 1000
         pressDelay: 100
