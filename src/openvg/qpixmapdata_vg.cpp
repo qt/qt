@@ -75,13 +75,13 @@ QVGPixmapData::QVGPixmapData(PixelType type)
 
 QVGPixmapData::~QVGPixmapData()
 {
-    destroyVGImageAndVGContext();
+    destroyImageAndContext();
 #if !defined(QT_NO_EGL)
     qt_vg_unregister_pixmap(this);
 #endif
 }
 
-void QVGPixmapData::destroyVGImages()
+void QVGPixmapData::destroyImages()
 {
     if (inImagePool) {
         QVGImagePool *pool = QVGImagePool::instance();
@@ -100,23 +100,23 @@ void QVGPixmapData::destroyVGImages()
     inImagePool = false;
 }
 
-void QVGPixmapData::destroyVGImageAndVGContext()
+void QVGPixmapData::destroyImageAndContext()
 {
     if (vgImage != VG_INVALID_HANDLE) {
         // We need to have a context current to destroy the image.
 #if !defined(QT_NO_EGL)
         if (context->isCurrent()) {
-            destroyVGImages();
+            destroyImages();
         } else {
             // We don't currently have a widget surface active, but we
             // need a surface to make the context current.  So use the
             // shared pbuffer surface instead.
             context->makeCurrent(qt_vg_shared_surface());
-            destroyVGImages();
+            destroyImages();
             context->lazyDoneCurrent();
         }
 #else
-        destroyVGImages();
+        destroyImages();
 #endif
     }
 #if !defined(QT_NO_EGL)
@@ -301,7 +301,7 @@ VGImage QVGPixmapData::toVGImage()
 #endif
 
     if (recreate && prevSize != QSize(w, h))
-        destroyVGImages();
+        destroyImages();
     else if (recreate)
         cachedOpacity = -1.0f;  // Force opacity image to be refreshed later.
 
@@ -393,7 +393,7 @@ void QVGPixmapData::hibernate()
         return;
 
     forceToImage();
-    destroyVGImageAndVGContext();
+    destroyImageAndContext();
 }
 
 void QVGPixmapData::reclaimImages()
@@ -401,7 +401,7 @@ void QVGPixmapData::reclaimImages()
     if (!inImagePool)
         return;
     forceToImage();
-    destroyVGImages();
+    destroyImages();
 }
 
 Q_DECL_IMPORT extern int qt_defaultDpiX();

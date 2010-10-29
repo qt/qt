@@ -171,8 +171,8 @@ protected:
     void forceToImage();
     QImage::Format sourceFormat() const;
 
-    void destroyVGImageAndVGContext();
-    void destroyVGImages();
+    void destroyImageAndContext();
+    void destroyImages();
 };
 
 QT_END_NAMESPACE

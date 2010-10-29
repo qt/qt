@@ -144,7 +144,7 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
     if (type == QPixmapData::SgImage && pixmap) {
 #if defined(QT_SYMBIAN_SUPPORTS_SGIMAGE) && !defined(QT_NO_EGL)
         RSgImage *sgImage = reinterpret_cast<RSgImage*>(pixmap);
-        destroyVGImages();
+        destroyImages();
         prevSize = QSize();
 
         VGImage vgImage = sgImageToVGImage(context, *sgImage);
