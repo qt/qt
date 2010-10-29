@@ -331,6 +331,7 @@ public:
     float gamma;
     int quality;
     QString description;
+    QStringList readTexts;
 
     png_struct *png_ptr;
     png_info *info_ptr;
@@ -408,6 +409,8 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngHeader()
         if (!description.isEmpty())
             description += QLatin1String("\n\n");
         description += key + QLatin1String(": ") + value.simplified();
+        readTexts.append(key);
+        readTexts.append(value);
         text_ptr++;
     }
 #endif
@@ -485,25 +488,8 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngImage(QImage *outImage)
     outImage->setDotsPerMeterX(png_get_x_pixels_per_meter(png_ptr,info_ptr));
     outImage->setDotsPerMeterY(png_get_y_pixels_per_meter(png_ptr,info_ptr));
 
-#ifndef QT_NO_IMAGE_TEXT
-    png_textp text_ptr;
-    int num_text=0;
-    png_get_text(png_ptr,info_ptr,&text_ptr,&num_text);
-    while (num_text--) {
-        outImage->setText(text_ptr->key,0,QString::fromAscii(text_ptr->text));
-        text_ptr++;
-    }
-
-    foreach (const QString &pair, description.split(QLatin1String("\n\n"))) {
-        int index = pair.indexOf(QLatin1Char(':'));
-        if (index >= 0 && pair.indexOf(QLatin1Char(' ')) < index) {
-            outImage->setText(QLatin1String("Description"), pair.simplified());
-        } else {
-            QString key = pair.left(index);
-            outImage->setText(key, pair.mid(index + 2).simplified());
-        }
-    }
-#endif
+    for (int i = 0; i < readTexts.size()-1; i+=2)
+        outImage->setText(readTexts.at(i), readTexts.at(i+1));
 
     png_read_end(png_ptr, end_info);
     png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
