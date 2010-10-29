@@ -109,6 +109,11 @@ private slots:
     void equals();
     void strictlyEquals();
 
+    void getSetPrototype_cyclicPrototype();
+    void getSetPrototype_evalCyclicPrototype();
+    void getSetPrototype_eval();
+    void getSetPrototype_invalidPrototype();
+    void getSetPrototype_twoEngines();
     void getSetPrototype();
     void getSetScope();
     void getSetProperty_HooliganTask162051();

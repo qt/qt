@@ -2262,50 +2262,78 @@ void tst_QScriptValue::arrayElementGetterSetter()
     QVERIFY(obj.propertyFlags("1") == 0);
 }
 
+void tst_QScriptValue::getSetPrototype_cyclicPrototype()
+{
+    QScriptEngine eng;
+    QScriptValue prototype = eng.newObject();
+    QScriptValue object = eng.newObject();
+    object.setPrototype(prototype);
+
+    QScriptValue previousPrototype = prototype.prototype();
+    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setPrototype() failed: cyclic prototype value");
+    prototype.setPrototype(prototype);
+    QCOMPARE(prototype.prototype().strictlyEquals(previousPrototype), true);
+
+    object.setPrototype(prototype);
+    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setPrototype() failed: cyclic prototype value");
+    prototype.setPrototype(object);
+    QCOMPARE(prototype.prototype().strictlyEquals(previousPrototype), true);
+
+}
+
+void tst_QScriptValue::getSetPrototype_evalCyclicPrototype()
+{
+    QScriptEngine eng;
+    QScriptValue ret = eng.evaluate("o = { }; p = { }; o.__proto__ = p; p.__proto__ = o");
+    QCOMPARE(eng.hasUncaughtException(), true);
+    QVERIFY(ret.strictlyEquals(eng.uncaughtException()));
+    QCOMPARE(ret.isError(), true);
+    QCOMPARE(ret.toString(), QLatin1String("Error: cyclic __proto__ value"));
+}
+
+void tst_QScriptValue::getSetPrototype_eval()
+{
+    QScriptEngine eng;
+    QScriptValue ret = eng.evaluate("p = { }; p.__proto__ = { }");
+    QCOMPARE(eng.hasUncaughtException(), false);
+    QCOMPARE(ret.isError(), false);
+}
+
+void tst_QScriptValue::getSetPrototype_invalidPrototype()
+{
+    QScriptEngine eng;
+    QScriptValue inv;
+    QScriptValue object = eng.newObject();
+    QScriptValue proto = object.prototype();
+    QVERIFY(object.prototype().strictlyEquals(proto));
+    inv.setPrototype(object);
+    QCOMPARE(inv.prototype().isValid(), false);
+    object.setPrototype(inv);
+    // FIXME should it be invalid or proto?
+    QVERIFY(object.prototype().strictlyEquals(inv));
+}
+
+void tst_QScriptValue::getSetPrototype_twoEngines()
+{
+    QScriptEngine eng;
+    QScriptValue prototype = eng.newObject();
+    QScriptValue object = eng.newObject();
+    object.setPrototype(prototype);
+    QScriptEngine otherEngine;
+    QScriptValue newPrototype = otherEngine.newObject();
+    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setPrototype() failed: cannot set a prototype created in a different engine");
+    object.setPrototype(newPrototype);
+    QCOMPARE(object.prototype().strictlyEquals(prototype), true);
+
+}
+
 void tst_QScriptValue::getSetPrototype()
 {
     QScriptEngine eng;
-
+    QScriptValue prototype = eng.newObject();
     QScriptValue object = eng.newObject();
-
-    QScriptValue object2 = eng.newObject();
-    object2.setPrototype(object);
-
-    QCOMPARE(object2.prototype().strictlyEquals(object), true);
-
-    QScriptValue inv;
-    inv.setPrototype(object);
-    QCOMPARE(inv.prototype().isValid(), false);
-
-    QScriptEngine otherEngine;
-    QScriptValue object3 = otherEngine.newObject();
-    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setPrototype() failed: cannot set a prototype created in a different engine");
-    object2.setPrototype(object3);
-    QCOMPARE(object2.prototype().strictlyEquals(object), true);
-
-    // cyclic prototypes
-    QScriptValue old = object.prototype();
-    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setPrototype() failed: cyclic prototype value");
-    object.setPrototype(object);
-    QCOMPARE(object.prototype().strictlyEquals(old), true);
-
-    object2.setPrototype(object);
-    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setPrototype() failed: cyclic prototype value");
-    object.setPrototype(object2);
-    QCOMPARE(object.prototype().strictlyEquals(old), true);
-
-    {
-        QScriptValue ret = eng.evaluate("o = { }; p = { }; o.__proto__ = p; p.__proto__ = o");
-        QCOMPARE(eng.hasUncaughtException(), true);
-        QVERIFY(ret.strictlyEquals(eng.uncaughtException()));
-        QCOMPARE(ret.isError(), true);
-        QCOMPARE(ret.toString(), QLatin1String("Error: cyclic __proto__ value"));
-    }
-    {
-        QScriptValue ret = eng.evaluate("p.__proto__ = { }");
-        QCOMPARE(eng.hasUncaughtException(), false);
-        QCOMPARE(ret.isError(), false);
-    }
+    object.setPrototype(prototype);
+    QCOMPARE(object.prototype().strictlyEquals(prototype), true);
 }
 
 void tst_QScriptValue::getSetScope()
