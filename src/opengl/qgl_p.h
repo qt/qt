@@ -434,20 +434,6 @@ public:
     static void setCurrentContext(QGLContext *context);
 };
 
-// ### make QGLContext a QObject in 5.0 and remove the proxy stuff
-class Q_OPENGL_EXPORT QGLSignalProxy : public QObject
-{
-    Q_OBJECT
-public:
-    QGLSignalProxy() : QObject() {}
-    void emitAboutToDestroyContext(const QGLContext *context) {
-        emit aboutToDestroyContext(context);
-    }
-    static QGLSignalProxy *instance();
-Q_SIGNALS:
-    void aboutToDestroyContext(const QGLContext *context);
-};
-
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGLExtensions::Extensions)
 
 // Temporarily make a context current if not already current or
@@ -490,6 +476,48 @@ private:
     QGLContext *m_ctx;
 };
 
+// ### make QGLContext a QObject in 5.0 and remove the proxy stuff
+class Q_OPENGL_EXPORT QGLSignalProxy : public QObject
+{
+    Q_OBJECT
+public:
+    QGLSignalProxy() : QObject() {
+        qRegisterMetaType<GLuint>("GLuint");
+        connect(this, SIGNAL(freeTexture(QGLContext *, QPixmapData *, GLuint)),
+                this, SLOT(freeTexture_slot(QGLContext *, QPixmapData *, GLuint)));
+    }
+    void emitAboutToDestroyContext(const QGLContext *context) {
+        emit aboutToDestroyContext(context);
+    }
+    void emitFreeTexture(QGLContext *context, QPixmapData *boundPixmap, GLuint id) {
+        emit freeTexture(context, boundPixmap, id);
+    }
+    static QGLSignalProxy *instance();
+Q_SIGNALS:
+    void aboutToDestroyContext(const QGLContext *context);
+    void freeTexture(QGLContext *context, QPixmapData *boundPixmap, GLuint id);
+
+private slots:
+    void freeTexture_slot(QGLContext *context, QPixmapData *boundPixmap, GLuint id) {
+#if defined(Q_WS_X11)
+        if (boundPixmap) {
+            QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
+            context->makeCurrent();
+            // Although glXReleaseTexImage is a glX call, it must be called while there
+            // is a current context - the context the pixmap was bound to a texture in.
+            // Otherwise the release doesn't do anything and you get BadDrawable errors
+            // when you come to delete the context.
+            QGLContextPrivate::unbindPixmapFromTexture(boundPixmap);
+            glDeleteTextures(1, &id);
+            oldContext->makeCurrent();
+            return;
+        }
+#endif
+        QGLShareContextScope scope(context);
+        glDeleteTextures(1, &id);
+    }
+};
+
 class QGLTexture {
 public:
     QGLTexture(QGLContext *ctx = 0, GLuint tx_id = 0, GLenum tx_target = GL_TEXTURE_2D,
@@ -506,16 +534,10 @@ public:
     ~QGLTexture() {
         if (options & QGLContext::MemoryManagedBindOption) {
             Q_ASSERT(context);
-            QGLShareContextScope scope(context);
-#if defined(Q_WS_X11)
-            // Although glXReleaseTexImage is a glX call, it must be called while there
-            // is a current context - the context the pixmap was bound to a texture in.
-            // Otherwise the release doesn't do anything and you get BadDrawable errors
-            // when you come to delete the context.
-            if (boundPixmap)
-                QGLContextPrivate::unbindPixmapFromTexture(boundPixmap);
+#if !defined(Q_WS_X11)
+            QPixmapData *boundPixmap = 0;
 #endif
-            glDeleteTextures(1, &id);
+            QGLSignalProxy::instance()->emitFreeTexture(context, boundPixmap, id);
         }
      }
 
