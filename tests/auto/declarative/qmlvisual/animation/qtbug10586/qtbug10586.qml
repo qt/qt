@@ -1,5 +1,6 @@
 import QtQuick 1.0
 
+/* This test checks that animations do occur while the flickable is flicking */
 Rectangle {
     width: 200
     height: 400
@@ -11,11 +12,6 @@ Rectangle {
             border.color: "black"
             border.width: 10
             width: 1000; height: 1000
-            rotation: 90
-            gradient: Gradient {
-                GradientStop { position: 0; color: "black" }
-                GradientStop { position: 1; color: "white" }
-            }
         }
     }
     Rectangle {

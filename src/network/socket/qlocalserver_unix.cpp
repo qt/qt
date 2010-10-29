@@ -119,7 +119,7 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     // subsequent call to accept will not block in any case
     //
     // This change can be removed once more generic fix to select thread
-    // syncronization problem is implemented.
+    // synchronization problem is implemented.
     int flags = fcntl(listenSocket, F_GETFL, 0);
     if (-1 == flags
         || -1 == (fcntl(listenSocket, F_SETFL, flags | O_NONBLOCK))) {

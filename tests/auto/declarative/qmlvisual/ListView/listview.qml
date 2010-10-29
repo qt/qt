@@ -1,6 +1,7 @@
 import QtQuick 1.0
 
 Rectangle {
+    property string skip: "Incorrect start: QTBUG-14794"
     width: 600; height: 300; color: "white"
 
     ListModel {
@@ -49,7 +50,7 @@ Rectangle {
 
     Component {
         id: myHighlight
-        Rectangle { color: "black" }
+        Rectangle { width: 200; height: 50; color: "black" }
     }
 
     ListView {

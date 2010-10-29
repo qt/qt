@@ -2035,6 +2035,20 @@ void QSslSocketPrivate::createPlainSocket(QIODevice::OpenMode openMode)
     q->setReadBufferSize(readBufferMaxSize);
 }
 
+void QSslSocketPrivate::pauseSocketNotifiers(QSslSocket *socket)
+{
+    if (!socket->d_func()->plainSocket)
+        return;
+    QAbstractSocketPrivate::pauseSocketNotifiers(socket->d_func()->plainSocket);
+}
+
+void QSslSocketPrivate::resumeSocketNotifiers(QSslSocket *socket)
+{
+    if (!socket->d_func()->plainSocket)
+        return;
+    QAbstractSocketPrivate::resumeSocketNotifiers(socket->d_func()->plainSocket);
+}
+
 /*!
     \internal
 */

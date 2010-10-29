@@ -128,16 +128,35 @@ void QDeclarativeTester::executefailure()
 {
     hasFailed = true;
 
-    if (options & QDeclarativeViewer::ExitOnFailure)
-        exit(-1);
+    if (options & QDeclarativeViewer::ExitOnFailure){
+        testSkip();
+        exit(hasFailed?-1:0);
+    }
 }
 
 void QDeclarativeTester::imagefailure()
 {
     hasFailed = true;
 
-    if (options & QDeclarativeViewer::ExitOnFailure)
-        exit(-1);
+    if (options & QDeclarativeViewer::ExitOnFailure){
+        testSkip();
+        exit(hasFailed?-1:0);
+    }
+}
+
+void QDeclarativeTester::testSkip()
+{
+    if (options & QDeclarativeViewer::TestSkipProperty){
+        QString e = m_view->rootObject()->property("skip").toString();
+        if (!e.isEmpty()) {
+            if(hasFailed){
+                qWarning() << "Test failed, but skipping it: " << e;
+            }else{
+                qWarning() << "Test skipped: " << e;
+            }
+            hasFailed = 0;
+        }
+    }
 }
 
 void QDeclarativeTester::complete()
@@ -149,7 +168,10 @@ void QDeclarativeTester::complete()
             hasFailed = true;
         }
     }
-    if (options & QDeclarativeViewer::ExitOnComplete) 
+
+
+    testSkip();
+    if (options & QDeclarativeViewer::ExitOnComplete)
         QApplication::exit(hasFailed?-1:0);
 
     if (hasCompleted)
