@@ -1,7 +1,7 @@
 import QtQuick 1.0
 
 Item{
-    width: 200; height: 600
+    width: 40; height: 320
     Column{
         Rectangle{color:"Red"; width:40; height:40;}
         Repeater{
@@ -11,5 +11,6 @@ Item{
         }
         Rectangle{color:"Blue"; width:40; height:40;}
     }
-    Timer{ interval: 500; running: true; onTriggered: rep.model=6;}
+    Timer{ interval: 250; running: true; onTriggered: rep.model=6;}
+    Timer{ interval: 500; running: true; onTriggered: Qt.quit();}
 }
