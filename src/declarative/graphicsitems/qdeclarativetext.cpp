@@ -221,6 +221,7 @@ void QDeclarativeTextPrivate::updateSize()
     if (text.isEmpty()) {
         q->setImplicitHeight(fm.height());
         emit q->paintedSizeChanged();
+        q->update();
         return;
     }
 
@@ -866,7 +867,7 @@ void QDeclarativeText::setStyleColor(const QColor &color)
     and \c Text.AlignVCenter.
 
     Note that for a single line of text, the size of the text is the area of the text. In this common case,
-    all alignments are equivalent. If you want the text to be, say, centered in it parent, then you will
+    all alignments are equivalent. If you want the text to be, say, centered in its parent, then you will
     need to either modify the Item::anchors, or set horizontalAlignment to Text.AlignHCenter and bind the width to 
     that of the parent.
 */
