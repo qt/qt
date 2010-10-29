@@ -127,7 +127,12 @@ Q_GLOBAL_STATIC(QGLDefaultOverlayFormat, defaultOverlayFormatInstance)
 Q_GLOBAL_STATIC(QGLSignalProxy, theSignalProxy)
 QGLSignalProxy *QGLSignalProxy::instance()
 {
-    return theSignalProxy();
+    QGLSignalProxy *proxy = theSignalProxy();
+    if (proxy && proxy->thread() != qApp->thread()) {
+        if (proxy->thread() == QThread::currentThread())
+            proxy->moveToThread(qApp->thread());
+    }
+    return proxy;
 }
 
 
