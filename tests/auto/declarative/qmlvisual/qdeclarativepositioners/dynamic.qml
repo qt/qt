@@ -1,7 +1,7 @@
 import QtQuick 1.0
 
-//Expected to fail until QTBUG-14839 is resolved
 Item {
+    property string skip: "Expected to fail until QTBUG-14839 is resolved"
     width: 120; height: 60;
     property int step: 0
     function tick()
