@@ -2271,18 +2271,6 @@ void DitaXmlGenerator::generateTitle(const QString& title,
 void DitaXmlGenerator::generateBrief(const Node* node, CodeMarker* marker)
 {
     Text brief = node->doc().briefText(true); // zzz
-    if (outFileName() == "requirements-x11.xml") {
-        if (brief.isEmpty())
-            qDebug() << "EMPTY BRIEF";
-        else {
-            qDebug() << "NON-EMPTY BRIEF";
-            Atom* a = brief.firstAtom();
-            while (a != 0) {
-                qDebug() << "  " << a->type() << a->typeString() << a->string();
-                a = a->next();
-            }
-        }
-    }
     if (!brief.isEmpty()) {
         generateText(brief, node, marker);
     }
@@ -2626,7 +2614,7 @@ void DitaXmlGenerator::generateClassHierarchy(const Node* relative,
 
             NodeMap newTop;
             foreach (const RelatedClass &d, child->derivedClasses()) {
-                if (d.access != Node::Private)
+                if (d.access != Node::Private && !d.node->doc().isEmpty())
                     newTop.insert(d.node->name(), d.node);
             }
             if (!newTop.isEmpty()) {
@@ -4587,7 +4575,8 @@ void DitaXmlGenerator::writeDerivations(const ClassNode* cn, CodeMarker* marker)
             // not included: <cxxClassDerivationVirtual>
 
             xmlWriter().writeStartElement(CXXCLASSBASECLASS);
-            xmlWriter().writeAttribute("href",(*r).node->ditaXmlHref());
+            QString attr = fileName((*r).node) + "#" + (*r).node->guid();
+            xmlWriter().writeAttribute("href",attr);
             xmlWriter().writeCharacters(marker->plainFullName((*r).node));
             xmlWriter().writeEndElement(); // </cxxClassBaseClass>
 
