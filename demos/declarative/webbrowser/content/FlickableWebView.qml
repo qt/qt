@@ -128,7 +128,7 @@ Flickable {
                         if (!heuristicZoom(clickX,clickY,2.5)) {
                             var zf = flickable.width / contentsSize.width
                             if (zf >= contentsScale)
-                                zf = 2.0/zoomFactor // zoom in (else zooming out)
+                                zf = 2.0*contentsScale // zoom in (else zooming out)
                             doZoom(zf,clickX*zf,clickY*zf)
                          }
                        }
