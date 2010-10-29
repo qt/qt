@@ -1660,18 +1660,30 @@ void tst_QScriptValue::isArray()
     QCOMPARE(value.isArray(), array);
 }
 
+void tst_QScriptValue::isDate_data()
+{
+    newEngine();
+
+    QTest::addColumn<QScriptValue>("value");
+    QTest::addColumn<bool>("date");
+
+    QTest::newRow("date") << engine->evaluate("new Date()") << true;
+    QTest::newRow("[]") << engine->evaluate("[]") << false;
+    QTest::newRow("{}") << engine->evaluate("{}") << false;
+    QTest::newRow("globalObject") << engine->globalObject() << false;
+    QTest::newRow("invalid") << QScriptValue() << false;
+    QTest::newRow("number") << QScriptValue(123) << false;
+    QTest::newRow("bool") << QScriptValue(false) << false;
+    QTest::newRow("null") << engine->nullValue() << false;
+    QTest::newRow("undefined") << engine->undefinedValue() << false;
+}
+
 void tst_QScriptValue::isDate()
 {
-    QScriptEngine eng;
-    QVERIFY(eng.evaluate("new Date()").isDate());
-    QVERIFY(!eng.evaluate("[]").isDate());
-    QVERIFY(!eng.evaluate("{}").isDate());
-    QVERIFY(!eng.globalObject().isDate());
-    QVERIFY(!QScriptValue().isDate());
-    QVERIFY(!QScriptValue(123).isDate());
-    QVERIFY(!QScriptValue(false).isDate());
-    QVERIFY(!eng.nullValue().isDate());
-    QVERIFY(!eng.undefinedValue().isDate());
+    QFETCH(QScriptValue, value);
+    QFETCH(bool, date);
+
+    QCOMPARE(value.isDate(), date);
 }
 
 void tst_QScriptValue::isError()

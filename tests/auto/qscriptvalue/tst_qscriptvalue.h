@@ -98,6 +98,7 @@ private slots:
     void isArray_data();
     void isArray();
     void isDate();
+    void isDate_data();
     void isError();
     void isRegExp();
 
