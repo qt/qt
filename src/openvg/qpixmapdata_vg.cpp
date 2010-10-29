@@ -65,6 +65,7 @@ QVGPixmapData::QVGPixmapData(PixelType type)
     recreate = true;
     inImagePool = false;
     inLRU = false;
+    failedToAlloc = false;
 #if !defined(QT_NO_EGL)
     context = 0;
     qt_vg_register_pixmap(this);
@@ -74,13 +75,13 @@ QVGPixmapData::QVGPixmapData(PixelType type)
 
 QVGPixmapData::~QVGPixmapData()
 {
-    destroyImageAndContext();
+    destroyVGImageAndVGContext();
 #if !defined(QT_NO_EGL)
     qt_vg_unregister_pixmap(this);
 #endif
 }
 
-void QVGPixmapData::destroyImages()
+void QVGPixmapData::destroyVGImages()
 {
     if (inImagePool) {
         QVGImagePool *pool = QVGImagePool::instance();
@@ -99,23 +100,23 @@ void QVGPixmapData::destroyImages()
     inImagePool = false;
 }
 
-void QVGPixmapData::destroyImageAndContext()
+void QVGPixmapData::destroyVGImageAndVGContext()
 {
     if (vgImage != VG_INVALID_HANDLE) {
         // We need to have a context current to destroy the image.
 #if !defined(QT_NO_EGL)
         if (context->isCurrent()) {
-            destroyImages();
+            destroyVGImages();
         } else {
             // We don't currently have a widget surface active, but we
             // need a surface to make the context current.  So use the
             // shared pbuffer surface instead.
             context->makeCurrent(qt_vg_shared_surface());
-            destroyImages();
+            destroyVGImages();
             context->lazyDoneCurrent();
         }
 #else
-        destroyImages();
+        destroyVGImages();
 #endif
     }
 #if !defined(QT_NO_EGL)
@@ -155,6 +156,9 @@ void QVGPixmapData::resize(int wid, int ht)
 void QVGPixmapData::fromImage
         (const QImage &image, Qt::ImageConversionFlags flags)
 {
+    if(image.isNull())
+        return;
+
     QImage img = image;
     createPixmapForImage(img, flags, false);
 }
@@ -203,10 +207,19 @@ void QVGPixmapData::createPixmapForImage(QImage &image, Qt::ImageConversionFlags
     else
         resize(image.width(), image.height());
 
-    if (inPlace && image.data_ptr()->convertInPlace(sourceFormat(), flags))
+    QImage::Format format = sourceFormat();
+    int d = image.depth();
+    if (d == 1 || d == 16 || d == 24 || (d == 32 && !image.hasAlphaChannel()))
+        format = QImage::Format_RGB32;
+    else if (!(flags & Qt::NoOpaqueDetection) && const_cast<QImage &>(image).data_ptr()->checkForAlphaPixels())
+        format = sourceFormat();
+    else
+        format = QImage::Format_RGB32;
+
+    if (inPlace && image.data_ptr()->convertInPlace(format, flags))
         source = image;
     else
-        source = image.convertToFormat(sourceFormat());
+        source = image.convertToFormat(format);
 
     recreate = true;
 }
@@ -278,7 +291,7 @@ QPaintEngine* QVGPixmapData::paintEngine() const
 
 VGImage QVGPixmapData::toVGImage()
 {
-    if (!isValid())
+    if (!isValid() || failedToAlloc)
         return VG_INVALID_HANDLE;
 
 #if !defined(QT_NO_EGL)
@@ -288,17 +301,19 @@ VGImage QVGPixmapData::toVGImage()
 #endif
 
     if (recreate && prevSize != QSize(w, h))
-        destroyImages();
+        destroyVGImages();
     else if (recreate)
         cachedOpacity = -1.0f;  // Force opacity image to be refreshed later.
 
     if (vgImage == VG_INVALID_HANDLE) {
         vgImage = QVGImagePool::instance()->createImageForPixmap
-            (VG_sARGB_8888_PRE, w, h, VG_IMAGE_QUALITY_FASTER, this);
+            (qt_vg_image_to_vg_format(source.format()), w, h, VG_IMAGE_QUALITY_FASTER, this);
 
         // Bail out if we run out of GPU memory - try again next time.
-        if (vgImage == VG_INVALID_HANDLE)
+        if (vgImage == VG_INVALID_HANDLE) {
+            failedToAlloc = true;
             return VG_INVALID_HANDLE;
+        }
 
         inImagePool = true;
     } else if (inImagePool) {
@@ -309,7 +324,7 @@ VGImage QVGPixmapData::toVGImage()
         vgImageSubData
             (vgImage,
              source.constBits(), source.bytesPerLine(),
-             VG_sARGB_8888_PRE, 0, 0, w, h);
+             qt_vg_image_to_vg_format(source.format()), 0, 0, w, h);
     }
 
     recreate = false;
@@ -378,7 +393,7 @@ void QVGPixmapData::hibernate()
         return;
 
     forceToImage();
-    destroyImageAndContext();
+    destroyVGImageAndVGContext();
 }
 
 void QVGPixmapData::reclaimImages()
@@ -386,7 +401,7 @@ void QVGPixmapData::reclaimImages()
     if (!inImagePool)
         return;
     forceToImage();
-    destroyImages();
+    destroyVGImages();
 }
 
 Q_DECL_IMPORT extern int qt_defaultDpiX();

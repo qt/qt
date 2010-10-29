@@ -144,7 +144,7 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
     if (type == QPixmapData::SgImage && pixmap) {
 #if defined(QT_SYMBIAN_SUPPORTS_SGIMAGE) && !defined(QT_NO_EGL)
         RSgImage *sgImage = reinterpret_cast<RSgImage*>(pixmap);
-        destroyImages();
+        destroyVGImages();
         prevSize = QSize();
 
         VGImage vgImage = sgImageToVGImage(context, *sgImage);
@@ -164,7 +164,6 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         CFbsBitmap *bitmap = reinterpret_cast<CFbsBitmap*>(pixmap);
 
         bool deleteSourceBitmap = false;
-
 #ifdef Q_SYMBIAN_HAS_EXTENDED_BITMAP_TYPE
 
         // Rasterize extended bitmaps

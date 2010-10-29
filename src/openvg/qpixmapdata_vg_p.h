@@ -143,7 +143,9 @@ private:
     QVGPixmapData *nextLRU;
     QVGPixmapData *prevLRU;
     bool inLRU;
+    bool failedToAlloc;
     friend class QVGImagePool;
+    friend class QVGPaintEngine;
 
 #if !defined(QT_NO_EGL)
     QVGPixmapData *next;
@@ -169,8 +171,8 @@ protected:
     void forceToImage();
     QImage::Format sourceFormat() const;
 
-    void destroyImageAndContext();
-    void destroyImages();
+    void destroyVGImageAndVGContext();
+    void destroyVGImages();
 };
 
 QT_END_NAMESPACE
