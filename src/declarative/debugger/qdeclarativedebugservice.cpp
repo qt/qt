@@ -204,13 +204,13 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
         bool ok = false;
 
         // format: qmljsdebugger=port:3768[,block]
-        if (!appD->qmljsDebugArguments.isEmpty()) {
+        if (!appD->qmljsDebugArgumentsString().isEmpty()) {
 
-            if (appD->qmljsDebugArguments.indexOf(QLatin1String("port:")) == 0) {
-                int separatorIndex = appD->qmljsDebugArguments.indexOf(QLatin1Char(','));
-                port = appD->qmljsDebugArguments.mid(5, separatorIndex - 5).toInt(&ok);
+            if (appD->qmljsDebugArgumentsString().indexOf(QLatin1String("port:")) == 0) {
+                int separatorIndex = appD->qmljsDebugArgumentsString().indexOf(QLatin1Char(','));
+                port = appD->qmljsDebugArgumentsString().mid(5, separatorIndex - 5).toInt(&ok);
             }
-            block = appD->qmljsDebugArguments.contains(QLatin1String("block"));
+            block = appD->qmljsDebugArgumentsString().contains(QLatin1String("block"));
 
             if (ok) {
                 server = new QDeclarativeDebugServer(port);
@@ -219,9 +219,9 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
                     server->waitForConnection();
                 }
             } else {
-                qWarning(QString("QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
-                                 "Format is -qmljsdebugger=port:<port>[,block]").arg(
-                             appD->qmljsDebugArguments).toAscii().constData());
+                qWarning(QString::fromAscii("QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
+                                            "Format is -qmljsdebugger=port:<port>[,block]").arg(
+                             appD->qmljsDebugArgumentsString()).toAscii().constData());
             }
         }
 #endif
