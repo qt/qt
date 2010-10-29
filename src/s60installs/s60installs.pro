@@ -86,7 +86,7 @@ symbian: {
         bearer_plugin.path = c:$$QT_PLUGINS_BASE_DIR/bearer
         DEPLOYMENT += bearer_plugin
     }
-    
+
     contains(S60_VERSION, 5.0)|contains(S60_VERSION, symbian3) {
         feedback_plugin.sources = $$QT_BUILD_TREE/plugins/s60/feedback/qtactilefeedback$${QT_LIBINFIX}.dll
         feedback_plugin.path = c:$$QT_PLUGINS_BASE_DIR/feedback
