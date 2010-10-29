@@ -95,6 +95,7 @@ private slots:
     void toDateTime();
     void toRegExp();
     void instanceOf();
+    void isArray_data();
     void isArray();
     void isDate();
     void isError();
