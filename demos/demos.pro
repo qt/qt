@@ -44,7 +44,7 @@ contains(QT_CONFIG, opengl):!contains(QT_CONFIG, opengles1):!contains(QT_CONFIG,
 SUBDIRS += demos_boxes
 }
 
-mac*: SUBDIRS += demos_macmainwindow
+mac* && !qpa: SUBDIRS += demos_macmainwindow
 wince*|symbian|embedded|x11: SUBDIRS += demos_embedded
 
 !contains(QT_EDITION, Console):!cross_compile:!embedded:!wince*:SUBDIRS += demos_arthurplugin

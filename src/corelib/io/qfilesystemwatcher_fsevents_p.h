@@ -56,6 +56,8 @@
 
 #include "qfilesystemwatcher_p.h"
 
+#ifndef QT_NO_FILESYSTEMWATCHER
+
 #include <QtCore/qmutex.h>
 #include <QtCore/qwaitcondition.h>
 #include <QtCore/qthread.h>
@@ -122,6 +124,8 @@ private:
     void updateList(PathInfoList &list, bool directory, bool emitSignals);
 #endif
 };
+
+#endif //QT_NO_FILESYSTEMWATCHER
 
 #endif
 

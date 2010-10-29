@@ -95,6 +95,8 @@
 #  include <private/qabstractfontengine_p.h>
 #elif defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
 #  include <private/qfontengine_s60_p.h>
+#elif defined(Q_WS_QPA)
+#  include <private/qfontengine_ft_p.h>
 #endif
 
 #if defined(Q_WS_WIN64)
@@ -440,7 +442,7 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
     if (device->devType() == QInternal::Pixmap) {
         QPixmap *pixmap = static_cast<QPixmap *>(device);
         QPixmapData *pd = pixmap->pixmapData();
-        if (pd->classId() == QPixmapData::RasterClass)
+        if (pd->classId() == QPixmapData::RasterClass || pd->classId() == QPixmapData::BlitterClass)
             d->device = pd->buffer();
     } else {
         d->device = device;
@@ -3380,6 +3382,33 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
         return;
     }
 #endif // Q_WS_QWS
+
+#ifdef Q_WS_QPA
+    if (s->matrix.type() < QTransform::TxScale) {
+
+        QVarLengthArray<QFixedPoint> positions;
+        QVarLengthArray<glyph_t> glyphs;
+        QTransform matrix = state()->transform();
+
+        qreal _x = qFloor(p.x());
+        qreal _y = qFloor(p.y());
+        matrix.translate(_x, _y);
+
+        fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
+        if (glyphs.size() == 0)
+            return;
+
+        for(int i = 0; i < glyphs.size(); i++) {
+            QImage img = fontEngine->alphaMapForGlyph(glyphs[i]);
+            glyph_metrics_t metrics = fontEngine->boundingBox(glyphs[i]);
+            alphaPenBlt(img.bits(), img.bytesPerLine(), img.depth(),
+                                         qRound(positions[i].x + metrics.x),
+                                         qRound(positions[i].y + metrics.y),
+                                         img.width(), img.height());
+        }
+        return;
+    }
+#endif //Q_WS_QPA
 
 #if (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)) && !defined(QT_NO_FREETYPE)
 

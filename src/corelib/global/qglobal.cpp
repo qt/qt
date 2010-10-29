@@ -74,7 +74,7 @@
 #  include <envLib.h>
 #endif
 
-#if defined(Q_CC_MWERKS) && defined(Q_OS_MACX)
+#if defined(Q_OS_MACX) && !defined(QT_NO_CORESERVICES)
 #include <CoreServices/CoreServices.h>
 #endif
 
@@ -1232,7 +1232,7 @@ bool qSharedBuild()
 
     Defined on Mac OS X.
 
-    \sa Q_WS_WIN, Q_WS_X11, Q_WS_QWS, Q_WS_S60
+    \sa Q_WS_WIN, Q_WS_X11, Q_WS_QWS, Q_WS_QPA, Q_WS_S60
 */
 
 /*!
@@ -1241,7 +1241,7 @@ bool qSharedBuild()
 
     Defined on Windows.
 
-    \sa Q_WS_MAC, Q_WS_X11, Q_WS_QWS, Q_WS_S60
+    \sa Q_WS_MAC, Q_WS_X11, Q_WS_QWS, Q_WS_QPA, Q_WS_S60
 */
 
 /*!
@@ -1250,7 +1250,7 @@ bool qSharedBuild()
 
     Defined on X11.
 
-    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_QWS, Q_WS_S60
+    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_QWS, Q_WS_QPA, Q_WS_S60
 */
 
 /*!
@@ -1259,7 +1259,16 @@ bool qSharedBuild()
 
     Defined on Qt for Embedded Linux.
 
-    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_S60
+    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_QPA, Q_WS_S60
+*/
+
+/*!
+    \macro Q_WS_QPA
+    \relates <QtGlobal>
+
+    Defined on Qt for Embedded Linux, Lite version.
+
+    \sa Q_WS_MAC, Q_WS_WIN, Q_WS_X11, Q_WS_QWS, Q_WS_S60
 */
 
 /*!
@@ -1634,7 +1643,7 @@ static const unsigned int qt_one = 1;
 const int QSysInfo::ByteOrder = ((*((unsigned char *) &qt_one) == 0) ? BigEndian : LittleEndian);
 #endif
 
-#if !defined(QWS) && defined(Q_OS_MAC)
+#if !defined(QWS) && !defined(Q_WS_QPA) && defined(Q_OS_MAC)
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "private/qcore_mac_p.h"
@@ -1688,15 +1697,18 @@ Q_CORE_EXPORT void qt_mac_to_pascal_string(QString s, Str255 str, TextEncoding e
 Q_CORE_EXPORT QString qt_mac_from_pascal_string(const Str255 pstr) {
     return QCFString(CFStringCreateWithPascalString(0, pstr, CFStringGetSystemEncoding()));
 }
+#endif //!defined(QWS) && !defined(Q_WS_QPA) && defined(Q_OS_MAC)
 
-
+#if !defined(QWS) && defined(Q_OS_MAC)
 
 static QSysInfo::MacVersion macVersion()
 {
+#ifndef QT_NO_CORESERVICES
     SInt32 gestalt_version;
     if (Gestalt(gestaltSystemVersion, &gestalt_version) == noErr) {
         return QSysInfo::MacVersion(((gestalt_version & 0x00F0) >> 4) + 2);
     }
+#endif
     return QSysInfo::MV_Unknown;
 }
 const QSysInfo::MacVersion QSysInfo::MacintoshVersion = macVersion();

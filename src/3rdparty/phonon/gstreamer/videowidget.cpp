@@ -31,7 +31,9 @@
 
 #include "glrenderer.h"
 #include "widgetrenderer.h"
+#ifdef Q_WS_X11
 #include "x11renderer.h"
+#endif
 
 #ifndef QT_NO_PHONON_VIDEO
 QT_BEGIN_NAMESPACE
@@ -116,10 +118,12 @@ void VideoWidget::setupVideoBin()
             GstPad *videopad = gst_element_get_pad (queue, "sink");
             gst_element_add_pad (m_videoBin, gst_ghost_pad_new ("sink", videopad));
             gst_object_unref (videopad);
+#ifndef Q_WS_QPA
             QWidget *parentWidget = qobject_cast<QWidget*>(parent());
             if (parentWidget)
                 parentWidget->winId();  // Due to some existing issues with alien in 4.4,
                                         //  we must currently force the creation of a parent widget.
+#endif
             m_isValid = true; //initialization ok, accept input
         }
     }

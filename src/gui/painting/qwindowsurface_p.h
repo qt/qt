@@ -63,6 +63,7 @@ class QRect;
 class QPoint;
 class QImage;
 class QWindowSurfacePrivate;
+class QPlatformWindow;
 
 class Q_GUI_EXPORT QWindowSurface
 {
@@ -79,8 +80,14 @@ public:
     // can be larger than just the offset from the top-level widget as there may also be window
     // decorations which are painted into the window surface.
     virtual void flush(QWidget *widget, const QRegion &region, const QPoint &offset) = 0;
+#if !defined(Q_WS_QPA)
     virtual void setGeometry(const QRect &rect);
     QRect geometry() const;
+#else
+    virtual void resize(const QSize &size);
+    QSize size() const;
+    inline QRect geometry() const { return QRect(QPoint(), size()); }     //### cleanup before Qt 5
+#endif
 
     virtual bool scroll(const QRegion &area, int dx, int dy);
 

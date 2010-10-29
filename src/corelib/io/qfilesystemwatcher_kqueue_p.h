@@ -60,6 +60,7 @@
 #include <QtCore/qthread.h>
 #include <QtCore/qvector.h>
 
+#ifndef QT_NO_FILESYSTEMWATCHER
 struct kevent;
 
 QT_BEGIN_NAMESPACE
@@ -92,4 +93,5 @@ private:
 
 QT_END_NAMESPACE
 
+#endif //QT_NO_FILESYSTEMWATCHER
 #endif // FILEWATCHER_KQUEUE_P_H

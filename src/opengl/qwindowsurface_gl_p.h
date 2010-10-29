@@ -89,7 +89,13 @@ public:
 
     QPaintDevice *paintDevice();
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+
+#if !defined(Q_WS_QPA)
     void setGeometry(const QRect &rect);
+#else
+    virtual void resize(const QSize &size);
+#endif
+
     void updateGeometry();
     bool scroll(const QRegion &area, int dx, int dy);
 

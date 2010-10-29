@@ -45,6 +45,8 @@
 #include "qfilesystemwatcher.h"
 #include "qfilesystemwatcher_fsevents_p.h"
 
+#ifndef QT_NO_FILESYSTEMWATCHER
+
 #include <qdebug.h>
 #include <qfile.h>
 #include <qdatetime.h>
@@ -487,3 +489,4 @@ void QFSEventsFileSystemWatcherEngine::run()
 }
 
 QT_END_NAMESPACE
+#endif //QT_NO_FILESYSTEMWATCHER
