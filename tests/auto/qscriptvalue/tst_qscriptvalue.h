@@ -234,7 +234,12 @@ private slots:
     void getSetProperty();
     void arrayElementGetterSetter();
     void getSetData();
-    void getSetScriptClass();
+    void getSetScriptClass_nonObjects_data();
+    void getSetScriptClass_nonObjects();
+    void getSetScriptClass_JSObjectFromCpp();
+    void getSetScriptClass_JSObjectFromJS();
+    void getSetScriptClass_QVariant();
+    void getSetScriptClass_QObject();
     void call();
     void construct();
     void construct_constructorThrowsPrimitive();

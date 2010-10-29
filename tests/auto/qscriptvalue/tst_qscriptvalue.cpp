@@ -2332,14 +2332,27 @@ public:
     TestScriptClass(QScriptEngine *engine) : QScriptClass(engine) {}
 };
 
-void tst_QScriptValue::getSetScriptClass()
+void tst_QScriptValue::getSetScriptClass_nonObjects_data()
+{
+    QTest::addColumn<QScriptValue>("value");
+
+    QTest::newRow("invalid") << QScriptValue();
+    QTest::newRow("number") << QScriptValue(123);
+    QTest::newRow("string") << QScriptValue("pong");
+    QTest::newRow("bool") << QScriptValue(false);
+    QTest::newRow("null") << QScriptValue(QScriptValue::NullValue);
+    QTest::newRow("undefined") << QScriptValue(QScriptValue::UndefinedValue);
+}
+
+void tst_QScriptValue::getSetScriptClass_nonObjects()
+{
+    QFETCH(QScriptValue, value);
+    QCOMPARE(value.scriptClass(), (QScriptClass*)0);
+}
+
+void tst_QScriptValue::getSetScriptClass_JSObjectFromCpp()
 {
     QScriptEngine eng;
-    QScriptValue inv;
-    QCOMPARE(inv.scriptClass(), (QScriptClass*)0);
-    QScriptValue num(123);
-    QCOMPARE(num.scriptClass(), (QScriptClass*)0);
-
     TestScriptClass testClass(&eng);
     // object created in C++ (newObject())
     {
@@ -2350,6 +2363,12 @@ void tst_QScriptValue::getSetScriptClass()
         obj.setScriptClass(0);
         QCOMPARE(obj.scriptClass(), (QScriptClass*)0);
     }
+}
+
+void tst_QScriptValue::getSetScriptClass_JSObjectFromJS()
+{
+    QScriptEngine eng;
+    TestScriptClass testClass(&eng);
     // object created in JS
     {
         QScriptValue obj = eng.evaluate("new Object");
@@ -2364,6 +2383,12 @@ void tst_QScriptValue::getSetScriptClass()
         obj.setScriptClass(0);
         QCOMPARE(obj.scriptClass(), (QScriptClass*)0);
     }
+}
+
+void tst_QScriptValue::getSetScriptClass_QVariant()
+{
+    QScriptEngine eng;
+    TestScriptClass testClass(&eng);
     // object that already has a(n internal) class
     {
         QScriptValue obj = eng.newVariant(QUrl("http://example.com"));
@@ -2375,6 +2400,12 @@ void tst_QScriptValue::getSetScriptClass()
         QVERIFY(!obj.isVariant());
         QCOMPARE(obj.toVariant(), QVariant(QVariantMap()));
     }
+}
+
+void tst_QScriptValue::getSetScriptClass_QObject()
+{
+    QScriptEngine eng;
+    TestScriptClass testClass(&eng);
     {
         QScriptValue obj = eng.newQObject(this);
         QVERIFY(obj.isQObject());
