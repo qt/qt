@@ -157,7 +157,7 @@ void tst_qmlvisual::visual()
 
     QStringList arguments;
     arguments << "-script" << testdata
-              << "-scriptopts" << "play,testimages,testerror,exitoncomplete,exitonfailure" 
+              << "-scriptopts" << "play,testimages,testerror,testskip,exitoncomplete,exitonfailure"
               << file;
 #ifdef Q_WS_QWS
     arguments << "-qws";
@@ -278,7 +278,7 @@ void action(Mode mode, const QString &file)
             break;
         case Play:
             arguments << "-script" << testdata
-                  << "-scriptopts" << "play,testimages,testerror,exitoncomplete"
+                  << "-scriptopts" << "play,testimages,testerror,testskip,exitoncomplete"
                   << file;
             break;
         case TestVisuals:

@@ -172,6 +172,7 @@ void scriptOptsUsage()
     qWarning("  play ..................................... playback an existing script");
     qWarning("  testimages ............................... record images or compare images on playback");
     qWarning("  testerror ................................ test 'error' property of root item on playback");
+    qWarning("  testskip  ................................ test 'skip' property of root item on playback");
     qWarning("  snapshot ................................. file being recorded is static,");
     qWarning("                                             only one frame will be recorded or tested");
     qWarning("  exitoncomplete ........................... cleanly exit the viewer on script completion");
@@ -305,6 +306,8 @@ static void parseScriptOptions()
             scriptOptions |= QDeclarativeViewer::TestImages;
         } else if (option == QLatin1String("testerror")) {
             scriptOptions |= QDeclarativeViewer::TestErrorProperty;
+        } else if (option == QLatin1String("testskip")) {
+            scriptOptions |= QDeclarativeViewer::TestSkipProperty;
         } else if (option == QLatin1String("exitoncomplete")) {
             scriptOptions |= QDeclarativeViewer::ExitOnComplete;
         } else if (option == QLatin1String("exitonfailure")) {

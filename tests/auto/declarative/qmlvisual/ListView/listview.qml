@@ -1,7 +1,7 @@
 import QtQuick 1.0
 
-// Broken - QTBUG-14794
 Rectangle {
+    property string skip: "Incorrect start: QTBUG-14794"
     width: 600; height: 300; color: "white"
 
     ListModel {

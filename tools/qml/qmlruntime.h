@@ -83,7 +83,8 @@ public:
         SaveOnExit = 0x00000010,
         ExitOnComplete = 0x00000020,
         ExitOnFailure = 0x00000040,
-        Snapshot = 0x00000080
+        Snapshot = 0x00000080,
+        TestSkipProperty = 0x00000100
     };
     Q_DECLARE_FLAGS(ScriptOptions, ScriptOption)
     void setScript(const QString &s) { m_script = s; }
