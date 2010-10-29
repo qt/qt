@@ -1556,7 +1556,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "ARM_FPU_TYPE" ]        = "softvfp";
         dictionary[ "SQL_SQLITE" ]          = "yes";
         dictionary[ "SQL_SQLITE_LIB" ]      = "system";
-        dictionary[ "DECLARATIVE_DEBUG" ]   = "no";
 
         // Disable building docs and translations for now
         disabledBuildParts << "docs" << "translations";
