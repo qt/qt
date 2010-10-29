@@ -109,8 +109,8 @@ private slots:
     void getSetProperty();
     void arrayElementGetterSetter();
     void getSetData();
-    void getSetScriptClass_nonObjects_data();
-    void getSetScriptClass_nonObjects();
+    void getSetScriptClass_emptyClass_data();
+    void getSetScriptClass_emptyClass();
     void getSetScriptClass_JSObjectFromCpp();
     void getSetScriptClass_JSObjectFromJS();
     void getSetScriptClass_QVariant();
@@ -128,6 +128,12 @@ private slots:
     void nestedObjectToVariant();
 
 private:
+    void newEngine()
+    {
+        if (engine)
+            delete engine;
+        engine = new QScriptEngine();
+    }
     QScriptEngine *engine;
 };
 

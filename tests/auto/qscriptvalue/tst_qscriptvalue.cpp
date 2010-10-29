@@ -56,7 +56,8 @@ tst_QScriptValue::tst_QScriptValue()
 
 tst_QScriptValue::~tst_QScriptValue()
 {
-    delete engine;
+    if (engine)
+        delete engine;
 }
 
 void tst_QScriptValue::ctor_invalid()
@@ -2278,8 +2279,9 @@ public:
     TestScriptClass(QScriptEngine *engine) : QScriptClass(engine) {}
 };
 
-void tst_QScriptValue::getSetScriptClass_nonObjects_data()
+void tst_QScriptValue::getSetScriptClass_emptyClass_data()
 {
+    newEngine();
     QTest::addColumn<QScriptValue>("value");
 
     QTest::newRow("invalid") << QScriptValue();
@@ -2288,9 +2290,18 @@ void tst_QScriptValue::getSetScriptClass_nonObjects_data()
     QTest::newRow("bool") << QScriptValue(false);
     QTest::newRow("null") << QScriptValue(QScriptValue::NullValue);
     QTest::newRow("undefined") << QScriptValue(QScriptValue::UndefinedValue);
+
+    QTest::newRow("number") << QScriptValue(engine, 123);
+    QTest::newRow("string") << QScriptValue(engine, "pong");
+    QTest::newRow("bool") << QScriptValue(engine, true);
+    QTest::newRow("null") << QScriptValue(engine->nullValue());
+    QTest::newRow("undefined") << QScriptValue(engine->undefinedValue());
+    QTest::newRow("object") << QScriptValue(engine->newObject());
+    QTest::newRow("date") << QScriptValue(engine->evaluate("new Date()"));
+    QTest::newRow("qobject") << QScriptValue(engine->newQObject(this));
 }
 
-void tst_QScriptValue::getSetScriptClass_nonObjects()
+void tst_QScriptValue::getSetScriptClass_emptyClass()
 {
     QFETCH(QScriptValue, value);
     QCOMPARE(value.scriptClass(), (QScriptClass*)0);
@@ -2303,7 +2314,6 @@ void tst_QScriptValue::getSetScriptClass_JSObjectFromCpp()
     // object created in C++ (newObject())
     {
         QScriptValue obj = eng.newObject();
-        QCOMPARE(obj.scriptClass(), (QScriptClass*)0);
         obj.setScriptClass(&testClass);
         QCOMPARE(obj.scriptClass(), (QScriptClass*)&testClass);
         obj.setScriptClass(0);
@@ -2355,7 +2365,6 @@ void tst_QScriptValue::getSetScriptClass_QObject()
     {
         QScriptValue obj = eng.newQObject(this);
         QVERIFY(obj.isQObject());
-        QCOMPARE(obj.scriptClass(), (QScriptClass*)0);
         obj.setScriptClass(&testClass);
         QCOMPARE(obj.scriptClass(), (QScriptClass*)&testClass);
         QVERIFY(obj.isObject());
