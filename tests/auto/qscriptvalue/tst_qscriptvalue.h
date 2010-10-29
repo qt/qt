@@ -82,27 +82,27 @@ private slots:
     void ctor_copyAndAssign();
     void ctor_nullEngine();
 
-    void toString_old();
-    void toNumber_old();
-    void toBoolean_old();
-    void toBool_old();
-    void toInteger_old();
-    void toInt32_old();
-    void toUInt32_old();
-    void toUInt16_old();
-    void toVariant_old();
-    void toQObject_old();
-    void toDateTime_old();
-    void toRegExp_old();
-    void instanceOf_old();
-    void isArray_old();
-    void isDate_old();
-    void isError_old();
-    void isRegExp_old();
+    void toString();
+    void toNumber();
+    void toBoolean();
+    void toBool();
+    void toInteger();
+    void toInt32();
+    void toUInt32();
+    void toUInt16();
+    void toVariant();
+    void toQObject();
+    void toDateTime();
+    void toRegExp();
+    void instanceOf();
+    void isArray();
+    void isDate();
+    void isError();
+    void isRegExp();
 
-    void lessThan_old();
-    void equals_old();
-    void strictlyEquals_old();
+    void lessThan();
+    void equals();
+    void strictlyEquals();
 
     void getSetPrototype();
     void getSetScope();

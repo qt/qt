@@ -339,7 +339,7 @@ static QScriptValue myFunction(QScriptContext *, QScriptEngine *eng)
     return eng->undefinedValue();
 }
 
-void tst_QScriptValue::toString_old()
+void tst_QScriptValue::toString()
 {
     QScriptEngine eng;
 
@@ -453,7 +453,7 @@ void tst_QScriptValue::toString_old()
     QVERIFY(variant.toString().isEmpty());
 }
 
-void tst_QScriptValue::toNumber_old()
+void tst_QScriptValue::toNumber()
 {
     QScriptEngine eng;
 
@@ -526,7 +526,7 @@ void tst_QScriptValue::toNumber_old()
     }
 }
 
-void tst_QScriptValue::toBoolean_old() // deprecated
+void tst_QScriptValue::toBoolean() // deprecated
 {
     QScriptEngine eng;
 
@@ -623,7 +623,7 @@ void tst_QScriptValue::toBoolean_old() // deprecated
     }
 }
 
-void tst_QScriptValue::toBool_old()
+void tst_QScriptValue::toBool()
 {
     QScriptEngine eng;
 
@@ -720,7 +720,7 @@ void tst_QScriptValue::toBool_old()
     }
 }
 
-void tst_QScriptValue::toInteger_old()
+void tst_QScriptValue::toInteger()
 {
     QScriptEngine eng;
 
@@ -807,7 +807,7 @@ void tst_QScriptValue::toInteger_old()
     QCOMPARE(inv.toInteger(), 0.0);
 }
 
-void tst_QScriptValue::toInt32_old()
+void tst_QScriptValue::toInt32()
 {
     QScriptEngine eng;
 
@@ -943,7 +943,7 @@ void tst_QScriptValue::toInt32_old()
     QCOMPARE(qscriptvalue_cast<qint32>(inv), 0);
 }
 
-void tst_QScriptValue::toUInt32_old()
+void tst_QScriptValue::toUInt32()
 {
     QScriptEngine eng;
 
@@ -1075,7 +1075,7 @@ void tst_QScriptValue::toUInt32_old()
     QCOMPARE(qscriptvalue_cast<quint32>(inv), quint32(0));
 }
 
-void tst_QScriptValue::toUInt16_old()
+void tst_QScriptValue::toUInt16()
 {
     QScriptEngine eng;
 
@@ -1236,7 +1236,7 @@ void tst_QScriptValue::toUInt16_old()
 Q_DECLARE_METATYPE(QVariant)
 #endif
 
-void tst_QScriptValue::toVariant_old()
+void tst_QScriptValue::toVariant()
 {
     QScriptEngine eng;
 
@@ -1343,7 +1343,7 @@ void tst_QScriptValue::toVariant_old()
 // unfortunately, this is necessary in order to do qscriptvalue_cast<QPushButton*>(...)
 Q_DECLARE_METATYPE(QPushButton*)
 
-void tst_QScriptValue::toQObject_old()
+void tst_QScriptValue::toQObject()
 {
     QScriptEngine eng;
 
@@ -1550,7 +1550,7 @@ void tst_QScriptValue::toObject()
     }
 }
 
-void tst_QScriptValue::toDateTime_old()
+void tst_QScriptValue::toDateTime()
 {
     QScriptEngine eng;
     QDateTime dt = eng.evaluate("new Date(0)").toDateTime();
@@ -1568,7 +1568,7 @@ void tst_QScriptValue::toDateTime_old()
     QVERIFY(!eng.undefinedValue().toDateTime().isValid());
 }
 
-void tst_QScriptValue::toRegExp_old()
+void tst_QScriptValue::toRegExp()
 {
     QScriptEngine eng;
     {
@@ -1598,7 +1598,7 @@ void tst_QScriptValue::toRegExp_old()
     QVERIFY(eng.undefinedValue().toRegExp().isEmpty());
 }
 
-void tst_QScriptValue::instanceOf_old()
+void tst_QScriptValue::instanceOf()
 {
     QScriptEngine eng;
     QScriptValue obj = eng.newObject();
@@ -1634,7 +1634,7 @@ void tst_QScriptValue::instanceOf_old()
     QCOMPARE(obj.instanceOf(otherEngine.globalObject().property("Object")), false);
 }
 
-void tst_QScriptValue::isArray_old()
+void tst_QScriptValue::isArray()
 {
     QScriptEngine eng;
     QVERIFY(eng.evaluate("[]").isArray());
@@ -1647,7 +1647,7 @@ void tst_QScriptValue::isArray_old()
     QVERIFY(!eng.undefinedValue().isArray());
 }
 
-void tst_QScriptValue::isDate_old()
+void tst_QScriptValue::isDate()
 {
     QScriptEngine eng;
     QVERIFY(eng.evaluate("new Date()").isDate());
@@ -1661,7 +1661,7 @@ void tst_QScriptValue::isDate_old()
     QVERIFY(!eng.undefinedValue().isDate());
 }
 
-void tst_QScriptValue::isError_old()
+void tst_QScriptValue::isError()
 {
     QStringList errors;
     errors << "Error"
@@ -1686,7 +1686,7 @@ void tst_QScriptValue::isError_old()
     QVERIFY(!eng.evaluate("new Object()").isError());
 }
 
-void tst_QScriptValue::isRegExp_old()
+void tst_QScriptValue::isRegExp()
 {
     QScriptEngine eng;
     QVERIFY(eng.evaluate("/foo/").isRegExp());
@@ -2814,7 +2814,7 @@ void tst_QScriptValue::construct_constructorThrowsPrimitive()
     }
 }
 
-void tst_QScriptValue::lessThan_old()
+void tst_QScriptValue::lessThan()
 {
     QScriptEngine eng;
 
@@ -2908,7 +2908,7 @@ void tst_QScriptValue::lessThan_old()
     QCOMPARE(date1.lessThan(QScriptValue(&otherEngine, 123)), false);
 }
 
-void tst_QScriptValue::equals_old()
+void tst_QScriptValue::equals()
 {
     QScriptEngine eng;
 
@@ -3101,7 +3101,7 @@ void tst_QScriptValue::equals_old()
     QCOMPARE(date1.equals(QScriptValue(&otherEngine, 123)), false);
 }
 
-void tst_QScriptValue::strictlyEquals_old()
+void tst_QScriptValue::strictlyEquals()
 {
     QScriptEngine eng;
 
