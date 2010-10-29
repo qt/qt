@@ -187,7 +187,25 @@ private slots:
     // Non-generated test functions
 
     void toObject();
-    void ctor();
+
+    void ctor_invalid();
+    void ctor_undefinedWithEngine();
+    void ctor_undefined();
+    void ctor_nullWithEngine();
+    void ctor_null();
+    void ctor_boolWithEngine();
+    void ctor_bool();
+    void ctor_intWithEngine();
+    void ctor_int();
+    void ctor_uintWithEngine();
+    void ctor_uint();
+    void ctor_floatWithEngine();
+    void ctor_float();
+    void ctor_stringWithEngine();
+    void ctor_string();
+    void ctor_copyAndAssignWithEngine();
+    void ctor_copyAndAssign();
+    void ctor_nullEngine();
 
     void toString_old();
     void toNumber_old();

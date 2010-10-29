@@ -113,7 +113,7 @@ void tst_QScriptValue::assignAndCopyConstruct_test(const char *, const QScriptVa
 
 DEFINE_TEST_FUNCTION(assignAndCopyConstruct)
 
-void tst_QScriptValue::ctor()
+void tst_QScriptValue::ctor_invalid()
 {
     QScriptEngine eng;
     {
@@ -121,6 +121,11 @@ void tst_QScriptValue::ctor()
         QCOMPARE(v.isValid(), false);
         QCOMPARE(v.engine(), (QScriptEngine *)0);
     }
+}
+
+void tst_QScriptValue::ctor_undefinedWithEngine()
+{
+    QScriptEngine eng;
     {
         QScriptValue v(&eng, QScriptValue::UndefinedValue);
         QCOMPARE(v.isValid(), true);
@@ -128,6 +133,11 @@ void tst_QScriptValue::ctor()
         QCOMPARE(v.isObject(), false);
         QCOMPARE(v.engine(), &eng);
     }
+}
+
+void tst_QScriptValue::ctor_nullWithEngine()
+{
+    QScriptEngine eng;
     {
         QScriptValue v(&eng, QScriptValue::NullValue);
         QCOMPARE(v.isValid(), true);
@@ -135,6 +145,11 @@ void tst_QScriptValue::ctor()
         QCOMPARE(v.isObject(), false);
         QCOMPARE(v.engine(), &eng);
     }
+}
+
+void tst_QScriptValue::ctor_boolWithEngine()
+{
+    QScriptEngine eng;
     {
         QScriptValue v(&eng, false);
         QCOMPARE(v.isValid(), true);
@@ -144,6 +159,11 @@ void tst_QScriptValue::ctor()
         QCOMPARE(v.toBoolean(), false);
         QCOMPARE(v.engine(), &eng);
     }
+}
+
+void tst_QScriptValue::ctor_intWithEngine()
+{
+    QScriptEngine eng;
     {
         QScriptValue v(&eng, int(1));
         QCOMPARE(v.isValid(), true);
@@ -152,11 +172,28 @@ void tst_QScriptValue::ctor()
         QCOMPARE(v.toNumber(), 1.0);
         QCOMPARE(v.engine(), &eng);
     }
+}
+
+void tst_QScriptValue::ctor_int()
+{
     {
         QScriptValue v(int(0x43211234));
         QVERIFY(v.isNumber());
         QCOMPARE(v.toInt32(), 0x43211234);
     }
+    {
+        QScriptValue v(int(1));
+        QCOMPARE(v.isValid(), true);
+        QCOMPARE(v.isNumber(), true);
+        QCOMPARE(v.isObject(), false);
+        QCOMPARE(v.toNumber(), 1.0);
+        QCOMPARE(v.engine(), (QScriptEngine *)0);
+    }
+}
+
+void tst_QScriptValue::ctor_uintWithEngine()
+{
+    QScriptEngine eng;
     {
         QScriptValue v(&eng, uint(1));
         QCOMPARE(v.isValid(), true);
@@ -165,11 +202,28 @@ void tst_QScriptValue::ctor()
         QCOMPARE(v.toNumber(), 1.0);
         QCOMPARE(v.engine(), &eng);
     }
+}
+
+void tst_QScriptValue::ctor_uint()
+{
     {
         QScriptValue v(uint(0x43211234));
         QVERIFY(v.isNumber());
         QCOMPARE(v.toUInt32(), uint(0x43211234));
     }
+    {
+        QScriptValue v(uint(1));
+        QCOMPARE(v.isValid(), true);
+        QCOMPARE(v.isNumber(), true);
+        QCOMPARE(v.isObject(), false);
+        QCOMPARE(v.toNumber(), 1.0);
+        QCOMPARE(v.engine(), (QScriptEngine *)0);
+    }
+}
+
+void tst_QScriptValue::ctor_floatWithEngine()
+{
+    QScriptEngine eng;
     {
         QScriptValue v(&eng, 1.0);
         QCOMPARE(v.isValid(), true);
@@ -178,11 +232,28 @@ void tst_QScriptValue::ctor()
         QCOMPARE(v.toNumber(), 1.0);
         QCOMPARE(v.engine(), &eng);
     }
+}
+
+void tst_QScriptValue::ctor_float()
+{
     {
         QScriptValue v(12345678910.5);
         QVERIFY(v.isNumber());
         QCOMPARE(v.toNumber(), 12345678910.5);
     }
+    {
+        QScriptValue v(1.0);
+        QCOMPARE(v.isValid(), true);
+        QCOMPARE(v.isNumber(), true);
+        QCOMPARE(v.isObject(), false);
+        QCOMPARE(v.toNumber(), 1.0);
+        QCOMPARE(v.engine(), (QScriptEngine *)0);
+    }
+}
+
+void tst_QScriptValue::ctor_stringWithEngine()
+{
+    QScriptEngine eng;
     {
         QScriptValue v(&eng, "ciao");
         QCOMPARE(v.isValid(), true);
@@ -191,14 +262,31 @@ void tst_QScriptValue::ctor()
         QCOMPARE(v.toString(), QLatin1String("ciao"));
         QCOMPARE(v.engine(), &eng);
     }
+}
+
+void tst_QScriptValue::ctor_string()
+{
     {
-        QScriptValue v(&eng, QString("ciao"));
+        QScriptValue v(QString("ciao"));
         QCOMPARE(v.isValid(), true);
         QCOMPARE(v.isString(), true);
         QCOMPARE(v.isObject(), false);
         QCOMPARE(v.toString(), QLatin1String("ciao"));
-        QCOMPARE(v.engine(), &eng);
+        QCOMPARE(v.engine(), (QScriptEngine *)0);
     }
+    {
+        QScriptValue v("ciao");
+        QCOMPARE(v.isValid(), true);
+        QCOMPARE(v.isString(), true);
+        QCOMPARE(v.isObject(), false);
+        QCOMPARE(v.toString(), QLatin1String("ciao"));
+        QCOMPARE(v.engine(), (QScriptEngine *)0);
+    }
+}
+
+void tst_QScriptValue::ctor_copyAndAssignWithEngine()
+{
+    QScriptEngine eng;
     // copy constructor, operator=
     {
         QScriptValue v(&eng, 1.0);
@@ -227,100 +315,68 @@ void tst_QScriptValue::ctor()
         QCOMPARE(v5.strictlyEquals(v), false);
         QCOMPARE(v5.toNumber(), 1.0);
     }
+}
 
-    // constructors that take no engine argument
-    {
-        QScriptValue v(QScriptValue::UndefinedValue);
-        QCOMPARE(v.isValid(), true);
-        QCOMPARE(v.isUndefined(), true);
-        QCOMPARE(v.isObject(), false);
-        QCOMPARE(v.engine(), (QScriptEngine *)0);
-    }
-    {
-        QScriptValue v(QScriptValue::NullValue);
-        QCOMPARE(v.isValid(), true);
-        QCOMPARE(v.isNull(), true);
-        QCOMPARE(v.isObject(), false);
-        QCOMPARE(v.engine(), (QScriptEngine *)0);
-    }
-    {
-        QScriptValue v(false);
-        QCOMPARE(v.isValid(), true);
-        QCOMPARE(v.isBoolean(), true);
-        QCOMPARE(v.isBool(), true);
-        QCOMPARE(v.isObject(), false);
-        QCOMPARE(v.toBoolean(), false);
-        QCOMPARE(v.engine(), (QScriptEngine *)0);
-    }
-    {
-        QScriptValue v(int(1));
-        QCOMPARE(v.isValid(), true);
-        QCOMPARE(v.isNumber(), true);
-        QCOMPARE(v.isObject(), false);
-        QCOMPARE(v.toNumber(), 1.0);
-        QCOMPARE(v.engine(), (QScriptEngine *)0);
-    }
-    {
-        QScriptValue v(uint(1));
-        QCOMPARE(v.isValid(), true);
-        QCOMPARE(v.isNumber(), true);
-        QCOMPARE(v.isObject(), false);
-        QCOMPARE(v.toNumber(), 1.0);
-        QCOMPARE(v.engine(), (QScriptEngine *)0);
-    }
-    {
-        QScriptValue v(1.0);
-        QCOMPARE(v.isValid(), true);
-        QCOMPARE(v.isNumber(), true);
-        QCOMPARE(v.isObject(), false);
-        QCOMPARE(v.toNumber(), 1.0);
-        QCOMPARE(v.engine(), (QScriptEngine *)0);
-    }
-    {
-        QScriptValue v("ciao");
-        QCOMPARE(v.isValid(), true);
-        QCOMPARE(v.isString(), true);
-        QCOMPARE(v.isObject(), false);
-        QCOMPARE(v.toString(), QLatin1String("ciao"));
-        QCOMPARE(v.engine(), (QScriptEngine *)0);
-    }
-    {
-        QScriptValue v(QString("ciao"));
-        QCOMPARE(v.isValid(), true);
-        QCOMPARE(v.isString(), true);
-        QCOMPARE(v.isObject(), false);
-        QCOMPARE(v.toString(), QLatin1String("ciao"));
-        QCOMPARE(v.engine(), (QScriptEngine *)0);
-    }
-    // copy constructor, operator=
-    {
-        QScriptValue v(1.0);
-        QScriptValue v2(v);
-        QCOMPARE(v2.strictlyEquals(v), true);
-        QCOMPARE(v2.engine(), (QScriptEngine *)0);
+void tst_QScriptValue::ctor_undefined()
+{
+    QScriptValue v(QScriptValue::UndefinedValue);
+    QCOMPARE(v.isValid(), true);
+    QCOMPARE(v.isUndefined(), true);
+    QCOMPARE(v.isObject(), false);
+    QCOMPARE(v.engine(), (QScriptEngine *)0);
+}
 
-        QScriptValue v3(v);
-        QCOMPARE(v3.strictlyEquals(v), true);
-        QCOMPARE(v3.strictlyEquals(v2), true);
-        QCOMPARE(v3.engine(), (QScriptEngine *)0);
+void tst_QScriptValue::ctor_null()
+{
+    QScriptValue v(QScriptValue::NullValue);
+    QCOMPARE(v.isValid(), true);
+    QCOMPARE(v.isNull(), true);
+    QCOMPARE(v.isObject(), false);
+    QCOMPARE(v.engine(), (QScriptEngine *)0);
+}
 
-        QScriptValue v4(2.0);
-        QCOMPARE(v4.strictlyEquals(v), false);
-        v3 = v4;
-        QCOMPARE(v3.strictlyEquals(v), false);
-        QCOMPARE(v3.strictlyEquals(v4), true);
+void tst_QScriptValue::ctor_bool()
+{
+    QScriptValue v(false);
+    QCOMPARE(v.isValid(), true);
+    QCOMPARE(v.isBoolean(), true);
+    QCOMPARE(v.isBool(), true);
+    QCOMPARE(v.isObject(), false);
+    QCOMPARE(v.toBoolean(), false);
+    QCOMPARE(v.engine(), (QScriptEngine *)0);
+}
 
-        v2 = QScriptValue();
-        QCOMPARE(v2.strictlyEquals(v), false);
-        QCOMPARE(v.toNumber(), 1.0);
+void tst_QScriptValue::ctor_copyAndAssign()
+{
+    QScriptValue v(1.0);
+    QScriptValue v2(v);
+    QCOMPARE(v2.strictlyEquals(v), true);
+    QCOMPARE(v2.engine(), (QScriptEngine *)0);
 
-        QScriptValue v5(v);
-        QCOMPARE(v5.strictlyEquals(v), true);
-        v = QScriptValue();
-        QCOMPARE(v5.strictlyEquals(v), false);
-        QCOMPARE(v5.toNumber(), 1.0);
-    }
+    QScriptValue v3(v);
+    QCOMPARE(v3.strictlyEquals(v), true);
+    QCOMPARE(v3.strictlyEquals(v2), true);
+    QCOMPARE(v3.engine(), (QScriptEngine *)0);
 
+    QScriptValue v4(2.0);
+    QCOMPARE(v4.strictlyEquals(v), false);
+    v3 = v4;
+    QCOMPARE(v3.strictlyEquals(v), false);
+    QCOMPARE(v3.strictlyEquals(v4), true);
+
+    v2 = QScriptValue();
+    QCOMPARE(v2.strictlyEquals(v), false);
+    QCOMPARE(v.toNumber(), 1.0);
+
+    QScriptValue v5(v);
+    QCOMPARE(v5.strictlyEquals(v), true);
+    v = QScriptValue();
+    QCOMPARE(v5.strictlyEquals(v), false);
+    QCOMPARE(v5.toNumber(), 1.0);
+}
+
+void tst_QScriptValue::ctor_nullEngine()
+{
     // 0 engine
     QVERIFY(QScriptValue(0, QScriptValue::UndefinedValue).isUndefined());
     QVERIFY(QScriptValue(0, QScriptValue::NullValue).isNull());
