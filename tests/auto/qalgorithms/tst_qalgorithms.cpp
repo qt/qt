@@ -81,6 +81,7 @@ private slots:
     void test_qBinaryFind();
     void qBinaryFindOneEntry();
     void swap();
+    void swap2();
     void sortEmptyList();
     void sortedList();
     void sortAPItest();
@@ -518,6 +519,28 @@ void tst_QAlgorithms::swap()
     {
         const QString * const *a = 0, * const *b = 0;
         qSwap(a, b);
+    }
+}
+
+namespace SwapTest {
+    struct ST { int i; int j; };
+    void swap(ST &a, ST &b) {
+        a.i = b.j;
+        b.i = a.j;
+    }
+}
+
+void tst_QAlgorithms::swap2()
+{
+    {
+#ifndef QT_NO_SQL
+        //check the namespace lookup works correctly
+        SwapTest::ST a = { 45, 65 };
+        SwapTest::ST b = { 48, 68 };
+        qSwap(a, b);
+        QCOMPARE(a.i, 68);
+        QCOMPARE(b.i, 65);
+#endif
     }
 }
 
