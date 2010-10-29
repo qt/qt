@@ -1686,7 +1686,7 @@ void tst_QScriptValue::isDate()
     QCOMPARE(value.isDate(), date);
 }
 
-void tst_QScriptValue::isError()
+void tst_QScriptValue::isError_propertiesOfGlobalObject()
 {
     QStringList errors;
     errors << "Error"
@@ -1702,13 +1702,34 @@ void tst_QScriptValue::isError()
         QVERIFY(ctor.isFunction());
         QVERIFY(ctor.property("prototype").isError());
     }
-    QVERIFY(!eng.globalObject().isError());
-    QVERIFY(!QScriptValue().isError());
-    QVERIFY(!QScriptValue(123).isError());
-    QVERIFY(!QScriptValue(false).isError());
-    QVERIFY(!eng.nullValue().isError());
-    QVERIFY(!eng.undefinedValue().isError());
-    QVERIFY(!eng.evaluate("new Object()").isError());
+}
+
+void tst_QScriptValue::isError_data()
+{
+    newEngine();
+
+    QTest::addColumn<QScriptValue>("value");
+    QTest::addColumn<bool>("error");
+
+    QTest::newRow("syntax error") << engine->evaluate("%fsdg's") << true;
+    QTest::newRow("[]") << engine->evaluate("[]") << false;
+    QTest::newRow("{}") << engine->evaluate("{}") << false;
+    QTest::newRow("globalObject") << engine->globalObject() << false;
+    QTest::newRow("invalid") << QScriptValue() << false;
+    QTest::newRow("number") << QScriptValue(123) << false;
+    QTest::newRow("bool") << QScriptValue(false) << false;
+    QTest::newRow("null") << engine->nullValue() << false;
+    QTest::newRow("undefined") << engine->undefinedValue() << false;
+    QTest::newRow("newObject") << engine->newObject() << false;
+    QTest::newRow("new Object") << engine->evaluate("new Object()") << false;
+}
+
+void tst_QScriptValue::isError()
+{
+    QFETCH(QScriptValue, value);
+    QFETCH(bool, error);
+
+    QCOMPARE(value.isError(), error);
 }
 
 void tst_QScriptValue::isRegExp_data()

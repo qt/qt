@@ -99,6 +99,8 @@ private slots:
     void isArray();
     void isDate();
     void isDate_data();
+    void isError_propertiesOfGlobalObject();
+    void isError_data();
     void isError();
     void isRegExp_data();
     void isRegExp();
