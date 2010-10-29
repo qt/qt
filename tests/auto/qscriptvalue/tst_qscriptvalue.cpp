@@ -1599,6 +1599,15 @@ void tst_QScriptValue::toRegExp()
     QVERIFY(eng.undefinedValue().toRegExp().isEmpty());
 }
 
+void tst_QScriptValue::instanceOf_twoEngines()
+{
+    QScriptEngine eng;
+    QScriptValue obj = eng.newObject();
+    QScriptEngine otherEngine;
+    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::instanceof: cannot perform operation on a value created in a different engine");
+    QCOMPARE(obj.instanceOf(otherEngine.globalObject().property("Object")), false);
+}
+
 void tst_QScriptValue::instanceOf()
 {
     QScriptEngine eng;
@@ -1629,10 +1638,6 @@ void tst_QScriptValue::instanceOf()
     QCOMPARE(arr.instanceOf(eng.evaluate("QObject")), false);
 
     QCOMPARE(QScriptValue().instanceOf(arr), false);
-
-    QScriptEngine otherEngine;
-    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::instanceof: cannot perform operation on a value created in a different engine");
-    QCOMPARE(obj.instanceOf(otherEngine.globalObject().property("Object")), false);
 }
 
 void tst_QScriptValue::isArray_data()
