@@ -1,7 +1,7 @@
 import QtQuick 1.0
 
 Rectangle {
-    id: s; width: 600; height: 100; color: "lightsteelblue"
+    id: s; width: 600; height: 100;
     property string text: "The quick brown fox jumps over the lazy dog."
     Text {
         text: s.text

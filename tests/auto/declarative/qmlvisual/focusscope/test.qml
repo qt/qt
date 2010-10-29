@@ -1,9 +1,16 @@
 import QtQuick 1.0
 
+/*
+    Blue border indicates scoped focus
+    Black border indicates NOT scoped focus
+    Red box indicates active focus
+    Use arrow keys to navigate
+    Press "9" to print currently focused item
+*/
 Rectangle {
     color: "white"
-    width: 800
-    height: 600
+    width: 480
+    height: 480
 
     Keys.onDigit9Pressed: console.log("Error - Root")
 
@@ -54,8 +61,6 @@ Rectangle {
         }
         KeyNavigation.down: item3
     }
-
-    Text { x:100; y:170; text: "Blue border indicates scoped focus\nBlack border indicates NOT scoped focus\nRed box indicates active focus\nUse arrow keys to navigate\nPress \"9\" to print currently focused item" }
 
     Rectangle {
         id: item3
