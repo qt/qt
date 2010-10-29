@@ -6,6 +6,6 @@ VisualTest {
     }
     Frame {
         msec: 16
-        image: "rect-painting.0.png"
+        image: "GradientRect.0.png"
     }
 }
