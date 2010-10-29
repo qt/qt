@@ -2295,39 +2295,71 @@ void tst_QScriptValue::getSetScope()
     QVERIFY(!object2.scope().isValid());
 }
 
-void tst_QScriptValue::getSetData()
+void tst_QScriptValue::getSetData_objects_data()
 {
-    QScriptEngine eng;
-    {
-        QScriptValue object = eng.newObject();
-        QVERIFY(!object.data().isValid());
-        QScriptValue v1(true);
-        object.setData(v1);
-        QVERIFY(object.data().strictlyEquals(v1));
-        QScriptValue v2(123);
-        object.setData(v2);
-        QVERIFY(object.data().strictlyEquals(v2));
-        QScriptValue v3 = eng.newObject();
-        object.setData(v3);
-        QVERIFY(object.data().strictlyEquals(v3));
-        object.setData(QScriptValue());
-        QVERIFY(!object.data().isValid());
-    }
-    {
-        QScriptValue value = eng.undefinedValue();
-        QVERIFY(!value.data().isValid());
-        QScriptValue v1(true);
-        value.setData(v1);
-        QVERIFY(!value.data().isValid());
-        QScriptValue v2(123);
-        value.setData(v2);
-        QVERIFY(!value.data().isValid());
-        QScriptValue v3 = eng.newObject();
-        value.setData(v3);
-        QVERIFY(!value.data().isValid());
-        value.setData(QScriptValue());
-        QVERIFY(!value.data().isValid());
-    }
+    newEngine();
+
+    QTest::addColumn<QScriptValue>("object");
+
+    QTest::newRow("object from evaluate") << engine->evaluate("new Object()");
+    QTest::newRow("object from engine") << engine->newObject();
+    QTest::newRow("Array") << engine->newArray();
+    QTest::newRow("Date") << engine->newDate(12324);
+    QTest::newRow("QObject") << engine->newQObject(this);
+    QTest::newRow("RegExp") << engine->newRegExp(QRegExp());
+}
+
+void tst_QScriptValue::getSetData_objects()
+{
+    QFETCH(QScriptValue, object);
+
+    QVERIFY(!object.data().isValid());
+    QScriptValue v1(true);
+    object.setData(v1);
+    QVERIFY(object.data().strictlyEquals(v1));
+    QScriptValue v2(123);
+    object.setData(v2);
+    QVERIFY(object.data().strictlyEquals(v2));
+    QScriptValue v3 = engine->newObject();
+    object.setData(v3);
+    QVERIFY(object.data().strictlyEquals(v3));
+    object.setData(QScriptValue());
+    QVERIFY(!object.data().isValid());
+}
+
+void tst_QScriptValue::getSetData_nonObjects_data()
+{
+    newEngine();
+
+    QTest::addColumn<QScriptValue>("value");
+
+    QTest::newRow("undefined (bound)") << engine->undefinedValue();
+    QTest::newRow("null (bound)") << engine->nullValue();
+    QTest::newRow("string (bound)") << QScriptValue(engine, "Pong");
+    QTest::newRow("bool (bound)") << QScriptValue(engine, false);
+
+    QTest::newRow("undefined") << QScriptValue(QScriptValue::UndefinedValue);
+    QTest::newRow("null") << QScriptValue(QScriptValue::NullValue);
+    QTest::newRow("string") << QScriptValue("Pong");
+    QTest::newRow("bool") << QScriptValue(true);
+}
+
+void tst_QScriptValue::getSetData_nonObjects()
+{
+    QFETCH(QScriptValue, value);
+
+    QVERIFY(!value.data().isValid());
+    QScriptValue v1(true);
+    value.setData(v1);
+    QVERIFY(!value.data().isValid());
+    QScriptValue v2(123);
+    value.setData(v2);
+    QVERIFY(!value.data().isValid());
+    QScriptValue v3 = engine->newObject();
+    value.setData(v3);
+    QVERIFY(!value.data().isValid());
+    value.setData(QScriptValue());
+    QVERIFY(!value.data().isValid());
 }
 
 class TestScriptClass : public QScriptClass

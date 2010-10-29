@@ -113,7 +113,10 @@ private slots:
     void getSetScope();
     void getSetProperty();
     void arrayElementGetterSetter();
-    void getSetData();
+    void getSetData_objects_data();
+    void getSetData_objects();
+    void getSetData_nonObjects_data();
+    void getSetData_nonObjects();
     void getSetScriptClass_emptyClass_data();
     void getSetScriptClass_emptyClass();
     void getSetScriptClass_JSObjectFromCpp();
