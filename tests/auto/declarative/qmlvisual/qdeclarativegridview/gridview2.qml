@@ -1,7 +1,5 @@
 import QtQuick 1.0
 
-//Currently doesn't behave right: see QTBUG-14838
-
 Rectangle {
     width: 300; height: 400; color: "black"
 
