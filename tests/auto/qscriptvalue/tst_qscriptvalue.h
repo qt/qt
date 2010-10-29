@@ -111,6 +111,17 @@ private slots:
 
     void getSetPrototype();
     void getSetScope();
+    void getSetProperty_HooliganTask162051();
+    void getSetProperty_HooliganTask183072();
+    void getSetProperty_propertyRemoval();
+    void getSetProperty_resolveMode();
+    void getSetProperty_twoEngines();
+    void getSetProperty_gettersAndSetters();
+    void getSetProperty_gettersAndSettersThrowError();
+    void getSetProperty_gettersAndSettersOnNative();
+    void getSetProperty_gettersAndSettersOnGlobalObject();
+    void getSetProperty_gettersAndSettersChange();
+    void getSetProperty_array();
     void getSetProperty();
     void arrayElementGetterSetter();
     void getSetData_objects_data();

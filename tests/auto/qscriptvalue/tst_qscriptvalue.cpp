@@ -1791,6 +1791,302 @@ static QScriptValue getSet__proto__(QScriptContext *ctx, QScriptEngine *)
     return ctx->callee().property("value");
 }
 
+void tst_QScriptValue::getSetProperty_HooliganTask162051()
+{
+    QScriptEngine eng;
+    // task 162051 -- detecting whether the property is an array index or not
+    QVERIFY(eng.evaluate("a = []; a['00'] = 123; a['00']").strictlyEquals(QScriptValue(&eng, 123)));
+    QVERIFY(eng.evaluate("a.length").strictlyEquals(QScriptValue(&eng, 0)));
+    QVERIFY(eng.evaluate("a.hasOwnProperty('00')").strictlyEquals(QScriptValue(&eng, true)));
+    QVERIFY(eng.evaluate("a.hasOwnProperty('0')").strictlyEquals(QScriptValue(&eng, false)));
+    QVERIFY(eng.evaluate("a[0]").isUndefined());
+    QVERIFY(eng.evaluate("a[0.5] = 456; a[0.5]").strictlyEquals(QScriptValue(&eng, 456)));
+    QVERIFY(eng.evaluate("a.length").strictlyEquals(QScriptValue(&eng, 0)));
+    QVERIFY(eng.evaluate("a.hasOwnProperty('0.5')").strictlyEquals(QScriptValue(&eng, true)));
+    QVERIFY(eng.evaluate("a[0]").isUndefined());
+    QVERIFY(eng.evaluate("a[0] = 789; a[0]").strictlyEquals(QScriptValue(&eng, 789)));
+    QVERIFY(eng.evaluate("a.length").strictlyEquals(QScriptValue(&eng, 1)));
+}
+
+void tst_QScriptValue::getSetProperty_HooliganTask183072()
+{
+    QScriptEngine eng;
+    // task 183072 -- 0x800000000 is not an array index
+    eng.evaluate("a = []; a[0x800000000] = 123");
+    QVERIFY(eng.evaluate("a.length").strictlyEquals(QScriptValue(&eng, 0)));
+    QVERIFY(eng.evaluate("a[0]").isUndefined());
+    QVERIFY(eng.evaluate("a[0x800000000]").strictlyEquals(QScriptValue(&eng, 123)));
+}
+
+void tst_QScriptValue::getSetProperty_propertyRemoval()
+{
+    // test property removal (setProperty(QScriptValue()))
+    QScriptEngine eng;
+    QScriptValue object = eng.newObject();
+    QScriptValue str = QScriptValue(&eng, "bar");
+    QScriptValue num = QScriptValue(&eng, 123.0);
+
+    object.setProperty("foo", num);
+    QCOMPARE(object.property("foo").strictlyEquals(num), true);
+    object.setProperty("bar", str);
+    QCOMPARE(object.property("bar").strictlyEquals(str), true);
+    object.setProperty("foo", QScriptValue());
+    QCOMPARE(object.property("foo").isValid(), false);
+    QCOMPARE(object.property("bar").strictlyEquals(str), true);
+    object.setProperty("foo", num);
+    QCOMPARE(object.property("foo").strictlyEquals(num), true);
+    QCOMPARE(object.property("bar").strictlyEquals(str), true);
+    object.setProperty("bar", QScriptValue());
+    QCOMPARE(object.property("bar").isValid(), false);
+    QCOMPARE(object.property("foo").strictlyEquals(num), true);
+    object.setProperty("foo", QScriptValue());
+    object.setProperty("foo", QScriptValue());
+
+    eng.globalObject().setProperty("object3", object);
+    QCOMPARE(eng.evaluate("object3.hasOwnProperty('foo')")
+             .strictlyEquals(QScriptValue(&eng, false)), true);
+    object.setProperty("foo", num);
+    QCOMPARE(eng.evaluate("object3.hasOwnProperty('foo')")
+             .strictlyEquals(QScriptValue(&eng, true)), true);
+    eng.globalObject().setProperty("object3", QScriptValue());
+    QCOMPARE(eng.evaluate("this.hasOwnProperty('object3')")
+             .strictlyEquals(QScriptValue(&eng, false)), true);
+}
+
+void tst_QScriptValue::getSetProperty_resolveMode()
+{
+    // test ResolveMode
+    QScriptEngine eng;
+    QScriptValue object = eng.newObject();
+    QScriptValue prototype = eng.newObject();
+    object.setPrototype(prototype);
+    QScriptValue num2 = QScriptValue(&eng, 456.0);
+    prototype.setProperty("propertyInPrototype", num2);
+    // default is ResolvePrototype
+    QCOMPARE(object.property("propertyInPrototype")
+             .strictlyEquals(num2), true);
+    QCOMPARE(object.property("propertyInPrototype", QScriptValue::ResolvePrototype)
+             .strictlyEquals(num2), true);
+    QCOMPARE(object.property("propertyInPrototype", QScriptValue::ResolveLocal)
+             .isValid(), false);
+    QCOMPARE(object.property("propertyInPrototype", QScriptValue::ResolveScope)
+             .strictlyEquals(num2), false);
+    QCOMPARE(object.property("propertyInPrototype", QScriptValue::ResolveFull)
+             .strictlyEquals(num2), true);
+}
+
+void tst_QScriptValue::getSetProperty_twoEngines()
+{
+    QScriptEngine engine;
+    QScriptValue object = engine.newObject();
+
+    QScriptEngine otherEngine;
+    QScriptValue otherNum = QScriptValue(&otherEngine, 123);
+    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setProperty(oof) failed: cannot set value created in a different engine");
+    object.setProperty("oof", otherNum);
+    QCOMPARE(object.property("oof").isValid(), false);
+}
+
+
+void tst_QScriptValue::getSetProperty_gettersAndSetters()
+{
+    QScriptEngine eng;
+    QScriptValue str = QScriptValue(&eng, "bar");
+    QScriptValue num = QScriptValue(&eng, 123.0);
+    QScriptValue object = eng.newObject();
+    for (int x = 0; x < 2; ++x) {
+        object.setProperty("foo", QScriptValue());
+        // getter() returns this.x
+        object.setProperty("foo", eng.newFunction(getter),
+                            QScriptValue::PropertyGetter | QScriptValue::UserRange);
+        QCOMPARE(object.propertyFlags("foo") & ~QScriptValue::UserRange,
+                 QScriptValue::PropertyGetter );
+
+        QEXPECT_FAIL("", "User-range flags are not retained for getter/setter properties", Continue);
+        QCOMPARE(object.propertyFlags("foo"),
+                 QScriptValue::PropertyGetter | QScriptValue::UserRange);
+        object.setProperty("x", num);
+        QCOMPARE(object.property("foo").strictlyEquals(num), true);
+
+        // setter() sets this.x
+        object.setProperty("foo", eng.newFunction(setter),
+                            QScriptValue::PropertySetter);
+        QCOMPARE(object.propertyFlags("foo") & ~QScriptValue::UserRange,
+                 QScriptValue::PropertySetter | QScriptValue::PropertyGetter);
+
+        QCOMPARE(object.propertyFlags("foo"),
+                 QScriptValue::PropertySetter | QScriptValue::PropertyGetter);
+        object.setProperty("foo", str);
+        QCOMPARE(object.property("x").strictlyEquals(str), true);
+        QCOMPARE(object.property("foo").strictlyEquals(str), true);
+
+        // kill the getter
+        object.setProperty("foo", QScriptValue(), QScriptValue::PropertyGetter);
+        QVERIFY(!(object.propertyFlags("foo") & QScriptValue::PropertyGetter));
+        QVERIFY(object.propertyFlags("foo") & QScriptValue::PropertySetter);
+        QCOMPARE(object.property("foo").isUndefined(), true);
+
+        // setter should still work
+        object.setProperty("foo", num);
+        QCOMPARE(object.property("x").strictlyEquals(num), true);
+
+        // kill the setter too
+        object.setProperty("foo", QScriptValue(), QScriptValue::PropertySetter);
+        QVERIFY(!(object.propertyFlags("foo") & QScriptValue::PropertySetter));
+        // now foo is just a regular property
+        object.setProperty("foo", str);
+        QCOMPARE(object.property("x").strictlyEquals(num), true);
+        QCOMPARE(object.property("foo").strictlyEquals(str), true);
+    }
+
+    for (int x = 0; x < 2; ++x) {
+        object.setProperty("foo", QScriptValue());
+        // setter() sets this.x
+        object.setProperty("foo", eng.newFunction(setter), QScriptValue::PropertySetter);
+        object.setProperty("foo", str);
+        QCOMPARE(object.property("x").strictlyEquals(str), true);
+        QCOMPARE(object.property("foo").isUndefined(), true);
+
+        // getter() returns this.x
+        object.setProperty("foo", eng.newFunction(getter), QScriptValue::PropertyGetter);
+        object.setProperty("x", num);
+        QCOMPARE(object.property("foo").strictlyEquals(num), true);
+
+        // kill the setter
+        object.setProperty("foo", QScriptValue(), QScriptValue::PropertySetter);
+        QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setProperty() failed: property 'foo' has a getter but no setter");
+        object.setProperty("foo", str);
+
+        // getter should still work
+        QCOMPARE(object.property("foo").strictlyEquals(num), true);
+
+        // kill the getter too
+        object.setProperty("foo", QScriptValue(), QScriptValue::PropertyGetter);
+        // now foo is just a regular property
+        object.setProperty("foo", str);
+        QCOMPARE(object.property("x").strictlyEquals(num), true);
+        QCOMPARE(object.property("foo").strictlyEquals(str), true);
+    }
+
+    // use a single function as both getter and setter
+    object.setProperty("foo", QScriptValue());
+    object.setProperty("foo", eng.newFunction(getterSetter),
+                        QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
+    QCOMPARE(object.propertyFlags("foo"),
+             QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
+    object.setProperty("x", num);
+    QCOMPARE(object.property("foo").strictlyEquals(num), true);
+
+    // killing the getter will preserve the setter, even though they are the same function
+    object.setProperty("foo", QScriptValue(), QScriptValue::PropertyGetter);
+    QVERIFY(object.propertyFlags("foo") & QScriptValue::PropertySetter);
+    QCOMPARE(object.property("foo").isUndefined(), true);
+}
+
+void tst_QScriptValue::getSetProperty_gettersAndSettersThrowError()
+{
+    // getter/setter that throws an error
+    QScriptEngine eng;
+    QScriptValue str = QScriptValue(&eng, "bar");
+    QScriptValue object = eng.newObject();
+
+    object.setProperty("foo", eng.newFunction(getterSetterThrowingError),
+                        QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
+    QVERIFY(!eng.hasUncaughtException());
+    QScriptValue ret = object.property("foo");
+    QVERIFY(ret.isError());
+    QVERIFY(eng.hasUncaughtException());
+    QVERIFY(ret.strictlyEquals(eng.uncaughtException()));
+    eng.evaluate("Object"); // clear exception state...
+    QVERIFY(!eng.hasUncaughtException());
+    object.setProperty("foo", str);
+    QVERIFY(eng.hasUncaughtException());
+    QCOMPARE(eng.uncaughtException().toString(), QLatin1String("Error: set foo"));
+}
+
+void tst_QScriptValue::getSetProperty_gettersAndSettersOnNative()
+{
+    // attempt to install getter+setter on built-in (native) property
+    QScriptEngine eng;
+    QScriptValue object = eng.newObject();
+    QVERIFY(object.property("__proto__").strictlyEquals(object.prototype()));
+
+    QScriptValue fun = eng.newFunction(getSet__proto__);
+    fun.setProperty("value", QScriptValue(&eng, "boo"));
+    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setProperty() failed: "
+                         "cannot set getter or setter of native property "
+                         "`__proto__'");
+    object.setProperty("__proto__", fun,
+                        QScriptValue::PropertyGetter | QScriptValue::PropertySetter
+                        | QScriptValue::UserRange);
+    QVERIFY(object.property("__proto__").strictlyEquals(object.prototype()));
+
+    object.setProperty("__proto__", QScriptValue(),
+                        QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
+    QVERIFY(object.property("__proto__").strictlyEquals(object.prototype()));
+}
+
+void tst_QScriptValue::getSetProperty_gettersAndSettersOnGlobalObject()
+{
+    // global property that's a getter+setter
+    QScriptEngine eng;
+    eng.globalObject().setProperty("globalGetterSetterProperty", eng.newFunction(getterSetter),
+                                   QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
+    eng.evaluate("globalGetterSetterProperty = 123");
+    {
+        QScriptValue ret = eng.evaluate("globalGetterSetterProperty");
+        QVERIFY(ret.isNumber());
+        QVERIFY(ret.strictlyEquals(QScriptValue(&eng, 123)));
+    }
+    QCOMPARE(eng.evaluate("typeof globalGetterSetterProperty").toString(),
+             QString::fromLatin1("number"));
+    {
+        QScriptValue ret = eng.evaluate("this.globalGetterSetterProperty()");
+        QVERIFY(ret.isError());
+        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'this.globalGetterSetterProperty' [123] is not a function."));
+    }
+    {
+        QScriptValue ret = eng.evaluate("new this.globalGetterSetterProperty()");
+        QVERIFY(ret.isError());
+        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'this.globalGetterSetterProperty' [123] is not a constructor."));
+    }
+}
+
+void tst_QScriptValue::getSetProperty_gettersAndSettersChange()
+{
+    // "upgrading" an existing property to become a getter+setter
+    QScriptEngine eng;
+    QScriptValue object = eng.newObject();
+    QScriptValue num(&eng, 123);
+    object.setProperty("foo", num);
+    object.setProperty("foo", eng.newFunction(getterSetter),
+                        QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
+    QVERIFY(!object.property("x").isValid());
+    object.setProperty("foo", num);
+    QVERIFY(object.property("x").equals(num));
+}
+
+void tst_QScriptValue::getSetProperty_array()
+{
+    QScriptEngine eng;
+    QScriptValue str = QScriptValue(&eng, "bar");
+    QScriptValue num = QScriptValue(&eng, 123.0);
+    QScriptValue array = eng.newArray();
+
+    QVERIFY(array.isArray());
+    array.setProperty(0, num);
+    QCOMPARE(array.property(0).toNumber(), num.toNumber());
+    QCOMPARE(array.property("0").toNumber(), num.toNumber());
+    QCOMPARE(array.property("length").toUInt32(), quint32(1));
+    array.setProperty(1, str);
+    QCOMPARE(array.property(1).toString(), str.toString());
+    QCOMPARE(array.property("1").toString(), str.toString());
+    QCOMPARE(array.property("length").toUInt32(), quint32(2));
+    array.setProperty("length", QScriptValue(&eng, 1));
+    QCOMPARE(array.property("length").toUInt32(), quint32(1));
+    QCOMPARE(array.property(1).isValid(), false);
+}
+
 void tst_QScriptValue::getSetProperty()
 {
     QScriptEngine eng;
@@ -1818,255 +2114,6 @@ void tst_QScriptValue::getSetProperty()
     QScriptValue inv;
     inv.setProperty("foo", num);
     QCOMPARE(inv.property("foo").isValid(), false);
-
-    QScriptValue array = eng.newArray();
-    QVERIFY(array.isArray());
-    array.setProperty(0, num);
-    QCOMPARE(array.property(0).toNumber(), num.toNumber());
-    QCOMPARE(array.property("0").toNumber(), num.toNumber());
-    QCOMPARE(array.property("length").toUInt32(), quint32(1));
-    array.setProperty(1, str);
-    QCOMPARE(array.property(1).toString(), str.toString());
-    QCOMPARE(array.property("1").toString(), str.toString());
-    QCOMPARE(array.property("length").toUInt32(), quint32(2));
-    array.setProperty("length", QScriptValue(&eng, 1));
-    QCOMPARE(array.property("length").toUInt32(), quint32(1));
-    QCOMPARE(array.property(1).isValid(), false);
-
-    // task 162051 -- detecting whether the property is an array index or not
-    QVERIFY(eng.evaluate("a = []; a['00'] = 123; a['00']").strictlyEquals(QScriptValue(&eng, 123)));
-    QVERIFY(eng.evaluate("a.length").strictlyEquals(QScriptValue(&eng, 0)));
-    QVERIFY(eng.evaluate("a.hasOwnProperty('00')").strictlyEquals(QScriptValue(&eng, true)));
-    QVERIFY(eng.evaluate("a.hasOwnProperty('0')").strictlyEquals(QScriptValue(&eng, false)));
-    QVERIFY(eng.evaluate("a[0]").isUndefined());
-    QVERIFY(eng.evaluate("a[0.5] = 456; a[0.5]").strictlyEquals(QScriptValue(&eng, 456)));
-    QVERIFY(eng.evaluate("a.length").strictlyEquals(QScriptValue(&eng, 0)));
-    QVERIFY(eng.evaluate("a.hasOwnProperty('0.5')").strictlyEquals(QScriptValue(&eng, true)));
-    QVERIFY(eng.evaluate("a[0]").isUndefined());
-    QVERIFY(eng.evaluate("a[0] = 789; a[0]").strictlyEquals(QScriptValue(&eng, 789)));
-    QVERIFY(eng.evaluate("a.length").strictlyEquals(QScriptValue(&eng, 1)));
-
-    // task 183072 -- 0x800000000 is not an array index
-    eng.evaluate("a = []; a[0x800000000] = 123");
-    QVERIFY(eng.evaluate("a.length").strictlyEquals(QScriptValue(&eng, 0)));
-    QVERIFY(eng.evaluate("a[0]").isUndefined());
-    QVERIFY(eng.evaluate("a[0x800000000]").strictlyEquals(QScriptValue(&eng, 123)));
-
-    QScriptEngine otherEngine;
-    QScriptValue otherNum = QScriptValue(&otherEngine, 123);
-    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setProperty(oof) failed: cannot set value created in a different engine");
-    object.setProperty("oof", otherNum);
-    QCOMPARE(object.property("oof").isValid(), false);
-
-    // test ResolveMode
-    QScriptValue object2 = eng.newObject();
-    object.setPrototype(object2);
-    QScriptValue num2 = QScriptValue(&eng, 456.0);
-    object2.setProperty("propertyInPrototype", num2);
-    // default is ResolvePrototype
-    QCOMPARE(object.property("propertyInPrototype")
-             .strictlyEquals(num2), true);
-    QCOMPARE(object.property("propertyInPrototype", QScriptValue::ResolvePrototype)
-             .strictlyEquals(num2), true);
-    QCOMPARE(object.property("propertyInPrototype", QScriptValue::ResolveLocal)
-             .isValid(), false);
-    QCOMPARE(object.property("propertyInPrototype", QScriptValue::ResolveScope)
-             .strictlyEquals(num2), false);
-    QCOMPARE(object.property("propertyInPrototype", QScriptValue::ResolveFull)
-             .strictlyEquals(num2), true);
-
-    // test property removal (setProperty(QScriptValue()))
-    QScriptValue object3 = eng.newObject();
-    object3.setProperty("foo", num);
-    QCOMPARE(object3.property("foo").strictlyEquals(num), true);
-    object3.setProperty("bar", str);
-    QCOMPARE(object3.property("bar").strictlyEquals(str), true);
-    object3.setProperty("foo", QScriptValue());
-    QCOMPARE(object3.property("foo").isValid(), false);
-    QCOMPARE(object3.property("bar").strictlyEquals(str), true);
-    object3.setProperty("foo", num);
-    QCOMPARE(object3.property("foo").strictlyEquals(num), true);
-    QCOMPARE(object3.property("bar").strictlyEquals(str), true);
-    object3.setProperty("bar", QScriptValue());
-    QCOMPARE(object3.property("bar").isValid(), false);
-    QCOMPARE(object3.property("foo").strictlyEquals(num), true);
-    object3.setProperty("foo", QScriptValue());
-    object3.setProperty("foo", QScriptValue());
-
-    eng.globalObject().setProperty("object3", object3);
-    QCOMPARE(eng.evaluate("object3.hasOwnProperty('foo')")
-             .strictlyEquals(QScriptValue(&eng, false)), true);
-    object3.setProperty("foo", num);
-    QCOMPARE(eng.evaluate("object3.hasOwnProperty('foo')")
-             .strictlyEquals(QScriptValue(&eng, true)), true);
-    eng.globalObject().setProperty("object3", QScriptValue());
-    QCOMPARE(eng.evaluate("this.hasOwnProperty('object3')")
-             .strictlyEquals(QScriptValue(&eng, false)), true);
-
-    // getters and setters
-    {
-        QScriptValue object4 = eng.newObject();
-        for (int x = 0; x < 2; ++x) {
-            object4.setProperty("foo", QScriptValue());
-            // getter() returns this.x
-            object4.setProperty("foo", eng.newFunction(getter),
-                                QScriptValue::PropertyGetter | QScriptValue::UserRange);
-            QCOMPARE(object4.propertyFlags("foo") & ~QScriptValue::UserRange,
-                        QScriptValue::PropertyGetter );
-
-            QEXPECT_FAIL("", "User-range flags are not retained for getter/setter properties", Continue);
-            QCOMPARE(object4.propertyFlags("foo"),
-                     QScriptValue::PropertyGetter | QScriptValue::UserRange);
-            object4.setProperty("x", num);
-            QCOMPARE(object4.property("foo").strictlyEquals(num), true);
-
-            // setter() sets this.x
-            object4.setProperty("foo", eng.newFunction(setter),
-                                QScriptValue::PropertySetter);
-            QCOMPARE(object4.propertyFlags("foo") & ~QScriptValue::UserRange,
-                                QScriptValue::PropertySetter | QScriptValue::PropertyGetter);
-
-            QCOMPARE(object4.propertyFlags("foo"),
-                     QScriptValue::PropertySetter | QScriptValue::PropertyGetter);
-            object4.setProperty("foo", str);
-            QCOMPARE(object4.property("x").strictlyEquals(str), true);
-            QCOMPARE(object4.property("foo").strictlyEquals(str), true);
-
-            // kill the getter
-            object4.setProperty("foo", QScriptValue(), QScriptValue::PropertyGetter);
-            QVERIFY(!(object4.propertyFlags("foo") & QScriptValue::PropertyGetter));
-            QVERIFY(object4.propertyFlags("foo") & QScriptValue::PropertySetter);
-            QCOMPARE(object4.property("foo").isUndefined(), true);
-
-            // setter should still work
-            object4.setProperty("foo", num);
-            QCOMPARE(object4.property("x").strictlyEquals(num), true);
-
-            // kill the setter too
-            object4.setProperty("foo", QScriptValue(), QScriptValue::PropertySetter);
-            QVERIFY(!(object4.propertyFlags("foo") & QScriptValue::PropertySetter));
-            // now foo is just a regular property
-            object4.setProperty("foo", str);
-            QCOMPARE(object4.property("x").strictlyEquals(num), true);
-            QCOMPARE(object4.property("foo").strictlyEquals(str), true);
-        }
-
-        for (int x = 0; x < 2; ++x) {
-            object4.setProperty("foo", QScriptValue());
-            // setter() sets this.x
-            object4.setProperty("foo", eng.newFunction(setter), QScriptValue::PropertySetter);
-            object4.setProperty("foo", str);
-            QCOMPARE(object4.property("x").strictlyEquals(str), true);
-            QCOMPARE(object4.property("foo").isUndefined(), true);
-
-            // getter() returns this.x
-            object4.setProperty("foo", eng.newFunction(getter), QScriptValue::PropertyGetter);
-            object4.setProperty("x", num);
-            QCOMPARE(object4.property("foo").strictlyEquals(num), true);
-
-            // kill the setter
-            object4.setProperty("foo", QScriptValue(), QScriptValue::PropertySetter);
-            QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setProperty() failed: property 'foo' has a getter but no setter");
-            object4.setProperty("foo", str);
-
-            // getter should still work
-            QCOMPARE(object4.property("foo").strictlyEquals(num), true);
-
-            // kill the getter too
-            object4.setProperty("foo", QScriptValue(), QScriptValue::PropertyGetter);
-            // now foo is just a regular property
-            object4.setProperty("foo", str);
-            QCOMPARE(object4.property("x").strictlyEquals(num), true);
-            QCOMPARE(object4.property("foo").strictlyEquals(str), true);
-        }
-
-        // use a single function as both getter and setter
-        object4.setProperty("foo", QScriptValue());
-        object4.setProperty("foo", eng.newFunction(getterSetter),
-                            QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
-        QCOMPARE(object4.propertyFlags("foo"),
-                 QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
-        object4.setProperty("x", num);
-        QCOMPARE(object4.property("foo").strictlyEquals(num), true);
-
-        // killing the getter will preserve the setter, even though they are the same function
-        object4.setProperty("foo", QScriptValue(), QScriptValue::PropertyGetter);
-        QVERIFY(object4.propertyFlags("foo") & QScriptValue::PropertySetter);
-        QCOMPARE(object4.property("foo").isUndefined(), true);
-
-        // getter/setter that throws an error
-        {
-            QScriptValue object5 = eng.newObject();
-            object5.setProperty("foo", eng.newFunction(getterSetterThrowingError),
-                                QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
-            QVERIFY(!eng.hasUncaughtException());
-            QScriptValue ret = object5.property("foo");
-            QVERIFY(ret.isError());
-            QVERIFY(eng.hasUncaughtException());
-            QVERIFY(ret.strictlyEquals(eng.uncaughtException()));
-            eng.evaluate("Object"); // clear exception state...
-            QVERIFY(!eng.hasUncaughtException());
-            object5.setProperty("foo", str);
-            QVERIFY(eng.hasUncaughtException());
-            QCOMPARE(eng.uncaughtException().toString(), QLatin1String("Error: set foo"));
-        }
-
-        // attempt to install getter+setter on built-in (native) property
-        {
-            QScriptValue object6 = eng.newObject();
-            QVERIFY(object6.property("__proto__").strictlyEquals(object6.prototype()));
-
-            QScriptValue fun = eng.newFunction(getSet__proto__);
-            fun.setProperty("value", QScriptValue(&eng, "boo"));
-            QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setProperty() failed: "
-                                 "cannot set getter or setter of native property "
-                                 "`__proto__'");
-            object6.setProperty("__proto__", fun,
-                                QScriptValue::PropertyGetter | QScriptValue::PropertySetter
-                                | QScriptValue::UserRange);
-            QVERIFY(object6.property("__proto__").strictlyEquals(object6.prototype()));
-
-            object6.setProperty("__proto__", QScriptValue(),
-                                QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
-            QVERIFY(object6.property("__proto__").strictlyEquals(object6.prototype()));
-        }
-
-        // global property that's a getter+setter
-        {
-            eng.globalObject().setProperty("globalGetterSetterProperty", eng.newFunction(getterSetter),
-                                           QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
-            eng.evaluate("globalGetterSetterProperty = 123");
-            {
-                QScriptValue ret = eng.evaluate("globalGetterSetterProperty");
-                QVERIFY(ret.isNumber());
-                QVERIFY(ret.strictlyEquals(QScriptValue(&eng, 123)));
-            }
-            QCOMPARE(eng.evaluate("typeof globalGetterSetterProperty").toString(),
-                     QString::fromLatin1("number"));
-            {
-                QScriptValue ret = eng.evaluate("this.globalGetterSetterProperty()");
-                QVERIFY(ret.isError());
-                QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'this.globalGetterSetterProperty' [123] is not a function."));
-            }
-            {
-                QScriptValue ret = eng.evaluate("new this.globalGetterSetterProperty()");
-                QVERIFY(ret.isError());
-                QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'this.globalGetterSetterProperty' [123] is not a constructor."));
-            }
-        }
-
-        // "upgrading" an existing property to become a getter+setter
-        {
-            QScriptValue object7 = eng.newObject();
-            QScriptValue num(&eng, 123);
-            object7.setProperty("foo", num);
-            object7.setProperty("foo", eng.newFunction(getterSetter),
-                                QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
-            QVERIFY(!object7.property("x").isValid());
-            object7.setProperty("foo", num);
-            QVERIFY(object7.property("x").equals(num));
-        }
-    }
 
     eng.globalObject().setProperty("object", object);
 
