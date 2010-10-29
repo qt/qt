@@ -100,6 +100,7 @@ private slots:
     void isDate();
     void isDate_data();
     void isError();
+    void isRegExp_data();
     void isRegExp();
 
     void lessThan();

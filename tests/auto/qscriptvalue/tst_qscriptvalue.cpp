@@ -1711,18 +1711,30 @@ void tst_QScriptValue::isError()
     QVERIFY(!eng.evaluate("new Object()").isError());
 }
 
+void tst_QScriptValue::isRegExp_data()
+{
+    newEngine();
+
+    QTest::addColumn<QScriptValue>("value");
+    QTest::addColumn<bool>("regexp");
+
+    QTest::newRow("/foo/") << engine->evaluate("/foo/") << true;
+    QTest::newRow("[]") << engine->evaluate("[]") << false;
+    QTest::newRow("{}") << engine->evaluate("{}") << false;
+    QTest::newRow("globalObject") << engine->globalObject() << false;
+    QTest::newRow("invalid") << QScriptValue() << false;
+    QTest::newRow("number") << QScriptValue(123) << false;
+    QTest::newRow("bool") << QScriptValue(false) << false;
+    QTest::newRow("null") << engine->nullValue() << false;
+    QTest::newRow("undefined") << engine->undefinedValue() << false;
+}
+
 void tst_QScriptValue::isRegExp()
 {
-    QScriptEngine eng;
-    QVERIFY(eng.evaluate("/foo/").isRegExp());
-    QVERIFY(!eng.evaluate("[]").isRegExp());
-    QVERIFY(!eng.evaluate("{}").isRegExp());
-    QVERIFY(!eng.globalObject().isRegExp());
-    QVERIFY(!QScriptValue().isRegExp());
-    QVERIFY(!QScriptValue(123).isRegExp());
-    QVERIFY(!QScriptValue(false).isRegExp());
-    QVERIFY(!eng.nullValue().isRegExp());
-    QVERIFY(!eng.undefinedValue().isRegExp());
+    QFETCH(QScriptValue, value);
+    QFETCH(bool, regexp);
+
+    QCOMPARE(value.isRegExp(), regexp);
 }
 
 static QScriptValue getter(QScriptContext *ctx, QScriptEngine *)
