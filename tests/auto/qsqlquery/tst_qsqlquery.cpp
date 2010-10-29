@@ -209,6 +209,8 @@ private slots:
     void QTBUG_6852();
     void QTBUG_5765_data() { generic_data("QMYSQL"); }
     void QTBUG_5765();
+    void QTBUG_14132_data() { generic_data("QOCI"); }
+    void QTBUG_14132();
     void sqlite_constraint_data() { generic_data("QSQLITE"); }
     void sqlite_constraint();
 
@@ -2931,6 +2933,25 @@ void tst_QSqlQuery::QTBUG_551()
     QCOMPARE(res_outLst[0].toString(), QLatin1String("1. Value is 0"));
     QCOMPARE(res_outLst[1].toString(), QLatin1String("2. Value is 1"));
     QCOMPARE(res_outLst[2].toString(), QLatin1String("3. Value is 2"));
+}
+
+void tst_QSqlQuery::QTBUG_14132()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+    QSqlQuery q(db);
+    const QString procedureName(qTableName("procedure", __FILE__));
+    QVERIFY_SQL(q, exec("CREATE OR REPLACE PROCEDURE "+ procedureName + " (outStr OUT varchar2)  \n\
+                        is \n\
+                        begin \n\
+                        outStr := 'OUTSTRING'; \n\
+                        end;"));
+    QString outValue = "XXXXXXXXX";
+    q.prepare("CALL "+procedureName+"(?)");
+    q.addBindValue(outValue, QSql::Out);
+    QVERIFY_SQL(q, exec());
+    QCOMPARE(outValue, QLatin1String("OUTSTRING"));
 }
 
 void tst_QSqlQuery::QTBUG_5251()
