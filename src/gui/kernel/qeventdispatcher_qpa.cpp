@@ -332,6 +332,4 @@ void SelectWorker::run()
         m_edPrivate->barrierReturnValue->checkpoint();
     }
 }
-
-#include "qeventdispatcher_qpa.moc"
 QT_END_NAMESPACE
