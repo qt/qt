@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,37 +39,12 @@
 **
 ****************************************************************************/
 
-import QtQuick 1.0
+#include <QObject>
 
-Rectangle {
-    id: container
+class TactileFeedbackInterface : public QObject
+{
+    public:
+        virtual void touchFeedback(QEvent *event, const QWidget *widget) = 0;
+};
 
-    property string text: "Button"
-
-    signal clicked
-
-    width: buttonLabel.width + 20; height: buttonLabel.height + 20
-    smooth: true
-    border { width: 1; color: Qt.darker(activePalette.button) }
-    radius: 8
-    color: activePalette.button
-
-    gradient: Gradient {
-        GradientStop {
-            position: 0.0
-            color: {
-                if (mouseArea.pressed)
-                    return activePalette.dark
-                else
-                    return activePalette.light
-            }
-        }
-        GradientStop { position: 1.0; color: activePalette.button }
-    }
-
-    MouseArea { id: mouseArea; anchors.fill: parent; onClicked: container.clicked() }
-
-    Text {
-        id: buttonLabel; text: container.text; anchors.centerIn: container; color: activePalette.buttonText; font.pixelSize: 24
-    }
-}
+Q_DECLARE_INTERFACE(TactileFeedbackInterface, "com.trolltech.Qt.TactileFeedbackInterface/1.0")

@@ -60,7 +60,7 @@ QT_FORWARD_DECLARE_CLASS(QByteArray)
 class Waveform : public QWidget {
     Q_OBJECT
 public:
-    Waveform(const QByteArray &buffer, QWidget *parent = 0);
+    Waveform(QWidget *parent = 0);
     ~Waveform();
 
     // QWidget
@@ -73,8 +73,8 @@ public:
     void setAutoUpdatePosition(bool enabled);
 
 public slots:
-    void dataLengthChanged(qint64 length);
-    void positionChanged(qint64 position);
+    void bufferChanged(qint64 position, qint64 length, const QByteArray &buffer);
+    void audioPositionChanged(qint64 position);
 
 private:
     static const int NullIndex = -1;
@@ -167,9 +167,11 @@ private:
     void resetTiles(qint64 newStartPos);
 
 private:
-    const QByteArray&       m_buffer;
-    qint64                  m_dataLength;
-    qint64                  m_position;
+    qint64                  m_bufferPosition;
+    qint64                  m_bufferLength;
+    QByteArray              m_buffer;
+
+    qint64                  m_audioPosition;
     QAudioFormat            m_format;
 
     bool                    m_active;
