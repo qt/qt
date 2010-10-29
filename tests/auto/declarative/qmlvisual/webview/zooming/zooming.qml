@@ -1,5 +1,5 @@
 import QtQuick 1.0
-import org.webkit 1.0
+import QtWebKit 1.0
 
 // Note that zooming is better done using zoomFactor and careful
 // control of rendering to avoid excessive re-rendering during
