@@ -44,6 +44,7 @@
 
 #include <QtScript/qscriptcontext.h>
 #include <QtScript/qscriptengine.h>
+#include <QtScript/qscriptvalueiterator.h>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -77,6 +78,7 @@ private slots:
     void scopeChain();
     void pushAndPopScope();
     void getSetActivationObject();
+    void getSetActivationObject_customContext();
     void inheritActivationAndThisObject();
     void toString();
     void calledAsConstructor();
@@ -513,8 +515,30 @@ void tst_QScriptContext::pushAndPopContext()
         QScriptContext *ctx3 = eng.pushContext();
         ctx3->activationObject().setProperty("foo", QScriptValue(&eng, 123));
         QVERIFY(eng.evaluate("foo").strictlyEquals(QScriptValue(&eng, 123)));
+        QCOMPARE(ctx3->activationObject().propertyFlags("foo"), QScriptValue::PropertyFlags(0));
+
+        ctx3->activationObject().setProperty(4, 456);
+        QVERIFY(ctx3->activationObject().property(4, QScriptValue::ResolveLocal).equals(456));
+
         eng.evaluate("var bar = 'ciao'");
         QVERIFY(ctx3->activationObject().property("bar", QScriptValue::ResolveLocal).strictlyEquals(QScriptValue(&eng, "ciao")));
+
+        ctx3->activationObject().setProperty("baz", 789, QScriptValue::ReadOnly);
+        QVERIFY(eng.evaluate("baz").equals(789));
+        QCOMPARE(ctx3->activationObject().propertyFlags("baz"), QScriptValue::ReadOnly);
+
+        QSet<QString> activationPropertyNames;
+        QScriptValueIterator it(ctx3->activationObject());
+        while (it.hasNext()) {
+            it.next();
+            activationPropertyNames.insert(it.name());
+        }
+        QCOMPARE(activationPropertyNames.size(), 4);
+        QVERIFY(activationPropertyNames.contains("foo"));
+        QVERIFY(activationPropertyNames.contains("4"));
+        QVERIFY(activationPropertyNames.contains("bar"));
+        QVERIFY(activationPropertyNames.contains("baz"));
+
         eng.popContext();
     }
 
@@ -1052,6 +1076,20 @@ void tst_QScriptContext::getSetActivationObject()
         QCOMPARE(arguments.property("1").toInt32(), 1);
         QCOMPARE(arguments.property("2").toInt32(), 1);
     }
+}
+
+void tst_QScriptContext::getSetActivationObject_customContext()
+{
+    QScriptEngine eng;
+    QScriptContext *ctx = eng.pushContext();
+    QVERIFY(ctx->activationObject().isObject());
+    QScriptValue act = eng.newObject();
+    ctx->setActivationObject(act);
+    QVERIFY(ctx->activationObject().equals(act));
+    eng.evaluate("var foo = 123");
+    QCOMPARE(act.property("foo").toInt32(), 123);
+    eng.popContext();
+    QCOMPARE(act.property("foo").toInt32(), 123);
 }
 
 static QScriptValue myEval(QScriptContext *ctx, QScriptEngine *eng)
