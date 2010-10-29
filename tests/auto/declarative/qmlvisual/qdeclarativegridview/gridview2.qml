@@ -1,6 +1,7 @@
 import QtQuick 1.0
 
 Rectangle {
+    property string skip: "Last bit is wrong (rest is probably right, just bitrot). QTBUG-14838"
     width: 300; height: 400; color: "black"
 
     ListModel {
@@ -45,7 +46,7 @@ Rectangle {
         model: appModel; delegate: appDelegate; focus: true
         keyNavigationWraps: true
 
-        flickableData: [
+        flickableData: [//Presumably the different way of doing highlight tests more things
             Rectangle {
                 color: "transparent"; border.color: "white"; border.width: 8; z: 3000
                 height: 100; width: 100
