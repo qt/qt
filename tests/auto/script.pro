@@ -13,5 +13,6 @@ SUBDIRS=\
            qscriptstring \
            qscriptv8testsuite \
            qscriptvalue \
+           qscriptvaluegenerated \
            qscriptvalueiterator \
 
