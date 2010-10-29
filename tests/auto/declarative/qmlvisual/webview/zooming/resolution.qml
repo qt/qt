@@ -2,6 +2,7 @@ import QtQuick 1.0
 import org.webkit 1.0
 
 WebView {
+    property string skip: "WebView tests not counting until resources allocated to WebView maintenance"
     width: 200 * zoomFactor
     height: 250 * zoomFactor
     scale: 1/zoomFactor
