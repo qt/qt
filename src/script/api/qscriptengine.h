@@ -337,10 +337,7 @@ inline QScriptValue qScriptValueFromValue(QScriptEngine *engine, const T &t)
 template <>
 inline QScriptValue qScriptValueFromValue<QVariant>(QScriptEngine *engine, const QVariant &v)
 {
-    QScriptValue result = qScriptValueFromValue_helper(engine, v.userType(), v.data());
-    if (!result.isValid())
-        result = engine->newVariant(v);
-    return result;
+    return qScriptValueFromValue_helper(engine, v.userType(), v.data());
 }
 
 inline bool qscriptvalue_cast_helper(const QScriptValue &value, int type, void *ptr)

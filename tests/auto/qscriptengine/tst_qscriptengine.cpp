@@ -120,6 +120,7 @@ private slots:
     void uncaughtException();
     void errorMessage_QT679();
     void valueConversion();
+    void qScriptValueFromValue_noEngine();
     void importExtension();
     void infiniteRecursion();
     void castWithPrototypeChain();
@@ -2228,6 +2229,12 @@ void tst_QScriptEngine::valueConversion()
         QEXPECT_FAIL("", "QTBUG-6136: JSC-based back-end doesn't preserve QRegExp::minimal (always false)", Continue);
         QCOMPARE(val.toRegExp().isMinimal(), in.isMinimal());
     }
+}
+
+void tst_QScriptEngine::qScriptValueFromValue_noEngine()
+{
+    QVERIFY(!qScriptValueFromValue(0, 123).isValid());
+    QVERIFY(!qScriptValueFromValue(0, QVariant(123)).isValid());
 }
 
 static QScriptValue __import__(QScriptContext *ctx, QScriptEngine *eng)
