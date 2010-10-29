@@ -91,15 +91,15 @@ public:
     void createCookieJar() const;
 
     void authenticationRequired(QNetworkAccessBackend *backend, QAuthenticator *authenticator);
-    void addCredentials(const QUrl &url, const QAuthenticator *auth);
+    void cacheCredentials(const QUrl &url, const QAuthenticator *auth);
     QNetworkAuthenticationCredential *fetchCachedCredentials(const QUrl &url,
                                                              const QAuthenticator *auth = 0);
 
 #ifndef QT_NO_NETWORKPROXY
     void proxyAuthenticationRequired(QNetworkAccessBackend *backend, const QNetworkProxy &proxy,
                                      QAuthenticator *authenticator);
-    void addCredentials(const QNetworkProxy &proxy, const QAuthenticator *auth);
-    QNetworkAuthenticationCredential *fetchCachedCredentials(const QNetworkProxy &proxy,
+    void cacheProxyCredentials(const QNetworkProxy &proxy, const QAuthenticator *auth);
+    QNetworkAuthenticationCredential *fetchCachedProxyCredentials(const QNetworkProxy &proxy,
                                                              const QAuthenticator *auth = 0);
     QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query);
 #endif

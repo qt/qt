@@ -17,18 +17,10 @@ Rectangle {
             ListElement { itemColor: "yellow" }
             ListElement { itemColor: "slategrey" }
             ListElement { itemColor: "cyan" }
-            ListElement { itemColor: "red" }
-            ListElement { itemColor: "green" }
-            ListElement { itemColor: "blue" }
-            ListElement { itemColor: "orange" }
-            ListElement { itemColor: "purple" }
-            ListElement { itemColor: "yellow" }
-            ListElement { itemColor: "slategrey" }
-            ListElement { itemColor: "cyan" }
         }
         delegate: Package {
             Rectangle {
-                id: listItem; Package.name: "list"; width:root.width/2; height: 50; color: "transparent"; border.color: "white"
+                id: listItem; Package.name: "list"; width:root.width/2; height: 25; color: "transparent"; border.color: "white"
                 MouseArea {
                     anchors.fill: parent
                     onClicked: myState.state = myState.state == "list" ? "grid" : "list"
@@ -50,12 +42,12 @@ Rectangle {
                     State {
                         name: "list"
                         ParentChange { target: myContent; parent: listItem }
-                        PropertyChanges { target: myContent; x: 0; y: 0; width: listItem.width }
+                        PropertyChanges { target: myContent; x: 0; y: 0; width: listItem.width; height: listItem.height }
                     },
                     State {
                         name: "grid"
                         ParentChange { target: myContent; parent: gridItem }
-                        PropertyChanges { target: myContent; x: 0; y: 0; width: gridItem.width }
+                        PropertyChanges { target: myContent; x: 0; y: 0; width: gridItem.width; height: gridItem.height }
                     }
                 ]
 
@@ -64,7 +56,7 @@ Rectangle {
                         from: "*"; to: "*"
                         SequentialAnimation {
                             ParentAnimation{
-                                NumberAnimation { properties: "x,y,width"; easing.type: "InOutQuad" }
+                                NumberAnimation { properties: "x,y,width,height"; easing.type: "InOutQuad" }
                             }
                         }
                     }

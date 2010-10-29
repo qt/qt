@@ -59,14 +59,12 @@
 
 #include <QMap>
 #include <QVariant>
-#include <QtCore/qthread.h>
 
 #ifndef QT_NO_BEARERMANAGEMENT
 #ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
 
-class QConnmanConnectThread;
 class QConnmanEngine : public QBearerEngineImpl
 {
     Q_OBJECT
@@ -141,33 +139,8 @@ private:
     bool isRoamingAllowed(const QString &context);
 protected:
     bool requiresPolling() const;
-    QConnmanConnectThread *connThread;
 };
 
-class QConnmanConnectThread : public QThread
-{
-    Q_OBJECT
-
-public:
-    QConnmanConnectThread(QObject *parent = 0);
-    ~QConnmanConnectThread();
-    bool keepRunning;
-    void stop();
-    void setServicePath(const QString &path);
-    void setIdentifier(const QString &id);
-
-Q_SIGNALS:
-    void connectionError(const QString &id, QBearerEngineImpl::ConnectionError error);
-
-protected:
-    void run();
-    QString servicePath;
-    QString identifier;
-
-private:
-    QMutex mutex;
-
-};
 
 QT_END_NAMESPACE
 

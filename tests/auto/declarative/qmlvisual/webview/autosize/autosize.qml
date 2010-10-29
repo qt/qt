@@ -1,9 +1,10 @@
 import QtQuick 1.0
-import org.webkit 1.0
+import QtWebKit 1.0
 
 // The WebView size is determined by the width, height,
 // preferredWidth, and preferredHeight properties.
 Rectangle {
+    property string skip: "WebView tests not counting until resources allocated to WebView maintenance"
     id: rect
     color: "white"
     width: 200

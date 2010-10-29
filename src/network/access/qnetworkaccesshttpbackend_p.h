@@ -125,7 +125,6 @@ private:
     quint64 resumeOffset;
 
     void disconnectFromHttp();
-    void setupConnection();
     void validateCache(QHttpNetworkRequest &httpRequest, bool &loadedFromCache);
     void invalidateCache();
     void postRequest();

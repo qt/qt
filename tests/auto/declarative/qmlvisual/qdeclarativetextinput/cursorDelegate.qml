@@ -11,8 +11,8 @@ import QtQuick 1.0
                     Rectangle { id:bottom; color: "black"; width: 3; height: 1; x: -1; anchors.bottom: parent.bottom;}
                     opacity: 1
                     SequentialAnimation on opacity { running: cPage.parent.focus == true; loops: Animation.Infinite;
-                        NumberAnimation { properties: "opacity"; to: 1; duration: 500; easing.type: "InQuad"}
-                        NumberAnimation { properties: "opacity"; to: 0; duration: 500; easing.type: "OutQuad"}
+                        NumberAnimation { to: 1; duration: 500; easing.type: "InQuad"}
+                        NumberAnimation { to: 0; duration: 500; easing.type: "OutQuad"}
                      }
                 }
                 width: 1;

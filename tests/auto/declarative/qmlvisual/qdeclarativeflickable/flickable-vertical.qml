@@ -85,6 +85,6 @@ Rectangle {
         height: 50
         x: 200
         y: parent.height - 50
-        color: blue
+        color: "blue"
     }
 }

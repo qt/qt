@@ -1,17 +1,17 @@
 import QtQuick 1.0
 
 /*
-This test starts with a red rectangle at 0,0. It should animate a color change to blue,
+This test starts with a 30x40 rectangle at 0,0. It should animate a width change to 40,
 then jump 50 pixels right, and then animate moving 50 pixels down. Afer this it should
 do an exact visual reversal (animate up 50 pixels, jump left 50 pixels, and then animate
-a change back to red).
+a change back to 30px wide).
 */
 
 Rectangle {
-    width: 400; height: 400
+    width: 100; height: 100
     Rectangle {
         id: myRect
-        width: 100; height: 100
+        width: 30; height: 40
         color: "red"
     }
     MouseArea {
@@ -24,8 +24,7 @@ Rectangle {
         when: clickable.pressed
         PropertyChanges {
             target: myRect
-            x: 50; y: 50
-            color: "blue"
+            x: 50; y: 50; width: 40
         }
     }
 
@@ -33,7 +32,7 @@ Rectangle {
         to: "state1"
         reversible: true
         SequentialAnimation {
-            ColorAnimation {}
+            NumberAnimation { properties: "width"; easing.type: "InOutQuad" }
             PropertyAction { properties: "x" }
             NumberAnimation { properties: "y"; easing.type: "InOutQuad" }
         }

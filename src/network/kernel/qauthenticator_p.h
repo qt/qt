@@ -71,6 +71,7 @@ public:
 
     QAtomicInt ref;
     QString user;
+    QString extractedUser;
     QString password;
     QVariantHash options;
     Method method;
