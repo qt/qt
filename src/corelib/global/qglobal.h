@@ -43,9 +43,6 @@
 #define QGLOBAL_H
 
 #include <stddef.h>
-#ifndef QT_NO_STL
-#include <algorithm>
-#endif
 
 #define QT_VERSION_STR   "4.8.0"
 /*
@@ -66,6 +63,10 @@
 #endif
 
 #ifdef __cplusplus
+
+#ifndef QT_NO_STL
+#include <algorithm>
+#endif
 
 #ifndef QT_NAMESPACE /* user namespace */
 
