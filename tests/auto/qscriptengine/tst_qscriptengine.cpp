@@ -120,6 +120,7 @@ private slots:
     void uncaughtException();
     void errorMessage_QT679();
     void valueConversion();
+    void qScriptValueFromValue_noEngine();
     void importExtension();
     void infiniteRecursion();
     void castWithPrototypeChain();
@@ -129,6 +130,7 @@ private slots:
     void gcWithNestedDataStructure();
     void processEventsWhileRunning();
     void throwErrorFromProcessEvents();
+    void disableProcessEventsInterval();
     void stacktrace();
     void numberParsing_data();
     void numberParsing();
@@ -169,6 +171,7 @@ private slots:
     void evaluateProgram();
     void collectGarbageAfterConnect();
     void promoteThisObjectToQObjectInConstructor();
+    void scriptValueFromQMetaObject();
 
     void qRegExpInport_data();
     void qRegExpInport();
@@ -456,11 +459,13 @@ void tst_QScriptEngine::newVariant()
     // replace value of existing object
     {
         QScriptValue object = eng.newVariant(QVariant(123));
-        QScriptValue ret = eng.newVariant(object, QVariant(456));
-        QVERIFY(ret.isValid());
-        QVERIFY(ret.strictlyEquals(object));
-        QVERIFY(ret.isVariant());
-        QCOMPARE(ret.toVariant(), QVariant(456));
+        for (int x = 0; x < 2; ++x) {
+            QScriptValue ret = eng.newVariant(object, QVariant(456));
+            QVERIFY(ret.isValid());
+            QVERIFY(ret.strictlyEquals(object));
+            QVERIFY(ret.isVariant());
+            QCOMPARE(ret.toVariant(), QVariant(456));
+        }
     }
 
     // valueOf() and toString()
@@ -494,6 +499,19 @@ void tst_QScriptEngine::newVariant()
         QVERIFY(value.isObject());
         QVERIFY(value.strictlyEquals(object));
         QCOMPARE(object.toString(), QString::fromLatin1("QVariant(QPoint)"));
+    }
+
+    {
+        QVariant var(456);
+        QScriptValue ret = eng.newVariant(123, var);
+        QVERIFY(ret.isVariant());
+        QCOMPARE(ret.toVariant(), var);
+    }
+
+    {
+        QTest::ignoreMessage(QtWarningMsg, "QScriptEngine::newVariant(): changing class of non-QScriptObject not supported");
+        QScriptValue ret = eng.newVariant(eng.newArray(), 123);
+        QVERIFY(!ret.isValid());
     }
 }
 
@@ -733,12 +751,14 @@ void tst_QScriptEngine::newQObject()
         QScriptValue object = eng.newVariant(123);
         QScriptValue originalProto = object.prototype();
         QObject otherQObject;
-        QScriptValue ret = eng.newQObject(object, &otherQObject);
-        QVERIFY(ret.isValid());
-        QVERIFY(ret.isQObject());
-        QVERIFY(ret.strictlyEquals(object));
-        QCOMPARE(ret.toQObject(), (QObject *)&otherQObject);
-        QVERIFY(ret.prototype().strictlyEquals(originalProto));
+        for (int x = 0; x < 2; ++x) {
+            QScriptValue ret = eng.newQObject(object, &otherQObject);
+            QVERIFY(ret.isValid());
+            QVERIFY(ret.isQObject());
+            QVERIFY(ret.strictlyEquals(object));
+            QCOMPARE(ret.toQObject(), (QObject *)&otherQObject);
+            QVERIFY(ret.prototype().strictlyEquals(originalProto));
+        }
     }
 
     // calling newQObject() several times with same object
@@ -792,6 +812,18 @@ void tst_QScriptEngine::newQObject()
 
         eng.setDefaultPrototype(qMetaTypeId<QObject*>(), oldQObjectProto);
         eng.setDefaultPrototype(typeId, QScriptValue());
+    }
+
+    {
+        QScriptValue ret = eng.newQObject(123, this);
+        QVERIFY(ret.isQObject());
+        QCOMPARE(ret.toQObject(), this);
+    }
+
+    {
+        QTest::ignoreMessage(QtWarningMsg, "QScriptEngine::newQObject(): changing class of non-QScriptObject not supported");
+        QScriptValue ret = eng.newQObject(eng.newArray(), this);
+        QVERIFY(!ret.isValid());
     }
 }
 
@@ -981,6 +1013,11 @@ void tst_QScriptEngine::getSetGlobalObject()
     QCOMPARE(glob.prototype().isObject(), true);
     QCOMPARE(glob.prototype().strictlyEquals(eng.evaluate("Object.prototype")), true);
 
+    eng.setGlobalObject(glob);
+    QVERIFY(eng.globalObject().equals(glob));
+    eng.setGlobalObject(123);
+    QVERIFY(eng.globalObject().equals(glob));
+
     QScriptValue obj = eng.newObject();
     eng.setGlobalObject(obj);
     QVERIFY(eng.globalObject().strictlyEquals(obj));
@@ -1029,6 +1066,28 @@ void tst_QScriptEngine::getSetGlobalObject()
     {
         QScriptValue ret = eng.evaluate("(function() { return this; })()");
         QVERIFY(ret.strictlyEquals(obj));
+    }
+
+    // Delete property.
+    {
+        QScriptValue ret = eng.evaluate("delete foo");
+        QVERIFY(ret.isBool());
+        QVERIFY(ret.toBool());
+        QVERIFY(!obj.property("foo").isValid());
+    }
+
+    // Getter/setter property.
+    QVERIFY(eng.evaluate("this.__defineGetter__('oof', function() { return this.bar; })").isUndefined());
+    QVERIFY(eng.evaluate("this.__defineSetter__('oof', function(v) { this.bar = v; })").isUndefined());
+    QVERIFY(eng.evaluate("this.__lookupGetter__('oof')").isFunction());
+    QVERIFY(eng.evaluate("this.__lookupSetter__('oof')").isFunction());
+    eng.evaluate("oof = 123");
+    QVERIFY(eng.evaluate("oof").equals(obj.property("bar")));
+
+    // Enumeration.
+    {
+        QScriptValue ret = eng.evaluate("a = []; for (var p in this) a.push(p); a");
+        QCOMPARE(ret.toString(), QString::fromLatin1("bar,baz,oof,p,a"));
     }
 }
 
@@ -2256,6 +2315,14 @@ void tst_QScriptEngine::valueConversion()
         QEXPECT_FAIL("", "QTBUG-6136: JSC-based back-end doesn't preserve QRegExp::minimal (always false)", Continue);
         QCOMPARE(val.toRegExp().isMinimal(), in.isMinimal());
     }
+
+    QCOMPARE(qscriptvalue_cast<QVariant>(QScriptValue(123)), QVariant(123));
+}
+
+void tst_QScriptEngine::qScriptValueFromValue_noEngine()
+{
+    QVERIFY(!qScriptValueFromValue(0, 123).isValid());
+    QVERIFY(!qScriptValueFromValue(0, QVariant(123)).isValid());
 }
 
 static QScriptValue __import__(QScriptContext *ctx, QScriptEngine *eng)
@@ -2692,6 +2759,19 @@ void tst_QScriptEngine::throwErrorFromProcessEvents()
     QScriptValue ret = eng.evaluate(QString::fromLatin1("while (1) { }"));
     QVERIFY(ret.isError());
     QCOMPARE(ret.toString(), QString::fromLatin1("Error: Killed"));
+}
+
+void tst_QScriptEngine::disableProcessEventsInterval()
+{
+    QScriptEngine eng;
+    eng.setProcessEventsInterval(100);
+    QCOMPARE(eng.processEventsInterval(), 100);
+    eng.setProcessEventsInterval(0);
+    QCOMPARE(eng.processEventsInterval(), 0);
+    eng.setProcessEventsInterval(-1);
+    QCOMPARE(eng.processEventsInterval(), -1);
+    eng.setProcessEventsInterval(-100);
+    QCOMPARE(eng.processEventsInterval(), -100);
 }
 
 void tst_QScriptEngine::stacktrace()
@@ -4522,6 +4602,17 @@ void tst_QScriptEngine::installTranslatorFunctions()
         QVERIFY(ret.isString());
         QCOMPARE(ret.toString(), QString::fromLatin1("foobar"));
     }
+    {
+        QScriptValue ret = eng.evaluate("'foo%0'.arg(123)");
+        QVERIFY(ret.isString());
+        QCOMPARE(ret.toString(), QString::fromLatin1("foo123"));
+    }
+    {
+        // Maybe this should throw an error?
+        QScriptValue ret = eng.evaluate("'foo%0'.arg()");
+        QVERIFY(ret.isString());
+        QCOMPARE(ret.toString(), QString());
+    }
 
     {
         QScriptValue ret = eng.evaluate("qsTrId('foo')");
@@ -4533,6 +4624,7 @@ void tst_QScriptEngine::installTranslatorFunctions()
         QVERIFY(ret.isString());
         QCOMPARE(ret.toString(), QString::fromLatin1("foo"));
     }
+    QVERIFY(eng.evaluate("QT_TRID_NOOP()").isUndefined());
 }
 
 static QScriptValue callQsTr(QScriptContext *ctx, QScriptEngine *eng)
@@ -4567,8 +4659,13 @@ void tst_QScriptEngine::translateScript()
     QCOMPARE(engine.evaluate("eval('qsTranslate(\\'FooContext\\', \\'Goodbye\\')')", fileName).toString(), QString::fromLatin1("Farvel"));
 
     QCOMPARE(engine.evaluate("qsTranslate('FooContext', 'Goodbye', '', 'UnicodeUTF8')", fileName).toString(), QString::fromLatin1("Farvel"));
+    QCOMPARE(engine.evaluate("qsTranslate('FooContext', 'Goodbye', '', 'CodecForTr')", fileName).toString(), QString::fromLatin1("Farvel"));
+
+    QCOMPARE(engine.evaluate("qsTranslate('FooContext', 'Goodbye', '', 'UnicodeUTF8', 42)", fileName).toString(), QString::fromLatin1("Goodbye"));
 
     QCOMPARE(engine.evaluate("qsTr('One', 'not the same one')", fileName).toString(), QString::fromLatin1("Enda en"));
+
+    QCOMPARE(engine.evaluate("qsTr('One', 'not the same one', 42)", fileName).toString(), QString::fromLatin1("One"));
 
     QVERIFY(engine.evaluate("QT_TR_NOOP()").isUndefined());
     QCOMPARE(engine.evaluate("QT_TR_NOOP('One')").toString(), QString::fromLatin1("One"));
@@ -4638,6 +4735,7 @@ void tst_QScriptEngine::translateWithInvalidArgs_data()
 
     QTest::newRow("qsTranslate()")  << "qsTranslate()" << "Error: qsTranslate() requires at least two arguments";
     QTest::newRow("qsTranslate('foo')")  << "qsTranslate('foo')" << "Error: qsTranslate() requires at least two arguments";
+    QTest::newRow("qsTranslate(123, 'foo')")  << "qsTranslate(123, 'foo')" << "Error: qsTranslate(): first argument (context) must be a string";
     QTest::newRow("qsTranslate('foo', 123)")  << "qsTranslate('foo', 123)" << "Error: qsTranslate(): second argument (text) must be a string";
     QTest::newRow("qsTranslate('foo', 'bar', 123)")  << "qsTranslate('foo', 'bar', 123)" << "Error: qsTranslate(): third argument (comment) must be a string";
     QTest::newRow("qsTranslate('foo', 'bar', 'baz', 123)")  << "qsTranslate('foo', 'bar', 'baz', 123)" << "Error: qsTranslate(): fourth argument (encoding) must be a string";
@@ -5101,6 +5199,10 @@ void tst_QScriptEngine::qRegExpInport_data()
     QTest::newRow("aaa")  << QRegExp("a{2,5}") << "aAaAaaaaaAa";
     QTest::newRow("aaa minimal")  << minimal(QRegExp("a{2,5}")) << "aAaAaaaaaAa";
     QTest::newRow("minimal")  << minimal(QRegExp(".*\\} [*8]")) << "}?} ?} *";
+    QTest::newRow(".? minimal")  << minimal(QRegExp(".?")) << ".?";
+    QTest::newRow(".+ minimal")  << minimal(QRegExp(".+")) << ".+";
+    QTest::newRow("[.?] minimal")  << minimal(QRegExp("[.?]")) << ".?";
+    QTest::newRow("[.+] minimal")  << minimal(QRegExp("[.+]")) << ".+";
 }
 
 void tst_QScriptEngine::qRegExpInport()
@@ -5443,6 +5545,30 @@ void tst_QScriptEngine::newGrowingStaticScopeObject()
     }
 
     eng.popContext();
+}
+
+Q_SCRIPT_DECLARE_QMETAOBJECT(QStandardItemModel, QObject*)
+
+void tst_QScriptEngine::scriptValueFromQMetaObject()
+{
+    QScriptEngine eng;
+    {
+        QScriptValue meta = eng.scriptValueFromQMetaObject<QScriptEngine>();
+        QVERIFY(meta.isQMetaObject());
+        QCOMPARE(meta.toQMetaObject(), &QScriptEngine::staticMetaObject);
+        // Because of missing Q_SCRIPT_DECLARE_QMETAOBJECT() for QScriptEngine.
+        QVERIFY(!meta.construct().isValid());
+    }
+    {
+        QScriptValue meta = eng.scriptValueFromQMetaObject<QStandardItemModel>();
+        QVERIFY(meta.isQMetaObject());
+        QCOMPARE(meta.toQMetaObject(), &QStandardItemModel::staticMetaObject);
+        QScriptValue obj = meta.construct(QScriptValueList() << eng.newQObject(&eng));
+        QVERIFY(obj.isQObject());
+        QStandardItemModel *model = qobject_cast<QStandardItemModel*>(obj.toQObject());
+        QVERIFY(model != 0);
+        QCOMPARE(model->parent(), (QObject*)&eng);
+    }
 }
 
 QTEST_MAIN(tst_QScriptEngine)

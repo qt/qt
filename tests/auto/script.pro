@@ -7,6 +7,7 @@ SUBDIRS=\
            qscriptengine \
            qscriptengineagent \
            qscriptenginedebugger \
+           qscriptextensionplugin \
            qscriptextqobject \
            qscriptjstestsuite \
            qscriptstring \
