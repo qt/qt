@@ -15,7 +15,6 @@ qmldir.path +=  $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
 
 symbian:{
     TARGET.UID3 = 0x2002131F
-    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     
     isEmpty(DESTDIR):importFiles.files = qmlgesturesplugin$${QT_LIBINFIX}.dll qmldir
     else:importFiles.files = $$DESTDIR/qmlgesturesplugin$${QT_LIBINFIX}.dll qmldir

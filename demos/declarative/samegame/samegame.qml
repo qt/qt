@@ -133,7 +133,7 @@ Rectangle {
 
     Rectangle {
         id: toolBar
-        width: parent.width; height: 32
+        width: parent.width; height: 58
         color: activePalette.window
         anchors.bottom: screen.bottom
 
@@ -156,6 +156,7 @@ Rectangle {
             anchors { right: parent.right; rightMargin: 3; verticalCenter: parent.verticalCenter }
             text: "Score: " + gameCanvas.score
             font.bold: true
+            font.pixelSize: 24
             color: activePalette.windowText
         }
     }
