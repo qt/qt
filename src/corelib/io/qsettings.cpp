@@ -1229,16 +1229,21 @@ QConfFileSettingsPrivate::~QConfFileSettingsPrivate()
         if (confFiles[i] && !confFiles[i]->ref.deref()) {
             if (confFiles[i]->size == 0) {
                 delete confFiles[i].take();
-            } else if (unusedCache) {
+            } else {
                 if (usedHash)
                     usedHash->remove(confFiles[i]->name);
-                QT_TRY {
-                    // compute a better size?
-                    unusedCache->insert(confFiles[i]->name, confFiles[i].data(),
-                                    10 + (confFiles[i]->originalKeys.size() / 4));
-                    confFiles[i].take();
-                } QT_CATCH(...) {
-                    // out of memory. Do not cache the file.
+                if (unusedCache) {
+                    QT_TRY {
+                        // compute a better size?
+                        unusedCache->insert(confFiles[i]->name, confFiles[i].data(),
+                                        10 + (confFiles[i]->originalKeys.size() / 4));
+                        confFiles[i].take();
+                    } QT_CATCH(...) {
+                        // out of memory. Do not cache the file.
+                        delete confFiles[i].take();
+                    }
+                } else {
+                    // unusedCache is gone - delete the entry to prevent a memory leak
                     delete confFiles[i].take();
                 }
             }

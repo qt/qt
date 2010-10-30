@@ -128,10 +128,8 @@ void QDeclarativeTester::executefailure()
 {
     hasFailed = true;
 
-    if (options & QDeclarativeViewer::ExitOnFailure){
-        testSkip();
-        exit(hasFailed?-1:0);
-    }
+    if (options & QDeclarativeViewer::ExitOnFailure)
+        exit(-1);
 }
 
 void QDeclarativeTester::imagefailure()

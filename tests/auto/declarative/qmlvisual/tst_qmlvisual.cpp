@@ -143,7 +143,7 @@ void tst_qmlvisual::visual_data()
 
     foreach (const QString &file, files) {
         QString testdata = toTestScript(file);
-        if (testdata.isEmpty() || !QFile::exists(testdata+".qml"))
+        if (testdata.isEmpty())
             continue;
 
         QTest::newRow(file.toLatin1().constData()) << file << testdata;
