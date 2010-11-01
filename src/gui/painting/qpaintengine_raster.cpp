@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qmutex.h>
 
 #define QT_FT_BEGIN_HEADER
 #define QT_FT_END_HEADER
@@ -4963,6 +4964,7 @@ public:
         for (int i = 0; i < stops.size() && i <= 2; i++)
             hash_val += stops[i].second.rgba();
 
+        QMutexLocker lock(&mutex);
         QGradientColorTableHash::const_iterator it = cache.constFind(hash_val);
 
         if (it == cache.constEnd())
@@ -4996,6 +4998,7 @@ protected:
     }
 
     QGradientColorTableHash cache;
+    QMutex mutex;
 };
 
 void QGradientCache::generateGradientColorTable(const QGradient& gradient, uint *colorTable, int size, int opacity) const
