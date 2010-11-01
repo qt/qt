@@ -2938,7 +2938,7 @@ if [ '!' -f "${XQMAKESPEC}/qplatformdefs.h" ]; then
 fi
 
 # now look at the configs and figure out what platform we are config'd for
-[ "$CFG_EMBEDDED" = "no" ] \
+[ "$CFG_EMBEDDED" = "no" ] && [ "$PLATFORM_QPA" != "yes" ] \
   && [ '!' -z "`getQMakeConf \"$XQMAKESPEC\" | grep QMAKE_LIBS_X11 | awk '{print $3;}'`" ] \
   && PLATFORM_X11=yes
 ### echo "$XQMAKESPEC" | grep mkspecs/qws >/dev/null 2>&1 && PLATFORM_QWS=yes
