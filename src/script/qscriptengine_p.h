@@ -201,6 +201,7 @@ public:
             v8::Handle<v8::Object> prototype;
         };
 
+        inline TypeInfos() {};
         inline ~TypeInfos();
         inline void clear();
         inline TypeInfo value(int type) const;
