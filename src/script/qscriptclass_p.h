@@ -96,6 +96,7 @@ struct QScriptClassObject : QScriptV8ObjectWrapper<QScriptClassObject, &QScriptE
     QScriptClassPrivate *scriptclass;
     v8::Persistent<v8::Object> original;
 
+    QScriptClassObject() {}
     ~QScriptClassObject()
     {
         if (!original.IsEmpty())
@@ -112,7 +113,8 @@ struct QScriptClassObject : QScriptV8ObjectWrapper<QScriptClassObject, &QScriptE
     {
         original = v8::Persistent<v8::Object>::New(o);
     }
-
+private:
+    Q_DISABLE_COPY(QScriptClassObject);
 };
 
 #endif // QSCRIPTCLASSPRIVATE_P_H

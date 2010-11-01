@@ -211,6 +211,7 @@ public:
         QHash<int, TypeInfo> m_infos;
     };
 private:
+    Q_DISABLE_COPY(QScriptEnginePrivate);
     QScriptEngine* q_ptr;
     v8::Isolate *m_isolate;
     v8::Persistent<v8::Context> m_v8Context;

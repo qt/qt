@@ -106,6 +106,7 @@ public:
     inline bool isValid() const;
     inline QScriptEnginePrivate* engine() const;
 private:
+    Q_DISABLE_COPY(QScriptValueIteratorPrivate);
     //void dump(QString) const;
 
     QScriptSharedDataPointer<QScriptValuePrivate> m_object;

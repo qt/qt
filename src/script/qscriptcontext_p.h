@@ -78,6 +78,8 @@ public:
     QList<v8::Persistent<v8::Context> > scopes;
     v8::Persistent<v8::Context> inheritedScope;
     QScriptContextPrivate *parent;
+private:
+    Q_DISABLE_COPY(QScriptContextPrivate);
 };
 
 

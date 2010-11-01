@@ -63,6 +63,7 @@ public:
     void onSignal(void **);
 
 private:
+    Q_DISABLE_COPY(QtConnection);
     QtSignalData *m_signal;
     v8::Persistent<v8::Function> m_callback;
     v8::Persistent<v8::Object> m_receiver;
@@ -137,6 +138,7 @@ public:
     v8::Handle<v8::Value> call();
 
 private:
+    Q_DISABLE_COPY(QtSignalData);
     QList<QtConnection*> m_connections;
     v8::Persistent<v8::Object> m_object;
     uint m_index:31;
