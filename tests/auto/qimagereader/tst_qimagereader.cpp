@@ -1960,13 +1960,16 @@ void tst_QImageReader::preserveTexts_data()
     QTest::newRow("Newline") << "A text\nwith newlines\n";
     QTest::newRow("Double newlines") << "A text\n\nwith double newlines\n\n";
     QTest::newRow("Long") << QString("A rather long text, at least after many repetitions. ").repeated(100);
+    QString latin1set;
+    int c;
+    for(c = 0x20; c <= 0x7e; c++)
+        latin1set.append(QLatin1Char(c));
+    for(c = 0xa0; c <= 0xff; c++)
+        latin1set.append(QLatin1Char(c));
+    QTest::newRow("All Latin1 chars") << latin1set;
 
 #if 0
     // Depends on iTXt support in libpng
-    QString latin1set;
-    for(int c = 0x20; c <= 0xff; c++)
-        latin1set.append(QLatin1Char(c));
-    QTest::newRow("All Latin1 chars") << latin1set;
     QTest::newRow("Multibyte string") << QString::fromUtf8("\341\233\222\341\233\226\341\232\251\341\232\271\341\232\242\341\233\232\341\232\240");
 #endif
 }

@@ -390,20 +390,13 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngHeader()
 
     while (num_text--) {
         QString key, value;
-#if defined(PNG_iTXt_SUPPORTED) && !defined(QT_NO_TEXTCODEC)
-        if (text_ptr->lang) {
-            QTextCodec *codec = QTextCodec::codecForName(text_ptr->lang);
-            if (codec) {
-                key = codec->toUnicode(text_ptr->lang_key);
-                value = codec->toUnicode(QByteArray(text_ptr->text, text_ptr->itxt_length));
-            } else {
-                key = QString::fromLatin1(text_ptr->key);
-                value = QString::fromLatin1(QByteArray(text_ptr->text, int(text_ptr->text_length)));
-            }
+        key = QString::fromLatin1(text_ptr->key);
+#if defined(PNG_iTXt_SUPPORTED)
+        if (text_ptr->itxt_length) {
+            value = QString::fromUtf8(text_ptr->text, int(text_ptr->itxt_length));
         } else
 #endif
         {
-            key = QString::fromLatin1(text_ptr->key);
             value = QString::fromLatin1(QByteArray(text_ptr->text, int(text_ptr->text_length)));
         }
         if (!description.isEmpty())
@@ -620,29 +613,40 @@ static void set_text(const QImage &image, png_structp png_ptr, png_infop info_pt
         return;
 
     png_textp text_ptr = new png_text[text.size()];
+    qMemSet(text_ptr, 0, text.size() * sizeof(png_text));
 
     QMap<QString, QString>::ConstIterator it = text.constBegin();
     int i = 0;
     while (it != text.constEnd()) {
-        QString t = it.value();
-        if (t.length() < 40)
-            text_ptr[i].compression = PNG_TEXT_COMPRESSION_NONE;
-        else
-            text_ptr[i].compression = PNG_TEXT_COMPRESSION_zTXt;
         text_ptr[i].key = qstrdup(it.key().left(79).toLatin1().constData());
+        bool noCompress = (it.value().length() < 40);
 
-#ifndef PNG_iTXt_SUPPORTED
-        QByteArray value = it.value().toLatin1();
-        text_ptr[i].text = qstrdup(value.constData());
-        text_ptr[i].text_length = value.size();
-#else
-        QByteArray value = it.value().toUtf8();
-        text_ptr[i].text = qstrdup(value.constData());
-        text_ptr[i].text_length = 0;
-        text_ptr[i].itxt_length = value.size();
-        text_ptr[i].lang = const_cast<char*>("UTF-8");
-        text_ptr[i].lang_key = qstrdup(it.key().toUtf8().constData());
+#ifdef PNG_iTXt_SUPPORTED
+        bool needsItxt = false;
+        foreach(const QChar c, it.value()) {
+            uchar ch = c.cell();
+            if (c.row() || (ch < 0x20 && ch != '\n') || (ch > 0x7e && ch < 0xa0)) {
+                needsItxt = true;
+                break;
+            }
+        }
+
+        if (needsItxt) {
+            text_ptr[i].compression = noCompress ? PNG_ITXT_COMPRESSION_NONE : PNG_ITXT_COMPRESSION_zTXt;
+            QByteArray value = it.value().toUtf8();
+            text_ptr[i].text = qstrdup(value.constData());
+            text_ptr[i].itxt_length = value.size();
+            text_ptr[i].lang = const_cast<char*>("UTF-8");
+            text_ptr[i].lang_key = qstrdup(it.key().toUtf8().constData());
+        }
+        else
 #endif
+        {
+            text_ptr[i].compression = noCompress ? PNG_TEXT_COMPRESSION_NONE : PNG_TEXT_COMPRESSION_zTXt;
+            QByteArray value = it.value().toLatin1();
+            text_ptr[i].text = qstrdup(value.constData());
+            text_ptr[i].text_length = value.size();
+        }
         ++i;
         ++it;
     }
