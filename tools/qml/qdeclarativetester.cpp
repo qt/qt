@@ -52,6 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
+extern Q_GUI_EXPORT bool qt_applefontsmoothing_enabled;
 
 QDeclarativeTester::QDeclarativeTester(const QString &script, QDeclarativeViewer::ScriptOptions opts, 
                      QDeclarativeView *parent)
@@ -267,7 +268,14 @@ void QDeclarativeTester::updateCurrentTime(int msec)
 
     if (options & QDeclarativeViewer::TestImages) {
         img.fill(qRgb(255,255,255));
+#ifdef Q_WS_MAC
+        bool oldSmooth = qt_applefontsmoothing_enabled;
+        qt_applefontsmoothing_enabled = false;
+#endif
         QPainter p(&img);
+#ifdef Q_WS_MAC
+        qt_applefontsmoothing_enabled = oldSmooth;
+#endif
         m_view->render(&p);
     }
 
