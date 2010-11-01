@@ -5547,7 +5547,9 @@ void tst_QScriptEngine::newGrowingStaticScopeObject()
     eng.popContext();
 }
 
+QT_BEGIN_NAMESPACE
 Q_SCRIPT_DECLARE_QMETAOBJECT(QStandardItemModel, QObject*)
+QT_END_NAMESPACE
 
 void tst_QScriptEngine::scriptValueFromQMetaObject()
 {
