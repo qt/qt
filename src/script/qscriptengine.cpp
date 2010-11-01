@@ -250,7 +250,7 @@ v8::Handle<v8::Value> QScriptEnginePrivate::metaTypeToJS(int type, const void *d
     Q_Q(QScriptEngine);
     Q_ASSERT(data != 0);
     v8::Handle<v8::Value> result;
-    TypeInfo info = m_typeInfos.value(type);
+    TypeInfos::TypeInfo info = m_typeInfos.value(type);
     if (info.marshal) {
         result = QScriptValuePrivate::get(info.marshal(q, data))->asV8Value(this);
     } else {
@@ -342,8 +342,8 @@ v8::Handle<v8::Value> QScriptEnginePrivate::metaTypeToJS(int type, const void *d
         }
     }
 
-    if (!result.IsEmpty() && result->IsObject() && !info.prototype().IsEmpty())
-        v8::Object::Cast(*result)->SetPrototype(info.prototype());
+    if (!result.IsEmpty() && result->IsObject() && !info.prototype.IsEmpty())
+        v8::Object::Cast(*result)->SetPrototype(info.prototype);
 #if 0
     if (result && result.isObject() && info && info->prototype
         && JSC::JSValue::strictEqual(exec, JSC::asObject(result)->prototype(), eng->originalGlobalObject()->objectPrototype())) {
@@ -358,7 +358,7 @@ v8::Handle<v8::Value> QScriptEnginePrivate::metaTypeToJS(int type, const void *d
 // Returns true if conversion succeeded, false otherwise.
 bool QScriptEnginePrivate::metaTypeFromJS(v8::Handle<v8::Value> value, int type, void *data)
 {
-    TypeInfo info = m_typeInfos.value(type);
+    TypeInfos::TypeInfo info = m_typeInfos.value(type);
     if (info.demarshal) {
         info.demarshal(QScriptValuePrivate::get(new QScriptValuePrivate(this, value)), data);
         return true;
@@ -652,9 +652,9 @@ v8::Handle<v8::Object> QScriptEnginePrivate::newVariant(const QVariant &value)
     v8::Handle<v8::ObjectTemplate> instanceTempl = m_variantTemplate->InstanceTemplate();
     v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
 
-    TypeInfo info = m_typeInfos.value(value.userType());
-    if (!info.prototype().IsEmpty())
-        instance->SetPrototype(info.prototype());
+    TypeInfos::TypeInfo info = m_typeInfos.value(value.userType());
+    if (!info.prototype.IsEmpty())
+        instance->SetPrototype(info.prototype);
 
     Q_ASSERT(instance->InternalFieldCount() == 1);
     QtVariantData *data = new QtVariantData(value);
@@ -1672,20 +1672,20 @@ void QScriptEngine::setDefaultPrototype(int metaTypeId, const QScriptValue &prot
 
 void QScriptEnginePrivate::setDefaultPrototype(int metaTypeId, const QScriptValuePrivate *prototype)
 {
-    TypeInfo &info = m_typeInfos[metaTypeId];
+    TypeInfos::TypeInfo info = m_typeInfos.value(metaTypeId);
     if (prototype->isObject())
-        info.setPrototype(v8::Handle<v8::Object>::Cast(static_cast<v8::Handle<v8::Value> >(*prototype)));
+        m_typeInfos.registerCustomType(metaTypeId, info.marshal, info.demarshal, *prototype);
     if (!prototype->isValid() || prototype->isNull()) {
-        info.setPrototype(v8::Handle<v8::Object>());
+        m_typeInfos.registerCustomType(metaTypeId, info.marshal, info.demarshal);
     }
 }
 
 QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::defaultPrototype(int metaTypeId)
 {
-    TypeInfo info = m_typeInfos.value(metaTypeId);
-    if (info.prototype().IsEmpty())
+    TypeInfos::TypeInfo info = m_typeInfos.value(metaTypeId);
+    if (info.prototype.IsEmpty())
         return new QScriptValuePrivate();
-    return new QScriptValuePrivate(this, info.prototype());
+    return new QScriptValuePrivate(this, info.prototype);
 }
 
 QScriptString QScriptEngine::toStringHandle(const QString& str)
@@ -2000,6 +2000,14 @@ void QScriptEngine::registerCustomType(int type, MarshalFunction mf, DemarshalFu
 {
     Q_D(QScriptEngine);
     d->registerCustomType(type, mf, df, QScriptValuePrivate::get(prototype));
+}
+
+void QScriptEnginePrivate::registerCustomType(int type, QScriptEngine::MarshalFunction mf, QScriptEngine::DemarshalFunction df, const QScriptValuePrivate *prototype)
+{
+    if (prototype->isObject())
+        m_typeInfos.registerCustomType(type, mf, df, *prototype);
+    else
+        m_typeInfos.registerCustomType(type, mf, df);
 }
 
 QScriptContext *QScriptEngine::currentContext() const

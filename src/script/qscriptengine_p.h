@@ -176,7 +176,7 @@ public:
     void pushScope(QScriptValuePrivate* value);
     QScriptPassPointer<QScriptValuePrivate> popScope();
 
-    inline void registerCustomType(int type, QScriptEngine::MarshalFunction mf, QScriptEngine::DemarshalFunction df, const QScriptValuePrivate *prototype);
+    void registerCustomType(int type, QScriptEngine::MarshalFunction mf, QScriptEngine::DemarshalFunction df, const QScriptValuePrivate *prototype);
     void setDefaultPrototype(int metaTypeId, const QScriptValuePrivate *prototype);
     QScriptPassPointer<QScriptValuePrivate> defaultPrototype(int metaTypeId);
 
@@ -190,19 +190,24 @@ public:
     v8::Persistent<v8::FunctionTemplate> declarativeClassTemplate;
     v8::Persistent<v8::FunctionTemplate> scriptClassTemplate;
 
-    class TypeInfo
+    class TypeInfos
     {
     public:
-        inline TypeInfo() : marshal(0), demarshal(0) { }
-        inline ~TypeInfo();
+        struct TypeInfo
+        {
+            QScriptEngine::MarshalFunction marshal;
+            QScriptEngine::DemarshalFunction demarshal;
+            // This is a persistent and it should be deleted in ~TypeInfos
+            v8::Handle<v8::Object> prototype;
+        };
 
-        QScriptEngine::MarshalFunction marshal;
-        QScriptEngine::DemarshalFunction demarshal;
-
-        inline void setPrototype(v8::Handle<v8::Object> object);
-        inline v8::Handle<v8::Object> prototype() const;
+        inline ~TypeInfos();
+        inline void clear();
+        inline TypeInfo value(int type) const;
+        inline void registerCustomType(int type, QScriptEngine::MarshalFunction mf, QScriptEngine::DemarshalFunction df, v8::Handle<v8::Object> prototype = v8::Handle<v8::Object>());
     private:
-        v8::Persistent<v8::Object> m_prototype;
+        Q_DISABLE_COPY(TypeInfos);
+        QHash<int, TypeInfo> m_infos;
     };
 private:
     QScriptEngine* q_ptr;
@@ -222,7 +227,7 @@ private:
     QScopedPointer<QScriptContextPrivate> m_baseQsContext;
     QSet<int> visitedConversionObjects;
     bool m_isEvaluating;
-    QHash<int, TypeInfo> m_typeInfos;
+    TypeInfos m_typeInfos;
 };
 
 v8::Handle<v8::Value> QScriptEnginePrivate::makeJSValue()
@@ -413,13 +418,6 @@ inline bool QScriptEnginePrivate::isQtMetaObject(v8::Handle<v8::Value> value) co
     return m_metaObjectTemplate->HasInstance(value);
 }
 
-inline void QScriptEnginePrivate::registerCustomType(int type, QScriptEngine::MarshalFunction mf, QScriptEngine::DemarshalFunction df, const QScriptValuePrivate *prototype)
-{
-    TypeInfo &info = m_typeInfos[type];
-    info.marshal = mf;
-    info.demarshal = df;
-}
-
 /* set the current QScriptContext, and return the old value */
 QScriptContextPrivate* QScriptEnginePrivate::setCurrentQSContext(QScriptContextPrivate *ctx)
 {
@@ -496,25 +494,35 @@ QStringList QScriptEnginePrivate::Exception::backtrace() const
     return backtrace;
 }
 
-QScriptEnginePrivate::TypeInfo::~TypeInfo()
+inline QScriptEnginePrivate::TypeInfos::~TypeInfos()
 {
-    if (!m_prototype.IsEmpty())
-        m_prototype.Dispose();
+    clear();
 }
 
-void QScriptEnginePrivate::TypeInfo::setPrototype(v8::Handle<v8::Object> object)
+inline void QScriptEnginePrivate::TypeInfos::registerCustomType(int type, QScriptEngine::MarshalFunction mf, QScriptEngine::DemarshalFunction df, v8::Handle<v8::Object> prototype)
 {
-    if (!m_prototype.IsEmpty())
-        m_prototype.Dispose();
-    if (!object.IsEmpty())
-        m_prototype = v8::Persistent<v8::Object>::New(object);
-    else
-        m_prototype.Clear();
+    TypeInfo &info = m_infos[type];
+    static_cast<v8::Persistent<v8::Object> >(info.prototype).Dispose();
+
+    Q_ASSERT(prototype.IsEmpty() || prototype->IsObject());
+    info.marshal = mf;
+    info.demarshal = df;
+    info.prototype = v8::Persistent<v8::Object>::New(prototype);
+
 }
 
-v8::Handle<v8::Object> QScriptEnginePrivate::TypeInfo::prototype() const
+inline QScriptEnginePrivate::TypeInfos::TypeInfo QScriptEnginePrivate::TypeInfos::value(int type) const
 {
-    return m_prototype;
+    return m_infos.value(type);
+}
+
+inline void QScriptEnginePrivate::TypeInfos::clear()
+{
+    QList<TypeInfo> values = m_infos.values();
+    QList<TypeInfo>::const_iterator i = values.constBegin();
+    for (; i != values.constEnd(); ++i)
+        static_cast<v8::Persistent<v8::Object> >(i->prototype).Dispose();
+    m_infos.clear();
 }
 
 QT_END_NAMESPACE
