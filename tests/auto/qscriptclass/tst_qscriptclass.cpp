@@ -68,6 +68,7 @@ private slots:
     void getAndSetProperty();
     void enumerate();
     void extension();
+    void defaultImplementations();
 };
 
 tst_QScriptClass::tst_QScriptClass()
@@ -603,6 +604,8 @@ void tst_QScriptClass::newInstance()
     QVERIFY(obj2.data().strictlyEquals(num));
     QVERIFY(obj2.prototype().strictlyEquals(cls.prototype()));
     QCOMPARE(obj2.scriptClass(), (QScriptClass*)&cls);
+    QVERIFY(!obj2.equals(obj1));
+    QVERIFY(!obj2.strictlyEquals(obj1));
 
     QScriptValue obj3 = eng.newObject();
     QCOMPARE(obj3.scriptClass(), (QScriptClass*)0);
@@ -730,6 +733,14 @@ void tst_QScriptClass::getAndSetProperty()
         QCOMPARE(cls.lastPropertyId(), foo2Id);
     }
 
+    // attempt to delete custom property
+    obj1.setProperty(foo2, QScriptValue());
+    // delete real property
+    obj1.setProperty(foo, QScriptValue());
+    QVERIFY(!obj1.property(foo).isValid());
+    obj1.setProperty(foo, num);
+    QVERIFY(obj1.property(foo).equals(num));
+
     // remove script class; normal properties should remain
     obj1.setScriptClass(0);
     QCOMPARE(obj1.scriptClass(), (QScriptClass*)0);
@@ -805,6 +816,7 @@ void tst_QScriptClass::extension()
         QCOMPARE((int)cls.lastExtensionType(), -1);
         QVERIFY(!obj.instanceOf(obj));
         QCOMPARE((int)cls.lastExtensionType(), -1);
+        QVERIFY(!obj.construct().isValid());
     }
     // Callable
     {
@@ -1015,6 +1027,34 @@ void tst_QScriptClass::extension()
             QVERIFY(ret.toBoolean());
         }
     }
+}
+
+void tst_QScriptClass::defaultImplementations()
+{
+    QScriptEngine eng;
+
+    QScriptClass defaultClass(&eng);
+    QCOMPARE(defaultClass.engine(), &eng);
+    QVERIFY(!defaultClass.prototype().isValid());
+    QCOMPARE(defaultClass.name(), QString());
+
+    QScriptValue obj = eng.newObject(&defaultClass);
+    QCOMPARE(obj.scriptClass(), &defaultClass);
+
+    QScriptString name = eng.toStringHandle("foo");
+    uint id = -1;
+    QCOMPARE(defaultClass.queryProperty(obj, name, QScriptClass::HandlesReadAccess, &id), QScriptClass::QueryFlags(0));
+    QVERIFY(!defaultClass.property(obj, name, id).isValid());
+    QCOMPARE(defaultClass.propertyFlags(obj, name, id), QScriptValue::PropertyFlags(0));
+    defaultClass.setProperty(obj, name, id, 123);
+    QVERIFY(!obj.property(name).isValid());
+
+    QCOMPARE(defaultClass.newIterator(obj), (QScriptClassPropertyIterator*)0);
+
+    QVERIFY(!defaultClass.supportsExtension(QScriptClass::Callable));
+    QVERIFY(!defaultClass.supportsExtension(QScriptClass::HasInstance));
+    QVERIFY(!defaultClass.extension(QScriptClass::Callable).isValid());
+    QVERIFY(!defaultClass.extension(QScriptClass::HasInstance).isValid());
 }
 
 QTEST_MAIN(tst_QScriptClass)
