@@ -73,23 +73,23 @@ QScriptDeclarativeClass::Value::Value(QScriptContext *, const QString &value)
 QScriptDeclarativeClass::Value::Value(QScriptContext *, const QScriptValue &value)
     :value(value) { }
 
-QScriptDeclarativeClass::Value::Value(QScriptEngine *, int value)
-    :value(value) { }
+QScriptDeclarativeClass::Value::Value(QScriptEngine *engine, int value)
+    :value(engine, value) { }
 
-QScriptDeclarativeClass::Value::Value(QScriptEngine *, uint value)
-    :value(value) { }
+QScriptDeclarativeClass::Value::Value(QScriptEngine *engine, uint value)
+    :value(engine, value) { }
 
-QScriptDeclarativeClass::Value::Value(QScriptEngine *, bool value)
-    :value(value) { }
+QScriptDeclarativeClass::Value::Value(QScriptEngine *engine, bool value)
+    :value(engine, value) { }
 
-QScriptDeclarativeClass::Value::Value(QScriptEngine *, double value)
-    :value(value) { }
+QScriptDeclarativeClass::Value::Value(QScriptEngine *engine, double value)
+    :value(engine, value) { }
 
-QScriptDeclarativeClass::Value::Value(QScriptEngine *, float value)
-    :value(value) { }
+QScriptDeclarativeClass::Value::Value(QScriptEngine *engine, float value)
+    :value(engine, value) { }
 
-QScriptDeclarativeClass::Value::Value(QScriptEngine *, const QString &value)
-    :value(value) { }
+QScriptDeclarativeClass::Value::Value(QScriptEngine *engine, const QString &value)
+    :value(engine, value) { }
 
 QScriptDeclarativeClass::Value::Value(QScriptEngine *, const QScriptValue &value)
     :value(value) { }
