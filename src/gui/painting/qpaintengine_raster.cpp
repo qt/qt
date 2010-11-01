@@ -2483,7 +2483,7 @@ void QRasterPaintEngine::drawImage(const QPointF &p, const QImage &img)
         const QClipData *clip = d->clip();
         QPointF pt(p.x() + s->matrix.dx(), p.y() + s->matrix.dy());
 
-        if (s->flags.fast_images) {
+        if (d->canUseFastImageBlending(d->rasterBuffer->compositionMode, img)) {
             SrcOverBlendFunc func = qBlendFunctions[d->rasterBuffer->format][img.format()];
             if (func) {
                 if (!clip) {
@@ -2664,7 +2664,7 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
         bool exceedsPrecision = targetBounds.width() > 0xffff
                                 || targetBounds.height() > 0xffff;
 
-        if (s->flags.fast_images && !exceedsPrecision) {
+        if (!exceedsPrecision && d->canUseFastImageBlending(d->rasterBuffer->compositionMode, img)) {
             if (s->matrix.type() > QTransform::TxScale) {
                 SrcOverTransformFunc func = qTransformFunctions[d->rasterBuffer->format][img.format()];
                 if (func && (!clip || clip->hasRectClip)) {
@@ -2736,8 +2736,7 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
         fillPath(path, &d->image_filler_xform);
         s->matrix = m;
     } else {
-
-        if (s->flags.fast_images) {
+        if (d->canUseFastImageBlending(d->rasterBuffer->compositionMode, img)) {
             SrcOverBlendFunc func = qBlendFunctions[d->rasterBuffer->format][img.format()];
             if (func) {
                 QPointF pt(r.x() + s->matrix.dx(), r.y() + s->matrix.dy());
@@ -4291,11 +4290,19 @@ void QRasterPaintEnginePrivate::recalculateFastImages()
     QRasterPaintEngineState *s = q->state();
 
     s->flags.fast_images = !(s->renderHints & QPainter::SmoothPixmapTransform)
-                           && rasterBuffer->compositionMode == QPainter::CompositionMode_SourceOver
                            && s->matrix.type() <= QTransform::TxShear;
 }
 
+bool QRasterPaintEnginePrivate::canUseFastImageBlending(QPainter::CompositionMode mode, const QImage &image) const
+{
+    Q_Q(const QRasterPaintEngine);
+    const QRasterPaintEngineState *s = q->state();
 
+    return s->flags.fast_images
+           && (mode == QPainter::CompositionMode_SourceOver
+               || (mode == QPainter::CompositionMode_Source
+                   && !image.hasAlphaChannel()));
+}
 
 QImage QRasterBuffer::colorizeBitmap(const QImage &image, const QColor &color)
 {
