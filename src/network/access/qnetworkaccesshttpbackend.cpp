@@ -72,7 +72,7 @@ static QByteArray makeCacheKey(QNetworkAccessHttpBackend *backend, QNetworkProxy
     QUrl copy = backend->url();
     bool isEncrypted = copy.scheme().toLower() == QLatin1String("https");
     copy.setPort(copy.port(isEncrypted ? DefaultHttpsPort : DefaultHttpPort));
-    result = copy.toEncoded(QUrl::RemovePassword | QUrl::RemovePath |
+    result = copy.toEncoded(QUrl::RemoveUserInfo | QUrl::RemovePath |
                             QUrl::RemoveQuery | QUrl::RemoveFragment);
 
 #ifndef QT_NO_NETWORKPROXY
