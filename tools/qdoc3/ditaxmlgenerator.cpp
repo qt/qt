@@ -2907,7 +2907,7 @@ void DitaXmlGenerator::generateFunctionIndex(const Node* relative,
                                              CodeMarker* marker)
 {
     xmlWriter().writeStartElement("p");
-    xmlWriter().writeAttribute("outputclass","centerAlign functionIndex");
+    xmlWriter().writeAttribute("outputclass","function-index");
     xmlWriter().writeStartElement("b");
     for (int i = 0; i < 26; i++) {
         QChar ch('a' + i);
@@ -3980,6 +3980,7 @@ void DitaXmlGenerator::findAllFunctions(const InnerNode* node)
             else if ((*c)->type() == Node::Function) {
                 const FunctionNode* func = static_cast<const FunctionNode*>(*c);
                 if ((func->status() > Node::Obsolete) &&
+                    !func->isInternal() &&
                     (func->metaness() != FunctionNode::Ctor) &&
                     (func->metaness() != FunctionNode::Dtor)) {
                     funcIndex[(*c)->name()].insert(myTree->fullDocumentName((*c)->parent()), *c);
@@ -4776,12 +4777,14 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
             xmlWriter().writeCharacters(fnl);
             xmlWriter().writeEndElement(); // <cxxFunctionNameLookup>
 
-            if (fn->isReimp() && fn->reimplementedFrom() != 0) {
+            if (!fn->isInternal() && fn->isReimp() && fn->reimplementedFrom() != 0) {
                 FunctionNode* rfn = (FunctionNode*)fn->reimplementedFrom();
-                xmlWriter().writeStartElement(CXXFUNCTIONREIMPLEMENTED);
-                xmlWriter().writeAttribute("href",rfn->ditaXmlHref());
-                xmlWriter().writeCharacters(marker->plainFullName(rfn));
-                xmlWriter().writeEndElement(); // </cxxFunctionReimplemented>
+                if (rfn && !rfn->isInternal()) {
+                    xmlWriter().writeStartElement(CXXFUNCTIONREIMPLEMENTED);
+                    xmlWriter().writeAttribute("href",rfn->ditaXmlHref());
+                    xmlWriter().writeCharacters(marker->plainFullName(rfn));
+                    xmlWriter().writeEndElement(); // </cxxFunctionReimplemented>
+                }
             }
             writeParameters(fn);
             writeLocation(fn);

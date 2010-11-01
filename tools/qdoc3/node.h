@@ -164,6 +164,7 @@ class Node
     virtual bool isReimp() const { return false; }
     virtual bool isFunction() const { return false; }
     virtual bool isQmlNode() const { return false; }
+    virtual bool isInternal() const { return false; }
     Type type() const { return typ; }
     virtual SubType subType() const { return NoSubType; }
     InnerNode* parent() const { return par; }
@@ -636,6 +637,7 @@ class FunctionNode : public LeafNode
     virtual bool isQmlNode() const { 
         return ((type() == QmlSignal) || (type() == QmlMethod)); 
     }
+    virtual bool isInternal() const;
 
     void debug() const;
 

@@ -3807,6 +3807,7 @@ void HtmlGenerator::findAllFunctions(const InnerNode *node)
             else if ((*c)->type() == Node::Function) {
                 const FunctionNode *func = static_cast<const FunctionNode *>(*c);
                 if ((func->status() > Node::Obsolete) &&
+                    !func->isInternal() &&
                     (func->metaness() != FunctionNode::Ctor) &&
                     (func->metaness() != FunctionNode::Dtor)) {
                     funcIndex[(*c)->name()].insert(myTree->fullDocumentName((*c)->parent()), *c);

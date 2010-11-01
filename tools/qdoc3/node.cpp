@@ -1364,6 +1364,21 @@ QString FunctionNode::signature(bool values) const
 }
 
 /*!
+  Returns true if the node's status is Internal, or if its
+  parent is a class with internal status.
+ */
+bool FunctionNode::isInternal() const
+{
+    if (status() == Internal)
+        return true;
+    if (parent() && parent()->status() == Internal)
+        return true;
+    if (relates() && relates()->status() == Internal)
+        return true;
+    return false;
+}
+
+/*!
   Print some debugging stuff.
  */
 void FunctionNode::debug() const
