@@ -608,7 +608,7 @@ QDeclarativeContext *QDeclarativeEngine::rootContext() const
   QNetworkAccessManager with specialized caching, proxy and cookie
   support.
 
-  The factory must be set before exceuting the engine.
+  The factory must be set before executing the engine.
 */
 void QDeclarativeEngine::setNetworkAccessManagerFactory(QDeclarativeNetworkAccessManagerFactory *factory)
 {
