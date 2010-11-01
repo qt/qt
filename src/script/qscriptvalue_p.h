@@ -142,7 +142,7 @@ public:
     inline bool assignEngine(QScriptEnginePrivate* engine);
     inline QScriptEnginePrivate* engine() const;
 
-    inline operator v8::Persistent<v8::Value>() const;
+    inline operator v8::Handle<v8::Value>() const;
     inline operator v8::Handle<v8::Object>() const;
     inline v8::Handle<v8::Value> asV8Value(QScriptEnginePrivate* engine);
 private:
@@ -1258,7 +1258,7 @@ QScriptEnginePrivate* QScriptValuePrivate::engine() const
     return const_cast<QScriptEnginePrivate*>(m_engine.constData());
 }
 
-inline QScriptValuePrivate::operator v8::Persistent<v8::Value>() const
+inline QScriptValuePrivate::operator v8::Handle<v8::Value>() const
 {
     Q_ASSERT(isJSBased());
     return m_value;

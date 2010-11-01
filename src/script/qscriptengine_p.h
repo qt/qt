@@ -160,7 +160,7 @@ public:
 
     QScriptValue scriptValueFromInternal(v8::Handle<v8::Value>);
 
-    inline operator v8::Persistent<v8::Context>();
+    inline operator v8::Handle<v8::Context>();
     inline void clearExceptions();
     inline void setException(v8::Handle<v8::Value> value, v8::Handle<v8::Message> exception = v8::Handle<v8::Message>());
     inline bool hasUncaughtException() const;
@@ -268,7 +268,7 @@ v8::Handle<v8::Value> QScriptEnginePrivate::makeJSValue(const QString& value)
     return QScriptConverter::toString(value);
 }
 
-inline QScriptEnginePrivate::operator v8::Persistent<v8::Context>()
+inline QScriptEnginePrivate::operator v8::Handle<v8::Context>()
 {
     return m_v8Context;
 }
