@@ -682,7 +682,7 @@ void tst_MediaObject::testPauseOnFinish()
 }
 
 void tst_MediaObject::testReconnectBetweenTwoMediaObjects(){
-    // Purpose: Test that phonon can handle swithing the same sink
+    // Purpose: Test that phonon can handle switching the same sink
     // between different media objects.
 
     Phonon::MediaObject obj1;
