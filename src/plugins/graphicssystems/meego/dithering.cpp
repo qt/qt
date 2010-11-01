@@ -76,8 +76,13 @@
 // Converts incoming RGB32 (QImage::Format_RGB32) to RGB565. Returns the newly allocated data.
 unsigned short* convertRGB32_to_RGB565(const unsigned char *in, int width, int height, int stride)
 {
+    // Output line stride. Alligned to 4 bytes.
+    int alignedWidth = width;
+    if (alignedWidth % 2 > 0)
+        alignedWidth++;
+
     // Will store output
-    unsigned short *out = (unsigned short *) malloc(width * height * 2);
+    unsigned short *out = (unsigned short *) malloc(alignedWidth * height * 2);
 
     // Lookup tables for the 8bit => 6bit and 8bit => 5bit conversion
     unsigned char lookup_8bit_to_5bit[256];
@@ -174,7 +179,7 @@ unsigned short* convertRGB32_to_RGB565(const unsigned char *in, int width, int h
             }
 
             // Write the newly produced pixel
-            PUT_565(out, x, y, width, component[2], component[1], component[0]);
+            PUT_565(out, x, y, alignedWidth, component[2], component[1], component[0]);
         }
     }
 
@@ -183,10 +188,16 @@ unsigned short* convertRGB32_to_RGB565(const unsigned char *in, int width, int h
 
 // Converts incoming RGBA32 (QImage::Format_ARGB32_Premultiplied) to RGB565. Returns the newly allocated data.
 // This function is similar (yet different) to the _565 variant but it makes sense to duplicate it here for simplicity.
+// The output has each scan line aligned to 4 bytes (as expected by GL by default).
 unsigned short* convertARGB32_to_RGBA4444(const unsigned char *in, int width, int height, int stride)
 {
+    // Output line stride. Alligned to 4 bytes.
+    int alignedWidth = width;
+    if (alignedWidth % 2 > 0)
+        alignedWidth++;
+
     // Will store output
-    unsigned short *out = (unsigned short *) malloc(width * height * 2);
+    unsigned short *out = (unsigned short *) malloc(alignedWidth * 2 * height);
 
     // Lookup tables for the 8bit => 4bit conversion
     unsigned char lookup_8bit_to_4bit[256];
@@ -269,7 +280,7 @@ unsigned short* convertARGB32_to_RGBA4444(const unsigned char *in, int width, in
             }
 
             // Write the newly produced pixel
-            PUT_4444(out, x, y, width, component[0], component[1], component[2], component[3]);
+            PUT_4444(out, x, y, alignedWidth, component[0], component[1], component[2], component[3]);
         }
     }
 
