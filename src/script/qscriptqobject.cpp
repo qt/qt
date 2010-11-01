@@ -575,7 +575,7 @@ void QtConnection::onSignal(void **argv)
     v8::Handle<v8::Object> receiver = m_receiver;
     if (receiver.IsEmpty())
         receiver = v8::Context::GetCurrent()->Global();
-    v8::Function::Cast(*m_callback)->Call(receiver, argc, const_cast<v8::Handle<v8::Value>*>(jsArgv.constData()));
+    m_callback->Call(receiver, argc, const_cast<v8::Handle<v8::Value>*>(jsArgv.constData()));
 
     if (tryCatch.HasCaught()) {
         v8::Local<v8::Value> result = tryCatch.Exception();
@@ -938,30 +938,6 @@ static v8::Handle<v8::Value> QtLazyPropertyGetter(v8::Local<v8::String> property
         }
     }
 
-  /*  // Look up signal by name or signature.
-    bool hasParens = name.indexOf('(') != -1;
-    const QMetaObject *meta = qobject->metaObject();
-    for (int index = meta->methodCount() - 1; index >= 0; --index) {
-        QMetaMethod method = meta->method(index);
-        if (method.methodType() != QMetaMethod::Signal)
-            continue;
-        if (method.access() == QMetaMethod::Private)
-            continue;
-        if (!hasParens && methodNameEquals(method, name.constData(), name.length())) {
-            v8::Handle<v8::Object> signal = engine->newSignal(self, index, QtSignalData::ResolvedByName);
-            // Set the property directly on the instance, so from now on it won't be
-            // handled by the interceptor.
-            self->ForceSet(property, signal);
-            return signal;
-        } else if (hasParens && !qstrcmp(method.signature(), name.constData())) {
-            v8::Handle<v8::Object> signal = engine->newSignal(self, index, QtSignalData::ResolvedBySignature);
-            // Set the property directly on the instance, so from now on it won't be
-            // handled by the interceptor.
-            self->ForceSet(property, signal);
-            return signal;
-        }
-    }*/
-
     return v8::Handle<v8::Value>();
 }
 
@@ -1052,20 +1028,17 @@ v8::Handle<v8::Value> QtSignalData::QtConnectCallback(const v8::Arguments& args)
         // Can probably figure this out at class/instance construction time
     }
 
-
-    //QScriptEnginePrivate *engine = data->;
-
     v8::Handle<v8::Object> receiver;
     v8::Handle<v8::Object> slot;
     if (args.Length() == 1) {
         //simple function
-        if (!args[0]->IsObject()) //FIXME: should be isCallable
+        if (!args[0]->IsObject())
             return handleScope.Close(v8::ThrowException(v8::Exception::TypeError(v8::String::New("QtSignal.connect(): argument is not a function"))));
         slot = v8::Handle<v8::Object>(v8::Object::Cast(*args[0]));
     } else {
         receiver = v8::Handle<v8::Object>(v8::Object::Cast(*args[0]));
         v8::Local<v8::Value> arg1 = args[1];
-        if (arg1->IsObject() && !arg1->IsString()) { //FIXME: should be isCallable
+        if (arg1->IsObject() && !arg1->IsString()) {
             slot = v8::Handle<v8::Object>(v8::Object::Cast(*arg1));
         } else if (!receiver.IsEmpty() && arg1->IsString()) {
             v8::Local<v8::String> propertyName = arg1->ToString();
@@ -1073,7 +1046,7 @@ v8::Handle<v8::Value> QtSignalData::QtConnectCallback(const v8::Arguments& args)
         }
     }
 
-    if (slot.IsEmpty()) {
+    if (slot.IsEmpty() || !slot->IsCallable()) {
         return handleScope.Close(v8::ThrowException(v8::Exception::TypeError(v8::String::New("QtSignal.connect(): target is not a function"))));
     }
 
