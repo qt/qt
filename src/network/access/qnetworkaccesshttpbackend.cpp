@@ -353,10 +353,12 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
     QNetworkRequest::CacheLoadControl CacheLoadControlAttribute =
         (QNetworkRequest::CacheLoadControl)request().attribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferNetwork).toInt();
     if (CacheLoadControlAttribute == QNetworkRequest::AlwaysNetwork) {
-        // forced reload from the network
-        // tell any caching proxy servers to reload too
-        httpRequest.setHeaderField("Cache-Control", "no-cache");
-        httpRequest.setHeaderField("Pragma", "no-cache");
+        // If the request does not already specify preferred cache-control
+        // force reload from the network and tell any caching proxy servers to reload too
+        if (!request().rawHeaderList().contains("Cache-Control")) {
+            httpRequest.setHeaderField("Cache-Control", "no-cache");
+            httpRequest.setHeaderField("Pragma", "no-cache");
+        }
         return;
     }
 
