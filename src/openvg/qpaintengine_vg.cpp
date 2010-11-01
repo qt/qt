@@ -3536,6 +3536,7 @@ void QVGPaintEngine::restoreState(QPaintEngine::DirtyFlags dirty)
         d->maskIsSet = false;
         d->scissorMask = false;
         d->maskRect = QRect();
+        d->scissorDirty = true;
         clipEnabledChanged();
     }
 
