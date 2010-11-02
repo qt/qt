@@ -279,7 +279,11 @@ QVariant QSqlQueryModel::headerData(int section, Qt::Orientation orientation, in
             val = d->headers.value(section).value(Qt::EditRole);
         if (val.isValid())
             return val;
-        if (role == Qt::DisplayRole && d->rec.count() > section)
+
+        // See if it's an inserted column (iiq.column() != -1)
+        QModelIndex dItem = indexInQuery(createIndex(0, section));
+
+        if (role == Qt::DisplayRole && d->rec.count() > section && dItem.column() != -1)
             return d->rec.fieldName(section);
     }
     return QAbstractItemModel::headerData(section, orientation, role);
