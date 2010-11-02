@@ -709,6 +709,8 @@ QPolygon QPolygonF::toPolygon() const
 
 /*!
     \fn void QPolygonF::swap(QPolygonF &other)
+    \since 4.8
+
     Swaps polygon \a other with this polygon. This operation is very
     fast and never fails.
 */

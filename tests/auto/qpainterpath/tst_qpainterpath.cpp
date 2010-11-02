@@ -60,6 +60,8 @@ public:
 
 private slots:
     void getSetCheck();
+    void swap();
+
     void contains_QPointF_data();
     void contains_QPointF();
 
@@ -137,6 +139,17 @@ void tst_QPainterPath::getSetCheck()
     QCOMPARE(qreal(0.0), obj1.curveThreshold());
     obj1.setCurveThreshold(1.1);
     QCOMPARE(qreal(1.1), obj1.curveThreshold());
+}
+
+void tst_QPainterPath::swap()
+{
+    QPainterPath p1;
+    p1.addRect( 0, 0,10,10);
+    QPainterPath p2;
+    p2.addRect(10,10,10,10);
+    p1.swap(p2);
+    QCOMPARE(p1.boundingRect().toRect(), QRect(10,10,10,10));
+    QCOMPARE(p2.boundingRect().toRect(), QRect( 0, 0,10,10));
 }
 
 Q_DECLARE_METATYPE(QPainterPath)

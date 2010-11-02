@@ -391,6 +391,14 @@ void QRegion::exec(const QByteArray &buffer, int ver, QDataStream::ByteOrder byt
 */
 
 /*!
+    \fn void QRegion::swap(QRegion &other)
+    \since 4.8
+
+    Swaps region \a other with this region. This operation is very
+    fast and never fails.
+*/
+
+/*!
     \relates QRegion
 
     Writes the region \a r to the stream \a s and returns a reference

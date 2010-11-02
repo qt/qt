@@ -738,6 +738,7 @@ void QHashData::checkSanity()
 */
 
 /*! \fn void QMultiHash::swap(QMultiHash<Key, T> &other)
+    \since 4.8
 
     Swaps hash \a other with this hash. This operation is very
     fast and never fails.

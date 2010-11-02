@@ -70,6 +70,7 @@ private slots:
     void actualSize2();
     void svgActualSize();
     void isNull();
+    void swap();
     void bestMatch();
     void cacheKey();
     void detach();
@@ -257,6 +258,21 @@ void tst_QIcon::isNull() {
     QIcon iconSupportedFormat = QIcon(prefix + "image.png");
     QVERIFY(!iconSupportedFormat.isNull());
     QVERIFY(iconSupportedFormat.actualSize(QSize(32, 32)).isValid());
+}
+
+void tst_QIcon::swap()
+{
+    QPixmap p1(1, 1), p2(2, 2);
+    p1.fill(Qt::black);
+    p2.fill(Qt::black);
+
+    QIcon i1(p1), i2(p2);
+    const qint64 i1k = i1.cacheKey();
+    const qint64 i2k = i2.cacheKey();
+    QVERIFY(i1k != i2k);
+    i1.swap(i2);
+    QCOMPARE(i1.cacheKey(), i2k);
+    QCOMPARE(i2.cacheKey(), i1k);
 }
 
 void tst_QIcon::bestMatch()

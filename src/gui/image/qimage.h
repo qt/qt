@@ -144,6 +144,7 @@ public:
     inline QImage &operator=(QImage &&other)
     { qSwap(d, other.d); return *this; }
 #endif
+    inline void swap(QImage &other) { qSwap(d, other.d); }
 
     bool isNull() const;
 

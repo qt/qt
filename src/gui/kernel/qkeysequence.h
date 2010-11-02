@@ -183,6 +183,7 @@ public:
     inline QKeySequence &operator=(QKeySequence &&other)
     { qSwap(d, other.d); return *this; }
 #endif
+    inline void swap(QKeySequence &other) { qSwap(d, other.d); }
     bool operator==(const QKeySequence &other) const;
     inline bool operator!= (const QKeySequence &other) const
     { return !(*this == other); }

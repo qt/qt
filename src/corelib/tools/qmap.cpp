@@ -412,6 +412,7 @@ void QMapData::dump()
 */
 
 /*! \fn void QMultiMap::swap(QMultiMap<Key, T> &other)
+    \since 4.8
 
     Swaps map \a other with this map. This operation is very
     fast and never fails.
