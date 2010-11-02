@@ -47,9 +47,9 @@ class QScriptablePrivate
 {
     Q_DECLARE_PUBLIC(QScriptable)
 public:
+    QScriptablePrivate(const QScriptable* q) : q_ptr(const_cast<QScriptable*>(q)), m_engine(0) {}
     static inline QScriptablePrivate *get(QScriptable *q) { return q->d_func(); }
 
-    QScriptable *q_ptr;
 
     inline QScriptEnginePrivate* engine() const;
     inline QScriptContextPrivate* context() const;
@@ -59,12 +59,13 @@ public:
 
     inline QScriptEnginePrivate *swapEngine(QScriptEnginePrivate *);
 private:
-    QScriptEnginePrivate *m_engine;
+    QScriptable *q_ptr;
+    QScriptSharedDataPointer<QScriptEnginePrivate> m_engine;
 };
 
 inline QScriptEnginePrivate* QScriptablePrivate::engine() const
 {
-    return m_engine;
+    return m_engine.data();
 }
 
 inline QScriptContextPrivate* QScriptablePrivate::context() const
@@ -77,23 +78,33 @@ inline QScriptContextPrivate* QScriptablePrivate::context() const
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptablePrivate::thisObject() const
 {
-    return context()->thisObject();
+    QScriptContextPrivate *c = context();
+    if (!c)
+        return new QScriptValuePrivate();
+    return c->thisObject();
 }
 
 inline int QScriptablePrivate::argumentCount() const
 {
-    return context()->argumentCount();
+    QScriptContextPrivate *c = context();
+    if (!c)
+        return -1;
+    return c->argumentCount();
 }
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptablePrivate::argument(int index) const
 {
-    return context()->argument(index);
+    QScriptContextPrivate *c = context();
+    if (!c)
+        return new QScriptValuePrivate();
+    return c->argument(index);
 }
 
 QScriptEnginePrivate *QScriptablePrivate::swapEngine(QScriptEnginePrivate* newEngine)
 {
-    qSwap(newEngine, m_engine);
-    return newEngine;
+    QScriptEnginePrivate *oldEngine = m_engine.data();
+    m_engine = newEngine;
+    return oldEngine;
 }
 
 

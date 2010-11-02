@@ -83,9 +83,8 @@ QT_BEGIN_NAMESPACE
   \internal
 */
 QScriptable::QScriptable()
-    : d_ptr(new QScriptablePrivate())
+    : d_ptr(new QScriptablePrivate(this))
 {
-    d_ptr->q_ptr = this;
 }
 
 /*!
@@ -130,10 +129,8 @@ QScriptContext *QScriptable::context() const
 QScriptValue QScriptable::thisObject() const
 {
     Q_D(const QScriptable);
-    QScriptContextPrivate *c = d->context();
-    if (!c)
-        return QScriptValue();
-    return QScriptValuePrivate::get(c->thisObject());
+    QScriptIsolate api(d->engine());
+    return QScriptValuePrivate::get(d->thisObject());
 }
 
 /*!
@@ -146,8 +143,8 @@ QScriptValue QScriptable::thisObject() const
 int QScriptable::argumentCount() const
 {
     Q_D(const QScriptable);
-    QScriptContextPrivate *c = d->context();
-    return c->argumentCount();
+    QScriptIsolate api(d->engine());
+    return d->argumentCount();
 }
 
 /*!
@@ -159,8 +156,8 @@ int QScriptable::argumentCount() const
 QScriptValue QScriptable::argument(int index) const
 {
     Q_D(const QScriptable);
-    QScriptContextPrivate *c = d->context();
-    return QScriptValuePrivate::get(c->argument(index));
+    QScriptIsolate api(d->engine());
+    return QScriptValuePrivate::get(d->argument(index));
 }
 
 QT_END_NAMESPACE
