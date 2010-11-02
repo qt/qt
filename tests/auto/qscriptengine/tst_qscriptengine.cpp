@@ -95,16 +95,33 @@ private slots:
     void pushPopContext();
     void getSetDefaultPrototype();
     void newFunction();
+    void newFunctionWithArg();
+    void newFunctionWithProto();
     void newObject();
     void newArray();
+    void newArray_HooliganTask218092();
+    void newArray_HooliganTask233836();
     void newVariant();
+    void newVariant_defaultPrototype();
+    void newVariant_promoteObject();
+    void newVariant_replaceValue();
+    void newVariant_valueOfToString();
+    void newVariant_promoteNonObject();
+    void newVariant_promoteNonQScriptObject();
     void newRegExp();
     void newDate();
     void newQObject();
+    void newQObject_ownership();
+    void newQObject_promoteObject();
+    void newQObject_sameQObject();
+    void newQObject_defaultPrototype();
+    void newQObject_promoteNonObject();
+    void newQObject_promoteNonQScriptObject();
     void newQMetaObject();
     void newActivationObject();
     void getSetGlobalObject();
     void globalObjectProperties();
+    void createGlobalObjectProperty();
     void globalObjectGetterSetterProperty();
     void customGlobalObjectWithPrototype();
     void globalObjectWithCustomPrototype();
@@ -146,7 +163,10 @@ private slots:
     void forInStatement();
     void functionExpression();
     void stringObjects();
-    void getterSetterThisObject();
+    void getterSetterThisObject_global();
+    void getterSetterThisObject_plain();
+    void getterSetterThisObject_prototypeChain();
+    void getterSetterThisObject_activation();
     void continueInSwitch();
     void readOnlyPrototypeProperty();
     void toObject();
@@ -169,6 +189,11 @@ private slots:
     void functionScopes();
     void nativeFunctionScopes();
     void evaluateProgram();
+    void evaluateProgram_customScope();
+    void evaluateProgram_closure();
+    void evaluateProgram_executeLater();
+    void evaluateProgram_multipleEngines();
+    void evaluateProgram_empty();
     void collectGarbageAfterConnect();
     void promoteThisObjectToQObjectInConstructor();
     void scriptValueFromQMetaObject();
@@ -291,8 +316,11 @@ void tst_QScriptEngine::newFunction()
         QCOMPARE(fun.call().isNull(), true);
         QCOMPARE(fun.construct().isObject(), true);
     }
+}
 
-    // the overload that takes a void*
+void tst_QScriptEngine::newFunctionWithArg()
+{
+    QScriptEngine eng;
     {
         QScriptValue fun = eng.newFunction(myFunctionWithVoidArg, (void*)this);
         QVERIFY(fun.isFunction());
@@ -313,8 +341,11 @@ void tst_QScriptEngine::newFunction()
         QCOMPARE(fun.call().isNull(), true);
         QCOMPARE(fun.construct().isObject(), true);
     }
+}
 
-    // the overload that takes a prototype
+void tst_QScriptEngine::newFunctionWithProto()
+{
+    QScriptEngine eng;
     {
         QScriptValue proto = eng.newObject();
         QScriptValue fun = eng.newFunction(myFunction, proto);
@@ -364,8 +395,11 @@ void tst_QScriptEngine::newArray()
     QCOMPARE(array.prototype().isValid(), true);
     QCOMPARE(array.prototype().isArray(), true);
     QCOMPARE(array.prototype().strictlyEquals(eng.evaluate("Array.prototype")), true);
+}
 
-    // task 218092
+void tst_QScriptEngine::newArray_HooliganTask218092()
+{
+    QScriptEngine eng;
     {
         QScriptValue ret = eng.evaluate("[].splice(0, 0, 'a')");
         QVERIFY(ret.isArray());
@@ -391,8 +425,11 @@ void tst_QScriptEngine::newArray()
         QVERIFY(ret.isArray());
         QCOMPARE(ret.property("length").toInt32(), 2);
     }
+}
 
-    // task 233836
+void tst_QScriptEngine::newArray_HooliganTask233836()
+{
+    QScriptEngine eng;
     {
         QScriptValue ret = eng.evaluate("a = new Array(4294967295); a.push('foo')");
         QVERIFY(ret.isNumber());
@@ -426,7 +463,12 @@ void tst_QScriptEngine::newVariant()
         QCOMPARE(opaque.prototype().isVariant(), true);
         QVERIFY(opaque.property("valueOf").call(opaque).isUndefined());
     }
+}
+
+void tst_QScriptEngine::newVariant_defaultPrototype()
+{
     // default prototype should be set automatically
+    QScriptEngine eng;
     {
         QScriptValue proto = eng.newObject();
         eng.setDefaultPrototype(qMetaTypeId<QString>(), proto);
@@ -439,7 +481,12 @@ void tst_QScriptEngine::newVariant()
         QVERIFY(ret2.isVariant());
         QVERIFY(!ret2.prototype().strictlyEquals(proto));
     }
+}
+
+void tst_QScriptEngine::newVariant_promoteObject()
+{
     // "promote" plain object to variant
+    QScriptEngine eng;
     {
         QScriptValue object = eng.newObject();
         object.setProperty("foo", eng.newObject());
@@ -456,7 +503,12 @@ void tst_QScriptEngine::newVariant()
         QCOMPARE(ret.toVariant(), QVariant(123));
         QVERIFY(ret.prototype().strictlyEquals(originalProto));
     }
+}
+
+void tst_QScriptEngine::newVariant_replaceValue()
+{
     // replace value of existing object
+    QScriptEngine eng;
     {
         QScriptValue object = eng.newVariant(QVariant(123));
         for (int x = 0; x < 2; ++x) {
@@ -467,8 +519,12 @@ void tst_QScriptEngine::newVariant()
             QCOMPARE(ret.toVariant(), QVariant(456));
         }
     }
+}
 
+void tst_QScriptEngine::newVariant_valueOfToString()
+{
     // valueOf() and toString()
+    QScriptEngine eng;
     {
         QScriptValue object = eng.newVariant(QVariant(123));
         QScriptValue value = object.property("valueOf").call(object);
@@ -500,14 +556,22 @@ void tst_QScriptEngine::newVariant()
         QVERIFY(value.strictlyEquals(object));
         QCOMPARE(object.toString(), QString::fromLatin1("QVariant(QPoint)"));
     }
+}
 
+void tst_QScriptEngine::newVariant_promoteNonObject()
+{
+    QScriptEngine eng;
     {
         QVariant var(456);
         QScriptValue ret = eng.newVariant(123, var);
         QVERIFY(ret.isVariant());
         QCOMPARE(ret.toVariant(), var);
     }
+}
 
+void tst_QScriptEngine::newVariant_promoteNonQScriptObject()
+{
+    QScriptEngine eng;
     {
         QTest::ignoreMessage(QtWarningMsg, "QScriptEngine::newVariant(): changing class of non-QScriptObject not supported");
         QScriptValue ret = eng.newVariant(eng.newArray(), 123);
@@ -663,8 +727,11 @@ void tst_QScriptEngine::newQObject()
         QCOMPARE(qobject.prototype().isQObject(), true);
         QCOMPARE(qobject.scriptClass(), (QScriptClass*)0);
     }
+}
 
-    // test ownership
+void tst_QScriptEngine::newQObject_ownership()
+{
+    QScriptEngine eng;
     {
         QPointer<QObject> ptr = new QObject();
         QVERIFY(ptr != 0);
@@ -719,7 +786,11 @@ void tst_QScriptEngine::newQObject()
         QVERIFY(child != 0);
         delete parent;
     }
+}
 
+void tst_QScriptEngine::newQObject_promoteObject()
+{
+    QScriptEngine eng;
     // "promote" plain object to QObject
     {
         QScriptValue obj = eng.newObject();
@@ -760,7 +831,11 @@ void tst_QScriptEngine::newQObject()
             QVERIFY(ret.prototype().strictlyEquals(originalProto));
         }
     }
+}
 
+void tst_QScriptEngine::newQObject_sameQObject()
+{
+    QScriptEngine eng;
     // calling newQObject() several times with same object
     for (int x = 0; x < 2; ++x) {
         QObject qobj;
@@ -791,7 +866,11 @@ void tst_QScriptEngine::newQObject()
                                            QScriptEngine::ExcludeSuperClassMethods | opt);
         QCOMPARE(obj8.strictlyEquals(obj7), preferExisting);
     }
+}
 
+void tst_QScriptEngine::newQObject_defaultPrototype()
+{
+    QScriptEngine eng;
     // newQObject() should set the default prototype, if one has been registered
     {
         QScriptValue oldQObjectProto = eng.defaultPrototype(qMetaTypeId<QObject*>());
@@ -813,13 +892,21 @@ void tst_QScriptEngine::newQObject()
         eng.setDefaultPrototype(qMetaTypeId<QObject*>(), oldQObjectProto);
         eng.setDefaultPrototype(typeId, QScriptValue());
     }
+}
 
+void tst_QScriptEngine::newQObject_promoteNonObject()
+{
+    QScriptEngine eng;
     {
         QScriptValue ret = eng.newQObject(123, this);
         QVERIFY(ret.isQObject());
         QCOMPARE(ret.toQObject(), this);
     }
+}
 
+void tst_QScriptEngine::newQObject_promoteNonQScriptObject()
+{
+    QScriptEngine eng;
     {
         QTest::ignoreMessage(QtWarningMsg, "QScriptEngine::newQObject(): changing class of non-QScriptObject not supported");
         QScriptValue ret = eng.newQObject(eng.newArray(), this);
@@ -1235,7 +1322,12 @@ void tst_QScriptEngine::globalObjectProperties()
         }
     }
     QVERIFY(remainingNames.isEmpty());
+}
 
+void tst_QScriptEngine::createGlobalObjectProperty()
+{
+    QScriptEngine eng;
+    QScriptValue global = eng.globalObject();
     // create property with no attributes
     {
         QString name = QString::fromLatin1("foo");
@@ -3810,9 +3902,8 @@ void tst_QScriptEngine::stringObjects()
     }
 }
 
-void tst_QScriptEngine::getterSetterThisObject()
+void tst_QScriptEngine::getterSetterThisObject_global()
 {
-    // Global Object
     {
         QScriptEngine eng;
         // read
@@ -3870,8 +3961,10 @@ void tst_QScriptEngine::getterSetterThisObject()
             QCOMPARE(ret.toString(), QString::fromLatin1("foo"));
         }
     }
+}
 
-    // other object
+void tst_QScriptEngine::getterSetterThisObject_plain()
+{
     {
         QScriptEngine eng;
         eng.evaluate("o = {}");
@@ -3888,8 +3981,10 @@ void tst_QScriptEngine::getterSetterThisObject()
         QVERIFY(eng.evaluate("with (o) x = 'foo'").equals("foo"));
         QVERIFY(eng.evaluate("with (o) with (q) x = 'foo'").equals("foo"));
     }
+}
 
-    // getter+setter in prototype chain
+void tst_QScriptEngine::getterSetterThisObject_prototypeChain()
+{
     {
         QScriptEngine eng;
         eng.evaluate("o = {}; p = {}; o.__proto__ = p");
@@ -3907,8 +4002,10 @@ void tst_QScriptEngine::getterSetterThisObject()
         QVERIFY(eng.evaluate("with (o) x = 'foo'").equals("foo"));
         QVERIFY(eng.evaluate("with (o) with (q) x = 'foo'").equals("foo"));
     }
+}
 
-    // getter+setter in activation
+void tst_QScriptEngine::getterSetterThisObject_activation()
+{
     {
         QScriptEngine eng;
         QScriptContext *ctx = eng.pushContext();
@@ -5030,8 +5127,11 @@ void tst_QScriptEngine::evaluateProgram()
         QVERIFY(differentProgram != program);
         QVERIFY(!eng.evaluate(differentProgram).equals(expected));
     }
+}
 
-    // Program that accesses variable in the scope
+void tst_QScriptEngine::evaluateProgram_customScope()
+{
+    QScriptEngine eng;
     {
         QScriptProgram program("a");
         QVERIFY(!program.isNull());
@@ -5068,8 +5168,11 @@ void tst_QScriptEngine::evaluateProgram()
 
         ctx->popScope();
     }
+}
 
-    // Program that creates closure
+void tst_QScriptEngine::evaluateProgram_closure()
+{
+    QScriptEngine eng;
     {
         QScriptProgram program("(function() { var count = 0; return function() { return count++; }; })");
         QVERIFY(!program.isNull());
@@ -5089,7 +5192,11 @@ void tst_QScriptEngine::evaluateProgram()
             QVERIFY(ret.isNumber());
         }
     }
+}
 
+void tst_QScriptEngine::evaluateProgram_executeLater()
+{
+    QScriptEngine eng;
     // Program created in a function call, then executed later
     {
         QScriptValue fun = eng.newFunction(createProgram);
@@ -5110,8 +5217,11 @@ void tst_QScriptEngine::evaluateProgram()
             QCOMPARE(ret.toInt32(), 123);
         }
     }
+}
 
-    // Same program run in different engines
+void tst_QScriptEngine::evaluateProgram_multipleEngines()
+{
+    QScriptEngine eng;
     {
         QString code("1 + 2");
         QScriptProgram program(code);
@@ -5125,8 +5235,11 @@ void tst_QScriptEngine::evaluateProgram()
             }
         }
     }
+}
 
-    // No program
+void tst_QScriptEngine::evaluateProgram_empty()
+{
+    QScriptEngine eng;
     {
         QScriptProgram program;
         QVERIFY(program.isNull());
