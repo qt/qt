@@ -904,6 +904,13 @@ QByteArray &QByteArray::operator=(const char *str)
     return *this;
 }
 
+/*! \fn void QByteArray::swap(QByteArray &other)
+    \since 4.8
+
+    Swaps byte array \a other with this byte array. This operation is very
+    fast and never fails.
+*/
+
 /*! \fn int QByteArray::size() const
 
     Returns the number of bytes in this byte array.

@@ -68,6 +68,8 @@ public:
     { qSwap(d, other.d); return *this; }
 #endif
 
+    inline void swap(QBitArray &other) { qSwap(d, other.d); }
+
     inline int size() const { return (d.size() << 3) - *d.constData(); }
     inline int count() const { return (d.size() << 3) - *d.constData(); }
     int count(bool on) const;

@@ -71,6 +71,7 @@ public slots:
     void init();
     void cleanup();
 private slots:
+    void swap();
     void qCompress_data();
 #ifndef QT_NO_COMPRESS
     void qCompress();
@@ -451,6 +452,14 @@ void tst_QByteArray::split()
 
     QList<QByteArray> list = sample.split(' ');
     QCOMPARE(list.count(), size);
+}
+
+void tst_QByteArray::swap()
+{
+    QByteArray b1 = "b1", b2 = "b2";
+    b1.swap(b2);
+    QCOMPARE(b1, QByteArray("b2"));
+    QCOMPARE(b2, QByteArray("b1"));
 }
 
 void tst_QByteArray::base64_data()

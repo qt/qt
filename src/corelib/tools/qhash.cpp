@@ -730,6 +730,19 @@ void QHashData::checkSanity()
     Assigns \a other to this hash and returns a reference to this hash.
 */
 
+/*! \fn void QHash::swap(QHash<Key, T> &other)
+    \since 4.8
+
+    Swaps hash \a other with this hash. This operation is very
+    fast and never fails.
+*/
+
+/*! \fn void QMultiHash::swap(QMultiHash<Key, T> &other)
+
+    Swaps hash \a other with this hash. This operation is very
+    fast and never fails.
+*/
+
 /*! \fn bool QHash::operator==(const QHash<Key, T> &other) const
 
     Returns true if \a other is equal to this hash; otherwise returns
