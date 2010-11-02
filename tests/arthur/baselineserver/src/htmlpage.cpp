@@ -20,12 +20,13 @@ QString HTMLPage::filePath()
     return path;
 }
 
-void HTMLPage::start(const QString &storagepath, const QString &runId, const PlatformInfo pinfo, const ImageItemList &itemList)
+void HTMLPage::start(const QString &storagepath, const QString &runId, const PlatformInfo pinfo, const QString &hostAddress, const ImageItemList &itemList)
 {
     end();
 
     id = runId;
     plat = pinfo;
+    address = hostAddress;
     root = storagepath;
     imageItems = itemList;
     QString dir = root + QLS("reports/");
@@ -48,11 +49,9 @@ void HTMLPage::writeHeader(const ImageItem &item)
     out.setDevice(&file);
 
     out << "<html><body><h1>Lancelot results from run " << id << "</h1>\n\n";
-    out << "<h3>Host: " << plat.hostName << "</h3>\n";
-    out << "<h3>Qt version: " << plat.qtVersion << "</h3>\n";
-    out << "<h3>Build key: " << plat.buildKey << "</h3>\n";
-    out << "<h3>Engine: " << item.engineAsString() << "</h3>\n";
-    out << "<h3>Format: " << item.formatAsString() << "</h3>\n\n";
+    out << "<h3>Host: " << plat.hostName << " [" << address << "] OS: " << plat.osName << " [enum: " << plat.osVersion << "]</h3>\n";
+    out << "<h3>Qt version: " << plat.qtVersion << " [commit: " << plat.gitCommit << "] Build key: \"" << plat.buildKey << "\"</h3>\n";
+    out << "<h3>Engine: " << item.engineAsString() << " Format: " << item.formatAsString() << "</h3>\n\n";
     out << "<h3><a href=\"/cgi-bin/server.cgi?cmd=updateAllBaselines&id="<< id << "&host=" << plat.hostName
         << "&engine=" << item.engineAsString() << "&format=" << item.formatAsString()
         << "&url=" << pageUrl

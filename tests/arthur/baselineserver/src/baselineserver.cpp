@@ -182,7 +182,7 @@ void BaselineHandler::provideBaselineChecksums(const QByteArray &itemListBlock)
     QDataStream ods(&block, QIODevice::WriteOnly);
     ods << itemList;
     proto.sendBlock(BaselineProtocol::Ack, block);
-    report.start(BaselineServer::storagePath(), runId, plat, itemList);
+    report.start(BaselineServer::storagePath(), runId, plat, proto.socket.peerAddress().toString(), itemList);
 }
 
 
