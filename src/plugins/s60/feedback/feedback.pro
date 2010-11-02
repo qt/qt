@@ -2,7 +2,7 @@ include(../../qpluginbase.pri)
 
 TARGET = qtactilefeedback$${QT_LIBINFIX}
 
-QTDIR_build:DESTDIR	 = $$QT_BUILD_TREE/plugins/s60/feedback
+QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/s60/feedback
 
 INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
 
