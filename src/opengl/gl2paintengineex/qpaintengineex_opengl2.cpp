@@ -890,7 +890,10 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 
                     prepareForDraw(currentBrush.isOpaque());
                     setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, vertices.constData());
-                    glDrawElements(GL_TRIANGLES, polys.indices.size(), GL_UNSIGNED_INT, polys.indices.constData());
+                    if (QGLExtensions::glExtensions() & QGLExtensions::ElementIndexUint)
+                        glDrawElements(GL_TRIANGLES, polys.indices.size(), GL_UNSIGNED_INT, polys.indices.data());
+                    else
+                        glDrawElements(GL_TRIANGLES, polys.indices.size(), GL_UNSIGNED_SHORT, polys.indices.data());
                 } else {
                     // We can't handle big, concave painter paths with OpenGL without stencil buffer.
                     qWarning("Painter path exceeds +/-32767 pixels.");
