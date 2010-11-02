@@ -101,7 +101,7 @@
     }
     a
     {
-        color: #00732f;
+        color: #44a51c;
         text-decoration: none;
     }
     hr
@@ -1297,6 +1297,10 @@
         background-color: #E6E7E8;
         margin: 0;
     }
+   .small
+    {
+        font: normal 9px/1 Verdana;
+    }	
 /* end footer elements */
 
 
@@ -1471,7 +1475,7 @@
 	}
 
 
-    .creator .header, .footer, .wrapper
+    .creator .header, .creator .footer, .creator .wrapper
     {
         max-width: 1500px;
         margin: 0px;
