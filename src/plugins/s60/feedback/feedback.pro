@@ -2,6 +2,8 @@ include(../../qpluginbase.pri)
 
 TARGET = qtactilefeedback$${QT_LIBINFIX}
 
+QTDIR_build:DESTDIR	 = $$QT_BUILD_TREE/plugins/s60/feedback
+
 INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
 
 contains(S60_VERSION, 5.0)|contains(S60_VERSION, symbian3) {
