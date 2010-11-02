@@ -54,12 +54,13 @@
 
 struct PlatformQuirks
 {
-    enum MediaFileTypes {
-      mp3,
-      wav,
-      ogg
+    enum MediaFileTypes
+    {
+        mp3,
+        wav,
+        ogg
     };
-  
+
     /* On some platforms, libpng or libjpeg sacrifice precision for speed.
        Esp. with NEON support, color values after decoding can be off by up
        to three bytes.
@@ -68,12 +69,12 @@ struct PlatformQuirks
     {
 #ifdef Q_WS_MAEMO_5
         return true;
-#endif
-#ifdef Q_WS_X11
-        if (X11->desktopEnvironment == DE_MAEMO6)
-            return true;
-#endif
+#elif defined(Q_WS_X11)
+        // ### this is a very bad assumption, we should really check the version of libjpeg
+        return X11->desktopEnvironment == DE_MEEGO_COMPOSITOR;
+#else
         return false;
+#endif
     }
 
     /* Some windowing systems automatically maximize apps on startup (e.g. Maemo)
@@ -83,26 +84,24 @@ struct PlatformQuirks
     {
 #ifdef Q_WS_MAEMO_5
         return true;
-#endif
-#ifdef Q_WS_X11
-        if (X11->desktopEnvironment == DE_MAEMO6)
-            return true;
-#endif
+#elif defined(Q_WS_X11)
+        return X11->desktopEnvironment == DE_MEEGO_COMPOSITOR;
+#else
         return false;
+#endif
     }
 
     static inline bool haveMouseCursor()
     {
 #ifdef Q_WS_MAEMO_5
         return false;
-#endif
-#ifdef Q_WS_X11
-        if (X11->desktopEnvironment == DE_MAEMO6)
-            return false;
-#endif
+#elif defined(Q_WS_X11)
+        return X11->desktopEnvironment != DE_MEEGO_COMPOSITOR;
+#else
         return true;
+#endif
     }
-    
+
     /* On some systems an ogg codec is not installed by default.
     The autotests have to know which fileType is the default on the system*/
     static inline MediaFileTypes defaultMediaFileType()
@@ -111,7 +110,8 @@ struct PlatformQuirks
         return PlatformQuirks::mp3;
 #endif
 #ifdef Q_WS_X11
-        if (X11->desktopEnvironment == DE_MAEMO6)
+        // ### very bad assumption
+        if (X11->desktopEnvironment == DE_MEEGO_COMPOSITOR)
             return PlatformQuirks::mp3;
 #endif
         return PlatformQuirks::ogg;
