@@ -286,3 +286,21 @@ unsigned short* convertARGB32_to_RGBA4444(const unsigned char *in, int width, in
 
     return out;
 }
+
+unsigned char* convertBGRA32_to_RGBA32(const unsigned char *in, int width, int height, int stride)
+{
+    unsigned char *out = (unsigned char *) malloc(stride * height);
+
+    // For each line...
+    for (int y = 0; y < height; y++) {
+        // For each column
+        for (int x = 0; x < width; x++) {
+            out[(stride * y) + (x * 4) + 0] = in[(stride * y) + (x * 4) + 2];
+            out[(stride * y) + (x * 4) + 1] = in[(stride * y) + (x * 4) + 1];
+            out[(stride * y) + (x * 4) + 2] = in[(stride * y) + (x * 4) + 0];
+            out[(stride * y) + (x * 4) + 3] = in[(stride * y) + (x * 4) + 3];
+        }
+    }
+
+    return out;
+}
