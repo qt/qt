@@ -257,6 +257,36 @@ static int resolveOverloadedQtMetaMethodCall(QScriptEnginePrivate *engine, const
     return bestIndex;
 }
 
+
+// Helper class to invoke QObject::{,dis}connectNotify() (they are protected).
+class QtObjectNotifyCaller : public QObject
+{
+public:
+    void callConnectNotify(const char *signal)
+        { connectNotify(signal); }
+    void callDisconnectNotify(const char *signal)
+        { disconnectNotify(signal); }
+
+    static void callConnectNotify(QObject *sender, int signalIndex)
+    {
+        QMetaMethod signal = sender->metaObject()->method(signalIndex);
+        QByteArray signalString;
+        signalString.append('2'); // signal code
+        signalString.append(signal.signature());
+        static_cast<QtObjectNotifyCaller*>(sender)->callConnectNotify(signalString);
+    }
+
+    static void callDisconnectNotify(QObject *sender, int signalIndex)
+    {
+        QMetaMethod signal = sender->metaObject()->method(signalIndex);
+        QByteArray signalString;
+        signalString.append('2'); // signal code
+        signalString.append(signal.signature());
+        static_cast<QtObjectNotifyCaller*>(sender)->callDisconnectNotify(signalString);
+    }
+};
+
+
 // A C++ signal-to-JS handler connection.
 //
 // Acts as a middle-man; intercepts a C++ signal,
@@ -513,9 +543,11 @@ bool QtConnection::connect(v8::Handle<v8::Object> receiver, v8::Handle<v8::Objec
 {
     Q_ASSERT(m_callback.IsEmpty());
     QtInstanceData *instance = QtInstanceData::get(m_signal->object());
-    bool ok = QMetaObject::connect(instance->cppObject(), m_signal->index(),
+    QObject *sender = instance->cppObject();
+    bool ok = QMetaObject::connect(sender, m_signal->index(),
                                    this, staticMetaObject.methodOffset(), type);
     if (ok) {
+        QtObjectNotifyCaller::callConnectNotify(sender, m_signal->index());
         m_callback = v8::Persistent<v8::Object>::New(callback);
         m_receiver = v8::Persistent<v8::Object>::New(receiver);
     }
@@ -527,9 +559,11 @@ bool QtConnection::disconnect()
 {
     Q_ASSERT(!m_callback.IsEmpty());
     QtInstanceData *instance = QtInstanceData::get(m_signal->object());
-    bool ok = QMetaObject::disconnect(instance->cppObject(), m_signal->index(),
+    QObject *sender = instance->cppObject();
+    bool ok = QMetaObject::disconnect(sender, m_signal->index(),
                                       this, staticMetaObject.methodOffset());
     if (ok) {
+        QtObjectNotifyCaller::callDisconnectNotify(sender, m_signal->index());
         m_callback.Dispose();
         m_callback.Clear();
     }
