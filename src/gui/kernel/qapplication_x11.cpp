@@ -2335,35 +2335,25 @@ void qt_init(QApplicationPrivate *priv, int,
                 break;
             }
 
-            Window windowManagerWindow = XNone;
-            Atom typeReturned;
-            int formatReturned;
-            unsigned long nitemsReturned;
-            unsigned long unused;
-            unsigned char *data = 0;
-            if (XGetWindowProperty(QX11Info::display(), QX11Info::appRootWindow(),
+            if (XGetWindowProperty(X11->display, QX11Info::appRootWindow(),
                                ATOM(_NET_SUPPORTING_WM_CHECK),
-                               0, 1024, False, XA_WINDOW, &typeReturned,
-                               &formatReturned, &nitemsReturned, &unused, &data)
-                  == Success) {
-                if (typeReturned == XA_WINDOW && formatReturned == 32)
-                    windowManagerWindow = *((Window*) data);
-                if (data)
+                               0, 1024, False, XA_WINDOW, &type,
+                               &format, &length, &after, &data) == Success) {
+                if (type == XA_WINDOW && format == 32) {
+                    Window windowManagerWindow = *((Window*) data);
                     XFree(data);
+                    data = 0;
 
-                if (windowManagerWindow != XNone) {
-                    QString wmName;
-                    Atom utf8atom = ATOM(UTF8_STRING);
-                    if (XGetWindowProperty(QX11Info::display(), windowManagerWindow, ATOM(_NET_WM_NAME),
-                                           0, 1024, False, utf8atom, &typeReturned,
-                                           &formatReturned, &nitemsReturned, &unused, &data)
-                        == Success) {
-                        if (typeReturned == utf8atom && formatReturned == 8)
-                            wmName = QString::fromUtf8((const char*)data);
-                        if (data)
-                            XFree(data);
-                        if (wmName == QLatin1String("MCompositor"))
-                            X11->desktopEnvironment = DE_MAEMO6;
+                    if (windowManagerWindow != XNone) {
+                        Atom utf8atom = ATOM(UTF8_STRING);
+                        if (XGetWindowProperty(QX11Info::display(), windowManagerWindow, ATOM(_NET_WM_NAME),
+                                               0, 1024, False, utf8atom, &type,
+                                               &format, &length, &after, &data) == Success) {
+                            if (type == utf8atom && format == 8) {
+                                if (qstrcmp((const char *)data, "MCompositor") == 0)
+                                    X11->desktopEnvironment = DE_MEEGO_COMPOSITOR;
+                            }
+                        }
                     }
                 }
             }
