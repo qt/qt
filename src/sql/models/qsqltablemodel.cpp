@@ -425,6 +425,10 @@ QVariant QSqlTableModel::data(const QModelIndex &index, int role) const
     if (!index.isValid() || (role != Qt::DisplayRole && role != Qt::EditRole))
         return QVariant();
 
+    // Problem.. we need to use QSQM::indexInQuery to handle inserted columns
+    // but inserted rows we need to handle
+    // and indexInQuery is not virtual (grrr) so any values we pass to QSQM need
+    // to handle the insertedRows
     QModelIndex item = indexInQuery(index);
 
     switch (d->strategy) {
@@ -452,7 +456,9 @@ QVariant QSqlTableModel::data(const QModelIndex &index, int role) const
             return var;
         break; }
     }
-    return QSqlQueryModel::data(item, role);
+
+    // We need to handle row mapping here, but not column mapping
+    return QSqlQueryModel::data(index.sibling(item.row(), index.column()), role);
 }
 
 /*!
@@ -1230,7 +1236,7 @@ int QSqlTableModel::rowCount(const QModelIndex &parent) const
 QModelIndex QSqlTableModel::indexInQuery(const QModelIndex &item) const
 {
     Q_D(const QSqlTableModel);
-    const QModelIndex it = QSqlQueryModel::indexInQuery(item);
+    const QModelIndex it = QSqlQueryModel::indexInQuery(item); // this adjusts columns only
     if (d->strategy == OnManualSubmit) {
         int rowOffset = 0;
         QSqlTableModelPrivate::CacheMap::ConstIterator i = d->cache.constBegin();
