@@ -87,14 +87,18 @@ SOURCES += \
                 painting/qpaintengine_raster.cpp        \
                 painting/qdrawhelper.cpp                \
                 painting/qimagescale.cpp                \
-                painting/qgrayraster.c
+                painting/qgrayraster.c                  \
+                painting/qpaintengine_blitter.cpp       \
+                painting/qblittable.cpp                 \
 
         HEADERS +=                                      \
                 painting/qpaintengine_raster_p.h        \
                 painting/qdrawhelper_p.h                \
                 painting/qblendfunctions_p.h            \
                 painting/qrasterdefs_p.h                \
-                painting/qgrayraster_p.h
+                painting/qgrayraster_p.h                \
+                painting/qpaintengine_blitter_p.h       \
+                painting/qblittable_p.h                 \
 
 win32 {
         HEADERS += painting/qprintengine_win_p.h
@@ -115,20 +119,20 @@ embedded {
     SOURCES += \
         painting/qgraphicssystem_qws.cpp \
 
-} else {
+} else: if(!qpa) {
     HEADERS += \
         painting/qgraphicssystem_raster_p.h \
         painting/qgraphicssystem_runtime_p.h \
         painting/qgraphicssystemfactory_p.h \
         painting/qgraphicssystemplugin_p.h \
-        painting/qwindowsurface_raster_p.h \
+        painting/qwindowsurface_raster_p.h
 
     SOURCES += \
         painting/qgraphicssystem_raster.cpp \
         painting/qgraphicssystem_runtime.cpp \
         painting/qgraphicssystemfactory.cpp \
         painting/qgraphicssystemplugin.cpp \
-        painting/qwindowsurface_raster.cpp \
+        painting/qwindowsurface_raster.cpp
 }
 
 unix:x11 {
@@ -141,7 +145,7 @@ unix:x11 {
                 painting/qpaintengine_x11.cpp
 }
 
-!embedded:!x11:mac {
+!embedded:!qpa:!x11:mac {
         HEADERS += \
                 painting/qpaintengine_mac_p.h \
                 painting/qgraphicssystem_mac_p.h \
@@ -157,14 +161,14 @@ unix:x11 {
                 painting/qprintengine_mac.mm \
 }
 
-unix:!mac:!symbian {
+unix:!mac:!symbian|qpa {
         HEADERS += \
                 painting/qprinterinfo_unix_p.h
         SOURCES += \
                 painting/qprinterinfo_unix.cpp
 }
 
-win32|x11|mac|embedded|symbian {
+win32|x11|mac|embedded|qpa|symbian {
         SOURCES += painting/qbackingstore.cpp
         HEADERS += painting/qbackingstore_p.h
 }
@@ -181,6 +185,12 @@ embedded {
                 painting/qpaintdevice_qws.cpp
 }
 
+qpa {
+        SOURCES += \
+                painting/qcolormap_qpa.cpp \
+                painting/qpaintdevice_qpa.cpp
+}
+
 symbian {
         SOURCES += \
 				painting/qpaintengine_s60.cpp \
@@ -191,7 +201,7 @@ symbian {
                 painting/qpaintengine_s60_p.h
 }
 
-x11|embedded {
+x11|embedded|qpa {
         contains(QT_CONFIG,qtopia) {
             DEFINES += QT_NO_CUPS QT_NO_LPR
         } else {
@@ -221,7 +231,7 @@ x11 {
         SOURCES += painting/qwindowsurface_x11.cpp
 }
 
-mac {
+!embedded:!qpa:mac {
         HEADERS += painting/qwindowsurface_mac_p.h
         SOURCES += painting/qwindowsurface_mac.cpp
 }

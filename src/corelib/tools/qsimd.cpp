@@ -72,7 +72,12 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined (Q_OS_WINCE)
+#if defined (Q_OS_NACL)
+static inline uint detectProcessorFeatures()
+{
+    return 0;
+}
+#elif defined (Q_OS_WINCE)
 static inline uint detectProcessorFeatures()
 {
     uint features = 0;

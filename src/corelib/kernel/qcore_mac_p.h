@@ -68,7 +68,15 @@
 #  undef qDebug
 #endif
 
+#if defined(QT_BUILD_QMAKE) || defined(QT_BOOTSTRAPPED)
 #include <ApplicationServices/ApplicationServices.h>
+#else
+#include <CoreFoundation/CoreFoundation.h>
+#endif
+
+#ifndef QT_NO_CORESERVICES
+#include <CoreServices/CoreServices.h>
+#endif
 
 #undef DEBUG
 #ifdef OLD_DEBUG

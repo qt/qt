@@ -219,6 +219,7 @@ private slots:
     void getSetScriptClass();
     void call();
     void construct();
+    void construct_constructorThrowsPrimitive();
     void castToPointer();
     void prettyPrinter_data();
     void prettyPrinter();

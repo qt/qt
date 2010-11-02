@@ -1,7 +1,9 @@
 import QtQuick 1.0
-import org.webkit 1.0
+import QtWebKit 1.0
 
 WebView {
+    property string skip: "WebView tests not counting until resources allocated to WebView maintenance"
+    /*
     width: 200 * zoomFactor
     height: 250 * zoomFactor
     scale: 1/zoomFactor
@@ -13,4 +15,5 @@ WebView {
         NumberAnimation { from: 1; to: 5; duration: 2000 }
         NumberAnimation { from: 5; to: 1; duration: 2000 }
     }
+    */
 }

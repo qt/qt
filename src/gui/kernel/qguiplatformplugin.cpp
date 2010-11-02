@@ -152,7 +152,7 @@ QString QGuiPlatformPlugin::styleName()
     return QLatin1String("Windows");                    // default style for Symbian without S60
 #elif defined(Q_WS_X11) && defined(Q_OS_IRIX)
     return QLatin1String("SGI");                        // default style for X11 on IRIX
-#elif defined(Q_WS_QWS)
+#elif defined(Q_WS_QWS) || defined(Q_WS_QPA)
     return QLatin1String("Plastique");                  // default style for X11 and small devices
 #elif defined(Q_WS_MAC)
     return QLatin1String("Macintosh");              // default style for all Mac's

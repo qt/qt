@@ -88,6 +88,8 @@ QT_BEGIN_HEADER
 #  include "QtCore/qatomic_sh.h"
 #elif defined(QT_ARCH_SH4A)
 #  include "QtCore/qatomic_sh4a.h"
+#elif defined(QT_ARCH_NACL)
+#  include "QtCore/qatomic_generic.h"
 #else
 #  error "Qt has not been ported to this architecture"
 #endif

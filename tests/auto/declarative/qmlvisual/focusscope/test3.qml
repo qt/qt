@@ -1,9 +1,14 @@
 import QtQuick 1.0
 
+/*
+    Currently selected element should be red
+    Pressing "9" should print the number of the currently selected item
+    Be sure to scroll all the way to the right, pause, and then all the way to the left
+*/
 Rectangle {
     color: "white"
-    width: 800
-    height: 600
+    width: 400
+    height: 100
 
     ListModel {
         id: model
@@ -45,8 +50,4 @@ Rectangle {
     }
 
 
-    Text {
-        y: 100; x: 50
-        text: "Currently selected element should be red\nPressing \"9\" should print the number of the currently selected item\nBe sure to scroll all the way to the right, pause, and then all the way to the left."
-    }
 }

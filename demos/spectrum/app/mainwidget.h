@@ -80,21 +80,21 @@ public slots:
                          const FrequencySpectrum &spectrum);
     void infoMessage(const QString &message, int timeoutMs);
     void errorMessage(const QString &heading, const QString &detail);
-    void positionChanged(qint64 position);
-    void bufferDurationChanged(qint64 duration);
+    void audioPositionChanged(qint64 position);
+    void bufferLengthChanged(qint64 length);
 
 private slots:
     void showFileDialog();
     void showSettingsDialog();
     void showToneGeneratorDialog();
     void initializeRecord();
-    void dataDurationChanged(qint64 duration);
+    void updateModeMenu();
+    void updateButtonStates();
 
 private:
     void createUi();
     void createMenus();
     void connectUi();
-    void updateButtonStates();
     void reset();
 
     enum Mode {
@@ -111,7 +111,9 @@ private:
 
     Engine*                 m_engine;
 
+#ifndef DISABLE_WAVEFORM
     Waveform*               m_waveform;
+#endif
     ProgressBar*            m_progressBar;
     Spectrograph*           m_spectrograph;
     LevelMeter*             m_levelMeter;

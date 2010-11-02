@@ -108,43 +108,22 @@ public:
     QNetworkProxy transparentProxy() const;
 #endif
 
-    //enable encryption
-    void enableEncryption();
     bool isEncrypted() const;
-
-    //authentication parameters
-    void setProxyAuthentication(QAuthenticator *authenticator);
-    void setAuthentication(const QString &domain, QAuthenticator *authenticator);
 
 #ifndef QT_NO_OPENSSL
     void setSslConfiguration(const QSslConfiguration &config);
     void ignoreSslErrors(int channel = -1);
     void ignoreSslErrors(const QList<QSslError> &errors, int channel = -1);
-
-Q_SIGNALS:
-    void sslErrors(const QList<QSslError> &errors);
 #endif
-
-Q_SIGNALS:
-#ifndef QT_NO_NETWORKPROXY
-    //cannot be used with queued connection.
-    void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator,
-                                     const QHttpNetworkConnection *connection = 0);
-#endif
-    void authenticationRequired(const QHttpNetworkRequest &request, QAuthenticator *authenticator,
-                                const QHttpNetworkConnection *connection = 0);
-    void cacheCredentials(const QHttpNetworkRequest &request, QAuthenticator *authenticator,
-                                const QHttpNetworkConnection *connection = 0);
-    void error(QNetworkReply::NetworkError errorCode, const QString &detail = QString());
 
 private:
     Q_DECLARE_PRIVATE(QHttpNetworkConnection)
     Q_DISABLE_COPY(QHttpNetworkConnection)
     friend class QHttpNetworkReply;
+    friend class QHttpNetworkReplyPrivate;
     friend class QHttpNetworkConnectionChannel;
 
     Q_PRIVATE_SLOT(d_func(), void _q_startNextRequest())
-    Q_PRIVATE_SLOT(d_func(), void _q_restartAuthPendingRequests())
 };
 
 
@@ -160,10 +139,19 @@ public:
     static const int defaultPipelineLength;
     static const int defaultRePipelineLength;
 
+    enum ConnectionState {
+        RunningState = 0,
+        PausedState = 1,
+    };
+
     QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt);
     QHttpNetworkConnectionPrivate(quint16 channelCount, const QString &hostName, quint16 port, bool encrypt);
     ~QHttpNetworkConnectionPrivate();
     void init();
+
+    void pauseConnection();
+    void resumeConnection();
+    ConnectionState state;
 
     enum { ChunkSize = 4096 };
 
@@ -184,7 +172,6 @@ public:
 
     // private slots
     void _q_startNextRequest(); // send the next request from the queue
-    void _q_restartAuthPendingRequests(); // send the currently blocked request
 
     void createAuthorization(QAbstractSocket *socket, QHttpNetworkRequest &request);
 
@@ -202,9 +189,6 @@ public:
 
     const int channelCount;
     QHttpNetworkConnectionChannel *channels; // parallel connections to the server
-
-    bool pendingAuthSignal; // there is an incomplete authentication signal
-    bool pendingProxyAuthSignal; // there is an incomplete proxy authentication signal
 
     qint64 uncompressedBytesAvailable(const QHttpNetworkReply &reply) const;
     qint64 uncompressedBytesAvailableNextBlock(const QHttpNetworkReply &reply) const;

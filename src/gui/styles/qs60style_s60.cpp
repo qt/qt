@@ -49,6 +49,10 @@
 #include "private/qcore_symbian_p.h"
 #include "qapplication.h"
 
+#include "qpluginloader.h"
+#include "qlibraryinfo.h"
+#include "private/qs60style_feedbackinterface_p.h"
+
 #include <w32std.h>
 #include <AknsConstants.h>
 #include <aknconsts.h>
@@ -1143,13 +1147,25 @@ void QS60StylePrivate::setActiveLayout()
 
 Q_GLOBAL_STATIC(QList<QS60StyleAnimation *>, m_animations)
 
-QS60StylePrivate::QS60StylePrivate()
+QS60StylePrivate::QS60StylePrivate() : m_feedbackPlugin(0)
 {
     //Animation defaults need to be created when style is instantiated
     QS60StyleAnimation* progressBarAnimation = new QS60StyleAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim, 7, 100);
     m_animations()->append(progressBarAnimation);
     // No need to set active layout, if dynamic metrics API is available
     setActiveLayout();
+
+    //Tactile feedback plugin is only available for touch devices.
+    if (isTouchSupported()) {
+        QString pluginsPath = QLibraryInfo::location(QLibraryInfo::PluginsPath);
+        pluginsPath += QLatin1String("/feedback/qtactilefeedback.dll");
+
+        // Create plugin loader
+        QPluginLoader pluginLoader(pluginsPath);
+        // Load plugin and store pointer to the plugin implementation
+        if (pluginLoader.load())
+            m_feedbackPlugin = qobject_cast<TactileFeedbackInterface*>(pluginLoader.instance());
+    }
 }
 
 void QS60StylePrivate::removeAnimations()
@@ -1437,6 +1453,12 @@ void QS60StylePrivate::stopAnimation(QS60StyleEnums::SkinParts animationPart)
         }
         animation->resetToDefaults();
     }
+}
+
+void QS60StylePrivate::touchFeedback(QEvent *event, const QWidget *widget)
+{
+    if (m_feedbackPlugin)
+        m_feedbackPlugin->touchFeedback(event, widget);
 }
 
 QVariant QS60StyleModeSpecifics::themeDefinition(

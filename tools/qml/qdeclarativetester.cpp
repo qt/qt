@@ -52,6 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
+extern Q_GUI_EXPORT bool qt_applefontsmoothing_enabled;
 
 QDeclarativeTester::QDeclarativeTester(const QString &script, QDeclarativeViewer::ScriptOptions opts, 
                      QDeclarativeView *parent)
@@ -136,8 +137,25 @@ void QDeclarativeTester::imagefailure()
 {
     hasFailed = true;
 
-    if (options & QDeclarativeViewer::ExitOnFailure)
-        exit(-1);
+    if (options & QDeclarativeViewer::ExitOnFailure){
+        testSkip();
+        exit(hasFailed?-1:0);
+    }
+}
+
+void QDeclarativeTester::testSkip()
+{
+    if (options & QDeclarativeViewer::TestSkipProperty){
+        QString e = m_view->rootObject()->property("skip").toString();
+        if (!e.isEmpty()) {
+            if(hasFailed){
+                qWarning() << "Test failed, but skipping it: " << e;
+            }else{
+                qWarning() << "Test skipped: " << e;
+            }
+            hasFailed = 0;
+        }
+    }
 }
 
 void QDeclarativeTester::complete()
@@ -149,7 +167,10 @@ void QDeclarativeTester::complete()
             hasFailed = true;
         }
     }
-    if (options & QDeclarativeViewer::ExitOnComplete) 
+
+
+    testSkip();
+    if (options & QDeclarativeViewer::ExitOnComplete)
         QApplication::exit(hasFailed?-1:0);
 
     if (hasCompleted)
@@ -247,7 +268,14 @@ void QDeclarativeTester::updateCurrentTime(int msec)
 
     if (options & QDeclarativeViewer::TestImages) {
         img.fill(qRgb(255,255,255));
+#ifdef Q_WS_MAC
+        bool oldSmooth = qt_applefontsmoothing_enabled;
+        qt_applefontsmoothing_enabled = false;
+#endif
         QPainter p(&img);
+#ifdef Q_WS_MAC
+        qt_applefontsmoothing_enabled = oldSmooth;
+#endif
         m_view->render(&p);
     }
 

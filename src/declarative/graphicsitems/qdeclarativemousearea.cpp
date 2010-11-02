@@ -566,7 +566,8 @@ void QDeclarativeMouseArea::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *even
     if (!d->absorb) {
         QDeclarativeItem::mouseDoubleClickEvent(event);
     } else {
-        d->doubleClick = true;
+        if (d->isDoubleClickConnected())
+            d->doubleClick = true;
         d->saveEvent(event);
         QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, true, false);
         me.setAccepted(d->isDoubleClickConnected());

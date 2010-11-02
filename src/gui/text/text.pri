@@ -25,7 +25,7 @@ HEADERS += \
 	text/qabstracttextdocumentlayout.h \
 	text/qtextdocumentlayout_p.h \
 	text/qtextcursor.h \
-	text/qtextcursor_p.h \
+        text/qtextcursor_p.h \
 	text/qtextdocumentfragment.h \
 	text/qtextdocumentfragment_p.h \
 	text/qtextimagehandler_p.h \
@@ -92,7 +92,7 @@ unix:x11 {
 		text/qfontengine_ft.cpp
 }
 
-!embedded:!x11:mac {
+!embedded:!qpa:!x11:mac {
 	SOURCES += \
 		text/qfont_mac.cpp
         OBJECTIVE_SOURCES += text/qfontengine_mac.mm
@@ -111,6 +111,19 @@ embedded {
 		text/qabstractfontengine_qws.h \
 		text/qabstractfontengine_p.h
 	DEFINES += QT_NO_FONTCONFIG
+}
+
+qpa {
+	SOURCES += \
+                text/qfont_qpa.cpp \
+                text/qfontengine_qpa.cpp \
+                text/qplatformfontdatabase_qpa.cpp
+
+	HEADERS += \
+                text/qplatformfontdatabase_qpa.h
+
+	DEFINES += QT_NO_FONTCONFIG
+        DEFINES += QT_NO_FREETYPE
 }
 
 symbian {
@@ -132,6 +145,7 @@ symbian {
 	}
 }
 
+!qpa {
 contains(QT_CONFIG, freetype) {
     SOURCES += \
 	../3rdparty/freetype/src/base/ftbase.c \
@@ -205,6 +219,7 @@ contains(QT_CONFIG, freetype) {
 contains(QT_CONFIG, fontconfig) {
     CONFIG += opentype
 }
+}#!qpa
 
 DEFINES += QT_NO_OPENTYPE
 INCLUDEPATH += ../3rdparty/harfbuzz/src

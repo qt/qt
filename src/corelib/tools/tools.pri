@@ -83,7 +83,7 @@ SOURCES += \
 
 symbian:SOURCES+=tools/qlocale_symbian.cpp
 
-mac:SOURCES += tools/qelapsedtimer_mac.cpp
+!nacl:mac:SOURCES += tools/qelapsedtimer_mac.cpp
 else:symbian:SOURCES += tools/qelapsedtimer_symbian.cpp
 else:unix:SOURCES += tools/qelapsedtimer_unix.cpp
 else:win32:SOURCES += tools/qelapsedtimer_win.cpp
