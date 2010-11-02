@@ -381,8 +381,8 @@ void tst_QScriptValue::toString_old()
     QCOMPARE(qscriptvalue_cast<QString>(object), QString("[object Object]"));
 
     QScriptValue fun = eng.newFunction(myFunction);
-    QCOMPARE(fun.toString(), QString("function () {\n    [native code]\n}"));
-    QCOMPARE(qscriptvalue_cast<QString>(fun), QString("function () {\n    [native code]\n}"));
+    QCOMPARE(fun.toString().simplified(), QString("function () { [native code] }"));
+    QCOMPARE(qscriptvalue_cast<QString>(fun).simplified(), QString("function () { [native code] }"));
 
     // toString() that throws exception
     {
@@ -406,7 +406,7 @@ void tst_QScriptValue::toString_old()
             "})()");
         QVERIFY(!eng.hasUncaughtException());
         QVERIFY(objectObject.isObject());
-        QCOMPARE(objectObject.toString(), QString::fromLatin1("TypeError: Function.prototype.toString called on incompatible object"));
+        QCOMPARE(objectObject.toString(), QString::fromLatin1("TypeError: Function.prototype.toString is not generic"));
         QVERIFY(eng.hasUncaughtException());
         eng.clearExceptions();
     }
@@ -2192,7 +2192,7 @@ void tst_QScriptValue::getSetPrototype()
         QCOMPARE(eng.hasUncaughtException(), true);
         QVERIFY(ret.strictlyEquals(eng.uncaughtException()));
         QCOMPARE(ret.isError(), true);
-        QCOMPARE(ret.toString(), QLatin1String("Error: cyclic __proto__ value"));
+        QCOMPARE(ret.toString().toLower(), QString::fromAscii("Error: cyclic __proto__ value").toLower());
     }
     {
         QScriptValue ret = eng.evaluate("p.__proto__ = { }");
@@ -2300,11 +2300,8 @@ void tst_QScriptValue::getSetScriptClass()
         QVERIFY(!eng.hasUncaughtException());
         QVERIFY(obj.isObject());
         QCOMPARE(obj.scriptClass(), (QScriptClass*)0);
-        QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setScriptClass() failed: cannot change class of non-QScriptObject");
         obj.setScriptClass(&testClass);
-        QEXPECT_FAIL("", "With JSC back-end, the class of a plain object created in JS can't be changed", Continue);
         QCOMPARE(obj.scriptClass(), (QScriptClass*)&testClass);
-        QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setScriptClass() failed: cannot change class of non-QScriptObject");
         obj.setScriptClass(0);
         QCOMPARE(obj.scriptClass(), (QScriptClass*)0);
     }
@@ -2328,6 +2325,16 @@ void tst_QScriptValue::getSetScriptClass()
         QVERIFY(obj.isObject());
         QVERIFY(!obj.isQObject());
         QVERIFY(obj.toQObject() == 0);
+    }
+
+    {
+        inv.setScriptClass(&testClass);
+        QCOMPARE(inv.scriptClass(), (QScriptClass*)0);
+        num.setScriptClass(&testClass);
+        QCOMPARE(num.scriptClass(), (QScriptClass*)0);
+        QScriptValue ass(&eng, 12);
+        ass.setScriptClass(&testClass);
+        QCOMPARE(ass.scriptClass(), (QScriptClass*)0);
     }
 }
 
@@ -2372,7 +2379,7 @@ void tst_QScriptValue::call()
 
     // test that call() doesn't construct new objects
     QScriptValue Number = eng.evaluate("Number");
-    QCOMPARE(Object.isFunction(), true);
+    QCOMPARE(Number.isFunction(), true);
     {
         QScriptValueList args;
         args << QScriptValue(&eng, 123);
@@ -2418,6 +2425,10 @@ void tst_QScriptValue::call()
             QScriptValue result = fun.call(eng.undefinedValue(), args);
             QCOMPARE(result.isNumber(), true);
             QCOMPARE(result.toNumber(), 123.0);
+        }
+        {
+            QScriptValue result = fun.call(eng.undefinedValue(), eng.undefinedValue());
+            QCOMPARE(result.isUndefined(), true);
         }
         {
             QScriptValue args = eng.newArray();
@@ -3453,6 +3464,8 @@ void tst_QScriptValue::engineDeleted()
     QVERIFY(v2.isString());
 
     delete eng;
+
+    QSKIP("QSEP should stay alive", SkipAll);
 
     QVERIFY(!v1.isValid());
     QVERIFY(v1.engine() == 0);

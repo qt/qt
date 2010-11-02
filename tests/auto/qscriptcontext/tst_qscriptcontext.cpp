@@ -75,7 +75,14 @@ private slots:
     void backtrace_data();
     void backtrace();
     void scopeChain();
+    void pushScopeEvaluate();
+    void pushScopeCall();
+    void popScopeSimple();
+    void pushAndPopGlobalObjectSimple();
+    void pushAndPopGlobalObject();
+    void pushAndPopIterative();
     void pushAndPopScope();
+    void pushPopScope();
     void getSetActivationObject();
     void inheritActivationAndThisObject();
     void toString();
@@ -931,6 +938,89 @@ void tst_QScriptContext::scopeChain()
     }
 }
 
+void tst_QScriptContext::pushScopeEvaluate()
+{
+    QScriptEngine engine;
+    QScriptValue object = engine.newObject();
+    object.setProperty("foo", 1234);
+    object.setProperty(1, 1234);
+    engine.currentContext()->pushScope(object);
+    object.setProperty("bar", 4321);
+    object.setProperty(2, 4321);
+    QVERIFY(engine.evaluate("foo").equals(1234));
+    QVERIFY(engine.evaluate("bar").equals(4321));
+    QVERIFY(engine.evaluate("this[1]").equals(1234));
+    QVERIFY(engine.evaluate("this[2]").equals(4321));
+}
+
+void tst_QScriptContext::pushScopeCall()
+{
+    QScriptEngine engine;
+    QScriptValue object = engine.newObject();
+    QScriptValue thisObject = engine.newObject();
+    QScriptValue function = engine.evaluate("(function(property){return this[property]; })");
+    QVERIFY(function.isFunction());
+    object.setProperty("foo", 1234);
+    thisObject.setProperty("foo", "foo");
+    engine.currentContext()->pushScope(object);
+    object.setProperty("bar", 4321);
+    thisObject.setProperty("bar", "bar");
+    QVERIFY(!function.call(QScriptValue(), QScriptValueList() << "foo").isValid());
+    QVERIFY(function.call(QScriptValue(), QScriptValueList() << "bar").equals(4321));
+    QVERIFY(function.call(thisObject, QScriptValueList() << "foo").equals("foo"));
+    QVERIFY(function.call(thisObject, QScriptValueList() << "bar").equals("bar"));
+}
+
+void tst_QScriptContext::popScopeSimple()
+{
+    QScriptEngine engine;
+    QScriptValue object = engine.newObject();
+    QScriptValue globalObject = engine.globalObject();
+    engine.currentContext()->pushScope(object);
+    QVERIFY(engine.currentContext()->popScope().strictlyEquals(object));
+    QVERIFY(engine.globalObject().strictlyEquals(globalObject));
+}
+
+void tst_QScriptContext::pushAndPopGlobalObjectSimple()
+{
+    QScriptEngine engine;
+    QScriptValue globalObject = engine.globalObject();
+    engine.currentContext()->pushScope(globalObject);
+    QVERIFY(engine.currentContext()->popScope().strictlyEquals(globalObject));
+    QVERIFY(engine.globalObject().strictlyEquals(globalObject));
+}
+
+void tst_QScriptContext::pushAndPopIterative()
+{
+    QScriptEngine engine;
+    for (uint repeat = 0; repeat < 2; ++repeat) {
+        for (uint i = 1; i < 11; ++i) {
+            QScriptValue object = engine.newObject();
+            object.setProperty("x", i + 10 * repeat);
+            engine.currentContext()->pushScope(object);
+        }
+        for (uint i = 10; i > 0; --i) {
+            QScriptValue object = engine.currentContext()->popScope();
+            QVERIFY(object.property("x").equals(i + 10 * repeat));
+        }
+    }
+}
+
+void tst_QScriptContext::pushAndPopGlobalObject()
+{
+    // Mixing push of a scope and change a global object (white box test)
+    QScriptEngine engine;
+    QScriptValue object = engine.newObject();
+    QScriptValue newGlobalObject = engine.newObject();
+    QScriptValue newGlobalObjectBis = engine.newObject();
+    engine.currentContext()->pushScope(object);
+    engine.setGlobalObject(newGlobalObject);
+    QVERIFY(engine.currentContext()->popScope().strictlyEquals(object));
+    QEXPECT_FAIL("", "FIXME: calling setGlobalObject after pushScope will result in broken scope chain", Abort);
+    QVERIFY(engine.globalObject().strictlyEquals(newGlobalObjectBis));
+    QVERIFY(engine.globalObject().strictlyEquals(newGlobalObject));
+}
+
 void tst_QScriptContext::pushAndPopScope()
 {
     QScriptEngine eng;
@@ -1005,6 +1095,50 @@ void tst_QScriptContext::pushAndPopScope()
     QVERIFY(ctx->scopeChain().isEmpty());
 
     QVERIFY(!ctx->popScope().isValid());
+}
+
+void tst_QScriptContext::pushPopScope()
+{
+    /* This test implements somthing similar to:
+       o = new Object()
+       o.objectProperty = 12345;
+       o.__proto__.prototypeProperty = 54321;
+       with (o) {
+            undefinedProperty = 'a';
+            objectProperty = 'b';
+            prototypeProperty = 'c';
+       }
+    */
+    QScriptEngine engine;
+    QScriptValue object = engine.newObject();
+    QScriptValue prototype = engine.newObject();
+    object.setPrototype(prototype);
+
+    QScriptString objectPropertyName = engine.toStringHandle("objectProperty");
+    QScriptString prototypePropertyName = engine.toStringHandle("prototypeProperty");
+
+    engine.currentContext()->pushScope(object);
+
+    object.setProperty(objectPropertyName, 12345);
+    prototype.setProperty(prototypePropertyName, 54321);
+
+    QVERIFY(object.property(objectPropertyName, QScriptValue::ResolveLocal).isValid());
+    QVERIFY(prototype.property(prototypePropertyName, QScriptValue::ResolveLocal).isValid());
+    QVERIFY(object.property(prototypePropertyName).isValid());
+
+    engine.evaluate("undefinedProperty = 'a'");
+    engine.evaluate("objectProperty = 'b'");
+    // prototypeProperty property exist only in prototype chain of the object, then an assign to the
+    // property should create a new property, owned byt the object.
+    engine.evaluate("prototypeProperty = 'c'");
+
+    engine.currentContext()->popScope();
+
+    QCOMPARE(object.property(objectPropertyName, QScriptValue::ResolveLocal).toString(), QString::fromLatin1("b"));
+    QCOMPARE(object.property(prototypePropertyName, QScriptValue::ResolveLocal).toString(), QString::fromLatin1("c"));
+    QCOMPARE(prototype.property(prototypePropertyName, QScriptValue::ResolveLocal).toInt32(), 54321);
+    QVERIFY(!object.property("undefinedProperty").isValid());
+    QCOMPARE(engine.globalObject().property("undefinedProperty").toString(), QString::fromLatin1("a"));
 }
 
 static QScriptValue get_activationObject(QScriptContext *ctx, QScriptEngine *)
