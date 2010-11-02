@@ -68,7 +68,7 @@
 
 // Writes(ads) a new value to the diffusion accumulator. accumulator is a short.
 // x, y is a position in the accumulation buffer. y can be 0 or 1 -- we operate on two lines at time.
-#define ACCUMULATE(accumulator, x, y, width, v) if (x < width && x > 0) accumulator[(y * width) + x] += v
+#define ACCUMULATE(accumulator, x, y, width, v) if (x < width && x >= 0) accumulator[(y * width) + x] += v
 
 // Clamps a value to be in 0..255 range.
 #define CLAMP_256(v) if (v > 255) v = 255; if (v < 0) v = 0;
@@ -110,18 +110,18 @@ unsigned short* convertRGB32_to_RGB565(const unsigned char *in, int width, int h
     // Produce the conversion lookup tables.
     for (i = 0; i < 256; i++) {
         lookup_8bit_to_5bit[i] = round(i / 8.0);
-        if (lookup_8bit_to_5bit[i] > 31)
-            lookup_8bit_to_5bit[i] -= 1;
 
         // Before bitshifts: (i * 8) - (... * 8 * 8)
         lookup_8bit_to_5bit_diff[i] = (i << 3) - (lookup_8bit_to_5bit[i] << 6);
+        if (lookup_8bit_to_5bit[i] > 31)
+            lookup_8bit_to_5bit[i] -= 1;
 
         lookup_8bit_to_6bit[i] = round(i / 4.0);
-        if (lookup_8bit_to_6bit[i] > 63)
-            lookup_8bit_to_6bit[i] -= 1;
 
         // Before bitshifts: (i * 8) - (... * 4 * 8)
         lookup_8bit_to_6bit_diff[i] = (i << 3) - (lookup_8bit_to_6bit[i] << 5);
+        if (lookup_8bit_to_6bit[i] > 63)
+            lookup_8bit_to_6bit[i] -= 1;
     }
 
     // Clear the accumulators
@@ -221,11 +221,11 @@ unsigned short* convertARGB32_to_RGBA4444(const unsigned char *in, int width, in
     // Produce the conversion lookup tables.
     for (i = 0; i < 256; i++) {
         lookup_8bit_to_4bit[i] = round(i / 16.0);
-        if (lookup_8bit_to_4bit[i] > 15)
-            lookup_8bit_to_4bit[i] -= 1;
-
         // Before bitshifts: (i * 8) - (... * 16 * 8)
         lookup_8bit_to_4bit_diff[i] = (i << 3) - (lookup_8bit_to_4bit[i] << 7);
+
+        if (lookup_8bit_to_4bit[i] > 15)
+            lookup_8bit_to_4bit[i] = 15;
     }
 
     // Clear the accumulators
