@@ -612,7 +612,7 @@ static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiCon
                     } else {
                         eor = current;
                     }
-                    dir = QChar::DirON; status.eor = QChar::DirAN;
+                    dir = QChar::DirAN; status.eor = QChar::DirAN;
                     break;
                 case QChar::DirCS:
                     if(status.eor == QChar::DirAN) {
