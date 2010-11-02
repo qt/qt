@@ -49,17 +49,17 @@ QT_BEGIN_NAMESPACE
 extern bool qt_script_isJITEnabled();
 QT_END_NAMESPACE
 
-tst_QScriptValue::tst_QScriptValue()
+tst_QScriptValueGenerated::tst_QScriptValueGenerated()
     : engine(0)
 {
 }
 
-tst_QScriptValue::~tst_QScriptValue()
+tst_QScriptValueGenerated::~tst_QScriptValueGenerated()
 {
     delete engine;
 }
 
-void tst_QScriptValue::dataHelper(InitDataFunction init, DefineDataFunction define)
+void tst_QScriptValueGenerated::dataHelper(InitDataFunction init, DefineDataFunction define)
 {
     QTest::addColumn<QString>("__expression__");
     (this->*init)();
@@ -71,30 +71,30 @@ void tst_QScriptValue::dataHelper(InitDataFunction init, DefineDataFunction defi
     m_currentExpression = QString();
 }
 
-QTestData &tst_QScriptValue::newRow(const char *tag)
+QTestData &tst_QScriptValueGenerated::newRow(const char *tag)
 {
     return QTest::newRow(tag) << m_currentExpression;
 }
 
-void tst_QScriptValue::testHelper(TestFunction fun)
+void tst_QScriptValueGenerated::testHelper(TestFunction fun)
 {
     QFETCH(QString, __expression__);
     QScriptValue value = m_values.value(__expression__);
     (this->*fun)(__expression__.toLatin1(), value);
 }
 
-void tst_QScriptValue::assignAndCopyConstruct_initData()
+void tst_QScriptValueGenerated::assignAndCopyConstruct_initData()
 {
     QTest::addColumn<int>("dummy");
     initScriptValues();
 }
 
-void tst_QScriptValue::assignAndCopyConstruct_makeData(const char *expr)
+void tst_QScriptValueGenerated::assignAndCopyConstruct_makeData(const char *expr)
 {
     newRow(expr) << 0;
 }
 
-void tst_QScriptValue::assignAndCopyConstruct_test(const char *, const QScriptValue &value)
+void tst_QScriptValueGenerated::assignAndCopyConstruct_test(const char *, const QScriptValue &value)
 {
     QScriptValue copy(value);
     QCOMPARE(copy.strictlyEquals(value), !value.isNumber() || !qIsNaN(value.toNumber()));
@@ -113,4 +113,4 @@ void tst_QScriptValue::assignAndCopyConstruct_test(const char *, const QScriptVa
 
 DEFINE_TEST_FUNCTION(assignAndCopyConstruct)
 
-QTEST_MAIN(tst_QScriptValue)
+QTEST_MAIN(tst_QScriptValueGenerated)

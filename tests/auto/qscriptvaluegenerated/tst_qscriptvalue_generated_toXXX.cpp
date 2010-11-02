@@ -47,7 +47,7 @@
 
 
 
-void tst_QScriptValue::toString_initData()
+void tst_QScriptValueGenerated::toString_initData()
 {
     QTest::addColumn<QString>("expected");
     initScriptValues();
@@ -270,7 +270,7 @@ static QString toString_valueArray [] = {
     "123", "false", 
     "null", "QScriptEngine(name = \"\")", };
 
-void tst_QScriptValue::toString_makeData(const char* expr)
+void tst_QScriptValueGenerated::toString_makeData(const char* expr)
 {
     static QHash<QString, QString> toString;
     if (toString.isEmpty()) {
@@ -281,7 +281,7 @@ void tst_QScriptValue::toString_makeData(const char* expr)
     newRow(expr) << toString.value(expr);
 }
 
-void tst_QScriptValue::toString_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::toString_test(const char*, const QScriptValue& value)
 {
     QFETCH(QString, expected);
     QCOMPARE(value.toString(), expected);
@@ -291,7 +291,7 @@ void tst_QScriptValue::toString_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(toString)
 
 
-void tst_QScriptValue::toNumber_initData()
+void tst_QScriptValueGenerated::toNumber_initData()
 {
     QTest::addColumn<qsreal>("expected");
     initScriptValues();
@@ -456,7 +456,7 @@ static qsreal toNumber_valueArray [] = {
     65536, 65537, qQNaN(), qInf(), qInf(), qQNaN(), 0, 0, 123, 12.4, 
     0, qQNaN(), qQNaN(), 0, qQNaN(), qQNaN(), qQNaN(), qQNaN(), 123, 0, 
     0, qQNaN(), };
-void tst_QScriptValue::toNumber_makeData(const char* expr)
+void tst_QScriptValueGenerated::toNumber_makeData(const char* expr)
 {
     static QHash<QString, qsreal> toNumber;
     if (toNumber.isEmpty()) {
@@ -467,7 +467,7 @@ void tst_QScriptValue::toNumber_makeData(const char* expr)
     newRow(expr) << toNumber.value(expr);
 }
 
-void tst_QScriptValue::toNumber_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::toNumber_test(const char*, const QScriptValue& value)
 {
     QFETCH(qsreal, expected);
     if (qIsNaN(expected)) {
@@ -486,7 +486,7 @@ void tst_QScriptValue::toNumber_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(toNumber)
 
 
-void tst_QScriptValue::toBool_initData()
+void tst_QScriptValueGenerated::toBool_initData()
 {
     QTest::addColumn<bool>("expected");
     initScriptValues();
@@ -709,7 +709,7 @@ static bool toBool_valueArray [] = {
     true, true, 
     false, true, };
 
-void tst_QScriptValue::toBool_makeData(const char* expr)
+void tst_QScriptValueGenerated::toBool_makeData(const char* expr)
 {
     static QHash<QString, bool> toBool;
     if (toBool.isEmpty()) {
@@ -720,7 +720,7 @@ void tst_QScriptValue::toBool_makeData(const char* expr)
     newRow(expr) << toBool.value(expr);
 }
 
-void tst_QScriptValue::toBool_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::toBool_test(const char*, const QScriptValue& value)
 {
     QFETCH(bool, expected);
     QCOMPARE(value.toBool(), expected);
@@ -730,7 +730,7 @@ void tst_QScriptValue::toBool_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(toBool)
 
 
-void tst_QScriptValue::toBoolean_initData()
+void tst_QScriptValueGenerated::toBoolean_initData()
 {
     QTest::addColumn<bool>("expected");
     initScriptValues();
@@ -953,7 +953,7 @@ static bool toBoolean_valueArray [] = {
     true, true, 
     false, true, };
 
-void tst_QScriptValue::toBoolean_makeData(const char* expr)
+void tst_QScriptValueGenerated::toBoolean_makeData(const char* expr)
 {
     static QHash<QString, bool> toBoolean;
     if (toBoolean.isEmpty()) {
@@ -964,7 +964,7 @@ void tst_QScriptValue::toBoolean_makeData(const char* expr)
     newRow(expr) << toBoolean.value(expr);
 }
 
-void tst_QScriptValue::toBoolean_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::toBoolean_test(const char*, const QScriptValue& value)
 {
     QFETCH(bool, expected);
     QCOMPARE(value.toBoolean(), expected);
@@ -974,7 +974,7 @@ void tst_QScriptValue::toBoolean_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(toBoolean)
 
 
-void tst_QScriptValue::toInteger_initData()
+void tst_QScriptValueGenerated::toInteger_initData()
 {
     QTest::addColumn<qsreal>("expected");
     initScriptValues();
@@ -1139,7 +1139,7 @@ static qsreal toInteger_valueArray [] = {
     65536, 65537, 0, qInf(), qInf(), 0, 0, 0, 123, 12, 
     0, 0, 0, 0, 0, 0, 0, 0, 123, 0, 
     0, 0, };
-void tst_QScriptValue::toInteger_makeData(const char* expr)
+void tst_QScriptValueGenerated::toInteger_makeData(const char* expr)
 {
     static QHash<QString, qsreal> toInteger;
     if (toInteger.isEmpty()) {
@@ -1150,7 +1150,7 @@ void tst_QScriptValue::toInteger_makeData(const char* expr)
     newRow(expr) << toInteger.value(expr);
 }
 
-void tst_QScriptValue::toInteger_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::toInteger_test(const char*, const QScriptValue& value)
 {
     QFETCH(qsreal, expected);
     if (qIsInf(expected)) {
@@ -1165,7 +1165,7 @@ void tst_QScriptValue::toInteger_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(toInteger)
 
 
-void tst_QScriptValue::toInt32_initData()
+void tst_QScriptValueGenerated::toInt32_initData()
 {
     QTest::addColumn<qint32>("expected");
     initScriptValues();
@@ -1388,7 +1388,7 @@ static qint32 toInt32_valueArray [] = {
     123, 0, 
     0, 0, };
 
-void tst_QScriptValue::toInt32_makeData(const char* expr)
+void tst_QScriptValueGenerated::toInt32_makeData(const char* expr)
 {
     static QHash<QString, qint32> toInt32;
     if (toInt32.isEmpty()) {
@@ -1399,7 +1399,7 @@ void tst_QScriptValue::toInt32_makeData(const char* expr)
     newRow(expr) << toInt32.value(expr);
 }
 
-void tst_QScriptValue::toInt32_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::toInt32_test(const char*, const QScriptValue& value)
 {
     QFETCH(qint32, expected);
     QCOMPARE(value.toInt32(), expected);
@@ -1409,7 +1409,7 @@ void tst_QScriptValue::toInt32_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(toInt32)
 
 
-void tst_QScriptValue::toUInt32_initData()
+void tst_QScriptValueGenerated::toUInt32_initData()
 {
     QTest::addColumn<quint32>("expected");
     initScriptValues();
@@ -1632,7 +1632,7 @@ static quint32 toUInt32_valueArray [] = {
     123, 0, 
     0, 0, };
 
-void tst_QScriptValue::toUInt32_makeData(const char* expr)
+void tst_QScriptValueGenerated::toUInt32_makeData(const char* expr)
 {
     static QHash<QString, quint32> toUInt32;
     if (toUInt32.isEmpty()) {
@@ -1643,7 +1643,7 @@ void tst_QScriptValue::toUInt32_makeData(const char* expr)
     newRow(expr) << toUInt32.value(expr);
 }
 
-void tst_QScriptValue::toUInt32_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::toUInt32_test(const char*, const QScriptValue& value)
 {
     QFETCH(quint32, expected);
     QCOMPARE(value.toUInt32(), expected);
@@ -1653,7 +1653,7 @@ void tst_QScriptValue::toUInt32_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(toUInt32)
 
 
-void tst_QScriptValue::toUInt16_initData()
+void tst_QScriptValueGenerated::toUInt16_initData()
 {
     QTest::addColumn<quint16>("expected");
     initScriptValues();
@@ -1876,7 +1876,7 @@ static quint16 toUInt16_valueArray [] = {
     123, 0, 
     0, 0, };
 
-void tst_QScriptValue::toUInt16_makeData(const char* expr)
+void tst_QScriptValueGenerated::toUInt16_makeData(const char* expr)
 {
     static QHash<QString, quint16> toUInt16;
     if (toUInt16.isEmpty()) {
@@ -1887,7 +1887,7 @@ void tst_QScriptValue::toUInt16_makeData(const char* expr)
     newRow(expr) << toUInt16.value(expr);
 }
 
-void tst_QScriptValue::toUInt16_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::toUInt16_test(const char*, const QScriptValue& value)
 {
     QFETCH(quint16, expected);
     QCOMPARE(value.toUInt16(), expected);

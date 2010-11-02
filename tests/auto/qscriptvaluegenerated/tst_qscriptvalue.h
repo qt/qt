@@ -54,13 +54,13 @@
 Q_DECLARE_METATYPE(QVariant)
 Q_DECLARE_METATYPE(QScriptValue)
 
-class tst_QScriptValue : public QObject
+class tst_QScriptValueGenerated : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_QScriptValue();
-    virtual ~tst_QScriptValue();
+    tst_QScriptValueGenerated();
+    virtual ~tst_QScriptValueGenerated();
 
 private slots:
     // Generated test functions
@@ -185,12 +185,12 @@ private slots:
     void qscriptvalue_castquint16();
 
 private:
-    typedef void (tst_QScriptValue::*InitDataFunction)();
-    typedef void (tst_QScriptValue::*DefineDataFunction)(const char *);
+    typedef void (tst_QScriptValueGenerated::*InitDataFunction)();
+    typedef void (tst_QScriptValueGenerated::*DefineDataFunction)(const char *);
     void dataHelper(InitDataFunction init, DefineDataFunction define);
     QTestData &newRow(const char *tag);
 
-    typedef void (tst_QScriptValue::*TestFunction)(const char *, const QScriptValue &);
+    typedef void (tst_QScriptValueGenerated::*TestFunction)(const char *, const QScriptValue &);
     void testHelper(TestFunction fun);
 
     // Generated functions
@@ -364,7 +364,7 @@ private:
 };
 
 #define DEFINE_TEST_FUNCTION(name) \
-void tst_QScriptValue::name##_data() { dataHelper(&tst_QScriptValue::name##_initData, &tst_QScriptValue::name##_makeData); } \
-void tst_QScriptValue::name() { testHelper(&tst_QScriptValue::name##_test); }
+void tst_QScriptValueGenerated::name##_data() { dataHelper(&tst_QScriptValueGenerated::name##_initData, &tst_QScriptValueGenerated::name##_makeData); } \
+void tst_QScriptValueGenerated::name() { testHelper(&tst_QScriptValueGenerated::name##_test); }
 
 #endif
