@@ -214,6 +214,10 @@ void tst_QDoubleValidator::validate_data()
     arabicNum += QChar(1643);
     arabicNum += QChar(1636);
     QTest::newRow("arabic") << "ar" << 0.0 << 20.0 << 2 << arabicNum << ACC << ACC;
+
+    QTest::newRow("data_QTBUG_14935-1") << "de" << 0.0 << 1.0 << 5 << QString("0.31") << ACC << ACC;
+    QTest::newRow("data_QTBUG_14935-2") << "de" << 0.0 << 1000000.0 << 5 << QString("3.123") << ACC << ACC;
+    QTest::newRow("data_QTBUG_14935-3") << "de" << 0.0 << 1000000.0 << 5 << QString("123,345.678") << ACC << ACC;
 }
 
 void tst_QDoubleValidator::validate()
