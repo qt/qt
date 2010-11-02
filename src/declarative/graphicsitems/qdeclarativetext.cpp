@@ -291,30 +291,30 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
     qreal height = 0;
     qreal lineWidth = 0;
 
-    //set manual width
-    if (q->widthValid())
-        lineWidth = q->width();
-
     QTextOption textOption = layout.textOption();
-    textOption.setWrapMode(QTextOption::WrapMode(wrapMode));
+    textOption.setWrapMode(QTextOption::NoWrap);
     textOption.setAlignment(Qt::Alignment(hAlign));
-    layout.setTextOption(textOption);
 
+    // if the item has an explicit width, we set the line width and enable wrapping
+    if (q->widthValid()) {
+        lineWidth = q->width();
+        textOption.setWrapMode(QTextOption::WrapMode(wrapMode));
+    }
+
+    layout.setTextOption(textOption);
     layout.beginLayout();
     while (1) {
         QTextLine line = layout.createLine();
         if (!line.isValid())
             break;
 
-        if (q->widthValid()) {
-            line.setLineWidth(lineWidth);
-            line.setPosition(QPointF(0, height));
-            height += line.height();
-        }
+        line.setLineWidth(lineWidth);
+        line.setPosition(QPointF(0, height));
+        height += line.height();
     }
     layout.endLayout();
 
-    return QSize(qCeil(layout.boundingRect().width()), layout.boundingRect().height());
+    return layout.boundingRect().toAlignedRect().size();
 }
 
 /*!
