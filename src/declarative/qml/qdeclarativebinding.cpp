@@ -49,6 +49,7 @@
 #include "private/qdeclarativedata_p.h"
 #include "private/qdeclarativestringconverters_p.h"
 #include "private/qdeclarativestate_p_p.h"
+#include "private/qdeclarativedebugtrace_p.h"
 
 #include <QVariant>
 #include <QtCore/qdebug.h>
@@ -114,6 +115,19 @@ QDeclarativeProperty QDeclarativeBinding::property() const
    return d->property; 
 }
 
+class QDeclarativeBindingProfiler {
+public:
+    QDeclarativeBindingProfiler()
+    {
+        QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Binding);
+    }
+
+    ~QDeclarativeBindingProfiler()
+    {
+        QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Binding);
+    }
+};
+
 void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
 {
     Q_D(QDeclarativeBinding);
@@ -122,6 +136,7 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
         return;
 
     if (!d->updating) {
+        QDeclarativeBindingProfiler prof;
         d->updating = true;
         bool wasDeleted = false;
         d->deleted = &wasDeleted;

@@ -43,7 +43,7 @@
 #define QDECLARATIVEDEBUGTRACE_P_H
 
 #include <private/qdeclarativedebugservice_p.h>
-#include <QtCore/qelapsedtimer.h>
+#include <private/qperformancetimer_p.h>
 
 QT_BEGIN_HEADER
 
@@ -74,6 +74,7 @@ public:
         Painting,
         Compiling,
         Creating,
+        Binding,
 
         MaximumRangeType
     };
@@ -90,7 +91,7 @@ private:
     void startRangeImpl(RangeType);
     void rangeDataImpl(RangeType, const QUrl &);
     void endRangeImpl(RangeType);
-    QElapsedTimer m_timer;
+    QPerformanceTimer m_timer;
 };
 
 QT_END_NAMESPACE

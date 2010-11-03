@@ -54,6 +54,7 @@
 #include <private/qdeclarativeanchors_p_p.h>
 #include <private/qdeclarativeglobal_p.h>
 #include <private/qdeclarativefastproperties_p.h>
+#include <private/qdeclarativedebugtrace_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -316,7 +317,9 @@ int QDeclarativeCompiledBindingsPrivate::Binding::propertyIndex()
 
 void QDeclarativeCompiledBindingsPrivate::Binding::update(QDeclarativePropertyPrivate::WriteFlags flags)
 {
+    QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Binding);
     parent->run(this, flags);
+    QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Binding);
 }
 
 void QDeclarativeCompiledBindingsPrivate::Binding::destroy()
