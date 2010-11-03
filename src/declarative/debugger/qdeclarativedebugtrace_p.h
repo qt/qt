@@ -86,12 +86,19 @@ public:
     static void endRange(RangeType);
 
     QDeclarativeDebugTrace();
+protected:
+    virtual void messageReceived(const QByteArray &);
 private:
     void addEventImpl(EventType);
     void startRangeImpl(RangeType);
     void rangeDataImpl(RangeType, const QUrl &);
     void endRangeImpl(RangeType);
+    void processMessage(const QByteArray &);
+    void sendMessages();
     QPerformanceTimer m_timer;
+    bool m_enabled;
+    bool m_deferredSend;
+    QList<QByteArray> m_data;
 };
 
 QT_END_NAMESPACE

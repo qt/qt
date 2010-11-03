@@ -43,11 +43,13 @@
 
 #include <QtCore/qdatastream.h>
 #include <QtCore/qurl.h>
+#include <QtCore/qtimer.h>
 
 Q_GLOBAL_STATIC(QDeclarativeDebugTrace, traceInstance);
 
 QDeclarativeDebugTrace::QDeclarativeDebugTrace()
-: QDeclarativeDebugService(QLatin1String("CanvasFrameRate"))
+: QDeclarativeDebugService(QLatin1String("CanvasFrameRate")),
+  m_enabled(false), m_deferredSend(true)
 {
     m_timer.start();
 }
@@ -78,45 +80,80 @@ void QDeclarativeDebugTrace::endRange(RangeType t)
 
 void QDeclarativeDebugTrace::addEventImpl(EventType event)
 {
-    if (status() != Enabled)
+    if (status() != Enabled || !m_enabled)
         return;
 
     QByteArray data;
     QDataStream ds(&data, QIODevice::WriteOnly);
     ds << m_timer.elapsed() << (int)Event << (int)event;
-    sendMessage(data);
+    processMessage(data);
 }
 
 void QDeclarativeDebugTrace::startRangeImpl(RangeType range)
 {
-    if (status() != Enabled)
+    if (status() != Enabled || !m_enabled)
         return;
 
     QByteArray data;
     QDataStream ds(&data, QIODevice::WriteOnly);
     ds << m_timer.elapsed() << (int)RangeStart << (int)range;
-    sendMessage(data);
+    processMessage(data);
 }
 
 void QDeclarativeDebugTrace::rangeDataImpl(RangeType range, const QUrl &u)
 {
-    if (status() != Enabled)
+    if (status() != Enabled || !m_enabled)
         return;
 
     QByteArray data;
     QDataStream ds(&data, QIODevice::WriteOnly);
     ds << m_timer.elapsed() << (int)RangeData << (int)range << (QString)u.toString();
-    sendMessage(data);
+    processMessage(data);
 }
 
 void QDeclarativeDebugTrace::endRangeImpl(RangeType range)
 {
-    if (status() != Enabled)
+    if (status() != Enabled || !m_enabled)
         return;
 
     QByteArray data;
     QDataStream ds(&data, QIODevice::WriteOnly);
     ds << m_timer.elapsed() << (int)RangeEnd << (int)range;
-    sendMessage(data);
+    processMessage(data);
 }
 
+/*
+    Either send the message directly, or queue up
+    a list of messages to send later (via sendMessages)
+*/
+void QDeclarativeDebugTrace::processMessage(const QByteArray &message)
+{
+    if (m_deferredSend)
+        m_data.append(message);
+    else
+        sendMessage(message);
+}
+
+/*
+    Send the messages queued up by processMessage
+*/
+void QDeclarativeDebugTrace::sendMessages()
+{
+    if (m_deferredSend) {
+        //### this is a suboptimal way to send batched messages
+        for (int i = 0; i < m_data.count(); ++i)
+            sendMessage(m_data.at(i));
+        m_data.clear();
+    }
+}
+
+void QDeclarativeDebugTrace::messageReceived(const QByteArray &message)
+{
+    QByteArray rwData = message;
+    QDataStream stream(&rwData, QIODevice::ReadOnly);
+
+    stream >> m_enabled;
+
+    if (!m_enabled)
+        sendMessages();
+}
