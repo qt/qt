@@ -314,9 +314,14 @@ void tst_QSqlTableModel::setRecord()
             rec.setValue(2, rec.value(2).toString() + 'X');
             QVERIFY(model.setRecord(i, rec));
 
-            if ((QSqlTableModel::EditStrategy)submitpolicy == QSqlTableModel::OnManualSubmit)
+            if ((QSqlTableModel::EditStrategy)submitpolicy == QSqlTableModel::OnManualSubmit) {
+                // setRecord should emit dataChanged() itself for manualSubmit
+                QCOMPARE(spy.count(), 1);
+                QCOMPARE(spy.at(0).count(), 2);
+                QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(0)), model.index(i, 0));
+                QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(1)), model.index(i, rec.count() - 1));
                 QVERIFY(model.submitAll());
-            else if ((QSqlTableModel::EditStrategy)submitpolicy == QSqlTableModel::OnRowChange && i == model.rowCount() -1)
+            } else if ((QSqlTableModel::EditStrategy)submitpolicy == QSqlTableModel::OnRowChange && i == model.rowCount() -1)
                 model.submit();
             else {
                 // dataChanged() is not emitted when submitAll() is called
