@@ -1419,9 +1419,9 @@ QScriptValue QScriptEngine::newVariant(const QScriptValue &object,
 QScriptValue QScriptEngine::globalObject() const
 {
     Q_D(const QScriptEngine);
-    QScriptIsolate api(d_ptr);
+    QScriptIsolate api(d_ptr, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
-    return QScriptValuePrivate::get(new QScriptValuePrivate(const_cast<QScriptEnginePrivate*>(d), d->globalObject()));
+    return QScriptValuePrivate::get(new QScriptValuePrivate(d_ptr.data(), d->globalObject()));
 }
 
 static v8::Handle<v8::Value> QtGlobalObjectNamedPropertyGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info)
