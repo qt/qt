@@ -1338,6 +1338,9 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
             else
                 mrow.rec.setValue(idx, record.value(i));
         }
+
+        if (isOk)
+            emit dataChanged(createIndex(row, 0), createIndex(row, columnCount() - 1));
         return isOk; }
     }
     return false;
