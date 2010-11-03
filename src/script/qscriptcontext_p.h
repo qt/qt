@@ -70,6 +70,8 @@ public:
     inline QScriptPassPointer<QScriptValuePrivate> popScope();
     inline void setInheritedScope(v8::Handle<v8::Context>);
 
+    inline v8::Handle<v8::Value> throwError(Error error, const QString &text);
+
     QScriptContext* q_ptr;
     QScriptEnginePrivate *engine;
     const v8::Arguments *arguments;
@@ -92,22 +94,26 @@ QT_END_INCLUDE_NAMESPACE
 inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args)
 : q_ptr(this), engine(engine), arguments(args), accessorInfo(0), parent(engine->setCurrentQSContext(this))
 {
+    Q_ASSERT(engine);
 }
 
 inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::AccessorInfo *accessor)
 : q_ptr(this), engine(engine), arguments(0), accessorInfo(accessor), parent(engine->setCurrentQSContext(this))
 {
+    Q_ASSERT(engine);
 }
 
 inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, v8::Handle<v8::Context> context)
     : q_ptr(this), engine(engine), arguments(0), accessorInfo(0),
       context(v8::Persistent<v8::Context>::New(context)), parent(engine->setCurrentQSContext(this))
 {
+    Q_ASSERT(engine);
     context->Enter();
 }
 
 QScriptContextPrivate::~QScriptContextPrivate()
 {
+    Q_ASSERT(engine);
     if (!parent)
         return;
     QScriptContextPrivate *old = engine->setCurrentQSContext(parent);
@@ -261,6 +267,35 @@ inline void QScriptContextPrivate::setInheritedScope(v8::Handle<v8::Context> obj
     Q_ASSERT(inheritedScope.IsEmpty());
     inheritedScope = v8::Persistent<v8::Context>::New(object);
 }
+
+v8::Handle<v8::Value> QScriptContextPrivate::throwError(QScriptContext::Error error, const QString& text)
+{
+    v8::Handle<v8::String> message = QScriptConverter::toString(text);
+    v8::Handle<v8::Value> exception;
+    switch (error) {
+        case UnknownError:
+            exception = v8::Exception::Error(message);
+            break;
+        case ReferenceError:
+            exception = v8::Exception::ReferenceError(message);
+            break;
+        case SyntaxError:
+            exception = v8::Exception::SyntaxError(message);
+            break;
+        case TypeError:
+            exception = v8::Exception::TypeError(message);
+            break;
+        case RangeError:
+            exception = v8::Exception::RangeError(message);
+            break;
+        case URIError:
+            //FIXME
+            exception = v8::Exception::Error(message);
+            break;
+    }
+    return v8::ThrowException(exception);
+}
+
 
 QT_END_NAMESPACE
 

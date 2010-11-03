@@ -148,9 +148,11 @@ QScriptContext::QScriptContext()
 */
 QScriptValue QScriptContext::throwValue(const QScriptValue &value)
 {
-    Q_UNUSED(value);
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(QScriptContext);
+    QScriptIsolate api(d->engine);
+    v8::HandleScope handleScope;
+    v8::Handle< v8::Value > exception = QScriptValuePrivate::get(value)->asV8Value(d->engine);
+    return d->engine->scriptValueFromInternal(v8::ThrowException(exception));
 }
 
 /*!
@@ -169,10 +171,10 @@ QScriptValue QScriptContext::throwValue(const QScriptValue &value)
 */
 QScriptValue QScriptContext::throwError(Error error, const QString &text)
 {
-    Q_UNUSED(error);
-    Q_UNUSED(text);
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(QScriptContext);
+    QScriptIsolate api(d->engine);
+    v8::HandleScope handleScope;
+    return d->engine->scriptValueFromInternal(d->throwError(error, text));
 }
 
 /*!
@@ -185,9 +187,10 @@ QScriptValue QScriptContext::throwError(Error error, const QString &text)
 */
 QScriptValue QScriptContext::throwError(const QString &text)
 {
-    Q_UNUSED(text);
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(QScriptContext);
+    QScriptIsolate api(d->engine);
+    v8::HandleScope handleScope;
+    return d->engine->scriptValueFromInternal(d->throwError(UnknownError, text));
 }
 
 /*!
