@@ -76,7 +76,7 @@
 // Converts incoming RGB32 (QImage::Format_RGB32) to RGB565. Returns the newly allocated data.
 unsigned short* convertRGB32_to_RGB565(const unsigned char *in, int width, int height, int stride)
 {
-    // Output line stride. Alligned to 4 bytes.
+    // Output line stride. Aligned to 4 bytes.
     int alignedWidth = width;
     if (alignedWidth % 2 > 0)
         alignedWidth++;
@@ -191,7 +191,7 @@ unsigned short* convertRGB32_to_RGB565(const unsigned char *in, int width, int h
 // The output has each scan line aligned to 4 bytes (as expected by GL by default).
 unsigned short* convertARGB32_to_RGBA4444(const unsigned char *in, int width, int height, int stride)
 {
-    // Output line stride. Alligned to 4 bytes.
+    // Output line stride. Aligned to 4 bytes.
     int alignedWidth = width;
     if (alignedWidth % 2 > 0)
         alignedWidth++;
