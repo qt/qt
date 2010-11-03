@@ -114,7 +114,7 @@ struct QScriptClassObject : QScriptV8ObjectWrapper<QScriptClassObject, &QScriptE
         original = v8::Persistent<v8::Object>::New(o);
     }
 private:
-    Q_DISABLE_COPY(QScriptClassObject);
+    Q_DISABLE_COPY(QScriptClassObject)
 };
 
 #endif // QSCRIPTCLASSPRIVATE_P_H

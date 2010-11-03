@@ -61,7 +61,7 @@ public:
 
     inline v8::Handle<v8::Value> invalid() const;
 private:
-    Q_DISABLE_COPY(QScriptOriginalGlobalObject);
+    Q_DISABLE_COPY(QScriptOriginalGlobalObject)
     inline v8::Local<v8::Object> getOwnPropertyDescriptor(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property) const;
     bool isType(const QScriptValuePrivate* value, v8::Handle<v8::Object> constructor, v8::Handle<v8::Value> prototype) const;
     inline void initializeMember(v8::Handle<v8::String> prototypeName, v8::Handle<v8::Value> type, v8::Persistent<v8::Object>& constructor, v8::Persistent<v8::Value>& prototype);

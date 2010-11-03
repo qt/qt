@@ -59,7 +59,7 @@ class QScriptEnginePrivate
     {
         v8::Persistent<v8::Value> m_value;
         v8::Persistent<v8::Message> m_message;
-        Q_DISABLE_COPY(Exception);
+        Q_DISABLE_COPY(Exception)
     public:
         inline Exception();
         inline ~Exception();
@@ -207,11 +207,11 @@ public:
         inline TypeInfo value(int type) const;
         inline void registerCustomType(int type, QScriptEngine::MarshalFunction mf, QScriptEngine::DemarshalFunction df, v8::Handle<v8::Object> prototype = v8::Handle<v8::Object>());
     private:
-        Q_DISABLE_COPY(TypeInfos);
+        Q_DISABLE_COPY(TypeInfos)
         QHash<int, TypeInfo> m_infos;
     };
 private:
-    Q_DISABLE_COPY(QScriptEnginePrivate);
+    Q_DISABLE_COPY(QScriptEnginePrivate)
     QScriptEngine* q_ptr;
     v8::Isolate *m_isolate;
     v8::Persistent<v8::Context> m_v8Context;

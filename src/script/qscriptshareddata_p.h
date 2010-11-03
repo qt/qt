@@ -61,7 +61,7 @@ public:
     inline QScriptSharedData() : ref(0) { }
 
 private:
-    Q_DISABLE_COPY(QScriptSharedData);
+    Q_DISABLE_COPY(QScriptSharedData)
 };
 
 

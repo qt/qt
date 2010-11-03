@@ -64,7 +64,7 @@ public:
     inline quint64 id() const;
 
 private:
-    Q_DISABLE_COPY(QScriptStringPrivate);
+    Q_DISABLE_COPY(QScriptStringPrivate)
     QScriptSharedDataPointer<QScriptEnginePrivate> m_engine;
     v8::Persistent<v8::String> m_string;
     friend class QScriptString;

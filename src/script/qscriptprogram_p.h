@@ -68,7 +68,7 @@ public:
     QScriptSharedDataPointer<QScriptEnginePrivate> m_engine;
     v8::Persistent<v8::Script> m_compiled;
 private:
-    Q_DISABLE_COPY(QScriptProgramPrivate);
+    Q_DISABLE_COPY(QScriptProgramPrivate)
 };
 
 QScriptProgramPrivate* QScriptProgramPrivate::get(const QScriptProgram& program)
