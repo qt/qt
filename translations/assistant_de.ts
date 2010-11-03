@@ -67,7 +67,7 @@ Grund:
     </message>
     <message>
         <source>Error reading collection file &apos;%1&apos;: %2.</source>
-        <translation>Fehler beim Lesen der Katalogdatei &apos;%1&apos;: %2</translation>
+        <translation>Fehler beim Lesen der Katalogdatei &apos;%1&apos;: %2.</translation>
     </message>
     <message>
         <source>Error creating collection file &apos;%1&apos;: %2.</source>
@@ -741,7 +741,7 @@ Grund:
     </message>
     <message>
         <source>Input File</source>
-        <translation>Eingabedatei:</translation>
+        <translation>Datei eingeben</translation>
     </message>
     <message>
         <source>Specify the .adp or .dcf file you want to convert to the new Qt help project format and/or collection format.</source>
@@ -989,7 +989,7 @@ Grund:
     </message>
     <message>
         <source>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Version %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Version %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation und/oder ihre Tochtergesellschaft(en).&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Could not register file &apos;%1&apos;: %2</source>
@@ -1354,7 +1354,19 @@ qcollectiongenerator &lt;collection-config-file&gt; [options]
                          qcollectiongenerator.
 
 </source>
-        <translation type="unfinished"></translation>
+        <translation>
+Aufruf:
+
+qcollectiongenerator &lt;collection-Konfigurationsdatei&gt; [Optionen]
+
+  -o &lt;collection-Datei&gt;  Erstellt eine Collection-Datei mit
+                         dem Namen &lt;collection-Datei&gt;. Wenn
+                         diese Option nicht angegeben ist, wird
+                         der Standardname verwendet.
+  -v                     Zeigt die Versionsnummer von
+                         qcollectiongenerator an.
+
+</translation>
     </message>
     <message>
         <source>Could not open %1.
@@ -1435,7 +1447,22 @@ qhelpgenerator &lt;help-project-file&gt; [options]
                          qhelpgenerator.
 
 </source>
-        <translation type="unfinished"></translation>
+        <translation>
+Aufruf:
+
+qhelpgenerator &lt;Hilfe-Projektdatei&gt; [Optionen]
+  -o &lt;komprimierte-Datei&gt;  Erstellt eine komprimierte
+                           Qt-Hilfedatei mit dem Namen
+                           &lt;komprimierte-Datei&gt;. Wenn diese
+                           Option nicht angegeben ist, wird
+                           ein Standardname verwendet.
+  -c                       Prüft, ob alle Verknüpfungen in
+                           HTML-Dateien auf Dateien in diesem
+                           Hilfeprojekt verweisen.
+  -v                       Zeigt die Versionsnummer von
+                           qhelpgenerator an.
+
+</translation>
     </message>
     <message>
         <source>Could not open %1.
