@@ -406,7 +406,13 @@ bool QScriptValue::isFunction() const
 {
     Q_D(const QScriptValue);
     QScriptIsolate api(d->engine());
-    return d->isCallable();
+    bool isCallable = d->isCallable();
+    if (isCallable) {
+        QScriptDeclarativeClass *cls = QScriptDeclarativeClassObject::declarativeClass(d);
+        if (cls)
+            return cls->supportsCall();
+    }
+    return isCallable;
 }
 
 /*!
