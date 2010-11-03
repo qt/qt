@@ -1838,5 +1838,6 @@ EXPORTS
 	?addChanged@QDeclarativeBasePositioner@@IAEXXZ @ 1837 NONAME ABSENT ; void QDeclarativeBasePositioner::addChanged(void)
 	?start@QDeclarativeAbstractAnimation@@QAEXXZ @ 1838 NONAME ABSENT ; void QDeclarativeAbstractAnimation::start(void)
 	?qt_metacall@QDeclarativeAbstractAnimation@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 1839 NONAME ABSENT ; int QDeclarativeAbstractAnimation::qt_metacall(enum QMetaObject::Call, int, void * *)
-	?connect@QDeclarativePropertyPrivate@@SA_NPBVQObject@@H0HHPAH@Z @ 1840 NONAME ABSENT ; bool QDeclarativePropertyPrivate::connect(class QObject const *, int, class QObject const *, int, int, int *)
+	?enableDebugging@QDeclarativeDebugHelper@@SAXXZ @ 1840 NONAME ; void QDeclarativeDebugHelper::enableDebugging(void)
+	?connect@QDeclarativePropertyPrivate@@SA_NPBVQObject@@H0HHPAH@Z @ 1841 NONAME ABSENT ; bool QDeclarativePropertyPrivate::connect(class QObject const *, int, class QObject const *, int, int, int *)
 
