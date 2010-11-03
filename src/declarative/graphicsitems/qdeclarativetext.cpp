@@ -219,6 +219,7 @@ void QDeclarativeTextPrivate::updateSize()
 
     QFontMetrics fm(font);
     if (text.isEmpty()) {
+        q->setImplicitWidth(0);
         q->setImplicitHeight(fm.height());
         emit q->paintedSizeChanged();
         q->update();
