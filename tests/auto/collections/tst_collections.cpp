@@ -3878,7 +3878,7 @@ struct ExtList : QList<T> {
     }
     void insert(typename QList<T>::iterator before, int n, const T&x) {
         while (n--) {
-            this->insert(before, x );
+            before = this->insert(before, x);
         }
     }
 
