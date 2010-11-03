@@ -1120,12 +1120,18 @@ static v8::Handle<v8::Value> QtGetMetaMethod(v8::Local<v8::String> /*property*/,
                                              const v8::AccessorInfo& info)
 {
     v8::Local<v8::Object> self = info.This();
+    v8::Local<v8::Array> dataArray = v8::Array::Cast(*info.Data());
+    QScriptEnginePrivate *engine = static_cast<QScriptEnginePrivate *>(v8::External::Unwrap(dataArray->Get(0)));
+    if (!engine->isQtObject(self)) {
+        //If we are not called on a QObject (ie, the prototype is used in another object, we cannot do anything
+        return v8::Handle<v8::Value>();
+    }
     QtInstanceData *instance = QtInstanceData::get(self);
-    QScriptEnginePrivate *engine = instance->engine();
+    Q_ASSERT(engine == instance->engine());
     //QScriptContextPrivate context(engine, &info);
     QObject *qobject = instance->cppObject();
     const QMetaObject *meta = qobject->metaObject();
-    uint intData = v8::Uint32::Cast(*info.Data())->Value();
+    uint intData = v8::Uint32::Cast(*dataArray->Get(1))->Value();
     int methodIndex = intData & 0x3fffffff;
     bool overload = intData & (1 << 30);
     bool voidvoid = intData & (1 << 31);
@@ -1267,11 +1273,17 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
                 method = mo->method(methodIndex);
                 voidvoid = !method.typeName()[0] && method.parameterTypes().isEmpty();
                 quint32 data = (methodIndex & 0x3ffffff) | (voidvoid << 31) | (1 << 29);
-                protoTempl->SetAccessor(v8::String::New(method.signature()), QtGetMetaMethod, 0, v8::Uint32::New(data));
+                v8::Local<v8::Array> dataArray = v8::Array::New(2);
+                dataArray->Set(0, v8::External::Wrap(engine));
+                dataArray->Set(1, v8::Uint32::New(data));
+                protoTempl->SetAccessor(v8::String::New(method.signature()), QtGetMetaMethod, 0, dataArray);
             }
             int methodIndex = indexes.last(); // The largest index by that name.
             quint32 data = (methodIndex & 0x3ffffff) | (voidvoid << 31) | (overloaded << 30);
-            protoTempl->SetAccessor(v8::String::New(name), QtGetMetaMethod, 0, v8::Uint32::New(data));
+            v8::Local<v8::Array> dataArray = v8::Array::New(2);
+            dataArray->Set(0, v8::External::Wrap(engine));
+            dataArray->Set(1, v8::Uint32::New(data));
+            protoTempl->SetAccessor(v8::String::New(name), QtGetMetaMethod, 0, dataArray);
 
         }
     }
