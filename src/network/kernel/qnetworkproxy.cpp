@@ -427,7 +427,7 @@ QNetworkProxy::QNetworkProxy()
     : d(0)
 {
     if (QGlobalNetworkProxy *globalProxy = globalNetworkProxy())
-        globalProx->init();
+        globalProxy->init();
 }
 
 /*!
@@ -443,7 +443,7 @@ QNetworkProxy::QNetworkProxy(ProxyType type, const QString &hostName, quint16 po
     : d(new QNetworkProxyPrivate(type, hostName, port, user, password))
 {
     if (QGlobalNetworkProxy *globalProxy = globalNetworkProxy())
-        globalProx->init();
+        globalProxy->init();
 }
 
 /*!
