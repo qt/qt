@@ -174,6 +174,7 @@ struct StaticQtMetaObject : public QObject
 };
 
 static bool qt_QmlQtModule_registered = false;
+bool QDeclarativeEnginePrivate::qml_debugging_enabled = false;
 
 void QDeclarativeEnginePrivate::defineModule()
 {

@@ -1838,4 +1838,4 @@ EXPORTS
 	?addChanged@QDeclarativeBasePositioner@@IAEXXZ @ 1837 NONAME ; void QDeclarativeBasePositioner::addChanged(void)
 	?start@QDeclarativeAbstractAnimation@@QAEXXZ @ 1838 NONAME ; void QDeclarativeAbstractAnimation::start(void)
 	?qt_metacall@QDeclarativeAbstractAnimation@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 1839 NONAME ; int QDeclarativeAbstractAnimation::qt_metacall(enum QMetaObject::Call, int, void * *)
-
+	?enableDebugging@QDeclarativeDebugHelper@@SAXXZ @ 1840 NONAME ; void QDeclarativeDebugHelper::enableDebugging(void)

@@ -322,6 +322,8 @@ public:
     static QString urlToLocalFileOrQrc(const QUrl& url);
 
     static void defineModule();
+
+    static bool qml_debugging_enabled;
 };
 
 /*!

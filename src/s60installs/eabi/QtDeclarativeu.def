@@ -1883,4 +1883,5 @@ EXPORTS
 	_ZThn8_N29QDeclarativeAbstractAnimation9setTargetERK20QDeclarativeProperty @ 1882 NONAME
 	_ZThn8_N29QDeclarativeAbstractAnimationD0Ev @ 1883 NONAME
 	_ZThn8_N29QDeclarativeAbstractAnimationD1Ev @ 1884 NONAME
+	_ZN23QDeclarativeDebugHelper15enableDebuggingEv @ 1885 NONAME
 

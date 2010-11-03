@@ -42,6 +42,7 @@
 #include "private/qdeclarativedebugservice_p.h"
 
 #include "private/qpacketprotocol_p.h"
+#include "private/qdeclarativeengine_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtNetwork/qtcpserver.h>
@@ -205,6 +206,12 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
 
         // format: qmljsdebugger=port:3768[,block]
         if (!appD->qmljsDebugArgumentsString().isEmpty()) {
+            if (!QDeclarativeEnginePrivate::qml_debugging_enabled) {
+                qWarning() << QString::fromLatin1("QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
+                              "Debugging has not been enabled.").arg(
+                                  appD->qmljsDebugArgumentsString()).toAscii().constData();
+                return 0;
+            }
 
             if (appD->qmljsDebugArgumentsString().indexOf(QLatin1String("port:")) == 0) {
                 int separatorIndex = appD->qmljsDebugArgumentsString().indexOf(QLatin1Char(','));
