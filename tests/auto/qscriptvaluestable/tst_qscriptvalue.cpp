@@ -1527,28 +1527,4 @@ void tst_QScriptValue::assignAndCopyConstruct()
     QCOMPARE(assigned.engine(), other.engine());
 }
 
-void tst_QScriptValue::invalidValue()
-{
-    // The test checks if an invalid value bound to engine behave as a normal invalid value.
-    QScriptEngine engine;
-    engine.setGlobalObject(engine.newObject());
-    QScriptValue cinvalid;
-    QScriptValue jsinvalid = engine.evaluate("foo");
-    QVERIFY(!cinvalid.isObject());
-    QVERIFY(!jsinvalid.isObject());
-    QVERIFY(!cinvalid.isValid());
-    QVERIFY(!jsinvalid.isValid());
-    QVERIFY(!cinvalid.engine());
-    QVERIFY(!jsinvalid.engine());
-    QVERIFY(!cinvalid.call().isValid());
-    QVERIFY(!jsinvalid.call().isValid());
-    QVERIFY(!cinvalid.property("foo").isValid());
-    QVERIFY(!jsinvalid.property("foo").isValid());
-    QVERIFY(jsinvalid.strictlyEquals(cinvalid));
-    QVERIFY(cinvalid.strictlyEquals(jsinvalid));
-    QVERIFY(jsinvalid.equals(cinvalid));
-    QVERIFY(cinvalid.equals(jsinvalid));
-    QVERIFY(!jsinvalid.prototype().isValid());
-}
-
 QTEST_MAIN(tst_QScriptValue)

@@ -91,7 +91,6 @@ private slots:
     void globalObjectChanges();
     void assignAndCopyConstruct_data();
     void assignAndCopyConstruct();
-    void invalidValue();
 
     // Generated test functions.
     void isArray_data();
