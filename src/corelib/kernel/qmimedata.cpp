@@ -249,7 +249,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
     \o  We can subclass QMimeData and reimplement hasFormat(),
         formats(), and retrieveData().
 
-    \o  If the drag and drop operation occurs withing a single
+    \o  If the drag and drop operation occurs within a single
         application, we can subclass QMimeData and add extra data in
         it, and use a qobject_cast() in the receiver's drop event
         handler. For example:

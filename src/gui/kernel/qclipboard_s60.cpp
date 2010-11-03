@@ -257,18 +257,14 @@ const QMimeData* QClipboard::mimeData(Mode mode) const
                 }
             }
             CleanupStack::PopAndDestroy(cb);
-            if (dataExists) {
-                return d->source();
-            }
-            else {
-                return 0;
-            }
-
         });
         if (err != KErrNone){
             qDebug()<< "clipboard is empty/err: " << err;
         }
 
+        if (dataExists) {
+            return d->source();
+        }
     }
     return 0;
 }

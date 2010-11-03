@@ -95,8 +95,7 @@ public:
         WritingState = 2,       // writing the data
         WaitingState = 4,       // waiting for reply
         ReadingState = 8,       // reading the reply
-        Wait4AuthState = 0x10,  // blocked for send till the current authentication slot is done
-        BusyState = (ConnectingState|WritingState|WaitingState|ReadingState|Wait4AuthState)
+        BusyState = (ConnectingState|WritingState|WaitingState|ReadingState)
     };
     QAbstractSocket *socket;
     ChannelState state;
@@ -108,8 +107,8 @@ public:
     int lastStatus; // last status received on this channel
     bool pendingEncrypt; // for https (send after encrypted)
     int reconnectAttempts; // maximum 2 reconnection attempts
-    QAuthenticatorPrivate::Method authMehtod;
-    QAuthenticatorPrivate::Method proxyAuthMehtod;
+    QAuthenticatorPrivate::Method authMethod;
+    QAuthenticatorPrivate::Method proxyAuthMethod;
     QAuthenticator authenticator;
     QAuthenticator proxyAuthenticator;
 #ifndef QT_NO_OPENSSL

@@ -1025,16 +1025,8 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     priv->manager = this;
 
     // second step: fetch cached credentials
-    if (static_cast<QNetworkRequest::LoadControl>
-        (request.attribute(QNetworkRequest::AuthenticationReuseAttribute,
-                           QNetworkRequest::Automatic).toInt()) == QNetworkRequest::Automatic) {
-        QNetworkAuthenticationCredential *cred = d->fetchCachedCredentials(url);
-        if (cred) {
-            url.setUserName(cred->user);
-            url.setPassword(cred->password);
-            priv->urlForLastAuthentication = url;
-        }
-    }
+    // This is not done for the time being, we should use signal emissions to request
+    // the credentials from cache.
 
     // third step: find a backend
     priv->backend = d->findBackend(op, request);
@@ -1116,7 +1108,9 @@ void QNetworkAccessManagerPrivate::authenticationRequired(QNetworkAccessBackend 
 
     // don't try the cache for the same URL twice in a row
     // being called twice for the same URL means the authentication failed
-    if (url != backend->reply->urlForLastAuthentication) {
+    // also called when last URL is empty, e.g. on first call
+    if (backend->reply->urlForLastAuthentication.isEmpty()
+            || url != backend->reply->urlForLastAuthentication) {
         QNetworkAuthenticationCredential *cred = fetchCachedCredentials(url, authenticator);
         if (cred) {
             authenticator->setUser(cred->user);
@@ -1128,7 +1122,7 @@ void QNetworkAccessManagerPrivate::authenticationRequired(QNetworkAccessBackend 
 
     backend->reply->urlForLastAuthentication = url;
     emit q->authenticationRequired(backend->reply->q_func(), authenticator);
-    addCredentials(url, authenticator);
+    cacheCredentials(url, authenticator);
 }
 
 #ifndef QT_NO_NETWORKPROXY
@@ -1145,7 +1139,7 @@ void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(QNetworkAccessBac
     // possible solution: some tracking inside the authenticator
     //      or a new function proxyAuthenticationSucceeded(true|false)
     if (proxy != backend->reply->lastProxyAuthentication) {
-        QNetworkAuthenticationCredential *cred = fetchCachedCredentials(proxy);
+        QNetworkAuthenticationCredential *cred = fetchCachedProxyCredentials(proxy);
         if (cred) {
             authenticator->setUser(cred->user);
             authenticator->setPassword(cred->password);
@@ -1155,10 +1149,10 @@ void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(QNetworkAccessBac
 
     backend->reply->lastProxyAuthentication = proxy;
     emit q->proxyAuthenticationRequired(proxy, authenticator);
-    addCredentials(proxy, authenticator);
+    cacheProxyCredentials(proxy, authenticator);
 }
 
-void QNetworkAccessManagerPrivate::addCredentials(const QNetworkProxy &p,
+void QNetworkAccessManagerPrivate::cacheProxyCredentials(const QNetworkProxy &p,
                                                   const QAuthenticator *authenticator)
 {
     Q_ASSERT(authenticator);
@@ -1195,7 +1189,7 @@ void QNetworkAccessManagerPrivate::addCredentials(const QNetworkProxy &p,
 }
 
 QNetworkAuthenticationCredential *
-QNetworkAccessManagerPrivate::fetchCachedCredentials(const QNetworkProxy &p,
+QNetworkAccessManagerPrivate::fetchCachedProxyCredentials(const QNetworkProxy &p,
                                                      const QAuthenticator *authenticator)
 {
     QNetworkProxy proxy = p;
@@ -1247,7 +1241,7 @@ QList<QNetworkProxy> QNetworkAccessManagerPrivate::queryProxy(const QNetworkProx
 }
 #endif
 
-void QNetworkAccessManagerPrivate::addCredentials(const QUrl &url,
+void QNetworkAccessManagerPrivate::cacheCredentials(const QUrl &url,
                                                   const QAuthenticator *authenticator)
 {
     Q_ASSERT(authenticator);

@@ -48,7 +48,7 @@ Rectangle {
 
     signal clicked
 
-    width: buttonLabel.width + 20; height: buttonLabel.height + 6
+    width: buttonLabel.width + 20; height: buttonLabel.height + 20
     smooth: true
     border { width: 1; color: Qt.darker(activePalette.button) }
     radius: 8
@@ -70,6 +70,6 @@ Rectangle {
     MouseArea { id: mouseArea; anchors.fill: parent; onClicked: container.clicked() }
 
     Text {
-        id: buttonLabel; text: container.text; anchors.centerIn: container; color: activePalette.buttonText
+        id: buttonLabel; text: container.text; anchors.centerIn: container; color: activePalette.buttonText; font.pixelSize: 24
     }
 }

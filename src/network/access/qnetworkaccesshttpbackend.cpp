@@ -338,24 +338,6 @@ void QNetworkAccessHttpBackend::finished()
     QNetworkAccessBackend::finished();
 }
 
-void QNetworkAccessHttpBackend::setupConnection()
-{
-#ifndef QT_NO_NETWORKPROXY
-    connect(http, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
-            SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
-#endif
-    connect(http, SIGNAL(authenticationRequired(QHttpNetworkRequest,QAuthenticator*)),
-            SLOT(httpAuthenticationRequired(QHttpNetworkRequest,QAuthenticator*)));
-    connect(http, SIGNAL(cacheCredentials(QHttpNetworkRequest,QAuthenticator*)),
-            SLOT(httpCacheCredentials(QHttpNetworkRequest,QAuthenticator*)));
-    connect(http, SIGNAL(error(QNetworkReply::NetworkError,QString)),
-            SLOT(httpError(QNetworkReply::NetworkError,QString)));
-#ifndef QT_NO_OPENSSL
-    connect(http, SIGNAL(sslErrors(QList<QSslError>)),
-            SLOT(sslErrors(QList<QSslError>)));
-#endif
-}
-
 /*
     For a given httpRequest
     1) If AlwaysNetwork, return
@@ -593,6 +575,8 @@ void QNetworkAccessHttpBackend::postRequest()
     if (pendingIgnoreAllSslErrors)
         httpReply->ignoreSslErrors();
     httpReply->ignoreSslErrors(pendingIgnoreSslErrorsList);
+    connect(httpReply, SIGNAL(sslErrors(QList<QSslError>)),
+            SLOT(sslErrors(QList<QSslError>)));
 #endif
 
     connect(httpReply, SIGNAL(readyRead()), SLOT(replyReadyRead()));
@@ -600,6 +584,14 @@ void QNetworkAccessHttpBackend::postRequest()
     connect(httpReply, SIGNAL(finishedWithError(QNetworkReply::NetworkError,QString)),
             SLOT(httpError(QNetworkReply::NetworkError,QString)));
     connect(httpReply, SIGNAL(headerChanged()), SLOT(replyHeaderChanged()));
+    connect(httpReply, SIGNAL(cacheCredentials(QHttpNetworkRequest,QAuthenticator*)),
+            SLOT(httpCacheCredentials(QHttpNetworkRequest,QAuthenticator*)));
+#ifndef QT_NO_NETWORKPROXY
+    connect(httpReply, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
+            SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
+#endif
+    connect(httpReply, SIGNAL(authenticationRequired(const QHttpNetworkRequest,QAuthenticator*)),
+                SLOT(httpAuthenticationRequired(const QHttpNetworkRequest,QAuthenticator*)));
 }
 
 void QNetworkAccessHttpBackend::invalidateCache()
@@ -674,7 +666,6 @@ void QNetworkAccessHttpBackend::open()
         cache->addEntry(cacheKey, http);
     }
 
-    setupConnection();
     postRequest();
 }
 
@@ -879,29 +870,6 @@ void QNetworkAccessHttpBackend::httpError(QNetworkReply::NetworkError errorCode,
 {
 #if defined(QNETWORKACCESSHTTPBACKEND_DEBUG)
     qDebug() << "http error!" << errorCode << errorString;
-#endif
-#if 0
-    static const QNetworkReply::NetworkError conversionTable[] = {
-        QNetworkReply::ConnectionRefusedError,
-        QNetworkReply::RemoteHostClosedError,
-        QNetworkReply::HostNotFoundError,
-        QNetworkReply::UnknownNetworkError, // SocketAccessError
-        QNetworkReply::UnknownNetworkError, // SocketResourceError
-        QNetworkReply::TimeoutError,        // SocketTimeoutError
-        QNetworkReply::UnknownNetworkError, // DatagramTooLargeError
-        QNetworkReply::UnknownNetworkError, // NetworkError
-        QNetworkReply::UnknownNetworkError, // AddressInUseError
-        QNetworkReply::UnknownNetworkError, // SocketAddressNotAvailableError
-        QNetworkReply::UnknownNetworkError, // UnsupportedSocketOperationError
-        QNetworkReply::UnknownNetworkError, // UnfinishedSocketOperationError
-        QNetworkReply::ProxyAuthenticationRequiredError
-    };
-    QNetworkReply::NetworkError code;
-    if (int(errorCode) >= 0 &&
-        uint(errorCode) < (sizeof conversionTable / sizeof conversionTable[0]))
-        code = conversionTable[errorCode];
-    else
-        code = QNetworkReply::UnknownNetworkError;
 #endif
     error(errorCode, errorString);
     finished();

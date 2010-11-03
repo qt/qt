@@ -55,6 +55,8 @@
 #include <QtGui/private/qfontengine_p.h>
 #include <QtGui/private/qpainterpath_p.h>
 #include <QtGui/private/qstatictext_p.h>
+#include <QtGui/QApplication>
+#include <QtGui/QDesktopWidget>
 #include <QtCore/qmath.h>
 #include <QDebug>
 #include <QSet>
@@ -3060,6 +3062,21 @@ void qt_vg_drawVGImageStencil
     vgDrawImage(vgImg);
 }
 
+bool QVGPaintEngine::canVgWritePixels(const QImage &image) const
+{
+    Q_D(const QVGPaintEngine);
+    // vgWritePixels ignores masking, blending and xforms so we can only use it if
+    // ALL of the following conditions are true:
+    // - It is a simple translate, or a scale of -1 on the y-axis (inverted)
+    // - The opacity is totally opaque
+    // - The composition mode is "source" OR "source over" provided the image is opaque
+    return ( d->imageTransform.type() <= QTransform::TxScale
+            && d->imageTransform.m11() == 1.0 && qAbs(d->imageTransform.m22()) == 1.0)
+            && d->opacity == 1.0f
+            && (d->blendMode == VG_BLEND_SRC || (d->blendMode == VG_BLEND_SRC_OVER &&
+                                                !image.hasAlphaChannel()));
+}
+
 void QVGPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
 {
     QPixmapData *pd = pm.pixmapData();
@@ -3074,9 +3091,18 @@ void QVGPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF
             drawVGImage(d, r, vgpd->toVGImage(), vgpd->size(), sr);
         else
             drawVGImage(d, r, vgpd->toVGImage(d->opacity), vgpd->size(), sr);
-    } else {
-        drawImage(r, *(pd->buffer()), sr, Qt::AutoColor);
+
+        if(!vgpd->failedToAlloc)
+            return;
+
+        // try to reallocate next time if reasonable small pixmap
+        QSize screenSize = QApplication::desktop()->screenGeometry().size();
+        if (pm.size().width() <= screenSize.width()
+            && pm.size().height() <= screenSize.height())
+            vgpd->failedToAlloc = false;
     }
+
+    drawImage(r, *(pd->buffer()), sr, Qt::AutoColor);
 }
 
 void QVGPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pm)
@@ -3093,9 +3119,18 @@ void QVGPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pm)
             drawVGImage(d, pos, vgpd->toVGImage());
         else
             drawVGImage(d, pos, vgpd->toVGImage(d->opacity));
-    } else {
-        drawImage(pos, *(pd->buffer()));
+
+        if (!vgpd->failedToAlloc)
+            return;
+
+        // try to reallocate next time if reasonable small pixmap
+        QSize screenSize = QApplication::desktop()->screenGeometry().size();
+        if (pm.size().width() <= screenSize.width()
+            && pm.size().height() <= screenSize.height())
+            vgpd->failedToAlloc = false;
     }
+
+    drawImage(pos, *(pd->buffer()));
 }
 
 void QVGPaintEngine::drawImage
@@ -3116,9 +3151,31 @@ void QVGPaintEngine::drawImage
                         QRectF(QPointF(0, 0), sr.size()));
         }
     } else {
-        // Monochrome images need to use the vgChildImage() path.
-        vgImg = toVGImage(image, flags);
-        drawVGImage(d, r, vgImg, image.size(), sr);
+        if (canVgWritePixels(image) && (r.size() == sr.size()) && !flags) {
+            // Optimization for straight blits, no blending
+            int x = sr.x();
+            int y = sr.y();
+            int bpp = image.depth() >> 3; // bytes
+            int offset = 0;
+            int bpl = image.bytesPerLine();
+            if (d->imageTransform.m22() < 0) {
+                // inverted
+                offset = ((y + sr.height()) * bpl) - ((image.width() - x) * bpp);
+                bpl = -bpl;
+            } else {
+                offset = (y * bpl) + (x * bpp);
+            }
+            const uchar *bits = image.constBits() + offset;
+
+            QPointF mapped = d->imageTransform.map(r.topLeft());
+            vgWritePixels(bits, bpl, qt_vg_image_to_vg_format(image.format()),
+                        mapped.x(), mapped.y() - sr.height(), r.width(), r.height());
+            return;
+        } else {
+            // Monochrome images need to use the vgChildImage() path.
+            vgImg = toVGImage(image, flags);
+            drawVGImage(d, r, vgImg, image.size(), sr);
+        }
     }
     vgDestroyImage(vgImg);
 }
@@ -3127,10 +3184,21 @@ void QVGPaintEngine::drawImage(const QPointF &pos, const QImage &image)
 {
     Q_D(QVGPaintEngine);
     VGImage vgImg;
-    if (d->simpleTransform || d->opacity == 1.0f)
+    if (canVgWritePixels(image)) {
+        // Optimization for straight blits, no blending
+        bool inverted = (d->imageTransform.m22() < 0);
+        const uchar *bits = inverted ? image.constBits() + image.byteCount() : image.constBits();
+        int bpl = inverted ? -image.bytesPerLine() : image.bytesPerLine();
+
+        QPointF mapped = d->imageTransform.map(pos);
+        vgWritePixels(bits, bpl, qt_vg_image_to_vg_format(image.format()),
+                             mapped.x(), mapped.y() - image.height(), image.width(), image.height());
+        return;
+    } else if (d->simpleTransform || d->opacity == 1.0f) {
         vgImg = toVGImage(image);
-    else
+    } else {
         vgImg = toVGImageWithOpacity(image, d->opacity);
+    }
     drawVGImage(d, pos, vgImg);
     vgDestroyImage(vgImg);
 }
@@ -3610,6 +3678,7 @@ void QVGPaintEngine::restoreState(QPaintEngine::DirtyFlags dirty)
         d->maskIsSet = false;
         d->scissorMask = false;
         d->maskRect = QRect();
+        d->scissorDirty = true;
         clipEnabledChanged();
     }
 

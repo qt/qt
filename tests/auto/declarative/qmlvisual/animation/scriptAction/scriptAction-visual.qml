@@ -6,10 +6,10 @@ then immediately change blue, and then animate moving 50 pixels down.
 */
 
 Rectangle {
-    width: 400; height: 400
+    width: 100; height: 100
     Rectangle {
         id: myRect
-        width: 100; height: 100
+        width: 50; height: 50
         color: "red"
     }
     MouseArea {
