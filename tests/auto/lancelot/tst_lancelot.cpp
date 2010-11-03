@@ -46,7 +46,9 @@
 #include <baselineprotocol.h>
 #include <QHash>
 
+#ifndef QT_NO_OPENGL
 #include <QtOpenGL>
+#endif
 
 #ifndef SRCDIR
 #define SRCDIR "."
@@ -82,8 +84,10 @@ private slots:
     void testRasterRGB16_data();
     void testRasterRGB16();
 
+#ifndef QT_NO_OPENGL
     void testOpenGL_data();
     void testOpenGL();
+#endif
 };
 
 tst_Lancelot::tst_Lancelot()
@@ -170,6 +174,7 @@ void tst_Lancelot::testRasterRGB16()
 }
 
 
+#ifndef QT_NO_OPENGL
 void tst_Lancelot::testOpenGL_data()
 {
     QStringList localBlacklist = QStringList() << QLatin1String("rasterops.qps");
@@ -196,6 +201,7 @@ void tst_Lancelot::testOpenGL()
     else
         QSKIP("System under test does not meet preconditions for GL testing. Skipping.", SkipAll);
 }
+#endif
 
 
 bool tst_Lancelot::setupTestSuite(ImageItem::GraphicsEngine engine, QImage::Format format, const QStringList& blacklist)
@@ -262,6 +268,7 @@ ImageItem tst_Lancelot::render(const ImageItem &item)
         paint(&img, script, QFileInfo(filePath).absoluteFilePath()); // eh yuck (filePath stuff)
         res.image = img;
         res.imageChecksums.append(ImageItem::computeChecksum(img));
+#ifndef QT_NO_OPENGL
     } else if (item.engine == ImageItem::OpenGL) {
         QGLWidget glWidget;
         if (glWidget.isValid()) {
@@ -274,6 +281,7 @@ ImageItem tst_Lancelot::render(const ImageItem &item)
             res.image = fbo.toImage().convertToFormat(item.renderFormat);
             res.imageChecksums.append(ImageItem::computeChecksum(res.image));
         }
+#endif
     }
 
     return res;
