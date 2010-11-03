@@ -306,6 +306,8 @@ void QSqlQueryModel::queryChange()
     lastError() can be used to retrieve verbose information if there
     was an error setting the query.
 
+    \note Calling setQuery() will remove any inserted columns.
+
     \sa query(), QSqlQuery::isActive(), QSqlQuery::setForwardOnly(), lastError()
 */
 void QSqlQueryModel::setQuery(const QSqlQuery &query)
