@@ -54,11 +54,11 @@ extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 #endif
 
 QGLTextureGlyphCache::QGLTextureGlyphCache(const QGLContext *context, QFontEngineGlyphCache::Type type, const QTransform &matrix)
-    : QImageTextureGlyphCache(type, matrix)
+    : QImageTextureGlyphCache(type, matrix), QGLContextGroupResourceBase()
     , ctx(context)
     , pex(0)
-    , m_filterMode(Nearest)
     , m_blitProgram(0)
+    , m_filterMode(Nearest)
 {
 #ifdef QT_GL_TEXTURE_GLYPH_CACHE_DEBUG
     qDebug(" -> QGLTextureGlyphCache() %p for context %p.", this, ctx);
@@ -208,8 +208,8 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 
             {
                 QString source;
-                source.append(qglslMainWithTexCoordsVertexShader);
-                source.append(qglslUntransformedPositionVertexShader);
+                source.append(QLatin1String(qglslMainWithTexCoordsVertexShader));
+                source.append(QLatin1String(qglslUntransformedPositionVertexShader));
 
                 QGLShader *vertexShader = new QGLShader(QGLShader::Vertex, m_blitProgram);
                 vertexShader->compileSourceCode(source);
@@ -219,8 +219,8 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 
             {
                 QString source;
-                source.append(qglslMainFragmentShader);
-                source.append(qglslImageSrcFragmentShader);
+                source.append(QLatin1String(qglslMainFragmentShader));
+                source.append(QLatin1String(qglslImageSrcFragmentShader));
 
                 QGLShader *fragmentShader = new QGLShader(QGLShader::Fragment, m_blitProgram);
                 fragmentShader->compileSourceCode(source);

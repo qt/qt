@@ -85,6 +85,7 @@ public:
     inline QRegion &operator=(QRegion &&other)
     { qSwap(d, other.d); return *this; }
 #endif
+    inline void swap(QRegion &other) { qSwap(d, other.d); }
 #ifdef QT3_SUPPORT
     inline QT3_SUPPORT bool isNull() const { return isEmpty(); }
 #endif

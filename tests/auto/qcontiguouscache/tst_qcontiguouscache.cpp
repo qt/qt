@@ -55,6 +55,8 @@ public:
     virtual ~tst_QContiguousCache() {}
 private slots:
     void empty();
+    void swap();
+
     void append_data();
     void append();
 
@@ -97,6 +99,17 @@ void tst_QContiguousCache::empty()
     QCOMPARE(c.count(), 0);
     QVERIFY(c.isEmpty());
     QCOMPARE(c.capacity(), 10);
+}
+
+void tst_QContiguousCache::swap()
+{
+    QContiguousCache<int> c1(10), c2(100);
+    c1.append(1);
+    c1.swap(c2);
+    QCOMPARE(c1.capacity(), 100);
+    QCOMPARE(c1.count(),    0  );
+    QCOMPARE(c2.capacity(), 10 );
+    QCOMPARE(c2.count(),    1  );
 }
 
 void tst_QContiguousCache::append_data()

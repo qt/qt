@@ -80,6 +80,7 @@ public:
     inline QRegExp &operator=(QRegExp &&other)
     { qSwap(priv,other.priv); return *this; }
 #endif
+    inline void swap(QRegExp &other) { qSwap(priv, other.priv); }
 
     bool operator==(const QRegExp &rx) const;
     inline bool operator!=(const QRegExp &rx) const { return !operator==(rx); }

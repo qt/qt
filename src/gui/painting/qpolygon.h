@@ -67,6 +67,8 @@ public:
     inline QPolygon(const QVector<QPoint> &v) : QVector<QPoint>(v) {}
     QPolygon(const QRect &r, bool closed=false);
     QPolygon(int nPoints, const int *points);
+    inline void swap(QPolygon &other) { QVector<QPoint>::swap(other); } // prevent QVector<QPoint><->QPolygon swaps
+
     operator QVariant() const;
 
     void translate(int dx, int dy);
@@ -139,6 +141,7 @@ public:
     inline QPolygonF(const QVector<QPointF> &v) : QVector<QPointF>(v) {}
     QPolygonF(const QRectF &r);
     QPolygonF(const QPolygon &a);
+    inline void swap(QPolygonF &other) { QVector<QPointF>::swap(other); } // prevent QVector<QPointF><->QPolygonF swaps
 
     inline void translate(qreal dx, qreal dy);
     void translate(const QPointF &offset);

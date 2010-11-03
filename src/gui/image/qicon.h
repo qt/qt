@@ -75,6 +75,8 @@ public:
     inline QIcon &operator=(QIcon &&other)
     { qSwap(d, other.d); return *this; }
 #endif
+    inline void swap(QIcon &other) { qSwap(d, other.d); }
+
     operator QVariant() const;
 
     QPixmap pixmap(const QSize &size, Mode mode = Normal, State state = Off) const;

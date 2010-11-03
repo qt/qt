@@ -64,6 +64,7 @@ public:
 private slots:
     void boundingRect();
     void rects();
+    void swap();
     void setRects();
     void ellipseRegion();
     void polygonRegion();
@@ -166,6 +167,15 @@ void tst_QRegion::rects()
 	QVERIFY( !region.contains( QPoint(20,40) ) );
 	QVERIFY( !region.contains( QPoint(40,20) ) );
     }
+}
+
+void tst_QRegion::swap()
+{
+    QRegion r1(QRect( 0, 0,10,10));
+    QRegion r2(QRect(10,10,10,10));
+    r1.swap(r2);
+    QCOMPARE(r1.rects().front(), QRect(10,10,10,10));
+    QCOMPARE(r2.rects().front(), QRect( 0, 0,10,10));
 }
 
 void tst_QRegion::setRects()
