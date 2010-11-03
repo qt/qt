@@ -329,6 +329,18 @@ public:
         { m_qtFunctionInvoked = 58; m_actuals << int(arg); return arg; }
     Q_INVOKABLE MyQObject::Ability myInvokableWithQualifiedFlagsArg(MyQObject::Ability arg)
         { m_qtFunctionInvoked = 59; m_actuals << int(arg); return arg; }
+    Q_INVOKABLE QWidget *myInvokableWithQWidgetStarArg(QWidget *arg)
+        { m_qtFunctionInvoked = 63; m_actuals << qVariantFromValue((QWidget*)arg); return arg; }
+    Q_INVOKABLE short myInvokableWithShortArg(short arg)
+        { m_qtFunctionInvoked = 64; m_actuals << qVariantFromValue(arg); return arg; }
+    Q_INVOKABLE unsigned short myInvokableWithUShortArg(unsigned short arg)
+        { m_qtFunctionInvoked = 65; m_actuals << qVariantFromValue(arg); return arg; }
+    Q_INVOKABLE char myInvokableWithCharArg(char arg)
+        { m_qtFunctionInvoked = 66; m_actuals << qVariantFromValue(arg); return arg; }
+    Q_INVOKABLE unsigned char myInvokableWithUCharArg(unsigned char arg)
+        { m_qtFunctionInvoked = 67; m_actuals << qVariantFromValue(arg); return arg; }
+    Q_INVOKABLE qulonglong myInvokableWithULonglongArg(qulonglong arg)
+        { m_qtFunctionInvoked = 68; m_actuals << qVariantFromValue(arg); return arg; }
 
     Q_INVOKABLE QObjectList findObjects() const
     {  return findChildren<QObject *>();  }
@@ -394,6 +406,8 @@ public Q_SLOTS:
         { m_qtFunctionInvoked = 32; m_actuals << arg; }
     void myOverloadedSlot(const QDate &arg)
         { m_qtFunctionInvoked = 33; m_actuals << arg; }
+    void myOverloadedSlot(const QTime &arg)
+        { m_qtFunctionInvoked = 69; m_actuals << arg; }
     void myOverloadedSlot(const QRegExp &arg)
         { m_qtFunctionInvoked = 34; m_actuals << arg; }
     void myOverloadedSlot(const QVariant &arg)
@@ -519,6 +533,7 @@ private slots:
     void callQtInvokable();
     void connectAndDisconnect();
     void connectAndDisconnectWithBadArgs();
+    void connectAndDisconnect_senderDeleted();
     void cppConnectAndDisconnect();
     void classEnums();
     void classConstructor();
@@ -1361,9 +1376,75 @@ void tst_QScriptExtQObject::callQtInvokable()
 
     m_myObject->resetQtFunctionInvoked();
     {
+        QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithQWidgetStarArg(null)");
+        QVERIFY(ret.isNull());
+        QCOMPARE(m_myObject->qtFunctionInvoked(), 63);
+        QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
+        QVariant v = m_myObject->qtFunctionActuals().at(0);
+        QCOMPARE(v.userType(), int(QMetaType::QWidgetStar));
+        QCOMPARE(qvariant_cast<QWidget*>(v), (QObject *)0);
+    }
+
+    m_myObject->resetQtFunctionInvoked();
+    {
         // no implicit conversion from integer to QObject*
         QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithQObjectStarArg(123)");
         QCOMPARE(ret.isError(), true);
+    }
+
+    m_myObject->resetQtFunctionInvoked();
+    {
+        QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithShortArg(123)");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(m_myObject->qtFunctionInvoked(), 64);
+        QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
+        QVariant v = m_myObject->qtFunctionActuals().at(0);
+        QCOMPARE(v.userType(), int(QMetaType::Short));
+        QCOMPARE(qvariant_cast<short>(v), short(123));
+    }
+
+    m_myObject->resetQtFunctionInvoked();
+    {
+        QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithUShortArg(123)");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(m_myObject->qtFunctionInvoked(), 65);
+        QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
+        QVariant v = m_myObject->qtFunctionActuals().at(0);
+        QCOMPARE(v.userType(), int(QMetaType::UShort));
+        QCOMPARE(qvariant_cast<ushort>(v), ushort(123));
+    }
+
+    m_myObject->resetQtFunctionInvoked();
+    {
+        QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithCharArg(123)");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(m_myObject->qtFunctionInvoked(), 66);
+        QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
+        QVariant v = m_myObject->qtFunctionActuals().at(0);
+        QCOMPARE(v.userType(), int(QMetaType::Char));
+        QCOMPARE(qvariant_cast<char>(v), char(123));
+    }
+
+    m_myObject->resetQtFunctionInvoked();
+    {
+        QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithUCharArg(123)");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(m_myObject->qtFunctionInvoked(), 67);
+        QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
+        QVariant v = m_myObject->qtFunctionActuals().at(0);
+        QCOMPARE(v.userType(), int(QMetaType::UChar));
+        QCOMPARE(qvariant_cast<uchar>(v), uchar(123));
+    }
+
+    m_myObject->resetQtFunctionInvoked();
+    {
+        QScriptValue ret = m_engine->evaluate("myObject.myInvokableWithULonglongArg(123)");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(m_myObject->qtFunctionInvoked(), 68);
+        QCOMPARE(m_myObject->qtFunctionActuals().size(), 1);
+        QVariant v = m_myObject->qtFunctionActuals().at(0);
+        QCOMPARE(v.userType(), int(QMetaType::ULongLong));
+        QCOMPARE(qvariant_cast<qulonglong>(v), qulonglong(123));
     }
 
     m_myObject->resetQtFunctionInvoked();
@@ -1913,6 +1994,25 @@ void tst_QScriptExtQObject::connectAndDisconnectWithBadArgs()
         QScriptValue ret = m_engine->evaluate("myObject.mySignal.disconnect(function() { })");
         QVERIFY(ret.isError());
         QCOMPARE(ret.toString(), QLatin1String("Error: Function.prototype.disconnect: failed to disconnect from MyQObject::mySignal()"));
+    }
+}
+
+void tst_QScriptExtQObject::connectAndDisconnect_senderDeleted()
+{
+    QScriptEngine eng;
+    QObject *obj = new QObject;
+    eng.globalObject().setProperty("obj", eng.newQObject(obj));
+    eng.evaluate("signal = obj.destroyed");
+    delete obj;
+    {
+        QScriptValue ret = eng.evaluate("signal.connect(function(){})");
+        QVERIFY(ret.isError());
+        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Function.prototype.connect: cannot connect to deleted QObject"));
+    }
+    {
+        QScriptValue ret = eng.evaluate("signal.disconnect(function(){})");
+        QVERIFY(ret.isError());
+        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Function.prototype.discconnect: cannot disconnect from deleted QObject"));
     }
 }
 
