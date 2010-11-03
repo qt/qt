@@ -178,7 +178,7 @@ QT_BEGIN_NAMESPACE
 
 QStateMachinePrivate::QStateMachinePrivate()
 {
-    QAbstractStatePrivate::isMachine = true;
+    isMachine = true;
 
     state = NotRunning;
     _startState = 0;
