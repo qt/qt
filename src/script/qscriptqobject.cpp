@@ -308,6 +308,7 @@ public:
     // This class implements qt_metacall() and friends manually; moc should
     // not process it. But then the Q_OBJECT macro must be manually expanded:
     static const QMetaObject staticMetaObject;
+    Q_OBJECT_GETSTATICMETAOBJECT
     virtual const QMetaObject *metaObject() const;
     virtual void *qt_metacast(const char *);
     virtual int qt_metacall(QMetaObject::Call, int, void **);
