@@ -69,6 +69,7 @@
 #include "private/qdeclarativetypenamecache_p.h"
 #include "private/qdeclarativeinclude_p.h"
 #include "private/qdeclarativenotifier_p.h"
+#include "private/qdeclarativedebugtrace_p.h"
 
 #include <QtCore/qmetaobject.h>
 #include <QScriptClass>
@@ -927,7 +928,7 @@ Q_AUTOTEST_EXPORT void qmlExecuteDeferred(QObject *object)
     QDeclarativeData *data = QDeclarativeData::get(object);
 
     if (data && data->deferredComponent) {
-
+        QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Creating);
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(data->context->engine);
 
         QDeclarativeComponentPrivate::ConstructionState state;
@@ -937,6 +938,7 @@ Q_AUTOTEST_EXPORT void qmlExecuteDeferred(QObject *object)
         data->deferredComponent = 0;
 
         QDeclarativeComponentPrivate::complete(ep, &state);
+        QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Creating);
     }
 }
 

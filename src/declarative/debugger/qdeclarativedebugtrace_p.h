@@ -74,7 +74,8 @@ public:
         Painting,
         Compiling,
         Creating,
-        Binding,
+        Binding,            //running a binding
+        HandlingSignal,     //running a signal handler
 
         MaximumRangeType
     };

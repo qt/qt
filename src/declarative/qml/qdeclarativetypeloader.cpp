@@ -45,6 +45,7 @@
 #include <private/qdeclarativecompiler_p.h>
 #include <private/qdeclarativecomponent_p.h>
 #include <private/qdeclarativeglobal_p.h>
+#include <private/qdeclarativedebugtrace_p.h>
 
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <QtCore/qdebug.h>
@@ -895,6 +896,7 @@ void QDeclarativeTypeData::downloadProgressChanged(qreal p)
 void QDeclarativeTypeData::compile()
 {
     Q_ASSERT(m_compiledData == 0);
+    QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Compiling);
 
     m_compiledData = new QDeclarativeCompiledData(typeLoader()->engine());
     m_compiledData->url = m_imports.baseUrl();
@@ -906,6 +908,7 @@ void QDeclarativeTypeData::compile()
         m_compiledData->release();
         m_compiledData = 0;
     }
+    QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Compiling);
 }
 
 void QDeclarativeTypeData::resolveTypes()

@@ -49,6 +49,7 @@
 #include "qdeclarative.h"
 #include "qdeclarativecontext.h"
 #include "private/qdeclarativeglobal_p.h"
+#include "private/qdeclarativedebugtrace_p.h"
 
 #include <QtCore/qdebug.h>
 
@@ -165,6 +166,7 @@ QDeclarativeBoundSignal *QDeclarativeBoundSignal::cast(QObject *o)
 int QDeclarativeBoundSignal::qt_metacall(QMetaObject::Call c, int id, void **a)
 {
     if (c == QMetaObject::InvokeMetaMethod && id == evaluateIdx) {
+        QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::HandlingSignal);
         m_isEvaluating = true;
         if (!m_paramsValid) {
             if (!m_signal.parameterTypes().isEmpty())
@@ -180,6 +182,7 @@ int QDeclarativeBoundSignal::qt_metacall(QMetaObject::Call c, int id, void **a)
         }
         if (m_params) m_params->clearValues();
         m_isEvaluating = false;
+        QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::HandlingSignal);
         return -1;
     } else {
         return QObject::qt_metacall(c, id, a);
