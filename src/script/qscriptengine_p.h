@@ -119,6 +119,7 @@ public:
     inline v8::Local<v8::Array> getOwnPropertyNames(v8::Handle<v8::Object> object) const;
     inline QScriptValue::PropertyFlags getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property, const QScriptValue::ResolveFlags& mode);
     inline v8::Local<v8::Value> getOwnProperty(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property) const;
+    inline v8::Local<v8::Value> getOwnProperty(v8::Handle<v8::Object> object, uint32_t index) const;
 
     QDateTime qtDateTimeFromJS(v8::Handle<v8::Date> jsDate);
     v8::Handle<v8::Value> qtDateTimeToJS(const QDateTime &dt);
@@ -313,6 +314,11 @@ inline QScriptValue::PropertyFlags QScriptEnginePrivate::getPropertyFlags(v8::Ha
 inline v8::Local<v8::Value> QScriptEnginePrivate::getOwnProperty(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property) const
 {
     return m_originalGlobalObject.getOwnProperty(object, property);
+}
+
+inline v8::Local<v8::Value> QScriptEnginePrivate::getOwnProperty(v8::Handle<v8::Object> object, uint32_t index) const
+{
+    return m_originalGlobalObject.getOwnProperty(object, v8::Integer::New(index));
 }
 
 QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(const QString& program, const QString& fileName, int lineNumber)

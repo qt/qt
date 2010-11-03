@@ -921,7 +921,7 @@ QScriptValue QScriptValue::property(const QScriptString& name, const ResolveFlag
 {
     Q_D(const QScriptValue);
     QScriptIsolate api(d->engine());
-    return QScriptValuePrivate::get(d->property(QScriptStringPrivate::get(name)->m_string, mode));
+    return QScriptValuePrivate::get(d->property(QScriptStringPrivate::get(name), mode));
 }
 
 /*!

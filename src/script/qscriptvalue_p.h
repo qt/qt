@@ -122,8 +122,11 @@ public:
     inline void setProperty(v8::Handle<v8::String> name, QScriptValuePrivate *value, v8::PropertyAttribute attribs = v8::None);
     inline void setProperty(quint32 index, QScriptValuePrivate *value, v8::PropertyAttribute attribs = v8::None);
     inline QScriptPassPointer<QScriptValuePrivate> property(const QString& name, const QScriptValue::ResolveFlags& mode) const;
+    inline QScriptPassPointer<QScriptValuePrivate> property(QScriptStringPrivate* name, const QScriptValue::ResolveFlags& mode) const;
     inline QScriptPassPointer<QScriptValuePrivate> property(v8::Handle<v8::String> name, const QScriptValue::ResolveFlags& mode) const;
     inline QScriptPassPointer<QScriptValuePrivate> property(quint32 index, const QScriptValue::ResolveFlags& mode) const;
+    template<typename T>
+    inline QScriptPassPointer<QScriptValuePrivate> property(T name, const QScriptValue::ResolveFlags& mode) const;
     inline bool deleteProperty(const QString& name);
     inline QScriptValue::PropertyFlags propertyFlags(const QString& name, const QScriptValue::ResolveFlags& mode) const;
     inline QScriptValue::PropertyFlags propertyFlags(v8::Handle<v8::String> name, const QScriptValue::ResolveFlags& mode) const;
@@ -917,30 +920,40 @@ inline void QScriptValuePrivate::setProperty(quint32 index, QScriptValuePrivate*
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(const QString& name, const QScriptValue::ResolveFlags& mode) const
 {
-    if (!isObject())
+    if (!isObject() || !name.length())
         return new QScriptValuePrivate();
 
     v8::HandleScope handleScope;
-    v8::Handle<v8::Object> self(v8::Object::Cast(*m_value));
-    v8::Handle<v8::String> jsname = QScriptConverter::toString(name);
+    return property(QScriptConverter::toString(name), mode);
+}
 
-    v8::Handle<v8::Value> result = self->Get(jsname);
-    if (result->IsUndefined() && !self->Has(jsname)) {
-        // In QtScript we make a distinction between a property that exists and has value undefined,
-        // and a property that doesn't exist; in the latter case, we should return an invalid value.
-        return new QScriptValuePrivate();
-    }
-    if ((mode == QScriptValue::ResolveLocal) && engine()->getOwnProperty(self, jsname).IsEmpty())
+inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(QScriptStringPrivate* name, const QScriptValue::ResolveFlags& mode) const
+{
+    if (!isObject() || !name->isValid())
         return new QScriptValuePrivate();
 
-    return new QScriptValuePrivate(engine(), result);
+    v8::HandleScope handleScope;
+    return property(name->asV8Value(), mode);
 }
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(v8::Handle<v8::String> name, const QScriptValue::ResolveFlags& mode) const
 {
-    if (!isObject() || name.IsEmpty())
-        return new QScriptValuePrivate();
+    Q_ASSERT(!name.IsEmpty());
+    Q_ASSERT(isObject());
+    return property<>(name, mode);
+}
 
+inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(quint32 index, const QScriptValue::ResolveFlags& mode) const
+{
+    if (!isObject())
+        return new QScriptValuePrivate();
+    return property<>(index, mode);
+}
+
+template<typename T>
+inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(T name, const QScriptValue::ResolveFlags& mode) const
+{
+    Q_ASSERT(isObject());
     v8::HandleScope handleScope;
     v8::Handle<v8::Object> self(v8::Object::Cast(*m_value));
 
@@ -951,26 +964,6 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(v8:
         return new QScriptValuePrivate();
     }
     if ((mode == QScriptValue::ResolveLocal) && engine()->getOwnProperty(self, name).IsEmpty())
-        return new QScriptValuePrivate();
-
-    return new QScriptValuePrivate(engine(), result);
-}
-
-inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(quint32 index, const QScriptValue::ResolveFlags& mode) const
-{
-    if (!isObject())
-        return new QScriptValuePrivate();
-
-    v8::HandleScope handleScope;
-    v8::Handle<v8::Object> self(v8::Object::Cast(*m_value));
-
-    v8::Handle<v8::Value> result = self->Get(index);
-    if (result->IsUndefined() && !self->Has(index)) {
-        // In QtScript we make a distinction between a property that exists and has value undefined,
-        // and a property that doesn't exist; in the latter case, we should return an invalid value.
-        return new QScriptValuePrivate();
-    }
-    if ((mode == QScriptValue::ResolveLocal) && engine()->getOwnProperty(self, v8::Integer::New(index)).IsEmpty())
         return new QScriptValuePrivate();
 
     return new QScriptValuePrivate(engine(), result);

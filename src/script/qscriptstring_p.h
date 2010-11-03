@@ -62,6 +62,8 @@ public:
     inline quint32 toArrayIndex(bool* ok = 0) const;
     inline QString toString() const;
     inline quint64 id() const;
+    inline operator v8::Handle<v8::String>() const;
+    inline v8::Handle<v8::String> asV8Value() const;
 
 private:
     Q_DISABLE_COPY(QScriptStringPrivate)
@@ -140,6 +142,17 @@ QString QScriptStringPrivate::toString() const
 quint64 QScriptStringPrivate::id() const
 {
     return m_string->Hash();
+}
+
+inline QScriptStringPrivate::operator v8::Handle<v8::String>() const
+{
+    Q_ASSERT(isValid());
+    return m_string;
+}
+
+inline v8::Handle<v8::String> QScriptStringPrivate::asV8Value()const
+{
+    return m_string;
 }
 
 QT_END_NAMESPACE
