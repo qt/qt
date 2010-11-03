@@ -46,7 +46,7 @@
 #include "tst_qscriptvalue.h"
 
 
-void tst_QScriptValue::isValid_initData()
+void tst_QScriptValueGenerated::isValid_initData()
 {
     QTest::addColumn<bool>("expected");
     initScriptValues();
@@ -195,7 +195,7 @@ static QString isValid_array [] = {
     "engine->newQObject(0)",
     "engine->newQObject(engine)",};
 
-void tst_QScriptValue::isValid_makeData(const char* expr)
+void tst_QScriptValueGenerated::isValid_makeData(const char* expr)
 {
     static QSet<QString> isValid;
     if (isValid.isEmpty()) {
@@ -206,7 +206,7 @@ void tst_QScriptValue::isValid_makeData(const char* expr)
     newRow(expr) << isValid.contains(expr);
 }
 
-void tst_QScriptValue::isValid_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::isValid_test(const char*, const QScriptValue& value)
 {
     QFETCH(bool, expected);
     QCOMPARE(value.isValid(), expected);
@@ -216,7 +216,7 @@ void tst_QScriptValue::isValid_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(isValid)
 
 
-void tst_QScriptValue::isBool_initData()
+void tst_QScriptValueGenerated::isBool_initData()
 {
     QTest::addColumn<bool>("expected");
     initScriptValues();
@@ -232,7 +232,7 @@ static QString isBool_array [] = {
     "engine->evaluate(\"true\")",
     "engine->evaluate(\"false\")",};
 
-void tst_QScriptValue::isBool_makeData(const char* expr)
+void tst_QScriptValueGenerated::isBool_makeData(const char* expr)
 {
     static QSet<QString> isBool;
     if (isBool.isEmpty()) {
@@ -243,7 +243,7 @@ void tst_QScriptValue::isBool_makeData(const char* expr)
     newRow(expr) << isBool.contains(expr);
 }
 
-void tst_QScriptValue::isBool_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::isBool_test(const char*, const QScriptValue& value)
 {
     QFETCH(bool, expected);
     QCOMPARE(value.isBool(), expected);
@@ -253,7 +253,7 @@ void tst_QScriptValue::isBool_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(isBool)
 
 
-void tst_QScriptValue::isBoolean_initData()
+void tst_QScriptValueGenerated::isBoolean_initData()
 {
     QTest::addColumn<bool>("expected");
     initScriptValues();
@@ -269,7 +269,7 @@ static QString isBoolean_array [] = {
     "engine->evaluate(\"true\")",
     "engine->evaluate(\"false\")",};
 
-void tst_QScriptValue::isBoolean_makeData(const char* expr)
+void tst_QScriptValueGenerated::isBoolean_makeData(const char* expr)
 {
     static QSet<QString> isBoolean;
     if (isBoolean.isEmpty()) {
@@ -280,7 +280,7 @@ void tst_QScriptValue::isBoolean_makeData(const char* expr)
     newRow(expr) << isBoolean.contains(expr);
 }
 
-void tst_QScriptValue::isBoolean_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::isBoolean_test(const char*, const QScriptValue& value)
 {
     QFETCH(bool, expected);
     QCOMPARE(value.isBoolean(), expected);
@@ -290,7 +290,7 @@ void tst_QScriptValue::isBoolean_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(isBoolean)
 
 
-void tst_QScriptValue::isNumber_initData()
+void tst_QScriptValueGenerated::isNumber_initData()
 {
     QTest::addColumn<bool>("expected");
     initScriptValues();
@@ -354,7 +354,7 @@ static QString isNumber_array [] = {
     "engine->evaluate(\"Infinity\")",
     "engine->evaluate(\"-Infinity\")",};
 
-void tst_QScriptValue::isNumber_makeData(const char* expr)
+void tst_QScriptValueGenerated::isNumber_makeData(const char* expr)
 {
     static QSet<QString> isNumber;
     if (isNumber.isEmpty()) {
@@ -365,7 +365,7 @@ void tst_QScriptValue::isNumber_makeData(const char* expr)
     newRow(expr) << isNumber.contains(expr);
 }
 
-void tst_QScriptValue::isNumber_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::isNumber_test(const char*, const QScriptValue& value)
 {
     QFETCH(bool, expected);
     QCOMPARE(value.isNumber(), expected);
@@ -375,7 +375,7 @@ void tst_QScriptValue::isNumber_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(isNumber)
 
 
-void tst_QScriptValue::isFunction_initData()
+void tst_QScriptValueGenerated::isFunction_initData()
 {
     QTest::addColumn<bool>("expected");
     initScriptValues();
@@ -393,7 +393,7 @@ static QString isFunction_array [] = {
     "engine->evaluate(\"/foo/\")",
     "engine->newQMetaObject(&QObject::staticMetaObject)",};
 
-void tst_QScriptValue::isFunction_makeData(const char* expr)
+void tst_QScriptValueGenerated::isFunction_makeData(const char* expr)
 {
     static QSet<QString> isFunction;
     if (isFunction.isEmpty()) {
@@ -404,7 +404,7 @@ void tst_QScriptValue::isFunction_makeData(const char* expr)
     newRow(expr) << isFunction.contains(expr);
 }
 
-void tst_QScriptValue::isFunction_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::isFunction_test(const char*, const QScriptValue& value)
 {
     QFETCH(bool, expected);
     QCOMPARE(value.isFunction(), expected);
@@ -414,7 +414,7 @@ void tst_QScriptValue::isFunction_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(isFunction)
 
 
-void tst_QScriptValue::isNull_initData()
+void tst_QScriptValueGenerated::isNull_initData()
 {
     QTest::addColumn<bool>("expected");
     initScriptValues();
@@ -428,7 +428,7 @@ static QString isNull_array [] = {
     "engine->nullValue()",
     "engine->newQObject(0)",};
 
-void tst_QScriptValue::isNull_makeData(const char* expr)
+void tst_QScriptValueGenerated::isNull_makeData(const char* expr)
 {
     static QSet<QString> isNull;
     if (isNull.isEmpty()) {
@@ -439,7 +439,7 @@ void tst_QScriptValue::isNull_makeData(const char* expr)
     newRow(expr) << isNull.contains(expr);
 }
 
-void tst_QScriptValue::isNull_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::isNull_test(const char*, const QScriptValue& value)
 {
     QFETCH(bool, expected);
     QCOMPARE(value.isNull(), expected);
@@ -449,7 +449,7 @@ void tst_QScriptValue::isNull_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(isNull)
 
 
-void tst_QScriptValue::isString_initData()
+void tst_QScriptValueGenerated::isString_initData()
 {
     QTest::addColumn<bool>("expected");
     initScriptValues();
@@ -492,7 +492,7 @@ static QString isString_array [] = {
     "engine->evaluate(\"'123'\")",
     "engine->evaluate(\"'12.4'\")",};
 
-void tst_QScriptValue::isString_makeData(const char* expr)
+void tst_QScriptValueGenerated::isString_makeData(const char* expr)
 {
     static QSet<QString> isString;
     if (isString.isEmpty()) {
@@ -503,7 +503,7 @@ void tst_QScriptValue::isString_makeData(const char* expr)
     newRow(expr) << isString.contains(expr);
 }
 
-void tst_QScriptValue::isString_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::isString_test(const char*, const QScriptValue& value)
 {
     QFETCH(bool, expected);
     QCOMPARE(value.isString(), expected);
@@ -513,7 +513,7 @@ void tst_QScriptValue::isString_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(isString)
 
 
-void tst_QScriptValue::isUndefined_initData()
+void tst_QScriptValueGenerated::isUndefined_initData()
 {
     QTest::addColumn<bool>("expected");
     initScriptValues();
@@ -527,7 +527,7 @@ static QString isUndefined_array [] = {
     "engine->evaluate(\"undefined\")",
     "engine->undefinedValue()",};
 
-void tst_QScriptValue::isUndefined_makeData(const char* expr)
+void tst_QScriptValueGenerated::isUndefined_makeData(const char* expr)
 {
     static QSet<QString> isUndefined;
     if (isUndefined.isEmpty()) {
@@ -538,7 +538,7 @@ void tst_QScriptValue::isUndefined_makeData(const char* expr)
     newRow(expr) << isUndefined.contains(expr);
 }
 
-void tst_QScriptValue::isUndefined_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::isUndefined_test(const char*, const QScriptValue& value)
 {
     QFETCH(bool, expected);
     QCOMPARE(value.isUndefined(), expected);
@@ -548,7 +548,7 @@ void tst_QScriptValue::isUndefined_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(isUndefined)
 
 
-void tst_QScriptValue::isVariant_initData()
+void tst_QScriptValueGenerated::isVariant_initData()
 {
     QTest::addColumn<bool>("expected");
     initScriptValues();
@@ -559,7 +559,7 @@ static QString isVariant_array [] = {
     "engine->newVariant(QVariant(123))",
     "engine->newVariant(QVariant(false))",};
 
-void tst_QScriptValue::isVariant_makeData(const char* expr)
+void tst_QScriptValueGenerated::isVariant_makeData(const char* expr)
 {
     static QSet<QString> isVariant;
     if (isVariant.isEmpty()) {
@@ -570,7 +570,7 @@ void tst_QScriptValue::isVariant_makeData(const char* expr)
     newRow(expr) << isVariant.contains(expr);
 }
 
-void tst_QScriptValue::isVariant_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::isVariant_test(const char*, const QScriptValue& value)
 {
     QFETCH(bool, expected);
     QCOMPARE(value.isVariant(), expected);
@@ -580,7 +580,7 @@ void tst_QScriptValue::isVariant_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(isVariant)
 
 
-void tst_QScriptValue::isQObject_initData()
+void tst_QScriptValueGenerated::isQObject_initData()
 {
     QTest::addColumn<bool>("expected");
     initScriptValues();
@@ -589,7 +589,7 @@ void tst_QScriptValue::isQObject_initData()
 static QString isQObject_array [] = {
     "engine->newQObject(engine)",};
 
-void tst_QScriptValue::isQObject_makeData(const char* expr)
+void tst_QScriptValueGenerated::isQObject_makeData(const char* expr)
 {
     static QSet<QString> isQObject;
     if (isQObject.isEmpty()) {
@@ -600,7 +600,7 @@ void tst_QScriptValue::isQObject_makeData(const char* expr)
     newRow(expr) << isQObject.contains(expr);
 }
 
-void tst_QScriptValue::isQObject_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::isQObject_test(const char*, const QScriptValue& value)
 {
     QFETCH(bool, expected);
     QCOMPARE(value.isQObject(), expected);
@@ -610,7 +610,7 @@ void tst_QScriptValue::isQObject_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(isQObject)
 
 
-void tst_QScriptValue::isQMetaObject_initData()
+void tst_QScriptValueGenerated::isQMetaObject_initData()
 {
     QTest::addColumn<bool>("expected");
     initScriptValues();
@@ -619,7 +619,7 @@ void tst_QScriptValue::isQMetaObject_initData()
 static QString isQMetaObject_array [] = {
     "engine->newQMetaObject(&QObject::staticMetaObject)",};
 
-void tst_QScriptValue::isQMetaObject_makeData(const char* expr)
+void tst_QScriptValueGenerated::isQMetaObject_makeData(const char* expr)
 {
     static QSet<QString> isQMetaObject;
     if (isQMetaObject.isEmpty()) {
@@ -630,7 +630,7 @@ void tst_QScriptValue::isQMetaObject_makeData(const char* expr)
     newRow(expr) << isQMetaObject.contains(expr);
 }
 
-void tst_QScriptValue::isQMetaObject_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::isQMetaObject_test(const char*, const QScriptValue& value)
 {
     QFETCH(bool, expected);
     QCOMPARE(value.isQMetaObject(), expected);
@@ -640,7 +640,7 @@ void tst_QScriptValue::isQMetaObject_test(const char*, const QScriptValue& value
 DEFINE_TEST_FUNCTION(isQMetaObject)
 
 
-void tst_QScriptValue::isObject_initData()
+void tst_QScriptValueGenerated::isObject_initData()
 {
     QTest::addColumn<bool>("expected");
     initScriptValues();
@@ -678,7 +678,7 @@ static QString isObject_array [] = {
     "engine->newVariant(QVariant(false))",
     "engine->newQObject(engine)",};
 
-void tst_QScriptValue::isObject_makeData(const char* expr)
+void tst_QScriptValueGenerated::isObject_makeData(const char* expr)
 {
     static QSet<QString> isObject;
     if (isObject.isEmpty()) {
@@ -689,7 +689,7 @@ void tst_QScriptValue::isObject_makeData(const char* expr)
     newRow(expr) << isObject.contains(expr);
 }
 
-void tst_QScriptValue::isObject_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::isObject_test(const char*, const QScriptValue& value)
 {
     QFETCH(bool, expected);
     QCOMPARE(value.isObject(), expected);
@@ -699,7 +699,7 @@ void tst_QScriptValue::isObject_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(isObject)
 
 
-void tst_QScriptValue::isDate_initData()
+void tst_QScriptValueGenerated::isDate_initData()
 {
     QTest::addColumn<bool>("expected");
     initScriptValues();
@@ -709,7 +709,7 @@ static QString isDate_array [] = {
     "engine->evaluate(\"Date.prototype\")",
     "engine->newDate(QDateTime())",};
 
-void tst_QScriptValue::isDate_makeData(const char* expr)
+void tst_QScriptValueGenerated::isDate_makeData(const char* expr)
 {
     static QSet<QString> isDate;
     if (isDate.isEmpty()) {
@@ -720,7 +720,7 @@ void tst_QScriptValue::isDate_makeData(const char* expr)
     newRow(expr) << isDate.contains(expr);
 }
 
-void tst_QScriptValue::isDate_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::isDate_test(const char*, const QScriptValue& value)
 {
     QFETCH(bool, expected);
     QCOMPARE(value.isDate(), expected);
@@ -730,7 +730,7 @@ void tst_QScriptValue::isDate_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(isDate)
 
 
-void tst_QScriptValue::isRegExp_initData()
+void tst_QScriptValueGenerated::isRegExp_initData()
 {
     QTest::addColumn<bool>("expected");
     initScriptValues();
@@ -739,7 +739,7 @@ void tst_QScriptValue::isRegExp_initData()
 static QString isRegExp_array [] = {
     "engine->evaluate(\"/foo/\")",};
 
-void tst_QScriptValue::isRegExp_makeData(const char* expr)
+void tst_QScriptValueGenerated::isRegExp_makeData(const char* expr)
 {
     static QSet<QString> isRegExp;
     if (isRegExp.isEmpty()) {
@@ -750,7 +750,7 @@ void tst_QScriptValue::isRegExp_makeData(const char* expr)
     newRow(expr) << isRegExp.contains(expr);
 }
 
-void tst_QScriptValue::isRegExp_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::isRegExp_test(const char*, const QScriptValue& value)
 {
     QFETCH(bool, expected);
     QCOMPARE(value.isRegExp(), expected);
@@ -760,7 +760,7 @@ void tst_QScriptValue::isRegExp_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(isRegExp)
 
 
-void tst_QScriptValue::isArray_initData()
+void tst_QScriptValueGenerated::isArray_initData()
 {
     QTest::addColumn<bool>("expected");
     initScriptValues();
@@ -773,7 +773,7 @@ static QString isArray_array [] = {
     "engine->newArray()",
     "engine->newArray(10)",};
 
-void tst_QScriptValue::isArray_makeData(const char* expr)
+void tst_QScriptValueGenerated::isArray_makeData(const char* expr)
 {
     static QSet<QString> isArray;
     if (isArray.isEmpty()) {
@@ -784,7 +784,7 @@ void tst_QScriptValue::isArray_makeData(const char* expr)
     newRow(expr) << isArray.contains(expr);
 }
 
-void tst_QScriptValue::isArray_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::isArray_test(const char*, const QScriptValue& value)
 {
     QFETCH(bool, expected);
     QCOMPARE(value.isArray(), expected);
@@ -794,7 +794,7 @@ void tst_QScriptValue::isArray_test(const char*, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(isArray)
 
 
-void tst_QScriptValue::isError_initData()
+void tst_QScriptValueGenerated::isError_initData()
 {
     QTest::addColumn<bool>("expected");
     initScriptValues();
@@ -808,7 +808,7 @@ static QString isError_array [] = {
     "engine->evaluate(\"True\")",
     "engine->evaluate(\"False\")",};
 
-void tst_QScriptValue::isError_makeData(const char* expr)
+void tst_QScriptValueGenerated::isError_makeData(const char* expr)
 {
     static QSet<QString> isError;
     if (isError.isEmpty()) {
@@ -819,7 +819,7 @@ void tst_QScriptValue::isError_makeData(const char* expr)
     newRow(expr) << isError.contains(expr);
 }
 
-void tst_QScriptValue::isError_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::isError_test(const char*, const QScriptValue& value)
 {
     QFETCH(bool, expected);
     QCOMPARE(value.isError(), expected);

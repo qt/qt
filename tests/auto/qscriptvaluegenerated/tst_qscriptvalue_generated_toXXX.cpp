@@ -47,13 +47,13 @@
 
 
 
-void tst_QScriptValue::qscriptvalue_castQString_initData()
+void tst_QScriptValueGenerated::toString_initData()
 {
     QTest::addColumn<QString>("expected");
     initScriptValues();
 }
 
-static QString qscriptvalue_castQString_tagArray [] = {
+static QString toString_tagArray [] = {
     "QScriptValue()",
     "QScriptValue(QScriptValue::UndefinedValue)",
     "QScriptValue(QScriptValue::NullValue)",
@@ -196,9 +196,10 @@ static QString qscriptvalue_castQString_tagArray [] = {
     "engine->newVariant(QVariant(false))",
     "engine->newQObject(0)",
     "engine->newQObject(engine)",};
-static QString qscriptvalue_castQString_valueArray [] = {
-    "", "", 
-    "", "true", 
+
+static QString toString_valueArray [] = {
+    "", "undefined", 
+    "null", "true", 
     "false", "122", 
     "124", "0", 
     "0", "123", 
@@ -211,8 +212,8 @@ static QString qscriptvalue_castQString_valueArray [] = {
     "ciao", "ciao", 
     "", "", 
     "0", "123", 
-    "12.4", "", 
-    "", "true", 
+    "12.4", "undefined", 
+    "null", "true", 
     "false", "122", 
     "124", "0", 
     "0", "123", 
@@ -225,8 +226,8 @@ static QString qscriptvalue_castQString_valueArray [] = {
     "ciao", "ciao", 
     "", "", 
     "0", "123", 
-    "12.3", "", 
-    "", "true", 
+    "12.3", "undefined", 
+    "null", "true", 
     "false", "122", 
     "124", "0", 
     "0", "123", 
@@ -240,7 +241,7 @@ static QString qscriptvalue_castQString_valueArray [] = {
     "", "", 
     "0", "123", 
     "1.23", "", 
-    "", "[object Object]", 
+    "undefined", "[object Object]", 
     "Invalid Date", "", 
     "function () {\n    [native code]\n}", "Error: Unknown error", 
     "function Object() {\n    [native code]\n}", "function Array() {\n    [native code]\n}", 
@@ -251,7 +252,7 @@ static QString qscriptvalue_castQString_valueArray [] = {
     "Error: Unknown error", "22", 
     "ReferenceError: Can't find variable: Undefined", "ReferenceError: Can't find variable: Null", 
     "ReferenceError: Can't find variable: True", "ReferenceError: Can't find variable: False", 
-    "", "", 
+    "undefined", "null", 
     "true", "false", 
     "122", "124", 
     "0", "0", 
@@ -262,40 +263,41 @@ static QString qscriptvalue_castQString_valueArray [] = {
     "-Infinity", "ciao", 
     "", "0", 
     "123", "12.4", 
-    "", "", 
+    "null", "undefined", 
     "[object Object]", "", 
     ",,,,,,,,,", "Invalid Date", 
     "[object QMetaObject]", "undefined", 
     "123", "false", 
-    "", "QScriptEngine(name = \"\")", };
-void tst_QScriptValue::qscriptvalue_castQString_makeData(const char* expr)
+    "null", "QScriptEngine(name = \"\")", };
+
+void tst_QScriptValueGenerated::toString_makeData(const char* expr)
 {
-    static QHash<QString, QString> value;
-    if (value.isEmpty()) {
-        value.reserve(142);
+    static QHash<QString, QString> toString;
+    if (toString.isEmpty()) {
+        toString.reserve(142);
         for (unsigned i = 0; i < 142; ++i)
-            value.insert(qscriptvalue_castQString_tagArray[i], qscriptvalue_castQString_valueArray[i]);
+            toString.insert(toString_tagArray[i], toString_valueArray[i]);
     }
-    newRow(expr) << value.value(expr);
+    newRow(expr) << toString.value(expr);
 }
 
-void tst_QScriptValue::qscriptvalue_castQString_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::toString_test(const char*, const QScriptValue& value)
 {
     QFETCH(QString, expected);
-    QCOMPARE(qscriptvalue_cast<QString>(value), expected);
-    QCOMPARE(qscriptvalue_cast<QString>(value), expected);
+    QCOMPARE(value.toString(), expected);
+    QCOMPARE(value.toString(), expected);
 }
 
-DEFINE_TEST_FUNCTION(qscriptvalue_castQString)
+DEFINE_TEST_FUNCTION(toString)
 
 
-void tst_QScriptValue::qscriptvalue_castqsreal_initData()
+void tst_QScriptValueGenerated::toNumber_initData()
 {
     QTest::addColumn<qsreal>("expected");
     initScriptValues();
 }
 
-static QString qscriptvalue_castqsreal_tagArray [] = {
+static QString toNumber_tagArray [] = {
     "QScriptValue()",
     "QScriptValue(QScriptValue::UndefinedValue)",
     "QScriptValue(QScriptValue::NullValue)",
@@ -438,7 +440,7 @@ static QString qscriptvalue_castqsreal_tagArray [] = {
     "engine->newVariant(QVariant(false))",
     "engine->newQObject(0)",
     "engine->newQObject(engine)",};
-static qsreal qscriptvalue_castqsreal_valueArray [] = {
+static qsreal toNumber_valueArray [] = {
     0, qQNaN(), 0, 1, 0, 122, 124, 0, 0, 123, 
     6.369999999999999e-08, -6.369999999999999e-08, 1126240820, 65536, 65537, qQNaN(), qQNaN(), qInf(), qInf(), qQNaN(), 
     qInf(), qInf(), qQNaN(), qQNaN(), 0, 0, 0, 123, 12.4, qQNaN(), 
@@ -454,44 +456,43 @@ static qsreal qscriptvalue_castqsreal_valueArray [] = {
     65536, 65537, qQNaN(), qInf(), qInf(), qQNaN(), 0, 0, 123, 12.4, 
     0, qQNaN(), qQNaN(), 0, qQNaN(), qQNaN(), qQNaN(), qQNaN(), 123, 0, 
     0, qQNaN(), };
-void tst_QScriptValue::qscriptvalue_castqsreal_makeData(const char* expr)
+void tst_QScriptValueGenerated::toNumber_makeData(const char* expr)
 {
-    static QHash<QString, qsreal> value;
-    if (value.isEmpty()) {
-        value.reserve(142);
+    static QHash<QString, qsreal> toNumber;
+    if (toNumber.isEmpty()) {
+        toNumber.reserve(142);
         for (unsigned i = 0; i < 142; ++i)
-            value.insert(qscriptvalue_castqsreal_tagArray[i], qscriptvalue_castqsreal_valueArray[i]);
+            toNumber.insert(toNumber_tagArray[i], toNumber_valueArray[i]);
     }
-    newRow(expr) << value.value(expr);
+    newRow(expr) << toNumber.value(expr);
 }
 
-void tst_QScriptValue::qscriptvalue_castqsreal_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::toNumber_test(const char*, const QScriptValue& value)
 {
     QFETCH(qsreal, expected);
     if (qIsNaN(expected)) {
-        QVERIFY(qIsNaN(qscriptvalue_cast<qsreal>(value)));
-        QVERIFY(qIsNaN(qscriptvalue_cast<qsreal>(value)));
+        QVERIFY(qIsNaN(value.toNumber()));
         return;
     }
     if (qIsInf(expected)) {
-        QVERIFY(qIsInf(qscriptvalue_cast<qsreal>(value)));
-        QVERIFY(qIsInf(qscriptvalue_cast<qsreal>(value)));
+        QVERIFY(qIsInf(value.toNumber()));
+        QVERIFY(qIsInf(value.toNumber()));
         return;
     }
-    QCOMPARE(qscriptvalue_cast<qsreal>(value), expected);
-    QCOMPARE(qscriptvalue_cast<qsreal>(value), expected);
+    QCOMPARE(value.toNumber(), expected);
+    QCOMPARE(value.toNumber(), expected);
 }
 
-DEFINE_TEST_FUNCTION(qscriptvalue_castqsreal)
+DEFINE_TEST_FUNCTION(toNumber)
 
 
-void tst_QScriptValue::qscriptvalue_castbool_initData()
+void tst_QScriptValueGenerated::toBool_initData()
 {
     QTest::addColumn<bool>("expected");
     initScriptValues();
 }
 
-static QString qscriptvalue_castbool_tagArray [] = {
+static QString toBool_tagArray [] = {
     "QScriptValue()",
     "QScriptValue(QScriptValue::UndefinedValue)",
     "QScriptValue(QScriptValue::NullValue)",
@@ -634,7 +635,8 @@ static QString qscriptvalue_castbool_tagArray [] = {
     "engine->newVariant(QVariant(false))",
     "engine->newQObject(0)",
     "engine->newQObject(engine)",};
-static bool qscriptvalue_castbool_valueArray [] = {
+
+static bool toBool_valueArray [] = {
     false, false, 
     false, true, 
     false, true, 
@@ -706,34 +708,470 @@ static bool qscriptvalue_castbool_valueArray [] = {
     true, true, 
     true, true, 
     false, true, };
-void tst_QScriptValue::qscriptvalue_castbool_makeData(const char* expr)
+
+void tst_QScriptValueGenerated::toBool_makeData(const char* expr)
 {
-    static QHash<QString, bool> value;
-    if (value.isEmpty()) {
-        value.reserve(142);
+    static QHash<QString, bool> toBool;
+    if (toBool.isEmpty()) {
+        toBool.reserve(142);
         for (unsigned i = 0; i < 142; ++i)
-            value.insert(qscriptvalue_castbool_tagArray[i], qscriptvalue_castbool_valueArray[i]);
+            toBool.insert(toBool_tagArray[i], toBool_valueArray[i]);
     }
-    newRow(expr) << value.value(expr);
+    newRow(expr) << toBool.value(expr);
 }
 
-void tst_QScriptValue::qscriptvalue_castbool_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::toBool_test(const char*, const QScriptValue& value)
 {
     QFETCH(bool, expected);
-    QCOMPARE(qscriptvalue_cast<bool>(value), expected);
-    QCOMPARE(qscriptvalue_cast<bool>(value), expected);
+    QCOMPARE(value.toBool(), expected);
+    QCOMPARE(value.toBool(), expected);
 }
 
-DEFINE_TEST_FUNCTION(qscriptvalue_castbool)
+DEFINE_TEST_FUNCTION(toBool)
 
 
-void tst_QScriptValue::qscriptvalue_castqint32_initData()
+void tst_QScriptValueGenerated::toBoolean_initData()
+{
+    QTest::addColumn<bool>("expected");
+    initScriptValues();
+}
+
+static QString toBoolean_tagArray [] = {
+    "QScriptValue()",
+    "QScriptValue(QScriptValue::UndefinedValue)",
+    "QScriptValue(QScriptValue::NullValue)",
+    "QScriptValue(true)",
+    "QScriptValue(false)",
+    "QScriptValue(int(122))",
+    "QScriptValue(uint(124))",
+    "QScriptValue(0)",
+    "QScriptValue(0.0)",
+    "QScriptValue(123.0)",
+    "QScriptValue(6.37e-8)",
+    "QScriptValue(-6.37e-8)",
+    "QScriptValue(0x43211234)",
+    "QScriptValue(0x10000)",
+    "QScriptValue(0x10001)",
+    "QScriptValue(qSNaN())",
+    "QScriptValue(qQNaN())",
+    "QScriptValue(qInf())",
+    "QScriptValue(-qInf())",
+    "QScriptValue(\"NaN\")",
+    "QScriptValue(\"Infinity\")",
+    "QScriptValue(\"-Infinity\")",
+    "QScriptValue(\"ciao\")",
+    "QScriptValue(QString::fromLatin1(\"ciao\"))",
+    "QScriptValue(QString(\"\"))",
+    "QScriptValue(QString())",
+    "QScriptValue(QString(\"0\"))",
+    "QScriptValue(QString(\"123\"))",
+    "QScriptValue(QString(\"12.4\"))",
+    "QScriptValue(0, QScriptValue::UndefinedValue)",
+    "QScriptValue(0, QScriptValue::NullValue)",
+    "QScriptValue(0, true)",
+    "QScriptValue(0, false)",
+    "QScriptValue(0, int(122))",
+    "QScriptValue(0, uint(124))",
+    "QScriptValue(0, 0)",
+    "QScriptValue(0, 0.0)",
+    "QScriptValue(0, 123.0)",
+    "QScriptValue(0, 6.37e-8)",
+    "QScriptValue(0, -6.37e-8)",
+    "QScriptValue(0, 0x43211234)",
+    "QScriptValue(0, 0x10000)",
+    "QScriptValue(0, 0x10001)",
+    "QScriptValue(0, qSNaN())",
+    "QScriptValue(0, qQNaN())",
+    "QScriptValue(0, qInf())",
+    "QScriptValue(0, -qInf())",
+    "QScriptValue(0, \"NaN\")",
+    "QScriptValue(0, \"Infinity\")",
+    "QScriptValue(0, \"-Infinity\")",
+    "QScriptValue(0, \"ciao\")",
+    "QScriptValue(0, QString::fromLatin1(\"ciao\"))",
+    "QScriptValue(0, QString(\"\"))",
+    "QScriptValue(0, QString())",
+    "QScriptValue(0, QString(\"0\"))",
+    "QScriptValue(0, QString(\"123\"))",
+    "QScriptValue(0, QString(\"12.3\"))",
+    "QScriptValue(engine, QScriptValue::UndefinedValue)",
+    "QScriptValue(engine, QScriptValue::NullValue)",
+    "QScriptValue(engine, true)",
+    "QScriptValue(engine, false)",
+    "QScriptValue(engine, int(122))",
+    "QScriptValue(engine, uint(124))",
+    "QScriptValue(engine, 0)",
+    "QScriptValue(engine, 0.0)",
+    "QScriptValue(engine, 123.0)",
+    "QScriptValue(engine, 6.37e-8)",
+    "QScriptValue(engine, -6.37e-8)",
+    "QScriptValue(engine, 0x43211234)",
+    "QScriptValue(engine, 0x10000)",
+    "QScriptValue(engine, 0x10001)",
+    "QScriptValue(engine, qSNaN())",
+    "QScriptValue(engine, qQNaN())",
+    "QScriptValue(engine, qInf())",
+    "QScriptValue(engine, -qInf())",
+    "QScriptValue(engine, \"NaN\")",
+    "QScriptValue(engine, \"Infinity\")",
+    "QScriptValue(engine, \"-Infinity\")",
+    "QScriptValue(engine, \"ciao\")",
+    "QScriptValue(engine, QString::fromLatin1(\"ciao\"))",
+    "QScriptValue(engine, QString(\"\"))",
+    "QScriptValue(engine, QString())",
+    "QScriptValue(engine, QString(\"0\"))",
+    "QScriptValue(engine, QString(\"123\"))",
+    "QScriptValue(engine, QString(\"1.23\"))",
+    "engine->evaluate(\"[]\")",
+    "engine->evaluate(\"{}\")",
+    "engine->evaluate(\"Object.prototype\")",
+    "engine->evaluate(\"Date.prototype\")",
+    "engine->evaluate(\"Array.prototype\")",
+    "engine->evaluate(\"Function.prototype\")",
+    "engine->evaluate(\"Error.prototype\")",
+    "engine->evaluate(\"Object\")",
+    "engine->evaluate(\"Array\")",
+    "engine->evaluate(\"Number\")",
+    "engine->evaluate(\"Function\")",
+    "engine->evaluate(\"(function() { return 1; })\")",
+    "engine->evaluate(\"(function() { return 'ciao'; })\")",
+    "engine->evaluate(\"(function() { throw new Error('foo'); })\")",
+    "engine->evaluate(\"/foo/\")",
+    "engine->evaluate(\"new Object()\")",
+    "engine->evaluate(\"new Array()\")",
+    "engine->evaluate(\"new Error()\")",
+    "engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\")",
+    "engine->evaluate(\"Undefined\")",
+    "engine->evaluate(\"Null\")",
+    "engine->evaluate(\"True\")",
+    "engine->evaluate(\"False\")",
+    "engine->evaluate(\"undefined\")",
+    "engine->evaluate(\"null\")",
+    "engine->evaluate(\"true\")",
+    "engine->evaluate(\"false\")",
+    "engine->evaluate(\"122\")",
+    "engine->evaluate(\"124\")",
+    "engine->evaluate(\"0\")",
+    "engine->evaluate(\"0.0\")",
+    "engine->evaluate(\"123.0\")",
+    "engine->evaluate(\"6.37e-8\")",
+    "engine->evaluate(\"-6.37e-8\")",
+    "engine->evaluate(\"0x43211234\")",
+    "engine->evaluate(\"0x10000\")",
+    "engine->evaluate(\"0x10001\")",
+    "engine->evaluate(\"NaN\")",
+    "engine->evaluate(\"Infinity\")",
+    "engine->evaluate(\"-Infinity\")",
+    "engine->evaluate(\"'ciao'\")",
+    "engine->evaluate(\"''\")",
+    "engine->evaluate(\"'0'\")",
+    "engine->evaluate(\"'123'\")",
+    "engine->evaluate(\"'12.4'\")",
+    "engine->nullValue()",
+    "engine->undefinedValue()",
+    "engine->newObject()",
+    "engine->newArray()",
+    "engine->newArray(10)",
+    "engine->newDate(QDateTime())",
+    "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newVariant(QVariant())",
+    "engine->newVariant(QVariant(123))",
+    "engine->newVariant(QVariant(false))",
+    "engine->newQObject(0)",
+    "engine->newQObject(engine)",};
+
+static bool toBoolean_valueArray [] = {
+    false, false, 
+    false, true, 
+    false, true, 
+    true, false, 
+    false, true, 
+    true, true, 
+    true, true, 
+    true, false, 
+    false, true, 
+    true, true, 
+    true, true, 
+    true, true, 
+    false, false, 
+    true, true, 
+    true, false, 
+    false, true, 
+    false, true, 
+    true, false, 
+    false, true, 
+    true, true, 
+    true, true, 
+    true, false, 
+    false, true, 
+    true, true, 
+    true, true, 
+    true, true, 
+    false, false, 
+    true, true, 
+    true, false, 
+    false, true, 
+    false, true, 
+    true, false, 
+    false, true, 
+    true, true, 
+    true, true, 
+    true, false, 
+    false, true, 
+    true, true, 
+    true, true, 
+    true, true, 
+    false, false, 
+    true, true, 
+    true, true, 
+    false, true, 
+    true, true, 
+    true, true, 
+    true, true, 
+    true, true, 
+    true, true, 
+    true, true, 
+    true, true, 
+    true, true, 
+    true, true, 
+    true, true, 
+    false, false, 
+    true, false, 
+    true, true, 
+    false, false, 
+    true, true, 
+    true, true, 
+    true, true, 
+    false, true, 
+    true, true, 
+    false, true, 
+    true, true, 
+    false, false, 
+    true, true, 
+    true, true, 
+    true, true, 
+    true, true, 
+    false, true, };
+
+void tst_QScriptValueGenerated::toBoolean_makeData(const char* expr)
+{
+    static QHash<QString, bool> toBoolean;
+    if (toBoolean.isEmpty()) {
+        toBoolean.reserve(142);
+        for (unsigned i = 0; i < 142; ++i)
+            toBoolean.insert(toBoolean_tagArray[i], toBoolean_valueArray[i]);
+    }
+    newRow(expr) << toBoolean.value(expr);
+}
+
+void tst_QScriptValueGenerated::toBoolean_test(const char*, const QScriptValue& value)
+{
+    QFETCH(bool, expected);
+    QCOMPARE(value.toBoolean(), expected);
+    QCOMPARE(value.toBoolean(), expected);
+}
+
+DEFINE_TEST_FUNCTION(toBoolean)
+
+
+void tst_QScriptValueGenerated::toInteger_initData()
+{
+    QTest::addColumn<qsreal>("expected");
+    initScriptValues();
+}
+
+static QString toInteger_tagArray [] = {
+    "QScriptValue()",
+    "QScriptValue(QScriptValue::UndefinedValue)",
+    "QScriptValue(QScriptValue::NullValue)",
+    "QScriptValue(true)",
+    "QScriptValue(false)",
+    "QScriptValue(int(122))",
+    "QScriptValue(uint(124))",
+    "QScriptValue(0)",
+    "QScriptValue(0.0)",
+    "QScriptValue(123.0)",
+    "QScriptValue(6.37e-8)",
+    "QScriptValue(-6.37e-8)",
+    "QScriptValue(0x43211234)",
+    "QScriptValue(0x10000)",
+    "QScriptValue(0x10001)",
+    "QScriptValue(qSNaN())",
+    "QScriptValue(qQNaN())",
+    "QScriptValue(qInf())",
+    "QScriptValue(-qInf())",
+    "QScriptValue(\"NaN\")",
+    "QScriptValue(\"Infinity\")",
+    "QScriptValue(\"-Infinity\")",
+    "QScriptValue(\"ciao\")",
+    "QScriptValue(QString::fromLatin1(\"ciao\"))",
+    "QScriptValue(QString(\"\"))",
+    "QScriptValue(QString())",
+    "QScriptValue(QString(\"0\"))",
+    "QScriptValue(QString(\"123\"))",
+    "QScriptValue(QString(\"12.4\"))",
+    "QScriptValue(0, QScriptValue::UndefinedValue)",
+    "QScriptValue(0, QScriptValue::NullValue)",
+    "QScriptValue(0, true)",
+    "QScriptValue(0, false)",
+    "QScriptValue(0, int(122))",
+    "QScriptValue(0, uint(124))",
+    "QScriptValue(0, 0)",
+    "QScriptValue(0, 0.0)",
+    "QScriptValue(0, 123.0)",
+    "QScriptValue(0, 6.37e-8)",
+    "QScriptValue(0, -6.37e-8)",
+    "QScriptValue(0, 0x43211234)",
+    "QScriptValue(0, 0x10000)",
+    "QScriptValue(0, 0x10001)",
+    "QScriptValue(0, qSNaN())",
+    "QScriptValue(0, qQNaN())",
+    "QScriptValue(0, qInf())",
+    "QScriptValue(0, -qInf())",
+    "QScriptValue(0, \"NaN\")",
+    "QScriptValue(0, \"Infinity\")",
+    "QScriptValue(0, \"-Infinity\")",
+    "QScriptValue(0, \"ciao\")",
+    "QScriptValue(0, QString::fromLatin1(\"ciao\"))",
+    "QScriptValue(0, QString(\"\"))",
+    "QScriptValue(0, QString())",
+    "QScriptValue(0, QString(\"0\"))",
+    "QScriptValue(0, QString(\"123\"))",
+    "QScriptValue(0, QString(\"12.3\"))",
+    "QScriptValue(engine, QScriptValue::UndefinedValue)",
+    "QScriptValue(engine, QScriptValue::NullValue)",
+    "QScriptValue(engine, true)",
+    "QScriptValue(engine, false)",
+    "QScriptValue(engine, int(122))",
+    "QScriptValue(engine, uint(124))",
+    "QScriptValue(engine, 0)",
+    "QScriptValue(engine, 0.0)",
+    "QScriptValue(engine, 123.0)",
+    "QScriptValue(engine, 6.37e-8)",
+    "QScriptValue(engine, -6.37e-8)",
+    "QScriptValue(engine, 0x43211234)",
+    "QScriptValue(engine, 0x10000)",
+    "QScriptValue(engine, 0x10001)",
+    "QScriptValue(engine, qSNaN())",
+    "QScriptValue(engine, qQNaN())",
+    "QScriptValue(engine, qInf())",
+    "QScriptValue(engine, -qInf())",
+    "QScriptValue(engine, \"NaN\")",
+    "QScriptValue(engine, \"Infinity\")",
+    "QScriptValue(engine, \"-Infinity\")",
+    "QScriptValue(engine, \"ciao\")",
+    "QScriptValue(engine, QString::fromLatin1(\"ciao\"))",
+    "QScriptValue(engine, QString(\"\"))",
+    "QScriptValue(engine, QString())",
+    "QScriptValue(engine, QString(\"0\"))",
+    "QScriptValue(engine, QString(\"123\"))",
+    "QScriptValue(engine, QString(\"1.23\"))",
+    "engine->evaluate(\"[]\")",
+    "engine->evaluate(\"{}\")",
+    "engine->evaluate(\"Object.prototype\")",
+    "engine->evaluate(\"Date.prototype\")",
+    "engine->evaluate(\"Array.prototype\")",
+    "engine->evaluate(\"Function.prototype\")",
+    "engine->evaluate(\"Error.prototype\")",
+    "engine->evaluate(\"Object\")",
+    "engine->evaluate(\"Array\")",
+    "engine->evaluate(\"Number\")",
+    "engine->evaluate(\"Function\")",
+    "engine->evaluate(\"(function() { return 1; })\")",
+    "engine->evaluate(\"(function() { return 'ciao'; })\")",
+    "engine->evaluate(\"(function() { throw new Error('foo'); })\")",
+    "engine->evaluate(\"/foo/\")",
+    "engine->evaluate(\"new Object()\")",
+    "engine->evaluate(\"new Array()\")",
+    "engine->evaluate(\"new Error()\")",
+    "engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\")",
+    "engine->evaluate(\"Undefined\")",
+    "engine->evaluate(\"Null\")",
+    "engine->evaluate(\"True\")",
+    "engine->evaluate(\"False\")",
+    "engine->evaluate(\"undefined\")",
+    "engine->evaluate(\"null\")",
+    "engine->evaluate(\"true\")",
+    "engine->evaluate(\"false\")",
+    "engine->evaluate(\"122\")",
+    "engine->evaluate(\"124\")",
+    "engine->evaluate(\"0\")",
+    "engine->evaluate(\"0.0\")",
+    "engine->evaluate(\"123.0\")",
+    "engine->evaluate(\"6.37e-8\")",
+    "engine->evaluate(\"-6.37e-8\")",
+    "engine->evaluate(\"0x43211234\")",
+    "engine->evaluate(\"0x10000\")",
+    "engine->evaluate(\"0x10001\")",
+    "engine->evaluate(\"NaN\")",
+    "engine->evaluate(\"Infinity\")",
+    "engine->evaluate(\"-Infinity\")",
+    "engine->evaluate(\"'ciao'\")",
+    "engine->evaluate(\"''\")",
+    "engine->evaluate(\"'0'\")",
+    "engine->evaluate(\"'123'\")",
+    "engine->evaluate(\"'12.4'\")",
+    "engine->nullValue()",
+    "engine->undefinedValue()",
+    "engine->newObject()",
+    "engine->newArray()",
+    "engine->newArray(10)",
+    "engine->newDate(QDateTime())",
+    "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newVariant(QVariant())",
+    "engine->newVariant(QVariant(123))",
+    "engine->newVariant(QVariant(false))",
+    "engine->newQObject(0)",
+    "engine->newQObject(engine)",};
+static qsreal toInteger_valueArray [] = {
+    0, 0, 0, 1, 0, 122, 124, 0, 0, 123, 
+    0, 0, 1126240820, 65536, 65537, 0, 0, qInf(), qInf(), 0, 
+    qInf(), qInf(), 0, 0, 0, 0, 0, 123, 12, 0, 
+    0, 1, 0, 122, 124, 0, 0, 123, 0, 0, 
+    1126240820, 65536, 65537, 0, 0, qInf(), qInf(), 0, qInf(), qInf(), 
+    0, 0, 0, 0, 0, 123, 12, 0, 0, 1, 
+    0, 122, 124, 0, 0, 123, 0, 0, 1126240820, 65536, 
+    65537, 0, 0, qInf(), qInf(), 0, qInf(), qInf(), 0, 0, 
+    0, 0, 0, 123, 1, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 22, 0, 0, 0, 0, 0, 0, 
+    1, 0, 122, 124, 0, 0, 123, 0, 0, 1126240820, 
+    65536, 65537, 0, qInf(), qInf(), 0, 0, 0, 123, 12, 
+    0, 0, 0, 0, 0, 0, 0, 0, 123, 0, 
+    0, 0, };
+void tst_QScriptValueGenerated::toInteger_makeData(const char* expr)
+{
+    static QHash<QString, qsreal> toInteger;
+    if (toInteger.isEmpty()) {
+        toInteger.reserve(142);
+        for (unsigned i = 0; i < 142; ++i)
+            toInteger.insert(toInteger_tagArray[i], toInteger_valueArray[i]);
+    }
+    newRow(expr) << toInteger.value(expr);
+}
+
+void tst_QScriptValueGenerated::toInteger_test(const char*, const QScriptValue& value)
+{
+    QFETCH(qsreal, expected);
+    if (qIsInf(expected)) {
+        QVERIFY(qIsInf(value.toInteger()));
+        QVERIFY(qIsInf(value.toInteger()));
+        return;
+    }
+    QCOMPARE(value.toInteger(), expected);
+    QCOMPARE(value.toInteger(), expected);
+}
+
+DEFINE_TEST_FUNCTION(toInteger)
+
+
+void tst_QScriptValueGenerated::toInt32_initData()
 {
     QTest::addColumn<qint32>("expected");
     initScriptValues();
 }
 
-static QString qscriptvalue_castqint32_tagArray [] = {
+static QString toInt32_tagArray [] = {
     "QScriptValue()",
     "QScriptValue(QScriptValue::UndefinedValue)",
     "QScriptValue(QScriptValue::NullValue)",
@@ -876,7 +1314,8 @@ static QString qscriptvalue_castqint32_tagArray [] = {
     "engine->newVariant(QVariant(false))",
     "engine->newQObject(0)",
     "engine->newQObject(engine)",};
-static qint32 qscriptvalue_castqint32_valueArray [] = {
+
+static qint32 toInt32_valueArray [] = {
     0, 0, 
     0, 1, 
     0, 122, 
@@ -948,34 +1387,35 @@ static qint32 qscriptvalue_castqint32_valueArray [] = {
     0, 0, 
     123, 0, 
     0, 0, };
-void tst_QScriptValue::qscriptvalue_castqint32_makeData(const char* expr)
+
+void tst_QScriptValueGenerated::toInt32_makeData(const char* expr)
 {
-    static QHash<QString, qint32> value;
-    if (value.isEmpty()) {
-        value.reserve(142);
+    static QHash<QString, qint32> toInt32;
+    if (toInt32.isEmpty()) {
+        toInt32.reserve(142);
         for (unsigned i = 0; i < 142; ++i)
-            value.insert(qscriptvalue_castqint32_tagArray[i], qscriptvalue_castqint32_valueArray[i]);
+            toInt32.insert(toInt32_tagArray[i], toInt32_valueArray[i]);
     }
-    newRow(expr) << value.value(expr);
+    newRow(expr) << toInt32.value(expr);
 }
 
-void tst_QScriptValue::qscriptvalue_castqint32_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::toInt32_test(const char*, const QScriptValue& value)
 {
     QFETCH(qint32, expected);
-    QCOMPARE(qscriptvalue_cast<qint32>(value), expected);
-    QCOMPARE(qscriptvalue_cast<qint32>(value), expected);
+    QCOMPARE(value.toInt32(), expected);
+    QCOMPARE(value.toInt32(), expected);
 }
 
-DEFINE_TEST_FUNCTION(qscriptvalue_castqint32)
+DEFINE_TEST_FUNCTION(toInt32)
 
 
-void tst_QScriptValue::qscriptvalue_castquint32_initData()
+void tst_QScriptValueGenerated::toUInt32_initData()
 {
     QTest::addColumn<quint32>("expected");
     initScriptValues();
 }
 
-static QString qscriptvalue_castquint32_tagArray [] = {
+static QString toUInt32_tagArray [] = {
     "QScriptValue()",
     "QScriptValue(QScriptValue::UndefinedValue)",
     "QScriptValue(QScriptValue::NullValue)",
@@ -1118,7 +1558,8 @@ static QString qscriptvalue_castquint32_tagArray [] = {
     "engine->newVariant(QVariant(false))",
     "engine->newQObject(0)",
     "engine->newQObject(engine)",};
-static quint32 qscriptvalue_castquint32_valueArray [] = {
+
+static quint32 toUInt32_valueArray [] = {
     0, 0, 
     0, 1, 
     0, 122, 
@@ -1190,34 +1631,35 @@ static quint32 qscriptvalue_castquint32_valueArray [] = {
     0, 0, 
     123, 0, 
     0, 0, };
-void tst_QScriptValue::qscriptvalue_castquint32_makeData(const char* expr)
+
+void tst_QScriptValueGenerated::toUInt32_makeData(const char* expr)
 {
-    static QHash<QString, quint32> value;
-    if (value.isEmpty()) {
-        value.reserve(142);
+    static QHash<QString, quint32> toUInt32;
+    if (toUInt32.isEmpty()) {
+        toUInt32.reserve(142);
         for (unsigned i = 0; i < 142; ++i)
-            value.insert(qscriptvalue_castquint32_tagArray[i], qscriptvalue_castquint32_valueArray[i]);
+            toUInt32.insert(toUInt32_tagArray[i], toUInt32_valueArray[i]);
     }
-    newRow(expr) << value.value(expr);
+    newRow(expr) << toUInt32.value(expr);
 }
 
-void tst_QScriptValue::qscriptvalue_castquint32_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::toUInt32_test(const char*, const QScriptValue& value)
 {
     QFETCH(quint32, expected);
-    QCOMPARE(qscriptvalue_cast<quint32>(value), expected);
-    QCOMPARE(qscriptvalue_cast<quint32>(value), expected);
+    QCOMPARE(value.toUInt32(), expected);
+    QCOMPARE(value.toUInt32(), expected);
 }
 
-DEFINE_TEST_FUNCTION(qscriptvalue_castquint32)
+DEFINE_TEST_FUNCTION(toUInt32)
 
 
-void tst_QScriptValue::qscriptvalue_castquint16_initData()
+void tst_QScriptValueGenerated::toUInt16_initData()
 {
     QTest::addColumn<quint16>("expected");
     initScriptValues();
 }
 
-static QString qscriptvalue_castquint16_tagArray [] = {
+static QString toUInt16_tagArray [] = {
     "QScriptValue()",
     "QScriptValue(QScriptValue::UndefinedValue)",
     "QScriptValue(QScriptValue::NullValue)",
@@ -1360,7 +1802,8 @@ static QString qscriptvalue_castquint16_tagArray [] = {
     "engine->newVariant(QVariant(false))",
     "engine->newQObject(0)",
     "engine->newQObject(engine)",};
-static quint16 qscriptvalue_castquint16_valueArray [] = {
+
+static quint16 toUInt16_valueArray [] = {
     0, 0, 
     0, 1, 
     0, 122, 
@@ -1432,22 +1875,23 @@ static quint16 qscriptvalue_castquint16_valueArray [] = {
     0, 0, 
     123, 0, 
     0, 0, };
-void tst_QScriptValue::qscriptvalue_castquint16_makeData(const char* expr)
+
+void tst_QScriptValueGenerated::toUInt16_makeData(const char* expr)
 {
-    static QHash<QString, quint16> value;
-    if (value.isEmpty()) {
-        value.reserve(142);
+    static QHash<QString, quint16> toUInt16;
+    if (toUInt16.isEmpty()) {
+        toUInt16.reserve(142);
         for (unsigned i = 0; i < 142; ++i)
-            value.insert(qscriptvalue_castquint16_tagArray[i], qscriptvalue_castquint16_valueArray[i]);
+            toUInt16.insert(toUInt16_tagArray[i], toUInt16_valueArray[i]);
     }
-    newRow(expr) << value.value(expr);
+    newRow(expr) << toUInt16.value(expr);
 }
 
-void tst_QScriptValue::qscriptvalue_castquint16_test(const char*, const QScriptValue& value)
+void tst_QScriptValueGenerated::toUInt16_test(const char*, const QScriptValue& value)
 {
     QFETCH(quint16, expected);
-    QCOMPARE(qscriptvalue_cast<quint16>(value), expected);
-    QCOMPARE(qscriptvalue_cast<quint16>(value), expected);
+    QCOMPARE(value.toUInt16(), expected);
+    QCOMPARE(value.toUInt16(), expected);
 }
 
-DEFINE_TEST_FUNCTION(qscriptvalue_castquint16)
+DEFINE_TEST_FUNCTION(toUInt16)
