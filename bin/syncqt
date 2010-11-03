@@ -880,7 +880,7 @@ foreach my $lib (@modules_to_sync) {
                             @headers = ( "$out_basedir/include/$lib/private/$header" );
                         }
                         foreach(@headers) { #sync them
-                            $header_copies++ if(syncHeader($_, $iheader, $copy_headers, $ts));
+                            $header_copies++ if(syncHeader($_, $iheader, $copy_headers && !$shadow, $ts));
                         }
 
                         if($public_header) {
