@@ -92,10 +92,12 @@ void HTMLPage::writeHeader(const ImageItem &item)
     out << "<h3>Host: " << plat.hostName << " [" << address << "] OS: " << plat.osName << " [enum: " << plat.osVersion << "]</h3>\n";
     out << "<h3>Qt version: " << plat.qtVersion << " [commit: " << plat.gitCommit << "] Build key: \"" << plat.buildKey << "\"</h3>\n";
     out << "<h3>Engine: " << item.engineAsString() << " Format: " << item.formatAsString() << "</h3>\n\n";
+#if 0
     out << "<h3><a href=\"/cgi-bin/server.cgi?cmd=updateAllBaselines&id="<< id << "&host=" << plat.hostName
         << "&engine=" << item.engineAsString() << "&format=" << item.formatAsString()
         << "&url=" << pageUrl
         << "\">Update all baselines</a><br>";
+#endif
     out << "<table border=\"2\">\n"
            "<tr>\n"
            "<td><b>Script</b></td>\n"
@@ -129,11 +131,14 @@ void HTMLPage::addItem(const QString &baseline, const QString &rendered, const I
         out << "<td><a href=\"/" << img << "\"><img src=\"/" << img << "\" width=240 height=240></a></td>\n";
     out << "<td><a href=\"/cgi-bin/server.cgi?cmd=updateSingleBaseline&oldBaseline=" << baseline
         << "&newBaseline=" << rendered << "&url=" << pageUrl << "\">Update baseline</a><br>"
+#if 0
            "<a href=\"/cgi-bin/server.cgi?cmd=blacklist&scriptName=" << item.scriptName
            << "&host=" << plat.hostName << "&engine=" << item.engineAsString()
            << "&format=" << item.formatAsString()
-           << "&url=" << pageUrl << "\">Blacklist test</a></td>\n";
-    out << "<tr>\n\n";
+           << "&url=" << pageUrl << "\">Blacklist test</a>"
+#endif
+        << "</td>\n";
+        out << "</tr>\n\n";
 
     QMutableVectorIterator<ImageItem> it(imageItems);
     while (it.hasNext()) {
@@ -164,7 +169,7 @@ void HTMLPage::end()
             } else {
                 out << "<span style=\"color:green\">Test passed</span>";
             }
-            out << "</td><tr>";
+            out << "</td></tr>\n";
         }
 
         writeFooter();
