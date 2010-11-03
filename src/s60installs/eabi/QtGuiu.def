@@ -12101,4 +12101,7 @@ EXPORTS
 	_ZN19QApplicationPrivate25qmljsDebugArgumentsStringEv @ 12100 NONAME
 	_ZNK5QFont14lastResortFontEv @ 12101 NONAME
 	_ZN11QFontEngine33convertToPostscriptFontFamilyNameERK10QByteArray @ 12102 NONAME
+	_ZN15QStaticTextItem13setFontEngineEP11QFontEngine @ 12103 NONAME
+	_ZN15QStaticTextItemD1Ev @ 12104 NONAME
+	_ZN15QStaticTextItemD2Ev @ 12105 NONAME
 

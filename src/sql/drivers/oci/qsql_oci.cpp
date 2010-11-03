@@ -93,11 +93,13 @@ enum { QOCIEncoding = 2002 }; // AL16UTF16LE
 enum { QOCIEncoding = 2000 }; // AL16UTF16
 #endif
 
+#ifdef OCI_ATTR_CHARSET_FORM
 // Always set the OCI_ATTR_CHARSET_FORM to SQLCS_NCHAR is safe
 // because Oracle server will deal with the implicit Conversion
 // Between CHAR and NCHAR.
 // see: http://download.oracle.com/docs/cd/A91202_01/901_doc/appdev.901/a89857/oci05bnd.htm#422705 
 static const ub1 qOraCharsetForm = SQLCS_NCHAR;
+#endif
 
 #if defined (OCI_UTF16ID)
 static const ub2 qOraCharset = OCI_UTF16ID;
@@ -116,6 +118,8 @@ static // for some reason, Sun CC can't use qOraWarning when it's declared stati
 #endif
 void qOraWarning(const char* msg, OCIError *err);
 static QSqlError qMakeError(const QString& errString, QSqlError::ErrorType type, OCIError *err);
+
+
 
 class QOCIRowId: public QSharedData
 {
@@ -164,7 +168,6 @@ struct QOCIResultPrivate
     int serverVersion;
     int prefetchRows, prefetchMem;
 
-    void setCharset(OCIBind* hbnd);
     void setStatementAttributes();
     int bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, int pos,
                   const QVariant &val, dvoid *indPtr, ub2 *tmpSize, QList<QByteArray> &tmpStorage);
@@ -176,6 +179,41 @@ struct QOCIResultPrivate
     { return q->bindValueType(i) & QSql::Out; }
     inline bool isBinaryValue(int i) const
     { return q->bindValueType(i) & QSql::Binary; }
+
+    void setCharset(dvoid* handle, ub4 type) const
+    {
+        int r = 0;
+        Q_ASSERT(handle);
+
+#ifdef OCI_ATTR_CHARSET_FORM
+        r = OCIAttrSet(handle,
+                       type,
+                       // this const cast is safe since OCI doesn't touch
+                       // the charset.
+                       const_cast<void *>(static_cast<const void *>(&qOraCharsetForm)),
+                       0,
+                       OCI_ATTR_CHARSET_FORM,
+                       //Strange Oracle bug: some Oracle servers crash the server process with non-zero error handle (mostly for 10g).
+                       //So ignore the error message here.
+                       0);
+        #ifdef QOCI_DEBUG
+        if (r != 0)
+            qWarning("QOCIResultPrivate::setCharset: Couldn't set OCI_ATTR_CHARSET_FORM.");
+        #endif
+#endif
+
+        r = OCIAttrSet(handle,
+                       type,
+                       // this const cast is safe since OCI doesn't touch
+                       // the charset.
+                       const_cast<void *>(static_cast<const void *>(&qOraCharset)),
+                       0,
+                       OCI_ATTR_CHARSET_ID,
+                       err);
+        if (r != 0)
+            qOraWarning("QOCIResultPrivate::setCharsetI Couldn't set OCI_ATTR_CHARSET_ID: ", err);
+
+    }
 };
 
 void QOCIResultPrivate::setStatementAttributes()
@@ -206,36 +244,6 @@ void QOCIResultPrivate::setStatementAttributes()
             qOraWarning("QOCIResultPrivate::setStatementAttributes:"
                         " Couldn't set OCI_ATTR_PREFETCH_MEMORY: ", err);
     }
-}
-
-void QOCIResultPrivate::setCharset(OCIBind* hbnd)
-{
-    int r = 0;
-
-    Q_ASSERT(hbnd);
-
-    r = OCIAttrSet(hbnd,
-                   OCI_HTYPE_BIND,
-                   // this const cast is safe since OCI doesn't touch
-                   // the charset.
-                   const_cast<void *>(static_cast<const void *>(&qOraCharsetForm)),
-                   0,
-                   OCI_ATTR_CHARSET_FORM,
-                   err);
-    if (r != 0)
-        qOraWarning("QOCIResultPrivate::setCharset: Couldn't set OCI_ATTR_CHARSET_FORM: ", err);
-
-    r = OCIAttrSet(hbnd,
-                   OCI_HTYPE_BIND,
-                   // this const cast is safe since OCI doesn't touch
-                   // the charset.
-                   const_cast<void *>(static_cast<const void *>(&qOraCharset)),
-                   0,
-                   OCI_ATTR_CHARSET_ID,
-                   err);
-    if (r != 0)
-        qOraWarning("QOCIResultPrivate::setCharset: Couldn't set OCI_ATTR_CHARSET_ID: ", err);
-
 }
 
 int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, int pos,
@@ -283,6 +291,14 @@ int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, in
                          sizeof(uint),
                          SQLT_UIN, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
         break;
+    case QVariant::LongLong:
+        r = OCIBindByPos(sql, hbnd, err,
+                           pos + 1,
+                           // if it's an out value, the data is already detached
+                           // so the const cast is safe.
+                           const_cast<void *>(data),
+                           sizeof(OCINumber),
+                           SQLT_VNU, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
     case QVariant::Double:
         r = OCIBindByPos(sql, hbnd, err,
                          pos + 1,
@@ -325,7 +341,7 @@ int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, in
                              (s.length() + 1) * sizeof(QChar),
                              SQLT_STR, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
             if (r == OCI_SUCCESS)
-                setCharset(*hbnd);
+                setCharset(*hbnd, OCI_HTYPE_BIND);
             break;
         }
     } // fall through for OUT values
@@ -349,7 +365,7 @@ int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, in
                              SQLT_STR, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
         }
         if (r == OCI_SUCCESS)
-            setCharset(*hbnd);
+            setCharset(*hbnd, OCI_HTYPE_BIND);
         tmpStorage.append(ba);
         break;
     } // default case
@@ -688,7 +704,6 @@ class QOCICols
 public:
     QOCICols(int size, QOCIResultPrivate* dp);
     ~QOCICols();
-    void setCharset(OCIDefine* dfn);
     int readPiecewise(QVector<QVariant> &values, int index = 0);
     int readLOBs(QVector<QVariant> &values, int index = 0);
     int fieldFromDefine(OCIDefine* d);
@@ -890,7 +905,7 @@ QOCICols::QOCICols(int size, QOCIResultPrivate* dp)
                         &(fieldInf[idx].ind),
                         0, 0, OCI_DEFAULT);
                 if (r == 0)
-                    setCharset(dfn);
+                    d->setCharset(dfn, OCI_HTYPE_DEFINE);
             }
            break;
         default:
@@ -948,35 +963,6 @@ OCILobLocator **QOCICols::createLobLocator(int position, OCIEnv* env)
         lob = 0;
     }
     return &lob;
-}
-
-void QOCICols::setCharset(OCIDefine* dfn)
-{
-    int r = 0;
-
-    Q_ASSERT(dfn);
-
-    r = OCIAttrSet(dfn,
-                   OCI_HTYPE_DEFINE,
-                   // this const cast is safe since OCI doesn't touch
-                   // the charset.
-                   const_cast<void *>(static_cast<const void *>(&qOraCharsetForm)),
-                   0,
-                   OCI_ATTR_CHARSET_FORM,
-                   d->err);
-    if (r != 0)
-        qOraWarning("QOCIResultPrivate::setCharset: Couldn't set OCI_ATTR_CHARSET_FORM: ", d->err);
-
-    r = OCIAttrSet(dfn,
-                   OCI_HTYPE_DEFINE,
-                   // this const cast is safe since OCI doesn't touch
-                   // the charset.
-                   const_cast<void *>(static_cast<const void *>(&qOraCharset)),
-                   0,
-                   OCI_ATTR_CHARSET_ID,
-                   d->err);
-        if (r != 0)
-            qOraWarning("QOCICols::setCharset: Couldn't set OCI_ATTR_CHARSET_ID: ", d->err);
 }
 
 int QOCICols::readPiecewise(QVector<QVariant> &values, int index)
