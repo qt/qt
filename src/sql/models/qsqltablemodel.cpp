@@ -393,6 +393,8 @@ QString QSqlTableModel::tableName() const
     specified filter and sort condition, and returns true if successful; otherwise
     returns false.
 
+    \note Calling select() will revert any unsubmitted changes and remove any inserted columns.
+
     \sa setTable(), setFilter(), selectStatement()
 */
 bool QSqlTableModel::select()
