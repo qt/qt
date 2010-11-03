@@ -101,7 +101,7 @@
     }
     a
     {
-        color: #44a51c;
+        color: #00732F;
         text-decoration: none;
     }
     hr
@@ -1008,7 +1008,7 @@
 	/*display:inline-block;*/
 	margin-left:10px;
 	min-width:250px;
-	line-height: 1.2;
+	line-height: 1.5;
 	min-width:100%;
 	min-height:15px;
 	}
