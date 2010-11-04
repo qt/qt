@@ -70,7 +70,9 @@
 # define SRCDIR ""
 #endif
 
+QT_BEGIN_NAMESPACE
 extern Q_AUTOTEST_EXPORT bool qIsLikelyToBeNfs(int /* handle */);
+QT_END_NAMESPACE
 
 //TESTED_CLASS=
 //TESTED_FILES=
