@@ -163,7 +163,7 @@ protected slots:
 
 private:
     QComboBox *testWidget;
-    QDialog *parent;
+    QWidget *parent;
     QPushButton* ok;
     int editTextCount;
     QString editText;
@@ -395,7 +395,7 @@ tst_QComboBox::~tst_QComboBox()
 void tst_QComboBox::initTestCase()
 {
     // Create the test class
-    parent = new QDialog(0);
+    parent = new QWidget(0, Qt::Window);
     parent->setObjectName("parent");
     parent->resize(400, 400);
     testWidget = new QComboBox(parent);
@@ -1914,7 +1914,8 @@ void tst_QComboBox::itemListPosition()
 
     //we test QFontComboBox because it has the specific behaviour to set a fixed size
     //to the list view
-    QFontComboBox combo;
+    QWidget topLevel;
+    QFontComboBox combo(&topLevel);
 
     //the code to get the avaialbe screen space is copied from QComboBox code
     const int scrNumber = QApplication::desktop()->screenNumber(&combo);
@@ -1932,7 +1933,7 @@ void tst_QComboBox::itemListPosition()
 
     combo.move(screen.width()-combo.sizeHint().width(), 0); //puts the combo to the top-right corner
 
-    combo.show();
+    topLevel.show();
     //wait because the window manager can move the window if there is a right panel
     QTRY_VERIFY(combo.isVisible());
     combo.showPopup();
@@ -2254,9 +2255,10 @@ void tst_QComboBox::noScrollbar()
     qApp->setStyleSheet(stylesheet);
 
     {
-        QComboBox comboBox;
+        QWidget topLevel;
+        QComboBox comboBox(&topLevel);
         comboBox.addItems(initialContent);
-        comboBox.show();
+        topLevel.show();
         comboBox.resize(200, comboBox.height());
         QTRY_VERIFY(comboBox.isVisible());
         comboBox.showPopup();
