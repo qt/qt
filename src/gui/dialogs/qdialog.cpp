@@ -1111,7 +1111,7 @@ QSize QDialog::sizeHint() const
     // if size is not fixed, try to adjust it according to S60 layoutting
     if (minimumSize() != maximumSize()) {
         // In S60, dialogs are always the width of screen (in portrait, regardless of current layout)
-        return QSize(qMax(S60->screenHeightInPixels, S60->screenWidthInPixels), QWidget::sizeHint().height());
+        return QSize(qMin(S60->screenHeightInPixels, S60->screenWidthInPixels), QWidget::sizeHint().height());
     } else {
         return QWidget::sizeHint();
     }
