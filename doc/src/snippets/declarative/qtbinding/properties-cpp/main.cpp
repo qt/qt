@@ -37,26 +37,22 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QtCore>
+#include <QtDeclarative>
 
-#include "stopwatch.h"
+#include "applicationdata.h"
 
-Stopwatch::Stopwatch()
-    : m_running(false)
-{
-}
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
 
-bool Stopwatch::isRunning() const
-{
-    return m_running;
-}
+    QDeclarativeView view;
 
-void Stopwatch::start()
-{
-    m_running = true;
-}
+    ApplicationData data;
+    view.rootContext()->setContextProperty("applicationData", &data);
 
-void Stopwatch::stop()
-{
-    m_running = false;
+    view.setSource(QUrl::fromLocalFile("MyItem.qml"));
+    view.show();
+
+    return app.exec();
 }
 

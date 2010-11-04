@@ -288,23 +288,25 @@ qreal QDeclarativeImage::paintedHeight() const
     Use this status to provide an update or respond to the status change in some way.
     For example, you could:
 
-    \e {Trigger a state change:}
-    \qml 
-        State { name: 'loaded'; when: image.status = Image.Ready }
+    \list
+    \o Trigger a state change:
+    \qml
+        State { name: 'loaded'; when: image.status == Image.Ready }
     \endqml
 
-    \e {Implement an \c onStatusChanged signal handler:}
-    \qml 
+    \o Implement an \c onStatusChanged signal handler:
+    \qml
         Image {
             id: image
             onStatusChanged: if (image.status == Image.Ready) console.log('Loaded')
         }
     \endqml
 
-    \e {Bind to the status value:}
+    \o Bind to the status value:
     \qml
-        Text { text: image.status != Image.Ready ? 'Not Loaded' : 'Loaded' }
+        Text { text: image.status == Image.Ready ? 'Loaded' : 'Not loaded' }
     \endqml
+    \endlist
 
     \sa progress
 */

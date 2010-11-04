@@ -37,25 +37,26 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QtCore>
+#include <QtDeclarative>
 
-#include <QApplication>
-#include <QDeclarativeView>
-#include <QDeclarativeContext>
+#include "imageviewer.h"
 
-#include "custompalette.h"
+void ImageViewer::setImage(const QUrl &url) {}
+QUrl ImageViewer::image() const { return QUrl(); }
 
-//![0]
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    QDeclarativeView view;
-    view.rootContext()->setContextProperty("palette", new CustomPalette);
+    //![register]
+    qmlRegisterType<ImageViewer>("MyLibrary", 1, 0, "ImageViewer");
+    //![register]
 
-    view.setSource(QUrl::fromLocalFile("main.qml"));
+    QDeclarativeView view;
+    view.setSource(QUrl::fromLocalFile("standalone.qml"));
     view.show();
 
     return app.exec();
 }
-//![0]
 

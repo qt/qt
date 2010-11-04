@@ -37,10 +37,25 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QtCore>
+#include <QtDeclarative>
+
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
 
 //![0]
-// main.qml
-import QtQuick 1.0
+QDeclarativeEngine engine;
+QDeclarativeComponent component(&engine, "MyItem.qml");
+QObject *object = component.create();
 
-Image { source: "images/background.png" }
+qDebug() << "Property value:" << QDeclarativeProperty::read(object, "someNumber").toInt();
+QDeclarativeProperty::write(object, "someNumber", 5000);
+
+qDebug() << "Property value:" << object->property("someNumber").toInt();
+object->setProperty("someNumber", 100);
 //![0]
+
+    return app.exec();
+}
+

@@ -37,10 +37,37 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QtCore>
+#include <QtDeclarative>
 
-//![0]
-// main.qml
-import QtQuick 1.0
+#include "imageviewer.h"
 
-Image { source: "images/background.png" }
-//![0]
+ImageViewer::ImageViewer(QDeclarativeItem *parent)
+    : QDeclarativeItem(parent)
+{
+    QTimer::singleShot(0, this, SLOT(emitSignals()));
+}
+
+ImageViewer::Status ImageViewer::status() const
+{
+    return Ready;
+}
+
+void ImageViewer::emitSignals()
+{
+    emit statusChanged();
+}
+
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
+
+    qmlRegisterType<ImageViewer>("MyLibrary", 1, 0, "ImageViewer");
+
+    QDeclarativeView view;
+    view.setSource(QUrl::fromLocalFile("standalone.qml"));
+    view.show();
+
+    return app.exec();
+}
+

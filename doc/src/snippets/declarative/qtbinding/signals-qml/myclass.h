@@ -37,10 +37,15 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+#include <QObject>
+#include <QDebug>
 //![0]
-// main.qml
-import QtQuick 1.0
-
-Image { source: "images/background.png" }
+class MyClass : public QObject
+{
+    Q_OBJECT
+public slots:
+    void cppSlot(const QString &msg) {
+        qDebug() << "Called the C++ slot with message:" << msg;
+    }
+};
 //![0]

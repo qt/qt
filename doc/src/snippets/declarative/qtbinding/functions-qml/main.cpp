@@ -37,26 +37,27 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QtCore>
+#include <QtDeclarative>
 
-#include "stopwatch.h"
-
-#include <QDeclarativeView>
-#include <QDeclarativeContext>
-#include <QApplication>
-
-//![0]
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    QDeclarativeView view;
-    view.rootContext()->setContextProperty("stopwatch",
-                                           new Stopwatch);
-
-    view.setSource(QUrl::fromLocalFile("main.qml"));
-    view.show();
-
-    return app.exec();
-}
 //![0]
+// main.cpp
+QDeclarativeEngine engine;
+QDeclarativeComponent component(&engine, "MyItem.qml");
+QObject *object = component.create();
+
+QVariant returnedValue;
+QVariant msg = "Hello from C++";
+QMetaObject::invokeMethod(object, "myQmlFunction",
+        Q_RETURN_ARG(QVariant, returnedValue),
+        Q_ARG(QVariant, msg));
+
+qDebug() << "QML function returned:" << returnedValue.toString();
+delete object;
+//![0]
+}
 
