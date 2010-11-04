@@ -370,7 +370,8 @@ void QSqlQueryModel::setQuery(const QSqlQuery &query)
 /*! \overload
 
     Executes the query \a query for the given database connection \a
-    db. If no database is specified, the default connection is used.
+    db. If no database (or an invalid database) is specified, the
+    default connection is used.
 
     lastError() can be used to retrieve verbose information if there
     was an error setting the query.
