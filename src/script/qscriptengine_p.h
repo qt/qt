@@ -107,7 +107,6 @@ public:
     v8::Handle<v8::FunctionTemplate> qtClassTemplate(const QMetaObject *);
     v8::Handle<v8::FunctionTemplate> qobjectTemplate();
 
-    inline v8::Handle<v8::Value> makeJSValue();
     inline v8::Handle<v8::Value> makeJSValue(bool value);
     inline v8::Handle<v8::Value> makeJSValue(int value);
     inline v8::Handle<v8::Value> makeJSValue(uint value);
@@ -115,7 +114,6 @@ public:
     inline v8::Handle<v8::Value> makeJSValue(QScriptValue::SpecialValue value);
     inline v8::Handle<v8::Value> makeJSValue(const QString& value);
     inline bool isError(const QScriptValuePrivate* value) const;
-    inline bool isInvalid(v8::Handle<v8::Value> value) const;
     inline v8::Local<v8::Array> getOwnPropertyNames(v8::Handle<v8::Object> object) const;
     inline QScriptValue::PropertyFlags getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property, const QScriptValue::ResolveFlags& mode);
     inline v8::Local<v8::Value> getOwnProperty(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property) const;
@@ -232,11 +230,6 @@ private:
     TypeInfos m_typeInfos;
 };
 
-v8::Handle<v8::Value> QScriptEnginePrivate::makeJSValue()
-{
-    return m_originalGlobalObject.invalid();
-}
-
 v8::Handle<v8::Value> QScriptEnginePrivate::makeJSValue(bool value)
 {
     return value ? v8::True() : v8::False();
@@ -281,15 +274,6 @@ inline QScriptEnginePrivate::operator v8::Handle<v8::Context>()
 inline bool QScriptEnginePrivate::isError(const QScriptValuePrivate* value) const
 {
     return m_originalGlobalObject.isError(value);
-}
-
-/*!
-  \internal
-  Check if given value is an invalid value bound to this engine.
-*/
-inline bool QScriptEnginePrivate::isInvalid(v8::Handle<v8::Value> value) const
-{
-    return m_originalGlobalObject.isInvalid(value);
 }
 
 /*!

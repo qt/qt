@@ -305,8 +305,6 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate *engine, v8::Handl
     // It shouldn't happen, v8 shows errors by returning an empty handler. This is important debug
     // information and it can't be simply ignored.
     Q_ASSERT(!value.IsEmpty());
-    if (engine->isInvalid(value))
-        reinitialize();
 }
 
 QScriptValuePrivate::~QScriptValuePrivate()
@@ -594,7 +592,7 @@ inline bool QScriptValuePrivate::isNumber() const
 
 inline bool QScriptValuePrivate::isObject() const
 {
-    return isJSBased() && !engine()->isInvalid(m_value) && m_value->IsObject();
+    return isJSBased() && m_value->IsObject();
 }
 
 inline bool QScriptValuePrivate::isString() const
@@ -609,7 +607,7 @@ inline bool QScriptValuePrivate::isUndefined() const
 
 inline bool QScriptValuePrivate::isValid() const
 {
-    return !(m_state == Invalid || (isJSBased() && engine()->isInvalid(m_value)));
+    return m_state != Invalid;
 }
 
 inline bool QScriptValuePrivate::isVariant() const
@@ -957,8 +955,11 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(T n
     v8::HandleScope handleScope;
     v8::Handle<v8::Object> self(v8::Object::Cast(*m_value));
 
+    v8::TryCatch tryCatch;
     v8::Handle<v8::Value> result = self->Get(name);
-    if (result->IsUndefined() && !self->Has(name)) {
+    // FIXME: Result may be empty if a property accessor throw an exception, but for some reasons
+    // tryCatch.HasCaught() returns false.
+    if (result.IsEmpty() || (result->IsUndefined() && !self->Has(name))) {
         // In QtScript we make a distinction between a property that exists and has value undefined,
         // and a property that doesn't exist; in the latter case, we should return an invalid value.
         return new QScriptValuePrivate();
@@ -1235,14 +1236,9 @@ void QScriptValuePrivate::reinitialize(QScriptEnginePrivate* engine, v8::Handle<
     } else if (isStringBased()) {
         delete u.m_string;
     }
-    if (engine->isInvalid(value)) {
-        engine = 0;
-        m_state = Invalid;
-    } else {
-        m_engine = engine;
-        m_state = JSValue;
-        m_value = v8::Persistent<v8::Value>::New(value);
-    }
+    m_engine = engine;
+    m_state = JSValue;
+    m_value = v8::Persistent<v8::Value>::New(value);
 }
 
 QScriptEnginePrivate* QScriptValuePrivate::engine() const

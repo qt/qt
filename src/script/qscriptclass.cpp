@@ -44,7 +44,7 @@ v8::Handle<v8::Value> QScriptClassObject::property(v8::Local<v8::String> propert
         v8::Handle<v8::Value> originalResult = original->Get(property);
         if (!scriptclass || (!originalResult.IsEmpty() && !originalResult->IsUndefined())) {
             if (originalResult->IsUndefined() && !original->Has(property))
-                return handleScope.Close(engine->makeJSValue());
+                return handleScope.Close(v8::ThrowException(v8::Exception::ReferenceError(property)));
             return handleScope.Close(originalResult);
         }
     }

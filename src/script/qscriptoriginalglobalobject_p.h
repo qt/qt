@@ -53,13 +53,10 @@ public:
     inline void destroy();
 
     inline bool isError(const QScriptValuePrivate* value) const;
-    inline bool isInvalid(v8::Handle<v8::Value> value) const;
     inline v8::Local<v8::Array> getOwnPropertyNames(v8::Handle<v8::Object> object) const;
     inline QScriptValue::PropertyFlags getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property, const QScriptValue::ResolveFlags& mode);
     inline v8::Local<v8::Value> getOwnProperty(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property) const;
     inline void installArgFunctionOnOrgStringPrototype(v8::Handle<v8::Function> arg);
-
-    inline v8::Handle<v8::Value> invalid() const;
 private:
     Q_DISABLE_COPY(QScriptOriginalGlobalObject)
     inline v8::Local<v8::Object> getOwnPropertyDescriptor(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property) const;
@@ -74,7 +71,6 @@ private:
     v8::Persistent<v8::Function> m_ownPropertyDescriptor;
     v8::Persistent<v8::Function> m_ownPropertyNames;
     v8::Persistent<v8::Object> m_globalObject;
-    v8::Persistent<v8::Value> m_invalidValue;
 };
 
 QScriptOriginalGlobalObject::QScriptOriginalGlobalObject(v8::Handle<v8::Context> context)
@@ -97,8 +93,6 @@ QScriptOriginalGlobalObject::QScriptOriginalGlobalObject(v8::Handle<v8::Context>
         Q_ASSERT(!ownPropertyNames.IsEmpty());
         m_ownPropertyNames= v8::Persistent<v8::Function>::New(v8::Handle<v8::Function>::Cast(ownPropertyNames));
     }
-
-    m_invalidValue = v8::Persistent<v8::Value>::New(v8::Object::New());
 }
 
 inline void QScriptOriginalGlobalObject::initializeMember(v8::Handle<v8::String> prototypeName, v8::Handle<v8::Value> type, v8::Persistent<v8::Object>& constructor, v8::Persistent<v8::Value>& prototype)
@@ -127,7 +121,6 @@ QScriptOriginalGlobalObject::~QScriptOriginalGlobalObject()
     Q_ASSERT_X(m_ownPropertyDescriptor.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
     Q_ASSERT_X(m_ownPropertyNames.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
     Q_ASSERT_X(m_globalObject.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
-    Q_ASSERT_X(m_invalidValue.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
 }
 
 inline void QScriptOriginalGlobalObject::destroy()
@@ -139,7 +132,6 @@ inline void QScriptOriginalGlobalObject::destroy()
     m_ownPropertyNames.Dispose();
     m_ownPropertyDescriptor.Dispose();
     m_globalObject.Dispose();
-    m_invalidValue.Dispose();
 #ifndef QT_NO_DEBUG
     m_errorConstructor.Clear();
     m_errorPrototype.Clear();
@@ -148,18 +140,12 @@ inline void QScriptOriginalGlobalObject::destroy()
     m_ownPropertyNames.Clear();
     m_ownPropertyDescriptor.Clear();
     m_globalObject.Clear();
-    m_invalidValue.Clear();
 #endif
 }
 
 inline bool QScriptOriginalGlobalObject::isError(const QScriptValuePrivate* value) const
 {
     return isType(value, m_errorConstructor, m_errorPrototype);
-}
-
-inline bool QScriptOriginalGlobalObject::isInvalid(v8::Handle<v8::Value> value) const
-{
-    return m_invalidValue->StrictEquals(value);
 }
 
 inline v8::Local<v8::Array> QScriptOriginalGlobalObject::getOwnPropertyNames(v8::Handle<v8::Object> object) const
@@ -212,11 +198,6 @@ inline v8::Local<v8::Value> QScriptOriginalGlobalObject::getOwnProperty(v8::Hand
 inline void QScriptOriginalGlobalObject::installArgFunctionOnOrgStringPrototype(v8::Handle<v8::Function> arg)
 {
     v8::Handle<v8::Object>::Cast(m_stringPrototype)->Set(v8::String::New("arg"), arg);
-}
-
-inline v8::Handle<v8::Value> QScriptOriginalGlobalObject::invalid() const
-{
-    return m_invalidValue;
 }
 
 inline v8::Local<v8::Object> QScriptOriginalGlobalObject::getOwnPropertyDescriptor(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property) const

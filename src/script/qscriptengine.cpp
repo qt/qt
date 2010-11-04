@@ -1433,7 +1433,7 @@ static v8::Handle<v8::Value> QtGlobalObjectNamedPropertyGetter(v8::Local<v8::Str
     // always intercepts
     v8::Local<v8::Value> result = customGlobalObject->Get(property);
     if (result->IsUndefined() && !customGlobalObject->Has(property))
-        return handleScope.Close(engine->makeJSValue());
+        return handleScope.Close(v8::ThrowException(v8::Exception::ReferenceError(property)));
     return handleScope.Close(result);
 }
 
@@ -1490,7 +1490,7 @@ static v8::Handle<v8::Value> QtGlobalObjectIndexedPropertyGetter(uint32_t index,
         // FIXME: I think it should be GetRealIndexedProperty
         return handleScope.Close(customGlobalObject->Get(index));
     }
-    return handleScope.Close(engine->makeJSValue());
+    return handleScope.Close(v8::ThrowException(v8::Exception::ReferenceError(QScriptConverter::toString(QString::number(index)))));
 }
 
 static v8::Handle<v8::Value> QtGlobalObjectIndexedPropertySetter(uint32_t index, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
