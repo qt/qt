@@ -66,10 +66,10 @@ void QDeclarativeDebugTrace::startRange(RangeType t)
         traceInstance()->startRangeImpl(t);
 }
 
-void QDeclarativeDebugTrace::rangeData(RangeType t, const QUrl &url)
+void QDeclarativeDebugTrace::rangeData(RangeType t, const QString &data)
 {
     if (QDeclarativeDebugService::isDebuggingEnabled()) 
-        traceInstance()->rangeDataImpl(t, url);
+        traceInstance()->rangeDataImpl(t, data);
 }
 
 void QDeclarativeDebugTrace::endRange(RangeType t)
@@ -100,14 +100,14 @@ void QDeclarativeDebugTrace::startRangeImpl(RangeType range)
     processMessage(data);
 }
 
-void QDeclarativeDebugTrace::rangeDataImpl(RangeType range, const QUrl &u)
+void QDeclarativeDebugTrace::rangeDataImpl(RangeType range, const QString &rData)
 {
     if (status() != Enabled || !m_enabled)
         return;
 
     QByteArray data;
     QDataStream ds(&data, QIODevice::WriteOnly);
-    ds << m_timer.elapsed() << (int)RangeData << (int)range << (QString)u.toString();
+    ds << m_timer.elapsed() << (int)RangeData << (int)range << rData;
     processMessage(data);
 }
 

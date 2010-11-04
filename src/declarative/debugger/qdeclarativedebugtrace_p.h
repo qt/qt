@@ -83,7 +83,7 @@ public:
     static void addEvent(EventType);
 
     static void startRange(RangeType);
-    static void rangeData(RangeType, const QUrl &);
+    static void rangeData(RangeType, const QString &);
     static void endRange(RangeType);
 
     QDeclarativeDebugTrace();
@@ -92,7 +92,7 @@ protected:
 private:
     void addEventImpl(EventType);
     void startRangeImpl(RangeType);
-    void rangeDataImpl(RangeType, const QUrl &);
+    void rangeDataImpl(RangeType, const QString &);
     void endRangeImpl(RangeType);
     void processMessage(const QByteArray &);
     void sendMessages();

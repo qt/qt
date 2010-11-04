@@ -117,9 +117,10 @@ QDeclarativeProperty QDeclarativeBinding::property() const
 
 class QDeclarativeBindingProfiler {
 public:
-    QDeclarativeBindingProfiler()
+    QDeclarativeBindingProfiler(QDeclarativeBinding *bind)
     {
         QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Binding);
+        //QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::Binding, bind->expression());
     }
 
     ~QDeclarativeBindingProfiler()
@@ -136,7 +137,7 @@ void QDeclarativeBinding::update(QDeclarativePropertyPrivate::WriteFlags flags)
         return;
 
     if (!d->updating) {
-        QDeclarativeBindingProfiler prof;
+        QDeclarativeBindingProfiler prof(this);
         d->updating = true;
         bool wasDeleted = false;
         d->deleted = &wasDeleted;
