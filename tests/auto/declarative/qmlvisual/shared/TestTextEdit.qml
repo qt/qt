@@ -7,7 +7,7 @@ TextEdit {
     font.family: fixedFont.name
     font.pixelSize: 12
     cursorDelegate: Rectangle {
-            width: 1; 
+            width: 1;
             color: "black";
             visible: edit.cursorVisible
     }
