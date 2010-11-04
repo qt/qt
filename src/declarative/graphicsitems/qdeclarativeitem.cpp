@@ -1955,12 +1955,8 @@ void QDeclarativeItem::geometryChanged(const QRectF &newGeometry,
             change.listener->itemGeometryChanged(this, newGeometry, oldGeometry);
     }
 
-    if (newGeometry.x() != oldGeometry.x())
-        emit xChanged();
     if (newGeometry.width() != oldGeometry.width())
         emit widthChanged();
-    if (newGeometry.y() != oldGeometry.y())
-        emit yChanged();
     if (newGeometry.height() != oldGeometry.height())
         emit heightChanged();
 }

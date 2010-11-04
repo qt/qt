@@ -1074,7 +1074,7 @@ VisualTest {
     }
     Frame {
         msec: 3296
-        hash: "52831480eb69184341b12ffb09ace736"
+        hash: "58f2b900bc335424fc70eaaeb23ceb56"
     }
     Frame {
         msec: 3312
@@ -1082,59 +1082,59 @@ VisualTest {
     }
     Frame {
         msec: 3328
-        hash: "58f2b900bc335424fc70eaaeb23ceb56"
-    }
-    Frame {
-        msec: 3344
         hash: "544275da3f7e2ccaedc8c521bf17f59b"
     }
     Frame {
-        msec: 3360
+        msec: 3344
         hash: "df9fef370c2f6ff300b20fc24b5b9e34"
     }
     Frame {
-        msec: 3376
-        hash: "99cdc74eefc8c7c7df4650b373d8bc15"
-    }
-    Frame {
-        msec: 3392
+        msec: 3360
         hash: "0662898d246e5ff6981610d32e2b8375"
     }
     Frame {
-        msec: 3408
-        hash: "651b4c8b7a241263d48e645e603a55a3"
+        msec: 3376
+        hash: "6c04761cc86d28112c16f692cda58ba4"
     }
     Frame {
-        msec: 3424
+        msec: 3392
         hash: "82b31c8e8794ce3a9a6a635ef93b29b3"
     }
     Frame {
-        msec: 3440
+        msec: 3408
         hash: "388658b5e03f3853e93173bd9501b77b"
     }
     Frame {
-        msec: 3456
+        msec: 3424
         hash: "cf1856e961e6b8277a82c03ace5ba864"
     }
     Frame {
-        msec: 3472
+        msec: 3440
         hash: "e1d022cc1b41098baffe49925b20678f"
     }
     Frame {
-        msec: 3488
-        hash: "ee55d155fa495f3a0da8c21ad56dfc61"
+        msec: 3456
+        hash: "a63f8e6b194f900acb1b7a332f9fb9ae"
     }
     Frame {
-        msec: 3504
+        msec: 3472
         hash: "044c3712a6a5f6a973defe85643c8d02"
     }
     Frame {
-        msec: 3520
+        msec: 3488
+        hash: "044c3712a6a5f6a973defe85643c8d02"
+    }
+    Frame {
+        msec: 3504
         hash: "e4fe2f1a81a4a4806f4155807f285a2d"
     }
     Frame {
+        msec: 3520
+        hash: "19c43fcf2875769c9a15f1ce317a0f1e"
+    }
+    Frame {
         msec: 3536
-        hash: "e4fe2f1a81a4a4806f4155807f285a2d"
+        hash: "19c43fcf2875769c9a15f1ce317a0f1e"
     }
     Frame {
         msec: 3552
