@@ -1,4 +1,5 @@
 import QtQuick 1.0
+import "../../shared" 1.0
 
 Rectangle {
     width: 500
@@ -9,7 +10,7 @@ Rectangle {
         height: myText.height
         color: "white"
         anchors.centerIn: parent
-        Text {
+        TestText {
             id: myText
             NumberAnimation on width { from: 500; to: 0; loops: Animation.Infinite; duration: 5000 }
             elide: "ElideRight"

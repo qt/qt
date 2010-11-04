@@ -1,4 +1,5 @@
 import QtQuick 1.0
+import "../../shared" 1.0
 
 Rectangle {
     width: 400; height: 200
@@ -6,16 +7,16 @@ Rectangle {
     Row {
         spacing: 20
         anchors.centerIn: parent
-        Text {
+        TestText {
             text: "First line\nSecond line"; wrapMode: Text.Wrap
         }
-        Text {
+        TestText {
             text: "First line\nSecond line"; width: 70
         }
-        Text {
+        TestText {
             text: "First Second\nThird Fourth"; wrapMode: Text.Wrap; width: 50
         }
-        Text {
+        TestText {
             text: "First line<br>Second line"; textFormat: Text.StyledText
         }
     }

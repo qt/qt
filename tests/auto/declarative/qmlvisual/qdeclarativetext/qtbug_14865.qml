@@ -1,9 +1,10 @@
 import QtQuick 1.0
+import "../shared" 1.0
 
 Rectangle {
     width: 200; height: 200
 
-    Text {
+    TestText {
         id: label
         objectName: "label"
         text: "Hello world!"
