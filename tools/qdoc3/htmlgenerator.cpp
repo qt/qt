@@ -3719,7 +3719,11 @@ void HtmlGenerator::findAllClasses(const InnerNode *node)
                      (*c)->subType() == Node::QmlClass &&
                      !(*c)->doc().isEmpty()) {
                 QString qmlClassName = (*c)->name();
-                qmlClasses.insert(qmlClassName,*c);
+                // Remove the "QML:" prefix if present.
+                if (qmlClassName.startsWith(QLatin1String("QML:")))
+                    qmlClasses.insert(qmlClassName.mid(4),*c);
+                else
+                    qmlClasses.insert(qmlClassName,*c);
             }
             else if ((*c)->isInnerNode()) {
                 findAllClasses(static_cast<InnerNode *>(*c));
