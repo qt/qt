@@ -52,7 +52,6 @@ public:
     inline ~QScriptOriginalGlobalObject();
     inline void destroy();
 
-    inline bool isError(const QScriptValuePrivate* value) const;
     inline v8::Local<v8::Array> getOwnPropertyNames(v8::Handle<v8::Object> object) const;
     inline QScriptValue::PropertyFlags getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property, const QScriptValue::ResolveFlags& mode);
     inline v8::Local<v8::Value> getOwnProperty(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property) const;
@@ -60,12 +59,9 @@ public:
 private:
     Q_DISABLE_COPY(QScriptOriginalGlobalObject)
     inline v8::Local<v8::Object> getOwnPropertyDescriptor(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property) const;
-    bool isType(const QScriptValuePrivate* value, v8::Handle<v8::Object> constructor, v8::Handle<v8::Value> prototype) const;
     inline void initializeMember(v8::Handle<v8::String> prototypeName, v8::Handle<v8::Value> type, v8::Persistent<v8::Object>& constructor, v8::Persistent<v8::Value>& prototype);
 
     // Copy of constructors and prototypes used in isType functions.
-    v8::Persistent<v8::Object> m_errorConstructor;
-    v8::Persistent<v8::Value> m_errorPrototype;
     v8::Persistent<v8::Object> m_stringConstructor;
     v8::Persistent<v8::Value> m_stringPrototype;
     v8::Persistent<v8::Function> m_ownPropertyDescriptor;
@@ -78,7 +74,6 @@ QScriptOriginalGlobalObject::QScriptOriginalGlobalObject(v8::Handle<v8::Context>
     v8::Context::Scope contextScope(context);
     v8::HandleScope handleScope;
     m_globalObject = v8::Persistent<v8::Object>::New(context->Global());
-    initializeMember(v8::String::New("prototype"), v8::String::New("Error"), m_errorConstructor, m_errorPrototype);
     initializeMember(v8::String::New("prototype"), v8::String::New("String"), m_stringConstructor, m_stringPrototype);
 
     v8::Handle<v8::Value> objectConstructor = m_globalObject->Get(v8::String::New("Object"));
@@ -114,8 +109,6 @@ QScriptOriginalGlobalObject::~QScriptOriginalGlobalObject()
     // QScriptOriginalGlobalObject live as long as QScriptEnginePrivate that keeps it. In ~QSEP
     // the v8 context is removed, so we need to remove our handlers before. It is why destroy method
     // should be called before destructor.
-    Q_ASSERT_X(m_errorConstructor.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
-    Q_ASSERT_X(m_errorPrototype.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
     Q_ASSERT_X(m_stringConstructor.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
     Q_ASSERT_X(m_stringPrototype.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
     Q_ASSERT_X(m_ownPropertyDescriptor.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
@@ -125,27 +118,18 @@ QScriptOriginalGlobalObject::~QScriptOriginalGlobalObject()
 
 inline void QScriptOriginalGlobalObject::destroy()
 {
-    m_errorConstructor.Dispose();
-    m_errorPrototype.Dispose();
     m_stringConstructor.Dispose();
     m_stringPrototype.Dispose();
     m_ownPropertyNames.Dispose();
     m_ownPropertyDescriptor.Dispose();
     m_globalObject.Dispose();
 #ifndef QT_NO_DEBUG
-    m_errorConstructor.Clear();
-    m_errorPrototype.Clear();
     m_stringConstructor.Clear();
     m_stringPrototype.Clear();
     m_ownPropertyNames.Clear();
     m_ownPropertyDescriptor.Clear();
     m_globalObject.Clear();
 #endif
-}
-
-inline bool QScriptOriginalGlobalObject::isError(const QScriptValuePrivate* value) const
-{
-    return isType(value, m_errorConstructor, m_errorPrototype);
 }
 
 inline v8::Local<v8::Array> QScriptOriginalGlobalObject::getOwnPropertyNames(v8::Handle<v8::Object> object) const

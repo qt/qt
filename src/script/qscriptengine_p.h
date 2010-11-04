@@ -113,7 +113,6 @@ public:
     inline v8::Handle<v8::Value> makeJSValue(qsreal value);
     inline v8::Handle<v8::Value> makeJSValue(QScriptValue::SpecialValue value);
     inline v8::Handle<v8::Value> makeJSValue(const QString& value);
-    inline bool isError(const QScriptValuePrivate* value) const;
     inline v8::Local<v8::Array> getOwnPropertyNames(v8::Handle<v8::Object> object) const;
     inline QScriptValue::PropertyFlags getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property, const QScriptValue::ResolveFlags& mode);
     inline v8::Local<v8::Value> getOwnProperty(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property) const;
@@ -264,16 +263,6 @@ v8::Handle<v8::Value> QScriptEnginePrivate::makeJSValue(const QString& value)
 inline QScriptEnginePrivate::operator v8::Handle<v8::Context>()
 {
     return m_v8Context;
-}
-
-/*!
-  \internal
-  Check if given value is an Error instance
-  \attention value had to be an object.
-*/
-inline bool QScriptEnginePrivate::isError(const QScriptValuePrivate* value) const
-{
-    return m_originalGlobalObject.isError(value);
 }
 
 /*!

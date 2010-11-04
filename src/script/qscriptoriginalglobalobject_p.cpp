@@ -22,26 +22,7 @@
 ****************************************************************************/
 
 #include "qscriptoriginalglobalobject_p.h"
-#include "qscriptvalue_p.h"
 
 QT_BEGIN_NAMESPACE
-
-bool QScriptOriginalGlobalObject::isType(const QScriptValuePrivate* value, v8::Handle<v8::Object> constructor, v8::Handle<v8::Value> prototype) const
-{
-    // FIXME re-check this comment
-    // V8 API doesn't export the [[Class]] information for the builtins. But we know that a value
-    // is an object of the Type if it was created with the Type constructor or if it is the Type.prototype.
-    Q_ASSERT(value->isObject());
-
-    bool result = value->instanceOf(constructor);
-    if (result)
-        return true;
-    // FIXME Creating QSVP just for comparision is a waste of time.
-    QScriptValuePrivate* tmp = new QScriptValuePrivate(value->engine(), prototype);
-    // value is pointing to an object so strictlyEquals can't change it. We can safely const_cast.
-    result = const_cast<QScriptValuePrivate*>(value)->strictlyEquals(tmp);
-    delete tmp;
-    return result;
-}
 
 QT_END_NAMESPACE

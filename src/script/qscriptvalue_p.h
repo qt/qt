@@ -572,7 +572,7 @@ inline bool QScriptValuePrivate::isError() const
     if (!isJSBased())
         return false;
     v8::HandleScope handleScope;
-    return m_value->IsObject() && engine()->isError(this);
+    return m_value->IsError();
 }
 
 inline bool QScriptValuePrivate::isFunction() const
