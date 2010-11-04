@@ -4918,7 +4918,7 @@ void QOpenGLPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     d->flushDrawQueue();
 
     // make sure the glyphs we want to draw are in the cache
-    qt_glyph_cache()->cacheGlyphs(d->device->context(), textItem->fontEngine, textItem->glyphs,
+    qt_glyph_cache()->cacheGlyphs(d->device->context(), textItem->fontEngine(), textItem->glyphs,
                                   textItem->numGlyphs);
 
     d->setGradientOps(Qt::SolidPattern, QRectF()); // turns off gradient ops
@@ -4941,13 +4941,13 @@ void QOpenGLPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
 
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    bool antialias = !(textItem->fontEngine->fontDef.styleStrategy & QFont::NoAntialias)
+    bool antialias = !(textItem->fontEngine()->fontDef.styleStrategy & QFont::NoAntialias)
 				   && (d->matrix.type() > QTransform::TxTranslate);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, antialias ? GL_LINEAR : GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, antialias ? GL_LINEAR : GL_NEAREST);
 
     for (int i=0; i< textItem->numGlyphs; ++i) {
-        QGLGlyphCoord *g = qt_glyph_cache()->lookup(textItem->fontEngine, textItem->glyphs[i]);
+        QGLGlyphCoord *g = qt_glyph_cache()->lookup(textItem->fontEngine(), textItem->glyphs[i]);
 
         // we don't cache glyphs with no width/height
         if (!g)
@@ -5003,7 +5003,7 @@ void QOpenGLPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     {
         QStaticTextItem staticTextItem;
         staticTextItem.chars = const_cast<QChar *>(ti.chars);
-        staticTextItem.fontEngine = ti.fontEngine;
+        staticTextItem.setFontEngine(ti.fontEngine);
         staticTextItem.glyphs = glyphs.data();
         staticTextItem.numChars = ti.num_chars;
         staticTextItem.numGlyphs = glyphs.size();
