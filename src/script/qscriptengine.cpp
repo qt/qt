@@ -1429,7 +1429,6 @@ static v8::Handle<v8::Value> QtGlobalObjectNamedPropertyGetter(v8::Local<v8::Str
     v8::HandleScope handleScope;
     v8::Local<v8::Array> data = v8::Local<v8::Array>::Cast(info.Data());
     v8::Local<v8::Object> customGlobalObject = v8::Local<v8::Object>::Cast(data->Get(0));
-    QScriptEnginePrivate *engine = static_cast<QScriptEnginePrivate*>(v8::Local<v8::Object>::Cast(data->Get(1))->GetPointerFromInternalField(0));
     // always intercepts
     v8::Local<v8::Value> result = customGlobalObject->Get(property);
     if (result->IsUndefined() && !customGlobalObject->Has(property))
@@ -1484,7 +1483,6 @@ static v8::Handle<v8::Value> QtGlobalObjectIndexedPropertyGetter(uint32_t index,
     v8::HandleScope handleScope;
     v8::Local<v8::Array> data = v8::Local<v8::Array>::Cast(info.Data());
     v8::Local<v8::Object> customGlobalObject = v8::Local<v8::Object>::Cast(data->Get(0));
-    QScriptEnginePrivate *engine = static_cast<QScriptEnginePrivate*>(v8::Local<v8::Object>::Cast(data->Get(1))->GetPointerFromInternalField(0));
     // always intercepts
     if (customGlobalObject->HasRealIndexedProperty(index)) {
         // FIXME: I think it should be GetRealIndexedProperty
