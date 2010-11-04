@@ -44,6 +44,7 @@
 
 #include <QtScript/qscriptcontext.h>
 #include <QtScript/qscriptengine.h>
+#include <QtScript/qscriptvalueiterator.h>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -67,7 +68,11 @@ private slots:
     void arguments();
     void thisObject();
     void returnValue();
-    void throwError();
+    void throwError_data();
+    void throwError_fromEvaluate_data();
+    void throwError_fromEvaluate();
+    void throwError_fromCpp_data();
+    void throwError_fromCpp();
     void throwValue();
     void evaluateInFunction();
     void pushAndPopContext();
@@ -77,6 +82,7 @@ private slots:
     void scopeChain();
     void pushAndPopScope();
     void getSetActivationObject();
+    void getSetActivationObject_customContext();
     void inheritActivationAndThisObject();
     void toString();
     void calledAsConstructor();
@@ -360,73 +366,71 @@ static QScriptValue throw_ErrorAndReturnUndefined(QScriptContext *ctx, QScriptEn
     return eng->undefinedValue();
 }
 
-void tst_QScriptContext::throwError()
+static QScriptValue throw_ErrorAndReturnString(QScriptContext *ctx, QScriptEngine *)
 {
-    QScriptEngine eng;
+    return ctx->throwError(QScriptContext::UnknownError, "foo").toString();
+}
 
-    {
-        QScriptValue fun = eng.newFunction(throw_Error);
-        eng.globalObject().setProperty("throw_Error", fun);
-        QScriptValue result = eng.evaluate("throw_Error()");
-        QCOMPARE(eng.hasUncaughtException(), true);
-        QCOMPARE(result.isError(), true);
-        QCOMPARE(result.toString(), QString("Error: foo"));
-    }
+static QScriptValue throw_ErrorAndReturnObject(QScriptContext *ctx, QScriptEngine *eng)
+{
+    ctx->throwError(QScriptContext::UnknownError, "foo");
+    return eng->newObject();
+}
 
-    {
-        QScriptValue fun = eng.newFunction(throw_TypeError);
-        eng.globalObject().setProperty("throw_TypeError", fun);
-        QScriptValue result = eng.evaluate("throw_TypeError()");
-        QCOMPARE(eng.hasUncaughtException(), true);
-        QCOMPARE(result.isError(), true);
-        QCOMPARE(result.toString(), QString("TypeError: foo"));
-    }
+void tst_QScriptContext::throwError_data()
+{
+    QTest::addColumn<void*>("nativeFunctionPtr");
+    QTest::addColumn<QString>("stringRepresentation");
 
-    {
-        QScriptValue fun = eng.newFunction(throw_ReferenceError);
-        eng.globalObject().setProperty("throw_ReferenceError", fun);
-        QScriptValue result = eng.evaluate("throw_ReferenceError()");
-        QCOMPARE(eng.hasUncaughtException(), true);
-        QCOMPARE(result.isError(), true);
-        QCOMPARE(result.toString(), QString("ReferenceError: foo"));
-    }
+    QTest::newRow("Error") << reinterpret_cast<void*>(throw_Error) << QString("Error: foo");
+    QTest::newRow("TypeError") << reinterpret_cast<void*>(throw_TypeError) << QString("TypeError: foo");
+    QTest::newRow("ReferenceError") << reinterpret_cast<void*>(throw_ReferenceError) << QString("ReferenceError: foo");
+    QTest::newRow("SyntaxError") << reinterpret_cast<void*>(throw_SyntaxError) << QString("SyntaxError: foo");
+    QTest::newRow("RangeError") << reinterpret_cast<void*>(throw_RangeError) << QString("RangeError: foo");
+    QTest::newRow("URIError") << reinterpret_cast<void*>(throw_URIError) << QString("URIError: foo");
+    QTest::newRow("ErrorAndReturnUndefined") << reinterpret_cast<void*>(throw_ErrorAndReturnUndefined) << QString("Error: foo");
+    QTest::newRow("ErrorAndReturnString") << reinterpret_cast<void*>(throw_ErrorAndReturnString) << QString("Error: foo");
+    QTest::newRow("ErrorAndReturnObject") << reinterpret_cast<void*>(throw_ErrorAndReturnObject) << QString("Error: foo");
+}
 
-    {
-        QScriptValue fun = eng.newFunction(throw_SyntaxError);
-        eng.globalObject().setProperty("throw_SyntaxError", fun);
-        QScriptValue result = eng.evaluate("throw_SyntaxError()");
-        QCOMPARE(eng.hasUncaughtException(), true);
-        QCOMPARE(result.isError(), true);
-        QCOMPARE(result.toString(), QString("SyntaxError: foo"));
-    }
+void tst_QScriptContext::throwError_fromEvaluate_data()
+{
+    throwError_data();
+}
 
-    {
-        QScriptValue fun = eng.newFunction(throw_RangeError);
-        eng.globalObject().setProperty("throw_RangeError", fun);
-        QScriptValue result = eng.evaluate("throw_RangeError()");
-        QCOMPARE(eng.hasUncaughtException(), true);
-        QCOMPARE(result.isError(), true);
-        QCOMPARE(result.toString(), QString("RangeError: foo"));
-    }
+void tst_QScriptContext::throwError_fromEvaluate()
+{
+    QFETCH(void*, nativeFunctionPtr);
+    QScriptEngine::FunctionSignature nativeFunction = reinterpret_cast<QScriptEngine::FunctionSignature>(nativeFunctionPtr);
+    QFETCH(QString, stringRepresentation);
+    QScriptEngine engine;
 
-    {
-        QScriptValue fun = eng.newFunction(throw_URIError);
-        eng.globalObject().setProperty("throw_URIError", fun);
-        QScriptValue result = eng.evaluate("throw_URIError()");
-        QCOMPARE(eng.hasUncaughtException(), true);
-        QCOMPARE(result.isError(), true);
-        QCOMPARE(result.toString(), QString("URIError: foo"));
-    }
+    QScriptValue fun = engine.newFunction(nativeFunction);
+    engine.globalObject().setProperty("throw_Error", fun);
+    QScriptValue result = engine.evaluate("throw_Error()");
+    QCOMPARE(engine.hasUncaughtException(), true);
+    QCOMPARE(result.isError(), true);
+    QCOMPARE(result.toString(), stringRepresentation);
+}
 
-    {
-        QScriptValue fun = eng.newFunction(throw_ErrorAndReturnUndefined);
-        eng.globalObject().setProperty("throw_ErrorAndReturnUndefined", fun);
-        QScriptValue result = eng.evaluate("throw_ErrorAndReturnUndefined()");
-        QVERIFY(eng.hasUncaughtException());
-        QVERIFY(result.isError());
-        QCOMPARE(result.toString(), QString("Error: foo"));
-    }
+void tst_QScriptContext::throwError_fromCpp_data()
+{
+    throwError_data();
+}
 
+void tst_QScriptContext::throwError_fromCpp()
+{
+    QFETCH(void*, nativeFunctionPtr);
+    QScriptEngine::FunctionSignature nativeFunction = reinterpret_cast<QScriptEngine::FunctionSignature>(nativeFunctionPtr);
+    QFETCH(QString, stringRepresentation);
+    QScriptEngine engine;
+
+    QScriptValue fun = engine.newFunction(nativeFunction);
+    engine.globalObject().setProperty("throw_Error", fun);
+    QScriptValue result = fun.call();
+    QCOMPARE(engine.hasUncaughtException(), true);
+    QCOMPARE(result.isError(), true);
+    QCOMPARE(result.toString(), stringRepresentation);
 }
 
 static QScriptValue throw_value(QScriptContext *ctx, QScriptEngine *)
@@ -513,8 +517,30 @@ void tst_QScriptContext::pushAndPopContext()
         QScriptContext *ctx3 = eng.pushContext();
         ctx3->activationObject().setProperty("foo", QScriptValue(&eng, 123));
         QVERIFY(eng.evaluate("foo").strictlyEquals(QScriptValue(&eng, 123)));
+        QCOMPARE(ctx3->activationObject().propertyFlags("foo"), QScriptValue::PropertyFlags(0));
+
+        ctx3->activationObject().setProperty(4, 456);
+        QVERIFY(ctx3->activationObject().property(4, QScriptValue::ResolveLocal).equals(456));
+
         eng.evaluate("var bar = 'ciao'");
         QVERIFY(ctx3->activationObject().property("bar", QScriptValue::ResolveLocal).strictlyEquals(QScriptValue(&eng, "ciao")));
+
+        ctx3->activationObject().setProperty("baz", 789, QScriptValue::ReadOnly);
+        QVERIFY(eng.evaluate("baz").equals(789));
+        QCOMPARE(ctx3->activationObject().propertyFlags("baz"), QScriptValue::ReadOnly);
+
+        QSet<QString> activationPropertyNames;
+        QScriptValueIterator it(ctx3->activationObject());
+        while (it.hasNext()) {
+            it.next();
+            activationPropertyNames.insert(it.name());
+        }
+        QCOMPARE(activationPropertyNames.size(), 4);
+        QVERIFY(activationPropertyNames.contains("foo"));
+        QVERIFY(activationPropertyNames.contains("4"));
+        QVERIFY(activationPropertyNames.contains("bar"));
+        QVERIFY(activationPropertyNames.contains("baz"));
+
         eng.popContext();
     }
 
@@ -1052,6 +1078,20 @@ void tst_QScriptContext::getSetActivationObject()
         QCOMPARE(arguments.property("1").toInt32(), 1);
         QCOMPARE(arguments.property("2").toInt32(), 1);
     }
+}
+
+void tst_QScriptContext::getSetActivationObject_customContext()
+{
+    QScriptEngine eng;
+    QScriptContext *ctx = eng.pushContext();
+    QVERIFY(ctx->activationObject().isObject());
+    QScriptValue act = eng.newObject();
+    ctx->setActivationObject(act);
+    QVERIFY(ctx->activationObject().equals(act));
+    eng.evaluate("var foo = 123");
+    QCOMPARE(act.property("foo").toInt32(), 123);
+    eng.popContext();
+    QCOMPARE(act.property("foo").toInt32(), 123);
 }
 
 static QScriptValue myEval(QScriptContext *ctx, QScriptEngine *eng)
