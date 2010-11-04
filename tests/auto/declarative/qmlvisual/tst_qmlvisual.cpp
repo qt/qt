@@ -102,7 +102,7 @@ void tst_qmlvisual::visual_data()
     QTest::addColumn<QString>("testdata");
 
     QStringList files;
-    if (qgetenv("QMLVISUAL_ALL") != "")
+    if (qgetenv("QMLVISUAL_ALL") != "0")
         files << findQmlFiles(QDir(QT_TEST_SOURCE_DIR));
     else {
         //these are newly added tests we want to try out in CI (then move to the stable list)
