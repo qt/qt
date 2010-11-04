@@ -58,6 +58,7 @@
 #include <qimagereader.h>
 #include <qimagewriter.h>
 #include <qcommonstyle.h>
+#include <qlayout.h>
 
 #include <qabstracttextdocumentlayout.h>
 #include <qtextdocumentfragment.h>
@@ -2157,7 +2158,9 @@ void tst_QTextEdit::pasteFromQt3RichText()
 void tst_QTextEdit::noWrapBackgrounds()
 {
     QWidget topLevel;
-    QTextEdit edit(&topLevel);
+    QVBoxLayout *layout = new QVBoxLayout(&topLevel);
+
+    QTextEdit edit;
     edit.setLineWrapMode(QTextEdit::NoWrap);
 
     QTextFrame *root = edit.document()->rootFrame();
@@ -2171,7 +2174,11 @@ void tst_QTextEdit::noWrapBackgrounds()
     edit.textCursor().setBlockFormat(format);
     edit.insertPlainText(QLatin1String(" \n  \n   \n    \n"));
     edit.setFixedSize(100, 200);
+
+    layout->addWidget(&edit);
     topLevel.show();
+
+    QTest::qWait(1000);
 
     QImage img = QPixmap::grabWidget(edit.viewport()).toImage();
     QCOMPARE(img, img.mirrored(true, false));
