@@ -302,6 +302,14 @@ have libgstreamer-plugins-base installed.</source>
         <translation>Ошибка открытия адреса URL</translation>
     </message>
     <message>
+        <source>Error opening resource</source>
+        <translation>Ошибка открытия ресурса</translation>
+    </message>
+    <message>
+        <source>Error opening source: resource not opened</source>
+        <translation>Ошибка открытия источника: ресурс не был открыт</translation>
+    </message>
+    <message>
         <source>Setting volume failed</source>
         <translation>Не удалось установить уровень громкости</translation>
     </message>
@@ -312,6 +320,10 @@ have libgstreamer-plugins-base installed.</source>
     <message>
         <source>Playback complete</source>
         <translation>Воспроизведение завершено</translation>
+    </message>
+    <message>
+        <source>Download error</source>
+        <translation>Ошибка загрузки</translation>
     </message>
 </context>
 <context>
@@ -419,6 +431,14 @@ have libgstreamer-plugins-base installed.</source>
     <message>
         <source>Error opening source: type not supported</source>
         <translation>Ошибка открытия источника: тип не поддерживается</translation>
+    </message>
+    <message>
+        <source>Error opening source: resource is compressed</source>
+        <translation>Ошибка открытия источника: сжатый ресурс</translation>
+    </message>
+    <message>
+        <source>Error opening source: resource not valid</source>
+        <translation>Ошибка открытия источника: некорректный ресурс</translation>
     </message>
     <message>
         <source>Error opening source: media type could not be determined</source>
@@ -1360,7 +1380,7 @@ to
     <name>QDeclarativeBinding</name>
     <message>
         <source>Binding loop detected for property &quot;%1&quot;</source>
-        <translation type="unfinished">Обнаружена цикличная привязка для свойства &quot;%1&quot;</translation>
+        <translation type="unfinished">Обнаружено зацикливание привязки для свойства &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
@@ -1574,6 +1594,10 @@ to
         <translation type="unfinished">Некорректное присваивание свойства: ожидается сценарий</translation>
     </message>
     <message>
+        <source>Cannot assign multiple values to a singular property</source>
+        <translation type="unfinished">Невозможно присвоить множество значений свойству, принимающему только одно</translation>
+    </message>
+    <message>
         <source>Cannot assign object to property</source>
         <translation type="unfinished">Невозможно назначить объектсвойству</translation>
     </message>
@@ -1666,8 +1690,16 @@ to
         <translation type="unfinished">Некорректное размещение псевдонима</translation>
     </message>
     <message>
+        <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt;, &lt;id&gt;.&lt;property&gt; or &lt;id&gt;.&lt;value property&gt;.&lt;property&gt;</source>
+        <translation type="unfinished">Некорректная ссылка на псевдоним. Ссылка на псевдоним должна быть указана, как &lt;id&gt;, &lt;id&gt;.&lt;свойство&gt; или &lt;id&gt;.&lt;свойство значения&gt;.&lt;свойство&gt;</translation>
+    </message>
+    <message>
+        <source>Alias property exceeds alias bounds</source>
+        <translation type="unfinished">Свойство псевдонима выходит за границы</translation>
+    </message>
+    <message>
         <source>Invalid alias reference. An alias reference must be specified as &lt;id&gt; or &lt;id&gt;.&lt;property&gt;</source>
-        <translation type="unfinished">Некорректная ссылка на псевдоним. Ссылка на псевдоним должна быть указана, как &lt;id&gt; или &lt;id&gt;.&lt;property&gt;</translation>
+        <translation type="obsolete">Некорректная ссылка на псевдоним. Ссылка на псевдоним должна быть указана, как &lt;id&gt; или &lt;id&gt;.&lt;property&gt;</translation>
     </message>
     <message>
         <source>Invalid alias reference. Unable to find id &quot;%1&quot;</source>
@@ -1682,29 +1714,10 @@ to
     </message>
 </context>
 <context>
-    <name>QDeclarativeCompositeTypeManager</name>
-    <message>
-        <source>Resource %1 unavailable</source>
-        <translation>Ресурс &quot;%1&quot; недоступен</translation>
-    </message>
-    <message>
-        <source>Namespace %1 cannot be used as a type</source>
-        <translation>Пространство имён &quot;%1&quot; не может быть использовано в качестве типа</translation>
-    </message>
-    <message>
-        <source>%1 %2</source>
-        <translation>%1 %2</translation>
-    </message>
-    <message>
-        <source>Type %1 unavailable</source>
-        <translation>Тип &quot;%1&quot; недоступен</translation>
-    </message>
-</context>
-<context>
     <name>QDeclarativeConnections</name>
     <message>
         <source>Cannot assign to non-existent property &quot;%1&quot;</source>
-        <translation type="unfinished">Невозможно назначить несуществующему свойству &quot;%1&quot;</translation>
+        <translation>Невозможно назначить несуществующему свойству &quot;%1&quot;</translation>
     </message>
     <message>
         <source>Connections: nested objects not allowed</source>
@@ -1760,6 +1773,10 @@ to
 <context>
     <name>QDeclarativeImportDatabase</name>
     <message>
+        <source>cannot load module &quot;%1&quot;: File name case mismatch for &quot;%2&quot;</source>
+        <translation type="unfinished">невозможно загрузить модуль &quot;%1&quot;: Регистр имени файла не соответствует &quot;%2&quot;</translation>
+    </message>
+    <message>
         <source>module &quot;%1&quot; definition &quot;%2&quot; not readable</source>
         <translation type="unfinished">невозможно прочитать определение &quot;%2&quot; модуля &quot;%1&quot;</translation>
     </message>
@@ -1814,6 +1831,10 @@ to
     <message>
         <source>is not a type</source>
         <translation>не является типом</translation>
+    </message>
+    <message>
+        <source>File name case mismatch for &quot;%2&quot;</source>
+        <translation type="unfinished">Регистр имени файла не соответствует &quot;%2&quot;</translation>
     </message>
 </context>
 <context>
@@ -1918,7 +1939,7 @@ to
     <name>QDeclarativeParser</name>
     <message>
         <source>Illegal unicode escape sequence</source>
-        <translation type="unfinished">Неверная unicode esc-последовательность</translation>
+        <translation>Недопустимая unicode esc-последовательность</translation>
     </message>
     <message>
         <source>Illegal character</source>
@@ -1930,7 +1951,7 @@ to
     </message>
     <message>
         <source>Illegal escape squence</source>
-        <translation type="unfinished">Неверная esc-последовательность</translation>
+        <translation>Недопустимая esc-последовательность</translation>
     </message>
     <message>
         <source>Unclosed comment at end of file</source>
@@ -1938,7 +1959,7 @@ to
     </message>
     <message>
         <source>Illegal syntax for exponential number</source>
-        <translation type="unfinished">Недопустимый синтаксис для экспоненциального числа</translation>
+        <translation>Недопустимый синтаксис для экспоненциального числа</translation>
     </message>
     <message>
         <source>Identifier cannot start with numeric literal</source>
@@ -1986,15 +2007,15 @@ to
     </message>
     <message>
         <source>Reserved name &quot;Qt&quot; cannot be used as an qualifier</source>
-        <translation type="unfinished">Зарезервированное имя &quot;Qt&quot; не может быть использовано в качестве спецификатора</translation>
+        <translation>Зарезервированное имя &quot;Qt&quot; не может быть использовано в качестве спецификатора</translation>
     </message>
     <message>
         <source>Script import qualifiers must be unique.</source>
-        <translation type="unfinished">Спецификаторы импорта сценария должны быть уникальными.</translation>
+        <translation>Спецификаторы импорта сценария должны быть уникальными.</translation>
     </message>
     <message>
         <source>Script import requires a qualifier</source>
-        <translation type="unfinished">Для импорта сценария требуется спецификатор</translation>
+        <translation>Для импорта сценария требуется спецификатор</translation>
     </message>
     <message>
         <source>Library import requires a version</source>
@@ -2078,6 +2099,25 @@ to
     <message>
         <source>Could not instantiate cursor delegate</source>
         <translation type="unfinished">Не удалось инстанциировать делегат курсора</translation>
+    </message>
+</context>
+<context>
+    <name>QDeclarativeTypeLoader</name>
+    <message>
+        <source>Script %1 unavailable</source>
+        <translation>Сценарий %1 недоступен</translation>
+    </message>
+    <message>
+        <source>Type %1 unavailable</source>
+        <translation>Тип &quot;%1&quot; недоступен</translation>
+    </message>
+    <message>
+        <source>Namespace %1 cannot be used as a type</source>
+        <translation>Пространство имён &quot;%1&quot; не может быть использовано в качестве типа</translation>
+    </message>
+    <message>
+        <source>%1 %2</source>
+        <translation>%1 %2</translation>
     </message>
 </context>
 <context>
@@ -3298,16 +3338,8 @@ Please verify the correct directory name was given.</source>
 <context>
     <name>QLibrary</name>
     <message>
-        <source>Could not mmap &apos;%1&apos;: %2</source>
-        <translation>Не удалось выполнить mmap &quot;%1&quot;: %2</translation>
-    </message>
-    <message>
         <source>Plugin verification data mismatch in &apos;%1&apos;</source>
         <translation>Проверочная информация для модуля &quot;%1&quot; не совпадает</translation>
-    </message>
-    <message>
-        <source>Could not unmap &apos;%1&apos;: %2</source>
-        <translation>Не удалось выполнить unmap &quot;%1&quot;: %2</translation>
     </message>
     <message>
         <source>The plugin &apos;%1&apos; uses incompatible Qt library. (%2.%3.%4) [%5]</source>
@@ -6071,7 +6103,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Voice Dial</source>
-        <extracomment>Button to trigger voice dialling</extracomment>
+        <extracomment>Button to trigger voice dialing</extracomment>
         <translation type="unfinished">Голосовой вызов</translation>
     </message>
     <message>
@@ -8381,11 +8413,11 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>W3C XML Schema identity constraint selector</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Переключатель ограничений типа шаблона W3C XML</translation>
     </message>
     <message>
         <source>W3C XML Schema identity constraint field</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Поле ограничений типа шаблона W3C XML</translation>
     </message>
     <message>
         <source>A construct was encountered which is disallowed in the current language(%1).</source>
@@ -9557,15 +9589,15 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Data of type %1 are not allowed to be empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>Данные типа %1 не могут быть пустыми.</translation>
     </message>
     <message>
         <source>Element %1 is missing child element.</source>
-        <translation type="unfinished"></translation>
+        <translation>У элемента %1 отсутствует дочерний элемент.</translation>
     </message>
     <message>
         <source>There is one IDREF value with no corresponding ID: %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Присутствует одно значение IDREF без соответствующего ID: %1.</translation>
     </message>
     <message>
         <source>Loaded schema file is invalid.</source>
@@ -9593,7 +9625,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Specified type %1 is not known to the schema.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Указанный тип %1 шаблону не известен.</translation>
     </message>
     <message>
         <source>Element %1 is not defined in this scope.</source>
@@ -9601,15 +9633,15 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Declaration for element %1 does not exist.</source>
-        <translation type="unfinished"></translation>
+        <translation>Отсутствует объявление элемента %1.</translation>
     </message>
     <message>
         <source>Element %1 contains invalid content.</source>
-        <translation type="unfinished"></translation>
+        <translation>В элементе %1 находится неверное содержимое.</translation>
     </message>
     <message>
         <source>Element %1 is declared as abstract.</source>
-        <translation type="unfinished"></translation>
+        <translation>Элемент %1 объявлен абстрактным.</translation>
     </message>
     <message>
         <source>Element %1 is not nillable.</source>
@@ -9617,7 +9649,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Attribute %1 contains invalid data: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Атрибут %1 содержит неверные данные: %2</translation>
     </message>
     <message>
         <source>Element contains content although it is nillable.</source>
@@ -9625,7 +9657,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Fixed value constraint not allowed if element is nillable.</source>
-        <translation type="unfinished"></translation>
+        <translation>Для обнуляемых элементов недопустимо ограничение фиксированным значением.</translation>
     </message>
     <message>
         <source>Element %1 cannot contain other elements, as it has a fixed content.</source>
@@ -9633,75 +9665,75 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Specified type %1 is not validly substitutable with element type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>Указанный тип %1 не может быть корректно замещён элементом типа %2.</translation>
     </message>
     <message>
         <source>Complex type %1 is not allowed to be abstract.</source>
-        <translation type="unfinished"></translation>
+        <translation>Недопустимо, чтобы сложный тип %1 был абстрактным.</translation>
     </message>
     <message>
         <source>Element %1 contains not allowed attributes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Элемент %1 содержит недопустимые атрибуты.</translation>
     </message>
     <message>
         <source>Element %1 contains not allowed child element.</source>
-        <translation type="unfinished"></translation>
+        <translation>Элемент %1 содержит недопустимый дочерний элемент.</translation>
     </message>
     <message>
         <source>Content of element %1 does not match its type definition: %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>Содержимое элемента %1 не соответствует его определению типа: %2.</translation>
     </message>
     <message>
         <source>Content of element %1 does not match defined value constraint.</source>
-        <translation type="unfinished"></translation>
+        <translation>Содержимое элемента %1 не соответствует определённому ограничению значения.</translation>
     </message>
     <message>
         <source>Element %1 contains not allowed child content.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Элемент %1 содержит недопустимое дочернее содержимое.</translation>
     </message>
     <message>
         <source>Element %1 contains not allowed text content.</source>
-        <translation type="unfinished"></translation>
+        <translation>Элемент %1 содержит недопустимое текстовое содержимое.</translation>
     </message>
     <message>
         <source>Element %1 is missing required attribute %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>У элемента %1 отсутствует необходимый атрибут %2.</translation>
     </message>
     <message>
         <source>Attribute %1 does not match the attribute wildcard.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Атрибут %1 не соответствует шаблону.</translation>
     </message>
     <message>
         <source>Declaration for attribute %1 does not exist.</source>
-        <translation type="unfinished"></translation>
+        <translation>Отсутствует объявление атрибута %1.</translation>
     </message>
     <message>
         <source>Element %1 contains two attributes of type %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>Элемент %1 содержит два атрибута типа %2.</translation>
     </message>
     <message>
         <source>Attribute %1 contains invalid content.</source>
-        <translation type="unfinished"></translation>
+        <translation>Элемент %1 содержит неверное содержимое.</translation>
     </message>
     <message>
         <source>Element %1 contains unknown attribute %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>Элемент %1 содержит неизвестный атрибут %2.</translation>
     </message>
     <message>
         <source>Content of attribute %1 does not match its type definition: %2.</source>
-        <translation type="unfinished"></translation>
+        <translation>Содержимое атрибута %1 не соответствует его определению типа: %2.</translation>
     </message>
     <message>
         <source>Content of attribute %1 does not match defined value constraint.</source>
-        <translation type="unfinished"></translation>
+        <translation>Содержимое атрибута %1 не соответствует определённому ограничению значения.</translation>
     </message>
     <message>
         <source>Non-unique value found for constraint %1.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Обнаружено неуникальное значение для ограничения %1.</translation>
     </message>
     <message>
         <source>Key constraint %1 contains absent fields.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ограничение на ключ %1 содержит недостающие поля.</translation>
     </message>
     <message>
         <source>Key constraint %1 contains references nillable element %2.</source>
@@ -9717,7 +9749,7 @@ Please choose a different file name.</source>
     </message>
     <message>
         <source>Field %1 has no simple type.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Поле %1 имеет не простой тип.</translation>
     </message>
     <message>
         <source>ID value &apos;%1&apos; is not unique.</source>
