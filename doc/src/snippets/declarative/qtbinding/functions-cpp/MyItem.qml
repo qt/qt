@@ -37,10 +37,19 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 //![0]
-// main.qml
+// MyItem.qml
 import QtQuick 1.0
 
-Image { source: "images/background.png" }
+Item {
+    width: 100; height: 100
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: {
+            myObject.cppMethod("Hello from QML")
+            myObject.cppSlot(12345)
+        }
+    }
+}
 //![0]

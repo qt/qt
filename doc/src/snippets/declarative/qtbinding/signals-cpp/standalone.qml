@@ -37,42 +37,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include <QDeclarativeComponent>
-#include <QDeclarativeEngine>
+import MyLibrary 1.0
 
 //![0]
-#include <QApplication>
-#include <QDeclarativeView>
-#include <QDeclarativeContext>
-
-int main(int argc, char *argv[])
-{
-    QApplication app(argc, argv);
-
-    QDeclarativeView view;
-    QDeclarativeContext *context = view.rootContext();
-    context->setContextProperty("backgroundColor",
-                                QColor(Qt::yellow));
-
-    view.setSource(QUrl::fromLocalFile("main.qml"));
-    view.show();
-
-    return app.exec();
+ImageViewer {
+    onImageChanged: console.log("Image changed!")
+    onLoadingError: console.log("Image failed to load:", errorMsg)
 }
 //![0]
-
-static void alternative()
-{
-    // Alternatively, if we don't actually want to display main.qml:
-//![1]
-    QDeclarativeEngine engine;
-    QDeclarativeContext *windowContext = new QDeclarativeContext(engine.rootContext());
-    windowContext->setContextProperty("backgroundColor", QColor(Qt::yellow));
-
-    QDeclarativeComponent component(&engine, "main.qml");
-    QObject *window = component.create(windowContext);
-//![1]
-}
-
 

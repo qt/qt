@@ -37,10 +37,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 //![0]
-// main.qml
+// MyItem.qml
 import QtQuick 1.0
 
-Image { source: "images/background.png" }
+Item {
+    property int someNumber: 100
+}
 //![0]

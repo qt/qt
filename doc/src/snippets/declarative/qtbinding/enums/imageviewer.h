@@ -37,10 +37,32 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QtCore>
+#include <QtDeclarative>
 
-//![0]
-// main.qml
-import QtQuick 1.0
+//![start]
+class ImageViewer : public QDeclarativeItem
+{
+    Q_OBJECT
+    Q_ENUMS(Status)
+    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
+public:
+    enum Status {
+        Ready,
+        Loading,
+        Error
+    };
 
-Image { source: "images/background.png" }
-//![0]
+    Status status() const;
+//![start]
+
+    ImageViewer(QDeclarativeItem *parent = 0);
+
+public slots:
+    void emitSignals();
+
+//![end]
+signals:
+    void statusChanged();
+};
+//![end]

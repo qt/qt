@@ -37,26 +37,14 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 //![0]
+// MyItem.qml
 import QtQuick 1.0
 
-Rectangle {
-    width: 240
-    height: 320
-    color: palette.background
-    
-    Text {
-        anchors.centerIn: parent
-        color: palette.text
-        text: "Click me to change color!"
-    }
-    
-    MouseArea {
-        anchors.fill: parent
-        onClicked: {
-            palette.text = "blue";
-        }
+Item {
+    function myQmlFunction(msg) {
+        console.log("Got message:", msg)
+        return "some return value"
     }
 }
 //![0]

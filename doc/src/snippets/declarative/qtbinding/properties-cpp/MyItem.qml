@@ -37,10 +37,18 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 //![0]
-// main.qml
+// MyItem.qml
 import QtQuick 1.0
 
-Image { source: "images/background.png" }
+Rectangle {
+    width: 100; height: 100
+    color: applicationData.backgroundColor
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: applicationData.backgroundColor = "red"
+    }
+}
 //![0]
+

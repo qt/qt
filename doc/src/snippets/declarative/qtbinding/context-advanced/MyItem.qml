@@ -37,43 +37,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include <QObject>
-#include <QColor>
-
 //![0]
-class CustomPalette : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(QColor background READ background WRITE setBackground NOTIFY backgroundChanged)
-    Q_PROPERTY(QColor text READ text WRITE setText NOTIFY textChanged)
+// MyItem.qml
+import QtQuick 1.0
 
-public:
-    CustomPalette() : m_background(Qt::white), m_text(Qt::black) {}
-    
-    QColor background() const { return m_background; }
-    void setBackground(const QColor &c) {
-        if (c != m_background) {
-            m_background = c;
-            emit backgroundChanged();
-        }
-    }
-    
-    QColor text() const { return m_text; }
-    void setText(const QColor &c) {
-        if (c != m_text) {
-            m_text = c;
-            emit textChanged();
-        }
-    }
-
-signals:
-    void textChanged();
-    void backgroundChanged();
-    
-private:
-    QColor m_background;
-    QColor m_text;
-};
-
+Text { text: applicationData.getCurrentDateTime() }
 //![0]
+

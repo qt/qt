@@ -37,10 +37,16 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QObject>
+#include <QDateTime>
 
 //![0]
-// main.qml
-import QtQuick 1.0
-
-Image { source: "images/background.png" }
+class ApplicationData : public QObject
+{
+    Q_OBJECT
+public:
+    Q_INVOKABLE QDateTime getCurrentDateTime() const {
+        return QDateTime::currentDateTime();
+    }
+};
 //![0]

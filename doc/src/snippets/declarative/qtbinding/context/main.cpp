@@ -37,10 +37,20 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QtCore>
+#include <QtDeclarative>
+
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
 
 //![0]
-// main.qml
-import QtQuick 1.0
-
-Image { source: "images/background.png" }
+QDeclarativeView view;
+view.rootContext()->setContextProperty("currentDateTime", QDateTime::currentDateTime());
+view.setSource(QUrl::fromLocalFile("MyItem.qml"));
+view.show();
 //![0]
+
+    return app.exec();
+}
+

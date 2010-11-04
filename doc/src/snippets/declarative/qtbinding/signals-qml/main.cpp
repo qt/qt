@@ -37,10 +37,23 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QtCore>
+#include <QtDeclarative>
 
 //![0]
-// main.qml
-import QtQuick 1.0
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
 
-Image { source: "images/background.png" }
+    QDeclarativeView view(QUrl::fromLocalFile("MyItem.qml"));
+    QObject *item = view.rootObject();
+
+    MyClass myClass;
+    QObject::connect(item, SIGNAL(qmlSignal(QString)),
+                     &myClass, SLOT(cppSlot(QString)));
+
+    view.show();
+    return app.exec();
+}
 //![0]
+
+#include "moc_main.cpp"

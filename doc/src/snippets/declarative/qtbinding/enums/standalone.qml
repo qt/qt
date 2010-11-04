@@ -37,10 +37,13 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+import MyLibrary 1.0
 
 //![0]
-// main.qml
-import QtQuick 1.0
-
-Image { source: "images/background.png" }
+ImageViewer {
+    onStatusChanged: {
+        if (status == ImageViewer.Ready)
+            console.log("Image viewer is ready!")
+    }
+}
 //![0]

@@ -37,10 +37,16 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-//![0]
-// main.qml
 import QtQuick 1.0
 
-Image { source: "images/background.png" }
 //![0]
+Text {
+    text: applicationData.getCurrentDateTime()
+
+    Connections {
+        target: applicationData
+        onDataChanged: console.log("The application data changed!")
+    }
+}
+//![0]
+

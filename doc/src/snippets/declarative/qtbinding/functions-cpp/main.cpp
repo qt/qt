@@ -37,10 +37,23 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QtCore>
+#include <QtDeclarative>
+
+#include "myclass.h"
 
 //![0]
-// main.qml
-import QtQuick 1.0
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
 
-Image { source: "images/background.png" }
+    QDeclarativeView view;
+    MyClass myClass;
+    view.rootContext()->setContextProperty("myObject", &myClass);
+
+    view.setSource(QUrl::fromLocalFile("MyItem.qml"));
+    view.show();
+
+    return app.exec();
+}
 //![0]
+

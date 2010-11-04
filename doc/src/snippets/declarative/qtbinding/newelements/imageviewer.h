@@ -37,10 +37,20 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QtCore>
+#include <QtDeclarative>
 
 //![0]
-// main.qml
-import QtQuick 1.0
+class ImageViewer : public QDeclarativeItem
+{
+    Q_OBJECT
+    Q_PROPERTY(QUrl image READ image WRITE setImage NOTIFY imageChanged)
 
-Image { source: "images/background.png" }
+public:
+    void setImage(const QUrl &url);
+    QUrl image() const;
+
+signals:
+    void imageChanged();
+};
 //![0]

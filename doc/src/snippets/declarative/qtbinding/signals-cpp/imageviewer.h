@@ -37,22 +37,28 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QtCore>
+#include <QtDeclarative>
 
-//![0]
-import QtQuick 1.0
+//![start]
+class ImageViewer : public QDeclarativeItem
+{
+    Q_OBJECT
+    Q_PROPERTY(QUrl image READ image WRITE setImage NOTIFY imageChanged)
+public:
+//![start]
+    ImageViewer(QDeclarativeItem *item = 0);
 
-Rectangle {
-    width: 300
-    height: 300
+    void setImage(const QUrl &url) {}
+    QUrl image() const { return QUrl(); }
 
-    MouseArea {
-        anchors.fill: parent
-        onClicked: {
-            if (stopwatch.isRunning())
-                stopwatch.stop()
-            else
-                stopwatch.start();
-        }
-    }
-}
-//![0]
+public slots:
+    void emitSignals();
+
+//![end]
+signals:
+    void imageChanged();
+    void loadingError(const QString &errorMsg);
+};
+//![end]
+

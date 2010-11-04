@@ -37,10 +37,54 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QtCore>
+#include <QtDeclarative>
 
-//![0]
-// main.qml
-import QtQuick 1.0
+static void withComponent()
+{
+//![QDeclarativeComponent-a]
+// Using QDeclarativeComponent
+QDeclarativeEngine engine;
+QDeclarativeComponent component(&engine,
+        QUrl::fromLocalFile("MyItem.qml"));
+QObject *object = component.create();
+//![QDeclarativeComponent-a]
+}
 
-Image { source: "images/background.png" }
-//![0]
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
+
+//![QDeclarativeView]
+// Using QDeclarativeView
+QDeclarativeView view;
+view.setSource(QUrl::fromLocalFile("MyItem.qml"));
+view.show();
+QObject *object = view.rootObject();
+//![QDeclarativeView]
+
+//![properties]
+object->setProperty("width", 500);
+QDeclarativeProperty(object, "width").write(500);
+//![properties]
+
+//![cast]
+QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(object);
+item->setWidth(500);
+//![cast]
+
+//![findChild]
+QObject *rect = object->findChild<QObject*>("rect");
+if (rect)
+    rect->setProperty("color", "red");
+//![findChild]
+
+//![QDeclarativeComponent-b]
+delete object;
+//![QDeclarativeComponent-b]
+
+withComponent();
+
+    return app.exec();
+}
+

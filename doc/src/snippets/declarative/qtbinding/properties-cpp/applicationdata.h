@@ -38,9 +38,34 @@
 **
 ****************************************************************************/
 
-//![0]
-// main.qml
-import QtQuick 1.0
+#include <QObject>
+#include <QColor>
 
-Image { source: "images/background.png" }
+//![0]
+class ApplicationData : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QColor backgroundColor
+            READ backgroundColor
+            WRITE setBackgroundColor
+            NOTIFY backgroundColorChanged)
+
+public:
+    void setBackgroundColor(const QColor &c) {
+        if (c != m_color) {
+            m_color = c;
+            emit backgroundColorChanged();
+        }
+    }
+
+    QColor backgroundColor() const {
+        return m_color;
+    }
+
+signals:
+    void backgroundColorChanged();
+
+private:
+    QColor m_color;
+};
 //![0]
