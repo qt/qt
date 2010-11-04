@@ -164,9 +164,13 @@ QAuthenticator &QAuthenticator::operator=(const QAuthenticator &other)
 {
     if (d == other.d)
         return *this;
-    detach();
-    d->user = other.d->user;
-    d->password = other.d->password;
+
+    if (d && !d->ref.deref())
+        delete d;
+
+    d = other.d;
+    if (d)
+        d->ref.ref();
     return *this;
 }
 

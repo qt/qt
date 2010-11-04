@@ -194,13 +194,15 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
             d->hotSpot = p1.screenPos();
             d->isHotSpotSet = true;
 
+            QPointF centerPoint = (p1.screenPos() + p2.screenPos()) / 2.0;
             if (d->isNewSequence) {
                 d->startPosition[0] = p1.screenPos();
                 d->startPosition[1] = p2.screenPos();
+                d->lastCenterPoint = centerPoint;
+            } else {
+                d->lastCenterPoint = d->centerPoint;
             }
-
-            d->lastCenterPoint = d->centerPoint;
-            d->centerPoint = (p1.screenPos() + p2.screenPos()) / 2.0;
+            d->centerPoint = centerPoint;
 
             d->changeFlags |= QPinchGesture::CenterPointChanged;
 
@@ -224,7 +226,7 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
                 startAngle -= 360;
             const qreal rotationAngle = startAngle - angle;
             if (d->isNewSequence)
-                d->lastRotationAngle = rotationAngle;
+                d->lastRotationAngle = 0.0;
             else
                 d->lastRotationAngle = d->rotationAngle;
             d->rotationAngle = rotationAngle;

@@ -2553,14 +2553,8 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     ShadowMkspecs()
     {
         rm -rf "$outpath/mkspecs/$1"
-        if [ "$UNAME_SYSTEM" = "Linux" ]; then
-            # This works with GNU coreutils, and is needed for ScratchBox
-            cp -rs "$relpath/mkspecs/$1" "$outpath/mkspecs/$1"
-        else
-            # A simple "cp -rs" doesn't work on Mac. :(
-            find "$relpath/mkspecs/$1" -type d | sed "s,^$relpath,$outpath," | xargs mkdir -p
-            find "$relpath/mkspecs/$1" -type f | sed "s,^$relpath/,," | xargs -n 1 -I % ln -s "$relpath/%" "$outpath/%"
-        fi
+        find "$relpath/mkspecs/$1" -type d | sed "s,^$relpath,$outpath," | xargs mkdir -p
+        find "$relpath/mkspecs/$1" -type f | sed "s,^$relpath/,," | while read f; do ln -s "$relpath/$f" "$outpath/$f"; done
     }
 
     # Special case for mkspecs/features directory.

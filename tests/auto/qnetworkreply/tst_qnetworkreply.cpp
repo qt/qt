@@ -303,6 +303,8 @@ private Q_SLOTS:
 
     void getFromUnreachableIp();
 
+    void qtbug4121unknownAuthentication();
+
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 };
@@ -4870,6 +4872,7 @@ void tst_QNetworkReply::qtbug12908compressedHttpReply()
     QCOMPARE(reply->error(), QNetworkReply::NoError);
 }
 
+// TODO add similar test for FTP
 void tst_QNetworkReply::getFromUnreachableIp()
 {
     QNetworkAccessManager manager;
@@ -4883,6 +4886,35 @@ void tst_QNetworkReply::getFromUnreachableIp()
 
     QVERIFY(reply->error() != QNetworkReply::NoError);
 }
+
+void tst_QNetworkReply::qtbug4121unknownAuthentication()
+{
+    MiniHttpServer server(QByteArray("HTTP/1.1 401 bla\r\nWWW-Authenticate: crap\r\nContent-Length: 0\r\n\r\n"));
+    server.doClose = false;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkAccessManager manager;
+    QNetworkReplyPtr reply = manager.get(request);
+
+    qRegisterMetaType<QNetworkReply*>("QNetworkReply*");
+    qRegisterMetaType<QAuthenticator*>("QAuthenticator*");
+    QSignalSpy authSpy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+    QSignalSpy finishedSpy(&manager, SIGNAL(finished(QNetworkReply*)));
+    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
+    QSignalSpy errorSpy(reply, SIGNAL(error(QNetworkReply::NetworkError)));
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(authSpy.count(), 0);
+    QCOMPARE(finishedSpy.count(), 1);
+    QCOMPARE(errorSpy.count(), 1);
+
+    QCOMPARE(reply->error(), QNetworkReply::AuthenticationRequiredError);
+}
+
+
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!
 void tst_QNetworkReply::parentingRepliesToTheApp()
