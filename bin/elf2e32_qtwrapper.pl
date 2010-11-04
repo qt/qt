@@ -80,7 +80,9 @@ while (1) {
         my $newDefFile;
         my $origDefFile;
         my $savedNewDefFileLine = "";
-        open($origDefFile, "< $definput[1]") or die("Could not open $definput[1]");
+        if ($definput[1]) {
+            open($origDefFile, "< $definput[1]") or die("Could not open $definput[1]");
+        }
         open($newDefFile, "< $defoutput[1]") or die("Could not open $defoutput[1]");
         open($tmpDefFile, "> $defoutput[1].tmp") or die("Could not open $defoutput[1].tmp");
         print($tmpDefFile "EXPORTS\n");
@@ -98,19 +100,21 @@ while (1) {
             my $sym;
             my $ordinal;
             my $extraData;
-            # Read from original def file, and skip non-symbol lines
-            while (1) {
-                $origDefLine = <$origDefFile>;
-                if (defined($origDefLine)) {
-                    $origDefLine =~ s/[\n\r]//;
-                    if ($origDefLine =~ /([a-z0-9_]+) +\@ ([0-9]+) (.*)/i) {
-                        $origSym = $1;
-                        $origOrdinal = $2;
-                        $origExtraData = $3;
+            if ($definput[1]) {
+                # Read from original def file, and skip non-symbol lines
+                while (1) {
+                    $origDefLine = <$origDefFile>;
+                    if (defined($origDefLine)) {
+                        $origDefLine =~ s/[\n\r]//;
+                        if ($origDefLine =~ /([a-z0-9_]+) +\@ ([0-9]+) (.*)/i) {
+                            $origSym = $1;
+                            $origOrdinal = $2;
+                            $origExtraData = $3;
+                            last;
+                        }
+                    } else {
                         last;
                     }
-                } else {
-                    last;
                 }
             }
 
@@ -169,7 +173,7 @@ while (1) {
             print($tmpDefFile "\t$sym \@ $ordinal $extraData\n");
         }
         print($tmpDefFile "\n");
-        close($origDefFile);
+        close($origDefFile) if ($definput[1]);
         close($newDefFile);
         close($tmpDefFile);
 
