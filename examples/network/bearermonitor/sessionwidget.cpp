@@ -74,7 +74,7 @@ SessionWidget::SessionWidget(const QNetworkConfiguration &config, QWidget *paren
             this, SLOT(closeSession()));
     connect(stopSessionButton, SIGNAL(clicked()),
             this, SLOT(stopSession()));
-#if defined(Q_WS_MAEMO_5) || defined(Q_WS_MAEMO_6)
+#ifdef MAEMO_UI
     connect(deleteSessionButton, SIGNAL(clicked()),
             this, SLOT(deleteSession()));
 #endif
@@ -94,7 +94,7 @@ void SessionWidget::timerEvent(QTimerEvent *e)
     }
 }
 
-#if defined(Q_WS_MAEMO_5) || defined(Q_WS_MAEMO_6)
+#ifdef MAEMO_UI
 void SessionWidget::deleteSession()
 {
     delete this;
