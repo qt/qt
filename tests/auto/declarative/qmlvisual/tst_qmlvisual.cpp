@@ -345,6 +345,12 @@ void usage()
         "If you ONLY wish to use the 'error' property, you can record your test with\n"
         "-recordnovisuals, or discard existing visuals with -removevisuals; the test\n"
         "will then only fail on a syntax error, crash, or non-empty 'error' property.\n"
+        "\n"
+        "If your test has anything set to the 'skip' property on the root object then\n"
+        "test failures will be ignored. This allows for an opt-out of automated\n"
+        "aggregation of test results. The value of the 'skip' property (usually a\n"
+        "string) will then be printed to stdout when the test is run as part of the\n"
+        "message saying the test has been skipped.\n"
     );
 }
 
