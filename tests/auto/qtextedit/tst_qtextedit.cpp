@@ -58,6 +58,7 @@
 #include <qimagereader.h>
 #include <qimagewriter.h>
 #include <qcommonstyle.h>
+#include <qlayout.h>
 
 #include <qabstracttextdocumentlayout.h>
 #include <qtextdocumentfragment.h>
@@ -2111,6 +2112,7 @@ void tst_QTextEdit::setDocumentPreservesPalette()
     QPalette whitePal = ed->palette();
     whitePal.setColor(QPalette::Active, QPalette::Text, "white");
 
+
     QVERIFY(whitePal != ed->palette());
     ed->setPalette(whitePal);
     QVERIFY(whitePal.color(QPalette::Active, QPalette::Text)
@@ -2155,6 +2157,9 @@ void tst_QTextEdit::pasteFromQt3RichText()
 
 void tst_QTextEdit::noWrapBackgrounds()
 {
+    QWidget topLevel;
+    QVBoxLayout *layout = new QVBoxLayout(&topLevel);
+
     QTextEdit edit;
     edit.setLineWrapMode(QTextEdit::NoWrap);
 
@@ -2169,6 +2174,11 @@ void tst_QTextEdit::noWrapBackgrounds()
     edit.textCursor().setBlockFormat(format);
     edit.insertPlainText(QLatin1String(" \n  \n   \n    \n"));
     edit.setFixedSize(100, 200);
+
+    layout->addWidget(&edit);
+    topLevel.show();
+
+    QTest::qWait(1000);
 
     QImage img = QPixmap::grabWidget(edit.viewport()).toImage();
     QCOMPARE(img, img.mirrored(true, false));

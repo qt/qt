@@ -147,9 +147,10 @@ void testInvalidateAndRestore(
     QVERIFY(sbox->hasAcceptableInput());
     QVERIFY(okButton->isEnabled());
     QCOMPARE(sbox->value(), lastValidValue);
+    QLocale loc;
     QCOMPARE(
         normalizeNumericString(ledit->text()),
-        normalizeNumericString(QString("%1").arg(sbox->value())));
+        normalizeNumericString(loc.toString(sbox->value())));
 }
 
 template <typename SpinBoxType, typename ValueType>
@@ -169,9 +170,10 @@ void testGetNumeric(QInputDialog *dialog, SpinBoxType * = 0, ValueType * = 0)
     QVERIFY(sbox->value() >= sbox->minimum());
     QVERIFY(sbox->value() <= sbox->maximum());
     QVERIFY(sbox->hasAcceptableInput());
+    QLocale loc;
     QCOMPARE(
         normalizeNumericString(ledit->selectedText()),
-        normalizeNumericString(QString("%1").arg(sbox->value())));
+        normalizeNumericString(loc.toString(sbox->value())));
     QVERIFY(okButton->isEnabled());
 
     const ValueType origValue = sbox->value();
@@ -185,7 +187,7 @@ void testGetNumeric(QInputDialog *dialog, SpinBoxType * = 0, ValueType * = 0)
     testTypingValue<SpinBoxType>(sbox, okButton, "0.0");
     testTypingValue<SpinBoxType>(sbox, okButton, "foobar");
 
-    testTypingValue<SpinBoxType>(sbox, okButton, QString("%1").arg(origValue));
+    testTypingValue<SpinBoxType>(sbox, okButton, loc.toString(origValue));
 }
 
 void testGetText(QInputDialog *dialog)

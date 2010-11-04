@@ -2334,6 +2334,30 @@ void qt_init(QApplicationPrivate *priv, int,
                 X11->desktopEnvironment = DE_4DWM;
                 break;
             }
+
+            if (XGetWindowProperty(X11->display, QX11Info::appRootWindow(),
+                               ATOM(_NET_SUPPORTING_WM_CHECK),
+                               0, 1024, False, XA_WINDOW, &type,
+                               &format, &length, &after, &data) == Success) {
+                if (type == XA_WINDOW && format == 32) {
+                    Window windowManagerWindow = *((Window*) data);
+                    XFree(data);
+                    data = 0;
+
+                    if (windowManagerWindow != XNone) {
+                        Atom utf8atom = ATOM(UTF8_STRING);
+                        if (XGetWindowProperty(QX11Info::display(), windowManagerWindow, ATOM(_NET_WM_NAME),
+                                               0, 1024, False, utf8atom, &type,
+                                               &format, &length, &after, &data) == Success) {
+                            if (type == utf8atom && format == 8) {
+                                if (qstrcmp((const char *)data, "MCompositor") == 0)
+                                    X11->desktopEnvironment = DE_MEEGO_COMPOSITOR;
+                            }
+                        }
+                    }
+                }
+            }
+
         } while(0);
 
         if (data)

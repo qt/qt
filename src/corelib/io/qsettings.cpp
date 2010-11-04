@@ -88,6 +88,12 @@
 #define CSIDL_APPDATA		0x001a	// <username>\Application Data
 #endif
 
+#ifdef Q_AUTOTEST_EXPORT
+#  define Q_AUTOTEST_EXPORT_HELPER Q_AUTOTEST_EXPORT
+#else
+#  define Q_AUTOTEST_EXPORT_HELPER static
+#endif
+
 // ************************************************************************
 // QConfFile
 
@@ -134,7 +140,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 # include <sys/mount.h>
 QT_END_INCLUDE_NAMESPACE
 
-static bool isLikelyToBeNfs(int handle)
+Q_AUTOTEST_EXPORT_HELPER bool qIsLikelyToBeNfs(int handle)
 {
     struct statfs buf;
     if (fstatfs(handle, &buf) != 0)
@@ -160,7 +166,7 @@ QT_END_INCLUDE_NAMESPACE
 #  define AUTOFSNG_SUPER_MAGIC  0x7d92b1a0
 # endif
 
-static bool isLikelyToBeNfs(int handle)
+Q_AUTOTEST_EXPORT_HELPER bool qIsLikelyToBeNfs(int handle)
 {
     struct statfs buf;
     if (fstatfs(handle, &buf) != 0)
@@ -177,7 +183,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 # include <sys/statvfs.h>
 QT_END_INCLUDE_NAMESPACE
 
-static bool isLikelyToBeNfs(int handle)
+Q_AUTOTEST_EXPORT_HELPER bool qIsLikelyToBeNfs(int handle)
 {
     struct statvfs buf;
     if (fstatvfs(handle, &buf) != 0)
@@ -189,7 +195,7 @@ static bool isLikelyToBeNfs(int handle)
 #endif
 }
 #else
-static inline bool isLikelyToBeNfs(int /* handle */)
+Q_AUTOTEST_EXPORT_HELPER inline bool qIsLikelyToBeNfs(int /* handle */)
 {
     return true;
 }
@@ -203,7 +209,7 @@ static bool unixLock(int handle, int lockType)
         now is to disable locking when we detect NFS (or AutoFS or
         CacheFS, which are probably wrapping NFS).
     */
-    if (isLikelyToBeNfs(handle))
+    if (qIsLikelyToBeNfs(handle))
         return false;
 
     struct flock fl;
