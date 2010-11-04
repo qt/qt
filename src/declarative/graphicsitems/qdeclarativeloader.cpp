@@ -395,23 +395,25 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
     Use this status to provide an update or respond to the status change in some way.
     For example, you could:
 
-    \e {Trigger a state change:}
-    \qml 
-        State { name: 'loaded'; when: loader.status = Loader.Ready }
+    \list
+    \o Trigger a state change:
+    \qml
+        State { name: 'loaded'; when: loader.status == Loader.Ready }
     \endqml
 
-    \e {Implement an \c onStatusChanged signal handler:}
-    \qml 
+    \o Implement an \c onStatusChanged signal handler:
+    \qml
         Loader {
             id: loader
             onStatusChanged: if (loader.status == Loader.Ready) console.log('Loaded')
         }
     \endqml
 
-    \e {Bind to the status value:}
+    \o Bind to the status value:
     \qml
-        Text { text: loader.status != Loader.Ready ? 'Not Loaded' : 'Loaded' }
+        Text { text: loader.status == Loader.Ready ? 'Loaded' : 'Not loaded' }
     \endqml
+    \endlist
 
     Note that if the source is a local file, the status will initially be Ready (or Error). While
     there will be no onStatusChanged signal in that case, the onLoaded will still be invoked.

@@ -37,19 +37,20 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-//![0]
+//![start]
 import QtQuick 1.0
 
-Rectangle {
-    width: 300
-    height: 300
+Item {
+    width: 100; height: 100
+//![start]
 
-    color: backgroundColor
-
-    Text {
-        anchors.centerIn: parent
-        text: "Hello Yellow World!"
+//![child]
+    Rectangle {
+        anchors.fill: parent
+        objectName: "rect"
     }
+//![child]
+
+//![end]
 }
-//![0]
+//![end]

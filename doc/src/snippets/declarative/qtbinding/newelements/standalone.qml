@@ -37,25 +37,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include <QObject>
-
 //![0]
-class Stopwatch : public QObject
-{
-    Q_OBJECT
-public:
-    Stopwatch();
-    
-    Q_INVOKABLE bool isRunning() const;
-    
-public slots:
-    void start();
-    void stop();
+import MyLibrary 1.0
 
-private:
-    bool m_running;
-};
-
+ImageViewer { image: "smile.png" }
 //![0]
-
