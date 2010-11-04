@@ -561,6 +561,9 @@ void QInputDialog::setLabelText(const QString &text)
     } else {
         d->label->setText(text);
     }
+#ifdef Q_OS_SYMBIAN
+    d->label->setWordWrap(true);
+#endif
 }
 
 QString QInputDialog::labelText() const
