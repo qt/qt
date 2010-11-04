@@ -112,7 +112,15 @@ typedef QVarLengthArray<ub2, 32> SizeArray;
 
 static QByteArray qMakeOraDate(const QDateTime& dt);
 static QDateTime qMakeDate(const char* oraDate);
+
+static QByteArray qMakeOCINumber(const qlonglong &ll, OCIError *err);
+static QByteArray qMakeOCINumber(const qulonglong& ull, OCIError* err);
+
+static qlonglong qMakeLongLong(const char* ociNumber, OCIError* err);
+static qulonglong qMakeULongLong(const char* ociNumber, OCIError* err);
+
 static QString qOraWarn(OCIError *err, int *errorCode = 0);
+
 #ifndef Q_CC_SUN
 static // for some reason, Sun CC can't use qOraWarning when it's declared static
 #endif
@@ -292,13 +300,27 @@ int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, in
                          SQLT_UIN, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
         break;
     case QVariant::LongLong:
+    {
+        QByteArray ba = qMakeOCINumber(val.toLongLong(), err);
         r = OCIBindByPos(sql, hbnd, err,
                            pos + 1,
-                           // if it's an out value, the data is already detached
-                           // so the const cast is safe.
-                           const_cast<void *>(data),
-                           sizeof(OCINumber),
+                           ba.data(),
+                           ba.size(),
                            SQLT_VNU, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
+        tmpStorage.append(ba);
+        break;
+    }
+    case QVariant::ULongLong:
+    {
+        QByteArray ba = qMakeOCINumber(val.toULongLong(), err);
+        r = OCIBindByPos(sql, hbnd, err,
+                           pos + 1,
+                           ba.data(),
+                           ba.size(),
+                           SQLT_VNU, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
+        tmpStorage.append(ba);
+        break;
+    }
     case QVariant::Double:
         r = OCIBindByPos(sql, hbnd, err,
                          pos + 1,
@@ -394,7 +416,7 @@ int QOCIResultPrivate::bindValues(QVector<QVariant> &values, IndicatorArray &ind
 }
 
 // will assign out value and remove its temp storage.
-static void qOraOutValue(QVariant &value, QList<QByteArray> &storage)
+static void qOraOutValue(QVariant &value, QList<QByteArray> &storage, OCIError* err)
 {
     switch (value.type()) {
     case QVariant::Time:
@@ -405,6 +427,12 @@ static void qOraOutValue(QVariant &value, QList<QByteArray> &storage)
         break;
     case QVariant::DateTime:
         value = qMakeDate(storage.takeFirst());
+        break;
+    case QVariant::LongLong:
+        value = qMakeLongLong(storage.takeFirst(), err);
+        break;
+    case QVariant::ULongLong:
+        value = qMakeULongLong(storage.takeFirst(), err);
         break;
     case QVariant::String:
         value = QString(
@@ -423,7 +451,7 @@ void QOCIResultPrivate::outValues(QVector<QVariant> &values, IndicatorArray &ind
         if (!isOutValue(i))
             continue;
 
-        qOraOutValue(values[i], tmpStorage);
+        qOraOutValue(values[i], tmpStorage, err);
 
         QVariant::Type typ = values.at(i).type();
         if (indicators[i] == -1) // NULL
@@ -681,6 +709,56 @@ QByteArray qMakeOraDate(const QDateTime& dt)
     ba[5]= dt.time().minute() + 1;
     ba[6]= dt.time().second() + 1;
     return ba;
+}
+
+/*!
+  \internal
+
+   Convert qlonglong to the internal Oracle OCINumber format.
+  */
+QByteArray qMakeOCINumber(const qlonglong& ll, OCIError* err)
+{
+    QByteArray ba(sizeof(OCINumber), 0);
+
+    OCINumberFromInt(err,
+                     &ll,
+                     sizeof(qlonglong),
+                     OCI_NUMBER_SIGNED,
+                     reinterpret_cast<OCINumber*>(ba.data()));
+    return ba;
+}
+
+/*!
+  \internal
+
+   Convert qulonglong to the internal Oracle OCINumber format.
+  */
+QByteArray qMakeOCINumber(const qulonglong& ull, OCIError* err)
+{
+    QByteArray ba(sizeof(OCINumber), 0);
+
+    OCINumberFromInt(err,
+                     &ull,
+                     sizeof(qlonglong),
+                     OCI_NUMBER_UNSIGNED,
+                     reinterpret_cast<OCINumber*>(ba.data()));
+    return ba;
+}
+
+qlonglong qMakeLongLong(const char* ociNumber, OCIError* err)
+{
+    qlonglong qll = 0;
+    OCINumberToInt(err, reinterpret_cast<const OCINumber *>(ociNumber), sizeof(qlonglong),
+                   OCI_NUMBER_SIGNED, &qll);
+    return qll;
+}
+
+qulonglong qMakeULongLong(const char* ociNumber, OCIError* err)
+{
+    qulonglong qull = 0;
+    OCINumberToInt(err, reinterpret_cast<const OCINumber *>(ociNumber), sizeof(qulonglong),
+                   OCI_NUMBER_UNSIGNED, &qull);
+    return qull;
 }
 
 QDateTime qMakeDate(const char* oraDate)
@@ -1267,6 +1345,16 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
                 col.maxLen = sizeof(uint);
                 break;
 
+            case QVariant::LongLong:
+                col.bindAs = SQLT_VNU;
+                col.maxLen = sizeof(OCINumber);
+                break;
+
+            case QVariant::ULongLong:
+                col.bindAs = SQLT_VNU;
+                col.maxLen = sizeof(OCINumber);
+                break;
+
             case QVariant::Double:
                 col.bindAs = SQLT_FLT;
                 col.maxLen = sizeof(double);
@@ -1338,6 +1426,22 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
                         *reinterpret_cast<uint*>(dataPtr) = val.toUInt();
                         break;
 
+                    case QVariant::LongLong:
+                    {
+                        columns[i].lengths[row] = columns[i].maxLen;
+                        const QByteArray ba = qMakeOCINumber(val.toLongLong(), d->err);
+                        Q_ASSERT(ba.size() == int(columns[i].maxLen));
+                        memcpy(dataPtr, ba.constData(), columns[i].maxLen);
+                        break;
+                    }
+                    case QVariant::ULongLong:
+                    {
+                        columns[i].lengths[row] = columns[i].maxLen;
+                        const QByteArray ba = qMakeOCINumber(val.toULongLong(), d->err);
+                        Q_ASSERT(ba.size() == int(columns[i].maxLen));
+                        memcpy(dataPtr, ba.constData(), columns[i].maxLen);
+                        break;
+                    }
                     case QVariant::Double:
                          columns[i].lengths[row] = columns[i].maxLen;
                          *reinterpret_cast<double*>(dataPtr) = val.toDouble();
@@ -1445,7 +1549,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
 
         QVariant::Type tp = boundValues.at(i).type();
         if (tp != QVariant::List) {
-            qOraOutValue(boundValues[i], tmpStorage);
+            qOraOutValue(boundValues[i], tmpStorage, d->err);
             if (*columns[i].indicators == -1)
                 boundValues[i] = QVariant(tp);
             continue;
@@ -1474,6 +1578,21 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
                 case SQLT_UIN:
                     (*list)[r] =  *reinterpret_cast<uint*>(data + r * columns[i].maxLen);
                     break;
+
+                case SQLT_VNU:
+                {
+                    switch (boundValues.at(i).type()) {
+                    case QVariant::LongLong:
+                        (*list)[r] =  qMakeLongLong(data + r * columns[i].maxLen, d->err);
+                        break;
+                    case QVariant::ULongLong:
+                        (*list)[r] =  qMakeULongLong(data + r * columns[i].maxLen, d->err);
+                        break;
+                    default:
+                        break;
+                    }
+                    break;
+                }
 
                 case SQLT_FLT:
                     (*list)[r] =  *reinterpret_cast<double*>(data + r * columns[i].maxLen);

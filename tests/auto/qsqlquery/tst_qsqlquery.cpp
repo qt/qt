@@ -139,6 +139,8 @@ private slots:
     void oraClob();
     void oraLong_data() { generic_data("QOCI"); }
     void oraLong();
+    void oraOCINumber_data() { generic_data("QOCI"); }
+    void oraOCINumber();
     void outValuesDB2_data() { generic_data("QDB2"); }
     void outValuesDB2();
     void storedProceduresIBase_data() {generic_data("QIBASE"); }
@@ -211,8 +213,7 @@ private slots:
     void QTBUG_5765();
     void QTBUG_14132_data() { generic_data("QOCI"); }
     void QTBUG_14132();
-    void QTBUG_14640_data() { generic_data("QOCI"); }
-    void QTBUG_14640();
+
     void sqlite_constraint_data() { generic_data("QSQLITE"); }
     void sqlite_constraint();
 
@@ -332,7 +333,7 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
                << qTableName( "task_250026", __FILE__ )
                << qTableName( "task_234422", __FILE__ )
                << qTableName("test141895", __FILE__)
-               << qTableName("qtest_QTBUG14640", __FILE__);
+               << qTableName("qtest_oraOCINumber", __FILE__);
 
     if ( db.driverName().startsWith("QPSQL") )
         tablenames << qTableName("task_233829", __FILE__);
@@ -2950,11 +2951,11 @@ void tst_QSqlQuery::QTBUG_14132()
                         begin \n\
                         outStr := 'OUTSTRING'; \n\
                         end;"));
-    QString outValue = "XXXXXXXXX";
-    q.prepare("CALL "+procedureName+"(?)");
-    q.addBindValue(outValue, QSql::Out);
+    QString placeholder = "XXXXXXXXX";
+    QVERIFY(q.prepare("CALL "+procedureName+"(?)"));
+    q.addBindValue(placeholder, QSql::Out);
     QVERIFY_SQL(q, exec());
-    QCOMPARE(outValue, QLatin1String("OUTSTRING"));
+    QCOMPARE(q.boundValue(0).toString(), QLatin1String("OUTSTRING"));
 }
 
 void tst_QSqlQuery::QTBUG_5251()
@@ -3104,30 +3105,108 @@ void tst_QSqlQuery::QTBUG_5765()
     QCOMPARE(q.value(0).toInt(), 123);
 }
 
-void tst_QSqlQuery::QTBUG_14640()
+void tst_QSqlQuery::oraOCINumber()
 {
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
-    const QString qtest_QTBUG14640(qTableName("qtest_QTBUG14640", __FILE__));
+    const QString qtest_oraOCINumber(qTableName("qtest_oraOCINumber", __FILE__));
 
     QSqlQuery q( db );
     q.setForwardOnly( true );
-    QVERIFY_SQL( q, exec( "create table " + qtest_QTBUG14640 +
-                            " (col1 number, col2 number)" ) );
-    QVERIFY_SQL( q, exec( "insert into " + qtest_QTBUG14640 + " values (1, 1111)" ) );
-    QVERIFY_SQL( q, exec( "insert into " + qtest_QTBUG14640 + " values (2, 2222)" ) );
-    QVERIFY_SQL( q, exec( "insert into " + qtest_QTBUG14640 + " values (3, 3333)" ) );
+    QVERIFY_SQL( q, exec( "create table " + qtest_oraOCINumber +
+                            " (col1 number(20), col2 number(20))" ) );
+    QVERIFY(q.prepare("insert into " + qtest_oraOCINumber + " values (?, ?)"));
+    QVariantList col1Values;
+    QVariantList col2Values;
+    col1Values << (qulonglong)(1)
+               << (qulonglong)(0)
+               << (qulonglong)(INT_MAX)
+               << (qulonglong)(UINT_MAX)
+               << (qulonglong)(LONG_MAX)
+               << (qulonglong)(ULONG_MAX)
+               << (qulonglong)(LLONG_MAX)
+               << (qulonglong)(ULLONG_MAX);
 
-    QString sqlStr = "select * from " + qtest_QTBUG14640 +  " where col1 == :bindValue0 AND col2 == :bindValue1";
-    q.prepare(sqlStr);
-    q.bindValue(":bindValue0", qlonglong(1), QSql::In);
-    q.bindValue(":bindValue1", qlonglong(1111), QSql::In);
+    col2Values << (qlonglong)(1)
+               << (qlonglong)(0)
+               << (qlonglong)(-1)
+               << (qlonglong)(LONG_MAX)
+               << (qlonglong)(LONG_MIN)
+               << (qlonglong)(ULONG_MAX)
+               << (qlonglong)(LLONG_MAX)
+               << (qlonglong)(LLONG_MIN);
+
+    q.addBindValue(col1Values);
+    q.addBindValue(col2Values);
+    QVERIFY(q.execBatch());
+    QString sqlStr = "select * from " + qtest_oraOCINumber +  " where col1 = :bindValue0 AND col2 = :bindValue1";
+    QVERIFY(q.prepare(sqlStr));
+
+    q.bindValue(":bindValue0", (qulonglong)(1), QSql::InOut);
+    q.bindValue(":bindValue1", (qlonglong)(1), QSql::InOut);
+
+    QVERIFY_SQL( q, exec() );
+    QVERIFY( q.next() );
+    QCOMPARE(q.boundValue( 0 ).toULongLong(),  qulonglong(1));
+    QCOMPARE(q.boundValue( 1 ).toLongLong(),  (qlonglong)(1));
+
+    q.bindValue(":bindValue0", (qulonglong)(0), QSql::InOut);
+    q.bindValue(":bindValue1", (qlonglong)(0), QSql::InOut);
     QVERIFY_SQL( q, exec() );
 
     QVERIFY( q.next() );
-    QCOMPARE(q.boundValue( 0 ).toLongLong(),  qlonglong(1));
-    QCOMPARE(q.boundValue( 1 ).toLongLong(),  qlonglong(1111));
+    QCOMPARE(q.boundValue( 0 ).toULongLong(),  (qulonglong)(0));
+    QCOMPARE(q.boundValue( 1 ).toLongLong(),  (qlonglong)(0));
+
+    q.bindValue(":bindValue0", (qulonglong)(INT_MAX), QSql::InOut);
+    q.bindValue(":bindValue1", (qlonglong)(-1), QSql::InOut);
+    QVERIFY_SQL( q, exec() );
+
+    QVERIFY( q.next() );
+    QCOMPARE(q.boundValue( 0 ).toULongLong(),  (qulonglong)(INT_MAX));
+    QCOMPARE(q.boundValue( 1 ).toLongLong(),  (qlonglong)(-1));
+
+    q.bindValue(":bindValue0", (qulonglong)(UINT_MAX), QSql::InOut);
+    q.bindValue(":bindValue1", (qlonglong)(LONG_MAX), QSql::InOut);
+    QVERIFY_SQL( q, exec() );
+
+    QVERIFY( q.next() );
+    QCOMPARE(q.boundValue( 0 ).toULongLong(),  (qulonglong)(UINT_MAX));
+    QCOMPARE(q.boundValue( 1 ).toLongLong(),  (qlonglong)(LONG_MAX));
+
+    q.bindValue(":bindValue0", (qulonglong)(LONG_MAX), QSql::InOut);
+    q.bindValue(":bindValue1", (qlonglong)(LONG_MIN), QSql::InOut);
+    QVERIFY_SQL( q, exec() );
+
+    QVERIFY( q.next() );
+    QCOMPARE(q.boundValue( 0 ).toULongLong(),  (qulonglong)(LONG_MAX));
+    QCOMPARE(q.boundValue( 1 ).toLongLong(),  (qlonglong)(LONG_MIN));
+
+    q.bindValue(":bindValue0", (qulonglong)(ULONG_MAX), QSql::InOut);
+    q.bindValue(":bindValue1", (qlonglong)(ULONG_MAX), QSql::InOut);
+    QVERIFY_SQL( q, exec() );
+
+    QVERIFY( q.next() );
+    QCOMPARE(q.boundValue( 0 ).toULongLong(),  (qulonglong)(ULONG_MAX));
+    QCOMPARE(q.boundValue( 1 ).toLongLong(),  (qlonglong)(ULONG_MAX));
+
+    q.bindValue(":bindValue0", (qulonglong)(LLONG_MAX), QSql::InOut);
+    q.bindValue(":bindValue1", (qlonglong)(LLONG_MAX), QSql::InOut);
+    QVERIFY_SQL( q, exec() );
+
+    QVERIFY( q.next() );
+    QCOMPARE(q.boundValue( 0 ).toULongLong(),  (qulonglong)(LLONG_MAX));
+    QCOMPARE(q.boundValue( 1 ).toLongLong(),  (qlonglong)(LLONG_MAX));
+
+    q.bindValue(":bindValue0", (qulonglong)(ULLONG_MAX), QSql::InOut);
+    q.bindValue(":bindValue1", (qlonglong)(LLONG_MIN), QSql::InOut);
+    QVERIFY_SQL( q, exec() );
+
+    QVERIFY( q.next() );
+    QCOMPARE(q.boundValue( 0 ).toULongLong(),  (qulonglong)(ULLONG_MAX));
+    QCOMPARE(q.boundValue( 1 ).toLongLong(),  (qlonglong)(LLONG_MIN));
+
 }
 
 void tst_QSqlQuery::sqlite_constraint()
