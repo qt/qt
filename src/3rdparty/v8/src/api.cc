@@ -1885,6 +1885,12 @@ bool Value::IsRegExp() const {
   return obj->IsJSRegExp();
 }
 
+bool Value::IsError() const {
+  if (IsDeadCheck("v8::Value::IsError()")) return false;
+  i::Handle<i::Object> obj = Utils::OpenHandle(this);
+  return obj->HasSpecificClassOf(HEAP->Error_symbol());
+}
+
 
 Local<String> Value::ToString() const {
   if (IsDeadCheck("v8::Value::ToString()")) return Local<String>();
