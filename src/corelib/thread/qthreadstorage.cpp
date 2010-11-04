@@ -178,11 +178,12 @@ void QThreadStorageData::finish(void **p)
         return; // nothing to do
 
     DEBUG_MSG("QThreadStorageData: Destroying storage for thread %p", QThread::currentThread());
-
-    for(int i = tls->size() - 1; i >= 0; i--) {
-        void *&value = (*tls)[i];
+    while (!tls->isEmpty()) {
+        void *&value = tls->last();
         void *q = value;
         value = 0;
+        int i = tls->size() - 1;
+        tls->resize(i);
 
         if (!q) {
             // data already deleted

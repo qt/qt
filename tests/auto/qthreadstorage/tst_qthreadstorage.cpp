@@ -77,6 +77,7 @@ private slots:
     void adoptedThreads();
     void ensureCleanupOrder();
     void QTBUG13877_crashOnExit();
+    void QTBUG14579_leakInDestructor();
 };
 
 class Pointer
@@ -308,6 +309,77 @@ void tst_QThreadStorage::QTBUG13877_crashOnExit()
 #endif
     QVERIFY(process.waitForFinished());
     QVERIFY(process.exitStatus() != QProcess::CrashExit);
+}
+
+// S stands for thread Safe.
+class SPointer
+{
+public:
+    static QBasicAtomicInt count;
+    inline SPointer() { count.ref(); }
+    inline ~SPointer() { count.deref(); }
+};
+QBasicAtomicInt SPointer::count = Q_BASIC_ATOMIC_INITIALIZER(0);
+
+Q_GLOBAL_STATIC(QThreadStorage<SPointer *>, QTBUG14579_pointers1)
+Q_GLOBAL_STATIC(QThreadStorage<SPointer *>, QTBUG14579_pointers2)
+
+class QTBUG14579_class
+{
+public:
+    SPointer member;
+    inline ~QTBUG14579_class() {
+        QVERIFY(!QTBUG14579_pointers1()->hasLocalData());
+        QVERIFY(!QTBUG14579_pointers2()->hasLocalData());
+        QTBUG14579_pointers2()->setLocalData(new SPointer);
+        QTBUG14579_pointers1()->setLocalData(new SPointer);
+        QVERIFY(QTBUG14579_pointers1()->hasLocalData());
+        QVERIFY(QTBUG14579_pointers2()->hasLocalData());
+    }
+};
+
+
+void tst_QThreadStorage::QTBUG14579_leakInDestructor()
+{
+    class Thread : public QThread
+    {
+    public:
+        QThreadStorage<QTBUG14579_class *> &tls;
+
+        Thread(QThreadStorage<QTBUG14579_class *> &t) : tls(t) { }
+
+        void run()
+        {
+            QVERIFY(!tls.hasLocalData());
+            tls.setLocalData(new QTBUG14579_class);
+            QVERIFY(tls.hasLocalData());
+        }
+    };
+    int c = SPointer::count;
+
+    QThreadStorage<QTBUG14579_class *> tls;
+
+    QVERIFY(!QTBUG14579_pointers1()->hasLocalData());
+    QThreadStorage<int *> tls2; //add some more tls to make sure ids are not following each other too much
+    QThreadStorage<int *> tls3;
+    QVERIFY(!tls2.hasLocalData());
+    QVERIFY(!tls3.hasLocalData());
+    QVERIFY(!tls.hasLocalData());
+
+    Thread t1(tls);
+    Thread t2(tls);
+    Thread t3(tls);
+
+    t1.start();
+    t2.start();
+    t3.start();
+
+    QVERIFY(t1.wait());
+    QVERIFY(t2.wait());
+    QVERIFY(t3.wait());
+
+    //check all the constructed things have been destructed
+    QCOMPARE(int(SPointer::count), c);
 }
 
 QTEST_MAIN(tst_QThreadStorage)
