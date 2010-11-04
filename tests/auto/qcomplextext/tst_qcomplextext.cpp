@@ -45,6 +45,7 @@
 #if !defined(Q_WS_MAC)
 
 #include <QtTest/QtTest>
+#include <QtGui/QtGui>
 #include <private/qtextengine_p.h>
 
 #include "bidireorderstring.h"
@@ -69,6 +70,7 @@ private slots:
     void bidiReorderString_data();
     void bidiReorderString();
     void bidiCursor_qtbug2795();
+    void bidiCursor_PDF();
 };
 
 tst_QComplexText::tst_QComplexText()
@@ -181,6 +183,20 @@ void tst_QComplexText::bidiCursor_qtbug2795()
 
     // The cursor should remain at the same position after a digit is appended
     QVERIFY(x1 == x2);
+}
+
+void tst_QComplexText::bidiCursor_PDF()
+{
+    QString str = QString::fromUtf8("\342\200\252hello\342\200\254");
+    QTextLayout layout(str);
+
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    layout.endLayout();
+
+    int size = str.size();
+
+    QVERIFY(line.cursorToX(size) == line.cursorToX(size - 1));
 }
 
 QTEST_MAIN(tst_QComplexText)

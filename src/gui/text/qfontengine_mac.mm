@@ -252,6 +252,11 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
             continue;
 
         Q_ASSERT((CTRunGetStatus(run) & kCTRunStatusRightToLeft) == rtl);
+        CFRange stringRange = CTRunGetStringRange(run);
+        UniChar endGlyph = CFStringGetCharacterAtIndex(cfstring, stringRange.location + stringRange.length - 1);
+        bool endWithPDF = QChar::direction(endGlyph) == QChar::DirPDF;
+        if (endWithPDF)
+            glyphCount++;
 
         if (!outOBounds && outGlyphs + glyphCount - initialGlyph > *nglyphs) {
             outOBounds = true;
@@ -264,6 +269,9 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
             CTFontRef runFont = static_cast<CTFontRef>(CFDictionaryGetValue(runAttribs, NSFontAttributeName));
             const uint fontIndex = (fontIndexForFont(runFont) << 24);
             //NSLog(@"Run Font Name = %@", CTFontCopyFamilyName(runFont));
+            if (endWithPDF)
+                glyphCount--;
+
             QVarLengthArray<CGGlyph, 512> cgglyphs(0);
             const CGGlyph *tmpGlyphs = CTRunGetGlyphsPtr(run);
             if (!tmpGlyphs) {
@@ -331,6 +339,16 @@ bool QCoreTextFontEngineMulti::stringToCMap(const QChar *str, int len, QGlyphLay
                     (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
                     ? QFixed::fromReal(lastGlyphAdvance.width).round()
                     : QFixed::fromReal(lastGlyphAdvance.width);
+
+            if (endWithPDF) {
+                logClusters[stringRange.location + stringRange.length - 1] = glyphCount;
+                outGlyphs[glyphCount] = 0xFFFF;
+                outAdvances_x[glyphCount] = 0;
+                outAdvances_y[glyphCount] = 0;
+                outAttributes[glyphCount].clusterStart = true;
+                outAttributes[glyphCount].dontPrint = true;
+                glyphCount++;
+            }
         }
         outGlyphs += glyphCount;
         outAttributes += glyphCount;
