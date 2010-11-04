@@ -134,6 +134,7 @@ private slots:
     void connectConstructorByMetaMethod();
     void disconnectByMetaMethod();
     void disconnectNotSignalMetaMethod();
+    void autoConnectionBehavior();
 
 protected:
 };
@@ -3845,6 +3846,83 @@ void tst_QObject::disconnectNotSignalMetaMethod()
 
     QTest::ignoreMessage(QtWarningMsg,"Object::disconnect: Attempt to unbind non-signal SenderObject::aPublicSlot()");
     QVERIFY(!QObject::disconnect(&s, slot, &r, QMetaMethod()));
+}
+
+class ThreadAffinityThread : public QThread
+{
+public:
+    SenderObject *sender;
+
+    ThreadAffinityThread(SenderObject *sender)
+        : sender(sender)
+    { }
+    void run()
+    {
+        sender->emitSignal1();
+    }
+};
+
+void tst_QObject::autoConnectionBehavior()
+{
+    SenderObject *sender = new SenderObject;
+    ReceiverObject *receiver = new ReceiverObject;
+    connect(sender, SIGNAL(signal1()), receiver, SLOT(slot1()));
+
+    // at emit, currentThread == sender->thread(), currentThread == receiver->thread(), sender->thread() == receiver->thread()
+    QVERIFY(!receiver->called(1));
+    sender->emitSignal1();
+    QVERIFY(receiver->called(1));
+    receiver->reset();
+
+    // at emit, currentThread != sender->thread(), currentThread != receiver->thread(), sender->thread() == receiver->thread()
+    ThreadAffinityThread emitThread1(sender);
+    QVERIFY(!receiver->called(1));
+    emitThread1.start();
+    QVERIFY(emitThread1.wait(30000));
+    QVERIFY(!receiver->called(1));
+    QCoreApplication::sendPostedEvents(receiver, QEvent::MetaCall);
+    QVERIFY(receiver->called(1));
+    receiver->reset();
+
+    // at emit, currentThread == sender->thread(), currentThread != receiver->thread(), sender->thread() != receiver->thread()
+    sender->moveToThread(&emitThread1);
+    QVERIFY(!receiver->called(1));
+    emitThread1.start();
+    QVERIFY(emitThread1.wait(30000));
+    QVERIFY(!receiver->called(1));
+    QCoreApplication::sendPostedEvents(receiver, QEvent::MetaCall);
+    QVERIFY(receiver->called(1));
+    receiver->reset();
+
+    // at emit, currentThread != sender->thread(), currentThread == receiver->thread(), sender->thread() != receiver->thread()
+    QVERIFY(!receiver->called(1));
+    sender->emitSignal1();
+    QVERIFY(receiver->called(1));
+    receiver->reset();
+
+    // at emit, currentThread != sender->thread(), currentThread != receiver->thread(), sender->thread() != receiver->thread()
+    ThreadAffinityThread emitThread2(sender);
+    QThread receiverThread;
+    QTimer *timer = new QTimer;
+    timer->setSingleShot(true);
+    timer->setInterval(100);
+    connect(&receiverThread, SIGNAL(started()), timer, SLOT(start()));
+    connect(timer, SIGNAL(timeout()), &receiverThread, SLOT(quit()), Qt::DirectConnection);
+    connect(&receiverThread, SIGNAL(finished()), timer, SLOT(deleteLater()));
+    timer->moveToThread(&receiverThread);
+
+    receiver->moveToThread(&receiverThread);
+    QVERIFY(!receiver->called(1));
+    emitThread2.start();
+    QVERIFY(emitThread2.wait(30000));
+    QVERIFY(!receiver->called(1));
+    receiverThread.start();
+    QVERIFY(receiverThread.wait(30000));
+    QVERIFY(receiver->called(1));
+    receiver->reset();
+
+    delete sender;
+    delete receiver;
 }
 
 QTEST_MAIN(tst_QObject)
