@@ -373,6 +373,13 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
         // - If withCredentials has been set to false (e.g. by QtWebKit for a cross-origin XMLHttpRequest) then
         //   we need to bail out if authentication is required.
         if (priv->phase == QAuthenticatorPrivate::Done || !reply->request().withCredentials()) {
+            // Reset authenticator so the next request on that channel does not get messed up
+            auth = 0;
+            if (isProxy)
+                channels[i].proxyAuthenticator = QAuthenticator();
+            else
+                channels[i].authenticator = QAuthenticator();
+
             // authentication is cancelled, send the current contents to the user.
             emit channels[i].reply->headerChanged();
             emit channels[i].reply->readyRead();
