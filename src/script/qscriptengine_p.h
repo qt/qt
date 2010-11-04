@@ -228,6 +228,9 @@ private:
     QSet<int> visitedConversionObjects;
     bool m_isEvaluating;
     TypeInfos m_typeInfos;
+
+    QSet<QString> importedExtensions;
+    QSet<QString> extensionsBeingImported;
 };
 
 v8::Handle<v8::Value> QScriptEnginePrivate::makeJSValue(bool value)
