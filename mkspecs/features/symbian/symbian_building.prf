@@ -187,26 +187,16 @@ contains(TEMPLATE, app):!contains(QMAKE_LINK, "^@:.*") {
     linux-armcc: {
         QMAKE_LIBS += usrt2_2.lib dfpaeabi.dso dfprvct2_2.dso drtaeabi.dso scppnwdl.dso drtrvct2_2.dso h_t__uf.l\\(switch8.o\\)
         QMAKE_LIBS += -leexe.lib\\(uc_exe_.o\\)
-        contains(CONFIG, "qt"):contains(QT, "gui") { #if linking with QtCore
-            QMAKE_LIBS -= -lqtmain$${QT_LIBINFIX}.lib
-            QMAKE_LIBS += -lqtmain$${QT_LIBINFIX}.lib
-        } else {
-            QMAKE_LIBS -= -llibcrt0.lib
-            QMAKE_LIBS += -llibcrt0.lib
-        }
+        QMAKE_LIBS -= $$QMAKE_LIBS_QT_ENTRY
+        QMAKE_LIBS += $$QMAKE_LIBS_QT_ENTRY
     } else :linux-gcce {
         # notice that we can't merge these as ordering of arguments is important.
         QMAKE_LIBS += \
             -l:eexe.lib \
             -l:usrt2_2.lib
-        contains(CONFIG, "qt"):contains(QT, "gui") { #if linking with QtCore
-            QMAKE_LIBS -= -l:qtmain$${QT_LIBINFIX}.lib
-            QMAKE_LIBS += -l:qtmain$${QT_LIBINFIX}.lib
-        } else {
-            QMAKE_LIBS -= -l:libcrt0.lib
-            QMAKE_LIBS -= -l:libcrt0_gcce.lib
-            QMAKE_LIBS += -l:libcrt0_gcce.lib
-        }
+        modified_entry = $$replace(QMAKE_LIBS_QT_ENTRY, "^-l", "-l:")
+        QMAKE_LIBS -= $$modified_entry
+        QMAKE_LIBS += $$modified_entry
         QMAKE_LIBS += \
             -l:dfpaeabi.dso \
             -l:drtaeabi.dso \
