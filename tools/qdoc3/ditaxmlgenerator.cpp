@@ -2036,7 +2036,7 @@ void DitaXmlGenerator::writeXrefListItem(const QString& link, const QString& tex
   Generate the html page for a qdoc file that doesn't map
   to an underlying c++ file.
  */
-void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
+void DitaXmlGenerator::generateFakeNode(const FakeNode* fake, CodeMarker* marker)
 {
     SubTitleSize subTitleSize = LargeSubTitle;
     QList<Section> sections;
@@ -2054,7 +2054,6 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
     }
 
     generateHeader(fake, fullTitle);
-    
     generateBrief(fake, marker); // <shortdesc>
     xmlWriter().writeStartElement("body");
     if (fake->subType() == Node::Module) {
@@ -2115,7 +2114,62 @@ void DitaXmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
         }
     }
     xmlWriter().writeEndElement(); // </body>
+    writeRelatedLinks(fake, marker);
     xmlWriter().writeEndElement(); // </topic>
+}
+
+/*!
+  This function writes a \e{<link>} element inside a
+  \e{<related-links>} element.
+
+  \sa writeRelatedLinks()
+ */
+void DitaXmlGenerator::writeLink(const Node* node,
+                                 const QString& text,
+                                 const QString& role)
+{
+    if (node) {
+        QString link = fileName(node) + "#" + node->guid();
+        xmlWriter().writeStartElement("link");
+        xmlWriter().writeAttribute("href", link);
+        xmlWriter().writeAttribute("role", role);
+        xmlWriter().writeStartElement("linktext");
+        xmlWriter().writeCharacters(text);
+        xmlWriter().writeEndElement(); // </linktext>
+        xmlWriter().writeEndElement(); // </link>
+    }
+}
+
+/*!
+  This function writes a \e{<related-links>} element, which
+  contains the \c{next}, \c{previous}, and \c{start}
+  links for topic pages that have them. Note that the
+  value of the \e role attribute is \c{parent} for the
+  \c{start} link.
+ */
+void DitaXmlGenerator::writeRelatedLinks(const FakeNode* node, CodeMarker* marker)
+{
+    const Node* linkNode = 0;
+    QPair<QString,QString> linkPair;
+    if (node && !node->links().empty()) {
+        xmlWriter().writeStartElement("related-links");
+        if (node->links().contains(Node::PreviousLink)) {
+            linkPair = node->links()[Node::PreviousLink];
+            linkNode = findNodeForTarget(linkPair.first, node, marker);
+            writeLink(linkNode, linkPair.second, "previous");
+        }
+        if (node->links().contains(Node::NextLink)) {
+            linkPair = node->links()[Node::NextLink];
+            linkNode = findNodeForTarget(linkPair.first, node, marker);
+            writeLink(linkNode, linkPair.second, "next");
+        }
+        if (node->links().contains(Node::StartLink)) {
+            linkPair = node->links()[Node::StartLink];
+            linkNode = findNodeForTarget(linkPair.first, node, marker);
+            writeLink(linkNode, linkPair.second, "parent");
+        }
+        xmlWriter().writeEndElement(); // </related-links>
+    }
 }
 
 /*!
@@ -2231,6 +2285,7 @@ void DitaXmlGenerator::generateHeader(const Node* node,
     xmlWriter().writeStartElement(nameElement); // <title> or <apiName>
     xmlWriter().writeCharacters(name);
     xmlWriter().writeEndElement(); // </title> or </apiName> 
+
 }
 
 /*!

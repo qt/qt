@@ -136,6 +136,8 @@ class DitaXmlGenerator : public PageGenerator
                      CodeMarker* marker,
                      const QString& attribute = QString());
     void writePropertyParameter(const QString& tag, const NodeList& nlist);
+    void writeRelatedLinks(const FakeNode* fake, CodeMarker* marker);
+    void writeLink(const Node* node, const QString& tex, const QString& role);
 
  private:
     enum SubTitleSize { SmallSubTitle, LargeSubTitle };
