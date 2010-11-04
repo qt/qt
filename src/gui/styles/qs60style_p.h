@@ -625,6 +625,7 @@ private:
     static qint64 m_webPaletteKey;
 
     static QPointer<QWidget> m_pressedWidget;
+    static QSet<const QWidget *> *m_autoFillDisabledWidgets;
 
 #ifdef Q_WS_S60
     //list of progress bars having animation running
