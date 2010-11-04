@@ -105,17 +105,17 @@ function processNokiaData(response){
 			/* start a new list element */
 			full_li_element = '<li';
 					/* if the pageType element reads APIPage, add class name api */
-      if (propertyTags[j].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'APIPage') {
+      if (propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'APIPage') {
       	full_li_element += ' class="api"';
       	apiCount++;
       }
 					/* if the pageType element reads Article, add class name article */
-      else if (propertyTags[j].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Article') {
+      else if (propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Article') {
       	full_li_element += ' class="article"';
       	articleCount++;
       }
 					/* if the pageType element reads Example, add class name example */
-      else if (propertyTags[j].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Example') {
+      else if (propertyTags[i].getElementsByTagName('pageType')[0].firstChild.nodeValue == 'Example') {
       	full_li_element += ' class="example"';
       	exampleCount++;
       }

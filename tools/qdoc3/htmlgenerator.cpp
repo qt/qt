@@ -1929,10 +1929,8 @@ void HtmlGenerator::generateHeader(const QString& title,
         }
     }
 
-#if 0 // Removed for new doc format. MWS
     if (node && !node->links().empty())
-        out() << "<p>\n" << navigationLinks << "</p>\n";
-#endif    
+        out() << "<p>\n" << navigationLinks << "</p><p/>\n";
 }
 
 void HtmlGenerator::generateTitle(const QString& title,
