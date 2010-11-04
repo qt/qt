@@ -70,7 +70,7 @@
 # define SRCDIR ""
 #endif
 
-extern Q_AUTOTEST_EXPORT bool isLikelyToBeNfs(int /* handle */);
+extern Q_AUTOTEST_EXPORT bool qIsLikelyToBeNfs(int /* handle */);
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -942,7 +942,7 @@ void tst_QFileInfo::fileTimes()
 #endif
         QVERIFY(file.open(QFile::WriteOnly | QFile::Text));
 #ifdef Q_OS_UNIX
-        if (isLikelyToBeNfs(file.handle()))
+        if (qIsLikelyToBeNfs(file.handle()))
             QSKIP("This Test doesn't work on NFS", SkipAll);
 #endif
         QTextStream ts(&file);
