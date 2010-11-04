@@ -152,7 +152,7 @@ QScriptValue QScriptContext::throwValue(const QScriptValue &value)
     QScriptIsolate api(d->engine);
     v8::HandleScope handleScope;
     v8::Handle< v8::Value > exception = QScriptValuePrivate::get(value)->asV8Value(d->engine);
-    return d->engine->scriptValueFromInternal(v8::ThrowException(exception));
+    return d->engine->scriptValueFromInternal(d->engine->throwException(exception));
 }
 
 /*!

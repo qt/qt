@@ -158,7 +158,8 @@ public:
 
     inline operator v8::Handle<v8::Context>();
     inline void clearExceptions();
-    inline void setException(v8::Handle<v8::Value> value, v8::Handle<v8::Message> exception = v8::Handle<v8::Message>());
+    inline void setException(v8::Handle<v8::Value> value, v8::Handle<v8::Message> message = v8::Handle<v8::Message>());
+    inline v8::Handle<v8::Value> throwException(v8::Handle<v8::Value> value);
     inline bool hasUncaughtException() const;
     inline int uncaughtExceptionLineNumber() const;
     inline QStringList uncaughtExceptionBacktrace() const;
@@ -351,6 +352,13 @@ void QScriptEnginePrivate::reportAdditionalMemoryCost(int cost)
 inline void QScriptEnginePrivate::setException(v8::Handle<v8::Value> value, v8::Handle<v8::Message> msg)
 {
     m_exception.set(value, msg);
+}
+
+inline v8::Handle<v8::Value> QScriptEnginePrivate::throwException(v8::Handle<v8::Value> value)
+{
+    setException(value);
+    v8::ThrowException(value);
+    return value;
 }
 
 inline void QScriptEnginePrivate::clearExceptions()

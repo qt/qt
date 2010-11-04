@@ -293,7 +293,7 @@ v8::Handle<v8::Value> QScriptContextPrivate::throwError(QScriptContext::Error er
             exception = v8::Exception::Error(message);
             break;
     }
-    return v8::ThrowException(exception);
+    return engine->throwException(exception);
 }
 
 
