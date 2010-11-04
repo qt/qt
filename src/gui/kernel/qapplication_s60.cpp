@@ -2055,6 +2055,17 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
         }
 #endif
         break;
+#ifdef Q_SYMBIAN_SUPPORTS_SURFACES
+    case EEventUser:
+        {
+            // GOOM is looking for candidates to kill so indicate that we are
+            // capable of cleaning up by handling this event
+            TInt32 *data = reinterpret_cast<TInt32 *>(event->EventData());
+            if (data[0] == EApaSystemEventShutdown && data[1] == KGoomMemoryLowEvent)
+                return 1;
+        }
+        break;
+#endif
     default:
         break;
     }

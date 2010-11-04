@@ -285,6 +285,13 @@ int QVectorData::grow(int sizeofTypedData, int size, int sizeofT, bool excessive
     vector.
 */
 
+/*! \fn void QVector::swap(QVector<T> &other)
+    \since 4.8
+
+    Swaps vector \a other with this vector. This operation is very fast and
+    never fails.
+*/
+
 /*! \fn bool QVector::operator==(const QVector<T> &other) const
 
     Returns true if \a other is equal to this vector; otherwise

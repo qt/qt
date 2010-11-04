@@ -4,6 +4,7 @@
 TEMPLATE=subdirs
 SUBDIRS=\
 #           exceptionsafety_objects \ shouldn't enable it
+           lancelot \
            qaccessibility \
            qalgorithms \
            qcombobox \

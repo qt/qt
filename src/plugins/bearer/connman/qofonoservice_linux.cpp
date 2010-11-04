@@ -262,7 +262,7 @@ void QOfonoModemInterface::connectNotify(const char *signal)
 
 
             QObject::connect(helper,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)),
-                    this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)));
+                    this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)), Qt::UniqueConnection);
         }}
 
 void QOfonoModemInterface::disconnectNotify(const char *signal)
@@ -385,7 +385,7 @@ if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QDBusVariant))) {
 
 
         QObject::connect(helper,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)),
-                this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)));
+                this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)), Qt::UniqueConnection);
     }
 }
 
@@ -483,7 +483,7 @@ if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QDBusVariant))) {
 
 
         QObject::connect(helper,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)),
-                this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)));
+                this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)), Qt::UniqueConnection);
     }
 }
 
@@ -586,7 +586,7 @@ if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QDBusVariant))) {
 
 
         QObject::connect(helper,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)),
-                this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)));
+                this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)), Qt::UniqueConnection);
     }
 }
 
@@ -675,7 +675,7 @@ if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QDBusVariant))) {
 
 
         QObject::connect(helper,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)),
-                this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)));
+                this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)), Qt::UniqueConnection);
     }
 }
 
@@ -794,7 +794,7 @@ if (QLatin1String(signal) == SIGNAL(propertyChanged(QString,QDBusVariant))) {
 
 
         QObject::connect(helper,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)),
-                this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)));
+                this,SIGNAL(propertyChangedContext(const QString &,const QString &,const QDBusVariant &)), Qt::UniqueConnection);
     }
 }
 

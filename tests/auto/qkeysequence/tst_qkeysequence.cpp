@@ -112,6 +112,7 @@ public:
     virtual ~tst_QKeySequence();
 
 private slots:
+    void swap();
     void operatorQString_data();
     void operatorQString();
     void compareConstructors_data();
@@ -174,6 +175,15 @@ void tst_QKeySequence::initTestCase()
     ourTranslator->load(":/keys_de");
     qtTranslator = new QTranslator(this);
     qtTranslator->load(":/qt_de");
+}
+
+void tst_QKeySequence::swap()
+{
+    QKeySequence ks1(Qt::CTRL+Qt::Key_O);
+    QKeySequence ks2(Qt::CTRL+Qt::Key_L);
+    ks1.swap(ks2);
+    QCOMPARE(ks1[0], int(Qt::CTRL+Qt::Key_L));
+    QCOMPARE(ks2[0], int(Qt::CTRL+Qt::Key_O));
 }
 
 void tst_QKeySequence::operatorQString_data()

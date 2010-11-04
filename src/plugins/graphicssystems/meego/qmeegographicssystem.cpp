@@ -151,9 +151,8 @@ void QMeeGoGraphicsSystem::setTranslucent(bool translucent)
 QPixmapData *QMeeGoGraphicsSystem::pixmapDataFromEGLSharedImage(Qt::HANDLE handle, const QImage &softImage)
 {
     if (softImage.format() != QImage::Format_ARGB32_Premultiplied &&
-        softImage.format() != QImage::Format_ARGB32 &&
         softImage.format() != QImage::Format_RGB32) {
-        qFatal("For egl shared images, the soft image has to be ARGB32, ARGB32_Premultiplied or RGB32");
+        qFatal("For egl shared images, the soft image has to be ARGB32_Premultiplied or RGB32");
         return NULL;
     }
     

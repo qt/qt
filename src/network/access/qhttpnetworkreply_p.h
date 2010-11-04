@@ -136,6 +136,8 @@ public:
 
     bool isPipeliningUsed() const;
 
+    QHttpNetworkConnection* connection();
+
 #ifndef QT_NO_OPENSSL
     QSslConfiguration sslConfiguration() const;
     void setSslConfiguration(const QSslConfiguration &config);
@@ -154,7 +156,11 @@ Q_SIGNALS:
     // FIXME we need to change this to qint64!
     void dataReadProgress(int done, int total);
     void dataSendProgress(qint64 done, qint64 total);
-
+    void cacheCredentials(const QHttpNetworkRequest &request, QAuthenticator *authenticator);
+#ifndef QT_NO_NETWORKPROXY
+    void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator);
+#endif
+    void authenticationRequired(const QHttpNetworkRequest &request, QAuthenticator *authenticator);
 private:
     Q_DECLARE_PRIVATE(QHttpNetworkReply)
     friend class QHttpNetworkConnection;

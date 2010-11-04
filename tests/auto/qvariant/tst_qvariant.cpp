@@ -100,6 +100,7 @@ private slots:
     void constructor();
     void copy_constructor();
     void isNull();
+    void swap();
 
     void canConvert_data();
     void canConvert();
@@ -370,6 +371,16 @@ void tst_QVariant::isNull()
     QCOMPARE(var7.asInt(), 0);
 #endif
     QVERIFY(var7.isNull());
+}
+
+void tst_QVariant::swap()
+{
+    QVariant v1 = 1, v2 = 2.0;
+    v1.swap(v2);
+    QCOMPARE(v1.type(),QVariant::Double);
+    QCOMPARE(v1.toDouble(),2.0);
+    QCOMPARE(v2.type(),QVariant::Int);
+    QCOMPARE(v2.toInt(),1);
 }
 
 void tst_QVariant::canConvert_data()

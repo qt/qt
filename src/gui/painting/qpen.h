@@ -78,6 +78,7 @@ public:
     inline QPen &operator=(QPen &&other)
     { qSwap(d, other.d); return *this; }
 #endif
+    inline void swap(QPen &other) { qSwap(d, other.d); }
 
     Qt::PenStyle style() const;
     void setStyle(Qt::PenStyle);
