@@ -112,8 +112,6 @@ const short QS60StylePrivate::data[][MAX_PIXELMETRICS] = {
 // *** End of generated data ***
 };
 
-QSet<const QWidget *> *QS60StylePrivate::m_autoFillDisabledWidgets = 0;
-
 const short *QS60StylePrivate::m_pmPointer = QS60StylePrivate::data[0];
 
 // theme background texture
@@ -154,8 +152,6 @@ const double KTabFontMul = 0.72;
 
 QS60StylePrivate::~QS60StylePrivate()
 {
-    delete m_autoFillDisabledWidgets;
-    m_autoFillDisabledWidgets = 0;
     clearCaches(); //deletes also background image
     deleteThemePalette();
 #ifdef Q_WS_S60
@@ -3188,13 +3184,6 @@ void QS60Style::polish(QWidget *widget)
     }
     d->setThemePalette(widget);
     d->setFont(widget);
-    
-    if (widget->autoFillBackground()) {
-        if (!d->m_autoFillDisabledWidgets)
-            d->m_autoFillDisabledWidgets = new QSet<const QWidget *>;
-        widget->setAutoFillBackground(false);
-        d->m_autoFillDisabledWidgets->insert(widget);
-    }
 }
 
 /*!
@@ -3229,13 +3218,6 @@ void QS60Style::unpolish(QWidget *widget)
 
     if (widget)
         widget->setPalette(QPalette());
-    
-    if (d->m_autoFillDisabledWidgets &&
-	    !d->m_autoFillDisabledWidgets->isEmpty() &&
-		d->m_autoFillDisabledWidgets->contains(widget)) {
-        widget->setAutoFillBackground(true);
-        d->m_autoFillDisabledWidgets->remove(widget);
-    }
 
 #if defined(Q_WS_S60) && !defined(QT_NO_PROGRESSBAR)
     if (QProgressBar *bar = qobject_cast<QProgressBar *>(widget)) {
