@@ -78,6 +78,7 @@ private slots:
     void ensureCleanupOrder();
     void QTBUG13877_crashOnExit();
     void QTBUG14579_leakInDestructor();
+    void valueBased();
 };
 
 class Pointer
@@ -318,6 +319,7 @@ public:
     static QBasicAtomicInt count;
     inline SPointer() { count.ref(); }
     inline ~SPointer() { count.deref(); }
+    inline SPointer(const SPointer &other) { count.ref(); }
 };
 QBasicAtomicInt SPointer::count = Q_BASIC_ATOMIC_INITIALIZER(0);
 
@@ -381,6 +383,78 @@ void tst_QThreadStorage::QTBUG14579_leakInDestructor()
     //check all the constructed things have been destructed
     QCOMPARE(int(SPointer::count), c);
 }
+
+void tst_QThreadStorage::valueBased()
+{
+    struct Thread : QThread {
+        QThreadStorage<SPointer> &tlsSPointer;
+        QThreadStorage<QString> &tlsString;
+        QThreadStorage<int> &tlsInt;
+
+        int someNumber;
+        QString someString;
+        Thread(QThreadStorage<SPointer> &t1, QThreadStorage<QString> &t2, QThreadStorage<int> &t3)
+        : tlsSPointer(t1), tlsString(t2), tlsInt(t3) { }
+
+        void run() {
+            /*QVERIFY(!tlsSPointer.hasLocalData());
+            QVERIFY(!tlsString.hasLocalData());
+            QVERIFY(!tlsInt.hasLocalData());*/
+            SPointer pointercopy = tlsSPointer.localData();
+
+            //Default constructed values
+            QVERIFY(tlsString.localData().isNull());
+            QCOMPARE(tlsInt.localData(), 0);
+
+            //setting
+            tlsString.setLocalData(someString);
+            tlsInt.setLocalData(someNumber);
+
+            QCOMPARE(tlsString.localData(), someString);
+            QCOMPARE(tlsInt.localData(), someNumber);
+
+            //changing
+            tlsSPointer.setLocalData(SPointer());
+            tlsInt.localData() += 42;
+            tlsString.localData().append(QLatin1String(" world"));
+
+            QCOMPARE(tlsString.localData(), (someString + QLatin1String(" world")));
+            QCOMPARE(tlsInt.localData(), (someNumber + 42));
+
+            // operator=
+            tlsString.localData() = QString::number(someNumber);
+            QCOMPARE(tlsString.localData().toInt(), someNumber);
+        }
+    };
+
+    QThreadStorage<SPointer> tlsSPointer;
+    QThreadStorage<QString> tlsString;
+    QThreadStorage<int> tlsInt;
+
+    int c = SPointer::count;
+
+    Thread t1(tlsSPointer, tlsString, tlsInt);
+    Thread t2(tlsSPointer, tlsString, tlsInt);
+    Thread t3(tlsSPointer, tlsString, tlsInt);
+    t1.someNumber = 42;
+    t2.someNumber = -128;
+    t3.someNumber = 78;
+    t1.someString = "hello";
+    t2.someString = "trolltech";
+    t3.someString = "nokia";
+
+    t1.start();
+    t2.start();
+    t3.start();
+
+    QVERIFY(t1.wait());
+    QVERIFY(t2.wait());
+    QVERIFY(t3.wait());
+
+    QCOMPARE(c, int(SPointer::count));
+
+}
+
 
 QTEST_MAIN(tst_QThreadStorage)
 #include "tst_qthreadstorage.moc"
