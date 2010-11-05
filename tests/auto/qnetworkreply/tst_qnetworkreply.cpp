@@ -297,6 +297,8 @@ private Q_SLOTS:
 
     void qtbug4121unknownAuthentication();
 
+    void qtbug13431replyThrottling();
+
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 };
@@ -4641,6 +4643,56 @@ void tst_QNetworkReply::qtbug4121unknownAuthentication()
     QCOMPARE(errorSpy.count(), 1);
 
     QCOMPARE(reply->error(), QNetworkReply::AuthenticationRequiredError);
+}
+
+class QtBug13431Helper : public QObject {
+    Q_OBJECT
+public:
+    QNetworkReply* m_reply;
+    QTimer m_dlTimer;
+public slots:
+    void replyFinished(QNetworkReply*) {
+        QTestEventLoop::instance().exitLoop();
+    }
+
+    void onReadAndReschedule() {
+        const qint64 bytesReceived = m_reply->bytesAvailable();
+        if (bytesReceived) {
+           QByteArray data = m_reply->read(bytesReceived);
+           // reschedule read
+           const int millisecDelay = static_cast<int>(bytesReceived * 1000 / m_reply->readBufferSize());
+           m_dlTimer.start(millisecDelay);
+        }
+        else {
+           // reschedule read
+           m_dlTimer.start(200);
+        }
+    }
+};
+
+void tst_QNetworkReply::qtbug13431replyThrottling()
+{
+    QtBug13431Helper helper;
+
+    QNetworkAccessManager nam;
+    connect(&nam, SIGNAL(finished(QNetworkReply*)), &helper, SLOT(replyFinished(QNetworkReply*)));
+
+    // Download a bigger file
+    QNetworkRequest netRequest(QUrl("http://qt-test-server/qtest/bigfile"));
+    helper.m_reply = nam.get(netRequest);
+    // Set the throttle
+    helper.m_reply->setReadBufferSize(36000);
+
+    // Schedule a timer that tries to read
+
+    connect(&helper.m_dlTimer, SIGNAL(timeout()), &helper, SLOT(onReadAndReschedule()));
+    helper.m_dlTimer.setSingleShot(true);
+    helper.m_dlTimer.start(0);
+
+    QTestEventLoop::instance().enterLoop(30);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(helper.m_reply->isFinished());
+    QCOMPARE(helper.m_reply->error(), QNetworkReply::NoError);
 }
 
 
