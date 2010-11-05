@@ -54,6 +54,7 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qset.h>
+#include <QtCore/qfile.h>
 
 #ifdef Q_OS_SYMBIAN
 class RFile;
@@ -652,6 +653,7 @@ public:
 
     inline QString file() const { return f; }
     QUrl url() const;
+    void openFile(QFile &file, QIODevice::OpenMode flags) const;
 private:
     QString f;
 };

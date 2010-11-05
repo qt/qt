@@ -3098,6 +3098,20 @@ QUrl QFileOpenEvent::url() const
     return reinterpret_cast<const QFileOpenEventPrivate *>(d)->url;
 }
 
+void QFileOpenEvent::openFile(QFile &file, QIODevice::OpenMode flags) const
+{
+    file.setFileName(f);
+#ifdef Q_OS_SYMBIAN
+    const QFileOpenEventPrivate *priv = reinterpret_cast<const QFileOpenEventPrivate *>(d);
+    if (priv->file.SubSessionHandle()) {
+        // TODO return a QFile opened from the file handle
+        file.open(flags);
+        return;
+    }
+#endif
+    file.open(flags);
+}
+
 #ifndef QT_NO_TOOLBAR
 /*!
     \internal
