@@ -106,6 +106,7 @@ private slots:
     void adoptMultipleThreads();
 
     void QTBUG13810_exitAndStart();
+    void connectThreadFinishedSignalToObjectDeleteLaterSlot();
 
     void stressTest();
 };
@@ -975,6 +976,19 @@ void tst_QThread::QTBUG13810_exitAndStart()
     QCOMPARE(sync1.m_prop, 89);
 }
 
+void tst_QThread::connectThreadFinishedSignalToObjectDeleteLaterSlot()
+{
+    QThread thread;
+    QObject *object = new QObject;
+    QWeakPointer<QObject> p = object;
+    QVERIFY(!p.isNull());
+    connect(&thread, SIGNAL(started()), &thread, SLOT(quit()), Qt::DirectConnection);
+    connect(&thread, SIGNAL(finished()), object, SLOT(deleteLater()));
+    object->moveToThread(&thread);
+    thread.start();
+    QVERIFY(thread.wait(30000));
+    QVERIFY(p.isNull());
+}
 
 QTEST_MAIN(tst_QThread)
 #include "tst_qthread.moc"

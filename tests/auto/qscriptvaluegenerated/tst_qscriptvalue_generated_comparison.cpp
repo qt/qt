@@ -47,7 +47,7 @@
 
 
 
-void tst_QScriptValue::equals_initData()
+void tst_QScriptValueGenerated::equals_initData()
 {
     QTest::addColumn<QScriptValue>("other");
     QTest::addColumn<bool>("expected");
@@ -1273,7 +1273,7 @@ static QString equals_array [] = {
     "engine->newQObject(0) <=> engine->newQObject(0)",
     "engine->newQObject(engine) <=> engine->newQObject(engine)",};
 
-void tst_QScriptValue::equals_makeData(const char *expr)
+void tst_QScriptValueGenerated::equals_makeData(const char *expr)
 {
     static QSet<QString> equals;
     if (equals.isEmpty()) {
@@ -1288,7 +1288,7 @@ void tst_QScriptValue::equals_makeData(const char *expr)
     }
 }
 
-void tst_QScriptValue::equals_test(const char *, const QScriptValue& value)
+void tst_QScriptValueGenerated::equals_test(const char *, const QScriptValue& value)
 {
     QFETCH(QScriptValue, other);
     QFETCH(bool, expected);
@@ -1298,7 +1298,7 @@ void tst_QScriptValue::equals_test(const char *, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(equals)
 
 
-void tst_QScriptValue::strictlyEquals_initData()
+void tst_QScriptValueGenerated::strictlyEquals_initData()
 {
     QTest::addColumn<QScriptValue>("other");
     QTest::addColumn<bool>("expected");
@@ -1830,7 +1830,7 @@ static QString strictlyEquals_array [] = {
     "engine->newQObject(0) <=> engine->newQObject(0)",
     "engine->newQObject(engine) <=> engine->newQObject(engine)",};
 
-void tst_QScriptValue::strictlyEquals_makeData(const char *expr)
+void tst_QScriptValueGenerated::strictlyEquals_makeData(const char *expr)
 {
     static QSet<QString> equals;
     if (equals.isEmpty()) {
@@ -1845,7 +1845,7 @@ void tst_QScriptValue::strictlyEquals_makeData(const char *expr)
     }
 }
 
-void tst_QScriptValue::strictlyEquals_test(const char *, const QScriptValue& value)
+void tst_QScriptValueGenerated::strictlyEquals_test(const char *, const QScriptValue& value)
 {
     QFETCH(QScriptValue, other);
     QFETCH(bool, expected);
@@ -1855,7 +1855,7 @@ void tst_QScriptValue::strictlyEquals_test(const char *, const QScriptValue& val
 DEFINE_TEST_FUNCTION(strictlyEquals)
 
 
-void tst_QScriptValue::lessThan_initData()
+void tst_QScriptValueGenerated::lessThan_initData()
 {
     QTest::addColumn<QScriptValue>("other");
     QTest::addColumn<bool>("expected");
@@ -6927,7 +6927,7 @@ static QString lessThan_array [] = {
     "engine->newQObject(engine) <=> engine->newObject()",
     "engine->newQObject(engine) <=> engine->newQMetaObject(&QObject::staticMetaObject)",};
 
-void tst_QScriptValue::lessThan_makeData(const char *expr)
+void tst_QScriptValueGenerated::lessThan_makeData(const char *expr)
 {
     static QSet<QString> equals;
     if (equals.isEmpty()) {
@@ -6942,7 +6942,7 @@ void tst_QScriptValue::lessThan_makeData(const char *expr)
     }
 }
 
-void tst_QScriptValue::lessThan_test(const char *, const QScriptValue& value)
+void tst_QScriptValueGenerated::lessThan_test(const char *, const QScriptValue& value)
 {
     QFETCH(QScriptValue, other);
     QFETCH(bool, expected);
@@ -6952,7 +6952,7 @@ void tst_QScriptValue::lessThan_test(const char *, const QScriptValue& value)
 DEFINE_TEST_FUNCTION(lessThan)
 
 
-void tst_QScriptValue::instanceOf_initData()
+void tst_QScriptValueGenerated::instanceOf_initData()
 {
     QTest::addColumn<QScriptValue>("other");
     QTest::addColumn<bool>("expected");
@@ -7001,7 +7001,7 @@ static QString instanceOf_array [] = {
     "engine->newVariant(QVariant(false)) <=> engine->evaluate(\"Object\")",
     "engine->newQObject(engine) <=> engine->evaluate(\"Object\")",};
 
-void tst_QScriptValue::instanceOf_makeData(const char *expr)
+void tst_QScriptValueGenerated::instanceOf_makeData(const char *expr)
 {
     static QSet<QString> equals;
     if (equals.isEmpty()) {
@@ -7016,7 +7016,7 @@ void tst_QScriptValue::instanceOf_makeData(const char *expr)
     }
 }
 
-void tst_QScriptValue::instanceOf_test(const char *, const QScriptValue& value)
+void tst_QScriptValueGenerated::instanceOf_test(const char *, const QScriptValue& value)
 {
     QFETCH(QScriptValue, other);
     QFETCH(bool, expected);
