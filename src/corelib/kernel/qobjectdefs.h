@@ -215,11 +215,15 @@ Q_CORE_EXPORT const char *qFlagLocation(const char *method);
 #define QTOSTRING(s) QTOSTRING_HELPER(s)
 #ifndef QT_NO_DEBUG
 # define QLOCATION "\0"__FILE__":"QTOSTRING(__LINE__)
-# define METHOD(a)   qFlagLocation("0"#a QLOCATION)
+# ifndef QT_NO_KEYWORDS
+#  define METHOD(a)   qFlagLocation("0"#a QLOCATION)
+# endif
 # define SLOT(a)     qFlagLocation("1"#a QLOCATION)
 # define SIGNAL(a)   qFlagLocation("2"#a QLOCATION)
 #else
-# define METHOD(a)   "0"#a
+# ifndef QT_NO_KEYWORDS
+#  define METHOD(a)   "0"#a
+# endif
 # define SLOT(a)     "1"#a
 # define SIGNAL(a)   "2"#a
 #endif
