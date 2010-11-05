@@ -85,6 +85,7 @@ public:
 
 private:
     QPaintDevice *paintDevice();
+    void updateToolbarOffset(QWidget *widget);
     void prepareBuffer(QImage::Format format, QWidget *widget);
     void recursiveRedirect(QObject *widget, const QPoint &offset);
 

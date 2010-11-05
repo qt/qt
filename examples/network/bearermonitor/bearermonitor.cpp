@@ -41,8 +41,8 @@
 #include "bearermonitor.h"
 #include "sessionwidget.h"
 
-#include <QDebug>
-#include <QMessageBox>
+#include <QtCore/QDebug>
+
 #ifdef Q_OS_WIN
 #include <winsock2.h>
 #undef interface
@@ -56,20 +56,18 @@ BearerMonitor::BearerMonitor(QWidget *parent)
 :   QWidget(parent)
 {
     setupUi(this);
-#if defined(Q_WS_MAEMO_5) || defined(Q_WS_MAEMO_6)
+#ifdef MAEMO_UI
     newSessionButton->hide();
     deleteSessionButton->hide();
 #else
     delete tabWidget->currentWidget();
     sessionGroup->hide();
 #endif
-#if defined (Q_OS_SYMBIAN) || defined(Q_OS_WINCE) || defined(Q_WS_MAEMO_5) || defined(Q_WS_MAEMO_6)
+#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE) || defined(MAEMO_UI)
     setWindowState(Qt::WindowMaximized);
 #endif
     updateConfigurations();
-#if !defined(Q_WS_MAEMO_5) && !defined(Q_WS_MAEMO_6)
     onlineStateChanged(!manager.allConfigurations(QNetworkConfiguration::Active).isEmpty());
-#endif
     QNetworkConfiguration defaultConfiguration = manager.defaultConfiguration();
     for (int i = 0; i < treeWidget->topLevelItemCount(); ++i) {
         QTreeWidgetItem *item = treeWidget->topLevelItem(i);
@@ -104,7 +102,7 @@ BearerMonitor::BearerMonitor(QWidget *parent)
 
     connect(newSessionButton, SIGNAL(clicked()),
             this, SLOT(createNewSession()));
-#if !defined(Q_WS_MAEMO_5) && !defined(Q_WS_MAEMO_6)
+#ifndef MAEMO_UI
     connect(deleteSessionButton, SIGNAL(clicked()),
             this, SLOT(deleteSession()));
 #endif
@@ -257,15 +255,9 @@ void BearerMonitor::updateConfigurations()
 void BearerMonitor::onlineStateChanged(bool isOnline)
 {
     if (isOnline)
-#if defined(Q_WS_MAEMO_5) || defined(Q_WS_MAEMO_6)
-        QMessageBox::information(this, "Connection state changed", "Online", QMessageBox::Close);
-    else
-        QMessageBox::information(this, "Connection state changed", "Offline", QMessageBox::Close);
-#else
         onlineState->setText(tr("Online"));
     else
         onlineState->setText(tr("Offline"));
-#endif
 }
 
 #ifdef Q_OS_WIN
@@ -393,7 +385,7 @@ void BearerMonitor::createSessionFor(QTreeWidgetItem *item)
 
     tabWidget->addTab(session, conf.name());
 
-#if !defined(Q_WS_MAEMO_5) && !defined(Q_WS_MAEMO_6)
+#ifndef MAEMO_UI
     sessionGroup->show();
 #endif
 
@@ -408,7 +400,7 @@ void BearerMonitor::createNewSession()
     createSessionFor(item);
 }
 
-#if !defined(Q_WS_MAEMO_5) && !defined(Q_WS_MAEMO_6)
+#ifndef MAEMO_UI
 void BearerMonitor::deleteSession()
 {
     SessionWidget *session = qobject_cast<SessionWidget *>(tabWidget->currentWidget());

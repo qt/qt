@@ -42,6 +42,7 @@
 #include "qunifiedtoolbarsurface_mac_p.h"
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qbackingstore_p.h>
+#include <private/qmainwindowlayout_p.h>
 
 #include <QDebug>
 
@@ -90,7 +91,6 @@ void QUnifiedToolbarSurface::insertToolbar(QWidget *toolbar, const QPoint &offse
 {
     setGeometry(QRect(QPoint(0, 0), QSize(offset.x() + toolbar->width(), 100))); // FIXME
     recursiveRedirect(toolbar, offset);
-//    toolbar->d_func()->toolbar_offset = offset;
 }
 
 void QUnifiedToolbarSurface::setGeometry(const QRect &rect)
@@ -101,6 +101,8 @@ void QUnifiedToolbarSurface::setGeometry(const QRect &rect)
     if (d->image == 0 || d->image->width() < rect.width() || d->image->height() < rect.height())
             prepareBuffer(QImage::Format_ARGB32_Premultiplied, window());
     d->inSetGeometry = false;
+
+    // FIXME: set unified toolbar height.
 }
 
 void QUnifiedToolbarSurface::beginPaint(const QRegion &rgn)
@@ -114,9 +116,17 @@ void QUnifiedToolbarSurface::beginPaint(const QRegion &rgn)
     }
 }
 
+void QUnifiedToolbarSurface::updateToolbarOffset(QWidget *widget)
+{
+    QMainWindowLayout *mlayout = qobject_cast<QMainWindowLayout*> (widget->window()->layout());
+    mlayout->updateUnifiedToolbarOffset();
+}
+
 void QUnifiedToolbarSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &offset)
 {
     Q_D(QUnifiedToolbarSurface);
+
+    QRegion flushingRegion(widget->rect());
 
     if (!d->image || rgn.rectCount() == 0) {
         return;
@@ -132,24 +142,29 @@ void QUnifiedToolbarSurface::flush(QWidget *widget, const QRegion &rgn, const QP
         qt_mac_display(widget);
         return;
     } else {
+        // We render the content of the toolbar in the surface.
+        updateToolbarOffset(widget);
+        QRect beginPaintRect(widget->d_func()->toolbar_offset.x(), widget->d_func()->toolbar_offset.y(), widget->geometry().width(), widget->geometry().height());
+        QRegion beginPaintRegion(beginPaintRect);
+
         context = widget->d_func()->cgContext;
+        beginPaint(beginPaintRegion);
         widget->render(widget->d_func()->unifiedSurface->paintDevice(), widget->d_func()->toolbar_offset, QRegion(), QWidget::DrawChildren);
     }
 
     CGContextSaveGState(context);
 
-    int areaX = widget->geometry().x() + widget->d_func()->toolbar_offset.x();
-    int areaY = widget->geometry().y() + widget->d_func()->toolbar_offset.y();
+    int areaX = widget->d_func()->toolbar_offset.x();
+    int areaY = widget->d_func()->toolbar_offset.y();
     int areaWidth = widget->geometry().width();
     int areaHeight = widget->geometry().height();
     const CGRect area = CGRectMake(areaX, areaY, areaWidth, areaHeight);
 
     // Clip to region.
-    const QVector<QRect> &rects = rgn.rects();
+    const QVector<QRect> &rects = flushingRegion.rects();
     for (int i = 0; i < rects.size(); ++i) {
         const QRect &rect = rects.at(i);
-        //        CGContextAddRect(context, CGRectMake(rect.x(), rect.y(), rect.width(), rect.height()));
-        CGContextAddRect(context, CGRectMake(0, 0, 1000, 1000)); //FIXME: Set correct size.
+        CGContextAddRect(context, CGRectMake(rect.x(), rect.y(), rect.width(), rect.height()));
     }
     CGContextAddRect(context, area);
     CGContextClip(context);
