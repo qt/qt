@@ -127,8 +127,10 @@ void QS60MainDocument::OpenFileL(CFileStore *&aFileStore, RFile &aFile)
 {
     QCoreApplication* app = QCoreApplication::instance();
     QFileOpenEvent* event = new QFileOpenEvent(aFile);
-    app->postEvent(app, event);
-    aFileStore = 0;
+    TFileName name;
+    aFile.FullName(name);
+    QString qname((QChar*)name.Ptr(), name.Length());
+    QFileOpenEvent* event = new QFileOpenEvent(qname);
 }
 
 QT_END_NAMESPACE
