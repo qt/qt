@@ -247,7 +247,9 @@ public:
 
     void addDeferredActiveObject(QActiveObject *object);
     void removeDeferredActiveObject(QActiveObject *object);
-    void reactivateDeferredActiveObjects();
+    void queueDeferredActiveObjectsCompletion();
+    // Can be overridden to activate local active objects too, but do call baseclass!
+    virtual void reactivateDeferredActiveObjects();
 
     inline int iterationCount() const { return m_iterationCount; }
 
