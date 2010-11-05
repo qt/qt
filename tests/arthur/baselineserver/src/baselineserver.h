@@ -116,7 +116,7 @@ private:
     void provideBaselineChecksums(const QByteArray &itemListBlock);
     void storeImage(const QByteArray &itemBlock, bool isBaseline);
     QString pathForItem(const ImageItem &item, bool isBaseline = true, bool absolute = true);
-    QString logtime();
+    const char *logtime();
     QString computeMismatchScore(const QImage& baseline, const QImage& rendered);
     QString engineForItem(const ImageItem &item);
 

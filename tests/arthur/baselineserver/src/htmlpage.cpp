@@ -89,9 +89,12 @@ void HTMLPage::writeHeader(const ImageItem &item)
     out.setDevice(&file);
 
     out << "<html><body><h1>Lancelot results from run " << id << "</h1>\n\n";
-    out << "<h3>Host: " << plat.hostName << " [" << address << "] OS: " << plat.osName << " [enum: " << plat.osVersion << "]</h3>\n";
-    out << "<h3>Qt version: " << plat.qtVersion << " [commit: " << plat.gitCommit << "] Build key: \"" << plat.buildKey << "\"</h3>\n";
-    out << "<h3>Engine: " << item.engineAsString() << " Format: " << item.formatAsString() << "</h3>\n\n";
+    out << "<h3>Platform Info:</h3>\n";
+    out << "<table>\n";
+    foreach (QString key, plat.keys())
+        out << "<tr><td>" << key << "</td><td>" << plat.value(key) << "</td></tr>\n";
+    out << "</table>\n";
+
 #if 0
     out << "<h3><a href=\"/cgi-bin/server.cgi?cmd=updateAllBaselines&id="<< id << "&host=" << plat.hostName
         << "&engine=" << item.engineAsString() << "&format=" << item.formatAsString()
@@ -161,7 +164,7 @@ void HTMLPage::end()
             if (imageItems.at(i).status == ImageItem::IgnoreItem) {
                 out << "<span style=\"background-color:yellow\">Blacklisted</span><br>"
                        "<a href=\"/cgi-bin/server.cgi?cmd=whitelist&scriptName="
-                    << imageItems.at(i).scriptName << "&host=" << plat.hostName
+                    << imageItems.at(i).scriptName << "&host=" << plat.value(PI_HostName)
                     << "&engine=" << imageItems.at(i).engineAsString()
                     << "&format=" << imageItems.at(i).formatAsString()
                     << "&url=" << pageUrl
