@@ -88,12 +88,12 @@ void MarkCompactCollector::CollectGarbage() {
     heap_->MarkMapPointersAsEncoded(true);
     UpdatePointers();
     heap_->MarkMapPointersAsEncoded(false);
-    PcToCodeCache::FlushPcToCodeCache();
+    heap_->isolate()->pc_to_code_cache()->Flush();
 
     RelocateObjects();
   } else {
     SweepSpaces();
-    PcToCodeCache::FlushPcToCodeCache();
+    heap_->isolate()->pc_to_code_cache()->Flush();
   }
 
   Finish();
@@ -1562,7 +1562,8 @@ static void UpdatePointerToNewGen(HeapObject** p) {
 }
 
 
-static String* UpdateNewSpaceReferenceInExternalStringTableEntry(Object **p) {
+static String* UpdateNewSpaceReferenceInExternalStringTableEntry(Heap* heap,
+                                                                 Object** p) {
   Address old_addr = HeapObject::cast(*p)->address();
   Address new_addr = Memory::Address_at(old_addr);
   return String::cast(HeapObject::FromAddress(new_addr));

@@ -1464,12 +1464,12 @@ static Object* Runtime_RegExpCloneResult(RUNTIME_CALLING_CONVENTION) {
   // Having the original JSRegExpResult map guarantees that we have
   // fast elements and no properties except the two in-object properties.
   ASSERT(result->HasFastElements());
-  ASSERT(result->properties() == HEAP->empty_fixed_array());
+  ASSERT(result->properties() == isolate->heap()->empty_fixed_array());
   ASSERT_EQ(2, regexp_result_map->inobject_properties());
 
-  Object* new_array_alloc = HEAP->AllocateRaw(JSRegExpResult::kSize,
-                                              NEW_SPACE,
-                                              OLD_POINTER_SPACE);
+  Object* new_array_alloc = isolate->heap()->AllocateRaw(JSRegExpResult::kSize,
+                                                         NEW_SPACE,
+                                                         OLD_POINTER_SPACE);
   if (new_array_alloc->IsFailure()) return new_array_alloc;
 
   // Set HeapObject map to JSRegExpResult map.
@@ -1482,8 +1482,8 @@ static Object* Runtime_RegExpCloneResult(RUNTIME_CALLING_CONVENTION) {
 
   // Copy JSObject elements as copy-on-write.
   FixedArray* elements = FixedArray::cast(result->elements());
-  if (elements != HEAP->empty_fixed_array()) {
-    elements->set_map(HEAP->fixed_cow_array_map());
+  if (elements != isolate->heap()->empty_fixed_array()) {
+    elements->set_map(isolate->heap()->fixed_cow_array_map());
   }
   new_array->set_elements(elements);
 
@@ -6429,7 +6429,8 @@ static Object* Runtime_DateYMDFromTime(RUNTIME_CALLING_CONVENTION) {
   int year, month, day;
   DateYMDFromTime(static_cast<int>(floor(t / 86400000)), year, month, day);
 
-  RUNTIME_ASSERT(res_array->elements()->map() == HEAP->fixed_array_map());
+  RUNTIME_ASSERT(res_array->elements()->map() ==
+                 isolate->heap()->fixed_array_map());
   FixedArray* elms = FixedArray::cast(res_array->elements());
   RUNTIME_ASSERT(elms->length() == 3);
 
@@ -7403,7 +7404,7 @@ static Object* Runtime_AllocateInNewSpace(RUNTIME_CALLING_CONVENTION) {
   RUNTIME_ASSERT(IsAligned(size, kPointerSize));
   RUNTIME_ASSERT(size > 0);
   Heap* heap = isolate->heap();
-  static const int kMinFreeNewSpaceAfterGC = heap->InitialSemiSpaceSize() * 3/4;
+  const int kMinFreeNewSpaceAfterGC = heap->InitialSemiSpaceSize() * 3/4;
   RUNTIME_ASSERT(size <= kMinFreeNewSpaceAfterGC);
   Object* allocation = heap->new_space()->AllocateRaw(size);
   if (!allocation->IsFailure()) {
@@ -7877,8 +7878,8 @@ static Object* Runtime_MoveArrayContents(RUNTIME_CALLING_CONVENTION) {
   CONVERT_CHECKED(JSArray, to, args[1]);
   HeapObject* new_elements = from->elements();
   Object* new_map;
-  if (new_elements->map() == HEAP->fixed_array_map() ||
-      new_elements->map() == HEAP->fixed_cow_array_map()) {
+  if (new_elements->map() == isolate->heap()->fixed_array_map() ||
+      new_elements->map() == isolate->heap()->fixed_cow_array_map()) {
     new_map = to->map()->GetFastElementsMap();
   } else {
     new_map = to->map()->GetSlowElementsMap();
@@ -8140,7 +8141,7 @@ static Object* Runtime_DebugGetPropertyDetails(RUNTIME_CALLING_CONVENTION) {
   // into the embedding application can occour, and the embedding application
   // could have the assumption that its own global context is the current
   // context and not some internal debugger context.
-  SaveContext save;
+  SaveContext save(isolate);
   if (isolate->debug()->InDebugger()) {
     isolate->set_context(*isolate->debug()->debugger_entry()->GetContext());
   }
@@ -8407,7 +8408,8 @@ static Object* Runtime_GetFrameDetails(RUNTIME_CALLING_CONVENTION) {
   Handle<Object> frame_id(WrapFrameId(it.frame()->id()), isolate);
 
   // Find source position.
-  int position = it.frame()->code()->SourcePosition(it.frame()->pc());
+  int position =
+      it.frame()->LookupCode(isolate)->SourcePosition(it.frame()->pc());
 
   // Check for constructor frame.
   bool constructor = it.frame()->IsConstructor();
@@ -9480,9 +9482,8 @@ static Handle<Object> GetArgumentsObject(Isolate* isolate,
 }
 
 
-static const char* source_str =
+static const char kSourceStr[] =
     "(function(arguments,__source__){return eval(__source__);})";
-static const int source_str_length = StrLength(source_str);
 
 
 // Evaluate a piece of JavaScript in the context of a stack frame for
@@ -9527,7 +9528,7 @@ static Object* Runtime_DebugEvaluate(RUNTIME_CALLING_CONVENTION) {
     save = save->prev();
   }
   ASSERT(save != NULL);
-  SaveContext savex;
+  SaveContext savex(isolate);
   isolate->set_context(*(save->context()));
 
   // Create the (empty) function replacing the function on the stack frame for
@@ -9565,11 +9566,10 @@ static Object* Runtime_DebugEvaluate(RUNTIME_CALLING_CONVENTION) {
   // 'arguments'. This it to have access to what would have been 'arguments' in
   // the function being debugged.
   // function(arguments,__source__) {return eval(__source__);}
-  ASSERT(source_str_length == StrLength(source_str));
 
   Handle<String> function_source =
       isolate->factory()->NewStringFromAscii(
-          Vector<const char>(source_str, source_str_length));
+          Vector<const char>(kSourceStr, sizeof(kSourceStr) - 1));
   Handle<SharedFunctionInfo> shared =
       Compiler::CompileEval(function_source,
                             context,
@@ -9626,7 +9626,7 @@ static Object* Runtime_DebugEvaluateGlobal(RUNTIME_CALLING_CONVENTION) {
   DisableBreak disable_break_save(disable_break);
 
   // Enter the top context from before the debugger was invoked.
-  SaveContext save;
+  SaveContext save(isolate);
   SaveContext* top = &save;
   while (top != NULL && *top->context() == *isolate->debug()->debug_context()) {
     top = top->prev();
@@ -10345,7 +10345,7 @@ static Object* Runtime_CollectStackTrace(RUNTIME_CALLING_CONVENTION) {
       Object* recv = frame->receiver();
       Object* fun = frame->function();
       Address pc = frame->pc();
-      Address start = frame->code()->address();
+      Address start = frame->LookupCode(isolate)->address();
       Smi* offset = Smi::FromInt(static_cast<int>(pc - start));
       FixedArray* elements = FixedArray::cast(result->elements());
       if (cursor + 2 < elements->length()) {
@@ -10559,7 +10559,7 @@ static Object* Runtime_IS_VAR(RUNTIME_CALLING_CONVENTION) {
   { Runtime::kInline##name, Runtime::INLINE,     \
     "_" #name, NULL, number_of_args, result_size },
 
-Runtime::Function kIntrinsicFunctions[] = {
+static const Runtime::Function kIntrinsicFunctions[] = {
   RUNTIME_FUNCTION_LIST(F)
   INLINE_FUNCTION_LIST(I)
   INLINE_RUNTIME_FUNCTION_LIST(I)
@@ -10585,7 +10585,7 @@ Object* Runtime::InitializeIntrinsicFunctionNames(Heap* heap,
 }
 
 
-Runtime::Function* Runtime::FunctionForSymbol(Handle<String> name) {
+const Runtime::Function* Runtime::FunctionForSymbol(Handle<String> name) {
   Heap* heap = HEAP;
   int entry = heap->intrinsic_function_names()->FindEntry(*name);
   if (entry != kNotFound) {
@@ -10597,7 +10597,7 @@ Runtime::Function* Runtime::FunctionForSymbol(Handle<String> name) {
 }
 
 
-Runtime::Function* Runtime::FunctionForId(Runtime::FunctionId id) {
+const Runtime::Function* Runtime::FunctionForId(Runtime::FunctionId id) {
   return &(kIntrinsicFunctions[static_cast<int>(id)]);
 }
 

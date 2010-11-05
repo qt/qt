@@ -33,7 +33,6 @@
 #include "builtins.h"
 #include "contexts.h"
 #include "execution.h"
-#include "frames-inl.h"
 #include "frames.h"
 #include "global-handles.h"
 #include "handles.h"
@@ -375,14 +374,13 @@ class Isolate {
   }
 
   // Returns the isolate inside which the current thread is running.
-  static Isolate* Current() {
-    Isolate* tls_isolate = reinterpret_cast<Isolate*>(
-        Thread::GetThreadLocal(isolate_key_));
-    ASSERT(tls_isolate != NULL);
-    return tls_isolate;
+  INLINE(static Isolate* Current()) {
+    Isolate* isolate = UncheckedCurrent();
+    ASSERT(isolate != NULL);
+    return isolate;
   }
 
-  static Isolate* UncheckedCurrent() {
+  INLINE(static Isolate* UncheckedCurrent()) {
     return reinterpret_cast<Isolate*>(Thread::GetThreadLocal(isolate_key_));
   }
 
@@ -638,8 +636,8 @@ class Isolate {
 
   static const char* const kStackOverflowMessage;
 
-  static const int kUC16AlphabetSize = 256; // See StringSearchBase.
-  static const int kBMMaxShift = 250;       // See StringSearchBase.
+  static const int kUC16AlphabetSize = 256;  // See StringSearchBase.
+  static const int kBMMaxShift = 250;        // See StringSearchBase.
 
   // Accessors.
 #define GLOBAL_ACCESSOR(type, name, initialvalue)                              \
@@ -704,6 +702,8 @@ class Isolate {
   ScannerCharacterClasses* scanner_character_classes() {
     return scanner_character_classes_;
   }
+
+  PcToCodeCache* pc_to_code_cache() { return pc_to_code_cache_; }
 
   StringInputBuffer* write_input_buffer() { return write_input_buffer_; }
 
@@ -975,6 +975,7 @@ class Isolate {
   PreallocatedStorage in_use_list_;
   PreallocatedStorage free_list_;
   bool preallocated_storage_preallocated_;
+  PcToCodeCache* pc_to_code_cache_;
   StringInputBuffer* write_input_buffer_;
   GlobalHandles* global_handles_;
   ContextSwitcher* context_switcher_;
@@ -1045,13 +1046,14 @@ class Isolate {
 // versions of GCC. See V8 issue 122 for details.
 class SaveContext BASE_EMBEDDED {
  public:
-  SaveContext()
-      : context_(Isolate::Current()->context()),
+  explicit SaveContext(Isolate* isolate) : prev_(isolate->save_context()) {
+    if (isolate->context() != NULL) {
+      context_ = Handle<Context>(isolate->context());
 #if __GNUC_VERSION__ >= 40100 && __GNUC_VERSION__ < 40300
-        dummy_(Isolate::Current()->context()),
+      dummy_ = Handle<Context>(isolate->context());
 #endif
-        prev_(Isolate::Current()->save_context()) {
-    Isolate::Current()->set_save_context(this);
+    }
+    isolate->set_save_context(this);
 
     // If there is no JS frame under the current C frame, use the value 0.
     JavaScriptFrameIterator it;
@@ -1059,8 +1061,15 @@ class SaveContext BASE_EMBEDDED {
   }
 
   ~SaveContext() {
-    Isolate::Current()->set_context(*context_);
-    Isolate::Current()->set_save_context(prev_);
+    if (context_.is_null()) {
+      Isolate* isolate = Isolate::Current();
+      isolate->set_context(NULL);
+      isolate->set_save_context(prev_);
+    } else {
+      Isolate* isolate = context_->GetIsolate();
+      isolate->set_context(*context_);
+      isolate->set_save_context(prev_);
+    }
   }
 
   Handle<Context> context() { return context_; }
@@ -1190,5 +1199,6 @@ inline void Context::mark_out_of_memory() {
 //                 they're needed.
 #include "allocation-inl.h"
 #include "zone-inl.h"
+#include "frames-inl.h"
 
 #endif  // V8_ISOLATE_H_

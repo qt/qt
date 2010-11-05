@@ -427,8 +427,9 @@ Isolate* Heap::isolate() {
       v8::internal::V8::FatalProcessOutOfMemory("CALL_AND_RETRY_0", true);\
     }                                                                     \
     if (!__object__->IsRetryAfterGC()) RETURN_EMPTY;                      \
-    ISOLATE->heap()->CollectGarbage(Failure::cast(__object__)->requested(),\
-                         Failure::cast(__object__)->allocation_space());  \
+    ISOLATE->heap()->CollectGarbage(                                      \
+       Failure::cast(__object__)->requested(),                            \
+       Failure::cast(__object__)->allocation_space());                    \
     __object__ = FUNCTION_CALL;                                           \
     if (!__object__->IsFailure()) RETURN_VALUE;                           \
     if (__object__->IsOutOfMemoryFailure()) {                             \
@@ -477,7 +478,7 @@ inline bool Heap::allow_allocation(bool new_state) {
 
 void ExternalStringTable::AddString(String* string) {
   ASSERT(string->IsExternalString());
-  if (HEAP->InNewSpace(string)) {
+  if (heap_->InNewSpace(string)) {
     new_space_strings_.Add(string);
   } else {
     old_space_strings_.Add(string);
@@ -502,11 +503,11 @@ void ExternalStringTable::Iterate(ObjectVisitor* v) {
 void ExternalStringTable::Verify() {
 #ifdef DEBUG
   for (int i = 0; i < new_space_strings_.length(); ++i) {
-    ASSERT(HEAP->InNewSpace(new_space_strings_[i]));
+    ASSERT(heap_->InNewSpace(new_space_strings_[i]));
     ASSERT(new_space_strings_[i] != HEAP->raw_unchecked_null_value());
   }
   for (int i = 0; i < old_space_strings_.length(); ++i) {
-    ASSERT(!HEAP->InNewSpace(old_space_strings_[i]));
+    ASSERT(!heap_->InNewSpace(old_space_strings_[i]));
     ASSERT(old_space_strings_[i] != HEAP->raw_unchecked_null_value());
   }
 #endif
@@ -515,7 +516,7 @@ void ExternalStringTable::Verify() {
 
 void ExternalStringTable::AddOldString(String* string) {
   ASSERT(string->IsExternalString());
-  ASSERT(!HEAP->InNewSpace(string));
+  ASSERT(!heap_->InNewSpace(string));
   old_space_strings_.Add(string);
 }
 
@@ -527,7 +528,7 @@ void ExternalStringTable::ShrinkNewStrings(int position) {
 
 
 void Heap::ClearInstanceofCache() {
-  set_instanceof_cache_function(HEAP->the_hole_value());
+  set_instanceof_cache_function(the_hole_value());
 }
 
 
