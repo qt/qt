@@ -129,7 +129,7 @@ void QS60MainDocument::OpenFileL(CFileStore *&aFileStore, RFile &aFile)
     QFileOpenEvent* event = new QFileOpenEvent(aFile);
     TFileName name;
     aFile.FullName(name);
-    QString qname((QChar*)name.Ptr(), name.Length());
+    QString qname = qt_TDesC2QString(name);
     QFileOpenEvent* event = new QFileOpenEvent(qname);
 }
 
