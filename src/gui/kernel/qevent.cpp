@@ -53,6 +53,10 @@
 #include "qgesture.h"
 #include "qgesture_p.h"
 
+#ifdef Q_OS_SYMBIAN
+#include "private/qcore_symbian_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -3023,7 +3027,7 @@ QShowEvent::~QShowEvent()
     This event is only used to notify the application of a request.
     It may be safely ignored.
 
-    \note This class is currently supported for Mac OS X only.
+    \note This class is currently supported for Mac OS X and Symbian only.
 */
 
 /*!
@@ -3049,11 +3053,31 @@ QFileOpenEvent::QFileOpenEvent(const QUrl &url)
     f = url.toLocalFile();
 }
 
+#ifdef Q_OS_SYMBIAN
+/*! \internal
+*/
+QFileOpenEvent::QFileOpenEvent(const RFile &fileHandle)
+    : QEvent(FileOpen)
+{
+    TFileName fullName;
+    fileHandle.FullName(fullName);
+    QString file = qt_TDesC2QString(fullName);
+    f = file;
+    QScopedPointer<QFileOpenEventPrivate> priv(new QFileOpenEventPrivate(QUrl::fromLocalFile(file)));
+    qt_symbian_throwIfError(priv->file.Duplicate(fileHandle));
+    d = reinterpret_cast<QEventPrivate *>(priv.take());
+}
+#endif
+
 /*! \internal
 */
 QFileOpenEvent::~QFileOpenEvent()
 {
-    delete reinterpret_cast<QFileOpenEventPrivate *>(d);
+    QFileOpenEventPrivate *priv = reinterpret_cast<QFileOpenEventPrivate *>(d);
+#ifdef Q_OS_SYMBIAN
+    priv->file.Close();
+#endif
+    delete priv;
 }
 
 /*!

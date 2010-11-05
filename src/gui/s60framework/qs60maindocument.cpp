@@ -111,14 +111,12 @@ CEikAppUi *QS60MainDocument::CreateAppUiL()
 /*!
   \internal
  */
-CFileStore *QS60MainDocument::OpenFileL(TBool aDoOpen, const TDesC &aFilename, RFs &/*aFs*/)
+CFileStore *QS60MainDocument::OpenFileL(TBool /*aDoOpen*/, const TDesC &aFilename, RFs &/*aFs*/)
 {
-    if (aDoOpen) {
-        QCoreApplication* app = QCoreApplication::instance();
-        QString qname = qt_TDesC2QString(aFilename);
-        QFileOpenEvent* event = new QFileOpenEvent(qname);
-        app->postEvent(app, event);
-    }
+    QCoreApplication* app = QCoreApplication::instance();
+    QString qname = qt_TDesC2QString(aFilename);
+    QFileOpenEvent* event = new QFileOpenEvent(qname);
+    app->postEvent(app, event);
     return 0;
 }
 
@@ -128,10 +126,7 @@ CFileStore *QS60MainDocument::OpenFileL(TBool aDoOpen, const TDesC &aFilename, R
 void QS60MainDocument::OpenFileL(CFileStore *&aFileStore, RFile &aFile)
 {
     QCoreApplication* app = QCoreApplication::instance();
-    TFileName name;
-    aFile.FullName(name);
-    QString qname = qt_TDesC2QString(name);
-    QFileOpenEvent* event = new QFileOpenEvent(qname);
+    QFileOpenEvent* event = new QFileOpenEvent(aFile);
     app->postEvent(app, event);
     aFileStore = 0;
 }
