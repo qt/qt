@@ -146,32 +146,17 @@ QList<SerialPortId> enumerateSerialPorts(int loglevel)
 
                 // second loop to find the actual data interface.
                 foreach (int i, usableInterfaces) {
-                    for (int m = 0; m < usbConfig.bNumInterfaces; ++m) {
-                        for (int o = 0; o < usbConfig.interface[m].num_altsetting; ++o) {
-                            struct usb_interface_descriptor &descriptor = usbConfig.interface[m].altsetting[o];
-                            if (descriptor.bInterfaceNumber != i)
-                                continue;
-                            if (descriptor.bInterfaceClass == 10) { // "CDC Data"
-                                if (loglevel > 1) {
-                                    qDebug() << "      found the data port"
-                                             << "bus:" << bus->dirname
-                                             << "device" << device->filename
-                                             << "interface" << descriptor.bInterfaceNumber;
-                                }
-                                // ### manufacturer and product strings are only readable as root :(
-                                if (!manufacturerString.isEmpty() && !productString.isEmpty()) {
-                                    eligibleInterfaces << QString("usb-%1_%2-if%3")
-                                                          .arg(manufacturerString.replace(QChar(' '), QChar('_')))
-                                                          .arg(productString.replace(QChar(' '), QChar('_')))
-                                                          .arg(i, 2, 16, QChar('0'));
-                                } else {
-                                    eligibleInterfaces << QString("if%1").arg(i, 2, 16, QChar('0')); // fix!
-                                }
-                                eligibleInterfacesInfo << InterfaceInfo(manufacturerString, productString, device->descriptor.idVendor, device->descriptor.idProduct);
-                            }
-                        }
+                    // ### manufacturer and product strings are only readable as root :(
+                    if (!manufacturerString.isEmpty() && !productString.isEmpty()) {
+                        eligibleInterfaces << QString("usb-%1_%2-if%3")
+                             .arg(manufacturerString.replace(QChar(' '), QChar('_')))
+                             .arg(productString.replace(QChar(' '), QChar('_')))
+                             .arg(i, 2, 16, QChar('0'));
+                    } else {
+                        eligibleInterfaces << QString("if%1").arg(i, 2, 16, QChar('0')); // fix!
                     }
                 }
+                eligibleInterfacesInfo << InterfaceInfo(manufacturerString, productString, device->descriptor.idVendor, device->descriptor.idProduct);
             }
         }
     }
