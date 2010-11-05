@@ -574,6 +574,7 @@ void DitaXmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
     findAllSince(tree->root());
 
     PageGenerator::generateTree(tree, marker);
+    writeDitaMap();
 }
 
 void DitaXmlGenerator::startText(const Node* /* relative */,
@@ -2285,7 +2286,6 @@ void DitaXmlGenerator::generateHeader(const Node* node,
     xmlWriter().writeStartElement(nameElement); // <title> or <apiName>
     xmlWriter().writeCharacters(name);
     xmlWriter().writeEndElement(); // </title> or </apiName> 
-
 }
 
 /*!
@@ -5571,6 +5571,33 @@ DitaXmlGenerator::generateInnerNode(const InnerNode* node, CodeMarker* marker)
 bool DitaXmlGenerator::canHandleFormat(const QString& format)
 {
     return (format == "HTML") || (format == this->format());
+}
+
+void DitaXmlGenerator::writeDitaMap()
+{
+    beginSubPage(Location(),"qt-dita-map.xml");
+
+    QString doctype;
+    doctype = "<!DOCTYPE cxxAPIMap PUBLIC \"-//NOKIA//DTD DITA C++ API Map Reference Type v0.6.0//EN\" \"dtd/cxxAPIMap.dtd\">";
+
+    xmlWriter().writeDTD(doctype);
+    xmlWriter().writeStartElement("cxxAPIMap");
+    xmlWriter().writeAttribute("id","Qt-DITA-Map");
+    xmlWriter().writeAttribute("title","Qt DITA Map");
+    xmlWriter().writeStartElement("topicmeta");
+    xmlWriter().writeStartElement("shortdesc");
+    xmlWriter().writeCharacters("The top level map for the Qt documentation");
+    xmlWriter().writeEndElement(); // </shortdesc>
+    xmlWriter().writeEndElement(); // </topicmeta>
+    GuidMaps::iterator i = guidMaps.begin();
+    while (i != guidMaps.end()) {
+        xmlWriter().writeStartElement("topicref");
+        xmlWriter().writeAttribute("href",i.key());
+        xmlWriter().writeAttribute("type","topic");
+        xmlWriter().writeEndElement(); // </topicref>
+        ++i;
+    }
+    endSubPage();
 }
 
 QT_END_NAMESPACE

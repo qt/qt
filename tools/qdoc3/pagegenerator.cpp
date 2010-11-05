@@ -289,11 +289,10 @@ QString PageGenerator::outFileName()
 void PageGenerator::beginSubPage(const Location& location,
                                  const QString& fileName)
 {
-    QFile *outFile = new QFile(outputDir() + "/" + fileName);
+    QFile* outFile = new QFile(outputDir() + "/" + fileName);
     if (!outFile->open(QFile::WriteOnly))
-	location.fatal(tr("Cannot open output file '%1'")
-			.arg(outFile->fileName()));
-    QTextStream *out = new QTextStream(outFile);
+	location.fatal(tr("Cannot open output file '%1'").arg(outFile->fileName()));
+    QTextStream* out = new QTextStream(outFile);
     out->setCodec(outputCodec);
     outStreamStack.push(out);
 }

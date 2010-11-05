@@ -270,6 +270,7 @@ class DitaXmlGenerator : public PageGenerator
                                   bool apiDesc,
                                   const QString& title);
     void addLink(const QString& href, const QStringRef& text);
+    void writeDitaMap();
 
  private:
     QMap<QString, QString> refMap;
