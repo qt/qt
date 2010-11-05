@@ -262,6 +262,126 @@
 <context>
     <name>QVFb</name>
     <message>
+        <source>&amp;File</source>
+        <translation>&amp;Файл</translation>
+    </message>
+    <message>
+        <source>&amp;Configure...</source>
+        <translation>&amp;Настройки...</translation>
+    </message>
+    <message>
+        <source>&amp;Save image...</source>
+        <translation>&amp;Сохранить изображение...</translation>
+    </message>
+    <message>
+        <source>&amp;Animation...</source>
+        <translation>&amp;Анимация...</translation>
+    </message>
+    <message>
+        <source>&amp;Quit</source>
+        <translation>В&amp;ыход</translation>
+    </message>
+    <message>
+        <source>&amp;View</source>
+        <translation>&amp;Вид</translation>
+    </message>
+    <message>
+        <source>Show &amp;Cursor</source>
+        <translation>Отображать &amp;курсор</translation>
+    </message>
+    <message>
+        <source>&amp;Refresh Rate...</source>
+        <translation>&amp;Частота обновлений...</translation>
+    </message>
+    <message>
+        <source>&amp;No rotation</source>
+        <translation>&amp;Без поворота</translation>
+    </message>
+    <message>
+        <source>&amp;90° rotation</source>
+        <translation>Поворот на &amp;90°</translation>
+    </message>
+    <message>
+        <source>1&amp;80° rotation</source>
+        <translation>Поворот на 1&amp;80°</translation>
+    </message>
+    <message>
+        <source>2&amp;70° rotation</source>
+        <translation>Поворот на 2&amp;70°</translation>
+    </message>
+    <message>
+        <source>Zoom scale &amp;0.5</source>
+        <translation>Масштаб &amp;0.5</translation>
+    </message>
+    <message>
+        <source>Zoom scale 0.7&amp;5</source>
+        <translation>Масштаб 0.7&amp;5</translation>
+    </message>
+    <message>
+        <source>Zoom scale &amp;1</source>
+        <translation>Масштаб &amp;1</translation>
+    </message>
+    <message>
+        <source>Zoom scale &amp;2</source>
+        <translation>Масштаб &amp;2</translation>
+    </message>
+    <message>
+        <source>Zoom scale &amp;3</source>
+        <translation>Масштаб &amp;3</translation>
+    </message>
+    <message>
+        <source>Zoom scale &amp;4</source>
+        <translation>Масштаб &amp;4</translation>
+    </message>
+    <message>
+        <source>Zoom &amp;scale...</source>
+        <translation>&amp;Масштаб...</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>&amp;Справка</translation>
+    </message>
+    <message>
+        <source>&amp;About...</source>
+        <translation>&amp;О программе...</translation>
+    </message>
+    <message>
+        <source>Save Main Screen image</source>
+        <translation>Сохранить снимок основного экрана</translation>
+    </message>
+    <message>
+        <source>snapshot.png</source>
+        <translation>снимок.png</translation>
+    </message>
+    <message>
+        <source>Portable Network Graphics (*.png)</source>
+        <translation>Portable Network Graphics (*.png)</translation>
+    </message>
+    <message>
+        <source>Save Main Screen Image</source>
+        <translation>Сохранить снимок основного экрана</translation>
+    </message>
+    <message>
+        <source>Save failed. Check that you have permission to write to the target directory.</source>
+        <translation>Не удалось сохранить. Убедитесь, что Вы имеете права на запись в целевой каталог.</translation>
+    </message>
+    <message>
+        <source>Save Second Screen image</source>
+        <translation>Сохранить снимок дополнительного экрана</translation>
+    </message>
+    <message>
+        <source>Save Second Screen Image</source>
+        <translation>Сохранить снимок дополнительного экрана</translation>
+    </message>
+    <message>
+        <source>About QVFB</source>
+        <translation>О QVFB</translation>
+    </message>
+    <message>
+        <source>&lt;h2&gt;The Qt for Embedded Linux Virtual X11 Framebuffer&lt;/h2&gt;&lt;p&gt;This application runs under Qt for X11, emulating a simple framebuffer, which the Qt for Embedded Linux server and clients can attach to just as if it was a hardware Linux framebuffer. &lt;p&gt;With the aid of this development tool, you can develop Qt for Embedded  Linux applications under X11 without having to switch to a virtual console. This means you can comfortably use your other development tools such as GUI profilers and debuggers.</source>
+        <translation>&lt;h2&gt;Qt для Embedded Linux Virtual X11 Framebuffer&lt;/h2&gt;&lt;p&gt;Данное приложение работает под Qt для X11, эмулируя простой фрэймбуфер, к которому сервер и клиенты Qt для Embedded Linux могут соединяться как если бы это был аппаратный фрэймбуфер Linux. &lt;p&gt;С помощью данного инструмента Вы можете разрабатывать приложения Qt для Embedded Linux под X11 без необходимости переключаться в виртуальную консоль, что делает более удобным использование других инструментов с графическим интерфейсом - как то профайлеров и отладчиков.</translation>
+    </message>
+    <message>
         <source>Browse...</source>
         <translation>Обзор...</translation>
     </message>
@@ -272,6 +392,25 @@
     <message>
         <source>All QVFB Skins (*.skin)</source>
         <translation>Все обложки QVFB (*.skin)</translation>
+    </message>
+</context>
+<context>
+    <name>QVFbRateDialog</name>
+    <message>
+        <source>Target frame rate:</source>
+        <translation>Частота смены кадров:</translation>
+    </message>
+    <message>
+        <source>%1fps</source>
+        <translation>%1 к/с</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>ОК</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Отмена</translation>
     </message>
 </context>
 </TS>

@@ -417,7 +417,9 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
         }
         case QHttpNetworkReplyPrivate::ReadingDataState: {
            QHttpNetworkReplyPrivate *replyPrivate = reply->d_func();
-           if (replyPrivate->downstreamLimited && !replyPrivate->responseData.isEmpty() && replyPrivate->shouldEmitSignals()) {
+           if (socket->state() == QAbstractSocket::ConnectedState &&
+               replyPrivate->downstreamLimited && !replyPrivate->responseData.isEmpty() && replyPrivate->shouldEmitSignals()) {
+               // (only do the following when still connected, not when we have already been disconnected and there is still data)
                // We already have some HTTP body data. We don't read more from the socket until
                // this is fetched by QHttpNetworkAccessHttpBackend. If we would read more,
                // we could not limit our read buffer usage.
