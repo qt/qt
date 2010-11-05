@@ -86,6 +86,12 @@ void QDeclarativeDebugTrace::rangeData(RangeType t, const QString &data)
         traceInstance()->rangeDataImpl(t, data);
 }
 
+void QDeclarativeDebugTrace::rangeData(RangeType t, const QUrl &data)
+{
+    if (QDeclarativeDebugService::isDebuggingEnabled())
+        traceInstance()->rangeDataImpl(t, data);
+}
+
 void QDeclarativeDebugTrace::endRange(RangeType t)
 {
     if (QDeclarativeDebugService::isDebuggingEnabled()) 
@@ -116,6 +122,15 @@ void QDeclarativeDebugTrace::rangeDataImpl(RangeType range, const QString &rData
         return;
 
     QDeclarativeDebugData rd = {m_timer.elapsed(), (int)RangeData, (int)range, rData};
+    processMessage(rd);
+}
+
+void QDeclarativeDebugTrace::rangeDataImpl(RangeType range, const QUrl &rData)
+{
+    if (status() != Enabled || !m_enabled)
+        return;
+
+    QDeclarativeDebugData rd = {m_timer.elapsed(), (int)RangeData, (int)range, rData.toEncoded(QUrl::FormattingOption(0x100))};
     processMessage(rd);
 }
 

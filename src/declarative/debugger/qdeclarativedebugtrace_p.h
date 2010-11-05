@@ -96,6 +96,7 @@ public:
 
     static void startRange(RangeType);
     static void rangeData(RangeType, const QString &);
+    static void rangeData(RangeType, const QUrl &);
     static void endRange(RangeType);
 
     QDeclarativeDebugTrace();
@@ -105,6 +106,7 @@ private:
     void addEventImpl(EventType);
     void startRangeImpl(RangeType);
     void rangeDataImpl(RangeType, const QString &);
+    void rangeDataImpl(RangeType, const QUrl &);
     void endRangeImpl(RangeType);
     void processMessage(const QDeclarativeDebugData &);
     void sendMessages();

@@ -901,6 +901,7 @@ void QDeclarativeTypeData::compile()
     m_compiledData = new QDeclarativeCompiledData(typeLoader()->engine());
     m_compiledData->url = m_imports.baseUrl();
     m_compiledData->name = m_compiledData->url.toString();
+    QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::Compiling, m_compiledData->name);
 
     QDeclarativeCompiler compiler;
     if (!compiler.compile(typeLoader()->engine(), this, m_compiledData)) {

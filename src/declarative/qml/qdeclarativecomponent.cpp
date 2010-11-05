@@ -785,8 +785,10 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *parentCon
     Q_ASSERT(!isRoot || state); // Either this isn't a root component, or a state data must be provided
     Q_ASSERT((state != 0) ^ (errors != 0)); // One of state or errors (but not both) must be provided
 
-    if (isRoot) 
+    if (isRoot) {
         QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Creating);
+        QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::Creating, component->url);
+    }
 
     QDeclarativeContextData *ctxt = new QDeclarativeContextData;
     ctxt->isInternal = true;
