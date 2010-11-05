@@ -68,27 +68,60 @@ public:
         OpenGLUserData
     };
 
-    QStaticTextUserData(Type t) : type(t) {}
+    QStaticTextUserData(Type t) : type(t) { ref = 0; }
     virtual ~QStaticTextUserData() {}
 
+    QAtomicInt ref;
     Type type;
 };
 
 class Q_GUI_EXPORT QStaticTextItem
 {
 public:    
-    QStaticTextItem() : chars(0), numChars(0), fontEngine(0), userData(0),
-                        useBackendOptimizations(false), userDataNeedsUpdate(0) {}
-    ~QStaticTextItem() { delete userData; }
+    QStaticTextItem() : chars(0), numChars(0), useBackendOptimizations(false),
+                        userDataNeedsUpdate(0), m_fontEngine(0), m_userData(0) {}
+
+    QStaticTextItem(const QStaticTextItem &other)
+    {
+        operator=(other);
+    }
+
+    void operator=(const QStaticTextItem &other)
+    {
+        glyphPositions = other.glyphPositions;
+        glyphs = other.glyphs;
+        chars = other.chars;
+        numGlyphs = other.numGlyphs;
+        numChars = other.numChars;
+        font = other.font;
+        color = other.color;
+        useBackendOptimizations = other.useBackendOptimizations;
+        userDataNeedsUpdate = other.userDataNeedsUpdate;
+
+        m_fontEngine = 0;
+        m_userData = 0;
+        setUserData(other.userData());
+        setFontEngine(other.fontEngine());
+    }
+
+    ~QStaticTextItem();
 
     void setUserData(QStaticTextUserData *newUserData)
     {
-        if (userData == newUserData)
+        if (m_userData == newUserData)
             return;
 
-        delete userData;
-        userData = newUserData;
+        if (m_userData != 0 && !m_userData->ref.deref())
+            delete m_userData;
+
+        m_userData = newUserData;
+        if (m_userData != 0)
+            m_userData->ref.ref();
     }
+    QStaticTextUserData *userData() const { return m_userData; }
+
+    void setFontEngine(QFontEngine *fe);
+    QFontEngine *fontEngine() const { return m_fontEngine; }
 
     union {
         QFixedPoint *glyphPositions;             // 8 bytes per glyph
@@ -108,14 +141,17 @@ public:
                                                  // 12 bytes for pointers
     int numGlyphs;                               // 4 bytes per item
     int numChars;                                // 4 bytes per item
-    QFontEngine *fontEngine;                     // 4 bytes per item
     QFont font;                                  // 8 bytes per item
     QColor color;                                // 10 bytes per item
-    QStaticTextUserData *userData;               // 8 bytes per item
     char useBackendOptimizations : 1;            // 1 byte per item
     char userDataNeedsUpdate : 1;                //
                                                  // ================
                                                  // 51 bytes per item
+
+private: // Needs special handling in setters, so private to avoid abuse
+    QFontEngine *m_fontEngine;                     // 4 bytes per item
+    QStaticTextUserData *m_userData;               // 8 bytes per item
+
 };
 
 class QStaticText;
