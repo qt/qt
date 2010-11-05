@@ -49,18 +49,22 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+struct QDeclarativeDebugData
+{
+    qint64 time;
+    int messageType;
+    int detailType;
+    QString detailData;
+
+    QByteArray toByteArray() const;
+};
+
+Q_DECLARE_TYPEINFO(QDeclarativeDebugData,Q_PRIMITIVE_TYPE);
+
 class QUrl;
 class Q_AUTOTEST_EXPORT QDeclarativeDebugTrace : public QDeclarativeDebugService
 {
 public:
-    enum EventType {
-        FramePaint,
-        Mouse,
-        Key,
-
-        MaximumEventType
-    };
-
     enum Message {
         Event,
         RangeStart,
@@ -68,6 +72,14 @@ public:
         RangeEnd,
 
         MaximumMessage
+    };
+
+    enum EventType {
+        FramePaint,
+        Mouse,
+        Key,
+
+        MaximumEventType
     };
 
     enum RangeType {
@@ -94,12 +106,12 @@ private:
     void startRangeImpl(RangeType);
     void rangeDataImpl(RangeType, const QString &);
     void endRangeImpl(RangeType);
-    void processMessage(const QByteArray &);
+    void processMessage(const QDeclarativeDebugData &);
     void sendMessages();
     QPerformanceTimer m_timer;
     bool m_enabled;
     bool m_deferredSend;
-    QList<QByteArray> m_data;
+    QList<QDeclarativeDebugData> m_data;
 };
 
 QT_END_NAMESPACE

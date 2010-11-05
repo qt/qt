@@ -120,7 +120,7 @@ public:
     QDeclarativeBindingProfiler(QDeclarativeBinding *bind)
     {
         QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Binding);
-        //QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::Binding, bind->expression());
+        QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::Binding, bind->expression());
     }
 
     ~QDeclarativeBindingProfiler()

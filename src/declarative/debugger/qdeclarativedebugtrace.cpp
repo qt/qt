@@ -47,6 +47,20 @@
 
 Q_GLOBAL_STATIC(QDeclarativeDebugTrace, traceInstance);
 
+// convert to a QByteArray that can be sent to the debug client
+// use of QDataStream can skew results if m_deferredSend == false
+//     (see tst_qperformancetimer::trace() benchmark)
+QByteArray QDeclarativeDebugData::toByteArray() const
+{
+    QByteArray data;
+    //### using QDataStream is relatively expensive
+    QDataStream ds(&data, QIODevice::WriteOnly);
+    ds << time << messageType << detailType;
+    if (messageType == (int)QDeclarativeDebugTrace::RangeData)
+        ds << detailData;
+    return data;
+}
+
 QDeclarativeDebugTrace::QDeclarativeDebugTrace()
 : QDeclarativeDebugService(QLatin1String("CanvasFrameRate")),
   m_enabled(false), m_deferredSend(true)
@@ -83,10 +97,8 @@ void QDeclarativeDebugTrace::addEventImpl(EventType event)
     if (status() != Enabled || !m_enabled)
         return;
 
-    QByteArray data;
-    QDataStream ds(&data, QIODevice::WriteOnly);
-    ds << m_timer.elapsed() << (int)Event << (int)event;
-    processMessage(data);
+    QDeclarativeDebugData ed = {m_timer.elapsed(), (int)Event, (int)event, QString()};
+    processMessage(ed);
 }
 
 void QDeclarativeDebugTrace::startRangeImpl(RangeType range)
@@ -94,10 +106,8 @@ void QDeclarativeDebugTrace::startRangeImpl(RangeType range)
     if (status() != Enabled || !m_enabled)
         return;
 
-    QByteArray data;
-    QDataStream ds(&data, QIODevice::WriteOnly);
-    ds << m_timer.elapsed() << (int)RangeStart << (int)range;
-    processMessage(data);
+    QDeclarativeDebugData rd = {m_timer.elapsed(), (int)RangeStart, (int)range, QString()};
+    processMessage(rd);
 }
 
 void QDeclarativeDebugTrace::rangeDataImpl(RangeType range, const QString &rData)
@@ -105,10 +115,8 @@ void QDeclarativeDebugTrace::rangeDataImpl(RangeType range, const QString &rData
     if (status() != Enabled || !m_enabled)
         return;
 
-    QByteArray data;
-    QDataStream ds(&data, QIODevice::WriteOnly);
-    ds << m_timer.elapsed() << (int)RangeData << (int)range << rData;
-    processMessage(data);
+    QDeclarativeDebugData rd = {m_timer.elapsed(), (int)RangeData, (int)range, rData};
+    processMessage(rd);
 }
 
 void QDeclarativeDebugTrace::endRangeImpl(RangeType range)
@@ -116,22 +124,20 @@ void QDeclarativeDebugTrace::endRangeImpl(RangeType range)
     if (status() != Enabled || !m_enabled)
         return;
 
-    QByteArray data;
-    QDataStream ds(&data, QIODevice::WriteOnly);
-    ds << m_timer.elapsed() << (int)RangeEnd << (int)range;
-    processMessage(data);
+    QDeclarativeDebugData rd = {m_timer.elapsed(), (int)RangeEnd, (int)range, QString()};
+    processMessage(rd);
 }
 
 /*
     Either send the message directly, or queue up
     a list of messages to send later (via sendMessages)
 */
-void QDeclarativeDebugTrace::processMessage(const QByteArray &message)
+void QDeclarativeDebugTrace::processMessage(const QDeclarativeDebugData &message)
 {
     if (m_deferredSend)
         m_data.append(message);
     else
-        sendMessage(message);
+        sendMessage(message.toByteArray());
 }
 
 /*
@@ -142,7 +148,7 @@ void QDeclarativeDebugTrace::sendMessages()
     if (m_deferredSend) {
         //### this is a suboptimal way to send batched messages
         for (int i = 0; i < m_data.count(); ++i)
-            sendMessage(m_data.at(i));
+            sendMessage(m_data.at(i).toByteArray());
         m_data.clear();
     }
 }

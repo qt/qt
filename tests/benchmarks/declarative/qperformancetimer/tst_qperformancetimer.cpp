@@ -54,6 +54,7 @@ private slots:
     void all();
     void startElapsed();
     void doubleElapsed();
+    void trace();
 };
 
 void tst_qperformancetimer::all()
@@ -81,6 +82,16 @@ void tst_qperformancetimer::doubleElapsed()
     QBENCHMARK {
         t.elapsed();
         t.elapsed();
+    }
+}
+
+void tst_qperformancetimer::trace()
+{
+    QString s("A decent sized string of text here.");
+    QBENCHMARK {
+        QByteArray data;
+        QDataStream ds(&data, QIODevice::WriteOnly);
+        ds << (qint64)100 << (int)5 << (int)5 << s;
     }
 }
 
