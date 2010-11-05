@@ -679,7 +679,7 @@ void QNetworkSessionPrivateImpl::open()
     if (serviceConfig.isValid()) {
         lastError = QNetworkSession::OperationNotSupportedError;
         emit QNetworkSessionPrivate::error(lastError);
-    } else if (!isOpen) {
+    } else if (!opened) {
 	if (publicConfig.type() == QNetworkConfiguration::UserChoice) {
 	    /* Caller is trying to connect to default IAP.
 	     * At this time we will not know the IAP details so we just

@@ -426,7 +426,8 @@ template<> void QSharedDataPointer<QNetworkProxyPrivate>::detach()
 QNetworkProxy::QNetworkProxy()
     : d(0)
 {
-    globalNetworkProxy()->init();
+    if (QGlobalNetworkProxy *globalProxy = globalNetworkProxy())
+        globalProxy->init();
 }
 
 /*!
@@ -441,7 +442,8 @@ QNetworkProxy::QNetworkProxy(ProxyType type, const QString &hostName, quint16 po
                   const QString &user, const QString &password)
     : d(new QNetworkProxyPrivate(type, hostName, port, user, password))
 {
-    globalNetworkProxy()->init();
+    if (QGlobalNetworkProxy *globalProxy = globalNetworkProxy())
+        globalProxy->init();
 }
 
 /*!

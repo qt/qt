@@ -4,6 +4,26 @@
 <context>
     <name>MainWindow</name>
     <message>
+        <source>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Appearance&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;Use this tab to customize the appearance of your Qt applications.&lt;/p&gt;&lt;p&gt;You can select the default GUI Style from the drop down list and customize the colors.&lt;/p&gt;&lt;p&gt;Any GUI Style plugins in your plugin path will automatically be added to the list of built-in Qt styles. (See the Library Paths tab for information on adding new plugin paths.)&lt;/p&gt;&lt;p&gt;When you choose 3-D Effects and Window Background colors, the Qt Configuration program will automatically generate a palette for you. To customize colors further, press the Tune Palette button to open the advanced palette editor.&lt;p&gt;The Preview Window shows what the selected Style and colors look like.</source>
+        <translation type="unfinished">&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Внешний вид&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;На этой вкладке можно настроить внешний вид приложений Qt.&lt;/p&gt;&lt;p&gt;Позволяет выбрать стиль интерфейса по умолчанию из выпадающего списка и настроить используемые стилем цвета.&lt;/p&gt;&lt;p&gt;Каждый стиль интерфейса, содержащийся в модулях, найденных в путях к модулям, автоматически добавляется в список встроенных стилей Qt (на вкладке Пути к библиотекам имеется более подробная информация о добавлении путей к модулям).&lt;/p&gt;&lt;p&gt;При выборе эффектов 3D и фоновых цветов окна программа настройки Qt автоматически создаст подходящую палитру. Для дальнейшей настройки цветов следует зайти в расширенный редактор палитры, нажав кнопку Настроить палитру.&lt;p&gt;В окне предпросмотра можно увидеть как будет выглядеть интерфейс с выбранными стилем и цветами.</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Fonts&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;Use this tab to select the default font for your Qt applications. The selected font is shown (initially as &apos;Sample Text&apos;) in the line edit below the Family, Style and Point Size drop down lists.&lt;/p&gt;&lt;p&gt;Qt has a powerful font substitution feature that allows you to specify a list of substitute fonts.  Substitute fonts are used when a font cannot be loaded, or if the specified font doesn&apos;t have a particular character.&lt;p&gt;For example, if you select the font Lucida, which doesn&apos;t have Korean characters, but need to show some Korean text using the Mincho font family you can do so by adding Mincho to the list. Once Mincho is added, any Korean characters that are not found in the Lucida font will be taken from the Mincho font.  Because the font substitutions are lists, you can also select multiple families, such as Song Ti (for use with Chinese text).</source>
+        <translation type="unfinished">&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Шрифты&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;На этой вкладке можно выбрать шрифт по умолчанию для приложений Qt. Выбранный шрифт отображается в строке редактирования ниже выпадающих списков &quot;Шрифт&quot;, &quot;Начертание&quot; и &quot;Размер&quot; (по умолчанию это текст &quot;Текст для примера (Sample Text)&quot;).&lt;/p&gt;&lt;p&gt;Qt обладает мощным механизмом подмены шрифтов, который позволяет задавать список подставляемых шрифтов. Подставляемые шрифты используются, когда шрифт не удаётся загрузить или в нём отсутствуют необходимые символы.&lt;p&gt;Например, если требуется, чтобы при выборе шрифта Lucida, в котором отсутствуют корейские иероглифы, для отображения корейского текста использовался шрифт Mincho,то можно добавить его в список. После этого все корейские символы, отсутствующие в шрифте Lucida, будут браться из шрифта Mincho. Так как для замены используется список, то можно добавлять несколько шрифтов, например, можно также добавить шрифт Song Ti для отображения китайского текста.</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Interface&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;Use this tab to customize the feel of your Qt applications.&lt;/p&gt;&lt;p&gt;If the Resolve Symlinks checkbox is checked Qt will follow symlinks when handling URLs. For example, in the file dialog, if this setting is turned on and /usr/tmp is a symlink to /var/tmp, entering the /usr/tmp directory will cause the file dialog to change to /var/tmp.  With this setting turned off, symlinks are not resolved or followed.&lt;/p&gt;&lt;p&gt;The Global Strut setting is useful for people who require a minimum size for all widgets (e.g. when using a touch panel or for users who are visually impaired).  Leaving the Global Strut width and height at 0 will disable the Global Strut feature&lt;/p&gt;&lt;p&gt;XIM (Extended Input Methods) are used for entering characters in languages that have large character sets, for example, Chinese and Japanese.</source>
+        <translation type="unfinished">&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Интерфейс&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;На этой вкладке можно настроить поведение приложений Qt.&lt;/p&gt;&lt;p&gt;Если включено &quot;Разрешать символьные ссылки&quot;, Qt будет следовать по символьным ссылкам при обработке путей URL. Например, если эта функция включена и /usr/tmp является символьной ссылкой на /var/tmp, то в диалоге выбора файла при вводе пути к каталогу /usr/tmp он будет изменён на /var/tmp.&lt;/p&gt;&lt;p&gt;Функция &quot;Минимальные размеры&quot; предназначены для тех, кому необходимо чтобы элементы интерфейса были не менее заданного размера (например, при использовании сенсорной панели или для людей с проблемами зрения). Если задать 0 в полях &quot;минимальная ширина&quot; и &quot;минимальная высота&quot;, то данная функция будет отключена.&lt;/p&gt;&lt;p&gt;Метод ввода XIM (расширенные методы ввода) используется для ввода символов на языках с большим набором символов (например, китайском или японском).</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Printer&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;Use this tab to configure the way Qt generates output for the printer.You can specify if Qt should try to embed fonts into its generated output.If you enable font embedding, the resulting postscript will be more portable and will more accurately reflect the visual output on the screen; however the resulting postscript file size will be bigger.&lt;p&gt;When using font embedding you can select additional directories where Qt should search for embeddable font files.  By default, the X server font path is used.</source>
+        <translation type="unfinished">&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Принтер&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;На этой вкладке можно настроить способ, которым Qt будет подготавливать данные для печати. Можно указать следует ли встраивать шрифты - в этом случае напечатанные документы будут более похожи на те, что на экране, но при этом увеличится объём данных, передаваемых на печатающее устройство.&lt;p&gt;При использовании встраивания шрифтов можно указать дополнительные каталоги, в которых Qt будет искать файлы шрифтов для встраивания. По умолчанию используется путь к шрифтам X сервера.</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Phonon&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;Use this tab to configure the Phonon GStreamer multimedia backend. &lt;p&gt;It is reccommended to leave all settings on &quot;Auto&quot; to let Phonon determine your settings automatically.</source>
+        <translation type="unfinished">&lt;p&gt;&lt;b&gt;&lt;font size+=2&gt;Phonon&lt;/font&gt;&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;На этой вкладке можно настроить мультимедийную подсистему Phonon GStreamer.&lt;p&gt;Рекомендуется оставить значение &quot;Автоматически&quot; для всех настроек, чтобы Phonon определил параметры самостоятельно.</translation>
+    </message>
+    <message>
         <source>Desktop Settings (Default)</source>
         <translation>Настройки рабочего стола (по умолчанию)</translation>
     </message>
@@ -236,7 +256,7 @@
     </message>
     <message>
         <source>Feel Settings</source>
-        <translation type="unfinished">Настройка указателя</translation>
+        <translation type="unfinished">Настройки поведения</translation>
     </message>
     <message>
         <source> ms</source>
@@ -260,7 +280,7 @@
     </message>
     <message>
         <source>Wheel &amp;Scroll Lines:</source>
-        <translation type="unfinished">&amp;Прокручивать строк при повороте колёсика:</translation>
+        <translation>&amp;Прокручивать строк при повороте колёсика:</translation>
     </message>
     <message>
         <source>Resolve symlinks in URLs</source>
@@ -268,7 +288,7 @@
     </message>
     <message>
         <source>GUI Effects</source>
-        <translation type="unfinished">Эффекты пользовательского интерфейса</translation>
+        <translation>Эффекты интерфейса</translation>
     </message>
     <message>
         <source>&amp;Enable</source>
@@ -284,15 +304,15 @@
     </message>
     <message>
         <source>C&amp;omboBox Effect:</source>
-        <translation type="unfinished">Эффект &amp;выпадающего списка:</translation>
+        <translation>Эффект &amp;выпадающего списка:</translation>
     </message>
     <message>
         <source>&amp;ToolTip Effect:</source>
-        <translation type="unfinished">Эффект &amp;подсказки:</translation>
+        <translation>Эффект &amp;подсказки:</translation>
     </message>
     <message>
         <source>Tool&amp;Box Effect:</source>
-        <translation type="unfinished">Эффект панели &amp;инструментов:</translation>
+        <translation>Эффект панели &amp;инструментов:</translation>
     </message>
     <message>
         <source>Disable</source>
@@ -308,7 +328,7 @@
     </message>
     <message>
         <source>Global Strut</source>
-        <translation type="unfinished">Минимальные размеры</translation>
+        <translation>Минимальные размеры</translation>
     </message>
     <message>
         <source>Minimum &amp;Width:</source>
@@ -519,59 +539,59 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Build inactive palette from active</source>
-        <translation type="unfinished">Создать неактивную палитру из активной</translation>
+        <translation>Создать неактивную палитру из активной</translation>
     </message>
     <message>
         <source>Build disabled palette from active</source>
-        <translation type="unfinished">Создать выключенную палитру из активной</translation>
+        <translation>Создать выключенную палитру из активной</translation>
     </message>
     <message>
         <source>Central color &amp;roles</source>
-        <translation type="unfinished">Роли &amp;цветов</translation>
+        <translation>Основные роли &amp;цветов</translation>
     </message>
     <message>
         <source>Choose central color role</source>
-        <translation type="unfinished">Выберите роль цвета</translation>
+        <translation>Выберите основную роль цвета</translation>
     </message>
     <message>
         <source>&lt;b&gt;Select a color role.&lt;/b&gt;&lt;p&gt;Available central roles are: &lt;ul&gt; &lt;li&gt;Window - general background color.&lt;/li&gt; &lt;li&gt;WindowText - general foreground color. &lt;/li&gt; &lt;li&gt;Base - used as background color for e.g. text entry widgets, usually white or another light color. &lt;/li&gt; &lt;li&gt;Text - the foreground color used with Base. Usually this is the same as WindowText, in what case it must provide good contrast both with Window and Base. &lt;/li&gt; &lt;li&gt;Button - general button background color, where buttons need a background different from Window, as in the Macintosh style. &lt;/li&gt; &lt;li&gt;ButtonText - a foreground color used with the Button color. &lt;/li&gt; &lt;li&gt;Highlight - a color to indicate a selected or highlighted item. &lt;/li&gt; &lt;li&gt;HighlightedText - a text color that contrasts to Highlight. &lt;/li&gt; &lt;li&gt;BrightText - a text color that is very different from WindowText and contrasts well with e.g. black. &lt;/li&gt; &lt;/ul&gt; &lt;/p&gt;</source>
-        <translation type="unfinished">&lt;b&gt;Выбор роли цвета.&lt;/b&gt;&lt;p&gt;Доступны следующие роли: &lt;ul&gt;&lt;li&gt;Window - основной цвет фона.&lt;/li&gt; &lt;li&gt;WindowText - основной цвет текста.&lt;/li&gt; &lt;li&gt;Base - используется в качестве фона для, например, виджетов с текстовыми полями, обычно, белый или другой светлый цвет.&lt;/li&gt; &lt;li&gt;Text - цвет текста используемый совместно с Base. Обычно, он совпадает с WindowText, так как в этом случае получается максимальный контраст и с Window, и с Base.&lt;/li&gt; &lt;li&gt;Button - основной цвет фона кнопки, которой требуется цвет отличный от Window, например, в стиле Macintosh.&lt;/li&gt; &lt;li&gt;ButtonText - цвет текста используемый совместно с Button.&lt;/li&gt; &lt;li&gt;Highlight - цвет для обозначения выбранного или выделенного элемента.&lt;/li&gt; &lt;li&gt;HighlightedText - цвет текста контрастирующий с Highlight.&lt;/li&gt; &lt;li&gt;BrightText - цвет текста, который отличается от WindowText и хорошо контрастирует с черным.&lt;/li&gt;&lt;/ul&gt;&lt;/p&gt;</translation>
+        <translation>&lt;b&gt;Выбор роли цвета.&lt;/b&gt;&lt;p&gt;Доступны следующие роли: &lt;ul&gt;&lt;li&gt;&lt;b&gt;Окно&lt;/b&gt; - основной цвет фона.&lt;/li&gt; &lt;li&gt;&lt;b&gt;Текст окна&lt;/b&gt; - основной цвет текста.&lt;/li&gt; &lt;li&gt;&lt;b&gt;Фон&lt;/b&gt; - используется в качестве фона для, например, виджетов с текстовыми полями, обычно, белый или другой светлый цвет.&lt;/li&gt; &lt;li&gt;&lt;b&gt;Текст&lt;/b&gt; - цвет текста используемый совместно с &lt;b&gt;Фон&lt;/b&gt;. Обычно, он совпадает с &lt;b&gt;Текст окна&lt;/b&gt;, так как в этом случае получается максимальный контраст и с &lt;b&gt;Окно&lt;/b&gt;, и с &lt;b&gt;Фон&lt;/b&gt;.&lt;/li&gt; &lt;li&gt;&lt;b&gt;Кнопка&lt;/b&gt; - основной цвет фона кнопки, которой требуется цвет отличный от &lt;b&gt;Окно&lt;/b&gt;, например, в стиле Macintosh.&lt;/li&gt; &lt;li&gt;&lt;b&gt;Текст кнопки&lt;/b&gt; - цвет текста используемый совместно с &lt;b&gt;Кнопка&lt;/b&gt;.&lt;/li&gt; &lt;li&gt;&lt;b&gt;Выделение&lt;/b&gt; - цвет для обозначения выбранного или выделенного элемента.&lt;/li&gt; &lt;li&gt;&lt;b&gt;Выделенный текст&lt;/b&gt; - цвет текста контрастирующий с &lt;b&gt;Выделение&lt;/b&gt;.&lt;/li&gt; &lt;li&gt;&lt;b&gt;Яркий текст&lt;/b&gt; - цвет текста, который отличается от &lt;b&gt;Текст окна&lt;/b&gt; и хорошо контрастирует с черным.&lt;/li&gt;&lt;/ul&gt;&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Window</source>
-        <translation type="unfinished"></translation>
+        <translation>Окно</translation>
     </message>
     <message>
         <source>WindowText</source>
-        <translation type="unfinished"></translation>
+        <translation>Текст окна</translation>
     </message>
     <message>
         <source>Button</source>
-        <translation type="unfinished"></translation>
+        <translation>Кнопка</translation>
     </message>
     <message>
         <source>Base</source>
-        <translation type="unfinished"></translation>
+        <translation>Фон</translation>
     </message>
     <message>
         <source>Text</source>
-        <translation type="unfinished"></translation>
+        <translation>Текст</translation>
     </message>
     <message>
         <source>BrightText</source>
-        <translation type="unfinished"></translation>
+        <translation>Светлый текст</translation>
     </message>
     <message>
         <source>ButtonText</source>
-        <translation type="unfinished"></translation>
+        <translation>Текст на кнопке</translation>
     </message>
     <message>
         <source>Highlight</source>
-        <translation type="unfinished"></translation>
+        <translation>Выделение</translation>
     </message>
     <message>
         <source>HighlightedText</source>
-        <translation type="unfinished"></translation>
+        <translation>Выделенный текст</translation>
     </message>
     <message>
         <source>&amp;Select Color:</source>
@@ -595,39 +615,39 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Generate shadings</source>
-        <translation type="unfinished">Создание полутонов</translation>
+        <translation>Создание полутонов</translation>
     </message>
     <message>
         <source>Check to let 3D-effect colors be calculated from button-color.</source>
-        <translation type="unfinished">Включите, чтобы цвета эффекта трёхмерности были получены из цвета кнопки.</translation>
+        <translation>Создать цвета эффекта трёхмерности из цвета кнопки.</translation>
     </message>
     <message>
         <source>Choose 3D-effect color role</source>
-        <translation type="unfinished">Выбор роли цвета дял эффекта трёхмерности</translation>
+        <translation>Выбор роли цвета дял эффекта трёхмерности</translation>
     </message>
     <message>
         <source>&lt;b&gt;Select a color role.&lt;/b&gt;&lt;p&gt;Available effect roles are: &lt;ul&gt; &lt;li&gt;Light - lighter than Button color. &lt;/li&gt; &lt;li&gt;Midlight - between Button and Light. &lt;/li&gt; &lt;li&gt;Mid - between Button and Dark. &lt;/li&gt; &lt;li&gt;Dark - darker than Button. &lt;/li&gt; &lt;li&gt;Shadow - a very dark color. &lt;/li&gt; &lt;/ul&gt;</source>
-        <translation>&lt;b&gt;Выбор роли цвета.&lt;/b&gt;&lt;p&gt;Доступны следующие роли: &lt;ul&gt; &lt;li&gt;Light - светлее цвета Button. &lt;/li&gt; &lt;li&gt;Midlight - среднее между Light и Button. &lt;/li&gt; &lt;li&gt;Mid - среднее между Button и Dark. &lt;/li&gt; &lt;li&gt;Dark - темнее цвета Button. &lt;/li&gt; &lt;li&gt;Shadow - очень темный цвет. &lt;/li&gt; &lt;/ul&gt;</translation>
+        <translation>&lt;b&gt;Выбор роли цвета.&lt;/b&gt;&lt;p&gt;Доступны следующие роли: &lt;ul&gt; &lt;li&gt;&lt;b&gt;Светлый&lt;/b&gt; - светлее цвета &lt;b&gt;Кнопка&lt;/b&gt;. &lt;/li&gt; &lt;li&gt;&lt;b&gt;Полусветлый&lt;/b&gt; - среднее между &lt;b&gt;Светлый&lt;/b&gt; и &lt;b&gt;Кнопка&lt;/b&gt;. &lt;/li&gt; &lt;li&gt;&lt;b&gt;Полутёмный&lt;/b&gt; - среднее между &lt;b&gt;Кнопка&lt;/b&gt; и &lt;b&gt;Тёмный&lt;/b&gt;. &lt;/li&gt; &lt;li&gt;&lt;b&gt;Тёмный&lt;/b&gt; - темнее цвета &lt;b&gt;Кнопка&lt;/b&gt;. &lt;/li&gt; &lt;li&gt;&lt;b&gt;Тень&lt;/b&gt; - очень темный цвет. &lt;/li&gt; &lt;/ul&gt;</translation>
     </message>
     <message>
         <source>Light</source>
-        <translation type="unfinished"></translation>
+        <translation>Светлый</translation>
     </message>
     <message>
         <source>Midlight</source>
-        <translation type="unfinished"></translation>
+        <translation>Полусветлый</translation>
     </message>
     <message>
         <source>Mid</source>
-        <translation type="unfinished"></translation>
+        <translation>Полутёмный</translation>
     </message>
     <message>
         <source>Dark</source>
-        <translation type="unfinished"></translation>
+        <translation>Тёмный</translation>
     </message>
     <message>
         <source>Shadow</source>
-        <translation type="unfinished"></translation>
+        <translation>Тень</translation>
     </message>
     <message>
         <source>Select Co&amp;lor:</source>
@@ -635,7 +655,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Choose a color for the selected effect color role.</source>
-        <translation type="unfinished">Выбор цвета для указанной роли.</translation>
+        <translation>Выбор цвета для указанной роли.</translation>
     </message>
     <message>
         <source>OK</source>

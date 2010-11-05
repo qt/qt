@@ -338,6 +338,7 @@ enum DesktopEnvironment {
     DE_KDE,
     DE_GNOME,
     DE_CDE,
+    DE_MEEGO_COMPOSITOR,
     DE_4DWM
 };
 
