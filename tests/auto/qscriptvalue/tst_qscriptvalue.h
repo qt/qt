@@ -140,7 +140,18 @@ private slots:
     void getSetScriptClass_JSObjectFromJS();
     void getSetScriptClass_QVariant();
     void getSetScriptClass_QObject();
+    void call_function();
+    void call_object();
+    void call_newObjects();
+    void call_this();
+    void call_arguments();
     void call();
+    void call_invalidArguments();
+    void call_invalidReturn();
+    void call_twoEngines();
+    void call_array();
+    void call_nonFunction_data();
+    void call_nonFunction();
     void construct();
     void construct_constructorThrowsPrimitive();
     void castToPointer();
