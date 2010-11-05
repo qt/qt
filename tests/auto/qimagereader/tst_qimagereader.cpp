@@ -180,6 +180,9 @@ private slots:
 
     void saveFormat_data();
     void saveFormat();
+
+    void preserveTexts_data();
+    void preserveTexts();
 };
 
 static const QLatin1String prefix(SRCDIR "/images/");
@@ -1945,6 +1948,65 @@ void tst_QImageReader::saveFormat()
     stored = stored.convertToFormat(QImage::Format_ARGB32);
     converted = converted.convertToFormat(QImage::Format_ARGB32);
     QCOMPARE(stored, converted);
+}
+
+
+void tst_QImageReader::preserveTexts_data()
+{
+    QTest::addColumn<QString>("text");
+
+    QTest::newRow("Simple") << "simpletext";
+    QTest::newRow("Whitespace") << " A text  with whitespace ";
+    QTest::newRow("Newline") << "A text\nwith newlines\n";
+    QTest::newRow("Double newlines") << "A text\n\nwith double newlines\n\n";
+    QTest::newRow("Long") << QString("A rather long text, at least after many repetitions. ").repeated(100);
+    QString latin1set;
+    int c;
+    for(c = 0x20; c <= 0x7e; c++)
+        latin1set.append(QLatin1Char(c));
+    for(c = 0xa0; c <= 0xff; c++)
+        latin1set.append(QLatin1Char(c));
+    QTest::newRow("All Latin1 chars") << latin1set;
+
+#if 0
+    // Depends on iTXt support in libpng
+    QTest::newRow("Multibyte string") << QString::fromUtf8("\341\233\222\341\233\226\341\232\251\341\232\271\341\232\242\341\233\232\341\232\240");
+#endif
+}
+
+
+void tst_QImageReader::preserveTexts()
+{
+    QFETCH(QString, text);
+    QString key("testkey");
+    QString key2("testkey2");
+    QString text2("Some other text.");
+    QString key3("testkey3");
+    QString text3("Some more other text.");
+
+    QImage img(":/images/kollada.png");
+    img.setText(key, text);
+    img.setText(key2, text2);
+    QBuffer buf;
+    buf.open(QIODevice::WriteOnly);
+    QVERIFY(img.save(&buf, "png"));
+    buf.close();
+    QImage stored = QImage::fromData(buf.buffer(), "png");
+    QCOMPARE(stored.text(key), text);
+    QCOMPARE(stored.text(key2), text2);
+
+    QImage img2(":/images/kollada.png");
+    img2.setText(key3, text3);
+    QBuffer buf2;
+    QImageWriter w(&buf2, "png");
+    w.setText(key, text);
+    w.setText(key2, text2);
+    QVERIFY(w.write(img2));
+    buf2.close();
+    QImageReader r(&buf2, "png");
+    QCOMPARE(r.text(key), text.simplified());
+    QCOMPARE(r.text(key2), text2.simplified());
+    QCOMPARE(r.text(key3), text3.simplified());
 }
 
 

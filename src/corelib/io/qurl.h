@@ -100,6 +100,8 @@ public:
 #endif
     ~QUrl();
 
+    inline void swap(QUrl &other) { qSwap(d, other.d); }
+
     void setUrl(const QString &url);
     void setUrl(const QString &url, ParsingMode mode);
     // ### Qt 5: merge the two setUrl() functions, with mode = TolerantMode

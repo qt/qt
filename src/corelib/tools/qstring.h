@@ -108,6 +108,7 @@ public:
     inline QString &operator=(QString &&other)
     { qSwap(d, other.d); return *this; }
 #endif
+    inline void swap(QString &other) { qSwap(d, other.d); }
     inline int size() const { return d->size; }
     inline int count() const { return d->size; }
     inline int length() const;

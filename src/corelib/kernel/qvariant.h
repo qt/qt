@@ -224,6 +224,8 @@ class Q_CORE_EXPORT QVariant
     { qSwap(d, other.d); return *this; }
 #endif
 
+    inline void swap(QVariant &other) { qSwap(d, other.d); }
+
     Type type() const;
     int userType() const;
     const char *typeName() const;

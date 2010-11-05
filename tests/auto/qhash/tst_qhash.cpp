@@ -60,6 +60,7 @@ private slots:
     void erase();
     void key();
 
+    void swap();
     void count(); // copied from tst_QMap
     void clear(); // copied from tst_QMap
     void empty(); // copied from tst_QMap
@@ -551,6 +552,16 @@ void tst_QHash::key()
         QCOMPARE(hash2.key("zero"), 0);
         QCOMPARE(hash2.key("zero", def), 0);
     }
+}
+
+void tst_QHash::swap()
+{
+    QHash<int,QString> h1, h2;
+    h1[0] = "h1[0]";
+    h2[1] = "h2[1]";
+    h1.swap(h2);
+    QCOMPARE(h1.value(1),QLatin1String("h2[1]"));
+    QCOMPARE(h2.value(0),QLatin1String("h1[0]"));
 }
 
 // copied from tst_QMap

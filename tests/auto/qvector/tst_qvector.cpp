@@ -80,6 +80,7 @@ private slots:
     void remove() const;
     void size() const;
     void startsWith() const;
+    void swap() const;
     void toList() const;
     void toStdVector() const;
     void value() const;
@@ -577,6 +578,17 @@ void tst_QVector::startsWith() const
     // remove it again :)
     myvec.remove(0);
     QVERIFY(myvec.startsWith(1));
+}
+
+void tst_QVector::swap() const
+{
+    QVector<int> v1, v2;
+    v1 << 1 << 2 << 3;
+    v2 << 4 << 5 << 6;
+
+    v1.swap(v2);
+    QCOMPARE(v1,QVector<int>() << 4 << 5 << 6);
+    QCOMPARE(v2,QVector<int>() << 1 << 2 << 3);
 }
 
 void tst_QVector::toList() const

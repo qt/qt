@@ -147,6 +147,13 @@ QLinkedListData QLinkedListData::shared_null = {
     list.
 */
 
+/*! \fn void QLinkedList::swap(QLinkedList<T> &other)
+    \since 4.8
+
+    Swaps list \a other with this list. This operation is very
+    fast and never fails.
+*/
+
 /*! \fn bool QLinkedList::operator==(const QLinkedList<T> &other) const
 
     Returns true if \a other is equal to this list; otherwise returns

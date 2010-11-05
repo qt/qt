@@ -85,6 +85,7 @@ public:
     inline QPicture &operator=(QPicture &&other)
     { qSwap(d_ptr, other.d_ptr); return *this; }
 #endif
+    inline void swap(QPicture &other) { d_ptr.swap(other.d_ptr); }
     void detach();
     bool isDetached() const;
 

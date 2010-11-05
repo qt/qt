@@ -69,6 +69,7 @@ public:
     tst_QImage();
 
 private slots:
+    void swap();
     void create();
     void createInvalidXPM();
     void createFromUChar();
@@ -153,6 +154,20 @@ private slots:
 tst_QImage::tst_QImage()
 
 {
+}
+
+void tst_QImage::swap()
+{
+    QImage i1( 16, 16, QImage::Format_RGB32 ), i2( 32, 32, QImage::Format_RGB32 );
+    i1.fill( Qt::white );
+    i2.fill( Qt::black );
+    const qint64 i1k = i1.cacheKey();
+    const qint64 i2k = i2.cacheKey();
+    i1.swap(i2);
+    QCOMPARE(i1.cacheKey(), i2k);
+    QCOMPARE(i1.size(), QSize(32,32));
+    QCOMPARE(i2.cacheKey(), i1k);
+    QCOMPARE(i2.size(), QSize(16,16));
 }
 
 // Test if QImage (or any functions called from QImage) throws an

@@ -125,6 +125,7 @@ public:
     inline QVector<T> operator=(QVector<T> &&other)
     { qSwap(p, other.p); return *this; }
 #endif
+    inline void swap(QVector<T> &other) { qSwap(d, other.d); }
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QVector(std::initializer_list<T> args);
 #endif

@@ -1329,6 +1329,14 @@ QImage &QImage::operator=(const QImage &image)
 }
 
 /*!
+    \fn void QImage::swap(QImage &other)
+    \since 4.8
+
+    Swaps image \a other with this image. This operation is very
+    fast and never fails.
+*/
+
+/*!
   \internal
 */
 int QImage::devType() const

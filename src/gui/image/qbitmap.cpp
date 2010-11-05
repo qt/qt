@@ -227,6 +227,14 @@ QBitmap::~QBitmap()
 }
 
 /*!
+    \fn void QBitmap::swap(QBitmap &other)
+    \since 4.8
+
+    Swaps bitmap \a other with this bitmap. This operation is very
+    fast and never fails.
+*/
+
+/*!
    Returns the bitmap as a QVariant.
 */
 QBitmap::operator QVariant() const

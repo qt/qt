@@ -418,6 +418,13 @@ void QBitArray::fill(bool value, int begin, int end)
     this bit array.
 */
 
+/*! \fn void QBitArray::swap(QBitArray &other)
+    \since 4.8
+
+    Swaps bit array \a other with this bit array. This operation is very
+    fast and never fails.
+*/
+
 /*! \fn bool QBitArray::operator==(const QBitArray &other) const
 
     Returns true if \a other is equal to this bit array; otherwise

@@ -95,6 +95,8 @@ public slots:
     void cleanup();
 
 private slots:
+    void swap();
+
     void setAlphaChannel_data();
     void setAlphaChannel();
 
@@ -245,6 +247,20 @@ void tst_QPixmap::init()
 
 void tst_QPixmap::cleanup()
 {
+}
+
+void tst_QPixmap::swap()
+{
+    QPixmap p1( 16, 16 ), p2( 32, 32 );
+    p1.fill( Qt::white );
+    p2.fill( Qt::black );
+    const qint64 p1k = p1.cacheKey();
+    const qint64 p2k = p2.cacheKey();
+    p1.swap(p2);
+    QCOMPARE(p1.cacheKey(), p2k);
+    QCOMPARE(p1.size(), QSize(32,32));
+    QCOMPARE(p2.cacheKey(), p1k);
+    QCOMPARE(p2.size(), QSize(16,16));
 }
 
 void tst_QPixmap::setAlphaChannel_data()

@@ -114,6 +114,7 @@ private slots:
     void remove_string();
     void remove_regexp_data();
     void remove_regexp();
+    void swap();
     void prepend();
     void prepend_bytearray_data();
     void prepend_bytearray();
@@ -1850,6 +1851,16 @@ void tst_QString::operator_pluseq_bytearray()
 
 	QTEST( str, "res" );
     }
+}
+
+void tst_QString::swap()
+{
+    QString s1, s2;
+    s1 = "s1";
+    s2 = "s2";
+    s1.swap(s2);
+    QCOMPARE(s1,QLatin1String("s2"));
+    QCOMPARE(s2,QLatin1String("s1"));
 }
 
 void tst_QString::prepend()

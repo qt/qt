@@ -120,9 +120,9 @@ SOURCES += apigenerator.cpp \
 
 qtPrepareTool(QDOC, qdoc3)
 
-docs.commands = $$QDOC qdoc-manual.qdocconf
+html-docs.commands = cd \"$$PWD/doc\" && $$QDOC qdoc-manual.qdocconf
 
-QMAKE_EXTRA_TARGETS += docs
+QMAKE_EXTRA_TARGETS += html-docs
 
 target.path = $$[QT_INSTALL_BINS]
 INSTALLS += target
