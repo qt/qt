@@ -46,7 +46,7 @@
 #include "tst_qscriptvalue.h"
 
 
-void tst_QScriptValue::initScriptValues()
+void tst_QScriptValueGenerated::initScriptValues()
 {
     m_values.clear();
     if (engine) 
