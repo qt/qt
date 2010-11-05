@@ -39,9 +39,8 @@
 ****************************************************************************/
 
 //![0]
+// main.qml
 import QtQuick 1.0
 
-Image {
-    source: "images/background.png"
-}
+Image { source: "images/background.png" }
 //![0]

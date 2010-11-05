@@ -1,4 +1,5 @@
 import QtQuick 1.0
+import "../../shared" 1.0
 
 /* The bug was that if text was set to "" or the size didn't increase, the text didn't repaint
    ended up only repainting for 1, 10, 11, 12.
