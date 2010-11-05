@@ -4629,38 +4629,40 @@ void QClipData::fixup()
         return;
     }
 
-//      qDebug("QClipData::fixup: count=%d",count);
     int y = -1;
     ymin = m_spans[0].y;
     ymax = m_spans[count-1].y + 1;
     xmin = INT_MAX;
     xmax = 0;
 
+    const int firstLeft = m_spans[0].x;
+    const int firstRight = m_spans[0].x + m_spans[0].len;
     bool isRect = true;
-    int left = m_spans[0].x;
-    int right = m_spans[0].x + m_spans[0].len;
 
     for (int i = 0; i < count; ++i) {
-        if (m_spans[i].y != y) {
-            if (m_spans[i].y != y + 1 && y != -1) {
+        QT_FT_Span_& span = m_spans[i];
+
+        if (span.y != y) {
+            if (span.y != y + 1 && y != -1)
                 isRect = false;
-            }
-            y = m_spans[i].y;
-            m_clipLines[y].spans = m_spans+i;
-            m_clipLines[y].count = 0;
-//              qDebug() << "        new line: y=" << y;
-        }
-        ++m_clipLines[y].count;
-        int sl = (int) m_spans[i].x;
-        int sr = sl + m_spans[i].len;
+            y = span.y;
+            m_clipLines[y].spans = &span;
+            m_clipLines[y].count = 1;
+        } else
+            ++m_clipLines[y].count;
 
-        xmin = qMin(xmin, (int)m_spans[i].x);
-        xmax = qMax(xmax, (int)m_spans[i].x + m_spans[i].len);
+        const int spanLeft = span.x;
+        const int spanRight = spanLeft + span.len;
 
-        if (sl != left || sr != right)
+        if (spanLeft < xmin)
+            xmin = spanLeft;
+
+        if (spanRight > xmax)
+            xmax = spanRight;
+
+        if (spanLeft != firstLeft || spanRight != firstRight)
             isRect = false;
     }
-//     qDebug("xmin=%d,xmax=%d,ymin=%d,ymax=%d %s", xmin, xmax, ymin, ymax, isRect ? "rectangular" : "");
 
     if (isRect) {
         hasRectClip = true;
