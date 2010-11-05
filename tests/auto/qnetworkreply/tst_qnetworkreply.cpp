@@ -3471,11 +3471,11 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp_data()
 {
     QTest::addColumn<bool>("https");
     QTest::addColumn<int>("bufferSize");
-    QTest::newRow("http, no limit") << false << 0;
-    QTest::newRow("http, limited") << false << 4096;
+    QTest::newRow("http+unlimited") << false << 0;
+    QTest::newRow("http+limited") << false << 4096;
 #ifndef QT_NO_OPENSSL
-    QTest::newRow("https, no limit") << true << 0;
-    QTest::newRow("https, limited") << true << 4096;
+    QTest::newRow("https+unlimited") << true << 0;
+    QTest::newRow("https+limited") << true << 4096;
 #endif
 }
 
@@ -3548,6 +3548,7 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
         const int allowedDeviation = 16; // TODO find out why the send rate is 13% faster currently
         const int minRate = rate * 1024 * (100-allowedDeviation) / 100;
         const int maxRate = rate * 1024 * (100+allowedDeviation) / 100;
+        qDebug() << minRate << "<="<< server.transferRate << "<=" << maxRate << "?";
         QVERIFY(server.transferRate >= minRate);
         QVERIFY(server.transferRate <= maxRate);
     }

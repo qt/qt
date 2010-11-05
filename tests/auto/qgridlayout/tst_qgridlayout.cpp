@@ -52,6 +52,7 @@
 #include <QStyleFactory>
 
 #include "../../shared/util.h"
+#include "../platformquirks.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=gui/kernel/qlayout.cpp gui/kernel/qlayout.h
@@ -678,6 +679,8 @@ void tst_QGridLayout::spacingsAndMargins()
 
     QApplication::setStyle(new Qt42Style);
     QWidget toplevel;
+    if(PlatformQuirks::isAutoMaximizing())
+        toplevel.setWindowFlags(Qt::X11BypassWindowManagerHint);
     QVBoxLayout vbox(&toplevel);
     QGridLayout grid1;
     vbox.addLayout(&grid1);
@@ -713,11 +716,12 @@ void tst_QGridLayout::spacingsAndMargins()
     toplevel.show();
     toplevel.adjustSize();
     QApplication::processEvents();
+    QTest::qWaitForWindowShown(&toplevel);
 
     QSize topsize = toplevel.size();
     QSize minimumsize = vbox.totalMinimumSize();
 
-#ifdef Q_WS_QWS
+#if defined(Q_WS_QWS)
     if (topsize.width() < minimumsize.width() || topsize.height() < minimumsize.height())
         QSKIP("The screen is too small to run this test case", SkipSingle);
 #endif
@@ -1463,15 +1467,18 @@ void tst_QGridLayout::layoutSpacingImplementation()
     QFETCH(int, vSpacing);
     QFETCH(bool, customSubElementRect);
 
+    QWidget toplevel;
+
     CustomLayoutStyle *style = new CustomLayoutStyle();
     style->hspacing = hSpacing;
     style->vspacing = vSpacing;
     style->reimplementSubelementRect = customSubElementRect;
     QApplication::setStyle(style);
+    widget->setParent(&toplevel);
     widget->resize(widget->sizeHint());
-    widget->show();
-#if defined(Q_WS_X11)
-    qt_x11_wait_for_window_manager(widget);     // wait for the show
+    toplevel.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&toplevel);     // wait for the show
 #endif
 
     QLayout *layout = widget->layout();
@@ -1482,8 +1489,6 @@ void tst_QGridLayout::layoutSpacingImplementation()
         //qDebug()  << item->widget()->pos();
         QCOMPARE(item->widget()->pos(), expectedpositions.at(pi));
     }
-    delete widget;
-
 }
 
 void tst_QGridLayout::spacing()
