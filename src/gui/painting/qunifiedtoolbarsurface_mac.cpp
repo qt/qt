@@ -76,9 +76,14 @@ void QUnifiedToolbarSurface::recursiveRedirect(QObject *object, const QPoint &of
     if (object != 0) {
         if (object->isWidgetType()) {
             QWidget *widget = qobject_cast<QWidget *>(object);
-            widget->d_func()->unifiedSurface = this;
-            widget->d_func()->isInUnifiedToolbar = true;
-            widget->d_func()->toolbar_offset = offset;
+
+            // We redirect the painting only if the widget is in the same window
+            // and is not a window in itself.
+            if (!(widget->windowType() & Qt::Window)) {
+                widget->d_func()->unifiedSurface = this;
+                widget->d_func()->isInUnifiedToolbar = true;
+                widget->d_func()->toolbar_offset = offset;
+            }
         }
 
         for (int i = 0; i < object->children().size(); ++i) {

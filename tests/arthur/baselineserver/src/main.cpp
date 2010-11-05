@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    qDebug() << "Listening for connections";
+    qDebug() << "\n*****" << argv[0] << "started, ready to serve on port" << BaselineProtocol::ServerPort
+             << "with baseline protocol version" << BaselineProtocol::ProtocolVersion << "*****\n";
     return a.exec();
 }

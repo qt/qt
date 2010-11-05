@@ -392,6 +392,7 @@ void QMetaObject::addGuard(QObject **ptr)
         return;
     }
     QMutexLocker locker(guardHashLock());
+    Q_ASSERT_X(!QObjectPrivate::get(*ptr)->wasDeleted, "QPointer", "Detected QPointer creation on a QObject being deleted");
     QObjectPrivate::get(*ptr)->hasGuards = true;
     hash->insert(*ptr, ptr);
 }
@@ -434,6 +435,7 @@ void QMetaObject::changeGuard(QObject **ptr, QObject *o)
     }
     QMutexLocker locker(guardHashLock());
     if (o) {
+        Q_ASSERT_X(!QObjectPrivate::get(o)->wasDeleted, "QPointer", "Detected QPointer creation on a QObject being deleted");
         hash->insert(o, ptr);
         QObjectPrivate::get(o)->hasGuards = true;
     }

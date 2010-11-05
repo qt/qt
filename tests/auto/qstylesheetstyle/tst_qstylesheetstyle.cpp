@@ -103,6 +103,7 @@ private slots:
     //at the end because it mess with the style.
     void widgetStyle();
     void appStyle();
+    void QTBUG11658_cachecrash();
 private:
     QColor COLOR(const QWidget& w) {
         w.ensurePolished();
@@ -1621,6 +1622,37 @@ void tst_QStyleSheetStyle::changeStyleInChangeEvent()
     wid.setStyleSheet(" /* ** */ ");
     wid.ensurePolished();
 }
+
+void tst_QStyleSheetStyle::QTBUG11658_cachecrash()
+{
+    //should not crash
+    class Widget : public QWidget
+    {
+    public:
+        Widget(QWidget *parent = 0)
+        : QWidget(parent)
+        {
+            QVBoxLayout* pLayout = new QVBoxLayout(this);
+            QCheckBox* pCheckBox = new QCheckBox(this);
+            pLayout->addWidget(pCheckBox);
+            setLayout(pLayout);
+
+            QString szStyleSheet = QLatin1String("* { color: red; }");
+            qApp->setStyleSheet(szStyleSheet);
+            qApp->setStyle(QStyleFactory::create(QLatin1String("Windows")));
+        }
+    };
+
+    Widget *w = new Widget();
+    delete w;
+    w = new Widget();
+    w->show();
+
+    QTest::qWaitForWindowShown(w);
+    delete w;
+    qApp->setStyleSheet(QString());
+}
+
 
 QTEST_MAIN(tst_QStyleSheetStyle)
 #include "tst_qstylesheetstyle.moc"
