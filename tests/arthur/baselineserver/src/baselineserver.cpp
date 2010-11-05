@@ -133,24 +133,29 @@ BaselineHandler::BaselineHandler(int socketDescriptor)
     proto.socket.setSocketDescriptor(socketDescriptor);
 }
 
-QString BaselineHandler::logtime()
+const char *BaselineHandler::logtime()
 {
-    return QTime::currentTime().toString(QLS("mm:ss.zzz"));
+    return 0;
+    //return QTime::currentTime().toString(QLS("mm:ss.zzz"));
 }
 
 void BaselineHandler::receiveRequest()
 {
     if (!connectionEstablished) {
         if (!proto.acceptConnection(&plat)) {
-            qWarning() << runId << logtime() << "Accepting new connection failed. " << proto.errorMessage();
-            QThread::currentThread()->exit(1);
+            qWarning() << runId << logtime() << "Accepting new connection from" << proto.socket.peerAddress().toString() << "failed." << proto.errorMessage();
+            proto.socket.disconnectFromHost();
             return;
         }
         connectionEstablished = true;
-        qDebug() << runId << logtime() << "Connection established with" << plat.hostName << "[" << proto.socket.peerAddress().toString() << "]"
-                 << "OS:" << plat.osName << "[" << plat.osVersion << "]" << "Qt version:" << plat.qtVersion << "[" << plat.buildKey << "]"
-                 << "git commit:" << plat.gitCommit;
-                    return;
+        QString logMsg;
+        foreach (QString key, plat.keys()) {
+            if (key != PI_HostName && key != PI_HostAddress)
+                logMsg += key + QLS(": '") + plat.value(key) + QLS("', ");
+        }
+        qDebug() << runId << logtime() << "Connection established with" << plat.value(PI_HostName)
+                 << "[" << qPrintable(plat.value(PI_HostAddress)) << "]" << logMsg;
+        return;
     }
 
     QByteArray block;
@@ -284,7 +289,7 @@ QString BaselineHandler::itemSubPath(const QString &engine, const QString &forma
 QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline, bool absolute)
 {
     if (pathForRun.isNull()) {
-        QString host = plat.hostName.section(QLC('.'), 0, 0);  // Filter away domain, if any
+        QString host = plat.value(PI_HostName).section(QLC('.'), 0, 0);  // Filter away domain, if any
         if (host.isEmpty() || host == QLS("localhost")) {
             host = proto.socket.peerAddress().toString();
             if (host.isEmpty())
@@ -438,11 +443,11 @@ void BaselineHandler::testPathMapping()
     item.imageChecksums << 0x0123456789abcdefULL;
     item.scriptChecksum = 0x0123;
 
-    plat.qtVersion = QLS("4.8.0");
-    plat.buildKey = QLS("(nobuildkey)");
+    plat.insert(PI_QtVersion, QLS("4.8.0"));
+    plat.insert(PI_BuildKey, QLS("(nobuildkey)"));
     foreach(const QString& host, hosts) {
         pathForRun = QString();
-        plat.hostName = host;
+        plat.insert(PI_HostName, host);
         qDebug() << "Baseline from" << host << "->" << pathForItem(item, true).remove(BaselineServer::storagePath());
         qDebug() << "Mismatch from" << host << "->" << pathForItem(item, false).remove(BaselineServer::storagePath());
     }
