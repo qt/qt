@@ -4157,6 +4157,10 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         pseudoElement = PseudoElement_DownArrow;
         break;
 
+    case PE_IndicatorArrowUp:
+        pseudoElement = PseudoElement_UpArrow;
+        break;
+
     case PE_IndicatorRadioButton:
         pseudoElement = PseudoElement_ExclusiveIndicator;
         break;
