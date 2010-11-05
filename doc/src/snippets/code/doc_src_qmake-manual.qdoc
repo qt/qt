@@ -1009,3 +1009,8 @@ my_exports = \
     "bar.h /epoc32/include/mylib/bar.h"
 BLD_INF_RULES.prj_exports += my_exports
 //! [152]
+
+//! [153]
+my_note.pkg_postrules.installer = "\"myinstallnote.txt\" - \"\", FILETEXT, TEXTCONTINUE"
+DEPLOYMENT += my_note
+//! [153]

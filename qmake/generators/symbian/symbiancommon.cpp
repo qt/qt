@@ -204,44 +204,71 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocB
     tw << headerComment.arg(wrapperPkgFilename).arg(dateStr);
     ts << headerComment.arg(stubPkgFileName).arg(dateStr);
 
-    // Construct QStringList from pkg_prerules since we need search it before printed to file
-    // Note: Though there can't be more than one language or header line, use stringlists
+    QStringList commonRawPreRules;
+    QStringList mainRawPreRules;
+    QStringList instRawPreRules;
+    QStringList stubRawPreRules;
+
+    // Though there can't be more than one language or header line, use stringlists
     // in case user wants comments to go with the rules.
-    QStringList rawPkgPreRules;
+    // Note that it makes no sense to have file specific language or header rules,
+    // except what is provided for installer header via "DEPLOYMENT.installer_header" variable,
+    // because stub and main headers should always match. Vendor rules are similarly limited to
+    // make code cleaner as it is unlikely anyone will want different vendor in different files.
     QStringList languageRules;
     QStringList headerRules;
-    foreach(QString deploymentItem, project->values("DEPLOYMENT")) {
-        foreach(QString pkgrulesItem, project->values(deploymentItem + ".pkg_prerules")) {
-            QStringList pkgrulesValue = project->values(pkgrulesItem);
-            // If there is no stringlist defined for a rule, use rule name directly
-            // This is convenience for defining single line mmp statements
-            if (pkgrulesValue.isEmpty()) {
-                if (pkgrulesItem.startsWith("&"))
-                    languageRules << pkgrulesItem;
-                else if (pkgrulesItem.startsWith("#"))
-                    headerRules << pkgrulesItem;
-                else
-                    rawPkgPreRules << pkgrulesItem;
-            } else {
-                if (containsStartWithItem('&', pkgrulesValue)) {
-                    foreach(QString pkgrule, pkgrulesValue) {
-                        languageRules << pkgrule;
-                    }
-                } else if (containsStartWithItem('#', pkgrulesValue)) {
-                    foreach(QString pkgrule, pkgrulesValue) {
-                        headerRules << pkgrule;
-                    }
-                } else {
-                    foreach(QString pkgrule, pkgrulesValue) {
-                        rawPkgPreRules << pkgrule;
-                    }
-                }
-            }
+    QStringList vendorRules;
+
+    QStringList commonRawPostRules;
+    QStringList mainRawPostRules;
+    QStringList instRawPostRules;
+    QStringList stubRawPostRules;
+
+    QStringList failList; // Used for detecting incorrect usage
+
+    QString emptySuffix;
+    QString mainSuffix(".main");
+    QString instSuffix(".installer");
+    QString stubSuffix(".stub");
+
+    foreach(QString item, project->values("DEPLOYMENT")) {
+        parsePreRules(item, emptySuffix, &commonRawPreRules, &languageRules, &headerRules, &vendorRules);
+        parsePreRules(item, mainSuffix, &mainRawPreRules, &failList, &failList, &failList);
+        parsePreRules(item, instSuffix, &instRawPreRules, &failList, &failList, &failList);
+        parsePreRules(item, stubSuffix, &stubRawPreRules, &failList, &failList, &failList);
+
+        parsePostRules(item, emptySuffix, &commonRawPostRules);
+        parsePostRules(item, mainSuffix, &mainRawPostRules);
+        parsePostRules(item, instSuffix, &instRawPostRules);
+        parsePostRules(item, stubSuffix, &stubRawPostRules);
+    }
+
+    if (!failList.isEmpty()) {
+        fprintf(stderr, "Warning: Custom language, header, or vendor definitions are not "
+                "supported by file specific pkg_prerules.* variables.\n"
+                "Use plain pkg_prerules and/or DEPLOYMENT.installer_header for customizing "
+                "these items.\n");
+    }
+
+    foreach(QString item, commonRawPreRules) {
+        if (item.startsWith("(")) {
+            // Only regular pkg file should have package dependencies
+            mainRawPreRules << item;
+        } else if (item.startsWith("[")) {
+            // stub pkg file should not have platform dependencies
+            mainRawPreRules << item;
+            instRawPreRules << item;
+        } else {
+            mainRawPreRules << item;
+            instRawPreRules << item;
+            stubRawPreRules << item;
         }
     }
 
-    // Apply some defaults if specific data does not exist in PKG pre-rules
+    // Currently common postrules only go to main
+    mainRawPostRules << commonRawPostRules;
 
+    // Apply some defaults if specific data does not exist in PKG pre-rules
     if (languageRules.isEmpty()) {
         // language, (*** hardcoded to english atm, should be parsed from TRANSLATIONS)
         languageRules << "; Language\n&EN\n\n";
@@ -313,48 +340,37 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocB
         ts << headerRules.join("\n") << endl;
     }
 
-    // Localized vendor name
-    QString vendorName;
-    if (!containsStartWithItem('%', rawPkgPreRules)) {
-        vendorName += "; Localised Vendor name\n%{\"Vendor\"}\n\n";
+    // Vendor name
+    if (!containsStartWithItem('%', vendorRules)) {
+        vendorRules << "; Default localized vendor name\n%{\"Vendor\"}\n\n";
+    }
+    if (!containsStartWithItem(':', vendorRules)) {
+        vendorRules << "; Default unique vendor name\n:\"Vendor\"\n\n";
     }
 
-    // Unique vendor name
-    if (!containsStartWithItem(':', rawPkgPreRules)) {
-        vendorName += "; Unique Vendor name\n:\"Vendor\"\n\n";
-    }
-
-    t << vendorName;
-    tw << vendorName;
-    ts << vendorName;
+    t << vendorRules.join("\n") << endl;
+    tw << vendorRules.join("\n") << endl;
+    ts << vendorRules.join("\n") << endl;
 
     // PKG pre-rules - these are added before actual file installations i.e. SIS package body
-    if (rawPkgPreRules.size()) {
-        QString comment = "\n; Manual PKG pre-rules from PRO files\n";
-        t << comment;
-        tw << comment;
-        ts << comment;
+    QString comment = "\n; Manual PKG pre-rules from PRO files\n";
 
-        foreach(QString item, rawPkgPreRules) {
-            // Only regular pkg file should have package dependencies
-            if (item.startsWith("(")) {
-                t << item << endl;
-            }
-            // stub pkg file should not have platform dependencies
-            else if (item.startsWith("[")) {
-                t << item << endl;
-                tw << item << endl;
-            }
-            else {
-                t << item << endl;
-                ts << item << endl;
-                tw << item << endl;
-            }
-        }
-        t << endl;
-        ts << endl;
-        tw << endl;
+    if (mainRawPreRules.size()) {
+        t << comment;
+        t << mainRawPreRules.join("\n") << endl;
     }
+    if (instRawPreRules.size()) {
+        tw << comment;
+        tw << instRawPreRules.join("\n") << endl;
+    }
+    if (stubRawPreRules.size()) {
+        ts << comment;
+        ts << stubRawPreRules.join("\n") << endl;
+    }
+
+    t << endl;
+    tw << endl;
+    ts << endl;
 
     // Begin Manufacturer block
     if (!project->values("DEPLOYMENT.manufacturers").isEmpty()) {
@@ -481,21 +497,19 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocB
     ts << endl;
 
     // PKG post-rules - these are added after actual file installations i.e. SIS package body
-    t << "; Manual PKG post-rules from PRO files" << endl;
-    foreach(QString deploymentItem, project->values("DEPLOYMENT")) {
-        foreach(QString pkgrulesItem, project->values(deploymentItem + ".pkg_postrules")) {
-            QStringList pkgrulesValue = project->values(pkgrulesItem);
-            // If there is no stringlist defined for a rule, use rule name directly
-            // This is convenience for defining single line statements
-            if (pkgrulesValue.isEmpty()) {
-                t << pkgrulesItem << endl;
-            } else {
-                foreach(QString pkgrule, pkgrulesValue) {
-                    t << pkgrule << endl;
-                }
-            }
-            t << endl;
-        }
+    comment = "; Manual PKG post-rules from PRO files\n";
+
+    if (mainRawPostRules.size()) {
+        t << comment;
+        t << mainRawPostRules.join("\n") << endl;
+    }
+    if (instRawPostRules.size()) {
+        tw << comment;
+        tw << instRawPostRules.join("\n") << endl;
+    }
+    if (stubRawPostRules.size()) {
+        ts << comment;
+        ts << stubRawPostRules.join("\n") << endl;
     }
 
     // Close Manufacturer block
@@ -1035,5 +1049,68 @@ void SymbianCommonGenerator::fillQt2S60LangMapTable()
     qt2S60LangMapTable.insert("haw", "SC");           //Hawaiian                      //
     qt2S60LangMapTable.insert("kcg", "SC");           //Tyap                          //
     qt2S60LangMapTable.insert("ny", "SC");            //Chewa                         //
+}
+
+void SymbianCommonGenerator::parsePreRules(const QString &deploymentVariable,
+                                           const QString &variableSuffix,
+                                           QStringList *rawRuleList,
+                                           QStringList *languageRuleList,
+                                           QStringList *headerRuleList,
+                                           QStringList *vendorRuleList)
+{
+    QMakeProject *project = generator->project;
+    foreach(QString pkgrulesItem, project->values(deploymentVariable + ".pkg_prerules" + variableSuffix)) {
+        QStringList pkgrulesValue = project->values(pkgrulesItem);
+        // If there is no stringlist defined for a rule, use rule name directly
+        // This is convenience for defining single line statements
+        if (pkgrulesValue.isEmpty()) {
+            if (pkgrulesItem.startsWith("&"))
+                *languageRuleList << pkgrulesItem;
+            else if (pkgrulesItem.startsWith("#"))
+                *headerRuleList << pkgrulesItem;
+            else if (pkgrulesItem.startsWith("%") || pkgrulesItem.startsWith(":"))
+                *vendorRuleList << pkgrulesItem;
+            else
+                *rawRuleList << pkgrulesItem;
+        } else {
+            if (containsStartWithItem('&', pkgrulesValue)) {
+                foreach(QString pkgrule, pkgrulesValue) {
+                    *languageRuleList << pkgrule;
+                }
+            } else if (containsStartWithItem('#', pkgrulesValue)) {
+                foreach(QString pkgrule, pkgrulesValue) {
+                    *headerRuleList << pkgrule;
+                }
+            } else if (containsStartWithItem('%', pkgrulesValue)
+                       || containsStartWithItem(':', pkgrulesValue)) {
+                foreach(QString pkgrule, pkgrulesValue) {
+                    *vendorRuleList << pkgrule;
+                }
+            } else {
+                foreach(QString pkgrule, pkgrulesValue) {
+                    *rawRuleList << pkgrule;
+                }
+            }
+        }
+    }
+}
+
+void SymbianCommonGenerator::parsePostRules(const QString &deploymentVariable,
+                                            const QString &variableSuffix,
+                                            QStringList *rawRuleList)
+{
+    QMakeProject *project = generator->project;
+    foreach(QString pkgrulesItem, project->values(deploymentVariable + ".pkg_postrules" + variableSuffix)) {
+        QStringList pkgrulesValue = project->values(pkgrulesItem);
+        // If there is no stringlist defined for a rule, use rule name directly
+        // This is convenience for defining single line statements
+        if (pkgrulesValue.isEmpty()) {
+            *rawRuleList << pkgrulesItem;
+        } else {
+            foreach(QString pkgrule, pkgrulesValue) {
+                *rawRuleList << pkgrule;
+            }
+        }
+    }
 }
 
