@@ -396,18 +396,19 @@ void tst_QButtonGroup::task106609()
     vbox->addWidget(radio2);
     buttons->addButton(radio3, 3);
     vbox->addWidget(radio3);
-
-    radio1->setFocus();
-    radio1->setChecked(true);
     dlg.show();
+    QTest::qWaitForWindowShown(&dlg);
 
     qRegisterMetaType<QAbstractButton*>("QAbstractButton*");
     QSignalSpy spy1(buttons, SIGNAL(buttonClicked(QAbstractButton*)));
     QSignalSpy spy2(buttons, SIGNAL(buttonClicked(int)));
 
-    QTestEventLoop::instance().enterLoop(1);
     QApplication::setActiveWindow(&dlg);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&dlg));
+
+    radio1->setFocus();
+    radio1->setChecked(true);
+    QTestEventLoop::instance().enterLoop(1);
 
     //qDebug() << "int:" << spy2.count() << "QAbstractButton*:" << spy1.count();
     QCOMPARE(spy2.count(), 2);

@@ -38,78 +38,18 @@
 **
 ****************************************************************************/
 
-//! [0]
-   <qtopia-root-dir>/qtopiacore/qt/configure -embedded -help |grep -a1 mouse
-//! [0]
+import QtQuick 1.0
 
+Rectangle {
+    id: page
+    color: "white"
+    width: 180; height: 180
 
-//! [1]
-   ./configure -extra-qtopiacore-config -qt-mouse-tslib
-//! [1]
-
-
-//! [2]
-   ./configure -help
-//! [2]
-
-
-//! [3]
-   configure -qt-mouse-tslib
-//! [3]
-
-
-//! [4]
-export QWS_MOUSE_PROTO=<driver>[:<driver specific options>]
-//! [4]
-
-
-//! [5]
-export QWS_MOUSE_PROTO="<driver>[:<driver specific options>]
-        <driver>[:<driver specific options>]
-        <driver>[:<driver specific options>]"
-//! [5]
-
-
-//! [6]
-export QWS_MOUSE_PROTO="Vr41xx:press=500:/dev/misc/ts"
-//! [6]
-
-
-//! [7]
-....
-QMAKE_CFLAGS += -I<path to tslib headers>
-QMAKE_LFLAGS += -L<path to tslib library> -Wl,-rpath-link=<path to tslib library>
-....
-//! [7]
-
-
-//! [8]
-module_raw input
-module linear
-//! [8]
-
-
-//! [9]
-QWS_MOUSE_PROTO=IntelliMouse:/dev/input/mouse0
-//! [9]
-
-
-//! [10]
-cat /dev/input/mouse0 | hexdump
-//! [10]
-
-
-//! [11]
-QWS_MOUSE_PROTO=IntelliMouse:/dev/input/mouse0
-//! [11]
-
-
-//! [show permissions]
-ls -l /dev/input/mouse0
-//! [show permissions]
-
-//! [12]
-chmod a+rw /dev/input/mouse0
-//! [12]
-
-
+//! [tiled border image]
+BorderImage {
+    width: 180; height: 180
+    border { left: 30; top: 30; right: 30; bottom: 30 }
+    source: "pics/borderframe.png"
+}
+//! [tiled border image]
+}

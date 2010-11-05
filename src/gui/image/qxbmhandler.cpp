@@ -66,27 +66,36 @@ static inline int hex2byte(register char *p)
 static bool read_xbm_header(QIODevice *device, int& w, int& h)
 {
     const int buflen = 300;
+    const int maxlen = 4096;
     char buf[buflen + 1];
     QRegExp r1(QLatin1String("^#define[ \t]+[a-zA-Z0-9._]+[ \t]+"));
     QRegExp r2(QLatin1String("[0-9]+"));
 
     qint64 readBytes = 0;
+    qint64 totalReadBytes = 0;
 
-    // "#define .._width <num>"
-    readBytes = device->readLine(buf, buflen);
-    if (readBytes <= 0)
-	return false;
-    buf[readBytes - 1] = '\0';
+    buf[0] = '\0';
 
     // skip initial comment, if any
-    while (buf[0] != '#' && (readBytes = device->readLine( buf, buflen )) > 0) {}
+    while (buf[0] != '#') {
+        readBytes = device->readLine(buf, buflen);
 
-    if (readBytes <= 0)
-	return false;
+        // if readBytes >= buflen, it's very probably not a C file
+        if (readBytes <= 0 || readBytes >= buflen -1)
+            return false;
+
+        // limit xbm headers to the first 4k in the file to prevent
+        // excessive reads on non-xbm files
+        totalReadBytes += readBytes;
+        if (totalReadBytes >= maxlen)
+            return false;
+    }
+
     buf[readBytes - 1] = '\0';
     QString sbuf;
     sbuf = QString::fromLatin1(buf);
 
+    // "#define .._width <num>"
     if (r1.indexIn(sbuf) == 0 &&
          r2.indexIn(sbuf, r1.matchedLength()) == r1.matchedLength())
         w = QByteArray(&buf[r1.matchedLength()]).trimmed().toInt();

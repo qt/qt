@@ -76,10 +76,6 @@ Reason:
         <translation>Ошибка создания файла коллекции справки &apos;%1&apos;: %2.</translation>
     </message>
     <message>
-        <source>Error reading collection file &apos;%1&apos;: %2</source>
-        <translation>Ошибка чтения файла коллекции справки &apos;%1&apos;: %2</translation>
-    </message>
-    <message>
         <source>Cannot load sqlite database driver!</source>
         <translation>Не удалось загрузить драйвер баз данных sqlite!</translation>
     </message>
@@ -112,6 +108,17 @@ Reason:
     </message>
 </context>
 <context>
+    <name>BookmarkItem</name>
+    <message>
+        <source>New Folder</source>
+        <translation>Новая папка</translation>
+    </message>
+    <message>
+        <source>Untitled</source>
+        <translation>Безымянная</translation>
+    </message>
+</context>
+<context>
     <name>BookmarkManager</name>
     <message>
         <source>Remove</source>
@@ -131,7 +138,7 @@ Reason:
     </message>
     <message>
         <source>Untitled</source>
-        <translation>Неозаглавлено</translation>
+        <translation>Безымянная</translation>
     </message>
     <message>
         <source>Manage Bookmarks...</source>
@@ -329,6 +336,64 @@ Reason:
         <translation>Файл коллекции справки &apos;%1&apos; не существует.</translation>
     </message>
     <message>
+        <source>Usage: assistant [Options]
+
+-collectionFile file       Uses the specified collection
+                           file instead of the default one
+-showUrl url               Shows the document with the
+                           url.
+-enableRemoteControl       Enables Assistant to be
+                           remotely controlled.
+-show widget               Shows the specified dockwidget
+                           which can be &quot;contents&quot;, &quot;index&quot;,
+                           &quot;bookmarks&quot; or &quot;search&quot;.
+-activate widget           Activates the specified dockwidget
+                           which can be &quot;contents&quot;, &quot;index&quot;,
+                           &quot;bookmarks&quot; or &quot;search&quot;.
+-hide widget               Hides the specified dockwidget
+                           which can be &quot;contents&quot;, &quot;index&quot;
+                           &quot;bookmarks&quot; or &quot;search&quot;.
+-register helpFile         Registers the specified help file
+                           (.qch) in the given collection
+                           file.
+-unregister helpFile       Unregisters the specified help file
+                           (.qch) from the give collection
+                           file.
+-setCurrentFilter filter   Set the filter as the active filter.
+-remove-search-index       Removes the full text search index.
+-rebuild-search-index      Re-builds the full text search index (potentially slow).
+-quiet                     Does not display any error or
+                           status message.
+-help                      Displays this help.
+</source>
+        <translation>Использование: assistant [ОПЦИИ]
+
+-collectionFile файл       Использовать указанный файл коллекции,
+                           вместо стандартного
+-showUrl ссылка            Отобразить документ по ссылке.
+-enableRemoteControl       Включение удалённого управления Assistant.
+-show виджет               Отображение указанного прикрепляемого виджета,
+                           который может быть &quot;contents&quot;, &quot;index&quot;,
+                           &quot;bookmarks&quot; или &quot;search&quot;.
+-activate виджет           Включение указанного прикрепляемого виджета,
+                           который может быть &quot;contents&quot;, &quot;index&quot;,
+                           &quot;bookmarks&quot; или &quot;search&quot;.
+-hide виджет               Скрытие указанного прикрепляемого виджета,
+                           который может быть &quot;contents&quot;, &quot;index&quot;,
+                           &quot;bookmarks&quot; или &quot;search&quot;.
+-register файлСправки      Регистрация указанного файла справки (.qch)
+                           в данном файле коллекции.
+-unregister файлСправки    Отмена регистрации указанного файла
+                           справки (.qch) в данном файле коллекции.
+-setCurrentFilter фильтр   Активация указанного фильтра.
+-remove-search-index       Удаление индекса полнотекстового поиска.
+-rebuild-search-index      Пересоздание индекса полнотекстового поиска
+                           (потенциально медленно).
+-quiet                     Не отображать сообщения об ошибках и состояниях.
+-help                      Показать эту справку.
+</translation>
+    </message>
+    <message>
         <source>Missing collection file.</source>
         <translation>Отсутствует файл коллекции справки.</translation>
     </message>
@@ -377,6 +442,56 @@ Reason:
     </message>
 </context>
 <context>
+    <name>ConversionWizard</name>
+    <message>
+        <source>Help Conversion Wizard</source>
+        <translation>Мастер преобразования справки</translation>
+    </message>
+    <message>
+        <source>Converting %1...</source>
+        <translation>Преобразование %1...</translation>
+    </message>
+    <message>
+        <source>Writing help collection file...</source>
+        <translation>Запись файла коллекции справки...</translation>
+    </message>
+    <message>
+        <source>Done.</source>
+        <translation>Готово.</translation>
+    </message>
+</context>
+<context>
+    <name>FilesPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Форма</translation>
+    </message>
+    <message>
+        <source>Files:</source>
+        <translation>Файлы:</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Удалить</translation>
+    </message>
+    <message>
+        <source>Remove All</source>
+        <translation>Удалить всё</translation>
+    </message>
+    <message>
+        <source>Unreferenced Files</source>
+        <translation>Невостребованные файлы</translation>
+    </message>
+    <message>
+        <source>Remove files which are neither referenced by a keyword nor by the TOC.</source>
+        <translation>Удаление файлов, на которые нет ссылок ни по ключевым словам, ни в содержании.</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;&lt;b&gt;Warning:&lt;/b&gt; When removing images or stylesheets, be aware that those files are not directly referenced by the .adp or .dcf file.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;&lt;b&gt;Внимание:&lt;/b&gt; при удалении изображений или таблиц стилей следует убедиться, что на эти файлы напрямую не ссылается файл .adp или .dcf.&lt;/p&gt;</translation>
+    </message>
+</context>
+<context>
     <name>FilterNameDialogClass</name>
     <message>
         <source>Add Filter Name</source>
@@ -385,6 +500,66 @@ Reason:
     <message>
         <source>Filter Name:</source>
         <translation>Название фильтра:</translation>
+    </message>
+</context>
+<context>
+    <name>FilterPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Форма</translation>
+    </message>
+    <message>
+        <source>Filter attributes for current documentation (comma separated list):</source>
+        <translation>Атрибуты фильтра для текущей документации (список, разделённый запятыми):</translation>
+    </message>
+    <message>
+        <source>Custom Filters</source>
+        <translation>Пользовательские фильтры</translation>
+    </message>
+    <message>
+        <source>1</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>2</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation>Добавить</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Удалить</translation>
+    </message>
+    <message>
+        <source>Filter Settings</source>
+        <translation>Настройки фильтра</translation>
+    </message>
+    <message>
+        <source>Specify the filter attributes for the documentation. If filter attributes are used, also define a custom filter for it. Both the filter attributes and the custom filters are optional.</source>
+        <translation>Укажите атрибуты фильтра для документации. Если атрибуты фильтра используются, также укажите пользовательский фильтр для них. Атрибуты и пользовательский фильтр необязательны.</translation>
+    </message>
+    <message>
+        <source>Filter Name</source>
+        <translation>Название фильтра</translation>
+    </message>
+    <message>
+        <source>Filter Attributes</source>
+        <translation>Атрибуты фильтра</translation>
+    </message>
+    <message>
+        <source>The custom filter &apos;%1&apos; is defined multiple times.</source>
+        <translation>Пользовательский фильтр &quot;%1&quot; определён несколько раз.</translation>
+    </message>
+    <message>
+        <source>The attributes for custom filter &apos;%1&apos; are defined multiple times.</source>
+        <translation>Атрибуты для пользовательского фильтра &quot;%1&quot; определены несколько раз.</translation>
+    </message>
+    <message>
+        <source>unfiltered</source>
+        <comment>list of available documentation</comment>
+        <translation>вся документация</translation>
     </message>
 </context>
 <context>
@@ -404,6 +579,17 @@ Reason:
     <message>
         <source>&lt;img src=&quot;:/trolltech/assistant/images/wrap.png&quot;&gt;&amp;nbsp;Search wrapped</source>
         <translation>&lt;img src=&quot;:/trolltech/assistant/images/wrap.png&quot;&gt;&amp;nbsp;Поиск с начала</translation>
+    </message>
+</context>
+<context>
+    <name>FinishPage</name>
+    <message>
+        <source>Converting File</source>
+        <translation>Преобразование файла</translation>
+    </message>
+    <message>
+        <source>Creating the new Qt help files from the old ADP file.</source>
+        <translation>Создание файлов справки Qt из старых файлов ADP.</translation>
     </message>
 </context>
 <context>
@@ -430,6 +616,59 @@ Reason:
     </message>
 </context>
 <context>
+    <name>GeneralPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Форма</translation>
+    </message>
+    <message>
+        <source>Namespace:</source>
+        <translation>Пространство имён:</translation>
+    </message>
+    <message>
+        <source>Virtual Folder:</source>
+        <translation>Виртуальный каталог:</translation>
+    </message>
+    <message>
+        <source>General Settings</source>
+        <translation>Основные настройки</translation>
+    </message>
+    <message>
+        <source>Specify the namespace and the virtual folder for the documentation.</source>
+        <translation>Укажите пространство имён и виртуальный каталог для документации.</translation>
+    </message>
+    <message>
+        <source>Namespace Error</source>
+        <translation>Ошибка пространства имён</translation>
+    </message>
+    <message>
+        <source>The namespace contains some invalid characters.</source>
+        <translation>Пространство имён содержит недопустимые символы.</translation>
+    </message>
+    <message>
+        <source>Virtual Folder Error</source>
+        <translation>Ошибка виртуального каталога</translation>
+    </message>
+    <message>
+        <source>The virtual folder contains some invalid characters.</source>
+        <translation>Виртуальный каталог содержит недопустимые символы.</translation>
+    </message>
+</context>
+<context>
+    <name>HelpEngineWrapper</name>
+    <message>
+        <source>Unfiltered</source>
+        <translation>Вся документация</translation>
+    </message>
+</context>
+<context>
+    <name>HelpGenerator</name>
+    <message>
+        <source>Warning: %1</source>
+        <translation>Предупреждение: %1</translation>
+    </message>
+</context>
+<context>
     <name>HelpViewer</name>
     <message>
         <source>&lt;title&gt;about:blank&lt;/title&gt;</source>
@@ -453,6 +692,40 @@ Reason:
     </message>
 </context>
 <context>
+    <name>HelpWindow</name>
+    <message>
+        <source>&lt;center&gt;&lt;b&gt;Wizard Assistant&lt;/b&gt;&lt;/center&gt;</source>
+        <translation>&lt;center&gt;&lt;b&gt;Помощь по мастеру преобразования справки&lt;/b&gt;&lt;/center&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>IdentifierPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Форма</translation>
+    </message>
+    <message>
+        <source>Create identifiers</source>
+        <translation>Создавать идентификаторы</translation>
+    </message>
+    <message>
+        <source>Global prefix:</source>
+        <translation>Глобальный префикс:</translation>
+    </message>
+    <message>
+        <source>Inherit prefix from file names</source>
+        <translation>Наследовать префикс из имён файлов</translation>
+    </message>
+    <message>
+        <source>Identifiers</source>
+        <translation>Идентификаторы</translation>
+    </message>
+    <message>
+        <source>This page allows you to create identifiers from the keywords found in the .adp or .dcf file.</source>
+        <translation>Данная страница позволяет создавать идентификаторы из ключевых слов найденных в файле .adp или .dcf.</translation>
+    </message>
+</context>
+<context>
     <name>IndexWindow</name>
     <message>
         <source>&amp;Look for:</source>
@@ -465,6 +738,53 @@ Reason:
     <message>
         <source>Open Link in New Tab</source>
         <translation>Открыть ссылку в новой вкладке</translation>
+    </message>
+</context>
+<context>
+    <name>InputPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Форма</translation>
+    </message>
+    <message>
+        <source>File name:</source>
+        <translation>Имя файла:</translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Input File</source>
+        <translation>Исходный файл</translation>
+    </message>
+    <message>
+        <source>Specify the .adp or .dcf file you want to convert to the new Qt help project format and/or collection format.</source>
+        <translation>Укажите файл .adp или .dcf, который необходимо преобразовать в формат нового проекта справки Qt или коллекции.</translation>
+    </message>
+    <message>
+        <source>Open file</source>
+        <translation>Открыть файл</translation>
+    </message>
+    <message>
+        <source>Qt Help Files (*.adp *.dcf)</source>
+        <translation>Файлы справки Qt (*.adp *.dcf)</translation>
+    </message>
+    <message>
+        <source>File Open Error</source>
+        <translation>Ошибка открытия файла</translation>
+    </message>
+    <message>
+        <source>The specified file could not be opened!</source>
+        <translation>Не удалось открыть указанный файл!</translation>
+    </message>
+    <message>
+        <source>File Parsing Error</source>
+        <translation>Ошибка обработки файла</translation>
+    </message>
+    <message>
+        <source>Parsing error in line %1!</source>
+        <translation>Возникла ошибка обработки на строке %1!</translation>
     </message>
 </context>
 <context>
@@ -715,6 +1035,10 @@ Reason:
         <translation>&amp;Закладки</translation>
     </message>
     <message>
+        <source>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Version %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;</source>
+        <translation>&lt;center&gt;&lt;h3&gt;%1&lt;/h3&gt;&lt;p&gt;Версия %2&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;</translation>
+    </message>
+    <message>
         <source>Could not register file &apos;%1&apos;: %2</source>
         <translation>Не удалось зарегистрировать файл &apos;%1&apos;: %2</translation>
     </message>
@@ -776,7 +1100,93 @@ Reason:
     </message>
     <message>
         <source>Updating search index</source>
-        <translation>Обновление поискового индекса</translation>
+        <translation>Обновление индекса полнотекстового поиска</translation>
+    </message>
+</context>
+<context>
+    <name>OutputPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Форма</translation>
+    </message>
+    <message>
+        <source>Project file name:</source>
+        <translation>Имя файла проекта:</translation>
+    </message>
+    <message>
+        <source>Collection file name:</source>
+        <translation>Имя файла коллекции:</translation>
+    </message>
+    <message>
+        <source>Output File Names</source>
+        <translation>Имена выходных файлов</translation>
+    </message>
+    <message>
+        <source>Specify the file names for the output files.</source>
+        <translation>Укажите имена выходных файлов.</translation>
+    </message>
+    <message>
+        <source>Convert...</source>
+        <translation>Преобразовать...</translation>
+    </message>
+    <message>
+        <source>Qt Help Project File</source>
+        <translation>Файл проекта справки Qt</translation>
+    </message>
+    <message>
+        <source>Qt Help Collection Project File</source>
+        <translation>Файл проекта коллекции справки Qt</translation>
+    </message>
+    <message>
+        <source>The specified file %1 already exist.
+
+Do you want to remove it?</source>
+        <translation>Файл %1 уже существует.
+
+Желаете удалить его?</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Удалить</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Отмена</translation>
+    </message>
+</context>
+<context>
+    <name>PathPage</name>
+    <message>
+        <source>Form</source>
+        <translation>Форма</translation>
+    </message>
+    <message>
+        <source>File filters:</source>
+        <translation>Фильтры файлов:</translation>
+    </message>
+    <message>
+        <source>Documentation source file paths:</source>
+        <translation>Пути к исходным файлам документации:</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation>Добавить</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Удалить</translation>
+    </message>
+    <message>
+        <source>Source File Paths</source>
+        <translation>Пути к исходным файлам</translation>
+    </message>
+    <message>
+        <source>Specify the paths where the sources files are located. By default, all files in those directories matched by the file filter will be included.</source>
+        <translation>Укажите пути, где расположены исходные файлы. По умолчанию, будут включены все файлы в каталогах, соответствующие фильтру файлов.</translation>
+    </message>
+    <message>
+        <source>Source File Path</source>
+        <translation>Путь к исходному файлу</translation>
     </message>
 </context>
 <context>
@@ -911,6 +1321,165 @@ Reason:
     <message>
         <source>Blank Page</source>
         <translation>Пустая страница</translation>
+    </message>
+</context>
+<context>
+    <name>QCollectionGenerator</name>
+    <message>
+        <source>Unknown token at line %1.</source>
+        <translation>Неизвестный токен в строке %1.</translation>
+    </message>
+    <message>
+        <source>Unknown token at line %1. Expected &quot;QtHelpCollectionProject&quot;.</source>
+        <translation>Неизвестный токен в строке %1. Ожидался &quot;QtHelpCollectionProject&quot;.</translation>
+    </message>
+    <message>
+        <source>Missing end tags.</source>
+        <translation>Отсутствуют завершающие теги.</translation>
+    </message>
+    <message>
+        <source>Missing input or output file for help file generation.</source>
+        <translation>Отсутствует входной или выходной файл для создания файла справки.</translation>
+    </message>
+    <message>
+        <source>Missing output file name.</source>
+        <translation>Отсутствует имя выходного файла.</translation>
+    </message>
+    <message>
+        <source>Qt Collection Generator version 1.0 (Qt %1)
+</source>
+        <translation>Генератор коллекций Qt версии 1.0 (Qt %1)
+</translation>
+    </message>
+    <message>
+        <source>Missing collection config file.</source>
+        <translation>Отсутствует файл настроек коллекции.</translation>
+    </message>
+    <message>
+        <source>
+Usage:
+
+qcollectiongenerator &lt;collection-config-file&gt; [options]
+
+  -o &lt;collection-file&gt;   Generates a collection file
+                         called &lt;collection-file&gt;. If
+                         this option is not specified
+                         a default name will be used.
+  -v                     Displays the version of
+                         qcollectiongenerator.
+
+</source>
+        <translation>
+Использование:
+
+qcollectiongenerator &lt;файл-конфигурации-коллекции&gt; [ОПЦИИ]
+
+  -o &lt;файл-коллекции&gt;    Создание файла коллекции с именем
+                         &lt;файл-коллекции&gt;. Если эта опция не указана,
+                         будет использовано имя по умолчанию.
+  -v                     Показать версию qcollectiongenerator.
+
+</translation>
+    </message>
+    <message>
+        <source>Could not open %1.
+</source>
+        <translation>Не удалось открыть %1.</translation>
+    </message>
+    <message>
+        <source>Reading collection config file...
+</source>
+        <translation>Чтение файла конфигурации коллекции...
+</translation>
+    </message>
+    <message>
+        <source>Collection config file error: %1
+</source>
+        <translation>Ошибка файла конфигурации коллекции: %1
+</translation>
+    </message>
+    <message>
+        <source>Generating help for %1...
+</source>
+        <translation>Создание справки для %1...</translation>
+    </message>
+    <message>
+        <source>Creating collection file...
+</source>
+        <translation>Создание файла коллекции...</translation>
+    </message>
+    <message>
+        <source>The file %1 cannot be overwritten.
+</source>
+        <translation>Файл %1 не может быть перезаписан.</translation>
+    </message>
+    <message>
+        <source>Cannot open %1.
+</source>
+        <translation>Не удалось открыть %1.</translation>
+    </message>
+    <message>
+        <source>Cannot open referenced image file %1.
+</source>
+        <translation>Не удалось открыть необходимый файл изображения %1.
+</translation>
+    </message>
+</context>
+<context>
+    <name>QHelpGenerator</name>
+    <message>
+        <source>Missing output file name.</source>
+        <translation>Отсутствует имя выходного файла.</translation>
+    </message>
+    <message>
+        <source>Qt Help Generator version 1.0 (Qt %1)
+</source>
+        <translation>Генератор справки Qt, версия 1.0 (Qt %1)
+</translation>
+    </message>
+    <message>
+        <source>Missing Qt help project file.</source>
+        <translation>Отсутствует файл проекта справки Qt.</translation>
+    </message>
+    <message>
+        <source>
+Usage:
+
+qhelpgenerator &lt;help-project-file&gt; [options]
+
+  -o &lt;compressed-file&gt;   Generates a Qt compressed help
+                         file called &lt;compressed-file&gt;.
+                         If this option is not specified
+                         a default name will be used.
+  -c                     Checks whether all links in HTML files
+                         point to files in this help project.
+  -v                     Displays the version of 
+                         qhelpgenerator.
+
+</source>
+        <translation>
+Использование:
+
+qhelpgenerator &lt;файл-проекта-справки&gt; [ОПЦИИ]
+
+  -o &lt;сжатый-файл&gt;   Создание сжатого файла справки Qt под именем
+                     &lt;сжатый-файл&gt;. Если эта опция не указана,
+                     будет использоваться имя по умолчанию.
+  -c                 Проверка на то, чтобы все ссылки в файлах
+                     HTML указывали на файлы в этом проекте.
+  -v                 Отображение версии qhelpgenerator.
+
+</translation>
+    </message>
+    <message>
+        <source>Could not open %1.
+</source>
+        <translation>Не удалось открыть %1.</translation>
+    </message>
+    <message>
+        <source>Could not create output directory: %1
+</source>
+        <translation>Не удалось создать каталог: %1</translation>
     </message>
 </context>
 <context>

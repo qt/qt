@@ -412,7 +412,9 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
         }
         case QHttpNetworkReplyPrivate::ReadingDataState: {
            QHttpNetworkReplyPrivate *replyPrivate = reply->d_func();
-           if (replyPrivate->downstreamLimited && !replyPrivate->responseData.isEmpty() && replyPrivate->shouldEmitSignals()) {
+           if (socket->state() == QAbstractSocket::ConnectedState &&
+               replyPrivate->downstreamLimited && !replyPrivate->responseData.isEmpty() && replyPrivate->shouldEmitSignals()) {
+               // (only do the following when still connected, not when we have already been disconnected and there is still data)
                // We already have some HTTP body data. We don't read more from the socket until
                // this is fetched by QHttpNetworkAccessHttpBackend. If we would read more,
                // we could not limit our read buffer usage.
@@ -421,7 +423,6 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
                // to the read buffer maximum size, but we don't care since they should be small.
                return;
            }
-
             if (!replyPrivate->isChunked() && !replyPrivate->autoDecompress
                 && replyPrivate->bodyLength > 0) {
                 // bulk files like images should fulfill these properties and
