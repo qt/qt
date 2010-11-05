@@ -1,7 +1,8 @@
 import QtQuick 1.0
 
 Rectangle {
-    property string skip: "Incorrect start: QTBUG-14794"
+    id: root
+    property int current: 0
     width: 600; height: 300; color: "white"
 
     ListModel {
@@ -57,7 +58,9 @@ Rectangle {
         id: list1
         width: 200; height: parent.height
         model: myModel; delegate: myDelegate
-        highlight: myHighlight; currentIndex: list3.currentIndex
+        highlight: myHighlight
+        currentIndex: root.current
+        onCurrentIndexChanged: root.current = currentIndex
         focus: true
     }
     ListView {
@@ -67,13 +70,14 @@ Rectangle {
         preferredHighlightBegin: 80
         preferredHighlightEnd: 220
         highlightRangeMode: "ApplyRange"
-        currentIndex: list1.currentIndex
+        currentIndex: root.current
     }
     ListView {
         id: list3
         x: 400; width: 200; height: parent.height
         model: myModel; delegate: myDelegate; highlight: myHighlight
-        currentIndex: list1.currentIndex
+        currentIndex: root.current
+        onCurrentIndexChanged: root.current = currentIndex
         preferredHighlightBegin: 125
         preferredHighlightEnd: 125
         highlightRangeMode: "StrictlyEnforceRange"
