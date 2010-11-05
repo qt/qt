@@ -43,6 +43,7 @@
 #include "qs60maindocument.h"
 #include "qcoreapplication.h"
 #include "qevent.h"
+#include "private/qcore_symbian_p.h"
 
 #include <exception>
 
@@ -114,7 +115,7 @@ CFileStore *QS60MainDocument::OpenFileL(TBool aDoOpen, const TDesC &aFilename, R
 {
     if (aDoOpen) {
         QCoreApplication* app = QCoreApplication::instance();
-        QString qname((QChar*)aFilename.Ptr(), aFilename.Length());
+        QString qname = qt_TDesC2QString(aFilename);
         QFileOpenEvent* event = new QFileOpenEvent(qname);
         app->postEvent(app, event);
     }
@@ -129,7 +130,7 @@ void QS60MainDocument::OpenFileL(CFileStore *&aFileStore, RFile &aFile)
     QCoreApplication* app = QCoreApplication::instance();
     TFileName name;
     aFile.FullName(name);
-    QString qname((QChar*)name.Ptr(), name.Length());
+    QString qname = qt_TDesC2QString(name);
     QFileOpenEvent* event = new QFileOpenEvent(qname);
     app->postEvent(app, event);
     aFileStore = 0;
