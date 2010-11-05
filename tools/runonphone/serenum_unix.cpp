@@ -100,7 +100,7 @@ QList<SerialPortId> enumerateSerialPorts(int loglevel)
                             // data transmission.
                             // the extra info stores that as a index for the interface
                             if (buf[0] >= 5 && buf[1] == 36 && buf[2] == 6) { // CDC Union
-                                for (int i = 4; i < buf[0]; i++)
+                                for (int i = 3; i < buf[0]; i++)
                                     usableInterfaces.append((int) buf[i]);
                             }
                             size -= buf[0];
