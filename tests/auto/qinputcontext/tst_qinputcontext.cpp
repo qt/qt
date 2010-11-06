@@ -158,8 +158,8 @@ public:
     }
 
     // For some reason, the test fails if using processEvents instead of an event loop
-    // with a zero timer to quit it, so use the timer.
-#define KEY_WAIT 0
+    // with a timer to quit it, so use the timer.
+#define KEY_WAIT 10
 
     void replay(QWidget *w)
     {
