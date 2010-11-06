@@ -8,3 +8,5 @@ QT += opengl
 
 # Input
 SOURCES += main.cpp
+
+include(../trusted-benchmarks.pri)
