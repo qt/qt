@@ -335,7 +335,6 @@ public:
     QHash<QToolBar *, ToolBarSaveState> toolbarSaveState;
     QHash<QString, QToolBar *> cocoaItemIDToToolbarHash;
     void insertIntoMacToolbar(QToolBar *before, QToolBar *after);
-    void updateUnifiedToolbarOffset();
     void removeFromMacToolbar(QToolBar *toolbar);
     void cleanUpMacToolbarItems();
     void fixSizeInUnifiedToolbar(QToolBar *tb) const;
@@ -346,6 +345,7 @@ public:
 
 #ifdef QT_MAC_USE_COCOA
     QUnifiedToolbarSurface *unifiedSurface;
+    void updateUnifiedToolbarOffset();
 #endif // QT_MAC_USE_COCOA
 
 #endif // Q_WS_MAC

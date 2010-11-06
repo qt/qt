@@ -474,6 +474,7 @@ void QMainWindowLayout::insertIntoMacToolbar(QToolBar *before, QToolBar *toolbar
 #endif
 }
 
+#ifdef QT_MAC_USE_COCOA
 void QMainWindowLayout::updateUnifiedToolbarOffset()
 {
     QPoint offset(0, 0);
@@ -483,6 +484,8 @@ void QMainWindowLayout::updateUnifiedToolbarOffset()
         qtoolbarsInUnifiedToolbarList.at(i)->d_func()->toolbar_offset = offset;
     }
 }
+#endif // QT_MAC_USE_COCOA
+
 
 void QMainWindowLayout::removeFromMacToolbar(QToolBar *toolbar)
 {
