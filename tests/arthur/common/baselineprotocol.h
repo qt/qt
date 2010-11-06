@@ -45,25 +45,29 @@
 #include <QTcpSocket>
 #include <QImage>
 #include <QVector>
+#include <QMap>
 
 #define QLS QLatin1String
 #define QLC QLatin1Char
 
 #define FileFormat "png"
 
-struct PlatformInfo
-{
-    PlatformInfo(bool useLocal = false);
+const QString PI_HostName(QLS("HostName"));
+const QString PI_HostAddress(QLS("HostAddress"));
+const QString PI_OSName(QLS("OSName"));
+const QString PI_OSVersion(QLS("OSVersion"));
+const QString PI_QtVersion(QLS("QtVersion"));
+const QString PI_BuildKey(QLS("BuildKey"));
+const QString PI_GitCommit(QLS("GitCommit"));
+const QString PI_QMakeSpec(QLS("QMakeSpec"));
+const QString PI_PulseGitBranch(QLS("PulseGitBranch"));
+const QString PI_PulseTestrBranch(QLS("PulseTestrBranch"));
 
-    QString hostName;
-    QString osName;
-    int     osVersion;
-    QString qtVersion;
-    QString buildKey;
-    QString gitCommit;
+class PlatformInfo : public QMap<QString, QString>
+{
+public:
+    PlatformInfo(bool useLocal = false);
 };
-QDataStream & operator<< (QDataStream &stream, const PlatformInfo &p);
-QDataStream & operator>> (QDataStream& stream, PlatformInfo& p);
 
 struct ImageItem
 {
@@ -117,7 +121,7 @@ public:
     // Important constants here
     // ****************************************************
     enum Constant {
-        ProtocolVersion = 1,
+        ProtocolVersion = 2,
         ServerPort = 54129,
         Timeout = 10000
     };
