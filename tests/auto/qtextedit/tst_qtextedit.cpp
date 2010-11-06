@@ -2163,6 +2163,9 @@ void tst_QTextEdit::noWrapBackgrounds()
     QTextEdit edit;
     edit.setLineWrapMode(QTextEdit::NoWrap);
 
+    // hide the cursor in order to make the image comparison below reliable
+    edit.setCursorWidth(0);
+
     QTextFrame *root = edit.document()->rootFrame();
     QTextFrameFormat frameFormat = root->frameFormat();
     frameFormat.setLeftMargin(2);
@@ -2177,8 +2180,6 @@ void tst_QTextEdit::noWrapBackgrounds()
 
     layout->addWidget(&edit);
     topLevel.show();
-
-    QTest::qWait(1000);
 
     QImage img = QPixmap::grabWidget(edit.viewport()).toImage();
     QCOMPARE(img, img.mirrored(true, false));
