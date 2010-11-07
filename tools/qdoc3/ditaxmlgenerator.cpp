@@ -5404,6 +5404,7 @@ void DitaXmlGenerator::beginSubPage(const Location& location,
                                     const QString& fileName)
 {
     PageGenerator::beginSubPage(location,fileName);
+    (void) lookupGuidMap(fileName);
     QXmlStreamWriter* writer = new QXmlStreamWriter(out().device());
     xmlWriterStack.push(writer);
     writer->setAutoFormatting(true);
