@@ -48,6 +48,7 @@
 #endif
 
 #include <private/qstylesheetstyle_p.h>
+#include "../platformquirks.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -822,6 +823,8 @@ void tst_QStyleSheetStyle::focusColors()
 
 void tst_QStyleSheetStyle::hoverColors()
 {
+    if (!PlatformQuirks::haveMouseCursor())
+        QSKIP("No mouse Cursor on this platform",SkipAll);
     QList<QWidget *> widgets;
     widgets << new QPushButton("TESTING");
     widgets << new QLineEdit("TESTING");
@@ -979,10 +982,11 @@ void tst_QStyleSheetStyle::background()
 
 void tst_QStyleSheetStyle::tabAlignement()
 {
-    QTabWidget tabWidget;
+    QWidget topLevel;
+    QTabWidget tabWidget(&topLevel);
     tabWidget.addTab(new QLabel("tab1"),"tab1");
     tabWidget.resize(QSize(400,400));
-    tabWidget.show();
+    topLevel.show();
     QTest::qWaitForWindowShown(&tabWidget);
     QTest::qWait(50);
     QTabBar *bar = qFindChild<QTabBar*>(&tabWidget);

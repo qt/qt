@@ -25,6 +25,49 @@
     </message>
 </context>
 <context>
+    <name>AbstractItemEditor</name>
+    <message>
+        <source>Selectable</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Editable</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>DragEnabled</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>DropEnabled</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>UserCheckable</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Tristate</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Unchecked</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>PartiallyChecked</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Checked</source>
+        <translation></translation>
+    </message>
+</context>
+<context>
     <name>AddLinkDialog</name>
     <message>
         <source>Insert Link</source>
@@ -304,7 +347,7 @@
     </message>
     <message>
         <source>Change Z-order of &apos;%1&apos;</source>
-        <translation type="unfinished">Изменить порядок удалённости &apos;%1&apos;</translation>
+        <translation>Изменить порядок удалённости &apos;%1&apos;</translation>
     </message>
     <message>
         <source>Raise &apos;%1&apos;</source>
@@ -324,11 +367,11 @@
     </message>
     <message>
         <source>Promote to custom widget</source>
-        <translation type="unfinished">Преобразовать в пользовательский виджет</translation>
+        <translation>Преобразовать в пользовательский виджет</translation>
     </message>
     <message>
         <source>Demote from custom widget</source>
-        <translation type="unfinished">Преобразовать из пользовательского виджета</translation>
+        <translation>Преобразовать из пользовательского виджета</translation>
     </message>
     <message>
         <source>Lay out using grid</source>
@@ -348,7 +391,7 @@
     </message>
     <message>
         <source>Simplify Grid Layout</source>
-        <translation type="unfinished">Упрощённая компоновка по сетке</translation>
+        <translation>Упрощённая компоновка по сетке</translation>
     </message>
     <message>
         <source>Move Page</source>
@@ -396,7 +439,7 @@
     </message>
     <message>
         <source>Add Dock Window</source>
-        <translation type="unfinished">Добавить прикрепляемое окно</translation>
+        <translation>Добавить прикрепляемое окно</translation>
     </message>
     <message>
         <source>Adjust Size of &apos;%1&apos;</source>
@@ -404,11 +447,11 @@
     </message>
     <message>
         <source>Change Form Layout Item Geometry</source>
-        <translation type="unfinished">Изменить геометрию элементов компоновки столбцами</translation>
+        <translation>Изменить геометрию элемента компоновки столбцами</translation>
     </message>
     <message>
         <source>Change Layout Item Geometry</source>
-        <translation type="unfinished">Изменить геометрию элементов компоновки</translation>
+        <translation>Изменить геометрию элемента компоновки</translation>
     </message>
     <message>
         <source>Delete Subwindow</source>
@@ -653,7 +696,7 @@
     </message>
     <message>
         <source>Promoted Widgets</source>
-        <translation type="unfinished">Преобразованные виджеты</translation>
+        <translation>Преобразованные виджеты</translation>
     </message>
     <message>
         <source>Unable to launch %1.</source>
@@ -777,7 +820,7 @@
     <message>
         <source>Embedded Design</source>
         <extracomment>Tab in preferences dialog</extracomment>
-        <translation type="unfinished">Оформление портативных устройств</translation>
+        <translation>Оформление портативных устройств</translation>
     </message>
     <message>
         <source>Device Profiles</source>
@@ -852,6 +895,7 @@ Parsing grid layout minimum size values</extracomment>
     <name>FormEditorOptionsPage</name>
     <message>
         <source>%1 %</source>
+        <extracomment>Zoom percentage</extracomment>
         <translation>%1 %</translation>
     </message>
     <message>
@@ -876,7 +920,7 @@ Parsing grid layout minimum size values</extracomment>
     <name>FormLayoutRowDialog</name>
     <message>
         <source>Add Form Layout Row</source>
-        <translation type="unfinished">Добавление строки  компоновщика формы</translation>
+        <translation>Добавление строки  компоновщика столбцами (QFormLayout)</translation>
     </message>
     <message>
         <source>&amp;Label text:</source>
@@ -962,7 +1006,7 @@ Parsing grid layout minimum size values</extracomment>
     </message>
     <message>
         <source>Embedded Design</source>
-        <translation type="unfinished">Оформление портативных устройств</translation>
+        <translation>Оформление портативных устройств</translation>
     </message>
 </context>
 <context>
@@ -1131,7 +1175,7 @@ Parsing grid layout minimum size values</extracomment>
     <message>
         <source>Not used</source>
         <extracomment>Usage of promoted widgets</extracomment>
-        <translation>Не используется</translation>
+        <translation>Не используются</translation>
     </message>
 </context>
 <context>
@@ -1205,11 +1249,11 @@ This indicates an inconsistency in the ui-file.</source>
     <name>QAxWidgetTaskMenu</name>
     <message>
         <source>Set Control</source>
-        <translation>Установить элемент управления</translation>
+        <translation>Задать элемент управления</translation>
     </message>
     <message>
         <source>Reset Control</source>
-        <translation type="unfinished">Удалить элемент управления</translation>
+        <translation>Сбросить элемент управления</translation>
     </message>
     <message>
         <source>Licensed Control</source>
@@ -1224,7 +1268,7 @@ This indicates an inconsistency in the ui-file.</source>
     <name>QCoreApplication</name>
     <message>
         <source>%1 is not a promoted class.</source>
-        <translation type="unfinished">%1 не является преобразованным классом.</translation>
+        <translation>%1 не является преобразованным классом.</translation>
     </message>
     <message>
         <source>The base class %1 is invalid.</source>
@@ -1236,7 +1280,7 @@ This indicates an inconsistency in the ui-file.</source>
     </message>
     <message>
         <source>Promoted Widgets</source>
-        <translation type="unfinished">Преобразованные виджеты</translation>
+        <translation>Преобразованные виджеты</translation>
     </message>
     <message>
         <source>The class %1 cannot be removed</source>
@@ -1567,11 +1611,11 @@ Would you like to retry?</source>
     <name>QDesignerAxWidget</name>
     <message>
         <source>Reset control</source>
-        <translation type="unfinished">Сбросить элемент управления</translation>
+        <translation>Сбросить элемент управления</translation>
     </message>
     <message>
         <source>Set control</source>
-        <translation>Установить элемент управления</translation>
+        <translation>Задать элемент управления</translation>
     </message>
     <message>
         <source>Control loaded</source>
@@ -1579,7 +1623,7 @@ Would you like to retry?</source>
     </message>
     <message>
         <source>A COM exception occurred when executing a meta call of type %1, index %2 of &quot;%3&quot;.</source>
-        <translation type="unfinished">Возникло исключение COM при выполнении мета-вызова типа %1, индекс %2 &quot;%3&quot;.</translation>
+        <translation>Возникло исключение COM при выполнении мета-вызова типа %1, индекс %2 в &quot;%3&quot;.</translation>
     </message>
 </context>
 <context>
@@ -1838,7 +1882,7 @@ Container pages should only be added by specifying them in XML returned by the d
     </message>
     <message>
         <source>Backup Information</source>
-        <translation type="unfinished">Информация о резервированых копиях</translation>
+        <translation>Информация о резервных копиях</translation>
     </message>
     <message>
         <source>The last session of Designer was not terminated correctly. Backup files were left behind. Do you want to load them?</source>
@@ -2232,27 +2276,27 @@ Empty class name passed to widget factory method</extracomment>
     </message>
     <message>
         <source>Linear</source>
-        <translation type="unfinished">Линейный</translation>
+        <translation>Линейный</translation>
     </message>
     <message>
         <source>Radial</source>
-        <translation type="unfinished">Радиальный</translation>
+        <translation>Радиальный</translation>
     </message>
     <message>
         <source>Conical</source>
-        <translation type="unfinished">Конический</translation>
+        <translation>Конический</translation>
     </message>
     <message>
         <source>Pad</source>
-        <translation type="unfinished">Равномерная</translation>
+        <translation>Равномерная</translation>
     </message>
     <message>
         <source>Repeat</source>
-        <translation type="unfinished">Цикличная</translation>
+        <translation>Цикличная</translation>
     </message>
     <message>
         <source>Reflect</source>
-        <translation type="unfinished">Зеркальная</translation>
+        <translation>Зеркальная</translation>
     </message>
     <message>
         <source>Form</source>
@@ -2514,6 +2558,10 @@ Empty class name passed to widget factory method</extracomment>
 <context>
     <name>QtLocalePropertyManager</name>
     <message>
+        <source>&lt;Invalid&gt;</source>
+        <translation>&lt;Некорректное значение&gt;</translation>
+    </message>
+    <message>
         <source>%1, %2</source>
         <translation>%1, %2</translation>
     </message>
@@ -2651,7 +2699,7 @@ Do you want to replace it?</source>
     </message>
     <message>
         <source>newPrefix</source>
-        <translation type="unfinished">newPrefix</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&lt;p&gt;&lt;b&gt;Warning:&lt;/b&gt; The file&lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;&lt;p&gt;is outside of the current resource file&apos;s parent directory.&lt;/p&gt;</source>
@@ -2883,7 +2931,7 @@ to
     <name>QtSizePolicyPropertyManager</name>
     <message>
         <source>&lt;Invalid&gt;</source>
-        <translation>&lt;Неверный&gt;</translation>
+        <translation>&lt;Некорректное значение&gt;</translation>
     </message>
     <message>
         <source>[%1, %2, %3, %4]</source>
@@ -3174,23 +3222,23 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <source>Dock views</source>
-        <translation type="unfinished">Прикрепляемые панели</translation>
+        <translation>Прикрепляемые панели</translation>
     </message>
     <message>
         <source>File</source>
-        <translation type="unfinished">Файл</translation>
+        <translation>Файл</translation>
     </message>
     <message>
         <source>Edit</source>
-        <translation type="unfinished">Правка</translation>
+        <translation>Правка</translation>
     </message>
     <message>
         <source>Tools</source>
-        <translation type="unfinished">Инструменты</translation>
+        <translation>Инструменты</translation>
     </message>
     <message>
         <source>Form</source>
-        <translation type="unfinished">Форма</translation>
+        <translation>Форма</translation>
     </message>
     <message>
         <source>Toolbars</source>
@@ -3220,11 +3268,11 @@ Do you want overwrite the template?</source>
     <name>VideoPlayerTaskMenu</name>
     <message>
         <source>Available Mime Types</source>
-        <translation type="unfinished">Доступные типы данных</translation>
+        <translation>Доступные типы данных</translation>
     </message>
     <message>
         <source>Display supported mime types...</source>
-        <translation type="unfinished">Показывать поддерживаемые типы данных...</translation>
+        <translation>Показать поддерживаемые типы данных...</translation>
     </message>
     <message>
         <source>Load...</source>
@@ -3306,11 +3354,11 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <source>Icon View</source>
-        <translation type="unfinished">Значки</translation>
+        <translation>Значки</translation>
     </message>
     <message>
         <source>Detailed View</source>
-        <translation type="unfinished">Подробно</translation>
+        <translation>Подробно</translation>
     </message>
     <message>
         <source>New action</source>
@@ -3902,7 +3950,7 @@ Do you want overwrite the template?</source>
     <name>qdesigner_internal::FormLayoutMenu</name>
     <message>
         <source>Add form layout row...</source>
-        <translation>Добавить строку компоновщика формы...</translation>
+        <translation>Добавить строку компоновки в 2 столбца...</translation>
     </message>
 </context>
 <context>
@@ -3953,7 +4001,7 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <source>Cannot paste widgets. Designer could not find a container without a layout to paste into.</source>
-        <translation type="unfinished">Не удалось вставить виджеты. Qt Designer не смог найти контейнер без компоновщика для вставки виджетов.</translation>
+        <translation>Не удалось вставить виджеты. Qt Designer не смог найти контейнер без компоновщика для вставки виджетов.</translation>
     </message>
     <message>
         <source>Break the layout of the container you want to paste into, select this container and then paste again.</source>
@@ -4083,11 +4131,11 @@ Do you want overwrite the template?</source>
     </message>
     <message>
         <source>Lay Out in a &amp;Form Layout</source>
-        <translation>Скомпоновать в &amp;две колонки</translation>
+        <translation>Скомпоновать в &amp;два столбца</translation>
     </message>
     <message>
         <source>Lays out the selected widgets in a form layout</source>
-        <translation>Компонует выделенные виджеты в две колонки (QFormLayout)</translation>
+        <translation>Компонует выделенные виджеты в два столбца (QFormLayout)</translation>
     </message>
     <message>
         <source>Lay Out in a &amp;Grid</source>
@@ -4548,7 +4596,7 @@ Please select another name.</source>
     </message>
     <message>
         <source>Embedded Design</source>
-        <translation type="unfinished">Оформление портативных устройств</translation>
+        <translation>Оформление портативных устройств</translation>
     </message>
     <message>
         <source>Device:</source>
@@ -4567,7 +4615,7 @@ Please select another name.</source>
     </message>
     <message>
         <source>New Promoted Class</source>
-        <translation type="unfinished">Новый преобразованный класс</translation>
+        <translation>Новый преобразованный класс</translation>
     </message>
     <message>
         <source>Base class name:</source>
@@ -4575,7 +4623,7 @@ Please select another name.</source>
     </message>
     <message>
         <source>Promoted class name:</source>
-        <translation type="unfinished">Имя преобразованного класса:</translation>
+        <translation>Имя преобразованного класса:</translation>
     </message>
     <message>
         <source>Header file:</source>
@@ -4644,7 +4692,7 @@ Please select another name.</source>
     </message>
     <message>
         <source>Compute Details</source>
-        <translation type="unfinished">Расчитывать детали</translation>
+        <translation type="unfinished">Рассчитывать детали</translation>
     </message>
     <message>
         <source>Quick</source>
@@ -4671,7 +4719,7 @@ Please select another name.</source>
     <name>qdesigner_internal::PaletteEditorButton</name>
     <message>
         <source>Change Palette</source>
-        <translation type="unfinished">Изменить палитру</translation>
+        <translation>Изменить палитру</translation>
     </message>
 </context>
 <context>
@@ -4740,6 +4788,14 @@ Please select another name.</source>
     <message>
         <source>Scan for newly installed custom widget plugins.</source>
         <translation>Поиск вновь установленных модулей пользовательских виджетов.</translation>
+    </message>
+    <message>
+        <source>Loaded Plugins</source>
+        <translation>Загруженные модули</translation>
+    </message>
+    <message>
+        <source>Failed Plugins</source>
+        <translation>Незагруженные модули</translation>
     </message>
     <message>
         <source>Qt Designer couldn&apos;t find any plugins</source>
@@ -4898,7 +4954,7 @@ ate the goose who was loose.</source>
     </message>
     <message>
         <source>Global include</source>
-        <translation>Глобальное включение</translation>
+        <translation type="unfinished">Глобальное включение</translation>
     </message>
     <message>
         <source>Usage</source>
@@ -4909,11 +4965,11 @@ ate the goose who was loose.</source>
     <name>qdesigner_internal::PromotionTaskMenu</name>
     <message>
         <source>Promoted widgets...</source>
-        <translation type="unfinished">Преобразованные виджеты...</translation>
+        <translation>Преобразованные виджеты...</translation>
     </message>
     <message>
         <source>Promote to ...</source>
-        <translation type="unfinished">Преобразовать в ...</translation>
+        <translation>Преобразовать в ...</translation>
     </message>
     <message>
         <source>Change signals/slots...</source>
@@ -4921,11 +4977,11 @@ ate the goose who was loose.</source>
     </message>
     <message>
         <source>Promote to</source>
-        <translation type="unfinished">Преобразовать в</translation>
+        <translation>Преобразовать в</translation>
     </message>
     <message>
         <source>Demote to %1</source>
-        <translation type="unfinished">Преобразовать в %1</translation>
+        <translation>Преобразовать в %1</translation>
     </message>
 </context>
 <context>
@@ -4988,15 +5044,15 @@ Class: %2</source>
     <name>qdesigner_internal::QDesignerPromotionDialog</name>
     <message>
         <source>Promoted Widgets</source>
-        <translation type="unfinished">Преобразованные виджеты</translation>
+        <translation>Преобразованные виджеты</translation>
     </message>
     <message>
         <source>Promoted Classes</source>
-        <translation type="unfinished">Преобразованные классы</translation>
+        <translation>Преобразованные классы</translation>
     </message>
     <message>
         <source>Promote</source>
-        <translation type="unfinished">Преобразовать</translation>
+        <translation>Преобразовать</translation>
     </message>
     <message>
         <source>Change signals/slots...</source>
@@ -5227,7 +5283,7 @@ Class: %2</source>
     </message>
     <message>
         <source>Source</source>
-        <translation type="unfinished">Исходник</translation>
+        <translation>Исходник</translation>
     </message>
     <message>
         <source>&amp;OK</source>
@@ -5600,7 +5656,7 @@ Class: %2</source>
     </message>
     <message>
         <source>Edit Tree Widget</source>
-        <translation type="unfinished">Изменение виджета Дерево</translation>
+        <translation>Изменение виджета Дерево</translation>
     </message>
     <message>
         <source>&amp;Items</source>
@@ -5681,7 +5737,7 @@ Class: %2</source>
     <name>qdesigner_internal::WidgetBoxTreeWidget</name>
     <message>
         <source>Scratchpad</source>
-        <translation type="unfinished">Блокнот</translation>
+        <translation>Блокнот</translation>
     </message>
     <message>
         <source>Custom Widgets</source>
@@ -5742,7 +5798,7 @@ Class: %2</source>
     </message>
     <message>
         <source>The current page of the container &apos;%1&apos; (%2) could not be determined while creating a layout.This indicates an inconsistency in the ui-file, probably a layout being constructed on a container widget.</source>
-        <translation type="unfinished">При создании компоновщика не удалось определить текущую страницу контейнера &apos;%1&apos; (%2). Это указывает на некорректность файла ui - возможно, компоновщик был создан для контейнерного виджета.</translation>
+        <translation>При создании компоновщика не удалось определить текущую страницу контейнера &apos;%1&apos; (%2). Это указывает на некорректность файла ui - возможно, компоновщик был создан для виджета контейнерного типа.</translation>
     </message>
     <message>
         <source>Attempt to add a layout to a widget &apos;%1&apos; (%2) which already has an unmanaged layout of type %3.

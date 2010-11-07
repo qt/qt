@@ -305,6 +305,10 @@ private Q_SLOTS:
 
     void qtbug4121unknownAuthentication();
 
+    void qtbug13431replyThrottling();
+
+    void httpWithNoCredentialUsage();
+
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 };
@@ -3471,11 +3475,11 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp_data()
 {
     QTest::addColumn<bool>("https");
     QTest::addColumn<int>("bufferSize");
-    QTest::newRow("http, no limit") << false << 0;
-    QTest::newRow("http, limited") << false << 4096;
+    QTest::newRow("http+unlimited") << false << 0;
+    QTest::newRow("http+limited") << false << 4096;
 #ifndef QT_NO_OPENSSL
-    QTest::newRow("https, no limit") << true << 0;
-    QTest::newRow("https, limited") << true << 4096;
+    QTest::newRow("https+unlimited") << true << 0;
+    QTest::newRow("https+limited") << true << 4096;
 #endif
 }
 
@@ -3548,6 +3552,7 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
         const int allowedDeviation = 16; // TODO find out why the send rate is 13% faster currently
         const int minRate = rate * 1024 * (100-allowedDeviation) / 100;
         const int maxRate = rate * 1024 * (100+allowedDeviation) / 100;
+        qDebug() << minRate << "<="<< server.transferRate << "<=" << maxRate << "?";
         QVERIFY(server.transferRate >= minRate);
         QVERIFY(server.transferRate <= maxRate);
     }
@@ -4908,6 +4913,83 @@ void tst_QNetworkReply::qtbug4121unknownAuthentication()
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(authSpy.count(), 0);
+    QCOMPARE(finishedSpy.count(), 1);
+    QCOMPARE(errorSpy.count(), 1);
+
+    QCOMPARE(reply->error(), QNetworkReply::AuthenticationRequiredError);
+}
+
+class QtBug13431Helper : public QObject {
+    Q_OBJECT
+public:
+    QNetworkReply* m_reply;
+    QTimer m_dlTimer;
+public slots:
+    void replyFinished(QNetworkReply*) {
+        QTestEventLoop::instance().exitLoop();
+    }
+
+    void onReadAndReschedule() {
+        const qint64 bytesReceived = m_reply->bytesAvailable();
+        if (bytesReceived) {
+           QByteArray data = m_reply->read(bytesReceived);
+           // reschedule read
+           const int millisecDelay = static_cast<int>(bytesReceived * 1000 / m_reply->readBufferSize());
+           m_dlTimer.start(millisecDelay);
+        }
+        else {
+           // reschedule read
+           m_dlTimer.start(200);
+        }
+    }
+};
+
+void tst_QNetworkReply::qtbug13431replyThrottling()
+{
+    QtBug13431Helper helper;
+
+    QNetworkAccessManager nam;
+    connect(&nam, SIGNAL(finished(QNetworkReply*)), &helper, SLOT(replyFinished(QNetworkReply*)));
+
+    // Download a bigger file
+    QNetworkRequest netRequest(QUrl("http://qt-test-server/qtest/bigfile"));
+    helper.m_reply = nam.get(netRequest);
+    // Set the throttle
+    helper.m_reply->setReadBufferSize(36000);
+
+    // Schedule a timer that tries to read
+
+    connect(&helper.m_dlTimer, SIGNAL(timeout()), &helper, SLOT(onReadAndReschedule()));
+    helper.m_dlTimer.setSingleShot(true);
+    helper.m_dlTimer.start(0);
+
+    QTestEventLoop::instance().enterLoop(30);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(helper.m_reply->isFinished());
+    QCOMPARE(helper.m_reply->error(), QNetworkReply::NoError);
+}
+
+void tst_QNetworkReply::httpWithNoCredentialUsage()
+{
+    QNetworkRequest request(QUrl("http://httptest:httptest@" + QtNetworkSettings::serverName() + "/qtest/protected/cgi-bin/md5sum.cgi"));
+    // Do not use credentials
+    request.setAttribute(QNetworkRequest::AuthenticationReuseAttribute, QNetworkRequest::Manual);
+    QNetworkAccessManager manager;
+    QNetworkReplyPtr reply = manager.get(request);
+
+    qRegisterMetaType<QNetworkReply*>("QNetworkReply*");
+    qRegisterMetaType<QAuthenticator*>("QAuthenticator*");
+    QSignalSpy authSpy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+    QSignalSpy finishedSpy(&manager, SIGNAL(finished(QNetworkReply*)));
+    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
+    QSignalSpy errorSpy(reply, SIGNAL(error(QNetworkReply::NetworkError)));
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    // We check if authenticationRequired was emitted, however we do not anything in it so it should be 401
+    QCOMPARE(authSpy.count(), 1);
     QCOMPARE(finishedSpy.count(), 1);
     QCOMPARE(errorSpy.count(), 1);
 

@@ -55,6 +55,7 @@
 #include <qtextedit.h>
 #include <private/qmainwindowlayout_p.h>
 #include <private/qdockarealayout_p.h>
+#include "../platformquirks.h"
 
 //TESTED_FILES=
 
@@ -1679,6 +1680,9 @@ void tst_QMainWindow::addToolbarAfterShow()
 
 void tst_QMainWindow::centralWidgetSize()
 {
+    if(PlatformQuirks::isAutoMaximizing())
+        QSKIP("The platform is auto maximizing, so the test makes no sense", SkipAll);;
+
     QMainWindow mainWindow;
     mainWindow.menuBar()->addMenu("menu");
 

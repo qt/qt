@@ -9,7 +9,7 @@ HTML.postheader         = " <div class=\"header\" id=\"qtdocheader\">\n" \
 			  "    <div id=\"nav-logo\">\n" \
 			  "      <a href=\"index.html\">Home</a></div>\n" \
 			  "    <a href=\"index.html\" class=\"qtref\"><span>Qt Reference Documentation</span></a>\n" \
-			  "    <div id="narrowsearch"></div>\n" \
+			  "    <div id=\"narrowsearch\"></div>\n" \
 			  "    <div id=\"nav-topright\">\n" \
 			  "      <ul>\n" \
 			  "        <li class=\"nav-topright-home\"><a href=\"http://qt.nokia.com/\">Qt HOME</a></li>\n" \
