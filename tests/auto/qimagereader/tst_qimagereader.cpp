@@ -55,6 +55,8 @@
 #include <QTcpServer>
 #include <QTimer>
 
+#include "../platformquirks.h"
+
 #if defined(Q_OS_SYMBIAN)
 # define SRCDIR "."
 #endif
@@ -315,23 +317,27 @@ void tst_QImageReader::jpegRgbCmyk()
     QImage image1(prefix + QLatin1String("YCbCr_cmyk.jpg"));
     QImage image2(prefix + QLatin1String("YCbCr_cmyk.png"));
 
-    // first, do some obvious tests
-    QCOMPARE(image1.height(), image2.height());
-    QCOMPARE(image1.width(), image2.width());
-    QCOMPARE(image1.format(), image2.format());
-    QCOMPARE(image1.format(), QImage::Format_RGB32);
+    if (PlatformQuirks::isImageLoaderImprecise()) {
+        // first, do some obvious tests
+        QCOMPARE(image1.height(), image2.height());
+        QCOMPARE(image1.width(), image2.width());
+        QCOMPARE(image1.format(), image2.format());
+        QCOMPARE(image1.format(), QImage::Format_RGB32);
 
-    // compare all the pixels with a slack of 3. This ignores rounding errors in libjpeg/libpng
-    for (int h = 0; h < image1.height(); ++h) {
-        const uchar *s1 = image1.constScanLine(h);
-        const uchar *s2 = image2.constScanLine(h);
-        for (int w = 0; w < image1.width() * 4; ++w) {
-            if (*s1 != *s2) {
-                QVERIFY2(qAbs(*s1 - *s2) <= 3, qPrintable(QString("images differ in line %1, col %2 (image1: %3, image2: %4)").arg(h).arg(w).arg(*s1, 0, 16).arg(*s2, 0, 16)));
+        // compare all the pixels with a slack of 3. This ignores rounding errors in libjpeg/libpng
+        for (int h = 0; h < image1.height(); ++h) {
+            const uchar *s1 = image1.constScanLine(h);
+            const uchar *s2 = image2.constScanLine(h);
+            for (int w = 0; w < image1.width() * 4; ++w) {
+                if (*s1 != *s2) {
+                    QVERIFY2(qAbs(*s1 - *s2) <= 3, qPrintable(QString("images differ in line %1, col %2 (image1: %3, image2: %4)").arg(h).arg(w).arg(*s1, 0, 16).arg(*s2, 0, 16)));
+                }
+                s1++;
+                s2++;
             }
-            s1++;
-            s2++;
         }
+    } else {
+        QCOMPARE(image1, image2);
     }
 }
 

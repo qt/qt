@@ -259,8 +259,10 @@ void QDeclarativeImage::setFillMode(FillMode mode)
     \qmlproperty real Image::paintedHeight
 
     These properties hold the size of the image that is actually painted.
-    In most cases it is the same as \c width and \c height, but when using a \c fillMode like
-    \c PreserveAspectFit \c paintedWidth or \c paintedHeight can be smaller than \c width and \c height.
+    In most cases it is the same as \c width and \c height, but when using a 
+    \c fillMode \c PreserveAspectFit or \c fillMode \c PreserveAspectCrop 
+    \c paintedWidth or \c paintedHeight can be smaller or larger than 
+    \c width and \c height of the Image element.
 */
 qreal QDeclarativeImage::paintedWidth() const
 {
@@ -399,6 +401,19 @@ void QDeclarativeImage::updatePaintedGeometry()
         if (heightValid() && !widthValid()) {
             setImplicitWidth(d->paintedWidth);
         }
+    } else if (d->fillMode == PreserveAspectCrop) {
+        if (!d->pix.width() || !d->pix.height())
+            return;
+        qreal widthScale = width() / qreal(d->pix.width());
+        qreal heightScale = height() / qreal(d->pix.height());
+        if (widthScale < heightScale) {
+            widthScale = heightScale;
+        } else if(heightScale < widthScale) {
+            heightScale = widthScale;
+        }
+
+        d->paintedHeight = heightScale * qreal(d->pix.height());
+        d->paintedWidth = widthScale * qreal(d->pix.width());
     } else {
         d->paintedWidth = width();
         d->paintedHeight = height();
@@ -410,6 +425,12 @@ void QDeclarativeImage::geometryChanged(const QRectF &newGeometry, const QRectF 
 {
     QDeclarativeImageBase::geometryChanged(newGeometry, oldGeometry);
     updatePaintedGeometry();
+}
+
+QRectF QDeclarativeImage::boundingRect() const
+{
+    Q_D(const QDeclarativeImage);
+    return QRectF(0, 0, qMax(d->mWidth, d->paintedWidth), qMax(d->mHeight, d->paintedHeight));
 }
 
 /*!
@@ -496,7 +517,7 @@ void QDeclarativeImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWi
             }
             if (clip()) {
                 p->save();
-                p->setClipRect(boundingRect(), Qt::IntersectClip);
+                p->setClipRect(QRectF(0, 0, d->mWidth, d->mHeight), Qt::IntersectClip);
             }
             scale.scale(widthScale, heightScale);
             QTransform old = p->transform();
