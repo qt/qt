@@ -26,7 +26,7 @@
 #include "qscriptisolate_p.h"
 #include "qscriptstring_p.h"
 #include "qscriptvalue_p.h"
-#include "qscriptisolate_p.h"
+#include "qscriptclasspropertyiterator.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -112,11 +112,15 @@ private:
     QScriptSharedDataPointer<QScriptValuePrivate> m_object;
     QList<Persistent<String> > m_names;
     QMutableListIterator<Persistent<String> > m_iterator;
+    QScriptClassPropertyIterator *m_classIterator;
+    bool m_usingClassIterator;
 };
 
 inline QScriptValueIteratorPrivate::QScriptValueIteratorPrivate(const QScriptValuePrivate* value)
     : m_object(const_cast<QScriptValuePrivate*>(value))
     , m_iterator(m_names)
+    , m_classIterator(0)
+    , m_usingClassIterator(false)
 {
     Q_ASSERT(value);
     QScriptIsolate api(engine());
@@ -126,7 +130,18 @@ inline QScriptValueIteratorPrivate::QScriptValueIteratorPrivate(const QScriptVal
         v8::HandleScope scope;
         Handle<Value> tmp = *value;
         Handle<Object> obj = Handle<Object>::Cast(tmp);
-        Local<Array> names = engine()->getOwnPropertyNames(obj);
+        Local<Array> names;
+
+        // check if the value is a script class instance
+        QScriptClassObject *data = QScriptClassObject::safeGet(value);
+        if (data
+            && data->scriptclass
+            && (m_classIterator = data->scriptclass->userCallback()->newIterator(QScriptValuePrivate::get(value)))) {
+            // we need to wrap custom iterator.
+            names = engine()->getOwnPropertyNames(data->original);
+        } else
+            names = engine()->getOwnPropertyNames(obj);
+
         uint32_t count = names->Length();
         Local<String> name;
         m_names.reserve(count); // The count is the maximal count of values.
@@ -137,7 +152,6 @@ inline QScriptValueIteratorPrivate::QScriptValueIteratorPrivate(const QScriptVal
 
         // Reinitialize the iterator.
         m_iterator = m_names;
-        //dump(QString::fromAscii("constr"));
     }
 }
 
@@ -149,33 +163,44 @@ inline QScriptValueIteratorPrivate::~QScriptValueIteratorPrivate()
         for (; i != m_names.end(); ++i) {
             (*i).Dispose();
         }
+        delete m_classIterator;
     }
 }
 
 inline bool QScriptValueIteratorPrivate::hasNext()
 {
     //dump("hasNext()");
-    return m_iterator.hasNext();
+    return m_iterator.hasNext() || (m_classIterator && m_classIterator->hasNext());
 }
 
 inline void QScriptValueIteratorPrivate::next()
 {
     // FIXME (Qt5) This method should return a value (QTBUG-11226).
     //dump("next();");
-    m_iterator.next();
+    if (m_iterator.hasNext())
+        m_iterator.next();
+    else if (m_classIterator) {
+        m_usingClassIterator = true;
+        m_classIterator->next();
+    }
 }
 
 inline bool QScriptValueIteratorPrivate::hasPrevious()
 {
     //dump("hasPrevious()");
-    return m_iterator.hasPrevious();
+    return (m_classIterator && m_classIterator->hasPrevious()) || m_iterator.hasPrevious();
 }
 
 inline void QScriptValueIteratorPrivate::previous()
 {
     // FIXME (Qt5) This method should return a value (QTBUG-11226).
     //dump("previous();");
-    m_iterator.previous();
+    if (m_classIterator && m_classIterator->hasPrevious())
+        m_classIterator->previous();
+    else {
+        m_usingClassIterator = false;
+        m_iterator.previous();
+    }
 }
 
 inline QString QScriptValueIteratorPrivate::name() const
@@ -184,6 +209,8 @@ inline QString QScriptValueIteratorPrivate::name() const
     if (!isValid())
         return QString();
 
+    if (m_usingClassIterator)
+        return m_classIterator->name().toString();
     return QScriptConverter::toString(m_iterator.value());
 }
 
@@ -192,7 +219,13 @@ inline QScriptPassPointer<QScriptStringPrivate> QScriptValueIteratorPrivate::scr
     //dump("scriptName");
     if (!isValid())
         return new QScriptStringPrivate();
-    return new QScriptStringPrivate(engine(), m_iterator.value());
+    // FIXME it could be faster
+    Handle<String> name;
+    if (m_usingClassIterator)
+        name = *QScriptStringPrivate::get(m_classIterator->name());
+    else
+        name = m_iterator.value();
+    return new QScriptStringPrivate(engine(), name);
 }
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptValueIteratorPrivate::value() const
@@ -201,6 +234,8 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValueIteratorPrivate::valu
     if (!isValid())
         return new QScriptValuePrivate();
     // FIXME it could be faster!
+    if (m_usingClassIterator)
+        return m_object->property(m_classIterator->name().toString(), QScriptValue::ResolveLocal);
     return m_object->property(QScriptConverter::toString(m_iterator.value()), QScriptValue::ResolveLocal);
 }
 
@@ -208,6 +243,8 @@ inline void QScriptValueIteratorPrivate::setValue(const QScriptValuePrivate* val
 {
     if (!isValid())
         return;
+    if (m_usingClassIterator)
+        m_object->setProperty(m_classIterator->name(), const_cast<QScriptValuePrivate*>(value));
     m_object->setProperty(QScriptConverter::toString(m_iterator.value()), const_cast<QScriptValuePrivate*>(value));
 }
 
@@ -216,6 +253,10 @@ inline void QScriptValueIteratorPrivate::remove()
     //dump("remove();");
     if (!isValid())
         return;
+    if (m_usingClassIterator) {
+        m_object->deleteProperty(m_classIterator->name());
+        return;
+    }
     if (m_object->deleteProperty(QScriptConverter::toString(m_iterator.value())))
         m_iterator.remove();
 }
@@ -224,18 +265,26 @@ inline void QScriptValueIteratorPrivate::toFront()
 {
     //dump("toFront();");
     m_iterator.toFront();
+    if (m_classIterator)
+        m_classIterator->toFront();
 }
 
 inline void QScriptValueIteratorPrivate::toBack()
 {
     //dump("toBack();");
     m_iterator.toBack();
+    if (m_classIterator)
+        m_classIterator->toBack();
 }
 
 QScriptValue::PropertyFlags QScriptValueIteratorPrivate::flags() const
 {
     if (!isValid())
         return QScriptValue::PropertyFlags(0);
+
+    v8::HandleScope scope;
+    if (m_usingClassIterator)
+        return m_object->propertyFlags(QScriptConverter::toString(m_classIterator->name()), QScriptValue::ResolveLocal);
     return m_object->propertyFlags(QScriptConverter::toString(m_iterator.value()), QScriptValue::ResolveLocal);
 }
 

@@ -1035,7 +1035,7 @@ QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QScriptString& nam
 {
     Q_D(const QScriptValue);
     QScriptIsolate api(d->engine());
-    return d->propertyFlags(QScriptStringPrivate::get(name)->m_string, mode);
+    return d->propertyFlags(QScriptStringPrivate::get(name), mode);
 }
 
 /*!

@@ -129,6 +129,7 @@ public:
     inline QScriptPassPointer<QScriptValuePrivate> property(T name, const QScriptValue::ResolveFlags& mode) const;
     inline bool deleteProperty(const QString& name);
     inline QScriptValue::PropertyFlags propertyFlags(const QString& name, const QScriptValue::ResolveFlags& mode) const;
+    inline QScriptValue::PropertyFlags propertyFlags(const QScriptStringPrivate* name, const QScriptValue::ResolveFlags& mode) const;
     inline QScriptValue::PropertyFlags propertyFlags(v8::Handle<v8::String> name, const QScriptValue::ResolveFlags& mode) const;
     inline void setData(QScriptValuePrivate* value) const;
     inline QScriptPassPointer<QScriptValuePrivate> data() const;
@@ -987,6 +988,15 @@ inline QScriptValue::PropertyFlags QScriptValuePrivate::propertyFlags(const QStr
 
     v8::HandleScope handleScope;
     return engine()->getPropertyFlags(v8::Handle<v8::Object>::Cast(m_value), QScriptConverter::toString(name), mode);
+}
+
+inline QScriptValue::PropertyFlags QScriptValuePrivate::propertyFlags(const QScriptStringPrivate* name, const QScriptValue::ResolveFlags& mode) const
+{
+    if (!isObject())
+        return QScriptValue::PropertyFlags(0);
+
+    v8::HandleScope handleScope;
+    return engine()->getPropertyFlags(v8::Handle<v8::Object>::Cast(m_value), static_cast<v8::Handle<v8::String> >(*name), mode);
 }
 
 inline QScriptValue::PropertyFlags QScriptValuePrivate::propertyFlags(v8::Handle<v8::String> name, const QScriptValue::ResolveFlags& mode) const

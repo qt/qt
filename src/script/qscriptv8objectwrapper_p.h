@@ -59,7 +59,6 @@ template <typename T>
 static v8::Handle<v8::Value> namedPropertySetter(v8::Local<v8::String> property,
                                                   v8::Local<v8::Value> value,
                                                   const v8::AccessorInfo &info)
-
 {
     v8::HandleScope handleScope;
     v8::Local<v8::Object> self = info.This();
@@ -68,6 +67,18 @@ static v8::Handle<v8::Value> namedPropertySetter(v8::Local<v8::String> property,
     Q_ASSERT(data != 0);
     QScriptContextPrivate qScriptContext(data->engine, &info);
     return handleScope.Close(data->setProperty(property, value));
+}
+
+template <typename T>
+static v8::Handle<v8::Array> namedPropertyEnumerator(const v8::AccessorInfo &info)
+{
+    v8::HandleScope handleScope;
+    v8::Local<v8::Object> self = info.This();
+    Q_ASSERT(self->InternalFieldCount() == 1);
+    T *data = reinterpret_cast<T *>(self->GetPointerFromInternalField(0));
+    Q_ASSERT(data != 0);
+    QScriptContextPrivate qScriptContext(data->engine, &info);
+    return handleScope.Close(data->enumerate());
 }
 
 template <typename T>

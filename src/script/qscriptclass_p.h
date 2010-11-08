@@ -105,6 +105,7 @@ struct QScriptClassObject : QScriptV8ObjectWrapper<QScriptClassObject, &QScriptE
 
     v8::Handle<v8::Value> property(v8::Local<v8::String> property);
     v8::Handle<v8::Value> setProperty(v8::Local<v8::String> property, v8::Local<v8::Value> value);
+    v8::Handle<v8::Array> enumerate();
 
     static v8::Handle<v8::FunctionTemplate> createFunctionTemplate(QScriptEnginePrivate *engine);
     static v8::Handle<v8::Value> newInstance(QScriptClassPrivate* scriptclass, v8::Handle<v8::Object> previousValue);
