@@ -8,8 +8,14 @@ contains(TEMPLATE, ".*app") {
     } else {
         QMAKE_LIBS += $$QMAKE_LIBS_NO_QT_ENTRY
     }
-    
-    default_bin_deployment.files += $$symbianRemoveSpecialCharacters($$basename(TARGET)).exe
+
+    contains(DESTDIR, "/.*") {
+        default_bin_deployment.sources += $$DESTDIR/$$symbianRemoveSpecialCharacters($$basename(TARGET)).exe
+    } else:isEmpty(DESTDIR) {
+        default_bin_deployment.sources += $$OUT_PWD/$$symbianRemoveSpecialCharacters($$basename(TARGET)).exe
+    } else {
+        default_bin_deployment.sources += $$OUT_PWD/$$DESTDIR/$$symbianRemoveSpecialCharacters($$basename(TARGET)).exe
+    }
     default_bin_deployment.path += /sys/bin
     
     load(application_icon.prf)
