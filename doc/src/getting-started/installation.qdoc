@@ -697,187 +697,224 @@ the Symbian platform from scratch, using Linux as the build host.
 Qt for Symbian binaries can be downloaded directly so development of
 applications using Qt for Symbian can start right away.
 
-\section1 Step 1:  Setup the development environment
+\section1 Step 1: Setup the Development Environment
 
-    Qt for the Symbian platform has some requirements on the development
-    platform. The Symbian SDK for Linux as well as a cross compiler for the ARM
-    processor used on Symbian devices should be present on the development 
-    machine.
-    
-    See \l{http://qt.gitorious.org/qt/pages/QtCreatorSymbianLinux} for more details.
+Qt for the Symbian platform has some requirements on the development
+platform. The Symbian SDK for Linux as well as a cross compiler for the ARM
+processor used on Symbian devices should be present on the development 
+machine.
+
+See \l{http://qt.gitorious.org/qt/pages/QtCreatorSymbianLinux} for more details.
+
+
 \section1 Step 2: Unpack the Archive
 
-    Uncompress the \l{http://qt.nokia.com/downloads}{downloaded} source package into the
-        directory you want Qt installed, e.g. \c{/home/user/qt/%VERSION%}.
+Uncompress the \l{http://qt.nokia.com/downloads}{downloaded} source package into the
+directory you want Qt installed, e.g. \c{/home/user/qt/%VERSION%}.
+
 
 \section1 Step 3: Set the Environment Variables
 
-    In order to build and use Qt, the \c PATH environment variable needs
-    to be extended to fine Qt tools and also to find the Symbian platform tools:
+In order to build and use Qt, the \c PATH environment variable needs
+to be extended to fine Qt tools and also to find the Symbian platform tools:
 
-    First you need to set the \c EPOCROOT environment variable to point to the 
-    location of your S60 SDK:
+First you need to set the \c EPOCROOT environment variable to point to the 
+location of your S60 SDK:
 
 \snippet doc/src/snippets/code/doc_src_installation.qdoc 36
 
-    Then you can update the PATH variable;
+Then you can update the PATH variable;
 
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 37
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 37
+
 
 \section1 Step 4: Configure Qt
 
-    To configure Qt for the Symbian platform, do:
+To configure Qt for the Symbian platform, do:
 
 \snippet doc/src/snippets/code/doc_src_installation.qdoc 38
-    to build the libraries using RVCT or
+
+to build the libraries using RVCT or
 
 \snippet doc/src/snippets/code/doc_src_installation.qdoc 39
-    to build the libraries using GCCE.
+
+to build the libraries using GCCE.
+
 
 \section1 Step 5: Build Qt
 
-    To build Qt for the device, type:
+To build Qt for the device, type:
 
 \snippet doc/src/snippets/code/doc_src_installation.qdoc 40
 
-    Congratulations, Qt is now ready to use.
+Congratulations, Qt is now ready to use.
 
-\section1 Step 6: Building Qt packages for the Device
 
-    To run any application or demo on a real device, you need to install it
-    on the device. To do this you first have to create a a package for the
-    device, containing the libraries:
+\section1 Step 6: Building Qt Packages for the Device
 
-    \bold{Building a Qt package without a certificate}
+To run any application or demo on a real device, you need to install it
+on the device. To do this you first have to create a a package for the
+device, containing the libraries:
 
-            If you have no certificate, build a self signed Qt:
+\bold{Building a Qt package without a certificate}
 
-            \snippet doc/src/snippets/code/doc_src_installation.qdoc 41
+If you have no certificate, build a self signed Qt:
 
-            The Qt libraries are built with "All -Tcb" capability, so that
-            they can support all types of applications. However, these
-            capabilities are automatically lowered if you make a self-signed
-            package.
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 41
 
-    \bold{Building a Qt package with a Symbian developer certificate}
+The Qt libraries are built with "All -Tcb" capability, so that
+they can support all types of applications. However, these
+capabilities are automatically lowered if you make a self-signed
+package.
 
-            If you have a symbian-signed developer certificate, specify the
-            capabilities you can sign for, for example:
+\bold{Building a Qt package with a Symbian developer certificate}
 
-            \snippet doc/src/snippets/code/doc_src_installation.qdoc 42
-   
-    \section2  Installing Qt packages to the device.
+If you have a Symbian-signed developer certificate, specify the
+capabilities you can sign for, for example:
 
-        It is possible to install packages to a phone in Linux by putting
-        the package on the phone memory card and then installing manually
-        from the phone menu. However, this is tedious and will not work
-        on phones without a memory card, so the method recommended by Qt is
-        to use the App TRK tool.
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 42
 
-        \section3 Obtaining the App TRK package.
+\section2 Installing Qt Packages to the Device.
 
-                Download the package from the following location.
+It is possible to install packages to a phone in Linux by putting
+the package on the phone memory card and then installing manually
+from the phone menu. However, this is tedious and will not work
+on phones without a memory card, so the method recommended by Qt is
+to use the App TRK tool.
 
-                \list
-                    \o \l{http://tools.ext.nokia.com/trk/}{Application TRK}.
-                       Choose the correct installation package based on the
-                       S60 version of your device
-                       (\c{S60_<S60-version>_app_trk_<TRK-version>.sisx}).
-                \endlist
+\section3 Obtaining the App TRK package.
 
-                This package currently has to be installed by putting the
-                package on the memory card and installing from the phone
-                menu, or using a Windows PC for doing the install. However,
-                the installation only has to be done once.
+Download the package from the following location.
 
-         \section3 Configuring App TRK on the phone.
+\list
+\o \l{http://tools.ext.nokia.com/trk/}{Application TRK}.
+   Choose the correct installation package based on the
+   S60 version of your device
+   (\c{S60_<S60-version>_app_trk_<TRK-version>.sisx}).
+\endlist
 
-                When App TRK is installed, connect the phone to the PC using
-                the USB cable. Select "PCSuite" as connection type. Then run
-                App TRK on the phone, and make sure that the connection type is
-                USB. This can be changed under
-                the \c Settings menu entry. If necessary, choose \c Connect
-                from the menu.
+This package currently has to be installed by putting the
+package on the memory card and installing from the phone
+menu, or using a Windows PC for doing the install. However,
+the installation only has to be done once.
 
-         \section3 Configuring the USB serial driver on the Linux system.
+\section3 Configuring App TRK on the Phone
 
-               On Linux, phone should appear as the \c /dev/ttyUSB1 device,
-               however if you are running an old kernel, you may need to
-               force the USB module to be loaded correctly before the device
-               will appear:
+When App TRK is installed, connect the phone to the PC using
+the USB cable. Select "PCSuite" as connection type. Then run
+App TRK on the phone, and make sure that the connection type is
+USB. This can be changed under the \c Settings menu entry.
+If necessary, choose \c Connect from the menu.
 
-               \snippet doc/src/snippets/code/doc_src_installation.qdoc 43
+\section3 Configuring the USB Serial Driver on the Linux System
 
-               Note the identifier on the line where your Symbian device
-               appears. Then execute the following, using the first and
-               second part of the identifier in place of \c XXX,
-               respectively.
+On Linux, phone should appear as the \c /dev/ttyUSB1 device,
+however if you are running an old kernel, you may need to
+force the USB module to be loaded correctly before the device
+will appear:
 
-               \snippet doc/src/snippets/code/doc_src_installation.qdoc 44
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 43
 
-               The \c rmmod step may fail if the module is not already
-               loaded, but that is harmless.
+Note the identifier on the line where your Symbian device
+appears. Then execute the following, using the first and
+second part of the identifier in place of \c XXX,
+respectively.
 
-          \section3 Building the \c runonphone tool.
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 44
 
-               Note that building the \c runonphone tool requires a separate
-               installation of Qt for Linux. If there is a version of Qt
-               installed by your distribution's package mechanism, that that
-               should do fine. Some distributions separate the libraries from
-               the development setup which includes qmake. Make sure you have
-               both installed.
+The \c rmmod step may fail if the module is not already
+loaded, but that is harmless.
 
-               First make sure that the \c qmake you use is taken from the
-               Linux installation of Qt. The easiest way to make sure of this
-               is to open a new shell and run the following command:
+\section3 Building the runonphone Tool.
 
-               \snippet doc/src/snippets/code/doc_src_installation.qdoc 45
+Note that building the \c runonphone tool requires a separate
+installation of Qt for Linux. If there is a version of Qt
+installed by your distribution's package mechanism, that that
+should do fine. Some distributions separate the libraries from
+the development setup which includes \c qmake. Make sure you
+have both installed.
 
-               \c qmake will tell you where it is installed.
+You will also need the \l{libusb} libraries and header files
+installed. Usually, installing a development package such as
+\c{libusb-dev} will ensure that you have all the necessary
+dependencies installed.
 
-               Copy the \c{%QTDIR%/tools/runonphone} folder to a place outside
-               of the Qt tree. Then go to the folder in a shell and build it:
+First, make sure that the \c qmake you use is taken from the
+Linux installation of Qt. The easiest way to make sure of this
+is to open a new shell and run the following command:
 
-               \snippet doc/src/snippets/code/doc_src_installation.qdoc 46
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 45
 
-               Copy the resulting executable to a folder which is in your
-               \c PATH environment variable.
+\c qmake will tell you where it is installed.
 
-           \section3 Installing the built package onto the phone.
+Copy the \c{%QTDIR%/tools/runonphone} folder to a place outside
+of the Qt tree. Then go to the folder in a shell and build it:
 
-               Return to the root of the Qt tree configured for Symbian. Then
-               install the Qt libraries by running the following:
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 46
 
-               \snippet doc/src/snippets/code/doc_src_installation.qdoc 47
+Copy the resulting executable to a folder which is in your
+\c PATH environment variable.
 
-               \note If the installation fails, please make sure that there is
-                     no previously installed version of Qt on the phone.
+\section3 Installing the Built Package onto the Phone
 
-               Qt requires some dependent packages to be installed on the device,
-               they are shipped in the Symbian SDK and can be installed using the
-               runonphone tool as well.
-               The packages can be found in the EPOCROOT at the following locations;
+\note Before starting, please make sure that there is no previously
+installed version of Qt on the phone.
 
-               \snippet doc/src/snippets/code/doc_src_installation.qdoc 50
+Return to the root of the Qt tree configured for Symbian. Then
+install the Qt libraries by running the following:
 
-\section1 Running Qt demos
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 47
 
-        We've included a subset of the Qt demos in this package for you
-        to try out. An excellent starting point is the "fluidlauncher"
-        demo.
+You may need to supply the path of the serial device file using
+the \c{-p} option:
 
-        Install and run the demo by using the following commands:
+\snippet doc/src/snippets/code/doc_src_installation.qdoc runonphone with device file path
 
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 48
+If the installation fails, please make sure that there is
+no previously installed version of Qt on the phone.
 
-        The same command can be used for other applications:
+Qt requires some dependent packages to be installed on the device,
+they are shipped in the Symbian SDK and can be installed using the
+runonphone tool as well.
+The packages can be found in the EPOCROOT at the following locations;
 
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 49
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 50
 
-        For more information about building and running Qt programs on the
-        Symbian platform, see \l{The Symbian platform - Introduction to Qt}.
+It is also possible to install packages onto the device using the
+\c runonphone build rule that \c qmake automatically generates for
+each Qt project. Options can be supplied to the \c runonphone tool
+that is invoked begind the scenes:
 
-    We hope you will enjoy using Qt.
+\snippet doc/src/snippets/code/doc_src_installation.qdoc make runonphone with options
+
+If you are running \c runonphone or invoking the \c runonphone
+build rule often, it is possible to set the \c QT_RUN_ON_PHONE_OPTIONS
+environment variable with the options you normally use:
+
+\snippet doc/src/snippets/code/doc_src_installation.qdoc make runonphone with preset environment variable
+
+This makes installation of packages onto a device easier and less
+error-prone.
+
+
+\section1 Running Qt Demos
+
+We've included a subset of the Qt demos in this package for you
+to try out. An excellent starting point is the "fluidlauncher"
+demo.
+
+Install and run the demo by using the following commands:
+
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 48
+
+The same command can be used for other applications:
+
+\snippet doc/src/snippets/code/doc_src_installation.qdoc 49
+
+For more information about building and running Qt programs on the
+Symbian platform, see \l{The Symbian platform - Introduction to Qt}.
+
+We hope you will enjoy using Qt.
 */
 
 /*!

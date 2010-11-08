@@ -1930,7 +1930,7 @@ void HtmlGenerator::generateHeader(const QString& title,
     }
 
     if (node && !node->links().empty())
-        out() << "<p>\n" << navigationLinks << "</p><p/>\n";
+        out() << "<p class=\"naviNextPrevious headerNavi\">\n" << navigationLinks << "</p><p/>\n";
 }
 
 void HtmlGenerator::generateTitle(const QString& title,
@@ -1955,7 +1955,7 @@ void HtmlGenerator::generateTitle(const QString& title,
 void HtmlGenerator::generateFooter(const Node *node)
 {
     if (node && !node->links().empty())
-        out() << "<p>\n" << navigationLinks << "</p>\n";
+        out() << "<p class=\"naviNextPrevious footerNavi\">\n" << navigationLinks << "</p>\n";
 
     out() << QString(footer).replace("\\" + COMMAND_VERSION, myTree->version())
           << QString(address).replace("\\" + COMMAND_VERSION, myTree->version());
@@ -3719,7 +3719,11 @@ void HtmlGenerator::findAllClasses(const InnerNode *node)
                      (*c)->subType() == Node::QmlClass &&
                      !(*c)->doc().isEmpty()) {
                 QString qmlClassName = (*c)->name();
-                qmlClasses.insert(qmlClassName,*c);
+                // Remove the "QML:" prefix if present.
+                if (qmlClassName.startsWith(QLatin1String("QML:")))
+                    qmlClasses.insert(qmlClassName.mid(4),*c);
+                else
+                    qmlClasses.insert(qmlClassName,*c);
             }
             else if ((*c)->isInnerNode()) {
                 findAllClasses(static_cast<InnerNode *>(*c));
