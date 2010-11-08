@@ -55,6 +55,7 @@
 #include <private/qpixmap_raster_p.h>
 #include <private/qimagepixmapcleanuphooks_p.h>
 
+
 QT_BEGIN_NAMESPACE
 
 class SurfaceCache;
@@ -112,7 +113,7 @@ public:
     static inline int cacheCost(const QImage &img) { return img.width() * img.height() * img.depth() / 8; }
 #endif
 
-    void prepareForBlit(bool alpha);
+    void prepareForBlit(IDirectFBSurface *surface);
 
     IDirectFBSurface *surface;
 
@@ -616,7 +617,7 @@ void QDirectFBPaintEngine::drawImage(const QRectF &r, const QImage &image,
 #if !defined QT_NO_DIRECTFB_PREALLOCATED || defined QT_DIRECTFB_IMAGECACHE
     bool release;
     IDirectFBSurface *imgSurface = d->getSurface(image, &release);
-    d->prepareForBlit(QDirectFBScreen::hasAlphaChannel(imgSurface));
+    d->prepareForBlit(imgSurface);
     CLIPPED_PAINT(d->blit(r, imgSurface, sr));
     if (release) {
 #if (Q_DIRECTFB_VERSION >= 0x010000)
@@ -655,8 +656,8 @@ void QDirectFBPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap,
             QRasterPaintEngine::drawImage(r, *img, sr);
         } else {
             QDirectFBPaintEnginePrivate::unlock(dfbData);
-            d->prepareForBlit(pixmap.hasAlphaChannel());
             IDirectFBSurface *s = dfbData->directFBSurface();
+            d->prepareForBlit(s);
             CLIPPED_PAINT(d->blit(r, s, sr));
         }
     }
@@ -978,7 +979,7 @@ void QDirectFBPaintEnginePrivate::setCompositionMode(QPainter::CompositionMode m
         break;
     case QPainter::CompositionMode_SourceOver:
         compositionModeStatus &= ~PorterDuff_AlwaysBlend;
-        surface->SetPorterDuff(surface, DSPD_NONE);
+        surface->SetPorterDuff(surface, DSPD_SRC_OVER);
         break;
     case QPainter::CompositionMode_DestinationOver:
         surface->SetPorterDuff(surface, DSPD_DST_OVER);
@@ -1031,13 +1032,18 @@ void QDirectFBPaintEnginePrivate::setRenderHints(QPainter::RenderHints hints)
     }
 }
 
-void QDirectFBPaintEnginePrivate::prepareForBlit(bool alpha)
+void QDirectFBPaintEnginePrivate::prepareForBlit(IDirectFBSurface *s)
 {
-    DFBSurfaceBlittingFlags blittingFlags = alpha ? DSBLIT_BLEND_ALPHACHANNEL : DSBLIT_NOFX;
+    DFBSurfaceBlittingFlags blittingFlags = DSBLIT_NOFX;
+    if (QDirectFBScreen::isPremultiplied(QDirectFBScreen::getImageFormat(s)))
+        blittingFlags |= DSBLIT_SRC_PREMULTIPLY;
+    if (QDirectFBScreen::hasAlphaChannel(s))
+        blittingFlags |= DSBLIT_BLEND_ALPHACHANNEL;
     if (opacity != 255) {
         blittingFlags |= DSBLIT_BLEND_COLORALPHA;
+        surface->SetColor(surface, 0xff, 0xff, 0xff, opacity);
     }
-    surface->SetColor(surface, 0xff, 0xff, 0xff, opacity);
+
     surface->SetBlittingFlags(surface, blittingFlags);
 }
 
@@ -1154,13 +1160,13 @@ void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest, const QPix
 
     QPointF offset = off;
     Q_ASSERT(transform.type() <= QTransform::TxScale);
-    prepareForBlit(pixmap.hasAlphaChannel());
     QPixmapData *data = pixmap.pixmapData();
     Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
     QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
+    IDirectFBSurface *sourceSurface = dfbData->directFBSurface();
+    prepareForBlit(sourceSurface);
     QDirectFBPaintEnginePrivate::unlock(dfbData);
     const QSize pixmapSize = dfbData->size();
-    IDirectFBSurface *sourceSurface = dfbData->directFBSurface();
     if (transform.isScaling()) {
         Q_ASSERT(supportsStretchBlit());
         Q_ASSERT(qMin(transform.m11(), transform.m22()) >= 0);
