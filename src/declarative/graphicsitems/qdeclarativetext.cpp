@@ -285,35 +285,56 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
 {
     // ### text layout handling should be profiled and optimized as needed
     // what about QStackTextEngine engine(tmp, d->font.font()); QTextLayout textLayout(&engine);
-
     Q_Q(QDeclarativeText);
     layout.setCacheEnabled(true);
 
     qreal height = 0;
+    qreal widthUsed = 0;
     qreal lineWidth = 0;
 
-    QTextOption textOption = layout.textOption();
-    textOption.setWrapMode(QTextOption::NoWrap);
-    textOption.setAlignment(Qt::Alignment(hAlign));
-
-    // if the item has an explicit width, we set the line width and enable wrapping
-    if (q->widthValid()) {
+    //set manual width
+    if ((wrapMode != QDeclarativeText::NoWrap || elideMode != QDeclarativeText::ElideNone) && q->widthValid())
         lineWidth = q->width();
-        textOption.setWrapMode(QTextOption::WrapMode(wrapMode));
-    }
 
+    QTextOption textOption = layout.textOption();
+    textOption.setWrapMode(QTextOption::WrapMode(wrapMode));
     layout.setTextOption(textOption);
+
     layout.beginLayout();
-    while (1) {
+    forever {
         QTextLine line = layout.createLine();
         if (!line.isValid())
             break;
 
-        line.setLineWidth(lineWidth);
-        line.setPosition(QPointF(0, height));
-        height += line.height();
+        if (lineWidth)
+            line.setLineWidth(lineWidth);
     }
     layout.endLayout();
+
+    for (int i = 0; i < layout.lineCount(); ++i) {
+        QTextLine line = layout.lineAt(i);
+        widthUsed = qMax(widthUsed, line.naturalTextWidth());
+    }
+
+    qreal layoutWidth = q->widthValid() ? q->width() : widthUsed;
+
+    qreal x = 0;
+    for (int i = 0; i < layout.lineCount(); ++i) {
+        QTextLine line = layout.lineAt(i);
+        line.setPosition(QPointF(0, height));
+        height += line.height();
+
+        if (!cacheAllTextAsImage) {
+            if (hAlign == QDeclarativeText::AlignLeft) {
+                x = 0;
+            } else if (hAlign == QDeclarativeText::AlignRight) {
+                x = layoutWidth - line.naturalTextWidth();
+            } else if (hAlign == QDeclarativeText::AlignHCenter) {
+                x = (layoutWidth - line.naturalTextWidth()) / 2;
+            }
+            line.setPosition(QPointF(x, line.y()));
+        }
+    }
 
     return layout.boundingRect().toAlignedRect().size();
 }
@@ -326,6 +347,19 @@ QPixmap QDeclarativeTextPrivate::textLayoutImage(bool drawStyle)
 {
     //do layout
     QSize size = layedOutTextSize;
+
+    qreal x = 0;
+    for (int i = 0; i < layout.lineCount(); ++i) {
+        QTextLine line = layout.lineAt(i);
+        if (hAlign == QDeclarativeText::AlignLeft) {
+            x = 0;
+        } else if (hAlign == QDeclarativeText::AlignRight) {
+            x = size.width() - line.naturalTextWidth();
+        } else if (hAlign == QDeclarativeText::AlignHCenter) {
+            x = (size.width() - line.naturalTextWidth()) / 2;
+        }
+        line.setPosition(QPointF(x, line.y()));
+    }
 
     //paint text
     QPixmap img(size);
