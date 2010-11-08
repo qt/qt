@@ -1,4 +1,5 @@
 import QtQuick 1.0
+import "../../shared" 1.0
 
 /*Tests both the alignments of multiline text, and that
   it can deal with changing them properly
@@ -8,7 +9,7 @@ Item{
     height: 80
     property int stage: 0
     onStageChanged: if(stage == 6) Qt.quit();
-    Text{
+    TestText{
         text: "I am the very model of a modern major general."
         anchors.fill: parent;
         wrapMode: Text.WordWrap

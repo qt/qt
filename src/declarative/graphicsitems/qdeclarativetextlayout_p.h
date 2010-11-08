@@ -59,6 +59,7 @@ public:
     ~QDeclarativeTextLayout();
 
     void beginLayout();
+    void clearLayout();
 
     void prepare();
     void draw(QPainter *, const QPointF & = QPointF());

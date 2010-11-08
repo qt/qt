@@ -450,7 +450,7 @@ VisualTest {
     }
     Frame {
         msec: 1760
-        hash: "2c01571e523002166ba6ec476bc8a68b"
+        hash: "b2b4b3de77e2b7fd58d3da1ad52355a9"
     }
     Frame {
         msec: 1776
@@ -1554,7 +1554,7 @@ VisualTest {
     }
     Frame {
         msec: 6144
-        hash: "0506667a14ace4e2edf04956c137e217"
+        hash: "8cd5edce652013a2ed4bf95693259538"
     }
     Frame {
         msec: 6160
@@ -1731,7 +1731,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777249
-        modifiers: 0
+        modifiers: 67108864
         text: ""
         autorep: false
         count: 1
