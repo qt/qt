@@ -196,17 +196,27 @@ void QWaylandDrmWindowSurface::flush(QWidget *widget, const QRegion &region, con
     }
 }
 
-void QWaylandDrmWindowSurface::resize(const QSize &size)
+void QWaylandDrmWindowSurface::resize(const QSize &requestedSize)
 {
     QWaylandWindow *ww = (QWaylandWindow *) window()->platformWindow();
-    QWindowSurface::resize(size);
-    QImage::Format format = QApplicationPrivate::platformIntegration()->screens().first()->format();
+    QWaylandScreen *screen = (QWaylandScreen *)QApplicationPrivate::platformIntegration()->screens().first();
+    QImage::Format format = screen->format();
+    QSize screenSize = screen->geometry().size();
+    QSize size = requestedSize;
 
     if (mBuffer != NULL && mBuffer->mSize == size)
 	return;
 
     if (mBuffer != NULL)
 	delete mBuffer;
+
+    /* Clamp to screen size */
+    if (size.width() > screenSize.width())
+	size.setWidth(screenSize.width());
+    if (size.height() > screenSize.height())
+	size.setHeight(screenSize.height());
+
+    QWindowSurface::resize(size);
 
     mBuffer = new QWaylandDrmBuffer(mDisplay, size, format);
 
