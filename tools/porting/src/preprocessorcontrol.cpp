@@ -154,7 +154,7 @@ QByteArray PreprocessorCache::readFile(const QString &filename) const
     // read the file for us.
     if (receivers(SIGNAL(readFile(QByteArray&,QString))) > 0) {
         QByteArray array;
-        // Workaround for "not beeing able to emit from const function"
+        // Workaround for "not being able to emit from const function"
         PreprocessorCache *cache = const_cast<PreprocessorCache *>(this);
         emit cache->readFile(array, filename);
         return array;
