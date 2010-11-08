@@ -317,6 +317,7 @@ private:
 };
 
 class QGLTexture;
+class QGLTextureDestroyer;
 
 // This probably needs to grow to GL_MAX_VERTEX_ATTRIBS, but 3 is ok for now as that's
 // all the GL2 engine uses:
@@ -326,7 +327,7 @@ class QGLContextPrivate
 {
     Q_DECLARE_PUBLIC(QGLContext)
 public:
-    explicit QGLContextPrivate(QGLContext *context) : internal_context(false), q_ptr(context) {group = new QGLContextGroup(context);}
+    explicit QGLContextPrivate(QGLContext *context);
     ~QGLContextPrivate();
     QGLTexture *bindTexture(const QImage &image, GLenum target, GLint format,
                             QGLContext::BindOptions options);
@@ -417,6 +418,7 @@ public:
     GLuint current_fbo;
     GLuint default_fbo;
     QPaintEngine *active_engine;
+    QGLTextureDestroyer *texture_destroyer;
 
     bool vertexAttributeArraysEnabledState[QT_GL_VERTEX_ARRAY_TRACKED_COUNT];
 
@@ -476,25 +478,20 @@ private:
     QGLContext *m_ctx;
 };
 
-// ### make QGLContext a QObject in 5.0 and remove the proxy stuff
-class Q_OPENGL_EXPORT QGLSignalProxy : public QObject
+class QGLTextureDestroyer : public QObject
 {
     Q_OBJECT
 public:
-    QGLSignalProxy() : QObject() {
+    QGLTextureDestroyer() : QObject() {
         qRegisterMetaType<GLuint>("GLuint");
         connect(this, SIGNAL(freeTexture(QGLContext *, QPixmapData *, GLuint)),
                 this, SLOT(freeTexture_slot(QGLContext *, QPixmapData *, GLuint)));
     }
-    void emitAboutToDestroyContext(const QGLContext *context) {
-        emit aboutToDestroyContext(context);
-    }
     void emitFreeTexture(QGLContext *context, QPixmapData *boundPixmap, GLuint id) {
         emit freeTexture(context, boundPixmap, id);
     }
-    static QGLSignalProxy *instance();
+
 Q_SIGNALS:
-    void aboutToDestroyContext(const QGLContext *context);
     void freeTexture(QGLContext *context, QPixmapData *boundPixmap, GLuint id);
 
 private slots:
@@ -518,6 +515,19 @@ private slots:
     }
 };
 
+// ### make QGLContext a QObject in 5.0 and remove the proxy stuff
+class Q_OPENGL_EXPORT QGLSignalProxy : public QObject
+{
+    Q_OBJECT
+public:
+    void emitAboutToDestroyContext(const QGLContext *context) {
+        emit aboutToDestroyContext(context);
+    }
+    static QGLSignalProxy *instance();
+Q_SIGNALS:
+    void aboutToDestroyContext(const QGLContext *context);
+};
+
 class QGLTexture {
 public:
     QGLTexture(QGLContext *ctx = 0, GLuint tx_id = 0, GLenum tx_target = GL_TEXTURE_2D,
@@ -537,7 +547,7 @@ public:
 #if !defined(Q_WS_X11)
             QPixmapData *boundPixmap = 0;
 #endif
-            QGLSignalProxy::instance()->emitFreeTexture(context, boundPixmap, id);
+            context->d_ptr->texture_destroyer->emitFreeTexture(context, boundPixmap, id);
         }
      }
 

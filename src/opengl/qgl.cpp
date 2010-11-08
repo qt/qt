@@ -1642,12 +1642,23 @@ const QGLContext *qt_gl_transfer_context(const QGLContext *ctx)
         return 0;
 }
 
+QGLContextPrivate::QGLContextPrivate(QGLContext *context)
+    : internal_context(false)
+    , q_ptr(context)
+{
+    group = new QGLContextGroup(context);
+    texture_destroyer = new QGLTextureDestroyer;
+    texture_destroyer->moveToThread(qApp->thread());
+}
+
 QGLContextPrivate::~QGLContextPrivate()
 {
     if (!group->m_refs.deref()) {
         Q_ASSERT(group->context() == q_ptr);
         delete group;
     }
+
+    delete texture_destroyer;
 }
 
 void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)

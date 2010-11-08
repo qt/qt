@@ -2335,8 +2335,10 @@ public:
     Widget()
         : iterations(0)
         , display(0)
+        , producer(new Producer)
     {
         startTimer(400);
+        connect(this, SIGNAL(destroyed()), producer, SLOT(deleteLater()));
     }
 
     int iterations;
@@ -2348,15 +2350,15 @@ protected:
 
         delete display;
         display = new DisplayWidget(this);
-        connect(&producer, SIGNAL(imageReady(const QImage &)), display, SLOT(setImage(const QImage &)));
+        connect(producer, SIGNAL(imageReady(const QImage &)), display, SLOT(setImage(const QImage &)));
 
         display->setGeometry(rect());
         display->show();
     }
 
 private:
-    Producer producer;
     DisplayWidget *display;
+    Producer *producer;
 };
 
 }
@@ -2369,6 +2371,8 @@ void tst_QGL::threadImages()
     while (widget->iterations <= 5) {
         qApp->processEvents();
     }
+
+    delete widget;
 }
 
 class tst_QGLDummy : public QObject
