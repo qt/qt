@@ -15,10 +15,12 @@ contains(CONFIG, no_icon) {
         resourceZDir = $$EPOCROOT$$HW_ZDIR$$APP_RESOURCE_DIR
         regZDir = $$EPOCROOT$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR
     } else {
-        isEmpty(DESTDIR) {
-            resourceZDir = .
-        } else {
+        contains(DESTDIR, "/.*") {
             resourceZDir = $$DESTDIR
+        } else:isEmpty(DESTDIR) {
+            resourceZDir = $$OUT_PWD
+        } else {
+            resourceZDir = $$OUT_PWD/$$DESTDIR
         }
         regZDir = $$resourceZDir
     }
