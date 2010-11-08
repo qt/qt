@@ -124,7 +124,6 @@ struct QScriptV8ObjectWrapper
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "qscriptvalue_p.h"
-#include "qscriptisolate_p.h"
 QT_END_INCLUDE_NAMESPACE
 
 template <typename T, v8::Persistent<v8::FunctionTemplate> QScriptEnginePrivate::*functionTemplate>
@@ -133,7 +132,6 @@ T* QScriptV8ObjectWrapper<T, functionTemplate>::safeGet(const QScriptValuePrivat
     QScriptEnginePrivate *engine = p->engine();
     if (!engine)
         return 0;
-    QScriptIsolate api(engine, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     v8::Handle<v8::Value> value = *p;
 

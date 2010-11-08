@@ -48,6 +48,8 @@ class QScriptClassPrivate
 public:
     inline static QScriptClassPrivate* get(const QScriptClass* q);
     inline static QScriptClass* get(const QScriptClassPrivate* d);
+    inline static QScriptClassPrivate* safeGet(const QScriptClass* q);
+    inline static QScriptClass* safeGet(const QScriptClassPrivate* d);
 
     inline QScriptClassPrivate(QScriptEnginePrivate* engine, QScriptClass* q);
     inline QScriptEnginePrivate* engine() const;
@@ -67,10 +69,24 @@ inline QScriptClassPrivate* QScriptClassPrivate::get(const QScriptClass* q)
     return q->d_ptr.data();
 }
 
+inline QScriptClassPrivate* QScriptClassPrivate::safeGet(const QScriptClass* q)
+{
+    if (q && q->d_ptr)
+        return q->d_ptr.data();
+    return 0;
+}
+
 inline QScriptClass* QScriptClassPrivate::get(const QScriptClassPrivate* d)
 {
     Q_ASSERT(d);
     return d->q_ptr;
+}
+
+inline QScriptClass* QScriptClassPrivate::safeGet(const QScriptClassPrivate* d)
+{
+    if (d)
+        return d->q_ptr;
+    return 0;
 }
 
 inline QScriptClassPrivate::QScriptClassPrivate(QScriptEnginePrivate* engine, QScriptClass* q)

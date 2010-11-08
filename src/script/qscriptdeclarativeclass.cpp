@@ -154,14 +154,18 @@ QScriptDeclarativeClass::newObjectValue(QScriptEngine *engine,
     return Value(engine, newObject(engine, scriptClass, object));
 }
 
-QScriptDeclarativeClass *QScriptDeclarativeClass::scriptClass(const QScriptValue &v)
+QScriptDeclarativeClass *QScriptDeclarativeClass::scriptClass(const QScriptValue &value)
 {
-    return QScriptDeclarativeClassObject::declarativeClass(QScriptValuePrivate::get(v));
+    QScriptValuePrivate *v = QScriptValuePrivate::get(value);
+    QScriptIsolate api(v->engine());
+    return QScriptDeclarativeClassObject::declarativeClass(v);
 }
 
-QScriptDeclarativeClass::Object *QScriptDeclarativeClass::object(const QScriptValue &v)
+QScriptDeclarativeClass::Object *QScriptDeclarativeClass::object(const QScriptValue &value)
 {
-    return QScriptDeclarativeClassObject::object(QScriptValuePrivate::get(v));
+    QScriptValuePrivate *v = QScriptValuePrivate::get(value);
+    QScriptIsolate api(v->engine());
+    return QScriptDeclarativeClassObject::object(v);
 }
 
 QScriptValue QScriptDeclarativeClass::function(const QScriptValue &v, const Identifier &name)

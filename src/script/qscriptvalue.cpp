@@ -1219,8 +1219,8 @@ void QScriptValue::setData(const QScriptValue &value)
 QScriptClass *QScriptValue::scriptClass() const
 {
     Q_D(const QScriptValue);
-    QScriptClassObject *data = QScriptClassObject::safeGet(d);
-    return (data && data->scriptClass()) ? QScriptClassPrivate::get(data->scriptClass()) : 0;
+    QScriptIsolate api(d->engine());
+    return QScriptClassPrivate::safeGet(d->scriptClass());
 }
 
 /*!
@@ -1239,16 +1239,28 @@ QScriptClass *QScriptValue::scriptClass() const
 void QScriptValue::setScriptClass(QScriptClass *scriptclass)
 {
     Q_D(QScriptValue);
-    if (!d->isObject())
-        return;
-    Q_ASSERT(d->engine());
-    QScriptClassPrivate *dclass = scriptclass ? QScriptClassPrivate::get(scriptclass) : 0;
-    QScriptIsolate api(d->engine(), QScriptIsolate::NotNullEngine);
-    d->setScriptClass(dclass);
+    QScriptIsolate api(d->engine());
+    d->setScriptClass(QScriptClassPrivate::safeGet(scriptclass));
 }
 
-inline void QScriptValuePrivate::setScriptClass(QScriptClassPrivate *scriptclass)
+/*!
+  \internal
+  Get script class if it exists
+  \note it can be null
+*/
+QScriptClassPrivate* QScriptValuePrivate::scriptClass() const
 {
+    QScriptClassObject *data = QScriptClassObject::safeGet(this);
+    if (data)
+        return data->scriptClass();
+    return 0;
+}
+
+void QScriptValuePrivate::setScriptClass(QScriptClassPrivate *scriptclass)
+{
+    if (!isObject())
+        return;
+
     v8::HandleScope scope;
     // FIXME this algorithm is bad. It creates new value instead to add functionality to exiting one
     // This code would fail
@@ -1257,7 +1269,6 @@ inline void QScriptValuePrivate::setScriptClass(QScriptClassPrivate *scriptclass
     // QSV obj2 = engine.evaluate("a");
     // obj1.setScriptClass(scriptclass);
     // QVERIFY(obj1.strictlyEquals(obj2);
-    Q_ASSERT(isObject());
 
     QScriptClassObject *data = QScriptClassObject::safeGet(this);
     if (data) {

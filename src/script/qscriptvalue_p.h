@@ -116,7 +116,8 @@ public:
 
     inline QScriptPassPointer<QScriptValuePrivate> prototype() const;
     inline void setPrototype(QScriptValuePrivate* prototype);
-    inline void setScriptClass(QScriptClassPrivate* scriptclass);
+    QScriptClassPrivate* scriptClass() const;
+    void setScriptClass(QScriptClassPrivate* scriptclass);
 
     inline void setProperty(const QString& name, QScriptValuePrivate *value, v8::PropertyAttribute attribs = v8::None);
     inline void setProperty(v8::Handle<v8::String> name, QScriptValuePrivate *value, v8::PropertyAttribute attribs = v8::None);

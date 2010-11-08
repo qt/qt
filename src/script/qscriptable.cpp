@@ -21,6 +21,7 @@
 **
 ****************************************************************************/
 
+#include "qscriptisolate_p.h"
 #include "qscriptable.h"
 #include "qscriptable_p.h"
 #include "qscriptcontext_p.h"
