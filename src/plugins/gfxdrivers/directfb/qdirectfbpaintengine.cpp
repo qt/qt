@@ -113,7 +113,11 @@ public:
     static inline int cacheCost(const QImage &img) { return img.width() * img.height() * img.depth() / 8; }
 #endif
 
-    void prepareForBlit(IDirectFBSurface *surface);
+    enum BlitFlag {
+        HasAlpha = 0x1,
+        Premultiplied = 0x2
+    };
+    void prepareForBlit(uint blitFlags);
 
     IDirectFBSurface *surface;
 
@@ -617,7 +621,12 @@ void QDirectFBPaintEngine::drawImage(const QRectF &r, const QImage &image,
 #if !defined QT_NO_DIRECTFB_PREALLOCATED || defined QT_DIRECTFB_IMAGECACHE
     bool release;
     IDirectFBSurface *imgSurface = d->getSurface(image, &release);
-    d->prepareForBlit(imgSurface);
+    uint blitFlags = 0;
+    if (image.hasAlphaChannel())
+        blitFlags |= QDirectFBPaintEnginePrivate::HasAlpha;
+    if (QDirectFBScreen::isPremultiplied(image.format()))
+        blitFlags |= QDirectFBPaintEnginePrivate::Premultiplied;
+    d->prepareForBlit(blitFlags);
     CLIPPED_PAINT(d->blit(r, imgSurface, sr));
     if (release) {
 #if (Q_DIRECTFB_VERSION >= 0x010000)
@@ -657,7 +666,13 @@ void QDirectFBPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap,
         } else {
             QDirectFBPaintEnginePrivate::unlock(dfbData);
             IDirectFBSurface *s = dfbData->directFBSurface();
-            d->prepareForBlit(s);
+            uint blitFlags = 0;
+            if (pixmap.hasAlphaChannel())
+                blitFlags |= QDirectFBPaintEnginePrivate::HasAlpha;
+            if (QDirectFBScreen::isPremultiplied(dfbData->pixelFormat()))
+                blitFlags |= QDirectFBPaintEnginePrivate::Premultiplied;
+
+            d->prepareForBlit(blitFlags);
             CLIPPED_PAINT(d->blit(r, s, sr));
         }
     }
@@ -1032,12 +1047,12 @@ void QDirectFBPaintEnginePrivate::setRenderHints(QPainter::RenderHints hints)
     }
 }
 
-void QDirectFBPaintEnginePrivate::prepareForBlit(IDirectFBSurface *s)
+void QDirectFBPaintEnginePrivate::prepareForBlit(uint flags)
 {
     DFBSurfaceBlittingFlags blittingFlags = DSBLIT_NOFX;
-    if (QDirectFBScreen::isPremultiplied(QDirectFBScreen::getImageFormat(s)))
+    if (flags & Premultiplied)
         blittingFlags |= DSBLIT_SRC_PREMULTIPLY;
-    if (QDirectFBScreen::hasAlphaChannel(s))
+    if (flags & HasAlpha)
         blittingFlags |= DSBLIT_BLEND_ALPHACHANNEL;
     if (opacity != 255) {
         blittingFlags |= DSBLIT_BLEND_COLORALPHA;
@@ -1164,7 +1179,12 @@ void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest, const QPix
     Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
     QDirectFBPixmapData *dfbData = static_cast<QDirectFBPixmapData*>(data);
     IDirectFBSurface *sourceSurface = dfbData->directFBSurface();
-    prepareForBlit(sourceSurface);
+    uint blitFlags = 0;
+    if (dfbData->hasAlphaChannel())
+        blitFlags |= HasAlpha;
+    if (QDirectFBScreen::isPremultiplied(dfbData->pixelFormat()))
+        blitFlags |= Premultiplied;
+    prepareForBlit(blitFlags);
     QDirectFBPaintEnginePrivate::unlock(dfbData);
     const QSize pixmapSize = dfbData->size();
     if (transform.isScaling()) {
