@@ -256,6 +256,7 @@ private slots:
     void drawPointScaled();
 
     void QTBUG14614_gradientCacheRaceCondition();
+    void drawTextOpacity();
 
 private:
     void fillData();
@@ -4574,6 +4575,30 @@ void tst_QPainter::QTBUG14614_gradientCacheRaceCondition()
         producers[i].start();
     for (int i = 0; i < threadCount; ++i)
         producers[i].wait();
+}
+
+void tst_QPainter::drawTextOpacity()
+{
+    QImage image(32, 32, QImage::Format_RGB32);
+    image.fill(0xffffffff);
+
+    QPainter p(&image);
+    p.setPen(QColor("#6F6F6F"));
+    p.setOpacity(0.5);
+    p.drawText(5, 30, QLatin1String("Qt"));
+    p.end();
+
+    QImage copy = image;
+    image.fill(0xffffffff);
+
+    p.begin(&image);
+    p.setPen(QColor("#6F6F6F"));
+    p.drawLine(-10, -10, -1, -1);
+    p.setOpacity(0.5);
+    p.drawText(5, 30, QLatin1String("Qt"));
+    p.end();
+
+    QCOMPARE(image, copy);
 }
 
 QTEST_MAIN(tst_QPainter)
