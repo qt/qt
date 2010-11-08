@@ -46,6 +46,7 @@
 #include <QSysInfo>
 #include <QProcess>
 #include <QFileInfo>
+#include <QDir>
 
 #ifndef QMAKESPEC
 #define QMAKESPEC "Unknown"
@@ -57,7 +58,8 @@ PlatformInfo::PlatformInfo(bool useLocal)
     if (useLocal) {
         insert(PI_HostName, QHostInfo::localHostName());
         insert(PI_QtVersion, QLS(qVersion()));
-        insert(PI_QMakeSpec, QFileInfo(QLS(QMAKESPEC)).fileName());
+        QString mkspec = QDir::fromNativeSeparators(QLS(QMAKESPEC)).remove(QRegExp(QLS("^.*/mkspecs/")));
+        insert(PI_QMakeSpec, mkspec);
         insert(PI_BuildKey, QLibraryInfo::buildKey());
 #if defined(Q_OS_LINUX)
         insert(PI_OSName, QLS("Linux"));
