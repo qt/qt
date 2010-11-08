@@ -46,7 +46,11 @@
 #include <QObject>
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QPlatformScreen>
+#include <QtGui/QPlatformGLContext>
+#include <QtGui/QPlatformWindowFormat>
 #include "qgl.h"
+
+#include <private/qpixmapdata_gl_p.h>
 
 #include <wayland-client.h>
 #include "qwaylandinputdevice.h"
@@ -187,6 +191,23 @@ private:
     QPlatformFontDatabase *mFontDb;
     QWaylandDisplay *mDisplay;
     bool mUseOpenGL;
+};
+
+class QWaylandGLContext : public QPlatformGLContext {
+public:
+    QWaylandGLContext(QWaylandDisplay *wd, QWaylandWindow *window, const QPlatformWindowFormat &format);
+    ~QWaylandGLContext();
+    void makeCurrent();
+    void doneCurrent();
+    void swapBuffers();
+    void* getProcAddress(const QString&);
+    QPlatformWindowFormat platformWindowFormat() const { return mFormat; }
+
+private:
+    QPlatformWindowFormat mFormat;
+    QWaylandDisplay *mDisplay;
+    QWaylandWindow *mWindow;
+    GLuint parentFbo, parentRbo;
 };
 
 QT_END_NAMESPACE

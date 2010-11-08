@@ -5,8 +5,10 @@ QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
 SOURCES =   main.cpp \
             qwaylandintegration.cpp \
-            qwaylandwindowsurface.cpp \
-            qwaylandinputdevice.cpp
+            qwaylandshmsurface.cpp \
+            qwaylanddrmsurface.cpp \
+            qwaylandinputdevice.cpp \
+            qwaylandglcontext.cpp
 
 HEADERS =   qwaylandintegration.h \
             qwaylandwindowsurface.h
