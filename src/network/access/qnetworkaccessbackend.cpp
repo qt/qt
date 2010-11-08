@@ -88,18 +88,6 @@ QNetworkAccessBackendFactory::~QNetworkAccessBackendFactory()
 QNetworkAccessBackend *QNetworkAccessManagerPrivate::findBackend(QNetworkAccessManager::Operation op,
                                                                  const QNetworkRequest &request)
 {
-    QNetworkRequest::CacheLoadControl mode =
-        static_cast<QNetworkRequest::CacheLoadControl>(
-            request.attribute(QNetworkRequest::CacheLoadControlAttribute,
-                              QNetworkRequest::PreferNetwork).toInt());
-    if (mode == QNetworkRequest::AlwaysCache
-        && (op == QNetworkAccessManager::GetOperation
-        || op == QNetworkAccessManager::HeadOperation)) {
-        QNetworkAccessBackend *backend = new QNetworkAccessCacheBackend;
-        backend->manager = this;
-        return backend;
-    }
-
     if (!factoryDataShutdown) {
         QMutexLocker locker(&factoryData()->mutex);
         QNetworkAccessBackendFactoryData::ConstIterator it = factoryData()->constBegin(),
