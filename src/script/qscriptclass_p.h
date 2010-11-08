@@ -92,15 +92,12 @@ inline QScriptClass* QScriptClassPrivate::userCallback() const
 }
 
 
-struct QScriptClassObject : QScriptV8ObjectWrapper<QScriptClassObject, &QScriptEnginePrivate::scriptClassTemplate> {
-    QScriptClassPrivate *scriptclass;
-    v8::Persistent<v8::Object> original;
-
+class QScriptClassObject : public QScriptV8ObjectWrapper<QScriptClassObject, &QScriptEnginePrivate::scriptClassTemplate> {
+public:
     QScriptClassObject() {}
     ~QScriptClassObject()
     {
-        if (!original.IsEmpty())
-            original.Dispose();
+        m_original.Dispose();
     }
 
     v8::Handle<v8::Value> property(v8::Local<v8::String> property);
@@ -108,14 +105,34 @@ struct QScriptClassObject : QScriptV8ObjectWrapper<QScriptClassObject, &QScriptE
     v8::Handle<v8::Array> enumerate();
 
     static v8::Handle<v8::FunctionTemplate> createFunctionTemplate(QScriptEnginePrivate *engine);
-    static v8::Handle<v8::Value> newInstance(QScriptClassPrivate* scriptclass, v8::Handle<v8::Object> previousValue);
+    static v8::Handle<v8::Value> newInstance(QScriptClassPrivate* m_scriptclass, v8::Handle<v8::Object> previousValue);
 
     void setOriginal(v8::Handle<v8::Object> o)
     {
-        original = v8::Persistent<v8::Object>::New(o);
+        m_original.Dispose();
+        m_original = v8::Persistent<v8::Object>::New(o);
     }
+
+    v8::Handle<v8::Object> original() const
+    {
+        return m_original;
+    }
+
+    QScriptClassPrivate *scriptClass() const
+    {
+        return m_scriptclass;
+    }
+
+    void setScriptClass(QScriptClassPrivate *scriptclass)
+    {
+        m_scriptclass = scriptclass;
+    }
+
 private:
     Q_DISABLE_COPY(QScriptClassObject)
+    // FIXME should it be a smart pointer?
+    QScriptClassPrivate *m_scriptclass;
+    v8::Persistent<v8::Object> m_original;
 };
 
 #endif // QSCRIPTCLASSPRIVATE_P_H

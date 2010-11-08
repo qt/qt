@@ -135,10 +135,10 @@ inline QScriptValueIteratorPrivate::QScriptValueIteratorPrivate(const QScriptVal
         // check if the value is a script class instance
         QScriptClassObject *data = QScriptClassObject::safeGet(value);
         if (data
-            && data->scriptclass
-            && (m_classIterator = data->scriptclass->userCallback()->newIterator(QScriptValuePrivate::get(value)))) {
+            && data->scriptClass()
+            && (m_classIterator = data->scriptClass()->userCallback()->newIterator(QScriptValuePrivate::get(value)))) {
             // we need to wrap custom iterator.
-            names = engine()->getOwnPropertyNames(data->original);
+            names = engine()->getOwnPropertyNames(data->original());
         } else
             names = engine()->getOwnPropertyNames(obj);
 

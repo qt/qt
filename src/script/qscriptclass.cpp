@@ -40,38 +40,38 @@ QT_BEGIN_NAMESPACE
 v8::Handle<v8::Value> QScriptClassObject::property(v8::Local<v8::String> property)
 {
     v8::HandleScope handleScope;
-    if (!scriptclass || (!original.IsEmpty() && !original->IsUndefined())) {
+    if (!m_scriptclass || (!m_original.IsEmpty() && !m_original->IsUndefined())) {
         // For compatibility with the old back-end, normal JS properties are queried first.
-        v8::Handle<v8::Value> originalResult = original->Get(property);
-        if (!scriptclass || (!originalResult.IsEmpty() && !originalResult->IsUndefined())) {
-            if (originalResult->IsUndefined() && !original->Has(property))
+        v8::Handle<v8::Value> originalResult = m_original->Get(property);
+        if (!m_scriptclass || (!originalResult.IsEmpty() && !originalResult->IsUndefined())) {
+            if (originalResult->IsUndefined() && !m_original->Has(property))
                 return handleScope.Close(v8::ThrowException(v8::Exception::ReferenceError(property)));
             return handleScope.Close(originalResult);
         }
     }
 
-    Q_ASSERT(scriptclass);
+    Q_ASSERT(m_scriptclass);
 
     QScriptString str = QScriptStringPrivate::get(new QScriptStringPrivate(engine, property));
     QScriptValue that = QScriptValuePrivate::get(engine->currentContext()->thisObject());
 
     uint id = 0;
     QScriptClass::QueryFlags userFlags =
-            scriptclass->userCallback()->queryProperty(that, str, QScriptClass::HandlesReadAccess, &id);
+            m_scriptclass->userCallback()->queryProperty(that, str, QScriptClass::HandlesReadAccess, &id);
 
     if (!(userFlags & QScriptClass::HandlesReadAccess))
         return handleScope.Close(v8::Handle<v8::Value>());
-    QScriptValue userResult = scriptclass->userCallback()->property(that, str, id);
+    QScriptValue userResult = m_scriptclass->userCallback()->property(that, str, id);
     QScriptValuePrivate* result = QScriptValuePrivate::get(userResult);
-    return handleScope.Close(static_cast<v8::Handle<v8::Value> >(result->asV8Value(scriptclass->engine())));
+    return handleScope.Close(static_cast<v8::Handle<v8::Value> >(result->asV8Value(m_scriptclass->engine())));
 }
 
 
 v8::Handle<v8::Value> QScriptClassObject::setProperty(v8::Local<v8::String> property, v8::Local<v8::Value> value)
 {
-    if (!scriptclass) {
-        Q_ASSERT(!original.IsEmpty());
-        bool ret = original->Set(property, value);
+    if (!m_scriptclass) {
+        Q_ASSERT(!m_original.IsEmpty());
+        bool ret = m_original->Set(property, value);
         return ret ? value : v8::Handle<v8::Value>();
     }
 
@@ -82,34 +82,34 @@ v8::Handle<v8::Value> QScriptClassObject::setProperty(v8::Local<v8::String> prop
 
     uint id = 0;
     QScriptClass::QueryFlags userFlags =
-        scriptclass->userCallback()->queryProperty(that, str, QScriptClass::HandlesWriteAccess, &id);
+        m_scriptclass->userCallback()->queryProperty(that, str, QScriptClass::HandlesWriteAccess, &id);
 
     if (!(userFlags & QScriptClass::HandlesWriteAccess)) {
-        if (original.IsEmpty())
+        if (m_original.IsEmpty())
             setOriginal(v8::Object::New());
-        bool ret = original->Set(property, value);
+        bool ret = m_original->Set(property, value);
         return ret ? value : v8::Handle<v8::Value>();
     }
 
-    scriptclass->userCallback()->setProperty(that, str, id, QScriptValuePrivate::get(new QScriptValuePrivate(scriptclass->engine(), value)));
+    m_scriptclass->userCallback()->setProperty(that, str, id, QScriptValuePrivate::get(new QScriptValuePrivate(m_scriptclass->engine(), value)));
     return handleScope.Close(value);
 }
 
 v8::Handle<v8::Array> QScriptClassObject::enumerate()
 {
-    if (original.IsEmpty() || !engine) {
+    if (m_original.IsEmpty() || !engine) {
         // FIXME Is it possible?
         Q_UNIMPLEMENTED();
         return v8::Handle<v8::Array>();
     }
 
     v8::HandleScope handleScope;
-    v8::Handle<v8::Array> originalNames = engine->getOwnPropertyNames(original);
+    v8::Handle<v8::Array> originalNames = engine->getOwnPropertyNames(m_original);
     v8::Handle<v8::Array> names;
     uint32_t idx = 0;
-    if (scriptclass) {
+    if (m_scriptclass) {
         QScriptValue that = QScriptValuePrivate::get(engine->currentContext()->thisObject());
-        QScopedPointer<QScriptClassPropertyIterator> iter(scriptclass->userCallback()->newIterator(that));
+        QScopedPointer<QScriptClassPropertyIterator> iter(m_scriptclass->userCallback()->newIterator(that));
         if (iter) {
             names = v8::Array::New(originalNames->Length()); // Length will be at least equal to that (or bigger).
             while (iter->hasNext()) {
@@ -249,7 +249,7 @@ v8::Handle<v8::Value> QScriptClassObject::newInstance(QScriptClassPrivate* scrip
 {
     QScriptClassObject *data = new QScriptClassObject;
     data->engine = scriptclass->engine();
-    data->scriptclass = scriptclass;
+    data->m_scriptclass = scriptclass;
     if (!previousValue.IsEmpty() && !previousValue->IsUndefined())
         data->setOriginal(previousValue);
 

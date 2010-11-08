@@ -1220,7 +1220,7 @@ QScriptClass *QScriptValue::scriptClass() const
 {
     Q_D(const QScriptValue);
     QScriptClassObject *data = QScriptClassObject::safeGet(d);
-    return (data && data->scriptclass) ? QScriptClassPrivate::get(data->scriptclass) : 0;
+    return (data && data->scriptClass()) ? QScriptClassPrivate::get(data->scriptClass()) : 0;
 }
 
 /*!
@@ -1261,11 +1261,11 @@ inline void QScriptValuePrivate::setScriptClass(QScriptClassPrivate *scriptclass
 
     QScriptClassObject *data = QScriptClassObject::safeGet(this);
     if (data) {
-        data->scriptclass = scriptclass;
+        data->setScriptClass(scriptclass);
         if (!scriptclass) {
-            if (data->original.IsEmpty())
+            if (data->original().IsEmpty())
                 data->setOriginal(v8::Object::New());
-            reinitialize(engine(), data->original);
+            reinitialize(engine(), data->original());
         }
         return;
     }
