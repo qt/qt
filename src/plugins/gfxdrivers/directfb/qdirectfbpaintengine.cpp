@@ -68,6 +68,14 @@ public:
         Matrix_BlitsUnsupported = (Matrix_NegativeScale|Matrix_RectsUnsupported)
     };
 
+    inline static uint getTransformationType(const QTransform &transform) {
+        int ret = transform.type();
+        if (qMin(transform.m11(), transform.m22()) < 0) {
+            ret |= QDirectFBPaintEnginePrivate::Matrix_NegativeScale;
+        }
+        return ret;
+    }
+
     enum CompositionModeStatus {
         PorterDuff_None = 0x0,
         PorterDuff_Supported = 0x1,
@@ -99,7 +107,7 @@ public:
 
     inline bool isSimpleBrush(const QBrush &brush) const;
 
-    void drawTiledPixmap(const QRectF &dest, const QPixmap &pixmap, const QPointF &pos);
+    void drawTiledPixmap(const QRectF &dest, const QPixmap &pixmap, const QPointF &pos, const QTransform &pixmapTransform);
     void blit(const QRectF &dest, IDirectFBSurface *surface, const QRectF &src);
 
     inline bool supportsStretchBlit() const;
@@ -707,7 +715,8 @@ void QDirectFBPaintEngine::drawTiledPixmap(const QRectF &r,
         const QPixmap pix(data);
         QRasterPaintEngine::drawTiledPixmap(r, pix, offset);
     } else {
-        CLIPPED_PAINT(d->drawTiledPixmap(r, pixmap, offset));
+        QTransform transform(state()->matrix);
+        CLIPPED_PAINT(d->drawTiledPixmap(r, pixmap, offset, transform));
     }
 }
 
@@ -827,9 +836,14 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
             return; }
 
         case Qt::TexturePattern: {
+            const QPointF &brushOrigin = state()->brushOrigin;
+            const QTransform stateTransform = state()->matrix;
+            QTransform transform(stateTransform);
+            transform.translate(brushOrigin.x(), brushOrigin.y());
+            transform = brush.transform() * transform;
             if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_Supported)
-                || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_BlitsUnsupported)
-                || (!d->supportsStretchBlit() && state()->matrix.isScaling())) {
+                || (QDirectFBPaintEnginePrivate::getTransformationType(transform) & QDirectFBPaintEnginePrivate::Matrix_BlitsUnsupported)
+                || (!d->supportsStretchBlit() && transform.isScaling())) {
                 break;
             }
 
@@ -837,7 +851,7 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
             if (texture.pixmapData()->classId() != QPixmapData::DirectFBClass)
                 break;
 
-            CLIPPED_PAINT(d->drawTiledPixmap(rect, texture, rect.topLeft() - state()->brushOrigin));
+            CLIPPED_PAINT(d->drawTiledPixmap(stateTransform.mapRect(rect), texture, rect.topLeft() - brushOrigin, transform));
             return; }
         default:
             break;
@@ -948,10 +962,7 @@ void QDirectFBPaintEnginePrivate::unlock(QDirectFBPaintDevice *device)
 
 void QDirectFBPaintEnginePrivate::setTransform(const QTransform &transform)
 {
-    transformationType = transform.type();
-    if (qMin(transform.m11(), transform.m22()) < 0) {
-        transformationType |= QDirectFBPaintEnginePrivate::Matrix_NegativeScale;
-    }
+    transformationType = getTransformationType(transform);
     setPen(q->state()->pen);
 }
 
@@ -1153,10 +1164,12 @@ static inline qreal fixCoord(qreal rect_pos, qreal pixmapSize, qreal offset)
     return pos;
 }
 
-void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest, const QPixmap &pixmap, const QPointF &off)
+void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest, const QPixmap &pixmap,
+                                                  const QPointF &off, const QTransform &pixmapTransform)
 {
-    Q_ASSERT(!(transformationType & Matrix_BlitsUnsupported));
     const QTransform &transform = q->state()->matrix;
+    Q_ASSERT(!(getTransformationType(transform) & Matrix_BlitsUnsupported) &&
+             !(getTransformationType(pixmapTransform) & Matrix_BlitsUnsupported));
     const QRect destinationRect = transform.mapRect(dest).toRect().normalized();
     QRect newClip = destinationRect;
     if (!currentClip.isEmpty())
@@ -1173,7 +1186,7 @@ void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest, const QPix
     };
     surface->SetClip(surface, &clip);
 
-    QPointF offset = off;
+    QPointF offset = pixmapTransform.inverted().map(off);
     Q_ASSERT(transform.type() <= QTransform::TxScale);
     QPixmapData *data = pixmap.pixmapData();
     Q_ASSERT(data->classId() == QPixmapData::DirectFBClass);
@@ -1187,13 +1200,14 @@ void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest, const QPix
     prepareForBlit(blitFlags);
     QDirectFBPaintEnginePrivate::unlock(dfbData);
     const QSize pixmapSize = dfbData->size();
-    if (transform.isScaling()) {
+    IDirectFBSurface *sourceSurface = dfbData->directFBSurface();
+    if (transform.isScaling() || pixmapTransform.isScaling()) {
         Q_ASSERT(supportsStretchBlit());
         Q_ASSERT(qMin(transform.m11(), transform.m22()) >= 0);
         offset.rx() *= transform.m11();
         offset.ry() *= transform.m22();
 
-        const QSizeF mappedSize(pixmapSize.width() * transform.m11(), pixmapSize.height() * transform.m22());
+        const QSizeF mappedSize(pixmapSize.width() * pixmapTransform.m11(), pixmapSize.height() * pixmapTransform.m22());
         qreal y = fixCoord(destinationRect.y(), mappedSize.height(), offset.y());
         const qreal startX = fixCoord(destinationRect.x(), mappedSize.width(), offset.x());
         while (y <= destinationRect.bottom()) {
