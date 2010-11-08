@@ -51,6 +51,7 @@
 // from dithering.cpp
 extern unsigned short* convertRGB32_to_RGB565(const unsigned char *in, int width, int height, int stride);
 extern unsigned short* convertARGB32_to_RGBA4444(const unsigned char *in, int width, int height, int stride);
+extern unsigned char* convertBGRA32_to_RGBA32(const unsigned char *in, int width, int height, int stride);
 
 static EGLint preserved_image_attribs[] = { EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE };
 
@@ -146,8 +147,8 @@ Qt::HANDLE QMeeGoPixmapData::imageToEGLSharedImage(const QImage &image)
     glGenTextures(1, &textureId);
     glBindTexture(GL_TEXTURE_2D, textureId);
     if (image.hasAlphaChannel() && const_cast<QImage &>(image).data_ptr()->checkForAlphaPixels()) {
-        void *converted = convertARGB32_to_RGBA4444(image.bits(), image.width(), image.height(), image.bytesPerLine());
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width(), image.height(), 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, converted);
+        void *converted = convertBGRA32_to_RGBA32(image.bits(), image.width(), image.height(), image.bytesPerLine());
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width(), image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, converted);
         free(converted);
     } else {
         void *converted = convertRGB32_to_RGB565(image.bits(), image.width(), image.height(), image.bytesPerLine());

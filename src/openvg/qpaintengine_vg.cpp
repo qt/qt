@@ -3475,7 +3475,7 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
 
 void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
 {
-    drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->font, textItem->fontEngine,
+    drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->font, textItem->fontEngine(),
                      QPointF(0, 0), textItem->glyphPositions);
 }
 

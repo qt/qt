@@ -817,7 +817,7 @@ void tst_QPixmap::grabWidget()
     for (int row = 0; row < image.height(); ++row) {
         QRgb *line = reinterpret_cast<QRgb *>(image.scanLine(row));
         for (int col = 0; col < image.width(); ++col)
-            line[col] = qRgb(rand() & 255, row, col);
+            line[col] = qRgba(rand() & 255, row, col, 127);
     }
 
     QPalette pal = widget.palette();
