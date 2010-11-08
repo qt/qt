@@ -56,7 +56,29 @@
 #include <private/qeventdispatcher_symbian_p.h>
 #include "qt_s60_p.h"
 
+#include <eikenv.h>
+
 QT_BEGIN_NAMESPACE
+
+class QEventDispatcherS60;
+
+class QtEikonEnv : public CEikonEnv
+{
+public:
+    QtEikonEnv();
+    ~QtEikonEnv();
+
+    // from CActive.
+    void RunL();
+    void DoCancel();
+
+    void complete();
+
+private:
+    int m_lastIterationCount;
+    TInt m_savedStatusCode;
+    bool m_hasAlreadyRun;
+};
 
 class Q_GUI_EXPORT QEventDispatcherS60 : public QEventDispatcherSymbian
 {
@@ -72,6 +94,8 @@ public:
     bool excludeUserInputEvents() { return m_noInputEvents; }
 
     void saveInputEvent(QSymbianControl *control, QWidget *widget, QInputEvent *event);
+
+    void reactivateDeferredActiveObjects();
 
 private:
     bool sendDeferredInputEvents();
