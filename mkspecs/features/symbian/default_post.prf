@@ -3,8 +3,10 @@ load(default_post)
 contains(TEMPLATE, ".*app") {
     contains(CONFIG, stdbinary) {
         QMAKE_LIBS +=
-    } else {
+    } else:contains(CONFIG,qt) {
         QMAKE_LIBS += $$QMAKE_LIBS_QT_ENTRY
+    } else {
+        QMAKE_LIBS += $$QMAKE_LIBS_NO_QT_ENTRY
     }
     
     default_bin_deployment.files += $$symbianRemoveSpecialCharacters($$basename(TARGET)).exe
