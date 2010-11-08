@@ -406,11 +406,10 @@ QString qAppName()
     operations can call processEvents() to keep the application
     responsive.
 
-    Some Qt classes, such as QString, can be used without a
-    QCoreApplication object. However, in general, we recommend that
-    you create a QCoreApplication or a QApplication object in your \c
-    main() function as early as possible. exit() will not return
-    until the event loop exits; e.g., when quit() is called.
+    In general, we recommend that you create a QCoreApplication or
+    a QApplication object in your \c main() function as early as
+    possible. exit() will not return until the event loop exits;
+    e.g., when quit() is called.
 
     Several static convenience functions are also provided. The
     QCoreApplication object is available from instance(). Events can
