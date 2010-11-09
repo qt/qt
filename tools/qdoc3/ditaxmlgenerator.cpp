@@ -639,7 +639,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             const Node* node = 0;
             QString link = getLink(atom, relative, marker, &node);
             if (!link.isEmpty()) {
-                beginLink(link, node, relative, marker);
+                beginLink(link);
                 generateLink(atom, relative, marker);
                 endLink();
             }
@@ -1091,7 +1091,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                         .arg(marker->plainFullName(relative)));
             }
             else if (!inSectionHeading) {
-                beginLink(myLink, node, relative, marker);
+                beginLink(myLink);
             }
 #if 0
             else {
@@ -1107,14 +1107,14 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
 #if 0            
             qDebug() << "GUID LINK:" << atom->string() << outFileName();
 #endif            
-            beginLink(atom->string(), 0, relative, marker);
+            beginLink(atom->string());
             skipAhead = 1;
         }
         break;
     case Atom::LinkNode:
         {
             const Node* node = CodeMarker::nodeForString(atom->string());
-            beginLink(linkForNode(node, relative), node, relative, marker);
+            beginLink(linkForNode(node, relative));
             skipAhead = 1;
         }
         break;
@@ -1476,7 +1476,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::UnknownCommand:
         xmlWriter().writeStartElement("b");
-        xmlWriter().writeAttribute("outputclass","redFont code");
+        xmlWriter().writeAttribute("outputclass","error unknown-command");
         xmlWriter().writeCharacters(protectEnc(atom->string()));
         xmlWriter().writeEndElement(); // </b>
         break;
@@ -3701,20 +3701,6 @@ void DitaXmlGenerator::generateFullName(const Node* apparentNode,
         actualNode = apparentNode;
     xmlWriter().writeStartElement("xref");
     xmlWriter().writeAttribute("href",linkForNode(actualNode, relative));
-#if 0    
-    if (true || relative == 0 || relative->status() != actualNode->status()) {
-        switch (actualNode->status()) {
-        case Node::Obsolete:
-            xmlWriter().writeAttribute("outputclass","obsolete");
-            break;
-        case Node::Compat:
-            xmlWriter().writeAttribute("outputclass","compat");
-            break;
-        default:
-            break;
-        }
-    }
-#endif    
     xmlWriter().writeCharacters(protectEnc(fullName(apparentNode, relative, marker)));
     xmlWriter().writeEndElement(); // </xref>
 }
@@ -4194,41 +4180,13 @@ void DitaXmlGenerator::generateStatus(const Node* node, CodeMarker* marker)
     }
 }
 
-void DitaXmlGenerator::beginLink(const QString& link,
-                                 const Node* node,
-                                 const Node* relative,
-                                 CodeMarker* marker)
+void DitaXmlGenerator::beginLink(const QString& link)
 {
-    Q_UNUSED(marker)
-    Q_UNUSED(relative)
-
     this->link = link;
-    if (link.isEmpty()) {
-        if (showBrokenLinks)
-            xmlWriter().writeStartElement("i");
-    }
-    else if (node == 0 || (relative != 0 &&
-                           node->status() == relative->status())) {
-        xmlWriter().writeStartElement("xref");
-        xmlWriter().writeAttribute("href",link);
-    }
-    else {
-        switch (node->status()) {
-        case Node::Obsolete:
-            xmlWriter().writeStartElement("xref");
-            xmlWriter().writeAttribute("href",link);
-            //xmlWriter().writeAttribute("outputclass","obsolete");
-            break;
-        case Node::Compat:
-            xmlWriter().writeStartElement("xref");
-            xmlWriter().writeAttribute("href",link);
-            //xmlWriter().writeAttribute("outputclass","compat");
-            break;
-        default:
-            xmlWriter().writeStartElement("xref");
-            xmlWriter().writeAttribute("href",link);
-        }
-    }
+    if (link.isEmpty())
+        return;
+    xmlWriter().writeStartElement("xref");
+    xmlWriter().writeAttribute("href",link);
     inLink = true;
 }
 
@@ -4356,7 +4314,6 @@ void DitaXmlGenerator::generateQmlInherits(const QmlClassNode* cn,
             if (n && n->subType() == Node::QmlClass) {
                 const QmlClassNode* qcn = static_cast<const QmlClassNode*>(n);
                 xmlWriter().writeStartElement("p");
-                xmlWriter().writeAttribute("outputclass","centerAlign");
                 Text text;
                 text << "[Inherits ";
                 text << Atom(Atom::LinkNode,CodeMarker::stringForNode(qcn));
@@ -4404,7 +4361,6 @@ void DitaXmlGenerator::generateQmlInstantiates(const QmlClassNode* qcn,
     const ClassNode* cn = qcn->classNode();
     if (cn && (cn->status() != Node::Internal)) {
         xmlWriter().writeStartElement("p");
-        xmlWriter().writeAttribute("outputclass","centerAlign");
         Text text;
         text << "[";
         text << Atom(Atom::LinkNode,CodeMarker::stringForNode(qcn));

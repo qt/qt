@@ -245,10 +245,7 @@ class DitaXmlGenerator : public PageGenerator
 #ifdef GENERATE_MAC_REFS    
     void generateMacRef(const Node* node, CodeMarker* marker);
 #endif
-    void beginLink(const QString& link, 
-                   const Node* node, 
-                   const Node* relative, 
-                   CodeMarker* marker);
+    void beginLink(const QString& link); 
     void endLink();
     QString writeGuidAttribute(QString text);
     void writeGuidAttribute(Node* node);
