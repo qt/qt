@@ -89,7 +89,6 @@ private slots:
     void multithreadedDebugging();
     void autoShowStandardWindow();
     void standardWindowOwnership();
-    void runningState();
 
 private:
     QScriptEngineDebugger::DebuggerState m_recordedDebuggerState;
@@ -849,18 +848,6 @@ void tst_QScriptEngineDebugger::standardWindowOwnership()
         win->setParent(&widget);
     }
     QVERIFY(win != 0);
-}
-
-void tst_QScriptEngineDebugger::runningState()
-{
-    QScriptEngine engine;
-    QScriptEngineDebugger debugger;
-    debugger.attachTo(&engine);
-    QObject::connect(&debugger, SIGNAL(evaluationSuspended()),
-                     this, SLOT(recordDebuggerStateAndContinue()));
-    m_recordedDebuggerState = QScriptEngineDebugger::SuspendedState;
-    engine.evaluate("debugger");
-    QTRY_COMPARE(m_recordedDebuggerState, QScriptEngineDebugger::RunningState);
 }
 
 QTEST_MAIN(tst_QScriptEngineDebugger)
