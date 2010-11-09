@@ -709,7 +709,7 @@ void QS60StylePrivate::deleteStoredSettings()
 QColor QS60StylePrivate::colorFromFrameGraphics(SkinFrameElements frame) const
 {
 #ifndef QT_NO_SETTINGS
-    TInt themeID = 0;    
+    TInt themeID = 0;
     //First we need to fetch active theme ID. We need to store the themeID at the same time
     //as color, so that we can later check if the stored color is still from the same theme.
     //Native side stores active theme UID/Timestamp into central repository.
@@ -718,13 +718,13 @@ QColor QS60StylePrivate::colorFromFrameGraphics(SkinFrameElements frame) const
         CRepository *themeRepository = CRepository::NewLC(personalisationUID);
         if (themeRepository) {
             static const TInt KThemePkgIDDesSize = 23; //size of the stored theme package ID
-            TBuf<32> value; //themeID is currently max of 8 + 1 + 8 characters, but lets have some extra space 
+            TBuf<32> value; //themeID is currently max of 8 + 1 + 8 characters, but lets have some extra space
             const TUint32 key = 0x00000002; //active theme key in the repository
             error = themeRepository->Get(key, value);
             if (error == KErrNone) {
-                TLex lex(value);                
+                TLex lex(value);
                 TPtrC numberToken(lex.NextToken());
-                if(numberToken.Length())
+                if (numberToken.Length())
                     error = TLex(numberToken).Val(themeID);
                 else
                     error = KErrArgument;

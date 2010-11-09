@@ -527,7 +527,7 @@ public:
     static void deleteStoredSettings();
     // calculates average color based on theme graphics (minus borders).
     QColor colorFromFrameGraphics(SkinFrameElements frame) const;
-#endif    
+#endif
     QColor calculatedColor(SkinFrameElements frame) const;
 
     //set theme palette for application
