@@ -2036,6 +2036,7 @@ void QScriptValue::setData(const QScriptValue &data)
     Q_D(QScriptValue);
     if (!d || !d->isObject())
         return;
+    QScript::APIShim shim(d->engine);
     JSC::JSValue other = d->engine->scriptValueToJSCValue(data);
     if (d->jscValue.inherits(&QScriptObject::info)) {
         QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
