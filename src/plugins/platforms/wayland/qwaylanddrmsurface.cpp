@@ -112,7 +112,7 @@ QWaylandDrmBuffer::QWaylandDrmBuffer(QWaylandDisplay *display,
     : mDisplay(display)
     , mSize(size)
 {
-    Q_UNUSED(format);
+    struct wl_visual *visual;
 
     EGLint name, stride;
     static const EGLint contextAttribs[] = {
@@ -143,8 +143,21 @@ QWaylandDrmBuffer::QWaylandDrmBuffer(QWaylandDisplay *display,
     eglExportDRMImageMESA(mDisplay->eglDisplay(),
 			  mImage, &name, NULL, &stride);
 
+    switch (format) {
+    case QImage::Format_ARGB32:
+	visual = display->argbVisual();
+	break;
+    case QImage::Format_ARGB32_Premultiplied:
+	visual = display->argbPremultipliedVisual();
+	break;
+    default:
+	qDebug("unsupported buffer format %d requested\n", format);
+	visual = display->argbVisual();
+	break;
+    }
+
     mBuffer = display->createDrmBuffer(name, size.width(), size.height(),
-				       stride, display->argbVisual());
+				       stride, visual);
 }
 
 QWaylandDrmBuffer::~QWaylandDrmBuffer(void)

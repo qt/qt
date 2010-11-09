@@ -79,8 +79,9 @@ public:
     struct wl_buffer *createDrmBuffer(int name, int width, int height,
 				      uint32_t stride,
 				      struct wl_visual *visual);
-
+    struct wl_visual *rgbVisual();
     struct wl_visual *argbVisual();
+    struct wl_visual *argbPremultipliedVisual();
     EGLDisplay eglDisplay() { return mEglDisplay; }
 
     void setCursor(QWaylandBuffer *buffer, int32_t x, int32_t y);
