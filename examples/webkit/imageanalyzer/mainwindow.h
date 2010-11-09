@@ -45,7 +45,9 @@
 #include <QWebView>
 
 class ImageAnalyzer;
+QT_BEGIN_NAMESPACE
 class QNetworkDiskCache;
+QT_END_NAMESPACE
 
 class MainWin : public QWebView
 {
