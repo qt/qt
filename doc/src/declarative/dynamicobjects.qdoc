@@ -173,7 +173,11 @@ component. Each instance runs a NumberAnimation, and when the animation has fini
 Alternatively, the \c application.qml could have destroyed the created object
 by calling \c object.destroy().
 
-Notice that if a \c SelfDestroyingRect instance was created statically like this:
+Note that it is safe to call destroy() on an object within that object. Objects are not destroyed the
+instant destroy() is called, but are cleaned up sometime between the end of that script block and the next frame
+(unless you specified a non-zero delay).
+
+Note also that if a \c SelfDestroyingRect instance was created statically like this:
 
 \qml
 Item {
