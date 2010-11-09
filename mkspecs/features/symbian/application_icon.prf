@@ -1,20 +1,40 @@
 load(data_caging_paths)
 
-# If no_icon keyword exist, the S60 UI app is just made hidden. This because S60 app FW
-# requires the registration resource file to exist always
-contains( CONFIG, no_icon ) {
-    symbian:RSS_RULES += "hidden = KAppIsHidden;"
-    CONFIG -= no_icon
-} else {
-# There is no point in compiling the MIF icon if no_icon CONFIGS is set
-    !isEmpty(ICON) {
+contains(CONFIG, no_icon) {
+    # If no_icon keyword exist, the S60 UI app is just made hidden. This because S60 app FW
+    # requires the registration resource file to exist always
+    contains(QT, gui):contains(CONFIG, qt) {
+        symbian:RSS_RULES += "hidden = KAppIsHidden;"
+        CONFIG -= no_icon
+    }
+}
 
+!contains(CONFIG, no_icon) {
+    baseTarget = $$symbianRemoveSpecialCharacters($$basename(TARGET))
+    symbian-abld|symbian-sbsv2 {
+        resourceZDir = $$EPOCROOT$$HW_ZDIR$$APP_RESOURCE_DIR
+        regZDir = $$EPOCROOT$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR
+    } else {
+        contains(DESTDIR, "/.*") {
+            resourceZDir = $$DESTDIR
+        } else:isEmpty(DESTDIR) {
+            resourceZDir = $$OUT_PWD
+        } else {
+            resourceZDir = $$OUT_PWD/$$DESTDIR
+        }
+        regZDir = $$resourceZDir
+    }
+
+    default_resource_deployment.sources += $$resourceZDir/$${baseTarget}.rsc
+    default_resource_deployment.path = $$APP_RESOURCE_DIR
+    default_reg_deployment.sources += $$regZDir/$${baseTarget}_reg.rsc
+    default_reg_deployment.path = $$REG_RESOURCE_IMPORT_DIR
+
+    !isEmpty(ICON) {
         !count(ICON, 1) {
             ICON = $$first(ICON)
             warning("Only first icon specified in ICON variable is used: $$ICON")
         }
-
-        baseTarget = $$symbianRemoveSpecialCharacters($$basename(TARGET))
 
         # Note: symbian-sbsv2 builds can't utilize extra compiler for mifconv, so ICON handling is done in code
         !symbian-sbsv2 {
@@ -27,13 +47,10 @@ contains( CONFIG, no_icon ) {
             ICON_backslashed = $$ICON
 
             symbian-abld {
+                # ${ZDIR} is defined in Makefile
                 mifIconZDir = ${ZDIR}$$APP_RESOURCE_DIR
             } else {
-                isEmpty(DESTDIR) {
-                    mifIconZDir = .
-                } else {
-                    mifIconZDir = $$DESTDIR
-                }
+                mifIconZDir = $$resourceZDir
             }
 
             # Extra compiler rules for mifconv
@@ -54,5 +71,9 @@ contains( CONFIG, no_icon ) {
         # Rules to use generated MIF file from symbian resources
         RSS_RULES.number_of_icons = $$size(ICON_backslashed)
         RSS_RULES.icon_file = $$APP_RESOURCE_DIR/$${baseTarget}.mif
+
+        default_resource_deployment.sources += $$resourceZDir/$${baseTarget}.mif
     }
 }
+
+
