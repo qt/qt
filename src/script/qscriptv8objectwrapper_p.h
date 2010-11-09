@@ -25,7 +25,7 @@
 #define QSCRIPTV8OBJECTWRAPPER_P_H
 
 #include "qscriptvalue.h"
-
+#include "qscriptcontext_p.h"
 #include <v8.h>
 
 QT_BEGIN_INCLUDE_NAMESPACE

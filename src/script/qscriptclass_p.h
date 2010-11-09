@@ -36,7 +36,6 @@
 #define QSCRIPTCLASSPRIVATE_P_H
 
 #include "qscriptclass.h"
-#include "qscriptengine_p.h"
 #include <v8.h>
 #include "qscriptv8objectwrapper_p.h"
 
