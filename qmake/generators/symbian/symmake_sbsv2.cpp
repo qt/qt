@@ -386,8 +386,9 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
         t << endl;
 
         QString currentClause;
+        QString locFileDep = generateLocFileTarget(t, qmakeCmd);
 
-        t << "debug: " << BLD_INF_FILENAME << endl;
+        t << "debug: " << locFileDep << BLD_INF_FILENAME << endl;
         t << "\t$(SBS)";
         foreach(QString clause, debugClauses) {
             t << clause;
@@ -399,7 +400,7 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
             t << clause;
         }
         t << endl;
-        t << "release: " << BLD_INF_FILENAME << endl;
+        t << "release: " << locFileDep << BLD_INF_FILENAME << endl;
         t << "\t$(SBS)";
         foreach(QString clause, releaseClauses) {
             t << clause;
@@ -431,7 +432,7 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
             else // use generic arm clause
                 clause = configClause(item, debugBuild, defaultRvctCompilerVersion, genericArmClause);
 
-            t << "debug-" << item << ": " << BLD_INF_FILENAME << endl;
+            t << "debug-" << item << ": " << locFileDep << BLD_INF_FILENAME << endl;
             t << "\t$(SBS)" << clause << endl;
             t << "clean-debug-" << item << ": " << BLD_INF_FILENAME << endl;
             t << "\t$(SBS) reallyclean" << clause << endl;
@@ -444,7 +445,7 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
             else // use generic arm clause
                 clause = configClause(item, releaseBuild, defaultRvctCompilerVersion, genericArmClause);
 
-            t << "release-" << item << ": " << BLD_INF_FILENAME << endl;
+            t << "release-" << item << ": " << locFileDep << BLD_INF_FILENAME << endl;
             t << "\t$(SBS)" << clause << endl;
             t << "clean-release-" << item << ": " << BLD_INF_FILENAME << endl;
             t << "\t$(SBS) reallyclean" << clause << endl;
@@ -454,11 +455,11 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
             foreach(QString compilerVersion, allArmCompilerVersions) {
                 QString debugClause = configClause(item, debugBuild, compilerVersion, armClause);
                 QString releaseClause = configClause(item, releaseBuild, compilerVersion, armClause);
-                t << "debug-" << item << "-" << compilerVersion << ": " << BLD_INF_FILENAME << endl;
+                t << "debug-" << item << "-" << compilerVersion << ": " << locFileDep << BLD_INF_FILENAME << endl;
                 t << "\t$(SBS)" << debugClause << endl;
                 t << "clean-debug-" << item << "-" << compilerVersion << ": " << BLD_INF_FILENAME << endl;
                 t << "\t$(SBS) reallyclean" << debugClause << endl;
-                t << "release-" << item << "-" << compilerVersion << ": " << BLD_INF_FILENAME << endl;
+                t << "release-" << item << "-" << compilerVersion << ": " << locFileDep << BLD_INF_FILENAME << endl;
                 t << "\t$(SBS)" << releaseClause << endl;
                 t << "clean-release-" << item << "-" << compilerVersion << ": " << BLD_INF_FILENAME << endl;
                 t << "\t$(SBS) reallyclean" << releaseClause << endl;
