@@ -3098,6 +3098,17 @@ QUrl QFileOpenEvent::url() const
     return reinterpret_cast<const QFileOpenEventPrivate *>(d)->url;
 }
 
+/*!
+    \fn void openFile(QFile &file, QIODevice::OpenMode flags) const
+
+    Opens a QFile on the file referenced by this event.
+    This is necessary as some files cannot be opened with the filename alone, but require specific
+    information stored in this event.
+    For example, if this QFileOpenEvent contains a request to open a Symbian data caged file,
+    this function must be used to open a QFile on it.
+
+    \since 4.8
+*/
 void QFileOpenEvent::openFile(QFile &file, QIODevice::OpenMode flags) const
 {
     file.setFileName(f);
