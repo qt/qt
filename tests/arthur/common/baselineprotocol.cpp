@@ -45,30 +45,42 @@
 #include <QHostInfo>
 #include <QSysInfo>
 #include <QProcess>
+#include <QFileInfo>
+#include <QDir>
+
+#ifndef QMAKESPEC
+#define QMAKESPEC "Unknown"
+#endif
 
 PlatformInfo::PlatformInfo(bool useLocal)
+    : QMap<QString, QString>()
 {
     if (useLocal) {
-        buildKey = QLibraryInfo::buildKey();
-        qtVersion = QLatin1String(qVersion());
-        hostName = QHostInfo::localHostName();
-        osVersion = -1;
+        insert(PI_HostName, QHostInfo::localHostName());
+        insert(PI_QtVersion, QLS(qVersion()));
+        QString mkspec = QDir::fromNativeSeparators(QLS(QMAKESPEC)).remove(QRegExp(QLS("^.*/mkspecs/")));
+        insert(PI_QMakeSpec, mkspec);
+        insert(PI_BuildKey, QLibraryInfo::buildKey());
 #if defined(Q_OS_LINUX)
-        osName = QLatin1String("Linux");
+        insert(PI_OSName, QLS("Linux"));
+        QProcess uname;
+        uname.start(QLS("uname"), QStringList() << QLS("-r"));
+        if (uname.waitForFinished(3000))
+            insert(PI_OSVersion, QString::fromLocal8Bit(uname.readAllStandardOutput().constData()).simplified());
 #elif defined(Q_OS_WINCE)
-        osName = QLatin1String("WinCE");
-        osVersion = QSysInfo::windowsVersion();
+        insert(PI_OSName, QLS("WinCE"));
+        insert(PI_OSVersion, QString::number(QSysInfo::windowsVersion()));
 #elif defined(Q_OS_WIN)
-        osName = QLatin1String("Windows");
-        osVersion = QSysInfo::windowsVersion();
+        insert(PI_OSName, QLS("Windows"));
+        insert(PI_OSVersion, QString::number(QSysInfo::windowsVersion()));
 #elif defined(Q_OS_MAC)
-        osName = QLatin1String("MacOS");
-        osVersion = qMacVersion();
+        insert(PI_OSName, QLS("MacOS"));
+        insert(PI_OSVersion, QString::number(qMacVersion()));
 #elif defined(Q_OS_SYMBIAN)
-        osName = QLatin1String("Symbian");
-        osVersion = QSysInfo::symbianVersion();
+        insert(PI_OSName, QLS("Symbian"));
+        insert(PI_OSVersion, QString::number(QSysInfo::symbianVersion());
 #else
-        osName = QLatin1String("Other");
+        insert(PI_OSName, QLS("Other"));
 #endif
 
         QProcess git;
@@ -80,27 +92,23 @@ PlatformInfo::PlatformInfo(bool useLocal)
 #else
         cmd = QLS("git");
 #endif
-        args << QLS("log") << QLS("--max-count=1") << QLS("--pretty=%H");
+        args << QLS("log") << QLS("--max-count=1") << QLS("--pretty=%H [%an] [%ad] %s");
         git.start(cmd, args);
         git.waitForFinished(3000);
         if (!git.exitCode())
-            gitCommit = QString::fromLocal8Bit(git.readAllStandardOutput().constData()).trimmed();
+            insert(PI_GitCommit, QString::fromLocal8Bit(git.readAllStandardOutput().constData()).simplified());
         else
-            gitCommit = QLS("Unknown");
+            insert(PI_GitCommit, QLS("Unknown"));
     }
+
+    QByteArray gb = qgetenv("PULSE_GIT_BRANCH");
+    if (!gb.isEmpty())
+        insert(PI_PulseGitBranch, QString::fromLatin1(gb));
+    QByteArray tb = qgetenv("PULSE_TESTR_BRANCH");
+    if (!tb.isEmpty())
+        insert(PI_PulseTestrBranch, QString::fromLatin1(tb));
 }
 
-QDataStream & operator<< (QDataStream &stream, const PlatformInfo &p)
-{
-    stream << p.hostName << p.osName << p.osVersion << p.qtVersion << p.buildKey << p.gitCommit;
-    return stream;
-}
-
-QDataStream & operator>> (QDataStream& stream, PlatformInfo& p)
-{
-    stream >> p.hostName >> p.osName >> p.osVersion >> p.qtVersion >> p.buildKey >> p.gitCommit;
-    return stream;
-}
 
 ImageItem &ImageItem::operator=(const ImageItem &other)
 {
@@ -151,15 +159,15 @@ QString ImageItem::engineAsString() const
 {
     switch (engine) {
     case Raster:
-        return QLatin1String("Raster");
+        return QLS("Raster");
         break;
     case OpenGL:
-        return QLatin1String("OpenGL");
+        return QLS("OpenGL");
         break;
     default:
         break;
     }
-    return QLatin1String("Unknown");
+    return QLS("Unknown");
 }
 
 QString ImageItem::formatAsString() const
@@ -184,8 +192,8 @@ QString ImageItem::formatAsString() const
         "ARGB4444-Premult"
     };
     if (renderFormat < 0 || renderFormat >= numFormats)
-        return QLatin1String("UnknownFormat");
-    return QLatin1String(formatNames[renderFormat]);
+        return QLS("UnknownFormat");
+    return QLS(formatNames[renderFormat]);
 }
 
 QDataStream & operator<< (QDataStream &stream, const ImageItem &ii)
@@ -223,7 +231,7 @@ bool BaselineProtocol::connect()
 
     socket.connectToHost(serverName, ServerPort);
     if (!socket.waitForConnected(Timeout)) {
-        errMsg += QLatin1String("TCP connectToHost failed. Host:") + serverName + QLatin1String(" port:") + QString::number(ServerPort);
+        errMsg += QLS("TCP connectToHost failed. Host:") + serverName + QLS(" port:") + QString::number(ServerPort);
         return false;
     }
 
@@ -232,13 +240,13 @@ bool BaselineProtocol::connect()
     QDataStream ds(&block, QIODevice::ReadWrite);
     ds << pi;
     if (!sendBlock(AcceptPlatformInfo, block)) {
-        errMsg += QLatin1String("Failed to send data to server.");
+        errMsg += QLS("Failed to send data to server.");
         return false;
     }
 
     Command cmd = Ack;
     if (!receiveBlock(&cmd, &block) || cmd != Ack) {
-        errMsg += QLatin1String("Failed to get response from server.");
+        errMsg += QLS("Failed to get response from server.");
         return false;
     }
 
@@ -258,6 +266,7 @@ bool BaselineProtocol::acceptConnection(PlatformInfo *pi)
     if (pi) {
         QDataStream ds(block);
         ds >> *pi;
+        pi->insert(PI_HostAddress, socket.peerAddress().toString());
     }
 
     if (!sendBlock(Ack, QByteArray()))
@@ -307,7 +316,7 @@ bool BaselineProtocol::sendItem(Command cmd, const ImageItem &item)
     QDataStream ds(&buf);
     ds << item;
     if (!sendBlock(cmd, buf.data())) {
-        errMsg.prepend(QLatin1String("Failed to submit image to server. "));
+        errMsg.prepend(QLS("Failed to submit image to server. "));
         return false;
     }
     return true;
@@ -334,9 +343,8 @@ bool BaselineProtocol::receiveBlock(Command *cmd, QByteArray *block)
     quint16 rcvProtocolVersion, rcvCmd;
     ds >> rcvProtocolVersion >> rcvCmd;
     if (rcvProtocolVersion != ProtocolVersion) {
-        // TBD: More resilient handling of this case; the server should accept client's version
-        errMsg = QLatin1String("Server protocol version mismatch, received:") + QString::number(rcvProtocolVersion);
-
+        errMsg = QLS("Baseline protocol version mismatch, received:") + QString::number(rcvProtocolVersion)
+                + QLS(" expected:") + QString::number(ProtocolVersion);
         return false;
     }
     if (cmd)
@@ -368,6 +376,6 @@ QString BaselineProtocol::errorMessage()
 {
     QString ret = errMsg;
     if (socket.error() >= 0)
-        ret += QLatin1String(" Socket state: ") + socket.errorString();
+        ret += QLS(" Socket state: ") + socket.errorString();
     return ret;
 }

@@ -64,6 +64,7 @@ class QAuthenticator;
 class Q_NETWORK_EXPORT QAbstractSocket : public QIODevice
 {
     Q_OBJECT
+    Q_ENUMS(SocketType NetworkLayerProtocol SocketError SocketState SocketOption)
 public:
     enum SocketType {
         TcpSocket,
