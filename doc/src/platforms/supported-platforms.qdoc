@@ -44,9 +44,8 @@
 
     \tableofcontents
 
-    Information about the specific platforms Qt runs on can be found on the
-    \l{Platform Notes} page. Information about the compilers used on each platform
-    can be found on the \l{Compiler Notes} page.
+    Information about the specific platforms Qt runs on, and the compilers used
+    on each platform, can be found on the \l{Platform and Compiler Notes} page.
 
     \section1 Tier 1 Platforms
 
@@ -123,6 +122,8 @@
                                      \o RVCT 2.2 [build 686 or later], WINSCW 3.2.5 [build 482 or later], GCCE (for applications)
     \endtable
 
+	\note The PPC architecture on Mac has been downgraded from tier 1 to tier 2 for 4.7. 
+	
     \section1 Tier 3 Platforms (Not supported by Nokia)
 
     All platforms not specifically listed above are not supported by Nokia. Nokia does

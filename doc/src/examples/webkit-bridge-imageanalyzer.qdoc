@@ -24,9 +24,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 /*!
     \example webkit/imageanalyzer
-    \startpage {index.html} {Qt Reference Documentation}
+    \startpage {index.html}{Qt Reference Documentation}
     \title The Webkit Bridge Tutorial - Hybrid Client Application
 
     In this example, we will show how to write a hybrid application using
@@ -36,6 +37,9 @@ like a native application, but presents nothing more than a \c QWebView for its
 user interface, displaying web content written in HTML/JavaScript. The
 application uses QtConcurrent to distribute its work across as many CPU cores as
 are available from the system, so it can process each image in parallel.
+
+For the full reference documentation of QtWebKit hybrid development, see 
+\l{qtwebkit-bridge.html}{The QtWebKit Bridge}.
 
 Initially, you will see a user interface with an empty list of images. Clicking
 on some of the images in the lower pane below adds them to the list view above,
@@ -54,8 +58,8 @@ each image are shown.
 
     \image webkit-imageanalyzer-complete.png
 
-The MainWindow is defined in C++, and creates a \c QNetworkCache and a
-\c QWebView, and tells the \c QWebView to load the starting page, providing us
+The MainWindow is defined in C++, and creates a \l QNetworkDiskCache and a
+\l QWebView, and tells the \l QWebView to load the starting page, providing us
 with a user interface for the client.
 
   \snippet examples/webkit/imageanalyzer/mainwindow.cpp MainWindow - constructor
@@ -67,8 +71,8 @@ likely be retrieved from the network rather than from resources.
 
 We wish to initialize an object reference in the JavaScript web page to point
 to our \tt ImageAnalyzer before any other scripts are run. To do this, we
-connect the \c javaScriptWindowObjectCleared() signal to a slot which does the
-object creation and handoff to JavaScript.
+connect the \l{QWebFrame::}{javaScriptWindowObjectCleared()} signal to a slot
+which does the object creation and handoff to JavaScript.
 
   \snippet examples/webkit/imageanalyzer/mainwindow.cpp MainWindow - addJSObject
 
@@ -81,7 +85,7 @@ page's mainFrame with \c addToJavaScriptWindowObject().
 
     \snippet examples/webkit/imageanalyzer/resources/index.html sample images
 
-    Clicking an image adds it to an images list.
+Clicking an image adds it to an images list.
 
     \snippet examples/webkit/imageanalyzer/resources/index.html addImage
 
@@ -94,14 +98,15 @@ When the user clicks the \bold {Analyze} button, \c analyzeImages() is called,
 another regular JavaScript method, shown below.
 Notice it assumes the \c imageAnalyzer object is already defined and initialized
 in JavaScript space, but we guaranteed that by connecting our setup slot to the
-appropriate signal, \c javaScriptWindowObjectCleared().
+appropriate signal, \l{QWebFrame::}{javaScriptWindowObjectCleared()}.
 
     \snippet examples/webkit/imageanalyzer/resources/index.html analyzeImages
 
 The only methods on \c ImageAnalyzer that we can or do call from JavaScript are
-those which are exposed through Qt's MetaObject system: property getter/setter
-methods,
-\c public \c slots, \c signals, and other \c Q_INVOKABLE functions.
+those which are exposed through \{The Meta-Object System}{Qt's MetaObject}
+system: \l{The Property System}{property} getter/setter methods,
+\c public \l {Signals & Slots}{signals and slots}, and other 
+\l{Q_INVOKABLE}{Q_INVOKABLE} functions.
 
 \snippet examples/webkit/imageanalyzer/imageanalyzer.h ImageAnalyzer - public interface
 \dots
@@ -138,13 +143,13 @@ will load them into a QImage when the data is ready.
 \snippet examples/webkit/imageanalyzer/imageanalyzer.cpp ImageAnalyzer - handleReply
 
 After the images are loaded, they are queued up in preparation to be
-sent in a batch for analysis to a \c QFutureWatcher, which will distribute the
+sent in a batch for analysis to a \l QFutureWatcher, which will distribute the
 processing across multiple threads and cores, depending on how many are available.
 
 \snippet examples/webkit/imageanalyzer/imageanalyzer.cpp ImageAnalyzer - queueImage
 
 The function that gets performed on each image is \c averageRGB(),
-as specified in argument 2 to the \c QtConcurrent::mapped() function.
+as specified in argument 2 to the \l{QtConcurrent::mapped()} function.
 Notice it repeats the same calculations 100 times on each pixel to keep the CPU
 very busy. This is done only for the purposes of the demo so that the analysis
 takes a noticeable time to complete.

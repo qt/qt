@@ -722,7 +722,7 @@ public:
 
 /*!
     Returns true if \a item1 is on top of \a item2.
-    The items dont need to be siblings.
+    The items don't need to be siblings.
 
     \internal
 */
@@ -776,7 +776,7 @@ inline bool qt_closestItemFirst(const QGraphicsItem *item1, const QGraphicsItem 
 
 /*!
     Returns true if \a item2 is on top of \a item1.
-    The items dont need to be siblings.
+    The items don't need to be siblings.
 
     \internal
 */

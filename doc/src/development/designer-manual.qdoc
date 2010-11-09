@@ -1769,37 +1769,54 @@ pixmap property in the property editor.
 
     \title Using a Designer UI File in Your Application
 
-    With Qt's integrated build tools, \l{qmake Manual}{qmake} and \l uic, the
-    code for user interface components created with \QD is automatically
-    generated when the rest of your application is built. Forms can be included
-    and used directly from your application. Alternatively, you can use them to
-    extend subclasses of standard widgets. These forms can be processed at
-    compile time or at run time, depending on the approach used.
+    Qt Designer UI files represent the widget tree of the form in XML format. The
+    forms can be processed:
 
+    \list
+        \o \l{Compile Time Form Processing}{At compile time}, which means that forms
+            are converted to C++ code that can be compiled.
+        \o \l{Run Time Form Processing}{At runtime}, which means that forms are processed
+            by the QUiLoader class that dynamically constructs the widget tree while
+            parsing the XML file.
+    \endlist
 
     \tableofcontents
     \section1 Compile Time Form Processing
+
+    You create user interface components with \QD and use Qt's integrated build tools,
+    \l{qmake Manual}{qmake} and \l{User Interface Compiler (uic)}{uic}, to generate code
+    for them when the application is built. The generated code contains the form's user
+    interface object. It is a C++ struct that contains:
+
+    \list
+        \o Pointers to the form's widgets, layouts, layout items,
+           button groups, and actions.
+        \o A member function called \c setupUi() to build the widget tree
+           on the parent widget.
+        \o A member function called \c retranslateUi() that handles the
+           translation of the string properties of the form. For more information,
+           see \l{Reacting to Language Changes}.
+    \endlist
+
+    The generated code can be included in your application and used directly from
+    it. Alternatively, you can use it to extend subclasses of standard widgets.
 
     A compile time processed form can be used in your application with one of
     the following approaches:
 
     \list
-        \o  The Direct Approach: you construct a widget to use as a placeholder
+        \o  \l{The Direct Approach}: you construct a widget to use as a placeholder
             for the component, and set up the user interface inside it.
-        \o  The Single Inheritance Approach: you subclass the form's base class
+        \o  \l{The Single Inheritance Approach}: you subclass the form's base class
             (QWidget or QDialog, for example), and include a private instance
             of the form's user interface object.
-        \o  The MultipleInheritance Approach: you subclass both the form's base
+        \o  \l{The Multiple Inheritance Approach}: you subclass both the form's base
             class and the form's user interface object. This allows the widgets
             defined in the form to be used directly from within the scope of
             the subclass.
     \endlist
 
-
-    \section2 The Direct Approach
-
-    To demonstrate how to use user interface (UI) files straight from
-    \QD, we create a simple Calculator Form application. This is based on the
+    To demonstrate, we create a simple Calculator Form application. It is based on the
     original \l{Calculator Form Example}{Calculator Form} example.
 
     The application consists of one source file, \c main.cpp and a UI
@@ -1817,15 +1834,18 @@ pixmap property in the property editor.
     The special feature of this file is the \c FORMS declaration that tells
     \c qmake which files to process with \c uic. In this case, the
     \c calculatorform.ui file is used to create a \c ui_calculatorform.h file
-    that can be used by any file listed in the \c SOURCES declaration. To
-    ensure that \c qmake generates the \c ui_calculatorform.h file, we need to
-    include it in a file listed in \c SOURCES. Since we only have \c main.cpp,
-    we include it there:
+    that can be used by any file listed in the \c SOURCES declaration.
+
+    \note You can use Qt Creator to create the Calculator Form project. It
+    automatically generates the main.cpp, UI, and .pro files, which you can
+    then modify.
+
+    \section2 The Direct Approach
+
+    To use the direct approach, we include the \c ui_calculatorform.h file
+    directly in \c main.cpp:
 
     \snippet doc/src/snippets/uitools/calculatorform/main.cpp 0
-
-    This include is an additional check to ensure that we do not generate code
-    for UI files that are not used.
 
     The \c main function creates the calculator widget by constructing a
     standard QWidget that we use to host the user interface described by the
@@ -1837,23 +1857,33 @@ pixmap property in the property editor.
     from the \c ui_calculatorform.h file that sets up all the dialog's widgets
     and the connections between its signals and slots.
 
-    This approach provides a quick and easy way to use simple, self-contained
-    components in your applications, but many componens created with \QD will
+    The direct approach provides a quick and easy way to use simple, self-contained
+    components in your applications. However, componens created with \QD often
     require close integration with the rest of the application code. For
     instance, the \c CalculatorForm code provided above will compile and run,
     but the QSpinBox objects will not interact with the QLabel as we need a
     custom slot to carry out the add operation and display the result in the
-    QLabel. To achieve this, we need to subclass a standard Qt widget (known as
-    the single inheritance approach).
-
+    QLabel. To achieve this, we need to use the single inheritance approach.
 
     \section2 The Single Inheritance Approach
+
+    To use the single inheritance approach, we subclass a standard Qt widget and
+    include a private instance of the form's user interface object. This can take
+    the form of:
+
+    \list
+        \o A member variable
+        \o A pointer member variable
+    \endlist
+
+    \section3 Using a Member Variable
 
     In this approach, we subclass a Qt widget and set up the user interface
     from within the constructor. Components used in this way expose the widgets
     and layouts used in the form to the Qt widget subclass, and provide a
     standard system for making signal and slot connections between the user
     interface and other objects in your application.
+    The generated \c{Ui::CalculatorForm} structure is a member of the class.
 
     This approach is used in the \l{Calculator Form Example}{Calculator Form}
     example.
@@ -1893,6 +1923,52 @@ pixmap property in the property editor.
     them. This approach can be used to create individual tabs from existing
     forms, for example.
 
+    \section3 Using a Pointer Member Variable
+
+    Alternatively, the \c{Ui::CalculatorForm} structure can be made a pointer
+    member of the class. The header then looks as follows:
+
+    \code
+
+    namespace Ui {
+        class CalculatorForm;
+    }
+
+    class CalculatorForm : public QWidget
+    ...
+    virtual ~CalculatorForm();
+    ...
+    private:
+        Ui::CalculatorForm *ui;
+    ...
+
+    \endcode
+
+    The corresponding source file looks as follows:
+
+    \code
+    #include "ui_calculatorform.h"
+
+    CalculatorForm::CalculatorForm(QWidget *parent) :
+        QWidget(parent), ui(new Ui::CalculatorForm)
+    {
+        ui->setupUi(this);
+    }
+
+    CalculatorForm::~CalculatorForm()
+    {
+        delete ui;
+    }
+    \endcode
+
+    The advantage of this approach is that the user interface object can be
+    forward-declared, which means that we do not have to include the generated
+    \c ui_calculatorform.h file in the header. The form can then be changed without
+    recompiling the dependent source files. This is particularly important if the
+    class is subject to binary compatibility restrictions.
+
+    We generally recommend this approach for libraries and large applications.
+    For more information, see \l{Creating Shared Libraries}.
 
     \section2 The Multiple Inheritance Approach
 
@@ -1906,13 +1982,14 @@ pixmap property in the property editor.
     {Multiple Inheritance} example.
 
     We need to include the header file that \c uic generates from the
-    \c calculatorform.ui file:
+    \c calculatorform.ui file, as follows:
 
     \snippet examples/uitools/multipleinheritance/calculatorform.h 0
 
     The class is defined in a similar way to the one used in the
     \l{The Single Inheritance Approach}{single inheritance approach}, except that
-    this time we inherit from \e{both} QWidget and \c{Ui::CalculatorForm}:
+    this time we inherit from \e{both} QWidget and \c{Ui::CalculatorForm},
+    as follows:
 
     \snippet examples/uitools/multipleinheritance/calculatorform.h 1
 
@@ -1931,11 +2008,26 @@ pixmap property in the property editor.
     same say as a widget created in code by hand. We no longer require the
     \c{ui} prefix to access them.
 
-    Subclassing using multiple inheritance gives us more direct access to the
-    contents of the form, is slightly cleaner than the single inheritance
-    approach, but does not conveniently support composition of multiple user
-    interfaces.
+    \section2 Reacting to Language Changes
 
+    Qt notifies applications if the user interface language changes by sending an
+    event of the type QEvent::LanguageChange. To call the member function
+    \c retranslateUi() of the user interface object, we reimplement
+    \c QWidget::changeEvent() in the form class, as follows:
+
+    \code
+    void CalculatorForm::changeEvent(QEvent *e)
+    {
+        QWidget::changeEvent(e);
+        switch (e->type()) {
+        case QEvent::LanguageChange:
+            ui->retranslateUi(this);
+            break;
+        default:
+            break;
+       }
+    }
+    \endcode
 
     \section1 Run Time Form Processing
 

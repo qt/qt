@@ -608,7 +608,7 @@ QDeclarativeContext *QDeclarativeEngine::rootContext() const
   QNetworkAccessManager with specialized caching, proxy and cookie
   support.
 
-  The factory must be set before exceuting the engine.
+  The factory must be set before executing the engine.
 */
 void QDeclarativeEngine::setNetworkAccessManagerFactory(QDeclarativeNetworkAccessManagerFactory *factory)
 {
@@ -878,7 +878,7 @@ void QDeclarativeEngine::setContextForObject(QObject *object, QDeclarativeContex
   created by calling QDeclarativeCompnent::create() or
   QDeclarativeComponent::beginCreate() which have CppOwnership by
   default.  The ownership of these root-level objects is considered to
-  have been transfered to the C++ caller.
+  have been transferred to the C++ caller.
 
   Objects not-created by QML have CppOwnership by default.  The
   exception to this is objects returned from a C++ method call.  The

@@ -832,11 +832,11 @@ QString QDateTimeEdit::sectionText(Section section) const
   This format is the same as the one used described in QDateTime::toString()
   and QDateTime::fromString()
 
-  Example format strings(assuming that the date is 2nd of July 1969):
+  Example format strings (assuming that the date is 2nd of July 1969):
 
   \table
   \header \i Format \i Result
-  \row \i dd.MM.yyyy    \i 02.07.1969
+  \row \i dd.MM.yyyy \i 02.07.1969
   \row \i MMM d yy \i Jul 2 69
   \row \i MMMM d yy \i July 2 69
   \endtable

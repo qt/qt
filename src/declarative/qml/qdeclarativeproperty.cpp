@@ -1408,8 +1408,8 @@ static inline void flush_vme_signal(const QObject *object, int index)
             int methodOffset = metaObject->methodOffset();
 
             while (methodOffset > index) {
-                methodOffset -= QMetaObject_methods(metaObject);
                 metaObject = metaObject->d.superdata;
+                methodOffset -= QMetaObject_methods(metaObject);
             }
 
             QDeclarativeVMEMetaObject *vme = 

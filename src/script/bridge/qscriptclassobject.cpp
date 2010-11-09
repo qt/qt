@@ -78,6 +78,12 @@ bool ClassObjectDelegate::getOwnPropertySlot(QScriptObject* object,
         scriptObject, scriptName, QScriptClass::HandlesReadAccess, &id);
     if (flags & QScriptClass::HandlesReadAccess) {
         QScriptValue value = m_scriptClass->property(scriptObject, scriptName, id);
+        if (!value.isValid()) {
+            // The class claims to have the property, but returned an invalid
+            // value. Silently convert to undefined to avoid the invalid value
+            // "escaping" into JS.
+            value = QScriptValue(QScriptValue::UndefinedValue);
+        }
         slot.setValue(engine->scriptValueToJSCValue(value));
         return true;
     }
@@ -119,6 +125,12 @@ bool ClassObjectDelegate::getOwnPropertyDescriptor(QScriptObject *object,
         attribs |= pflags & QScriptValue::UserRange;
         // Rather than calling the getter, we could return an access descriptor here.
         QScriptValue value = m_scriptClass->property(scriptObject, scriptName, id);
+        if (!value.isValid()) {
+            // The class claims to have the property, but returned an invalid
+            // value. Silently convert to undefined to avoid the invalid value
+            // "escaping" into JS.
+            value = QScriptValue(QScriptValue::UndefinedValue);
+        }
         descriptor.setDescriptor(engine->scriptValueToJSCValue(value), attribs);
         return true;
     }

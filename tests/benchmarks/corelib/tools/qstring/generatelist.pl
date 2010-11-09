@@ -160,11 +160,10 @@ while (1) {
     $totalsize += $len;
     $maxlen = $len if $len > $maxlen;
 }
-print "\n};\n";
+print "};\n";
 close IN;
 
-print "struct StringCollection stringCollection[] = {\n";
-
+print "const struct StringCollection stringCollection[] = {\n";
 for $i (0..$count-1) {
     print "    {",
         $data[$i]->{len}, ", ",

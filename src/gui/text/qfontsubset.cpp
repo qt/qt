@@ -697,7 +697,7 @@ static QTtfTable generateHead(const qttf_head_table &head)
 // Bits 5-10: These should be set according to  Apple's specification . However, they are not implemented in OpenType.
 // Bit 11: Font data is 'lossless,' as a result of having been compressed and decompressed with the Agfa MicroType Express engine.
 // Bit 12: Font converted (produce compatible metrics)
-// Bit 13: Font optimised for ClearType
+// Bit 13: Font optimized for ClearType
 // Bit 14: Reserved, set to 0
 // Bit 15: Reserved, set to 0
       << quint16(0)
@@ -1008,7 +1008,7 @@ static void convertPath(const QPainterPath &path, QList<TTF_POINT> *points, QLis
                     np.x = (i1_x + i2_x) >> 1;
                     np.y = (i1_y + i2_y) >> 1;
                     if (try_reduce) {
-                        // see if we can optimise out the last onCurve point
+                        // see if we can optimize out the last onCurve point
                         int mx = (points->at(points->size() - 2).x + base[2].x) >> 1;
                         int my = (points->at(points->size() - 2).y + base[2].y) >> 1;
                         if (qAbs(mx - base[3].x) <= split_limit && qAbs(my = base[3].y) <= split_limit)

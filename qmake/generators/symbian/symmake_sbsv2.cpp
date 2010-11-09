@@ -120,7 +120,7 @@ void SymbianSbsv2MakefileGenerator::findInstalledCompilerVersions(const QString 
             && fileInfo(matcher.cap(matcher.captureCount())).exists()) {
             // First capture (index 0) is the whole match, which is skipped.
             // Next n captures are version numbers, which are interesting.
-            // Final capture is the env var value, which we alrady used, so that is skipped, too.
+            // Final capture is the env var value, which we already used, so that is skipped, too.
             int capture = 1;
             int finalCapture = matcher.captureCount() - 1;
             QString version = versionPrefix;

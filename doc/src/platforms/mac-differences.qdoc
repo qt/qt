@@ -32,7 +32,7 @@
     \ingroup platform-specific
 
     This file outlines known issues and possible workarounds when
-    using Qt on Mac OS X. Contact Qt's technical support team if you find
+    using Qt for Mac OS X. Contact Qt's technical support team if you find
     additional issues which are not covered here. (See also the
     document \l{qtmac-as-native.html} {Qt is Mac OS X Native}.)
 

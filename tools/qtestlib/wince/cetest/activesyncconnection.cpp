@@ -247,7 +247,7 @@ bool ActiveSyncConnection::copyFileFromDevice(const QString &deviceSource, const
     wprintf(L"\n");
 
     if (!readUntilEnd) {
-        debugOutput(QString::fromLatin1("  an error occured during copy"), 2);
+        debugOutput(QString::fromLatin1("  an error occurred during copy"), 2);
         return false;
     }
 

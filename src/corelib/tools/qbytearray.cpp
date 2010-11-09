@@ -1812,7 +1812,7 @@ QByteArray &QByteArray::replace(int pos, int len, const QByteArray &after)
         return *this;
     } else {
         QByteArray copy(after);
-        // ### optimise me
+        // ### optimize me
         remove(pos, len);
         return insert(pos, copy);
     }
@@ -1853,7 +1853,7 @@ QByteArray &QByteArray::replace(int pos, int len, const char *after, int alen)
     }
 }
 
-// ### optimise all other replace method, by offering
+// ### optimize all other replace method, by offering
 // QByteArray::replace(const char *before, int blen, const char *after, int alen)
 
 /*!

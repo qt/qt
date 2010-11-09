@@ -772,7 +772,7 @@ void QItemSelectionModelPrivate::_q_layoutAboutToBeChanged()
     savedPersistentIndexes.clear();
     savedPersistentCurrentIndexes.clear();
 
-    // optimisation for when all indexes are selected
+    // optimization for when all indexes are selected
     // (only if there is lots of items (1000) because this is not entirely correct)
     if (ranges.isEmpty() && currentSelection.count() == 1) {
         QItemSelectionRange range = currentSelection.first();
@@ -1059,6 +1059,19 @@ void QItemSelectionModel::select(const QItemSelection &selection, QItemSelection
 
     // store old selection
     QItemSelection sel = selection;
+    // If d->ranges is non-empty when the source model is reset the persistent indexes
+    // it contains will be invalid. We can't clear them in a modelReset slot because that might already
+    // be too late if another model observer is connected to the same modelReset slot and is invoked first
+    // it might call select() on this selection model before any such QItemSelectionModelPrivate::_q_modelReset() slot
+    // is invoked, so it would not be cleared yet. We clear it invalid ranges in it here.
+    QItemSelection::iterator it = d->ranges.begin();
+    while (it != d->ranges.end()) {
+      if (!it->isValid())
+        it = d->ranges.erase(it);
+      else
+        ++it;
+    }
+
     QItemSelection old = d->ranges;
     old.merge(d->currentSelection, d->currentCommand);
 

@@ -739,8 +739,8 @@ QGLTexture* QGLPixmapData::texture() const
     return &m_texture;
 }
 
-extern int qt_defaultDpiX();
-extern int qt_defaultDpiY();
+Q_DECL_IMPORT extern int qt_defaultDpiX();
+Q_DECL_IMPORT extern int qt_defaultDpiY();
 
 int QGLPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 {

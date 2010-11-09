@@ -104,6 +104,10 @@ QWS_MOUSE_PROTO=IntelliMouse:/dev/input/mouse0
 //! [11]
 
 
+//! [show permissions]
+ls -l /dev/input/mouse0
+//! [show permissions]
+
 //! [12]
 chmod a+rw /dev/input/mouse0
 //! [12]

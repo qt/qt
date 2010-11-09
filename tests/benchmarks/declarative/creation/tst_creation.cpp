@@ -243,7 +243,7 @@ void tst_creation::qobject_alloc()
     }
 }
 
-struct QDeclarativeGraphics_DerivedObject : public QObject
+struct QDeclarativeGraphics_Derived : public QObject
 {
     void setParent_noEvent(QObject *parent) {
         bool sce = d_ptr->sendChildEvents;
@@ -255,7 +255,7 @@ struct QDeclarativeGraphics_DerivedObject : public QObject
 
 inline void QDeclarativeGraphics_setParent_noEvent(QObject *object, QObject *parent)
 {
-    static_cast<QDeclarativeGraphics_DerivedObject *>(object)->setParent_noEvent(parent);
+    static_cast<QDeclarativeGraphics_Derived *>(object)->setParent_noEvent(parent);
 }
 
 void tst_creation::itemtree_notree_cpp()

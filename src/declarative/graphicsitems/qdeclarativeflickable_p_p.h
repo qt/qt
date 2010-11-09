@@ -182,10 +182,10 @@ class QDeclarativeFlickableVisibleArea : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(qreal xPosition READ xPosition NOTIFY pageChanged)
-    Q_PROPERTY(qreal yPosition READ yPosition NOTIFY pageChanged)
-    Q_PROPERTY(qreal widthRatio READ widthRatio NOTIFY pageChanged)
-    Q_PROPERTY(qreal heightRatio READ heightRatio NOTIFY pageChanged)
+    Q_PROPERTY(qreal xPosition READ xPosition NOTIFY xPositionChanged)
+    Q_PROPERTY(qreal yPosition READ yPosition NOTIFY yPositionChanged)
+    Q_PROPERTY(qreal widthRatio READ widthRatio NOTIFY widthRatioChanged)
+    Q_PROPERTY(qreal heightRatio READ heightRatio NOTIFY heightRatioChanged)
 
 public:
     QDeclarativeFlickableVisibleArea(QDeclarativeFlickable *parent=0);
@@ -198,7 +198,10 @@ public:
     void updateVisible();
 
 signals:
-    void pageChanged();
+    void xPositionChanged(qreal xPosition);
+    void yPositionChanged(qreal yPosition);
+    void widthRatioChanged(qreal widthRatio);
+    void heightRatioChanged(qreal heightRatio);
 
 private:
     QDeclarativeFlickable *flickable;

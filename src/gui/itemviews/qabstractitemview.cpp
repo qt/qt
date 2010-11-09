@@ -1363,7 +1363,7 @@ bool QAbstractItemView::dragEnabled() const
 
     Note that the model used needs to provide support for drag and drop operations.
 
-    \sa setDragDropMode() {Using drag & drop with item views}
+    \sa setDragDropMode() {Using drag and drop with item views}
 */
 
 /*!

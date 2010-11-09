@@ -1736,10 +1736,12 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
 
     JSC::JSValue savedException;
     QScriptEnginePrivate::saveException(exec, &savedException);
-    JSC::JSObject *result = JSC::construct(exec, callee, constructType, constructData, jscArgs);
+    JSC::JSValue result;
+    JSC::JSObject *newObject = JSC::construct(exec, callee, constructType, constructData, jscArgs);
     if (exec->hadException()) {
-        result = JSC::asObject(exec->exception());
+        result = exec->exception();
     } else {
+        result = newObject;
         QScriptEnginePrivate::restoreException(exec, savedException);
     }
     return d->engine->scriptValueFromJSCValue(result);
@@ -1796,11 +1798,12 @@ QScriptValue QScriptValue::construct(const QScriptValue &arguments)
 
     JSC::JSValue savedException;
     QScriptEnginePrivate::saveException(exec, &savedException);
-    JSC::JSObject *result = JSC::construct(exec, callee, constructType, constructData, applyArgs);
+    JSC::JSValue result;
+    JSC::JSObject *newObject = JSC::construct(exec, callee, constructType, constructData, applyArgs);
     if (exec->hadException()) {
-        if (exec->exception().isObject())
-            result = JSC::asObject(exec->exception());
+        result = exec->exception();
     } else {
+        result = newObject;
         QScriptEnginePrivate::restoreException(exec, savedException);
     }
     return d->engine->scriptValueFromJSCValue(result);

@@ -8,7 +8,8 @@ SOURCES = main.cpp \
           bearermonitor.cpp \
           sessionwidget.cpp
 
-maemo5|maemo6 {
+maemo5|maemo6|linux-g++-maemo {
+  DEFINES += MAEMO_UI
   FORMS = bearermonitor_maemo.ui \
           sessionwidget_maemo.ui
 } else {
@@ -17,8 +18,8 @@ maemo5|maemo6 {
           sessionwidget.ui
 }
 
-win32:!wince*:LIBS += -lWs2_32
-wince*:LIBS += -lWs2
+win32:!wince*:LIBS += -lws2_32
+wince*:LIBS += -lws2
 
 CONFIG += console
 

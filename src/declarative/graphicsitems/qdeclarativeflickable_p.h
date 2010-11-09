@@ -163,7 +163,6 @@ Q_SIGNALS:
     void horizontalVelocityChanged();
     void verticalVelocityChanged();
     void isAtBoundaryChanged();
-    void pageChanged();
     void flickableDirectionChanged();
     void interactiveChanged();
     void boundsBehaviorChanged();
@@ -191,6 +190,8 @@ protected Q_SLOTS:
     void movementEnding();
 
 protected:
+    void movementXEnding();
+    void movementYEnding();
     virtual qreal minXExtent() const;
     virtual qreal minYExtent() const;
     virtual qreal maxXExtent() const;

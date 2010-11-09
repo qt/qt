@@ -148,7 +148,68 @@ void Timer::runTest(QDeclarativeContext *context, uint iterations)
 
 void usage(const char *name)
 {
-    qWarning("Usage: %s [-iterations <count>] [-parent] <qml file>", name);
+    qWarning("Usage: %s [-iterations <count>] [-parent] <qml file>\n", name);
+
+    qWarning("qmltime is a tool for benchmarking the runtime cost of instantiating\n"
+    "a QML component. It is typically run as follows:\n"
+    "\n"
+    "%s path/to/benchmark.qml\n"
+    "\n"
+    "If the -parent option is specified, the component being measured will also\n"
+    "be parented to an item already in the scene.\n"
+    "\n"
+    "If the -iterations option is specified, the benchmark will run the specified\n"
+    "number of iterations. If -iterations is not specified, 1024 iterations\n"
+    "are performed.\n"
+    "\n"
+    "qmltime expects the file to be benchmarked to contain a certain structure.\n"
+    "Specifically, it requires the presence of a QmlTime.Timer element. For example,\n"
+    "say we wanted to benchmark the following list delegate:\n"
+    "\n"
+    "Rectangle {\n"
+    "    color: \"green\"\n"
+    "    width: 400; height: 100\n"
+    "    Text {\n"
+    "        anchors.centerIn: parent\n"
+    "        text: name\n"
+    "    }\n"
+    "}\n"
+    "\n"
+    "we would create a benchmark file that looks like this:\n"
+    "\n"
+    "import QtQuick 1.0\n"
+    "import QmlTime 1.0 as QmlTime\n"
+    "\n"
+    "Item {\n"
+    "\n"
+    "    property string name: \"Bob Smith\"\n"
+    "\n"
+    "    QmlTime.Timer {\n"
+    "        component: Rectangle {\n"
+    "            color: \"green\"\n"
+    "            width: 400; height: 100\n"
+    "            Text {\n"
+    "                anchors.centerIn: parent\n"
+    "                text: name\n"
+    "            }\n"
+    "        }\n"
+    "    }\n"
+    "}\n"
+    "\n"
+    "The outer Item functions as a dummy data provider for any additional\n"
+    "data required by the bindings in the component being benchmarked (in the\n"
+    "example above we provide a \"name\" property).\n"
+    "\n"
+    "When started, the component is instantiated once before running\n"
+    "the benchmark, which means that the reported time does not include\n"
+    "compile time (as the results of compilation are cached internally).\n"
+    "In this sense the times reported by qmltime best correspond to the\n"
+    "costs associated with delegate creation in the view classes, where the\n"
+    "same delegate is instantiated over and over. Conversely, it is not a\n"
+    "good approximation for e.g. Loader, which typically only instantiates\n"
+    "an element once (and so for Loader the compile time is very relevant\n"
+    "to the overall cost).", name);
+
     exit(-1);
 }
 
@@ -178,6 +239,8 @@ int main(int argc, char ** argv)
             }
         } else if (arg == "-parent") {
             willParent = true;
+        } else if (arg == "-help") {
+            usage(argv[0]);
         } else {
             filename = QLatin1String(argv[ii]);
         }

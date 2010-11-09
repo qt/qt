@@ -939,7 +939,9 @@
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 130
 
-    The default values depend on the version of the Symbian SDK you're using.
+    The default values depend on the version of the Symbian SDK you're using,
+	however, the Qt toolchain sets this to the maximum possible value and this
+	should not be changed.
 
     \section2 Compiler specific options
 
@@ -958,23 +960,30 @@
     Symbian applications may have unique identifiers attached to them.
     Here is how to define them in a project file:
 
-    There are four types of IDs supported: \c UID2, \c UID3, \c SID, and \c VID. They
+    There are four available types of IDs supported: \c UID2, \c UID3, \c SID, and \c VID. They
     are specified like this:
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 132
 
-    If \c UID2 is not specified, it defaults to the same value as \c UID3.
+    If \c SID is not specified, it defaults to the same value as \c UID3.
     If \c UID3 is not specified, qmake will automatically generate a \c UID3
     suitable for development and debugging. This value should be manually
     specified for applications that are to be released. In order to obtain
-    an official UID, please contact Nokia. Both \c SID and \c VID default to empty values.
+    an official UID, please contact \l{Symbian}{http:\\www.symbiansigned.com}.
+	Both \c SID and \c VID default to empty values.
 
-    For more information about unique identifiers and their meaning for
-    Symbian applications, please refer to the Symbian SDK documentation.
-
+    There exists one UID1 too, but this should not be touched by any application.
+	
+	The UID2 has a specific value for different types of files - e.g. apps/exes
+	are always 0x100039CE. The toolchain will set this for value for the most common file types like,
+	EXE/APP and shared library DLL. 
+	
+	For more information about unique identifiers and their meaning for Symbian applications,
+	please refer to the \l{Symbian SDK documentation}{http://developer.symbian.org/main/documentation/reference/s3/pdk/GUID-380A8C4F-3EB6-5E1C-BCFB-ED5B866136D9.html}
+	
     \section2 Capabilities
 
-    Capabilities define extra priviledges for the application, such as the
+    Capabilities define extra privileges for the application, such as the
     ability to list all files on the file system. Capabilities are defined
     in the project file like this:
 

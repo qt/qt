@@ -45,13 +45,15 @@
 #include <QtCore/QHash>
 #include <QtCore/QVariant>
 
+#include <private/qdeclarativeglobal_p.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class Q_DECLARATIVE_EXPORT QListModelInterface : public QObject
+class Q_DECLARATIVE_PRIVATE_EXPORT QListModelInterface : public QObject
 {
     Q_OBJECT
  public:

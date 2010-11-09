@@ -36,7 +36,7 @@
 
    You can run the examples from the \l{Examples and Demos Launcher}
    application (except see \l{QML Examples and Demos} {QML Examples}
-   for special instructions for running thos examples).
+   for special instructions for running those examples).
 
    The examples are listed below by functional area. Each example
    listed in a particular functional area is meant to illustrate how
@@ -53,7 +53,8 @@
    deliberately show off Qt's features. You might want to look at
    these as well.
 
-   These examples are provided under the terms of the \l{BSD License}.
+   These examples are provided under the terms of the
+   \l{New and Modified BSD Licenses}{Modified BSD License}.
 
 
    \section1 Examples by Functional Area

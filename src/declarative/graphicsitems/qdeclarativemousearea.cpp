@@ -335,7 +335,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 
     If the \e accepted property of the \l {MouseEvent}{mouse} parameter is set to false
     in the handler, the onPressed/onReleased/onClicked handlers will be called for the second
-    click; otherwise they are supressed.  The accepted property defaults to true.
+    click; otherwise they are suppressed.  The accepted property defaults to true.
 */
 
 /*!
@@ -566,7 +566,8 @@ void QDeclarativeMouseArea::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *even
     if (!d->absorb) {
         QDeclarativeItem::mouseDoubleClickEvent(event);
     } else {
-        d->doubleClick = true;
+        if (d->isDoubleClickConnected())
+            d->doubleClick = true;
         d->saveEvent(event);
         QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, true, false);
         me.setAccepted(d->isDoubleClickConnected());

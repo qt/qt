@@ -388,7 +388,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
             s += "\nAdapt: ";
             s += Colors::noAdapt ? "off" : "on";
-            s += "\nAdaption occured: ";
+            s += "\nAdaption occurred: ";
             s += Colors::adapted ? "yes" : "no";
             s += "\nOpenGL version: ";
             s += Colors::glVersion;

@@ -328,7 +328,7 @@ public:
 
     QDeclarativeBulkValueAnimator *va;
 
-    // for animations that dont use the QDeclarativeBulkValueAnimator
+    // for animations that don't use the QDeclarativeBulkValueAnimator
     QDeclarativeStateActions *actions;
 
     static QVariant interpolateVariant(const QVariant &from, const QVariant &to, qreal progress);

@@ -182,7 +182,8 @@ public:
         , bufferMode(BufferBefore | BufferAfter)
         , ownModel(false), wrap(false), autoHighlight(true), haveHighlightRange(false)
         , correctFlick(false), inFlickCorrection(false), lazyRelease(false)
-        , deferredRelease(false), layoutScheduled(false), minExtentDirty(true), maxExtentDirty(true)
+        , deferredRelease(false), layoutScheduled(false), currentIndexCleared(false)
+        , minExtentDirty(true), maxExtentDirty(true)
     {}
 
     void init();
@@ -393,42 +394,17 @@ public:
     }
 
     // map a model index to visibleItems index.
-    // These may differ if removed items are still present in the visible list,
-    // e.g. doing a removal animation
     int mapFromModel(int modelIndex) const {
         if (modelIndex < visibleIndex || modelIndex >= visibleIndex + visibleItems.count())
             return -1;
         for (int i = 0; i < visibleItems.count(); ++i) {
             FxListItem *listItem = visibleItems.at(i);
             if (listItem->index == modelIndex)
-                return i + visibleIndex;
+                return i;
             if (listItem->index > modelIndex)
                 return -1;
         }
         return -1; // Not in visibleList
-    }
-
-    bool mapRangeFromModel(int &index, int &count) const {
-        if (index + count < visibleIndex)
-            return false;
-
-        int lastIndex = -1;
-        for (int i = visibleItems.count()-1; i >= 0; --i) {
-            FxListItem *listItem = visibleItems.at(i);
-            if (listItem->index != -1) {
-                lastIndex = listItem->index;
-                break;
-            }
-        }
-
-        if (index > lastIndex)
-            return false;
-
-        int last = qMin(index + count - 1, lastIndex);
-        index = qMax(index, visibleIndex);
-        count = last - index + 1;
-
-        return true;
     }
 
     void updateViewport() {
@@ -544,6 +520,7 @@ public:
     bool lazyRelease : 1;
     bool deferredRelease : 1;
     bool layoutScheduled : 1;
+    bool currentIndexCleared : 1;
     mutable bool minExtentDirty : 1;
     mutable bool maxExtentDirty : 1;
 };
@@ -881,6 +858,7 @@ void QDeclarativeListViewPrivate::createHighlight()
                 } else {
                     highlight->item->setWidth(currentItem->item->width());
                 }
+                highlight->setPosition(currentItem->itemPosition());
             }
             QDeclarativeItemPrivate *itemPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(item));
             itemPrivate->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
@@ -1045,8 +1023,11 @@ void QDeclarativeListViewPrivate::updateCurrent(int modelIndex)
             currentItem->attached->setIsCurrentItem(false);
             releaseItem(currentItem);
             currentItem = 0;
-            currentIndex = -1;
+            currentIndex = modelIndex;
+            emit q->currentIndexChanged();
             updateHighlight();
+        } else if (currentIndex != modelIndex) {
+            currentIndex = modelIndex;
             emit q->currentIndexChanged();
         }
         return;
@@ -1567,7 +1548,7 @@ void QDeclarativeListView::setModel(const QVariant &model)
         disconnect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
         disconnect(d->model, SIGNAL(itemsChanged(int,int)), this, SLOT(itemsChanged(int,int)));
         disconnect(d->model, SIGNAL(modelReset()), this, SLOT(modelReset()));
-        disconnect(d->model, SIGNAL(createdItem(int, QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
+        disconnect(d->model, SIGNAL(createdItem(int,QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
         disconnect(d->model, SIGNAL(destroyingItem(QDeclarativeItem*)), this, SLOT(destroyingItem(QDeclarativeItem*)));
     }
     d->clear();
@@ -1598,7 +1579,7 @@ void QDeclarativeListView::setModel(const QVariant &model)
         if (isComponentComplete()) {
             updateSections();
             refill();
-            if (d->currentIndex >= d->model->count() || d->currentIndex < 0) {
+            if ((d->currentIndex >= d->model->count() || d->currentIndex < 0) && !d->currentIndexCleared) {
                 setCurrentIndex(0);
             } else {
                 d->moveReason = QDeclarativeListViewPrivate::SetIndex;
@@ -1614,7 +1595,7 @@ void QDeclarativeListView::setModel(const QVariant &model)
         connect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
         connect(d->model, SIGNAL(itemsChanged(int,int)), this, SLOT(itemsChanged(int,int)));
         connect(d->model, SIGNAL(modelReset()), this, SLOT(modelReset()));
-        connect(d->model, SIGNAL(createdItem(int, QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
+        connect(d->model, SIGNAL(createdItem(int,QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
         connect(d->model, SIGNAL(destroyingItem(QDeclarativeItem*)), this, SLOT(destroyingItem(QDeclarativeItem*)));
         emit countChanged();
     }
@@ -1688,7 +1669,8 @@ void QDeclarativeListView::setDelegate(QDeclarativeComponent *delegate)
     \qmlproperty Item ListView::currentItem
 
     The \c currentIndex property holds the index of the current item, and
-    \c currentItem holds the current item. 
+    \c currentItem holds the current item.   Setting the currentIndex to -1
+    will clear the highlight and set currentItem to null.
 
     If highlightFollowsCurrentItem is \c true, setting either of these 
     properties will smoothly scroll the ListView so that the current 
@@ -1708,10 +1690,13 @@ void QDeclarativeListView::setCurrentIndex(int index)
     Q_D(QDeclarativeListView);
     if (d->requestedIndex >= 0)  // currently creating item
         return;
-    if (isComponentComplete() && d->isValid() && index != d->currentIndex && index < d->model->count() && index >= 0) {
+    d->currentIndexCleared = (index == -1);
+    if (index == d->currentIndex)
+        return;
+    if (isComponentComplete() && d->isValid()) {
         d->moveReason = QDeclarativeListViewPrivate::SetIndex;
         d->updateCurrent(index);
-    } else if (index != d->currentIndex) {
+    } else {
         d->currentIndex = index;
         emit currentIndexChanged();
     }
@@ -2320,6 +2305,8 @@ void QDeclarativeListView::viewportMoved()
 {
     Q_D(QDeclarativeListView);
     QDeclarativeFlickable::viewportMoved();
+    if (!d->itemCount)
+        return;
     d->lazyRelease = true;
     refill();
     if (d->flickingHorizontally || d->flickingVertically || d->movingHorizontally || d->movingVertically)
@@ -2523,16 +2510,18 @@ void QDeclarativeListView::geometryChanged(const QRectF &newGeometry,
 
     Increments the current index.  The current index will wrap
     if keyNavigationWraps is true and it is currently at the end.
+    This method has no effect if the \l count is zero.
 
     \bold Note: methods should only be called after the Component has completed.
 */
 void QDeclarativeListView::incrementCurrentIndex()
 {
     Q_D(QDeclarativeListView);
-    if (currentIndex() < d->model->count() - 1 || d->wrap) {
+    int count = d->model ? d->model->count() : 0;
+    if (count && (currentIndex() < count - 1 || d->wrap)) {
         d->moveReason = QDeclarativeListViewPrivate::SetIndex;
         int index = currentIndex()+1;
-        d->updateCurrent(index < d->model->count() ? index : 0);
+        setCurrentIndex((index >= 0 && index < count) ? index : 0);
     }
 }
 
@@ -2541,16 +2530,18 @@ void QDeclarativeListView::incrementCurrentIndex()
 
     Decrements the current index.  The current index will wrap
     if keyNavigationWraps is true and it is currently at the beginning.
+    This method has no effect if the \l count is zero.
 
     \bold Note: methods should only be called after the Component has completed.
 */
 void QDeclarativeListView::decrementCurrentIndex()
 {
     Q_D(QDeclarativeListView);
-    if (currentIndex() > 0 || d->wrap) {
+    int count = d->model ? d->model->count() : 0;
+    if (count && (currentIndex() > 0 || d->wrap)) {
         d->moveReason = QDeclarativeListViewPrivate::SetIndex;
         int index = currentIndex()-1;
-        d->updateCurrent(index >= 0 ? index : d->model->count()-1);
+        setCurrentIndex((index >= 0 && index < count) ? index : count-1);
     }
 }
 
@@ -2684,7 +2675,7 @@ void QDeclarativeListView::componentComplete()
     if (d->isValid()) {
         refill();
         d->moveReason = QDeclarativeListViewPrivate::SetIndex;
-        if (d->currentIndex < 0)
+        if (d->currentIndex < 0 && !d->currentIndexCleared)
             d->updateCurrent(0);
         else
             d->updateCurrent(d->currentIndex);
@@ -2784,13 +2775,13 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
     d->moveReason = QDeclarativeListViewPrivate::Other;
     if (!d->visibleItems.count() || d->model->count() <= 1) {
         d->scheduleLayout();
-        if (d->currentIndex >= modelIndex) {
+        if (d->itemCount && d->currentIndex >= modelIndex) {
             // adjust current item index
             d->currentIndex += count;
             if (d->currentItem)
                 d->currentItem->index = d->currentIndex;
             emit currentIndexChanged();
-        } else if (d->currentIndex < 0) {
+        } else if (!d->currentIndex || (d->currentIndex < 0 && !d->currentIndexCleared)) {
             d->updateCurrent(0);
         }
         d->itemCount += count;
@@ -2798,15 +2789,15 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
         return;
     }
 
-    int overlapCount = count;
-    if (!d->mapRangeFromModel(modelIndex, overlapCount)) {
+    int index = d->mapFromModel(modelIndex);
+    if (index < 0) {
         int i = d->visibleItems.count() - 1;
         while (i > 0 && d->visibleItems.at(i)->index == -1)
             --i;
         if (d->visibleItems.at(i)->index + 1 == modelIndex
             && d->visibleItems.at(i)->endPosition() < d->buffer+d->position()+d->size()-1) {
             // Special case of appending an item to the model.
-            modelIndex = d->visibleIndex + d->visibleItems.count();
+            index = d->visibleItems.count();
         } else {
             if (modelIndex < d->visibleIndex) {
                 // Insert before visible items
@@ -2833,7 +2824,6 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
 
     // At least some of the added items will be visible
 
-    int index = modelIndex - d->visibleIndex;
     // index can be the next item past the end of the visible items list (i.e. appended)
     int pos = index < d->visibleItems.count() ? d->visibleItems.at(index)->position()
                                                 : d->visibleItems.at(index-1)->endPosition()+d->spacing+1;
@@ -2897,7 +2887,7 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
         }
         diff = pos - initialPos;
     }
-    if (d->currentIndex >= modelIndex) {
+    if (d->itemCount && d->currentIndex >= modelIndex) {
         // adjust current item index
         d->currentIndex += count;
         if (d->currentItem) {

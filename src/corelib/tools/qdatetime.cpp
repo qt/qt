@@ -1630,6 +1630,7 @@ QString QTime::toString(Qt::DateFormat format) const
     \endtable
 
     If the datetime is invalid, an empty string will be returned.
+    If \a format is empty, the default format "hh:mm:ss" is used.
 
     \sa QDate::toString() QDateTime::toString()
 */

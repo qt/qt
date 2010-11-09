@@ -42,6 +42,8 @@
 #include <QtGui>
 #include "mediaplayer.h"
 
+const qreal DefaultVolume = -1.0;
+
 int main (int argc, char *argv[])
 {
     Q_INIT_RESOURCE(mediaplayer);
@@ -50,36 +52,38 @@ int main (int argc, char *argv[])
     app.setOrganizationName("Qt");
     app.setQuitOnLastWindowClosed(true);
 
-    bool hasSmallScreen =
+    QString fileName;
+    qreal volume = DefaultVolume;
+    bool smallScreen = false;
 #ifdef Q_OS_SYMBIAN
-        /* On Symbian, we always want fullscreen. One reason is that it's not
-         * possible to launch any demos from the fluidlauncher due to a
-         * limitation in the emulator. */
-        true
-#else
-        false
+    smallScreen = true;
 #endif
-    ;
 
-    QString fileString;
-    const QStringList args(app.arguments());
-    /* We have a minor problem here, we accept two arguments, both are
-     * optional:
-     * - A file name
-     * - the option "-small-screen", so let's try to cope with that.
-     */
-    for (int i = 0; i < args.count(); ++i) {
-        const QString &at = args.at(i);
-
-        if (at == QLatin1String("-small-screen"))
-            hasSmallScreen = true;
-        else if (i > 0) // We don't want the app name.
-            fileString = at;
+    QStringList args(app.arguments());
+    args.removeFirst(); // remove name of executable
+    while (!args.empty()) {
+        const QString &arg = args.first();
+        if (QLatin1String("-small-screen") == arg || QLatin1String("--small-screen") == arg) {
+            smallScreen = true;
+        } else if (QLatin1String("-volume") == arg || QLatin1String("--volume") == arg) {
+            if (!args.empty()) {
+                args.removeFirst();
+                volume = qMax(qMin(args.first().toFloat(), float(1.0)), float(0.0));
+            }
+        } else if (fileName.isNull()) {
+            fileName = arg;
+        }
+        args.removeFirst();
     }
 
-    MediaPlayer player(fileString, hasSmallScreen);
+    MediaPlayer player;
+    player.setSmallScreen(smallScreen);
+    if (DefaultVolume != volume)
+        player.setVolume(volume);
+    if (!fileName.isNull())
+        player.setFile(fileName);
 
-    if (hasSmallScreen)
+    if (smallScreen)
         player.showMaximized();
     else
         player.show();

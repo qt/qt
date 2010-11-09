@@ -44,7 +44,7 @@
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
-    app.setApplicationName("QtMultimedia spectrum analyser");
+    app.setApplicationName("QtMultimedia spectrum analyzer");
     MainWidget w;
 
 #ifdef Q_OS_SYMBIAN

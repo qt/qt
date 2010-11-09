@@ -93,7 +93,7 @@ QDeclarativeDebugConnectionPrivate::QDeclarativeDebugConnectionPrivate(QDeclarat
 
 void QDeclarativeDebugConnectionPrivate::advertisePlugins()
 {
-    if (!q->isConnected() || !gotHello)
+    if (!q->isConnected())
         return;
 
     QPacket pack;

@@ -42,13 +42,14 @@
 #ifndef QDECLARATIVESCALEGRID_H
 #define QDECLARATIVESCALEGRID_H
 
-#include "private/qdeclarativeborderimage_p.h"
-
-#include <private/qdeclarativepixmapcache_p.h>
 #include <qdeclarative.h>
 
 #include <QtCore/QString>
 #include <QtCore/QObject>
+
+#include <private/qdeclarativeborderimage_p.h>
+#include <private/qdeclarativepixmapcache_p.h>
+#include <private/qdeclarativeglobal_p.h>
 
 QT_BEGIN_HEADER
 
@@ -56,7 +57,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class Q_DECLARATIVE_EXPORT QDeclarativeScaleGrid : public QObject
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeScaleGrid : public QObject
 {
     Q_OBJECT
     Q_ENUMS(TileRule)
@@ -94,7 +95,7 @@ private:
     int _bottom;
 };
 
-class Q_DECLARATIVE_EXPORT QDeclarativeGridScaledImage
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeGridScaledImage
 {
 public:
     QDeclarativeGridScaledImage();

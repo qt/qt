@@ -109,9 +109,10 @@ public:
     };
     ConstructionState state;
 
-    static QObject *begin(QDeclarativeContextData *ctxt, QDeclarativeEnginePrivate *enginePriv,
-                          QDeclarativeCompiledData *component, int start, int count,
-                          ConstructionState *state, const QBitField &bindings = QBitField());
+    static QObject *begin(QDeclarativeContextData *parentContext, QDeclarativeContextData *componentCreationContext,
+                          QDeclarativeCompiledData *component, int start, int count, 
+                          ConstructionState *state, QList<QDeclarativeError> *errors, 
+                          const QBitField &bindings = QBitField());
     static void beginDeferred(QDeclarativeEnginePrivate *enginePriv, QObject *object, 
                               ConstructionState *state);
     static void complete(QDeclarativeEnginePrivate *enginePriv, ConstructionState *state);

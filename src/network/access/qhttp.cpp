@@ -2442,7 +2442,7 @@ void QHttpPrivate::_q_slotSendRequest()
         if (proxy.hostName().isEmpty()) {
             proxy.setType(QNetworkProxy::NoProxy);
         } else if (sslInUse) {
-            // Disallow use of cacheing proxy with HTTPS; instead fall back to
+            // Disallow use of caching proxy with HTTPS; instead fall back to
             // transparent HTTP CONNECT proxying.
             transparentProxyInUse = true;
         } else {

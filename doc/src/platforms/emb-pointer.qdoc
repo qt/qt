@@ -186,8 +186,11 @@
     device file. Some drivers also require write access to the device file. 
     For instance, if you have specified the mouse driver with
     \snippet doc/src/snippets/code/doc_src_emb-pointer.qdoc 11
-    then examine the permissions of the device file by entering the following
-    command in a console:
+    then examine the permissions of the device file by entering the
+    following command in a console:
+    \snippet doc/src/snippets/code/doc_src_emb-pointer.qdoc show permissions
+    Change the permissions of the device file, if necessary, in the following
+    way:
     \snippet doc/src/snippets/code/doc_src_emb-pointer.qdoc 12
 
     If the device file is actually a symbolic link to another file, you must

@@ -32,7 +32,7 @@ function startNewGame()
     if (state == "starting")
         return;
 
-    if (heartbeat.running) {
+    if (activeGame) {
         endGame();
         startNewGameTimer.running = true;
         state = "";
@@ -87,7 +87,7 @@ function startNewGame()
 
 function endGame()
 {
-    heartbeat.running = false;
+    activeGame = false;
     for(var i in snake)
         snake[i].dying = true;
     if (cookie) {

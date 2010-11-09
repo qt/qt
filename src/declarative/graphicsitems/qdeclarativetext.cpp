@@ -221,6 +221,7 @@ void QDeclarativeTextPrivate::updateSize()
     if (text.isEmpty()) {
         q->setImplicitHeight(fm.height());
         emit q->paintedSizeChanged();
+        q->update();
         return;
     }
 
@@ -270,6 +271,7 @@ void QDeclarativeTextPrivate::updateSize()
     internalWidthUpdate = false;
     q->setImplicitHeight(size.height());
     emit q->paintedSizeChanged();
+    q->update();
 }
 
 /*!
@@ -286,16 +288,16 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
     Q_Q(QDeclarativeText);
     layout.setCacheEnabled(true);
 
-    int height = 0;
-    qreal widthUsed = 0;
+    qreal height = 0;
     qreal lineWidth = 0;
 
     //set manual width
-    if ((wrapMode != QDeclarativeText::NoWrap || elideMode != QDeclarativeText::ElideNone) && q->widthValid())
+    if (q->widthValid())
         lineWidth = q->width();
 
     QTextOption textOption = layout.textOption();
     textOption.setWrapMode(QTextOption::WrapMode(wrapMode));
+    textOption.setAlignment(Qt::Alignment(hAlign));
     layout.setTextOption(textOption);
 
     layout.beginLayout();
@@ -304,37 +306,15 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
         if (!line.isValid())
             break;
 
-        if ((wrapMode != QDeclarativeText::NoWrap || elideMode != QDeclarativeText::ElideNone) && q->widthValid()) 
+        if (q->widthValid()) {
             line.setLineWidth(lineWidth);
+            line.setPosition(QPointF(0, height));
+            height += line.height();
+        }
     }
     layout.endLayout();
 
-    for (int i = 0; i < layout.lineCount(); ++i) {
-        QTextLine line = layout.lineAt(i);
-        widthUsed = qMax(widthUsed, line.naturalTextWidth());
-    }
-
-    qreal layoutWidth = q->widthValid()?q->width():widthUsed;
-
-    int x = 0;
-    for (int i = 0; i < layout.lineCount(); ++i) {
-        QTextLine line = layout.lineAt(i);
-        line.setPosition(QPointF(0, height));
-        height += int(line.height());
-
-        if (!cacheAllTextAsImage) {
-            if (hAlign == QDeclarativeText::AlignLeft) {
-                x = 0;
-            } else if (hAlign == QDeclarativeText::AlignRight) {
-                x = layoutWidth - (int)line.naturalTextWidth();
-            } else if (hAlign == QDeclarativeText::AlignHCenter) {
-                x = (layoutWidth - (int)line.naturalTextWidth()) / 2;
-            }
-            line.setPosition(QPoint(x, (int)line.y()));
-        }
-    }
-
-    return QSize(qCeil(widthUsed), height);
+    return QSize(qCeil(layout.boundingRect().width()), layout.boundingRect().height());
 }
 
 /*!
@@ -345,19 +325,6 @@ QPixmap QDeclarativeTextPrivate::textLayoutImage(bool drawStyle)
 {
     //do layout
     QSize size = layedOutTextSize;
-
-    int x = 0;
-    for (int i = 0; i < layout.lineCount(); ++i) {
-        QTextLine line = layout.lineAt(i);
-        if (hAlign == QDeclarativeText::AlignLeft) {
-            x = 0;
-        } else if (hAlign == QDeclarativeText::AlignRight) {
-            x = size.width() - (int)line.naturalTextWidth();
-        } else if (hAlign == QDeclarativeText::AlignHCenter) {
-            x = (size.width() - (int)line.naturalTextWidth()) / 2;
-        }
-        line.setPosition(QPoint(x, (int)line.y()));
-    }
 
     //paint text
     QPixmap img(size);
@@ -900,7 +867,7 @@ void QDeclarativeText::setStyleColor(const QColor &color)
     and \c Text.AlignVCenter.
 
     Note that for a single line of text, the size of the text is the area of the text. In this common case,
-    all alignments are equivalent. If you want the text to be, say, centered in it parent, then you will
+    all alignments are equivalent. If you want the text to be, say, centered in its parent, then you will
     need to either modify the Item::anchors, or set horizontalAlignment to Text.AlignHCenter and bind the width to 
     that of the parent.
 */
@@ -1143,9 +1110,10 @@ QRectF QDeclarativeText::boundingRect() const
 void QDeclarativeText::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     Q_D(QDeclarativeText);
-    if (!d->internalWidthUpdate && newGeometry.width() != oldGeometry.width() &&
-        (d->wrapMode != QDeclarativeText::NoWrap || d->elideMode != QDeclarativeText::ElideNone)) {
-
+    if ((!d->internalWidthUpdate && newGeometry.width() != oldGeometry.width())
+            && (d->wrapMode != QDeclarativeText::NoWrap
+                || d->elideMode != QDeclarativeText::ElideNone
+                || d->hAlign != QDeclarativeText::AlignLeft)) {
         if (d->singleline && d->elideMode != QDeclarativeText::ElideNone && widthValid()) {
             // We need to re-elide
             d->updateLayout();

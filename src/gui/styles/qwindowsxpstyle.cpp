@@ -302,7 +302,7 @@ HWND QWindowsXPStylePrivate::winId(const QWidget *widget)
         limboWidget = new QWidget(0);
         limboWidget->createWinId();
         limboWidget->setObjectName(QLatin1String("xp_limbo_widget"));
-        // We dont need this internal widget to appear in QApplication::topLevelWidgets()
+        // We don't need this internal widget to appear in QApplication::topLevelWidgets()
         if (QWidgetPrivate::allWidgets)
             QWidgetPrivate::allWidgets->remove(limboWidget);
     }

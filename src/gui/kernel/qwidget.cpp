@@ -68,6 +68,7 @@
 # include "qt_cocoa_helpers_mac_p.h"
 # include "qmainwindow.h"
 # include "qtoolbar.h"
+# include <private/qmainwindowlayout_p.h>
 #endif
 #if defined(Q_WS_QWS)
 # include "qwsdisplay_qws.h"
@@ -235,6 +236,17 @@ void QWidgetBackingStoreTracker::unregisterWidget(QWidget *w)
     }
 }
 
+/*!
+    \internal
+    Recursively remove widget and all of its descendents.
+ */
+void QWidgetBackingStoreTracker::unregisterWidgetSubtree(QWidget *widget)
+{
+    unregisterWidget(widget);
+    foreach (QObject *child, widget->children())
+        if (QWidget *childWidget = qobject_cast<QWidget *>(child))
+            unregisterWidgetSubtree(childWidget);
+}
 
 QWidgetPrivate::QWidgetPrivate(int version)
     : QObjectPrivate(version)
@@ -325,15 +337,27 @@ QWidgetPrivate::~QWidgetPrivate()
 #endif //QT_NO_GRAPHICSEFFECT
 }
 
+class QDummyWindowSurface : public QWindowSurface
+{
+public:
+    QDummyWindowSurface(QWidget *window) : QWindowSurface(window) {}
+    QPaintDevice *paintDevice() { return window(); }
+    void flush(QWidget *, const QRegion &, const QPoint &) {}
+};
+
 QWindowSurface *QWidgetPrivate::createDefaultWindowSurface()
 {
     Q_Q(QWidget);
 
     QWindowSurface *surface;
-    if (QApplicationPrivate::graphicsSystem())
-        surface = QApplicationPrivate::graphicsSystem()->createWindowSurface(q);
-    else
-        surface = createDefaultWindowSurface_sys();
+    if (q->property("_q_DummyWindowSurface").toBool()) {
+        surface = new QDummyWindowSurface(q);
+    } else {
+        if (QApplicationPrivate::graphicsSystem())
+            surface = QApplicationPrivate::graphicsSystem()->createWindowSurface(q);
+        else
+            surface = createDefaultWindowSurface_sys();
+    }
 
     return surface;
 }
@@ -3002,6 +3026,15 @@ bool QWidget::isFullScreen() const
 */
 void QWidget::showFullScreen()
 {
+#ifdef Q_WS_MAC
+    // If the unified toolbar is enabled, we have to disable it before going fullscreen.
+    QMainWindow *mainWindow = qobject_cast<QMainWindow*>(this);
+    if (mainWindow && mainWindow->unifiedTitleAndToolBarOnMac()) {
+        mainWindow->setUnifiedTitleAndToolBarOnMac(false);
+        QMainWindowLayout *mainLayout = qobject_cast<QMainWindowLayout*>(mainWindow->layout());
+        mainLayout->activateUnifiedToolbarAfterFullScreen = true;
+    }
+#endif // Q_WS_MAC
     ensurePolished();
 #ifdef QT3_SUPPORT
     if (parent())
@@ -3034,6 +3067,18 @@ void QWidget::showMaximized()
 
     setWindowState((windowState() & ~(Qt::WindowMinimized | Qt::WindowFullScreen))
                    | Qt::WindowMaximized);
+#ifdef Q_WS_MAC
+    // If the unified toolbar was enabled before going fullscreen, we have to enable it back.
+    QMainWindow *mainWindow = qobject_cast<QMainWindow*>(this);
+    if (mainWindow)
+    {
+        QMainWindowLayout *mainLayout = qobject_cast<QMainWindowLayout*>(mainWindow->layout());
+        if (mainLayout->activateUnifiedToolbarAfterFullScreen) {
+            mainWindow->setUnifiedTitleAndToolBarOnMac(true);
+            mainLayout->activateUnifiedToolbarAfterFullScreen = false;
+        }
+    }
+#endif // Q_WS_MAC
     show();
 }
 
@@ -3055,6 +3100,18 @@ void QWidget::showNormal()
     setWindowState(windowState() & ~(Qt::WindowMinimized
                                      | Qt::WindowMaximized
                                      | Qt::WindowFullScreen));
+#ifdef Q_WS_MAC
+    // If the unified toolbar was enabled before going fullscreen, we have to enable it back.
+    QMainWindow *mainWindow = qobject_cast<QMainWindow*>(this);
+    if (mainWindow)
+    {
+        QMainWindowLayout *mainLayout = qobject_cast<QMainWindowLayout*>(mainWindow->layout());
+        if (mainLayout->activateUnifiedToolbarAfterFullScreen) {
+            mainWindow->setUnifiedTitleAndToolBarOnMac(true);
+            mainLayout->activateUnifiedToolbarAfterFullScreen = false;
+        }
+    }
+#endif // Q_WS_MAC
     show();
 }
 
@@ -9997,7 +10054,16 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     if (newParent && isAncestorOf(focusWidget()))
         focusWidget()->clearFocus();
 
+    QTLWExtra *oldTopExtra = window()->d_func()->maybeTopData();
+    QWidgetBackingStoreTracker *oldBsTracker = oldTopExtra ? &oldTopExtra->backingStore : 0;
+
     d->setParent_sys(parent, f);
+
+    QTLWExtra *topExtra = window()->d_func()->maybeTopData();
+    QWidgetBackingStoreTracker *bsTracker = topExtra ? &topExtra->backingStore : 0;
+    if (oldBsTracker && oldBsTracker != bsTracker)
+        oldBsTracker->unregisterWidgetSubtree(this);
+
     if (desktopWidget)
         parent = 0;
 
