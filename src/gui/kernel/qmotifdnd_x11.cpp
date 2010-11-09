@@ -385,7 +385,10 @@ static void DndReadSourceProperty(Display * dpy,
 static void DndWriteReceiverProperty(Display * dpy, Window window,
                                      unsigned char protocol_style)
 {
-    DndReceiverProp receiver_prop ;
+    DndReceiverProp receiver_prop;
+
+    // squelch potential valgrind errors about uninitialized reads
+    memset(&receiver_prop, 0, sizeof(receiver_prop));
 
     receiver_prop.byte_order = DndByteOrder() ;
     receiver_prop.protocol_version = DND_PROTOCOL_VERSION;
