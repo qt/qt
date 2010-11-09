@@ -3,9 +3,22 @@ load(default_post)
 contains(TEMPLATE, ".*app") {
     contains(CONFIG, stdbinary) {
         QMAKE_LIBS +=
-    } else {
+    } else:contains(CONFIG,qt) {
         QMAKE_LIBS += $$QMAKE_LIBS_QT_ENTRY
+    } else {
+        QMAKE_LIBS += $$QMAKE_LIBS_NO_QT_ENTRY
     }
+
+    contains(DESTDIR, "/.*") {
+        default_bin_deployment.sources += $$DESTDIR/$$symbianRemoveSpecialCharacters($$basename(TARGET)).exe
+    } else:isEmpty(DESTDIR) {
+        default_bin_deployment.sources += $$OUT_PWD/$$symbianRemoveSpecialCharacters($$basename(TARGET)).exe
+    } else {
+        default_bin_deployment.sources += $$OUT_PWD/$$DESTDIR/$$symbianRemoveSpecialCharacters($$basename(TARGET)).exe
+    }
+    default_bin_deployment.path += /sys/bin
+
+    load(application_icon.prf)
 }
 contains(TEMPLATE, lib): {
     contains(CONFIG, staticlib)|contains(CONFIG, static): {
@@ -21,10 +34,6 @@ contains(TEMPLATE, lib): {
 } else {
     # Applications don't need this
     MMP_RULES -= EXPORTUNFROZEN
-}
-
-contains(TEMPLATE, ".*app"):contains(QT, gui):contains(CONFIG,qt) {
-    load(application_icon.prf)
 }
 
 isEmpty(TARGET.UID3):TARGET.UID3 = $$generate_uid("$${OUT_PWD}/$${TARGET}")
