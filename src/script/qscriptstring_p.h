@@ -65,12 +65,12 @@ public:
     inline quint64 id() const;
     inline operator v8::Handle<v8::String>() const;
     inline v8::Handle<v8::String> asV8Value() const;
+    inline QScriptEnginePrivate* engine() const;
 
 private:
     Q_DISABLE_COPY(QScriptStringPrivate)
     QScriptSharedDataPointer<QScriptEnginePrivate> m_engine;
     v8::Persistent<v8::String> m_string;
-    friend class QScriptString;
 };
 
 
@@ -155,6 +155,10 @@ inline v8::Handle<v8::String> QScriptStringPrivate::asV8Value()const
     return m_string;
 }
 
+inline QScriptEnginePrivate* QScriptStringPrivate::engine() const
+{
+    return m_engine.data();
+}
 QT_END_NAMESPACE
 
 #endif
