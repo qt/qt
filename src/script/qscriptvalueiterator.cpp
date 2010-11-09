@@ -26,6 +26,7 @@
 #include "qscriptisolate_p.h"
 #include "qscriptstring_p.h"
 #include "qscriptvalue_p.h"
+#include "qscriptclass_p.h"
 #include "qscriptclasspropertyiterator.h"
 
 QT_BEGIN_NAMESPACE

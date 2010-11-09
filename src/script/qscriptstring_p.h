@@ -37,13 +37,14 @@
 
 #include "qscriptshareddata_p.h"
 #include "qscriptconverter_p.h"
-#include "qscriptengine_p.h"
 #include "qscriptstring.h"
 #include <QtCore/qnumeric.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qhash.h>
 
 QT_BEGIN_NAMESPACE
+
+class QScriptEnginePrivate;
 
 class QScriptStringPrivate : public QScriptSharedData {
 public:

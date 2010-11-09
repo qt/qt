@@ -24,13 +24,14 @@
 #ifndef QSCRIPTV8OBJECTWRAPPER_P_H
 #define QSCRIPTV8OBJECTWRAPPER_P_H
 
-#include "qscriptengine.h"
-#include "qscriptengine_p.h"
 #include "qscriptvalue.h"
 
 #include <v8.h>
 
+QT_BEGIN_INCLUDE_NAMESPACE
+class QScriptValuePrivate;
 class QScriptEnginePrivate;
+QT_END_INCLUDE_NAMESPACE
 
 namespace QScriptV8ObjectWrapperHelper {
 

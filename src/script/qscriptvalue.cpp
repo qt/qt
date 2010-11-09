@@ -27,6 +27,7 @@
 #include "qscriptstring.h"
 #include "qscriptvalue.h"
 #include "qscriptvalue_p.h"
+#include "qscriptclass_p.h"
 #include "qscriptdeclarativeclassobject_p.h"
 #include <QtCore/qregexp.h>
 #include <QtCore/qstring.h>

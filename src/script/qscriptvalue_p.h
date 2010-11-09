@@ -32,6 +32,7 @@
 #include <QtCore/qvarlengtharray.h>
 #include <qdebug.h>
 
+#include "qscriptconverter_p.h"
 #include "qscriptshareddata_p.h"
 #include "qscriptvalue.h"
 #include "qscriptstring_p.h"
@@ -192,8 +193,6 @@ private:
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "qscriptengine_p.h"
-#include "qscriptconverter_p.h"
-#include "qscriptclass_p.h"
 #include "qscriptqobject_p.h"
 QT_END_INCLUDE_NAMESPACE
 
