@@ -1,7 +1,7 @@
 TARGET = qicdbearer
 include(../../qpluginbase.pri)
 
-QT += network dbus
+QT = core network dbus
 
 QMAKE_CXXFLAGS *= $$QT_CFLAGS_DBUS $$QT_CFLAGS_CONNSETTINGS
 LIBS += $$QT_LIBS_CONNSETTINGS
