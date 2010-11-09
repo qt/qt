@@ -115,6 +115,8 @@ private slots:
     void getSetPrototype_eval();
     void getSetPrototype_invalidPrototype();
     void getSetPrototype_twoEngines();
+    void getSetPrototype_null();
+    void getSetPrototype_notObjectOrNull();
     void getSetPrototype();
     void getSetScope();
     void getSetProperty_HooliganTask162051();
