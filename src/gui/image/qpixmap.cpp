@@ -1101,11 +1101,13 @@ QPixmap QPixmap::grabWidget(QWidget * widget, const QRect &rect)
     if (!r.intersects(widget->rect()))
         return QPixmap();
 
-    QImage res(r.size(), QImage::Format_ARGB32_Premultiplied);
-    res.fill(0);
+    QPixmap res(r.size());
+    if (!qt_widget_private(widget)->isOpaque)
+        res.fill(Qt::transparent);
+
     widget->d_func()->render(&res, QPoint(), r, QWidget::DrawWindowBackground
                              | QWidget::DrawChildren | QWidget::IgnoreMask, true);
-    return QPixmap::fromImage(res);
+    return res;
 }
 
 /*!
