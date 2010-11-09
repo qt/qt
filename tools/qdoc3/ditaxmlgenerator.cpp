@@ -1977,49 +1977,6 @@ DitaXmlGenerator::generateClassLikeNode(const InnerNode* inner, CodeMarker* mark
 }
 
 
-#if 0        
-        while (s != detailSections.end()) {
-            if ((*s).name == "Member Function Documentation") {
-                writeFunctions((*s),qcn,marker);
-            }
-            else if ((*s).name == "Member Type Documentation") {
-                writeEnumerations((*s),marker);
-                writeTypedefs((*s),marker);
-            }
-            else if ((*s).name == "Member Variable Documentation") {
-                writeDataMembers((*s),marker);
-            }
-            else if ((*s).name == "Property Documentation") {
-                writeProperties((*s),marker);
-            }
-            else if ((*s).name == "Macro Documentation") {
-                writeMacros((*s),marker);
-            }
-            ++s;
-        }
-#endif
-#if 0        
-        QString membersLink = generateListOfAllMemberFile(inner, marker);
-        QString obsoleteLink = generateLowStatusMemberFile(inner,
-                                                           marker,
-                                                           CodeMarker::Obsolete);
-        QString compatLink = generateLowStatusMemberFile(inner,
-                                                         marker,
-                                                         CodeMarker::Compat);
-        if (!membersLink.isEmpty() ||
-            !obsoleteLink.isEmpty() ||
-            !compatLink.isEmpty()) {
-            xmlWriter().writeStartElement("ul");
-            if (!membersLink.isEmpty())
-                writeXrefListItem(membersLink,"List of all members, including inherited members");
-            if (!obsoleteLink.isEmpty())
-                writeXrefListItem(obsoleteLink,"Obsolete members");
-            if (!compatLink.isEmpty())
-                writeXrefListItem(compatLink,"Qt 3 support members");
-            xmlWriter().writeEndElement(); // </ul>
-        }
-#endif        
-
 /*!
   Write a list item for a \a link with the given \a text.
  */
@@ -2289,38 +2246,6 @@ void DitaXmlGenerator::generateHeader(const Node* node,
 }
 
 /*!
-  Writes a \a title as a <p> element with an \c {outputclass}
-  attribute of "h1 title".
-
-  Also generates and writes a \a subTitle as a <p> element,
-  if one is provided, but this probably doesn't work right.
- */
-void DitaXmlGenerator::generateTitle(const QString& title,
-                                     const Text& subTitle,
-                                     SubTitleSize subTitleSize,
-                                     const Node* relative,
-                                     CodeMarker* marker)
-{
-    if (!title.isEmpty()) {
-        xmlWriter().writeStartElement("p");
-        xmlWriter().writeAttribute("outputclass", "h1 title");
-        xmlWriter().writeCharacters(protectEnc(title));
-        xmlWriter().writeEndElement(); // </p>
-    }
-    if (!subTitle.isEmpty()) {
-        xmlWriter().writeStartElement("p");
-        if (subTitleSize == SmallSubTitle) {
-            xmlWriter().writeAttribute("outputclass", "small-subtitle");
-        }
-        else {
-            xmlWriter().writeAttribute("outputclass", "subtitle");
-        }
-        generateText(subTitle, relative, marker);
-        xmlWriter().writeEndElement(); // </p>
-    }
-}
-
-/*!
   Outputs the \e brief command as a <shortdesc> element.
  */
 void DitaXmlGenerator::generateBrief(const Node* node, CodeMarker* marker)
@@ -2546,44 +2471,6 @@ void DitaXmlGenerator::generateTableOfContents(const Node* node,
     out() << "</div>\n";
     inContents = false;
     inLink = false;
-}
-
-QString DitaXmlGenerator::generateListOfAllMemberFile(const InnerNode* inner,
-                                                      CodeMarker* marker)
-{
-    QList<Section> sections;
-    QList<Section>::ConstIterator s;
-
-    sections = marker->sections(inner,
-                                CodeMarker::SeparateList,
-                                CodeMarker::Okay);
-    if (sections.isEmpty())
-        return QString();
-
-    QString fileName = fileBase(inner) + "-members." + fileExtension(inner);
-    beginSubPage(inner->location(), fileName);
-    QString title = "List of All Members for " + inner->name();
-    generateHeader(inner, title, true);
-    xmlWriter().writeStartElement("body");
-    xmlWriter().writeStartElement("section");
-    if (!title.isEmpty()) {
-        xmlWriter().writeStartElement("title");
-        xmlWriter().writeAttribute("outputclass", "h1");
-        xmlWriter().writeCharacters(protectEnc(title));
-        xmlWriter().writeEndElement(); // </title>
-    }
-    xmlWriter().writeStartElement("p");
-    xmlWriter().writeCharacters("This is the complete list of members for ");
-    generateFullName(inner, 0, marker);
-    xmlWriter().writeCharacters(", including inherited members.");
-    xmlWriter().writeEndElement(); // </p>
-
-    Section section = sections.first();
-    generateSection(section.members, 0, marker, CodeMarker::SeparateList);
-    xmlWriter().writeEndElement(); // </section>
-    xmlWriter().writeEndElement(); // </body>
-    endSubPage();
-    return fileName;
 }
 
 void DitaXmlGenerator::generateLowStatusMembers(const InnerNode* inner,

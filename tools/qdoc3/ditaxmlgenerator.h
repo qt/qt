@@ -150,11 +150,6 @@ class DitaXmlGenerator : public PageGenerator
     void generateHeader(const Node* node, 
                         const QString& name,
                         bool subpage = false);
-    void generateTitle(const QString& title, 
-                       const Text& subTitle, 
-                       SubTitleSize subTitleSize,
-                       const Node* relative, 
-                       CodeMarker* marker);
     void generateBrief(const Node* node, CodeMarker* marker);
     void generateIncludes(const InnerNode* inner, CodeMarker* marker);
     void generateTableOfContents(const Node* node, 
@@ -165,7 +160,6 @@ class DitaXmlGenerator : public PageGenerator
     void generateTableOfContents(const Node* node, 
                                  CodeMarker* marker, 
                                  QList<Section>* sections = 0);
-    QString generateListOfAllMemberFile(const InnerNode* inner, CodeMarker* marker);
     void generateLowStatusMembers(const InnerNode* inner,
                                   CodeMarker* marker,
                                   CodeMarker::Status status);
