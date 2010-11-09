@@ -1010,7 +1010,7 @@ void QScriptValue::setProperty(const QScriptString& name, const QScriptValue& va
 {
     Q_D(QScriptValue);
     QScriptIsolate api(d->engine());
-    d->setProperty(QScriptStringPrivate::get(name)->m_string, QScriptValuePrivate::get(value), QScriptConverter::toPropertyAttributes(flags));
+    d->setProperty(QScriptStringPrivate::get(name), QScriptValuePrivate::get(value), QScriptConverter::toPropertyAttributes(flags));
 }
 
 /*!

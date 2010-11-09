@@ -71,7 +71,6 @@ private:
     QScriptSharedDataPointer<QScriptEnginePrivate> m_engine;
     v8::Persistent<v8::String> m_string;
     friend class QScriptString;
-    friend class QScriptValue;
 };
 
 
