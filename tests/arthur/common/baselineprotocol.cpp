@@ -58,8 +58,7 @@ PlatformInfo::PlatformInfo(bool useLocal)
     if (useLocal) {
         insert(PI_HostName, QHostInfo::localHostName());
         insert(PI_QtVersion, QLS(qVersion()));
-        QString mkspec = QDir::fromNativeSeparators(QLS(QMAKESPEC)).remove(QRegExp(QLS("^.*/mkspecs/")));
-        insert(PI_QMakeSpec, mkspec);
+        insert(PI_QMakeSpec, QString(QLS(QMAKESPEC)).remove(QRegExp(QLS("^.*mkspecs/"))));
         insert(PI_BuildKey, QLibraryInfo::buildKey());
 #if defined(Q_OS_LINUX)
         insert(PI_OSName, QLS("Linux"));

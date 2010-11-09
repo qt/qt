@@ -8,6 +8,8 @@ HEADERS += $$QT_SOURCE_TREE/tests/arthur/common/paintcommands.h
 RESOURCES += $$QT_SOURCE_TREE/tests/arthur/common/images.qrc
 
 include($$QT_SOURCE_TREE/tests/arthur/common/baselineprotocol.pri)
-DEFINES += QMAKESPEC=\\\"$$QMAKESPEC\\\"
+win32|symbian*:MKSPEC=$$replace(QMAKESPEC, \\\\, /)
+else:MKSPEC=$$QMAKESPEC
+DEFINES += QMAKESPEC=\\\"$$MKSPEC\\\"
 
 !symbian:!wince*:DEFINES += SRCDIR=\\\"$$PWD\\\"
