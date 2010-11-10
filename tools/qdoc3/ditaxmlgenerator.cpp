@@ -4239,6 +4239,7 @@ void DitaXmlGenerator::generateQmlInherits(const QmlClassNode* cn,
             if (n && n->subType() == Node::QmlClass) {
                 const QmlClassNode* qcn = static_cast<const QmlClassNode*>(n);
                 xmlWriter().writeStartElement("p");
+                xmlWriter().writeAttribute("outputclass","inherits");
                 Text text;
                 text << "[Inherits ";
                 text << Atom(Atom::LinkNode,CodeMarker::stringForNode(qcn));
@@ -4286,6 +4287,7 @@ void DitaXmlGenerator::generateQmlInstantiates(const QmlClassNode* qcn,
     const ClassNode* cn = qcn->classNode();
     if (cn && (cn->status() != Node::Internal)) {
         xmlWriter().writeStartElement("p");
+            xmlWriter().writeAttribute("outputclass","instantiates");
         Text text;
         text << "[";
         text << Atom(Atom::LinkNode,CodeMarker::stringForNode(qcn));
@@ -4311,13 +4313,13 @@ void DitaXmlGenerator::generateQmlInstantiates(const QmlClassNode* qcn,
   is set to Node::Internal, do nothing. 
  */
 void DitaXmlGenerator::generateInstantiatedBy(const ClassNode* cn,
-                                           CodeMarker* marker)
+                                              CodeMarker* marker)
 {
     if (cn &&  cn->status() != Node::Internal && !cn->qmlElement().isEmpty()) {
         const Node* n = myTree->root()->findNode(cn->qmlElement(),Node::Fake);
         if (n && n->subType() == Node::QmlClass) {
             xmlWriter().writeStartElement("p");
-            xmlWriter().writeAttribute("outputclass","centerAlign");
+            xmlWriter().writeAttribute("outputclass","instantiated-by");
             Text text;
             text << "[";
             text << Atom(Atom::LinkNode,CodeMarker::stringForNode(cn));
