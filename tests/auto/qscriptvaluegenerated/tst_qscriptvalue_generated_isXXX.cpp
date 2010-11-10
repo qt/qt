@@ -52,7 +52,7 @@ void tst_QScriptValueGenerated::isValid_initData()
     initScriptValues();
 }
 
-static QString isValid_array [] = {
+static QString isValid_array[] = {
     "QScriptValue(QScriptValue::UndefinedValue)",
     "QScriptValue(QScriptValue::NullValue)",
     "QScriptValue(true)",
@@ -155,6 +155,11 @@ static QString isValid_array [] = {
     "engine->evaluate(\"new Object()\")",
     "engine->evaluate(\"new Array()\")",
     "engine->evaluate(\"new Error()\")",
+    "engine->evaluate(\"new Boolean(true)\")",
+    "engine->evaluate(\"new Boolean(false)\")",
+    "engine->evaluate(\"new Number(123)\")",
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->evaluate(\"new String('ciao')\")",
     "engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\")",
     "engine->evaluate(\"Undefined\")",
     "engine->evaluate(\"Null\")",
@@ -189,18 +194,20 @@ static QString isValid_array [] = {
     "engine->newArray(10)",
     "engine->newDate(QDateTime())",
     "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newRegExp(\"foo\", \"gim\")",
     "engine->newVariant(QVariant())",
     "engine->newVariant(QVariant(123))",
     "engine->newVariant(QVariant(false))",
     "engine->newQObject(0)",
-    "engine->newQObject(engine)",};
+    "engine->newQObject(engine)"
+};
 
 void tst_QScriptValueGenerated::isValid_makeData(const char* expr)
 {
     static QSet<QString> isValid;
     if (isValid.isEmpty()) {
-        isValid.reserve(141);
-        for (unsigned i = 0; i < 141; ++i)
+        isValid.reserve(147);
+        for (unsigned i = 0; i < 147; ++i)
             isValid.insert(isValid_array[i]);
     }
     newRow(expr) << isValid.contains(expr);
@@ -222,7 +229,7 @@ void tst_QScriptValueGenerated::isBool_initData()
     initScriptValues();
 }
 
-static QString isBool_array [] = {
+static QString isBool_array[] = {
     "QScriptValue(true)",
     "QScriptValue(false)",
     "QScriptValue(0, true)",
@@ -230,7 +237,8 @@ static QString isBool_array [] = {
     "QScriptValue(engine, true)",
     "QScriptValue(engine, false)",
     "engine->evaluate(\"true\")",
-    "engine->evaluate(\"false\")",};
+    "engine->evaluate(\"false\")"
+};
 
 void tst_QScriptValueGenerated::isBool_makeData(const char* expr)
 {
@@ -259,7 +267,7 @@ void tst_QScriptValueGenerated::isBoolean_initData()
     initScriptValues();
 }
 
-static QString isBoolean_array [] = {
+static QString isBoolean_array[] = {
     "QScriptValue(true)",
     "QScriptValue(false)",
     "QScriptValue(0, true)",
@@ -267,7 +275,8 @@ static QString isBoolean_array [] = {
     "QScriptValue(engine, true)",
     "QScriptValue(engine, false)",
     "engine->evaluate(\"true\")",
-    "engine->evaluate(\"false\")",};
+    "engine->evaluate(\"false\")"
+};
 
 void tst_QScriptValueGenerated::isBoolean_makeData(const char* expr)
 {
@@ -296,7 +305,7 @@ void tst_QScriptValueGenerated::isNumber_initData()
     initScriptValues();
 }
 
-static QString isNumber_array [] = {
+static QString isNumber_array[] = {
     "QScriptValue(int(122))",
     "QScriptValue(uint(124))",
     "QScriptValue(0)",
@@ -352,7 +361,8 @@ static QString isNumber_array [] = {
     "engine->evaluate(\"0x10001\")",
     "engine->evaluate(\"NaN\")",
     "engine->evaluate(\"Infinity\")",
-    "engine->evaluate(\"-Infinity\")",};
+    "engine->evaluate(\"-Infinity\")"
+};
 
 void tst_QScriptValueGenerated::isNumber_makeData(const char* expr)
 {
@@ -381,7 +391,7 @@ void tst_QScriptValueGenerated::isFunction_initData()
     initScriptValues();
 }
 
-static QString isFunction_array [] = {
+static QString isFunction_array[] = {
     "engine->evaluate(\"Function.prototype\")",
     "engine->evaluate(\"Object\")",
     "engine->evaluate(\"Array\")",
@@ -391,14 +401,17 @@ static QString isFunction_array [] = {
     "engine->evaluate(\"(function() { return 'ciao'; })\")",
     "engine->evaluate(\"(function() { throw new Error('foo'); })\")",
     "engine->evaluate(\"/foo/\")",
-    "engine->newQMetaObject(&QObject::staticMetaObject)",};
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newRegExp(\"foo\", \"gim\")"
+};
 
 void tst_QScriptValueGenerated::isFunction_makeData(const char* expr)
 {
     static QSet<QString> isFunction;
     if (isFunction.isEmpty()) {
-        isFunction.reserve(10);
-        for (unsigned i = 0; i < 10; ++i)
+        isFunction.reserve(12);
+        for (unsigned i = 0; i < 12; ++i)
             isFunction.insert(isFunction_array[i]);
     }
     newRow(expr) << isFunction.contains(expr);
@@ -420,13 +433,14 @@ void tst_QScriptValueGenerated::isNull_initData()
     initScriptValues();
 }
 
-static QString isNull_array [] = {
+static QString isNull_array[] = {
     "QScriptValue(QScriptValue::NullValue)",
     "QScriptValue(0, QScriptValue::NullValue)",
     "QScriptValue(engine, QScriptValue::NullValue)",
     "engine->evaluate(\"null\")",
     "engine->nullValue()",
-    "engine->newQObject(0)",};
+    "engine->newQObject(0)"
+};
 
 void tst_QScriptValueGenerated::isNull_makeData(const char* expr)
 {
@@ -455,7 +469,7 @@ void tst_QScriptValueGenerated::isString_initData()
     initScriptValues();
 }
 
-static QString isString_array [] = {
+static QString isString_array[] = {
     "QScriptValue(\"NaN\")",
     "QScriptValue(\"Infinity\")",
     "QScriptValue(\"-Infinity\")",
@@ -490,7 +504,8 @@ static QString isString_array [] = {
     "engine->evaluate(\"''\")",
     "engine->evaluate(\"'0'\")",
     "engine->evaluate(\"'123'\")",
-    "engine->evaluate(\"'12.4'\")",};
+    "engine->evaluate(\"'12.4'\")"
+};
 
 void tst_QScriptValueGenerated::isString_makeData(const char* expr)
 {
@@ -519,13 +534,14 @@ void tst_QScriptValueGenerated::isUndefined_initData()
     initScriptValues();
 }
 
-static QString isUndefined_array [] = {
+static QString isUndefined_array[] = {
     "QScriptValue(QScriptValue::UndefinedValue)",
     "QScriptValue(0, QScriptValue::UndefinedValue)",
     "QScriptValue(engine, QScriptValue::UndefinedValue)",
     "engine->evaluate(\"{}\")",
     "engine->evaluate(\"undefined\")",
-    "engine->undefinedValue()",};
+    "engine->undefinedValue()"
+};
 
 void tst_QScriptValueGenerated::isUndefined_makeData(const char* expr)
 {
@@ -554,10 +570,11 @@ void tst_QScriptValueGenerated::isVariant_initData()
     initScriptValues();
 }
 
-static QString isVariant_array [] = {
+static QString isVariant_array[] = {
     "engine->newVariant(QVariant())",
     "engine->newVariant(QVariant(123))",
-    "engine->newVariant(QVariant(false))",};
+    "engine->newVariant(QVariant(false))"
+};
 
 void tst_QScriptValueGenerated::isVariant_makeData(const char* expr)
 {
@@ -586,8 +603,9 @@ void tst_QScriptValueGenerated::isQObject_initData()
     initScriptValues();
 }
 
-static QString isQObject_array [] = {
-    "engine->newQObject(engine)",};
+static QString isQObject_array[] = {
+    "engine->newQObject(engine)"
+};
 
 void tst_QScriptValueGenerated::isQObject_makeData(const char* expr)
 {
@@ -616,8 +634,9 @@ void tst_QScriptValueGenerated::isQMetaObject_initData()
     initScriptValues();
 }
 
-static QString isQMetaObject_array [] = {
-    "engine->newQMetaObject(&QObject::staticMetaObject)",};
+static QString isQMetaObject_array[] = {
+    "engine->newQMetaObject(&QObject::staticMetaObject)"
+};
 
 void tst_QScriptValueGenerated::isQMetaObject_makeData(const char* expr)
 {
@@ -646,7 +665,7 @@ void tst_QScriptValueGenerated::isObject_initData()
     initScriptValues();
 }
 
-static QString isObject_array [] = {
+static QString isObject_array[] = {
     "engine->evaluate(\"[]\")",
     "engine->evaluate(\"Object.prototype\")",
     "engine->evaluate(\"Date.prototype\")",
@@ -664,6 +683,11 @@ static QString isObject_array [] = {
     "engine->evaluate(\"new Object()\")",
     "engine->evaluate(\"new Array()\")",
     "engine->evaluate(\"new Error()\")",
+    "engine->evaluate(\"new Boolean(true)\")",
+    "engine->evaluate(\"new Boolean(false)\")",
+    "engine->evaluate(\"new Number(123)\")",
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->evaluate(\"new String('ciao')\")",
     "engine->evaluate(\"Undefined\")",
     "engine->evaluate(\"Null\")",
     "engine->evaluate(\"True\")",
@@ -673,17 +697,19 @@ static QString isObject_array [] = {
     "engine->newArray(10)",
     "engine->newDate(QDateTime())",
     "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newRegExp(\"foo\", \"gim\")",
     "engine->newVariant(QVariant())",
     "engine->newVariant(QVariant(123))",
     "engine->newVariant(QVariant(false))",
-    "engine->newQObject(engine)",};
+    "engine->newQObject(engine)"
+};
 
 void tst_QScriptValueGenerated::isObject_makeData(const char* expr)
 {
     static QSet<QString> isObject;
     if (isObject.isEmpty()) {
-        isObject.reserve(30);
-        for (unsigned i = 0; i < 30; ++i)
+        isObject.reserve(36);
+        for (unsigned i = 0; i < 36; ++i)
             isObject.insert(isObject_array[i]);
     }
     newRow(expr) << isObject.contains(expr);
@@ -705,9 +731,10 @@ void tst_QScriptValueGenerated::isDate_initData()
     initScriptValues();
 }
 
-static QString isDate_array [] = {
+static QString isDate_array[] = {
     "engine->evaluate(\"Date.prototype\")",
-    "engine->newDate(QDateTime())",};
+    "engine->newDate(QDateTime())"
+};
 
 void tst_QScriptValueGenerated::isDate_makeData(const char* expr)
 {
@@ -736,15 +763,18 @@ void tst_QScriptValueGenerated::isRegExp_initData()
     initScriptValues();
 }
 
-static QString isRegExp_array [] = {
-    "engine->evaluate(\"/foo/\")",};
+static QString isRegExp_array[] = {
+    "engine->evaluate(\"/foo/\")",
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->newRegExp(\"foo\", \"gim\")"
+};
 
 void tst_QScriptValueGenerated::isRegExp_makeData(const char* expr)
 {
     static QSet<QString> isRegExp;
     if (isRegExp.isEmpty()) {
-        isRegExp.reserve(1);
-        for (unsigned i = 0; i < 1; ++i)
+        isRegExp.reserve(3);
+        for (unsigned i = 0; i < 3; ++i)
             isRegExp.insert(isRegExp_array[i]);
     }
     newRow(expr) << isRegExp.contains(expr);
@@ -766,12 +796,13 @@ void tst_QScriptValueGenerated::isArray_initData()
     initScriptValues();
 }
 
-static QString isArray_array [] = {
+static QString isArray_array[] = {
     "engine->evaluate(\"[]\")",
     "engine->evaluate(\"Array.prototype\")",
     "engine->evaluate(\"new Array()\")",
     "engine->newArray()",
-    "engine->newArray(10)",};
+    "engine->newArray(10)"
+};
 
 void tst_QScriptValueGenerated::isArray_makeData(const char* expr)
 {
@@ -800,13 +831,14 @@ void tst_QScriptValueGenerated::isError_initData()
     initScriptValues();
 }
 
-static QString isError_array [] = {
+static QString isError_array[] = {
     "engine->evaluate(\"Error.prototype\")",
     "engine->evaluate(\"new Error()\")",
     "engine->evaluate(\"Undefined\")",
     "engine->evaluate(\"Null\")",
     "engine->evaluate(\"True\")",
-    "engine->evaluate(\"False\")",};
+    "engine->evaluate(\"False\")"
+};
 
 void tst_QScriptValueGenerated::isError_makeData(const char* expr)
 {
