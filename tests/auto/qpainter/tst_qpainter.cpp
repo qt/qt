@@ -4581,32 +4581,6 @@ void tst_QPainter::drawText_subPixelPositionsInRaster_qtbug5053()
 #if !defined(Q_WS_MAC) || !defined(QT_MAC_USE_COCOA)
     QSKIP("Only Mac/Cocoa supports sub pixel positions in raster engine currently", SkipAll);
 #endif
-
-    int w = 10, h = 10;
-    QImage image(w, h, QImage::Format_RGB32);
-    image.fill(0xffffffff);
-    QPainter p(&image);
-    p.drawText(0, h, "X\\");
-    p.end();
-
-    bool foundNonGrayPixel = false;
-    const int *bits = (const int *) ((const QImage &) image).bits();
-    int bpl = image.bytesPerLine() / 4;
-    for (int y=0; y<w; ++y) {
-        for (int x=0; x<h; ++x) {
-            int r = qRed(bits[x]);
-            int g = qGreen(bits[x]);
-            int b = qBlue(bits[x]);
-            if (r != g || r != b) {
-                foundNonGrayPixel = true;
-                break;
-            }
-        }
-        bits += bpl;
-    }
-    if (!foundNonGrayPixel)
-        QSKIP("Font smoothing must be turned on for this test", SkipAll);
-
     QFontMetricsF fm(qApp->font());
 
     QImage baseLine(fm.width(QChar::fromLatin1('e')), fm.height(), QImage::Format_RGB32);

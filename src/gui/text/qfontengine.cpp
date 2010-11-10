@@ -607,6 +607,11 @@ void QFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int n
 
 QImage QFontEngine::alphaMapForGlyph(glyph_t glyph, const QTransform &t)
 {
+    return alphaMapForGlyph(glyph, 0, t);
+}
+
+QImage QFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed /*subPixelPosition*/, const QTransform &t)
+{
     QImage i = alphaMapForGlyph(glyph);
     if (t.type() > QTransform::TxTranslate)
         i = i.transformed(t).convertToFormat(QImage::Format_Indexed8);
