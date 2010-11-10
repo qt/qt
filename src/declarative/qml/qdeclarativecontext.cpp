@@ -474,7 +474,7 @@ int QDeclarativeContextPrivate::context_count(QDeclarativeListProperty<QObject> 
 {
     QDeclarativeContext *context = static_cast<QDeclarativeContext*>(prop->object);
     QDeclarativeContextPrivate *d = QDeclarativeContextPrivate::get(context);
-    int contextProperty = (int)(intptr_t)prop->data;
+    int contextProperty = (int)(quintptr)prop->data;
 
     if (d->propertyValues.at(contextProperty).userType() != qMetaTypeId<QList<QObject*> >()) {
         return 0;
@@ -487,7 +487,7 @@ QObject *QDeclarativeContextPrivate::context_at(QDeclarativeListProperty<QObject
 {
     QDeclarativeContext *context = static_cast<QDeclarativeContext*>(prop->object);
     QDeclarativeContextPrivate *d = QDeclarativeContextPrivate::get(context);
-    int contextProperty = (int)(intptr_t)prop->data;
+    int contextProperty = (int)(quintptr)prop->data;
 
     if (d->propertyValues.at(contextProperty).userType() != qMetaTypeId<QList<QObject*> >()) {
         return 0;
