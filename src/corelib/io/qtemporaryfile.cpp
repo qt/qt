@@ -108,7 +108,7 @@ QT_BEGIN_NAMESPACE
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-static int _gettemp(char *path, int *doopen, int domkdir, int slen)
+static int _gettemp(char *path, int *doopen, int slen)
 {
     char *start, *trv, *suffp;
     QT_STATBUF sbuf;
@@ -118,11 +118,6 @@ static int _gettemp(char *path, int *doopen, int domkdir, int slen)
 #else
     pid_t pid;
 #endif
-
-    if (doopen && domkdir) {
-        errno = EINVAL;
-        return 0;
-    }
 
     for (trv = path; *trv; ++trv)
         ;
@@ -166,7 +161,7 @@ static int _gettemp(char *path, int *doopen, int domkdir, int slen)
      * check the target directory; if you have six X's and it
      * doesn't exist this runs for a *very* long time.
      */
-    if (doopen || domkdir) {
+    if (doopen) {
         for (;; --trv) {
             if (trv <= path)
                 break;
@@ -234,15 +229,6 @@ static int _gettemp(char *path, int *doopen, int domkdir, int slen)
             }
             if (errno != EEXIST)
                 return 0;
-        } else if (domkdir) {
-#ifdef Q_OS_WIN
-            if (QT_MKDIR(path) == 0)
-#else
-            if (QT_MKDIR(path, 0700) == 0)
-#endif
-                return 1;
-            if (errno != EEXIST)
-                return 0;
         }
 #ifndef Q_OS_WIN
         else if (QT_LSTAT(path, &sbuf))
@@ -281,7 +267,7 @@ static int _gettemp(char *path, int *doopen, int domkdir, int slen)
 static int qt_mkstemps(char *path, int slen)
 {
     int fd = 0;
-    return (_gettemp(path, &fd, 0, slen) ? fd : -1);
+    return (_gettemp(path, &fd, slen) ? fd : -1);
 }
 #endif
 
@@ -391,7 +377,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     setError(errno == EMFILE ? QFile::ResourceError : QFile::OpenError, qt_error_string(errno));
     return false;
 #else
-    if (!_gettemp(filename, 0, 0, suffixLength)) {
+    if (!_gettemp(filename, 0, suffixLength)) {
         delete [] filename;
         return false;
     }
