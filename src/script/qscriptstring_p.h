@@ -37,13 +37,14 @@
 
 #include "qscriptshareddata_p.h"
 #include "qscriptconverter_p.h"
-#include "qscriptengine_p.h"
 #include "qscriptstring.h"
 #include <QtCore/qnumeric.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qhash.h>
 
 QT_BEGIN_NAMESPACE
+
+class QScriptEnginePrivate;
 
 class QScriptStringPrivate : public QScriptSharedData {
 public:
@@ -64,13 +65,12 @@ public:
     inline quint64 id() const;
     inline operator v8::Handle<v8::String>() const;
     inline v8::Handle<v8::String> asV8Value() const;
+    inline QScriptEnginePrivate* engine() const;
 
 private:
     Q_DISABLE_COPY(QScriptStringPrivate)
     QScriptSharedDataPointer<QScriptEnginePrivate> m_engine;
     v8::Persistent<v8::String> m_string;
-    friend class QScriptString;
-    friend class QScriptValue;
 };
 
 
@@ -155,6 +155,10 @@ inline v8::Handle<v8::String> QScriptStringPrivate::asV8Value()const
     return m_string;
 }
 
+inline QScriptEnginePrivate* QScriptStringPrivate::engine() const
+{
+    return m_engine.data();
+}
 QT_END_NAMESPACE
 
 #endif

@@ -765,7 +765,6 @@ void tst_QScriptClass::getAndSetProperty()
 
 void tst_QScriptClass::enumerate()
 {
-    QEXPECT_FAIL("", "Iterating over a script class instance hasn't been implemented yet", Abort);
     QScriptEngine eng;
 
     TestClass cls(&eng);
@@ -800,12 +799,14 @@ void tst_QScriptClass::enumerate()
         QVERIFY(it.hasNext());
         it.next();
         QVERIFY(it.scriptName() == foo2);
+        QEXPECT_FAIL("", "QScriptValueIterator::flags is not full implemented", Continue);
         QCOMPARE(it.flags(), foo2Pflags);
         QVERIFY(!it.hasNext());
 
         QVERIFY(it.hasPrevious());
         it.previous();
         QVERIFY(it.scriptName() == foo2);
+        QEXPECT_FAIL("", "QScriptValueIterator::flags is not full implemented", Continue);
         QCOMPARE(it.flags(), foo2Pflags);
         QVERIFY(it.hasPrevious());
         it.previous();

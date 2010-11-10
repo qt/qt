@@ -84,7 +84,8 @@ QScriptString& QScriptString::operator=(const QScriptString& other)
 */
 bool QScriptString::isValid() const
 {
-    return d_ptr->isValid();
+    Q_D(const QScriptString);
+    return d->isValid();
 }
 
 /*!
@@ -93,7 +94,8 @@ bool QScriptString::isValid() const
 */
 bool QScriptString::operator==(const QScriptString& other) const
 {
-    QScriptIsolate api(d_ptr->m_engine);
+    Q_D(const QScriptString);
+    QScriptIsolate api(d->engine());
     return d_ptr == other.d_ptr || *d_ptr == *(other.d_ptr);
 }
 
@@ -103,7 +105,8 @@ bool QScriptString::operator==(const QScriptString& other) const
 */
 bool QScriptString::operator!=(const QScriptString& other) const
 {
-    QScriptIsolate api(d_ptr->m_engine);
+    Q_D(const QScriptString);
+    QScriptIsolate api(d->engine());
     return d_ptr != other.d_ptr || *d_ptr != *(other.d_ptr);
 }
 
@@ -116,8 +119,9 @@ bool QScriptString::operator!=(const QScriptString& other) const
 */
 quint32 QScriptString::toArrayIndex(bool* ok) const
 {
-    QScriptIsolate api(d_ptr->m_engine);
-    return d_ptr->toArrayIndex(ok);
+    Q_D(const QScriptString);
+    QScriptIsolate api(d->engine());
+    return d->toArrayIndex(ok);
 }
 
 /*!
@@ -128,8 +132,9 @@ quint32 QScriptString::toArrayIndex(bool* ok) const
 */
 QString QScriptString::toString() const
 {
-    QScriptIsolate api(d_ptr->m_engine);
-    return d_ptr->toString();
+    Q_D(const QScriptString);
+    QScriptIsolate api(d->engine());
+    return d->toString();
 }
 
 /*!
@@ -140,8 +145,9 @@ QString QScriptString::toString() const
 */
 QScriptString::operator QString() const
 {
-    QScriptIsolate api(d_ptr->m_engine);
-    return d_ptr->toString();
+    Q_D(const QScriptString);
+    QScriptIsolate api(d->engine());
+    return d->toString();
 }
 
 uint qHash(const QScriptString& key)

@@ -25,11 +25,12 @@
 #define QSCRIPTQOBJECT_P_H
 
 #include <QtCore/qmetaobject.h>
-#include "qscriptengine_p.h"
-
+#include "qscriptvalue.h"
 #include <v8.h>
 
 QT_BEGIN_NAMESPACE
+
+class QScriptEnginePrivate;
 class QScriptable;
 
 // Data associated with a QObject JS wrapper object.

@@ -24,13 +24,14 @@
 #ifndef QSCRIPTV8OBJECTWRAPPER_P_H
 #define QSCRIPTV8OBJECTWRAPPER_P_H
 
-#include "qscriptengine.h"
-#include "qscriptengine_p.h"
 #include "qscriptvalue.h"
 
 #include <v8.h>
 
+QT_BEGIN_INCLUDE_NAMESPACE
+class QScriptValuePrivate;
 class QScriptEnginePrivate;
+QT_END_INCLUDE_NAMESPACE
 
 namespace QScriptV8ObjectWrapperHelper {
 
@@ -59,7 +60,6 @@ template <typename T>
 static v8::Handle<v8::Value> namedPropertySetter(v8::Local<v8::String> property,
                                                   v8::Local<v8::Value> value,
                                                   const v8::AccessorInfo &info)
-
 {
     v8::HandleScope handleScope;
     v8::Local<v8::Object> self = info.This();
@@ -68,6 +68,18 @@ static v8::Handle<v8::Value> namedPropertySetter(v8::Local<v8::String> property,
     Q_ASSERT(data != 0);
     QScriptContextPrivate qScriptContext(data->engine, &info);
     return handleScope.Close(data->setProperty(property, value));
+}
+
+template <typename T>
+static v8::Handle<v8::Array> namedPropertyEnumerator(const v8::AccessorInfo &info)
+{
+    v8::HandleScope handleScope;
+    v8::Local<v8::Object> self = info.This();
+    Q_ASSERT(self->InternalFieldCount() == 1);
+    T *data = reinterpret_cast<T *>(self->GetPointerFromInternalField(0));
+    Q_ASSERT(data != 0);
+    QScriptContextPrivate qScriptContext(data->engine, &info);
+    return handleScope.Close(data->enumerate());
 }
 
 template <typename T>
@@ -113,7 +125,6 @@ struct QScriptV8ObjectWrapper
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "qscriptvalue_p.h"
-#include "qscriptisolate_p.h"
 QT_END_INCLUDE_NAMESPACE
 
 template <typename T, v8::Persistent<v8::FunctionTemplate> QScriptEnginePrivate::*functionTemplate>
@@ -122,7 +133,6 @@ T* QScriptV8ObjectWrapper<T, functionTemplate>::safeGet(const QScriptValuePrivat
     QScriptEnginePrivate *engine = p->engine();
     if (!engine)
         return 0;
-    QScriptIsolate api(engine, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
     v8::Handle<v8::Value> value = *p;
 

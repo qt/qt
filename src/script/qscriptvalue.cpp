@@ -27,6 +27,7 @@
 #include "qscriptstring.h"
 #include "qscriptvalue.h"
 #include "qscriptvalue_p.h"
+#include "qscriptclass_p.h"
 #include "qscriptdeclarativeclassobject_p.h"
 #include <QtCore/qregexp.h>
 #include <QtCore/qstring.h>
@@ -1009,7 +1010,7 @@ void QScriptValue::setProperty(const QScriptString& name, const QScriptValue& va
 {
     Q_D(QScriptValue);
     QScriptIsolate api(d->engine());
-    d->setProperty(QScriptStringPrivate::get(name)->m_string, QScriptValuePrivate::get(value), QScriptConverter::toPropertyAttributes(flags));
+    d->setProperty(QScriptStringPrivate::get(name), QScriptValuePrivate::get(value), QScriptConverter::toPropertyAttributes(flags));
 }
 
 /*!
@@ -1035,7 +1036,7 @@ QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QScriptString& nam
 {
     Q_D(const QScriptValue);
     QScriptIsolate api(d->engine());
-    return d->propertyFlags(QScriptStringPrivate::get(name)->m_string, mode);
+    return d->propertyFlags(QScriptStringPrivate::get(name), mode);
 }
 
 /*!
@@ -1219,8 +1220,8 @@ void QScriptValue::setData(const QScriptValue &value)
 QScriptClass *QScriptValue::scriptClass() const
 {
     Q_D(const QScriptValue);
-    QScriptClassObject *data = QScriptClassObject::safeGet(d);
-    return (data && data->scriptclass) ? QScriptClassPrivate::get(data->scriptclass) : 0;
+    QScriptIsolate api(d->engine());
+    return QScriptClassPrivate::safeGet(d->scriptClass());
 }
 
 /*!
@@ -1239,16 +1240,28 @@ QScriptClass *QScriptValue::scriptClass() const
 void QScriptValue::setScriptClass(QScriptClass *scriptclass)
 {
     Q_D(QScriptValue);
-    if (!d->isObject())
-        return;
-    Q_ASSERT(d->engine());
-    QScriptClassPrivate *dclass = scriptclass ? QScriptClassPrivate::get(scriptclass) : 0;
-    QScriptIsolate api(d->engine(), QScriptIsolate::NotNullEngine);
-    d->setScriptClass(dclass);
+    QScriptIsolate api(d->engine());
+    d->setScriptClass(QScriptClassPrivate::safeGet(scriptclass));
 }
 
-inline void QScriptValuePrivate::setScriptClass(QScriptClassPrivate *scriptclass)
+/*!
+  \internal
+  Get script class if it exists
+  \note it can be null
+*/
+QScriptClassPrivate* QScriptValuePrivate::scriptClass() const
 {
+    QScriptClassObject *data = QScriptClassObject::safeGet(this);
+    if (data)
+        return data->scriptClass();
+    return 0;
+}
+
+void QScriptValuePrivate::setScriptClass(QScriptClassPrivate *scriptclass)
+{
+    if (!isObject())
+        return;
+
     v8::HandleScope scope;
     // FIXME this algorithm is bad. It creates new value instead to add functionality to exiting one
     // This code would fail
@@ -1257,15 +1270,14 @@ inline void QScriptValuePrivate::setScriptClass(QScriptClassPrivate *scriptclass
     // QSV obj2 = engine.evaluate("a");
     // obj1.setScriptClass(scriptclass);
     // QVERIFY(obj1.strictlyEquals(obj2);
-    Q_ASSERT(isObject());
 
     QScriptClassObject *data = QScriptClassObject::safeGet(this);
     if (data) {
-        data->scriptclass = scriptclass;
+        data->setScriptClass(scriptclass);
         if (!scriptclass) {
-            if (data->original.IsEmpty())
+            if (data->original().IsEmpty())
                 data->setOriginal(v8::Object::New());
-            reinitialize(engine(), data->original);
+            reinitialize(engine(), data->original());
         }
         return;
     }
