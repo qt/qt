@@ -114,7 +114,7 @@ void QSpanCollection::updateSpan(QSpanCollection::Span *span, int old_height)
         }
     } else if (old_height > span->height()) {
         //remove the span from all the subspans lists that intersect the columns not covered anymore
-        Index::iterator it_y = index.lowerBound(-qMax(span->bottom(), span->top())); //qMax usefull if height is 0
+        Index::iterator it_y = index.lowerBound(-qMax(span->bottom(), span->top())); //qMax useful if height is 0
         Q_ASSERT(it_y != index.end()); //it_y must exist since the span is in the list
         while (-it_y.key() <= span->top() + old_height -1) {
             if (-it_y.key() > span->bottom()) {
@@ -1411,7 +1411,7 @@ void QTableView::paintEvent(QPaintEvent *event)
         }
 
         if (showGrid) {
-            // Find the bottom right (the last rows/coloumns might be hidden)
+            // Find the bottom right (the last rows/columns might be hidden)
             while (verticalHeader->isSectionHidden(verticalHeader->logicalIndex(bottom))) --bottom;
             QPen old = painter.pen();
             painter.setPen(gridPen);

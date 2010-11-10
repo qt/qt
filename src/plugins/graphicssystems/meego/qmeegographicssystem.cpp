@@ -83,7 +83,7 @@ QWindowSurface* QMeeGoGraphicsSystem::createWindowSurface(QWidget *widget) const
 QPixmapData *QMeeGoGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
 {
     // Long story short: without this it's possible to hit an 
-    // unitialized paintDevice due to a Qt bug too complex to even 
+    // uninitialized paintDevice due to a Qt bug too complex to even
     // explain here... not to mention fix without going crazy. 
     // MDK
     QGLShareContextScope ctx(qt_gl_share_widget()->context());

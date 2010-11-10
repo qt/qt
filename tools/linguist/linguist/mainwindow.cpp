@@ -2498,8 +2498,8 @@ void MainWindow::updateDanger(const MultiDataIndex &index, bool verbose)
             }
 
             if (m_ui.actionPlaceMarkerMatches->isChecked()) {
-                // Stores the occurence count of the place markers in the map placeMarkerIndexes.
-                // i.e. the occurence count of %1 is stored at placeMarkerIndexes[1],
+                // Stores the occurrence count of the place markers in the map placeMarkerIndexes.
+                // i.e. the occurrence count of %1 is stored at placeMarkerIndexes[1],
                 // count of %2 is stored at placeMarkerIndexes[2] etc.
                 // In the first pass, it counts all place markers in the sourcetext.
                 // In the second pass it (de)counts all place markers in the translation.

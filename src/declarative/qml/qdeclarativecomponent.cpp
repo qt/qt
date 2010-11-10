@@ -98,6 +98,43 @@ class QByteArray;
     int width = item->width();  // width = 200
     \endcode
 
+
+    \section2 Network Components
+
+    If the URL passed to QDeclarativeComponent is a network resource, or if the QML document references a
+    network resource, the QDeclarativeComponent has to fetch the network data before it is able to create
+    objects.  In this case, the QDeclarativeComponent will have a \l {QDeclarativeComponent::Loading}{Loading}
+    \l {QDeclarativeComponent::status()}{status}.  An application will have to wait until the component
+    is \l {QDeclarativeComponent::Ready}{Ready} before calling \l {QDeclarativeComponent::create()}.
+
+    The following example shows how to load a QML file from a network resource.  After creating
+    the QDeclarativeComponent, it tests whether the component is loading.  If it is, it connects to the
+    QDeclarativeComponent::statusChanged() signal and otherwise calls the \c {continueLoading()} method
+    directly. Note that QDeclarativeComponent::isLoading() may be false for a network component if the
+    component has been cached and is ready immediately.
+
+    \code
+    MyApplication::MyApplication()
+    {
+        // ...
+        component = new QDeclarativeComponent(engine, QUrl("http://www.example.com/main.qml"));
+        if (component->isLoading())
+            QObject::connect(component, SIGNAL(statusChanged(QDeclarativeComponent::Status)),
+                             this, SLOT(continueLoading()));
+        else
+            continueLoading();
+    }
+
+    void MyApplication::continueLoading()
+    {
+        if (component->isError()) {
+            qWarning() << component->errors();
+        } else {
+            QObject *myObject = component->create();
+        }
+    }
+    \endcode
+
     \sa {Using QML in C++ Applications}, {Integrating QML with existing Qt UI code}
 */
 

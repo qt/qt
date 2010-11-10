@@ -53,9 +53,6 @@ QT_BEGIN_NAMESPACE
 // before we perform a flick.
 static const int FlickThreshold = 20;
 
-// Really slow flicks can be annoying.
-static const int MinimumFlickVelocity = 75;
-
 QDeclarativeFlickableVisibleArea::QDeclarativeFlickableVisibleArea(QDeclarativeFlickable *parent)
     : QObject(parent), flickable(parent), m_xPosition(0.), m_widthRatio(0.)
     , m_yPosition(0.), m_heightRatio(0.)
@@ -990,8 +987,8 @@ void QDeclarativeFlickable::viewportMoved()
 {
     Q_D(QDeclarativeFlickable);
 
-    qreal prevY = d->lastFlickablePosition.x();
-    qreal prevX = d->lastFlickablePosition.y();
+    qreal prevX = d->lastFlickablePosition.x();
+    qreal prevY = d->lastFlickablePosition.y();
     d->velocityTimeline.clear();
     if (d->pressed || d->calcVelocity) {
         int elapsed = QDeclarativeItemPrivate::restart(d->velocityTime);
@@ -1012,7 +1009,7 @@ void QDeclarativeFlickable::viewportMoved()
         }
     }
 
-    d->lastFlickablePosition = QPointF(d->vData.move.value(), d->hData.move.value());
+    d->lastFlickablePosition = QPointF(d->hData.move.value(), d->vData.move.value());
 
     d->vTime = d->timeline.time();
     d->updateBeginningEnd();

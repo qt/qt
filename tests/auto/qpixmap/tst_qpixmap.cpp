@@ -812,33 +812,43 @@ void tst_QPixmap::drawBitmap()
 
 void tst_QPixmap::grabWidget()
 {
-    QWidget widget;
-    QImage image(128, 128, QImage::Format_ARGB32_Premultiplied);
-    for (int row = 0; row < image.height(); ++row) {
-        QRgb *line = reinterpret_cast<QRgb *>(image.scanLine(row));
-        for (int col = 0; col < image.width(); ++col)
-            line[col] = qRgb(rand() & 255, row, col);
+    for (int opaque = 0; opaque < 2; ++opaque) {
+        QWidget widget;
+        QImage image(128, 128, opaque ? QImage::Format_RGB32 : QImage::Format_ARGB32_Premultiplied);
+        for (int row = 0; row < image.height(); ++row) {
+            QRgb *line = reinterpret_cast<QRgb *>(image.scanLine(row));
+            for (int col = 0; col < image.width(); ++col)
+                line[col] = qRgba(rand() & 255, row, col, opaque ? 255 : 127);
+        }
+
+        QPalette pal = widget.palette();
+        pal.setBrush(QPalette::Window, QBrush(image));
+        widget.setPalette(pal);
+        widget.resize(128, 128);
+
+        QPixmap expected(64, 64);
+        if (!opaque)
+            expected.fill(Qt::transparent);
+
+        QPainter p(&expected);
+        p.translate(-64, -64);
+        p.drawTiledPixmap(0, 0, 128, 128, pal.brush(QPalette::Window).texture(), 0, 0);
+        p.end();
+
+        QPixmap actual = QPixmap::grabWidget(&widget, QRect(64, 64, 64, 64));
+        QVERIFY(lenientCompare(actual, expected));
+
+        actual = QPixmap::grabWidget(&widget, 64, 64);
+        QVERIFY(lenientCompare(actual, expected));
+
+        // Make sure a widget that is not yet shown is grabbed correctly.
+        QTreeWidget widget2;
+        actual = QPixmap::grabWidget(&widget2);
+        widget2.show();
+        expected = QPixmap::grabWidget(&widget2);
+
+        QVERIFY(lenientCompare(actual, expected));
     }
-
-    QPalette pal = widget.palette();
-    pal.setBrush(QPalette::Window, QBrush(image));
-    widget.setPalette(pal);
-    widget.resize(128, 128);
-
-    QPixmap expected = QPixmap::fromImage(QImage(image.scanLine(64) + 64 * 4, 64, 64, image.bytesPerLine(), image.format()));
-    QPixmap actual = QPixmap::grabWidget(&widget, QRect(64, 64, 64, 64));
-    QVERIFY(lenientCompare(actual, expected));
-
-    actual = QPixmap::grabWidget(&widget, 64, 64);
-    QVERIFY(lenientCompare(actual, expected));
-
-    // Make sure a widget that is not yet shown is grabbed correctly.
-    QTreeWidget widget2;
-    actual = QPixmap::grabWidget(&widget2);
-    widget2.show();
-    expected = QPixmap::grabWidget(&widget2);
-
-    QVERIFY(lenientCompare(actual, expected));
 }
 
 void tst_QPixmap::grabWindow()

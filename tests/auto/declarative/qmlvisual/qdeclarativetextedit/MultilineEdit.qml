@@ -1,4 +1,5 @@
 import QtQuick 1.0
+import "../shared" 1.0
 
 Item {
     id:lineedit
@@ -7,16 +8,16 @@ Item {
     width: 240 + 11 //Should be set manually in most cases
     height: textEdit.height + 11 
 
-    Rectangle{
+    Rectangle {
         color: 'lightsteelblue'
         anchors.fill: parent
     }
     clip: true
     Component.onCompleted: textEdit.cursorPosition = 0;
-    TextEdit{
+    TestTextEdit {
         id:textEdit
-        cursorDelegate: Item{
-            Rectangle{
+        cursorDelegate: Item {
+            Rectangle {
                 visible: parent.parent.focus
                 color: "#009BCE"
                 height: 13
@@ -46,7 +47,7 @@ Item {
         wrapMode: TextEdit.WordWrap
         font.pixelSize:15
     }
-    MouseArea{
+    MouseArea {
         //Implements all line edit mouse handling
         id: mainMouseArea
         anchors.fill: parent;
