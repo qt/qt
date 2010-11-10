@@ -914,7 +914,7 @@ void XsdSchemaParser::parseRedefine()
                 redefinedType->setWxsSuperType(contextType);
 
                 // 3) remove the base type resolving job from the resolver as
-                //    we have set the base type here explicitely
+                //    we have set the base type here explicitly
                 m_parserContext->resolver()->removeSimpleRestrictionBase(redefinedType);
 
                 // 4) add the redefined type to the schema
@@ -963,7 +963,7 @@ void XsdSchemaParser::parseRedefine()
                 redefinedType->setWxsSuperType(contextType);
 
                 // 3) remove the base type resolving job from the resolver as
-                //    we have set the base type here explicitely
+                //    we have set the base type here explicitly
                 m_parserContext->resolver()->removeComplexBaseType(redefinedType);
 
                 // 4) add the redefined type to the schema
@@ -5781,7 +5781,7 @@ QString XsdSchemaParser::readNamespaceAttribute(const QString &attributeName, co
 
 SchemaType::DerivationConstraints XsdSchemaParser::readDerivationConstraintAttribute(const SchemaType::DerivationConstraints &allowedConstraints, const char *elementName)
 {
-    // first convert the flags into strings for easier comparision
+    // first convert the flags into strings for easier comparison
     QSet<QString> allowedContent;
     if (allowedConstraints & SchemaType::RestrictionConstraint)
         allowedContent.insert(QString::fromLatin1("restriction"));
@@ -5844,7 +5844,7 @@ SchemaType::DerivationConstraints XsdSchemaParser::readDerivationConstraintAttri
 
 NamedSchemaComponent::BlockingConstraints XsdSchemaParser::readBlockingConstraintAttribute(const NamedSchemaComponent::BlockingConstraints &allowedConstraints, const char *elementName)
 {
-    // first convert the flags into strings for easier comparision
+    // first convert the flags into strings for easier comparison
     QSet<QString> allowedContent;
     if (allowedConstraints & NamedSchemaComponent::RestrictionConstraint)
         allowedContent.insert(QString::fromLatin1("restriction"));

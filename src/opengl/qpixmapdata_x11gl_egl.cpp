@@ -93,7 +93,7 @@ public:
             if (rgbConfig == argbConfig)
                 argbContext = rgbContext;
 
-            // Otherwise, create a seperate context to be used for ARGB pixmaps:
+            // Otherwise, create a separate context to be used for ARGB pixmaps:
             if (!argbContext) {
                 argbContext = new QEglContext;
                 argbContext->setConfig(argbConfig);
@@ -314,7 +314,7 @@ QPaintEngine* QX11GLPixmapData::paintEngine() const
         Q_ASSERT(ctx->d_func()->eglContext == 0);
         ctx->d_func()->eglContext = hasAlphaChannel() ? sharedContexts()->argbContext : sharedContexts()->rgbContext;
 
-        // While we use a seperate QGLContext for each pixmap, the underlying QEglContext is
+        // While we use a separate QGLContext for each pixmap, the underlying QEglContext is
         // the same. So we must use a "fake" QGLContext and fool the texture cache into thinking
         // each pixmap's QGLContext is sharing with this central one. The only place this is
         // going to fail is where we the underlying EGL RGB and ARGB contexts aren't sharing.
