@@ -165,6 +165,7 @@ private:
     CCertAttributeFilter* iCertFilter;
     TInt iCurrentCertIndex;
     QByteArray iCertificateData;
+    TPtr8 iCertificatePtr;
     QList<QByteArray>* iCertificates;
     TInt iSequenceError;
 };
