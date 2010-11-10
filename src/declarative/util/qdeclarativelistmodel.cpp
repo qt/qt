@@ -1450,6 +1450,8 @@ void ModelNode::setObjectValue(const QScriptValue& valuemap, bool writeToCache) 
         if (v.isArray()) {
             value->isArray = true;
             value->setListValue(v);
+            if (writeToCache && objectCache)
+                objectCache->setValue(it.name().toUtf8(), QVariant::fromValue(value->model(m_model)));
         } else {
             value->values << v.toVariant();
             if (writeToCache && objectCache)
