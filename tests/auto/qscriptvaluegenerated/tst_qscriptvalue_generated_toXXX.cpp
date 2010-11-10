@@ -157,6 +157,11 @@ static QString toString_tagArray[] = {
     "engine->evaluate(\"new Object()\")",
     "engine->evaluate(\"new Array()\")",
     "engine->evaluate(\"new Error()\")",
+    "engine->evaluate(\"new Boolean(true)\")",
+    "engine->evaluate(\"new Boolean(false)\")",
+    "engine->evaluate(\"new Number(123)\")",
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->evaluate(\"new String('ciao')\")",
     "engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\")",
     "engine->evaluate(\"Undefined\")",
     "engine->evaluate(\"Null\")",
@@ -191,6 +196,7 @@ static QString toString_tagArray[] = {
     "engine->newArray(10)",
     "engine->newDate(QDateTime())",
     "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newRegExp(\"foo\", \"gim\")",
     "engine->newVariant(QVariant())",
     "engine->newVariant(QVariant(123))",
     "engine->newVariant(QVariant(false))",
@@ -249,24 +255,27 @@ static QString toString_valueArray[] = {
     "function () { return 1; }", "function () { return 'ciao'; }",
     "function () { throw new Error('foo'); }", "/foo/",
     "[object Object]", "",
-    "Error: Unknown error", "22",
-    "ReferenceError: Can't find variable: Undefined", "ReferenceError: Can't find variable: Null",
-    "ReferenceError: Can't find variable: True", "ReferenceError: Can't find variable: False",
-    "undefined", "null",
-    "true", "false",
-    "122", "124",
-    "0", "0",
-    "123", "6.37e-8",
-    "-6.37e-8", "1126240820",
-    "65536", "65537",
-    "NaN", "Infinity",
-    "-Infinity", "ciao",
-    "", "0",
-    "123", "12.4",
-    "null", "undefined",
-    "[object Object]", "",
-    ",,,,,,,,,", "Invalid Date",
-    "[object QMetaObject]", "undefined",
+    "Error: Unknown error", "true",
+    "false", "123",
+    "/foo/gim", "ciao",
+    "22", "ReferenceError: Can't find variable: Undefined",
+    "ReferenceError: Can't find variable: Null", "ReferenceError: Can't find variable: True",
+    "ReferenceError: Can't find variable: False", "undefined",
+    "null", "true",
+    "false", "122",
+    "124", "0",
+    "0", "123",
+    "6.37e-8", "-6.37e-8",
+    "1126240820", "65536",
+    "65537", "NaN",
+    "Infinity", "-Infinity",
+    "ciao", "",
+    "0", "123",
+    "12.4", "null",
+    "undefined", "[object Object]",
+    "", ",,,,,,,,,",
+    "Invalid Date", "[object QMetaObject]",
+    "/foo/gim", "undefined",
     "123", "false",
     "null", "QScriptEngine(name = \"\")"};
 
@@ -274,8 +283,8 @@ void tst_QScriptValueGenerated::toString_makeData(const char* expr)
 {
     static QHash<QString, QString> toString;
     if (toString.isEmpty()) {
-        toString.reserve(142);
-        for (unsigned i = 0; i < 142; ++i)
+        toString.reserve(148);
+        for (unsigned i = 0; i < 148; ++i)
             toString.insert(toString_tagArray[i], toString_valueArray[i]);
     }
     newRow(expr) << toString.value(expr);
@@ -401,6 +410,11 @@ static QString toNumber_tagArray[] = {
     "engine->evaluate(\"new Object()\")",
     "engine->evaluate(\"new Array()\")",
     "engine->evaluate(\"new Error()\")",
+    "engine->evaluate(\"new Boolean(true)\")",
+    "engine->evaluate(\"new Boolean(false)\")",
+    "engine->evaluate(\"new Number(123)\")",
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->evaluate(\"new String('ciao')\")",
     "engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\")",
     "engine->evaluate(\"Undefined\")",
     "engine->evaluate(\"Null\")",
@@ -435,6 +449,7 @@ static QString toNumber_tagArray[] = {
     "engine->newArray(10)",
     "engine->newDate(QDateTime())",
     "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newRegExp(\"foo\", \"gim\")",
     "engine->newVariant(QVariant())",
     "engine->newVariant(QVariant(123))",
     "engine->newVariant(QVariant(false))",
@@ -451,17 +466,17 @@ static qsreal toNumber_valueArray[] = {
     65537, qQNaN(), qQNaN(), qInf(), qInf(), qQNaN(), qInf(), qInf(), qQNaN(), qQNaN(),
     0, 0, 0, 123, 1.23, 0, qQNaN(), qQNaN(), qQNaN(), 0,
     qQNaN(), qQNaN(), qQNaN(), qQNaN(), qQNaN(), qQNaN(), qQNaN(), qQNaN(), qQNaN(), qQNaN(),
-    qQNaN(), 0, qQNaN(), 22, qQNaN(), qQNaN(), qQNaN(), qQNaN(), qQNaN(), 0,
-    1, 0, 122, 124, 0, 0, 123, 6.369999999999999e-08, -6.369999999999999e-08, 1126240820,
-    65536, 65537, qQNaN(), qInf(), qInf(), qQNaN(), 0, 0, 123, 12.4,
-    0, qQNaN(), qQNaN(), 0, qQNaN(), qQNaN(), qQNaN(), qQNaN(), 123, 0,
-    0, qQNaN()};
+    qQNaN(), 0, qQNaN(), 1, 0, 123, qQNaN(), qQNaN(), 22, qQNaN(),
+    qQNaN(), qQNaN(), qQNaN(), qQNaN(), 0, 1, 0, 122, 124, 0,
+    0, 123, 6.369999999999999e-08, -6.369999999999999e-08, 1126240820, 65536, 65537, qQNaN(), qInf(), qInf(),
+    qQNaN(), 0, 0, 123, 12.4, 0, qQNaN(), qQNaN(), 0, qQNaN(),
+    qQNaN(), qQNaN(), qQNaN(), qQNaN(), 123, 0, 0, qQNaN()};
 void tst_QScriptValueGenerated::toNumber_makeData(const char* expr)
 {
     static QHash<QString, qsreal> toNumber;
     if (toNumber.isEmpty()) {
-        toNumber.reserve(142);
-        for (unsigned i = 0; i < 142; ++i)
+        toNumber.reserve(148);
+        for (unsigned i = 0; i < 148; ++i)
             toNumber.insert(toNumber_tagArray[i], toNumber_valueArray[i]);
     }
     newRow(expr) << toNumber.value(expr);
@@ -596,6 +611,11 @@ static QString toBool_tagArray[] = {
     "engine->evaluate(\"new Object()\")",
     "engine->evaluate(\"new Array()\")",
     "engine->evaluate(\"new Error()\")",
+    "engine->evaluate(\"new Boolean(true)\")",
+    "engine->evaluate(\"new Boolean(false)\")",
+    "engine->evaluate(\"new Number(123)\")",
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->evaluate(\"new String('ciao')\")",
     "engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\")",
     "engine->evaluate(\"Undefined\")",
     "engine->evaluate(\"Null\")",
@@ -630,6 +650,7 @@ static QString toBool_tagArray[] = {
     "engine->newArray(10)",
     "engine->newDate(QDateTime())",
     "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newRegExp(\"foo\", \"gim\")",
     "engine->newVariant(QVariant())",
     "engine->newVariant(QVariant(123))",
     "engine->newVariant(QVariant(false))",
@@ -691,18 +712,21 @@ static bool toBool_valueArray[] = {
     true, true,
     true, true,
     true, true,
-    false, false,
+    true, true,
+    true, true,
+    true, false,
+    false, true,
+    false, true,
+    true, false,
+    false, true,
+    true, true,
+    true, true,
     true, false,
     true, true,
-    false, false,
+    true, false,
     true, true,
-    true, true,
-    true, true,
+    true, false,
     false, true,
-    true, true,
-    false, true,
-    true, true,
-    false, false,
     true, true,
     true, true,
     true, true,
@@ -713,8 +737,8 @@ void tst_QScriptValueGenerated::toBool_makeData(const char* expr)
 {
     static QHash<QString, bool> toBool;
     if (toBool.isEmpty()) {
-        toBool.reserve(142);
-        for (unsigned i = 0; i < 142; ++i)
+        toBool.reserve(148);
+        for (unsigned i = 0; i < 148; ++i)
             toBool.insert(toBool_tagArray[i], toBool_valueArray[i]);
     }
     newRow(expr) << toBool.value(expr);
@@ -840,6 +864,11 @@ static QString toBoolean_tagArray[] = {
     "engine->evaluate(\"new Object()\")",
     "engine->evaluate(\"new Array()\")",
     "engine->evaluate(\"new Error()\")",
+    "engine->evaluate(\"new Boolean(true)\")",
+    "engine->evaluate(\"new Boolean(false)\")",
+    "engine->evaluate(\"new Number(123)\")",
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->evaluate(\"new String('ciao')\")",
     "engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\")",
     "engine->evaluate(\"Undefined\")",
     "engine->evaluate(\"Null\")",
@@ -874,6 +903,7 @@ static QString toBoolean_tagArray[] = {
     "engine->newArray(10)",
     "engine->newDate(QDateTime())",
     "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newRegExp(\"foo\", \"gim\")",
     "engine->newVariant(QVariant())",
     "engine->newVariant(QVariant(123))",
     "engine->newVariant(QVariant(false))",
@@ -935,18 +965,21 @@ static bool toBoolean_valueArray[] = {
     true, true,
     true, true,
     true, true,
-    false, false,
+    true, true,
+    true, true,
+    true, false,
+    false, true,
+    false, true,
+    true, false,
+    false, true,
+    true, true,
+    true, true,
     true, false,
     true, true,
-    false, false,
+    true, false,
     true, true,
-    true, true,
-    true, true,
+    true, false,
     false, true,
-    true, true,
-    false, true,
-    true, true,
-    false, false,
     true, true,
     true, true,
     true, true,
@@ -957,8 +990,8 @@ void tst_QScriptValueGenerated::toBoolean_makeData(const char* expr)
 {
     static QHash<QString, bool> toBoolean;
     if (toBoolean.isEmpty()) {
-        toBoolean.reserve(142);
-        for (unsigned i = 0; i < 142; ++i)
+        toBoolean.reserve(148);
+        for (unsigned i = 0; i < 148; ++i)
             toBoolean.insert(toBoolean_tagArray[i], toBoolean_valueArray[i]);
     }
     newRow(expr) << toBoolean.value(expr);
@@ -1084,6 +1117,11 @@ static QString toInteger_tagArray[] = {
     "engine->evaluate(\"new Object()\")",
     "engine->evaluate(\"new Array()\")",
     "engine->evaluate(\"new Error()\")",
+    "engine->evaluate(\"new Boolean(true)\")",
+    "engine->evaluate(\"new Boolean(false)\")",
+    "engine->evaluate(\"new Number(123)\")",
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->evaluate(\"new String('ciao')\")",
     "engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\")",
     "engine->evaluate(\"Undefined\")",
     "engine->evaluate(\"Null\")",
@@ -1118,6 +1156,7 @@ static QString toInteger_tagArray[] = {
     "engine->newArray(10)",
     "engine->newDate(QDateTime())",
     "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newRegExp(\"foo\", \"gim\")",
     "engine->newVariant(QVariant())",
     "engine->newVariant(QVariant(123))",
     "engine->newVariant(QVariant(false))",
@@ -1134,17 +1173,17 @@ static qsreal toInteger_valueArray[] = {
     65537, 0, 0, qInf(), qInf(), 0, qInf(), qInf(), 0, 0,
     0, 0, 0, 123, 1, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 22, 0, 0, 0, 0, 0, 0,
-    1, 0, 122, 124, 0, 0, 123, 0, 0, 1126240820,
-    65536, 65537, 0, qInf(), qInf(), 0, 0, 0, 123, 12,
-    0, 0, 0, 0, 0, 0, 0, 0, 123, 0,
-    0, 0};
+    0, 0, 0, 1, 0, 123, 0, 0, 22, 0,
+    0, 0, 0, 0, 0, 1, 0, 122, 124, 0,
+    0, 123, 0, 0, 1126240820, 65536, 65537, 0, qInf(), qInf(),
+    0, 0, 0, 123, 12, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 123, 0, 0, 0};
 void tst_QScriptValueGenerated::toInteger_makeData(const char* expr)
 {
     static QHash<QString, qsreal> toInteger;
     if (toInteger.isEmpty()) {
-        toInteger.reserve(142);
-        for (unsigned i = 0; i < 142; ++i)
+        toInteger.reserve(148);
+        for (unsigned i = 0; i < 148; ++i)
             toInteger.insert(toInteger_tagArray[i], toInteger_valueArray[i]);
     }
     newRow(expr) << toInteger.value(expr);
@@ -1275,6 +1314,11 @@ static QString toInt32_tagArray[] = {
     "engine->evaluate(\"new Object()\")",
     "engine->evaluate(\"new Array()\")",
     "engine->evaluate(\"new Error()\")",
+    "engine->evaluate(\"new Boolean(true)\")",
+    "engine->evaluate(\"new Boolean(false)\")",
+    "engine->evaluate(\"new Number(123)\")",
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->evaluate(\"new String('ciao')\")",
     "engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\")",
     "engine->evaluate(\"Undefined\")",
     "engine->evaluate(\"Null\")",
@@ -1309,6 +1353,7 @@ static QString toInt32_tagArray[] = {
     "engine->newArray(10)",
     "engine->newDate(QDateTime())",
     "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newRegExp(\"foo\", \"gim\")",
     "engine->newVariant(QVariant())",
     "engine->newVariant(QVariant(123))",
     "engine->newVariant(QVariant(false))",
@@ -1367,20 +1412,23 @@ static qint32 toInt32_valueArray[] = {
     0, 0,
     0, 0,
     0, 0,
-    0, 22,
+    0, 1,
+    0, 123,
+    0, 0,
+    22, 0,
     0, 0,
     0, 0,
+    0, 1,
+    0, 122,
+    124, 0,
+    0, 123,
     0, 0,
-    1, 0,
-    122, 124,
-    0, 0,
-    123, 0,
-    0, 1126240820,
-    65536, 65537,
+    1126240820, 65536,
+    65537, 0,
     0, 0,
     0, 0,
-    0, 0,
-    123, 12,
+    0, 123,
+    12, 0,
     0, 0,
     0, 0,
     0, 0,
@@ -1392,8 +1440,8 @@ void tst_QScriptValueGenerated::toInt32_makeData(const char* expr)
 {
     static QHash<QString, qint32> toInt32;
     if (toInt32.isEmpty()) {
-        toInt32.reserve(142);
-        for (unsigned i = 0; i < 142; ++i)
+        toInt32.reserve(148);
+        for (unsigned i = 0; i < 148; ++i)
             toInt32.insert(toInt32_tagArray[i], toInt32_valueArray[i]);
     }
     newRow(expr) << toInt32.value(expr);
@@ -1519,6 +1567,11 @@ static QString toUInt32_tagArray[] = {
     "engine->evaluate(\"new Object()\")",
     "engine->evaluate(\"new Array()\")",
     "engine->evaluate(\"new Error()\")",
+    "engine->evaluate(\"new Boolean(true)\")",
+    "engine->evaluate(\"new Boolean(false)\")",
+    "engine->evaluate(\"new Number(123)\")",
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->evaluate(\"new String('ciao')\")",
     "engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\")",
     "engine->evaluate(\"Undefined\")",
     "engine->evaluate(\"Null\")",
@@ -1553,6 +1606,7 @@ static QString toUInt32_tagArray[] = {
     "engine->newArray(10)",
     "engine->newDate(QDateTime())",
     "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newRegExp(\"foo\", \"gim\")",
     "engine->newVariant(QVariant())",
     "engine->newVariant(QVariant(123))",
     "engine->newVariant(QVariant(false))",
@@ -1611,20 +1665,23 @@ static quint32 toUInt32_valueArray[] = {
     0, 0,
     0, 0,
     0, 0,
-    0, 22,
+    0, 1,
+    0, 123,
+    0, 0,
+    22, 0,
     0, 0,
     0, 0,
+    0, 1,
+    0, 122,
+    124, 0,
+    0, 123,
     0, 0,
-    1, 0,
-    122, 124,
-    0, 0,
-    123, 0,
-    0, 1126240820,
-    65536, 65537,
+    1126240820, 65536,
+    65537, 0,
     0, 0,
     0, 0,
-    0, 0,
-    123, 12,
+    0, 123,
+    12, 0,
     0, 0,
     0, 0,
     0, 0,
@@ -1636,8 +1693,8 @@ void tst_QScriptValueGenerated::toUInt32_makeData(const char* expr)
 {
     static QHash<QString, quint32> toUInt32;
     if (toUInt32.isEmpty()) {
-        toUInt32.reserve(142);
-        for (unsigned i = 0; i < 142; ++i)
+        toUInt32.reserve(148);
+        for (unsigned i = 0; i < 148; ++i)
             toUInt32.insert(toUInt32_tagArray[i], toUInt32_valueArray[i]);
     }
     newRow(expr) << toUInt32.value(expr);
@@ -1763,6 +1820,11 @@ static QString toUInt16_tagArray[] = {
     "engine->evaluate(\"new Object()\")",
     "engine->evaluate(\"new Array()\")",
     "engine->evaluate(\"new Error()\")",
+    "engine->evaluate(\"new Boolean(true)\")",
+    "engine->evaluate(\"new Boolean(false)\")",
+    "engine->evaluate(\"new Number(123)\")",
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->evaluate(\"new String('ciao')\")",
     "engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\")",
     "engine->evaluate(\"Undefined\")",
     "engine->evaluate(\"Null\")",
@@ -1797,6 +1859,7 @@ static QString toUInt16_tagArray[] = {
     "engine->newArray(10)",
     "engine->newDate(QDateTime())",
     "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newRegExp(\"foo\", \"gim\")",
     "engine->newVariant(QVariant())",
     "engine->newVariant(QVariant(123))",
     "engine->newVariant(QVariant(false))",
@@ -1855,20 +1918,23 @@ static quint16 toUInt16_valueArray[] = {
     0, 0,
     0, 0,
     0, 0,
-    0, 22,
-    0, 0,
-    0, 0,
-    0, 0,
-    1, 0,
-    122, 124,
-    0, 0,
-    123, 0,
-    0, 4660,
     0, 1,
+    0, 123,
+    0, 0,
+    22, 0,
     0, 0,
     0, 0,
+    0, 1,
+    0, 122,
+    124, 0,
+    0, 123,
     0, 0,
-    123, 12,
+    4660, 0,
+    1, 0,
+    0, 0,
+    0, 0,
+    0, 123,
+    12, 0,
     0, 0,
     0, 0,
     0, 0,
@@ -1880,8 +1946,8 @@ void tst_QScriptValueGenerated::toUInt16_makeData(const char* expr)
 {
     static QHash<QString, quint16> toUInt16;
     if (toUInt16.isEmpty()) {
-        toUInt16.reserve(142);
-        for (unsigned i = 0; i < 142; ++i)
+        toUInt16.reserve(148);
+        for (unsigned i = 0; i < 148; ++i)
             toUInt16.insert(toUInt16_tagArray[i], toUInt16_valueArray[i]);
     }
     newRow(expr) << toUInt16.value(expr);

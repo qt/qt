@@ -155,6 +155,11 @@ static QString isValid_array[] = {
     "engine->evaluate(\"new Object()\")",
     "engine->evaluate(\"new Array()\")",
     "engine->evaluate(\"new Error()\")",
+    "engine->evaluate(\"new Boolean(true)\")",
+    "engine->evaluate(\"new Boolean(false)\")",
+    "engine->evaluate(\"new Number(123)\")",
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->evaluate(\"new String('ciao')\")",
     "engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\")",
     "engine->evaluate(\"Undefined\")",
     "engine->evaluate(\"Null\")",
@@ -189,6 +194,7 @@ static QString isValid_array[] = {
     "engine->newArray(10)",
     "engine->newDate(QDateTime())",
     "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newRegExp(\"foo\", \"gim\")",
     "engine->newVariant(QVariant())",
     "engine->newVariant(QVariant(123))",
     "engine->newVariant(QVariant(false))",
@@ -200,8 +206,8 @@ void tst_QScriptValueGenerated::isValid_makeData(const char* expr)
 {
     static QSet<QString> isValid;
     if (isValid.isEmpty()) {
-        isValid.reserve(141);
-        for (unsigned i = 0; i < 141; ++i)
+        isValid.reserve(147);
+        for (unsigned i = 0; i < 147; ++i)
             isValid.insert(isValid_array[i]);
     }
     newRow(expr) << isValid.contains(expr);
@@ -395,15 +401,17 @@ static QString isFunction_array[] = {
     "engine->evaluate(\"(function() { return 'ciao'; })\")",
     "engine->evaluate(\"(function() { throw new Error('foo'); })\")",
     "engine->evaluate(\"/foo/\")",
-    "engine->newQMetaObject(&QObject::staticMetaObject)"
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newRegExp(\"foo\", \"gim\")"
 };
 
 void tst_QScriptValueGenerated::isFunction_makeData(const char* expr)
 {
     static QSet<QString> isFunction;
     if (isFunction.isEmpty()) {
-        isFunction.reserve(10);
-        for (unsigned i = 0; i < 10; ++i)
+        isFunction.reserve(12);
+        for (unsigned i = 0; i < 12; ++i)
             isFunction.insert(isFunction_array[i]);
     }
     newRow(expr) << isFunction.contains(expr);
@@ -675,6 +683,11 @@ static QString isObject_array[] = {
     "engine->evaluate(\"new Object()\")",
     "engine->evaluate(\"new Array()\")",
     "engine->evaluate(\"new Error()\")",
+    "engine->evaluate(\"new Boolean(true)\")",
+    "engine->evaluate(\"new Boolean(false)\")",
+    "engine->evaluate(\"new Number(123)\")",
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->evaluate(\"new String('ciao')\")",
     "engine->evaluate(\"Undefined\")",
     "engine->evaluate(\"Null\")",
     "engine->evaluate(\"True\")",
@@ -684,6 +697,7 @@ static QString isObject_array[] = {
     "engine->newArray(10)",
     "engine->newDate(QDateTime())",
     "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newRegExp(\"foo\", \"gim\")",
     "engine->newVariant(QVariant())",
     "engine->newVariant(QVariant(123))",
     "engine->newVariant(QVariant(false))",
@@ -694,8 +708,8 @@ void tst_QScriptValueGenerated::isObject_makeData(const char* expr)
 {
     static QSet<QString> isObject;
     if (isObject.isEmpty()) {
-        isObject.reserve(30);
-        for (unsigned i = 0; i < 30; ++i)
+        isObject.reserve(36);
+        for (unsigned i = 0; i < 36; ++i)
             isObject.insert(isObject_array[i]);
     }
     newRow(expr) << isObject.contains(expr);
@@ -750,15 +764,17 @@ void tst_QScriptValueGenerated::isRegExp_initData()
 }
 
 static QString isRegExp_array[] = {
-    "engine->evaluate(\"/foo/\")"
+    "engine->evaluate(\"/foo/\")",
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->newRegExp(\"foo\", \"gim\")"
 };
 
 void tst_QScriptValueGenerated::isRegExp_makeData(const char* expr)
 {
     static QSet<QString> isRegExp;
     if (isRegExp.isEmpty()) {
-        isRegExp.reserve(1);
-        for (unsigned i = 0; i < 1; ++i)
+        isRegExp.reserve(3);
+        for (unsigned i = 0; i < 3; ++i)
             isRegExp.insert(isRegExp_array[i]);
     }
     newRow(expr) << isRegExp.contains(expr);

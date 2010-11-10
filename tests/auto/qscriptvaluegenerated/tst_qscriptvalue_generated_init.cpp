@@ -155,6 +155,11 @@ void tst_QScriptValueGenerated::initScriptValues()
     DEFINE_TEST_VALUE(engine->evaluate("new Object()"));
     DEFINE_TEST_VALUE(engine->evaluate("new Array()"));
     DEFINE_TEST_VALUE(engine->evaluate("new Error()"));
+    DEFINE_TEST_VALUE(engine->evaluate("new Boolean(true)"));
+    DEFINE_TEST_VALUE(engine->evaluate("new Boolean(false)"));
+    DEFINE_TEST_VALUE(engine->evaluate("new Number(123)"));
+    DEFINE_TEST_VALUE(engine->evaluate("new RegExp('foo', 'gim')"));
+    DEFINE_TEST_VALUE(engine->evaluate("new String('ciao')"));
     DEFINE_TEST_VALUE(engine->evaluate("a = new Object(); a.foo = 22; a.foo"));
     DEFINE_TEST_VALUE(engine->evaluate("Undefined"));
     DEFINE_TEST_VALUE(engine->evaluate("Null"));
@@ -189,6 +194,7 @@ void tst_QScriptValueGenerated::initScriptValues()
     DEFINE_TEST_VALUE(engine->newArray(10));
     DEFINE_TEST_VALUE(engine->newDate(QDateTime()));
     DEFINE_TEST_VALUE(engine->newQMetaObject(&QObject::staticMetaObject));
+    DEFINE_TEST_VALUE(engine->newRegExp("foo", "gim"));
     DEFINE_TEST_VALUE(engine->newVariant(QVariant()));
     DEFINE_TEST_VALUE(engine->newVariant(QVariant(123)));
     DEFINE_TEST_VALUE(engine->newVariant(QVariant(false)));

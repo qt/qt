@@ -157,6 +157,11 @@ static QString qscriptvalue_castQString_tagArray[] = {
     "engine->evaluate(\"new Object()\")",
     "engine->evaluate(\"new Array()\")",
     "engine->evaluate(\"new Error()\")",
+    "engine->evaluate(\"new Boolean(true)\")",
+    "engine->evaluate(\"new Boolean(false)\")",
+    "engine->evaluate(\"new Number(123)\")",
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->evaluate(\"new String('ciao')\")",
     "engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\")",
     "engine->evaluate(\"Undefined\")",
     "engine->evaluate(\"Null\")",
@@ -191,6 +196,7 @@ static QString qscriptvalue_castQString_tagArray[] = {
     "engine->newArray(10)",
     "engine->newDate(QDateTime())",
     "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newRegExp(\"foo\", \"gim\")",
     "engine->newVariant(QVariant())",
     "engine->newVariant(QVariant(123))",
     "engine->newVariant(QVariant(false))",
@@ -248,32 +254,35 @@ static QString qscriptvalue_castQString_valueArray[] = {
     "function () { return 1; }", "function () { return 'ciao'; }",
     "function () { throw new Error('foo'); }", "/foo/",
     "[object Object]", "",
-    "Error: Unknown error", "22",
-    "ReferenceError: Can't find variable: Undefined", "ReferenceError: Can't find variable: Null",
-    "ReferenceError: Can't find variable: True", "ReferenceError: Can't find variable: False",
-    "", "",
-    "true", "false",
-    "122", "124",
-    "0", "0",
-    "123", "6.37e-8",
-    "-6.37e-8", "1126240820",
-    "65536", "65537",
-    "NaN", "Infinity",
-    "-Infinity", "ciao",
-    "", "0",
-    "123", "12.4",
-    "", "",
-    "[object Object]", "",
-    ",,,,,,,,,", "Invalid Date",
-    "[object QMetaObject]", "undefined",
+    "Error: Unknown error", "true",
+    "false", "123",
+    "/foo/gim", "ciao",
+    "22", "ReferenceError: Can't find variable: Undefined",
+    "ReferenceError: Can't find variable: Null", "ReferenceError: Can't find variable: True",
+    "ReferenceError: Can't find variable: False", "",
+    "", "true",
+    "false", "122",
+    "124", "0",
+    "0", "123",
+    "6.37e-8", "-6.37e-8",
+    "1126240820", "65536",
+    "65537", "NaN",
+    "Infinity", "-Infinity",
+    "ciao", "",
+    "0", "123",
+    "12.4", "",
+    "", "[object Object]",
+    "", ",,,,,,,,,",
+    "Invalid Date", "[object QMetaObject]",
+    "/foo/gim", "undefined",
     "123", "false",
     "", "QScriptEngine(name = \"\")"};
 void tst_QScriptValueGenerated::qscriptvalue_castQString_makeData(const char* expr)
 {
     static QHash<QString, QString> value;
     if (value.isEmpty()) {
-        value.reserve(142);
-        for (unsigned i = 0; i < 142; ++i)
+        value.reserve(148);
+        for (unsigned i = 0; i < 148; ++i)
             value.insert(qscriptvalue_castQString_tagArray[i], qscriptvalue_castQString_valueArray[i]);
     }
     newRow(expr) << value.value(expr);
@@ -399,6 +408,11 @@ static QString qscriptvalue_castqsreal_tagArray[] = {
     "engine->evaluate(\"new Object()\")",
     "engine->evaluate(\"new Array()\")",
     "engine->evaluate(\"new Error()\")",
+    "engine->evaluate(\"new Boolean(true)\")",
+    "engine->evaluate(\"new Boolean(false)\")",
+    "engine->evaluate(\"new Number(123)\")",
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->evaluate(\"new String('ciao')\")",
     "engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\")",
     "engine->evaluate(\"Undefined\")",
     "engine->evaluate(\"Null\")",
@@ -433,6 +447,7 @@ static QString qscriptvalue_castqsreal_tagArray[] = {
     "engine->newArray(10)",
     "engine->newDate(QDateTime())",
     "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newRegExp(\"foo\", \"gim\")",
     "engine->newVariant(QVariant())",
     "engine->newVariant(QVariant(123))",
     "engine->newVariant(QVariant(false))",
@@ -449,17 +464,17 @@ static qsreal qscriptvalue_castqsreal_valueArray[] = {
     65537, qQNaN(), qQNaN(), qInf(), qInf(), qQNaN(), qInf(), qInf(), qQNaN(), qQNaN(),
     0, 0, 0, 123, 1.23, 0, qQNaN(), qQNaN(), qQNaN(), 0,
     qQNaN(), qQNaN(), qQNaN(), qQNaN(), qQNaN(), qQNaN(), qQNaN(), qQNaN(), qQNaN(), qQNaN(),
-    qQNaN(), 0, qQNaN(), 22, qQNaN(), qQNaN(), qQNaN(), qQNaN(), qQNaN(), 0,
-    1, 0, 122, 124, 0, 0, 123, 6.369999999999999e-08, -6.369999999999999e-08, 1126240820,
-    65536, 65537, qQNaN(), qInf(), qInf(), qQNaN(), 0, 0, 123, 12.4,
-    0, qQNaN(), qQNaN(), 0, qQNaN(), qQNaN(), qQNaN(), qQNaN(), 123, 0,
-    0, qQNaN()};
+    qQNaN(), 0, qQNaN(), 1, 0, 123, qQNaN(), qQNaN(), 22, qQNaN(),
+    qQNaN(), qQNaN(), qQNaN(), qQNaN(), 0, 1, 0, 122, 124, 0,
+    0, 123, 6.369999999999999e-08, -6.369999999999999e-08, 1126240820, 65536, 65537, qQNaN(), qInf(), qInf(),
+    qQNaN(), 0, 0, 123, 12.4, 0, qQNaN(), qQNaN(), 0, qQNaN(),
+    qQNaN(), qQNaN(), qQNaN(), qQNaN(), 123, 0, 0, qQNaN()};
 void tst_QScriptValueGenerated::qscriptvalue_castqsreal_makeData(const char* expr)
 {
     static QHash<QString, qsreal> value;
     if (value.isEmpty()) {
-        value.reserve(142);
-        for (unsigned i = 0; i < 142; ++i)
+        value.reserve(148);
+        for (unsigned i = 0; i < 148; ++i)
             value.insert(qscriptvalue_castqsreal_tagArray[i], qscriptvalue_castqsreal_valueArray[i]);
     }
     newRow(expr) << value.value(expr);
@@ -595,6 +610,11 @@ static QString qscriptvalue_castbool_tagArray[] = {
     "engine->evaluate(\"new Object()\")",
     "engine->evaluate(\"new Array()\")",
     "engine->evaluate(\"new Error()\")",
+    "engine->evaluate(\"new Boolean(true)\")",
+    "engine->evaluate(\"new Boolean(false)\")",
+    "engine->evaluate(\"new Number(123)\")",
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->evaluate(\"new String('ciao')\")",
     "engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\")",
     "engine->evaluate(\"Undefined\")",
     "engine->evaluate(\"Null\")",
@@ -629,6 +649,7 @@ static QString qscriptvalue_castbool_tagArray[] = {
     "engine->newArray(10)",
     "engine->newDate(QDateTime())",
     "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newRegExp(\"foo\", \"gim\")",
     "engine->newVariant(QVariant())",
     "engine->newVariant(QVariant(123))",
     "engine->newVariant(QVariant(false))",
@@ -689,18 +710,21 @@ static bool qscriptvalue_castbool_valueArray[] = {
     true, true,
     true, true,
     true, true,
-    false, false,
+    true, true,
+    true, true,
+    true, false,
+    false, true,
+    false, true,
+    true, false,
+    false, true,
+    true, true,
+    true, true,
     true, false,
     true, true,
-    false, false,
+    true, false,
     true, true,
-    true, true,
-    true, true,
+    true, false,
     false, true,
-    true, true,
-    false, true,
-    true, true,
-    false, false,
     true, true,
     true, true,
     true, true,
@@ -710,8 +734,8 @@ void tst_QScriptValueGenerated::qscriptvalue_castbool_makeData(const char* expr)
 {
     static QHash<QString, bool> value;
     if (value.isEmpty()) {
-        value.reserve(142);
-        for (unsigned i = 0; i < 142; ++i)
+        value.reserve(148);
+        for (unsigned i = 0; i < 148; ++i)
             value.insert(qscriptvalue_castbool_tagArray[i], qscriptvalue_castbool_valueArray[i]);
     }
     newRow(expr) << value.value(expr);
@@ -837,6 +861,11 @@ static QString qscriptvalue_castqint32_tagArray[] = {
     "engine->evaluate(\"new Object()\")",
     "engine->evaluate(\"new Array()\")",
     "engine->evaluate(\"new Error()\")",
+    "engine->evaluate(\"new Boolean(true)\")",
+    "engine->evaluate(\"new Boolean(false)\")",
+    "engine->evaluate(\"new Number(123)\")",
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->evaluate(\"new String('ciao')\")",
     "engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\")",
     "engine->evaluate(\"Undefined\")",
     "engine->evaluate(\"Null\")",
@@ -871,6 +900,7 @@ static QString qscriptvalue_castqint32_tagArray[] = {
     "engine->newArray(10)",
     "engine->newDate(QDateTime())",
     "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newRegExp(\"foo\", \"gim\")",
     "engine->newVariant(QVariant())",
     "engine->newVariant(QVariant(123))",
     "engine->newVariant(QVariant(false))",
@@ -928,20 +958,23 @@ static qint32 qscriptvalue_castqint32_valueArray[] = {
     0, 0,
     0, 0,
     0, 0,
-    0, 22,
+    0, 1,
+    0, 123,
+    0, 0,
+    22, 0,
     0, 0,
     0, 0,
+    0, 1,
+    0, 122,
+    124, 0,
+    0, 123,
     0, 0,
-    1, 0,
-    122, 124,
-    0, 0,
-    123, 0,
-    0, 1126240820,
-    65536, 65537,
+    1126240820, 65536,
+    65537, 0,
     0, 0,
     0, 0,
-    0, 0,
-    123, 12,
+    0, 123,
+    12, 0,
     0, 0,
     0, 0,
     0, 0,
@@ -952,8 +985,8 @@ void tst_QScriptValueGenerated::qscriptvalue_castqint32_makeData(const char* exp
 {
     static QHash<QString, qint32> value;
     if (value.isEmpty()) {
-        value.reserve(142);
-        for (unsigned i = 0; i < 142; ++i)
+        value.reserve(148);
+        for (unsigned i = 0; i < 148; ++i)
             value.insert(qscriptvalue_castqint32_tagArray[i], qscriptvalue_castqint32_valueArray[i]);
     }
     newRow(expr) << value.value(expr);
@@ -1079,6 +1112,11 @@ static QString qscriptvalue_castquint32_tagArray[] = {
     "engine->evaluate(\"new Object()\")",
     "engine->evaluate(\"new Array()\")",
     "engine->evaluate(\"new Error()\")",
+    "engine->evaluate(\"new Boolean(true)\")",
+    "engine->evaluate(\"new Boolean(false)\")",
+    "engine->evaluate(\"new Number(123)\")",
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->evaluate(\"new String('ciao')\")",
     "engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\")",
     "engine->evaluate(\"Undefined\")",
     "engine->evaluate(\"Null\")",
@@ -1113,6 +1151,7 @@ static QString qscriptvalue_castquint32_tagArray[] = {
     "engine->newArray(10)",
     "engine->newDate(QDateTime())",
     "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newRegExp(\"foo\", \"gim\")",
     "engine->newVariant(QVariant())",
     "engine->newVariant(QVariant(123))",
     "engine->newVariant(QVariant(false))",
@@ -1170,20 +1209,23 @@ static quint32 qscriptvalue_castquint32_valueArray[] = {
     0, 0,
     0, 0,
     0, 0,
-    0, 22,
+    0, 1,
+    0, 123,
+    0, 0,
+    22, 0,
     0, 0,
     0, 0,
+    0, 1,
+    0, 122,
+    124, 0,
+    0, 123,
     0, 0,
-    1, 0,
-    122, 124,
-    0, 0,
-    123, 0,
-    0, 1126240820,
-    65536, 65537,
+    1126240820, 65536,
+    65537, 0,
     0, 0,
     0, 0,
-    0, 0,
-    123, 12,
+    0, 123,
+    12, 0,
     0, 0,
     0, 0,
     0, 0,
@@ -1194,8 +1236,8 @@ void tst_QScriptValueGenerated::qscriptvalue_castquint32_makeData(const char* ex
 {
     static QHash<QString, quint32> value;
     if (value.isEmpty()) {
-        value.reserve(142);
-        for (unsigned i = 0; i < 142; ++i)
+        value.reserve(148);
+        for (unsigned i = 0; i < 148; ++i)
             value.insert(qscriptvalue_castquint32_tagArray[i], qscriptvalue_castquint32_valueArray[i]);
     }
     newRow(expr) << value.value(expr);
@@ -1321,6 +1363,11 @@ static QString qscriptvalue_castquint16_tagArray[] = {
     "engine->evaluate(\"new Object()\")",
     "engine->evaluate(\"new Array()\")",
     "engine->evaluate(\"new Error()\")",
+    "engine->evaluate(\"new Boolean(true)\")",
+    "engine->evaluate(\"new Boolean(false)\")",
+    "engine->evaluate(\"new Number(123)\")",
+    "engine->evaluate(\"new RegExp('foo', 'gim')\")",
+    "engine->evaluate(\"new String('ciao')\")",
     "engine->evaluate(\"a = new Object(); a.foo = 22; a.foo\")",
     "engine->evaluate(\"Undefined\")",
     "engine->evaluate(\"Null\")",
@@ -1355,6 +1402,7 @@ static QString qscriptvalue_castquint16_tagArray[] = {
     "engine->newArray(10)",
     "engine->newDate(QDateTime())",
     "engine->newQMetaObject(&QObject::staticMetaObject)",
+    "engine->newRegExp(\"foo\", \"gim\")",
     "engine->newVariant(QVariant())",
     "engine->newVariant(QVariant(123))",
     "engine->newVariant(QVariant(false))",
@@ -1412,20 +1460,23 @@ static quint16 qscriptvalue_castquint16_valueArray[] = {
     0, 0,
     0, 0,
     0, 0,
-    0, 22,
-    0, 0,
-    0, 0,
-    0, 0,
-    1, 0,
-    122, 124,
-    0, 0,
-    123, 0,
-    0, 4660,
     0, 1,
+    0, 123,
+    0, 0,
+    22, 0,
     0, 0,
     0, 0,
+    0, 1,
+    0, 122,
+    124, 0,
+    0, 123,
     0, 0,
-    123, 12,
+    4660, 0,
+    1, 0,
+    0, 0,
+    0, 0,
+    0, 123,
+    12, 0,
     0, 0,
     0, 0,
     0, 0,
@@ -1436,8 +1487,8 @@ void tst_QScriptValueGenerated::qscriptvalue_castquint16_makeData(const char* ex
 {
     static QHash<QString, quint16> value;
     if (value.isEmpty()) {
-        value.reserve(142);
-        for (unsigned i = 0; i < 142; ++i)
+        value.reserve(148);
+        for (unsigned i = 0; i < 148; ++i)
             value.insert(qscriptvalue_castquint16_tagArray[i], qscriptvalue_castquint16_valueArray[i]);
     }
     newRow(expr) << value.value(expr);
