@@ -115,18 +115,16 @@ private slots:
 private:
     void provideBaselineChecksums(const QByteArray &itemListBlock);
     void storeImage(const QByteArray &itemBlock, bool isBaseline);
+    void mapPlatformInfo();
     QString pathForItem(const ImageItem &item, bool isBaseline = true, bool absolute = true);
     const char *logtime();
     QString computeMismatchScore(const QImage& baseline, const QImage& rendered);
-    QString engineForItem(const ImageItem &item);
-
-    static QString itemSubPath(const QString &engine, const QString &format, bool isBaseline = true);
 
     BaselineProtocol proto;
     PlatformInfo plat;
+    PlatformInfo mapped;
     bool connectionEstablished;
     QString runId;
-    QString pathForRun;
     HTMLPage report;
 };
 

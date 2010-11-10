@@ -67,7 +67,7 @@ void HTMLPage::start(const QString &storagepath, const QString &runId, const Pla
     id = runId;
     plat = pinfo;
     address = hostAddress;
-    root = storagepath;
+    root = storagepath + QLC('/');
     imageItems = itemList;
     QString dir = root + QLS("reports/");
     QDir cwd;
