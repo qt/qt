@@ -86,11 +86,15 @@ QT_BEGIN_NAMESPACE
     Item {
         ...
         transitions: [
-            Transition { ... },
+            Transition { to: "state1" ... },
             Transition { ... }
         ]
     }
     \endqml
+
+    If multiple Transitions are specified, only a single (best-matching) Transition will be applied for any particular
+    state change. In the example above, when changing to \c state1, the first transition will be used, rather
+    than the more generic second transition.
 
     If a state change has a Transition that matches the same property as a
     \l Behavior, the Transition animation overrides the \l Behavior for that

@@ -42,14 +42,13 @@ import QtQuick 1.0
 import "content"
 
 Rectangle {
+    id: root
+    property int current: 0
     width: 600; height: 300
 
     // This example shows the same model in three different ListView items, 
     // with different highlight ranges. The highlight ranges are set by the 
     // preferredHighlightBegin and preferredHighlightEnd properties in ListView.
-    //
-    // The second and third ListViews set their currentIndex to be the
-    // same as the first. The first ListView is given keyboard focus.
     //
     // The first ListView does not set a highlight range, so its currentItem
     // can move freely within the visible area. If it moves outside the
@@ -66,9 +65,10 @@ Rectangle {
     // forces the current item to change when the view is flicked,
     // since the highlight is unable to move.
     //
-    // Note that the first ListView sets its currentIndex to be equal to
-    // the third ListView's currentIndex.  By flicking the third ListView with
-    // the mouse, the current index of the first ListView will be changed.
+    // All ListViews bind their currentIndex to the root.current property.
+    // The first ListView sets root.current whenever its currentIndex changes
+    // due to keyboard interaction.
+    // Flicking the third ListView with the mouse also changes root.current.
 
     ListView {
         id: list1
@@ -77,7 +77,8 @@ Rectangle {
         delegate: petDelegate
 
         highlight: Rectangle { color: "lightsteelblue" }
-        currentIndex: list3.currentIndex
+        currentIndex: root.current
+        onCurrentIndexChanged: root.current = currentIndex
         focus: true
     }
 
@@ -89,7 +90,7 @@ Rectangle {
         delegate: petDelegate
 
         highlight: Rectangle { color: "yellow" }
-        currentIndex: list1.currentIndex
+        currentIndex: root.current
         preferredHighlightBegin: 80; preferredHighlightEnd: 220
         highlightRangeMode: ListView.ApplyRange
     }
@@ -102,7 +103,8 @@ Rectangle {
         delegate: petDelegate
 
         highlight: Rectangle { color: "yellow" }
-        currentIndex: list1.currentIndex
+        currentIndex: root.current
+        onCurrentIndexChanged: root.current = currentIndex
         preferredHighlightBegin: 125; preferredHighlightEnd: 125
         highlightRangeMode: ListView.StrictlyEnforceRange
     }

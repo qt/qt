@@ -76,6 +76,7 @@ public:
     qreal paintedHeight() const;
 
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
+    QRectF boundingRect() const;
 
 Q_SIGNALS:
     void fillModeChanged();
