@@ -103,9 +103,10 @@ sub printUshortArray($$$) {
     return ($offset + $headpadding, $offset + $headpadding + $len + $tailpadding);
 }
 
+print "// This is a generated file - DO NOT EDIT\n\n";
+
 print "#include \"data.h\"\n\n";
 
-print "// This is a generated file - DO NOT EDIT\n";
 print "const ushort stringCollectionData[] __attribute__((aligned(64))) = {\n";
 $count = 0;
 $offset = 0;

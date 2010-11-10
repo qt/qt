@@ -1,6 +1,7 @@
+// This is a generated file - DO NOT EDIT
+
 #include "data.h"
 
-// This is a generated file - DO NOT EDIT
 const ushort stringCollectionData[] __attribute__((aligned(16))) = {
     // #0
     65535,
