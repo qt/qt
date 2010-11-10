@@ -285,6 +285,19 @@ void QDeclarativeTextLayout::beginLayout()
     QTextLayout::beginLayout();
 }
 
+void QDeclarativeTextLayout::clearLayout()
+{
+    if (d && d->cached) {
+        d->cached = false;
+        d->items.clear();
+        d->positions.clear();
+        d->glyphs.clear();
+        d->chars.clear();
+        d->position = QPointF();
+    }
+    QTextLayout::clearLayout();
+}
+
 void QDeclarativeTextLayout::prepare()
 {
     if (!d || !d->cached) {
