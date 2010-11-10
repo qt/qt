@@ -217,9 +217,6 @@ class DitaXmlGenerator : public PageGenerator
                           const Node* relative, 
                           CodeMarker* marker,
 			  const Node* actualNode = 0);
-    void generateDetailedMember(Node* node, 
-                                const InnerNode* relative, 
-                                CodeMarker* marker);
     void generateLink(const Atom* atom, 
                       const Node* relative, 
                       CodeMarker* marker);
