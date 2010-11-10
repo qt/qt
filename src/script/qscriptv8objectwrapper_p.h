@@ -45,15 +45,71 @@ void weakCallback(v8::Persistent<v8::Value> object, void *parameter)
 }
 
 template <typename T>
-static v8::Handle<v8::Value> namedPropertyGetter(v8::Local<v8::String> property, const v8::AccessorInfo &info)
+T *getDataPointer(v8::Handle<v8::Object> self)
 {
-    v8::HandleScope handleScope;
-    v8::Local<v8::Object> self = info.This();
+    Q_ASSERT(!self.IsEmpty());
     Q_ASSERT(self->InternalFieldCount() == 1);
     T *data = reinterpret_cast<T *>(self->GetPointerFromInternalField(0));
     Q_ASSERT(data != 0);
-    QScriptContextPrivate qScriptContext(data->engine, &info);
-    return handleScope.Close(data->property(property));
+    return data;
+}
+
+template <typename T>
+T *getDataPointer(const v8::AccessorInfo &info)
+{
+    return getDataPointer<T>(info.This());
+}
+
+template <typename T>
+T *getDataPointer(const v8::Arguments& args)
+{
+    return getDataPointer<T>(args.Holder());
+}
+
+#ifdef QTSCRIPT_V8OBJECT_DATA_CALLBACK
+#  error QTSCRIPT_V8OBJECT_DATA_CALLBACK name is in use
+#else
+#define QTSCRIPT_V8OBJECT_DATA_CALLBACK(arg, callback) \
+    v8::HandleScope handleScope; \
+    T *data = getDataPointer<T>(arg); \
+    QScriptContextPrivate qScriptContext(data->engine, &arg); \
+    return handleScope.Close(callback);
+#endif
+
+template <typename T>
+static v8::Handle<v8::Value> namedPropertyGetter(v8::Local<v8::String> property, const v8::AccessorInfo &info)
+{
+    QTSCRIPT_V8OBJECT_DATA_CALLBACK(info, data->property(property));
+}
+
+template <typename T>
+static v8::Handle<v8::Value> indexedPropertyGetter(uint32_t index, const v8::AccessorInfo &info)
+{
+    QTSCRIPT_V8OBJECT_DATA_CALLBACK(info, data->property(index));
+}
+
+template <typename T>
+static v8::Handle<v8::Integer> namedPropertyQuery(v8::Local<v8::String> property, const v8::AccessorInfo &info)
+{
+    QTSCRIPT_V8OBJECT_DATA_CALLBACK(info, data->propertyFlags(property));
+}
+
+template <typename T>
+static v8::Handle<v8::Integer> indexedPropertyQuery(uint32_t index, const v8::AccessorInfo &info)
+{
+    QTSCRIPT_V8OBJECT_DATA_CALLBACK(info, data->propertyFlags(index));
+}
+
+template <typename T>
+static v8::Handle<v8::Integer> namedPropertyDeleter(v8::Local<v8::String> property, const v8::AccessorInfo &info)
+{
+    QTSCRIPT_V8OBJECT_DATA_CALLBACK(info, data->removeProperty(property));
+}
+
+template <typename T>
+static v8::Handle<v8::Integer> indexedPropertyDeleter(uint32_t index, const v8::AccessorInfo &info)
+{
+    QTSCRIPT_V8OBJECT_DATA_CALLBACK(info, data->removeProperty(index));
 }
 
 template <typename T>
@@ -61,38 +117,36 @@ static v8::Handle<v8::Value> namedPropertySetter(v8::Local<v8::String> property,
                                                   v8::Local<v8::Value> value,
                                                   const v8::AccessorInfo &info)
 {
-    v8::HandleScope handleScope;
-    v8::Local<v8::Object> self = info.This();
-    Q_ASSERT(self->InternalFieldCount() == 1);
-    T *data = reinterpret_cast<T *>(self->GetPointerFromInternalField(0));
-    Q_ASSERT(data != 0);
-    QScriptContextPrivate qScriptContext(data->engine, &info);
-    return handleScope.Close(data->setProperty(property, value));
+    QTSCRIPT_V8OBJECT_DATA_CALLBACK(info, data->setProperty(property, value));
+}
+
+template <typename T>
+static v8::Handle<v8::Value> indexedPropertySetter(uint32_t index,
+                                                  v8::Local<v8::Value> value,
+                                                  const v8::AccessorInfo &info)
+{
+    QTSCRIPT_V8OBJECT_DATA_CALLBACK(info, data->setProperty(index, value));
 }
 
 template <typename T>
 static v8::Handle<v8::Array> namedPropertyEnumerator(const v8::AccessorInfo &info)
 {
-    v8::HandleScope handleScope;
-    v8::Local<v8::Object> self = info.This();
-    Q_ASSERT(self->InternalFieldCount() == 1);
-    T *data = reinterpret_cast<T *>(self->GetPointerFromInternalField(0));
-    Q_ASSERT(data != 0);
-    QScriptContextPrivate qScriptContext(data->engine, &info);
-    return handleScope.Close(data->enumerate());
+    QTSCRIPT_V8OBJECT_DATA_CALLBACK(info, data->enumerate());
+}
+
+template <typename T>
+static v8::Handle<v8::Array> indexedPropertyEnumerator(const v8::AccessorInfo &info)
+{
+    QTSCRIPT_V8OBJECT_DATA_CALLBACK(info, data->enumerate());
 }
 
 template <typename T>
 v8::Handle<v8::Value> callAsFunction(const v8::Arguments& args)
 {
-    v8::HandleScope handleScope;
-    v8::Local<v8::Object> self = args.Holder();
-    Q_ASSERT(self->InternalFieldCount() == 1);
-    T *data = reinterpret_cast<T *>(self->GetPointerFromInternalField(0));
-    Q_ASSERT(data != 0);
-    QScriptContextPrivate qScriptContext(data->engine, &args);
-    return handleScope.Close(data->call());
+    QTSCRIPT_V8OBJECT_DATA_CALLBACK(args, data->call());
 }
+
+#undef QTSCRIPT_V8OBJECT_DATA_CALLBACK
 
 }
 
