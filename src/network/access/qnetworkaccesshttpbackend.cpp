@@ -674,26 +674,6 @@ void QNetworkAccessHttpBackend::closeDownstreamChannel()
     // this indicates that the user closed the stream while the reply isn't finished yet
 }
 
-bool QNetworkAccessHttpBackend::waitForDownstreamReadyRead(int msecs)
-{
-    Q_ASSERT(http);
-
-    if (httpReply->bytesAvailable()) {
-        readFromHttp();
-        return true;
-    }
-
-    if (msecs == 0) {
-        // no bytes available in the socket and no waiting
-        return false;
-    }
-
-    // ### FIXME
-    qCritical("QNetworkAccess: HTTP backend does not support waitForReadyRead()");
-    return false;
-}
-
-
 void QNetworkAccessHttpBackend::downstreamReadyWrite()
 {
     readFromHttp();
