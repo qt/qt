@@ -112,6 +112,7 @@ private slots:
     void tst_QDeclarativeDebugContextReference();
     void tst_QDeclarativeDebugPropertyReference();
 
+    void setBindingForObject();
     void setMethodBody();
 };
 
@@ -892,6 +893,78 @@ void tst_QDeclarativeDebug::tst_QDeclarativeDebugPropertyReference()
     copyAssign = ref;
     foreach (const QDeclarativeDebugPropertyReference &r, (QList<QDeclarativeDebugPropertyReference>() << copy << copyAssign))
         compareProperties(r, ref);
+}
+
+
+void tst_QDeclarativeDebug::setBindingForObject()
+{
+    QDeclarativeDebugObjectReference rootObject = findRootObject();
+    QVERIFY(rootObject.debugId() != -1);
+    QDeclarativeDebugPropertyReference widthPropertyRef = findProperty(rootObject.properties(), "width");
+
+    QCOMPARE(widthPropertyRef.value(), QVariant(10));
+    QCOMPARE(widthPropertyRef.binding(), QString());
+
+    //
+    // set literal
+    //
+    m_dbg->setBindingForObject(rootObject.debugId(), "width", "15", true);
+
+    rootObject = findRootObject();
+    widthPropertyRef =  findProperty(rootObject.properties(), "width");
+
+    QCOMPARE(widthPropertyRef.value(), QVariant(15));
+    QCOMPARE(widthPropertyRef.binding(), QString());
+
+    //
+    // set expression
+    //
+    m_dbg->setBindingForObject(rootObject.debugId(), "width", "height", false);
+
+    rootObject = findRootObject();
+    widthPropertyRef =  findProperty(rootObject.properties(), "width");
+
+    QCOMPARE(widthPropertyRef.value(), QVariant(20));
+    QCOMPARE(widthPropertyRef.binding(), QString("height"));
+
+    //
+    // reset
+    //
+    m_dbg->resetBindingForObject(rootObject.debugId(), "width");
+
+    rootObject = findRootObject();
+    widthPropertyRef =  findProperty(rootObject.properties(), "width");
+
+   // QCOMPARE(widthPropertyRef.value(), QVariant(0)); // TODO: Shouldn't this work?
+    QCOMPARE(widthPropertyRef.binding(), QString());
+
+    //
+    // set handler
+    //
+    rootObject = findRootObject();
+    QCOMPARE(rootObject.children().size(), 3);
+    QDeclarativeDebugObjectReference mouseAreaObject = rootObject.children().at(2);
+    QDeclarativeDebugObjectQuery *q_obj = m_dbg->queryObjectRecursive(mouseAreaObject, this);
+    waitForQuery(q_obj);
+    mouseAreaObject = q_obj->object();
+
+    QCOMPARE(mouseAreaObject.className(), QString("MouseArea"));
+
+    QDeclarativeDebugPropertyReference onEnteredRef = findProperty(mouseAreaObject.properties(), "onEntered");
+
+    QCOMPARE(onEnteredRef.name(), QString("onEntered"));
+    QCOMPARE(onEnteredRef.value(),  QVariant("{ console.log('hello') }"));
+
+    m_dbg->setBindingForObject(mouseAreaObject.debugId(), "onEntered", "{console.log('hello, world') }", false) ;
+
+    rootObject = findRootObject();
+    mouseAreaObject = rootObject.children().at(2);
+    q_obj = m_dbg->queryObjectRecursive(mouseAreaObject, this);
+    waitForQuery(q_obj);
+    mouseAreaObject = q_obj->object();
+    onEnteredRef = findProperty(mouseAreaObject.properties(), "onEntered");
+    QCOMPARE(onEnteredRef.name(), QString("onEntered"));
+    QCOMPARE(onEnteredRef.value(),  QVariant("{console.log('hello, world') }"));
 }
 
 int main(int argc, char *argv[])
