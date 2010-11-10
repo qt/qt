@@ -49,7 +49,7 @@
 void tst_QScriptValueGenerated::initScriptValues()
 {
     m_values.clear();
-    if (engine) 
+    if (engine)
         delete engine;
     engine = new QScriptEngine;
     DEFINE_TEST_VALUE(QScriptValue());

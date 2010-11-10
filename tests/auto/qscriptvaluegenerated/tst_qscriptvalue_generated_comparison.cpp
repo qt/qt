@@ -54,7 +54,7 @@ void tst_QScriptValueGenerated::equals_initData()
     initScriptValues();
 }
 
-static QString equals_array [] = {
+static QString equals_array[] = {
     "QScriptValue() <=> QScriptValue()",
     "QScriptValue(QScriptValue::UndefinedValue) <=> QScriptValue(QScriptValue::UndefinedValue)",
     "QScriptValue(QScriptValue::UndefinedValue) <=> QScriptValue(QScriptValue::NullValue)",
@@ -1271,7 +1271,7 @@ static QString equals_array [] = {
     "engine->newQObject(0) <=> engine->nullValue()",
     "engine->newQObject(0) <=> engine->undefinedValue()",
     "engine->newQObject(0) <=> engine->newQObject(0)",
-    "engine->newQObject(engine) <=> engine->newQObject(engine)",};
+    "engine->newQObject(engine) <=> engine->newQObject(engine)"};
 
 void tst_QScriptValueGenerated::equals_makeData(const char *expr)
 {
@@ -1305,7 +1305,7 @@ void tst_QScriptValueGenerated::strictlyEquals_initData()
     initScriptValues();
 }
 
-static QString strictlyEquals_array [] = {
+static QString strictlyEquals_array[] = {
     "QScriptValue() <=> QScriptValue()",
     "QScriptValue(QScriptValue::UndefinedValue) <=> QScriptValue(QScriptValue::UndefinedValue)",
     "QScriptValue(QScriptValue::UndefinedValue) <=> QScriptValue(0, QScriptValue::UndefinedValue)",
@@ -1828,7 +1828,7 @@ static QString strictlyEquals_array [] = {
     "engine->newQObject(0) <=> engine->evaluate(\"null\")",
     "engine->newQObject(0) <=> engine->nullValue()",
     "engine->newQObject(0) <=> engine->newQObject(0)",
-    "engine->newQObject(engine) <=> engine->newQObject(engine)",};
+    "engine->newQObject(engine) <=> engine->newQObject(engine)"};
 
 void tst_QScriptValueGenerated::strictlyEquals_makeData(const char *expr)
 {
@@ -1862,7 +1862,7 @@ void tst_QScriptValueGenerated::lessThan_initData()
     initScriptValues();
 }
 
-static QString lessThan_array [] = {
+static QString lessThan_array[] = {
     "QScriptValue(QScriptValue::NullValue) <=> QScriptValue(true)",
     "QScriptValue(QScriptValue::NullValue) <=> QScriptValue(int(122))",
     "QScriptValue(QScriptValue::NullValue) <=> QScriptValue(uint(124))",
@@ -6925,7 +6925,7 @@ static QString lessThan_array [] = {
     "engine->newQObject(engine) <=> engine->evaluate(\"False\")",
     "engine->newQObject(engine) <=> engine->evaluate(\"'ciao'\")",
     "engine->newQObject(engine) <=> engine->newObject()",
-    "engine->newQObject(engine) <=> engine->newQMetaObject(&QObject::staticMetaObject)",};
+    "engine->newQObject(engine) <=> engine->newQMetaObject(&QObject::staticMetaObject)"};
 
 void tst_QScriptValueGenerated::lessThan_makeData(const char *expr)
 {
@@ -6959,7 +6959,7 @@ void tst_QScriptValueGenerated::instanceOf_initData()
     initScriptValues();
 }
 
-static QString instanceOf_array [] = {
+static QString instanceOf_array[] = {
     "engine->evaluate(\"[]\") <=> engine->evaluate(\"Object\")",
     "engine->evaluate(\"[]\") <=> engine->evaluate(\"Array\")",
     "engine->evaluate(\"Date.prototype\") <=> engine->evaluate(\"Object\")",
@@ -6999,7 +6999,7 @@ static QString instanceOf_array [] = {
     "engine->newVariant(QVariant()) <=> engine->evaluate(\"Object\")",
     "engine->newVariant(QVariant(123)) <=> engine->evaluate(\"Object\")",
     "engine->newVariant(QVariant(false)) <=> engine->evaluate(\"Object\")",
-    "engine->newQObject(engine) <=> engine->evaluate(\"Object\")",};
+    "engine->newQObject(engine) <=> engine->evaluate(\"Object\")"};
 
 void tst_QScriptValueGenerated::instanceOf_makeData(const char *expr)
 {
