@@ -131,7 +131,7 @@ QScriptValue MyScriptable::getArguments()
 
 int MyScriptable::getArgumentCount()
 {
-    return context()->argumentCount();
+    return argumentCount();
 }
 
 void MyScriptable::foo()
@@ -286,6 +286,8 @@ void tst_QScriptable::engine()
 
 void tst_QScriptable::thisObject()
 {
+    QVERIFY(!m_scriptable.thisObject().isValid());
+
     m_engine.evaluate("o = { }");
     {
         QScriptValue ret = m_engine.evaluate("o.__proto__ = scriptable;"

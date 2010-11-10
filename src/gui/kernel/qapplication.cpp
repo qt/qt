@@ -1433,10 +1433,18 @@ QStyle *QApplication::style()
         // Compile-time search for default style
         //
         QString style;
-        if (!QApplicationPrivate::styleOverride.isEmpty())
+#ifdef QT_BUILD_INTERNAL
+        QString envStyle = QString::fromLocal8Bit(qgetenv("QT_STYLE_OVERRIDE"));
+#else
+        QString envStyle;
+#endif
+        if (!QApplicationPrivate::styleOverride.isEmpty()) {
             style = QApplicationPrivate::styleOverride;
-        else
+        } else if (!envStyle.isEmpty()) {
+            style = envStyle;
+        } else {
             style = QApplicationPrivate::desktopStyleKey();
+        }
 
         QStyle *&app_style = QApplicationPrivate::app_style;
         app_style = QStyleFactory::create(style);

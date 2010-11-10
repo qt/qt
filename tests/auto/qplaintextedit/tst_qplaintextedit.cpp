@@ -880,6 +880,7 @@ void tst_QPlainTextEdit::lineWrapModes()
     // We thus need to make it wide enough to show something visible.
     int minimumWidth = 2 * ed->document()->documentMargin();
     minimumWidth += ed->fontMetrics().width(QLatin1Char('a'));
+    minimumWidth += ed->frameWidth();
     ed->resize(minimumWidth, 1000);
     QCOMPARE(lineCount(), 26);
     ed->setParent(0);

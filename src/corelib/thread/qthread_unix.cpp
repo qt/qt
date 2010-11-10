@@ -345,6 +345,7 @@ void QThreadPrivate::finish(void *arg)
         emit thr->terminated();
     d->terminated = false;
     emit thr->finished();
+    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
 
     if (d->data->eventDispatcher) {
         d->data->eventDispatcher->closingDown();

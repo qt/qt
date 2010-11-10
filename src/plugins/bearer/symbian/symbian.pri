@@ -1,7 +1,7 @@
 TARGET = qsymbianbearer
 include(../../qpluginbase.pri)
 
-QT += network
+QT = core network
 
 HEADERS += ../symbianengine.h \
            ../qnetworksession_impl.h

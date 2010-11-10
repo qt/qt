@@ -309,6 +309,9 @@ private slots:
     void qobjectSignalHandler();
     void customTypeSignalHandler();
 
+    void emitSignal_data();
+    void emitSignal();
+
     void readButtonMetaProperty_data();
     void readButtonMetaProperty();
 
@@ -946,6 +949,31 @@ void tst_QScriptQObject::customTypeSignalHandler()
         for (int i = 0; i < ITERATION_COUNT; ++i)
             testObject.emitCustomTypeSignal(value);
     }
+}
+
+void tst_QScriptQObject::emitSignal_data()
+{
+    QTest::addColumn<QString>("propertyName");
+    QTest::addColumn<QString>("arguments");
+
+    QTest::newRow("voidSignal()") << "voidSignal" << "";
+
+    QTest::newRow("boolSignal(true)") << "boolSignal" << "true";
+    QTest::newRow("intSignal(123)") << "intSignal" << "123";
+    QTest::newRow("doubleSignal(123)") << "doubleSignal" << "123";
+    QTest::newRow("stringSignal('hello')") << "stringSignal" << "'hello'";
+    QTest::newRow("variantSignal(123)") << "variantSignal" << "123";
+    QTest::newRow("qobjectSignal(this)") << "qobjectSignal" << "this"; // assumes 'this' is a QObject
+}
+
+void tst_QScriptQObject::emitSignal()
+{
+    QFETCH(QString, propertyName);
+    QFETCH(QString, arguments);
+
+    QScriptEngine engine;
+    SignalTestObject testObject;
+    callMethodHelper(engine, &testObject, propertyName, arguments);
 }
 
 void tst_QScriptQObject::readButtonMetaProperty_data()
