@@ -1193,19 +1193,18 @@ void QDeclarativeFlickable::setBoundsBehavior(BoundsBehavior b)
     \qmlproperty real Flickable::contentWidth
     \qmlproperty real Flickable::contentHeight
 
-    The dimensions of the content (the surface controlled by Flickable). Typically this
-    should be set to the combined size of the items placed in the Flickable. Note this
-    can be set automatically using \l {Item::childrenRect.width}{childrenRect.width}
-    and \l {Item::childrenRect.height}{childrenRect.height}. For example:
+    The dimensions of the content (the surface controlled by Flickable).
+    This should typically be set to the combined size of the items placed in the
+    Flickable.
 
-    \code
-    Flickable {
-        width: 320; height: 480
-        contentWidth: childrenRect.width; contentHeight: childrenRect.height
+    The following snippet shows how these properties are used to display
+    an image that is larger than the Flickable item itself:
 
-        Image { id: image; source: "bigImage.png" }
-    }
-    \endcode
+    \snippet doc/src/snippets/declarative/flickable.qml document
+
+    In some cases, the the content dimensions can be automatically set
+    using the \l {Item::childrenRect.width}{childrenRect.width}
+    and \l {Item::childrenRect.height}{childrenRect.height} properties.
 */
 qreal QDeclarativeFlickable::contentWidth() const
 {

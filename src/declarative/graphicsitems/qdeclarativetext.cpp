@@ -1063,7 +1063,7 @@ void QDeclarativeText::setTextFormat(TextFormat format)
     Set this property to elide parts of the text fit to the Text item's width.
     The text will only elide if an explicit width has been set.
 
-    This property cannot be used with wrapping enabled or with rich text.
+    This property cannot be used with multi-line text or with rich text.
 
     Eliding can be:
     \list

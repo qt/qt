@@ -37,8 +37,110 @@
   To see the QML elements listed by functional area, see the
   \l{Groups Of Related QML Elements} page.
 
-  \generatelist qmlclasses
+	\table 
+	\header \o {2,1} \bold {Basic Visual Items}
+	\row \o \l {Item} \o Basic item element inherited by all visual items in QML
+	\row \o \l {Rectangle} \o Basic visual rectangle element
+	\row \o \l {Gradient} \o Defines a gradient between two or more colors
+	\row \o \l {GradientStop} \o Defines a color used in a \l {Gradient}
+	\row \o \l {Image} \o Allows the use of bitmaps to a scene
+	\row \o \l {BorderImage} (Item-specific) \o Defines an image as a border
+	\row \o \l {AnimatedImage} \o For playing animations stored as a series of frames
+	\row \o \l {Text} \o Allows the use of formatted text in a scene
+	\row \o \l {TextInput} \o Displays an editable line of text
+	\row \o \l {IntValidator} \o Validator for integer values
+	\row \o \l {DoubleValidator} \o Validator for non-integer values
+	\row \o \l {RegExpValidator} \o Validator for string regular expressions
+	\row \o \l {TextEdit} \o Displays multiple lines of editable formatted text
 
+	\header \o {2,1} \bold {Basic Interaction Items}
+	\row \o \l {MouseArea} \o Handles mouse interactions
+	\row \o \l {FocusScope} \o For keyboard focus handling 
+	\row \o \l {Flickable} \o Provides a surface that can be "flicked"  
+	\row \o \l {Flipable} \o Provides a surface that produces flipping effects
+	\row \o \l {GestureArea} (experimental) \o Enables simple gesture handling
+	 
+	\header \o {2,1} \bold {States}
+	\row \o \l {State} \o Defines sets of configurations of objects and properties
+	\row \o \l {PropertyChanges} \o Describes property changes within a state
+	\row \o \l {StateGroup} \o Contains a set of states and state transitions
+	\row \o \l {StateChangeScript} \o Allows script binding in a state
+	\row \o \l {ParentChange} (Item-specific) \o Re-parent an Item in a state change
+	\row \o \l {AnchorChanges} \o Change the anchors of an item in a state
+
+	\header \o {2,1} \bold {Animation and Transitions}
+	\row \o \l {Behavior} \o Specifies a default animation for property changes
+	\row \o \l {SequentialAnimation} \o Runs animations sequentially
+	\row \o \l {ParallelAnimation} \o Runs animations in parallel
+	\row \o \l {PropertyAnimation} \o Animates property changes
+	\row \o \l {NumberAnimation} \o Animates properties of type qreal
+	\row \o \l {Vector3dAnimation} \o Animates properties of type QVector3d
+	\row \o \l {ColorAnimation} \o Animates color changes
+	\row \o \l {RotationAnimation} \o Animates rotations
+	\row \o \l {ParentAnimation} \o Animates parent changes
+	\row \o \l {AnchorAnimation} \o Animates anchor changes
+	\row \o \l {PauseAnimation} \o Pauses an animation 
+	\row \o \l {SmoothedAnimation} \o Allows a property to smoothly track a value
+	\row \o \l {SpringAnimation} \o Allows a property to track a value in a spring-like motion
+	\row \o \l {PropertyAction} \o Sets immediate property changes during animation
+	\row \o \l {ScriptAction} \o Runs scripts during an animation
+	\row \o \l {Transition} \o Animates transitions during state changes
+
+	\header \o {2,1} \bold {Working with Data}
+	\row \o \l {Binding} \o Binds any value to any property
+	\row \o \l {ListModel} \o Defines a list of data
+	\row \o \l {ListElement} \o Defines a data item in a \l {ListModel}
+	\row \o \l {VisualItemModel} \o Contains items that already defines its own visual delegate
+	\row \o \l {VisualDataModel} \o Encapsulates a model and a delegate
+	\row \o \l {Package} \o Collection that enables sharing of items within different views
+	\row \o \l {XmlListModel} \o Specifies a model using XPath expressions 
+	\row \o \l {XmlRole}  \o Specifies a role for an \l {XmlListModel}
+
+	\header \o {2,1} \bold {Views}
+	\row \o \l {ListView} \o Provides a list visualization of a model
+	\row \o \l {GridView} \o Provides a grid visualization of a model
+	\row \o \l {PathView} \o Visualizes a model's contents along a path
+	\row \o \l {Path} \o Defines a path used by \l {PathView}
+	\row \o \l {PathLine}  \o Defines a line in \l {Path}
+	\row \o \l {PathQuad}  \o Defines a quadratic Bezier curve in a \l {Path}
+	\row \o \l {PathCubic}  \o Defines a cubic Bezier curve in a \l {Path}
+	\row \o \l {PathAttribute}  \o Allows the setting of attributes along a \l {Path}
+	\row \o \l {PathPercent}  \o Modifies the item distribution along a \l {Path}
+	\row \o \l {WebView} \o Allows the addition of web content to a canvas
+
+	\header \o {2,1} \bold {Positioners}
+	\row \o \l {Column} \o Arranges its children vertically
+	\row \o \l {Row} \o Arranges its children horizontally
+	\row \o \l {Grid} \o Positions its children in a grid
+	\row \o \l {Flow} \o Positions its children with wrapping support
+
+	\header \o {2,1} \bold {Utility}
+	\row \o \l {Connections} \o Explicitly connects signals and signal handlers
+	\row \o \l {Component} \o Encapsulate QML items as a component
+	\row \o \l {Timer} \o Provides timed triggers 
+	\row \o \l {QML:QtObject} {QtObject} \o Basic element containing only the objectName property
+	\row \o \l {QML:Qt} {Qt} \o The QML global Qt object provides useful enums and functions from Qt.
+	\row \o \l {WorkerScript} \o Enables the use of threads in QML
+	\row \o \l {Loader} \o Controls the loading of items or components
+	\row \o \l {Repeater} \o Uses a model to create multiples of components
+	\row \o \l {SystemPalette} \o Provides access to the Qt palettes
+	\row \o \l {FontLoader} \o Loads fonts by name or URL
+	\row \o \l {LayoutItem} \o Allows declarative UI elements inside Qt's Graphics View layouts 
+
+	\header \o {2,1} \bold {Transforms}
+	\row \o \l {Scale} \o Assigns item scaling behaviors
+	\row \o \l {Rotation} \o Assigns item rotation behaviors
+	\row \o \l {Translate} \o Assigns item translation behaviors
+
+	\header \o {2,1} \bold {Effects}
+	\row \o \l {Particles} (experimental) \o Generates and animates particles
+	\row \o \l {ParticleMotionLinear} \o Adds linear motion behavior to \l {Particles}
+	\row \o \l {ParticleMotionGravity} \o Adds gravitational motion to \l {Particles}
+	\row \o \l {ParticleMotionWander} \o Adds varied motions to \l {Particles}
+	\endtable
+	  
+  
+  
 */
 
 
