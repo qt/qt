@@ -37,7 +37,7 @@
 QT_BEGIN_NAMESPACE
 
 
-v8::Handle<v8::Value> QScriptClassObject::property(v8::Local<v8::String> property)
+v8::Handle<v8::Value> QScriptClassObject::property(v8::Handle<v8::String> property)
 {
     v8::HandleScope handleScope;
     if (!m_scriptclass || (!m_original.IsEmpty() && !m_original->IsUndefined())) {
@@ -66,8 +66,16 @@ v8::Handle<v8::Value> QScriptClassObject::property(v8::Local<v8::String> propert
     return handleScope.Close(static_cast<v8::Handle<v8::Value> >(result->asV8Value(m_scriptclass->engine())));
 }
 
+v8::Handle<v8::Value> QScriptClassObject::property(uint32_t index)
+{
+    v8::HandleScope handleScope;
+    // FIXME it could be faster
+    v8::Handle<v8::String> str = QScriptConverter::toString(QString::number(index));
+    return handleScope.Close(property(str));
+}
 
-v8::Handle<v8::Value> QScriptClassObject::setProperty(v8::Local<v8::String> property, v8::Local<v8::Value> value)
+
+v8::Handle<v8::Value> QScriptClassObject::setProperty(v8::Handle<v8::String> property, v8::Local<v8::Value> value)
 {
     if (!m_scriptclass) {
         Q_ASSERT(!m_original.IsEmpty());
@@ -93,6 +101,45 @@ v8::Handle<v8::Value> QScriptClassObject::setProperty(v8::Local<v8::String> prop
 
     m_scriptclass->userCallback()->setProperty(that, str, id, QScriptValuePrivate::get(new QScriptValuePrivate(m_scriptclass->engine(), value)));
     return handleScope.Close(value);
+}
+
+v8::Handle<v8::Value> QScriptClassObject::setProperty(uint32_t index, v8::Local<v8::Value> value)
+{
+    v8::HandleScope handleScope;
+    // FIXME it could be faster
+    v8::Handle<v8::String> str = QScriptConverter::toString(QString::number(index));
+    return handleScope.Close(setProperty(str, value));
+}
+
+v8::Handle<v8::Integer> QScriptClassObject::propertyFlags(v8::Handle<v8::String> property)
+{
+    v8::HandleScope handleScope;
+    if (!m_scriptclass)  {
+        Q_ASSERT(!m_original.IsEmpty());
+        if (m_original->Has(property))
+            return v8::Integer::New(QScriptConverter::toPropertyAttributes(engine->getPropertyFlags(m_original, property, QScriptValue::ResolvePrototype)));
+        return handleScope.Close(v8::Handle<v8::Integer>());
+    }
+
+    QScriptString str = QScriptStringPrivate::get(new QScriptStringPrivate(engine, property));
+    QScriptValue that = QScriptValuePrivate::get(engine->currentContext()->thisObject());
+
+    uint id = 0;
+    QScriptClass::QueryFlags userFlags =
+            m_scriptclass->userCallback()->queryProperty(that, str, QScriptClass::HandlesReadAccess, &id);
+
+    if (!(userFlags & QScriptClass::HandlesReadAccess))
+        return handleScope.Close(v8::Handle<v8::Integer>());
+    QScriptValue::PropertyFlags userResult = m_scriptclass->userCallback()->propertyFlags(that, str, id);
+    return handleScope.Close(v8::Integer::New(QScriptConverter::toPropertyAttributes(userResult)));
+}
+
+v8::Handle<v8::Integer> QScriptClassObject::propertyFlags(uint32_t index)
+{
+    v8::HandleScope handleScope;
+    // FIXME it could be faster
+    v8::Handle<v8::String> str = QScriptConverter::toString(QString::number(index));
+    return handleScope.Close(propertyFlags(str));
 }
 
 v8::Handle<v8::Array> QScriptClassObject::enumerate()
@@ -138,18 +185,18 @@ v8::Handle<v8::FunctionTemplate> QScriptClassObject::createFunctionTemplate(QScr
     v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
     instTempl->SetInternalFieldCount(1);
 
+    //FIXME: fully implement both!
     instTempl->SetNamedPropertyHandler(QScriptV8ObjectWrapperHelper::namedPropertyGetter<QScriptClassObject>,
                                        QScriptV8ObjectWrapperHelper::namedPropertySetter<QScriptClassObject>,
-                                       /* QScriptV8ObjectWrapperHelper::namedPropertyQuery<QScriptClassObject> */ 0,
+                                       QScriptV8ObjectWrapperHelper::namedPropertyQuery<QScriptClassObject>,
                                        /* QScriptV8ObjectWrapperHelper::namedPropertyDeleter<QScriptClassObject> */ 0,
                                        QScriptV8ObjectWrapperHelper::namedPropertyEnumerator<QScriptClassObject>);
-    //FIXME: implement
-    /*classDataTemplate->SetIndexedPropertyHandler(QtClassInstanceIndexedPropertyGetter,
-                                                QtClassInstanceIndexedPropertySetter,
-                                                QtClassInstanceIndexedPropertyQuery,
-                                                QtClassInstanceIndexedPropertyDeleter,
-                                                QtClassInstanceIndexedPropertyEnumerator,
-                                                classdata);*/
+
+    instTempl->SetIndexedPropertyHandler(QScriptV8ObjectWrapperHelper::indexedPropertyGetter<QScriptClassObject>,
+                                        QScriptV8ObjectWrapperHelper::indexedPropertySetter<QScriptClassObject>,
+                                        QScriptV8ObjectWrapperHelper::indexedPropertyQuery<QScriptClassObject>,
+                                        /* QScriptV8ObjectWrapperHelper::namedPropertyDeleter<QScriptClassObject> */ 0,
+                                        QScriptV8ObjectWrapperHelper::indexedPropertyEnumerator<QScriptClassObject>);
 
     return handleScope.Close(funcTempl);
 }

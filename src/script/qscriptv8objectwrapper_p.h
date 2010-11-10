@@ -157,6 +157,7 @@ struct QScriptV8ObjectWrapper
     QScriptEnginePrivate *engine;
 
     static T *safeGet(const QScriptValuePrivate *p);
+    static T *get(v8::Handle<v8::Object> object);
 
     static v8::Handle<v8::Object> createInstance(T *data)
     {
@@ -182,8 +183,20 @@ QT_BEGIN_INCLUDE_NAMESPACE
 QT_END_INCLUDE_NAMESPACE
 
 template <typename T, v8::Persistent<v8::FunctionTemplate> QScriptEnginePrivate::*functionTemplate>
+T* QScriptV8ObjectWrapper<T, functionTemplate>::get(v8::Handle<v8::Object> object)
+{
+    Q_ASSERT(object->InternalFieldCount() == 1);
+    T *data = reinterpret_cast<T *>(object->GetPointerFromInternalField(0));
+    return data;
+}
+
+template <typename T, v8::Persistent<v8::FunctionTemplate> QScriptEnginePrivate::*functionTemplate>
 T* QScriptV8ObjectWrapper<T, functionTemplate>::safeGet(const QScriptValuePrivate* p)
 {
+    // FIXME this algorithm should be shared with the QSEP, as it needs to distinguish between proxy
+    // and normal objects.
+    // If you need to modify it please update getOwnProperty and other methods checking if an object
+    // is a script class instance.
     QScriptEnginePrivate *engine = p->engine();
     if (!engine)
         return 0;
@@ -191,14 +204,10 @@ T* QScriptV8ObjectWrapper<T, functionTemplate>::safeGet(const QScriptValuePrivat
     v8::Handle<v8::Value> value = *p;
 
     v8::Handle<v8::FunctionTemplate> funcTmpl = engine->*functionTemplate;
-    if (funcTmpl.IsEmpty())
-        return 0;
-    if (!funcTmpl->HasInstance(value))
+    if (!engine->hasInstance(funcTmpl, value))
         return 0;
     v8::Local<v8::Object> object = v8::Object::Cast(*value);
-    Q_ASSERT(object->InternalFieldCount() == 1);
-    T *data = reinterpret_cast<T *>(object->GetPointerFromInternalField(0));
-    return data;
+    return get(object);
 }
 
 

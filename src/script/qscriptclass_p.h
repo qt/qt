@@ -115,8 +115,12 @@ public:
         m_original.Dispose();
     }
 
-    v8::Handle<v8::Value> property(v8::Local<v8::String> property);
-    v8::Handle<v8::Value> setProperty(v8::Local<v8::String> property, v8::Local<v8::Value> value);
+    v8::Handle<v8::Value> property(v8::Handle<v8::String> property);
+    v8::Handle<v8::Value> property(uint32_t property);
+    v8::Handle<v8::Integer> propertyFlags(v8::Handle<v8::String> property);
+    v8::Handle<v8::Integer> propertyFlags(uint32_t property);
+    v8::Handle<v8::Value> setProperty(v8::Handle<v8::String> property, v8::Local<v8::Value> value);
+    v8::Handle<v8::Value> setProperty(uint32_t property, v8::Local<v8::Value> value);
     v8::Handle<v8::Array> enumerate();
 
     static v8::Handle<v8::FunctionTemplate> createFunctionTemplate(QScriptEnginePrivate *engine);

@@ -184,6 +184,8 @@ public:
     v8::Handle<v8::Value> securityToken() { return m_v8Context->GetSecurityToken(); }
     void emitSignalHandlerException();
 
+    inline bool hasInstance(v8::Handle<v8::FunctionTemplate> fun, v8::Handle<v8::Value> value) const;
+
     v8::Persistent<v8::FunctionTemplate> declarativeClassTemplate;
     v8::Persistent<v8::FunctionTemplate> scriptClassTemplate;
     v8::Persistent<v8::FunctionTemplate> metaMethodTemplate;
@@ -211,6 +213,9 @@ public:
     };
 private:
     Q_DISABLE_COPY(QScriptEnginePrivate)
+    v8::Local<v8::Value> getOwnPropertyFromScriptClassInstance(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property) const;
+    QScriptValue::PropertyFlags getPropertyFlagsFromScriptClassInstance(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property, const QScriptValue::ResolveFlags& mode);
+
     QScriptEngine* q_ptr;
     v8::Isolate *m_isolate;
     v8::Persistent<v8::Context> m_v8Context;
@@ -285,17 +290,27 @@ inline v8::Local<v8::Array> QScriptEnginePrivate::getOwnPropertyNames(v8::Handle
 */
 inline QScriptValue::PropertyFlags QScriptEnginePrivate::getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property, const QScriptValue::ResolveFlags& mode)
 {
-    return m_originalGlobalObject.getPropertyFlags(object, property, mode);
+    QScriptValue::PropertyFlags flags = m_originalGlobalObject.getPropertyFlags(object, property, mode);
+    if (!flags && hasInstance(scriptClassTemplate, object)) {
+        flags = getPropertyFlagsFromScriptClassInstance(object, property, mode);
+    }
+    return flags;
 }
-
-inline v8::Local<v8::Value> QScriptEnginePrivate::getOwnProperty(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property) const
+inline v8::Local<v8::Value> QScriptEnginePrivate::getOwnProperty(v8::Handle<v8::Object> object, v8::Handle<v8::Value> propertyName) const
 {
-    return m_originalGlobalObject.getOwnProperty(object, property);
+    v8::Local<v8::Value> property = m_originalGlobalObject.getOwnProperty(object, propertyName);
+    if (property.IsEmpty()) {
+        // Check if the object is not an instance of a script class.
+        if (hasInstance(scriptClassTemplate, object)) {
+            property = getOwnPropertyFromScriptClassInstance(object, propertyName);
+        }
+    }
+    return property;
 }
 
 inline v8::Local<v8::Value> QScriptEnginePrivate::getOwnProperty(v8::Handle<v8::Object> object, uint32_t index) const
 {
-    return m_originalGlobalObject.getOwnProperty(object, v8::Integer::New(index));
+    return getOwnProperty(object, v8::Integer::New(index));
 }
 
 QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(const QString& program, const QString& fileName, int lineNumber)
@@ -511,6 +526,11 @@ inline void QScriptEnginePrivate::TypeInfos::clear()
     m_infos.clear();
 }
 
+inline bool QScriptEnginePrivate::hasInstance(v8::Handle<v8::FunctionTemplate> fun, v8::Handle<v8::Value> value) const
+{
+    Q_ASSERT(!value.IsEmpty());
+    return !fun.IsEmpty() && fun->HasInstance(value);
+}
 QT_END_NAMESPACE
 
 #endif

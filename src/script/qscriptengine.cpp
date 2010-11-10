@@ -2524,5 +2524,40 @@ void QScriptEnginePrivate::emitSignalHandlerException()
     emit q->signalHandlerException(QScriptValuePrivate::get(uncaughtException()));
 }
 
+/*!
+  \internal
+  This method was created only because it couldn't be inlined in getOwnProperty.
+  It shouldn't be used in other places.
+  \note that it assume that object has a QScriptClassObject instance associated.
+  */
+v8::Local<v8::Value> QScriptEnginePrivate::getOwnPropertyFromScriptClassInstance(v8::Handle<v8::Object> object, v8::Handle<v8::Value> propertyName) const
+{
+#ifndef QT_NO_DEBUG
+    Q_ASSERT(object->InternalFieldCount() == 1);
+    QScriptValuePrivate *ptr = new QScriptValuePrivate(const_cast<QScriptEnginePrivate*>(this), object);
+    Q_ASSERT(QScriptClassObject::safeGet(ptr));
+    delete ptr;
+#endif
+    QScriptClassObject *data = QScriptClassObject::get(object);
+    return m_originalGlobalObject.getOwnProperty(data->original(), propertyName);
+}
+
+/*!
+  \internal
+  This method was created only because it couldn't be inlined in getPropertyFlags.
+  It shouldn't be used in other places.
+  \note that it assume that object has a QScriptClassObject instance associated.
+  */
+QScriptValue::PropertyFlags QScriptEnginePrivate::getPropertyFlagsFromScriptClassInstance(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property, const QScriptValue::ResolveFlags& mode)
+{
+#ifndef QT_NO_DEBUG
+    Q_ASSERT(object->InternalFieldCount() == 1);
+    QScriptValuePrivate *ptr = new QScriptValuePrivate(const_cast<QScriptEnginePrivate*>(this), object);
+    Q_ASSERT(QScriptClassObject::safeGet(ptr));
+    delete ptr;
+#endif
+    QScriptClassObject *data = QScriptClassObject::get(object);
+    return m_originalGlobalObject.getPropertyFlags(data->original(), property, mode);
+}
 
 QT_END_NAMESPACE
