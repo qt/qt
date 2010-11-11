@@ -220,7 +220,6 @@ bool QMeeGoLivePixmapData::release(QImage* /*img*/)
 
     if (QMeeGoExtensions::eglUnlockSurfaceKHR(QEgl::display(), getSurfaceForBackingPixmap())) {
         lockedImage = QImage();
-        glFinish();
         return true;
     } else {
         lockedImage = QImage();
