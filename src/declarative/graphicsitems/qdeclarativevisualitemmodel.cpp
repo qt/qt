@@ -557,8 +557,9 @@ QDeclarativeVisualDataModelData::~QDeclarativeVisualDataModelData()
 void QDeclarativeVisualDataModelData::ensureProperties()
 {
     QDeclarativeVisualDataModelPrivate *modelPriv = QDeclarativeVisualDataModelPrivate::get(m_model);
-    if (modelPriv->m_metaDataCacheable && !modelPriv->m_metaDataCreated) {
-        modelPriv->createMetaData();
+    if (modelPriv->m_metaDataCacheable) {
+        if (!modelPriv->m_metaDataCreated)
+            modelPriv->createMetaData();
         if (modelPriv->m_metaDataCreated)
             m_meta->setCached(true);
     }
