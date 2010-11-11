@@ -2353,8 +2353,6 @@ void tst_QScriptValue::getSetPrototype_notObjectOrNull()
     QScriptValue object = eng.newObject();
     QScriptValue originalProto = object.prototype();
 
-    QEXPECT_FAIL("", "QTBUG-15154: QScriptValue::setPrototype() allows a non-Object value to be set as prototype", Abort);
-
     // bool
     object.setPrototype(true);
     QVERIFY(object.prototype().equals(originalProto));
