@@ -43,6 +43,7 @@
 #define MLIVEPIXMAPDATA_H
 
 #include <private/qpixmapdata_gl_p.h>
+#include "qmeegoextensions.h"
 
 class QMeeGoLivePixmapData : public QGLPixmapData
 {
@@ -56,7 +57,7 @@ public:
 
     void initializeThroughEGLImage();
 
-    QImage* lock();
+    QImage* lock(EGLSyncKHR fenceSync);
     bool release(QImage *img);
     Qt::HANDLE handle();
 
