@@ -85,7 +85,7 @@ void QMeeGoExtensions::ensureInitialized()
 
 EGLNativeSharedImageTypeNOK QMeeGoExtensions::eglCreateSharedImageNOK(EGLDisplay dpy, EGLImageKHR image, EGLint *props)
 {
-    if (! hasImageShared)
+    if (!hasImageShared)
         qFatal("EGL_NOK_image_shared not found but trying to use capability!");
 
     return _eglCreateSharedImageNOK(dpy, image, props);
@@ -93,7 +93,7 @@ EGLNativeSharedImageTypeNOK QMeeGoExtensions::eglCreateSharedImageNOK(EGLDisplay
 
 bool QMeeGoExtensions::eglQueryImageNOK(EGLDisplay dpy, EGLImageKHR image, EGLint prop, EGLint *v)
 {
-    if (! hasImageShared)
+    if (!hasImageShared)
         qFatal("EGL_NOK_image_shared not found but trying to use capability!");
 
     return _eglQueryImageNOK(dpy, image, prop, v);
@@ -101,7 +101,7 @@ bool QMeeGoExtensions::eglQueryImageNOK(EGLDisplay dpy, EGLImageKHR image, EGLin
 
 bool QMeeGoExtensions::eglDestroySharedImageNOK(EGLDisplay dpy, EGLNativeSharedImageTypeNOK img)
 {
-    if (! hasImageShared)
+    if (!hasImageShared)
         qFatal("EGL_NOK_image_shared not found but trying to use capability!");
 
     return _eglDestroySharedImageNOK(dpy, img);
@@ -109,7 +109,7 @@ bool QMeeGoExtensions::eglDestroySharedImageNOK(EGLDisplay dpy, EGLNativeSharedI
 
 bool QMeeGoExtensions::eglSetSurfaceScalingNOK(EGLDisplay dpy, EGLSurface surface, int x, int y, int width, int height)
 {
-    if (! hasSurfaceScaling)
+    if (!hasSurfaceScaling)
         qFatal("EGL_NOK_surface_scaling not found but trying to use capability!");
 
    return _eglSetSurfaceScalingNOK(dpy, surface, x, y, width, height);
@@ -117,7 +117,7 @@ bool QMeeGoExtensions::eglSetSurfaceScalingNOK(EGLDisplay dpy, EGLSurface surfac
 
 bool QMeeGoExtensions::eglLockSurfaceKHR(EGLDisplay display, EGLSurface surface, const EGLint *attrib_list)
 {
-    if (! hasLockSurface)
+    if (!hasLockSurface)
         qFatal("EGL_KHR_lock_surface2 not found but trying to use capability!");
 
     return _eglLockSurfaceKHR(display, surface, attrib_list);
@@ -125,7 +125,7 @@ bool QMeeGoExtensions::eglLockSurfaceKHR(EGLDisplay display, EGLSurface surface,
 
 bool QMeeGoExtensions::eglUnlockSurfaceKHR(EGLDisplay display, EGLSurface surface)
 {
-    if (! hasLockSurface)
+    if (!hasLockSurface)
         qFatal("EGL_KHR_lock_surface2 not found but trying to use capability!");
 
     return _eglUnlockSurfaceKHR(display, surface);
@@ -133,7 +133,7 @@ bool QMeeGoExtensions::eglUnlockSurfaceKHR(EGLDisplay display, EGLSurface surfac
 
 EGLSyncKHR QMeeGoExtensions::eglCreateSyncKHR(EGLDisplay dpy, EGLenum type, const EGLint *attrib_list)
 {
-    if (! hasFenceSync)
+    if (!hasFenceSync)
         qFatal("EGL_KHR_fence_sync not found but trying to use capability!");
 
     return _eglCreateSyncKHR(dpy, type, attrib_list);
@@ -141,7 +141,7 @@ EGLSyncKHR QMeeGoExtensions::eglCreateSyncKHR(EGLDisplay dpy, EGLenum type, cons
 
 bool QMeeGoExtensions::eglDestroySyncKHR(EGLDisplay dpy, EGLSyncKHR sync)
 {
-    if (! hasFenceSync)
+    if (!hasFenceSync)
         qFatal("EGL_KHR_fence_sync not found but trying to use capability!");
 
     return _eglDestroySyncKHR(dpy, sync);
@@ -149,7 +149,7 @@ bool QMeeGoExtensions::eglDestroySyncKHR(EGLDisplay dpy, EGLSyncKHR sync)
 
 EGLint QMeeGoExtensions::eglClientWaitSyncKHR(EGLDisplay dpy, EGLSyncKHR sync, EGLint flags, EGLTimeKHR timeout)
 {
-    if (! hasFenceSync)
+    if (!hasFenceSync)
         qFatal("EGL_KHR_fence_sync not found but trying to use capability!");
 
     return _eglClientWaitSyncKHR(dpy, sync, flags, timeout);
@@ -157,7 +157,7 @@ EGLint QMeeGoExtensions::eglClientWaitSyncKHR(EGLDisplay dpy, EGLSyncKHR sync, E
 
 EGLBoolean QMeeGoExtensions::eglGetSyncAttribKHR(EGLDisplay dpy, EGLSyncKHR sync, EGLint attribute, EGLint *value)
 {
-    if (! hasFenceSync)
+    if (!hasFenceSync)
         qFatal("EGL_KHR_fence_sync not found but trying to use capability!");
 
     return _eglGetSyncAttribKHR(dpy, sync, attribute, value);
