@@ -100,7 +100,19 @@ public:
             this->reportFinished();
             return;
         }
-        this->runFunctor();
+#ifndef QT_NO_EXCEPTIONS
+        try {
+#endif
+            this->runFunctor();
+#ifndef QT_NO_EXCEPTIONS
+        } catch (QtConcurrent::Exception &e) {
+            qDebug() << "cought exception";
+            QFutureInterface<T>::reportException(e);
+        } catch (...) {
+            QFutureInterface<T>::reportException(QtConcurrent::UnhandledException());
+        }
+#endif
+
         this->reportResult(result);
         this->reportFinished();
     }
@@ -117,7 +129,17 @@ public:
             this->reportFinished();
             return;
         }
-        this->runFunctor();
+#ifndef QT_NO_EXCEPTIONS
+        try {
+#endif
+            this->runFunctor();
+#ifndef QT_NO_EXCEPTIONS
+        } catch (QtConcurrent::Exception &e) {
+            QFutureInterface<void>::reportException(e);
+        } catch (...) {
+            QFutureInterface<void>::reportException(QtConcurrent::UnhandledException());
+        }
+#endif
         this->reportFinished();
     }
 };
