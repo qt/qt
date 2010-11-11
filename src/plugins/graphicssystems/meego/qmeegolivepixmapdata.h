@@ -50,16 +50,16 @@ public:
     QMeeGoLivePixmapData(int w, int h, QImage::Format format);
     QMeeGoLivePixmapData(Qt::HANDLE h);
     ~QMeeGoLivePixmapData();
-    
+
     QPixmapData *createCompatiblePixmapData() const;
     bool scroll(int dx, int dy, const QRect &rect);
 
     void initializeThroughEGLImage();
-        
+
     QImage* lock();
     bool release(QImage *img);
     Qt::HANDLE handle();
-    
+
     EGLSurface getSurfaceForBackingPixmap();
     void destroySurfaceForPixmapData(QPixmapData* pmd);
 

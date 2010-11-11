@@ -78,7 +78,7 @@ EGLNativeSharedImageTypeNOK QMeeGoExtensions::eglCreateSharedImageNOK(EGLDisplay
 {
     if (! hasImageShared)
         qFatal("EGL_NOK_image_shared not found but trying to use capability!");
-        
+
     return _eglCreateSharedImageNOK(dpy, image, props);
 }
 
@@ -128,7 +128,7 @@ void QMeeGoExtensions::initialize()
 {
     QGLContext *ctx = (QGLContext *) QGLContext::currentContext();
     qt_resolve_eglimage_gl_extensions(ctx);
-    
+
     if (QEgl::hasExtension("EGL_NOK_image_shared")) {
         qDebug("MeegoGraphics: found EGL_NOK_image_shared");
         _eglQueryImageNOK = (eglQueryImageNOKFunc) eglGetProcAddress("eglQueryImageNOK");
@@ -136,15 +136,15 @@ void QMeeGoExtensions::initialize()
         _eglDestroySharedImageNOK = (eglDestroySharedImageNOKFunc) eglGetProcAddress("eglDestroySharedImageNOK");
         _eglLockSurfaceKHR = (eglLockSurfaceKHRFunc) eglGetProcAddress("eglLockSurfaceKHR");
         _eglUnlockSurfaceKHR = (eglUnlockSurfaceKHRFunc) eglGetProcAddress("eglUnlockSurfaceKHR");
-        
+
         Q_ASSERT(_eglQueryImageNOK && _eglCreateSharedImageNOK && _eglDestroySharedImageNOK);
         hasImageShared = true;
     }
-    
+
     if (QEgl::hasExtension("EGL_NOK_surface_scaling")) {
         qDebug("MeegoGraphics: found EGL_NOK_surface_scaling");
         _eglSetSurfaceScalingNOK = (eglSetSurfaceScalingNOKFunc) eglGetProcAddress("eglSetSurfaceScalingNOK");
-        
+
         Q_ASSERT(_eglSetSurfaceScalingNOK);
         hasSurfaceScaling = true;
     }
@@ -153,7 +153,7 @@ void QMeeGoExtensions::initialize()
         qDebug("MeegoGraphics: found EGL_KHR_lock_surface2");
         _eglLockSurfaceKHR = (eglLockSurfaceKHRFunc) eglGetProcAddress("eglLockSurfaceKHR");
         _eglUnlockSurfaceKHR = (eglUnlockSurfaceKHRFunc) eglGetProcAddress("eglUnlockSurfaceKHR");
-         
+
         Q_ASSERT(_eglLockSurfaceKHR && _eglUnlockSurfaceKHR);
         hasLockSurface = true;
     }

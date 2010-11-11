@@ -87,7 +87,7 @@ QPixmapData *QMeeGoGraphicsSystem::createPixmapData(QPixmapData::PixelType type)
     // explain here... not to mention fix without going crazy. 
     // MDK
     QGLShareContextScope ctx(qt_gl_share_widget()->context());
- 
+
     return new QRasterPixmapData(type);
 }
 
@@ -103,8 +103,8 @@ QPixmapData *QMeeGoGraphicsSystem::createPixmapData(QPixmapData *origin)
 
         if (QMeeGoPixmapData::sharedImagesMap.contains(rawResource))
             return new QMeeGoPixmapData();
-    } 
-        
+    }
+
     return new QRasterPixmapData(origin->pixelType());
 }
 
@@ -155,7 +155,7 @@ QPixmapData *QMeeGoGraphicsSystem::pixmapDataFromEGLSharedImage(Qt::HANDLE handl
         qFatal("For egl shared images, the soft image has to be ARGB32_Premultiplied or RGB32");
         return NULL;
     }
-    
+
     if (QMeeGoGraphicsSystem::meeGoRunning()) {
         QMeeGoPixmapData *pmd = new QMeeGoPixmapData;
         pmd->fromEGLSharedImage(handle, softImage);
@@ -177,9 +177,9 @@ QPixmapData *QMeeGoGraphicsSystem::pixmapDataFromEGLSharedImage(Qt::HANDLE handl
 void QMeeGoGraphicsSystem::updateEGLSharedImagePixmap(QPixmap *pixmap)
 {
     QMeeGoPixmapData *pmd = (QMeeGoPixmapData *) pixmap->pixmapData();
-    
+
     // Basic sanity check to make sure this is really a QMeeGoPixmapData...
-    if (pmd->classId() != QPixmapData::OpenGLClass) 
+    if (pmd->classId() != QPixmapData::OpenGLClass)
         qFatal("Trying to updated EGLSharedImage pixmap but it's not really a shared image pixmap!");
 
     pmd->updateFromSoftImage();
