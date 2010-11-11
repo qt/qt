@@ -106,7 +106,6 @@ public:
             this->runFunctor();
 #ifndef QT_NO_EXCEPTIONS
         } catch (QtConcurrent::Exception &e) {
-            qDebug() << "cought exception";
             QFutureInterface<T>::reportException(e);
         } catch (...) {
             QFutureInterface<T>::reportException(QtConcurrent::UnhandledException());
