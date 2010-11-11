@@ -2332,6 +2332,54 @@ void tst_QScriptValue::getSetPrototype_twoEngines()
 
 }
 
+void tst_QScriptValue::getSetPrototype_null()
+{
+    QScriptEngine eng;
+    QScriptValue object = eng.newObject();
+    object.setPrototype(QScriptValue(QScriptValue::NullValue));
+    QVERIFY(object.prototype().isNull());
+
+    QScriptValue newProto = eng.newObject();
+    object.setPrototype(newProto);
+    QVERIFY(object.prototype().equals(newProto));
+
+    object.setPrototype(QScriptValue(&eng, QScriptValue::NullValue));
+    QVERIFY(object.prototype().isNull());
+}
+
+void tst_QScriptValue::getSetPrototype_notObjectOrNull()
+{
+    QScriptEngine eng;
+    QScriptValue object = eng.newObject();
+    QScriptValue originalProto = object.prototype();
+
+    QEXPECT_FAIL("", "QTBUG-15154: QScriptValue::setPrototype() allows a non-Object value to be set as prototype", Abort);
+
+    // bool
+    object.setPrototype(true);
+    QVERIFY(object.prototype().equals(originalProto));
+    object.setPrototype(QScriptValue(&eng, true));
+    QVERIFY(object.prototype().equals(originalProto));
+
+    // number
+    object.setPrototype(123);
+    QVERIFY(object.prototype().equals(originalProto));
+    object.setPrototype(QScriptValue(&eng, 123));
+    QVERIFY(object.prototype().equals(originalProto));
+
+    // string
+    object.setPrototype("foo");
+    QVERIFY(object.prototype().equals(originalProto));
+    object.setPrototype(QScriptValue(&eng, "foo"));
+    QVERIFY(object.prototype().equals(originalProto));
+
+    // undefined
+    object.setPrototype(QScriptValue(QScriptValue::UndefinedValue));
+    QVERIFY(object.prototype().equals(originalProto));
+    object.setPrototype(QScriptValue(&eng, QScriptValue::UndefinedValue));
+    QVERIFY(object.prototype().equals(originalProto));
+}
+
 void tst_QScriptValue::getSetPrototype()
 {
     QScriptEngine eng;

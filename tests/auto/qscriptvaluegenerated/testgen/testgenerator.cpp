@@ -156,14 +156,14 @@ static QString generateLicence()
 
 static QString generateIsXXXDef(const QString& name, const QList<QString>& list)
 {
-    static const QString templ("void tst_QScriptValue::%1_initData()\n"\
+    static const QString templ("void tst_QScriptValueGenerated::%1_initData()\n"\
                                "{\n"\
                                "    QTest::addColumn<bool>(\"expected\");\n"\
                                "    initScriptValues();\n"\
                                "}\n"\
                                "\n"\
                                "static QString %1_array[] = {%2};\n\n"\
-                               "void tst_QScriptValue::%1_makeData(const char* expr)\n"\
+                               "void tst_QScriptValueGenerated::%1_makeData(const char* expr)\n"\
                                "{\n"\
                                "    static QSet<QString> %1;\n"\
                                "    if (%1.isEmpty()) {\n"\
@@ -174,7 +174,7 @@ static QString generateIsXXXDef(const QString& name, const QList<QString>& list)
                                "    newRow(expr) << %1.contains(expr);\n"\
                                "}\n"\
                                "\n"\
-                               "void tst_QScriptValue::%1_test(const char*, const QScriptValue& value)\n"\
+                               "void tst_QScriptValueGenerated::%1_test(const char*, const QScriptValue& value)\n"\
                                "{\n"\
                                "    QFETCH(bool, expected);\n"\
                                "    QCOMPARE(value.%1(), expected);\n"\
@@ -197,8 +197,9 @@ static QString generateIsXXXDef(const QString& name, const QList<QString>& list)
             set.append("\",");
         set.append("\n    \"");
         set.append(escape(t));
-        set.append("\"");
     }
+    if (!list.isEmpty())
+        set.append("\"\n");
 
     return result.arg(name, set.join(QString()), QString::number(list.count()));
 }
@@ -207,7 +208,7 @@ template<typename T>
 static QString generateToXXXDef(const QString& name, const QList<QPair<QString, T> >& list)
 {
     static const QString templ = "\n"\
-                                 "void tst_QScriptValue::%1_initData()\n"\
+                                 "void tst_QScriptValueGenerated::%1_initData()\n"\
                                  "{\n"\
                                  "    QTest::addColumn<%2>(\"expected\");\n"\
                                  "    initScriptValues();\n"\
@@ -215,7 +216,7 @@ static QString generateToXXXDef(const QString& name, const QList<QPair<QString, 
                                  "\n"\
                                  "static QString %1_tagArray[] = {%4};\n\n"\
                                  "static %2 %1_valueArray[] = {%5};\n\n"\
-                                 "void tst_QScriptValue::%1_makeData(const char* expr)\n"\
+                                 "void tst_QScriptValueGenerated::%1_makeData(const char* expr)\n"\
                                  "{\n"\
                                  "    static QHash<QString, %2> %1;\n"\
                                  "    if (%1.isEmpty()) {\n"\
@@ -226,7 +227,7 @@ static QString generateToXXXDef(const QString& name, const QList<QPair<QString, 
                                  "    newRow(expr) << %1.value(expr);\n"\
                                  "}\n"\
                                  "\n"\
-                                 "void tst_QScriptValue::%1_test(const char*, const QScriptValue& value)\n"\
+                                 "void tst_QScriptValueGenerated::%1_test(const char*, const QScriptValue& value)\n"\
                                  "{\n"\
                                  "    QFETCH(%2, expected);\n"\
                                  "    QCOMPARE(value.%1(), expected);\n"\
@@ -268,7 +269,7 @@ template<>
 QString generateToXXXDef<qsreal>(const QString& name, const QList<QPair<QString, qsreal> >& list)
 {
     static const QString templ = "\n"\
-                                 "void tst_QScriptValue::%1_initData()\n"\
+                                 "void tst_QScriptValueGenerated::%1_initData()\n"\
                                  "{\n"\
                                  "    QTest::addColumn<%2>(\"expected\");\n"\
                                  "    initScriptValues();\n"\
@@ -276,7 +277,7 @@ QString generateToXXXDef<qsreal>(const QString& name, const QList<QPair<QString,
                                  "\n"\
                                  "static QString %1_tagArray[] = {%3};\n"\
                                  "static %2 %1_valueArray[] = {%4};\n"\
-                                 "void tst_QScriptValue::%1_makeData(const char* expr)\n"\
+                                 "void tst_QScriptValueGenerated::%1_makeData(const char* expr)\n"\
                                  "{\n"\
                                  "    static QHash<QString, %2> %1;\n"\
                                  "    if (%1.isEmpty()) {\n"\
@@ -287,7 +288,7 @@ QString generateToXXXDef<qsreal>(const QString& name, const QList<QPair<QString,
                                  "    newRow(expr) << %1.value(expr);\n"\
                                  "}\n"\
                                  "\n"\
-                                 "void tst_QScriptValue::%1_test(const char*, const QScriptValue& value)\n"\
+                                 "void tst_QScriptValueGenerated::%1_test(const char*, const QScriptValue& value)\n"\
                                  "{\n"\
                                  "    QFETCH(%2, expected);\n"\
                                  "%666"
@@ -345,7 +346,7 @@ template<typename T>
 static QString generateCastDef(const QList<QPair<QString, T> >& list)
 {
     static const QString templ = "\n"\
-                                 "void tst_QScriptValue::qscriptvalue_cast%1_initData()\n"\
+                                 "void tst_QScriptValueGenerated::qscriptvalue_cast%1_initData()\n"\
                                  "{\n"\
                                  "    QTest::addColumn<%1>(\"expected\");\n"\
                                  "    initScriptValues();\n"\
@@ -353,7 +354,7 @@ static QString generateCastDef(const QList<QPair<QString, T> >& list)
                                  "\n"\
                                  "static QString qscriptvalue_cast%1_tagArray[] = {%2};\n"\
                                  "static %1 qscriptvalue_cast%1_valueArray[] = {%3};\n"\
-                                 "void tst_QScriptValue::qscriptvalue_cast%1_makeData(const char* expr)\n"\
+                                 "void tst_QScriptValueGenerated::qscriptvalue_cast%1_makeData(const char* expr)\n"\
                                  "{\n"\
                                  "    static QHash<QString, %1> value;\n"\
                                  "    if (value.isEmpty()) {\n"\
@@ -364,7 +365,7 @@ static QString generateCastDef(const QList<QPair<QString, T> >& list)
                                  "    newRow(expr) << value.value(expr);\n"\
                                  "}\n"\
                                  "\n"\
-                                 "void tst_QScriptValue::qscriptvalue_cast%1_test(const char*, const QScriptValue& value)\n"\
+                                 "void tst_QScriptValueGenerated::qscriptvalue_cast%1_test(const char*, const QScriptValue& value)\n"\
                                  "{\n"\
                                  "    QFETCH(%1, expected);\n"\
                                  "    QCOMPARE(qscriptvalue_cast<%1>(value), expected);\n"\
@@ -401,7 +402,7 @@ template<>
 QString generateCastDef<qsreal>(const QList<QPair<QString, qsreal> >& list)
 {
     static const QString templ = "\n"\
-                                 "void tst_QScriptValue::qscriptvalue_cast%1_initData()\n"\
+                                 "void tst_QScriptValueGenerated::qscriptvalue_cast%1_initData()\n"\
                                  "{\n"\
                                  "    QTest::addColumn<%1>(\"expected\");\n"\
                                  "    initScriptValues();\n"\
@@ -409,7 +410,7 @@ QString generateCastDef<qsreal>(const QList<QPair<QString, qsreal> >& list)
                                  "\n"\
                                  "static QString qscriptvalue_cast%1_tagArray[] = {%2};\n"\
                                  "static %1 qscriptvalue_cast%1_valueArray[] = {%3};\n"\
-                                 "void tst_QScriptValue::qscriptvalue_cast%1_makeData(const char* expr)\n"\
+                                 "void tst_QScriptValueGenerated::qscriptvalue_cast%1_makeData(const char* expr)\n"\
                                  "{\n"\
                                  "    static QHash<QString, %1> value;\n"\
                                  "    if (value.isEmpty()) {\n"\
@@ -420,7 +421,7 @@ QString generateCastDef<qsreal>(const QList<QPair<QString, qsreal> >& list)
                                  "    newRow(expr) << value.value(expr);\n"\
                                  "}\n"\
                                  "\n"\
-                                 "void tst_QScriptValue::qscriptvalue_cast%1_test(const char*, const QScriptValue& value)\n"\
+                                 "void tst_QScriptValueGenerated::qscriptvalue_cast%1_test(const char*, const QScriptValue& value)\n"\
                                  "{\n"\
                                  "    QFETCH(%1, expected);\n"\
                                  "    if (qIsNaN(expected)) {\n"
@@ -469,7 +470,7 @@ QString generateCastDef<qsreal>(const QList<QPair<QString, qsreal> >& list)
 static QString generateCompareDef(const QString& comparisionType, const QList<QString> tags)
 {
     static const QString templ = "\n"\
-                                 "void tst_QScriptValue::%1_initData()\n"\
+                                 "void tst_QScriptValueGenerated::%1_initData()\n"\
                                  "{\n"\
                                  "    QTest::addColumn<QScriptValue>(\"other\");\n"\
                                  "    QTest::addColumn<bool>(\"expected\");\n"\
@@ -477,7 +478,7 @@ static QString generateCompareDef(const QString& comparisionType, const QList<QS
                                  "}\n"\
                                  "\n"\
                                  "static QString %1_array[] = {%2};\n\n"\
-                                 "void tst_QScriptValue::%1_makeData(const char *expr)\n"\
+                                 "void tst_QScriptValueGenerated::%1_makeData(const char *expr)\n"\
                                  "{\n"\
                                  "    static QSet<QString> equals;\n"\
                                  "    if (equals.isEmpty()) {\n"\
@@ -492,7 +493,7 @@ static QString generateCompareDef(const QString& comparisionType, const QList<QS
                                  "    }\n"\
                                  "}\n"\
                                  "\n"\
-                                 "void tst_QScriptValue::%1_test(const char *, const QScriptValue& value)\n"\
+                                 "void tst_QScriptValueGenerated::%1_test(const char *, const QScriptValue& value)\n"\
                                  "{\n"\
                                  "    QFETCH(QScriptValue, other);\n"\
                                  "    QFETCH(bool, expected);\n"\
@@ -520,7 +521,7 @@ static QString generateCompareDef(const QString& comparisionType, const QList<QS
 
 static QString generateInitDef(const QVector<QString>& allDataTags)
 {
-    static const QString templ = "void tst_QScriptValue::initScriptValues()\n"\
+    static const QString templ = "void tst_QScriptValueGenerated::initScriptValues()\n"\
                                  "{\n"\
                                  "    m_values.clear();\n"\
                                  "    if (engine)\n"\
