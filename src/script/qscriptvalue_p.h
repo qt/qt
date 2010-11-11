@@ -1033,17 +1033,30 @@ inline int QScriptValuePrivate::convertArguments(QVarLengthArray<v8::Handle<v8::
     if (!args->isJSBased() && !args->assignEngine(engine()))
         return -1;
 
-    int argc = 0;
+    // argc == -1 will cause a type error to be thrown.
+    int argc = -1;
     if (args->isArray()) {
         v8::Handle<v8::Array> array(v8::Array::Cast(*args->m_value));
         argc = array->Length();
         argv->resize(argc);
         for (int i = 0; i < argc; ++i)
             (*argv)[i] = array->Get(i);
-    } else if (!args->isNull() && !args->isUndefined()) {
-        // this will cause a type error to be thrown
-        argc = -1;
+    } else if (args->isObject()) {
+        // FIXME probably we have to strip an Arguments object, for now there is no way to check
+        // it for sure. Anyway lets do our best.
+        QScriptSharedDataPointer<QScriptValuePrivate> lengthProp(args->property(v8::String::New("length"), QScriptValue::ResolveLocal));
+        argc = lengthProp->toUInt32();
+        v8::Handle<v8::Object> obj(v8::Object::Cast(*args->m_value));
+        if (argc) {
+            argv->resize(argc);
+            for (int i = 0; i < argc; ++i)
+                (*argv)[i] = obj->Get(i);
+        } else
+            argc = -1;
+    } else if (args->isNull() || args->isUndefined()) {
+        argc = 0;
     }
+
     return argc;
 }
 
@@ -1058,7 +1071,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::call(QScript
     int argc = args.size();
     QVarLengthArray<v8::Handle<v8::Value>, 8> argv(argc);
     if (!prepareArgumentsForCall(argv.data(), args)) {
-        qWarning("QScriptValue::call() failed: cannot call function with values created in a different engine");
+        qWarning("QScriptValue::call() failed: cannot call function with argument created in a different engine");
         return new QScriptValuePrivate();
     }
 
@@ -1088,8 +1101,8 @@ QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::call(QScriptValuePr
         recv = v8::Handle<v8::Object>(v8::Object::Cast(*e->globalObject()));
     } else {
         if (!thisObject->assignEngine(e)) {
-            qWarning("QScriptValue::call(): cannot call function with thisObject created in a different engine");
-            return new QScriptValuePrivate(e, QScriptValue::UndefinedValue);
+            qWarning("QScriptValue::call() failed: cannot call function with thisObject created in a different engine");
+            return new QScriptValuePrivate();
         }
 
         recv = v8::Handle<v8::Object>(v8::Object::Cast(*thisObject->m_value));
@@ -1314,9 +1327,14 @@ inline bool QScriptValuePrivate::prepareArgumentsForCall(v8::Handle<v8::Value> a
     QScriptValueList::const_iterator i = args.constBegin();
     for (int j = 0; i != args.constEnd(); j++, i++) {
         QScriptValuePrivate* value = QScriptValuePrivate::get(*i);
-        if (!value->isJSBased() && !value->assignEngine(engine()))
+        if ((value->isJSBased() && engine() != value->engine())
+                || (!value->isJSBased() && value->isValid() && !value->assignEngine(engine())))
+            // Different engines are not allowed!
             return false;
-        argv[j] = *value;
+        if (value->isValid())
+            argv[j] = *value;
+        else
+            argv[j] = engine()->makeJSValue(QScriptValue::UndefinedValue);
     }
     return true;
 }
