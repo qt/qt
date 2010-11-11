@@ -699,7 +699,7 @@ void SymbianCommonGenerator::readRssRules(QString &numberOfIcons,
                     newValues << itemList.join("\n");
                 }
             }
-            // Verify thet there is exactly one value in RSS_TAG_NBROFICONS
+            // Verify that there is exactly one value in RSS_TAG_NBROFICONS
             if (newKey == RSS_TAG_NBROFICONS) {
                 if (newValues.count() == 1) {
                     numberOfIcons = newValues[0];
@@ -708,7 +708,7 @@ void SymbianCommonGenerator::readRssRules(QString &numberOfIcons,
                             RSS_RULES_BASE, RSS_TAG_NBROFICONS);
                     continue;
                 }
-            // Verify thet there is exactly one value in RSS_TAG_ICONFILE
+            // Verify that there is exactly one value in RSS_TAG_ICONFILE
             } else if (newKey == RSS_TAG_ICONFILE) {
                 if (newValues.count() == 1) {
                     iconFile = newValues[0];

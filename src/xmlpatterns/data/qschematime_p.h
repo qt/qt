@@ -63,7 +63,7 @@ namespace QPatternist
     /**
      * @short Implements the value instance of the @c xs:time type.
      *
-     * The header file for this class was orignally called Time.h, but this
+     * The header file for this class was originally called Time.h, but this
      * clashed with a system header on MinGW.
      *
      * @author Frans Englich <frans.englich@nokia.com>

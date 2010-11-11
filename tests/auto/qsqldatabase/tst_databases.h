@@ -208,7 +208,7 @@ public:
 //         addDb( "QOCI8", "//horsehead.nokia.troll.no:1521/ustest.troll.no", "scott", "tiger", "" ); // Oracle 9i on horsehead
 //         addDb( "QOCI8", "//iceblink.nokia.troll.no:1521/ice.troll.no", "scott", "tiger", "" ); // Oracle 8 on iceblink (not currently working)
 //         addDb( "QOCI", "//silence.nokia.troll.no:1521/testdb", "scott", "tiger" ); // Oracle 10g on silence
-//         addDb( "QOCI", "//oracle10g-nokia.trolltech.com.au:1521/XE", "scott", "tiger" ); // Oracle 10gexpress on xen
+//         addDb( "QOCI", "//bq-oracle10g.apac.nokia.com:1521/XE", "scott", "tiger" ); // Oracle 10gexpress
 
 //      This requires a local ODBC data source to be configured( pointing to a MySql database )
 //         addDb( "QODBC", "mysqlodbc", "troll", "trond" );

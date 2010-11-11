@@ -1078,7 +1078,7 @@ void QNetworkSessionPrivateImpl::RunL()
             TInt error = KErrNone;
             QNetworkConfiguration newActiveConfig = activeConfiguration();
             if (!newActiveConfig.isValid()) {
-                // RConnection startup was successfull but no configuration
+                // RConnection startup was successful but no configuration
                 // was found. That indicates that user has chosen to create a
                 // new WLAN configuration (from scan results), but that new
                 // configuration does not have access to Internet (Internet
