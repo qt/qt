@@ -719,7 +719,7 @@ inline bool QScriptValuePrivate::strictlyEquals(QScriptValuePrivate* other)
             return false;
         }
         if (other->engine() != engine()) {
-            qWarning("strictlyEquals(): Cannot compare to a value created in a different engine");
+            qWarning("QScriptValue::strictlyEquals: cannot compare to a value created in a different engine");
             return false;
         }
         return m_value->StrictEquals(other->m_value);
