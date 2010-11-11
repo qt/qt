@@ -80,9 +80,6 @@ QT_BEGIN_NAMESPACE
 bool QSslSocketPrivate::s_libraryLoaded = false;
 bool QSslSocketPrivate::s_loadedCiphersAndCerts = false;
 
-// Useful defines
-#define SSL_ERRORSTR() QString::fromLocal8Bit(q_ERR_error_string(q_ERR_get_error(), NULL))
-
 /* \internal
 
     From OpenSSL's thread(3) manual page:
@@ -272,7 +269,7 @@ init_context:
         }
 
         // ### Bad error code
-        q->setErrorString(QSslSocket::tr("Error creating SSL context (%1)").arg(SSL_ERRORSTR()));
+        q->setErrorString(QSslSocket::tr("Error creating SSL context (%1)").arg(getErrorsFromOpenSsl()));
         q->setSocketError(QAbstractSocket::UnknownSocketError);
         emit q->error(QAbstractSocket::UnknownSocketError);
         return false;
@@ -297,7 +294,7 @@ init_context:
 
     if (!q_SSL_CTX_set_cipher_list(ctx, cipherString.data())) {
         // ### Bad error code
-        q->setErrorString(QSslSocket::tr("Invalid or empty cipher list (%1)").arg(SSL_ERRORSTR()));
+        q->setErrorString(QSslSocket::tr("Invalid or empty cipher list (%1)").arg(getErrorsFromOpenSsl()));
         q->setSocketError(QAbstractSocket::UnknownSocketError);
         emit q->error(QAbstractSocket::UnknownSocketError);
         return false;
@@ -325,14 +322,14 @@ init_context:
     if (!configuration.localCertificate.isNull()) {
         // Require a private key as well.
         if (configuration.privateKey.isNull()) {
-            q->setErrorString(QSslSocket::tr("Cannot provide a certificate with no key, %1").arg(SSL_ERRORSTR()));
+            q->setErrorString(QSslSocket::tr("Cannot provide a certificate with no key, %1").arg(getErrorsFromOpenSsl()));
             emit q->error(QAbstractSocket::UnknownSocketError);
             return false;
         }
 
         // Load certificate
         if (!q_SSL_CTX_use_certificate(ctx, (X509 *)configuration.localCertificate.handle())) {
-            q->setErrorString(QSslSocket::tr("Error loading local certificate, %1").arg(SSL_ERRORSTR()));
+            q->setErrorString(QSslSocket::tr("Error loading local certificate, %1").arg(getErrorsFromOpenSsl()));
             emit q->error(QAbstractSocket::UnknownSocketError);
             return false;
         }
@@ -347,14 +344,14 @@ init_context:
         else
             q_EVP_PKEY_set1_DSA(pkey, (DSA *)configuration.privateKey.handle());
         if (!q_SSL_CTX_use_PrivateKey(ctx, pkey)) {
-            q->setErrorString(QSslSocket::tr("Error loading private key, %1").arg(SSL_ERRORSTR()));
+            q->setErrorString(QSslSocket::tr("Error loading private key, %1").arg(getErrorsFromOpenSsl()));
             emit q->error(QAbstractSocket::UnknownSocketError);
             return false;
         }
 
         // Check if the certificate matches the private key.
         if (!q_SSL_CTX_check_private_key(ctx)) {
-            q->setErrorString(QSslSocket::tr("Private key does not certify public key, %1").arg(SSL_ERRORSTR()));
+            q->setErrorString(QSslSocket::tr("Private key does not certify public key, %1").arg(getErrorsFromOpenSsl()));
             emit q->error(QAbstractSocket::UnknownSocketError);
             return false;
         }
@@ -374,7 +371,7 @@ init_context:
     // Create and initialize SSL session
     if (!(ssl = q_SSL_new(ctx))) {
         // ### Bad error code
-        q->setErrorString(QSslSocket::tr("Error creating SSL session, %1").arg(SSL_ERRORSTR()));
+        q->setErrorString(QSslSocket::tr("Error creating SSL session, %1").arg(getErrorsFromOpenSsl()));
         q->setSocketError(QAbstractSocket::UnknownSocketError);
         emit q->error(QAbstractSocket::UnknownSocketError);
         return false;
@@ -389,7 +386,7 @@ init_context:
     writeBio = q_BIO_new(q_BIO_s_mem());
     if (!readBio || !writeBio) {
         // ### Bad error code
-        q->setErrorString(QSslSocket::tr("Error creating SSL session: %1").arg(SSL_ERRORSTR()));
+        q->setErrorString(QSslSocket::tr("Error creating SSL session: %1").arg(getErrorsFromOpenSsl()));
         q->setSocketError(QAbstractSocket::UnknownSocketError);
         emit q->error(QAbstractSocket::UnknownSocketError);
         return false;
@@ -868,7 +865,7 @@ void QSslSocketBackendPrivate::transmit()
                 int writtenBytes = q_SSL_write(ssl, writeBuffer.readPointer(), nextDataBlockSize);
                 if (writtenBytes <= 0) {
                     // ### Better error handling.
-                    q->setErrorString(QSslSocket::tr("Unable to write data: %1").arg(SSL_ERRORSTR()));
+                    q->setErrorString(QSslSocket::tr("Unable to write data: %1").arg(getErrorsFromOpenSsl()));
                     q->setSocketError(QAbstractSocket::UnknownSocketError);
                     emit q->error(QAbstractSocket::UnknownSocketError);
                     return;
@@ -931,7 +928,7 @@ void QSslSocketBackendPrivate::transmit()
                     plainSocket->read(data.data(), writtenToBio);
                 } else {
                     // ### Better error handling.
-                    q->setErrorString(QSslSocket::tr("Unable to decrypt data: %1").arg(SSL_ERRORSTR()));
+                    q->setErrorString(QSslSocket::tr("Unable to decrypt data: %1").arg(getErrorsFromOpenSsl()));
                     q->setSocketError(QAbstractSocket::UnknownSocketError);
                     emit q->error(QAbstractSocket::UnknownSocketError);
                     return;
@@ -1009,7 +1006,7 @@ void QSslSocketBackendPrivate::transmit()
             case SSL_ERROR_SSL: // error in the SSL library
                 // we do not know exactly what the error is, nor whether we can recover from it,
                 // so just return to prevent an endless loop in the outer "while" statement
-                q->setErrorString(QSslSocket::tr("Error while reading: %1").arg(SSL_ERRORSTR()));
+                q->setErrorString(QSslSocket::tr("Error while reading: %1").arg(getErrorsFromOpenSsl()));
                 q->setSocketError(QAbstractSocket::UnknownSocketError);
                 emit q->error(QAbstractSocket::UnknownSocketError);
                 return;
@@ -1019,7 +1016,7 @@ void QSslSocketBackendPrivate::transmit()
                 // SSL_ERROR_WANT_X509_LOOKUP: can only happen with a
                 // SSL_CTX_set_client_cert_cb(), which we do not call.
                 // So this default case should never be triggered.
-                q->setErrorString(QSslSocket::tr("Error while reading: %1").arg(SSL_ERRORSTR()));
+                q->setErrorString(QSslSocket::tr("Error while reading: %1").arg(getErrorsFromOpenSsl()));
                 q->setSocketError(QAbstractSocket::UnknownSocketError);
                 emit q->error(QAbstractSocket::UnknownSocketError);
                 break;
@@ -1114,8 +1111,7 @@ bool QSslSocketBackendPrivate::startHandshake()
             // The handshake is not yet complete.
             break;
         default:
-            // ### Handle errors better
-            q->setErrorString(QSslSocket::tr("Error during SSL handshake: %1").arg(SSL_ERRORSTR()));
+            q->setErrorString(QSslSocket::tr("Error during SSL handshake: %1").arg(getErrorsFromOpenSsl()));
             q->setSocketError(QAbstractSocket::SslHandshakeFailedError);
 #ifdef QSSLSOCKET_DEBUG
             qDebug() << "QSslSocketBackendPrivate::startHandshake: error!" << q->errorString();
@@ -1289,6 +1285,19 @@ QList<QSslCertificate> QSslSocketBackendPrivate::STACKOFX509_to_QSslCertificates
             certificates << QSslCertificatePrivate::QSslCertificate_from_X509(entry);
     }
     return certificates;
+}
+
+QString QSslSocketBackendPrivate::getErrorsFromOpenSsl()
+{
+    QString errorString;
+    unsigned long errNum;
+    while((errNum = q_ERR_get_error())) {
+        if (! errorString.isEmpty())
+            errorString.append(QLatin1String(", "));
+        const char *error = q_ERR_error_string(errNum, NULL);
+        errorString.append(QString::fromAscii(error)); // error is ascii according to man ERR_error_string
+    }
+    return errorString;
 }
 
 bool QSslSocketBackendPrivate::isMatchingHostname(const QString &cn, const QString &hostname)
