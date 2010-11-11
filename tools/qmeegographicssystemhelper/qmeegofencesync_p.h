@@ -39,33 +39,22 @@
 **
 ****************************************************************************/
 
-#ifndef MLIVEPIXMAPDATA_H
-#define MLIVEPIXMAPDATA_H
+#include "qmeegofencesync.h"
 
-#include <private/qpixmapdata_gl_p.h>
-#include "qmeegoextensions.h"
+#ifndef QMEEGOFENCESYNC_P_H
+#define QMEEGOFENCESYNC_P_H
 
-class QMeeGoLivePixmapData : public QGLPixmapData
+class QMeeGoFenceSyncPrivate
 {
 public:
-    QMeeGoLivePixmapData(int w, int h, QImage::Format format);
-    QMeeGoLivePixmapData(Qt::HANDLE h);
-    ~QMeeGoLivePixmapData();
+    Q_DECLARE_PUBLIC(QMeeGoFenceSync);
+    QMeeGoFenceSyncPrivate();
 
-    QPixmapData *createCompatiblePixmapData() const;
-    bool scroll(int dx, int dy, const QRect &rect);
+    virtual ~QMeeGoFenceSyncPrivate();
 
-    void initializeThroughEGLImage();
+    void* syncObject;
 
-    QImage* lock(EGLSyncKHR fenceSync);
-    bool release(QImage *img);
-    Qt::HANDLE handle();
-
-    EGLSurface getSurfaceForBackingPixmap();
-    void destroySurfaceForPixmapData(QPixmapData* pmd);
-
-    QPixmap *backingX11Pixmap;
-    QImage lockedImage;
+    QMeeGoFenceSync *q_ptr;
 };
 
 #endif
