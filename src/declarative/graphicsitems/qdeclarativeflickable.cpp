@@ -1029,6 +1029,13 @@ void QDeclarativeFlickable::geometryChanged(const QRectF &newGeometry,
             d->contentItem->setWidth(width());
             emit contentWidthChanged();
         }
+        // Make sure that we're entirely in view.
+        if (!d->pressed && !d->movingHorizontally && !d->movingVertically) {
+            int oldDuration = d->fixupDuration;
+            d->fixupDuration = 0;
+            d->fixupX();
+            d->fixupDuration = oldDuration;
+        }
     }
     if (newGeometry.height() != oldGeometry.height()) {
         if (yflick())
@@ -1036,6 +1043,13 @@ void QDeclarativeFlickable::geometryChanged(const QRectF &newGeometry,
         if (d->vData.viewSize < 0) {
             d->contentItem->setHeight(height());
             emit contentHeightChanged();
+        }
+        // Make sure that we're entirely in view.
+        if (!d->pressed && !d->movingHorizontally && !d->movingVertically) {
+            int oldDuration = d->fixupDuration;
+            d->fixupDuration = 0;
+            d->fixupY();
+            d->fixupDuration = oldDuration;
         }
     }
 

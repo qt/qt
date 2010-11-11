@@ -77,6 +77,23 @@ typedef void* EGLNativeSharedImageTypeNOK;
 #define EGL_WRITE_SURFACE_BIT_KHR 0x0002
 #endif
 
+#ifndef EGL_SYNC_FENCE_KHR
+#define EGL_SYNC_FENCE_KHR 0x30F9
+#define EGL_SYNC_TYPE_KHR 0x30F7
+#define EGL_SYNC_STATUS_KHR 0x30F1
+#define EGL_SYNC_CONDITION_KHR 0x30F8
+#define EGL_SIGNALED_KHR 0x30F2
+#define EGL_UNSIGNALED_KHR 0x30F3
+#define EGL_SYNC_PRIOR_COMMANDS_COMPLETE_KHR 0x30F0
+#define EGL_SYNC_FLUSH_COMMANDS_BIT_KHR 0x0001
+#define EGL_FOREVER_KHR 0xFFFFFFFFFFFFFFFFull
+#define EGL_TIMEOUT_EXPIRED_KHR 0x30F5
+#define EGL_CONDITION_SATISFIED_KHR 0x30F6
+#define EGL_NO_SYNC_KHR ((EGLSyncKHR)0)
+typedef void* EGLSyncKHR;
+typedef khronos_utime_nanoseconds_t EGLTimeKHR;
+#endif
+
 /* Class */
 
 class QMeeGoExtensions
@@ -90,6 +107,10 @@ public:
     static bool eglSetSurfaceScalingNOK(EGLDisplay dpy, EGLSurface surface, int x, int y, int width, int height);
     static bool eglLockSurfaceKHR(EGLDisplay display, EGLSurface surface, const EGLint *attrib_list);
     static bool eglUnlockSurfaceKHR(EGLDisplay display, EGLSurface surface);
+    static EGLSyncKHR eglCreateSyncKHR(EGLDisplay dpy, EGLenum type, const EGLint *attrib_list);
+    static bool eglDestroySyncKHR(EGLDisplay dpy, EGLSyncKHR sync);
+    static EGLint eglClientWaitSyncKHR(EGLDisplay dpy, EGLSyncKHR sync, EGLint flags, EGLTimeKHR timeout);
+    static EGLBoolean eglGetSyncAttribKHR(EGLDisplay dpy, EGLSyncKHR sync, EGLint attribute, EGLint *value);
 
 private:
     static void initialize();
@@ -98,6 +119,7 @@ private:
     static bool hasImageShared;
     static bool hasSurfaceScaling;
     static bool hasLockSurface;
+    static bool hasFenceSync;
 };
 
 #endif

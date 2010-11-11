@@ -93,7 +93,7 @@ struct QGLRect
     GLfloat right;
     GLfloat bottom;
 
-    operator QRectF() {return QRectF(left, top, right-left, bottom-top);}
+    operator QRectF() const {return QRectF(left, top, right-left, bottom-top);}
 };
 
 class QGL2PEXVertexArray
