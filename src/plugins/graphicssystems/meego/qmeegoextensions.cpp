@@ -47,6 +47,7 @@ bool QMeeGoExtensions::initialized = false;
 bool QMeeGoExtensions::hasImageShared = false;
 bool QMeeGoExtensions::hasSurfaceScaling = false;
 bool QMeeGoExtensions::hasLockSurface = false;
+bool QMeeGoExtensions::hasFenceSync = false;
 
 /* Extension funcs */
 
@@ -54,8 +55,12 @@ typedef EGLBoolean (EGLAPIENTRY *eglQueryImageNOKFunc)(EGLDisplay, EGLImageKHR, 
 typedef EGLNativeSharedImageTypeNOK (EGLAPIENTRY *eglCreateSharedImageNOKFunc)(EGLDisplay, EGLImageKHR, EGLint*);
 typedef EGLBoolean (EGLAPIENTRY *eglDestroySharedImageNOKFunc)(EGLDisplay, EGLNativeSharedImageTypeNOK);
 typedef EGLBoolean (EGLAPIENTRY *eglSetSurfaceScalingNOKFunc)(EGLDisplay, EGLSurface, EGLint, EGLint, EGLint, EGLint);
-typedef EGLBoolean (EGLAPIENTRY *eglLockSurfaceKHRFunc)(EGLDisplay display, EGLSurface surface, const EGLint *attrib_list);
-typedef EGLBoolean (EGLAPIENTRY *eglUnlockSurfaceKHRFunc)(EGLDisplay display, EGLSurface surface);
+typedef EGLBoolean (EGLAPIENTRY *eglLockSurfaceKHRFunc)(EGLDisplay, EGLSurface, const EGLint*);
+typedef EGLBoolean (EGLAPIENTRY *eglUnlockSurfaceKHRFunc)(EGLDisplay, EGLSurface);
+typedef EGLSyncKHR (EGLAPIENTRY *eglCreateSyncKHRFunc)(EGLDisplay, EGLenum, const EGLint*);
+typedef EGLBoolean (EGLAPIENTRY *eglDestroySyncKHRFunc)(EGLDisplay, EGLSyncKHR);
+typedef EGLint (EGLAPIENTRY *eglClientWaitSyncKHRFunc)(EGLDisplay, EGLSyncKHR, EGLint, EGLTimeKHR);
+typedef EGLBoolean (EGLAPIENTRY *eglGetSyncAttribKHRFunc)(EGLDisplay, EGLSyncKHR, EGLint, EGLint*);
 
 static eglQueryImageNOKFunc _eglQueryImageNOK = 0;
 static eglCreateSharedImageNOKFunc _eglCreateSharedImageNOK = 0;
@@ -63,6 +68,10 @@ static eglDestroySharedImageNOKFunc _eglDestroySharedImageNOK = 0;
 static eglSetSurfaceScalingNOKFunc _eglSetSurfaceScalingNOK = 0;
 static eglLockSurfaceKHRFunc _eglLockSurfaceKHR = 0;
 static eglUnlockSurfaceKHRFunc _eglUnlockSurfaceKHR = 0;
+static eglCreateSyncKHRFunc _eglCreateSyncKHR = 0;
+static eglDestroySyncKHRFunc _eglDestroySyncKHR = 0;
+static eglClientWaitSyncKHRFunc _eglClientWaitSyncKHR = 0;
+static eglGetSyncAttribKHRFunc _eglGetSyncAttribKHR = 0;
 
 /* Public */
 
@@ -122,6 +131,38 @@ bool QMeeGoExtensions::eglUnlockSurfaceKHR(EGLDisplay display, EGLSurface surfac
     return _eglUnlockSurfaceKHR(display, surface);
 }
 
+EGLSyncKHR QMeeGoExtensions::eglCreateSyncKHR(EGLDisplay dpy, EGLenum type, const EGLint *attrib_list)
+{
+    if (! hasFenceSync)
+        qFatal("EGL_KHR_fence_sync not found but trying to use capability!");
+
+    return _eglCreateSyncKHR(dpy, type, attrib_list);
+}
+
+bool QMeeGoExtensions::eglDestroySyncKHR(EGLDisplay dpy, EGLSyncKHR sync)
+{
+    if (! hasFenceSync)
+        qFatal("EGL_KHR_fence_sync not found but trying to use capability!");
+
+    return _eglDestroySyncKHR(dpy, sync);
+}
+
+EGLint QMeeGoExtensions::eglClientWaitSyncKHR(EGLDisplay dpy, EGLSyncKHR sync, EGLint flags, EGLTimeKHR timeout)
+{
+    if (! hasFenceSync)
+        qFatal("EGL_KHR_fence_sync not found but trying to use capability!");
+
+    return _eglClientWaitSyncKHR(dpy, sync, flags, timeout);
+}
+
+EGLBoolean QMeeGoExtensions::eglGetSyncAttribKHR(EGLDisplay dpy, EGLSyncKHR sync, EGLint attribute, EGLint *value)
+{
+    if (! hasFenceSync)
+        qFatal("EGL_KHR_fence_sync not found but trying to use capability!");
+
+    return _eglGetSyncAttribKHR(dpy, sync, attribute, value);
+}
+
 /* Private */
 
 void QMeeGoExtensions::initialize()
@@ -156,6 +197,17 @@ void QMeeGoExtensions::initialize()
 
         Q_ASSERT(_eglLockSurfaceKHR && _eglUnlockSurfaceKHR);
         hasLockSurface = true;
+    }
+
+    if (QEgl::hasExtension("EGL_KHR_fence_sync")) {
+        qDebug("MeegoGraphics: found EGL_KHR_fence_sync");
+        _eglCreateSyncKHR = (eglCreateSyncKHRFunc) eglGetProcAddress("eglCreateSyncKHR");
+        _eglDestroySyncKHR = (eglDestroySyncKHRFunc) eglGetProcAddress("eglDestroySyncKHR");
+        _eglClientWaitSyncKHR = (eglClientWaitSyncKHRFunc) eglGetProcAddress("eglClientWaitSyncKHR");
+        _eglGetSyncAttribKHR = (eglGetSyncAttribKHRFunc) eglGetProcAddress("eglGetSyncAttribKHR");
+
+        Q_ASSERT(_eglCreateSyncKHR && _eglDestroySyncKHR && _eglClientWaitSyncKHR && _eglGetSyncAttribKHR);
+        hasFenceSync = true;
     }
 }
 
