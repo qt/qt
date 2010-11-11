@@ -219,7 +219,6 @@ HtmlGenerator::HtmlGenerator()
       inTableHeader(false),
       numTableRows(0),
       threeColumnEnumValueTable(true),
-      application(Online),
       funcLeftParen("\\S(\\()"),
       myTree(0),
       slow(false),
@@ -263,7 +262,10 @@ void HtmlGenerator::initializeGenerator(const Config &config)
 
     style = config.getString(HtmlGenerator::format() +
                              Config::dot +
-                             HTMLGENERATOR_STYLE);
+                             CONFIG_STYLE);
+    endHeader = config.getString(HtmlGenerator::format() +
+                                 Config::dot +
+                                 CONFIG_ENDHEADER);
     postHeader = config.getString(HtmlGenerator::format() +
                                   Config::dot +
                                   HTMLGENERATOR_POSTHEADER);
@@ -287,14 +289,6 @@ void HtmlGenerator::initializeGenerator(const Config &config)
                                           HTMLGENERATOR_GENERATEMACREFS);
 
     project = config.getString(CONFIG_PROJECT);
-
-    QString app = config.getString(CONFIG_APPLICATION);
-    if (app == "online")
-        application = Online;
-    else if (app == "creator")
-        application = Creator;
-    else 
-        application = Creator;
 
     projectDescription = config.getString(CONFIG_DESCRIPTION);
     if (projectDescription.isEmpty() && !project.isEmpty())
@@ -336,17 +330,18 @@ void HtmlGenerator::initializeGenerator(const Config &config)
 
     slow = config.getBool(CONFIG_SLOW);
 
-    stylesheets = config.getStringList(HtmlGenerator::format() +
-                                       Config::dot +
-                                       HTMLGENERATOR_STYLESHEETS);
-    customHeadElements = config.getStringList(HtmlGenerator::format() +
-                                              Config::dot +
-                                              HTMLGENERATOR_CUSTOMHEADELEMENTS);
     codeIndent = config.getInt(CONFIG_CODEINDENT);
 
     helpProjectWriter = new HelpProjectWriter(config,
                                               project.toLower() +
                                               ".qhp");
+
+    // Documentation template handling
+    headerScripts = config.getString(HtmlGenerator::format() + Config::dot +
+                                   CONFIG_HEADERSCRIPTS);
+    headerStyles = config.getString(HtmlGenerator::format() +
+                                       Config::dot +
+                                       CONFIG_HEADERSTYLES);
 }
 
 void HtmlGenerator::terminateGenerator()
@@ -360,8 +355,8 @@ QString HtmlGenerator::format()
 }
 
 /*!
-  This is where the html files and dcf files are written.
-  \note The html file generation is done in the base class,
+  This is where the HTML and DCF files are written.
+  \note The HTML file generation is done in the base class,
   PageGenerator::generateTree().
  */
 void HtmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
@@ -1804,77 +1799,22 @@ void HtmlGenerator::generateHeader(const QString& title,
 
     // Generating page title
     out() << "  <title>" << shortVersion << protectEnc(title) << "</title>\n";
-    // Adding style sheet
-    out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />\n";
-    // Adding jquery and functions - providing online tools and search features
-    out() << "  <script src=\"scripts/jquery.js\" type=\"text/javascript\"></script>\n";
-    out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
 
-
-    // Adding syntax highlighter         // future release
-
-    // Setting some additional style sheet related details depending on configuration (e.g. Online/Creator)
-
-    switch (application) {
-    case Online:
-    // Adding style and js for small windows
-        out() << "  <script src=\"./scripts/superfish.js\" type=\"text/javascript\"></script>\n";
-        out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/superfish.css\" />";
-        out() << "  <script src=\"./scripts/narrow.js\" type=\"text/javascript\"></script>\n";
-        out() << "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/narrow.css\" />\n";
-        // Browser spec styles
-        out() << "  <!--[if IE]>\n";
-        out() << "<meta name=\"MSSmartTagsPreventParsing\" content=\"true\">\n";
-        out() << "<meta http-equiv=\"imagetoolbar\" content=\"no\">\n";
-        out() << "<![endif]-->\n";
-        out() << "<!--[if lt IE 7]>\n";
-        out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie6.css\">\n";
-        out() << "<![endif]-->\n";
-        out() << "<!--[if IE 7]>\n";
-        out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie7.css\">\n";
-        out() << "<![endif]-->\n";
-        out() << "<!--[if IE 8]>\n";
-        out() << "<link rel=\"stylesheet\" type=\"text/css\" href=\"style/style_ie8.css\">\n";
-        out() << "<![endif]-->\n";
-
-        out() << "</head>\n";
-        // CheckEmptyAndLoadList activating search
-        out() << "<body class=\"\" onload=\"CheckEmptyAndLoadList();\">\n";
-        break;
-    case Creator:
-        out() << "</head>\n";
-        out() << "<body class=\"offline narrow creator\">\n"; // offline narrow
-        break;
-    default:
-        out() << "</head>\n";
-        out() << "<body>\n";
-        break;
-    }
+    // Include style sheet and script links.
+    out() << headerStyles;
+    out() << headerScripts;
+    out() << endHeader;
 
 #ifdef GENERATE_MAC_REFS    
     if (mainPage)
         generateMacRef(node, marker);
 #endif   
  
-    switch (application) {
-    case Online:
-        out() << QString(postHeader).replace("\\" + COMMAND_VERSION, myTree->version());
-        generateBreadCrumbs(title,node,marker);
-        out() << QString(postPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
-        break;
-    case Creator:
-        out() << QString(creatorPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
-        generateBreadCrumbs(title,node,marker);
-        out() << QString(creatorPostPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
-        break;
-    default: // default -- not used except if one forgets to set any of the above settings to true
-        out() << QString(creatorPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
-        generateBreadCrumbs(title,node,marker);
-        out() << QString(creatorPostPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
-        break;
-    }
+    out() << QString(postHeader).replace("\\" + COMMAND_VERSION, myTree->version());
+    generateBreadCrumbs(title,node,marker);
+    out() << QString(postPostHeader).replace("\\" + COMMAND_VERSION, myTree->version());
 
-        navigationLinks.clear();
+    navigationLinks.clear();
 
     if (node && !node->links().empty()) {
         QPair<QString,QString> linkPair;
@@ -1960,30 +1900,8 @@ void HtmlGenerator::generateFooter(const Node *node)
     out() << QString(footer).replace("\\" + COMMAND_VERSION, myTree->version())
           << QString(address).replace("\\" + COMMAND_VERSION, myTree->version());
 
-    switch (application) {
-    case Online:
-        out() << "  <script src=\"scripts/functions.js\" type=\"text/javascript\"></script>\n";
-        out() << "  <script type=\"text/javascript\">\n";
-        out() << "  var _gaq = _gaq || [];\n";
-        out() << "  _gaq.push(['_setAccount', 'UA-4457116-5']);\n";
-        out() << "  _gaq.push(['_trackPageview']);\n";
-        out() << "  (function() {\n";
-        out() << "  var ga = document.createElement('script'); ";
-        out() << "ga.type = 'text/javascript'; ga.async = true;\n";
-        out() << "  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + ";
-        out() << "'.google-analytics.com/ga.js';\n";
-        out() << "  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);\n";
-        out() << "  })();\n";
-        out() << "  </script>\n";
-        out() << "</body>\n";
-        break;
-    case Creator:
-        out() << "</body>\n";
-        break;
-    default:
-        out() << "</body>\n";
-    }
-          out() <<   "</html>\n";
+    out() << "</body>\n";
+    out() << "</html>\n";
 }
 
 void HtmlGenerator::generateBrief(const Node *node, CodeMarker *marker,

@@ -1,4 +1,4 @@
-include(qt-html-default-styles.qdocconf)
+include(qt-html-online-styles.qdocconf)
 
 HTML.postheader = \
     " <div class=\"header\" id=\"qtdocheader\">\n" \

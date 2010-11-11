@@ -95,10 +95,6 @@ class HtmlGenerator : public PageGenerator
         LastSinceType
     };
 
-    enum Application {
-        Online,
-        Creator};
-
  public:
     HtmlGenerator();
     ~HtmlGenerator();
@@ -301,11 +297,13 @@ class HtmlGenerator : public PageGenerator
     bool inTableHeader;
     int numTableRows;
     bool threeColumnEnumValueTable;
-    Application application;
     QString link;
     QStringList sectionNumber;
     QRegExp funcLeftParen;
     QString style;
+    QString headerScripts;
+    QString headerStyles;
+    QString endHeader;
     QString postHeader;
     QString postPostHeader;
     QString creatorPostHeader;
@@ -350,9 +348,6 @@ class HtmlGenerator : public PageGenerator
 #define HTMLGENERATOR_POSTPOSTHEADER    "postpostheader"
 #define HTMLGENERATOR_CREATORPOSTHEADER        "postheader"
 #define HTMLGENERATOR_CREATORPOSTPOSTHEADER    "postpostheader"
-#define HTMLGENERATOR_STYLE             "style"
-#define HTMLGENERATOR_STYLESHEETS       "stylesheets"
-#define HTMLGENERATOR_CUSTOMHEADELEMENTS "customheadelements"
 
 QT_END_NAMESPACE
 

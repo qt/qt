@@ -180,45 +180,52 @@ void Generator::initialize(const Config &config)
                 ++e;
             }
 
-            QStringList noExts;
-            QStringList scripts =
-                config.getStringList(CONFIG_SCRIPTS+Config::dot+(*g)->format());
-            e = scripts.begin();
-            while (e != scripts.end()) {
-                QString userFriendlyFilePath;
-                QString filePath = Config::findFile(config.lastLocation(),
-                                                    scriptFiles,
-                                                    scriptDirs,
-                                                    *e,
-                                                    noExts,
-                                                    userFriendlyFilePath);
-                if (!filePath.isEmpty())
-                    Config::copyFile(config.lastLocation(),
-                                     filePath,
-                                     userFriendlyFilePath,
-                                     (*g)->outputDir() +
-                                     "/scripts");
-                ++e;
-            }
+            // Documentation template handling
+            QString templateDir = config.getString(
+                (*g)->format() + Config::dot + CONFIG_TEMPLATEDIR);
 
-            QStringList styles =
-                config.getStringList(CONFIG_STYLES+Config::dot+(*g)->format());
-            e = styles.begin();
-            while (e != styles.end()) {
-                QString userFriendlyFilePath;
-                QString filePath = Config::findFile(config.lastLocation(),
-                                                    styleFiles,
-                                                    styleDirs,
-                                                    *e,
-                                                    noExts,
-                                                    userFriendlyFilePath);
-                if (!filePath.isEmpty())
-                    Config::copyFile(config.lastLocation(),
-                                     filePath,
-                                     userFriendlyFilePath,
-                                     (*g)->outputDir() +
-                                     "/style");
-                ++e;
+            if (!templateDir.isEmpty()) {
+                QStringList noExts;
+                QStringList searchDirs = QStringList() << templateDir;
+                QStringList scripts =
+                    config.getStringList((*g)->format()+Config::dot+CONFIG_SCRIPTS);
+                e = scripts.begin();
+                while (e != scripts.end()) {
+                    QString userFriendlyFilePath;
+                    QString filePath = Config::findFile(config.lastLocation(),
+                                                        scriptFiles,
+                                                        searchDirs,
+                                                        *e,
+                                                        noExts,
+                                                        userFriendlyFilePath);
+                    if (!filePath.isEmpty())
+                        Config::copyFile(config.lastLocation(),
+                                         filePath,
+                                         userFriendlyFilePath,
+                                         (*g)->outputDir() +
+                                         "/scripts");
+                    ++e;
+                }
+
+                QStringList styles =
+                    config.getStringList((*g)->format()+Config::dot+CONFIG_STYLESHEETS);
+                e = styles.begin();
+                while (e != styles.end()) {
+                    QString userFriendlyFilePath;
+                    QString filePath = Config::findFile(config.lastLocation(),
+                                                        styleFiles,
+                                                        searchDirs,
+                                                        *e,
+                                                        noExts,
+                                                        userFriendlyFilePath);
+                    if (!filePath.isEmpty())
+                        Config::copyFile(config.lastLocation(),
+                                         filePath,
+                                         userFriendlyFilePath,
+                                         (*g)->outputDir() +
+                                         "/style");
+                    ++e;
+                }
             }
         }
         ++g;
