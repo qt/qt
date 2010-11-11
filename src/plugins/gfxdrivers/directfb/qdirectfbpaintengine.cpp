@@ -68,7 +68,8 @@ public:
         Matrix_BlitsUnsupported = (Matrix_NegativeScale|Matrix_RectsUnsupported)
     };
 
-    inline static uint getTransformationType(const QTransform &transform) {
+    inline static uint getTransformationType(const QTransform &transform)
+    {
         int ret = transform.type();
         if (qMin(transform.m11(), transform.m22()) < 0) {
             ret |= QDirectFBPaintEnginePrivate::Matrix_NegativeScale;
@@ -1200,7 +1201,6 @@ void QDirectFBPaintEnginePrivate::drawTiledPixmap(const QRectF &dest, const QPix
     prepareForBlit(blitFlags);
     QDirectFBPaintEnginePrivate::unlock(dfbData);
     const QSize pixmapSize = dfbData->size();
-    IDirectFBSurface *sourceSurface = dfbData->directFBSurface();
     if (transform.isScaling() || pixmapTransform.isScaling()) {
         Q_ASSERT(supportsStretchBlit());
         Q_ASSERT(qMin(transform.m11(), transform.m22()) >= 0);
