@@ -69,8 +69,6 @@ public:
     void open();
     void closeDownstreamChannel();
     void closeUpstreamChannel();
-    bool waitForDownstreamReadyRead(int msecs);
-    bool waitForUpstreamBytesWritten(int msecs);
 
     void upstreamReadyRead();
     void downstreamReadyWrite();

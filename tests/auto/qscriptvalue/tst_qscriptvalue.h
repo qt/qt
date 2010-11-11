@@ -216,6 +216,7 @@ private slots:
     void getSetProperty();
     void arrayElementGetterSetter();
     void getSetData();
+    void setData_QTBUG15144();
     void getSetScriptClass();
     void call();
     void construct();
