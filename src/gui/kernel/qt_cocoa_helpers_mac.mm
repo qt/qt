@@ -79,6 +79,7 @@
 #include <qdesktopwidget.h>
 #include <qevent.h>
 #include <qpixmapcache.h>
+#include <qvarlengtharray.h>
 #include <private/qevent_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qt_mac_p.h>
@@ -577,6 +578,27 @@ Qt::KeyboardModifiers qt_cocoaModifiers2QtModifiers(ulong modifierFlags)
     if (modifierFlags & NSNumericPadKeyMask)
         qtMods |= Qt::KeypadModifier;
     return qtMods;
+}
+
+NSString *qt_mac_removePrivateUnicode(NSString* string)
+{
+    int len = [string length];
+    if (len) {
+        QVarLengthArray <unichar, 10> characters(len);
+        bool changed = false;
+        for (int i = 0; i<len; i++) {
+            characters[i] = [string characterAtIndex:i];
+            // check if they belong to key codes in private unicode range
+            // currently we need to handle only the NSDeleteFunctionKey
+            if (characters[i] == NSDeleteFunctionKey) {
+                characters[i] = NSDeleteCharacter;
+                changed = true;
+            }
+        }
+        if (changed)
+            return [NSString stringWithCharacters:characters.data() length:len];
+    }
+    return string;
 }
 
 Qt::KeyboardModifiers qt_cocoaDragOperation2QtModifiers(uint dragOperations)
