@@ -832,6 +832,7 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
         systemCerts.append(QSslCertificate::fromPath(it.next()));
     }
     systemCerts.append(QSslCertificate::fromPath(QLatin1String("/etc/pki/tls/certs/ca-bundle.crt"), QSsl::Pem)); // Fedora, Mandriva
+    systemCerts.append(QSslCertificate::fromPath(QLatin1String("/usr/local/share/certs/ca-root-nss.crt"), QSsl::Pem)); // FreeBSD's ca_root_nss
 
 #elif defined(Q_OS_SYMBIAN)
     QList<QByteArray> certs;
