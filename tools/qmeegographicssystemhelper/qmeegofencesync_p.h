@@ -39,30 +39,22 @@
 **
 ****************************************************************************/
 
-#include <QPixmap>
-#include <QImage>
+#include "qmeegofencesync.h"
 
-class QMeeGoRuntime
+#ifndef QMEEGOFENCESYNC_P_H
+#define QMEEGOFENCESYNC_P_H
+
+class QMeeGoFenceSyncPrivate
 {
 public:
-    static void initialize();
+    Q_DECLARE_PUBLIC(QMeeGoFenceSync);
+    QMeeGoFenceSyncPrivate();
 
-    static Qt::HANDLE imageToEGLSharedImage(const QImage &image);
-    static QPixmapData* pixmapDataFromEGLSharedImage(Qt::HANDLE handle, const QImage &softImage);
-    static QPixmapData* pixmapDataWithGLTexture(int w, int h);
-    static bool destroyEGLSharedImage(Qt::HANDLE handle);
-    static void updateEGLSharedImagePixmap(QPixmap *p);
-    static void setSurfaceFixedSize(int w, int h);
-    static void setSurfaceScaling(int x, int y, int w, int h);
-    static void setTranslucent(bool translucent);
-    static QPixmapData* pixmapDataWithNewLiveTexture(int w, int h, QImage::Format format);
-    static QPixmapData* pixmapDataFromLiveTextureHandle(Qt::HANDLE h);
-    static QImage* lockLiveTexture(QPixmap *pixmap, void *fenceSync);
-    static bool releaseLiveTexture(QPixmap *pixmap, QImage *image);
-    static Qt::HANDLE getLiveTextureHandle(QPixmap *pixmap);
-    static void* createFenceSync();
-    static void destroyFenceSync(void *fs);
+    virtual ~QMeeGoFenceSyncPrivate();
 
-private:
-    static bool initialized;
+    void* syncObject;
+
+    QMeeGoFenceSync *q_ptr;
 };
+
+#endif
