@@ -51,6 +51,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qdiriterator.h>
+#include <QtCore/qelapsedtimer.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qmutex.h>
@@ -574,7 +575,7 @@ void QSslSocketPrivate::resetDefaultCiphers()
 #if defined(Q_OS_SYMBIAN)
 
 CSymbianCertificateRetriever::CSymbianCertificateRetriever() : CActive(CActive::EPriorityStandard),
-        iSequenceError(KErrNone)
+    iCertificatePtr(0,0,0), iSequenceError(KErrNone)
 {
 }
 
@@ -618,6 +619,11 @@ void CSymbianCertificateRetriever::doThreadEntryL()
     iCertStore = CUnifiedCertStore::NewLC(qt_s60GetRFs(), EFalse);
     iCertFilter = CCertAttributeFilter::NewLC();
 
+    // only interested in CA certs
+    iCertFilter->SetOwnerType(ECACertificate);
+    // only interested in X.509 format (we don't support WAP formats)
+    iCertFilter->SetFormat(EX509Certificate);
+
     // Kick off the sequence by initializing the cert store
     iState = Initializing;
     iCertStore->Initialize(iStatus);
@@ -637,6 +643,7 @@ void CSymbianCertificateRetriever::doThreadEntryL()
 
 TInt CSymbianCertificateRetriever::ThreadEntryPoint(TAny* aParams)
 {
+    User::SetCritical(User::EProcessCritical);
     CTrapCleanup* cleanupStack = CTrapCleanup::New();
 
     CSymbianCertificateRetriever* self = (CSymbianCertificateRetriever*) aParams;
@@ -658,7 +665,17 @@ void CSymbianCertificateRetriever::ConstructL()
 
 void CSymbianCertificateRetriever::DoCancel()
 {
-    // We never cancel the sequence
+    switch(iState) {
+    case Initializing:
+        iCertStore->CancelInitialize();
+        break;
+    case Listing:
+        iCertStore->CancelList();
+        break;
+    case RetrievingCertificates:
+        iCertStore->CancelGetCert();
+        break;
+    }
 }
 
 TInt CSymbianCertificateRetriever::RunError(TInt aError)
@@ -671,37 +688,51 @@ TInt CSymbianCertificateRetriever::RunError(TInt aError)
 
 void CSymbianCertificateRetriever::GetCertificateL()
 {
-    CCTCertInfo* certInfo = iCertInfos[iCurrentCertIndex];
-    iCertificateData.resize(certInfo->Size());
-    TPtr8 des((TUint8*)iCertificateData.data(), 0, iCertificateData.size());
-    iCertStore->Retrieve(*certInfo, des, iStatus);
-    iState = RetrievingCertificates;
-    SetActive();
+    if (iCurrentCertIndex < iCertInfos.Count()) {
+        CCTCertInfo* certInfo = iCertInfos[iCurrentCertIndex++];
+        iCertificateData = QByteArray();
+        QT_TRYCATCH_LEAVING(iCertificateData.resize(certInfo->Size()));
+        iCertificatePtr.Set((TUint8*)iCertificateData.data(), 0, iCertificateData.size());
+#ifdef QSSLSOCKET_DEBUG
+        qDebug() << "getting " << qt_TDesC2QString(certInfo->Label()) << " size=" << certInfo->Size();
+        qDebug() << "format=" << certInfo->CertificateFormat();
+        qDebug() << "ownertype=" << certInfo->CertificateOwnerType();
+        qDebug() << "type=" << hex << certInfo->Type().iUid;
+#endif
+        iCertStore->Retrieve(*certInfo, iCertificatePtr, iStatus);
+        iState = RetrievingCertificates;
+        SetActive();
+    } else {
+        //reached end of list
+        CActiveScheduler::Stop();
+    }
 }
 
 void CSymbianCertificateRetriever::RunL()
 {
+#ifdef QSSLSOCKET_DEBUG
+    qDebug() << "CSymbianCertificateRetriever::RunL status " << iStatus.Int() << " count " << iCertInfos.Count() << " index " << iCurrentCertIndex;
+#endif
     switch (iState) {
     case Initializing:
+        User::LeaveIfError(iStatus.Int()); // initialise fail means pointless to continue
         iState = Listing;
         iCertStore->List(iCertInfos, *iCertFilter, iStatus);
         SetActive();
         break;
 
     case Listing:
+        User::LeaveIfError(iStatus.Int()); // listing fail means pointless to continue
         iCurrentCertIndex = 0;
         GetCertificateL();
         break;
 
     case RetrievingCertificates:
-        iCertificates->append(iCertificateData);
-        iCertificateData = QByteArray();
-        iCurrentCertIndex++;
-        if (iCurrentCertIndex < iCertInfos.Count())
-            GetCertificateL();
+        if (iStatus.Int() == KErrNone)
+            iCertificates->append(iCertificateData);
         else
-            // Stop the scheduler to return to the thread entry function
-            CActiveScheduler::Stop();
+            qWarning() << "CSymbianCertificateRetriever: failed to retreive a certificate, error " << iStatus.Int();
+        GetCertificateL();
         break;
     }
 }
@@ -710,6 +741,10 @@ void CSymbianCertificateRetriever::RunL()
 QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
 {
     ensureInitialized();
+#ifdef QSSLSOCKET_DEBUG
+    QElapsedTimer timer;
+    timer.start();
+#endif
     QList<QSslCertificate> systemCerts;
 #if defined(Q_OS_MAC)
     CFArrayRef cfCerts;
@@ -808,9 +843,17 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
     retriever->GetCertificates(certs);
     foreach (const QByteArray &encodedCert, certs) {
         QSslCertificate cert(encodedCert, QSsl::Der);
-        if (!cert.isNull())
+        if (!cert.isNull()) {
+#ifdef QSSLSOCKET_DEBUG
+            qDebug() << "imported certificate: " << cert.issuerInfo(QSslCertificate::CommonName);
+#endif
             systemCerts.append(cert);
+        }
     }
+#endif
+#ifdef QSSLSOCKET_DEBUG
+    qDebug() << "systemCaCertificates retrieval time " << timer.elapsed() << "ms";
+    qDebug() << "imported " << systemCerts.count() << " certificates";
 #endif
 
     return systemCerts;
