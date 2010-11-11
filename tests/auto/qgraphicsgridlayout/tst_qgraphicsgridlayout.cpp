@@ -2556,8 +2556,9 @@ void tst_QGraphicsGridLayout::heightForWidth()
     w11->setSizePolicy(sp);
     layout->addItem(w11, 1, 1);
 
-    QSizeF prefSize = layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(-1, -1));
-    QCOMPARE(prefSize, QSizeF(10+200, 10+100));
+    QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(-1, -1)), QSizeF(2, 2));
+    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(-1, -1)), QSizeF(210, 110));
+    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(-1, -1)), QSizeF(30100, 30100));
 
     QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(2, -1)), QSizeF(2, 20001));
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(2, -1)), QSizeF(2, 20010));
@@ -2610,21 +2611,25 @@ void tst_QGraphicsGridLayout::heightForWidthWithSpanning()
     w->setSizePolicy(sp);
     layout->addItem(w, 0,0,2,2);
 
-    QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(-1, -1)), QSizeF(1, 100));
+    QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(-1, -1)), QSizeF(1, 1));
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(-1, -1)), QSizeF(200, 100));
-    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(-1, -1)), QSizeF(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX));
+    QEXPECT_FAIL("", "Due to an old bug this wrongly returns QWIDGETSIZE_MAX", Continue);
+    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(-1, -1)), QSizeF(30000, 30000));
 
     QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(200, -1)), QSizeF(200, 100));
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(200, -1)), QSizeF(200, 100));
-    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(200, -1)), QSizeF(200, QWIDGETSIZE_MAX));
+    QEXPECT_FAIL("", "Due to an old bug this wrongly returns QWIDGETSIZE_MAX", Continue);
+    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(200, -1)), QSizeF(200, 100));
 
     QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(2, -1)), QSizeF(2, 10000));
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(2, -1)), QSizeF(2, 10000));
-    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(2, -1)), QSizeF(2, QWIDGETSIZE_MAX));
+    QEXPECT_FAIL("", "Due to an old bug this wrongly returns QWIDGETSIZE_MAX", Continue);
+    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(2, -1)), QSizeF(2, 10000));
 
     QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(200, -1)), QSizeF(200, 100));
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(200, -1)), QSizeF(200, 100));
-    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(200, -1)), QSizeF(200, QWIDGETSIZE_MAX));
+    QEXPECT_FAIL("", "Due to an old bug this wrongly returns QWIDGETSIZE_MAX", Continue);
+    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(200, -1)), QSizeF(200, 10000));
 }
 
 QTEST_MAIN(tst_QGraphicsGridLayout)
