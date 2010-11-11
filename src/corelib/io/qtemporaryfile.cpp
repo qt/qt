@@ -65,9 +65,6 @@
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 # include <process.h>
-# if defined(_MSC_VER) && _MSC_VER >= 1400
-#  include <share.h>
-# endif
 #endif
 
 #if defined(Q_OS_WINCE)
@@ -108,7 +105,7 @@ QT_BEGIN_NAMESPACE
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-static int _gettemp(char *path, int *doopen, int slen)
+static int _gettemp(char *path, int slen)
 {
     char *start, *trv, *suffp;
     QT_STATBUF sbuf;
@@ -126,7 +123,7 @@ static int _gettemp(char *path, int *doopen, int slen)
     --trv;
     if (trv < path) {
         errno = EINVAL;
-        return 0;
+        return -1;
     }
 #if defined(Q_OS_WIN) && defined(_MSC_VER) && _MSC_VER >= 1400
     pid = _getpid();
@@ -157,82 +154,38 @@ static int _gettemp(char *path, int *doopen, int slen)
     }
     start = trv + 1;
 
+#ifndef Q_OS_WIN
     /*
      * check the target directory; if you have six X's and it
      * doesn't exist this runs for a *very* long time.
      */
-    if (doopen) {
-        for (;; --trv) {
-            if (trv <= path)
-                break;
-            if (*trv == '/') {
-                *trv = '\0';
-#if defined (Q_OS_WIN) && !defined(Q_OS_WINCE)
-                if (trv - path == 2 && path[1] == ':') {
-                    // Special case for Windows drives
-                    // (e.g., "C:" => "C:\").
-                    // ### Better to use a Windows
-                    // call for this.
-                    char drive[] = "c:\\";
-                    drive[0] = path[0];
-                    rval = QT_STAT(drive, &sbuf);
-                } else
-#endif
-                    rval = QT_STAT(path, &sbuf);
-                *trv = '/';
-                if (rval != 0)
-                    return 0;
-                if (!S_ISDIR(sbuf.st_mode)) {
-                    errno = ENOTDIR;
-                    return 0;
-                }
-                break;
+    for (;; --trv) {
+        if (trv <= path)
+            break;
+        if (*trv == '/') {
+            *trv = '\0';
+            rval = QT_STAT(path, &sbuf);
+            *trv = '/';
+            if (rval != 0)
+                return -1;
+            if (!S_ISDIR(sbuf.st_mode)) {
+                errno = ENOTDIR;
+                return -1;
             }
+            break;
         }
     }
+#endif
 
     for (;;) {
-        if (doopen) {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && defined(_MSC_VER) && _MSC_VER >= 1400
-            if (_sopen_s(doopen, path, QT_OPEN_CREAT|O_EXCL|QT_OPEN_RDWR|QT_OPEN_BINARY
-#  ifdef QT_LARGEFILE_SUPPORT
-                                       |QT_OPEN_LARGEFILE
-#  endif
-                         , _SH_DENYNO, _S_IREAD | _S_IWRITE)== 0)
-#else // WIN && !CE
-#  if defined(Q_OS_WINCE)
-            QString targetPath;
-            if (QDir::isAbsolutePath(QString::fromLatin1(path)))
-                targetPath = QLatin1String(path);
-            else
-                targetPath = QDir::currentPath().append(QLatin1Char('/')) + QLatin1String(path);
-
-            if ((*doopen =
-                QT_OPEN(targetPath.toLocal8Bit(), O_CREAT|O_EXCL|O_RDWR
-#  else // CE
-            // this is Unix or older MSVC
-            if ((*doopen =
-                QT_OPEN(path, QT_OPEN_CREAT|O_EXCL|QT_OPEN_RDWR
-#  endif
-#  ifdef QT_LARGEFILE_SUPPORT
-                           |QT_OPEN_LARGEFILE
-#  endif
-#  if defined(Q_OS_WINCE)
-                           |_O_BINARY
-#  elif defined(Q_OS_WIN)
-                           |O_BINARY
-#  endif
-                     , 0600)) >= 0)
-#endif // WIN && !CE
-            {
-                return 1;
-            }
-            if (errno != EEXIST)
-                return 0;
-        }
 #ifndef Q_OS_WIN
-        else if (QT_LSTAT(path, &sbuf))
-            return (errno == ENOENT) ? 1 : 0;
+        {
+            int fd = QT_OPEN(path, QT_OPEN_CREAT | O_EXCL | QT_OPEN_RDWR | QT_OPEN_LARGEFILE, 0600);
+            if (fd != -1)
+                return fd;
+            if (errno != EEXIST)
+                return -1;
+        }
 #else
         if (!QFileInfo(QLatin1String(path)).exists())
             return 1;
@@ -241,10 +194,10 @@ static int _gettemp(char *path, int *doopen, int slen)
         /* tricky little algorwwithm for backward compatibility */
         for (trv = start;;) {
             if (!*trv)
-                return 0;
+                return -1;
             if (*trv == 'Z') {
                 if (trv == suffp)
-                    return 0;
+                    return -1;
                 *trv++ = 'a';
             } else {
                 if (isdigit(*trv))
@@ -253,7 +206,7 @@ static int _gettemp(char *path, int *doopen, int slen)
                     *trv = 'A';
                 else {
                     if (trv == suffp)
-                        return 0;
+                        return -1;
                     ++*trv;
                 }
                 break;
@@ -262,14 +215,6 @@ static int _gettemp(char *path, int *doopen, int slen)
     }
     /*NOTREACHED*/
 }
-
-#ifndef Q_WS_WIN
-static int qt_mkstemps(char *path, int slen)
-{
-    int fd = 0;
-    return (_gettemp(path, &fd, slen) ? fd : -1);
-}
-#endif
 
 //************* QTemporaryFileEngine
 class QTemporaryFileEngine : public QFSFileEngine
@@ -354,8 +299,8 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     int suffixLength = qfilename.length() - (qfilename.lastIndexOf(QLatin1String("XXXXXX"), -1, Qt::CaseSensitive) + 6);
     char *filename = qstrdup(qfilename.toLocal8Bit());
 
-#ifndef Q_WS_WIN
-    int fd = qt_mkstemps(filename, suffixLength);
+#ifndef Q_OS_WIN
+    int fd = _gettemp(filename, suffixLength);
     if (fd != -1) {
         // First open the fd as an external file descriptor to
         // initialize the engine properly.
@@ -377,7 +322,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     setError(errno == EMFILE ? QFile::ResourceError : QFile::OpenError, qt_error_string(errno));
     return false;
 #else
-    if (!_gettemp(filename, 0, suffixLength)) {
+    if (_gettemp(filename, suffixLength) == -1) {
         delete [] filename;
         return false;
     }
