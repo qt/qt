@@ -39,33 +39,41 @@
 **
 ****************************************************************************/
 
-#ifndef MLIVEPIXMAPDATA_H
-#define MLIVEPIXMAPDATA_H
+#include "qmeegofencesync.h"
+#include "qmeegofencesync_p.h"
+#include "qmeegoruntime.h"
 
-#include <private/qpixmapdata_gl_p.h>
-#include "qmeegoextensions.h"
+/* QMeeGoFenceSyncPrivate */
 
-class QMeeGoLivePixmapData : public QGLPixmapData
+QMeeGoFenceSyncPrivate::QMeeGoFenceSyncPrivate() : syncObject(NULL)
 {
-public:
-    QMeeGoLivePixmapData(int w, int h, QImage::Format format);
-    QMeeGoLivePixmapData(Qt::HANDLE h);
-    ~QMeeGoLivePixmapData();
+}
 
-    QPixmapData *createCompatiblePixmapData() const;
-    bool scroll(int dx, int dy, const QRect &rect);
+QMeeGoFenceSyncPrivate::~QMeeGoFenceSyncPrivate()
+{
+    if (syncObject) {
+        QMeeGoRuntime::destroyFenceSync(syncObject);
+        syncObject = NULL;
+    }
+}
 
-    void initializeThroughEGLImage();
+/* QMeeGoFenceSync */
 
-    QImage* lock(EGLSyncKHR fenceSync);
-    bool release(QImage *img);
-    Qt::HANDLE handle();
+QMeeGoFenceSync::QMeeGoFenceSync(QWidget *parent) : QObject(parent), d_ptr(new QMeeGoFenceSyncPrivate())
+{
+    Q_D(QMeeGoFenceSync);
+    d->q_ptr = this;
+}
 
-    EGLSurface getSurfaceForBackingPixmap();
-    void destroySurfaceForPixmapData(QPixmapData* pmd);
+QMeeGoFenceSync::~QMeeGoFenceSync()
+{
+}
 
-    QPixmap *backingX11Pixmap;
-    QImage lockedImage;
-};
+void QMeeGoFenceSync::setSyncPoint()
+{
+    Q_D(QMeeGoFenceSync);
+    if (d->syncObject)
+        QMeeGoRuntime::destroyFenceSync(d->syncObject);
 
-#endif
+    d->syncObject = QMeeGoRuntime::createFenceSync();
+}
