@@ -24,10 +24,13 @@
 #include "qscriptisolate_p.h"
 #include "qscriptengine.h"
 #include "qscriptengine_p.h"
+#include "qscriptengine_impl_p.h"
 #include "qscriptstring.h"
 #include "qscriptvalue.h"
 #include "qscriptvalue_p.h"
+#include "qscriptvalue_impl_p.h"
 #include "qscriptclass_p.h"
+#include "qscriptclass_impl_p.h"
 #include "qscriptdeclarativeclassobject_p.h"
 #include <QtCore/qregexp.h>
 #include <QtCore/qstring.h>

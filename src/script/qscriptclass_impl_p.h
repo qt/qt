@@ -21,9 +21,6 @@
 **
 ****************************************************************************/
 
-#ifndef QSCRIPTABLE_P_H
-#define QSCRIPTABLE_P_H
-
 //
 //  W A R N I N G
 //  -------------
@@ -35,34 +32,54 @@
 // We mean it.
 //
 
-#include <QtCore/qobjectdefs.h>
-#include "qscriptengine_p.h"
-#include "qscriptcontext_p.h"
-#include "qscriptable.h"
+#ifndef QSCRIPTCLASSPRIVATE_IMPL_P_H
+#define QSCRIPTCLASSPRIVATE_IMPL_P_H
 
-QT_BEGIN_NAMESPACE
+#include "qscriptclass_p.h"
 
-class QScriptable;
-class QScriptablePrivate
+inline QScriptClassPrivate* QScriptClassPrivate::get(const QScriptClass* q)
 {
-    Q_DECLARE_PUBLIC(QScriptable)
-public:
-    QScriptablePrivate(const QScriptable* q) : q_ptr(const_cast<QScriptable*>(q)), m_engine(0) {}
-    static inline QScriptablePrivate *get(QScriptable *q) { return q->d_func(); }
+    Q_ASSERT(q);
+    Q_ASSERT(q->d_ptr);
+    return q->d_ptr.data();
+}
 
+inline QScriptClassPrivate* QScriptClassPrivate::safeGet(const QScriptClass* q)
+{
+    if (q && q->d_ptr)
+        return q->d_ptr.data();
+    return 0;
+}
 
-    inline QScriptEnginePrivate* engine() const;
-    inline QScriptContextPrivate* context() const;
-    inline QScriptPassPointer<QScriptValuePrivate> thisObject() const;
-    inline int argumentCount() const;
-    inline QScriptPassPointer<QScriptValuePrivate> argument(int index) const;
+inline QScriptClass* QScriptClassPrivate::get(const QScriptClassPrivate* d)
+{
+    Q_ASSERT(d);
+    return d->q_ptr;
+}
 
-    inline QScriptEnginePrivate *swapEngine(QScriptEnginePrivate *);
-private:
-    QScriptable *q_ptr;
-    QScriptSharedDataPointer<QScriptEnginePrivate> m_engine;
-};
+inline QScriptClass* QScriptClassPrivate::safeGet(const QScriptClassPrivate* d)
+{
+    if (d)
+        return d->q_ptr;
+    return 0;
+}
 
-QT_END_NAMESPACE
+inline QScriptClassPrivate::QScriptClassPrivate(QScriptEnginePrivate* engine, QScriptClass* q)
+    : q_ptr(q)
+    , m_engine(engine)
+{
+    Q_ASSERT(q_ptr);
+    Q_ASSERT(engine);
+}
 
-#endif
+inline QScriptEnginePrivate* QScriptClassPrivate::engine() const
+{
+    return m_engine;
+}
+
+inline QScriptClass* QScriptClassPrivate::userCallback() const
+{
+    return q_ptr;
+}
+
+#endif // QSCRIPTCLASSPRIVATE_IMPL_P_H

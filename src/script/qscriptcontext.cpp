@@ -21,10 +21,14 @@
 **
 ****************************************************************************/
 
+#include "qscriptisolate_p.h"
 #include "qscriptcontext.h"
 #include "qscriptcontext_p.h"
+#include "qscriptcontext_impl_p.h"
 #include "qscriptengine.h"
-#include "qscriptisolate_p.h"
+#include "qscriptengine_impl_p.h"
+#include "qscriptvalue_p.h"
+#include "qscriptvalue_impl_p.h"
 
 #include <QtCore/qstringlist.h>
 

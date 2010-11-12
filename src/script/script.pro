@@ -33,12 +33,15 @@ SOURCES += \
 HEADERS += \
     $$PWD/qscriptclass.h \
     $$PWD/qscriptclass_p.h \
+    $$PWD/qscriptclass_impl_p.h \
     $$PWD/qscriptclasspropertyiterator.h \
     $$PWD/qscriptcontext.h \
     $$PWD/qscriptcontext_p.h \
+    $$PWD/qscriptcontext_impl_p.h \
     $$PWD/qscriptcontextinfo.h \
     $$PWD/qscriptengine.h \
     $$PWD/qscriptengine_p.h \
+    $$PWD/qscriptengine_impl_p.h \
     $$PWD/qscriptengineagent.h \
     $$PWD/qscriptengineagent_p.h \
     $$PWD/qscriptextensioninterface.h \
@@ -50,9 +53,11 @@ HEADERS += \
     $$PWD/qscriptsyntaxcheckresult_p.h \
     $$PWD/qscriptvalue.h \
     $$PWD/qscriptvalue_p.h \
+    $$PWD/qscriptvalue_impl_p.h \
     $$PWD/qscriptvalueiterator.h \
     $$PWD/qscriptable.h \
     $$PWD/qscriptable_p.h \
+    $$PWD/qscriptable_impl_p.h \
     $$PWD/qscriptisolate_p.h \
     $$PWD/qscriptshareddata_p.h \
     $$PWD/qscriptv8objectwrapper_p.h \

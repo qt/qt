@@ -24,6 +24,8 @@
 #include "qscriptprogram.h"
 #include "qscriptprogram_p.h"
 #include "qscriptisolate_p.h"
+#include "qscriptengine_p.h"
+#include "qscriptengine_impl_p.h"
 
 QT_BEGIN_NAMESPACE
 

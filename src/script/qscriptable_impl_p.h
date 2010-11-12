@@ -21,8 +21,8 @@
 **
 ****************************************************************************/
 
-#ifndef QSCRIPTABLE_P_H
-#define QSCRIPTABLE_P_H
+#ifndef QSCRIPTABLE_IMPL_P_H
+#define QSCRIPTABLE_IMPL_P_H
 
 //
 //  W A R N I N G
@@ -35,33 +35,56 @@
 // We mean it.
 //
 
-#include <QtCore/qobjectdefs.h>
+#include "qscriptable_p.h"
 #include "qscriptengine_p.h"
-#include "qscriptcontext_p.h"
-#include "qscriptable.h"
+#include "qscriptvalue_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QScriptable;
-class QScriptablePrivate
+inline QScriptEnginePrivate* QScriptablePrivate::engine() const
 {
-    Q_DECLARE_PUBLIC(QScriptable)
-public:
-    QScriptablePrivate(const QScriptable* q) : q_ptr(const_cast<QScriptable*>(q)), m_engine(0) {}
-    static inline QScriptablePrivate *get(QScriptable *q) { return q->d_func(); }
+    return m_engine.data();
+}
 
+inline QScriptContextPrivate* QScriptablePrivate::context() const
+{
+    if (!m_engine)
+        return 0;
 
-    inline QScriptEnginePrivate* engine() const;
-    inline QScriptContextPrivate* context() const;
-    inline QScriptPassPointer<QScriptValuePrivate> thisObject() const;
-    inline int argumentCount() const;
-    inline QScriptPassPointer<QScriptValuePrivate> argument(int index) const;
+    return m_engine->currentContext();
+}
 
-    inline QScriptEnginePrivate *swapEngine(QScriptEnginePrivate *);
-private:
-    QScriptable *q_ptr;
-    QScriptSharedDataPointer<QScriptEnginePrivate> m_engine;
-};
+inline QScriptPassPointer<QScriptValuePrivate> QScriptablePrivate::thisObject() const
+{
+    QScriptContextPrivate *c = context();
+    if (!c)
+        return new QScriptValuePrivate();
+    return c->thisObject();
+}
+
+inline int QScriptablePrivate::argumentCount() const
+{
+    QScriptContextPrivate *c = context();
+    if (!c)
+        return -1;
+    return c->argumentCount();
+}
+
+inline QScriptPassPointer<QScriptValuePrivate> QScriptablePrivate::argument(int index) const
+{
+    QScriptContextPrivate *c = context();
+    if (!c)
+        return new QScriptValuePrivate();
+    return c->argument(index);
+}
+
+QScriptEnginePrivate *QScriptablePrivate::swapEngine(QScriptEnginePrivate* newEngine)
+{
+    QScriptEnginePrivate *oldEngine = m_engine.data();
+    m_engine = newEngine;
+    return oldEngine;
+}
+
 
 QT_END_NAMESPACE
 

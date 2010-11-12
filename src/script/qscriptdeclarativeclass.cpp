@@ -27,7 +27,9 @@
 #include <QtScript/qscriptengine.h>
 #include <QtScript/qscriptengineagent.h>
 #include <private/qscriptengine_p.h>
+#include "qscriptengine_impl_p.h"
 #include <private/qscriptvalue_p.h>
+#include "qscriptvalue_impl_p.h"
 #include <private/qscriptqobject_p.h>
 #include <QtCore/qstringlist.h>
 #include "qscriptdeclarativeclassobject_p.h"
