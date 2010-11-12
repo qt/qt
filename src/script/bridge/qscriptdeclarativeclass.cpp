@@ -468,6 +468,14 @@ QString QScriptDeclarativeClass::toString(const Identifier &identifier)
     return QString((QChar *)r->data(), r->size());
 }
 
+bool QScriptDeclarativeClass::startsWithUpper(const Identifier &identifier)
+{
+    JSC::UString::Rep *r = (JSC::UString::Rep *)identifier;
+    if (r->size() < 1)
+        return false;
+    return QChar::category(r->data()[0]) == QChar::Letter_Uppercase;
+}
+
 quint32 QScriptDeclarativeClass::toArrayIndex(const Identifier &identifier, bool *ok)
 {
     JSC::UString::Rep *r = (JSC::UString::Rep *)identifier;
