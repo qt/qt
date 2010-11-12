@@ -340,7 +340,7 @@ QStringList QInotifyFileSystemWatcherEngine::removePaths(const QStringList &path
 
 void QInotifyFileSystemWatcherEngine::stop()
 {
-    QMetaObject::invokeMethod(this, "quit");
+    quit();
 }
 
 void QInotifyFileSystemWatcherEngine::readFromInotify()
