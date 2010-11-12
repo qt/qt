@@ -25,6 +25,7 @@
 #define QSCRIPTENGINE_IMPL_P_H
 
 #include "qscriptengine_p.h"
+#include "qscriptvalue_impl_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -131,6 +132,8 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(QS
 //    v8::TryCatch tryCatch;
 //    v8::Handle<v8::Script> script = program->compiled(this);
 //    return evaluate(script, tryCatch);
+    if (program->isNull())
+        return new QScriptValuePrivate();
     return evaluate(program->m_program, program->m_fileName, program->m_line);
 }
 
