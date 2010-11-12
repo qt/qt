@@ -637,7 +637,7 @@ QRectF QGridLayoutItem::geometryWithin(qreal x, qreal y, qreal width, qreal heig
             if (dynamicConstraintOrientation() == Qt::Vertical) {
                if (size.width() > cellWidth)
                    size = effectiveMaxSize(QSizeF(cellWidth, -1));
-            } else if(size.height() > cellHeight) {
+            } else if (size.height() > cellHeight) {
                 size = effectiveMaxSize(QSizeF(-1, cellHeight));
             }
         }
@@ -1113,7 +1113,7 @@ QSizeF QGridLayoutEngine::sizeHint(const QLayoutStyleInfo &styleInfo, Qt::SizeHi
         if (constraintOrientation() == Qt::Vertical) {
             //We have items whose height depends on their width
             if (constraint.width() >= 0) {
-                if(q_cachedDataForStyleInfo != styleInfo)
+                if (q_cachedDataForStyleInfo != styleInfo)
                     ensureColumnAndRowData(&q_columnData, &sizehint_totalBoxes[Hor], styleInfo, NULL, NULL, Qt::Horizontal);
                 else
                     sizehint_totalBoxes[Hor] = q_totalBoxes[Hor];
@@ -1152,7 +1152,7 @@ QSizeF QGridLayoutEngine::sizeHint(const QLayoutStyleInfo &styleInfo, Qt::SizeHi
 
     if (!sizeHintCalculated) {
         //No items with height for width, so it doesn't matter which order we do these in
-        if(q_cachedDataForStyleInfo != styleInfo) {
+        if (q_cachedDataForStyleInfo != styleInfo) {
             ensureColumnAndRowData(&q_columnData, &sizehint_totalBoxes[Hor], styleInfo, NULL, NULL, Qt::Horizontal);
             ensureColumnAndRowData(&q_rowData, &sizehint_totalBoxes[Ver], styleInfo, NULL, NULL, Qt::Vertical);
         } else {
@@ -1680,7 +1680,7 @@ void QGridLayoutEngine::ensureGeometries(const QLayoutStyleInfo &styleInfo,
     q_heights.resize(rowCount());
     q_descents.resize(rowCount());
 
-    if(constraintOrientation() != Qt::Horizontal) {
+    if (constraintOrientation() != Qt::Horizontal) {
         //We might have items whose width depends on their height
         ensureColumnAndRowData(&q_columnData, &q_totalBoxes[Hor], styleInfo, NULL, NULL, Qt::Horizontal);
         //Calculate column widths and positions, and put results in q_xx.data() and q_widths.data() so that we can use this information as
