@@ -2429,14 +2429,8 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     ShadowMkspecs()
     {
         rm -rf "$outpath/mkspecs/$1"
-        if [ "$UNAME_SYSTEM" = "Linux" ]; then
-            # This works with GNU coreutils, and is needed for ScratchBox
-            cp -rs "$relpath/mkspecs/$1" "$outpath/mkspecs/$1"
-        else
-            # A simple "cp -rs" doesn't work on Mac. :(
-            find "$relpath/mkspecs/$1" -type d | sed "s,^$relpath,$outpath," | xargs mkdir -p
-            find "$relpath/mkspecs/$1" -type f | sed "s,^$relpath/,," | xargs -n 1 -I % ln -s "$relpath/%" "$outpath/%"
-        fi
+        find "$relpath/mkspecs/$1" -type d | sed "s,^$relpath,$outpath," | xargs mkdir -p
+        find "$relpath/mkspecs/$1" -type f | sed "s,^$relpath/,," | while read f; do ln -s "$relpath/$f" "$outpath/$f"; done
     }
 
     # Special case for mkspecs/features directory.
@@ -3320,12 +3314,9 @@ if [ -z "$QT_INSTALL_PREFIX" ]; then
         if [ "$PLATFORM" != "$XPLATFORM" ]; then
             QT_INSTALL_PREFIX="${QT_INSTALL_PREFIX}-${CFG_ARCH}"
         fi
-    elif [ -d "$EPOCROOT" ]; then
-        case "$XPLATFORM" in *symbian*)
-            QT_INSTALL_PREFIX="$EPOCROOT/epoc32/"
-            QT_INSTALL_LIBS="$EPOCROOT/epoc32/release/armv5/lib/"
-            ;;
-        esac
+    elif [ -d "$EPOCROOT" ] && echo $XPLATFORM | grep symbian > /dev/null; then
+        QT_INSTALL_PREFIX="$EPOCROOT/epoc32/"
+        QT_INSTALL_LIBS="$EPOCROOT/epoc32/release/armv5/lib/"
     else
         QT_INSTALL_PREFIX="/usr/local/Trolltech/Qt-${QT_VERSION}" # the default install prefix is /usr/local/Trolltech/Qt-$QT_VERSION
     fi

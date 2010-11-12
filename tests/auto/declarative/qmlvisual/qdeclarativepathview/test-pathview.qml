@@ -33,7 +33,7 @@ Rectangle {
 
     PathView {
         id: photoPathView; model: rssModel; delegate: photoDelegate
-        y: 100; width: 800; height: 330; pathItemCount: 10; z: 1
+        y: 100; width: 800; height: 330; z: 1
         path: Path {
             startX: -50; startY: 40;
             

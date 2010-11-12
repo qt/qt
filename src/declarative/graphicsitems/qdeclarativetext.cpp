@@ -219,8 +219,10 @@ void QDeclarativeTextPrivate::updateSize()
 
     QFontMetrics fm(font);
     if (text.isEmpty()) {
+        q->setImplicitWidth(0);
         q->setImplicitHeight(fm.height());
         emit q->paintedSizeChanged();
+        q->update();
         return;
     }
 
@@ -283,11 +285,10 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
 {
     // ### text layout handling should be profiled and optimized as needed
     // what about QStackTextEngine engine(tmp, d->font.font()); QTextLayout textLayout(&engine);
-
     Q_Q(QDeclarativeText);
     layout.setCacheEnabled(true);
 
-    int height = 0;
+    qreal height = 0;
     qreal widthUsed = 0;
     qreal lineWidth = 0;
 
@@ -300,12 +301,12 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
     layout.setTextOption(textOption);
 
     layout.beginLayout();
-    while (1) {
+    forever {
         QTextLine line = layout.createLine();
         if (!line.isValid())
             break;
 
-        if ((wrapMode != QDeclarativeText::NoWrap || elideMode != QDeclarativeText::ElideNone) && q->widthValid()) 
+        if (lineWidth)
             line.setLineWidth(lineWidth);
     }
     layout.endLayout();
@@ -315,27 +316,27 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
         widthUsed = qMax(widthUsed, line.naturalTextWidth());
     }
 
-    qreal layoutWidth = q->widthValid()?q->width():widthUsed;
+    qreal layoutWidth = q->widthValid() ? q->width() : widthUsed;
 
-    int x = 0;
+    qreal x = 0;
     for (int i = 0; i < layout.lineCount(); ++i) {
         QTextLine line = layout.lineAt(i);
         line.setPosition(QPointF(0, height));
-        height += int(line.height());
+        height += line.height();
 
         if (!cacheAllTextAsImage) {
             if (hAlign == QDeclarativeText::AlignLeft) {
                 x = 0;
             } else if (hAlign == QDeclarativeText::AlignRight) {
-                x = layoutWidth - (int)line.naturalTextWidth();
+                x = layoutWidth - line.naturalTextWidth();
             } else if (hAlign == QDeclarativeText::AlignHCenter) {
-                x = (layoutWidth - (int)line.naturalTextWidth()) / 2;
+                x = (layoutWidth - line.naturalTextWidth()) / 2;
             }
-            line.setPosition(QPoint(x, (int)line.y()));
+            line.setPosition(QPointF(x, line.y()));
         }
     }
 
-    return QSize(qCeil(widthUsed), height);
+    return layout.boundingRect().toAlignedRect().size();
 }
 
 /*!
@@ -347,17 +348,17 @@ QPixmap QDeclarativeTextPrivate::textLayoutImage(bool drawStyle)
     //do layout
     QSize size = layedOutTextSize;
 
-    int x = 0;
+    qreal x = 0;
     for (int i = 0; i < layout.lineCount(); ++i) {
         QTextLine line = layout.lineAt(i);
         if (hAlign == QDeclarativeText::AlignLeft) {
             x = 0;
         } else if (hAlign == QDeclarativeText::AlignRight) {
-            x = size.width() - (int)line.naturalTextWidth();
+            x = size.width() - line.naturalTextWidth();
         } else if (hAlign == QDeclarativeText::AlignHCenter) {
-            x = (size.width() - (int)line.naturalTextWidth()) / 2;
+            x = (size.width() - line.naturalTextWidth()) / 2;
         }
-        line.setPosition(QPoint(x, (int)line.y()));
+        line.setPosition(QPointF(x, line.y()));
     }
 
     //paint text
@@ -901,7 +902,7 @@ void QDeclarativeText::setStyleColor(const QColor &color)
     and \c Text.AlignVCenter.
 
     Note that for a single line of text, the size of the text is the area of the text. In this common case,
-    all alignments are equivalent. If you want the text to be, say, centered in it parent, then you will
+    all alignments are equivalent. If you want the text to be, say, centered in its parent, then you will
     need to either modify the Item::anchors, or set horizontalAlignment to Text.AlignHCenter and bind the width to 
     that of the parent.
 */
@@ -1062,7 +1063,7 @@ void QDeclarativeText::setTextFormat(TextFormat format)
     Set this property to elide parts of the text fit to the Text item's width.
     The text will only elide if an explicit width has been set.
 
-    This property cannot be used with wrapping enabled or with rich text.
+    This property cannot be used with multi-line text or with rich text.
 
     Eliding can be:
     \list
@@ -1147,7 +1148,7 @@ void QDeclarativeText::geometryChanged(const QRectF &newGeometry, const QRectF &
     if ((!d->internalWidthUpdate && newGeometry.width() != oldGeometry.width())
             && (d->wrapMode != QDeclarativeText::NoWrap
                 || d->elideMode != QDeclarativeText::ElideNone
-                || d->hAlign != Qt::AlignLeft)) {
+                || d->hAlign != QDeclarativeText::AlignLeft)) {
         if (d->singleline && d->elideMode != QDeclarativeText::ElideNone && widthValid()) {
             // We need to re-elide
             d->updateLayout();

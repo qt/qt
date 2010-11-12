@@ -170,24 +170,24 @@ EXPORTS
 	_ZN17QDeclarativeErrorD1Ev @ 169 NONAME
 	_ZN17QDeclarativeErrorD2Ev @ 170 NONAME
 	_ZN17QDeclarativeErroraSERKS_ @ 171 NONAME
-	_ZN17QDeclarativeState10setExtendsERK7QString @ 172 NONAME ABSENT
-	_ZN17QDeclarativeState11qt_metacallEN11QMetaObject4CallEiPPv @ 173 NONAME ABSENT
-	_ZN17QDeclarativeState11qt_metacastEPKc @ 174 NONAME ABSENT
-	_ZN17QDeclarativeState13setStateGroupEP22QDeclarativeStateGroup @ 175 NONAME ABSENT
-	_ZN17QDeclarativeState16staticMetaObjectE @ 176 NONAME DATA 16 ABSENT
-	_ZN17QDeclarativeState19getStaticMetaObjectEv @ 177 NONAME ABSENT
-	_ZN17QDeclarativeState5applyEP22QDeclarativeStateGroupP22QDeclarativeTransitionPS_ @ 178 NONAME ABSENT
-	_ZN17QDeclarativeState6cancelEv @ 179 NONAME ABSENT
-	_ZN17QDeclarativeState7changesEv @ 180 NONAME ABSENT
-	_ZN17QDeclarativeState7setNameERK7QString @ 181 NONAME ABSENT
-	_ZN17QDeclarativeState7setWhenEP19QDeclarativeBinding @ 182 NONAME ABSENT
-	_ZN17QDeclarativeState9completedEv @ 183 NONAME ABSENT
-	_ZN17QDeclarativeStateC1EP7QObject @ 184 NONAME ABSENT
-	_ZN17QDeclarativeStateC2EP7QObject @ 185 NONAME ABSENT
-	_ZN17QDeclarativeStateD0Ev @ 186 NONAME ABSENT
-	_ZN17QDeclarativeStateD1Ev @ 187 NONAME ABSENT
-	_ZN17QDeclarativeStateD2Ev @ 188 NONAME ABSENT
-	_ZN17QDeclarativeStatelsEP26QDeclarativeStateOperation @ 189 NONAME ABSENT
+	_ZN17QDeclarativeState10setExtendsERK7QString @ 172 NONAME
+	_ZN17QDeclarativeState11qt_metacallEN11QMetaObject4CallEiPPv @ 173 NONAME
+	_ZN17QDeclarativeState11qt_metacastEPKc @ 174 NONAME
+	_ZN17QDeclarativeState13setStateGroupEP22QDeclarativeStateGroup @ 175 NONAME
+	_ZN17QDeclarativeState16staticMetaObjectE @ 176 NONAME DATA 16
+	_ZN17QDeclarativeState19getStaticMetaObjectEv @ 177 NONAME
+	_ZN17QDeclarativeState5applyEP22QDeclarativeStateGroupP22QDeclarativeTransitionPS_ @ 178 NONAME
+	_ZN17QDeclarativeState6cancelEv @ 179 NONAME
+	_ZN17QDeclarativeState7changesEv @ 180 NONAME
+	_ZN17QDeclarativeState7setNameERK7QString @ 181 NONAME
+	_ZN17QDeclarativeState7setWhenEP19QDeclarativeBinding @ 182 NONAME
+	_ZN17QDeclarativeState9completedEv @ 183 NONAME
+	_ZN17QDeclarativeStateC1EP7QObject @ 184 NONAME
+	_ZN17QDeclarativeStateC2EP7QObject @ 185 NONAME
+	_ZN17QDeclarativeStateD0Ev @ 186 NONAME
+	_ZN17QDeclarativeStateD1Ev @ 187 NONAME
+	_ZN17QDeclarativeStateD2Ev @ 188 NONAME
+	_ZN17QDeclarativeStatelsEP26QDeclarativeStateOperation @ 189 NONAME
 	_ZN18QDeclarativeAction17deleteFromBindingEv @ 190 NONAME ABSENT
 	_ZN18QDeclarativeActionC1EP7QObjectRK7QStringP19QDeclarativeContextRK8QVariant @ 191 NONAME ABSENT
 	_ZN18QDeclarativeActionC1EP7QObjectRK7QStringRK8QVariant @ 192 NONAME ABSENT
@@ -637,42 +637,42 @@ EXPORTS
 	_ZN22QDeclarativeExpressionD0Ev @ 636 NONAME
 	_ZN22QDeclarativeExpressionD1Ev @ 637 NONAME
 	_ZN22QDeclarativeExpressionD2Ev @ 638 NONAME
-	_ZN22QDeclarativeStateGroup10classBeginEv @ 639 NONAME ABSENT
-	_ZN22QDeclarativeStateGroup11qt_metacallEN11QMetaObject4CallEiPPv @ 640 NONAME ABSENT
-	_ZN22QDeclarativeStateGroup11qt_metacastEPKc @ 641 NONAME ABSENT
-	_ZN22QDeclarativeStateGroup11removeStateEP17QDeclarativeState @ 642 NONAME ABSENT
-	_ZN22QDeclarativeStateGroup12stateChangedERK7QString @ 643 NONAME ABSENT
-	_ZN22QDeclarativeStateGroup14statesPropertyEv @ 644 NONAME ABSENT
-	_ZN22QDeclarativeStateGroup15updateAutoStateEv @ 645 NONAME ABSENT
-	_ZN22QDeclarativeStateGroup16staticMetaObjectE @ 646 NONAME DATA 16 ABSENT
-	_ZN22QDeclarativeStateGroup17componentCompleteEv @ 647 NONAME ABSENT
-	_ZN22QDeclarativeStateGroup19getStaticMetaObjectEv @ 648 NONAME ABSENT
-	_ZN22QDeclarativeStateGroup19transitionsPropertyEv @ 649 NONAME ABSENT
-	_ZN22QDeclarativeStateGroup8setStateERK7QString @ 650 NONAME ABSENT
-	_ZN22QDeclarativeStateGroupC1EP7QObject @ 651 NONAME ABSENT
-	_ZN22QDeclarativeStateGroupC2EP7QObject @ 652 NONAME ABSENT
-	_ZN22QDeclarativeStateGroupD0Ev @ 653 NONAME ABSENT
-	_ZN22QDeclarativeStateGroupD1Ev @ 654 NONAME ABSENT
-	_ZN22QDeclarativeStateGroupD2Ev @ 655 NONAME ABSENT
-	_ZN22QDeclarativeTransition10animationsEv @ 656 NONAME ABSENT
-	_ZN22QDeclarativeTransition10setToStateERK7QString @ 657 NONAME ABSENT
-	_ZN22QDeclarativeTransition11fromChangedEv @ 658 NONAME ABSENT
-	_ZN22QDeclarativeTransition11qt_metacallEN11QMetaObject4CallEiPPv @ 659 NONAME ABSENT
-	_ZN22QDeclarativeTransition11qt_metacastEPKc @ 660 NONAME ABSENT
-	_ZN22QDeclarativeTransition11setReversedEb @ 661 NONAME ABSENT
-	_ZN22QDeclarativeTransition12setFromStateERK7QString @ 662 NONAME ABSENT
-	_ZN22QDeclarativeTransition13setReversibleEb @ 663 NONAME ABSENT
-	_ZN22QDeclarativeTransition16staticMetaObjectE @ 664 NONAME DATA 16 ABSENT
-	_ZN22QDeclarativeTransition17reversibleChangedEv @ 665 NONAME ABSENT
-	_ZN22QDeclarativeTransition19getStaticMetaObjectEv @ 666 NONAME ABSENT
-	_ZN22QDeclarativeTransition4stopEv @ 667 NONAME ABSENT
-	_ZN22QDeclarativeTransition7prepareER5QListI18QDeclarativeActionERS0_I20QDeclarativePropertyEP29QDeclarativeTransitionManager @ 668 NONAME ABSENT
-	_ZN22QDeclarativeTransition9toChangedEv @ 669 NONAME ABSENT
-	_ZN22QDeclarativeTransitionC1EP7QObject @ 670 NONAME ABSENT
-	_ZN22QDeclarativeTransitionC2EP7QObject @ 671 NONAME ABSENT
-	_ZN22QDeclarativeTransitionD0Ev @ 672 NONAME ABSENT
-	_ZN22QDeclarativeTransitionD1Ev @ 673 NONAME ABSENT
-	_ZN22QDeclarativeTransitionD2Ev @ 674 NONAME ABSENT
+	_ZN22QDeclarativeStateGroup10classBeginEv @ 639 NONAME
+	_ZN22QDeclarativeStateGroup11qt_metacallEN11QMetaObject4CallEiPPv @ 640 NONAME
+	_ZN22QDeclarativeStateGroup11qt_metacastEPKc @ 641 NONAME
+	_ZN22QDeclarativeStateGroup11removeStateEP17QDeclarativeState @ 642 NONAME
+	_ZN22QDeclarativeStateGroup12stateChangedERK7QString @ 643 NONAME
+	_ZN22QDeclarativeStateGroup14statesPropertyEv @ 644 NONAME
+	_ZN22QDeclarativeStateGroup15updateAutoStateEv @ 645 NONAME
+	_ZN22QDeclarativeStateGroup16staticMetaObjectE @ 646 NONAME DATA 16
+	_ZN22QDeclarativeStateGroup17componentCompleteEv @ 647 NONAME
+	_ZN22QDeclarativeStateGroup19getStaticMetaObjectEv @ 648 NONAME
+	_ZN22QDeclarativeStateGroup19transitionsPropertyEv @ 649 NONAME
+	_ZN22QDeclarativeStateGroup8setStateERK7QString @ 650 NONAME
+	_ZN22QDeclarativeStateGroupC1EP7QObject @ 651 NONAME
+	_ZN22QDeclarativeStateGroupC2EP7QObject @ 652 NONAME
+	_ZN22QDeclarativeStateGroupD0Ev @ 653 NONAME
+	_ZN22QDeclarativeStateGroupD1Ev @ 654 NONAME
+	_ZN22QDeclarativeStateGroupD2Ev @ 655 NONAME
+	_ZN22QDeclarativeTransition10animationsEv @ 656 NONAME
+	_ZN22QDeclarativeTransition10setToStateERK7QString @ 657 NONAME
+	_ZN22QDeclarativeTransition11fromChangedEv @ 658 NONAME
+	_ZN22QDeclarativeTransition11qt_metacallEN11QMetaObject4CallEiPPv @ 659 NONAME
+	_ZN22QDeclarativeTransition11qt_metacastEPKc @ 660 NONAME
+	_ZN22QDeclarativeTransition11setReversedEb @ 661 NONAME
+	_ZN22QDeclarativeTransition12setFromStateERK7QString @ 662 NONAME
+	_ZN22QDeclarativeTransition13setReversibleEb @ 663 NONAME
+	_ZN22QDeclarativeTransition16staticMetaObjectE @ 664 NONAME DATA 16
+	_ZN22QDeclarativeTransition17reversibleChangedEv @ 665 NONAME
+	_ZN22QDeclarativeTransition19getStaticMetaObjectEv @ 666 NONAME
+	_ZN22QDeclarativeTransition4stopEv @ 667 NONAME
+	_ZN22QDeclarativeTransition7prepareER5QListI18QDeclarativeActionERS0_I20QDeclarativePropertyEP29QDeclarativeTransitionManager @ 668 NONAME
+	_ZN22QDeclarativeTransition9toChangedEv @ 669 NONAME
+	_ZN22QDeclarativeTransitionC1EP7QObject @ 670 NONAME
+	_ZN22QDeclarativeTransitionC2EP7QObject @ 671 NONAME
+	_ZN22QDeclarativeTransitionD0Ev @ 672 NONAME
+	_ZN22QDeclarativeTransitionD1Ev @ 673 NONAME
+	_ZN22QDeclarativeTransitionD2Ev @ 674 NONAME
 	_ZN23QDeclarativeDebugClient10setEnabledEb @ 675 NONAME ABSENT
 	_ZN23QDeclarativeDebugClient11qt_metacallEN11QMetaObject4CallEiPPv @ 676 NONAME ABSENT
 	_ZN23QDeclarativeDebugClient11qt_metacastEPKc @ 677 NONAME ABSENT
@@ -835,13 +835,13 @@ EXPORTS
 	_ZN26QDeclarativeOpenMetaObjectD2Ev @ 834 NONAME ABSENT
 	_ZN26QDeclarativeOpenMetaObjectixERK10QByteArray @ 835 NONAME ABSENT
 	_ZN26QDeclarativeOpenMetaObjectixEi @ 836 NONAME ABSENT
-	_ZN26QDeclarativeStateOperation11qt_metacallEN11QMetaObject4CallEiPPv @ 837 NONAME ABSENT
-	_ZN26QDeclarativeStateOperation11qt_metacastEPKc @ 838 NONAME ABSENT
-	_ZN26QDeclarativeStateOperation16staticMetaObjectE @ 839 NONAME DATA 16 ABSENT
-	_ZN26QDeclarativeStateOperation19getStaticMetaObjectEv @ 840 NONAME ABSENT
-	_ZN26QDeclarativeStateOperation7actionsEv @ 841 NONAME ABSENT
-	_ZN26QDeclarativeStateOperationC1ER14QObjectPrivateP7QObject @ 842 NONAME ABSENT
-	_ZN26QDeclarativeStateOperationC2ER14QObjectPrivateP7QObject @ 843 NONAME ABSENT
+	_ZN26QDeclarativeStateOperation11qt_metacallEN11QMetaObject4CallEiPPv @ 837 NONAME
+	_ZN26QDeclarativeStateOperation11qt_metacastEPKc @ 838 NONAME
+	_ZN26QDeclarativeStateOperation16staticMetaObjectE @ 839 NONAME DATA 16
+	_ZN26QDeclarativeStateOperation19getStaticMetaObjectEv @ 840 NONAME
+	_ZN26QDeclarativeStateOperation7actionsEv @ 841 NONAME
+	_ZN26QDeclarativeStateOperationC1ER14QObjectPrivateP7QObject @ 842 NONAME
+	_ZN26QDeclarativeStateOperationC2ER14QObjectPrivateP7QObject @ 843 NONAME
 	_ZN27QDeclarativeAbstractBinding10setEnabledEb6QFlagsIN27QDeclarativePropertyPrivate9WriteFlagEE @ 844 NONAME ABSENT
 	_ZN27QDeclarativeAbstractBinding11addToObjectEP7QObject @ 845 NONAME ABSENT
 	_ZN27QDeclarativeAbstractBinding16removeFromObjectEv @ 846 NONAME ABSENT
@@ -1156,15 +1156,15 @@ EXPORTS
 	_ZNK17QDeclarativeError6columnEv @ 1155 NONAME
 	_ZNK17QDeclarativeError7isValidEv @ 1156 NONAME
 	_ZNK17QDeclarativeError8toStringEv @ 1157 NONAME
-	_ZNK17QDeclarativeState10metaObjectEv @ 1158 NONAME ABSENT
-	_ZNK17QDeclarativeState10stateGroupEv @ 1159 NONAME ABSENT
-	_ZNK17QDeclarativeState11isWhenKnownEv @ 1160 NONAME ABSENT
-	_ZNK17QDeclarativeState11operationAtEi @ 1161 NONAME ABSENT
-	_ZNK17QDeclarativeState14operationCountEv @ 1162 NONAME ABSENT
-	_ZNK17QDeclarativeState4nameEv @ 1163 NONAME ABSENT
-	_ZNK17QDeclarativeState4whenEv @ 1164 NONAME ABSENT
-	_ZNK17QDeclarativeState7extendsEv @ 1165 NONAME ABSENT
-	_ZNK17QDeclarativeState7isNamedEv @ 1166 NONAME ABSENT
+	_ZNK17QDeclarativeState10metaObjectEv @ 1158 NONAME
+	_ZNK17QDeclarativeState10stateGroupEv @ 1159 NONAME
+	_ZNK17QDeclarativeState11isWhenKnownEv @ 1160 NONAME
+	_ZNK17QDeclarativeState11operationAtEi @ 1161 NONAME
+	_ZNK17QDeclarativeState14operationCountEv @ 1162 NONAME
+	_ZNK17QDeclarativeState4nameEv @ 1163 NONAME
+	_ZNK17QDeclarativeState4whenEv @ 1164 NONAME
+	_ZNK17QDeclarativeState7extendsEv @ 1165 NONAME
+	_ZNK17QDeclarativeState7isNamedEv @ 1166 NONAME
 	_ZNK18QDeclarativeEngine10metaObjectEv @ 1167 NONAME
 	_ZNK18QDeclarativeEngine11rootContextEv @ 1168 NONAME
 	_ZNK18QDeclarativeEngine13imageProviderERK7QString @ 1169 NONAME
@@ -1381,14 +1381,14 @@ EXPORTS
 	_ZNK22QDeclarativeExpression6engineEv @ 1380 NONAME
 	_ZNK22QDeclarativeExpression7contextEv @ 1381 NONAME
 	_ZNK22QDeclarativeExpression8hasErrorEv @ 1382 NONAME
-	_ZNK22QDeclarativeStateGroup10metaObjectEv @ 1383 NONAME ABSENT
-	_ZNK22QDeclarativeStateGroup5stateEv @ 1384 NONAME ABSENT
-	_ZNK22QDeclarativeStateGroup6statesEv @ 1385 NONAME ABSENT
-	_ZNK22QDeclarativeStateGroup9findStateERK7QString @ 1386 NONAME ABSENT
-	_ZNK22QDeclarativeTransition10metaObjectEv @ 1387 NONAME ABSENT
-	_ZNK22QDeclarativeTransition10reversibleEv @ 1388 NONAME ABSENT
-	_ZNK22QDeclarativeTransition7toStateEv @ 1389 NONAME ABSENT
-	_ZNK22QDeclarativeTransition9fromStateEv @ 1390 NONAME ABSENT
+	_ZNK22QDeclarativeStateGroup10metaObjectEv @ 1383 NONAME
+	_ZNK22QDeclarativeStateGroup5stateEv @ 1384 NONAME
+	_ZNK22QDeclarativeStateGroup6statesEv @ 1385 NONAME
+	_ZNK22QDeclarativeStateGroup9findStateERK7QString @ 1386 NONAME
+	_ZNK22QDeclarativeTransition10metaObjectEv @ 1387 NONAME
+	_ZNK22QDeclarativeTransition10reversibleEv @ 1388 NONAME
+	_ZNK22QDeclarativeTransition7toStateEv @ 1389 NONAME
+	_ZNK22QDeclarativeTransition9fromStateEv @ 1390 NONAME
 	_ZNK23QDeclarativeDebugClient10metaObjectEv @ 1391 NONAME ABSENT
 	_ZNK23QDeclarativeDebugClient11isConnectedEv @ 1392 NONAME ABSENT
 	_ZNK23QDeclarativeDebugClient4nameEv @ 1393 NONAME ABSENT
@@ -1452,7 +1452,7 @@ EXPORTS
 	_ZNK26QDeclarativeOpenMetaObject6objectEv @ 1451 NONAME ABSENT
 	_ZNK26QDeclarativeOpenMetaObject6parentEv @ 1452 NONAME ABSENT
 	_ZNK26QDeclarativeOpenMetaObject8hasValueEi @ 1453 NONAME ABSENT
-	_ZNK26QDeclarativeStateOperation10metaObjectEv @ 1454 NONAME ABSENT
+	_ZNK26QDeclarativeStateOperation10metaObjectEv @ 1454 NONAME
 	_ZNK27QDeclarativeAbstractBinding10expressionEv @ 1455 NONAME ABSENT
 	_ZNK27QDeclarativeDebugConnection10metaObjectEv @ 1456 NONAME ABSENT
 	_ZNK27QDeclarativeDebugConnection11isConnectedEv @ 1457 NONAME ABSENT
@@ -1531,7 +1531,7 @@ EXPORTS
 	_ZTI16QDeclarativeItem @ 1530 NONAME
 	_ZTI16QDeclarativeText @ 1531 NONAME ABSENT
 	_ZTI16QDeclarativeView @ 1532 NONAME
-	_ZTI17QDeclarativeState @ 1533 NONAME ABSENT
+	_ZTI17QDeclarativeState @ 1533 NONAME
 	_ZTI18QDeclarativeEngine @ 1534 NONAME
 	_ZTI18QMetaObjectBuilder @ 1535 NONAME ABSENT
 	_ZTI19QDeclarativeAnchors @ 1536 NONAME ABSENT
@@ -1547,8 +1547,8 @@ EXPORTS
 	_ZTI22QDeclarativeDebugQuery @ 1546 NONAME ABSENT
 	_ZTI22QDeclarativeDebugWatch @ 1547 NONAME ABSENT
 	_ZTI22QDeclarativeExpression @ 1548 NONAME
-	_ZTI22QDeclarativeStateGroup @ 1549 NONAME ABSENT
-	_ZTI22QDeclarativeTransition @ 1550 NONAME ABSENT
+	_ZTI22QDeclarativeStateGroup @ 1549 NONAME
+	_ZTI22QDeclarativeTransition @ 1550 NONAME
 	_ZTI23QDeclarativeDebugClient @ 1551 NONAME ABSENT
 	_ZTI23QDeclarativeEngineDebug @ 1552 NONAME ABSENT
 	_ZTI23QDeclarativeItemPrivate @ 1553 NONAME
@@ -1559,7 +1559,7 @@ EXPORTS
 	_ZTI25QDeclarativeImageProvider @ 1558 NONAME
 	_ZTI26QDeclarativeDebuggerStatus @ 1559 NONAME ABSENT
 	_ZTI26QDeclarativeOpenMetaObject @ 1560 NONAME ABSENT
-	_ZTI26QDeclarativeStateOperation @ 1561 NONAME ABSENT
+	_ZTI26QDeclarativeStateOperation @ 1561 NONAME
 	_ZTI27QDeclarativeAbstractBinding @ 1562 NONAME ABSENT
 	_ZTI27QDeclarativeDebugConnection @ 1563 NONAME ABSENT
 	_ZTI27QDeclarativeExtensionPlugin @ 1564 NONAME
@@ -1581,7 +1581,7 @@ EXPORTS
 	_ZTV16QDeclarativeItem @ 1580 NONAME
 	_ZTV16QDeclarativeText @ 1581 NONAME ABSENT
 	_ZTV16QDeclarativeView @ 1582 NONAME
-	_ZTV17QDeclarativeState @ 1583 NONAME ABSENT
+	_ZTV17QDeclarativeState @ 1583 NONAME
 	_ZTV18QDeclarativeEngine @ 1584 NONAME
 	_ZTV18QMetaObjectBuilder @ 1585 NONAME ABSENT
 	_ZTV19QDeclarativeAnchors @ 1586 NONAME ABSENT
@@ -1597,8 +1597,8 @@ EXPORTS
 	_ZTV22QDeclarativeDebugQuery @ 1596 NONAME ABSENT
 	_ZTV22QDeclarativeDebugWatch @ 1597 NONAME ABSENT
 	_ZTV22QDeclarativeExpression @ 1598 NONAME
-	_ZTV22QDeclarativeStateGroup @ 1599 NONAME ABSENT
-	_ZTV22QDeclarativeTransition @ 1600 NONAME ABSENT
+	_ZTV22QDeclarativeStateGroup @ 1599 NONAME
+	_ZTV22QDeclarativeTransition @ 1600 NONAME
 	_ZTV23QDeclarativeDebugClient @ 1601 NONAME ABSENT
 	_ZTV23QDeclarativeEngineDebug @ 1602 NONAME ABSENT
 	_ZTV23QDeclarativeItemPrivate @ 1603 NONAME
@@ -1609,7 +1609,7 @@ EXPORTS
 	_ZTV25QDeclarativeImageProvider @ 1608 NONAME
 	_ZTV26QDeclarativeDebuggerStatus @ 1609 NONAME ABSENT
 	_ZTV26QDeclarativeOpenMetaObject @ 1610 NONAME ABSENT
-	_ZTV26QDeclarativeStateOperation @ 1611 NONAME ABSENT
+	_ZTV26QDeclarativeStateOperation @ 1611 NONAME
 	_ZTV27QDeclarativeAbstractBinding @ 1612 NONAME ABSENT
 	_ZTV27QDeclarativeDebugConnection @ 1613 NONAME ABSENT
 	_ZTV27QDeclarativeExtensionPlugin @ 1614 NONAME
@@ -1656,10 +1656,10 @@ EXPORTS
 	_ZThn8_N20QDeclarativeBehaviorD0Ev @ 1655 NONAME ABSENT
 	_ZThn8_N20QDeclarativeBehaviorD1Ev @ 1656 NONAME ABSENT
 	_ZThn8_N21QDeclarativeRectangle5paintEP8QPainterPK24QStyleOptionGraphicsItemP7QWidget @ 1657 NONAME ABSENT
-	_ZThn8_N22QDeclarativeStateGroup10classBeginEv @ 1658 NONAME ABSENT
-	_ZThn8_N22QDeclarativeStateGroup17componentCompleteEv @ 1659 NONAME ABSENT
-	_ZThn8_N22QDeclarativeStateGroupD0Ev @ 1660 NONAME ABSENT
-	_ZThn8_N22QDeclarativeStateGroupD1Ev @ 1661 NONAME ABSENT
+	_ZThn8_N22QDeclarativeStateGroup10classBeginEv @ 1658 NONAME
+	_ZThn8_N22QDeclarativeStateGroup17componentCompleteEv @ 1659 NONAME
+	_ZThn8_N22QDeclarativeStateGroupD0Ev @ 1660 NONAME
+	_ZThn8_N22QDeclarativeStateGroupD1Ev @ 1661 NONAME
 	_ZThn8_N27QDeclarativeExtensionPlugin16initializeEngineEP18QDeclarativeEnginePKc @ 1662 NONAME
 	_ZThn8_N27QDeclarativeExtensionPluginD0Ev @ 1663 NONAME
 	_ZThn8_N27QDeclarativeExtensionPluginD1Ev @ 1664 NONAME
@@ -1675,17 +1675,17 @@ EXPORTS
 	_ZrsR11QDataStreamRN29QDeclarativeEngineDebugServer22QDeclarativeObjectDataE @ 1674 NONAME ABSENT
 	_ZrsR11QDataStreamRN29QDeclarativeEngineDebugServer26QDeclarativeObjectPropertyE @ 1675 NONAME ABSENT
 	_ZN23QDeclarativeEngineDebug10newObjectsEv @ 1676 NONAME ABSENT
-	_ZN17QDeclarativeState20addEntryToRevertListERK18QDeclarativeAction @ 1677 NONAME ABSENT
-	_ZN17QDeclarativeState22addEntriesToRevertListERK5QListI18QDeclarativeActionE @ 1678 NONAME ABSENT
-	_ZN17QDeclarativeState23changeValueInRevertListEP7QObjectRK10QByteArrayRK8QVariant @ 1679 NONAME ABSENT
-	_ZN17QDeclarativeState25changeBindingInRevertListEP7QObjectRK10QByteArrayP27QDeclarativeAbstractBinding @ 1680 NONAME ABSENT
-	_ZN17QDeclarativeState25removeEntryFromRevertListEP7QObjectRK10QByteArray @ 1681 NONAME ABSENT
-	_ZN17QDeclarativeState30removeAllEntriesFromRevertListEP7QObject @ 1682 NONAME ABSENT
+	_ZN17QDeclarativeState20addEntryToRevertListERK18QDeclarativeAction @ 1677 NONAME
+	_ZN17QDeclarativeState22addEntriesToRevertListERK5QListI18QDeclarativeActionE @ 1678 NONAME
+	_ZN17QDeclarativeState23changeValueInRevertListEP7QObjectRK10QByteArrayRK8QVariant @ 1679 NONAME
+	_ZN17QDeclarativeState25changeBindingInRevertListEP7QObjectRK10QByteArrayP27QDeclarativeAbstractBinding @ 1680 NONAME
+	_ZN17QDeclarativeState25removeEntryFromRevertListEP7QObjectRK10QByteArray @ 1681 NONAME
+	_ZN17QDeclarativeState30removeAllEntriesFromRevertListEP7QObject @ 1682 NONAME
 	_ZN23QDeclarativeItemPrivate10data_clearEP24QDeclarativeListPropertyI7QObjectE @ 1683 NONAME
 	_ZN23QDeclarativeItemPrivate10data_countEP24QDeclarativeListPropertyI7QObjectE @ 1684 NONAME
 	_ZN23QDeclarativeItemPrivate15resources_clearEP24QDeclarativeListPropertyI7QObjectE @ 1685 NONAME
 	_ZN23QDeclarativeItemPrivate7data_atEP24QDeclarativeListPropertyI7QObjectEi @ 1686 NONAME
-	_ZN26QDeclarativeStateOperation8setStateEP17QDeclarativeState @ 1687 NONAME ABSENT
+	_ZN26QDeclarativeStateOperation8setStateEP17QDeclarativeState @ 1687 NONAME
 	_ZN27QDeclarativeAbstractBinding11weakPointerEv @ 1688 NONAME ABSENT
 	_ZN27QDeclarativePropertyChanges11changeValueERK10QByteArrayRK8QVariant @ 1689 NONAME ABSENT
 	_ZN27QDeclarativePropertyChanges11qt_metacallEN11QMetaObject4CallEiPPv @ 1690 NONAME ABSENT
@@ -1705,11 +1705,11 @@ EXPORTS
 	_ZN27QDeclarativePropertyChangesD0Ev @ 1704 NONAME ABSENT
 	_ZN27QDeclarativePropertyChangesD1Ev @ 1705 NONAME ABSENT
 	_ZN27QDeclarativePropertyChangesD2Ev @ 1706 NONAME ABSENT
-	_ZNK17QDeclarativeState13isStateActiveEv @ 1707 NONAME ABSENT
-	_ZNK17QDeclarativeState17valueInRevertListEP7QObjectRK10QByteArray @ 1708 NONAME ABSENT
-	_ZNK17QDeclarativeState19bindingInRevertListEP7QObjectRK10QByteArray @ 1709 NONAME ABSENT
-	_ZNK17QDeclarativeState28containsPropertyInRevertListEP7QObjectRK10QByteArray @ 1710 NONAME ABSENT
-	_ZNK26QDeclarativeStateOperation5stateEv @ 1711 NONAME ABSENT
+	_ZNK17QDeclarativeState13isStateActiveEv @ 1707 NONAME
+	_ZNK17QDeclarativeState17valueInRevertListEP7QObjectRK10QByteArray @ 1708 NONAME
+	_ZNK17QDeclarativeState19bindingInRevertListEP7QObjectRK10QByteArray @ 1709 NONAME
+	_ZNK17QDeclarativeState28containsPropertyInRevertListEP7QObjectRK10QByteArray @ 1710 NONAME
+	_ZNK26QDeclarativeStateOperation5stateEv @ 1711 NONAME
 	_ZNK27QDeclarativePropertyChanges10expressionERK10QByteArray @ 1712 NONAME ABSENT
 	_ZNK27QDeclarativePropertyChanges10isExplicitEv @ 1713 NONAME ABSENT
 	_ZNK27QDeclarativePropertyChanges10metaObjectEv @ 1714 NONAME ABSENT
@@ -1883,5 +1883,6 @@ EXPORTS
 	_ZThn8_N29QDeclarativeAbstractAnimation9setTargetERK20QDeclarativeProperty @ 1882 NONAME ABSENT
 	_ZThn8_N29QDeclarativeAbstractAnimationD0Ev @ 1883 NONAME ABSENT
 	_ZThn8_N29QDeclarativeAbstractAnimationD1Ev @ 1884 NONAME ABSENT
-	_ZN27QDeclarativePropertyPrivate7connectEPK7QObjectiS2_iiPi @ 1885 NONAME ABSENT
+	_ZN23QDeclarativeDebugHelper15enableDebuggingEv @ 1885 NONAME
+	_ZN27QDeclarativePropertyPrivate7connectEPK7QObjectiS2_iiPi @ 1886 NONAME ABSENT
 

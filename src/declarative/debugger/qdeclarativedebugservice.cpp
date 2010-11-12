@@ -42,6 +42,7 @@
 #include "private/qdeclarativedebugservice_p.h"
 
 #include "private/qpacketprotocol_p.h"
+#include "private/qdeclarativeengine_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtNetwork/qtcpserver.h>
@@ -204,13 +205,19 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
         bool ok = false;
 
         // format: qmljsdebugger=port:3768[,block]
-        if (!appD->qmljsDebugArguments.isEmpty()) {
-
-            if (appD->qmljsDebugArguments.indexOf(QLatin1String("port:")) == 0) {
-                int separatorIndex = appD->qmljsDebugArguments.indexOf(QLatin1Char(','));
-                port = appD->qmljsDebugArguments.mid(5, separatorIndex - 5).toInt(&ok);
+        if (!appD->qmljsDebugArgumentsString().isEmpty()) {
+            if (!QDeclarativeEnginePrivate::qml_debugging_enabled) {
+                qWarning() << QString::fromLatin1("QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
+                              "Debugging has not been enabled.").arg(
+                                  appD->qmljsDebugArgumentsString()).toAscii().constData();
+                return 0;
             }
-            block = appD->qmljsDebugArguments.contains(QLatin1String("block"));
+
+            if (appD->qmljsDebugArgumentsString().indexOf(QLatin1String("port:")) == 0) {
+                int separatorIndex = appD->qmljsDebugArgumentsString().indexOf(QLatin1Char(','));
+                port = appD->qmljsDebugArgumentsString().mid(5, separatorIndex - 5).toInt(&ok);
+            }
+            block = appD->qmljsDebugArgumentsString().contains(QLatin1String("block"));
 
             if (ok) {
                 server = new QDeclarativeDebugServer(port);
@@ -221,7 +228,7 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
             } else {
                 qWarning(QString::fromAscii("QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
                                             "Format is -qmljsdebugger=port:<port>[,block]").arg(
-                             appD->qmljsDebugArguments).toAscii().constData());
+                             appD->qmljsDebugArgumentsString()).toAscii().constData());
             }
         }
 #endif

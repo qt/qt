@@ -1,7 +1,8 @@
 import QtQuick 1.0
-import org.webkit 1.0
+import QtWebKit 1.0
 
 Column {
+    property string skip: "WebView tests not counting until resources allocated to WebView maintenance"
     WebView {
         width: 200
         height: 200

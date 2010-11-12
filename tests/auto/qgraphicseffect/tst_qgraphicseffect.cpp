@@ -51,6 +51,7 @@
 
 #include "../../shared/util.h"
 #include <private/qgraphicseffect_p.h>
+#include "../platformquirks.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -710,7 +711,10 @@ void tst_QGraphicsEffect::prepareGeometryChangeInvalidateCache()
     scene.addItem(item);
 
     QGraphicsView view(&scene);
-    view.show();
+    if(PlatformQuirks::isAutoMaximizing())
+        view.showFullScreen();
+    else
+        view.show();
     QTest::qWaitForWindowShown(&view);
     QTRY_COMPARE(item->nbPaint, 1);
 

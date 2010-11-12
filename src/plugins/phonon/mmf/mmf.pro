@@ -18,7 +18,7 @@ symbian {
 	# This is necessary because both epoc32/include and Phonon contain videoplayer.h.
 	# By making /epoc32/include the first SYSTEMINCLUDE, we ensure that
 	# '#include <videoplayer.h>' picks up the Symbian header, as intended.
-	PREPEND_INCLUDEPATH = /epoc32/include
+	PREPEND_INCLUDEPATH = $${EPOCROOT}epoc32/include
 
 	PREPEND_INCLUDEPATH += $$QT_SOURCE_TREE/src/3rdparty
 

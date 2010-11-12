@@ -132,18 +132,6 @@ void QNetworkAccessCacheBackend::closeUpstreamChannel()
     Q_ASSERT_X(false, Q_FUNC_INFO, "This function show not have been called!");
 }
 
-bool QNetworkAccessCacheBackend::waitForDownstreamReadyRead(int)
-{
-    Q_ASSERT_X(false, Q_FUNC_INFO , "This function show not have been called!");
-    return false;
-}
-
-bool QNetworkAccessCacheBackend::waitForUpstreamBytesWritten(int)
-{
-    Q_ASSERT_X(false, Q_FUNC_INFO, "This function show not have been called!");
-    return false;
-}
-
 void QNetworkAccessCacheBackend::upstreamReadyRead()
 {
     Q_ASSERT_X(false, Q_FUNC_INFO, "This function show not have been called!");

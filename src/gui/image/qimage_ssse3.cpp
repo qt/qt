@@ -54,7 +54,7 @@ Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_ssse3(quint32 *dst, con
 {
     quint32 *const end = dst + len;
 
-    // Prologue, align dst to 16 bytes. The alignement is done on dst because it has 4 store()
+    // Prologue, align dst to 16 bytes. The alignment is done on dst because it has 4 store()
     // for each 3 load() of src.
     const int offsetToAlignOn16Bytes = (4 - ((reinterpret_cast<quintptr>(dst) >> 2) & 0x3)) & 0x3;
     const int prologLength = qMin(len, offsetToAlignOn16Bytes);

@@ -41,6 +41,7 @@
 
 #include "qmeegolivepixmap.h"
 #include "qmeegolivepixmap_p.h"
+#include "qmeegofencesync_p.h"
 #include "qmeegoruntime.h"
 
 /* QMeeGoLivePixmapPrivate */
@@ -102,10 +103,12 @@ QMeeGoLivePixmap::~QMeeGoLivePixmap()
 {
 }
 
-QImage* QMeeGoLivePixmap::lock()
+QImage* QMeeGoLivePixmap::lock(QMeeGoFenceSync *fenceSync)
 {
-    return QMeeGoRuntime::lockLiveTexture(this);
-
+    if (fenceSync)
+        return QMeeGoRuntime::lockLiveTexture(this, fenceSync->d_func()->syncObject);
+    else
+        return QMeeGoRuntime::lockLiveTexture(this, NULL);
 }
 
 void QMeeGoLivePixmap::release(QImage *img)

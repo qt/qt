@@ -2253,6 +2253,19 @@ void tst_QScriptValue::getSetData()
     QVERIFY(!object.data().isValid());
 }
 
+void tst_QScriptValue::setData_QTBUG15144()
+{
+    QScriptEngine eng;
+    QScriptValue obj = eng.newObject();
+    for (int i = 0; i < 10000; ++i) {
+        // Create an object with property 'fooN' on it, and immediately kill
+        // the reference to the object so it and the property name become garbage.
+        eng.evaluate(QString::fromLatin1("o = {}; o.foo%0 = 10; o = null;").arg(i));
+        // Setting the data will cause a JS string to be allocated, which could
+        // trigger a GC. This should not cause a crash.
+        obj.setData("foodfight");
+    }
+}
 class TestScriptClass : public QScriptClass
 {
 public:
@@ -2737,6 +2750,31 @@ void tst_QScriptValue::construct()
     QVERIFY(!QScriptValue(QString::fromLatin1("ciao")).construct().isValid());
     QVERIFY(!QScriptValue(QScriptValue::UndefinedValue).construct().isValid());
     QVERIFY(!QScriptValue(QScriptValue::NullValue).construct().isValid());
+}
+
+void tst_QScriptValue::construct_constructorThrowsPrimitive()
+{
+    QScriptEngine eng;
+    QScriptValue fun = eng.evaluate("(function() { throw 123; })");
+    QVERIFY(fun.isFunction());
+    // construct(QScriptValueList)
+    {
+        QScriptValue ret = fun.construct();
+        QVERIFY(ret.isNumber());
+        QCOMPARE(ret.toNumber(), 123.0);
+        QVERIFY(eng.hasUncaughtException());
+        QVERIFY(ret.strictlyEquals(eng.uncaughtException()));
+        eng.clearExceptions();
+    }
+    // construct(QScriptValue)
+    {
+        QScriptValue ret = fun.construct(eng.newArray());
+        QVERIFY(ret.isNumber());
+        QCOMPARE(ret.toNumber(), 123.0);
+        QVERIFY(eng.hasUncaughtException());
+        QVERIFY(ret.strictlyEquals(eng.uncaughtException()));
+        eng.clearExceptions();
+    }
 }
 
 void tst_QScriptValue::lessThan_old()

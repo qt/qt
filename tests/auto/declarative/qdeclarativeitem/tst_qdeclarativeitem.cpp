@@ -686,6 +686,8 @@ void tst_QDeclarativeItem::propertyChanges()
     QSignalSpy focusSpy(item, SIGNAL(focusChanged(bool)));
     QSignalSpy wantsFocusSpy(parentItem, SIGNAL(activeFocusChanged(bool)));
     QSignalSpy childrenChangedSpy(parentItem, SIGNAL(childrenChanged()));
+    QSignalSpy xSpy(item, SIGNAL(xChanged()));
+    QSignalSpy ySpy(item, SIGNAL(yChanged()));
 
     item->setParentItem(parentItem);
     item->setWidth(100.0);
@@ -730,6 +732,14 @@ void tst_QDeclarativeItem::propertyChanges()
     QCOMPARE(parentItem->hasActiveFocus(), false);
     QCOMPARE(parentItem->hasFocus(), false);
     QCOMPARE(wantsFocusSpy.count(),0);
+
+    item->setX(10.0);
+    QCOMPARE(item->x(), 10.0);
+    QCOMPARE(xSpy.count(), 1);
+
+    item->setY(10.0);
+    QCOMPARE(item->y(), 10.0);
+    QCOMPARE(ySpy.count(), 1);
 
     delete canvas;
 }

@@ -193,6 +193,8 @@ private Q_SLOTS:
     void ioGetFromFtpWithReuse();
     void ioGetFromHttp();
 
+    void ioGetFromBuiltinHttp_data();
+    void ioGetFromBuiltinHttp();
     void ioGetFromHttpWithReuseParallel();
     void ioGetFromHttpWithReuseSequential();
     void ioGetFromHttpWithAuth();
@@ -293,6 +295,12 @@ private Q_SLOTS:
 
     void getFromUnreachableIp();
 
+    void qtbug4121unknownAuthentication();
+
+    void qtbug13431replyThrottling();
+
+    void httpWithNoCredentialUsage();
+
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 };
@@ -343,6 +351,14 @@ QT_END_NAMESPACE
             QFAIL(qPrintable(errorMsg));        \
     } while (0);
 
+#ifndef QT_NO_OPENSSL
+static void setupSslServer(QSslSocket* serverSocket)
+{
+    serverSocket->setProtocol(QSsl::AnyProtocol);
+    serverSocket->setLocalCertificate(SRCDIR "/certs/server.pem");
+    serverSocket->setPrivateKey(SRCDIR "/certs/server.key");
+}
+#endif
 
 // Does not work for POST/PUT!
 class MiniHttpServer: public QTcpServer
@@ -353,24 +369,66 @@ public:
     QByteArray dataToTransmit;
     QByteArray receivedData;
     bool doClose;
+    bool doSsl;
     bool multiple;
     int totalConnections;
 
-    MiniHttpServer(const QByteArray &data) : client(0), dataToTransmit(data), doClose(true), multiple(false), totalConnections(0)
+    MiniHttpServer(const QByteArray &data, bool ssl = false)
+        : client(0), dataToTransmit(data), doClose(true), doSsl(ssl),
+          multiple(false), totalConnections(0)
     {
         listen();
-        connect(this, SIGNAL(newConnection()), this, SLOT(doAccept()));
+    }
+
+protected:
+    void incomingConnection(int socketDescriptor)
+    {
+        //qDebug() << "incomingConnection" << socketDescriptor;
+        if (!doSsl) {
+            client = new QTcpSocket;
+            client->setSocketDescriptor(socketDescriptor);
+            connectSocketSignals();
+        } else {
+#ifndef QT_NO_OPENSSL
+            QSslSocket *serverSocket = new QSslSocket;
+            serverSocket->setParent(this);
+            if (serverSocket->setSocketDescriptor(socketDescriptor)) {
+                connect(serverSocket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
+                setupSslServer(serverSocket);
+                serverSocket->startServerEncryption();
+                client = serverSocket;
+                connectSocketSignals();
+            } else {
+                delete serverSocket;
+                return;
+            }
+#endif
+        }
+        client->setParent(this);
+        ++totalConnections;
+    }
+private:
+    void connectSocketSignals()
+    {
+        //qDebug() << "connectSocketSignals" << client;
+        connect(client, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
+        connect(client, SIGNAL(error(QAbstractSocket::SocketError)),
+                this, SLOT(slotError(QAbstractSocket::SocketError)));
+    }
+
+private slots:
+#ifndef QT_NO_OPENSSL
+    void slotSslErrors(const QList<QSslError>& errors)
+    {
+        qDebug() << "slotSslErrors" << client->errorString() << errors;
+    }
+#endif
+    void slotError(QAbstractSocket::SocketError err)
+    {
+        qDebug() << "slotError" << err << client->errorString();
     }
 
 public slots:
-    void doAccept()
-    {
-        client = nextPendingConnection();
-        client->setParent(this);
-        ++totalConnections;
-        connect(client, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
-    }
-
     void readyReadSlot()
     {
         receivedData += client->readAll();
@@ -382,6 +440,9 @@ public slots:
                 receivedData.remove(0, doubleEndlPos+4);
 
             client->write(dataToTransmit);
+            while (client->bytesToWrite() > 0)
+                client->waitForBytesWritten();
+
             if (doClose) {
                 client->disconnectFromHost();
                 disconnect(client, 0, this, 0);
@@ -554,17 +615,89 @@ public:
     }
 };
 
+// A blocking tcp server (must be used in a thread) which supports SSL.
+class BlockingTcpServer : public QTcpServer
+{
+    Q_OBJECT
+public:
+    BlockingTcpServer(bool ssl) : doSsl(ssl), sslSocket(0) {}
+
+    QTcpSocket* waitForNextConnectionSocket() {
+        waitForNewConnection(-1);
+        if (doSsl) {
+            Q_ASSERT(sslSocket);
+            return sslSocket;
+        } else {
+            //qDebug() << "returning nextPendingConnection";
+            return nextPendingConnection();
+        }
+    }
+    virtual void incomingConnection(int socketDescriptor)
+    {
+#ifndef QT_NO_OPENSSL
+        if (doSsl) {
+            QSslSocket *serverSocket = new QSslSocket;
+            serverSocket->setParent(this);
+            serverSocket->setSocketDescriptor(socketDescriptor);
+            connect(serverSocket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
+            setupSslServer(serverSocket);
+            serverSocket->startServerEncryption();
+            sslSocket = serverSocket;
+        } else
+#endif
+        {
+            QTcpServer::incomingConnection(socketDescriptor);
+        }
+    }
+private slots:
+
+#ifndef QT_NO_OPENSSL
+    void slotSslErrors(const QList<QSslError>& errors)
+    {
+        qDebug() << "slotSslErrors" << sslSocket->errorString() << errors;
+    }
+#endif
+
+private:
+    const bool doSsl;
+    QTcpSocket* sslSocket;
+};
+
+// This server tries to send data as fast as possible (like most servers)
+// but it measures how fast it was able to send it, which shows at which
+// rate the reader is processing the data.
 class FastSender: public QThread
 {
     Q_OBJECT
     QSemaphore ready;
     qint64 wantedSize;
     int port;
+    enum Protocol { DebugPipe, ProvidedData };
+    const Protocol protocol;
+    const bool doSsl;
+    const bool fillKernelBuffer;
 public:
     int transferRate;
     QWaitCondition cond;
+
+    QByteArray dataToTransmit;
+    int dataIndex;
+
+    // a server that sends debugpipe data
     FastSender(qint64 size)
-        : wantedSize(size), port(-1), transferRate(-1)
+        : wantedSize(size), port(-1), protocol(DebugPipe),
+          doSsl(false), fillKernelBuffer(true), transferRate(-1),
+          dataIndex(0)
+    {
+        start();
+        ready.acquire();
+    }
+
+    // a server that sends the data provided at construction time, useful for HTTP
+    FastSender(const QByteArray& data, bool https, bool fillBuffer)
+        : wantedSize(data.size()), port(-1), protocol(ProvidedData),
+          doSsl(https), fillKernelBuffer(fillBuffer), transferRate(-1),
+          dataToTransmit(data), dataIndex(0)
     {
         start();
         ready.acquire();
@@ -572,90 +705,121 @@ public:
 
     inline int serverPort() const { return port; }
 
+    int writeNextData(QTcpSocket* socket, qint32 size)
+    {
+        if (protocol == DebugPipe) {
+            QByteArray data;
+            QDataStream stream(&data, QIODevice::WriteOnly);
+            stream << QVariantMap() << QByteArray(size, 'a');
+            socket->write((char*)&size, sizeof size);
+            socket->write(data);
+            dataIndex += size;
+            return size;
+        } else {
+            const QByteArray data = dataToTransmit.mid(dataIndex, size);
+            socket->write(data);
+            dataIndex += data.size();
+            //qDebug() << "wrote" << dataIndex << "/" << dataToTransmit.size();
+            return data.size();
+        }
+    }
+    void writeLastData(QTcpSocket* socket)
+    {
+        if (protocol == DebugPipe) {
+            QByteArray data;
+            QDataStream stream(&data, QIODevice::WriteOnly);
+            stream << QVariantMap() << QByteArray();
+            const qint32 size = data.size();
+            socket->write((char*)&size, sizeof size);
+            socket->write(data);
+        }
+    }
+
 protected:
     void run()
     {
-        QTcpServer server;
+        BlockingTcpServer server(doSsl);
         server.listen();
         port = server.serverPort();
         ready.release();
 
-        server.waitForNewConnection(-1);
-        QTcpSocket *client = server.nextPendingConnection();
+        QTcpSocket *client = server.waitForNextConnectionSocket();
 
         // get the "request" packet
         if (!client->waitForReadyRead(2000)) {
-            qDebug() << client->error() << "waiting for \"request\" packet";
+            qDebug() << "FastSender:" << client->error() << "waiting for \"request\" packet";
             return;
         }
-        client->readAll();      // we're not interested in the actual contents
+        client->readAll();      // we're not interested in the actual contents (e.g. HTTP request)
 
-        enum { BlockSize = 256 };
-        QByteArray data;
-        {
-            QDataStream stream(&data, QIODevice::WriteOnly);
-            stream << QVariantMap() << QByteArray(BlockSize, 'a');
+        enum { BlockSize = 1024 };
+
+        if (fillKernelBuffer) {
+
+            // write a bunch of bytes to fill up the buffers
+            bool done = false;
+            do {
+                if (writeNextData(client, BlockSize) < BlockSize) {
+                    qDebug() << "ERROR: FastSender: not enough data to write in order to fill buffers; or client is reading too fast";
+                    return;
+                }
+                while (client->bytesToWrite() > 0) {
+                    if (!client->waitForBytesWritten(0)) {
+                        done = true;
+                        break;
+                    }
+                }
+                //qDebug() << "Filling kernel buffer: wrote" << dataIndex << "bytes";
+            } while (!done);
+
+            qDebug() << "FastSender: ok, kernel buffer is full after writing" << dataIndex << "bytes";
         }
-        qint32 size = data.size();
 
-        // write a bunch of bytes to fill up the buffers
-        do {
-            client->write((char*)&size, sizeof size);
-            client->write(data);
-            while (client->bytesToWrite() > 0)
-                if (!client->waitForBytesWritten(0))
-                    break;
-        } while (client->bytesToWrite() == 0);
+        // Tell the client to start reading
+        emit dataReady();
 
         // the kernel buffer is full
         // clean up QAbstractSocket's residue:
-        while (client->bytesToWrite() > 0)
+        while (client->bytesToWrite() > 0) {
+            qDebug() << "Still having" << client->bytesToWrite() << "bytes to write, doing that now";
             if (!client->waitForBytesWritten(2000)) {
-                qDebug() << client->error() << "cleaning up residue";
+                qDebug() << "ERROR: FastSender:" << client->error() << "cleaning up residue";
                 return;
             }
+        }
 
-        // now write in "blocking mode"
+        // now write in "blocking mode", this is where the rate measuring starts
         QTime timer;
         timer.start();
-        qint64 totalBytes = 0;
-        while (totalBytes < wantedSize) {
-            int bytesToWrite = wantedSize - totalBytes;
+        //const qint64 writtenBefore = dataIndex;
+        //qint64 measuredTotalBytes = wantedSize - writtenBefore;
+        qint64 measuredSentBytes = 0;
+        while (dataIndex < wantedSize) {
+            const int remainingBytes = wantedSize - measuredSentBytes;
+            const int bytesToWrite = qMin(remainingBytes, static_cast<int>(BlockSize));
             Q_ASSERT(bytesToWrite);
-            if (bytesToWrite > BlockSize) {
-                bytesToWrite = BlockSize;
-            } else {
-                QDataStream stream(&data, QIODevice::WriteOnly);
-                stream << QVariantMap() << QByteArray(bytesToWrite, 'b');
-            }
-            size = data.size();
-            client->write((char*)&size, sizeof size);
-            client->write(data);
-            totalBytes += bytesToWrite;
+            measuredSentBytes += writeNextData(client, bytesToWrite);
 
-            while (client->bytesToWrite() > 0)
+            while (client->bytesToWrite() > 0) {
                 if (!client->waitForBytesWritten(2000)) {
-                    qDebug() << client->error() << "blocking write";
+                    qDebug() << "ERROR: FastSender:" << client->error() << "during blocking write";
                     return;
                 }
-//            qDebug() << bytesToWrite << "bytes written now;"
-//                     << totalBytes << "total ("
-//                     << totalBytes*100/wantedSize << "% complete);"
-//                     << timer.elapsed() << "ms elapsed";
+            }
+            /*qDebug() << "FastSender:" << bytesToWrite << "bytes written now;"
+                     << measuredSentBytes << "measured bytes" << measuredSentBytes + writtenBefore << "total ("
+                     << measuredSentBytes*100/measuredTotalBytes << "% complete);"
+                     << timer.elapsed() << "ms elapsed";*/
         }
 
-        transferRate = totalBytes * 1000 / timer.elapsed();
-        qDebug() << "flushed" << totalBytes << "bytes in" << timer.elapsed() << "ms: rate =" << transferRate;
+        transferRate = measuredSentBytes * 1000 / timer.elapsed();
+        qDebug() << "FastSender: flushed" << measuredSentBytes << "bytes in" << timer.elapsed() << "ms: rate =" << transferRate << "B/s";
 
-        // write a "close connection" packet
-        {
-            QDataStream stream(&data, QIODevice::WriteOnly);
-            stream << QVariantMap() << QByteArray();
-        }
-        size = data.size();
-        client->write((char*)&size, sizeof size);
-        client->write(data);
+        // write a "close connection" packet, if the protocol needs it
+        writeLastData(client);
     }
+signals:
+    void dataReady();
 };
 
 class RateControlledReader: public QObject
@@ -664,40 +828,85 @@ class RateControlledReader: public QObject
     QIODevice *device;
     int bytesToRead;
     int interval;
+    int readBufferSize;
 public:
+    QByteArray data;
     qint64 totalBytesRead;
-    RateControlledReader(QIODevice *dev, int kbPerSec)
-        : device(dev), totalBytesRead(0)
+    RateControlledReader(QObject& senderObj, QIODevice *dev, int kbPerSec, int maxBufferSize = 0)
+        : device(dev), readBufferSize(maxBufferSize), totalBytesRead(0)
     {
         // determine how often we have to wake up
-        bytesToRead = kbPerSec * 1024 / 20;
-        interval = 50;
+        int timesPerSecond;
+        if (readBufferSize == 0) {
+            // The requirement is simply "N KB per seconds"
+            timesPerSecond = 20;
+            bytesToRead = kbPerSec * 1024 / timesPerSecond;
+        } else {
+            // The requirement also includes "<readBufferSize> bytes at a time"
+            bytesToRead = readBufferSize;
+            timesPerSecond = kbPerSec * 1024 / readBufferSize;
+        }
+        interval = 1000 / timesPerSecond; // in ms
 
         qDebug() << "RateControlledReader: going to read" << bytesToRead
                  << "bytes every" << interval << "ms";
-        qDebug() << "actual rate will be"
+        qDebug() << "actual read rate will be"
                  << (bytesToRead * 1000 / interval) << "bytes/sec (wanted"
                  << kbPerSec * 1024 << "bytes/sec)";
+
+        // Wait for data to be readyRead
+        bool ok = connect(&senderObj, SIGNAL(dataReady()), this, SLOT(slotDataReady()));
+        Q_ASSERT(ok);
+    }
+
+    void wrapUp()
+    {
+        QByteArray someData = device->read(device->bytesAvailable());
+        data += someData;
+        totalBytesRead += someData.size();
+        qDebug() << "wrapUp: found" << someData.size() << "bytes left. progress" << data.size();
+        //qDebug() << "wrapUp: now bytesAvailable=" << device->bytesAvailable();
+    }
+
+private slots:
+    void slotDataReady()
+    {
+        //qDebug() << "RateControlledReader: ready to go";
         startTimer(interval);
     }
 
 protected:
     void timerEvent(QTimerEvent *)
     {
+        //qDebug() << "RateControlledReader: timerEvent bytesAvailable=" << device->bytesAvailable();
+        if (readBufferSize > 0) {
+            // This asserts passes all the time, except in the final flush.
+            //Q_ASSERT(device->bytesAvailable() <= readBufferSize);
+        }
+
         qint64 bytesRead = 0;
         QTime stopWatch;
         stopWatch.start();
         do {
-            if (device->bytesAvailable() == 0)
-                if (stopWatch.elapsed() > 10 || !device->waitForReadyRead(5))
+            if (device->bytesAvailable() == 0) {
+                if (stopWatch.elapsed() > 20) {
+                    qDebug() << "RateControlledReader: Not enough data available for reading, waited too much, timing out";
                     break;
-            QByteArray data = device->read(bytesToRead - bytesRead);
-            bytesRead += data.size();
-        } while (bytesRead < bytesToRead);// && stopWatch.elapsed() < interval/4);
+                }
+                if (!device->waitForReadyRead(5)) {
+                    qDebug() << "RateControlledReader: Not enough data available for reading, even after waiting 5ms, bailing out";
+                    break;
+                }
+            }
+            QByteArray someData = device->read(bytesToRead - bytesRead);
+            data += someData;
+            bytesRead += someData.size();
+            //qDebug() << "RateControlledReader: successfully read" << someData.size() << "progress:" << data.size();
+        } while (bytesRead < bytesToRead);
         totalBytesRead += bytesRead;
 
         if (bytesRead < bytesToRead)
-            qWarning() << bytesToRead - bytesRead << "bytes not read";
+            qWarning() << "RateControlledReader: WARNING:" << bytesToRead - bytesRead << "bytes not read";
     }
 };
 
@@ -3157,8 +3366,8 @@ public:
             connect(serverSocket, SIGNAL(encrypted()), this, SLOT(encryptedSlot()));
             serverSocket->setProtocol(QSsl::AnyProtocol);
             connect(serverSocket, SIGNAL(sslErrors(const QList<QSslError>&)), serverSocket, SLOT(ignoreSslErrors()));
-            serverSocket->setLocalCertificate (SRCDIR "/certs/server.pem");
-            serverSocket->setPrivateKey (SRCDIR  "/certs/server.key");
+            serverSocket->setLocalCertificate(SRCDIR "/certs/server.pem");
+            serverSocket->setPrivateKey(SRCDIR  "/certs/server.key");
             serverSocket->startServerEncryption();
         } else {
             delete serverSocket;
@@ -3247,6 +3456,93 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
     server.close();
 }
 #endif
+
+void tst_QNetworkReply::ioGetFromBuiltinHttp_data()
+{
+    QTest::addColumn<bool>("https");
+    QTest::addColumn<int>("bufferSize");
+    QTest::newRow("http+unlimited") << false << 0;
+    QTest::newRow("http+limited") << false << 4096;
+#ifndef QT_NO_OPENSSL
+    QTest::newRow("https+unlimited") << true << 0;
+    QTest::newRow("https+limited") << true << 4096;
+#endif
+}
+
+void tst_QNetworkReply::ioGetFromBuiltinHttp()
+{
+    QFETCH(bool, https);
+    QFETCH(int, bufferSize);
+
+    QByteArray testData;
+    // Make the data big enough so that it can fill the kernel buffer
+    // (which seems to hold 202 KB here)
+    const int wantedSize = 1200 * 1000;
+    testData.reserve(wantedSize);
+    // And in the case of SSL, the compression can fool us and let the
+    // server send the data much faster than expected.
+    // So better provide random data that cannot be compressed.
+    for (int i = 0; i < wantedSize; ++i)
+        testData += (char)qrand();
+
+    QByteArray httpResponse = QByteArray("HTTP/1.0 200 OK\r\nContent-Length: ");
+    httpResponse += QByteArray::number(testData.size());
+    httpResponse += "\r\n\r\n";
+    httpResponse += testData;
+
+    qDebug() << "Server will send" << (httpResponse.size()-testData.size()) << "bytes of header and"
+             << testData.size() << "bytes of data";
+
+    const bool fillKernelBuffer = bufferSize > 0;
+    FastSender server(httpResponse, https, fillKernelBuffer);
+
+    QUrl url(QString("%1://127.0.0.1:%2/qtest/rfc3252.txt")
+             .arg(https?"https":"http")
+             .arg(server.serverPort()));
+    QNetworkRequest request(url);
+    QNetworkReplyPtr reply = manager.get(request);
+    reply->setReadBufferSize(bufferSize);
+    reply->ignoreSslErrors();
+    const int rate = 200; // in kB per sec
+    RateControlledReader reader(server, reply, rate, bufferSize);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTime loopTime;
+    loopTime.start();
+    QTestEventLoop::instance().enterLoop(11);
+    const int elapsedTime = loopTime.elapsed();
+    server.wait();
+    reader.wrapUp();
+
+    qDebug() << "send rate:" << server.transferRate << "B/s";
+    qDebug() << "receive rate:" << reader.totalBytesRead * 1000 / elapsedTime
+             << "(it received" << reader.totalBytesRead << "bytes in" << elapsedTime << "ms)";
+
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(reply->url(), request.url());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+
+    QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), (qint64)testData.size());
+    if (reader.data.size() < testData.size()) { // oops?
+        QCOMPARE(reader.data, testData.mid(0, reader.data.size()));
+        qDebug() << "The data is incomplete, the last" << testData.size() - reader.data.size() << "bytes are missing";
+    }
+    QCOMPARE(reader.data.size(), testData.size());
+    QCOMPARE(reader.data, testData);
+
+    // OK we got the file alright, but did setReadBufferSize work?
+    QVERIFY(server.transferRate != -1);
+    if (bufferSize > 0) {
+        const int allowedDeviation = 16; // TODO find out why the send rate is 13% faster currently
+        const int minRate = rate * 1024 * (100-allowedDeviation) / 100;
+        const int maxRate = rate * 1024 * (100+allowedDeviation) / 100;
+        qDebug() << minRate << "<="<< server.transferRate << "<=" << maxRate << "?";
+        QVERIFY(server.transferRate >= minRate);
+        QVERIFY(server.transferRate <= maxRate);
+    }
+}
 
 void tst_QNetworkReply::ioPostToHttpUploadProgress()
 {
@@ -3432,14 +3728,20 @@ void tst_QNetworkReply::rateControl()
     QNetworkReplyPtr reply = manager.get(request);
     reply->setReadBufferSize(32768);
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
+    QSignalSpy errorSpy(reply, SIGNAL(error(QNetworkReply::NetworkError)));
 
-    RateControlledReader reader(reply, rate);
+    RateControlledReader reader(sender, reply, rate, 20);
 
     // this test is designed to run for 25 seconds at most
     QTime loopTime;
     loopTime.start();
     QTestEventLoop::instance().enterLoop(40);
     int elapsedTime = loopTime.elapsed();
+
+    if (!errorSpy.isEmpty()) {
+        qDebug() << "ERROR!" << errorSpy[0][0] << reply->errorString();
+    }
 
     qDebug() << "tst_QNetworkReply::rateControl" << "send rate:" << sender.transferRate;
     qDebug() << "tst_QNetworkReply::rateControl" << "receive rate:" << reader.totalBytesRead * 1000 / elapsedTime
@@ -4303,6 +4605,7 @@ void tst_QNetworkReply::qtbug12908compressedHttpReply()
     QCOMPARE(reply->error(), QNetworkReply::NoError);
 }
 
+// TODO add similar test for FTP
 void tst_QNetworkReply::getFromUnreachableIp()
 {
     QNetworkAccessManager manager;
@@ -4316,6 +4619,112 @@ void tst_QNetworkReply::getFromUnreachableIp()
 
     QVERIFY(reply->error() != QNetworkReply::NoError);
 }
+
+void tst_QNetworkReply::qtbug4121unknownAuthentication()
+{
+    MiniHttpServer server(QByteArray("HTTP/1.1 401 bla\r\nWWW-Authenticate: crap\r\nContent-Length: 0\r\n\r\n"));
+    server.doClose = false;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkAccessManager manager;
+    QNetworkReplyPtr reply = manager.get(request);
+
+    qRegisterMetaType<QNetworkReply*>("QNetworkReply*");
+    qRegisterMetaType<QAuthenticator*>("QAuthenticator*");
+    QSignalSpy authSpy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+    QSignalSpy finishedSpy(&manager, SIGNAL(finished(QNetworkReply*)));
+    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
+    QSignalSpy errorSpy(reply, SIGNAL(error(QNetworkReply::NetworkError)));
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(authSpy.count(), 0);
+    QCOMPARE(finishedSpy.count(), 1);
+    QCOMPARE(errorSpy.count(), 1);
+
+    QCOMPARE(reply->error(), QNetworkReply::AuthenticationRequiredError);
+}
+
+class QtBug13431Helper : public QObject {
+    Q_OBJECT
+public:
+    QNetworkReply* m_reply;
+    QTimer m_dlTimer;
+public slots:
+    void replyFinished(QNetworkReply*) {
+        QTestEventLoop::instance().exitLoop();
+    }
+
+    void onReadAndReschedule() {
+        const qint64 bytesReceived = m_reply->bytesAvailable();
+        if (bytesReceived) {
+           QByteArray data = m_reply->read(bytesReceived);
+           // reschedule read
+           const int millisecDelay = static_cast<int>(bytesReceived * 1000 / m_reply->readBufferSize());
+           m_dlTimer.start(millisecDelay);
+        }
+        else {
+           // reschedule read
+           m_dlTimer.start(200);
+        }
+    }
+};
+
+void tst_QNetworkReply::qtbug13431replyThrottling()
+{
+    QtBug13431Helper helper;
+
+    QNetworkAccessManager nam;
+    connect(&nam, SIGNAL(finished(QNetworkReply*)), &helper, SLOT(replyFinished(QNetworkReply*)));
+
+    // Download a bigger file
+    QNetworkRequest netRequest(QUrl("http://qt-test-server/qtest/bigfile"));
+    helper.m_reply = nam.get(netRequest);
+    // Set the throttle
+    helper.m_reply->setReadBufferSize(36000);
+
+    // Schedule a timer that tries to read
+
+    connect(&helper.m_dlTimer, SIGNAL(timeout()), &helper, SLOT(onReadAndReschedule()));
+    helper.m_dlTimer.setSingleShot(true);
+    helper.m_dlTimer.start(0);
+
+    QTestEventLoop::instance().enterLoop(30);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(helper.m_reply->isFinished());
+    QCOMPARE(helper.m_reply->error(), QNetworkReply::NoError);
+}
+
+void tst_QNetworkReply::httpWithNoCredentialUsage()
+{
+    QNetworkRequest request(QUrl("http://httptest:httptest@" + QtNetworkSettings::serverName() + "/qtest/protected/cgi-bin/md5sum.cgi"));
+    // Do not use credentials
+    request.setAttribute(QNetworkRequest::AuthenticationReuseAttribute, QNetworkRequest::Manual);
+    QNetworkAccessManager manager;
+    QNetworkReplyPtr reply = manager.get(request);
+
+    qRegisterMetaType<QNetworkReply*>("QNetworkReply*");
+    qRegisterMetaType<QAuthenticator*>("QAuthenticator*");
+    QSignalSpy authSpy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+    QSignalSpy finishedSpy(&manager, SIGNAL(finished(QNetworkReply*)));
+    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
+    QSignalSpy errorSpy(reply, SIGNAL(error(QNetworkReply::NetworkError)));
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    // We check if authenticationRequired was emitted, however we do not anything in it so it should be 401
+    QCOMPARE(authSpy.count(), 1);
+    QCOMPARE(finishedSpy.count(), 1);
+    QCOMPARE(errorSpy.count(), 1);
+
+    QCOMPARE(reply->error(), QNetworkReply::AuthenticationRequiredError);
+}
+
+
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!
 void tst_QNetworkReply::parentingRepliesToTheApp()

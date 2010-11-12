@@ -2521,9 +2521,9 @@ int QS60Style::pixelMetric(PixelMetric metric, const QStyleOption *option, const
             metricValue = QS60StylePrivate::pixelMetric(PM_LayoutLeftMargin);
     }
 
-    if (widget && (metric == PM_LayoutTopMargin))
+    if (widget && (metric == PM_LayoutTopMargin || metric == PM_LayoutLeftMargin || metric == PM_LayoutRightMargin))
         if (widget->windowType() == Qt::Dialog)
-            //double the top layout margin for dialogs, it is very close to real value
+            //double the layout margins (except bottom) for dialogs, it is very close to real value
             //without having to define custom pixel metric
             metricValue *= 2;
 
@@ -3424,8 +3424,11 @@ bool QS60Style::eventFilter(QObject *object, QEvent *event)
                         qobject_cast<QCheckBox *>(w))
                     d->m_pressedWidget = w;
 
-                if ( d->m_pressedWidget)
+                if (d->m_pressedWidget)
                     d->m_pressedWidget->update();
+#ifdef Q_WS_S60
+                d->touchFeedback(event, w);
+#endif
             }
             break;
         }

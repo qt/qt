@@ -647,7 +647,8 @@ language.
 
 \section1 Adding new properties
 
-New properties can be added to an existing type.  These new properties are
+New properties can be added to an existing type using the \c property keyword.
+These new properties are
 available for use within QML, and also appear as regular Qt properties on the
 C++ object, accessible through the regular property access mechanisms.
 
@@ -679,8 +680,12 @@ like this:
     property list<Item> listOfItemsProperty
 \endcode
 
+Custom types must be registered with qmlRegisterType() to be usable as a property
+type. Also note that list properties cannot be modified like ordinary JavaScript
+arrays; see the \l {list}{list type documentation} for details.
+
 QML supports two methods for adding a new property to a type: a new property
-definition, and a property alias.
+definition, and a property alias. These are shown below.
 
 \section2 Property definitions
 

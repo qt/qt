@@ -198,7 +198,8 @@ void tst_QBoxLayout::sizeConstraints()
 
 void tst_QBoxLayout::setGeometry()
 {
-    QWidget w;
+    QWidget toplevel;
+    QWidget w(&toplevel);
     QVBoxLayout *lay = new QVBoxLayout;
     lay->setMargin(0);
     lay->setSpacing(0);
@@ -209,7 +210,7 @@ void tst_QBoxLayout::setGeometry()
     lay2->setAlignment(Qt::AlignRight);
     lay->addLayout(lay2);
     w.setLayout(lay);
-    w.show();
+    toplevel.show();
 
     QRect newGeom(0, 0, 70, 70);
     lay2->setGeometry(newGeom);

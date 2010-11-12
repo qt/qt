@@ -53,9 +53,6 @@ QT_BEGIN_NAMESPACE
 // before we perform a flick.
 static const int FlickThreshold = 20;
 
-// Really slow flicks can be annoying.
-static const int MinimumFlickVelocity = 75;
-
 QDeclarativeFlickableVisibleArea::QDeclarativeFlickableVisibleArea(QDeclarativeFlickable *parent)
     : QObject(parent), flickable(parent), m_xPosition(0.), m_widthRatio(0.)
     , m_yPosition(0.), m_heightRatio(0.)
@@ -990,8 +987,8 @@ void QDeclarativeFlickable::viewportMoved()
 {
     Q_D(QDeclarativeFlickable);
 
-    qreal prevY = d->lastFlickablePosition.x();
-    qreal prevX = d->lastFlickablePosition.y();
+    qreal prevX = d->lastFlickablePosition.x();
+    qreal prevY = d->lastFlickablePosition.y();
     d->velocityTimeline.clear();
     if (d->pressed || d->calcVelocity) {
         int elapsed = QDeclarativeItemPrivate::restart(d->velocityTime);
@@ -1012,7 +1009,7 @@ void QDeclarativeFlickable::viewportMoved()
         }
     }
 
-    d->lastFlickablePosition = QPointF(d->vData.move.value(), d->hData.move.value());
+    d->lastFlickablePosition = QPointF(d->hData.move.value(), d->vData.move.value());
 
     d->vTime = d->timeline.time();
     d->updateBeginningEnd();
@@ -1032,6 +1029,13 @@ void QDeclarativeFlickable::geometryChanged(const QRectF &newGeometry,
             d->contentItem->setWidth(width());
             emit contentWidthChanged();
         }
+        // Make sure that we're entirely in view.
+        if (!d->pressed && !d->movingHorizontally && !d->movingVertically) {
+            int oldDuration = d->fixupDuration;
+            d->fixupDuration = 0;
+            d->fixupX();
+            d->fixupDuration = oldDuration;
+        }
     }
     if (newGeometry.height() != oldGeometry.height()) {
         if (yflick())
@@ -1039,6 +1043,13 @@ void QDeclarativeFlickable::geometryChanged(const QRectF &newGeometry,
         if (d->vData.viewSize < 0) {
             d->contentItem->setHeight(height());
             emit contentHeightChanged();
+        }
+        // Make sure that we're entirely in view.
+        if (!d->pressed && !d->movingHorizontally && !d->movingVertically) {
+            int oldDuration = d->fixupDuration;
+            d->fixupDuration = 0;
+            d->fixupY();
+            d->fixupDuration = oldDuration;
         }
     }
 
@@ -1182,19 +1193,18 @@ void QDeclarativeFlickable::setBoundsBehavior(BoundsBehavior b)
     \qmlproperty real Flickable::contentWidth
     \qmlproperty real Flickable::contentHeight
 
-    The dimensions of the content (the surface controlled by Flickable). Typically this
-    should be set to the combined size of the items placed in the Flickable. Note this
-    can be set automatically using \l {Item::childrenRect.width}{childrenRect.width}
-    and \l {Item::childrenRect.height}{childrenRect.height}. For example:
+    The dimensions of the content (the surface controlled by Flickable).
+    This should typically be set to the combined size of the items placed in the
+    Flickable.
 
-    \code
-    Flickable {
-        width: 320; height: 480
-        contentWidth: childrenRect.width; contentHeight: childrenRect.height
+    The following snippet shows how these properties are used to display
+    an image that is larger than the Flickable item itself:
 
-        Image { id: image; source: "bigImage.png" }
-    }
-    \endcode
+    \snippet doc/src/snippets/declarative/flickable.qml document
+
+    In some cases, the the content dimensions can be automatically set
+    using the \l {Item::childrenRect.width}{childrenRect.width}
+    and \l {Item::childrenRect.height}{childrenRect.height} properties.
 */
 qreal QDeclarativeFlickable::contentWidth() const
 {

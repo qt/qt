@@ -182,23 +182,6 @@ void QNetworkAccessFtpBackend::closeDownstreamChannel()
 #endif
 }
 
-bool QNetworkAccessFtpBackend::waitForDownstreamReadyRead(int ms)
-{
-    if (!ftp)
-        return false;
-
-    if (ftp->bytesAvailable()) {
-        ftpReadyRead();
-        return true;
-    }
-
-    if (ms == 0)
-        return false;
-
-    qCritical("QNetworkAccess: FTP backend does not support waitForReadyRead()");
-    return false;
-}
-
 void QNetworkAccessFtpBackend::downstreamReadyWrite()
 {
     if (state == Transferring && ftp && ftp->bytesAvailable())

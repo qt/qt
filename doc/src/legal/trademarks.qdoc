@@ -33,20 +33,20 @@
     \brief Information about trademarks owned by Nokia and other organisations.
 
     Nokia, the Nokia logo, Qt, and the Qt logo are trademarks of Nokia
-    Corporation and/or its subsidiaries in Finland and other countries.
+    Corporation and/or its subsidiaries in Finland and other countries.
 
     \list
     \o Intel, Intel Inside (logos), MMX and Pentium are \reg trademarks of
        Intel Corporation in the United States, other countries, or both.
-    \o Java and all Java-based trademarks are trademarks of Sun Microsystems,
-       Inc. in the United States, other countries, or both.
+    \o Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+       Other names may be trademarks of their respective owners.
     \o Linux is a \reg trademark of Linus Torvalds in the United States, other
        countries or both. 
     \o Mac, Mac OS and Macintosh are \reg trademarks of Apple Computer, Inc.,
        registered in the U.S. and other countries. 
-    \o Microsoft, Windows, Windows NT, XP, Visual Studio and the Windows logo
-       are \reg trademarks of Microsoft Corporation in the United States, other
-       countries, or both. 
+    \o Microsoft, Windows, Windows NT, XP, Windows Vista, Visual Studio and the
+       Windows logo are \reg trademarks of Microsoft Corporation in the United
+       States, other countries, or both.
     \o Motif is a registered trademark of The Open Group in the United States,
        other countries, or both. 
     \o OpenGL is a \reg trademark of Silicon Graphics, Inc. in the United States

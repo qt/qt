@@ -377,7 +377,7 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pixmap, cons
         checkedForEglImageTFP = true;
 
         // We need to be able to create an EGLImage from a native pixmap, which was split
-        // into a seperate EGL extension, EGL_KHR_image_pixmap. It is possible to have
+        // into a separate EGL extension, EGL_KHR_image_pixmap. It is possible to have
         // eglCreateImageKHR & eglDestroyImageKHR without support for pixmaps, so we must
         // check we have the EGLImage from pixmap functionality.
         if (QEgl::hasExtension("EGL_KHR_image") || QEgl::hasExtension("EGL_KHR_image_pixmap")) {
