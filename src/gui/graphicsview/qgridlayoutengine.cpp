@@ -1107,7 +1107,50 @@ QSizeF QGridLayoutEngine::sizeHint(const QLayoutStyleInfo &styleInfo, Qt::SizeHi
 {
     QGridLayoutBox sizehint_totalBoxes[NOrientations];
 
-    if(rowCount() < 1 || columnCount() < 1 || !hasDynamicConstraint()) {
+    bool sizeHintCalculated = false;
+
+    if (hasDynamicConstraint() && rowCount() > 0 && columnCount() > 0) {
+        if (constraintOrientation() == Qt::Vertical) {
+            //We have items whose height depends on their width
+            if (constraint.width() >= 0) {
+                if(q_cachedDataForStyleInfo != styleInfo)
+                    ensureColumnAndRowData(&q_columnData, &sizehint_totalBoxes[Hor], styleInfo, NULL, NULL, Qt::Horizontal);
+                else
+                    sizehint_totalBoxes[Hor] = q_totalBoxes[Hor];
+                QVector<qreal> sizehint_xx;
+                QVector<qreal> sizehint_widths;
+
+                sizehint_xx.resize(columnCount());
+                sizehint_widths.resize(columnCount());
+                qreal width = constraint.width();
+                //Calculate column widths and positions, and put results in q_xx.data() and q_widths.data() so that we can use this information as
+                //constraints to find the row heights
+                q_columnData.calculateGeometries(0, columnCount(), width, sizehint_xx.data(), sizehint_widths.data(),
+                        0, sizehint_totalBoxes[Hor]);
+                ensureColumnAndRowData(&q_rowData, &sizehint_totalBoxes[Ver], styleInfo, sizehint_xx.data(), sizehint_widths.data(), Qt::Vertical);
+                sizeHintCalculated = true;
+            }
+        } else {
+            if (constraint.height() >= 0) {
+                //We have items whose width depends on their height
+                ensureColumnAndRowData(&q_rowData, &sizehint_totalBoxes[Ver], styleInfo, NULL, NULL, Qt::Vertical);
+                QVector<qreal> sizehint_yy;
+                QVector<qreal> sizehint_heights;
+
+                sizehint_yy.resize(rowCount());
+                sizehint_heights.resize(rowCount());
+                qreal height = constraint.height();
+                //Calculate row heights and positions, and put results in q_yy.data() and q_heights.data() so that we can use this information as
+                //constraints to find the column widths
+                q_rowData.calculateGeometries(0, rowCount(), height, sizehint_yy.data(), sizehint_heights.data(),
+                        0, sizehint_totalBoxes[Ver]);
+                ensureColumnAndRowData(&q_columnData, &sizehint_totalBoxes[Hor], styleInfo, sizehint_yy.data(), sizehint_heights.data(), Qt::Vertical);
+                sizeHintCalculated = true;
+            }
+        }
+    }
+
+    if (!sizeHintCalculated) {
         //No items with height for width, so it doesn't matter which order we do these in
         if(q_cachedDataForStyleInfo != styleInfo) {
             ensureColumnAndRowData(&q_columnData, &sizehint_totalBoxes[Hor], styleInfo, NULL, NULL, Qt::Horizontal);
@@ -1116,55 +1159,7 @@ QSizeF QGridLayoutEngine::sizeHint(const QLayoutStyleInfo &styleInfo, Qt::SizeHi
             sizehint_totalBoxes[Hor] = q_totalBoxes[Hor];
             sizehint_totalBoxes[Ver] = q_totalBoxes[Ver];
         }
-    } else if(constraintOrientation() == Qt::Vertical) {
-        //We have items whose width depends on their height
-        if(q_cachedDataForStyleInfo != styleInfo)
-            ensureColumnAndRowData(&q_columnData, &sizehint_totalBoxes[Hor], styleInfo, NULL, NULL, Qt::Horizontal);
-        else
-            sizehint_totalBoxes[Hor] = q_totalBoxes[Hor];
-        QVector<qreal> sizehint_xx;
-        QVector<qreal> sizehint_widths;
-
-        sizehint_xx.resize(columnCount());
-        sizehint_widths.resize(columnCount());
-        qreal width = constraint.width();
-        if(width < 0) {
-            /* It's not obvious what the behaviour should be. */
-/*            if(which == Qt::MaximumSize)
-                width = sizehint_totalBoxes[Hor].q_maximumSize;
-            else if(which == Qt::MinimumSize)
-                width = sizehint_totalBoxes[Hor].q_minimumSize;
-            else*/
-                width = sizehint_totalBoxes[Hor].q_preferredSize;
-        }
-        //Calculate column widths and positions, and put results in q_xx.data() and q_widths.data() so that we can use this information as
-        //constraints to find the row heights
-        q_columnData.calculateGeometries(0, columnCount(), width, sizehint_xx.data(), sizehint_widths.data(),
-                0, sizehint_totalBoxes[Hor]);
-        ensureColumnAndRowData(&q_rowData, &sizehint_totalBoxes[Ver], styleInfo, sizehint_xx.data(), sizehint_widths.data(), Qt::Vertical);
-    } else {
-        //We have items whose height depends on their width
-        ensureColumnAndRowData(&q_rowData, &sizehint_totalBoxes[Ver], styleInfo, NULL, NULL, Qt::Vertical);
-        QVector<qreal> sizehint_yy;
-        QVector<qreal> sizehint_heights;
-
-        sizehint_yy.resize(rowCount());
-        sizehint_heights.resize(rowCount());
-        qreal height = constraint.height();
-        if(height < 0) {
-/*            if(which == Qt::MaximumSize)
-                height = sizehint_totalBoxes[Ver].q_maximumSize;
-            else if(which == Qt::MinimumSize)
-                height = sizehint_totalBoxes[Ver].q_minimumSize;
-            else*/
-                height = sizehint_totalBoxes[Ver].q_preferredSize;
-        }
-        //Calculate row heights and positions, and put results in q_yy.data() and q_heights.data() so that we can use this information as
-        //constraints to find the column widths
-        q_rowData.calculateGeometries(0, rowCount(), height, sizehint_yy.data(), sizehint_heights.data(),
-                0, sizehint_totalBoxes[Ver]);
-        ensureColumnAndRowData(&q_columnData, &sizehint_totalBoxes[Hor], styleInfo, sizehint_yy.data(), sizehint_heights.data(), Qt::Vertical);
-    }
+     }
 
     switch (which) {
     case Qt::MinimumSize:

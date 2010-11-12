@@ -2306,6 +2306,11 @@ static QSizeF hfw1(Qt::SizeHint, const QSizeF &constraint)
     return result;
 }
 
+static QSizeF hfw2(Qt::SizeHint /*which*/, const QSizeF &constraint)
+{
+    return QSizeF(constraint.width(), constraint.width());
+}
+
 void tst_QGraphicsGridLayout::geometries_data()
 {
 
@@ -2361,6 +2366,31 @@ void tst_QGraphicsGridLayout::geometries_data()
                                 << QRectF(0, 1, 50,100) << QRectF(50, 1, 50,400)
                             );
 
+
+    QTest::newRow("hfw-h408") << (ItemList()
+                                    << ItemDesc(0,0)
+                                        .minSize(QSizeF(1,1))
+                                        .preferredSize(QSizeF(50,10))
+                                        .maxSize(QSizeF(100, 100))
+                                    << ItemDesc(0,1)
+                                        .minSize(QSizeF(1,1))
+                                        .preferredSize(QSizeF(50,10))
+                                        .maxSize(QSizeF(100, 100))
+                                    << ItemDesc(1,0)
+                                        .minSize(QSizeF(1,1))
+                                        .preferredSize(QSizeF(50,10))
+                                        .maxSize(QSizeF(100, 100))
+                                    << ItemDesc(1,1)
+                                        .sizeHint(Qt::MinimumSize, QSizeF(40,40))
+                                        .sizeHint(Qt::PreferredSize, QSizeF(50,400))
+                                        .sizeHint(Qt::MaximumSize, QSizeF(500, 500))
+                                        .heightForWidth(hfw1)
+                                )
+                            << QSizeF(100, 408)
+                            << (RectList()
+                                << QRectF(0, 0, 50,  8) << QRectF(50,  0, 50,  8)
+                                << QRectF(0, 8, 50,100) << QRectF(50,  8, 50,400)
+                            );
     QTest::newRow("hfw-h410") << (ItemList()
                                     << ItemDesc(0,0)
                                         .minSize(QSizeF(1,1))
@@ -2384,6 +2414,150 @@ void tst_QGraphicsGridLayout::geometries_data()
                             << (RectList()
                                 << QRectF(0, 0, 50,10) << QRectF(50, 0, 50,10)
                                 << QRectF(0, 10, 50,100) << QRectF(50, 10, 50,400)
+                            );
+
+    QTest::newRow("hfw-h470") << (ItemList()
+                                    << ItemDesc(0,0)
+                                        .minSize(QSizeF(1,1))
+                                        .preferredSize(QSizeF(50,10))
+                                        .maxSize(QSizeF(100, 100))
+                                    << ItemDesc(0,1)
+                                        .minSize(QSizeF(1,1))
+                                        .preferredSize(QSizeF(50,10))
+                                        .maxSize(QSizeF(100, 100))
+                                    << ItemDesc(1,0)
+                                        .minSize(QSizeF(1,1))
+                                        .preferredSize(QSizeF(50,10))
+                                        .maxSize(QSizeF(100, 100))
+                                    << ItemDesc(1,1)
+                                        .sizeHint(Qt::MinimumSize, QSizeF(40,40))
+                                        .sizeHint(Qt::PreferredSize, QSizeF(50,400))
+                                        .sizeHint(Qt::MaximumSize, QSizeF(500,500))
+                                        .heightForWidth(hfw1)
+                                )
+                            << QSizeF(100, 470)
+                            << (RectList()
+                                << QRectF(0, 0, 50,70) << QRectF(50, 0, 50,70)
+                                << QRectF(0, 70, 50,100) << QRectF(50, 70, 50,400)
+                            );
+
+
+    // change layout width and verify
+    QTest::newRow("hfw-w100") << (ItemList()
+                                    << ItemDesc(0,0)
+                                        .minSize(QSizeF(1,1))
+                                        .preferredSize(QSizeF(50,10))
+                                        .maxSize(QSizeF(100, 100))
+                                    << ItemDesc(0,1)
+                                        .minSize(QSizeF(1,1))
+                                        .preferredSize(QSizeF(50,10))
+                                        .maxSize(QSizeF(100, 100))
+                                    << ItemDesc(1,0)
+                                        .minSize(QSizeF(1,1))
+                                        .preferredSize(QSizeF(50,10))
+                                        .maxSize(QSizeF(100, 100))
+                                    << ItemDesc(1,1)
+                                        .sizeHint(Qt::MinimumSize, QSizeF(40,40))
+                                        .sizeHint(Qt::PreferredSize, QSizeF(50,400))
+                                        .sizeHint(Qt::MaximumSize, QSizeF(5000,5000))
+                                        .heightForWidth(hfw1)
+                                )
+                            << QSizeF(100, 401)
+                            << (RectList()
+                                << QRectF( 0, 0,  50,   1) << QRectF( 50,  0,  50,   1)
+                                << QRectF( 0, 1,  50, 100) << QRectF( 50,  1,  50, 400)
+                            );
+
+    QTest::newRow("hfw-w160") << (ItemList()
+                                     << ItemDesc(0,0)
+                                         .minSize(QSizeF(1,1))
+                                         .preferredSize(QSizeF(50,10))
+                                         .maxSize(QSizeF(100, 100))
+                                     << ItemDesc(0,1)
+                                         .minSize(QSizeF(1,1))
+                                         .preferredSize(QSizeF(50,10))
+                                         .maxSize(QSizeF(100, 100))
+                                     << ItemDesc(1,0)
+                                         .minSize(QSizeF(1,1))
+                                         .preferredSize(QSizeF(50,10))
+                                         .maxSize(QSizeF(100, 100))
+                                     << ItemDesc(1,1)
+                                         .sizeHint(Qt::MinimumSize, QSizeF(40,40))
+                                         .sizeHint(Qt::PreferredSize, QSizeF(50,400))
+                                         .sizeHint(Qt::MaximumSize, QSizeF(5000,5000))
+                                         .heightForWidth(hfw1)
+                                 )
+                             << QSizeF(160, 401)
+                             << (RectList()
+                                 << QRectF( 0,   0,  80, 100) << QRectF( 80,   0,  80, 100)
+                                 << QRectF( 0, 100,  80, 100) << QRectF( 80, 100,  80, 250)
+                             );
+
+    QTest::newRow("hfw-w500") << (ItemList()
+                                    << ItemDesc(0,0)
+                                        .minSize(QSizeF(1,1))
+                                        .preferredSize(QSizeF(50,10))
+                                        .maxSize(QSizeF(100, 100))
+                                    << ItemDesc(0,1)
+                                        .minSize(QSizeF(1,1))
+                                        .preferredSize(QSizeF(50,10))
+                                        .maxSize(QSizeF(100, 100))
+                                    << ItemDesc(1,0)
+                                        .minSize(QSizeF(1,1))
+                                        .preferredSize(QSizeF(50,10))
+                                        .maxSize(QSizeF(100, 100))
+                                    << ItemDesc(1,1)
+                                        .sizeHint(Qt::MinimumSize, QSizeF(40,40))
+                                        .sizeHint(Qt::PreferredSize, QSizeF(50,400))
+                                        .sizeHint(Qt::MaximumSize, QSizeF(5000,5000))
+                                        .heightForWidth(hfw1)
+                                )
+                            << QSizeF(500, 401)
+                            << (RectList()
+                                << QRectF( 0,   0, 100, 100) << QRectF(100,   0, 100, 100)
+                                << QRectF( 0, 100, 100, 100) << QRectF(100, 100, 400,  50)
+                            );
+
+    QTest::newRow("hfw-alignment-defaults") << (ItemList()
+                                    << ItemDesc(0,0)
+                                        .minSize(QSizeF(100, 100))
+                                        .maxSize(QSizeF(100, 100))
+                                        .heightForWidth(hfw2)
+                                    << ItemDesc(1,0)
+                                        .minSize(QSizeF(200, 200))
+                                        .maxSize(QSizeF(200, 200))
+                                        .heightForWidth(hfw2)
+                                    << ItemDesc(2,0)
+                                        .minSize(QSizeF(300, 300))
+                                        .maxSize(QSizeF(300, 300))
+                                )
+                            << QSizeF(300, 600)
+                            << (RectList()
+                                << QRectF(0, 0,   100, 100)
+                                << QRectF(0, 100, 200, 200)
+                                << QRectF(0, 300, 300, 300)
+                            );
+
+    QTest::newRow("hfw-alignment2") << (ItemList()
+                                    << ItemDesc(0,0)
+                                        .minSize(QSizeF(100, 100))
+                                        .maxSize(QSizeF(100, 100))
+                                        .heightForWidth(hfw2)
+                                        .alignment(Qt::AlignRight)
+                                    << ItemDesc(1,0)
+                                        .minSize(QSizeF(200, 200))
+                                        .maxSize(QSizeF(200, 200))
+                                        .heightForWidth(hfw2)
+                                        .alignment(Qt::AlignHCenter)
+                                    << ItemDesc(2,0)
+                                        .minSize(QSizeF(300, 300))
+                                        .maxSize(QSizeF(300, 300))
+                                )
+                            << QSizeF(300, 600)
+                            << (RectList()
+                                << QRectF(200, 0,   100, 100)
+                                << QRectF( 50, 100, 200, 200)
+                                << QRectF(  0, 300, 300, 300)
                             );
 
 }
@@ -2556,8 +2730,9 @@ void tst_QGraphicsGridLayout::heightForWidth()
     w11->setSizePolicy(sp);
     layout->addItem(w11, 1, 1);
 
-    QSizeF prefSize = layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(-1, -1));
-    QCOMPARE(prefSize, QSizeF(10+200, 10+100));
+    QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(-1, -1)), QSizeF(2, 2));
+    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(-1, -1)), QSizeF(210, 110));
+    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(-1, -1)), QSizeF(30100, 30100));
 
     QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(2, -1)), QSizeF(2, 20001));
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(2, -1)), QSizeF(2, 20010));
@@ -2610,21 +2785,25 @@ void tst_QGraphicsGridLayout::heightForWidthWithSpanning()
     w->setSizePolicy(sp);
     layout->addItem(w, 0,0,2,2);
 
-    QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(-1, -1)), QSizeF(1, 100));
+    QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(-1, -1)), QSizeF(1, 1));
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(-1, -1)), QSizeF(200, 100));
-    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(-1, -1)), QSizeF(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX));
+    QEXPECT_FAIL("", "Due to an old bug this wrongly returns QWIDGETSIZE_MAX", Continue);
+    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(-1, -1)), QSizeF(30000, 30000));
 
     QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(200, -1)), QSizeF(200, 100));
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(200, -1)), QSizeF(200, 100));
-    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(200, -1)), QSizeF(200, QWIDGETSIZE_MAX));
+    QEXPECT_FAIL("", "Due to an old bug this wrongly returns QWIDGETSIZE_MAX", Continue);
+    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(200, -1)), QSizeF(200, 100));
 
     QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(2, -1)), QSizeF(2, 10000));
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(2, -1)), QSizeF(2, 10000));
-    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(2, -1)), QSizeF(2, QWIDGETSIZE_MAX));
+    QEXPECT_FAIL("", "Due to an old bug this wrongly returns QWIDGETSIZE_MAX", Continue);
+    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(2, -1)), QSizeF(2, 10000));
 
     QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(200, -1)), QSizeF(200, 100));
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(200, -1)), QSizeF(200, 100));
-    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(200, -1)), QSizeF(200, QWIDGETSIZE_MAX));
+    QEXPECT_FAIL("", "Due to an old bug this wrongly returns QWIDGETSIZE_MAX", Continue);
+    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(200, -1)), QSizeF(200, 10000));
 }
 
 QTEST_MAIN(tst_QGraphicsGridLayout)
