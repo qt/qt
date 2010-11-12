@@ -149,7 +149,6 @@ void BaselineHandler::receiveRequest()
             proto.socket.disconnectFromHost();
             return;
         }
-        connectionEstablished = true;
         QString logMsg;
         foreach (QString key, plat.keys()) {
             if (key != PI_HostName && key != PI_HostAddress)
@@ -157,6 +156,20 @@ void BaselineHandler::receiveRequest()
         }
         qDebug() << runId << logtime() << "Connection established with" << plat.value(PI_HostName)
                  << "[" << qPrintable(plat.value(PI_HostAddress)) << "]" << logMsg;
+
+        // Filter on branch
+        QString branch = plat.value(PI_PulseGitBranch);
+        if (branch.isEmpty()) {
+            // Not run by Pulse, i.e. ad hoc run: Ok.
+        }
+        else if (branch != QLS("master-integration") || !plat.value(PI_GitCommit).contains(QLS("Merge branch 'master' of scm.dev.nokia.troll.no:qt/oslo-staging-2 into master-integration"))) {
+            qDebug() << runId << logtime() << "Did not pass branch/staging repo filter, disconnecting.";
+            // TBD: Cleaner termination
+            proto.socket.disconnectFromHost();
+            return;
+        }
+
+        connectionEstablished = true;
         return;
     }
 
