@@ -62,15 +62,10 @@
 // copied from miutset.h, so we don't get a dependency into the app layer
 const TUid KUidMsgTypeSMTP			= {0x10001028};	// 268439592
 
-#ifdef Q_OS_SYMBIAN
-#  include <pathinfo.h>             // PathInfo
-#  ifdef USE_DOCUMENTHANDLER
-#    include <DocumentHandler.h>    // CDocumentHandler
-#    include <AknServerApp.h>
-#  endif
-#else
-#  warning CDocumentHandler requires support for S60
-#  undef USE_DOCUMENTHANDLER        // Fallback to RApaLsSession based implementation
+#include <pathinfo.h>             // PathInfo
+#ifdef USE_DOCUMENTHANDLER
+#  include <DocumentHandler.h>    // CDocumentHandler
+#  include <AknServerApp.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -268,7 +263,6 @@ static TDriveUnit writableExeDrive()
 static TPtrC writableDataRoot()
 {
     TDriveUnit drive = exeDrive();
-#ifdef Q_OS_SYMBIAN
     switch(drive.operator TInt()){
         case EDriveC:
             return PathInfo::PhoneMemoryRootPath();
@@ -285,10 +279,6 @@ static TPtrC writableDataRoot()
             return PathInfo::PhoneMemoryRootPath();
             break;
     }
-#else
-#warning No fallback implementation of writableDataRoot()
-    return 0;
-#endif
 }
 
 static void openDocumentL(const TDesC& aUrl)
@@ -395,21 +385,15 @@ QString QDesktopServices::storageLocation(StandardLocation type)
         break;
     case MusicLocation:
         path.Append(writableDataRoot());
-#ifdef Q_OS_SYMBIAN
         path.Append(PathInfo::SoundsPath());
-#endif
         break;
     case MoviesLocation:
         path.Append(writableDataRoot());
-#ifdef Q_OS_SYMBIAN
         path.Append(PathInfo::VideosPath());
-#endif
         break;
     case PicturesLocation:
         path.Append(writableDataRoot());
-#ifdef Q_OS_SYMBIAN
         path.Append(PathInfo::ImagesPath());
-#endif
         break;
     case TempLocation:
         return QDir::tempPath();
