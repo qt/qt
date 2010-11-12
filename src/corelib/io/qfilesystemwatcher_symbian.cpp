@@ -215,7 +215,7 @@ void QSymbianFileSystemWatcherEngine::emitPathChanged(QNotifyChangeEvent *e)
 
 void QSymbianFileSystemWatcherEngine::stop()
 {
-    QMetaObject::invokeMethod(this, "quit");
+    quit();
     wait();
 }
 

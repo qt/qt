@@ -198,7 +198,7 @@ QStringList QPollingFileSystemWatcherEngine::removePaths(const QStringList &path
 
 void QPollingFileSystemWatcherEngine::stop()
 {
-    QMetaObject::invokeMethod(this, "quit");
+    quit();
 }
 
 void QPollingFileSystemWatcherEngine::timeout()
@@ -432,11 +432,6 @@ QFileSystemWatcher::QFileSystemWatcher(const QStringList &paths, QObject *parent
 
 /*!
     Destroys the file system watcher.
-
-    \note To avoid deadlocks on shutdown, all instances of QFileSystemWatcher
-    need to be destroyed before QCoreApplication. Note that passing
-    QCoreApplication::instance() as the parent object when creating
-    QFileSystemWatcher is not sufficient.
 */
 QFileSystemWatcher::~QFileSystemWatcher()
 {

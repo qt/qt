@@ -82,6 +82,8 @@ private slots:
     void removeFileAndUnWatch();
 
     void cleanup();
+
+    void QTBUG15255_deadlock();
 private:
     QStringList do_force_engines;
     bool do_force_native;
@@ -549,6 +551,24 @@ void tst_QFileSystemWatcher::removeFileAndUnWatch()
     }
     watcher.addPath(filename);
 }
+
+class SomeSingleton : public QObject
+{
+public:
+    SomeSingleton() : mFsWatcher(new QFileSystemWatcher(this)) { mFsWatcher->addPath(QLatin1String("/usr/lib"));}
+    void bla() const {}
+    QFileSystemWatcher* mFsWatcher;
+};
+
+Q_GLOBAL_STATIC(SomeSingleton, someSingleton)
+
+void tst_QFileSystemWatcher::QTBUG15255_deadlock()
+{
+    someSingleton()->bla();
+    //the test must still finish
+    QTest::qWait(30);
+}
+
 
 QTEST_MAIN(tst_QFileSystemWatcher)
 #include "tst_qfilesystemwatcher.moc"
