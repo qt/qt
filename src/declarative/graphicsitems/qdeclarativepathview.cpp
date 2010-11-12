@@ -607,6 +607,8 @@ void QDeclarativePathView::setCurrentIndex(int idx)
 */
 void QDeclarativePathView::incrementCurrentIndex()
 {
+    Q_D(QDeclarativePathView);
+    d->moveDirection = QDeclarativePathViewPrivate::Positive;
     setCurrentIndex(currentIndex()+1);
 }
 
@@ -625,6 +627,7 @@ void QDeclarativePathView::decrementCurrentIndex()
         int idx = currentIndex()-1;
         if (idx < 0)
             idx = d->modelCount - 1;
+        d->moveDirection = QDeclarativePathViewPrivate::Negative;
         setCurrentIndex(idx);
     }
 }
@@ -1636,7 +1639,7 @@ void QDeclarativePathViewPrivate::snapToCurrent()
     if (!model || modelCount <= 0)
         return;
 
-    qreal targetOffset = modelCount - currentIndex;
+    qreal targetOffset = qmlMod(modelCount - currentIndex, modelCount);
 
     moveReason = Other;
     offsetAdj = 0.0;
@@ -1645,19 +1648,28 @@ void QDeclarativePathViewPrivate::snapToCurrent()
 
     const int duration = highlightMoveDuration;
 
-    if (targetOffset - offset > modelCount/2) {
+    if (moveDirection == Positive || (moveDirection == Shortest && targetOffset - offset > modelCount/2)) {
         qreal distance = modelCount - targetOffset + offset;
-        tl.move(moveOffset, 0.0, QEasingCurve(QEasingCurve::InQuad), int(duration * offset / distance));
-        tl.set(moveOffset, modelCount);
-        tl.move(moveOffset, targetOffset, QEasingCurve(QEasingCurve::OutQuad), int(duration * (modelCount-targetOffset) / distance));
-    } else if (targetOffset - offset <= -modelCount/2) {
+        if (targetOffset > moveOffset) {
+            tl.move(moveOffset, 0.0, QEasingCurve(QEasingCurve::InQuad), int(duration * offset / distance));
+            tl.set(moveOffset, modelCount);
+            tl.move(moveOffset, targetOffset, QEasingCurve(offset == 0.0 ? QEasingCurve::InOutQuad : QEasingCurve::OutQuad), int(duration * (modelCount-targetOffset) / distance));
+        } else {
+            tl.move(moveOffset, targetOffset, QEasingCurve(QEasingCurve::InOutQuad), duration);
+        }
+    } else if (moveDirection == Negative || targetOffset - offset <= -modelCount/2) {
         qreal distance = modelCount - offset + targetOffset;
-        tl.move(moveOffset, modelCount, QEasingCurve(QEasingCurve::InQuad), int(duration * (modelCount-offset) / distance));
-        tl.set(moveOffset, 0.0);
-        tl.move(moveOffset, targetOffset, QEasingCurve(QEasingCurve::OutQuad), int(duration * targetOffset / distance));
+        if (targetOffset < moveOffset) {
+            tl.move(moveOffset, modelCount, QEasingCurve(targetOffset == 0 ? QEasingCurve::InOutQuad : QEasingCurve::InQuad), int(duration * (modelCount-offset) / distance));
+            tl.set(moveOffset, 0.0);
+            tl.move(moveOffset, targetOffset, QEasingCurve(QEasingCurve::OutQuad), int(duration * targetOffset / distance));
+        } else {
+            tl.move(moveOffset, targetOffset, QEasingCurve(QEasingCurve::InOutQuad), duration);
+        }
     } else {
         tl.move(moveOffset, targetOffset, QEasingCurve(QEasingCurve::InOutQuad), duration);
     }
+    moveDirection = Shortest;
 }
 
 QDeclarativePathViewAttached *QDeclarativePathView::qmlAttachedProperties(QObject *obj)
