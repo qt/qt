@@ -123,19 +123,21 @@ void tst_qdeclarativeimage::imageSource_data()
     QTest::addColumn<double>("height");
     QTest::addColumn<bool>("remote");
     QTest::addColumn<bool>("async");
+    QTest::addColumn<bool>("cached");
     QTest::addColumn<QString>("error");
 
-    QTest::newRow("local") << QUrl::fromLocalFile(SRCDIR "/data/colors.png").toString() << 120.0 << 120.0 << false << false << "";
-    QTest::newRow("local async") << QUrl::fromLocalFile(SRCDIR "/data/colors1.png").toString() << 120.0 << 120.0 << false << true << "";
+    QTest::newRow("local") << QUrl::fromLocalFile(SRCDIR "/data/colors.png").toString() << 120.0 << 120.0 << false << false << true << "";
+    QTest::newRow("local no cache") << QUrl::fromLocalFile(SRCDIR "/data/colors.png").toString() << 120.0 << 120.0 << false << false << false << "";
+    QTest::newRow("local async") << QUrl::fromLocalFile(SRCDIR "/data/colors1.png").toString() << 120.0 << 120.0 << false << true << true << "";
     QTest::newRow("local not found") << QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString() << 0.0 << 0.0 << false
-        << false << "file::2:1: QML Image: Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString();
+        << false << true << "file::2:1: QML Image: Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/no-such-file.png").toString();
     QTest::newRow("local async not found") << QUrl::fromLocalFile(SRCDIR "/data/no-such-file-1.png").toString() << 0.0 << 0.0 << false
-        << true << "file::2:1: QML Image: Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/no-such-file-1.png").toString();
-    QTest::newRow("remote") << SERVER_ADDR "/colors.png" << 120.0 << 120.0 << true << false << "";
-    QTest::newRow("remote redirected") << SERVER_ADDR "/oldcolors.png" << 120.0 << 120.0 << true << false << "";
-    QTest::newRow("remote svg") << SERVER_ADDR "/heart.svg" << 550.0 << 500.0 << true << false << "";
+        << true << true << "file::2:1: QML Image: Cannot open: " + QUrl::fromLocalFile(SRCDIR "/data/no-such-file-1.png").toString();
+    QTest::newRow("remote") << SERVER_ADDR "/colors.png" << 120.0 << 120.0 << true << false << true << "";
+    QTest::newRow("remote redirected") << SERVER_ADDR "/oldcolors.png" << 120.0 << 120.0 << true << false << false << "";
+    QTest::newRow("remote svg") << SERVER_ADDR "/heart.svg" << 550.0 << 500.0 << true << false << false << "";
     QTest::newRow("remote not found") << SERVER_ADDR "/no-such-file.png" << 0.0 << 0.0 << true
-        << false << "file::2:1: QML Image: Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found";
+        << false << true << "file::2:1: QML Image: Error downloading " SERVER_ADDR "/no-such-file.png - server replied: Not found";
 
 }
 
@@ -146,6 +148,7 @@ void tst_qdeclarativeimage::imageSource()
     QFETCH(double, height);
     QFETCH(bool, remote);
     QFETCH(bool, async);
+    QFETCH(bool, cached);
     QFETCH(QString, error);
 
     TestHTTPServer server(SERVER_PORT);
@@ -159,7 +162,8 @@ void tst_qdeclarativeimage::imageSource()
         QTest::ignoreMessage(QtWarningMsg, error.toUtf8());
 
     QString componentStr = "import QtQuick 1.0\nImage { source: \"" + source + "\"; asynchronous: "
-        + (async ? QLatin1String("true") : QLatin1String("false")) + " }";
+        + (async ? QLatin1String("true") : QLatin1String("false")) + "; cached: "
+        + (cached ? QLatin1String("true") : QLatin1String("false")) + " }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
@@ -167,6 +171,13 @@ void tst_qdeclarativeimage::imageSource()
 
     if (async)
         QVERIFY(obj->asynchronous() == true);
+    else
+        QVERIFY(obj->asynchronous() == false);
+
+    if (cached)
+        QVERIFY(obj->cached() == true);
+    else
+        QVERIFY(obj->cached() == false);
 
     if (remote || async)
         QTRY_VERIFY(obj->status() == QDeclarativeImage::Loading);

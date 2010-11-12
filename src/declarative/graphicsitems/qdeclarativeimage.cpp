@@ -458,6 +458,15 @@ QRectF QDeclarativeImage::boundingRect() const
     are always loaded asynchonously.
 */
 
+/*!
+    \qmlproperty bool Image::cached
+    \since Quick 1.1
+
+    Specifies that the image should be cached. The default value is
+    true. Setting \a cached to false is useful when dealing with large images,
+    to make sure that they aren't cached at the expense of small 'ui element' images.
+*/
+
 void QDeclarativeImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QDeclarativeImage);

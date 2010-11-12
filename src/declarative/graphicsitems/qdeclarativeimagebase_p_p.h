@@ -70,7 +70,8 @@ public:
       : status(QDeclarativeImageBase::Null),
         progress(0.0),
         explicitSourceSize(false),
-        async(false)
+        async(false),
+        cached(true)
     {
         QGraphicsItemPrivate::flags = QGraphicsItemPrivate::flags & ~QGraphicsItem::ItemHasNoContents;
     }
@@ -82,6 +83,7 @@ public:
     QSize sourcesize;
     bool explicitSourceSize : 1;
     bool async : 1;
+    bool cached : 1;
 };
 
 QT_END_NAMESPACE
