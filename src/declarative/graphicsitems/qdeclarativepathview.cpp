@@ -373,7 +373,21 @@ void QDeclarativePathViewPrivate::regenerate()
     opacity of the items as they rotate. This additional code can be seen in the
     PathAttribute documentation.)
 
-    The \c focus can be set to \c true to enable keyboard navigation.
+    PathView does not automatically handle keyboard navigation.  This is because
+    the keys to use for navigation will depend upon the shape of the path.  Navigation
+    can be added quite simply by setting \c focus to \c true and calling
+    \l decrementCurrentIndex() or \l incrementCurrentIndex(), for example to navigate
+    using the left and right arrow keys:
+
+    \code
+    PathView {
+        ...
+        focus: true
+        Keys.onLeftPressed: decrementCurrentIndex()
+        Keys.onRightPressed: incrementCurrentIndex()
+    }
+    \endcode
+
     The path view itself is a focus scope (see \l{qmlfocus#Acquiring Focus and Focus Scopes}{the focus documentation page} for more details).
 
     Delegates are instantiated as needed and may be destroyed at any time.
