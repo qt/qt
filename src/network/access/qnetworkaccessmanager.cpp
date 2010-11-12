@@ -53,6 +53,7 @@
 #include "qnetworkaccessftpbackend_p.h"
 #include "qnetworkaccessfilebackend_p.h"
 #include "qnetworkaccessdebugpipebackend_p.h"
+#include "qnetworkaccesscachebackend_p.h"
 #include "qnetworkreplydataimpl_p.h"
 #include "qnetworkreplyfileimpl_p.h"
 

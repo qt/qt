@@ -1573,7 +1573,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         vertexCoordinates->clear();
         textureCoordinates->clear();
 
-        bool supportsSubPixelPositions = staticTextItem->fontEngine->supportsSubPixelPositions();
+        bool supportsSubPixelPositions = staticTextItem->fontEngine()->supportsSubPixelPositions();
         for (int i=0; i<staticTextItem->numGlyphs; ++i) {
             QFixed subPixelPosition;
             if (supportsSubPixelPositions)
