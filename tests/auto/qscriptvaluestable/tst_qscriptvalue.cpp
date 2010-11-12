@@ -492,7 +492,7 @@ void tst_QScriptValue::getSetProperty()
 
     QScriptEngine otherEngine;
     QScriptValue otherNum = QScriptValue(&otherEngine, 123);
-    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setProperty() failed: cannot set value created in a different engine");
+    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setProperty(oof) failed: cannot set value created in a different engine");
     object.setProperty("oof", otherNum);
     QCOMPARE(object.property("oof").isValid(), false);
 
@@ -856,10 +856,9 @@ void tst_QScriptValue::callWithThisObject()
     QScriptEngine otherEngine;
     QScriptValue otherObject = otherEngine.newObject();
     otherObject.setProperty("foo", 1024);
-    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::call(): cannot call function with thisObject created in a different engine");
+    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::call() failed: cannot call function with thisObject created in a different engine");
     result = function.call(otherObject);
-    QVERIFY(result.isUndefined());
-    QVERIFY(result.engine() == &engine);
+    QVERIFY(!result.isValid());
     QVERIFY(otherObject.engine() == &otherEngine);
 }
 
@@ -969,11 +968,8 @@ void tst_QScriptValue::construct()
         QCOMPARE(ret.property(2).strictlyEquals(array.property(2)), true);
         // construct with arguments object as arguments
         QScriptValue ret2 = fun.construct(ret);
-        QEXPECT_FAIL("", "FIXME: currently only work with true array, used to work with argument object", Continue);
         QCOMPARE(ret2.property(0).strictlyEquals(ret.property(0)), true);
-        QEXPECT_FAIL("", "FIXME: currently only work with true array, used to work with argument object", Continue);
         QCOMPARE(ret2.property(1).strictlyEquals(ret.property(1)), true);
-        QEXPECT_FAIL("", "FIXME: currently only work with true array, used to work with argument object", Continue);
         QCOMPARE(ret2.property(2).strictlyEquals(ret.property(2)), true);
         // construct with null as arguments
         QScriptValue ret3 = fun.construct(eng.nullValue());
