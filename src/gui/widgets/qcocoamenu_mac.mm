@@ -156,10 +156,14 @@ QT_USE_NAMESPACE
     // In every other case we return NO, which means that Cocoa can do as it pleases
     // (i.e., fire the menu action).
     NSMenuItem *whichItem;
+    // Change the private unicode keys to the ones used in setting the "Key Equivalents"
+    extern NSString *qt_mac_removePrivateUnicode(NSString* string);
+    NSString *characters = qt_mac_removePrivateUnicode([event characters]);
     if ([self hasShortcut:menu
-                   forKey:[event characters]
-             forModifiers:([event modifierFlags] & NSDeviceIndependentModifierFlagsMask)
-                 whichItem:&whichItem]) {
+            forKey:characters
+            // Interested only in Shift, Cmd, Ctrl & Alt Keys, so ignoring masks like, Caps lock, Num Lock ...
+            forModifiers:([event modifierFlags] & (NSShiftKeyMask | NSControlKeyMask | NSCommandKeyMask | NSAlternateKeyMask))
+            whichItem:&whichItem]) {
         QWidget *widget = 0;
         QAction *qaction = 0;
         if (whichItem && [whichItem tag]) {
@@ -170,6 +174,9 @@ QT_USE_NAMESPACE
                       qApp->activePopupWidget()->focusWidget() : qApp->activePopupWidget());
         else if (QApplicationPrivate::focus_widget)
             widget = QApplicationPrivate::focus_widget;
+        // If we could not find any receivers, pass it to the active window
+        if (!widget)
+            widget = qApp->activeWindow();
         if (qaction && widget) {
             int key = qaction->shortcut();
             QKeyEvent accel_ev(QEvent::ShortcutOverride, (key & (~Qt::KeyboardModifierMask)),
@@ -177,11 +184,10 @@ QT_USE_NAMESPACE
             accel_ev.ignore();
             qt_sendSpontaneousEvent(widget, &accel_ev);
             if (accel_ev.isAccepted()) {
-                if (qt_dispatchKeyEvent(event, widget)) {
-                    *target = nil;
-                    *action = nil;
-                    return YES;
-                }
+                qt_dispatchKeyEvent(event, widget);
+                *target = nil;
+                *action = nil;
+                return YES;
             }
         }
     }
