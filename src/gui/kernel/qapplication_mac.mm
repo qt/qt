@@ -549,7 +549,7 @@ void qt_mac_update_os_settings()
             FontMap("QTipLabel", kThemeSmallSystemFont),
             FontMap("QLabel", kThemeSystemFont),
             FontMap("QToolButton", kThemeSmallSystemFont),
-            FontMap("QMenuItem", kThemeMenuItemCmdKeyFont),  // It doesn't exist, but its unique.
+            FontMap("QMenuItem", kThemeMenuItemFont),  // It doesn't exist, but its unique.
             FontMap("QComboLineEdit", kThemeViewsFont),  // It doesn't exist, but its unique.
             FontMap("QSmallFont", kThemeSmallSystemFont),  // It doesn't exist, but its unique.
             FontMap("QMiniFont", kThemeMiniSystemFont),  // It doesn't exist, but its unique.
