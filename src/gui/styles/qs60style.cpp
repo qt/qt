@@ -723,7 +723,7 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
     palette->setBrush(QPalette::Base, Qt::transparent);
     // set button color based on pixel colors
 #ifndef Q_WS_S60
-    //For emulated style, just calculate the color everytime
+    //For emulated style, just calculate the color every time
     const QColor buttonColor = calculatedColor(SF_ButtonNormal);
 #else
     const QColor buttonColor = colorFromFrameGraphics(SF_ButtonNormal);
