@@ -1217,7 +1217,6 @@ void tst_QScriptEngine::getSetGlobalObject()
     QVERIFY(!glob.isFunction());
     QEXPECT_FAIL("", "currentContext is not yet implemented", Continue);
     QVERIFY(eng.currentContext()->thisObject().strictlyEquals(glob));
-    QEXPECT_FAIL("", "currentContext is not yet implemented", Continue);
     QVERIFY(eng.currentContext()->activationObject().strictlyEquals(glob));
     QCOMPARE(glob.toString(), QString::fromLatin1("[object global]"));
     // prototype should be Object.prototype
@@ -1236,7 +1235,6 @@ void tst_QScriptEngine::getSetGlobalObject()
     QVERIFY(eng.globalObject().strictlyEquals(obj));
     QEXPECT_FAIL("", "currentContext is not yet implemented", Continue);
     QVERIFY(eng.currentContext()->thisObject().strictlyEquals(obj));
-    QEXPECT_FAIL("", "currentContext is not yet implemented", Continue);
     QVERIFY(eng.currentContext()->activationObject().strictlyEquals(obj));
     QVERIFY(eng.evaluate("this").strictlyEquals(obj));
     QEXPECT_FAIL("", "FIXME: Do we really want to enforce this? ECMA standard says that it is implementation dependent, skipping for now", Continue);
@@ -1250,14 +1248,12 @@ void tst_QScriptEngine::getSetGlobalObject()
     QVERIFY(eng.globalObject().strictlyEquals(obj));
     QEXPECT_FAIL("", "currentContext is not yet implemented", Continue);
     QVERIFY(eng.currentContext()->thisObject().strictlyEquals(obj));
-    QEXPECT_FAIL("", "currentContext is not yet implemented", Continue);
     QVERIFY(eng.currentContext()->activationObject().strictlyEquals(obj));
 
     collectGarbage_helper(eng);
     QVERIFY(eng.globalObject().strictlyEquals(obj));
     QEXPECT_FAIL("", "currentContext is not yet implemented", Continue);
     QVERIFY(eng.currentContext()->thisObject().strictlyEquals(obj));
-    QEXPECT_FAIL("", "currentContext is not yet implemented", Continue);
     QVERIFY(eng.currentContext()->activationObject().strictlyEquals(obj));
 
     QVERIFY(!obj.property("foo").isValid());
@@ -1480,7 +1476,7 @@ void tst_QScriptEngine::createGlobalObjectProperty()
         QScriptValue::PropertyFlags flags = QScriptValue::ReadOnly | QScriptValue::SkipInEnumeration;
         global.setProperty(name, val, flags);
         QVERIFY(global.property(name).equals(val));
-        QEXPECT_FAIL("", "QTBUG-6134: custom Global Object properties don't retain attributes", Continue);
+        //QEXPECT_FAIL("", "QTBUG-6134: custom Global Object properties don't retain attributes", Continue);
         QCOMPARE(global.propertyFlags(name), flags);
         global.setProperty(name, QScriptValue());
         QVERIFY(!global.property(name).isValid());
@@ -5711,7 +5707,6 @@ void tst_QScriptEngine::newFixedStaticScopeObject()
     // Push it on the scope chain of a new context.
     QScriptContext *ctx = eng.pushContext();
     ctx->pushScope(scope);
-    QEXPECT_FAIL("", "scopeChain has not been implemented yet", Continue);
     QCOMPARE(ctx->scopeChain().size(), 3); // Global Object, native activation, custom scope
     QEXPECT_FAIL("", "activationObject has not been implemented yet", Continue);
     QVERIFY(ctx->activationObject().equals(scope));
