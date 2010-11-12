@@ -733,6 +733,21 @@ void tst_qdeclarativeecmascript::constantsOverrideBindings()
         QCOMPARE(object->property("c2").toInt(), 13);
     }
 #endif
+
+    // Using an alias
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("constantsOverrideBindings.4.qml"));
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("c1").toInt(), 0);
+        QEXPECT_FAIL("", "QTBUG-13719", Continue);
+        QCOMPARE(object->property("c3").toInt(), 10);
+        object->setProperty("c1", QVariant(9));
+        QCOMPARE(object->property("c1").toInt(), 9);
+        QEXPECT_FAIL("", "QTBUG-13719", Continue);
+        QCOMPARE(object->property("c3").toInt(), 10);
+    }
 }
 
 /*

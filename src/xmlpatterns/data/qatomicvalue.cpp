@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
 
 /**
  * @file
- * @short Contains the implementation for AtomicValue. The defintion is in qitem_p.h.
+ * @short Contains the implementation for AtomicValue. The definition is in qitem_p.h.
  */
 
 using namespace QPatternist;

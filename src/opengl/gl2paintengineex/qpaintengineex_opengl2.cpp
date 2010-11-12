@@ -1379,8 +1379,8 @@ void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
 
     ensureActive();
 
-    QFontEngineGlyphCache::Type glyphType = textItem->fontEngine->glyphFormat >= 0
-                                            ? QFontEngineGlyphCache::Type(textItem->fontEngine->glyphFormat)
+    QFontEngineGlyphCache::Type glyphType = textItem->fontEngine()->glyphFormat >= 0
+                                            ? QFontEngineGlyphCache::Type(textItem->fontEngine()->glyphFormat)
                                             : d->glyphCacheType;
     if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
         if (d->device->alphaRequested() || state()->matrix.type() > QTransform::TxTranslate
@@ -1459,7 +1459,7 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
         {
             QStaticTextItem staticTextItem;
             staticTextItem.chars = const_cast<QChar *>(ti.chars);
-            staticTextItem.fontEngine = ti.fontEngine;
+            staticTextItem.setFontEngine(ti.fontEngine);
             staticTextItem.glyphs = glyphs.data();
             staticTextItem.numChars = ti.num_chars;
             staticTextItem.numGlyphs = glyphs.size();
@@ -1505,19 +1505,19 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 
     void *cacheKey = const_cast<QGLContext *>(QGLContextPrivate::contextGroup(ctx)->context());
     QGLTextureGlyphCache *cache =
-            (QGLTextureGlyphCache *) staticTextItem->fontEngine->glyphCache(cacheKey, glyphType, QTransform());
+            (QGLTextureGlyphCache *) staticTextItem->fontEngine()->glyphCache(cacheKey, glyphType, QTransform());
     if (!cache || cache->cacheType() != glyphType || cache->context() == 0) {
         cache = new QGLTextureGlyphCache(ctx, glyphType, QTransform());
-        staticTextItem->fontEngine->setGlyphCache(cacheKey, cache);
+        staticTextItem->fontEngine()->setGlyphCache(cacheKey, cache);
         cache->insert(ctx, cache);
     }
 
     bool recreateVertexArrays = false;
     if (staticTextItem->userDataNeedsUpdate)
         recreateVertexArrays = true;
-    else if (staticTextItem->userData == 0)
+    else if (staticTextItem->userData() == 0)
         recreateVertexArrays = true;
-    else if (staticTextItem->userData->type != QStaticTextUserData::OpenGLUserData)
+    else if (staticTextItem->userData()->type != QStaticTextUserData::OpenGLUserData)
         recreateVertexArrays = true;
 
     // We only need to update the cache with new glyphs if we are actually going to recreate the vertex arrays.
@@ -1525,8 +1525,8 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     // cache so this text is performed before we test if the cache size has changed.
     if (recreateVertexArrays) {
         cache->setPaintEnginePrivate(this);
-        cache->populate(staticTextItem->fontEngine, staticTextItem->numGlyphs, staticTextItem->glyphs,
-                        staticTextItem->glyphPositions);
+        cache->populate(staticTextItem->fontEngine(), staticTextItem->numGlyphs,
+                        staticTextItem->glyphs, staticTextItem->glyphPositions);
         cache->fillInPendingGlyphs();
     }
 
@@ -1547,14 +1547,14 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     if (staticTextItem->useBackendOptimizations) {
         QOpenGLStaticTextUserData *userData = 0;
 
-        if (staticTextItem->userData == 0
-            || staticTextItem->userData->type != QStaticTextUserData::OpenGLUserData) {
+        if (staticTextItem->userData() == 0
+            || staticTextItem->userData()->type != QStaticTextUserData::OpenGLUserData) {
 
             userData = new QOpenGLStaticTextUserData();
             staticTextItem->setUserData(userData);
 
         } else {
-            userData = static_cast<QOpenGLStaticTextUserData*>(staticTextItem->userData);
+            userData = static_cast<QOpenGLStaticTextUserData*>(staticTextItem->userData());
         }
 
         // Use cache if backend optimizations is turned on

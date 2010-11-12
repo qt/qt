@@ -960,6 +960,26 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         return new QNetworkReplyDataImpl(this, req, op);
     }
 
+    // A request with QNetworkRequest::AlwaysCache does not need any bearer management
+    QNetworkRequest::CacheLoadControl mode =
+        static_cast<QNetworkRequest::CacheLoadControl>(
+            req.attribute(QNetworkRequest::CacheLoadControlAttribute,
+                              QNetworkRequest::PreferNetwork).toInt());
+    if (mode == QNetworkRequest::AlwaysCache
+        && (op == QNetworkAccessManager::GetOperation
+        || op == QNetworkAccessManager::HeadOperation)) {
+        // FIXME Implement a QNetworkReplyCacheImpl instead, see QTBUG-15106
+        QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
+        QNetworkReplyImplPrivate *priv = reply->d_func();
+        priv->manager = this;
+        priv->backend = new QNetworkAccessCacheBackend();
+        priv->backend->manager = this->d_func();
+        priv->backend->setParent(reply);
+        priv->backend->reply = priv;
+        priv->setup(op, req, outgoingData);
+        return reply;
+    }
+
 #ifndef QT_NO_BEARERMANAGEMENT
     // Return a disabled network reply if network access is disabled.
     // Except if the scheme is empty or file://.
