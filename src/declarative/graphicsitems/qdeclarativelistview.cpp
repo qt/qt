@@ -124,8 +124,8 @@ public:
     }
     qreal endPosition() const {
         return (view->orientation() == QDeclarativeListView::Vertical
-                                        ? item->y() + (item->height() > 0 ? item->height() : 1)
-                                        : item->x() + (item->width() > 0 ? item->width() : 1)) - 1;
+                                        ? item->y() + (item->height() >= 1.0 ? item->height() : 1)
+                                        : item->x() + (item->width() >= 1.0 ? item->width() : 1)) - 1;
     }
     void setPosition(qreal pos) {
         if (view->orientation() == QDeclarativeListView::Vertical) {
@@ -736,7 +736,7 @@ void QDeclarativeListViewPrivate::layout()
     }
     if (!visibleItems.isEmpty()) {
         qreal oldEnd = visibleItems.last()->endPosition();
-        qreal pos = visibleItems.first()->endPosition() + spacing + 1;
+        qreal pos = visibleItems.first()->position() + visibleItems.first()->size() + spacing;
         for (int i=1; i < visibleItems.count(); ++i) {
             FxListItem *item = visibleItems.at(i);
             item->setPosition(pos);
