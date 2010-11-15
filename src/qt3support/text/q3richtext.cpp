@@ -2914,7 +2914,7 @@ QString Q3TextDocument::selectedText(int id, bool asRichText) const
         }
     }
     // ### workaround for plain text export until we get proper
-    // mime types: turn unicode line seperators into the more
+    // mime types: turn unicode line separators into the more
     // widely understood \n. Makes copy and pasting code snipplets
     // from within Assistent possible
     QChar* uc = (QChar*) s.unicode();

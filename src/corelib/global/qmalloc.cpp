@@ -90,8 +90,6 @@ void *qReallocAligned(void *oldptr, size_t newsize, size_t oldsize, size_t align
         return newptr + 1;
     }
 
-    union { void *ptr; void **pptr; quintptr n; } real, faked;
-
     // qMalloc returns pointers aligned at least at sizeof(size_t) boundaries
     // but usually more (8- or 16-byte boundaries).
     // So we overallocate by alignment-sizeof(size_t) bytes, so we're guaranteed to find a
@@ -100,19 +98,21 @@ void *qReallocAligned(void *oldptr, size_t newsize, size_t oldsize, size_t align
     // However, we need to store the actual pointer, so we need to allocate actually size +
     // alignment anyway.
 
-    real.ptr = qRealloc(actualptr, newsize + alignment);
-    if (!real.ptr)
+    void *real = qRealloc(actualptr, newsize + alignment);
+    if (!real)
         return 0;
 
-    faked.n = real.n + alignment;
-    faked.n &= ~(alignment - 1);
+    quintptr faked = reinterpret_cast<quintptr>(real) + alignment;
+    faked &= ~(alignment - 1);
+
+    void **faked_ptr = reinterpret_cast<void **>(faked);
 
     // now save the value of the real pointer at faked-sizeof(void*)
     // by construction, alignment > sizeof(void*) and is a power of 2, so
     // faked-sizeof(void*) is properly aligned for a pointer
-    faked.pptr[-1] = real.ptr;
+    faked_ptr[-1] = real;
 
-    return faked.ptr;
+    return faked_ptr;
 }
 
 void qFreeAligned(void *ptr)

@@ -53,6 +53,7 @@
 #include "qnetworkaccessftpbackend_p.h"
 #include "qnetworkaccessfilebackend_p.h"
 #include "qnetworkaccessdebugpipebackend_p.h"
+#include "qnetworkaccesscachebackend_p.h"
 #include "qnetworkreplydataimpl_p.h"
 #include "qnetworkreplyfileimpl_p.h"
 
@@ -958,6 +959,26 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     if ((op == QNetworkAccessManager::GetOperation || op == QNetworkAccessManager::HeadOperation)
             && scheme == QLatin1String("data")) {
         return new QNetworkReplyDataImpl(this, req, op);
+    }
+
+    // A request with QNetworkRequest::AlwaysCache does not need any bearer management
+    QNetworkRequest::CacheLoadControl mode =
+        static_cast<QNetworkRequest::CacheLoadControl>(
+            req.attribute(QNetworkRequest::CacheLoadControlAttribute,
+                              QNetworkRequest::PreferNetwork).toInt());
+    if (mode == QNetworkRequest::AlwaysCache
+        && (op == QNetworkAccessManager::GetOperation
+        || op == QNetworkAccessManager::HeadOperation)) {
+        // FIXME Implement a QNetworkReplyCacheImpl instead, see QTBUG-15106
+        QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
+        QNetworkReplyImplPrivate *priv = reply->d_func();
+        priv->manager = this;
+        priv->backend = new QNetworkAccessCacheBackend();
+        priv->backend->manager = this->d_func();
+        priv->backend->setParent(reply);
+        priv->backend->reply = priv;
+        priv->setup(op, req, outgoingData);
+        return reply;
     }
 
 #ifndef QT_NO_BEARERMANAGEMENT

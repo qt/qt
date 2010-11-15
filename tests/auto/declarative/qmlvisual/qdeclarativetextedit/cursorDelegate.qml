@@ -1,5 +1,7 @@
 import QtQuick 1.0
-    Rectangle {
+import "../shared" 1.0
+
+Rectangle {
     resources: [
         Component { id: cursorA
             Item { id: cPage;
@@ -21,7 +23,7 @@ import QtQuick 1.0
     width: 400
     height: 200
     color: "white"
-    TextEdit { id: mainText
+    TestTextEdit { id: mainText
         text: "Hello World"
         cursorDelegate: cursorA
         focus: true

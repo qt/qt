@@ -260,32 +260,28 @@ custom QML types may see unexpected behavior if bindings are not implemented.
 
 The \c PieChart type currently has a string-type property and a color-type property.
 It could have many other types of properties. For example, it could have an
-enum-type property to store a display mode for each chart:
+int-type property to store an identifier for each chart:
 
 \code
     // C++
     class PieChart : public QDeclarativeItem
     {
-        Q_ENUMS(DisplayMode)
-        Q_PROPERTY(DisplayMode displayMode READ displayMode WRITE setDisplayMode)
+        Q_PROPERTY(int chartId READ chartId WRITE setChartId NOTIFY chartIdChanged)
         ...
 
     public:
-        enum DisplayMode {
-            MultiLevel,
-            Exploded,
-            ThreeDimensional
-        };
-
-        void setDisplayMode(DisplayMode mode);
-        DisplayMode displayMode() const;
+        void setChartId(int chartId);
+        int chartId() const;
         ...
+
+    signals:
+        void chartIdChanged();
     };
 
     // QML
     PieChart {
         ...
-        displayMode: PieChart.Exploded
+        chartId: 100
     }
 \endcode
 

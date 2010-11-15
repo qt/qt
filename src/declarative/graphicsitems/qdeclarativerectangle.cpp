@@ -477,7 +477,8 @@ void QDeclarativeRectangle::drawRect(QPainter &p)
 {
     Q_D(QDeclarativeRectangle);
     if ((d->gradient && d->gradient->gradient())
-        || d->radius > width()/2 || d->radius > height()/2) {
+        || d->radius > width()/2 || d->radius > height()/2
+        || width() < 3 || height() < 3) {
         // XXX This path is still slower than the image path
         // Image path won't work for gradients or invalid radius though
         bool oldAA = p.testRenderHint(QPainter::Antialiasing);

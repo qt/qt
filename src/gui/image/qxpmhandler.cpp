@@ -766,7 +766,7 @@ static bool qt_get_named_xpm_rgb(const char *name_no_space, QRgb *rgb)
 {
     XPMRGBData x;
     x.name = name_no_space;
-    // Funtion bsearch() is supposed to be
+    // Function bsearch() is supposed to be
     // void *bsearch(const void *key, const void *base, ...
     // So why (char*)? Are there broken bsearch() declarations out there?
     XPMRGBData *r = (XPMRGBData *)bsearch((char *)&x, (char *)xpmRgbTbl, xpmRgbTblSize,

@@ -1,7 +1,6 @@
 TEMPLATE = app
 TARGET  = minehunt
 QT += declarative
-CONFIG += qt plugin
 
 # Input
 HEADERS += minehunt.h

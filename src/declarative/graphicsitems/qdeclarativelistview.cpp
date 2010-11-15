@@ -334,28 +334,9 @@ public:
         return model && model->count() && model->isValid();
     }
 
-    int snapIndex() {
-        int index = currentIndex;
-        for (int i = 0; i < visibleItems.count(); ++i) {
-            FxListItem *item = visibleItems[i];
-            if (item->index == -1)
-                continue;
-            qreal itemTop = item->position();
-            if (itemTop >= highlight->position()-item->size()/2 && itemTop < highlight->position()+item->size()/2)
-                return item->index;
-        }
-        return index;
-    }
-
     qreal snapPosAt(qreal pos) {
-        for (int i = 0; i < visibleItems.count(); ++i) {
-            FxListItem *item = visibleItems[i];
-            if (item->index == -1)
-                continue;
-            qreal itemTop = item->position();
-            if (itemTop+item->size()/2 >= pos && itemTop <= pos)
-                return item->position();
-        }
+        if (FxListItem *snapItem = snapItemAt(pos))
+            return snapItem->position();
         if (visibleItems.count()) {
             qreal firstPos = visibleItems.first()->position();
             qreal endPos = visibleItems.last()->position();
@@ -368,17 +349,18 @@ public:
     }
 
     FxListItem *snapItemAt(qreal pos) {
+        FxListItem *snapItem = 0;
         for (int i = 0; i < visibleItems.count(); ++i) {
             FxListItem *item = visibleItems[i];
             if (item->index == -1)
                 continue;
             qreal itemTop = item->position();
-            if (item->index == model->count()-1 || (itemTop+item->size()/2 >= pos))
+            if (highlight && itemTop >= pos && item->endPosition() <= pos + highlight->size() - 1)
                 return item;
+            if (itemTop+item->size()/2 >= pos && itemTop-item->size()/2 < pos)
+                snapItem = item;
         }
-        if (visibleItems.count() && visibleItems.first()->position() <= pos)
-            return visibleItems.first();
-        return 0;
+        return snapItem;
     }
 
     int lastVisibleIndex() const {
@@ -768,8 +750,10 @@ void QDeclarativeListViewPrivate::layout()
     minExtentDirty = true;
     maxExtentDirty = true;
     updateHighlight();
-    fixupPosition();
-    q->refill();
+    if (!q->isMoving() && !q->isFlicking()) {
+        fixupPosition();
+        q->refill();
+    }
     if (header)
         updateHeader();
     if (footer)
@@ -1173,6 +1157,7 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
         || (orient == QDeclarativeListView::Vertical && &data == &hData))
         return;
 
+    correctFlick = false;
     int oldDuration = fixupDuration;
     fixupDuration = moveReason == Mouse ? fixupDuration : 0;
 
@@ -1350,12 +1335,15 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
             qreal newtarget = data.flickTarget;
             if (snapMode != QDeclarativeListView::NoSnap || highlightRange == QDeclarativeListView::StrictlyEnforceRange)
                 newtarget = -snapPosAt(-(data.flickTarget - highlightRangeStart)) + highlightRangeStart;
-            if (velocity < 0 && newtarget < maxExtent)
-                newtarget = maxExtent;
-            else if (velocity > 0 && newtarget > minExtent)
-                newtarget = minExtent;
-            if (newtarget == data.flickTarget) // boundary unchanged - nothing to do
+            if (velocity < 0 && newtarget <= maxExtent)
+                newtarget = maxExtent - overshootDist;
+            else if (velocity > 0 && newtarget >= minExtent)
+                newtarget = minExtent + overshootDist;
+            if (newtarget == data.flickTarget) { // boundary unchanged - nothing to do
+                if (qAbs(velocity) < MinimumFlickVelocity)
+                    correctFlick = false;
                 return;
+            }
             data.flickTarget = newtarget;
             qreal dist = -newtarget + data.move.value();
             if ((v < 0 && dist < 0) || (v > 0 && dist > 0)) {
@@ -1365,7 +1353,7 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
                 return;
             }
             timeline.reset(data.move);
-            timeline.accelDistance(data.move, v, -dist + (v < 0 ? -overshootDist : overshootDist));
+            timeline.accelDistance(data.move, v, -dist);
             timeline.callback(QDeclarativeTimeLineCallback(&data.move, fixupCallback, this));
         }
     } else {
@@ -1696,7 +1684,7 @@ void QDeclarativeListView::setCurrentIndex(int index)
     if (isComponentComplete() && d->isValid()) {
         d->moveReason = QDeclarativeListViewPrivate::SetIndex;
         d->updateCurrent(index);
-    } else {
+    } else if (d->currentIndex != index) {
         d->currentIndex = index;
         emit currentIndexChanged();
     }
@@ -2323,9 +2311,10 @@ void QDeclarativeListView::viewportMoved()
             d->highlight->setPosition(qRound(pos));
 
             // update current index
-            int idx = d->snapIndex();
-            if (idx >= 0 && idx != d->currentIndex)
-                d->updateCurrent(idx);
+            if (FxListItem *snapItem = d->snapItemAt(d->highlight->position())) {
+                if (snapItem->index >= 0 && snapItem->index != d->currentIndex)
+                    d->updateCurrent(snapItem->index);
+            }
         }
     }
 

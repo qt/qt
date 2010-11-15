@@ -319,6 +319,7 @@ private:
 };
 
 class QGLTexture;
+class QGLTextureDestroyer;
 
 // This probably needs to grow to GL_MAX_VERTEX_ATTRIBS, but 3 is ok for now as that's
 // all the GL2 engine uses:
@@ -330,7 +331,7 @@ class QGLContextPrivate
 {
     Q_DECLARE_PUBLIC(QGLContext)
 public:
-    explicit QGLContextPrivate(QGLContext *context) : internal_context(false), q_ptr(context) {group = new QGLContextGroup(context);}
+    explicit QGLContextPrivate(QGLContext *context);
     ~QGLContextPrivate();
     QGLTexture *bindTexture(const QImage &image, GLenum target, GLint format,
                             QGLContext::BindOptions options);
@@ -430,6 +431,7 @@ public:
     GLuint default_fbo;
     QPaintEngine *active_engine;
     QHash<QGLContextResourceBase *, void *> m_resources;
+    QGLTextureDestroyer *texture_destroyer;
 
     bool vertexAttributeArraysEnabledState[QT_GL_VERTEX_ARRAY_TRACKED_COUNT];
 
@@ -445,20 +447,6 @@ public:
 #endif
 
     static void setCurrentContext(QGLContext *context);
-};
-
-// ### make QGLContext a QObject in 5.0 and remove the proxy stuff
-class Q_OPENGL_EXPORT QGLSignalProxy : public QObject
-{
-    Q_OBJECT
-public:
-    QGLSignalProxy() : QObject() {}
-    void emitAboutToDestroyContext(const QGLContext *context) {
-        emit aboutToDestroyContext(context);
-    }
-    static QGLSignalProxy *instance();
-Q_SIGNALS:
-    void aboutToDestroyContext(const QGLContext *context);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGLExtensions::Extensions)
@@ -503,6 +491,56 @@ private:
     QGLContext *m_ctx;
 };
 
+class QGLTextureDestroyer : public QObject
+{
+    Q_OBJECT
+public:
+    QGLTextureDestroyer() : QObject() {
+        qRegisterMetaType<GLuint>("GLuint");
+        connect(this, SIGNAL(freeTexture(QGLContext *, QPixmapData *, GLuint)),
+                this, SLOT(freeTexture_slot(QGLContext *, QPixmapData *, GLuint)));
+    }
+    void emitFreeTexture(QGLContext *context, QPixmapData *boundPixmap, GLuint id) {
+        emit freeTexture(context, boundPixmap, id);
+    }
+
+Q_SIGNALS:
+    void freeTexture(QGLContext *context, QPixmapData *boundPixmap, GLuint id);
+
+private slots:
+    void freeTexture_slot(QGLContext *context, QPixmapData *boundPixmap, GLuint id) {
+#if defined(Q_WS_X11)
+        if (boundPixmap) {
+            QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
+            context->makeCurrent();
+            // Although glXReleaseTexImage is a glX call, it must be called while there
+            // is a current context - the context the pixmap was bound to a texture in.
+            // Otherwise the release doesn't do anything and you get BadDrawable errors
+            // when you come to delete the context.
+            QGLContextPrivate::unbindPixmapFromTexture(boundPixmap);
+            glDeleteTextures(1, &id);
+            oldContext->makeCurrent();
+            return;
+        }
+#endif
+        QGLShareContextScope scope(context);
+        glDeleteTextures(1, &id);
+    }
+};
+
+// ### make QGLContext a QObject in 5.0 and remove the proxy stuff
+class Q_OPENGL_EXPORT QGLSignalProxy : public QObject
+{
+    Q_OBJECT
+public:
+    void emitAboutToDestroyContext(const QGLContext *context) {
+        emit aboutToDestroyContext(context);
+    }
+    static QGLSignalProxy *instance();
+Q_SIGNALS:
+    void aboutToDestroyContext(const QGLContext *context);
+};
+
 class QGLTexture {
 public:
     QGLTexture(QGLContext *ctx = 0, GLuint tx_id = 0, GLenum tx_target = GL_TEXTURE_2D,
@@ -519,16 +557,10 @@ public:
     ~QGLTexture() {
         if (options & QGLContext::MemoryManagedBindOption) {
             Q_ASSERT(context);
-            QGLShareContextScope scope(context);
-#if defined(Q_WS_X11)
-            // Although glXReleaseTexImage is a glX call, it must be called while there
-            // is a current context - the context the pixmap was bound to a texture in.
-            // Otherwise the release doesn't do anything and you get BadDrawable errors
-            // when you come to delete the context.
-            if (boundPixmap)
-                QGLContextPrivate::unbindPixmapFromTexture(boundPixmap);
+#if !defined(Q_WS_X11)
+            QPixmapData *boundPixmap = 0;
 #endif
-            glDeleteTextures(1, &id);
+            context->d_ptr->texture_destroyer->emitFreeTexture(context, boundPixmap, id);
         }
      }
 

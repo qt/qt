@@ -1425,7 +1425,7 @@ void qt_init(QApplicationPrivate * /* priv */, int)
         TInt err = CApaCommandLine::GetCommandLineFromProcessEnvironment(commandLine);
         // After this construction, CEikonEnv will be available from CEikonEnv::Static().
         // (much like our qApp).
-        CEikonEnv* coe = new CEikonEnv;
+        QtEikonEnv* coe = new QtEikonEnv;
         //not using QT_TRAP_THROWING, because coe owns the cleanupstack so it can't be pushed there.
         if(err == KErrNone)
             TRAP(err, coe->ConstructAppFromCommandLineL(factory,*commandLine));

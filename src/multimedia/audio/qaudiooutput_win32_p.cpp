@@ -586,7 +586,7 @@ bool QAudioOutputPrivate::deviceReady()
                 }
             }
             if ( out < l) {
-                // Didnt write all data
+                // Didn't write all data
                 audioSource->seek(audioSource->pos()-(l-out));
             }
 	    if(startup)
