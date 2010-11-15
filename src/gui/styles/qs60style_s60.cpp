@@ -48,6 +48,7 @@
 #include "private/qpixmap_s60_p.h"
 #include "private/qcore_symbian_p.h"
 #include "qapplication.h"
+#include "qsettings.h"
 
 #include "qpluginloader.h"
 #include "qlibraryinfo.h"
@@ -69,6 +70,8 @@
 #include <gulicon.h>
 #include <AknBitmapAnimation.h>
 
+#include <centralrepository.h>
+
 #if !defined(QT_NO_STYLE_S60) || defined(QT_PLUGIN)
 
 QT_BEGIN_NAMESPACE
@@ -80,6 +83,8 @@ enum TDrawType {
     EDrawAnimation,
     ENoDraw
 };
+
+const TUid personalisationUID = { 0x101F876F };
 
 enum TSupportRelease {
     ES60_None     = 0x0000, //indicates that the commonstyle should draw the graphics
@@ -687,6 +692,76 @@ bool QS60StylePrivate::hasSliderGrooveGraphic()
 bool QS60StylePrivate::isSingleClickUi()
 {
     return (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0);
+}
+
+void QS60StylePrivate::deleteStoredSettings()
+{
+    QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
+    settings.beginGroup(QLatin1String("QS60Style"));
+    settings.remove("");
+    settings.endGroup();
+}
+
+// Since S60Style has 'button' as a graphic, we don't have any native color which to use
+// for QPalette::Button. Therefore S60Style needs to guesstimate palette color by calculating
+// average rgb values for button pixels.
+// Returns Qt::black if there is an issue with the graphics (image is NULL, or no constBits() found).
+QColor QS60StylePrivate::colorFromFrameGraphics(SkinFrameElements frame) const
+{
+#ifndef QT_NO_SETTINGS
+    TInt themeID = 0;
+    //First we need to fetch active theme ID. We need to store the themeID at the same time
+    //as color, so that we can later check if the stored color is still from the same theme.
+    //Native side stores active theme UID/Timestamp into central repository.
+    int error = 0;
+    QT_TRAP_THROWING(
+        CRepository *themeRepository = CRepository::NewLC(personalisationUID);
+        if (themeRepository) {
+            static const TInt KThemePkgIDDesSize = 23; //size of the stored theme package ID
+            TBuf<32> value; //themeID is currently max of 8 + 1 + 8 characters, but lets have some extra space
+            const TUint32 key = 0x00000002; //active theme key in the repository
+            error = themeRepository->Get(key, value);
+            if (error == KErrNone) {
+                TLex lex(value);
+                TPtrC numberToken(lex.NextToken());
+                if (numberToken.Length())
+                    error = TLex(numberToken).Val(themeID);
+                else
+                    error = KErrArgument;
+            }
+        }
+        CleanupStack::PopAndDestroy(themeRepository);
+    );
+
+    QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
+    settings.beginGroup(QLatin1String("QS60Style"));
+    if (themeID != 0) {
+        QVariant buttonColor = settings.value(QLatin1String("ButtonColor"));
+        if (!buttonColor.isNull()) {
+            //there is a stored color value, lets see if the theme ID matches
+            if (error == KErrNone) {
+                QVariant themeUID = settings.value(QLatin1String("ThemeUID"));
+                if (!themeUID.isNull() && themeUID.toInt() == themeID) {
+                    QColor storedColor(buttonColor.value<QColor>());
+                    if (storedColor.isValid())
+                        return storedColor;
+                }
+            }
+            settings.remove(""); //if color was invalid, or theme has been changed, just delete all stored settings
+        }
+    }
+#endif
+
+    QColor color = calculatedColor(frame);
+
+#ifndef QT_NO_SETTINGS
+    settings.setValue(QLatin1String("ThemeUID"), QVariant(themeID));
+    if (frame == SF_ButtonNormal) //other colors are not currently calculated from graphics
+        settings.setValue(QLatin1String("ButtonColor"), QVariant(color));
+    settings.endGroup();
+#endif
+
+    return color;
 }
 
 QPoint qt_s60_fill_background_offset(const QWidget *targetWidget)
