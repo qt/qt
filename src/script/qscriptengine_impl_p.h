@@ -112,7 +112,9 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(const QSt
     if (script.IsEmpty()) {
         // TODO: Why don't we get the exception, as with Script::Compile()?
         // Q_ASSERT(tryCatch.HasCaught());
-        return new QScriptValuePrivate(this, v8::Exception::SyntaxError(v8::String::New("")));
+        v8::Handle<v8::Value> error = v8::Exception::SyntaxError(v8::String::New(""));
+        setException(error);
+        return new QScriptValuePrivate(this, error);
     }
     return evaluate(script, tryCatch);
 }
