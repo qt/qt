@@ -704,7 +704,7 @@ void tst_QGraphicsGridLayout::columnMaximumWidth()
     QCOMPARE(layout->minimumSize(), QSizeF(10+10+10, 10+10));
     QCOMPARE(layout->preferredSize(), QSizeF(25+25+25, 25+25));
     QCOMPARE(layout->maximumSize(), QSizeF(50+50+50, 50+50));
-    
+
     // should at least be a very large number
     QVERIFY(layout->columnMaximumWidth(0) >= 10000);
     QCOMPARE(layout->columnMaximumWidth(0), layout->columnMaximumWidth(1));
@@ -738,7 +738,7 @@ void tst_QGraphicsGridLayout::columnMaximumWidth()
     QCOMPARE(layout->itemAt(0,2)->geometry(), QRectF(75, 0, 50, 50));
     QCOMPARE(layout->itemAt(1,2)->geometry(), QRectF(75, 50, 50, 50));
 
-    for(int i = 0; i < layout->count(); i++)
+    for (int i = 0; i < layout->count(); i++)
         layout->setAlignment(layout->itemAt(i), Qt::AlignRight | Qt::AlignBottom);
     layout->activate();
     QCOMPARE(layout->itemAt(0,0)->geometry(), QRectF(0, 0, 20, 50));
@@ -747,13 +747,13 @@ void tst_QGraphicsGridLayout::columnMaximumWidth()
     QCOMPARE(layout->itemAt(1,1)->geometry(), QRectF(20, 50, 50, 50));
     QCOMPARE(layout->itemAt(0,2)->geometry(), QRectF(80, 0, 50, 50));
     QCOMPARE(layout->itemAt(1,2)->geometry(), QRectF(80, 50, 50, 50));
-    for(int i = 0; i < layout->count(); i++)
+    for (int i = 0; i < layout->count(); i++)
         layout->setAlignment(layout->itemAt(i), Qt::AlignCenter);
 
     layout->setMaximumSize(layout->maximumSize() + QSizeF(60,60));
     widget->resize(widget->effectiveSizeHint(Qt::MaximumSize));
     layout->activate();
-    
+
     QCOMPARE(layout->itemAt(0,0)->geometry(), QRectF(0, 15, 20, 50));
     QCOMPARE(layout->itemAt(1,0)->geometry(), QRectF(0, 95, 20, 50));
     QCOMPARE(layout->itemAt(0,1)->geometry(), QRectF(20+30, 15, 50, 50));

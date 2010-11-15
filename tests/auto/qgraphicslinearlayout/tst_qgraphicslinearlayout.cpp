@@ -1543,7 +1543,7 @@ void tst_QGraphicsLinearLayout::testOffByOneInLargerLayout() {
     layout->activate();
     QCOMPARE(a->geometry(), QRectF(0,0,100,100));
     QCOMPARE(b->geometry(), QRectF(0,100,100,100));
- 
+
     layout->setMinimumSize(QSizeF(99,199));
     layout->setMaximumSize(QSizeF(99,199));
     layout->activate();
