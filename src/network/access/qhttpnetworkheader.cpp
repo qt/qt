@@ -60,7 +60,17 @@ QHttpNetworkHeaderPrivate::QHttpNetworkHeaderPrivate(const QHttpNetworkHeaderPri
 qint64 QHttpNetworkHeaderPrivate::contentLength() const
 {
     bool ok = false;
-    QByteArray value = headerField("content-length");
+    // We are not using the headerField() method here because servers might send us multiple content-length
+    // headers which is crap (see QTBUG-15311). Therefore just take the first content-length header field.
+    QByteArray value;
+    QList<QPair<QByteArray, QByteArray> >::ConstIterator it = fields.constBegin(),
+                                                        end = fields.constEnd();
+    for ( ; it != end; ++it)
+        if (qstricmp("content-length", it->first) == 0) {
+            value = it->second;
+            break;
+        }
+
     qint64 length = value.toULongLong(&ok);
     if (ok)
         return length;
