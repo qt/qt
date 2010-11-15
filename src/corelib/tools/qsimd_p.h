@@ -105,7 +105,8 @@ QT_BEGIN_HEADER
 #endif // defined(QT_HAVE_SSE2) && (defined(__SSE2__) || defined(Q_CC_MSVC))
 
 // NEON intrinsics
-#if defined(QT_HAVE_NEON)
+#if defined __ARM_NEON__
+#define QT_ALWAYS_HAVE_NEON
 #include <arm_neon.h>
 #endif
 

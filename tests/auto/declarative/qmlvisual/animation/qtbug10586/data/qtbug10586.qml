@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "0755ae54acb6af587bbf7ca509146e0f"
+        image: "qtbug10586.0.png"
     }
     Frame {
         msec: 32
@@ -338,7 +338,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "qtbug10586.0.png"
+        hash: "dff3c85f1bb42138410e9db7be98425b"
     }
     Frame {
         msec: 976
@@ -666,7 +666,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "qtbug10586.1.png"
+        hash: "d84bf962449716cc64cb34b285926c48"
     }
     Frame {
         msec: 1936
@@ -906,7 +906,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "qtbug10586.2.png"
+        hash: "7454984bc5316de021b87d04daf0e8bb"
     }
     Frame {
         msec: 2896

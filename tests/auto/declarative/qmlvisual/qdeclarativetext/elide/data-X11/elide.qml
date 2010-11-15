@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "bdf278826a033dbb744d1fa9492c9351"
+        image: "elide.0.png"
     }
     Frame {
         msec: 32
@@ -242,7 +242,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "elide.0.png"
+        hash: "bdf278826a033dbb744d1fa9492c9351"
     }
     Frame {
         msec: 976
@@ -251,7 +251,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777249
-        modifiers: 67108864
+        modifiers: 0
         text: ""
         autorep: false
         count: 1

@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "7cf95f1bc67a90c0df788787589a75a9"
+        image: "packageviews.0.png"
     }
     Frame {
         msec: 32
@@ -258,7 +258,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "packageviews.0.png"
+        hash: "9748e4da669f474bf10abfe7a9c013fd"
     }
     Frame {
         msec: 976
@@ -530,7 +530,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "packageviews.1.png"
+        hash: "6056cb02b921b56c63696d7fe9fe90fa"
     }
     Frame {
         msec: 1936
@@ -818,7 +818,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "packageviews.2.png"
+        hash: "7bb02b032c1dcb4a7b3e6604ea5a8a8d"
     }
     Frame {
         msec: 2896
@@ -1114,7 +1114,7 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "packageviews.3.png"
+        hash: "6dbc00069eca813c20731afdf0d25e35"
     }
     Frame {
         msec: 3856
@@ -1426,7 +1426,7 @@ VisualTest {
     }
     Frame {
         msec: 4800
-        image: "packageviews.4.png"
+        hash: "a703cbbef38b49be2d3033163ad450e7"
     }
     Frame {
         msec: 4816
@@ -1714,7 +1714,7 @@ VisualTest {
     }
     Frame {
         msec: 5760
-        image: "packageviews.5.png"
+        hash: "8d52a504170547407fad6d8785b7199b"
     }
     Frame {
         msec: 5776

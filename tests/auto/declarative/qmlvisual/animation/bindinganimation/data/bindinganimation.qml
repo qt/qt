@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "7cb5fc371040e587de9f06ce14a4b29a"
+        image: "bindinganimation.0.png"
     }
     Frame {
         msec: 32
@@ -250,7 +250,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "bindinganimation.0.png"
+        hash: "383ba6b9efcc58fca512982a207631f6"
     }
     Frame {
         msec: 976
@@ -506,7 +506,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "bindinganimation.1.png"
+        hash: "abc2ec0bc7a93e75b5823310e6284db1"
     }
     Frame {
         msec: 1936
@@ -810,7 +810,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "bindinganimation.2.png"
+        hash: "82363265ed2b611a54f8d48b2af22f11"
     }
     Frame {
         msec: 2896

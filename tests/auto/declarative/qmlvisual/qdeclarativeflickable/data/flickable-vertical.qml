@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "b0e76c5cfeb797888e8c032b3f2781bd"
+        image: "flickable-vertical.0.png"
     }
     Frame {
         msec: 32
@@ -346,7 +346,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "flickable-vertical.0.png"
+        hash: "f1192763bfb9efacc47828866abacaea"
     }
     Frame {
         msec: 976
@@ -658,7 +658,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "flickable-vertical.1.png"
+        hash: "c591e684fa9a8888d6117af66eaec299"
     }
     Frame {
         msec: 1936
@@ -994,7 +994,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "flickable-vertical.2.png"
+        hash: "96fb3652bfcf0aac1e35a2e50532816f"
     }
     Mouse {
         type: 5
@@ -1498,7 +1498,7 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "flickable-vertical.3.png"
+        hash: "b0e76c5cfeb797888e8c032b3f2781bd"
     }
     Frame {
         msec: 3856
@@ -1762,7 +1762,7 @@ VisualTest {
     }
     Frame {
         msec: 4800
-        image: "flickable-vertical.4.png"
+        hash: "b0e76c5cfeb797888e8c032b3f2781bd"
     }
     Frame {
         msec: 4816
@@ -2154,7 +2154,7 @@ VisualTest {
     }
     Frame {
         msec: 5760
-        image: "flickable-vertical.5.png"
+        hash: "5eb13b99216b29a54d4676c171949cf6"
     }
     Mouse {
         type: 5
@@ -2442,7 +2442,7 @@ VisualTest {
     }
     Frame {
         msec: 6720
-        image: "flickable-vertical.6.png"
+        hash: "4cd763300154da47a8ce8fc13b2213c5"
     }
     Frame {
         msec: 6736
@@ -2698,7 +2698,7 @@ VisualTest {
     }
     Frame {
         msec: 7680
-        image: "flickable-vertical.7.png"
+        hash: "1889f1f0e319b90b6a68d76df6eebe96"
     }
     Frame {
         msec: 7696
@@ -3154,7 +3154,7 @@ VisualTest {
     }
     Frame {
         msec: 8640
-        image: "flickable-vertical.8.png"
+        hash: "1889f1f0e319b90b6a68d76df6eebe96"
     }
     Frame {
         msec: 8656
@@ -3754,7 +3754,7 @@ VisualTest {
     }
     Frame {
         msec: 9600
-        image: "flickable-vertical.9.png"
+        hash: "b3003855e3805c0a514bf2c7a42d398f"
     }
     Mouse {
         type: 5
@@ -4242,7 +4242,7 @@ VisualTest {
     }
     Frame {
         msec: 10560
-        image: "flickable-vertical.10.png"
+        hash: "b0e76c5cfeb797888e8c032b3f2781bd"
     }
     Mouse {
         type: 5
@@ -4602,7 +4602,7 @@ VisualTest {
     }
     Frame {
         msec: 11520
-        image: "flickable-vertical.11.png"
+        hash: "b0e76c5cfeb797888e8c032b3f2781bd"
     }
     Frame {
         msec: 11536
@@ -5122,7 +5122,7 @@ VisualTest {
     }
     Frame {
         msec: 12480
-        image: "flickable-vertical.12.png"
+        hash: "b0e76c5cfeb797888e8c032b3f2781bd"
     }
     Mouse {
         type: 5
@@ -5498,7 +5498,7 @@ VisualTest {
     }
     Frame {
         msec: 13440
-        image: "flickable-vertical.13.png"
+        hash: "f77f12bdb352d5a8470ae8c93ae3646e"
     }
     Frame {
         msec: 13456

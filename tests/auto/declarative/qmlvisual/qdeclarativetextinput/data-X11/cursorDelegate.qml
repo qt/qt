@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "65bbc5da769f475d1c47bdedb92ba65e"
+        image: "cursorDelegate.0.png"
     }
     Frame {
         msec: 32
@@ -306,7 +306,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "cursorDelegate.0.png"
+        hash: "a764060e409f44b5a2196e405f0e00e0"
     }
     Frame {
         msec: 976
@@ -642,7 +642,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "cursorDelegate.1.png"
+        hash: "627206a252bd6fcbf57d9f1cde0506bb"
     }
     Frame {
         msec: 1936
@@ -978,7 +978,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "cursorDelegate.2.png"
+        hash: "87968f62496d88d8ed800d76a2d41c25"
     }
     Frame {
         msec: 2896
@@ -1266,7 +1266,7 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "cursorDelegate.3.png"
+        hash: "4a080a5154c517e6bcf24b3a1f1d7f2c"
     }
     Frame {
         msec: 3856
@@ -1506,7 +1506,7 @@ VisualTest {
     }
     Frame {
         msec: 4800
-        image: "cursorDelegate.4.png"
+        hash: "7797530c0cec492d09390e8f5b6410e6"
     }
     Frame {
         msec: 4816

@@ -12,15 +12,15 @@ Rectangle {
 
     ListModel {
         id: model
-        ListElement { name: "1" }
-        ListElement { name: "2" }
-        ListElement { name: "3" }
-        ListElement { name: "4" }
-        ListElement { name: "5" }
-        ListElement { name: "6" }
-        ListElement { name: "7" }
-        ListElement { name: "8" }
-        ListElement { name: "9" }
+        ListElement { name: "red" }
+        ListElement { name: "orange" }
+        ListElement { name: "yellow" }
+        ListElement { name: "green" }
+        ListElement { name: "cyan" }
+        ListElement { name: "blue" }
+        ListElement { name: "indigo" }
+        ListElement { name: "violet" }
+        ListElement { name: "pink" }
     }
 
     Component {
@@ -33,8 +33,7 @@ Rectangle {
                 focus: true
                 Keys.onDigit9Pressed: console.log(name)
                 width: 50; height: 50; 
-                color: root.ListView.isCurrentItem?"red":"green"
-                Text { text: name; anchors.centerIn: parent }
+                color: root.ListView.isCurrentItem?"black":name
             }
         }
     }

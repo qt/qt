@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "3b88645092be28037fca4a6034f5b2f7"
+        image: "listview.0.png"
     }
     Frame {
         msec: 32
@@ -298,7 +298,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "listview.0.png"
+        hash: "d193987835dc12e4391e55ff5fee4ce1"
     }
     Frame {
         msec: 976
@@ -650,7 +650,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "listview.1.png"
+        hash: "02f34b6fde613c7c5928285bf81837d6"
     }
     Frame {
         msec: 1936
@@ -1034,7 +1034,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "listview.2.png"
+        hash: "5387de4152cac542735a4debf997b56f"
     }
     Frame {
         msec: 2896
@@ -1394,7 +1394,7 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "listview.3.png"
+        hash: "294e6961316b028201657ab6b244559f"
     }
     Mouse {
         type: 5
@@ -1834,7 +1834,7 @@ VisualTest {
     }
     Frame {
         msec: 4800
-        image: "listview.4.png"
+        hash: "5cb4cf2c527d821db2a5072dd3702653"
     }
     Frame {
         msec: 4816
@@ -2130,7 +2130,7 @@ VisualTest {
     }
     Frame {
         msec: 5760
-        image: "listview.5.png"
+        hash: "dbd87bf02d698b7f053d307ef0c98452"
     }
     Frame {
         msec: 5776

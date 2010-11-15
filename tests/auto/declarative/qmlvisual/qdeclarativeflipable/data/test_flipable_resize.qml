@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "04382a80a203e1fe3d0d4944c9195e0b"
+        image: "test_flipable_resize.0.png"
     }
     Frame {
         msec: 32
@@ -187,7 +187,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777249
-        modifiers: 67108864
+        modifiers: 0
         text: ""
         autorep: false
         count: 1

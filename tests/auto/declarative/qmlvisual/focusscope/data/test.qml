@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "94675f9c9afb6834b91a69fd0ce35a22"
+        image: "test.0.png"
     }
     Frame {
         msec: 32
@@ -290,7 +290,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "test.0.png"
+        hash: "f369109744055d30eadf2832a028a104"
     }
     Frame {
         msec: 976
@@ -594,7 +594,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "test.1.png"
+        hash: "f369109744055d30eadf2832a028a104"
     }
     Frame {
         msec: 1936
@@ -882,7 +882,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "test.2.png"
+        hash: "94675f9c9afb6834b91a69fd0ce35a22"
     }
     Frame {
         msec: 2896

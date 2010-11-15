@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "4faa7727bafeea0771f2db62f0141ac9"
+        image: "parallelAnimation-visual.0.png"
     }
     Frame {
         msec: 32
@@ -258,7 +258,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "parallelAnimation.0.png"
+        hash: "115cb0b4c2c0dcd44618b5891aa210e1"
     }
     Frame {
         msec: 976
@@ -399,7 +399,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777249
-        modifiers: 67108864
+        modifiers: 0
         text: ""
         autorep: false
         count: 1
