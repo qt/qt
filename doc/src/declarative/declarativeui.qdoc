@@ -45,7 +45,7 @@ language for describing user interfaces and a language runtime. A collection
 of C++ APIs is used to integrate these high level features with classic
 Qt applications.
 
-\section2 QML, Elements and the QtDeclarative Module
+\section2 QML, Elements and the Qt Declarative Module
 
 User interfaces and their behavior are described using QML, an extension to
 \l{About JavaScript}{JavaScript} that lets developers and designers
@@ -60,14 +60,14 @@ QObject-based type system, adds support for automatic
 \l{Property Binding}{property bindings} and provides
 \l{Network Transparency}{network transparency} at the language level.
 
-The QtDeclarative module implements the interface between the QML language
+The Qt Declarative module implements the interface between the QML language
 and the elements available to it. It also provides a C++ API that can be
 used to load and interact with QML files from within Qt applications.
 
 Qt Quick builds on \l{QML for Qt programmers}{Qt's existing strengths}.
 QML can be be used to incrementally extend an existing application or
 to build completely new applications.  QML is fully
-\l{Extending QML in C++}{extensible from C++} through the QtDeclarative
+\l{Extending QML in C++}{extensible from C++} through the Qt Declarative
 Module.
 
 \section1 Getting Started
@@ -139,7 +139,7 @@ Module.
 \o \l{QML Global Object}
 \o \l{QML Internationalization}
 \o \l{QML Security}
-\o \l{QtDeclarative Module}
+\o \l{Qt Declarative Module}
 \o \l{Debugging QML}
 \o \l{QML Viewer}
 \o \l{QML Performance}
