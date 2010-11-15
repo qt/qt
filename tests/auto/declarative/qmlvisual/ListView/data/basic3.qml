@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "7b874555d744b10ed666dcb6fad79a19"
+        image: "basic3.0.png"
     }
     Frame {
         msec: 32

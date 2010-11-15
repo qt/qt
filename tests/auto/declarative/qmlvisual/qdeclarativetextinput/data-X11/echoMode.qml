@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "eff6a4491bc00e5570ea73a1371f63fc"
+        image: "echoMode.0.png"
     }
     Frame {
         msec: 32
@@ -306,7 +306,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "echoMode.0.png"
+        hash: "b3504e4dbb653a7c039dcf8ab0351055"
     }
     Frame {
         msec: 976
@@ -650,7 +650,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "echoMode.1.png"
+        hash: "deab81e7fcc4ecc31d02fccc52a4cc17"
     }
     Key {
         type: 7
@@ -994,7 +994,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "echoMode.2.png"
+        hash: "34d00f787b814ad82c025c77d6be51a2"
     }
     Frame {
         msec: 2896

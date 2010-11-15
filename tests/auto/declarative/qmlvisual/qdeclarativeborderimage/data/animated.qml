@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "aec13bcab337e55832b0a02fb5c6b526"
+        image: "animated.0.png"
     }
     Frame {
         msec: 32
@@ -242,7 +242,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "animated.0.png"
+        hash: "d1ed4916cb1ecff60277d74369ff311b"
     }
     Frame {
         msec: 976
@@ -482,7 +482,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "animated.1.png"
+        hash: "b63e4d1686057828fd8781f1c33585f5"
     }
     Frame {
         msec: 1936

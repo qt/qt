@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "fab978e1e0ee5140d8131320ff2322e9"
+        image: "QTBUG-14469.0.png"
     }
     Frame {
         msec: 32
@@ -242,7 +242,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "QTBUG-14469.0.png"
+        hash: "b1a283365bbffbc0ddaa4aa661e52add"
     }
     Frame {
         msec: 976
