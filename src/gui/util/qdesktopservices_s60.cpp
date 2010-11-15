@@ -79,7 +79,7 @@ _LIT(KFontsDir, "z:\\resource\\Fonts\\");
 
 #ifndef USE_SCHEMEHANDLER
 // copied from miutset.h, so we don't get a dependency into the app layer
-const TUid KUidMsgTypeSMTP = {0x10001028};	// 268439592
+const TUid KUidMsgTypeSMTP = {0x10001028}; // 268439592
 const TUid KUidBrowser = { 0x10008D39 };
 
 template<class R>
@@ -345,7 +345,7 @@ static TDriveUnit exeDrive()
 static TDriveUnit writableExeDrive()
 {
     TDriveUnit drive = exeDrive();
-    if(drive.operator TInt() == EDriveZ)
+    if (drive.operator TInt() == EDriveZ)
         return TDriveUnit(EDriveC);
     return drive;
 }
@@ -353,7 +353,7 @@ static TDriveUnit writableExeDrive()
 static TPtrC writableDataRoot()
 {
     TDriveUnit drive = exeDrive();
-    switch(drive.operator TInt()){
+    switch (drive.operator TInt()){
         case EDriveC:
             return PathInfo::PhoneMemoryRootPath();
             break;
