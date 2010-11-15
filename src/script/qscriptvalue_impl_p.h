@@ -713,11 +713,9 @@ inline void QScriptValuePrivate::setProperty(v8::Handle<v8::String> name, QScrip
     }
 
     if (engine() != value->engine()) {
-        QStringList msg;
-        msg << QString::fromLatin1("QScriptValue::setProperty(")
-            << QScriptConverter::toString(name)
-            << QString::fromLatin1(") failed: cannot set value created in a different engine");
-        qWarning(msg.join(QString()).toLatin1().constData());
+        qWarning("QScriptValue::setProperty(%s) failed: "
+                 "cannot set value created in a different engine",
+                 qPrintable(QScriptConverter::toString(name)));
         return;
     }
 
