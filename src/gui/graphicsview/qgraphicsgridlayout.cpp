@@ -67,7 +67,7 @@
     \section1 Size Hints and Size Policies in QGraphicsGridLayout
 
     QGraphicsGridLayout respects each item's size hints and size policies,
-    and when the layout contains more space than the items can fill, each item
+    and when a cell in the grid has more space than the items can fill, each item
     is arranged according to the layout's alignment for that item. You can set
     an alignment for each item by calling setAlignment(), and check the
     alignment for any item by calling alignment(). You can also set the alignment
