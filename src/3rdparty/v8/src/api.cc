@@ -1357,6 +1357,8 @@ Local<Script> Script::CompileEval(v8::Handle<String> source,
       context,
       context->IsGlobalContext(),
       i::Compiler::DONT_VALIDATE_JSON);
+  if (shared.is_null())
+      return Local<Script>();
   i::Handle<i::JSFunction> result = FACTORY->NewFunctionFromSharedFunctionInfo(
       shared,
       context,
