@@ -109,6 +109,11 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(const QSt
     Q_UNUSED(lineNumber);
     v8::TryCatch tryCatch;
     v8::Handle<v8::Script> script = v8::Script::CompileEval(QScriptConverter::toString(program), QScriptConverter::toString(fileName));
+    if (script.IsEmpty()) {
+        // TODO: Why don't we get the exception, as with Script::Compile()?
+        // Q_ASSERT(tryCatch.HasCaught());
+        return new QScriptValuePrivate(this, v8::Exception::SyntaxError(v8::String::New("")));
+    }
     return evaluate(script, tryCatch);
 }
 
