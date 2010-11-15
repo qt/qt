@@ -120,9 +120,11 @@ private:
 v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *, const QMetaObject *);
 v8::Handle<v8::FunctionTemplate> createQtMetaObjectTemplate();
 
-v8::Handle<v8::Object> newQtObject(QScriptEnginePrivate *engine, QObject *object,
-                                   QScriptEngine::ValueOwnership own,
-                                   const QScriptEngine::QObjectWrapOptions &opt);
+v8::Handle<v8::Value> QtDynamicPropertyGetter(v8::Local<v8::String> property,
+                                                     const v8::AccessorInfo& info);
+void QtDynamicPropertySetter(v8::Local<v8::String> property,
+                                    v8::Local<v8::Value> value,
+                                    const v8::AccessorInfo& info);
 
 QObject *toQtObject(QScriptEnginePrivate *engine, const v8::Handle<v8::Object> &object);
 

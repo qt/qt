@@ -320,7 +320,7 @@ v8::Handle<v8::Value> QScriptEnginePrivate::metaTypeToJS(int type, const void *d
 #endif
         case QMetaType::QObjectStar:
         case QMetaType::QWidgetStar:
-            result = newQObject(*reinterpret_cast<QObject* const *>(data));
+            result = makeQtObject(*reinterpret_cast<QObject* const *>(data));
             break;
         case QMetaType::QVariant:
             result = variantToJS(*reinterpret_cast<const QVariant*>(data));
@@ -849,11 +849,59 @@ QScriptValue QScriptEngine::evaluate(const QScriptProgram& program)
     return QScriptValuePrivate::get(d->evaluate(QScriptProgramPrivate::get(program)));
 }
 
-v8::Handle<v8::Object> QScriptEnginePrivate::newQObject(
-        QObject *object, QScriptEngine::ValueOwnership own,
-        const QScriptEngine::QObjectWrapOptions &opt)
+v8::Handle<v8::Value> QScriptEnginePrivate::makeQtObject(QObject *object,
+                                   QScriptEngine::ValueOwnership own,
+                                   const QScriptEngine::QObjectWrapOptions &opt)
 {
-    return newQtObject(this, object, own, opt);
+    if (!object)
+        return makeJSValue(QScriptValue::NullValue);
+    v8::HandleScope handleScope;
+    v8::Handle<v8::FunctionTemplate> templ = this->qtClassTemplate(object->metaObject());
+    Q_ASSERT(!templ.IsEmpty());
+    v8::Handle<v8::ObjectTemplate> instanceTempl = templ->InstanceTemplate();
+    Q_ASSERT(!instanceTempl.IsEmpty());
+    v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
+    Q_ASSERT(instance->InternalFieldCount() == 1);
+
+    QtInstanceData *data = new QtInstanceData(this, object, own, opt);
+    instance->SetPointerInInternalField(0, data);
+
+    // Add accessors for current dynamic properties.
+    {
+        QList<QByteArray> dpNames = object->dynamicPropertyNames();
+        for (int i = 0; i < dpNames.size(); ++i) {
+            QByteArray name = dpNames.at(i);
+            instance->SetAccessor(v8::String::New(name),
+                                  QtDynamicPropertyGetter,
+                                  QtDynamicPropertySetter);
+        }
+    }
+
+    if (!opt & QScriptEngine::ExcludeChildObjects) {
+        // Add accessors for current child objects.
+        QList<QObject*> children = object->children();
+        for (int i = 0; i < children.size(); ++i) {
+            QObject *child = children.at(i);
+            if (child->objectName().isEmpty())
+                continue;
+            //FIXME Install an accessor.
+            //Q_UNIMPLEMENTED();
+        }
+    }
+
+    for (const QMetaObject* cls = object->metaObject(); cls; cls = cls->superClass()) {
+        QByteArray className = cls->className();
+        className.append("*"); // We are searching for a pointer.
+        v8::Handle<v8::Object> prototype = defaultPrototype(className.data());
+        if (!prototype.IsEmpty()) {
+            instance->SetPrototype(prototype);
+            break;
+        }
+    }
+
+    v8::Persistent<v8::Object> persistent = v8::Persistent<v8::Object>::New(instance);
+    persistent.MakeWeak(data, QScriptV8ObjectWrapperHelper::weakCallback<QtInstanceData>);
+    return handleScope.Close(instance);
 }
 
 QScriptValue QScriptEnginePrivate::scriptValueFromInternal(v8::Handle<v8::Value> value)
@@ -1226,13 +1274,10 @@ QScriptValue QScriptEngine::newArray(uint length)
 QScriptValue QScriptEngine::newQObject(QObject *object, ValueOwnership ownership,
                                        const QObjectWrapOptions &options)
 {
-    // FIXME move this code to private.
     Q_D(QScriptEngine);
     QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
-    if (!object)
-        return QScriptValue::NullValue;
-    return d->scriptValueFromInternal(d->newQObject(object, ownership, options));
+    return QScriptValuePrivate::get(d->newQObject(object, ownership, options));
 }
 
 /*!
@@ -1265,11 +1310,10 @@ QScriptValue QScriptEngine::newQObject(QObject *object, ValueOwnership ownership
 QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject, QObject *qtObject,
                                        ValueOwnership ownership, const QObjectWrapOptions &options)
 {
-    if (!scriptObject.isObject())
-        return newQObject(qtObject, ownership, options);
-
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(QScriptEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
+    v8::HandleScope handleScope;
+    return QScriptValuePrivate::get(d->newQObject(QScriptValuePrivate::get(scriptObject), qtObject, ownership, options));
 }
 
 /*!
@@ -1668,6 +1712,13 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::defaultPrototype(i
     if (info.prototype.IsEmpty())
         return new QScriptValuePrivate();
     return new QScriptValuePrivate(this, info.prototype);
+}
+
+v8::Handle<v8::Object> QScriptEnginePrivate::defaultPrototype(const char* metaTypeName)
+{
+    int metaTypeId = QMetaType::type(metaTypeName);
+    TypeInfos::TypeInfo info = m_typeInfos.value(metaTypeId);
+    return info.prototype;
 }
 
 QScriptString QScriptEngine::toStringHandle(const QString& str)

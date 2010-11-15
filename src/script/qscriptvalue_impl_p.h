@@ -474,9 +474,7 @@ bool QScriptValuePrivate::isRegExp() const
 
 bool QScriptValuePrivate::isQObject() const
 {
-    if (!isJSBased() || !m_value->IsObject())
-        return false;
-    return toQtObject(m_engine.data(), m_value->ToObject());
+    return isJSBased() && engine()->isQtObject(m_value);
 }
 
 bool QScriptValuePrivate::isQMetaObject() const

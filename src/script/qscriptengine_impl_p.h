@@ -331,6 +331,44 @@ inline bool QScriptEnginePrivate::hasInstance(v8::Handle<v8::FunctionTemplate> f
     Q_ASSERT(!value.IsEmpty());
     return !fun.IsEmpty() && fun->HasInstance(value);
 }
+
+inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newQObject(
+        QObject *object, QScriptEngine::ValueOwnership own,
+        const QScriptEngine::QObjectWrapOptions &opt)
+{
+    return new QScriptValuePrivate(this, makeQtObject(object, own, opt));
+}
+
+inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newQObject(QScriptValuePrivate *scriptObject,
+                                                                         QObject *qtobject,
+                                                                         QScriptEngine::ValueOwnership ownership,
+                                                                         const QScriptEngine::QObjectWrapOptions &options)
+{
+    if (!scriptObject->isObject())
+        return newQObject(qtobject, ownership, options);
+
+    v8::Handle<v8::Object> jsobject = *scriptObject;
+    if (scriptObject->isQObject()) {
+        // scriptObject is a wrapper of an qt object.
+        Q_ASSERT(jsobject->InternalFieldCount() == 1);
+        QtInstanceData *data = reinterpret_cast<QtInstanceData*>(jsobject->GetPointerFromInternalField(0));
+        Q_ASSERT(data);
+        delete data;
+        data = new QtInstanceData(this, qtobject, ownership, options);
+        jsobject->SetPointerInInternalField(0, data);
+        return scriptObject;
+    }
+
+    // FIXME it create a new instance instead of reusing this one. It doesn't replace existing references in JS.
+    // Similar problem is in QSV::setScriptClass.
+    // Q_UNIMPLEMENTED();
+    QScriptPassPointer<QScriptValuePrivate> obj(newQObject(qtobject, ownership, options));
+    QScriptPassPointer<QScriptValuePrivate> proto(scriptObject->prototype());
+    scriptObject->reinitialize(this, *obj.give());
+    scriptObject->setPrototype(proto.give());
+
+    return scriptObject;
+}
 QT_END_NAMESPACE
 
 #endif

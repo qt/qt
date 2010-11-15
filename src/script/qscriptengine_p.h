@@ -94,10 +94,13 @@ public:
     QScriptPassPointer<QScriptValuePrivate> newFunction(QScriptEngine::FunctionSignature fun, QScriptValuePrivate *prototype, int length);
     QScriptPassPointer<QScriptValuePrivate> newFunction(QScriptEngine::FunctionWithArgSignature fun, void *arg);
 
-    v8::Handle<v8::Object> newQObject(
+    QScriptPassPointer<QScriptValuePrivate> newQObject(
         QObject *object, QScriptEngine::ValueOwnership own = QScriptEngine::QtOwnership,
         const QScriptEngine::QObjectWrapOptions &opt = 0);
-
+    QScriptPassPointer<QScriptValuePrivate> newQObject(QScriptValuePrivate *scriptObject,
+                                                       QObject *qtObject,
+                                                       QScriptEngine::ValueOwnership ownership,
+                                                       const QScriptEngine::QObjectWrapOptions &options);
     v8::Handle<v8::Object> newVariant(const QVariant &value);
     v8::Handle<v8::Object> newQMetaObject(const QMetaObject* mo, const QScriptValue &ctor);
 
@@ -113,6 +116,9 @@ public:
     inline v8::Handle<v8::Value> makeJSValue(qsreal value);
     inline v8::Handle<v8::Value> makeJSValue(QScriptValue::SpecialValue value);
     inline v8::Handle<v8::Value> makeJSValue(const QString& value);
+    v8::Handle<v8::Value> makeQtObject(QObject *object,
+                                       QScriptEngine::ValueOwnership own = QScriptEngine::QtOwnership,
+                                       const QScriptEngine::QObjectWrapOptions &opt = 0);
     inline v8::Local<v8::Array> getOwnPropertyNames(v8::Handle<v8::Object> object) const;
     inline QScriptValue::PropertyFlags getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property, const QScriptValue::ResolveFlags& mode);
     inline v8::Local<v8::Value> getOwnProperty(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property) const;
@@ -176,6 +182,7 @@ public:
     void registerCustomType(int type, QScriptEngine::MarshalFunction mf, QScriptEngine::DemarshalFunction df, const QScriptValuePrivate *prototype);
     void setDefaultPrototype(int metaTypeId, const QScriptValuePrivate *prototype);
     QScriptPassPointer<QScriptValuePrivate> defaultPrototype(int metaTypeId);
+    v8::Handle<v8::Object> defaultPrototype(const char* metaTypeName);
 
     inline QScriptContextPrivate *setCurrentQSContext(QScriptContextPrivate *ctx);
     inline QScriptContextPrivate *currentContext() { return m_currentQsContext; }

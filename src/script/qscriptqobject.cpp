@@ -879,7 +879,7 @@ static void QtMetaPropertySetter(v8::Local<v8::String> /*property*/,
 // an instance (not tied to a class). Dynamic properties can be added,
 // changed and removed at any time. If the dynamic property with the given
 // name no longer exists, this accessor will be uninstalled.
-static v8::Handle<v8::Value> QtDynamicPropertyGetter(v8::Local<v8::String> property,
+v8::Handle<v8::Value> QtDynamicPropertyGetter(v8::Local<v8::String> property,
                                                      const v8::AccessorInfo& info)
 {
     v8::Local<v8::Object> self = info.Holder(); // This?
@@ -902,7 +902,7 @@ static v8::Handle<v8::Value> QtDynamicPropertyGetter(v8::Local<v8::String> prope
 // This callback implements writing a presumably existing dynamic property.
 // If the dynamic property with the given name no longer exists, this accessor
 // will be uninstalled.
-static void QtDynamicPropertySetter(v8::Local<v8::String> property,
+void QtDynamicPropertySetter(v8::Local<v8::String> property,
                                     v8::Local<v8::Value> value,
                                     const v8::AccessorInfo& info)
 {
@@ -972,7 +972,7 @@ static v8::Handle<v8::Value> QtLazyPropertyGetter(v8::Local<v8::String> property
             QString childName = child->objectName();
             if (childName == QString::fromLatin1(name)) {
                 Q_UNIMPLEMENTED();
-                return engine->newQObject(child);
+                return engine->makeQtObject(child);
             }
         }
     }
@@ -1174,7 +1174,7 @@ static v8::Handle<v8::Value> findChildCallback(const v8::Arguments& args)
         name = QScriptConverter::toString(args[0]->ToString());
     QObject *child = qobject->findChild<QObject *>(name);
     QScriptEngine::QObjectWrapOptions opt = QScriptEngine::PreferExistingWrapperObject;
-    return handleScope.Close(engine->newQObject(child, QScriptEngine::QtOwnership, opt));
+    return handleScope.Close(engine->makeQtObject(child, QScriptEngine::QtOwnership, opt));
 }
 
 static v8::Handle<v8::Value> findChildrenCallback(const v8::Arguments& args)
@@ -1201,7 +1201,7 @@ static v8::Handle<v8::Value> findChildrenCallback(const v8::Arguments& args)
     v8::Local<v8::Array> array = v8::Array::New(children.length());
     const QScriptEngine::QObjectWrapOptions opt = QScriptEngine::PreferExistingWrapperObject;
     for (int i = 0; i < children.length(); i++) {
-        array->Set(i , engine->newQObject(children.at(i), QScriptEngine::QtOwnership, opt));
+        array->Set(i , engine->makeQtObject(children.at(i), QScriptEngine::QtOwnership, opt));
     }
     return handleScope.Close(array);
 }
@@ -1327,51 +1327,6 @@ v8::Handle<v8::FunctionTemplate> createQtMetaObjectTemplate()
     instTempl->SetNamedPropertyHandler(QtMetaObjectPropertyGetter);
 
     return funcTempl;
-}
-
-v8::Handle<v8::Object> newQtObject(QScriptEnginePrivate *engine, QObject *object,
-                                   QScriptEngine::ValueOwnership own,
-                                   const QScriptEngine::QObjectWrapOptions &opt)
-{
-    if (!object)
-        return v8::Handle<v8::Object>();
-    v8::HandleScope handleScope;
-    v8::Handle<v8::FunctionTemplate> templ = engine->qtClassTemplate(object->metaObject());
-    Q_ASSERT(!templ.IsEmpty());
-    v8::Handle<v8::ObjectTemplate> instanceTempl = templ->InstanceTemplate();
-    Q_ASSERT(!instanceTempl.IsEmpty());
-    v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
-    Q_ASSERT(instance->InternalFieldCount() == 1);
-
-    QtInstanceData *data = new QtInstanceData(engine, object, own, opt);
-    instance->SetPointerInInternalField(0, data);
-
-    // Add accessors for current dynamic properties.
-    {
-        QList<QByteArray> dpNames = object->dynamicPropertyNames();
-        for (int i = 0; i < dpNames.size(); ++i) {
-            QByteArray name = dpNames.at(i);
-            instance->SetAccessor(v8::String::New(name),
-                                  QtDynamicPropertyGetter,
-                                  QtDynamicPropertySetter);
-        }
-    }
-
-    if (!opt & QScriptEngine::ExcludeChildObjects) {
-        // Add accessors for current child objects.
-        QList<QObject*> children = object->children();
-        for (int i = 0; i < children.size(); ++i) {
-            QObject *child = children.at(i);
-            if (child->objectName().isEmpty())
-                continue;
-            //FIXME Install an accessor.
-            //Q_UNIMPLEMENTED();
-        }
-    }
-
-    v8::Persistent<v8::Object> persistent = v8::Persistent<v8::Object>::New(instance);
-    persistent.MakeWeak(data, QScriptV8ObjectWrapperHelper::weakCallback<QtInstanceData>);
-    return handleScope.Close(instance);
 }
 
 QObject *toQtObject(QScriptEnginePrivate *engine, const v8::Handle<v8::Object> &object)
