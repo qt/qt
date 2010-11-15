@@ -141,14 +141,14 @@ public:
 
 typedef QElapsedTimer ElapsedTimer;
 
-class QUnifiedTimer : public QObject
+class Q_CORE_EXPORT QUnifiedTimer : public QObject
 {
 private:
     QUnifiedTimer();
 
 public:
     //XXX this is needed by dui
-    static Q_CORE_EXPORT QUnifiedTimer *instance();
+    static QUnifiedTimer *instance();
     static QUnifiedTimer *instance(bool create);
 
     static void registerAnimation(QAbstractAnimation *animation, bool isTopLevel);
