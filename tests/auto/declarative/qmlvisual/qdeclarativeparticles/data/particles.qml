@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "b4df49cbd7cf972af9879399808f6c53"
+        image: "particles.0.png"
     }
     Frame {
         msec: 32
@@ -242,7 +242,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "particles.0.png"
+        hash: "d52c30bc201afd3d1caf34efcddafdee"
     }
     Frame {
         msec: 976
@@ -482,7 +482,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "particles.1.png"
+        hash: "57976a66963718e90c62535a936d9251"
     }
     Frame {
         msec: 1936
@@ -722,7 +722,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "particles.2.png"
+        hash: "ac6878edac61916bf424dcee2d7790e8"
     }
     Frame {
         msec: 2896

@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "7e16e6360fc2e9db67dbf11d58042745"
+        image: "test-flipable.0.png"
     }
     Frame {
         msec: 32
@@ -242,7 +242,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "test-flipable.0.png"
+        hash: "c03406106847c03c73f5897e65690925"
     }
     Frame {
         msec: 976
@@ -482,7 +482,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "test-flipable.1.png"
+        hash: "1e8348fbb51871dffe9543fca19bb452"
     }
     Frame {
         msec: 1936
@@ -722,7 +722,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "test-flipable.2.png"
+        hash: "373141f99bc88c40ead161502c9750e9"
     }
     Frame {
         msec: 2896
@@ -962,7 +962,7 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "test-flipable.3.png"
+        hash: "464a78e75e10b62773ab64af4fc4c7aa"
     }
     Frame {
         msec: 3856
@@ -1202,7 +1202,7 @@ VisualTest {
     }
     Frame {
         msec: 4800
-        image: "test-flipable.4.png"
+        hash: "03f17b2cd781f2ee0ae5664a0491166c"
     }
     Frame {
         msec: 4816
@@ -1442,7 +1442,7 @@ VisualTest {
     }
     Frame {
         msec: 5760
-        image: "test-flipable.5.png"
+        hash: "73c06997014af4e008b546b53fe349fb"
     }
     Frame {
         msec: 5776
@@ -1559,7 +1559,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777249
-        modifiers: 67108864
+        modifiers: 0
         text: ""
         autorep: false
         count: 1

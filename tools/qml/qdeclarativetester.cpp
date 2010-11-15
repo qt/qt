@@ -286,7 +286,7 @@ void QDeclarativeTester::updateCurrentTime(int msec)
     fe.msec = msec;
     if (msec == 0 || !(options & QDeclarativeViewer::TestImages)) {
         // Skip first frame, skip if not doing images
-    } else if (0 == (m_savedFrameEvents.count() % 60) || snapshot) {
+    } else if (0 == (m_savedFrameEvents.count()-1 % 60) || snapshot) {
         fe.image = img;
     } else {
         QCryptographicHash hash(QCryptographicHash::Md5);
@@ -356,6 +356,11 @@ void QDeclarativeTester::updateCurrentTime(int msec)
 
             if (options & QDeclarativeViewer::TestImages && !(options & QDeclarativeViewer::Record) && !frame->image().isEmpty()) {
                 QImage goodImage(frame->image().toLocalFile());
+                if (frame->msec() == 16 && goodImage.size() != img.size()){
+                    //Also an image mismatch, but this warning is more informative. Only checked at start though.
+                    qWarning() << "QDeclarativeTester(" << m_script << "): Size mismatch. This test must be run at " << goodImage.size();
+                    imagefailure();
+                }
                 if (goodImage != img) {
                     QString reject(frame->image().toLocalFile() + ".reject.png");
                     qWarning() << "QDeclarativeTester: Image mismatch.  Reject saved to:" 

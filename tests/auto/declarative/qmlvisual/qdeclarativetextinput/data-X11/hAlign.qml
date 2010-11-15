@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "09298802dfc053e2bb1b3bb2192ca5b2"
+        image: "hAlign.0.png"
     }
     Frame {
         msec: 32
