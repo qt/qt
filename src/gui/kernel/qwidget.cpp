@@ -7051,13 +7051,16 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
     restoredNormalGeometry.moveTop(qMax(restoredNormalGeometry.top(), availableGeometry.top() + frameHeight));
 
     if (maximized || fullScreen) {
-        // set geomerty before setting the window state to make
-        // sure the window is maximized to the right screen.
-        // Skip on windows: the window is restored into a broken
-        // half-maximized state.
-#ifndef Q_WS_WIN
-        setGeometry(restoredNormalGeometry);
-#endif
+        // Set the geomerty before setting the maximized/fullscreen
+        // window state to make sure the window is maximized to the
+        // correct screen. Clear the window state before setting the
+        // geometry to prevent a bug where the window is restored to
+        // an inconsitent state on Windows.
+        if (desktop->screenNumber(restoredNormalGeometry.center()) != desktop->screenNumber(this)) {
+            setWindowState(Qt::WindowNoState);
+            setGeometry(restoredNormalGeometry);
+        }
+
         Qt::WindowStates ws = windowState();
         if (maximized)
             ws |= Qt::WindowMaximized;
