@@ -122,6 +122,7 @@ private slots:
     void task236367_maxSizeHint();
     void heightForWidth();
     void heightForWidthWithSpanning();
+    void stretchAndHeightForWidth();
 };
 
 class RectWidget : public QGraphicsWidget
@@ -2805,6 +2806,67 @@ void tst_QGraphicsGridLayout::heightForWidthWithSpanning()
     QEXPECT_FAIL("", "Due to an old bug this wrongly returns QWIDGETSIZE_MAX", Continue);
     QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(200, -1)), QSizeF(200, 10000));
 }
+
+
+void tst_QGraphicsGridLayout::stretchAndHeightForWidth()
+{
+    QGraphicsWidget *widget = new QGraphicsWidget(0, Qt::Window);
+    QGraphicsGridLayout *layout = new QGraphicsGridLayout;
+    widget->setLayout(layout);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+
+    RectWidget *w1 = new RectWidget;
+    w1->setSizeHint(Qt::MinimumSize, QSizeF(10, 10));
+    w1->setSizeHint(Qt::PreferredSize, QSizeF(100, 100));
+    w1->setSizeHint(Qt::MaximumSize, QSizeF(500, 500));
+    layout->addItem(w1, 0,0,1,1);
+
+    RectWidget *w2 = new RectWidget;
+    w2->setSizeHint(Qt::MinimumSize, QSizeF(10, 10));
+    w2->setSizeHint(Qt::PreferredSize, QSizeF(100, 100));
+    w2->setSizeHint(Qt::MaximumSize, QSizeF(500, 500));
+    layout->addItem(w2, 0,1,1,1);
+    layout->setColumnStretchFactor(1, 2);
+
+    QApplication::sendPostedEvents();
+    QGraphicsScene scene;
+    QGraphicsView *view = new QGraphicsView(&scene);
+
+    scene.addItem(widget);
+
+    view->show();
+
+    widget->resize(500, 100);
+    // w1 should stay at its preferred size
+    QCOMPARE(w1->geometry(), QRectF(0, 0, 100, 100));
+    QCOMPARE(w2->geometry(), QRectF(100, 0, 400, 100));
+
+
+    // only w1 has hfw
+    w1->setConstraintFunction(hfw);
+    QSizePolicy sp(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    sp.setHeightForWidth(true);
+    w1->setSizePolicy(sp);
+    QApplication::sendPostedEvents();
+
+    QCOMPARE(w1->geometry(), QRectF(0, 0, 100, 200));
+    QCOMPARE(w2->geometry(), QRectF(100, 0, 400, 200));
+
+    // only w2 has hfw
+    w2->setConstraintFunction(hfw);
+    w2->setSizePolicy(sp);
+
+    w1->setConstraintFunction(0);
+    sp.setHeightForWidth(false);
+    w1->setSizePolicy(sp);
+    QApplication::sendPostedEvents();
+
+    QCOMPARE(w1->geometry(), QRectF(0, 0, 100, 100));
+    QCOMPARE(w2->geometry(), QRectF(100, 0, 400, 50));
+
+}
+
 
 QTEST_MAIN(tst_QGraphicsGridLayout)
 #include "tst_qgraphicsgridlayout.moc"
