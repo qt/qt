@@ -700,6 +700,10 @@ void tst_QGraphicsGridLayout::columnMaximumWidth()
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
+    QCOMPARE(layout->minimumSize(), QSizeF(10+10+10, 10+10));
+    QCOMPARE(layout->preferredSize(), QSizeF(25+25+25, 25+25));
+    QCOMPARE(layout->maximumSize(), QSizeF(50+50+50, 50+50));
+    
     // should at least be a very large number
     QVERIFY(layout->columnMaximumWidth(0) >= 10000);
     QCOMPARE(layout->columnMaximumWidth(0), layout->columnMaximumWidth(1));
@@ -707,17 +711,65 @@ void tst_QGraphicsGridLayout::columnMaximumWidth()
     layout->setColumnMaximumWidth(0, 20);
     layout->setColumnMaximumWidth(2, 60);
 
-    view.show();
-    widget->show();
-    widget->resize(widget->effectiveSizeHint(Qt::PreferredSize));
-    QApplication::processEvents();
+    QCOMPARE(layout->minimumSize(), QSizeF(10+10+10, 10+10));
+    QCOMPARE(layout->preferredSize(), QSizeF(20+25+25, 25+25));
+    QCOMPARE(layout->maximumSize(), QSizeF(20+50+60, 50+50));
+    QCOMPARE(layout->maximumSize(), widget->maximumSize());
 
-    QCOMPARE(layout->itemAt(0,0)->geometry().width(), 20.0);
-    QCOMPARE(layout->itemAt(1,0)->geometry().width(), 20.0);
-    QCOMPARE(layout->itemAt(0,1)->geometry().width(), 25.0);
-    QCOMPARE(layout->itemAt(1,1)->geometry().width(), 25.0);
-    QCOMPARE(layout->itemAt(0,2)->geometry().width(), 25.0);
-    QCOMPARE(layout->itemAt(1,2)->geometry().width(), 25.0);
+    widget->resize(widget->effectiveSizeHint(Qt::PreferredSize));
+    layout->activate();
+
+    QCOMPARE(layout->itemAt(0,0)->geometry(), QRectF(0, 0, 20, 25));
+    QCOMPARE(layout->itemAt(1,0)->geometry(), QRectF(0, 25, 20, 25));
+    QCOMPARE(layout->itemAt(0,1)->geometry(), QRectF(20, 0, 25, 25));
+    QCOMPARE(layout->itemAt(1,1)->geometry(), QRectF(20, 25, 25, 25));
+    QCOMPARE(layout->itemAt(0,2)->geometry(), QRectF(45, 0, 25, 25));
+    QCOMPARE(layout->itemAt(1,2)->geometry(), QRectF(45, 25, 25, 25));
+
+    layout->setColumnAlignment(2, Qt::AlignCenter); //FIXME This shouldn't be needed because the documentation says that center is default
+    widget->resize(widget->effectiveSizeHint(Qt::MaximumSize));
+    layout->activate();
+    QCOMPARE(layout->geometry(), QRectF(0,0,20+50+60, 50+50));
+    QCOMPARE(layout->itemAt(0,0)->geometry(), QRectF(0, 0, 20, 50));
+    QCOMPARE(layout->itemAt(1,0)->geometry(), QRectF(0, 50, 20, 50));
+    QCOMPARE(layout->itemAt(0,1)->geometry(), QRectF(20, 0, 50, 50));
+    QCOMPARE(layout->itemAt(1,1)->geometry(), QRectF(20, 50, 50, 50));
+    QCOMPARE(layout->itemAt(0,2)->geometry(), QRectF(75, 0, 50, 50));
+    QCOMPARE(layout->itemAt(1,2)->geometry(), QRectF(75, 50, 50, 50));
+
+    for(int i = 0; i < layout->count(); i++)
+        layout->setAlignment(layout->itemAt(i), Qt::AlignRight | Qt::AlignBottom);
+    layout->activate();
+    QCOMPARE(layout->itemAt(0,0)->geometry(), QRectF(0, 0, 20, 50));
+    QCOMPARE(layout->itemAt(1,0)->geometry(), QRectF(0, 50, 20, 50));
+    QCOMPARE(layout->itemAt(0,1)->geometry(), QRectF(20, 0, 50, 50));
+    QCOMPARE(layout->itemAt(1,1)->geometry(), QRectF(20, 50, 50, 50));
+    QCOMPARE(layout->itemAt(0,2)->geometry(), QRectF(80, 0, 50, 50));
+    QCOMPARE(layout->itemAt(1,2)->geometry(), QRectF(80, 50, 50, 50));
+    for(int i = 0; i < layout->count(); i++)
+        layout->setAlignment(layout->itemAt(i), Qt::AlignCenter);
+
+    layout->setMaximumSize(layout->maximumSize() + QSizeF(60,60));
+    widget->resize(widget->effectiveSizeHint(Qt::MaximumSize));
+    layout->activate();
+    
+    QCOMPARE(layout->itemAt(0,0)->geometry(), QRectF(0, 15, 20, 50));
+    QCOMPARE(layout->itemAt(1,0)->geometry(), QRectF(0, 95, 20, 50));
+    QCOMPARE(layout->itemAt(0,1)->geometry(), QRectF(20+30, 15, 50, 50));
+    QCOMPARE(layout->itemAt(1,1)->geometry(), QRectF(20+30, 95, 50, 50));
+    QCOMPARE(layout->itemAt(0,2)->geometry(), QRectF(20+60+50+5, 15, 50, 50));
+    QCOMPARE(layout->itemAt(1,2)->geometry(), QRectF(20+60+50+5, 95, 50, 50));
+
+    layout->setMaximumSize(layout->preferredSize() + QSizeF(20,20));
+    widget->resize(widget->effectiveSizeHint(Qt::MaximumSize));
+    layout->activate();
+
+    QCOMPARE(layout->itemAt(0,0)->geometry(), QRectF(0, 0, 20, 35));
+    QCOMPARE(layout->itemAt(1,0)->geometry(), QRectF(0, 35, 20, 35));
+    QCOMPARE(layout->itemAt(0,1)->geometry(), QRectF(20, 0, 35, 35));
+    QCOMPARE(layout->itemAt(1,1)->geometry(), QRectF(20, 35, 35, 35));
+    QCOMPARE(layout->itemAt(0,2)->geometry(), QRectF(55, 0, 35, 35));
+    QCOMPARE(layout->itemAt(1,2)->geometry(), QRectF(55, 35, 35, 35));
 
     delete widget;
 }
