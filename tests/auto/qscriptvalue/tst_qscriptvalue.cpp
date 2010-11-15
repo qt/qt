@@ -2293,7 +2293,7 @@ void tst_QScriptValue::getSetPrototype_evalCyclicPrototype()
     QCOMPARE(eng.hasUncaughtException(), true);
     QVERIFY(ret.strictlyEquals(eng.uncaughtException()));
     QCOMPARE(ret.isError(), true);
-    QCOMPARE(ret.toString(), QLatin1String("Error: cyclic __proto__ value"));
+    QCOMPARE(ret.toString(), QLatin1String("Error: Cyclic __proto__ value"));
 }
 
 void tst_QScriptValue::getSetPrototype_eval()
@@ -2314,8 +2314,7 @@ void tst_QScriptValue::getSetPrototype_invalidPrototype()
     inv.setPrototype(object);
     QCOMPARE(inv.prototype().isValid(), false);
     object.setPrototype(inv);
-    // FIXME should it be invalid or proto?
-    QVERIFY(object.prototype().strictlyEquals(inv));
+    QVERIFY(object.prototype().strictlyEquals(proto));
 }
 
 void tst_QScriptValue::getSetPrototype_twoEngines()
@@ -3708,7 +3707,7 @@ void tst_QScriptValue::prettyPrinter_data()
     QTest::newRow("a === b || c !== d") << QString("function() { a === b || c !== d; }") << QString("function () { a === b || c !== d; }");
     QTest::newRow("a === (b || c !== d)") << QString("function() { a === (b || c !== d); }") << QString("function () { a === (b || c !== d); }");
     QTest::newRow("a &= b + c") << QString("function() { a &= b + c; }") << QString("function () { a &= b + c; }");
-    QTest::newRow("debugger") << QString("function() { debugger }") << QString("function () { debugger; }");
+    QTest::newRow("debugger") << QString("function() { debugger; }") << QString("function () { debugger; }");
 }
 
 void tst_QScriptValue::prettyPrinter()
