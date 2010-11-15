@@ -123,6 +123,7 @@ private slots:
     void heightForWidth();
     void heightForWidthWithSpanning();
     void stretchAndHeightForWidth();
+    void testDefaultAlignment();
 };
 
 class RectWidget : public QGraphicsWidget
@@ -726,7 +727,7 @@ void tst_QGraphicsGridLayout::columnMaximumWidth()
     QCOMPARE(layout->itemAt(0,2)->geometry(), QRectF(45, 0, 25, 25));
     QCOMPARE(layout->itemAt(1,2)->geometry(), QRectF(45, 25, 25, 25));
 
-    layout->setColumnAlignment(2, Qt::AlignCenter); //FIXME This shouldn't be needed because the documentation says that center is default
+    layout->setColumnAlignment(2, Qt::AlignCenter);
     widget->resize(widget->effectiveSizeHint(Qt::MaximumSize));
     layout->activate();
     QCOMPARE(layout->geometry(), QRectF(0,0,20+50+60, 50+50));
@@ -2859,7 +2860,6 @@ void tst_QGraphicsGridLayout::heightForWidthWithSpanning()
     QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(200, -1)), QSizeF(200, 10000));
 }
 
-
 void tst_QGraphicsGridLayout::stretchAndHeightForWidth()
 {
     QGraphicsWidget *widget = new QGraphicsWidget(0, Qt::Window);
@@ -2919,7 +2919,48 @@ void tst_QGraphicsGridLayout::stretchAndHeightForWidth()
 
 }
 
+void tst_QGraphicsGridLayout::testDefaultAlignment()
+{
+    QGraphicsWidget *widget = new QGraphicsWidget;
+    QGraphicsGridLayout *layout = new QGraphicsGridLayout(widget);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
 
+    QGraphicsWidget *w = new QGraphicsWidget;
+    w->setMinimumSize(50,50);
+    w->setMaximumSize(50,50);
+    layout->addItem(w,0,0);
+
+    //Default alignment should be to the top-left
+
+    //First, check by forcing the layout to be bigger
+    layout->setMinimumSize(100,100);
+    layout->activate();
+    QCOMPARE(layout->geometry(), QRectF(0,0,100,100));
+    QCOMPARE(w->geometry(), QRectF(0,0,50,50));
+    layout->setMinimumSize(-1,-1);
+
+    //Second, check by forcing the column and row to be bigger instead
+    layout->setColumnMinimumWidth(0, 100);
+    layout->setRowMinimumHeight(0, 100);
+    layout->activate();
+    QCOMPARE(layout->geometry(), QRectF(0,0,100,100));
+    QCOMPARE(w->geometry(), QRectF(0,0,50,50));
+    layout->setMinimumSize(-1,-1);
+    layout->setColumnMinimumWidth(0, 0);
+    layout->setRowMinimumHeight(0, 0);
+
+
+    //Third, check by adding a larger item in the column
+    QGraphicsWidget *w2 = new QGraphicsWidget;
+    w2->setMinimumSize(100,100);
+    w2->setMaximumSize(100,100);
+    layout->addItem(w2,1,0);
+    layout->activate();
+    QCOMPARE(layout->geometry(), QRectF(0,0,100,150));
+    QCOMPARE(w->geometry(), QRectF(0,0,50,50));
+    QCOMPARE(w2->geometry(), QRectF(0,50,100,100));
+}
 QTEST_MAIN(tst_QGraphicsGridLayout)
 #include "tst_qgraphicsgridlayout.moc"
 
