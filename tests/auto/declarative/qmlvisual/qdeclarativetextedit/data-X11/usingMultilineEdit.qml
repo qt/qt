@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "a4edfba57a47b45f96fe1fa7a37c1720"
+        image: "usingMultilineEdit.0.png"
     }
     Frame {
         msec: 32
@@ -274,7 +274,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "usingMultilineEdit.0.png"
+        hash: "bf9ad629e190df34f8bbb242e986083f"
     }
     Frame {
         msec: 976
@@ -618,7 +618,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "usingMultilineEdit.1.png"
+        hash: "1d5b3f8dc6e0701c0c11a330e055ba5d"
     }
     Frame {
         msec: 1936
@@ -1010,7 +1010,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "usingMultilineEdit.2.png"
+        hash: "3646bd6ea35fb8f0160a24a203b0f469"
     }
     Frame {
         msec: 2896
@@ -1426,7 +1426,7 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "usingMultilineEdit.3.png"
+        hash: "00972f42fed66eb94832506b436b203d"
     }
     Frame {
         msec: 3856
@@ -1770,7 +1770,7 @@ VisualTest {
     }
     Frame {
         msec: 4800
-        image: "usingMultilineEdit.4.png"
+        hash: "67facce41bc51af385bd8102a7e1285e"
     }
     Frame {
         msec: 4816
@@ -2034,7 +2034,7 @@ VisualTest {
     }
     Frame {
         msec: 5760
-        image: "usingMultilineEdit.5.png"
+        hash: "a616e994d83964ff75d95b702f355937"
     }
     Mouse {
         type: 2
@@ -2994,7 +2994,7 @@ VisualTest {
     }
     Frame {
         msec: 6720
-        image: "usingMultilineEdit.6.png"
+        hash: "bc4cd74678c08403bb16b74630d0fd18"
     }
     Mouse {
         type: 5
@@ -3434,7 +3434,7 @@ VisualTest {
     }
     Frame {
         msec: 7680
-        image: "usingMultilineEdit.7.png"
+        hash: "f8d7e167379a5109b1744727b3bb5050"
     }
     Frame {
         msec: 7696
@@ -3810,7 +3810,7 @@ VisualTest {
     }
     Frame {
         msec: 8640
-        image: "usingMultilineEdit.8.png"
+        hash: "b5c199f82cea188d2aafa4fa09f444fc"
     }
     Frame {
         msec: 8656
@@ -4130,7 +4130,7 @@ VisualTest {
     }
     Frame {
         msec: 9600
-        image: "usingMultilineEdit.9.png"
+        hash: "a6c8b66b0d3f1124a6a316209a1456ff"
     }
     Frame {
         msec: 9616
@@ -4410,7 +4410,7 @@ VisualTest {
     }
     Frame {
         msec: 10560
-        image: "usingMultilineEdit.10.png"
+        hash: "a6c8b66b0d3f1124a6a316209a1456ff"
     }
     Frame {
         msec: 10576
@@ -4658,7 +4658,7 @@ VisualTest {
     }
     Frame {
         msec: 11520
-        image: "usingMultilineEdit.11.png"
+        hash: "a6c8b66b0d3f1124a6a316209a1456ff"
     }
     Frame {
         msec: 11536

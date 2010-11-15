@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "2c6600b50a18c415032fa95fe5089da6"
+        image: "smoothedfollow.0.png"
     }
     Frame {
         msec: 32
@@ -242,7 +242,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "smoothedfollow.0.png"
+        hash: "cecdb41f4b121dcb9ea8eedacdc4653b"
     }
     Frame {
         msec: 976
@@ -482,7 +482,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "smoothedfollow.1.png"
+        hash: "6b810b1a3a9090ea11456a0bdf170c8a"
     }
     Frame {
         msec: 1936
@@ -722,7 +722,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "smoothedfollow.2.png"
+        hash: "d97e6dd2b3c79fe0b306981c08b6cea4"
     }
     Frame {
         msec: 2896

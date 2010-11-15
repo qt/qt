@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "19c43fcf2875769c9a15f1ce317a0f1e"
+        image: "enforcerange.0.png"
     }
     Frame {
         msec: 32
@@ -242,7 +242,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "enforcerange.0.png"
+        hash: "19c43fcf2875769c9a15f1ce317a0f1e"
     }
     Frame {
         msec: 976
@@ -602,7 +602,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "enforcerange.1.png"
+        hash: "b64810845a97bedf6fe11c043457c197"
     }
     Frame {
         msec: 1936
@@ -842,7 +842,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "enforcerange.2.png"
+        hash: "a4ff6c6c43697808f9ad7387d152cef3"
     }
     Frame {
         msec: 2896
@@ -1210,7 +1210,7 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "enforcerange.3.png"
+        hash: "19c43fcf2875769c9a15f1ce317a0f1e"
     }
     Frame {
         msec: 3856
@@ -1650,7 +1650,7 @@ VisualTest {
     }
     Frame {
         msec: 4800
-        image: "enforcerange.4.png"
+        hash: "da5a30a6f9f40fbb5e2b150965be8ac0"
     }
     Frame {
         msec: 4816
@@ -1890,7 +1890,7 @@ VisualTest {
     }
     Frame {
         msec: 5760
-        image: "enforcerange.5.png"
+        hash: "b64810845a97bedf6fe11c043457c197"
     }
     Frame {
         msec: 5776

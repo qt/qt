@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "c5d2b291578c11c11452c29dc02bcad9"
+        image: "scriptAction-visual.0.png"
     }
     Frame {
         msec: 32
@@ -250,7 +250,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "scriptAction-visual.0.png"
+        hash: "1761f6606bbdf5772594cf96412337ca"
     }
     Frame {
         msec: 976
@@ -498,7 +498,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "scriptAction-visual.1.png"
+        hash: "6741d853f099a5a98fcdf87053b69ec8"
     }
     Frame {
         msec: 1936

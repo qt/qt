@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "cb3a3cca07a49fadf8bb00834ea24f73"
+        image: "test3.0.png"
     }
     Frame {
         msec: 32
@@ -290,7 +290,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "test3.0.png"
+        hash: "b5a811e6d1b956af67c6df4c9eabd0a3"
     }
     Frame {
         msec: 976
@@ -602,7 +602,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "test3.1.png"
+        hash: "2553f91e5ea5a4da70eb3825a0cdfa10"
     }
     Frame {
         msec: 1936
@@ -898,7 +898,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "test3.2.png"
+        hash: "1bf8a37b5aeb9df37f97083ce19a0c1a"
     }
     Frame {
         msec: 2896
@@ -1218,7 +1218,7 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "test3.3.png"
+        hash: "cb3a3cca07a49fadf8bb00834ea24f73"
     }
     Frame {
         msec: 3856

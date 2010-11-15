@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "26a468619443250a160845a894643eb9"
+        image: "elide2.0.png"
     }
     Frame {
         msec: 32
@@ -242,7 +242,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "elide2.0.png"
+        hash: "186db3738dc443d66b5b0352d7753b26"
     }
     Frame {
         msec: 976
@@ -443,7 +443,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777249
-        modifiers: 0
+        modifiers: 67108864
         text: ""
         autorep: false
         count: 1
@@ -490,7 +490,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "elide2.1.png"
+        hash: "03123bcb0f4ff032257415f713a5873c"
     }
     Frame {
         msec: 1936
@@ -730,7 +730,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "elide2.2.png"
+        hash: "905d42c34198abdc68a3c6f69bfbd293"
     }
     Frame {
         msec: 2896
@@ -970,7 +970,7 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "elide2.3.png"
+        hash: "6e800f4aacf0096f34acdf13678cab25"
     }
     Frame {
         msec: 3856

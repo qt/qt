@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "a350b70c5238a340e85fd4a3ec0390a3"
+        image: "pauseAnimation-visual.0.png"
     }
     Frame {
         msec: 32
@@ -242,7 +242,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "pauseAnimation.0.png"
+        hash: "f1e0301430d153fb9d15eaffdfcd5c58"
     }
     Frame {
         msec: 976
@@ -482,7 +482,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "pauseAnimation.1.png"
+        hash: "3042003c067b257de2cb32f650dde693"
     }
     Frame {
         msec: 1936
@@ -722,7 +722,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "pauseAnimation.2.png"
+        hash: "a350b70c5238a340e85fd4a3ec0390a3"
     }
     Frame {
         msec: 2896
@@ -962,7 +962,7 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "pauseAnimation.3.png"
+        hash: "7c27ef654e645679c90520d6cf00b0c4"
     }
     Frame {
         msec: 3856
@@ -1202,7 +1202,7 @@ VisualTest {
     }
     Frame {
         msec: 4800
-        image: "pauseAnimation.4.png"
+        hash: "336d31586171f22d541b989d24b95cbb"
     }
     Frame {
         msec: 4816
@@ -1442,7 +1442,7 @@ VisualTest {
     }
     Frame {
         msec: 5760
-        image: "pauseAnimation.5.png"
+        hash: "ce57e27af329eba4fac3ab891f0407ce"
     }
     Frame {
         msec: 5776
@@ -1599,7 +1599,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777249
-        modifiers: 67108864
+        modifiers: 0
         text: ""
         autorep: false
         count: 1

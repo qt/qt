@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "1ec47db85ba34bf1900445a2ab87b5e3"
+        image: "multilineAlign.0.png"
     }
     Frame {
         msec: 32
@@ -242,6 +242,6 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "multilineAlign.0.png"
+        hash: "436000b48f688120d96919227d9e67b4"
     }
 }
