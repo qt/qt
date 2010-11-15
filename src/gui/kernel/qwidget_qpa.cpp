@@ -97,7 +97,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     }
     Q_ASSERT(platformWindow);
 
-    if (!surface) {
+    if (!surface && platformWindow && q->platformWindowFormat().hasWindowSurface()) {
         surface = QApplicationPrivate::platformIntegration()->createWindowSurface(q,platformWindow->winId());
     }
 
@@ -831,7 +831,10 @@ QPaintEngine *QWidget::paintEngine() const
 QWindowSurface *QWidgetPrivate::createDefaultWindowSurface_sys()
 {
     Q_Q(QWidget);
-    return QApplicationPrivate::platformIntegration()->createWindowSurface(q,0);
+    if (q->platformWindowFormat().hasWindowSurface())
+        return QApplicationPrivate::platformIntegration()->createWindowSurface(q,0);
+    else
+        return 0;
 }
 
 void QWidgetPrivate::setModal_sys()

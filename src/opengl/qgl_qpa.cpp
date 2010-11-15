@@ -134,6 +134,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
                 winFormat.setSharedContext(shareContext->d_func()->platformContext);
             }
             winFormat.setWindowApi(QPlatformWindowFormat::OpenGL);
+            winFormat.setWindowSurface(false);
             widget->setPlatformWindowFormat(winFormat);
             widget->winId();//make window
         }

@@ -53,7 +53,7 @@ public:
         , opts(QPlatformWindowFormat::DoubleBuffer | QPlatformWindowFormat::DepthBuffer
              | QPlatformWindowFormat::Rgba | QPlatformWindowFormat::DirectRendering
              | QPlatformWindowFormat::StencilBuffer | QPlatformWindowFormat::DeprecatedFunctions
-             | QPlatformWindowFormat::UseDefaultSharedContext)
+             | QPlatformWindowFormat::UseDefaultSharedContext | QPlatformWindowFormat::HasWindowSurface)
         , depthSize(-1)
         , accumSize(-1)
         , stencilSize(-1)
@@ -616,31 +616,32 @@ QPlatformGLContext *QPlatformWindowFormat::sharedGLContext() const
     return d->sharedContext;
 }
 
-///*!
-//    \fn bool QPlatformWindowFormat::hasOverlay() const
+/*!
+    \fn bool QPlatformWindowFormat::hasWindowSurface() const
 
-//    Returns true if overlay plane is enabled; otherwise returns false.
+    Returns true if the corresponding widget has an instance of QWindowSurface.
 
-//    Overlay is disabled by default.
+    Otherwise returns false.
 
-//    \sa setOverlay()
-//*/
+    WindowSurface is enabled by default.
 
-///*!
-//    If \a enable is true enables an overlay plane; otherwise disables
-//    the overlay plane.
+    \sa setOverlay()
+*/
 
-//    Enabling the overlay plane will cause QGLWidget to create an
-//    additional context in an overlay plane. See the QGLWidget
-//    documentation for further information.
+/*!
+    If \a enable is true a top level QWidget will create a QWindowSurface at creation;
 
-//    \sa hasOverlay()
-//*/
+    otherwise the QWidget will only have a QPlatformWindow.
 
-//void QPlatformWindowFormat::setOverlay(bool enable)
-//{
-//    setOption(enable ? QPlatformWindowFormat::HasOverlay : QPlatformWindowFormat::NoOverlay);
-//}
+    This is usefull for ie. QGLWidget where the QPlatformGLContext controlls the surface.
+
+    \sa hasOverlay()
+*/
+
+void QPlatformWindowFormat::setWindowSurface(bool enable)
+{
+    setOption(enable ? QPlatformWindowFormat::HasWindowSurface : QPlatformWindowFormat::NoWindowSurface);
+}
 
 /*!
     Sets the format option to \a opt.
