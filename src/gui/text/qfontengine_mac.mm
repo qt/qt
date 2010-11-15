@@ -694,7 +694,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
     CGContextSetFont(ctx, cgFont);
 
     qreal pos_x = -br.x.toReal() + subPixelPosition.toReal();
-    qreal pos_y = im.height()+br.y.toReal();
+    qreal pos_y = im.height() + br.y.toReal() - 1;
     CGContextSetTextPosition(ctx, pos_x, pos_y);
 
     CGSize advance;
