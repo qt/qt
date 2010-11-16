@@ -937,6 +937,8 @@ void QDeclarativeVisualDataModel::setPart(const QString &part)
 int QDeclarativeVisualDataModel::count() const
 {
     Q_D(const QDeclarativeVisualDataModel);
+    if (d->m_visualItemModel)
+        return d->m_visualItemModel->count();
     if (!d->m_delegate)
         return 0;
     return d->modelCount();

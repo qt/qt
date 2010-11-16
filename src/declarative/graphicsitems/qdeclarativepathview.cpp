@@ -1011,6 +1011,7 @@ void QDeclarativePathView::setDelegate(QDeclarativeComponent *delegate)
     }
     if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model)) {
         dataModel->setDelegate(delegate);
+        d->modelCount = dataModel->count();
         d->regenerate();
         emit delegateChanged();
     }
