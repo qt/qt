@@ -189,6 +189,7 @@ private slots:
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     void owner();
 #endif
+    void group();
 };
 
 tst_QFileInfo::tst_QFileInfo()
@@ -1689,6 +1690,30 @@ void tst_QFileInfo::owner()
 #endif
 }
 #endif
+
+void tst_QFileInfo::group()
+{
+    QString expected;
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+    struct group *gr;
+    gid_t gid = getegid();
+    gr = getgrgid(gid);
+    expected = QString::fromLocal8Bit(gr->gr_name);
+#endif
+
+    QString fileName("ownertest.txt");
+    if (QFile::exists(fileName))
+        QFile::remove(fileName);
+    QFile testFile(fileName);
+    QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Text));
+    QByteArray testData("testfile");
+    QVERIFY(testFile.write(testData) != -1);
+    testFile.close();
+    QFileInfo fi(fileName);
+    QVERIFY(fi.exists());
+
+    QCOMPARE(fi.group(), expected);
+}
 
 QTEST_MAIN(tst_QFileInfo)
 #include "tst_qfileinfo.moc"
