@@ -392,7 +392,7 @@ void tst_QScriptEngine::evaluateProgram()
         QScriptProgram program;
         QVERIFY(program.isNull());
         QScriptValue ret = eng.evaluate(program);
-        QEXPECT_FAIL("", "FIXME (Qt5) an empty program should be executed in the same way as an empty string.", Continue);
+        // FIXME (Qt5) an empty program should be executed in the same way as an empty string.
         QVERIFY(!ret.isValid());
     }
 }
