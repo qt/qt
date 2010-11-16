@@ -285,7 +285,7 @@ void QDeclarativeTester::updateCurrentTime(int msec)
     fe.msec = msec;
     if (msec == 0 || !(options & QDeclarativeViewer::TestImages)) {
         // Skip first frame, skip if not doing images
-    } else if (0 == (m_savedFrameEvents.count()-1 % 60) || snapshot) {
+    } else if (0 == ((m_savedFrameEvents.count()-1) % 60) || snapshot) {
         fe.image = img;
     } else {
         QCryptographicHash hash(QCryptographicHash::Md5);
