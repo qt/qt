@@ -989,8 +989,8 @@ static v8::Handle<v8::Value> QtLazyPropertySetter(v8::Local<v8::String> property
 }
 
 // This callback implements a catch-all property getter for QMetaObject wrapper objects.
-static v8::Handle<v8::Value> QtMetaObjectPropertyGetter(v8::Local<v8::String> property,
-                                                        const v8::AccessorInfo& info)
+v8::Handle<v8::Value> QtMetaObjectPropertyGetter(v8::Local<v8::String> property,
+                                                 const v8::AccessorInfo& info)
 {
     v8::Local<v8::Object> self = info.Holder();
     QtMetaObjectData *data = QtMetaObjectData::get(self);
@@ -1021,7 +1021,7 @@ static v8::Handle<v8::Value> QtMetaObjectPropertyGetter(v8::Local<v8::String> pr
 }
 
 // This callback is called when the QMetaObject is invoked
-static v8::Handle<v8::Value> QtMetaObjectCallback(const v8::Arguments& args)
+v8::Handle<v8::Value> QtMetaObjectCallback(const v8::Arguments& args)
 {
     v8::Local<v8::Object> self = args.Holder();
     QtMetaObjectData *data = QtMetaObjectData::get(self);
@@ -1315,20 +1315,6 @@ v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *eng
     return handleScope.Close(funcTempl);
 }
 
-v8::Handle<v8::FunctionTemplate> createQtMetaObjectTemplate()
-{
-    v8::Handle<v8::FunctionTemplate> funcTempl = v8::FunctionTemplate::New();
-    funcTempl->SetClassName(v8::String::New("QMetaObject"));
-
-    v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
-    instTempl->SetInternalFieldCount(1); // QtMetaObjectData*
-
-    instTempl->SetCallAsFunctionHandler(QtMetaObjectCallback);
-    instTempl->SetNamedPropertyHandler(QtMetaObjectPropertyGetter);
-
-    return funcTempl;
-}
-
 QObject *toQtObject(QScriptEnginePrivate *engine, const v8::Handle<v8::Object> &object)
 {
     v8::HandleScope handleScope;
@@ -1343,7 +1329,7 @@ QObject *toQtObject(QScriptEnginePrivate *engine, const v8::Handle<v8::Object> &
 
 v8::Handle<v8::Object> QScriptEnginePrivate::newQMetaObject(const QMetaObject *mo, const QScriptValue &ctor)
 {
-    v8::Handle<v8::FunctionTemplate> templ = m_metaObjectTemplate;
+    v8::Handle<v8::FunctionTemplate> templ = metaObjectTemplate();
     Q_ASSERT(!templ.IsEmpty());
     v8::Handle<v8::ObjectTemplate> instanceTempl = templ->InstanceTemplate();
     Q_ASSERT(!instanceTempl.IsEmpty());

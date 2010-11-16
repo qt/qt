@@ -104,8 +104,6 @@ public:
     v8::Handle<v8::Object> newVariant(const QVariant &value);
     v8::Handle<v8::Object> newQMetaObject(const QMetaObject* mo, const QScriptValue &ctor);
 
-    v8::Handle<v8::FunctionTemplate> createMetaObjectTemplate();
-    v8::Handle<v8::FunctionTemplate> createVariantTemplate();
 
     v8::Handle<v8::FunctionTemplate> qtClassTemplate(const QMetaObject *);
     v8::Handle<v8::FunctionTemplate> qobjectTemplate();
@@ -222,6 +220,10 @@ private:
     Q_DISABLE_COPY(QScriptEnginePrivate)
     v8::Local<v8::Value> getOwnPropertyFromScriptClassInstance(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property) const;
     QScriptValue::PropertyFlags getPropertyFlagsFromScriptClassInstance(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property, const QScriptValue::ResolveFlags& mode);
+    v8::Handle<v8::FunctionTemplate> createMetaObjectTemplate();
+    v8::Handle<v8::FunctionTemplate> createVariantTemplate();
+    v8::Handle<v8::FunctionTemplate> metaObjectTemplate();
+    v8::Handle<v8::FunctionTemplate> variantTemplate();
 
     QScriptEngine* q_ptr;
     v8::Isolate *m_isolate;

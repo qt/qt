@@ -656,7 +656,7 @@ v8::Handle<v8::FunctionTemplate> QScriptEnginePrivate::qobjectTemplate()
 // Creates a QVariant wrapper object.
 v8::Handle<v8::Object> QScriptEnginePrivate::newVariant(const QVariant &value)
 {
-    v8::Handle<v8::ObjectTemplate> instanceTempl = m_variantTemplate->InstanceTemplate();
+    v8::Handle<v8::ObjectTemplate> instanceTempl = variantTemplate()->InstanceTemplate();
     v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
 
     TypeInfos::TypeInfo info = m_typeInfos.value(value.userType());
@@ -725,8 +725,6 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine:
     {
         m_v8Context->Enter();
         v8::HandleScope handleScope;
-        m_metaObjectTemplate = v8::Persistent<v8::FunctionTemplate>::New(createMetaObjectTemplate());
-        m_variantTemplate = v8::Persistent<v8::FunctionTemplate>::New(createVariantTemplate());
 
         v8::Local<v8::Value> that = v8::External::Wrap(this);
         globalObject()->Set(v8::String::New("print") , v8::FunctionTemplate::New(functionPrint, that)->GetFunction());
@@ -739,7 +737,16 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine:
 // Creates a template for QMetaObject wrapper objects.
 v8::Handle<v8::FunctionTemplate> QScriptEnginePrivate::createMetaObjectTemplate()
 {
-    return createQtMetaObjectTemplate();
+    v8::Handle<v8::FunctionTemplate> funcTempl = v8::FunctionTemplate::New();
+    funcTempl->SetClassName(v8::String::New("QMetaObject"));
+
+    v8::Handle<v8::ObjectTemplate> instTempl = funcTempl->InstanceTemplate();
+    instTempl->SetInternalFieldCount(1); // QtMetaObjectData*
+
+    instTempl->SetCallAsFunctionHandler(QtMetaObjectCallback);
+    instTempl->SetNamedPropertyHandler(QtMetaObjectPropertyGetter);
+
+    return funcTempl;
 }
 
 // Creates a template for QVariant wrapper objects.

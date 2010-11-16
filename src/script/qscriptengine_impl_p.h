@@ -211,12 +211,12 @@ inline void QScriptEnginePrivate::exitIsolate() const
 
 inline bool QScriptEnginePrivate::isQtVariant(v8::Handle<v8::Value> value) const
 {
-    return m_variantTemplate->HasInstance(value);
+    return hasInstance(m_variantTemplate, value);
 }
 
 inline bool QScriptEnginePrivate::isQtMetaObject(v8::Handle<v8::Value> value) const
 {
-    return m_metaObjectTemplate->HasInstance(value);
+    return hasInstance(m_metaObjectTemplate, value);
 }
 
 /* set the current QScriptContext, and return the old value */
@@ -369,6 +369,21 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newQObject(
 
     return scriptObject;
 }
+
+inline v8::Handle<v8::FunctionTemplate> QScriptEnginePrivate::metaObjectTemplate()
+{
+    if (m_metaObjectTemplate.IsEmpty())
+        m_metaObjectTemplate = v8::Persistent<v8::FunctionTemplate>::New(createMetaObjectTemplate());
+    return m_metaObjectTemplate;
+}
+
+inline v8::Handle<v8::FunctionTemplate> QScriptEnginePrivate::variantTemplate()
+{
+    if (m_variantTemplate.IsEmpty())
+        m_variantTemplate = v8::Persistent<v8::FunctionTemplate>::New(createVariantTemplate());
+    return m_variantTemplate;
+}
+
 QT_END_NAMESPACE
 
 #endif
