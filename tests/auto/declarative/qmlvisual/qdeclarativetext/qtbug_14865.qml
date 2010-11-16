@@ -2,7 +2,7 @@ import QtQuick 1.0
 import "../shared" 1.0
 
 Rectangle {
-    width: 200; height: 200
+    width: 100; height: 20
 
     TestText {
         id: label
