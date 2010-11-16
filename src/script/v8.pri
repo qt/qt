@@ -219,14 +219,14 @@ CONFIG(os_win32) {
 }
 
 #mode:debug
-CONFIG(release) {
-    DEFINES += NDEBUG
-} else {
-    DEFINES += DEBUG ENABLE_VMSTATE_TRACKING ENABLE_LOGGING_AND_PROFILING
+CONFIG(debug) {
+    DEFINES += DEBUG ENABLE_VMSTATE_TRACKING ENABLE_LOGGING_AND_PROFILING V8_ENABLE_CHECKS
     SOURCES += \
         $$V8DIR/src/objects-debug.cc \
         $$V8DIR/src/prettyprinter.cc \
         $$V8DIR/src/regexp-macro-assembler-tracer.cc
+} else {
+    DEFINES += NDEBUG
 }
 
 
