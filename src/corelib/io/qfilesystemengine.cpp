@@ -359,7 +359,7 @@ QString QFileSystemEngine::resolveUserName(const QFileSystemEntry &entry, QFileS
 #else //(Q_OS_UNIX)
     if (!metaData.hasFlags(QFileSystemMetaData::UserId))
         QFileSystemEngine::fillMetaData(entry, metaData, QFileSystemMetaData::UserId);
-    return resolveGroupName(metaData.userId());
+    return resolveUserName(metaData.userId());
 #endif
 }
 
