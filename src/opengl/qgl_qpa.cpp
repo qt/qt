@@ -166,6 +166,15 @@ void QGLContext::makeCurrent()
     Q_D(QGLContext);
     d->platformContext->makeCurrent();
     QGLContextPrivate::setCurrentContext(this);
+
+    if (!d->workaroundsCached) {
+        d->workaroundsCached = true;
+        const char *renderer = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
+        if (renderer && strstr(renderer, "Mali")) {
+            d->workaround_brokenFBOReadBack = true;
+        }
+    }
+
 }
 
 void QGLContext::doneCurrent()
