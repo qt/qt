@@ -48,7 +48,7 @@ class QScriptValuePrivate;
 class QScriptOriginalGlobalObject
 {
 public:
-    inline QScriptOriginalGlobalObject(v8::Handle<v8::Context> context);
+    inline QScriptOriginalGlobalObject(const QScriptEnginePrivate *engine, v8::Handle<v8::Context> context);
     inline ~QScriptOriginalGlobalObject();
     inline void destroy();
 
@@ -69,9 +69,15 @@ private:
     v8::Persistent<v8::Object> m_globalObject;
 };
 
-QScriptOriginalGlobalObject::QScriptOriginalGlobalObject(v8::Handle<v8::Context> context)
+v8::Handle<v8::Value> functionPrint(const v8::Arguments& args);
+v8::Handle<v8::Value> functionGC(const v8::Arguments& args);
+v8::Handle<v8::Value> functionVersion(const v8::Arguments& args);
+
+QScriptOriginalGlobalObject::QScriptOriginalGlobalObject(const QScriptEnginePrivate *engine, v8::Handle<v8::Context> context)
 {
-    v8::Context::Scope contextScope(context);
+    // Please notice that engine is not fully initialized at this point.
+
+    context->Enter(); // Enter the context. We will exit in the QScriptEnginePrivate destructor.
     v8::HandleScope handleScope;
     m_globalObject = v8::Persistent<v8::Object>::New(context->Global());
     initializeMember(v8::String::New("prototype"), v8::String::New("String"), m_stringConstructor, m_stringPrototype);
@@ -88,6 +94,12 @@ QScriptOriginalGlobalObject::QScriptOriginalGlobalObject(v8::Handle<v8::Context>
         Q_ASSERT(!ownPropertyNames.IsEmpty());
         m_ownPropertyNames= v8::Persistent<v8::Function>::New(v8::Handle<v8::Function>::Cast(ownPropertyNames));
     }
+
+    // Set our default properties.
+    v8::Local<v8::Value> eng = v8::External::Wrap(const_cast<QScriptEnginePrivate *>(engine));
+    m_globalObject->Set(v8::String::New("print") , v8::FunctionTemplate::New(functionPrint, eng)->GetFunction());
+    m_globalObject->Set(v8::String::New("gc") , v8::FunctionTemplate::New(functionGC, eng)->GetFunction());
+    m_globalObject->Set(v8::String::New("version") , v8::FunctionTemplate::New(functionVersion, eng)->GetFunction());
 }
 
 inline void QScriptOriginalGlobalObject::initializeMember(v8::Handle<v8::String> prototypeName, v8::Handle<v8::Value> type, v8::Persistent<v8::Object>& constructor, v8::Persistent<v8::Value>& prototype)

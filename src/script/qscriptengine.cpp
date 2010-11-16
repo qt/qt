@@ -672,31 +672,6 @@ v8::Handle<v8::Object> QScriptEnginePrivate::newVariant(const QVariant &value)
     return persistent;
 }
 
-static v8::Handle<v8::Value> functionPrint(const v8::Arguments& args)
-{
-    QString result;
-    for (int i = 0; i < args.Length(); ++i) {
-        if (i != 0)
-            result.append(QLatin1Char(' '));
-        QString s = QScriptConverter::toString(args[i]->ToString());
-        result.append(s);
-    }
-    qDebug("%s", qPrintable(result));
-    return v8::Handle<v8::Value>();
-}
-
-static v8::Handle<v8::Value> functionGC(const v8::Arguments& args)
-{
-    QScriptEnginePrivate *engine = static_cast<QScriptEnginePrivate *>(v8::External::Unwrap(args.Data()));
-    engine->collectGarbage();
-    return v8::Handle<v8::Value>();
-}
-
-static v8::Handle<v8::Value> functionVersion(const v8::Arguments& args)
-{
-    return v8::Number::New(1);
-}
-
 static inline v8::Isolate *createEnterIsolate()
 {
     v8::V8::Initialize();
@@ -712,7 +687,7 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine:
     , m_isolate(createEnterIsolate())
     , m_v8Context(ownership == QScriptEngine::AdoptCurrentContext ?
             v8::Persistent<v8::Context>::New(v8::Context::GetCurrent()) : v8::Context::New())
-    , m_originalGlobalObject(m_v8Context)
+    , m_originalGlobalObject(this, m_v8Context)
     , m_currentQsContext(0)
     , m_isEvaluating(false)
 {
@@ -722,15 +697,6 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine:
 
     Q_ASSERT(!m_v8Context.IsEmpty());
     m_baseQsContext.reset(new QScriptContextPrivate(this));
-    {
-        m_v8Context->Enter();
-        v8::HandleScope handleScope;
-
-        v8::Local<v8::Value> that = v8::External::Wrap(this);
-        globalObject()->Set(v8::String::New("print") , v8::FunctionTemplate::New(functionPrint, that)->GetFunction());
-        globalObject()->Set(v8::String::New("gc") , v8::FunctionTemplate::New(functionGC, that)->GetFunction());
-        globalObject()->Set(v8::String::New("version") , v8::FunctionTemplate::New(functionVersion, that)->GetFunction());
-    }
     m_isolate->Exit();
 }
 
@@ -798,7 +764,7 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     m_typeInfos.clear();
     clearExceptions();
 
-    m_v8Context->Exit();
+    m_v8Context->Exit(); // Exit the context that was entered in QScriptOriginalGlobalObject ctor.
     m_v8Context.Dispose();
     for (int i = 0; i < m_v8Contexts.count(); ++i)
         m_v8Contexts[i].Dispose();
