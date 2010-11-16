@@ -211,6 +211,9 @@ private slots:
 
     void openStandardStreams();
 
+    void resize_data();
+    void resize();
+
     // --- Task related tests below this line
     void task167217();
 
@@ -3083,6 +3086,29 @@ void tst_QFile::writeNothing()
         QCOMPARE( file.error(), QFile::NoError );
         closeFile(file);
     }
+}
+
+void tst_QFile::resize_data()
+{
+    QTest::addColumn<int>("filetype");
+
+    QTest::newRow("native") << int(OpenQFile);
+    QTest::newRow("fileno") << int(OpenFd);
+    QTest::newRow("stream") << int(OpenStream);
+}
+
+void tst_QFile::resize()
+{
+    QFETCH(int, filetype);
+    QString filename(QLatin1String("file.txt"));
+    QFile file(filename);
+    QVERIFY(openFile(file, QIODevice::ReadWrite, FileType(filetype)));
+    QVERIFY(file.resize(8));
+    QCOMPARE(file.size(), qint64(8));
+    closeFile(file);
+    QFile::resize(filename, 4);
+    QCOMPARE(QFileInfo(filename).size(), qint64(4));
+    QVERIFY(QFile::remove(filename));
 }
 
 QTEST_MAIN(tst_QFile)
