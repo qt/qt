@@ -1353,8 +1353,24 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
         file.open(QIODevice::ReadWrite);
         file.close();
 
-        QVERIFY(pwd.exists("abs_symlink") || createSymbolicLinkW((wchar_t*)absSymlink.utf16(),(wchar_t*)absTarget.utf16(),0x1));
-        QVERIFY(pwd.exists(relSymlink) || createSymbolicLinkW((wchar_t*)relSymlink.utf16(),(wchar_t*)relTarget.utf16(),0x1));
+        DWORD err = ERROR_SUCCESS ;
+        if (!pwd.exists("abs_symlink"))
+            if (!createSymbolicLinkW((wchar_t*)absSymlink.utf16(),(wchar_t*)absTarget.utf16(),0x1))
+                err = GetLastError();
+        if (err == ERROR_SUCCESS && !pwd.exists(relSymlink))
+            if (!createSymbolicLinkW((wchar_t*)relSymlink.utf16(),(wchar_t*)relTarget.utf16(),0x1))
+                err = GetLastError();
+        if (err != ERROR_SUCCESS) {
+            wchar_t errstr[0x100];
+            DWORD count = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM,
+                0, err, 0, errstr, 0x100, 0);
+            QString error(QString::fromUtf16(errstr, count));
+            qWarning() << error;
+            //we need at least one data set for the test not to assert fail when skipping _data function
+            QDir target("target");
+            QTest::newRow("dummy") << target.path() << false << "" << target.canonicalPath();
+            QSKIP("link not supported by FS or insufficient privilege", SkipSingle);
+        }
         QVERIFY(file.exists());
 
         QTest::newRow("absolute dir symlink") << absSymlink << true << QDir::fromNativeSeparators(absTarget) << target.canonicalPath();
