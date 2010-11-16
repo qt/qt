@@ -1836,14 +1836,22 @@ bool QDeclarativeCompiler::buildValueTypeProperty(QObject *type,
                 COMPILE_EXCEPTION(prop, tr("Unexpected object assignment"));
             } else if (value->value.isScript()) {
                 // ### Check for writability
-                BindingReference reference;
-                reference.expression = value->value;
-                reference.property = prop;
-                reference.value = value;
-                reference.bindingContext = ctxt;
-                reference.bindingContext.owner++;
-                addBindingReference(reference);
-                value->type = Value::PropertyBinding;
+
+                //optimization for <Type>.<EnumValue> enum assignments
+                bool isEnumAssignment = false;
+                COMPILE_CHECK(testQualifiedEnumAssignment(p, obj, value, &isEnumAssignment));
+                if (isEnumAssignment) {
+                    value->type = Value::Literal;
+                } else {
+                    BindingReference reference;
+                    reference.expression = value->value;
+                    reference.property = prop;
+                    reference.value = value;
+                    reference.bindingContext = ctxt;
+                    reference.bindingContext.owner++;
+                    addBindingReference(reference);
+                    value->type = Value::PropertyBinding;
+                }
             } else  {
                 COMPILE_CHECK(testLiteralAssignment(p, value));
                 value->type = Value::Literal;
@@ -2138,7 +2146,15 @@ bool QDeclarativeCompiler::testQualifiedEnumAssignment(const QMetaProperty &prop
     QDeclarativeType *type = 0;
     unit->imports().resolveType(typeName.toUtf8(), &type, 0, 0, 0, 0);
 
-    if (!type || obj->typeName != type->qmlTypeName())
+    //handle enums on value types (where obj->typeName is empty)
+    QByteArray objTypeName = obj->typeName;
+    if (objTypeName.isEmpty()) {
+        QDeclarativeType *objType = toQmlType(obj);
+        if (objType)
+            objTypeName = objType->qmlTypeName();
+    }
+
+    if (!type || objTypeName != type->qmlTypeName())
         return true;
 
     QString enumValue = parts.at(1);
