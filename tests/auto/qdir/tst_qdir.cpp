@@ -183,6 +183,11 @@ private slots:
     void isRoot_data();
     void isRoot();
 #endif
+
+#ifndef QT_NO_REGEXP
+    void match_data();
+    void match();
+#endif
 };
 
 // Testing get/set functions
@@ -1735,6 +1740,31 @@ void tst_QDir::isRoot()
 
     QDir dir(path);
     QCOMPARE(dir.isRoot(),isRoot);
+}
+#endif
+
+#ifndef QT_NO_REGEXP
+void tst_QDir::match_data()
+{
+    QTest::addColumn<QString>("filter");
+    QTest::addColumn<QString>("filename");
+    QTest::addColumn<bool>("match");
+
+    QTest::newRow("single, matching") << "*.cpp" << "tst_qdir.cpp" << true;
+    QTest::newRow("single, not matching") << "*.cpp" << "tst_qdir.h" << false;
+    QTest::newRow("multi, matching") << "*.cpp;*.h" << "tst_qdir.cpp" << true;
+    QTest::newRow("multi, matching2") << "*.cpp;*.h" << "tst_qdir.h" << true;
+    QTest::newRow("multi, not matching") << "*.cpp;*.h" << "readme.txt" << false;
+}
+
+void tst_QDir::match()
+{
+    QFETCH(QString, filter);
+    QFETCH(QString, filename);
+    QFETCH(bool, match);
+
+    QCOMPARE(QDir::match(filter, filename), match);
+    QCOMPARE(QDir::match(filter.split(QLatin1Char(';')), filename), match);
 }
 #endif
 
