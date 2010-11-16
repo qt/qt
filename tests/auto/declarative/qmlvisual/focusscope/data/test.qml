@@ -294,7 +294,7 @@ VisualTest {
     }
     Frame {
         msec: 976
-        hash: "f369109744055d30eadf2832a028a104"
+        image: "test.1.png"
     }
     Frame {
         msec: 992
@@ -598,7 +598,7 @@ VisualTest {
     }
     Frame {
         msec: 1936
-        hash: "f369109744055d30eadf2832a028a104"
+        image: "test.2.png"
     }
     Frame {
         msec: 1952
@@ -886,7 +886,7 @@ VisualTest {
     }
     Frame {
         msec: 2896
-        hash: "94675f9c9afb6834b91a69fd0ce35a22"
+        image: "test.3.png"
     }
     Frame {
         msec: 2912

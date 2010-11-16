@@ -262,7 +262,7 @@ VisualTest {
     }
     Frame {
         msec: 976
-        hash: "85b1821cc50f2a9f3ed6944f792b7a2f"
+        image: "colorAnimation-visual.1.png"
     }
     Frame {
         msec: 992
@@ -502,7 +502,7 @@ VisualTest {
     }
     Frame {
         msec: 1936
-        hash: "e7aa6374c73832e57ceb2427a1e258aa"
+        image: "colorAnimation-visual.2.png"
     }
     Frame {
         msec: 1952
@@ -742,7 +742,7 @@ VisualTest {
     }
     Frame {
         msec: 2896
-        hash: "8c0fcda4f8956394c53fc4ba18caa850"
+        image: "colorAnimation-visual.3.png"
     }
     Frame {
         msec: 2912
