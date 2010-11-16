@@ -329,18 +329,11 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         if (topLevel) {
             if ((type == Qt::Window || dialog || tool)) {
                 if (!(flags & Qt::FramelessWindowHint)) {
-                    if (!(flags & Qt::MSWindowsFixedSizeDialogHint)) {
+                    style |= WS_POPUP;
+                    if (!(flags & Qt::MSWindowsFixedSizeDialogHint))
                         style |= WS_THICKFRAME;
-                        if(!(flags &
-                            ( Qt::WindowSystemMenuHint
-                            | Qt::WindowTitleHint
-                            | Qt::WindowMinMaxButtonsHint
-                            | Qt::WindowCloseButtonHint
-                            | Qt::WindowContextHelpButtonHint)))
-                            style |= WS_POPUP;
-                    } else {
-                        style |= WS_POPUP | WS_DLGFRAME;
-                    }
+                    else
+                        style |= WS_DLGFRAME;
                 }
                 if (flags & Qt::WindowTitleHint)
                     style |= WS_CAPTION;
@@ -424,6 +417,14 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
             if (!q->testAttribute(Qt::WA_Resized)) {
                 w = sw/2;
                 h = 4*sh/10;
+                if (extra) {
+                    int dx = rect.right - rect.left;
+                    int dy = rect.bottom - rect.top;
+                    w = qMin(w, extra->maxw + dx);
+                    h = qMin(h, extra->maxh + dy);
+                    w = qMax(w, extra->minw + dx);
+                    h = qMax(h, extra->minh + dy);
+                }
             }
             if (!wasMoved) {
                 x = sw/2 - w/2;
