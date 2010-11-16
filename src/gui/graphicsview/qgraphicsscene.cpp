@@ -4369,25 +4369,8 @@ static void _q_paintIntoCache(QPixmap *pix, QGraphicsItem *item, const QRegion &
 static inline bool transformIsSimple(const QTransform& transform)
 {
     QTransform::TransformationType type = transform.type();
-    if (type == QTransform::TxNone || type == QTransform::TxTranslate) {
+    if (type <= QTransform::TxScale) {
         return true;
-    } else if (type == QTransform::TxScale) {
-        // Check for 0 and 180 degree rotations.
-        // (0 might happen after 4 rotations of 90 degrees).
-        qreal m11 = transform.m11();
-        qreal m12 = transform.m12();
-        qreal m21 = transform.m21();
-        qreal m22 = transform.m22();
-        if (m12 == 0.0f && m21 == 0.0f) {
-            if (m11 == 1.0f && m22 == 1.0f)
-                return true; // 0 degrees
-            else if (m11 == -1.0f && m22 == -1.0f)
-                return true; // 180 degrees.
-            if(m11 == 1.0f && m22 == -1.0f)
-                return true; // 0 degrees inverted y.
-            else if(m11 == -1.0f && m22 == 1.0f)
-                return true; // 180 degrees inverted y.
-        }
     } else if (type == QTransform::TxRotate) {
         // Check for 90, and 270 degree rotations.
         qreal m11 = transform.m11();
