@@ -1434,6 +1434,29 @@ void tst_QDir::searchPaths()
     for (int i = 0; i < searchPathPrefixList.count(); ++i) {
         QVERIFY(QDir::searchPaths(searchPathPrefixList.at(i)).isEmpty());
     }
+
+    for (int i = 0; i < searchPathPrefixList.count(); ++i) {
+        foreach (QString path, searchPathsList.at(i).split(",")) {
+            QDir::addSearchPath(searchPathPrefixList.at(i), path);
+        }
+    }
+    for (int i = 0; i < searchPathPrefixList.count(); ++i) {
+        QVERIFY(QDir::searchPaths(searchPathPrefixList.at(i)) == searchPathsList.at(i).split(","));
+    }
+
+    QCOMPARE(QFile(filename).exists(), exists);
+    QCOMPARE(QFileInfo(filename).exists(), exists);
+
+    if (exists) {
+        QCOMPARE(QFileInfo(filename).absoluteFilePath(), expectedAbsolutePath);
+    }
+
+    for (int i = 0; i < searchPathPrefixList.count(); ++i) {
+        QDir::setSearchPaths(searchPathPrefixList.at(i), QStringList());
+    }
+    for (int i = 0; i < searchPathPrefixList.count(); ++i) {
+        QVERIFY(QDir::searchPaths(searchPathPrefixList.at(i)).isEmpty());
+    }
 }
 
 void tst_QDir::entryListWithSearchPaths()
