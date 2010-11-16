@@ -68,6 +68,7 @@ class SharedBindingTester : protected AST::Visitor
     bool _sharable;
 public:
     bool isSharable(const QString &code);
+    bool isSharable(AST::Statement *statement);
     
     virtual bool visit(AST::FunctionDeclaration *) { _sharable = false; return false; }
     virtual bool visit(AST::FunctionExpression *) { _sharable = false; return false; }
@@ -81,7 +82,7 @@ class RewriteBinding: protected AST::Visitor
     QByteArray _name;
 
 public:
-    QString operator()(const QString &code, bool *ok = 0);
+    QString operator()(const QString &code, bool *ok = 0, bool *sharable = 0);
 
     //name of the function:  used for the debugger
     void setName(const QByteArray &name) { _name = name; }

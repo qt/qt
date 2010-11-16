@@ -2800,13 +2800,10 @@ bool QDeclarativeCompiler::completeComponentBuild()
         // Pre-rewrite the expression
         QString expression = binding.expression.asScript();
 
-        // ### Optimize
-        QDeclarativeRewrite::SharedBindingTester sharableTest;
-        bool isSharable = sharableTest.isSharable(expression);
-        
         QDeclarativeRewrite::RewriteBinding rewriteBinding;
         rewriteBinding.setName('$'+binding.property->name);
-        expression = rewriteBinding(expression);
+        bool isSharable = false;
+        expression = rewriteBinding(expression,0,&isSharable);
 
         quint32 length = expression.length();
         quint32 pc; 

@@ -62,12 +62,17 @@ bool SharedBindingTester::isSharable(const QString &code)
     if (!parser.statement()) 
         return false;
 
+    return isSharable(parser.statement());
+}
+
+bool SharedBindingTester::isSharable(AST::Statement *statement)
+{
     _sharable = true;
-    AST::Node::acceptChild(parser.statement(), this);
+    AST::Node::acceptChild(statement, this);
     return _sharable;
 }
 
-QString RewriteBinding::operator()(const QString &code, bool *ok)
+QString RewriteBinding::operator()(const QString &code, bool *ok, bool *sharable)
 {
     Engine engine;
     NodePool pool(QString(), &engine);
@@ -80,6 +85,10 @@ QString RewriteBinding::operator()(const QString &code, bool *ok)
         return QString();
     } else {
         if (ok) *ok = true;
+        if (sharable) {
+            SharedBindingTester tester;
+            *sharable = tester.isSharable(parser.statement());
+        }
     }
     return rewrite(code, 0, parser.statement());
 }
