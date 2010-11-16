@@ -301,6 +301,8 @@ private Q_SLOTS:
 
     void httpWithNoCredentialUsage();
 
+    void qtbug15311doubleContentLength();
+
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 };
@@ -4722,6 +4724,26 @@ void tst_QNetworkReply::httpWithNoCredentialUsage()
     QCOMPARE(errorSpy.count(), 1);
 
     QCOMPARE(reply->error(), QNetworkReply::AuthenticationRequiredError);
+}
+
+void tst_QNetworkReply::qtbug15311doubleContentLength()
+{
+    QByteArray response("HTTP/1.0 200 OK\r\nContent-Length: 3\r\nServer: bogus\r\nContent-Length: 3\r\n\r\nABC");
+    MiniHttpServer server(response);
+    server.doClose = true;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(reply->isFinished());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->size(), qint64(3));
+    QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), qint64(3));
+    QCOMPARE(reply->rawHeader("Content-length"), QByteArray("3, 3"));
+    QCOMPARE(reply->readAll(), QByteArray("ABC"));
 }
 
 

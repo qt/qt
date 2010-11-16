@@ -537,7 +537,6 @@ int QDeclarativePathView::count() const
 
 /*!
     \qmlproperty Path PathView::path
-    \default
     This property holds the path used to lay out the items.
     For more information see the \l Path documentation.
 */
