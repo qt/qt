@@ -80,9 +80,7 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
     yourself, you can call setSceneRect(). This will adjust the scroll bars'
     ranges appropriately. Note that although the scene supports a virtually
     unlimited size, the range of the scroll bars will never exceed the range of
-    an integer (INT_MIN, INT_MAX). When the scene is larger than the scroll
-    bars' values, you can choose to use translate() to navigate the scene
-    instead.
+    an integer (INT_MIN, INT_MAX).
 
     QGraphicsView visualizes the scene by calling render(). By default, the
     items are drawn onto the viewport by using a regular QPainter, and using
@@ -101,7 +99,8 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
     convenience functions rotate(), scale(), translate() or shear(). The most
     two common transformations are scaling, which is used to implement
     zooming, and rotation. QGraphicsView keeps the center of the view fixed
-    during a transformation.
+    during a transformation. Because of the scene alignment (setAligment()),
+    translating the view will have no visual impact.
 
     You can interact with the items on the scene by using the mouse and
     keyboard. QGraphicsView translates the mouse and key events into \e scene
