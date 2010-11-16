@@ -1224,7 +1224,7 @@ bool QFile::unmap(uchar *address)
             d->setError(d->fileEngine->error(), d->fileEngine->errorString());
         return success;
     }
-    d->setError(PermissionsError, QSystemError(EACCES, QSystemError::StandardLibraryError).toString());
+    d->setError(PermissionsError, tr("No file engine available or engine does not support UnMapExtension"));
     return false;
 }
 
