@@ -649,7 +649,6 @@ void QTestLiteWindow::setParent(const QPlatformWindow *window)
 {
         QPoint point = widget()->mapTo(widget()->nativeParentWidget(),QPoint());
         XReparentWindow(xd->display,x_window,window->winId(),point.x(),point.y());
-        XMapWindow(xd->display, x_window);
 }
 
 void QTestLiteWindow::raise()

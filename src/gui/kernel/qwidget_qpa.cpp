@@ -392,25 +392,22 @@ void QWidgetPrivate::show_sys()
 
     QPlatformWindow *window = q->platformWindow();
     if (window) {
-         const QRect geomRect = q->geometry();
-         const QRect windowRect = window->geometry();
-         if (windowRect != geomRect) {
-             window->setGeometry(geomRect);
-         }
-         if (q->isWindow()) {
-             if (QWindowSurface *surface = q->windowSurface()) {
-                 if (windowRect.size() != geomRect.size()) {
-                     surface->resize(geomRect.size());
-                 }
-             }
+        const QRect geomRect = q->geometry();
+        const QRect windowRect = window->geometry();
+        if (windowRect != geomRect) {
+            window->setGeometry(geomRect);
+        }
+        if (QWindowSurface *surface = q->windowSurface()) {
+            if (windowRect.size() != geomRect.size()) {
+                surface->resize(geomRect.size());
+            }
+        }
+        if (window)
+            window->setVisible(true);
 
-             if (window)
-                 window->setVisible(true);
-
-             if (q->windowType() != Qt::Popup && q->windowType() != Qt::ToolTip && !(q->windowFlags() & Qt::X11BypassWindowManagerHint))
-                 q->activateWindow(); //###
-         }
-     }
+        if (q->isWindow() && q->windowType() != Qt::Popup && q->windowType() != Qt::ToolTip && !(q->windowFlags() & Qt::X11BypassWindowManagerHint))
+            q->activateWindow(); //### QWindowSystemInterface should have callback function for when WS actually activates window.
+    }
 }
 
 
