@@ -1,5 +1,8 @@
 // This is a generated file - DO NOT EDIT
-static const ushort stringCollectionData[] __attribute__((aligned(16))) = { 
+
+#include "data.h"
+
+const ushort stringCollectionData[] __attribute__((aligned(16))) = {
     // #0
     65535,
          99, 111, 109, 112, 105, 108, 101, 114, 32, 118, 101, 114, 115, 105, 111, 110, 115, 47,
@@ -1123,15 +1126,9 @@ static const ushort stringCollectionData[] __attribute__((aligned(16))) = {
     65535,
          84, 69, 65, 77, 66, 85, 73, 76, 68, 69, 82, 61,
     65535,65534,65533, // 5216
-
-
 };
-static struct StringCollection
-{
-    int len;
-    int offset1, offset2;
-    ushort align1, align2;
-} stringCollection[] = {
+
+const struct StringCollection stringCollection[] = {
     {18, 1, 29, 3666, 106},     // #0
     {18, 53, 77, 106, 1978},     // #1
     {20, 97, 125, 2850, 3210},     // #2
@@ -1274,8 +1271,8 @@ static struct StringCollection
     {12, 5153, 5169, 130, 2930},     // #139
     {12, 5185, 5201, 242, 2930},     // #140
 };
-static const int stringCollectionCount = 141;
-static const int stringCollectionMaxLen = 51;
+const int stringCollectionCount = 141;
+const int stringCollectionMaxLen = 51;
 // average comparison length: 12.0922
 // cache-line crosses: 6 (2.1%)
 // alignment histogram:

@@ -1030,7 +1030,7 @@ void Q3Canvas::setUpdatePeriod(int ms)
 
     The advance takes place in two phases. In phase 0, the
     Q3CanvasItem::advance() function of each Q3CanvasItem::animated()
-    canvas item is called with paramater 0. Then all these canvas
+    canvas item is called with parameter 0. Then all these canvas
     items are called again, with parameter 1. In phase 0, the canvas
     items should not change position, merely examine other items on
     the canvas for which special processing is required, such as

@@ -115,7 +115,6 @@ public:
     virtual bool start();
 #endif
     virtual void closeDownstreamChannel() = 0;
-    virtual bool waitForDownstreamReadyRead(int msecs) = 0;
 
     // slot-like:
     virtual void downstreamReadyWrite();

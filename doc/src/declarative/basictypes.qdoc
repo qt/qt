@@ -355,9 +355,11 @@
 
     \brief A list of objects.
 
-    A list of objects. While not technically a basic type, QML also
-    supports lists of object types. When used from QML, the engine
-    automatically appends each value to the list.
+    A list type contains a list of objects. While not technically
+    a basic type, QML supports lists of object types. When used
+    from QML, the engine automatically appends each value to the list.
+    Items in the list can be accessed by index using the usual
+    \c listName[index] syntax.
 
     For example, the \l Item class contains a list property named
     children that can be used like this:
@@ -366,13 +368,86 @@
     Item {
         children: [
             Item { id: child1 },
-            Rectangle { id: child2 },
+            Rectangle { id: child2; width: 200 },
             Text { id: child3 }
+        ]
+
+        Component.onCompleted: {
+            console.log("Width of child rectangle:", children[1].width)
+        }
+    }
+    \endqml
+    \c child1, \c child2 and \c child3 will be added to the children list
+    in the order in which they appear.
+
+    List \l {Adding new properties}{properties} can be created as a
+    \c variant type, or as a \c list<Type> type, where \c Type is the
+    type of the object in the list:
+
+    \qml
+    Item {
+        property variant values: [ 10, 20, 'abc', 'xyz' ]
+
+        property list<Rectangle> rects: [
+            Rectangle { width: 100; height: 100},
+            Rectangle { width: 200; height: 200}
         ]
     }
     \endqml
-    \c child1, \c child2 and \c child3 will all be added to the children list
-    in the order in which they appear.
+
+    A \c variant list can contain values of any of the \l {QML Basic Types}{basic QML types}
+    such as numbers, strings, etc. while a \c list<Type> list can only contain values
+    that match (or are derived from) the specified \c Type.
+
+    A list property can be cleared by setting it to an empty list:
+
+    \qml
+    Item {
+        children: []
+    }
+    \endqml
+
+    A list property cannot be modified in any other way. Items cannot be dynamically added to
+    or removed from the list through JavaScript operations; any \c push() operations on the
+    list only modify a \e copy of the list and not the actual list. (These current limitations
+    are due to restrictions on \l {Property Binding} where lists are involved.)
+
+    To create a modifiable list, create an array object from within a \c .js JavaScript file,
+    or implement a custom list element in C++. Here is a QML element that modifies the list in a
+    JavaScript file:
+
+    \table
+    \row
+    \o
+    \qml
+    // QML
+    import "script.js" as Script
+
+    Item {
+        Component.onCompleted: {
+            Script.addItem('abc')
+            console.log("Added:", Script.getList()[0])
+        }
+    }
+    \endqml
+
+    \o
+    \code
+    // script.js
+    var myArray = new Array()
+
+    function getList() {
+        return myArray
+    }
+
+    function addItem(item) {
+        myArray.push(item)
+    }
+    \endcode
+    \endtable
+
+    However, note that a JavaScript list should not be used as a QML \c property value,
+    as the property is not updated when the list changes.
 
     \sa {QML Basic Types}
 */

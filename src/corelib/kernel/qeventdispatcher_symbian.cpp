@@ -975,15 +975,18 @@ bool QEventDispatcherSymbian::sendPostedEvents()
 
 inline void QEventDispatcherSymbian::addDeferredActiveObject(QActiveObject *object)
 {
-    if (m_deferredActiveObjects.isEmpty()) {
-        m_completeDeferredAOs->complete();
-    }
+    queueDeferredActiveObjectsCompletion();
     m_deferredActiveObjects.append(object);
 }
 
 inline void QEventDispatcherSymbian::removeDeferredActiveObject(QActiveObject *object)
 {
     m_deferredActiveObjects.removeAll(object);
+}
+
+void QEventDispatcherSymbian::queueDeferredActiveObjectsCompletion()
+{
+    m_completeDeferredAOs->complete();
 }
 
 void QEventDispatcherSymbian::reactivateDeferredActiveObjects()

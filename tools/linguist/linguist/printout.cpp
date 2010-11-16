@@ -130,7 +130,7 @@ void PrintOut::addBox(int percent, const QString &text, Style style, Qt::Alignme
     cp.rect.setSize(QSize(cp.rect.width() + wd, qMax(cp.rect.height(), ht)));
 }
 
-// use init if inital vsize should be calculated (first breakPage call)
+// use init if initial vsize should be calculated (first breakPage call)
 void PrintOut::breakPage(bool init)
 {
     static const int LeftAlign = Qt::AlignLeft | Qt::AlignTop;

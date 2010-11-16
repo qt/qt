@@ -17,7 +17,7 @@ contains(TEMPLATE, ".*app") {
         default_bin_deployment.sources += $$OUT_PWD/$$DESTDIR/$$symbianRemoveSpecialCharacters($$basename(TARGET)).exe
     }
     default_bin_deployment.path += /sys/bin
-    
+
     load(application_icon.prf)
 }
 contains(TEMPLATE, lib): {
