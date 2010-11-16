@@ -705,10 +705,19 @@ void tst_QFileInfo::dir()
     QFETCH(QString, expected);
 
     QFileInfo fi(file);
-    if (absPath)
+    if (absPath) {
         QCOMPARE(fi.absolutePath(), expected);
-    else
+        QCOMPARE(fi.absoluteDir().path(), expected);
+#ifdef QT3_SUPPORT
+        QCOMPARE(fi.dir(true).path(), expected);
+#endif
+    } else {
         QCOMPARE(fi.path(), expected);
+        QCOMPARE(fi.dir().path(), expected);
+#ifdef QT3_SUPPORT
+        QCOMPARE(fi.dir(false).path(), expected);
+#endif
+    }
 }
 
 
