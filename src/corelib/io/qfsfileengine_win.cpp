@@ -865,12 +865,16 @@ bool QFSFileEngine::setSize(qint64 size)
 {
     Q_D(QFSFileEngine);
 
-    if (d->fileHandle != INVALID_HANDLE_VALUE || d->fd != -1) {
+    if (d->fileHandle != INVALID_HANDLE_VALUE || d->fd != -1 || d->fh) {
         // resize open file
         HANDLE fh = d->fileHandle;
 #if !defined(Q_OS_WINCE)
-        if (fh == INVALID_HANDLE_VALUE)
-            fh = (HANDLE)_get_osfhandle(d->fd);
+        if (fh == INVALID_HANDLE_VALUE) {
+            if (d->fh)
+                fh = (HANDLE)_get_osfhandle(QT_FILENO(d->fh));
+            else
+                fh = (HANDLE)_get_osfhandle(d->fd);
+        }
 #endif
         if (fh == INVALID_HANDLE_VALUE)
             return false;
