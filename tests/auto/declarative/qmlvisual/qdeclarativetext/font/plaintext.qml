@@ -15,7 +15,7 @@ Rectangle {
             text: s.text; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; width: s.width;
         }
         TestText {
-            font.pointSize: 20
+            font.pixelSize: 24
             text: s.text; horizontalAlignment: Text.AlignRight; verticalAlignment: Text.AlignBottom; width: s.width;
         }
         Grid{

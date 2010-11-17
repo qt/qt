@@ -14,7 +14,7 @@ Rectangle {
             text: s.text; font.pixelSize: 18
         }
         TestText {
-            text: s.text; font.pointSize: 18
+            text: s.text; font.pixelSize: 24
         }
         TestText {
             text: s.text; color: "red"; smooth: true
