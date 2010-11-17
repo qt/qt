@@ -278,7 +278,7 @@ VisualTest {
     }
     Frame {
         msec: 976
-        hash: "02c632713d0dc64bff9d8e58f745df95"
+        image: "gridview.1.png"
     }
     Frame {
         msec: 992
@@ -550,7 +550,7 @@ VisualTest {
     }
     Frame {
         msec: 1936
-        hash: "8304d2432168a2ea8a887d9a135b40b4"
+        image: "gridview.2.png"
     }
     Frame {
         msec: 1952
@@ -830,7 +830,7 @@ VisualTest {
     }
     Frame {
         msec: 2896
-        hash: "534973232974b7ee999172269d16c499"
+        image: "gridview.3.png"
     }
     Key {
         type: 7
@@ -1110,7 +1110,7 @@ VisualTest {
     }
     Frame {
         msec: 3856
-        hash: "e63d987ba303a42046827f14941b444a"
+        image: "gridview.4.png"
     }
     Frame {
         msec: 3872
@@ -1398,7 +1398,7 @@ VisualTest {
     }
     Frame {
         msec: 4816
-        hash: "11150995098af8516513230360d40108"
+        image: "gridview.5.png"
     }
     Frame {
         msec: 4832
@@ -1670,7 +1670,7 @@ VisualTest {
     }
     Frame {
         msec: 5776
-        hash: "3de570332e8a1e01f409d892feb7930e"
+        image: "gridview.6.png"
     }
     Frame {
         msec: 5792
@@ -1950,7 +1950,7 @@ VisualTest {
     }
     Frame {
         msec: 6736
-        hash: "b6c7ad2c8e305ea5478a2307aa71b16b"
+        image: "gridview.7.png"
     }
     Frame {
         msec: 6752
@@ -2222,7 +2222,7 @@ VisualTest {
     }
     Frame {
         msec: 7696
-        hash: "e8b6316baae781ca5390bc86528194c0"
+        image: "gridview.8.png"
     }
     Key {
         type: 7
@@ -2518,7 +2518,7 @@ VisualTest {
     }
     Frame {
         msec: 8656
-        hash: "4724d0bfd63f248914f18117ba0c6119"
+        image: "gridview.9.png"
     }
     Frame {
         msec: 8672
@@ -2790,7 +2790,7 @@ VisualTest {
     }
     Frame {
         msec: 9616
-        hash: "02c632713d0dc64bff9d8e58f745df95"
+        image: "gridview.10.png"
     }
     Frame {
         msec: 9632
@@ -2831,7 +2831,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777249
-        modifiers: 67108864
+        modifiers: 0
         text: ""
         autorep: false
         count: 1

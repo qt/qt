@@ -246,7 +246,7 @@ VisualTest {
     }
     Frame {
         msec: 976
-        hash: "213811853dbefdc418099721e3bf8651"
+        image: "reanchor.1.png"
     }
     Frame {
         msec: 992
@@ -502,7 +502,7 @@ VisualTest {
     }
     Frame {
         msec: 1936
-        hash: "ad3837dcf3e69274ac2918d796974f29"
+        image: "reanchor.2.png"
     }
     Frame {
         msec: 1952
@@ -774,7 +774,7 @@ VisualTest {
     }
     Frame {
         msec: 2896
-        hash: "eb3eeb37ab7b26692cbf100adfaf3772"
+        image: "reanchor.3.png"
     }
     Frame {
         msec: 2912
@@ -1030,7 +1030,7 @@ VisualTest {
     }
     Frame {
         msec: 3856
-        hash: "213811853dbefdc418099721e3bf8651"
+        image: "reanchor.4.png"
     }
     Frame {
         msec: 3872
@@ -1286,7 +1286,7 @@ VisualTest {
     }
     Frame {
         msec: 4816
-        hash: "c4559982aa3f3d291364deed4bd96d65"
+        image: "reanchor.5.png"
     }
     Frame {
         msec: 4832
@@ -1526,7 +1526,7 @@ VisualTest {
     }
     Frame {
         msec: 5776
-        hash: "1137e22c68e043950811dee295e19b04"
+        image: "reanchor.6.png"
     }
     Frame {
         msec: 5792
@@ -1782,7 +1782,7 @@ VisualTest {
     }
     Frame {
         msec: 6736
-        hash: "213811853dbefdc418099721e3bf8651"
+        image: "reanchor.7.png"
     }
     Frame {
         msec: 6752
@@ -2038,7 +2038,7 @@ VisualTest {
     }
     Frame {
         msec: 7696
-        hash: "eb3eeb37ab7b26692cbf100adfaf3772"
+        image: "reanchor.8.png"
     }
     Frame {
         msec: 7712
@@ -2294,7 +2294,7 @@ VisualTest {
     }
     Frame {
         msec: 8656
-        hash: "6ed9b6118a0dc81c22af9fee108b7432"
+        image: "reanchor.9.png"
     }
     Frame {
         msec: 8672
@@ -2419,7 +2419,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777249
-        modifiers: 67108864
+        modifiers: 0
         text: ""
         autorep: false
         count: 1

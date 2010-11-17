@@ -318,7 +318,7 @@ VisualTest {
     }
     Frame {
         msec: 976
-        hash: "de5647af86a322921dcc68e81979a3cc"
+        image: "flickable-horizontal.1.png"
     }
     Frame {
         msec: 992
@@ -606,7 +606,7 @@ VisualTest {
     }
     Frame {
         msec: 1936
-        hash: "45ea16bca2c9ae07cb7dead1e24f6ed0"
+        image: "flickable-horizontal.2.png"
     }
     Mouse {
         type: 5
@@ -878,7 +878,7 @@ VisualTest {
     }
     Frame {
         msec: 2896
-        hash: "e2166fe87d04be70a9b1d4c8d1002b49"
+        image: "flickable-horizontal.3.png"
     }
     Frame {
         msec: 2912
@@ -1358,7 +1358,7 @@ VisualTest {
     }
     Frame {
         msec: 3856
-        hash: "90f94986ab44ab59618e9a5da17b8cc9"
+        image: "flickable-horizontal.4.png"
     }
     Frame {
         msec: 3872
