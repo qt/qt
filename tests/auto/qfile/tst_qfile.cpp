@@ -214,6 +214,8 @@ private slots:
     void resize_data();
     void resize();
 
+    void objectConstructors();
+
     // --- Task related tests below this line
     void task167217();
 
@@ -1112,6 +1114,7 @@ void tst_QFile::permissions()
     QFETCH(bool, expected);
     QFile f(file);
     QCOMPARE(((f.permissions() & perms) == QFile::Permissions(perms)), expected);
+    QCOMPARE(((QFile::permissions(file) & perms) == QFile::Permissions(perms)), expected);
 }
 
 void tst_QFile::setPermissions()
@@ -1298,6 +1301,12 @@ void tst_QFile::link()
     QFileInfo info2("myLink.lnk");
     QVERIFY(info2.isSymLink());
     QCOMPARE(info2.symLinkTarget(), info1.absoluteFilePath());
+
+    QFile link("myLink.lnk");
+    QVERIFY(link.open(QIODevice::ReadOnly));
+    QCOMPARE(link.symLinkTarget(), info1.absoluteFilePath());
+    link.close();
+    QCOMPARE(QFile::symLinkTarget("myLink.lnk"), info1.absoluteFilePath());
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QString wd = getWorkingDirectoryForLink(info2.absoluteFilePath());
@@ -3109,6 +3118,15 @@ void tst_QFile::resize()
     QFile::resize(filename, 4);
     QCOMPARE(QFileInfo(filename).size(), qint64(4));
     QVERIFY(QFile::remove(filename));
+}
+
+void tst_QFile::objectConstructors()
+{
+    QObject ob;
+    QFile* file1 = new QFile(SRCDIR "testfile.txt", &ob);
+    QFile* file2 = new QFile(&ob);
+    QVERIFY(file1->exists());
+    QVERIFY(!file2->exists());
 }
 
 QTEST_MAIN(tst_QFile)
