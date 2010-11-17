@@ -48,15 +48,29 @@
 
 #include <qmath.h>
 
+void GraphicsView::wheelEvent(QWheelEvent *e)
+{
+    if (e->modifiers() & Qt::ControlModifier) {
+        if (e->delta() > 0)
+            view->zoomIn(6);
+        else
+            view->zoomOut(6);
+        e->accept();
+    } else {
+        QGraphicsView::wheelEvent(e);
+    }
+}
+
 View::View(const QString &name, QWidget *parent)
     : QFrame(parent)
 {
     setFrameStyle(Sunken | StyledPanel);
-    graphicsView = new QGraphicsView;
+    graphicsView = new GraphicsView(this);
     graphicsView->setRenderHint(QPainter::Antialiasing, false);
     graphicsView->setDragMode(QGraphicsView::RubberBandDrag);
     graphicsView->setOptimizationFlags(QGraphicsView::DontSavePainterState);
     graphicsView->setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
+    graphicsView->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 
     int size = style()->pixelMetric(QStyle::PM_ToolBarIconSize);
     QSize iconSize(size, size);
@@ -111,6 +125,15 @@ View::View(const QString &name, QWidget *parent)
     // Label layout
     QHBoxLayout *labelLayout = new QHBoxLayout;
     label = new QLabel(name);
+    label2 = new QLabel(tr("Pointer Mode"));
+    selectModeButton = new QToolButton;
+    selectModeButton->setText(tr("Select"));
+    selectModeButton->setCheckable(true);
+    selectModeButton->setChecked(true);
+    dragModeButton = new QToolButton;
+    dragModeButton->setText(tr("Drag"));
+    dragModeButton->setCheckable(true);
+    dragModeButton->setChecked(false);
     antialiasButton = new QToolButton;
     antialiasButton->setText(tr("Antialiasing"));
     antialiasButton->setCheckable(true);
@@ -126,7 +149,16 @@ View::View(const QString &name, QWidget *parent)
     printButton = new QToolButton;
     printButton->setIcon(QIcon(QPixmap(":/fileprint.png")));
 
+    QButtonGroup *pointerModeGroup = new QButtonGroup;
+    pointerModeGroup->setExclusive(true);
+    pointerModeGroup->addButton(selectModeButton);
+    pointerModeGroup->addButton(dragModeButton);
+
     labelLayout->addWidget(label);
+    labelLayout->addStretch();
+    labelLayout->addWidget(label2);
+    labelLayout->addWidget(selectModeButton);
+    labelLayout->addWidget(dragModeButton);
     labelLayout->addStretch();
     labelLayout->addWidget(antialiasButton);
     labelLayout->addWidget(openGlButton);
@@ -145,6 +177,8 @@ View::View(const QString &name, QWidget *parent)
     connect(rotateSlider, SIGNAL(valueChanged(int)), this, SLOT(setupMatrix()));
     connect(graphicsView->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(setResetButtonEnabled()));
     connect(graphicsView->horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(setResetButtonEnabled()));
+    connect(selectModeButton, SIGNAL(toggled(bool)), this, SLOT(togglePointerMode()));
+    connect(dragModeButton, SIGNAL(toggled(bool)), this, SLOT(togglePointerMode()));
     connect(antialiasButton, SIGNAL(toggled(bool)), this, SLOT(toggleAntialiasing()));
     connect(openGlButton, SIGNAL(toggled(bool)), this, SLOT(toggleOpenGL()));
     connect(rotateLeftIcon, SIGNAL(clicked()), this, SLOT(rotateLeft()));
@@ -158,7 +192,7 @@ View::View(const QString &name, QWidget *parent)
 
 QGraphicsView *View::view() const
 {
-    return graphicsView;
+    return static_cast<QGraphicsView *>(graphicsView);
 }
 
 void View::resetView()
@@ -188,6 +222,14 @@ void View::setupMatrix()
     setResetButtonEnabled();
 }
 
+void View::togglePointerMode()
+{
+    graphicsView->setDragMode(selectModeButton->isChecked()
+                              ? QGraphicsView::RubberBandDrag
+                              : QGraphicsView::ScrollHandDrag);
+    graphicsView->setInteractive(selectModeButton->isChecked());
+}
+
 void View::toggleOpenGL()
 {
 #ifndef QT_NO_OPENGL
@@ -212,14 +254,14 @@ void View::print()
 #endif
 }
 
-void View::zoomIn()
+void View::zoomIn(int level)
 {
-    zoomSlider->setValue(zoomSlider->value() + 1);
+    zoomSlider->setValue(zoomSlider->value() + level);
 }
 
-void View::zoomOut()
+void View::zoomOut(int level)
 {
-    zoomSlider->setValue(zoomSlider->value() - 1);
+    zoomSlider->setValue(zoomSlider->value() - level);
 }
 
 void View::rotateLeft()
