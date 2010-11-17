@@ -92,8 +92,10 @@ private slots:
     void removeRow();
     void removeRows_data() { generic_data(); }
     void removeRows();
-    void removeInsertedRow_data() { generic_data(); }
+    void removeInsertedRow_data() { generic_data_with_strategies(); }
     void removeInsertedRow();
+    void removeInsertedRows_data() { generic_data(); }
+    void removeInsertedRows();
     void setFilter_data() { generic_data(); }
     void setFilter();
     void setInvalidFilter_data() { generic_data(); }
@@ -543,10 +545,19 @@ void tst_QSqlTableModel::removeRows()
     QCOMPARE(model.rowCount(), 3);
 
     QSignalSpy beforeDeleteSpy(&model, SIGNAL(beforeDelete(int)));
+
+    // Make sure wrong stuff is ok
+    QVERIFY(!model.removeRows(-1,1)); // negative start
+    QVERIFY(!model.removeRows(-1, 0)); // negative start, and zero count
+    QVERIFY(!model.removeRows(1, 0)); // zero count
+    QVERIFY(!model.removeRows(5, 1)); // past end (causes a beforeDelete to be emitted)
+    QVERIFY(!model.removeRows(1, 0, model.index(2, 0))); // can't pass a valid modelindex
+
     QVERIFY_SQL(model, removeRows(0, 2));
-    QVERIFY(beforeDeleteSpy.count() == 2);
-    QVERIFY(beforeDeleteSpy.at(0).at(0).toInt() == 0);
-    QVERIFY(beforeDeleteSpy.at(1).at(0).toInt() == 1);
+    QCOMPARE(beforeDeleteSpy.count(), 3);
+    QVERIFY(beforeDeleteSpy.at(0).at(0).toInt() == 5);
+    QVERIFY(beforeDeleteSpy.at(1).at(0).toInt() == 0);
+    QVERIFY(beforeDeleteSpy.at(2).at(0).toInt() == 1);
     QCOMPARE(model.rowCount(), 1);
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("vohi"));
     model.clear();
@@ -560,6 +571,13 @@ void tst_QSqlTableModel::removeRows()
 
     // When the edit strategy is OnManualSubmit the beforeDelete() signal
     // isn't emitted until submitAll() is called.
+
+    QVERIFY(!model.removeRows(-1,1)); // negative start
+    QVERIFY(!model.removeRows(-1, 0)); // negative start, and zero count
+    QVERIFY(!model.removeRows(1, 0)); // zero count
+    QVERIFY(!model.removeRows(5, 1)); // past end (DOESN'T cause a beforeDelete to be emitted)
+    QVERIFY(!model.removeRows(1, 0, model.index(2, 0))); // can't pass a valid modelindex
+
     qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
     QSignalSpy headerDataChangedSpy(&model, SIGNAL(headerDataChanged(Qt::Orientation, int, int)));
     QVERIFY(model.removeRows(0, 2, QModelIndex()));
@@ -581,33 +599,146 @@ void tst_QSqlTableModel::removeRows()
 void tst_QSqlTableModel::removeInsertedRow()
 {
     QFETCH(QString, dbName);
+    QFETCH(int, submitpolicy_i);
+    QSqlTableModel::EditStrategy submitpolicy = (QSqlTableModel::EditStrategy) submitpolicy_i;
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    for (int i = 0; i <= 1; ++i) {
+    QSqlTableModel model(0, db);
+    model.setTable(test);
+    model.setSort(0, Qt::AscendingOrder);
 
-        QSqlTableModel model(0, db);
-        model.setTable(test);
-        model.setSort(0, Qt::AscendingOrder);
+    model.setEditStrategy(submitpolicy);
+    QVERIFY_SQL(model, select());
+    QCOMPARE(model.rowCount(), 3);
 
-        model.setEditStrategy(i == 0
-                ? QSqlTableModel::OnRowChange : QSqlTableModel::OnManualSubmit);
-        QVERIFY_SQL(model, select());
-        QCOMPARE(model.rowCount(), 3);
+    QVERIFY(model.insertRow(1));
+    QCOMPARE(model.rowCount(), 4);
 
-        QVERIFY(model.insertRow(1));
-        QCOMPARE(model.rowCount(), 4);
+    QVERIFY(model.removeRow(1));
+    QCOMPARE(model.rowCount(), 3);
 
-        QVERIFY(model.removeRow(1));
-        QCOMPARE(model.rowCount(), 3);
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+    QCOMPARE(model.data(model.index(1, 1)).toString(), QString("trond"));
+    QCOMPARE(model.data(model.index(2, 1)).toString(), QString("vohi"));
+}
 
-        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
-        QCOMPARE(model.data(model.index(1, 1)).toString(), QString("trond"));
-        QCOMPARE(model.data(model.index(2, 1)).toString(), QString("vohi"));
-        model.clear();
+void tst_QSqlTableModel::removeInsertedRows()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
 
-        recreateTestTables();
-    }
+    QSqlTableModel model(0, db);
+    model.setTable(test);
+    model.setSort(0, Qt::AscendingOrder);
+    model.setEditStrategy(QSqlTableModel::OnManualSubmit); // you can't insert more than one row otherwise
+    QVERIFY_SQL(model, select());
+    QCOMPARE(model.rowCount(), 3);
+
+    // First put two empty rows, and remove them one by one
+    QVERIFY(model.insertRows(1, 2));
+    QCOMPARE(model.rowCount(), 5);
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+    QCOMPARE(model.data(model.index(1, 1)).toString(), QString());
+    QCOMPARE(model.data(model.index(2, 1)).toString(), QString());
+    QCOMPARE(model.data(model.index(3, 1)).toString(), QString("trond"));
+    QCOMPARE(model.data(model.index(4, 1)).toString(), QString("vohi"));
+
+    QVERIFY(model.removeRow(1));
+    QCOMPARE(model.rowCount(), 4);
+
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+    QCOMPARE(model.data(model.index(1, 1)).toString(), QString());
+    QCOMPARE(model.data(model.index(2, 1)).toString(), QString("trond"));
+    QCOMPARE(model.data(model.index(3, 1)).toString(), QString("vohi"));
+
+    QVERIFY(model.removeRow(1));
+    QCOMPARE(model.rowCount(), 3);
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+    QCOMPARE(model.data(model.index(1, 1)).toString(), QString("trond"));
+    QCOMPARE(model.data(model.index(2, 1)).toString(), QString("vohi"));
+
+    // Now put two empty rows, and remove them all at once
+    QVERIFY(model.insertRows(1, 2));
+    QCOMPARE(model.rowCount(), 5);
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+    QCOMPARE(model.data(model.index(1, 1)).toString(), QString());
+    QCOMPARE(model.data(model.index(2, 1)).toString(), QString());
+    QCOMPARE(model.data(model.index(3, 1)).toString(), QString("trond"));
+    QCOMPARE(model.data(model.index(4, 1)).toString(), QString("vohi"));
+
+    QVERIFY(model.removeRows(1, 2));
+    QCOMPARE(model.rowCount(), 3);
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+    QCOMPARE(model.data(model.index(1, 1)).toString(), QString("trond"));
+    QCOMPARE(model.data(model.index(2, 1)).toString(), QString("vohi"));
+
+
+    // Now put two empty rows, and remove one good and two empty
+    QVERIFY(model.insertRows(1, 2));
+    QCOMPARE(model.rowCount(), 5);
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+    QCOMPARE(model.data(model.index(1, 1)).toString(), QString());
+    QCOMPARE(model.data(model.index(2, 1)).toString(), QString());
+    QCOMPARE(model.data(model.index(3, 1)).toString(), QString("trond"));
+    QCOMPARE(model.data(model.index(4, 1)).toString(), QString("vohi"));
+
+    QVERIFY(model.removeRows(0, 3));
+    QVERIFY(model.submitAll()); // otherwise the remove of the real row doesn't work
+
+    QCOMPARE(model.rowCount(), 2);
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("trond"));
+    QCOMPARE(model.data(model.index(1, 1)).toString(), QString("vohi"));
+
+    // Reset back again
+    model.clear();
+    recreateTestTables();
+    model.setTable(test);
+    model.setSort(0, Qt::AscendingOrder);
+    model.setEditStrategy(QSqlTableModel::OnManualSubmit); // you can't insert more than one row otherwise
+    QVERIFY_SQL(model, select());
+    QCOMPARE(model.rowCount(), 3);
+
+    // Now two empty and one good
+    QVERIFY(model.insertRows(1, 2));
+    QCOMPARE(model.rowCount(), 5);
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+    QCOMPARE(model.data(model.index(1, 1)).toString(), QString());
+    QCOMPARE(model.data(model.index(2, 1)).toString(), QString());
+    QCOMPARE(model.data(model.index(3, 1)).toString(), QString("trond"));
+    QCOMPARE(model.data(model.index(4, 1)).toString(), QString("vohi"));
+
+    QVERIFY(model.removeRows(1, 3));
+    QVERIFY(model.submitAll());
+    QCOMPARE(model.rowCount(), 2);
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+    QCOMPARE(model.data(model.index(1, 1)).toString(), QString("vohi"));
+
+    // Reset back again
+    model.clear();
+    recreateTestTables();
+    model.setTable(test);
+    model.setSort(0, Qt::AscendingOrder);
+    model.setEditStrategy(QSqlTableModel::OnManualSubmit); // you can't insert more than one row otherwise
+    QVERIFY_SQL(model, select());
+    QCOMPARE(model.rowCount(), 3);
+
+    // one empty, one good, one empty
+    QVERIFY(model.insertRows(1, 1));
+    QVERIFY(model.insertRows(3, 1));
+    QCOMPARE(model.rowCount(), 5);
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+    QCOMPARE(model.data(model.index(1, 1)).toString(), QString());
+    QCOMPARE(model.data(model.index(2, 1)).toString(), QString("trond"));
+    QCOMPARE(model.data(model.index(3, 1)).toString(), QString());
+    QCOMPARE(model.data(model.index(4, 1)).toString(), QString("vohi"));
+
+    QVERIFY(model.removeRows(1, 3));
+    QVERIFY(model.submitAll());
+    QCOMPARE(model.rowCount(), 2);
+    QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
+    QCOMPARE(model.data(model.index(1, 1)).toString(), QString("vohi"));
 }
 
 void tst_QSqlTableModel::emptyTable()

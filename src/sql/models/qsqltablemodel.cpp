@@ -1097,9 +1097,12 @@ bool QSqlTableModel::removeRows(int row, int count, const QModelIndex &parent)
             int idx = row + i;
             if (idx >= rowCount())
                 return false;
-            if (d->cache.value(idx).op == QSqlTableModelPrivate::Insert)
+            if (d->cache.value(idx).op == QSqlTableModelPrivate::Insert) {
                 revertRow(idx);
-            else {
+                // Reverting a row means all the other cache entries have been adjusted downwards
+                // so fake this by adjusting row
+                --row;
+            } else {
                 d->cache[idx].op = QSqlTableModelPrivate::Delete;
                 d->cache[idx].primaryValues = d->primaryValues(indexInQuery(createIndex(idx, 0)).row());
                 emit headerDataChanged(Qt::Vertical, idx, idx);
