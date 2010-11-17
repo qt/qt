@@ -97,9 +97,16 @@ QScriptOriginalGlobalObject::QScriptOriginalGlobalObject(const QScriptEnginePriv
 
     // Set our default properties.
     v8::Local<v8::Value> eng = v8::External::Wrap(const_cast<QScriptEnginePrivate *>(engine));
-    m_globalObject->Set(v8::String::New("print") , v8::FunctionTemplate::New(functionPrint, eng)->GetFunction());
-    m_globalObject->Set(v8::String::New("gc") , v8::FunctionTemplate::New(functionGC, eng)->GetFunction());
-    m_globalObject->Set(v8::String::New("version") , v8::FunctionTemplate::New(functionVersion, eng)->GetFunction());
+    v8::Local<v8::Function> builtinFunc;
+    builtinFunc = v8::FunctionTemplate::New(functionPrint, eng)->GetFunction();
+    builtinFunc->ForceSet(v8::String::New("name"), v8::String::New("print"), v8::PropertyAttribute(v8::ReadOnly | v8::DontEnum | v8::DontDelete));
+    m_globalObject->Set(v8::String::New("print") , builtinFunc);
+    builtinFunc = v8::FunctionTemplate::New(functionGC, eng)->GetFunction();
+    builtinFunc->ForceSet(v8::String::New("name"), v8::String::New("gc"), v8::PropertyAttribute(v8::ReadOnly | v8::DontEnum | v8::DontDelete));
+    m_globalObject->Set(v8::String::New("gc") , builtinFunc);
+    builtinFunc = v8::FunctionTemplate::New(functionVersion, eng)->GetFunction();
+    builtinFunc->ForceSet(v8::String::New("name"), v8::String::New("version"), v8::PropertyAttribute(v8::ReadOnly | v8::DontEnum | v8::DontDelete));
+    m_globalObject->Set(v8::String::New("version") , builtinFunc);
 }
 
 inline void QScriptOriginalGlobalObject::initializeMember(v8::Handle<v8::String> prototypeName, v8::Handle<v8::Value> type, v8::Persistent<v8::Object>& constructor, v8::Persistent<v8::Value>& prototype)
