@@ -46,6 +46,7 @@
 #include <private/qgraphicssystem_runtime_p.h>
 #include <private/qpixmap_raster_p.h>
 #include "qmeegoruntime.h"
+#include "qmeegoswitchevent.h"
 
 QString QMeeGoGraphicsSystemHelper::runningGraphicsSystemName()
 {
@@ -81,8 +82,16 @@ void QMeeGoGraphicsSystemHelper::switchToMeeGo()
     if (QApplicationPrivate::instance()->graphics_system_name != QLatin1String("runtime"))
         qWarning("Can't switch to meego - switching only supported with 'runtime' graphics system.");
     else {
+        QMeeGoSwitchEvent willSwitchEvent(QLatin1String("meego"), QMeeGoSwitchEvent::WillSwitch);
+        foreach (QWidget *widget, QApplication::topLevelWidgets())
+            QCoreApplication::sendEvent(widget, &willSwitchEvent);
+
         QApplication *app = static_cast<QApplication *>(QCoreApplication::instance());
         app->setGraphicsSystem(QLatin1String("meego"));
+
+        QMeeGoSwitchEvent didSwitchEvent(QLatin1String("meego"), QMeeGoSwitchEvent::DidSwitch);
+        foreach (QWidget *widget, QApplication::topLevelWidgets())
+            QCoreApplication::sendEvent(widget, &didSwitchEvent);
     }
 }
 
@@ -94,8 +103,16 @@ void QMeeGoGraphicsSystemHelper::switchToRaster()
     if (QApplicationPrivate::instance()->graphics_system_name != QLatin1String("runtime"))
         qWarning("Can't switch to raster - switching only supported with 'runtime' graphics system.");
     else {
+        QMeeGoSwitchEvent willSwitchEvent(QLatin1String("raster"), QMeeGoSwitchEvent::WillSwitch);
+        foreach (QWidget *widget, QApplication::topLevelWidgets())
+            QCoreApplication::sendEvent(widget, &willSwitchEvent);
+
         QApplication *app = static_cast<QApplication *>(QCoreApplication::instance());
         app->setGraphicsSystem(QLatin1String("raster"));
+
+        QMeeGoSwitchEvent didSwitchEvent(QLatin1String("raster"), QMeeGoSwitchEvent::DidSwitch);
+        foreach (QWidget *widget, QApplication::topLevelWidgets())
+            QCoreApplication::sendEvent(widget, &didSwitchEvent);
     }
 }
 
