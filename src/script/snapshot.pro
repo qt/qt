@@ -15,7 +15,7 @@ isEmpty(V8SNAPSHOT) {
 }
 
 contains(V8SNAPSHOT,yes) {
-    v8_mksnapshot.commands = $$PWD/mksnapshot/mksnapshot ${QMAKE_FILE_OUT}
+    v8_mksnapshot.commands = mksnapshot/mksnapshot ${QMAKE_FILE_OUT}
     CONFIG(debug): v8_mksnapshot.commands += --logfile $$PWD/generated/snapshot.log --log-snapshot-positions
     DUMMY_FILE = qscriptengine.cpp
     v8_mksnapshot.input = DUMMY_FILE
