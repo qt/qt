@@ -1694,6 +1694,13 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newObject(QScriptC
 
 QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newArray(uint length)
 {
+    if (int(length) < 0) {
+        // FIXME v8 have a limitation that max size of an array is 512 MB (it is defined in object.h FixedArray::kMaxSize)
+        // It is wrong as ECMA standard says something different (15.4). It have to be reported, for now try to not crash.
+        Q_UNIMPLEMENTED();
+        length = 12345;
+    }
+
     v8::Persistent<v8::Array> array(v8::Persistent<v8::Array>::New(v8::Array::New(length)));
     // FIXME hmm it seems that V8 Array constructor doesn't set the length attribute as it is done
     // in JS. I'm not sure if it is bug or feature. It need to be investigated.
