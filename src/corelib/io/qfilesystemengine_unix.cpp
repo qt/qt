@@ -52,36 +52,12 @@
 #include <stdio.h>
 #include <errno.h>
 
-#if defined(Q_OS_SYMBIAN)
-# include <sys/syslimits.h>
-# include <f32file.h>
-# include <pathinfo.h>
-# include <QtCore/private/qcore_symbian_p.h>
-#endif
 
 #if defined(Q_OS_MAC)
 # include <QtCore/private/qcore_mac_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
-
-#if defined(Q_OS_SYMBIAN)
-static bool _q_isSymbianHidden(const QFileSystemEntry &entry, bool isDir)
-{
-    RFs rfs = qt_s60GetRFs();
-
-    QFileSystemEntry absoluteEntry = QFileSystemEngine::absoluteName(entry);
-    QString absolutePath = absoluteEntry.filePath();
-
-    if (isDir && !absolutePath.endsWith(QLatin1Char('/')))
-        absolutePath.append(QLatin1Char('/'));
-
-    TPtrC ptr(qt_QString2TPtrC(absolutePath));
-    TUint attributes;
-    TInt err = rfs.Att(ptr, attributes);
-    return (err == KErrNone && (attributes & KEntryAttHidden));
-}
-#endif
 
 #if !defined(QWS) && defined(Q_OS_MAC)
 static inline bool _q_isMacHidden(const char *nativePath)
@@ -113,11 +89,7 @@ static inline bool _q_isMacHidden(const char *nativePath)
 
 bool QFileSystemEngine::isCaseSensitive()
 {
-#if defined(Q_OS_SYMBIAN)
-    return false;
-#else
     return true;
-#endif
 }
 
 //static
@@ -306,7 +278,6 @@ QString QFileSystemEngine::resolveGroupName(uint groupId)
     QVarLengthArray<char, 1024> buf(size_max);
 #endif
 
-#if !defined(Q_OS_SYMBIAN)
     struct group *gr = 0;
 #if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
     size_max = sysconf(_SC_GETGR_R_SIZE_MAX);
@@ -329,7 +300,6 @@ QString QFileSystemEngine::resolveGroupName(uint groupId)
 #endif
     if (gr)
         return QFile::decodeName(QByteArray(gr->gr_name));
-#endif
     return QString();
 }
 
@@ -357,13 +327,6 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
     if (what & QFileSystemMetaData::BundleType) {
         if (!data.hasFlags(QFileSystemMetaData::DirectoryType))
             what |= QFileSystemMetaData::DirectoryType;
-    }
-#endif
-
-#if defined(Q_OS_SYMBIAN)
-    if (what & QFileSystemMetaData::HiddenAttribute) {
-        if (!data.hasFlags(QFileSystemMetaData::LinkType | QFileSystemMetaData::DirectoryType))
-            what |= QFileSystemMetaData::LinkType | QFileSystemMetaData::DirectoryType;
     }
 #endif
 
@@ -471,18 +434,10 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
 
     if (what & QFileSystemMetaData::HiddenAttribute
             && !data.isHidden()) {
-#if defined(Q_OS_SYMBIAN)
-        // In Symbian, all symlinks have hidden attribute for some reason;
-        // lets make them visible for better compatibility with other platforms.
-        // If somebody actually wants a hidden link, then they are out of luck.
-        if (entryExists && !data.isLink() && _q_isSymbianHidden(entry, data.isDirectory()))
-            data.entryFlags |= QFileSystemMetaData::HiddenAttribute;
-#else
         QString fileName = entry.fileName();
         if ((fileName.size() > 0 && fileName.at(0) == QLatin1Char('.'))
                 || (entryExists && _q_isMacHidden(nativeFilePath)))
             data.entryFlags |= QFileSystemMetaData::HiddenAttribute;
-#endif
         data.knownFlagsMask |= QFileSystemMetaData::HiddenAttribute;
     }
 
@@ -513,9 +468,6 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
     QString dirName = entry.filePath();
     if (createParents) {
         dirName = QDir::cleanPath(dirName);
-#if defined(Q_OS_SYMBIAN)
-        dirName = QDir::toNativeSeparators(dirName);
-#endif
         for (int oldslash = -1, slash=0; slash != -1; oldslash = slash) {
             slash = dirName.indexOf(QDir::separator(), oldslash+1);
             if (slash == -1) {
@@ -548,9 +500,6 @@ bool QFileSystemEngine::removeDirectory(const QFileSystemEntry &entry, bool remo
 {
     if (removeEmptyParents) {
         QString dirName = QDir::cleanPath(entry.filePath());
-#if defined(Q_OS_SYMBIAN)
-        dirName = QDir::toNativeSeparators(dirName);
-#endif
         for (int oldslash = 0, slash=dirName.length(); slash > 0; oldslash = slash) {
             QByteArray chunk = QFile::encodeName(dirName.left(slash));
             QT_STATBUF st;
