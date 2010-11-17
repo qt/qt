@@ -840,6 +840,9 @@ QT_LIBS_GLIB=
 QT_CFLAGS_GSTREAMER=
 QT_LIBS_GSTREAMER=
 
+#flag for Symbian fpu settings
+QT_CFLAGS_FPU=
+
 # flags for libconnsettings0 (used for Maemo ICD bearer management plugin)
 QT_CFLAGS_CONNSETTINGS=
 QT_LIBS_CONNSETTINGS=
@@ -1070,6 +1073,16 @@ while [ "$#" -gt 0 ]; do
             VAL="$1"
         else
             VAL=`echo $1 | sed 's,-D,,'`
+        fi
+        ;;
+    -fpu)
+        VAR="fpu"
+        # this option may or may not be followed by an argument
+        if [ -z "$2" ] || echo "$2" | grep '^-' >/dev/null 2>&1; then
+            VAL=no
+        else
+            shift
+            VAL=$1
         fi
         ;;
     -I?*|-I)
@@ -2250,6 +2263,11 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    fpu)
+       if [ "$VAL" != "no" ]; then
+          QT_CFLAGS_FPU=$VAL
+       fi
+       ;;
     *)
         UNKNOWN_OPT=yes
         ;;
@@ -7944,6 +7962,12 @@ if [ "$CFG_DEV" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG private_tests"
 fi
 
+if [ -z "$QT_CFLAGS_FPU" ]; then
+    if echo "$XPLATFORM" | grep "symbian-sbsv2" > /dev/null 2>&1; then
+        QT_CFLAGS_FPU=softvfp
+    fi
+fi
+
 # Make the application arch follow the Qt arch for single arch builds.
 # (for multiple-arch builds, set CONFIG manually in the application .pro file)
 if [ `echo "$CFG_MAC_ARCHS" | wc -w` -eq 1 ]; then
@@ -7977,10 +8001,11 @@ if [ -n "$QT_GCC_MAJOR_VERSION" ]; then
     echo "QT_GCC_MINOR_VERSION = $QT_GCC_MINOR_VERSION" >> "$QTCONFIG.tmp"
     echo "QT_GCC_PATCH_VERSION = $QT_GCC_PATCH_VERSION" >> "$QTCONFIG.tmp"
 fi
-if echo "$XPLATFORM" | grep "symbian-sbsv2" > /dev/null 2>&1; then
+if [ -n "$QT_CFLAGS_FPU" ]; then
     echo "#Qt for symbian FPU settings" >> "$QTCONFIG.tmp"
-    echo "MMP_RULES += \"ARMFPU softvfp\"" >> "$QTCONFIG.tmp"
+    echo "MMP_RULES += \"ARMFPU $QT_CFLAGS_FPU\"" >> "$QTCONFIG.tmp"
 fi
+
 # replace qconfig.pri if it differs from the newly created temp file
 if cmp -s "$QTCONFIG.tmp" "$QTCONFIG"; then
     rm -f "$QTCONFIG.tmp"
