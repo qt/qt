@@ -18,6 +18,9 @@ INCLUDEPATH += $$PWD
 INCLUDEPATH += $$V8DIR/include
 LIBS += -L. -lv8 -lsnapshot
 
+# Avoid qmake adding -lv8 et al as dependencies.
+CONFIG -= explicitlib
+
 SOURCES += \
     $$PWD/qscriptclass.cpp \
     $$PWD/qscriptclasspropertyiterator.cpp \
