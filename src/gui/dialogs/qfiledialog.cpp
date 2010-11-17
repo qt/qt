@@ -1619,7 +1619,7 @@ extern QString qt_win_get_existing_directory(const QFileDialogArgs &args);
 /*
     For Symbian file dialogs
 */
-#if defined(Q_WS_S60) && defined(SYMBIAN_VERSION_SYMBIAN3)
+#if defined(Q_WS_S60)
 extern QString qtSymbianGetOpenFileName(const QString &caption,
                                         const QString &dir,
                                         const QString &filter);
