@@ -1212,6 +1212,9 @@ void QGL2PaintEngineExPrivate::stroke(const QVectorPath &path, const QPen &pen)
         stroker.process(dashStroke, pen, clip);
     }
 
+    if (!stroker.vertexCount())
+        return;
+
     if (opaque) {
         prepareForDraw(opaque);
         setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, stroker.vertices());
