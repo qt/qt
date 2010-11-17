@@ -800,6 +800,7 @@ CFG_ALSA=auto
 CFG_PULSEAUDIO=auto
 CFG_COREWLAN=auto
 CFG_ICD=auto
+CFG_NOPROCESS=no
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -2235,6 +2236,12 @@ while [ "$#" -gt 0 ]; do
         else
             UNKNOWN_OPT=yes
         fi
+        ;;
+    dont-process)
+        CFG_NOPROCESS=yes
+        ;;
+    process)
+        CFG_NOPROCESS=no
         ;;
     audio-backend)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -8397,11 +8404,13 @@ EXEC=""
 #-------------------------------------------------------------------------------
 
 echo "Finding project files. Please wait..."
-"$outpath/bin/qmake" -prl -r "${relpath}/projects.pro"
-if [ -f "${relpath}/projects.pro" ]; then
-    mkfile="${outpath}/Makefile"
-    [ -f "$mkfile" ] && chmod +w "$mkfile"
-    QTDIR="$outpath" "$outpath/bin/qmake" -spec "$XQMAKESPEC" "${relpath}/projects.pro" -o "$mkfile"
+if [ "$CFG_NOPROCESS" != "yes" ]; then
+    "$outpath/bin/qmake" -prl -r "${relpath}/projects.pro"
+    if [ -f "${relpath}/projects.pro" ]; then
+        mkfile="${outpath}/Makefile"
+        [ -f "$mkfile" ] && chmod +w "$mkfile"
+        QTDIR="$outpath" "$outpath/bin/qmake" -spec "$XQMAKESPEC" "${relpath}/projects.pro" -o "$mkfile"
+    fi
 fi
 
 # .projects      -> projects to process
@@ -8558,13 +8567,17 @@ for file in .projects .projects.3; do
         *winmain/winmain.pro)
             [ "$XPLATFORM_MINGW" = "yes" ] || continue
             SPEC=$XQMAKESPEC ;;
-        *s60main/s60main.pro) if [ -z "`echo "$XPLATFORM" | grep "symbian" >/dev/null`" ]; then
+        *s60main/s60main.pro) if [ "$CFG_NOPROCESS" = "yes" ] || [ -z "`echo "$XPLATFORM" | grep "symbian" >/dev/null`"]; then
                 continue
             fi;;
         *examples/activeqt/*) continue ;;
         */qmake/qmake.pro) continue ;;
         *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*|*linguist/lrelease*) SPEC=$QMAKESPEC ;;
-        *) SPEC=$XQMAKESPEC ;;
+        *) if [ "$CFG_NOPROCESS" = "yes" ]; then
+              continue
+           else
+              SPEC=$XQMAKESPEC
+           fi;;
         esac
         dir=`dirname "$a" | sed -e "s;$sepath;.;g"`
         test -d "$dir" || mkdir -p "$dir"
