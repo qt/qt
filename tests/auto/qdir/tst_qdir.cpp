@@ -57,11 +57,13 @@
 #include "../../shared/filesystem.h"
 
 #if defined(Q_OS_SYMBIAN)
+# include <f32file.h>
 # define STRINGIFY(x) #x
 # define TOSTRING(x) STRINGIFY(x)
 # define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"
 #elif defined(Q_OS_UNIX)
 # include <unistd.h>
+# include <sys/stat.h>
 #endif
 
 #if defined(Q_OS_VXWORKS)
@@ -188,6 +190,22 @@ private slots:
     void match_data();
     void match();
 #endif
+
+    void drives();
+
+    void arrayOperator();
+
+#ifdef QT3_SUPPORT
+    void setNameFilter();
+#endif
+
+    void equalityOperator_data();
+    void equalityOperator();
+
+    void isRelative_data();
+    void isRelative();
+
+    void isReadable();
 };
 
 // Testing get/set functions
@@ -1190,6 +1208,8 @@ void tst_QDir::remove()
     QDir dir;
     QVERIFY(dir.remove("remove-test"));
     QVERIFY(!dir.remove("/remove-test"));
+    QTest::ignoreMessage(QtWarningMsg, "QDir::remove: Empty or null file name");
+    QVERIFY(!dir.remove(""));
 }
 
 void tst_QDir::rename()
@@ -1202,10 +1222,18 @@ void tst_QDir::rename()
     QVERIFY(dir.rename("rename-test-renamed", "rename-test"));
 #if defined(Q_OS_MAC)
     QVERIFY(!dir.rename("rename-test", "/etc/rename-test-renamed"));
-#elif !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
-    // on windows/symbian this is possible - maybe make the test a bit better
+#elif defined(Q_OS_SYMBIAN)
+    QVERIFY(!dir.rename("rename-test", "/resource/rename-test-renamed"));
+#elif !defined(Q_OS_WIN)
+    // on windows this is possible - maybe make the test a bit better
     QVERIFY(!dir.rename("rename-test", "/rename-test-renamed"));
 #endif
+    QTest::ignoreMessage(QtWarningMsg, "QDir::rename: Empty or null file name(s)");
+    QVERIFY(!dir.rename("rename-test", ""));
+    QTest::ignoreMessage(QtWarningMsg, "QDir::rename: Empty or null file name(s)");
+    QVERIFY(!dir.rename("", "rename-test-renamed"));
+    QVERIFY(!dir.rename("some-file-that-does-not-exist", "rename-test-renamed"));
+
     QVERIFY(dir.remove("rename-test"));
 }
 
@@ -1717,7 +1745,6 @@ void tst_QDir::testCaching()
     QVERIFY(dir.exists()); // QDir doesn't cache the 'exist' between calls.
 }
 
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
 void tst_QDir::isRoot_data()
 {
     QTest::addColumn<QString>("path");
@@ -1729,8 +1756,13 @@ void tst_QDir::isRoot_data()
     QTest::newRow(QString("./ appended " + test).toLatin1()) << test << false;
     test = QDir(QDir::rootPath().append("./")).canonicalPath();
     QTest::newRow(QString("canonicalPath " + test).toLatin1()) << test << true;
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
     test = QDir::rootPath().left(2);
     QTest::newRow(QString("drive relative " + test).toLatin1()) << test << false;
+#endif
+
+    QTest::newRow("resources root") << ":/" << true;
+    QTest::newRow("resources nonroot") << ":/entrylist" << false;
 }
 
 void tst_QDir::isRoot()
@@ -1741,7 +1773,6 @@ void tst_QDir::isRoot()
     QDir dir(path);
     QCOMPARE(dir.isRoot(),isRoot);
 }
-#endif
 
 #ifndef QT_NO_REGEXP
 void tst_QDir::match_data()
@@ -1767,6 +1798,177 @@ void tst_QDir::match()
     QCOMPARE(QDir::match(filter.split(QLatin1Char(';')), filename), match);
 }
 #endif
+
+void tst_QDir::drives()
+{
+    QFileInfoList list(QDir::drives());
+#if defined(Q_OS_WIN)
+    QVERIFY(list.count() >= 1); //system
+    QLatin1Char systemdrive('c');
+#elif defined(Q_OS_SYMBIAN)
+    QVERIFY(list.count() >= 2); //system, rom
+    QLatin1Char romdrive('z');
+    QLatin1Char systemdrive('a' + int(RFs::SystemDrive()));
+#endif
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+    QVERIFY(list.count() <= 26);
+    bool foundsystem = false;
+#ifdef Q_OS_SYMBIAN
+    bool foundrom = false;
+#endif
+    foreach (QFileInfo fi, list) {
+        QCOMPARE(fi.absolutePath().size(), 3); //"x:/"
+        QCOMPARE(fi.absolutePath().at(1), QChar(QLatin1Char(':')));
+        QCOMPARE(fi.absolutePath().at(2), QChar(QLatin1Char('/')));
+        if (fi.absolutePath().at(0).toLower() == systemdrive)
+            foundsystem = true;
+#ifdef Q_OS_SYMBIAN
+        if (fi.absolutePath().at(0).toLower() == romdrive)
+            foundrom = true;
+#endif
+    }
+    QCOMPARE(foundsystem, true);
+#ifdef Q_OS_SYMBIAN
+    QCOMPARE(foundrom, true);
+#endif
+#else
+    QCOMPARE(list.count(), 1); //root
+    QCOMPARE(list.at(0).absolutePath(), "/");
+#endif
+}
+
+void tst_QDir::arrayOperator()
+{
+    QDir dir1(SRCDIR "entrylist/");
+    QDir dir2(SRCDIR "entrylist/");
+
+    QStringList entries(dir1.entryList());
+    int i = dir2.count();
+    QCOMPARE(i, entries.count());
+    --i;
+    for (;i>=0;--i) {
+        QCOMPARE(dir2[i], entries.at(i));
+    }
+}
+
+#ifdef QT3_SUPPORT
+void tst_QDir::setNameFilter()
+{
+    QStringList filters;
+    filters << "*.jpg" << "*.png" << "*.gif";
+    QStringList filters2;
+    filters2 << "*.cpp" << "*.h" << "*.c";
+
+    QDir dir(SRCDIR "entrylist/");
+
+    dir.setNameFilter(filters.join(";"));
+    QCOMPARE(filters, dir.nameFilters());
+    QCOMPARE(filters, dir.nameFilter().split(';'));
+
+    dir.setNameFilters(filters2);
+    QCOMPARE(filters2, dir.nameFilter().split(';'));
+
+    dir.setNameFilter(filters.join(" "));
+    QCOMPARE(filters, dir.nameFilters());
+    QCOMPARE(filters, dir.nameFilter().split(' '));
+
+    dir.setNameFilters(filters2);
+    QCOMPARE(filters2, dir.nameFilter().split(' '));
+}
+#endif
+
+void tst_QDir::equalityOperator_data()
+{
+    QTest::addColumn<QString>("leftPath");
+    QTest::addColumn<QString>("leftNameFilters");
+    QTest::addColumn<int>("leftSort");
+    QTest::addColumn<int>("leftFilters");
+    QTest::addColumn<QString>("rightPath");
+    QTest::addColumn<QString>("rightNameFilters");
+    QTest::addColumn<int>("rightSort");
+    QTest::addColumn<int>("rightFilters");
+    QTest::addColumn<bool>("expected");
+
+    QTest::newRow("same") << SRCDIR << "*.cpp" << int(QDir::Name) << int(QDir::Files)
+        << SRCDIR << "*.cpp" << int(QDir::Name) << int(QDir::Files)
+        << true;
+
+    QTest::newRow("relativepaths") << "entrylist/" << "*.cpp" << int(QDir::Name) << int(QDir::Files)
+        << "./entrylist" << "*.cpp" << int(QDir::Name) << int(QDir::Files)
+        << true;
+
+    QTest::newRow("diff-filters") << SRCDIR << "*.cpp" << int(QDir::Name) << int(QDir::Files)
+        << SRCDIR << "*.cpp" << int(QDir::Name) << int(QDir::Dirs)
+        << false;
+
+    QTest::newRow("diff-sort") << SRCDIR << "*.cpp" << int(QDir::Name) << int(QDir::Files)
+        << SRCDIR << "*.cpp" << int(QDir::Time) << int(QDir::Files)
+        << false;
+
+    QTest::newRow("diff-namefilters") << SRCDIR << "*.cpp" << int(QDir::Name) << int(QDir::Files)
+        << SRCDIR << "*.jpg" << int(QDir::Name) << int(QDir::Files)
+        << false;
+}
+
+void tst_QDir::equalityOperator()
+{
+    QFETCH(QString, leftPath);
+    QFETCH(QString, leftNameFilters);
+    QFETCH(int, leftSort);
+    QFETCH(int, leftFilters);
+    QFETCH(QString, rightPath);
+    QFETCH(QString, rightNameFilters);
+    QFETCH(int, rightSort);
+    QFETCH(int, rightFilters);
+    QFETCH(bool, expected);
+
+    QDir dir1(leftPath, leftNameFilters, QDir::SortFlags(leftSort), QDir::Filters(leftFilters));
+    QDir dir2(rightPath, rightNameFilters, QDir::SortFlags(rightSort), QDir::Filters(rightFilters));
+
+    QCOMPARE((dir1 == dir2), expected);
+    QCOMPARE((dir2 == dir1), expected);
+    QCOMPARE((dir1 != dir2), !expected);
+    QCOMPARE((dir2 != dir1), !expected);
+}
+
+void tst_QDir::isRelative_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<bool>("relative");
+
+    QTest::newRow(".") << "./" << true;
+    QTest::newRow("..") << "../" << true;
+    QTest::newRow("content") << "entrylist/" << true;
+    QTest::newRow("current") << QDir::currentPath() << false;
+    QTest::newRow("homepath") << QDir::homePath() << false;
+    QTest::newRow("temppath") << QDir::tempPath() << false;
+    QTest::newRow("rootpath") << QDir::rootPath() << false;
+    foreach (QFileInfo root, QDir::drives()) {
+        QTest::newRow(root.absolutePath()) << root.absolutePath() << false;
+    }
+}
+
+void tst_QDir::isRelative()
+{
+    QFETCH(QString, path);
+    QFETCH(bool, relative);
+
+    QCOMPARE(QDir(path).isRelative(), relative);
+}
+
+void tst_QDir::isReadable()
+{
+    QDir dir;
+
+    QVERIFY(dir.isReadable());
+#if defined (Q_OS_UNIX) && !defined (Q_OS_SYMBIAN)
+    QVERIFY(dir.mkdir("nonreadabledir"));
+    QVERIFY(0 == ::chmod("nonreadabledir", 0));
+    QVERIFY(!QDir("nonreadabledir").isReadable());
+    QVERIFY(0 == ::chmod("nonreadabledir", S_IRUSR | S_IWUSR | S_IXUSR));
+    QVERIFY(dir.rmdir("nonreadabledir"));
+#endif
+}
 
 QTEST_MAIN(tst_QDir)
 #include "tst_qdir.moc"
