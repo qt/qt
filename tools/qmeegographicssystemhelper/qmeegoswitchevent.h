@@ -42,22 +42,46 @@
 #include <QEvent>
 #include <QString>
 
+//! A custom event representing a graphics system switch.
+/*!
+ This event is sent two times -- before the actual switch and after the switch.
+ The current mode of the event can be detected by looking at the State of the
+ event.
+
+ The end-user application can use the event to drop it's own allocated GL resources
+ when going to software mode.
+*/
+
 class QMeeGoSwitchEvent : public QEvent
 {
 public:
+
+    //! The state represented by this event.
     enum State {
         WillSwitch,
         DidSwitch
     };
 
+    //! The event type id to use to detect this event.
     enum Type {
         SwitchEvent = QEvent::User + 1024
     };
 
+    //! Constructor for the event.
+    /*!
+     Creates a new event with the given name and the given state.
+    */
     QMeeGoSwitchEvent(const QString &graphicsSystemName, State s);
-    QString graphicsSystemName() const;
-    State state() const;
 
+    //! Returns the name of the target graphics system.
+    /*!
+     Depending on the state, the name represents the system we're about to swtich to,
+     or the system we just switched to.
+    */
+    QString graphicsSystemName() const;
+
+    //! Returns the state represented by this event.
+    State state() const;
 
 private:
     QString name;
