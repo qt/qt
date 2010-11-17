@@ -69,11 +69,18 @@ public:
     static QFileSystemEntry canonicalName(const QFileSystemEntry &entry, QFileSystemMetaData &data);
     static QFileSystemEntry absoluteName(const QFileSystemEntry &entry);
     static QString resolveUserName(const QFileSystemEntry &entry, QFileSystemMetaData &data);
-    static QString resolveUserName(uint userId);
     static QString resolveGroupName(const QFileSystemEntry &entry, QFileSystemMetaData &data);
-    static QString resolveGroupName(uint groupId);
 
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+    static QString resolveUserName(uint userId);
+    static QString resolveGroupName(uint groupId);
+#endif
+
+#if !defined(QWS) && defined(Q_OS_MAC)
     static QString bundleName(const QFileSystemEntry &entry);
+#else
+    static QString bundleName(const QFileSystemEntry &entry) { Q_UNUSED(entry) return QString(); }
+#endif
 
     static bool fillMetaData(const QFileSystemEntry &entry, QFileSystemMetaData &data,
                              QFileSystemMetaData::MetaDataFlags what);

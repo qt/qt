@@ -529,25 +529,6 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 }
 
 //static
-QString QFileSystemEngine::resolveUserName(uint userId)
-{
-    return QString(); // TODO
-}
-
-//static
-QString QFileSystemEngine::resolveGroupName(uint groupId)
-{
-    return QString(); // TODO
-}
-
-//static
-QString QFileSystemEngine::bundleName(const QFileSystemEntry &entry)
-{
-    Q_UNUSED(entry);
-    return QString();
-}
-
-//static
 QString QFileSystemEngine::owner(const QFileSystemEntry &entry, QAbstractFileEngine::FileOwner own)
 {
     QString name;

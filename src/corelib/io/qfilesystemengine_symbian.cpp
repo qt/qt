@@ -151,27 +151,6 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
     return QFileSystemEntry(symbianCleanAbsolutePath(result), QFileSystemEntry::FromInternalPath());
 }
 
-//static
-QString QFileSystemEngine::resolveUserName(uint userId)
-{
-    Q_UNUSED(userId)
-    return QString(); // no users or groups on symbian
-}
-
-//static
-QString QFileSystemEngine::resolveGroupName(uint groupId)
-{
-    Q_UNUSED(groupId)
-    return QString(); // no users or groups on symbian
-}
-
-//static
-QString QFileSystemEngine::bundleName(const QFileSystemEntry &entry)
-{
-    Q_UNUSED(entry);
-    return QString();
-}
-
 void QFileSystemMetaData::fillFromTEntry(const TEntry& entry)
 {
     entryFlags &= ~(QFileSystemMetaData::SymbianTEntryFlags);

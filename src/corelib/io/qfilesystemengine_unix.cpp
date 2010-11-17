@@ -333,10 +333,10 @@ QString QFileSystemEngine::resolveGroupName(uint groupId)
     return QString();
 }
 
+#if !defined(QWS) && defined(Q_OS_MAC)
 //static
 QString QFileSystemEngine::bundleName(const QFileSystemEntry &entry)
 {
-#if !defined(QWS) && defined(Q_OS_MAC)
     QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, QCFString(entry.filePath()),
             kCFURLPOSIXPathStyle, true);
     if (QCFType<CFDictionaryRef> dict = CFBundleCopyInfoDictionaryForURL(url)) {
@@ -345,11 +345,9 @@ QString QFileSystemEngine::bundleName(const QFileSystemEntry &entry)
                 return QCFString::toQString((CFStringRef)name);
         }
     }
-#else
-    Q_UNUSED(entry);
-#endif
     return QString();
 }
+#endif
 
 //static
 bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemMetaData &data,
