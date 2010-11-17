@@ -981,7 +981,7 @@ void SymbianEngine::RunL()
     QMutexLocker locker(&mutex);
 
     if (iStatus != KErrCancel) {
-        // By default, start relistening notifications. Stop only if interesting event occured.
+        // By default, start relistening notifications. Stop only if interesting event occurred.
         iWaitingCommsDatabaseNotifications = true;
         RDbNotifier::TEvent event = STATIC_CAST(RDbNotifier::TEvent, iStatus.Int());
         switch (event) {

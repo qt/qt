@@ -189,7 +189,7 @@ void QGestureManager::cleanupCachedGestures(QObject *target, Qt::GestureType typ
 QGesture *QGestureManager::getState(QObject *object, QGestureRecognizer *recognizer, Qt::GestureType type)
 {
     // if the widget is being deleted we should be careful not to
-    // create a new state, as it will create QWeakPointer which doesnt work
+    // create a new state, as it will create QWeakPointer which doesn't work
     // from the destructor.
     if (object->isWidgetType()) {
         if (static_cast<QWidget *>(object)->d_func()->data.in_destructor)
