@@ -1305,12 +1305,13 @@ void tst_QDir::dotAndDotDot()
 {
 #if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     QSKIP("WinCE and Symbian do not have . nor ..", SkipAll);
-#endif
+#else
     QDir dir(QString(SRCDIR "testdir/"));
     QStringList entryList = dir.entryList(QDir::Dirs);
     QCOMPARE(entryList, QStringList() << QString(".") << QString("..") << QString("dir") << QString("spaces"));
     entryList = dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
     QCOMPARE(entryList, QStringList() << QString("dir") << QString("spaces"));
+#endif
 }
 
 #ifdef QT3_SUPPORT
@@ -1806,7 +1807,7 @@ void tst_QDir::drives()
 #elif defined(Q_OS_SYMBIAN)
     QVERIFY(list.count() >= 2); //system, rom
     QLatin1Char romdrive('z');
-    QLatin1Char systemdrive('a' + int(RFs::SystemDrive()));
+    QLatin1Char systemdrive('a' + int(RFs::GetSystemDrive()));
 #endif
 #if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
     QVERIFY(list.count() <= 26);
@@ -1942,7 +1943,7 @@ void tst_QDir::isRelative_data()
     QTest::newRow("temppath") << QDir::tempPath() << false;
     QTest::newRow("rootpath") << QDir::rootPath() << false;
     foreach (QFileInfo root, QDir::drives()) {
-        QTest::newRow(root.absolutePath()) << root.absolutePath() << false;
+        QTest::newRow(root.absolutePath().toLocal8Bit()) << root.absolutePath() << false;
     }
 }
 
