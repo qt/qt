@@ -200,21 +200,21 @@ SOURCES += \
     $$V8DIR/src/x64/virtual-frame-x64.cc
 }
 
-#os:linux
-#CONFIG(os_linux) {
+unix:!symbian {
 SOURCES += \
     $$V8DIR/src/platform-linux.cc \
     $$V8DIR/src/platform-posix.cc
-#}
+}
 
 #os:macos
-CONFIG(os_macos) {
+macx {
+SOURCES += \
     $$V8DIR/src/platform-macos.cc \
     $$V8DIR/src/platform-posix.cc
 }
 
-#os:win32
-CONFIG(os_win32) {
+win32 {
+SOURCES += \
     $$V8DIR/src/platform-win32.cc
 }
 
