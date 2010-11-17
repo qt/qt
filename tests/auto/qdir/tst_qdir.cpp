@@ -181,10 +181,8 @@ private slots:
 
     void testCaching();
 
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
     void isRoot_data();
     void isRoot();
-#endif
 
 #ifndef QT_NO_REGEXP
     void match_data();
@@ -1833,7 +1831,7 @@ void tst_QDir::drives()
 #endif
 #else
     QCOMPARE(list.count(), 1); //root
-    QCOMPARE(list.at(0).absolutePath(), "/");
+    QCOMPARE(list.at(0).absolutePath(), QLatin1String("/"));
 #endif
 }
 
