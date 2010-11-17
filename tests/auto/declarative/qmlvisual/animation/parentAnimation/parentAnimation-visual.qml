@@ -10,14 +10,14 @@ then a final full transition.
 */
 
 Rectangle {
-    width: 800;
-    height: 480;
+    width: 400;
+    height: 240;
     color: "black";
 
     Rectangle {
         id: gr
         color: "green"
-        width: 100; height: 100
+        width: 50; height: 50
     }
 
     MouseArea {
@@ -27,21 +27,21 @@ Rectangle {
 
     Rectangle {
         id: np
-        x: 300
-        width: 300; height: 300
+        x: 150
+        width: 150; height: 150
         color: "yellow"
         clip: true
         Rectangle {
             color: "red"
-            x: 100; y: 100; height: 100; width: 100
+            x: 50; y: 50; height: 50; width: 50
         }
 
     }
 
     Rectangle {
         id: vp
-        x: 200; y: 200
-        width: 100; height: 100
+        x: 100; y: 100
+        width: 50; height: 50
         color: "blue"
         rotation: 45
         scale: 2
@@ -53,7 +53,7 @@ Rectangle {
         ParentChange {
             target: gr
             parent: np
-            x: 100; y: 100; width: 200;
+            x: 50; y: 50; width: 100;
         }
     }
 

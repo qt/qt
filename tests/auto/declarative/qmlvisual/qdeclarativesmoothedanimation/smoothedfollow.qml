@@ -1,40 +1,40 @@
 import QtQuick 1.0
 
 Rectangle {
-    width: 800; height: 720; color: "gray"
+    width: 400; height: 360; color: "gray"
 
     Rectangle {
         id: rect
-        width: 50; height: 20; y: 30; color: "black"
+        width: 25; height: 10; y: 15; color: "black"
         SequentialAnimation on x {
             loops: Animation.Infinite
-            NumberAnimation { from: 50; to: 700; duration: 1000 }
-            NumberAnimation { from: 700; to: 50; duration: 1000 }
+            NumberAnimation { from: 25; to: 350; duration: 1000 }
+            NumberAnimation { from: 350; to: 25; duration: 1000 }
         }
     }
 
     Rectangle {
-        width: 50; height: 20; x: rect.x; y: 60; color: "red"
-        Behavior on x { SmoothedAnimation { velocity: 400 } }
+        width: 25; height: 10; x: rect.x; y: 30; color: "red"
+        Behavior on x { SmoothedAnimation { velocity: 200 } }
     }
 
     Rectangle {
-        width: 50; height: 20; x: rect.x; y: 90; color: "yellow"
-        Behavior on x { SmoothedAnimation { velocity: 300; reversingMode: SmoothedAnimation.Immediate } }
+        width: 25; height: 10; x: rect.x; y: 45; color: "yellow"
+        Behavior on x { SmoothedAnimation { velocity: 150; reversingMode: SmoothedAnimation.Immediate } }
     }
 
     Rectangle {
-        width: 50; height: 20; x: rect.x; y: 120; color: "green"
-        Behavior on x { SmoothedAnimation { velocity: 200; reversingMode: SmoothedAnimation.Sync } }
+        width: 25; height: 10; x: rect.x; y: 60; color: "green"
+        Behavior on x { SmoothedAnimation { velocity: 100; reversingMode: SmoothedAnimation.Sync } }
     }
 
     Rectangle {
-        width: 50; height: 20; x: rect.x; y: 150; color: "purple"
-        Behavior on x { SmoothedAnimation { velocity: 200; maximumEasingTime: 100 } }
+        width: 25; height: 10; x: rect.x; y: 75; color: "purple"
+        Behavior on x { SmoothedAnimation { velocity: 100; maximumEasingTime: 100 } }
     }
 
     Rectangle {
-        width: 50; height: 20; x: rect.x; y: 180; color: "blue"
+        width: 25; height: 10; x: rect.x; y: 90; color: "blue"
         Behavior on x { SmoothedAnimation { velocity: -1; duration: 300 } }
     }
 
@@ -42,13 +42,13 @@ Rectangle {
     Rectangle {
         id: rect2
         property int dir: 1
-        width: 50; height: 20; x:50; y: 240; color: "black"
+        width: 25; height: 10; x:25; y: 120; color: "black"
         function advance(){
-            if(x >= 700)
+            if(x >= 350)
                 dir = -1;
-            if(x <= 50)
+            if(x <= 25)
                 dir = 1;
-            x += 130.0 * dir;
+            x += 65.0 * dir;
         }
     }
     Timer{
@@ -59,39 +59,39 @@ Rectangle {
     }
 
     Rectangle {
-        width: 50; height: 20; x: rect2.x; y: 270; color: "red"
-        Behavior on x { SmoothedAnimation { velocity: 400 } }
+        width: 25; height: 10; x: rect2.x; y: 135; color: "red"
+        Behavior on x { SmoothedAnimation { velocity: 200 } }
     }
 
     Rectangle {
-        width: 50; height: 20; x: rect2.x; y: 300; color: "yellow"
-        Behavior on x { SmoothedAnimation { velocity: 300; reversingMode: SmoothedAnimation.Immediate } }
+        width: 25; height: 10; x: rect2.x; y: 150; color: "yellow"
+        Behavior on x { SmoothedAnimation { velocity: 150; reversingMode: SmoothedAnimation.Immediate } }
     }
 
     Rectangle {
-        width: 50; height: 20; x: rect2.x; y: 330; color: "green"
-        Behavior on x { SmoothedAnimation { velocity: 200; reversingMode: SmoothedAnimation.Sync } }
+        width: 25; height: 10; x: rect2.x; y: 165; color: "green"
+        Behavior on x { SmoothedAnimation { velocity: 100; reversingMode: SmoothedAnimation.Sync } }
     }
 
     Rectangle {
-        width: 50; height: 20; x: rect2.x; y: 360; color: "purple"
-        Behavior on x { SmoothedAnimation { velocity: 200; maximumEasingTime: 100 } }
+        width: 25; height: 10; x: rect2.x; y: 180; color: "purple"
+        Behavior on x { SmoothedAnimation { velocity: 100; maximumEasingTime: 100 } }
     }
 
     Rectangle {
-        width: 50; height: 20; x: rect2.x; y: 390; color: "blue"
+        width: 25; height: 10; x: rect2.x; y: 195; color: "blue"
         Behavior on x { SmoothedAnimation { velocity: -1; duration: 300 } }
     }
 
     //rect3 just jumps , but the rects following it should be smooth
     Rectangle {
         id: rect3
-        width: 50; height: 20; x:50; y: 480; color: "black"
+        width: 25; height: 10; x:25; y: 240; color: "black"
         function advance(){
-            if(x == 50)
-                x = 700;
+            if(x == 25)
+                x = 350;
             else
-                x = 50;
+                x = 25;
         }
     }
     Timer{
@@ -102,27 +102,27 @@ Rectangle {
     }
 
     Rectangle {
-        width: 50; height: 20; x: rect3.x; y: 510; color: "red"
-        Behavior on x { SmoothedAnimation { velocity: 400 } }
+        width: 25; height: 10; x: rect3.x; y: 255; color: "red"
+        Behavior on x { SmoothedAnimation { velocity: 200 } }
     }
 
     Rectangle {
-        width: 50; height: 20; x: rect3.x; y: 540; color: "yellow"
-        Behavior on x { SmoothedAnimation { velocity: 300; reversingMode: SmoothedAnimation.Immediate } }
+        width: 25; height: 10; x: rect3.x; y: 270; color: "yellow"
+        Behavior on x { SmoothedAnimation { velocity: 150; reversingMode: SmoothedAnimation.Immediate } }
     }
 
     Rectangle {
-        width: 50; height: 20; x: rect3.x; y: 570; color: "green"
-        Behavior on x { SmoothedAnimation { velocity: 200; reversingMode: SmoothedAnimation.Sync } }
+        width: 25; height: 10; x: rect3.x; y: 285; color: "green"
+        Behavior on x { SmoothedAnimation { velocity: 100; reversingMode: SmoothedAnimation.Sync } }
     }
 
     Rectangle {
-        width: 50; height: 20; x: rect3.x; y: 600; color: "purple"
-        Behavior on x { SmoothedAnimation { velocity: 200; maximumEasingTime: 100 } }
+        width: 25; height: 10; x: rect3.x; y: 300; color: "purple"
+        Behavior on x { SmoothedAnimation { velocity: 100; maximumEasingTime: 100 } }
     }
 
     Rectangle {
-        width: 50; height: 20; x: rect3.x; y: 630; color: "blue"
+        width: 25; height: 10; x: rect3.x; y: 315; color: "blue"
         Behavior on x { SmoothedAnimation { velocity: -1; duration: 300 } }
     }
 }
