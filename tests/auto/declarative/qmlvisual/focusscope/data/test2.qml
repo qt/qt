@@ -246,7 +246,7 @@ VisualTest {
     }
     Frame {
         msec: 976
-        hash: "4823f4520db0c1f64d887f172b3efa17"
+        image: "test2.1.png"
     }
     Frame {
         msec: 992

@@ -270,7 +270,7 @@ VisualTest {
     }
     Frame {
         msec: 976
-        hash: "e09a359578935b988ac1cc8c40b25547"
+        image: "qtbug13398.1.png"
     }
     Frame {
         msec: 992

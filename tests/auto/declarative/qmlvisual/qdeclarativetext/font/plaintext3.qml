@@ -2,7 +2,7 @@ import QtQuick 1.0
 
 Rectangle {
     id: main
-    width: 800; height: 400
+    width: 620; height: 280
 
 
     Grid {

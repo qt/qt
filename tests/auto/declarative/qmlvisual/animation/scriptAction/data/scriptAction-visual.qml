@@ -254,7 +254,7 @@ VisualTest {
     }
     Frame {
         msec: 976
-        hash: "1761f6606bbdf5772594cf96412337ca"
+        image: "scriptAction-visual.1.png"
     }
     Frame {
         msec: 992
@@ -502,7 +502,7 @@ VisualTest {
     }
     Frame {
         msec: 1936
-        hash: "6741d853f099a5a98fcdf87053b69ec8"
+        image: "scriptAction-visual.2.png"
     }
     Frame {
         msec: 1952
