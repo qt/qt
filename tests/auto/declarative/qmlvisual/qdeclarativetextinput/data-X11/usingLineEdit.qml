@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "9d5b9f785409527b8f315fef560a4688"
+        image: "usingLineEdit.0.png"
     }
     Frame {
         msec: 32
@@ -258,7 +258,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "usingLineEdit.0.png"
+        hash: "ebd6e6bbd0edaffed688dd5fa2328393"
     }
     Mouse {
         type: 4
@@ -379,7 +379,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777249
-        modifiers: 0
+        modifiers: 67108864
         text: ""
         autorep: false
         count: 1
@@ -522,7 +522,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "usingLineEdit.1.png"
+        hash: "957c85bfa6586d5d92aa3689c178944f"
     }
     Frame {
         msec: 1936
@@ -583,7 +583,7 @@ VisualTest {
     Key {
         type: 7
         key: 16777249
-        modifiers: 67108864
+        modifiers: 0
         text: ""
         autorep: false
         count: 1
@@ -783,7 +783,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777249
-        modifiers: 0
+        modifiers: 67108864
         text: ""
         autorep: false
         count: 1
@@ -810,7 +810,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "usingLineEdit.2.png"
+        hash: "ebd6e6bbd0edaffed688dd5fa2328393"
     }
     Frame {
         msec: 2896
@@ -1082,7 +1082,7 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "usingLineEdit.3.png"
+        hash: "3e9cbf56be37f593e907759285ddebdb"
     }
     Frame {
         msec: 3856
@@ -1175,7 +1175,7 @@ VisualTest {
     Key {
         type: 7
         key: 16777249
-        modifiers: 67108864
+        modifiers: 0
         text: ""
         autorep: false
         count: 1
@@ -1338,7 +1338,7 @@ VisualTest {
     }
     Frame {
         msec: 4800
-        image: "usingLineEdit.4.png"
+        hash: "39ce4d31df138a329a21056b8d397fd7"
     }
     Mouse {
         type: 3
@@ -1674,7 +1674,7 @@ VisualTest {
     }
     Frame {
         msec: 5760
-        image: "usingLineEdit.5.png"
+        hash: "48bb05f44207f641b573d43043882aa2"
     }
     Frame {
         msec: 5776
@@ -1823,7 +1823,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777249
-        modifiers: 0
+        modifiers: 67108864
         text: ""
         autorep: false
         count: 1
@@ -2058,7 +2058,7 @@ VisualTest {
     }
     Frame {
         msec: 6720
-        image: "usingLineEdit.6.png"
+        hash: "ecfa95feb59486098b758894cba272c8"
     }
     Frame {
         msec: 6736
@@ -2327,7 +2327,7 @@ VisualTest {
     Key {
         type: 7
         key: 16777249
-        modifiers: 67108864
+        modifiers: 0
         text: ""
         autorep: false
         count: 1
@@ -2370,7 +2370,7 @@ VisualTest {
     }
     Frame {
         msec: 7680
-        image: "usingLineEdit.7.png"
+        hash: "28b1455bb7b150afb4bec88f3328a1f6"
     }
     Frame {
         msec: 7696
@@ -2682,7 +2682,7 @@ VisualTest {
     }
     Frame {
         msec: 8640
-        image: "usingLineEdit.8.png"
+        hash: "b7f624c97fc369c66314ecbb86549686"
     }
     Mouse {
         type: 5
@@ -3626,7 +3626,7 @@ VisualTest {
     }
     Frame {
         msec: 9600
-        image: "usingLineEdit.9.png"
+        hash: "0b4b632291769b48d942f5aea91a8ae5"
     }
     Mouse {
         type: 5
@@ -4154,7 +4154,7 @@ VisualTest {
     }
     Frame {
         msec: 10560
-        image: "usingLineEdit.10.png"
+        hash: "020ac5797abe98f97c4839afc67aac18"
     }
     Frame {
         msec: 10576

@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "e94ba580322887dbbbf9cb6309e39c23"
+        image: "follow.0.png"
     }
     Frame {
         msec: 32
@@ -242,7 +242,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "follow.0.png"
+        hash: "00586f2f1d49fa81f90f7b06614311b4"
     }
     Frame {
         msec: 976
@@ -450,7 +450,7 @@ VisualTest {
     }
     Frame {
         msec: 1760
-        hash: "2c01571e523002166ba6ec476bc8a68b"
+        hash: "b2b4b3de77e2b7fd58d3da1ad52355a9"
     }
     Frame {
         msec: 1776
@@ -490,7 +490,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "follow.1.png"
+        hash: "a40e5e2744d1d84c8b9a45525801a745"
     }
     Frame {
         msec: 1936
@@ -730,7 +730,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "follow.2.png"
+        hash: "3c5d3d10bacc093afc6a9c0b5aa4cddc"
     }
     Frame {
         msec: 2896
@@ -978,7 +978,7 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "follow.3.png"
+        hash: "6686f9c1a814c6a6b785b70f94937b68"
     }
     Frame {
         msec: 3856
@@ -1218,7 +1218,7 @@ VisualTest {
     }
     Frame {
         msec: 4800
-        image: "follow.4.png"
+        hash: "315764d20b647f6ab1ba30239a69bf72"
     }
     Frame {
         msec: 4816
@@ -1458,7 +1458,7 @@ VisualTest {
     }
     Frame {
         msec: 5760
-        image: "follow.5.png"
+        hash: "b7133225daa03563d3f5b1dac5f56a23"
     }
     Frame {
         msec: 5776
@@ -1554,7 +1554,7 @@ VisualTest {
     }
     Frame {
         msec: 6144
-        hash: "0506667a14ace4e2edf04956c137e217"
+        hash: "8cd5edce652013a2ed4bf95693259538"
     }
     Frame {
         msec: 6160
@@ -1698,7 +1698,7 @@ VisualTest {
     }
     Frame {
         msec: 6720
-        image: "follow.6.png"
+        hash: "228920e994ebf71d542c71ce8263614e"
     }
     Frame {
         msec: 6736

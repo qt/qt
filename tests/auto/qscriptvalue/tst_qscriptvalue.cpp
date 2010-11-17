@@ -2253,6 +2253,19 @@ void tst_QScriptValue::getSetData()
     QVERIFY(!object.data().isValid());
 }
 
+void tst_QScriptValue::setData_QTBUG15144()
+{
+    QScriptEngine eng;
+    QScriptValue obj = eng.newObject();
+    for (int i = 0; i < 10000; ++i) {
+        // Create an object with property 'fooN' on it, and immediately kill
+        // the reference to the object so it and the property name become garbage.
+        eng.evaluate(QString::fromLatin1("o = {}; o.foo%0 = 10; o = null;").arg(i));
+        // Setting the data will cause a JS string to be allocated, which could
+        // trigger a GC. This should not cause a crash.
+        obj.setData("foodfight");
+    }
+}
 class TestScriptClass : public QScriptClass
 {
 public:

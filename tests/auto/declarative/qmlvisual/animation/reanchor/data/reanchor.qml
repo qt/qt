@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "213811853dbefdc418099721e3bf8651"
+        image: "reanchor.0.png"
     }
     Frame {
         msec: 32
@@ -242,7 +242,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "reanchor.0.png"
+        hash: "213811853dbefdc418099721e3bf8651"
     }
     Frame {
         msec: 976
@@ -498,7 +498,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "reanchor.1.png"
+        hash: "ad3837dcf3e69274ac2918d796974f29"
     }
     Frame {
         msec: 1936
@@ -770,7 +770,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "reanchor.2.png"
+        hash: "213811853dbefdc418099721e3bf8651"
     }
     Frame {
         msec: 2896
@@ -1026,7 +1026,7 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "reanchor.3.png"
+        hash: "213811853dbefdc418099721e3bf8651"
     }
     Frame {
         msec: 3856
@@ -1282,7 +1282,7 @@ VisualTest {
     }
     Frame {
         msec: 4800
-        image: "reanchor.4.png"
+        hash: "df51ffd71a82742af7c06f8a786f6bf2"
     }
     Frame {
         msec: 4816
@@ -1522,7 +1522,7 @@ VisualTest {
     }
     Frame {
         msec: 5760
-        image: "reanchor.5.png"
+        hash: "1137e22c68e043950811dee295e19b04"
     }
     Frame {
         msec: 5776
@@ -1778,7 +1778,7 @@ VisualTest {
     }
     Frame {
         msec: 6720
-        image: "reanchor.6.png"
+        hash: "213811853dbefdc418099721e3bf8651"
     }
     Frame {
         msec: 6736
@@ -2034,7 +2034,7 @@ VisualTest {
     }
     Frame {
         msec: 7680
-        image: "reanchor.7.png"
+        hash: "213811853dbefdc418099721e3bf8651"
     }
     Frame {
         msec: 7696
@@ -2290,7 +2290,7 @@ VisualTest {
     }
     Frame {
         msec: 8640
-        image: "reanchor.8.png"
+        hash: "b36a09269dfc9173ff8583a62ae87e8a"
     }
     Frame {
         msec: 8656
@@ -2419,7 +2419,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777249
-        modifiers: 0
+        modifiers: 67108864
         text: ""
         autorep: false
         count: 1

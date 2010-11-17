@@ -64,13 +64,12 @@ symbian {
 
 neon:*-g++* {
     DEFINES += QT_HAVE_NEON
-    QMAKE_CXXFLAGS *= -mfpu=neon
     HEADERS += $$NEON_HEADERS
     SOURCES += $$NEON_SOURCES
 
     DRAWHELPER_NEON_ASM_FILES = $$NEON_ASM
 
-    neon_compiler.commands = $$QMAKE_CXX -c
+    neon_compiler.commands = $$QMAKE_CXX -c -mfpu=neon
     neon_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
     neon_compiler.dependency_type = TYPE_C
     neon_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}

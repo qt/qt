@@ -502,7 +502,8 @@ void QDeclarativeEngineDebugServer::setBinding(int objectId,
             property.write(expression);
         } else if (hasValidSignal(object, propertyName)) {
             QDeclarativeExpression *declarativeExpression = new QDeclarativeExpression(context, object, expression.toString());
-            QDeclarativePropertyPrivate::setSignalExpression(property, declarativeExpression);
+            QDeclarativeExpression *oldExpression = QDeclarativePropertyPrivate::setSignalExpression(property, declarativeExpression);
+            declarativeExpression->setSourceLocation(oldExpression->sourceFile(), oldExpression->lineNumber());
         } else if (property.isProperty()) {
             QDeclarativeBinding *binding = new QDeclarativeBinding(expression.toString(), object, context);
             binding->setTarget(property);

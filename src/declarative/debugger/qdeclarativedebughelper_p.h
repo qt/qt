@@ -55,11 +55,15 @@ class QDeclarativeEngine;
 
 // Helper methods to access private API through a stable interface
 // This is used in the qmljsdebugger library of QtCreator.
-class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeDebugHelper
+class Q_DECLARATIVE_EXPORT QDeclarativeDebugHelper
 {
 public:
     static QScriptEngine *getScriptEngine(QDeclarativeEngine *engine);
     static void setAnimationSlowDownFactor(qreal factor);
+
+    // Enables remote debugging functionality
+    // Only use this for debugging in a safe environment!
+    static void enableDebugging();
 };
 
 QT_END_NAMESPACE

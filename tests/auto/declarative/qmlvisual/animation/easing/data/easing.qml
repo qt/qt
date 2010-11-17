@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "bb8e2ba14526dc5ad74f74e8ff3d96a5"
+        image: "easing.0.png"
     }
     Frame {
         msec: 32
@@ -250,7 +250,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "easing.0.png"
+        hash: "4c9de74276d32c5b2787cf75e612f97d"
     }
     Frame {
         msec: 976
@@ -498,7 +498,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "easing.1.png"
+        hash: "2d2ce71a074f045916a207044abd055a"
     }
     Frame {
         msec: 1936
@@ -738,7 +738,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "easing.2.png"
+        hash: "bb8e2ba14526dc5ad74f74e8ff3d96a5"
     }
     Frame {
         msec: 2896

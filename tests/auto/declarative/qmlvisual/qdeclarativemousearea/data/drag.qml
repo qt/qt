@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "668cc6d9d699b947a7c0f3ff4b26853f"
+        image: "drag.0.png"
     }
     Frame {
         msec: 32
@@ -242,7 +242,7 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "drag.0.png"
+        hash: "668cc6d9d699b947a7c0f3ff4b26853f"
     }
     Frame {
         msec: 976
@@ -554,7 +554,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "drag.1.png"
+        hash: "a611a57ed2bdf4eaa5e13612346ecce7"
     }
     Mouse {
         type: 5
@@ -1426,7 +1426,7 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "drag.2.png"
+        hash: "9356ce797d12ae076af947cd0e658551"
     }
     Mouse {
         type: 5
@@ -2290,7 +2290,7 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "drag.3.png"
+        hash: "668cc6d9d699b947a7c0f3ff4b26853f"
     }
     Mouse {
         type: 5
@@ -2962,7 +2962,7 @@ VisualTest {
     }
     Frame {
         msec: 4800
-        image: "drag.4.png"
+        hash: "c6d398d42d968763c7597728e86304f2"
     }
     Mouse {
         type: 5
@@ -3850,7 +3850,7 @@ VisualTest {
     }
     Frame {
         msec: 5760
-        image: "drag.5.png"
+        hash: "f0454d80a51c5f2226bd45aba58dc1e9"
     }
     Mouse {
         type: 5
@@ -4730,7 +4730,7 @@ VisualTest {
     }
     Frame {
         msec: 6720
-        image: "drag.6.png"
+        hash: "bf4b18a73b53c0a554f9bb0ac32a465d"
     }
     Mouse {
         type: 5
@@ -5122,7 +5122,7 @@ VisualTest {
     }
     Frame {
         msec: 7680
-        image: "drag.7.png"
+        hash: "2c1ce07ab6ce0072f6cb205f1e5297e0"
     }
     Frame {
         msec: 7696

@@ -116,7 +116,7 @@ QScriptDebuggerAgent::~QScriptDebuggerAgent()
 /*!
   Instructs the agent to perform a "step into" operation.  This
   function returns immediately. The agent will report step completion
-  at a later time, i.e. when script statements are evaluted.
+  at a later time, i.e. when script statements are evaluated.
 */
 void QScriptDebuggerAgent::enterStepIntoMode(int count)
 {
@@ -129,7 +129,7 @@ void QScriptDebuggerAgent::enterStepIntoMode(int count)
 /*!
   Instructs the agent to perform a "step over" operation.  This
   function returns immediately. The agent will report step completion
-  at a later time, i.e. when script statements are evaluted.
+  at a later time, i.e. when script statements are evaluated.
 */
 void QScriptDebuggerAgent::enterStepOverMode(int count)
 {
@@ -146,7 +146,7 @@ void QScriptDebuggerAgent::enterStepOverMode(int count)
 /*!
   Instructs the agent to perform a "step out" operation.  This
   function returns immediately. The agent will report step completion
-  at a later time, i.e. when script statements are evaluted.
+  at a later time, i.e. when script statements are evaluated.
 */
 void QScriptDebuggerAgent::enterStepOutMode()
 {
