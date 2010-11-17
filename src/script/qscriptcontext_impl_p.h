@@ -155,6 +155,10 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::activation
 {
     if (!parent)
         return new QScriptValuePrivate(engine, engine->globalObject());
+    if (context.IsEmpty()) {
+        Q_UNIMPLEMENTED();
+        return new QScriptValuePrivate();
+    }
     Q_ASSERT(!context.IsEmpty());
     return new QScriptValuePrivate(engine, context->GetExtensionObject());
 }
