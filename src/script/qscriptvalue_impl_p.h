@@ -347,9 +347,13 @@ inline QRegExp QScriptValuePrivate::toRegExp() const
 
 QObject* QScriptValuePrivate::toQObject() const
 {
-    if (!isObject())
-        return 0;
-    return toQtObject(m_engine.data(), m_value->ToObject());
+    v8::HandleScope handleScope;
+    if (isQObject()) {
+        QtInstanceData *data = QtInstanceData::get(*this);
+        Q_ASSERT(data);
+        return data->cppObject();
+    }
+    return 0;
 }
 
 const QMetaObject *QScriptValuePrivate::toQMetaObject() const
