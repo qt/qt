@@ -117,6 +117,40 @@ private:
     QScriptValue m_ctor;
 };
 
+// Data associated with a QVariant JS wrapper object.
+//
+// When converting a QVariant to JS, QtScript will attempt
+// to convert the QVariant to a "real" JS value, but in case
+// it can't (for example, the type is a custom type with no
+// conversion functions registered), the QVariant is wrapped
+// in a custom JS object.
+//
+// It's also possible to explicitly create a QVariant wrapper
+// object by calling QScriptEngine::newVariant().
+//
+class QtVariantData
+{
+public:
+    QtVariantData(const QVariant &value)
+        : m_value(value)
+    { }
+
+    static QtVariantData *get(v8::Handle<v8::Object> object)
+    {
+        void *ptr = object->GetPointerFromInternalField(0);
+        Q_ASSERT(ptr != 0);
+        return static_cast<QtVariantData*>(ptr);
+    }
+
+    QVariant &value()
+    { return m_value; }
+    void setValue(const QVariant &value)
+    { m_value = value; }
+
+private:
+    QVariant m_value;
+};
+
 v8::Handle<v8::FunctionTemplate> createQtClassTemplate(QScriptEnginePrivate *, const QMetaObject *);
 
 v8::Handle<v8::Value> QtDynamicPropertyGetter(v8::Local<v8::String> property,

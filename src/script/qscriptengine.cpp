@@ -56,40 +56,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// Data associated with a QVariant JS wrapper object.
-//
-// When converting a QVariant to JS, QtScript will attempt
-// to convert the QVariant to a "real" JS value, but in case
-// it can't (for example, the type is a custom type with no
-// conversion functions registered), the QVariant is wrapped
-// in a custom JS object.
-//
-// It's also possible to explicitly create a QVariant wrapper
-// object by calling QScriptEngine::newVariant().
-//
-class QtVariantData
-{
-public:
-    QtVariantData(const QVariant &value)
-        : m_value(value)
-    { }
-
-    static QtVariantData *get(v8::Handle<v8::Object> object)
-    {
-        void *ptr = object->GetPointerFromInternalField(0);
-        Q_ASSERT(ptr != 0);
-        return static_cast<QtVariantData*>(ptr);
-    }
-
-    QVariant &value()
-    { return m_value; }
-    void setValue(const QVariant &value)
-    { m_value = value; }
-
-private:
-    QVariant m_value;
-};
-
 static void QtVariantWeakCallback(v8::Persistent<v8::Value> val, void *arg)
 {
     Q_UNUSED(val);
@@ -138,7 +104,7 @@ static v8::Handle<v8::Value> QtVariantValueOfCallback(const v8::Arguments& args)
     default:
         ;
     }
-    return v8::Handle<v8::Value>();
+    return args.This();
 }
 
 // Converts a JS Date to a QDateTime.
@@ -343,7 +309,7 @@ v8::Handle<v8::Value> QScriptEnginePrivate::metaTypeToJS(int type, const void *d
                     return v8::Null();
                 } else {
                     // Fall back to wrapping in a QVariant.
-                    result = newVariant(QVariant(type, data));
+                    result = makeVariant(QVariant(type, data));
                 }
             }
         }
@@ -654,7 +620,7 @@ v8::Handle<v8::FunctionTemplate> QScriptEnginePrivate::qobjectTemplate()
 }
 
 // Creates a QVariant wrapper object.
-v8::Handle<v8::Object> QScriptEnginePrivate::newVariant(const QVariant &value)
+v8::Handle<v8::Object> QScriptEnginePrivate::makeVariant(const QVariant &value)
 {
     v8::Handle<v8::ObjectTemplate> instanceTempl = variantTemplate()->InstanceTemplate();
     v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
@@ -1400,7 +1366,7 @@ QScriptValue QScriptEngine::newVariant(const QVariant &value)
     Q_D(QScriptEngine);
     QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
     v8::HandleScope handleScope;
-    return d->scriptValueFromInternal(d->newVariant(value));
+    return QScriptValuePrivate::get(d->newVariant(value));
 }
 
 /*!
@@ -1432,11 +1398,10 @@ QScriptValue QScriptEngine::newVariant(const QVariant &value)
 QScriptValue QScriptEngine::newVariant(const QScriptValue &object,
                                        const QVariant &value)
 {
-    if (!object.isObject())
-        return newVariant(value);
-
-    Q_UNIMPLEMENTED();
-    return QScriptValue();
+    Q_D(QScriptEngine);
+    QScriptIsolate api(d, QScriptIsolate::NotNullEngine);
+    v8::HandleScope handleScope;
+    return QScriptValuePrivate::get(d->newVariant(QScriptValuePrivate::get(object), value));
 }
 
 
