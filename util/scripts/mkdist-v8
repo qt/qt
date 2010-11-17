@@ -20,15 +20,13 @@ if [ -z "$repository" ]; then
     die "error: cannot locate v8 git repository. please run git config --global v8.url /path-or-url/to/v8/repo"
 fi
 
-excluded_directories="$excluded_directories benchmarks samples test tools"
+excluded_directories="$excluded_directories benchmarks samples test"
 
 
 files_to_remove=""
-files_to_remove="$files_to_remove src/*.js"
 files_to_remove="$files_to_remove .gitignore"
 files_to_remove="$files_to_remove SConstruct"
 files_to_remove="$files_to_remove src/SConscript"
-files_to_remove="$files_to_remove src/macros.py"
 
 require_clean_work_tree() {
     # test if working tree is dirty
