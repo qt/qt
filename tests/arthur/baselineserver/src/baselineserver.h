@@ -103,10 +103,7 @@ public:
     static QString updateAllBaselines(const QString &host, const QString &id,
                                       const QString &engine, const QString &format);
     static QString updateSingleBaseline(const QString &oldBaseline, const QString &newBaseline);
-    static QString blacklistTest(const QString &scriptName, const QString &host,
-                                 const QString &engine, const QString &format);
-    static QString whitelistTest(const QString &scriptName, const QString &host,
-                                 const QString &engine, const QString &format);
+    static QString blacklistTest(const QString &context, const QString &itemId, bool removeFromBlacklist = false);
 
 private slots:
     void receiveRequest();

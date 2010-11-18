@@ -54,6 +54,7 @@
 
 QString BaselineServer::storage;
 
+
 BaselineServer::BaselineServer(QObject *parent)
     : QTcpServer(parent)
 {
@@ -221,9 +222,9 @@ void BaselineHandler::provideBaselineChecksums(const QByteArray &itemListBlock)
     }
 
     // Find and mark blacklisted items
+    QString context = pathForItem(itemList.at(0), true, false).section(QLC('/'), 0, -2);
     if (itemList.count() > 0) {
-        QString prefix = pathForItem(itemList.at(0), true).section(QLC('/'), 0, -2);
-        QFile file(prefix + QLS("/.blacklist"));
+        QFile file(BaselineServer::storagePath() + QLC('/') + context + QLS("/BLACKLIST"));
         if (file.open(QIODevice::ReadOnly)) {
             QTextStream in(&file);
             do {
@@ -242,7 +243,7 @@ void BaselineHandler::provideBaselineChecksums(const QByteArray &itemListBlock)
     QDataStream ods(&block, QIODevice::WriteOnly);
     ods << itemList;
     proto.sendBlock(BaselineProtocol::Ack, block);
-    report.start(BaselineServer::storagePath(), runId, plat, proto.socket.peerAddress().toString(), itemList);
+    report.start(BaselineServer::storagePath(), runId, plat, context, itemList);
 }
 
 
@@ -406,61 +407,29 @@ QString BaselineHandler::updateSingleBaseline(const QString &oldBaseline, const 
     return res;
 }
 
-QString BaselineHandler::blacklistTest(const QString &scriptName, const QString &host, const QString &engine,
-                                       const QString &format)
+QString BaselineHandler::blacklistTest(const QString &context, const QString &itemId, bool removeFromBlacklist)
 {
-#if 0
-    QString configFile(BaselineServer::storagePath() + host + QLC('/')
-                       + itemSubPath(engine, format) + QLS(".blacklist"));
-    QFile file(configFile);
-    if (file.open(QIODevice::Append)) {
-        QTextStream out(&file);
-        out << scriptName << endl;
-        return QLS("Blacklisted ") + scriptName;
+    QFile file(BaselineServer::storagePath() + QLC('/') + context + QLS("/BLACKLIST"));
+    QStringList blackList;
+    if (file.open(QIODevice::ReadWrite)) {
+        while (!file.atEnd())
+            blackList.append(file.readLine().trimmed());
+
+        if (removeFromBlacklist)
+            blackList.removeAll(itemId);
+        else if (!blackList.contains(itemId))
+            blackList.append(itemId);
+
+        file.resize(0);
+        foreach (QString id, blackList)
+            file.write(id.toLatin1() + '\n');
+        file.close();
+        return QLS(removeFromBlacklist ? "Whitelisted " : "Blacklisted ") + itemId + QLS(" in context ") + context;
     } else {
-        return QLS("Unable to update blacklisted tests.");
+        return QLS("Unable to update blacklisted tests, failed to open ") + file.fileName();
     }
-#else
-    return QString();
-#endif
 }
 
-QString BaselineHandler::whitelistTest(const QString &scriptName, const QString &host, const QString &engine,
-                                       const QString &format)
-{
-#if 0
-    QString configFile(BaselineServer::storagePath() + host + QLC('/')
-                       + itemSubPath(engine, format) + QLS(".blacklist"));
-    QFile file(configFile);
-    QStringList tests;
-    if (file.open(QIODevice::ReadOnly)) {
-        QTextStream in(&file);
-        do {
-            tests << in.readLine();
-        } while (!in.atEnd());
-        if (tests.count() != 0) {
-            QMutableStringListIterator it(tests);
-            while (it.hasNext()) {
-                it.next();
-                if (it.value() == scriptName)
-                    it.remove();
-            }
-        }
-        file.close();
-        if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            QTextStream out(&file);
-            for (int i=0; i<tests.count(); ++i)
-                out << tests.at(i);
-            return QLS("Whitelisted ") + scriptName;
-        } else {
-            QLS("Unable to whitelist ") + scriptName + QLS(". Unable to truncate blacklist file.");
-        }
-    }
-    return QLS("Unable to whitelist ") + scriptName + QLS(". Unable to open blacklist file.");
-#else
-    return QString();
-#endif
-}
 
 void BaselineHandler::testPathMapping()
 {
