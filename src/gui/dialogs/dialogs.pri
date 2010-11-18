@@ -108,7 +108,7 @@ SOURCES += \
 	dialogs/qwizard.cpp \
         dialogs/qprintpreviewdialog.cpp
 
-contains(QT_CONFIG, s60) {
+symbian:contains(QT_CONFIG, s60) {
     LIBS += -lcommondialogs \
             -lavkon \
             -lplatformenv \
