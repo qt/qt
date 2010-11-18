@@ -79,6 +79,10 @@
 #include <private/qglwindowsurface_qws_p.h>
 #endif
 
+#ifdef Q_WS_QPA
+#include <QtGui/QPlatformGLContext>
+#endif
+
 #include <qglpixelbuffer.h>
 #include <qglframebufferobject.h>
 
@@ -117,7 +121,9 @@ struct QGLThreadContext {
     QGLContext *context;
 };
 
+#ifndef Q_WS_QPA
 static QThreadStorage<QGLThreadContext *> qgl_context_storage;
+#endif
 
 Q_GLOBAL_STATIC(QGLFormat, qgl_default_format)
 
@@ -3381,14 +3387,31 @@ void QGLContext::setInitialized(bool on)
 
 const QGLContext* QGLContext::currentContext()
 {
+#ifdef Q_WS_QPA
+    if (const QPlatformGLContext *threadContext = QPlatformGLContext::currentContext()) {
+        if (threadContext->qGLContextHandle()) {
+            return (const QGLContext *)threadContext->qGLContextHandle();
+        } else {
+            QWidget *widget  = threadContext->platformWindow()->widget();
+            QGLContext *context = new QGLContext(QGLFormat::fromPlatformWindowFormat(threadContext->platformWindowFormat()),widget);
+            context->create(); //don't know how to pass in the sharecontext. (doesn't really matter though)
+            return context;
+        }
+    }
+    return 0;
+#else
     QGLThreadContext *threadContext = qgl_context_storage.localData();
     if (threadContext)
         return threadContext->context;
     return 0;
+#endif //Q_WS_QPA
 }
 
 void QGLContextPrivate::setCurrentContext(QGLContext *context)
 {
+#ifdef Q_WS_QPA
+    Q_UNUSED(context);
+#else
     QGLThreadContext *threadContext = qgl_context_storage.localData();
     if (!threadContext) {
         if (!QThread::currentThread()) {
@@ -3401,6 +3424,7 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
     }
     threadContext->context = context;
     QGLContext::currentCtx = context; // XXX: backwards-compat, not thread-safe
+#endif
 }
 
 /*!

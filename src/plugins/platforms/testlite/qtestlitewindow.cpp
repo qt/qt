@@ -1021,7 +1021,7 @@ QPlatformGLContext *QTestLiteWindow::glContext() const
     if (!mGLContext) {
         QTestLiteWindow *that = const_cast<QTestLiteWindow *>(this);
 #ifndef QT_NO_OPENGL
-        that->mGLContext = new QGLXGLContext(x_window, xd, widget()->platformWindowFormat());
+        that->mGLContext = new QGLXGLContext(x_window, xd, that,widget()->platformWindowFormat());
 #endif
     }
     return mGLContext;

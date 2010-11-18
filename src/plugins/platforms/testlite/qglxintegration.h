@@ -58,7 +58,7 @@ class MyDisplay;
 class QGLXGLContext : public QPlatformGLContext
 {
 public:
-    QGLXGLContext(Window window, MyDisplay *xd, const QPlatformWindowFormat &format);
+    QGLXGLContext(Window window, MyDisplay *xd, QPlatformWindow *platformWindow, const QPlatformWindowFormat &format);
     ~QGLXGLContext();
 
     virtual void makeCurrent();
@@ -66,7 +66,7 @@ public:
     virtual void swapBuffers();
     virtual void* getProcAddress(const QString& procName);
 
-    GLXContext glxContext() {return m_context;}
+    GLXContext glxContext() const {return m_context;}
 
     QPlatformWindowFormat platformWindowFormat() const;
 

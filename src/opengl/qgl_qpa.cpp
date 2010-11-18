@@ -52,7 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
-static QGLFormat qt_platformwindowformat_to_glformat(const QPlatformWindowFormat &format)
+QGLFormat QGLFormat::fromPlatformWindowFormat(const QPlatformWindowFormat &format)
 {
     QGLFormat retFormat;
     retFormat.setAccum(format.accum());
@@ -83,7 +83,7 @@ static QGLFormat qt_platformwindowformat_to_glformat(const QPlatformWindowFormat
     return retFormat;
 }
 
-static QPlatformWindowFormat qt_glformat_to_platformwindowformat(const QGLFormat &format)
+QPlatformWindowFormat QGLFormat::toPlatformWindowFormat(const QGLFormat &format)
 {
     QPlatformWindowFormat retFormat;
     retFormat.setAccum(format.accum());
@@ -120,6 +120,12 @@ bool QGLFormat::hasOpenGL()
     return QApplicationPrivate::platformIntegration()->hasOpenGL();
 }
 
+void qDeleteQGLContext(void *handle)
+{
+    QGLContext *context = static_cast<QGLContext *>(handle);
+    delete context;
+}
+
 bool QGLContext::chooseContext(const QGLContext* shareContext)
 {
     Q_D(QGLContext);
@@ -129,7 +135,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         QWidget *widget = static_cast<QWidget *>(d->paintDevice);
         if (!widget->platformWindow()){
             QGLFormat glformat = format();
-            QPlatformWindowFormat winFormat = qt_glformat_to_platformwindowformat(glformat);
+            QPlatformWindowFormat winFormat = QGLFormat::toPlatformWindowFormat(glformat);
             if (shareContext) {
                 winFormat.setSharedContext(shareContext->d_func()->platformContext);
             }
@@ -140,8 +146,11 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         }
         d->platformContext = widget->platformWindow()->glContext();
         Q_ASSERT(d->platformContext);
-        d->glFormat = qt_platformwindowformat_to_glformat(d->platformContext->platformWindowFormat());
+        d->glFormat = QGLFormat::fromPlatformWindowFormat(d->platformContext->platformWindowFormat());
         d->valid =(bool) d->platformContext;
+        if (d->valid) {
+            d->platformContext->setQGLContextHandle(this,qDeleteQGLContext);
+        }
     }
 
     return d->valid;
@@ -254,13 +263,13 @@ class QGLTemporaryContextPrivate
 {
 public:
     QWidget *widget;
-    QGLContext *context;
+    QPlatformGLContext *context;
 };
 
 QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
     : d(new QGLTemporaryContextPrivate)
 {
-    d->context = const_cast<QGLContext *>(QGLContext::currentContext());
+    d->context = const_cast<QPlatformGLContext *>(QPlatformGLContext::currentContext());
     if (d->context)
         d->context->doneCurrent();
     d->widget = new QWidget;
@@ -268,7 +277,6 @@ QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
     QPlatformWindowFormat format = d->widget->platformWindowFormat();
     format.setWindowApi(QPlatformWindowFormat::OpenGL);
     d->widget->winId();
-
 
     d->widget->platformWindow()->glContext()->makeCurrent();
 }

@@ -48,6 +48,10 @@
 #include <QtCore/qmap.h>
 #include <QtCore/qscopedpointer.h>
 
+#ifdef Q_WS_QPA
+#include <QtGui/QPlatformWindowFormat>
+#endif
+
 QT_BEGIN_HEADER
 
 #if defined(Q_WS_WIN)
@@ -270,6 +274,10 @@ public:
 
     static OpenGLVersionFlags openGLVersionFlags();
 
+#if defined(Q_WS_QPA)
+    static QGLFormat fromPlatformWindowFormat(const QPlatformWindowFormat &format);
+    static QPlatformWindowFormat toPlatformWindowFormat(const QGLFormat &format);
+#endif
 private:
     QGLFormatPrivate *d;
 

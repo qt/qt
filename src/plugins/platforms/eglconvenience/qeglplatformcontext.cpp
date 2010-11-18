@@ -48,8 +48,8 @@
 
 #include <EGL/egl.h>
 
-QEGLPlatformContext::QEGLPlatformContext(EGLDisplay display, EGLConfig config, EGLint contextAttrs[], EGLSurface surface, EGLenum eglApi)
-    : QPlatformGLContext()
+QEGLPlatformContext::QEGLPlatformContext(EGLDisplay display, EGLConfig config, EGLint contextAttrs[], EGLSurface surface, EGLenum eglApi, QPlatformWindow *platformWindow)
+    : QPlatformGLContext(platformWindow)
     , m_eglDisplay(display)
     , m_eglSurface(surface)
     , m_eglApi(eglApi)
@@ -88,6 +88,7 @@ QEGLPlatformContext::~QEGLPlatformContext()
 
 void QEGLPlatformContext::makeCurrent()
 {
+    QPlatformGLContext::makeCurrent();
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglContext::makeCurrent: %p\n",this);
 #endif
@@ -117,6 +118,7 @@ void QEGLPlatformContext::makeCurrent()
 }
 void QEGLPlatformContext::doneCurrent()
 {
+    QPlatformGLContext::doneCurrent();
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglContext::doneCurrent:%p\n",this);
 #endif

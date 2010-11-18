@@ -48,6 +48,7 @@
 #include "QtGui/private/qapplication_p.h"
 #include "QtGui/qdesktopwidget.h"
 #include "QtGui/qplatformwindow_qpa.h"
+#include "QtGui/qplatformglcontext_qpa.h"
 
 #include <QtGui/QPlatformCursor>
 
@@ -99,6 +100,8 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     if (!surface && platformWindow && q->platformWindowFormat().hasWindowSurface()) {
         surface = QApplicationPrivate::platformIntegration()->createWindowSurface(q,platformWindow->winId());
+    } else {
+        q->setAttribute(Qt::WA_PaintOnScreen,true);
     }
 
     data.window_flags = q->platformWindow()->setWindowFlags(data.window_flags);
@@ -784,6 +787,15 @@ void QWidgetPrivate::createTLSysExtra()
 void QWidgetPrivate::deleteTLSysExtra()
 {
     if (extra && extra->topextra) {
+        if (extra->topextra->platformWindowFormat.windowApi() == QPlatformWindowFormat::OpenGL) {
+            //the toplevel might have a context with a "qglcontext assosiated with it. We need to
+            //delete the qglcontext before we delete the qplatformglcontext.
+            if (extra->topextra->platformWindow) {
+                if (QPlatformGLContext *context = extra->topextra->platformWindow->glContext()) {
+                    context->deleteQGLContext();
+                }
+            }
+        }
         delete extra->topextra->platformWindow;
         extra->topextra->platformWindow = 0;
         extra->topextra->backingStore.destroy();

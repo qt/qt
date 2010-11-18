@@ -41,17 +41,123 @@
 
 #include "qplatformglcontext_qpa.h"
 
-QPlatformGLContext::~QPlatformGLContext()
-{ }
+#include <QtCore/QThreadStorage>
+#include <QtCore/QThread>
 
-static QPlatformGLContext *staticSharedContext = 0;
+#include <QDebug>
+
+class QPlatformGLThreadContext
+{
+public:
+    ~QPlatformGLThreadContext() {
+        if (context)
+            context->doneCurrent();
+    }
+    QPlatformGLContext *context;
+};
+
+static QThreadStorage<QPlatformGLThreadContext *> qplatformgl_context_storage;
+
+class QPlatformGLContextPrivate
+{
+public:
+    QPlatformGLContextPrivate(QPlatformWindow *platformWindow)
+        :qGLContextHandle(0),platformWindow(platformWindow)
+    {
+    }
+
+    virtual ~QPlatformGLContextPrivate()
+    {
+        //do not delete the QGLContext handle here as it is deleted in
+        //QWidgetPrivate::deleteTLSysExtra()
+    }
+    void *qGLContextHandle;
+    void (*qGLContextDeleteFunction)(void *handle);
+    QPlatformWindow *platformWindow;
+    static QPlatformGLContext *staticSharedContext;
+
+    static void setCurrentContext(QPlatformGLContext *context);
+};
+
+QPlatformGLContext *QPlatformGLContextPrivate::staticSharedContext = 0;
+
+void QPlatformGLContextPrivate::setCurrentContext(QPlatformGLContext *context)
+{
+    QPlatformGLThreadContext *threadContext = qplatformgl_context_storage.localData();
+    if (!threadContext) {
+        if (!QThread::currentThread()) {
+            qWarning("No QTLS available. currentContext wont work");
+            return;
+        }
+        threadContext = new QPlatformGLThreadContext;
+        qplatformgl_context_storage.setLocalData(threadContext);
+    }
+    threadContext->context = context;
+}
+
+QPlatformWindow *QPlatformGLContext::platformWindow() const
+{
+    Q_D(const QPlatformGLContext);
+    return d->platformWindow;
+}
+
+const QPlatformGLContext* QPlatformGLContext::currentContext()
+{
+    QPlatformGLThreadContext *threadContext = qplatformgl_context_storage.localData();
+    if(threadContext) {
+        return threadContext->context;
+    }
+    return 0;
+}
+
+QPlatformGLContext::QPlatformGLContext(QPlatformWindow *platformWindow)
+    :d_ptr(new QPlatformGLContextPrivate(platformWindow))
+{
+}
+
+QPlatformGLContext::~QPlatformGLContext()
+{
+    if (QPlatformGLContext::currentContext() == this) {
+        doneCurrent();
+    }
+
+}
 
 void QPlatformGLContext::setDefaultSharedContext(QPlatformGLContext *sharedContext)
 {
-    staticSharedContext = sharedContext;
+    QPlatformGLContextPrivate::staticSharedContext = sharedContext;
 }
 
-QPlatformGLContext *QPlatformGLContext::defaultSharedContext()
+const QPlatformGLContext *QPlatformGLContext::defaultSharedContext()
 {
-    return staticSharedContext;
+    return QPlatformGLContextPrivate::staticSharedContext;
+}
+
+void QPlatformGLContext::makeCurrent()
+{
+    QPlatformGLContextPrivate::setCurrentContext(this);
+}
+
+void QPlatformGLContext::doneCurrent()
+{
+    QPlatformGLContextPrivate::setCurrentContext(0);
+}
+
+void *QPlatformGLContext::qGLContextHandle() const
+{
+    Q_D(const QPlatformGLContext);
+    return d->qGLContextHandle;
+}
+
+void QPlatformGLContext::setQGLContextHandle(void *handle,void (*qGLContextDeleteFunction)(void *))
+{
+    Q_D(QPlatformGLContext);
+    d->qGLContextHandle = handle;
+    d->qGLContextDeleteFunction = qGLContextDeleteFunction;
+}
+
+void QPlatformGLContext::deleteQGLContext()
+{
+    Q_D(QPlatformGLContext);
+    d->qGLContextDeleteFunction(d->qGLContextHandle);
 }

@@ -235,14 +235,14 @@ QPlatformWindowFormat QGLXGLContext::reducePlatformWindowFormat(const QPlatformW
     return retFormat;
 }
 
-QGLXGLContext::QGLXGLContext(Window window, MyDisplay *xd, const QPlatformWindowFormat &format)
-    : QPlatformGLContext()
+QGLXGLContext::QGLXGLContext(Window window, MyDisplay *xd, QPlatformWindow *platformWindow, const QPlatformWindowFormat &format)
+    : QPlatformGLContext(platformWindow)
     , m_xd(xd)
     , m_drawable((Drawable)window)
     , m_context(0)
 {
 
-    QPlatformGLContext *sharePlatformContext;
+    const QPlatformGLContext *sharePlatformContext;
     if (format.useDefaultSharedContext()) {
         if (!QPlatformGLContext::defaultSharedContext()) {
             if (m_defaultSharedContextMutex.tryLock()){
@@ -259,7 +259,7 @@ QGLXGLContext::QGLXGLContext(Window window, MyDisplay *xd, const QPlatformWindow
     }
     GLXContext shareGlxContext = 0;
     if (sharePlatformContext)
-        shareGlxContext = static_cast<QGLXGLContext*>(sharePlatformContext)->glxContext();
+        shareGlxContext = static_cast<const QGLXGLContext*>(sharePlatformContext)->glxContext();
 
     GLXFBConfig config = findConfig(xd,format);
     m_context = glXCreateNewContext(xd->display,config,GLX_RGBA_TYPE,shareGlxContext,TRUE);
@@ -271,7 +271,7 @@ QGLXGLContext::QGLXGLContext(Window window, MyDisplay *xd, const QPlatformWindow
 }
 
 QGLXGLContext::QGLXGLContext(MyDisplay *display, Drawable drawable, GLXContext context)
-    : QPlatformGLContext(), m_xd(display), m_drawable(drawable), m_context(context)
+    : QPlatformGLContext(0), m_xd(display), m_drawable(drawable), m_context(context)
 {
 
 }
@@ -313,6 +313,7 @@ void QGLXGLContext::createDefaultSharedContex(MyDisplay *xd)
 
 void QGLXGLContext::makeCurrent()
 {
+    QPlatformGLContext::makeCurrent();
 #ifdef MYX11_DEBUG
     qDebug("QGLXGLContext::makeCurrent(window=0x%x, ctx=0x%x)", m_drawable, m_context);
 #endif
@@ -321,6 +322,7 @@ void QGLXGLContext::makeCurrent()
 
 void QGLXGLContext::doneCurrent()
 {
+    QPlatformGLContext::doneCurrent();
     glXMakeCurrent(m_xd->display, 0, 0);
 }
 
