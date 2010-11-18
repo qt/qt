@@ -97,11 +97,11 @@ protected:
     static bool removeDuplicatedStrings(QStringList& stringList);
 
     void writeMmpFileHeader(QTextStream &t);
-    void writeMmpFile(QString &filename, QStringList &symbianLangCodes);
+    void writeMmpFile(QString &filename, const SymbianLocalizationList &symbianLocalizationList);
     void writeMmpFileMacrosPart(QTextStream& t);
     void addMacro(QTextStream& t, const QString& value);
     void writeMmpFileTargetPart(QTextStream& t);
-    void writeMmpFileResourcePart(QTextStream& t, QStringList &symbianLangCodes);
+    void writeMmpFileResourcePart(QTextStream& t, const SymbianLocalizationList &symbianLocalizationList);
     void writeMmpFileSystemIncludePart(QTextStream& t);
     void writeMmpFileIncludePart(QTextStream& t);
     void writeMmpFileLibraryPart(QTextStream& t);
@@ -131,6 +131,7 @@ protected:
                                const QString& itemSuffix);
 
     void generateDistcleanTargets(QTextStream& t);
+    QString generateLocFileTarget(QTextStream& t, const QString& locCmd);
 
     // Subclass implements
     virtual void writeBldInfExtensionRulesPart(QTextStream& t, const QString &iconTargetFile) = 0;
