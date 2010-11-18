@@ -767,17 +767,24 @@ void QWidgetPrivate::s60UpdateIsOpaque()
     if (!q->testAttribute(Qt::WA_WState_Created) || !q->testAttribute(Qt::WA_TranslucentBackground))
         return;
 
+    createTLExtra();
+
     RWindow *const window = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
 
 #ifdef Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
     window->SetSurfaceTransparency(!isOpaque);
+    extra->topextra->nativeWindowTransparencyEnabled = !isOpaque;
 #else
     if (!isOpaque) {
         const TDisplayMode displayMode = static_cast<TDisplayMode>(window->SetRequiredDisplayMode(EColor16MA));
-        if (window->SetTransparencyAlphaChannel() == KErrNone)
+        if (window->SetTransparencyAlphaChannel() == KErrNone) {
             window->SetBackgroundColor(TRgb(255, 255, 255, 0));
-    } else
+            extra->topextra->nativeWindowTransparencyEnabled = 1;
+        }
+    } else if (extra->topextra->nativeWindowTransparencyEnabled) {
         window->SetTransparentRegion(TRegionFix<1>());
+        extra->topextra->nativeWindowTransparencyEnabled = 0;
+    }
 #endif
 }
 
@@ -936,6 +943,7 @@ void QWidgetPrivate::registerDropSite(bool /* on */)
 void QWidgetPrivate::createTLSysExtra()
 {
     extra->topextra->inExpose = 0;
+    extra->topextra->nativeWindowTransparencyEnabled = 0;
 }
 
 void QWidgetPrivate::deleteTLSysExtra()
