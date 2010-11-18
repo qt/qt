@@ -157,6 +157,16 @@ private slots:
     void call_array();
     void call_nonFunction_data();
     void call_nonFunction();
+    void construct_nonFunction_data();
+    void construct_nonFunction();
+    void construct_simple();
+    void construct_newObjectJS();
+    void construct_undefined();
+    void construct_newObjectCpp();
+    void construct_arg();
+    void construct_proto();
+    void construct_returnInt();
+    void construct_throw();
     void construct();
     void construct_constructorThrowsPrimitive();
     void castToPointer();
