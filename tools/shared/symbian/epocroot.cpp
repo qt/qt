@@ -64,23 +64,13 @@
 // Stored as a static value in order to avoid unnecessary re-evaluation.
 static QString epocRootValue;
 
-#ifdef QT_BUILD_QMAKE
-std::ostream &operator<<(std::ostream &s, const QString &val) {
-    s << val.toLocal8Bit().data();
-    return s;
-}
-#else
-// Operator implemented in configureapp.cpp
-std::ostream &operator<<(std::ostream &s, const QString &val);
-#endif
-
 QString getDevicesXmlPath()
     {
     // Note that the following call will return a null string on platforms other
     // than Windows.  If support is required on other platforms for devices.xml,
     // an alternative mechanism for retrieving the location of this file will
     // be required.
-    return readRegistryKey(SYMBIAN_SDKS_REG_HANDLE, SYMBIAN_SDKS_REG_SUBKEY);
+    return readRegistryKey(SYMBIAN_SDKS_REG_HANDLE, QLatin1String(SYMBIAN_SDKS_REG_SUBKEY));
     }
 
 /**
@@ -92,7 +82,8 @@ void checkEpocRootExists(const QString &source)
     if (!epocRootValue.isEmpty()) {
         QDir dir(epocRootValue);
         if (!dir.exists()) {
-            std::cerr << "Warning: " << source << " is set to an invalid path: " << epocRootValue << std::endl;
+            qWarning("Warning: %s is set to an invalid path: '%s'", qPrintable(source),
+                     qPrintable(epocRootValue));
             epocRootValue = QString();
         }
     }
@@ -103,10 +94,10 @@ void checkEpocRootExists(const QString &source)
  */
 static void fixEpocRoot(QString &path)
 {
-    path.replace("\\", "/");
+    path.replace(QLatin1Char('\\'), QLatin1Char('/'));
 
-    if (!path.size() || path[path.size()-1] != QChar('/')) {
-        path += QChar('/');
+    if (!path.size() || path[path.size()-1] != QLatin1Char('/')) {
+        path += QLatin1Char('/');
     }
 }
 
@@ -118,17 +109,15 @@ QString epocRoot()
     if (epocRootValue.isEmpty()) {
         // 1. If environment variable EPOCROOT is set and points to an existent
         //    directory, this is returned.
-        epocRootValue = qgetenv("EPOCROOT");
-        checkEpocRootExists("EPOCROOT");
+        epocRootValue = QString::fromLocal8Bit(qgetenv("EPOCROOT").constData());
+        checkEpocRootExists(QLatin1String("EPOCROOT environment variable"));
 
         if (epocRootValue.isEmpty()) {
             // 2. The location of devices.xml is specified by a registry key.  If this
             //    file exists, it is parsed.
             QString devicesXmlPath = getDevicesXmlPath();
-            if (devicesXmlPath.isEmpty()) {
-                std::cerr << "Error: Symbian SDK registry key not found" << std::endl;
-            } else {
-                devicesXmlPath += "/devices.xml";
+            if (!devicesXmlPath.isEmpty()) {
+                devicesXmlPath += QLatin1String("/devices.xml");
                 QFile devicesFile(devicesXmlPath);
                 if (devicesFile.open(QIODevice::ReadOnly)) {
 
@@ -138,87 +127,90 @@ QString epocRoot()
                     // 4. If a device element marked as default is found in devices.xml and its
                     //    epocroot value points to an existent directory, this is returned.
 
-                    const QString epocDeviceValue = qgetenv("EPOCDEVICE");
+                    const QString epocDeviceValue = QString::fromLocal8Bit(qgetenv("EPOCDEVICE").constData());
                     bool epocDeviceFound = false;
 
                     QXmlStreamReader xml(&devicesFile);
                     while (!xml.atEnd()) {
                         xml.readNext();
-                        if (xml.isStartElement() && xml.name() == "devices") {
-                            if (xml.attributes().value("version") == "1.0") {
-                                while (!(xml.isEndElement() && xml.name() == "devices") && !xml.atEnd()) {
+                        if (xml.isStartElement() && xml.name() == QLatin1String("devices")) {
+                            if (xml.attributes().value(QLatin1String("version")) == QLatin1String("1.0")) {
+                                while (!(xml.isEndElement() && xml.name() == QLatin1String("devices")) && !xml.atEnd()) {
                                     xml.readNext();
-                                    if (xml.isStartElement() && xml.name() == "device") {
-                                        const bool isDefault = xml.attributes().value("default") == "yes";
-                                        const QString id = xml.attributes().value("id").toString();
-                                        const QString name = xml.attributes().value("name").toString();
-                                        const QString alias = xml.attributes().value("alias").toString();
-                                        bool epocDeviceMatch = (id + ":" + name) == epocDeviceValue;
+                                    if (xml.isStartElement() && xml.name() == QLatin1String("device")) {
+                                        const bool isDefault = xml.attributes().value(QLatin1String("default")) == QLatin1String("yes");
+                                        const QString id = xml.attributes().value(QLatin1String("id")).toString();
+                                        const QString name = xml.attributes().value(QLatin1String("name")).toString();
+                                        const QString alias = xml.attributes().value(QLatin1String("alias")).toString();
+                                        bool epocDeviceMatch = QString(id + QLatin1String(":") + name) == epocDeviceValue;
                                         if (!alias.isEmpty())
                                             epocDeviceMatch |= alias == epocDeviceValue;
                                         epocDeviceFound |= epocDeviceMatch;
 
                                         if((epocDeviceValue.isEmpty() && isDefault) || epocDeviceMatch) {
                                             // Found a matching device
-                                            while (!(xml.isEndElement() && xml.name() == "device") && !xml.atEnd()) {
+                                            while (!(xml.isEndElement() && xml.name() == QLatin1String("device")) && !xml.atEnd()) {
                                                 xml.readNext();
-                                                if (xml.isStartElement() && xml.name() == "epocroot") {
+                                                if (xml.isStartElement() && xml.name() == QLatin1String("epocroot")) {
                                                     epocRootValue = xml.readElementText();
                                                     const QString deviceSource = epocDeviceValue.isEmpty()
-                                                        ? "default device"
-                                                        : "EPOCDEVICE (" + epocDeviceValue + ")";
+                                                        ? QLatin1String("default device")
+                                                        : QString(QLatin1String("EPOCDEVICE (") + epocDeviceValue + QLatin1String(")"));
                                                     checkEpocRootExists(deviceSource);
                                                 }
                                             }
 
                                             if (epocRootValue.isEmpty())
-                                                xml.raiseError("No epocroot element found");
+                                                xml.raiseError(QLatin1String("No epocroot element found"));
                                         }
                                     }
                                 }
                             } else {
-                                xml.raiseError("Invalid 'devices' element version");
+                                xml.raiseError(QLatin1String("Invalid 'devices' element version"));
                             }
                         }
                     }
                     if (xml.hasError()) {
-                        std::cerr << "Error: \"" << xml.errorString() << "\" when parsing devices.xml" << std::endl;
+                        qWarning("Warning: Error \"%s\" when parsing devices.xml",
+                                 qPrintable(xml.errorString()));
                     } else {
                         if (epocRootValue.isEmpty()) {
                             if (!epocDeviceValue.isEmpty()) {
                                 if (epocDeviceFound) {
-                                    std::cerr << "Error: missing or invalid epocroot attribute "
-                                              << "in device '" << epocDeviceValue << "'";
+                                    qWarning("Warning: Missing or invalid epocroot attribute in device '%s' in devices.xml.",
+                                             qPrintable(epocDeviceValue));
                                 } else {
-                                    std::cerr << "Error: no device matching EPOCDEVICE ("
-                                              << epocDeviceValue << ")";
+                                    qWarning("Warning: No device matching EPOCDEVICE (%s) in devices.xml.",
+                                             qPrintable(epocDeviceValue));
                                 }
                             } else {
                                 if (epocDeviceFound) {
-                                    std::cerr << "Error: missing or invalid epocroot attribute "
-                                              << "in default device";
+                                    qWarning("Warning: Missing or invalid epocroot attribute in default device in devices.xml.");
                                 } else {
-                                    std::cerr << "Error: no default device";
+                                    qWarning("Warning: No default device set in devices.xml.");
                                 }
                             }
-                            std::cerr << " found in devices.xml file." << std::endl;
                         }
                     }
                 } else {
-                    std::cerr << "Error: could not open file " << devicesXmlPath << std::endl;
+                    qWarning("Warning: Could not open file: '%s'.", qPrintable(devicesXmlPath));
                 }
             }
         }
 
         if (epocRootValue.isEmpty()) {
             // 5. An empty string is returned.
-            std::cerr << "Error: failed to find epoc root" << std::endl
-                 << "Either" << std::endl
-                 << "    1. Set EPOCROOT environment variable to a valid value" << std::endl
-                 << " or 2. Ensure that the HKEY_LOCAL_MACHINE\\" SYMBIAN_SDKS_REG_SUBKEY
-                    " registry key is set, and then" << std::endl
-                 << "       a. Set EPOCDEVICE environment variable to a valid device" << std::endl
-                 << "    or b. Specify a default device in the devices.xml file." << std::endl;
+            qWarning("Warning: failed to resolve epocroot."
+#ifdef Q_OS_WIN32
+                     "\nEither\n"
+                     "    1. Set EPOCROOT environment variable to a valid value.\n"
+                     " or 2. Ensure that the HKEY_LOCAL_MACHINE\\" SYMBIAN_SDKS_REG_SUBKEY
+                     " registry key is set, and then\n"
+                     "       a. Set EPOCDEVICE environment variable to a valid device\n"
+                     "    or b. Specify a default device in the devices.xml file.");
+#else
+                     " Set EPOCROOT environment variable to a valid value.");
+#endif
         } else {
             fixEpocRoot(epocRootValue);
         }
