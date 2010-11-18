@@ -144,7 +144,6 @@ static void create_current_thread_data_key()
             pthread_key_delete(current_thread_data_key);
         }
     } d;
-    Q_UNUSED(d);
 }
 
 // Utility functions for getting, setting and clearing thread specific data.
