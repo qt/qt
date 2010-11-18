@@ -4,11 +4,10 @@
 
 HTML.templatedir = $QT_SOURCE_TREE/doc/src/template
 
-HTML.stylesheets = style/style.css
+HTML.stylesheets = style/style.css \
+                   style/narrow.css
 
-HTML.scripts     = scripts/functions.js \
-                   scripts/narrow.js \
-
+HTML.scripts     =
 
 # Files not referenced in any qdoc file (last four needed by qtdemo)
 # See also qhp.Qt.extraFiles
