@@ -537,7 +537,6 @@ int QDeclarativePathView::count() const
 
 /*!
     \qmlproperty Path PathView::path
-    \default
     This property holds the path used to lay out the items.
     For more information see the \l Path documentation.
 */
@@ -1012,6 +1011,7 @@ void QDeclarativePathView::setDelegate(QDeclarativeComponent *delegate)
     }
     if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model)) {
         dataModel->setDelegate(delegate);
+        d->modelCount = dataModel->count();
         d->regenerate();
         emit delegateChanged();
     }

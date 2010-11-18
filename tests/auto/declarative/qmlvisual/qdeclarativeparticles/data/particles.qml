@@ -246,7 +246,7 @@ VisualTest {
     }
     Frame {
         msec: 976
-        hash: "2b33354b9e53eae7ebd5996ae0350773"
+        image: "particles.1.png"
     }
     Frame {
         msec: 992
@@ -486,7 +486,7 @@ VisualTest {
     }
     Frame {
         msec: 1936
-        hash: "00743f1dceb5d0351a67a237bcf1985b"
+        image: "particles.2.png"
     }
     Frame {
         msec: 1952
@@ -726,7 +726,7 @@ VisualTest {
     }
     Frame {
         msec: 2896
-        hash: "449168c60d6c9f04c94b3c48f27de7ff"
+        image: "particles.3.png"
     }
     Frame {
         msec: 2912

@@ -246,7 +246,7 @@ VisualTest {
     }
     Frame {
         msec: 976
-        hash: "2ff4e8f394a62892adb348271435205c"
+        image: "clock.1.png"
     }
     Frame {
         msec: 992
@@ -486,7 +486,7 @@ VisualTest {
     }
     Frame {
         msec: 1936
-        hash: "a3e6173e6d82d2cb52149588b32851e4"
+        image: "clock.2.png"
     }
     Frame {
         msec: 1952

@@ -1,5 +1,5 @@
-border.left:30
-border.top:30
-border.right:30
-border.bottom:30
+border.left:15
+border.top:15
+border.right:15
+border.bottom:15
 source:colors.png

@@ -9,11 +9,11 @@ Item {
     property int borderWidth
     property bool smooth: false
 
-    width: 80; height: 80
+    width: 40; height: 40
     Item {
         anchors.centerIn: parent; rotation: rect.rotation;
         Rectangle {
-            anchors.centerIn: parent; width: 80; height: 80
+            anchors.centerIn: parent; width: 40; height: 40
             color: rect.color; border.color: rect.border; border.width: rect.border != Qt.rgba(0,0,0,0) ? 2 : 0
             radius: rect.radius; smooth: rect.smooth
         }

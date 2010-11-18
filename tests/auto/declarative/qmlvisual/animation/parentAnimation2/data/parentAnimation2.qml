@@ -262,7 +262,7 @@ VisualTest {
     }
     Frame {
         msec: 976
-        hash: "95b4fe1e5eeffe1673e199308e8ce76c"
+        image: "parentAnimation2.1.png"
     }
     Frame {
         msec: 992
@@ -518,7 +518,7 @@ VisualTest {
     }
     Frame {
         msec: 1936
-        hash: "60ed700e49bf2c51aba9b44400b56294"
+        image: "parentAnimation2.2.png"
     }
     Frame {
         msec: 1952
@@ -766,7 +766,7 @@ VisualTest {
     }
     Frame {
         msec: 2896
-        hash: "acab4a79f22ebc8a45759ae282e8f3db"
+        image: "parentAnimation2.3.png"
     }
     Mouse {
         type: 3
@@ -967,7 +967,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777249
-        modifiers: 0
+        modifiers: 67108864
         text: ""
         autorep: false
         count: 1

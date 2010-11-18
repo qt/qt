@@ -246,7 +246,7 @@ VisualTest {
     }
     Frame {
         msec: 976
-        hash: "19c43fcf2875769c9a15f1ce317a0f1e"
+        image: "enforcerange.1.png"
     }
     Frame {
         msec: 992
@@ -606,7 +606,7 @@ VisualTest {
     }
     Frame {
         msec: 1936
-        hash: "b64810845a97bedf6fe11c043457c197"
+        image: "enforcerange.2.png"
     }
     Frame {
         msec: 1952
@@ -846,7 +846,7 @@ VisualTest {
     }
     Frame {
         msec: 2896
-        hash: "a4ff6c6c43697808f9ad7387d152cef3"
+        image: "enforcerange.3.png"
     }
     Frame {
         msec: 2912
@@ -1214,7 +1214,7 @@ VisualTest {
     }
     Frame {
         msec: 3856
-        hash: "19c43fcf2875769c9a15f1ce317a0f1e"
+        image: "enforcerange.4.png"
     }
     Frame {
         msec: 3872
@@ -1654,7 +1654,7 @@ VisualTest {
     }
     Frame {
         msec: 4816
-        hash: "7eb75e8e83874d52448a7dbf6a0ad29c"
+        image: "enforcerange.5.png"
     }
     Frame {
         msec: 4832
@@ -1894,7 +1894,7 @@ VisualTest {
     }
     Frame {
         msec: 5776
-        hash: "87aaa82b96131fed8822e57e226162a0"
+        image: "enforcerange.6.png"
     }
     Frame {
         msec: 5792
