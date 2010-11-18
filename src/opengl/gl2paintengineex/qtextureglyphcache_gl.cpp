@@ -54,11 +54,18 @@ extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 
 QGLTextureGlyphCache::QGLTextureGlyphCache(QGLContext *context, QFontEngineGlyphCache::Type type, const QTransform &matrix)
     : QImageTextureGlyphCache(type, matrix)
-    , ctx(context)
+    , ctx(0)
     , m_width(0)
     , m_height(0)
     , m_filterMode(Nearest)
 {
+    setContext(context);
+}
+
+void QGLTextureGlyphCache::setContext(QGLContext *context)
+{
+    ctx = context;
+
     // broken FBO readback is a bug in the SGX 1.3 and 1.4 drivers for the N900 where
     // copying between FBO's is broken if the texture is either GL_ALPHA or POT. The
     // workaround is to use a system-memory copy of the glyph cache for this device.

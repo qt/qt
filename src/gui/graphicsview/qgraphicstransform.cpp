@@ -54,7 +54,7 @@
     instances to one QGraphicsItem. Each QGraphicsTransform is applied in
     order, one at a time, to the QGraphicsItem it's assigned to.
 
-    QGraphicsTransform is particularily useful for animations. Whereas
+    QGraphicsTransform is particularly useful for animations. Whereas
     QGraphicsItem::setTransform() lets you assign any transform directly to an
     item, there is no direct way to interpolate between two different
     transformations (e.g., when transitioning between two states, each for
