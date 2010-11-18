@@ -62,24 +62,23 @@ public:
     void setFilter(const QString filter)
     {
         filterList.clear();
-        if (filter.left(2) == "*.") {
+        if (filter.left(2) == QLatin1String("*.")) {
             //Filter has only extensions
             filterList << filter.split(" ");
             return;
-        }
-        else {
+        } else {
             //Extensions are in parenthesis and there may be several filters
-            QStringList separatedFilters(filter.split(";;"));
+            QStringList separatedFilters(filter.split(QLatin1String(";;")));
             for (int i = 0; i < separatedFilters.size(); i++) {
-                if (separatedFilters.at(i) == QFileDialog::tr("All Files (*)")){
-                    filterList << QFileDialog::tr("All Files (*)");
+                if (separatedFilters.at(i).contains(QLatin1String("(*)"))) {
+                    filterList << QLatin1String("(*)");
                     return;
                 }
             }
             QRegExp rx("\\(([^\\)]*)\\)");
             int pos = 0;
             while ((pos = rx.indexIn(filter, pos)) != -1) {
-                filterList << rx.cap(1).split(" ");
+                filterList << rx.cap(1).split(QLatin1String(" "));
                 pos += rx.matchedLength();
             }
         }
@@ -94,7 +93,7 @@ public:
             //No filter for files, all can be accepted
             return ETrue;
         }
-        if (filterList == QStringList(QFileDialog::tr("All Files (*)"))) {
+        if (filterList == QStringList(QLatin1String("(*)"))) {
             return ETrue;
         }
         for (int i = 0; i < filterList.size(); ++i) {
@@ -142,11 +141,11 @@ static QString launchSymbianDialog(const QString dialogCaption, const QString st
                      startFolder, NULL, NULL, titlePtr, extensionFilter);
             CleanupStack::Pop(extensionFilter);
         }
-        else if (dialogMode == DialogSave){
+        else if (dialogMode == DialogSave) {
             select = AknCommonDialogsDynMem::RunSaveDlgLD(types, target,
                      startFolder, NULL, NULL, titlePtr);
         }
-        else if (dialogMode == DialogFolder){
+        else if (dialogMode == DialogFolder) {
             select = AknCommonDialogsDynMem::RunFolderSelectDlgLD(types, target, startFolder,
                         0, 0, titlePtr, NULL, NULL);
         }
@@ -189,8 +188,7 @@ QString qtSymbianGetExistingDirectory(const QString &caption,
     QString folderCaption;
     if (!caption.isEmpty()) {
         folderCaption.append(caption);
-    }
-    else {
+    } else {
         // Title for folder selection dialog is mandatory
         folderCaption.append(QFileDialog::tr("Find Directory"));
     }

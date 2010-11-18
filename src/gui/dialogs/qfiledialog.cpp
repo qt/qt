@@ -1696,9 +1696,8 @@ QString QFileDialog::getOpenFileName(QWidget *parent,
     if (qt_filedialog_open_filename_hook && !(options & DontUseNativeDialog))
         return qt_filedialog_open_filename_hook(parent, caption, dir, filter, selectedFilter, options);
 #if defined(Q_WS_S60)
-    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0 && !(options & DontUseNativeDialog)) {
+    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0 && !(options & DontUseNativeDialog))
         return qtSymbianGetOpenFileName(caption, dir, filter);
-    }
 #endif
     QFileDialogArgs args;
     args.parent = parent;
@@ -1789,9 +1788,8 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
     if (qt_filedialog_open_filenames_hook && !(options & DontUseNativeDialog))
         return qt_filedialog_open_filenames_hook(parent, caption, dir, filter, selectedFilter, options);
 #if defined(Q_WS_S60)
-    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0 && !(options & DontUseNativeDialog)) {
+    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0 && !(options & DontUseNativeDialog))
         return qtSymbianGetOpenFileNames(caption, dir, filter);
-    }
 #endif
     QFileDialogArgs args;
     args.parent = parent;
@@ -1884,9 +1882,8 @@ QString QFileDialog::getSaveFileName(QWidget *parent,
     if (qt_filedialog_save_filename_hook && !(options & DontUseNativeDialog))
         return qt_filedialog_save_filename_hook(parent, caption, dir, filter, selectedFilter, options);
 #if defined(Q_WS_S60)
-    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0 && !(options & DontUseNativeDialog)) {
+    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0 && !(options & DontUseNativeDialog))
         return qtSymbianGetSaveFileName(caption, dir);
-    }
 #endif
     QFileDialogArgs args;
     args.parent = parent;

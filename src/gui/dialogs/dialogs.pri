@@ -114,8 +114,7 @@ contains(QT_CONFIG, s60) {
             -lplatformenv \
             -lefsrv \
             -lgdi
-    SOURCES += dialogs/qfiledialog_symbian.cpp \
-               dialogs/qcolordialog_symbian.cpp
+    SOURCES += dialogs/qfiledialog_symbian.cpp
 }
 
 FORMS += dialogs/qpagesetupwidget.ui
