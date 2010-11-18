@@ -168,6 +168,7 @@ private slots:
     void construct_returnInt();
     void construct_throw();
     void construct();
+    void construct_twoEngines();
     void construct_constructorThrowsPrimitive();
     void castToPointer();
     void prettyPrinter_data();

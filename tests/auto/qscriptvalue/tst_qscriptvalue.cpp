@@ -3068,6 +3068,18 @@ void tst_QScriptValue::construct()
     QCOMPARE(ret6.toString(), QString::fromLatin1("TypeError: Arguments must be an array"));
 }
 
+void tst_QScriptValue::construct_twoEngines()
+{
+    QScriptEngine engine;
+    QScriptEngine otherEngine;
+    QScriptValue ctor = engine.evaluate("(function (a, b) { this.foo = 123; })");
+    QScriptValue arg(&otherEngine, 124567);
+    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::construct() failed: cannot construct function with argument created in a different engine");
+    QVERIFY(!ctor.construct(arg).isValid());
+    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::construct() failed: cannot construct function with argument created in a different engine");
+    QVERIFY(!ctor.construct(QScriptValueList() << arg << otherEngine.newObject()).isValid());
+}
+
 void tst_QScriptValue::construct_constructorThrowsPrimitive()
 {
     QScriptEngine eng;
