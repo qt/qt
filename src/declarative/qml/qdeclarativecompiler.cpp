@@ -2803,7 +2803,7 @@ bool QDeclarativeCompiler::completeComponentBuild()
         QDeclarativeRewrite::RewriteBinding rewriteBinding;
         rewriteBinding.setName('$'+binding.property->name);
         bool isSharable = false;
-        expression = rewriteBinding(expression,0,&isSharable);
+        expression = rewriteBinding(binding.expression.asAST(), expression, &isSharable);
 
         quint32 length = expression.length();
         quint32 pc; 
