@@ -26,6 +26,14 @@
         <source>Goodbye</source>
         <translation>Farvel</translation>
     </message>
+    <message numerus="yes">
+        <location filename="translatable.js" line="12"/>
+        <source>%n fooish bar(s) found</source>
+        <translation>
+            <numerusform>%n fooaktig bar funnet</numerusform>
+            <numerusform>%n fooaktige barer funnet</numerusform>
+        </translation>
+    </message>
 </context>
 <context>
     <name>translatable</name>
@@ -44,6 +52,14 @@
         <source>One</source>
         <comment>not the same one</comment>
         <translation>Enda en</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="translatable.js" line="11"/>
+        <source>%n message(s) saved</source>
+        <translation>
+            <numerusform>%n melding lagret</numerusform>
+            <numerusform>%n meldinger lagret</numerusform>
+        </translation>
     </message>
     <message>
         <source>Goodbye</source>
