@@ -1494,6 +1494,20 @@ void tst_QWebPage::inputMethods()
     QCOMPARE(value, QString("QtWebKit"));
 #endif
 
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event(QString(), attributes);
+        event.setCommitString("XXX", 0, 0);
+        page->event(&event);
+        event.setCommitString(QString(), -2, 2); // Erase two characters.
+        page->event(&event);
+        event.setCommitString(QString(), -1, 1); // Erase one character.
+        page->event(&event);
+        variant = page->inputMethodQuery(Qt::ImSurroundingText);
+        value = variant.value<QString>();
+        QCOMPARE(value, QString("QtWebKit"));
+    }
+
     //ImhHiddenText
     QMouseEvent evpresPassword(QEvent::MouseButtonPress, inputs.at(1).geometry().center(), Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
     page->event(&evpresPassword);
