@@ -54,6 +54,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <QVarLengthArray>
 
 // Gets a component (red = 1, green = 2...) from a RGBA data structure.
 // data is unsigned char. stride is the number of bytes per line.
@@ -67,7 +68,7 @@
 
 // Writes(ads) a new value to the diffusion accumulator. accumulator is a short.
 // x, y is a position in the accumulation buffer. y can be 0 or 1 -- we operate on two lines at time.
-#define ACCUMULATE(accumulator, x, y, width, v) if (x < width && x > 0) accumulator[(y * width) + x] += v
+#define ACCUMULATE(accumulator, x, y, width, v) if (x < width && x >= 0) accumulator[(y * width) + x] += v
 
 // Clamps a value to be in 0..255 range.
 #define CLAMP_256(v) if (v > 255) v = 255; if (v < 0) v = 0;
@@ -75,8 +76,13 @@
 // Converts incoming RGB32 (QImage::Format_RGB32) to RGB565. Returns the newly allocated data.
 unsigned short* convertRGB32_to_RGB565(const unsigned char *in, int width, int height, int stride)
 {
+    // Output line stride. Aligned to 4 bytes.
+    int alignedWidth = width;
+    if (alignedWidth % 2 > 0)
+        alignedWidth++;
+
     // Will store output
-    unsigned short *out = (unsigned short *) malloc(width * height * 2);
+    unsigned short *out = (unsigned short *) malloc(alignedWidth * height * 2);
 
     // Lookup tables for the 8bit => 6bit and 8bit => 5bit conversion
     unsigned char lookup_8bit_to_5bit[256];
@@ -95,23 +101,27 @@ unsigned short* convertRGB32_to_RGB565(const unsigned char *in, int width, int h
     int x, y, c; // Pixel we're processing. c is component number (0, 1, 2 for r, b, b)
     short component[3]; // Stores the new components (r, g, b) for pixel produced during conversion
     short diff; // The difference between the converted value and the original one. To be accumulated.
-    short accumulator[3][width * 2]; // Three acumulators for r, g, b. Each accumulator is two lines.
+    QVarLengthArray <short> accumulatorData(3 * width * 2); // Data for three acumulators for r, g, b. Each accumulator is two lines.
+    short *accumulator[3]; // Helper for accessing the accumulator on a per-channel basis more easily.
+    accumulator[0] = accumulatorData.data();
+    accumulator[1] = accumulatorData.data() + width;
+    accumulator[2] = accumulatorData.data() + (width * 2);
 
     // Produce the conversion lookup tables.
     for (i = 0; i < 256; i++) {
         lookup_8bit_to_5bit[i] = round(i / 8.0);
-        if (lookup_8bit_to_5bit[i] > 31)
-            lookup_8bit_to_5bit[i] -= 1;
 
         // Before bitshifts: (i * 8) - (... * 8 * 8)
         lookup_8bit_to_5bit_diff[i] = (i << 3) - (lookup_8bit_to_5bit[i] << 6);
+        if (lookup_8bit_to_5bit[i] > 31)
+            lookup_8bit_to_5bit[i] -= 1;
 
         lookup_8bit_to_6bit[i] = round(i / 4.0);
-        if (lookup_8bit_to_6bit[i] > 63)
-            lookup_8bit_to_6bit[i] -= 1;
 
         // Before bitshifts: (i * 8) - (... * 4 * 8)
         lookup_8bit_to_6bit_diff[i] = (i << 3) - (lookup_8bit_to_6bit[i] << 5);
+        if (lookup_8bit_to_6bit[i] > 63)
+            lookup_8bit_to_6bit[i] -= 1;
     }
 
     // Clear the accumulators
@@ -169,7 +179,7 @@ unsigned short* convertRGB32_to_RGB565(const unsigned char *in, int width, int h
             }
 
             // Write the newly produced pixel
-            PUT_565(out, x, y, width, component[2], component[1], component[0]);
+            PUT_565(out, x, y, alignedWidth, component[2], component[1], component[0]);
         }
     }
 
@@ -178,10 +188,16 @@ unsigned short* convertRGB32_to_RGB565(const unsigned char *in, int width, int h
 
 // Converts incoming RGBA32 (QImage::Format_ARGB32_Premultiplied) to RGB565. Returns the newly allocated data.
 // This function is similar (yet different) to the _565 variant but it makes sense to duplicate it here for simplicity.
+// The output has each scan line aligned to 4 bytes (as expected by GL by default).
 unsigned short* convertARGB32_to_RGBA4444(const unsigned char *in, int width, int height, int stride)
 {
+    // Output line stride. Aligned to 4 bytes.
+    int alignedWidth = width;
+    if (alignedWidth % 2 > 0)
+        alignedWidth++;
+
     // Will store output
-    unsigned short *out = (unsigned short *) malloc(width * height * 2);
+    unsigned short *out = (unsigned short *) malloc(alignedWidth * 2 * height);
 
     // Lookup tables for the 8bit => 4bit conversion
     unsigned char lookup_8bit_to_4bit[256];
@@ -195,16 +211,21 @@ unsigned short* convertARGB32_to_RGBA4444(const unsigned char *in, int width, in
     int x, y, c; // Pixel we're processing. c is component number (0, 1, 2, 3 for r, b, b, a)
     short component[4]; // Stores the new components (r, g, b, a) for pixel produced during conversion
     short diff; // The difference between the converted value and the original one. To be accumulated.
-    short accumulator[4][width * 2]; // Four acumulators for r, g, b, a. Each accumulator is two lines.
+    QVarLengthArray <short> accumulatorData(4 * width * 2); // Data for three acumulators for r, g, b. Each accumulator is two lines.
+    short *accumulator[4]; // Helper for accessing the accumulator on a per-channel basis more easily.
+    accumulator[0] = accumulatorData.data();
+    accumulator[1] = accumulatorData.data() + width;
+    accumulator[2] = accumulatorData.data() + (width * 2);
+    accumulator[3] = accumulatorData.data() + (width * 3);
 
     // Produce the conversion lookup tables.
     for (i = 0; i < 256; i++) {
         lookup_8bit_to_4bit[i] = round(i / 16.0);
-        if (lookup_8bit_to_4bit[i] > 15)
-            lookup_8bit_to_4bit[i] -= 1;
-
         // Before bitshifts: (i * 8) - (... * 16 * 8)
         lookup_8bit_to_4bit_diff[i] = (i << 3) - (lookup_8bit_to_4bit[i] << 7);
+
+        if (lookup_8bit_to_4bit[i] > 15)
+            lookup_8bit_to_4bit[i] = 15;
     }
 
     // Clear the accumulators
@@ -259,7 +280,25 @@ unsigned short* convertARGB32_to_RGBA4444(const unsigned char *in, int width, in
             }
 
             // Write the newly produced pixel
-            PUT_4444(out, x, y, width, component[0], component[1], component[2], component[3]);
+            PUT_4444(out, x, y, alignedWidth, component[0], component[1], component[2], component[3]);
+        }
+    }
+
+    return out;
+}
+
+unsigned char* convertBGRA32_to_RGBA32(const unsigned char *in, int width, int height, int stride)
+{
+    unsigned char *out = (unsigned char *) malloc(stride * height);
+
+    // For each line...
+    for (int y = 0; y < height; y++) {
+        // For each column
+        for (int x = 0; x < width; x++) {
+            out[(stride * y) + (x * 4) + 0] = in[(stride * y) + (x * 4) + 2];
+            out[(stride * y) + (x * 4) + 1] = in[(stride * y) + (x * 4) + 1];
+            out[(stride * y) + (x * 4) + 2] = in[(stride * y) + (x * 4) + 0];
+            out[(stride * y) + (x * 4) + 3] = in[(stride * y) + (x * 4) + 3];
         }
     }
 

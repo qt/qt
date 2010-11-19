@@ -53,7 +53,7 @@ using namespace QPatternist;
  * This page describes how to use DFAs for validating that the XML child tags of an
  * XML parent tag occur in the right order.
  *
- * To validate the occurence of XML tags one need a regular expression that describes
+ * To validate the occurrence of XML tags one need a regular expression that describes
  * which tags can appear how often in what context. For example the regular expression
  * of the global <em>attribute</em> tag in XML Schema is (annotation?, simpleType?).
  * That means the <em>attribute</em> tag can contain an <em>annotation</em> tag followed

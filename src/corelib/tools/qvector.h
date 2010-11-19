@@ -125,6 +125,7 @@ public:
     inline QVector<T> operator=(QVector<T> &&other)
     { qSwap(p, other.p); return *this; }
 #endif
+    inline void swap(QVector<T> &other) { qSwap(d, other.d); }
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QVector(std::initializer_list<T> args);
 #endif
@@ -303,7 +304,7 @@ public:
 
 #ifndef QT_NO_STL
     static inline QVector<T> fromStdVector(const std::vector<T> &vector)
-    { QVector<T> tmp; tmp.reserve(vector.size()); qCopy(vector.begin(), vector.end(), std::back_inserter(tmp)); return tmp; }
+    { QVector<T> tmp; tmp.reserve(int(vector.size())); qCopy(vector.begin(), vector.end(), std::back_inserter(tmp)); return tmp; }
     inline std::vector<T> toStdVector() const
     { std::vector<T> tmp; tmp.reserve(size()); qCopy(constBegin(), constEnd(), std::back_inserter(tmp)); return tmp; }
 #endif
@@ -439,9 +440,9 @@ QVector<T>::QVector(int asize, const T &t)
 template <typename T>
 QVector<T>::QVector(std::initializer_list<T> args)
 {
-    d = malloc(args.size());
+    d = malloc(int(args.size()));
     d->ref = 1;
-    d->alloc = d->size = args.size();
+    d->alloc = d->size = int(args.size());
     d->sharable = true;
     d->capacity = false;
     T* i = p->array + d->size;

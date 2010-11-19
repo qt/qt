@@ -79,7 +79,6 @@ public:
 
     virtual void open();
     virtual void closeDownstreamChannel();
-    virtual bool waitForDownstreamReadyRead(int msecs);
 
     virtual void downstreamReadyWrite();
     virtual void setDownstreamLimited(bool b);
@@ -126,7 +125,6 @@ private:
     quint64 resumeOffset;
 
     void disconnectFromHttp();
-    void setupConnection();
     void validateCache(QHttpNetworkRequest &httpRequest, bool &loadedFromCache);
     void invalidateCache();
     void postRequest();

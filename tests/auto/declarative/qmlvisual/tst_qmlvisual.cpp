@@ -102,7 +102,7 @@ void tst_qmlvisual::visual_data()
     QTest::addColumn<QString>("testdata");
 
     QStringList files;
-    if (qgetenv("QMLVISUAL_ALL") != "")
+    if (qgetenv("QMLVISUAL_ALL") != "0")
         files << findQmlFiles(QDir(QT_TEST_SOURCE_DIR));
     else {
         //these are newly added tests we want to try out in CI (then move to the stable list)
@@ -157,7 +157,7 @@ void tst_qmlvisual::visual()
 
     QStringList arguments;
     arguments << "-script" << testdata
-              << "-scriptopts" << "play,testimages,testerror,exitoncomplete,exitonfailure" 
+              << "-scriptopts" << "play,testimages,testerror,testskip,exitoncomplete,exitonfailure"
               << file;
 #ifdef Q_WS_QWS
     arguments << "-qws";
@@ -278,7 +278,7 @@ void action(Mode mode, const QString &file)
             break;
         case Play:
             arguments << "-script" << testdata
-                  << "-scriptopts" << "play,testimages,testerror,exitoncomplete"
+                  << "-scriptopts" << "play,testimages,testerror,testskip,exitoncomplete"
                   << file;
             break;
         case TestVisuals:
@@ -345,6 +345,12 @@ void usage()
         "If you ONLY wish to use the 'error' property, you can record your test with\n"
         "-recordnovisuals, or discard existing visuals with -removevisuals; the test\n"
         "will then only fail on a syntax error, crash, or non-empty 'error' property.\n"
+        "\n"
+        "If your test has anything set to the 'skip' property on the root object then\n"
+        "test failures will be ignored. This allows for an opt-out of automated\n"
+        "aggregation of test results. The value of the 'skip' property (usually a\n"
+        "string) will then be printed to stdout when the test is run as part of the\n"
+        "message saying the test has been skipped.\n"
     );
 }
 

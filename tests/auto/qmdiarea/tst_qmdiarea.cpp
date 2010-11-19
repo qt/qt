@@ -63,6 +63,7 @@
 #include <QMacStyle>
 
 #include "../../shared/util.h"
+#include "../platformquirks.h"
 
 static const Qt::WindowFlags DefaultWindowFlags
     = Qt::SubWindow | Qt::WindowSystemMenuHint
@@ -468,6 +469,8 @@ void tst_QMdiArea::subWindowActivated2()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&mdiArea);
 #endif
+    QTest::qWaitForWindowShown(&mdiArea);
+    mdiArea.activateWindow();
     QTest::qWait(100);
 
     QTRY_COMPARE(spy.count(), 5);
@@ -509,6 +512,9 @@ void tst_QMdiArea::subWindowActivated2()
     QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(mdiArea.activeSubWindow(), activeSubWindow);
     spy.clear();
+
+    if (PlatformQuirks::isAutoMaximizing())
+        QSKIP("Platform is auto maximizing, so no showMinimized()", SkipAll);
 
     // Check that we only emit _one_ signal and the active window
     // is unchanged after showMinimized/showNormal.
@@ -1119,9 +1125,10 @@ void tst_QMdiArea::currentSubWindow()
 
 void tst_QMdiArea::addAndRemoveWindows()
 {
-    QMdiArea workspace;
+    QWidget topLevel;
+    QMdiArea workspace(&topLevel);
     workspace.resize(800, 600);
-    workspace.show();
+    topLevel.show();
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&workspace);
 #endif
@@ -1594,6 +1601,8 @@ void tst_QMdiArea::tileSubWindows()
 {
     QMdiArea workspace;
     workspace.resize(600,480);
+    if (PlatformQuirks::isAutoMaximizing())
+        workspace.setWindowFlags(workspace.windowFlags() | Qt::X11BypassWindowManagerHint);
     workspace.show();
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&workspace);
@@ -1848,8 +1857,9 @@ void tst_QMdiArea::resizeMaximizedChildWindows()
     QFETCH(int, increment);
     QFETCH(int, windowCount);
 
-    QMdiArea workspace;
-    workspace.show();
+    QWidget topLevel;
+    QMdiArea workspace(&topLevel);
+    topLevel.show();
 #if defined(Q_WS_X11)
     qt_x11_wait_for_window_manager(&workspace);
 #endif
@@ -2094,6 +2104,7 @@ void tst_QMdiArea::resizeTimer()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&mdiArea);
 #endif
+    QTest::qWaitForWindowShown(&mdiArea);
 
 #ifndef Q_OS_WINCE
     int time = 250;

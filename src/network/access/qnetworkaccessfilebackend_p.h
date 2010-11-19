@@ -69,7 +69,6 @@ public:
 
     virtual void open();
     virtual void closeDownstreamChannel();
-    virtual bool waitForDownstreamReadyRead(int msecs);
 
     virtual void downstreamReadyWrite();
 

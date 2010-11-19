@@ -63,6 +63,7 @@ public:
 
 private slots:
     void makeEllipse();
+    void swap();
 };
 
 tst_QPolygon::tst_QPolygon()
@@ -89,6 +90,15 @@ void tst_QPolygon::makeEllipse()
 	err |= ( qAbs( r - double(R) ) > 2.0 );
     }
     QVERIFY( !err );
+}
+
+void tst_QPolygon::swap()
+{
+    QPolygon p1(QVector<QPoint>() << QPoint(0,0) << QPoint(10,10) << QPoint(-10,10));
+    QPolygon p2(QVector<QPoint>() << QPoint(0,0) << QPoint( 0,10) << QPoint( 10,10) << QPoint(10,0));
+    p1.swap(p2);
+    QCOMPARE(p1.count(),4);
+    QCOMPARE(p2.count(),3);
 }
 
 QTEST_APPLESS_MAIN(tst_QPolygon)

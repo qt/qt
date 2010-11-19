@@ -55,6 +55,8 @@
 class Slider : public QAbstractSlider
 {
     public:
+        Slider(QWidget *parent)
+            : QAbstractSlider(parent) {}
         using QAbstractSlider::setRepeatAction;
         using QAbstractSlider::repeatAction;
 };
@@ -95,6 +97,7 @@ private slots:
 private:
     void waitUntilTimeElapsed(const QTime& t, int ms);
 
+    QWidget *topLevel;
     Slider *slider;
     int previousAction;
     int reportedMinimum;
@@ -113,7 +116,8 @@ Q_DECLARE_METATYPE(QPoint)
 
 void tst_QAbstractSlider::initTestCase()
 {
-    slider = new Slider;
+    topLevel = new QWidget;
+    slider = new Slider(topLevel);
     slider->setObjectName("testWidget");
     slider->resize(100,100);
     slider->show();
@@ -129,7 +133,7 @@ void tst_QAbstractSlider::initTestCase()
 
 void tst_QAbstractSlider::cleanupTestCase()
 {
-    delete slider;
+    delete topLevel;
 }
 
 void tst_QAbstractSlider::actionTriggered(int action)
@@ -735,7 +739,6 @@ void tst_QAbstractSlider::wheelEvent_data()
                                    << 100                                // expected position after
 #endif
                                    << QPoint(1,1);
-
     QTest::newRow("Different orientation") << 0                             // initial position
                                         << 0                             // minimum
                                         << 100                           // maximum
@@ -773,7 +776,6 @@ void tst_QAbstractSlider::wheelEvent_data()
                                         << 100                           // expected position after
 #endif
                                         << QPoint(0,0);
-
 
     QTest::newRow("Inverted controls")     << 50                            // initial position
                                         << 0                             // minimum
@@ -924,6 +926,7 @@ void tst_QAbstractSlider::sliderPressedReleased()
     QFETCH(uint, subControl);
     QFETCH(int, expectedCount);
 
+    QWidget topLevel;
     QAbstractSlider *slider;
     switch (control) {
     default:
@@ -931,11 +934,11 @@ void tst_QAbstractSlider::sliderPressedReleased()
         return;
         break;
     case QStyle::CC_Slider:
-        slider = new QSlider;
+        slider = new QSlider(&topLevel);
         slider->setLayoutDirection(Qt::LeftToRight);   // Makes "upside down" much easier to compute
         break;
     case QStyle::CC_ScrollBar:
-        slider = new QScrollBar;
+        slider = new QScrollBar(&topLevel);
         break;
     }
 
@@ -949,7 +952,7 @@ void tst_QAbstractSlider::sliderPressedReleased()
     QSignalSpy spy2(slider, SIGNAL(sliderReleased()));
 
     // Mac Style requires the control to be active to get the correct values...
-    slider->show();
+    topLevel.show();
     slider->activateWindow();
 
     QStyleOptionSlider option;

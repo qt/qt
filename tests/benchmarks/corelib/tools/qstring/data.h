@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef DATA_H
+#define DATA_H
+
 #include <qglobal.h>
 
 struct StringCollection
@@ -49,5 +52,7 @@ struct StringCollection
 };
 
 extern const ushort stringCollectionData[];
-extern StringCollection stringCollection[];
+extern const StringCollection stringCollection[];
 extern const int stringCollectionCount;
+
+#endif // DATA_H

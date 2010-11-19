@@ -216,7 +216,8 @@ QDeclarativeLoader::~QDeclarativeLoader()
     cannot load non-visual components.
 
     To unload the currently loaded item, set this property to an empty string,
-    or set \l sourceComponent to \c undefined.
+    or set \l sourceComponent to \c undefined. Setting \c source to a
+    new URL will also cause the item created by the previous URL to be unloaded.
 
     \sa sourceComponent, status, progress
 */
@@ -394,23 +395,25 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
     Use this status to provide an update or respond to the status change in some way.
     For example, you could:
 
-    \e {Trigger a state change:}
-    \qml 
-        State { name: 'loaded'; when: loader.status = Loader.Ready }
+    \list
+    \o Trigger a state change:
+    \qml
+        State { name: 'loaded'; when: loader.status == Loader.Ready }
     \endqml
 
-    \e {Implement an \c onStatusChanged signal handler:}
-    \qml 
+    \o Implement an \c onStatusChanged signal handler:
+    \qml
         Loader {
             id: loader
             onStatusChanged: if (loader.status == Loader.Ready) console.log('Loaded')
         }
     \endqml
 
-    \e {Bind to the status value:}
+    \o Bind to the status value:
     \qml
-        Text { text: loader.status != Loader.Ready ? 'Not Loaded' : 'Loaded' }
+        Text { text: loader.status == Loader.Ready ? 'Loaded' : 'Not loaded' }
     \endqml
+    \endlist
 
     Note that if the source is a local file, the status will initially be Ready (or Error). While
     there will be no onStatusChanged signal in that case, the onLoaded will still be invoked.

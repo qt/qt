@@ -714,6 +714,8 @@ bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &a, quint16 port)
             address = QHostAddress(QHostAddress::Any);
         }
         break;
+    default:
+        break;
     }
 
     struct sockaddr_in sockAddrIPv4;
@@ -799,7 +801,7 @@ int QNativeSocketEnginePrivate::nativeAccept()
 {
     int acceptedDescriptor = WSAAccept(socketDescriptor, 0,0,0,0);
 	if (acceptedDescriptor != -1 && QAbstractEventDispatcher::instance()) {
-		// Becuase of WSAAsyncSelect() WSAAccept returns a non blocking socket
+		// Because of WSAAsyncSelect() WSAAccept returns a non blocking socket
 		// with the same attributes as the listening socket including the current
 		// WSAAsyncSelect(). To be able to change the socket to blocking mode the
 		// WSAAsyncSelect() call must be cancled.

@@ -121,6 +121,7 @@ OSStatus QMacFontPath::closePath(void *data)
     return noErr;
 }
 
+
 #ifndef QT_MAC_USE_COCOA
 QFontEngineMacMulti::QFontEngineMacMulti(const ATSFontFamilyRef &atsFamily, const ATSFontRef &atsFontRef, const QFontDef &fontDef, bool kerning)
     : QFontEngineMulti(0)

@@ -345,6 +345,7 @@ public:
 
 #ifdef QT_MAC_USE_COCOA
     QUnifiedToolbarSurface *unifiedSurface;
+    void updateUnifiedToolbarOffset();
 #endif // QT_MAC_USE_COCOA
 
 #endif // Q_WS_MAC

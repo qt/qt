@@ -388,7 +388,7 @@ DeploymentInfo deployQtFrameworks(QList<FrameworkInfo> frameworks,
         foreach (FrameworkInfo dependency, dependencies) {
             changeInstallName(dependency.installName, dependency.deployedInstallName, deployedBinaryPath);
 
-            // Deploy framework if neccesary.
+            // Deploy framework if necessary.
             if (copiedFrameworks.contains(dependency.frameworkName) == false && frameworks.contains(dependency) == false) {
                 frameworks.append(dependency);
             }

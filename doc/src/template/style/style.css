@@ -101,7 +101,7 @@
     }
     a
     {
-        color: #00732f;
+        color: #00732F;
         text-decoration: none;
     }
     hr
@@ -660,12 +660,30 @@
 		-webkit-box-shadow: 0 4px 6px 0 rgba(0,0,0,.2);
 		-moz-box-shadow: 0 4px 6px 0 rgba(0,0,0,.2);
 		box-shadow: 0 4px 6px 0 rgba(0,0,0,.2);
+		font-size: 11px;
+	}
+
+	#resultdialog a
+  {
+      color: #00732f;
 	}
 
 	#resultdialog.active {
 	  display: block;
-	  width:30%;
 	}
+
+	.narrow #resultdialog {
+	  width: 60%;
+	  _width: 360px;
+	}
+
+	.narrow #resultdialog.active {
+    right: 10px;
+	  *left: auto;
+	  _left: auto;
+    _right: -20px;
+	}
+
 
 	#resultdialog #resultclose {
 	  float: right;
@@ -779,6 +797,7 @@
         margin-right: 15px;
         font-weight: bold;
         color: #B0ADAB;
+        font: bold 10px/1.2 Verdana;
     }
 
     .toolbuttons #print
@@ -892,7 +911,6 @@
     }
     .wrap .content h2
     {
-	border-bottom:1px solid #DDDDDD;
 	font:600 16px/1.2 Arial;
 	margin-top:15px;
 	width:100%;	
@@ -990,7 +1008,7 @@
 	/*display:inline-block;*/
 	margin-left:10px;
 	min-width:250px;
-	line-height: 1.2;
+	line-height: 1.5;
 	min-width:100%;
 	min-height:15px;
 	}
@@ -1279,6 +1297,10 @@
         background-color: #E6E7E8;
         margin: 0;
     }
+   .small
+    {
+        font: normal 9px/1 Verdana;
+    }	
 /* end footer elements */
 
 
@@ -1453,7 +1475,7 @@
 	}
 
 
-    .creator .header, .footer, .wrapper
+    .creator .header, .creator .footer, .creator .wrapper
     {
         max-width: 1500px;
         margin: 0px;
@@ -1658,6 +1680,58 @@
 	}
 /* end of creator spec*/
 	
+	.item {
+	  float: left;
+	  position: relative;
+	  width: 100%;
+	  overflow: hidden;
+	}
+
+
+	.item .primary {
+	  margin-right: 220px;
+	  position: relative;
+	}
+
+	.item hr {
+	  margin-left: -220px;
+	}
+
+	.item .secondary {
+	  float: right;
+	  width: 200px;
+	  position: relative;
+	}
+
+	.item .cols {
+	  clear: both;
+	  display: block;
+	}
+
+	.item .cols .col {
+	  float: left;
+	  margin-left: 1.5%;
+	}
+
+	.item .cols .col.first {
+	  margin-left: 0;
+	}
+
+	.item .cols.two .col {
+	  width: 45%;
+	}
+
+	.item .box {
+	  margin: 0 0 10px 0;
+	}
+
+	.item .box h3 {
+	  margin: 0 0 10px 0;
+	}
+
+	.cols.unclear {
+		clear:none;
+	}
 }
 
 /* end of screen media */

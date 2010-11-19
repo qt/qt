@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qmutex.h>
 
 #define QT_FT_BEGIN_HEADER
 #define QT_FT_END_HEADER
@@ -873,9 +874,10 @@ void QRasterPaintEngine::updateState()
     if (s->dirty & DirtyTransform)
         updateMatrix(s->matrix);
 
-    if (s->dirty & (DirtyPen|DirtyCompositionMode)) {
+    if (s->dirty & (DirtyPen|DirtyCompositionMode|DirtyOpacity)) {
         const QPainter::CompositionMode mode = s->composition_mode;
         s->flags.fast_text = (s->penData.type == QSpanData::Solid)
+                       && s->intOpacity == 256
                        && (mode == QPainter::CompositionMode_Source
                            || (mode == QPainter::CompositionMode_SourceOver
                                && qAlpha(s->penData.solid.color) == 255));
@@ -899,6 +901,7 @@ void QRasterPaintEngine::opacityChanged()
     s->fillFlags |= DirtyOpacity;
     s->strokeFlags |= DirtyOpacity;
     s->pixmapFlags |= DirtyOpacity;
+    s->dirty |= DirtyOpacity;
     s->intOpacity = (int) (s->opacity * 256);
 }
 
@@ -2482,7 +2485,7 @@ void QRasterPaintEngine::drawImage(const QPointF &p, const QImage &img)
         const QClipData *clip = d->clip();
         QPointF pt(p.x() + s->matrix.dx(), p.y() + s->matrix.dy());
 
-        if (s->flags.fast_images) {
+        if (d->canUseFastImageBlending(d->rasterBuffer->compositionMode, img)) {
             SrcOverBlendFunc func = qBlendFunctions[d->rasterBuffer->format][img.format()];
             if (func) {
                 if (!clip) {
@@ -2663,7 +2666,7 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
         bool exceedsPrecision = targetBounds.width() > 0xffff
                                 || targetBounds.height() > 0xffff;
 
-        if (s->flags.fast_images && !exceedsPrecision) {
+        if (!exceedsPrecision && d->canUseFastImageBlending(d->rasterBuffer->compositionMode, img)) {
             if (s->matrix.type() > QTransform::TxScale) {
                 SrcOverTransformFunc func = qTransformFunctions[d->rasterBuffer->format][img.format()];
                 if (func && (!clip || clip->hasRectClip)) {
@@ -2735,8 +2738,7 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
         fillPath(path, &d->image_filler_xform);
         s->matrix = m;
     } else {
-
-        if (s->flags.fast_images) {
+        if (d->canUseFastImageBlending(d->rasterBuffer->compositionMode, img)) {
             SrcOverBlendFunc func = qBlendFunctions[d->rasterBuffer->format][img.format()];
             if (func) {
                 QPointF pt(r.x() + s->matrix.dx(), r.y() + s->matrix.dy());
@@ -3291,7 +3293,7 @@ void QRasterPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     ensureState();
 
     drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->glyphPositions,
-                     textItem->fontEngine);
+                     textItem->fontEngine());
 }
 
 /*!
@@ -4290,11 +4292,19 @@ void QRasterPaintEnginePrivate::recalculateFastImages()
     QRasterPaintEngineState *s = q->state();
 
     s->flags.fast_images = !(s->renderHints & QPainter::SmoothPixmapTransform)
-                           && rasterBuffer->compositionMode == QPainter::CompositionMode_SourceOver
                            && s->matrix.type() <= QTransform::TxShear;
 }
 
+bool QRasterPaintEnginePrivate::canUseFastImageBlending(QPainter::CompositionMode mode, const QImage &image) const
+{
+    Q_Q(const QRasterPaintEngine);
+    const QRasterPaintEngineState *s = q->state();
 
+    return s->flags.fast_images
+           && (mode == QPainter::CompositionMode_SourceOver
+               || (mode == QPainter::CompositionMode_Source
+                   && !image.hasAlphaChannel()));
+}
 
 QImage QRasterBuffer::colorizeBitmap(const QImage &image, const QColor &color)
 {
@@ -4621,38 +4631,40 @@ void QClipData::fixup()
         return;
     }
 
-//      qDebug("QClipData::fixup: count=%d",count);
     int y = -1;
     ymin = m_spans[0].y;
     ymax = m_spans[count-1].y + 1;
     xmin = INT_MAX;
     xmax = 0;
 
+    const int firstLeft = m_spans[0].x;
+    const int firstRight = m_spans[0].x + m_spans[0].len;
     bool isRect = true;
-    int left = m_spans[0].x;
-    int right = m_spans[0].x + m_spans[0].len;
 
     for (int i = 0; i < count; ++i) {
-        if (m_spans[i].y != y) {
-            if (m_spans[i].y != y + 1 && y != -1) {
+        QT_FT_Span_& span = m_spans[i];
+
+        if (span.y != y) {
+            if (span.y != y + 1 && y != -1)
                 isRect = false;
-            }
-            y = m_spans[i].y;
-            m_clipLines[y].spans = m_spans+i;
-            m_clipLines[y].count = 0;
-//              qDebug() << "        new line: y=" << y;
-        }
-        ++m_clipLines[y].count;
-        int sl = (int) m_spans[i].x;
-        int sr = sl + m_spans[i].len;
+            y = span.y;
+            m_clipLines[y].spans = &span;
+            m_clipLines[y].count = 1;
+        } else
+            ++m_clipLines[y].count;
 
-        xmin = qMin(xmin, (int)m_spans[i].x);
-        xmax = qMax(xmax, (int)m_spans[i].x + m_spans[i].len);
+        const int spanLeft = span.x;
+        const int spanRight = spanLeft + span.len;
 
-        if (sl != left || sr != right)
+        if (spanLeft < xmin)
+            xmin = spanLeft;
+
+        if (spanRight > xmax)
+            xmax = spanRight;
+
+        if (spanLeft != firstLeft || spanRight != firstRight)
             isRect = false;
     }
-//     qDebug("xmin=%d,xmax=%d,ymin=%d,ymax=%d %s", xmin, xmax, ymin, ymax, isRect ? "rectangular" : "");
 
     if (isRect) {
         hasRectClip = true;
@@ -4963,6 +4975,7 @@ public:
         for (int i = 0; i < stops.size() && i <= 2; i++)
             hash_val += stops[i].second.rgba();
 
+        QMutexLocker lock(&mutex);
         QGradientColorTableHash::const_iterator it = cache.constFind(hash_val);
 
         if (it == cache.constEnd())
@@ -4996,6 +5009,7 @@ protected:
     }
 
     QGradientColorTableHash cache;
+    QMutex mutex;
 };
 
 void QGradientCache::generateGradientColorTable(const QGradient& gradient, uint *colorTable, int size, int opacity) const

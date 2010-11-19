@@ -367,10 +367,10 @@ QStyle::~QStyle()
     Note that the default implementation does nothing. Reasonable
     actions in this function might be to call the
     QWidget::setBackgroundMode() function for the widget. Do not use
-    the function to set, for example, the geometry; reimplementing
-    this function do provide a back-door through which the appearance
-    of a widget can be changed, but with Qt 4.0's style engine there
-    is rarely necessary to implement this function; reimplement the
+    the function to set, for example, the geometry. Reimplementing
+    this function provides a back-door through which the appearance
+    of a widget can be changed, but with Qt's style engine it is
+    rarely necessary to implement this function; reimplement
     drawItemPixmap(), drawItemText(), drawPrimitive(), etc. instead.
 
     The QWidget::inherits() function may provide enough information to

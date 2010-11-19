@@ -71,7 +71,7 @@ static QByteArray makeCacheKey(QNetworkAccessHttpBackend *backend, QNetworkProxy
     QUrl copy = backend->url();
     bool isEncrypted = copy.scheme().toLower() == QLatin1String("https");
     copy.setPort(copy.port(isEncrypted ? DefaultHttpsPort : DefaultHttpPort));
-    result = copy.toEncoded(QUrl::RemovePassword | QUrl::RemovePath |
+    result = copy.toEncoded(QUrl::RemoveUserInfo | QUrl::RemovePath |
                             QUrl::RemoveQuery | QUrl::RemoveFragment);
 
 #ifndef QT_NO_NETWORKPROXY
@@ -338,24 +338,6 @@ void QNetworkAccessHttpBackend::finished()
     QNetworkAccessBackend::finished();
 }
 
-void QNetworkAccessHttpBackend::setupConnection()
-{
-#ifndef QT_NO_NETWORKPROXY
-    connect(http, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
-            SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
-#endif
-    connect(http, SIGNAL(authenticationRequired(QHttpNetworkRequest,QAuthenticator*)),
-            SLOT(httpAuthenticationRequired(QHttpNetworkRequest,QAuthenticator*)));
-    connect(http, SIGNAL(cacheCredentials(QHttpNetworkRequest,QAuthenticator*)),
-            SLOT(httpCacheCredentials(QHttpNetworkRequest,QAuthenticator*)));
-    connect(http, SIGNAL(error(QNetworkReply::NetworkError,QString)),
-            SLOT(httpError(QNetworkReply::NetworkError,QString)));
-#ifndef QT_NO_OPENSSL
-    connect(http, SIGNAL(sslErrors(QList<QSslError>)),
-            SLOT(sslErrors(QList<QSslError>)));
-#endif
-}
-
 /*
     For a given httpRequest
     1) If AlwaysNetwork, return
@@ -367,10 +349,12 @@ void QNetworkAccessHttpBackend::validateCache(QHttpNetworkRequest &httpRequest, 
     QNetworkRequest::CacheLoadControl CacheLoadControlAttribute =
         (QNetworkRequest::CacheLoadControl)request().attribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferNetwork).toInt();
     if (CacheLoadControlAttribute == QNetworkRequest::AlwaysNetwork) {
-        // forced reload from the network
-        // tell any caching proxy servers to reload too
-        httpRequest.setHeaderField("Cache-Control", "no-cache");
-        httpRequest.setHeaderField("Pragma", "no-cache");
+        // If the request does not already specify preferred cache-control
+        // force reload from the network and tell any caching proxy servers to reload too
+        if (!request().rawHeaderList().contains("Cache-Control")) {
+            httpRequest.setHeaderField("Cache-Control", "no-cache");
+            httpRequest.setHeaderField("Pragma", "no-cache");
+        }
         return;
     }
 
@@ -596,12 +580,22 @@ void QNetworkAccessHttpBackend::postRequest()
     if (pendingIgnoreAllSslErrors)
         httpReply->ignoreSslErrors();
     httpReply->ignoreSslErrors(pendingIgnoreSslErrorsList);
+    connect(httpReply, SIGNAL(sslErrors(QList<QSslError>)),
+            SLOT(sslErrors(QList<QSslError>)));
 #endif
 
     connect(httpReply, SIGNAL(finished()), SLOT(replyFinished()));
     connect(httpReply, SIGNAL(finishedWithError(QNetworkReply::NetworkError,QString)),
             SLOT(httpError(QNetworkReply::NetworkError,QString)));
     connect(httpReply, SIGNAL(headerChanged()), SLOT(replyHeaderChanged()));
+    connect(httpReply, SIGNAL(cacheCredentials(QHttpNetworkRequest,QAuthenticator*)),
+            SLOT(httpCacheCredentials(QHttpNetworkRequest,QAuthenticator*)));
+#ifndef QT_NO_NETWORKPROXY
+    connect(httpReply, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
+            SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
+#endif
+    connect(httpReply, SIGNAL(authenticationRequired(const QHttpNetworkRequest,QAuthenticator*)),
+                SLOT(httpAuthenticationRequired(const QHttpNetworkRequest,QAuthenticator*)));
 }
 
 void QNetworkAccessHttpBackend::invalidateCache()
@@ -676,7 +670,6 @@ void QNetworkAccessHttpBackend::open()
         cache->addEntry(cacheKey, http);
     }
 
-    setupConnection();
     postRequest();
 }
 
@@ -684,26 +677,6 @@ void QNetworkAccessHttpBackend::closeDownstreamChannel()
 {
     // this indicates that the user closed the stream while the reply isn't finished yet
 }
-
-bool QNetworkAccessHttpBackend::waitForDownstreamReadyRead(int msecs)
-{
-    Q_ASSERT(http);
-
-    if (httpReply->bytesAvailable()) {
-        readFromHttp();
-        return true;
-    }
-
-    if (msecs == 0) {
-        // no bytes available in the socket and no waiting
-        return false;
-    }
-
-    // ### FIXME
-    qCritical("QNetworkAccess: HTTP backend does not support waitForReadyRead()");
-    return false;
-}
-
 
 void QNetworkAccessHttpBackend::downstreamReadyWrite()
 {
@@ -905,29 +878,6 @@ void QNetworkAccessHttpBackend::httpError(QNetworkReply::NetworkError errorCode,
 {
 #if defined(QNETWORKACCESSHTTPBACKEND_DEBUG)
     qDebug() << "http error!" << errorCode << errorString;
-#endif
-#if 0
-    static const QNetworkReply::NetworkError conversionTable[] = {
-        QNetworkReply::ConnectionRefusedError,
-        QNetworkReply::RemoteHostClosedError,
-        QNetworkReply::HostNotFoundError,
-        QNetworkReply::UnknownNetworkError, // SocketAccessError
-        QNetworkReply::UnknownNetworkError, // SocketResourceError
-        QNetworkReply::TimeoutError,        // SocketTimeoutError
-        QNetworkReply::UnknownNetworkError, // DatagramTooLargeError
-        QNetworkReply::UnknownNetworkError, // NetworkError
-        QNetworkReply::UnknownNetworkError, // AddressInUseError
-        QNetworkReply::UnknownNetworkError, // SocketAddressNotAvailableError
-        QNetworkReply::UnknownNetworkError, // UnsupportedSocketOperationError
-        QNetworkReply::UnknownNetworkError, // UnfinishedSocketOperationError
-        QNetworkReply::ProxyAuthenticationRequiredError
-    };
-    QNetworkReply::NetworkError code;
-    if (int(errorCode) >= 0 &&
-        uint(errorCode) < (sizeof conversionTable / sizeof conversionTable[0]))
-        code = conversionTable[errorCode];
-    else
-        code = QNetworkReply::UnknownNetworkError;
 #endif
     error(errorCode, errorString);
     finished();

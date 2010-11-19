@@ -1210,6 +1210,36 @@ void QAbstractSocketPrivate::fetchConnectionParameters()
 #endif
 }
 
+
+void QAbstractSocketPrivate::pauseSocketNotifiers(QAbstractSocket *socket)
+{
+    QAbstractSocketEngine *socketEngine = socket->d_func()->socketEngine;
+    if (!socketEngine)
+        return;
+    socket->d_func()->prePauseReadSocketNotifierState = socketEngine->isReadNotificationEnabled();
+    socket->d_func()->prePauseWriteSocketNotifierState = socketEngine->isWriteNotificationEnabled();
+    socket->d_func()->prePauseExceptionSocketNotifierState = socketEngine->isExceptionNotificationEnabled();
+    socketEngine->setReadNotificationEnabled(false);
+    socketEngine->setWriteNotificationEnabled(false);
+    socketEngine->setExceptionNotificationEnabled(false);
+}
+
+void QAbstractSocketPrivate::resumeSocketNotifiers(QAbstractSocket *socket)
+{
+    QAbstractSocketEngine *socketEngine = socket->d_func()->socketEngine;
+    if (!socketEngine)
+        return;
+    socketEngine->setReadNotificationEnabled(socket->d_func()->prePauseReadSocketNotifierState);
+    socketEngine->setWriteNotificationEnabled(socket->d_func()->prePauseWriteSocketNotifierState);
+    socketEngine->setExceptionNotificationEnabled(socket->d_func()->prePauseExceptionSocketNotifierState);
+}
+
+QAbstractSocketEngine* QAbstractSocketPrivate::getSocketEngine(QAbstractSocket *socket)
+{
+    return socket->d_func()->socketEngine;
+}
+
+
 /*! \internal
 
     Constructs a new abstract socket of type \a socketType. The \a

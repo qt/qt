@@ -228,6 +228,7 @@ private:
 
     void imagefailure();
     void complete();
+    void testSkip();
 
     enum Destination { View, ViewPort };
     void addKeyEvent(Destination, QKeyEvent *);

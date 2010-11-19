@@ -196,7 +196,9 @@ public:
      * Returns an image indexed_8 with index values ranging from 0=fully transparant to 255=opaque
      */
     virtual QImage alphaMapForGlyph(glyph_t);
+    virtual QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition);
     virtual QImage alphaMapForGlyph(glyph_t, const QTransform &t);
+    virtual QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
     virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
 
     virtual glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, const QTransform &matrix, GlyphFormat /*format*/)

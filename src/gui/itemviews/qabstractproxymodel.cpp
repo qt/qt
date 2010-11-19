@@ -362,7 +362,7 @@ QMimeData* QAbstractProxyModel::mimeData(const QModelIndexList &indexes) const
     QModelIndexList list;
     foreach(const QModelIndex &index, indexes)
         list << mapToSource(index);
-    return d->model->mimeData(indexes);
+    return d->model->mimeData(list);
 }
 
 /*!

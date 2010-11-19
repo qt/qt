@@ -9,3 +9,4 @@ wince*|symbian:{
    addFiles.path = .
    DEPLOYMENT += addFiles
 }
+CONFIG += parallel_test

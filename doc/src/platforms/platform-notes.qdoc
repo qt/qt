@@ -739,6 +739,9 @@
             \o \c AllFiles when \l{http://developer.symbian.org/wiki/index.php/Capabilities_%28Symbian_Signed%29/AllFiles_Capability}{accessing specific areas.}
     \row    \o QtNetwork
             \o \c NetworkServices is basically always required for this module.
+            \o \c ReadUserData is required to include all the phone's SSL certificates in the system's default CA certificate list
+                  (for example those added by the user or stored in the SIM card),
+                  without this capability only the CA certs built into the phone are used.
     \row    \o QtMultiMedia
             \o \c UserEnvironment if QAudioInput is used.
     \endtable

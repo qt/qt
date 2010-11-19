@@ -149,6 +149,8 @@ public:
     { qSwap(d, other.d); return *this; }
 #endif
 
+    inline void swap(QByteArray &other) { qSwap(d, other.d); }
+
     inline int size() const;
     bool isEmpty() const;
     void resize(int size);

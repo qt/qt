@@ -7,7 +7,8 @@ contains(CONFIG, no_icon) {
         symbian:RSS_RULES += "hidden = KAppIsHidden;"
         CONFIG -= no_icon
     }
-} 
+}
+
 
 !contains(CONFIG, no_icon) {
     baseTarget = $$symbianRemoveSpecialCharacters($$basename(TARGET))
@@ -15,10 +16,12 @@ contains(CONFIG, no_icon) {
         resourceZDir = $$EPOCROOT$$HW_ZDIR$$APP_RESOURCE_DIR
         regZDir = $$EPOCROOT$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR
     } else {
-        isEmpty(DESTDIR) {
-            resourceZDir = .
-        } else {
+        contains(DESTDIR, "/.*") {
             resourceZDir = $$DESTDIR
+        } else:isEmpty(DESTDIR) {
+            resourceZDir = $$OUT_PWD
+        } else {
+            resourceZDir = $$OUT_PWD/$$DESTDIR
         }
         regZDir = $$resourceZDir
     }
@@ -68,6 +71,7 @@ contains(CONFIG, no_icon) {
         }
         # Rules to use generated MIF file from symbian resources
         RSS_RULES.number_of_icons = $$size(ICON_backslashed)
+
         RSS_RULES.icon_file = $$APP_RESOURCE_DIR/$${baseTarget}.mif                
 
         default_resource_deployment.files += $$resourceZDir/$${baseTarget}.mif

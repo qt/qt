@@ -73,6 +73,10 @@
 #define SPI_GETPLATFORMTYPE 257
 #endif
 
+#ifndef PATH_MAX
+#define PATH_MAX FILENAME_MAX
+#endif
+
 #ifndef _INTPTR_T_DEFINED
 #ifdef  _WIN64
 typedef __int64             intptr_t;

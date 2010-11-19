@@ -3858,6 +3858,14 @@ QRegExp &QRegExp::operator=(const QRegExp &rx)
 }
 
 /*!
+    \fn void QRegExp::swap(QRegExp &other)
+    \since 4.8
+
+    Swaps regular expression \a other with this regular
+    expression. This operation is very fast and never fails.
+*/
+
+/*!
     Returns true if this regular expression is equal to \a rx;
     otherwise returns false.
 

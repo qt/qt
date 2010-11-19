@@ -48,6 +48,7 @@
 #include <qstringlist.h>
 #include <qpixmap.h>
 #include <qbrush.h>
+#include <qhash.h>
 
 QT_FORWARD_DECLARE_CLASS(QPainter)
 QT_FORWARD_DECLARE_CLASS(QRegExp)
@@ -89,6 +90,7 @@ public:
         , m_verboseMode(false)
         , m_type(WidgetType)
         , m_checkers_background(true)
+        , m_shouldDrawText(true)
     { staticInit(); }
 
 public:
@@ -114,6 +116,7 @@ public:
     void setControlPoints(const QVector<QPointF> &points) { staticInit(); m_controlPoints = points; }
     void setVerboseMode(bool v) { staticInit(); m_verboseMode = v; }
     void insertAt(int commandIndex, const QStringList &newCommands);
+    void setShouldDrawText(bool drawText) { m_shouldDrawText = drawText; }
 
     // run
     void runCommands();
@@ -279,6 +282,7 @@ private:
     bool m_verboseMode;
     DeviceType m_type;
     bool m_checkers_background;
+    bool m_shouldDrawText;
 
     QVector<QPointF> m_controlPoints;
 
@@ -329,6 +333,7 @@ public:
 
     static QList<PaintCommandInfos> s_commandInfoTable;
     static QList<QPair<QString,QStringList> > s_enumsTable;
+    static QMultiHash<QString, int> s_commandHash;
 };
 
 #endif // PAINTCOMMANDS_H

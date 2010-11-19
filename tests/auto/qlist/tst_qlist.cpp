@@ -499,6 +499,13 @@ void tst_QList::swap() const
     // swap again
     list.swap(1, 2);
     QCOMPARE(list, QList<QString>() << "baz" << "foo" << "bar");
+
+    QList<QString> list2;
+    list2 << "alpha" << "beta";
+
+    list.swap(list2);
+    QCOMPARE(list,  QList<QString>() << "alpha" << "beta");
+    QCOMPARE(list2, QList<QString>() << "baz" << "foo" << "bar");
 }
 
 void tst_QList::takeAt() const

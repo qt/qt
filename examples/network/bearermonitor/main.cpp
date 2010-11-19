@@ -38,7 +38,8 @@
 **
 ****************************************************************************/
 
-#include <QApplication>
+#include <QtGui/QApplication>
+#include <QtGui/QMainWindow>
 
 #include "bearermonitor.h"
 
@@ -46,8 +47,12 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
+    QMainWindow mainWindow;
+
     BearerMonitor monitor;
-    monitor.show();
+
+    mainWindow.setCentralWidget(&monitor);
+    mainWindow.show();
 
     return app.exec();
 }

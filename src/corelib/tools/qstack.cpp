@@ -91,6 +91,14 @@
 */
 
 /*!
+    \fn void QStack::swap(QStack<T> &other)
+    \since 4.8
+
+    Swaps stack \a other with this stack. This operation is very fast and
+    never fails.
+*/
+
+/*!
     \fn void QStack::push(const T& t)
 
     Adds element \a t to the top of the stack.
