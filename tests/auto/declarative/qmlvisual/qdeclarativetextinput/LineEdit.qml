@@ -42,6 +42,7 @@ Item {
         text:""
         horizontalAlignment: TextInput.AlignLeft
         font.pixelSize:15
+        selectionColor: 'steelblue'
     }
     MouseArea {
         //Implements all line edit mouse handling

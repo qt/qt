@@ -246,7 +246,7 @@ VisualTest {
     }
     Frame {
         msec: 976
-        hash: "33d81c39d16c6a326012499796e50e03"
+        image: "gridview2.1.png"
     }
     Frame {
         msec: 992
@@ -518,7 +518,7 @@ VisualTest {
     }
     Frame {
         msec: 1936
-        hash: "77d5193bc5f53fe5cb98a236c55f841e"
+        image: "gridview2.2.png"
     }
     Frame {
         msec: 1952
@@ -806,7 +806,7 @@ VisualTest {
     }
     Frame {
         msec: 2896
-        hash: "c88c120d64171197e4050cb73b56a766"
+        image: "gridview2.3.png"
     }
     Frame {
         msec: 2912
@@ -1086,7 +1086,7 @@ VisualTest {
     }
     Frame {
         msec: 3856
-        hash: "b78cfa8624a7f7b382bb628648f8a9df"
+        image: "gridview2.4.png"
     }
     Key {
         type: 7
@@ -1350,7 +1350,7 @@ VisualTest {
     }
     Frame {
         msec: 4816
-        hash: "ac37c4abbbc11b8e2bf8e0e8dae6180f"
+        image: "gridview2.5.png"
     }
     Key {
         type: 6
@@ -1622,7 +1622,7 @@ VisualTest {
     }
     Frame {
         msec: 5776
-        hash: "03714e1fe57c2a438b0c89374a0d51b4"
+        image: "gridview2.6.png"
     }
     Frame {
         msec: 5792
@@ -1878,7 +1878,7 @@ VisualTest {
     }
     Frame {
         msec: 6736
-        hash: "8d36bc2f3ab614d19f3ec8821f3e81ed"
+        image: "gridview2.7.png"
     }
     Key {
         type: 6
@@ -2134,7 +2134,7 @@ VisualTest {
     }
     Frame {
         msec: 7696
-        hash: "5b3d4cd60019fb3382534949342f63ce"
+        image: "gridview2.8.png"
     }
     Frame {
         msec: 7712
@@ -2374,7 +2374,7 @@ VisualTest {
     }
     Frame {
         msec: 8656
-        hash: "33d81c39d16c6a326012499796e50e03"
+        image: "gridview2.9.png"
     }
     Frame {
         msec: 8672
@@ -2391,7 +2391,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777249
-        modifiers: 0
+        modifiers: 67108864
         text: ""
         autorep: false
         count: 1
