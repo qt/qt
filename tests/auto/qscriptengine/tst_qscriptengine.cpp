@@ -4772,6 +4772,11 @@ void tst_QScriptEngine::translateScript_data()
             << QString::fromLatin1("eval('qsTr(\\'One\\')')") << fileName << QString::fromLatin1("En");
     QTest::newRow("eval('qsTr(\\'Hello\\')')@translatable.js")
             << QString::fromLatin1("eval('qsTr(\\'Hello\\')')") << fileName << QString::fromLatin1("Hallo");
+    // Plural
+    QTest::newRow("qsTr('%n message(s) saved', '', 1)@translatable.js")
+            << QString::fromLatin1("qsTr('%n message(s) saved', '', 1)") << fileName << QString::fromLatin1("1 melding lagret");
+    QTest::newRow("qsTr('%n message(s) saved', '', 3).arg@translatable.js")
+            << QString::fromLatin1("qsTr('%n message(s) saved', '', 3)") << fileName << QString::fromLatin1("3 meldinger lagret");
 
     // Top-level
     QTest::newRow("qsTranslate('FooContext', 'Two')@translatable.js")
@@ -4797,6 +4802,12 @@ void tst_QScriptEngine::translateScript_data()
 
     QTest::newRow("qsTr('One', 'not the same one', 42)@translatable.js")
             << QString::fromLatin1("qsTr('One', 'not the same one', 42)") << fileName << QString::fromLatin1("One");
+
+    // Plural
+    QTest::newRow("qsTranslate('FooContext', '%n fooish bar(s) found', '', 'UnicodeUTF8', 1)@translatable.js")
+            << QString::fromLatin1("qsTranslate('FooContext', '%n fooish bar(s) found', '', 'UnicodeUTF8', 1)") << fileName << QString::fromLatin1("1 fooaktig bar funnet");
+    QTest::newRow("qsTranslate('FooContext', '%n fooish bar(s) found', '', 'UnicodeUTF8', 2)@translatable.js")
+            << QString::fromLatin1("qsTranslate('FooContext', '%n fooish bar(s) found', '', 'UnicodeUTF8', 2)") << fileName << QString::fromLatin1("2 fooaktige barer funnet");
 
     // Don't exist in translation
     QTest::newRow("qsTr('Three')@translatable.js")
