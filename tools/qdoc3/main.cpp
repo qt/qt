@@ -45,7 +45,6 @@
 
 #include <qglobal.h>
 #include <stdlib.h>
-#include "apigenerator.h"
 #include "codemarker.h"
 #include "codeparser.h"
 #include "config.h"
@@ -54,9 +53,6 @@
 #include "doc.h"
 #include "htmlgenerator.h"
 #include "plaincodemarker.h"
-#include "polyarchiveextractor.h"
-#include "polyuncompressor.h"
-#include "webxmlgenerator.h"
 #include "ditaxmlgenerator.h"
 #include "tokenizer.h"
 #include "tree.h"
@@ -369,24 +365,6 @@ int main(int argc, char **argv)
 #ifndef QT_BOOTSTRAPPED
     QCoreApplication app(argc, argv);
 #endif
-    QString cf = "qsauncompress \1 \2";
-    PolyArchiveExtractor qsaExtractor(QStringList() << "qsa",cf);
-    cf = "tar -C \2 -xf \1";
-    PolyArchiveExtractor tarExtractor(QStringList() << "tar",cf);
-    cf = "tar -C \2 -Zxf \1";
-    PolyArchiveExtractor tazExtractor(QStringList() << "taz",cf);
-    cf = "tar -C \2 -jxf \1";
-    PolyArchiveExtractor tbz2Extractor(QStringList() << "tbz" << "tbz2",cf);
-    cf = "tar -C \2 -zxf \1";
-    PolyArchiveExtractor tgzExtractor(QStringList() << "tgz",cf);
-    cf = "unzip \1 -d \2";
-    PolyArchiveExtractor zipExtractor(QStringList() << "zip",cf);
-    cf = "bunzip2 -c \1 > \2";
-    PolyUncompressor bz2Uncompressor(QStringList() << "bz" << "bz2",cf);
-    cf = "gunzip -c \1 > \2";
-    PolyUncompressor gzAndZUncompressor(QStringList() << "gz" << "z" << "Z",cf);
-    cf = "unzip -c \1 > \2";
-    PolyUncompressor zipUncompressor(QStringList() << "zip",cf);
 
     /*
       Create code parsers for the languages to be parsed,
@@ -401,9 +379,7 @@ int main(int argc, char **argv)
     PlainCodeMarker plainMarker;
     CppCodeMarker cppMarker;
 
-    ApiGenerator apiGenerator;
     HtmlGenerator htmlGenerator;
-    WebXMLGenerator webxmlGenerator;
     DitaXmlGenerator ditaxmlGenerator;
 
     QStringList qdocFiles;

@@ -674,35 +674,6 @@ void Generator::generateExampleFiles(const FakeNode *fake, CodeMarker *marker)
     generateFileList(fake, marker, Node::Image, QString("Images:"));
 }
 
-#if 0
-    QList<Generator *>::ConstIterator g = generators.begin();
-    while (g != generators.end()) {
-        if (outputFormats.contains((*g)->format())) {
-            (*g)->initializeGenerator(config);
-            QStringList extraImages =
-                config.getStringList(CONFIG_EXTRAIMAGES+Config::dot+(*g)->format());
-            QStringList::ConstIterator e = extraImages.begin();
-            while (e != extraImages.end()) {
-                QString userFriendlyFilePath;
-                QString filePath = Config::findFile(config.lastLocation(),
-                                                    imageFiles,
-                                                    imageDirs,
-                                                    *e,
-                                                    imgFileExts[(*g)->format()],
-                                                    userFriendlyFilePath);
-                if (!filePath.isEmpty())
-                    Config::copyFile(config.lastLocation(),
-                                     filePath,
-                                     userFriendlyFilePath,
-                                     (*g)->outputDir() +
-                                     "/images");
-                ++e;
-            }
-        }
-        ++g;
-    }
-#endif
-
 QString Generator::indent(int level, const QString& markedCode)
 {
     if (level == 0)

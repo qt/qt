@@ -24,9 +24,7 @@ build_all:!build_pass {
 }
 
 CONFIG -= app_bundle
-HEADERS += apigenerator.h \
-           archiveextractor.h \
-	   atom.h \
+HEADERS += atom.h \
 	   ccodeparser.h \
            codechunk.h \
            codemarker.h \
@@ -46,19 +44,13 @@ HEADERS += apigenerator.h \
            openedlist.h \
 	   pagegenerator.h \
 	   plaincodemarker.h \
-	   polyarchiveextractor.h \
-	   polyuncompressor.h \
            quoter.h \
 	   separator.h \
 	   text.h \
 	   tokenizer.h \
 	   tr.h \
-	   tree.h \
-	   uncompressor.h \
-           webxmlgenerator.h
-SOURCES += apigenerator.cpp \
-           archiveextractor.cpp \
-	   atom.cpp \
+	   tree.h
+SOURCES += atom.cpp \
 	   ccodeparser.cpp \
            codechunk.cpp \
            codemarker.cpp \
@@ -79,15 +71,11 @@ SOURCES += apigenerator.cpp \
            openedlist.cpp \
 	   pagegenerator.cpp \
 	   plaincodemarker.cpp \
-	   polyarchiveextractor.cpp \
-	   polyuncompressor.cpp \
            quoter.cpp \
 	   separator.cpp \
 	   text.cpp \
 	   tokenizer.cpp \
 	   tree.cpp \
-	   uncompressor.cpp \
-           webxmlgenerator.cpp \
 	   yyindent.cpp
 
 ### Documentation for qdoc3 ###
