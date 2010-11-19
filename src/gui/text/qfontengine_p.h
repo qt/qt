@@ -196,7 +196,9 @@ public:
      * Returns an image indexed_8 with index values ranging from 0=fully transparant to 255=opaque
      */
     virtual QImage alphaMapForGlyph(glyph_t);
+    virtual QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition);
     virtual QImage alphaMapForGlyph(glyph_t, const QTransform &t);
+    virtual QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
     virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
 
     virtual glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, const QTransform &matrix, GlyphFormat /*format*/)
@@ -473,7 +475,7 @@ public:
     virtual FaceId faceId() const;
     virtual bool getSfntTableData(uint /*tag*/, uchar * /*buffer*/, uint * /*length*/) const;
     virtual void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics);
-    virtual QImage alphaMapForGlyph(glyph_t);
+    virtual QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition);
     virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
     virtual qreal minRightBearing() const;
     virtual qreal minLeftBearing() const;

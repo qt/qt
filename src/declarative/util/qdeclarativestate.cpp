@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
 DEFINE_BOOL_CONFIG_OPTION(stateChangeDebug, STATECHANGE_DEBUG);
 
 QDeclarativeAction::QDeclarativeAction()
-: restore(true), actionDone(false), reverseEvent(false), deletableToBinding(false), fromBinding(0), toBinding(0), event(0),
+: restore(true), actionDone(false), reverseEvent(false), deletableToBinding(false), fromBinding(0), event(0),
   specifiedObject(0)
 {
 }
@@ -67,7 +67,7 @@ QDeclarativeAction::QDeclarativeAction(QObject *target, const QString &propertyN
                const QVariant &value)
 : restore(true), actionDone(false), reverseEvent(false), deletableToBinding(false), 
   property(target, propertyName), toValue(value), 
-  fromBinding(0), toBinding(0), event(0), 
+  fromBinding(0), event(0),
   specifiedObject(target), specifiedProperty(propertyName)
 {
     if (property.isValid())
@@ -78,7 +78,7 @@ QDeclarativeAction::QDeclarativeAction(QObject *target, const QString &propertyN
                QDeclarativeContext *context, const QVariant &value)
 : restore(true), actionDone(false), reverseEvent(false), deletableToBinding(false),
   property(target, propertyName, context), toValue(value),
-  fromBinding(0), toBinding(0), event(0),
+  fromBinding(0), event(0),
   specifiedObject(target), specifiedProperty(propertyName)
 {
     if (property.isValid())
@@ -503,11 +503,11 @@ void QDeclarativeState::addEntriesToRevertList(const QList<QDeclarativeAction> &
             const QDeclarativeAction &action = actionListIterator.next();
             QDeclarativeSimpleAction simpleAction(action);
             action.property.write(action.toValue);
-            if (action.toBinding) {
+            if (!action.toBinding.isNull()) {
                 QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::binding(simpleAction.property());
                 if (oldBinding)
                     QDeclarativePropertyPrivate::setBinding(simpleAction.property(), 0);
-                QDeclarativePropertyPrivate::setBinding(simpleAction.property(), action.toBinding, QDeclarativePropertyPrivate::DontRemoveBinding);
+                QDeclarativePropertyPrivate::setBinding(simpleAction.property(), action.toBinding.data(), QDeclarativePropertyPrivate::DontRemoveBinding);
             }
 
             simpleActionList.append(simpleAction);
@@ -675,7 +675,7 @@ void QDeclarativeState::apply(QDeclarativeStateGroup *group, QDeclarativeTransit
             a.property = d->revertList.at(ii).property();
             a.fromValue = cur;
             a.toValue = d->revertList.at(ii).value();
-            a.toBinding = d->revertList.at(ii).binding();
+            a.toBinding = QDeclarativeAbstractBinding::getPointer(d->revertList.at(ii).binding());
             a.specifiedObject = d->revertList.at(ii).specifiedObject();
             a.specifiedProperty = d->revertList.at(ii).specifiedProperty();
             a.event = d->revertList.at(ii).event();

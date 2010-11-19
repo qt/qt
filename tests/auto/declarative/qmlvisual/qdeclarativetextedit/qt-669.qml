@@ -1,4 +1,5 @@
 import QtQuick 1.0
+import "../shared" 1.0
 
 Rectangle {
     Component { id: testableCursor
@@ -10,7 +11,7 @@ Rectangle {
     }
     width:300;
     height:40;
-    TextEdit {
+    TestTextEdit {
         focus: true;
         cursorDelegate: testableCursor
         text: "Jackdaws love my big sphinx of Quartz"

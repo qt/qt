@@ -86,8 +86,13 @@ QDeclarativeContextPrivate::QDeclarativeContextPrivate()
 
     QDeclarativeComponent component(&engine);
     component.setData("import QtQuick 1.0\nListView { model: myModel }", QUrl());
-    component.create(context);
+    QObject *window = component.create(context);
     \endcode
+
+    Note it is the responsibility of the creator to delete any QDeclarativeContext it
+    constructs. If the \c context object in the example is no longer needed when the
+    \c window component instance is destroyed, the \c context must be destroyed explicitly.
+    The simplest way to ensure this is to set \c window as the parent of \c context.
 
     To simplify binding and maintaining larger data sets, a context object can be set
     on a QDeclarativeContext.  All the properties of the context object are available
@@ -119,11 +124,13 @@ QDeclarativeContextPrivate::QDeclarativeContextPrivate()
     All properties added explicitly by QDeclarativeContext::setContextProperty() take 
     precedence over the context object's properties.
 
-    Contexts form a hierarchy.  The root of this hierarchy is the QDeclarativeEngine's
-    \l {QDeclarativeEngine::rootContext()}{root context}.  A component instance can 
-    access the data in its own context, as well as all its ancestor contexts.  Data
-    can be made available to all instances by modifying the 
-    \l {QDeclarativeEngine::rootContext()}{root context}.
+    \section2 The Context Hierarchy
+
+    Contexts form a hierarchy. The root of this hierarchy is the QML engine's
+    \l {QDeclarativeEngine::rootContext()}{root context}. Child contexts inherit
+    the context properties of their parents; if a child context sets a context property
+    that already exists in its parent, the new context property overrides that of the
+    parent.
 
     The following example defines two contexts - \c context1 and \c context2.  The
     second context overrides the "b" context property inherited from the first with a
@@ -144,7 +151,7 @@ QDeclarativeContextPrivate::QDeclarativeContextPrivate()
     context, their bindings are.  If a context is destroyed, the property bindings of 
     outstanding QML objects will stop evaluating.
 
-    \note Setting the context object or adding new context properties after an object
+    \warning Setting the context object or adding new context properties after an object
     has been created in that context is an expensive operation (essentially forcing all bindings
     to reevaluate). Thus whenever possible you should complete "setup" of the context
     before using it to create any objects.

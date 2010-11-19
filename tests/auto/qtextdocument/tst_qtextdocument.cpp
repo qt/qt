@@ -2054,6 +2054,7 @@ void tst_QTextDocument::clonePreservesIndentWidth()
     doc->setIndentWidth(42);
     QTextDocument *clone = doc->clone();
     QCOMPARE(clone->indentWidth(), qreal(42));
+    delete clone;
 }
 
 void tst_QTextDocument::blockCount()

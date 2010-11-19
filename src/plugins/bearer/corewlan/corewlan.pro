@@ -1,7 +1,7 @@
 TARGET = qcorewlanbearer
 include(../../qpluginbase.pri)
 
-QT = core gui network
+QT = core network
 LIBS += -framework Foundation -framework SystemConfiguration
 
 contains(QT_CONFIG, corewlan) {

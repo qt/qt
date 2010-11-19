@@ -328,8 +328,6 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
     Q_ASSERT(socket);
     Q_ASSERT(reply);
 
-    Q_Q(QHttpNetworkConnection);
-
     resend = false;
     //create the response header to be used with QAuthenticatorPrivate.
     QList<QPair<QByteArray, QByteArray> > fields = reply->header();

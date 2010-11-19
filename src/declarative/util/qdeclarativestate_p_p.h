@@ -85,7 +85,7 @@ public:
             m_reverseEvent = true;
         } else {
             m_value = a.toValue;
-            m_binding = QDeclarativeAbstractBinding::getPointer(a.toBinding);
+            m_binding = a.toBinding;
             m_reverseEvent = false;
         }
     }

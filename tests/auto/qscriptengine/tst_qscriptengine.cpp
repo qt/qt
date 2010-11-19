@@ -186,6 +186,10 @@ private slots:
     void translationContext_data();
     void translationContext();
     void translateScriptIdBased();
+    void translateScriptUnicode_data();
+    void translateScriptUnicode();
+    void translateScriptUnicodeIdBased_data();
+    void translateScriptUnicodeIdBased();
     void functionScopes();
     void nativeFunctionScopes();
     void evaluateProgram();
@@ -4948,6 +4952,93 @@ void tst_QScriptEngine::translateScriptIdBased()
              QString::fromLatin1("10 fooish bar(s) found"));
     QCOMPARE(engine.evaluate("qsTrId('qtn_foo_bar', 10)").toString(),
              QString::fromLatin1("qtn_foo_bar")); // Doesn't have plural
+}
+
+// How to add a new test row:
+// - Find a nice list of Unicode characters to choose from
+// - Write source string/context/comment in .js using Unicode escape sequences (\uABCD)
+// - Update corresponding .ts file (e.g. lupdate foo.js -ts foo.ts -codecfortr UTF-8)
+// - Enter translation in Linguist
+// - Update corresponding .qm file (e.g. lrelease foo.ts)
+// - Evaluate script that performs translation; make sure the correct result is returned
+//   (e.g. by setting the resulting string as the text of a QLabel and visually verifying
+//   that it looks the same as what you entered in Linguist :-) )
+// - Generate the expectedTranslation column data using toUtf8().toHex()
+void tst_QScriptEngine::translateScriptUnicode_data()
+{
+    QTest::addColumn<QString>("expression");
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<QString>("expectedTranslation");
+
+    QString fileName = QString::fromLatin1("translatable-unicode.js");
+    QTest::newRow("qsTr('H\\u2082O')@translatable-unicode.js")
+            << QString::fromLatin1("qsTr('H\\u2082O')") << fileName << QString::fromUtf8("\xcd\xbb\xcd\xbc\xcd\xbd");
+    QTest::newRow("qsTranslate('\\u010C\\u0101\\u011F\\u0115', 'CO\\u2082')@translatable-unicode.js")
+            << QString::fromLatin1("qsTranslate('\\u010C\\u0101\\u011F\\u0115', 'CO\\u2082')") << fileName << QString::fromUtf8("\xd7\x91\xd7\x9a\xd7\xa2");
+    QTest::newRow("qsTr('\\u0391\\u0392\\u0393')@translatable-unicode.js")
+            << QString::fromLatin1("qsTr('\\u0391\\u0392\\u0393')") << fileName << QString::fromUtf8("\xd3\x9c\xd2\xb4\xd1\xbc");
+    QTest::newRow("qsTranslate('\\u010C\\u0101\\u011F\\u0115', '\\u0414\\u0415\\u0416')@translatable-unicode.js")
+            << QString::fromLatin1("qsTranslate('\\u010C\\u0101\\u011F\\u0115', '\\u0414\\u0415\\u0416')") << fileName << QString::fromUtf8("\xd8\xae\xd8\xb3\xd8\xb3");
+    QTest::newRow("qsTr('H\\u2082O', 'not the same H\\u2082O')@translatable-unicode.js")
+            << QString::fromLatin1("qsTr('H\\u2082O', 'not the same H\\u2082O')") << fileName << QString::fromUtf8("\xd4\xb6\xd5\x8a\xd5\x92");
+    QTest::newRow("qsTr('H\\u2082O')")
+            << QString::fromLatin1("qsTr('H\\u2082O')") << QString() << QString::fromUtf8("\x48\xe2\x82\x82\x4f");
+    QTest::newRow("qsTranslate('\\u010C\\u0101\\u011F\\u0115', 'CO\\u2082')")
+            << QString::fromLatin1("qsTranslate('\\u010C\\u0101\\u011F\\u0115', 'CO\\u2082')") << QString() << QString::fromUtf8("\xd7\x91\xd7\x9a\xd7\xa2");
+}
+
+void tst_QScriptEngine::translateScriptUnicode()
+{
+    QFETCH(QString, expression);
+    QFETCH(QString, fileName);
+    QFETCH(QString, expectedTranslation);
+
+    QScriptEngine engine;
+
+    QTranslator translator;
+    QVERIFY(translator.load(":/translations/translatable-unicode"));
+    QCoreApplication::instance()->installTranslator(&translator);
+    engine.installTranslatorFunctions();
+
+    QCOMPARE(engine.evaluate(expression, fileName).toString(), expectedTranslation);
+    QVERIFY(!engine.hasUncaughtException());
+
+    QCoreApplication::instance()->removeTranslator(&translator);
+}
+
+void tst_QScriptEngine::translateScriptUnicodeIdBased_data()
+{
+    QTest::addColumn<QString>("expression");
+    QTest::addColumn<QString>("expectedTranslation");
+
+    QTest::newRow("qsTrId('\\u01F8\\u01D2\\u0199\\u01D0\\u01E1'')")
+            << QString::fromLatin1("qsTrId('\\u01F8\\u01D2\\u0199\\u01D0\\u01E1')") << QString::fromUtf8("\xc6\xa7\xc6\xb0\xc6\x88\xc8\xbc\xc8\x9d\xc8\xbf\xc8\x99");
+    QTest::newRow("qsTrId('\\u0191\\u01CE\\u0211\\u0229\\u019C\\u018E\\u019A\\u01D0')")
+            << QString::fromLatin1("qsTrId('\\u0191\\u01CE\\u0211\\u0229\\u019C\\u018E\\u019A\\u01D0')") << QString::fromUtf8("\xc7\xa0\xc8\xa1\xc8\x8b\xc8\x85\xc8\x95");
+    QTest::newRow("qsTrId('\\u0181\\u01A1\\u0213\\u018F\\u018C', 10)")
+            << QString::fromLatin1("qsTrId('\\u0181\\u01A1\\u0213\\u018F\\u018C', 10)") << QString::fromUtf8("\x31\x30\x20\xc6\x92\xc6\xa1\xc7\x92\x28\xc8\x99\x29");
+    QTest::newRow("qsTrId('\\u0181\\u01A1\\u0213\\u018F\\u018C')")
+            << QString::fromLatin1("qsTrId('\\u0181\\u01A1\\u0213\\u018F\\u018C')") << QString::fromUtf8("\xc6\x91\xc6\xb0\xc7\xb9");
+    QTest::newRow("qsTrId('\\u01CD\\u0180\\u01A8\\u0190\\u019E\\u01AB')")
+            << QString::fromLatin1("qsTrId('\\u01CD\\u0180\\u01A8\\u0190\\u019E\\u01AB')") << QString::fromUtf8("\xc7\x8d\xc6\x80\xc6\xa8\xc6\x90\xc6\x9e\xc6\xab");
+}
+
+void tst_QScriptEngine::translateScriptUnicodeIdBased()
+{
+    QFETCH(QString, expression);
+    QFETCH(QString, expectedTranslation);
+
+    QScriptEngine engine;
+
+    QTranslator translator;
+    QVERIFY(translator.load(":/translations/idtranslatable-unicode"));
+    QCoreApplication::instance()->installTranslator(&translator);
+    engine.installTranslatorFunctions();
+
+    QCOMPARE(engine.evaluate(expression).toString(), expectedTranslation);
+    QVERIFY(!engine.hasUncaughtException());
+
+    QCoreApplication::instance()->removeTranslator(&translator);
 }
 
 void tst_QScriptEngine::functionScopes()

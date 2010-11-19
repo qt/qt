@@ -301,10 +301,23 @@ make
 runonphone -s lib/Qt.sis
 //! [47]
 
+//! [runonphone with device file path]
+runonphone -s lib/Qt.sis -p /dev/ttyUSB1
+//! [runonphone with device file path]
+
 //! [48]
 cd demos/embedded/fluidlauncher
 runonphone -s fluidlauncher.sis fluidlauncher.exe
 //! [48]
+
+//! [make runonphone with options]
+make runonphone "QT_RUN_ON_PHONE_OPTIONS=-p /dev/ttyUSB1"
+//! [make runonphone with options]
+
+//! [make runonphone with preset environment variable]
+export QT_RUN_ON_PHONE_OPTIONS="-p /dev/ttyUSB1"
+make runonphone
+//! [make runonphone with preset environment variable]
 
 //! [49]
 cd myapp

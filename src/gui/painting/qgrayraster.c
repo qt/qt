@@ -408,25 +408,31 @@
   /*                                                                       */
   /* Record the current cell in the table.                                 */
   /*                                                                       */
-  static PCell
-  gray_find_cell( RAS_ARG )
+  static void
+  gray_record_cell( RAS_ARG )
   {
     PCell  *pcell, cell;
     int     x = ras.ex;
 
+    if ( ras.invalid || !( ras.area | ras.cover ) )
+        return;
 
     if ( x > ras.max_ex )
       x = ras.max_ex;
 
     pcell = &ras.ycells[ras.ey];
+
     for (;;)
     {
       cell = *pcell;
       if ( cell == NULL || cell->x > x )
         break;
 
-      if ( cell->x == x )
-        goto Exit;
+      if ( cell->x == x ) {
+          cell->area  += ras.area;
+          cell->cover += ras.cover;
+          return;
+      }
 
       pcell = &cell->next;
     }
@@ -436,28 +442,11 @@
 
     cell        = ras.cells + ras.num_cells++;
     cell->x     = x;
-    cell->area  = 0;
-    cell->cover = 0;
+    cell->area  = ras.area;
+    cell->cover = ras.cover;
 
     cell->next  = *pcell;
     *pcell      = cell;
-
-  Exit:
-    return cell;
-  }
-
-
-  static void
-  gray_record_cell( RAS_ARG )
-  {
-    if ( !ras.invalid && ( ras.area | ras.cover ) )
-    {
-      PCell  cell = gray_find_cell( RAS_VAR );
-
-
-      cell->area  += ras.area;
-      cell->cover += ras.cover;
-    }
   }
 
 

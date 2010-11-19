@@ -115,6 +115,8 @@ private slots:
     void getSetPrototype_eval();
     void getSetPrototype_invalidPrototype();
     void getSetPrototype_twoEngines();
+    void getSetPrototype_null();
+    void getSetPrototype_notObjectOrNull();
     void getSetPrototype();
     void getSetScope();
     void getSetProperty_HooliganTask162051();
@@ -134,6 +136,7 @@ private slots:
     void getSetData_objects();
     void getSetData_nonObjects_data();
     void getSetData_nonObjects();
+    void setData_QTBUG15144();
     void getSetScriptClass_emptyClass_data();
     void getSetScriptClass_emptyClass();
     void getSetScriptClass_JSObjectFromCpp();
@@ -162,6 +165,7 @@ private slots:
     void objectId();
     void nestedObjectToVariant_data();
     void nestedObjectToVariant();
+
 
 private:
     void newEngine()

@@ -5857,7 +5857,7 @@ void QPainterPrivate::drawGlyphs(quint32 *glyphArray, QFixedPoint *positions, in
         QStaticTextItem staticTextItem;
         staticTextItem.color = state->pen.color();
         staticTextItem.font = state->font;
-        staticTextItem.fontEngine = fontEngine;
+        staticTextItem.setFontEngine(fontEngine);
         staticTextItem.numGlyphs = glyphCount;
         staticTextItem.glyphs = reinterpret_cast<glyph_t *>(const_cast<glyph_t *>(glyphArray));
         staticTextItem.glyphPositions = positions;
@@ -6064,7 +6064,7 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         d->extended->drawStaticTextItem(item);
 
         drawDecorationForGlyphs(this, item->glyphs, item->glyphPositions,
-                                item->numGlyphs, item->fontEngine, staticText_d->font,
+                                item->numGlyphs, item->fontEngine(), staticText_d->font,
                                 QTextCharFormat());
     }
     if (currentColor != oldPen.color())

@@ -205,4 +205,5 @@ EXPORTS
 	_ZN13QVGPixmapData20createPixmapForImageER6QImage6QFlagsIN2Qt19ImageConversionFlagEEb @ 204 NONAME
 	_ZN13QVGPixmapData8fromDataEPKhjPKc6QFlagsIN2Qt19ImageConversionFlagEE @ 205 NONAME
 	_ZN13QVGPixmapData8fromFileERK7QStringPKc6QFlagsIN2Qt19ImageConversionFlagEE @ 206 NONAME
+	_ZNK14QVGPaintEngine16canVgWritePixelsERK6QImage @ 207 NONAME
 

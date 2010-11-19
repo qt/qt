@@ -12,3 +12,4 @@ SOURCES += tst_qtmd5.cpp
 QT = core
 
 
+CONFIG += parallel_test

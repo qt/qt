@@ -50,6 +50,7 @@
 //TESTED_FILES=
 
 Q_DECLARE_METATYPE(QScriptValueList)
+Q_DECLARE_METATYPE(QScriptContext::Error)
 
 QT_BEGIN_NAMESPACE
 extern bool qt_script_isJITEnabled();
@@ -91,6 +92,10 @@ private slots:
     void qobjectAsActivationObject();
     void parentContextCallee_QT2270();
     void popNativeContextScope();
+    void throwErrorInGlobalContext();
+    void throwErrorWithTypeInGlobalContext_data();
+    void throwErrorWithTypeInGlobalContext();
+    void throwValueInGlobalContext();
 };
 
 tst_QScriptContext::tst_QScriptContext()
@@ -1321,6 +1326,50 @@ void tst_QScriptContext::parentContextCallee_QT2270()
     QVERIFY(fun.isFunction());
     QScriptValue callee = fun.call();
     QVERIFY(callee.equals(fun));
+}
+
+void tst_QScriptContext::throwErrorInGlobalContext()
+{
+    QScriptEngine eng;
+    QScriptValue ret = eng.currentContext()->throwError("foo");
+    QVERIFY(ret.isError());
+    QVERIFY(eng.hasUncaughtException());
+    QVERIFY(eng.uncaughtException().strictlyEquals(ret));
+    QCOMPARE(ret.toString(), QString::fromLatin1("Error: foo"));
+}
+
+void tst_QScriptContext::throwErrorWithTypeInGlobalContext_data()
+{
+    QTest::addColumn<QScriptContext::Error>("error");
+    QTest::addColumn<QString>("stringRepresentation");
+    QTest::newRow("ReferenceError") << QScriptContext::ReferenceError << QString::fromLatin1("ReferenceError: foo");
+    QTest::newRow("SyntaxError") << QScriptContext::SyntaxError << QString::fromLatin1("SyntaxError: foo");
+    QTest::newRow("TypeError") << QScriptContext::TypeError << QString::fromLatin1("TypeError: foo");
+    QTest::newRow("RangeError") << QScriptContext::RangeError << QString::fromLatin1("RangeError: foo");
+    QTest::newRow("URIError") << QScriptContext::URIError << QString::fromLatin1("URIError: foo");
+    QTest::newRow("UnknownError") << QScriptContext::UnknownError << QString::fromLatin1("Error: foo");
+}
+
+void tst_QScriptContext::throwErrorWithTypeInGlobalContext()
+{
+    QFETCH(QScriptContext::Error, error);
+    QFETCH(QString, stringRepresentation);
+    QScriptEngine eng;
+    QScriptValue ret = eng.currentContext()->throwError(error, "foo");
+    QVERIFY(ret.isError());
+    QVERIFY(eng.hasUncaughtException());
+    QVERIFY(eng.uncaughtException().strictlyEquals(ret));
+    QCOMPARE(ret.toString(), stringRepresentation);
+}
+
+void tst_QScriptContext::throwValueInGlobalContext()
+{
+    QScriptEngine eng;
+    QScriptValue val(&eng, 123);
+    QScriptValue ret = eng.currentContext()->throwValue(val);
+    QVERIFY(ret.strictlyEquals(val));
+    QVERIFY(eng.hasUncaughtException());
+    QVERIFY(eng.uncaughtException().strictlyEquals(val));
 }
 
 QTEST_MAIN(tst_QScriptContext)
