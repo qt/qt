@@ -1948,10 +1948,9 @@ void QMacStyle::unpolish(QWidget* w)
         rubber->setAttribute(Qt::WA_NoSystemBackground, true);
     }
 
-    if (QFocusFrame *frame = qobject_cast<QFocusFrame *>(w)) {
+    if (QFocusFrame *frame = qobject_cast<QFocusFrame *>(w))
         frame->setAttribute(Qt::WA_NoSystemBackground, true);
-        frame->setAutoFillBackground(true);
-    }
+
     QWindowsStyle::unpolish(w);
 }
 
