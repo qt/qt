@@ -89,19 +89,16 @@ void HTMLPage::writeHeader(const ImageItem &item)
     out.setDevice(&file);
 
     out << "<html><body><h1>Lancelot results from run " << id << "</h1>\n\n";
-    out << "<h3>Platform Info:</h3>\n";
+    out << "<p><h3>Platform Info:</h3>\n";
     out << "<table>\n";
     foreach (QString key, plat.keys())
         out << "<tr><td>" << key << "</td><td>" << plat.value(key) << "</td></tr>\n";
-    out << "</table>\n";
+    out << "</table></p>\n\n";
 
-#if 0
-    out << "<h3><a href=\"/cgi-bin/server.cgi?cmd=updateAllBaselines&id="<< id << "&host=" << plat.hostName
-        << "&engine=" << item.engineAsString() << "&format=" << item.formatAsString()
-        << "&url=" << pageUrl
-        << "\">Update all baselines</a><br>";
-#endif
-    out << "<table border=\"2\">\n"
+    out << "<p><a href=\"/cgi-bin/server.cgi?cmd=clearAllBaselines&context=" << ctx << "&url=" << pageUrl
+        << "\"><b><big>Clear all baselines</big></b></a></h3> (They will be recreated by the next run)</p>\n\n";
+
+    out << "<p><table border=\"2\">\n"
            "<tr>\n"
            "<td><b>Script</b></td>\n"
            "<td><b>Baseline</b></td>\n"
@@ -114,7 +111,7 @@ void HTMLPage::writeHeader(const ImageItem &item)
 
 void HTMLPage::writeFooter()
 {
-    out << "</table>\n</body></html>\n";
+    out << "</table></p>\n</body></html>\n";
 }
 
 
@@ -207,11 +204,8 @@ void HTMLPage::handleCGIQuery(const QString &query)
     if (command == QLS("updateSingleBaseline")) {
         s << BaselineHandler::updateSingleBaseline(cgiUrl.queryItemValue(QLS("oldBaseline")),
                                                    cgiUrl.queryItemValue(QLS("newBaseline")));
-    } else if (command == QLS("updateAllBaselines")) {
-        s << BaselineHandler::updateAllBaselines(cgiUrl.queryItemValue(QLS("host")),
-                                                 cgiUrl.queryItemValue(QLS("id")),
-                                                 cgiUrl.queryItemValue(QLS("engine")),
-                                                 cgiUrl.queryItemValue(QLS("format")));
+    } else if (command == QLS("clearAllBaselines")) {
+        s << BaselineHandler::clearAllBaselines(cgiUrl.queryItemValue(QLS("context")));
     } else if (command == QLS("blacklist")) {
         // blacklist a test
         s << BaselineHandler::blacklistTest(cgiUrl.queryItemValue(QLS("context")),

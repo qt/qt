@@ -51,6 +51,7 @@
 #include <QHostInfo>
 #include <QTextStream>
 #include <QProcess>
+#include <QDirIterator>
 
 QString BaselineServer::storage;
 
@@ -349,43 +350,14 @@ QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline, boo
 }
 
 
-QString BaselineHandler::updateAllBaselines(const QString &host, const QString &id,
-                                            const QString &engine, const QString &format)
+QString BaselineHandler::clearAllBaselines(const QString &context)
 {
-#if 0
-    QString basePath(BaselineServer::storagePath());
-    QString srcDir(basePath + host + QLC('/') + itemSubPath(engine, format, false) + id);
-    QString dstDir(basePath + host + QLC('/') + itemSubPath(engine, format));
+    QDirIterator it(BaselineServer::storagePath() + QLC('/') + context,
+                    QStringList() << QLS("*.png") << QLS("*.metadata"));
+    while (it.hasNext())
+        QFile::remove(it.next());
 
-    QDir dir(srcDir);
-    QStringList nameFilter;
-    nameFilter << "*.metadata" << "*.png";
-    QStringList fileList = dir.entryList(nameFilter, QDir::Files | QDir::NoDotAndDotDot);
-
-    // remove the generated _fuzzycompared.png and _compared.png files from the list
-    QMutableStringListIterator it(fileList);
-    while (it.hasNext()) {
-        it.next();
-        if (it.value().endsWith(QLS("compared.png")))
-            it.remove();
-    }
-
-    QString res;
-    QProcess proc;
-    proc.setWorkingDirectory(srcDir);
-    proc.setProcessChannelMode(QProcess::MergedChannels);
-    proc.start(QLS("cp"), QStringList() << QLS("-f") << fileList << dstDir);
-    proc.waitForFinished();
-    if (proc.exitCode() == 0)
-        res = QLS("Successfully updated baseline for all failed tests.");
-    else
-        res = QString("Error updating baseline: %1<br>"
-                      "Command output: <pre>%2</pre>").arg(proc.errorString(), proc.readAll().constData());
-
-    return res;
-#else
-    return QString();
-#endif
+   return QLS("All baselines cleared from context ") + context;
 }
 
 QString BaselineHandler::updateSingleBaseline(const QString &oldBaseline, const QString &newBaseline)
