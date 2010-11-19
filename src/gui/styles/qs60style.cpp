@@ -1438,10 +1438,11 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             const QRect iconRect = subElementRect(SE_ItemViewItemDecoration, &voptAdj, widget);
             QRect textRect = subElementRect(SE_ItemViewItemText, &voptAdj, widget);
             const QAbstractItemView *itemView = qobject_cast<const QAbstractItemView *>(widget);
-            const bool singleSelection =
-                (itemView->selectionMode() == QAbstractItemView::SingleSelection ||
-                 itemView->selectionMode() == QAbstractItemView::NoSelection);
-            const bool selectItems = (itemView->selectionBehavior() == QAbstractItemView::SelectItems);
+            
+            const bool singleSelection = itemView && 
+                ((itemView->selectionMode() == QAbstractItemView::SingleSelection ||
+                 itemView->selectionMode() == QAbstractItemView::NoSelection));
+            const bool selectItems = itemView && (itemView->selectionBehavior() == QAbstractItemView::SelectItems);
 
             // draw themed background for itemview unless background brush has been defined.
             if (vopt->backgroundBrush == Qt::NoBrush) {
