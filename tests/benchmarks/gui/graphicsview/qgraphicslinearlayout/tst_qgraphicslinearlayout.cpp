@@ -93,7 +93,7 @@ void tst_QGraphicsLinearLayout::heightForWidth()
     QGraphicsLinearLayout *outerlayout = 0;
     if (nested) {
        outerlayout = new QGraphicsLinearLayout(form);
-       for(int i = 0; i < 8; i++) {
+       for (int i = 0; i < 8; i++) {
            QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Vertical);
            outerlayout->addItem(layout);
            outerlayout = layout;
