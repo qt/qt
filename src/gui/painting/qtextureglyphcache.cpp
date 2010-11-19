@@ -65,7 +65,7 @@ static inline int qt_next_power_of_two(int v)
     return v;
 }
 
-void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const glyph_t *glyphs,
+bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const glyph_t *glyphs,
                                   const QFixedPoint *)
 {
 #ifdef CACHE_DEBUG
@@ -119,7 +119,7 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
         rowHeight = qMax(rowHeight, glyph_height);
     }
     if (listItemCoordinates.isEmpty())
-        return;
+        return true;
 
     rowHeight += margin * 2 + paddingDoubled;
     if (isNull())
@@ -150,6 +150,13 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
             int new_height = m_h*2;
             while (new_height < m_cy + c.h)
                 new_height *= 2;
+
+	    if (new_height > maxTextureHeight()) {
+	        // We can't make a new texture of the required size, so 
+	        // bail out
+	        return false;
+	    }
+
             // if no room in the current texture - realloc a larger texture
             resizeTextureData(m_w, new_height);
             m_h = new_height;
@@ -165,7 +172,7 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
         ++iter;
     }
 
-
+    return true;
 }
 
 QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g) const

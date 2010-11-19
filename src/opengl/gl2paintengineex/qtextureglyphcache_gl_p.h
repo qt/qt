@@ -124,6 +124,8 @@ public Q_SLOTS:
         }
     }
 
+    void clear();
+
 private:
     QGLContext *ctx;
 
