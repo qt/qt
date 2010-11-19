@@ -59,23 +59,23 @@ class QSqlRelationalDelegate: public QItemDelegate
 {
 public:
 
-explicit QSqlRelationalDelegate(QObject *parent = 0)
-    : QItemDelegate(parent)
+explicit QSqlRelationalDelegate(QObject *aParent = 0)
+    : QItemDelegate(aParent)
 {}
 
 ~QSqlRelationalDelegate()
 {}
 
-QWidget *createEditor(QWidget *parent,
+QWidget *createEditor(QWidget *aParent,
                       const QStyleOptionViewItem &option,
                       const QModelIndex &index) const
 {
     const QSqlRelationalTableModel *sqlModel = qobject_cast<const QSqlRelationalTableModel *>(index.model());
     QSqlTableModel *childModel = sqlModel ? sqlModel->relationModel(index.column()) : 0;
     if (!childModel)
-        return QItemDelegate::createEditor(parent, option, index);
+        return QItemDelegate::createEditor(aParent, option, index);
 
-    QComboBox *combo = new QComboBox(parent);
+    QComboBox *combo = new QComboBox(aParent);
     combo->setModel(childModel);
     combo->setModelColumn(childModel->fieldIndex(sqlModel->relation(index.column()).displayColumn()));
     combo->installEventFilter(const_cast<QSqlRelationalDelegate *>(this));
