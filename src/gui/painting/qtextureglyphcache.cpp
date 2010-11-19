@@ -151,11 +151,11 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
             while (new_height < m_cy + c.h)
                 new_height *= 2;
 
-	    if (new_height > maxTextureHeight()) {
-	        // We can't make a new texture of the required size, so 
-	        // bail out
-	        return false;
-	    }
+            if (maxTextureHeight() > 0 && new_height > maxTextureHeight()) {
+                // We can't make a new texture of the required size, so
+                // bail out
+                return false;
+            }
 
             // if no room in the current texture - realloc a larger texture
             resizeTextureData(m_w, new_height);
@@ -266,11 +266,14 @@ void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g)
     }
 #endif
 
-    if (m_type == QFontEngineGlyphCache::Raster_RGBMask) {
-        QPainter p(&m_image);
+    if (m_type == QFontEngineGlyphCache::Raster_RGBMask) {        
+        QImage ref(m_image.bits() + (c.x * 4 + c.y * m_image.bytesPerLine()),
+                   qMax(mask.width(), c.w), qMax(mask.height(), c.h), m_image.bytesPerLine(),
+                   m_image.format());
+        QPainter p(&ref);
         p.setCompositionMode(QPainter::CompositionMode_Source);
-        p.fillRect(c.x, c.y, c.w, c.h, QColor(0,0,0,0)); // TODO optimize this
-        p.drawImage(c.x, c.y, mask);
+        p.fillRect(0, 0, c.w, c.h, QColor(0,0,0,0)); // TODO optimize this
+        p.drawImage(0, 0, mask);
         p.end();
     } else if (m_type == QFontEngineGlyphCache::Raster_Mono) {
         if (mask.depth() > 1) {
