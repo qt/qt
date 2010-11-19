@@ -355,7 +355,7 @@ QString HtmlGenerator::format()
 }
 
 /*!
-  This is where the HTML and DCF files are written.
+  This is where the HTML files are written.
   \note The HTML file generation is done in the base class,
   PageGenerator::generateTree().
  */
@@ -379,43 +379,6 @@ void HtmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
     findAllSince(tree->root());
 
     PageGenerator::generateTree(tree, marker);
-
-    dcfClassesRoot.ref = "classes.html";
-    dcfClassesRoot.title = "Classes";
-    qSort(dcfClassesRoot.subsections);
-
-    dcfOverviewsRoot.ref = "overviews.html";
-    dcfOverviewsRoot.title = "Overviews";
-    qSort(dcfOverviewsRoot.subsections);
-
-    dcfExamplesRoot.ref = "examples.html";
-    dcfExamplesRoot.title = "Tutorial & Examples";
-    qSort(dcfExamplesRoot.subsections);
-
-    DcfSection qtRoot;
-    appendDcfSubSection(&qtRoot, dcfClassesRoot);
-    appendDcfSubSection(&qtRoot, dcfOverviewsRoot);
-    appendDcfSubSection(&qtRoot, dcfExamplesRoot);
-
-    generateDcf(project.toLower().simplified().replace(" ", "-"),
-                "index.html",
-                projectDescription, qtRoot);
-    generateDcf("designer",
-                "designer-manual.html",
-                "Qt Designer Manual",
-                dcfDesignerRoot);
-    generateDcf("linguist",
-                "linguist-manual.html",
-                "Qt Linguist Manual",
-                dcfLinguistRoot);
-    generateDcf("assistant",
-                "assistant-manual.html",
-                "Qt Assistant Manual",
-                dcfAssistantRoot);
-    generateDcf("qmake",
-                "qmake-manual.html",
-                "qmake Manual",
-                dcfQmakeRoot);
 
     QString fileBase = project.toLower().simplified().replace(" ", "-");
     generateIndex(fileBase, projectUrl, projectDescription);
@@ -1253,11 +1216,6 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
         title = rawTitle + " Class Reference";
     }
 
-    DcfSection classSection;
-    classSection.title = title;
-    classSection.ref = linkForNode(inner, 0);
-    classSection.keywords += qMakePair(inner->name(), classSection.ref);
-
     Text subtitleText;
     if (rawTitle != fullTitle)
         subtitleText << "(" << Atom(Atom::AutoLink, fullTitle) << ")"
@@ -1420,8 +1378,6 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
                         names << plainCode(marker->markedUpEnumValue(enumName,
                                                                      enume));
                 }
-                foreach (const QString &name, names)
-                    classSection.keywords += qMakePair(name,linkForNode(*m,0));
             }
             ++m;
         }
@@ -1430,27 +1386,6 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
         ++s;
     }
     generateFooter(inner);
-
-    if (!membersLink.isEmpty()) {
-        DcfSection membersSection;
-        membersSection.title = "List of all members";
-        membersSection.ref = membersLink;
-        appendDcfSubSection(&classSection, membersSection);
-    }
-    if (!obsoleteLink.isEmpty()) {
-        DcfSection obsoleteSection;
-        obsoleteSection.title = "Obsolete members";
-        obsoleteSection.ref = obsoleteLink;
-        appendDcfSubSection(&classSection, obsoleteSection);
-    }
-    if (!compatLink.isEmpty()) {
-        DcfSection compatSection;
-        compatSection.title = "Qt 3 support members";
-        compatSection.ref = compatLink;
-        appendDcfSubSection(&classSection, compatSection);
-    }
-
-    appendDcfSubSection(&dcfClassesRoot, classSection);
 }
 
 /*!
@@ -1460,9 +1395,6 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
 void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
 {
     SubTitleSize subTitleSize = LargeSubTitle;
-    DcfSection fakeSection;
-    fakeSection.title = fake->fullTitle();
-    fakeSection.ref = linkForNode(fake, 0);
 
     QList<Section> sections;
     QList<Section>::const_iterator s;
@@ -1542,25 +1474,6 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
                   << "Qt 3 support members</a></li>\n";
 
         out() << "</ul>\n";
-
-        if (!membersLink.isEmpty()) {
-            DcfSection membersSection;
-            membersSection.title = "List of all members";
-            membersSection.ref = membersLink;
-            appendDcfSubSection(&fakeSection, membersSection);
-        }
-        if (!obsoleteLink.isEmpty()) {
-            DcfSection obsoleteSection;
-            obsoleteSection.title = "Obsolete members";
-            obsoleteSection.ref = obsoleteLink;
-            appendDcfSubSection(&fakeSection, obsoleteSection);
-        }
-        if (!compatLink.isEmpty()) {
-            DcfSection compatSection;
-            compatSection.title = "Qt 3 support members";
-            compatSection.ref = compatLink;
-            appendDcfSubSection(&fakeSection, compatSection);
-        }
     }
 #ifdef QDOC_QML
     else if (fake->subType() == Node::QmlClass) {
@@ -1603,8 +1516,6 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
             while (m != (*s).members.end()) {
                 generateDetailedQmlMember(*m, fake, marker);
                 out() << "<br/>\n";
-                fakeSection.keywords += qMakePair((*m)->name(),
-                                                  linkForNode(*m,0));
                 ++m;
             }
             ++s;
@@ -1649,8 +1560,6 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
         generateAnnotatedList(fake, marker, groupMembersMap);
     }
 
-    fakeSection.keywords += qMakePair(fakeSection.title, fakeSection.ref);
-
     sections = marker->sections(fake, CodeMarker::Detailed, CodeMarker::Okay);
     s = sections.begin();
     while (s != sections.end()) {
@@ -1660,35 +1569,11 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
         NodeList::ConstIterator m = (*s).members.begin();
         while (m != (*s).members.end()) {
             generateDetailedMember(*m, fake, marker);
-            fakeSection.keywords += qMakePair((*m)->name(), linkForNode(*m, 0));
             ++m;
         }
         ++s;
     }
     generateFooter(fake);
-
-    if (fake->subType() == Node::Example) {
-        appendDcfSubSection(&dcfExamplesRoot, fakeSection);
-    }
-    else if (fake->subType() != Node::File) {
-        QString contentsPage = fake->links().value(Node::ContentsLink).first;
-
-        if (contentsPage == "Qt Designer Manual") {
-            appendDcfSubSection(&dcfDesignerRoot, fakeSection);
-        }
-        else if (contentsPage == "Qt Linguist Manual") {
-            appendDcfSubSection(&dcfLinguistRoot, fakeSection);
-        }
-        else if (contentsPage == "Qt Assistant Manual") {
-            appendDcfSubSection(&dcfAssistantRoot, fakeSection);
-        }
-        else if (contentsPage == "qmake Manual") {
-            appendDcfSubSection(&dcfQmakeRoot, fakeSection);
-        }
-        else {
-            appendDcfSubSection(&dcfOverviewsRoot, fakeSection);
-        }
-    }
 }
 
 /*!
@@ -3464,10 +3349,7 @@ QString HtmlGenerator::linkForNode(const Node *node, const Node *relative)
     fn = fileName(node);
 /*    if (!node->url().isEmpty())
         return fn;*/
-#if 0
-    // ### reintroduce this test, without breaking .dcf files
-    if (fn != outFileName())
-#endif
+
     link += fn;
 
     if (!node->isInnerNode() || node->subType() == Node::QmlPropertyGroup) {
@@ -3957,16 +3839,6 @@ QString HtmlGenerator::getLink(const Atom *atom,
         }
     }
     return link;
-}
-
-void HtmlGenerator::generateDcf(const QString &fileBase,
-                                const QString &startPage,
-                                const QString &title,
-                                DcfSection &dcfRoot)
-{
-    dcfRoot.ref = startPage;
-    dcfRoot.title = title;
-    generateDcfSections(dcfRoot, outputDir() + "/" + fileBase + ".dcf", fileBase + "/reference");
 }
 
 void HtmlGenerator::generateIndex(const QString &fileBase,

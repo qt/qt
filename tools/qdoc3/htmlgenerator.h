@@ -52,7 +52,6 @@
 
 #include "codemarker.h"
 #include "config.h"
-#include "dcfsection.h"
 #include "pagegenerator.h"
 
 QT_BEGIN_NAMESPACE
@@ -253,9 +252,6 @@ class HtmlGenerator : public PageGenerator
                             const Node *relative, 
                             CodeMarker *marker, 
                             const Node** node);
-    virtual void generateDcf(const QString &fileBase, 
-                             const QString &startPage,
-                             const QString &title, DcfSection &dcfRoot);
     virtual void generateIndex(const QString &fileBase, 
                                const QString &url,
                                const QString &title);
@@ -282,13 +278,6 @@ class HtmlGenerator : public PageGenerator
 #endif
     QMap<QString, QString> refMap;
     int codeIndent;
-    DcfSection dcfClassesRoot;
-    DcfSection dcfOverviewsRoot;
-    DcfSection dcfExamplesRoot;
-    DcfSection dcfDesignerRoot;
-    DcfSection dcfLinguistRoot;
-    DcfSection dcfAssistantRoot;
-    DcfSection dcfQmakeRoot;
     HelpProjectWriter *helpProjectWriter;
     bool inLink;
     bool inObsoleteLink;

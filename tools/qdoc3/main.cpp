@@ -51,22 +51,11 @@
 #include "config.h"
 #include "cppcodemarker.h"
 #include "cppcodeparser.h"
-#include "cpptoqsconverter.h"
 #include "doc.h"
 #include "htmlgenerator.h"
-#include "jambiapiparser.h"
-#include "javacodemarker.h"
-#include "javadocgenerator.h"
-#include "linguistgenerator.h"
-#include "loutgenerator.h"
-#include "mangenerator.h"
 #include "plaincodemarker.h"
 #include "polyarchiveextractor.h"
 #include "polyuncompressor.h"
-#include "qsakernelparser.h"
-#include "qscodemarker.h"
-#include "qscodeparser.h"
-#include "sgmlgenerator.h"
 #include "webxmlgenerator.h"
 #include "ditaxmlgenerator.h"
 #include "tokenizer.h"
@@ -210,7 +199,6 @@ static void processQdocconfFile(const QString &fileName)
     Location::initialize(config);
     Tokenizer::initialize(config);
     Doc::initialize(config);
-    CppToQsConverter::initialize(config);
     CodeMarker::initialize(config);
     CodeParser::initialize(config);
     Generator::initialize(config);
@@ -355,7 +343,6 @@ static void processQdocconfFile(const QString &fileName)
     Generator::terminate();
     CodeParser::terminate();
     CodeMarker::terminate();
-    CppToQsConverter::terminate();
     Doc::terminate();
     Tokenizer::terminate();
     Location::terminate();
@@ -408,25 +395,14 @@ int main(int argc, char **argv)
     CppCodeParser cppParser;
     Tree *cppTree = treeForLanguage(cppParser.language());
 
-    QsCodeParser qsParser(cppTree);
-    QsaKernelParser qsaKernelParser(cppTree);
-    JambiApiParser jambiParser(cppTree);
-
     /*
-      Create code markers for plain text, C++, Java, and qs.
+      Create code markers for plain text and C++.
      */
     PlainCodeMarker plainMarker;
     CppCodeMarker cppMarker;
-    JavaCodeMarker javaMarker;
-    QsCodeMarker qsMarker;
 
     ApiGenerator apiGenerator;
     HtmlGenerator htmlGenerator;
-    JavadocGenerator javadocGenerator;
-    LinguistGenerator linguistGenerator;
-    LoutGenerator loutGenerator;
-    ManGenerator manGenerator;
-    SgmlGenerator smglGenerator;
     WebXMLGenerator webxmlGenerator;
     DitaXmlGenerator ditaxmlGenerator;
 
