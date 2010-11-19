@@ -1341,51 +1341,52 @@ void tst_QScriptValue::toVariant()
     }
 }
 
+void tst_QScriptValue::toQObject_nonQObject_data()
+{
+    newEngine();
+    QTest::addColumn<QScriptValue>("value");
+
+    QTest::newRow("invalid") << QScriptValue();
+    QTest::newRow("bool(false)") << QScriptValue(false);
+    QTest::newRow("bool(true)") << QScriptValue(true);
+    QTest::newRow("int") << QScriptValue(123);
+    QTest::newRow("string") << QScriptValue(QString::fromLatin1("ciao"));
+    QTest::newRow("undefined") << QScriptValue(QScriptValue::UndefinedValue);
+    QTest::newRow("null") << QScriptValue(QScriptValue::NullValue);
+
+    QTest::newRow("bool bound(false)") << QScriptValue(engine, false);
+    QTest::newRow("bool bound(true)") << QScriptValue(engine, true);
+    QTest::newRow("int bound") << QScriptValue(engine, 123);
+    QTest::newRow("string bound") << QScriptValue(engine, QString::fromLatin1("ciao"));
+    QTest::newRow("undefined bound") << engine->undefinedValue();
+    QTest::newRow("null bound") << engine->nullValue();
+    QTest::newRow("object") << engine->newObject();
+    QTest::newRow("array") << engine->newArray();
+    QTest::newRow("date") << engine->newDate(124);
+    QTest::newRow("variant(12345)") << engine->newVariant(12345);
+    QTest::newRow("variant((QObject*)0)") << engine->newVariant(qVariantFromValue((QObject*)0));
+    QTest::newRow("newQObject(0)") << engine->newQObject(0);
+}
+
+
+void tst_QScriptValue::toQObject_nonQObject()
+{
+    QFETCH(QScriptValue, value);
+    QCOMPARE(value.toQObject(), (QObject *)0);
+    QCOMPARE(qscriptvalue_cast<QObject*>(value), (QObject *)0);
+}
+
 // unfortunately, this is necessary in order to do qscriptvalue_cast<QPushButton*>(...)
-Q_DECLARE_METATYPE(QPushButton*)
+Q_DECLARE_METATYPE(QPushButton*);
 
 void tst_QScriptValue::toQObject()
 {
     QScriptEngine eng;
 
-    QScriptValue undefined = eng.undefinedValue();
-    QCOMPARE(undefined.toQObject(), (QObject *)0);
-    QCOMPARE(qscriptvalue_cast<QObject*>(undefined), (QObject *)0);
-
-    QScriptValue null = eng.nullValue();
-    QCOMPARE(null.toQObject(), (QObject *)0);
-    QCOMPARE(qscriptvalue_cast<QObject*>(null), (QObject *)0);
-
-    {
-        QScriptValue falskt = QScriptValue(&eng, false);
-        QCOMPARE(falskt.toQObject(), (QObject *)0);
-        QCOMPARE(qscriptvalue_cast<QObject*>(falskt), (QObject *)0);
-
-        QScriptValue sant = QScriptValue(&eng, true);
-        QCOMPARE(sant.toQObject(), (QObject *)0);
-        QCOMPARE(qscriptvalue_cast<QObject*>(sant), (QObject *)0);
-
-        QScriptValue number = QScriptValue(&eng, 123.0);
-        QCOMPARE(number.toQObject(), (QObject *)0);
-        QCOMPARE(qscriptvalue_cast<QObject*>(number), (QObject *)0);
-
-        QScriptValue str = QScriptValue(&eng, QString("ciao"));
-        QCOMPARE(str.toQObject(), (QObject *)0);
-        QCOMPARE(qscriptvalue_cast<QObject*>(str), (QObject *)0);
-    }
-
-    QScriptValue object = eng.newObject();
-    QCOMPARE(object.toQObject(), (QObject *)0);
-    QCOMPARE(qscriptvalue_cast<QObject*>(object), (QObject *)0);
-
     QScriptValue qobject = eng.newQObject(this);
     QCOMPARE(qobject.toQObject(), (QObject *)this);
     QCOMPARE(qscriptvalue_cast<QObject*>(qobject), (QObject *)this);
     QCOMPARE(qscriptvalue_cast<QWidget*>(qobject), (QWidget *)0);
-
-    QScriptValue qobject2 = eng.newQObject(0);
-    QCOMPARE(qobject2.toQObject(), (QObject *)0);
-    QCOMPARE(qscriptvalue_cast<QObject*>(qobject2), (QObject *)0);
 
     QWidget widget;
     QScriptValue qwidget = eng.newQObject(&widget);
@@ -1399,25 +1400,6 @@ void tst_QScriptValue::toQObject()
     QCOMPARE(qscriptvalue_cast<QObject*>(qbutton), (QObject *)&button);
     QCOMPARE(qscriptvalue_cast<QWidget*>(qbutton), (QWidget *)&button);
     QCOMPARE(qscriptvalue_cast<QPushButton*>(qbutton), &button);
-
-    // V2 constructors
-    {
-        QScriptValue falskt = QScriptValue(false);
-        QCOMPARE(falskt.toQObject(), (QObject *)0);
-        QCOMPARE(qscriptvalue_cast<QObject*>(falskt), (QObject *)0);
-
-        QScriptValue sant = QScriptValue(true);
-        QCOMPARE(sant.toQObject(), (QObject *)0);
-        QCOMPARE(qscriptvalue_cast<QObject*>(sant), (QObject *)0);
-
-        QScriptValue number = QScriptValue(123.0);
-        QCOMPARE(number.toQObject(), (QObject *)0);
-        QCOMPARE(qscriptvalue_cast<QObject*>(number), (QObject *)0);
-
-        QScriptValue str = QScriptValue(QString("ciao"));
-        QCOMPARE(str.toQObject(), (QObject *)0);
-        QCOMPARE(qscriptvalue_cast<QObject*>(str), (QObject *)0);
-    }
 
     // wrapping a QObject* as variant
     QScriptValue variant = eng.newVariant(qVariantFromValue((QObject*)&button));
@@ -1437,10 +1419,6 @@ void tst_QScriptValue::toQObject()
     QCOMPARE(qscriptvalue_cast<QObject*>(variant3), (QObject*)0);
     QCOMPARE(qscriptvalue_cast<QWidget*>(variant3), (QWidget*)0);
     QCOMPARE(qscriptvalue_cast<QPushButton*>(variant3), &button);
-
-    QScriptValue inv;
-    QCOMPARE(inv.toQObject(), (QObject *)0);
-    QCOMPARE(qscriptvalue_cast<QObject*>(inv), (QObject *)0);
 }
 
 void tst_QScriptValue::toObject()

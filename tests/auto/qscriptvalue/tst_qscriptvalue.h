@@ -91,6 +91,8 @@ private slots:
     void toUInt32();
     void toUInt16();
     void toVariant();
+    void toQObject_nonQObject_data();
+    void toQObject_nonQObject();
     void toQObject();
     void toDateTime();
     void toRegExp();
