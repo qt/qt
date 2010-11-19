@@ -9,34 +9,35 @@ import QtQuick 1.0
 */
 
 Rectangle {
-    width: 400; height: 200
+    width: 200; height: 100
     Rectangle {
         id: redRect
-        width: 100; height: 100
+        width: 50; height: 50
         color: "red"
     }
     Rectangle {
         id: redRect2
-        width: 100; height: 100
-        y: 100
+        width: 50; height: 50
+        y: 50
         color: "red"
     }
 
-    MouseArea {
-        anchors.fill: parent
-        onClicked: parent.state = "state1"
+    Timer{
+        interval: 100
+        running: true
+        onTriggered: parent.state = "state1"
     }
 
     states: State {
         name: "state1"
         PropertyChanges {
             target: redRect
-            x: 300
+            x: 150
             color: "purple"
         }
         PropertyChanges {
             target: redRect2
-            x: 300
+            x: 150
             color: "purple"
         }
     }
