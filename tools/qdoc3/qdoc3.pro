@@ -28,7 +28,6 @@ HEADERS += atom.h \
            codechunk.h \
            codemarker.h \
 	   codeparser.h \
-	   command.h \
            config.h \
 	   cppcodemarker.h \
 	   cppcodeparser.h \
@@ -53,7 +52,6 @@ SOURCES += atom.cpp \
            codechunk.cpp \
            codemarker.cpp \
 	   codeparser.cpp \
-	   command.cpp \
            config.cpp \
 	   cppcodemarker.cpp \
 	   cppcodeparser.cpp \
