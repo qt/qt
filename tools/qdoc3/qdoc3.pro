@@ -25,7 +25,6 @@ build_all:!build_pass {
 
 CONFIG -= app_bundle
 HEADERS += atom.h \
-	   ccodeparser.h \
            codechunk.h \
            codemarker.h \
 	   codeparser.h \
@@ -51,7 +50,6 @@ HEADERS += atom.h \
 	   tr.h \
 	   tree.h
 SOURCES += atom.cpp \
-	   ccodeparser.cpp \
            codechunk.cpp \
            codemarker.cpp \
 	   codeparser.cpp \
