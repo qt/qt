@@ -3,7 +3,7 @@ import "../shared" 1.0
 
 TextInput {
     id: inp
-    FontLoader { id: fixedFont; source: "Vera.ttf" }
+    FontLoader { id: fixedFont; source: "DejaVuSansMono.ttf" }
     font.family: fixedFont.name
     font.pixelSize: 12
     cursorDelegate: Rectangle {

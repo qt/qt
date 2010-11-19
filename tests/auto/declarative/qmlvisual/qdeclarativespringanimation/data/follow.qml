@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "e94ba580322887dbbbf9cb6309e39c23"
+        image: "follow.0.png"
     }
     Frame {
         msec: 32
@@ -242,11 +242,11 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "follow.0.png"
+        hash: "00586f2f1d49fa81f90f7b06614311b4"
     }
     Frame {
         msec: 976
-        hash: "78422e0e8d323dea6aa655a2980b7562"
+        image: "follow.1.png"
     }
     Frame {
         msec: 992
@@ -490,11 +490,11 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "follow.1.png"
+        hash: "a40e5e2744d1d84c8b9a45525801a745"
     }
     Frame {
         msec: 1936
-        hash: "379d5c4ced414f856e476095fbedfb7d"
+        image: "follow.2.png"
     }
     Frame {
         msec: 1952
@@ -730,11 +730,11 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "follow.2.png"
+        hash: "3c5d3d10bacc093afc6a9c0b5aa4cddc"
     }
     Frame {
         msec: 2896
-        hash: "3c5d3d10bacc093afc6a9c0b5aa4cddc"
+        image: "follow.3.png"
     }
     Frame {
         msec: 2912
@@ -978,11 +978,11 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "follow.3.png"
+        hash: "6686f9c1a814c6a6b785b70f94937b68"
     }
     Frame {
         msec: 3856
-        hash: "0aed83364cd59e3f7309c92593894d43"
+        image: "follow.4.png"
     }
     Frame {
         msec: 3872
@@ -1218,11 +1218,11 @@ VisualTest {
     }
     Frame {
         msec: 4800
-        image: "follow.4.png"
+        hash: "315764d20b647f6ab1ba30239a69bf72"
     }
     Frame {
         msec: 4816
-        hash: "a510d302d2441b9a07463aed8b592d32"
+        image: "follow.5.png"
     }
     Frame {
         msec: 4832
@@ -1458,11 +1458,11 @@ VisualTest {
     }
     Frame {
         msec: 5760
-        image: "follow.5.png"
+        hash: "b7133225daa03563d3f5b1dac5f56a23"
     }
     Frame {
         msec: 5776
-        hash: "6354ebe3aa919a52902b5a5346b473ae"
+        image: "follow.6.png"
     }
     Frame {
         msec: 5792
@@ -1698,11 +1698,11 @@ VisualTest {
     }
     Frame {
         msec: 6720
-        image: "follow.6.png"
+        hash: "228920e994ebf71d542c71ce8263614e"
     }
     Frame {
         msec: 6736
-        hash: "228920e994ebf71d542c71ce8263614e"
+        image: "follow.7.png"
     }
     Frame {
         msec: 6752

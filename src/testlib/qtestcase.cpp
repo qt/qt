@@ -755,6 +755,9 @@ QT_BEGIN_NAMESPACE
     QTest::touchEvent to create a QTouchEventSequence instance. Add touch events to
     the sequence by calling press(), move(), release() and stationary(), and let the
     instance run out of scope to commit the sequence to the event system.
+
+    Example:
+    \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 25
 */
 
 /*!

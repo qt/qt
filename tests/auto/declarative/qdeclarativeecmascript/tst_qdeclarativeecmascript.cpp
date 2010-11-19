@@ -1566,7 +1566,7 @@ void tst_qdeclarativeecmascript::callQtInvokables()
 
     o.reset();
     {
-    QString expected = "MyInvokableObject(0x" + QString::number((intptr_t)&o, 16) + ")";
+    QString expected = "MyInvokableObject(0x" + QString::number((quintptr)&o, 16) + ")";
     QCOMPARE(engine->evaluate("object.method_QString(object)").isUndefined(), true);
     QCOMPARE(o.error(), false);
     QCOMPARE(o.invoked(), 11);
