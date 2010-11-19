@@ -3413,7 +3413,7 @@ QString HtmlGenerator::protect(const QString &string, const QString &outputEncod
 #undef APPEND
 }
 
-QString HtmlGenerator::fileBase(const Node *node)
+QString HtmlGenerator::fileBase(const Node *node) const
 {
     QString result;
 
@@ -3544,8 +3544,11 @@ QString HtmlGenerator::linkForNode(const Node *node, const Node *relative)
         return QString();
  
     fn = fileName(node);
-/*    if (!node->url().isEmpty())
-        return fn;*/
+#if 0
+    if (!node->url().isEmpty())
+        return fn;
+#endif    
+
 #if 0
     // ### reintroduce this test, without breaking .dcf files
     if (fn != outFileName())

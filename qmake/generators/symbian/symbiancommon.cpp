@@ -41,9 +41,10 @@
 
 #include "symbiancommon.h"
 #include <qdebug.h>
+#include <qxmlstream.h>
 
 // Included from tools/shared
-#include <symbian/epocroot.h>
+#include <symbian/epocroot_p.h>
 
 #define RESOURCE_DIRECTORY_RESOURCE "\\\\resource\\\\apps\\\\"
 
@@ -151,7 +152,9 @@ QString romPath(const QString& path)
     return QLatin1String("z:") + path;
 }
 
-void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocBuild)
+void SymbianCommonGenerator::generatePkgFile(const QString &iconFile,
+                                             bool epocBuild,
+                                             const SymbianLocalizationList &symbianLocalizationList)
 {
     QMakeProject *project = generator->project;
     QString pkgFilename = Option::output_dir + QLatin1Char('/') +
@@ -270,8 +273,17 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocB
 
     // Apply some defaults if specific data does not exist in PKG pre-rules
     if (languageRules.isEmpty()) {
-        // language, (*** hardcoded to english atm, should be parsed from TRANSLATIONS)
-        languageRules << "; Language\n&EN\n\n";
+        if (symbianLocalizationList.isEmpty()) {
+            languageRules << "; Language\n&EN\n\n";
+        } else {
+            QStringList langCodes;
+            SymbianLocalizationListIterator iter(symbianLocalizationList);
+            while (iter.hasNext()) {
+                const SymbianLocalization &loc = iter.next();
+                langCodes << loc.symbianLanguageCode;
+            }
+            languageRules << QString("; Languages\n&%1\n\n").arg(langCodes.join(","));
+        }
     } else if (headerRules.isEmpty()) {
         // In case user defines langs, he must take care also about SIS header
         fprintf(stderr, "Warning: If language is defined with DEPLOYMENT pkg_prerules, also the SIS header must be defined\n");
@@ -320,12 +332,14 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocB
 
     // Package header
     QString sisHeader = "; SIS header: name, uid, version\n#{\"%1\"},(%2),%3\n\n";
-    QString visualTarget = project->values("DEPLOYMENT.display_name").join(" ");
-    if (visualTarget.isEmpty())
-        visualTarget = generator->escapeFilePath(project->first("TARGET"));
 
-    visualTarget = removePathSeparators(visualTarget);
-    QString wrapperTarget = visualTarget + " installer";
+    QString defaultVisualTarget = project->values("DEPLOYMENT.display_name").join(" ");
+    if (defaultVisualTarget.isEmpty())
+        defaultVisualTarget = generator->escapeFilePath(project->first("TARGET"));
+    defaultVisualTarget = removePathSeparators(defaultVisualTarget);
+
+    QString visualTarget = generatePkgNameForHeader(symbianLocalizationList, defaultVisualTarget, false);
+    QString wrapperTarget = generatePkgNameForHeader(symbianLocalizationList, defaultVisualTarget, true);
 
     if (installerSisHeader.startsWith("0x", Qt::CaseInsensitive)) {
         tw << sisHeader.arg(wrapperTarget).arg(installerSisHeader).arg(applicationVersion);
@@ -344,7 +358,13 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocB
 
     // Vendor name
     if (!containsStartWithItem('%', vendorRules)) {
-        vendorRules << "; Default localized vendor name\n%{\"Vendor\"}\n\n";
+        QString vendorStr = QLatin1String("\"Vendor\",");
+        QString locVendors = vendorStr;
+        for (int i = 1; i < symbianLocalizationList.size(); i++) {
+            locVendors.append(vendorStr);
+        }
+        locVendors.chop(1);
+        vendorRules << QString("; Default localized vendor name\n%{%1}\n\n").arg(locVendors);
     }
     if (!containsStartWithItem(':', vendorRules)) {
         vendorRules << "; Default unique vendor name\n:\"Vendor\"\n\n";
@@ -385,12 +405,19 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile, bool epocB
         t << manufacturerStr << endl;
     }
 
+    // ### FIXME: remove epocBuild check once makefile based mkspecs support localized resource generation
+    if (epocBuild && symbianLocalizationList.size()) {
+        // Add localized resources to DEPLOYMENT if default resource deployment is done
+        addLocalizedResourcesToDeployment("default_resource_deployment.sources", symbianLocalizationList);
+        addLocalizedResourcesToDeployment("default_reg_deployment.sources", symbianLocalizationList);
+    }
+
     // deploy files specified by DEPLOYMENT variable
     QString remoteTestPath;
     QString zDir;
     remoteTestPath = QString("!:\\private\\%1").arg(privateDirUid);
     if (epocBuild)
-        zDir = epocRoot() + QLatin1String("epoc32/data/z");
+        zDir = qt_epocRoot() + QLatin1String("epoc32/data/z");
 
     DeploymentList depList;
     initProjectDeploySymbian(project, depList, remoteTestPath, true, epocBuild, "$(PLATFORM)", "$(TARGET)", generatedDirs, generatedFiles);
@@ -633,12 +660,9 @@ void SymbianCommonGenerator::writeRssFile(QString &numberOfIcons, QString &iconF
     }
 }
 
-void SymbianCommonGenerator::writeLocFile(QStringList &symbianLangCodes)
+void SymbianCommonGenerator::writeLocFile(const SymbianLocalizationList &symbianLocalizationList)
 {
-    QString filename(fixedTarget);
-    if (!Option::output_dir.isEmpty())
-        filename = Option::output_dir + '/' + filename;
-    filename.append(".loc");
+    QString filename = generateLocFileName();
     QFile ft(filename);
     if (ft.open(QIODevice::WriteOnly)) {
         generatedFiles << ft.fileName();
@@ -658,11 +682,22 @@ void SymbianCommonGenerator::writeLocFile(QStringList &symbianLangCodes)
         t << "#ifdef LANGUAGE_SC" << endl;
         t << "#define STRING_r_short_caption \"" << displayName  << "\"" << endl;
         t << "#define STRING_r_caption \"" << displayName  << "\"" << endl;
-        foreach(QString lang, symbianLangCodes) {
-            t << "#elif defined LANGUAGE_" << lang << endl;
-            t << "#define STRING_r_short_caption \"" << displayName  << "\"" << endl;
-            t << "#define STRING_r_caption \"" << displayName  << "\"" << endl;
+
+        SymbianLocalizationListIterator iter(symbianLocalizationList);
+        while (iter.hasNext()) {
+            const SymbianLocalization &loc = iter.next();
+            QString shortCaption = loc.shortCaption;
+            QString longCaption = loc.longCaption;
+            if (shortCaption.isEmpty())
+                shortCaption = displayName;
+            if (longCaption.isEmpty())
+                longCaption = displayName;
+
+            t << "#elif defined LANGUAGE_" << loc.symbianLanguageCode << endl;
+            t << "#define STRING_r_short_caption \"" << shortCaption << "\"" << endl;
+            t << "#define STRING_r_caption \"" << longCaption << "\"" << endl;
         }
+
         t << "#else" << endl;
         t << "#define STRING_r_short_caption \"" << displayName  << "\"" << endl;
         t << "#define STRING_r_caption \"" << displayName  << "\"" << endl;
@@ -803,195 +838,49 @@ void SymbianCommonGenerator::writeCustomDefFile()
     }
 }
 
-QStringList SymbianCommonGenerator::symbianLangCodesFromTsFiles()
+void SymbianCommonGenerator::parseTsFiles(SymbianLocalizationList *symbianLocalizationList)
 {
-    QStringList tsfiles;
-    QStringList symbianLangCodes;
-    tsfiles << generator->project->values("TRANSLATIONS");
-
-    fillQt2S60LangMapTable();
-
-    foreach(QString file, tsfiles) {
-        int extIndex = file.lastIndexOf(".");
-        int langIndex = file.lastIndexOf("_", (extIndex - file.length()));
-        langIndex += 1;
-        QString qtlang = file.mid(langIndex, extIndex - langIndex);
-        QString s60lang = qt2S60LangMapTable.value(qtlang, QString("SC"));
-
-        if (!symbianLangCodes.contains(s60lang) && s60lang != "SC")
-            symbianLangCodes += s60lang;
+    if (!generator->project->isActiveConfig("localize_deployment")) {
+        return;
     }
 
-    return symbianLangCodes;
+    QStringList symbianTsFiles;
+
+    symbianTsFiles << generator->project->values("SYMBIAN_MATCHED_TRANSLATIONS");
+
+    if (!symbianTsFiles.isEmpty()) {
+        fillQt2SymbianLocalizationList(symbianLocalizationList);
+
+        QMutableListIterator<SymbianLocalization> iter(*symbianLocalizationList);
+        while (iter.hasNext()) {
+            SymbianLocalization &loc = iter.next();
+            static QString matchStrTemplate = QLatin1String(".*_%1\\.ts");
+            QString matchStr = matchStrTemplate.arg(loc.qtLanguageCode);
+
+            foreach (QString file, symbianTsFiles) {
+                QRegExp matcher(matchStr);
+                if (matcher.exactMatch(file) && parseTsContent(file, &loc))
+                    break;
+            }
+        }
+    }
 }
 
-void SymbianCommonGenerator::fillQt2S60LangMapTable()
+void SymbianCommonGenerator::fillQt2SymbianLocalizationList(SymbianLocalizationList *symbianLocalizationList)
 {
-    qt2S60LangMapTable.reserve(170); // 165 items at time of writing.
-    qt2S60LangMapTable.insert("ab", "SC");            //Abkhazian                     //
-    qt2S60LangMapTable.insert("om", "SC");            //Afan                          //
-    qt2S60LangMapTable.insert("aa", "SC");            //Afar                          //
-    qt2S60LangMapTable.insert("af", "34");            //Afrikaans                     //Afrikaans
-    qt2S60LangMapTable.insert("sq", "35");            //Albanian                      //Albanian
-    qt2S60LangMapTable.insert("am", "36");            //Amharic                       //Amharic
-    qt2S60LangMapTable.insert("ar", "37");            //Arabic                        //Arabic
-    qt2S60LangMapTable.insert("hy", "38");            //Armenian                      //Armenian
-    qt2S60LangMapTable.insert("as", "SC");            //Assamese                      //
-    qt2S60LangMapTable.insert("ay", "SC");            //Aymara                        //
-    qt2S60LangMapTable.insert("az", "SC");            //Azerbaijani                   //
-    qt2S60LangMapTable.insert("ba", "SC");            //Bashkir                       //
-    qt2S60LangMapTable.insert("eu", "SC");            //Basque                        //
-    qt2S60LangMapTable.insert("bn", "41");            //Bengali                       //Bengali
-    qt2S60LangMapTable.insert("dz", "SC");            //Bhutani                       //
-    qt2S60LangMapTable.insert("bh", "SC");            //Bihari                        //
-    qt2S60LangMapTable.insert("bi", "SC");            //Bislama                       //
-    qt2S60LangMapTable.insert("br", "SC");            //Breton                        //
-    qt2S60LangMapTable.insert("bg", "42");            //Bulgarian                     //Bulgarian
-    qt2S60LangMapTable.insert("my", "43");            //Burmese                       //Burmese
-    qt2S60LangMapTable.insert("be", "40");            //Byelorussian                  //Belarussian
-    qt2S60LangMapTable.insert("km", "SC");            //Cambodian                     //
-    qt2S60LangMapTable.insert("ca", "44");            //Catalan                       //Catalan
-    qt2S60LangMapTable.insert("zh", "SC");            //Chinese                       //
-    qt2S60LangMapTable.insert("co", "SC");            //Corsican                      //
-    qt2S60LangMapTable.insert("hr", "45");            //Croatian                      //Croatian
-    qt2S60LangMapTable.insert("cs", "25");            //Czech                         //Czech
-    qt2S60LangMapTable.insert("da", "07");            //Danish                        //Danish
-    qt2S60LangMapTable.insert("nl", "18");            //Dutch                         //Dutch
-    qt2S60LangMapTable.insert("en", "01");            //English                       //English(UK)
-    qt2S60LangMapTable.insert("eo", "SC");            //Esperanto                     //
-    qt2S60LangMapTable.insert("et", "49");            //Estonian                      //Estonian
-    qt2S60LangMapTable.insert("fo", "SC");            //Faroese                       //
-    qt2S60LangMapTable.insert("fj", "SC");            //Fiji                          //
-    qt2S60LangMapTable.insert("fi", "09");            //Finnish                       //Finnish
-    qt2S60LangMapTable.insert("fr", "02");            //French                        //French
-    qt2S60LangMapTable.insert("fy", "SC");            //Frisian                       //
-    qt2S60LangMapTable.insert("gd", "52");            //Gaelic                        //Gaelic
-    qt2S60LangMapTable.insert("gl", "SC");            //Galician                      //
-    qt2S60LangMapTable.insert("ka", "53");            //Georgian                      //Georgian
-    qt2S60LangMapTable.insert("de", "03");            //German                        //German
-    qt2S60LangMapTable.insert("el", "54");            //Greek                         //Greek
-    qt2S60LangMapTable.insert("kl", "SC");            //Greenlandic                   //
-    qt2S60LangMapTable.insert("gn", "SC");            //Guarani                       //
-    qt2S60LangMapTable.insert("gu", "56");            //Gujarati                      //Gujarati
-    qt2S60LangMapTable.insert("ha", "SC");            //Hausa                         //
-    qt2S60LangMapTable.insert("he", "57");            //Hebrew                        //Hebrew
-    qt2S60LangMapTable.insert("hi", "58");            //Hindi                         //Hindi
-    qt2S60LangMapTable.insert("hu", "17");            //Hungarian                     //Hungarian
-    qt2S60LangMapTable.insert("is", "15");            //Icelandic                     //Icelandic
-    qt2S60LangMapTable.insert("id", "59");            //Indonesian                    //Indonesian
-    qt2S60LangMapTable.insert("ia", "SC");            //Interlingua                   //
-    qt2S60LangMapTable.insert("ie", "SC");            //Interlingue                   //
-    qt2S60LangMapTable.insert("iu", "SC");            //Inuktitut                     //
-    qt2S60LangMapTable.insert("ik", "SC");            //Inupiak                       //
-    qt2S60LangMapTable.insert("ga", "60");            //Irish                         //Irish
-    qt2S60LangMapTable.insert("it", "05");            //Italian                       //Italian
-    qt2S60LangMapTable.insert("ja", "32");            //Japanese                      //Japanese
-    qt2S60LangMapTable.insert("jv", "SC");            //Javanese                      //
-    qt2S60LangMapTable.insert("kn", "62");            //Kannada                       //Kannada
-    qt2S60LangMapTable.insert("ks", "SC");            //Kashmiri                      //
-    qt2S60LangMapTable.insert("kk", "63");            //Kazakh                        //Kazakh
-    qt2S60LangMapTable.insert("rw", "SC");            //Kinyarwanda                   //
-    qt2S60LangMapTable.insert("ky", "SC");            //Kirghiz                       //
-    qt2S60LangMapTable.insert("ko", "65");            //Korean                        //Korean
-    qt2S60LangMapTable.insert("ku", "SC");            //Kurdish                       //
-    qt2S60LangMapTable.insert("rn", "SC");            //Kurundi                       //
-    qt2S60LangMapTable.insert("lo", "66");            //Laothian                      //Laothian
-    qt2S60LangMapTable.insert("la", "SC");            //Latin                         //
-    qt2S60LangMapTable.insert("lv", "67");            //Latvian                       //Latvian
-    qt2S60LangMapTable.insert("ln", "SC");            //Lingala                       //
-    qt2S60LangMapTable.insert("lt", "68");            //Lithuanian                    //Lithuanian
-    qt2S60LangMapTable.insert("mk", "69");            //Macedonian                    //Macedonian
-    qt2S60LangMapTable.insert("mg", "SC");            //Malagasy                      //
-    qt2S60LangMapTable.insert("ms", "70");            //Malay                         //Malay
-    qt2S60LangMapTable.insert("ml", "71");            //Malayalam                     //Malayalam
-    qt2S60LangMapTable.insert("mt", "SC");            //Maltese                       //
-    qt2S60LangMapTable.insert("mi", "SC");            //Maori                         //
-    qt2S60LangMapTable.insert("mr", "72");            //Marathi                       //Marathi
-    qt2S60LangMapTable.insert("mo", "73");            //Moldavian                     //Moldovian
-    qt2S60LangMapTable.insert("mn", "74");            //Mongolian                     //Mongolian
-    qt2S60LangMapTable.insert("na", "SC");            //Nauru                         //
-    qt2S60LangMapTable.insert("ne", "SC");            //Nepali                        //
-    qt2S60LangMapTable.insert("nb", "08");            //Norwegian                     //Norwegian
-    qt2S60LangMapTable.insert("oc", "SC");            //Occitan                       //
-    qt2S60LangMapTable.insert("or", "SC");            //Oriya                         //
-    qt2S60LangMapTable.insert("ps", "SC");            //Pashto                        //
-    qt2S60LangMapTable.insert("fa", "SC");            //Persian                       //
-    qt2S60LangMapTable.insert("pl", "27");            //Polish                        //Polish
-    qt2S60LangMapTable.insert("pt", "13");            //Portuguese                    //Portuguese
-    qt2S60LangMapTable.insert("pa", "77");            //Punjabi                       //Punjabi
-    qt2S60LangMapTable.insert("qu", "SC");            //Quechua                       //
-    qt2S60LangMapTable.insert("rm", "SC");            //RhaetoRomance                 //
-    qt2S60LangMapTable.insert("ro", "78");            //Romanian                      //Romanian
-    qt2S60LangMapTable.insert("ru", "16");            //Russian                       //Russian
-    qt2S60LangMapTable.insert("sm", "SC");            //Samoan                        //
-    qt2S60LangMapTable.insert("sg", "SC");            //Sangho                        //
-    qt2S60LangMapTable.insert("sa", "SC");            //Sanskrit                      //
-    qt2S60LangMapTable.insert("sr", "79");            //Serbian                       //Serbian
-    qt2S60LangMapTable.insert("sh", "SC");            //SerboCroatian                 //
-    qt2S60LangMapTable.insert("st", "SC");            //Sesotho                       //
-    qt2S60LangMapTable.insert("tn", "SC");            //Setswana                      //
-    qt2S60LangMapTable.insert("sn", "SC");            //Shona                         //
-    qt2S60LangMapTable.insert("sd", "SC");            //Sindhi                        //
-    qt2S60LangMapTable.insert("si", "80");            //Singhalese                    //Sinhalese
-    qt2S60LangMapTable.insert("ss", "SC");            //Siswati                       //
-    qt2S60LangMapTable.insert("sk", "26");            //Slovak                        //Slovak
-    qt2S60LangMapTable.insert("sl", "28");            //Slovenian                     //Slovenian
-    qt2S60LangMapTable.insert("so", "81");            //Somali                        //Somali
-    qt2S60LangMapTable.insert("es", "04");            //Spanish                       //Spanish
-    qt2S60LangMapTable.insert("su", "SC");            //Sundanese                     //
-    qt2S60LangMapTable.insert("sw", "84");            //Swahili                       //Swahili
-    qt2S60LangMapTable.insert("sv", "06");            //Swedish                       //Swedish
-    qt2S60LangMapTable.insert("tl", "39");            //Tagalog                       //Tagalog
-    qt2S60LangMapTable.insert("tg", "SC");            //Tajik                         //
-    qt2S60LangMapTable.insert("ta", "87");            //Tamil                         //Tamil
-    qt2S60LangMapTable.insert("tt", "SC");            //Tatar                         //
-    qt2S60LangMapTable.insert("te", "88");            //Telugu                        //Telugu
-    qt2S60LangMapTable.insert("th", "33");            //Thai                          //Thai
-    qt2S60LangMapTable.insert("bo", "89");            //Tibetan                       //Tibetan
-    qt2S60LangMapTable.insert("ti", "90");            //Tigrinya                      //Tigrinya
-    qt2S60LangMapTable.insert("to", "SC");            //Tonga                         //
-    qt2S60LangMapTable.insert("ts", "SC");            //Tsonga                        //
-    qt2S60LangMapTable.insert("tr", "14");            //Turkish                       //Turkish
-    qt2S60LangMapTable.insert("tk", "92");            //Turkmen                       //Turkmen
-    qt2S60LangMapTable.insert("tw", "SC");            //Twi                           //
-    qt2S60LangMapTable.insert("ug", "SC");            //Uigur                         //
-    qt2S60LangMapTable.insert("uk", "93");            //Ukrainian                     //Ukrainian
-    qt2S60LangMapTable.insert("ur", "94");            //Urdu                          //Urdu
-    qt2S60LangMapTable.insert("uz", "SC");            //Uzbek                         //
-    qt2S60LangMapTable.insert("vi", "96");            //Vietnamese                    //Vietnamese
-    qt2S60LangMapTable.insert("vo", "SC");            //Volapuk                       //
-    qt2S60LangMapTable.insert("cy", "97");            //Welsh                         //Welsh
-    qt2S60LangMapTable.insert("wo", "SC");            //Wolof                         //
-    qt2S60LangMapTable.insert("xh", "SC");            //Xhosa                         //
-    qt2S60LangMapTable.insert("yi", "SC");            //Yiddish                       //
-    qt2S60LangMapTable.insert("yo", "SC");            //Yoruba                        //
-    qt2S60LangMapTable.insert("za", "SC");            //Zhuang                        //
-    qt2S60LangMapTable.insert("zu", "98");            //Zulu                          //Zulu
-    qt2S60LangMapTable.insert("nn", "75");            //Nynorsk                       //NorwegianNynorsk
-    qt2S60LangMapTable.insert("bs", "SC");            //Bosnian                       //
-    qt2S60LangMapTable.insert("dv", "SC");            //Divehi                        //
-    qt2S60LangMapTable.insert("gv", "SC");            //Manx                          //
-    qt2S60LangMapTable.insert("kw", "SC");            //Cornish                       //
-    qt2S60LangMapTable.insert("ak", "SC");            //Akan                          //
-    qt2S60LangMapTable.insert("kok", "SC");           //Konkani                       //
-    qt2S60LangMapTable.insert("gaa", "SC");           //Ga                            //
-    qt2S60LangMapTable.insert("ig", "SC");            //Igbo                          //
-    qt2S60LangMapTable.insert("kam", "SC");           //Kamba                         //
-    qt2S60LangMapTable.insert("syr", "SC");           //Syriac                        //
-    qt2S60LangMapTable.insert("byn", "SC");           //Blin                          //
-    qt2S60LangMapTable.insert("gez", "SC");           //Geez                          //
-    qt2S60LangMapTable.insert("kfo", "SC");           //Koro                          //
-    qt2S60LangMapTable.insert("sid", "SC");           //Sidamo                        //
-    qt2S60LangMapTable.insert("cch", "SC");           //Atsam                         //
-    qt2S60LangMapTable.insert("tig", "SC");           //Tigre                         //
-    qt2S60LangMapTable.insert("kaj", "SC");           //Jju                           //
-    qt2S60LangMapTable.insert("fur", "SC");           //Friulian                      //
-    qt2S60LangMapTable.insert("ve", "SC");            //Venda                         //
-    qt2S60LangMapTable.insert("ee", "SC");            //Ewe                           //
-    qt2S60LangMapTable.insert("wa", "SC");            //Walamo                        //
-    qt2S60LangMapTable.insert("haw", "SC");           //Hawaiian                      //
-    qt2S60LangMapTable.insert("kcg", "SC");           //Tyap                          //
-    qt2S60LangMapTable.insert("ny", "SC");            //Chewa                         //
+    static QString symbianCodePrefix = QLatin1String("SYMBIAN_LANG.");
+
+    QStringList symbianLanguages = generator->project->values("SYMBIAN_MATCHED_LANGUAGES");
+
+    foreach (QString qtCode, symbianLanguages) {
+        SymbianLocalization newLoc;
+        QString symbianCodeVariable = symbianCodePrefix + qtCode;
+        newLoc.symbianLanguageCode = generator->project->first(symbianCodeVariable);
+        if (!newLoc.symbianLanguageCode.isEmpty()) {
+            newLoc.qtLanguageCode = qtCode;
+            symbianLocalizationList->append(newLoc);
+        }
+    }
 }
 
 void SymbianCommonGenerator::parsePreRules(const QString &deploymentVariable,
@@ -1057,3 +946,183 @@ void SymbianCommonGenerator::parsePostRules(const QString &deploymentVariable,
     }
 }
 
+bool SymbianCommonGenerator::parseTsContent(const QString &tsFilename, SymbianLocalization *loc)
+{
+    bool retval = true;
+    QMakeProject *project = generator->project;
+    QFile tsFile(tsFilename);
+
+    if (tsFile.exists()) {
+        if (tsFile.open(QIODevice::ReadOnly)) {
+            static QString applicationCaptionsContext = QLatin1String("QtApplicationCaptions");
+            static QString pkgNameContext = QLatin1String("QtPackageNames");
+            static QString tsElement = QLatin1String("TS");
+            static QString contextElement = QLatin1String("context");
+            static QString nameElement = QLatin1String("name");
+            static QString messageElement = QLatin1String("message");
+            static QString sourceElement = QLatin1String("source");
+            static QString translationElement = QLatin1String("translation");
+            static QString shortCaptionId = QLatin1String("Application short caption");
+            static QString longCaptionId = QLatin1String("Application long caption");
+            static QString pkgDisplayNameId = QLatin1String("Package name");
+            static QString installerPkgDisplayNameId = QLatin1String("Smart installer package name");
+            static QString languageAttribute = QLatin1String("language");
+            static QChar underscoreChar = QLatin1Char('_');
+
+            enum CurrentContext {
+                ContextUnknown,
+                ContextUninteresting,
+                ContextInteresting
+            };
+
+            QXmlStreamReader xml(&tsFile);
+
+            while (xml.name() != tsElement)
+                xml.readNextStartElement();
+
+            while (xml.readNextStartElement()) {
+                if (xml.name() == contextElement) {
+                    CurrentContext currentContext = ContextUnknown;
+                    while (xml.readNextStartElement()) {
+                        if (currentContext == ContextUnknown) {
+                            // Expect name element before message elements
+                            if (xml.name() == nameElement) {
+                                QString nameText = xml.readElementText();
+                                if (nameText == applicationCaptionsContext || nameText == pkgNameContext) {
+                                    currentContext = ContextInteresting;
+                                } else {
+                                    currentContext = ContextUninteresting;
+                                }
+                            } else {
+                                xml.skipCurrentElement();
+                            }
+                        } else if (currentContext == ContextInteresting) {
+                            if (xml.name() == messageElement) {
+                                QString source;
+                                QString translation;
+                                while (xml.readNextStartElement()) {
+                                    if (xml.name() == sourceElement) {
+                                        source = xml.readElementText();
+                                    } else if (xml.name() == translationElement) {
+                                        translation = xml.readElementText();
+                                    } else {
+                                        xml.skipCurrentElement();
+                                    }
+                                }
+
+                                if (source == shortCaptionId) {
+                                    if (loc->shortCaption.isEmpty()) {
+                                        loc->shortCaption = translation;
+                                    } else {
+                                        fprintf(stderr, "Warning: Duplicate application short caption defined in (%s).\n",
+                                                qPrintable(tsFilename));
+                                    }
+                                } else if (source == longCaptionId) {
+                                    if (loc->longCaption.isEmpty()) {
+                                        loc->longCaption = translation;
+                                    } else {
+                                        fprintf(stderr, "Warning: Duplicate application long caption defined in (%s).\n",
+                                                qPrintable(tsFilename));
+                                    }
+                                } else if (source == pkgDisplayNameId) {
+                                    if (loc->pkgDisplayName.isEmpty()) {
+                                        loc->pkgDisplayName = translation;
+                                    } else {
+                                        fprintf(stderr, "Warning: Duplicate package display name defined in (%s).\n",
+                                                qPrintable(tsFilename));
+                                    }
+                                } else if (source == installerPkgDisplayNameId) {
+                                    if (loc->installerPkgDisplayName.isEmpty()) {
+                                        loc->installerPkgDisplayName = translation;
+                                    } else {
+                                        fprintf(stderr, "Warning: Duplicate smart installer package display name defined in (%s).\n",
+                                                qPrintable(tsFilename));
+                                    }
+                                }
+                            } else {
+                                xml.skipCurrentElement();
+                            }
+                        } else {
+                            xml.skipCurrentElement();
+                        }
+                    }
+                } else {
+                    xml.skipCurrentElement();
+                }
+            }
+            if (xml.hasError()) {
+                retval = false;
+                fprintf(stderr, "ERROR: Encountered error \"%s\" when parsing ts file (%s).\n",
+                        qPrintable(xml.errorString()), qPrintable(tsFilename));
+            }
+        } else {
+            retval = false;
+            fprintf(stderr, "Warning: Could not open ts file (%s).\n", qPrintable(tsFilename));
+        }
+    } else {
+        retval = false;
+        fprintf(stderr, "Warning: ts file does not exist: (%s), unable to parse it.\n",
+                qPrintable(tsFilename));
+    }
+
+    return retval;
+}
+
+QString SymbianCommonGenerator::generatePkgNameForHeader(const SymbianLocalizationList &symbianLocalizationList,
+                                                         const QString &defaultName,
+                                                         bool isForSmartInstaller)
+{
+    QStringList allNames;
+    QString noTranslation = defaultName;
+
+    if (isForSmartInstaller)
+        noTranslation += QLatin1String(" installer");
+
+    SymbianLocalizationListIterator iter(symbianLocalizationList);
+    while (iter.hasNext()) {
+        const SymbianLocalization &loc = iter.next();
+        QString currentName;
+        if (isForSmartInstaller) {
+            currentName = loc.installerPkgDisplayName;
+        } else {
+            currentName = loc.pkgDisplayName;
+        }
+
+        if (currentName.isEmpty())
+            currentName = noTranslation;
+
+        allNames << currentName;
+    }
+
+    if (!allNames.size())
+        allNames << noTranslation;
+
+    return allNames.join("\",\"");
+
+}
+
+void SymbianCommonGenerator::addLocalizedResourcesToDeployment(const QString &deploymentFilesVar,
+                                                               const SymbianLocalizationList &symbianLocalizationList)
+{
+    QStringList locResources;
+    foreach (QString defaultResource, generator->project->values(deploymentFilesVar)) {
+        if (defaultResource.endsWith(".rsc")) {
+            defaultResource.chop(2);
+            SymbianLocalizationListIterator iter(symbianLocalizationList);
+            while (iter.hasNext()) {
+                const SymbianLocalization &loc = iter.next();
+                locResources << QString(defaultResource + loc.symbianLanguageCode);
+            }
+        }
+    }
+    generator->project->values(deploymentFilesVar) << locResources;
+}
+
+QString SymbianCommonGenerator::generateLocFileName()
+{
+    QString fileName(fixedTarget);
+    if (!Option::output_dir.isEmpty())
+        fileName = Option::output_dir + QLatin1Char('/') + fileName;
+    fileName.append(".loc");
+    return fileName;
+}

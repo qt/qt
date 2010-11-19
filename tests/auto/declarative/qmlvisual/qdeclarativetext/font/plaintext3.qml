@@ -2,7 +2,7 @@ import QtQuick 1.0
 
 Rectangle {
     id: main
-    width: 800; height: 600
+    width: 620; height: 280
 
 
     Grid {
@@ -12,51 +12,51 @@ Rectangle {
 
         Column {
             spacing: 4
-            TestText { }
-            TestText { horizontalAlignment: Text.AlignHCenter }
-            TestText { horizontalAlignment: Text.AlignRight }
+            BorderedText { }
+            BorderedText { horizontalAlignment: Text.AlignHCenter }
+            BorderedText { horizontalAlignment: Text.AlignRight }
         }
 
         Column {
             spacing: 4
-            TestText { wrapMode: Text.Wrap }
-            TestText { horizontalAlignment: Text.AlignHCenter; wrapMode: Text.Wrap }
-            TestText { horizontalAlignment: Text.AlignRight; wrapMode: Text.Wrap }
+            BorderedText { wrapMode: Text.Wrap }
+            BorderedText { horizontalAlignment: Text.AlignHCenter; wrapMode: Text.Wrap }
+            BorderedText { horizontalAlignment: Text.AlignRight; wrapMode: Text.Wrap }
         }
 
         Column {
             spacing: 4
-            TestText { wrapMode: Text.Wrap; elide: Text.ElideRight }
-            TestText { horizontalAlignment: Text.AlignHCenter; wrapMode: Text.Wrap; elide: Text.ElideRight }
-            TestText { horizontalAlignment: Text.AlignRight; wrapMode: Text.Wrap; elide: Text.ElideRight }
+            BorderedText { wrapMode: Text.Wrap; elide: Text.ElideRight }
+            BorderedText { horizontalAlignment: Text.AlignHCenter; wrapMode: Text.Wrap; elide: Text.ElideRight }
+            BorderedText { horizontalAlignment: Text.AlignRight; wrapMode: Text.Wrap; elide: Text.ElideRight }
         }
 
         Column {
             spacing: 4
-            TestText { width: 230; wrapMode: Text.Wrap; elide: Text.ElideRight }
-            TestText { width: 230; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.Wrap; elide: Text.ElideRight }
-            TestText { width: 230; horizontalAlignment: Text.AlignRight; wrapMode: Text.Wrap; elide: Text.ElideRight }
+            BorderedText { width: 230; wrapMode: Text.Wrap; elide: Text.ElideRight }
+            BorderedText { width: 230; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.Wrap; elide: Text.ElideRight }
+            BorderedText { width: 230; horizontalAlignment: Text.AlignRight; wrapMode: Text.Wrap; elide: Text.ElideRight }
         }
 
         Column {
             spacing: 4
-            TestText { width: 120; wrapMode: Text.Wrap; elide: Text.ElideRight }
-            TestText { width: 120; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.Wrap; elide: Text.ElideRight }
-            TestText { width: 120; horizontalAlignment: Text.AlignRight; wrapMode: Text.Wrap; elide: Text.ElideRight }
+            BorderedText { width: 120; wrapMode: Text.Wrap; elide: Text.ElideRight }
+            BorderedText { width: 120; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.Wrap; elide: Text.ElideRight }
+            BorderedText { width: 120; horizontalAlignment: Text.AlignRight; wrapMode: Text.Wrap; elide: Text.ElideRight }
         }
 
         Column {
             spacing: 4
-            TestText { width: 120; wrapMode: Text.Wrap }
-            TestText { width: 120; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.Wrap }
-            TestText { width: 120; horizontalAlignment: Text.AlignRight; wrapMode: Text.Wrap }
+            BorderedText { width: 120; wrapMode: Text.Wrap }
+            BorderedText { width: 120; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.Wrap }
+            BorderedText { width: 120; horizontalAlignment: Text.AlignRight; wrapMode: Text.Wrap }
         }
 
         Column {
             spacing: 4
-            TestText { width: 120 }
-            TestText { width: 120; horizontalAlignment: Text.AlignHCenter }
-            TestText { width: 120; horizontalAlignment: Text.AlignRight }
+            BorderedText { width: 120 }
+            BorderedText { width: 120; horizontalAlignment: Text.AlignHCenter }
+            BorderedText { width: 120; horizontalAlignment: Text.AlignRight }
         }
     }
 }

@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "1a396cf01a6c31155609532654653599"
+        image: "usingRepeater.0.png"
     }
     Frame {
         msec: 32

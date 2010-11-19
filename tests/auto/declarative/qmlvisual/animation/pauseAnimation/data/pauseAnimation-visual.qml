@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "a350b70c5238a340e85fd4a3ec0390a3"
+        image: "pauseAnimation-visual.0.png"
     }
     Frame {
         msec: 32
@@ -242,11 +242,11 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "pauseAnimation.0.png"
+        hash: "f1e0301430d153fb9d15eaffdfcd5c58"
     }
     Frame {
         msec: 976
-        hash: "5f18a81707f23d377e81a27c1fc41ce9"
+        image: "pauseAnimation-visual.1.png"
     }
     Frame {
         msec: 992
@@ -482,11 +482,11 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "pauseAnimation.1.png"
+        hash: "3042003c067b257de2cb32f650dde693"
     }
     Frame {
         msec: 1936
-        hash: "a725b59b4947357546bbfc7df3d830af"
+        image: "pauseAnimation-visual.2.png"
     }
     Frame {
         msec: 1952
@@ -722,11 +722,11 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "pauseAnimation.2.png"
+        hash: "a350b70c5238a340e85fd4a3ec0390a3"
     }
     Frame {
         msec: 2896
-        hash: "a350b70c5238a340e85fd4a3ec0390a3"
+        image: "pauseAnimation-visual.3.png"
     }
     Frame {
         msec: 2912
@@ -962,11 +962,11 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "pauseAnimation.3.png"
+        hash: "7c27ef654e645679c90520d6cf00b0c4"
     }
     Frame {
         msec: 3856
-        hash: "20258f07c613958c32f783466771391a"
+        image: "pauseAnimation-visual.4.png"
     }
     Frame {
         msec: 3872
@@ -1202,11 +1202,11 @@ VisualTest {
     }
     Frame {
         msec: 4800
-        image: "pauseAnimation.4.png"
+        hash: "336d31586171f22d541b989d24b95cbb"
     }
     Frame {
         msec: 4816
-        hash: "f0d8132489c2f2ef760e905b3c093726"
+        image: "pauseAnimation-visual.5.png"
     }
     Frame {
         msec: 4832
@@ -1442,11 +1442,11 @@ VisualTest {
     }
     Frame {
         msec: 5760
-        image: "pauseAnimation.5.png"
+        hash: "ce57e27af329eba4fac3ab891f0407ce"
     }
     Frame {
         msec: 5776
-        hash: "41ba853c3403f68a23e708df82e21c53"
+        image: "pauseAnimation-visual.6.png"
     }
     Frame {
         msec: 5792

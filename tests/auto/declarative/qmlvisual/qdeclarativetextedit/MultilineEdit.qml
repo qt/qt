@@ -46,6 +46,7 @@ Item {
         horizontalAlignment: TextInput.AlignLeft
         wrapMode: TextEdit.WordWrap
         font.pixelSize:15
+        selectionColor: 'steelblue'
     }
     MouseArea {
         //Implements all line edit mouse handling

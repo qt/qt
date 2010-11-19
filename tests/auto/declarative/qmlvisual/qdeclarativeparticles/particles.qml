@@ -2,6 +2,7 @@ import QtQuick 1.0
 import Qt.labs.particles 1.0
 
 Rectangle {
+    property string skip: "May contain random numbers"
     width: 640; height: 480; color: "black"
 
     Particles { id:particlesAneverEmitting

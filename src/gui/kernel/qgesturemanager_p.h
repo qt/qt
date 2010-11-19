@@ -130,6 +130,7 @@ private:
 
     QHash<QGestureRecognizer *, QSet<QGesture *> > m_obsoleteGestures;
     QHash<QGesture *, QGestureRecognizer *> m_deletedRecognizers;
+    QSet<QGesture *> m_gesturesToDelete;
     void cleanupGesturesForRemovedRecognizer(QGesture *gesture);
 
     QGesture *getState(QObject *widget, QGestureRecognizer *recognizer,

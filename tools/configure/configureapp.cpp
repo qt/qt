@@ -3236,7 +3236,8 @@ void Configure::generateConfigfiles()
     }
 
     // Copy configured mkspec to default directory, but remove the old one first, if there is any
-    QString defSpec = buildPath + "/mkspecs/default";
+    QString mkspecsPath = buildPath + "/mkspecs";
+    QString defSpec = mkspecsPath + "/default";
     QFileInfo defSpecInfo(defSpec);
     if (defSpecInfo.exists()) {
         if (!Environment::rmdir(defSpec)) {
@@ -3246,21 +3247,22 @@ void Configure::generateConfigfiles()
         }
     }
 
-    QString spec = dictionary.contains("XQMAKESPEC") ? dictionary["XQMAKESPEC"] : dictionary["QMAKESPEC"];
-    QString pltSpec = sourcePath + "/mkspecs/" + spec;
-    if (!Environment::cpdir(pltSpec, defSpec)) {
-        cout << "Couldn't update default mkspec! Does " << qPrintable(pltSpec) << " exist?" << endl;
+    QDir mkspecsDir(mkspecsPath);
+    if (!mkspecsDir.mkdir("default")) {
+        cout << "Couldn't create default mkspec dir!" << endl;
         dictionary["DONE"] = "error";
         return;
     }
 
+    QString spec = dictionary.contains("XQMAKESPEC") ? dictionary["XQMAKESPEC"] : dictionary["QMAKESPEC"];
+    QString pltSpec = sourcePath + "/mkspecs/" + spec;
     outName = defSpec + "/qmake.conf";
-    ::SetFileAttributes((wchar_t*)outName.utf16(), FILE_ATTRIBUTE_NORMAL);
     QFile qmakeConfFile(outName);
-    if (qmakeConfFile.open(QFile::Append | QFile::WriteOnly | QFile::Text)) {
+    if (qmakeConfFile.open(QFile::WriteOnly | QFile::Text)) {
         QTextStream qmakeConfStream;
         qmakeConfStream.setDevice(&qmakeConfFile);
-        qmakeConfStream << endl << "QMAKESPEC_ORIGINAL=" << pltSpec << endl;
+        qmakeConfStream << "QMAKESPEC_ORIGINAL=" << pltSpec << endl << endl;
+        qmakeConfStream << "include(" << pltSpec << "/qmake.conf)" << endl;
         qmakeConfStream.flush();
         qmakeConfFile.close();
     }

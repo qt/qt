@@ -12104,4 +12104,5 @@ EXPORTS
 	_ZN15QStaticTextItem13setFontEngineEP11QFontEngine @ 12103 NONAME
 	_ZN15QStaticTextItemD1Ev @ 12104 NONAME
 	_ZN15QStaticTextItemD2Ev @ 12105 NONAME
+	_ZN19QEventDispatcherS6031reactivateDeferredActiveObjectsEv @ 12106 NONAME
 
