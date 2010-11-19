@@ -86,26 +86,25 @@ public:
 
     TBool Accept(const TDesC &/*aDriveAndPath*/, const TEntry &aEntry) const
     {
-        if (aEntry.IsDir()) {
+        if (aEntry.IsDir())
             return ETrue;
-        }
-        if (filterList.isEmpty()) {
-            //No filter for files, all can be accepted
+
+        //If no filter for files, all can be accepted
+        if (filterList.isEmpty())
             return ETrue;
-        }
-        if (filterList == QStringList(QLatin1String("(*)"))) {
+
+        if (filterList == QStringList(QLatin1String("(*)")))
             return ETrue;
-        }
+
         for (int i = 0; i < filterList.size(); ++i) {
             QString extension = filterList.at(i);
             //remove '*' from the beginning of the extension
-            if (extension.left(1) == "*"){
-                extension = extension.right(extension.size() - 1);
-            }
+            if (extension.at(0) == QLatin1Char('*'))
+                extension = extension.mid(1);
+
             QString fileName = qt_TDesC2QString(aEntry.iName);
-            if (fileName.right(extension.size()) == extension) {
+            if (fileName.endsWith(extension))
                 return ETrue;
-            }
         }
         return EFalse;
     }
@@ -140,18 +139,15 @@ static QString launchSymbianDialog(const QString dialogCaption, const QString st
             select = AknCommonDialogsDynMem::RunSelectDlgLD(types, target,
                      startFolder, NULL, NULL, titlePtr, extensionFilter);
             CleanupStack::Pop(extensionFilter);
-        }
-        else if (dialogMode == DialogSave) {
+        } else if (dialogMode == DialogSave) {
             select = AknCommonDialogsDynMem::RunSaveDlgLD(types, target,
                      startFolder, NULL, NULL, titlePtr);
-        }
-        else if (dialogMode == DialogFolder) {
+        } else if (dialogMode == DialogFolder) {
             select = AknCommonDialogsDynMem::RunFolderSelectDlgLD(types, target, startFolder,
                         0, 0, titlePtr, NULL, NULL);
         }
-        if (select) {
+        if (select)
             selection.append(qt_TDesC2QString(target));
-        }
     );
 #endif
     return selection;

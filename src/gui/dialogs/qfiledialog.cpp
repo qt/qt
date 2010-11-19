@@ -1964,9 +1964,8 @@ QString QFileDialog::getExistingDirectory(QWidget *parent,
     if (qt_filedialog_existing_directory_hook && !(options & DontUseNativeDialog))
         return qt_filedialog_existing_directory_hook(parent, caption, dir, options);
 #if defined(Q_WS_S60)
-    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0 && !(options & DontUseNativeDialog)) {
+    if (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0 && !(options & DontUseNativeDialog))
         return qtSymbianGetExistingDirectory(caption, dir);
-    }
 #endif
     QFileDialogArgs args;
     args.parent = parent;
