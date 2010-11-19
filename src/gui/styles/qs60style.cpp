@@ -1438,8 +1438,8 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             const QRect iconRect = subElementRect(SE_ItemViewItemDecoration, &voptAdj, widget);
             QRect textRect = subElementRect(SE_ItemViewItemText, &voptAdj, widget);
             const QAbstractItemView *itemView = qobject_cast<const QAbstractItemView *>(widget);
-            
-            const bool singleSelection = itemView && 
+
+            const bool singleSelection = itemView &&
                 ((itemView->selectionMode() == QAbstractItemView::SingleSelection ||
                  itemView->selectionMode() == QAbstractItemView::NoSelection));
             const bool selectItems = itemView && (itemView->selectionBehavior() == QAbstractItemView::SelectItems);
