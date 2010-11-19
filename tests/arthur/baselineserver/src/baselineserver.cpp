@@ -165,11 +165,12 @@ void BaselineHandler::receiveRequest()
         }
         else if (branch != QLS("master-integration") || !plat.value(PI_GitCommit).contains(QLS("Merge branch 'master' of scm.dev.nokia.troll.no:qt/oslo-staging-2 into master-integration"))) {
             qDebug() << runId << logtime() << "Did not pass branch/staging repo filter, disconnecting.";
-            // TBD: Cleaner termination
+            proto.sendBlock(BaselineProtocol::Abort, QByteArray("This branch/staging repo is not assigned to be tested."));
             proto.socket.disconnectFromHost();
             return;
         }
 
+        proto.sendBlock(BaselineProtocol::Ack, QByteArray());
         connectionEstablished = true;
         return;
     }

@@ -123,7 +123,7 @@ public:
     enum Constant {
         ProtocolVersion = 2,
         ServerPort = 54129,
-        Timeout = 10000
+        Timeout = 5000
     };
 
     enum Command {
@@ -135,10 +135,12 @@ public:
         AcceptMismatch = 5,
         // Responses
         Ack = 128,
+        Abort = 129,
+        DoDryRun = 130
     };
 
     // For client:
-    bool connect();
+    bool connect(bool *dryrun = 0);
     bool requestBaselineChecksums(ImageItemList *itemList);
     bool submitNewBaseline(const ImageItem &item, QByteArray *serverMsg);
     bool submitMismatch(const ImageItem &item, QByteArray *serverMsg);
@@ -153,6 +155,8 @@ private:
 
     bool sendBlock(Command cmd, const QByteArray &block);
     bool receiveBlock(Command *cmd, QByteArray *block);
+    void sysSleep(int ms);
+
     QString errMsg;
     QTcpSocket socket;
 
