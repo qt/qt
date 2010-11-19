@@ -2507,7 +2507,7 @@ bool VCXFilter::addExtraCompiler(const VCXFilterFile &info)
 
         // Output in info.additionalFile -----------
         if (!CustomBuildTool.Description.isEmpty())
-            CustomBuildTool.Description += " & ";
+            CustomBuildTool.Description += ", ";
         CustomBuildTool.Description += cmd_name;
         CustomBuildTool.CommandLine += VCToolBase::fixCommandLine(cmd.trimmed());
         int space = cmd.indexOf(' ');

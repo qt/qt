@@ -301,6 +301,8 @@ private Q_SLOTS:
 
     void httpWithNoCredentialUsage();
 
+    void qtbug15311doubleContentLength();
+
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 };
@@ -4128,8 +4130,23 @@ void tst_QNetworkReply::httpProxyCommands()
     QCOMPARE(receivedHeader, expectedCommand);
 }
 
+class ProxyChangeHelper : public QObject {
+    Q_OBJECT
+public:
+    ProxyChangeHelper() : QObject(), signalCount(0) {};
+public slots:
+    void finishedSlot() {
+        signalCount++;
+        if (signalCount == 2)
+            QMetaObject::invokeMethod(&QTestEventLoop::instance(), "exitLoop", Qt::QueuedConnection);
+    }
+private:
+   int signalCount;
+};
+
 void tst_QNetworkReply::proxyChange()
 {
+    ProxyChangeHelper helper;
     MiniHttpServer proxyServer(
         "HTTP/1.0 200 OK\r\nProxy-Connection: keep-alive\r\n"
         "Content-Length: 1\r\n\r\n1");
@@ -4139,29 +4156,14 @@ void tst_QNetworkReply::proxyChange()
 
     manager.setProxy(dummyProxy);
     QNetworkReplyPtr reply1 = manager.get(req);
-    QSignalSpy finishedspy(reply1, SIGNAL(finished()));
+    connect(reply1, SIGNAL(finished()), &helper, SLOT(finishedSlot()));
 
     manager.setProxy(QNetworkProxy());
     QNetworkReplyPtr reply2 = manager.get(req);
+    connect(reply2, SIGNAL(finished()), &helper, SLOT(finishedSlot()));
 
-    connect(reply2, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-#ifdef Q_OS_SYMBIAN
-    // we need more time as:
-    // 1. running from the emulator
-    // 2. not perfect POSIX implementation
-    // 3. embedded device
     QTestEventLoop::instance().enterLoop(20);
-#else
-    QTestEventLoop::instance().enterLoop(10);
-#endif
     QVERIFY(!QTestEventLoop::instance().timeout());
-
-    if (finishedspy.count() == 0) {
-        // wait for the second reply as well
-        connect(reply1, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-        QTestEventLoop::instance().enterLoop(1);
-        QVERIFY(!QTestEventLoop::instance().timeout());
-    }
 
     // verify that the replies succeeded
     QCOMPARE(reply1->error(), QNetworkReply::NoError);
@@ -4722,6 +4724,26 @@ void tst_QNetworkReply::httpWithNoCredentialUsage()
     QCOMPARE(errorSpy.count(), 1);
 
     QCOMPARE(reply->error(), QNetworkReply::AuthenticationRequiredError);
+}
+
+void tst_QNetworkReply::qtbug15311doubleContentLength()
+{
+    QByteArray response("HTTP/1.0 200 OK\r\nContent-Length: 3\r\nServer: bogus\r\nContent-Length: 3\r\n\r\nABC");
+    MiniHttpServer server(response);
+    server.doClose = true;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(reply->isFinished());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->size(), qint64(3));
+    QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), qint64(3));
+    QCOMPARE(reply->rawHeader("Content-length"), QByteArray("3, 3"));
+    QCOMPARE(reply->readAll(), QByteArray("ABC"));
 }
 
 

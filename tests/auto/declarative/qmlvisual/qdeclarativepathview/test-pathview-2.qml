@@ -1,7 +1,7 @@
 import QtQuick 1.0
 
 Rectangle {
-    width: 800; height: 450
+    width: 580; height: 220
     //Same as test-pathview, but with pathItemCount < model.count
     
     ListModel {
@@ -20,8 +20,10 @@ Rectangle {
         id: photoDelegate
         Rectangle {
             id: wrapper
-            width: 85; height: 85; color: lColor
+            width: 65; height: 65; color: lColor
             scale: wrapper.PathView.scale
+
+            MouseArea { anchors.fill: parent }
             
             transform: Rotation {
                 id: itemRotation; origin.x: wrapper.width/2; origin.y: wrapper.height/2
@@ -31,9 +33,10 @@ Rectangle {
     }
 
     PathView {
-        id: pathView; model: rssModel; delegate: photoDelegate
-        y: 100; width: 800; height: 330; pathItemCount: 6; z: 1
-        focus: true
+        id: photoPathView; model: rssModel; delegate: photoDelegate
+        anchors.fill: parent;  z: 1
+        anchors.topMargin:40
+        pathItemCount: 6
         path: Path {
             startX: -50; startY: 40;
             
@@ -41,22 +44,27 @@ Rectangle {
             PathAttribute { name: "angle"; value: -45 }
             
             PathCubic {
-                x: 400; y: 220
-                control1X: 140; control1Y: 40
-                control2X: 210; control2Y: 220
+                x: 300; y: 140
+                control1X: 90; control1Y: 30
+                control2X: 140; control2Y: 150
             }
             
             PathAttribute { name: "scale"; value: 1.2  }
             PathAttribute { name: "angle"; value: 0 }
             
             PathCubic {
-                x: 850; y: 40
-                control2X: 660; control2Y: 40
-                control1X: 590; control1Y: 220
+                x: 600; y: 30
+                control2X: 440; control2Y: 30
+                control1X: 420; control1Y: 150
             }
             
             PathAttribute { name: "scale"; value: 0.5 }
             PathAttribute { name: "angle"; value: 45 }
         }
+    }
+
+    Column {
+        Rectangle { width: 20; height: 20; color: "red"; opacity: photoPathView.moving ? 1 : 0 }
+        Rectangle { width: 20; height: 20; color: "blue"; opacity: photoPathView.flicking ? 1 : 0 }
     }
 }

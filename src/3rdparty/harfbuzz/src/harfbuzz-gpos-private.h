@@ -32,10 +32,6 @@
 
 HB_BEGIN_HEADER
 
-#ifdef HB_USE_PACKED_STRUCTS
-#pragma pack(push, 1)
-#endif
-
 /* shared tables */
 
 #define VR_X_PLACEMENT_DEVICE 0
@@ -719,10 +715,6 @@ _HB_GPOS_Load_SubTable( HB_GPOS_SubTable* st,
 HB_INTERNAL void
 _HB_GPOS_Free_SubTable( HB_GPOS_SubTable* st,
 			      HB_UShort     lookup_type );
-
-#ifdef HB_USE_PACKED_STRUCTS
-#pragma pack(pop)
-#endif
 
 HB_END_HEADER
 
