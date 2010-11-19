@@ -41,7 +41,6 @@
 
 #include <qfileinfo.h>
 #include <qregexp.h>
-#include <qdebug.h>
 
 #include "quoter.h"
 
@@ -123,9 +122,9 @@ Quoter::Quoter()
     /* We're going to hard code these delimiters:
         * C++, Qt, Qt Script, Java:
           //! [<id>]
-        * .pro files:
+        * .pro, .py files:
           #! [<id>]
-        * .xq, .xml, .html files:
+        * .html, .qrc, .ui, .xq, .xml files:
           <!-- [<id>] -->
     */
     commentHash["pro"] = "#!";
