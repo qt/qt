@@ -109,12 +109,9 @@ SOURCES += \
         dialogs/qprintpreviewdialog.cpp
 
 symbian:contains(QT_CONFIG, s60) {
-    LIBS += -lcommondialogs \
-            -lavkon \
-            -lplatformenv \
-            -lefsrv \
-            -lgdi
-    SOURCES += dialogs/qfiledialog_symbian.cpp
+    LIBS += -lcommondialogs
+    SOURCES += dialogs/qfiledialog_symbian.cpp \
+               dialogs/qcolordialog_symbian.cpp
 }
 
 FORMS += dialogs/qpagesetupwidget.ui
