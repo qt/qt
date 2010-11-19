@@ -42,6 +42,7 @@
 #include <QtCore/qstringlist.h>
 #include "registry.h"
 
+#ifdef Q_OS_WIN32
 /*!
   Returns the path part of a registry key.
   e.g.
@@ -73,10 +74,11 @@ static QString keyName(const QString &rKey)
         return rKey;
 
     QString res(rKey.mid(idx + 1));
-    if (res == "Default" || res == ".")
-        res = "";
+    if (res == QLatin1String("Default") || res == QLatin1String("."))
+        res = QString();
     return res;
 }
+#endif
 
 QString readRegistryKey(HKEY parentHandle, const QString &rSubkey)
 {
@@ -128,7 +130,7 @@ QString readRegistryKey(HKEY parentHandle, const QString &rSubkey)
                     break;
                 l.append(s);
             }
-            result = l.join(", ");
+            result = l.join(QLatin1String(", "));
             break;
         }
 
