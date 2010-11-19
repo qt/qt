@@ -3674,7 +3674,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-verbose] [-v] [-silent] [-no-nis] [-nis] [-no-cups] [-cups] [-no-iconv]
         [-iconv] [-no-pch] [-pch] [-no-dbus] [-dbus] [-dbus-linked] [-no-gui]
         [-no-separate-debug-info] [-no-mmx] [-no-3dnow] [-no-sse] [-no-sse2]
-        [-no-sse3] [-no-ssse3] [-no-sse4.1] [-no-sse4.2] [-no-avx]
+        [-no-sse3] [-no-ssse3] [-no-sse4.1] [-no-sse4.2] [-no-avx] [-no-neon]
         [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info] [-armfpa]
         [-no-optimized-qmake] [-optimized-qmake] [-no-xmlpatterns] [-xmlpatterns]
         [-no-multimedia] [-multimedia] [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
@@ -3878,6 +3878,7 @@ cat << EOF
     -no-sse4.1.......... Do not compile with use of SSE4.1 instructions.
     -no-sse4.2.......... Do not compile with use of SSE4.2 instructions.
     -no-avx ............ Do not compile with use of AVX instructions.
+    -no-neon ........... Do not compile with use of NEON instructions.
 
     -qtnamespace <name>  Wraps all Qt library code in 'namespace <name> {...}'.
     -qtlibinfix <infix>  Renames all libQt*.so to libQt*<infix>.so.
@@ -4311,8 +4312,6 @@ Qt for Embedded Linux only:
 
     -iwmmxt ............ Compile using the iWMMXt instruction set
                          (available on some XScale CPUs).
-
-    -no-neon ........... Do not compile with use of NEON instructions.
 EOF
 fi
 

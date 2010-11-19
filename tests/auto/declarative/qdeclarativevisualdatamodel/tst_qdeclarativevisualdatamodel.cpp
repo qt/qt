@@ -121,6 +121,7 @@ private slots:
     void objectListModel();
     void singleRole();
     void modelProperties();
+    void noDelegate();
 
 private:
     QDeclarativeEngine engine;
@@ -471,6 +472,29 @@ void tst_qdeclarativevisualdatamodel::modelProperties()
 
     //### should also test QStringList and QVariantList
 }
+
+void tst_qdeclarativevisualdatamodel::noDelegate()
+{
+    QDeclarativeView view;
+
+    QStandardItemModel model;
+    initStandardTreeModel(&model);
+
+    view.rootContext()->setContextProperty("myModel", &model);
+
+    view.setSource(QUrl::fromLocalFile(SRCDIR "/data/datalist.qml"));
+
+    QDeclarativeListView *listview = qobject_cast<QDeclarativeListView*>(view.rootObject());
+    QVERIFY(listview != 0);
+
+    QDeclarativeVisualDataModel *vdm = listview->findChild<QDeclarativeVisualDataModel*>("visualModel");
+    QVERIFY(vdm != 0);
+    QCOMPARE(vdm->count(), 3);
+
+    vdm->setDelegate(0);
+    QCOMPARE(vdm->count(), 0);
+}
+
 
 template<typename T>
 T *tst_qdeclarativevisualdatamodel::findItem(QGraphicsObject *parent, const QString &objectName, int index)
