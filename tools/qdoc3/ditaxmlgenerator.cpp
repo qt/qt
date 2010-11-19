@@ -976,8 +976,8 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                 s = sections.constBegin();
                 while (s != sections.constEnd()) {
                     if (!(*s).members.isEmpty()) {
-                        writeXrefListItem(QString("#" + Doc::canonicalTitle((*s).name)),
-                                          (*s).name);
+                        QString li = outFileName() + "#" + Doc::canonicalTitle((*s).name);
+                        writeXrefListItem(li, (*s).name);
                     }
                     ++s;
                 }
@@ -2762,7 +2762,8 @@ void DitaXmlGenerator::generateCompactList(const Node* relative,
             if (usedParagraphNames.contains(char('a' + i))) {
                 xmlWriter().writeStartElement("xref");
                 QString guid = lookupGuid(outFileName(),QString(ch));
-                xmlWriter().writeAttribute("href",QString("#%1").arg(guid));
+                QString attr = outFileName() + QString("#%1").arg(guid);
+                xmlWriter().writeAttribute("href", attr);
                 xmlWriter().writeCharacters(QString(ch.toUpper()));
                 xmlWriter().writeEndElement(); // </xref>
             }
@@ -2849,16 +2850,17 @@ void DitaXmlGenerator::generateFunctionIndex(const Node* relative,
                                              CodeMarker* marker)
 {
     xmlWriter().writeStartElement("p");
-    xmlWriter().writeAttribute("outputclass","function-index");
-    xmlWriter().writeStartElement("b");
+    xmlWriter().writeAttribute("outputclass","alphabet");
     for (int i = 0; i < 26; i++) {
         QChar ch('a' + i);
         xmlWriter().writeStartElement("xref");
-        xmlWriter().writeAttribute("href",QString("#%1").arg(ch));
+        QString guid = lookupGuid(outFileName(),QString(ch));
+        QString attr = outFileName() + QString("#%1").arg(guid);
+        xmlWriter().writeAttribute("href", attr);
         xmlWriter().writeCharacters(QString(ch.toUpper()));
         xmlWriter().writeEndElement(); // </xref>
+        
     }
-    xmlWriter().writeEndElement(); // </b>
     xmlWriter().writeEndElement(); // </p>
 
     char nextLetter = 'a';
@@ -3700,7 +3702,8 @@ void DitaXmlGenerator::generateFullName(const Node* apparentNode,
     if (actualNode == 0)
         actualNode = apparentNode;
     xmlWriter().writeStartElement("xref");
-    xmlWriter().writeAttribute("href",linkForNode(actualNode, relative));
+    QString href = linkForNode(actualNode, relative);
+    xmlWriter().writeAttribute("href",href);
     xmlWriter().writeCharacters(protectEnc(fullName(apparentNode, relative, marker)));
     xmlWriter().writeEndElement(); // </xref>
 }
@@ -4042,9 +4045,25 @@ QString DitaXmlGenerator::getLink(const Atom* atom,
             link = linkForNode(*node, relative);
             if (*node && (*node)->subType() == Node::Image)
                 link = "images/used-in-examples/" + link;
-            if (targetAtom)
-                link += "#" + refForAtom(targetAtom, *node);
+            if (targetAtom) {
+                if (link.isEmpty())
+                    link = outFileName();
+                QString guid = lookupGuid(link,refForAtom(targetAtom,*node));
+                link += "#" + guid;
+            }
+#if 0
+            else if (link.isEmpty() && *node) {
+                link = outFileName() + "#" + (*node)->guid();
+            }
+#endif
+            else if (!link.isEmpty() && *node && link.endsWith(".xml")) {
+                link += "#" + (*node)->guid();
+            }
         }
+    }
+    if (!link.isEmpty() && link[0] == '#') {
+        link.prepend(outFileName());
+        qDebug() << "LOCAL LINK:" << link;
     }
     return link;
 }
