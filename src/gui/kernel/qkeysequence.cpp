@@ -1105,7 +1105,7 @@ QKeySequence QKeySequence::mnemonic(const QString &text)
 #else
                     found = true;
                 } else {
-                    qWarning("QKeySequence::mnemonic: \"%s\" contains multiple occurences of '&'", qPrintable(text));
+                    qWarning("QKeySequence::mnemonic: \"%s\" contains multiple occurrences of '&'", qPrintable(text));
 #endif
                 }
             }
