@@ -1212,6 +1212,9 @@ void QGL2PaintEngineExPrivate::stroke(const QVectorPath &path, const QPen &pen)
         stroker.process(dashStroke, pen, clip);
     }
 
+    if (!stroker.vertexCount())
+        return;
+
     if (opaque) {
         prepareForDraw(opaque);
         setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, stroker.vertices());
@@ -1479,6 +1482,8 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     if (!cache || cache->cacheType() != glyphType) {
         cache = new QGLTextureGlyphCache(ctx, glyphType, QTransform());
         staticTextItem->fontEngine()->setGlyphCache(ctx, cache);
+    } else if (cache->context() == 0) { // Old context has been destroyed, new context has same ptr value
+        cache->setContext(ctx);
     }
 
     bool recreateVertexArrays = false;
@@ -1494,8 +1499,13 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     // cache so this text is performed before we test if the cache size has changed.
     if (recreateVertexArrays) {
         cache->setPaintEnginePrivate(this);
-        cache->populate(staticTextItem->fontEngine(), staticTextItem->numGlyphs,
-                        staticTextItem->glyphs, staticTextItem->glyphPositions);
+        if (!cache->populate(staticTextItem->fontEngine(), staticTextItem->numGlyphs,
+			     staticTextItem->glyphs, staticTextItem->glyphPositions)) {
+	    // No space in cache. We need to clear the cache and try again
+            cache->clear();
+            cache->populate(staticTextItem->fontEngine(), staticTextItem->numGlyphs,
+			    staticTextItem->glyphs, staticTextItem->glyphPositions);
+	}
     }
 
     if (cache->width() == 0 || cache->height() == 0)
