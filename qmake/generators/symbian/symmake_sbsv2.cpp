@@ -49,7 +49,7 @@
 #include <qdebug.h>
 
 // Included from tools/shared
-#include <symbian/epocroot.h>
+#include <symbian/epocroot_p.h>
 
 SymbianSbsv2MakefileGenerator::SymbianSbsv2MakefileGenerator() : SymbianMakefileGenerator() { }
 SymbianSbsv2MakefileGenerator::~SymbianSbsv2MakefileGenerator() { }
@@ -82,7 +82,7 @@ void SymbianSbsv2MakefileGenerator::exportFlm()
         QDir sourceDir = QDir(QLibraryInfo::location(QLibraryInfo::PrefixPath) + FLM_SOURCE_DIR);
         QFileInfoList sourceInfos = sourceDir.entryInfoList(QDir::Files);
 
-        QDir destDir(epocRoot() + FLM_DEST_DIR);
+        QDir destDir(qt_epocRoot() + FLM_DEST_DIR);
         if (!destDir.exists()) {
             if (destDir.mkpath(destDir.absolutePath()))
                 generatedDirs << destDir.absolutePath();
@@ -630,7 +630,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     t << endl;
 
     // Write deployment rules
-    QString remoteTestPath = epocRoot() + QLatin1String("epoc32/winscw/c/private/") + privateDirUid;
+    QString remoteTestPath = qt_epocRoot() + QLatin1String("epoc32/winscw/c/private/") + privateDirUid;
     DeploymentList depList;
 
     //write emulator deployment
@@ -641,7 +641,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     t << "#endif" << endl;
 
     //write ROM deployment
-    remoteTestPath = epocRoot() + QLatin1String("epoc32/data/z/private/") + privateDirUid;
+    remoteTestPath = qt_epocRoot() + QLatin1String("epoc32/data/z/private/") + privateDirUid;
     depList.clear();
     initProjectDeploySymbian(project, depList, remoteTestPath, false, true,
         QLatin1String(ROM_DEPLOYMENT_PLATFORM), QString(), generatedDirs, generatedFiles);

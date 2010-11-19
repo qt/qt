@@ -40,7 +40,9 @@
 ****************************************************************************/
 
 #include <QtCore/qstringlist.h>
-#include "registry.h"
+#include "registry_p.h"
+
+QT_BEGIN_NAMESPACE
 
 #ifdef Q_OS_WIN32
 /*!
@@ -80,7 +82,7 @@ static QString keyName(const QString &rKey)
 }
 #endif
 
-QString readRegistryKey(HKEY parentHandle, const QString &rSubkey)
+QString qt_readRegistryKey(HKEY parentHandle, const QString &rSubkey)
 {
     QString result;
 
@@ -160,4 +162,5 @@ QString readRegistryKey(HKEY parentHandle, const QString &rSubkey)
     return result;
 }
 
+QT_END_NAMESPACE
 

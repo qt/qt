@@ -39,13 +39,13 @@
 **
 ****************************************************************************/
 
-#include <iostream>
-
 #include <QtCore/qdir.h>
 #include <QtCore/qxmlstream.h>
 
-#include "epocroot.h"
-#include "../windows/registry.h"
+#include "epocroot_p.h"
+#include "../windows/registry_p.h"
+
+QT_BEGIN_NAMESPACE
 
 // Registry key under which the location of the Symbian devices.xml file is
 // stored.
@@ -64,20 +64,20 @@
 // Stored as a static value in order to avoid unnecessary re-evaluation.
 static QString epocRootValue;
 
-QString getDevicesXmlPath()
+static QString getDevicesXmlPath()
     {
     // Note that the following call will return a null string on platforms other
     // than Windows.  If support is required on other platforms for devices.xml,
     // an alternative mechanism for retrieving the location of this file will
     // be required.
-    return readRegistryKey(SYMBIAN_SDKS_REG_HANDLE, QLatin1String(SYMBIAN_SDKS_REG_SUBKEY));
+    return qt_readRegistryKey(SYMBIAN_SDKS_REG_HANDLE, QLatin1String(SYMBIAN_SDKS_REG_SUBKEY));
     }
 
 /**
  * Checks whether epocRootValue points to an existent directory.
  * If not, epocRootValue is set to an empty string and an error message is printed.
  */
-void checkEpocRootExists(const QString &source)
+static void checkEpocRootExists(const QString &source)
 {
     if (!epocRootValue.isEmpty()) {
         QDir dir(epocRootValue);
@@ -104,7 +104,7 @@ static void fixEpocRoot(QString &path)
 /**
  * Determine the epoc root for the currently active SDK.
  */
-QString epocRoot()
+QString qt_epocRoot()
 {
     if (epocRootValue.isEmpty()) {
         // 1. If environment variable EPOCROOT is set and points to an existent
@@ -219,3 +219,4 @@ QString epocRoot()
     return epocRootValue;
 }
 
+QT_END_NAMESPACE

@@ -63,7 +63,7 @@ QT_END_NAMESPACE
 #endif
 
 #ifdef QLIBRARYINFO_EPOCROOT
-# include "symbian/epocroot.h"
+# include "symbian/epocroot_p.h"
 #endif
 
 #include "qconfig.cpp"
@@ -442,7 +442,7 @@ QLibraryInfo::location(LibraryLocation loc)
             // $${EPOCROOT} is a special case, resolve it similarly to qmake.
             QRegExp epocrootMatcher(QLatin1String("\\$\\$\\{EPOCROOT\\}"));
             if ((rep = epocrootMatcher.indexIn(ret)) != -1)
-                ret.replace(rep, epocrootMatcher.matchedLength(), epocRoot());
+                ret.replace(rep, epocrootMatcher.matchedLength(), qt_epocRoot());
 #endif
 
             config->endGroup();

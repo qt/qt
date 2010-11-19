@@ -50,7 +50,7 @@
 #include <qdebug.h>
 
 // Included from tools/shared
-#include <symbian/epocroot.h>
+#include <symbian/epocroot_p.h>
 
 #define RESOURCE_DIRECTORY_MMP "/resource/apps"
 #define REGISTRATION_RESOURCE_DIRECTORY_HW "/private/10003a3f/import/apps"
@@ -87,10 +87,10 @@ QString SymbianMakefileGenerator::fixPathForMmp(const QString& origPath, const Q
 {
     static QString epocRootStr;
     if (epocRootStr.isEmpty()) {
-        epocRootStr = epocRoot();
+        epocRootStr = qt_epocRoot();
         QFileInfo efi(epocRootStr);
         if (!efi.exists() || epocRootStr.isEmpty()) {
-            fprintf(stderr, "Unable to resolve epocRoot '%s' to real dir on current drive, defaulting to '/' for mmp paths\n", qPrintable(epocRoot()));
+            fprintf(stderr, "Unable to resolve epocRoot '%s' to real dir on current drive, defaulting to '/' for mmp paths\n", qPrintable(qt_epocRoot()));
             epocRootStr = "/";
         } else {
             epocRootStr = efi.absoluteFilePath();
@@ -122,7 +122,7 @@ QString SymbianMakefileGenerator::absolutizePath(const QString& origPath)
     // Prepend epocroot to any paths beginning with "/epoc32/"
     QString resultPath = QDir::fromNativeSeparators(origPath);
     if (resultPath.startsWith("/epoc32/", Qt::CaseInsensitive))
-        resultPath = QDir::fromNativeSeparators(epocRoot()) + resultPath.mid(1);
+        resultPath = QDir::fromNativeSeparators(qt_epocRoot()) + resultPath.mid(1);
 
     QFileInfo fi(fileInfo(resultPath));
 
@@ -719,7 +719,7 @@ void SymbianMakefileGenerator::writeMmpFileLibraryPart(QTextStream& t)
                 // Hacky way to find out what kind of library it is. Check the
                 // ARMV5 build directory for library type. We default to shared
                 // library, since that is more common.
-                QString udebStaticLibLocation(epocRoot());
+                QString udebStaticLibLocation(qt_epocRoot());
                 QString urelStaticLibLocation(udebStaticLibLocation);
                 udebStaticLibLocation += QString("epoc32/release/armv5/udeb/%1.lib").arg(lib);
                 urelStaticLibLocation += QString("epoc32/release/armv5/urel/%1.lib").arg(lib);

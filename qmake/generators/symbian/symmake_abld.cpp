@@ -49,7 +49,7 @@
 #include <qdebug.h>
 
 // Included from tools/shared
-#include <symbian/epocroot.h>
+#include <symbian/epocroot_p.h>
 
 #define DO_NOTHING_TARGET "do_nothing"
 #define CREATE_TEMPS_TARGET "create_temps"
@@ -431,7 +431,7 @@ bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t, bool i
     else
         t << WINSCW_DEPLOYMENT_TARGET ":" << endl;
 
-    QString remoteTestPath = epocRoot()
+    QString remoteTestPath = qt_epocRoot()
         + QDir::toNativeSeparators(QLatin1String(isRom ? "epoc32/data/z/private/"
                                                        : "epoc32/winscw/c/private/"))
         + privateDirUid;

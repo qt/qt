@@ -36,8 +36,8 @@ HEADERS += project.h property.h generators/makefile.h \
            generators/symbian/symmake_abld.h \
            generators/symbian/symmake_sbsv2.h \
            generators/symbian/initprojectdeploy_symbian.h \
-           windows/registry.h \
-           symbian/epocroot.h
+           windows/registry_p.h \
+           symbian/epocroot_p.h
 
 contains(QT_EDITION, OpenSource) {
    DEFINES += QMAKE_OPENSOURCE_EDITION

@@ -39,8 +39,21 @@
 **
 ****************************************************************************/
 
-#ifndef WINDOWS_REGISTRY_H
-#define WINDOWS_REGISTRY_H
+#ifndef QT_WINDOWS_REGISTRY_H
+#define QT_WINDOWS_REGISTRY_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+QT_BEGIN_NAMESPACE
 
 #include <QtCore/qglobal.h>
 
@@ -59,6 +72,9 @@
  * if this code is compiled for a platform other than Windows), a null
  * string is returned.
  */
-QString readRegistryKey(HKEY parentHandle, const QString &rSubkey);
+QString qt_readRegistryKey(HKEY parentHandle, const QString &rSubkey);
 
-#endif // WINDOWS_REGISTRY_H
+QT_END_NAMESPACE
+
+#endif // QT_WINDOWS_REGISTRY_H
+

@@ -44,7 +44,7 @@
 #include <qxmlstream.h>
 
 // Included from tools/shared
-#include <symbian/epocroot.h>
+#include <symbian/epocroot_p.h>
 
 #define RESOURCE_DIRECTORY_RESOURCE "\\\\resource\\\\apps\\\\"
 
@@ -417,7 +417,7 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile,
     QString zDir;
     remoteTestPath = QString("!:\\private\\%1").arg(privateDirUid);
     if (epocBuild)
-        zDir = epocRoot() + QLatin1String("epoc32/data/z");
+        zDir = qt_epocRoot() + QLatin1String("epoc32/data/z");
 
     DeploymentList depList;
     initProjectDeploySymbian(project, depList, remoteTestPath, true, epocBuild, "$(PLATFORM)", "$(TARGET)", generatedDirs, generatedFiles);
