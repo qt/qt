@@ -95,12 +95,18 @@ void QPlatformGLContextPrivate::setCurrentContext(QPlatformGLContext *context)
     threadContext->context = context;
 }
 
+/*!
+  Returns the platformWindow which this QPlatformGLContext belongs to.
+*/
 QPlatformWindow *QPlatformGLContext::platformWindow() const
 {
     Q_D(const QPlatformGLContext);
     return d->platformWindow;
 }
 
+/*!
+  Returns the last context which called makeCurrent. This function is thread aware.
+*/
 const QPlatformGLContext* QPlatformGLContext::currentContext()
 {
     QPlatformGLThreadContext *threadContext = qplatformgl_context_storage.localData();
@@ -110,11 +116,17 @@ const QPlatformGLContext* QPlatformGLContext::currentContext()
     return 0;
 }
 
+/*!
+    All subclasses needs to specify the platformWindow. It can be a null window.
+*/
 QPlatformGLContext::QPlatformGLContext(QPlatformWindow *platformWindow)
     :d_ptr(new QPlatformGLContextPrivate(platformWindow))
 {
 }
 
+/*!
+  If this is the current context for the thread, doneCurrent is called
+*/
 QPlatformGLContext::~QPlatformGLContext()
 {
     if (QPlatformGLContext::currentContext() == this) {
@@ -123,26 +135,45 @@ QPlatformGLContext::~QPlatformGLContext()
 
 }
 
+
+/*!
+    Makes it possible to set the context which can be the default for making new contexts.
+*/
 void QPlatformGLContext::setDefaultSharedContext(QPlatformGLContext *sharedContext)
 {
     QPlatformGLContextPrivate::staticSharedContext = sharedContext;
 }
 
+/*!
+    Default shared context is intended to be a globally awailable pointer to a context which can
+    be used for sharing resources when creating new contexts. Its default value is 0;
+*/
 const QPlatformGLContext *QPlatformGLContext::defaultSharedContext()
 {
     return QPlatformGLContextPrivate::staticSharedContext;
 }
 
+/*!
+    Reimplement in subclass to do makeCurrent on native GL context
+*/
 void QPlatformGLContext::makeCurrent()
 {
     QPlatformGLContextPrivate::setCurrentContext(this);
 }
 
+/*!
+    Reimplement in subclass to release current context.
+    Typically this is calling makeCurrent with 0 "surface"
+*/
 void QPlatformGLContext::doneCurrent()
 {
     QPlatformGLContextPrivate::setCurrentContext(0);
 }
 
+/*
+  internal: Needs to have a pointer to qGLContext. But since this is in QtGui we cant
+  have any type information.
+*/
 void *QPlatformGLContext::qGLContextHandle() const
 {
     Q_D(const QPlatformGLContext);
@@ -161,3 +192,42 @@ void QPlatformGLContext::deleteQGLContext()
     Q_D(QPlatformGLContext);
     d->qGLContextDeleteFunction(d->qGLContextHandle);
 }
+
+/*!
+    \class QPlatformGLContext
+    \since 4.8
+    \internal
+    \preliminary
+    \ingroup qpa
+
+    \brief The QPlatformGLContext class provides an abstraction for native GL contexts.
+
+    In QPA the way to support OpenGL or OpenVG or other technologies that requires a native GL
+    context is through the QPlatformGLContext wrapper.
+
+    There is no factory function for QPlatformGLContexts, but rather only one accessor function.
+    The only place to retrieve a QPlatformGLContext from is through a QPlatformWindow.
+
+    The context which is current for a specific thread can be collected by the currentContext()
+    function. This is how QPlatformGLContext also makes it possible to use the QtOpenGL module
+    withhout using QGLWidget. When using QGLContext::currentContext(), it will ask
+    QPlatformGLContext for the currentContext. Then a corresponding QGLContext will be returned,
+    which maps to the QPlatformGLContext.
+*/
+
+/*! \fn void swapBuffers()
+    Reimplement in subclass to native swap buffers calls
+*/
+
+/*! getProcAddress(const QString& procName)
+    Reimplement in subclass to native getProcAddr calls.
+
+    Note: its convenient to use qPrintable(const QString &str) to get the const char * pointer
+*/
+
+/*! platformWindowFormat() const
+    QWidget has the function qplatformWindowFormat(). That function is for the application
+    programmer to request the format of the window and the context that he wants.
+
+    Reimplement this function in a subclass to indicate what format the glContext actually has.
+*/

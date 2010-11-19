@@ -102,9 +102,15 @@ public:
 /*!
     \class QPlatformWindowFormat
     \brief The QPlatformWindowFormat class specifies the display format of an OpenGL
-    rendering context.
+    rendering context and if possible attributes of the corresponding QPlatformWindow.
 
-    \ingroup painting-3D
+    \ingroup painting
+
+    QWidget has a setter and getter function for QPlatformWindowFormat. These functions can be used
+    by the application programmer to signal what kind of format he wants to the window and glcontext
+    should have. However, it is not allways possible to furfill these requirements. The application
+    programmer should therefor check the resulting QPlatformWindowFormat from QPlatformGLContext
+    to see the format that was actually created.
 
     A display format has several characteristics:
     \list
@@ -162,7 +168,7 @@ public:
         United States and other countries.
     \endlegalese
 
-    \sa QGLContext, QGLWidget
+    \sa QPlatformContext, QWidget
 */
 
 /*!
