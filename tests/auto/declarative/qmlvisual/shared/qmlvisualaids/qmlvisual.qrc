@@ -1,6 +1,0 @@
-<RCC>
-    <qresource prefix="/qml" lang="qml">
-        <file>Comparison.qml</file>
-        <file>Button.qml</file>
-    </qresource>
-</RCC>
