@@ -47,7 +47,7 @@ qmlView->setSource(QUrl::fromLocalFile("myqml.qml"));
 
 QWidget *widget = myExistingWidget();
 QVBoxLayout *layout = new QVBoxLayout(widget);
-widget->addWidget(qmlView);
+layout->addWidget(qmlView);
 \endcode
 
 The one drawback to this approach is that QDeclarativeView is slower to initialize

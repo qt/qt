@@ -72,6 +72,7 @@ private:
     BaselineProtocol proto;
     ImageItemList baseList;
     QHash<QString, QStringList> scripts;
+    bool dryRunMode;
 
 private slots:
     void initTestCase();
@@ -103,13 +104,8 @@ void tst_Lancelot::initTestCase()
 #if defined(Q_OS_SOMEPLATFORM)
     QSKIP("This test is not supported on this platform.", SkipAll);
 #endif
-    if (!proto.connect()) {
-        QTest::qSleep(3000);  // Wait a bit and try again, the server might just be restarting
-        if (!proto.connect()) {
-            QWARN(qPrintable(proto.errorMessage()));
-            QSKIP("Communication with baseline image server failed.", SkipAll);
-        }
-    }
+    if (!proto.connect(&dryRunMode))
+        QSKIP(qPrintable(proto.errorMessage()), SkipAll);
 
     QDir qpsDir(scriptsDir);
     QStringList files = qpsDir.entryList(QStringList() << QLatin1String("*.qps"), QDir::Files | QDir::Readable);
@@ -250,7 +246,10 @@ void tst_Lancelot::runTestSuite()
             QByteArray serverMsg;
             if (!proto.submitMismatch(rendered, &serverMsg))
                 serverMsg = "Failed to submit mismatching image to server.";
-            QFAIL("Rendered image differs from baseline.\n" + serverMsg);
+            if (dryRunMode)
+                qDebug() << "Dryrun mode, ignoring detected mismatch." << serverMsg;
+            else
+                QFAIL("Rendered image differs from baseline.\n" + serverMsg);
     }
 }
 

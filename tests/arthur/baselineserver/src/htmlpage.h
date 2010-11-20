@@ -51,7 +51,7 @@ public:
     HTMLPage();
     ~HTMLPage();
 
-    void start(const QString &storagePath, const QString &runId, const PlatformInfo pinfo, const QString &hostAddress, const ImageItemList &itemList);
+    void start(const QString &storagePath, const QString &runId, const PlatformInfo pinfo, const QString &context, const ImageItemList &itemList);
     void addItem(const QString &baseline, const QString &rendered, const ImageItem &item);
     void end();
     QString filePath();
@@ -69,7 +69,7 @@ private:
     QTextStream out;
     QString id;
     PlatformInfo plat;
-    QString address;
+    QString ctx;
     ImageItemList imageItems;
     bool headerWritten;
 };

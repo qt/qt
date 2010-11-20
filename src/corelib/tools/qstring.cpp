@@ -3606,7 +3606,7 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
             }
             length = length % 16;
         }
-#elif QT_HAVE_NEON
+#elif QT_ALWAYS_HAVE_NEON
         // Refer to the documentation of the SSE2 implementation
         // this use eactly the same method as for SSE except:
         // 1) neon has unsigned comparison

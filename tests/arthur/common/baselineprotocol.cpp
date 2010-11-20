@@ -47,10 +47,27 @@
 #include <QProcess>
 #include <QFileInfo>
 #include <QDir>
+#include <QTime>
 
 #ifndef QMAKESPEC
 #define QMAKESPEC "Unknown"
 #endif
+
+#if defined(Q_OS_WIN)
+#include <QtCore/qt_windows.h>
+#endif
+#if defined(Q_OS_UNIX)
+#include <time.h>
+#endif
+void BaselineProtocol::sysSleep(int ms)
+{
+#if defined(Q_OS_WIN)
+    Sleep(DWORD(ms));
+#else
+    struct timespec ts = { ms / 1000, (ms % 1000) * 1000 * 1000 };
+    nanosleep(&ts, NULL);
+#endif
+}
 
 PlatformInfo::PlatformInfo(bool useLocal)
     : QMap<QString, QString>()
@@ -141,12 +158,6 @@ quint64 ImageItem::computeChecksum(const QImage &image)
             p += bpl;
         }
     }
-    if (img.format() == QImage::Format_RGB32) {    // Thank you, Haavard
-        quint32 *p = (quint32 *)img.bits();
-        const quint32 *end = p + (img.byteCount()/4);
-        while (p<end)
-            *p++ &= RGB_MASK;
-    }
 
     quint32 h1 = 0xfeedbacc;
     quint32 h2 = 0x21604894;
@@ -221,7 +232,7 @@ BaselineProtocol::~BaselineProtocol()
 }
 
 
-bool BaselineProtocol::connect()
+bool BaselineProtocol::connect(bool *dryrun)
 {
     errMsg.clear();
     QByteArray serverName(qgetenv("QT_LANCELOT_SERVER"));
@@ -230,8 +241,11 @@ bool BaselineProtocol::connect()
 
     socket.connectToHost(serverName, ServerPort);
     if (!socket.waitForConnected(Timeout)) {
-        errMsg += QLS("TCP connectToHost failed. Host:") + serverName + QLS(" port:") + QString::number(ServerPort);
-        return false;
+        sysSleep(Timeout);  // Wait a bit and try again, the server might just be restarting
+        if (!socket.waitForConnected(Timeout)) {
+            errMsg += QLS("TCP connectToHost failed. Host:") + serverName + QLS(" port:") + QString::number(ServerPort);
+            return false;
+        }
     }
 
     PlatformInfo pi(true);
@@ -243,9 +257,22 @@ bool BaselineProtocol::connect()
         return false;
     }
 
-    Command cmd = Ack;
-    if (!receiveBlock(&cmd, &block) || cmd != Ack) {
+    Command cmd = UnknownError;
+    if (!receiveBlock(&cmd, &block)) {
         errMsg += QLS("Failed to get response from server.");
+        return false;
+    }
+
+    if (cmd == Abort) {
+        errMsg += QLS("Server aborted connection. Reason: ") + QString::fromLatin1(block);
+        return false;
+    }
+
+    if (dryrun)
+        *dryrun = (cmd == DoDryRun);
+
+    if (cmd != Ack && cmd != DoDryRun) {
+        errMsg += QLS("Unexpected response from server.");
         return false;
     }
 
@@ -268,8 +295,6 @@ bool BaselineProtocol::acceptConnection(PlatformInfo *pi)
         pi->insert(PI_HostAddress, socket.peerAddress().toString());
     }
 
-    if (!sendBlock(Ack, QByteArray()))
-        return false;
     return true;
 }
 

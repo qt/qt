@@ -135,10 +135,9 @@ void SymbianEngine::initialize()
 
     updateConfigurations();
     updateStatesToSnaps();
-    updateAvailableAccessPoints(); // On first time updates synchronously (without WLAN scans)
+    updateAvailableAccessPoints(); // On first time updates (without WLAN scans)
     // Start monitoring IAP and/or SNAP changes in Symbian CommsDB
     startCommsDatabaseNotifications();
-    iFirstUpdate = false;
 }
 
 SymbianEngine::~SymbianEngine()
@@ -790,6 +789,12 @@ void SymbianEngine::accessPointScanningReady(TBool scanSuccessful, TConnMonIapIn
         mutex.unlock();
         emit updateCompleted();
         mutex.lock();
+    } else {
+        iFirstUpdate = false;
+        if (iScanInQueue) {
+            iScanInQueue = EFalse;
+            updateAvailableAccessPoints();
+        }
     }
 }
 
@@ -976,7 +981,7 @@ void SymbianEngine::RunL()
     QMutexLocker locker(&mutex);
 
     if (iStatus != KErrCancel) {
-        // By default, start relistening notifications. Stop only if interesting event occurred.
+        // By default, start relistening notifications. Stop only if interesting event occured.
         iWaitingCommsDatabaseNotifications = true;
         RDbNotifier::TEvent event = STATIC_CAST(RDbNotifier::TEvent, iStatus.Int());
         switch (event) {
@@ -1356,27 +1361,39 @@ AccessPointsAvailabilityScanner::~AccessPointsAvailabilityScanner()
 void AccessPointsAvailabilityScanner::DoCancel()
 {
     iConnectionMonitor.CancelAsyncRequest(EConnMonGetPckgAttribute);
+    iScanActive = EFalse;
+    iOwner.iScanInQueue = EFalse;
 }
 
 void AccessPointsAvailabilityScanner::StartScanning()
 {
-    if (iOwner.iFirstUpdate) {
-        // On first update (the mgr is being instantiated) update only those bearers who
-        // don't need time-consuming scans (WLAN).
-        // Note: EBearerIdWCDMA covers also GPRS bearer
-        iConnectionMonitor.GetPckgAttribute(EBearerIdWCDMA, 0, KIapAvailability, iIapBuf, iStatus);
-    } else {
-        iConnectionMonitor.GetPckgAttribute(EBearerIdAll, 0, KIapAvailability, iIapBuf, iStatus);
-    }
+    if (!iScanActive) {
+        iScanActive = ETrue;
+        if (iOwner.iFirstUpdate) {
+            // On first update (the mgr is being instantiated) update only those bearers who
+            // don't need time-consuming scans (WLAN).
+            // Note: EBearerIdWCDMA covers also GPRS bearer
+            iConnectionMonitor.GetPckgAttribute(EBearerIdWCDMA, 0, KIapAvailability, iIapBuf, iStatus);
+        } else {
+            iConnectionMonitor.GetPckgAttribute(EBearerIdAll, 0, KIapAvailability, iIapBuf, iStatus);
+        }
 
-    if (!IsActive())
-        SetActive();
+        if (!IsActive()) {
+            SetActive();
+        }
+    } else {
+        // Queue scan for getting WLAN info after first request returns
+        if (iOwner.iFirstUpdate) {
+            iOwner.iScanInQueue = ETrue;
+        }
+    }
 }
 
 void AccessPointsAvailabilityScanner::RunL()
 {
     QMutexLocker locker(&iOwner.mutex);
 
+    iScanActive = EFalse;
     if (iStatus.Int() != KErrNone) {
         iIapBuf().iCount = 0;
         QT_TRYCATCH_LEAVING(iOwner.accessPointScanningReady(false,iIapBuf()));
