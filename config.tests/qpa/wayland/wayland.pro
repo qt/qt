@@ -1,4 +1,4 @@
-SOURCES = client.cpp
+SOURCES = wayland.cpp
 CONFIG -= qt
 
 QMAKE_CXXFLAGS += $$QT_CFLAGS_WAYLAND
