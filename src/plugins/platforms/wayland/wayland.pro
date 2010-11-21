@@ -16,7 +16,11 @@ HEADERS =   qwaylandintegration.h \
 contains(QT_CONFIG, opengl) {
     QT += opengl
 }
-LIBS += -lwayland-client -ldrm -lxkbcommon -lEGL -lGLESv2
+LIBS += -lwayland-client -lxkbcommon -lEGL -lGLESv2
+unix {
+	CONFIG += link_pkgconfig
+	PKGCONFIG += libdrm
+}
 
 include (../fontdatabases/fontconfig/fontconfig.pri)
 
