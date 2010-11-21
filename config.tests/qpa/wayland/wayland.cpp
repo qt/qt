@@ -1,5 +1,4 @@
-#include "wayland-client.h"
-#include "wayland-glib.h"
+#include <wayland-client.h>
 
 int main(int, char **)
 {
