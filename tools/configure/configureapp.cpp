@@ -741,6 +741,23 @@ void Configure::parseCmdLine()
         } else if (configCmdLine.at(i) == "-opengl-es-2") {
             dictionary[ "OPENGL" ]          = "yes";
             dictionary[ "OPENGL_ES_2" ]     = "yes";
+        } else if (configCmdLine.at(i) == "-opengl") {
+            dictionary[ "OPENGL" ]          = "yes";
+            i++;
+            if (i == argCount)
+                break;
+
+            if (configCmdLine.at(i) == "es1") {
+                dictionary[ "OPENGL_ES_CM" ]    = "yes";
+            } else if ( configCmdLine.at(i) == "es2" ) {
+                dictionary[ "OPENGL_ES_2" ]     = "yes";
+            } else if ( configCmdLine.at(i) == "desktop" ) {
+                dictionary[ "OPENGL_ES_2" ]     = "yes";
+            } else {
+                cout << "Argument passed to -opengl option is not valid." << endl;
+                dictionary[ "DONE" ] = "error";
+                break;
+            }
         }
 
         // OpenVG Support -------------------------------------------
@@ -1735,6 +1752,11 @@ bool Configure::displayHelp()
 
         desc("QT3SUPPORT", "no","-no-qt3support",       "Disables the Qt 3 support functionality.\n");
         desc("OPENGL", "no","-no-opengl",               "Disables OpenGL functionality\n");
+        desc("OPENGL", "no","-opengl <api>",            "Enable OpenGL support with specified API version.\n"
+                                                        "Available values for <api>:");
+        desc("", "", "",                                "  desktop - Enable support for Desktop OpenGL", ' ');
+        desc("OPENGL_ES_CM", "no", "",                  "  es1 - Enable support for OpenGL ES Common Profile", ' ');
+        desc("OPENGL_ES_2",  "no", "",                  "  es2 - Enable support for OpenGL ES 2.0", ' ');
 
         desc("OPENVG", "no","-no-openvg",               "Disables OpenVG functionality\n");
         desc("OPENVG", "yes","-openvg",                 "Enables OpenVG functionality");
@@ -1895,8 +1917,7 @@ bool Configure::displayHelp()
         desc("CETEST", "no",       "-no-cetest",           "Do not compile Windows CE remote test application");
         desc("CETEST", "yes",      "-cetest",              "Compile Windows CE remote test application");
         desc(                      "-signature <file>",    "Use file for signing the target project");
-        desc("OPENGL_ES_CM", "no", "-opengl-es-cm",        "Enable support for OpenGL ES Common");
-        desc("OPENGL_ES_2",  "no", "-opengl-es-2",         "Enable support for OpenGL ES 2.0");
+
         desc("DIRECTSHOW", "no",   "-phonon-wince-ds9",    "Enable Phonon Direct Show 9 backend for Windows CE");
 
         // Qt\Symbian only options go below here -----------------------------------------------------------------------------
