@@ -187,7 +187,7 @@ QString QGuiPlatformPlugin::styleName()
 #endif
 }
 
-/* return an aditional default palette  (only work on X11) */
+/* return an additional default palette  (only work on X11) */
 QPalette QGuiPlatformPlugin::palette()
 {
 #ifdef Q_WS_X11
