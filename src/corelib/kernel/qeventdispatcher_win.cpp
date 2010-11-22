@@ -538,7 +538,7 @@ LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
                 // there are still input and timer messages in the message queue
                 d->sendPostedEventsWindowsTimerId = SetTimer(d->internalHwnd,
                                                              SendPostedEventsWindowsTimerId,
-                                                             USER_TIMER_MINIMUM,
+                                                             0, // we specify zero, but Windows uses USER_TIMER_MINIMUM
                                                              NULL);
                 // we don't check the return value of SetTimer()... if creating the timer failed, there's little
                 // we can do. we just have to accept that posted events will be starved
