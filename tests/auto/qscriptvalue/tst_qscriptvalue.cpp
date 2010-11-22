@@ -1341,51 +1341,52 @@ void tst_QScriptValue::toVariant()
     }
 }
 
+void tst_QScriptValue::toQObject_nonQObject_data()
+{
+    newEngine();
+    QTest::addColumn<QScriptValue>("value");
+
+    QTest::newRow("invalid") << QScriptValue();
+    QTest::newRow("bool(false)") << QScriptValue(false);
+    QTest::newRow("bool(true)") << QScriptValue(true);
+    QTest::newRow("int") << QScriptValue(123);
+    QTest::newRow("string") << QScriptValue(QString::fromLatin1("ciao"));
+    QTest::newRow("undefined") << QScriptValue(QScriptValue::UndefinedValue);
+    QTest::newRow("null") << QScriptValue(QScriptValue::NullValue);
+
+    QTest::newRow("bool bound(false)") << QScriptValue(engine, false);
+    QTest::newRow("bool bound(true)") << QScriptValue(engine, true);
+    QTest::newRow("int bound") << QScriptValue(engine, 123);
+    QTest::newRow("string bound") << QScriptValue(engine, QString::fromLatin1("ciao"));
+    QTest::newRow("undefined bound") << engine->undefinedValue();
+    QTest::newRow("null bound") << engine->nullValue();
+    QTest::newRow("object") << engine->newObject();
+    QTest::newRow("array") << engine->newArray();
+    QTest::newRow("date") << engine->newDate(124);
+    QTest::newRow("variant(12345)") << engine->newVariant(12345);
+    QTest::newRow("variant((QObject*)0)") << engine->newVariant(qVariantFromValue((QObject*)0));
+    QTest::newRow("newQObject(0)") << engine->newQObject(0);
+}
+
+
+void tst_QScriptValue::toQObject_nonQObject()
+{
+    QFETCH(QScriptValue, value);
+    QCOMPARE(value.toQObject(), (QObject *)0);
+    QCOMPARE(qscriptvalue_cast<QObject*>(value), (QObject *)0);
+}
+
 // unfortunately, this is necessary in order to do qscriptvalue_cast<QPushButton*>(...)
-Q_DECLARE_METATYPE(QPushButton*)
+Q_DECLARE_METATYPE(QPushButton*);
 
 void tst_QScriptValue::toQObject()
 {
     QScriptEngine eng;
 
-    QScriptValue undefined = eng.undefinedValue();
-    QCOMPARE(undefined.toQObject(), (QObject *)0);
-    QCOMPARE(qscriptvalue_cast<QObject*>(undefined), (QObject *)0);
-
-    QScriptValue null = eng.nullValue();
-    QCOMPARE(null.toQObject(), (QObject *)0);
-    QCOMPARE(qscriptvalue_cast<QObject*>(null), (QObject *)0);
-
-    {
-        QScriptValue falskt = QScriptValue(&eng, false);
-        QCOMPARE(falskt.toQObject(), (QObject *)0);
-        QCOMPARE(qscriptvalue_cast<QObject*>(falskt), (QObject *)0);
-
-        QScriptValue sant = QScriptValue(&eng, true);
-        QCOMPARE(sant.toQObject(), (QObject *)0);
-        QCOMPARE(qscriptvalue_cast<QObject*>(sant), (QObject *)0);
-
-        QScriptValue number = QScriptValue(&eng, 123.0);
-        QCOMPARE(number.toQObject(), (QObject *)0);
-        QCOMPARE(qscriptvalue_cast<QObject*>(number), (QObject *)0);
-
-        QScriptValue str = QScriptValue(&eng, QString("ciao"));
-        QCOMPARE(str.toQObject(), (QObject *)0);
-        QCOMPARE(qscriptvalue_cast<QObject*>(str), (QObject *)0);
-    }
-
-    QScriptValue object = eng.newObject();
-    QCOMPARE(object.toQObject(), (QObject *)0);
-    QCOMPARE(qscriptvalue_cast<QObject*>(object), (QObject *)0);
-
     QScriptValue qobject = eng.newQObject(this);
     QCOMPARE(qobject.toQObject(), (QObject *)this);
     QCOMPARE(qscriptvalue_cast<QObject*>(qobject), (QObject *)this);
     QCOMPARE(qscriptvalue_cast<QWidget*>(qobject), (QWidget *)0);
-
-    QScriptValue qobject2 = eng.newQObject(0);
-    QCOMPARE(qobject2.toQObject(), (QObject *)0);
-    QCOMPARE(qscriptvalue_cast<QObject*>(qobject2), (QObject *)0);
 
     QWidget widget;
     QScriptValue qwidget = eng.newQObject(&widget);
@@ -1399,25 +1400,6 @@ void tst_QScriptValue::toQObject()
     QCOMPARE(qscriptvalue_cast<QObject*>(qbutton), (QObject *)&button);
     QCOMPARE(qscriptvalue_cast<QWidget*>(qbutton), (QWidget *)&button);
     QCOMPARE(qscriptvalue_cast<QPushButton*>(qbutton), &button);
-
-    // V2 constructors
-    {
-        QScriptValue falskt = QScriptValue(false);
-        QCOMPARE(falskt.toQObject(), (QObject *)0);
-        QCOMPARE(qscriptvalue_cast<QObject*>(falskt), (QObject *)0);
-
-        QScriptValue sant = QScriptValue(true);
-        QCOMPARE(sant.toQObject(), (QObject *)0);
-        QCOMPARE(qscriptvalue_cast<QObject*>(sant), (QObject *)0);
-
-        QScriptValue number = QScriptValue(123.0);
-        QCOMPARE(number.toQObject(), (QObject *)0);
-        QCOMPARE(qscriptvalue_cast<QObject*>(number), (QObject *)0);
-
-        QScriptValue str = QScriptValue(QString("ciao"));
-        QCOMPARE(str.toQObject(), (QObject *)0);
-        QCOMPARE(qscriptvalue_cast<QObject*>(str), (QObject *)0);
-    }
 
     // wrapping a QObject* as variant
     QScriptValue variant = eng.newVariant(qVariantFromValue((QObject*)&button));
@@ -1437,10 +1419,6 @@ void tst_QScriptValue::toQObject()
     QCOMPARE(qscriptvalue_cast<QObject*>(variant3), (QObject*)0);
     QCOMPARE(qscriptvalue_cast<QWidget*>(variant3), (QWidget*)0);
     QCOMPARE(qscriptvalue_cast<QPushButton*>(variant3), &button);
-
-    QScriptValue inv;
-    QCOMPARE(inv.toQObject(), (QObject *)0);
-    QCOMPARE(qscriptvalue_cast<QObject*>(inv), (QObject *)0);
 }
 
 void tst_QScriptValue::toObject()
@@ -2937,127 +2915,169 @@ static QScriptValue ctorReturningNewObject(QScriptContext *, QScriptEngine *eng)
     return result;
 }
 
+void tst_QScriptValue::construct_nonFunction_data()
+{
+    newEngine();
+    QTest::addColumn<QScriptValue>("value");
+
+    QTest::newRow("invalid") << QScriptValue();
+    QTest::newRow("bool") << QScriptValue(false);
+    QTest::newRow("int") << QScriptValue(123);
+    QTest::newRow("string") << QScriptValue(QString::fromLatin1("ciao"));
+    QTest::newRow("undefined") << QScriptValue(QScriptValue::UndefinedValue);
+    QTest::newRow("null") << QScriptValue(QScriptValue::NullValue);
+
+    QTest::newRow("bool bound") << QScriptValue(engine, false);
+    QTest::newRow("int bound") << QScriptValue(engine, 123);
+    QTest::newRow("string bound") << QScriptValue(engine, QString::fromLatin1("ciao"));
+    QTest::newRow("undefined bound") << engine->undefinedValue();
+    QTest::newRow("null bound") << engine->nullValue();
+}
+
+void tst_QScriptValue::construct_nonFunction()
+{
+    QFETCH(QScriptValue, value);
+    QVERIFY(!value.construct().isValid());
+}
+
+void tst_QScriptValue::construct_simple()
+{
+    QScriptEngine eng;
+    QScriptValue fun = eng.evaluate("(function () { this.foo = 123; })");
+    QVERIFY(fun.isFunction());
+    QScriptValue ret = fun.construct();
+    QVERIFY(ret.isObject());
+    QVERIFY(ret.instanceOf(fun));
+    QCOMPARE(ret.property("foo").toInt32(), 123);
+}
+
+void tst_QScriptValue::construct_newObjectJS()
+{
+    QScriptEngine eng;
+    // returning a different object overrides the default-constructed one
+    QScriptValue fun = eng.evaluate("(function () { return { bar: 456 }; })");
+    QVERIFY(fun.isFunction());
+    QScriptValue ret = fun.construct();
+    QVERIFY(ret.isObject());
+    QVERIFY(!ret.instanceOf(fun));
+    QCOMPARE(ret.property("bar").toInt32(), 456);
+}
+
+void tst_QScriptValue::construct_undefined()
+{
+    QScriptEngine eng;
+    QScriptValue fun = eng.newFunction(ctorReturningUndefined);
+    QScriptValue ret = fun.construct();
+    QVERIFY(ret.isObject());
+    QVERIFY(ret.instanceOf(fun));
+    QCOMPARE(ret.property("foo").toInt32(), 123);
+}
+
+void tst_QScriptValue::construct_newObjectCpp()
+{
+    QScriptEngine eng;
+    QScriptValue fun = eng.newFunction(ctorReturningNewObject);
+    QScriptValue ret = fun.construct();
+    QVERIFY(ret.isObject());
+    QVERIFY(!ret.instanceOf(fun));
+    QCOMPARE(ret.property("bar").toInt32(), 456);
+}
+
+void tst_QScriptValue::construct_arg()
+{
+    QScriptEngine eng;
+    QScriptValue Number = eng.evaluate("Number");
+    QCOMPARE(Number.isFunction(), true);
+    QScriptValueList args;
+    args << QScriptValue(&eng, 123);
+    QScriptValue ret = Number.construct(args);
+    QCOMPARE(ret.isObject(), true);
+    QCOMPARE(ret.toNumber(), args.at(0).toNumber());
+}
+
+void tst_QScriptValue::construct_proto()
+{
+    QScriptEngine eng;
+    // test that internal prototype is set correctly
+    QScriptValue fun = eng.evaluate("(function() { return this.__proto__; })");
+    QCOMPARE(fun.isFunction(), true);
+    QCOMPARE(fun.property("prototype").isObject(), true);
+    QScriptValue ret = fun.construct();
+    QCOMPARE(fun.property("prototype").strictlyEquals(ret), true);
+}
+
+void tst_QScriptValue::construct_returnInt()
+{
+    QScriptEngine eng;
+    // test that we return the new object even if a non-object value is returned from the function
+    QScriptValue fun = eng.evaluate("(function() { return 123; })");
+    QCOMPARE(fun.isFunction(), true);
+    QScriptValue ret = fun.construct();
+    QCOMPARE(ret.isObject(), true);
+}
+
+void tst_QScriptValue::construct_throw()
+{
+    QScriptEngine eng;
+    QScriptValue fun = eng.evaluate("(function() { throw new Error('foo'); })");
+    QCOMPARE(fun.isFunction(), true);
+    QScriptValue ret = fun.construct();
+    QCOMPARE(ret.isError(), true);
+    QCOMPARE(eng.hasUncaughtException(), true);
+    QVERIFY(ret.strictlyEquals(eng.uncaughtException()));
+}
+
 void tst_QScriptValue::construct()
 {
     QScriptEngine eng;
+    QScriptValue fun = eng.evaluate("(function() { return arguments; })");
+    QVERIFY(fun.isFunction());
+    QScriptValue array = eng.newArray(3);
+    array.setProperty(0, QScriptValue(&eng, 123.0));
+    array.setProperty(1, QScriptValue(&eng, 456.0));
+    array.setProperty(2, QScriptValue(&eng, 789.0));
+    // construct with single array object as arguments
+    QScriptValue ret = fun.construct(array);
+    QVERIFY(!eng.hasUncaughtException());
+    QVERIFY(ret.isValid());
+    QVERIFY(ret.isObject());
+    QCOMPARE(ret.property(0).strictlyEquals(array.property(0)), true);
+    QCOMPARE(ret.property(1).strictlyEquals(array.property(1)), true);
+    QCOMPARE(ret.property(2).strictlyEquals(array.property(2)), true);
+    // construct with arguments object as arguments
+    QScriptValue ret2 = fun.construct(ret);
+    QCOMPARE(ret2.property(0).strictlyEquals(ret.property(0)), true);
+    QCOMPARE(ret2.property(1).strictlyEquals(ret.property(1)), true);
+    QCOMPARE(ret2.property(2).strictlyEquals(ret.property(2)), true);
+    // construct with null as arguments
+    QScriptValue ret3 = fun.construct(eng.nullValue());
+    QCOMPARE(ret3.isError(), false);
+    QCOMPARE(ret3.property("length").isNumber(), true);
+    QCOMPARE(ret3.property("length").toNumber(), 0.0);
+    // construct with undefined as arguments
+    QScriptValue ret4 = fun.construct(eng.undefinedValue());
+    QCOMPARE(ret4.isError(), false);
+    QCOMPARE(ret4.property("length").isNumber(), true);
+    QCOMPARE(ret4.property("length").toNumber(), 0.0);
+    // construct with something else as arguments
+    QScriptValue ret5 = fun.construct(QScriptValue(&eng, 123.0));
+    QCOMPARE(ret5.isError(), true);
+    // construct with a non-array object as arguments
+    QScriptValue ret6 = fun.construct(eng.globalObject());
+    QVERIFY(ret6.isError());
+    QCOMPARE(ret6.toString(), QString::fromLatin1("TypeError: Arguments must be an array"));
+}
 
-    {
-        QScriptValue fun = eng.evaluate("(function () { this.foo = 123; })");
-        QVERIFY(fun.isFunction());
-        QScriptValue ret = fun.construct();
-        QVERIFY(ret.isObject());
-        QVERIFY(ret.instanceOf(fun));
-        QCOMPARE(ret.property("foo").toInt32(), 123);
-    }
-    // returning a different object overrides the default-constructed one
-    {
-        QScriptValue fun = eng.evaluate("(function () { return { bar: 456 }; })");
-        QVERIFY(fun.isFunction());
-        QScriptValue ret = fun.construct();
-        QVERIFY(ret.isObject());
-        QVERIFY(!ret.instanceOf(fun));
-        QCOMPARE(ret.property("bar").toInt32(), 456);
-    }
-
-    {
-        QScriptValue fun = eng.newFunction(ctorReturningUndefined);
-        QScriptValue ret = fun.construct();
-        QVERIFY(ret.isObject());
-        QVERIFY(ret.instanceOf(fun));
-        QCOMPARE(ret.property("foo").toInt32(), 123);
-    }
-    {
-        QScriptValue fun = eng.newFunction(ctorReturningNewObject);
-        QScriptValue ret = fun.construct();
-        QVERIFY(ret.isObject());
-        QVERIFY(!ret.instanceOf(fun));
-        QCOMPARE(ret.property("bar").toInt32(), 456);
-    }
-
-    QScriptValue Number = eng.evaluate("Number");
-    QCOMPARE(Number.isFunction(), true);
-    {
-        QScriptValueList args;
-        args << QScriptValue(&eng, 123);
-        QScriptValue ret = Number.construct(args);
-        QCOMPARE(ret.isObject(), true);
-        QCOMPARE(ret.toNumber(), args.at(0).toNumber());
-    }
-
-    // test that internal prototype is set correctly
-    {
-        QScriptValue fun = eng.evaluate("(function() { return this.__proto__; })");
-        QCOMPARE(fun.isFunction(), true);
-        QCOMPARE(fun.property("prototype").isObject(), true);
-        QScriptValue ret = fun.construct();
-        QCOMPARE(fun.property("prototype").strictlyEquals(ret), true);
-    }
-
-    // test that we return the new object even if a non-object value is returned from the function
-    {
-        QScriptValue fun = eng.evaluate("(function() { return 123; })");
-        QCOMPARE(fun.isFunction(), true);
-        QScriptValue ret = fun.construct();
-        QCOMPARE(ret.isObject(), true);
-    }
-
-    {
-        QScriptValue fun = eng.evaluate("(function() { throw new Error('foo'); })");
-        QCOMPARE(fun.isFunction(), true);
-        QScriptValue ret = fun.construct();
-        QCOMPARE(ret.isError(), true);
-        QCOMPARE(eng.hasUncaughtException(), true);
-        QVERIFY(ret.strictlyEquals(eng.uncaughtException()));
-    }
-
-    QScriptValue inv;
-    QCOMPARE(inv.construct().isValid(), false);
-
-    {
-        QScriptValue fun = eng.evaluate("(function() { return arguments; })");
-        QVERIFY(fun.isFunction());
-        QScriptValue array = eng.newArray(3);
-        array.setProperty(0, QScriptValue(&eng, 123.0));
-        array.setProperty(1, QScriptValue(&eng, 456.0));
-        array.setProperty(2, QScriptValue(&eng, 789.0));
-        // construct with single array object as arguments
-        QScriptValue ret = fun.construct(array);
-        QVERIFY(!eng.hasUncaughtException());
-        QVERIFY(ret.isValid());
-        QVERIFY(ret.isObject());
-        QCOMPARE(ret.property(0).strictlyEquals(array.property(0)), true);
-        QCOMPARE(ret.property(1).strictlyEquals(array.property(1)), true);
-        QCOMPARE(ret.property(2).strictlyEquals(array.property(2)), true);
-        // construct with arguments object as arguments
-        QScriptValue ret2 = fun.construct(ret);
-        QCOMPARE(ret2.property(0).strictlyEquals(ret.property(0)), true);
-        QCOMPARE(ret2.property(1).strictlyEquals(ret.property(1)), true);
-        QCOMPARE(ret2.property(2).strictlyEquals(ret.property(2)), true);
-        // construct with null as arguments
-        QScriptValue ret3 = fun.construct(eng.nullValue());
-        QCOMPARE(ret3.isError(), false);
-        QCOMPARE(ret3.property("length").isNumber(), true);
-        QCOMPARE(ret3.property("length").toNumber(), 0.0);
-        // construct with undefined as arguments
-        QScriptValue ret4 = fun.construct(eng.undefinedValue());
-        QCOMPARE(ret4.isError(), false);
-        QCOMPARE(ret4.property("length").isNumber(), true);
-        QCOMPARE(ret4.property("length").toNumber(), 0.0);
-        // construct with something else as arguments
-        QScriptValue ret5 = fun.construct(QScriptValue(&eng, 123.0));
-        QCOMPARE(ret5.isError(), true);
-        // construct with a non-array object as arguments
-        QScriptValue ret6 = fun.construct(eng.globalObject());
-        QVERIFY(ret6.isError());
-        QCOMPARE(ret6.toString(), QString::fromLatin1("TypeError: Arguments must be an array"));
-    }
-
-    // construct on things that are not functions
-    QVERIFY(!QScriptValue(false).construct().isValid());
-    QVERIFY(!QScriptValue(123).construct().isValid());
-    QVERIFY(!QScriptValue(QString::fromLatin1("ciao")).construct().isValid());
-    QVERIFY(!QScriptValue(QScriptValue::UndefinedValue).construct().isValid());
-    QVERIFY(!QScriptValue(QScriptValue::NullValue).construct().isValid());
+void tst_QScriptValue::construct_twoEngines()
+{
+    QScriptEngine engine;
+    QScriptEngine otherEngine;
+    QScriptValue ctor = engine.evaluate("(function (a, b) { this.foo = 123; })");
+    QScriptValue arg(&otherEngine, 124567);
+    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::construct() failed: cannot construct function with argument created in a different engine");
+    QVERIFY(!ctor.construct(arg).isValid());
+    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::construct() failed: cannot construct function with argument created in a different engine");
+    QVERIFY(!ctor.construct(QScriptValueList() << arg << otherEngine.newObject()).isValid());
 }
 
 void tst_QScriptValue::construct_constructorThrowsPrimitive()

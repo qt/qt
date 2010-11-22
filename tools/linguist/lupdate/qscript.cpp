@@ -67,6 +67,8 @@ class LU {
     Q_DECLARE_TR_FUNCTIONS(LUpdate)
 };
 
+static QString MagicComment(QLatin1String("TRANSLATOR"));
+
 class QScriptGrammar
 {
 public:
@@ -2092,8 +2094,9 @@ public:
     ~QScriptParser();
 
     void setLexer(QScript::Lexer *);
+    void setTranslator(Translator *);
 
-    bool parse(Translator *translator);
+    bool parse();
 
     QString fileName() const
     { return lexer->fileName(); }
@@ -2129,6 +2132,8 @@ protected:
 
 private:
     QScript::Lexer *lexer;
+    Translator *translator;
+    QString trcontext;
     QString extracomment;
     QString msgid;
     QString sourcetext;
@@ -2160,7 +2165,8 @@ QScriptParser::QScriptParser():
     sym_stack(0),
     state_stack(0),
     location_stack(0),
-    lexer(0)
+    lexer(0),
+    translator(0)
 {
 }
 
@@ -2187,9 +2193,17 @@ void QScriptParser::setLexer(QScript::Lexer *lex)
     lexer = lex;
 }
 
-bool QScriptParser::parse(Translator *translator)
+void QScriptParser::setTranslator(Translator *tor)
+{
+    translator = tor;
+}
+
+bool QScriptParser::parse()
 {
   Q_ASSERT(lexer != 0);
+  Q_ASSERT(translator != 0);
+  trcontext = QFileInfo(fileName()).baseName();
+
   const int INITIAL_STATE = 0;
 
   int yytoken = -1;
@@ -2303,11 +2317,10 @@ case 66: {
             if (args.at(0).type() != QVariant::String) {
                 yyMsg(identLineNo) << qPrintable(LU::tr("%1(): text to translate must be a literal string.\n").arg(name));
             } else {
-                QString context = QFileInfo(fileName()).baseName();
                 QString text = args.at(0).toString();
                 QString comment = args.value(1).toString();
                 bool plural = (args.size() > 2);
-                recordMessage(translator, context, text, comment, extracomment,
+                recordMessage(translator, trcontext, text, comment, extracomment,
                               msgid, extra, plural, fileName(), identLineNo);
             }
         }
@@ -2533,6 +2546,32 @@ void QScriptParser::processComment(const QChar *chars, int length)
             }
         }
         sourcetext.resize(ptr - (ushort *)sourcetext.data());
+    } else {
+        int idx = 0;
+        ushort c;
+        while ((c = chars[idx].unicode()) == ' ' || c == '\t' || c == '\n')
+            ++idx;
+        if (!memcmp(chars + idx, MagicComment.unicode(), MagicComment.length() * 2)) {
+            idx += MagicComment.length();
+            QString comment = QString(chars + idx, length - idx).simplified();
+            int k = comment.indexOf(QLatin1Char(' '));
+            if (k == -1) {
+                trcontext = comment;
+            } else {
+                trcontext = comment.left(k);
+                comment.remove(0, k + 1);
+                TranslatorMessage msg(
+                        trcontext, QString(),
+                        comment, QString(),
+                        fileName(), lexer->startLineNo(), QStringList(),
+                        TranslatorMessage::Finished, /*plural=*/false);
+                msg.setExtraComment(extracomment.simplified());
+                extracomment.clear();
+                translator->append(msg);
+                translator->setExtras(extra);
+                extra.clear();
+            }
+        }
     }
 }
 
@@ -2558,7 +2597,8 @@ bool loadQScript(Translator &translator, const QString &filename, ConversionData
     QScript::Lexer lexer(&parser);
     lexer.setCode(code, filename, /*lineNumber=*/1);
     parser.setLexer(&lexer);
-    if (!parser.parse(&translator)) {
+    parser.setTranslator(&translator);
+    if (!parser.parse()) {
         std::cerr << qPrintable(filename) << ':' << parser.errorLineNumber() << ": "
                   << qPrintable(parser.errorMessage()) << std::endl;
         return false;
