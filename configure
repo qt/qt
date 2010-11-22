@@ -6670,10 +6670,12 @@ else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_STYLE_S60"
 fi
 
-# Disable OpenGL on Symbian.
+# Just check if OpenGL is not set by command argumets for Symbian.
 case "$XPLATFORM" in
     symbian*)
-        CFG_OPENGL="no"
+        if [ "$CFG_OPENGL" = "auto" ]; then
+            CFG_OPENGL="no"
+        fi
         ;;
 esac
 
