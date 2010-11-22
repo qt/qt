@@ -191,11 +191,9 @@ symbian: {
         qtlibraries.files += $$QMAKE_LIBDIR_QT/QtOpenVG$${QT_LIBINFIX}.dll
         graphicssystems_plugins.files += $$QT_BUILD_TREE/plugins/graphicssystems/qvggraphicssystem$${QT_LIBINFIX}.dll
         # OpenVG requires Symbian^3 or later
-        pkg_platform_dependencies -= \
-            "[0x101F7961],0,0,0,{\"S60ProductID\"}" \
-            "[0x102032BE],0,0,0,{\"S60ProductID\"}" \
-            "[0x102752AE],0,0,0,{\"S60ProductID\"}" \
-            "[0x1028315F],0,0,0,{\"S60ProductID\"}"
+        pkg_platform_dependencies = \
+            "[0x20022E6D],0,0,0,{\"S60ProductID\"}" \
+            "[0x20032DE7],0,0,0,{\"S60ProductID\"}"
     }
 
     contains(QT_CONFIG, opengl) {

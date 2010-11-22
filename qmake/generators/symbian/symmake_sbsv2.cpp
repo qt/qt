@@ -49,7 +49,7 @@
 #include <qdebug.h>
 
 // Included from tools/shared
-#include <symbian/epocroot.h>
+#include <symbian/epocroot_p.h>
 
 SymbianSbsv2MakefileGenerator::SymbianSbsv2MakefileGenerator() : SymbianMakefileGenerator() { }
 SymbianSbsv2MakefileGenerator::~SymbianSbsv2MakefileGenerator() { }
@@ -82,7 +82,7 @@ void SymbianSbsv2MakefileGenerator::exportFlm()
         QDir sourceDir = QDir(QLibraryInfo::location(QLibraryInfo::PrefixPath) + FLM_SOURCE_DIR);
         QFileInfoList sourceInfos = sourceDir.entryInfoList(QDir::Files);
 
-        QDir destDir(epocRoot() + FLM_DEST_DIR);
+        QDir destDir(qt_epocRoot() + FLM_DEST_DIR);
         if (!destDir.exists()) {
             if (destDir.mkpath(destDir.absolutePath()))
                 generatedDirs << destDir.absolutePath();
@@ -386,8 +386,9 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
         t << endl;
 
         QString currentClause;
+        QString locFileDep = generateLocFileTarget(t, qmakeCmd);
 
-        t << "debug: " << BLD_INF_FILENAME << endl;
+        t << "debug: " << locFileDep << BLD_INF_FILENAME << endl;
         t << "\t$(SBS)";
         foreach(QString clause, debugClauses) {
             t << clause;
@@ -399,7 +400,7 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
             t << clause;
         }
         t << endl;
-        t << "release: " << BLD_INF_FILENAME << endl;
+        t << "release: " << locFileDep << BLD_INF_FILENAME << endl;
         t << "\t$(SBS)";
         foreach(QString clause, releaseClauses) {
             t << clause;
@@ -431,7 +432,7 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
             else // use generic arm clause
                 clause = configClause(item, debugBuild, defaultRvctCompilerVersion, genericArmClause);
 
-            t << "debug-" << item << ": " << BLD_INF_FILENAME << endl;
+            t << "debug-" << item << ": " << locFileDep << BLD_INF_FILENAME << endl;
             t << "\t$(SBS)" << clause << endl;
             t << "clean-debug-" << item << ": " << BLD_INF_FILENAME << endl;
             t << "\t$(SBS) reallyclean" << clause << endl;
@@ -444,7 +445,7 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
             else // use generic arm clause
                 clause = configClause(item, releaseBuild, defaultRvctCompilerVersion, genericArmClause);
 
-            t << "release-" << item << ": " << BLD_INF_FILENAME << endl;
+            t << "release-" << item << ": " << locFileDep << BLD_INF_FILENAME << endl;
             t << "\t$(SBS)" << clause << endl;
             t << "clean-release-" << item << ": " << BLD_INF_FILENAME << endl;
             t << "\t$(SBS) reallyclean" << clause << endl;
@@ -454,11 +455,11 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
             foreach(QString compilerVersion, allArmCompilerVersions) {
                 QString debugClause = configClause(item, debugBuild, compilerVersion, armClause);
                 QString releaseClause = configClause(item, releaseBuild, compilerVersion, armClause);
-                t << "debug-" << item << "-" << compilerVersion << ": " << BLD_INF_FILENAME << endl;
+                t << "debug-" << item << "-" << compilerVersion << ": " << locFileDep << BLD_INF_FILENAME << endl;
                 t << "\t$(SBS)" << debugClause << endl;
                 t << "clean-debug-" << item << "-" << compilerVersion << ": " << BLD_INF_FILENAME << endl;
                 t << "\t$(SBS) reallyclean" << debugClause << endl;
-                t << "release-" << item << "-" << compilerVersion << ": " << BLD_INF_FILENAME << endl;
+                t << "release-" << item << "-" << compilerVersion << ": " << locFileDep << BLD_INF_FILENAME << endl;
                 t << "\t$(SBS)" << releaseClause << endl;
                 t << "clean-release-" << item << "-" << compilerVersion << ": " << BLD_INF_FILENAME << endl;
                 t << "\t$(SBS) reallyclean" << releaseClause << endl;
@@ -629,7 +630,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     t << endl;
 
     // Write deployment rules
-    QString remoteTestPath = epocRoot() + QLatin1String("epoc32/winscw/c/private/") + privateDirUid;
+    QString remoteTestPath = qt_epocRoot() + QLatin1String("epoc32/winscw/c/private/") + privateDirUid;
     DeploymentList depList;
 
     //write emulator deployment
@@ -640,7 +641,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     t << "#endif" << endl;
 
     //write ROM deployment
-    remoteTestPath = epocRoot() + QLatin1String("epoc32/data/z/private/") + privateDirUid;
+    remoteTestPath = qt_epocRoot() + QLatin1String("epoc32/data/z/private/") + privateDirUid;
     depList.clear();
     initProjectDeploySymbian(project, depList, remoteTestPath, false, true,
         QLatin1String(ROM_DEPLOYMENT_PLATFORM), QString(), generatedDirs, generatedFiles);
