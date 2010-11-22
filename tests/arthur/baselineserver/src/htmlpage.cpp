@@ -69,7 +69,8 @@ void HTMLPage::start(const QString &storagepath, const QString &runId, const Pla
     ctx = context;
     root = storagepath + QLC('/');
     imageItems = itemList;
-    QString dir = root + QLS("reports/");
+    reportDir = pinfo.value(PI_PulseGitBranch).isEmpty() ? QLS("reports/adhoc/") : QLS("reports/pulse/");
+    QString dir = root + reportDir;
     QDir cwd;
     if (!cwd.exists(dir))
         cwd.mkpath(dir);
@@ -78,7 +79,7 @@ void HTMLPage::start(const QString &storagepath, const QString &runId, const Pla
 
 void HTMLPage::writeHeader(const ImageItem &item)
 {
-    path = QLS("reports/") + id + QLC('_') + item.engineAsString()
+    path = reportDir + id + QLC('_') + item.engineAsString()
             + QLC('_') + item.formatAsString() + QLS(".html");
 
     QString pageUrl = BaselineServer::baseUrl() + path;

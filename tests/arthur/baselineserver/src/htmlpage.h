@@ -65,6 +65,7 @@ private:
 
     QString root;
     QString path;
+    QString reportDir;
     QFile file;
     QTextStream out;
     QString id;
