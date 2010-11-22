@@ -41,7 +41,9 @@
 
 #include "qmeegoswitchevent.h"
 
-QMeeGoSwitchEvent::QMeeGoSwitchEvent(const QString &graphicsSystemName, QMeeGoSwitchEvent::State s) : QEvent((QEvent::Type) QMeeGoSwitchEvent::SwitchEvent)
+static int switchEventNumber = -1;
+
+QMeeGoSwitchEvent::QMeeGoSwitchEvent(const QString &graphicsSystemName, QMeeGoSwitchEvent::State s) : QEvent(QMeeGoSwitchEvent::eventNumber())
 {
     name = graphicsSystemName;
     switchState = s;
@@ -55,4 +57,12 @@ QString QMeeGoSwitchEvent::graphicsSystemName() const
 QMeeGoSwitchEvent::State QMeeGoSwitchEvent::state() const
 {
     return switchState;
+}
+
+QEvent::Type QMeeGoSwitchEvent::eventNumber()
+{
+    if (switchEventNumber < 0)
+        switchEventNumber = QEvent::registerEventType();
+
+    return (QEvent::Type) switchEventNumber;
 }
