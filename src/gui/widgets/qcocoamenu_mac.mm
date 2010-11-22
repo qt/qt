@@ -44,6 +44,7 @@
 #ifdef QT_MAC_USE_COCOA
 #import <private/qcocoamenu_mac_p.h>
 #import <private/qcocoamenuloader_mac_p.h>
+#import <private/qcocoaapplication_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qapplication_p.h>
 #include <private/qaction_p.h>

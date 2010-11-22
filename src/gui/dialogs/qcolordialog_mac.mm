@@ -439,7 +439,7 @@ void QColorDialogPrivate::openCocoaColorPanel(const QColor &initial,
             priv:this];
         [colorPanel setDelegate:static_cast<QT_MANGLE_NAMESPACE(QCocoaColorPanelDelegate) *>(delegate)];
     }
-    [delegate setResultSet:false];
+    [static_cast<QT_MANGLE_NAMESPACE(QCocoaColorPanelDelegate) *>(delegate) setResultSet:NO];
     setCocoaPanelColor(initial);
     [static_cast<QT_MANGLE_NAMESPACE(QCocoaColorPanelDelegate) *>(delegate) showColorPanel];
 }

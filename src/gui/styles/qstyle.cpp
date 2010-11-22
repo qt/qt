@@ -2456,6 +2456,8 @@ QDebug operator<<(QDebug debug, QStyle::State state)
     qSort(states);
     debug << states.join(QLatin1String(" | "));
     debug << ')';
+#else
+    Q_UNUSED(state);
 #endif
     return debug;
 }
