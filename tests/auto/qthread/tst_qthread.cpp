@@ -997,7 +997,8 @@ void tst_QThread::QTBUG15378_exitAndExec()
     thread.exit(556);
     thread.sem1.release(); //should exit the first loop
     thread.sem2.acquire();
-    QCOMPARE(int(thread.value), 556);
+    int v = thread.value;
+    QCOMPARE(v, 556);
 
     //test that the thread is running by executing queued connected signal there
     Syncronizer sync1;
