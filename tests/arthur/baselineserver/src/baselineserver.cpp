@@ -98,8 +98,8 @@ void BaselineServer::heartbeat()
     if (me.lastModified() == meLastMod)
         return;
 
-    // (could close() here to avoid accepting new connections, to avoid livelock)
-    // also, could check for a timeout to force exit, to avoid hung threads blocking
+    //# (could close() here to avoid accepting new connections, to avoid livelock)
+    //# also, could check for a timeout to force exit, to avoid hung threads blocking
     bool isServing = false;
     foreach(BaselineThread *thread, findChildren<BaselineThread *>()) {
         if (thread->isRunning()) {
@@ -305,10 +305,13 @@ void BaselineHandler::mapPlatformInfo()
     if (host.isEmpty() || host == QLS("localhost")) {
         host = plat.value(PI_HostAddress);
     } else {
-        // remove index postfix typical of vm hostnames
-        host.remove(QRegExp(QLS("\\d+$")));
-        if (host.endsWith(QLC('-')))
-            host.chop(1);
+        //# Site specific, should be in a config file
+        if (!host.startsWith(QLS("oldhcp"))) {
+            // remove index postfix typical of vm hostnames
+            host.remove(QRegExp(QLS("\\d+$")));
+            if (host.endsWith(QLC('-')))
+                host.chop(1);
+        }
     }
     if (host.isEmpty())
         host = QLS("unknownhost");
@@ -352,12 +355,16 @@ QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline, boo
 
 QString BaselineHandler::clearAllBaselines(const QString &context)
 {
+    int tot = 0;
+    int failed = 0;
     QDirIterator it(BaselineServer::storagePath() + QLC('/') + context,
                     QStringList() << QLS("*.png") << QLS("*.metadata"));
-    while (it.hasNext())
-        QFile::remove(it.next());
-
-   return QLS("All baselines cleared from context ") + context;
+    while (it.hasNext()) {
+        tot++;
+        if (!QFile::remove(it.next()))
+            failed++;
+    }
+    return QString(QLS("%1 of %2 baselines cleared from context ")).arg((tot-failed)/2).arg(tot/2) + context;
 }
 
 QString BaselineHandler::updateSingleBaseline(const QString &oldBaseline, const QString &newBaseline)
