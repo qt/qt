@@ -185,7 +185,7 @@ QT_USE_NAMESPACE
         [self relayout];
 }
 
-- (void)colorChanged:(NSNotification *)notification;
+- (void)colorChanged:(NSNotification *)notification
 {
     Q_UNUSED(notification);
     [self updateQtColor];

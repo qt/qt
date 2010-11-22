@@ -174,7 +174,7 @@ static void cleanupCocoaApplicationDelegate()
     qtMenuLoader = menuLoader;
 }
 
-- (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)menuLoader;
+- (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)menuLoader
 {
     return [[qtMenuLoader retain] autorelease];
 }
@@ -257,7 +257,7 @@ static void cleanupCocoaApplicationDelegate()
     onApplicationChangedActivation(true);
 }
 
-- (void)applicationDidResignActive:(NSNotification *)notification;
+- (void)applicationDidResignActive:(NSNotification *)notification
 {
     if (reflectionDelegate
         && [reflectionDelegate respondsToSelector:@selector(applicationDidResignActive:)])
