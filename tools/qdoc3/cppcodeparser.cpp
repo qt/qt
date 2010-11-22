@@ -966,16 +966,6 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
                     .arg(COMMAND_REIMP).arg(node->name()));
             }
 
-#if 0
-            // Reimplemented functions now reported in separate sections.
-            /*
-              Note: Setting the access to Private hides the documentation,
-              but setting the status to Internal makes the node available
-              in the XML output when the WebXMLGenerator is used.
-            */
-            func->setAccess(Node::Private);
-            func->setStatus(Node::Internal);
-#endif
             func->setReimp(true);
         }
         else {

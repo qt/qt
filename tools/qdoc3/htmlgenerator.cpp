@@ -63,10 +63,6 @@ QT_BEGIN_NAMESPACE
 int HtmlGenerator::id = 0;
 bool HtmlGenerator::debugging_on = false;
 
-#if 0
-QString HtmlGenerator::divNavTop = "<div class=\"navTop\"><a href=\"#toc\"><img src=\"./images/bullet_up.png\"></a></div>";
-#endif
-
 QString HtmlGenerator::divNavTop = "";
 
 QString HtmlGenerator::sinceTitles[] =
@@ -1020,26 +1016,8 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         out() << atom->string();
         break;
     case Atom::SectionLeft:
-#if 0
-        {
-            int nextLevel = atom->string().toInt();
-            if (sectionNumber.size() < nextLevel) {
-                do {
-                    sectionNumber.append("1");
-                } while (sectionNumber.size() < nextLevel);
-            }
-            else {
-                while (sectionNumber.size() > nextLevel) {
-                    sectionNumber.removeLast();
-                }
-                sectionNumber.last() = QString::number(sectionNumber.last().toInt() + 1);
-            }
-            out() << "<a name=\"sec-" << sectionNumber.join("-") << "\"></a>" << divNavTop << "\n";
-        }
-#else
         out() << "<a name=\"" << Doc::canonicalTitle(Text::sectionHeading(atom).toString())
               << "\"></a>" << divNavTop << "\n";
-#endif
         break;
     case Atom::SectionRight:
         break;
@@ -2021,39 +1999,6 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
     inContents = false;
     inLink = false;
 }
-
-#if 0
-void HtmlGenerator::generateNavigationBar(const NavigationBar& bar,
-                                           const Node *node,
-                                           CodeMarker *marker)
-{
-    if (bar.prev.begin() != 0 || bar.current.begin() != 0 ||
-         bar.next.begin() != 0) {
-        out() << "<p class=\"rightAlign\">";
-        if (bar.prev.begin() != 0) {
-#if 0
-            out() << "[<a href=\"" << section.previousBaseName()
-                  << ".html\">Prev: ";
-            generateText(section.previousHeading(), node, marker);
-            out() << "</a>]\n";
-#endif
-        }
-        if (fake->name() != QString("index.html")) {
-            if (bar.current.begin() != 0) {
-                out() << "[<a href=\"" << "home"
-                      << ".html\">Home</a>]\n";
-            }
-            if (bar.next.begin() != 0) {
-                out() << "[<a href=\"" << fileBase(node, bar.next)
-                      << ".html\">Next: ";
-                generateText(Text::sectionHeading(bar.next.begin()), node, marker);
-                out() << "</a>]\n";
-            }
-            out() << "</p>\n";
-        }
-    }
-}
-#endif
 
 QString HtmlGenerator::generateListOfAllMemberFile(const InnerNode *inner,
                                                    CodeMarker *marker)
@@ -3237,29 +3182,6 @@ QString HtmlGenerator::fileBase(const Node *node)
     return result;
 }
 
-#if 0
-QString HtmlGenerator::fileBase(const Node *node,
-                                const SectionIterator& section)
-{
-    QStringList::ConstIterator s = section.sectionNumber().end();
-    QStringList::ConstIterator b = section.baseNameStack().end();
-
-    QString suffix;
-    QString base = fileBase(node);
-
-    while (s != section.sectionNumber().begin()) {
-        --s;
-        --b;
-        if (!(*b).isEmpty()) {
-            base = *b;
-            break;
-        }
-        suffix.prepend("-" + *s);
-    }
-    return base + suffix;
-}
-#endif
-
 QString HtmlGenerator::fileName(const Node *node)
 {
     if (node->type() == Node::Fake) {
@@ -3813,14 +3735,6 @@ QString HtmlGenerator::getLink(const Atom *atom,
                              << (*node)->name() << "no relative";
                 }
             }
-#if 0                    
-            else if ((*node)->status() == Node::Deprecated) {
-                qDebug() << "Link to Deprecated entity";
-            }
-            else if ((*node)->status() == Node::Internal) {
-                qDebug() << "Link to Internal entity";
-            }
-#endif                
         }
 
         while (!path.isEmpty()) {

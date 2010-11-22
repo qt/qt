@@ -455,21 +455,6 @@ QString CppCodeMarker::functionEndRegExp(const QString& /* funcName */)
     return "^\\}$";
 }
 
-#if 0
-	    FastSection privateReimpFuncs(classe,
-                                          "Private Reimplemented Functions",
-                                          "private reimplemented function",
-                                          "private reimplemented functions");
-	    FastSection protectedReimpFuncs(classe,
-                                            "Protected Reimplemented Functions",
-                                            "protected reimplemented function",
-                                            "protected reimplemented functions");
-	    FastSection publicReimpFuncs(classe,
-                                         "Public Reimplemented Functions",
-                                         "public reimplemented function",
-                                         "public reimplemented functions");
-#endif
-
 QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                                        SynopsisStyle style,
                                        Status status)

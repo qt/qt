@@ -383,14 +383,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
 {
     bool quiet = false;
 
-    if (node->type() == Node::Function) {
-#if 0
-        const FunctionNode *func = (const FunctionNode *) node;
-        if (func->isOverload() && func->metaness() != FunctionNode::Ctor)
-            generateOverload(node, marker);
-#endif
-    }
-    else if (node->type() == Node::Fake) {
+    if (node->type() == Node::Fake) {
         const FakeNode *fake = static_cast<const FakeNode *>(node);
         if (fake->subType() == Node::Example)
             generateExampleFiles(fake, marker);
@@ -510,11 +503,6 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
                 if (!body.contains("return", Qt::CaseInsensitive))
                     node->doc().location().warning(tr("Undocumented return value"));
             }
-#if 0
-            // Now we put this at the top, before the other text.
-            if (func->reimplementedFrom() != 0)
-                generateReimplementedFrom(func, marker);
-#endif
         }
     }
 

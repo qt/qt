@@ -591,12 +591,6 @@ void Tree::resolveGroups()
         if (fake && fake->subType() == Node::Group) {
             fake->addGroupMember(i.value());
         }
-#if 0        
-        else {
-            if (prevGroup != i.key())
-                i.value()->doc().location().warning(tr("No such group '%1'").arg(i.key()));
-        }
-#endif        
 
         prevGroup = i.key();
     }
@@ -1986,15 +1980,7 @@ QString Tree::fullDocumentLocation(const Node *node) const
         else
             parentName = fullDocumentLocation(node->parent());
     }
-#if 0
-    if (node->type() == Node::QmlProperty) {
-        qDebug() << "Node::QmlProperty:" << node->name()
-                 << "parentName:" << parentName;
-        if (parentNode)
-            qDebug() << "PARENT NODE" << parentNode->type()
-                     << parentNode->subType() << parentNode->name();
-    }
-#endif
+
     switch (node->type()) {
         case Node::Class:
         case Node::Namespace:

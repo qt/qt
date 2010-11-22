@@ -1545,11 +1545,6 @@ void QmlClassNode::clear()
  */
 QString QmlClassNode::fileBase() const
 {
-#if 0
-    if (Node::fileBase() == "item")
-        qDebug() << "FILEBASE: qmlitem" << name();
-    return "qml_" + Node::fileBase();
-#endif
     return Node::fileBase();
 }
 

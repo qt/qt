@@ -1685,13 +1685,6 @@ void DocParser::startSection(Doc::SectioningUnit unit, int cmd)
     leavePara();
 
     if (currentSectioningUnit == Doc::Book) {
-#if 0
-        // mws didn't think this was necessary.
-	if (unit > Doc::Section1)
-	    location().warning(tr("Unexpected '\\%1' without '\\%2'")
-				.arg(cmdName(cmd))
-				.arg(cmdName(CMD_SECTION1)));
-#endif        
 	currentSectioningUnit = (Doc::SectioningUnit) (unit - 1);
 	priv->constructExtra();
 	priv->extra->sectioningUnit = currentSectioningUnit;
@@ -1866,9 +1859,6 @@ void DocParser::enterPara(Atom::Type leftType,
 	pendingParaRightType = rightType;
 	pendingParaString = string;
 	if (
-#if 0
-	     leftType == Atom::BriefLeft ||
-#endif
 	     leftType == Atom::SectionHeadingLeft) {
 	    paraState = InsideSingleLinePara;
 	}
@@ -2273,12 +2263,6 @@ QString DocParser::getCode(int cmd, CodeMarker *marker)
 QString DocParser::getUnmarkedCode(int cmd)
 {
     QString code = getUntilEnd(cmd);
-#if 0    
-    int indent = indentLevel(code);
-    if (indent < minIndent)
-        minIndent = indent;
-    code = unindent(minIndent, code);
-#endif    
     return code;
 }
 
@@ -3043,13 +3027,6 @@ QString Doc::canonicalTitle(const QString &title)
                 result += QLatin1Char('-');
             dashAppended = true;
         }
-#if 0
-        // This was screwing things up.
-        else {
-            result += title[i];
-            lastAlnum = result.size();
-        }
-#endif        
     }
     result.truncate(lastAlnum);
     return result;
