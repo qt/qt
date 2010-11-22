@@ -1296,8 +1296,8 @@ void tst_QFile::link()
     QSKIP("Symbian does not support links", SkipAll);
 #endif
     QFile::remove("myLink.lnk");
-    QFileInfo info1("tst_qfile.cpp");
-    QVERIFY(QFile::link("tst_qfile.cpp", "myLink.lnk"));
+    QFileInfo info1(SRCDIR "tst_qfile.cpp");
+    QVERIFY(QFile::link(SRCDIR "tst_qfile.cpp", "myLink.lnk"));
     QFileInfo info2("myLink.lnk");
     QVERIFY(info2.isSymLink());
     QCOMPARE(info2.symLinkTarget(), info1.absoluteFilePath());
