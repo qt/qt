@@ -62,11 +62,6 @@ public:
         DidSwitch
     };
 
-    //! The event type id to use to detect this event.
-    enum Type {
-        SwitchEvent = QEvent::User + 1024
-    };
-
     //! Constructor for the event.
     /*!
      Creates a new event with the given name and the given state.
@@ -82,6 +77,13 @@ public:
 
     //! Returns the state represented by this event.
     State state() const;
+
+    //! Returns the event type/number for QMeeGoSwitchEvent.
+    /*!
+     The type is registered on first access. Use this to detect incoming
+     QMeeGoSwitchEvents.
+    */
+    QEvent::Type eventNumber();
 
 private:
     QString name;
