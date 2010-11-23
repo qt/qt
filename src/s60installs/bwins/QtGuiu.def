@@ -12852,7 +12852,7 @@ EXPORTS
 	?drawStaticText@QPainter@@QAEXABVQPointF@@ABVQStaticText@@@Z @ 12851 NONAME ; void QPainter::drawStaticText(class QPointF const &, class QStaticText const &)
 	?updateAll@QGraphicsViewPrivate@@QAEXXZ @ 12852 NONAME ; void QGraphicsViewPrivate::updateAll(void)
 	?updateMicroFocus@QGraphicsItem@@IAEXXZ @ 12853 NONAME ; void QGraphicsItem::updateMicroFocus(void)
-	?populate@QTextureGlyphCache@@QAEXPAVQFontEngine@@HPBIPBUQFixedPoint@@@Z @ 12854 NONAME ; void QTextureGlyphCache::populate(class QFontEngine *, int, unsigned int const *, struct QFixedPoint const *)
+	?populate@QTextureGlyphCache@@QAEXPAVQFontEngine@@HPBIPBUQFixedPoint@@@Z @ 12854 NONAME ABSENT ; void QTextureGlyphCache::populate(class QFontEngine *, int, unsigned int const *, struct QFixedPoint const *)
 	?hasPartialUpdateSupport@QWindowSurface@@QBE_NXZ @ 12855 NONAME ; bool QWindowSurface::hasPartialUpdateSupport(void) const
 	?scroll@QRuntimePixmapData@@UAE_NHHABVQRect@@@Z @ 12856 NONAME ; bool QRuntimePixmapData::scroll(int, int, class QRect const &)
 	?qt_draw_glyphs@@YAXPAVQPainter@@PBIPBVQPointF@@H@Z @ 12857 NONAME ; void qt_draw_glyphs(class QPainter *, unsigned int const *, class QPointF const *, int)
@@ -12904,4 +12904,5 @@ EXPORTS
 	?fontEngine@QStaticTextItem@@QBEPAVQFontEngine@@XZ @ 12903 NONAME ; class QFontEngine * QStaticTextItem::fontEngine(void) const
 	?reactivateDeferredActiveObjects@QEventDispatcherS60@@UAEXXZ @ 12904 NONAME ; void QEventDispatcherS60::reactivateDeferredActiveObjects(void)
 	?userData@QStaticTextItem@@QBEPAVQStaticTextUserData@@XZ @ 12905 NONAME ; class QStaticTextUserData * QStaticTextItem::userData(void) const
+	?populate@QTextureGlyphCache@@QAE_NPAVQFontEngine@@HPBIPBUQFixedPoint@@@Z @ 12906 NONAME ; bool QTextureGlyphCache::populate(class QFontEngine *, int, unsigned int const *, struct QFixedPoint const *)
 
