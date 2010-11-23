@@ -469,11 +469,10 @@
 
     \list
 
-    \o \l{Qt::AutoConnection}{Auto Connection} (default) The behavior
-       is the same as the Direct Connection, if the emitter and
-       receiver are in the same thread. The behavior is the same as
-       the Queued Connection, if the emitter and receiver are in
-       different threads.
+    \o \l{Qt::AutoConnection}{Auto Connection} (default) If the signal is
+       emitted in the thread which the receiving object has affinity then
+       the behavior is the same as the Direct Connection. Otherwise,
+       the behavior is the same as the Queued Connection."
 
     \o \l{Qt::DirectConnection}{Direct Connection} The slot is invoked
        immediately, when the signal is emitted. The slot is executed

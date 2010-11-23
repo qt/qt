@@ -386,6 +386,13 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
     \snippet doc/src/snippets/declarative/flickable.qml document
 
     \clearfloat
+
+    Items declared as children of a Flickable are automatically parented to the
+    Flickable's \l contentItem.  This should be taken into account when
+    operating on the children of the Flickable; it is usually the children of
+    \c contentItem that are relevant.  For example, the bound of Items added
+    to the Flickable will be available by \c contentItem.childrenRect
+
     \section1 Limitations
 
     \note Due to an implementation detail, items placed inside a Flickable cannot anchor to it by

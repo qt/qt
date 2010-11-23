@@ -623,7 +623,7 @@ QMacPasteboard::sync() const
 
 #ifdef DEBUG_PASTEBOARD
     if(fromGlobal)
-        qDebug("Pasteboard: Syncronize!");
+        qDebug("Pasteboard: Synchronize!");
 #endif
     return fromGlobal;
 }

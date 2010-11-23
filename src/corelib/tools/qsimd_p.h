@@ -87,9 +87,13 @@ QT_BEGIN_HEADER
 #include <tmmintrin.h>
 #endif
 
-// SSE4.1 and SSE4.2 intrinsics
-#if (defined(QT_HAVE_SSE4_1) || defined(QT_HAVE_SSE4_2)) && (defined(__SSE4_1__) || defined(Q_CC_MSVC))
+// SSE4.1 intrinsics
+#if defined(QT_HAVE_SSE4_1) && (defined(__SSE4_1__) || defined(Q_CC_MSVC))
 #include <smmintrin.h>
+#endif
+
+// SSE4.2 intrinsics
+#if defined(QT_HAVE_SSE4_2) && (defined(__SSE4_2__) || defined(Q_CC_MSVC))
 #include <nmmintrin.h>
 #endif
 
