@@ -62,6 +62,7 @@ private:
     void writeHeader(const ImageItem &item);
     void writeFooter();
     QString generateCompared(const QString &baseline, const QString &rendered, bool fuzzy = false);
+    QString generateThumbnail(const QString &image);
 
     QString root;
     QString path;

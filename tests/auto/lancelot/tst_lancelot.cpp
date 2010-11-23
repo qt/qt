@@ -299,13 +299,15 @@ void tst_Lancelot::paint(QPaintDevice *device, const QStringList &script, const 
     pcmd.setPainter(&p);
     pcmd.setFilePath(filePath);
     pcmd.runCommands();
+    p.end();
 
     if (simfail) {
-        p.drawLine(0, 0, 800, 800);
+        QPainter p2(device);
+        p2.setPen(QPen(QBrush(Qt::cyan), 3, Qt::DashLine));
+        p2.drawLine(200, 200, 600, 600);
+        p2.drawLine(600, 200, 200, 600);
         simfail = false;
     }
-
-    p.end();
 }
 
 #define main rmain

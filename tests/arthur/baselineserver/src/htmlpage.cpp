@@ -104,7 +104,7 @@ void HTMLPage::writeHeader(const ImageItem &item)
            "<td><b>Script</b></td>\n"
            "<td><b>Baseline</b></td>\n"
            "<td><b>Rendered</b></td>\n"
-           "<td><b>Comparison</b></td>\n"
+           "<td><b>Comparison</b> (diffs are <span style=\"color:red\">RED</span>)</td>\n"
            "<td><b>Info/Action</b></td>\n"
            "</b></tr><br>";
 }
@@ -129,7 +129,7 @@ void HTMLPage::addItem(const QString &baseline, const QString &rendered, const I
     out << "<td>" << item.scriptName << "</td>\n";
     QStringList images = QStringList() << baseline << rendered << compared;
     foreach(const QString& img, images)
-        out << "<td><a href=\"/" << img << "\"><img src=\"/" << img << "\" width=240 height=240></a></td>\n";
+        out << "<td><a href=\"/" << img << "\"><img src=\"/" << generateThumbnail(img) << "\" width=240 height=240></a></td>\n";
 
     out << "<td><p><a href=\"/cgi-bin/server.cgi?cmd=updateSingleBaseline&oldBaseline=" << baseline
         << "&newBaseline=" << rendered << "&url=" << pageUrl << "\">Replace baseline with rendered</a></p>"
@@ -187,6 +187,22 @@ QString HTMLPage::generateCompared(const QString &baseline, const QString &rende
         args << QLS("-fuzz") << QLS("5%");
     args << root+baseline << root+rendered << root+res;
     QProcess::execute(QLS("compare"), args);
+    return res;
+}
+
+
+QString HTMLPage::generateThumbnail(const QString &image)
+{
+    QString res = image;
+    QFileInfo imgFI(root+image);
+    res.chop(imgFI.suffix().length() + 1);
+    res += QLS("_thumbnail.jpg");
+    QFileInfo resFI(root+res);
+    if (resFI.exists() && resFI.lastModified() > imgFI.lastModified())
+        return res;
+    QStringList args;
+    args << root+image << QLS("-resize") << QLS("240x240") << QLS("-quality") << QLS("50") << root+res;
+    QProcess::execute(QLS("convert"), args);
     return res;
 }
 
