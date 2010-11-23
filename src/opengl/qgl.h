@@ -383,6 +383,7 @@ public:
 
     static const QGLContext* currentContext();
 
+    static QGLContext *fromPlatformGLContext(QPlatformGLContext *platformContext);
 protected:
     virtual bool chooseContext(const QGLContext* shareContext = 0);
 
@@ -412,6 +413,10 @@ protected:
     static QGLContext* currentCtx;
 
 private:
+#ifdef Q_WS_QPA
+    QGLContext(QPlatformGLContext *platformContext);
+#endif
+
     QScopedPointer<QGLContextPrivate> d_ptr;
 
     friend class QGLPixelBuffer;

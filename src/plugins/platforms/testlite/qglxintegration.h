@@ -58,7 +58,7 @@ class MyDisplay;
 class QGLXGLContext : public QPlatformGLContext
 {
 public:
-    QGLXGLContext(Window window, MyDisplay *xd, QPlatformWindow *platformWindow, const QPlatformWindowFormat &format);
+    QGLXGLContext(Window window, MyDisplay *xd, const QPlatformWindowFormat &format);
     ~QGLXGLContext();
 
     virtual void makeCurrent();

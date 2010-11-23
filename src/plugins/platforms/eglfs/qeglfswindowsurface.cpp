@@ -57,13 +57,10 @@ public:
     #ifdef QEGL_EXTRA_DEBUG
         qWarning("QEglPaintDevice %p, %p, %p",this, screen, widget);
     #endif
-        QGLFormat format;
-        m_context = new QGLContext(format, widget);
-        m_context->create();
     }
 
     QSize size() const { return m_screen->geometry().size(); }
-    QGLContext* context() const { return m_context;}
+    QGLContext* context() const { return QGLContext::fromPlatformGLContext(m_screen->platformContext());}
 
     QPaintEngine *paintEngine() const { return qt_qgl_paint_engine(); }
 

@@ -58,7 +58,7 @@ class Q_OPENGL_EXPORT QPlatformGLContext
 Q_DECLARE_PRIVATE(QPlatformGLContext);
 
 public:
-    explicit QPlatformGLContext(QPlatformWindow *platformWindow);
+    explicit QPlatformGLContext();
     virtual ~QPlatformGLContext();
 
     virtual void makeCurrent();
@@ -67,8 +67,6 @@ public:
     virtual void* getProcAddress(const QString& procName) = 0;
 
     virtual QPlatformWindowFormat platformWindowFormat() const = 0;
-
-    QPlatformWindow *platformWindow() const;
 
     const static QPlatformGLContext *currentContext();
     const static QPlatformGLContext *defaultSharedContext();

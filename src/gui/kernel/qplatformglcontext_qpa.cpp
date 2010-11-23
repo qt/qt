@@ -61,8 +61,8 @@ static QThreadStorage<QPlatformGLThreadContext *> qplatformgl_context_storage;
 class QPlatformGLContextPrivate
 {
 public:
-    QPlatformGLContextPrivate(QPlatformWindow *platformWindow)
-        :qGLContextHandle(0),platformWindow(platformWindow)
+    QPlatformGLContextPrivate()
+        :qGLContextHandle(0)
     {
     }
 
@@ -73,7 +73,6 @@ public:
     }
     void *qGLContextHandle;
     void (*qGLContextDeleteFunction)(void *handle);
-    QPlatformWindow *platformWindow;
     static QPlatformGLContext *staticSharedContext;
 
     static void setCurrentContext(QPlatformGLContext *context);
@@ -96,15 +95,6 @@ void QPlatformGLContextPrivate::setCurrentContext(QPlatformGLContext *context)
 }
 
 /*!
-  Returns the platformWindow which this QPlatformGLContext belongs to.
-*/
-QPlatformWindow *QPlatformGLContext::platformWindow() const
-{
-    Q_D(const QPlatformGLContext);
-    return d->platformWindow;
-}
-
-/*!
   Returns the last context which called makeCurrent. This function is thread aware.
 */
 const QPlatformGLContext* QPlatformGLContext::currentContext()
@@ -119,8 +109,8 @@ const QPlatformGLContext* QPlatformGLContext::currentContext()
 /*!
     All subclasses needs to specify the platformWindow. It can be a null window.
 */
-QPlatformGLContext::QPlatformGLContext(QPlatformWindow *platformWindow)
-    :d_ptr(new QPlatformGLContextPrivate(platformWindow))
+QPlatformGLContext::QPlatformGLContext()
+    :d_ptr(new QPlatformGLContextPrivate())
 {
 }
 

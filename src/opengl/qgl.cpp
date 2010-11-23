@@ -2095,6 +2095,14 @@ QGLContext::QGLContext(const QGLFormat &format)
     d->init(0, format);
 }
 
+QGLContext::QGLContext(QPlatformGLContext *platformContext)
+    : d_ptr(new QGLContextPrivate(this))
+{
+    Q_D(QGLContext);
+    d->init(0,QGLFormat::fromPlatformWindowFormat(platformContext->platformWindowFormat()));
+    d->platformContext = platformContext;
+}
+
 /*!
     Destroys the OpenGL context and frees its resources.
 */
@@ -3152,6 +3160,18 @@ void QGLContext::setDevice(QPaintDevice *pDev)
     }
 }
 
+QGLContext *QGLContext::fromPlatformGLContext(QPlatformGLContext *platformContext)
+{
+    if (!platformContext)
+        return 0;
+    if (platformContext->qGLContextHandle()) {
+        return reinterpret_cast<QGLContext *>(platformContext->qGLContextHandle());
+    }
+    QGLContext *glContext = new QGLContext(platformContext);
+    glContext->create();
+    return glContext;
+}
+
 /*!
     \fn bool QGLContext::isValid() const
 
@@ -3304,11 +3324,16 @@ bool QGLContext::areSharing(const QGLContext *context1, const QGLContext *contex
 bool QGLContext::create(const QGLContext* shareContext)
 {
     Q_D(QGLContext);
+#ifdef Q_WS_QPA
+    if (!d->paintDevice && !d->platformContext)
+#else
     if (!d->paintDevice)
+#endif
         return false;
+
     reset();
     d->valid = chooseContext(shareContext);
-    if (d->valid && d->paintDevice->devType() == QInternal::Widget) {
+    if (d->valid && d->paintDevice && d->paintDevice->devType() == QInternal::Widget) {
         QWidgetPrivate *wd = qt_widget_private(static_cast<QWidget *>(d->paintDevice));
         wd->usesDoubleBufferedGLContext = d->glFormat.doubleBuffer();
     }
@@ -3389,14 +3414,7 @@ const QGLContext* QGLContext::currentContext()
 {
 #ifdef Q_WS_QPA
     if (const QPlatformGLContext *threadContext = QPlatformGLContext::currentContext()) {
-        if (threadContext->qGLContextHandle()) {
-            return (const QGLContext *)threadContext->qGLContextHandle();
-        } else {
-            QWidget *widget  = threadContext->platformWindow()->widget();
-            QGLContext *context = new QGLContext(QGLFormat::fromPlatformWindowFormat(threadContext->platformWindowFormat()),widget);
-            context->create(); //don't know how to pass in the sharecontext. (doesn't really matter though)
-            return context;
-        }
+        return QGLContext::fromPlatformGLContext(const_cast<QPlatformGLContext *>(threadContext));
     }
     return 0;
 #else
@@ -3781,7 +3799,18 @@ QGLWidget::QGLWidget(QWidget *parent, const QGLWidget* shareWidget, Qt::WindowFl
     setAttribute(Qt::WA_PaintOnScreen);
     setAttribute(Qt::WA_NoSystemBackground);
     setAutoFillBackground(true); // for compatibility
+#ifdef Q_WS_QPA
+    setPlatformWindowFormat(QGLFormat::toPlatformWindowFormat(QGLFormat::defaultFormat()));
+    winId(); // create window;
+    QGLContext *glContext = 0;
+    if (platformWindow())
+        glContext = QGLContext::fromPlatformGLContext(platformWindow()->glContext());
+    if (glContext){
+        d->init(glContext,shareWidget);
+    }
+#else
     d->init(new QGLContext(QGLFormat::defaultFormat(), this), shareWidget);
+#endif
 }
 
 
@@ -3821,7 +3850,18 @@ QGLWidget::QGLWidget(const QGLFormat &format, QWidget *parent, const QGLWidget* 
     setAttribute(Qt::WA_PaintOnScreen);
     setAttribute(Qt::WA_NoSystemBackground);
     setAutoFillBackground(true); // for compatibility
+#ifdef Q_WS_QPA
+    setPlatformWindowFormat(QGLFormat::toPlatformWindowFormat(QGLFormat::defaultFormat()));
+    winId(); // create window;
+    QGLContext *glContext = 0;
+    if (platformWindow())
+        glContext = QGLContext::fromPlatformGLContext(platformWindow()->glContext());
+    if (glContext){
+        d->init(glContext,shareWidget);
+    }
+#else
     d->init(new QGLContext(format, this), shareWidget);
+#endif
 }
 
 /*!

@@ -48,8 +48,8 @@
 
 #include <EGL/egl.h>
 
-QEGLPlatformContext::QEGLPlatformContext(EGLDisplay display, EGLConfig config, EGLint contextAttrs[], EGLSurface surface, EGLenum eglApi, QPlatformWindow *platformWindow)
-    : QPlatformGLContext(platformWindow)
+QEGLPlatformContext::QEGLPlatformContext(EGLDisplay display, EGLConfig config, EGLint contextAttrs[], EGLSurface surface, EGLenum eglApi)
+    : QPlatformGLContext()
     , m_eglDisplay(display)
     , m_eglSurface(surface)
     , m_eglApi(eglApi)

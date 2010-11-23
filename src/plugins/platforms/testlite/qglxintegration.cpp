@@ -235,8 +235,8 @@ QPlatformWindowFormat QGLXGLContext::reducePlatformWindowFormat(const QPlatformW
     return retFormat;
 }
 
-QGLXGLContext::QGLXGLContext(Window window, MyDisplay *xd, QPlatformWindow *platformWindow, const QPlatformWindowFormat &format)
-    : QPlatformGLContext(platformWindow)
+QGLXGLContext::QGLXGLContext(Window window, MyDisplay *xd, const QPlatformWindowFormat &format)
+    : QPlatformGLContext()
     , m_xd(xd)
     , m_drawable((Drawable)window)
     , m_context(0)
@@ -271,7 +271,7 @@ QGLXGLContext::QGLXGLContext(Window window, MyDisplay *xd, QPlatformWindow *plat
 }
 
 QGLXGLContext::QGLXGLContext(MyDisplay *display, Drawable drawable, GLXContext context)
-    : QPlatformGLContext(0), m_xd(display), m_drawable(drawable), m_context(context)
+    : QPlatformGLContext(), m_xd(display), m_drawable(drawable), m_context(context)
 {
 
 }

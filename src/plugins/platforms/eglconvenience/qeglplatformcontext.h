@@ -48,7 +48,7 @@
 class QEGLPlatformContext : public QPlatformGLContext
 {
 public:
-    QEGLPlatformContext(EGLDisplay display, EGLConfig config, EGLint contextAttrs[], EGLSurface surface, EGLenum eglApi, QPlatformWindow *platformWindow);
+    QEGLPlatformContext(EGLDisplay display, EGLConfig config, EGLint contextAttrs[], EGLSurface surface, EGLenum eglApi);
     ~QEGLPlatformContext();
 
     void makeCurrent();

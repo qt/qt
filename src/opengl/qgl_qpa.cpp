@@ -129,7 +129,11 @@ void qDeleteQGLContext(void *handle)
 bool QGLContext::chooseContext(const QGLContext* shareContext)
 {
     Q_D(QGLContext);
-    if (!d->paintDevice || d->paintDevice->devType() != QInternal::Widget) {
+    if (d->platformContext && !d->platformContext->qGLContextHandle()) {
+        d->platformContext->setQGLContextHandle(this,qDeleteQGLContext);
+        d->glFormat = QGLFormat::fromPlatformWindowFormat(d->platformContext->platformWindowFormat());
+        d->valid = true;
+    }else if(!d->paintDevice || d->paintDevice->devType() != QInternal::Widget) {
         d->valid = false;
     }else {
         QWidget *widget = static_cast<QWidget *>(d->paintDevice);
@@ -215,10 +219,9 @@ void QGLWidget::setContext(QGLContext *context,
         qWarning("QGLWidget::setContext: Cannot set null context");
         return;
     }
-    if (!context->deviceIsPixmap() && context->device() != this) {
-        qWarning("QGLWidget::setContext: Context must refer to this widget");
-        return;
-    }
+
+    if (context->device() == 0) // a context may refere to more than 1 window.
+        context->setDevice(this); //but its better to point to 1 of them than none of them.
 
     QGLContext* oldcx = d->glcx;
     d->glcx = context;
@@ -312,11 +315,8 @@ bool QGLWidget::event(QEvent *e)
 {
     Q_D(QGLWidget);
     if (e->type() == QEvent::WinIdChange) {
-        if (d->glcx->isValid()) {
-            if (QGLContext::currentContext() == d->glcx)
-                QGLContextPrivate::setCurrentContext(0); //Its not valid anymore
-            setContext(new QGLContext(d->glcx->requestedFormat(), this));
-
+        if (platformWindow()) {
+            d->glcx = QGLContext::fromPlatformGLContext(platformWindow()->glContext());
         }
     }
     return QWidget::event(e);
