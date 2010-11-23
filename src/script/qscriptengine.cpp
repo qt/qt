@@ -772,6 +772,10 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(v8::Handl
     v8::Handle<v8::Value> result = script->Run();
     if (result.IsEmpty()) {
         v8::Handle<v8::Value> exception = tryCatch.Exception();
+        // TODO: figure out why v8 doesn't always produce an exception value
+        //Q_ASSERT(!exception.IsEmpty());
+        if (exception.IsEmpty())
+            exception = v8::Exception::Error(v8::String::New("missing exception value"));
         setException(exception, tryCatch.Message());
         m_isEvaluating = false;
         return new QScriptValuePrivate(this, exception);
