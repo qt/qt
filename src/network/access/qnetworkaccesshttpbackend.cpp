@@ -1157,7 +1157,7 @@ bool QNetworkAccessHttpBackend::processRequestSynchronously()
     bool waitResult = channel->socket->waitForConnected(timeout);
     timeoutTimer.start();
 
-    if (!waitResult || channel->socket->state() != QAbstractSocket::Connected) {
+    if (!waitResult || channel->socket->state() != QAbstractSocket::ConnectedState) {
         error(QNetworkReply::UnknownNetworkError, QLatin1String("could not connect"));
         return false;
     }
