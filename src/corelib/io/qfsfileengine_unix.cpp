@@ -861,9 +861,13 @@ uint QFSFileEngine::ownerId(FileOwner own) const
 
 QString QFSFileEngine::owner(FileOwner own) const
 {
+#ifndef Q_OS_SYMBIAN
     if (own == OwnerUser)
         return QFileSystemEngine::resolveUserName(ownerId(own));
     return QFileSystemEngine::resolveGroupName(ownerId(own));
+#else
+    return QString();
+#endif
 }
 
 bool QFSFileEngine::setPermissions(uint perms)
