@@ -79,7 +79,7 @@ QColor launchSymbianColorDialog(QColor initial)
         array->AppendL(KRgbGray);
         array->AppendL(KRgbWhite);
 
-        TRgb initialColour(initial.red(), initial.green(), initial.blue(), initial.alpha());  
+        TRgb initialColour(initial.red(), initial.green(), initial.blue(), initial.alpha());
 
         TBool noneChosen = EFalse; // If true shows the default colour button
         CAknColourSelectionGrid* colourSelectionGrid =

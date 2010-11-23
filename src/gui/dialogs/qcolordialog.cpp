@@ -1968,7 +1968,7 @@ extern QColor qtSymbianGetColor(const QColor &initial);
 
     The \a options argument allows you to customize the dialog.
 
-    On Symbian, this static function will use the native color dialog and not a QColorDialog. 
+    On Symbian, this static function will use the native color dialog and not a QColorDialog.
     On Symbian the parameters \a title and \a parent has no relevance and the
     \a options parameter is only used to define if the native color dialog is
     used or not.
