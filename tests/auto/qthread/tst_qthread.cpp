@@ -1063,7 +1063,7 @@ void tst_QThread::wait3_slowDestructor()
     //QVERIFY(elapsed < Waiting_Thread::WaitTime * 1.4);
 
     slow.cond.wakeOne();
-    //now the thread shoud finish quickly
+    //now the thread should finish quickly
     QVERIFY(thread.wait(one_minute));
 }
 

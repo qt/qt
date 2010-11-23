@@ -279,7 +279,7 @@ void QThreadStorageData::finish(void **p)
     If T is a pointer type, returns true if the calling thread has
     non-zero data available.
 
-    If T is a value type, returns wether the data has already been
+    If T is a value type, returns whether the data has already been
     constructed by calling setLocalData or localData.
 
     \sa localData()
