@@ -4,13 +4,13 @@ SOURCES = tst_qplugin.cpp
 QT = core
 
 wince*: {
-   plugins.sources = plugins/*
+   plugins.files = plugins/*
    plugins.path = plugins
    DEPLOYMENT += plugins
 }
 
 symbian: {
-    rpDep.sources = releaseplugin.dll debugplugin.dll
+    rpDep.files = releaseplugin.dll debugplugin.dll
     rpDep.path = plugins
     DEPLOYMENT += rpDep dpDep
 }

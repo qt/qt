@@ -58,7 +58,11 @@ public:
     }
 
     QWidget *window;
+#if !defined(Q_WS_QPA)
     QRect geometry;
+#else
+    QSize size;
+#endif //Q_WS_QPA
     QRegion staticContents;
     QList<QImage*> bufferImages;
     uint staticContentsSupport : 1;
@@ -114,11 +118,11 @@ public:
 /*!
     Constructs an empty surface for the given top-level \a window.
 */
-QWindowSurface::QWindowSurface(QWidget *window)
+QWindowSurface::QWindowSurface(QWidget *window, bool setDefaultSurface)
     : d_ptr(new QWindowSurfacePrivate(window))
 {
     if (!QApplicationPrivate::runtime_graphics_system) {
-        if(window)
+        if(setDefaultSurface && window)
             window->setWindowSurface(this);
     }
 }
@@ -153,6 +157,7 @@ void QWindowSurface::endPaint(const QRegion &)
     d_ptr->bufferImages.clear();
 }
 
+#if !defined(Q_WS_QPA)
 /*!
     Sets the currently allocated area to be the given \a rect.
 
@@ -173,6 +178,17 @@ QRect QWindowSurface::geometry() const
 {
     return d_ptr->geometry;
 }
+#else
+void QWindowSurface::resize(const QSize &size)
+{
+    d_ptr->size = size;
+}
+
+QSize QWindowSurface::size() const
+{
+    return d_ptr->size;
+}
+#endif //Q_WS_QPA
 
 /*!
     Scrolls the given \a area \a dx pixels to the right and \a dy
@@ -329,7 +345,13 @@ void QWindowSurface::setPartialUpdateSupport(bool enable)
     d_ptr->partialUpdateSupport = enable;
 }
 
-void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset)
+#ifdef Q_WS_QPA
+#define Q_EXPORT_SCROLLRECT Q_GUI_EXPORT
+#else
+#define Q_EXPORT_SCROLLRECT
+#endif
+
+void Q_EXPORT_SCROLLRECT qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset)
 {
     // make sure we don't detach
     uchar *mem = const_cast<uchar*>(const_cast<const QImage &>(img).bits());

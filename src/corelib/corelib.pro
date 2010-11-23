@@ -19,7 +19,14 @@ include(codecs/codecs.pri)
 include(statemachine/statemachine.pri)
 include(xml/xml.pri)
 
-mac|darwin:LIBS_PRIVATE += -framework ApplicationServices
+!qpa:mac|darwin:LIBS_PRIVATE += -framework ApplicationServices
+qpa:mac|darwin {
+  contains(QT_CONFIG, coreservices) {
+    LIBS_PRIVATE += -framework CoreServices
+  } else {
+    LIBS_PRIVATE += -framework CoreFoundation
+  }
+}
 
 mac:lib_bundle:DEFINES += QT_NO_DEBUG_PLUGIN_CHECK
 win32:DEFINES-=QT_NO_CAST_TO_ASCII
@@ -37,10 +44,3 @@ symbian: {
     MMP_RULES -= PAGED
     MMP_RULES *= UNPAGED
 }
-
-neon {
-    DEFINES += QT_HAVE_NEON
-    QMAKE_CXXFLAGS *= -mfpu=neon
-}
-
-

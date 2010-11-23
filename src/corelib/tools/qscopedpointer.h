@@ -186,6 +186,18 @@ template <class T, class Cleanup>
 Q_INLINE_TEMPLATE void qSwap(QScopedPointer<T, Cleanup> &p1, QScopedPointer<T, Cleanup> &p2)
 { p1.swap(p2); }
 
+#ifndef QT_NO_STL
+QT_END_NAMESPACE
+namespace std {
+    template <class T, class Cleanup>
+    Q_INLINE_TEMPLATE void swap(QT_PREPEND_NAMESPACE(QScopedPointer)<T, Cleanup> &p1, QT_PREPEND_NAMESPACE(QScopedPointer)<T, Cleanup> &p2)
+    { p1.swap(p2); }
+}
+QT_BEGIN_NAMESPACE
+#endif
+
+
+
 namespace QtPrivate {
     template <typename X, typename Y> struct QScopedArrayEnsureSameType;
     template <typename X> struct QScopedArrayEnsureSameType<X,X> { typedef X* Type; };

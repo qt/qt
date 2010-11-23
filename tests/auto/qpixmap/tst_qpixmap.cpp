@@ -95,6 +95,8 @@ public slots:
     void cleanup();
 
 private slots:
+    void swap();
+
     void setAlphaChannel_data();
     void setAlphaChannel();
 
@@ -179,6 +181,7 @@ private slots:
     void fromImageReader_data();
     void fromImageReader();
 
+    void fromImageReaderAnimatedGif_data();
     void fromImageReaderAnimatedGif();
 
     void preserveDepth();
@@ -244,6 +247,20 @@ void tst_QPixmap::init()
 
 void tst_QPixmap::cleanup()
 {
+}
+
+void tst_QPixmap::swap()
+{
+    QPixmap p1( 16, 16 ), p2( 32, 32 );
+    p1.fill( Qt::white );
+    p2.fill( Qt::black );
+    const qint64 p1k = p1.cacheKey();
+    const qint64 p2k = p2.cacheKey();
+    p1.swap(p2);
+    QCOMPARE(p1.cacheKey(), p2k);
+    QCOMPARE(p1.size(), QSize(32,32));
+    QCOMPARE(p2.cacheKey(), p1k);
+    QCOMPARE(p2.size(), QSize(16,16));
 }
 
 void tst_QPixmap::setAlphaChannel_data()
@@ -811,33 +828,43 @@ void tst_QPixmap::drawBitmap()
 
 void tst_QPixmap::grabWidget()
 {
-    QWidget widget;
-    QImage image(128, 128, QImage::Format_ARGB32_Premultiplied);
-    for (int row = 0; row < image.height(); ++row) {
-        QRgb *line = reinterpret_cast<QRgb *>(image.scanLine(row));
-        for (int col = 0; col < image.width(); ++col)
-            line[col] = qRgb(rand() & 255, row, col);
+    for (int opaque = 0; opaque < 2; ++opaque) {
+        QWidget widget;
+        QImage image(128, 128, opaque ? QImage::Format_RGB32 : QImage::Format_ARGB32_Premultiplied);
+        for (int row = 0; row < image.height(); ++row) {
+            QRgb *line = reinterpret_cast<QRgb *>(image.scanLine(row));
+            for (int col = 0; col < image.width(); ++col)
+                line[col] = qRgba(rand() & 255, row, col, opaque ? 255 : 127);
+        }
+
+        QPalette pal = widget.palette();
+        pal.setBrush(QPalette::Window, QBrush(image));
+        widget.setPalette(pal);
+        widget.resize(128, 128);
+
+        QPixmap expected(64, 64);
+        if (!opaque)
+            expected.fill(Qt::transparent);
+
+        QPainter p(&expected);
+        p.translate(-64, -64);
+        p.drawTiledPixmap(0, 0, 128, 128, pal.brush(QPalette::Window).texture(), 0, 0);
+        p.end();
+
+        QPixmap actual = QPixmap::grabWidget(&widget, QRect(64, 64, 64, 64));
+        QVERIFY(lenientCompare(actual, expected));
+
+        actual = QPixmap::grabWidget(&widget, 64, 64);
+        QVERIFY(lenientCompare(actual, expected));
+
+        // Make sure a widget that is not yet shown is grabbed correctly.
+        QTreeWidget widget2;
+        actual = QPixmap::grabWidget(&widget2);
+        widget2.show();
+        expected = QPixmap::grabWidget(&widget2);
+
+        QVERIFY(lenientCompare(actual, expected));
     }
-
-    QPalette pal = widget.palette();
-    pal.setBrush(QPalette::Window, QBrush(image));
-    widget.setPalette(pal);
-    widget.resize(128, 128);
-
-    QPixmap expected = QPixmap::fromImage(QImage(image.scanLine(64) + 64 * 4, 64, 64, image.bytesPerLine(), image.format()));
-    QPixmap actual = QPixmap::grabWidget(&widget, QRect(64, 64, 64, 64));
-    QVERIFY(lenientCompare(actual, expected));
-
-    actual = QPixmap::grabWidget(&widget, 64, 64);
-    QVERIFY(lenientCompare(actual, expected));
-
-    // Make sure a widget that is not yet shown is grabbed correctly.
-    QTreeWidget widget2;
-    actual = QPixmap::grabWidget(&widget2);
-    widget2.show();
-    expected = QPixmap::grabWidget(&widget2);
-
-    QVERIFY(lenientCompare(actual, expected));
 }
 
 void tst_QPixmap::grabWindow()
@@ -1159,6 +1186,8 @@ void tst_QPixmap::fromSymbianCFbsBitmap_data()
     const int smallHeight = 20;
     const int largeWidth = 240;
     const int largeHeight = 320;
+    const int notAlignedWidth = 250;
+    const int notAlignedHeight = 250;
 
     // Indexed Color Formats - Disabled since images seem to be blank -> no palette?
 //    QTest::newRow("EGray2 small") << EGray2 << smallWidth << smallHeight << QColor(Qt::black);
@@ -1171,14 +1200,19 @@ void tst_QPixmap::fromSymbianCFbsBitmap_data()
     // Direct Color Formats
     QTest::newRow("EColor4K small") << EColor4K << smallWidth << smallHeight << QColor(Qt::red);
     QTest::newRow("EColor4K big") << EColor4K << largeWidth << largeHeight << QColor(Qt::red);
+    QTest::newRow("EColor4K not aligned") << EColor4K << notAlignedWidth << notAlignedHeight << QColor(Qt::red);
     QTest::newRow("EColor64K small") << EColor64K << smallWidth << smallHeight << QColor(Qt::green);
     QTest::newRow("EColor64K big") << EColor64K << largeWidth << largeHeight << QColor(Qt::green);
+    QTest::newRow("EColor64K not aligned") << EColor64K << notAlignedWidth << notAlignedHeight << QColor(Qt::green);
     QTest::newRow("EColor16M small") << EColor16M << smallWidth << smallHeight << QColor(Qt::yellow);
     QTest::newRow("EColor16M big") << EColor16M << largeWidth << largeHeight << QColor(Qt::yellow);
+    QTest::newRow("EColor16M not aligned") << EColor16M << notAlignedWidth << notAlignedHeight << QColor(Qt::yellow);
     QTest::newRow("EColor16MU small") << EColor16MU << smallWidth << smallHeight << QColor(Qt::red);
     QTest::newRow("EColor16MU big") << EColor16MU << largeWidth << largeHeight << QColor(Qt::red);
+    QTest::newRow("EColor16MU not aligned") << EColor16MU << notAlignedWidth << notAlignedHeight << QColor(Qt::red);
     QTest::newRow("EColor16MA small opaque") << EColor16MA << smallWidth << smallHeight << QColor(255, 255, 0);
     QTest::newRow("EColor16MA big opaque") << EColor16MA << largeWidth << largeHeight << QColor(255, 255, 0);
+    QTest::newRow("EColor16MA not aligned opaque") << EColor16MA << notAlignedWidth << notAlignedHeight << QColor(255, 255, 0);
 
     // Semi-transparent Colors - Disabled for now, since the QCOMPARE fails, but visually confirmed to work
 //    QTest::newRow("EColor16MA small semi") << EColor16MA << smallWidth << smallHeight << QColor(255, 255, 0, 127);
@@ -1236,6 +1270,10 @@ void tst_QPixmap::fromSymbianCFbsBitmap()
 
         QColor actualColor(image.pixel(1, 1));
         QCOMPARE(actualColor, color);
+
+        QImage shouldBe(pixmap.width(), pixmap.height(), image.format());
+        shouldBe.fill(color.rgba());
+        QCOMPARE(image, shouldBe);
     }
     __UHEAP_MARKEND;
 
@@ -1605,6 +1643,8 @@ void tst_QPixmap::fromImageReader_data()
     QTest::newRow("designer_indexed8_no_alpha.gif") << prefix + "/designer_indexed8_no_alpha.gif";
     QTest::newRow("designer_indexed8_with_alpha.gif") << prefix + "/designer_indexed8_with_alpha.gif";
     QTest::newRow("designer_rgb32.jpg") << prefix + "/designer_rgb32.jpg";
+    QTest::newRow("designer_indexed8_with_alpha_animated") << prefix + "/designer_indexed8_with_alpha_animated.gif";
+    QTest::newRow("designer_indexed8_with_alpha_animated") << prefix + "/designer_indexed8_no_alpha_animated.gif";
 }
 
 void tst_QPixmap::fromImageReader()
@@ -1621,14 +1661,22 @@ void tst_QPixmap::fromImageReader()
     QVERIFY(pixmapsAreEqual(&pixmapWithCopy, &directLoadingPixmap));
 }
 
+void tst_QPixmap::fromImageReaderAnimatedGif_data()
+{
+    QTest::addColumn<QString>("imagePath");
+    QTest::newRow("gif with alpha") << QString::fromLatin1("/designer_indexed8_with_alpha_animated.gif");
+    QTest::newRow("gif without alpha") << QString::fromLatin1("/designer_indexed8_no_alpha_animated.gif");
+}
+
 void tst_QPixmap::fromImageReaderAnimatedGif()
 {
+    QFETCH(QString, imagePath);
 #ifdef Q_OS_SYMBIAN
     const QString prefix = QLatin1String(SRCDIR) + "loadFromData";
 #else
     const QString prefix = QLatin1String(SRCDIR) + "/loadFromData";
 #endif
-    const QString path = prefix + QString::fromLatin1("/designer_indexed8_with_alpha_animated.gif");
+    const QString path = prefix + imagePath;
 
     QImageReader referenceReader(path);
     QImageReader pixmapReader(path);

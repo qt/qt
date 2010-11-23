@@ -132,6 +132,7 @@ private slots:
     void compat_encode();
     void percentEncoding_data();
     void percentEncoding();
+    void swap();
     void symmetry();
     void ipv6_data();
     void ipv6();
@@ -2208,6 +2209,14 @@ void tst_QUrl::toPercentEncoding()
     QByteArray encodedUrl = QUrl::toPercentEncoding(original, excludeInEncoding, includeInEncoding);
     QCOMPARE(encodedUrl.constData(), encoded.constData());
     QCOMPARE(original, QUrl::fromPercentEncoding(encodedUrl));
+}
+
+void tst_QUrl::swap()
+{
+    QUrl u1(QLatin1String("http://qt.nokia.com")), u2(QLatin1String("http://www.kdab.com"));
+    u1.swap(u2);
+    QCOMPARE(u2.host(),QLatin1String("qt.nokia.com"));
+    QCOMPARE(u1.host(),QLatin1String("www.kdab.com"));
 }
 
 void tst_QUrl::symmetry()

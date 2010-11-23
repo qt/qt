@@ -197,7 +197,9 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
         generatePkg = true;
     } else {
         foreach(QString item, project->values("DEPLOYMENT")) {
-            if (!project->values(item + ".sources").isEmpty()) {
+            // ### Qt 5: remove .sources, inconsistent with INSTALLS
+            if (!project->values(item + ".sources").isEmpty() ||
+                !project->values(item + ".files").isEmpty()) {
                 generatePkg = true;
                 break;
             }

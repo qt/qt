@@ -133,6 +133,7 @@ private slots:
     void task217070_scrollbarsAdjusted();
     void task258949_keypressHangup();
     void QTBUG8086_currentItemChangedOnClick();
+    void QTBUG14363_completerWithAnyKeyPressedEditTriggers();
 
 
 protected slots:
@@ -1499,6 +1500,11 @@ void tst_QListWidget::itemWidget()
 class MyListWidget : public QListWidget
 {
 public:
+    MyListWidget(QWidget *parent=0)
+        : QListWidget(parent)
+        {
+        }
+
     void paintEvent(QPaintEvent *e) {
         painted += e->region();
         QListWidget::paintEvent(e);
@@ -1513,14 +1519,17 @@ void tst_QListWidget::fastScroll()
         QSKIP("S60 style doesn't support fast scrolling", SkipAll);
     }
 
-    MyListWidget widget;
+    QWidget topLevel;
+    MyListWidget widget(&topLevel);
     for (int i = 0; i < 50; ++i)
         widget.addItem(QString("Item %1").arg(i));
 
-    widget.show();
+    topLevel.resize(300, 300); // toplevel needs to be wide enough for the item
+    topLevel.show();
     // Make sure the widget gets the first full repaint. On
     // some WMs, we'll get two (first inactive exposure, then
     // active exposure.
+    QTest::qWaitForWindowShown(&widget);
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&widget);
 #endif
@@ -1531,6 +1540,7 @@ void tst_QListWidget::fastScroll()
     QVERIFY(!itemSize.isEmpty());
 
     QScrollBar *sbar = widget.verticalScrollBar();
+    widget.setVerticalScrollMode(QAbstractItemView::ScrollPerItem);
     widget.painted = QRegion();
     sbar->setValue(sbar->value() + sbar->singleStep());
     QApplication::processEvents();
@@ -1638,6 +1648,45 @@ void tst_QListWidget::QTBUG8086_currentItemChangedOnClick()
     QCOMPARE(spy.count(), 1);
 
 }
+
+
+class ItemDelegate : public QItemDelegate
+{
+public:
+	ItemDelegate(QObject *parent = 0) : QItemDelegate(parent)
+	{}
+	virtual QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &) const
+	{
+		QLineEdit *lineEdit = new QLineEdit(parent);
+		lineEdit->setFrame(false);
+		QCompleter *completer = new QCompleter(QStringList() << "completer", lineEdit);
+		completer->setCompletionMode(QCompleter::InlineCompletion);
+		lineEdit->setCompleter(completer);
+		return lineEdit;
+	}
+};
+
+void tst_QListWidget::QTBUG14363_completerWithAnyKeyPressedEditTriggers()
+{
+	QListWidget listWidget;
+	listWidget.setEditTriggers(QAbstractItemView::AnyKeyPressed);
+    listWidget.setItemDelegate(new ItemDelegate);
+    QListWidgetItem *item = new QListWidgetItem(QLatin1String("select an item (don't start editing)"), &listWidget);
+    item->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable|Qt::ItemIsEditable);
+    new QListWidgetItem(QLatin1String("try to type the letter 'c'"), &listWidget);
+    new QListWidgetItem(QLatin1String("completer"), &listWidget);
+	listWidget.show();
+    listWidget.setCurrentItem(item);
+    QTest::qWaitForWindowShown(&listWidget);
+
+    QTest::keyClick(listWidget.viewport(), Qt::Key_C);
+
+    QLineEdit *le = qobject_cast<QLineEdit*>(listWidget.itemWidget(item));
+    QVERIFY(le);
+    QCOMPARE(le->text(), QString("completer"));
+    QCOMPARE(le->completer()->currentCompletion(), QString("completer"));
+}
+
 
 
 QTEST_MAIN(tst_QListWidget)

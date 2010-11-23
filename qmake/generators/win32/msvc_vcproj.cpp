@@ -459,6 +459,7 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
                         tmp_vcproj.setProjectFile(&tmp_proj);
                         Option::qmake_mode = old_mode;
                         if(Option::debug_level) {
+                            debug_msg(1, "Dumping all variables:");
                             QMap<QString, QStringList> &vars = tmp_proj.variables();
                             for(QMap<QString, QStringList>::Iterator it = vars.begin();
                                 it != vars.end(); ++it) {
@@ -1174,7 +1175,8 @@ void VcprojGenerator::initDeploymentTool()
             devicePath = Option::fixPathToLocalOS(QDir::cleanPath(targetPath + QLatin1Char('\\') + devicePath));
         }
         // foreach d in item.sources
-        foreach(QString source, project->values(item + ".sources")) {
+        // ### Qt 5: remove .sources, inconsistent with INSTALLS
+        foreach(QString source, project->values(item + ".sources") + project->values(item + ".files")) {
             QString itemDevicePath = devicePath;
             source = Option::fixPathToLocalOS(source);
             QString nameFilter;
@@ -1551,10 +1553,10 @@ QString VcprojGenerator::fixFilename(QString ofile) const
     if(slashfind == -1) {
         ofile = ofile.replace('-', '_');
     } else {
-        int hypenfind = ofile.indexOf('-', slashfind);
-        while (hypenfind != -1 && slashfind < hypenfind) {
-            ofile = ofile.replace(hypenfind, 1, '_');
-            hypenfind = ofile.indexOf('-', hypenfind + 1);
+        int hyphenfind = ofile.indexOf('-', slashfind);
+        while (hyphenfind != -1 && slashfind < hyphenfind) {
+            ofile = ofile.replace(hyphenfind, 1, '_');
+            hyphenfind = ofile.indexOf('-', hyphenfind + 1);
         }
     }
     return ofile;

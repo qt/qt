@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -28,10 +28,10 @@
 /*!
     \page qt-embedded-install.html
 
-    \title Installing Qt on Embedded Linux
+    \title Installing Qt for Embedded Linux
     \ingroup qt-embedded-linux
     \ingroup installation
-    \brief How to install Qt on Embedded Linux.
+    \brief How to install Qt for Embedded Linux.
 
     This document describes how to install \l{Qt for Embedded Linux} in your
     development environment:
@@ -152,7 +152,7 @@
     \endlist
 
     Note that the virtual framebuffer requires a Qt for X11
-    installation. See \l {Installing Qt on X11 Platforms} for details.
+    installation. See \l {Installing Qt for X11 Platforms} for details.
 
     The Linux framebuffer, on the other hand, is enabled by default on
     all modern Linux distributions. For information on older versions,

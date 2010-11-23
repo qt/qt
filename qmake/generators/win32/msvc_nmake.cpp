@@ -215,7 +215,7 @@ void NmakeMakefileGenerator::init()
         project->values("QMAKE_CLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".exp");
     }
     if(project->isActiveConfig("debug")) {
-        project->values("QMAKE_CLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".pdb");
+        project->values("QMAKE_DISTCLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".pdb");
         project->values("QMAKE_CLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".ilk");
         project->values("QMAKE_CLEAN").append("vc*.pdb");
         project->values("QMAKE_CLEAN").append("vc*.idb");

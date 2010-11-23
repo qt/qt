@@ -968,11 +968,12 @@ void QS60PixmapData::fromNativeType(void* pixmap, NativeType nativeType)
         if (needsCopy) {
 
             TSize size = sourceBitmap->SizeInPixels();
+            int bytesPerLine = sourceBitmap->ScanLineLength(size.iWidth, displayMode);
 
             QSymbianBitmapDataAccess da;
             da.beginDataAccess(sourceBitmap);
             uchar *bytes = (uchar*)sourceBitmap->DataAddress();
-            QImage img = QImage(bytes, size.iWidth, size.iHeight, format);
+            QImage img = QImage(bytes, size.iWidth, size.iHeight, bytesPerLine, format);
             img = img.copy();
             da.endDataAccess(sourceBitmap);
 

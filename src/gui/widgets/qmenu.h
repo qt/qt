@@ -51,6 +51,10 @@
 #include <QtGui/qpixmap.h>
 #endif
 
+#ifdef Q_WS_WINCE
+#include <windef.h> // for HMENU
+#endif
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE

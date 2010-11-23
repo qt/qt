@@ -126,6 +126,7 @@ public:
     inline QList &operator=(QList &&other)
     { qSwap(d, other.d); return *this; }
 #endif
+    inline void swap(QList<T> &other) { qSwap(d, other.d); }
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QList(std::initializer_list<T> args) : d(&QListData::shared_null)
     { d->ref.ref(); qCopy(args.begin(), args.end(), std::back_inserter(*this)); }

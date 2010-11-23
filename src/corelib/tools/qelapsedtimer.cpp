@@ -83,7 +83,7 @@ QT_BEGIN_NAMESPACE
     function, which can be used to determine if a certain number of
     milliseconds has already elapsed:
 
-    \snippet doc/src/snippets/qelapsedtimer/main.cpp 1
+    \snippet doc/src/snippets/qelapsedtimer/main.cpp 2
 
     \section1 Reference clocks
 

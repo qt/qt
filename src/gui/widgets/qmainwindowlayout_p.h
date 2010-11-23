@@ -85,7 +85,11 @@ typedef HIObjectRef                     HIToolbarItemRef;
 typedef const void * CFTypeRef;
 typedef const struct __CFString * CFStringRef;
 
-#endif
+#  ifdef QT_MAC_USE_COCOA
+#include <private/qunifiedtoolbarsurface_mac_p.h>
+# endif // QT_MAC_USE_COCOA
+
+#endif // Q_WS_MAC
 
 QT_BEGIN_NAMESPACE
 
@@ -335,9 +339,16 @@ public:
     void cleanUpMacToolbarItems();
     void fixSizeInUnifiedToolbar(QToolBar *tb) const;
     bool useHIToolBar;
+    bool activateUnifiedToolbarAfterFullScreen;
     void syncUnifiedToolbarVisibility();
     bool blockVisiblityCheck;
-#endif
+
+#ifdef QT_MAC_USE_COCOA
+    QUnifiedToolbarSurface *unifiedSurface;
+    void updateUnifiedToolbarOffset();
+#endif // QT_MAC_USE_COCOA
+
+#endif // Q_WS_MAC
 };
 QT_END_NAMESPACE
 

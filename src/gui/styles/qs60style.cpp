@@ -405,13 +405,14 @@ void QS60StylePrivate::clearCaches(CacheClearReason reason)
         QPixmapCache::clear();
         break;
     case CC_ThemeChange:
-        m_colorCache.clear();
         QPixmapCache::clear();
+#ifdef Q_WS_S60
+        deleteStoredSettings();
+#endif
         deleteBackground();
         break;
     case CC_UndefinedChange:
     default:
-        m_colorCache.clear();
         m_mappedFontsCache.clear();
         QPixmapCache::clear();
         deleteBackground();
@@ -419,64 +420,53 @@ void QS60StylePrivate::clearCaches(CacheClearReason reason)
     }
 }
 
-// Since S60Style has 'button' and 'tooltip' as a graphic, we don't have any native color which to use
-// for QPalette::Button and QPalette::ToolTipBase. Therefore S60Style needs to guesstimate
-// palette colors by calculating average rgb values for button pixels.
-// Returns Qt::black if there is an issue with the graphics (image is NULL, or no bits() found).
-QColor QS60StylePrivate::colorFromFrameGraphics(SkinFrameElements frame) const
+QColor QS60StylePrivate::calculatedColor(SkinFrameElements frame) const
 {
-    const bool cachedColorExists = m_colorCache.contains(frame);
-    if (!cachedColorExists) {
-        const int frameCornerWidth = pixelMetric(PM_FrameCornerWidth);
-        const int frameCornerHeight = pixelMetric(PM_FrameCornerHeight);
-        Q_ASSERT(2 * frameCornerWidth < 32);
-        Q_ASSERT(2 * frameCornerHeight < 32);
+    const int frameCornerWidth = pixelMetric(PM_FrameCornerWidth);
+    const int frameCornerHeight = pixelMetric(PM_FrameCornerHeight);
+    Q_ASSERT(2 * frameCornerWidth < 32);
+    Q_ASSERT(2 * frameCornerHeight < 32);
 
-        const QImage frameImage = QS60StylePrivate::frame(frame, QSize(32, 32)).toImage();
-        Q_ASSERT(frameImage.bytesPerLine() > 0);
-        if (frameImage.isNull())
-            return Qt::black;
+    const QImage frameImage = QS60StylePrivate::frame(frame, QSize(32, 32)).toImage();
+    Q_ASSERT(frameImage.bytesPerLine() > 0);
+    if (frameImage.isNull())
+        return Qt::black;
 
-        const QRgb *pixelRgb = (const QRgb*)frameImage.bits();
-        const int pixels = frameImage.byteCount()/sizeof(QRgb);
+    const QRgb *pixelRgb = (const QRgb*)frameImage.constBits();
+    const int pixels = frameImage.byteCount() / sizeof(QRgb);
 
-        int estimatedRed = 0;
-        int estimatedGreen = 0;
-        int estimatedBlue = 0;
+    int estimatedRed = 0;
+    int estimatedGreen = 0;
+    int estimatedBlue = 0;
 
-        int skips = 0;
-        int estimations = 0;
+    int skips = 0;
+    int estimations = 0;
 
-        const int topBorderLastPixel = frameCornerHeight*frameImage.width() - 1;
-        const int bottomBorderFirstPixel = frameImage.width() * frameImage.height() - frameCornerHeight*frameImage.width() - 1;
-        const int rightBorderFirstPixel = frameImage.width() - frameCornerWidth;
-        const int leftBorderLastPixel = frameCornerWidth;
+    const int topBorderLastPixel = frameCornerHeight * frameImage.width() - 1;
+    const int bottomBorderFirstPixel = frameImage.width() * frameImage.height() - topBorderLastPixel;
+    const int rightBorderFirstPixel = frameImage.width() - frameCornerWidth;
+    const int leftBorderLastPixel = frameCornerWidth;
 
-        while ((skips + estimations) < pixels) {
-            if ((skips + estimations) > topBorderLastPixel &&
-                (skips + estimations) < bottomBorderFirstPixel) {
-                for (int rowIndex = 0; rowIndex < frameImage.width(); rowIndex++) {
-                    if (rowIndex > leftBorderLastPixel &&
-                        rowIndex < rightBorderFirstPixel) {
-                        estimatedRed += qRed(*pixelRgb);
-                        estimatedGreen += qGreen(*pixelRgb);
-                        estimatedBlue += qBlue(*pixelRgb);
-                    }
-                    pixelRgb++;
-                    estimations++;
+    while ((skips + estimations) < pixels) {
+        if ((skips + estimations) > topBorderLastPixel &&
+            (skips + estimations) < bottomBorderFirstPixel) {
+            for (int rowIndex = 0; rowIndex < frameImage.width(); rowIndex++) {
+                if (rowIndex > leftBorderLastPixel &&
+                    rowIndex < rightBorderFirstPixel) {
+                    estimatedRed += qRed(*pixelRgb);
+                    estimatedGreen += qGreen(*pixelRgb);
+                    estimatedBlue += qBlue(*pixelRgb);
                 }
-            } else {
                 pixelRgb++;
-                skips++;
+                estimations++;
             }
+        } else {
+            pixelRgb++;
+            skips++;
         }
-        QColor frameColor(estimatedRed/estimations, estimatedGreen/estimations, estimatedBlue/estimations);
-        m_colorCache.insert(frame, frameColor);
-        return !estimations ? Qt::black : frameColor;
-    } else {
-        return m_colorCache.value(frame);
     }
-
+    QColor frameColor(estimatedRed/estimations, estimatedGreen/estimations, estimatedBlue/estimations);
+    return !estimations ? Qt::black : frameColor;
 }
 
 void QS60StylePrivate::setThemePalette(QApplication *app) const
@@ -731,11 +721,14 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
     palette->setBrush(QPalette::Window, backgroundTexture());
     // set as transparent so that styled full screen theme background is visible
     palette->setBrush(QPalette::Base, Qt::transparent);
-    // set button and tooltipbase based on pixel colors
+    // set button color based on pixel colors
+#ifndef Q_WS_S60
+    //For emulated style, just calculate the color every time
+    const QColor buttonColor = calculatedColor(SF_ButtonNormal);
+#else
     const QColor buttonColor = colorFromFrameGraphics(SF_ButtonNormal);
+#endif
     palette->setColor(QPalette::Button, buttonColor);
-    const QColor toolTipColor = colorFromFrameGraphics(SF_ToolTip);
-    palette->setColor(QPalette::ToolTipBase, toolTipColor);
     palette->setColor(QPalette::Light, palette->color(QPalette::Button).lighter());
     palette->setColor(QPalette::Dark, palette->color(QPalette::Button).darker());
     palette->setColor(QPalette::Midlight, palette->color(QPalette::Button).lighter(125));
@@ -837,11 +830,8 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
         s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QLineEdit");
     QApplication::setPalette(widgetPalette, "QTextEdit");
-    widgetPalette = *palette;
-
-    widgetPalette.setColor(QPalette::HighlightedText,
-        s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QComboBox");
+    QApplication::setPalette(widgetPalette, "QSpinBox");
     widgetPalette = *palette;
 
     widgetPalette.setColor(QPalette::WindowText, s60Color(QS60StyleEnums::CL_QsnTextColors, 7, 0));
@@ -2524,9 +2514,9 @@ int QS60Style::pixelMetric(PixelMetric metric, const QStyleOption *option, const
             metricValue = QS60StylePrivate::pixelMetric(PM_LayoutLeftMargin);
     }
 
-    if (widget && (metric == PM_LayoutTopMargin))
+    if (widget && (metric == PM_LayoutTopMargin || metric == PM_LayoutLeftMargin || metric == PM_LayoutRightMargin))
         if (widget->windowType() == Qt::Dialog)
-            //double the top layout margin for dialogs, it is very close to real value
+            //double the layout margins (except bottom) for dialogs, it is very close to real value
             //without having to define custom pixel metric
             metricValue *= 2;
 
@@ -2620,6 +2610,8 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
             break;
     }
+    if (!sz.isValid())
+        sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);
     return sz;
 }
 
@@ -3425,8 +3417,11 @@ bool QS60Style::eventFilter(QObject *object, QEvent *event)
                         qobject_cast<QCheckBox *>(w))
                     d->m_pressedWidget = w;
 
-                if ( d->m_pressedWidget)
+                if (d->m_pressedWidget)
                     d->m_pressedWidget->update();
+#ifdef Q_WS_S60
+                d->touchFeedback(event, w);
+#endif
             }
             break;
         }

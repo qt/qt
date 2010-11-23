@@ -5,7 +5,7 @@ SOURCES  += tst_qbytearray.cpp
 QT = core
 
 wince*|symbian {
-   addFile.sources = rfc3252.txt
+   addFile.files = rfc3252.txt
    addFile.path = .
    DEPLOYMENT += addFile
 }
@@ -18,3 +18,4 @@ wince* {
   DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 
+CONFIG += parallel_test

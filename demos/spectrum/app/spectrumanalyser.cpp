@@ -64,6 +64,8 @@ SpectrumAnalyserThread::SpectrumAnalyserThread(QObject *parent)
 #endif
 {
 #ifdef SPECTRUM_ANALYSER_SEPARATE_THREAD
+    // moveToThread() cannot be called on a QObject with a parent
+    setParent(0);
     moveToThread(m_thread);
     m_thread->start();
 #endif
@@ -124,7 +126,7 @@ void SpectrumAnalyserThread::calculateSpectrum(const QByteArray &buffer,
     // Calculate the FFT
     m_fft->calculateFFT(m_output.data(), m_input.data());
 
-    // Analyse output to obtain amplitude and phase for each frequency
+    // Analyze output to obtain amplitude and phase for each frequency
     for (int i=2; i<=m_numSamples/2; ++i) {
         // Calculate frequency of this complex sample
         m_spectrum[i].frequency = qreal(i * inputFrequency) / (m_numSamples);

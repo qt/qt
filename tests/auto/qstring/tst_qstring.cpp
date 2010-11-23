@@ -80,6 +80,7 @@ private slots:
     void check_QTextStream();
     void check_QDataStream();
     void fromRawData();
+    void setRawData();
     void endsWith();
     void startsWith();
     void setNum();
@@ -113,6 +114,7 @@ private slots:
     void remove_string();
     void remove_regexp_data();
     void remove_regexp();
+    void swap();
     void prepend();
     void prepend_bytearray_data();
     void prepend_bytearray();
@@ -1851,6 +1853,16 @@ void tst_QString::operator_pluseq_bytearray()
     }
 }
 
+void tst_QString::swap()
+{
+    QString s1, s2;
+    s1 = "s1";
+    s2 = "s2";
+    s1.swap(s2);
+    QCOMPARE(s1,QLatin1String("s2"));
+    QCOMPARE(s2,QLatin1String("s1"));
+}
+
 void tst_QString::prepend()
 {
     QString a;
@@ -3077,7 +3089,9 @@ void tst_QString::fromRawData()
 {
     const QChar ptr[] = { 0x1234, 0x0000 };
     QString cstr = QString::fromRawData(ptr, 1);
+    QVERIFY(cstr.isDetached());
     QVERIFY(cstr.constData() == ptr);
+    QVERIFY(cstr == QString(ptr, 1));
     cstr.squeeze();
     QVERIFY(cstr.constData() == ptr);
     cstr.detach();
@@ -3086,6 +3100,41 @@ void tst_QString::fromRawData()
     QVERIFY(cstr.constData() != ptr);
     QVERIFY(cstr.constData()[0] == QChar(0x1234));
     QVERIFY(cstr.constData()[1] == QChar(0x0000));
+}
+
+void tst_QString::setRawData()
+{
+    const QChar ptr[] = { 0x1234, 0x0000 };
+    const QChar ptr2[] = { 0x4321, 0x0000 };
+    QString cstr;
+
+    // This just tests the fromRawData() fallback
+    QVERIFY(!cstr.isDetached());
+    cstr.setRawData(ptr, 1);
+    QVERIFY(cstr.isDetached());
+    QVERIFY(cstr.constData() == ptr);
+    QVERIFY(cstr == QString(ptr, 1));
+
+    // This actually tests the recycling of the shared data object
+    QString::DataPtr csd = cstr.data_ptr();
+    cstr.setRawData(ptr2, 1);
+    QVERIFY(cstr.isDetached());
+    QVERIFY(cstr.constData() == ptr2);
+    QVERIFY(cstr == QString(ptr2, 1));
+    QVERIFY(cstr.data_ptr() == csd);
+
+    // This tests the discarding of the shared data object
+    cstr = "foo";
+    QVERIFY(cstr.isDetached());
+    QVERIFY(cstr.constData() != ptr2);
+
+    // Another test of the fallback
+    csd = cstr.data_ptr();
+    cstr.setRawData(ptr2, 1);
+    QVERIFY(cstr.isDetached());
+    QVERIFY(cstr.constData() == ptr2);
+    QVERIFY(cstr == QString(ptr2, 1));
+    QVERIFY(cstr.data_ptr() != csd);
 }
 
 void tst_QString::fromStdString()
@@ -4533,8 +4582,10 @@ void tst_QString::nanAndInf()
     CHECK_NAN("nan  ", true, true)
     CHECK_NAN("\t NAN", true, true)
     CHECK_NAN("\t NAN  ", true, true)
+#ifndef QT_QLOCALE_USES_FCVT //In case we use glibc this tests will fail
     CHECK_NAN("-nan", false, false)
     CHECK_NAN("+NAN", false, false)
+#endif
     CHECK_NAN("NaN", true, true)
     CHECK_NAN("nAn", true, true)
     CHECK_NAN("NANe-10", false, false)

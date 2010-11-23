@@ -59,7 +59,12 @@
 static QString fixPathToEpocOS(const QString &src)
 {
     QString ret = Option::fixPathToTargetOS(src);
-    return ret.replace('/', '\\');
+
+    bool pathHasDriveLetter = false;
+    if (ret.size() > 1)
+        pathHasDriveLetter = (ret.at(1) == QLatin1Char(':'));
+
+    return pathHasDriveLetter ? ret.replace('/', '\\') : QDir::toNativeSeparators(ret);
 }
 
 static bool isPlugin(const QFileInfo& info, const QString& devicePath)
@@ -250,7 +255,8 @@ void initProjectDeploySymbian(QMakeProject* project,
 
         QStringList flags = project->values(item + ".flags");
 
-        foreach(QString source, project->values(item + ".sources")) {
+        // ### Qt 5: remove .sources, inconsistent with INSTALLS
+        foreach(QString source, project->values(item + ".sources") + project->values(item + ".files")) {
             source = Option::fixPathToLocalOS(source);
             QString nameFilter;
             QFileInfo info(source);

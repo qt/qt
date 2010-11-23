@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -34,7 +34,7 @@
     about it so that we can fix it.
 
     Before reporting a bug, please check the \l{FAQs}, \l{Platform
-    Notes}, and the \l{Qt Bug Tracker} on the Qt website to see
+    and Compiler Notes}, and the \l{Qt Bug Tracker} on the Qt website to see
     if the issue is already known.
 
     The first thing you should do is to sign up for an account for
@@ -51,7 +51,7 @@
        compiled with
     \o Reliable and clear description on how to reproduce the problem
     \endlist
-   
+
     If possible, please provide a test written using the QtTest module
     as this will improve the procedure of reproducing your problem and
     allow the developers to address the issue in a more efficient way.

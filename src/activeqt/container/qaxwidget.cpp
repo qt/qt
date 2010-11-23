@@ -1008,7 +1008,7 @@ HRESULT WINAPI QAxClientSite::TranslateAccelerator(LPMSG lpMsg, DWORD /*grfModif
         }
     }
     // ActiveQt based in-processes-servers will handle the event properly, so
-    // we dont need to send this key event to the host.
+    // we don't need to send this key event to the host.
     return S_OK;
 }
 

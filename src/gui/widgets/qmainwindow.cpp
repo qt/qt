@@ -78,6 +78,7 @@ public:
         : layout(0), explicitIconSize(false), toolButtonStyle(Qt::ToolButtonIconOnly)
 #ifdef Q_WS_MAC
             , useHIToolBar(false)
+            , activateUnifiedToolbarAfterFullScreen(false)
 #endif
 #if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_CURSOR)
             , hasOldCursor(false) , cursorAdjusted(false)
@@ -89,6 +90,7 @@ public:
     Qt::ToolButtonStyle toolButtonStyle;
 #ifdef Q_WS_MAC
     bool useHIToolBar;
+    bool activateUnifiedToolbarAfterFullScreen;
 #endif
     void init();
     QList<int> hoverSeparator;
@@ -502,7 +504,7 @@ void QMainWindow::setToolButtonStyle(Qt::ToolButtonStyle toolButtonStyle)
 */
 QMenuBar *QMainWindow::menuBar() const
 {
-    QMenuBar *menuBar = qobject_cast<QMenuBar *>(d_func()->layout->menuBar());
+    QMenuBar *menuBar = qobject_cast<QMenuBar *>(layout()->menuBar());
     if (!menuBar) {
         QMainWindow *self = const_cast<QMainWindow *>(this);
         menuBar = new QMenuBar(self);
@@ -1501,8 +1503,6 @@ bool QMainWindow::event(QEvent *event)
     \i Before Qt 4.5, if you called showFullScreen() on the main window, the QToolbar would
         disappear since it is considered to be part of the title bar. Qt 4.5 and up will now work around this by pulling
         the toolbars out and back into the regular toolbar and vice versa when you swap out.
-        However, a good practice would be that turning off the unified toolbar before you call
-        showFullScreen() and restoring it after you call showNormal().
     \endlist
 
     Setting this back to false will remove these restrictions.
@@ -1516,13 +1516,20 @@ void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool set)
     if (!isWindow() || d->useHIToolBar == set || QSysInfo::MacintoshVersion < QSysInfo::MV_10_3)
         return;
 
-    // ### Disable the unified toolbar when using anything but the native graphics system.
-    // ### Disable when using alien widgets as well
-    if (windowSurface() || testAttribute(Qt::WA_NativeWindow) == false)
+    // ### Disable when using alien widgets
+    if (testAttribute(Qt::WA_NativeWindow) == false) {
         return;
+    }
 
     d->useHIToolBar = set;
     createWinId(); // We need the hiview for down below.
+
+#ifdef QT_MAC_USE_COCOA
+    // Activate the unified toolbar with the raster engine.
+    if (windowSurface()) {
+        d->layout->unifiedSurface = new QUnifiedToolbarSurface(this);
+    }
+#endif // QT_MAC_USE_COCOA
 
     d->layout->updateHIToolBarStatus();
     // Enabling the unified toolbar clears the opaque size grip setting, update it.

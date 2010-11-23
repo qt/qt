@@ -13,7 +13,7 @@ INCLUDEPATH += ../shared
 # LIBS += -lgcov
 
 symbian: {
-    importFiles.sources = data
+    importFiles.files = data
     importFiles.path = .
     DEPLOYMENT += importFiles
 } else {

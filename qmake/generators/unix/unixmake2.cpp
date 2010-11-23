@@ -835,7 +835,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
         if(!project->isEmpty("PRECOMPILED_DIR"))
             precomph_out_dir = project->first("PRECOMPILED_DIR");
-        precomph_out_dir += project->first("QMAKE_ORIG_TARGET") + project->first("QMAKE_PCH_OUTPUT_EXT");
+        precomph_out_dir += project->first("QMAKE_ORIG_TARGET");
+        if (!project->isActiveConfig("clang_pch_style"))
+            precomph_out_dir += project->first("QMAKE_PCH_OUTPUT_EXT");
 
         if (project->isActiveConfig("icc_pch_style")) {
             // icc style
@@ -849,19 +851,22 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
             precomp_files << precomph_out_dir << sourceFile << objectFile;
         } else {
-            // gcc style
+            // gcc style (including clang_pch_style)
             precomph_out_dir += Option::dir_sep;
 
             QString header_prefix = project->first("QMAKE_PRECOMP_PREFIX");
+            QString header_suffix = project->isActiveConfig("clang_pch_style")
+                               ? project->first("QMAKE_PCH_OUTPUT_EXT") : "";
+
             if(!project->isEmpty("QMAKE_CFLAGS_PRECOMPILE"))
-                precomp_files += precomph_out_dir + header_prefix + "c";
+                precomp_files += precomph_out_dir + header_prefix + "c" + header_suffix;
             if(!project->isEmpty("QMAKE_CXXFLAGS_PRECOMPILE"))
-                precomp_files += precomph_out_dir + header_prefix + "c++";
+                precomp_files += precomph_out_dir + header_prefix + "c++" + header_suffix;
             if(project->isActiveConfig("objective_c")) {
                 if(!project->isEmpty("QMAKE_OBJCFLAGS_PRECOMPILE"))
-                    precomp_files += precomph_out_dir + header_prefix + "objective-c";
+                    precomp_files += precomph_out_dir + header_prefix + "objective-c" + header_suffix;
                 if(!project->isEmpty("QMAKE_OBJCXXFLAGS_PRECOMPILE"))
-                    precomp_files += precomph_out_dir + header_prefix + "objective-c++";
+                    precomp_files += precomph_out_dir + header_prefix + "objective-c++" + header_suffix;
             }
         }
         t << "-$(DEL_FILE) " << precomp_files.join(" ") << "\n\t";
@@ -930,7 +935,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             QString pchOutput;
             if(!project->isEmpty("PRECOMPILED_DIR"))
                 pchOutput = project->first("PRECOMPILED_DIR");
-            pchOutput += pchBaseName + project->first("QMAKE_PCH_OUTPUT_EXT");
+            pchOutput += pchBaseName;
+            if (!project->isActiveConfig("clang_pch_style"))
+                pchOutput += project->first("QMAKE_PCH_OUTPUT_EXT");
 
             if (project->isActiveConfig("icc_pch_style")) {
                 // icc style
@@ -943,9 +950,10 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 pchFlags = pchFlags.replace("${QMAKE_PCH_TEMP_SOURCE}", sourceFile)
                            .replace("${QMAKE_PCH_TEMP_OBJECT}", objectFile);
             } else {
-                // gcc style
+                // gcc style (including clang_pch_style)
                 QString header_prefix = project->first("QMAKE_PRECOMP_PREFIX");
-
+                QString header_suffix = project->isActiveConfig("clang_pch_style")
+                                  ? project->first("QMAKE_PCH_OUTPUT_EXT") : "";
                 pchOutput += Option::dir_sep;
                 QString pchOutputDir = pchOutput, pchOutputFile;
 
@@ -961,7 +969,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 }
                 if(pchOutputFile.isEmpty())
                     continue;
-                pchOutput += header_prefix + pchOutputFile;
+                pchOutput += header_prefix + pchOutputFile + header_suffix;
 
                 t << pchOutput << ": " << pchInput << " " << findDependencies(pchInput).join(" \\\n\t\t")
                   << "\n\t" << mkdir_p_asstring(pchOutputDir);

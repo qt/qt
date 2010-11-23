@@ -7,7 +7,7 @@ macx:CONFIG -= app_bundle
 SOURCES += tst_creation.cpp
 
 symbian {
-    data.sources = data
+    data.files = data
     data.path = .
     DEPLOYMENT += data
 } else {

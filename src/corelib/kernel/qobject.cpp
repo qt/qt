@@ -127,6 +127,7 @@ extern "C" Q_CORE_EXPORT void qt_removeObject(QObject *)
 
 void (*QAbstractDeclarativeData::destroyed)(QAbstractDeclarativeData *, QObject *) = 0;
 void (*QAbstractDeclarativeData::parentChanged)(QAbstractDeclarativeData *, QObject *, QObject *) = 0;
+void (*QAbstractDeclarativeData::objectNameChanged)(QAbstractDeclarativeData *, QObject *) = 0;
 
 QObjectData::~QObjectData() {}
 
@@ -1067,7 +1068,12 @@ QString QObject::objectName() const
 void QObject::setObjectName(const QString &name)
 {
     Q_D(QObject);
+    bool objectNameChanged = d->declarativeData && d->objectName != name;
+
     d->objectName = name;
+
+    if (objectNameChanged) 
+        d->declarativeData->objectNameChanged(d->declarativeData, this);
 }
 
 
@@ -3502,9 +3508,7 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
 
             // determine if this connection should be sent immediately or
             // put into the event queue
-            if ((c->connectionType == Qt::AutoConnection
-                 && (!receiverInSameThread
-                     || receiver->d_func()->threadData != sender->d_func()->threadData))
+            if ((c->connectionType == Qt::AutoConnection && !receiverInSameThread)
                 || (c->connectionType == Qt::QueuedConnection)) {
                 queued_activate(sender, signal_absolute_index, c, argv ? argv : empty_argv);
                 continue;

@@ -4,8 +4,6 @@
  !
  ! The location element is set as optional since it was introduced first in Qt 4.2.
  ! The userdata element is set as optional since it was introduced first in Qt 4.4.
- ! The source and translation elements are optional starting with version 3.0
- ! (Qt 4.6) to support S60 blank messages.
  !
   -->
 <!-- 
@@ -36,13 +34,10 @@
           language CDATA #IMPLIED>
 <!-- The encoding to use in the QM file by default. Default is ISO-8859-1. -->
 <!ELEMENT defaultcodec (#PCDATA) >
-<!ELEMENT context (name?, comment?, (context|message)+) >
+<!ELEMENT context (name, comment?, (context|message)+) >
 <!ATTLIST context
           encoding CDATA #IMPLIED>
 <!ELEMENT name %evilstring; >
-<!-- If "no", then the context nesting is for informational puposes only -->
-<!ATTLIST name
-          nest (yes|no) "yes">
 <!-- This is "disambiguation" in the (new) API, or "msgctxt" in gettext speak -->
 <!ELEMENT comment %evilstring; >
 <!-- Previous content of comment (result of merge) -->
@@ -53,12 +48,13 @@
 <!ELEMENT translatorcomment %evilstring; >
 <!ELEMENT message (location*, source?, oldsource?, comment?, oldcomment?, extracomment?, translatorcomment?, translation?, userdata?, extra-**) >
 <!--
- ! If utf8 is true, the defaultcodec is overridden and the message is encoded
- ! in UTF-8 in the QM file.
+ ! If utf8 is "true", the defaultcodec is overridden and the message is encoded
+ ! in UTF-8 in the QM file. If it is "both", both source encodings are stored
+ ! in the QM file.
   -->
 <!ATTLIST message
           id CDATA #IMPLIED
-          utf8 (true|false) "false"
+          utf8 (true|false|both) "false"
           numerus (yes|no) "no">
 <!ELEMENT location EMPTY>
 <!--
@@ -100,14 +96,5 @@
   -->
 <!ELEMENT numerusform (#PCDATA|byte|lengthvariant)* >
 <!ATTLIST numerusform
-          plurality (nullar|singular|dual|trial|paucal|greaterpaucal|plural|greaterplural) #IMPLIED>
           variants (yes|no) "no">
 <!ELEMENT lengthvariant %evilstring; >
-<!--
- ! The translation variants have a priority between 1 ("highest") and 9 ("lowest")
- ! Typically longer translations get a higher priority.
- ! If omitted, the order of appearance of the variants in the TS files is used.
-  -->
-<!ATTLIST lengthvariant
-          priority (1|2|3|4|5|6|7|8|9) #IMPLIED>
-         

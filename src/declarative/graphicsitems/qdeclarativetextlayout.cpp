@@ -94,7 +94,7 @@ class DrawTextItemRecorder: public QPaintEngine
             if (!m_inertText->items.isEmpty()) {
                 QStaticTextItem &last = m_inertText->items[m_inertText->items.count() - 1];
 
-                if (last.fontEngine == ti.fontEngine && last.font == ti.font() && 
+                if (last.fontEngine() == ti.fontEngine && last.font == ti.font() &&
                     (!m_dirtyPen || last.color == state->pen().color())) {
                     needFreshCurrentItem = false;
 
@@ -107,7 +107,7 @@ class DrawTextItemRecorder: public QPaintEngine
             if (needFreshCurrentItem) {
                 QStaticTextItem currentItem;
 
-                currentItem.fontEngine = ti.fontEngine;
+                currentItem.setFontEngine(ti.fontEngine);
                 currentItem.font = ti.font();
                 currentItem.charOffset = charOffset;
                 currentItem.numChars = ti.num_chars;
@@ -285,6 +285,19 @@ void QDeclarativeTextLayout::beginLayout()
     QTextLayout::beginLayout();
 }
 
+void QDeclarativeTextLayout::clearLayout()
+{
+    if (d && d->cached) {
+        d->cached = false;
+        d->items.clear();
+        d->positions.clear();
+        d->glyphs.clear();
+        d->chars.clear();
+        d->position = QPointF();
+    }
+    QTextLayout::clearLayout();
+}
+
 void QDeclarativeTextLayout::prepare()
 {
     if (!d || !d->cached) {
@@ -321,7 +334,7 @@ void QDeclarativeTextLayout::draw(QPainter *painter, const QPointF &p)
                                                priv->extended->type() == QPaintEngine::OpenVG ||
                                                priv->extended->type() == QPaintEngine::OpenGL);
 
-    if (!paintEngineSupportsTransformations) {
+    if (!paintEngineSupportsTransformations || !priv->state->matrix.isAffine()) {
         QTextLayout::draw(painter, p);
         return;
     }

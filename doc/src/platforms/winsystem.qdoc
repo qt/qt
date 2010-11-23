@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -44,8 +44,8 @@
     \tableofcontents
 
     For information about which platforms are supported by Qt, see the
-    \l{Platform Notes}. For information on distributing Qt applications, see
-    \l{Deploying Qt Applications}.
+    \l{Platform and Compiler Notes}. For information on distributing Qt
+    applications, see \l{Deploying Qt Applications}.
 
     \target x11
     \section1 Qt for X11

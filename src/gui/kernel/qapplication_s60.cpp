@@ -1237,10 +1237,11 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         qwidget->d_func()->setWindowTitle_sys(qwidget->windowTitle());
 #ifdef Q_WS_S60
         // If widget is fullscreen/minimized, hide status pane and button container otherwise show them.
-        const bool visible = !(qwidget->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
+        QWidget *const window = qwidget->window();
+        const bool visible = !(window->windowState() & (Qt::WindowFullScreen | Qt::WindowMinimized));
         const bool statusPaneVisibility = visible;
-        const bool isFullscreen = qwidget->windowState() & Qt::WindowFullScreen;
-        const bool cbaVisibilityHint = qwidget->windowFlags() & Qt::WindowSoftkeysVisibleHint;
+        const bool isFullscreen = window->windowState() & Qt::WindowFullScreen;
+        const bool cbaVisibilityHint = window->windowFlags() & Qt::WindowSoftkeysVisibleHint;
         const bool buttonGroupVisibility = (visible || (isFullscreen && cbaVisibilityHint));
         S60->setStatusPaneAndButtonGroupVisibility(statusPaneVisibility, buttonGroupVisibility);
 #endif
@@ -1424,7 +1425,7 @@ void qt_init(QApplicationPrivate * /* priv */, int)
         TInt err = CApaCommandLine::GetCommandLineFromProcessEnvironment(commandLine);
         // After this construction, CEikonEnv will be available from CEikonEnv::Static().
         // (much like our qApp).
-        CEikonEnv* coe = new CEikonEnv;
+        QtEikonEnv* coe = new QtEikonEnv;
         //not using QT_TRAP_THROWING, because coe owns the cleanupstack so it can't be pushed there.
         if(err == KErrNone)
             TRAP(err, coe->ConstructAppFromCommandLineL(factory,*commandLine));
@@ -2057,6 +2058,17 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
         }
 #endif
         break;
+#ifdef Q_SYMBIAN_SUPPORTS_SURFACES
+    case EEventUser:
+        {
+            // GOOM is looking for candidates to kill so indicate that we are
+            // capable of cleaning up by handling this event
+            TInt32 *data = reinterpret_cast<TInt32 *>(event->EventData());
+            if (data[0] == EApaSystemEventShutdown && data[1] == KGoomMemoryLowEvent)
+                return 1;
+        }
+        break;
+#endif
     default:
         break;
     }

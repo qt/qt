@@ -83,7 +83,7 @@ win32 {
             SOURCES += io/qprocess_unix.cpp
             SOURCES += io/qfilesystemiterator_unix.cpp
         }
-        macx-*: {
+        !nacl:macx-*: {
             HEADERS += io/qfilesystemwatcher_fsevents_p.h
             SOURCES += io/qfilesystemengine_mac.cpp
             SOURCES += io/qsettings_mac.cpp io/qfilesystemwatcher_fsevents.cpp
@@ -99,9 +99,11 @@ win32 {
                     io/qfilesystemwatcher_dnotify_p.h
         }
 
-        freebsd-*|macx-*|darwin-*|openbsd-*:{
-            SOURCES += io/qfilesystemwatcher_kqueue.cpp
-            HEADERS += io/qfilesystemwatcher_kqueue_p.h
+        !nacl {
+            freebsd-*|macx-*|darwin-*|openbsd-*:{
+                SOURCES += io/qfilesystemwatcher_kqueue.cpp
+                HEADERS += io/qfilesystemwatcher_kqueue_p.h
+            }
         }
 
         symbian {

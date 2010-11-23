@@ -1427,6 +1427,11 @@ public:
     inline void setAttributeColSpan(int a) { m_attr_colSpan = a; m_has_attr_colSpan = true; }
     inline void clearAttributeColSpan() { m_has_attr_colSpan = false; }
 
+    inline bool hasAttributeAlignment() const { return m_has_attr_alignment; }
+    inline QString attributeAlignment() const { return m_attr_alignment; }
+    inline void setAttributeAlignment(const QString& a) { m_attr_alignment = a; m_has_attr_alignment = true; }
+    inline void clearAttributeAlignment() { m_has_attr_alignment = false; }
+
     // child element accessors
     enum Kind { Unknown = 0, Widget, Layout, Spacer };
     inline Kind kind() const { return m_kind; }
@@ -1459,6 +1464,9 @@ private:
 
     int m_attr_colSpan;
     bool m_has_attr_colSpan;
+
+    QString m_attr_alignment;
+    bool m_has_attr_alignment;
 
     // child element data
     Kind m_kind;

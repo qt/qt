@@ -1007,6 +1007,7 @@ static inline __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_sse2_al
     return ucstrncmp_short_tail(a + counter, b + counter, len);
 }
 
+#ifdef __SSSE3__
 static inline __attribute__((optimize("no-unroll-loops"))) int ucstrncmp_ssse3_alignr_aligned(const ushort *a, const ushort *b, int len)
 {
     quintptr counter = 0;
@@ -1275,6 +1276,7 @@ static int ucstrncmp_ssse3_aligning2(const ushort *a, const ushort *b, int len)
     }
 }
 
+#endif
 #endif
 
 typedef int (* UcstrncmpFunction)(const ushort *, const ushort *, int);

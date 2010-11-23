@@ -8,7 +8,7 @@ SOURCES += tst_qdeclarativecomponent.cpp testtypes.cpp
 HEADERS += testtypes.h
 
 symbian {
-    data.sources = data
+    data.files = data
     data.path = .
     DEPLOYMENT += data
 } else {

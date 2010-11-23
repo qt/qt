@@ -39,5 +39,5 @@
 **
 ****************************************************************************/
 
-#include "../macx-g++/qplatformdefs.h"
+#include "../common/mac/qplatformdefs.h"
 

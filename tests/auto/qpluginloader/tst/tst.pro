@@ -14,15 +14,15 @@ win32 {
 
 
 wince*: {
-   addFiles.sources = $$OUT_PWD/../bin/*.dll
+   addFiles.files = $$OUT_PWD/../bin/*.dll
    addFiles.path = bin
    DEPLOYMENT += addFiles
 }
 
 symbian: {
-   libDep.sources = tst_qpluginloaderlib.dll
+   libDep.files = tst_qpluginloaderlib.dll
    libDep.path = /sys/bin
-   pluginDep.sources = theplugin.dll
+   pluginDep.files = theplugin.dll
    pluginDep.path = bin
 
    DEPLOYMENT += libDep pluginDep

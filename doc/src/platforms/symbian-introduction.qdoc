@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -29,7 +29,7 @@
     \group qtsymbian
     \title Qt for the Symbian platform
     \ingroup qt-embedded
-    \brief Documents related to Qt on the Symbian platform
+    \brief Documents related to Qt for the Symbian platform
 
     Qt for Symbian is a C++ framework for GUI and application development
     for embedded devices running Symbian. Qt for Symbian provides all
@@ -42,14 +42,14 @@
     \o
      \list
         \o \l {Qt for the Symbian platform Requirements}
-        \o \l {Installing Qt on the Symbian platform from a Binary Package}
-        \o \l {Installing Qt on the Symbian platform}
+        \o \l {Installing Qt for the Symbian platform from a Binary Package}
+        \o \l {Installing Qt for the Symbian platform}
         \o \l {The Symbian platform - Introduction to Qt}{Introduction to using Qt}
     \endlist
     \o
     \list
         \o \l {Exception Safety with Symbian}
-        \o \l {Platform Notes - Symbian} {Qt for the Symbian platform - state of support}
+        \o \l {Platform and Compiler Notes - Symbian} {Qt for the Symbian platform - state of support}
         \o \l {qmake Platform Notes#Symbian platform} {Qt for Symbian extensions for qmake}
 	\o \l {Symbian Platform Security Requirements} {Symbian Platform Security Requirements}
     \endlist
@@ -93,10 +93,10 @@
 
     \section1 Installing Qt and Running Demos
 
-    Follow the instructions found in \l{Installing Qt on the Symbian platform from a Binary Package}
+    Follow the instructions found in \l{Installing Qt for the Symbian platform from a Binary Package}
     to learn how to install Qt using a binary package and how to build and run Qt demos.
 
-    Follow the instructions found in \l{Installing Qt on the Symbian platform} to learn how to install Qt using
+    Follow the instructions found in \l{Installing Qt for the Symbian platform} to learn how to install Qt using
     using source package and how to build and run the Qt demos.
 
     \section1 Building Your Own Applications

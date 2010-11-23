@@ -534,7 +534,7 @@ static int qCocoaViewCount = 0;
         return;
 
     // We use a different graphics system.
-    if (QApplicationPrivate::graphicsSystem() != 0) {
+    if (QApplicationPrivate::graphicsSystem() != 0 && !qwidgetprivate->isInUnifiedToolbar) {
 
         // Qt handles the painting occuring inside the window.
         // Cocoa also keeps track of all widgets as NSView and therefore might
@@ -558,6 +558,15 @@ static int qCocoaViewCount = 0;
 
     CGContextRef cg = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
     qwidgetprivate->hd = cg;
+
+    // We steal the CGContext for flushing in the unified toolbar with the raster engine.
+    if (QApplicationPrivate::graphicsSystem() != 0 && qwidgetprivate->isInUnifiedToolbar) {
+        qwidgetprivate->cgContext = cg;
+        qwidgetprivate->hasOwnContext = true;
+        qwidgetprivate->unifiedSurface->flush(qwidget, qwidgetprivate->ut_rg, qwidgetprivate->ut_pt);
+        return;
+    }
+
     CGContextSaveGState(cg);
 
     if (qwidget->isVisible() && qwidget->updatesEnabled()) { //process the actual paint event.
@@ -955,10 +964,6 @@ static int qCocoaViewCount = 0;
         }
     }
 #endif //QT_NO_WHEELEVENT
-
-    if (!wheelOK) {
-        return [super scrollWheel:theEvent];
-    }
 }
 
 - (void)tabletProximity:(NSEvent *)tabletEvent
@@ -1408,7 +1413,7 @@ static int qCocoaViewCount = 0;
     if (!selectedText.isEmpty()) {
         QCFString string(selectedText.mid(theRange.location, theRange.length));
         const NSString *tmpString = reinterpret_cast<const NSString *>((CFStringRef)string);
-        return [[[NSAttributedString alloc]  initWithString:tmpString] autorelease];
+        return [[[NSAttributedString alloc]  initWithString:const_cast<NSString *>(tmpString)] autorelease];
     } else {
         return nil;
     }

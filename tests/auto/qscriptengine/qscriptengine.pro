@@ -10,7 +10,7 @@ wince* {
 }
 
 wince*|symbian: {
-   addFiles.sources = script
+   addFiles.files = script
    addFiles.path = .
    DEPLOYMENT += addFiles
 }

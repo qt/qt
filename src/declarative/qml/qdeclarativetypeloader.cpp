@@ -44,6 +44,7 @@
 #include <private/qdeclarativeengine_p.h>
 #include <private/qdeclarativecompiler_p.h>
 #include <private/qdeclarativecomponent_p.h>
+#include <private/qdeclarativeglobal_p.h>
 
 #include <QtDeclarative/qdeclarativecomponent.h>
 #include <QtCore/qdebug.h>
@@ -493,6 +494,13 @@ void QDeclarativeDataLoader::load(QDeclarativeDataBlob *blob)
     QString lf = QDeclarativeEnginePrivate::urlToLocalFileOrQrc(blob->m_url);
 
     if (!lf.isEmpty()) {
+        if (!QDeclarative_isFileCaseCorrect(lf)) {
+            QDeclarativeError error;
+            error.setUrl(blob->m_url);
+            error.setDescription(QLatin1String("File name case mismatch"));
+            blob->setError(error);
+            return;
+        }
         QFile file(lf);
         if (file.open(QFile::ReadOnly)) {
             QByteArray data = file.readAll();
@@ -711,7 +719,7 @@ void QDeclarativeTypeLoader::clearCache()
 QDeclarativeTypeData::QDeclarativeTypeData(const QUrl &url, QDeclarativeTypeLoader::Options options, 
                                            QDeclarativeTypeLoader *manager)
 : QDeclarativeDataBlob(url, QmlFile), m_options(options), m_typesResolved(false), 
-  m_compiledData(0), m_component(0), m_typeLoader(manager)
+  m_compiledData(0), m_typeLoader(manager)
 {
 }
 
@@ -758,23 +766,6 @@ QDeclarativeCompiledData *QDeclarativeTypeData::compiledData() const
         m_compiledData->addref();
 
     return m_compiledData;
-}
-
-QDeclarativeComponent *QDeclarativeTypeData::component() const
-{
-    if (!m_component) {
-
-        if (m_compiledData) {
-            m_component = new QDeclarativeComponent(typeLoader()->engine(), m_compiledData, -1, -1, 0);
-        } else {
-            m_component = new QDeclarativeComponent(typeLoader()->engine());
-            QDeclarativeComponentPrivate::get(m_component)->url = finalUrl();
-            QDeclarativeComponentPrivate::get(m_component)->state.errors = errors();
-        }
-
-    }
-
-    return m_component;
 }
 
 void QDeclarativeTypeData::registerCallback(TypeDataCallback *callback)

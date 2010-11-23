@@ -100,6 +100,7 @@ public:
     { qSwap(d_ptr, other.d_ptr); return *this; }
 #endif
     ~QPainterPath();
+    inline void swap(QPainterPath &other) { d_ptr.swap(other.d_ptr); }
 
     void closeSubpath();
 

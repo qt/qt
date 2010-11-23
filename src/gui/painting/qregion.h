@@ -59,7 +59,7 @@ QT_MODULE(Gui)
 template <class T> class QVector;
 class QVariant;
 
-#if defined(Q_WS_QWS) || defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
 struct QRegionPrivate;
 #endif
 
@@ -85,6 +85,7 @@ public:
     inline QRegion &operator=(QRegion &&other)
     { qSwap(d, other.d); return *this; }
 #endif
+    inline void swap(QRegion &other) { qSwap(d, other.d); }
 #ifdef QT3_SUPPORT
     inline QT3_SUPPORT bool isNull() const { return isEmpty(); }
 #endif
@@ -166,7 +167,7 @@ public:
 #endif
     HIMutableShapeRef toHIMutableShape() const;
     static QRegion fromHIShapeRef(HIShapeRef shape);
-#elif defined(Q_WS_QWS)
+#elif defined(Q_WS_QWS) || defined(Q_WS_QPA)
     inline void *handle() const { return d->qt_rgn; }
 #endif
 #endif
@@ -204,9 +205,9 @@ private:
         Region rgn;
         void *xrectangles;
 #elif defined(Q_WS_MAC) && !defined(QT_MAC_USE_COCOA)
-        mutable RgnHandle unused; // Here for binary compatability reasons. ### Qt 5 remove.
+        mutable RgnHandle unused; // Here for binary compatibility reasons. ### Qt 5 remove.
 #endif
-#if defined(Q_WS_QWS) || defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
         QRegionPrivate *qt_rgn;
 #endif
     };

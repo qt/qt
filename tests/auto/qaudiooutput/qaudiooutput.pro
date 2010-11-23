@@ -5,7 +5,7 @@ SOURCES += tst_qaudiooutput.cpp
 QT = core multimedia
 
 wince*|symbian: {
-    deploy.sources += 4.wav
+    deploy.files += 4.wav
     DEPLOYMENT += deploy
     !symbian {
         DEFINES += SRCDIR=\\\"\\\"

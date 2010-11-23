@@ -205,8 +205,11 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
 #ifdef Q_OS_WIN32
     t << "XCOPY             = xcopy /d /f /h /r /y /i" << endl;
     t << "ABLD              = ABLD.BAT" << endl;
+#elif defined(Q_OS_MAC)
+    t << "XCOPY             = cp -R -v" << endl;
+    t << "ABLD              = abld" << endl;
 #else
-    t << "XCOPY             = cp -u -v" << endl;
+    t << "XCOPY             = cp -R -u -v" << endl;
     t << "ABLD              = abld" << endl;
 #endif
     t << "DEBUG_PLATFORMS   = " << debugPlatforms.join(" ") << endl;
@@ -427,7 +430,8 @@ bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t, bool i
         t << WINSCW_DEPLOYMENT_TARGET ":" << endl;
 
     QString remoteTestPath = epocRoot()
-        + QLatin1String(isRom ? "epoc32\\data\\z\\private\\" : "epoc32\\winscw\\c\\private\\")
+        + QDir::toNativeSeparators(QLatin1String(isRom ? "epoc32/data/z/private/"
+                                                       : "epoc32/winscw/c/private/"))
         + privateDirUid;
     DeploymentList depList;
 
@@ -439,11 +443,21 @@ bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t, bool i
         t << "\t-echo Deploying changed files..." << endl;
 
     for (int i = 0; i < depList.size(); ++i) {
+#ifdef Q_OS_WIN32
         // Xcopy prompts for selecting file or directory if target doesn't exist,
         // and doesn't provide switch to force file selection. It does provide dir forcing, though,
         // so strip the last part of the destination.
         t << "\t-$(XCOPY) \"" << depList.at(i).from << "\" \""
           << depList.at(i).to.left(depList.at(i).to.lastIndexOf("\\") + 1) << "\"" << endl;
+#else
+        QString dirExists = var("QMAKE_CHK_DIR_EXISTS");
+        QString mkdir = var("QMAKE_MKDIR");
+        QString dir = QFileInfo(depList.at(i).to).dir().path();
+        t << "\t-@ " << dirExists << " \""  << dir << "\" || "
+                      << mkdir << " \"" << dir << "\"" << endl;
+        t << "\t-$(XCOPY) \"" << QDir::toNativeSeparators(depList.at(i).from) << "\" \""
+          << QDir::toNativeSeparators(depList.at(i).to) << "\"" << endl;
+#endif
     }
 
     t << endl;
@@ -455,7 +469,7 @@ bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t, bool i
 
     QStringList cleanList;
     for (int i = 0; i < depList.size(); ++i) {
-        cleanList.append(depList.at(i).to);
+        cleanList.append(QDir::toNativeSeparators(depList.at(i).to));
     }
     generateCleanCommands(t, cleanList, "$(DEL_FILE)", "", "", "");
 

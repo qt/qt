@@ -12,3 +12,4 @@ win32-msvc|win32-msvc9x {
 }
 
 
+CONFIG += parallel_test

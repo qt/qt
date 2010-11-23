@@ -63,6 +63,7 @@
 #include <qdesktopwidget.h>
 #include <stdlib.h>
 #include <qabstracteventdispatcher.h>
+#import <AppKit/NSSavePanel.h>
 #include "ui_qfiledialog.h"
 
 QT_BEGIN_NAMESPACE
@@ -84,7 +85,13 @@ QT_USE_NAMESPACE
 
 @class QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate);
 
-@interface QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) : NSObject {
+@interface QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate)
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+    : NSObject<NSOpenSavePanelDelegate>
+#else
+    : NSObject
+#endif
+{
     @public
     NSOpenPanel *mOpenPanel;
     NSSavePanel *mSavePanel;

@@ -4,3 +4,4 @@ QT = core
 
 SOURCES += tst_qmath.cpp
 QT = core
+CONFIG += parallel_test

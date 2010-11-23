@@ -204,6 +204,7 @@ void tst_QDeclarativeItem::keys()
     canvas->rootContext()->setContextProperty("keysTestObject", testObject);
 
     canvas->rootContext()->setContextProperty("enableKeyHanding", QVariant(true));
+    canvas->rootContext()->setContextProperty("forwardeeVisible", QVariant(true));
 
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/keystest.qml"));
     canvas->show();
@@ -284,6 +285,17 @@ void tst_QDeclarativeItem::keys()
     QCOMPARE(testObject->mText, QLatin1String("Backtab"));
     QVERIFY(testObject->mModifiers == Qt::NoModifier);
     QVERIFY(key.isAccepted());
+
+    testObject->reset();
+
+    canvas->rootContext()->setContextProperty("forwardeeVisible", QVariant(false));
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_A, Qt::NoModifier, "A", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QCOMPARE(testObject->mKey, int(Qt::Key_A));
+    QCOMPARE(testObject->mForwardedKey, 0);
+    QCOMPARE(testObject->mText, QLatin1String("A"));
+    QVERIFY(testObject->mModifiers == Qt::NoModifier);
+    QVERIFY(!key.isAccepted());
 
     testObject->reset();
 
@@ -674,6 +686,8 @@ void tst_QDeclarativeItem::propertyChanges()
     QSignalSpy focusSpy(item, SIGNAL(focusChanged(bool)));
     QSignalSpy wantsFocusSpy(parentItem, SIGNAL(activeFocusChanged(bool)));
     QSignalSpy childrenChangedSpy(parentItem, SIGNAL(childrenChanged()));
+    QSignalSpy xSpy(item, SIGNAL(xChanged()));
+    QSignalSpy ySpy(item, SIGNAL(yChanged()));
 
     item->setParentItem(parentItem);
     item->setWidth(100.0);
@@ -718,6 +732,14 @@ void tst_QDeclarativeItem::propertyChanges()
     QCOMPARE(parentItem->hasActiveFocus(), false);
     QCOMPARE(parentItem->hasFocus(), false);
     QCOMPARE(wantsFocusSpy.count(),0);
+
+    item->setX(10.0);
+    QCOMPARE(item->x(), 10.0);
+    QCOMPARE(xSpy.count(), 1);
+
+    item->setY(10.0);
+    QCOMPARE(item->y(), 10.0);
+    QCOMPARE(ySpy.count(), 1);
 
     delete canvas;
 }

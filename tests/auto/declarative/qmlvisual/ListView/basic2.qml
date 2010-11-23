@@ -11,8 +11,11 @@ Rectangle {
             color: "red"
             width: 100
             height: 100
-            Text {
-                text: name
+            Rectangle {
+                anchors.centerIn: parent
+                width: 60
+                height: 60
+                color: name 
             }
         }
     }
@@ -21,10 +24,10 @@ Rectangle {
         delegate: delegate
         model: ListModel {
             ListElement {
-                name: "January"
+                name: "palegoldenrod"
             }
             ListElement {
-                name: "February"
+                name: "lightsteelblue"
             }
         }
     }

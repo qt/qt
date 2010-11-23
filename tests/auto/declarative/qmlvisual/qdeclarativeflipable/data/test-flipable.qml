@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "7e16e6360fc2e9db67dbf11d58042745"
+        image: "test-flipable.0.png"
     }
     Frame {
         msec: 32
@@ -242,11 +242,11 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "test-flipable.0.png"
+        hash: "c03406106847c03c73f5897e65690925"
     }
     Frame {
         msec: 976
-        hash: "7d1a0ff0eceb80ff64d828c34792a2d5"
+        image: "test-flipable.1.png"
     }
     Frame {
         msec: 992
@@ -482,11 +482,11 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "test-flipable.1.png"
+        hash: "1e8348fbb51871dffe9543fca19bb452"
     }
     Frame {
         msec: 1936
-        hash: "ae4e35413e462221b8cb48dd0350f873"
+        image: "test-flipable.2.png"
     }
     Frame {
         msec: 1952
@@ -722,11 +722,11 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "test-flipable.2.png"
+        hash: "373141f99bc88c40ead161502c9750e9"
     }
     Frame {
         msec: 2896
-        hash: "ae76d183491834e2b1d0371420d51ce5"
+        image: "test-flipable.3.png"
     }
     Frame {
         msec: 2912
@@ -962,11 +962,11 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "test-flipable.3.png"
+        hash: "464a78e75e10b62773ab64af4fc4c7aa"
     }
     Frame {
         msec: 3856
-        hash: "e18635d7c6c5de361e7406c2db357aca"
+        image: "test-flipable.4.png"
     }
     Frame {
         msec: 3872
@@ -1202,11 +1202,11 @@ VisualTest {
     }
     Frame {
         msec: 4800
-        image: "test-flipable.4.png"
+        hash: "03f17b2cd781f2ee0ae5664a0491166c"
     }
     Frame {
         msec: 4816
-        hash: "6e48e605ea1aed4028e02476328f182b"
+        image: "test-flipable.5.png"
     }
     Frame {
         msec: 4832
@@ -1442,11 +1442,11 @@ VisualTest {
     }
     Frame {
         msec: 5760
-        image: "test-flipable.5.png"
+        hash: "73c06997014af4e008b546b53fe349fb"
     }
     Frame {
         msec: 5776
-        hash: "90fb4e4ba04ac32b52c10b3258431c04"
+        image: "test-flipable.6.png"
     }
     Frame {
         msec: 5792

@@ -43,6 +43,7 @@
 #include <qtoolbar.h>
 #include <private/qtoolbarlayout_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
+#include <private/qtoolbar_p.h>
 
 #ifndef QT_MAC_USE_COCOA
 #include <Carbon/Carbon.h>
@@ -408,6 +409,7 @@ void QMainWindowLayout::insertIntoMacToolbar(QToolBar *before, QToolBar *toolbar
         beforeIndex = qtoolbarsInUnifiedToolbarList.size();
 
     int toolbarIndex = qtoolbarsInUnifiedToolbarList.indexOf(toolbar);
+
 #ifndef QT_MAC_USE_COCOA
     HIToolbarRef macToolbar = NULL;
     if ((GetWindowToolbar(window, &macToolbar) == noErr) && !macToolbar) {
@@ -444,6 +446,18 @@ void QMainWindowLayout::insertIntoMacToolbar(QToolBar *before, QToolBar *toolbar
 #endif
     }
     qtoolbarsInUnifiedToolbarList.insert(beforeIndex, toolbar);
+
+    // Adding to the unified toolbar surface for the raster engine.
+    if (layoutState.mainWindow->windowSurface()) {
+        QPoint offset(0, 0);
+        for (int i = 0; i < beforeIndex; ++i) {
+            offset.setX(offset.x() + qtoolbarsInUnifiedToolbarList.at(i)->size().width());
+        }
+#ifdef QT_MAC_USE_COCOA
+        unifiedSurface->insertToolbar(toolbar, offset);
+#endif // QT_MAC_USE_COCOA
+    }
+
 #ifndef QT_MAC_USE_COCOA
     QCFType<HIToolbarItemRef> outItem;
     const QObject *stupidArray[] = { toolbar, this };
@@ -459,6 +473,19 @@ void QMainWindowLayout::insertIntoMacToolbar(QToolBar *before, QToolBar *toolbar
     [macToolbar insertItemWithItemIdentifier:toolbarID atIndex:beforeIndex];
 #endif
 }
+
+#ifdef QT_MAC_USE_COCOA
+void QMainWindowLayout::updateUnifiedToolbarOffset()
+{
+    QPoint offset(0, 0);
+
+    for (int i = 1; i < qtoolbarsInUnifiedToolbarList.length(); ++i) {
+        offset.setX(offset.x() + qtoolbarsInUnifiedToolbarList.at(i - 1)->size().width());
+        qtoolbarsInUnifiedToolbarList.at(i)->d_func()->toolbar_offset = offset;
+    }
+}
+#endif // QT_MAC_USE_COCOA
+
 
 void QMainWindowLayout::removeFromMacToolbar(QToolBar *toolbar)
 {
@@ -533,11 +560,11 @@ void QMainWindowLayout::fixSizeInUnifiedToolbar(QToolBar *tb) const
         QMacCocoaAutoReleasePool pool;
         QWidgetItem layoutItem(tb);
         QSize size = layoutItem.maximumSize();
-        NSSize nssize = NSMakeSize(size.width(), size.height() - 2);
+        NSSize nssize = NSMakeSize(size.width(), size.height());
         [item setMaxSize:nssize];
         size = layoutItem.minimumSize();
         nssize.width = size.width();
-        nssize.height = size.height() - 2;
+        nssize.height = size.height();
         [item setMinSize:nssize];
     }
 #else

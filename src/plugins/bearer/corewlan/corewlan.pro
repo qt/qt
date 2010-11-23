@@ -1,7 +1,7 @@
 TARGET = qcorewlanbearer
 include(../../qpluginbase.pri)
 
-QT = core gui network
+QT = core network
 LIBS += -framework Foundation -framework SystemConfiguration
 
 contains(QT_CONFIG, corewlan) {
@@ -16,8 +16,9 @@ HEADERS += qcorewlanengine.h \
            ../qbearerengine_impl.h
 
 SOURCES += main.cpp \
-           qcorewlanengine.mm \
            ../qnetworksession_impl.cpp
+
+OBJECTIVE_SOURCES += qcorewlanengine.mm
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/bearer
 target.path += $$[QT_INSTALL_PLUGINS]/bearer

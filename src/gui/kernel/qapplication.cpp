@@ -450,6 +450,9 @@ QPalette *QApplicationPrivate::sys_pal = 0;        // default system palette
 QPalette *QApplicationPrivate::set_pal = 0;        // default palette set by programmer
 
 QGraphicsSystem *QApplicationPrivate::graphics_system = 0; // default graphics system
+#if defined(Q_WS_QPA)
+QPlatformIntegration *QApplicationPrivate::platform_integration = 0;
+#endif
 QString QApplicationPrivate::graphics_system_name;         // graphics system id - for delayed initialization
 bool QApplicationPrivate::runtime_graphics_system = false;
 
@@ -495,7 +498,7 @@ bool QApplicationPrivate::fade_tooltip = false;
 bool QApplicationPrivate::animate_toolbox = false;
 bool QApplicationPrivate::widgetCount = false;
 bool QApplicationPrivate::load_testability = false;
-QString QApplicationPrivate::qmljsDebugArguments;
+QString QApplicationPrivate::qmljs_debug_arguments;
 #ifdef QT_KEYPAD_NAVIGATION
 #  ifdef Q_OS_SYMBIAN
 Qt::NavigationMode QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadDirectional;
@@ -512,7 +515,7 @@ inline bool QApplicationPrivate::isAlien(QWidget *widget)
 {
     if (!widget)
         return false;
-#if defined(Q_WS_QWS)
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
     return !widget->isWindow()
 # ifdef Q_BACKINGSTORE_SUBSURFACES
         && !(widget->d_func()->maybeTopData() && widget->d_func()->maybeTopData()->windowSurface)
@@ -568,7 +571,7 @@ void QApplicationPrivate::process_cmdline()
         if (arg == "-qdevel" || arg == "-qdebug") {
             // obsolete argument
         } else if (arg.indexOf("-qmljsdebugger=", 0) != -1) {
-            qmljsDebugArguments = QString::fromLocal8Bit(arg.right(arg.length() - 15));
+            qmljs_debug_arguments = QString::fromLocal8Bit(arg.right(arg.length() - 15));
         } else if (arg.indexOf("-style=", 0) != -1) {
             s = QString::fromLocal8Bit(arg.right(arg.length() - 7).toLower());
         } else if (arg == "-style" && i < argc-1) {
@@ -804,6 +807,7 @@ void QApplicationPrivate::construct(
                                     )
 {
     initResources();
+    graphics_system_name = QLatin1String(qgetenv("QT_DEFAULT_GRAPHICS_SYSTEM"));
 
     qt_is_gui_used = (qt_appType != QApplication::Tty);
     process_cmdline();
@@ -964,10 +968,11 @@ void QApplicationPrivate::initialize()
     QWidgetPrivate::mapper = new QWidgetMapper;
     QWidgetPrivate::allWidgets = new QWidgetSet;
 
-#if !defined(Q_WS_X11) && !defined(Q_WS_QWS)
+#if !defined(Q_WS_X11) && !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
     // initialize the graphics system - on X11 this is initialized inside
     // qt_init() in qapplication_x11.cpp because of several reasons.
     // On QWS, the graphics system is set by the QScreen plugin.
+    // We don't use graphics systems in Qt QPA
     graphics_system = QGraphicsSystemFactory::create(graphics_system_name);
 #endif
 
@@ -1428,10 +1433,18 @@ QStyle *QApplication::style()
         // Compile-time search for default style
         //
         QString style;
-        if (!QApplicationPrivate::styleOverride.isEmpty())
+#ifdef QT_BUILD_INTERNAL
+        QString envStyle = QString::fromLocal8Bit(qgetenv("QT_STYLE_OVERRIDE"));
+#else
+        QString envStyle;
+#endif
+        if (!QApplicationPrivate::styleOverride.isEmpty()) {
             style = QApplicationPrivate::styleOverride;
-        else
+        } else if (!envStyle.isEmpty()) {
+            style = envStyle;
+        } else {
             style = QApplicationPrivate::desktopStyleKey();
+        }
 
         QStyle *&app_style = QApplicationPrivate::app_style;
         app_style = QStyleFactory::create(style);
@@ -1633,14 +1646,18 @@ QStyle* QApplication::setStyle(const QString& style)
 
 void QApplication::setGraphicsSystem(const QString &system)
 {
-#ifdef QT_GRAPHICSSYSTEM_RUNTIME
+#ifdef Q_WS_QPA
+        Q_UNUSED(system);
+#else
+# ifdef QT_GRAPHICSSYSTEM_RUNTIME
     if (QApplicationPrivate::graphics_system_name == QLatin1String("runtime")) {
         QRuntimeGraphicsSystem *r =
                 static_cast<QRuntimeGraphicsSystem *>(QApplicationPrivate::graphics_system);
         r->setGraphicsSystem(system);
     } else
-#endif
+# endif
         QApplicationPrivate::graphics_system_name = system;
+#endif
 }
 
 /*!
@@ -2786,7 +2803,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
     // Update cursor for alien/graphics widgets.
 
     const bool enterOnAlien = (enter && (isAlien(enter) || enter->testAttribute(Qt::WA_DontShowOnScreen)));
-#if defined(Q_WS_X11)
+#if defined(Q_WS_X11) || defined(Q_WS_QPA)
     //Whenever we leave an alien widget on X11, we need to reset its nativeParentWidget()'s cursor.
     // This is not required on Windows as the cursor is reset on every single mouse move.
     QWidget *parentOfLeavingCursor = 0;
@@ -2810,7 +2827,15 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
         if (!parentOfLeavingCursor->window()->graphicsProxyWidget())
 #endif
         {
+#if defined(Q_WS_X11)
             qt_x11_enforce_cursor(parentOfLeavingCursor,true);
+#elif defined(Q_WS_QPA)
+            if (enter == QApplication::desktop()) {
+                qt_qpa_set_cursor(enter, true);
+            } else {
+                qt_qpa_set_cursor(parentOfLeavingCursor, true);
+            }
+#endif
         }
     }
 #endif
@@ -2834,6 +2859,8 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
             qt_x11_enforce_cursor(cursorWidget, true);
 #elif defined(Q_OS_SYMBIAN)
             qt_symbian_set_cursor(cursorWidget, true);
+#elif defined(Q_WS_QPA)
+            qt_qpa_set_cursor(cursorWidget, true);
 #endif
         }
     }
@@ -3138,7 +3165,7 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
     return result;
 }
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_MAC)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_MAC) || defined(Q_WS_QPA)
 /*
     This function should only be called when the widget changes visibility, i.e.
     when the \a widget is shown, hidden or deleted. This function does nothing
@@ -3150,7 +3177,7 @@ extern QWidget *qt_button_down;
 void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
 {
 #ifndef QT_NO_CURSOR
-#ifdef Q_WS_QWS
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
     if (!widget || widget->isWindow())
         return;
 #else
@@ -6075,8 +6102,15 @@ QPixmap QApplicationPrivate::getPixmapCursor(Qt::CursorShape cshape)
     default:
         break;
     }
+#else
+    Q_UNUSED(cshape);
 #endif
     return QPixmap();
+}
+
+QString QApplicationPrivate::qmljsDebugArgumentsString()
+{
+    return qmljs_debug_arguments;
 }
 
 QT_END_NAMESPACE

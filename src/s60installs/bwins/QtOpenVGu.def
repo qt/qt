@@ -175,4 +175,5 @@ EXPORTS
 	?createPixmapForImage@QVGPixmapData@@IAEXAAVQImage@@V?$QFlags@W4ImageConversionFlag@Qt@@@@_N@Z @ 174 NONAME ; void QVGPixmapData::createPixmapForImage(class QImage &, class QFlags<enum Qt::ImageConversionFlag>, bool)
 	?fromData@QVGPixmapData@@UAE_NPBEIPBDV?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 175 NONAME ; bool QVGPixmapData::fromData(unsigned char const *, unsigned int, char const *, class QFlags<enum Qt::ImageConversionFlag>)
 	?fromImageReader@QVGPixmapData@@UAEXPAVQImageReader@@V?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 176 NONAME ; void QVGPixmapData::fromImageReader(class QImageReader *, class QFlags<enum Qt::ImageConversionFlag>)
+	?canVgWritePixels@QVGPaintEngine@@ABE_NABVQImage@@@Z @ 177 NONAME ; bool QVGPaintEngine::canVgWritePixels(class QImage const &) const
 

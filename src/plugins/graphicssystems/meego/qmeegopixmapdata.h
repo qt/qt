@@ -55,8 +55,8 @@ class QMeeGoPixmapData : public QGLPixmapData
 public:
     QMeeGoPixmapData();
     void fromTexture(GLuint textureId, int w, int h, bool alpha);
+    QPixmapData *createCompatiblePixmapData() const;
 
-    virtual void fromEGLImage(Qt::HANDLE handle);
     virtual void fromEGLSharedImage(Qt::HANDLE handle, const QImage &softImage);
     virtual void fromImage (const QImage &image, Qt::ImageConversionFlags flags);
     virtual QImage toImage() const;

@@ -65,6 +65,7 @@ QVGPixmapData::QVGPixmapData(PixelType type)
     recreate = true;
     inImagePool = false;
     inLRU = false;
+    failedToAlloc = false;
 #if !defined(QT_NO_EGL)
     context = 0;
     qt_vg_register_pixmap(this);
@@ -155,6 +156,9 @@ void QVGPixmapData::resize(int wid, int ht)
 void QVGPixmapData::fromImage
         (const QImage &image, Qt::ImageConversionFlags flags)
 {
+    if(image.isNull())
+        return;
+
     QImage img = image;
     createPixmapForImage(img, flags, false);
 }
@@ -203,10 +207,19 @@ void QVGPixmapData::createPixmapForImage(QImage &image, Qt::ImageConversionFlags
     else
         resize(image.width(), image.height());
 
-    if (inPlace && image.data_ptr()->convertInPlace(sourceFormat(), flags))
+    QImage::Format format = sourceFormat();
+    int d = image.depth();
+    if (d == 1 || d == 16 || d == 24 || (d == 32 && !image.hasAlphaChannel()))
+        format = QImage::Format_RGB32;
+    else if (!(flags & Qt::NoOpaqueDetection) && const_cast<QImage &>(image).data_ptr()->checkForAlphaPixels())
+        format = sourceFormat();
+    else
+        format = QImage::Format_RGB32;
+
+    if (inPlace && image.data_ptr()->convertInPlace(format, flags))
         source = image;
     else
-        source = image.convertToFormat(sourceFormat());
+        source = image.convertToFormat(format);
 
     recreate = true;
 }
@@ -278,7 +291,7 @@ QPaintEngine* QVGPixmapData::paintEngine() const
 
 VGImage QVGPixmapData::toVGImage()
 {
-    if (!isValid())
+    if (!isValid() || failedToAlloc)
         return VG_INVALID_HANDLE;
 
 #if !defined(QT_NO_EGL)
@@ -294,11 +307,13 @@ VGImage QVGPixmapData::toVGImage()
 
     if (vgImage == VG_INVALID_HANDLE) {
         vgImage = QVGImagePool::instance()->createImageForPixmap
-            (VG_sARGB_8888_PRE, w, h, VG_IMAGE_QUALITY_FASTER, this);
+            (qt_vg_image_to_vg_format(source.format()), w, h, VG_IMAGE_QUALITY_FASTER, this);
 
         // Bail out if we run out of GPU memory - try again next time.
-        if (vgImage == VG_INVALID_HANDLE)
+        if (vgImage == VG_INVALID_HANDLE) {
+            failedToAlloc = true;
             return VG_INVALID_HANDLE;
+        }
 
         inImagePool = true;
     } else if (inImagePool) {
@@ -309,7 +324,7 @@ VGImage QVGPixmapData::toVGImage()
         vgImageSubData
             (vgImage,
              source.constBits(), source.bytesPerLine(),
-             VG_sARGB_8888_PRE, 0, 0, w, h);
+             qt_vg_image_to_vg_format(source.format()), 0, 0, w, h);
     }
 
     recreate = false;

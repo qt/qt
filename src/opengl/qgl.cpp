@@ -93,12 +93,15 @@
 #include "qlibrary.h"
 #include <qmutex.h>
 
+#ifdef QT_OPENGL_ES
+#include <EGL/egl.h>
+#endif
 
 // #define QT_GL_CONTEXT_RESOURCE_DEBUG
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_OS_SYMBIAN)
 QGLExtensionFuncs QGLContextPrivate::qt_extensionFuncs;
 #endif
 
@@ -133,7 +136,12 @@ Q_GLOBAL_STATIC(QGLDefaultOverlayFormat, defaultOverlayFormatInstance)
 Q_GLOBAL_STATIC(QGLSignalProxy, theSignalProxy)
 QGLSignalProxy *QGLSignalProxy::instance()
 {
-    return theSignalProxy();
+    QGLSignalProxy *proxy = theSignalProxy();
+    if (proxy && proxy->thread() != qApp->thread()) {
+        if (proxy->thread() == QThread::currentThread())
+            proxy->moveToThread(qApp->thread());
+    }
+    return proxy;
 }
 
 
@@ -1406,6 +1414,10 @@ QGLFormat::OpenGLVersionFlags QGLFormat::openGLVersionFlags()
         }
     }
 
+#ifdef Q_WS_QPA
+    hasOpenGL(); // ### I have no idea why this is needed here, but it makes things work for testlite
+#endif
+
     QString versionString(QLatin1String(reinterpret_cast<const char*>(glGetString(GL_VERSION))));
     OpenGLVersionFlags versionFlags = qOpenGLVersionFlagsFromString(versionString);
     if (currentCtx) {
@@ -1643,12 +1655,23 @@ const QGLContext *qt_gl_transfer_context(const QGLContext *ctx)
         return 0;
 }
 
+QGLContextPrivate::QGLContextPrivate(QGLContext *context)
+    : internal_context(false)
+    , q_ptr(context)
+{
+    group = new QGLContextGroup(context);
+    texture_destroyer = new QGLTextureDestroyer;
+    texture_destroyer->moveToThread(qApp->thread());
+}
+
 QGLContextPrivate::~QGLContextPrivate()
 {
     if (!group->m_refs.deref()) {
         Q_ASSERT(group->context() == q_ptr);
         delete group;
     }
+
+    delete texture_destroyer;
 }
 
 void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
@@ -1678,7 +1701,10 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
 #  endif
     vi = 0;
 #endif
-#ifndef QT_NO_EGL
+#if defined(Q_WS_QPA)
+    platformContext = 0;
+#endif
+#if !defined(QT_NO_EGL)
     ownsEglContext = false;
     eglContext = 0;
     eglSurface = EGL_NO_SURFACE;
@@ -2118,7 +2144,7 @@ void QGLContextPrivate::syncGlState()
 #undef ctx
 
 #ifdef QT_NO_EGL
-void QGLContextPrivate::swapRegion(const QRegion *)
+void QGLContextPrivate::swapRegion(const QRegion &)
 {
     Q_Q(QGLContext);
     q->swapBuffers();
@@ -2268,7 +2294,7 @@ static void convertToGLFormatHelper(QImage &dst, const QImage &img, GLenum textu
     }
 }
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_OS_SYMBIAN)
 QGLExtensionFuncs& QGLContextPrivate::extensionFuncs(const QGLContext *)
 {
     return qt_extensionFuncs;
@@ -4189,7 +4215,7 @@ void QGLWidget::resizeOverlayGL(int, int)
 /*! \fn bool QGLWidget::event(QEvent *e)
   \reimp
 */
-#if !defined(Q_OS_WINCE) && !defined(Q_WS_QWS)
+#if !defined(Q_OS_WINCE) && !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
 bool QGLWidget::event(QEvent *e)
 {
     Q_D(QGLWidget);
@@ -5325,8 +5351,6 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
         glExtensions |= FragmentShader;
     if (extensions.match("GL_ARB_shader_objects"))
         glExtensions |= FragmentShader;
-    if (extensions.match("GL_ARB_ES2_compatibility"))
-        glExtensions |= ES2Compatibility;
     if (extensions.match("GL_ARB_texture_mirrored_repeat"))
         glExtensions |= MirroredRepeat;
     if (extensions.match("GL_EXT_framebuffer_object"))
@@ -5347,7 +5371,6 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
     glExtensions |= FramebufferObject;
     glExtensions |= GenerateMipmap;
     glExtensions |= FragmentShader;
-    glExtensions |= ES2Compatibility;
 #endif
 #if defined(QT_OPENGL_ES_1)
     if (extensions.match("GL_OES_framebuffer_object"))
@@ -5356,6 +5379,12 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
 #if defined(QT_OPENGL_ES)
     if (extensions.match("GL_OES_packed_depth_stencil"))
         glExtensions |= PackedDepthStencil;
+    if (extensions.match("GL_OES_element_index_uint"))
+        glExtensions |= ElementIndexUint;
+    if (extensions.match("GL_OES_depth24"))
+        glExtensions |= Depth24;
+#else
+    glExtensions |= ElementIndexUint;
 #endif
     if (extensions.match("GL_ARB_framebuffer_object")) {
         // ARB_framebuffer_object also includes EXT_framebuffer_blit.
@@ -5432,7 +5461,7 @@ void QGLWidgetPrivate::initContext(QGLContext *context, const QGLWidget* shareWi
         glcx = new QGLContext(QGLFormat::defaultFormat(), q);
 }
 
-#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
+#if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
 Q_GLOBAL_STATIC(QString, qt_gl_lib_name)
 
 Q_OPENGL_EXPORT void qt_set_gl_library_name(const QString& name)

@@ -64,6 +64,10 @@
 
 #ifdef __cplusplus
 
+#ifndef QT_NO_STL
+#include <algorithm>
+#endif
+
 #ifndef QT_NAMESPACE /* user namespace */
 
 # define QT_PREPEND_NAMESPACE(name) ::name
@@ -216,6 +220,8 @@ namespace QT_NAMESPACE {}
 #  define Q_OS_ULTRIX
 #elif defined(sinix)
 #  define Q_OS_RELIANT
+#elif defined(__native_client__)
+#  define Q_OS_NACL
 #elif defined(__linux__) || defined(__linux)
 #  define Q_OS_LINUX
 #elif defined(__FreeBSD__) || defined(__DragonFly__)
@@ -284,7 +290,7 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
-#if defined(Q_OS_MAC64) && !defined(QT_MAC_USE_COCOA) && !defined(QT_BUILD_QMAKE)
+#if defined(Q_WS_MAC64) && !defined(QT_MAC_USE_COCOA) && !defined(QT_BUILD_QMAKE) && !defined(QT_BOOTSTRAPPED)
 #error "You are building a 64-bit application, but using a 32-bit version of Qt. Check your build configuration."
 #endif
 
@@ -356,6 +362,7 @@ namespace QT_NAMESPACE {}
      GCCE     - GCCE (Symbian GCCE builds)
      RVCT     - ARM Realview Compiler Suite
      NOKIAX86 - Nokia x86 (Symbian WINSCW builds)
+     CLANG    - C++ front-end for the LLVM compiler
 
 
    Should be sorted most to least authoritative.
@@ -451,6 +458,10 @@ namespace QT_NAMESPACE {}
 /* Intel C++ also masquerades as GCC 3.2.0 */
 #    define Q_CC_INTEL
 #    define Q_NO_TEMPLATE_FRIENDS
+#  endif
+#  if defined(__clang__)
+/* Clang also masquerades as GCC 4.2.1 */
+#    define Q_CC_CLANG
 #  endif
 #  ifdef __APPLE__
 #    define Q_NO_DEPRECATED_CONSTRUCTORS
@@ -817,7 +828,7 @@ namespace QT_NAMESPACE {}
 #  define Q_WS_PM
 #  error "Qt does not work with OS/2 Presentation Manager or Workplace Shell"
 #elif defined(Q_OS_UNIX)
-#  if defined(Q_OS_MAC) && !defined(__USE_WS_X11__) && !defined(Q_WS_QWS)
+#  if defined(Q_OS_MAC) && !defined(__USE_WS_X11__) && !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
 #    define Q_WS_MAC
 #    define Q_WS_MACX
 #    if defined(Q_OS_MAC64)
@@ -829,7 +840,7 @@ namespace QT_NAMESPACE {}
 #    if !defined(QT_NO_S60)
 #      define Q_WS_S60
 #    endif
-#  elif !defined(Q_WS_QWS)
+#  elif !defined(Q_WS_QWS) && !defined(Q_WS_QPA)
 #    define Q_WS_X11
 #  endif
 #endif
@@ -1091,7 +1102,7 @@ redefine to built-in booleans to make autotests work properly */
 
 typedef int QNoImplicitBoolCast;
 
-#if defined(QT_ARCH_ARM) || defined(QT_ARCH_AVR32) || (defined(QT_ARCH_MIPS) && (defined(Q_WS_QWS) || defined(Q_OS_WINCE))) || defined(QT_ARCH_SH) || defined(QT_ARCH_SH4A)
+#if defined(QT_ARCH_ARM) || defined(QT_ARCH_ARMV6) || defined(QT_ARCH_AVR32) || (defined(QT_ARCH_MIPS) && (defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_OS_WINCE))) || defined(QT_ARCH_SH) || defined(QT_ARCH_SH4A)
 #define QT_NO_FPU
 #endif
 
@@ -2057,9 +2068,14 @@ Q_DECLARE_TYPEINFO_BODY(TYPE, FLAGS)
 template <typename T>
 inline void qSwap(T &value1, T &value2)
 {
+#ifdef QT_NO_STL
     const T t = value1;
     value1 = value2;
     value2 = t;
+#else
+    using std::swap;
+    swap(value1, value2);
+#endif
 }
 
 /*
@@ -2071,12 +2087,23 @@ inline void qSwap(T &value1, T &value2)
    types must declare a 'bool isDetached(void) const;' member for this
    to work.
 */
+#ifdef QT_NO_STL
+#define Q_DECLARE_SHARED_STL(TYPE)
+#else
+#define Q_DECLARE_SHARED_STL(TYPE) \
+QT_END_NAMESPACE \
+namespace std { \
+    template<> inline void swap<QT_PREPEND_NAMESPACE(TYPE)>(QT_PREPEND_NAMESPACE(TYPE) &value1, QT_PREPEND_NAMESPACE(TYPE) &value2) \
+    { swap(value1.data_ptr(), value2.data_ptr()); } \
+} \
+QT_BEGIN_NAMESPACE
+#endif
+
 #define Q_DECLARE_SHARED(TYPE)                                          \
 template <> inline bool qIsDetached<TYPE>(TYPE &t) { return t.isDetached(); } \
 template <> inline void qSwap<TYPE>(TYPE &value1, TYPE &value2) \
-{ \
-    qSwap(value1.data_ptr(), value2.data_ptr()); \
-}
+{ qSwap(value1.data_ptr(), value2.data_ptr()); } \
+Q_DECLARE_SHARED_STL(TYPE)
 
 /*
    QTypeInfo primitive specializations
@@ -2642,6 +2669,10 @@ QT_LICENSED_MODULE(DBus)
 #  define QT_NO_SHAREDMEMORY
 // QNX currently doesn't support forking in a thread, so disable QProcess
 #  define QT_NO_PROCESS
+#endif
+
+#ifdef Q_OS_NACL
+#include <QtCore/qnaclunimplemented.h>
 #endif
 
 #if defined (__ELF__)

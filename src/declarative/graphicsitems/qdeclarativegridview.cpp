@@ -112,7 +112,7 @@ public:
     , bufferMode(BufferBefore | BufferAfter), snapMode(QDeclarativeGridView::NoSnap)
     , ownModel(false), wrap(false), autoHighlight(true)
     , fixCurrentVisibility(false), lazyRelease(false), layoutScheduled(false)
-    , deferredRelease(false), haveHighlightRange(false) {}
+    , deferredRelease(false), haveHighlightRange(false), currentIndexCleared(false) {}
 
     void init();
     void clear();
@@ -218,7 +218,14 @@ public:
                 return visibleItems.last()->rowPos() + rows * rowSize();
             }
         } else {
-             return (modelIndex / columns) * rowSize();
+            qreal pos = (modelIndex / columns) * rowSize();
+            if (header) {
+                qreal headerSize = flow == QDeclarativeGridView::LeftToRight
+                                   ? header->item->height()
+                                   : header->item->width();
+                pos += headerSize;
+            }
+            return pos;
         }
         return 0;
     }
@@ -385,6 +392,7 @@ public:
     bool layoutScheduled : 1;
     bool deferredRelease : 1;
     bool haveHighlightRange : 1;
+    bool currentIndexCleared : 1;
 };
 
 void QDeclarativeGridViewPrivate::init()
@@ -723,6 +731,8 @@ void QDeclarativeGridViewPrivate::createHighlight()
             QDeclarative_setParent_noEvent(item, q->contentItem());
             item->setParentItem(q->contentItem());
             highlight = new FxGridItem(item, q);
+            if (currentItem)
+                highlight->setPosition(currentItem->colPos(), currentItem->rowPos());
             highlightXAnimator = new QSmoothedAnimation(q);
             highlightXAnimator->target = QDeclarativeProperty(highlight->item, QLatin1String("x"));
             highlightXAnimator->userDuration = highlightMoveDuration;
@@ -764,8 +774,11 @@ void QDeclarativeGridViewPrivate::updateCurrent(int modelIndex)
             currentItem->attached->setIsCurrentItem(false);
             releaseItem(currentItem);
             currentItem = 0;
-            currentIndex = -1;
+            currentIndex = modelIndex;
+            emit q->currentIndexChanged();
             updateHighlight();
+        } else if (currentIndex != modelIndex) {
+            currentIndex = modelIndex;
             emit q->currentIndexChanged();
         }
         return;
@@ -1204,7 +1217,7 @@ void QDeclarativeGridView::setModel(const QVariant &model)
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
         disconnect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
         disconnect(d->model, SIGNAL(modelReset()), this, SLOT(modelReset()));
-        disconnect(d->model, SIGNAL(createdItem(int, QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
+        disconnect(d->model, SIGNAL(createdItem(int,QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
         disconnect(d->model, SIGNAL(destroyingItem(QDeclarativeItem*)), this, SLOT(destroyingItem(QDeclarativeItem*)));
     }
     d->clear();
@@ -1229,7 +1242,7 @@ void QDeclarativeGridView::setModel(const QVariant &model)
         d->bufferMode = QDeclarativeGridViewPrivate::BufferBefore | QDeclarativeGridViewPrivate::BufferAfter;
         if (isComponentComplete()) {
             refill();
-            if (d->currentIndex >= d->model->count() || d->currentIndex < 0) {
+            if ((d->currentIndex >= d->model->count() || d->currentIndex < 0) && !d->currentIndexCleared) {
                 setCurrentIndex(0);
             } else {
                 d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
@@ -1245,7 +1258,7 @@ void QDeclarativeGridView::setModel(const QVariant &model)
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
         connect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
         connect(d->model, SIGNAL(modelReset()), this, SLOT(modelReset()));
-        connect(d->model, SIGNAL(createdItem(int, QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
+        connect(d->model, SIGNAL(createdItem(int,QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
         connect(d->model, SIGNAL(destroyingItem(QDeclarativeItem*)), this, SLOT(destroyingItem(QDeclarativeItem*)));
         emit countChanged();
     }
@@ -1317,7 +1330,8 @@ void QDeclarativeGridView::setDelegate(QDeclarativeComponent *delegate)
   \qmlproperty Item GridView::currentItem
 
     The \c currentIndex property holds the index of the current item, and
-    \c currentItem holds the current item. 
+    \c currentItem holds the current item.  Setting the currentIndex to -1
+    will clear the highlight and set currentItem to null.
 
     If highlightFollowsCurrentItem is \c true, setting either of these 
     properties will smoothly scroll the GridView so that the current 
@@ -1337,10 +1351,13 @@ void QDeclarativeGridView::setCurrentIndex(int index)
     Q_D(QDeclarativeGridView);
     if (d->requestedIndex >= 0) // currently creating item
         return;
-    if (isComponentComplete() && d->isValid() && index != d->currentIndex && index < d->model->count() && index >= 0) {
+    d->currentIndexCleared = (index == -1);
+    if (index == d->currentIndex)
+        return;
+    if (isComponentComplete() && d->isValid()) {
         d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
         d->updateCurrent(index);
-    } else if (index != d->currentIndex) {
+    } else {
         d->currentIndex = index;
         emit currentIndexChanged();
     }
@@ -1815,6 +1832,8 @@ void QDeclarativeGridView::viewportMoved()
 {
     Q_D(QDeclarativeGridView);
     QDeclarativeFlickable::viewportMoved();
+    if (!d->itemCount)
+        return;
     d->lazyRelease = true;
     if (d->flickingHorizontally || d->flickingVertically) {
         if (yflick()) {
@@ -1976,22 +1995,25 @@ void QDeclarativeGridView::keyPressEvent(QKeyEvent *event)
 
     Move the currentIndex up one item in the view.
     The current index will wrap if keyNavigationWraps is true and it
-    is currently at the end.
+    is currently at the end. This method has no effect if the \l count is zero.
 
     \bold Note: methods should only be called after the Component has completed.
 */
 void QDeclarativeGridView::moveCurrentIndexUp()
 {
     Q_D(QDeclarativeGridView);
+    const int count = d->model ? d->model->count() : 0;
+    if (!count)
+        return;
     if (d->flow == QDeclarativeGridView::LeftToRight) {
         if (currentIndex() >= d->columns || d->wrap) {
             int index = currentIndex() - d->columns;
-            setCurrentIndex(index >= 0 ? index : d->model->count()-1);
+            setCurrentIndex((index >= 0 && index < count) ? index : count-1);
         }
     } else {
         if (currentIndex() > 0 || d->wrap) {
             int index = currentIndex() - 1;
-            setCurrentIndex(index >= 0 ? index : d->model->count()-1);
+            setCurrentIndex((index >= 0 && index < count) ? index : count-1);
         }
     }
 }
@@ -2001,22 +2023,25 @@ void QDeclarativeGridView::moveCurrentIndexUp()
 
     Move the currentIndex down one item in the view.
     The current index will wrap if keyNavigationWraps is true and it
-    is currently at the end.
+    is currently at the end. This method has no effect if the \l count is zero.
 
     \bold Note: methods should only be called after the Component has completed.
 */
 void QDeclarativeGridView::moveCurrentIndexDown()
 {
     Q_D(QDeclarativeGridView);
+    const int count = d->model ? d->model->count() : 0;
+    if (!count)
+        return;
     if (d->flow == QDeclarativeGridView::LeftToRight) {
-        if (currentIndex() < d->model->count() - d->columns || d->wrap) {
+        if (currentIndex() < count - d->columns || d->wrap) {
             int index = currentIndex()+d->columns;
-            setCurrentIndex(index < d->model->count() ? index : 0);
+            setCurrentIndex((index >= 0 && index < count) ? index : 0);
         }
     } else {
-        if (currentIndex() < d->model->count() - 1 || d->wrap) {
+        if (currentIndex() < count - 1 || d->wrap) {
             int index = currentIndex() + 1;
-            setCurrentIndex(index < d->model->count() ? index : 0);
+            setCurrentIndex((index >= 0 && index < count) ? index : 0);
         }
     }
 }
@@ -2026,22 +2051,25 @@ void QDeclarativeGridView::moveCurrentIndexDown()
 
     Move the currentIndex left one item in the view.
     The current index will wrap if keyNavigationWraps is true and it
-    is currently at the end.
+    is currently at the end. This method has no effect if the \l count is zero.
 
     \bold Note: methods should only be called after the Component has completed.
 */
 void QDeclarativeGridView::moveCurrentIndexLeft()
 {
     Q_D(QDeclarativeGridView);
+    const int count = d->model ? d->model->count() : 0;
+    if (!count)
+        return;
     if (d->flow == QDeclarativeGridView::LeftToRight) {
         if (currentIndex() > 0 || d->wrap) {
             int index = currentIndex() - 1;
-            setCurrentIndex(index >= 0 ? index : d->model->count()-1);
+            setCurrentIndex((index >= 0 && index < count) ? index : count-1);
         }
     } else {
         if (currentIndex() >= d->columns || d->wrap) {
             int index = currentIndex() - d->columns;
-            setCurrentIndex(index >= 0 ? index : d->model->count()-1);
+            setCurrentIndex((index >= 0 && index < count) ? index : count-1);
         }
     }
 }
@@ -2051,22 +2079,25 @@ void QDeclarativeGridView::moveCurrentIndexLeft()
 
     Move the currentIndex right one item in the view.
     The current index will wrap if keyNavigationWraps is true and it
-    is currently at the end.
+    is currently at the end. This method has no effect if the \l count is zero.
 
     \bold Note: methods should only be called after the Component has completed.
 */
 void QDeclarativeGridView::moveCurrentIndexRight()
 {
     Q_D(QDeclarativeGridView);
+    const int count = d->model ? d->model->count() : 0;
+    if (!count)
+        return;
     if (d->flow == QDeclarativeGridView::LeftToRight) {
-        if (currentIndex() < d->model->count() - 1 || d->wrap) {
+        if (currentIndex() < count - 1 || d->wrap) {
             int index = currentIndex() + 1;
-            setCurrentIndex(index < d->model->count() ? index : 0);
+            setCurrentIndex((index >= 0 && index < count) ? index : 0);
         }
     } else {
-        if (currentIndex() < d->model->count() - d->columns || d->wrap) {
+        if (currentIndex() < count - d->columns || d->wrap) {
             int index = currentIndex()+d->columns;
-            setCurrentIndex(index < d->model->count() ? index : 0);
+            setCurrentIndex((index >= 0 && index < count) ? index : 0);
         }
     }
 }
@@ -2194,7 +2225,7 @@ void QDeclarativeGridView::componentComplete()
     if (d->isValid()) {
         refill();
         d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
-        if (d->currentIndex < 0)
+        if (d->currentIndex < 0 && !d->currentIndexCleared)
             d->updateCurrent(0);
         else
             d->updateCurrent(d->currentIndex);
@@ -2269,13 +2300,13 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
         return;
     if (!d->visibleItems.count() || d->model->count() <= 1) {
         d->scheduleLayout();
-        if (d->currentIndex >= modelIndex) {
+        if (d->itemCount && d->currentIndex >= modelIndex) {
             // adjust current item index
             d->currentIndex += count;
             if (d->currentItem)
                 d->currentItem->index = d->currentIndex;
             emit currentIndexChanged();
-        } else if (d->currentIndex < 0) {
+        } else if (!d->currentIndex || (d->currentIndex < 0 && !d->currentIndexCleared)) {
             d->updateCurrent(0);
         }
         d->itemCount += count;
@@ -2383,7 +2414,7 @@ void QDeclarativeGridView::itemsInserted(int modelIndex, int count)
         }
     }
 
-    if (d->currentIndex >= modelIndex) {
+    if (d->itemCount && d->currentIndex >= modelIndex) {
         // adjust current item index
         d->currentIndex += count;
         if (d->currentItem) {
@@ -2470,8 +2501,8 @@ void QDeclarativeGridView::itemsRemoved(int modelIndex, int count)
 
     if (removedVisible && d->visibleItems.isEmpty()) {
         d->timeline.clear();
-        d->setPosition(0);
         if (d->itemCount == 0) {
+            d->setPosition(0);
             d->updateHeader();
             d->updateFooter();
             update();

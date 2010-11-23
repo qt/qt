@@ -143,6 +143,13 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
     QHash<GlyphAndSubPixelPosition, Coord> listItemCoordinates;
     int rowHeight = 0;
 
+    QFontEngine::GlyphFormat format;
+    switch (m_type) {
+    case Raster_A8: format = QFontEngine::Format_A8; break;
+    case Raster_RGBMask: format = QFontEngine::Format_A32; break;
+    default: format = QFontEngine::Format_Mono; break;
+    }
+
     // check each glyph for its metrics and get the required rowHeight.
     for (int i=0; i < numGlyphs; ++i) {
         const glyph_t glyph = glyphs[i];
@@ -157,7 +164,7 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
             continue;
         if (listItemCoordinates.contains(GlyphAndSubPixelPosition(glyph, subPixelPosition)))
             continue;
-        glyph_metrics_t metrics = fontEngine->boundingBox(glyph, m_transform);
+        glyph_metrics_t metrics = fontEngine->alphaMapBoundingBox(glyph, m_transform, format);
 
 #ifdef CACHE_DEBUG
         printf("(%4x): w=%.2f, h=%.2f, xoff=%.2f, yoff=%.2f, x=%.2f, y=%.2f\n",
@@ -305,7 +312,7 @@ QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g, QFixed subPixelPosition
     if (m_type == QFontEngineGlyphCache::Raster_RGBMask)
         return m_current_fontengine->alphaRGBMapForGlyph(g, subPixelPosition, glyphMargin(), m_transform);
     else
-        return m_current_fontengine->alphaMapForGlyph(g, m_transform);
+        return m_current_fontengine->alphaMapForGlyph(g, subPixelPosition, m_transform);
 
     return QImage();
 }

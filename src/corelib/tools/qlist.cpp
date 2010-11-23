@@ -602,6 +602,13 @@ void **QListData::erase(void **xi)
     list.
 */
 
+/*! \fn void QList::swap(QList<T> &other)
+    \since 4.8
+
+    Swaps list \a other with this list. This operation is very
+    fast and never fails.
+*/
+
 /*! \fn bool QList::operator==(const QList<T> &other) const
 
     Returns true if \a other is equal to this list; otherwise returns
@@ -936,7 +943,7 @@ void **QListData::erase(void **xi)
     This function requires the value type to have an implementation of
     \c operator==().
 
-    Note that QList uses 0-based indexes, just like C++ arrays. Negative 
+    Note that QList uses 0-based indexes, just like C++ arrays. Negative
     indexes are not supported with the exception of the value mentioned
     above.
 

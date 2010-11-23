@@ -46,7 +46,7 @@
 
 /**
  * Widget which displays a vertical audio level meter, indicating the
- * RMS and peak levels of the window of audio samples most recently analysed
+ * RMS and peak levels of the window of audio samples most recently analyzed
  * by the Engine.
  */
 class LevelMeter : public QWidget {

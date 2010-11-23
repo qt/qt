@@ -185,6 +185,7 @@ int PaintCommands::translateEnum(const char *table[], const QString &pattern, in
 
 QList<PaintCommands::PaintCommandInfos> PaintCommands::s_commandInfoTable = QList<PaintCommands::PaintCommandInfos>();
 QList<QPair<QString,QStringList> > PaintCommands::s_enumsTable = QList<QPair<QString,QStringList> >();
+QMultiHash<QString, int> PaintCommands::s_commandHash;
 
 #define DECL_PAINTCOMMAND(identifier, method, regexp, syntax, sample) \
     s_commandInfoTable << PaintCommandInfos(QLatin1String(identifier), &PaintCommands::method, QRegExp(regexp), \
@@ -627,6 +628,15 @@ void PaintCommands::staticInit()
                       "\n  - where vertices 1 to 4 defines the source quad and 5 to 8 the destination quad",
                       "mapQuadToQuad 0.0 0.0 1.0 1.0 0.0 0.0 -1.0 -1.0");
 
+    // populate the command lookup hash
+    for (int i=0; i<s_commandInfoTable.size(); i++) {
+        if (s_commandInfoTable.at(i).isSectionHeader() ||
+            s_commandInfoTable.at(i).identifier == QLatin1String("comment") ||
+            s_commandInfoTable.at(i).identifier == QLatin1String("noop"))
+            continue;
+        s_commandHash.insert(s_commandInfoTable.at(i).identifier, i);
+    }
+
     // populate the enums list
     ADD_ENUMLIST("brush styles", brushStyleTable);
     ADD_ENUMLIST("pen styles", penStyleTable);
@@ -686,12 +696,23 @@ void PaintCommands::insertAt(int commandIndex, const QStringList &newCommands)
 **********************************************************************************/
 void PaintCommands::runCommand(const QString &scriptLine)
 {
-    staticInit();
-    foreach (PaintCommandInfos command, s_commandInfoTable)
-        if (!command.isSectionHeader() && command.regExp.indexIn(scriptLine) >= 0) {
+    if (scriptLine.isEmpty()) {
+        command_noop(QRegExp());
+        return;
+    }
+    if (scriptLine.startsWith('#')) {
+        command_comment(QRegExp());
+        return;
+    }
+    QString firstWord = scriptLine.section(QRegExp("\\s"), 0, 0);
+    QList<int> indices = s_commandHash.values(firstWord);
+    foreach(int idx, indices) {
+        const PaintCommandInfos &command = s_commandInfoTable.at(idx);
+        if (command.regExp.indexIn(scriptLine) >= 0) {
             (this->*(command.paintMethod))(command.regExp);
             return;
         }
+    }
     qWarning("ERROR: unknown command or argument syntax error in \"%s\"", qPrintable(scriptLine));
 }
 
@@ -1357,6 +1378,8 @@ void PaintCommands::command_qt3_drawArc(QRegExp re)
 /***************************************************************************************************/
 void PaintCommands::command_drawText(QRegExp re)
 {
+    if (!m_shouldDrawText)
+        return;
     QStringList caps = re.capturedTexts();
     int x = convertToInt(caps.at(1));
     int y = convertToInt(caps.at(2));

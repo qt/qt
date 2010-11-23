@@ -56,7 +56,6 @@
 
 #include <QDebug>
 #include <QPen>
-#include <QFile>
 #include <QEvent>
 #include <QGraphicsSceneMouseEvent>
 #include <QtCore/qnumeric.h>
@@ -729,41 +728,39 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event, bool post)
     \since 4.7
     \brief The Keys attached property provides key handling to Items.
 
-    All visual primitives support key handling via the \e Keys
-    attached property.  Keys can be handled via the \e onPressed
-    and \e onReleased signal properties.
+    All visual primitives support key handling via the Keys
+    attached property.  Keys can be handled via the onPressed
+    and onReleased signal properties.
 
     The signal properties have a \l KeyEvent parameter, named
     \e event which contains details of the event.  If a key is
     handled \e event.accepted should be set to true to prevent the
     event from propagating up the item hierarchy.
 
-    \code
-    Item {
-        focus: true
-        Keys.onPressed: {
-            if (event.key == Qt.Key_Left) {
-                console.log("move left");
-                event.accepted = true;
-            }
-        }
-    }
-    \endcode
+    \section1 Example Usage
+
+    The following example shows how the general onPressed handler can
+    be used to test for a certain key; in this case, the left cursor
+    key:
+
+    \snippet doc/src/snippets/declarative/keys/keys-pressed.qml key item
 
     Some keys may alternatively be handled via specific signal properties,
     for example \e onSelectPressed.  These handlers automatically set
     \e event.accepted to true.
 
-    \code
-    Item {
-        focus: true
-        Keys.onLeftPressed: console.log("move left")
-    }
-    \endcode
+    \snippet doc/src/snippets/declarative/keys/keys-handler.qml key item
 
-    See \l {Qt::Key}{Qt.Key} for the list of keyboard codes.
+    See \l{Qt::Key}{Qt.Key} for the list of keyboard codes.
 
-    If priority is Keys.BeforeItem (default) the order of key event processing is:
+    \section1 Key Handling Priorities
+
+    The Keys attached property can be configured to handle key events
+    before or after the item it is attached to. This makes it possible
+    to intercept events in order to override an item's default behavior,
+    or act as a fallback for keys not handled by the item.
+
+    If \l priority is Keys.BeforeItem (default) the order of key event processing is:
 
     \list 1
     \o Items specified in \c forwardTo
@@ -774,6 +771,7 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event, bool post)
     \endlist
 
     If priority is Keys.AfterItem the order of key event processing is:
+
     \list 1
     \o Item specific key handling, e.g. TextInput key handling
     \o Items specified in \c forwardTo
@@ -1181,7 +1179,7 @@ void QDeclarativeKeysAttached::keyPressed(QKeyEvent *event, bool post)
         d->inPress = true;
         for (int ii = 0; ii < d->targets.count(); ++ii) {
             QGraphicsItem *i = d->finalFocusProxy(d->targets.at(ii));
-            if (i) {
+            if (i && i->isVisible()) {
                 d->item->scene()->sendEvent(i, event);
                 if (event->isAccepted()) {
                     d->inPress = false;
@@ -1223,7 +1221,7 @@ void QDeclarativeKeysAttached::keyReleased(QKeyEvent *event, bool post)
         d->inRelease = true;
         for (int ii = 0; ii < d->targets.count(); ++ii) {
             QGraphicsItem *i = d->finalFocusProxy(d->targets.at(ii));
-            if (i) {
+            if (i && i->isVisible()) {
                 d->item->scene()->sendEvent(i, event);
                 if (event->isAccepted()) {
                     d->inRelease = false;
@@ -1248,7 +1246,7 @@ void QDeclarativeKeysAttached::inputMethodEvent(QInputMethodEvent *event, bool p
         d->inIM = true;
         for (int ii = 0; ii < d->targets.count(); ++ii) {
             QGraphicsItem *i = d->finalFocusProxy(d->targets.at(ii));
-            if (i && (i->flags() & QGraphicsItem::ItemAcceptsInputMethod)) {
+            if (i && i->isVisible() && (i->flags() & QGraphicsItem::ItemAcceptsInputMethod)) {
                 d->item->scene()->sendEvent(i, event);
                 if (event->isAccepted()) {
                     d->imeItem = i;
@@ -1276,7 +1274,7 @@ QVariant QDeclarativeKeysAttached::inputMethodQuery(Qt::InputMethodQuery query) 
     if (d->item) {
         for (int ii = 0; ii < d->targets.count(); ++ii) {
                 QGraphicsItem *i = d->finalFocusProxy(d->targets.at(ii));
-            if (i && (i->flags() & QGraphicsItem::ItemAcceptsInputMethod) && i == d->imeItem) { //### how robust is i == d->imeItem check?
+            if (i && i->isVisible() && (i->flags() & QGraphicsItem::ItemAcceptsInputMethod) && i == d->imeItem) { //### how robust is i == d->imeItem check?
                 QVariant v = static_cast<QDeclarativeItemAccessor *>(i)->doInputMethodQuery(query);
                 if (v.userType() == QVariant::RectF)
                     v = d->item->mapRectFromItem(i, v.toRectF());  //### cost?
@@ -1957,12 +1955,8 @@ void QDeclarativeItem::geometryChanged(const QRectF &newGeometry,
             change.listener->itemGeometryChanged(this, newGeometry, oldGeometry);
     }
 
-    if (newGeometry.x() != oldGeometry.x())
-        emit xChanged();
     if (newGeometry.width() != oldGeometry.width())
         emit widthChanged();
-    if (newGeometry.y() != oldGeometry.y())
-        emit yChanged();
     if (newGeometry.height() != oldGeometry.height())
         emit heightChanged();
 }

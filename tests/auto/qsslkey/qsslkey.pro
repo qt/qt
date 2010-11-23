@@ -15,10 +15,10 @@ win32 {
 }
 
 wince*|symbian: {
-   keyFiles.sources = keys
+   keyFiles.files = keys
    keyFiles.path    = .
 
-   passphraseFiles.sources = rsa-without-passphrase.pem rsa-with-passphrase.pem
+   passphraseFiles.files = rsa-without-passphrase.pem rsa-with-passphrase.pem
    passphraseFiles.path    = .
 
    DEPLOYMENT += keyFiles passphraseFiles

@@ -15,7 +15,7 @@ win32 {
 }
 
 wince*|symbian: {
-  certFiles.sources = certificates more-certificates
+  certFiles.files = certificates more-certificates
   certFiles.path    = .
   DEPLOYMENT += certFiles
 }
@@ -24,5 +24,6 @@ wince*: {
   DEFINES += SRCDIR=\\\".\\\"
 } else:!symbian {
    DEFINES += SRCDIR=\\\"$$PWD/\\\"
-   TARGET.CAPABILITY = NetworkServices
 }
+
+symbian:TARGET.CAPABILITY = NetworkServices ReadUserData

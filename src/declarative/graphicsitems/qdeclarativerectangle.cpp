@@ -261,9 +261,9 @@ void QDeclarativeRectangle::doUpdate()
     A width of 1 creates a thin line. For no line, use a width of 0 or a transparent color.
 
     If \c border.width is an odd number, the rectangle is painted at a half-pixel offset to retain
-    border smoothness. Also, the border is rendered evenly on either side of the 
+    border smoothness. Also, the border is rendered evenly on either side of the
     rectangle's boundaries, and the spare pixel is rendered to the right and below the
-    rectangle (as documented for QRect rendering). This can cause unintended effects if 
+    rectangle (as documented for QRect rendering). This can cause unintended effects if
     \c border.width is 1 and the rectangle is \l{Item::clip}{clipped} by a parent item:
 
     \beginfloatright
@@ -477,7 +477,8 @@ void QDeclarativeRectangle::drawRect(QPainter &p)
 {
     Q_D(QDeclarativeRectangle);
     if ((d->gradient && d->gradient->gradient())
-        || d->radius > width()/2 || d->radius > height()/2) {
+        || d->radius > width()/2 || d->radius > height()/2
+        || width() < 3 || height() < 3) {
         // XXX This path is still slower than the image path
         // Image path won't work for gradients or invalid radius though
         bool oldAA = p.testRenderHint(QPainter::Antialiasing);

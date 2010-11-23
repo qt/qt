@@ -6,5 +6,4 @@ build_all:!build_pass {
 }
 HEADERS		= feature.h featuretreemodel.h graphics.h
 SOURCES		= main.cpp feature.cpp featuretreemodel.cpp
-INTERFACES	=
 TARGET		= qconfig

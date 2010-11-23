@@ -2960,7 +2960,7 @@ EXPORTS
 	?qvsnprintf@@YAHPADIPBD0@Z @ 2959 NONAME ; int qvsnprintf(char *, unsigned int, char const *, char *)
 	?raiseError@QXmlStreamReader@@QAEXABVQString@@@Z @ 2960 NONAME ; void QXmlStreamReader::raiseError(class QString const &)
 	?rangeContains@QXmlUtils@@CA_NPBVQXmlCharRange@@0VQChar@@@Z @ 2961 NONAME ; bool QXmlUtils::rangeContains(class QXmlCharRange const *, class QXmlCharRange const *, class QChar)
-	?reactivateDeferredActiveObjects@QEventDispatcherSymbian@@QAEXXZ @ 2962 NONAME ; void QEventDispatcherSymbian::reactivateDeferredActiveObjects(void)
+	?reactivateDeferredActiveObjects@QEventDispatcherSymbian@@QAEXXZ @ 2962 NONAME ABSENT ; void QEventDispatcherSymbian::reactivateDeferredActiveObjects(void)
 	?reactivateSocketNotifier@QEventDispatcherSymbian@@QAEXPAVQSocketNotifier@@@Z @ 2963 NONAME ; void QEventDispatcherSymbian::reactivateSocketNotifier(class QSocketNotifier *)
 	?read@QAbstractFileEngine@@UAE_JPAD_J@Z @ 2964 NONAME ; long long QAbstractFileEngine::read(char *, long long)
 	?read@QFSFileEngine@@UAE_JPAD_J@Z @ 2965 NONAME ; long long QFSFileEngine::read(char *, long long)
@@ -4482,61 +4482,8 @@ EXPORTS
 	?textDirection@QLocale@@QBE?AW4LayoutDirection@Qt@@XZ @ 4481 NONAME ; enum Qt::LayoutDirection QLocale::textDirection(void) const
 	?msecsSinceReference@QElapsedTimer@@QBE_JXZ @ 4482 NONAME ; long long QElapsedTimer::msecsSinceReference(void) const
 	?selectThread@QEventDispatcherSymbian@@AAEAAVQSelectThread@@XZ @ 4483 NONAME ; class QSelectThread & QEventDispatcherSymbian::selectThread(void)
-	??0QCoreApplication@@QAE@AAHPAPADH@Z @ 4484 NONAME ; QCoreApplication::QCoreApplication(int &, char * *, int)
-	??0QCoreApplicationPrivate@@QAE@AAHPAPADI@Z @ 4485 NONAME ; QCoreApplicationPrivate::QCoreApplicationPrivate(int &, char * *, unsigned int)
-	?connect@QObject@@SA_NPBV1@ABVQMetaMethod@@01W4ConnectionType@Qt@@@Z @ 4486 NONAME ; bool QObject::connect(class QObject const *, class QMetaMethod const &, class QObject const *, class QMetaMethod const &, enum Qt::ConnectionType)
-	?contains@QString@@QBE?AVQBool@@ABVQStringRef@@W4CaseSensitivity@Qt@@@Z @ 4487 NONAME ; class QBool QString::contains(class QStringRef const &, enum Qt::CaseSensitivity) const
-	?contains@QStringRef@@QBE?AVQBool@@ABV1@W4CaseSensitivity@Qt@@@Z @ 4488 NONAME ; class QBool QStringRef::contains(class QStringRef const &, enum Qt::CaseSensitivity) const
-	?contains@QStringRef@@QBE?AVQBool@@ABVQString@@W4CaseSensitivity@Qt@@@Z @ 4489 NONAME ; class QBool QStringRef::contains(class QString const &, enum Qt::CaseSensitivity) const
-	?contains@QStringRef@@QBE?AVQBool@@VQChar@@W4CaseSensitivity@Qt@@@Z @ 4490 NONAME ; class QBool QStringRef::contains(class QChar, enum Qt::CaseSensitivity) const
-	?contains@QStringRef@@QBE?AVQBool@@VQLatin1String@@W4CaseSensitivity@Qt@@@Z @ 4491 NONAME ; class QBool QStringRef::contains(class QLatin1String, enum Qt::CaseSensitivity) const
-	?count@QString@@QBEHABVQStringRef@@W4CaseSensitivity@Qt@@@Z @ 4492 NONAME ; int QString::count(class QStringRef const &, enum Qt::CaseSensitivity) const
-	?count@QStringRef@@QBEHABV1@W4CaseSensitivity@Qt@@@Z @ 4493 NONAME ; int QStringRef::count(class QStringRef const &, enum Qt::CaseSensitivity) const
-	?count@QStringRef@@QBEHABVQString@@W4CaseSensitivity@Qt@@@Z @ 4494 NONAME ; int QStringRef::count(class QString const &, enum Qt::CaseSensitivity) const
-	?count@QStringRef@@QBEHVQChar@@W4CaseSensitivity@Qt@@@Z @ 4495 NONAME ; int QStringRef::count(class QChar, enum Qt::CaseSensitivity) const
-	?disconnect@QObject@@SA_NPBV1@ABVQMetaMethod@@01@Z @ 4496 NONAME ; bool QObject::disconnect(class QObject const *, class QMetaMethod const &, class QObject const *, class QMetaMethod const &)
-	?endsWith@QString@@QBE_NABVQStringRef@@W4CaseSensitivity@Qt@@@Z @ 4497 NONAME ; bool QString::endsWith(class QStringRef const &, enum Qt::CaseSensitivity) const
-	?endsWith@QStringRef@@QBE_NABV1@W4CaseSensitivity@Qt@@@Z @ 4498 NONAME ; bool QStringRef::endsWith(class QStringRef const &, enum Qt::CaseSensitivity) const
-	?endsWith@QStringRef@@QBE_NABVQString@@W4CaseSensitivity@Qt@@@Z @ 4499 NONAME ; bool QStringRef::endsWith(class QString const &, enum Qt::CaseSensitivity) const
-	?endsWith@QStringRef@@QBE_NVQChar@@W4CaseSensitivity@Qt@@@Z @ 4500 NONAME ; bool QStringRef::endsWith(class QChar, enum Qt::CaseSensitivity) const
-	?endsWith@QStringRef@@QBE_NVQLatin1String@@W4CaseSensitivity@Qt@@@Z @ 4501 NONAME ; bool QStringRef::endsWith(class QLatin1String, enum Qt::CaseSensitivity) const
-	?indexOf@QString@@QBEHABVQStringRef@@HW4CaseSensitivity@Qt@@@Z @ 4502 NONAME ; int QString::indexOf(class QStringRef const &, int, enum Qt::CaseSensitivity) const
-	?indexOf@QStringRef@@QBEHABV1@HW4CaseSensitivity@Qt@@@Z @ 4503 NONAME ; int QStringRef::indexOf(class QStringRef const &, int, enum Qt::CaseSensitivity) const
-	?indexOf@QStringRef@@QBEHABVQString@@HW4CaseSensitivity@Qt@@@Z @ 4504 NONAME ; int QStringRef::indexOf(class QString const &, int, enum Qt::CaseSensitivity) const
-	?indexOf@QStringRef@@QBEHVQChar@@HW4CaseSensitivity@Qt@@@Z @ 4505 NONAME ; int QStringRef::indexOf(class QChar, int, enum Qt::CaseSensitivity) const
-	?indexOf@QStringRef@@QBEHVQLatin1String@@HW4CaseSensitivity@Qt@@@Z @ 4506 NONAME ; int QStringRef::indexOf(class QLatin1String, int, enum Qt::CaseSensitivity) const
-	?isLocalFile@QUrl@@QBE_NXZ @ 4507 NONAME ; bool QUrl::isLocalFile(void) const
-	?lastIndexOf@QString@@QBEHABVQStringRef@@HW4CaseSensitivity@Qt@@@Z @ 4508 NONAME ; int QString::lastIndexOf(class QStringRef const &, int, enum Qt::CaseSensitivity) const
-	?lastIndexOf@QStringRef@@QBEHABV1@HW4CaseSensitivity@Qt@@@Z @ 4509 NONAME ; int QStringRef::lastIndexOf(class QStringRef const &, int, enum Qt::CaseSensitivity) const
-	?lastIndexOf@QStringRef@@QBEHABVQString@@HW4CaseSensitivity@Qt@@@Z @ 4510 NONAME ; int QStringRef::lastIndexOf(class QString const &, int, enum Qt::CaseSensitivity) const
-	?lastIndexOf@QStringRef@@QBEHVQChar@@HW4CaseSensitivity@Qt@@@Z @ 4511 NONAME ; int QStringRef::lastIndexOf(class QChar, int, enum Qt::CaseSensitivity) const
-	?lastIndexOf@QStringRef@@QBEHVQLatin1String@@HW4CaseSensitivity@Qt@@@Z @ 4512 NONAME ; int QStringRef::lastIndexOf(class QLatin1String, int, enum Qt::CaseSensitivity) const
-	?lockInline@QMutex@@QAEXXZ @ 4513 NONAME ; void QMutex::lockInline(void)
-	?lockInternal@QMutex@@AAEXXZ @ 4514 NONAME ; void QMutex::lockInternal(void)
-	?nativeKey@QSharedMemory@@QBE?AVQString@@XZ @ 4515 NONAME ; class QString QSharedMemory::nativeKey(void) const
-	?senderSignalIndex@QObject@@IBEHXZ @ 4516 NONAME ; int QObject::senderSignalIndex(void) const
-	?setNativeKey@QSharedMemory@@QAEXABVQString@@@Z @ 4517 NONAME ; void QSharedMemory::setNativeKey(class QString const &)
-	?startsWith@QString@@QBE_NABVQStringRef@@W4CaseSensitivity@Qt@@@Z @ 4518 NONAME ; bool QString::startsWith(class QStringRef const &, enum Qt::CaseSensitivity) const
-	?startsWith@QStringRef@@QBE_NABV1@W4CaseSensitivity@Qt@@@Z @ 4519 NONAME ; bool QStringRef::startsWith(class QStringRef const &, enum Qt::CaseSensitivity) const
-	?startsWith@QStringRef@@QBE_NABVQString@@W4CaseSensitivity@Qt@@@Z @ 4520 NONAME ; bool QStringRef::startsWith(class QString const &, enum Qt::CaseSensitivity) const
-	?startsWith@QStringRef@@QBE_NVQChar@@W4CaseSensitivity@Qt@@@Z @ 4521 NONAME ; bool QStringRef::startsWith(class QChar, enum Qt::CaseSensitivity) const
-	?startsWith@QStringRef@@QBE_NVQLatin1String@@W4CaseSensitivity@Qt@@@Z @ 4522 NONAME ; bool QStringRef::startsWith(class QLatin1String, enum Qt::CaseSensitivity) const
-	?tryLockInline@QMutex@@QAE_NXZ @ 4523 NONAME ; bool QMutex::tryLockInline(void)
-	?unlockInline@QMutex@@QAEXXZ @ 4524 NONAME ; void QMutex::unlockInline(void)
-	?unlockInternal@QMutex@@AAEXXZ @ 4525 NONAME ; void QMutex::unlockInternal(void)
-	?waitForDone@QThreadPool@@QAE_NH@Z @ 4526 NONAME ; bool QThreadPool::waitForDone(int)
-	?app_compile_version@QCoreApplicationPrivate@@2HA @ 4527 NONAME ; int QCoreApplicationPrivate::app_compile_version
-	??0QFileInfo@@QAE@PAVQFileInfoPrivate@@@Z @ 4528 NONAME ; QFileInfo::QFileInfo(class QFileInfoPrivate *)
-	??0QSystemError@@QAE@HW4ErrorScope@0@@Z @ 4529 NONAME ; QSystemError::QSystemError(int, enum QSystemError::ErrorScope)
-	??0QSystemError@@QAE@XZ @ 4530 NONAME ; QSystemError::QSystemError(void)
-	?cast@QMetaObject@@QBEPBVQObject@@PBV2@@Z @ 4531 NONAME ; class QObject const * QMetaObject::cast(class QObject const *) const
-	?error@QSystemError@@QAEHXZ @ 4532 NONAME ; int QSystemError::error(void)
-	?qt_symbian_SetupThreadHeap@@YAHHAAUSStdEpocThreadCreateInfo@@@Z @ 4533 NONAME ; int qt_symbian_SetupThreadHeap(int, struct SStdEpocThreadCreateInfo &)
-	?scope@QSystemError@@QAE?AW4ErrorScope@1@XZ @ 4534 NONAME ; enum QSystemError::ErrorScope QSystemError::scope(void)
-	?toAscii@QStringRef@@QBE?AVQByteArray@@XZ @ 4535 NONAME ; class QByteArray QStringRef::toAscii(void) const
-	?toLatin1@QStringRef@@QBE?AVQByteArray@@XZ @ 4536 NONAME ; class QByteArray QStringRef::toLatin1(void) const
-	?toLocal8Bit@QStringRef@@QBE?AVQByteArray@@XZ @ 4537 NONAME ; class QByteArray QStringRef::toLocal8Bit(void) const
-	?toString@QSystemError@@QAE?AVQString@@XZ @ 4538 NONAME ; class QString QSystemError::toString(void)
-	?toUcs4@QStringRef@@QBE?AV?$QVector@I@@XZ @ 4539 NONAME ; class QVector<unsigned int> QStringRef::toUcs4(void) const
-	?toUtf8@QStringRef@@QBE?AVQByteArray@@XZ @ 4540 NONAME ; class QByteArray QStringRef::toUtf8(void) const
+	?qt_symbian_SetupThreadHeap@@YAHHAAUSStdEpocThreadCreateInfo@@@Z @ 4484 NONAME ; int qt_symbian_SetupThreadHeap(int, struct SStdEpocThreadCreateInfo &)
+	?objectNameChanged@QAbstractDeclarativeData@@2P6AXPAV1@PAVQObject@@@ZA @ 4485 NONAME ; void (*QAbstractDeclarativeData::objectNameChanged)(class QAbstractDeclarativeData *, class QObject *)
+	?queueDeferredActiveObjectsCompletion@QEventDispatcherSymbian@@QAEXXZ @ 4486 NONAME ; void QEventDispatcherSymbian::queueDeferredActiveObjectsCompletion(void)
+	?reactivateDeferredActiveObjects@QEventDispatcherSymbian@@UAEXXZ @ 4487 NONAME ; void QEventDispatcherSymbian::reactivateDeferredActiveObjects(void)
 

@@ -210,7 +210,7 @@ EGLConfig QEgl::defaultConfig(int devType, API api, ConfigOptions options)
     else
         configId = qgetenv("QT_GL_EGL_CONFIG");
     if (!configId.isEmpty()) {
-        // Overriden, so get the EGLConfig for the specified config ID:
+        // Overridden, so get the EGLConfig for the specified config ID:
         EGLint properties[] = {
             EGL_CONFIG_ID, (EGLint)configId.toInt(),
             EGL_NONE
@@ -267,7 +267,7 @@ EGLConfig QEgl::defaultConfig(int devType, API api, ConfigOptions options)
         configAttribs.setValue(EGL_STENCIL_SIZE, 1);
         configAttribs.setValue(EGL_SAMPLE_BUFFERS, 1);
 #ifndef QT_OPENGL_ES_2
-        // Aditionally, the GL1 engine likes to have a depth buffer for clipping
+        // Additionally, the GL1 engine likes to have a depth buffer for clipping
         configAttribs.setValue(EGL_DEPTH_SIZE, 1);
 #endif
     }
@@ -394,7 +394,7 @@ bool QEglContext::createContext(QEglContext *shareContext, const QEglProperties 
         }
     }
     if (ctx == EGL_NO_CONTEXT) {
-        ctx = eglCreateContext(display(), cfg, 0, contextProps.properties());
+        ctx = eglCreateContext(display(), cfg, EGL_NO_CONTEXT, contextProps.properties());
         if (ctx == EGL_NO_CONTEXT) {
             qWarning() << "QEglContext::createContext(): Unable to create EGL context:" << QEgl::errorString();
             return false;

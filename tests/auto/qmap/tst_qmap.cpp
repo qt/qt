@@ -65,6 +65,8 @@ private slots:
     void beginEnd();
     void key();
 
+    void swap();
+
     void operator_eq();
 
     void empty();
@@ -390,6 +392,16 @@ void tst_QMap::key()
         QCOMPARE(map2.key("zero"), 0);
         QCOMPARE(map2.key("zero", def), 0);
     }
+}
+
+void tst_QMap::swap()
+{
+    QMap<int,QString> m1, m2;
+    m1[0] = "m1[0]";
+    m2[1] = "m2[1]";
+    m1.swap(m2);
+    QCOMPARE(m1.value(1),QLatin1String("m2[1]"));
+    QCOMPARE(m2.value(0),QLatin1String("m1[0]"));
 }
 
 void tst_QMap::operator_eq()

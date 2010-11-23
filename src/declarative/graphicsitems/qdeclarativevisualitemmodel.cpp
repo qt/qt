@@ -403,6 +403,8 @@ public:
     QDeclarativeListAccessor *m_listAccessor;
 
     QModelIndex m_root;
+    QList<QByteArray> watchedRoles;
+    QList<int> watchedRoleIds;
 };
 
 class QDeclarativeVisualDataModelDataMetaObject : public QDeclarativeOpenMetaObject
@@ -712,14 +714,14 @@ void QDeclarativeVisualDataModel::setModel(const QVariant &model)
                 this, SLOT(_q_itemsMoved(int,int,int)));
         d->m_listModelInterface = 0;
     } else if (d->m_abstractItemModel) {
-        QObject::disconnect(d->m_abstractItemModel, SIGNAL(rowsInserted(const QModelIndex &,int,int)),
-                            this, SLOT(_q_rowsInserted(const QModelIndex &,int,int)));
-        QObject::disconnect(d->m_abstractItemModel, SIGNAL(rowsRemoved(const QModelIndex &,int,int)),
-                            this, SLOT(_q_rowsRemoved(const QModelIndex &,int,int)));
-        QObject::disconnect(d->m_abstractItemModel, SIGNAL(dataChanged(const QModelIndex&,const QModelIndex&)),
-                            this, SLOT(_q_dataChanged(const QModelIndex&,const QModelIndex&)));
-        QObject::disconnect(d->m_abstractItemModel, SIGNAL(rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)),
-                            this, SLOT(_q_rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)));
+        QObject::disconnect(d->m_abstractItemModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
+                            this, SLOT(_q_rowsInserted(QModelIndex,int,int)));
+        QObject::disconnect(d->m_abstractItemModel, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+                            this, SLOT(_q_rowsRemoved(QModelIndex,int,int)));
+        QObject::disconnect(d->m_abstractItemModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
+                            this, SLOT(_q_dataChanged(QModelIndex,QModelIndex)));
+        QObject::disconnect(d->m_abstractItemModel, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)),
+                            this, SLOT(_q_rowsMoved(QModelIndex,int,int,QModelIndex,int)));
         QObject::disconnect(d->m_abstractItemModel, SIGNAL(modelReset()), this, SLOT(_q_modelReset()));
         QObject::disconnect(d->m_abstractItemModel, SIGNAL(layoutChanged()), this, SLOT(_q_layoutChanged()));
         d->m_abstractItemModel = 0;
@@ -760,14 +762,14 @@ void QDeclarativeVisualDataModel::setModel(const QVariant &model)
             emit itemsInserted(0, d->m_listModelInterface->count());
         return;
     } else if (object && (d->m_abstractItemModel = qobject_cast<QAbstractItemModel *>(object))) {
-        QObject::connect(d->m_abstractItemModel, SIGNAL(rowsInserted(const QModelIndex &,int,int)),
-                            this, SLOT(_q_rowsInserted(const QModelIndex &,int,int)));
-        QObject::connect(d->m_abstractItemModel, SIGNAL(rowsRemoved(const QModelIndex &,int,int)),
-                            this, SLOT(_q_rowsRemoved(const QModelIndex &,int,int)));
-        QObject::connect(d->m_abstractItemModel, SIGNAL(dataChanged(const QModelIndex&,const QModelIndex&)),
-                            this, SLOT(_q_dataChanged(const QModelIndex&,const QModelIndex&)));
-        QObject::connect(d->m_abstractItemModel, SIGNAL(rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)),
-                            this, SLOT(_q_rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)));
+        QObject::connect(d->m_abstractItemModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
+                            this, SLOT(_q_rowsInserted(QModelIndex,int,int)));
+        QObject::connect(d->m_abstractItemModel, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+                            this, SLOT(_q_rowsRemoved(QModelIndex,int,int)));
+        QObject::connect(d->m_abstractItemModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
+                            this, SLOT(_q_dataChanged(QModelIndex,QModelIndex)));
+        QObject::connect(d->m_abstractItemModel, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)),
+                            this, SLOT(_q_rowsMoved(QModelIndex,int,int,QModelIndex,int)));
         QObject::connect(d->m_abstractItemModel, SIGNAL(modelReset()), this, SLOT(_q_modelReset()));
         QObject::connect(d->m_abstractItemModel, SIGNAL(layoutChanged()), this, SLOT(_q_layoutChanged()));
         d->m_metaDataCacheable = true;
@@ -935,6 +937,10 @@ void QDeclarativeVisualDataModel::setPart(const QString &part)
 int QDeclarativeVisualDataModel::count() const
 {
     Q_D(const QDeclarativeVisualDataModel);
+    if (d->m_visualItemModel)
+        return d->m_visualItemModel->count();
+    if (!d->m_delegate)
+        return 0;
     return d->modelCount();
 }
 
@@ -1170,10 +1176,25 @@ int QDeclarativeVisualDataModel::indexOf(QDeclarativeItem *item, QObject *) cons
     return -1;
 }
 
+void QDeclarativeVisualDataModel::setWatchedRoles(QList<QByteArray> roles)
+{
+    Q_D(QDeclarativeVisualDataModel);
+    d->watchedRoles = roles;
+    d->watchedRoleIds.clear();
+}
+
 void QDeclarativeVisualDataModel::_q_itemsChanged(int index, int count,
                                          const QList<int> &roles)
 {
     Q_D(QDeclarativeVisualDataModel);
+    bool changed = false;
+    if (!d->watchedRoles.isEmpty() && d->watchedRoleIds.isEmpty()) {
+        foreach (QByteArray r, d->watchedRoles) {
+            if (d->m_roleNames.contains(r))
+                d->watchedRoleIds << d->m_roleNames.value(r);
+        }
+    }
+
     for (QHash<int,QDeclarativeVisualDataModelPrivate::ObjectRef>::ConstIterator iter = d->m_cache.begin();
         iter != d->m_cache.end(); ++iter) {
         const int idx = iter.key();
@@ -1183,6 +1204,8 @@ void QDeclarativeVisualDataModel::_q_itemsChanged(int index, int count,
             QDeclarativeVisualDataModelData *data = d->data(objRef.obj);
             for (int roleIdx = 0; roleIdx < roles.count(); ++roleIdx) {
                 int role = roles.at(roleIdx);
+                if (!changed && !d->watchedRoleIds.isEmpty() && d->watchedRoleIds.contains(role))
+                    changed = true;
                 int propId = data->propForRole(role);
                 if (propId != -1) {
                     if (data->hasValue(propId)) {
@@ -1217,6 +1240,8 @@ void QDeclarativeVisualDataModel::_q_itemsChanged(int index, int count,
             }
         }
     }
+    if (changed)
+        emit itemsChanged(index, count);
 }
 
 void QDeclarativeVisualDataModel::_q_itemsInserted(int index, int count)

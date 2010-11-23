@@ -3712,51 +3712,6 @@ EXPORTS
 	_ZltRK13QElapsedTimerS1_ @ 3711 NONAME
 	_ZrsR11QDataStreamR12QEasingCurve @ 3712 NONAME
 	_Z26qt_symbian_SetupThreadHeapiR24SStdEpocThreadCreateInfo @ 3713 NONAME
-	_ZN11QThreadPool11waitForDoneEi @ 3714 NONAME
-	_ZN12QSystemError8toStringEv @ 3715 NONAME
-	_ZN13QSharedMemory12setNativeKeyERK7QString @ 3716 NONAME
-	_ZN16QCoreApplicationC1ERiPPci @ 3717 NONAME
-	_ZN16QCoreApplicationC2ERiPPci @ 3718 NONAME
-	_ZN23QCoreApplicationPrivate19app_compile_versionE @ 3719 NONAME DATA 4
-	_ZN23QCoreApplicationPrivateC1ERiPPcj @ 3720 NONAME
-	_ZN23QCoreApplicationPrivateC2ERiPPcj @ 3721 NONAME
-	_ZN6QMutex12lockInternalEv @ 3722 NONAME
-	_ZN6QMutex14unlockInternalEv @ 3723 NONAME
-	_ZN7QObject10disconnectEPKS_RK11QMetaMethodS1_S4_ @ 3724 NONAME
-	_ZN7QObject7connectEPKS_RK11QMetaMethodS1_S4_N2Qt14ConnectionTypeE @ 3725 NONAME
-	_ZN9QFileInfoC1EP16QFileInfoPrivate @ 3726 NONAME
-	_ZN9QFileInfoC2EP16QFileInfoPrivate @ 3727 NONAME
-	_ZNK10QStringRef10startsWithE13QLatin1StringN2Qt15CaseSensitivityE @ 3728 NONAME
-	_ZNK10QStringRef10startsWithE5QCharN2Qt15CaseSensitivityE @ 3729 NONAME
-	_ZNK10QStringRef10startsWithERK7QStringN2Qt15CaseSensitivityE @ 3730 NONAME
-	_ZNK10QStringRef10startsWithERKS_N2Qt15CaseSensitivityE @ 3731 NONAME
-	_ZNK10QStringRef11lastIndexOfE13QLatin1StringiN2Qt15CaseSensitivityE @ 3732 NONAME
-	_ZNK10QStringRef11lastIndexOfE5QChariN2Qt15CaseSensitivityE @ 3733 NONAME
-	_ZNK10QStringRef11lastIndexOfERK7QStringiN2Qt15CaseSensitivityE @ 3734 NONAME
-	_ZNK10QStringRef11lastIndexOfERKS_iN2Qt15CaseSensitivityE @ 3735 NONAME
-	_ZNK10QStringRef11toLocal8BitEv @ 3736 NONAME
-	_ZNK10QStringRef5countE5QCharN2Qt15CaseSensitivityE @ 3737 NONAME
-	_ZNK10QStringRef5countERK7QStringN2Qt15CaseSensitivityE @ 3738 NONAME
-	_ZNK10QStringRef5countERKS_N2Qt15CaseSensitivityE @ 3739 NONAME
-	_ZNK10QStringRef6toUcs4Ev @ 3740 NONAME
-	_ZNK10QStringRef6toUtf8Ev @ 3741 NONAME
-	_ZNK10QStringRef7indexOfE13QLatin1StringiN2Qt15CaseSensitivityE @ 3742 NONAME
-	_ZNK10QStringRef7indexOfE5QChariN2Qt15CaseSensitivityE @ 3743 NONAME
-	_ZNK10QStringRef7indexOfERK7QStringiN2Qt15CaseSensitivityE @ 3744 NONAME
-	_ZNK10QStringRef7indexOfERKS_iN2Qt15CaseSensitivityE @ 3745 NONAME
-	_ZNK10QStringRef7toAsciiEv @ 3746 NONAME
-	_ZNK10QStringRef8endsWithE13QLatin1StringN2Qt15CaseSensitivityE @ 3747 NONAME
-	_ZNK10QStringRef8endsWithE5QCharN2Qt15CaseSensitivityE @ 3748 NONAME
-	_ZNK10QStringRef8endsWithERK7QStringN2Qt15CaseSensitivityE @ 3749 NONAME
-	_ZNK10QStringRef8endsWithERKS_N2Qt15CaseSensitivityE @ 3750 NONAME
-	_ZNK10QStringRef8toLatin1Ev @ 3751 NONAME
-	_ZNK11QMetaObject4castEPK7QObject @ 3752 NONAME
-	_ZNK13QSharedMemory9nativeKeyEv @ 3753 NONAME
-	_ZNK4QUrl11isLocalFileEv @ 3754 NONAME
-	_ZNK7QObject17senderSignalIndexEv @ 3755 NONAME
-	_ZNK7QString10startsWithERK10QStringRefN2Qt15CaseSensitivityE @ 3756 NONAME
-	_ZNK7QString11lastIndexOfERK10QStringRefiN2Qt15CaseSensitivityE @ 3757 NONAME
-	_ZNK7QString5countERK10QStringRefN2Qt15CaseSensitivityE @ 3758 NONAME
-	_ZNK7QString7indexOfERK10QStringRefiN2Qt15CaseSensitivityE @ 3759 NONAME
-	_ZNK7QString8endsWithERK10QStringRefN2Qt15CaseSensitivityE @ 3760 NONAME
+	_ZN24QAbstractDeclarativeData17objectNameChangedE @ 3714 NONAME DATA 4
+	_ZN23QEventDispatcherSymbian36queueDeferredActiveObjectsCompletionEv @ 3715 NONAME
 

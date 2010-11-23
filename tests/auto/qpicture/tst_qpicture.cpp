@@ -64,6 +64,7 @@ private slots:
     void devType();
     void paintingActive();
     void boundingRect();
+    void swap();
     void operator_lt_lt();
 
     void save_restore();
@@ -153,6 +154,18 @@ void tst_QPicture::boundingRect()
         QRect r3(0, 0, 5, 5);
         QCOMPARE(p4.boundingRect(), r3);
     }
+}
+
+void tst_QPicture::swap()
+{
+    QPicture p1, p2;
+    QPainter(&p1).drawLine(0, 0, 5, 5);
+    QPainter(&p2).drawLine(0, 3, 3, 0);
+    QCOMPARE(p1.boundingRect(), QRect(0,0,5,5));
+    QCOMPARE(p2.boundingRect(), QRect(0,0,3,3));
+    p1.swap(p2);
+    QCOMPARE(p1.boundingRect(), QRect(0,0,3,3));
+    QCOMPARE(p2.boundingRect(), QRect(0,0,5,5));
 }
 
 // operator<< and operator>>

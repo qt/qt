@@ -208,7 +208,7 @@ bool QDeclarativeListModelWorkerAgent::event(QEvent *e)
         const QList<Change> &changes = s->data.changes;
 
         if (m_copy) {
-            bool cc = m_copy->count() != s->list->count();
+            bool cc = m_orig->count() != s->list->count();
 
             FlatListModel *orig = m_orig->m_flat;
             FlatListModel *copy = s->list->m_flat;

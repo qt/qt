@@ -45,6 +45,8 @@
 #include <qdeclarative.h>
 #include <qdeclarativeproperty.h>
 #include <QtCore/qobject.h>
+#include <private/qdeclarativebinding_p.h>
+#include <private/qdeclarativeglobal_p.h>
 
 QT_BEGIN_HEADER
 
@@ -56,7 +58,7 @@ class QDeclarativeActionEvent;
 class QDeclarativeAbstractBinding;
 class QDeclarativeBinding;
 class QDeclarativeExpression;
-class Q_DECLARATIVE_EXPORT QDeclarativeAction
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeAction
 {
 public:
     QDeclarativeAction();
@@ -74,7 +76,7 @@ public:
     QVariant toValue;
 
     QDeclarativeAbstractBinding *fromBinding;
-    QDeclarativeAbstractBinding *toBinding;
+    QDeclarativeAbstractBinding::Pointer toBinding;
     QDeclarativeActionEvent *event;
 
     //strictly for matching

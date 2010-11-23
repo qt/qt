@@ -635,6 +635,15 @@ QBrush &QBrush::operator=(const QBrush &b)
     return *this;
 }
 
+
+/*!
+    \fn void QBrush::swap(QBrush &other)
+    \since 4.8
+
+    Swaps brush \a other with this brush. This operation is very
+    fast and never fails.
+*/
+
 /*!
    Returns the brush as a QVariant
 */

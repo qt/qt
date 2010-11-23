@@ -44,6 +44,8 @@
 
 #include <QtCore/qglobal.h>
 
+#include <private/qdeclarativeglobal_p.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -58,6 +60,10 @@ class Q_DECLARATIVE_EXPORT QDeclarativeDebugHelper
 public:
     static QScriptEngine *getScriptEngine(QDeclarativeEngine *engine);
     static void setAnimationSlowDownFactor(qreal factor);
+
+    // Enables remote debugging functionality
+    // Only use this for debugging in a safe environment!
+    static void enableDebugging();
 };
 
 QT_END_NAMESPACE

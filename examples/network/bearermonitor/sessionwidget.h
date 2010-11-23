@@ -42,7 +42,8 @@
 #define SESSIONWIDGET_H
 
 #include <qnetworksession.h>
-#if defined(Q_WS_MAEMO_5) || defined(Q_WS_MAEMO_6)
+
+#ifdef MAEMO_UI
 #include "ui_sessionwidget_maemo.h"
 #else
 #include "ui_sessionwidget.h"
@@ -71,7 +72,7 @@ private Q_SLOTS:
     void stopSession();
     void updateSession();
     void updateSessionError(QNetworkSession::SessionError error);
-#if defined(Q_WS_MAEMO_5) || defined(Q_WS_MAEMO_6)
+#ifdef MAEMO_UI
     void deleteSession();
 #endif
 

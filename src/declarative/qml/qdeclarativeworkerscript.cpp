@@ -514,7 +514,7 @@ void QDeclarativeWorkerScriptEngine::run()
 
 /*!
     \qmlclass WorkerScript QDeclarativeWorkerScript
-  \ingroup qml-utility-elements
+    \ingroup qml-utility-elements
     \brief The WorkerScript element enables the use of threads in QML.
 
     Use WorkerScript to run operations in a new thread.
@@ -528,7 +528,7 @@ void QDeclarativeWorkerScriptEngine::run()
 
     \snippet doc/src/snippets/declarative/workerscript.qml 0
 
-    The above worker script specifies a javascript file, "script.js", that handles
+    The above worker script specifies a JavaScript file, "script.js", that handles
     the operations to be performed in the new thread. Here is \c script.js:
 
     \qml
@@ -542,6 +542,19 @@ void QDeclarativeWorkerScriptEngine::run()
     called, triggering the \tt WorkerScript.onMessage() handler in
     \tt script.js. This in turn sends a reply message that is then received
     by the \tt onMessage() handler of \tt myWorker.
+
+
+    \section3 Restrictions
+
+    Since the \c WorkerScript.onMessage() function is run in a separate thread, the
+    JavaScript file is evaluated in a context separate from the main QML engine. This means
+    that unlike an ordinary JavaScript file that is imported into QML, the \c script.js
+    in the above example cannot access the properties, methods or other attributes
+    of the QML item, nor can it access any context properties set on the QML object
+    through QDeclarativeContext.
+
+    Additionally, there are restrictions on the types of values that can be passed to and
+    from the worker script. See the sendMessage() documentation for details.
 
     \sa {declarative/threading/workerscript}{WorkerScript example},
         {declarative/threading/threadedlistmodel}{Threaded ListModel example}
@@ -586,6 +599,19 @@ void QDeclarativeWorkerScript::setSource(const QUrl &source)
     Sends the given \a message to a worker script handler in another
     thread. The other worker script handler can receive this message
     through the onMessage() handler.
+
+    The \c message object may only contain values of the following
+    types:
+
+    \list
+    \o boolean, number, string
+    \o JavaScript objects and arrays
+    \o ListModel objects (any other type of QObject* is not allowed)
+    \endlist
+
+    All objects and arrays are copied to the \c message. With the exception
+    of ListModel objects, any modifications by the other thread to an object
+    passed in \c message will not be reflected in the original object.
 */
 void QDeclarativeWorkerScript::sendMessage(const QScriptValue &message)
 {

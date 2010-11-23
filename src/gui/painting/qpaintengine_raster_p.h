@@ -254,6 +254,8 @@ protected:
     QRasterPaintEngine(QRasterPaintEnginePrivate &d, QPaintDevice *);
 private:
     friend struct QSpanData;
+    friend class QBlitterPaintEngine;
+    friend class QBlitterPaintEnginePrivate;
     void init();
 
     void fillRect(const QRectF &rect, QSpanData *data);
@@ -338,6 +340,7 @@ public:
     void initializeRasterizer(QSpanData *data);
 
     void recalculateFastImages();
+    bool canUseFastImageBlending(QPainter::CompositionMode mode, const QImage &image) const;
 
     QPaintDevice *device;
     QScopedPointer<QOutlineMapper> outlineMapper;

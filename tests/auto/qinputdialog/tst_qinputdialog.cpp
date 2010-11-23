@@ -74,6 +74,7 @@ private slots:
     void getItem_data();
     void getItem();
     void task256299_getTextReturnNullStringOnRejected();
+    void inputMethodHintsOfChildWidget();
 };
 
 QString stripFraction(const QString &s)
@@ -146,9 +147,10 @@ void testInvalidateAndRestore(
     QVERIFY(sbox->hasAcceptableInput());
     QVERIFY(okButton->isEnabled());
     QCOMPARE(sbox->value(), lastValidValue);
+    QLocale loc;
     QCOMPARE(
         normalizeNumericString(ledit->text()),
-        normalizeNumericString(QString("%1").arg(sbox->value())));
+        normalizeNumericString(loc.toString(sbox->value())));
 }
 
 template <typename SpinBoxType, typename ValueType>
@@ -168,9 +170,10 @@ void testGetNumeric(QInputDialog *dialog, SpinBoxType * = 0, ValueType * = 0)
     QVERIFY(sbox->value() >= sbox->minimum());
     QVERIFY(sbox->value() <= sbox->maximum());
     QVERIFY(sbox->hasAcceptableInput());
+    QLocale loc;
     QCOMPARE(
         normalizeNumericString(ledit->selectedText()),
-        normalizeNumericString(QString("%1").arg(sbox->value())));
+        normalizeNumericString(loc.toString(sbox->value())));
     QVERIFY(okButton->isEnabled());
 
     const ValueType origValue = sbox->value();
@@ -184,7 +187,7 @@ void testGetNumeric(QInputDialog *dialog, SpinBoxType * = 0, ValueType * = 0)
     testTypingValue<SpinBoxType>(sbox, okButton, "0.0");
     testTypingValue<SpinBoxType>(sbox, okButton, "foobar");
 
-    testTypingValue<SpinBoxType>(sbox, okButton, QString("%1").arg(origValue));
+    testTypingValue<SpinBoxType>(sbox, okButton, loc.toString(origValue));
 }
 
 void testGetText(QInputDialog *dialog)
@@ -402,6 +405,25 @@ void tst_QInputDialog::getItem()
     QVERIFY(ok);
     QCOMPARE(result, items[index]);
     delete parent;
+}
+
+void tst_QInputDialog::inputMethodHintsOfChildWidget()
+{
+    QInputDialog dialog;
+    dialog.setInputMode(QInputDialog::TextInput);
+    QList<QObject *> children = dialog.children();
+    QLineEdit *editWidget = 0;
+    for (int c = 0; c < children.size(); c++) {
+        editWidget = qobject_cast<QLineEdit *>(children.at(c));
+        if (editWidget)
+            break;
+    }
+    QVERIFY(editWidget);
+    QCOMPARE(editWidget->inputMethodHints(), dialog.inputMethodHints());
+    QCOMPARE(editWidget->inputMethodHints(), Qt::ImhNone);
+    dialog.setInputMethodHints(Qt::ImhDigitsOnly);
+    QCOMPARE(editWidget->inputMethodHints(), dialog.inputMethodHints());
+    QCOMPARE(editWidget->inputMethodHints(), Qt::ImhDigitsOnly);
 }
 
 QTEST_MAIN(tst_QInputDialog)

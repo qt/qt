@@ -364,7 +364,7 @@ private slots:
 
     void setClearAndResizeMask();
     void maskedUpdate();
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
     void syntheticEnterLeave();
     void taskQTBUG_4055_sendSyntheticEnterLeave();
 #endif
@@ -1966,7 +1966,7 @@ void tst_QWidget::showMaximized()
     layouted.showNormal();
     QVERIFY(!(layouted.windowState() & Qt::WindowMaximized));
 
-#if !defined(Q_WS_QWS) && !defined(Q_OS_WINCE) && !defined(Q_WS_S60)
+#if !defined(Q_WS_QWS) && !defined(Q_OS_WINCE) && !defined(Q_WS_S60) && !defined(Q_WS_QPA)
 //embedded may choose a different size to fit on the screen.
     QCOMPARE(layouted.size(), layouted.sizeHint());
 #endif
@@ -2065,7 +2065,7 @@ void tst_QWidget::showFullScreen()
     layouted.showNormal();
     QVERIFY(!(layouted.windowState() & Qt::WindowFullScreen));
 
-#if !defined(Q_WS_QWS) && !defined(Q_OS_WINCE) && !defined (Q_WS_S60)
+#if !defined(Q_WS_QWS) && !defined(Q_OS_WINCE) && !defined (Q_WS_S60) && !defined(Q_WS_QPA)
 //embedded may choose a different size to fit on the screen.
     QCOMPARE(layouted.size(), layouted.sizeHint());
 #endif
@@ -2154,7 +2154,10 @@ void tst_QWidget::resizeEvent()
         wParent.show();
         QCOMPARE (wChild.m_resizeEventCount, 1); // initial resize event before paint
         wParent.hide();
-        wChild.resize(QSize(640,480));
+        QSize safeSize(640,480);
+        if (wChild.size() == safeSize)
+            safeSize.setWidth(639);
+        wChild.resize(safeSize);
         QCOMPARE (wChild.m_resizeEventCount, 1);
         wParent.show();
         QCOMPARE (wChild.m_resizeEventCount, 2);
@@ -2165,7 +2168,10 @@ void tst_QWidget::resizeEvent()
         wTopLevel.show();
         QCOMPARE (wTopLevel.m_resizeEventCount, 1); // initial resize event before paint for toplevels
         wTopLevel.hide();
-        wTopLevel.resize(QSize(640,480));
+        QSize safeSize(640,480);
+        if (wTopLevel.size() == safeSize)
+            safeSize.setWidth(639);
+        wTopLevel.resize(safeSize);
         QCOMPARE (wTopLevel.m_resizeEventCount, 1);
         wTopLevel.show();
         QCOMPARE (wTopLevel.m_resizeEventCount, 2);
@@ -3362,6 +3368,10 @@ void tst_QWidget::widgetAt()
 #if defined(Q_OS_SYMBIAN)
     QEXPECT_FAIL("", "Symbian/S60 does only support rectangular regions", Continue); //See also task 147191
 #endif
+#if defined(Q_WS_QPA)
+    QEXPECT_FAIL("", "Window mask not implemented on Lighthouse", Continue); 
+#endif
+
     QTRY_COMPARE(QApplication::widgetAt(100,100)->objectName(), w1->objectName());
     QTRY_COMPARE(QApplication::widgetAt(101,101)->objectName(), w2->objectName());
 
@@ -3379,6 +3389,9 @@ void tst_QWidget::widgetAt()
 #endif
 #if defined(Q_OS_SYMBIAN)
     QEXPECT_FAIL("", "Symbian/S60 does only support rectangular regions", Continue); //See also task 147191
+#endif
+#if defined(Q_WS_QPA)
+    QEXPECT_FAIL("", "Window mask not implemented on Lighthouse", Continue); 
 #endif
     QTRY_VERIFY(QApplication::widgetAt(100,100) == w1);
     QTRY_VERIFY(QApplication::widgetAt(101,101) == w2);
@@ -5452,9 +5465,12 @@ public:
             QCOMPARE(pixmap.size(), rect.size());                       \
             QPixmap expectedPixmap(pixmap); /* ensure equal formats */  \
             expectedPixmap.fill(color);                                 \
-            if (pixmap.toImage().pixel(0,0) != QColor(color).rgb() && t < 4 ) \
+            QImage image = pixmap.toImage();                          \
+            uint alphaCorrection = image.format() == QImage::Format_RGB32 ? 0xff000000 : 0; \
+            uint firstPixel = image.pixel(0,0) | alphaCorrection;        \
+            if ( firstPixel != QColor(color).rgb() && t < 4 )          \
             { QTest::qWait(200); continue; }                            \
-            QCOMPARE(pixmap.toImage().pixel(0,0), QColor(color).rgb()); \
+            QCOMPARE(firstPixel, QColor(color).rgb());                  \
             QCOMPARE(pixmap, expectedPixmap);                           \
             break;                                                      \
         }                                                               \
@@ -6346,7 +6362,7 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             EventRecorder::EventList()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
+#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60) || defined(Q_WS_QPA)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
             ;
@@ -6442,7 +6458,7 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
+#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60) || defined(Q_WS_QPA)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
             ;
@@ -6538,7 +6554,7 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
+#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60) || defined(Q_WS_QPA)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
             ;
@@ -9151,7 +9167,7 @@ void tst_QWidget::maskedUpdate()
     QTRY_COMPARE(grandChild.paintedRegion, QRegion(grandChild.rect())); // Full update.
 }
 
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS)
+#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_QPA)
 void tst_QWidget::syntheticEnterLeave()
 {
     class MyWidget : public QWidget
@@ -9692,14 +9708,25 @@ void tst_QWidget::destroyBackingStoreWhenHidden()
     child.setAutoFillBackground(true);
     child.setPalette(Qt::blue);
 
+    QWidget grandChild(&child);
+    grandChild.setAutoFillBackground(true);
+    grandChild.setPalette(Qt::yellow);
+
     QVBoxLayout layout(&parent);
     layout.setContentsMargins(10, 10, 10, 10);
     layout.addWidget(&child);
     parent.setLayout(&layout);
 
-    child.winId();
+    QVBoxLayout childLayout(&child);
+    childLayout.setContentsMargins(10, 10, 10, 10);
+    childLayout.addWidget(&grandChild);
+    child.setLayout(&childLayout);
+
+    // Ensure that this widget and all its ancestors are native
+    grandChild.winId();
 
     parent.show();
+
     QTest::qWaitForWindowShown(&parent);
 
     // Check that child window does not obscure parent window
@@ -9708,18 +9735,24 @@ void tst_QWidget::destroyBackingStoreWhenHidden()
     // Native child widget should share parent's backing store
     QVERIFY(0 != backingStore(parent));
     QVERIFY(0 == backingStore(child));
+    QVERIFY(0 == backingStore(grandChild));
 
     // Make child widget full screen
     child.setWindowFlags((child.windowFlags() | Qt::Window) ^ Qt::SubWindow);
     child.setWindowState(child.windowState() | Qt::WindowFullScreen);
     child.show();
+
+    // Paint into the child to ensure that it gets a backing store
+    QPainter painter(&child);
+    painter.fillRect(QRect(0, 0, 90, 90), Qt::white);
+
     QTest::qWaitForWindowShown(&child);
 
     // Ensure that 'window hidden' event is received by parent
     qApp->processEvents();
 
     // Check that child window obscures parent window
-    QVERIFY(parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
+    QVERIFY(parent.visibleRegion().subtracted(child.visibleRegion() + grandChild.visibleRegion()).isEmpty());
 
     // Now that extent of child widget goes beyond parent's extent,
     // a new backing store should be created for the child widget.
@@ -9735,11 +9768,12 @@ void tst_QWidget::destroyBackingStoreWhenHidden()
     QTest::qWaitForWindowShown(&child);
 
     // Check that parent is now visible again
-    QVERIFY(!parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
+    QVERIFY(!parent.visibleRegion().subtracted(child.visibleRegion() + grandChild.visibleRegion()).isEmpty());
 
     // Native child widget should once again share parent's backing store
     QVERIFY(0 != backingStore(parent));
     QVERIFY(0 == backingStore(child));
+    QVERIFY(0 == backingStore(grandChild));
     }
 
     // 6. Partial reveal followed by full reveal

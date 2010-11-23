@@ -98,6 +98,21 @@ static inline void qt_flush(QWidget *widget, const QRegion &region, QWindowSurfa
         QWidgetBackingStore::showYellowThing(widget, region, flushUpdate * 10, false);
 #endif
 
+    //The performance hit by doing this should be negligible. However, be aware that
+    //using this FPS when you have > 1 windowsurface can give you inaccurate FPS
+    static bool fpsDebug = qgetenv("QT_DEBUG_FPS").toInt();
+    if (fpsDebug) {
+        static QTime time = QTime::currentTime();
+        static int frames = 0;
+
+        frames++;
+
+        if(time.elapsed() > 5000) {
+            double fps = double(frames * 1000) /time.restart();
+            fprintf(stderr,"FPS: %.1f\n",fps);
+            frames = 0;
+        }
+    }
     if (widget != tlw)
         windowSurface->flush(widget, region, tlwOffset + widget->mapTo(tlw, QPoint()));
     else
@@ -271,7 +286,11 @@ bool QWidgetBackingStore::bltRect(const QRect &rect, int dx, int dy, QWidget *wi
 void QWidgetBackingStore::releaseBuffer()
 {
     if (windowSurface)
+#if defined(Q_WS_QPA)
+        windowSurface->resize(QSize());
+#else
         windowSurface->setGeometry(QRect());
+#endif
 #ifdef Q_BACKINGSTORE_SUBSURFACES
     for (int i = 0; i < subSurfaces.size(); ++i)
         subSurfaces.at(i)->setGeometry(QRect());
@@ -401,7 +420,11 @@ QRegion QWidgetBackingStore::dirtyRegion(QWidget *widget) const
 {
     const bool widgetDirty = widget && widget != tlw;
     const QRect tlwRect(topLevelRect());
+#if defined(Q_WS_QPA)
+    const QRect surfaceGeometry(tlwRect.topLeft(), windowSurface->size());
+#else
     const QRect surfaceGeometry(windowSurface->geometry());
+#endif
     if (fullUpdatePending || (surfaceGeometry != tlwRect && surfaceGeometry.size() != tlwRect.size())) {
         if (widgetDirty) {
             const QRect dirtyTlwRect = QRect(QPoint(), tlwRect.size());
@@ -446,13 +469,17 @@ QRegion QWidgetBackingStore::dirtyRegion(QWidget *widget) const
 
 /*!
     Returns the static content inside the \a parent if non-zero; otherwise the static content
-    for the entire backing store is returned. The content will be clipped to \a withingClipRect
+    for the entire backing store is returned. The content will be clipped to \a withinClipRect
     if non-empty.
 */
 QRegion QWidgetBackingStore::staticContents(QWidget *parent, const QRect &withinClipRect) const
 {
     if (!parent && tlw->testAttribute(Qt::WA_StaticContents)) {
+#if defined(Q_WS_QPA)
+        const QSize surfaceGeometry(windowSurface->size());
+#else
         const QRect surfaceGeometry(windowSurface->geometry());
+#endif
         QRect surfaceRect(0, 0, surfaceGeometry.width(), surfaceGeometry.height());
         if (!withinClipRect.isEmpty())
             surfaceRect &= withinClipRect;
@@ -720,9 +747,8 @@ void QWidgetBackingStore::markDirtyOnScreen(const QRegion &region, QWidget *widg
     }
 
     // Alien widgets.
-    if (!widget->internalWinId()) {
-        QWidget *nativeParent = widget->nativeParentWidget();
-        // Alien widgets with the top-level as the native parent (common case).
+    if (!widget->internalWinId() && !widget->isWindow()) {
+        QWidget *nativeParent = widget->nativeParentWidget();        // Alien widgets with the top-level as the native parent (common case).
         if (nativeParent == tlw) {
             if (!widget->testAttribute(Qt::WA_WState_InPaintEvent))
                 dirtyOnScreen += region.translated(topLevelOffset);
@@ -1152,12 +1178,16 @@ void QWidgetBackingStore::sync()
         return;
     }
 
-    const bool inTopLevelResize = tlwExtra->inTopLevelResize;
     const bool updatesDisabled = !tlw->updatesEnabled();
-    const QRect tlwRect(topLevelRect());
-    const QRect surfaceGeometry(windowSurface->geometry());
     bool repaintAllWidgets = false;
 
+    const bool inTopLevelResize = tlwExtra->inTopLevelResize;
+    const QRect tlwRect(topLevelRect());
+#ifdef  Q_WS_QPA
+    const QRect surfaceGeometry(tlwRect.topLeft(), windowSurface->size());
+#else
+    const QRect surfaceGeometry(windowSurface->geometry());
+#endif
     if ((fullUpdatePending || inTopLevelResize || surfaceGeometry.size() != tlwRect.size()) && !updatesDisabled) {
         if (hasStaticContents()) {
             // Repaint existing dirty area and newly visible area.
@@ -1177,8 +1207,13 @@ void QWidgetBackingStore::sync()
         }
     }
 
+#ifdef Q_WS_QPA
+    if (inTopLevelResize || surfaceGeometry.size() != tlwRect.size())
+        windowSurface->resize(tlwRect.size());
+#else
     if (inTopLevelResize || surfaceGeometry != tlwRect)
         windowSurface->setGeometry(tlwRect);
+#endif
 
     if (updatesDisabled)
         return;

@@ -50,16 +50,18 @@
 #include "qwidget.h"
 #include "qevent.h"
 #include "private/qcore_symbian_p.h"
+#ifdef SYMBIAN_ENABLE_SPLIT_HEADERS
+#include "txtclipboard.h"
+#endif
+#include "txtetext.h"
 #include <QtDebug>
 
 // Symbian's clipboard
 #include <baclipb.h>
 QT_BEGIN_NAMESPACE
 
-//###  Mime Type mapping to UIDs
-
 const TUid KQtCbDataStream = {0x2001B2DD};
-
+const TInt KPlainTextBegin = 0;
 
 class QClipboardData
 {
@@ -141,7 +143,6 @@ void writeToStreamLX(const QMimeData* aData, RWriteStream& aStream)
     {
         HBufC* stringData = TPtrC(reinterpret_cast<const TUint16*>((*iter).utf16())).AllocLC();
         QByteArray ba = aData->data((*iter));
-        qDebug() << "copy to clipboard mime: " << *iter << " data: " << ba;
         // mime type
         aStream << TCardinality(stringData->Size());
         aStream << *(stringData);
@@ -150,6 +151,43 @@ void writeToStreamLX(const QMimeData* aData, RWriteStream& aStream)
         aStream.WriteL(reinterpret_cast<const uchar*>(ba.constData()),ba.size());
         CleanupStack::PopAndDestroy(stringData);
     }
+}
+
+void writeToSymbianStoreLX(const QMimeData* aData, CClipboard* clipboard)
+{
+    // This function both leaves and throws exceptions. There must be no destructor
+    // dependencies between cleanup styles, and no cleanup stack dependencies on stacked objects.
+    if (aData->hasText()) {
+        CPlainText* text = CPlainText::NewL();
+        CleanupStack::PushL(text);
+
+        TPtrC textPtr(qt_QString2TPtrC(aData->text()));
+        text->InsertL(KPlainTextBegin, textPtr);
+        text->CopyToStoreL(clipboard->Store(), clipboard->StreamDictionary(),
+                           KPlainTextBegin, textPtr.Length());
+        CleanupStack::PopAndDestroy(text);
+    }
+}
+
+void readSymbianStoreLX(QMimeData* aData, CClipboard* clipboard)
+{
+    // This function both leaves and throws exceptions. There must be no destructor
+    // dependencies between cleanup styles, and no cleanup stack dependencies on stacked objects.
+    CPlainText* text = CPlainText::NewL();
+    CleanupStack::PushL(text);
+    TInt dataLength = text->PasteFromStoreL(clipboard->Store(), clipboard->StreamDictionary(),
+                                            KPlainTextBegin);
+    if (dataLength == 0) {
+        User::Leave(KErrNotFound);
+    }
+    HBufC* hBuf = HBufC::NewL(dataLength);
+    TPtr buf = hBuf->Des();
+    text->Extract(buf, KPlainTextBegin, dataLength);
+
+    QString string = qt_TDesC2QString(buf);
+    CleanupStack::PopAndDestroy(text);
+
+    aData->setText(string);
 }
 
 void readFromStreamLX(QMimeData* aData,RReadStream& aStream)
@@ -174,7 +212,6 @@ void readFromStreamLX(QMimeData* aData,RReadStream& aStream)
         ba.reserve(dataSize);
         aStream.ReadL(reinterpret_cast<uchar*>(ba.data_ptr()->data),dataSize);
         ba.data_ptr()->size = dataSize;
-        qDebug() << "paste from clipboard mime: " << mimeType << " data: " << ba;
         aData->setData(mimeType,ba);
     }
 }
@@ -192,23 +229,42 @@ const QMimeData* QClipboard::mimeData(Mode mode) const
 {
     if (mode != Clipboard) return 0;
     QClipboardData *d = clipboardData();
+    bool dataExists(false);
     if (d)
     {
         TRAPD(err,{
             RFs fs = qt_s60GetRFs();
             CClipboard* cb = CClipboard::NewForReadingLC(fs);
             Q_ASSERT(cb);
+            //stream for qt
             RStoreReadStream stream;
             TStreamId stid = (cb->StreamDictionary()).At(KQtCbDataStream);
-            stream.OpenLC(cb->Store(),stid);
-            QT_TRYCATCH_LEAVING(readFromStreamLX(d->source(),stream));
-            CleanupStack::PopAndDestroy(2,cb);
-            return d->source();
+            if (stid != 0) {
+                stream.OpenLC(cb->Store(),stid);
+                QT_TRYCATCH_LEAVING(readFromStreamLX(d->source(),stream));
+                CleanupStack::PopAndDestroy(&stream);
+                dataExists = true;
+            }
+            else {
+                //symbian clipboard
+                RStoreReadStream symbianStream;
+                TStreamId symbianStId = (cb->StreamDictionary()).At(KClipboardUidTypePlainText);
+                if (symbianStId != 0) {
+                    symbianStream.OpenLC(cb->Store(), symbianStId);
+                    QT_TRYCATCH_LEAVING(readSymbianStoreLX(d->source(), cb));
+                    CleanupStack::PopAndDestroy(&symbianStream);
+                    dataExists = true;
+                }
+            }
+            CleanupStack::PopAndDestroy(cb);
         });
         if (err != KErrNone){
             qDebug()<< "clipboard is empty/err: " << err;
         }
 
+        if (dataExists) {
+            return d->source();
+        }
     }
     return 0;
 }
@@ -223,6 +279,7 @@ void QClipboard::setMimeData(QMimeData* src, Mode mode)
         TRAPD(err,{
             RFs fs = qt_s60GetRFs();
             CClipboard* cb = CClipboard::NewForWritingLC(fs);
+            //stream for qt
             RStoreWriteStream  stream;
             TStreamId stid = stream.CreateLC(cb->Store());
             QT_TRYCATCH_LEAVING(writeToStreamLX(src,stream));
@@ -230,7 +287,14 @@ void QClipboard::setMimeData(QMimeData* src, Mode mode)
             stream.CommitL();
             (cb->StreamDictionary()).AssignL(KQtCbDataStream,stid);
             cb->CommitL();
-            CleanupStack::PopAndDestroy(2,cb);
+
+            //stream for symbian
+            RStoreWriteStream symbianStream;
+            TStreamId symbianStId = symbianStream.CreateLC(cb->Store());
+            QT_TRYCATCH_LEAVING(writeToSymbianStoreLX(src, cb));
+            (cb->StreamDictionary()).AssignL(KClipboardUidTypePlainText, symbianStId);
+            cb->CommitL();
+            CleanupStack::PopAndDestroy(3,cb);
         });
         if (err != KErrNone){
             qDebug()<< "clipboard write err :" << err;

@@ -7,10 +7,12 @@ SUBDIRS=\
            qscriptengine \
            qscriptengineagent \
            qscriptenginedebugger \
+           qscriptextensionplugin \
            qscriptextqobject \
            qscriptjstestsuite \
            qscriptstring \
            qscriptv8testsuite \
            qscriptvalue \
+           qscriptvaluegenerated \
            qscriptvalueiterator \
 

@@ -548,7 +548,7 @@ void QWidgetPrivate::show_sys()
 
         id->MakeVisible(true);
 
-        if(q->isWindow())
+        if(q->isWindow()&&!q->testAttribute(Qt::WA_ShowWithoutActivating))
             id->setFocusSafely(true);
     }
 
@@ -581,7 +581,7 @@ void QWidgetPrivate::hide_sys()
     QSymbianControl *id = static_cast<QSymbianControl *>(q->internalWinId());
 
     if (id) {
-        //Incorrect optimisation - for popup windows, Qt's focus is moved before
+        //Incorrect optimization - for popup windows, Qt's focus is moved before
         //hide_sys is called, resulting in the popup window keeping its elevated
         //position in the CONE control stack.
         //This can result in keyboard focus being in an invisible widget in some
@@ -713,7 +713,8 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     // old_winid may not have received a 'not visible' visibility
     // changed event before being destroyed; make sure that it is
     // removed from the backing store's list of visible windows.
-    S60->controlVisibilityChanged(old_winid, false);
+    if (old_winid)
+        S60->controlVisibilityChanged(old_winid, false);
 
     setWinId(0);
 

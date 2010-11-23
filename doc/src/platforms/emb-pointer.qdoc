@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -186,8 +186,11 @@
     device file. Some drivers also require write access to the device file. 
     For instance, if you have specified the mouse driver with
     \snippet doc/src/snippets/code/doc_src_emb-pointer.qdoc 11
-    then examine the permissions of the device file by entering the following
-    command in a console:
+    then examine the permissions of the device file by entering the
+    following command in a console:
+    \snippet doc/src/snippets/code/doc_src_emb-pointer.qdoc show permissions
+    Change the permissions of the device file, if necessary, in the following
+    way:
     \snippet doc/src/snippets/code/doc_src_emb-pointer.qdoc 12
 
     If the device file is actually a symbolic link to another file, you must

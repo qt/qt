@@ -144,6 +144,7 @@ public:
     inline QImage &operator=(QImage &&other)
     { qSwap(d, other.d); return *this; }
 #endif
+    inline void swap(QImage &other) { qSwap(d, other.d); }
 
     bool isNull() const;
 
@@ -334,6 +335,7 @@ private:
     QImageData *d;
 
     friend class QRasterPixmapData;
+    friend class QBlittablePixmapData;
     friend class QPixmapCacheEntry;
     friend Q_GUI_EXPORT qint64 qt_image_id(const QImage &image);
     friend const QVector<QRgb> *qt_image_colortable(const QImage &image);

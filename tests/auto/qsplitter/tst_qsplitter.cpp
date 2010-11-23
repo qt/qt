@@ -1230,7 +1230,8 @@ void tst_QSplitter::testShowHide()
 
     QSplitter *split = new QSplitter(Qt::Horizontal);
 
-    QWidget widget;
+    QWidget topLevel;
+    QWidget widget(&topLevel);
     widget.resize(400 + split->handleWidth(), 200);
     QVBoxLayout *lay=new QVBoxLayout(&widget);
     lay->setMargin(0);
@@ -1240,7 +1241,7 @@ void tst_QSplitter::testShowHide()
     split->setSizes(QList<int>() << 200 << 200);
     lay->addWidget(split);
     widget.setLayout(lay);
-    widget.show();
+    topLevel.show();
 
     QTest::qWait(100);
 
@@ -1378,8 +1379,9 @@ class MyTextEdit : public QTextEdit
 
 void tst_QSplitter::task169702_sizes()
 {
+    QWidget topLevel;
     // Create two nested (non-collapsible) splitters
-    QSplitter* outerSplitter = new QSplitter(Qt::Vertical);
+    QSplitter* outerSplitter = new QSplitter(Qt::Vertical, &topLevel);
     outerSplitter->setChildrenCollapsible(false);
     QSplitter* splitter = new QSplitter(Qt::Horizontal, outerSplitter);
     splitter->setChildrenCollapsible(false);
@@ -1396,12 +1398,12 @@ void tst_QSplitter::task169702_sizes()
     splitter->addWidget(new QTextEdit("Bar"));
 
     outerSplitter->setGeometry(100, 100, 500, 500);
-    outerSplitter->show();
+    topLevel.show();
 
     QTest::qWait(100);
     testW->m_iFactor++;
     testW->updateGeometry();
-    QTest::qWait(100);
+    QTest::qWait(500);//100 is too fast for Maemo
 
     //Make sure the minimimSizeHint is respected
     QCOMPARE(testW->size().height(), testW->minimumSizeHint().height());

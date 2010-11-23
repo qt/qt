@@ -6,3 +6,4 @@ SOURCES  += tst_qcontiguouscache.cpp
 
 
 
+CONFIG += parallel_test

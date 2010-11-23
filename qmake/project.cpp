@@ -76,7 +76,7 @@
 
 QT_BEGIN_NAMESPACE
 
-//expand fucntions
+//expand functions
 enum ExpandFunc { E_MEMBER=1, E_FIRST, E_LAST, E_CAT, E_FROMFILE, E_EVAL, E_LIST,
                   E_SPRINTF, E_JOIN, E_SPLIT, E_BASENAME, E_DIRNAME, E_SECTION,
                   E_FIND, E_SYSTEM, E_UNIQUE, E_QUOTE, E_ESCAPE_EXPAND,
@@ -677,7 +677,23 @@ QMakeProject::reset()
 bool
 QMakeProject::parse(const QString &t, QMap<QString, QStringList> &place, int numLines)
 {
-    QString s = t.simplified();
+    // To preserve the integrity of any UTF-8 characters in .pro file, temporarily replace the
+    // non-breaking space (0xA0) characters with another non-space character, so that
+    // QString::simplified() call will not replace it with space.
+    // Note: There won't be any two byte characters in .pro files, so 0x10A0 should be a safe
+    // replacement character.
+    static QChar nbsp(0xA0);
+    static QChar nbspFix(0x01A0);
+    QString s;
+    if (t.indexOf(nbsp) != -1) {
+        s = t;
+        s.replace(nbsp, nbspFix);
+        s = s.simplified();
+        s.replace(nbspFix, nbsp);
+    } else {
+        s = t.simplified();
+    }
+
     int hash_mark = s.indexOf("#");
     if(hash_mark != -1) //good bye comments
         s = s.left(hash_mark);
@@ -1063,7 +1079,7 @@ QMakeProject::parse(const QString &t, QMap<QString, QStringList> &place, int num
 #undef SKIP_WS
 
     doVariableReplace(var, place);
-    var = varMap(var); //backwards compatability
+    var = varMap(var); //backwards compatibility
     if(!var.isEmpty() && Option::mkfile::do_preprocess) {
         static QString last_file("*none*");
         if(parser.file != last_file) {

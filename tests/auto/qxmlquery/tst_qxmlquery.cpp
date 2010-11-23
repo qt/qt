@@ -455,6 +455,7 @@ void tst_QXmlQuery::assignmentOperator() const
     class ReturnURI : public QAbstractUriResolver
     {
     public:
+        ReturnURI() {}
         virtual QUrl resolve(const QUrl &relative,
                              const QUrl &baseURI) const
         {
@@ -1197,9 +1198,15 @@ void tst_QXmlQuery::basicXQueryToQtTypeCheck() const
     expectedValues.append(QVariant()); /* xs:dayTimeDuration */
     expectedValues.append(QVariant()); /* xs:yearMonthDuration */
 
-    expectedValues.append(QVariant(double(3e3)));     /* xs:float */
-    expectedValues.append(QVariant(double(4e4)));     /* xs:double */
-    expectedValues.append(QVariant(double(2)));       /* xs:decimal */
+    if(sizeof(qreal) == sizeof(float)) {//ARM casts to Float not to double
+        expectedValues.append(QVariant(float(3e3)));     /* xs:float */
+        expectedValues.append(QVariant(float(4e4)));     /* xs:double */
+        expectedValues.append(QVariant(float(2)));       /* xs:decimal */
+    } else {
+        expectedValues.append(QVariant(double(3e3)));     /* xs:float */
+        expectedValues.append(QVariant(double(4e4)));     /* xs:double */
+        expectedValues.append(QVariant(double(2)));       /* xs:decimal */
+    }
 
     /* xs:integer and its sub-types. */
     expectedValues.append(QVariant(qlonglong(16)));
@@ -1347,10 +1354,17 @@ void tst_QXmlQuery::basicQtToXQueryTypeCheck() const
     QVERIFY(!item.isNull());
     QVERIFY(item.isAtomicValue());
 
-    QCOMPARE(item.toAtomicValue().toString(),
-             QLatin1String("4 true 3 654 7 41414141 C 2000-10-11Z 2001-09-10T01:02:03 "
-                           "A QString http://example.com/ 5 6 true true true true true true true true true true "
-                           "true true true"));
+    if(sizeof(qreal) == sizeof(float)) //ARM casts to Float not to double
+        QCOMPARE(item.toAtomicValue().toString(),
+                 QLatin1String("4 true 3 654 7 41414141 C 2000-10-11Z 2001-09-10T01:02:03 "
+                               "A QString http://example.com/ 5 6 true false false true true true true true true true "
+                               "true true true"));
+    else
+        QCOMPARE(item.toAtomicValue().toString(),
+                 QLatin1String("4 true 3 654 7 41414141 C 2000-10-11Z 2001-09-10T01:02:03 "
+                               "A QString http://example.com/ 5 6 true true true true true true true true true true "
+                               "true true true"));
+
 }
 
 void tst_QXmlQuery::bindNode() const
@@ -2858,6 +2872,7 @@ void tst_QXmlQuery::useUriResolver() const
                           , private TestFundament
     {
     public:
+        TestUriResolver() {}
         virtual QUrl resolve(const QUrl &relative,
                              const QUrl &baseURI) const
         {

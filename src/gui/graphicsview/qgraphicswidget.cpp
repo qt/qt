@@ -450,7 +450,7 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
     bottom.
 
     Contents margins are used by the assigned layout to define the placement
-    of subwidgets and layouts. Margins are particularily useful for widgets
+    of subwidgets and layouts. Margins are particularly useful for widgets
     that constrain subwidgets to only a section of its own geometry. For
     example, a group box with a layout will place subwidgets inside its frame,
     but below the title.
@@ -750,6 +750,22 @@ QSizeF QGraphicsWidget::sizeHint(Qt::SizeHint which, const QSizeF &constraint) c
 /*!
     \property QGraphicsWidget::layout
     \brief The layout of the widget
+
+    Any existing layout manager is deleted before the new layout is assigned. If
+     \a layout is 0, the widget is left without a layout. Existing subwidgets'
+    geometries will remain unaffected.
+
+    QGraphicsWidget takes ownership of \a layout.
+
+    All widgets that are currently managed by \a layout or all of its
+    sublayouts, are automatically reparented to this item. The layout is then
+    invalidated, and the child widget geometries are adjusted according to
+    this item's geometry() and contentsMargins(). Children who are not
+    explicitly managed by \a layout remain unaffected by the layout after
+    it has been assigned to this widget.
+
+    If no layout is currently managing this widget, layout() will return 0.
+
 */
 
 /*!

@@ -82,15 +82,16 @@ private:
     static QSet<QUrl> errors;
 };
 
-DEFINE_BOOL_CONFIG_OPTION(disableImageCache, QML_DISABLE_IMAGE_CACHE);
+DEFINE_BOOL_CONFIG_OPTION(enableImageCache, QML_ENABLE_TEXT_IMAGE_CACHE);
 
 QDeclarativeTextPrivate::QDeclarativeTextPrivate()
-: color((QRgb)0), style(QDeclarativeText::Normal),
-  hAlign(QDeclarativeText::AlignLeft), vAlign(QDeclarativeText::AlignTop), elideMode(QDeclarativeText::ElideNone),
-  imgDirty(true), dirty(true), richText(false), singleline(false), cache(true), internalWidthUpdate(false), doc(0),
-  format(QDeclarativeText::AutoText), wrapMode(QDeclarativeText::NoWrap)
+: color((QRgb)0), style(QDeclarativeText::Normal), hAlign(QDeclarativeText::AlignLeft), 
+  vAlign(QDeclarativeText::AlignTop), elideMode(QDeclarativeText::ElideNone),
+  format(QDeclarativeText::AutoText), wrapMode(QDeclarativeText::NoWrap), imageCacheDirty(true), 
+  updateOnComponentComplete(true), richText(false), singleline(false), cacheAllTextAsImage(true), 
+  internalWidthUpdate(false), doc(0) 
 {
-    cache = !disableImageCache();
+    cacheAllTextAsImage = enableImageCache();
     QGraphicsItemPrivate::acceptedMouseButtons = Qt::LeftButton;
     QGraphicsItemPrivate::flags = QGraphicsItemPrivate::flags & ~QGraphicsItem::ItemHasNoContents;
 }
@@ -151,7 +152,6 @@ void QTextDocumentWithImageResources::requestFinished()
 #endif
         QDeclarativeTextPrivate *d = QDeclarativeTextPrivate::get(textItem);
         d->updateLayout();
-        d->markImgDirty();
     }
 }
 
@@ -171,6 +171,384 @@ void QTextDocumentWithImageResources::setText(const QString &text)
 }
 
 QSet<QUrl> QTextDocumentWithImageResources::errors;
+
+QDeclarativeTextPrivate::~QDeclarativeTextPrivate()
+{
+}
+
+void QDeclarativeTextPrivate::updateLayout()
+{
+    Q_Q(QDeclarativeText);
+    if (!q->isComponentComplete()) {
+        updateOnComponentComplete = true;
+        return;
+    }
+
+    // Setup instance of QTextLayout for all cases other than richtext
+    if (!richText) {
+        layout.clearLayout();
+        layout.setFont(font);
+        if (format != QDeclarativeText::StyledText) {
+            QString tmp = text;
+            tmp.replace(QLatin1Char('\n'), QChar::LineSeparator);
+            singleline = !tmp.contains(QChar::LineSeparator);
+            if (singleline && elideMode != QDeclarativeText::ElideNone && q->widthValid()) {
+                QFontMetrics fm(font);
+                tmp = fm.elidedText(tmp,(Qt::TextElideMode)elideMode,q->width()); // XXX still worth layout...?
+            }
+            layout.setText(tmp);
+        } else {
+            singleline = false;
+            QDeclarativeStyledText::parse(text, layout);
+        }
+    }
+
+    updateSize();
+}
+
+void QDeclarativeTextPrivate::updateSize()
+{
+    Q_Q(QDeclarativeText);
+
+    if (!q->isComponentComplete()) {
+        updateOnComponentComplete = true;
+        return;
+    }
+
+    invalidateImageCache();
+
+    QFontMetrics fm(font);
+    if (text.isEmpty()) {
+        q->setImplicitWidth(0);
+        q->setImplicitHeight(fm.height());
+        emit q->paintedSizeChanged();
+        q->update();
+        return;
+    }
+
+    int dy = q->height();
+    QSize size(0, 0);
+
+    //setup instance of QTextLayout for all cases other than richtext
+    if (!richText) {
+        size = setupTextLayout();
+        if (layedOutTextSize != size) {
+            q->prepareGeometryChange();
+            layedOutTextSize = size;
+        }
+        dy -= size.height();
+    } else {
+        singleline = false; // richtext can't elide or be optimized for single-line case
+        ensureDoc();
+        doc->setDefaultFont(font);
+        QTextOption option((Qt::Alignment)int(hAlign | vAlign));
+        option.setWrapMode(QTextOption::WrapMode(wrapMode));
+        doc->setDefaultTextOption(option);
+        if (wrapMode != QDeclarativeText::NoWrap && q->widthValid())
+            doc->setTextWidth(q->width());
+        else
+            doc->setTextWidth(doc->idealWidth()); // ### Text does not align if width is not set (QTextDoc bug)
+        dy -= (int)doc->size().height();
+        QSize dsize = doc->size().toSize();
+        if (dsize != layedOutTextSize) {
+            q->prepareGeometryChange();
+            layedOutTextSize = dsize;
+        }
+        size = QSize(int(doc->idealWidth()),dsize.height());
+    }
+    int yoff = 0;
+
+    if (q->heightValid()) {
+        if (vAlign == QDeclarativeText::AlignBottom)
+            yoff = dy;
+        else if (vAlign == QDeclarativeText::AlignVCenter)
+            yoff = dy/2;
+    }
+    q->setBaselineOffset(fm.ascent() + yoff);
+
+    //### need to comfirm cost of always setting these for richText
+    internalWidthUpdate = true;
+    q->setImplicitWidth(size.width());
+    internalWidthUpdate = false;
+    q->setImplicitHeight(size.height());
+    emit q->paintedSizeChanged();
+    q->update();
+}
+
+/*!
+    Lays out the QDeclarativeTextPrivate::layout QTextLayout in the constraints of the QDeclarativeText.
+
+    Returns the size of the final text.  This can be used to position the text vertically (the text is
+    already absolutely positioned horizontally).
+*/
+QSize QDeclarativeTextPrivate::setupTextLayout()
+{
+    // ### text layout handling should be profiled and optimized as needed
+    // what about QStackTextEngine engine(tmp, d->font.font()); QTextLayout textLayout(&engine);
+    Q_Q(QDeclarativeText);
+    layout.setCacheEnabled(true);
+
+    qreal height = 0;
+    qreal widthUsed = 0;
+    qreal lineWidth = 0;
+
+    //set manual width
+    if ((wrapMode != QDeclarativeText::NoWrap || elideMode != QDeclarativeText::ElideNone) && q->widthValid())
+        lineWidth = q->width();
+
+    QTextOption textOption = layout.textOption();
+    textOption.setWrapMode(QTextOption::WrapMode(wrapMode));
+    layout.setTextOption(textOption);
+
+    layout.beginLayout();
+    forever {
+        QTextLine line = layout.createLine();
+        if (!line.isValid())
+            break;
+
+        if (lineWidth)
+            line.setLineWidth(lineWidth);
+    }
+    layout.endLayout();
+
+    for (int i = 0; i < layout.lineCount(); ++i) {
+        QTextLine line = layout.lineAt(i);
+        widthUsed = qMax(widthUsed, line.naturalTextWidth());
+    }
+
+    qreal layoutWidth = q->widthValid() ? q->width() : widthUsed;
+
+    qreal x = 0;
+    for (int i = 0; i < layout.lineCount(); ++i) {
+        QTextLine line = layout.lineAt(i);
+        line.setPosition(QPointF(0, height));
+        height += line.height();
+
+        if (!cacheAllTextAsImage) {
+            if (hAlign == QDeclarativeText::AlignLeft) {
+                x = 0;
+            } else if (hAlign == QDeclarativeText::AlignRight) {
+                x = layoutWidth - line.naturalTextWidth();
+            } else if (hAlign == QDeclarativeText::AlignHCenter) {
+                x = (layoutWidth - line.naturalTextWidth()) / 2;
+            }
+            line.setPosition(QPointF(x, line.y()));
+        }
+    }
+
+    return layout.boundingRect().toAlignedRect().size();
+}
+
+/*!
+    Returns a painted version of the QDeclarativeTextPrivate::layout QTextLayout.
+    If \a drawStyle is true, the style color overrides all colors in the document.
+*/
+QPixmap QDeclarativeTextPrivate::textLayoutImage(bool drawStyle)
+{
+    //do layout
+    QSize size = layedOutTextSize;
+
+    qreal x = 0;
+    for (int i = 0; i < layout.lineCount(); ++i) {
+        QTextLine line = layout.lineAt(i);
+        if (hAlign == QDeclarativeText::AlignLeft) {
+            x = 0;
+        } else if (hAlign == QDeclarativeText::AlignRight) {
+            x = size.width() - line.naturalTextWidth();
+        } else if (hAlign == QDeclarativeText::AlignHCenter) {
+            x = (size.width() - line.naturalTextWidth()) / 2;
+        }
+        line.setPosition(QPointF(x, line.y()));
+    }
+
+    //paint text
+    QPixmap img(size);
+    if (!size.isEmpty()) {
+        img.fill(Qt::transparent);
+#ifdef Q_WS_MAC
+        bool oldSmooth = qt_applefontsmoothing_enabled;
+        qt_applefontsmoothing_enabled = false;
+#endif
+        QPainter p(&img);
+#ifdef Q_WS_MAC
+        qt_applefontsmoothing_enabled = oldSmooth;
+#endif
+        drawTextLayout(&p, QPointF(0,0), drawStyle);
+    }
+    return img;
+}
+
+/*!
+    Paints the QDeclarativeTextPrivate::layout QTextLayout into \a painter at \a pos.  If 
+    \a drawStyle is true, the style color overrides all colors in the document.
+*/
+void QDeclarativeTextPrivate::drawTextLayout(QPainter *painter, const QPointF &pos, bool drawStyle)
+{
+    if (drawStyle)
+        painter->setPen(styleColor);
+    else
+        painter->setPen(color);
+    painter->setFont(font);
+    layout.draw(painter, pos); 
+}
+
+/*!
+    Returns a painted version of the QDeclarativeTextPrivate::doc QTextDocument.
+    If \a drawStyle is true, the style color overrides all colors in the document.
+*/
+QPixmap QDeclarativeTextPrivate::textDocumentImage(bool drawStyle)
+{
+    QSize size = doc->size().toSize();
+
+    //paint text
+    QPixmap img(size);
+    img.fill(Qt::transparent);
+#ifdef Q_WS_MAC
+    bool oldSmooth = qt_applefontsmoothing_enabled;
+    qt_applefontsmoothing_enabled = false;
+#endif
+    QPainter p(&img);
+#ifdef Q_WS_MAC
+    qt_applefontsmoothing_enabled = oldSmooth;
+#endif
+
+    QAbstractTextDocumentLayout::PaintContext context;
+
+    QTextOption oldOption(doc->defaultTextOption());
+    if (drawStyle) {
+        context.palette.setColor(QPalette::Text, styleColor);
+        QTextOption colorOption(doc->defaultTextOption());
+        colorOption.setFlags(QTextOption::SuppressColors);
+        doc->setDefaultTextOption(colorOption);
+    } else {
+        context.palette.setColor(QPalette::Text, color);
+    }
+    doc->documentLayout()->draw(&p, context);
+    if (drawStyle)
+        doc->setDefaultTextOption(oldOption);
+    return img;
+}
+
+/*!
+    Mark the image cache as dirty.
+*/
+void QDeclarativeTextPrivate::invalidateImageCache() 
+{
+    Q_Q(QDeclarativeText);
+
+    if (imageCacheDirty)
+        return;
+
+    imageCacheDirty = true;
+    imageCache = QPixmap();
+
+    if (q->isComponentComplete())
+        q->update();
+}
+
+/*!
+    Tests if the image cache is dirty, and repaints it if it is.
+*/
+void QDeclarativeTextPrivate::checkImageCache()
+{
+    if (!imageCacheDirty)
+        return;
+
+    if (text.isEmpty()) {
+
+        imageCache = QPixmap();
+
+    } else {
+
+        QPixmap textImage;
+        QPixmap styledImage;
+
+        if (richText) {
+            textImage = textDocumentImage(false);
+            if (style != QDeclarativeText::Normal)
+                styledImage = textDocumentImage(true); //### should use styleColor
+        } else {
+            textImage = textLayoutImage(false);
+            if (style != QDeclarativeText::Normal)
+                styledImage = textLayoutImage(true); //### should use styleColor
+        }
+
+        switch (style) {
+        case QDeclarativeText::Outline:
+            imageCache = drawOutline(textImage, styledImage);
+            break;
+        case QDeclarativeText::Sunken:
+            imageCache = drawOutline(textImage, styledImage, -1);
+            break;
+        case QDeclarativeText::Raised:
+            imageCache = drawOutline(textImage, styledImage, 1);
+            break;
+        default:
+            imageCache = textImage;
+            break;
+        }
+
+    } 
+
+    imageCacheDirty = false;
+}
+
+/*! 
+    Ensures the QDeclarativeTextPrivate::doc variable is set to a valid text document 
+*/
+void QDeclarativeTextPrivate::ensureDoc()
+{
+    if (!doc) {
+        Q_Q(QDeclarativeText);
+        doc = new QTextDocumentWithImageResources(q);
+        doc->setDocumentMargin(0);
+    }
+}
+
+/*!
+    Draw \a styleSource as an outline around \a source and return the new image.
+*/
+QPixmap QDeclarativeTextPrivate::drawOutline(const QPixmap &source, const QPixmap &styleSource)
+{
+    QPixmap img = QPixmap(styleSource.width() + 2, styleSource.height() + 2);
+    img.fill(Qt::transparent);
+
+    QPainter ppm(&img);
+
+    QPoint pos(0, 0);
+    pos += QPoint(-1, 0);
+    ppm.drawPixmap(pos, styleSource);
+    pos += QPoint(2, 0);
+    ppm.drawPixmap(pos, styleSource);
+    pos += QPoint(-1, -1);
+    ppm.drawPixmap(pos, styleSource);
+    pos += QPoint(0, 2);
+    ppm.drawPixmap(pos, styleSource);
+
+    pos += QPoint(0, -1);
+    ppm.drawPixmap(pos, source);
+    ppm.end();
+
+    return img;
+}
+
+/*!
+    Draw \a styleSource below \a source at \a yOffset and return the new image.
+*/
+QPixmap QDeclarativeTextPrivate::drawOutline(const QPixmap &source, const QPixmap &styleSource, int yOffset)
+{
+    QPixmap img = QPixmap(styleSource.width() + 2, styleSource.height() + 2);
+    img.fill(Qt::transparent);
+
+    QPainter ppm(&img);
+
+    ppm.drawPixmap(QPoint(0, yOffset), styleSource);
+    ppm.drawPixmap(0, 0, source);
+
+    ppm.end();
+
+    return img;
+}
 
 /*!
     \qmlclass Text QDeclarativeText
@@ -211,10 +589,44 @@ QDeclarativeText::~QDeclarativeText()
 {
 }
 
+/*!
+  \qmlproperty bool Text::clip
+  This property holds whether the text is clipped.
 
-QDeclarativeTextPrivate::~QDeclarativeTextPrivate()
-{
-}
+  Note that if the text does not fit in the bounding rectangle it will be abruptly chopped.
+
+  If you want to display potentially long text in a limited space, you probably want to use \c elide instead.
+*/
+
+/*!
+    \qmlproperty bool Text::smooth
+
+    This property holds whether the text is smoothly scaled or transformed.
+
+    Smooth filtering gives better visual quality, but is slower.  If
+    the item is displayed at its natural size, this property has no visual or
+    performance effect.
+
+    \note Generally scaling artifacts are only visible if the item is stationary on
+    the screen.  A common pattern when animating an item is to disable smooth
+    filtering at the beginning of the animation and reenable it at the conclusion.
+*/
+
+/*!
+    \qmlsignal Text::onLinkActivated(string link)
+
+    This handler is called when the user clicks on a link embedded in the text.
+    The link must be in rich text or HTML format and the 
+    \a link string provides access to the particular link. 
+
+    \snippet doc/src/snippets/declarative/text/onLinkActivated.qml 0
+
+    The example code will display the text 
+    "The main website is at \l{http://qt.nokia.com}{Nokia Qt DF}."
+
+    Clicking on the highlighted link will output 
+    \tt{http://qt.nokia.com link activated} to the console.
+*/
 
 /*!
     \qmlproperty string Text::font.family
@@ -320,7 +732,6 @@ QDeclarativeTextPrivate::~QDeclarativeTextPrivate()
     Text { text: "Hello"; font.capitalization: Font.AllLowercase }
     \endqml
 */
-
 QFont QDeclarativeText::font() const
 {
     Q_D(const QDeclarativeText);
@@ -334,30 +745,9 @@ void QDeclarativeText::setFont(const QFont &font)
         return;
 
     d->font = font;
-
     d->updateLayout();
-    d->markImgDirty();
+
     emit fontChanged(d->font);
-}
-
-void QDeclarativeText::setText(const QString &n)
-{
-    Q_D(QDeclarativeText);
-    if (d->text == n)
-        return;
-
-    d->richText = d->format == RichText || (d->format == AutoText && Qt::mightBeRichText(n));
-    if (d->richText) {
-        if (isComponentComplete()) {
-            d->ensureDoc();
-            d->doc->setText(n);
-        }
-    }
-
-    d->text = n;
-    d->updateLayout();
-    d->markImgDirty();
-    emit textChanged(d->text);
 }
 
 /*!
@@ -374,16 +764,24 @@ QString QDeclarativeText::text() const
     return d->text;
 }
 
-void QDeclarativeText::setColor(const QColor &color)
+void QDeclarativeText::setText(const QString &n)
 {
     Q_D(QDeclarativeText);
-    if (d->color == color)
+    if (d->text == n)
         return;
 
-    d->color = color;
-    d->markImgDirty();
-    emit colorChanged(d->color);
+    d->richText = d->format == RichText || (d->format == AutoText && Qt::mightBeRichText(n));
+    if (d->richText && isComponentComplete()) {
+        d->ensureDoc();
+        d->doc->setText(n);
+    }
+
+    d->text = n;
+    d->updateLayout();
+
+    emit textChanged(d->text);
 }
+
 
 /*!
     \qmlproperty color Text::color
@@ -398,11 +796,21 @@ void QDeclarativeText::setColor(const QColor &color)
     Text { color: "steelblue"; ... }
     \endqml
 */
-
 QColor QDeclarativeText::color() const
 {
     Q_D(const QDeclarativeText);
     return d->color;
+}
+
+void QDeclarativeText::setColor(const QColor &color)
+{
+    Q_D(QDeclarativeText);
+    if (d->color == color)
+        return;
+
+    d->color = color;
+    d->invalidateImageCache();
+    emit colorChanged(d->color);
 }
 
 /*!
@@ -445,19 +853,8 @@ void QDeclarativeText::setStyle(QDeclarativeText::TextStyle style)
     if (isComponentComplete() && (d->style == Normal || style == Normal))
         prepareGeometryChange();
     d->style = style;
-    d->markImgDirty();
+    d->invalidateImageCache();
     emit styleChanged(d->style);
-}
-
-void QDeclarativeText::setStyleColor(const QColor &color)
-{
-    Q_D(QDeclarativeText);
-    if (d->styleColor == color)
-        return;
-
-    d->styleColor = color;
-    d->markImgDirty();
-    emit styleColorChanged(d->styleColor);
 }
 
 /*!
@@ -481,6 +878,18 @@ QColor QDeclarativeText::styleColor() const
     return d->styleColor;
 }
 
+void QDeclarativeText::setStyleColor(const QColor &color)
+{
+    Q_D(QDeclarativeText);
+    if (d->styleColor == color)
+        return;
+
+    d->styleColor = color;
+    d->invalidateImageCache();
+    emit styleColorChanged(d->styleColor);
+}
+
+
 /*!
     \qmlproperty enumeration Text::horizontalAlignment
     \qmlproperty enumeration Text::verticalAlignment
@@ -493,7 +902,7 @@ QColor QDeclarativeText::styleColor() const
     and \c Text.AlignVCenter.
 
     Note that for a single line of text, the size of the text is the area of the text. In this common case,
-    all alignments are equivalent. If you want the text to be, say, centered in it parent, then you will
+    all alignments are equivalent. If you want the text to be, say, centered in its parent, then you will
     need to either modify the Item::anchors, or set horizontalAlignment to Text.AlignHCenter and bind the width to 
     that of the parent.
 */
@@ -511,7 +920,10 @@ void QDeclarativeText::setHAlign(HAlignment align)
 
     if (isComponentComplete())
         prepareGeometryChange();
+
     d->hAlign = align;
+    d->updateLayout();
+
     emit horizontalAlignmentChanged(align);
 }
 
@@ -559,9 +971,8 @@ void QDeclarativeText::setWrapMode(WrapMode mode)
         return;
 
     d->wrapMode = mode;
-
     d->updateLayout();
-    d->markImgDirty();
+    
     emit wrapModeChanged();
 }
 
@@ -621,7 +1032,6 @@ Column {
     \o \image declarative-textformat.png
     \endtable
 */
-
 QDeclarativeText::TextFormat QDeclarativeText::textFormat() const
 {
     Q_D(const QDeclarativeText);
@@ -637,18 +1047,12 @@ void QDeclarativeText::setTextFormat(TextFormat format)
     bool wasRich = d->richText;
     d->richText = format == RichText || (format == AutoText && Qt::mightBeRichText(d->text));
 
-    if (wasRich && !d->richText) {
-        //### delete control? (and vice-versa below)
-        d->updateLayout();
-        d->markImgDirty();
-    } else if (!wasRich && d->richText) {
-        if (isComponentComplete()) {
-            d->ensureDoc();
-            d->doc->setText(d->text);
-        }
-        d->updateLayout();
-        d->markImgDirty();
+    if (!wasRich && d->richText && isComponentComplete()) {
+        d->ensureDoc();
+        d->doc->setText(d->text);
     }
+
+    d->updateLayout();
 
     emit textFormatChanged(d->format);
 }
@@ -659,7 +1063,7 @@ void QDeclarativeText::setTextFormat(TextFormat format)
     Set this property to elide parts of the text fit to the Text item's width.
     The text will only elide if an explicit width has been set.
 
-    This property cannot be used with wrapping enabled or with rich text.
+    This property cannot be used with multi-line text or with rich text.
 
     Eliding can be:
     \list
@@ -688,12 +1092,12 @@ void QDeclarativeText::setElideMode(QDeclarativeText::TextElideMode mode)
         return;
 
     d->elideMode = mode;
-
     d->updateLayout();
-    d->markImgDirty();
+    
     emit elideModeChanged(d->elideMode);
 }
 
+/*! \internal */
 QRectF QDeclarativeText::boundingRect() const
 {
     Q_D(const QDeclarativeText);
@@ -704,7 +1108,7 @@ QRectF QDeclarativeText::boundingRect() const
     int x = 0;
     int y = 0;
 
-    QSize size = d->cachedLayoutSize;
+    QSize size = d->layedOutTextSize;
     if (d->style != Normal)
         size += QSize(2,2);
 
@@ -737,117 +1141,24 @@ QRectF QDeclarativeText::boundingRect() const
     return QRectF(x,y,size.width(),size.height());
 }
 
-void QDeclarativeText::geometryChanged(const QRectF &newGeometry,
-                              const QRectF &oldGeometry)
+/*! \internal */
+void QDeclarativeText::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     Q_D(QDeclarativeText);
-    if (!d->internalWidthUpdate && newGeometry.width() != oldGeometry.width()) {
-        if (d->wrapMode != QDeclarativeText::NoWrap || d->elideMode != QDeclarativeText::ElideNone) {
-            //re-elide if needed
-            if (d->singleline && d->elideMode != QDeclarativeText::ElideNone &&
-                isComponentComplete() && widthValid()) {
-
-                QFontMetrics fm(d->font);
-                QString tmp = fm.elidedText(d->text,(Qt::TextElideMode)d->elideMode,width()); // XXX still worth layout...?
-                d->layout.setText(tmp);
-            }
-
-            d->imgDirty = true;
+    if ((!d->internalWidthUpdate && newGeometry.width() != oldGeometry.width())
+            && (d->wrapMode != QDeclarativeText::NoWrap
+                || d->elideMode != QDeclarativeText::ElideNone
+                || d->hAlign != QDeclarativeText::AlignLeft)) {
+        if (d->singleline && d->elideMode != QDeclarativeText::ElideNone && widthValid()) {
+            // We need to re-elide
+            d->updateLayout();
+        } else {
+            // We just need to re-layout
             d->updateSize();
         }
     }
+
     QDeclarativeItem::geometryChanged(newGeometry, oldGeometry);
-}
-
-void QDeclarativeTextPrivate::updateLayout()
-{
-    Q_Q(QDeclarativeText);
-    if (q->isComponentComplete()) {
-        //setup instance of QTextLayout for all cases other than richtext
-        if (!richText) {
-            layout.clearLayout();
-            layout.setFont(font);
-            if (format != QDeclarativeText::StyledText) {
-                QString tmp = text;
-                tmp.replace(QLatin1Char('\n'), QChar::LineSeparator);
-                singleline = !tmp.contains(QChar::LineSeparator);
-                if (singleline && elideMode != QDeclarativeText::ElideNone && q->widthValid()) {
-                    QFontMetrics fm(font);
-                    tmp = fm.elidedText(tmp,(Qt::TextElideMode)elideMode,q->width()); // XXX still worth layout...?
-                }
-                layout.setText(tmp);
-            } else {
-                singleline = false;
-                QDeclarativeStyledText::parse(text, layout);
-            }
-        }
-        updateSize();
-    } else {
-        dirty = true;
-    }
-}
-
-
-void QDeclarativeTextPrivate::updateSize()
-{
-    Q_Q(QDeclarativeText);
-    if (q->isComponentComplete()) {
-        QFontMetrics fm(font);
-        if (text.isEmpty()) {
-            q->setImplicitHeight(fm.height());
-            emit q->paintedSizeChanged();
-            return;
-        }
-
-        int dy = q->height();
-        QSize size(0, 0);
-
-        //setup instance of QTextLayout for all cases other than richtext
-        if (!richText) {
-            size = setupTextLayout();
-            if (cachedLayoutSize != size) {
-                q->prepareGeometryChange();
-                cachedLayoutSize = size;
-            }
-            dy -= size.height();
-        } else {
-            singleline = false; // richtext can't elide or be optimized for single-line case
-            ensureDoc();
-            doc->setDefaultFont(font);
-            QTextOption option((Qt::Alignment)int(hAlign | vAlign));
-            option.setWrapMode(QTextOption::WrapMode(wrapMode));
-            doc->setDefaultTextOption(option);
-            if (wrapMode != QDeclarativeText::NoWrap && q->widthValid())
-                doc->setTextWidth(q->width());
-            else
-                doc->setTextWidth(doc->idealWidth()); // ### Text does not align if width is not set (QTextDoc bug)
-            dy -= (int)doc->size().height();
-            QSize dsize = doc->size().toSize();
-            if (dsize != cachedLayoutSize) {
-                q->prepareGeometryChange();
-                cachedLayoutSize = dsize;
-            }
-            size = QSize(int(doc->idealWidth()),dsize.height());
-        }
-        int yoff = 0;
-
-        if (q->heightValid()) {
-            if (vAlign == QDeclarativeText::AlignBottom)
-                yoff = dy;
-            else if (vAlign == QDeclarativeText::AlignVCenter)
-                yoff = dy/2;
-        }
-        q->setBaselineOffset(fm.ascent() + yoff);
-
-        //### need to comfirm cost of always setting these for richText
-        internalWidthUpdate = true;
-        q->setImplicitWidth(size.width());
-        internalWidthUpdate = false;
-        q->setImplicitHeight(size.height());
-        emit q->paintedSizeChanged();
-    } else {
-        dirty = true;
-    }
 }
 
 /*!
@@ -872,228 +1183,6 @@ qreal QDeclarativeText::paintedHeight() const
     return implicitHeight();
 }
 
-
-
-// ### text layout handling should be profiled and optimized as needed
-// what about QStackTextEngine engine(tmp, d->font.font()); QTextLayout textLayout(&engine);
-
-void QDeclarativeTextPrivate::drawOutline()
-{
-    QPixmap img = QPixmap(imgStyleCache.width()+2,imgStyleCache.height()+2);
-    img.fill(Qt::transparent);
-
-    QPainter ppm(&img);
-
-    QPoint pos(imgCache.rect().topLeft());
-    pos += QPoint(-1, 0);
-    ppm.drawPixmap(pos, imgStyleCache);
-    pos += QPoint(2, 0);
-    ppm.drawPixmap(pos, imgStyleCache);
-    pos += QPoint(-1, -1);
-    ppm.drawPixmap(pos, imgStyleCache);
-    pos += QPoint(0, 2);
-    ppm.drawPixmap(pos, imgStyleCache);
-
-    pos += QPoint(0, -1);
-    ppm.drawPixmap(pos, imgCache);
-    ppm.end();
-
-    imgCache = img;
-}
-
-void QDeclarativeTextPrivate::drawOutline(int yOffset)
-{
-    QPixmap img = QPixmap(imgStyleCache.width()+2,imgStyleCache.height()+2);
-    img.fill(Qt::transparent);
-
-    QPainter ppm(&img);
-
-    QPoint pos(imgCache.rect().topLeft());
-    pos += QPoint(0, yOffset);
-    ppm.drawPixmap(pos, imgStyleCache);
-
-    pos += QPoint(0, -yOffset);
-    ppm.drawPixmap(pos, imgCache);
-    ppm.end();
-
-    imgCache = img;
-}
-
-QSize QDeclarativeTextPrivate::setupTextLayout()
-{
-    Q_Q(QDeclarativeText);
-    layout.setCacheEnabled(true);
-
-    int height = 0;
-    qreal widthUsed = 0;
-    qreal lineWidth = 0;
-
-    //set manual width
-    if ((wrapMode != QDeclarativeText::NoWrap || elideMode != QDeclarativeText::ElideNone) && q->widthValid())
-        lineWidth = q->width();
-
-    QTextOption textOption = layout.textOption();
-    textOption.setWrapMode(QTextOption::WrapMode(wrapMode));
-    layout.setTextOption(textOption);
-
-    layout.beginLayout();
-
-    while (1) {
-        QTextLine line = layout.createLine();
-        if (!line.isValid())
-            break;
-
-        if ((wrapMode != QDeclarativeText::NoWrap || elideMode != QDeclarativeText::ElideNone) && q->widthValid())
-            line.setLineWidth(lineWidth);
-    }
-    layout.endLayout();
-
-    int x = 0;
-    for (int i = 0; i < layout.lineCount(); ++i) {
-        QTextLine line = layout.lineAt(i);
-        widthUsed = qMax(widthUsed, line.naturalTextWidth());
-        line.setPosition(QPointF(0, height));
-        height += int(line.height());
-
-        if (!cache) {
-            if (hAlign == QDeclarativeText::AlignLeft) {
-                x = 0;
-            } else if (hAlign == QDeclarativeText::AlignRight) {
-                x = q->width() - (int)line.naturalTextWidth();
-            } else if (hAlign == QDeclarativeText::AlignHCenter) {
-                x = (q->width() - (int)line.naturalTextWidth()) / 2;
-            }
-            line.setPosition(QPoint(x, (int)line.y()));
-        }
-    }
-
-    return QSize(qCeil(widthUsed), height);
-}
-
-QPixmap QDeclarativeTextPrivate::wrappedTextImage(bool drawStyle)
-{
-    //do layout
-    QSize size = cachedLayoutSize;
-
-    int x = 0;
-    for (int i = 0; i < layout.lineCount(); ++i) {
-        QTextLine line = layout.lineAt(i);
-        if (hAlign == QDeclarativeText::AlignLeft) {
-            x = 0;
-        } else if (hAlign == QDeclarativeText::AlignRight) {
-            x = size.width() - (int)line.naturalTextWidth();
-        } else if (hAlign == QDeclarativeText::AlignHCenter) {
-            x = (size.width() - (int)line.naturalTextWidth()) / 2;
-        }
-        line.setPosition(QPoint(x, (int)line.y()));
-    }
-
-    //paint text
-    QPixmap img(size);
-    if (!size.isEmpty()) {
-        img.fill(Qt::transparent);
-#ifdef Q_WS_MAC
-        bool oldSmooth = qt_applefontsmoothing_enabled;
-        qt_applefontsmoothing_enabled = false;
-#endif
-        QPainter p(&img);
-#ifdef Q_WS_MAC
-        qt_applefontsmoothing_enabled = oldSmooth;
-#endif
-        drawWrappedText(&p, QPointF(0,0), drawStyle);
-    }
-    return img;
-}
-
-void QDeclarativeTextPrivate::drawWrappedText(QPainter *p, const QPointF &pos, bool drawStyle)
-{
-    if (drawStyle)
-        p->setPen(styleColor);
-    else
-        p->setPen(color);
-    p->setFont(font);
-    layout.draw(p , pos); 
-}
-
-QPixmap QDeclarativeTextPrivate::richTextImage(bool drawStyle)
-{
-    QSize size = doc->size().toSize();
-
-    //paint text
-    QPixmap img(size);
-    img.fill(Qt::transparent);
-#ifdef Q_WS_MAC
-    bool oldSmooth = qt_applefontsmoothing_enabled;
-    qt_applefontsmoothing_enabled = false;
-#endif
-    QPainter p(&img);
-#ifdef Q_WS_MAC
-    qt_applefontsmoothing_enabled = oldSmooth;
-#endif
-
-    QAbstractTextDocumentLayout::PaintContext context;
-
-    QTextOption oldOption(doc->defaultTextOption());
-    if (drawStyle) {
-        context.palette.setColor(QPalette::Text, styleColor);
-        QTextOption colorOption(doc->defaultTextOption());
-        colorOption.setFlags(QTextOption::SuppressColors);
-        doc->setDefaultTextOption(colorOption);
-    } else {
-        context.palette.setColor(QPalette::Text, color);
-    }
-    doc->documentLayout()->draw(&p, context);
-    if (drawStyle)
-        doc->setDefaultTextOption(oldOption);
-    return img;
-}
-
-void QDeclarativeTextPrivate::checkImgCache()
-{
-    if (!imgDirty)
-        return;
-
-    bool empty = text.isEmpty();
-    QPixmap newImgCache;
-    if (empty) {
-        imgStyleCache = QPixmap();
-    } else if (richText) {
-        newImgCache = richTextImage(false);
-        if (style != QDeclarativeText::Normal)
-            imgStyleCache = richTextImage(true); //### should use styleColor
-    } else {
-        newImgCache = wrappedTextImage(false);
-        if (style != QDeclarativeText::Normal)
-            imgStyleCache = wrappedTextImage(true); //### should use styleColor
-    }
-    imgCache = newImgCache;
-    if (!empty)
-        switch (style) {
-        case QDeclarativeText::Outline:
-            drawOutline();
-            break;
-        case QDeclarativeText::Sunken:
-            drawOutline(-1);
-            break;
-        case QDeclarativeText::Raised:
-            drawOutline(1);
-            break;
-        default:
-            break;
-        }
-
-    imgDirty = false;
-}
-
-void QDeclarativeTextPrivate::ensureDoc()
-{
-    if (!doc) {
-        Q_Q(QDeclarativeText);
-        doc = new QTextDocumentWithImageResources(q);
-        doc->setDocumentMargin(0);
-    }
-}
-
 /*!
     Returns the number of resources (images) that are being loaded asynchronously.
 */
@@ -1103,22 +1192,14 @@ int QDeclarativeText::resourcesLoading() const
     return d->doc ? d->doc->resourcesLoading() : 0;
 }
 
-/*!
-  \qmlproperty bool Text::clip
-  This property holds whether the text is clipped.
-
-  Note that if the text does not fit in the bounding rectangle it will be abruptly chopped.
-
-  If you want to display potentially long text in a limited space, you probably want to use \c elide instead.
-*/
-
+/*! \internal */
 void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QDeclarativeText);
 
-    if (d->cache || d->style != Normal) {
-        d->checkImgCache();
-        if (d->imgCache.isNull())
+    if (d->cacheAllTextAsImage || d->style != Normal) {
+        d->checkImageCache();
+        if (d->imageCache.isNull())
             return;
 
         bool oldAA = p->testRenderHint(QPainter::Antialiasing);
@@ -1128,23 +1209,23 @@ void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWid
 
         QRect br = boundingRect().toRect();
 
-        bool needClip = clip() && (d->imgCache.width() > width() ||
-                                   d->imgCache.height() > height());
+        bool needClip = clip() && (d->imageCache.width() > width() ||
+                                   d->imageCache.height() > height());
 
         if (needClip)
-            p->drawPixmap(0, 0, width(), height(), d->imgCache, -br.x(), -br.y(), width(), height());
+            p->drawPixmap(0, 0, width(), height(), d->imageCache, -br.x(), -br.y(), width(), height());
         else
-            p->drawPixmap(br.x(), br.y(), d->imgCache);
+            p->drawPixmap(br.x(), br.y(), d->imageCache);
 
         if (d->smooth) {
             p->setRenderHint(QPainter::Antialiasing, oldAA);
             p->setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
         }
     } else {
-        qreal y = boundingRect().y();
+        QRectF bounds = boundingRect();
 
-        bool needClip = clip() && (d->cachedLayoutSize.width() > width() ||
-                                    d->cachedLayoutSize.height() > height());
+        bool needClip = clip() && (d->layedOutTextSize.width() > width() ||
+                                   d->layedOutTextSize.height() > height());
 
         if (needClip) {
             p->save();
@@ -1153,49 +1234,35 @@ void QDeclarativeText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWid
         if (d->richText) {
             QAbstractTextDocumentLayout::PaintContext context;
             context.palette.setColor(QPalette::Text, d->color);
-            p->translate(0, y);
+            p->translate(bounds.x(), bounds.y());
             d->doc->documentLayout()->draw(p, context);
-            p->translate(0, -y);
+            p->translate(-bounds.x(), -bounds.y());
         } else {
-            d->drawWrappedText(p, QPointF(0,y), false);
+            d->drawTextLayout(p, QPointF(0, bounds.y()), false);
         }
-        if (needClip)
+
+        if (needClip) {
             p->restore();
+        }
     }
 }
 
-/*!
-    \qmlproperty bool Text::smooth
-
-    This property holds whether the text is smoothly scaled or transformed.
-
-    Smooth filtering gives better visual quality, but is slower.  If
-    the item is displayed at its natural size, this property has no visual or
-    performance effect.
-
-    \note Generally scaling artifacts are only visible if the item is stationary on
-    the screen.  A common pattern when animating an item is to disable smooth
-    filtering at the beginning of the animation and reenable it at the conclusion.
-*/
-
+/*! \internal */
 void QDeclarativeText::componentComplete()
 {
     Q_D(QDeclarativeText);
     QDeclarativeItem::componentComplete();
-    if (d->dirty) {
+    if (d->updateOnComponentComplete) {
+        d->updateOnComponentComplete = false;
         if (d->richText) {
             d->ensureDoc();
             d->doc->setText(d->text);
         }
         d->updateLayout();
-        d->dirty = false;
     }
 }
 
-/*!
-  \overload
-  Handles the given mouse \a event.
- */
+/*!  \internal */
 void QDeclarativeText::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeText);
@@ -1214,26 +1281,7 @@ void QDeclarativeText::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 }
 
-/*!
-    \qmlsignal Text::onLinkActivated(string link)
-
-    This handler is called when the user clicks on a link embedded in the text.
-    The link must be in rich text or HTML format and the 
-    \a link string provides access to the particular link. 
-
-    \snippet doc/src/snippets/declarative/text/onLinkActivated.qml 0
-
-    The example code will display the text 
-    "The main website is at \l{http://qt.nokia.com}{Nokia Qt DF}."
-
-    Clicking on the highlighted link will output 
-    \tt{http://qt.nokia.com link activated} to the console.
-*/
-
-/*!
-  \overload
-  Handles the given mouse \a event.
- */
+/*! \internal */
 void QDeclarativeText::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QDeclarativeText);

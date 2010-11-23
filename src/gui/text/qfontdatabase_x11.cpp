@@ -1455,6 +1455,7 @@ void qt_addPatternProps(FcPattern *pattern, int screen, int script, const QFontD
         weight_value = FC_WEIGHT_DEMIBOLD;
     else if (request.weight < (QFont::Bold + QFont::Black) / 2)
         weight_value = FC_WEIGHT_BOLD;
+    FcPatternDel(pattern, FC_WEIGHT);
     FcPatternAddInteger(pattern, FC_WEIGHT, weight_value);
 
     int slant_value = FC_SLANT_ROMAN;
@@ -1462,20 +1463,25 @@ void qt_addPatternProps(FcPattern *pattern, int screen, int script, const QFontD
         slant_value = FC_SLANT_ITALIC;
     else if (request.style == QFont::StyleOblique)
         slant_value = FC_SLANT_OBLIQUE;
+    FcPatternDel(pattern, FC_SLANT);
     FcPatternAddInteger(pattern, FC_SLANT, slant_value);
 
     double size_value = qMax(qreal(1.), request.pixelSize);
+    FcPatternDel(pattern, FC_PIXEL_SIZE);
     FcPatternAddDouble(pattern, FC_PIXEL_SIZE, size_value);
 
     int stretch = request.stretch;
     if (!stretch)
         stretch = 100;
+    FcPatternDel(pattern, FC_WIDTH);
     FcPatternAddInteger(pattern, FC_WIDTH, stretch);
 
     if (X11->display && QX11Info::appDepth(screen) <= 8) {
+        FcPatternDel(pattern, FC_ANTIALIAS);
         // can't do antialiasing on 8bpp
         FcPatternAddBool(pattern, FC_ANTIALIAS, false);
     } else if (request.styleStrategy & (QFont::PreferAntialias|QFont::NoAntialias)) {
+        FcPatternDel(pattern, FC_ANTIALIAS);
         FcPatternAddBool(pattern, FC_ANTIALIAS,
                          !(request.styleStrategy & QFont::NoAntialias));
     }
@@ -1484,6 +1490,7 @@ void qt_addPatternProps(FcPattern *pattern, int screen, int script, const QFontD
         Q_ASSERT(script < QUnicodeTables::ScriptCount);
         FcLangSet *ls = FcLangSetCreate();
         FcLangSetAdd(ls, (const FcChar8*)specialLanguages[script]);
+        FcPatternDel(pattern, FC_LANG);
         FcPatternAddLangSet(pattern, FC_LANG, ls);
         FcLangSetDestroy(ls);
     }
@@ -1891,6 +1898,18 @@ QFontEngine *QFontDatabase::loadXlfd(int screen, int script, const QFontDef &req
     return fe;
 }
 
+#if (defined(QT_ARCH_ARM) || defined(QT_ARCH_ARMV6)) && defined(Q_CC_GNU) && (__GNUC__ == 4) && (__GNUC_MINOR__ == 3)
+#define NEEDS_GCC_BUG_WORKAROUND
+#endif
+
+#ifdef NEEDS_GCC_BUG_WORKAROUND
+static inline void gccBugWorkaround(const QFontDef &req)
+{
+    char buffer[8];
+    snprintf(buffer, 8, "%f", req.pixelSize);
+}
+#endif
+
 /*! \internal
   Loads a QFontEngine for the specified \a script that matches the
   QFontDef \e request member variable.
@@ -1902,9 +1921,15 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     // normalize the request to get better caching
     QFontDef req = d->request;
     if (req.pixelSize <= 0)
-        req.pixelSize = floor(qt_pixelSize(req.pointSize, d->dpi) * 100 + 0.5) / 100;
+        req.pixelSize = qFloor(qt_pixelSize(req.pointSize, d->dpi) * 100.0 + 0.5) * 0.01;
     if (req.pixelSize < 1)
         req.pixelSize = 1;
+
+#ifdef NEEDS_GCC_BUG_WORKAROUND
+    // req.pixelSize ends up with a bogus value unless this workaround is called
+    gccBugWorkaround(req);
+#endif
+
     if (req.weight == 0)
         req.weight = QFont::Normal;
     if (req.stretch == 0)
@@ -1940,7 +1965,6 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
 #ifndef QT_NO_FONTCONFIG
         } else if (X11->has_fontconfig) {
             fe = loadFc(d, script, req);
-
             if (fe != 0 && fe->fontDef.pixelSize != req.pixelSize && mainThread && qt_is_gui_used) {
                 QFontEngine *xlfdFontEngine = loadXlfd(d->screen, script, req);
                 if (xlfdFontEngine->fontDef.family == fe->fontDef.family) {
@@ -1989,7 +2013,7 @@ static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
 
     FcFontSet *set = FcConfigGetFonts(config, FcSetApplication);
     if (!set) {
-        FcConfigAppFontAddFile(config, (const FcChar8 *)":/non-existant");
+        FcConfigAppFontAddFile(config, (const FcChar8 *)":/non-existent");
         set = FcConfigGetFonts(config, FcSetApplication); // try again
         if (!set)
             return;

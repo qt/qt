@@ -130,7 +130,7 @@ public:
     static int x11Screen();
 #elif defined(Q_WS_MAC)
     Qt::HANDLE handle() const;
-#elif defined(Q_WS_QWS)
+#elif defined(Q_WS_QWS) || defined(Q_WS_QPA)
     int handle() const;
 #elif defined(Q_OS_SYMBIAN)
     Qt::HANDLE handle() const;

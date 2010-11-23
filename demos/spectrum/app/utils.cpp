@@ -49,8 +49,10 @@ qint64 audioDuration(const QAudioFormat &format, qint64 bytes)
 
 qint64 audioLength(const QAudioFormat &format, qint64 microSeconds)
 {
-   return (format.frequency() * format.channels() * (format.sampleSize() / 8))
+   qint64 result = (format.frequency() * format.channels() * (format.sampleSize() / 8))
        * microSeconds / 1000000;
+   result -= result % (format.channelCount() * format.sampleSize());
+   return result;
 }
 
 qreal nyquistFrequency(const QAudioFormat &format)

@@ -48,7 +48,7 @@
 /*!
 */
 
-class QMeeGoOverlayWidget : public QWidget
+class Q_DECL_EXPORT QMeeGoOverlayWidget : public QWidget
 {
 public:
     //! Constructs a new scaling widget.

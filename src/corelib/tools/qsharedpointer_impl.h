@@ -376,6 +376,13 @@ namespace QtSharedPointer {
 
         inline ExternalRefCount() : d(0) { }
         inline ExternalRefCount(Qt::Initialization i) : Basic<T>(i) { }
+
+        inline ExternalRefCount(T *ptr) : Basic<T>(Qt::Uninitialized) // throws
+        { internalConstruct(ptr); }
+        template <typename Deleter>
+        inline ExternalRefCount(T *ptr, Deleter deleter) : Basic<T>(Qt::Uninitialized) // throws
+        { internalConstruct(ptr, deleter); }
+
         inline ExternalRefCount(const ExternalRefCount<T> &other) : Basic<T>(other), d(other.d)
         { if (d) ref(); }
         template <class X>
@@ -453,11 +460,12 @@ public:
     inline QSharedPointer() { }
     // inline ~QSharedPointer() { }
 
-    inline explicit QSharedPointer(T *ptr) : BaseClass(Qt::Uninitialized)
-    { BaseClass::internalConstruct(ptr); }
+    inline explicit QSharedPointer(T *ptr) : BaseClass(ptr) // throws
+    { }
 
     template <typename Deleter>
-    inline QSharedPointer(T *ptr, Deleter d) { BaseClass::internalConstruct(ptr, d); }
+    inline QSharedPointer(T *ptr, Deleter d) : BaseClass(ptr, d) // throws
+    { }
 
     inline QSharedPointer(const QSharedPointer<T> &other) : BaseClass(other) { }
     inline QSharedPointer<T> &operator=(const QSharedPointer<T> &other)
@@ -775,6 +783,16 @@ inline void qSwap(QSharedPointer<T> &p1, QSharedPointer<T> &p2)
 {
     p1.swap(p2);
 }
+
+#ifndef QT_NO_STL
+QT_END_NAMESPACE
+namespace std {
+    template <class T>
+    inline void swap(QT_PREPEND_NAMESPACE(QSharedPointer)<T> &p1, QT_PREPEND_NAMESPACE(QSharedPointer)<T> &p2)
+    { p1.swap(p2); }
+}
+QT_BEGIN_NAMESPACE
+#endif
 
 namespace QtSharedPointer {
 // helper functions:

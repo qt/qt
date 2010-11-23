@@ -71,6 +71,7 @@ private slots:
     void iterateString();
     void iterateGetterSetter();
     void assignObjectToIterator();
+    void iterateNonObject();
 };
 
 tst_QScriptValueIterator::tst_QScriptValueIterator()
@@ -581,6 +582,26 @@ void tst_QScriptValueIterator::assignObjectToIterator()
     QVERIFY(it.hasNext());
     it.next();
     QCOMPARE(it.name(), QString::fromLatin1("bar"));
+}
+
+void tst_QScriptValueIterator::iterateNonObject()
+{
+    QScriptValueIterator it(123);
+    QVERIFY(!it.hasNext());
+    it.next();
+    QVERIFY(!it.hasPrevious());
+    it.previous();
+    it.toFront();
+    it.toBack();
+    it.name();
+    it.scriptName();
+    it.flags();
+    it.value();
+    it.setValue(1);
+    it.remove();
+    QScriptValue num(5);
+    it = num;
+    QVERIFY(!it.hasNext());
 }
 
 QTEST_MAIN(tst_QScriptValueIterator)

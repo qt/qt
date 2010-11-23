@@ -579,7 +579,7 @@ const QString::Null QString::null = { };
     strings from a string list that contain a particular substring or
     that match a particular QRegExp using the QStringList::filter()
     function.
-:
+
     \section1 Querying String Data
 
     If you want to see if a QString starts or ends with a particular
@@ -1173,6 +1173,13 @@ QString::QString(QChar ch)
     Destroys the string.
 */
 
+
+/*! \fn void QString::swap(QString &other)
+    \since 4.8
+
+    Swaps string \a other with this string. This operation is very fast and
+    never fails.
+*/
 
 /*! \fn void QString::detach()
 
@@ -3599,7 +3606,7 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
             }
             length = length % 16;
         }
-#elif QT_HAVE_NEON
+#elif QT_ALWAYS_HAVE_NEON
         // Refer to the documentation of the SSE2 implementation
         // this use eactly the same method as for SSE except:
         // 1) neon has unsigned comparison
@@ -3906,7 +3913,7 @@ QString QString::fromLocal8Bit(const char *str, int size)
 
 /*!
     Returns a QString initialized with the first \a size characters
-    of the 8-bit string \a str.
+    from the string \a str.
 
     If \a size is -1 (default), it is taken to be qstrlen(\a
     str).
@@ -4290,7 +4297,7 @@ QString& QString::fill(QChar ch, int size)
     Returns the number of characters in this string.  Equivalent to
     size().
 
-    \sa setLength()
+    \sa resize()
 */
 
 /*!
@@ -7460,31 +7467,17 @@ QDataStream &operator<<(QDataStream &out, const QString &str)
         out << str.toLatin1();
     } else {
         if (!str.isNull() || out.version() < 3) {
-            int byteOrder = out.byteOrder();
-            const QChar* ub = str.unicode();
-            static const uint auto_size = 1024;
-            char t[auto_size];
-            char *b;
-            if (str.length()*sizeof(QChar) > auto_size) {
-                b = new char[str.length()*sizeof(QChar)];
+            if ((out.byteOrder() == QDataStream::BigEndian) == (QSysInfo::ByteOrder == QSysInfo::BigEndian)) {
+                out.writeBytes(reinterpret_cast<const char *>(str.unicode()), sizeof(QChar) * str.length());
             } else {
-                b = t;
-            }
-            int l = str.length();
-            char *c=b;
-            while (l--) {
-                if (byteOrder == QDataStream::BigEndian) {
-                    *c++ = (char)ub->row();
-                    *c++ = (char)ub->cell();
-                } else {
-                    *c++ = (char)ub->cell();
-                    *c++ = (char)ub->row();
+                QVarLengthArray<ushort> buffer(str.length());
+                const ushort *data = reinterpret_cast<const ushort *>(str.constData());
+                for (int i = 0; i < str.length(); i++) {
+                    buffer[i] = qbswap(*data);
+                    ++data;
                 }
-                ub++;
+                out.writeBytes(reinterpret_cast<const char *>(buffer.data()), sizeof(ushort) * buffer.size());
             }
-            out.writeBytes(b, sizeof(QChar)*str.length());
-            if (str.length()*sizeof(QChar) > auto_size)
-                delete [] b;
         } else {
             // write null marker
             out << (quint32)0xffffffff;

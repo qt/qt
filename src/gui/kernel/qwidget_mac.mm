@@ -2794,19 +2794,38 @@ void QWidgetPrivate::transferChildren()
 #ifdef QT_MAC_USE_COCOA
 void QWidgetPrivate::setSubWindowStacking(bool set)
 {
+    // This will set/remove a visual relationship between parent and child on screen.
+    // The reason for doing this is to ensure that a child always stacks infront of
+    // its parent. Unfortunatly is turns out that [NSWindow addChildWindow] has
+    // several unwanted side-effects, one of them being the moving of a child when
+    // moving the parent, which we choose to accept. A way tougher side-effect is
+    // that Cocoa will hide the parent if you hide the child. And in the case of
+    // a tool window, since it will normally hide when you deactivate the
+    // application, Cocoa will hide the parent upon deactivate as well. The result often
+    // being no more visible windows on screen. So, to make a long story short, we only
+    // allow parent-child relationships between windows that both are either a plain window
+    // or a dialog.
+
     Q_Q(QWidget);
-    if (!q->isWindow() || !q->testAttribute(Qt::WA_WState_Created))
+    if (!q->isWindow())
+        return;
+    NSWindow *qwin = [qt_mac_nativeview_for(q) window];
+    if (!qwin)
+        return;
+    Qt::WindowType qtype = q->windowType();
+    if (set && !(qtype == Qt::Window || qtype == Qt::Dialog))
+        return;
+    if (set && ![qwin isVisible])
         return;
 
     if (QWidget *parent = q->parentWidget()) {
-        if (parent->testAttribute(Qt::WA_WState_Created)) {
+        if (NSWindow *pwin = [qt_mac_nativeview_for(parent) window]) {
             if (set) {
-                if (parent->isVisible()) {
-                    NSWindow *childwin = qt_mac_window_for(q);
-                    [qt_mac_window_for(parent) addChildWindow:childwin ordered:NSWindowAbove];
-                }
+                Qt::WindowType ptype = parent->window()->windowType();
+                if ([pwin isVisible] && (ptype == Qt::Window || ptype == Qt::Dialog) && ![qwin parentWindow])
+                    [pwin addChildWindow:qwin ordered:NSWindowAbove];
             } else {
-                [qt_mac_window_for(parent) removeChildWindow:qt_mac_window_for(q)];
+                [pwin removeChildWindow:qwin];
             }
         }
     }
@@ -2814,12 +2833,15 @@ void QWidgetPrivate::setSubWindowStacking(bool set)
     QList<QWidget *> widgets = q->findChildren<QWidget *>();
     for (int i=0; i<widgets.size(); ++i) {
         QWidget *child = widgets.at(i);
-        if (child->isWindow() && child->testAttribute(Qt::WA_WState_Created) && child->isVisibleTo(q)) {
-            if (set) {
-                NSWindow *childwin = qt_mac_window_for(child);
-                [qt_mac_window_for(q) addChildWindow:childwin ordered:NSWindowAbove];
-            } else {
-                [qt_mac_window_for(q) removeChildWindow:qt_mac_window_for(child)];
+        if (child && child->isWindow()) {
+            if (NSWindow *cwin = [qt_mac_nativeview_for(child) window]) {
+                if (set) {
+                    Qt::WindowType ctype = child->window()->windowType();
+                    if ([cwin isVisible] && (ctype == Qt::Window || ctype == Qt::Dialog) && ![cwin parentWindow])
+                        [qwin addChildWindow:cwin ordered:NSWindowAbove];
+                } else {
+                    [qwin removeChildWindow:qt_mac_window_for(child)];
+                }
             }
         }
     }
@@ -3176,7 +3198,7 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
         if (iconButton == nil) {
             QCFString string(q->windowTitle());
             const NSString *tmpString = reinterpret_cast<const NSString *>((CFStringRef)string);
-            [qt_mac_window_for(q) setRepresentedURL:[NSURL fileURLWithPath:tmpString]];
+            [qt_mac_window_for(q) setRepresentedURL:[NSURL fileURLWithPath:const_cast<NSString *>(tmpString)]];
             iconButton = [qt_mac_window_for(q) standardWindowButton:NSWindowDocumentIconButton];
         }
         if (icon.isNull()) {
@@ -3442,7 +3464,6 @@ void QWidgetPrivate::show_sys()
 #else
             // sync the opacity value back (in case of a fade).
             [window setAlphaValue:q->windowOpacity()];
-            setSubWindowStacking(true);
 
             QWidget *top = 0;
             if (QApplicationPrivate::tryModalHelper(q, &top)) {
@@ -3461,6 +3482,7 @@ void QWidgetPrivate::show_sys()
                         [modalWin orderFront:window];
                 }
             }
+            setSubWindowStacking(true);
 #endif
             if (q->windowType() == Qt::Popup) {
 			    if (q->focusWidget())

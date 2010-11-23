@@ -7,11 +7,11 @@
 ** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:FDL$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in a
-** written agreement between you and Nokia.
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Free Documentation License
 ** Alternatively, this file may be used under the terms of the GNU Free
@@ -32,11 +32,11 @@
    Qt includes a set of examples that cover nearly every aspect of Qt
    development. They aren't meant to be impressive when you run them,
    but in each case the source code has been carefully written to
-   illustrate one or more best Qt programming practices. 
+   illustrate one or more best Qt programming practices.
 
    You can run the examples from the \l{Examples and Demos Launcher}
    application (except see \l{QML Examples and Demos} {QML Examples}
-   for special instructions for running thos examples).
+   for special instructions for running those examples).
 
    The examples are listed below by functional area. Each example
    listed in a particular functional area is meant to illustrate how
@@ -53,7 +53,8 @@
    deliberately show off Qt's features. You might want to look at
    these as well.
 
-   These examples are provided under the terms of the \l{BSD License}.
+   These examples are provided under the terms of the
+   \l{New and Modified BSD Licenses}{Modified BSD License}.
 
 
    \section1 Examples by Functional Area
@@ -766,6 +767,9 @@
     \row \o \l{webkit/googlechat}{Google Chat}
     \o A real-world example that shows how an existing Web-based service can be accessed
     using QtWebKit.
+    \row \o \l{webkit/imageanalyzer}{Image Analyzer}\raisedaster
+    \o A \l{The QtWebKit Bridge}{QtWebKit bridge} application which contains a
+    web interface and client-side processing.
     \row \o \l{webkit/previewer}{Previewer}\raisedaster
     \o Shows how to make a simple Web page previewer by using Qt's text input widgets
     together with a QWebView widget.
@@ -778,7 +782,7 @@
 */
 
 /*!
-    \page examples-helpsystem.html 
+    \page examples-helpsystem.html
     \ingroup all-examples
     \title Help System Examples
     \brief Adding interactive help to your Qt application.

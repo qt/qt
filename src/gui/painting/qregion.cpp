@@ -391,6 +391,14 @@ void QRegion::exec(const QByteArray &buffer, int ver, QDataStream::ByteOrder byt
 */
 
 /*!
+    \fn void QRegion::swap(QRegion &other)
+    \since 4.8
+
+    Swaps region \a other with this region. This operation is very
+    fast and never fails.
+*/
+
+/*!
     \relates QRegion
 
     Writes the region \a r to the stream \a s and returns a reference
@@ -1620,7 +1628,7 @@ QT_END_INCLUDE_NAMESPACE
 QT_BEGIN_INCLUDE_NAMESPACE
 # include "qregion_win.cpp"
 QT_END_INCLUDE_NAMESPACE
-#elif defined(Q_WS_QWS)
+#elif defined(Q_WS_QWS) || defined(Q_WS_QPA)
 static QRegionPrivate qrp;
 QRegion::QRegionData QRegion::shared_empty = {Q_BASIC_ATOMIC_INITIALIZER(1), &qrp};
 #endif
@@ -4231,7 +4239,7 @@ QRect QRegion::boundingRect() const
     Returns true if \a rect is guaranteed to be fully contained in \a region.
     A false return value does not guarantee the opposite.
 */
-#ifdef Q_WS_QWS
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
 Q_GUI_EXPORT
 #endif
 bool qt_region_strictContains(const QRegion &region, const QRect &rect)

@@ -166,6 +166,7 @@ void CPixelMetricsMapperAppUi::HandleCommandL( TInt aCommand )
             else
                 bufferPtr.Append(_L("screen."));
             ShowL( *buffer, last );
+            CleanupStack::PopAndDestroy( buffer );
             }
             break;
         case ECmdStatus:
@@ -257,7 +258,7 @@ void CPixelMetricsMapperAppUi::HandleCommandL( TInt aCommand )
                 bufferPtr.Append(_L("Orientation cannot be changed."));
                 ShowL( *buffer, last );
                 bufferPtr.Zero();
-                delete buffer;
+                CleanupStack::PopAndDestroy( buffer );
                 break;
                 }
             #endif //__SERIES60_31__
@@ -278,7 +279,7 @@ void CPixelMetricsMapperAppUi::HandleCommandL( TInt aCommand )
             bufferPtr.Append(_L("Orientation changed."));
             ShowL( *buffer, last );
             bufferPtr.Zero();
-            delete buffer;
+            CleanupStack::PopAndDestroy( buffer );
             break;
             }
         case ECmdStartCalculations:
@@ -298,7 +299,7 @@ void CPixelMetricsMapperAppUi::HandleCommandL( TInt aCommand )
                 TInt height = screenRect.Height();
                 TInt width = screenRect.Width();
                 TBuf16<32> tgt;
-                // HEIGTH
+                // HEIGHT
                 tgt.Append(_L("height: \t"));
                 tgt.AppendNum(height, EDecimal); // put max height into text file
                 ShowL( tgt, last );
@@ -787,11 +788,14 @@ void CPixelMetricsMapperAppUi::CreateHeaderFileL() const
         CleanupStack::PopAndDestroy(); //sourceFile
         }
 
-    bufferLayoutHdr = bufferLayoutHdr.Left(bufferLayoutHdr.Length()-2);
-    bufferPMData = bufferPMData.Left(bufferPMData.Length()-2);
-    textFile.Write(bufferLayoutHdr);
-    textFile.Write(KCRLF);
-    textFile.Write(bufferPMData);
+    if (fileCount > 0)
+        {
+        bufferLayoutHdr = bufferLayoutHdr.Left(bufferLayoutHdr.Length()-2);
+        bufferPMData = bufferPMData.Left(bufferPMData.Length()-2);
+        textFile.Write(bufferLayoutHdr);
+        textFile.Write(KCRLF);
+        textFile.Write(bufferPMData);
+        }
     delete dirList;
 
     CleanupStack::PopAndDestroy(); //file

@@ -195,7 +195,7 @@ QString QUtf8::convertToUnicode(const char *chars, int len, QTextCodec::Converte
                     // utf-8 bom composes into 0xfeff code point
                     bool nonCharacter;
                     if (!headerdone && uc == 0xfeff) {
-                        // dont do anything, just skip the BOM
+                        // don't do anything, just skip the BOM
                     } else if (!(nonCharacter = isUnicodeNonCharacter(uc)) && uc > 0xffff && uc < 0x110000) {
                         // surrogate pair
                         Q_ASSERT((qch - (ushort*)result.unicode()) + 2 < result.length());

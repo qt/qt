@@ -65,14 +65,21 @@
 #include "QtCore/qhash.h"
 #include "QtCore/qpointer.h"
 #include "private/qcoreapplication_p.h"
-#include "private/qshortcutmap_p.h"
+#include "QtGui/private/qshortcutmap_p.h"
 #include <private/qthread_p.h>
+#include "QtCore/qpoint.h"
+#include <QTime>
 #ifdef Q_WS_QWS
 #include "QtGui/qscreen_qws.h"
 #include <private/qgraphicssystem_qws_p.h>
 #endif
 #ifdef Q_OS_SYMBIAN
 #include <w32std.h>
+#endif
+#ifdef Q_WS_QPA
+#include <QWindowSystemInterface>
+#include "qwindowsysteminterface_qpa_p.h"
+#include "QtGui/qplatformintegration_qpa.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -312,10 +319,18 @@ public:
     static QString desktopStyleKey();
 
     static QGraphicsSystem *graphicsSystem()
-#if !defined(Q_WS_QWS)
-    { return graphics_system; }
-#else
+#if defined(Q_WS_QWS)
     { return QScreen::instance()->graphicsSystem(); }
+#else
+    { return graphics_system; }
+#endif
+
+#if defined(Q_WS_QPA)
+    static QPlatformIntegration *platformIntegration()
+    { return platform_integration; }
+
+    static QAbstractEventDispatcher *qt_qpa_core_dispatcher()
+    { return QCoreApplication::instance()->d_func()->threadData->eventDispatcher; }
 #endif
 
     void createEventDispatcher();
@@ -418,6 +433,9 @@ public:
     static QGraphicsSystem *graphics_system;
     static QString graphics_system_name;
     static bool runtime_graphics_system;
+#ifdef Q_WS_QPA
+    static QPlatformIntegration *platform_integration;
+#endif
 
 private:
     static QFont *app_font; // private for a reason! Always use QApplication::font() instead!
@@ -446,7 +464,8 @@ public:
     static bool animate_toolbox;
     static bool widgetCount; // Coupled with -widgetcount switch
     static bool load_testability; // Coupled with -testability switch
-    static QString qmljsDebugArguments; // a string containing arguments for js/qml debugging.
+    static QString qmljs_debug_arguments; // a string containing arguments for js/qml debugging.
+    static QString qmljsDebugArgumentsString(); // access string from other libraries
 
 #ifdef Q_WS_MAC
     static bool native_modal_dialog_active;
@@ -474,6 +493,30 @@ public:
     static void disableUsageOfCursorRects(bool disable);
 #endif
     static bool qt_mac_apply_settings();
+#endif
+
+#ifdef Q_WS_QPA
+    static void processMouseEvent(QWindowSystemInterfacePrivate::MouseEvent *e);
+    static void processKeyEvent(QWindowSystemInterfacePrivate::KeyEvent *e);
+    static void processWheelEvent(QWindowSystemInterfacePrivate::WheelEvent *e);
+    static void processTouchEvent(QWindowSystemInterfacePrivate::TouchEvent *e);
+
+    static void processCloseEvent(QWindowSystemInterfacePrivate::CloseEvent *e);
+
+    static void processGeometryChangeEvent(QWindowSystemInterfacePrivate::GeometryChangeEvent *e);
+
+    static void processEnterEvent(QWindowSystemInterfacePrivate::EnterEvent *e);
+    static void processLeaveEvent(QWindowSystemInterfacePrivate::LeaveEvent *e);
+
+    static void processWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e);
+
+//    static void reportScreenCount(int count);
+    static void reportScreenCount(QWindowSystemInterfacePrivate::ScreenCountEvent *e);
+//    static void reportGeometryChange(int screenIndex);
+    static void reportGeometryChange(QWindowSystemInterfacePrivate::ScreenGeometryEvent *e);
+//    static void reportAvailableGeometryChange(int screenIndex);
+    static void reportAvailableGeometryChange(QWindowSystemInterfacePrivate::ScreenAvailableGeometryEvent *e);
+
 #endif
 
 #ifdef Q_WS_QWS
@@ -521,7 +564,7 @@ public:
 
     void _q_aboutToQuit();
 #endif
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_MAC)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_MAC) || defined(Q_WS_QPA)
     void sendSyntheticEnterLeave(QWidget *widget);
 #endif
 
@@ -629,6 +672,8 @@ Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
   extern void qt_x11_enforce_cursor(QWidget *);
 #elif defined(Q_OS_SYMBIAN)
   extern void qt_symbian_set_cursor(QWidget *, bool);
+#elif defined (Q_WS_QPA)
+  extern void qt_qpa_set_cursor(QWidget *, bool);
 #endif
 
 QT_END_NAMESPACE

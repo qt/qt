@@ -189,6 +189,7 @@ public:
     inline QMap<Key, T> &operator=(QMap<Key, T> &&other)
     { qSwap(d, other.d); return *this; }
 #endif
+    inline void swap(QMap<Key, T> &other) { qSwap(d, other.d); }
 #ifndef QT_NO_STL
     explicit QMap(const typename std::map<Key, T> &other);
     std::map<Key, T> toStdMap() const;
@@ -973,6 +974,7 @@ class QMultiMap : public QMap<Key, T>
 public:
     QMultiMap() {}
     QMultiMap(const QMap<Key, T> &other) : QMap<Key, T>(other) {}
+    inline void swap(QMultiMap<Key, T> &other) { QMap<Key, T>::swap(other); }
 
     inline typename QMap<Key, T>::iterator replace(const Key &key, const T &value)
     { return QMap<Key, T>::insert(key, value); }

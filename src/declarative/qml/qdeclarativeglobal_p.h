@@ -64,6 +64,12 @@ QT_MODULE(Declarative)
         return status == Yes; \
     }
 
+#ifdef Q_OS_SYMBIAN
+#define Q_DECLARATIVE_PRIVATE_EXPORT
+#else
+#define Q_DECLARATIVE_PRIVATE_EXPORT Q_DECLARATIVE_EXPORT
+#endif
+
 struct QDeclarativeGraphics_DerivedObject : public QObject
 {
     void setParent_noEvent(QObject *parent) {
@@ -73,6 +79,19 @@ struct QDeclarativeGraphics_DerivedObject : public QObject
         d_ptr->sendChildEvents = sce;
     }
 };
+
+/*!
+    Returns true if the case of \a fileName is equivalent to the file case of 
+    \a fileName on disk, and false otherwise.
+
+    This is used to ensure that the behavior of QML on a case-insensitive file 
+    system is the same as on a case-sensitive file system.  This function 
+    performs a "best effort" attempt to determine the real case of the file. 
+    It may have false positives (say the case is correct when it isn't), but it
+    should never have a false negative (say the case is incorrect when it is 
+    correct).
+*/
+bool QDeclarative_isFileCaseCorrect(const QString &fileName);
 
 /*!
     Makes the \a object a child of \a parent.  Note that when using this method,

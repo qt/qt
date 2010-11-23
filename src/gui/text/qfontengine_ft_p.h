@@ -130,13 +130,6 @@ private:
 class Q_GUI_EXPORT QFontEngineFT : public QFontEngine
 {
 public:
-    enum GlyphFormat {
-        Format_None,
-        Format_Render = Format_None,
-        Format_Mono,
-        Format_A8,
-        Format_A32
-    };
 
     /* we don't cache glyphs that are too large anyway, so we can make this struct rather small */
     struct Glyph {
@@ -242,6 +235,8 @@ private:
     virtual void recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlags flags) const;
     virtual QImage alphaMapForGlyph(glyph_t);
     virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, int margin, const QTransform &t);
+    virtual glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, const QTransform &matrix,
+                                                QFontEngine::GlyphFormat format);
     virtual void removeGlyphFromCache(glyph_t glyph);
 
     virtual int glyphCount() const;
@@ -282,6 +277,14 @@ private:
 
     virtual HB_Error getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints);
 
+    enum HintStyle {
+        HintNone,
+        HintLight,
+        HintMedium,
+        HintFull
+    };
+
+    void setDefaultHintStyle(HintStyle style);
 protected:
 
     void freeGlyphSets();
@@ -293,12 +296,6 @@ protected:
     QFreetypeFace *freetype;
     int default_load_flags;
 
-    enum HintStyle {
-        HintNone,
-        HintLight,
-        HintMedium,
-        HintFull
-    };
 
     HintStyle default_hint_style;
 
@@ -311,7 +308,7 @@ protected:
     bool embeddedbitmap;
 
 private:
-    QFontEngineFT::Glyph *loadGlyphMetrics(QGlyphSet *set, uint glyph) const;
+    QFontEngineFT::Glyph *loadGlyphMetrics(QGlyphSet *set, uint glyph, GlyphFormat format) const;
 
     GlyphFormat defaultFormat;
     FT_Matrix matrix;

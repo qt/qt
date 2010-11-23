@@ -39,9 +39,17 @@ wince* {
     LIBS += -lmmtimer
 }
 
-mac {
+!qpa:mac {
     DEFINES += ENABLE_JSC_MULTIPLE_THREADS=0
     LIBS_PRIVATE += -framework AppKit
+}
+qpa:mac {
+    DEFINES += ENABLE_JSC_MULTIPLE_THREADS=0
+    contains(QT_CONFIG, coreservices) {
+      LIBS_PRIVATE += -framework CoreServices
+    } else {
+      LIBS_PRIVATE += -framework CoreFoundation
+    }
 }
 
 include($$WEBKITDIR/JavaScriptCore/JavaScriptCore.pri)

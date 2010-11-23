@@ -7,7 +7,7 @@ SOURCES += tst_examples.cpp
 include(../../../../tools/qml/qml.pri)
 
 symbian: {
-    importFiles.sources = data
+    importFiles.files = data
     importFiles.path = .
     DEPLOYMENT += importFiles
 } else {

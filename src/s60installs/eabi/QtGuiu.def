@@ -12094,64 +12094,15 @@ EXPORTS
 	_ZN18QTapAndHoldGesture7timeoutEv @ 12093 NONAME
 	_ZN20QGraphicsItemPrivate26childrenBoundingRectHelperEP10QTransformP6QRectFb @ 12094 NONAME ABSENT
 	_ZN20QGraphicsItemPrivate14children_clearEP24QDeclarativeListPropertyI15QGraphicsObjectE @ 12095 NONAME
-	_ZN19QApplicationPrivate19qmljsDebugArgumentsE @ 12096 NONAME DATA 4
+	_ZN19QApplicationPrivate19qmljsDebugArgumentsE @ 12096 NONAME DATA 4 ABSENT
 	_ZN20QGraphicsItemPrivate26childrenBoundingRectHelperEP10QTransformP6QRectFP13QGraphicsItem @ 12097 NONAME
 	_ZNK20QGraphicsItemPrivate21effectiveBoundingRectEP13QGraphicsItem @ 12098 NONAME
-	_ZNK5QFont14lastResortFontEv @ 12099 NONAME
-	_ZN11QFontEngine19alphaRGBMapForGlyphEj6QFixediRK10QTransform @ 12100 NONAME
-	_ZN11QFontEngine33convertToPostscriptFontFamilyNameERK10QByteArray @ 12101 NONAME
-	_ZN18QTextureGlyphCache19fillInPendingGlyphsEv @ 12102 NONAME
-	_ZN19QAbstractProxyModel11setItemDataERK11QModelIndexRK4QMapIi8QVariantE @ 12103 NONAME
-	_ZN19QAbstractProxyModel4sortEiN2Qt9SortOrderE @ 12104 NONAME
-	_ZN19QAbstractProxyModel9fetchMoreERK11QModelIndex @ 12105 NONAME
-	_ZN19QApplicationPrivateC1ERiPPcN12QApplication4TypeEi @ 12106 NONAME
-	_ZN19QApplicationPrivateC2ERiPPcN12QApplication4TypeEi @ 12107 NONAME
-	_ZN19QGraphicsGridLayout10removeItemEP19QGraphicsLayoutItem @ 12108 NONAME
-	_ZN23QImageTextureGlyphCache11fillTextureERKN18QTextureGlyphCache5CoordEj6QFixed @ 12109 NONAME
-	_ZN6QImage4fillEN2Qt11GlobalColorE @ 12110 NONAME
-	_ZN6QImage4fillERK6QColor @ 12111 NONAME
-	_ZN7QGlyphs12setPositionsERK7QVectorI7QPointFE @ 12112 NONAME
-	_ZN7QGlyphs15setGlyphIndexesERK7QVectorIjE @ 12113 NONAME
-	_ZN7QGlyphs5clearEv @ 12114 NONAME
-	_ZN7QGlyphs6detachEv @ 12115 NONAME
-	_ZN7QGlyphs7setFontERK5QFont @ 12116 NONAME
-	_ZN7QGlyphsC1ERKS_ @ 12117 NONAME
-	_ZN7QGlyphsC1Ev @ 12118 NONAME
-	_ZN7QGlyphsC2ERKS_ @ 12119 NONAME
-	_ZN7QGlyphsC2Ev @ 12120 NONAME
-	_ZN7QGlyphsD1Ev @ 12121 NONAME
-	_ZN7QGlyphsD2Ev @ 12122 NONAME
-	_ZN7QGlyphsaSERKS_ @ 12123 NONAME
-	_ZN7QGlyphspLERKS_ @ 12124 NONAME
-	_ZN8QPainter10drawGlyphsERK7QPointFRK7QGlyphs @ 12125 NONAME
-	_ZNK10QTabWidget14heightForWidthEi @ 12126 NONAME
-	_ZNK11QFontEngine18createExplicitFontEv @ 12127 NONAME
-	_ZNK11QFontEngine26createExplicitFontWithNameERK7QString @ 12128 NONAME
-	_ZNK11QTextLayout6glyphsEv @ 12129 NONAME
-	_ZNK12QFontMetrics10inFontUcs4Ej @ 12130 NONAME
-	_ZNK12QRadioButton15minimumSizeHintEv @ 12131 NONAME
-	_ZNK13QFontMetricsF10inFontUcs4Ej @ 12132 NONAME
-	_ZNK13QTextFragment6glyphsEv @ 12133 NONAME
-	_ZNK14QWidgetPrivate17hasHeightForWidthEv @ 12134 NONAME
-	_ZNK16QFileSystemModel5rmdirERK11QModelIndex @ 12135 NONAME
-	_ZNK18QTextureGlyphCache18textureMapForGlyphEj6QFixed @ 12136 NONAME
-	_ZNK18QTextureGlyphCache20subPixelPositionForXE6QFixed @ 12137 NONAME
-	_ZNK18QTextureGlyphCache30calculateSubPixelPositionCountEj @ 12138 NONAME
-	_ZNK19QAbstractProxyModel11hasChildrenERK11QModelIndex @ 12139 NONAME
-	_ZNK19QAbstractProxyModel12canFetchMoreERK11QModelIndex @ 12140 NONAME
-	_ZNK19QAbstractProxyModel20supportedDropActionsEv @ 12141 NONAME
-	_ZNK19QAbstractProxyModel4spanERK11QModelIndex @ 12142 NONAME
-	_ZNK19QAbstractProxyModel5buddyERK11QModelIndex @ 12143 NONAME
-	_ZNK19QAbstractProxyModel8mimeDataERK5QListI11QModelIndexE @ 12144 NONAME
-	_ZNK19QAbstractProxyModel9mimeTypesEv @ 12145 NONAME
-	_ZNK7QGlyphs12glyphIndexesEv @ 12146 NONAME
-	_ZNK7QGlyphs4fontEv @ 12147 NONAME
-	_ZNK7QGlyphs9positionsEv @ 12148 NONAME
-	_ZNK7QGlyphseqERKS_ @ 12149 NONAME
-	_ZNK7QGlyphsneERKS_ @ 12150 NONAME
-	_ZNK7QGlyphsplERKS_ @ 12151 NONAME
-	_ZNK8QPainter16clipBoundingRectEv @ 12152 NONAME
-	_ZNK9QCheckBox15minimumSizeHintEv @ 12153 NONAME
-	_ZNK9QTextLine6glyphsEii @ 12154 NONAME
-	_Zls6QDebugPK13QSymbianEvent @ 12155 NONAME
+	_ZN19QApplicationPrivate21qmljs_debug_argumentsE @ 12099 NONAME DATA 4
+	_ZN19QApplicationPrivate25qmljsDebugArgumentsStringEv @ 12100 NONAME
+	_ZNK5QFont14lastResortFontEv @ 12101 NONAME
+	_ZN11QFontEngine33convertToPostscriptFontFamilyNameERK10QByteArray @ 12102 NONAME
+	_ZN15QStaticTextItem13setFontEngineEP11QFontEngine @ 12103 NONAME
+	_ZN15QStaticTextItemD1Ev @ 12104 NONAME
+	_ZN15QStaticTextItemD2Ev @ 12105 NONAME
+	_ZN19QEventDispatcherS6031reactivateDeferredActiveObjectsEv @ 12106 NONAME
 

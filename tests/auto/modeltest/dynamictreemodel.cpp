@@ -63,6 +63,13 @@ QModelIndex DynamicTreeModel::index(int row, int column, const QModelIndex &pare
 
   QList<QList<qint64> > childIdColumns = m_childItems.value(parent.internalId());
 
+  const qint64 grandParent = findParentId(parent.internalId());
+  if (grandParent >= 0) {
+    QList<QList<qint64> > parentTable = m_childItems.value(grandParent);
+    Q_ASSERT(parent.column() < parentTable.size());
+    QList<qint64> parentSiblings = parentTable.at(parent.column());
+    Q_ASSERT(parent.row() < parentSiblings.size());
+  }
 
   if (childIdColumns.size() == 0)
     return QModelIndex();

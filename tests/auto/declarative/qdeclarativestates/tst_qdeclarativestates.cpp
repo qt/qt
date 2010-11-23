@@ -143,6 +143,7 @@ private slots:
     void returnToBase();
     void extendsBug();
     void editProperties();
+    void QTBUG_14830();
 };
 
 void tst_qdeclarativestates::initTestCase()
@@ -1373,6 +1374,18 @@ void tst_qdeclarativestates::editProperties()
     rectPrivate->setState("blue");
     QCOMPARE(childRect->width(), qreal(402));
     QCOMPARE(childRect->height(), qreal(40));
+}
+
+void tst_qdeclarativestates::QTBUG_14830()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent c(&engine, SRCDIR "/data/QTBUG-14830.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect != 0);
+    QDeclarativeItem *item = rect->findChild<QDeclarativeItem*>("area");
+
+    QCOMPARE(item->width(), qreal(171));
 }
 
 QTEST_MAIN(tst_qdeclarativestates)

@@ -35,7 +35,9 @@ symbian: {
     }
     VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 
-    qtlibraries.sources = \
+    DESTDIR = $$QMAKE_LIBDIR_QT
+
+    qtlibraries.files = \
         $$QMAKE_LIBDIR_QT/QtCore$${QT_LIBINFIX}.dll \
         $$QMAKE_LIBDIR_QT/QtXml$${QT_LIBINFIX}.dll \
         $$QMAKE_LIBDIR_QT/QtGui$${QT_LIBINFIX}.dll \
@@ -80,9 +82,15 @@ symbian: {
         qts60plugindeployment = \
             "   \"$$pluginLocations/qts60plugin_5_0$${QT_LIBINFIX}.dll\" - \"c:\\sys\\bin\\qts60plugin_5_0$${QT_LIBINFIX}.dll\""
 
-        bearer_plugin.sources = $$QT_BUILD_TREE/plugins/bearer/qsymbianbearer$${QT_LIBINFIX}.dll
+        bearer_plugin.files = $$QT_BUILD_TREE/plugins/bearer/qsymbianbearer$${QT_LIBINFIX}.dll
         bearer_plugin.path = c:$$QT_PLUGINS_BASE_DIR/bearer
         DEPLOYMENT += bearer_plugin
+    }
+
+    contains(S60_VERSION, 5.0)|contains(S60_VERSION, symbian3) {
+        feedback_plugin.sources = $$QT_BUILD_TREE/plugins/s60/feedback/qtactilefeedback$${QT_LIBINFIX}.dll
+        feedback_plugin.path = c:$$QT_PLUGINS_BASE_DIR/feedback
+        DEPLOYMENT += feedback_plugin
     }
 
     qtlibraries.pkg_postrules += qts60plugindeployment
@@ -113,25 +121,25 @@ symbian: {
     }
     qtlibraries.pkg_prerules += "(0x2002af5f), 0, 5, 0, {\"sqlite3\"}"
 
-    !contains(QT_CONFIG, no-jpeg): imageformats_plugins.sources += $$QT_BUILD_TREE/plugins/imageformats/qjpeg$${QT_LIBINFIX}.dll
-    !contains(QT_CONFIG, no-gif):  imageformats_plugins.sources += $$QT_BUILD_TREE/plugins/imageformats/qgif$${QT_LIBINFIX}.dll
-    !contains(QT_CONFIG, no-mng):  imageformats_plugins.sources += $$QT_BUILD_TREE/plugins/imageformats/qmng$${QT_LIBINFIX}.dll
-    !contains(QT_CONFIG, no-tiff): imageformats_plugins.sources += $$QT_BUILD_TREE/plugins/imageformats/qtiff$${QT_LIBINFIX}.dll
-    !contains(QT_CONFIG, no-ico):  imageformats_plugins.sources += $$QT_BUILD_TREE/plugins/imageformats/qico$${QT_LIBINFIX}.dll
+    !contains(QT_CONFIG, no-jpeg): imageformats_plugins.files += $$QT_BUILD_TREE/plugins/imageformats/qjpeg$${QT_LIBINFIX}.dll
+    !contains(QT_CONFIG, no-gif):  imageformats_plugins.files += $$QT_BUILD_TREE/plugins/imageformats/qgif$${QT_LIBINFIX}.dll
+    !contains(QT_CONFIG, no-mng):  imageformats_plugins.files += $$QT_BUILD_TREE/plugins/imageformats/qmng$${QT_LIBINFIX}.dll
+    !contains(QT_CONFIG, no-tiff): imageformats_plugins.files += $$QT_BUILD_TREE/plugins/imageformats/qtiff$${QT_LIBINFIX}.dll
+    !contains(QT_CONFIG, no-ico):  imageformats_plugins.files += $$QT_BUILD_TREE/plugins/imageformats/qico$${QT_LIBINFIX}.dll
     imageformats_plugins.path = c:$$QT_PLUGINS_BASE_DIR/imageformats
 
-    codecs_plugins.sources = $$QT_BUILD_TREE/plugins/codecs/qcncodecs$${QT_LIBINFIX}.dll $$QT_BUILD_TREE/plugins/codecs/qjpcodecs$${QT_LIBINFIX}.dll $$QT_BUILD_TREE/plugins/codecs/qtwcodecs$${QT_LIBINFIX}.dll $$QT_BUILD_TREE/plugins/codecs/qkrcodecs$${QT_LIBINFIX}.dll
+    codecs_plugins.files = $$QT_BUILD_TREE/plugins/codecs/qcncodecs$${QT_LIBINFIX}.dll $$QT_BUILD_TREE/plugins/codecs/qjpcodecs$${QT_LIBINFIX}.dll $$QT_BUILD_TREE/plugins/codecs/qtwcodecs$${QT_LIBINFIX}.dll $$QT_BUILD_TREE/plugins/codecs/qkrcodecs$${QT_LIBINFIX}.dll
     codecs_plugins.path = c:$$QT_PLUGINS_BASE_DIR/codecs
 
     contains(QT_CONFIG, phonon-backend) {
-        phonon_backend_plugins.sources += $$QMAKE_LIBDIR_QT/phonon_mmf$${QT_LIBINFIX}.dll
+        phonon_backend_plugins.files += $$QMAKE_LIBDIR_QT/phonon_mmf$${QT_LIBINFIX}.dll
 
         phonon_backend_plugins.path = c:$$QT_PLUGINS_BASE_DIR/phonon_backend
         DEPLOYMENT += phonon_backend_plugins
     }
 
     # Support backup & restore for Qt libraries
-    qtbackup.sources = backup_registration.xml
+    qtbackup.files = backup_registration.xml
     qtbackup.path = c:/private/10202D56/import/packages/$$replace(TARGET.UID3, 0x,)
 
     DEPLOYMENT += qtlibraries \
@@ -141,35 +149,35 @@ symbian: {
                   graphicssystems_plugins
 
     contains(QT_CONFIG, svg): {
-       qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtSvg$${QT_LIBINFIX}.dll
-       imageformats_plugins.sources += $$QT_BUILD_TREE/plugins/imageformats/qsvg$${QT_LIBINFIX}.dll
-       iconengines_plugins.sources = $$QT_BUILD_TREE/plugins/iconengines/qsvgicon$${QT_LIBINFIX}.dll
+       qtlibraries.files += $$QMAKE_LIBDIR_QT/QtSvg$${QT_LIBINFIX}.dll
+       imageformats_plugins.files += $$QT_BUILD_TREE/plugins/imageformats/qsvg$${QT_LIBINFIX}.dll
+       iconengines_plugins.files = $$QT_BUILD_TREE/plugins/iconengines/qsvgicon$${QT_LIBINFIX}.dll
        iconengines_plugins.path = c:$$QT_PLUGINS_BASE_DIR/iconengines
        DEPLOYMENT += iconengines_plugins
     }
 
     contains(QT_CONFIG, phonon): {
-       qtlibraries.sources += $$QMAKE_LIBDIR_QT/phonon$${QT_LIBINFIX}.dll
+       qtlibraries.files += $$QMAKE_LIBDIR_QT/phonon$${QT_LIBINFIX}.dll
     }
 
     contains(QT_CONFIG, script): {
-        qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtScript$${QT_LIBINFIX}.dll
+        qtlibraries.files += $$QMAKE_LIBDIR_QT/QtScript$${QT_LIBINFIX}.dll
     }
 
     contains(QT_CONFIG, xmlpatterns): {
-       qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtXmlPatterns$${QT_LIBINFIX}.dll
+       qtlibraries.files += $$QMAKE_LIBDIR_QT/QtXmlPatterns$${QT_LIBINFIX}.dll
     }
 
     contains(QT_CONFIG, declarative): {
-        qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtDeclarative$${QT_LIBINFIX}.dll
+        qtlibraries.files += $$QMAKE_LIBDIR_QT/QtDeclarative$${QT_LIBINFIX}.dll
 
-        folderlistmodelImport.sources = $$QT_BUILD_TREE/imports/Qt/labs/folderlistmodel/qmlfolderlistmodelplugin$${QT_LIBINFIX}.dll
-        gesturesImport.sources = $$QT_BUILD_TREE/imports/Qt/labs/gestures/qmlgesturesplugin$${QT_LIBINFIX}.dll
-        particlesImport.sources = $$QT_BUILD_TREE/imports/Qt/labs/particles/qmlparticlesplugin$${QT_LIBINFIX}.dll
+        folderlistmodelImport.files = $$QT_BUILD_TREE/imports/Qt/labs/folderlistmodel/qmlfolderlistmodelplugin$${QT_LIBINFIX}.dll
+        gesturesImport.files = $$QT_BUILD_TREE/imports/Qt/labs/gestures/qmlgesturesplugin$${QT_LIBINFIX}.dll
+        particlesImport.files = $$QT_BUILD_TREE/imports/Qt/labs/particles/qmlparticlesplugin$${QT_LIBINFIX}.dll
 
-        folderlistmodelImport.sources += $$QT_SOURCE_TREE/src/imports/folderlistmodel/qmldir
-        gesturesImport.sources += $$QT_SOURCE_TREE/src/imports/gestures/qmldir
-        particlesImport.sources += $$QT_SOURCE_TREE/src/imports/particles/qmldir
+        folderlistmodelImport.files += $$QT_SOURCE_TREE/src/imports/folderlistmodel/qmldir
+        gesturesImport.files += $$QT_SOURCE_TREE/src/imports/gestures/qmldir
+        particlesImport.files += $$QT_SOURCE_TREE/src/imports/particles/qmldir
 
         folderlistmodelImport.path = c:$$QT_IMPORTS_BASE_DIR/Qt/labs/folderlistmodel
         gesturesImport.path = c:$$QT_IMPORTS_BASE_DIR/Qt/labs/gestures
@@ -180,8 +188,8 @@ symbian: {
 
     graphicssystems_plugins.path = c:$$QT_PLUGINS_BASE_DIR/graphicssystems
     contains(QT_CONFIG, openvg) {
-        qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtOpenVG$${QT_LIBINFIX}.dll
-        graphicssystems_plugins.sources += $$QT_BUILD_TREE/plugins/graphicssystems/qvggraphicssystem$${QT_LIBINFIX}.dll
+        qtlibraries.files += $$QMAKE_LIBDIR_QT/QtOpenVG$${QT_LIBINFIX}.dll
+        graphicssystems_plugins.files += $$QT_BUILD_TREE/plugins/graphicssystems/qvggraphicssystem$${QT_LIBINFIX}.dll
         # OpenVG requires Symbian^3 or later
         pkg_platform_dependencies -= \
             "[0x101F7961],0,0,0,{\"S60ProductID\"}" \
@@ -191,14 +199,13 @@ symbian: {
     }
 
     contains(QT_CONFIG, opengl) {
-        qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtOpenGL$${QT_LIBINFIX}.dll
-        graphicssystems_plugins.sources += $$QT_BUILD_TREE/plugins/graphicssystems/qglgraphicssystem$${QT_LIBINFIX}.dll
+        qtlibraries.files += $$QMAKE_LIBDIR_QT/QtOpenGL$${QT_LIBINFIX}.dll
+        graphicssystems_plugins.files += $$QT_BUILD_TREE/plugins/graphicssystems/qglgraphicssystem$${QT_LIBINFIX}.dll
     }
 
     contains(QT_CONFIG, multimedia){
-        qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtMultimedia$${QT_LIBINFIX}.dll
+        qtlibraries.files += $$QMAKE_LIBDIR_QT/QtMultimedia$${QT_LIBINFIX}.dll
     }
 
     BLD_INF_RULES.prj_exports += "qt.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qt.iby)"
-    BLD_INF_RULES.prj_exports += "qtdemoapps.iby $$CUSTOMER_VARIANT_APP_LAYER_IBY_EXPORT_PATH(qtdemoapps.iby)"
 }

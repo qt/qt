@@ -602,7 +602,7 @@ int QAccessibleDisplay::navigate(RelationFlag rel, int entry, QAccessibleInterfa
     return QAccessibleWidgetEx::navigate(rel, entry, target);
 }
 
-/*! \reimp */
+/*! \internal */
 QString QAccessibleDisplay::imageDescription()
 {
 #ifndef QT_NO_TOOLTIP
@@ -612,7 +612,7 @@ QString QAccessibleDisplay::imageDescription()
 #endif
 }
 
-/*! \reimp */
+/*! \internal */
 QSize QAccessibleDisplay::imageSize()
 {
     QLabel *label = qobject_cast<QLabel *>(widget());
@@ -624,7 +624,7 @@ QSize QAccessibleDisplay::imageSize()
     return pixmap->size();
 }
 
-/*! \reimp */
+/*! \internal */
 QRect QAccessibleDisplay::imagePosition(QAccessible2::CoordinateType coordType)
 {
     QLabel *label = qobject_cast<QLabel *>(widget());

@@ -48,6 +48,7 @@
 
 #include <private/qdeclarativeengine_p.h>
 #include <private/qabstractanimation_p.h>
+#include <private/qdeclarativeengine_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -61,6 +62,13 @@ void QDeclarativeDebugHelper::setAnimationSlowDownFactor(qreal factor)
     QUnifiedTimer *timer = QUnifiedTimer::instance();
     timer->setSlowModeEnabled(factor != 1.0);
     timer->setSlowdownFactor(factor);
+}
+
+void QDeclarativeDebugHelper::enableDebugging() {
+    if (!QDeclarativeEnginePrivate::qml_debugging_enabled) {
+        qWarning("Qml debugging is enabled. Only use this in a safe environment!");
+    }
+    QDeclarativeEnginePrivate::qml_debugging_enabled = true;
 }
 
 QT_END_NAMESPACE

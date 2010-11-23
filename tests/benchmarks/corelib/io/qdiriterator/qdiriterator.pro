@@ -16,7 +16,7 @@ SOURCES += qfilesystemiterator.cpp
 HEADERS += qfilesystemiterator.h
 
 wince*|symbian: {
-   corelibdir.sources = $$QT_SOURCE_TREE/src/corelib
+   corelibdir.files = $$QT_SOURCE_TREE/src/corelib
    corelibdir.path = ./depot/src
    DEPLOYMENT += corelibdir
 }

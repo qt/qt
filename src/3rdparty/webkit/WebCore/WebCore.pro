@@ -56,6 +56,7 @@ TEMPLATE = lib
 TARGET = QtWebKit
 
 contains(QT_CONFIG, embedded):CONFIG += embedded
+contains(QT_CONFIG, qpa):CONFIG += embedded
 
 CONFIG(standalone_package) {
     isEmpty(WC_GENERATED_SOURCES_DIR):WC_GENERATED_SOURCES_DIR = $$PWD/generated
@@ -2180,11 +2181,11 @@ contains(DEFINES, ENABLE_NETSCAPE_PLUGIN_API=1) {
     
             mac {
                 SOURCES += \
-                    plugins/mac/PluginPackageMac.cpp \
-                    plugins/mac/PluginViewMac.mm
+                    plugins/mac/PluginPackageMac.cpp
                 OBJECTIVE_SOURCES += \
                     platform/text/mac/StringImplMac.mm \
-                    platform/mac/WebCoreNSStringExtras.mm
+                    platform/mac/WebCoreNSStringExtras.mm \
+                    plugins/mac/PluginViewMac.mm
                 INCLUDEPATH += platform/mac
                 # Note: XP_MACOSX is defined in npapi.h
             } else {

@@ -440,6 +440,14 @@ QPixmap &QPixmap::operator=(const QPixmap &pixmap)
 }
 
 /*!
+    \fn void QPixmap::swap(QPixmap &other)
+    \since 4.8
+
+    Swaps pixmap \a other with this pixmap. This operation is very
+    fast and never fails.
+*/
+
+/*!
    Returns the pixmap as a QVariant.
 */
 QPixmap::operator QVariant() const
@@ -1102,6 +1110,9 @@ QPixmap QPixmap::grabWidget(QWidget * widget, const QRect &rect)
         return QPixmap();
 
     QPixmap res(r.size());
+    if (!qt_widget_private(widget)->isOpaque)
+        res.fill(Qt::transparent);
+
     widget->d_func()->render(&res, QPoint(), r, QWidget::DrawWindowBackground
                              | QWidget::DrawChildren | QWidget::IgnoreMask, true);
     return res;
@@ -1964,6 +1975,8 @@ int QPixmap::defaultDepth()
     return 32;
 #elif defined(Q_OS_SYMBIAN)
     return S60->screenDepth;
+#elif defined(Q_WS_QPA)
+    return 32; //LITE: use graphicssystem (we should do that in general)
 #endif
 }
 

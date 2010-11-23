@@ -9,7 +9,7 @@ SOURCES += tst_qdeclarativexmlhttprequest.cpp \
            ../shared/testhttpserver.cpp
 
 symbian: {
-    importFiles.sources = data
+    importFiles.files = data
     importFiles.path = .
     DEPLOYMENT += importFiles
 } else {

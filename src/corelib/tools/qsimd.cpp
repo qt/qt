@@ -72,7 +72,12 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined (Q_OS_WINCE)
+#if defined (Q_OS_NACL)
+static inline uint detectProcessorFeatures()
+{
+    return 0;
+}
+#elif defined (Q_OS_WINCE)
 static inline uint detectProcessorFeatures()
 {
     uint features = 0;
@@ -135,7 +140,7 @@ static inline uint detectProcessorFeatures()
 #if defined(QT_HAVE_IWMMXT)
     // runtime detection only available when running as a previlegied process
     features = IWMMXT;
-#elif defined(QT_HAVE_NEON)
+#elif defined(QT_ALWAYS_HAVE_NEON)
     features = NEON;
 #endif
 
