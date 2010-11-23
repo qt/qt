@@ -1494,9 +1494,9 @@ struct UCS2Pair {
     ushort u2;
 };
 
-static inline bool operator<(ushort u1, const UCS2Pair &ligature)
+inline bool operator<(ushort u1, const UCS2Pair &ligature)
 { return u1 < ligature.u1; }
-static inline bool operator<(const UCS2Pair &ligature, ushort u1)
+inline bool operator<(const UCS2Pair &ligature, ushort u1)
 { return ligature.u1 < u1; }
 
 static ushort ligatureHelper(ushort u1, ushort u2)
