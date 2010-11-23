@@ -500,6 +500,8 @@ v8::Handle<v8::Value> QScriptGenericMetaMethodData<T, functionTemplate>::call()
 {
     QtInstanceData *instance = QtInstanceData::get(object());
     QObject *qobject = instance->cppObject();
+    if (!qobject)
+        return v8::Undefined();
     const QMetaObject *meta = qobject->metaObject();
     const v8::Arguments *args = this->engine->currentContext()->arguments;
 
@@ -549,7 +551,7 @@ bool QtConnection::connect(v8::Handle<v8::Object> receiver, v8::Handle<v8::Objec
     Q_ASSERT(m_callback.IsEmpty());
     QtInstanceData *instance = QtInstanceData::get(m_signal->object());
     QObject *sender = instance->cppObject();
-    bool ok = QMetaObject::connect(sender, m_signal->index(),
+    bool ok = sender && QMetaObject::connect(sender, m_signal->index(),
                                    this, staticMetaObject.methodOffset(), type);
     if (ok) {
         QtObjectNotifyCaller::callConnectNotify(sender, m_signal->index());
@@ -565,7 +567,7 @@ bool QtConnection::disconnect()
     Q_ASSERT(!m_callback.IsEmpty());
     QtInstanceData *instance = QtInstanceData::get(m_signal->object());
     QObject *sender = instance->cppObject();
-    bool ok = QMetaObject::disconnect(sender, m_signal->index(),
+    bool ok = sender && QMetaObject::disconnect(sender, m_signal->index(),
                                       this, staticMetaObject.methodOffset());
     if (ok) {
         QtObjectNotifyCaller::callDisconnectNotify(sender, m_signal->index());
@@ -798,13 +800,15 @@ static v8::Handle<v8::Value> QtMetaPropertyGetter(v8::Local<v8::String> property
     QScriptContextPrivate context(engine, &info);
 
     QObject *qobject = data->cppObject();
-    Q_ASSERT(qobject != 0);
+    if (!qobject)
+        return v8::Undefined();
     const QMetaObject *meta = qobject->metaObject();
 
     int propertyIndex = v8::Int32::Cast(*info.Data())->Value();
 
     QMetaProperty prop = meta->property(propertyIndex);
-    Q_ASSERT(prop.isReadable());
+    if (!prop.isReadable())
+        return v8::Undefined();
 
     QScriptEnginePrivate *oldEngine = 0;
     QScriptable *scriptable = data->toQScriptable();
@@ -839,7 +843,6 @@ static void QtMetaPropertySetter(v8::Local<v8::String> /*property*/,
     int propertyIndex = v8::Int32::Cast(*info.Data())->Value();
 
     QMetaProperty prop = meta->property(propertyIndex);
-    Q_ASSERT(prop.isWritable());
 
     QVariant cppValue;
 #if 0
