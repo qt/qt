@@ -189,7 +189,7 @@ QEglFSScreen::QEglFSScreen(EGLNativeDisplayType display)
     attribList[temp++] = 2; // GLES version 2
     attribList[temp++] = EGL_NONE;
 
-    m_platformContext = new QEGLPlatformContext(m_dpy,config,attribList,m_surface,EGL_OPENGL_ES_API);
+    m_platformContext = new QEGLPlatformContext(m_dpy,config,attribList,m_surface,EGL_OPENGL_ES_API, 0);
 
 //    qWarning("Created platformcontext");
     EGLint w,h;
