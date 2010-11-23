@@ -49,7 +49,7 @@
 #include <qdebug.h>
 
 // Included from tools/shared
-#include <symbian/epocroot.h>
+#include <symbian/epocroot_p.h>
 
 #define DO_NOTHING_TARGET "do_nothing"
 #define CREATE_TEMPS_TARGET "create_temps"
@@ -267,12 +267,14 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
         t << "\tbldmake bldfiles" << endl;
         t << endl;
 
-        t << "debug: $(ABLD)" << endl;
+        QString locFileDep = generateLocFileTarget(t, qmakeCmd);
+
+        t << "debug: " << locFileDep << "$(ABLD)" << endl;
         foreach(QString item, debugPlatforms) {
             t << "\t$(ABLD)" << testClause << " build " << item << " udeb" << endl;
         }
         t << endl;
-        t << "release: $(ABLD)" << endl;
+        t << "release: " << locFileDep << "$(ABLD)" << endl;
         foreach(QString item, releasePlatforms) {
             t << "\t$(ABLD)" << testClause << " build " << item << " urel" << endl;
         }
@@ -280,12 +282,12 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
 
         // For more specific builds, targets are in this form: build-platform, e.g. release-armv5
         foreach(QString item, debugPlatforms) {
-            t << "debug-" << item << ": $(ABLD)" << endl;
+            t << "debug-" << item << ": " << locFileDep << "$(ABLD)" << endl;
             t << "\t$(ABLD)" << testClause << " build " << item << " udeb" << endl;
         }
 
         foreach(QString item, releasePlatforms) {
-            t << "release-" << item << ": $(ABLD)" << endl;
+            t << "release-" << item << ": " << locFileDep << "$(ABLD)" << endl;
             t << "\t$(ABLD)" << testClause << " build " << item << " urel" << endl;
         }
 
@@ -429,7 +431,7 @@ bool SymbianAbldMakefileGenerator::writeDeploymentTargets(QTextStream &t, bool i
     else
         t << WINSCW_DEPLOYMENT_TARGET ":" << endl;
 
-    QString remoteTestPath = epocRoot()
+    QString remoteTestPath = qt_epocRoot()
         + QDir::toNativeSeparators(QLatin1String(isRom ? "epoc32/data/z/private/"
                                                        : "epoc32/winscw/c/private/"))
         + privateDirUid;
