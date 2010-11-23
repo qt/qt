@@ -170,12 +170,12 @@ QT_USE_NAMESPACE
     return [[aboutQtItem retain] autorelease];
 }
 
-- (NSMenuItem *)hideMenuItem;
+- (NSMenuItem *)hideMenuItem
 {
     return [[hideItem retain] autorelease];
 }
 
-- (NSMenuItem *)appSpecificMenuItem;
+- (NSMenuItem *)appSpecificMenuItem
 {
     // Create an App-Specific menu item, insert it into the menu and return
     // it as an autorelease item.

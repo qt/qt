@@ -339,7 +339,7 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
     [self relayoutToContentSize:[[mStolenContentView superview] frame].size];
 }
 
-- (void)relayoutToContentSize:(NSSize)frameSize;
+- (void)relayoutToContentSize:(NSSize)frameSize
 {
     Q_ASSERT(mPanelHackedWithButtons);
 
