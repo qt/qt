@@ -604,7 +604,7 @@ struct QDeclarativeBindingCompilerPrivate
     QDeclarativeImports imports;
     QDeclarativeEnginePrivate *engine;
 
-    QString contextName() const { return QLatin1String("$$$SCOPE_") + QString::number((intptr_t)context, 16); }
+    QString contextName() const { return QLatin1String("$$$SCOPE_") + QString::number((quintptr)context, 16); }
 
     bool compile(QDeclarativeJS::AST::Node *);
 

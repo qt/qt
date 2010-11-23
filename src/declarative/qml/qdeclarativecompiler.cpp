@@ -591,8 +591,6 @@ bool QDeclarativeCompiler::compile(QDeclarativeEngine *engine,
             }
         } else if (tref.typeData) {
             ref.component = tref.typeData->compiledData();
-            ref.ref = tref.typeData;
-            ref.ref->addref();
         }
         ref.className = parserRef->name.toUtf8();
         out->types << ref;

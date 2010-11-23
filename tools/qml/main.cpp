@@ -155,7 +155,11 @@ void usage()
     qWarning("  -I <directory> ........................... prepend to the module import search path,");
     qWarning("                                             display path if <directory> is empty");
     qWarning("  -P <directory> ........................... prepend to the plugin search path");
+#if defined(Q_WS_MAC)
+    qWarning("  -no-opengl ............................... don't use a QGLWidget for the viewport");
+#else
     qWarning("  -opengl .................................. use a QGLWidget for the viewport");
+#endif
     qWarning("  -script <path> ........................... set the script to use");
     qWarning("  -scriptopts <options>|help ............... set the script options to use");
 
@@ -370,8 +374,13 @@ static void parseCommandLineOptions(const QStringList &arguments)
         } else if (arg == "-translation") {
             if (lastArg) usage();
             opts.translationFile = arguments.at(++i);
+#if defined(Q_WS_MAC)
+        } else if (arg == "-no-opengl") {
+            opts.useGL = false;
+#else
         } else if (arg == "-opengl") {
             opts.useGL = true;
+#endif
         } else if (arg == "-qmlbrowser") {
             opts.useNativeFileBrowser = false;
         } else if (arg == "-warnings") {

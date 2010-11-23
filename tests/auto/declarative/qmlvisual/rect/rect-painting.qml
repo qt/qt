@@ -1,7 +1,7 @@
 import QtQuick 1.0
 
 Rectangle {
-    width: 900; height: 500
+    width: 450; height: 250
     color: "white"
 
     Rectangle {
@@ -14,7 +14,7 @@ Rectangle {
 
     Grid {
         anchors.centerIn: parent
-        columns: 8; rows:4; spacing: 30
+        columns: 8; rows:4; spacing: 15
 
         MyRect { color: "lightsteelblue" }
         MyRect { color: "lightsteelblue"; border: "gray" }

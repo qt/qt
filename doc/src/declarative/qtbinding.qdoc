@@ -448,7 +448,8 @@ now be used from QML:
 \snippet doc/src/snippets/declarative/qtbinding/enums/standalone.qml 0
 
 The C++ type must be registered with QML to use its enums. If your C++ type is not instantiable, it
-can be registered using qmlRegisterUncreatableType().
+can be registered using qmlRegisterUncreatableType().  To be accessible from QML, the names of enum values
+must begin with a capital letter.
 
 See the \l {Tutorial: Writing QML extensions with C++}{Writing QML extensions with C++} tutorial and
 the \l {Extending QML in C++} reference documentation for more information.

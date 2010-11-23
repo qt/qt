@@ -177,7 +177,7 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
            fileName = source->url();
     }
 
-    // Get the others informations:
+    // Get the others information:
     JSC::JSObject *callee = frame->callee();
     if (callee && callee->inherits(&JSC::InternalFunction::info))
         functionName = JSC::asInternalFunction(callee)->name(frame);

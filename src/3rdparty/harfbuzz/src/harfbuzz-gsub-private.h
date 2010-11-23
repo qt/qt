@@ -32,10 +32,6 @@
 
 HB_BEGIN_HEADER
 
-#ifdef HB_USE_PACKED_STRUCTS
-#pragma pack(push, 1)
-#endif
-
 typedef union HB_GSUB_SubTable_  HB_GSUB_SubTable;
 
 /* LookupType 1 */
@@ -473,10 +469,6 @@ _HB_GSUB_Load_SubTable( HB_GSUB_SubTable* st,
 HB_INTERNAL void
 _HB_GSUB_Free_SubTable( HB_GSUB_SubTable* st,
 			      HB_UShort     lookup_type );
-
-#ifdef HB_USE_PACKED_STRUCTS
-#pragma pack(pop)
-#endif
 
 HB_END_HEADER
 
