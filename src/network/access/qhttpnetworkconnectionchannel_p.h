@@ -159,6 +159,8 @@ public:
     bool isSocketWaiting() const;
     bool isSocketReading() const;
 
+    friend class QNetworkAccessHttpBackend;
+
     protected slots:
     void _q_receiveReply();
     void _q_bytesWritten(qint64 bytes); // proceed sending

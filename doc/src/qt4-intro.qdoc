@@ -466,7 +466,7 @@
     collaborate tightly and create animated and fluid user experiences,
     using existing knowledge in script language and design.
 
-    \i QtDeclarative is a C++ library that provides the underlying engine,
+    \i Qt Declarative is a C++ library that provides the underlying engine,
     which translates the declarative description of the UI in QML into
     items on a QGraphicsScene. The library also provides APIs to bind
     custom C++ types and elements to QML, and to connect the QML UI with
