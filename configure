@@ -4520,7 +4520,7 @@ if [ -n "$EVALKEY" ]; then
     rm -f "$outpath/src/corelib/global/qconfig_eval.cpp"
     cat > "$outpath/src/corelib/global/qconfig_eval.cpp" <<EOF
 /* Evaluation license key */
-static const char qt_eval_key_data                   [512 + 12] = "$EVALKEY";
+static const volatile char qt_eval_key_data                   [512 + 12] = "$EVALKEY";
 EOF
     chmod -w "$outpath/src/corelib/global/qconfig_eval.cpp"
 fi
