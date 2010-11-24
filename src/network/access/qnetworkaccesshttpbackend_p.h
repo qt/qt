@@ -99,6 +99,8 @@ public:
     bool canResume() const;
     void setResumeOffset(quint64 offset);
 
+    virtual bool processRequestSynchronously();
+
 private slots:
     void replyReadyRead();
     void replyFinished();
@@ -111,7 +113,7 @@ private slots:
 
 private:
     QHttpNetworkReply *httpReply;
-    QPointer<QNetworkAccessCachedHttpConnection> http;
+    QPointer<QHttpNetworkConnection> http;
     QByteArray cacheKey;
     QNetworkAccessBackendUploadIODevice *uploadDevice;
 
