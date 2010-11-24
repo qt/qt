@@ -1618,12 +1618,10 @@ void HtmlGenerator::generateHeader(const QString& title,
     out() << QString("<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"%1\" lang=\"%1\">\n").arg(naturalLanguage);
     out() << "<head>\n";
     out() << "  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n";
-    QString shortVersion;
-    shortVersion = project + " " + shortVersion + ": ";
     if (node && !node->doc().location().isEmpty())
         out() << "<!-- " << node->doc().location().fileName() << " -->\n";
 
-    shortVersion = myTree->version();
+    QString shortVersion = myTree->version();
     if (shortVersion.count(QChar('.')) == 2)
         shortVersion.truncate(shortVersion.lastIndexOf(QChar('.')));
     if (!shortVersion.isEmpty()) {
