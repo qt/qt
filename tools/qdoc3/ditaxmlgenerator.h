@@ -234,9 +234,6 @@ class DitaXmlGenerator : public PageGenerator
     
     QString registerRef(const QString& ref);
     QString fileBase(const Node *node);
-#if 0
-    QString fileBase(const Node *node, const SectionIterator& section);
-#endif
     QString fileName(const Node *node);
     void findAllClasses(const InnerNode *node);
     void findAllFunctions(const InnerNode *node);

@@ -56,15 +56,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if 0
-struct NavigationBar
-{
-    SectionIterator prev;
-    SectionIterator current;
-    SectionIterator next;
-};
-#endif
-
 typedef QMultiMap<QString, Node*> NodeMultiMap;
 typedef QMap<QString, NodeMultiMap> NewSinceMaps;
 typedef QMap<Node*, NodeMultiMap> ParentMaps;
@@ -150,16 +141,6 @@ class HtmlGenerator : public PageGenerator
                        CodeMarker *marker,
                        const Node *relative = 0);
     void generateIncludes(const InnerNode *inner, CodeMarker *marker);
-#if 0
-    void generateNavigationBar(const NavigationBar& bar, 
-                               const Node *node,
-                               CodeMarker *marker);
-#endif
-    void generateTableOfContents(const Node *node, 
-                                 CodeMarker *marker,
-                                 Doc::SectioningUnit sectioningUnit,
-                                 int numColumns, 
-                                 const Node *relative = 0);
     void generateTableOfContents(const Node *node, 
                                  CodeMarker *marker, 
                                  QList<Section>* sections = 0);
@@ -237,9 +218,6 @@ class HtmlGenerator : public PageGenerator
     
     QString registerRef(const QString& ref);
     QString fileBase(const Node *node);
-#if 0
-    QString fileBase(const Node *node, const SectionIterator& section);
-#endif
     QString fileName(const Node *node);
     void findAllClasses(const InnerNode *node);
     void findAllFunctions(const InnerNode *node);
@@ -273,9 +251,6 @@ class HtmlGenerator : public PageGenerator
                            CodeMarker* marker) const;
     void generateExtractionMark(const Node *node, ExtractionMarkType markType);
 
-#if 0
-    NavigationBar currentNavigationBar;
-#endif
     QMap<QString, QString> refMap;
     int codeIndent;
     HelpProjectWriter *helpProjectWriter;

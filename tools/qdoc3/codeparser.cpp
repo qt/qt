@@ -47,7 +47,6 @@
 #include "node.h"
 #include "tree.h"
 #include "config.h"
-#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
@@ -99,7 +98,7 @@ void CodeParser::initializeParser(const Config& config)
 }
 
 /*!
-  Teerminating a code parser is trivial.
+  Terminating a code parser is trivial.
  */
 void CodeParser::terminateParser()
 {

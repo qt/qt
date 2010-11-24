@@ -1116,33 +1116,6 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             skipAhead = 1;
         break;
     case Atom::TableOfContents:
-        {
-            int numColumns = 1;
-            const Node *node = relative;
-
-            Doc::SectioningUnit sectioningUnit = Doc::Section4;
-            QStringList params = atom->string().split(",");
-            QString columnText = params.at(0);
-            QStringList pieces = columnText.split(" ", QString::SkipEmptyParts);
-            if (pieces.size() >= 2) {
-                columnText = pieces.at(0);
-                pieces.pop_front();
-                QString path = pieces.join(" ").trimmed();
-                node = findNodeForTarget(path, relative, marker, atom);
-            }
-
-            if (params.size() == 2) {
-                numColumns = qMax(columnText.toInt(), numColumns);
-                sectioningUnit = (Doc::SectioningUnit)params.at(1).toInt();
-            }
-
-            if (node)
-                generateTableOfContents(node,
-                                        marker,
-                                        sectioningUnit,
-                                        numColumns,
-                                        relative);
-        }
         break;
     case Atom::Target:
         out() << "<a name=\"" << Doc::canonicalTitle(atom->string()) << "\"></a>";
@@ -1796,91 +1769,6 @@ void HtmlGenerator::generateIncludes(const InnerNode *inner, CodeMarker *marker)
                                                  marker,inner))
               << "</pre>";
     }
-}
-
-/*!
-  Generates a table of contents beginning at \a node.
- */
-void HtmlGenerator::generateTableOfContents(const Node *node,
-                                            CodeMarker *marker,
-                                            Doc::SectioningUnit sectioningUnit,
-                                            int numColumns,
-                                            const Node *relative)
-
-{
-    return;
-    if (!node->doc().hasTableOfContents())
-        return;
-    QList<Atom *> toc = node->doc().tableOfContents();
-    if (toc.isEmpty())
-        return;
-
-    QString nodeName = "";
-    if (node != relative)
-        nodeName = node->name();
-
-    QStringList sectionNumber;
-    int columnSize = 0;
-
-    QString tdTag;
-    if (numColumns > 1) {
-        tdTag = "<td>"; /* width=\"" + QString::number((100 + numColumns - 1) / numColumns) + "%\">";*/
-        out() << "<table class=\"toc\">\n<tr class=\"topAlign\">"
-              << tdTag << "\n";
-    }
-
-    // disable nested links in table of contents
-    inContents = true;
-    inLink = true;
-
-    for (int i = 0; i < toc.size(); ++i) {
-        Atom *atom = toc.at(i);
-
-        int nextLevel = atom->string().toInt();
-        if (nextLevel > (int)sectioningUnit)
-            continue;
-
-        if (sectionNumber.size() < nextLevel) {
-            do {
-                out() << "<ul>";
-                sectionNumber.append("1");
-            } while (sectionNumber.size() < nextLevel);
-        }
-        else {
-            while (sectionNumber.size() > nextLevel) {
-                out() << "</ul>\n";
-                sectionNumber.removeLast();
-            }
-            sectionNumber.last() = QString::number(sectionNumber.last().toInt() + 1);
-        }
-        int numAtoms;
-        Text headingText = Text::sectionHeading(atom);
-
-        if (sectionNumber.size() == 1 && columnSize > toc.size() / numColumns) {
-            out() << "</ul></td>" << tdTag << "<ul>\n";
-            columnSize = 0;
-        }
-        out() << "<li>";
-        out() << "<a href=\""
-              << nodeName
-              << "#"
-              << Doc::canonicalTitle(headingText.toString())
-              << "\">";
-        generateAtomList(headingText.firstAtom(), node, marker, true, numAtoms);
-        out() << "</a></li>\n";
-
-        ++columnSize;
-    }
-    while (!sectionNumber.isEmpty()) {
-        out() << "</ul>\n";
-        sectionNumber.removeLast();
-    }
-
-    if (numColumns > 1)
-        out() << "</td></tr></table>\n";
-
-    inContents = false;
-    inLink = false;
 }
 
 /*!
