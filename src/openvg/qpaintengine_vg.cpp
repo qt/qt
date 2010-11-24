@@ -1502,7 +1502,10 @@ void QVGPaintEnginePrivate::fill(VGPath path, const QBrush& brush, VGint rule)
         return;
     ensureBrush(brush);
     setFillRule(rule);
+    QPen savedPen = currentPen;
+    currentPen = Qt::NoPen;
     ensurePathTransform();
+    currentPen = savedPen;
     vgDrawPath(path, VG_FILL_PATH);
 }
 

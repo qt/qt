@@ -108,6 +108,15 @@ SOURCES += \
 	dialogs/qwizard.cpp \
         dialogs/qprintpreviewdialog.cpp
 
+symbian:contains(QT_CONFIG, s60) {
+    LIBS += -lcommondialogs
+    SOURCES += dialogs/qfiledialog_symbian.cpp \
+               dialogs/qcolordialog_symbian.cpp
+}
+
 FORMS += dialogs/qpagesetupwidget.ui
 RESOURCES += dialogs/qprintdialog.qrc
 RESOURCES += dialogs/qmessagebox.qrc
+
+# Compensate for lack of platform defines in Symbian3
+symbian: DEFINES += SYMBIAN_VERSION_$$upper($$replace(SYMBIAN_VERSION,\\.,_))
