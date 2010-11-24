@@ -69,6 +69,10 @@
 #define SECURITY_WIN32
 #include <security.h>
 
+#ifndef PATH_MAX
+#define PATH_MAX FILENAME_MAX
+#endif
+
 QT_BEGIN_NAMESPACE
 
 
