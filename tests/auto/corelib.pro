@@ -102,6 +102,7 @@ SUBDIRS=\
    selftests \
    utf8 \
    qfilesystementry \
+   qabstractfileengine
 
 symbian:SUBDIRS -= \
    qtconcurrentfilter \
