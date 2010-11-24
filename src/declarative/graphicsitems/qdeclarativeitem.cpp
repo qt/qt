@@ -484,8 +484,16 @@ void QDeclarativeItemKeyFilter::componentComplete()
     \qmlproperty Item KeyNavigation::down
 
     These properties hold the item to assign focus to
-    when Key_Left, Key_Right, Key_Up or Key_Down are
+    when the left, right, up or down cursor keys are
     pressed.
+*/
+
+/*!
+    \qmlproperty Item KeyNavigation::tab
+    \qmlproperty Item KeyNavigation::backtab
+
+    These properties hold the item to assign focus to
+    when the Tab key or Shift+Tab key combination (Backtab) are pressed.
 */
 
 QDeclarativeKeyNavigationAttached::QDeclarativeKeyNavigationAttached(QObject *parent)
@@ -938,6 +946,20 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event, bool post)
 
     This handler is called when the Down arrow has been pressed. The \a event
     parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onTabPressed(KeyEvent event)
+
+    This handler is called when the Tab key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onBacktabPressed(KeyEvent event)
+
+    This handler is called when the Shift+Tab key combination (Backtab) has
+    been pressed. The \a event parameter provides information about the event.
 */
 
 /*!
