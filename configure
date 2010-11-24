@@ -8530,8 +8530,8 @@ PART_ROOTS=
 for part in $CFG_BUILD_PARTS; do
     case "$part" in
     tools) PART_ROOTS="$PART_ROOTS tools" ;;
-    libs) PART_ROOTS="$PART_ROOTS src" ;;
-    translations) PART_ROOTS="$PART_ROOTS tools/linguist/lrelease translations" ;;
+    libs) PART_ROOTS="$PART_ROOTS src tools/linguist/lrelease" ;;
+    translations) PART_ROOTS="$PART_ROOTS translations" ;;
     examples) PART_ROOTS="$PART_ROOTS examples demos" ;;
     *) ;;
     esac
