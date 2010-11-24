@@ -2931,7 +2931,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     // unless this is an alien widget. )
     const bool nonWindowWithCreatedParent = !q->isWindow() && parent->testAttribute(Qt::WA_WState_Created);
     const bool nativeWidget = q->internalWinId() != 0;
-    if (wasCreated || nativeWidget && nonWindowWithCreatedParent) {
+    if (wasCreated || (nativeWidget && nonWindowWithCreatedParent)) {
         createWinId();
         if (q->isWindow()) {
 #ifndef QT_MAC_USE_COCOA
