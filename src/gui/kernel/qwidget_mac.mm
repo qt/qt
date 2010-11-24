@@ -2294,7 +2294,10 @@ void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWin
     } else {
         [windowRef setHidesOnDeactivate:NO];
     }
-    [windowRef setHasShadow:YES];
+    if (q->testAttribute(Qt::WA_MacNoShadow))
+        [windowRef setHasShadow:NO];
+    else
+        [windowRef setHasShadow:YES];
     Q_UNUSED(parentWidget);
     Q_UNUSED(dialog);
 
