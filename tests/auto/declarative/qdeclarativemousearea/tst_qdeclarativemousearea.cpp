@@ -216,7 +216,14 @@ void tst_QDeclarativeMouseArea::dragging()
     QCOMPARE(blackRect->x(), 50.0);
     QCOMPARE(blackRect->y(), 50.0);
 
+    // First move event triggers drag, second is acted upon.
+    // This is due to possibility of higher stacked area taking precedence.
     QGraphicsSceneMouseEvent moveEvent(QEvent::GraphicsSceneMouseMove);
+    moveEvent.setScenePos(QPointF(106, 106));
+    moveEvent.setButton(Qt::LeftButton);
+    moveEvent.setButtons(Qt::LeftButton);
+    QApplication::sendEvent(scene, &moveEvent);
+
     moveEvent.setScenePos(QPointF(110, 110));
     moveEvent.setButton(Qt::LeftButton);
     moveEvent.setButtons(Qt::LeftButton);

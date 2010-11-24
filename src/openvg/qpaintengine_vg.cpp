@@ -3543,8 +3543,8 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
 
     // Set the glyph drawing origin.
     VGfloat origin[2];
-    origin[0] = positions[0].x.toReal();
-    origin[1] = positions[0].y.toReal();
+    origin[0] = positions[0].x.round().toReal();
+    origin[1] = positions[0].y.round().toReal();
     vgSetfv(VG_GLYPH_ORIGIN, 2, origin);
 
     // Fast anti-aliasing for paths, better for images.
