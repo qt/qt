@@ -201,6 +201,11 @@ void QThreadStorageData::finish(void **p)
             continue;
         }
         destructor(q); //crash here might mean the thread exited after qthreadstorage was destroyed
+
+        if (tls->size() > i) {
+            //re reset the tls in case it has been recreated by its own destructor.
+            (*tls)[i] = 0;
+        }
     }
     tls->clear();
 }
