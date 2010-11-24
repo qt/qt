@@ -4903,6 +4903,9 @@ case "$XPLATFORM" in *symbian*)
     if [ "$CFG_LARGEFILE" = auto ]; then
         CFG_LARGEFILE=no
     fi
+    if [ "$CFG_PHONON" = auto ]; then
+        CFG_PHONON=yes
+    fi
 
     if test -z "$EPOCROOT"; then
         echo "Please export EPOCROOT. It should point to the sdk install dir"
