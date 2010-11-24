@@ -98,6 +98,7 @@ public:
 
     void clear();
     bool isEmpty() const;
+    QByteArray data() const;
 
 protected:
     friend class QPacketProtocol;

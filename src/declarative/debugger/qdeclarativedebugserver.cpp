@@ -42,14 +42,10 @@
 #include "private/qdeclarativedebugserver_p.h"
 #include "private/qdeclarativedebugservice_p.h"
 #include "private/qdeclarativedebugservice_p_p.h"
+#include "private/qdeclarativedebugservertcpconnection_p.h"
 #include "private/qdeclarativeengine_p.h"
 
-#include "private/qpacketprotocol_p.h"
-
 #include <QtCore/QStringList>
-
-#include <QtNetwork/qtcpserver.h>
-#include <QtNetwork/qtcpsocket.h>
 
 #include <private/qobject_p.h>
 #include <private/qapplication_p.h>
@@ -89,73 +85,36 @@ public:
 
     void advertisePlugins();
 
-    int port;
-    QTcpSocket *connection;
-    QPacketProtocol *protocol;
+    QDeclarativeDebugServerConnection *connection;
     QHash<QString, QDeclarativeDebugService *> plugins;
     QStringList clientPlugins;
-    QTcpServer *tcpServer;
     bool gotHello;
 };
 
-QDeclarativeDebugServerPrivate::QDeclarativeDebugServerPrivate()
-: connection(0), protocol(0), gotHello(false)
+QDeclarativeDebugServerPrivate::QDeclarativeDebugServerPrivate() :
+    connection(0),
+    gotHello(false)
 {
 }
 
 void QDeclarativeDebugServerPrivate::advertisePlugins()
 {
-    if (!connection
-            || connection->state() != QTcpSocket::ConnectedState
-            || !gotHello)
+    if (!gotHello)
         return;
 
-    QPacket pack;
-    pack << QString(QLatin1String("QDeclarativeDebugClient")) << 1 << plugins.keys();
-    protocol->send(pack);
-    connection->flush();
-}
-
-void QDeclarativeDebugServer::listen()
-{
-    Q_D(QDeclarativeDebugServer);
-
-    d->tcpServer = new QTcpServer(this);
-    QObject::connect(d->tcpServer, SIGNAL(newConnection()), this, SLOT(newConnection()));
-    if (d->tcpServer->listen(QHostAddress::Any, d->port))
-        qWarning("QDeclarativeDebugServer: Waiting for connection on port %d...", d->port);
-    else
-        qWarning("QDeclarativeDebugServer: Unable to listen on port %d", d->port);
-}
-
-void QDeclarativeDebugServer::waitForConnection()
-{
-    Q_D(QDeclarativeDebugServer);
-    d->tcpServer->waitForNewConnection(-1);
-}
-
-void QDeclarativeDebugServer::newConnection()
-{
-    Q_D(QDeclarativeDebugServer);
-
-    if (d->connection) {
-        qWarning("QDeclarativeDebugServer error: another client is already connected");
-        QTcpSocket *faultyConnection = d->tcpServer->nextPendingConnection();
-        delete faultyConnection;
-        return;
+    QByteArray message;
+    {
+        QDataStream out(&message, QIODevice::WriteOnly);
+        out << QString(QLatin1String("QDeclarativeDebugClient")) << 1 << plugins.keys();
     }
-
-    d->connection = d->tcpServer->nextPendingConnection();
-    d->connection->setParent(this);
-    d->protocol = new QPacketProtocol(d->connection, this);
-    QObject::connect(d->protocol, SIGNAL(readyRead()), this, SLOT(readyRead()));
+    connection->send(message);
 }
 
 bool QDeclarativeDebugServer::hasDebuggingClient() const
 {
     Q_D(const QDeclarativeDebugServer);
     return d->connection
-            && (d->connection->state() == QTcpSocket::ConnectedState)
+            && d->connection->isConnected()
             && d->gotHello;
 }
 
@@ -192,11 +151,17 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
             block = appD->qmljsDebugArgumentsString().contains(QLatin1String("block"));
 
             if (ok) {
-                server = new QDeclarativeDebugServer(port);
-                server->listen();
+                server = new QDeclarativeDebugServer();
+
+                QDeclarativeDebugServerTcpConnection *tcpConnection
+                        = new QDeclarativeDebugServerTcpConnection(port, server);
+
+                tcpConnection->listen();
                 if (block) {
-                    server->waitForConnection();
+                    tcpConnection->waitForConnection();
                 }
+
+                server->d_func()->connection = tcpConnection;
             } else {
                 qWarning(QString::fromAscii("QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
                                             "Format is -qmljsdebugger=port:<port>[,block]").arg(
@@ -209,37 +174,31 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
     return server;
 }
 
-QDeclarativeDebugServer::QDeclarativeDebugServer(int port)
+QDeclarativeDebugServer::QDeclarativeDebugServer()
 : QObject(*(new QDeclarativeDebugServerPrivate))
 {
-    Q_D(QDeclarativeDebugServer);
-    d->port = port;
 }
 
-void QDeclarativeDebugServer::readyRead()
+void QDeclarativeDebugServer::receiveMessage(const QByteArray &message)
 {
     Q_D(QDeclarativeDebugServer);
 
+    QDataStream in(message);
     if (!d->gotHello) {
-        QPacket hello = d->protocol->read();
 
         QString name;
         int op;
-        hello >> name >> op;
+        in >> name >> op;
 
         if (name != QLatin1String("QDeclarativeDebugServer")
                 || op != 0) {
             qWarning("QDeclarativeDebugServer: Invalid hello message");
-            QObject::disconnect(d->protocol, SIGNAL(readyRead()), this, SLOT(readyRead()));
-            d->protocol->deleteLater();
-            d->protocol = 0;
-            d->connection->deleteLater();
-            d->connection = 0;
+            d->connection->disconnect();
             return;
         }
 
         int version;
-        hello >> version >> d->clientPlugins;
+        in >> version >> d->clientPlugins;
 
         QHash<QString, QDeclarativeDebugService*>::Iterator iter = d->plugins.begin();
         for (; iter != d->plugins.end(); ++iter) {
@@ -250,31 +209,30 @@ void QDeclarativeDebugServer::readyRead()
             iter.value()->statusChanged(newStatus);
         }
 
-        QPacket helloAnswer;
-        helloAnswer << QString(QLatin1String("QDeclarativeDebugClient")) << 0 << protocolVersion << d->plugins.keys();
-        d->protocol->send(helloAnswer);
-        d->connection->flush();
+        QByteArray helloAnswer;
+        {
+            QDataStream out(&helloAnswer, QIODevice::WriteOnly);
+            out << QString(QLatin1String("QDeclarativeDebugClient")) << 0 << protocolVersion << d->plugins.keys();
+        }
+        d->connection->send(helloAnswer);
 
         d->gotHello = true;
         qWarning("QDeclarativeDebugServer: Connection established");
-    }
+    } else {
 
-    QString debugServer(QLatin1String("QDeclarativeDebugServer"));
-
-    while (d->protocol->packetsAvailable()) {
-        QPacket pack = d->protocol->read();
+        QString debugServer(QLatin1String("QDeclarativeDebugServer"));
 
         QString name;
-        pack >> name;
+        in >> name;
 
         if (name == debugServer) {
             int op = -1;
-            pack >> op;
+            in >> op;
 
             if (op == 1) {
                 // Service Discovery
                 QStringList oldClientPlugins = d->clientPlugins;
-                pack >> d->clientPlugins;
+                in >> d->clientPlugins;
 
                 QHash<QString, QDeclarativeDebugService*>::Iterator iter = d->plugins.begin();
                 for (; iter != d->plugins.end(); ++iter) {
@@ -294,7 +252,7 @@ void QDeclarativeDebugServer::readyRead()
             }
         } else {
             QByteArray message;
-            pack >> message;
+            in >> message;
 
             QHash<QString, QDeclarativeDebugService *>::Iterator iter =
                 d->plugins.find(name);
@@ -306,7 +264,6 @@ void QDeclarativeDebugServer::readyRead()
         }
     }
 }
-
 
 QList<QDeclarativeDebugService*> QDeclarativeDebugServer::services() const
 {
@@ -357,10 +314,12 @@ void QDeclarativeDebugServer::sendMessage(QDeclarativeDebugService *service,
                                           const QByteArray &message)
 {
     Q_D(QDeclarativeDebugServer);
-    QPacket pack;
-    pack << service->name() << message;
-    d->protocol->send(pack);
-    d->connection->flush();
+    QByteArray msg;
+    {
+        QDataStream out(&msg, QIODevice::WriteOnly);
+        out << service->name() << message;
+    }
+    d->connection->send(msg);
 }
 
 QT_END_NAMESPACE
