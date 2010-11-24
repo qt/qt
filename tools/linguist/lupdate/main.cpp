@@ -350,6 +350,10 @@ static void processProjects(
         ProFileEvaluator visitor;
         visitor.setVerbose(options & Verbose);
 
+        QHash<QString, QStringList> lupdateConfig;
+        lupdateConfig.insert(QLatin1String("CONFIG"), QStringList(QLatin1String("lupdate_run")));
+        visitor.addVariables(lupdateConfig);
+
         QFileInfo pfi(proFile);
         ProFile pro(pfi.absoluteFilePath());
         if (!visitor.queryProFile(&pro) || !visitor.accept(&pro)) {

@@ -1690,13 +1690,8 @@ void QWidgetPrivate::setWinId(WId id)                // set widget identifier
     }
 
     if(oldWinId != id) {
-        // Do not emit an event when the old winId is destroyed.  This only
-        // happens (a) during widget destruction, and (b) immediately prior
-        // to creation of a new winId, for example as a result of re-parenting.
-        if(id != 0) {
-            QEvent e(QEvent::WinIdChange);
-            QCoreApplication::sendEvent(q, &e);
-        }
+        QEvent e(QEvent::WinIdChange);
+        QCoreApplication::sendEvent(q, &e);
     }
 }
 
