@@ -105,7 +105,7 @@ void CodeParser::terminateParser()
     // nothing.
 }
 
-QString CodeParser::headerFileNameFilter()
+QStringList CodeParser::headerFileNameFilter()
 {
     return sourceFileNameFilter();
 }
@@ -153,6 +153,42 @@ CodeParser *CodeParser::parserForLanguage(const QString& language)
     while (p != parsers.end()) {
 	if ((*p)->language() == language)
 	    return *p;
+	++p;
+    }
+    return 0;
+}
+
+CodeParser *CodeParser::parserForHeaderFile(const QString &filePath)
+{
+    QString fileName = QFileInfo(filePath).fileName();
+
+    QList<CodeParser *>::ConstIterator p = parsers.begin();
+    while (p != parsers.end()) {
+
+	QStringList headerPatterns = (*p)->headerFileNameFilter();
+	foreach (QString pattern, headerPatterns) {
+            QRegExp re(pattern, Qt::CaseInsensitive, QRegExp::Wildcard);
+            if (re.exactMatch(fileName))
+                return *p;
+        }
+	++p;
+    }
+    return 0;
+}
+
+CodeParser *CodeParser::parserForSourceFile(const QString &filePath)
+{
+    QString fileName = QFileInfo(filePath).fileName();
+
+    QList<CodeParser *>::ConstIterator p = parsers.begin();
+    while (p != parsers.end()) {
+
+	QStringList sourcePatterns = (*p)->sourceFileNameFilter();
+	foreach (QString pattern, sourcePatterns) {
+            QRegExp re(pattern, Qt::CaseInsensitive, QRegExp::Wildcard);
+            if (re.exactMatch(fileName))
+                return *p;
+        }
 	++p;
     }
     return 0;

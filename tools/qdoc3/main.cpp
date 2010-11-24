@@ -50,10 +50,12 @@
 #include "config.h"
 #include "cppcodemarker.h"
 #include "cppcodeparser.h"
+#include "ditaxmlgenerator.h"
 #include "doc.h"
 #include "htmlgenerator.h"
 #include "plaincodemarker.h"
-#include "ditaxmlgenerator.h"
+#include "puredocparser.h"
+#include "qmlcodeparser.h"
 #include "tokenizer.h"
 #include "tree.h"
 #include <qdebug.h>
@@ -235,14 +237,6 @@ static void processQdocconfFile(const QString &fileName)
     tree->setVersion(config.getString(CONFIG_VERSION));
 
     /*
-      There must be a code parser for the source code language, e.g. C++.
-      If there isn't one, give up.
-     */
-    CodeParser *codeParser = CodeParser::parserForLanguage(lang);
-    if (codeParser == 0)
-        config.lastLocation().fatal(tr("Cannot parse programming language '%1'").arg(lang));
-
-    /*
       By default, the only output format is HTML.
      */
     QSet<QString> outputFormats = config.getStringSet(CONFIG_OUTPUTFORMATS);
@@ -257,52 +251,69 @@ static void processQdocconfFile(const QString &fileName)
 	langLocation.fatal(tr("Cannot output documentation for programming language '%1'").arg(lang));
 
     /*
-      Read some XML indexes. What are they??? 
+      Read some XML indexes containing definitions from other documentation sets.
      */
     QStringList indexFiles = config.getStringList(CONFIG_INDEXES);
     tree->readIndexes(indexFiles);
-    
+
     /*
-      Get all the header files: "*.ch *.h *.h++ *.hh *.hpp *.hxx"
-      Put them in a set.
+      Read the list of excluded directories.
      */
     QSet<QString> excludedDirs;
     QStringList excludedDirsList = config.getStringList(CONFIG_EXCLUDEDIRS);
     foreach (const QString &excludeDir, excludedDirsList)
         excludedDirs.insert(QDir::fromNativeSeparators(excludeDir));
-    QSet<QString> headers = QSet<QString>::fromList(
-        config.getAllFiles(CONFIG_HEADERS, CONFIG_HEADERDIRS,
-                           codeParser->headerFileNameFilter(),
-                           excludedDirs));
 
     /*
-      Parse each header file in the set and add it to the big tree.
+      Get all the header files: "*.ch *.h *.h++ *.hh *.hpp *.hxx"
+      Put them in a set.
      */
-    QSet<QString>::ConstIterator h = headers.begin();
-    while (h != headers.end()) {
-	codeParser->parseHeaderFile(config.location(), *h, tree);
-	++h;
-    }
-    codeParser->doneParsingHeaderFiles(tree);
+    QSet<QString> headers = QSet<QString>::fromList(
+        config.getAllFiles(CONFIG_HEADERS, CONFIG_HEADERDIRS, excludedDirs));
 
     /*
       Get all the source text files: "*.cpp *.qdoc *.mm"
       Put them in a set.
      */
     QSet<QString> sources = QSet<QString>::fromList(
-        config.getAllFiles(CONFIG_SOURCES, CONFIG_SOURCEDIRS,
-                           codeParser->sourceFileNameFilter(),
-                           excludedDirs));
+        config.getAllFiles(CONFIG_SOURCES, CONFIG_SOURCEDIRS, excludedDirs));
 
     /*
-      Parse each source text file in the set and add it to the big tree.
+      Parse each header file in the set using the appropriate parser and add it
+      to the big tree.
+     */
+    QSet<CodeParser *> usedParsers;
+
+    QSet<QString>::ConstIterator h = headers.begin();
+    while (h != headers.end()) {
+        CodeParser *codeParser = CodeParser::parserForHeaderFile(*h);
+        if (codeParser) {
+	    codeParser->parseHeaderFile(config.location(), *h, tree);
+            usedParsers.insert(codeParser);
+        }
+	++h;
+    }
+
+    foreach (CodeParser *codeParser, usedParsers)
+        codeParser->doneParsingHeaderFiles(tree);
+
+    usedParsers.clear();
+    /*
+      Parse each source text file in the set using the appropriate parser and
+      add it to the big tree.
      */
     QSet<QString>::ConstIterator s = sources.begin();
     while (s != sources.end()) {
-	codeParser->parseSourceFile(config.location(), *s, tree);
+        CodeParser *codeParser = CodeParser::parserForSourceFile(*s);
+        if (codeParser) {
+	    codeParser->parseSourceFile(config.location(), *s, tree);
+            usedParsers.insert(codeParser);
+        }
 	++s;
     }
-    codeParser->doneParsingSourceFiles(tree);
+
+    foreach (CodeParser *codeParser, usedParsers)
+        codeParser->doneParsingSourceFiles(tree);
 
     /*
       Now the big tree has been built from all the header and
@@ -371,7 +382,8 @@ int main(int argc, char **argv)
       and create a tree for C++.
      */
     CppCodeParser cppParser;
-    Tree *cppTree = treeForLanguage(cppParser.language());
+    QmlCodeParser qmlParser;
+    PureDocParser docParser;
 
     /*
       Create code markers for plain text and C++.

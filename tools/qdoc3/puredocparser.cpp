@@ -40,60 +40,24 @@
 ****************************************************************************/
 
 /*
-  codeparser.h
+  puredocparser.cpp
 */
 
-#ifndef CODEPARSER_H
-#define CODEPARSER_H
-
-#include <QSet>
-
-#include "location.h"
+#include "puredocparser.h"
 
 QT_BEGIN_NAMESPACE
 
-class Config;
-class Node;
-class QString;
-class Tree;
-
-class CodeParser
+PureDocParser::PureDocParser()
 {
- public:
-    CodeParser();
-    virtual ~CodeParser();
+}
 
-    virtual void initializeParser(const Config& config);
-    virtual void terminateParser();
-    virtual QString language() = 0;
-    virtual QStringList headerFileNameFilter();
-    virtual QStringList sourceFileNameFilter() = 0;
-    virtual void parseHeaderFile(const Location& location,
-                                 const QString& filePath, Tree *tree);
-    virtual void parseSourceFile(const Location& location,
-                                 const QString& filePath, Tree *tree) = 0;
-    virtual void doneParsingHeaderFiles(Tree *tree);
-    virtual void doneParsingSourceFiles(Tree *tree) = 0;
+PureDocParser::~PureDocParser()
+{
+}
 
-    static void initialize(const Config& config);
-    static void terminate();
-    static CodeParser *parserForLanguage(const QString& language);
-    static CodeParser *parserForHeaderFile(const QString &filePath);
-    static CodeParser *parserForSourceFile(const QString &filePath);
-    static const QString titleFromName(const QString& name);
-
- protected:
-    QSet<QString> commonMetaCommands();
-    void processCommonMetaCommand(const Location& location,
-				  const QString& command, const QString& arg,
-				  Node *node, Tree *tree);
-
- private:
-    static QList<CodeParser *> parsers;
-    static bool showInternal;
-    static QMap<QString,QString> nameToTitle;
-};
+QStringList PureDocParser::sourceFileNameFilter()
+{
+    return QStringList("*.qdoc");
+}
 
 QT_END_NAMESPACE
-
-#endif

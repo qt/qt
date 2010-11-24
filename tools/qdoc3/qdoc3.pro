@@ -42,6 +42,9 @@ HEADERS += atom.h \
            openedlist.h \
 	   pagegenerator.h \
 	   plaincodemarker.h \
+           puredocparser.h \
+           qmlcodeparser.h \
+           qmlvisitor.h \
            quoter.h \
 	   separator.h \
 	   text.h \
@@ -67,12 +70,20 @@ SOURCES += atom.cpp \
            openedlist.cpp \
 	   pagegenerator.cpp \
 	   plaincodemarker.cpp \
+           puredocparser.cpp \
+           qmlcodeparser.cpp \
+           qmlvisitor.cpp \
            quoter.cpp \
 	   separator.cpp \
 	   text.cpp \
 	   tokenizer.cpp \
 	   tree.cpp \
 	   yyindent.cpp
+
+# Include the QML parsing library from Qt Creator.
+
+LIBS     += -L$$(QTCREATOR_LIBPATH) -lQmlJS -lUtils
+INCLUDEPATH += $$(QTCREATOR_INCPATH)
 
 ### Documentation for qdoc3 ###
 

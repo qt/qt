@@ -40,14 +40,18 @@
 ****************************************************************************/
 
 /*
-  codeparser.h
+  qmlcodeparser.h
 */
 
-#ifndef CODEPARSER_H
-#define CODEPARSER_H
+#ifndef QMLCODEPARSER_H
+#define QMLCODEPARSER_H
 
 #include <QSet>
+#include "parser/qmljsengine_p.h"
+#include "parser/qmljslexer_p.h"
+#include "parser/qmljsparser_p.h"
 
+#include "codeparser.h"
 #include "location.h"
 
 QT_BEGIN_NAMESPACE
@@ -57,41 +61,28 @@ class Node;
 class QString;
 class Tree;
 
-class CodeParser
+class QmlCodeParser : public CodeParser
 {
- public:
-    CodeParser();
-    virtual ~CodeParser();
+public:
+    QmlCodeParser();
+    virtual ~QmlCodeParser();
 
     virtual void initializeParser(const Config& config);
     virtual void terminateParser();
-    virtual QString language() = 0;
-    virtual QStringList headerFileNameFilter();
-    virtual QStringList sourceFileNameFilter() = 0;
-    virtual void parseHeaderFile(const Location& location,
-                                 const QString& filePath, Tree *tree);
+    virtual QString language();
+    virtual QStringList sourceFileNameFilter();
     virtual void parseSourceFile(const Location& location,
-                                 const QString& filePath, Tree *tree) = 0;
-    virtual void doneParsingHeaderFiles(Tree *tree);
-    virtual void doneParsingSourceFiles(Tree *tree) = 0;
+                                 const QString& filePath, Tree *tree);
+    virtual void doneParsingSourceFiles(Tree *tree);
 
-    static void initialize(const Config& config);
-    static void terminate();
-    static CodeParser *parserForLanguage(const QString& language);
-    static CodeParser *parserForHeaderFile(const QString &filePath);
-    static CodeParser *parserForSourceFile(const QString &filePath);
-    static const QString titleFromName(const QString& name);
+protected:
+    virtual QSet<QString> topicCommands();
+    virtual QSet<QString> otherMetaCommands();
 
- protected:
-    QSet<QString> commonMetaCommands();
-    void processCommonMetaCommand(const Location& location,
-				  const QString& command, const QString& arg,
-				  Node *node, Tree *tree);
-
- private:
-    static QList<CodeParser *> parsers;
-    static bool showInternal;
-    static QMap<QString,QString> nameToTitle;
+private:
+    QmlJS::Engine engine;
+    QmlJS::Lexer *lexer;
+    QmlJS::Parser *parser;
 };
 
 QT_END_NAMESPACE
