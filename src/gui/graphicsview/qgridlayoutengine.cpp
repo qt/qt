@@ -166,7 +166,7 @@ void QGridLayoutRowData::reset(int count)
     hasIgnoreFlag = false;
 }
 
-void QGridLayoutRowData::distributeMultiCells()
+void QGridLayoutRowData::distributeMultiCells(const QGridLayoutRowInfo &rowInfo)
 {
     MultiCellMap::const_iterator i = multiCellMap.constBegin();
     for (; i != multiCellMap.constEnd(); ++i) {
@@ -185,7 +185,7 @@ void QGridLayoutRowData::distributeMultiCells()
             qreal extra = compare(box, totalBox, j);
             if (extra > 0.0) {
                 calculateGeometries(start, end, box.q_sizes(j), dummy.data(), newSizes.data(),
-                                    0, totalBox);
+                                    0, totalBox, rowInfo);
 
                 for (int k = 0; k < span; ++k)
                     extras[k].q_sizes(j) = newSizes[k];
@@ -202,11 +202,12 @@ void QGridLayoutRowData::distributeMultiCells()
 
 void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSize, qreal *positions,
                                              qreal *sizes, qreal *descents,
-                                             const QGridLayoutBox &totalBox)
+                                             const QGridLayoutBox &totalBox,
+                                             const QGridLayoutRowInfo &rowInfo)
 {
     Q_ASSERT(end > start);
 
-    targetSize = qBound(totalBox.q_minimumSize, targetSize, totalBox.q_maximumSize);
+    targetSize = qMax(totalBox.q_minimumSize, targetSize);
 
     int n = end - start;
     QVarLengthArray<qreal> newSizes(n);
@@ -246,16 +247,22 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
             }
         }
     } else {
-        stealBox(start, end, PreferredSize, positions, sizes);
+        bool isLargerThanMaximum = (targetSize > totalBox.q_maximumSize);
+        if (isLargerThanMaximum) {
+            stealBox(start, end, MaximumSize, positions, sizes);
+            sumAvailable = targetSize - totalBox.q_maximumSize;
+        } else {
+            stealBox(start, end, PreferredSize, positions, sizes);
+            sumAvailable = targetSize - totalBox.q_preferredSize;
+        }
 
-        sumAvailable = targetSize - totalBox.q_preferredSize;
         if (sumAvailable > 0.0) {
             qreal sumCurrentAvailable = sumAvailable;
             bool somethingHasAMaximumSize = false;
 
-            qreal sumPreferredSizes = 0.0;
+            qreal sumSizes = 0.0;
             for (int i = 0; i < n; ++i)
-                sumPreferredSizes += sizes[i];
+                sumSizes += sizes[i];
 
             for (int i = 0; i < n; ++i) {
                 if (ignore.testBit(start + i)) {
@@ -265,7 +272,16 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
                 }
 
                 const QGridLayoutBox &box = boxes.at(start + i);
-                qreal desired = box.q_maximumSize - box.q_preferredSize;
+                qreal boxSize;
+
+                qreal desired;
+                if (isLargerThanMaximum) {
+                    boxSize = box.q_maximumSize;
+                    desired = rowInfo.boxes.value(start + i).q_maximumSize - boxSize;
+                } else {
+                    boxSize = box.q_preferredSize;
+                    desired = box.q_maximumSize - boxSize;
+                }
                 if (desired == 0.0) {
                     newSizes[i] = sizes[i];
                     factors[i] = 0.0;
@@ -284,17 +300,17 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
                     } else if (stretch <= 0) {
                         factors[i] = 0.0;
                     } else {
-                        qreal ultimatePreferredSize;
-                        qreal ultimateSumPreferredSizes;
-                        qreal x = ((stretch * sumPreferredSizes)
-                                   - (sumStretches * box.q_preferredSize))
+                        qreal ultimateSize;
+                        qreal ultimateSumSizes;
+                        qreal x = ((stretch * sumSizes)
+                                   - (sumStretches * boxSize))
                                   / (sumStretches - stretch);
                         if (x >= 0.0) {
-                            ultimatePreferredSize = box.q_preferredSize + x;
-                            ultimateSumPreferredSizes = sumPreferredSizes + x;
+                            ultimateSize = boxSize + x;
+                            ultimateSumSizes = sumSizes + x;
                         } else {
-                            ultimatePreferredSize = box.q_preferredSize;
-                            ultimateSumPreferredSizes = (sumStretches * box.q_preferredSize)
+                            ultimateSize = boxSize;
+                            ultimateSumSizes = (sumStretches * boxSize)
                                                         / stretch;
                         }
 
@@ -303,17 +319,17 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
                             (at the expense of the stretch factors, which are not fully respected
                             during the transition).
                         */
-                        ultimatePreferredSize = ultimatePreferredSize * 3 / 2;
-                        ultimateSumPreferredSizes = ultimateSumPreferredSizes * 3 / 2;
+                        ultimateSize = ultimateSize * 3 / 2;
+                        ultimateSumSizes = ultimateSumSizes * 3 / 2;
 
-                        qreal beta = ultimateSumPreferredSizes - sumPreferredSizes;
+                        qreal beta = ultimateSumSizes - sumSizes;
                         if (!beta) {
                             factors[i] = 1;
                         } else {
                             qreal alpha = qMin(sumCurrentAvailable, beta);
-                            qreal ultimateFactor = (stretch * ultimateSumPreferredSizes / sumStretches)
-                                                   - (box.q_preferredSize);
-                            qreal transitionalFactor = sumCurrentAvailable * (ultimatePreferredSize - box.q_preferredSize) / beta;
+                            qreal ultimateFactor = (stretch * ultimateSumSizes / sumStretches)
+                                                   - (boxSize);
+                            qreal transitionalFactor = sumCurrentAvailable * (ultimateSize - boxSize) / beta;
 
                             factors[i] = ((alpha * ultimateFactor)
                                           + ((beta - alpha) * transitionalFactor)) / beta;
@@ -336,11 +352,16 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
                     if (newSizes[i] >= 0.0)
                         continue;
 
-                    const QGridLayoutBox &box = boxes.at(start + i);
+                    qreal maxBoxSize;
+                    if (isLargerThanMaximum)
+                        maxBoxSize = rowInfo.boxes.value(start + i).q_maximumSize;
+                    else
+                        maxBoxSize = boxes.at(start + i).q_maximumSize;
+
                     qreal avail = sumCurrentAvailable * factors[i] / sumFactors;
-                    if (sizes[i] + avail >= box.q_maximumSize) {
-                        newSizes[i] = box.q_maximumSize;
-                        sumCurrentAvailable -= box.q_maximumSize - sizes[i];
+                    if (sizes[i] + avail >= maxBoxSize) {
+                        newSizes[i] = maxBoxSize;
+                        sumCurrentAvailable -= maxBoxSize - sizes[i];
                         sumFactors -= factors[i];
                         keepGoing = (sumCurrentAvailable > 0.0);
                         if (!keepGoing)
@@ -637,7 +658,7 @@ QRectF QGridLayoutItem::geometryWithin(qreal x, qreal y, qreal width, qreal heig
             if (dynamicConstraintOrientation() == Qt::Vertical) {
                if (size.width() > cellWidth)
                    size = effectiveMaxSize(QSizeF(cellWidth, -1));
-            } else if(size.height() > cellHeight) {
+            } else if (size.height() > cellHeight) {
                 size = effectiveMaxSize(QSizeF(-1, cellHeight));
             }
         }
@@ -1107,63 +1128,58 @@ QSizeF QGridLayoutEngine::sizeHint(const QLayoutStyleInfo &styleInfo, Qt::SizeHi
 {
     QGridLayoutBox sizehint_totalBoxes[NOrientations];
 
-    if(rowCount() < 1 || columnCount() < 1 || !hasDynamicConstraint()) {
+    bool sizeHintCalculated = false;
+
+    if (hasDynamicConstraint() && rowCount() > 0 && columnCount() > 0) {
+        if (constraintOrientation() == Qt::Vertical) {
+            //We have items whose height depends on their width
+            if (constraint.width() >= 0) {
+                if (q_cachedDataForStyleInfo != styleInfo)
+                    ensureColumnAndRowData(&q_columnData, &sizehint_totalBoxes[Hor], styleInfo, NULL, NULL, Qt::Horizontal);
+                else
+                    sizehint_totalBoxes[Hor] = q_totalBoxes[Hor];
+                QVector<qreal> sizehint_xx;
+                QVector<qreal> sizehint_widths;
+
+                sizehint_xx.resize(columnCount());
+                sizehint_widths.resize(columnCount());
+                qreal width = constraint.width();
+                //Calculate column widths and positions, and put results in q_xx.data() and q_widths.data() so that we can use this information as
+                //constraints to find the row heights
+                q_columnData.calculateGeometries(0, columnCount(), width, sizehint_xx.data(), sizehint_widths.data(),
+                        0, sizehint_totalBoxes[Hor], q_infos[Hor]);
+                ensureColumnAndRowData(&q_rowData, &sizehint_totalBoxes[Ver], styleInfo, sizehint_xx.data(), sizehint_widths.data(), Qt::Vertical);
+                sizeHintCalculated = true;
+            }
+        } else {
+            if (constraint.height() >= 0) {
+                //We have items whose width depends on their height
+                ensureColumnAndRowData(&q_rowData, &sizehint_totalBoxes[Ver], styleInfo, NULL, NULL, Qt::Vertical);
+                QVector<qreal> sizehint_yy;
+                QVector<qreal> sizehint_heights;
+
+                sizehint_yy.resize(rowCount());
+                sizehint_heights.resize(rowCount());
+                qreal height = constraint.height();
+                //Calculate row heights and positions, and put results in q_yy.data() and q_heights.data() so that we can use this information as
+                //constraints to find the column widths
+                q_rowData.calculateGeometries(0, rowCount(), height, sizehint_yy.data(), sizehint_heights.data(),
+                        0, sizehint_totalBoxes[Ver], q_infos[Ver]);
+                ensureColumnAndRowData(&q_columnData, &sizehint_totalBoxes[Hor], styleInfo, sizehint_yy.data(), sizehint_heights.data(), Qt::Vertical);
+                sizeHintCalculated = true;
+            }
+        }
+    }
+
+    if (!sizeHintCalculated) {
         //No items with height for width, so it doesn't matter which order we do these in
-        if(q_cachedDataForStyleInfo != styleInfo) {
+        if (q_cachedDataForStyleInfo != styleInfo) {
             ensureColumnAndRowData(&q_columnData, &sizehint_totalBoxes[Hor], styleInfo, NULL, NULL, Qt::Horizontal);
             ensureColumnAndRowData(&q_rowData, &sizehint_totalBoxes[Ver], styleInfo, NULL, NULL, Qt::Vertical);
         } else {
             sizehint_totalBoxes[Hor] = q_totalBoxes[Hor];
             sizehint_totalBoxes[Ver] = q_totalBoxes[Ver];
         }
-    } else if(constraintOrientation() == Qt::Vertical) {
-        //We have items whose width depends on their height
-        if(q_cachedDataForStyleInfo != styleInfo)
-            ensureColumnAndRowData(&q_columnData, &sizehint_totalBoxes[Hor], styleInfo, NULL, NULL, Qt::Horizontal);
-        else
-            sizehint_totalBoxes[Hor] = q_totalBoxes[Hor];
-        QVector<qreal> sizehint_xx;
-        QVector<qreal> sizehint_widths;
-
-        sizehint_xx.resize(columnCount());
-        sizehint_widths.resize(columnCount());
-        qreal width = constraint.width();
-        if(width < 0) {
-            /* It's not obvious what the behaviour should be. */
-/*            if(which == Qt::MaximumSize)
-                width = sizehint_totalBoxes[Hor].q_maximumSize;
-            else if(which == Qt::MinimumSize)
-                width = sizehint_totalBoxes[Hor].q_minimumSize;
-            else*/
-                width = sizehint_totalBoxes[Hor].q_preferredSize;
-        }
-        //Calculate column widths and positions, and put results in q_xx.data() and q_widths.data() so that we can use this information as
-        //constraints to find the row heights
-        q_columnData.calculateGeometries(0, columnCount(), width, sizehint_xx.data(), sizehint_widths.data(),
-                0, sizehint_totalBoxes[Hor]);
-        ensureColumnAndRowData(&q_rowData, &sizehint_totalBoxes[Ver], styleInfo, sizehint_xx.data(), sizehint_widths.data(), Qt::Vertical);
-    } else {
-        //We have items whose height depends on their width
-        ensureColumnAndRowData(&q_rowData, &sizehint_totalBoxes[Ver], styleInfo, NULL, NULL, Qt::Vertical);
-        QVector<qreal> sizehint_yy;
-        QVector<qreal> sizehint_heights;
-
-        sizehint_yy.resize(rowCount());
-        sizehint_heights.resize(rowCount());
-        qreal height = constraint.height();
-        if(height < 0) {
-/*            if(which == Qt::MaximumSize)
-                height = sizehint_totalBoxes[Ver].q_maximumSize;
-            else if(which == Qt::MinimumSize)
-                height = sizehint_totalBoxes[Ver].q_minimumSize;
-            else*/
-                height = sizehint_totalBoxes[Ver].q_preferredSize;
-        }
-        //Calculate row heights and positions, and put results in q_yy.data() and q_heights.data() so that we can use this information as
-        //constraints to find the column widths
-        q_rowData.calculateGeometries(0, rowCount(), height, sizehint_yy.data(), sizehint_heights.data(),
-                0, sizehint_totalBoxes[Ver]);
-        ensureColumnAndRowData(&q_columnData, &sizehint_totalBoxes[Hor], styleInfo, sizehint_yy.data(), sizehint_heights.data(), Qt::Vertical);
     }
 
     switch (which) {
@@ -1622,7 +1638,8 @@ void QGridLayoutEngine::ensureColumnAndRowData(QGridLayoutRowData *rowData, QGri
 {
     rowData->reset(rowCount(orientation));
     fillRowData(rowData, styleInfo, colPositions, colSizes, orientation);
-    rowData->distributeMultiCells();
+    const QGridLayoutRowInfo &rowInfo = q_infos[orientation == Qt::Vertical];
+    rowData->distributeMultiCells(rowInfo);
     *totalBox = rowData->totalBox(0, rowCount(orientation));
         //We have items whose width depends on their height
 }
@@ -1685,28 +1702,28 @@ void QGridLayoutEngine::ensureGeometries(const QLayoutStyleInfo &styleInfo,
     q_heights.resize(rowCount());
     q_descents.resize(rowCount());
 
-    if(constraintOrientation() != Qt::Horizontal) {
+    if (constraintOrientation() != Qt::Horizontal) {
         //We might have items whose width depends on their height
         ensureColumnAndRowData(&q_columnData, &q_totalBoxes[Hor], styleInfo, NULL, NULL, Qt::Horizontal);
         //Calculate column widths and positions, and put results in q_xx.data() and q_widths.data() so that we can use this information as
         //constraints to find the row heights
         q_columnData.calculateGeometries(0, columnCount(), size.width(), q_xx.data(), q_widths.data(),
-                0, q_totalBoxes[Hor]);
+                0, q_totalBoxes[Hor], q_infos[Hor] );
         ensureColumnAndRowData(&q_rowData, &q_totalBoxes[Ver], styleInfo, q_xx.data(), q_widths.data(), Qt::Vertical);
         //Calculate row heights and positions, and put results in q_yy.data() and q_heights.data()
         q_rowData.calculateGeometries(0, rowCount(), size.height(), q_yy.data(), q_heights.data(),
-                q_descents.data(), q_totalBoxes[Ver]);
+                q_descents.data(), q_totalBoxes[Ver], q_infos[Ver]);
     } else {
         //We have items whose height depends on their width
         ensureColumnAndRowData(&q_rowData, &q_totalBoxes[Ver], styleInfo, NULL, NULL, Qt::Vertical);
         //Calculate row heights and positions, and put results in q_yy.data() and q_heights.data() so that we can use this information as
         //constraints to find the column widths
         q_rowData.calculateGeometries(0, rowCount(), size.height(), q_yy.data(), q_heights.data(),
-                q_descents.data(), q_totalBoxes[Ver]);
+                q_descents.data(), q_totalBoxes[Ver], q_infos[Ver]);
         ensureColumnAndRowData(&q_columnData, &q_totalBoxes[Hor], styleInfo, q_yy.data(), q_heights.data(), Qt::Horizontal);
         //Calculate row heights and positions, and put results in q_yy.data() and q_heights.data()
         q_columnData.calculateGeometries(0, columnCount(), size.width(), q_xx.data(), q_widths.data(),
-                0, q_totalBoxes[Hor]);
+                0, q_totalBoxes[Hor], q_infos[Hor]);
     }
 }
 
