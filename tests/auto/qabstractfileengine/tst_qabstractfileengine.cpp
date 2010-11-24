@@ -236,7 +236,7 @@ public:
         QSharedPointer<File> file = resolveFile(false);
         if (file) {
             switch (owner) {
-                case OwnerUser: 
+                case OwnerUser:
                 {
                     QMutexLocker lock(&file->mutex);
                     return file->userId;
