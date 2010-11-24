@@ -109,6 +109,8 @@ private slots:
     void connectThreadFinishedSignalToObjectDeleteLaterSlot();
     void wait2();
     void wait3_slowDestructor();
+    void destroyFinishRace();
+    void startFinishRace();
 
     void stressTest();
 };
@@ -1066,6 +1068,50 @@ void tst_QThread::wait3_slowDestructor()
     //now the thread should finish quickly
     QVERIFY(thread.wait(one_minute));
 }
+
+void tst_QThread::destroyFinishRace()
+{
+    class Thread : public QThread { void run() {} };
+    for (int i = 0; i < 15; i++) {
+        Thread *thr = new Thread;
+        connect(thr, SIGNAL(finished()), thr, SLOT(deleteLater()));
+        QWeakPointer<QThread> weak(static_cast<QThread*>(thr));
+        thr->start();
+        while (weak) {
+            qApp->processEvents();
+            qApp->processEvents();
+            qApp->processEvents();
+            qApp->processEvents();
+        }
+    }
+}
+
+void tst_QThread::startFinishRace()
+{
+    class Thread : public QThread {
+    public:
+        Thread() : i (50) {}
+        void run() {
+            i--;
+            if (!i) disconnect(this, SIGNAL(finished()), 0, 0);
+        }
+        int i;
+    };
+    for (int i = 0; i < 15; i++) {
+        Thread thr;
+        connect(&thr, SIGNAL(finished()), &thr, SLOT(start()));
+        thr.start();
+        while (!thr.isFinished() || thr.i != 0) {
+            qApp->processEvents();
+            qApp->processEvents();
+            qApp->processEvents();
+            qApp->processEvents();
+        }
+        QCOMPARE(thr.i, 0);
+    }
+}
+
+
 
 QTEST_MAIN(tst_QThread)
 #include "tst_qthread.moc"

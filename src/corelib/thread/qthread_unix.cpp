@@ -341,7 +341,7 @@ void QThreadPrivate::finish(void *arg)
     QMutexLocker locker(&d->mutex);
 #endif
 
-
+    d->isInFinish = true;
     d->priority = QThread::InheritPriority;
     bool terminated = d->terminated;
     void *data = &d->data->tls;
@@ -371,6 +371,7 @@ void QThreadPrivate::finish(void *arg)
     d->running = false;
     d->finished = true;
 
+    d->isInFinish = false;
     d->thread_done.wakeAll();
 }
 
@@ -548,6 +549,10 @@ void QThread::start(Priority priority)
 {
     Q_D(QThread);
     QMutexLocker locker(&d->mutex);
+
+    if (d->isInFinish)
+        d->thread_done.wait(locker.mutex());
+
     if (d->running)
         return;
 

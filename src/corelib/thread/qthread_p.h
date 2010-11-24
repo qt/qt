@@ -126,6 +126,7 @@ public:
     bool running;
     bool finished;
     bool terminated;
+    bool isInFinish; //when in QThreadPrivate::finish
 
     bool exited;
     int returnCode;
