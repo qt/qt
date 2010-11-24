@@ -29,7 +29,7 @@
 \page qml-extending-tutorial-index.html
 \title Tutorial: Writing QML extensions with C++
 
-The QtDeclarative module provides a set of APIs for extending QML through
+The Qt Declarative module provides a set of APIs for extending QML through
 C++ extensions. You can write extensions to add your own QML types, extend existing
 Qt types, or call C/C++ functions that are not accessible from ordinary QML code.
 
@@ -65,7 +65,7 @@ For example, this could be done to implement particular data models, or provide
 elements with custom painting and drawing capabilities, or access system features
 like network programming that are not accessible through built-in QML features.
 
-In this tutorial, we will show how to use the C++ classes in the QtDeclarative
+In this tutorial, we will show how to use the C++ classes in the Qt Declarative
 module to extend QML. The end result will be a simple Pie Chart display implemented by
 several custom QML types connected together through QML features like bindings and 
 signals, and made available to the QML runtime through a plugin.
