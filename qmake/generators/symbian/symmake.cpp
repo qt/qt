@@ -50,7 +50,7 @@
 #include <qdebug.h>
 
 // Included from tools/shared
-#include <symbian/epocroot.h>
+#include <symbian/epocroot_p.h>
 
 #define RESOURCE_DIRECTORY_MMP "/resource/apps"
 #define REGISTRATION_RESOURCE_DIRECTORY_HW "/private/10003a3f/import/apps"
@@ -87,10 +87,10 @@ QString SymbianMakefileGenerator::fixPathForMmp(const QString& origPath, const Q
 {
     static QString epocRootStr;
     if (epocRootStr.isEmpty()) {
-        epocRootStr = epocRoot();
+        epocRootStr = qt_epocRoot();
         QFileInfo efi(epocRootStr);
         if (!efi.exists() || epocRootStr.isEmpty()) {
-            fprintf(stderr, "Unable to resolve epocRoot '%s' to real dir on current drive, defaulting to '/' for mmp paths\n", qPrintable(epocRoot()));
+            fprintf(stderr, "Unable to resolve epocRoot '%s' to real dir on current drive, defaulting to '/' for mmp paths\n", qPrintable(qt_epocRoot()));
             epocRootStr = "/";
         } else {
             epocRootStr = efi.absoluteFilePath();
@@ -122,7 +122,7 @@ QString SymbianMakefileGenerator::absolutizePath(const QString& origPath)
     // Prepend epocroot to any paths beginning with "/epoc32/"
     QString resultPath = QDir::fromNativeSeparators(origPath);
     if (resultPath.startsWith("/epoc32/", Qt::CaseInsensitive))
-        resultPath = QDir::fromNativeSeparators(epocRoot()) + resultPath.mid(1);
+        resultPath = QDir::fromNativeSeparators(qt_epocRoot()) + resultPath.mid(1);
 
     QFileInfo fi(fileInfo(resultPath));
 
@@ -187,8 +187,8 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
     QMap<QString, QStringList> userRssRules;
     readRssRules(numberOfIcons, iconFile, userRssRules);
 
-    // Get the application translations and convert to symbian OS lang code, i.e. decical number
-    QStringList symbianLangCodes = symbianLangCodesFromTsFiles();
+    SymbianLocalizationList symbianLocalizationList;
+    parseTsFiles(&symbianLocalizationList);
 
     // Generate pkg files if there are any actual files to deploy
     bool generatePkg = false;
@@ -205,7 +205,7 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
     }
 
     if (generatePkg) {
-        generatePkgFile(iconFile, true);
+        generatePkgFile(iconFile, true, symbianLocalizationList);
     }
 
     writeBldInfContent(t, generatePkg, iconFile);
@@ -242,13 +242,13 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
     writeMkFile(wrapperFileName, false);
 
     QString absoluteMmpFileName = Option::output_dir + QLatin1Char('/') + mmpFileName;
-    writeMmpFile(absoluteMmpFileName, symbianLangCodes);
+    writeMmpFile(absoluteMmpFileName, symbianLocalizationList);
 
     if (targetType == TypeExe) {
         if (!project->isActiveConfig("no_icon")) {
             writeRegRssFile(userRssRules);
             writeRssFile(numberOfIcons, iconFile);
-            writeLocFile(symbianLangCodes);
+            writeLocFile(symbianLocalizationList);
         }
     }
 
@@ -489,7 +489,7 @@ void SymbianMakefileGenerator::writeMmpFileHeader(QTextStream &t)
     t << "// ==============================================================================" << endl << endl;
 }
 
-void SymbianMakefileGenerator::writeMmpFile(QString &filename, QStringList &symbianLangCodes)
+void SymbianMakefileGenerator::writeMmpFile(QString &filename, const SymbianLocalizationList &symbianLocalizationList)
 {
     QFile ft(filename);
     if (ft.open(QIODevice::WriteOnly)) {
@@ -501,7 +501,7 @@ void SymbianMakefileGenerator::writeMmpFile(QString &filename, QStringList &symb
 
         writeMmpFileTargetPart(t);
 
-        writeMmpFileResourcePart(t, symbianLangCodes);
+        writeMmpFileResourcePart(t, symbianLocalizationList);
 
         writeMmpFileMacrosPart(t);
 
@@ -643,7 +643,7 @@ void SymbianMakefileGenerator::writeMmpFileTargetPart(QTextStream& t)
     Application registration resource files should be installed to the
     \private\10003a3f\import\apps directory.
 */
-void SymbianMakefileGenerator::writeMmpFileResourcePart(QTextStream& t, QStringList &symbianLangCodes)
+void SymbianMakefileGenerator::writeMmpFileResourcePart(QTextStream& t, const SymbianLocalizationList &symbianLocalizationList)
 {
     if ((targetType == TypeExe) &&
             !project->isActiveConfig("no_icon")) {
@@ -653,8 +653,10 @@ void SymbianMakefileGenerator::writeMmpFileResourcePart(QTextStream& t, QStringL
 
         t << "SOURCEPATH\t\t\t. " << endl;
         t << "LANG SC ";    // no endl
-        foreach(QString lang, symbianLangCodes) {
-            t << lang << " "; // no endl
+        SymbianLocalizationListIterator iter(symbianLocalizationList);
+        while (iter.hasNext()) {
+            const SymbianLocalization &loc = iter.next();
+            t << loc.symbianLanguageCode << " "; // no endl
         }
         t << endl;
         t << MMP_START_RESOURCE "\t\t" << locTarget << endl;
@@ -717,7 +719,7 @@ void SymbianMakefileGenerator::writeMmpFileLibraryPart(QTextStream& t)
                 // Hacky way to find out what kind of library it is. Check the
                 // ARMV5 build directory for library type. We default to shared
                 // library, since that is more common.
-                QString udebStaticLibLocation(epocRoot());
+                QString udebStaticLibLocation(qt_epocRoot());
                 QString urelStaticLibLocation(udebStaticLibLocation);
                 udebStaticLibLocation += QString("epoc32/release/armv5/udeb/%1.lib").arg(lib);
                 urelStaticLibLocation += QString("epoc32/release/armv5/urel/%1.lib").arg(lib);
@@ -1107,4 +1109,19 @@ void SymbianMakefileGenerator::generateDistcleanTargets(QTextStream& t)
 
     t << "distclean: clean dodistclean" << endl;
     t << endl;
+}
+
+// Returns a string that can be used as a dependency to loc file on other targets
+QString SymbianMakefileGenerator::generateLocFileTarget(QTextStream& t, const QString& locCmd)
+{
+    QString locFile;
+    if (targetType == TypeExe && !project->isActiveConfig("no_icon")) {
+        locFile = Option::fixPathToLocalOS(generateLocFileName());
+        t << locFile << QLatin1String(": ") << project->values("SYMBIAN_MATCHED_TRANSLATIONS").join(" ") << endl;
+        t << locCmd << endl;
+        t << endl;
+        locFile += QLatin1Char(' ');
+    }
+
+    return locFile;
 }
