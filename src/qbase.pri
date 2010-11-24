@@ -36,7 +36,7 @@ CONFIG		+= qt warn_on depend_includepath
 CONFIG          += qmake_cache target_qt 
 CONFIG          -= fix_output_dirs
 win32|mac:!macx-xcode:CONFIG += debug_and_release
-linux*-g++*:QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
+linux*:QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 
 contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
 unix:contains(QT_CONFIG, reduce_relocations):CONFIG += bsymbolic_functions
