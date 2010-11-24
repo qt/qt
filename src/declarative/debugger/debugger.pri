@@ -8,7 +8,8 @@ SOURCES += \
     $$PWD/qdeclarativedebug.cpp \
     $$PWD/qdeclarativedebugtrace.cpp \
     $$PWD/qdeclarativedebughelper.cpp \
-    $$PWD/qdeclarativedebugserver.cpp
+    $$PWD/qdeclarativedebugserver.cpp \
+    $$PWD/qdeclarativedebugservertcpconnection.cpp
 
 HEADERS += \
     $$PWD/qdeclarativedebuggerstatus_p.h \
@@ -19,4 +20,7 @@ HEADERS += \
     $$PWD/qdeclarativedebug_p.h \
     $$PWD/qdeclarativedebugtrace_p.h \
     $$PWD/qdeclarativedebughelper_p.h \
-    $$PWD/qdeclarativedebugserver_p.h
+    $$PWD/qdeclarativedebugserverplugin_p.h \
+    $$PWD/qdeclarativedebugserver_p.h \
+    $$PWD/qdeclarativedebugservertcpconnection_p.h \
+    debugger/qdeclarativedebugserverconnection_p.h

@@ -39,11 +39,10 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVEDEBUGSERVER_H
-#define QDECLARATIVEDEBUGSERVER_H
+#ifndef QDECLARATIVEDEBUGSERVERCONNECTION_H
+#define QDECLARATIVEDEBUGSERVERCONNECTION_H
 
 #include <private/qdeclarativeglobal_p.h>
-#include <private/qdeclarativedebugserverconnection_p.h>
 
 QT_BEGIN_HEADER
 
@@ -51,38 +50,19 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QDeclarativeDebugService;
-
-class QDeclarativeDebugServerPrivate;
-class QDeclarativeDebugServer : public QObject
+class QDeclarativeDebugServerConnection
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QDeclarativeDebugServer)
-    Q_DISABLE_COPY(QDeclarativeDebugServer)
 public:
-    static QDeclarativeDebugServer *instance();
+    QDeclarativeDebugServerConnection() {}
+    virtual ~QDeclarativeDebugServerConnection() {}
 
-    void setConnection(QDeclarativeDebugServerConnection *connection);
-
-    bool hasDebuggingClient() const;
-
-    QList<QDeclarativeDebugService*> services() const;
-    QStringList serviceNames() const;
-
-    bool addService(QDeclarativeDebugService *service);
-    bool removeService(QDeclarativeDebugService *service);
-
-    void sendMessage(QDeclarativeDebugService *service, const QByteArray &message);
-    void receiveMessage(const QByteArray &message);
-
-private:
-    friend class QDeclarativeDebugService;
-    friend class QDeclarativeDebugServicePrivate;
-    QDeclarativeDebugServer();
+    virtual bool isConnected() const = 0;
+    virtual void send(const QByteArray &message) = 0;
+    virtual void disconnect() = 0;
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QDECLARATIVEDEBUGSERVICE_H
+#endif // QDECLARATIVEDEBUGSERVERCONNECTION_H

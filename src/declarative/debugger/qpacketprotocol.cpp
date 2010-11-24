@@ -452,6 +452,14 @@ bool QPacket::isEmpty() const
 }
 
 /*!
+  Returns raw packet data.
+  */
+QByteArray QPacket::data() const
+{
+    return b;
+}
+
+/*!
   Clears data in the packet.  This is useful for reusing one writable packet.
   For example
   \code

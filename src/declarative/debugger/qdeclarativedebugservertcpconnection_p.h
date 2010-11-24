@@ -39,11 +39,10 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVEDEBUGSERVER_H
-#define QDECLARATIVEDEBUGSERVER_H
+#ifndef QDECLARATIVEDEBUGSERVERTCPCONNECTION_H
+#define QDECLARATIVEDEBUGSERVERTCPCONNECTION_H
 
 #include <private/qdeclarativeglobal_p.h>
-#include <private/qdeclarativedebugserverconnection_p.h>
 
 QT_BEGIN_HEADER
 
@@ -51,38 +50,37 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QDeclarativeDebugService;
+#include <qdeclarativedebugserverconnection_p.h>
 
-class QDeclarativeDebugServerPrivate;
-class QDeclarativeDebugServer : public QObject
+class QDeclarativeDebugServer;
+class QDeclarativeDebugServerTcpConnectionPrivate;
+class QDeclarativeDebugServerTcpConnection : public QObject, public QDeclarativeDebugServerConnection
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QDeclarativeDebugServer)
-    Q_DISABLE_COPY(QDeclarativeDebugServer)
+    Q_DECLARE_PRIVATE(QDeclarativeDebugServerTcpConnection)
+    Q_DISABLE_COPY(QDeclarativeDebugServerTcpConnection)
+
 public:
-    static QDeclarativeDebugServer *instance();
+    QDeclarativeDebugServerTcpConnection(int port, QDeclarativeDebugServer *server);
+    ~QDeclarativeDebugServerTcpConnection();
 
-    void setConnection(QDeclarativeDebugServerConnection *connection);
+    bool isConnected() const;
+    void send(const QByteArray &message);
+    void disconnect();
 
-    bool hasDebuggingClient() const;
+    void listen();
+    void waitForConnection();
 
-    QList<QDeclarativeDebugService*> services() const;
-    QStringList serviceNames() const;
-
-    bool addService(QDeclarativeDebugService *service);
-    bool removeService(QDeclarativeDebugService *service);
-
-    void sendMessage(QDeclarativeDebugService *service, const QByteArray &message);
-    void receiveMessage(const QByteArray &message);
+private Q_SLOTS:
+    void readyRead();
+    void newConnection();
 
 private:
-    friend class QDeclarativeDebugService;
-    friend class QDeclarativeDebugServicePrivate;
-    QDeclarativeDebugServer();
+    QDeclarativeDebugServerTcpConnectionPrivate *d_ptr;
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QDECLARATIVEDEBUGSERVICE_H
+#endif // QDECLARATIVEDEBUGSERVERTCPCONNECTION_H
