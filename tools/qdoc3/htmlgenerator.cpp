@@ -218,7 +218,8 @@ HtmlGenerator::HtmlGenerator()
       funcLeftParen("\\S(\\()"),
       myTree(0),
       slow(false),
-      obsoleteLinks(false)
+      obsoleteLinks(false),
+      inObsoleteLink(false)
 {
 }
 
