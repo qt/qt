@@ -806,6 +806,12 @@ void Tree::readIndexSection(const QDomElement &element,
             subtype = Node::Page;
         else if (element.attribute("subtype") == "externalpage")
             subtype = Node::ExternalPage;
+        else if (element.attribute("subtype") == "qmlclass")
+            subtype = Node::QmlClass;
+        else if (element.attribute("subtype") == "qmlpropertygroup")
+            subtype = Node::QmlPropertyGroup;
+        else if (element.attribute("subtype") == "qmlbasictype")
+            subtype = Node::QmlBasicType;
         else
             return;
 
