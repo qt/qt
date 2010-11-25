@@ -66,6 +66,7 @@ QHttpNetworkConnectionChannel::QHttpNetworkConnectionChannel()
     , bytesTotal(0)
     , resendCurrent(false)
     , lastStatus(0)
+    , unhandledError(QNetworkReply::NoError)
     , pendingEncrypt(false)
     , reconnectAttempts(2)
     , authMethod(QAuthenticatorPrivate::None)
@@ -180,7 +181,6 @@ bool QHttpNetworkConnectionChannel::sendRequest()
         reply->d_func()->autoDecompress = request.d->autoDecompress;
         reply->d_func()->pipeliningUsed = false;
 
-        pendingEncrypt = false;
         // if the url contains authentication parameters, use the new ones
         // both channels will use the new authentication parameters
         if (!request.url().userInfo().isEmpty() && request.withCredentials()) {
@@ -643,7 +643,21 @@ void QHttpNetworkConnectionChannel::allDone()
     // slot connected to it. The socket will not fire readyRead signal, if we are already
     // in the slot connected to readyRead
     if (emitFinished)
-        QMetaObject::invokeMethod(reply, "finished", Qt::QueuedConnection);
+    {
+        // Check whether _q_error was invoked previously and if it left a socket
+        // error unhandled.
+        if(unhandledError != QNetworkReply::NoError) {
+            QString errorString = connection->d_func()->errorDetail(unhandledError, socket, socket->errorString());
+            qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
+            QMetaObject::invokeMethod(reply, "finishedWithError",
+                Qt::QueuedConnection,
+                Q_ARG(QNetworkReply::NetworkError, unhandledError),
+                Q_ARG(QString, errorString));
+            unhandledError = QNetworkReply::NoError; // Reset the value
+        } else {
+            QMetaObject::invokeMethod(reply, "finished", Qt::QueuedConnection);
+        }
+    }
     // reset the reconnection attempts after we receive a complete reply.
     // in case of failures, each channel will attempt two reconnects before emitting error.
     reconnectAttempts = 2;
@@ -965,6 +979,7 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
                 errorCode = QNetworkReply::RemoteHostClosedError;
             }
         } else {
+            unhandledError = QNetworkReply::RemoteHostClosedError;
             return;
         }
         break;
@@ -1019,6 +1034,7 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
     if (!socket)
         return; // ### error
     state = QHttpNetworkConnectionChannel::IdleState;
+    pendingEncrypt = false;
     sendRequest();
 }
 
