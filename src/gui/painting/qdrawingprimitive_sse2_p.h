@@ -78,7 +78,7 @@ QT_BEGIN_NAMESPACE
     pixelVectorAG = _mm_mullo_epi16(pixelVectorAG, alphaChannel); \
     pixelVectorRB = _mm_mullo_epi16(pixelVectorRB, alphaChannel); \
  \
-    /* 3. devide by 255, that's the tricky part. \
+    /* 3. divide by 255, that's the tricky part. \
        we do it like for BYTE_MUL(), with bit shift: X/255 ~= (X + X/256 + rounding)/256 */ \
     /** so first (X + X/256 + rounding) */\
     pixelVectorRB = _mm_add_epi16(pixelVectorRB, _mm_srli_epi16(pixelVectorRB, 8)); \
@@ -86,7 +86,7 @@ QT_BEGIN_NAMESPACE
     pixelVectorAG = _mm_add_epi16(pixelVectorAG, _mm_srli_epi16(pixelVectorAG, 8)); \
     pixelVectorAG = _mm_add_epi16(pixelVectorAG, half); \
  \
-    /** second devide by 256 */\
+    /** second divide by 256 */\
     pixelVectorRB = _mm_srli_epi16(pixelVectorRB, 8); \
     /** for AG, we could >> 8 to divide followed by << 8 to put the \
         bytes in the correct position. By masking instead, we execute \
@@ -129,7 +129,7 @@ QT_BEGIN_NAMESPACE
 }
 
 // Basically blend src over dst with the const alpha defined as constAlphaVector.
-// nullVector, half, one, colorMask are constant accross the whole image/texture, and should be defined as:
+// nullVector, half, one, colorMask are constant across the whole image/texture, and should be defined as:
 //const __m128i nullVector = _mm_set1_epi32(0);
 //const __m128i half = _mm_set1_epi16(0x80);
 //const __m128i one = _mm_set1_epi16(0xff);
@@ -186,7 +186,7 @@ QT_BEGIN_NAMESPACE
 }
 
 // Basically blend src over dst with the const alpha defined as constAlphaVector.
-// nullVector, half, one, colorMask are constant accross the whole image/texture, and should be defined as:
+// nullVector, half, one, colorMask are constant across the whole image/texture, and should be defined as:
 //const __m128i nullVector = _mm_set1_epi32(0);
 //const __m128i half = _mm_set1_epi16(0x80);
 //const __m128i one = _mm_set1_epi16(0xff);
