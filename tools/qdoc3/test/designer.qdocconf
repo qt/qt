@@ -13,7 +13,7 @@ indexes                 = $QT_BUILD_TREE/doc-build/html-qt/qt.index
 qhp.projects            = Designer
 
 qhp.Designer.file                = designer.qhp
-qhp.Designer.namespace           = com.trolltech.designer.470
+qhp.Designer.namespace           = com.trolltech.designer.480
 qhp.Designer.virtualFolder       = qdoc
 qhp.Designer.indexTitle          = Qt Designer Manual
 qhp.Designer.extraFiles          = images/bg_l.png \

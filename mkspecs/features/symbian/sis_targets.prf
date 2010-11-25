@@ -13,6 +13,17 @@ else:!equals(DEPLOYMENT, default_deployment) {
 equals(GENERATE_SIS_TARGETS, true) {
 
     baseTarget = $$symbianRemoveSpecialCharacters($$basename(TARGET))
+    template_pkg_target.target = $${baseTarget}_template.pkg
+    template_pkg_target.depends += $$_PRO_FILE_
+    template_pkg_target.commands = $(MAKE) -f $(MAKEFILE) qmake
+    installer_pkg_target.target = $${baseTarget}_installer.pkg
+    installer_pkg_target.depends += $$_PRO_FILE_
+    installer_pkg_target.commands = $(MAKE) -f $(MAKEFILE) qmake
+    stub_pkg_target.target = $${baseTarget}_stub.pkg
+    stub_pkg_target.depends += $$_PRO_FILE_
+    stub_pkg_target.commands = $(MAKE) -f $(MAKEFILE) qmake
+    QMAKE_EXTRA_TARGETS += template_pkg_target installer_pkg_target stub_pkg_target
+
 
     symbian-abld|symbian-sbsv2 {
         symbian-sbsv2 {
@@ -36,6 +47,7 @@ equals(GENERATE_SIS_TARGETS, true) {
                               , \
                                   $(MAKE) -f $(MAKEFILE) fail_sis_nopkg \
                               )
+        sis_target.depends += $${baseTarget}_template.pkg
 
         ok_sis_target.target = ok_sis
         ok_sis_target.commands = createpackage $$CONVERT_GCCE_PARAM $(QT_SIS_OPTIONS) $${baseTarget}_template.pkg \
@@ -55,6 +67,7 @@ equals(GENERATE_SIS_TARGETS, true) {
                               , \
                                   $(MAKE) -f $(MAKEFILE) fail_sis_nopkg \
                               )
+        unsigned_sis_target.depends += $${baseTarget}_template.pkg
 
         ok_unsigned_sis_target.target = ok_unsigned_sis
         ok_unsigned_sis_target.commands = createpackage $$CONVERT_GCCE_PARAM $(QT_SIS_OPTIONS) -o $${baseTarget}_template.pkg $(QT_SIS_TARGET)
@@ -68,7 +81,7 @@ equals(GENERATE_SIS_TARGETS, true) {
                                         , \
                                             $(MAKE) -f $(MAKEFILE) fail_sis_nopkg \
                                         )
-        installer_sis_target.depends = sis
+        installer_sis_target.depends = $${baseTarget}_installer.pkg sis
 
         ok_installer_sis_target.target = ok_installer_sis
         ok_installer_sis_target.commands = createpackage $(QT_SIS_OPTIONS) $${baseTarget}_installer.pkg - \
@@ -80,7 +93,7 @@ equals(GENERATE_SIS_TARGETS, true) {
                                         , \
                                             $(MAKE) -f $(MAKEFILE) fail_sis_nopkg \
                                         )
-        unsigned_installer_sis_target.depends = unsigned_sis
+        unsigned_installer_sis_target.depends = $${baseTarget}_installer.pkg unsigned_sis
 
         ok_unsigned_installer_sis_target.target = ok_unsigned_installer_sis
         ok_unsigned_installer_sis_target.commands = createpackage $(QT_SIS_OPTIONS) -o $${baseTarget}_installer.pkg
@@ -105,6 +118,7 @@ equals(GENERATE_SIS_TARGETS, true) {
                                    , \
                                        $(MAKE) -f $(MAKEFILE) fail_sis_nopkg \
                                    )
+        stub_sis_target.depends += $${baseTarget}_stub.pkg
 
         ok_stub_sis_target.target = ok_stub_sis
         ok_stub_sis_target.commands = createpackage -s $(QT_SIS_OPTIONS) $${baseTarget}_stub.pkg \
@@ -155,11 +169,11 @@ equals(GENERATE_SIS_TARGETS, true) {
         sis_target.target = sis
         sis_target.commands = $$QMAKE_CREATEPACKAGE $(QT_SIS_OPTIONS) $${baseTarget}_template.pkg \
                                   - $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
-        sis_target.depends = first
+        sis_target.depends = first $${baseTarget}_template.pkg
 
         unsigned_sis_target.target = unsigned_sis
         unsigned_sis_target.commands = $$QMAKE_CREATEPACKAGE $(QT_SIS_OPTIONS) -o $${baseTarget}_template.pkg
-        unsigned_sis_target.depends = first
+        unsigned_sis_target.depends = first $${baseTarget}_template.pkg
 
         target_sis_target.target = $${sis_destdir}/$${baseTarget}.sis
         target_sis_target.commands = $(MAKE) -f $(MAKEFILE) sis
@@ -167,11 +181,11 @@ equals(GENERATE_SIS_TARGETS, true) {
         installer_sis_target.target = installer_sis
         installer_sis_target.commands = $$QMAKE_CREATEPACKAGE $(QT_SIS_OPTIONS) $${baseTarget}_installer.pkg - \
                                             $(QT_SIS_CERTIFICATE) $(QT_SIS_KEY) $(QT_SIS_PASSPHRASE)
-        installer_sis_target.depends = sis
+        installer_sis_target.depends = $${baseTarget}_installer.pkg sis
 
         unsigned_installer_sis_target.target = unsigned_installer_sis
         unsigned_installer_sis_target.commands = $$QMAKE_CREATEPACKAGE $(QT_SIS_OPTIONS) -o $${baseTarget}_installer.pkg
-        unsigned_installer_sis_target.depends = unsigned_sis
+        unsigned_installer_sis_target.depends = $${baseTarget}_installer.pkg unsigned_sis
 
         !isEmpty(sis_destdir):!equals(sis_destdir, "."):!equals(sis_destdir, "./") {
             sis_target.commands += && $$QMAKE_MOVE $${baseTarget}.sis $$sis_destdir

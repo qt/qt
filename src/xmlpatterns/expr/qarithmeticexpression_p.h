@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 namespace QPatternist
 {
     /**
-     * @short Implements arithmetics, such as multiplication and substraction.
+     * @short Implements arithmetics, such as multiplication and subtraction.
      *
      *
      * Optimizations: there's some operator/value combos that are no ops. For

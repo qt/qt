@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the qmake application of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,26 +39,53 @@
 **
 ****************************************************************************/
 
-#ifndef WINDOWS_REGISTRY_H
-#define WINDOWS_REGISTRY_H
+#include <QEvent>
+#include <QString>
 
-#include <QtCore/qglobal.h>
+//! A custom event representing a graphics system switch.
+/*!
+ This event is sent two times -- before the actual switch and after the switch.
+ The current mode of the event can be detected by looking at the State of the
+ event.
 
-#ifdef Q_OS_WIN32
-   #include <QtCore/qt_windows.h>
-#else
-    typedef void* HKEY;
-#endif
+ The end-user application can use the event to drop it's own allocated GL resources
+ when going to software mode.
+*/
 
-#include <QtCore/qstring.h>
+class QMeeGoSwitchEvent : public QEvent
+{
+public:
 
-/**
- * Read a value from the Windows registry.
- *
- * If the key is not found, or the registry cannot be accessed (for example
- * if this code is compiled for a platform other than Windows), a null
- * string is returned.
- */
-QString readRegistryKey(HKEY parentHandle, const QString &rSubkey);
+    //! The state represented by this event.
+    enum State {
+        WillSwitch,
+        DidSwitch
+    };
 
-#endif // WINDOWS_REGISTRY_H
+    //! Constructor for the event.
+    /*!
+     Creates a new event with the given name and the given state.
+    */
+    QMeeGoSwitchEvent(const QString &graphicsSystemName, State s);
+
+    //! Returns the name of the target graphics system.
+    /*!
+     Depending on the state, the name represents the system we're about to swtich to,
+     or the system we just switched to.
+    */
+    QString graphicsSystemName() const;
+
+    //! Returns the state represented by this event.
+    State state() const;
+
+    //! Returns the event type/number for QMeeGoSwitchEvent.
+    /*!
+     The type is registered on first access. Use this to detect incoming
+     QMeeGoSwitchEvents.
+    */
+    QEvent::Type eventNumber();
+
+private:
+    QString name;
+    State switchState;
+};
