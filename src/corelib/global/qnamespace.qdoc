@@ -2693,7 +2693,8 @@
     \value CheckStateRole       This role is used to obtain the checked state of
                                 an item. (Qt::CheckState)
     \value InitialSortOrderRole This role is used to obtain the initial sort order
-                                of a header view section. (Qt::SortOrder)
+                                of a header view section. (Qt::SortOrder). This
+                                role was introduced in Qt 4.8.
 
     Accessibility roles (with associated types):
 
