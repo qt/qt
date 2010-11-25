@@ -1015,7 +1015,12 @@ QFontEngineX11FT::QFontEngineX11FT(FcPattern *pattern, const QFontDef &fd, int s
 #ifdef FC_HINT_STYLE
     {
         int hint_style = 0;
-        if (FcPatternGetInteger (pattern, FC_HINT_STYLE, 0, &hint_style) == FcResultNoMatch)
+        // Try to use Xft.hintstyle from XDefaults first if running in GNOME, to match
+        // the behavior of cairo
+        if (X11->fc_hint_style > -1 && X11->desktopEnvironment == DE_GNOME)
+            hint_style = X11->fc_hint_style;
+        else if (FcPatternGetInteger (pattern, FC_HINT_STYLE, 0, &hint_style) == FcResultNoMatch
+                 && X11->fc_hint_style > -1)
             hint_style = X11->fc_hint_style;
 
         switch (hint_style) {
