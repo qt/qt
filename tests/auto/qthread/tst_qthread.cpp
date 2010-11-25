@@ -107,6 +107,10 @@ private slots:
 
     void QTBUG13810_exitAndStart();
     void connectThreadFinishedSignalToObjectDeleteLaterSlot();
+    void wait2();
+    void wait3_slowDestructor();
+    void destroyFinishRace();
+    void startFinishRace();
 
     void stressTest();
 };
@@ -976,6 +980,7 @@ void tst_QThread::QTBUG13810_exitAndStart()
     QCOMPARE(sync1.m_prop, 89);
 }
 
+
 void tst_QThread::connectThreadFinishedSignalToObjectDeleteLaterSlot()
 {
     QThread thread;
@@ -989,6 +994,124 @@ void tst_QThread::connectThreadFinishedSignalToObjectDeleteLaterSlot()
     QVERIFY(thread.wait(30000));
     QVERIFY(p.isNull());
 }
+
+class Waiting_Thread : public QThread
+{
+public:
+    enum { WaitTime = 800 };
+    QMutex mutex;
+    QWaitCondition cond1;
+    QWaitCondition cond2;
+
+    void run()
+    {
+        QMutexLocker locker(&mutex);
+        cond1.wait(&mutex);
+        cond2.wait(&mutex, WaitTime);
+    }
+};
+
+void tst_QThread::wait2()
+{
+    QElapsedTimer timer;
+    Waiting_Thread thread;
+    thread.start();
+    timer.start();
+    QVERIFY(!thread.wait(Waiting_Thread::WaitTime));
+    qint64 elapsed = timer.elapsed();
+
+    QVERIFY(elapsed >= Waiting_Thread::WaitTime);
+    //QVERIFY(elapsed < Waiting_Thread::WaitTime * 1.4);
+
+    timer.start();
+    thread.cond1.wakeOne();
+    QVERIFY(thread.wait(/*Waiting_Thread::WaitTime * 1.4*/));
+    elapsed = timer.elapsed();
+    QVERIFY(elapsed >= Waiting_Thread::WaitTime);
+    //QVERIFY(elapsed < Waiting_Thread::WaitTime * 1.4);
+}
+
+
+class SlowSlotObject : public QObject {
+    Q_OBJECT
+public:
+    QMutex mutex;
+    QWaitCondition cond;
+public slots:
+    void slowSlot() {
+        QMutexLocker locker(&mutex);
+        cond.wait(&mutex);
+    }
+};
+
+void tst_QThread::wait3_slowDestructor()
+{
+    SlowSlotObject slow;
+    QThread thread;
+    QObject::connect(&thread, SIGNAL(finished()), &slow, SLOT(slowSlot()), Qt::DirectConnection);
+
+    enum { WaitTime = 1800 };
+    QElapsedTimer timer;
+
+    thread.start();
+    thread.quit();
+    //the quit function will cause the thread to finish and enter the slowSlot that is blocking
+
+    timer.start();
+    QVERIFY(!thread.wait(Waiting_Thread::WaitTime));
+    qint64 elapsed = timer.elapsed();
+
+    QVERIFY(elapsed >= Waiting_Thread::WaitTime);
+    //QVERIFY(elapsed < Waiting_Thread::WaitTime * 1.4);
+
+    slow.cond.wakeOne();
+    //now the thread should finish quickly
+    QVERIFY(thread.wait(one_minute));
+}
+
+void tst_QThread::destroyFinishRace()
+{
+    class Thread : public QThread { void run() {} };
+    for (int i = 0; i < 15; i++) {
+        Thread *thr = new Thread;
+        connect(thr, SIGNAL(finished()), thr, SLOT(deleteLater()));
+        QWeakPointer<QThread> weak(static_cast<QThread*>(thr));
+        thr->start();
+        while (weak) {
+            qApp->processEvents();
+            qApp->processEvents();
+            qApp->processEvents();
+            qApp->processEvents();
+        }
+    }
+}
+
+void tst_QThread::startFinishRace()
+{
+    class Thread : public QThread {
+    public:
+        Thread() : i (50) {}
+        void run() {
+            i--;
+            if (!i) disconnect(this, SIGNAL(finished()), 0, 0);
+        }
+        int i;
+    };
+    for (int i = 0; i < 15; i++) {
+        Thread thr;
+        connect(&thr, SIGNAL(finished()), &thr, SLOT(start()));
+        thr.start();
+        while (!thr.isFinished() || thr.i != 0) {
+            qApp->processEvents();
+            qApp->processEvents();
+            qApp->processEvents();
+            qApp->processEvents();
+        }
+        QCOMPARE(thr.i, 0);
+    }
+}
+
+
 
 QTEST_MAIN(tst_QThread)
 #include "tst_qthread.moc"

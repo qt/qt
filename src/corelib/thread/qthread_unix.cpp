@@ -334,40 +334,45 @@ void QThreadPrivate::finish(void *arg)
 {
     QThread *thr = reinterpret_cast<QThread *>(arg);
     QThreadPrivate *d = thr->d_func();
-#ifdef Q_OS_SYMBIAN
-    if (lockAnyway)
-#endif
-        d->mutex.lock();
 
+#ifdef Q_OS_SYMBIAN
+    QMutexLocker locker(lockAnyway ? &d->mutex : 0);
+#else
+    QMutexLocker locker(&d->mutex);
+#endif
+
+    d->isInFinish = true;
     d->priority = QThread::InheritPriority;
-    d->running = false;
-    d->finished = true;
-    if (d->terminated)
+    bool terminated = d->terminated;
+    void *data = &d->data->tls;
+    locker.unlock();
+    if (terminated)
         emit thr->terminated();
-    d->terminated = false;
     emit thr->finished();
     QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-
-    if (d->data->eventDispatcher) {
-        d->data->eventDispatcher->closingDown();
-        QAbstractEventDispatcher *eventDispatcher = d->data->eventDispatcher;
-        d->data->eventDispatcher = 0;
-        delete eventDispatcher;
-    }
-
-    void *data = &d->data->tls;
     QThreadStorageData::finish((void **)data);
+    locker.relock();
+    d->terminated = false;
+
+    QAbstractEventDispatcher *eventDispatcher = d->data->eventDispatcher;
+    if (eventDispatcher) {
+        d->data->eventDispatcher = 0;
+        locker.unlock();
+        eventDispatcher->closingDown();
+        delete eventDispatcher;
+        locker.relock();
+    }
 
     d->thread_id = 0;
 #ifdef Q_OS_SYMBIAN
     if (closeNativeHandle)
         d->data->symbian_thread_handle.Close();
 #endif
+    d->running = false;
+    d->finished = true;
+
+    d->isInFinish = false;
     d->thread_done.wakeAll();
-#ifdef Q_OS_SYMBIAN
-    if (lockAnyway)
-#endif
-        d->mutex.unlock();
 }
 
 
@@ -544,6 +549,10 @@ void QThread::start(Priority priority)
 {
     Q_D(QThread);
     QMutexLocker locker(&d->mutex);
+
+    if (d->isInFinish)
+        d->thread_done.wait(locker.mutex());
+
     if (d->running)
         return;
 
