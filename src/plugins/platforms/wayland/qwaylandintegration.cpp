@@ -25,7 +25,7 @@ public:
     QWaylandCursor(QWaylandDisplay *display,
 		   QPlatformScreen *screen)
 	: QPlatformCursor(screen)
-	, mDisplay(display) { }
+	, mBuffer(0), mDisplay(display) { }
 
     void changeCursor(QCursor *cursor, QWidget *widget);
     QWaylandShmBuffer *mBuffer;
