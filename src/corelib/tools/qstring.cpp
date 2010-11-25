@@ -714,7 +714,7 @@ const QString::Null QString::null = { };
     formats, the \e precision represents the maximum number of
     significant digits (trailing zeroes are omitted).
 
-    \section1 More Efficient String Construction 
+    \section1 More Efficient String Construction
 
     Using the QString \c{'+'} operator, it is easy to construct a
     complex string from multiple substrings. You will often write code
@@ -924,7 +924,7 @@ int QString::grow(int size)
 /*!
     \since 4.2
 
-    Returns a copy of the \a string, where the encoding of \a string depends on 
+    Returns a copy of the \a string, where the encoding of \a string depends on
     the size of wchar. If wchar is 4 bytes, the \a string is interpreted as ucs-4,
     if wchar is 2 bytes it is interpreted as ucs-2.
 
@@ -3606,7 +3606,7 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
             }
             length = length % 16;
         }
-#elif QT_HAVE_NEON
+#elif defined(QT_ALWAYS_HAVE_NEON)
         // Refer to the documentation of the SSE2 implementation
         // this use eactly the same method as for SSE except:
         // 1) neon has unsigned comparison

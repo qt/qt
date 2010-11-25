@@ -78,6 +78,7 @@
 
 #import <private/qcocoaapplicationdelegate_mac_p.h>
 #import <private/qcocoamenuloader_mac_p.h>
+#import <private/qcocoaapplication_mac_p.h>
 #include <private/qapplication_p.h>
 #include <private/qt_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
@@ -173,7 +174,7 @@ static void cleanupCocoaApplicationDelegate()
     qtMenuLoader = menuLoader;
 }
 
-- (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)menuLoader;
+- (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)menuLoader
 {
     return [[qtMenuLoader retain] autorelease];
 }
@@ -256,7 +257,7 @@ static void cleanupCocoaApplicationDelegate()
     onApplicationChangedActivation(true);
 }
 
-- (void)applicationDidResignActive:(NSNotification *)notification;
+- (void)applicationDidResignActive:(NSNotification *)notification
 {
     if (reflectionDelegate
         && [reflectionDelegate respondsToSelector:@selector(applicationDidResignActive:)])

@@ -323,25 +323,33 @@ void QThreadPrivate::finish(void *arg, bool lockAnyway)
     QThread *thr = reinterpret_cast<QThread *>(arg);
     QThreadPrivate *d = thr->d_func();
 
-    if (lockAnyway)
-        d->mutex.lock();
+    QMutexLocker locker(lockAnyway ? &d->mutex : 0);
+    d->isInFinish = true;
     d->priority = QThread::InheritPriority;
-    d->running = false;
-    d->finished = true;
-    if (d->terminated)
+    bool terminated = d->terminated;
+    void **tls_data = reinterpret_cast<void **>(&d->data->tls);
+    locker.unlock();
+    if (terminated)
         emit thr->terminated();
-    d->terminated = false;
     emit thr->finished();
     QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    QThreadStorageData::finish(tls_data);
+    locker.relock();
 
-    if (d->data->eventDispatcher) {
-        d->data->eventDispatcher->closingDown();
-        QAbstractEventDispatcher *eventDispatcher = d->data->eventDispatcher;
+    d->terminated = false;
+
+    QAbstractEventDispatcher *eventDispatcher = d->data->eventDispatcher;
+    if (eventDispatcher) {
         d->data->eventDispatcher = 0;
+        locker.unlock();
+        eventDispatcher->closingDown();
         delete eventDispatcher;
+        locker.relock();
     }
 
-    QThreadStorageData::finish(reinterpret_cast<void **>(&d->data->tls));
+    d->running = false;
+    d->finished = true;
+    d->isInFinish = false;
 
     if (!d->waiters) {
         CloseHandle(d->handle);
@@ -350,8 +358,6 @@ void QThreadPrivate::finish(void *arg, bool lockAnyway)
 
     d->id = 0;
 
-    if (lockAnyway)
-        d->mutex.unlock();
 }
 
 /**************************************************************************
@@ -399,6 +405,12 @@ void QThread::start(Priority priority)
 {
     Q_D(QThread);
     QMutexLocker locker(&d->mutex);
+
+    if (d->isInFinish) {
+        locker.unlock();
+        wait();
+        locker.relock();
+    }
 
     if (d->running)
         return;
