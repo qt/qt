@@ -101,6 +101,7 @@ private slots:
     void footer();
     void resizeView();
     void sizeLessThan1();
+    void QTBUG_14821();
 
 private:
     template <class T> void items();
@@ -1766,6 +1767,26 @@ void tst_QDeclarativeListView::sizeLessThan1()
     }
 
     delete canvas;
+}
+
+void tst_QDeclarativeListView::QTBUG_14821()
+{
+    QDeclarativeView *canvas = createView();
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/qtbug14821.qml"));
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = qobject_cast<QDeclarativeListView*>(canvas->rootObject());
+    QVERIFY(listview != 0);
+
+    QDeclarativeItem *contentItem = listview->contentItem();
+    QVERIFY(contentItem != 0);
+
+    listview->decrementCurrentIndex();
+    QCOMPARE(listview->currentIndex(), 99);
+
+    listview->incrementCurrentIndex();
+    QCOMPARE(listview->currentIndex(), 0);
 }
 
 void tst_QDeclarativeListView::qListModelInterface_items()

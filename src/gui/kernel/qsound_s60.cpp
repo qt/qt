@@ -150,7 +150,7 @@ void QAuServerS60::playCompleted(QAuBucketS60 *bucket, int error)
     } else {
         // We don't have a way to inform about errors -> just decrement loops
         // in order that QSound::isFinished will return true;
-        while (decLoop(sound)) {}
+        while (decLoop(sound) > 0) {}
         if (staticPlayingSounds.removeAll(sound))
             delete sound;
     }

@@ -1012,7 +1012,7 @@ void QDeclarativeViewer::addPluginPath(const QString& plugin)
 
 void QDeclarativeViewer::reload()
 {
-    open(currentFileOrUrl);
+    launch(currentFileOrUrl);
 }
 
 void QDeclarativeViewer::openFile()
