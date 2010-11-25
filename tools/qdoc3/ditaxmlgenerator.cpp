@@ -385,7 +385,8 @@ DitaXmlGenerator::DitaXmlGenerator()
       myTree(0),
       slow(false),
       obsoleteLinks(false),
-      noLinks(0)
+      noLinks(0),
+      inObsoleteLink(false)
 {
 }
 
