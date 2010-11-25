@@ -85,14 +85,15 @@ QmlJS::AST::SourceLocation DocVisitor::precedingComment(unsigned offset) const
 }
 
 void DocVisitor::applyDocumentation(QmlJS::AST::SourceLocation location,
-                                    InnerNode *node)
+                                    Node *node)
 {
     QmlJS::AST::SourceLocation loc = precedingComment(location.begin());
 
     if (loc.isValid()) {
         QString source = document.mid(loc.offset, loc.length);
         if (source.startsWith(QLatin1String("!")) ||
-            source.startsWith(QLatin1String("*"))) {
+            (source.startsWith(QLatin1String("*")) &&
+             source[1] != QLatin1Char('*'))) {
 
             Location start(filePath);
             start.setLineNo(loc.startLine);
@@ -116,7 +117,13 @@ bool DocVisitor::visit(QmlJS::AST::UiObjectDefinition *definition)
 
     if (current->type() == Node::Namespace) {
         QmlClassNode *component = new QmlClassNode(current, name, 0);
+        component->setTitle(QLatin1String("QML ") + name + QLatin1String(" Component"));
+
+        QmlClassNode::addInheritedBy(type, component);
+        component->setLink(Node::InheritsLink, type, type);
+
         applyDocumentation(definition->firstSourceLocation(), component);
+
         current = component;
     }
 
@@ -152,16 +159,23 @@ bool DocVisitor::visit(QmlJS::AST::UiPublicMember *member)
     switch (member->type) {
     case QmlJS::AST::UiPublicMember::Signal:
     {
-        QString name = member->name->asString();
+        if (current->type() == Node::Fake) {
+            QmlClassNode *qmlClass = static_cast<QmlClassNode *>(current);
+            if (qmlClass) {
 
-        QList<QPair<QString, QString> > parameters;
-        for (QmlJS::AST::UiParameterList *it = member->parameters; it; it = it->next) {
-            if (it->type && it->name)
-                parameters.append(QPair<QString, QString>(it->type->asString(),
-                                                          it->name->asString()));
+                QString name = member->name->asString();
+                FunctionNode *qmlSignal = new FunctionNode(Node::QmlSignal, current, name, false);
+
+                QList<Parameter> parameters;
+                for (QmlJS::AST::UiParameterList *it = member->parameters; it; it = it->next) {
+                    if (it->type && it->name)
+                        parameters.append(Parameter(it->type->asString(), "", it->name->asString()));
+                }
+
+                qmlSignal->setParameters(parameters);
+                applyDocumentation(member->firstSourceLocation(), qmlSignal);
+            }
         }
-
-        //current->addSignal(new Signal(name, parameters));
         break;
     }
     case QmlJS::AST::UiPublicMember::Property:
@@ -169,7 +183,19 @@ bool DocVisitor::visit(QmlJS::AST::UiPublicMember *member)
         QString type = member->memberType->asString();
         QString name = member->name->asString();
 
-        //current->addProperty(new Property(type, name));
+        if (current->type() == Node::Fake) {
+            QmlClassNode *qmlClass = static_cast<QmlClassNode *>(current);
+            if (qmlClass) {
+
+                QString name = member->name->asString();
+                QmlPropGroupNode *qmlPropGroup = new QmlPropGroupNode(qmlClass, name, false);
+                if (member->isDefaultMember)
+                    qmlPropGroup->setDefault();
+                QmlPropertyNode *qmlPropNode = new QmlPropertyNode(qmlPropGroup, name, type, false);
+                qmlPropNode->setWritable(!member->isReadonlyMember);
+                applyDocumentation(member->firstSourceLocation(), qmlPropNode);
+            }
+        }
         break;
     }
     default:

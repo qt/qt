@@ -66,8 +66,7 @@ public:
 
 private:
     QmlJS::AST::SourceLocation precedingComment(unsigned offset) const;
-    void applyDocumentation(QmlJS::AST::SourceLocation location,
-                            InnerNode *node);
+    void applyDocumentation(QmlJS::AST::SourceLocation location, Node *node);
 
     QmlJS::Engine *engine;
     quint32 lastEndOffset;
