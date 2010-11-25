@@ -1,0 +1,82 @@
+SYMBIAN_LANG.af = 34            #Afrikaans
+SYMBIAN_LANG.sq = 35            #Albanian
+SYMBIAN_LANG.am = 36            #Amharic
+SYMBIAN_LANG.ar = 37            #Arabic
+SYMBIAN_LANG.hy = 38            #Armenian
+SYMBIAN_LANG.bn = 41            #Bengali
+SYMBIAN_LANG.bg = 42            #Bulgarian
+SYMBIAN_LANG.my = 43            #Burmese
+SYMBIAN_LANG.be = 40            #Byelorussian
+SYMBIAN_LANG.ca = 44            #Catalan
+SYMBIAN_LANG.hr = 45            #Croatian
+SYMBIAN_LANG.cs = 25            #Czech
+SYMBIAN_LANG.da = 07            #Danish
+SYMBIAN_LANG.nl = 18            #Dutch
+SYMBIAN_LANG.en = 01            #English(UK)
+SYMBIAN_LANG.et = 49            #Estonian
+SYMBIAN_LANG.fi = 09            #Finnish
+SYMBIAN_LANG.fr = 02            #French
+SYMBIAN_LANG.gd = 52            #Gaelic
+SYMBIAN_LANG.ka = 53            #Georgian
+SYMBIAN_LANG.de = 03            #German
+SYMBIAN_LANG.el = 54            #Greek
+SYMBIAN_LANG.gu = 56            #Gujarati
+SYMBIAN_LANG.he = 57            #Hebrew
+SYMBIAN_LANG.hi = 58            #Hindi
+SYMBIAN_LANG.hu = 17            #Hungarian
+SYMBIAN_LANG.is = 15            #Icelandic
+SYMBIAN_LANG.id = 59            #Indonesian
+SYMBIAN_LANG.ga = 60            #Irish
+SYMBIAN_LANG.it = 05            #Italian
+SYMBIAN_LANG.ja = 32            #Japanese
+SYMBIAN_LANG.kn = 62            #Kannada
+SYMBIAN_LANG.kk = 63            #Kazakh
+SYMBIAN_LANG.ko = 65            #Korean
+SYMBIAN_LANG.lo = 66            #Laothian
+SYMBIAN_LANG.lv = 67            #Latvian
+SYMBIAN_LANG.lt = 68            #Lithuanian
+SYMBIAN_LANG.mk = 69            #Macedonian
+SYMBIAN_LANG.ms = 70            #Malay
+SYMBIAN_LANG.ml = 71            #Malayalam
+SYMBIAN_LANG.mr = 72            #Marathi
+SYMBIAN_LANG.mo = 73            #Moldavian
+SYMBIAN_LANG.mn = 74            #Mongolian
+SYMBIAN_LANG.nb = 08            #Norwegian
+SYMBIAN_LANG.pl = 27            #Polish
+SYMBIAN_LANG.pt = 13            #Portuguese
+SYMBIAN_LANG.pa = 77            #Punjabi
+SYMBIAN_LANG.ro = 78            #Romanian
+SYMBIAN_LANG.ru = 16            #Russian
+SYMBIAN_LANG.sr = 79            #Serbian
+SYMBIAN_LANG.si = 80            #Singhalese
+SYMBIAN_LANG.sk = 26            #Slovak
+SYMBIAN_LANG.sl = 28            #Slovenian
+SYMBIAN_LANG.so = 81            #Somali
+SYMBIAN_LANG.es = 04            #Spanish
+SYMBIAN_LANG.sw = 84            #Swahili
+SYMBIAN_LANG.sv = 06            #Swedish
+SYMBIAN_LANG.tl = 39            #Tagalog
+SYMBIAN_LANG.ta = 87            #Tamil
+SYMBIAN_LANG.te = 88            #Telugu
+SYMBIAN_LANG.th = 33            #Thai
+SYMBIAN_LANG.bo = 89            #Tibetan
+SYMBIAN_LANG.ti = 90            #Tigrinya
+SYMBIAN_LANG.tr = 14            #Turkish
+SYMBIAN_LANG.tk = 92            #Turkmen
+SYMBIAN_LANG.uk = 93            #Ukrainian
+SYMBIAN_LANG.ur = 94            #Urdu
+SYMBIAN_LANG.vi = 96            #Vietnamese
+SYMBIAN_LANG.cy = 97            #Welsh
+SYMBIAN_LANG.zu = 98            #Zulu
+SYMBIAN_LANG.nn = 75            #Nynorsk
+
+isEmpty(SYMBIAN_MATCHED_LANGUAGES) {
+    matchSymbianLanguages()
+}
+
+!isEmpty(SYMBIAN_MATCHED_TRANSLATIONS) {
+    # Generate dependencies to .ts files for pkg files
+    template_pkg_target.depends += $$SYMBIAN_MATCHED_TRANSLATIONS
+    installer_pkg_target.depends += $$SYMBIAN_MATCHED_TRANSLATIONS
+    stub_pkg_target.depends += $$SYMBIAN_MATCHED_TRANSLATIONS
+}
