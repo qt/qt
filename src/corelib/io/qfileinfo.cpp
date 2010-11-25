@@ -623,7 +623,9 @@ bool QFileInfo::isRelative() const
     Q_D(const QFileInfo);
     if (d->isDefaultConstructed)
         return true;
-    return d->fileEntry.isRelative();
+    if (d->fileEngine == 0)
+        return d->fileEntry.isRelative();
+    return d->fileEngine->isRelativePath();
 }
 
 /*!

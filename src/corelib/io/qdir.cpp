@@ -1544,7 +1544,9 @@ bool QDir::isRoot() const
 */
 bool QDir::isRelative() const
 {
-    return d_ptr->dirEntry.isRelative();
+    if (d_ptr->fileEngine.isNull())
+        return d_ptr->dirEntry.isRelative();
+    return d_ptr->fileEngine->isRelativePath();
 }
 
 
