@@ -105,9 +105,15 @@ void tst_qmlvisual::visual_data()
     files << findQmlFiles(QDir(QT_TEST_SOURCE_DIR));
     if (qgetenv("QMLVISUAL_ALL") != "1") {
 #if defined(Q_WS_X11)
-        //Text on X11 varies per distro - and the CI system is currently using something outdated.
+        //Text on X11 varies per version - and the CI system is currently using something outdated.
         foreach(const QString &str, files.filter(QRegExp(".*text.*")))
             files.removeAll(str);
+#endif
+#if defined(Q_WS_MAC)
+        //Text on Mac also varies per version. Only check the text on 10.6
+        if(QSysInfo::MacintoshVersion != QSysInfo::MV_10_6)
+            foreach(const QString &str, files.filter(QRegExp(".*text.*")))
+                files.removeAll(str);
 #endif
 #if defined(Q_WS_QWS)
         //We don't want QWS test results to mire down the CI system
