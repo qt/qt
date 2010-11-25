@@ -1922,7 +1922,7 @@ VisualTest {
     }
     Frame {
         msec: 4480
-        hash: "155a834ddaa7128b6f5a2a406b340315"
+        hash: "16b99c9cf5297a5251869a3935084cf7"
     }
     Mouse {
         type: 5
@@ -2106,7 +2106,7 @@ VisualTest {
     }
     Frame {
         msec: 4768
-        hash: "155a834ddaa7128b6f5a2a406b340315"
+        hash: "d315f82e175361fed83193ce550cb6e9"
     }
     Mouse {
         type: 5
