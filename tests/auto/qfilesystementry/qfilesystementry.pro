@@ -5,3 +5,4 @@ SOURCES   += tst_qfilesystementry.cpp \
 HEADERS += ../../../src/corelib/io/qfilesystementry_p.h
 QT = core
 
+CONFIG += parallel_test
