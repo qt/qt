@@ -97,6 +97,8 @@ void BaselineServer::heartbeat()
     QFileInfo me(QCoreApplication::applicationFilePath());
     if (me.lastModified() == meLastMod)
         return;
+    if (!me.exists() || !me.isExecutable())
+        return;
 
     //# (could close() here to avoid accepting new connections, to avoid livelock)
     //# also, could check for a timeout to force exit, to avoid hung threads blocking
