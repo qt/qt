@@ -1296,22 +1296,28 @@ void tst_QFile::link()
     QSKIP("Symbian does not support links", SkipAll);
 #endif
     QFile::remove("myLink.lnk");
+
     QFileInfo info1(SRCDIR "tst_qfile.cpp");
+    QString referenceTarget = QDir::cleanPath(info1.absoluteFilePath());
+
     QVERIFY(QFile::link(SRCDIR "tst_qfile.cpp", "myLink.lnk"));
+
     QFileInfo info2("myLink.lnk");
     QVERIFY(info2.isSymLink());
-    QCOMPARE(info2.symLinkTarget(), info1.absoluteFilePath());
+    QCOMPARE(info2.symLinkTarget(), referenceTarget);
 
     QFile link("myLink.lnk");
     QVERIFY(link.open(QIODevice::ReadOnly));
-    QCOMPARE(link.symLinkTarget(), info1.absoluteFilePath());
+    QCOMPARE(link.symLinkTarget(), referenceTarget);
     link.close();
-    QCOMPARE(QFile::symLinkTarget("myLink.lnk"), info1.absoluteFilePath());
+
+    QCOMPARE(QFile::symLinkTarget("myLink.lnk"), referenceTarget);
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QString wd = getWorkingDirectoryForLink(info2.absoluteFilePath());
-    QCOMPARE(QDir::fromNativeSeparators(wd), info1.absolutePath());
+    QCOMPARE(QDir::fromNativeSeparators(wd), referenceTarget);
 #endif
+
     QVERIFY(QFile::remove(info2.absoluteFilePath()));
 }
 
