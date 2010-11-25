@@ -1680,6 +1680,9 @@ static QString valueType(const QString& n)
  */
 bool QmlPropertyNode::isWritable(const Tree* tree) const
 {
+    if (wri != Trool_Default)
+        return fromTrool(wri, false);
+
     Node* n = parent();
     while (n && n->subType() != Node::QmlClass)
         n = n->parent();
