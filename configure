@@ -634,12 +634,14 @@ fi
 # initalize variables
 #-------------------------------------------------------------------------------
 
-SYSTEM_VARIABLES="CC CXX CFLAGS CXXFLAGS LDFLAGS"
+SYSTEM_VARIABLES="RANLIB STRIP OBJDUMP LD CC CXX CFLAGS CXXFLAGS LDFLAGS"
 for varname in $SYSTEM_VARIABLES; do
     qmakevarname="${varname}"
     # use LDFLAGS for autoconf compat, but qmake uses QMAKE_LFLAGS
     if [ "${varname}" = "LDFLAGS" ]; then
         qmakevarname="LFLAGS"
+    elif [ "${varname}" = "LD" ]; then
+        qmakevarname="LINK"
     fi
     cmd=`echo \
 'if [ -n "\$'${varname}'" ]; then
