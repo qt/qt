@@ -119,67 +119,69 @@ QStringList QKqueueFileSystemWatcherEngine::addPaths(const QStringList &paths,
                                                      QStringList *files,
                                                      QStringList *directories)
 {
-    QMutexLocker locker(&mutex);
-
     QStringList p = paths;
-    QMutableListIterator<QString> it(p);
-    while (it.hasNext()) {
-        QString path = it.next();
-        int fd;
+    {
+        QMutexLocker locker(&mutex);
+
+        QMutableListIterator<QString> it(p);
+        while (it.hasNext()) {
+            QString path = it.next();
+            int fd;
 #if defined(O_EVTONLY)
-        fd = qt_safe_open(QFile::encodeName(path), O_EVTONLY);
+            fd = qt_safe_open(QFile::encodeName(path), O_EVTONLY);
 #else
-        fd = qt_safe_open(QFile::encodeName(path), O_RDONLY);
+            fd = qt_safe_open(QFile::encodeName(path), O_RDONLY);
 #endif
-        if (fd == -1) {
-            perror("QKqueueFileSystemWatcherEngine::addPaths: open");
-            continue;
-        }
+            if (fd == -1) {
+                perror("QKqueueFileSystemWatcherEngine::addPaths: open");
+                continue;
+            }
 
-        QT_STATBUF st;
-        if (QT_FSTAT(fd, &st) == -1) {
-            perror("QKqueueFileSystemWatcherEngine::addPaths: fstat");
-            ::close(fd);
-            continue;
-        }
-        int id = (S_ISDIR(st.st_mode)) ? -fd : fd;
-        if (id < 0) {
-            if (directories->contains(path)) {
+            QT_STATBUF st;
+            if (QT_FSTAT(fd, &st) == -1) {
+                perror("QKqueueFileSystemWatcherEngine::addPaths: fstat");
                 ::close(fd);
                 continue;
             }
-        } else {
-            if (files->contains(path)) {
+            int id = (S_ISDIR(st.st_mode)) ? -fd : fd;
+            if (id < 0) {
+                if (directories->contains(path)) {
+                    ::close(fd);
+                    continue;
+                }
+            } else {
+                if (files->contains(path)) {
+                    ::close(fd);
+                    continue;
+                }
+            }
+
+            struct kevent kev;
+            EV_SET(&kev,
+                   fd,
+                   EVFILT_VNODE,
+                   EV_ADD | EV_ENABLE | EV_CLEAR,
+                   NOTE_DELETE | NOTE_WRITE | NOTE_EXTEND | NOTE_ATTRIB | NOTE_RENAME | NOTE_REVOKE,
+                   0,
+                   0);
+            if (kevent(kqfd, &kev, 1, 0, 0, 0) == -1) {
+                perror("QKqueueFileSystemWatcherEngine::addPaths: kevent");
                 ::close(fd);
                 continue;
             }
-        }
 
-        struct kevent kev;
-        EV_SET(&kev,
-               fd,
-               EVFILT_VNODE,
-               EV_ADD | EV_ENABLE | EV_CLEAR,
-               NOTE_DELETE | NOTE_WRITE | NOTE_EXTEND | NOTE_ATTRIB | NOTE_RENAME | NOTE_REVOKE,
-               0,
-               0);
-        if (kevent(kqfd, &kev, 1, 0, 0, 0) == -1) {
-            perror("QKqueueFileSystemWatcherEngine::addPaths: kevent");
-            ::close(fd);
-            continue;
-        }
+            it.remove();
+            if (id < 0) {
+                DEBUG() << "QKqueueFileSystemWatcherEngine: added directory path" << path;
+                directories->append(path);
+            } else {
+                DEBUG() << "QKqueueFileSystemWatcherEngine: added file path" << path;
+                files->append(path);
+            }
 
-        it.remove();
-        if (id < 0) {
-            DEBUG() << "QKqueueFileSystemWatcherEngine: added directory path" << path;
-            directories->append(path);
-        } else {
-            DEBUG() << "QKqueueFileSystemWatcherEngine: added file path" << path;
-            files->append(path);
+            pathToID.insert(path, id);
+            idToPath.insert(id, path);
         }
-
-        pathToID.insert(path, id);
-        idToPath.insert(id, path);
     }
 
     if (!isRunning())
@@ -194,31 +196,33 @@ QStringList QKqueueFileSystemWatcherEngine::removePaths(const QStringList &paths
                                                         QStringList *files,
                                                         QStringList *directories)
 {
-    QMutexLocker locker(&mutex);
-
+    bool isEmpty;
     QStringList p = paths;
-    QMutableListIterator<QString> it(p);
-    while (it.hasNext()) {
-        QString path = it.next();
-        int id = pathToID.take(path);
-        QString x = idToPath.take(id);
-        if (x.isEmpty() || x != path)
-            continue;
+    {
+        QMutexLocker locker(&mutex);
 
-        ::close(id < 0 ? -id : id);
+        QMutableListIterator<QString> it(p);
+        while (it.hasNext()) {
+            QString path = it.next();
+            int id = pathToID.take(path);
+            QString x = idToPath.take(id);
+            if (x.isEmpty() || x != path)
+                continue;
 
-        it.remove();
-        if (id < 0)
-            directories->removeAll(path);
-        else
-            files->removeAll(path);
+            ::close(id < 0 ? -id : id);
+
+            it.remove();
+            if (id < 0)
+                directories->removeAll(path);
+            else
+                files->removeAll(path);
+        }
+        isEmpty = pathToID.isEmpty();
     }
 
-    if (pathToID.isEmpty()) {
+    if (isEmpty) {
         stop();
-        locker.unlock();
         wait();
-        locker.relock();
     } else {
         write(kqpipe[1], "@", 1);
     }
