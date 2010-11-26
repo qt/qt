@@ -65,6 +65,7 @@ class QDeclarativeContext;
 class QDeclarativePropertyCache;
 class QDeclarativeContextData;
 class QDeclarativeNotifier;
+class QDeclarativeDataExtended;
 // This class is structured in such a way, that simply zero'ing it is the
 // default state for elemental object allocations.  This is crucial in the
 // workings of the QDeclarativeInstruction::CreateSimpleObject instruction.
@@ -150,17 +151,13 @@ public:
         }
     }
 
+    bool hasExtendedData() const { return extendedData != 0; }
     QDeclarativeNotifier *objectNameNotifier() const;
     QHash<int, QObject *> *attachedProperties() const;
 
-    struct ExtendedData {
-        ExtendedData();
-        ~ExtendedData();
-
-        QHash<int, QObject *> attachedProperties;
-        void *objectNameNotifier;
-    };
-    mutable ExtendedData *extendedData;
+private:
+    // For objectNameNotifier and attachedProperties
+    mutable QDeclarativeDataExtended *extendedData;
 };
 
 template<class T>
