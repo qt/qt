@@ -208,6 +208,8 @@ QStringList QKqueueFileSystemWatcherEngine::removePaths(const QStringList &paths
     QStringList p = paths;
     {
         QMutexLocker locker(&mutex);
+        if (pathToID.isEmpty())
+            return p;
 
         QMutableListIterator<QString> it(p);
         while (it.hasNext()) {
