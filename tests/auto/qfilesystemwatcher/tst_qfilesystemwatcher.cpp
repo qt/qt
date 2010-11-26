@@ -141,10 +141,6 @@ void tst_QFileSystemWatcher::basicTest()
 
     QSignalSpy changedSpy(&watcher, SIGNAL(fileChanged(const QString &)));
     QEventLoop eventLoop;
-    connect(&watcher,
-            SIGNAL(fileChanged(const QString &)),
-            &eventLoop,
-            SLOT(quit()));
     QTimer timer;
     connect(&timer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
 
@@ -280,10 +276,6 @@ void tst_QFileSystemWatcher::watchDirectory()
 
     QSignalSpy changedSpy(&watcher, SIGNAL(directoryChanged(const QString &)));
     QEventLoop eventLoop;
-    connect(&watcher,
-            SIGNAL(directoryChanged(const QString &)),
-            &eventLoop,
-            SLOT(quit()));
     QTimer timer;
     connect(&timer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
 
