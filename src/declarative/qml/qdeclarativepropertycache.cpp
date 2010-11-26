@@ -321,6 +321,7 @@ void QDeclarativePropertyCache::update(QDeclarativeEngine *engine, const QMetaOb
     Q_ASSERT(engine);
     Q_ASSERT(metaObject);
     QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(engine);
+    Q_UNUSED(enginePriv)
 
     clear();
 
