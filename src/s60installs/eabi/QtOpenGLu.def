@@ -702,4 +702,9 @@ EXPORTS
 	_ZeqRK9QGLFormatS1_ @ 701 NONAME
 	_Zls6QDebugRK9QGLFormat @ 702 NONAME
 	_ZneRK9QGLFormatS1_ @ 703 NONAME
+	_ZN16QGLWindowSurface26initializeOffscreenTextureERK5QSize @ 704 NONAME
+	_ZNK20QGLTextureGlyphCache15maxTextureWidthEv @ 705 NONAME
+	_ZNK20QGLTextureGlyphCache16maxTextureHeightEv @ 706 NONAME
+	_ZThn8_NK20QGLTextureGlyphCache15maxTextureWidthEv @ 707 NONAME
+	_ZThn8_NK20QGLTextureGlyphCache16maxTextureHeightEv @ 708 NONAME
 

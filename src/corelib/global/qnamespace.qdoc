@@ -1257,6 +1257,9 @@
     to this top level window. This attribute has no effect on non-X11
     platforms.
 
+    \value WA_MacNoShadow Since Qt 4.8, this attribute disables drop shadows
+    for this top level window. Only affects Cocoa builds of Qt for Mac OS X.
+
     \omitvalue WA_SetLayoutDirection
     \omitvalue WA_InputMethodTransparent
     \omitvalue WA_WState_CompressKeys

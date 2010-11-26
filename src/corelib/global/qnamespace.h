@@ -519,6 +519,8 @@ public:
 
         WA_X11DoNotAcceptFocus = 132,
 
+        WA_MacNoShadow = 133,
+
         // Add new attributes before this line
         WA_AttributeCount
     };

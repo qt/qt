@@ -1241,6 +1241,9 @@ void QGL2PaintEngineExPrivate::stroke(const QVectorPath &path, const QPen &pen)
         stroker.process(dashStroke, pen, clip);
     }
 
+    if (!stroker.vertexCount())
+        return;
+
     if (opaque) {
         prepareForDraw(opaque);
         setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, stroker.vertices());
@@ -1510,6 +1513,8 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         cache = new QGLTextureGlyphCache(ctx, glyphType, QTransform());
         staticTextItem->fontEngine()->setGlyphCache(cacheKey, cache);
         cache->insert(ctx, cache);
+    } else if (cache->context() == 0) { // Old context has been destroyed, new context has same ptr value
+        cache->setContext(ctx);
     }
 
     bool recreateVertexArrays = false;

@@ -519,7 +519,8 @@ private slots:
             // when you come to delete the context.
             QGLContextPrivate::unbindPixmapFromTexture(boundPixmap);
             glDeleteTextures(1, &id);
-            oldContext->makeCurrent();
+            if (oldContext)
+                oldContext->makeCurrent();
             return;
         }
 #endif

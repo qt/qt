@@ -774,7 +774,7 @@ QAInterface QAccessibleHierarchyManager::lookup(const AXUIElementRef &element)
     return factory->interface(id);
 #else
     return QAInterface();
-#endif;
+#endif
 }
 
 QAInterface QAccessibleHierarchyManager::lookup(const QAElement &element)

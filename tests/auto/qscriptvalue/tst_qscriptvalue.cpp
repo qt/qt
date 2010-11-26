@@ -1254,6 +1254,10 @@ void tst_QScriptValue::toVariant()
         QCOMPARE(number.toVariant(), QVariant(123.0));
         QCOMPARE(qscriptvalue_cast<QVariant>(number), QVariant(123.0));
 
+        QScriptValue intNumber = QScriptValue(&eng, (qint32)123);
+        QCOMPARE(intNumber.toVariant().type(), QVariant((qint32)123).type());
+        QCOMPARE((qscriptvalue_cast<QVariant>(number)).type(), QVariant((qint32)123).type());
+
         QScriptValue falskt = QScriptValue(&eng, false);
         QCOMPARE(falskt.toVariant(), QVariant(false));
         QCOMPARE(qscriptvalue_cast<QVariant>(falskt), QVariant(false));

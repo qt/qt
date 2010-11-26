@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the qmake application of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,29 +39,30 @@
 **
 ****************************************************************************/
 
-#ifndef SYMBIAN_EPOCROOT_H
-#define SYMBIAN_EPOCROOT_H
+#include "qmeegoswitchevent.h"
 
-#include <QtCore/qstring.h>
+static int switchEventNumber = -1;
 
-/**
- * Determine the epoc root for the currently active SDK.
- *
- * The algorithm used is as follows:
- * 1. If environment variable EPOCROOT is set and points to an existent
- *    directory, this is returned.
- * 2. The location of devices.xml is specified by a registry key.  If this
- *    file exists, it is parsed.
- * 3. If the EPOCDEVICE environment variable is set and a corresponding
- *    entry is found in devices.xml, and its epocroot value points to an
- *    existent directory, it is returned.
- * 4. If a device element marked as default is found in devices.xml and its
- *    epocroot value points to an existent directory, this is returned.
- * 5. An empty string is returned.
- *
- * Any return value other than the empty string therefore is guaranteed to
- * point to an existent directory.
- */
-QString epocRoot();
+QMeeGoSwitchEvent::QMeeGoSwitchEvent(const QString &graphicsSystemName, QMeeGoSwitchEvent::State s) : QEvent(QMeeGoSwitchEvent::eventNumber())
+{
+    name = graphicsSystemName;
+    switchState = s;
+}
 
-#endif // EPOCROOT_H
+QString QMeeGoSwitchEvent::graphicsSystemName() const
+{
+    return name;
+}
+
+QMeeGoSwitchEvent::State QMeeGoSwitchEvent::state() const
+{
+    return switchState;
+}
+
+QEvent::Type QMeeGoSwitchEvent::eventNumber()
+{
+    if (switchEventNumber < 0)
+        switchEventNumber = QEvent::registerEventType();
+
+    return (QEvent::Type) switchEventNumber;
+}

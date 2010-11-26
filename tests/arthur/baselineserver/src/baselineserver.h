@@ -100,8 +100,7 @@ public:
     BaselineHandler(int socketDescriptor = -1);
     void testPathMapping();
 
-    static QString updateAllBaselines(const QString &host, const QString &id,
-                                      const QString &engine, const QString &format);
+    static QString clearAllBaselines(const QString &context);
     static QString updateSingleBaseline(const QString &oldBaseline, const QString &newBaseline);
     static QString blacklistTest(const QString &context, const QString &itemId, bool removeFromBlacklist = false);
 
