@@ -147,9 +147,11 @@ void tst_qmlvisual::visual()
 
     QProcess p;
     p.start(qmlruntime, arguments);
-    QVERIFY(p.waitForFinished());
+    bool finished = p.waitForFinished();
+    QByteArray output = p.readAllStandardOutput() + p.readAllStandardError();
+    QVERIFY2(finished, output.data());
     if (p.exitCode() != 0)
-        qDebug() << p.readAllStandardError();
+        qDebug() << output;
     QCOMPARE(p.exitStatus(), QProcess::NormalExit);
     QCOMPARE(p.exitCode(), 0);
 }

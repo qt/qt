@@ -3417,7 +3417,7 @@ void Configure::displayConfig()
         QString webkit = dictionary[ "WEBKIT" ];
         if (webkit == "debug")
             webkit = "yes (debug)";
-        cout << "WebKit support.............." << webkit;
+        cout << "WebKit support.............." << webkit << endl;
     }
     cout << "Declarative support........." << dictionary[ "DECLARATIVE" ] << endl;
     cout << "Declarative debugging......." << dictionary[ "DECLARATIVE_DEBUG" ] << endl;
