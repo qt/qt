@@ -180,7 +180,6 @@ bool QHttpNetworkConnectionChannel::sendRequest()
         reply->d_func()->autoDecompress = request.d->autoDecompress;
         reply->d_func()->pipeliningUsed = false;
 
-        pendingEncrypt = false;
         // if the url contains authentication parameters, use the new ones
         // both channels will use the new authentication parameters
         if (!request.url().userInfo().isEmpty() && request.withCredentials()) {
@@ -1019,6 +1018,7 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
     if (!socket)
         return; // ### error
     state = QHttpNetworkConnectionChannel::IdleState;
+    pendingEncrypt = false;
     sendRequest();
 }
 

@@ -85,6 +85,9 @@ public:
         MaximumDownloadBufferSizeAttribute, // internal
         DownloadBufferAttribute, // internal
 
+        // (DownloadBufferAttribute + 1) is reserved internal for QSynchronousHttpNetworkReply
+        // add the enum in 4.8
+
         User = 1000,
         UserMax = 32767
     };
