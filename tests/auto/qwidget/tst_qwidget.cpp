@@ -10691,7 +10691,7 @@ void tst_QWidget::nativeChildFocus()
     QTest::qWaitForWindowShown(&w);
 
     QCOMPARE(QApplication::activeWindow(), &w);
-    QCOMPARE(QApplication::focusWidget(), p1);
+    QCOMPARE(QApplication::focusWidget(), static_cast<QWidget*>(p1));
 }
 
 QTEST_MAIN(tst_QWidget)
