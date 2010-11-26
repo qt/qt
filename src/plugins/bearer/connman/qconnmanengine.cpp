@@ -726,6 +726,7 @@ void QConnmanEngine::addNetworkConfiguration(const QString &networkPath)
 
     if(servicePath.isEmpty()) {
         id = QString::number(qHash(networkPath));
+        serv = 0; // ### FIXME
     } else {
         id = QString::number(qHash(servicePath));
         serv = new QConnmanServiceInterface(servicePath,this);
