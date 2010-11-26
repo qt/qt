@@ -98,10 +98,12 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     }
     Q_ASSERT(platformWindow);
 
-    if (!surface && platformWindow && q->platformWindowFormat().hasWindowSurface()) {
-        surface = QApplicationPrivate::platformIntegration()->createWindowSurface(q,platformWindow->winId());
-    } else {
-        q->setAttribute(Qt::WA_PaintOnScreen,true);
+    if (!surface ) {
+        if (platformWindow && q->platformWindowFormat().hasWindowSurface()) {
+            surface = QApplicationPrivate::platformIntegration()->createWindowSurface(q,platformWindow->winId());
+        } else {
+            q->setAttribute(Qt::WA_PaintOnScreen,true);
+        }
     }
 
     data.window_flags = q->platformWindow()->setWindowFlags(data.window_flags);
@@ -787,13 +789,13 @@ void QWidgetPrivate::createTLSysExtra()
 void QWidgetPrivate::deleteTLSysExtra()
 {
     if (extra && extra->topextra) {
-        if (extra->topextra->platformWindowFormat.windowApi() == QPlatformWindowFormat::OpenGL) {
-            //the toplevel might have a context with a "qglcontext assosiated with it. We need to
-            //delete the qglcontext before we delete the qplatformglcontext.
-            if (extra->topextra->platformWindow) {
-                if (QPlatformGLContext *context = extra->topextra->platformWindow->glContext()) {
-                    context->deleteQGLContext();
-                }
+        //the toplevel might have a context with a "qglcontext assosiated with it. We need to
+        //delete the qglcontext before we delete the qplatformglcontext.
+        //One unfortunate thing about this is that we potentially create a glContext just to
+        //delete it straight afterwards.
+        if (extra->topextra->platformWindow) {
+            if (QPlatformGLContext *context = extra->topextra->platformWindow->glContext()) {
+                context->deleteQGLContext();
             }
         }
         delete extra->topextra->platformWindow;

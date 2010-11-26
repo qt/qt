@@ -180,7 +180,11 @@ void QPlatformGLContext::setQGLContextHandle(void *handle,void (*qGLContextDelet
 void QPlatformGLContext::deleteQGLContext()
 {
     Q_D(QPlatformGLContext);
-    d->qGLContextDeleteFunction(d->qGLContextHandle);
+    if (d->qGLContextDeleteFunction && d->qGLContextHandle) {
+        d->qGLContextDeleteFunction(d->qGLContextHandle);
+        d->qGLContextDeleteFunction = 0;
+        d->qGLContextHandle = 0;
+    }
 }
 
 /*!

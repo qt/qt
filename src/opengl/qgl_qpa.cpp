@@ -129,11 +129,7 @@ void qDeleteQGLContext(void *handle)
 bool QGLContext::chooseContext(const QGLContext* shareContext)
 {
     Q_D(QGLContext);
-    if (d->platformContext && !d->platformContext->qGLContextHandle()) {
-        d->platformContext->setQGLContextHandle(this,qDeleteQGLContext);
-        d->glFormat = QGLFormat::fromPlatformWindowFormat(d->platformContext->platformWindowFormat());
-        d->valid = true;
-    }else if(!d->paintDevice || d->paintDevice->devType() != QInternal::Widget) {
+    if(!d->paintDevice || d->paintDevice->devType() != QInternal::Widget) {
         d->valid = false;
     }else {
         QWidget *widget = static_cast<QWidget *>(d->paintDevice);
@@ -157,6 +153,18 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         }
     }
 
+    if (d->valid) {
+        QPlatformGLContext *sharedPlatformGLContext = d->platformContext->platformWindowFormat().sharedGLContext();
+        if (sharedPlatformGLContext) {
+            QGLContext *actualSharedContext = QGLContext::fromPlatformGLContext(sharedPlatformGLContext);
+            if (actualSharedContext == shareContext) {
+                d->sharing = true;//Will add combination in QGLContext::create
+            }else {
+                QGLContextGroup::addShare(this,actualSharedContext);
+            }
+        }
+    }
+
     return d->valid;
 }
 
@@ -173,13 +181,15 @@ void QGLContext::reset()
     d->transpColor = QColor();
     d->initDone = false;
     QGLContextGroup::removeShare(this);
+    if (d->platformContext) {
+        d->platformContext->setQGLContextHandle(0,0);
+    }
 }
 
 void QGLContext::makeCurrent()
 {
     Q_D(QGLContext);
     d->platformContext->makeCurrent();
-    QGLContextPrivate::setCurrentContext(this);
 
     if (!d->workaroundsCached) {
         d->workaroundsCached = true;
@@ -195,7 +205,6 @@ void QGLContext::doneCurrent()
 {
     Q_D(QGLContext);
     d->platformContext->doneCurrent();
-    QGLContextPrivate::setCurrentContext(0);
 }
 
 void QGLContext::swapBuffers() const
@@ -279,6 +288,8 @@ QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
     d->widget->setGeometry(0,0,3,3);
     QPlatformWindowFormat format = d->widget->platformWindowFormat();
     format.setWindowApi(QPlatformWindowFormat::OpenGL);
+    format.setWindowSurface(false);
+    d->widget->setPlatformWindowFormat(format);
     d->widget->winId();
 
     d->widget->platformWindow()->glContext()->makeCurrent();
@@ -360,6 +371,13 @@ void QGLWidget::setColormap(const QGLColormap & c)
     Q_UNUSED(c);
 }
 
+QGLContext::QGLContext(QPlatformGLContext *platformContext)
+    : d_ptr(new QGLContextPrivate(this))
+{
+    Q_D(QGLContext);
+    d->init(0,QGLFormat::fromPlatformWindowFormat(platformContext->platformWindowFormat()));
+    d->platformContext = platformContext;
+}
 
 QGLContext *QGLContext::fromPlatformGLContext(QPlatformGLContext *platformContext)
 {
@@ -378,6 +396,5 @@ QGLContext *QGLContext::fromPlatformGLContext(QPlatformGLContext *platformContex
 
     return glContext;
 }
-
 
 QT_END_NAMESPACE

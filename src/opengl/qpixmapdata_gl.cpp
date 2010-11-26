@@ -58,7 +58,7 @@
 
 QT_BEGIN_NAMESPACE
 
-extern QGLWidget* qt_gl_share_widget();
+extern const QGLContext* qt_gl_share_context();
 
 /*!
     \class QGLFramebufferObjectPool
@@ -261,14 +261,14 @@ QGLPixmapData::QGLPixmapData(PixelType type)
 
 QGLPixmapData::~QGLPixmapData()
 {
-    QGLWidget *shareWidget = qt_gl_share_widget();
-    if (!shareWidget)
+    const QGLContext *shareContext = qt_gl_share_context();
+    if (!shareContext)
         return;
 
     delete m_engine;
 
     if (m_texture.id) {
-        QGLShareContextScope ctx(shareWidget->context());
+        QGLShareContextScope ctx(shareContext);
         glDeleteTextures(1, &m_texture.id);
     }
 }
@@ -288,7 +288,7 @@ bool QGLPixmapData::isValidContext(const QGLContext *ctx) const
     if (ctx == m_ctx)
         return true;
 
-    const QGLContext *share_ctx = qt_gl_share_widget()->context();
+    const QGLContext *share_ctx = qt_gl_share_context();
     return ctx == share_ctx || QGLContext::areSharing(ctx, share_ctx);
 }
 
@@ -308,7 +308,7 @@ void QGLPixmapData::resize(int width, int height)
     d = pixelType() == QPixmapData::PixmapType ? 32 : 1;
 
     if (m_texture.id) {
-        QGLShareContextScope ctx(qt_gl_share_widget()->context());
+        QGLShareContextScope ctx(qt_gl_share_context());
         glDeleteTextures(1, &m_texture.id);
         m_texture.id = 0;
     }
@@ -325,7 +325,7 @@ void QGLPixmapData::ensureCreated() const
 
     m_dirty = false;
 
-    QGLShareContextScope ctx(qt_gl_share_widget()->context());
+    QGLShareContextScope ctx(qt_gl_share_context());
     m_ctx = ctx;
 
     const GLenum internal_format = m_hasAlpha ? GL_RGBA : GL_RGB;
@@ -399,7 +399,7 @@ void QGLPixmapData::fromImage(const QImage &image,
     d = m_source.depth();
 
     if (m_texture.id) {
-        QGLShareContextScope ctx(qt_gl_share_widget()->context());
+        QGLShareContextScope ctx(qt_gl_share_context());
         glDeleteTextures(1, &m_texture.id);
         m_texture.id = 0;
     }
@@ -420,7 +420,7 @@ bool QGLPixmapData::fromFile(const QString &filename, const char *format,
         resize(0, 0);
         data = file.readAll();
         file.close();
-        QGLShareContextScope ctx(qt_gl_share_widget()->context());
+        QGLShareContextScope ctx(qt_gl_share_context());
         QSize size = m_texture.bindCompressedTexture
             (data.constData(), data.size(), format);
         if (!size.isEmpty()) {
@@ -446,7 +446,7 @@ bool QGLPixmapData::fromData(const uchar *buffer, uint len, const char *format,
     const char *buf = reinterpret_cast<const char *>(buffer);
     if (m_texture.canBindCompressedTexture(buf, int(len), format, &alpha)) {
         resize(0, 0);
-        QGLShareContextScope ctx(qt_gl_share_widget()->context());
+        QGLShareContextScope ctx(qt_gl_share_context());
         QSize size = m_texture.bindCompressedTexture(buf, int(len), format);
         if (!size.isEmpty()) {
             w = size.width();
@@ -479,7 +479,7 @@ void QGLPixmapData::copy(const QPixmapData *data, const QRect &rect)
 
     const QGLPixmapData *other = static_cast<const QGLPixmapData *>(data);
     if (other->m_renderFbo) {
-        QGLShareContextScope ctx(qt_gl_share_widget()->context());
+        QGLShareContextScope ctx(qt_gl_share_context());
 
         resize(rect.width(), rect.height());
         m_hasAlpha = other->m_hasAlpha;
@@ -593,7 +593,7 @@ QImage QGLPixmapData::toImage() const
         ensureCreated();
     }
 
-    QGLShareContextScope ctx(qt_gl_share_widget()->context());
+    QGLShareContextScope ctx(qt_gl_share_context());
     glBindTexture(GL_TEXTURE_2D, m_texture.id);
     return qt_gl_read_texture(QSize(w, h), true, true);
 }
@@ -617,7 +617,7 @@ void QGLPixmapData::copyBackFromRenderFbo(bool keepCurrentFboBound) const
 
     m_hasFillColor = false;
 
-    const QGLContext *share_ctx = qt_gl_share_widget()->context();
+    const QGLContext *share_ctx = qt_gl_share_context();
     QGLShareContextScope ctx(share_ctx);
 
     ensureCreated();
@@ -672,8 +672,8 @@ QPaintEngine* QGLPixmapData::paintEngine() const
         extern QGLWidget* qt_gl_share_widget();
 
         if (!QGLContext::currentContext())
-            qt_gl_share_widget()->makeCurrent();
-        QGLShareContextScope ctx(qt_gl_share_widget()->context());
+            const_cast<QGLContext *>(qt_gl_share_context())->makeCurrent();
+        QGLShareContextScope ctx(qt_gl_share_context());
 
         QGLFramebufferObjectFormat format;
         format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);

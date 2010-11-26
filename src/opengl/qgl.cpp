@@ -2095,14 +2095,6 @@ QGLContext::QGLContext(const QGLFormat &format)
     d->init(0, format);
 }
 
-QGLContext::QGLContext(QPlatformGLContext *platformContext)
-    : d_ptr(new QGLContextPrivate(this))
-{
-    Q_D(QGLContext);
-    d->init(0,QGLFormat::fromPlatformWindowFormat(platformContext->platformWindowFormat()));
-    d->platformContext = platformContext;
-}
-
 /*!
     Destroys the OpenGL context and frees its resources.
 */
@@ -3788,7 +3780,13 @@ QGLWidget::QGLWidget(QWidget *parent, const QGLWidget* shareWidget, Qt::WindowFl
     setAttribute(Qt::WA_NoSystemBackground);
     setAutoFillBackground(true); // for compatibility
 #ifdef Q_WS_QPA
-    setPlatformWindowFormat(QGLFormat::toPlatformWindowFormat(QGLFormat::defaultFormat()));
+    QPlatformWindowFormat platformFormat = QGLFormat::toPlatformWindowFormat(QGLFormat::defaultFormat());
+    platformFormat.setUseDefaultSharedContext(false);
+    if (shareWidget && shareWidget->d_func()->glcx) {
+        QPlatformGLContext *sharedPlatformContext = shareWidget->d_func()->glcx->d_func()->platformContext;
+        platformFormat.setSharedContext(sharedPlatformContext);
+    }
+    setPlatformWindowFormat(platformFormat);
     winId(); // create window;
     QGLContext *glContext = 0;
     if (platformWindow())
@@ -3839,7 +3837,13 @@ QGLWidget::QGLWidget(const QGLFormat &format, QWidget *parent, const QGLWidget* 
     setAttribute(Qt::WA_NoSystemBackground);
     setAutoFillBackground(true); // for compatibility
 #ifdef Q_WS_QPA
-    setPlatformWindowFormat(QGLFormat::toPlatformWindowFormat(QGLFormat::defaultFormat()));
+    QPlatformWindowFormat platformFormat = QGLFormat::toPlatformWindowFormat(format);
+    platformFormat.setUseDefaultSharedContext(false);
+    if (shareWidget && shareWidget->d_func()->glcx) {
+        QPlatformGLContext *sharedPlatformContext = shareWidget->d_func()->glcx->d_func()->platformContext;
+        platformFormat.setSharedContext(sharedPlatformContext);
+    }
+    setPlatformWindowFormat(platformFormat);
     winId(); // create window;
     QGLContext *glContext = 0;
     if (platformWindow())

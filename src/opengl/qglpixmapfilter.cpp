@@ -125,7 +125,7 @@ protected:
     bool processGL(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF &srcRect) const;
 };
 
-extern QGLWidget *qt_gl_share_widget();
+extern const QGLContext *qt_gl_share_context();
 
 QPixmapFilter *QGL2PaintEngineEx::pixmapFilter(int type, const QPixmapFilter *prototype)
 {

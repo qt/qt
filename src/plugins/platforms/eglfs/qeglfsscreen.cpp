@@ -202,7 +202,9 @@ void QEglFSScreen::createAndSetPlatformContext()
     attribList[temp++] = 2; // GLES version 2
     attribList[temp++] = EGL_NONE;
 
-    m_platformContext = new QEGLPlatformContext(m_dpy,config,attribList,m_surface,EGL_OPENGL_ES_API);
+    QEGLPlatformContext *platformContext = new QEGLPlatformContext(m_dpy,config,attribList,m_surface,EGL_OPENGL_ES_API);
+    platformContext->makeDefaultSaredContext();
+    m_platformContext = platformContext;
 
     EGLint w,h;                    // screen size detection
     eglQuerySurface(m_dpy, m_surface, EGL_WIDTH, &w);
