@@ -236,9 +236,10 @@ void QKqueueFileSystemWatcherEngine::run()
     static const struct timespec ZeroTimeout = { 0, 0 };
 
     forever {
+        int r;
         struct kevent kev;
         DEBUG() << "QKqueueFileSystemWatcherEngine: waiting for kevents...";
-        int r = kevent(kqfd, 0, 0, &kev, 1, 0);
+        EINTR_LOOP(r, kevent(kqfd, 0, 0, &kev, 1, 0));
         if (r < 0) {
             perror("QKqueueFileSystemWatcherEngine: error during kevent wait");
             return;
