@@ -237,8 +237,6 @@ void QKqueueFileSystemWatcherEngine::stop()
 
 void QKqueueFileSystemWatcherEngine::run()
 {
-    static const struct timespec ZeroTimeout = { 0, 0 };
-
     forever {
         int r;
         struct kevent kev;
@@ -247,10 +245,7 @@ void QKqueueFileSystemWatcherEngine::run()
         if (r < 0) {
             perror("QKqueueFileSystemWatcherEngine: error during kevent wait");
             return;
-        }
-
-        QMutexLocker locker(&mutex);
-        do {
+        } else {
             int fd = kev.ident;
 
             DEBUG() << "QKqueueFileSystemWatcherEngine: processing kevent" << kev.ident << kev.filter;
@@ -282,6 +277,8 @@ void QKqueueFileSystemWatcherEngine::run()
                     break;
                 }
             } else {
+                QMutexLocker locker(&mutex);
+
                 int id = fd;
                 QString path = idToPath.value(id);
                 if (path.isEmpty()) {
@@ -290,12 +287,12 @@ void QKqueueFileSystemWatcherEngine::run()
                     path = idToPath.value(id);
                     if (path.isEmpty()) {
                         DEBUG() << "QKqueueFileSystemWatcherEngine: received a kevent for a file we're not watching";
-                        goto process_next_event;
+                        continue;
                     }
                 }
                 if (kev.filter != EVFILT_VNODE) {
                     DEBUG() << "QKqueueFileSystemWatcherEngine: received a kevent with the wrong filter";
-                    goto process_next_event;
+                    continue;
                 }
 
                 if ((kev.fflags & (NOTE_DELETE | NOTE_REVOKE | NOTE_RENAME)) != 0) {
@@ -318,11 +315,7 @@ void QKqueueFileSystemWatcherEngine::run()
                         emit fileChanged(path, false);
                 }
             }
-
-            // are there any more?
-process_next_event:
-            r = kevent(kqfd, 0, 0, &kev, 1, &ZeroTimeout);
-        } while (r > 0);
+        }
     }
 }
 
