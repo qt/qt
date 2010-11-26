@@ -42,7 +42,7 @@
 #ifndef QDECLARATIVEDEBUGSERVERCONNECTION_H
 #define QDECLARATIVEDEBUGSERVERCONNECTION_H
 
-#include <private/qdeclarativeglobal_p.h>
+#include <QtDeclarative/private/qdeclarativeglobal_p.h>
 
 QT_BEGIN_HEADER
 
@@ -50,16 +50,21 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QDeclarativeDebugServerConnection
+class QDeclarativeDebugServer;
+class Q_DECLARATIVE_EXPORT QDeclarativeDebugServerConnection
 {
 public:
     QDeclarativeDebugServerConnection() {}
     virtual ~QDeclarativeDebugServerConnection() {}
 
+    virtual void setServer(QDeclarativeDebugServer *server) = 0;
+    virtual void setPort(int port, bool bock) = 0;
     virtual bool isConnected() const = 0;
     virtual void send(const QByteArray &message) = 0;
     virtual void disconnect() = 0;
 };
+
+Q_DECLARE_INTERFACE(QDeclarativeDebugServerConnection, "com.trolltech.Qt.QDeclarativeDebugServerConnection/1.0")
 
 QT_END_NAMESPACE
 

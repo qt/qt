@@ -39,20 +39,19 @@
 **
 ****************************************************************************/
 
-#include "qdeclarativedebugservertcpconnection_p.h"
-
-#include "qdeclarativedebugserver_p.h"
-#include "private/qpacketprotocol_p.h"
+#include "qtcpserverconnection.h"
 
 #include <QtNetwork/qtcpserver.h>
 #include <QtNetwork/qtcpsocket.h>
 
+#include <private/qdeclarativedebugserver_p.h>
+#include <private/qpacketprotocol_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeDebugServerTcpConnectionPrivate {
+class QTcpServerConnectionPrivate {
 public:
-    QDeclarativeDebugServerTcpConnectionPrivate();
+    QTcpServerConnectionPrivate();
 
     int port;
     QTcpSocket *socket;
@@ -62,7 +61,7 @@ public:
     QDeclarativeDebugServer *debugServer;
 };
 
-QDeclarativeDebugServerTcpConnectionPrivate::QDeclarativeDebugServerTcpConnectionPrivate() :
+QTcpServerConnectionPrivate::QTcpServerConnectionPrivate() :
     port(0),
     socket(0),
     protocol(0),
@@ -71,29 +70,32 @@ QDeclarativeDebugServerTcpConnectionPrivate::QDeclarativeDebugServerTcpConnectio
 {
 }
 
-QDeclarativeDebugServerTcpConnection::QDeclarativeDebugServerTcpConnection(int port, QDeclarativeDebugServer *server) :
-    QObject(server),
-    d_ptr(new QDeclarativeDebugServerTcpConnectionPrivate)
+QTcpServerConnection::QTcpServerConnection() :
+    d_ptr(new QTcpServerConnectionPrivate)
 {
-    Q_D(QDeclarativeDebugServerTcpConnection);
-    d->port = port;
-    d->debugServer = server;
+
 }
 
-QDeclarativeDebugServerTcpConnection::~QDeclarativeDebugServerTcpConnection()
+QTcpServerConnection::~QTcpServerConnection()
 {
     delete d_ptr;
 }
 
-bool QDeclarativeDebugServerTcpConnection::isConnected() const
+void QTcpServerConnection::setServer(QDeclarativeDebugServer *server)
 {
-    Q_D(const QDeclarativeDebugServerTcpConnection);
+    Q_D(QTcpServerConnection);
+    d->debugServer = server;
+}
+
+bool QTcpServerConnection::isConnected() const
+{
+    Q_D(const QTcpServerConnection);
     return d->socket && d->socket->state() == QTcpSocket::ConnectedState;
 }
 
-void QDeclarativeDebugServerTcpConnection::send(const QByteArray &message)
+void QTcpServerConnection::send(const QByteArray &message)
 {
-    Q_D(QDeclarativeDebugServerTcpConnection);
+    Q_D(QTcpServerConnection);
 
     if (!isConnected())
         return;
@@ -105,9 +107,9 @@ void QDeclarativeDebugServerTcpConnection::send(const QByteArray &message)
     d->socket->flush();
 }
 
-void QDeclarativeDebugServerTcpConnection::disconnect()
+void QTcpServerConnection::disconnect()
 {
-    Q_D(QDeclarativeDebugServerTcpConnection);
+    Q_D(QTcpServerConnection);
 
     delete d->protocol;
     d->protocol = 0;
@@ -115,9 +117,19 @@ void QDeclarativeDebugServerTcpConnection::disconnect()
     d->socket = 0;
 }
 
-void QDeclarativeDebugServerTcpConnection::listen()
+void QTcpServerConnection::setPort(int port, bool block)
 {
-    Q_D(QDeclarativeDebugServerTcpConnection);
+    Q_D(QTcpServerConnection);
+    d->port = port;
+
+    listen();
+    if (block)
+        d->tcpServer->waitForNewConnection(-1);
+}
+
+void QTcpServerConnection::listen()
+{
+    Q_D(QTcpServerConnection);
 
     d->tcpServer = new QTcpServer(this);
     QObject::connect(d->tcpServer, SIGNAL(newConnection()), this, SLOT(newConnection()));
@@ -127,27 +139,22 @@ void QDeclarativeDebugServerTcpConnection::listen()
         qWarning("QDeclarativeDebugServer: Unable to listen on port %d", d->port);
 }
 
-void QDeclarativeDebugServerTcpConnection::waitForConnection()
-{
-    Q_D(QDeclarativeDebugServerTcpConnection);
-    d->tcpServer->waitForNewConnection(-1);
-}
 
-void QDeclarativeDebugServerTcpConnection::readyRead()
+void QTcpServerConnection::readyRead()
 {
-    Q_D(QDeclarativeDebugServerTcpConnection);
+    Q_D(QTcpServerConnection);
     QPacket packet = d->protocol->read();
 
     QByteArray content = packet.data();
     d->debugServer->receiveMessage(content);
 }
 
-void QDeclarativeDebugServerTcpConnection::newConnection()
+void QTcpServerConnection::newConnection()
 {
-    Q_D(QDeclarativeDebugServerTcpConnection);
+    Q_D(QTcpServerConnection);
 
     if (d->socket) {
-        qWarning("QDeclarativeDebugServer error: another client is already connected");
+        qWarning("QDeclarativeDebugServer: Another client is already connected");
         QTcpSocket *faultyConnection = d->tcpServer->nextPendingConnection();
         delete faultyConnection;
         return;
@@ -160,4 +167,7 @@ void QDeclarativeDebugServerTcpConnection::newConnection()
 }
 
 
+Q_EXPORT_PLUGIN2(tcpserver, QTcpServerConnection)
+
 QT_END_NAMESPACE
+
