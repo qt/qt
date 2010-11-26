@@ -383,7 +383,9 @@ public:
 
     static const QGLContext* currentContext();
 
+#ifdef Q_WS_QPA
     static QGLContext *fromPlatformGLContext(QPlatformGLContext *platformContext);
+#endif
 protected:
     virtual bool chooseContext(const QGLContext* shareContext = 0);
 

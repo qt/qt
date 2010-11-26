@@ -3160,18 +3160,6 @@ void QGLContext::setDevice(QPaintDevice *pDev)
     }
 }
 
-QGLContext *QGLContext::fromPlatformGLContext(QPlatformGLContext *platformContext)
-{
-    if (!platformContext)
-        return 0;
-    if (platformContext->qGLContextHandle()) {
-        return reinterpret_cast<QGLContext *>(platformContext->qGLContextHandle());
-    }
-    QGLContext *glContext = new QGLContext(platformContext);
-    glContext->create();
-    return glContext;
-}
-
 /*!
     \fn bool QGLContext::isValid() const
 

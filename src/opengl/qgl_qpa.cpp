@@ -360,4 +360,24 @@ void QGLWidget::setColormap(const QGLColormap & c)
     Q_UNUSED(c);
 }
 
+
+QGLContext *QGLContext::fromPlatformGLContext(QPlatformGLContext *platformContext)
+{
+    if (!platformContext)
+        return 0;
+    if (platformContext->qGLContextHandle()) {
+        return reinterpret_cast<QGLContext *>(platformContext->qGLContextHandle());
+    }
+    QGLContext *glContext = new QGLContext(platformContext);
+    //Dont call create on context. This can cause the platformFormat to be set on the widget, which
+    //will cause the platformWindow to be recreated.
+    glContext->d_func()->platformContext->setQGLContextHandle(glContext,qDeleteQGLContext);
+    QGLFormat format = QGLFormat::fromPlatformWindowFormat(platformContext->platformWindowFormat());
+    glContext->d_func()->glFormat = format;
+    glContext->d_func()->valid = true;
+
+    return glContext;
+}
+
+
 QT_END_NAMESPACE
