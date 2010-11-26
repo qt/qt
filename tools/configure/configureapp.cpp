@@ -3342,7 +3342,7 @@ void Configure::generateConfigfiles()
     if (tmpFile3.open()) {
         tmpStream.setDevice(&tmpFile3);
         tmpStream << "/* Evaluation license key */" << endl
-                  << "static const char qt_eval_key_data              [512 + 12] = \"qt_qevalkey=" << licenseInfo["LICENSEKEYEXT"] << "\";" << endl;
+                  << "static const volatile char qt_eval_key_data              [512 + 12] = \"qt_qevalkey=" << licenseInfo["LICENSEKEYEXT"] << "\";" << endl;
 
         tmpStream.flush();
         tmpFile3.flush();

@@ -63,6 +63,8 @@ Q_OBJECT
 public:
     tst_Lancelot();
 
+    static bool simfail;
+
 private:
     ImageItem render(const ImageItem &item);
     void paint(QPaintDevice *device, const QStringList &script, const QString &filePath);
@@ -90,6 +92,8 @@ private slots:
     void testOpenGL();
 #endif
 };
+
+bool tst_Lancelot::simfail = false;
 
 tst_Lancelot::tst_Lancelot()
 {
@@ -290,12 +294,38 @@ void tst_Lancelot::paint(QPaintDevice *device, const QStringList &script, const 
 {
     QPainter p(device);
     PaintCommands pcmd(script, 800, 800);
+    //pcmd.setShouldDrawText(false);
     pcmd.setType(ImageType);
     pcmd.setPainter(&p);
     pcmd.setFilePath(filePath);
     pcmd.runCommands();
     p.end();
+
+    if (simfail) {
+        QPainter p2(device);
+        p2.setPen(QPen(QBrush(Qt::cyan), 3, Qt::DashLine));
+        p2.drawLine(200, 200, 600, 600);
+        p2.drawLine(600, 200, 200, 600);
+        simfail = false;
+    }
 }
 
+#define main rmain
 QTEST_MAIN(tst_Lancelot)
+#undef main
+
+int main(int argc, char *argv[])
+{
+    char *fargv[20];
+    int fargc = 0;
+    for (int i = 0; i < qMin(argc, 19); i++) {
+        if (!qstrcmp(argv[i], "-simfail"))
+            tst_Lancelot::simfail = true;
+        else
+            fargv[fargc++] = argv[i];
+    }
+    fargv[fargc] = 0;
+    return rmain(fargc, fargv);
+}
+
 #include "tst_lancelot.moc"

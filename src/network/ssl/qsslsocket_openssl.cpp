@@ -736,7 +736,7 @@ void CSymbianCertificateRetriever::RunL()
         if (iStatus.Int() == KErrNone)
             iCertificates->append(iCertificateData);
         else
-            qWarning() << "CSymbianCertificateRetriever: failed to retreive a certificate, error " << iStatus.Int();
+            qWarning() << "CSymbianCertificateRetriever: failed to retrieve a certificate, error " << iStatus.Int();
         GetCertificateL();
         break;
     }

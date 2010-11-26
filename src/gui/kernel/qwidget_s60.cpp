@@ -57,7 +57,7 @@
 #include <eikbtgpc.h>
 #endif
 
-// This is necessary in order to be able to perform delayed invokation on slots
+// This is necessary in order to be able to perform delayed invocation on slots
 // which take arguments of type WId.  One example is
 // QWidgetPrivate::_q_delayedDestroy, which is used to delay destruction of
 // CCoeControl objects until after the CONE event handler has finished running.

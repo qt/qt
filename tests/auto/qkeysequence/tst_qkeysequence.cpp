@@ -415,7 +415,7 @@ void tst_QKeySequence::mnemonic()
 
 #ifndef QT_NO_DEBUG
     if (warning) {
-        QString str = QString::fromLatin1("QKeySequence::mnemonic: \"%1\" contains multiple occurences of '&'").arg(string);
+        QString str = QString::fromLatin1("QKeySequence::mnemonic: \"%1\" contains multiple occurrences of '&'").arg(string);
         QTest::ignoreMessage(QtWarningMsg, qPrintable(str));
     //    qWarning(qPrintable(str));
     }

@@ -1136,7 +1136,7 @@ void QX11EmbedContainer::paintEvent(QPaintEvent *)
 
 /*! \internal
 
-    Returns wether or not the windows' embedded flag is set.
+    Returns whether or not the windows' embedded flag is set.
 */
 bool QX11EmbedContainerPrivate::isEmbedded() const
 {

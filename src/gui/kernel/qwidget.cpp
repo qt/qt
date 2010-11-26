@@ -8861,7 +8861,7 @@ void QWidget::mousePressEvent(QMouseEvent *event)
         QWidget* w;
         while ((w = QApplication::activePopupWidget()) && w != this){
             w->close();
-            if (QApplication::activePopupWidget() == w) // widget does not want to dissappear
+            if (QApplication::activePopupWidget() == w) // widget does not want to disappear
                 w->hide(); // hide at least
         }
         if (!rect().contains(event->pos())){
@@ -9330,7 +9330,7 @@ void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
 #ifndef QT_NO_IM
     Q_D(QWidget);
     d->imHints = hints;
-    // Optimisation to update input context only it has already been created.
+    // Optimization to update input context only it has already been created.
     if (d->ic || qApp->d_func()->inputContext) {
         QInputContext *ic = inputContext();
         if (ic)

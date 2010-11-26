@@ -106,6 +106,8 @@ private slots:
     void adoptMultipleThreads();
 
     void QTBUG13810_exitAndStart();
+    void QTBUG15378_exitAndExec();
+
     void connectThreadFinishedSignalToObjectDeleteLaterSlot();
     void wait2();
     void wait3_slowDestructor();
@@ -980,6 +982,43 @@ void tst_QThread::QTBUG13810_exitAndStart()
     QCOMPARE(sync1.m_prop, 89);
 }
 
+void tst_QThread::QTBUG15378_exitAndExec()
+{
+    class Thread : public QThread {
+    public:
+        QSemaphore sem1;
+        QSemaphore sem2;
+        volatile int value;
+        void run() {
+            sem1.acquire();
+            value = exec();  //First entrence
+            sem2.release();
+            value = exec(); // Second loop
+        }
+    };
+    Thread thread;
+    thread.value = 0;
+    thread.start();
+    thread.exit(556);
+    thread.sem1.release(); //should exit the first loop
+    thread.sem2.acquire();
+    int v = thread.value;
+    QCOMPARE(v, 556);
+    
+    //test that the thread is running by executing queued connected signal there
+    Syncronizer sync1;
+    sync1.moveToThread(&thread);
+    Syncronizer sync2;
+    sync2.moveToThread(&thread);
+    connect(&sync2, SIGNAL(propChanged(int)), &sync1, SLOT(setProp(int)), Qt::QueuedConnection);
+    connect(&sync1, SIGNAL(propChanged(int)), &thread, SLOT(quit()), Qt::QueuedConnection);
+    QMetaObject::invokeMethod(&sync2, "setProp", Qt::QueuedConnection , Q_ARG(int, 89));
+    QTest::qWait(50);
+    while(!thread.wait(10))
+        QTest::qWait(10);
+    QCOMPARE(sync2.m_prop, 89);
+    QCOMPARE(sync1.m_prop, 89);
+}
 
 void tst_QThread::connectThreadFinishedSignalToObjectDeleteLaterSlot()
 {
@@ -1110,8 +1149,6 @@ void tst_QThread::startFinishRace()
         QCOMPARE(thr.i, 0);
     }
 }
-
-
 
 QTEST_MAIN(tst_QThread)
 #include "tst_qthread.moc"

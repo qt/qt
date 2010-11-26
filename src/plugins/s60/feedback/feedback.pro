@@ -6,7 +6,7 @@ QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/s60/feedback
 
 INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
 
-contains(S60_VERSION, 5.0)|contains(S60_VERSION, symbian3) {
+!contains(S60_VERSION, 3.1):!contains(S60_VERSION, 3.2) {
     HEADERS += qtactileFeedback.h
     SOURCES += qtactileFeedback_s60.cpp
 
