@@ -97,7 +97,6 @@ QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
     XVisualInfo visualInfo;
     XVisualInfo *vi;
     int numVisuals;
-    EGLint id = 0;
 
     visualInfo.visualid = QEgl::getCompatibleVisualId(config);
     vi = XGetVisualInfo(X11->display, VisualIDMask, &visualInfo, &numVisuals);
