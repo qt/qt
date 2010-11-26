@@ -157,7 +157,7 @@ QStringList QKqueueFileSystemWatcherEngine::addPaths(const QStringList &paths,
         EV_SET(&kev,
                fd,
                EVFILT_VNODE,
-               EV_ADD | EV_ENABLE | EV_ONESHOT,
+               EV_ADD | EV_ENABLE | EV_CLEAR,
                NOTE_DELETE | NOTE_WRITE | NOTE_EXTEND | NOTE_ATTRIB | NOTE_RENAME | NOTE_REVOKE,
                0,
                0);
@@ -315,24 +315,12 @@ void QKqueueFileSystemWatcherEngine::run()
                     else
                         emit fileChanged(path, true);
                 } else {
-                    DEBUG() << path << "changed, re-enabling watch";
+                    DEBUG() << path << "changed";
 
                     if (id < 0)
                         emit directoryChanged(path, false);
                     else
                         emit fileChanged(path, false);
-
-                    // renable the watch
-                    EV_SET(&kev,
-                           fd,
-                           EVFILT_VNODE,
-                           EV_ADD | EV_ENABLE | EV_ONESHOT,
-                           NOTE_DELETE | NOTE_WRITE | NOTE_EXTEND | NOTE_ATTRIB | NOTE_RENAME | NOTE_REVOKE,
-                           0,
-                           0);
-                    if (kevent(kqfd, &kev, 1, 0, 0, 0) == -1) {
-                        perror("QKqueueFileSystemWatcherEngine::processKqueueEvents: kevent EV_ADD");
-                    }
                 }
             }
 
