@@ -42,9 +42,10 @@
 #include "private/qdeclarativedebugserver_p.h"
 #include "private/qdeclarativedebugservice_p.h"
 #include "private/qdeclarativedebugservice_p_p.h"
-#include "private/qdeclarativedebugservertcpconnection_p.h"
 #include "private/qdeclarativeengine_p.h"
 
+#include <QtCore/QDir>
+#include <QtCore/QPluginLoader>
 #include <QtCore/QStringList>
 
 #include <private/qobject_p.h>
@@ -89,6 +90,8 @@ public:
     QHash<QString, QDeclarativeDebugService *> plugins;
     QStringList clientPlugins;
     bool gotHello;
+
+    static QDeclarativeDebugServerConnection *loadConnectionPlugin();
 };
 
 QDeclarativeDebugServerPrivate::QDeclarativeDebugServerPrivate() :
@@ -108,6 +111,36 @@ void QDeclarativeDebugServerPrivate::advertisePlugins()
         out << QString(QLatin1String("QDeclarativeDebugClient")) << 1 << plugins.keys();
     }
     connection->send(message);
+}
+
+QDeclarativeDebugServerConnection *QDeclarativeDebugServerPrivate::loadConnectionPlugin()
+{
+    QStringList pluginCandidates;
+    const QStringList paths = QCoreApplication::libraryPaths();
+    foreach (const QString &libPath, paths) {
+        const QDir dir(libPath + QLatin1String("/qmldebugging"));
+        if (dir.exists()) {
+            QStringList plugins(dir.entryList(QDir::Files));
+            foreach (const QString &pluginPath, plugins) {
+                pluginCandidates << dir.absoluteFilePath(pluginPath);
+            }
+        }
+    }
+
+    foreach (const QString &pluginPath, pluginCandidates) {
+        QPluginLoader loader(pluginPath);
+        if (!loader.load()) {
+            continue;
+        }
+        QDeclarativeDebugServerConnection *connection = 0;
+        if (QObject *instance = loader.instance())
+            connection = qobject_cast<QDeclarativeDebugServerConnection*>(instance);
+
+        if (connection)
+            return connection;
+        loader.unload();
+    }
+    return 0;
 }
 
 bool QDeclarativeDebugServer::hasDebuggingClient() const
@@ -153,15 +186,18 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
             if (ok) {
                 server = new QDeclarativeDebugServer();
 
-                QDeclarativeDebugServerTcpConnection *tcpConnection
-                        = new QDeclarativeDebugServerTcpConnection(port, server);
+                QDeclarativeDebugServerConnection *connection
+                        = QDeclarativeDebugServerPrivate::loadConnectionPlugin();
+                if (connection) {
+                    server->d_func()->connection = connection;
 
-                tcpConnection->listen();
-                if (block) {
-                    tcpConnection->waitForConnection();
+                    connection->setServer(server);
+                    connection->setPort(port, block);
+                } else {
+                    qWarning() << QString::fromAscii("QDeclarativeDebugServer: Ignoring\"-qmljsdebugger=%1\". "
+                                                     "Remote debugger plugin has not been found.").arg(appD->qmljsDebugArgumentsString());
                 }
 
-                server->d_func()->connection = tcpConnection;
             } else {
                 qWarning(QString::fromAscii("QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
                                             "Format is -qmljsdebugger=port:<port>[,block]").arg(

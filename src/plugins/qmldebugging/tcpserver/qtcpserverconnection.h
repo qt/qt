@@ -39,30 +39,30 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVEDEBUGSERVERTCPCONNECTION_H
-#define QDECLARATIVEDEBUGSERVERTCPCONNECTION_H
+#ifndef QTCPSERVERCONNECTION_H
+#define QTCPSERVERCONNECTION_H
 
-#include <private/qdeclarativeglobal_p.h>
-
-QT_BEGIN_HEADER
+#include <QtGui/QStylePlugin>
+#include <QtDeclarative/private/qdeclarativedebugserverconnection_p.h>
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-#include <qdeclarativedebugserverconnection_p.h>
-
 class QDeclarativeDebugServer;
-class QDeclarativeDebugServerTcpConnectionPrivate;
-class QDeclarativeDebugServerTcpConnection : public QObject, public QDeclarativeDebugServerConnection
+class QTcpServerConnectionPrivate;
+class QTcpServerConnection : public QObject, public QDeclarativeDebugServerConnection
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QDeclarativeDebugServerTcpConnection)
-    Q_DISABLE_COPY(QDeclarativeDebugServerTcpConnection)
+    Q_DECLARE_PRIVATE(QTcpServerConnection)
+    Q_DISABLE_COPY(QTcpServerConnection)
+    Q_INTERFACES(QDeclarativeDebugServerConnection)
+
 
 public:
-    QDeclarativeDebugServerTcpConnection(int port, QDeclarativeDebugServer *server);
-    ~QDeclarativeDebugServerTcpConnection();
+    QTcpServerConnection();
+    ~QTcpServerConnection();
+
+    void setServer(QDeclarativeDebugServer *server);
+    void setPort(int port, bool bock);
 
     bool isConnected() const;
     void send(const QByteArray &message);
@@ -76,11 +76,9 @@ private Q_SLOTS:
     void newConnection();
 
 private:
-    QDeclarativeDebugServerTcpConnectionPrivate *d_ptr;
+    QTcpServerConnectionPrivate *d_ptr;
 };
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QDECLARATIVEDEBUGSERVERTCPCONNECTION_H
+#endif // QTCPSERVERCONNECTION_H
