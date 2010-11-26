@@ -203,19 +203,7 @@ QStringList QKqueueFileSystemWatcherEngine::removePaths(const QStringList &paths
         if (x.isEmpty() || x != path)
             continue;
 
-        int fd = id < 0 ? -id : id;
-        struct kevent kev;
-        EV_SET(&kev,
-               fd,
-               EVFILT_VNODE,
-               EV_DELETE,
-               NOTE_DELETE | NOTE_WRITE | NOTE_EXTEND | NOTE_ATTRIB | NOTE_RENAME | NOTE_REVOKE,
-               0,
-               0);
-        if (kevent(kqfd, &kev, 1, 0, 0, 0) == -1) {
-            perror("QKqueueFileSystemWatcherEngine::removeWatch: kevent");
-        }
-        ::close(fd);
+        ::close(id < 0 ? -id : id);
 
         it.remove();
         if (id < 0)
