@@ -135,6 +135,7 @@ void tst_QFileSystemWatcher::basicTest()
     // create watcher, forcing it to use a specific backend
     QFileSystemWatcher watcher;
     watcher.setObjectName(QLatin1String("_qt_autotest_force_engine_") + backend);
+    watcher.removePath(testFile.fileName());
     watcher.addPath(testFile.fileName());
 
     QSignalSpy changedSpy(&watcher, SIGNAL(fileChanged(const QString &)));
