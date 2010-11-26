@@ -68,6 +68,8 @@ public:
     virtual void closeUpstreamChannel();
     virtual bool waitForDownstreamReadyRead(int msecs);
     virtual bool waitForUpstreamBytesWritten(int msecs);
+
+    virtual bool processRequestSynchronously();
 };
 
 class QNetworkAccessDataBackendFactory: public QNetworkAccessBackendFactory
