@@ -1315,7 +1315,7 @@ void tst_QFile::link()
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QString wd = getWorkingDirectoryForLink(info2.absoluteFilePath());
-    QCOMPARE(QDir::fromNativeSeparators(wd), referenceTarget);
+    QCOMPARE(QDir::fromNativeSeparators(wd), QDir::cleanPath(info1.absolutePath()));
 #endif
 
     QVERIFY(QFile::remove(info2.absoluteFilePath()));
