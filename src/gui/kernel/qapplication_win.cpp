@@ -3307,7 +3307,7 @@ bool QETWidget::translateMouseEvent(const MSG &msg)
         if (type == QEvent::MouseButtonPress
             && QApplication::activePopupWidget() != activePopupWidget
             && replayPopupMouseEvent) {
-            // the popup dissappeared. Replay the event
+            // the popup disappeared. Replay the event
             QWidget* w = QApplication::widgetAt(gpos.x, gpos.y);
             if (w && !QApplicationPrivate::isBlockedByModal(w)) {
                 Q_ASSERT(w->testAttribute(Qt::WA_WState_Created));
@@ -3544,7 +3544,7 @@ static void tabletInit(const quint64 uniqueId, const UINT csr_type, HCTX hTab)
 }
 #endif // QT_NO_TABLETEVENT
 
-// Update the "dynamic" informations of a cursor device (pen, airbrush, etc).
+// Update the "dynamic" information of a cursor device (pen, airbrush, etc).
 // The dynamic information is the information of QTabletDeviceData that can change
 // in time (eraser or pen if a device is turned around).
 #ifndef QT_NO_TABLETEVENT

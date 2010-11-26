@@ -54,6 +54,7 @@ private slots:
     void getSetCheck();
     void valueChanged();
     void sliderMoved();
+    void wrappingCheck();
 };
 
 // Testing get/set functions
@@ -141,6 +142,69 @@ void tst_QDial::sliderMoved()
     qApp->sendEvent(&dial, &releaseevent);
     QCOMPARE( valuespy.count(), 1); // valuechanged signal should be called at this point
 
+}
+
+void tst_QDial::wrappingCheck()
+{
+    //This tests if dial will wrap past the maximum value back to the minimum
+    //and vice versa when changing the value with a keypress
+    QDial dial;
+    dial.setMinimum(0);
+    dial.setMaximum(100);
+    dial.setSingleStep(1);
+    dial.setWrapping(true);
+    dial.setValue(99);
+    dial.show();
+
+    { //set value to maximum but do not wrap
+        QTest::keyPress(&dial, Qt::Key_Up);
+        QCOMPARE( dial.value(), 100);
+    }
+
+    { //step up once more and wrap clockwise to minimum + 1
+        QTest::keyPress(&dial, Qt::Key_Up);
+        QCOMPARE( dial.value(), 1);
+    }
+
+    { //step down once, and wrap anti-clockwise to minimum, then again to maximum - 1
+        QTest::keyPress(&dial, Qt::Key_Down);
+        QCOMPARE( dial.value(), 0);
+
+        QTest::keyPress(&dial, Qt::Key_Down);
+        QCOMPARE( dial.value(), 99);
+    }
+
+    { //when wrapping property is false no wrapping will occur
+        dial.setWrapping(false);
+        dial.setValue(100);
+
+        QTest::keyPress(&dial, Qt::Key_Up);
+        QCOMPARE( dial.value(), 100);
+
+        dial.setValue(0);
+        QTest::keyPress(&dial, Qt::Key_Down);
+        QCOMPARE( dial.value(), 0);
+    }
+
+    { //When the step is really big or small, wrapping should still behave
+        dial.setWrapping(true);
+        dial.setValue(dial.minimum());
+        dial.setSingleStep(305);
+
+        QTest::keyPress(&dial, Qt::Key_Up);
+        QCOMPARE( dial.value(), 5);
+
+        dial.setValue(dial.minimum());
+        QTest::keyPress(&dial, Qt::Key_Down);
+        QCOMPARE( dial.value(), 95);
+
+        dial.setMinimum(-30);
+        dial.setMaximum(-4);
+        dial.setSingleStep(200);
+        dial.setValue(dial.minimum());
+        QTest::keyPress(&dial, Qt::Key_Down);
+        QCOMPARE( dial.value(), -22);
+    }
 }
 
 QTEST_MAIN(tst_QDial)

@@ -298,7 +298,7 @@ void tst_QDBusConnection::registerObject()
         // register one object at root:
         MyObject obj;
         QVERIFY(con.registerObject(path, &obj, QDBusConnection::ExportAllSlots));
-        QCOMPARE(con.objectRegisteredAt(path), &obj);
+        QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(&obj));
         QVERIFY(callMethod(con, path));
         QCOMPARE(obj.path, path);
     }
@@ -495,7 +495,7 @@ void tst_QDBusConnection::callSelf()
     QDBusConnection connection = QDBusConnection::sessionBus();
     QVERIFY(connection.registerObject("/test", &testObject,
             QDBusConnection::ExportAllContents));
-    QCOMPARE(connection.objectRegisteredAt("/test"), &testObject);
+    QCOMPARE(connection.objectRegisteredAt("/test"), static_cast<QObject *>(&testObject));
     QVERIFY(connection.registerService(serviceName()));
     QDBusInterface interface(serviceName(), "/test");
     QVERIFY(interface.isValid());

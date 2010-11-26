@@ -15,6 +15,7 @@ macx:SOURCES += $$QT_SOURCE_TREE/src/corelib/io/qsettings_mac.cpp
 include(../../../src/tools/bootstrap/bootstrap.pri)
 include(../shared/formats.pri)
 include(../shared/proparser.pri)
+include(../../shared/symbian/epocroot.pri)
 
 win32:LIBS += -ladvapi32   # for qsettings_win.cpp
 

@@ -395,7 +395,10 @@ QIODevice::QIODevice(QIODevicePrivate &dd, QObject *parent)
 
 
 /*!
-    Destructs the QIODevice object.
+  The destructor is virtual, and QIODevice is an abstract base
+  class. This destructor does not call close(), but the subclass
+  destructor might. If you are in doubt, call close() before
+  destroying the QIODevice.
 */
 QIODevice::~QIODevice()
 {

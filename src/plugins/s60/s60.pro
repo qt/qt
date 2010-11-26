@@ -6,7 +6,7 @@ symbian {
         SUBDIRS += 3_1 3_2
     }
 
-    contains(S60_VERSION, 5.0)|contains(S60_VERSION, symbian3) {
+    !contains(S60_VERSION, 3.1):!contains(S60_VERSION, 3.2) {
         SUBDIRS += feedback
     }
 

@@ -45,6 +45,7 @@
 #include <QtDeclarative/qdeclarativeitem.h>
 #include <QtDeclarative/qdeclarativecontext.h>
 #include <QtGui/qmenubar.h>
+#include <QSignalSpy>
 #include "../../../shared/util.h"
 #include "qmlruntime.h"
 #include "deviceorientation.h"
@@ -194,7 +195,9 @@ void tst_QDeclarativeViewer::loading()
     QCOMPARE(viewer->size(), QSize(250, 350));
     QCOMPARE(viewer->size(), viewer->sizeHint());
 
+    QSignalSpy statusSpy(viewer->view(), SIGNAL(statusChanged(QDeclarativeView::Status)));
     viewer->reload();
+    QTRY_VERIFY(statusSpy.count() == 1);
     rootItem = qobject_cast<QDeclarativeItem*>(viewer->view()->rootObject());
     QVERIFY(rootItem);
 

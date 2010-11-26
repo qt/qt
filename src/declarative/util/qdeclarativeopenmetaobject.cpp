@@ -186,6 +186,7 @@ QDeclarativeOpenMetaObject::QDeclarativeOpenMetaObject(QObject *obj, bool automa
     d->type->d->referers.insert(this);
 
     QObjectPrivate *op = QObjectPrivate::get(obj);
+    d->parent = static_cast<QAbstractDynamicMetaObject *>(op->metaObject);
     *static_cast<QMetaObject *>(this) = *d->type->d->mem;
     op->metaObject = this;
 }
@@ -201,6 +202,7 @@ QDeclarativeOpenMetaObject::QDeclarativeOpenMetaObject(QObject *obj, QDeclarativ
     d->type->d->referers.insert(this);
 
     QObjectPrivate *op = QObjectPrivate::get(obj);
+    d->parent = static_cast<QAbstractDynamicMetaObject *>(op->metaObject);
     *static_cast<QMetaObject *>(this) = *d->type->d->mem;
     op->metaObject = this;
 }
