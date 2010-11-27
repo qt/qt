@@ -4490,6 +4490,7 @@ void tst_QNetworkReply::httpProxyCommandsSynchronous()
     QVERIFY(reply->isFinished()); // synchronous
     manager.setProxy(QNetworkProxy());
     serverThread.quit();
+    serverThread.wait(3000);
 
     //qDebug() << reply->error() << reply->errorString();
 
