@@ -554,6 +554,7 @@ static int qCocoaViewCount = 0;
     }
 
     CGContextRef cg = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
+    CGContextRetain(cg);
     qwidgetprivate->hd = cg;
 
     // We steal the CGContext for flushing in the unified toolbar with the raster engine.
@@ -653,6 +654,7 @@ static int qCocoaViewCount = 0;
     }
     qwidgetprivate->hd = 0;
     CGContextRestoreGState(cg);
+    CGContextRelease(cg);
 }
 
 - (BOOL)acceptsFirstMouse:(NSEvent *)theEvent

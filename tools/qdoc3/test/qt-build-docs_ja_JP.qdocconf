@@ -17,7 +17,7 @@ indexes                 = $QT_BUILD_TREE/doc-build/html-qt/qt.index
 qhp.projects            = Qt
 
 qhp.Qt.file                = qt.qhp
-qhp.Qt.namespace           = com.trolltech.qt.470
+qhp.Qt.namespace           = com.trolltech.qt.480
 qhp.Qt.virtualFolder       = qdoc
 qhp.Qt.title               = Qt
 qhp.Qt.indexTitle          = Qt

@@ -188,6 +188,8 @@ void QUnifiedToolbarSurface::flush(QWidget *widget, const QRegion &rgn, const QP
 
     // Restore context.
     CGContextRestoreGState(context);
+    CGContextRelease(context);
+    widget->d_func()->cgContext = 0;
     widget->d_func()->hasOwnContext = false;
 }
 

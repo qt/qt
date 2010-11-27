@@ -131,8 +131,9 @@ QMacCGContext::QMacCGContext(QPainter *p)
 
             CGContextTranslateCTM(context, native.dx(), native.dy());
         }
+    } else {
+        CGContextRetain(context);
     }
-    CGContextRetain(context);
 }
 
 
