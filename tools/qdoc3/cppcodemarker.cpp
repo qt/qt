@@ -43,7 +43,6 @@
   cppcodemarker.cpp
 */
 
-#include <qdebug.h>
 #include "atom.h"
 #include "cppcodemarker.h"
 #include "node.h"

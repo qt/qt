@@ -45,7 +45,6 @@
 
 #include "node.h"
 #include "tree.h"
-#include "codemarker.h"
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE

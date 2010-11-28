@@ -47,9 +47,9 @@
 #define QMLCODEPARSER_H
 
 #include <QSet>
-#include "parser/qmljsengine_p.h"
-#include "parser/qmljslexer_p.h"
-#include "parser/qmljsparser_p.h"
+#include "private/qdeclarativejsengine_p.h"
+#include "private/qdeclarativejslexer_p.h"
+#include "private/qdeclarativejsparser_p.h"
 
 #include "codeparser.h"
 #include "location.h"
@@ -80,9 +80,9 @@ protected:
     virtual QSet<QString> otherMetaCommands();
 
 private:
-    QmlJS::Engine engine;
-    QmlJS::Lexer *lexer;
-    QmlJS::Parser *parser;
+    QDeclarativeJS::Engine engine;
+    QDeclarativeJS::Lexer *lexer;
+    QDeclarativeJS::Parser *parser;
 };
 
 QT_END_NAMESPACE

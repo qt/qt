@@ -533,7 +533,7 @@ QString DitaXmlGenerator::lookupGuid(QString text)
   \note The file generation is done in the base class,
   PageGenerator::generateTree().
  */
-void DitaXmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
+void DitaXmlGenerator::generateTree(const Tree *tree)
 {
     myTree = tree;
     nonCompatClasses.clear();
@@ -552,7 +552,7 @@ void DitaXmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
     findAllNamespaces(tree->root());
     findAllSince(tree->root());
 
-    PageGenerator::generateTree(tree, marker);
+    PageGenerator::generateTree(tree);
 }
 
 void DitaXmlGenerator::startText(const Node* /* relative */,

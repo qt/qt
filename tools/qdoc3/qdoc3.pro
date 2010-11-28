@@ -43,7 +43,9 @@ HEADERS += atom.h \
 	   pagegenerator.h \
 	   plaincodemarker.h \
            puredocparser.h \
+           qmlcodemarker.h \
            qmlcodeparser.h \
+           qmlmarkupvisitor.h \
            qmlvisitor.h \
            quoter.h \
 	   separator.h \
@@ -71,7 +73,9 @@ SOURCES += atom.cpp \
 	   pagegenerator.cpp \
 	   plaincodemarker.cpp \
            puredocparser.cpp \
+           qmlcodemarker.cpp \
            qmlcodeparser.cpp \
+           qmlmarkupvisitor.cpp \
            qmlvisitor.cpp \
            quoter.cpp \
 	   separator.cpp \
@@ -80,10 +84,9 @@ SOURCES += atom.cpp \
 	   tree.cpp \
 	   yyindent.cpp
 
-# Include the QML parsing library from Qt Creator.
+INCLUDEPATH += $$(QT_BUILD_TREE)/include/QtDeclarative
 
-LIBS     += -L$$(QTCREATOR_LIBPATH) -lQmlJS -lUtils
-INCLUDEPATH += $$(QTCREATOR_INCPATH)
+include($$(QT_SOURCE_TREE)/src/declarative/qml/parser/parser.pri)
 
 ### Documentation for qdoc3 ###
 

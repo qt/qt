@@ -55,6 +55,7 @@
 #include "htmlgenerator.h"
 #include "plaincodemarker.h"
 #include "puredocparser.h"
+#include "qmlcodemarker.h"
 #include "qmlcodeparser.h"
 #include "tokenizer.h"
 #include "tree.h"
@@ -243,14 +244,6 @@ static void processQdocconfFile(const QString &fileName)
     Location outputFormatsLocation = config.lastLocation();
 
     /*
-      There must be a code marker for the source code language, e.g. C++.
-      If there isn't one, give up.
-     */
-    CodeMarker *marker = CodeMarker::markerForLanguage(lang);
-    if (!marker && !outputFormats.isEmpty())
-	langLocation.fatal(tr("Cannot output documentation for programming language '%1'").arg(lang));
-
-    /*
       Read some XML indexes containing definitions from other documentation sets.
      */
     QStringList indexFiles = config.getStringList(CONFIG_INDEXES);
@@ -334,7 +327,7 @@ static void processQdocconfFile(const QString &fileName)
         if (generator == 0)
             outputFormatsLocation.fatal(tr("Unknown output format '%1'")
                                         .arg(*of));
-        generator->generateTree(tree, marker);
+        generator->generateTree(tree);
         ++of;
     }
 
@@ -390,6 +383,7 @@ int main(int argc, char **argv)
      */
     PlainCodeMarker plainMarker;
     CppCodeMarker cppMarker;
+    QmlCodeMarker qmlMarker;
 
     HtmlGenerator htmlGenerator;
     DitaXmlGenerator ditaxmlGenerator;

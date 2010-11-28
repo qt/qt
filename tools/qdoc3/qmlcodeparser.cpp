@@ -43,9 +43,9 @@
   qmlcodeparser.cpp
 */
 
-#include "parser/qmljsast_p.h"
-#include "parser/qmljsastvisitor_p.h"
-#include "parser/qmljsnodepool_p.h"
+#include "private/qdeclarativejsast_p.h"
+#include "private/qdeclarativejsastvisitor_p.h"
+#include "private/qdeclarativejsnodepool_p.h"
 
 #include "qmlcodeparser.h"
 #include "node.h"
@@ -84,8 +84,8 @@ void QmlCodeParser::initializeParser(const Config &config)
 {
     CodeParser::initializeParser(config);
 
-    lexer = new QmlJS::Lexer(&engine);
-    parser = new QmlJS::Parser(&engine);
+    lexer = new QDeclarativeJS::Lexer(&engine);
+    parser = new QDeclarativeJS::Parser(&engine);
 }
 
 void QmlCodeParser::terminateParser()
@@ -125,12 +125,12 @@ void QmlCodeParser::parseSourceFile(const Location& location,
     QSet<QString> metacommandsAllowed = topicCommandsAllowed +
         otherMetacommandsAllowed;
 
-    QmlJS::NodePool m_nodePool(filePath, &engine);
+    QDeclarativeJS::NodePool m_nodePool(filePath, &engine);
 
     if (parser->parse()) {
-        QmlJS::AST::UiProgram *ast = parser->ast();
-        DocVisitor visitor(filePath, document, &engine, tree, metacommandsAllowed);
-        QmlJS::AST::Node::accept(ast, &visitor);
+        QDeclarativeJS::AST::UiProgram *ast = parser->ast();
+        QmlDocVisitor visitor(filePath, document, &engine, tree, metacommandsAllowed);
+        QDeclarativeJS::AST::Node::accept(ast, &visitor);
     }
 }
 

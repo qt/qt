@@ -217,9 +217,9 @@ HtmlGenerator::HtmlGenerator()
       threeColumnEnumValueTable(true),
       funcLeftParen("\\S(\\()"),
       myTree(0),
+      inObsoleteLink(false),
       slow(false),
-      obsoleteLinks(false),
-      inObsoleteLink(false)
+      obsoleteLinks(false)
 {
 }
 
@@ -356,7 +356,7 @@ QString HtmlGenerator::format()
   \note The HTML file generation is done in the base class,
   PageGenerator::generateTree().
  */
-void HtmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
+void HtmlGenerator::generateTree(const Tree *tree)
 {
     myTree = tree;
     nonCompatClasses.clear();
@@ -375,11 +375,11 @@ void HtmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
     findAllNamespaces(tree->root());
     findAllSince(tree->root());
 
-    PageGenerator::generateTree(tree, marker);
+    PageGenerator::generateTree(tree);
 
     QString fileBase = project.toLower().simplified().replace(" ", "-");
     generateIndex(fileBase, projectUrl, projectDescription);
-    generatePageIndex(outputDir() + "/" + fileBase + ".pageindex", marker);
+    generatePageIndex(outputDir() + "/" + fileBase + ".pageindex");
 
     helpProjectWriter->generate(myTree);
 }
@@ -2913,18 +2913,6 @@ void HtmlGenerator::generateLink(const Atom* atom,
         }
         inLink = false;
         out() << protectEnc(atom->string().mid(k));
-    } else if (marker->recognizeLanguage("Java")) {
-        // hack for Java: remove () and use <tt> when appropriate
-        bool func = atom->string().endsWith("()");
-        bool tt = (func || atom->string().contains(camelCase));
-        if (tt)
-            out() << "<tt>";
-        if (func) {
-            out() << protectEnc(atom->string().left(atom->string().length() - 2));
-        } else {
-            out() << protectEnc(atom->string());
-        }
-        out() << "</tt>";
     } else {
         out() << protectEnc(atom->string());
     }
@@ -4168,11 +4156,13 @@ void HtmlGenerator::generatePageElements(QXmlStreamWriter& writer, const Node* n
 /*!
   Outputs the file containing the index used for searching the html docs.
  */
-void HtmlGenerator::generatePageIndex(const QString& fileName, CodeMarker* marker) const
+void HtmlGenerator::generatePageIndex(const QString& fileName) const
 {
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text))
         return ;
+
+    CodeMarker *marker = CodeMarker::markerForFileName(fileName);
 
     QXmlStreamWriter writer(&file);
     writer.setAutoFormatting(true);

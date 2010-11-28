@@ -39,36 +39,38 @@
 **
 ****************************************************************************/
 
-#ifndef DOCVISITOR_H
-#define DOCVISITOR_H
+#ifndef QMLVISITOR_H
+#define QMLVISITOR_H
 
 #include <QString>
-#include "parser/qmljsastvisitor_p.h"
+#include "private/qdeclarativejsastvisitor_p.h"
 #include "node.h"
 #include "tree.h"
 
-class DocVisitor : public QmlJS::AST::Visitor
+QT_BEGIN_NAMESPACE
+
+class QmlDocVisitor : public QDeclarativeJS::AST::Visitor
 {
 public:
-    DocVisitor(const QString &filePath, const QString &code,
-               QmlJS::Engine *engine, Tree *tree, QSet<QString> &commands);
-    virtual ~DocVisitor();
+    QmlDocVisitor(const QString &filePath, const QString &code,
+               QDeclarativeJS::Engine *engine, Tree *tree, QSet<QString> &commands);
+    virtual ~QmlDocVisitor();
 
-    bool visit(QmlJS::AST::UiImportList *imports);
+    bool visit(QDeclarativeJS::AST::UiImportList *imports);
 
-    bool visit(QmlJS::AST::UiObjectDefinition *definition);
-    void endVisit(QmlJS::AST::UiObjectDefinition *definition);
+    bool visit(QDeclarativeJS::AST::UiObjectDefinition *definition);
+    void endVisit(QDeclarativeJS::AST::UiObjectDefinition *definition);
 
-    bool visit(QmlJS::AST::UiPublicMember *member);
-    void endVisit(QmlJS::AST::UiPublicMember *definition);
+    bool visit(QDeclarativeJS::AST::UiPublicMember *member);
+    void endVisit(QDeclarativeJS::AST::UiPublicMember *definition);
 
-    bool visit(QmlJS::AST::IdentifierPropertyName *idproperty);
+    bool visit(QDeclarativeJS::AST::IdentifierPropertyName *idproperty);
 
 private:
-    QmlJS::AST::SourceLocation precedingComment(unsigned offset) const;
-    void applyDocumentation(QmlJS::AST::SourceLocation location, Node *node);
+    QDeclarativeJS::AST::SourceLocation precedingComment(unsigned offset) const;
+    void applyDocumentation(QDeclarativeJS::AST::SourceLocation location, Node *node);
 
-    QmlJS::Engine *engine;
+    QDeclarativeJS::Engine *engine;
     quint32 lastEndOffset;
     QString filePath;
     QString name;
@@ -78,5 +80,7 @@ private:
     Tree *tree;
     InnerNode *current;
 };
+
+QT_END_NAMESPACE
 
 #endif

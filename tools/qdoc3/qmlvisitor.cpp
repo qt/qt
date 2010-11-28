@@ -42,15 +42,17 @@
 #include <QFileInfo>
 #include <QStringList>
 #include <QtGlobal>
-#include "parser/qmljsast_p.h"
-#include "parser/qmljsastfwd_p.h"
-#include "parser/qmljsengine_p.h"
+#include "private/qdeclarativejsast_p.h"
+#include "private/qdeclarativejsastfwd_p.h"
+#include "private/qdeclarativejsengine_p.h"
 
 #include "node.h"
 #include "qmlvisitor.h"
 
-DocVisitor::DocVisitor(const QString &filePath, const QString &code,
-                       QmlJS::Engine *engine, Tree *tree, QSet<QString> &commands)
+QT_BEGIN_NAMESPACE
+
+QmlDocVisitor::QmlDocVisitor(const QString &filePath, const QString &code,
+                       QDeclarativeJS::Engine *engine, Tree *tree, QSet<QString> &commands)
 {
     this->filePath = filePath;
     this->name = QFileInfo(filePath).baseName();
@@ -61,17 +63,17 @@ DocVisitor::DocVisitor(const QString &filePath, const QString &code,
     current = tree->root();
 }
 
-DocVisitor::~DocVisitor()
+QmlDocVisitor::~QmlDocVisitor()
 {
 }
 
-QmlJS::AST::SourceLocation DocVisitor::precedingComment(unsigned offset) const
+QDeclarativeJS::AST::SourceLocation QmlDocVisitor::precedingComment(unsigned offset) const
 {
-    QmlJS::AST::SourceLocation currentLoc;
+    QDeclarativeJS::AST::SourceLocation currentLoc;
 
-    foreach (const QmlJS::AST::SourceLocation &loc, engine->comments()) {
+    foreach (const QDeclarativeJS::AST::SourceLocation &loc, engine->comments()) {
         if (loc.begin() > lastEndOffset && loc.end() < offset)
-            currentLoc = loc; 
+            currentLoc = loc;
         else
             break;
     }
@@ -81,13 +83,13 @@ QmlJS::AST::SourceLocation DocVisitor::precedingComment(unsigned offset) const
             return currentLoc;
     }
 
-    return QmlJS::AST::SourceLocation();
+    return QDeclarativeJS::AST::SourceLocation();
 }
 
-void DocVisitor::applyDocumentation(QmlJS::AST::SourceLocation location,
+void QmlDocVisitor::applyDocumentation(QDeclarativeJS::AST::SourceLocation location,
                                     Node *node)
 {
-    QmlJS::AST::SourceLocation loc = precedingComment(location.begin());
+    QDeclarativeJS::AST::SourceLocation loc = precedingComment(location.begin());
 
     if (loc.isValid()) {
         QString source = document.mid(loc.offset, loc.length);
@@ -111,7 +113,7 @@ void DocVisitor::applyDocumentation(QmlJS::AST::SourceLocation location,
 /*!
     Visits element definitions, recording them in a tree structure.
 */
-bool DocVisitor::visit(QmlJS::AST::UiObjectDefinition *definition)
+bool QmlDocVisitor::visit(QDeclarativeJS::AST::UiObjectDefinition *definition)
 {
     QString type = definition->qualifiedTypeNameId->name->asString();
 
@@ -130,12 +132,12 @@ bool DocVisitor::visit(QmlJS::AST::UiObjectDefinition *definition)
     return true;
 }
 
-void DocVisitor::endVisit(QmlJS::AST::UiObjectDefinition *definition)
+void QmlDocVisitor::endVisit(QDeclarativeJS::AST::UiObjectDefinition *definition)
 {
     lastEndOffset = definition->lastSourceLocation().end();
 }
 
-bool DocVisitor::visit(QmlJS::AST::UiImportList *imports)
+bool QmlDocVisitor::visit(QDeclarativeJS::AST::UiImportList *imports)
 {
     // Note that the imports list can be traversed by iteration to obtain
     // all the imports in the document at once, having found just one:
@@ -154,10 +156,10 @@ bool DocVisitor::visit(QmlJS::AST::UiImportList *imports)
     Visits public member declarations, such as signals and properties.
     These only include custom signals and properties.
 */
-bool DocVisitor::visit(QmlJS::AST::UiPublicMember *member)
+bool QmlDocVisitor::visit(QDeclarativeJS::AST::UiPublicMember *member)
 {
     switch (member->type) {
-    case QmlJS::AST::UiPublicMember::Signal:
+    case QDeclarativeJS::AST::UiPublicMember::Signal:
     {
         if (current->type() == Node::Fake) {
             QmlClassNode *qmlClass = static_cast<QmlClassNode *>(current);
@@ -167,7 +169,7 @@ bool DocVisitor::visit(QmlJS::AST::UiPublicMember *member)
                 FunctionNode *qmlSignal = new FunctionNode(Node::QmlSignal, current, name, false);
 
                 QList<Parameter> parameters;
-                for (QmlJS::AST::UiParameterList *it = member->parameters; it; it = it->next) {
+                for (QDeclarativeJS::AST::UiParameterList *it = member->parameters; it; it = it->next) {
                     if (it->type && it->name)
                         parameters.append(Parameter(it->type->asString(), "", it->name->asString()));
                 }
@@ -178,7 +180,7 @@ bool DocVisitor::visit(QmlJS::AST::UiPublicMember *member)
         }
         break;
     }
-    case QmlJS::AST::UiPublicMember::Property:
+    case QDeclarativeJS::AST::UiPublicMember::Property:
     {
         QString type = member->memberType->asString();
         QString name = member->name->asString();
@@ -206,12 +208,14 @@ bool DocVisitor::visit(QmlJS::AST::UiPublicMember *member)
     return true;
 }
 
-void DocVisitor::endVisit(QmlJS::AST::UiPublicMember *definition)
+void QmlDocVisitor::endVisit(QDeclarativeJS::AST::UiPublicMember *definition)
 {
     lastEndOffset = definition->lastSourceLocation().end();
 }
 
-bool DocVisitor::visit(QmlJS::AST::IdentifierPropertyName *idproperty)
+bool QmlDocVisitor::visit(QDeclarativeJS::AST::IdentifierPropertyName *idproperty)
 {
     return true;
 }
+
+QT_END_NAMESPACE

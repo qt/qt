@@ -92,7 +92,7 @@ class HtmlGenerator : public PageGenerator
     virtual void initializeGenerator(const Config& config);
     virtual void terminateGenerator();
     virtual QString format();
-    virtual void generateTree(const Tree *tree, CodeMarker *marker);
+    virtual void generateTree(const Tree *tree);
 
     QString protectEnc(const QString &string);
     static QString protect(const QString &string, const QString &encoding = "ISO-8859-1");
@@ -247,8 +247,7 @@ class HtmlGenerator : public PageGenerator
     void generatePageElements(QXmlStreamWriter& writer, 
                               const Node* node, 
                               CodeMarker* marker) const;
-    void generatePageIndex(const QString& fileName, 
-                           CodeMarker* marker) const;
+    void generatePageIndex(const QString& fileName) const;
     void generateExtractionMark(const Node *node, ExtractionMarkType markType);
 
     QMap<QString, QString> refMap;
