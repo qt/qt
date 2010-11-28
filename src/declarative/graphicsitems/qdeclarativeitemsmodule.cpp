@@ -78,6 +78,7 @@
 #include "private/qdeclarativewebview_p_p.h"
 #endif
 #include "private/qdeclarativeanchors_p.h"
+#include "private/qdeclarativepincharea_p.h"
 
 static QDeclarativePrivate::AutoParentResult qgraphicsobject_autoParent(QObject *obj, QObject *parent)
 {
@@ -147,10 +148,13 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativeViewSection>("QtQuick",1,0,"ViewSection");
     qmlRegisterType<QDeclarativeVisualDataModel>("QtQuick",1,0,"VisualDataModel");
     qmlRegisterType<QDeclarativeVisualItemModel>("QtQuick",1,0,"VisualItemModel");
+    qmlRegisterType<QDeclarativePinchArea>("QtQuick",1,1,"PinchArea");
+    qmlRegisterType<QDeclarativePinch>();
 
     qmlRegisterType<QDeclarativeAnchors>();
     qmlRegisterType<QDeclarativeKeyEvent>();
     qmlRegisterType<QDeclarativeMouseEvent>();
+    qmlRegisterType<QDeclarativePinchEvent>();
     qmlRegisterType<QGraphicsObject>();
     qmlRegisterType<QGraphicsWidget>("QtQuick",1,0,"QGraphicsWidget");
     qmlRegisterExtendedType<QGraphicsWidget,QDeclarativeGraphicsWidget>("QtQuick",1,0,"QGraphicsWidget");
