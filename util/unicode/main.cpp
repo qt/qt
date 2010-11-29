@@ -85,6 +85,41 @@ static void initAgeMap()
 }
 
 
+enum Joining {
+    Joining_None,
+    Joining_Left,
+    Joining_Causing,
+    Joining_Dual,
+    Joining_Right,
+    Joining_Transparent
+
+    , Joining_Unassigned
+};
+
+static QHash<QByteArray, Joining> joining_map;
+
+static void initJoiningMap()
+{
+    struct JoiningList {
+        Joining joining;
+        const char *name;
+    } joinings[] = {
+        { Joining_None,        "U" },
+        { Joining_Left,        "L" },
+        { Joining_Causing,     "C" },
+        { Joining_Dual,        "D" },
+        { Joining_Right,       "R" },
+        { Joining_Transparent, "T" },
+        { Joining_Unassigned, 0 }
+    };
+    JoiningList *d = joinings;
+    while (d->name) {
+        joining_map.insert(d->name, d->joining);
+        ++d;
+    }
+}
+
+
 static const char *grapheme_break_string =
     "    enum GraphemeBreak {\n"
     "        GraphemeBreakOther,\n"
@@ -881,24 +916,31 @@ static void readArabicShaping()
         if (line.isEmpty())
             continue;
 
-        QList<QByteArray> shaping = line.split(';');
-        Q_ASSERT(shaping.size() == 4);
+        QList<QByteArray> l = line.split(';');
+        Q_ASSERT(l.size() == 4);
 
         bool ok;
-        int codepoint = shaping[0].toInt(&ok, 16);
+        int codepoint = l[0].toInt(&ok, 16);
         Q_ASSERT(ok);
 
-        QChar::Joining j = QChar::OtherJoining;
-        QByteArray shape = shaping[2].trimmed();
-        if (shape == "R")
-            j = QChar::Right;
-        else if (shape == "D")
-            j = QChar::Dual;
-        else if (shape == "C")
-            j = QChar::Center;
+        Joining joining = joining_map.value(l[2].trimmed(), Joining_Unassigned);
+        if (joining == Joining_Unassigned)
+            qFatal("unassigned or unhandled joining value: %s", l[2].constData());
+
+        if (joining == Joining_Left) {
+            // There are currently no characters of joining type Left_Joining defined in Unicode.
+            qFatal("%x: joining type '%s' was met; the current implementation needs to be revised!", codepoint, l[2].constData());
+        }
 
         UnicodeData d = unicodeData.value(codepoint, UnicodeData(codepoint));
-        d.p.joining = j;
+        if (joining == Joining_Right)
+            d.p.joining = QChar::Right;
+        else if (joining == Joining_Dual)
+            d.p.joining = QChar::Dual;
+        else if (joining == Joining_Causing)
+            d.p.joining = QChar::Center;
+        else
+            d.p.joining = QChar::OtherJoining;
         unicodeData.insert(codepoint, d);
     }
 }
@@ -2571,8 +2613,9 @@ int main(int, char **)
 {
     initAgeMap();
     initCategoryMap();
-    initDirectionMap();
     initDecompositionMap();
+    initDirectionMap();
+    initJoiningMap();
     initGraphemeBreak();
     initWordBreak();
     initSentenceBreak();
