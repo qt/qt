@@ -461,18 +461,22 @@ struct UnicodeData {
         p.combiningClass = 0;
 
         p.direction = QChar::DirL;
+        // DerivedBidiClass.txt
         // DirR for:  U+0590..U+05FF, U+07C0..U+08FF, U+FB1D..U+FB4F, U+10800..U+10FFF
         if ((codepoint >= 0x590 && codepoint <= 0x5ff)
             || (codepoint >= 0x7c0 && codepoint <= 0x8ff)
             || (codepoint >= 0xfb1d && codepoint <= 0xfb4f)
-            || (codepoint >= 0x10800 && codepoint <= 0x10fff))
+            || (codepoint >= 0x10800 && codepoint <= 0x10fff)) {
             p.direction = QChar::DirR;
-        // DirAL for: U+0600..U+07BF, U+FB50..U+FDCF, U+FDF0..U+FDFF, U+FE70..U+FEFE
+        }
+        // DirAL for:  U+0600..U+07BF, U+FB50..U+FDFF, U+FE70..U+FEFF
+        //             minus noncharacter code points (intersects with U+FDD0..U+FDEF)
         if ((codepoint >= 0x600 && codepoint <= 0x7bf)
             || (codepoint >= 0xfb50 && codepoint <= 0xfdcf)
             || (codepoint >= 0xfdf0 && codepoint <= 0xfdff)
-            || (codepoint >= 0xfe70 && codepoint <= 0xfefe))
+            || (codepoint >= 0xfe70 && codepoint <= 0xfeff)) {
             p.direction = QChar::DirAL;
+        }
 
         mirroredChar = 0;
         decompositionType = QChar::NoDecomposition;
