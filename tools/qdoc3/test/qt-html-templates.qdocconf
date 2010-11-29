@@ -13,7 +13,7 @@ HTML.postheader = \
     "      <div class=\"breadcrumb toolblock\">\n" \
     "        <ul>\n" \
     "          <li class=\"first\"><a href=\"index.html\">Home</a></li>\n" \
-    "          <!--  Bread crumbs goes here -->\n"
+    "          <!--  Breadcrumbs go here -->\n"
 
 HTML.postpostheader = \
     "        </ul>\n" \
