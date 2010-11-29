@@ -6261,28 +6261,32 @@ void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::
     if (version == QChar::Unicode_Unassigned) {
         version = UNICODE_DATA_VERSION;
     } else if (version != UNICODE_DATA_VERSION) {
-        QString &s = *data;
+        const QString &s = *data;
+        QChar *d = 0;
         for (int i = 0; i < NumNormalizationCorrections; ++i) {
             const NormalizationCorrection &n = uc_normalization_corrections[i];
             if (n.version > version) {
                 int pos = from;
-                if (n.ucs4 > 0xffff) {
+                if (QChar::requiresSurrogates(n.ucs4)) {
                     ushort ucs4High = QChar::highSurrogate(n.ucs4);
                     ushort ucs4Low = QChar::lowSurrogate(n.ucs4);
                     ushort oldHigh = QChar::highSurrogate(n.old_mapping);
                     ushort oldLow = QChar::lowSurrogate(n.old_mapping);
                     while (pos < s.length() - 1) {
                         if (s.at(pos).unicode() == ucs4High && s.at(pos + 1).unicode() == ucs4Low) {
-                            s[pos] = oldHigh;
-                            s[pos + 1] = oldLow;
-                            ++pos;
+                            if (!d)
+                                d = data->data();
+                            d[pos] = QChar(oldHigh);
+                            d[++pos] = QChar(oldLow);
                         }
                         ++pos;
                     }
                 } else {
                     while (pos < s.length()) {
                         if (s.at(pos).unicode() == n.ucs4) {
-                            s[pos] = n.old_mapping;
+                            if (!d)
+                                d = data->data();
+                            d[pos] = QChar(n.old_mapping);
                         }
                         ++pos;
                     }
