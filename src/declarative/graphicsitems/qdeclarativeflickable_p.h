@@ -149,6 +149,10 @@ public:
     FlickableDirection flickableDirection() const;
     void setFlickableDirection(FlickableDirection);
 
+    //XXX Added in QtQuick 1.1
+    Q_INVOKABLE void resizeContent(qreal w, qreal h, QPointF center);
+    Q_INVOKABLE void returnToBounds();
+
 Q_SIGNALS:
     void contentWidthChanged();
     void contentHeightChanged();

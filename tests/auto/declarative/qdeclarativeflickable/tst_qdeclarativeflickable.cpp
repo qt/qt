@@ -46,6 +46,7 @@
 #include <private/qdeclarativevaluetype_p.h>
 #include <QtGui/qgraphicswidget.h>
 #include <math.h>
+#include "../../../shared/util.h"
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -69,6 +70,8 @@ private slots:
     void pressDelay();
     void flickableDirection();
     void qgraphicswidget();
+    void resizeContent();
+    void returnToBounds();
 
 private:
     QDeclarativeEngine engine;
@@ -275,6 +278,57 @@ void tst_qdeclarativeflickable::qgraphicswidget()
     QVERIFY(flickable != 0);
     QGraphicsWidget *widget = findItem<QGraphicsWidget>(flickable->contentItem(), "widget1");
     QVERIFY(widget);
+}
+
+// QtQuick 1.1
+void tst_qdeclarativeflickable::resizeContent()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/resize.qml"));
+    QDeclarativeItem *root = qobject_cast<QDeclarativeItem*>(c.create());
+    QDeclarativeFlickable *obj = findItem<QDeclarativeFlickable>(root, "flick");
+
+    QVERIFY(obj != 0);
+    QCOMPARE(obj->contentX(), 0.);
+    QCOMPARE(obj->contentY(), 0.);
+    QCOMPARE(obj->contentWidth(), 300.);
+    QCOMPARE(obj->contentHeight(), 300.);
+
+    QMetaObject::invokeMethod(root, "resizeContent");
+
+    QCOMPARE(obj->contentX(), 100.);
+    QCOMPARE(obj->contentY(), 100.);
+    QCOMPARE(obj->contentWidth(), 600.);
+    QCOMPARE(obj->contentHeight(), 600.);
+
+    delete root;
+}
+
+// QtQuick 1.1
+void tst_qdeclarativeflickable::returnToBounds()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/resize.qml"));
+    QDeclarativeItem *root = qobject_cast<QDeclarativeItem*>(c.create());
+    QDeclarativeFlickable *obj = findItem<QDeclarativeFlickable>(root, "flick");
+
+    QVERIFY(obj != 0);
+    QCOMPARE(obj->contentX(), 0.);
+    QCOMPARE(obj->contentY(), 0.);
+    QCOMPARE(obj->contentWidth(), 300.);
+    QCOMPARE(obj->contentHeight(), 300.);
+
+    obj->setContentX(100);
+    obj->setContentY(400);
+    QTRY_COMPARE(obj->contentX(), 100.);
+    QTRY_COMPARE(obj->contentY(), 400.);
+
+    QMetaObject::invokeMethod(root, "returnToBounds");
+
+    QTRY_COMPARE(obj->contentX(), 0.);
+    QTRY_COMPARE(obj->contentY(), 0.);
+
+    delete root;
 }
 
 template<typename T>
