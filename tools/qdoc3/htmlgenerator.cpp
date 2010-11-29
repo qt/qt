@@ -89,7 +89,7 @@ static bool showBrokenLinks = false;
 static QRegExp linkTag("(<@link node=\"([^\"]+)\">).*(</@link>)");
 static QRegExp funcTag("(<@func target=\"([^\"]*)\">)(.*)(</@func>)");
 static QRegExp typeTag("(<@(type|headerfile|func)(?: +[^>]*)?>)(.*)(</@\\2>)");
-static QRegExp spanTag("</@(?:comment|preprocessor|string|char)>");
+static QRegExp spanTag("</@(?:comment|preprocessor|string|char|number|op|type|name|keyword)>");
 static QRegExp unknownTag("</?@[^>]*>");
 
 bool parseArg(const QString &src,
@@ -216,8 +216,8 @@ HtmlGenerator::HtmlGenerator()
       numTableRows(0),
       threeColumnEnumValueTable(true),
       funcLeftParen("\\S(\\()"),
-      myTree(0),
       inObsoleteLink(false),
+      myTree(0),
       slow(false),
       obsoleteLinks(false)
 {
@@ -1476,7 +1476,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
         return;
     }
 #endif
-    
+
     sections = marker->sections(fake, CodeMarker::Summary, CodeMarker::Okay);
     s = sections.begin();
     while (s != sections.end()) {
@@ -2846,23 +2846,40 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
     // "<@preprocessor>" -> "<span class=\"preprocessor\">";
     // "<@string>" -> "<span class=\"string\">";
     // "<@char>" -> "<span class=\"char\">";
-    // "</@(?:comment|preprocessor|string|char)>" -> "</span>"
+    // "<@number>" -> "<span class=\"number\">";
+    // "<@op>" -> "<span class=\"operator\">";
+    // "<@type>" -> "<span class=\"type\">";
+    // "<@name>" -> "<span class=\"name\">";
+    // "<@keyword>" -> "<span class=\"keyword\">";
+    // "</@(?:comment|preprocessor|string|char|number|op|type|name|keyword)>" -> "</span>"
     src = html;
     html = QString();
     static const QString spanTags[] = {
-        "<@comment>",      "<span class=\"comment\">",
-        "<@preprocessor>", "<span class=\"preprocessor\">",
-        "<@string>",       "<span class=\"string\">",
-        "<@char>",         "<span class=\"char\">",
-        "</@comment>",     "</span>",
-        "</@preprocessor>","</span>",
-        "</@string>",      "</span>",
-        "</@char>",        "</span>"
+        "<@comment>",       "<span class=\"comment\">",
+        "<@preprocessor>",  "<span class=\"preprocessor\">",
+        "<@string>",        "<span class=\"string\">",
+        "<@char>",          "<span class=\"char\">",
+        "<@number>",        "<span class=\"number\">",
+        "<@op>",            "<span class=\"operator\">",
+        "<@type>",          "<span class=\"type\">",
+        "<@name>",          "<span class=\"name\">",
+        "<@keyword>",       "<span class=\"keyword\">",
+        "</@comment>",      "</span>",
+        "</@preprocessor>", "</span>",
+        "</@string>",       "</span>",
+        "</@char>",         "</span>",
+        "</@number>",       "</span>",
+        "</@op>",           "</span>",
+        "</@type>",         "</span>",
+        "</@name>",         "</span>",
+        "</@keyword>",      "</span>",
     };
+    // Update the upper bound of k in the following code to match the length
+    // of the above array.
     for (int i = 0, n = src.size(); i < n;) {
         if (src.at(i) == charLangle) {
             bool handled = false;
-            for (int k = 0; k != 8; ++k) {
+            for (int k = 0; k != 18; ++k) {
                 const QString & tag = spanTags[2 * k];
                 if (tag == QStringRef(&src, i, tag.length())) {
                     html += spanTags[2 * k + 1];
