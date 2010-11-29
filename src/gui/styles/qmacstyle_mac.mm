@@ -1566,8 +1566,7 @@ void QMacStylePrivate::timerEvent(QTimerEvent *)
                 progressBars.removeAt(i);
             } else {
                 if (QProgressBar *pb = qobject_cast<QProgressBar *>(maybeProgress)) {
-                    if (pb->maximum() == 0 || pb->value() > 0
-                        && pb->value() < pb->maximum()) {
+                    if (pb->maximum() == 0 || (pb->value() > 0 && pb->value() < pb->maximum())) {
                         if (doAnimate(AquaProgressBar))
                             pb->update();
                     }
@@ -1948,10 +1947,9 @@ void QMacStyle::unpolish(QWidget* w)
         rubber->setAttribute(Qt::WA_NoSystemBackground, true);
     }
 
-    if (QFocusFrame *frame = qobject_cast<QFocusFrame *>(w)) {
+    if (QFocusFrame *frame = qobject_cast<QFocusFrame *>(w))
         frame->setAttribute(Qt::WA_NoSystemBackground, true);
-        frame->setAutoFillBackground(true);
-    }
+
     QWindowsStyle::unpolish(w);
 }
 
@@ -3609,7 +3607,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     break;
                 }
             }
-            bool stretchTabs = (!verticalTabs && tabRect.height() > 22 || verticalTabs && tabRect.width() > 22);
+            bool stretchTabs = (!verticalTabs && tabRect.height() > 22) || (verticalTabs && tabRect.width() > 22);
 
             switch (tp) {
             case QStyleOptionTab::Beginning:
@@ -4034,7 +4032,6 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 bdi.version = qt_mac_hitheme_version;
                 bdi.state = kThemeMenuBarNormal;
                 bdi.attributes = 0;
-                HIRect hirect = qt_hirectForQRect(mi->rect);
                 HIThemeDrawMenuBarBackground(&menuRect, &bdi, cg, kHIThemeOrientationNormal);
             }
 
@@ -5336,8 +5333,8 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
             case SC_GroupBoxCheckBox: {
                 // Cheat and use the smaller font if we need to
                 bool checkable = groupBox->subControls & SC_GroupBoxCheckBox;
-                bool fontIsSet = (widget && widget->testAttribute(Qt::WA_SetFont)
-                                  || !QApplication::desktopSettingsAware());
+                bool fontIsSet = (widget && widget->testAttribute(Qt::WA_SetFont))
+                                  || !QApplication::desktopSettingsAware();
                 int tw;
                 int h;
                 int margin =  flat || hasNoText ? 0 : 12;

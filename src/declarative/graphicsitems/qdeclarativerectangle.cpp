@@ -260,6 +260,9 @@ void QDeclarativeRectangle::doUpdate()
 
     A width of 1 creates a thin line. For no line, use a width of 0 or a transparent color.
 
+    \note The width of the rectangle's border does not affect the geometry of the
+    rectangle itself or its position relative to other items if anchors are used.
+
     If \c border.width is an odd number, the rectangle is painted at a half-pixel offset to retain
     border smoothness. Also, the border is rendered evenly on either side of the
     rectangle's boundaries, and the spare pixel is rendered to the right and below the

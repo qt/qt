@@ -60,16 +60,17 @@ QString HTMLPage::filePath()
     return path;
 }
 
-void HTMLPage::start(const QString &storagepath, const QString &runId, const PlatformInfo pinfo, const QString &hostAddress, const ImageItemList &itemList)
+void HTMLPage::start(const QString &storagepath, const QString &runId, const PlatformInfo pinfo, const QString &context, const ImageItemList &itemList)
 {
     end();
 
     id = runId;
     plat = pinfo;
-    address = hostAddress;
-    root = storagepath;
+    ctx = context;
+    root = storagepath + QLC('/');
     imageItems = itemList;
-    QString dir = root + QLS("reports/");
+    reportDir = pinfo.value(PI_PulseGitBranch).isEmpty() ? QLS("reports/adhoc/") : QLS("reports/pulse/");
+    QString dir = root + reportDir;
     QDir cwd;
     if (!cwd.exists(dir))
         cwd.mkpath(dir);
@@ -78,7 +79,7 @@ void HTMLPage::start(const QString &storagepath, const QString &runId, const Pla
 
 void HTMLPage::writeHeader(const ImageItem &item)
 {
-    path = QLS("reports/") + id + QLC('_') + item.engineAsString()
+    path = reportDir + id + QLC('_') + item.engineAsString()
             + QLC('_') + item.formatAsString() + QLS(".html");
 
     QString pageUrl = BaselineServer::baseUrl() + path;
@@ -89,24 +90,21 @@ void HTMLPage::writeHeader(const ImageItem &item)
     out.setDevice(&file);
 
     out << "<html><body><h1>Lancelot results from run " << id << "</h1>\n\n";
-    out << "<h3>Platform Info:</h3>\n";
+    out << "<p><h3>Platform Info:</h3>\n";
     out << "<table>\n";
     foreach (QString key, plat.keys())
         out << "<tr><td>" << key << "</td><td>" << plat.value(key) << "</td></tr>\n";
-    out << "</table>\n";
+    out << "</table></p>\n\n";
 
-#if 0
-    out << "<h3><a href=\"/cgi-bin/server.cgi?cmd=updateAllBaselines&id="<< id << "&host=" << plat.hostName
-        << "&engine=" << item.engineAsString() << "&format=" << item.formatAsString()
-        << "&url=" << pageUrl
-        << "\">Update all baselines</a><br>";
-#endif
-    out << "<table border=\"2\">\n"
+    out << "<p><a href=\"/cgi-bin/server.cgi?cmd=clearAllBaselines&context=" << ctx << "&url=" << pageUrl
+        << "\"><b><big>Clear all baselines</big></b></a></h3> (They will be recreated by the next run)</p>\n\n";
+
+    out << "<p><table border=\"2\">\n"
            "<tr>\n"
            "<td><b>Script</b></td>\n"
            "<td><b>Baseline</b></td>\n"
            "<td><b>Rendered</b></td>\n"
-           "<td><b>Comparison</b></td>\n"
+           "<td><b>Comparison</b> (diffs are <span style=\"color:red\">RED</span>)</td>\n"
            "<td><b>Info/Action</b></td>\n"
            "</b></tr><br>";
 }
@@ -114,7 +112,7 @@ void HTMLPage::writeHeader(const ImageItem &item)
 
 void HTMLPage::writeFooter()
 {
-    out << "</table>\n</body></html>\n";
+    out << "</table></p>\n</body></html>\n";
 }
 
 
@@ -131,17 +129,14 @@ void HTMLPage::addItem(const QString &baseline, const QString &rendered, const I
     out << "<td>" << item.scriptName << "</td>\n";
     QStringList images = QStringList() << baseline << rendered << compared;
     foreach(const QString& img, images)
-        out << "<td><a href=\"/" << img << "\"><img src=\"/" << img << "\" width=240 height=240></a></td>\n";
-    out << "<td><a href=\"/cgi-bin/server.cgi?cmd=updateSingleBaseline&oldBaseline=" << baseline
-        << "&newBaseline=" << rendered << "&url=" << pageUrl << "\">Update baseline</a><br>"
-#if 0
-           "<a href=\"/cgi-bin/server.cgi?cmd=blacklist&scriptName=" << item.scriptName
-           << "&host=" << plat.hostName << "&engine=" << item.engineAsString()
-           << "&format=" << item.formatAsString()
-           << "&url=" << pageUrl << "\">Blacklist test</a>"
-#endif
+        out << "<td><a href=\"/" << img << "\"><img src=\"/" << generateThumbnail(img) << "\" width=240 height=240></a></td>\n";
+
+    out << "<td><p><a href=\"/cgi-bin/server.cgi?cmd=updateSingleBaseline&oldBaseline=" << baseline
+        << "&newBaseline=" << rendered << "&url=" << pageUrl << "\">Replace baseline with rendered</a></p>"
+        << "<p><a href=\"/cgi-bin/server.cgi?cmd=blacklist&context=" << ctx
+        << "&itemId=" << item.scriptName << "&url=" << pageUrl << "\">Blacklist this item</a></p>"
         << "</td>\n";
-        out << "</tr>\n\n";
+    out << "</tr>\n\n";
 
     QMutableVectorIterator<ImageItem> it(imageItems);
     while (it.hasNext()) {
@@ -162,13 +157,10 @@ void HTMLPage::end()
         for (int i=0; i<imageItems.count(); ++i) {
             out << "<tr><td>" << imageItems.at(i).scriptName << "</td><td>N/A</td><td>N/A</td><td>N/A</td><td>";
             if (imageItems.at(i).status == ImageItem::IgnoreItem) {
-                out << "<span style=\"background-color:yellow\">Blacklisted</span><br>"
-                       "<a href=\"/cgi-bin/server.cgi?cmd=whitelist&scriptName="
-                    << imageItems.at(i).scriptName << "&host=" << plat.value(PI_HostName)
-                    << "&engine=" << imageItems.at(i).engineAsString()
-                    << "&format=" << imageItems.at(i).formatAsString()
-                    << "&url=" << pageUrl
-                    << "\">Whitelist test</a>";
+                out << "<span style=\"background-color:yellow\">Blacklisted</span> "
+                    << "<a href=\"/cgi-bin/server.cgi?cmd=whitelist&context=" << ctx
+                    << "&itemId=" << imageItems.at(i).scriptName << "&url=" << pageUrl
+                    << "\">Whitelist item</a>";
             } else {
                 out << "<span style=\"color:green\">Test passed</span>";
             }
@@ -199,6 +191,22 @@ QString HTMLPage::generateCompared(const QString &baseline, const QString &rende
 }
 
 
+QString HTMLPage::generateThumbnail(const QString &image)
+{
+    QString res = image;
+    QFileInfo imgFI(root+image);
+    res.chop(imgFI.suffix().length() + 1);
+    res += QLS("_thumbnail.jpg");
+    QFileInfo resFI(root+res);
+    if (resFI.exists() && resFI.lastModified() > imgFI.lastModified())
+        return res;
+    QStringList args;
+    args << root+image << QLS("-resize") << QLS("240x240") << QLS("-quality") << QLS("50") << root+res;
+    QProcess::execute(QLS("convert"), args);
+    return res;
+}
+
+
 void HTMLPage::handleCGIQuery(const QString &query)
 {
     QUrl cgiUrl(QLS("http://dummy/cgi-bin/dummy.cgi?") + query);
@@ -213,23 +221,16 @@ void HTMLPage::handleCGIQuery(const QString &query)
     if (command == QLS("updateSingleBaseline")) {
         s << BaselineHandler::updateSingleBaseline(cgiUrl.queryItemValue(QLS("oldBaseline")),
                                                    cgiUrl.queryItemValue(QLS("newBaseline")));
-    } else if (command == QLS("updateAllBaselines")) {
-        s << BaselineHandler::updateAllBaselines(cgiUrl.queryItemValue(QLS("host")),
-                                                 cgiUrl.queryItemValue(QLS("id")),
-                                                 cgiUrl.queryItemValue(QLS("engine")),
-                                                 cgiUrl.queryItemValue(QLS("format")));
+    } else if (command == QLS("clearAllBaselines")) {
+        s << BaselineHandler::clearAllBaselines(cgiUrl.queryItemValue(QLS("context")));
     } else if (command == QLS("blacklist")) {
         // blacklist a test
-        s << BaselineHandler::blacklistTest(cgiUrl.queryItemValue(QLS("scriptName")),
-                                                  cgiUrl.queryItemValue(QLS("host")),
-                                                  cgiUrl.queryItemValue(QLS("engine")),
-                                                  cgiUrl.queryItemValue(QLS("format")));
+        s << BaselineHandler::blacklistTest(cgiUrl.queryItemValue(QLS("context")),
+                                            cgiUrl.queryItemValue(QLS("itemId")));
     } else if (command == QLS("whitelist")) {
         // whitelist a test
-        s << BaselineHandler::whitelistTest(cgiUrl.queryItemValue(QLS("scriptName")),
-                                                    cgiUrl.queryItemValue(QLS("host")),
-                                                    cgiUrl.queryItemValue(QLS("engine")),
-                                                    cgiUrl.queryItemValue(QLS("format")));
+        s << BaselineHandler::blacklistTest(cgiUrl.queryItemValue(QLS("context")),
+                                            cgiUrl.queryItemValue(QLS("itemId")), true);
     } else {
         s << "Unknown query:<br>" << query << "<br>";
     }

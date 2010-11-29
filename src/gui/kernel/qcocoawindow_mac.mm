@@ -55,7 +55,7 @@ QT_USE_NAMESPACE
 
 @implementation NSWindow (QT_MANGLE_NAMESPACE(QWidgetIntegration))
 
-- (id)QT_MANGLE_NAMESPACE(qt_initWithQWidget):(QWidget*)widget contentRect:(NSRect)rect styleMask:(NSUInteger)mask;
+- (id)QT_MANGLE_NAMESPACE(qt_initWithQWidget):(QWidget*)widget contentRect:(NSRect)rect styleMask:(NSUInteger)mask
 {
     self = [self initWithContentRect:rect styleMask:mask backing:NSBackingStoreBuffered defer:YES];
     if (self) {

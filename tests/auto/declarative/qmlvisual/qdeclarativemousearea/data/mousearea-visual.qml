@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "1121bb51fc2d4c5c7ef3ae2c44794b49"
+        image: "mousearea-visual.0.png"
     }
     Frame {
         msec: 32
@@ -242,11 +242,11 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "mouseregion.0.png"
+        hash: "1121bb51fc2d4c5c7ef3ae2c44794b49"
     }
     Frame {
         msec: 976
-        hash: "1121bb51fc2d4c5c7ef3ae2c44794b49"
+        image: "mousearea-visual.1.png"
     }
     Frame {
         msec: 992
@@ -634,7 +634,7 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "mouseregion.1.png"
+        hash: "73f1639b9e2164c7b974042934c0d151"
     }
     Mouse {
         type: 5
@@ -654,7 +654,7 @@ VisualTest {
     }
     Frame {
         msec: 1936
-        hash: "73f1639b9e2164c7b974042934c0d151"
+        image: "mousearea-visual.2.png"
     }
     Mouse {
         type: 5
@@ -1002,11 +1002,11 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "mouseregion.2.png"
+        hash: "73f1639b9e2164c7b974042934c0d151"
     }
     Frame {
         msec: 2896
-        hash: "73f1639b9e2164c7b974042934c0d151"
+        image: "mousearea-visual.3.png"
     }
     Mouse {
         type: 5
@@ -1386,11 +1386,11 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "mouseregion.3.png"
+        hash: "73f1639b9e2164c7b974042934c0d151"
     }
     Frame {
         msec: 3856
-        hash: "73f1639b9e2164c7b974042934c0d151"
+        image: "mousearea-visual.4.png"
     }
     Frame {
         msec: 3872
@@ -1698,7 +1698,7 @@ VisualTest {
     }
     Frame {
         msec: 4800
-        image: "mouseregion.4.png"
+        hash: "12edb0902e4d480c9052b00edc1a0a42"
     }
     Mouse {
         type: 5
@@ -1718,7 +1718,7 @@ VisualTest {
     }
     Frame {
         msec: 4816
-        hash: "12edb0902e4d480c9052b00edc1a0a42"
+        image: "mousearea-visual.5.png"
     }
     Mouse {
         type: 5
@@ -2202,11 +2202,11 @@ VisualTest {
     }
     Frame {
         msec: 5760
-        image: "mouseregion.5.png"
+        hash: "12edb0902e4d480c9052b00edc1a0a42"
     }
     Frame {
         msec: 5776
-        hash: "12edb0902e4d480c9052b00edc1a0a42"
+        image: "mousearea-visual.6.png"
     }
     Frame {
         msec: 5792
@@ -2474,11 +2474,11 @@ VisualTest {
     }
     Frame {
         msec: 6720
-        image: "mouseregion.6.png"
+        hash: "12edb0902e4d480c9052b00edc1a0a42"
     }
     Frame {
         msec: 6736
-        hash: "12edb0902e4d480c9052b00edc1a0a42"
+        image: "mousearea-visual.7.png"
     }
     Mouse {
         type: 4
@@ -2738,11 +2738,11 @@ VisualTest {
     }
     Frame {
         msec: 7680
-        image: "mouseregion.7.png"
+        hash: "12edb0902e4d480c9052b00edc1a0a42"
     }
     Frame {
         msec: 7696
-        hash: "12edb0902e4d480c9052b00edc1a0a42"
+        image: "mousearea-visual.8.png"
     }
     Frame {
         msec: 7712
@@ -3082,7 +3082,7 @@ VisualTest {
     }
     Frame {
         msec: 8640
-        image: "mouseregion.8.png"
+        hash: "194ebac4ae7d95bf427f8161885a13e1"
     }
     Mouse {
         type: 5
@@ -3102,7 +3102,7 @@ VisualTest {
     }
     Frame {
         msec: 8656
-        hash: "194ebac4ae7d95bf427f8161885a13e1"
+        image: "mousearea-visual.9.png"
     }
     Mouse {
         type: 5
@@ -3538,7 +3538,7 @@ VisualTest {
     }
     Frame {
         msec: 9600
-        image: "mouseregion.9.png"
+        hash: "194ebac4ae7d95bf427f8161885a13e1"
     }
     Mouse {
         type: 5
@@ -3550,7 +3550,7 @@ VisualTest {
     }
     Frame {
         msec: 9616
-        hash: "194ebac4ae7d95bf427f8161885a13e1"
+        image: "mousearea-visual.10.png"
     }
     Mouse {
         type: 5
@@ -4418,7 +4418,7 @@ VisualTest {
     }
     Frame {
         msec: 10560
-        image: "mouseregion.10.png"
+        hash: "194ebac4ae7d95bf427f8161885a13e1"
     }
     Mouse {
         type: 5
@@ -4438,7 +4438,7 @@ VisualTest {
     }
     Frame {
         msec: 10576
-        hash: "194ebac4ae7d95bf427f8161885a13e1"
+        image: "mousearea-visual.11.png"
     }
     Frame {
         msec: 10592
@@ -4690,11 +4690,11 @@ VisualTest {
     }
     Frame {
         msec: 11520
-        image: "mouseregion.11.png"
+        hash: "194ebac4ae7d95bf427f8161885a13e1"
     }
     Frame {
         msec: 11536
-        hash: "194ebac4ae7d95bf427f8161885a13e1"
+        image: "mousearea-visual.12.png"
     }
     Frame {
         msec: 11552
@@ -4978,11 +4978,11 @@ VisualTest {
     }
     Frame {
         msec: 12480
-        image: "mouseregion.12.png"
+        hash: "194ebac4ae7d95bf427f8161885a13e1"
     }
     Frame {
         msec: 12496
-        hash: "194ebac4ae7d95bf427f8161885a13e1"
+        image: "mousearea-visual.13.png"
     }
     Frame {
         msec: 12512
@@ -5314,11 +5314,11 @@ VisualTest {
     }
     Frame {
         msec: 13440
-        image: "mouseregion.13.png"
+        hash: "194ebac4ae7d95bf427f8161885a13e1"
     }
     Frame {
         msec: 13456
-        hash: "194ebac4ae7d95bf427f8161885a13e1"
+        image: "mousearea-visual.14.png"
     }
     Frame {
         msec: 13472
@@ -5730,11 +5730,11 @@ VisualTest {
     }
     Frame {
         msec: 14400
-        image: "mouseregion.14.png"
+        hash: "194ebac4ae7d95bf427f8161885a13e1"
     }
     Frame {
         msec: 14416
-        hash: "194ebac4ae7d95bf427f8161885a13e1"
+        image: "mousearea-visual.15.png"
     }
     Frame {
         msec: 14432

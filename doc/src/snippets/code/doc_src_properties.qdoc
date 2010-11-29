@@ -91,7 +91,7 @@ for (int i=0; i<count; ++i) {
 class MyClass : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(Priority priority READ priority WRITE setPriority)
+    Q_PROPERTY(Priority priority READ priority WRITE setPriority NOTIFY priorityChanged)
     Q_ENUMS(Priority)
 
 public:
@@ -100,8 +100,19 @@ public:
 
     enum Priority { High, Low, VeryHigh, VeryLow };
 
-    void setPriority(Priority priority);
-    Priority priority() const;
+    void setPriority(Priority priority)
+    {
+        m_priority = priority;
+        emit priorityChanged(priority);
+    }
+    Priority priority() const
+    { return m_priority; }
+
+signals:
+    void priorityChanged(Priority);
+
+private:
+    Priority m_priority;
 };
 //! [5]
 

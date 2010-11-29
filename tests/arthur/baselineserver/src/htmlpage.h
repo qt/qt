@@ -51,7 +51,7 @@ public:
     HTMLPage();
     ~HTMLPage();
 
-    void start(const QString &storagePath, const QString &runId, const PlatformInfo pinfo, const QString &hostAddress, const ImageItemList &itemList);
+    void start(const QString &storagePath, const QString &runId, const PlatformInfo pinfo, const QString &context, const ImageItemList &itemList);
     void addItem(const QString &baseline, const QString &rendered, const ImageItem &item);
     void end();
     QString filePath();
@@ -62,14 +62,16 @@ private:
     void writeHeader(const ImageItem &item);
     void writeFooter();
     QString generateCompared(const QString &baseline, const QString &rendered, bool fuzzy = false);
+    QString generateThumbnail(const QString &image);
 
     QString root;
     QString path;
+    QString reportDir;
     QFile file;
     QTextStream out;
     QString id;
     PlatformInfo plat;
-    QString address;
+    QString ctx;
     ImageItemList imageItems;
     bool headerWritten;
 };

@@ -84,6 +84,9 @@ public:
     QString engineAsString() const;
     QString formatAsString() const;
 
+    void writeImageToStream(QDataStream &stream) const;
+    void readImageFromStream(QDataStream &stream);
+
     enum ItemStatus {
         Ok = 0,
         BaselineNotFound = 1,
@@ -105,7 +108,7 @@ public:
     quint16 scriptChecksum;
 };
 QDataStream & operator<< (QDataStream &stream, const ImageItem &ii);
-QDataStream & operator>> (QDataStream& stream, ImageItem& ii);
+QDataStream & operator>> (QDataStream &stream, ImageItem& ii);
 
 Q_DECLARE_METATYPE(ImageItem);
 
@@ -121,9 +124,9 @@ public:
     // Important constants here
     // ****************************************************
     enum Constant {
-        ProtocolVersion = 2,
+        ProtocolVersion = 3,
         ServerPort = 54129,
-        Timeout = 10000
+        Timeout = 5000
     };
 
     enum Command {
@@ -135,10 +138,12 @@ public:
         AcceptMismatch = 5,
         // Responses
         Ack = 128,
+        Abort = 129,
+        DoDryRun = 130
     };
 
     // For client:
-    bool connect();
+    bool connect(bool *dryrun = 0);
     bool requestBaselineChecksums(ImageItemList *itemList);
     bool submitNewBaseline(const ImageItem &item, QByteArray *serverMsg);
     bool submitMismatch(const ImageItem &item, QByteArray *serverMsg);
@@ -153,6 +158,8 @@ private:
 
     bool sendBlock(Command cmd, const QByteArray &block);
     bool receiveBlock(Command *cmd, QByteArray *block);
+    void sysSleep(int ms);
+
     QString errMsg;
     QTcpSocket socket;
 

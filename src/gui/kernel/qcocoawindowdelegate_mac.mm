@@ -138,7 +138,7 @@ static void cleanupCocoaWindowDelegate()
     }
 }
 
-- (void)dumpMaximizedStateforWidget:(QWidget*)qwidget window:(NSWindow *)window;
+- (void)dumpMaximizedStateforWidget:(QWidget*)qwidget window:(NSWindow *)window
 {
     if (!window)
         return; // Nothing to do.

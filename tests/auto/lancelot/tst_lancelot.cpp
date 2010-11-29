@@ -63,6 +63,8 @@ Q_OBJECT
 public:
     tst_Lancelot();
 
+    static bool simfail;
+
 private:
     ImageItem render(const ImageItem &item);
     void paint(QPaintDevice *device, const QStringList &script, const QString &filePath);
@@ -72,6 +74,7 @@ private:
     BaselineProtocol proto;
     ImageItemList baseList;
     QHash<QString, QStringList> scripts;
+    bool dryRunMode;
 
 private slots:
     void initTestCase();
@@ -90,6 +93,8 @@ private slots:
 #endif
 };
 
+bool tst_Lancelot::simfail = false;
+
 tst_Lancelot::tst_Lancelot()
 {
 }
@@ -103,13 +108,8 @@ void tst_Lancelot::initTestCase()
 #if defined(Q_OS_SOMEPLATFORM)
     QSKIP("This test is not supported on this platform.", SkipAll);
 #endif
-    if (!proto.connect()) {
-        QTest::qSleep(3000);  // Wait a bit and try again, the server might just be restarting
-        if (!proto.connect()) {
-            QWARN(qPrintable(proto.errorMessage()));
-            QSKIP("Communication with baseline image server failed.", SkipAll);
-        }
-    }
+    if (!proto.connect(&dryRunMode))
+        QSKIP(qPrintable(proto.errorMessage()), SkipAll);
 
     QDir qpsDir(scriptsDir);
     QStringList files = qpsDir.entryList(QStringList() << QLatin1String("*.qps"), QDir::Files | QDir::Readable);
@@ -250,7 +250,10 @@ void tst_Lancelot::runTestSuite()
             QByteArray serverMsg;
             if (!proto.submitMismatch(rendered, &serverMsg))
                 serverMsg = "Failed to submit mismatching image to server.";
-            QFAIL("Rendered image differs from baseline.\n" + serverMsg);
+            if (dryRunMode)
+                qDebug() << "Dryrun mode, ignoring detected mismatch." << serverMsg;
+            else
+                QFAIL("Rendered image differs from baseline.\n" + serverMsg);
     }
 }
 
@@ -291,12 +294,38 @@ void tst_Lancelot::paint(QPaintDevice *device, const QStringList &script, const 
 {
     QPainter p(device);
     PaintCommands pcmd(script, 800, 800);
+    //pcmd.setShouldDrawText(false);
     pcmd.setType(ImageType);
     pcmd.setPainter(&p);
     pcmd.setFilePath(filePath);
     pcmd.runCommands();
     p.end();
+
+    if (simfail) {
+        QPainter p2(device);
+        p2.setPen(QPen(QBrush(Qt::cyan), 3, Qt::DashLine));
+        p2.drawLine(200, 200, 600, 600);
+        p2.drawLine(600, 200, 200, 600);
+        simfail = false;
+    }
 }
 
+#define main rmain
 QTEST_MAIN(tst_Lancelot)
+#undef main
+
+int main(int argc, char *argv[])
+{
+    char *fargv[20];
+    int fargc = 0;
+    for (int i = 0; i < qMin(argc, 19); i++) {
+        if (!qstrcmp(argv[i], "-simfail"))
+            tst_Lancelot::simfail = true;
+        else
+            fargv[fargc++] = argv[i];
+    }
+    fargv[fargc] = 0;
+    return rmain(fargc, fargv);
+}
+
 #include "tst_lancelot.moc"

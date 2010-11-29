@@ -441,7 +441,7 @@ bool QUndoStackPrivate::checkUndoLimit()
 
 /*!
     Constructs an empty undo stack with the parent \a parent. The
-    stack will initally be in the clean state. If \a parent is a
+    stack will initially be in the clean state. If \a parent is a
     QUndoGroup object, the stack is automatically added to the group.
 
     \sa push()

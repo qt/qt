@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "eff7cc4b163dceb6084270cc589393f1"
+        image: "loop.0.png"
     }
     Frame {
         msec: 32
@@ -242,11 +242,11 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "loop.0.png"
+        hash: "0de25d97a43cf1a7551c8e8dd1943039"
     }
     Frame {
         msec: 976
-        hash: "2cc40e1119060483ae067f3881af0391"
+        image: "loop.1.png"
     }
     Frame {
         msec: 992
@@ -482,11 +482,11 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "loop.1.png"
+        hash: "72c0bf8225504e86ff023242b84513a8"
     }
     Frame {
         msec: 1936
-        hash: "7f79dd50a0af8e8871191ee80afcad0f"
+        image: "loop.2.png"
     }
     Frame {
         msec: 1952
@@ -722,11 +722,11 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "loop.2.png"
+        hash: "d57e1a10e48938e1f7fc219220fe1204"
     }
     Frame {
         msec: 2896
-        hash: "df41be1fa564353ceb2088af209610d3"
+        image: "loop.3.png"
     }
     Frame {
         msec: 2912
@@ -962,11 +962,11 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "loop.3.png"
+        hash: "fd7157aef6dfb303472cd33b176f91d8"
     }
     Frame {
         msec: 3856
-        hash: "e6521a3c74c190c193af2c913e5326e2"
+        image: "loop.4.png"
     }
     Frame {
         msec: 3872
@@ -1202,11 +1202,11 @@ VisualTest {
     }
     Frame {
         msec: 4800
-        image: "loop.4.png"
+        hash: "2fb9e078573ebd1a5cf0f615c97f1d20"
     }
     Frame {
         msec: 4816
-        hash: "31fa31ed47ea16390be8ea9d41f483e7"
+        image: "loop.5.png"
     }
     Frame {
         msec: 4832
@@ -1442,11 +1442,11 @@ VisualTest {
     }
     Frame {
         msec: 5760
-        image: "loop.5.png"
+        hash: "99789b6e168355a3960986c7d1f21f82"
     }
     Frame {
         msec: 5776
-        hash: "ebd37ee719ca460480521fd4ec284a3f"
+        image: "loop.6.png"
     }
     Frame {
         msec: 5792
