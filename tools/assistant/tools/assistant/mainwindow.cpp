@@ -460,14 +460,20 @@ void MainWindow::setupActions()
     menu->addAction(globalActions->printAction());
     menu->addSeparator();
 
-    QAction *tmp = menu->addAction(QIcon::fromTheme("application-exit"),
-                                   tr("&Quit"), this, SLOT(close()));
-    tmp->setMenuRole(QAction::QuitRole);
+    m_closeTabAction = menu->addAction(tr("&Close Tab"), m_centralWidget,
+        SLOT(closeTab()));
+    m_closeTabAction->setShortcuts(QKeySequence::Close);
+
+    QIcon appExitIcon = QIcon::fromTheme("application-exit");
+    QAction *tmp;
 #ifdef Q_OS_WIN
+    tmp = menu->addAction(appExitIcon, tr("E&xit"), this, SLOT(close()));
     tmp->setShortcut(QKeySequence(tr("CTRL+Q")));
 #else
+    tmp = menu->addAction(appExitIcon, tr("&Quit"), this, SLOT(close()));
     tmp->setShortcut(QKeySequence::Quit);
 #endif
+    tmp->setMenuRole(QAction::QuitRole);
 
     menu = menuBar()->addMenu(tr("&Edit"));
     menu->addAction(globalActions->copyAction());
