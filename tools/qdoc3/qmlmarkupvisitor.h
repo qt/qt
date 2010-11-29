@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 class QmlMarkupVisitor : public QDeclarativeJS::AST::Visitor
 {
 public:
-    QmlMarkupVisitor(const QString &code, bool debug = false);
+    QmlMarkupVisitor(const QString &code, QDeclarativeJS::Engine *engine);
     virtual ~QmlMarkupVisitor();
 
     QString markedUpCode();
@@ -317,7 +317,11 @@ public:
     virtual bool visit(QDeclarativeJS::AST::UiParameterList *);
     virtual void endVisit(QDeclarativeJS::AST::UiParameterList *);
 
+protected:
+    QString protect(const QString &string);
+
 private:
+    void addExtra(quint32 start, quint32 finish);
     void addMarkedUpToken(QDeclarativeJS::AST::SourceLocation &location,
                           const QString &text);
     void addVerbatim(QDeclarativeJS::AST::SourceLocation first,
@@ -326,11 +330,13 @@ private:
     void write(const QString &text);
     void endWrite(const QString &text);
 
+    QDeclarativeJS::Engine *engine;
     QString source;
     QString output;
     quint32 cursor;
+    quint32 commentIndex;
     int indent;
-    bool showDebug;
+    QString debug;
 };
 
 QT_END_NAMESPACE
