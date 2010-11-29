@@ -196,8 +196,8 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
         if (openMode & QFile::Unbuffered) {
             if (openMode & QIODevice::WriteOnly)
                 symbianMode |= 0x00001000; //EFileWriteDirectIO;
-            if (openMode & QIODevice::ReadOnly)
-                symbianMode |= 0x00004000; //EFileReadDirectIO;
+            // ### Unbuffered read is not used, because it prevents file open in /resource
+            // ### and has no obvious benefits
         } else {
             if (openMode & QIODevice::WriteOnly)
                 symbianMode |= 0x00000800; //EFileWriteBuffered;

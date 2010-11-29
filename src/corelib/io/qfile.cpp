@@ -993,8 +993,14 @@ bool QFile::open(OpenMode mode)
         return false;
     }
 
+#ifdef Q_OS_SYMBIAN
+    // For symbian, the unbuffered flag is used to control write-behind cache behaviour
+    if (fileEngine()->open(mode))
+#else
     // QIODevice provides the buffering, so there's no need to request it from the file engine.
-    if (fileEngine()->open(mode | QIODevice::Unbuffered)) {
+    if (fileEngine()->open(mode | QIODevice::Unbuffered))
+#endif
+    {
         QIODevice::open(mode);
         if (mode & Append)
             seek(size());
