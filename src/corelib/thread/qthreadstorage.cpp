@@ -201,6 +201,11 @@ void QThreadStorageData::finish(void **p)
             continue;
         }
         destructor(q); //crash here might mean the thread exited after qthreadstorage was destroyed
+
+        if (tls->size() > i) {
+            //re reset the tls in case it has been recreated by its own destructor.
+            (*tls)[i] = 0;
+        }
     }
     tls->clear();
 }
@@ -279,7 +284,7 @@ void QThreadStorageData::finish(void **p)
     If T is a pointer type, returns true if the calling thread has
     non-zero data available.
 
-    If T is a value type, returns wether the data has already been
+    If T is a value type, returns whether the data has already been
     constructed by calling setLocalData or localData.
 
     \sa localData()

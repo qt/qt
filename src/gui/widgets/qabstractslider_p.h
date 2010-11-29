@@ -117,7 +117,7 @@ public:
         ;
     }
 
-    inline int bound(int val) const { return qMax(minimum, qMin(maximum, val)); }
+    virtual int bound(int val) const { return qMax(minimum, qMin(maximum, val)); }
     inline int overflowSafeAdd(int add) const
     {
         int newValue = value + add;

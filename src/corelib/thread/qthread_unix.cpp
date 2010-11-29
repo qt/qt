@@ -99,6 +99,11 @@
 # define SCHED_IDLE    5
 #endif
 
+#if defined(Q_OS_DARWIN) || !defined(Q_OS_OPENBSD) && defined(_POSIX_THREAD_PRIORITY_SCHEDULING) && (_POSIX_THREAD_PRIORITY_SCHEDULING-0 >= 0)
+#define QT_HAS_THREAD_PRIORITY_SCHEDULING
+#endif
+
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_THREAD
@@ -341,7 +346,7 @@ void QThreadPrivate::finish(void *arg)
     QMutexLocker locker(&d->mutex);
 #endif
 
-
+    d->isInFinish = true;
     d->priority = QThread::InheritPriority;
     bool terminated = d->terminated;
     void *data = &d->data->tls;
@@ -371,6 +376,7 @@ void QThreadPrivate::finish(void *arg)
     d->running = false;
     d->finished = true;
 
+    d->isInFinish = false;
     d->thread_done.wakeAll();
 }
 
@@ -511,10 +517,10 @@ void QThread::usleep(unsigned long usecs)
     thread_sleep(&ti);
 }
 
+#ifdef QT_HAS_THREAD_PRIORITY_SCHEDULING
 // Does some magic and calculate the Unix scheduler priorities
 // sched_policy is IN/OUT: it must be set to a valid policy before calling this function
 // sched_priority is OUT only
-#if defined(Q_OS_DARWIN) || !defined(Q_OS_OPENBSD) && defined(_POSIX_THREAD_PRIORITY_SCHEDULING) && (_POSIX_THREAD_PRIORITY_SCHEDULING-0 >= 0)
 static bool calculateUnixPriority(int priority, int *sched_policy, int *sched_priority)
 {
 #ifdef SCHED_IDLE
@@ -548,6 +554,10 @@ void QThread::start(Priority priority)
 {
     Q_D(QThread);
     QMutexLocker locker(&d->mutex);
+
+    if (d->isInFinish)
+        d->thread_done.wait(locker.mutex());
+
     if (d->running)
         return;
 
@@ -563,7 +573,7 @@ void QThread::start(Priority priority)
 
     d->priority = priority;
 
-#if defined(Q_OS_DARWIN) || !defined(Q_OS_OPENBSD) && !defined(Q_OS_SYMBIAN) && defined(_POSIX_THREAD_PRIORITY_SCHEDULING) && (_POSIX_THREAD_PRIORITY_SCHEDULING-0 >= 0)
+#if defined(QT_HAS_THREAD_PRIORITY_SCHEDULING) && !defined(Q_OS_SYMBIAN)
 // ### Need to implement thread sheduling and priorities for symbian os. Implementation removed for now
     switch (priority) {
     case InheritPriority:
@@ -604,7 +614,7 @@ void QThread::start(Priority priority)
             break;
         }
     }
-#endif // _POSIX_THREAD_PRIORITY_SCHEDULING
+#endif // QT_HAS_THREAD_PRIORITY_SCHEDULING
 
 #ifdef Q_OS_SYMBIAN
     if (d->stackSize == 0)
@@ -767,7 +777,7 @@ void QThread::setPriority(Priority priority)
 
     // copied from start() with a few modifications:
 
-#if defined(Q_OS_DARWIN) || !defined(Q_OS_OPENBSD) && defined(_POSIX_THREAD_PRIORITY_SCHEDULING) && (_POSIX_THREAD_PRIORITY_SCHEDULING-0 >= 0)
+#ifdef QT_HAS_THREAD_PRIORITY_SCHEDULING
     int sched_policy;
     sched_param param;
 

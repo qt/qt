@@ -104,14 +104,16 @@ void tst_qmlvisual::visual_data()
     QStringList files;
     files << findQmlFiles(QDir(QT_TEST_SOURCE_DIR));
     if (qgetenv("QMLVISUAL_ALL") != "1") {
-        //Text on X11 varies per distro - and the CI system is currently using something outdated.
 #if defined(Q_WS_X11)
+        //Text on X11 varies per distro - and the CI system is currently using something outdated.
         foreach(const QString &str, files.filter(QRegExp(".*text.*")))
             files.removeAll(str);
 #endif
-        //We don't want QWS test results to mire down the CI system
 #if defined(Q_WS_QWS)
+        //We don't want QWS test results to mire down the CI system
         files.clear();
+        //Needs at least one test data or it fails anyways
+        files << QT_TEST_SOURCE_DIR "/selftest_noimages/selftest_noimages.qml";
 #endif
     }
 

@@ -51,6 +51,7 @@
 #include <QHostInfo>
 #include <QTextStream>
 #include <QProcess>
+#include <QDirIterator>
 
 QString BaselineServer::storage;
 
@@ -97,8 +98,8 @@ void BaselineServer::heartbeat()
     if (me.lastModified() == meLastMod)
         return;
 
-    // (could close() here to avoid accepting new connections, to avoid livelock)
-    // also, could check for a timeout to force exit, to avoid hung threads blocking
+    //# (could close() here to avoid accepting new connections, to avoid livelock)
+    //# also, could check for a timeout to force exit, to avoid hung threads blocking
     bool isServing = false;
     foreach(BaselineThread *thread, findChildren<BaselineThread *>()) {
         if (thread->isRunning()) {
@@ -304,10 +305,13 @@ void BaselineHandler::mapPlatformInfo()
     if (host.isEmpty() || host == QLS("localhost")) {
         host = plat.value(PI_HostAddress);
     } else {
-        // remove index postfix typical of vm hostnames
-        host.remove(QRegExp(QLS("\\d+$")));
-        if (host.endsWith(QLC('-')))
-            host.chop(1);
+        //# Site specific, should be in a config file
+        if (!host.startsWith(QLS("oldhcp"))) {
+            // remove index postfix typical of vm hostnames
+            host.remove(QRegExp(QLS("\\d+$")));
+            if (host.endsWith(QLC('-')))
+                host.chop(1);
+        }
     }
     if (host.isEmpty())
         host = QLS("unknownhost");
@@ -349,43 +353,18 @@ QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline, boo
 }
 
 
-QString BaselineHandler::updateAllBaselines(const QString &host, const QString &id,
-                                            const QString &engine, const QString &format)
+QString BaselineHandler::clearAllBaselines(const QString &context)
 {
-#if 0
-    QString basePath(BaselineServer::storagePath());
-    QString srcDir(basePath + host + QLC('/') + itemSubPath(engine, format, false) + id);
-    QString dstDir(basePath + host + QLC('/') + itemSubPath(engine, format));
-
-    QDir dir(srcDir);
-    QStringList nameFilter;
-    nameFilter << "*.metadata" << "*.png";
-    QStringList fileList = dir.entryList(nameFilter, QDir::Files | QDir::NoDotAndDotDot);
-
-    // remove the generated _fuzzycompared.png and _compared.png files from the list
-    QMutableStringListIterator it(fileList);
+    int tot = 0;
+    int failed = 0;
+    QDirIterator it(BaselineServer::storagePath() + QLC('/') + context,
+                    QStringList() << QLS("*.png") << QLS("*.metadata"));
     while (it.hasNext()) {
-        it.next();
-        if (it.value().endsWith(QLS("compared.png")))
-            it.remove();
+        tot++;
+        if (!QFile::remove(it.next()))
+            failed++;
     }
-
-    QString res;
-    QProcess proc;
-    proc.setWorkingDirectory(srcDir);
-    proc.setProcessChannelMode(QProcess::MergedChannels);
-    proc.start(QLS("cp"), QStringList() << QLS("-f") << fileList << dstDir);
-    proc.waitForFinished();
-    if (proc.exitCode() == 0)
-        res = QLS("Successfully updated baseline for all failed tests.");
-    else
-        res = QString("Error updating baseline: %1<br>"
-                      "Command output: <pre>%2</pre>").arg(proc.errorString(), proc.readAll().constData());
-
-    return res;
-#else
-    return QString();
-#endif
+    return QString(QLS("%1 of %2 baselines cleared from context ")).arg((tot-failed)/2).arg(tot/2) + context;
 }
 
 QString BaselineHandler::updateSingleBaseline(const QString &oldBaseline, const QString &newBaseline)

@@ -206,10 +206,52 @@ QString ImageItem::formatAsString() const
     return QLS(formatNames[renderFormat]);
 }
 
+void ImageItem::writeImageToStream(QDataStream &out) const
+{
+    if (image.isNull() || image.format() == QImage::Format_Invalid) {
+        out << quint8(0);
+        return;
+    }
+    out << quint8('Q') << quint8(image.format());
+    out << quint8(QSysInfo::ByteOrder) << quint8(0);       // pad to multiple of 4 bytes
+    out << quint32(image.width()) << quint32(image.height()) << quint32(image.bytesPerLine());
+    out << qCompress((const uchar *)image.constBits(), image.byteCount());
+    //# can be followed by colormap for formats that use it
+}
+
+void ImageItem::readImageFromStream(QDataStream &in)
+{
+    quint8 hdr, fmt, endian, pad;
+    quint32 width, height, bpl;
+    QByteArray data;
+
+    in >> hdr;
+    if (hdr != 'Q') {
+        image = QImage();
+        return;
+    }
+    in >> fmt >> endian >> pad;
+    if (!fmt || fmt >= QImage::NImageFormats) {
+        image = QImage();
+        return;
+    }
+    if (endian != QSysInfo::ByteOrder) {
+        qWarning("ImageItem cannot read streamed image with different endianness");
+        image = QImage();
+        return;
+    }
+    in >> width >> height >> bpl;
+    in >> data;
+    data = qUncompress(data);
+    QImage res((const uchar *)data.constData(), width, height, bpl, QImage::Format(fmt));
+    image = res.copy();  //# yuck, seems there is currently no way to avoid data copy
+}
+
 QDataStream & operator<< (QDataStream &stream, const ImageItem &ii)
 {
     stream << ii.scriptName << ii.scriptChecksum << quint8(ii.status) << quint8(ii.renderFormat)
-           << quint8(ii.engine) << ii.image << ii.imageChecksums;
+           << quint8(ii.engine) << ii.imageChecksums;
+    ii.writeImageToStream(stream);
     return stream;
 }
 
@@ -217,10 +259,11 @@ QDataStream & operator>> (QDataStream &stream, ImageItem &ii)
 {
     quint8 encFormat, encStatus, encEngine;
     stream >> ii.scriptName >> ii.scriptChecksum >> encStatus >> encFormat
-           >> encEngine >> ii.image >> ii.imageChecksums;
+           >> encEngine >> ii.imageChecksums;
     ii.renderFormat = QImage::Format(encFormat);
     ii.status = ImageItem::ItemStatus(encStatus);
     ii.engine = ImageItem::GraphicsEngine(encEngine);
+    ii.readImageFromStream(stream);
     return stream;
 }
 

@@ -1744,7 +1744,9 @@ QVariant QScriptEnginePrivate::toVariant(JSC::ExecState *exec, JSC::JSValue valu
         else if (QScriptDeclarativeClass *dc = declarativeClass(value))
             return dc->toVariant(declarativeObject(value));
         return variantMapFromObject(exec, JSC::asObject(value));
-    } else if (value.isNumber()) {
+    } else if (value.isInt32()) {
+        return QVariant(toInt32(exec, value));
+    } else if (value.isDouble()) {
         return QVariant(toNumber(exec, value));
     } else if (value.isString()) {
         return QVariant(toString(exec, value));

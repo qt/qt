@@ -84,6 +84,9 @@ public:
     QString engineAsString() const;
     QString formatAsString() const;
 
+    void writeImageToStream(QDataStream &stream) const;
+    void readImageFromStream(QDataStream &stream);
+
     enum ItemStatus {
         Ok = 0,
         BaselineNotFound = 1,
@@ -105,7 +108,7 @@ public:
     quint16 scriptChecksum;
 };
 QDataStream & operator<< (QDataStream &stream, const ImageItem &ii);
-QDataStream & operator>> (QDataStream& stream, ImageItem& ii);
+QDataStream & operator>> (QDataStream &stream, ImageItem& ii);
 
 Q_DECLARE_METATYPE(ImageItem);
 
@@ -121,7 +124,7 @@ public:
     // Important constants here
     // ****************************************************
     enum Constant {
-        ProtocolVersion = 2,
+        ProtocolVersion = 3,
         ServerPort = 54129,
         Timeout = 5000
     };

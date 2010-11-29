@@ -103,6 +103,9 @@ private slots:
     void removeLayout();
     void avoidRecursionInInsertItem();
     void styleInfoLeak();
+    void testAlignmentInLargerLayout();
+    void testOffByOneInLargerLayout();
+    void testDefaultAlignment();
 
     // Task specific tests
     void task218400_insertStretchCrash();
@@ -1463,6 +1466,121 @@ void tst_QGraphicsLinearLayout::task218400_insertStretchCrash()
 
     QGraphicsWidget *form  = new QGraphicsWidget;
     form->setLayout(layout); // crash
+}
+
+void tst_QGraphicsLinearLayout::testAlignmentInLargerLayout()
+{
+    QGraphicsScene *scene = new QGraphicsScene;
+    QGraphicsWidget *form = new QGraphicsWidget;
+    scene->addItem(form);
+    QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Vertical, form);
+    layout->setSpacing(0);
+    layout->setContentsMargins(0,0,0,0);
+
+    QGraphicsWidget *a = new QGraphicsWidget;
+    a->setMaximumSize(100,100);
+    layout->addItem(a);
+
+    QCOMPARE(form->maximumSize(), QSizeF(100,100));
+    QCOMPARE(layout->maximumSize(), QSizeF(100,100));
+    layout->setMinimumSize(QSizeF(200,200));
+    layout->setMaximumSize(QSizeF(200,200));
+
+    layout->setAlignment(a, Qt::AlignCenter);
+    layout->activate();
+    QCOMPARE(a->geometry(), QRectF(50,50,100,100));
+
+    layout->setAlignment(a, Qt::AlignRight | Qt::AlignBottom);
+    layout->activate();
+    QCOMPARE(a->geometry(), QRectF(100,100,100,100));
+
+    layout->setAlignment(a, Qt::AlignHCenter | Qt::AlignTop);
+    layout->activate();
+    QCOMPARE(a->geometry(), QRectF(50,0,100,100));
+
+    QGraphicsWidget *b = new QGraphicsWidget;
+    b->setMaximumSize(100,100);
+    layout->addItem(b);
+
+    layout->setAlignment(a, Qt::AlignCenter);
+    layout->setAlignment(b, Qt::AlignCenter);
+    layout->activate();
+    QCOMPARE(a->geometry(), QRectF(50,0,100,100));
+    QCOMPARE(b->geometry(), QRectF(50,100,100,100));
+
+    layout->setAlignment(a, Qt::AlignRight | Qt::AlignBottom);
+    layout->setAlignment(b, Qt::AlignLeft | Qt::AlignTop);
+    layout->activate();
+    QCOMPARE(a->geometry(), QRectF(100,0,100,100));
+    QCOMPARE(b->geometry(), QRectF(0,100,100,100));
+}
+
+void tst_QGraphicsLinearLayout::testOffByOneInLargerLayout() {
+    QGraphicsScene *scene = new QGraphicsScene;
+    QGraphicsWidget *form = new QGraphicsWidget;
+    scene->addItem(form);
+    QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Vertical, form);
+    layout->setSpacing(0);
+    layout->setContentsMargins(0,0,0,0);
+
+    QGraphicsWidget *a = new QGraphicsWidget;
+    QGraphicsWidget *b = new QGraphicsWidget;
+    a->setMaximumSize(100,100);
+    b->setMaximumSize(100,100);
+    layout->addItem(a);
+    layout->addItem(b);
+
+    layout->setAlignment(a, Qt::AlignRight | Qt::AlignBottom);
+    layout->setAlignment(b, Qt::AlignLeft | Qt::AlignTop);
+    layout->setMinimumSize(QSizeF(101,201));
+    layout->setMaximumSize(QSizeF(101,201));
+    layout->activate();
+    QCOMPARE(a->geometry(), QRectF(1,0.5,100,100));
+    QCOMPARE(b->geometry(), QRectF(0,100.5,100,100));
+
+    layout->setMinimumSize(QSizeF(100,200));
+    layout->setMaximumSize(QSizeF(100,200));
+    layout->activate();
+    QCOMPARE(a->geometry(), QRectF(0,0,100,100));
+    QCOMPARE(b->geometry(), QRectF(0,100,100,100));
+
+    layout->setMinimumSize(QSizeF(99,199));
+    layout->setMaximumSize(QSizeF(99,199));
+    layout->activate();
+    QCOMPARE(a->geometry(), QRectF(0,0,99,99.5));
+    QCOMPARE(b->geometry(), QRectF(0,99.5,99,99.5));
+}
+void tst_QGraphicsLinearLayout::testDefaultAlignment()
+{
+    QGraphicsWidget *widget = new QGraphicsWidget;
+    QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Vertical, widget);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+
+    QGraphicsWidget *w = new QGraphicsWidget;
+    w->setMinimumSize(50,50);
+    w->setMaximumSize(50,50);
+    layout->addItem(w);
+
+    //Default alignment should be to the top-left
+    QCOMPARE(layout->alignment(w), 0);
+
+    //First, check by forcing the layout to be bigger
+    layout->setMinimumSize(100,100);
+    layout->activate();
+    QCOMPARE(layout->geometry(), QRectF(0,0,100,100));
+    QCOMPARE(w->geometry(), QRectF(0,0,50,50));
+    layout->setMinimumSize(-1,-1);
+
+    //Second, check by adding a larger item in the column
+    QGraphicsWidget *w2 = new QGraphicsWidget;
+    w2->setMinimumSize(100,100);
+    w2->setMaximumSize(100,100);
+    layout->addItem(w2);
+    layout->activate();
+    QCOMPARE(layout->geometry(), QRectF(0,0,100,150));
+    QCOMPARE(w->geometry(), QRectF(0,0,50,50));
+    QCOMPARE(w2->geometry(), QRectF(0,50,100,100));
 }
 
 QTEST_MAIN(tst_QGraphicsLinearLayout)

@@ -78,6 +78,7 @@ private slots:
     void ensureCleanupOrder();
     void QTBUG13877_crashOnExit();
     void QTBUG14579_leakInDestructor();
+    void QTBUG14579_resetInDestructor();
     void valueBased();
 };
 
@@ -383,6 +384,49 @@ void tst_QThreadStorage::QTBUG14579_leakInDestructor()
     //check all the constructed things have been destructed
     QCOMPARE(int(SPointer::count), c);
 }
+
+
+class QTBUG14579_reset;
+Q_GLOBAL_STATIC(QThreadStorage<QTBUG14579_reset *>, QTBUG14579_resetTls)
+
+class QTBUG14579_reset {
+public:
+    SPointer member;
+    ~QTBUG14579_reset() {
+        //Quite stupid, but WTF::ThreadSpecific<T>::destroy does it.
+        QTBUG14579_resetTls()->setLocalData(this);
+    }
+};
+
+
+void tst_QThreadStorage::QTBUG14579_resetInDestructor()
+{
+    class Thread : public QThread
+    {
+    public:
+        void run()
+        {
+            QVERIFY(!QTBUG14579_resetTls()->hasLocalData());
+            QTBUG14579_resetTls()->setLocalData(new QTBUG14579_reset);
+            QVERIFY(QTBUG14579_resetTls()->hasLocalData());
+        }
+    };
+    int c = SPointer::count;
+
+    Thread t1;
+    Thread t2;
+    Thread t3;
+    t1.start();
+    t2.start();
+    t3.start();
+    QVERIFY(t1.wait());
+    QVERIFY(t2.wait());
+    QVERIFY(t3.wait());
+
+    //check all the constructed things have been destructed
+    QCOMPARE(int(SPointer::count), c);
+}
+
 
 void tst_QThreadStorage::valueBased()
 {
