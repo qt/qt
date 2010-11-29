@@ -509,6 +509,7 @@ Q_SIGNALS:
 
 private slots:
     void freeTexture_slot(QGLContext *context, QPixmapData *boundPixmap, GLuint id) {
+        Q_UNUSED(boundPixmap);
 #if defined(Q_WS_X11)
         if (boundPixmap) {
             QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
