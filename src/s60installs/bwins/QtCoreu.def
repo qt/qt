@@ -59,7 +59,7 @@ EXPORTS
 	??0QChildEvent@@QAE@W4Type@QEvent@@PAVQObject@@@Z @ 58 NONAME ; QChildEvent::QChildEvent(enum QEvent::Type, class QObject *)
 	??0QCoreApplication@@IAE@AAVQCoreApplicationPrivate@@@Z @ 59 NONAME ; QCoreApplication::QCoreApplication(class QCoreApplicationPrivate &)
 	??0QCoreApplication@@QAE@AAHPAPAD@Z @ 60 NONAME ; QCoreApplication::QCoreApplication(int &, char * *)
-	??0QCoreApplicationPrivate@@QAE@AAHPAPAD@Z @ 61 NONAME ; QCoreApplicationPrivate::QCoreApplicationPrivate(int &, char * *)
+	??0QCoreApplicationPrivate@@QAE@AAHPAPAD@Z @ 61 NONAME ABSENT ; QCoreApplicationPrivate::QCoreApplicationPrivate(int &, char * *)
 	??0QCryptographicHash@@QAE@W4Algorithm@0@@Z @ 62 NONAME ; QCryptographicHash::QCryptographicHash(enum QCryptographicHash::Algorithm)
 	??0QDataStream@@QAE@ABVQByteArray@@@Z @ 63 NONAME ; QDataStream::QDataStream(class QByteArray const &)
 	??0QDataStream@@QAE@PAVQByteArray@@V?$QFlags@W4OpenModeFlag@QIODevice@@@@@Z @ 64 NONAME ; QDataStream::QDataStream(class QByteArray *, class QFlags<enum QIODevice::OpenModeFlag>)
@@ -3123,7 +3123,7 @@ EXPORTS
 	?reset@QMetaProperty@@QBE_NPAVQObject@@@Z @ 3122 NONAME ; bool QMetaProperty::reset(class QObject *) const
 	?reset@QTextStream@@QAEXXZ @ 3123 NONAME ; void QTextStream::reset(void)
 	?resetCurrentSender@QObjectPrivate@@SAXPAVQObject@@PAUSender@1@1@Z @ 3124 NONAME ; void QObjectPrivate::resetCurrentSender(class QObject *, struct QObjectPrivate::Sender *, struct QObjectPrivate::Sender *)
-	?resetDeleteWatch@QObjectPrivate@@SAXPAV1@PAHH@Z @ 3125 NONAME ; void QObjectPrivate::resetDeleteWatch(class QObjectPrivate *, int *, int)
+	?resetDeleteWatch@QObjectPrivate@@SAXPAV1@PAHH@Z @ 3125 NONAME ABSENT ; void QObjectPrivate::resetDeleteWatch(class QObjectPrivate *, int *, int)
 	?resetStatus@QDataStream@@QAEXXZ @ 3126 NONAME ; void QDataStream::resetStatus(void)
 	?resetStatus@QTextStream@@QAEXXZ @ 3127 NONAME ; void QTextStream::resetStatus(void)
 	?resize@QBitArray@@QAEXH@Z @ 3128 NONAME ; void QBitArray::resize(int)
@@ -3296,7 +3296,7 @@ EXPORTS
 	?setDefault@QLocale@@SAXABV1@@Z @ 3295 NONAME ; void QLocale::setDefault(class QLocale const &)
 	?setDefaultFormat@QSettings@@SAXW4Format@1@@Z @ 3296 NONAME ; void QSettings::setDefaultFormat(enum QSettings::Format)
 	?setDefaultState@QHistoryState@@QAEXPAVQAbstractState@@@Z @ 3297 NONAME ; void QHistoryState::setDefaultState(class QAbstractState *)
-	?setDeleteWatch@QObjectPrivate@@SAPAHPAV1@PAH@Z @ 3298 NONAME ; int * QObjectPrivate::setDeleteWatch(class QObjectPrivate *, int *)
+	?setDeleteWatch@QObjectPrivate@@SAPAHPAV1@PAH@Z @ 3298 NONAME ABSENT ; int * QObjectPrivate::setDeleteWatch(class QObjectPrivate *, int *)
 	?setDevice@QDataStream@@QAEXPAVQIODevice@@@Z @ 3299 NONAME ; void QDataStream::setDevice(class QIODevice *)
 	?setDevice@QTextStream@@QAEXPAVQIODevice@@@Z @ 3300 NONAME ; void QTextStream::setDevice(class QIODevice *)
 	?setDevice@QXmlStreamReader@@QAEXPAVQIODevice@@@Z @ 3301 NONAME ; void QXmlStreamReader::setDevice(class QIODevice *)
@@ -4486,4 +4486,103 @@ EXPORTS
 	?objectNameChanged@QAbstractDeclarativeData@@2P6AXPAV1@PAVQObject@@@ZA @ 4485 NONAME ; void (*QAbstractDeclarativeData::objectNameChanged)(class QAbstractDeclarativeData *, class QObject *)
 	?queueDeferredActiveObjectsCompletion@QEventDispatcherSymbian@@QAEXXZ @ 4486 NONAME ; void QEventDispatcherSymbian::queueDeferredActiveObjectsCompletion(void)
 	?reactivateDeferredActiveObjects@QEventDispatcherSymbian@@UAEXXZ @ 4487 NONAME ; void QEventDispatcherSymbian::reactivateDeferredActiveObjects(void)
+	?contains@QString@@QBE?AVQBool@@ABVQStringRef@@W4CaseSensitivity@Qt@@@Z @ 4488 NONAME ; class QBool QString::contains(class QStringRef const &, enum Qt::CaseSensitivity) const
+	?swap@QRegExp@@QAEXAAV1@@Z @ 4489 NONAME ; void QRegExp::swap(class QRegExp &)
+	?indexOf@QStringRef@@QBEHABVQString@@HW4CaseSensitivity@Qt@@@Z @ 4490 NONAME ; int QStringRef::indexOf(class QString const &, int, enum Qt::CaseSensitivity) const
+	?indexOf@QStringRef@@QBEHABV1@HW4CaseSensitivity@Qt@@@Z @ 4491 NONAME ; int QStringRef::indexOf(class QStringRef const &, int, enum Qt::CaseSensitivity) const
+	?count@QString@@QBEHABVQStringRef@@W4CaseSensitivity@Qt@@@Z @ 4492 NONAME ; int QString::count(class QStringRef const &, enum Qt::CaseSensitivity) const
+	?swap@QString@@QAEXAAV1@@Z @ 4493 NONAME ; void QString::swap(class QString &)
+	?trUtf8@QAnimationDriver@@SA?AVQString@@PBD0H@Z @ 4494 NONAME ; class QString QAnimationDriver::trUtf8(char const *, char const *, int)
+	?startsWith@QStringRef@@QBE_NVQChar@@W4CaseSensitivity@Qt@@@Z @ 4495 NONAME ; bool QStringRef::startsWith(class QChar, enum Qt::CaseSensitivity) const
+	?setNativeKey@QSharedMemory@@QAEXABVQString@@@Z @ 4496 NONAME ; void QSharedMemory::setNativeKey(class QString const &)
+	??0QAnimationDriver@@IAE@AAVQAnimationDriverPrivate@@PAVQObject@@@Z @ 4497 NONAME ; QAnimationDriver::QAnimationDriver(class QAnimationDriverPrivate &, class QObject *)
+	?timerEvent@QUnifiedTimer@@MAEXPAVQTimerEvent@@@Z @ 4498 NONAME ; void QUnifiedTimer::timerEvent(class QTimerEvent *)
+	?registerAnimation@QUnifiedTimer@@SAXPAVQAbstractAnimation@@_N@Z @ 4499 NONAME ; void QUnifiedTimer::registerAnimation(class QAbstractAnimation *, bool)
+	?startsWith@QStringRef@@QBE_NABV1@W4CaseSensitivity@Qt@@@Z @ 4500 NONAME ; bool QStringRef::startsWith(class QStringRef const &, enum Qt::CaseSensitivity) const
+	?contains@QStringRef@@QBE?AVQBool@@ABV1@W4CaseSensitivity@Qt@@@Z @ 4501 NONAME ; class QBool QStringRef::contains(class QStringRef const &, enum Qt::CaseSensitivity) const
+	?startsWith@QStringRef@@QBE_NVQLatin1String@@W4CaseSensitivity@Qt@@@Z @ 4502 NONAME ; bool QStringRef::startsWith(class QLatin1String, enum Qt::CaseSensitivity) const
+	?cast@QMetaObject@@QBEPBVQObject@@PBV2@@Z @ 4503 NONAME ; class QObject const * QMetaObject::cast(class QObject const *) const
+	?ensureTimerUpdate@QUnifiedTimer@@SAXXZ @ 4504 NONAME ; void QUnifiedTimer::ensureTimerUpdate(void)
+	?contains@QStringRef@@QBE?AVQBool@@VQLatin1String@@W4CaseSensitivity@Qt@@@Z @ 4505 NONAME ; class QBool QStringRef::contains(class QLatin1String, enum Qt::CaseSensitivity) const
+	?d_func@QAnimationDriver@@ABEPBVQAnimationDriverPrivate@@XZ @ 4506 NONAME ; class QAnimationDriverPrivate const * QAnimationDriver::d_func(void) const
+	?swap@QVariant@@QAEXAAV1@@Z @ 4507 NONAME ; void QVariant::swap(class QVariant &)
+	?lastIndexOf@QStringRef@@QBEHABV1@HW4CaseSensitivity@Qt@@@Z @ 4508 NONAME ; int QStringRef::lastIndexOf(class QStringRef const &, int, enum Qt::CaseSensitivity) const
+	?indexOf@QStringRef@@QBEHVQLatin1String@@HW4CaseSensitivity@Qt@@@Z @ 4509 NONAME ; int QStringRef::indexOf(class QLatin1String, int, enum Qt::CaseSensitivity) const
+	?senderSignalIndex@QObject@@IBEHXZ @ 4510 NONAME ; int QObject::senderSignalIndex(void) const
+	?toUtf8@QStringRef@@QBE?AVQByteArray@@XZ @ 4511 NONAME ; class QByteArray QStringRef::toUtf8(void) const
+	?startsWith@QString@@QBE_NABVQStringRef@@W4CaseSensitivity@Qt@@@Z @ 4512 NONAME ; bool QString::startsWith(class QStringRef const &, enum Qt::CaseSensitivity) const
+	?unlockInternal@QMutex@@AAEXXZ @ 4513 NONAME ; void QMutex::unlockInternal(void)
+	?updateAnimationsTime@QUnifiedTimer@@QAEXXZ @ 4514 NONAME ; void QUnifiedTimer::updateAnimationsTime(void)
+	?swap@QBitArray@@QAEXAAV1@@Z @ 4515 NONAME ; void QBitArray::swap(class QBitArray &)
+	?nativeKey@QSharedMemory@@QBE?AVQString@@XZ @ 4516 NONAME ; class QString QSharedMemory::nativeKey(void) const
+	?connect@QObject@@SA_NPBV1@ABVQMetaMethod@@01W4ConnectionType@Qt@@@Z @ 4517 NONAME ; bool QObject::connect(class QObject const *, class QMetaMethod const &, class QObject const *, class QMetaMethod const &, enum Qt::ConnectionType)
+	?registerRunningAnimation@QUnifiedTimer@@AAEXPAVQAbstractAnimation@@@Z @ 4518 NONAME ; void QUnifiedTimer::registerRunningAnimation(class QAbstractAnimation *)
+	?disconnect@QObject@@SA_NPBV1@ABVQMetaMethod@@01@Z @ 4519 NONAME ; bool QObject::disconnect(class QObject const *, class QMetaMethod const &, class QObject const *, class QMetaMethod const &)
+	?installAnimationDriver@QUnifiedTimer@@QAEXPAVQAnimationDriver@@@Z @ 4520 NONAME ; void QUnifiedTimer::installAnimationDriver(class QAnimationDriver *)
+	?startsWith@QStringRef@@QBE_NABVQString@@W4CaseSensitivity@Qt@@@Z @ 4521 NONAME ; bool QStringRef::startsWith(class QString const &, enum Qt::CaseSensitivity) const
+	?contains@QStringRef@@QBE?AVQBool@@VQChar@@W4CaseSensitivity@Qt@@@Z @ 4522 NONAME ; class QBool QStringRef::contains(class QChar, enum Qt::CaseSensitivity) const
+	?unregisterAnimation@QUnifiedTimer@@SAXPAVQAbstractAnimation@@@Z @ 4523 NONAME ; void QUnifiedTimer::unregisterAnimation(class QAbstractAnimation *)
+	?qt_metacast@QAnimationDriver@@UAEPAXPBD@Z @ 4524 NONAME ; void * QAnimationDriver::qt_metacast(char const *)
+	?count@QStringRef@@QBEHABVQString@@W4CaseSensitivity@Qt@@@Z @ 4525 NONAME ; int QStringRef::count(class QString const &, enum Qt::CaseSensitivity) const
+	?endsWith@QStringRef@@QBE_NVQChar@@W4CaseSensitivity@Qt@@@Z @ 4526 NONAME ; bool QStringRef::endsWith(class QChar, enum Qt::CaseSensitivity) const
+	??0QUnifiedTimer@@AAE@XZ @ 4527 NONAME ; QUnifiedTimer::QUnifiedTimer(void)
+	??0QCoreApplicationPrivate@@QAE@AAHPAPADI@Z @ 4528 NONAME ; QCoreApplicationPrivate::QCoreApplicationPrivate(int &, char * *, unsigned int)
+	??0QCoreApplication@@QAE@AAHPAPADH@Z @ 4529 NONAME ; QCoreApplication::QCoreApplication(int &, char * *, int)
+	??0QAnimationDriver@@QAE@PAVQObject@@@Z @ 4530 NONAME ; QAnimationDriver::QAnimationDriver(class QObject *)
+	?lastIndexOf@QStringRef@@QBEHVQLatin1String@@HW4CaseSensitivity@Qt@@@Z @ 4531 NONAME ; int QStringRef::lastIndexOf(class QLatin1String, int, enum Qt::CaseSensitivity) const
+	??0QAnimationDriverPrivate@@QAE@XZ @ 4532 NONAME ; QAnimationDriverPrivate::QAnimationDriverPrivate(void)
+	?endsWith@QString@@QBE_NABVQStringRef@@W4CaseSensitivity@Qt@@@Z @ 4533 NONAME ; bool QString::endsWith(class QStringRef const &, enum Qt::CaseSensitivity) const
+	?trUtf8@QAnimationDriver@@SA?AVQString@@PBD0@Z @ 4534 NONAME ; class QString QAnimationDriver::trUtf8(char const *, char const *)
+	?install@QAnimationDriver@@QAEXXZ @ 4535 NONAME ; void QAnimationDriver::install(void)
+	?qt_metacall@QAnimationDriver@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 4536 NONAME ; int QAnimationDriver::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?endsWith@QStringRef@@QBE_NABVQString@@W4CaseSensitivity@Qt@@@Z @ 4537 NONAME ; bool QStringRef::endsWith(class QString const &, enum Qt::CaseSensitivity) const
+	?lockInline@QMutex@@QAEXXZ @ 4538 NONAME ; void QMutex::lockInline(void)
+	?endsWith@QStringRef@@QBE_NABV1@W4CaseSensitivity@Qt@@@Z @ 4539 NONAME ; bool QStringRef::endsWith(class QStringRef const &, enum Qt::CaseSensitivity) const
+	??_EQUnifiedTimer@@UAE@I@Z @ 4540 NONAME ; QUnifiedTimer::~QUnifiedTimer(unsigned int)
+	?setTimingInterval@QUnifiedTimer@@QAEXH@Z @ 4541 NONAME ; void QUnifiedTimer::setTimingInterval(int)
+	?closestPauseAnimationTimeToFinish@QUnifiedTimer@@AAEHXZ @ 4542 NONAME ; int QUnifiedTimer::closestPauseAnimationTimeToFinish(void)
+	??0QXmlStreamAttributes@@QAE@XZ @ 4543 NONAME ; QXmlStreamAttributes::QXmlStreamAttributes(void)
+	?lastIndexOf@QString@@QBEHABVQStringRef@@HW4CaseSensitivity@Qt@@@Z @ 4544 NONAME ; int QString::lastIndexOf(class QStringRef const &, int, enum Qt::CaseSensitivity) const
+	??1QAnimationDriverPrivate@@UAE@XZ @ 4545 NONAME ; QAnimationDriverPrivate::~QAnimationDriverPrivate(void)
+	?swap@QUrl@@QAEXAAV1@@Z @ 4546 NONAME ; void QUrl::swap(class QUrl &)
+	??_EQAnimationDriverPrivate@@UAE@I@Z @ 4547 NONAME ; QAnimationDriverPrivate::~QAnimationDriverPrivate(unsigned int)
+	??_EQAnimationDriver@@UAE@I@Z @ 4548 NONAME ; QAnimationDriver::~QAnimationDriver(unsigned int)
+	?instance@QUnifiedTimer@@SAPAV1@_N@Z @ 4549 NONAME ; class QUnifiedTimer * QUnifiedTimer::instance(bool)
+	?setSlowdownFactor@QUnifiedTimer@@QAEXM@Z @ 4550 NONAME ; void QUnifiedTimer::setSlowdownFactor(float)
+	?isRunning@QAnimationDriver@@QBE_NXZ @ 4551 NONAME ; bool QAnimationDriver::isRunning(void) const
+	?count@QStringRef@@QBEHABV1@W4CaseSensitivity@Qt@@@Z @ 4552 NONAME ; int QStringRef::count(class QStringRef const &, enum Qt::CaseSensitivity) const
+	?contains@QStringRef@@QBE?AVQBool@@ABVQString@@W4CaseSensitivity@Qt@@@Z @ 4553 NONAME ; class QBool QStringRef::contains(class QString const &, enum Qt::CaseSensitivity) const
+	?tryLockInline@QMutex@@QAE_NXZ @ 4554 NONAME ; bool QMutex::tryLockInline(void)
+	?lastIndexOf@QStringRef@@QBEHABVQString@@HW4CaseSensitivity@Qt@@@Z @ 4555 NONAME ; int QStringRef::lastIndexOf(class QString const &, int, enum Qt::CaseSensitivity) const
+	?lockInternal@QMutex@@AAEXXZ @ 4556 NONAME ; void QMutex::lockInternal(void)
+	?toLocal8Bit@QStringRef@@QBE?AVQByteArray@@XZ @ 4557 NONAME ; class QByteArray QStringRef::toLocal8Bit(void) const
+	?indexOf@QStringRef@@QBEHVQChar@@HW4CaseSensitivity@Qt@@@Z @ 4558 NONAME ; int QStringRef::indexOf(class QChar, int, enum Qt::CaseSensitivity) const
+	?toUcs4@QStringRef@@QBE?AV?$QVector@I@@XZ @ 4559 NONAME ; class QVector<unsigned int> QStringRef::toUcs4(void) const
+	?staticMetaObject@QAnimationDriver@@2UQMetaObject@@B @ 4560 NONAME ; struct QMetaObject const QAnimationDriver::staticMetaObject
+	?unregisterRunningAnimation@QUnifiedTimer@@AAEXPAVQAbstractAnimation@@@Z @ 4561 NONAME ; void QUnifiedTimer::unregisterRunningAnimation(class QAbstractAnimation *)
+	?isLocalFile@QUrl@@QBE_NXZ @ 4562 NONAME ; bool QUrl::isLocalFile(void) const
+	?swap@QByteArray@@QAEXAAV1@@Z @ 4563 NONAME ; void QByteArray::swap(class QByteArray &)
+	?tr@QAnimationDriver@@SA?AVQString@@PBD0H@Z @ 4564 NONAME ; class QString QAnimationDriver::tr(char const *, char const *, int)
+	?toLatin1@QStringRef@@QBE?AVQByteArray@@XZ @ 4565 NONAME ; class QByteArray QStringRef::toLatin1(void) const
+	??1QAnimationDriver@@UAE@XZ @ 4566 NONAME ; QAnimationDriver::~QAnimationDriver(void)
+	?tr@QAnimationDriver@@SA?AVQString@@PBD0@Z @ 4567 NONAME ; class QString QAnimationDriver::tr(char const *, char const *)
+	?waitForDone@QThreadPool@@QAE_NH@Z @ 4568 NONAME ; bool QThreadPool::waitForDone(int)
+	?endsWith@QStringRef@@QBE_NVQLatin1String@@W4CaseSensitivity@Qt@@@Z @ 4569 NONAME ; bool QStringRef::endsWith(class QLatin1String, enum Qt::CaseSensitivity) const
+	?stop@QAnimationDriver@@AAEXXZ @ 4570 NONAME ; void QAnimationDriver::stop(void)
+	?getStaticMetaObject@QAnimationDriver@@SAABUQMetaObject@@XZ @ 4571 NONAME ; struct QMetaObject const & QAnimationDriver::getStaticMetaObject(void)
+	?metaObject@QAnimationDriver@@UBEPBUQMetaObject@@XZ @ 4572 NONAME ; struct QMetaObject const * QAnimationDriver::metaObject(void) const
+	?d_func@QAnimationDriver@@AAEPAVQAnimationDriverPrivate@@XZ @ 4573 NONAME ; class QAnimationDriverPrivate * QAnimationDriver::d_func(void)
+	?app_compile_version@QCoreApplicationPrivate@@2HA @ 4574 NONAME ; int QCoreApplicationPrivate::app_compile_version
+	?restartAnimationTimer@QUnifiedTimer@@QAEXXZ @ 4575 NONAME ; void QUnifiedTimer::restartAnimationTimer(void)
+	?count@QStringRef@@QBEHVQChar@@W4CaseSensitivity@Qt@@@Z @ 4576 NONAME ; int QStringRef::count(class QChar, enum Qt::CaseSensitivity) const
+	?toAscii@QStringRef@@QBE?AVQByteArray@@XZ @ 4577 NONAME ; class QByteArray QStringRef::toAscii(void) const
+	?setConsistentTiming@QUnifiedTimer@@QAEX_N@Z @ 4578 NONAME ; void QUnifiedTimer::setConsistentTiming(bool)
+	??1QUnifiedTimer@@UAE@XZ @ 4579 NONAME ; QUnifiedTimer::~QUnifiedTimer(void)
+	?setSlowModeEnabled@QUnifiedTimer@@QAEX_N@Z @ 4580 NONAME ; void QUnifiedTimer::setSlowModeEnabled(bool)
+	?updateAnimationTimer@QUnifiedTimer@@SAXXZ @ 4581 NONAME ; void QUnifiedTimer::updateAnimationTimer(void)
+	?indexOf@QString@@QBEHABVQStringRef@@HW4CaseSensitivity@Qt@@@Z @ 4582 NONAME ; int QString::indexOf(class QStringRef const &, int, enum Qt::CaseSensitivity) const
+	?lastIndexOf@QStringRef@@QBEHVQChar@@HW4CaseSensitivity@Qt@@@Z @ 4583 NONAME ; int QStringRef::lastIndexOf(class QChar, int, enum Qt::CaseSensitivity) const
+	?advance@QAnimationDriver@@QAEXXZ @ 4584 NONAME ; void QAnimationDriver::advance(void)
+	?start@QAnimationDriver@@AAEXXZ @ 4585 NONAME ; void QAnimationDriver::start(void)
+	?unlockInline@QMutex@@QAEXXZ @ 4586 NONAME ; void QMutex::unlockInline(void)
 
