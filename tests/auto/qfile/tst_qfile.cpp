@@ -215,6 +215,11 @@ private slots:
     void resize();
 
     void objectConstructors();
+#ifdef Q_OS_SYMBIAN
+    void platformSecurity_data();
+    void platformSecurity();
+#endif
+    void caseSensitivity();
 
     // --- Task related tests below this line
     void task167217();
@@ -400,6 +405,7 @@ void tst_QFile::cleanupTestCase()
     QFile::remove("qfile_map_testfile");
     QFile::remove("readAllBuffer.txt");
     QFile::remove("qt_file.tmp");
+    QFile::remove("File.txt");
 }
 
 //------------------------------------------
@@ -3133,6 +3139,92 @@ void tst_QFile::objectConstructors()
     QFile* file2 = new QFile(&ob);
     QVERIFY(file1->exists());
     QVERIFY(!file2->exists());
+}
+
+#ifdef Q_OS_SYMBIAN
+void tst_QFile::platformSecurity_data()
+{
+    QTest::addColumn<QString>("file");
+    QTest::addColumn<bool>("readable");
+    QTest::addColumn<bool>("writable");
+
+    QString selfname = QCoreApplication::applicationFilePath();
+    QString ownprivate = QCoreApplication::applicationDirPath();
+    QString owndrive = selfname.left(2);
+    bool amiprivileged = RProcess().HasCapability(ECapabilityAllFiles);
+    QTest::newRow("resource") << owndrive + "/resource/apps/tst_qfile.rsc" << true << amiprivileged;
+    QTest::newRow("sys") << selfname << amiprivileged << false;
+    QTest::newRow("own private") << ownprivate + "/testfile.txt" << true << true;
+    QTest::newRow("other private") << owndrive + "/private/10003a3f/import/apps/tst_qfile_reg.rsc" << amiprivileged << amiprivileged;
+}
+
+void tst_QFile::platformSecurity()
+{
+    QFETCH(QString,file);
+    QFETCH(bool,readable);
+    QFETCH(bool,writable);
+
+    {
+        QFile f(file);
+        QCOMPARE(f.open(QIODevice::ReadOnly), readable);
+    }
+
+    {
+        QFile f(file);
+        QCOMPARE(f.open(QIODevice::ReadOnly | QIODevice::Unbuffered), readable);
+    }
+
+    //append mode used to avoid truncating the files.
+    {
+        QFile f(file);
+        QCOMPARE(f.open(QIODevice::WriteOnly | QIODevice::Append), writable);
+    }
+
+    {
+        QFile f(file);
+        QCOMPARE(f.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Unbuffered), writable);
+    }
+
+    {
+        QFile f(file);
+        QCOMPARE(f.open(QIODevice::ReadWrite), writable);
+    }
+
+    {
+        QFile f(file);
+        QCOMPARE(f.open(QIODevice::ReadWrite | QIODevice::Unbuffered), writable);
+    }
+}
+#endif
+
+void tst_QFile::caseSensitivity()
+{
+#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WIN)
+    const bool caseSensitive = false;
+#else
+    const bool caseSensitive = true;
+#endif
+    QByteArray testData("a little test");
+    QString filename("File.txt");
+    {
+        QFile f(filename);
+        QVERIFY(f.open(QIODevice::WriteOnly));
+        QVERIFY(f.write(testData));
+        f.close();
+    }
+    QStringList alternates;
+    QFileInfo fi(filename);
+    QVERIFY(fi.exists());
+    alternates << "file.txt" << "File.TXT" << "fIlE.TxT" << fi.absoluteFilePath().toUpper() << fi.absoluteFilePath().toLower();
+    foreach (QString alt, alternates) {
+        QFileInfo fi2(alt);
+        QCOMPARE(fi2.exists(), !caseSensitive);
+        QCOMPARE(fi.size() == fi2.size(), !caseSensitive);
+        QFile f2(alt);
+        QCOMPARE(f2.open(QIODevice::ReadOnly), !caseSensitive);
+        if (caseSensitive)
+            QCOMPARE(f2.readAll(), testData);
+    }
 }
 
 QTEST_MAIN(tst_QFile)
