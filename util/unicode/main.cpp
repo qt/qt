@@ -370,6 +370,7 @@ static const char *methods =
     "    inline int script(const QChar &ch)\n"
     "    { return script(ch.unicode()); }\n\n";
 
+static const int SizeOfPropertiesStruct = 20;
 
 struct PropertyFlags {
     bool operator ==(const PropertyFlags &o) {
@@ -2031,8 +2032,8 @@ static QByteArray createPropertyInfo()
     qDebug("        block data uses: %d bytes", smp_block_data);
     qDebug("        trie data uses : %d bytes", smp_trie);
 
-    qDebug("\n        properties use : %d bytes", uniqueProperties.size()*20);
-    qDebug("    memory usage: %d bytes", bmp_mem+smp_mem + uniqueProperties.size()*20);
+    qDebug("\n        properties uses : %d bytes", uniqueProperties.size() * SizeOfPropertiesStruct);
+    qDebug("    memory usage: %d bytes", bmp_mem + smp_mem + uniqueProperties.size() * SizeOfPropertiesStruct);
 
     QByteArray out;
     out += "static const unsigned short uc_property_trie[] = {\n";
