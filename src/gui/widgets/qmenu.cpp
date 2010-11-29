@@ -1795,10 +1795,14 @@ QSize QMenu::sizeHint() const
 void QMenu::popup(const QPoint &p, QAction *atAction)
 {
     Q_D(QMenu);
+#ifndef Q_WS_S60
+    //on S60 opens the menu at the same position it was activated last time
+    //there is no need to reset the offset fix for QTBUG-9505
     if (d->scroll) { // reset scroll state from last popup
         d->scroll->scrollOffset = 0;
         d->scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
     }
+#endif
     d->tearoffHighlighted = 0;
     d->motions = 0;
     d->doChildEffects = true;
