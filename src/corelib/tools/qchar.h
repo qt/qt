@@ -334,6 +334,8 @@ public:
     static UnicodeVersion QT_FASTCALL unicodeVersion(uint ucs4);
     static UnicodeVersion QT_FASTCALL unicodeVersion(ushort ucs2);
 
+    static UnicodeVersion QT_FASTCALL currentUnicodeVersion();
+
     static QString QT_FASTCALL decomposition(uint ucs4);
 
 #ifdef QT3_SUPPORT
