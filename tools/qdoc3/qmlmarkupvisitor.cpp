@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#include <QDebug>
 #include <QStringList>
 #include <QtGlobal>
 #include "private/qdeclarativejsast_p.h"
@@ -57,7 +56,7 @@ QmlMarkupVisitor::QmlMarkupVisitor(const QString &source, QDeclarativeJS::Engine
     indent = 0;
     cursor = 0;
     commentIndex = 0;
-    debug += QString("Comments %1\n").arg(engine->comments().length());
+     QString("Comments %1\n").arg(engine->comments().length());
 }
 
 QmlMarkupVisitor::~QmlMarkupVisitor()
@@ -94,8 +93,6 @@ QString QmlMarkupVisitor::markedUpCode()
     if (cursor < source.length())
         addExtra(cursor, source.length());
 
-    //qDebug() << debug;
-    qDebug() << output;
     return output;
 }
 
@@ -157,7 +154,7 @@ void QmlMarkupVisitor::addMarkedUpToken(
     if (cursor < location.offset)
         addExtra(cursor, location.offset);
     else if (cursor > location.offset)
-        debug += QString("%1 %2\n").arg(cursor).arg(location.offset);
+        return;
 
     output += QString(QLatin1String("<@%1>%2</@%3>")).arg(tagName, protect(sourceText(location)), tagName);
     cursor += location.length;
@@ -184,7 +181,7 @@ void QmlMarkupVisitor::addVerbatim(QDeclarativeJS::AST::SourceLocation first,
     if (cursor < start)
         addExtra(cursor, start);
     else if (cursor > start)
-        debug += QString("%1 %2 %3 x\n").arg(sourceText(first)).arg(cursor).arg(start);
+        return;
 
     QString text = source.mid(start, finish - start);
     write(text);
@@ -195,11 +192,10 @@ void QmlMarkupVisitor::addVerbatim(QDeclarativeJS::AST::SourceLocation first,
 
 void QmlMarkupVisitor::write(const QString &text)
 {
-    debug += QString().fill(QChar(' '), indent) + text + QLatin1String("\n");
     indent += 1;
 }
 
-void QmlMarkupVisitor::endWrite(const QString &)
+void QmlMarkupVisitor::endWrite(const QString &text)
 {
     indent -= 1;
 }
@@ -877,6 +873,9 @@ void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::ConditionalExpression *)
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::Expression *expression)
 {
     write("<Expression>");
+    QDeclarativeJS::AST::Node::accept(expression->left, this);
+    addVerbatim(expression->commaToken);
+    QDeclarativeJS::AST::Node::accept(expression->right, this);
     return true;
 }
 
@@ -987,9 +986,10 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::IfStatement *statement)
     QDeclarativeJS::AST::Node::accept(statement->expression, this);
     addVerbatim(statement->rparenToken);
     QDeclarativeJS::AST::Node::accept(statement->ok, this);
-    //addMarkedUpToken(statement->elseToken, QLatin1String("keyword"));
-    //addVerbatim(statement->elseToken); ### this token referred to the wrong source text for some reason
-    QDeclarativeJS::AST::Node::accept(statement->ko, this);
+    if (statement->ko) {
+        addMarkedUpToken(statement->elseToken, QLatin1String("keyword"));
+        QDeclarativeJS::AST::Node::accept(statement->ko, this);
+    }
     return false;
 }
 
