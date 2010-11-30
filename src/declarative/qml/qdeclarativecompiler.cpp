@@ -946,6 +946,16 @@ void QDeclarativeCompiler::genObject(QDeclarativeParser::Object *obj)
                               QDeclarativePropertyCache::Data::IsVMEFunction, 
                               QDeclarativePropertyCache::Data::IsVMESignal);
 
+        // Add flag for alias properties
+        if (!obj->synthdata.isEmpty()) {
+            const QDeclarativeVMEMetaData *vmeMetaData = 
+                reinterpret_cast<const QDeclarativeVMEMetaData *>(obj->synthdata.constData());
+            for (int ii = 0; ii < vmeMetaData->aliasCount; ++ii) {
+                int index = obj->metaObject()->propertyOffset() + vmeMetaData->propertyCount + ii;
+                propertyCache->property(index)->flags |= QDeclarativePropertyCache::Data::IsAlias;
+            }
+        }
+
         if (obj == unitRoot) {
             propertyCache->addref();
             output->rootPropertyCache = propertyCache;
@@ -1003,7 +1013,8 @@ void QDeclarativeCompiler::genObjectBody(QDeclarativeParser::Object *obj)
             seenDefer = true;
             continue;
         }
-        genValueProperty(prop, obj);
+        if (!prop->isAlias)
+            genValueProperty(prop, obj);
     }
     if (seenDefer) {
         QDeclarativeInstruction defer;
@@ -1113,25 +1124,56 @@ void QDeclarativeCompiler::genObjectBody(QDeclarativeParser::Object *obj)
     }
 
     foreach(Property *prop, obj->valueTypeProperties) {
-        QDeclarativeInstruction fetch;
-        fetch.type = QDeclarativeInstruction::FetchValueType;
-        fetch.fetchValue.property = prop->index;
-        fetch.fetchValue.type = prop->type;
-        fetch.line = prop->location.start.line;
-
-        output->bytecode << fetch;
-
-        foreach(Property *vprop, prop->value->valueProperties) {
-            genPropertyAssignment(vprop, prop->value, prop);
-        }
-
-        QDeclarativeInstruction pop;
-        pop.type = QDeclarativeInstruction::PopValueType;
-        pop.fetchValue.property = prop->index;
-        pop.fetchValue.type = prop->type;
-        pop.line = prop->location.start.line;
-        output->bytecode << pop;
+        if (!prop->isAlias)
+            genValueTypeProperty(obj, prop);
     }
+
+    foreach(Property *prop, obj->valueProperties) {
+        if (prop->isDeferred) 
+            continue;
+        if (prop->isAlias)
+            genValueProperty(prop, obj);
+    }
+
+    foreach(Property *prop, obj->valueTypeProperties) {
+        if (prop->isAlias)
+            genValueTypeProperty(obj, prop);
+    }
+}
+
+void QDeclarativeCompiler::genValueTypeProperty(QDeclarativeParser::Object *obj,QDeclarativeParser::Property *prop)
+{
+    QDeclarativeInstruction fetch;
+    fetch.type = QDeclarativeInstruction::FetchValueType;
+    fetch.fetchValue.property = prop->index;
+    fetch.fetchValue.type = prop->type;
+    fetch.fetchValue.bindingSkipList = 0;
+    fetch.line = prop->location.start.line;
+
+    if (obj->type == -1 || output->types.at(obj->type).component) {
+        // We only have to do this if this is a composite type.  If it is a builtin
+        // type it can't possibly already have bindings that need to be cleared.
+        foreach(Property *vprop, prop->value->valueProperties) {
+            if (!vprop->values.isEmpty()) {
+                Q_ASSERT(vprop->index >= 0 && vprop->index < 32);
+                fetch.fetchValue.bindingSkipList |= (1 << vprop->index);
+            }
+        }
+    }
+
+    output->bytecode << fetch;
+
+    foreach(Property *vprop, prop->value->valueProperties) {
+        genPropertyAssignment(vprop, prop->value, prop);
+    }
+
+    QDeclarativeInstruction pop;
+    pop.type = QDeclarativeInstruction::PopValueType;
+    pop.fetchValue.property = prop->index;
+    pop.fetchValue.type = prop->type;
+    pop.fetchValue.bindingSkipList = 0;
+    pop.line = prop->location.start.line;
+    output->bytecode << pop;
 }
 
 void QDeclarativeCompiler::genComponent(QDeclarativeParser::Object *obj)
@@ -1440,10 +1482,22 @@ bool QDeclarativeCompiler::buildProperty(QDeclarativeParser::Property *prop,
         if (p.name()) {
             prop->type = p.userType();
         }
-    }
 
-    if (prop->index != -1) 
-        prop->parent->setBindingBit(prop->index);
+        // Check if this is an alias
+        if (prop->index != -1 && 
+            prop->parent && 
+            prop->parent->type != -1 && 
+            output->types.at(prop->parent->type).component) {
+
+            QDeclarativePropertyCache *cache = output->types.at(prop->parent->type).component->rootPropertyCache;
+            if (cache && cache->property(prop->index) && 
+                cache->property(prop->index)->flags & QDeclarativePropertyCache::Data::IsAlias)
+                prop->isAlias = true;
+        }
+
+        if (prop->index != -1 && !prop->values.isEmpty()) 
+            prop->parent->setBindingBit(prop->index);
+    }
 
     if (!prop->isDefault && prop->name == "id" && !ctxt.isSubContext()) {
 
@@ -1776,6 +1830,12 @@ bool QDeclarativeCompiler::buildGroupedProperty(QDeclarativeParser::Property *pr
 
             if (!obj->metaObject()->property(prop->index).isWritable()) {
                 COMPILE_EXCEPTION(prop, tr( "Invalid property assignment: \"%1\" is a read-only property").arg(QString::fromUtf8(prop->name)));
+            }
+
+
+            if (prop->isAlias) {
+                foreach (Property *vtProp, prop->value->properties)
+                    vtProp->isAlias = true;
             }
 
             COMPILE_CHECK(buildValueTypeProperty(enginePrivate->valueTypes[prop->type],
@@ -2423,7 +2483,7 @@ bool QDeclarativeCompiler::buildDynamicMeta(QDeclarativeParser::Object *obj, Dyn
         if (p.type == Object::DynamicProperty::Alias) {
             if (mode == ResolveAliases) {
                 ((QDeclarativeVMEMetaData *)dynamicData.data())->aliasCount++;
-                compileAlias(builder, dynamicData, obj, p);
+                COMPILE_CHECK(compileAlias(builder, dynamicData, obj, p));
             } else {
                 // Need a fake signal so that the metaobject remains consistent across
                 // the resolve and non-resolve alias runs
@@ -2694,7 +2754,10 @@ void QDeclarativeCompiler::genBindingAssignment(QDeclarativeParser::Value *bindi
     }
 
     QDeclarativeInstruction store;
-    store.type = QDeclarativeInstruction::StoreBinding;
+    if (!prop->isAlias)
+        store.type = QDeclarativeInstruction::StoreBinding;
+    else
+        store.type = QDeclarativeInstruction::StoreBindingOnAlias;
     store.assignBinding.value = output->indexForByteArray(ref.compiledData);
     store.assignBinding.context = ref.bindingContext.stack;
     store.assignBinding.owner = ref.bindingContext.owner;
@@ -2769,13 +2832,17 @@ bool QDeclarativeCompiler::completeComponentBuild()
         expr.expression = binding.expression;
         expr.imports = unit->imports();
 
-        int index = bindingCompiler.compile(expr, enginePrivate);
-        if (index != -1) {
-            binding.dataType = BindingReference::Experimental;
-            binding.compiledIndex = index;
-            componentStat.optimizedBindings.append(iter.key()->location);
-            continue;
-        } 
+        // ### We don't currently optimize for bindings on alias's - because 
+        // of the solution to QTBUG-13719
+        if (!binding.property->isAlias) {
+            int index = bindingCompiler.compile(expr, enginePrivate);
+            if (index != -1) {
+                binding.dataType = BindingReference::Experimental;
+                binding.compiledIndex = index;
+                componentStat.optimizedBindings.append(iter.key()->location);
+                continue;
+            } 
+        }
 
         binding.dataType = BindingReference::QtScript;
 

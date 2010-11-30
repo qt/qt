@@ -897,9 +897,7 @@ void QDeclarativeEngine::setObjectOwnership(QObject *object, ObjectOwnership own
     if (!object)
         return;
 
-    // No need to do anything if CppOwnership and there is no QDeclarativeData as
-    // the current ownership must be CppOwnership
-    QDeclarativeData *ddata = QDeclarativeData::get(object, ownership == JavaScriptOwnership);
+    QDeclarativeData *ddata = QDeclarativeData::get(object, true);
     if (!ddata)
         return;
 

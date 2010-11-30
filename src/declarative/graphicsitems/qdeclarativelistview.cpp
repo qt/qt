@@ -1185,10 +1185,14 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
         FxListItem *bottomItem = snapItemAt(position()+highlightRangeEnd);
         qreal pos;
         if (topItem) {
-            pos = qMax(qMin(topItem->position() - highlightRangeStart, -maxExtent), -minExtent);
+            if (topItem->index == 0 && header && position()+highlightRangeStart < header->position()+header->size()/2)
+                pos = header->position() - highlightRangeStart;
+            else
+                pos = qMax(qMin(topItem->position() - highlightRangeStart, -maxExtent), -minExtent);
         } else if (bottomItem) {
            pos = qMax(qMin(bottomItem->position() - highlightRangeStart, -maxExtent), -minExtent);
         } else {
+            QDeclarativeFlickablePrivate::fixup(data, minExtent, maxExtent);
             fixupDuration = oldDuration;
             return;
         }
