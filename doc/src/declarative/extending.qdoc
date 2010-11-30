@@ -75,6 +75,8 @@ constructor.
 
 \endquotation
 
+#include <QtDeclarative> to use qmlRegisterType().
+
 Types can be registered by libraries, application code, or by plugins
 (see QDeclarativeExtensionPlugin).
 
