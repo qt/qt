@@ -3222,7 +3222,7 @@ void tst_QFile::caseSensitivity()
         QCOMPARE(fi.size() == fi2.size(), !caseSensitive);
         QFile f2(alt);
         QCOMPARE(f2.open(QIODevice::ReadOnly), !caseSensitive);
-        if (caseSensitive)
+        if (!caseSensitive)
             QCOMPARE(f2.readAll(), testData);
     }
 }
