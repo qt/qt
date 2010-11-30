@@ -203,12 +203,6 @@ void QNetworkAccessFileBackend::closeDownstreamChannel()
     }
 }
 
-bool QNetworkAccessFileBackend::waitForDownstreamReadyRead(int)
-{
-    Q_ASSERT(operation() == QNetworkAccessManager::GetOperation);
-    return readMoreFromFile();
-}
-
 void QNetworkAccessFileBackend::downstreamReadyWrite()
 {
     Q_ASSERT_X(operation() == QNetworkAccessManager::GetOperation, "QNetworkAccessFileBackend",

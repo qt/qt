@@ -6,242 +6,242 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "5033bd624cd855ba10da39e6cb30e7d2"
+        image: "multilineAlign.0.png"
     }
     Frame {
         msec: 32
-        hash: "5033bd624cd855ba10da39e6cb30e7d2"
+        hash: "3fc7ab44f913d350f7aef342b958e56d"
     }
     Frame {
         msec: 48
-        hash: "5033bd624cd855ba10da39e6cb30e7d2"
+        hash: "3fc7ab44f913d350f7aef342b958e56d"
     }
     Frame {
         msec: 64
-        hash: "5033bd624cd855ba10da39e6cb30e7d2"
+        hash: "3fc7ab44f913d350f7aef342b958e56d"
     }
     Frame {
         msec: 80
-        hash: "5033bd624cd855ba10da39e6cb30e7d2"
+        hash: "3fc7ab44f913d350f7aef342b958e56d"
     }
     Frame {
         msec: 96
-        hash: "5033bd624cd855ba10da39e6cb30e7d2"
+        hash: "3fc7ab44f913d350f7aef342b958e56d"
     }
     Frame {
         msec: 112
-        hash: "5033bd624cd855ba10da39e6cb30e7d2"
+        hash: "3fc7ab44f913d350f7aef342b958e56d"
     }
     Frame {
         msec: 128
-        hash: "5033bd624cd855ba10da39e6cb30e7d2"
+        hash: "3fc7ab44f913d350f7aef342b958e56d"
     }
     Frame {
         msec: 144
-        hash: "5033bd624cd855ba10da39e6cb30e7d2"
+        hash: "3fc7ab44f913d350f7aef342b958e56d"
     }
     Frame {
         msec: 160
-        hash: "5033bd624cd855ba10da39e6cb30e7d2"
+        hash: "3fc7ab44f913d350f7aef342b958e56d"
     }
     Frame {
         msec: 176
-        hash: "d0d1afd7d8ff38e033cec4fa68978767"
+        hash: "a495a8a95c8aa82ac437c2f2970bd42d"
     }
     Frame {
         msec: 192
-        hash: "d0d1afd7d8ff38e033cec4fa68978767"
+        hash: "a495a8a95c8aa82ac437c2f2970bd42d"
     }
     Frame {
         msec: 208
-        hash: "d0d1afd7d8ff38e033cec4fa68978767"
+        hash: "a495a8a95c8aa82ac437c2f2970bd42d"
     }
     Frame {
         msec: 224
-        hash: "d0d1afd7d8ff38e033cec4fa68978767"
+        hash: "a495a8a95c8aa82ac437c2f2970bd42d"
     }
     Frame {
         msec: 240
-        hash: "d0d1afd7d8ff38e033cec4fa68978767"
+        hash: "a495a8a95c8aa82ac437c2f2970bd42d"
     }
     Frame {
         msec: 256
-        hash: "d0d1afd7d8ff38e033cec4fa68978767"
+        hash: "a495a8a95c8aa82ac437c2f2970bd42d"
     }
     Frame {
         msec: 272
-        hash: "d0d1afd7d8ff38e033cec4fa68978767"
+        hash: "a495a8a95c8aa82ac437c2f2970bd42d"
     }
     Frame {
         msec: 288
-        hash: "d0d1afd7d8ff38e033cec4fa68978767"
+        hash: "a495a8a95c8aa82ac437c2f2970bd42d"
     }
     Frame {
         msec: 304
-        hash: "d0d1afd7d8ff38e033cec4fa68978767"
+        hash: "a495a8a95c8aa82ac437c2f2970bd42d"
     }
     Frame {
         msec: 320
-        hash: "d0d1afd7d8ff38e033cec4fa68978767"
+        hash: "a495a8a95c8aa82ac437c2f2970bd42d"
     }
     Frame {
         msec: 336
-        hash: "26eed73af37b01ebecb4ee98ed9d67c6"
+        hash: "e2d2a6e60537b9a434d0029ef5ff26dc"
     }
     Frame {
         msec: 352
-        hash: "26eed73af37b01ebecb4ee98ed9d67c6"
+        hash: "e2d2a6e60537b9a434d0029ef5ff26dc"
     }
     Frame {
         msec: 368
-        hash: "26eed73af37b01ebecb4ee98ed9d67c6"
+        hash: "e2d2a6e60537b9a434d0029ef5ff26dc"
     }
     Frame {
         msec: 384
-        hash: "26eed73af37b01ebecb4ee98ed9d67c6"
+        hash: "e2d2a6e60537b9a434d0029ef5ff26dc"
     }
     Frame {
         msec: 400
-        hash: "26eed73af37b01ebecb4ee98ed9d67c6"
+        hash: "e2d2a6e60537b9a434d0029ef5ff26dc"
     }
     Frame {
         msec: 416
-        hash: "26eed73af37b01ebecb4ee98ed9d67c6"
+        hash: "e2d2a6e60537b9a434d0029ef5ff26dc"
     }
     Frame {
         msec: 432
-        hash: "26eed73af37b01ebecb4ee98ed9d67c6"
+        hash: "e2d2a6e60537b9a434d0029ef5ff26dc"
     }
     Frame {
         msec: 448
-        hash: "26eed73af37b01ebecb4ee98ed9d67c6"
+        hash: "e2d2a6e60537b9a434d0029ef5ff26dc"
     }
     Frame {
         msec: 464
-        hash: "26eed73af37b01ebecb4ee98ed9d67c6"
+        hash: "e2d2a6e60537b9a434d0029ef5ff26dc"
     }
     Frame {
         msec: 480
-        hash: "26eed73af37b01ebecb4ee98ed9d67c6"
+        hash: "e2d2a6e60537b9a434d0029ef5ff26dc"
     }
     Frame {
         msec: 496
-        hash: "f046b9aaa9f1eba08386a160e2f281ca"
+        hash: "00cba961e67c2124ace75dddb657cd6c"
     }
     Frame {
         msec: 512
-        hash: "f046b9aaa9f1eba08386a160e2f281ca"
+        hash: "00cba961e67c2124ace75dddb657cd6c"
     }
     Frame {
         msec: 528
-        hash: "f046b9aaa9f1eba08386a160e2f281ca"
+        hash: "00cba961e67c2124ace75dddb657cd6c"
     }
     Frame {
         msec: 544
-        hash: "f046b9aaa9f1eba08386a160e2f281ca"
+        hash: "00cba961e67c2124ace75dddb657cd6c"
     }
     Frame {
         msec: 560
-        hash: "f046b9aaa9f1eba08386a160e2f281ca"
+        hash: "00cba961e67c2124ace75dddb657cd6c"
     }
     Frame {
         msec: 576
-        hash: "f046b9aaa9f1eba08386a160e2f281ca"
+        hash: "00cba961e67c2124ace75dddb657cd6c"
     }
     Frame {
         msec: 592
-        hash: "f046b9aaa9f1eba08386a160e2f281ca"
+        hash: "00cba961e67c2124ace75dddb657cd6c"
     }
     Frame {
         msec: 608
-        hash: "f046b9aaa9f1eba08386a160e2f281ca"
+        hash: "00cba961e67c2124ace75dddb657cd6c"
     }
     Frame {
         msec: 624
-        hash: "f046b9aaa9f1eba08386a160e2f281ca"
+        hash: "00cba961e67c2124ace75dddb657cd6c"
     }
     Frame {
         msec: 640
-        hash: "f046b9aaa9f1eba08386a160e2f281ca"
+        hash: "00cba961e67c2124ace75dddb657cd6c"
     }
     Frame {
         msec: 656
-        hash: "52f90c22e44475fac04559164c044aee"
+        hash: "31d518de83e195def2d957b7d86b98e5"
     }
     Frame {
         msec: 672
-        hash: "52f90c22e44475fac04559164c044aee"
+        hash: "31d518de83e195def2d957b7d86b98e5"
     }
     Frame {
         msec: 688
-        hash: "52f90c22e44475fac04559164c044aee"
+        hash: "31d518de83e195def2d957b7d86b98e5"
     }
     Frame {
         msec: 704
-        hash: "52f90c22e44475fac04559164c044aee"
+        hash: "31d518de83e195def2d957b7d86b98e5"
     }
     Frame {
         msec: 720
-        hash: "52f90c22e44475fac04559164c044aee"
+        hash: "31d518de83e195def2d957b7d86b98e5"
     }
     Frame {
         msec: 736
-        hash: "52f90c22e44475fac04559164c044aee"
+        hash: "31d518de83e195def2d957b7d86b98e5"
     }
     Frame {
         msec: 752
-        hash: "52f90c22e44475fac04559164c044aee"
+        hash: "31d518de83e195def2d957b7d86b98e5"
     }
     Frame {
         msec: 768
-        hash: "52f90c22e44475fac04559164c044aee"
+        hash: "31d518de83e195def2d957b7d86b98e5"
     }
     Frame {
         msec: 784
-        hash: "52f90c22e44475fac04559164c044aee"
+        hash: "31d518de83e195def2d957b7d86b98e5"
     }
     Frame {
         msec: 800
-        hash: "52f90c22e44475fac04559164c044aee"
+        hash: "31d518de83e195def2d957b7d86b98e5"
     }
     Frame {
         msec: 816
-        hash: "52f90c22e44475fac04559164c044aee"
+        hash: "31d518de83e195def2d957b7d86b98e5"
     }
     Frame {
         msec: 832
-        hash: "52f90c22e44475fac04559164c044aee"
+        hash: "31d518de83e195def2d957b7d86b98e5"
     }
     Frame {
         msec: 848
-        hash: "52f90c22e44475fac04559164c044aee"
+        hash: "31d518de83e195def2d957b7d86b98e5"
     }
     Frame {
         msec: 864
-        hash: "52f90c22e44475fac04559164c044aee"
+        hash: "31d518de83e195def2d957b7d86b98e5"
     }
     Frame {
         msec: 880
-        hash: "52f90c22e44475fac04559164c044aee"
+        hash: "31d518de83e195def2d957b7d86b98e5"
     }
     Frame {
         msec: 896
-        hash: "52f90c22e44475fac04559164c044aee"
+        hash: "31d518de83e195def2d957b7d86b98e5"
     }
     Frame {
         msec: 912
-        hash: "52f90c22e44475fac04559164c044aee"
+        hash: "31d518de83e195def2d957b7d86b98e5"
     }
     Frame {
         msec: 928
-        hash: "52f90c22e44475fac04559164c044aee"
+        hash: "31d518de83e195def2d957b7d86b98e5"
     }
     Frame {
         msec: 944
-        hash: "52f90c22e44475fac04559164c044aee"
+        hash: "31d518de83e195def2d957b7d86b98e5"
     }
     Frame {
         msec: 960
-        image: "multilineAlign.0.png"
+        hash: "31d518de83e195def2d957b7d86b98e5"
     }
 }

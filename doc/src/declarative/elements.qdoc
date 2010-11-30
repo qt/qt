@@ -32,7 +32,7 @@
   \brief A dictionary of standard QML elements.
 
   This is a dictionary of all standard QML elements made available
-  in the QtDeclarative module.
+  in the Qt Declarative module.
 
   To see the QML elements listed by functional area, see the
   \l{Groups Of Related QML Elements} page.

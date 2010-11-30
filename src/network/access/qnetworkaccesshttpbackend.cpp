@@ -50,6 +50,7 @@
 #include "qnetworkrequest_p.h"
 #include "qnetworkcookie_p.h"
 #include "QtCore/qdatetime.h"
+#include "QtCore/qelapsedtimer.h"
 #include "QtNetwork/qsslconfiguration.h"
 
 #ifndef QT_NO_HTTP
@@ -318,7 +319,10 @@ void QNetworkAccessHttpBackend::disconnectFromHttp()
 
         // Get the object cache that stores our QHttpNetworkConnection objects
         QNetworkAccessCache *cache = QNetworkAccessManagerPrivate::getObjectCache(this);
-        cache->releaseEntry(cacheKey);
+
+        // synchronous calls are not put into the cache, so for them the key is empty
+        if (!cacheKey.isEmpty())
+            cache->releaseEntry(cacheKey);
     }
 
     // This is abut disconnecting signals, not about disconnecting TCP connections
@@ -639,60 +643,55 @@ void QNetworkAccessHttpBackend::open()
     if (transparentProxy.type() == QNetworkProxy::DefaultProxy &&
         cacheProxy.type() == QNetworkProxy::DefaultProxy) {
         // unsuitable proxies
-        QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
-                                  Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ProxyNotFoundError),
-                                  Q_ARG(QString, tr("No suitable proxy found")));
-        QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
-        return;
+        if (isSynchronous()) {
+            error(QNetworkReply::ProxyNotFoundError, tr("No suitable proxy found"));
+            finished();
+        } else {
+            QMetaObject::invokeMethod(this, "error", Qt::QueuedConnection,
+                                      Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ProxyNotFoundError),
+                                      Q_ARG(QString, tr("No suitable proxy found")));
+            QMetaObject::invokeMethod(this, "finished", Qt::QueuedConnection);
+        }
+            return;
     }
 #endif
 
-    // check if we have an open connection to this host
-    cacheKey = makeCacheKey(this, theProxy);
-    QNetworkAccessCache *cache = QNetworkAccessManagerPrivate::getObjectCache(this);
-    // the http object is actually a QHttpNetworkConnection
-    http = static_cast<QNetworkAccessCachedHttpConnection *>(cache->requestEntryNow(cacheKey));
-    if (http == 0) {
-        // no entry in cache; create an object
-        // the http object is actually a QHttpNetworkConnection
-        http = new QNetworkAccessCachedHttpConnection(url.host(), url.port(), encrypt);
-
+    if (isSynchronous()) {
+        // for synchronous requests, we just create a new connection
+        http = new QHttpNetworkConnection(1, url.host(), url.port(), encrypt, this);
 #ifndef QT_NO_NETWORKPROXY
         http->setTransparentProxy(transparentProxy);
         http->setCacheProxy(cacheProxy);
 #endif
+        postRequest();
+        processRequestSynchronously();
+    } else {
+        // check if we have an open connection to this host
+        cacheKey = makeCacheKey(this, theProxy);
+        QNetworkAccessCache *cache = QNetworkAccessManagerPrivate::getObjectCache(this);
+        // the http object is actually a QHttpNetworkConnection
+        http = static_cast<QNetworkAccessCachedHttpConnection *>(cache->requestEntryNow(cacheKey));
+        if (http == 0) {
+            // no entry in cache; create an object
+            // the http object is actually a QHttpNetworkConnection
+            http = new QNetworkAccessCachedHttpConnection(url.host(), url.port(), encrypt);
 
-        // cache the QHttpNetworkConnection corresponding to this cache key
-        cache->addEntry(cacheKey, http);
+#ifndef QT_NO_NETWORKPROXY
+            http->setTransparentProxy(transparentProxy);
+            http->setCacheProxy(cacheProxy);
+#endif
+
+            // cache the QHttpNetworkConnection corresponding to this cache key
+            cache->addEntry(cacheKey, static_cast<QNetworkAccessCachedHttpConnection *>(http.data()));
+        }
+        postRequest();
     }
-
-    postRequest();
 }
 
 void QNetworkAccessHttpBackend::closeDownstreamChannel()
 {
     // this indicates that the user closed the stream while the reply isn't finished yet
 }
-
-bool QNetworkAccessHttpBackend::waitForDownstreamReadyRead(int msecs)
-{
-    Q_ASSERT(http);
-
-    if (httpReply->bytesAvailable()) {
-        readFromHttp();
-        return true;
-    }
-
-    if (msecs == 0) {
-        // no bytes available in the socket and no waiting
-        return false;
-    }
-
-    // ### FIXME
-    qCritical("QNetworkAccess: HTTP backend does not support waitForReadyRead()");
-    return false;
-}
-
 
 void QNetworkAccessHttpBackend::downstreamReadyWrite()
 {
@@ -1143,6 +1142,87 @@ bool QNetworkAccessHttpBackend::canResume() const
 void QNetworkAccessHttpBackend::setResumeOffset(quint64 offset)
 {
     resumeOffset = offset;
+}
+
+bool QNetworkAccessHttpBackend::processRequestSynchronously()
+{
+    QHttpNetworkConnectionChannel *channel = &http->channels()[0];
+
+    // Disconnect all socket signals. They will only confuse us when using waitFor*
+    QObject::disconnect(channel->socket, 0, 0, 0);
+
+    qint64 timeout = 20*1000; // 20 sec
+    QElapsedTimer timeoutTimer;
+
+    bool waitResult = channel->socket->waitForConnected(timeout);
+    timeoutTimer.start();
+
+    if (!waitResult || channel->socket->state() != QAbstractSocket::ConnectedState) {
+        error(QNetworkReply::UnknownNetworkError, QLatin1String("could not connect"));
+        return false;
+    }
+    channel->_q_connected(); // this will send the request (via sendRequest())
+
+#ifndef QT_NO_OPENSSL
+    if (http->isSsl()) {
+        qint64 remainingTimeEncrypted = timeout - timeoutTimer.elapsed();
+        if (!static_cast<QSslSocket *>(channel->socket)->waitForEncrypted(remainingTimeEncrypted)) {
+            error(QNetworkReply::SslHandshakeFailedError,
+                  QLatin1String("could not encrypt or timeout while encrypting"));
+            return false;
+        }
+        channel->_q_encrypted();
+    }
+#endif
+
+    // if we get a 401 or 407, we might need to send the request twice, see below
+    bool authenticating = false;
+
+    do {
+        channel->sendRequest();
+
+        qint64 remainingTimeBytesWritten;
+        while(channel->socket->bytesToWrite() > 0 ||
+              channel->state == QHttpNetworkConnectionChannel::WritingState) {
+            remainingTimeBytesWritten = timeout - timeoutTimer.elapsed();
+            channel->sendRequest(); // triggers channel->socket->write()
+            if (!channel->socket->waitForBytesWritten(remainingTimeBytesWritten)) {
+                error(QNetworkReply::TimeoutError,
+                      QLatin1String("could not write bytes to socket or timeout while writing"));
+                return false;
+            }
+        }
+
+        qint64 remainingTimeBytesRead = timeout - timeoutTimer.elapsed();
+        // Loop for at most remainingTime until either the socket disconnects
+        // or the reply is finished
+        do {
+            waitResult = channel->socket->waitForReadyRead(remainingTimeBytesRead);
+            remainingTimeBytesRead = timeout - timeoutTimer.elapsed();
+            if (!waitResult || remainingTimeBytesRead <= 0
+                || channel->socket->state() != QAbstractSocket::ConnectedState) {
+                error(QNetworkReply::TimeoutError,
+                      QLatin1String("could not read from socket or timeout while reading"));
+                return false;
+            }
+
+            if (channel->socket->bytesAvailable())
+                channel->_q_readyRead();
+
+            if (!httpReply)
+                return false; // we got a 401 or 407 and cannot handle it (it might happen that
+                              // disconnectFromHttp() was called, in that case the reply is zero)
+            // ### I am quite sure this does not work for NTLM
+            // ### how about uploading to an auth / proxyAuth site?
+
+            authenticating = (httpReply->statusCode() == 401 || httpReply->statusCode() == 407);
+
+            if (httpReply->isFinished())
+                break;
+        } while (remainingTimeBytesRead > 0);
+    } while (authenticating);
+
+    return true;
 }
 
 QT_END_NAMESPACE

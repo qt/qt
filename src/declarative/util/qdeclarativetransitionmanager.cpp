@@ -99,8 +99,8 @@ void QDeclarativeTransitionManager::complete()
 void QDeclarativeTransitionManagerPrivate::applyBindings()
 {
     foreach(const QDeclarativeAction &action, bindingsList) {
-        if (action.toBinding) {
-            QDeclarativePropertyPrivate::setBinding(action.property, action.toBinding);
+        if (!action.toBinding.isNull()) {
+            QDeclarativePropertyPrivate::setBinding(action.property, action.toBinding.data());
         } else if (action.event) {
             if (action.reverseEvent)
                 action.event->reverse();
@@ -145,8 +145,8 @@ void QDeclarativeTransitionManager::transition(const QList<QDeclarativeAction> &
         // Apply all the property and binding changes
         for (int ii = 0; ii < applyList.size(); ++ii) {
             const QDeclarativeAction &action = applyList.at(ii);
-            if (action.toBinding) {
-                QDeclarativePropertyPrivate::setBinding(action.property, action.toBinding, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
+            if (!action.toBinding.isNull()) {
+                QDeclarativePropertyPrivate::setBinding(action.property, action.toBinding.data(), QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
             } else if (!action.event) {
                 QDeclarativePropertyPrivate::write(action.property, action.toValue, QDeclarativePropertyPrivate::BypassInterceptor | QDeclarativePropertyPrivate::DontRemoveBinding);
             } else if (action.event->isReversable()) {
@@ -165,7 +165,7 @@ void QDeclarativeTransitionManager::transition(const QList<QDeclarativeAction> &
                 continue;
             }
             const QDeclarativeProperty &prop = action->property;
-            if (action->toBinding || !action->toValue.isValid()) {
+            if (!action->toBinding.isNull() || !action->toValue.isValid()) {
                 action->toValue = prop.read();
             }
         }
@@ -259,10 +259,10 @@ void QDeclarativeTransitionManager::cancel()
 
     for(int i = 0; i < d->bindingsList.count(); ++i) {
         QDeclarativeAction action = d->bindingsList[i];
-        if (action.toBinding && action.deletableToBinding) {
+        if (!action.toBinding.isNull() && action.deletableToBinding) {
             QDeclarativePropertyPrivate::setBinding(action.property, 0);
-            action.toBinding->destroy();
-            action.toBinding = 0;
+            action.toBinding.data()->destroy();
+            action.toBinding.clear();
             action.deletableToBinding = false;
         } else if (action.event) {
             //### what do we do here?

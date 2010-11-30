@@ -79,7 +79,6 @@ public:
 
     virtual void open();
     virtual void closeDownstreamChannel();
-    virtual bool waitForDownstreamReadyRead(int msecs);
 
     virtual void downstreamReadyWrite();
     virtual void setDownstreamLimited(bool b);
@@ -100,6 +99,8 @@ public:
     bool canResume() const;
     void setResumeOffset(quint64 offset);
 
+    virtual bool processRequestSynchronously();
+
 private slots:
     void replyReadyRead();
     void replyFinished();
@@ -112,7 +113,7 @@ private slots:
 
 private:
     QHttpNetworkReply *httpReply;
-    QPointer<QNetworkAccessCachedHttpConnection> http;
+    QPointer<QHttpNetworkConnection> http;
     QByteArray cacheKey;
     QNetworkAccessBackendUploadIODevice *uploadDevice;
 

@@ -1486,13 +1486,15 @@ void tst_Gestures::ungrabGesture() // a method on QWidget
     QVERIFY(customGestureA.data() != customGestureB.data());
 
     a->ungrabGesture(CustomGesture::GestureType);
-    QVERIFY(customGestureA.isNull());
+    //We changed the deletion of Gestures to lazy during QT-4022, so we can't ensure the QGesture is deleted until now
     QVERIFY(!customGestureB.isNull());
 
     a->gestures.clear();
     a->reset();
     // send again to 'b' and make sure a never gets it.
     sendCustomGesture(&event, b);
+    //After all Gestures are processed in the QGestureManager, we can ensure the QGesture is now deleted
+    QVERIFY(customGestureA.isNull());
     QCOMPARE(a->gestureEventsReceived, 0);
     QCOMPARE(a->gestureOverrideEventsReceived, 0);
 }

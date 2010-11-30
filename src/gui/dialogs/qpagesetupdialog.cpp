@@ -62,6 +62,9 @@ QT_BEGIN_NAMESPACE
     page margins set on a QPrinter won't show in the native Mac OS X
     page setup dialog.
 
+    In Symbian, there is no support for printing. Hence, this dialog should not
+    be used in Symbian.
+
     \sa QPrinter, QPrintDialog
 */
 

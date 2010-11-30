@@ -5483,6 +5483,8 @@ QDebug operator<<(QDebug debug, const QStyleOption::OptionType &optionType)
     case QStyleOption::SO_GraphicsItem:
         debug << "SO_GraphicsItem"; break;
     }
+#else
+    Q_UNUSED(optionType);
 #endif
     return debug;
 }
@@ -5496,6 +5498,8 @@ QDebug operator<<(QDebug debug, const QStyleOption &option)
     debug << ',' << option.state;
     debug << ',' << option.rect;
     debug << ')';
+#else
+    Q_UNUSED(option);
 #endif
     return debug;
 }

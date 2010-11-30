@@ -428,6 +428,7 @@ private:
     friend class QGLSharedResourceGuard;
     friend class QGLPixmapBlurFilter;
     friend class QGLExtensions;
+    friend class QGLTexture;
     friend QGLFormat::OpenGLVersionFlags QGLFormat::openGLVersionFlags();
 #ifdef Q_WS_MAC
 public:
