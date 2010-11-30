@@ -1145,4 +1145,11 @@ EXPORTS
 	?setNetworkAccessible@QNetworkAccessManager@@QAEXW4NetworkAccessibility@1@@Z @ 1144 NONAME ; void QNetworkAccessManager::setNetworkAccessible(enum QNetworkAccessManager::NetworkAccessibility)
 	??_EQBearerEngineFactoryInterface@@UAE@I@Z @ 1145 NONAME ; QBearerEngineFactoryInterface::~QBearerEngineFactoryInterface(unsigned int)
 	?enablePolling@QNetworkConfigurationManagerPrivate@@QAEXXZ @ 1146 NONAME ; void QNetworkConfigurationManagerPrivate::enablePolling(void)
+	?joinMulticastGroup@QUdpSocket@@QAE_NABVQHostAddress@@ABVQNetworkInterface@@@Z @ 1147 NONAME ; bool QUdpSocket::joinMulticastGroup(class QHostAddress const &, class QNetworkInterface const &)
+	?setMulticastInterface@QUdpSocket@@QAEXABVQNetworkInterface@@@Z @ 1148 NONAME ; void QUdpSocket::setMulticastInterface(class QNetworkInterface const &)
+	?setFinished@QNetworkReply@@IAEX_N@Z @ 1149 NONAME ; void QNetworkReply::setFinished(bool)
+	?multicastInterface@QUdpSocket@@QBE?AVQNetworkInterface@@XZ @ 1150 NONAME ; class QNetworkInterface QUdpSocket::multicastInterface(void) const
+	?joinMulticastGroup@QUdpSocket@@QAE_NABVQHostAddress@@@Z @ 1151 NONAME ; bool QUdpSocket::joinMulticastGroup(class QHostAddress const &)
+	?leaveMulticastGroup@QUdpSocket@@QAE_NABVQHostAddress@@ABVQNetworkInterface@@@Z @ 1152 NONAME ; bool QUdpSocket::leaveMulticastGroup(class QHostAddress const &, class QNetworkInterface const &)
+	?leaveMulticastGroup@QUdpSocket@@QAE_NABVQHostAddress@@@Z @ 1153 NONAME ; bool QUdpSocket::leaveMulticastGroup(class QHostAddress const &)
 
