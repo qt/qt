@@ -233,6 +233,10 @@ Image {
 }
 \endcode
 
+Items in the list can be accessed by index. See the \l{list}{list type} documentation
+for more details about list properties and their available operations.
+
+
 \section2 Default properties
 
 Each object type can specify one of its list or object properties as its default property.
