@@ -135,6 +135,8 @@ private slots:
     void scriptConnect();
     void scriptDisconnect();
     void ownership();
+    void cppOwnershipReturnValue();
+    void ownershipCustomReturnValue();
     void qlistqobjectMethods();
     void strictlyEquals();
     void compiled();
@@ -2098,6 +2100,87 @@ void tst_qdeclarativeecmascript::ownership()
 
         delete object;
     }
+}
+
+class CppOwnershipReturnValue : public QObject
+{
+    Q_OBJECT
+public:
+    CppOwnershipReturnValue() : value(0) {}
+    ~CppOwnershipReturnValue() { delete value; }
+
+    Q_INVOKABLE QObject *create() {
+        Q_ASSERT(value == 0);
+
+        value = new QObject;
+        QDeclarativeEngine::setObjectOwnership(value, QDeclarativeEngine::CppOwnership);
+        return value;
+    }
+
+    Q_INVOKABLE MyQmlObject *createQmlObject() {
+        Q_ASSERT(value == 0);
+
+        MyQmlObject *rv = new MyQmlObject;
+        value = rv;
+        return rv;
+    }
+
+    QPointer<QObject> value;
+};
+
+// QTBUG-15695.  
+// Test setObjectOwnership(CppOwnership) works even when there is no QDeclarativeData
+void tst_qdeclarativeecmascript::cppOwnershipReturnValue()
+{
+    CppOwnershipReturnValue source;
+
+    {
+    QDeclarativeEngine engine;
+    engine.rootContext()->setContextProperty("source", &source);
+
+    QVERIFY(source.value == 0);
+
+    QDeclarativeComponent component(&engine);
+    component.setData("import QtQuick 1.0\nQtObject {\nComponent.onCompleted: { var a = source.create(); }\n}\n", QUrl());
+
+    QObject *object = component.create();
+
+    QVERIFY(object != 0);
+    QVERIFY(source.value != 0);
+
+    delete object;
+    }
+
+    QCoreApplication::instance()->processEvents(QEventLoop::DeferredDeletion);
+
+    QVERIFY(source.value != 0);
+}
+
+// QTBUG-15697
+void tst_qdeclarativeecmascript::ownershipCustomReturnValue()
+{
+    CppOwnershipReturnValue source;
+
+    {
+    QDeclarativeEngine engine;
+    engine.rootContext()->setContextProperty("source", &source);
+
+    QVERIFY(source.value == 0);
+
+    QDeclarativeComponent component(&engine);
+    component.setData("import QtQuick 1.0\nQtObject {\nComponent.onCompleted: { var a = source.createQmlObject(); }\n}\n", QUrl());
+
+    QObject *object = component.create();
+
+    QVERIFY(object != 0);
+    QVERIFY(source.value != 0);
+
+    delete object;
+    }
+
+    QCoreApplication::instance()->processEvents(QEventLoop::DeferredDeletion);
+
+    QVERIFY(source.value == 0);
 }
 
 class QListQObjectMethodsObject : public QObject
