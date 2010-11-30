@@ -49,16 +49,23 @@ defineTest(qtAddLibrary) {
         isEqual(LIB_NAME, QtGui) {
             # Needed for #include <QtGui> because qs60mainapplication.h includes aknapp.h
             INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE
-        }
-        isEqual(LIB_NAME, QtWebKit) {
+        } else:isEqual(LIB_NAME, QtWebKit) {
             # Needed for because relative inclusion problem in toolchain
             INCLUDEPATH *= $$QMAKE_INCDIR_QT/QtXmlPatterns
             INCLUDEPATH *= $$QMAKE_INCDIR_QT/QtNetwork
-        }
-        isEqual(LIB_NAME, QtXmlPatterns) {
+            TARGET.CAPABILITY *= NetworkServices
+            isEmpty(TARGET.EPOCHEAPSIZE):TARGET.EPOCHEAPSIZE = 0x20000 0x2000000
+        } else:isEqual(LIB_NAME, QtXmlPatterns) {
             # Needed for #include <QtXmlPatterns/QtXmlPatterns> because relative inclusion problem in toolchain
             INCLUDEPATH *= $$QMAKE_INCDIR_QT/QtNetwork
+        } else:isEqual(LIB_NAME, QtNetwork) {
+            TARGET.CAPABILITY *= NetworkServices
+        } else:isEqual(LIB_NAME, QtDeclarative) {
+            TARGET.CAPABILITY *= NetworkServices
+            isEmpty(TARGET.EPOCHEAPSIZE):TARGET.EPOCHEAPSIZE = 0x20000 0x2000000
         }
+        export(TARGET.EPOCHEAPSIZE)
+        export(TARGET.CAPABILITY)
     }
     isEmpty(LINKAGE) {
        if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
