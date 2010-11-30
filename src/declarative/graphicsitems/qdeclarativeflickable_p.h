@@ -43,6 +43,7 @@
 #define QDECLARATIVEFLICKABLE_H
 
 #include "qdeclarativeitem.h"
+#include <QScroller>
 
 QT_BEGIN_HEADER
 
@@ -175,19 +176,12 @@ Q_SIGNALS:
     void flickEnded();
 
 protected:
-    virtual bool sceneEventFilter(QGraphicsItem *, QEvent *);
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-    void wheelEvent(QGraphicsSceneWheelEvent *event);
-    void timerEvent(QTimerEvent *event);
+    virtual bool event(QEvent *e);
 
     QDeclarativeFlickableVisibleArea *visibleArea();
 
 protected Q_SLOTS:
-    virtual void ticked();
-    void movementStarting();
-    void movementEnding();
+    virtual void scrollerStateChanged(QScroller::State);
 
 protected:
     void movementXEnding();
@@ -196,16 +190,10 @@ protected:
     virtual qreal minYExtent() const;
     virtual qreal maxXExtent() const;
     virtual qreal maxYExtent() const;
-    qreal vWidth() const;
-    qreal vHeight() const;
+    virtual void viewportAboutToMove(QPointF newPos);
     virtual void viewportMoved();
     virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
-    bool sendMouseEvent(QGraphicsSceneMouseEvent *event);
-
-    bool xflick() const;
-    bool yflick() const;
-    void cancelFlick();
 
 protected:
     QDeclarativeFlickable(QDeclarativeFlickablePrivate &dd, QDeclarativeItem *parent);
@@ -213,6 +201,8 @@ protected:
 private:
     Q_DISABLE_COPY(QDeclarativeFlickable)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeFlickable)
+
+
     friend class QDeclarativeFlickableVisibleArea;
 };
 

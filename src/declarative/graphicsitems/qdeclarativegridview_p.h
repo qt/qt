@@ -188,18 +188,22 @@ Q_SIGNALS:
     void headerChanged();
     void footerChanged();
 
+protected Q_SLOTS:
+    void scrollerStateChanged(QScroller::State state);
+
 protected:
     virtual bool event(QEvent *event);
-    virtual void viewportMoved();
+    virtual qreal minExtent() const;
+    virtual qreal maxExtent() const;
     virtual qreal minYExtent() const;
     virtual qreal maxYExtent() const;
     virtual qreal minXExtent() const;
     virtual qreal maxXExtent() const;
+    virtual void viewportAboutToMove(QPointF newPos);
     virtual void keyPressEvent(QKeyEvent *);
     virtual void componentComplete();
 
 private Q_SLOTS:
-    void trackedPositionChanged();
     void itemsInserted(int index, int count);
     void itemsRemoved(int index, int count);
     void itemsMoved(int from, int to, int count);
@@ -207,7 +211,6 @@ private Q_SLOTS:
     void destroyRemoved();
     void createdItem(int index, QDeclarativeItem *item);
     void destroyingItem(QDeclarativeItem *item);
-    void animStopped();
 
 private:
     void refill();

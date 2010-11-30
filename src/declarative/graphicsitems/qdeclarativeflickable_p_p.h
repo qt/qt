@@ -78,94 +78,35 @@ public:
     QDeclarativeFlickablePrivate();
     void init();
 
-    struct Velocity : public QDeclarativeTimeLineValue
-    {
-        Velocity(QDeclarativeFlickablePrivate *p)
-            : parent(p) {}
-        virtual void setValue(qreal v) {
-            if (v != value()) {
-                QDeclarativeTimeLineValue::setValue(v);
-                parent->updateVelocity();
-            }
-        }
-        QDeclarativeFlickablePrivate *parent;
-    };
-
-    struct AxisData {
-        AxisData(QDeclarativeFlickablePrivate *fp, void (QDeclarativeFlickablePrivate::*func)(qreal))
-            : move(fp, func), viewSize(-1), smoothVelocity(fp), atEnd(false), atBeginning(true)
-        {}
-
-        QDeclarativeTimeLineValueProxy<QDeclarativeFlickablePrivate> move;
-        qreal viewSize;
-        qreal pressPos;
-        qreal dragStartOffset;
-        qreal velocity;
-        qreal flickTarget;
-        QDeclarativeFlickablePrivate::Velocity smoothVelocity;
-        bool atEnd : 1;
-        bool atBeginning : 1;
-    };
-
-    void flickX(qreal velocity);
-    void flickY(qreal velocity);
-    virtual void flick(AxisData &data, qreal minExtent, qreal maxExtent, qreal vSize,
-                        QDeclarativeTimeLineCallback::Callback fixupCallback, qreal velocity);
-
-    void fixupX();
-    void fixupY();
-    virtual void fixup(AxisData &data, qreal minExtent, qreal maxExtent);
-
     void updateBeginningEnd();
 
-    void captureDelayedPress(QGraphicsSceneMouseEvent *event);
-    void clearDelayedPress();
-
-    void setRoundedViewportX(qreal x);
-    void setRoundedViewportY(qreal y);
-
-    qreal overShootDistance(qreal velocity, qreal size);
-
+    void updateScrollerValues();
+    void updateOvershootPolicy();
     void itemGeometryChanged(QDeclarativeItem *, const QRectF &, const QRectF &);
+
+    // private slot
+    void _q_scrollerStateChanged(QScroller::State state);
+        qreal dragStartOffset;
 
 public:
     QDeclarativeItem *contentItem;
 
-    AxisData hData;
-    AxisData vData;
+    bool updateScrollerValuesRequested;
+    bool duringScrollEvent;
 
-    QDeclarativeTimeLine timeline;
-    bool flickingHorizontally : 1;
-    bool flickingVertically : 1;
-    bool hMoved : 1;
-    bool vMoved : 1;
-    bool movingHorizontally : 1;
-    bool movingVertically : 1;
-    bool stealMouse : 1;
-    bool pressed : 1;
-    bool interactive : 1;
-    bool calcVelocity : 1;
-    QElapsedTimer lastPosTime;
-    QPointF lastPos;
-    QPointF pressPos;
-    QElapsedTimer pressTime;
-    qreal deceleration;
-    qreal maxVelocity;
-    QElapsedTimer velocityTime;
-    QPointF lastFlickablePosition;
-    qreal reportedVelocitySmoothing;
-    QGraphicsSceneMouseEvent *delayedPressEvent;
-    QGraphicsItem *delayedPressTarget;
-    QBasicTimer delayedPressTimer;
-    int pressDelay;
-    int fixupDuration;
+    bool isUserGenerated;
+    bool isFlicking;
+    bool isMoving;
+    bool movingHorizontally;
+    bool movingVertically;
 
-    static void fixupY_callback(void *);
-    static void fixupX_callback(void *);
+    bool atBeginningX;
+    bool atBeginningY;
+    bool atEndX;
+    bool atEndY;
 
-    void updateVelocity();
-    int vTime;
-    QDeclarativeTimeLine velocityTimeline;
+    bool interactive;
+
     QDeclarativeFlickableVisibleArea *visibleArea;
     QDeclarativeFlickable::FlickableDirection flickableDirection;
     QDeclarativeFlickable::BoundsBehavior boundsBehavior;
