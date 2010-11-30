@@ -1069,6 +1069,15 @@ QChar::UnicodeVersion QChar::unicodeVersion(ushort ucs2)
     return (QChar::UnicodeVersion) qGetProp(ucs2)->unicodeVersion;
 }
 
+/*!
+    \since 4.8
+
+    Returns the most recent supported Unicode version.
+*/
+QChar::UnicodeVersion QChar::currentUnicodeVersion()
+{
+    return UNICODE_DATA_VERSION;
+}
 
 /*!
     Returns the lowercase equivalent if the character is uppercase or titlecase;
