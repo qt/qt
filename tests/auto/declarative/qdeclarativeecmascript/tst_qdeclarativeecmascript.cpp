@@ -164,6 +164,10 @@ private slots:
     void in();
     void sharedAttachedObject();
     void objectName();
+    void writeRemovesBinding();
+    void aliasBindingsAssignCorrectly();
+    void aliasBindingsOverrideTarget();
+    void aliasWritesOverrideBindings();
 
     void include();
 
@@ -741,11 +745,9 @@ void tst_qdeclarativeecmascript::constantsOverrideBindings()
         QVERIFY(object != 0);
 
         QCOMPARE(object->property("c1").toInt(), 0);
-        QEXPECT_FAIL("", "QTBUG-13719", Continue);
         QCOMPARE(object->property("c3").toInt(), 10);
         object->setProperty("c1", QVariant(9));
         QCOMPARE(object->property("c1").toInt(), 9);
-        QEXPECT_FAIL("", "QTBUG-13719", Continue);
         QCOMPARE(object->property("c3").toInt(), 10);
     }
 }
@@ -2669,6 +2671,97 @@ void tst_qdeclarativeecmascript::objectName()
     QCOMPARE(o->property("test2").toString(), QString("orl"));
 
     delete o;
+}
+
+void tst_qdeclarativeecmascript::writeRemovesBinding()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("writeRemovesBinding.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test").toBool(), true);
+
+    delete o;
+}
+
+// Test bindings assigned to alias properties actually assign to the alias' target
+void tst_qdeclarativeecmascript::aliasBindingsAssignCorrectly()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("aliasBindingsAssignCorrectly.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test").toBool(), true);
+
+    delete o;
+}
+
+// Test bindings assigned to alias properties override a binding on the target (QTBUG-13719)
+void tst_qdeclarativeecmascript::aliasBindingsOverrideTarget()
+{
+    { 
+    QDeclarativeComponent component(&engine, TEST_FILE("aliasBindingsOverrideTarget.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test").toBool(), true);
+
+    delete o;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("aliasBindingsOverrideTarget.2.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test").toBool(), true);
+
+    delete o;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("aliasBindingsOverrideTarget.3.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test").toBool(), true);
+
+    delete o;
+    }
+}
+
+// Test that writes to alias properties override bindings on the alias target (QTBUG-13719)
+void tst_qdeclarativeecmascript::aliasWritesOverrideBindings()
+{
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("aliasWritesOverrideBindings.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test").toBool(), true);
+
+    delete o;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("aliasWritesOverrideBindings.2.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test").toBool(), true);
+
+    delete o;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("aliasWritesOverrideBindings.3.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test").toBool(), true);
+
+    delete o;
+    }
 }
 
 QTEST_MAIN(tst_qdeclarativeecmascript)
