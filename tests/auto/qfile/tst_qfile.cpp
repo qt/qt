@@ -3199,7 +3199,7 @@ void tst_QFile::platformSecurity()
 
 void tst_QFile::caseSensitivity()
 {
-#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WIN)
+#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WIN) || defined(Q_OS_MAC)
     const bool caseSensitive = false;
 #else
     const bool caseSensitive = true;
