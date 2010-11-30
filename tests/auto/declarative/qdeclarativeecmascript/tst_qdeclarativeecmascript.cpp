@@ -745,11 +745,9 @@ void tst_qdeclarativeecmascript::constantsOverrideBindings()
         QVERIFY(object != 0);
 
         QCOMPARE(object->property("c1").toInt(), 0);
-        QEXPECT_FAIL("", "QTBUG-13719", Continue);
         QCOMPARE(object->property("c3").toInt(), 10);
         object->setProperty("c1", QVariant(9));
         QCOMPARE(object->property("c1").toInt(), 9);
-        QEXPECT_FAIL("", "QTBUG-13719", Continue);
         QCOMPARE(object->property("c3").toInt(), 10);
     }
 }
