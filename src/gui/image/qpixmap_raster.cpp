@@ -206,7 +206,13 @@ void QRasterPixmapData::fill(const QColor &color)
                 else
 #endif
                     toFormat = QImage::Format_ARGB32_Premultiplied;
-                image = QImage(image.width(), image.height(), toFormat);
+
+                if (!image.isNull() && qt_depthForFormat(image.format()) == qt_depthForFormat(toFormat)) {
+                    image.detach();
+                    image.d->format = toFormat;
+                } else {
+                    image = QImage(image.width(), image.height(), toFormat);
+                }
             }
 
             switch (image.format()) {
