@@ -124,21 +124,26 @@ static inline const char *paperSize2String(QPrinter::PaperSize size)
 
 class QPrinterInfoPrivate
 {
-Q_DECLARE_PUBLIC(QPrinterInfo)
 public:
-    QPrinterInfoPrivate();
-    QPrinterInfoPrivate(const QString& name);
-    ~QPrinterInfoPrivate();
+    QPrinterInfoPrivate() :
+        m_isNull(true), m_default(false),
+        m_mustGetPaperSizes(true), m_cupsPrinterIndex(0)
+    {}
+    QPrinterInfoPrivate(const QString& name) :
+        m_name(name),
+        m_isNull(false), m_default(false),
+        m_mustGetPaperSizes(true), m_cupsPrinterIndex(0)
+    {}
+    ~QPrinterInfoPrivate()
+    {}
 
-private:
     QString                     m_name;
     bool                        m_isNull;
     bool                        m_default;
+
     mutable bool                m_mustGetPaperSizes;
     mutable QList<QPrinter::PaperSize> m_paperSizes;
     int                         m_cupsPrinterIndex;
-
-    QPrinterInfo*               q_ptr;
 };
 
 static QPrinterInfoPrivate nullQPrinterInfoPrivate;
@@ -946,7 +951,6 @@ QPrinterInfo::QPrinterInfo(const QPrinter& printer)
 {
 
     Q_D(QPrinterInfo);
-    d->q_ptr = this;
 
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     QCUPSSupport cups;
@@ -990,7 +994,6 @@ QPrinterInfo::QPrinterInfo(const QPrinter& printer)
 QPrinterInfo::QPrinterInfo(const QString& name)
     : d_ptr(new QPrinterInfoPrivate(name))
 {
-    d_ptr->q_ptr = this;
 }
 
 QPrinterInfo::~QPrinterInfo()
@@ -1001,7 +1004,6 @@ QPrinterInfo& QPrinterInfo::operator=(const QPrinterInfo& src)
 {
     Q_ASSERT(d_ptr);
     d_ptr.reset(new QPrinterInfoPrivate(*src.d_ptr));
-    d_ptr->q_ptr = this;
     return *this;
 }
 
@@ -1044,32 +1046,6 @@ QList< QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
 
     }
     return d->m_paperSizes;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////
-
-QPrinterInfoPrivate::QPrinterInfoPrivate()
-{
-    m_isNull = true;
-    m_default = false;
-    m_mustGetPaperSizes = true;
-    m_cupsPrinterIndex = 0;
-    q_ptr = 0;
-}
-
-QPrinterInfoPrivate::QPrinterInfoPrivate(const QString& name)
-{
-    m_name = name;
-    m_isNull = false;
-    m_default = false;
-    m_mustGetPaperSizes = true;
-    m_cupsPrinterIndex = 0;
-    q_ptr = 0;
-}
-
-QPrinterInfoPrivate::~QPrinterInfoPrivate()
-{
 }
 
 #endif // QT_NO_PRINTER

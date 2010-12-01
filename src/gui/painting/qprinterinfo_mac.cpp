@@ -49,18 +49,20 @@ QT_BEGIN_NAMESPACE
 
 class QPrinterInfoPrivate
 {
-Q_DECLARE_PUBLIC(QPrinterInfo)
 public:
-    ~QPrinterInfoPrivate();
-    QPrinterInfoPrivate();
-    QPrinterInfoPrivate(const QString& name);
-
-private:
-    QPrinterInfo*                 q_ptr;
+    QPrinterInfoPrivate() :
+        m_isNull(true), m_default(false)
+    {}
+    QPrinterInfoPrivate(const QString& name) :
+        m_name(name),
+        m_isNull(false), m_default(false)
+    {}
+    ~QPrinterInfoPrivate()
+    {}
 
     QString                     m_name;
-    bool                        m_default;
     bool                        m_isNull;
+    bool                        m_default;
 };
 
 static QPrinterInfoPrivate nullQPrinterInfoPrivate;
@@ -139,7 +141,6 @@ QPrinterInfo::QPrinterInfo()
 QPrinterInfo::QPrinterInfo(const QString& name)
     : d_ptr(new QPrinterInfoPrivate(name))
 {
-    d_ptr->q_ptr = this;
 }
 
 QPrinterInfo::QPrinterInfo(const QPrinterInfo& src)
@@ -152,7 +153,6 @@ QPrinterInfo& QPrinterInfo::operator=(const QPrinterInfo& src)
 {
     Q_ASSERT(d_ptr);
     d_ptr.reset(new QPrinterInfoPrivate(*src.d_ptr));
-    d_ptr->q_ptr = this;
     return *this;
 }
 
@@ -208,28 +208,6 @@ QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
     PMRelease(cfPrn);
 
     return paperList;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////
-
-QPrinterInfoPrivate::QPrinterInfoPrivate() :
-    q_ptr(NULL),
-    m_default(false),
-    m_isNull(true)
-{
-}
-
-QPrinterInfoPrivate::QPrinterInfoPrivate(const QString& name) :
-    q_ptr(NULL),
-    m_name(name),
-    m_default(false),
-    m_isNull(false)
-{
-}
-
-QPrinterInfoPrivate::~QPrinterInfoPrivate()
-{
 }
 
 #endif // QT_NO_PRINTER
