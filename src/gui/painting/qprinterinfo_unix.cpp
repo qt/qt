@@ -809,12 +809,12 @@ int qt_getLprPrinters(QList<QPrinterDescription>& printers)
 #endif
     }
 
+    QRegExp ps(QLatin1String("[^a-z]ps(?:[^a-z]|$)"));
+    QRegExp lp(QLatin1String("[^a-z]lp(?:[^a-z]|$)"));
+
     int quality = 0;
     int best = 0;
     for (int i = 0; i < printers.size(); ++i) {
-        QRegExp ps(QLatin1String("[^a-z]ps(?:[^a-z]|$)"));
-        QRegExp lp(QLatin1String("[^a-z]lp(?:[^a-z]|$)"));
-
         QString name = printers.at(i).name;
         QString comment = printers.at(i).comment;
         if (quality < 5 && name == dollarPrinter) {
@@ -849,50 +849,48 @@ int qt_getLprPrinters(QList<QPrinterDescription>& printers)
 
 QList<QPrinterInfo> QPrinterInfo::availablePrinters()
 {
-    QList<QPrinterInfo> list;
+    QList<QPrinterInfo> printers;
 
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     if (QCUPSSupport::isAvailable()) {
         QCUPSSupport cups;
         int cupsPrinterCount = cups.availablePrintersCount();
         const cups_dest_t* cupsPrinters = cups.availablePrinters();
-
         for (int i = 0; i < cupsPrinterCount; ++i) {
             QString printerName(QString::fromLocal8Bit(cupsPrinters[i].name));
             if (cupsPrinters[i].instance)
                 printerName += QLatin1Char('/') + QString::fromLocal8Bit(cupsPrinters[i].instance);
-            list.append(QPrinterInfo(printerName));
+
+            QPrinterInfo printerInfo(printerName);
             if (cupsPrinters[i].is_default)
-                list[i].d_ptr->isDefault = true;
-            list[i].d_ptr->cupsPrinterIndex = i;
+                printerInfo.d_ptr->isDefault = true;
+            printerInfo.d_ptr->cupsPrinterIndex = i;
+            printers.append(printerInfo);
         }
-    } else {
+    } else
 #endif
+           {
         QList<QPrinterDescription> lprPrinters;
         int defprn = qt_getLprPrinters(lprPrinters);
         // populating printer combo
-        QList<QPrinterDescription>::const_iterator i = lprPrinters.constBegin();
-        for(; i != lprPrinters.constEnd(); ++i) {
-            list.append(QPrinterInfo((*i).name));
-        }
-        if (defprn >= 0 && defprn < lprPrinters.size()) {
-            list[defprn].d_ptr->isDefault = true;
-        }
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+        foreach (const QPrinterDescription &description, lprPrinters)
+            printers.append(QPrinterInfo(description.name));
+        if (defprn >= 0 && defprn < printers.size())
+            printers[defprn].d_ptr->isDefault = true;
     }
-#endif
 
-    return list;
+    return printers;
 }
 
 QPrinterInfo QPrinterInfo::defaultPrinter()
 {
-    QList<QPrinterInfo> prnList = availablePrinters();
-    for (int i = 0; i < prnList.size(); ++i) {
-        if (prnList[i].isDefault())
-            return prnList[i];
+    QList<QPrinterInfo> printers = availablePrinters();
+    foreach (const QPrinterInfo &printerInfo, printers) {
+        if (printerInfo.isDefault())
+            return printerInfo;
     }
-    return (prnList.size() > 0) ? prnList[0] : QPrinterInfo();
+
+    return printers.value(0);
 }
 
 QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const

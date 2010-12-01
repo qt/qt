@@ -54,68 +54,63 @@ QList<QPrinterInfo> QPrinterInfo::availablePrinters()
 {
     QList<QPrinterInfo> printers;
 
-    OSStatus status = noErr;
-    QCFType<CFArrayRef> printerList;
-    status = PMServerCreatePrinterList(kPMServerLocal, &printerList);
-    if (status == noErr) {
-        CFIndex count = CFArrayGetCount(printerList);
-        for (CFIndex i=0; i<count; ++i) {
-            PMPrinter printer = static_cast<PMPrinter>(const_cast<void *>(CFArrayGetValueAtIndex(printerList, i)));
-            QString name = QCFString::toQString(PMPrinterGetName(printer));
-            printers.append(QPrinterInfo(name));
-            if (PMPrinterIsDefault(printer)) {
-                printers[i].d_ptr->isDefault = true;
-            }
+    QCFType<CFArrayRef> array;
+    if (PMServerCreatePrinterList(kPMServerLocal, &array) == noErr) {
+        CFIndex count = CFArrayGetCount(array);
+        for (int i = 0; i < count; ++i) {
+            PMPrinter printer = static_cast<PMPrinter>(const_cast<void *>(CFArrayGetValueAtIndex(array, i)));
+            QString printerName = QCFString::toQString(PMPrinterGetName(printer));
+
+            QPrinterInfo printerInfo(printerName);
+            if (PMPrinterIsDefault(printer))
+                printerInfo.d_ptr->isDefault = true;
+            printers.append(printerInfo);
         }
     }
 
     return printers;
 }
 
-QPrinterInfo QPrinterInfo::defaultPrinter(){
+QPrinterInfo QPrinterInfo::defaultPrinter()
+{
     QList<QPrinterInfo> printers = availablePrinters();
-    for (int c = 0; c < printers.size(); ++c) {
-        if (printers[c].isDefault()) {
-            return printers[c];
-        }
+    foreach (const QPrinterInfo &printerInfo, printers) {
+        if (printerInfo.isDefault())
+            return printerInfo;
     }
-    return QPrinterInfo();
+
+    return printers.value(0);
 }
 
 QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
 {
     const Q_D(QPrinterInfo);
 
-    PMPrinter cfPrn = PMPrinterCreateFromPrinterID(QCFString::toCFStringRef(d->name));
+    QList<QPrinter::PaperSize> paperSizes;
 
-    if (!cfPrn) return QList<QPrinter::PaperSize>();
+    PMPrinter cfPrn = PMPrinterCreateFromPrinterID(QCFString::toCFStringRef(d->name));
+    if (!cfPrn)
+        return paperSizes;
 
     CFArrayRef array;
-    OSStatus status = PMPrinterGetPaperList(cfPrn, &array);
-
-    if (status != 0) {
+    if (PMPrinterGetPaperList(cfPrn, &array) != noErr) {
         PMRelease(cfPrn);
-        return QList<QPrinter::PaperSize>();
+        return paperSizes;
     }
 
-    QList<QPrinter::PaperSize> paperList;
     int count = CFArrayGetCount(array);
-    for (int c = 0; c < count; c++) {
-        PMPaper paper = static_cast<PMPaper>(
-                const_cast<void*>(
-                CFArrayGetValueAtIndex(array, c)));
+    for (int i = 0; i < count; ++i) {
+        PMPaper paper = static_cast<PMPaper>(const_cast<void *>(CFArrayGetValueAtIndex(array, i)));
         double width, height;
-        status = PMPaperGetWidth(paper, &width);
-        status |= PMPaperGetHeight(paper, &height);
-        if (status != 0) continue;
-
-        QSizeF size(width * 0.3527, height * 0.3527);
-        paperList.append(qSizeFTopaperSize(size));
+        if (PMPaperGetWidth(paper, &width) == noErr && PMPaperGetHeight(paper, &height) == noErr) {
+            QSizeF size(width * 0.3527, height * 0.3527);
+            paperSizes.append(qSizeFTopaperSize(size));
+        }
     }
 
     PMRelease(cfPrn);
 
-    return paperList;
+    return paperSizes;
 }
 
 #endif // QT_NO_PRINTER
