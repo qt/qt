@@ -2231,9 +2231,8 @@ bool QDeclarative_isFileCaseCorrect(const QString &fileName)
             return false;
     }
 #else
-    Q_UNUSED(fileName);
+    Q_UNUSED(fileName)
 #endif
-
     return true;
 }
 

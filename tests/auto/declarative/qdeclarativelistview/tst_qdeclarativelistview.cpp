@@ -1664,32 +1664,63 @@ void tst_QDeclarativeListView::QTBUG_11105()
 
 void tst_QDeclarativeListView::header()
 {
-    QDeclarativeView *canvas = createView();
+    {
+        QDeclarativeView *canvas = createView();
 
-    TestModel model;
-    for (int i = 0; i < 30; i++)
-        model.addItem("Item" + QString::number(i), "");
+        TestModel model;
+        for (int i = 0; i < 30; i++)
+            model.addItem("Item" + QString::number(i), "");
 
-    QDeclarativeContext *ctxt = canvas->rootContext();
-    ctxt->setContextProperty("testModel", &model);
+        QDeclarativeContext *ctxt = canvas->rootContext();
+        ctxt->setContextProperty("testModel", &model);
 
-    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/header.qml"));
-    qApp->processEvents();
+        canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/header.qml"));
+        qApp->processEvents();
 
-    QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
-    QTRY_VERIFY(listview != 0);
+        QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
+        QTRY_VERIFY(listview != 0);
 
-    QDeclarativeItem *contentItem = listview->contentItem();
-    QTRY_VERIFY(contentItem != 0);
+        QDeclarativeItem *contentItem = listview->contentItem();
+        QTRY_VERIFY(contentItem != 0);
 
-    QDeclarativeText *header = findItem<QDeclarativeText>(contentItem, "header");
-    QVERIFY(header);
-    QCOMPARE(header->y(), 0.0);
+        QDeclarativeText *header = findItem<QDeclarativeText>(contentItem, "header");
+        QVERIFY(header);
+        QCOMPARE(header->y(), 0.0);
 
-    QCOMPARE(listview->contentY(), 0.0);
+        QCOMPARE(listview->contentY(), 0.0);
 
-    model.clear();
-    QTRY_COMPARE(header->y(), 0.0);
+        model.clear();
+        QTRY_COMPARE(header->y(), 0.0);
+
+        delete canvas;
+    }
+    {
+        QDeclarativeView *canvas = createView();
+
+        TestModel model;
+
+        QDeclarativeContext *ctxt = canvas->rootContext();
+
+        canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/header1.qml"));
+        qApp->processEvents();
+
+        QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
+        QTRY_VERIFY(listview != 0);
+
+        QDeclarativeItem *contentItem = listview->contentItem();
+        QTRY_VERIFY(contentItem != 0);
+
+        QDeclarativeText *header = findItem<QDeclarativeText>(contentItem, "header");
+        QVERIFY(header);
+        QCOMPARE(header->y(), 0.0);
+
+        QCOMPARE(listview->contentY(), 0.0);
+
+        model.clear();
+        QTRY_COMPARE(header->y(), 0.0);
+
+        delete canvas;
+    }
 }
 
 void tst_QDeclarativeListView::footer()

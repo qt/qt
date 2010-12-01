@@ -402,6 +402,8 @@ public:
     void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry) {
         Q_Q(QDeclarativeListView);
         QDeclarativeFlickablePrivate::itemGeometryChanged(item, newGeometry, oldGeometry);
+        if (!q->isComponentComplete())
+            return;
         if (item != contentItem && (!highlight || item != highlight->item)) {
             if ((orient == QDeclarativeListView::Vertical && newGeometry.height() != oldGeometry.height())
                 || (orient == QDeclarativeListView::Horizontal && newGeometry.width() != oldGeometry.width())) {
@@ -1123,8 +1125,6 @@ void QDeclarativeListViewPrivate::updateHeader()
             QDeclarativeItemPrivate *itemPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(item));
             itemPrivate->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
             header = new FxListItem(item, q);
-            if (visibleItems.isEmpty())
-                visiblePos = header->size();
         }
     }
     if (header) {
@@ -1137,6 +1137,8 @@ void QDeclarativeListViewPrivate::updateHeader()
                     header->setPosition(startPos - header->size());
             }
         } else {
+            if (itemCount == 0)
+                visiblePos = header->size();
             header->setPosition(0);
         }
     }
@@ -2215,8 +2217,10 @@ void QDeclarativeListView::setFooter(QDeclarativeComponent *footer)
         d->footerComponent = footer;
         d->minExtentDirty = true;
         d->maxExtentDirty = true;
-        d->updateFooter();
-        d->updateViewport();
+        if (isComponentComplete()) {
+            d->updateFooter();
+            d->updateViewport();
+        }
         emit footerChanged();
     }
 }
@@ -2247,9 +2251,11 @@ void QDeclarativeListView::setHeader(QDeclarativeComponent *header)
         d->headerComponent = header;
         d->minExtentDirty = true;
         d->maxExtentDirty = true;
-        d->updateHeader();
-        d->updateFooter();
-        d->updateViewport();
+        if (isComponentComplete()) {
+            d->updateHeader();
+            d->updateFooter();
+            d->updateViewport();
+        }
         emit headerChanged();
     }
 }
@@ -2659,6 +2665,8 @@ void QDeclarativeListView::componentComplete()
     Q_D(QDeclarativeListView);
     QDeclarativeFlickable::componentComplete();
     updateSections();
+    d->updateHeader();
+    d->updateFooter();
     if (d->isValid()) {
         refill();
         d->moveReason = QDeclarativeListViewPrivate::SetIndex;

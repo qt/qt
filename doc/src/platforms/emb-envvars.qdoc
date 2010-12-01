@@ -112,7 +112,7 @@
     device, e.g., \c /dev/mouse for mouse devices and \c /dev/ts for
     touch panels.
 
-    Multiple keyboard drivers can be specified in one go:
+    Multiple mouse drivers can be specified in one go:
 
     \snippet doc/src/snippets/code/doc_src_emb-envvars.qdoc 3
 
