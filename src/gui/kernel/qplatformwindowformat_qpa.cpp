@@ -108,8 +108,8 @@ public:
 
     QWidget has a setter and getter function for QPlatformWindowFormat. These functions can be used
     by the application programmer to signal what kind of format he wants to the window and glcontext
-    should have. However, it is not allways possible to furfill these requirements. The application
-    programmer should therefor check the resulting QPlatformWindowFormat from QPlatformGLContext
+    should have. However, it is not always possible to fulfill these requirements. The application
+    programmer should therefore check the resulting QPlatformWindowFormat from QPlatformGLContext
     to see the format that was actually created.
 
     A display format has several characteristics:
@@ -639,7 +639,7 @@ QPlatformGLContext *QPlatformWindowFormat::sharedGLContext() const
 
     otherwise the QWidget will only have a QPlatformWindow.
 
-    This is usefull for ie. QGLWidget where the QPlatformGLContext controlls the surface.
+    This is useful for ie. QGLWidget where the QPlatformGLContext controls the surface.
 
     \sa hasOverlay()
 */

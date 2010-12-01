@@ -138,7 +138,7 @@ WId QPlatformWindow::winId() const { return WId(0); }
     feature in Window systems, but can be faked. When this function is called all geometry of this
     platform window will be relative to the parent.
 */
-//jl: It would be usefull to have a property on the platform window which indicated if the sub-class
+//jl: It would be useful to have a property on the platform window which indicated if the sub-class
 // supported the setParent. If not, then geometry would be in screen coordinates.
 void QPlatformWindow::setParent(const QPlatformWindow *parent)
 {
@@ -157,7 +157,7 @@ void QPlatformWindow::setWindowTitle(const QString &title) {}
 void QPlatformWindow::raise() { qWarning("This plugin does not support raise()"); }
 
 /*!
-  Reimplement to be able to let Qt lower winows to the bottom of the dekstop
+  Reimplement to be able to let Qt lower windows to the bottom of the desktop
 */
 void QPlatformWindow::lower() { qWarning("This plugin does not support lower()"); }
 
@@ -171,7 +171,7 @@ void QPlatformWindow::setOpacity(qreal level)
 }
 
 /*!
-  Reimplement to return the glContext assosiated with the window.
+  Reimplement to return the glContext associated with the window.
 */
 QPlatformGLContext *QPlatformWindow::glContext() const
 {
@@ -194,7 +194,7 @@ QPlatformGLContext *QPlatformWindow::glContext() const
     QPlatformWindow is used to signal to the windowing system, how Qt persieves its frame.
     However, it is not concerned with how Qt renders into the window it represents.
 
-    Top level QWidgets(tlw) will allways have a QPlatformWindow. However, it is not neccesary for
+    Top level QWidgets(tlw) will always have a QPlatformWindow. However, it is not necessary for
     all tlw to have a QWindowSurface. This is the case for QGLWidget. And could be the case for
     widgets where some  3.party renders into it.
 

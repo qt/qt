@@ -68,7 +68,7 @@ QPlatformEventLoopIntegration *QPlatformIntegration::createEventLoopIntegration(
 }
 
 /*!
-    Returns wheter the given platform integration supports OpenGL.
+    Returns whether the given platform integration supports OpenGL.
 
     Default implementation returns false,
 */
@@ -103,7 +103,7 @@ QPlatformFontDatabase *QPlatformIntegration::fontDatabase() const
 
     QPlatformIntegration is the single entry point for windowsystem specific functionality when
     using the QPA platform. It has factory functions for creating platform specific pixmaps and
-    windows. The class also controlls the font subsystem.
+    windows. The class also controls the font subsystem.
 
     QPlatformIntegration is a singelton class which gets instansiated in the QApplication
     constructor. The QPlatformIntegration instance do not have ownership of objects it creates in
@@ -147,7 +147,7 @@ QPlatformFontDatabase *QPlatformIntegration::fontDatabase() const
     \fn QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const
 
     Factory function for QWindowSurface. The QWidget parameter is a pointer to the
-    top level widget(tlw) the window surface is created for. A QPlatformWindow is allways created
+    top level widget(tlw) the window surface is created for. A QPlatformWindow is always created
     before the QWindowSurface for tlw where the widget also requires a WindowSurface. It is
     possible to create top level QWidgets without a QWindowSurface by specifying
     QPlatformWindowFormat::setWindowSurface(false) for the tlw QPlatformWindowFormat.
