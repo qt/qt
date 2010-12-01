@@ -1438,10 +1438,11 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             const QRect iconRect = subElementRect(SE_ItemViewItemDecoration, &voptAdj, widget);
             QRect textRect = subElementRect(SE_ItemViewItemText, &voptAdj, widget);
             const QAbstractItemView *itemView = qobject_cast<const QAbstractItemView *>(widget);
-            const bool singleSelection =
-                (itemView->selectionMode() == QAbstractItemView::SingleSelection ||
-                 itemView->selectionMode() == QAbstractItemView::NoSelection);
-            const bool selectItems = (itemView->selectionBehavior() == QAbstractItemView::SelectItems);
+
+            const bool singleSelection = itemView &&
+                ((itemView->selectionMode() == QAbstractItemView::SingleSelection ||
+                 itemView->selectionMode() == QAbstractItemView::NoSelection));
+            const bool selectItems = itemView && (itemView->selectionBehavior() == QAbstractItemView::SelectItems);
 
             // draw themed background for itemview unless background brush has been defined.
             if (vopt->backgroundBrush == Qt::NoBrush) {
@@ -2536,6 +2537,56 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             if (const QStyleOptionToolButton *toolBtn = qstyleoption_cast<const QStyleOptionToolButton *>(opt))
                 if (toolBtn->subControls & SC_ToolButtonMenu)
                     sz += QSize(pixelMetric(PM_MenuButtonIndicator), 0);
+
+            //Make toolbuttons in toolbar stretch the whole screen area
+            if (widget && qobject_cast<const QToolBar *>(widget->parentWidget())) {
+                const QToolBar *tb = qobject_cast<const QToolBar *>(widget->parentWidget());
+                const bool parentCanGrowHorizontally = !(tb->sizePolicy().horizontalPolicy() == QSizePolicy::Fixed ||
+                        tb->sizePolicy().horizontalPolicy() == QSizePolicy::Maximum) && tb->orientation() == Qt::Horizontal;
+
+                if (parentCanGrowHorizontally) {
+                    int visibleButtons = 0;
+                    //Make the auto-stretch to happen only for horizontal orientation
+                    if (tb && tb->orientation() == Qt::Horizontal) {
+                        QList<QAction*> actionList =  tb->actions();
+                        for (int i = 0; i < actionList.count(); i++) {
+                            if (actionList.at(i)->isVisible())
+                                visibleButtons++;
+                        }
+                    }
+
+                    if (widget->parentWidget() && visibleButtons > 0) {
+                        QWidget *w = const_cast<QWidget *>(widget);
+                        int toolBarMaxWidth = 0;
+                        int totalMargin = 0;
+                        while (w) {
+                            //honor fixed width parents
+                            if (w->maximumWidth() == w->minimumWidth())
+                                toolBarMaxWidth = qMax(toolBarMaxWidth, w->maximumWidth());
+                            if (w->layout() && w->windowType() == Qt::Widget) {
+                                totalMargin += w->layout()->contentsMargins().left() +
+                                               w->layout()->contentsMargins().right();
+                            }
+                            w = w->parentWidget();
+                        }
+                        totalMargin += 2 * pixelMetric(QStyle::PM_ToolBarFrameWidth);
+
+                        if (toolBarMaxWidth == 0)
+                            toolBarMaxWidth =
+                                QApplication::desktop()->availableGeometry(widget->parentWidget()).width();
+                        //Reduce the margins, toolbar frame, item spacing and internal margin from available area
+                        toolBarMaxWidth -= totalMargin;
+
+                        //ensure that buttons are side-by-side and not on top of each other
+                        const int toolButtonWidth = (toolBarMaxWidth / visibleButtons)
+                                - pixelMetric(QStyle::PM_ToolBarItemSpacing)
+                                - pixelMetric(QStyle::PM_ToolBarItemMargin)
+                        //toolbar frame needs to be reduced again, since QToolBarLayout adds it for each toolbar action
+                                - 2 * pixelMetric(QStyle::PM_ToolBarFrameWidth) - 1;
+                        sz.setWidth(qMax(toolButtonWidth, sz.width()));
+                    }
+                }
+            }
             break;
         case CT_PushButton:
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);

@@ -470,7 +470,7 @@ QRectF QDeclarativeImage::boundingRect() const
 void QDeclarativeImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QDeclarativeImage);
-    if (d->pix.isNull())
+    if (d->pix.pixmap().isNull() )
         return;
 
     bool oldAA = p->testRenderHint(QPainter::Antialiasing);

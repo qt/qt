@@ -75,7 +75,7 @@
     is arranged according to the layout's alignment for that item. You can set
     an alignment for each item by calling setAlignment(), and check the
     alignment for any item by calling alignment(). By default, items are
-    centered both vertically and horizontally.
+    aligned to the top left.
 
     \section1 Spacing within QGraphicsLinearLayout
 
@@ -446,7 +446,7 @@ void QGraphicsLinearLayout::setAlignment(QGraphicsLayoutItem *item, Qt::Alignmen
 
 /*!
     Returns the alignment for \a item. The default alignment is
-    Qt::AlignCenter.
+    Qt::AlignTop | Qt::AlignLeft.
 
     The alignment decides how the item is positioned within its assigned space
     in the case where there's more space available in the layout than the

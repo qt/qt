@@ -87,6 +87,7 @@ private slots:
     void noLoading();
     void paintedWidthHeight();
     void sourceSize_QTBUG_14303();
+    void nullPixmapPaint();
 
 private:
     template<typename T>
@@ -549,6 +550,35 @@ void tst_qdeclarativeimage::sourceSize_QTBUG_14303()
     QTRY_COMPARE(obj->sourceSize().width(), 200);
     QTRY_COMPARE(obj->sourceSize().height(), 200);
     QTRY_COMPARE(sourceSizeSpy.count(), 2);
+}
+
+static int numberOfWarnings = 0;
+static void checkWarnings(QtMsgType, const char *)
+{
+    numberOfWarnings++;
+}
+
+// QTBUG-15690
+void tst_qdeclarativeimage::nullPixmapPaint()
+{
+    QString componentStr = QString("import QtQuick 1.0\nImage { width: 10; height:10; fillMode: Image.PreserveAspectFit; source: \"")
+            + SERVER_ADDR + QString("/no-such-file.png\" }");
+    QDeclarativeComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeImage *image = qobject_cast<QDeclarativeImage*>(component.create());
+
+    QTRY_VERIFY(image != 0);
+    
+    QtMsgHandler previousMsgHandler = qInstallMsgHandler(checkWarnings);
+
+    QPixmap pm(100, 100);
+    QPainter p(&pm);
+
+    // used to print "QTransform::translate with NaN called"
+    image->paint(&p, 0, 0);
+    qInstallMsgHandler(previousMsgHandler);
+    QVERIFY(numberOfWarnings == 0);
+    delete image;
 }
 
 /*

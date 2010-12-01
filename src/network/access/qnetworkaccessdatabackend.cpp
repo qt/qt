@@ -122,4 +122,10 @@ bool QNetworkAccessDataBackend::waitForUpstreamBytesWritten(int)
     return false;
 }
 
+bool QNetworkAccessDataBackend::processRequestSynchronously()
+{
+    start();
+    return true;
+}
+
 QT_END_NAMESPACE

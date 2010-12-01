@@ -684,7 +684,7 @@ void QDeclarativePixmapStore::timerEvent(QTimerEvent *)
 }
 
 QDeclarativePixmapReply::QDeclarativePixmapReply(QDeclarativePixmapData *d)
-: data(d), reader(0), loading(false), redirectCount(0), requestSize(d->requestSize)
+: data(d), reader(0), requestSize(d->requestSize), loading(false), redirectCount(0)
 {
     if (finishedIndex == -1) {
         finishedIndex = QDeclarativePixmapReply::staticMetaObject.indexOfSignal("finished()");

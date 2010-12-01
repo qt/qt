@@ -228,8 +228,14 @@ void QPollingFileSystemWatcherEngine::timeout()
             dit.remove();
             emit directoryChanged(path, true);
         } else if (x.value() != fi) {
-            x.value() = fi;
-            emit directoryChanged(path, false);
+            fi.refresh();
+            if (!fi.exists()) {
+                dit.remove();
+                emit directoryChanged(path, true);
+            } else {
+                x.value() = fi;
+                emit directoryChanged(path, false);
+            }
         }
         
     }
