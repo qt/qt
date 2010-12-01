@@ -1341,8 +1341,8 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
 }
 
 /*!
-  Generate the html page for a qdoc file that doesn't map
-  to an underlying c++ file.
+  Generate the HTML page for a qdoc file that doesn't map
+  to an underlying C++ file.
  */
 void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
 {
@@ -1360,6 +1360,9 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
     else if (fake->subType() == Node::QmlBasicType) {
         fullTitle = "QML Basic Type: " + fullTitle;
         htmlTitle = fullTitle;
+
+        // Replace the marker with a QML code marker.
+        marker = CodeMarker::markerForLanguage(QLatin1String("QML"));
     }
 
     generateHeader(htmlTitle, fake, marker);
@@ -1373,6 +1376,9 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
         qml_cn = static_cast<const QmlClassNode*>(fake);
         sections = marker->qmlSections(qml_cn,CodeMarker::Summary,0);
         generateTableOfContents(fake,marker,&sections);
+
+        // Replace the marker with a QML code marker.
+        marker = CodeMarker::markerForLanguage(QLatin1String("QML"));
     }
     else if (fake->name() != QString("index.html"))
         generateTableOfContents(fake,marker,0);

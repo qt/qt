@@ -514,7 +514,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
             Doc::quoteFromFile(fake->doc().location(), quoter, fake->name());
             QString code = quoter.quoteTo(fake->location(), "", "");
             text << Atom(Atom::Code, code);
-            generateText(text, fake, marker);
+            generateText(text, fake, CodeMarker::markerForFileName(fake->name()));
         }
     }
 }
