@@ -84,16 +84,15 @@ QPrinterInfo QPrinterInfo::defaultPrinter()
     wchar_t buffer[256];
     GetProfileString(L"windows", L"device", (wchar_t*)noPrinters.utf16(), buffer, 256);
     QString output = QString::fromWCharArray(buffer);
+    if (output != noPrinters) {
+        // Filter out the name of the printer, which should be everything before a comma.
+        QString printerName = output.split(QLatin1Char(',')).value(0);
+        QPrinterInfo printerInfo(printerName);
+        printerInfo.d_ptr->isDefault = true;
+        return printerInfo;
+    }
 
-    // Filter out the name of the printer, which should be everything before a comma.
-    bool noConfiguredPrinters = (output == noPrinters);
-    QString printerName = output.split(QLatin1Char(',')).value(0);
-
-    QPrinterInfo printerInfo(printerName);
-    printerInfo.d_ptr->isDefault = true;
-    if (noConfiguredPrinters)
-        printerInfo.d_ptr->isNull = true;
-    return printerInfo;
+    return QPrinterInfo();
 }
 
 QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
