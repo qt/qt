@@ -1769,8 +1769,10 @@ void QDeclarativeGridView::setFooter(QDeclarativeComponent *footer)
             d->footer = 0;
         }
         d->footerComponent = footer;
-        d->updateFooter();
-        d->updateGrid();
+        if (isComponentComplete()) {
+            d->updateFooter();
+            d->updateGrid();
+        }
         emit footerChanged();
     }
 }
@@ -1799,9 +1801,11 @@ void QDeclarativeGridView::setHeader(QDeclarativeComponent *header)
             d->header = 0;
         }
         d->headerComponent = header;
-        d->updateHeader();
-        d->updateFooter();
-        d->updateGrid();
+        if (isComponentComplete()) {
+            d->updateHeader();
+            d->updateFooter();
+            d->updateGrid();
+        }
         emit headerChanged();
     }
 }
@@ -2226,6 +2230,8 @@ void QDeclarativeGridView::componentComplete()
 {
     Q_D(QDeclarativeGridView);
     QDeclarativeFlickable::componentComplete();
+    d->updateHeader();
+    d->updateFooter();
     d->updateGrid();
     if (d->isValid()) {
         refill();
