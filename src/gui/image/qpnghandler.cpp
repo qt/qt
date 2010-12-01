@@ -156,10 +156,11 @@ void CALLBACK_CALL_TYPE iod_read_fn(png_structp png_ptr, png_bytep data, png_siz
     QPngHandlerPrivate *d = (QPngHandlerPrivate *)png_get_io_ptr(png_ptr);
     QIODevice *in = d->q->device();
 
-    if (d->state == QPngHandlerPrivate::ReadingEnd && in->atEnd() && length == 4) {
+    if (d->state == QPngHandlerPrivate::ReadingEnd && !in->isSequential() && (in->size() - in->pos()) < 4 && length == 4) {
         // Workaround for certain malformed PNGs that lack the final crc bytes
         uchar endcrc[4] = { 0xae, 0x42, 0x60, 0x82 };
         qMemCopy(data, endcrc, 4);
+        in->seek(in->size());
         return;
     }
 
