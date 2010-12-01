@@ -95,21 +95,6 @@ static QStringList defines;
 static QHash<QString, Tree *> trees;
 
 /*!
-  Find the Tree for language \a lang and return a pointer to it.
-  If there is no Tree for language \a lang in the Tree table, add
-  a new one. The Tree table is indexed by \a lang strings.
- */
-static Tree* treeForLanguage(const QString &lang)
-{
-    Tree* tree = trees.value(lang);
-    if (tree == 0) {
-        tree = new Tree;
-        trees.insert( lang, tree );
-    }
-    return tree;
-}
-
-/*!
   Print the help message to \c stdout.
  */
 static void printHelp()
