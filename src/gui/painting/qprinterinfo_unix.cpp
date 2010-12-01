@@ -60,6 +60,68 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_PRINTER
 
+#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+// preserver names in ascending order for the binary search
+static const struct NamedPaperSize {
+    const char *const name;
+    QPrinter::PaperSize size;
+} named_sizes_map[QPrinter::NPageSize] = {
+    { "A0", QPrinter::A0 },
+    { "A1", QPrinter::A1 },
+    { "A2", QPrinter::A2 },
+    { "A3", QPrinter::A3 },
+    { "A4", QPrinter::A4 },
+    { "A5", QPrinter::A5 },
+    { "A6", QPrinter::A6 },
+    { "A7", QPrinter::A7 },
+    { "A8", QPrinter::A8 },
+    { "A9", QPrinter::A9 },
+    { "B0", QPrinter::B0 },
+    { "B1", QPrinter::B1 },
+    { "B10", QPrinter::B10 },
+    { "B2", QPrinter::B2 },
+    { "B4", QPrinter::B4 },
+    { "B5", QPrinter::B5 },
+    { "B6", QPrinter::B6 },
+    { "B7", QPrinter::B7 },
+    { "B8", QPrinter::B8 },
+    { "B9", QPrinter::B9 },
+    { "C5E", QPrinter::C5E },
+    { "Comm10E", QPrinter::Comm10E },
+    { "Custom", QPrinter::Custom },
+    { "DLE", QPrinter::DLE },
+    { "Executive", QPrinter::Executive },
+    { "Folio", QPrinter::Folio },
+    { "Ledger", QPrinter::Ledger },
+    { "Legal", QPrinter::Legal },
+    { "Letter", QPrinter::Letter },
+    { "Tabloid", QPrinter::Tabloid }
+};
+
+inline bool operator<(const char *name, const NamedPaperSize &data)
+{ return qstrcmp(name, data.name) < 0; }
+inline bool operator<(const NamedPaperSize &data, const char *name)
+{ return qstrcmp(data.name, name) < 0; }
+
+static inline QPrinter::PaperSize string2PaperSize(const char *name)
+{
+    const NamedPaperSize *r = qBinaryFind(named_sizes_map, named_sizes_map + QPrinter::NPageSize, name);
+    if (r - named_sizes_map != QPrinter::NPageSize)
+        return r->size;
+    return QPrinter::Custom;
+}
+
+static inline const char *paperSize2String(QPrinter::PaperSize size)
+{
+    for (int i = 0; i < QPrinter::NPageSize; ++i) {
+        if (size == named_sizes_map[i].size)
+            return named_sizes_map[i].name;
+    }
+    return 0;
+}
+#endif
+
+
 class QPrinterInfoPrivate
 {
 Q_DECLARE_PUBLIC(QPrinterInfo)
@@ -67,9 +129,6 @@ public:
     QPrinterInfoPrivate();
     QPrinterInfoPrivate(const QString& name);
     ~QPrinterInfoPrivate();
-
-    static QPrinter::PaperSize string2PaperSize(const QString& str);
-    static QString pageSize2String(QPrinter::PaperSize size);
 
 private:
     QString                     m_name;
@@ -977,11 +1036,8 @@ QList< QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
             cups.setCurrentPrinter(d->m_cupsPrinterIndex);
             const ppd_option_t* sizes = cups.pageSizes();
             if (sizes) {
-                for (int j = 0; j < sizes->num_choices; ++j) {
-                    d->m_paperSizes.append(
-                        QPrinterInfoPrivate::string2PaperSize(
-                            QLatin1String(sizes->choices[j].choice)));
-                }
+                for (int j = 0; j < sizes->num_choices; ++j)
+                    d->m_paperSizes.append(string2PaperSize(sizes->choices[j].choice));
             }
         }
 #endif
@@ -1014,141 +1070,6 @@ QPrinterInfoPrivate::QPrinterInfoPrivate(const QString& name)
 
 QPrinterInfoPrivate::~QPrinterInfoPrivate()
 {
-}
-
-QPrinter::PaperSize QPrinterInfoPrivate::string2PaperSize(const QString& str)
-{
-    if (str == QLatin1String("A4")) {
-        return QPrinter::A4;
-    } else if (str == QLatin1String("B5")) {
-        return QPrinter::B5;
-    } else if (str == QLatin1String("Letter")) {
-        return QPrinter::Letter;
-    } else if (str == QLatin1String("Legal")) {
-        return QPrinter::Legal;
-    } else if (str == QLatin1String("Executive")) {
-        return QPrinter::Executive;
-    } else if (str == QLatin1String("A0")) {
-        return QPrinter::A0;
-    } else if (str == QLatin1String("A1")) {
-        return QPrinter::A1;
-    } else if (str == QLatin1String("A2")) {
-        return QPrinter::A2;
-    } else if (str == QLatin1String("A3")) {
-        return QPrinter::A3;
-    } else if (str == QLatin1String("A5")) {
-        return QPrinter::A5;
-    } else if (str == QLatin1String("A6")) {
-        return QPrinter::A6;
-    } else if (str == QLatin1String("A7")) {
-        return QPrinter::A7;
-    } else if (str == QLatin1String("A8")) {
-        return QPrinter::A8;
-    } else if (str == QLatin1String("A9")) {
-        return QPrinter::A9;
-    } else if (str == QLatin1String("B0")) {
-        return QPrinter::B0;
-    } else if (str == QLatin1String("B1")) {
-        return QPrinter::B1;
-    } else if (str == QLatin1String("B10")) {
-        return QPrinter::B10;
-    } else if (str == QLatin1String("B2")) {
-        return QPrinter::B2;
-    } else if (str == QLatin1String("B3")) {
-        return QPrinter::B3;
-    } else if (str == QLatin1String("B4")) {
-        return QPrinter::B4;
-    } else if (str == QLatin1String("B6")) {
-        return QPrinter::B6;
-    } else if (str == QLatin1String("B7")) {
-        return QPrinter::B7;
-    } else if (str == QLatin1String("B8")) {
-        return QPrinter::B8;
-    } else if (str == QLatin1String("B9")) {
-        return QPrinter::B9;
-    } else if (str == QLatin1String("C5E")) {
-        return QPrinter::C5E;
-    } else if (str == QLatin1String("Comm10E")) {
-        return QPrinter::Comm10E;
-    } else if (str == QLatin1String("DLE")) {
-        return QPrinter::DLE;
-    } else if (str == QLatin1String("Folio")) {
-        return QPrinter::Folio;
-    } else if (str == QLatin1String("Ledger")) {
-        return QPrinter::Ledger;
-    } else if (str == QLatin1String("Tabloid")) {
-        return QPrinter::Tabloid;
-    } else {
-        return QPrinter::Custom;
-    }
-}
-
-QString QPrinterInfoPrivate::pageSize2String(QPrinter::PaperSize size)
-{
-    switch (size) {
-    case QPrinter::A4:
-        return QLatin1String("A4");
-    case QPrinter::B5:
-        return QLatin1String("B5");
-    case QPrinter::Letter:
-        return QLatin1String("Letter");
-    case QPrinter::Legal:
-        return QLatin1String("Legal");
-    case QPrinter::Executive:
-        return QLatin1String("Executive");
-    case QPrinter::A0:
-        return QLatin1String("A0");
-    case QPrinter::A1:
-        return QLatin1String("A1");
-    case QPrinter::A2:
-        return QLatin1String("A2");
-    case QPrinter::A3:
-        return QLatin1String("A3");
-    case QPrinter::A5:
-        return QLatin1String("A5");
-    case QPrinter::A6:
-        return QLatin1String("A6");
-    case QPrinter::A7:
-        return QLatin1String("A7");
-    case QPrinter::A8:
-        return QLatin1String("A8");
-    case QPrinter::A9:
-        return QLatin1String("A9");
-    case QPrinter::B0:
-        return QLatin1String("B0");
-    case QPrinter::B1:
-        return QLatin1String("B1");
-    case QPrinter::B10:
-        return QLatin1String("B10");
-    case QPrinter::B2:
-        return QLatin1String("B2");
-    case QPrinter::B3:
-        return QLatin1String("B3");
-    case QPrinter::B4:
-        return QLatin1String("B4");
-    case QPrinter::B6:
-        return QLatin1String("B6");
-    case QPrinter::B7:
-        return QLatin1String("B7");
-    case QPrinter::B8:
-        return QLatin1String("B8");
-    case QPrinter::B9:
-        return QLatin1String("B9");
-    case QPrinter::C5E:
-        return QLatin1String("C5E");
-    case QPrinter::Comm10E:
-        return QLatin1String("Comm10E");
-    case QPrinter::DLE:
-        return QLatin1String("DLE");
-    case QPrinter::Folio:
-        return QLatin1String("Folio");
-    case QPrinter::Ledger:
-        return QLatin1String("Ledger");
-    case QPrinter::Tabloid:
-        return QLatin1String("Tabloid");
-    default:
-        return QLatin1String("Custom");
-    }
 }
 
 #endif // QT_NO_PRINTER
