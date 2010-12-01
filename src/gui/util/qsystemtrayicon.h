@@ -111,6 +111,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void activated(QSystemTrayIcon::ActivationReason reason);
     void messageClicked();
+    void messageTimeout();
 
 protected:
     bool event(QEvent *event);
