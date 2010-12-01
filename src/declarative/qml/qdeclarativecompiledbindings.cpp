@@ -187,7 +187,6 @@ public:
 
         // Inherited from QDeclarativeAbstractBinding
         virtual void setEnabled(bool, QDeclarativePropertyPrivate::WriteFlags flags);
-        virtual int propertyIndex();
         virtual void update(QDeclarativePropertyPrivate::WriteFlags flags);
         virtual void destroy();
 
@@ -294,24 +293,11 @@ QDeclarativeAbstractBinding *QDeclarativeCompiledBindings::configBinding(int ind
 
 void QDeclarativeCompiledBindingsPrivate::Binding::setEnabled(bool e, QDeclarativePropertyPrivate::WriteFlags flags)
 {
-    if (e) {
-        addToObject(target);
-    } else {
-        removeFromObject();
-    }
-
-    QDeclarativeAbstractBinding::setEnabled(e, flags);
-
     if (enabled != e) {
         enabled = e;
 
         if (e) update(flags);
     }
-}
-
-int QDeclarativeCompiledBindingsPrivate::Binding::propertyIndex()
-{
-    return property & 0xFFFF;
 }
 
 void QDeclarativeCompiledBindingsPrivate::Binding::update(QDeclarativePropertyPrivate::WriteFlags flags)

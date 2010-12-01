@@ -138,6 +138,7 @@ public:
                      QDeclarativeCompiledData *compiledData);
     ~QDeclarativeVMEMetaObject();
 
+    bool aliasTarget(int index, QObject **target, int *coreIndex, int *valueTypeIndex) const;
     void registerInterceptor(int index, int valueIndex, QDeclarativePropertyValueInterceptor *interceptor);
     QScriptValue vmeMethod(int index);
     int vmeMethodLineNumber(int index);
@@ -146,6 +147,7 @@ public:
     void setVMEProperty(int index, const QScriptValue &);
 
     void connectAliasSignal(int index);
+
 protected:
     virtual int metaCall(QMetaObject::Call _c, int _id, void **_a);
 
