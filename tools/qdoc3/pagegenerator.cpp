@@ -299,7 +299,7 @@ QTextStream &PageGenerator::out()
 }
 
 /*!
-  Recursive writing of html files from the root \a node.
+  Recursive writing of HTML files from the root \a node.
  */
 void
 PageGenerator::generateInnerNode(const InnerNode* node)
