@@ -327,8 +327,6 @@ private:
     void addVerbatim(QDeclarativeJS::AST::SourceLocation first,
                      QDeclarativeJS::AST::SourceLocation last = QDeclarativeJS::AST::SourceLocation());
     QString sourceText(QDeclarativeJS::AST::SourceLocation &location);
-    void write(const QString &text);
-    void endWrite(const QString &text);
 
     QDeclarativeJS::Engine *engine;
     QString source;
