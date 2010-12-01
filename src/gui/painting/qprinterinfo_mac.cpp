@@ -87,6 +87,8 @@ QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
     const Q_D(QPrinterInfo);
 
     QList<QPrinter::PaperSize> paperSizes;
+    if (isNull())
+        return paperSizes;
 
     PMPrinter cfPrn = PMPrinterCreateFromPrinterID(QCFString::toCFStringRef(d->name));
     if (!cfPrn)

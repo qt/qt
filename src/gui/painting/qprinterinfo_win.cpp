@@ -100,6 +100,8 @@ QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
     const Q_D(QPrinterInfo);
 
     QList<QPrinter::PaperSize> paperSizes;
+    if (isNull())
+        return paperSizes;
 
     DWORD size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
                                     NULL, DC_PAPERS, NULL, NULL);

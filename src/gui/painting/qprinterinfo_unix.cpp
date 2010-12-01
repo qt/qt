@@ -898,6 +898,9 @@ QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     const Q_D(QPrinterInfo);
 
+    if (isNull())
+        return d->paperSizes;
+
     if (!d->hasPaperSizes) {
         d->hasPaperSizes = true;
 
