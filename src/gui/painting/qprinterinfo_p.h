@@ -65,7 +65,7 @@ class QPrinterInfoPrivate
 {
 public:
     QPrinterInfoPrivate(const QString& name = QString()) :
-        name(name), isNull(false), isDefault(false)
+        name(name), isDefault(false)
 #if (defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_SYMBIAN)) || defined(Q_WS_QPA)
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
         , cupsPrinterIndex(0), hasPaperSizes(false)
@@ -78,7 +78,6 @@ public:
     static QPrinterInfoPrivate shared_null;
 
     QString name;
-    bool isNull;
     bool isDefault;
 
 #if (defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_SYMBIAN)) || defined(Q_WS_QPA)

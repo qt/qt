@@ -146,7 +146,7 @@ QString QPrinterInfo::printerName() const
 bool QPrinterInfo::isNull() const
 {
     const Q_D(QPrinterInfo);
-    return d->isNull;
+    return d == &QPrinterInfoPrivate::shared_null;
 }
 
 /*!
