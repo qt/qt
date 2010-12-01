@@ -47,6 +47,10 @@
 #include <qsystemtrayicon.h>
 #include <qmenu.h>
 
+#ifdef Q_OS_WIN32
+#include <windows.h>
+#endif
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -64,6 +68,7 @@ private slots:
     void showMessage();
     void supportsMessages();
     void lastWindowClosed();
+    void messageTimeout();
 };
 
 tst_QSystemTrayIcon::tst_QSystemTrayIcon()
@@ -143,6 +148,57 @@ void tst_QSystemTrayIcon::lastWindowClosed()
     qApp->exec();
     QVERIFY(spy.count() == 1);
 }
+
+#ifndef Q_WS_MAC
+
+static void triggerMessageTimeout()
+{
+#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
+    // the application has to loose focus on Windows for the message to timeout
+    INPUT input[2] = {};
+
+    input[0].type = INPUT_KEYBOARD;
+    input[0].ki.wVk = VK_LWIN;
+    input[0].ki.dwFlags = 0;
+
+    input[1].type = INPUT_KEYBOARD;
+    input[1].ki.wVk = VK_LWIN;
+    input[1].ki.dwFlags = KEYEVENTF_KEYUP;
+
+    for (int i = 0; i < 2; i++) {
+        QTest::qWait(100);
+        ::SendInput(2, input, sizeof(INPUT));
+    }
+#endif /* defined(Q_WS_WIN) && !defined(Q_WS_WINCE) */
+}
+
+void tst_QSystemTrayIcon::messageTimeout()
+{
+    QSystemTrayIcon icon;
+    if (icon.supportsMessages()) {
+        icon.setIcon(QIcon("whatever.png"));
+        icon.show();
+
+        QObject::connect(&icon, SIGNAL(messageTimeout()), qApp, SLOT(quit()));
+        QSignalSpy spy(&icon, SIGNAL(messageTimeout()));
+        icon.showMessage("Title", "Hello World!", QSystemTrayIcon::Information, 1000);
+
+        triggerMessageTimeout();
+
+        QTimer::singleShot(30000, qApp, SLOT(quit())); // in case the test fails
+        qApp->exec();
+        QVERIFY(spy.count() == 1);
+    }
+}
+
+#else
+
+void tst_QSystemTrayIcon::messageTimeout()
+{
+    // skip the test on Mac OS X
+}
+
+#endif /* Q_WS_MAC */
 
 QTEST_MAIN(tst_QSystemTrayIcon)
 #include "tst_qsystemtrayicon.moc"
