@@ -25,6 +25,16 @@
 **
 ****************************************************************************/
 
+#include "qprinterinfo.h"
+#include "qprinterinfo_p.h"
+
+#ifndef QT_NO_PRINTER
+
+QT_BEGIN_NAMESPACE
+
+QPrinterInfoPrivate QPrinterInfoPrivate::shared_null;
+
+
 /*!
     \class QPrinterInfo
 
@@ -59,60 +69,94 @@
 */
 
 /*!
-    \fn QPrinterInfo::QPrinterInfo()
-
     Constructs an empty QPrinterInfo object.
 
     \sa isNull()
 */
+QPrinterInfo::QPrinterInfo()
+    : d_ptr(&QPrinterInfoPrivate::shared_null)
+{
+}
 
 /*!
-    \fn QPrinterInfo::QPrinterInfo(const QPrinterInfo& src)
-
-    Constructs a copy of \a src.
+    Constructs a copy of \a other.
 */
+QPrinterInfo::QPrinterInfo(const QPrinterInfo &other)
+    : d_ptr(new QPrinterInfoPrivate(*other.d_ptr))
+{
+}
 
 /*!
-    \fn QPrinterInfo::QPrinterInfo(const QPrinter& printer)
-
     Constructs a QPrinterInfo object from \a printer.
 */
+QPrinterInfo::QPrinterInfo(const QPrinter &printer)
+    : d_ptr(&QPrinterInfoPrivate::shared_null)
+{
+    foreach (const QPrinterInfo &printerInfo, availablePrinters()) {
+        if (printerInfo.printerName() == printer.printerName()) {
+            d_ptr.reset(new QPrinterInfoPrivate(*printerInfo.d_ptr));
+            break;
+        }
+    }
+}
 
 /*!
-    \fn QPrinterInfo::~QPrinterInfo()
+    \internal
+*/
+QPrinterInfo::QPrinterInfo(const QString &name)
+    : d_ptr(new QPrinterInfoPrivate(name))
+{
+}
 
+/*!
     Destroys the QPrinterInfo object. References to the values in the
     object become invalid.
 */
+QPrinterInfo::~QPrinterInfo()
+{
+}
 
 /*!
-    \fn QPrinterInfo& QPrinterInfo::operator=(const QPrinterInfo& src)
-
-    Sets the QPrinterInfo object to be equal to \a src.
+    Sets the QPrinterInfo object to be equal to \a other.
 */
+QPrinterInfo &QPrinterInfo::operator=(const QPrinterInfo &other)
+{
+    Q_ASSERT(d_ptr);
+    d_ptr.reset(new QPrinterInfoPrivate(*other.d_ptr));
+    return *this;
+}
 
 /*!
-    \fn QString QPrinterInfo::printerName() const
-
     Returns the name of the printer.
 
     \sa QPrinter::setPrinterName()
 */
+QString QPrinterInfo::printerName() const
+{
+    const Q_D(QPrinterInfo);
+    return d->name;
+}
 
 /*!
-    \fn bool QPrinterInfo::isNull() const
-
     Returns whether this QPrinterInfo object holds a printer definition.
 
     An empty QPrinterInfo object could result for example from calling
     defaultPrinter() when there are no printers on the system.
 */
+bool QPrinterInfo::isNull() const
+{
+    const Q_D(QPrinterInfo);
+    return d->isNull;
+}
 
 /*!
-    \fn bool QPrinterInfo::isDefault() const
-
     Returns whether this printer is the default printer.
 */
+bool QPrinterInfo::isDefault() const
+{
+    const Q_D(QPrinterInfo);
+    return d->isDefault;
+}
 
 /*!
     \fn QList< QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
@@ -123,3 +167,7 @@
     Not all printer drivers support this query, so the list may be empty.
     On Mac OS X 10.3, this function always returns an empty list.
 */
+
+QT_END_NAMESPACE
+
+#endif // QT_NO_PRINTER

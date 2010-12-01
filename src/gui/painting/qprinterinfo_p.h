@@ -39,52 +39,70 @@
 **
 ****************************************************************************/
 
-#ifndef QPRINTERINFO_H
-#define QPRINTERINFO_H
+#ifndef QPRINTERINFO_P_H
+#define QPRINTERINFO_P_H
 
-#include <QtCore/QList>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include <QtGui/QPrinter>
+#include "QtCore/qglobal.h"
 
-QT_BEGIN_HEADER
+#ifndef QT_NO_PRINTER
+
+#include "QtCore/qlist.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
-
-#ifndef QT_NO_PRINTER
-class QPrinterInfoPrivate;
-class QPrinterInfoPrivateDeleter;
-class Q_GUI_EXPORT QPrinterInfo
+class QPrinterInfoPrivate
 {
 public:
-    QPrinterInfo();
-    QPrinterInfo(const QPrinterInfo &other);
-    QPrinterInfo(const QPrinter &printer);
-    ~QPrinterInfo();
+    QPrinterInfoPrivate(const QString& name = QString()) :
+        name(name), isNull(false), isDefault(false)
+#if (defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_SYMBIAN)) || defined(Q_WS_QPA)
+#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+        , cupsPrinterIndex(0), hasPaperSizes(false)
+#endif
+#endif
+    {}
+    ~QPrinterInfoPrivate()
+    {}
 
-    QPrinterInfo &operator=(const QPrinterInfo &other);
+    static QPrinterInfoPrivate shared_null;
 
-    QString printerName() const;
-    bool isNull() const;
-    bool isDefault() const;
-    QList<QPrinter::PaperSize> supportedPaperSizes() const;
+    QString name;
+    bool isNull;
+    bool isDefault;
 
-    static QList<QPrinterInfo> availablePrinters();
-    static QPrinterInfo defaultPrinter();
-
-private:
-    QPrinterInfo(const QString &name);
-
-private:
-    Q_DECLARE_PRIVATE(QPrinterInfo)
-    QScopedPointer<QPrinterInfoPrivate, QPrinterInfoPrivateDeleter> d_ptr;
+#if (defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_SYMBIAN)) || defined(Q_WS_QPA)
+#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+    int cupsPrinterIndex;
+    mutable bool hasPaperSizes;
+    mutable QList<QPrinter::PaperSize> paperSizes;
+#endif
+#endif
 };
 
-#endif // QT_NO_PRINTER
+
+class QPrinterInfoPrivateDeleter
+{
+public:
+    static inline void cleanup(QPrinterInfoPrivate *d)
+    {
+        if (d != &QPrinterInfoPrivate::shared_null)
+            delete d;
+    }
+};
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
+#endif // QT_NO_PRINTER
 
-#endif // QPRINTERINFO_H
+#endif // QPRINTERINFO_P_H

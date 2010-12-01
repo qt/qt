@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qprinterinfo.h"
+#include "qprinterinfo_p.h"
 
 #include "private/qt_mac_p.h"
 
@@ -47,40 +48,7 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_PRINTER
 
-class QPrinterInfoPrivate
-{
-public:
-    QPrinterInfoPrivate() :
-        m_isNull(true), m_default(false)
-    {}
-    QPrinterInfoPrivate(const QString& name) :
-        m_name(name),
-        m_isNull(false), m_default(false)
-    {}
-    ~QPrinterInfoPrivate()
-    {}
-
-    QString                     m_name;
-    bool                        m_isNull;
-    bool                        m_default;
-};
-
-static QPrinterInfoPrivate nullQPrinterInfoPrivate;
-
-class QPrinterInfoPrivateDeleter
-{
-public:
-    static inline void cleanup(QPrinterInfoPrivate *d)
-    {
-        if (d != &nullQPrinterInfoPrivate)
-            delete d;
-    }
-};
-
-extern QPrinter::PaperSize qSizeFTopaperSize(const QSizeF& size);
-
-/////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////
+extern QPrinter::PaperSize qSizeFTopaperSize(const QSizeF &size);
 
 QList<QPrinterInfo> QPrinterInfo::availablePrinters()
 {
@@ -96,7 +64,7 @@ QList<QPrinterInfo> QPrinterInfo::availablePrinters()
             QString name = QCFString::toQString(PMPrinterGetName(printer));
             printers.append(QPrinterInfo(name));
             if (PMPrinterIsDefault(printer)) {
-                printers[i].d_ptr->m_default = true;
+                printers[i].d_ptr->isDefault = true;
             }
         }
     }
@@ -114,71 +82,11 @@ QPrinterInfo QPrinterInfo::defaultPrinter(){
     return QPrinterInfo();
 }
 
-/////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////
-
-QPrinterInfo::QPrinterInfo(const QPrinter& prn)
-    : d_ptr(&nullQPrinterInfoPrivate)
-{
-    QList<QPrinterInfo> list = availablePrinters();
-    for (int c = 0; c < list.size(); ++c) {
-        if (prn.printerName() == list[c].printerName()) {
-            *this = list[c];
-            return;
-        }
-    }
-}
-
-QPrinterInfo::~QPrinterInfo()
-{
-}
-
-QPrinterInfo::QPrinterInfo()
-    : d_ptr(&nullQPrinterInfoPrivate)
-{
-}
-
-QPrinterInfo::QPrinterInfo(const QString& name)
-    : d_ptr(new QPrinterInfoPrivate(name))
-{
-}
-
-QPrinterInfo::QPrinterInfo(const QPrinterInfo& src)
-    : d_ptr(&nullQPrinterInfoPrivate)
-{
-    *this = src;
-}
-
-QPrinterInfo& QPrinterInfo::operator=(const QPrinterInfo& src)
-{
-    Q_ASSERT(d_ptr);
-    d_ptr.reset(new QPrinterInfoPrivate(*src.d_ptr));
-    return *this;
-}
-
-QString QPrinterInfo::printerName() const
-{
-    const Q_D(QPrinterInfo);
-    return d->m_name;
-}
-
-bool QPrinterInfo::isNull() const
-{
-    const Q_D(QPrinterInfo);
-    return d->m_isNull;
-}
-
-bool QPrinterInfo::isDefault() const
-{
-    const Q_D(QPrinterInfo);
-    return d->m_default;
-}
-
 QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
 {
     const Q_D(QPrinterInfo);
 
-    PMPrinter cfPrn = PMPrinterCreateFromPrinterID(QCFString::toCFStringRef(d->m_name));
+    PMPrinter cfPrn = PMPrinterCreateFromPrinterID(QCFString::toCFStringRef(d->name));
 
     if (!cfPrn) return QList<QPrinter::PaperSize>();
 

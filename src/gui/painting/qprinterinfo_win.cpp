@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qprinterinfo.h"
+#include "qprinterinfo_p.h"
 
 #include <qstringlist.h>
 
@@ -50,39 +51,6 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_PRINTER
 
 extern QPrinter::PaperSize mapDevmodePaperSize(int s);
-
-class QPrinterInfoPrivate
-{
-public:
-    QPrinterInfoPrivate() :
-        m_isNull(true), m_default(false)
-    {}
-    QPrinterInfoPrivate(const QString& name) :
-        m_name(name),
-        m_isNull(false), m_default(false)
-    {}
-    ~QPrinterInfoPrivate()
-    {}
-
-    QString                     m_name;
-    bool                        m_isNull;
-    bool                        m_default;
-};
-
-static QPrinterInfoPrivate nullQPrinterInfoPrivate;
-
-class QPrinterInfoPrivateDeleter
-{
-public:
-    static inline void cleanup(QPrinterInfoPrivate *d)
-    {
-        if (d != &nullQPrinterInfoPrivate)
-            delete d;
-    }
-};
-
-/////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////
 
 QList<QPrinterInfo> QPrinterInfo::availablePrinters()
 {
@@ -105,7 +73,7 @@ QList<QPrinterInfo> QPrinterInfo::availablePrinters()
         for (uint i = 0; i < returned; ++i) {
             printers.append(QPrinterInfo(QString::fromWCharArray(infoList[i].pPrinterName)));
             if (printers.at(i).printerName() == defPrn.printerName())
-                printers[i].d_ptr->m_default = true;
+                printers[i].d_ptr->isDefault = true;
         }
         delete [] buffer;
     }
@@ -127,72 +95,10 @@ QPrinterInfo QPrinterInfo::defaultPrinter()
     QString printerName = noConfiguredPrinters ? QString() : info.at(0);
 
     QPrinterInfo prn(printerName);
-    prn.d_ptr->m_default = true;
+    prn.d_ptr->isDefault = true;
     if (noConfiguredPrinters)
-        prn.d_ptr->m_isNull = true;
+        prn.d_ptr->isNull = true;
     return prn;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////
-
-QPrinterInfo::QPrinterInfo()
-    : d_ptr(&nullQPrinterInfoPrivate)
-{
-}
-
-QPrinterInfo::QPrinterInfo(const QString& name)
-    : d_ptr(new QPrinterInfoPrivate(name))
-{
-}
-
-QPrinterInfo::QPrinterInfo(const QPrinterInfo& src)
-    : d_ptr(&nullQPrinterInfoPrivate)
-{
-    *this = src;
-}
-
-QPrinterInfo::QPrinterInfo(const QPrinter& prn)
-    : d_ptr(&nullQPrinterInfoPrivate)
-{
-    QList<QPrinterInfo> list = availablePrinters();
-    for (int c = 0; c < list.size(); ++c) {
-        if (prn.printerName() == list[c].printerName()) {
-            *this = list[c];
-            return;
-        }
-    }
-
-    *this = QPrinterInfo();
-}
-
-QPrinterInfo::~QPrinterInfo()
-{
-}
-
-QPrinterInfo& QPrinterInfo::operator=(const QPrinterInfo& src)
-{
-    Q_ASSERT(d_ptr);
-    d_ptr.reset(new QPrinterInfoPrivate(*src.d_ptr));
-    return *this;
-}
-
-QString QPrinterInfo::printerName() const
-{
-    const Q_D(QPrinterInfo);
-    return d->m_name;
-}
-
-bool QPrinterInfo::isNull() const
-{
-    const Q_D(QPrinterInfo);
-    return d->m_isNull;
-}
-
-bool QPrinterInfo::isDefault() const
-{
-    const Q_D(QPrinterInfo);
-    return d->m_default;
 }
 
 QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
@@ -200,13 +106,13 @@ QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
     const Q_D(QPrinterInfo);
     QList<QPrinter::PaperSize> paperList;
 
-    DWORD size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->m_name.utf16()),
+    DWORD size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
                                     NULL, DC_PAPERS, NULL, NULL);
     if ((int)size == -1)
         return paperList;
 
     wchar_t *papers = new wchar_t[size];
-    size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->m_name.utf16()),
+    size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
                               NULL, DC_PAPERS, papers, NULL);
 
     for (int c = 0; c < (int)size; ++c) {
