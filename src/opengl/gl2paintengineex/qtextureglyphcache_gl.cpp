@@ -78,7 +78,7 @@ void QGLTextureGlyphCache::setContext(QGLContext *context)
             SLOT(contextDestroyed(const QGLContext*)));
 }
 
-QGLTextureGlyphCache::~QGLTextureGlyphCache()
+void QGLTextureGlyphCache::clear() 
 {
     if (ctx) {
         QGLShareContextScope scope(ctx);
@@ -88,7 +88,24 @@ QGLTextureGlyphCache::~QGLTextureGlyphCache()
 
         if (m_width || m_height)
             glDeleteTextures(1, &m_texture);
+
+        m_fbo = 0;
+        m_texture = 0;
+        m_width = 0;
+        m_height = 0;
+        m_w = 0;
+        m_h = 0;
+        m_cx = 0;
+        m_cy = 0;
+        m_currentRowHeight = 0;
+        coords.clear();
     }
+  
+}
+
+QGLTextureGlyphCache::~QGLTextureGlyphCache()
+{
+    clear();
 }
 
 void QGLTextureGlyphCache::createTextureData(int width, int height)

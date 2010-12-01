@@ -698,7 +698,7 @@ void QS60StylePrivate::deleteStoredSettings()
 {
     QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
     settings.beginGroup(QLatin1String("QS60Style"));
-    settings.remove("");
+    settings.remove(QString());
     settings.endGroup();
 }
 
@@ -717,7 +717,6 @@ QColor QS60StylePrivate::colorFromFrameGraphics(SkinFrameElements frame) const
     QT_TRAP_THROWING(
         CRepository *themeRepository = CRepository::NewLC(personalisationUID);
         if (themeRepository) {
-            static const TInt KThemePkgIDDesSize = 23; //size of the stored theme package ID
             TBuf<32> value; //themeID is currently max of 8 + 1 + 8 characters, but lets have some extra space
             const TUint32 key = 0x00000002; //active theme key in the repository
             error = themeRepository->Get(key, value);
@@ -747,7 +746,7 @@ QColor QS60StylePrivate::colorFromFrameGraphics(SkinFrameElements frame) const
                         return storedColor;
                 }
             }
-            settings.remove(""); //if color was invalid, or theme has been changed, just delete all stored settings
+            settings.remove(QString()); //if color was invalid, or theme has been changed, just delete all stored settings
         }
     }
 #endif

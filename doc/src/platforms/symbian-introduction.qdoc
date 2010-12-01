@@ -222,6 +222,7 @@
     \row \o -s                  \o Generates stub sis for ROM.
     \row \o -n <name>           \o Specifies the final sis name.
     \row \o -g                  \o Treat gcce platform as armv5.
+    \row \o -d                  \o Skip automatic patching of the package when default certificate is used.
     \endtable
 
     Execute the \c{createpackage.pl} script without any

@@ -656,8 +656,16 @@ TInt CSymbianCertificateRetriever::ThreadEntryPoint(TAny* aParams)
 
 void CSymbianCertificateRetriever::ConstructL()
 {
-    User::LeaveIfError(iThread.Create(_L("CertWorkerThread"),
-        CSymbianCertificateRetriever::ThreadEntryPoint, 16384, NULL, this));
+    TInt err;
+    int i=0;
+    QString name(QLatin1String("CertWorkerThread-%1"));
+    //recently closed thread names remain in use for a while until all handles have been closed
+    //including users of RUndertaker
+    do {
+        err = iThread.Create(qt_QString2TPtrC(name.arg(i++)),
+            CSymbianCertificateRetriever::ThreadEntryPoint, 16384, NULL, this);
+    } while (err == KErrAlreadyExists);
+    User::LeaveIfError(err);
 }
 
 void CSymbianCertificateRetriever::DoCancel()

@@ -63,7 +63,9 @@ QAudioDeviceInfoInternal::QAudioDeviceInfoInternal(QByteArray dev, QAudio::Mode 
     device = QLatin1String(dev);
     this->mode = mode;
 
+#if (SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 14)
     checkSurround();
+#endif
 }
 
 QAudioDeviceInfoInternal::~QAudioDeviceInfoInternal()
@@ -394,9 +396,11 @@ void QAudioDeviceInfoInternal::updateLists()
     }
     channelz.append(1);
     channelz.append(2);
+#if (SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 14)
     if (surround40) channelz.append(4);
     if (surround51) channelz.append(6);
     if (surround71) channelz.append(8);
+#endif
     sizez.append(8);
     sizez.append(16);
     sizez.append(32);
@@ -494,6 +498,7 @@ QByteArray QAudioDeviceInfoInternal::defaultOutputDevice()
     return devices.first();
 }
 
+#if (SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 14)
 void QAudioDeviceInfoInternal::checkSurround()
 {
     QList<QByteArray> devices;
@@ -534,5 +539,6 @@ void QAudioDeviceInfoInternal::checkSurround()
     }
     snd_device_name_free_hint(hints);
 }
+#endif
 
 QT_END_NAMESPACE

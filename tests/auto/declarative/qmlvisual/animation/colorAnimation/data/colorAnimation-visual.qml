@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "acc736435c9f84aa82941ba561bc5dbc"
+        image: "colorAnimation-visual.0.png"
     }
     Frame {
         msec: 32
@@ -258,11 +258,11 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "colorAnimation-visual.0.png"
+        hash: "2d133e7ee60c97386f57838b3f0976c7"
     }
     Frame {
         msec: 976
-        hash: "85b1821cc50f2a9f3ed6944f792b7a2f"
+        image: "colorAnimation-visual.1.png"
     }
     Frame {
         msec: 992
@@ -498,11 +498,11 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "colorAnimation-visual.1.png"
+        hash: "02bafb5a81ca66f7670ac93de5123860"
     }
     Frame {
         msec: 1936
-        hash: "e7aa6374c73832e57ceb2427a1e258aa"
+        image: "colorAnimation-visual.2.png"
     }
     Frame {
         msec: 1952
@@ -738,11 +738,11 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "colorAnimation-visual.2.png"
+        hash: "8c0fcda4f8956394c53fc4ba18caa850"
     }
     Frame {
         msec: 2896
-        hash: "8c0fcda4f8956394c53fc4ba18caa850"
+        image: "colorAnimation-visual.3.png"
     }
     Frame {
         msec: 2912
@@ -931,7 +931,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777249
-        modifiers: 67108864
+        modifiers: 0
         text: ""
         autorep: false
         count: 1

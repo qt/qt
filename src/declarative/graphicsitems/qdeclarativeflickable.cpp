@@ -281,7 +281,6 @@ void QDeclarativeFlickablePrivate::fixupY()
 
 void QDeclarativeFlickablePrivate::fixup(AxisData &data, qreal minExtent, qreal maxExtent)
 {
-    Q_Q(QDeclarativeFlickable);
     if (data.move.value() > minExtent || maxExtent > minExtent) {
         timeline.reset(data.move);
         if (data.move.value() != minExtent) {
@@ -290,8 +289,7 @@ void QDeclarativeFlickablePrivate::fixup(AxisData &data, qreal minExtent, qreal 
                 timeline.move(data.move, minExtent - dist/2, QEasingCurve(QEasingCurve::InQuad), fixupDuration/4);
                 timeline.move(data.move, minExtent, QEasingCurve(QEasingCurve::OutExpo), 3*fixupDuration/4);
             } else {
-                data.move.setValue(minExtent);
-                q->viewportMoved();
+                timeline.set(data.move, minExtent);
             }
         }
     } else if (data.move.value() < maxExtent) {
@@ -301,8 +299,7 @@ void QDeclarativeFlickablePrivate::fixup(AxisData &data, qreal minExtent, qreal 
             timeline.move(data.move, maxExtent - dist/2, QEasingCurve(QEasingCurve::InQuad), fixupDuration/4);
             timeline.move(data.move, maxExtent, QEasingCurve(QEasingCurve::OutExpo), 3*fixupDuration/4);
         } else {
-            data.move.setValue(maxExtent);
-            q->viewportMoved();
+            timeline.set(data.move, minExtent);
         }
     }
     vTime = timeline.time();
@@ -386,6 +383,13 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
     \snippet doc/src/snippets/declarative/flickable.qml document
 
     \clearfloat
+
+    Items declared as children of a Flickable are automatically parented to the
+    Flickable's \l contentItem.  This should be taken into account when
+    operating on the children of the Flickable; it is usually the children of
+    \c contentItem that are relevant.  For example, the bound of Items added
+    to the Flickable will be available by \c contentItem.childrenRect
+
     \section1 Limitations
 
     \note Due to an implementation detail, items placed inside a Flickable cannot anchor to it by
@@ -696,6 +700,9 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
     bool rejectY = false;
     bool rejectX = false;
 
+    bool stealY = false;
+    bool stealX = false;
+
     if (q->yflick()) {
         int dy = int(event->pos().y() - pressPos.y());
         if (qAbs(dy) > QApplication::startDragDistance() || QDeclarativeItemPrivate::elapsed(pressTime) > 200) {
@@ -724,7 +731,7 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
                 vMoved = true;
             }
             if (qAbs(dy) > QApplication::startDragDistance())
-                stealMouse = true;
+                stealY = true;
         }
     }
 
@@ -757,9 +764,11 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
             }
 
             if (qAbs(dx) > QApplication::startDragDistance())
-                stealMouse = true;
+                stealX = true;
         }
     }
+
+    stealMouse = stealX || stealY;
 
     if (!lastPos.isNull()) {
         qreal elapsed = qreal(QDeclarativeItemPrivate::restart(lastPosTime)) / 1000.;

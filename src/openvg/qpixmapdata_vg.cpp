@@ -214,7 +214,7 @@ void QVGPixmapData::createPixmapForImage(QImage &image, Qt::ImageConversionFlags
     else if (!(flags & Qt::NoOpaqueDetection) && const_cast<QImage &>(image).data_ptr()->checkForAlphaPixels())
         format = sourceFormat();
     else
-        format = QImage::Format_RGB32;
+        format = image.hasAlphaChannel() ? sourceFormat() : QImage::Format_RGB32;
 
     if (inPlace && image.data_ptr()->convertInPlace(format, flags))
         source = image;

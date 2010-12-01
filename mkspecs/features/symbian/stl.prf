@@ -12,7 +12,7 @@ INCLUDEPATH += $$OS_LAYER_STDCPP_SYSTEMINCLUDE
 
 # Remove mkspecs/common/symbian/stl-off from beginning of includepath 
 # in order to use new and delete operators from STL
-INCLUDEPATH -= $$[QT_INSTALL_PREFIX]/mkspecs/common/symbian/stl-off
+INCLUDEPATH -= $$[QT_INSTALL_DATA]/mkspecs/common/symbian/stl-off
 
 # libstdcppv5 is preferred over libstdcpp as it has/uses the throwing version of operator new
 # STDCPP turns on standard C++ new behaviour (ie. throwing new)
