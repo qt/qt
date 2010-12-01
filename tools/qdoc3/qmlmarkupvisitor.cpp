@@ -53,7 +53,6 @@ QmlMarkupVisitor::QmlMarkupVisitor(const QString &source, QDeclarativeJS::Engine
 {
     this->source = source;
     this->engine = engine;
-    indent = 0;
     cursor = 0;
     commentIndex = 0;
 }
@@ -183,18 +182,8 @@ void QmlMarkupVisitor::addVerbatim(QDeclarativeJS::AST::SourceLocation first,
         return;
 
     QString text = source.mid(start, finish - start);
-    indent -= 1;
     output += protect(text);
     cursor = finish;
-}
-
-bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UiProgram *)
-{
-    return true;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::UiProgram *)
-{
 }
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UiImport *uiimport)
@@ -238,28 +227,6 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UiPublicMember *member)
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::UiPublicMember *member)
-{
-}
-
-bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UiSourceElement *)
-{
-    return true;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::UiSourceElement *)
-{
-}
-
-bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UiParameterList *)
-{
-    return true;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::UiParameterList *)
-{
-}
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UiObjectInitializer *initializer)
 {
     addVerbatim(initializer->lbraceToken, initializer->lbraceToken);
@@ -280,20 +247,12 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UiObjectBinding *binding)
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::UiObjectBinding *)
-{
-}
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UiScriptBinding *binding)
 {
     QDeclarativeJS::AST::Node::accept(binding->qualifiedId, this);
     addVerbatim(binding->colonToken);
     QDeclarativeJS::AST::Node::accept(binding->statement, this);
     return false;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::UiScriptBinding *)
-{
 }
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UiArrayBinding *binding)
@@ -306,10 +265,6 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UiArrayBinding *binding)
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::UiArrayBinding *formal)
-{
-}
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UiArrayMemberList *list)
 {
     for (QDeclarativeJS::AST::UiArrayMemberList *it = list; it; it = it->next) {
@@ -319,18 +274,10 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UiArrayMemberList *list)
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::UiArrayMemberList *)
-{
-}
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UiQualifiedId *id)
 {
     addMarkedUpToken(id->identifierToken, QLatin1String("name"));
     return false;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::UiQualifiedId *)
-{
 }
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UiSignature *signature)
@@ -352,75 +299,41 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UiFormal *formal)
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::UiFormal *)
-{
-}
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::ThisExpression *expression)
 {
     addVerbatim(expression->thisToken);
     return true;
 }
  
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::ThisExpression *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::IdentifierExpression *identifier)
 {
     addMarkedUpToken(identifier->identifierToken, QLatin1String("name"));
     return false;
 }
  
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::IdentifierExpression *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::NullExpression *null)
 {
     addMarkedUpToken(null->nullToken, QLatin1String("number"));
     return true;
 }
  
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::NullExpression *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::TrueLiteral *literal)
 {
     addMarkedUpToken(literal->trueToken, QLatin1String("number"));
     return true;
 }
  
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::TrueLiteral *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::FalseLiteral *literal)
 {
     addMarkedUpToken(literal->falseToken, QLatin1String("number"));
     return true;
 }
  
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::FalseLiteral *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::NumericLiteral *literal)
 {
     addMarkedUpToken(literal->literalToken, QLatin1String("number"));
     return false;
 }
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::NumericLiteral *)
-{
-}
-
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::StringLiteral *literal)
 {
@@ -428,21 +341,11 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::StringLiteral *literal)
     return true;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::StringLiteral *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::RegExpLiteral *literal)
 {
     addVerbatim(literal->literalToken);
     return true;
 }
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::RegExpLiteral *)
-{
-}
-
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::ArrayLiteral *literal)
 {
@@ -451,11 +354,6 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::ArrayLiteral *literal)
     addVerbatim(literal->rbracketToken);
     return false;
 }
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::ArrayLiteral *)
-{
-}
-
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::ObjectLiteral *literal)
 {
@@ -479,46 +377,10 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::ElementList *list)
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::ElementList *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::Elision *elision)
 {
     addVerbatim(elision->commaToken, elision->commaToken);
     return true;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::Elision *)
-{
-}
-
-bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::IdentifierPropertyName *)
-{
-    return true;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::IdentifierPropertyName *)
-{
-}
-
-bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::StringLiteralPropertyName *)
-{
-    return true;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::StringLiteralPropertyName *)
-{
-}
-
-bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::NumericLiteralPropertyName *)
-{
-    return true;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::NumericLiteralPropertyName *)
-{
 }
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::PropertyNameAndValueList *list)
@@ -530,20 +392,6 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::PropertyNameAndValueList *list
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::PropertyNameAndValueList *)
-{
-}
-
-bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::NestedExpression *expression)
-{
-    return true;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::NestedExpression *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::ArrayMemberExpression *expression)
 {
     QDeclarativeJS::AST::Node::accept(expression->base, this);
@@ -553,11 +401,6 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::ArrayMemberExpression *express
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::ArrayMemberExpression *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::FieldMemberExpression *expression)
 {
     QDeclarativeJS::AST::Node::accept(expression->base, this);
@@ -565,11 +408,6 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::FieldMemberExpression *express
     addMarkedUpToken(expression->identifierToken, QLatin1String("name"));
     return false;
 }
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::FieldMemberExpression *expression)
-{
-}
-
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::NewMemberExpression *expression)
 {
@@ -581,141 +419,71 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::NewMemberExpression *expressio
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::NewMemberExpression *expression)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::NewExpression *expression)
 {
     addVerbatim(expression->newToken);
     return true;
 }
  
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::NewExpression *)
-{
-}
-
-
-bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::CallExpression *expression)
-{
-    return true;
-}
- 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::CallExpression *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::ArgumentList *list)
 {
     addVerbatim(list->commaToken, list->commaToken);
     return true;
 }
  
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::ArgumentList *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::PostIncrementExpression *expression)
 {
     addVerbatim(expression->incrementToken);
     return true;
 }
  
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::PostIncrementExpression *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::PostDecrementExpression *expression)
 {
     addVerbatim(expression->decrementToken);
     return true;
 }
  
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::PostDecrementExpression *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::DeleteExpression *expression)
 {
     addVerbatim(expression->deleteToken);
     return true;
 }
  
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::DeleteExpression *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::VoidExpression *expression)
 {
     addVerbatim(expression->voidToken);
     return true;
 }
  
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::VoidExpression *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::TypeOfExpression *expression)
 {
     addVerbatim(expression->typeofToken);
     return true;
 }
  
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::TypeOfExpression *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::PreIncrementExpression *expression)
 {
     addVerbatim(expression->incrementToken);
     return true;
 }
  
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::PreIncrementExpression *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::PreDecrementExpression *expression)
 {
     addVerbatim(expression->decrementToken);
     return true;
 }
  
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::PreDecrementExpression *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UnaryPlusExpression *expression)
 {
     addVerbatim(expression->plusToken);
     return true;
 }
  
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::UnaryPlusExpression *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UnaryMinusExpression *expression)
 {
     addVerbatim(expression->minusToken);
     return true;
 }
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::UnaryMinusExpression *)
-{
-}
-
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::TildeExpression *expression)
 {
@@ -723,21 +491,11 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::TildeExpression *expression)
     return true;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::TildeExpression *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::NotExpression *expression)
 {
     addVerbatim(expression->notToken);
     return true;
 }
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::NotExpression *)
-{
-}
-
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::BinaryExpression *expression)
 {
@@ -747,31 +505,22 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::BinaryExpression *expression)
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::BinaryExpression *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::ConditionalExpression *expression)
 {
-    return true;
+    QDeclarativeJS::AST::Node::accept(expression->expression, this);
+    addVerbatim(expression->questionToken);
+    QDeclarativeJS::AST::Node::accept(expression->ok, this);
+    addVerbatim(expression->colonToken);
+    QDeclarativeJS::AST::Node::accept(expression->ko, this);
+    return false;
 }
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::ConditionalExpression *)
-{
-}
-
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::Expression *expression)
 {
     QDeclarativeJS::AST::Node::accept(expression->left, this);
     addVerbatim(expression->commaToken);
     QDeclarativeJS::AST::Node::accept(expression->right, this);
-    return true;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::Expression *)
-{
+    return false;
 }
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::Block *block)
@@ -785,15 +534,6 @@ void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::Block *block)
     addVerbatim(block->rbraceToken);
 }
 
-bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::StatementList *)
-{
-    return true;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::StatementList *)
-{
-}
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::VariableStatement *statement)
 {
     addVerbatim(statement->declarationKindToken);
@@ -801,11 +541,6 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::VariableStatement *statement)
     addVerbatim(statement->semicolonToken);
     return false;
 }
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::VariableStatement *)
-{
-}
-
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::VariableDeclarationList *list)
 {
@@ -816,10 +551,6 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::VariableDeclarationList *list)
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::VariableDeclarationList *)
-{
-}
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::VariableDeclaration *declaration)
 {
     addMarkedUpToken(declaration->identifierToken, QLatin1String("name"));
@@ -827,32 +558,18 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::VariableDeclaration *declarati
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::VariableDeclaration *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::EmptyStatement *statement)
 {
     addVerbatim(statement->semicolonToken);
     return true;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::EmptyStatement *)
+bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::ExpressionStatement *statement)
 {
-}
-
-
-bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::ExpressionStatement *)
-{
-    return true;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::ExpressionStatement *statement)
-{
+    QDeclarativeJS::AST::Node::accept(statement->expression, this);
     addVerbatim(statement->semicolonToken);
+    return false;
 }
-
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::IfStatement *statement)
 {
@@ -868,11 +585,6 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::IfStatement *statement)
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::IfStatement *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::DoWhileStatement *statement)
 {
     addMarkedUpToken(statement->doToken, QLatin1String("keyword"));
@@ -885,20 +597,15 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::DoWhileStatement *statement)
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::DoWhileStatement *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::WhileStatement *statement)
 {
-    return true;
+    addMarkedUpToken(statement->whileToken, QLatin1String("keyword"));
+    addVerbatim(statement->lparenToken);
+    QDeclarativeJS::AST::Node::accept(statement->expression, this);
+    addVerbatim(statement->rparenToken);
+    QDeclarativeJS::AST::Node::accept(statement->statement, this);
+    return false;
 }
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::WhileStatement *)
-{
-}
-
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::ForStatement *statement)
 {
@@ -913,11 +620,6 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::ForStatement *statement)
     QDeclarativeJS::AST::Node::accept(statement->statement, this);
     return false;
 }
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::ForStatement *)
-{
-}
-
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::LocalForStatement *statement)
 {
@@ -934,11 +636,6 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::LocalForStatement *statement)
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::LocalForStatement *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::ForEachStatement *statement)
 {
     addMarkedUpToken(statement->forToken, QLatin1String("keyword"));
@@ -950,11 +647,6 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::ForEachStatement *statement)
     QDeclarativeJS::AST::Node::accept(statement->statement, this);
     return false;
 }
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::ForEachStatement *)
-{
-}
-
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::LocalForEachStatement *statement)
 {
@@ -969,11 +661,6 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::LocalForEachStatement *stateme
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::LocalForEachStatement *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::ContinueStatement *statement)
 {
     addMarkedUpToken(statement->continueToken, QLatin1String("keyword"));
@@ -981,11 +668,6 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::ContinueStatement *statement)
     addVerbatim(statement->semicolonToken);
     return false;
 }
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::ContinueStatement *)
-{
-}
-
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::BreakStatement *statement)
 {
@@ -995,35 +677,23 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::BreakStatement *statement)
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::BreakStatement *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::ReturnStatement *statement)
 {
     addMarkedUpToken(statement->returnToken, QLatin1String("keyword"));
-    return true;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::ReturnStatement *statement)
-{
+    QDeclarativeJS::AST::Node::accept(statement->expression, this);
     addVerbatim(statement->semicolonToken);
+    return false;
 }
-
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::WithStatement *statement)
 {
     addMarkedUpToken(statement->withToken, QLatin1String("keyword"));
     addVerbatim(statement->lparenToken);
+    QDeclarativeJS::AST::Node::accept(statement->expression, this);
     addVerbatim(statement->rparenToken);
-    return true;
+    QDeclarativeJS::AST::Node::accept(statement->statement, this);
+    return false;
 }
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::WithStatement *)
-{
-}
-
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::CaseBlock *block)
 {
@@ -1047,19 +717,6 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::SwitchStatement *statement)
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::SwitchStatement *statement)
-{
-}
-
-bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::CaseClauses *)
-{
-    return true;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::CaseClauses *)
-{
-}
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::CaseClause *clause)
 {
     addMarkedUpToken(clause->caseToken, QLatin1String("keyword"));
@@ -1069,22 +726,12 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::CaseClause *clause)
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::CaseClause *clause)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::DefaultClause *clause)
 {
     addMarkedUpToken(clause->defaultToken, QLatin1String("keyword"));
     addVerbatim(clause->colonToken, clause->colonToken);
     return true;
 }
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::DefaultClause *)
-{
-}
-
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::LabelledStatement *statement)
 {
@@ -1094,11 +741,6 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::LabelledStatement *statement)
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::LabelledStatement *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::ThrowStatement *statement)
 {
     addMarkedUpToken(statement->throwToken, QLatin1String("keyword"));
@@ -1106,11 +748,6 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::ThrowStatement *statement)
     addVerbatim(statement->semicolonToken);
     return false;
 }
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::ThrowStatement *)
-{
-}
-
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::Catch *c)
 {
@@ -1121,22 +758,12 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::Catch *c)
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::Catch *)
-{
-}
-
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::Finally *f)
 {
     addMarkedUpToken(f->finallyToken, QLatin1String("keyword"));
     QDeclarativeJS::AST::Node::accept(f->statement, this);
     return false;
 }
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::Finally *)
-{
-}
-
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::TryStatement *statement)
 {
@@ -1146,11 +773,6 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::TryStatement *statement)
     QDeclarativeJS::AST::Node::accept(statement->finallyExpression, this);
     return false;
 }
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::TryStatement *)
-{
-}
-
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::FunctionExpression *expression)
 {
@@ -1163,10 +785,6 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::FunctionExpression *expression
     QDeclarativeJS::AST::Node::accept(expression->body, this);
     addVerbatim(expression->rbraceToken);
     return false;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::FunctionExpression *expression)
-{
 }
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::FunctionDeclaration *declaration)
@@ -1182,28 +800,11 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::FunctionDeclaration *declarati
     return false;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::FunctionDeclaration *)
-{
-}
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::FormalParameterList *list)
 {
     addVerbatim(list->commaToken);
     addMarkedUpToken(list->identifierToken, QLatin1String("name"));
     return false;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::FormalParameterList *)
-{
-}
-
-bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::FunctionBody *body)
-{
-    return true;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::FunctionBody *body)
-{
 }
 
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::DebuggerStatement *statement)
@@ -1213,82 +814,11 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::DebuggerStatement *statement)
     return true;
 }
 
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::DebuggerStatement *)
-{
-}
-
-bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::FunctionSourceElement *)
-{
-    return true;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::FunctionSourceElement *)
-{
-}
-
-bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::StatementSourceElement *)
-{
-    return true;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::StatementSourceElement *)
-{
-}
-
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UiObjectDefinition *definition)
 {
     QDeclarativeJS::AST::Node::accept(definition->qualifiedTypeNameId, this);
     QDeclarativeJS::AST::Node::accept(definition->initializer, this);
     return false;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::UiObjectDefinition *)
-{
-}
-
-bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UiImportList *)
-{
-    return true;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::UiImportList *)
-{
-}
-
-bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UiObjectMemberList *)
-{
-    return true;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::UiObjectMemberList *)
-{
-}
-
-bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UiFormalList *)
-{
-    return true;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::UiFormalList *)
-{
-}
-
-bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::Program *)
-{
-    return true;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::Program *)
-{
-}
-
-bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::SourceElements *)
-{
-    return true;
-}
-
-void QmlMarkupVisitor::endVisit(QDeclarativeJS::AST::SourceElements *)
-{
 }
 
 QT_END_NAMESPACE
