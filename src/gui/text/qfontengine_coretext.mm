@@ -585,9 +585,9 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
     return im;
 }
 
-QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph)
+QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t)
 {
-    QImage im = imageForGlyph(glyph, QFixed(), 0, false);
+    QImage im = imageForGlyph(glyph, subPixelPosition, 0, false);
 
     QImage indexed(im.width(), im.height(), QImage::Format_Indexed8);
     QVector<QRgb> colors(256);
