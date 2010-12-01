@@ -146,7 +146,7 @@ void* QEGLPlatformContext::getProcAddress(const QString& procName)
     return (void *)eglGetProcAddress(qPrintable(procName));
 }
 
-void QEGLPlatformContext::makeDefaultSaredContext()
+void QEGLPlatformContext::makeDefaultSharedContext()
 {
     setDefaultSharedContext(this);
 }

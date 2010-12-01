@@ -158,7 +158,7 @@ QOpenKODEWindow::QOpenKODEWindow(QWidget *tlw)
         EGLSurface surface = eglCreateWindowSurface(screen->eglDisplay(),m_eglConfig,m_eglWindow,m_eglWindowAttrs.constData());
         m_platformGlContext = new QEGLPlatformContext(screen->eglDisplay(), m_eglConfig,
                                                       m_eglContextAttrs.data(), surface, m_eglApi);
-        m_platformGlContext->makeDefaultSaredContext();
+        m_platformGlContext->makeDefaultSharedContext();
     } else {
         m_platformGlContext = const_cast<QEGLPlatformContext *>(static_cast<const QEGLPlatformContext *>(QPlatformGLContext::defaultSharedContext()));
         kdDestroyWindow(m_kdWindow);
