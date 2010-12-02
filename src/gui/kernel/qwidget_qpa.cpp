@@ -789,7 +789,7 @@ void QWidgetPrivate::createTLSysExtra()
 void QWidgetPrivate::deleteTLSysExtra()
 {
     if (extra && extra->topextra) {
-        //the toplevel might have a context with a "qglcontext assosiated with it. We need to
+        //the toplevel might have a context with a "qglcontext associated with it. We need to
         //delete the qglcontext before we delete the qplatformglcontext.
         //One unfortunate thing about this is that we potentially create a glContext just to
         //delete it straight afterwards.
