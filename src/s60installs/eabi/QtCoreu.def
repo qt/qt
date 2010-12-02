@@ -3791,4 +3791,8 @@ EXPORTS
 	_ZTV13QUnifiedTimer @ 3790 NONAME
 	_ZTV16QAnimationDriver @ 3791 NONAME
 	_ZTV23QAnimationDriverPrivate @ 3792 NONAME
+	_ZN12QSystemError8toStringEv @ 3793 NONAME
+	_ZN5QChar21currentUnicodeVersionEv @ 3794 NONAME
+	_ZN9QFileInfoC1EP16QFileInfoPrivate @ 3795 NONAME
+	_ZN9QFileInfoC2EP16QFileInfoPrivate @ 3796 NONAME
 
