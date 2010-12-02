@@ -367,7 +367,7 @@ void QScroller::setScrollerProperties(const QScrollerProperties &sp)
         emit scrollerPropertiesChanged(sp);
 
         // we need to force the recalculation here, since the overshootPolicy may have changed and
-        // exisiting segments may include an overshoot animation.
+        // existing segments may include an overshoot animation.
         d->recalcScrollingSegments(true);
     }
 }

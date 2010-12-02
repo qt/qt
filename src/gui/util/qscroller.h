@@ -71,7 +71,7 @@ public:
         Inactive,
         Pressed,
         Dragging,
-        Scrolling,
+        Scrolling
     };
 
     enum ScrollerGestureType
