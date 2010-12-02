@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qgesture.h"
-#include "qcoreapplication.h"
+#include "qapplication.h"
 #include "qevent.h"
 #include "qwidget.h"
 #include "qgraphicsitem.h"
