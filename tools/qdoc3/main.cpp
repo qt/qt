@@ -53,6 +53,7 @@
 #include "ditaxmlgenerator.h"
 #include "doc.h"
 #include "htmlgenerator.h"
+#include "jscodemarker.h"
 #include "plaincodemarker.h"
 #include "puredocparser.h"
 #include "qmlcodemarker.h"
@@ -368,6 +369,7 @@ int main(int argc, char **argv)
      */
     PlainCodeMarker plainMarker;
     CppCodeMarker cppMarker;
+    JsCodeMarker jsMarker;
     QmlCodeMarker qmlMarker;
 
     HtmlGenerator htmlGenerator;

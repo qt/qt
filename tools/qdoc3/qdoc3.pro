@@ -37,6 +37,7 @@ HEADERS += atom.h \
 	   generator.h \
            helpprojectwriter.h \
 	   htmlgenerator.h \
+           jscodemarker.h \
            location.h \
            node.h \
            openedlist.h \
@@ -66,6 +67,7 @@ SOURCES += atom.cpp \
 	   generator.cpp \
            helpprojectwriter.cpp \
 	   htmlgenerator.cpp \
+           jscodemarker.cpp \
            location.cpp \
            main.cpp \
            node.cpp \
