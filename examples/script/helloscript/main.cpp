@@ -39,8 +39,11 @@
 ****************************************************************************/
 
 #include <QApplication>
+#include <QFile>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QTextStream>
+#include <QTranslator>
 #include <QtScript>
 
 //! [0]
