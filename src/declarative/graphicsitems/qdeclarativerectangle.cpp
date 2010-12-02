@@ -541,6 +541,12 @@ void QDeclarativeRectangle::drawRect(QPainter &p)
         Q_ASSERT(d->rectImage.width() == 2*xOffset + 1);
         Q_ASSERT(d->rectImage.height() == 2*yOffset + 1);
 
+        // check whether we've eliminated the center completely
+        if (2*xOffset > width()+pw)
+            xOffset = (width()+pw)/2;
+        if (2*yOffset > height()+pw)
+            yOffset = (height()+pw)/2;
+
         QMargins margins(xOffset, yOffset, xOffset, yOffset);
         QTileRules rules(Qt::StretchTile, Qt::StretchTile);
         //NOTE: even though our item may have qreal-based width and height, qDrawBorderPixmap only supports QRects
