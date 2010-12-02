@@ -771,7 +771,7 @@ void QDeclarativeTextInput::setEchoMode(QDeclarativeTextInput::EchoMode echo)
         imHints &= ~(Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
     setInputMethodHints(imHints);
     d->control->setEchoMode((uint)echo);
-    update();
+    q_textChanged();
     emit echoModeChanged(echoMode());
 }
 
