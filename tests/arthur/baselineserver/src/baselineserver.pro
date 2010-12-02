@@ -25,3 +25,6 @@ SOURCES += main.cpp \
 HEADERS += \
     baselineserver.h \
     htmlpage.h
+
+RESOURCES += \
+    baselineserver.qrc

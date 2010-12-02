@@ -131,10 +131,13 @@ void HTMLPage::addItem(const QString &baseline, const QString &rendered, const I
     foreach(const QString& img, images)
         out << "<td><a href=\"/" << img << "\"><img src=\"/" << generateThumbnail(img) << "\" width=240 height=240></a></td>\n";
 
-    out << "<td><p><a href=\"/cgi-bin/server.cgi?cmd=updateSingleBaseline&oldBaseline=" << baseline
-        << "&newBaseline=" << rendered << "&url=" << pageUrl << "\">Replace baseline with rendered</a></p>"
+    out << "<td>\n"
+        << "<p><a href=\"/cgi-bin/server.cgi?cmd=updateSingleBaseline&oldBaseline=" << baseline
+        << "&newBaseline=" << rendered << "&url=" << pageUrl << "\">Replace baseline with rendered</a></p>\n"
         << "<p><a href=\"/cgi-bin/server.cgi?cmd=blacklist&context=" << ctx
-        << "&itemId=" << item.scriptName << "&url=" << pageUrl << "\">Blacklist this item</a></p>"
+        << "&itemId=" << item.scriptName << "&url=" << pageUrl << "\">Blacklist this item</a></p>\n"
+        << "<p><a href=\"/cgi-bin/server.cgi?cmd=view&baseline=" << baseline << "&rendered=" << rendered
+        << "&compared=" << compared << "&url=" << pageUrl << "\">View</a></p>\n"
         << "</td>\n";
     out << "</tr>\n\n";
 
@@ -213,12 +216,15 @@ void HTMLPage::handleCGIQuery(const QString &query)
     QTextStream s(stdout);
     s << "Content-Type: text/html\r\n\r\n"
       << "<HTML>";
-//      << "Contents of QUERY_STRING:<br>"
-//      << "Full string = " << query << "<br>";
 
     QString command(cgiUrl.queryItemValue("cmd"));
 
-    if (command == QLS("updateSingleBaseline")) {
+    if (command == QLS("view")) {
+        s << BaselineHandler::view(cgiUrl.queryItemValue(QLS("baseline")),
+                                   cgiUrl.queryItemValue(QLS("rendered")),
+                                   cgiUrl.queryItemValue(QLS("compared")));
+    }
+    else if (command == QLS("updateSingleBaseline")) {
         s << BaselineHandler::updateSingleBaseline(cgiUrl.queryItemValue(QLS("oldBaseline")),
                                                    cgiUrl.queryItemValue(QLS("newBaseline")));
     } else if (command == QLS("clearAllBaselines")) {

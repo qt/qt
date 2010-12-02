@@ -355,6 +355,14 @@ QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline, boo
 }
 
 
+QString BaselineHandler::view(const QString &baseline, const QString &rendered, const QString &compared)
+{
+    QFile f(":/templates/view.html");
+    f.open(QIODevice::ReadOnly);
+    return QString::fromLatin1(f.readAll()).arg('/'+baseline, '/'+rendered, '/'+compared);
+}
+
+
 QString BaselineHandler::clearAllBaselines(const QString &context)
 {
     int tot = 0;
