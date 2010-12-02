@@ -51,6 +51,7 @@
 #include <private/qt_mac_p.h>
 #include <qabstracteventdispatcher.h>
 #include <qdebug.h>
+#include <private/qfontengine_coretext_p.h>
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 

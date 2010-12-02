@@ -395,7 +395,7 @@ void QFontconfigDatabase::populateFontDatabase()
                          : ((slant_value == FC_SLANT_OBLIQUE)
                             ? QFont::StyleOblique
                             : QFont::StyleNormal);
-        int weight = getFCWeight(weight_value);
+        QFont::Weight weight = QFont::Weight(getFCWeight(weight_value));
 
         double pixel_size = 0;
         if (!scalable) {
@@ -404,7 +404,8 @@ void QFontconfigDatabase::populateFontDatabase()
             FcPatternGetDouble (fonts->fonts[i], FC_PIXEL_SIZE, 0, &pixel_size);
         }
 
-        QPlatformFontDatabase::registerFont(familyName,QLatin1String((const char *)foundry_value),weight,style,100,antialias,scalable,pixel_size,writingSystems,fontFile);
+        QFont::Stretch stretch = QFont::Unstretched;
+        QPlatformFontDatabase::registerFont(familyName,QLatin1String((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,writingSystems,fontFile);
 //        qDebug() << familyName << (const char *)foundry_value << weight << style << &writingSystems << scalable << true << pixel_size;
     }
 
@@ -426,10 +427,11 @@ void QFontconfigDatabase::populateFontDatabase()
     QSupportedWritingSystems ws;
     ws.setSupported(QFontDatabase::Latin);
 
+
     while (f->qtname) {
-        registerFont(f->qtname,"",50,QFont::StyleNormal,100,true,true,0,ws,0);
-        registerFont(f->qtname,"",50,QFont::StyleItalic,100,true,true,0,ws,0);
-        registerFont(f->qtname,"",50,QFont::StyleOblique,100,true,true,0,ws,0);
+        registerFont(f->qtname,QLatin1String(""),QFont::Normal,QFont::StyleNormal,QFont::Unstretched,true,true,0,ws,0);
+        registerFont(f->qtname,QLatin1String(""),QFont::Normal,QFont::StyleItalic,QFont::Unstretched,true,true,0,ws,0);
+        registerFont(f->qtname,QLatin1String(""),QFont::Normal,QFont::StyleOblique,QFont::Unstretched,true,true,0,ws,0);
         ++f;
     }
 
@@ -444,6 +446,8 @@ void QFontconfigDatabase::populateFontDatabase()
 
 QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QUnicodeTables::Script script, void *usrPtr)
 {
+    if (!usrPtr)
+        return 0;
     QFontDef fontDef = f;
 
     QFontEngineFT *engine;

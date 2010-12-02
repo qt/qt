@@ -43,6 +43,7 @@
 #define QPLATFORMEVENTLOOPINTEGRATION_QPA_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/QScopedPointer>
 
 QT_BEGIN_HEADER
 
@@ -50,11 +51,28 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-class QPlatformEventLoopIntegration
+class QPlatformEventLoopIntegrationPrivate;
+
+class Q_GUI_EXPORT QPlatformEventLoopIntegration
 {
+    Q_DECLARE_PRIVATE(QPlatformEventLoopIntegration);
 public:
-    virtual void processEvents( qint64 msec ) = 0;
-    virtual void wakeup() = 0;
+    QPlatformEventLoopIntegration();
+    virtual ~QPlatformEventLoopIntegration();
+
+    virtual void startEventLoop() = 0;
+    virtual void quitEventLoop() = 0;
+    virtual void qtNeedsToProcessEvents() = 0;
+
+    qint64 nextTimerEvent() const;
+    void setNextTimerEvent(qint64 nextTimerEvent);
+
+    static void processEvents();
+protected:
+    QScopedPointer<QPlatformEventLoopIntegrationPrivate> d_ptr;
+private:
+    Q_DISABLE_COPY(QPlatformEventLoopIntegration);
+    friend class QEventDispatcherQPA;
 };
 
 QT_END_NAMESPACE

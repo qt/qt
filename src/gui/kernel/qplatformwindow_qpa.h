@@ -75,7 +75,7 @@ public:
     virtual WId winId() const;
     virtual void setParent(const QPlatformWindow *window);
 
-    virtual void setWindowTitle(const QString &);
+    virtual void setWindowTitle(const QString &title);
     virtual void raise();
     virtual void lower();
 
