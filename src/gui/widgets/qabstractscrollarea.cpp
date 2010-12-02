@@ -1005,13 +1005,13 @@ bool QAbstractScrollArea::event(QEvent *e)
     case QEvent::ScrollPrepare:
     {
         QScrollPrepareEvent *se = static_cast<QScrollPrepareEvent *>(e);
-        if( d->canStartScrollingAt(se->startPos().toPoint()) ) {
+        if (d->canStartScrollingAt(se->startPos().toPoint())) {
             QScrollBar *hBar = horizontalScrollBar();
             QScrollBar *vBar = verticalScrollBar();
 
-            se->setViewportSize( QSizeF(viewport()->size()) );
-            se->setContentPosRange( QRectF(0, 0, hBar->maximum(), vBar->maximum()) );
-            se->setContentPos( QPointF(hBar->value(), vBar->value()) );
+            se->setViewportSize(QSizeF(viewport()->size()));
+            se->setContentPosRange(QRectF(0, 0, hBar->maximum(), vBar->maximum()));
+            se->setContentPos(QPointF(hBar->value(), vBar->value()));
             se->accept();
             return true;
         }

@@ -422,7 +422,7 @@ Qt::GestureType QScroller::grabGesture(QObject *target, ScrollerGestureType scro
         if (scrollGestureType == TouchGesture)
             widget->setAttribute(Qt::WA_AcceptTouchEvents);
 
-    } else if(QGraphicsObject *go = qobject_cast<QGraphicsObject*>(target)) {
+    } else if (QGraphicsObject *go = qobject_cast<QGraphicsObject*>(target)) {
         if (scrollGestureType == TouchGesture)
             go->setAcceptTouchEvents(true);
         go->grabGesture(sp->recognizerType);
@@ -460,7 +460,7 @@ void QScroller::ungrabGesture(QObject *target)
         QWidget *widget = static_cast<QWidget *>(target);
         widget->ungrabGesture(sp->recognizerType);
 
-    } else if(QGraphicsObject *go = qobject_cast<QGraphicsObject*>(target)) {
+    } else if (QGraphicsObject *go = qobject_cast<QGraphicsObject*>(target)) {
         go->ungrabGesture(sp->recognizerType);
     }
 

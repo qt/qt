@@ -262,7 +262,7 @@ QVariant QScrollerProperties::scrollMetric(ScrollMetric metric) const
     case FrameRate:                     return QVariant::fromValue(d->frameRate);
     case ScrollMetricCount:             break;
     }
-    return QVariant();   
+    return QVariant();
 }
 
 /*!
@@ -404,7 +404,7 @@ void QScrollerProperties::setScrollMetric(ScrollMetric metric, const QVariant &v
 
     \value VerticalOvershootPolicy This is the horizontal overshooting policy (see OvershootPolicy).
 
-    \value FrameRate This is the frame rate which should be used while dragging or scrolling. 
+    \value FrameRate This is the frame rate which should be used while dragging or scrolling.
     QScroller uses a QAbstractAnimation timer internally to sync all scrolling operations to other
     animations that might be active at the same time.  If the Standard value of 60 frames per
     second is too fast for your use case, you can lower the frames per second with this setting
