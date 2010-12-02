@@ -25,7 +25,10 @@ include(graphicsitems/graphicsitems.pri)
 include(qml/qml.pri)
 include(debugger/debugger.pri)
 
-symbian:TARGET.UID3=0x2001E623
+symbian: {
+    TARGET.UID3=0x2001E623
+    LIBS += -lefsrv
+}
 
 DEFINES += QT_NO_OPENTYPE
 INCLUDEPATH += ../3rdparty/harfbuzz/src
