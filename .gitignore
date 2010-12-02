@@ -247,3 +247,5 @@ qtc-debugging-helper
 src/corelib/lib
 src/network/lib
 src/xml/lib/
+
+.pc/

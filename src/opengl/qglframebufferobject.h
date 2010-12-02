@@ -148,6 +148,9 @@ public:
     void setSamples(int samples);
     int samples() const;
 
+    void setMipmap(bool enabled);
+    bool mipmap() const;
+
     void setAttachment(QGLFramebufferObject::Attachment attachment);
     QGLFramebufferObject::Attachment attachment() const;
 

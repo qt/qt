@@ -166,7 +166,7 @@
     \l{QML:Qt::lighter()}{Qt.lighter()} or \l{QML:Qt::tint()}{Qt.tint()} functions:
 
     \qml
-    Rectangle { color: Qt.rgba(255, 0, 0, 1) }
+    Rectangle { color: Qt.rgba(0.5, 0.5, 0, 1) }
     \endqml
 
     \sa {QML Basic Types}

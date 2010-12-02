@@ -64,7 +64,7 @@
 #include <stdlib.h>
 
 // Included from tools/shared
-#include <symbian/epocroot.h>
+#include <symbian/epocroot_p.h>
 
 #ifdef Q_OS_WIN32
 #define QT_POPEN _popen
@@ -3118,7 +3118,7 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
                 false));
     } else if (var == QLatin1String("EPOCROOT")) {
         if (place[var].isEmpty())
-            place[var] = QStringList(epocRoot());
+            place[var] = QStringList(qt_epocRoot());
     }
 #if defined(Q_OS_WIN32) && defined(Q_CC_MSVC)
       else if(var.startsWith(QLatin1String("QMAKE_TARGET."))) {

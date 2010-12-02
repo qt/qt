@@ -1225,7 +1225,7 @@ void tst_Collections::vector()
         }
     }
 
-    // this used to trigger an unitialized read in valgrind
+    // this used to trigger an uninitialized read in valgrind
     QVector<char> foo;
     foo.resize(144);
 
