@@ -470,6 +470,8 @@ void QDeclarativeRectangle::generateBorderedRect()
 void QDeclarativeRectangle::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QDeclarativeRectangle);
+    if (width() <= 0 || height() <= 0)
+        return;
     if (d->radius > 0 || (d->pen && d->pen->isValid())
         || (d->gradient && d->gradient->gradient()) ) {
         drawRect(*p);
