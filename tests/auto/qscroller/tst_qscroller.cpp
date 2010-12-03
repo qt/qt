@@ -383,7 +383,7 @@ void tst_QScroller::scrollTo()
 void tst_QScroller::scroll()
 {
 #if defined(Q_OS_MACX) && (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
-    QSKIP("Mac OS X < 10.6 does not support QTouchEvents");
+    QSKIP("Mac OS X < 10.6 does not support QTouchEvents", SkipAll);
     return;
 #endif
 
@@ -430,7 +430,7 @@ void tst_QScroller::scroll()
 void tst_QScroller::overshoot()
 {
 #if defined(Q_OS_MACX) && (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
-    QSKIP("Mac OS X < 10.6 does not support QTouchEvents");
+    QSKIP("Mac OS X < 10.6 does not support QTouchEvents", SkipAll);
     return;
 #endif
 
