@@ -313,6 +313,10 @@ bool QSystemTrayIconSys::winEvent( MSG *m, long *result )
                 emit q->messageClicked();
                 break;
 
+            case NIN_BALLOONTIMEOUT:
+                emit q->messageTimeout();
+                break;
+
             case WM_MBUTTONUP:
                 emit q->activated(QSystemTrayIcon::MiddleClick);
                 break;
