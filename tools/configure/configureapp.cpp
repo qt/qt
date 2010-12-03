@@ -2471,15 +2471,11 @@ void Configure::generateOutputVars()
         qtConfig += "no-gif";
     else if (dictionary[ "GIF" ] == "yes")
         qtConfig += "gif";
-    else if (dictionary[ "GIF" ] == "plugin")
-        qmakeFormatPlugins += "gif";
 
     if (dictionary[ "TIFF" ] == "no")
         qtConfig += "no-tiff";
     else if (dictionary[ "TIFF" ] == "yes")
         qtConfig += "tiff";
-    else if (dictionary[ "TIFF" ] == "plugin")
-        qmakeFormatPlugins += "tiff";
     if (dictionary[ "LIBTIFF" ] == "system")
         qtConfig += "system-tiff";
 
@@ -2487,8 +2483,6 @@ void Configure::generateOutputVars()
         qtConfig += "no-jpeg";
     else if (dictionary[ "JPEG" ] == "yes")
         qtConfig += "jpeg";
-    else if (dictionary[ "JPEG" ] == "plugin")
-        qmakeFormatPlugins += "jpeg";
     if (dictionary[ "LIBJPEG" ] == "system")
         qtConfig += "system-jpeg";
 
@@ -2807,8 +2801,6 @@ void Configure::generateOutputVars()
         qmakeVars += QString("styles         += ") + qmakeStyles.join(" ");
     if (!qmakeStylePlugins.isEmpty())
         qmakeVars += QString("style-plugins  += ") + qmakeStylePlugins.join(" ");
-    if (!qmakeFormatPlugins.isEmpty())
-        qmakeVars += QString("imageformat-plugins += ") + qmakeFormatPlugins.join(" ");
 
     if (dictionary["QMAKESPEC"].endsWith("-g++")) {
         QString includepath = qgetenv("INCLUDE");
