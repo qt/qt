@@ -97,7 +97,7 @@ namespace QPatternist
     {
     public:
         EvaluationCache(const Expression::Ptr &operand,
-                        const VariableDeclaration::Ptr &varDecl,
+                        const VariableDeclaration *varDecl,
                         const VariableSlotID slot);
 
         virtual Item evaluateSingleton(const DynamicContext::Ptr &context) const;
@@ -124,7 +124,7 @@ namespace QPatternist
 
     private:
         static DynamicContext::Ptr topFocusContext(const DynamicContext::Ptr &context);
-        const VariableDeclaration::Ptr  m_declaration;
+        const VariableDeclaration *m_declaration;
         /**
          * This variable must not be called m_slot. If it so, a compiler bug on
          * HP-UX-aCC-64 is triggered in the constructor initializor. See the
