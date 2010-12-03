@@ -107,7 +107,7 @@ QString JsCodeMarker::markedUpCode(const QString &code,
 
 QString JsCodeMarker::addMarkUp(const QString &code,
                                  const Node * /* relative */,
-                                 const QString &dirPath)
+                                 const QString & /* dirPath */)
 {
     QDeclarativeJS::Engine engine;
     QDeclarativeJS::Lexer lexer(&engine);
