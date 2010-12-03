@@ -133,6 +133,9 @@ void tst_qmlvisual::visual()
     QFETCH(QString, testdata);
 
     QStringList arguments;
+#ifdef Q_WS_MAC
+    arguments << "-no-opengl";
+#endif
     arguments << "-script" << testdata
               << "-scriptopts" << "play,testimages,testerror,testskip,exitoncomplete,exitonfailure"
               << file;
@@ -236,6 +239,9 @@ void action(Mode mode, const QString &file)
     QString testdata = tst_qmlvisual::toTestScript(file,mode);
 
     QStringList arguments;
+#ifdef Q_WS_MAC
+    arguments << "-no-opengl";
+#endif
     switch (mode) {
         case Test:
             // Don't run qml
