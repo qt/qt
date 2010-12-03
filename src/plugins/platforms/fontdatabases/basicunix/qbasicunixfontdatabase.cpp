@@ -278,7 +278,7 @@ QStringList QBasicUnixFontDatabase::addTTFile(const QByteArray &fontData, const 
         }
         numFaces = face->num_faces;
 
-        int weight = QFont::Normal;
+        QFont::Weight weight = QFont::Normal;
 
         QFont::Style style = QFont::StyleNormal;
         if (face->style_flags & FT_STYLE_FLAG_ITALIC)
@@ -315,7 +315,9 @@ QStringList QBasicUnixFontDatabase::addTTFile(const QByteArray &fontData, const 
         fontFile->fileName = file;
         fontFile->indexValue = index;
 
-        registerFont(family,"",weight,style,100,true,true,0,writingSystems,fontFile);
+        QFont::Stretch stretch = QFont::Unstretched;
+
+        registerFont(family,"",weight,style,stretch,true,true,0,writingSystems,fontFile);
 
         families.append(family);
 

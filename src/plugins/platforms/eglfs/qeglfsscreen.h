@@ -57,13 +57,16 @@ public:
     QEglFSScreen(EGLNativeDisplayType display);
     ~QEglFSScreen() {}
 
-    QRect geometry() const { return m_geometry; }
-    int depth() const { return m_depth; }
-    QImage::Format format() const { return m_format; }
+    QRect geometry() const;
+    int depth() const;
+    QImage::Format format() const;
 
-    QPlatformGLContext *platformContext() const { return m_platformContext; }
+    QPlatformGLContext *platformContext() const;
 
 private:
+    void createAndSetPlatformContext() const;
+    void createAndSetPlatformContext();
+
     QRect m_geometry;
     int m_depth;
     QImage::Format m_format;

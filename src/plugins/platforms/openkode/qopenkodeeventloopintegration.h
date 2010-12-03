@@ -54,12 +54,14 @@ class QOpenKODEEventLoopIntegration : public QPlatformEventLoopIntegration
 {
 public:
     QOpenKODEEventLoopIntegration();
-    void processEvents(qint64 msec);
-    void wakeup();
+    void startEventLoop();
+    void quitEventLoop();
+    void qtNeedsToProcessEvents();
 
     void processInputEvent(const KDEvent *event);
 private:
 
+    bool m_quit;
     KDThread *m_kdThread;
 };
 

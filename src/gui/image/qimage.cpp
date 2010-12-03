@@ -3833,6 +3833,26 @@ void qInitImageConversions()
 #endif
 }
 
+void qGamma_correct_back_to_linear_cs(QImage *image)
+{
+    extern uchar qt_pow_rgb_gamma[256];
+
+    // gamma correct the pixels back to linear color space...
+    int h = image->height();
+    int w = image->width();
+
+    for (int y=0; y<h; ++y) {
+        uint *pixels = (uint *) image->scanLine(y);
+        for (int x=0; x<w; ++x) {
+            uint p = pixels[x];
+            uint r = qt_pow_rgb_gamma[qRed(p)];
+            uint g = qt_pow_rgb_gamma[qGreen(p)];
+            uint b = qt_pow_rgb_gamma[qBlue(p)];
+            pixels[x] = (r << 16) | (g << 8) | b | 0xff000000;
+        }
+    }
+}
+
 /*!
     Returns a copy of the image in the given \a format.
 
