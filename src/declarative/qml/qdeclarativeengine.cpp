@@ -678,6 +678,9 @@ QNetworkAccessManager *QDeclarativeEngine::networkAccessManager() const
   requests. See the QDeclarativeImageProvider documentation for details on
   implementing and using image providers.
 
+  All required image providers should be added to the engine before any
+  QML sources files are loaded.
+
   Note that images loaded from a QDeclarativeImageProvider are cached
   by QPixmapCache, similar to any image loaded by QML.
 
