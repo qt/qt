@@ -246,6 +246,12 @@ void QDeclarativeBorderImage::setSource(const QUrl &url)
         load();
 }
 
+void QDeclarativeBorderImage::setSourceSize(const QSize& size)
+{
+    Q_UNUSED(size);
+    qmlInfo(this) << "Setting sourceSize for borderImage not supported";
+}
+
 void QDeclarativeBorderImage::load()
 {
     Q_D(QDeclarativeBorderImage);
@@ -315,6 +321,7 @@ void QDeclarativeBorderImage::load()
                 d->progress = 1.0;
                 emit statusChanged(d->status);
                 emit progressChanged(d->progress);
+                requestFinished();
                 update();
             }
         }
@@ -474,6 +481,9 @@ void QDeclarativeBorderImage::requestFinished()
 
     setImplicitWidth(impsize.width());
     setImplicitHeight(impsize.height());
+
+    if (d->sourcesize.width() != d->pix.width() || d->sourcesize.height() != d->pix.height())
+        emit sourceSizeChanged();
 
     d->progress = 1.0;
     emit statusChanged(d->status);

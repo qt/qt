@@ -153,6 +153,8 @@ void tst_qdeclarativeborderimage::imageSource()
         QTRY_VERIFY(obj->status() == QDeclarativeBorderImage::Ready);
         QCOMPARE(obj->width(), 120.);
         QCOMPARE(obj->height(), 120.);
+        QCOMPARE(obj->sourceSize().width(), 120);
+        QCOMPARE(obj->sourceSize().height(), 120);
         QCOMPARE(obj->horizontalTileMode(), QDeclarativeBorderImage::Stretch);
         QCOMPARE(obj->verticalTileMode(), QDeclarativeBorderImage::Stretch);
     } else {
@@ -192,6 +194,8 @@ void tst_qdeclarativeborderimage::resized()
     QVERIFY(obj != 0);
     QCOMPARE(obj->width(), 300.);
     QCOMPARE(obj->height(), 300.);
+    QCOMPARE(obj->sourceSize().width(), 120);
+    QCOMPARE(obj->sourceSize().height(), 120);
     QCOMPARE(obj->horizontalTileMode(), QDeclarativeBorderImage::Stretch);
     QCOMPARE(obj->verticalTileMode(), QDeclarativeBorderImage::Stretch);
 

@@ -80,6 +80,8 @@ public:
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
     void setSource(const QUrl &url);
 
+    void setSourceSize(const QSize&);
+
 Q_SIGNALS:
     void horizontalTileModeChanged();
     void verticalTileModeChanged();
