@@ -51,6 +51,8 @@
 #include <windows.h>
 #endif
 
+QT_BEGIN_NAMESPACE
+
 #if !defined(Q_OS_WIN) && !defined(QT_NO_THREAD) && !defined(Q_OS_INTEGRITY) && !defined(Q_OS_QNX) && \
     defined(_POSIX_THREAD_SAFE_FUNCTIONS) && _POSIX_VERSION >= 200112L
 namespace {
