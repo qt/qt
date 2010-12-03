@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -37,66 +37,20 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 import QtQuick 1.0
-
+//![0]
 Item {
-    id: tabWidget
+    id: item
+    width: 200; height: 200
 
-    // Setting the default property to stack.children means any child items
-    // of the TabWidget are actually added to the 'stack' item's children.
-    // See the "Writing QML Components: Properties, Methods and Signals"
-    // documentation for details on default properties.
-    default property alias content: stack.children
-
-    property int current: 0
-
-    onCurrentChanged: setOpacities()
-    Component.onCompleted: setOpacities()
-
-    function setOpacities() {
-        for (var i = 0; i < stack.children.length; ++i) {
-            stack.children[i].opacity = (i == current ? 1 : 0)
-        }
+    function myMethod() {
+        console.log("Button was clicked!")
     }
 
-    Row {
-        id: header
-
-        Repeater {
-            model: stack.children.length
-            delegate: Rectangle {
-                width: tabWidget.width / stack.children.length; height: 36
-
-                Rectangle {
-                    width: parent.width; height: 1
-                    anchors { bottom: parent.bottom; bottomMargin: 1 }
-                    color: "#acb2c2"
-                }
-                BorderImage {
-                    anchors { fill: parent; leftMargin: 2; topMargin: 5; rightMargin: 1 }
-                    border { left: 7; right: 7 }
-                    source: "tab.png"
-                    visible: tabWidget.current == index
-                }
-                Text {
-                    horizontalAlignment: Qt.AlignHCenter; verticalAlignment: Qt.AlignVCenter
-                    anchors.fill: parent
-                    text: stack.children[index].title
-                    elide: Text.ElideRight
-                    font.bold: tabWidget.current == index
-                }
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: tabWidget.current = index
-                }
-            }
-        }
-    }
-
-    Item {
-        id: stack
-        width: tabWidget.width
-        anchors.top: header.bottom; anchors.bottom: tabWidget.bottom
+    Button {
+        id: button
+        anchors.fill: parent
+        Component.onCompleted: buttonClicked.connect(item.myMethod)
     }
 }
+//![0]
