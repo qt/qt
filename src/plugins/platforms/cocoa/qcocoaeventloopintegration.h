@@ -46,29 +46,20 @@
 
 #include <QPlatformEventLoopIntegration>
 
-@interface OurApplication: NSApplication
-{
-    bool shouldKeepRunning;
-}
-
-- (void) run;
-- (void) processEvents: (int) msec;
-
-@end
 
 class QCocoaEventLoopIntegration : public QPlatformEventLoopIntegration
 {
 public:
     QCocoaEventLoopIntegration();
-    void processEvents( qint64 msec );
-    void wakeup();
+    void startEventLoop();
+    void quitEventLoop();
+    void qtNeedsToProcessEvents();
 
-    static int wakeupEventId;
 private:
-    OurApplication *app;
+    CFRunLoopSourceContext m_sourceContext;
+    CFRunLoopTimerContext m_timerContext;
+    CFRunLoopSourceRef m_source;
 };
-
-
 
 #endif // QCOCAEVENTLOOPINTEGRATION_H
 
