@@ -43,6 +43,8 @@
 #include "qfilesystemengine_p.h"
 #include "qplatformdefs.h"
 
+#include <QtCore/qt_windows.h>
+
 QT_BEGIN_NAMESPACE
 
 bool done = true;

@@ -60,6 +60,7 @@
 
 // Platform-specific includes
 #if defined(Q_OS_WIN)
+#include <QtCore/qt_windows.h>
 #elif defined(Q_OS_SYMBIAN)
 #include <f32file.h>
 #include <QtCore/private/qdatetime_p.h>
