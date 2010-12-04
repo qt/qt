@@ -60,6 +60,10 @@
 
 // Platform-specific includes
 #if defined(Q_OS_WIN)
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0500
+#endif
+
 #include <QtCore/qt_windows.h>
 #elif defined(Q_OS_SYMBIAN)
 #include <f32file.h>
