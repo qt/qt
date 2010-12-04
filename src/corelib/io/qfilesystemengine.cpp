@@ -42,6 +42,7 @@
 #include "qfilesystemengine_p.h"
 #include <QtCore/qdir.h>
 #include <QtCore/qset.h>
+#include <QtCore/qstringbuilder.h>
 #include <QtCore/private/qabstractfileengine_p.h>
 #ifdef QT_BUILD_CORE_LIB
 #include <QtCore/private/qresource_p.h>
