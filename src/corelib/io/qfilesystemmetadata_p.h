@@ -60,15 +60,12 @@
 
 // Platform-specific includes
 #if defined(Q_OS_WIN)
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0500
+#ifndef IO_REPARSE_TAG_SYMLINK
+#define IO_REPARSE_TAG_SYMLINK (0xA000000CL)
 #endif
-
-#include <QtCore/qt_windows.h>
 #elif defined(Q_OS_SYMBIAN)
 #include <f32file.h>
 #include <QtCore/private/qdatetime_p.h>
-#else
 #endif
 
 QT_BEGIN_NAMESPACE

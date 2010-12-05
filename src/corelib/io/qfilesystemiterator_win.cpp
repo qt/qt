@@ -43,7 +43,8 @@
 #include "qfilesystemengine_p.h"
 #include "qplatformdefs.h"
 
-#ifndef _WIN32_WINNT
+#if _WIN32_WINNT < 0x0500
+#undef _WIN32_WINNT
 #define _WIN32_WINNT 0x0500
 #endif
 
