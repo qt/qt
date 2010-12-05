@@ -187,7 +187,7 @@ public:
     QSize sizeHint(const QStyleOptionViewItem &, const QModelIndex &) const { return QSize(); }
 };
 
-// emited any time the selection model emits current changed
+// emitted any time the selection model emits current changed
 void tst_QFiledialog::currentChangedSignal()
 {
     QNonNativeFileDialog fd;
@@ -212,7 +212,7 @@ void tst_QFiledialog::currentChangedSignal()
     QCOMPARE(spyCurrentChanged.count(), 1);
 }
 
-// only emited from the views, sidebar, or lookin combo
+// only emitted from the views, sidebar, or lookin combo
 void tst_QFiledialog::directoryEnteredSignal()
 {
 #if defined QT_BUILD_INTERNAL
@@ -273,7 +273,7 @@ void tst_QFiledialog::filesSelectedSignal_data()
     QTest::newRow("existingFiles") << QFileDialog::ExistingFiles;
 }
 
-// emited when the dialog closes with the selected files
+// emitted when the dialog closes with the selected files
 void tst_QFiledialog::filesSelectedSignal()
 {
     QNonNativeFileDialog fd;
@@ -317,7 +317,7 @@ void tst_QFiledialog::filesSelectedSignal()
     QCOMPARE(spyFilesSelected.count(), 1);
 }
 
-// only emited when the combo box is activated
+// only emitted when the combo box is activated
 void tst_QFiledialog::filterSelectedSignal()
 {
     QNonNativeFileDialog fd;

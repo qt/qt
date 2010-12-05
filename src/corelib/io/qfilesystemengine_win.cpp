@@ -378,7 +378,7 @@ static QString readLink(const QFileSystemEntry &link)
 
 static bool uncShareExists(const QString &server)
 {
-    // This code asumes the UNC path is always like \\?\UNC\server...
+    // This code assumes the UNC path is always like \\?\UNC\server...
     QStringList parts = server.split(QLatin1Char('\\'), QString::SkipEmptyParts);
     if (parts.count() >= 3) {
         QStringList shares;

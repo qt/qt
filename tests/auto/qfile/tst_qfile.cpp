@@ -414,7 +414,7 @@ void tst_QFile::cleanupTestCase()
 // attributes and the contents itself
 // will be changed as far as we have a
 // proper way to handle files in the
-// testing enviroment.
+// testing environment.
 //------------------------------------------
 
 void tst_QFile::exists()
@@ -1702,7 +1702,7 @@ void tst_QFile::seekAfterEndOfFile()
 
 void tst_QFile::FILEReadWrite()
 {
-    // Tests modifing a file. First creates it then reads in 4 bytes and then overwrites these
+    // Tests modifying a file. First creates it then reads in 4 bytes and then overwrites these
     // 4 bytes with new values. At the end check to see the file contains the new values.
 
     QFile::remove("FILEReadWrite.txt");

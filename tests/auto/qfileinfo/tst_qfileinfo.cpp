@@ -1653,8 +1653,8 @@ void tst_QFileInfo::owner()
     DWORD  bufSize = 1024;
     if (GetUserNameW(usernameBuf, &bufSize)) {
         userName = QString::fromWCharArray(usernameBuf, bufSize);
-        // Special case : If the user is a member of Adminstrators group, all files
-        // created by the current user are owned by the Admistrators group.
+        // Special case : If the user is a member of Administrators group, all files
+        // created by the current user are owned by the Administrators group.
         LPLOCALGROUP_USERS_INFO_0 pBuf = NULL;
         DWORD dwLevel = 0;
         DWORD dwFlags = LG_INCLUDE_INDIRECT ;
@@ -1664,7 +1664,7 @@ void tst_QFileInfo::owner()
         NET_API_STATUS nStatus;
         nStatus = NetUserGetLocalGroups(0, usernameBuf, dwLevel, dwFlags, (LPBYTE *) &pBuf,
                                         dwPrefMaxLen, &dwEntriesRead, &dwTotalEntries);
-        // Check if the current user is a member of Adminstrators group
+        // Check if the current user is a member of Administrators group
         if (nStatus == NERR_Success && pBuf){
             for (int i = 0; i < dwEntriesRead; i++) {
                 QString groupName = QString::fromWCharArray(pBuf[i].lgrui0_name);

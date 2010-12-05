@@ -378,7 +378,7 @@ bool QFileSystemEngine::setCurrentPath(const QFileSystemEntry &entry)
     if(!abspath.endsWith(QLatin1Char('\\')))
         abspath.append(QLatin1Char('\\'));
     TInt r = fs.SetSessionPath(qt_QString2TPtrC(abspath));
-    //SetSessionPath succeeds for non existant directory, which is why it's checked above
+    //SetSessionPath succeeds for non existent directory, which is why it's checked above
     if (r == KErrNone) {
         __ASSERT_COMPILE(sizeof(wchar_t) == sizeof(unsigned short));
         //attempt to set open C to the same path

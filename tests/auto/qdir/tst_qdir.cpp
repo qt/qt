@@ -928,7 +928,7 @@ void tst_QDir::current()
 
     if (!path.isEmpty()) {
         bool b = QDir::setCurrent(path);
-        // If path is non existant, then setCurrent should be false (currentDir is empty in testData)
+        // If path is non existent, then setCurrent should be false (currentDir is empty in testData)
         QVERIFY(b == !currentDir.isEmpty());
     }
     if (!currentDir.isEmpty()) {
