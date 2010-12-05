@@ -75,15 +75,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
-
-#if defined(Q_OS_WINCE)
-static QString qfsPrivateCurrentDir = QLatin1String("");
-// As none of the functions we try to resolve do exist on Windows CE
-// we use QT_NO_LIBRARY to shorten everything up a little bit.
-#define QT_NO_LIBRARY 1
-#endif
-
 #if !defined(Q_OS_WINCE)
 static inline bool isUncPath(const QString &path)
 {
@@ -112,24 +103,6 @@ QString QFSFileEnginePrivate::longFileName(const QString &path)
 #else
     return absPath;
 #endif
-}
-
-static inline bool getFindData(QString path, WIN32_FIND_DATA &findData)
-{
-    // path should not end with a trailing slash
-    while (path.endsWith(QLatin1Char('\\')))
-        path.chop(1);
-
-    // can't handle drives
-    if (!path.endsWith(QLatin1Char(':'))) {
-        HANDLE hFind = ::FindFirstFile((wchar_t*)path.utf16(), &findData);
-        if (hFind != INVALID_HANDLE_VALUE) {
-            ::FindClose(hFind);
-            return true;
-        }
-    }
-
-    return false;
 }
 
 /*
