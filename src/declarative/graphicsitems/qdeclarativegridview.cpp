@@ -1610,14 +1610,14 @@ bool QDeclarativeGridView::event(QEvent *event)
                 qreal rowPos = d->rowPosAt(d->currentIndex);
                 if (rowPos - d->rowSize() >= 0)
                     snapPoints.append( rowPos - d->rowSize());
-                else if( d->header )
+                else if (d->header)
                     snapPoints.append(0); // position of the header
 
                 snapPoints.append(rowPos);
 
                 if (rowPos + d->rowSize() < d->headerSize() + d->contentSize())
                     snapPoints.append(rowPos + d->rowSize());
-                else if( d->footer )
+                else if (d->footer)
                     snapPoints.append(d->headerSize() + d->contentSize() + snapOffset); // position of the footer
             }
 
