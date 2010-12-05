@@ -9,7 +9,7 @@ QT = core script
 !symbian:DEFINES += SRCDIR=\\\"$$PWD\\\"
 
 wince*|symbian: {
-testFiles.sources = tests
+testFiles.files = tests
 testFiles.path = .
 DEPLOYMENT += testFiles
 }

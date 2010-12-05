@@ -359,6 +359,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_modelDestroyed())
     Q_PRIVATE_SLOT(d_func(), void _q_layoutChanged())
     Q_PRIVATE_SLOT(d_func(), void _q_headerDataChanged())
+    Q_PRIVATE_SLOT(d_func(), void _q_scrollerStateChanged())
 
     friend class QTreeViewPrivate; // needed to compile with MSVC
     friend class QAccessibleItemRow;
