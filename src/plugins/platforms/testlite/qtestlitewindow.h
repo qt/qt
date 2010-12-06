@@ -109,10 +109,13 @@ public:
     void handleCloseEvent();
     void handleEnterEvent();
     void handleLeaveEvent();
+    void handleFocusInEvent();
+    void handleFocusOutEvent();
 
     void resizeEvent(XConfigureEvent *configure_event);
     void paintEvent();
 
+    void requestActivateWindow();
 
     void setGeometry(const QRect &rect);
 

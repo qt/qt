@@ -111,6 +111,9 @@ void QApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePrivate
     case QWindowSystemInterfacePrivate::Leave:
         QApplicationPrivate::processLeaveEvent(static_cast<QWindowSystemInterfacePrivate::LeaveEvent *>(e));
         break;
+    case QWindowSystemInterfacePrivate::ActivatedWindow:
+        QApplicationPrivate::processActivatedEvent(static_cast<QWindowSystemInterfacePrivate::ActivatedWindowEvent *>(e));
+        break;
     case QWindowSystemInterfacePrivate::Close:
         QApplicationPrivate::processCloseEvent(
                 static_cast<QWindowSystemInterfacePrivate::CloseEvent *>(e));
@@ -823,6 +826,10 @@ void QApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::Leave
 
 }
 
+void QApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *e)
+{
+    QApplication::setActiveWindow(e->activated.data());
+}
 
 void QApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePrivate::GeometryChangeEvent *e)
 {

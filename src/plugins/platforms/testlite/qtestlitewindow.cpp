@@ -318,6 +318,16 @@ void QTestLiteWindow::handleLeaveEvent()
     QWindowSystemInterface::handleLeaveEvent(widget());
 }
 
+void QTestLiteWindow::handleFocusInEvent()
+{
+    QWindowSystemInterface::handleWindowActivated(widget());
+}
+
+void QTestLiteWindow::handleFocusOutEvent()
+{
+    QWindowSystemInterface::handleWindowActivated(0);
+}
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Key event stuff -- not pretty either
@@ -694,6 +704,10 @@ void QTestLiteWindow::paintEvent()
         surface->flush(widget(), QRect(xpos,ypos,width, height), QPoint());
 }
 
+void QTestLiteWindow::requestActivateWindow()
+{
+    XSetInputFocus(xd->display, x_window, XRevertToParent, CurrentTime);
+}
 
 void QTestLiteWindow::resizeEvent(XConfigureEvent *e)
 {
@@ -1454,6 +1468,14 @@ bool MyDisplay::handleEvent(XEvent *xe)
 
     case LeaveNotify:
         xw->handleLeaveEvent();
+        break;
+
+    case XFocusIn:
+        xw->handleFocusInEvent();
+        break;
+
+    case XFocusOut:
+        xw->handleFocusOutEvent();
         break;
 
     default:

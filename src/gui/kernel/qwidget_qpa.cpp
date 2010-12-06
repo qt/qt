@@ -379,9 +379,8 @@ QWidget *QWidget::keyboardGrabber()
 
 void QWidget::activateWindow()
 {
-    // XXX
-//    qDebug() << "QWidget::activateWindow" << this;
-    QApplication::setActiveWindow(this); //#####
+    if (platformWindow())
+        platformWindow()->requestActivateWindow();
 }
 
 void QWidgetPrivate::show_sys()
@@ -409,9 +408,6 @@ void QWidgetPrivate::show_sys()
         }
         if (window)
             window->setVisible(true);
-
-        if (q->isWindow() && q->windowType() != Qt::Popup && q->windowType() != Qt::ToolTip && !(q->windowFlags() & Qt::X11BypassWindowManagerHint))
-            q->activateWindow(); //### QWindowSystemInterface should have callback function for when WS actually activates window.
     }
 }
 
