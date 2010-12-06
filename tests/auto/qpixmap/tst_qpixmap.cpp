@@ -185,6 +185,8 @@ private slots:
     void preserveDepth();
     void splash_crash();
 
+    void toImageDeepCopy();
+
     void loadAsBitmapOrPixmap();
 };
 
@@ -1751,6 +1753,21 @@ void tst_QPixmap::loadAsBitmapOrPixmap()
     QVERIFY(bitmap.isQBitmap());
 }
 
+void tst_QPixmap::toImageDeepCopy()
+{
+    QPixmap pixmap(64, 64);
+    pixmap.fill(Qt::white);
+
+    QPainter painter(&pixmap);
+    QImage first = pixmap.toImage();
+
+    painter.setBrush(Qt::black);
+    painter.drawEllipse(pixmap.rect());
+
+    QImage second = pixmap.toImage();
+
+    QVERIFY(first != second);
+}
 
 
 QTEST_MAIN(tst_QPixmap)

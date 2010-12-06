@@ -44,6 +44,7 @@
 #include "qpixmap_raster_p.h"
 #include "qnativeimage_p.h"
 #include "qimage_p.h"
+#include "qpaintengine.h"
 
 #include "qbitmap.h"
 #include "qimage.h"
@@ -302,6 +303,13 @@ bool QRasterPixmapData::hasAlphaChannel() const
 
 QImage QRasterPixmapData::toImage() const
 {
+    if (image.paintEngine()
+        && image.paintEngine()->isActive()
+        && image.paintEngine()->paintDevice() == &image)
+    {
+        return image.copy();
+    }
+
     return image;
 }
 
