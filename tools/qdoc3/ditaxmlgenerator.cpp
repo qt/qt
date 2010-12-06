@@ -714,27 +714,24 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::Code:
         {
-            xmlWriter().writeStartElement("pre");
-            xmlWriter().writeAttribute("outputclass","highlightedcode");
+            xmlWriter().writeStartElement("codeblock");
             QString chars = trimmedTrailing(atom->string()); 
             writeText(chars, marker, relative);
-            xmlWriter().writeEndElement(); // </pre>
+            xmlWriter().writeEndElement(); // </codeblock>
         }
 	break;
     case Atom::Qml:
-        xmlWriter().writeStartElement("pre");
-        xmlWriter().writeAttribute("outputclass","highlightedcode");
+        xmlWriter().writeStartElement("codeblock");
         writeText(trimmedTrailing(atom->string()), marker, relative);
-        xmlWriter().writeEndElement(); // </pre>
+        xmlWriter().writeEndElement(); // </codeblock>
 	break;
     case Atom::CodeNew:
         xmlWriter().writeStartElement("p");
         xmlWriter().writeCharacters("you can rewrite it as");
         xmlWriter().writeEndElement(); // </p>
-        xmlWriter().writeStartElement("pre");
-        xmlWriter().writeAttribute("outputclass","highlightedcode");
+        xmlWriter().writeStartElement("codeblock");
         writeText(trimmedTrailing(atom->string()), marker, relative);
-        xmlWriter().writeEndElement(); // </pre>
+        xmlWriter().writeEndElement(); // </codeblock>
         break;
     case Atom::CodeOld:
         xmlWriter().writeStartElement("p");
@@ -742,10 +739,9 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         xmlWriter().writeEndElement(); // </p>
         // fallthrough
     case Atom::CodeBad:
-        xmlWriter().writeStartElement("pre");
-        xmlWriter().writeAttribute("outputclass","highlightedcode");
-        xmlWriter().writeCharacters(trimmedTrailing(protectEnc(plainCode(atom->string()))));
-        xmlWriter().writeEndElement(); // </pre>
+        xmlWriter().writeStartElement("codeblock");
+        xmlWriter().writeCharacters(trimmedTrailing(plainCode(atom->string())));
+        xmlWriter().writeEndElement(); // </codeblock>
 	break;
     case Atom::FootnoteLeft:
         // ### For now
@@ -1043,30 +1039,30 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             if (atom->next() != 0)
                 text = atom->next()->string();
             if (fileName.isEmpty()) {
-                xmlWriter().writeStartElement("b");
-                xmlWriter().writeAttribute("outputclass","error");
-                xmlWriter().writeCharacters("[Missing image: ");
-                xmlWriter().writeCharacters(protectEnc(atom->string()));
-                xmlWriter().writeEndElement(); // </b>
+                /*
+                  Don't bother outputting an error message.
+                  Just output the href as if the image is in
+                  the images directory...
+                 */
+                fileName = QLatin1String("images/") + protectEnc(atom->string());
             }
+
+            xmlWriter().writeStartElement("fig");
+            xmlWriter().writeStartElement("image");
+            xmlWriter().writeAttribute("href",protectEnc(fileName));
+            if (atom->type() == Atom::InlineImage)
+                xmlWriter().writeAttribute("placement","inline");
             else {
-                xmlWriter().writeStartElement("fig");
-                xmlWriter().writeStartElement("image");
-                xmlWriter().writeAttribute("href",protectEnc(fileName));
-                if (atom->type() == Atom::InlineImage)
-                    xmlWriter().writeAttribute("placement","inline");
-                else {
-                    xmlWriter().writeAttribute("placement","break");
-                    xmlWriter().writeAttribute("align","center");
-                }
-                if (!text.isEmpty()) {
-                    xmlWriter().writeStartElement("alt");
-                    xmlWriter().writeCharacters(protectEnc(text));
-                    xmlWriter().writeEndElement(); // </alt>
-                }
-                xmlWriter().writeEndElement(); // </image>
-                xmlWriter().writeEndElement(); // </fig>
+                xmlWriter().writeAttribute("placement","break");
+                xmlWriter().writeAttribute("align","center");
             }
+            if (!text.isEmpty()) {
+                xmlWriter().writeStartElement("alt");
+                xmlWriter().writeCharacters(protectEnc(text));
+                xmlWriter().writeEndElement(); // </alt>
+            }
+            xmlWriter().writeEndElement(); // </image>
+            xmlWriter().writeEndElement(); // </fig>
         }
         break;
     case Atom::ImageText:
@@ -2263,10 +2259,9 @@ void DitaXmlGenerator::generateBrief(const Node* node, CodeMarker* marker)
 void DitaXmlGenerator::generateIncludes(const InnerNode* inner, CodeMarker* marker)
 {
     if (!inner->includes().isEmpty()) {
-        xmlWriter().writeStartElement("pre");
-        xmlWriter().writeAttribute("outputclass","highlightedcode");
+        xmlWriter().writeStartElement("codeblock");
         writeText(marker->markedUpIncludes(inner->includes()), marker, inner);
-        xmlWriter().writeEndElement(); // </pre>
+        xmlWriter().writeEndElement(); // </codeblock>
     }
 }
 
