@@ -711,7 +711,7 @@ QString QDir::absoluteFilePath(const QString &fileName) const
 */
 QString QDir::relativeFilePath(const QString &fileName) const
 {
-    QString dir = absolutePath();
+    QString dir = cleanPath(absolutePath());
     QString file = cleanPath(fileName);
 
     if (isRelativePath(file) || isRelativePath(dir))
