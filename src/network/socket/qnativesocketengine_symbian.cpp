@@ -46,6 +46,7 @@
 #include "qhostaddress.h"
 #include "qelapsedtimer.h"
 #include "qvarlengtharray.h"
+#include "qnetworkinterface.h"
 #include <es_sock.h>
 #include <in_sock.h>
 #include <QtCore/private/qcore_symbian_p.h>
@@ -165,7 +166,7 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
         return false;
     }
 
-    socketDescriptor = QSymbianSocketManager::instance().addSocket(&nativeSocket);
+    socketDescriptor = QSymbianSocketManager::instance().addSocket(nativeSocket);
     return true;
 }
 
@@ -547,10 +548,8 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
         return false;
 
     if (!nativeSocket.SubSessionHandle()) {
-        RSocket *s = QSymbianSocketManager::instance().lookupSocket(socketDescriptor);
-        if (!s)
+        if (!QSymbianSocketManager::instance().lookupSocket(socketDescriptor, nativeSocket))
             return false;
-        nativeSocket = *s; //TODO: badwrongfun (address is different, so this is broken)
     }
 
     // Determine local address
@@ -621,7 +620,7 @@ void QNativeSocketEnginePrivate::nativeClose()
 
     //TODO: call nativeSocket.Shutdown(EImmediate) in some cases?
     nativeSocket.Close();
-    QSymbianSocketManager::instance().removeSocket(&nativeSocket);
+    QSymbianSocketManager::instance().removeSocket(nativeSocket);
 }
 
 qint64 QNativeSocketEnginePrivate::nativeWrite(const char *data, qint64 len)
@@ -766,6 +765,32 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
         *selectForWrite = true;
     }
     return 1;
+}
+
+bool QNativeSocketEnginePrivate::nativeJoinMulticastGroup(const QHostAddress &groupAddress,
+                              const QNetworkInterface &iface)
+{
+    //TODO
+    return false;
+}
+
+bool QNativeSocketEnginePrivate::nativeLeaveMulticastGroup(const QHostAddress &groupAddress,
+                               const QNetworkInterface &iface)
+{
+    //TODO
+    return false;
+}
+
+QNetworkInterface QNativeSocketEnginePrivate::nativeMulticastInterface() const
+{
+    //TODO
+    return QNetworkInterface();
+}
+
+bool QNativeSocketEnginePrivate::nativeSetMulticastInterface(const QNetworkInterface &iface)
+{
+    //TODO
+    return false;
 }
 
 QT_END_NAMESPACE

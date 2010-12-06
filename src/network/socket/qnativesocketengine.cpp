@@ -110,6 +110,10 @@
 # include "qtcpserver.h"
 #endif
 
+#ifdef Q_OS_SYMBIAN
+# include <private/qcore_symbian_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 //#define QNATIVESOCKETENGINE_DEBUG
@@ -158,12 +162,15 @@ QT_BEGIN_NAMESPACE
     concurrent QNativeSocketEngine. This is safe, because WSAStartup and
     WSACleanup are reference counted.
 */
-QNativeSocketEnginePrivate::QNativeSocketEnginePrivate()
+QNativeSocketEnginePrivate::QNativeSocketEnginePrivate() :
+    socketDescriptor(-1),
+#ifdef Q_OS_SYMBIAN
+    socketServer(qt_symbianGetSocketServer()),
+#endif
+    readNotifier(0),
+    writeNotifier(0),
+    exceptNotifier(0)
 {
-    socketDescriptor = -1;
-    readNotifier = 0;
-    writeNotifier = 0;
-    exceptNotifier = 0;
 }
 
 /*! \internal

@@ -200,7 +200,7 @@ public:
     int socketDescriptor;
 #ifdef Q_OS_SYMBIAN
     mutable RSocket nativeSocket;
-    RSocketServ socketServer; //TODO: shared ref
+    RSocketServ& socketServer;
     RConnection connection; //TODO: shared ref
     mutable RTimer selectTimer;
 #endif
