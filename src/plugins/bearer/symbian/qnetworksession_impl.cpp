@@ -47,6 +47,7 @@
 #include <in_sock.h>
 #include <stdapis/sys/socket.h>
 #include <stdapis/net/if.h>
+#include <private/qcore_symbian_p.h>
 
 #ifdef SNAP_FUNCTIONALITY_AVAILABLE
 #include <cmmanager.h>
@@ -65,7 +66,7 @@ QNetworkSessionPrivateImpl::QNetworkSessionPrivateImpl(SymbianEngine *engine)
     iDynamicUnSetdefaultif(0), ipConnectionNotifier(0),
     iHandleStateNotificationsFromManager(false), iFirstSync(true), iStoppedByUser(false),
     iClosedByUser(false), iError(QNetworkSession::UnknownSessionError), iALREnabled(0),
-    iConnectInBackground(false), isOpening(false)
+    iConnectInBackground(false), isOpening(false), iSocketServ(qt_symbianGetSocketServer())
 {
     CActiveScheduler::Add(this);
 
@@ -109,7 +110,6 @@ QNetworkSessionPrivateImpl::~QNetworkSessionPrivateImpl()
 
     // Cancel possible RConnection::Start()
     Cancel();
-    iSocketServ.Close();
 
     // Close global 'Open C' RConnection
     // Clears also possible unsetdefaultif() flags.
@@ -363,20 +363,9 @@ void QNetworkSessionPrivateImpl::open()
     iStoppedByUser = false;
     iClosedByUser = false;
 
-    TInt error = iSocketServ.Connect();
-    if (error != KErrNone) {
-        // Could not open RSocketServ
-        newState(QNetworkSession::Invalid);
-        iError = QNetworkSession::UnknownSessionError;
-        emit QNetworkSessionPrivate::error(iError);
-        syncStateWithInterface();    
-        return;
-    }
-    
-    error = iConnection.Open(iSocketServ);
+    TInt error = iConnection.Open(iSocketServ);
     if (error != KErrNone) {
         // Could not open RConnection
-        iSocketServ.Close();
         newState(QNetworkSession::Invalid);
         iError = QNetworkSession::UnknownSessionError;
         emit QNetworkSessionPrivate::error(iError);
@@ -533,7 +522,6 @@ void QNetworkSessionPrivateImpl::close(bool allowSignals)
     }
     
     Cancel(); // closes iConnection
-    iSocketServ.Close();
 
     // Close global 'Open C' RConnection. If OpenC supports,
     // close the defaultif for good to avoid difficult timing

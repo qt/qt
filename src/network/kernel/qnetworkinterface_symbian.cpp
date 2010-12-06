@@ -44,6 +44,7 @@
 #include "qnetworkinterface.h"
 #include "qnetworkinterface_p.h"
 #include "../corelib/kernel/qcore_symbian_p.h"
+#include <private/qcore_symbian_p.h>
 
 #ifndef QT_NO_NETWORKINTERFACE
 
@@ -72,17 +73,10 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
     TInt err(KErrNone);
     QList<QNetworkInterfacePrivate *> interfaces;
 
-    // Connect to Native socket server
-    RSocketServ socketServ;
-    err = socketServ.Connect();
-    if (err)
-        return interfaces;
-
     // Open dummy socket for interface queries
     RSocket socket;
-    err = socket.Open(socketServ, _L("udp"));
+    err = socket.Open(qt_symbianGetSocketServer(), _L("udp"));
     if (err) {
-        socketServ.Close();
         return interfaces;
     }
 
@@ -90,7 +84,6 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
     err =  socket.SetOpt(KSoInetEnumInterfaces, KSolInetIfCtrl);
     if (err) {
         socket.Close();
-        socketServ.Close();
         return interfaces;
     }
 
@@ -176,7 +169,6 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
     err =  socket.SetOpt(KSoInetEnumRoutes, KSolInetRtCtrl);
     if (err) {
         socket.Close();
-        socketServ.Close();
         // return what we have
         // up to this moment
         return interfaces;
@@ -223,7 +215,6 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
     }
 
     socket.Close();
-    socketServ.Close();
 
     return interfaces;
 }
