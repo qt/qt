@@ -2,12 +2,13 @@
 
 RSS_RULES ="group_name=\"QtExamples\";"
 
+nokiaVendor = "Nokia, Qt"
 vendorinfo = \
     "; Localised Vendor name" \
-    "%{\"Nokia, Qt\"}" \
+    "%{$$addLanguageDependentPkgItem(nokiaVendor)}" \
     " " \
     "; Unique Vendor name" \
-    ":\"Nokia, Qt\"" \
+    ":\"$$nokiaVendor\"" \
     " "
 
 examples_deployment.pkg_prerules += vendorinfo

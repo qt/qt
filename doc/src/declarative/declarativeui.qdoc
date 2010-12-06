@@ -91,9 +91,10 @@ Module.
 \list
 \o \l{QML Documents}
 \o \l{Property Binding}
+\o \l{Anchor-based Layout in QML}
+\o \l{Writing QML Components: Properties, Methods and Signals}
 \o \l{QML Scope}
 \o \l{QML Modules}
-\o \l{Anchor-based Layout in QML}
 \endlist
 
 \section1 User Interaction
@@ -118,7 +119,6 @@ Module.
 \list
 \o \l{Qt Declarative UI Runtime}
 \o \l{Integrating JavaScript}
-\o \l{Extending types from QML}
 \o \l{Dynamic Object Management in QML}
 \endlist
 

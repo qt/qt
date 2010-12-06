@@ -239,3 +239,13 @@
     \externalpage http://get.qt.nokia.com/nokiasmartinstaller/
     \title Smart Installer
 */
+
+/*!
+    \externalpage http://qt.gitorious.org/qt-labs/qtestlib-tools
+    \title qtestlib-tools
+*/
+
+/*!
+    \externalpage http://labs.qt.nokia.com
+    \title Qt Labs
+*/

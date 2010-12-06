@@ -79,18 +79,18 @@ public:
             }
         }
 
-        if (generatePkg) {
-            generatePkgFile(iconFile, false);
-        }
+        SymbianLocalizationList symbianLocalizationList;
+        parseTsFiles(&symbianLocalizationList);
 
-        // Get the application translations and convert to symbian OS lang code, i.e. decical number
-        QStringList symbianLangCodes = symbianLangCodesFromTsFiles();
+        if (generatePkg) {
+            generatePkgFile(iconFile, false, symbianLocalizationList);
+        }
 
         if (targetType == TypeExe) {
             if (!this->project->values("CONFIG").contains("no_icon", Qt::CaseInsensitive)) {
                 writeRegRssFile(userRssRules);
                 writeRssFile(numberOfIcons, iconFile);
-                writeLocFile(symbianLangCodes);
+                writeLocFile(symbianLocalizationList);
             }
         }
 
