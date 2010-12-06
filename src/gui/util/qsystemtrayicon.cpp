@@ -335,16 +335,6 @@ bool QSystemTrayIcon::event(QEvent *e)
     \sa activated()
 */
 
-/*!
-    \fn void QSystemTrayIcon::messageTimeout()
-
-    This signal is emitted when the message displayed using showMessage()
-    hides automatically after being shown for the timeout value.
-
-    Currently this signal is not sent on Mac OS X.
-
-    \since 4.8
-*/
 
 /*!
     Returns true if the system tray is available; otherwise returns false.
@@ -667,10 +657,8 @@ void QBalloonTip::timerEvent(QTimerEvent *e)
 {
     if (e->timerId() == timerId) {
         killTimer(timerId);
-        if (!underMouse()) {
+        if (!underMouse())
             close();
-            emit trayIcon->messageTimeout();
-        }
         return;
     }
     QWidget::timerEvent(e);
