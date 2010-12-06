@@ -44,6 +44,7 @@
 #include <e32uid.h>
 #include "qcore_symbian_p.h"
 #include <string>
+#include <in_sock.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -218,7 +219,11 @@ Q_CORE_EXPORT RFs& qt_s60GetRFs()
 QSymbianSocketManager::QSymbianSocketManager() :
     iNextSocket(0)
 {
-    qt_symbian_throwIfError(iSocketServ.Connect());
+    TSessionPref preferences;
+    // ### In future this could be changed to KAfInet6 when that is more common than IPv4
+    preferences.iAddrFamily = KAfInet;
+    preferences.iProtocol = KProtocolInetIp;
+    qt_symbian_throwIfError(iSocketServ.Connect(preferences));
     qt_symbian_throwIfError(iSocketServ.ShareAuto());
 }
 
