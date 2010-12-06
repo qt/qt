@@ -549,7 +549,7 @@ void DocParser::parse(const QString& source,
 #ifdef QDOC_QML
                     case CMD_QML:
                         leavePara();
-                        append(Atom::Qml, getCode(CMD_QML, marker));
+                        append(Atom::Qml, getCode(CMD_QML, CodeMarker::markerForLanguage(QLatin1String("QML"))));
                         break;
                     case CMD_QMLTEXT:
                         append(Atom::QmlText);
@@ -2252,7 +2252,8 @@ QString DocParser::getCode(int cmd, CodeMarker *marker)
     if (indent < minIndent)
         minIndent = indent;
     code = unindent(minIndent, code);
-    marker = CodeMarker::markerForCode(code);
+    if (!marker)
+        marker = CodeMarker::markerForCode(code);
     return marker->markedUpCode(code, 0, "");
 }
 
