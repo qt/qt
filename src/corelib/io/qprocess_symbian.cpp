@@ -1050,6 +1050,7 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
 
         newProc->Resume();
         newProc->Close();
+        delete newProc;
         return true;
     }
 

@@ -252,6 +252,7 @@ private:
 
     void genObject(QDeclarativeParser::Object *obj);
     void genObjectBody(QDeclarativeParser::Object *obj);
+    void genValueTypeProperty(QDeclarativeParser::Object *obj,QDeclarativeParser::Property *);
     void genComponent(QDeclarativeParser::Object *obj);
     void genValueProperty(QDeclarativeParser::Property *prop, QDeclarativeParser::Object *obj);
     void genListProperty(QDeclarativeParser::Property *prop, QDeclarativeParser::Object *obj);

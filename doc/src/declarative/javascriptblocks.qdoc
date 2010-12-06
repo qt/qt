@@ -207,6 +207,25 @@ changes.
 See \l {Property Binding} for more information.
 
 
+\section1 Receiving QML Signals in JavaScript
+
+To receive a QML signal, use the signal's \c connect() method to connect it to a JavaScript
+function.
+
+For example, the following code connects the MouseArea \c clicked signal to the \c jsFunction()
+in \c script.js:
+
+\table
+\row
+\o \snippet doc/src/snippets/declarative/integrating-javascript/connectjs.qml 0
+\o \snippet doc/src/snippets/declarative/integrating-javascript/script.js 0
+\endtable
+
+The \c jsFunction() will now be called whenever MouseArea's \c clicked signal is emitted.
+
+See \l {Connecting signals to methods and other signals} for more information.
+
+
 \section1 QML JavaScript Restrictions
 
 QML executes standard JavaScript code, with the following restrictions:

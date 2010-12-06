@@ -377,7 +377,6 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
         t << qmakeCmd << endl;
         t << endl;
 
-        QString currentClause;
         QString locFileDep = generateLocFileTarget(t, qmakeCmd);
 
         t << "debug: " << locFileDep << BLD_INF_FILENAME << endl;

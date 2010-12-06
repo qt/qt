@@ -202,7 +202,7 @@ ItemType::Ptr AtomicValue::qtToXDMType(const QXmlItem &item)
     Q_ASSERT(item.isAtomicValue());
     const QVariant v(item.toAtomicValue());
 
-    switch(v.type())
+    switch(int(v.type()))
     {
         case QVariant::Char:
         /* Fallthrough. */
