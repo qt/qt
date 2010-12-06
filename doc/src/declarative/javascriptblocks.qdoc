@@ -94,9 +94,8 @@ Both relative and absolute JavaScript URLs can be imported.  In the case of a
 relative URL, the location is resolved relative to the location of the
 \l {QML Document} that contains the import.  If the script file is not accessible,
 an error will occur.  If the JavaScript needs to be fetched from a network
-resource, the QML document has a "Loading"
-\l {QDeclarativeComponent::status()}{status} until the script has been
-downloaded.
+resource, the component's \l {QDeclarativeComponent::status()}{status} is set to
+"Loading" until the script has been downloaded.
 
 Imported JavaScript files are always qualified using the "as" keyword.  The
 qualifier for JavaScript files must be unique, so there is always a one-to-one
