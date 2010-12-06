@@ -621,18 +621,27 @@ void tst_QFileInfo::canonicalFilePath()
     PtrCreateSymbolicLink ptrCreateSymbolicLink =
             (PtrCreateSymbolicLink)QLibrary::resolve(QLatin1String("kernel32"), "CreateSymbolicLinkW");
 
-    if (!ptrCreateSymbolicLink ||
-        ptrCreateSymbolicLink((wchar_t*)QString("res").utf16(), (wchar_t*)QString("resources").utf16(), 1) == 0) {
+    if (!ptrCreateSymbolicLink) {
         QSKIP("Symbolic links aren't supported by FS", SkipAll);
+    } else {
+        // CreateSymbolicLink can return TRUE & still fail to create the link,
+        // the error code in that case is ERROR_PRIVILEGE_NOT_HELD (1314)
+        SetLastError(0);
+        BOOL ret = ptrCreateSymbolicLink((wchar_t*)QString("res").utf16(), (wchar_t*)QString("resources").utf16(), 1);
+        DWORD dwErr = GetLastError();
+        if (!ret)
+            QSKIP("Symbolic links aren't supported by FS", SkipAll);
+        QString currentPath = QDir::currentPath();
+        bool is_res_Current = QDir::setCurrent("res");
+        if (!is_res_Current && dwErr == 1314)
+            QSKIP("Not enough privilages to create Symbolic links", SkipAll);
+        QCOMPARE(is_res_Current, true);
+
+        QCOMPARE(QFileInfo("file1").canonicalFilePath(), currentPath + "/resources/file1");
+
+        QCOMPARE(QDir::setCurrent(currentPath), true);
+        QDir::current().rmdir("res");
     }
-
-    QString currentPath = QDir::currentPath();
-    QCOMPARE(QDir::setCurrent("res"), true);
-
-    QCOMPARE(QFileInfo("file1").canonicalFilePath(), currentPath + "/resources/file1");
-
-    QCOMPARE(QDir::setCurrent(currentPath), true);
-    QDir::current().rmdir("res");
 #endif
 }
 
