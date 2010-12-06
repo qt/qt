@@ -143,6 +143,31 @@ As they are shared, stateless library files cannot access QML component instance
 objects or properties directly, although QML values can be passed as function
 parameters.
 
+
+\section2 Importing One JavaScript File From Another
+
+If a JavaScript file needs to use functions defined inside another JavaScript file,
+the other file can be imported using the \l {QML:Qt::include()}{Qt.include()}
+function. This imports all functions from the other file into the current file's
+namespace.
+
+For example, the QML code below left calls \c showCalculations() in \c script.js,
+which in turn can call \c factorial() in \c factorial.js, as it has included
+\c factorial.js using \l {QML:Qt::include()}{Qt.include()}.
+
+\table
+\row
+\o {1,2} \snippet doc/src/snippets/declarative/integrating-javascript/includejs/app.qml 0
+\o \snippet doc/src/snippets/declarative/integrating-javascript/includejs/script.js 0
+\row
+\o \snippet doc/src/snippets/declarative/integrating-javascript/includejs/factorial.js 0
+\endtable
+
+Notice that calling \l {QML:Qt::include()}{Qt.include()} imports all functions from
+\c factorial.js into the \c MyScript namespace, which means the QML component can also
+access \c factorial() directly as \c MyScript.factorial().
+
+
 \section1 Running JavaScript at Startup
 
 It is occasionally necessary to run some imperative code at application (or
