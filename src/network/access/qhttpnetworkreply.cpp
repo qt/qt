@@ -188,6 +188,12 @@ QByteArray QHttpNetworkReply::readAny()
     return d->responseData.read();
 }
 
+QByteArray QHttpNetworkReply::readAll()
+{
+    Q_D(QHttpNetworkReply);
+    return d->responseData.readAll();
+}
+
 void QHttpNetworkReply::setDownstreamLimited(bool dsl)
 {
     Q_D(QHttpNetworkReply);

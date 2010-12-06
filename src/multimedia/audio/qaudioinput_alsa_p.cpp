@@ -482,19 +482,18 @@ int QAudioInputPrivate::bytesReady() const
 
 qint64 QAudioInputPrivate::read(char* data, qint64 len)
 {
-    Q_UNUSED(len)
-
     // Read in some audio data and write it to QIODevice, pull mode
     if ( !handle )
         return 0;
 
-    bytesAvailable = checkBytesReady();
+    // bytesAvaiable is saved as a side effect of checkBytesReady().
+    int bytesToRead = checkBytesReady();
 
-    if (bytesAvailable < 0) {
+    if (bytesToRead < 0) {
         // bytesAvailable as negative is error code, try to recover from it.
-        xrun_recovery(bytesAvailable);
-        bytesAvailable = checkBytesReady();
-        if (bytesAvailable < 0) {
+        xrun_recovery(bytesToRead);
+        bytesToRead = checkBytesReady();
+        if (bytesToRead < 0) {
             // recovery failed must stop and set error.
             close();
             errorState = QAudio::IOError;
@@ -504,9 +503,11 @@ qint64 QAudioInputPrivate::read(char* data, qint64 len)
         }
     }
 
+    bytesToRead = qMin<qint64>(len, bytesToRead);
+    bytesToRead -= bytesToRead % period_size;
     int count=0, err = 0;
     while(count < 5) {
-        int chunks = bytesAvailable/period_size;
+        int chunks = bytesToRead/period_size;
         int frames = chunks*period_frames;
         if(frames > (int)buffer_frames)
             frames = buffer_frames;
@@ -554,6 +555,7 @@ qint64 QAudioInputPrivate::read(char* data, qint64 len)
                     emit stateChanged(deviceState);
                 }
             } else {
+                bytesAvailable -= err;
                 totalTimeValue += err;
                 resuming = false;
                 if (deviceState != QAudio::ActiveState) {
@@ -566,6 +568,7 @@ qint64 QAudioInputPrivate::read(char* data, qint64 len)
 
         } else {
             memcpy(data,audioBuffer,err);
+            bytesAvailable -= err;
             totalTimeValue += err;
             resuming = false;
             if (deviceState != QAudio::ActiveState) {
@@ -661,7 +664,7 @@ bool QAudioInputPrivate::deviceReady()
 {
     if(pullMode) {
         // reads some audio data and writes it to QIODevice
-        read(0,0);
+        read(0, buffer_size);
     } else {
         // emits readyRead() so user will call read() on QIODevice to get some audio data
         InputPrivate* a = qobject_cast<InputPrivate*>(audioSource);

@@ -42,8 +42,8 @@ mac {
     wince*:LIBS += -lcoredll
 
 } else:symbian {
-    INCLUDEPATH += /epoc32/include/mmf/common
-    INCLUDEPATH += /epoc32/include/mmf/server
+    INCLUDEPATH += $${EPOCROOT}epoc32/include/mmf/common
+    INCLUDEPATH += $${EPOCROOT}epoc32/include/mmf/server
 
     HEADERS += $$PWD/qaudio_symbian_p.h \
                $$PWD/qaudiodeviceinfo_symbian_p.h \

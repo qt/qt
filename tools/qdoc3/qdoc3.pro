@@ -37,11 +37,17 @@ HEADERS += atom.h \
 	   generator.h \
            helpprojectwriter.h \
 	   htmlgenerator.h \
+           jscodemarker.h \
            location.h \
            node.h \
            openedlist.h \
 	   pagegenerator.h \
 	   plaincodemarker.h \
+           puredocparser.h \
+           qmlcodemarker.h \
+           qmlcodeparser.h \
+           qmlmarkupvisitor.h \
+           qmlvisitor.h \
            quoter.h \
 	   separator.h \
 	   text.h \
@@ -61,18 +67,28 @@ SOURCES += atom.cpp \
 	   generator.cpp \
            helpprojectwriter.cpp \
 	   htmlgenerator.cpp \
+           jscodemarker.cpp \
            location.cpp \
            main.cpp \
            node.cpp \
            openedlist.cpp \
 	   pagegenerator.cpp \
 	   plaincodemarker.cpp \
+           puredocparser.cpp \
+           qmlcodemarker.cpp \
+           qmlcodeparser.cpp \
+           qmlmarkupvisitor.cpp \
+           qmlvisitor.cpp \
            quoter.cpp \
 	   separator.cpp \
 	   text.cpp \
 	   tokenizer.cpp \
 	   tree.cpp \
 	   yyindent.cpp
+
+INCLUDEPATH += $$(QT_BUILD_TREE)/include/QtDeclarative
+
+include($$(QT_SOURCE_TREE)/src/declarative/qml/parser/parser.pri)
 
 ### Documentation for qdoc3 ###
 

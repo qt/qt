@@ -43,8 +43,19 @@
   qmlcodemarker.cpp
 */
 
+#include "private/qdeclarativejsast_p.h"
+#include "private/qdeclarativejsastfwd_p.h"
+#include "private/qdeclarativejsengine_p.h"
+#include "private/qdeclarativejslexer_p.h"
+#include "private/qdeclarativejsnodepool_p.h"
+#include "private/qdeclarativejsparser_p.h"
+
+#include "atom.h"
 #include "node.h"
 #include "qmlcodemarker.h"
+#include "qmlmarkupvisitor.h"
+#include "text.h"
+#include "tree.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -56,323 +67,221 @@ QmlCodeMarker::~QmlCodeMarker()
 {
 }
 
-bool QmlCodeMarker::recognizeCode( const QString& /* code */ )
+/*!
+  Returns true if the \a code is recognized by the parser.
+ */
+bool QmlCodeMarker::recognizeCode(const QString &code)
 {
-    return true;
+    QDeclarativeJS::Engine engine;
+    QDeclarativeJS::Lexer lexer(&engine);
+    QDeclarativeJS::Parser parser(&engine);
+    QDeclarativeJS::NodePool m_nodePool("<QmlCodeMarker::recognizeCode>", &engine);
+
+    QString newCode = code;
+    extractPragmas(newCode);
+    lexer.setCode(newCode, 1);
+
+    return parser.parse();
 }
 
-bool QmlCodeMarker::recognizeExtension( const QString& ext )
+/*!
+  Returns true if \a ext is any of a list of file extensions
+  for the QML language.
+ */
+bool QmlCodeMarker::recognizeExtension(const QString &ext)
 {
     return ext == "qml";
 }
 
-bool QmlCodeMarker::recognizeLanguage( const QString& lang )
+/*!
+  Returns true if the \a language is recognized. Only "QML" is
+  recognized by this marker.
+ */
+bool QmlCodeMarker::recognizeLanguage(const QString &language)
 {
-    return lang == "QML";
+    return language == "QML";
 }
 
-QString QmlCodeMarker::plainName( const Node *node )
+/*!
+  Returns the name of the \a node. Method names include are returned with a
+  trailing set of parentheses.
+ */
+QString QmlCodeMarker::plainName(const Node *node)
 {
     QString name = node->name();
-    if ( node->type() == Node::Function )
-	name += "()";
+    if (node->type() == Node::QmlMethod)
+        name += "()";
     return name;
 }
 
-QString QmlCodeMarker::plainFullName( const Node *node, const Node * /* relative */ )
+QString QmlCodeMarker::plainFullName(const Node *node, const Node *relative)
 {
-    QString fullName;
-    for ( ;; ) {
-	fullName.prepend( plainName(node) );
-	if ( node->parent()->name().isEmpty() )
-	    break;
-	node = node->parent();
-	fullName.prepend(".");
+    if (node->name().isEmpty()) {
+        return "global";
     }
-    return fullName;
-}
-
-QString QmlCodeMarker::markedUpCode( const QString& code,
-				    const Node * /* relative */,
-				    const QString& /* dirPath */ )
-{
-    return protect( code );
-}
-
-QString QmlCodeMarker::markedUpSynopsis( const Node *node,
-					const Node * /* relative */,
-					SynopsisStyle style )
-{
-    QString synopsis;
-    QStringList extras;
-    QString name;
-
-    name = taggedNode( node );
-    if ( style != Detailed )
-        name = linkTag( node, name );
-    name = "<@name>" + name + "</@name>";
-
-    if ( style == Detailed && !node->parent()->name().isEmpty() &&
-	 node->type() != Node::Enum )
-	name.prepend( taggedNode(node->parent()) + "." );
-
-    switch ( node->type() ) {
-    case Node::Class:
-        synopsis = "class " + name;
-        break;
-    case Node::Function:
-	{
-            const FunctionNode *func = (const FunctionNode *) node;
-
-	    synopsis = name;
-
-	    if ( style == SeparateList ) {
-		synopsis += "()";
-	    } else {
-		synopsis += " (";
-        	if ( !func->parameters().isEmpty() ) {
-        	    synopsis += " ";
-		    int numOptional = 0;
-        	    QList<Parameter>::ConstIterator p = func->parameters().begin();
-        	    while ( p != func->parameters().end() ) {
-			if ( !(*p).defaultValue().isEmpty() ) {
-			    if ( p == func->parameters().begin() ) {
-				synopsis += "[ ";
-			    } else {
-				synopsis += " [ , ";
-			    }
-			    numOptional++;
-			} else {
-                	    if ( p != func->parameters().begin() )
-                		synopsis += ", ";
-			}
-			if ( !(*p).name().isEmpty() )
-			    synopsis += "<@param>" + protect( (*p).name() ) +
-					"</@param> : ";
-			synopsis += protect( (*p).leftType() );
-                	++p;
-        	    }
-		    for ( int i = 0; i < numOptional; i++ )
-			synopsis += " ]";
-        	    synopsis += " ";
-        	}
-		synopsis += ")";
-	    }
-
-	    if ( style != SeparateList && !func->returnType().isEmpty() )
-		synopsis += " : " + protect( func->returnType() );
-
-            if ( style == Detailed && func->metaness() == FunctionNode::Signal )
-		extras << "[signal]";
-	}
-        break;
-    case Node::Property:
-	{
-            const PropertyNode *property = (const PropertyNode *) node;
-
-	    synopsis = name;
-	    if ( style != SeparateList )
-		synopsis += " : " + property->dataType();
-	    if ( style == Detailed && property->setters().isEmpty() )
-		extras << "[read only]";
-	}
-        break;
-    case Node::Enum:
-	{
-	    /*
-	      The letters A to F and X (upper- and lower-case) can
-	      appear in a hexadecimal constant (e.g. 0x3F).
-	    */
-	    QRegExp letterRegExp( "[G-WYZg-wyz_]" );
-	    const EnumNode *enume = (const EnumNode *) node;
-
-	    synopsis = name;
-	    if ( style == Summary && !enume->items().isEmpty() ) {
-		synopsis += " : ";
-		QString comma;
-		QList<EnumItem>::ConstIterator it = enume->items().begin();
-		while ( it != enume->items().end() ) {
-		    if ( enume->itemAccess((*it).name()) == Node::Public ) {
-			synopsis += comma;
-			synopsis += (*it).name();
-			if ( (*it).value().indexOf(letterRegExp) != -1 )
-			    synopsis += " = " + (*it).value();
-			comma = ", ";
-		    }
-		    ++it;
-		}
-	    }
-	}
-	break;
-    case Node::Namespace:
-    case Node::Typedef:
-    default:
-        synopsis = name;
-    }
-
-    if ( style == Summary ) {
-        if ( node->status() == Node::Preliminary ) {
-            extras << "(preliminary)";
-        } else if ( node->status() == Node::Deprecated ) {
-            extras << "(deprecated)";
-        } else if ( node->status() == Node::Obsolete ) {
-            extras << "(obsolete)";
+    else {
+        QString fullName;
+        while (node) {
+            fullName.prepend(plainName(node));
+            if (node->parent() == relative || node->parent()->name().isEmpty())
+                break;
+            fullName.prepend("::");
+            node = node->parent();
         }
+        return fullName;
     }
-
-    QString extra;
-    if ( !extras.isEmpty() )
-        extra = "<@extra>" + extras.join(" ") + "</@extra>";
-    return synopsis + extra;
 }
 
-QString QmlCodeMarker::markedUpName( const Node *node )
+QString QmlCodeMarker::markedUpCode(const QString &code,
+                                    const Node *relative,
+                                    const QString &dirPath)
 {
-    QString name = linkTag( node, taggedNode(node) );
-    if ( node->type() == Node::Function )
-	name += "()";
+    return addMarkUp(code, relative, dirPath);
+}
+
+QString QmlCodeMarker::markedUpName(const Node *node)
+{
+    QString name = linkTag(node, taggedNode(node));
+    if (node->type() == Node::QmlMethod)
+        name += "()";
     return name;
 }
 
-QString QmlCodeMarker::markedUpFullName( const Node *node,
-					const Node * /* relative */ )
+QString QmlCodeMarker::markedUpFullName(const Node *node, const Node *relative)
 {
-    QString fullName;
-    for ( ;; ) {
-	fullName.prepend( markedUpName(node) );
-	if ( node->parent()->name().isEmpty() )
-	    break;
-	node = node->parent();
-	fullName.prepend( "<@op>.</@op>" );
+    if (node->name().isEmpty()) {
+        return "global";
     }
-    return fullName;
-}
-
-QString QmlCodeMarker::markedUpEnumValue(const QString & /* enumValue */,
-                                        const Node * /* relative */)
-{
-    return QString();
-}
-
-QString QmlCodeMarker::markedUpIncludes( const QStringList& /* includes */ )
-{
-    return QString();
-}
-
-QString QmlCodeMarker::functionBeginRegExp( const QString& funcName )
-{
-    return "^function[ \t].*\\b" + QRegExp::escape( funcName );
-}
-
-QString QmlCodeMarker::functionEndRegExp( const QString& /* funcName */ )
-{
-    return "^}";
-}
-
-QList<Section> QmlCodeMarker::sections( const InnerNode *inner, SynopsisStyle style, Status status )
-{
-    QList<Section> sections;
-
-    if (inner->type() != Node::Class)
-        return sections;
-
-    const ClassNode *classe = static_cast<const ClassNode *>(inner);
-
-    if ( style == Summary ) {
-	FastSection enums(classe, "Enums", "", "enum", "enums");
-	FastSection functions(classe, "Functions", "", "function", "functions");
-	FastSection readOnlyProperties(classe, "", "Read-Only Properties", "property", "properties");
-	FastSection signalz(classe, "Signals", "", "signal", "signals");
-	FastSection writableProperties(classe, "", "Writable Properties", "property", "properties");
-
-	QStack<const ClassNode *> stack;
-	stack.push( classe );
-
-	while ( !stack.isEmpty() ) {
-	    const ClassNode *ancestorClass = stack.pop();
-
-	    NodeList::ConstIterator c = ancestorClass->childNodes().begin();
-	    while ( c != ancestorClass->childNodes().end() ) {
-		if ( (*c)->access() == Node::Public ) {
-		    if ( (*c)->type() == Node::Enum ) {
-			insert( enums, *c, style, status );
-		    } else if ( (*c)->type() == Node::Function ) {
-			const FunctionNode *func = (const FunctionNode *) *c;
-			if ( func->metaness() == FunctionNode::Signal ) {
-			    insert( signalz, *c, style, status );
-			} else {
-			    insert( functions, *c, style, status );
-			}
-		    } else if ( (*c)->type() == Node::Property ) {
-			const PropertyNode *property =
-				(const PropertyNode *) *c;
-			if ( property->setters().isEmpty() ) {
-			    insert( readOnlyProperties, *c, style, status );
-			} else {
-			    insert( writableProperties, *c, style, status );
-			}
-		    }
-		}
-		++c;
-	    }
-
-	    QList<RelatedClass>::ConstIterator r = ancestorClass->baseClasses().begin();
-	    while ( r != ancestorClass->baseClasses().end() ) {
-		stack.prepend( (*r).node );
-		++r;
-	    }
-	}
-	append( sections, enums );
-	append( sections, writableProperties );
-	append( sections, readOnlyProperties );
-	append( sections, functions );
-	append( sections, signalz );
-    } else if ( style == Detailed ) {
-	FastSection enums( classe, "Enum Documentation", "", "member", "members");
-	FastSection functionsAndSignals( classe, "Function and Signal Documentation", "", "member", "members");
-	FastSection properties( classe, "Property Documentation", "", "member", "members");
-
-	NodeList::ConstIterator c = classe->childNodes().begin();
-	while ( c != classe->childNodes().end() ) {
-	    if ( (*c)->access() == Node::Public ) {
-		if ( (*c)->type() == Node::Enum ) {
-		    insert( enums, *c, style, status );
-		} else if ( (*c)->type() == Node::Function ) {
-		    insert( functionsAndSignals, *c, style, status );
-		} else if ( (*c)->type() == Node::Property ) {
-		    insert( properties, *c, style, status );
-		}
-	    }
-	    ++c;
-	}
-	append( sections, enums );
-	append( sections, properties );
-	append( sections, functionsAndSignals );
-    } else { // ( style == SeparateList )
-	FastSection all(classe, "", "", "member", "members");
-
-	QStack<const ClassNode *> stack;
-	stack.push( classe );
-
-	while ( !stack.isEmpty() ) {
-	    const ClassNode *ancestorClass = stack.pop();
-
-	    NodeList::ConstIterator c = ancestorClass->childNodes().begin();
-	    while ( c != ancestorClass->childNodes().end() ) {
-		if ( (*c)->access() == Node::Public )
-		    insert( all, *c, style, status );
-		++c;
-	    }
-
-	    QList<RelatedClass>::ConstIterator r = ancestorClass->baseClasses().begin();
-	    while ( r != ancestorClass->baseClasses().end() ) {
-		stack.prepend( (*r).node );
-		++r;
-	    }
-	}
-	append( sections, all );
+    else {
+        QString fullName;
+        for (;;) {
+            fullName.prepend(markedUpName(node));
+            if (node->parent() == relative || node->parent()->name().isEmpty())
+                break;
+            fullName.prepend("<@op>::</@op>");
+            node = node->parent();
+        }
+        return fullName;
     }
-    return sections;
+}
+
+QString QmlCodeMarker::markedUpIncludes(const QStringList& includes)
+{
+    QString code;
+
+    QStringList::ConstIterator inc = includes.begin();
+    while (inc != includes.end()) {
+        code += "import " + *inc + "\n";
+        ++inc;
+    }
+    return protect(addMarkUp(code, 0, ""));
+}
+
+QString QmlCodeMarker::functionBeginRegExp(const QString& funcName)
+{
+    return "^" + QRegExp::escape("function " + funcName) + "$";
+
+}
+
+QString QmlCodeMarker::functionEndRegExp(const QString& /* funcName */)
+{
+    return "^\\}$";
+}
+
+QString QmlCodeMarker::addMarkUp(const QString &code,
+                                 const Node * /* relative */,
+                                 const QString & /* dirPath */)
+{
+    QDeclarativeJS::Engine engine;
+    QDeclarativeJS::Lexer lexer(&engine);
+
+    QString newCode = code;
+    QList<QDeclarativeJS::AST::SourceLocation> pragmas = extractPragmas(newCode);
+    lexer.setCode(newCode, 1);
+
+    QDeclarativeJS::Parser parser(&engine);
+    QDeclarativeJS::NodePool m_nodePool("<QmlCodeMarker::addMarkUp>", &engine);
+    QString output;
+
+    if (parser.parse()) {
+        QDeclarativeJS::AST::UiProgram *ast = parser.ast();
+        // Pass the unmodified code to the visitor so that pragmas and other
+        // unhandled source text can be output.
+        QmlMarkupVisitor visitor(code, pragmas, &engine);
+        QDeclarativeJS::AST::Node::accept(ast, &visitor);
+        output = visitor.markedUpCode();
+    }
+    return output;
+}
+
+/*
+Copied and pasted from src/declarative/qml/qdeclarativescriptparser.cpp.
+*/
+static void replaceWithSpace(QString &str, int idx, int n)
+{
+    QChar *data = str.data() + idx;
+    const QChar space(QLatin1Char(' '));
+    for (int ii = 0; ii < n; ++ii)
+        *data++ = space;
+}
+
+/*
+Copied and pasted from src/declarative/qml/qdeclarativescriptparser.cpp then
+modified to return a list of removed pragmas.
+
+Searches for ".pragma <value>" declarations within \a script.  Currently supported pragmas
+are:
+    library
+*/
+QList<QDeclarativeJS::AST::SourceLocation> QmlCodeMarker::extractPragmas(QString &script)
+{
+    const QString pragma(QLatin1String("pragma"));
+    const QString library(QLatin1String("library"));
+    QList<QDeclarativeJS::AST::SourceLocation> removed;
+
+    QDeclarativeJS::Lexer l(0);
+    l.setCode(script, 0);
+
+    int token = l.lex();
+
+    while (true) {
+        if (token != QDeclarativeJSGrammar::T_DOT)
+            return removed;
+
+        int startOffset = l.tokenOffset();
+        int startLine = l.currentLineNo();
+        int startColumn = l.currentColumnNo();
+
+        token = l.lex();
+
+        if (token != QDeclarativeJSGrammar::T_IDENTIFIER ||
+            l.currentLineNo() != startLine ||
+            script.mid(l.tokenOffset(), l.tokenLength()) != pragma)
+            return removed;
+
+        token = l.lex();
+
+        if (token != QDeclarativeJSGrammar::T_IDENTIFIER ||
+            l.currentLineNo() != startLine)
+            return removed;
+
+        QString pragmaValue = script.mid(l.tokenOffset(), l.tokenLength());
+        int endOffset = l.tokenLength() + l.tokenOffset();
+
+        token = l.lex();
+        if (l.currentLineNo() == startLine)
+            return removed;
+
+        if (pragmaValue == QLatin1String("library")) {
+            replaceWithSpace(script, startOffset, endOffset - startOffset);
+            removed.append(
+                QDeclarativeJS::AST::SourceLocation(
+                    startOffset, endOffset - startOffset,
+                    startLine, startColumn));
+        } else
+            return removed;
+    }
+    return removed;
 }
 
 QT_END_NAMESPACE

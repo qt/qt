@@ -126,6 +126,7 @@ public:
     qint64 bytesAvailable() const;
     qint64 bytesAvailableNextBlock() const;
     QByteArray readAny();
+    QByteArray readAll();
     void setDownstreamLimited(bool t);
 
     bool isFinished() const;

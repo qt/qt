@@ -89,14 +89,12 @@ public:
     struct TypeReference 
     {
         TypeReference()
-        : type(0), component(0), ref(0) {}
+        : type(0), component(0) {}
 
         QByteArray className;
         QDeclarativeType *type;
-//        QDeclarativeComponent *component;
         QDeclarativeCompiledData *component;
 
-        QDeclarativeRefCount *ref;
         QObject *createInstance(QDeclarativeContextData *, const QBitField &, QList<QDeclarativeError> *) const;
         const QMetaObject *metaObject() const;
     };

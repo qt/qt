@@ -115,7 +115,6 @@ public:
     virtual bool start();
 #endif
     virtual void closeDownstreamChannel() = 0;
-    virtual bool waitForDownstreamReadyRead(int msecs) = 0;
 
     // slot-like:
     virtual void downstreamReadyWrite();
@@ -158,6 +157,9 @@ public:
     QVariant attribute(QNetworkRequest::Attribute code) const;
     void setAttribute(QNetworkRequest::Attribute code, const QVariant &value);
 
+    bool isSynchronous() { return synchronous; }
+    void setSynchronous(bool sync) { synchronous = sync; }
+
     // return true if the QNonContiguousByteDevice of the upload
     // data needs to support reset(). Currently needed for HTTP.
     // This will possibly enable buffering of the upload data.
@@ -166,6 +168,8 @@ public:
     // Returns true if backend is able to resume downloads.
     virtual bool canResume() const { return false; }
     virtual void setResumeOffset(quint64 offset) { Q_UNUSED(offset); }
+
+    virtual bool processRequestSynchronously() { return false; }
 
 protected:
     // Create the device used for reading the upload data
@@ -201,6 +205,7 @@ private:
     friend class QNetworkReplyImplPrivate;
     QNetworkAccessManagerPrivate *manager;
     QNetworkReplyImplPrivate *reply;
+    bool synchronous;
 };
 
 class QNetworkAccessBackendFactory

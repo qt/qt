@@ -76,7 +76,6 @@ class Config
     QSet<QString> subVars(const QString& var) const;
     QStringList getAllFiles(const QString& filesVar, 
                             const QString& dirsVar,
-                            const QString& defaultNameFilter,
                             const QSet<QString> &excludedDirs = QSet<QString>());
 
     static QStringList getFilesHere(const QString& dir,

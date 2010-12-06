@@ -46,32 +46,38 @@
 #ifndef QMLCODEMARKER_H
 #define QMLCODEMARKER_H
 
-#include "codemarker.h"
+#include "private/qdeclarativejsastfwd_p.h"
+#include "cppcodemarker.h"
 
 QT_BEGIN_NAMESPACE
 
-class QmlCodeMarker : public CodeMarker
+class QmlCodeMarker : public CppCodeMarker
 {
 public:
     QmlCodeMarker();
     ~QmlCodeMarker();
 
-    bool recognizeCode( const QString& code );
-    bool recognizeExtension( const QString& ext );
-    bool recognizeLanguage( const QString& lang );
-    QString plainName(const Node *node);
-    QString plainFullName(const Node *node, const Node *relative);
-    QString markedUpCode( const QString& code, const Node *relative,
-        		  const QString& dirPath );
-    QString markedUpSynopsis( const Node *node, const Node *relative,
-        		      SynopsisStyle style );
-    QString markedUpName( const Node *node );
-    QString markedUpFullName( const Node *node, const Node *relative );
-    QString markedUpEnumValue(const QString &enumValue, const Node *relative);
-    QString markedUpIncludes( const QStringList& includes );
-    QList<Section> sections(const InnerNode *innerNode, SynopsisStyle style, Status status);
-    QString functionBeginRegExp( const QString& funcName );
-    QString functionEndRegExp( const QString& funcName );
+    virtual bool recognizeCode(const QString &code);
+    virtual bool recognizeExtension(const QString &ext);
+    virtual bool recognizeLanguage(const QString &language);
+    virtual QString plainName(const Node *node);
+    virtual QString plainFullName(const Node *node, const Node *relative);
+    virtual QString markedUpCode(const QString &code, 
+                                 const Node *relative, 
+                                 const QString &dirPath);
+
+    virtual QString markedUpName(const Node *node);
+    virtual QString markedUpFullName(const Node *node, const Node *relative);
+    virtual QString markedUpIncludes(const QStringList &includes);
+    virtual QString functionBeginRegExp(const QString &funcName);
+    virtual QString functionEndRegExp(const QString &funcName);
+
+    /* Copied from src/declarative/qml/qdeclarativescriptparser.cpp */
+    QList<QDeclarativeJS::AST::SourceLocation> extractPragmas(QString &script);
+
+private:
+    QString addMarkUp(const QString &code, const Node * /* relative */,
+                      const QString & /* dirPath */);
 };
 
 QT_END_NAMESPACE

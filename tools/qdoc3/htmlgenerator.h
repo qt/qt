@@ -56,15 +56,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if 0
-struct NavigationBar
-{
-    SectionIterator prev;
-    SectionIterator current;
-    SectionIterator next;
-};
-#endif
-
 typedef QMultiMap<QString, Node*> NodeMultiMap;
 typedef QMap<QString, NodeMultiMap> NewSinceMaps;
 typedef QMap<Node*, NodeMultiMap> ParentMaps;
@@ -101,7 +92,7 @@ class HtmlGenerator : public PageGenerator
     virtual void initializeGenerator(const Config& config);
     virtual void terminateGenerator();
     virtual QString format();
-    virtual void generateTree(const Tree *tree, CodeMarker *marker);
+    virtual void generateTree(const Tree *tree);
 
     QString protectEnc(const QString &string);
     static QString protect(const QString &string, const QString &encoding = "ISO-8859-1");
@@ -150,16 +141,6 @@ class HtmlGenerator : public PageGenerator
                        CodeMarker *marker,
                        const Node *relative = 0);
     void generateIncludes(const InnerNode *inner, CodeMarker *marker);
-#if 0
-    void generateNavigationBar(const NavigationBar& bar, 
-                               const Node *node,
-                               CodeMarker *marker);
-#endif
-    void generateTableOfContents(const Node *node, 
-                                 CodeMarker *marker,
-                                 Doc::SectioningUnit sectioningUnit,
-                                 int numColumns, 
-                                 const Node *relative = 0);
     void generateTableOfContents(const Node *node, 
                                  CodeMarker *marker, 
                                  QList<Section>* sections = 0);
@@ -236,10 +217,7 @@ class HtmlGenerator : public PageGenerator
     void generateStatus(const Node *node, CodeMarker *marker);
     
     QString registerRef(const QString& ref);
-    QString fileBase(const Node *node);
-#if 0
-    QString fileBase(const Node *node, const SectionIterator& section);
-#endif
+    virtual QString fileBase(const Node *node) const;
     QString fileName(const Node *node);
     void findAllClasses(const InnerNode *node);
     void findAllFunctions(const InnerNode *node);
@@ -269,13 +247,9 @@ class HtmlGenerator : public PageGenerator
     void generatePageElements(QXmlStreamWriter& writer, 
                               const Node* node, 
                               CodeMarker* marker) const;
-    void generatePageIndex(const QString& fileName, 
-                           CodeMarker* marker) const;
+    void generatePageIndex(const QString& fileName) const;
     void generateExtractionMark(const Node *node, ExtractionMarkType markType);
 
-#if 0
-    NavigationBar currentNavigationBar;
-#endif
     QMap<QString, QString> refMap;
     int codeIndent;
     HelpProjectWriter *helpProjectWriter;

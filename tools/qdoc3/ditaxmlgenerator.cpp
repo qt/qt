@@ -385,7 +385,8 @@ DitaXmlGenerator::DitaXmlGenerator()
       myTree(0),
       slow(false),
       obsoleteLinks(false),
-      noLinks(0)
+      noLinks(0),
+      inObsoleteLink(false)
 {
 }
 
@@ -532,7 +533,7 @@ QString DitaXmlGenerator::lookupGuid(QString text)
   \note The file generation is done in the base class,
   PageGenerator::generateTree().
  */
-void DitaXmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
+void DitaXmlGenerator::generateTree(const Tree *tree)
 {
     myTree = tree;
     nonCompatClasses.clear();
@@ -551,7 +552,7 @@ void DitaXmlGenerator::generateTree(const Tree *tree, CodeMarker *marker)
     findAllNamespaces(tree->root());
     findAllSince(tree->root());
 
-    PageGenerator::generateTree(tree, marker);
+    PageGenerator::generateTree(tree);
 }
 
 void DitaXmlGenerator::startText(const Node* /* relative */,
@@ -2015,7 +2016,7 @@ void DitaXmlGenerator::generateIncludes(const InnerNode *inner, CodeMarker *mark
 }
 
 /*!
-  Generates a table of contents begining at \a node.
+  Generates a table of contents beginning at \a node.
  */
 void DitaXmlGenerator::generateTableOfContents(const Node *node,
                                             CodeMarker *marker,
@@ -2101,7 +2102,7 @@ void DitaXmlGenerator::generateTableOfContents(const Node *node,
 
 /*!
   Revised for the new doc format.
-  Generates a table of contents begining at \a node.
+  Generates a table of contents beginning at \a node.
  */
 void DitaXmlGenerator::generateTableOfContents(const Node *node,
                                             CodeMarker *marker,

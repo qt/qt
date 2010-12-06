@@ -405,13 +405,14 @@ void QS60StylePrivate::clearCaches(CacheClearReason reason)
         QPixmapCache::clear();
         break;
     case CC_ThemeChange:
-        m_colorCache.clear();
         QPixmapCache::clear();
+#ifdef Q_WS_S60
+        deleteStoredSettings();
+#endif
         deleteBackground();
         break;
     case CC_UndefinedChange:
     default:
-        m_colorCache.clear();
         m_mappedFontsCache.clear();
         QPixmapCache::clear();
         deleteBackground();
@@ -419,64 +420,53 @@ void QS60StylePrivate::clearCaches(CacheClearReason reason)
     }
 }
 
-// Since S60Style has 'button' and 'tooltip' as a graphic, we don't have any native color which to use
-// for QPalette::Button and QPalette::ToolTipBase. Therefore S60Style needs to guesstimate
-// palette colors by calculating average rgb values for button pixels.
-// Returns Qt::black if there is an issue with the graphics (image is NULL, or no bits() found).
-QColor QS60StylePrivate::colorFromFrameGraphics(SkinFrameElements frame) const
+QColor QS60StylePrivate::calculatedColor(SkinFrameElements frame) const
 {
-    const bool cachedColorExists = m_colorCache.contains(frame);
-    if (!cachedColorExists) {
-        const int frameCornerWidth = pixelMetric(PM_FrameCornerWidth);
-        const int frameCornerHeight = pixelMetric(PM_FrameCornerHeight);
-        Q_ASSERT(2 * frameCornerWidth < 32);
-        Q_ASSERT(2 * frameCornerHeight < 32);
+    const int frameCornerWidth = pixelMetric(PM_FrameCornerWidth);
+    const int frameCornerHeight = pixelMetric(PM_FrameCornerHeight);
+    Q_ASSERT(2 * frameCornerWidth < 32);
+    Q_ASSERT(2 * frameCornerHeight < 32);
 
-        const QImage frameImage = QS60StylePrivate::frame(frame, QSize(32, 32)).toImage();
-        Q_ASSERT(frameImage.bytesPerLine() > 0);
-        if (frameImage.isNull())
-            return Qt::black;
+    const QImage frameImage = QS60StylePrivate::frame(frame, QSize(32, 32)).toImage();
+    Q_ASSERT(frameImage.bytesPerLine() > 0);
+    if (frameImage.isNull())
+        return Qt::black;
 
-        const QRgb *pixelRgb = (const QRgb*)frameImage.bits();
-        const int pixels = frameImage.byteCount()/sizeof(QRgb);
+    const QRgb *pixelRgb = (const QRgb*)frameImage.constBits();
+    const int pixels = frameImage.byteCount() / sizeof(QRgb);
 
-        int estimatedRed = 0;
-        int estimatedGreen = 0;
-        int estimatedBlue = 0;
+    int estimatedRed = 0;
+    int estimatedGreen = 0;
+    int estimatedBlue = 0;
 
-        int skips = 0;
-        int estimations = 0;
+    int skips = 0;
+    int estimations = 0;
 
-        const int topBorderLastPixel = frameCornerHeight*frameImage.width() - 1;
-        const int bottomBorderFirstPixel = frameImage.width() * frameImage.height() - frameCornerHeight*frameImage.width() - 1;
-        const int rightBorderFirstPixel = frameImage.width() - frameCornerWidth;
-        const int leftBorderLastPixel = frameCornerWidth;
+    const int topBorderLastPixel = frameCornerHeight * frameImage.width() - 1;
+    const int bottomBorderFirstPixel = frameImage.width() * frameImage.height() - topBorderLastPixel;
+    const int rightBorderFirstPixel = frameImage.width() - frameCornerWidth;
+    const int leftBorderLastPixel = frameCornerWidth;
 
-        while ((skips + estimations) < pixels) {
-            if ((skips + estimations) > topBorderLastPixel &&
-                (skips + estimations) < bottomBorderFirstPixel) {
-                for (int rowIndex = 0; rowIndex < frameImage.width(); rowIndex++) {
-                    if (rowIndex > leftBorderLastPixel &&
-                        rowIndex < rightBorderFirstPixel) {
-                        estimatedRed += qRed(*pixelRgb);
-                        estimatedGreen += qGreen(*pixelRgb);
-                        estimatedBlue += qBlue(*pixelRgb);
-                    }
-                    pixelRgb++;
-                    estimations++;
+    while ((skips + estimations) < pixels) {
+        if ((skips + estimations) > topBorderLastPixel &&
+            (skips + estimations) < bottomBorderFirstPixel) {
+            for (int rowIndex = 0; rowIndex < frameImage.width(); rowIndex++) {
+                if (rowIndex > leftBorderLastPixel &&
+                    rowIndex < rightBorderFirstPixel) {
+                    estimatedRed += qRed(*pixelRgb);
+                    estimatedGreen += qGreen(*pixelRgb);
+                    estimatedBlue += qBlue(*pixelRgb);
                 }
-            } else {
                 pixelRgb++;
-                skips++;
+                estimations++;
             }
+        } else {
+            pixelRgb++;
+            skips++;
         }
-        QColor frameColor(estimatedRed/estimations, estimatedGreen/estimations, estimatedBlue/estimations);
-        m_colorCache.insert(frame, frameColor);
-        return !estimations ? Qt::black : frameColor;
-    } else {
-        return m_colorCache.value(frame);
     }
-
+    QColor frameColor(estimatedRed/estimations, estimatedGreen/estimations, estimatedBlue/estimations);
+    return !estimations ? Qt::black : frameColor;
 }
 
 void QS60StylePrivate::setThemePalette(QApplication *app) const
@@ -731,11 +721,14 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
     palette->setBrush(QPalette::Window, backgroundTexture());
     // set as transparent so that styled full screen theme background is visible
     palette->setBrush(QPalette::Base, Qt::transparent);
-    // set button and tooltipbase based on pixel colors
+    // set button color based on pixel colors
+#ifndef Q_WS_S60
+    //For emulated style, just calculate the color every time
+    const QColor buttonColor = calculatedColor(SF_ButtonNormal);
+#else
     const QColor buttonColor = colorFromFrameGraphics(SF_ButtonNormal);
+#endif
     palette->setColor(QPalette::Button, buttonColor);
-    const QColor toolTipColor = colorFromFrameGraphics(SF_ToolTip);
-    palette->setColor(QPalette::ToolTipBase, toolTipColor);
     palette->setColor(QPalette::Light, palette->color(QPalette::Button).lighter());
     palette->setColor(QPalette::Dark, palette->color(QPalette::Button).darker());
     palette->setColor(QPalette::Midlight, palette->color(QPalette::Button).lighter(125));
@@ -1445,10 +1438,11 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             const QRect iconRect = subElementRect(SE_ItemViewItemDecoration, &voptAdj, widget);
             QRect textRect = subElementRect(SE_ItemViewItemText, &voptAdj, widget);
             const QAbstractItemView *itemView = qobject_cast<const QAbstractItemView *>(widget);
-            const bool singleSelection =
-                (itemView->selectionMode() == QAbstractItemView::SingleSelection ||
-                 itemView->selectionMode() == QAbstractItemView::NoSelection);
-            const bool selectItems = (itemView->selectionBehavior() == QAbstractItemView::SelectItems);
+
+            const bool singleSelection = itemView &&
+                ((itemView->selectionMode() == QAbstractItemView::SingleSelection ||
+                 itemView->selectionMode() == QAbstractItemView::NoSelection));
+            const bool selectItems = itemView && (itemView->selectionBehavior() == QAbstractItemView::SelectItems);
 
             // draw themed background for itemview unless background brush has been defined.
             if (vopt->backgroundBrush == Qt::NoBrush) {
@@ -2543,6 +2537,56 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             if (const QStyleOptionToolButton *toolBtn = qstyleoption_cast<const QStyleOptionToolButton *>(opt))
                 if (toolBtn->subControls & SC_ToolButtonMenu)
                     sz += QSize(pixelMetric(PM_MenuButtonIndicator), 0);
+
+            //Make toolbuttons in toolbar stretch the whole screen area
+            if (widget && qobject_cast<const QToolBar *>(widget->parentWidget())) {
+                const QToolBar *tb = qobject_cast<const QToolBar *>(widget->parentWidget());
+                const bool parentCanGrowHorizontally = !(tb->sizePolicy().horizontalPolicy() == QSizePolicy::Fixed ||
+                        tb->sizePolicy().horizontalPolicy() == QSizePolicy::Maximum) && tb->orientation() == Qt::Horizontal;
+
+                if (parentCanGrowHorizontally) {
+                    int visibleButtons = 0;
+                    //Make the auto-stretch to happen only for horizontal orientation
+                    if (tb && tb->orientation() == Qt::Horizontal) {
+                        QList<QAction*> actionList =  tb->actions();
+                        for (int i = 0; i < actionList.count(); i++) {
+                            if (actionList.at(i)->isVisible())
+                                visibleButtons++;
+                        }
+                    }
+
+                    if (widget->parentWidget() && visibleButtons > 0) {
+                        QWidget *w = const_cast<QWidget *>(widget);
+                        int toolBarMaxWidth = 0;
+                        int totalMargin = 0;
+                        while (w) {
+                            //honor fixed width parents
+                            if (w->maximumWidth() == w->minimumWidth())
+                                toolBarMaxWidth = qMax(toolBarMaxWidth, w->maximumWidth());
+                            if (w->layout() && w->windowType() == Qt::Widget) {
+                                totalMargin += w->layout()->contentsMargins().left() +
+                                               w->layout()->contentsMargins().right();
+                            }
+                            w = w->parentWidget();
+                        }
+                        totalMargin += 2 * pixelMetric(QStyle::PM_ToolBarFrameWidth);
+
+                        if (toolBarMaxWidth == 0)
+                            toolBarMaxWidth =
+                                QApplication::desktop()->availableGeometry(widget->parentWidget()).width();
+                        //Reduce the margins, toolbar frame, item spacing and internal margin from available area
+                        toolBarMaxWidth -= totalMargin;
+
+                        //ensure that buttons are side-by-side and not on top of each other
+                        const int toolButtonWidth = (toolBarMaxWidth / visibleButtons)
+                                - pixelMetric(QStyle::PM_ToolBarItemSpacing)
+                                - pixelMetric(QStyle::PM_ToolBarItemMargin)
+                        //toolbar frame needs to be reduced again, since QToolBarLayout adds it for each toolbar action
+                                - 2 * pixelMetric(QStyle::PM_ToolBarFrameWidth) - 1;
+                        sz.setWidth(qMax(toolButtonWidth, sz.width()));
+                    }
+                }
+            }
             break;
         case CT_PushButton:
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);

@@ -1,9 +1,10 @@
 import QtQuick 1.0
+/* This test just animates y of a block with every easing curve*/
 
 Rectangle {
     id: item
-    width: 600
-    height: layout.height
+    height: 300
+    width: layout.width
     color: "white"
     resources: [
         ListModel {
@@ -133,10 +134,10 @@ Rectangle {
             }
         }
     ]
-    Column {
+    Row {
         id: layout
-        anchors.left: item.left
-        anchors.right: item.right
+        anchors.top: item.top
+        anchors.bottom: item.bottom
         Repeater {
             model: easingtypes
             Component {
@@ -149,8 +150,8 @@ Rectangle {
                         color: index & 1 ? "black" : "white"
                         opacity: 0 // 1 for debugging
                     }
-                    width: 120
-                    height: 18
+                    width: 15
+                    height: 30
                     color: index & 1 ? "red" : "blue"
                     states: [
                         State {
@@ -158,7 +159,7 @@ Rectangle {
                             when: !mouse.pressed
                             PropertyChanges {
                                 target: block
-                                x: 0
+                                y: 0
                             }
                         },
                         State {
@@ -166,7 +167,7 @@ Rectangle {
                             when: mouse.pressed
                             PropertyChanges {
                                 target: block
-                                x: item.width-block.width
+                                y: item.height-block.height
                             }
                         }
                     ]
@@ -176,7 +177,7 @@ Rectangle {
                             to: "to"
                             reversible: true
                             NumberAnimation {
-                                properties: "x"
+                                properties: "y"
                                 easing.type: type
                                 duration: 1000
                             }

@@ -450,7 +450,7 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
     bottom.
 
     Contents margins are used by the assigned layout to define the placement
-    of subwidgets and layouts. Margins are particularily useful for widgets
+    of subwidgets and layouts. Margins are particularly useful for widgets
     that constrain subwidgets to only a section of its own geometry. For
     example, a group box with a layout will place subwidgets inside its frame,
     but below the title.

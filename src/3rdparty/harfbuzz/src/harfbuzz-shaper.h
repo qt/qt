@@ -34,10 +34,6 @@
 
 HB_BEGIN_HEADER
 
-#ifdef HB_USE_PACKED_STRUCTS
-#pragma pack(push, 1)
-#endif
-
 /*
    using anything else than signed or unsigned for bitfields in C is non standard,
    but accepted by almost all compilers. And it gives a significant reduction in
@@ -257,10 +253,6 @@ typedef struct HB_Font_ {
 
     void *userData;
 } HB_FontRec;
-
-#ifdef HB_USE_PACKED_STRUCTS
-#pragma pack(pop)
-#endif
 
 typedef struct HB_ShaperItem_ HB_ShaperItem;
 

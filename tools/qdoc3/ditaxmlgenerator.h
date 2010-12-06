@@ -91,7 +91,7 @@ class DitaXmlGenerator : public PageGenerator
     virtual void initializeGenerator(const Config& config);
     virtual void terminateGenerator();
     virtual QString format();
-    virtual void generateTree(const Tree *tree, CodeMarker *marker);
+    virtual void generateTree(const Tree *tree);
 
     QString protectEnc(const QString &string);
     static QString protect(const QString &string, const QString &encoding = "ISO-8859-1");
@@ -234,9 +234,6 @@ class DitaXmlGenerator : public PageGenerator
     
     QString registerRef(const QString& ref);
     QString fileBase(const Node *node);
-#if 0
-    QString fileBase(const Node *node, const SectionIterator& section);
-#endif
     QString fileName(const Node *node);
     void findAllClasses(const InnerNode *node);
     void findAllFunctions(const InnerNode *node);

@@ -1502,7 +1502,10 @@ void QVGPaintEnginePrivate::fill(VGPath path, const QBrush& brush, VGint rule)
         return;
     ensureBrush(brush);
     setFillRule(rule);
+    QPen savedPen = currentPen;
+    currentPen = Qt::NoPen;
     ensurePathTransform();
+    currentPen = savedPen;
     vgDrawPath(path, VG_FILL_PATH);
 }
 
@@ -3475,7 +3478,7 @@ void QVGPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
 
 void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
 {
-    drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->font, textItem->fontEngine,
+    drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->font, textItem->fontEngine(),
                      QPointF(0, 0), textItem->glyphPositions);
 }
 
@@ -3543,8 +3546,8 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
 
     // Set the glyph drawing origin.
     VGfloat origin[2];
-    origin[0] = positions[0].x.toReal();
-    origin[1] = positions[0].y.toReal();
+    origin[0] = positions[0].x.round().toReal();
+    origin[1] = positions[0].y.round().toReal();
     vgSetfv(VG_GLYPH_ORIGIN, 2, origin);
 
     // Fast anti-aliasing for paths, better for images.

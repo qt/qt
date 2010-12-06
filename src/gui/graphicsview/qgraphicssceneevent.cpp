@@ -1629,7 +1629,7 @@ QGraphicsSceneMoveEvent::~QGraphicsSceneMoveEvent()
 }
 
 /*!
-    Returns the old position (i.e., the position immediatly before the widget
+    Returns the old position (i.e., the position immediately before the widget
     was moved).
 
     \sa newPos(), QGraphicsItem::setPos()

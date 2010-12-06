@@ -1,4 +1,5 @@
 import QtQuick 1.0
+import "../../shared" 1.0
 
 Rectangle {
     width: childrenRect.width
@@ -6,23 +7,23 @@ Rectangle {
     Column {
         width: 80
         height: myText.height*4
-        Text {
+        TestText {
             elide: "ElideLeft"
             text: "aaa bbb ccc ddd eee fff"
             width: 80
             id: myText
         }
-        Text {
+        TestText {
             elide: "ElideMiddle"
             text: "aaa bbb ccc ddd eee fff"
             width: 80
         }
-        Text {
+        TestText {
             elide: "ElideRight"
             text: "aaa bbb ccc ddd eee fff"
             width: 80
         }
-        Text {
+        TestText {
             elide: "ElideNone"
             text: "aaa bbb ccc ddd eee fff"
             width: 80

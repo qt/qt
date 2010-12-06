@@ -359,16 +359,12 @@ QSet<QString> Config::subVars(const QString& var) const
  */
 QStringList Config::getAllFiles(const QString &filesVar,
                                 const QString &dirsVar,
-				const QString &defaultNameFilter,
                                 const QSet<QString> &excludedDirs)
 {
     QStringList result = getStringList(filesVar);
     QStringList dirs = getStringList(dirsVar);
 
-    QString nameFilter = getString(filesVar + dot +
-        QLatin1String(CONFIG_FILEEXTENSIONS));
-    if (nameFilter.isEmpty())
-        nameFilter = defaultNameFilter;
+    QString nameFilter = getString(filesVar + dot + QLatin1String(CONFIG_FILEEXTENSIONS));
 
     QStringList::ConstIterator d = dirs.begin();
     while (d != dirs.end()) {
