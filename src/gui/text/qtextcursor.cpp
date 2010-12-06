@@ -363,6 +363,9 @@ bool QTextCursorPrivate::movePosition(QTextCursor::MoveOperation op, QTextCursor
     bool adjustX = true;
     QTextBlock blockIt = block();
 
+    if (!blockIt.isValid())
+        return false;
+
     if (op >= QTextCursor::Left && op <= QTextCursor::WordRight
         && blockIt.textDirection() == Qt::RightToLeft) {
         if (op == QTextCursor::Left)
