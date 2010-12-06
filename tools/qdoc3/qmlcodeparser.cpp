@@ -118,7 +118,10 @@ void QmlCodeParser::parseSourceFile(const Location& location,
     in.close();
 
     Location fileLocation(filePath);
-    lexer->setCode(document, 1);
+
+    QString newCode = document;
+    extractPragmas(newCode);
+    lexer->setCode(newCode, 1);
 
     QSet<QString> topicCommandsAllowed = topicCommands();
     QSet<QString> otherMetacommandsAllowed = otherMetaCommands();
@@ -129,7 +132,7 @@ void QmlCodeParser::parseSourceFile(const Location& location,
 
     if (parser->parse()) {
         QDeclarativeJS::AST::UiProgram *ast = parser->ast();
-        QmlDocVisitor visitor(filePath, document, &engine, tree, metacommandsAllowed);
+        QmlDocVisitor visitor(filePath, newCode, &engine, tree, metacommandsAllowed);
         QDeclarativeJS::AST::Node::accept(ast, &visitor);
     }
 }
@@ -163,6 +166,70 @@ QSet<QString> QmlCodeParser::otherMetaCommands()
     return commonMetaCommands() << COMMAND_STARTPAGE
                                 << COMMAND_QMLINHERITS
                                 << COMMAND_QMLDEFAULT;
+}
+
+/*
+Copied and pasted from src/declarative/qml/qdeclarativescriptparser.cpp.
+*/
+static void replaceWithSpace(QString &str, int idx, int n) 
+{
+    QChar *data = str.data() + idx;
+    const QChar space(QLatin1Char(' '));
+    for (int ii = 0; ii < n; ++ii)
+        *data++ = space;
+}
+
+/*
+Copied and pasted from src/declarative/qml/qdeclarativescriptparser.cpp then
+modified to return no values.
+
+Searches for ".pragma <value>" declarations within \a script.  Currently supported pragmas
+are:
+    library
+*/
+void QmlCodeParser::extractPragmas(QString &script)
+{
+    const QString pragma(QLatin1String("pragma"));
+    const QString library(QLatin1String("library"));
+
+    QDeclarativeJS::Lexer l(0);
+    l.setCode(script, 0);
+
+    int token = l.lex();
+
+    while (true) {
+        if (token != QDeclarativeJSGrammar::T_DOT)
+            return;
+
+        int startOffset = l.tokenOffset();
+        int startLine = l.currentLineNo();
+
+        token = l.lex();
+
+        if (token != QDeclarativeJSGrammar::T_IDENTIFIER ||
+            l.currentLineNo() != startLine ||
+            script.mid(l.tokenOffset(), l.tokenLength()) != pragma)
+            return;
+
+        token = l.lex();
+
+        if (token != QDeclarativeJSGrammar::T_IDENTIFIER ||
+            l.currentLineNo() != startLine)
+            return;
+
+        QString pragmaValue = script.mid(l.tokenOffset(), l.tokenLength());
+        int endOffset = l.tokenLength() + l.tokenOffset();
+
+        token = l.lex();
+        if (l.currentLineNo() == startLine)
+            return;
+
+        if (pragmaValue == QLatin1String("library"))
+            replaceWithSpace(script, startOffset, endOffset - startOffset);
+        else
+            return;
+    }
+    return;
 }
 
 QT_END_NAMESPACE

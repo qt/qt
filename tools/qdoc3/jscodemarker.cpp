@@ -75,7 +75,10 @@ bool JsCodeMarker::recognizeCode(const QString &code)
     QDeclarativeJS::Lexer lexer(&engine);
     QDeclarativeJS::Parser parser(&engine);
     QDeclarativeJS::NodePool m_nodePool("<JsCodeMarker::recognizeCode>", &engine);
-    lexer.setCode(code, 1);
+
+    QString newCode = code;
+    QList<QDeclarativeJS::AST::SourceLocation> pragmas = extractPragmas(newCode);
+    lexer.setCode(newCode, 1);
 
     return parser.parseProgram();
 }
@@ -111,7 +114,10 @@ QString JsCodeMarker::addMarkUp(const QString &code,
 {
     QDeclarativeJS::Engine engine;
     QDeclarativeJS::Lexer lexer(&engine);
-    lexer.setCode(code, 1);
+
+    QString newCode = code;
+    QList<QDeclarativeJS::AST::SourceLocation> pragmas = extractPragmas(newCode);
+    lexer.setCode(newCode, 1);
 
     QDeclarativeJS::Parser parser(&engine);
     QDeclarativeJS::NodePool m_nodePool("<JsCodeMarker::addMarkUp>", &engine);
@@ -119,7 +125,9 @@ QString JsCodeMarker::addMarkUp(const QString &code,
 
     if (parser.parseProgram()) {
         QDeclarativeJS::AST::Node *ast = parser.rootNode();
-        QmlMarkupVisitor visitor(code, &engine);
+        // Pass the unmodified code to the visitor so that pragmas and other
+        // unhandled source text can be output.
+        QmlMarkupVisitor visitor(code, pragmas, &engine);
         QDeclarativeJS::AST::Node::accept(ast, &visitor);
         output = visitor.markedUpCode();
     }

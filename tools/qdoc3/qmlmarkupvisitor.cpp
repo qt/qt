@@ -49,12 +49,42 @@
 
 QT_BEGIN_NAMESPACE
 
-QmlMarkupVisitor::QmlMarkupVisitor(const QString &source, QDeclarativeJS::Engine *engine)
+QmlMarkupVisitor::QmlMarkupVisitor(const QString &source,
+                  const QList<QDeclarativeJS::AST::SourceLocation> &pragmas,
+                  QDeclarativeJS::Engine *engine)
 {
     this->source = source;
     this->engine = engine;
+
     cursor = 0;
-    commentIndex = 0;
+    extraIndex = 0;
+
+    // Merge the lists of locations of pragmas and comments in the source code.
+    int i = 0;
+    int j = 0;
+    while (i < engine->comments().length() && j < pragmas.length()) {
+        if (engine->comments()[i].offset < pragmas[j].offset) {
+            extraTypes.append(Comment);
+            extraLocations.append(engine->comments()[i]);
+            ++i;
+        } else {
+            extraTypes.append(Pragma);
+            extraLocations.append(engine->comments()[j]);
+            ++j;
+        }
+    }
+
+    while (i < engine->comments().length()) {
+        extraTypes.append(Comment);
+        extraLocations.append(engine->comments()[i]);
+        ++i;
+    }
+
+    while (j < pragmas.length()) {
+        extraTypes.append(Pragma);
+        extraLocations.append(pragmas[j]);
+        ++j;
+    }
 }
 
 QmlMarkupVisitor::~QmlMarkupVisitor()
@@ -96,7 +126,7 @@ QString QmlMarkupVisitor::markedUpCode()
 
 void QmlMarkupVisitor::addExtra(quint32 start, quint32 finish)
 {
-    if (commentIndex >= engine->comments().length()) {
+    if (extraIndex >= extraLocations.length()) {
         QString extra = source.mid(start, finish - start);
         if (extra.trimmed().isEmpty())
             output += extra;
@@ -107,28 +137,37 @@ void QmlMarkupVisitor::addExtra(quint32 start, quint32 finish)
         return;
     }
 
-    while (commentIndex < engine->comments().length()) {
-        if (engine->comments()[commentIndex].offset - 2 >= start)
-            break;
-        commentIndex++;
+    while (extraIndex < extraLocations.length()) {
+        if (extraTypes[extraIndex] == Comment) {
+            if (extraLocations[extraIndex].offset - 2 >= start)
+                break;
+        } else {
+            if (extraLocations[extraIndex].offset >= start)
+                break;
+        }
+        extraIndex++;
     }
 
     quint32 i = start;
-    while (i < finish && commentIndex < engine->comments().length()) {
-        quint32 j = engine->comments()[commentIndex].offset - 2;
+    while (i < finish && extraIndex < extraLocations.length()) {
+        quint32 j = extraLocations[extraIndex].offset - 2;
         if (i <= j && j < finish) {
             if (i < j)
                 output += protect(source.mid(i, j - i));
 
-            quint32 l = engine->comments()[commentIndex].length;
-            if (source.mid(j, 2) == QLatin1String("/*"))
-                l += 4;
-            else
-                l += 2;
-            output += QLatin1String("<@comment>");
-            output += protect(source.mid(j, l));
-            output += QLatin1String("</@comment>");
-            commentIndex++;
+            quint32 l = extraLocations[extraIndex].length;
+            if (extraTypes[extraIndex] == Comment) {
+                if (source.mid(j, 2) == QLatin1String("/*"))
+                    l += 4;
+                else
+                    l += 2;
+                output += QLatin1String("<@comment>");
+                output += protect(source.mid(j, l));
+                output += QLatin1String("</@comment>");
+            } else
+                output += protect(source.mid(j, l));
+
+            extraIndex++;
             i = j + l;
         } else
             break;

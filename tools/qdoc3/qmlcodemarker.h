@@ -40,52 +40,44 @@
 ****************************************************************************/
 
 /*
-  qmlcodeparser.h
+  qmlcodemarker.h
 */
 
-#ifndef QMLCODEPARSER_H
-#define QMLCODEPARSER_H
+#ifndef QMLCODEMARKER_H
+#define QMLCODEMARKER_H
 
-#include <QSet>
-#include "private/qdeclarativejsengine_p.h"
-#include "private/qdeclarativejslexer_p.h"
-#include "private/qdeclarativejsparser_p.h"
-
-#include "codeparser.h"
-#include "location.h"
+#include "private/qdeclarativejsastfwd_p.h"
+#include "cppcodemarker.h"
 
 QT_BEGIN_NAMESPACE
 
-class Config;
-class Node;
-class QString;
-class Tree;
-
-class QmlCodeParser : public CodeParser
+class QmlCodeMarker : public CppCodeMarker
 {
 public:
-    QmlCodeParser();
-    virtual ~QmlCodeParser();
+    QmlCodeMarker();
+    ~QmlCodeMarker();
 
-    virtual void initializeParser(const Config& config);
-    virtual void terminateParser();
-    virtual QString language();
-    virtual QStringList sourceFileNameFilter();
-    virtual void parseSourceFile(const Location& location,
-                                 const QString& filePath, Tree *tree);
-    virtual void doneParsingSourceFiles(Tree *tree);
+    virtual bool recognizeCode(const QString &code);
+    virtual bool recognizeExtension(const QString &ext);
+    virtual bool recognizeLanguage(const QString &language);
+    virtual QString plainName(const Node *node);
+    virtual QString plainFullName(const Node *node, const Node *relative);
+    virtual QString markedUpCode(const QString &code, 
+                                 const Node *relative, 
+                                 const QString &dirPath);
+
+    virtual QString markedUpName(const Node *node);
+    virtual QString markedUpFullName(const Node *node, const Node *relative);
+    virtual QString markedUpIncludes(const QStringList &includes);
+    virtual QString functionBeginRegExp(const QString &funcName);
+    virtual QString functionEndRegExp(const QString &funcName);
 
     /* Copied from src/declarative/qml/qdeclarativescriptparser.cpp */
-    void extractPragmas(QString &script);
-
-protected:
-    virtual QSet<QString> topicCommands();
-    virtual QSet<QString> otherMetaCommands();
+    QList<QDeclarativeJS::AST::SourceLocation> extractPragmas(QString &script);
 
 private:
-    QDeclarativeJS::Engine engine;
-    QDeclarativeJS::Lexer *lexer;
-    QDeclarativeJS::Parser *parser;
+    QString addMarkUp(const QString &code, const Node * /* relative */,
+                      const QString & /* dirPath */);
 };
 
 QT_END_NAMESPACE

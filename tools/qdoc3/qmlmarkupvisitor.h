@@ -52,7 +52,14 @@ QT_BEGIN_NAMESPACE
 class QmlMarkupVisitor : public QDeclarativeJS::AST::Visitor
 {
 public:
-    QmlMarkupVisitor(const QString &code, QDeclarativeJS::Engine *engine);
+    enum ExtraType{
+        Comment,
+        Pragma
+    };
+
+    QmlMarkupVisitor(const QString &code,
+                     const QList<QDeclarativeJS::AST::SourceLocation> &pragmas,
+                     QDeclarativeJS::Engine *engine);
     virtual ~QmlMarkupVisitor();
 
     QString markedUpCode();
@@ -160,10 +167,12 @@ private:
     QString sourceText(QDeclarativeJS::AST::SourceLocation &location);
 
     QDeclarativeJS::Engine *engine;
+    QList<ExtraType> extraTypes;
+    QList<QDeclarativeJS::AST::SourceLocation> extraLocations;
     QString source;
     QString output;
     quint32 cursor;
-    quint32 commentIndex;
+    int extraIndex;
 };
 
 QT_END_NAMESPACE
