@@ -203,6 +203,11 @@ private:
     RFs iFs;
 };
 
+uint qHash(const RSubSessionBase& key)
+{
+    return qHash(key.SubSessionHandle());
+}
+
 Q_GLOBAL_STATIC(QS60RFsSession, qt_s60_RFsSession);
 
 Q_CORE_EXPORT RFs& qt_s60GetRFs()
@@ -229,7 +234,8 @@ RSocketServ& QSymbianSocketManager::getSocketServer() {
     return iSocketServ;
 }
 
-int QSymbianSocketManager::addSocket(RSocket* sock) {
+int QSymbianSocketManager::addSocket(const RSocket& socket) {
+    QHashableSocket sock(static_cast<const QHashableSocket &>(socket));
     QMutexLocker l(&iMutex);
     Q_ASSERT(!socketMap.contains(sock));
     if(socketMap.contains(sock))
@@ -250,7 +256,8 @@ int QSymbianSocketManager::addSocket(RSocket* sock) {
     return id + socket_offset;
 }
 
-bool QSymbianSocketManager::removeSocket(RSocket* sock) {
+bool QSymbianSocketManager::removeSocket(const RSocket &socket) {
+    QHashableSocket sock(static_cast<const QHashableSocket &>(socket));
     QMutexLocker l(&iMutex);
     if(!socketMap.contains(sock))
         return false;
@@ -260,7 +267,8 @@ bool QSymbianSocketManager::removeSocket(RSocket* sock) {
     return true;
 }
 
-int QSymbianSocketManager::lookupSocket(RSocket* sock) const {
+int QSymbianSocketManager::lookupSocket(const RSocket& socket) const {
+    QHashableSocket sock(static_cast<const QHashableSocket &>(socket));
     QMutexLocker l(&iMutex);
     if(!socketMap.contains(sock))
         return -1;
@@ -268,12 +276,13 @@ int QSymbianSocketManager::lookupSocket(RSocket* sock) const {
     return id + socket_offset;
 }
 
-RSocket* QSymbianSocketManager::lookupSocket(int fd) const {
+bool QSymbianSocketManager::lookupSocket(int fd, RSocket& socket) const {
     QMutexLocker l(&iMutex);
     int id = fd + socket_offset;
     if(!reverseSocketMap.contains(id))
-        return 0;
-    return reverseSocketMap.value(id);
+        return false;
+    socket = reverseSocketMap.value(id);
+    return true;
 }
 
 Q_GLOBAL_STATIC(QSymbianSocketManager, qt_symbianSocketManager);
@@ -282,4 +291,10 @@ QSymbianSocketManager& QSymbianSocketManager::instance()
 {
     return *(qt_symbianSocketManager());
 }
+
+Q_CORE_EXPORT RSocketServ& qt_symbianGetSocketServer()
+{
+    return QSymbianSocketManager::instance().getSocketServer();
+}
+
 QT_END_NAMESPACE
