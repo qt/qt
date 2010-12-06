@@ -1648,6 +1648,27 @@ void tst_QFileInfo::detachingOperations()
 }
 
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+BOOL IsUserAdmin()
+{
+    BOOL b;
+    SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
+    PSID AdministratorsGroup;
+    b = AllocateAndInitializeSid(
+                &NtAuthority,
+                2,
+                SECURITY_BUILTIN_DOMAIN_RID,
+                DOMAIN_ALIAS_RID_ADMINS,
+                0, 0, 0, 0, 0, 0,
+                &AdministratorsGroup);
+    if (b) {
+        if (!CheckTokenMembership( NULL, AdministratorsGroup, &b))
+            b = FALSE;
+        FreeSid(AdministratorsGroup);
+    }
+
+    return(b);
+}
+
 void tst_QFileInfo::owner()
 {
     QString userName;
@@ -1661,28 +1682,30 @@ void tst_QFileInfo::owner()
     wchar_t  usernameBuf[1024];
     DWORD  bufSize = 1024;
     if (GetUserNameW(usernameBuf, &bufSize)) {
-        userName = QString::fromWCharArray(usernameBuf, bufSize);
-        // Special case : If the user is a member of Administrators group, all files
-        // created by the current user are owned by the Administrators group.
-        LPLOCALGROUP_USERS_INFO_0 pBuf = NULL;
-        DWORD dwLevel = 0;
-        DWORD dwFlags = LG_INCLUDE_INDIRECT ;
-        DWORD dwPrefMaxLen = MAX_PREFERRED_LENGTH;
-        DWORD dwEntriesRead = 0;
-        DWORD dwTotalEntries = 0;
-        NET_API_STATUS nStatus;
-        nStatus = NetUserGetLocalGroups(0, usernameBuf, dwLevel, dwFlags, (LPBYTE *) &pBuf,
-                                        dwPrefMaxLen, &dwEntriesRead, &dwTotalEntries);
-        // Check if the current user is a member of Administrators group
-        if (nStatus == NERR_Success && pBuf){
-            for (int i = 0; i < dwEntriesRead; i++) {
-                QString groupName = QString::fromWCharArray(pBuf[i].lgrui0_name);
-                if (!groupName.compare(QLatin1String("Administrators")))
-                    userName = groupName;
+        userName = QString::fromWCharArray(usernameBuf);
+        if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && IsUserAdmin()) {
+            // Special case : If the user is a member of Administrators group, all files
+            // created by the current user are owned by the Administrators group.
+            LPLOCALGROUP_USERS_INFO_0 pBuf = NULL;
+            DWORD dwLevel = 0;
+            DWORD dwFlags = LG_INCLUDE_INDIRECT ;
+            DWORD dwPrefMaxLen = MAX_PREFERRED_LENGTH;
+            DWORD dwEntriesRead = 0;
+            DWORD dwTotalEntries = 0;
+            NET_API_STATUS nStatus;
+            nStatus = NetUserGetLocalGroups(0, usernameBuf, dwLevel, dwFlags, (LPBYTE *) &pBuf,
+                                            dwPrefMaxLen, &dwEntriesRead, &dwTotalEntries);
+            // Check if the current user is a member of Administrators group
+            if (nStatus == NERR_Success && pBuf){
+                for (int i = 0; i < dwEntriesRead; i++) {
+                    QString groupName = QString::fromWCharArray(pBuf[i].lgrui0_name);
+                    if (!groupName.compare(QLatin1String("Administrators")))
+                        userName = groupName;
+                }
             }
+            if (pBuf != NULL)
+                NetApiBufferFree(pBuf);
         }
-        if (pBuf != NULL)
-            NetApiBufferFree(pBuf);
     }
     extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
     qt_ntfs_permission_lookup = 1;
