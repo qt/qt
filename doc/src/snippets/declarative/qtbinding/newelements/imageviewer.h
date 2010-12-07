@@ -37,10 +37,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+//![0]
 #include <QtCore>
 #include <QtDeclarative>
 
-//![0]
 class ImageViewer : public QDeclarativeItem
 {
     Q_OBJECT

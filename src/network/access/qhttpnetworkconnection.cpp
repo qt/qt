@@ -855,10 +855,15 @@ QHttpNetworkReply* QHttpNetworkConnection::sendRequest(const QHttpNetworkRequest
     return d->queueRequest(request);
 }
 
-bool QHttpNetworkConnection::isEncrypted() const
+bool QHttpNetworkConnection::isSsl() const
 {
     Q_D(const QHttpNetworkConnection);
     return d->encrypt;
+}
+
+QHttpNetworkConnectionChannel *QHttpNetworkConnection::channels() const
+{
+    return d_func()->channels;
 }
 
 #ifndef QT_NO_NETWORKPROXY
