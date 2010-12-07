@@ -1,4 +1,4 @@
-include(qt.qdocconf)
+include(qt-project.qdocconf)
 
 imagedirs               = $QTDIR/doc/src/images \
                           $QTDIR/examples \
