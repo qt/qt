@@ -1614,6 +1614,9 @@ extern void qt_cleanup_symbianFontDatabaseExtras(); // qfontdatabase_s60.cpp
  *****************************************************************************/
 void qt_cleanup()
 {
+#ifdef Q_WS_S60
+    S60->setButtonGroupContainer(0);
+#endif
     if(qt_S60Beep) {
         delete qt_S60Beep;
         qt_S60Beep = 0;
