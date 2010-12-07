@@ -113,7 +113,11 @@ QAbstractSocketEngine *QAbstractSocketEngine::createSocketEngine(QAbstractSocket
         return 0;
 #endif
 
+#ifdef Q_OS_SYMBIAN
+    return new QSymbianSocketEngine(parent);
+#else
     return new QNativeSocketEngine(parent);
+#endif
 }
 
 QAbstractSocketEngine *QAbstractSocketEngine::createSocketEngine(int socketDescripter, QObject *parent)
@@ -123,7 +127,11 @@ QAbstractSocketEngine *QAbstractSocketEngine::createSocketEngine(int socketDescr
         if (QAbstractSocketEngine *ret = socketHandlers()->at(i)->createSocketEngine(socketDescripter, parent))
             return ret;
     }
+#ifdef Q_OS_SYMBIAN
+    return new QSymbianSocketEngine(parent);
+#else
     return new QNativeSocketEngine(parent);
+#endif
 }
 
 QAbstractSocket::SocketError QAbstractSocketEngine::error() const
