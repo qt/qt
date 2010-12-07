@@ -1472,6 +1472,41 @@ void Script::SetData(v8::Handle<String> data) {
 }
 
 
+#ifdef QT_BUILD_SCRIPT_LIB
+Local<Script> Script::CompileEval(v8::Handle<String> source,
+                                  v8::ScriptOrigin* origin,
+                                  v8::ScriptData* pre_data,
+                                  v8::Handle<String> script_data) {
+  i::Isolate* isolate = i::Isolate::Current();
+  ON_BAILOUT(isolate, "v8::Script::CompileEval()", return Local<Script>());
+  LOG_API(isolate, "Script::CompileEval");
+  ENTER_V8(isolate);
+  i::Handle<i::String> str = Utils::OpenHandle(*source);
+  i::Handle<i::Context> context(isolate->context());
+  i::Handle<i::SharedFunctionInfo> shared = i::Compiler::CompileEval(
+      str,
+      context,
+      context->IsGlobalContext(),
+      i::kNonStrictMode);
+  if (shared.is_null())
+      return Local<Script>();
+  i::Handle<i::JSFunction> result = isolate->factory()->NewFunctionFromSharedFunctionInfo(
+      shared,
+      context,
+      i::NOT_TENURED);
+  return Local<Script>(ToApi<Script>(result));
+}
+
+
+Local<Script> Script::CompileEval(v8::Handle<String> source,
+                                  v8::Handle<Value> file_name,
+                                  v8::Handle<String> script_data) {
+  ScriptOrigin origin(file_name);
+  return CompileEval(source, &origin, 0, script_data);
+}
+#endif
+
+
 // --- E x c e p t i o n s ---
 
 

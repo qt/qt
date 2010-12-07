@@ -669,6 +669,17 @@ class V8EXPORT Script {
    * debugger API.
    */
   void SetData(Handle<String> data);
+
+#ifdef QT_BUILD_SCRIPT_LIB
+  static Local<Script> CompileEval(Handle<String> source,
+                                   ScriptOrigin* origin = NULL,
+                                   ScriptData* pre_data = NULL,
+                                   Handle<String> script_data = Handle<String>());
+
+  static Local<Script> CompileEval(Handle<String> source,
+                                   Handle<Value> file_name,
+                                   Handle<String> script_data = Handle<String>());
+#endif
 };
 
 
