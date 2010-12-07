@@ -114,6 +114,7 @@ QNetworkSessionPrivateImpl::~QNetworkSessionPrivateImpl()
     // Close global 'Open C' RConnection
     // Clears also possible unsetdefaultif() flags.
     setdefaultif(0);
+    QSymbianSocketManager::instance().setDefaultConnection(0);
 
     iConnectionMonitor.Close();
     iOpenCLibrary.Close();
@@ -533,6 +534,7 @@ void QNetworkSessionPrivateImpl::close(bool allowSignals)
         setdefaultif(0);
     }
 
+    QSymbianSocketManager::instance().setDefaultConnection(0);
     // If UserChoice, go down immediately. If some other configuration,
     // go down immediately if there is no reports expected from the platform;
     // in practice Connection Monitor is aware of connections only after
@@ -634,6 +636,7 @@ void QNetworkSessionPrivateImpl::migrate()
         } else {
             setdefaultif(0);
         }
+        QSymbianSocketManager::instance().setDefaultConnection(0);
         // Start migrating to new IAP
         iMobility->MigrateToPreferredCarrier();
     }
@@ -670,6 +673,8 @@ void QNetworkSessionPrivateImpl::accept()
         strcpy(ifr.ifr_name, nameAsByteArray.constData());
         setdefaultif(&ifr);
 
+        QSymbianSocketManager::instance().setDefaultConnection(&iConnection);
+
         newState(QNetworkSession::Connected, iNewRoamingIap);
     }
 #endif
@@ -692,6 +697,8 @@ void QNetworkSessionPrivateImpl::reject()
             memset(&ifr, 0, sizeof(struct ifreq));
             strcpy(ifr.ifr_name, nameAsByteArray.constData());
             setdefaultif(&ifr);
+
+            QSymbianSocketManager::instance().setDefaultConnection(&iConnection);
 
             newState(QNetworkSession::Connected, iOldRoamingIap);
         }
@@ -1079,6 +1086,7 @@ void QNetworkSessionPrivateImpl::RunL()
                 QByteArray nameAsByteArray = newActiveConfig.name().toUtf8();
                 strcpy(ifr.ifr_name, nameAsByteArray.constData());
                 error = setdefaultif(&ifr);
+                QSymbianSocketManager::instance().setDefaultConnection(&iConnection);
             }
             if (error != KErrNone) {
                 isOpen = false;
@@ -1092,6 +1100,7 @@ void QNetworkSessionPrivateImpl::RunL()
                     // No valid configuration, bail out.
                     // Status updates from QNCM won't be received correctly
                     // because there is no configuration to associate them with so transit here.
+                    QSymbianSocketManager::instance().setDefaultConnection(0);
                     iConnection.Close();
                     newState(QNetworkSession::Closing);
                     newState(QNetworkSession::Disconnected);
@@ -1205,6 +1214,7 @@ bool QNetworkSessionPrivateImpl::newState(QNetworkSession::State newState, TUint
         strcpy(ifr.ifr_name, nameAsByteArray.constData());
 
         setdefaultif(&ifr);
+        QSymbianSocketManager::instance().setDefaultConnection(&iConnection);
 #endif
     }
 

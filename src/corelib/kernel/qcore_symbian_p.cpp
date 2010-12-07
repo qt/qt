@@ -217,7 +217,7 @@ Q_CORE_EXPORT RFs& qt_s60GetRFs()
 }
 
 QSymbianSocketManager::QSymbianSocketManager() :
-    iNextSocket(0)
+    iNextSocket(0), iDefaultConnection(0)
 {
     TSessionPref preferences;
     // ### In future this could be changed to KAfInet6 when that is more common than IPv4
@@ -288,6 +288,16 @@ bool QSymbianSocketManager::lookupSocket(int fd, RSocket& socket) const {
         return false;
     socket = reverseSocketMap.value(id);
     return true;
+}
+
+void QSymbianSocketManager::setDefaultConnection(RConnection* con)
+{
+    iDefaultConnection = con;
+}
+
+RConnection* QSymbianSocketManager::defaultConnection() const
+{
+    return iDefaultConnection;
 }
 
 Q_GLOBAL_STATIC(QSymbianSocketManager, qt_symbianSocketManager);
