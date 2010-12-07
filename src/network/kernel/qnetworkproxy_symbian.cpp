@@ -48,9 +48,14 @@ QT_BEGIN_NAMESPACE
 QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkProxyQuery &)
 {
     // TODO: Get the current QNetworkSession which has the Symbian RConnection we use
+	// I am wondering if we already have a connected QNetworkSession when the code
+	// is run that retrieves the proxy (for QNetworkAccessManager it's somewhere called
+	// from createRequest() which might be too early...)
 	
 	// TODO: Get the proxy from that RConnection
 
+	// See http://bugreports.qt.nokia.com/browse/QTBUG-13857 and http://bugreports.qt.nokia.com/browse/QTBUG-11016
+	// and the mails we have received.
 
     // Default case: No network proxy found/needed
     return QList<QNetworkProxy>() << QNetworkProxy::NoProxy;
