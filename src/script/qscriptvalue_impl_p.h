@@ -361,9 +361,7 @@ const QMetaObject *QScriptValuePrivate::toQMetaObject() const
     if (!isQMetaObject())
         return 0;
     v8::HandleScope handleScope;
-    v8::Handle<v8::Object> object = m_value->ToObject();
-    Q_ASSERT(object->InternalFieldCount() == 1);
-    QtMetaObjectData *data = static_cast<QtMetaObjectData *>(object->GetPointerFromInternalField(0));
+    QtMetaObjectData *data = QtMetaObjectData::get(*this);
     Q_ASSERT(data);
     return data->metaObject();
 }
