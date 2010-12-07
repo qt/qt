@@ -145,7 +145,7 @@ bool QSymbianSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType so
 #endif
     TUint type = (socketType == QAbstractSocket::UdpSocket) ? KSockDatagram : KSockStream;
     TUint protocol = (socketType == QAbstractSocket::UdpSocket) ? KProtocolInetUdp : KProtocolInetTcp;
-    TInt err = nativeSocket.Open(socketServer, family, type, protocol, connection);
+    TInt err = nativeSocket.Open(socketServer, family, type, protocol, *connection);
 
     if (err != KErrNone) {
         switch (err) {
@@ -262,6 +262,7 @@ void QSymbianSocketEnginePrivate::setPortAndAddress(TInetAddr& nativeAddr, quint
 QSymbianSocketEnginePrivate::QSymbianSocketEnginePrivate() :
     socketDescriptor(-1),
     socketServer(qt_symbianGetSocketServer()),
+    connection(QSymbianSocketManager::instance().defaultConnection()),
     readNotifier(0),
     writeNotifier(0),
     exceptNotifier(0)

@@ -156,8 +156,10 @@ public:
     int socketDescriptor;
 #ifdef Q_OS_SYMBIAN
     mutable RSocket nativeSocket;
+    // From QtCore:
     RSocketServ& socketServer;
-    RConnection connection; //TODO: shared ref
+    // From QtCore, check lifetime issues, also should be pulling this out of a QNetworkSession somehow:
+    RConnection *connection;
     mutable RTimer selectTimer;
 #endif
 
