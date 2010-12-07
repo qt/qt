@@ -309,7 +309,7 @@ public:
             pos = visibleItems.first()->position();
             pos -= visibleIndex * (averageSize + spacing);
         }
-        if (header)
+        if( header )
             pos -= header->size();
         return pos;
     }
@@ -960,6 +960,7 @@ void QDeclarativeListViewPrivate::recreateHighlight()
 */
 void QDeclarativeListViewPrivate::updateHighlight(bool smooth)
 {
+    
     if ((!currentItem && highlight) || (currentItem && !highlight))
         recreateHighlight();
 
@@ -2355,7 +2356,7 @@ void QDeclarativeListView::viewportAboutToMove(QPointF newPos)
 
     // qDebug() << "viewport about to move";
     // need to refill before moving
-    if (d->orient == Horizontal)
+    if( d->orient == Horizontal )
         d->refill(newPos.x(), newPos.x() + width() - 1);
     else
         d->refill(newPos.y(), newPos.y() + height() - 1);
@@ -2836,6 +2837,7 @@ void QDeclarativeListView::itemsRemoved(int modelIndex, int count)
         }
     }
 
+    
     // restore the start position of the visible items
     if (firstVisible && forceConst(d->visibleItems).first() != firstVisible)
         forceConst(d->visibleItems).first()->setPosition(forceConst(d->visibleItems).first()->position() + preRemovedSize);
