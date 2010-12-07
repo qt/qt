@@ -448,6 +448,7 @@ class Operand BASE_EMBEDDED {
   // Return true of this operand fits in one instruction so that no
   // 2-instruction solution with a load into the ip register is necessary.
   bool is_single_instruction() const;
+  bool must_use_constant_pool() const;
 
   inline int32_t immediate() const {
     ASSERT(!rm_.is_valid());
@@ -917,10 +918,13 @@ class Assembler : public Malloced {
   void stm(BlockAddrMode am, Register base, RegList src, Condition cond = al);
 
   // Exception-generating instructions and debugging support
-  void stop(const char* msg);
+  static const int kDefaultStopCode = -1;
+  void stop(const char* msg,
+            Condition cond = al,
+            int32_t code = kDefaultStopCode);
 
   void bkpt(uint32_t imm16);  // v5 and above
-  void swi(uint32_t imm24, Condition cond = al);
+  void svc(uint32_t imm24, Condition cond = al);
 
   // Coprocessor instructions
 
@@ -1127,13 +1131,9 @@ class Assembler : public Malloced {
   // Use --debug_code to enable.
   void RecordComment(const char* msg);
 
-  void RecordPosition(int pos);
-  void RecordStatementPosition(int pos);
-  bool WriteRecordedPositions();
-
   int pc_offset() const { return pc_ - buffer_; }
-  int current_position() const { return current_position_; }
-  int current_statement_position() const { return current_statement_position_; }
+
+  PositionsRecorder* positions_recorder() { return &positions_recorder_; }
 
   bool can_peephole_optimize(int instructions) {
     if (!FLAG_peephole_optimization) return false;
@@ -1269,12 +1269,6 @@ class Assembler : public Malloced {
   // The bound position, before this we cannot do instruction elimination.
   int last_bound_pos_;
 
-  // source position information
-  int current_position_;
-  int current_statement_position_;
-  int written_position_;
-  int written_statement_position_;
-
   // Code emission
   inline void CheckBuffer();
   void GrowBuffer();
@@ -1300,7 +1294,20 @@ class Assembler : public Malloced {
   friend class RelocInfo;
   friend class CodePatcher;
   friend class BlockConstPoolScope;
+
+  PositionsRecorder positions_recorder_;
+  friend class PositionsRecorder;
+  friend class EnsureSpace;
 };
+
+
+class EnsureSpace BASE_EMBEDDED {
+ public:
+  explicit EnsureSpace(Assembler* assembler) {
+    assembler->CheckBuffer();
+  }
+};
+
 
 } }  // namespace v8::internal
 

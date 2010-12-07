@@ -67,9 +67,10 @@ void CodeGenerator::ProcessDeferred() {
     DeferredCode* code = deferred_.RemoveLast();
     ASSERT(masm_ == code->masm());
     // Record position of deferred code stub.
-    masm_->RecordStatementPosition(code->statement_position());
+    masm_->positions_recorder()->RecordStatementPosition(
+        code->statement_position());
     if (code->position() != RelocInfo::kNoPosition) {
-      masm_->RecordPosition(code->position());
+      masm_->positions_recorder()->RecordPosition(code->position());
     }
     // Generate the code.
     Comment cmnt(masm_, code->comment());
@@ -369,24 +370,19 @@ const CodeGenerator::InlineFunctionGenerator
 #undef INLINE_FUNCTION_GENERATOR_ADDRESS
 
 
-CodeGenerator::InlineFunctionGenerator
-  CodeGenerator::FindInlineFunctionGenerator(Runtime::FunctionId id) {
-    return kInlineFunctionGenerators[
-      static_cast<int>(id) - static_cast<int>(Runtime::kFirstInlineFunction)];
-}
-
-
 bool CodeGenerator::CheckForInlineRuntimeCall(CallRuntime* node) {
   ZoneList<Expression*>* args = node->arguments();
   Handle<String> name = node->name();
   const Runtime::Function* function = node->function();
   if (function != NULL && function->intrinsic_type == Runtime::INLINE) {
-    InlineFunctionGenerator generator =
-        FindInlineFunctionGenerator(function->function_id);
-    if (generator != NULL) {
-      ((*this).*(generator))(args);
-      return true;
-    }
+    int lookup_index = static_cast<int>(function->function_id) -
+        static_cast<int>(Runtime::kFirstInlineFunction);
+    ASSERT(lookup_index >= 0);
+    ASSERT(static_cast<size_t>(lookup_index) <
+           ARRAY_SIZE(kInlineFunctionGenerators));
+    InlineFunctionGenerator generator = kInlineFunctionGenerators[lookup_index];
+    (this->*generator)(args);
+    return true;
   }
   return false;
 }
@@ -415,10 +411,10 @@ bool CodeGenerator::RecordPositions(MacroAssembler* masm,
                                     int pos,
                                     bool right_here) {
   if (pos != RelocInfo::kNoPosition) {
-    masm->RecordStatementPosition(pos);
-    masm->RecordPosition(pos);
+    masm->positions_recorder()->RecordStatementPosition(pos);
+    masm->positions_recorder()->RecordPosition(pos);
     if (right_here) {
-      return masm->WriteRecordedPositions();
+      return masm->positions_recorder()->WriteRecordedPositions();
     }
   }
   return false;
@@ -448,7 +444,7 @@ void CodeGenerator::CodeForDoWhileConditionPosition(DoWhileStatement* stmt) {
 
 void CodeGenerator::CodeForSourcePosition(int pos) {
   if (FLAG_debug_info && pos != RelocInfo::kNoPosition) {
-    masm()->RecordPosition(pos);
+    masm()->positions_recorder()->RecordPosition(pos);
   }
 }
 

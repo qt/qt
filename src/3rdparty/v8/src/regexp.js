@@ -71,9 +71,6 @@ function DoConstructRegExp(object, pattern, flags, isConstructorCall) {
     }
   }
 
-  if (!isConstructorCall) {
-    regExpCache.type = 'none';
-  }
   %RegExpInitializeObject(object, pattern, global, ignoreCase, multiline);
 
   // Call internal function to compile the pattern.
@@ -121,22 +118,6 @@ function DoRegExpExec(regexp, string, index) {
 }
 
 
-function RegExpCache() {
-  this.type = 'none';
-  this.regExp = 0;
-  this.subject = 0;
-  this.replaceString = 0;
-  this.lastIndex = 0;  // Also used for splitLimit when type is "split"
-  this.answer = 0;
-  // answerSaved marks whether the contents of answer is valid for a cache
-  // hit in RegExpExec, StringMatch and StringSplit.
-  this.answerSaved = false;
-}
-
-
-var regExpCache = new RegExpCache();
-
-
 function BuildResultFromMatchInfo(lastMatchInfo, s) {
   var numResults = NUMBER_OF_CAPTURES(lastMatchInfo) >> 1;
   var result = %_RegExpConstructResult(numResults, lastMatchInfo[CAPTURE0], s);
@@ -178,25 +159,7 @@ function RegExpExec(string) {
                         ['RegExp.prototype.exec', this]);
   }
 
-  var cache = regExpCache;
-  var saveAnswer = false;
-
-  if (%_ObjectEquals(cache.type, 'exec') &&
-      %_ObjectEquals(cache.lastIndex, this.lastIndex) &&
-      %_IsRegExpEquivalent(cache.regExp, this) &&
-      %_ObjectEquals(cache.subject, string)) {
-    if (cache.answerSaved) {
-      // If this regexp is not global, cache.lastIndex is zero, so we only get 
-      // here if this.lastIndex is zero, and resulting this.lastIndex
-      // must be zero too, so no change is necessary.
-      if (this.global) this.lastIndex = lastMatchInfo[CAPTURE1];
-      return %_RegExpCloneResult(cache.answer);
-    } else {
-      saveAnswer = true;
-    }
-  }
-
-  if (%_ArgumentsLength() == 0) {
+  if (%_ArgumentsLength() === 0) {
     var regExpInput = LAST_INPUT(lastMatchInfo);
     if (IS_UNDEFINED(regExpInput)) {
       throw MakeError('no_input_to_regexp', [this]);
@@ -211,45 +174,39 @@ function RegExpExec(string) {
   }
   var lastIndex = this.lastIndex;
 
-  var i = this.global ? TO_INTEGER(lastIndex) : 0;
+  // Conversion is required by the ES5 specification (RegExp.prototype.exec
+  // algorithm, step 5) even if the value is discarded for non-global RegExps.
+  var i = TO_INTEGER(lastIndex);
 
-  if (i < 0 || i > s.length) {
-    this.lastIndex = 0;
-    return null;
+  var global = this.global;
+  if (global) {
+    if (i < 0 || i > s.length) {
+      this.lastIndex = 0;
+      return null;
+    }
+  } else {
+    i = 0;
   }
 
   %_Log('regexp', 'regexp-exec,%0r,%1S,%2i', [this, s, lastIndex]);
   // matchIndices is either null or the lastMatchInfo array.
   var matchIndices = %_RegExpExec(this, s, i, lastMatchInfo);
 
-  if (matchIndices == null) {
-    if (this.global) {
+  if (matchIndices === null) {
+    if (global) {
       this.lastIndex = 0;
-      if (lastIndex != 0) return matchIndices;
     }
-    cache.lastIndex = lastIndex;
-    cache.regExp = this;
-    cache.subject = s;
-    cache.answer = matchIndices;  // Null.
-    cache.answerSaved = true;     // Safe since no cloning is needed.
-    cache.type = 'exec';
-    return matchIndices;        // No match.
+    return null;
   }
+
+  // Successful match.
   lastMatchInfoOverride = null;
   var result = BuildResultFromMatchInfo(matchIndices, s);
 
-  if (this.global) {
+  if (global) {
     this.lastIndex = lastMatchInfo[CAPTURE1];
-  } else {
-    cache.regExp = this;
-    cache.subject = s;
-    cache.lastIndex = lastIndex;
-    if (saveAnswer) cache.answer = %_RegExpCloneResult(result);
-    cache.answerSaved = saveAnswer;
-    cache.type = 'exec';
   }
   return result;
-
 }
 
 
@@ -273,6 +230,7 @@ function RegExpTest(string) {
     }
     string = regExpInput;
   }
+
   var s;
   if (IS_STRING(string)) {
     s = string;
@@ -281,60 +239,47 @@ function RegExpTest(string) {
   }
 
   var lastIndex = this.lastIndex;
-  var cache = regExpCache;
-  if (%_ObjectEquals(cache.type, 'test') &&
-      %_IsRegExpEquivalent(cache.regExp, this) &&
-      %_ObjectEquals(cache.subject, string) &&
-      %_ObjectEquals(cache.lastIndex, lastIndex)) {
-    // If this regexp is not global, cache.lastIndex is zero, so we only get 
-    // here if this.lastIndex is zero, and resulting this.lastIndex
-    // must be zero too, so no change is necessary.
-    if (this.global) this.lastIndex = lastMatchInfo[CAPTURE1];
-    return cache.answer;
+
+  // Conversion is required by the ES5 specification (RegExp.prototype.exec
+  // algorithm, step 5) even if the value is discarded for non-global RegExps.
+  var i = TO_INTEGER(lastIndex);
+  
+  var global = this.global;
+  if (global) {
+    if (i < 0 || i > s.length) {
+      this.lastIndex = 0;
+      return false;
+    }
+  } else {
+    i = 0;
   }
 
   // Remove irrelevant preceeding '.*' in a test regexp. The expression
   // checks whether this.source starts with '.*' and that the third
   // char is not a '?'
-  if (%_StringCharCodeAt(this.source,0) == 46 && // '.'
-      %_StringCharCodeAt(this.source,1) == 42 && // '*'
-      %_StringCharCodeAt(this.source,2) != 63) { // '?'
+  if (%_StringCharCodeAt(this.source, 0) == 46 &&  // '.'
+      %_StringCharCodeAt(this.source, 1) == 42 &&  // '*'
+      %_StringCharCodeAt(this.source, 2) != 63) {  // '?'
     if (!%_ObjectEquals(regexp_key, this)) {
       regexp_key = this;
       regexp_val = new $RegExp(this.source.substring(2, this.source.length),
-                               (this.global ? 'g' : '')
+                               (global ? 'g' : '')
                                + (this.ignoreCase ? 'i' : '')
                                + (this.multiline ? 'm' : ''));
     }
     if (!regexp_val.test(s)) return false;
   }
 
-  var length = s.length;
-  var i = this.global ? TO_INTEGER(lastIndex) : 0;
-
-  cache.type = 'test';
-  cache.regExp = this;
-  cache.subject = s;
-  cache.lastIndex = i;
-
-  if (i < 0 || i > length) {
-    this.lastIndex = 0;
-    cache.answer = false;
-    return false;
-  }
-
   %_Log('regexp', 'regexp-exec,%0r,%1S,%2i', [this, s, lastIndex]);
   // matchIndices is either null or the lastMatchInfo array.
   var matchIndices = %_RegExpExec(this, s, i, lastMatchInfo);
 
-  if (matchIndices == null) {
-    if (this.global) this.lastIndex = 0;
-    cache.answer = false;
+  if (matchIndices === null) {
+    if (global) this.lastIndex = 0;
     return false;
   }
   lastMatchInfoOverride = null;
-  if (this.global) this.lastIndex = lastMatchInfo[CAPTURE1];
-  cache.answer = true;
+  if (global) this.lastIndex = lastMatchInfo[CAPTURE1];
   return true;
 }
 
@@ -345,12 +290,9 @@ function RegExpToString() {
   // ecma_2/RegExp/properties-001.js.
   var src = this.source ? this.source : '(?:)';
   var result = '/' + src + '/';
-  if (this.global)
-    result += 'g';
-  if (this.ignoreCase)
-    result += 'i';
-  if (this.multiline)
-    result += 'm';
+  if (this.global) result += 'g';
+  if (this.ignoreCase) result += 'i';
+  if (this.multiline) result += 'm';
   return result;
 }
 
@@ -486,7 +428,6 @@ function SetupRegExp() {
     return IS_UNDEFINED(regExpInput) ? "" : regExpInput;
   }
   function RegExpSetInput(string) {
-    regExpCache.type = 'none';
     LAST_INPUT(lastMatchInfo) = ToString(string);
   };
 

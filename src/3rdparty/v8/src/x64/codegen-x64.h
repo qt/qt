@@ -584,9 +584,6 @@ class CodeGenerator: public AstVisitor {
 
   void CheckStack();
 
-  static InlineFunctionGenerator FindInlineFunctionGenerator(
-      Runtime::FunctionId function_id);
-
   bool CheckForInlineRuntimeCall(CallRuntime* node);
 
   void ProcessDeclarations(ZoneList<Declaration*>* declarations);
@@ -658,8 +655,6 @@ class CodeGenerator: public AstVisitor {
   void GenerateRegExpExec(ZoneList<Expression*>* args);
 
   void GenerateRegExpConstructResult(ZoneList<Expression*>* args);
-
-  void GenerateRegExpCloneResult(ZoneList<Expression*>* args);
 
   // Support for fast native caches.
   void GenerateGetFromCache(ZoneList<Expression*>* args);

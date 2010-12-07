@@ -110,8 +110,9 @@ static inline void ThrowRegExpException(Handle<JSRegExp> re,
 Handle<Object> RegExpImpl::Compile(Handle<JSRegExp> re,
                                    Handle<String> pattern,
                                    Handle<String> flag_str) {
+  Isolate* isolate = re->GetIsolate();
   JSRegExp::Flags flags = RegExpFlagsFromString(flag_str);
-  CompilationCache* compilation_cache = re->GetIsolate()->compilation_cache();
+  CompilationCache* compilation_cache = isolate->compilation_cache();
   Handle<FixedArray> cached = compilation_cache->LookupRegExp(pattern, flags);
   bool in_cache = !cached.is_null();
   LOG(RegExpCompileEvent(re, in_cache));
@@ -125,8 +126,9 @@ Handle<Object> RegExpImpl::Compile(Handle<JSRegExp> re,
   CompilationZoneScope zone_scope(DELETE_ON_EXIT);
   PostponeInterruptsScope postpone;
   RegExpCompileData parse_result;
-  FlatStringReader reader(pattern);
-  if (!Parser::ParseRegExp(&reader, flags.is_multiline(), &parse_result)) {
+  FlatStringReader reader(isolate, pattern);
+  if (!RegExpParser::ParseRegExp(&reader, flags.is_multiline(),
+                                 &parse_result)) {
     // Throw an exception if we fail to parse the pattern.
     ThrowRegExpException(re,
                          pattern,
@@ -144,7 +146,7 @@ Handle<Object> RegExpImpl::Compile(Handle<JSRegExp> re,
     RegExpAtom* atom = parse_result.tree->AsAtom();
     Vector<const uc16> atom_pattern = atom->data();
     Handle<String> atom_string =
-        re->GetIsolate()->factory()->NewStringFromTwoByte(atom_pattern);
+        isolate->factory()->NewStringFromTwoByte(atom_pattern);
     AtomCompile(re, pattern, flags, atom_string);
   } else {
     IrregexpInitialize(re, pattern, flags, parse_result.capture_count);
@@ -251,13 +253,14 @@ bool RegExpImpl::EnsureCompiledIrregexp(Handle<JSRegExp> re, bool is_ascii) {
 
 bool RegExpImpl::CompileIrregexp(Handle<JSRegExp> re, bool is_ascii) {
   // Compile the RegExp.
+  Isolate* isolate = re->GetIsolate();
   CompilationZoneScope zone_scope(DELETE_ON_EXIT);
   PostponeInterruptsScope postpone;
   Object* entry = re->DataAt(JSRegExp::code_index(is_ascii));
   if (entry->IsJSObject()) {
     // If it's a JSObject, a previous compilation failed and threw this object.
     // Re-throw the object without trying again.
-    re->GetIsolate()->Throw(entry);
+    isolate->Throw(entry);
     return false;
   }
   ASSERT(entry->IsTheHole());
@@ -270,8 +273,9 @@ bool RegExpImpl::CompileIrregexp(Handle<JSRegExp> re, bool is_ascii) {
   }
 
   RegExpCompileData compile_data;
-  FlatStringReader reader(pattern);
-  if (!Parser::ParseRegExp(&reader, flags.is_multiline(), &compile_data)) {
+  FlatStringReader reader(isolate, pattern);
+  if (!RegExpParser::ParseRegExp(&reader, flags.is_multiline(),
+                                 &compile_data)) {
     // Throw an exception if we fail to parse the pattern.
     // THIS SHOULD NOT HAPPEN. We already pre-parsed it successfully once.
     ThrowRegExpException(re,
@@ -288,7 +292,6 @@ bool RegExpImpl::CompileIrregexp(Handle<JSRegExp> re, bool is_ascii) {
                             is_ascii);
   if (result.error_message != NULL) {
     // Unable to compile regexp.
-    Isolate* isolate = re->GetIsolate();
     Handle<JSArray> array = isolate->factory()->NewJSArray(2);
     SetElement(array, 0, pattern);
     SetElement(array,
@@ -5197,7 +5200,10 @@ RegExpEngine::CompilationResult RegExpEngine::Compile(RegExpCompileData* data,
                                                     &compiler,
                                                     compiler.accept());
   RegExpNode* node = captured_body;
-  if (!data->tree->IsAnchored()) {
+  bool is_end_anchored = data->tree->IsAnchoredAtEnd();
+  bool is_start_anchored = data->tree->IsAnchoredAtStart();
+  int max_length = data->tree->max_match();
+  if (!is_start_anchored) {
     // Add a .*? at the beginning, outside the body capture, unless
     // this expression is anchored at the beginning.
     RegExpNode* loop_node =
@@ -5252,6 +5258,15 @@ RegExpEngine::CompilationResult RegExpEngine::Compile(RegExpCompileData* data,
   EmbeddedVector<byte, 1024> codes;
   RegExpMacroAssemblerIrregexp macro_assembler(codes);
 #endif  // V8_INTERPRETED_REGEXP
+
+  // Inserted here, instead of in Assembler, because it depends on information
+  // in the AST that isn't replicated in the Node structure.
+  static const int kMaxBacksearchLimit = 1024;
+  if (is_end_anchored &&
+      !is_start_anchored &&
+      max_length < kMaxBacksearchLimit) {
+    macro_assembler.SetCurrentPositionFromEnd(max_length);
+  }
 
   return compiler.Assemble(&macro_assembler,
                            node,

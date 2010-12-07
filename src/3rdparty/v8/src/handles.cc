@@ -63,7 +63,7 @@ Object** HandleScope::Extend() {
   ASSERT(result == current->limit);
   // Make sure there's at least one scope on the stack and that the
   // top of the scope stack isn't a barrier.
-  if (current->extensions < 0) {
+  if (current->level == 0) {
     Utils::ReportApiFailure("v8::HandleScope::CreateHandle()",
                             "Cannot create a handle without a HandleScope");
     return NULL;
@@ -75,6 +75,7 @@ Object** HandleScope::Extend() {
     Object** limit = &impl->blocks()->last()[kHandleBlockSize];
     if (current->limit != limit) {
       current->limit = limit;
+      ASSERT(limit - current->next < kHandleBlockSize);
     }
   }
 
@@ -86,7 +87,6 @@ Object** HandleScope::Extend() {
     // Add the extension to the global list of blocks, but count the
     // extension as part of the current scope.
     impl->blocks()->Add(result);
-    current->extensions++;
     current->limit = &result[kHandleBlockSize];
   }
 
@@ -98,23 +98,21 @@ void HandleScope::DeleteExtensions(Isolate* isolate) {
   ASSERT(isolate == Isolate::Current());
   v8::ImplementationUtilities::HandleScopeData* current =
       isolate->handle_scope_data();
-
-  ASSERT(current->extensions != 0);
-  isolate->handle_scope_implementer()->DeleteExtensions(current->extensions);
+  isolate->handle_scope_implementer()->DeleteExtensions(current->limit);
 }
 
 
 void HandleScope::ZapRange(Object** start, Object** end) {
-  if (start == NULL) return;
-  for (Object** p = start; p < end; p++) {
+  ASSERT(end - start <= kHandleBlockSize);
+  for (Object** p = start; p != end; p++) {
     *reinterpret_cast<Address*>(p) = v8::internal::kHandleZapValue;
   }
 }
 
 
-Address HandleScope::current_extensions_address() {
+Address HandleScope::current_level_address() {
   return reinterpret_cast<Address>(
-      &Isolate::Current()->handle_scope_data()->extensions);
+      &Isolate::Current()->handle_scope_data()->level);
 }
 
 
@@ -228,8 +226,17 @@ void TransformToFastProperties(Handle<JSObject> object,
 }
 
 
+void NumberDictionarySet(Handle<NumberDictionary> dictionary,
+                         uint32_t index,
+                         Handle<Object> value,
+                         PropertyDetails details) {
+  CALL_HEAP_FUNCTION_VOID(dictionary->GetIsolate(),
+                          dictionary->Set(index, *value, details));
+}
+
+
 void FlattenString(Handle<String> string) {
-  CALL_HEAP_FUNCTION_VOID(string->GetHeap()->isolate(), string->TryFlatten());
+  CALL_HEAP_FUNCTION_VOID(string->GetIsolate(), string->TryFlatten());
 }
 
 
@@ -654,8 +661,9 @@ void CustomArguments::IterateInstance(ObjectVisitor* v) {
 // Compute the property keys from the interceptor.
 v8::Handle<v8::Array> GetKeysForNamedInterceptor(Handle<JSObject> receiver,
                                                  Handle<JSObject> object) {
+  Isolate* isolate = receiver->GetIsolate();
   Handle<InterceptorInfo> interceptor(object->GetNamedInterceptor());
-  CustomArguments args(interceptor->data(), *receiver, *object);
+  CustomArguments args(isolate, interceptor->data(), *receiver, *object);
   v8::AccessorInfo info(args.end());
   v8::Handle<v8::Array> result;
   if (!interceptor->enumerator()->IsUndefined()) {
@@ -664,7 +672,7 @@ v8::Handle<v8::Array> GetKeysForNamedInterceptor(Handle<JSObject> receiver,
     LOG(ApiObjectAccess("interceptor-named-enum", *object));
     {
       // Leaving JavaScript.
-      VMState state(EXTERNAL);
+      VMState state(isolate, EXTERNAL);
       result = enum_fun(info);
     }
   }
@@ -675,8 +683,9 @@ v8::Handle<v8::Array> GetKeysForNamedInterceptor(Handle<JSObject> receiver,
 // Compute the element keys from the interceptor.
 v8::Handle<v8::Array> GetKeysForIndexedInterceptor(Handle<JSObject> receiver,
                                                    Handle<JSObject> object) {
+  Isolate* isolate = receiver->GetIsolate();
   Handle<InterceptorInfo> interceptor(object->GetIndexedInterceptor());
-  CustomArguments args(interceptor->data(), *receiver, *object);
+  CustomArguments args(isolate, interceptor->data(), *receiver, *object);
   v8::AccessorInfo info(args.end());
   v8::Handle<v8::Array> result;
   if (!interceptor->enumerator()->IsUndefined()) {
@@ -685,7 +694,7 @@ v8::Handle<v8::Array> GetKeysForIndexedInterceptor(Handle<JSObject> receiver,
     LOG(ApiObjectAccess("interceptor-indexed-enum", *object));
     {
       // Leaving JavaScript.
-      VMState state(EXTERNAL);
+      VMState state(isolate, EXTERNAL);
       result = enum_fun(info);
     }
   }

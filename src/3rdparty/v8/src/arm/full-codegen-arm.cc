@@ -62,6 +62,13 @@ void FullCodeGenerator::Generate(CompilationInfo* info) {
   SetFunctionPosition(function());
   Comment cmnt(masm_, "[ function compiled by full code generator");
 
+#ifdef DEBUG
+  if (strlen(FLAG_stop_at) > 0 &&
+      info->function()->name()->IsEqualTo(CStrVector(FLAG_stop_at))) {
+    __ stop("stop-at");
+  }
+#endif
+
   int locals_count = scope()->num_stack_slots();
 
   __ Push(lr, fp, cp, r1);
@@ -1167,6 +1174,11 @@ void FullCodeGenerator::VisitObjectLiteral(ObjectLiteral* expr) {
   // result_saved is false the result is in r0.
   bool result_saved = false;
 
+  // Mark all computed expressions that are bound to a key that
+  // is shadowed by a later occurrence of the same key. For the
+  // marked expressions, no store code is emitted.
+  expr->CalculateEmitStore();
+
   for (int i = 0; i < expr->properties()->length(); i++) {
     ObjectLiteral::Property* property = expr->properties()->at(i);
     if (property->IsCompileTimeValue()) continue;
@@ -1188,9 +1200,11 @@ void FullCodeGenerator::VisitObjectLiteral(ObjectLiteral* expr) {
           VisitForAccumulatorValue(value);
           __ mov(r2, Operand(key->handle()));
           __ ldr(r1, MemOperand(sp));
-          Handle<Code> ic(Isolate::Current()->builtins()->builtin(
-              Builtins::StoreIC_Initialize));
-          EmitCallIC(ic, RelocInfo::CODE_TARGET);
+          if (property->emit_store()) {
+            Handle<Code> ic(Isolate::Current()->builtins()->builtin(
+                Builtins::StoreIC_Initialize));
+            EmitCallIC(ic, RelocInfo::CODE_TARGET);
+          }
           break;
         }
         // Fall through.
@@ -1200,7 +1214,11 @@ void FullCodeGenerator::VisitObjectLiteral(ObjectLiteral* expr) {
         __ push(r0);
         VisitForStackValue(key);
         VisitForStackValue(value);
-        __ CallRuntime(Runtime::kSetProperty, 3);
+        if (property->emit_store()) {
+          __ CallRuntime(Runtime::kSetProperty, 3);
+        } else {
+          __ Drop(3);
+        }
         break;
       case ObjectLiteral::Property::GETTER:
       case ObjectLiteral::Property::SETTER:
@@ -1683,12 +1701,14 @@ void FullCodeGenerator::EmitCallWithIC(Call* expr,
   // Code common for calls using the IC.
   ZoneList<Expression*>* args = expr->arguments();
   int arg_count = args->length();
-  for (int i = 0; i < arg_count; i++) {
-    VisitForStackValue(args->at(i));
+  { PreserveStatementPositionScope scope(masm()->positions_recorder());
+    for (int i = 0; i < arg_count; i++) {
+      VisitForStackValue(args->at(i));
+    }
+    __ mov(r2, Operand(name));
   }
-  __ mov(r2, Operand(name));
   // Record source position for debugger.
-  SetSourcePosition(expr->position());
+  SetSourcePosition(expr->position(), FORCED_POSITION);
   // Call the IC initialization code.
   InLoopFlag in_loop = (loop_depth() > 0) ? IN_LOOP : NOT_IN_LOOP;
   Handle<Code> ic = CodeGenerator::ComputeCallInitialize(arg_count, in_loop);
@@ -1705,13 +1725,15 @@ void FullCodeGenerator::EmitKeyedCallWithIC(Call* expr,
   // Code common for calls using the IC.
   ZoneList<Expression*>* args = expr->arguments();
   int arg_count = args->length();
-  for (int i = 0; i < arg_count; i++) {
-    VisitForStackValue(args->at(i));
+  { PreserveStatementPositionScope scope(masm()->positions_recorder());
+    for (int i = 0; i < arg_count; i++) {
+      VisitForStackValue(args->at(i));
+    }
+    VisitForAccumulatorValue(key);
+    __ mov(r2, r0);
   }
-  VisitForAccumulatorValue(key);
-  __ mov(r2, r0);
   // Record source position for debugger.
-  SetSourcePosition(expr->position());
+  SetSourcePosition(expr->position(), FORCED_POSITION);
   // Call the IC initialization code.
   InLoopFlag in_loop = (loop_depth() > 0) ? IN_LOOP : NOT_IN_LOOP;
   Handle<Code> ic = CodeGenerator::ComputeKeyedCallInitialize(arg_count,
@@ -1727,11 +1749,13 @@ void FullCodeGenerator::EmitCallWithStub(Call* expr) {
   // Code common for calls using the call stub.
   ZoneList<Expression*>* args = expr->arguments();
   int arg_count = args->length();
-  for (int i = 0; i < arg_count; i++) {
-    VisitForStackValue(args->at(i));
+  { PreserveStatementPositionScope scope(masm()->positions_recorder());
+    for (int i = 0; i < arg_count; i++) {
+      VisitForStackValue(args->at(i));
+    }
   }
   // Record source position for debugger.
-  SetSourcePosition(expr->position());
+  SetSourcePosition(expr->position(), FORCED_POSITION);
   InLoopFlag in_loop = (loop_depth() > 0) ? IN_LOOP : NOT_IN_LOOP;
   CallFunctionStub stub(arg_count, in_loop, RECEIVER_MIGHT_BE_VALUE);
   __ CallStub(&stub);
@@ -1751,41 +1775,45 @@ void FullCodeGenerator::VisitCall(Call* expr) {
     // resolve the function we need to call and the receiver of the
     // call.  Then we call the resolved function using the given
     // arguments.
-    VisitForStackValue(fun);
-    __ LoadRoot(r2, Heap::kUndefinedValueRootIndex);
-    __ push(r2);  // Reserved receiver slot.
-
-    // Push the arguments.
     ZoneList<Expression*>* args = expr->arguments();
     int arg_count = args->length();
-    for (int i = 0; i < arg_count; i++) {
-      VisitForStackValue(args->at(i));
-    }
 
-    // Push copy of the function - found below the arguments.
-    __ ldr(r1, MemOperand(sp, (arg_count + 1) * kPointerSize));
-    __ push(r1);
+    { PreserveStatementPositionScope pos_scope(masm()->positions_recorder());
+      VisitForStackValue(fun);
+      __ LoadRoot(r2, Heap::kUndefinedValueRootIndex);
+      __ push(r2);  // Reserved receiver slot.
 
-    // Push copy of the first argument or undefined if it doesn't exist.
-    if (arg_count > 0) {
-      __ ldr(r1, MemOperand(sp, arg_count * kPointerSize));
+      // Push the arguments.
+      for (int i = 0; i < arg_count; i++) {
+        VisitForStackValue(args->at(i));
+      }
+
+      // Push copy of the function - found below the arguments.
+      __ ldr(r1, MemOperand(sp, (arg_count + 1) * kPointerSize));
       __ push(r1);
-    } else {
-      __ push(r2);
+
+      // Push copy of the first argument or undefined if it doesn't exist.
+      if (arg_count > 0) {
+        __ ldr(r1, MemOperand(sp, arg_count * kPointerSize));
+        __ push(r1);
+      } else {
+        __ push(r2);
+      }
+
+      // Push the receiver of the enclosing function and do runtime call.
+      __ ldr(r1,
+             MemOperand(fp, (2 + scope()->num_parameters()) * kPointerSize));
+      __ push(r1);
+      __ CallRuntime(Runtime::kResolvePossiblyDirectEval, 3);
+
+      // The runtime call returns a pair of values in r0 (function) and
+      // r1 (receiver). Touch up the stack with the right values.
+      __ str(r0, MemOperand(sp, (arg_count + 1) * kPointerSize));
+      __ str(r1, MemOperand(sp, arg_count * kPointerSize));
     }
-
-    // Push the receiver of the enclosing function and do runtime call.
-    __ ldr(r1, MemOperand(fp, (2 + scope()->num_parameters()) * kPointerSize));
-    __ push(r1);
-    __ CallRuntime(Runtime::kResolvePossiblyDirectEval, 3);
-
-    // The runtime call returns a pair of values in r0 (function) and
-    // r1 (receiver). Touch up the stack with the right values.
-    __ str(r0, MemOperand(sp, (arg_count + 1) * kPointerSize));
-    __ str(r1, MemOperand(sp, arg_count * kPointerSize));
 
     // Record source position for debugger.
-    SetSourcePosition(expr->position());
+    SetSourcePosition(expr->position(), FORCED_POSITION);
     InLoopFlag in_loop = (loop_depth() > 0) ? IN_LOOP : NOT_IN_LOOP;
     CallFunctionStub stub(arg_count, in_loop, RECEIVER_MIGHT_BE_VALUE);
     __ CallStub(&stub);
@@ -1802,12 +1830,14 @@ void FullCodeGenerator::VisitCall(Call* expr) {
     // Call to a lookup slot (dynamically introduced variable).
     Label slow, done;
 
-    // Generate code for loading from variables potentially shadowed
-    // by eval-introduced variables.
-    EmitDynamicLoadFromSlotFastCase(var->AsSlot(),
-                                    NOT_INSIDE_TYPEOF,
-                                    &slow,
-                                    &done);
+    { PreserveStatementPositionScope scope(masm()->positions_recorder());
+      // Generate code for loading from variables potentially shadowed
+      // by eval-introduced variables.
+      EmitDynamicLoadFromSlotFastCase(var->AsSlot(),
+                                      NOT_INSIDE_TYPEOF,
+                                      &slow,
+                                      &done);
+    }
 
     __ bind(&slow);
     // Call the runtime to find the function to call (returned in r0)
@@ -1841,17 +1871,23 @@ void FullCodeGenerator::VisitCall(Call* expr) {
     Literal* key = prop->key()->AsLiteral();
     if (key != NULL && key->handle()->IsSymbol()) {
       // Call to a named property, use call IC.
-      VisitForStackValue(prop->obj());
+      { PreserveStatementPositionScope scope(masm()->positions_recorder());
+        VisitForStackValue(prop->obj());
+      }
       EmitCallWithIC(expr, key->handle(), RelocInfo::CODE_TARGET);
     } else {
       // Call to a keyed property.
       // For a synthetic property use keyed load IC followed by function call,
       // for a regular property use keyed CallIC.
-      VisitForStackValue(prop->obj());
+      { PreserveStatementPositionScope scope(masm()->positions_recorder());
+        VisitForStackValue(prop->obj());
+      }
       if (prop->is_synthetic()) {
-        VisitForAccumulatorValue(prop->key());
+        { PreserveStatementPositionScope scope(masm()->positions_recorder());
+          VisitForAccumulatorValue(prop->key());
+        }
         // Record source code position for IC call.
-        SetSourcePosition(prop->position());
+        SetSourcePosition(prop->position(), FORCED_POSITION);
         __ pop(r1);  // We do not need to keep the receiver.
 
         Handle<Code> ic(Isolate::Current()->builtins()->builtin(
@@ -1875,7 +1911,10 @@ void FullCodeGenerator::VisitCall(Call* expr) {
         loop_depth() == 0) {
       lit->set_try_full_codegen(true);
     }
-    VisitForStackValue(fun);
+
+    { PreserveStatementPositionScope scope(masm()->positions_recorder());
+      VisitForStackValue(fun);
+    }
     // Load global receiver object.
     __ ldr(r1, CodeGenerator::GlobalObject());
     __ ldr(r1, FieldMemOperand(r1, GlobalObject::kGlobalReceiverOffset));

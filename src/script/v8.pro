@@ -11,6 +11,7 @@ SOURCES += \
     $$V8DIR/src/api.cc \
     $$V8DIR/src/assembler.cc \
     $$V8DIR/src/ast.cc \
+    $$V8DIR/src/bignum.cc \
     $$V8DIR/src/bootstrapper.cc \
     $$V8DIR/src/builtins.cc \
     $$V8DIR/src/cached-powers.cc \
@@ -67,6 +68,7 @@ SOURCES += \
     $$V8DIR/src/register-allocator.cc \
     $$V8DIR/src/rewriter.cc \
     $$V8DIR/src/runtime.cc \
+    $$V8DIR/src/scanner-base.cc \
     $$V8DIR/src/scanner.cc \
     $$V8DIR/src/scopeinfo.cc \
     $$V8DIR/src/scopes.cc \

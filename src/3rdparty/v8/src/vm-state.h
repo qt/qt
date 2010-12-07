@@ -36,7 +36,7 @@ namespace internal {
 class VMState BASE_EMBEDDED {
 #ifdef ENABLE_VMSTATE_TRACKING
  public:
-  inline VMState(StateTag state);
+  inline VMState(Isolate* isolate, StateTag state);
   inline ~VMState();
 
   StateTag state() { return state_; }
@@ -46,32 +46,29 @@ class VMState BASE_EMBEDDED {
 
   // Used for debug asserts.
   static bool is_outermost_external() {
-    VMState* state = reinterpret_cast<VMState*>(
-        *Isolate::Current()->vm_state());
-    return state == NULL;
+    return Isolate::Current()->current_vm_state() == 0;
   }
 
   static StateTag current_state() {
-    VMState* state = reinterpret_cast<VMState*>(
-        *Isolate::Current()->vm_state());
+    VMState* state = Isolate::Current()->current_vm_state();
     return state ? state->state() : EXTERNAL;
   }
 
   static Address external_callback() {
-    VMState* state = reinterpret_cast<VMState*>(
-        *Isolate::Current()->vm_state());
+    VMState* state = Isolate::Current()->current_vm_state();
     return state ? state->external_callback_ : NULL;
   }
 
  private:
+  Isolate* isolate_;
   bool disabled_;
   StateTag state_;
   VMState* previous_;
   Address external_callback_;
-  Isolate* isolate_;
+
 #else
  public:
-  explicit VMState(StateTag state) {}
+  VMState(Isolate* isolate, StateTag state) {}
 #endif
 };
 

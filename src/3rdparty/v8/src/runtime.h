@@ -164,7 +164,9 @@ namespace internal {
   F(RegExpExecMultiple, 4, 1) \
   F(RegExpInitializeObject, 5, 1) \
   F(RegExpConstructResult, 3, 1) \
-  F(RegExpCloneResult, 1, 1) \
+  \
+  /* JSON */ \
+  F(ParseJson, 1, 1) \
   \
   /* Strings */ \
   F(StringCharCodeAt, 2, 1) \
@@ -224,7 +226,7 @@ namespace internal {
   /* Numbers */ \
   \
   /* Globals */ \
-  F(CompileString, 2, 1) \
+  F(CompileString, 1, 1) \
   F(GlobalPrint, 1, 1) \
   \
   /* Eval */ \
@@ -269,7 +271,7 @@ namespace internal {
   F(Throw, 1, 1) \
   F(ReThrow, 1, 1) \
   F(ThrowReferenceError, 1, 1) \
-  F(StackGuard, 1, 1) \
+  F(StackGuard, 0, 1) \
   F(PromoteScheduledException, 0, 1) \
   \
   /* Contexts */ \
@@ -299,8 +301,6 @@ namespace internal {
   F(Log, 2, 1) \
   /* ES5 */ \
   F(LocalKeys, 1, 1) \
-  /* Handle scopes */ \
-  F(DeleteHandleScopeExtensions, 0, 1) \
   /* Cache suport */ \
   F(GetFromCache, 2, 1) \
   \
@@ -326,7 +326,6 @@ namespace internal {
   F(GetScopeCount, 2, 1) \
   F(GetScopeDetails, 3, 1) \
   F(DebugPrintScopes, 0, 1) \
-  F(GetCFrames, 1, 1) \
   F(GetThreadCount, 1, 1) \
   F(GetThreadDetails, 2, 1) \
   F(SetDisableBreak, 1, 1) \
@@ -426,7 +425,7 @@ namespace internal {
 // ----------------------------------------------------------------------------
 // INLINE_AND_RUNTIME_FUNCTION_LIST defines all inlined functions accessed
 // with a native call of the form %_name from within JS code that also have
-  // a corresponding runtime function, that is called for slow cases.
+// a corresponding runtime function, that is called for slow cases.
 // Entries have the form F(name, number of arguments, number of return values).
 #define INLINE_RUNTIME_FUNCTION_LIST(F) \
   F(IsConstructCall, 0, 1)                                                   \
@@ -438,7 +437,6 @@ namespace internal {
   F(StringCompare, 2, 1)                                                     \
   F(RegExpExec, 4, 1)                                                        \
   F(RegExpConstructResult, 3, 1)                                             \
-  F(RegExpCloneResult, 1, 1)                                                 \
   F(GetFromCache, 2, 1)                                                      \
   F(NumberToString, 1, 1)                                                    \
   F(SwapElements, 3, 1)
@@ -540,8 +538,8 @@ class Runtime : public AllStatic {
   // Returns failure if an allocation fails.  In this case, it must be
   // retried with a new, empty StringDictionary, not with the same one.
   // Alternatively, heap initialization can be completely restarted.
-  static Object* InitializeIntrinsicFunctionNames(Heap* heap,
-                                                  Object* dictionary);
+  MUST_USE_RESULT static MaybeObject* InitializeIntrinsicFunctionNames(
+      Heap* heap, Object* dictionary);
 
   // Get the intrinsic function with the given name, which must be a symbol.
   static const Function* FunctionForSymbol(Handle<String> name);
@@ -562,30 +560,35 @@ class Runtime : public AllStatic {
 
   // Support getting the characters in a string using [] notation as
   // in Firefox/SpiderMonkey, Safari and Opera.
-  static Object* GetElementOrCharAt(Isolate* isolate,
-                                    Handle<Object> object,
-                                    uint32_t index);
-  static Object* GetElement(Handle<Object> object, uint32_t index);
+  MUST_USE_RESULT static MaybeObject* GetElementOrCharAt(Isolate* isolate,
+                                                         Handle<Object> object,
+                                                         uint32_t index);
+  MUST_USE_RESULT static MaybeObject* GetElement(Handle<Object> object,
+                                                 uint32_t index);
 
-  static Object* SetObjectProperty(Isolate* isolate,
-                                   Handle<Object> object,
-                                   Handle<Object> key,
-                                   Handle<Object> value,
-                                   PropertyAttributes attr);
+  MUST_USE_RESULT static MaybeObject* SetObjectProperty(
+      Isolate* isolate,
+      Handle<Object> object,
+      Handle<Object> key,
+      Handle<Object> value,
+      PropertyAttributes attr);
 
-  static Object* ForceSetObjectProperty(Isolate* isolate,
-                                        Handle<JSObject> object,
-                                        Handle<Object> key,
-                                        Handle<Object> value,
-                                        PropertyAttributes attr);
+  MUST_USE_RESULT static MaybeObject* ForceSetObjectProperty(
+      Isolate* isolate,
+      Handle<JSObject> object,
+      Handle<Object> key,
+      Handle<Object> value,
+      PropertyAttributes attr);
 
-  static Object* ForceDeleteObjectProperty(Isolate* isolate,
-                                           Handle<JSObject> object,
-                                           Handle<Object> key);
+  MUST_USE_RESULT static MaybeObject* ForceDeleteObjectProperty(
+      Isolate* isolate,
+      Handle<JSObject> object,
+      Handle<Object> key);
 
-  static Object* GetObjectProperty(Isolate* isolate,
-                                   Handle<Object> object,
-                                   Handle<Object> key);
+  MUST_USE_RESULT static MaybeObject* GetObjectProperty(
+      Isolate* isolate,
+      Handle<Object> object,
+      Handle<Object> key);
 
   // This function is used in FunctionNameUsing* tests.
   static Object* FindSharedFunctionInfoInScript(Isolate* isolate,

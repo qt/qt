@@ -97,8 +97,8 @@ class GlobalHandles {
   // Tells whether global handle is weak.
   static bool IsWeak(Object** location);
 
-  // Process pending weak handles.  Returns true if any weak handle
-  // callback has been invoked.
+  // Process pending weak handles.
+  // Returns true if next major GC is likely to collect more garbage.
   bool PostGarbageCollectionProcessing();
 
   // Iterates over all strong handles.
@@ -138,10 +138,12 @@ class GlobalHandles {
 #endif
   class Pool;
  private:
-  GlobalHandles();
+  explicit GlobalHandles(Isolate* isolate);
 
   // Internal node structure, one for each global handle.
   class Node;
+
+  Isolate* isolate_;
 
   // Field always containing the number of weak and near-death handles.
   int number_of_weak_handles_;

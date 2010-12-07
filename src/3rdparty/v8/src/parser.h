@@ -31,13 +31,13 @@
 #include "allocation.h"
 #include "ast.h"
 #include "scanner.h"
+#include "scopes.h"
 
 namespace v8 {
 namespace internal {
 
 class CompilationInfo;
 class FuncNameInferrer;
-class ParserFactory;
 class ParserLog;
 class PositionStack;
 class Target;
@@ -177,13 +177,127 @@ class ScriptDataImpl : public ScriptData {
 };
 
 
-class Parser {
+// Record only functions.
+class PartialParserRecorder {
  public:
-  Parser(Handle<Script> script, bool allow_natives_syntax,
-         v8::Extension* extension, ParserMode is_pre_parsing,
-         ParserFactory* factory, ParserLog* log, ScriptDataImpl* pre_data);
-  virtual ~Parser() { }
+  PartialParserRecorder();
 
+  void LogFunction(int start, int end, int literals, int properties) {
+    function_store_.Add(start);
+    function_store_.Add(end);
+    function_store_.Add(literals);
+    function_store_.Add(properties);
+  }
+
+  void LogSymbol(int start, const char* symbol, int length) { }
+
+  // Logs an error message and marks the log as containing an error.
+  // Further logging will be ignored, and ExtractData will return a vector
+  // representing the error only.
+  void LogMessage(int start,
+                  int end,
+                  const char* message,
+                  const char* argument_opt) {
+    Scanner::Location location(start, end);
+    Vector<const char*> arguments;
+    if (argument_opt != NULL) {
+      arguments = Vector<const char*>(&argument_opt, 1);
+    }
+    this->LogMessage(location, message, arguments);
+  }
+
+  int function_position() { return function_store_.size(); }
+
+  void LogMessage(Scanner::Location loc,
+                  const char* message,
+                  Vector<const char*> args);
+
+  Vector<unsigned> ExtractData();
+
+  void PauseRecording() {
+    pause_count_++;
+    is_recording_ = false;
+  }
+
+  void ResumeRecording() {
+    ASSERT(pause_count_ > 0);
+    if (--pause_count_ == 0) is_recording_ = !has_error();
+  }
+
+  int symbol_position() { return 0; }
+  int symbol_ids() { return 0; }
+
+ protected:
+  bool has_error() {
+    return static_cast<bool>(preamble_[ScriptDataImpl::kHasErrorOffset]);
+  }
+
+  bool is_recording() {
+    return is_recording_;
+  }
+
+  void WriteString(Vector<const char> str);
+
+  Collector<unsigned> function_store_;
+  unsigned preamble_[ScriptDataImpl::kHeaderSize];
+  bool is_recording_;
+  int pause_count_;
+
+#ifdef DEBUG
+  int prev_start_;
+#endif
+};
+
+
+// Record both functions and symbols.
+class CompleteParserRecorder: public PartialParserRecorder {
+ public:
+  CompleteParserRecorder();
+
+  void LogSymbol(int start, Vector<const char> literal);
+
+  void LogSymbol(int start, const char* symbol, int length) {
+    LogSymbol(start, Vector<const char>(symbol, length));
+  }
+
+  Vector<unsigned> ExtractData();
+
+  int symbol_position() { return symbol_store_.size(); }
+  int symbol_ids() { return symbol_id_; }
+
+ private:
+  static int vector_hash(Vector<const char> string) {
+    int hash = 0;
+    for (int i = 0; i < string.length(); i++) {
+      int c = string[i];
+      hash += c;
+      hash += (hash << 10);
+      hash ^= (hash >> 6);
+    }
+    return hash;
+  }
+
+  static bool vector_compare(void* a, void* b) {
+    Vector<const char>* string1 = reinterpret_cast<Vector<const char>* >(a);
+    Vector<const char>* string2 = reinterpret_cast<Vector<const char>* >(b);
+    int length = string1->length();
+    if (string2->length() != length) return false;
+    return memcmp(string1->start(), string2->start(), length) == 0;
+  }
+
+  // Write a non-negative number to the symbol store.
+  void WriteNumber(int number);
+
+  Collector<byte> symbol_store_;
+  Collector<Vector<const char> > symbol_entries_;
+  HashMap symbol_table_;
+  int symbol_id_;
+};
+
+
+
+class ParserApi {
+ public:
   // Parses the source code represented by the compilation info and sets its
   // function literal.  Returns false (and deallocates any allocated AST
   // nodes) if parsing failed.
@@ -199,34 +313,263 @@ class Parser {
   static ScriptDataImpl* PartialPreParse(Handle<String> source,
                                          unibrow::CharacterStream* stream,
                                          v8::Extension* extension);
+};
+
+// ----------------------------------------------------------------------------
+// REGEXP PARSING
+
+// A BuffferedZoneList is an automatically growing list, just like (and backed
+// by) a ZoneList, that is optimized for the case of adding and removing
+// a single element. The last element added is stored outside the backing list,
+// and if no more than one element is ever added, the ZoneList isn't even
+// allocated.
+// Elements must not be NULL pointers.
+template <typename T, int initial_size>
+class BufferedZoneList {
+ public:
+  BufferedZoneList() : list_(NULL), last_(NULL) {}
+
+  // Adds element at end of list. This element is buffered and can
+  // be read using last() or removed using RemoveLast until a new Add or until
+  // RemoveLast or GetList has been called.
+  void Add(T* value) {
+    if (last_ != NULL) {
+      if (list_ == NULL) {
+        list_ = new ZoneList<T*>(initial_size);
+      }
+      list_->Add(last_);
+    }
+    last_ = value;
+  }
+
+  T* last() {
+    ASSERT(last_ != NULL);
+    return last_;
+  }
+
+  T* RemoveLast() {
+    ASSERT(last_ != NULL);
+    T* result = last_;
+    if ((list_ != NULL) && (list_->length() > 0))
+      last_ = list_->RemoveLast();
+    else
+      last_ = NULL;
+    return result;
+  }
+
+  T* Get(int i) {
+    ASSERT((0 <= i) && (i < length()));
+    if (list_ == NULL) {
+      ASSERT_EQ(0, i);
+      return last_;
+    } else {
+      if (i == list_->length()) {
+        ASSERT(last_ != NULL);
+        return last_;
+      } else {
+        return list_->at(i);
+      }
+    }
+  }
+
+  void Clear() {
+    list_ = NULL;
+    last_ = NULL;
+  }
+
+  int length() {
+    int length = (list_ == NULL) ? 0 : list_->length();
+    return length + ((last_ == NULL) ? 0 : 1);
+  }
+
+  ZoneList<T*>* GetList() {
+    if (list_ == NULL) {
+      list_ = new ZoneList<T*>(initial_size);
+    }
+    if (last_ != NULL) {
+      list_->Add(last_);
+      last_ = NULL;
+    }
+    return list_;
+  }
+
+ private:
+  ZoneList<T*>* list_;
+  T* last_;
+};
+
+
+// Accumulates RegExp atoms and assertions into lists of terms and alternatives.
+class RegExpBuilder: public ZoneObject {
+ public:
+  RegExpBuilder();
+  void AddCharacter(uc16 character);
+  // "Adds" an empty expression. Does nothing except consume a
+  // following quantifier
+  void AddEmpty();
+  void AddAtom(RegExpTree* tree);
+  void AddAssertion(RegExpTree* tree);
+  void NewAlternative();  // '|'
+  void AddQuantifierToAtom(int min, int max, RegExpQuantifier::Type type);
+  RegExpTree* ToRegExp();
+
+ private:
+  void FlushCharacters();
+  void FlushText();
+  void FlushTerms();
+  bool pending_empty_;
+  ZoneList<uc16>* characters_;
+  BufferedZoneList<RegExpTree, 2> terms_;
+  BufferedZoneList<RegExpTree, 2> text_;
+  BufferedZoneList<RegExpTree, 2> alternatives_;
+#ifdef DEBUG
+  enum {ADD_NONE, ADD_CHAR, ADD_TERM, ADD_ASSERT, ADD_ATOM} last_added_;
+#define LAST(x) last_added_ = x;
+#else
+#define LAST(x)
+#endif
+};
+
+
+class RegExpParser {
+ public:
+  RegExpParser(FlatStringReader* in,
+               Handle<String>* error,
+               bool multiline_mode);
 
   static bool ParseRegExp(FlatStringReader* input,
                           bool multiline,
                           RegExpCompileData* result);
 
-  // Pre-parse the program from the character stream; returns true on
-  // success, false if a stack-overflow happened during parsing.
-  bool PreParseProgram(Handle<String> source, unibrow::CharacterStream* stream);
+  RegExpTree* ParsePattern();
+  RegExpTree* ParseDisjunction();
+  RegExpTree* ParseGroup();
+  RegExpTree* ParseCharacterClass();
 
-  void ReportMessage(const char* message, Vector<const char*> args);
-  virtual void ReportMessageAt(Scanner::Location loc,
-                               const char* message,
-                               Vector<const char*> args) = 0;
+  // Parses a {...,...} quantifier and stores the range in the given
+  // out parameters.
+  bool ParseIntervalQuantifier(int* min_out, int* max_out);
 
+  // Parses and returns a single escaped character.  The character
+  // must not be 'b' or 'B' since they are usually handle specially.
+  uc32 ParseClassCharacterEscape();
+
+  // Checks whether the following is a length-digit hexadecimal number,
+  // and sets the value if it is.
+  bool ParseHexEscape(int length, uc32* value);
+
+  uc32 ParseControlLetterEscape();
+  uc32 ParseOctalLiteral();
+
+  // Tries to parse the input as a back reference.  If successful it
+  // stores the result in the output parameter and returns true.  If
+  // it fails it will push back the characters read so the same characters
+  // can be reparsed.
+  bool ParseBackReferenceIndex(int* index_out);
+
+  CharacterRange ParseClassAtom(uc16* char_class);
+  RegExpTree* ReportError(Vector<const char> message);
+  void Advance();
+  void Advance(int dist);
+  void Reset(int pos);
+
+  // Reports whether the pattern might be used as a literal search string.
+  // Only use if the result of the parse is a single atom node.
+  bool simple();
+  bool contains_anchor() { return contains_anchor_; }
+  void set_contains_anchor() { contains_anchor_ = true; }
+  int captures_started() { return captures_ == NULL ? 0 : captures_->length(); }
+  int position() { return next_pos_ - 1; }
+  bool failed() { return failed_; }
+
+  static const int kMaxCaptures = 1 << 16;
+  static const uc32 kEndMarker = (1 << 21);
+
+ private:
+  enum SubexpressionType {
+    INITIAL,
+    CAPTURE,  // All positive values represent captures.
+    POSITIVE_LOOKAHEAD,
+    NEGATIVE_LOOKAHEAD,
+    GROUPING
+  };
+
+  class RegExpParserState : public ZoneObject {
+   public:
+    RegExpParserState(RegExpParserState* previous_state,
+                      SubexpressionType group_type,
+                      int disjunction_capture_index)
+        : previous_state_(previous_state),
+          builder_(new RegExpBuilder()),
+          group_type_(group_type),
+          disjunction_capture_index_(disjunction_capture_index) {}
+    // Parser state of containing expression, if any.
+    RegExpParserState* previous_state() { return previous_state_; }
+    bool IsSubexpression() { return previous_state_ != NULL; }
+    // RegExpBuilder building this regexp's AST.
+    RegExpBuilder* builder() { return builder_; }
+    // Type of regexp being parsed (parenthesized group or entire regexp).
+    SubexpressionType group_type() { return group_type_; }
+    // Index in captures array of first capture in this sub-expression, if any.
+    // Also the capture index of this sub-expression itself, if group_type
+    // is CAPTURE.
+    int capture_index() { return disjunction_capture_index_; }
+
+   private:
+    // Linked list implementation of stack of states.
+    RegExpParserState* previous_state_;
+    // Builder for the stored disjunction.
+    RegExpBuilder* builder_;
+    // Stored disjunction type (capture, look-ahead or grouping), if any.
+    SubexpressionType group_type_;
+    // Stored disjunction's capture index (if any).
+    int disjunction_capture_index_;
+  };
+
+  uc32 current() { return current_; }
+  bool has_more() { return has_more_; }
+  bool has_next() { return next_pos_ < in()->length(); }
+  uc32 Next();
+  FlatStringReader* in() { return in_; }
+  void ScanForCaptures();
+
+  Handle<String>* error_;
+  ZoneList<RegExpCapture*>* captures_;
+  FlatStringReader* in_;
+  uc32 current_;
+  int next_pos_;
+  // The capture count is only valid after we have scanned for captures.
+  int capture_count_;
+  bool has_more_;
+  bool multiline_;
+  bool simple_;
+  bool contains_anchor_;
+  bool is_scanned_for_captures_;
+  bool failed_;
+};
+
+// ----------------------------------------------------------------------------
+// JAVASCRIPT PARSING
+
+class Parser {
+ public:
+  Parser(Handle<Script> script,
+         bool allow_natives_syntax,
+         v8::Extension* extension,
+         ScriptDataImpl* pre_data);
+  virtual ~Parser() { }
 
   // Returns NULL if parsing failed.
   FunctionLiteral* ParseProgram(Handle<String> source,
                                 bool in_global_context);
-  FunctionLiteral* ParseLazy(Handle<SharedFunctionInfo> info);
-  FunctionLiteral* ParseJson(Handle<String> source);
 
-  // The minimum number of contiguous assignment that will
-  // be treated as an initialization block. Benchmarks show that
-  // the overhead exceeds the savings below this limit.
-  static const int kMinInitializationBlock = 3;
+  FunctionLiteral* ParseLazy(Handle<SharedFunctionInfo> info);
+
+  void ReportMessageAt(Scanner::Location loc,
+                       const char* message,
+                       Vector<const char*> args);
 
  protected:
-
   enum Mode {
     PARSE_LAZILY,
     PARSE_EAGERLY
@@ -235,28 +578,9 @@ class Parser {
   // Report syntax error
   void ReportUnexpectedToken(Token::Value token);
   void ReportInvalidPreparseData(Handle<String> name, bool* ok);
-
-  Handle<Script> script_;
-  Scanner scanner_;
-
-  Scope* top_scope_;
-  int with_nesting_level_;
-
-  TemporaryScope* temp_scope_;
-  Mode mode_;
-
-  Target* target_stack_;  // for break, continue statements
-  bool allow_natives_syntax_;
-  v8::Extension* extension_;
-  ParserFactory* factory_;
-  ParserLog* log_;
-  bool is_pre_parsing_;
-  ScriptDataImpl* pre_data_;
-  FuncNameInferrer* fni_;
+  void ReportMessage(const char* message, Vector<const char*> args);
 
   bool inside_with() const { return with_nesting_level_ > 0; }
-  ParserFactory* factory() const { return factory_; }
-  ParserLog* log() const { return log_; }
   Scanner& scanner()  { return scanner_; }
   Mode mode() const { return mode_; }
   ScriptDataImpl* pre_data() const { return pre_data_; }
@@ -265,7 +589,7 @@ class Parser {
   // which is set to false if parsing failed; it is unchanged otherwise.
   // By making the 'exception handling' explicit, we are forced to check
   // for failure at the call sites.
-  void* ParseSourceElements(ZoneListWrapper<Statement>* processor,
+  void* ParseSourceElements(ZoneList<Statement*>* processor,
                             int end_token, bool* ok);
   Statement* ParseStatement(ZoneStringList* labels, bool* ok);
   Statement* ParseFunctionDeclaration(bool* ok);
@@ -378,16 +702,38 @@ class Parser {
                                            bool* ok);
 
   // Parser support
-  virtual VariableProxy* Declare(Handle<String> name, Variable::Mode mode,
-                                 FunctionLiteral* fun,
-                                 bool resolve,
-                                 bool* ok) = 0;
+  VariableProxy* Declare(Handle<String> name, Variable::Mode mode,
+                         FunctionLiteral* fun,
+                         bool resolve,
+                         bool* ok);
 
   bool TargetStackContainsLabel(Handle<String> label);
   BreakableStatement* LookupBreakTarget(Handle<String> label, bool* ok);
   IterationStatement* LookupContinueTarget(Handle<String> label, bool* ok);
 
   void RegisterTargetUse(BreakTarget* target, Target* stop);
+
+  // Factory methods.
+
+  Statement* EmptyStatement() {
+    static v8::internal::EmptyStatement empty;
+    return &empty;
+  }
+
+  Scope* NewScope(Scope* parent, Scope::Type type, bool inside_with);
+
+  Handle<String> LookupSymbol(int symbol_id,
+                              Vector<const char> string);
+
+  Handle<String> LookupCachedSymbol(int symbol_id,
+                                    Vector<const char> string);
+
+  Expression* NewCall(Expression* expression,
+                      ZoneList<Expression*>* arguments,
+                      int pos) {
+    return new Call(expression, arguments, pos);
+  }
+
 
   // Create a number literal.
   Literal* NewNumberLiteral(double value);
@@ -411,33 +757,23 @@ class Parser {
                             Handle<String> type,
                             Vector< Handle<Object> > arguments);
 
-  // JSON is a subset of JavaScript, as specified in, e.g., the ECMAScript 5
-  // specification section 15.12.1 (and appendix A.8).
-  // The grammar is given section 15.12.1.2 (and appendix A.8.2).
+  ZoneList<Handle<String> > symbol_cache_;
 
-  // Parse JSON input as a single JSON value.
-  Expression* ParseJson(bool* ok);
+  Handle<Script> script_;
+  Scanner scanner_;
 
-  // Parse a single JSON value from input (grammar production JSONValue).
-  // A JSON value is either a (double-quoted) string literal, a number literal,
-  // one of "true", "false", or "null", or an object or array literal.
-  Expression* ParseJsonValue(bool* ok);
-  // Parse a JSON object literal (grammar production JSONObject).
-  // An object literal is a squiggly-braced and comma separated sequence
-  // (possibly empty) of key/value pairs, where the key is a JSON string
-  // literal, the value is a JSON value, and the two are spearated by a colon.
-  // A JavaScript object also allows numbers and identifiers as keys.
-  Expression* ParseJsonObject(bool* ok);
-  // Parses a JSON array literal (grammar production JSONArray). An array
-  // literal is a square-bracketed and comma separated sequence (possibly empty)
-  // of JSON values.
-  // A JavaScript array allows leaving out values from the sequence.
-  Expression* ParseJsonArray(bool* ok);
+  Scope* top_scope_;
+  int with_nesting_level_;
 
-  friend class Target;
-  friend class TargetScope;
-  friend class LexicalScope;
-  friend class TemporaryScope;
+  TemporaryScope* temp_scope_;
+  Mode mode_;
+
+  Target* target_stack_;  // for break, continue statements
+  bool allow_natives_syntax_;
+  v8::Extension* extension_;
+  bool is_pre_parsing_;
+  ScriptDataImpl* pre_data_;
+  FuncNameInferrer* fni_;
 };
 
 
@@ -472,6 +808,52 @@ class CompileTimeValue: public AllStatic {
 };
 
 
+// ----------------------------------------------------------------------------
+// JSON PARSING
+
+// JSON is a subset of JavaScript, as specified in, e.g., the ECMAScript 5
+// specification section 15.12.1 (and appendix A.8).
+// The grammar is given section 15.12.1.2 (and appendix A.8.2).
+class JsonParser BASE_EMBEDDED {
+ public:
+  // Parse JSON input as a single JSON value.
+  // Returns null handle and sets exception if parsing failed.
+  static Handle<Object> Parse(Handle<String> source) {
+    return JsonParser().ParseJson(source);
+  }
+
+ private:
+  JsonParser() { }
+  ~JsonParser() { }
+
+  // Parse a string containing a single JSON value.
+  Handle<Object> ParseJson(Handle<String>);
+  // Parse a single JSON value from input (grammar production JSONValue).
+  // A JSON value is either a (double-quoted) string literal, a number literal,
+  // one of "true", "false", or "null", or an object or array literal.
+  Handle<Object> ParseJsonValue();
+  // Parse a JSON object literal (grammar production JSONObject).
+  // An object literal is a squiggly-braced and comma separated sequence
+  // (possibly empty) of key/value pairs, where the key is a JSON string
+  // literal, the value is a JSON value, and the two are separated by a colon.
+  // A JSON array dosn't allow numbers and identifiers as keys, like a
+  // JavaScript array.
+  Handle<Object> ParseJsonObject();
+  // Parses a JSON array literal (grammar production JSONArray). An array
+  // literal is a square-bracketed and comma separated sequence (possibly empty)
+  // of JSON values.
+  // A JSON array doesn't allow leaving out values from the sequence, nor does
+  // it allow a terminal comma, like a JavaScript array does.
+  Handle<Object> ParseJsonArray();
+
+  // Mark that a parsing error has happened at the current token, and
+  // return a null handle. Primarily for readability.
+  Handle<Object> ReportUnexpectedToken() { return Handle<Object>::null(); }
+  // Converts the currently parsed literal to a JavaScript String.
+  Handle<String> GetString();
+
+  Scanner scanner_;
+};
 } }  // namespace v8::internal
 
 #endif  // V8_PARSER_H_

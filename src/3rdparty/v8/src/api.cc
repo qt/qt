@@ -42,7 +42,6 @@
 #include "profile-generator-inl.h"
 #include "serialize.h"
 #include "snapshot.h"
-#include "utils.h"
 #include "v8threads.h"
 #include "version.h"
 
@@ -50,9 +49,10 @@
 
 #define LOG_API(expr) LOG(ApiEntryCall(expr))
 
+// TODO(isolates): avoid repeated TLS reads in function prologues.
 #ifdef ENABLE_VMSTATE_TRACKING
-#define ENTER_V8 i::VMState __state__(i::OTHER)
-#define LEAVE_V8 i::VMState __state__(i::EXTERNAL)
+#define ENTER_V8 i::VMState __state__(i::Isolate::Current(), i::OTHER)
+#define LEAVE_V8 i::VMState __state__(i::Isolate::Current(), i::EXTERNAL)
 #else
 #define ENTER_V8 ((void) 0)
 #define LEAVE_V8 ((void) 0)
@@ -468,16 +468,41 @@ void V8::DisposeGlobal(i::Object** obj) {
 // --- H a n d l e s ---
 
 
-HandleScope::HandleScope() : is_closed_(false) {
+HandleScope::HandleScope() {
   API_ENTRY_CHECK("HandleScope::HandleScope");
-  i::HandleScope::Enter(&previous_);
+  i::Isolate* isolate = i::Isolate::Current();
+  v8::ImplementationUtilities::HandleScopeData* current =
+      isolate->handle_scope_data();
+  isolate_ = isolate;
+  prev_next_ = current->next;
+  prev_limit_ = current->limit;
+  is_closed_ = false;
+  current->level++;
 }
 
 
 HandleScope::~HandleScope() {
   if (!is_closed_) {
-    i::HandleScope::Leave(&previous_);
+    Leave();
   }
+}
+
+
+void HandleScope::Leave() {
+  ASSERT(isolate_ == i::Isolate::Current());
+  v8::ImplementationUtilities::HandleScopeData* current =
+      isolate_->handle_scope_data();
+  current->level--;
+  ASSERT(current->level >= 0);
+  current->next = prev_next_;
+  if (current->limit != prev_limit_) {
+    current->limit = prev_limit_;
+    i::HandleScope::DeleteExtensions(isolate_);
+  }
+
+#ifdef DEBUG
+  i::HandleScope::ZapRange(prev_next_, prev_limit_);
+#endif
 }
 
 
@@ -571,7 +596,7 @@ i::Object** v8::HandleScope::RawClose(i::Object** value) {
     result = *value;
   }
   is_closed_ = true;
-  i::HandleScope::Leave(&previous_);
+  Leave();
 
   if (value == NULL) {
     return NULL;
@@ -1153,13 +1178,13 @@ void ObjectTemplate::SetInternalFieldCount(int value) {
 
 ScriptData* ScriptData::PreCompile(const char* input, int length) {
   unibrow::Utf8InputBuffer<> buf(input, length);
-  return i::Parser::PreParse(i::Handle<i::String>(), &buf, NULL);
+  return i::ParserApi::PreParse(i::Handle<i::String>(), &buf, NULL);
 }
 
 
 ScriptData* ScriptData::PreCompile(v8::Handle<String> source) {
   i::Handle<i::String> str = Utils::OpenHandle(*source);
-  return i::Parser::PreParse(str, NULL, NULL);
+  return i::ParserApi::PreParse(str, NULL, NULL);
 }
 
 
@@ -1355,8 +1380,7 @@ Local<Script> Script::CompileEval(v8::Handle<String> source,
   i::Handle<i::SharedFunctionInfo> shared = i::Compiler::CompileEval(
       str,
       context,
-      context->IsGlobalContext(),
-      i::Compiler::DONT_VALIDATE_JSON);
+      context->IsGlobalContext());
   if (shared.is_null())
       return Local<Script>();
   i::Handle<i::JSFunction> result = FACTORY->NewFunctionFromSharedFunctionInfo(
@@ -1540,9 +1564,10 @@ static i::Handle<i::Object> CallV8HeapFunction(const char* name,
                                                int argc,
                                                i::Object** argv[],
                                                bool* has_pending_exception) {
-  i::Handle<i::String> fmt_str = FACTORY->LookupAsciiSymbol(name);
+  i::Isolate* isolate = i::Isolate::Current();
+  i::Handle<i::String> fmt_str = isolate->factory()->LookupAsciiSymbol(name);
   i::Object* object_fun =
-      i::Isolate::Current()->js_builtins_object()->GetProperty(*fmt_str);
+      isolate->js_builtins_object()->GetPropertyNoExceptionThrown(*fmt_str);
   i::Handle<i::JSFunction> fun =
       i::Handle<i::JSFunction>(i::JSFunction::cast(object_fun));
   i::Handle<i::Object> value =
@@ -1658,7 +1683,8 @@ Local<StackFrame> StackTrace::GetFrame(uint32_t index) const {
   ENTER_V8;
   HandleScope scope;
   i::Handle<i::JSArray> self = Utils::OpenHandle(this);
-  i::Handle<i::JSObject> obj(i::JSObject::cast(self->GetElement(index)));
+  i::Object* raw_object = self->GetElementNoExceptionThrown(index);
+  i::Handle<i::JSObject> obj(i::JSObject::cast(raw_object));
   return scope.Close(Utils::StackFrameToLocal(obj));
 }
 
@@ -2580,10 +2606,12 @@ Local<Value> v8::Object::GetRealNamedPropertyInPrototypeChain(
   self_obj->LookupRealNamedPropertyInPrototypes(*key_obj, &lookup);
   if (lookup.IsProperty()) {
     PropertyAttributes attributes;
-    i::Handle<i::Object> result(self_obj->GetProperty(*self_obj,
-                                                      &lookup,
-                                                      *key_obj,
-                                                      &attributes));
+    i::Object* property =
+        self_obj->GetProperty(*self_obj,
+                              &lookup,
+                              *key_obj,
+                              &attributes)->ToObjectUnchecked();
+    i::Handle<i::Object> result(property);
     return Utils::ToLocal(result);
   }
   return Local<Value>();  // No real property was found in prototype chain.
@@ -2599,10 +2627,12 @@ Local<Value> v8::Object::GetRealNamedProperty(Handle<String> key) {
   self_obj->LookupRealNamedProperty(*key_obj, &lookup);
   if (lookup.IsProperty()) {
     PropertyAttributes attributes;
-    i::Handle<i::Object> result(self_obj->GetProperty(*self_obj,
-                                                      &lookup,
-                                                      *key_obj,
-                                                      &attributes));
+    i::Object* property =
+        self_obj->GetProperty(*self_obj,
+                              &lookup,
+                              *key_obj,
+                              &attributes)->ToObjectUnchecked();
+    i::Handle<i::Object> result(property);
     return Utils::ToLocal(result);
   }
   return Local<Value>();  // No real property was found in prototype chain.
@@ -5096,7 +5126,7 @@ char* HandleScopeImplementer::ArchiveThread(char* storage) {
   memcpy(storage, this, sizeof(*this));
 
   ResetAfterArchive();
-  current->Initialize(isolate);
+  current->Initialize();
 
   return storage + ArchiveSpacePerThread();
 }

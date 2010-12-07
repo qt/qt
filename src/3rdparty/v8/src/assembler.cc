@@ -588,6 +588,12 @@ ExternalReference ExternalReference::fill_heap_number_with_random_function() {
 }
 
 
+ExternalReference ExternalReference::delete_handle_scope_extensions() {
+  return ExternalReference(Redirect(FUNCTION_ADDR(
+                           HandleScope::DeleteExtensions)));
+}
+
+
 ExternalReference ExternalReference::random_uint32_function() {
   return ExternalReference(Redirect(FUNCTION_ADDR(V8::Random)));
 }
@@ -664,8 +670,8 @@ ExternalReference ExternalReference::new_space_allocation_limit_address() {
 }
 
 
-ExternalReference ExternalReference::handle_scope_extensions_address() {
-  return ExternalReference(HandleScope::current_extensions_address());
+ExternalReference ExternalReference::handle_scope_level_address() {
+  return ExternalReference(HandleScope::current_level_address());
 }
 
 
@@ -808,5 +814,54 @@ ExternalReference ExternalReference::debug_step_in_fp_address() {
   return ExternalReference(Isolate::Current()->debug()->step_in_fp_addr());
 }
 #endif
+
+
+void PositionsRecorder::RecordPosition(int pos,
+                                       PositionRecordingType recording_type) {
+  ASSERT(pos != RelocInfo::kNoPosition);
+  ASSERT(pos >= 0);
+  current_position_ = pos;
+  current_position_recording_type_ = recording_type;
+}
+
+
+void PositionsRecorder::RecordStatementPosition(int pos) {
+  ASSERT(pos != RelocInfo::kNoPosition);
+  ASSERT(pos >= 0);
+  current_statement_position_ = pos;
+}
+
+
+bool PositionsRecorder::WriteRecordedPositions() {
+  bool written = false;
+
+  // Write the statement position if it is different from what was written last
+  // time.
+  if (current_statement_position_ != written_statement_position_) {
+    EnsureSpace ensure_space(assembler_);
+    assembler_->RecordRelocInfo(RelocInfo::STATEMENT_POSITION,
+                                current_statement_position_);
+    written_statement_position_ = current_statement_position_;
+    written = true;
+  }
+
+  // Write the position if it is different from what was written last time and
+  // also different from the written statement position or was forced.
+  if (current_position_ != written_position_ &&
+      (current_position_ != current_statement_position_ || !written) &&
+      (current_position_ != written_statement_position_
+       || current_position_recording_type_ == FORCED_POSITION)) {
+    EnsureSpace ensure_space(assembler_);
+    assembler_->RecordRelocInfo(RelocInfo::POSITION, current_position_);
+    written_position_ = current_position_;
+    written = true;
+  }
+
+  current_position_recording_type_ = NORMAL_POSITION;
+
+  // Return whether something was written.
+  return written;
+}
+
 
 } }  // namespace v8::internal

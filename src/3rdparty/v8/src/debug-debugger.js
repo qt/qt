@@ -897,10 +897,6 @@ ExecutionState.prototype.frame = function(opt_index) {
   return new FrameMirror(this.break_id, opt_index);
 };
 
-ExecutionState.prototype.cframesValue = function(opt_from_index, opt_to_index) {
-  return %GetCFrames(this.break_id);
-};
-
 ExecutionState.prototype.setSelectedFrame = function(index) {
   var i = %ToNumber(index);
   if (i < 0 || i >= this.frameCount()) throw new Error('Illegal frame index.');
@@ -1301,7 +1297,7 @@ DebugCommandProcessor.prototype.processDebugJSONRequest = function(json_request)
   try {
     try {
       // Convert the JSON string to an object.
-      request = %CompileString('(' + json_request + ')', false)();
+      request = %CompileString('(' + json_request + ')')();
 
       // Create an initial response.
       response = this.createResponse(request);
@@ -1751,11 +1747,6 @@ DebugCommandProcessor.prototype.backtraceRequest_ = function(request, response) 
 };
 
 
-DebugCommandProcessor.prototype.backtracec = function(cmd, args) {
-  return this.exec_state_.cframesValue();
-};
-
-
 DebugCommandProcessor.prototype.frameRequest_ = function(request, response) {
   // No frames no source.
   if (this.exec_state_.frameCount() == 0) {
@@ -2118,7 +2109,7 @@ DebugCommandProcessor.prototype.changeLiveRequest_ = function(request, response)
   }
   var script_id = request.arguments.script_id;
   var preview_only = !!request.arguments.preview_only;
-  
+
   var scripts = %DebugGetLoadedScripts();
 
   var the_script = null;
@@ -2139,11 +2130,11 @@ DebugCommandProcessor.prototype.changeLiveRequest_ = function(request, response)
   }
 
   var new_source = request.arguments.new_source;
-  
+
   var result_description = Debug.LiveEdit.SetScriptSource(the_script,
       new_source, preview_only, change_log);
   response.body = {change_log: change_log, result: result_description};
-  
+
   if (!preview_only && !this.running_ && result_description.stack_modified) {
     response.body.stepin_recommended = true;
   }
@@ -2204,29 +2195,6 @@ function NumberToHex8Str(n) {
   }
   return r;
 };
-
-DebugCommandProcessor.prototype.formatCFrames = function(cframes_value) {
-  var result = "";
-  if (cframes_value == null || cframes_value.length == 0) {
-    result += "(stack empty)";
-  } else {
-    for (var i = 0; i < cframes_value.length; ++i) {
-      if (i != 0) result += "\n";
-      result += this.formatCFrame(cframes_value[i]);
-    }
-  }
-  return result;
-};
-
-
-DebugCommandProcessor.prototype.formatCFrame = function(cframe_value) {
-  var result = "";
-  result += "0x" + NumberToHex8Str(cframe_value.address);
-  if (!IS_UNDEFINED(cframe_value.text)) {
-    result += " " + cframe_value.text;
-  }
-  return result;
-}
 
 
 /**
