@@ -38,6 +38,7 @@
 #include "qscriptvalue_p.h"
 #include "qscriptengine_p.h"
 #include "qscriptqobject_p.h"
+#include "qscriptisolate_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -157,6 +158,7 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate *engine, v8::Handl
 QScriptValuePrivate::~QScriptValuePrivate()
 {
     if (isJSBased()) {
+        QScriptIsolate api(m_engine);
         m_value.Dispose();
     } else if (isStringBased()) {
         delete u.m_string;

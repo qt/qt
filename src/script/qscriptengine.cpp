@@ -640,7 +640,6 @@ v8::Handle<v8::Object> QScriptEnginePrivate::makeVariant(const QVariant &value)
 
 static inline v8::Isolate *createEnterIsolate()
 {
-    v8::V8::Initialize();
     v8::Isolate *isolate = v8::Isolate::New();
     isolate->Enter();
     // FIXME It doesn't capture the stack, so backtrace test is failing.
