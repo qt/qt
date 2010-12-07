@@ -12105,4 +12105,5 @@ EXPORTS
 	_ZN15QStaticTextItemD1Ev @ 12104 NONAME
 	_ZN15QStaticTextItemD2Ev @ 12105 NONAME
 	_ZN19QEventDispatcherS6031reactivateDeferredActiveObjectsEv @ 12106 NONAME
+	_ZN12QLineControl21resetCursorBlinkTimerEv @ 12107 NONAME
 
