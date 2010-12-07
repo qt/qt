@@ -946,6 +946,11 @@ class Value : public Data {
    */
   V8EXPORT bool IsRegExp() const;
 
+  /**
+   * Returns true if this value is an Error.
+   */
+  V8EXPORT bool IsError() const;
+
   V8EXPORT Local<Boolean> ToBoolean() const;
   V8EXPORT Local<Number> ToNumber() const;
   V8EXPORT Local<String> ToString() const;
