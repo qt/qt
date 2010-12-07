@@ -3304,6 +3304,49 @@ class V8EXPORT Context {
     Handle<Context> context_;
   };
 
+#ifdef QT_BUILD_SCRIPT_LIB
+  /**
+   * Creates a new scope context.
+   *
+   * The currently entered context will be the new context's previous
+   * scope.
+   *
+   * Properties on the given object, scope_object, are accessible from
+   * the new scope.
+   */
+  static Local<Context> NewScopeContext(Handle<Object> scope_object);
+
+  /**
+   * Creates a new function context.
+   *
+   * The currently entered context will be the new context's previous
+   * scope.
+   */
+  static Local<Context> NewFunctionContext();
+
+  /**
+   * Returns the extension object of this context.
+   *
+   * For a scope context, the extension object is the object that was
+   * passed to NewScopeContext().
+   *
+   * For a function context, the extension object is the object that's
+   * used to hold the context's dynamically instantiated variables
+   * (e.g. by eval()).
+   */
+  Local<Object> GetExtensionObject();
+
+  /**
+   * Gets the previous context.
+   */
+  Local<Context> GetPrevious();
+
+  /**
+   * Gets the context corresponding to the top-most JavaScript caller.
+   */
+  static Local<Context> GetCallerContext();
+#endif
+
  private:
   friend class Value;
   friend class Script;

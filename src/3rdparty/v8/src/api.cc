@@ -3835,6 +3835,87 @@ void Context::DetachGlobal() {
 }
 
 
+#ifdef QT_BUILD_SCRIPT_LIB
+Local<Context> v8::Context::NewScopeContext(v8::Handle<Object> scope_object) {
+  i::Isolate* isolate = i::Isolate::Current();
+  EnsureInitializedForIsolate(isolate, "v8::Context::NewScopeContext()");
+  ON_BAILOUT(isolate, "v8::Context::NewScopeContext()", return Local<Context>());
+  LOG_API(isolate, "Context::NewScopeContext");
+
+  ENTER_V8(isolate);
+  i::Handle<i::JSObject> obj = Utils::OpenHandle(*scope_object);
+  i::Handle<i::Context> current(isolate->context());
+  i::Handle<i::Context> context = isolate->factory()->NewWithContext(current, obj, /*is_catch_context=*/false);
+  return Utils::ToLocal(context);
+}
+
+
+Local<Context> v8::Context::NewFunctionContext() {
+  i::Isolate* isolate = i::Isolate::Current();
+  EnsureInitializedForIsolate(isolate, "v8::Context::NewFunctionContext()");
+  ON_BAILOUT(isolate, "v8::Context::NewFunctionContext()", return Local<Context>());
+  LOG_API(isolate, "Context::NewFunctionContext");
+
+  ENTER_V8(isolate);
+  i::Handle<i::JSFunction> closure(isolate->global_context()->closure());
+  i::Handle<i::Context> context = isolate->factory()->NewFunctionContext(i::Context::MIN_CONTEXT_SLOTS,
+                                                                         closure);
+  return Utils::ToLocal(context);
+}
+
+
+Local<Context> v8::Context::GetPrevious() {
+  i::Isolate* isolate = i::Isolate::Current();
+  if (IsDeadCheck(isolate, "v8::Context::GetPrevious()")) return Local<Context>();
+  ENTER_V8(isolate);
+  i::Handle<i::Context> env = Utils::OpenHandle(this);
+  if (env->IsGlobalContext()) return Local<Context>();
+  i::Context* previous = 0;
+  if (env->is_function_context())
+    previous = env->closure()->context();
+  else
+    previous = env->previous();
+  if (!previous) return Local<Context>();
+  i::Handle<i::Context> previous_handle(previous);
+  return Utils::ToLocal(previous_handle);
+}
+
+
+Local<Object> v8::Context::GetExtensionObject() {
+  i::Isolate* isolate = i::Isolate::Current();
+  if (IsDeadCheck(isolate, "v8::Context::GetExtensionObject()")) return Local<Object>();
+  ENTER_V8(isolate);
+  i::Handle<i::Context> env = Utils::OpenHandle(this);
+  if (!env->has_extension()) {
+      if (env->is_function_context()) {
+          // Create extension object on demand.
+          i::Handle<i::JSObject> ext = isolate->factory()->NewJSObject(
+              isolate->context_extension_function());
+          env->set_extension(*ext);
+      } else {
+          return Local<Object>();
+      }
+  }
+  i::Handle<i::Object> extension_handle(env->extension());
+  return Local<v8::Object>(ToApi<Object>(extension_handle));
+}
+
+
+v8::Local<v8::Context> Context::GetCallerContext()
+{
+  i::JavaScriptFrameIterator it;
+  if (it.done())
+      return Local<Context>();
+  i::JavaScriptFrame *frame = it.frame();
+  ASSERT(frame);
+  i::Context *context = (i::Context*)frame->context();
+  ASSERT(context);
+  i::Handle<i::Context> context_handle(context);
+  return Utils::ToLocal(context_handle);
+}
+#endif
+
+
 void Context::ReattachGlobal(Handle<Object> global_object) {
   i::Isolate* isolate = i::Isolate::Current();
   if (IsDeadCheck(isolate, "v8::Context::ReattachGlobal()")) return;
