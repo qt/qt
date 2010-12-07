@@ -129,10 +129,7 @@ private slots:
     void isNull();
     void task_246446();
 
-#ifdef Q_WS_QWS
     void convertFromImageNoDetach();
-#endif
-
     void convertFromImageDetach();
 
 #if defined(Q_WS_WIN)
@@ -913,11 +910,13 @@ void tst_QPixmap::isNull()
     }
 }
 
-#ifdef Q_WS_QWS
 void tst_QPixmap::convertFromImageNoDetach()
 {
+    QPixmap randomPixmap(10, 10);
+    if (randomPixmap.pixmapData()->classId() != QPixmapData::RasterClass)
+        QSKIP("Test only valid for raster pixmaps", SkipAll);
+
     //first get the screen format
-    QPixmap randomPixmap(10,10);
     QImage::Format screenFormat = randomPixmap.toImage().format();
     QVERIFY(screenFormat != QImage::Format_Invalid);
 
@@ -932,7 +931,6 @@ void tst_QPixmap::convertFromImageNoDetach()
     const QImage constCopy = copy;
     QVERIFY(constOrig.bits() == constCopy.bits());
 }
-#endif //Q_WS_QWS
 
 void tst_QPixmap::convertFromImageDetach()
 {

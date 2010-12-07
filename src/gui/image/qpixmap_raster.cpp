@@ -50,6 +50,7 @@
 #include "qimage.h"
 #include <QBuffer>
 #include <QImageReader>
+#include <private/qimage_p.h>
 #include <private/qsimd_p.h>
 #include <private/qwidget_p.h>
 #include <private/qdrawhelper_p.h>
@@ -303,11 +304,13 @@ bool QRasterPixmapData::hasAlphaChannel() const
 
 QImage QRasterPixmapData::toImage() const
 {
-    if (image.paintEngine()
-        && image.paintEngine()->isActive()
-        && image.paintEngine()->paintDevice() == &image)
-    {
-        return image.copy();
+    if (!image.isNull()) {
+        QImageData *data = const_cast<QImage &>(image).data_ptr();
+        if (data->paintEngine && data->paintEngine->isActive()
+            && data->paintEngine->paintDevice() == &image)
+        {
+            return image.copy();
+        }
     }
 
     return image;
