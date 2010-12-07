@@ -573,7 +573,7 @@ void DitaXmlGenerator::generateTree(const Tree *tree)
     findAllNamespaces(tree->root());
     findAllSince(tree->root());
 
-    PageGenerator::generateTree(tree, marker);
+    PageGenerator::generateTree(tree);
     writeDitaMap();
 }
 
