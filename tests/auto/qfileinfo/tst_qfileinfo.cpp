@@ -1648,6 +1648,7 @@ void tst_QFileInfo::detachingOperations()
 }
 
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if defined (Q_OS_WIN)
 BOOL IsUserAdmin()
 {
     BOOL b;
@@ -1668,6 +1669,7 @@ BOOL IsUserAdmin()
 
     return(b);
 }
+#endif
 
 void tst_QFileInfo::owner()
 {
