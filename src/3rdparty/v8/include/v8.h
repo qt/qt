@@ -1698,6 +1698,20 @@ class Object : public Value {
 
   V8EXPORT static Local<Object> New();
   static inline Object* Cast(Value* obj);
+
+#ifdef QT_BUILD_SCRIPT_LIB
+  /**
+   * Returns wether the object can be called as a function
+   */
+  V8EXPORT bool IsCallable();
+  /**
+   * Call the object as a function
+   */
+  V8EXPORT Local<Value> Call(Handle<Object> recv,
+                             int argc,
+                             Handle<Value> argv[]);
+#endif
+
  private:
   V8EXPORT Object();
   V8EXPORT static void CheckCast(Value* obj);

@@ -3213,6 +3213,49 @@ int v8::Object::GetIndexedPropertiesExternalArrayDataLength() {
   }
 }
 
+#ifdef QT_BUILD_SCRIPT_LIB
+bool v8::Object::IsCallable() {
+  i::Isolate* isolate = i::Isolate::Current();
+  ON_BAILOUT(isolate, "v8::Object::IsCallable()", return false);
+  ENTER_V8(isolate);
+  i::Handle<i::JSObject> obj = Utils::OpenHandle(this);
+  if (obj->IsJSFunction())
+      return true;
+  HandleScope scope;
+  return i::Execution::GetFunctionDelegate(obj)->IsJSFunction();
+}
+
+Local<v8::Value> v8::Object::Call(v8::Handle<v8::Object> recv, int argc,
+                                v8::Handle<v8::Value> argv[]) {
+  i::Isolate* isolate = i::Isolate::Current();
+  ON_BAILOUT(isolate, "v8::Object::Call()", return Local<v8::Value>());
+  LOG_API(isolate, "Object::Call");
+  ENTER_V8(isolate);
+  i::Object* raw_result = NULL;
+  {
+      HandleScope scope;
+      i::Handle<i::JSObject> obj = Utils::OpenHandle(this);
+      i::Handle<i::Object> recv_obj = Utils::OpenHandle(*recv);
+      STATIC_ASSERT(sizeof(v8::Handle<v8::Value>) == sizeof(i::Object**));
+      i::Object*** args = reinterpret_cast<i::Object***>(argv);
+      i::Handle<i::JSFunction> fun;
+      if (obj->IsJSFunction()) {
+          fun = i::Handle<i::JSFunction>::cast(obj);
+      } else {
+          fun = i::Handle<i::JSFunction>::cast(i::Execution::GetFunctionDelegate(obj));
+          recv_obj = obj;
+      }
+      EXCEPTION_PREAMBLE(isolate);
+      i::Handle<i::Object> returned =
+      i::Execution::Call(fun, recv_obj, argc, args, &has_pending_exception);
+      EXCEPTION_BAILOUT_CHECK(isolate, Local<Object>());
+      raw_result = *returned;
+  }
+  i::Handle<i::Object> result(raw_result);
+  return Utils::ToLocal(result);
+}
+#endif
+
 
 Local<v8::Object> Function::NewInstance() const {
   return NewInstance(0, NULL);
