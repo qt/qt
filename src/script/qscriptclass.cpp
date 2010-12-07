@@ -113,6 +113,41 @@ v8::Handle<v8::Value> QScriptClassObject::setProperty(uint32_t index, v8::Local<
     return handleScope.Close(setProperty(str, value));
 }
 
+v8::Handle<v8::Boolean> QScriptClassObject::removeProperty(v8::Handle<v8::String> property)
+{
+    if (!m_scriptclass) {
+        Q_ASSERT(!m_original.IsEmpty());
+        bool ret = m_original->Delete(property);
+        return v8::Boolean::New(ret);
+    }
+
+    v8::HandleScope handleScope;
+    QScriptString str = QScriptStringPrivate::get(new QScriptStringPrivate(engine, property));
+    QScriptValue that = QScriptValuePrivate::get(engine->currentContext()->thisObject());
+
+    uint id = 0;
+    QScriptClass::QueryFlags userFlags =
+        m_scriptclass->userCallback()->queryProperty(that, str, QScriptClass::HandlesWriteAccess, &id);
+
+    if (!(userFlags & QScriptClass::HandlesWriteAccess)) {
+        if (m_original.IsEmpty())
+            setOriginal(v8::Object::New());
+        bool ret = m_original->Delete(property);
+        return v8::Boolean::New(ret);
+    }
+
+    m_scriptclass->userCallback()->setProperty(that, str, id, QScriptValue());
+    return v8::True();
+}
+
+v8::Handle<v8::Boolean> QScriptClassObject::removeProperty(uint32_t index)
+{
+    v8::HandleScope handleScope;
+    // FIXME it could be faster
+    v8::Handle<v8::String> str = QScriptConverter::toString(QString::number(index));
+    return handleScope.Close(removeProperty(str));
+}
+
 v8::Handle<v8::Integer> QScriptClassObject::propertyFlags(v8::Handle<v8::String> property)
 {
     v8::HandleScope handleScope;
@@ -191,13 +226,13 @@ v8::Handle<v8::FunctionTemplate> QScriptClassObject::createFunctionTemplate(QScr
     instTempl->SetNamedPropertyHandler(QScriptV8ObjectWrapperHelper::namedPropertyGetter<QScriptClassObject>,
                                        QScriptV8ObjectWrapperHelper::namedPropertySetter<QScriptClassObject>,
                                        QScriptV8ObjectWrapperHelper::namedPropertyQuery<QScriptClassObject>,
-                                       /* QScriptV8ObjectWrapperHelper::namedPropertyDeleter<QScriptClassObject> */ 0,
+                                       QScriptV8ObjectWrapperHelper::namedPropertyDeleter<QScriptClassObject>,
                                        QScriptV8ObjectWrapperHelper::namedPropertyEnumerator<QScriptClassObject>);
 
     instTempl->SetIndexedPropertyHandler(QScriptV8ObjectWrapperHelper::indexedPropertyGetter<QScriptClassObject>,
                                         QScriptV8ObjectWrapperHelper::indexedPropertySetter<QScriptClassObject>,
                                         QScriptV8ObjectWrapperHelper::indexedPropertyQuery<QScriptClassObject>,
-                                        /* QScriptV8ObjectWrapperHelper::namedPropertyDeleter<QScriptClassObject> */ 0,
+                                        QScriptV8ObjectWrapperHelper::indexedPropertyDeleter<QScriptClassObject>,
                                         QScriptV8ObjectWrapperHelper::indexedPropertyEnumerator<QScriptClassObject>);
 
     return handleScope.Close(funcTempl);

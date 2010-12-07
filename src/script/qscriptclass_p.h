@@ -76,6 +76,8 @@ public:
     v8::Handle<v8::Value> setProperty(v8::Handle<v8::String> property, v8::Local<v8::Value> value);
     v8::Handle<v8::Value> setProperty(uint32_t property, v8::Local<v8::Value> value);
     v8::Handle<v8::Array> enumerate();
+    v8::Handle<v8::Boolean> removeProperty(uint32_t property);
+    v8::Handle<v8::Boolean> removeProperty(v8::Handle<v8::String> property);
 
     static v8::Handle<v8::FunctionTemplate> createFunctionTemplate(QScriptEnginePrivate *engine);
     static v8::Handle<v8::Value> newInstance(QScriptClassPrivate* m_scriptclass, v8::Handle<v8::Object> previousValue);

@@ -100,13 +100,13 @@ static v8::Handle<v8::Integer> indexedPropertyQuery(uint32_t index, const v8::Ac
 }
 
 template <typename T>
-static v8::Handle<v8::Integer> namedPropertyDeleter(v8::Local<v8::String> property, const v8::AccessorInfo &info)
+static v8::Handle<v8::Boolean> namedPropertyDeleter(v8::Local<v8::String> property, const v8::AccessorInfo &info)
 {
     QTSCRIPT_V8OBJECT_DATA_CALLBACK(info, data->removeProperty(property));
 }
 
 template <typename T>
-static v8::Handle<v8::Integer> indexedPropertyDeleter(uint32_t index, const v8::AccessorInfo &info)
+static v8::Handle<v8::Boolean> indexedPropertyDeleter(uint32_t index, const v8::AccessorInfo &info)
 {
     QTSCRIPT_V8OBJECT_DATA_CALLBACK(info, data->removeProperty(index));
 }
