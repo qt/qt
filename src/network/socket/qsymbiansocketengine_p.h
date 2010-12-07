@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QNATIVESOCKETENGINE_P_H
-#define QNATIVESOCKETENGINE_P_H
+#ifndef QSYMBIANSOCKETENGINE_P_H
+#define QSYMBIANSOCKETENGINE_P_H
 
 //
 //  W A R N I N G
@@ -54,63 +54,27 @@
 //
 #include "QtNetwork/qhostaddress.h"
 #include "private/qabstractsocketengine_p.h"
-#ifndef Q_OS_WIN
-#  include "qplatformdefs.h"
-#else
-#  include <winsock2.h>
-#endif
+#include "qplatformdefs.h"
 
-#ifdef Q_OS_SYMBIAN
 #include <private/qeventdispatcher_symbian_p.h>
 #include <unistd.h>
 #include <es_sock.h>
 #include <in_sock.h>
-#endif
+// TODO
+
 
 QT_BEGIN_NAMESPACE
 
-// Use our own defines and structs which we know are correct
-#  define QT_SS_MAXSIZE 128
-#  define QT_SS_ALIGNSIZE (sizeof(qint64))
-#  define QT_SS_PAD1SIZE (QT_SS_ALIGNSIZE - sizeof (short))
-#  define QT_SS_PAD2SIZE (QT_SS_MAXSIZE - (sizeof (short) + QT_SS_PAD1SIZE + QT_SS_ALIGNSIZE))
-struct qt_sockaddr_storage {
-      short ss_family;
-      char __ss_pad1[QT_SS_PAD1SIZE];
-      qint64 __ss_align;
-      char __ss_pad2[QT_SS_PAD2SIZE];
-};
 
-// sockaddr_in6 size changed between old and new SDK
-// Only the new version is the correct one, so always
-// use this structure.
-struct qt_in6_addr {
-    quint8 qt_s6_addr[16];
-};
-struct qt_sockaddr_in6 {
-    short   sin6_family;            /* AF_INET6 */
-    quint16 sin6_port;              /* Transport level port number */
-    quint32 sin6_flowinfo;          /* IPv6 flow information */
-    struct  qt_in6_addr sin6_addr;  /* IPv6 address */
-    quint32 sin6_scope_id;          /* set of interfaces for a scope */
-};
-
-union qt_sockaddr {
-    sockaddr a;
-    sockaddr_in a4;
-    qt_sockaddr_in6 a6;
-    qt_sockaddr_storage storage;
-};
-
-class QNativeSocketEnginePrivate;
+class QSymbianSocketEnginePrivate;
 class QNetworkInterface;
 
-class Q_AUTOTEST_EXPORT QNativeSocketEngine : public QAbstractSocketEngine
+class Q_AUTOTEST_EXPORT QSymbianSocketEngine : public QAbstractSocketEngine
 {
     Q_OBJECT
 public:
-    QNativeSocketEngine(QObject *parent = 0);
-    ~QNativeSocketEngine();
+    QSymbianSocketEngine(QObject *parent = 0);
+    ~QSymbianSocketEngine();
 
     bool initialize(QAbstractSocket::SocketType type, QAbstractSocket::NetworkLayerProtocol protocol = QAbstractSocket::IPv4Protocol);
     bool initialize(int socketDescriptor, QAbstractSocket::SocketState socketState = QAbstractSocket::ConnectedState);
@@ -156,6 +120,7 @@ public:
     int option(SocketOption option) const;
     bool setOption(SocketOption option, int value);
 
+    // FIXME actually implement
     bool waitForRead(int msecs = 30000, bool *timedOut = 0);
     bool waitForWrite(int msecs = 30000, bool *timedOut = 0);
     bool waitForReadOrWrite(bool *readyToRead, bool *readyToWrite,
@@ -170,32 +135,23 @@ public:
     void setExceptionNotificationEnabled(bool enable);
 
 public Q_SLOTS:
+    // TODO: Why do we do this? This is private Qt implementation stuff anyway, no need for it
     // non-virtual override;
     void connectionNotification();
 
 private:
-    Q_DECLARE_PRIVATE(QNativeSocketEngine)
-    Q_DISABLE_COPY(QNativeSocketEngine)
+    Q_DECLARE_PRIVATE(QSymbianSocketEngine)
+    Q_DISABLE_COPY(QSymbianSocketEngine)
 };
-
-#ifdef Q_OS_WIN
-class QWindowsSockInit
-{
-public:
-    QWindowsSockInit();
-    ~QWindowsSockInit();
-    int version;
-};
-#endif
 
 class QSocketNotifier;
 
-class QNativeSocketEnginePrivate : public QAbstractSocketEnginePrivate
+class QSymbianSocketEnginePrivate : public QAbstractSocketEnginePrivate
 {
-    Q_DECLARE_PUBLIC(QNativeSocketEngine)
+    Q_DECLARE_PUBLIC(QSymbianSocketEngine)
 public:
-    QNativeSocketEnginePrivate();
-    ~QNativeSocketEnginePrivate();
+    QSymbianSocketEnginePrivate();
+    ~QSymbianSocketEnginePrivate();
 
     int socketDescriptor;
 #ifdef Q_OS_SYMBIAN
@@ -206,10 +162,6 @@ public:
 #endif
 
     QSocketNotifier *readNotifier, *writeNotifier, *exceptNotifier;
-
-#ifdef Q_OS_WIN
-    QWindowsSockInit winSock;
-#endif
 
     enum ErrorString {
         NonBlockingInitFailedErrorString,
@@ -248,37 +200,11 @@ public:
 #endif
     void setError(QAbstractSocket::SocketError error, ErrorString errorString) const;
 
-    // native functions
-    int option(QNativeSocketEngine::SocketOption option) const;
-    bool setOption(QNativeSocketEngine::SocketOption option, int value);
-
-    bool createNewSocket(QAbstractSocket::SocketType type, QAbstractSocket::NetworkLayerProtocol protocol);
-
-    bool nativeConnect(const QHostAddress &address, quint16 port);
-    bool nativeBind(const QHostAddress &address, quint16 port);
-    bool nativeListen(int backlog);
-    int nativeAccept();
-    bool nativeJoinMulticastGroup(const QHostAddress &groupAddress,
-                                  const QNetworkInterface &iface);
-    bool nativeLeaveMulticastGroup(const QHostAddress &groupAddress,
-                                   const QNetworkInterface &iface);
-    QNetworkInterface nativeMulticastInterface() const;
-    bool nativeSetMulticastInterface(const QNetworkInterface &iface);
-    qint64 nativeBytesAvailable() const;
-
-    bool nativeHasPendingDatagrams() const;
-    qint64 nativePendingDatagramSize() const;
-    qint64 nativeReceiveDatagram(char *data, qint64 maxLength,
-                                     QHostAddress *address, quint16 *port);
-    qint64 nativeSendDatagram(const char *data, qint64 length,
-                                  const QHostAddress &host, quint16 port);
-    qint64 nativeRead(char *data, qint64 maxLength);
-    qint64 nativeWrite(const char *data, qint64 length);
+    // FIXME
     int nativeSelect(int timeout, bool selectForRead) const;
     int nativeSelect(int timeout, bool checkRead, bool checkWrite,
-		     bool *selectForRead, bool *selectForWrite) const;
+                           bool *selectForRead, bool *selectForWrite) const;
 
-    void nativeClose();
 
     bool checkProxy(const QHostAddress &address);
     bool fetchConnectionParameters();
@@ -286,4 +212,4 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QNATIVESOCKETENGINE_P_H
+#endif // QSYMBIANSOCKETENGINE_P_H
