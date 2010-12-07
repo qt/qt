@@ -104,8 +104,16 @@ void QAbstractTestLogger::startLogging()
 void QAbstractTestLogger::stopLogging()
 {
     QTEST_ASSERT(QTest::stream);
-    if (QTest::stream != stdout)
+    if (QTest::stream != stdout) {
         fclose(QTest::stream);
+    } else {
+#ifdef Q_OS_SYMBIAN
+        // Convenience sleep for Symbian and TRK. Without this sleep depending on the timing the
+        // user would not see the complete output because it is still pending in any of the buffers
+        // before arriving via the USB port on the development PC
+        User::AfterHighRes(2*1000*1000);
+#endif
+    }
     QTest::stream = 0;
 }
 
