@@ -198,12 +198,6 @@ public:
     ~QNativeSocketEnginePrivate();
 
     int socketDescriptor;
-#ifdef Q_OS_SYMBIAN
-    mutable RSocket nativeSocket;
-    RSocketServ& socketServer;
-    RConnection connection; //TODO: shared ref
-    mutable RTimer selectTimer;
-#endif
 
     QSocketNotifier *readNotifier, *writeNotifier, *exceptNotifier;
 
@@ -241,11 +235,6 @@ public:
         UnknownSocketErrorString = -1
     };
 
-#ifdef Q_OS_SYMBIAN
-    void getPortAndAddress(const TInetAddr& a, quint16 *port, QHostAddress *addr);
-    void setPortAndAddress(TInetAddr& nativeAddr, quint16 port, const QHostAddress &addr);
-    void setError(TInt symbianError);
-#endif
     void setError(QAbstractSocket::SocketError error, ErrorString errorString) const;
 
     // native functions

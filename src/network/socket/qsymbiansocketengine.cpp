@@ -53,6 +53,7 @@
 #ifndef QT_NO_IPV6IFNAME
 #include <net/if.h>
 #endif
+# include <private/qcore_symbian_p.h>
 
 #define QNATIVESOCKETENGINE_DEBUG
 
@@ -229,6 +230,56 @@ int QSymbianSocketEnginePrivate::option(QAbstractSocketEngine::SocketOption opt)
 }
 
 
+void QSymbianSocketEnginePrivate::setPortAndAddress(TInetAddr& nativeAddr, quint16 port, const QHostAddress &addr)
+{
+    nativeAddr.SetPort(port);
+#if !defined(QT_NO_IPV6)
+    if (addr.protocol() == QAbstractSocket::IPv6Protocol) {
+#ifndef QT_NO_IPV6IFNAME
+        TPckgBuf<TSoInetIfQuery> query;
+        query().iName = qt_QString2TPtrC(addr.scopeId());
+        TInt err = nativeSocket.GetOpt(KSoInetIfQueryByName, KSolInetIfQuery, query);
+        if(!err)
+            nativeAddr.SetScope(query().iIndex);
+        else
+            nativeAddr.SetScope(0);
+#else
+        nativeAddr.SetScope(addr.scopeId().toInt());
+#endif
+        Q_IPV6ADDR ip6 = addr.toIPv6Address();
+        TIp6Addr v6addr;
+        memcpy(v6addr.u.iAddr8, ip6.c, 16);
+        nativeAddr.SetAddress(v6addr);
+    } else
+#endif
+    if (addr.protocol() == QAbstractSocket::IPv4Protocol) {
+        nativeAddr.SetAddress(addr.toIPv4Address());
+    } else {
+        qWarning("unsupported network protocol (%d)", addr.protocol());
+    }
+}
+
+QSymbianSocketEnginePrivate::QSymbianSocketEnginePrivate() :
+    socketDescriptor(-1),
+    socketServer(qt_symbianGetSocketServer()),
+    readNotifier(0),
+    writeNotifier(0),
+    exceptNotifier(0)
+{
+}
+
+
+QSymbianSocketEngine::QSymbianSocketEngine(QObject *parent)
+    : QAbstractSocketEngine(*new QSymbianSocketEnginePrivate(), parent)
+{
+}
+
+
+QSymbianSocketEngine::~QSymbianSocketEngine()
+{
+    close();
+}
+
 /*
     Sets the socket option \a opt to \a v.
 */
@@ -274,35 +325,6 @@ bool QSymbianSocketEngine::setOption(QAbstractSocketEngine::SocketOption opt, in
     }
 
     return (KErrNone == nativeSocket.SetOpt(n, level, v));
-}
-
-void QSymbianSocketEnginePrivate::setPortAndAddress(TInetAddr& nativeAddr, quint16 port, const QHostAddress &addr)
-{
-    nativeAddr.SetPort(port);
-#if !defined(QT_NO_IPV6)
-    if (addr.protocol() == QAbstractSocket::IPv6Protocol) {
-#ifndef QT_NO_IPV6IFNAME
-        TPckgBuf<TSoInetIfQuery> query;
-        query().iName = qt_QString2TPtrC(addr.scopeId());
-        TInt err = nativeSocket.GetOpt(KSoInetIfQueryByName, KSolInetIfQuery, query);
-        if(!err)
-            nativeAddr.SetScope(query().iIndex);
-        else
-            nativeAddr.SetScope(0);
-#else
-        nativeAddr.SetScope(addr.scopeId().toInt());
-#endif
-        Q_IPV6ADDR ip6 = addr.toIPv6Address();
-        TIp6Addr v6addr;
-        memcpy(v6addr.u.iAddr8, ip6.c, 16);
-        nativeAddr.SetAddress(v6addr);
-    } else
-#endif
-    if (addr.protocol() == QAbstractSocket::IPv4Protocol) {
-        nativeAddr.SetAddress(addr.toIPv4Address());
-    } else {
-        qWarning("unsupported network protocol (%d)", addr.protocol());
-    }
 }
 
 bool QSymbianSocketEngine::connect(const QHostAddress &addr, quint16 port)
