@@ -259,7 +259,7 @@ public:
     QDeclarativeStateGroup *_states();
     QDeclarativeStateGroup *_stateGroup;
 
-    QDeclarativeItem::TransformOrigin origin:4;
+    QDeclarativeItem::TransformOrigin origin:5;
     bool widthValid:1;
     bool heightValid:1;
     bool componentComplete:1;
