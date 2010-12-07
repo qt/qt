@@ -421,58 +421,28 @@ void QDeclarativeItemKeyFilter::componentComplete()
     \since 4.7
     \brief The KeyNavigation attached property supports key navigation by arrow keys.
 
-    It is common in key-based UIs to use arrow keys to navigate
-    between focused items.  The KeyNavigation property provides a
-    convenient way of specifying which item will gain focus
-    when an arrow key is pressed.  The following example provides
-    key navigation for a 2x2 grid of items.
+    Key-based user interfaces commonly allow the use of arrow keys to navigate between
+    focusable items.  The KeyNavigation attached property enables this behavior by providing a
+    convenient way to specify the item that should gain focus when an arrow or tab key is pressed.
 
-    \code
-    Grid {
-        columns: 2
-        width: 100; height: 100
-        Rectangle {
-            id: item1
-            focus: true
-            width: 50; height: 50
-            color: focus ? "red" : "lightgray"
-            KeyNavigation.right: item2
-            KeyNavigation.down: item3
-        }
-        Rectangle {
-            id: item2
-            width: 50; height: 50
-            color: focus ? "red" : "lightgray"
-            KeyNavigation.left: item1
-            KeyNavigation.down: item4
-        }
-        Rectangle {
-            id: item3
-            width: 50; height: 50
-            color: focus ? "red" : "lightgray"
-            KeyNavigation.right: item4
-            KeyNavigation.up: item1
-        }
-        Rectangle {
-            id: item4
-            width: 50; height: 50
-            color: focus ? "red" : "lightgray"
-            KeyNavigation.left: item3
-            KeyNavigation.up: item2
-        }
-    }
-    \endcode
+    The following example provides key navigation for a 2x2 grid of items:
 
-    By default KeyNavigation receives key events after the item it is attached to.
-    If the item accepts an arrow key event, the KeyNavigation
-    attached property will not receive an event for that key.  Setting the
-    \l priority property to KeyNavigation.BeforeItem allows handling
-    of the key events before normal item processing.
+    \snippet doc/src/snippets/declarative/keynavigation.qml 0
 
-    If an item has been set for a direction and the KeyNavigation
-    attached property receives the corresponding
-    key press and release events, the events will be accepted by
-    KeyNavigation and will not propagate any further.
+    The top-left item initially receives focus by setting \l {Item::}{focus} to
+    \c true. When an arrow key is pressed, the focus will move to the
+    appropriate item, as defined by the value that has been set for
+    the KeyNavigation \l left, \l right, \l up or \l down properties.
+
+    Note that if a KeyNavigation attached property receives the key press and release
+    events for a requested arrow or tab key, the event is accepted and does not
+    propagate any further.
+
+    By default, KeyNavigation receives key events after the item to which it is attached.
+    If the item accepts the key event, the KeyNavigation attached property will not
+    receive an event for that key.  Setting the \l priority property to
+    \c KeyNavigation.BeforeItem allows the event to be used for key navigation
+    before the item, rather than after.
 
     \sa {Keys}{Keys attached property}
 */
@@ -599,7 +569,7 @@ void QDeclarativeKeyNavigationAttached::setBacktab(QDeclarativeItem *i)
 
     \list
     \o KeyNavigation.BeforeItem - process the key events before normal
-    item key processing.  If the event is accepted it will not
+    item key processing.  If the event is used for key navigation, it will be accepted and will not
     be passed on to the item.
     \o KeyNavigation.AfterItem (default) - process the key events after normal item key
     handling.  If the item accepts the key event it will not be
