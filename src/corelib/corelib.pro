@@ -37,10 +37,3 @@ symbian: {
     MMP_RULES -= PAGED
     MMP_RULES *= UNPAGED
 }
-
-neon {
-    DEFINES += QT_HAVE_NEON
-    QMAKE_CXXFLAGS *= -mfpu=neon
-}
-
-

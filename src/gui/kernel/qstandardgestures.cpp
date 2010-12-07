@@ -194,29 +194,28 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
             d->hotSpot = p1.screenPos();
             d->isHotSpotSet = true;
 
+            QPointF centerPoint = (p1.screenPos() + p2.screenPos()) / 2.0;
             if (d->isNewSequence) {
                 d->startPosition[0] = p1.screenPos();
                 d->startPosition[1] = p2.screenPos();
+                d->lastCenterPoint = centerPoint;
+            } else {
+                d->lastCenterPoint = d->centerPoint;
             }
-            QLineF line(p1.screenPos(), p2.screenPos());
-            QLineF lastLine(p1.lastScreenPos(),  p2.lastScreenPos());
-            QLineF tmp(line);
-            tmp.setLength(line.length() / 2.);
-            QPointF centerPoint = tmp.p2();
-
-            d->lastCenterPoint = d->centerPoint;
             d->centerPoint = centerPoint;
+
             d->changeFlags |= QPinchGesture::CenterPointChanged;
 
-            const qreal scaleFactor = line.length() / lastLine.length();
-
             if (d->isNewSequence) {
-                d->lastScaleFactor = scaleFactor;
+                d->scaleFactor = 1.0;
+                d->lastScaleFactor = 1.0;
             } else {
                 d->lastScaleFactor = d->scaleFactor;
+                QLineF line(p1.screenPos(), p2.screenPos());
+                QLineF lastLine(p1.lastScreenPos(),  p2.lastScreenPos());
+                d->scaleFactor = line.length() / lastLine.length();
             }
-            d->scaleFactor = scaleFactor;
-            d->totalScaleFactor = d->totalScaleFactor * scaleFactor;
+            d->totalScaleFactor = d->totalScaleFactor * d->scaleFactor;
             d->changeFlags |= QPinchGesture::ScaleFactorChanged;
 
             qreal angle = QLineF(p1.screenPos(), p2.screenPos()).angle();
@@ -227,7 +226,7 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
                 startAngle -= 360;
             const qreal rotationAngle = startAngle - angle;
             if (d->isNewSequence)
-                d->lastRotationAngle = rotationAngle;
+                d->lastRotationAngle = 0.0;
             else
                 d->lastRotationAngle = d->rotationAngle;
             d->rotationAngle = rotationAngle;

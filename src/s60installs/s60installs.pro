@@ -35,6 +35,8 @@ symbian: {
     }
     VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 
+    DESTDIR = $$QMAKE_LIBDIR_QT
+
     qtlibraries.sources = \
         $$QMAKE_LIBDIR_QT/QtCore$${QT_LIBINFIX}.dll \
         $$QMAKE_LIBDIR_QT/QtXml$${QT_LIBINFIX}.dll \
@@ -83,6 +85,12 @@ symbian: {
         bearer_plugin.sources = $$QT_BUILD_TREE/plugins/bearer/qsymbianbearer$${QT_LIBINFIX}.dll
         bearer_plugin.path = c:$$QT_PLUGINS_BASE_DIR/bearer
         DEPLOYMENT += bearer_plugin
+    }
+
+    !contains(S60_VERSION, 3.1):!contains(S60_VERSION, 3.2) {
+        feedback_plugin.sources = $$QT_BUILD_TREE/plugins/s60/feedback/qtactilefeedback$${QT_LIBINFIX}.dll
+        feedback_plugin.path = c:$$QT_PLUGINS_BASE_DIR/feedback
+        DEPLOYMENT += feedback_plugin
     }
 
     qtlibraries.pkg_postrules += qts60plugindeployment
@@ -183,11 +191,9 @@ symbian: {
         qtlibraries.sources += $$QMAKE_LIBDIR_QT/QtOpenVG$${QT_LIBINFIX}.dll
         graphicssystems_plugins.sources += $$QT_BUILD_TREE/plugins/graphicssystems/qvggraphicssystem$${QT_LIBINFIX}.dll
         # OpenVG requires Symbian^3 or later
-        pkg_platform_dependencies -= \
-            "[0x101F7961],0,0,0,{\"S60ProductID\"}" \
-            "[0x102032BE],0,0,0,{\"S60ProductID\"}" \
-            "[0x102752AE],0,0,0,{\"S60ProductID\"}" \
-            "[0x1028315F],0,0,0,{\"S60ProductID\"}"
+        pkg_platform_dependencies = \
+            "[0x20022E6D],0,0,0,{\"S60ProductID\"}" \
+            "[0x20032DE7],0,0,0,{\"S60ProductID\"}"
     }
 
     contains(QT_CONFIG, opengl) {

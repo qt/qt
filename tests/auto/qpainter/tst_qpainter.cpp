@@ -49,6 +49,7 @@
 #include <qfontmetrics.h>
 #include <qbitmap.h>
 #include <qimage.h>
+#include <qthread.h>
 #include <limits.h>
 #if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
 #include <qprinter.h>
@@ -253,6 +254,9 @@ private slots:
     void QTBUG5939_attachPainterPrivate();
 
     void drawPointScaled();
+
+    void QTBUG14614_gradientCacheRaceCondition();
+    void drawTextOpacity();
 
 private:
     void fillData();
@@ -4541,6 +4545,60 @@ void tst_QPainter::drawPointScaled()
     p.end();
 
     QCOMPARE(image.pixel(16, 16), 0xffff0000);
+}
+
+class GradientProducer : public QThread
+{
+protected:
+    void run();
+};
+
+void GradientProducer::run()
+{
+    QImage image(1, 1, QImage::Format_RGB32);
+    QPainter p(&image);
+
+    for (int i = 0; i < 1000; ++i) {
+        QLinearGradient g;
+        g.setColorAt(0, QColor(i % 256, 0, 0));
+        g.setColorAt(1, Qt::white);
+
+        p.fillRect(image.rect(), g);
+    }
+}
+
+void tst_QPainter::QTBUG14614_gradientCacheRaceCondition()
+{
+    const int threadCount = 16;
+    GradientProducer producers[threadCount];
+    for (int i = 0; i < threadCount; ++i)
+        producers[i].start();
+    for (int i = 0; i < threadCount; ++i)
+        producers[i].wait();
+}
+
+void tst_QPainter::drawTextOpacity()
+{
+    QImage image(32, 32, QImage::Format_RGB32);
+    image.fill(0xffffffff);
+
+    QPainter p(&image);
+    p.setPen(QColor("#6F6F6F"));
+    p.setOpacity(0.5);
+    p.drawText(5, 30, QLatin1String("Qt"));
+    p.end();
+
+    QImage copy = image;
+    image.fill(0xffffffff);
+
+    p.begin(&image);
+    p.setPen(QColor("#6F6F6F"));
+    p.drawLine(-10, -10, -1, -1);
+    p.setOpacity(0.5);
+    p.drawText(5, 30, QLatin1String("Qt"));
+    p.end();
+
+    QCOMPARE(image, copy);
 }
 
 QTEST_MAIN(tst_QPainter)

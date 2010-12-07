@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include <QMetaObject>
-#include <QDebug>
 #include "codemarker.h"
 #include "config.h"
 #include "node.h"

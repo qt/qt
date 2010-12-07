@@ -1,29 +1,33 @@
 import QtQuick 1.0
 
 Rectangle {
-    color: "blue"
-    width: 300
-    height: 200
+    color: "white"
+    width: 120
+    height: 240
+    id: page
     Component {
         id: delegate
         Rectangle {
-            color: "red"
+            color: "thistle"
             width: 100
             height: 100
-            Text {
-                text: name
+            Rectangle {
+                anchors.centerIn: parent
+                width: 60
+                height: 60
+                color: name 
             }
         }
     }
-    Row {
-        Repeater {
+    Column{
+        Repeater{
             delegate: delegate
             model: ListModel {
                 ListElement {
-                    name: "January"
+                    name: "palegoldenrod"
                 }
                 ListElement {
-                    name: "February"
+                    name: "lightsteelblue"
                 }
             }
         }

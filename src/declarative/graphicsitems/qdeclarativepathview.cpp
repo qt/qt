@@ -373,7 +373,21 @@ void QDeclarativePathViewPrivate::regenerate()
     opacity of the items as they rotate. This additional code can be seen in the
     PathAttribute documentation.)
 
-    The \c focus can be set to \c true to enable keyboard navigation.
+    PathView does not automatically handle keyboard navigation.  This is because
+    the keys to use for navigation will depend upon the shape of the path.  Navigation
+    can be added quite simply by setting \c focus to \c true and calling
+    \l decrementCurrentIndex() or \l incrementCurrentIndex(), for example to navigate
+    using the left and right arrow keys:
+
+    \code
+    PathView {
+        ...
+        focus: true
+        Keys.onLeftPressed: decrementCurrentIndex()
+        Keys.onRightPressed: incrementCurrentIndex()
+    }
+    \endcode
+
     The path view itself is a focus scope (see \l{qmlfocus#Acquiring Focus and Focus Scopes}{the focus documentation page} for more details).
 
     Delegates are instantiated as needed and may be destroyed at any time.
@@ -467,7 +481,7 @@ void QDeclarativePathView::setModel(const QVariant &model)
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
         disconnect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
         disconnect(d->model, SIGNAL(modelReset()), this, SLOT(modelReset()));
-        disconnect(d->model, SIGNAL(createdItem(int, QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
+        disconnect(d->model, SIGNAL(createdItem(int,QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
         for (int i=0; i<d->items.count(); i++){
             QDeclarativeItem *p = d->items[i];
             d->model->release(p);
@@ -498,7 +512,7 @@ void QDeclarativePathView::setModel(const QVariant &model)
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
         connect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
         connect(d->model, SIGNAL(modelReset()), this, SLOT(modelReset()));
-        connect(d->model, SIGNAL(createdItem(int, QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
+        connect(d->model, SIGNAL(createdItem(int,QDeclarativeItem*)), this, SLOT(createdItem(int,QDeclarativeItem*)));
         d->modelCount = d->model->count();
         if (d->model->count())
             d->offset = qmlMod(d->offset, qreal(d->model->count()));
@@ -523,7 +537,6 @@ int QDeclarativePathView::count() const
 
 /*!
     \qmlproperty Path PathView::path
-    \default
     This property holds the path used to lay out the items.
     For more information see the \l Path documentation.
 */
@@ -607,6 +620,8 @@ void QDeclarativePathView::setCurrentIndex(int idx)
 */
 void QDeclarativePathView::incrementCurrentIndex()
 {
+    Q_D(QDeclarativePathView);
+    d->moveDirection = QDeclarativePathViewPrivate::Positive;
     setCurrentIndex(currentIndex()+1);
 }
 
@@ -625,6 +640,7 @@ void QDeclarativePathView::decrementCurrentIndex()
         int idx = currentIndex()-1;
         if (idx < 0)
             idx = d->modelCount - 1;
+        d->moveDirection = QDeclarativePathViewPrivate::Negative;
         setCurrentIndex(idx);
     }
 }
@@ -995,6 +1011,7 @@ void QDeclarativePathView::setDelegate(QDeclarativeComponent *delegate)
     }
     if (QDeclarativeVisualDataModel *dataModel = qobject_cast<QDeclarativeVisualDataModel*>(d->model)) {
         dataModel->setDelegate(delegate);
+        d->modelCount = dataModel->count();
         d->regenerate();
         emit delegateChanged();
     }
@@ -1636,7 +1653,7 @@ void QDeclarativePathViewPrivate::snapToCurrent()
     if (!model || modelCount <= 0)
         return;
 
-    qreal targetOffset = modelCount - currentIndex;
+    qreal targetOffset = qmlMod(modelCount - currentIndex, modelCount);
 
     moveReason = Other;
     offsetAdj = 0.0;
@@ -1645,19 +1662,28 @@ void QDeclarativePathViewPrivate::snapToCurrent()
 
     const int duration = highlightMoveDuration;
 
-    if (targetOffset - offset > modelCount/2) {
+    if (moveDirection == Positive || (moveDirection == Shortest && targetOffset - offset > modelCount/2)) {
         qreal distance = modelCount - targetOffset + offset;
-        tl.move(moveOffset, 0.0, QEasingCurve(QEasingCurve::InQuad), int(duration * offset / distance));
-        tl.set(moveOffset, modelCount);
-        tl.move(moveOffset, targetOffset, QEasingCurve(QEasingCurve::OutQuad), int(duration * (modelCount-targetOffset) / distance));
-    } else if (targetOffset - offset <= -modelCount/2) {
+        if (targetOffset > moveOffset) {
+            tl.move(moveOffset, 0.0, QEasingCurve(QEasingCurve::InQuad), int(duration * offset / distance));
+            tl.set(moveOffset, modelCount);
+            tl.move(moveOffset, targetOffset, QEasingCurve(offset == 0.0 ? QEasingCurve::InOutQuad : QEasingCurve::OutQuad), int(duration * (modelCount-targetOffset) / distance));
+        } else {
+            tl.move(moveOffset, targetOffset, QEasingCurve(QEasingCurve::InOutQuad), duration);
+        }
+    } else if (moveDirection == Negative || targetOffset - offset <= -modelCount/2) {
         qreal distance = modelCount - offset + targetOffset;
-        tl.move(moveOffset, modelCount, QEasingCurve(QEasingCurve::InQuad), int(duration * (modelCount-offset) / distance));
-        tl.set(moveOffset, 0.0);
-        tl.move(moveOffset, targetOffset, QEasingCurve(QEasingCurve::OutQuad), int(duration * targetOffset / distance));
+        if (targetOffset < moveOffset) {
+            tl.move(moveOffset, modelCount, QEasingCurve(targetOffset == 0 ? QEasingCurve::InOutQuad : QEasingCurve::InQuad), int(duration * (modelCount-offset) / distance));
+            tl.set(moveOffset, 0.0);
+            tl.move(moveOffset, targetOffset, QEasingCurve(QEasingCurve::OutQuad), int(duration * targetOffset / distance));
+        } else {
+            tl.move(moveOffset, targetOffset, QEasingCurve(QEasingCurve::InOutQuad), duration);
+        }
     } else {
         tl.move(moveOffset, targetOffset, QEasingCurve(QEasingCurve::InOutQuad), duration);
     }
+    moveDirection = Shortest;
 }
 
 QDeclarativePathViewAttached *QDeclarativePathView::qmlAttachedProperties(QObject *obj)

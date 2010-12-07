@@ -97,6 +97,11 @@
 # define SCHED_IDLE    5
 #endif
 
+#if defined(Q_OS_DARWIN) || !defined(Q_OS_OPENBSD) && defined(_POSIX_THREAD_PRIORITY_SCHEDULING) && (_POSIX_THREAD_PRIORITY_SCHEDULING-0 >= 0)
+#define QT_HAS_THREAD_PRIORITY_SCHEDULING
+#endif
+
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_THREAD
@@ -142,6 +147,39 @@ static void destroy_current_thread_data_key()
 }
 Q_DESTRUCTOR_FUNCTION(destroy_current_thread_data_key)
 
+
+// Utility functions for getting, setting and clearing thread specific data.
+// In Symbian, TLS access is significantly faster than pthread_getspecific.
+// However Symbian does not have the thread destruction cleanup functionality
+// that pthread has, so pthread_setspecific is also used.
+static QThreadData *get_thread_data()
+{
+#ifdef Q_OS_SYMBIAN
+    return reinterpret_cast<QThreadData *>(Dll::Tls());
+#else
+    pthread_once(&current_thread_data_once, create_current_thread_data_key);
+    return reinterpret_cast<QThreadData *>(pthread_getspecific(current_thread_data_key));
+#endif
+}
+
+static void set_thread_data(QThreadData *data)
+{
+#ifdef Q_OS_SYMBIAN
+    qt_symbian_throwIfError(Dll::SetTls(data));
+#endif
+    pthread_once(&current_thread_data_once, create_current_thread_data_key);
+    pthread_setspecific(current_thread_data_key, data);
+}
+
+static void clear_thread_data()
+{
+#ifdef Q_OS_SYMBIAN
+    Dll::FreeTls();
+#endif
+    pthread_setspecific(current_thread_data_key, 0);
+}
+
+
 #ifdef Q_OS_SYMBIAN
 static void init_symbian_thread_handle(RThread &thread)
 {
@@ -158,26 +196,24 @@ static void init_symbian_thread_handle(RThread &thread)
 
 QThreadData *QThreadData::current()
 {
-    pthread_once(&current_thread_data_once, create_current_thread_data_key);
-
-    QThreadData *data = reinterpret_cast<QThreadData *>(pthread_getspecific(current_thread_data_key));
+    QThreadData *data = get_thread_data();
     if (!data) {
         void *a;
         if (QInternal::activateCallbacks(QInternal::AdoptCurrentThread, &a)) {
             QThread *adopted = static_cast<QThread*>(a);
             Q_ASSERT(adopted);
             data = QThreadData::get2(adopted);
-            pthread_setspecific(current_thread_data_key, data);
+            set_thread_data(data);
             adopted->d_func()->running = true;
             adopted->d_func()->finished = false;
             static_cast<QAdoptedThread *>(adopted)->init();
         } else {
             data = new QThreadData;
-            pthread_setspecific(current_thread_data_key, data);
             QT_TRY {
+                set_thread_data(data);
                 data->thread = new QAdoptedThread(data);
             } QT_CATCH(...) {
-                pthread_setspecific(current_thread_data_key, 0);
+                clear_thread_data();
                 data->deref();
                 data = 0;
                 QT_RETHROW;
@@ -268,8 +304,7 @@ void *QThreadPrivate::start(void *arg)
     User::SetCritical(User::EProcessCritical);
 #endif
 
-    pthread_once(&current_thread_data_once, create_current_thread_data_key);
-    pthread_setspecific(current_thread_data_key, data);
+    set_thread_data(data);
 
     data->ref();
     data->quitNow = false;
@@ -473,6 +508,7 @@ void QThread::usleep(unsigned long usecs)
     thread_sleep(&ti);
 }
 
+#ifdef QT_HAS_THREAD_PRIORITY_SCHEDULING
 // Does some magic and calculate the Unix scheduler priorities
 // sched_policy is IN/OUT: it must be set to a valid policy before calling this function
 // sched_priority is OUT only
@@ -503,6 +539,7 @@ static bool calculateUnixPriority(int priority, int *sched_policy, int *sched_pr
     *sched_priority = prio;
     return true;
 }
+#endif
 
 void QThread::start(Priority priority)
 {
@@ -523,7 +560,7 @@ void QThread::start(Priority priority)
 
     d->priority = priority;
 
-#if defined(Q_OS_DARWIN) || !defined(Q_OS_OPENBSD) && !defined(Q_OS_SYMBIAN) && defined(_POSIX_THREAD_PRIORITY_SCHEDULING) && (_POSIX_THREAD_PRIORITY_SCHEDULING-0 >= 0)
+#if defined(QT_HAS_THREAD_PRIORITY_SCHEDULING) && !defined(Q_OS_SYMBIAN)
 // ### Need to implement thread sheduling and priorities for symbian os. Implementation removed for now
     switch (priority) {
     case InheritPriority:
@@ -564,7 +601,7 @@ void QThread::start(Priority priority)
             break;
         }
     }
-#endif // _POSIX_THREAD_PRIORITY_SCHEDULING
+#endif // QT_HAS_THREAD_PRIORITY_SCHEDULING
 
 #ifdef Q_OS_SYMBIAN
     if (d->stackSize == 0)
@@ -727,7 +764,7 @@ void QThread::setPriority(Priority priority)
 
     // copied from start() with a few modifications:
 
-#if defined(Q_OS_DARWIN) || !defined(Q_OS_OPENBSD) && defined(_POSIX_THREAD_PRIORITY_SCHEDULING) && (_POSIX_THREAD_PRIORITY_SCHEDULING-0 >= 0)
+#ifdef QT_HAS_THREAD_PRIORITY_SCHEDULING
     int sched_policy;
     sched_param param;
 

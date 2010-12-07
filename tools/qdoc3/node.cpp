@@ -1562,11 +1562,6 @@ void QmlClassNode::clear()
  */
 QString QmlClassNode::fileBase() const
 {
-#if 0
-    if (Node::fileBase() == "item")
-        qDebug() << "FILEBASE: qmlitem" << name();
-    return "qml_" + Node::fileBase();
-#endif
     return Node::fileBase();
 }
 
@@ -1702,6 +1697,9 @@ static QString valueType(const QString& n)
  */
 bool QmlPropertyNode::isWritable(const Tree* tree) const
 {
+    if (wri != Trool_Default)
+        return fromTrool(wri, false);
+
     Node* n = parent();
     while (n && n->subType() != Node::QmlClass)
         n = n->parent();

@@ -45,6 +45,62 @@
 
 QT_BEGIN_NAMESPACE
 
+QtEikonEnv::QtEikonEnv()
+    : m_lastIterationCount(0)
+    , m_savedStatusCode(KRequestPending)
+    , m_hasAlreadyRun(false)
+{
+}
+
+QtEikonEnv::~QtEikonEnv()
+{
+}
+
+void QtEikonEnv::RunL()
+{
+    QEventDispatcherS60 *dispatcher = qobject_cast<QEventDispatcherS60 *>(QAbstractEventDispatcher::instance());
+    if (!dispatcher) {
+        CEikonEnv::RunL();
+        return;
+    }
+
+    if (m_lastIterationCount != dispatcher->iterationCount()) {
+        m_hasAlreadyRun = false;
+        m_lastIterationCount = dispatcher->iterationCount();
+    }
+
+    if (m_hasAlreadyRun) {
+        // Fool the active scheduler into believing we are still waiting for events.
+        // The window server thinks we are not, however.
+        m_savedStatusCode = iStatus.Int();
+        iStatus = KRequestPending;
+        SetActive();
+        dispatcher->queueDeferredActiveObjectsCompletion();
+    } else {
+        m_hasAlreadyRun = true;
+        CEikonEnv::RunL();
+    }
+}
+
+void QtEikonEnv::DoCancel()
+{
+    complete();
+
+    CEikonEnv::DoCancel();
+}
+
+void QtEikonEnv::complete()
+{
+    if (m_hasAlreadyRun) {
+        if (m_savedStatusCode != KRequestPending) {
+            TRequestStatus *status = &iStatus;
+            QEventDispatcherSymbian::RequestComplete(status, m_savedStatusCode);
+            m_savedStatusCode = KRequestPending;
+        }
+        m_hasAlreadyRun = false;
+    }
+}
+
 QEventDispatcherS60::QEventDispatcherS60(QObject *parent)
     : QEventDispatcherSymbian(parent),
       m_noInputEvents(false)
@@ -125,6 +181,16 @@ void QEventDispatcherS60::removeInputEventsForWidget(QObject *object)
             m_deferredInputEvents.removeAt(c--);
         }
     }
+}
+
+// reimpl
+void QEventDispatcherS60::reactivateDeferredActiveObjects()
+{
+    if (S60->qtOwnsS60Environment) {
+        static_cast<QtEikonEnv *>(CCoeEnv::Static())->complete();
+    }
+
+    QEventDispatcherSymbian::reactivateDeferredActiveObjects();
 }
 
 QT_END_NAMESPACE

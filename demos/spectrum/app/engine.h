@@ -91,12 +91,6 @@ public:
     QAudio::State state() const     { return m_state; }
 
     /**
-     * \return Reference to internal audio buffer
-     * \note This reference is valid for the lifetime of the Engine
-     */
-    const QByteArray& buffer() const    { return m_buffer; }
-
-    /**
      * \return Current audio format
      * \note May be QAudioFormat() if engine is not initialized
      */
@@ -129,7 +123,7 @@ public:
 
     /**
      * Position of the audio input device.
-     * \return Position in microseconds.
+     * \return Position in bytes.
      */
     qint64 recordPosition() const   { return m_recordPosition; }
 
@@ -147,27 +141,21 @@ public:
 
     /**
      * Position of the audio output device.
-     * \return Position in microseconds.
+     * \return Position in bytes.
      */
     qint64 playPosition() const     { return m_playPosition; }
 
     /**
      * Length of the internal engine buffer.
-     * \return Buffer length in microseconds.
+     * \return Buffer length in bytes.
      */
-    qint64 bufferDuration() const;
+    qint64 bufferLength() const;
 
     /**
      * Amount of data held in the buffer.
-     * \return Data duration in microseconds.
+     * \return Data length in bytes.
      */
-    qint64 dataDuration() const;
-
-    /**
-     * Returns the size of the underlying audio buffer in bytes.
-     * This should be an approximation of the capture latency.
-     */
-    qint64 audioBufferLength() const;
+    qint64 dataLength() const       { return m_dataLength; }
 
     /**
      * Set window function applied to audio data before spectral analysis.
@@ -203,23 +191,23 @@ signals:
      * Length of buffer has changed.
      * \param duration Duration in microseconds
      */
-    void bufferDurationChanged(qint64 duration);
+    void bufferLengthChanged(qint64 duration);
 
     /**
      * Amount of data in buffer has changed.
-     * \param duration Duration of data in microseconds
+     * \param Length of data in bytes
      */
-    void dataDurationChanged(qint64 duration);
+    void dataLengthChanged(qint64 duration);
 
     /**
      * Position of the audio input device has changed.
-     * \param position Position in microseconds
+     * \param position Position in bytes
      */
     void recordPositionChanged(qint64 position);
 
     /**
      * Position of the audio output device has changed.
-     * \param position Position in microseconds
+     * \param position Position in bytes
      */
     void playPositionChanged(qint64 position);
 
@@ -227,17 +215,24 @@ signals:
      * Level changed
      * \param rmsLevel RMS level in range 0.0 - 1.0
      * \param peakLevel Peak level in range 0.0 - 1.0
-     * \param numSamples Number of audio samples analysed
+     * \param numSamples Number of audio samples analyzed
      */
     void levelChanged(qreal rmsLevel, qreal peakLevel, int numSamples);
 
     /**
      * Spectrum has changed.
-     * \param position Position of start of window in microseconds
-     * \param length   Length of window in microseconds
+     * \param position Position of start of window in bytes
+     * \param length   Length of window in bytes
      * \param spectrum Resulting frequency spectrum
      */
     void spectrumChanged(qint64 position, qint64 length, const FrequencySpectrum &spectrum);
+
+    /**
+     * Buffer containing audio data has changed.
+     * \param position Position of start of buffer in bytes
+     * \param buffer   Buffer
+     */
+    void bufferChanged(qint64 position, qint64 length, const QByteArray &buffer);
 
 private slots:
     void audioNotify();
@@ -246,6 +241,7 @@ private slots:
     void spectrumChanged(const FrequencySpectrum &spectrum);
 
 private:
+    void resetAudioDevices();
     bool initialize();
     bool selectFormat();
     void stopRecording();
@@ -275,8 +271,10 @@ private:
     bool                m_generateTone;
     SweptTone           m_tone;
 
-    QFile*              m_file;
-    WavFile             m_wavFile;
+    WavFile*            m_file;
+    // We need a second file handle via which to read data into m_buffer
+    // for analysis
+    WavFile*            m_analysisFile;
 
     QAudioFormat        m_format;
 
@@ -293,12 +291,15 @@ private:
     QBuffer             m_audioOutputIODevice;
 
     QByteArray          m_buffer;
+    qint64              m_bufferPosition;
+    qint64              m_bufferLength;
     qint64              m_dataLength;
 
+    int                 m_levelBufferLength;
     qreal               m_rmsLevel;
     qreal               m_peakLevel;
 
-    int                 m_spectrumLengthBytes;
+    int                 m_spectrumBufferLength;
     QByteArray          m_spectrumBuffer;
     SpectrumAnalyser    m_spectrumAnalyser;
     qint64              m_spectrumPosition;

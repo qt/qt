@@ -93,6 +93,7 @@ public:
 
     bool eatFocusOut;
     QRect popupRect;
+    bool hiddenBecauseNoMatch;
 
     void showPopup(const QRect&);
     void _q_complete(QModelIndex, bool = false);

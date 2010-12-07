@@ -188,6 +188,12 @@ QByteArray QHttpNetworkReply::readAny()
     return d->responseData.read();
 }
 
+QByteArray QHttpNetworkReply::readAll()
+{
+    Q_D(QHttpNetworkReply);
+    return d->responseData.readAll();
+}
+
 void QHttpNetworkReply::setDownstreamLimited(bool dsl)
 {
     Q_D(QHttpNetworkReply);
@@ -203,6 +209,11 @@ bool QHttpNetworkReply::isFinished() const
 bool QHttpNetworkReply::isPipeliningUsed() const
 {
     return d_func()->pipeliningUsed;
+}
+
+QHttpNetworkConnection* QHttpNetworkReply::connection()
+{
+    return d_func()->connection;
 }
 
 

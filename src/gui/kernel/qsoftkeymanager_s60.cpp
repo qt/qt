@@ -265,7 +265,7 @@ bool QSoftKeyManagerPrivateS60::setSoftkeyImage(CEikButtonGroupContainer *cba,
             CFbsBitmap* nMask = softkeyAlpha.toSymbianCFbsBitmap();
 
             CEikImage* myimage = new (ELeave) CEikImage;
-            myimage->SetPicture( nBitmap, nMask ); // nBitmap and nMask ownership transfered
+            myimage->SetPicture( nBitmap, nMask ); // nBitmap and nMask ownership transferred
 
             EikSoftkeyImage::SetImage(cba, *myimage, left); // Takes myimage ownership
             cbaHasImage[position] = true;

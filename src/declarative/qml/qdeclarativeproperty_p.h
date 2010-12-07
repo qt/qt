@@ -55,17 +55,17 @@
 
 #include "qdeclarativeproperty.h"
 
-#include "private/qdeclarativepropertycache_p.h"
-#include "private/qdeclarativeguard_p.h"
-
 #include <private/qobject_p.h>
+#include <private/qdeclarativeglobal_p.h>
+#include <private/qdeclarativepropertycache_p.h>
+#include <private/qdeclarativeguard_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeContext;
 class QDeclarativeEnginePrivate;
 class QDeclarativeExpression;
-class Q_DECLARATIVE_EXPORT QDeclarativePropertyPrivate
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativePropertyPrivate
 {
 public:
     enum WriteFlag { BypassInterceptor = 0x01, DontRemoveBinding = 0x02 };

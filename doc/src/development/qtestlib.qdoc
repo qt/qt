@@ -32,17 +32,13 @@
 
     \ingroup frameworks-technologies
     \ingroup qt-basic-concepts
-	
+
     \keyword qtestlib
 
     The QTestLib framework, provided by Nokia, is a tool for unit
     testing Qt based applications and libraries. QTestLib provides
     all the functionality commonly found in unit testing frameworks as
     well as extensions for testing graphical user interfaces.
-
-    Table of contents:
-
-    \tableofcontents
 
     \section1 QTestLib Features
 
@@ -87,6 +83,10 @@
          \o \bold {Easily extendable}
          \o Custom types can easily be added to the test data and test output.
     \endtable
+
+    \note For higher-level GUI and application testing needs, please
+    see the \l{Partner Directory} for Qt testing products provided by
+    Nokia partners.
 
 
     \section1 QTestLib API
@@ -213,17 +213,17 @@
     \endlist
 
     \section2 Creating a Benchmark
-    
+
     To create a benchmark, follow the instructions for creating a test and then add a
     QBENCHMARK macro to the test function that you want to benchmark.
-    
+
     \snippet doc/src/snippets/code/doc_src_qtestlib.qdoc 12
-    
+
     The code inside the QBENCHMARK macro will be measured, and possibly also repeated
     several times in order to get an accurate measurement. This depends on the selected
     measurement back-end. Several back-ends are available. They can be selected on the
     command line:
-    
+
     \target testlib-benchmarking-measurement
 
     \table
@@ -243,7 +243,7 @@
          \o -eventcounter
          \o All platforms
     \endtable
-    
+
     In short, walltime is always available but requires many repetitions to
     get a useful result. 
     Tick counters are usually available and can provide 
@@ -255,7 +255,7 @@
     Event counting is available on all platforms and it provides the number of events
     that were received by the event loop before they are sent to their corresponding
     targets (this might include non-Qt events).
-       
+
     \note Depending on the device configuration, Tick counters on the
      Windows CE platform may not be as fine-grained, compared to other platforms.
      Devices that do not support high-resolution timers default to
@@ -320,7 +320,7 @@
     host computer and the device. Thus header files and libraries are needed to compile
     cetest and QtRemote successfully.
 
-    Prior to \l{Installing Qt on Windows CE}{installation} of Qt, you need to set your
+    Prior to \l{Installing Qt for Windows CE}{installation} of Qt, you need to set your
     \c INCLUDE and \c LIB environment variables properly.
 
     A default installation of Windows Mobile 5 for Pocket PC can be obtained by:
@@ -334,7 +334,7 @@
 
     The CPU tick counters used for benchmarking is licensed under the following
     license: (from src/testlib/3rdparty/cycle.h)
-                    
+
     \legalese
     Copyright (c) 2003, 2006 Matteo Frigo\br
     Copyright (c) 2003, 2006 Massachusetts Institute of Technology
@@ -365,6 +365,7 @@
     \brief A short introduction to testing with QTestLib.
     \contentspage QTestLib Manual
     \nextpage {Chapter 1: Writing a Unit Test}{Chapter 1}
+    \ingroup best-practices
 
     \title QTestLib Tutorial
 

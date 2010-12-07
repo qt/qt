@@ -53,6 +53,7 @@
 #include <qaction.h>
 #include <qwidgetaction.h>
 #include "../../shared/util.h"
+#include "../platformquirks.h"
 
 
 class EventSpy : public QObject
@@ -1111,6 +1112,10 @@ void tst_QGraphicsWidget::initStyleOption_data()
 // void initStyleOption(QStyleOption* option) const public
 void tst_QGraphicsWidget::initStyleOption()
 {
+#ifdef Q_WS_MAEMO_5
+    QSKIP("The test passes, but it doesn't work when the display is in energy saving mode", SkipAll);
+#endif
+
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
@@ -1773,6 +1778,9 @@ void tst_QGraphicsWidget::verifyFocusChain()
 
 void tst_QGraphicsWidget::updateFocusChainWhenChildDie()
 {
+#ifdef Q_WS_MAEMO_5
+    QSKIP("On Maemo 5 the Display Manager is shown on Window change, so the test won't work", SkipAll);
+#endif
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
@@ -3144,7 +3152,10 @@ void tst_QGraphicsWidget::initialShow()
     MyGraphicsWidget *widget = new MyGraphicsWidget;
 
     QGraphicsView view(&scene);
-    view.show();
+    if(PlatformQuirks::isAutoMaximizing())
+        view.showFullScreen();
+    else
+        view.show();
     QTest::qWaitForWindowShown(&view);
 
     scene.addItem(widget);
@@ -3186,7 +3197,7 @@ void tst_QGraphicsWidget::initialShow2()
     scene.addItem(widget);
 
     QGraphicsView view(&scene);
-    view.setWindowFlags(Qt::X11BypassWindowManagerHint);
+    view.setWindowFlags(view.windowFlags()|Qt::X11BypassWindowManagerHint);
     view.show();
     QTest::qWaitForWindowShown(&view);
 

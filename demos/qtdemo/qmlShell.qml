@@ -85,7 +85,7 @@ Item {
             MouseArea{
                 anchors.fill: parent
                 acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-                onClicked: loader.focus=true;/* and don't propogate to the 'exit' area*/
+                onClicked: loader.focus=true;/* and don't propagate to the 'exit' area*/
             }
 
             Rectangle{ id: innerFrame

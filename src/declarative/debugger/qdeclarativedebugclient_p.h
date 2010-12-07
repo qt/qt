@@ -44,6 +44,8 @@
 
 #include <QtNetwork/qtcpsocket.h>
 
+#include <private/qdeclarativeglobal_p.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -51,7 +53,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QDeclarativeDebugConnectionPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeDebugConnection : public QTcpSocket
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeDebugConnection : public QTcpSocket
 {
     Q_OBJECT
     Q_DISABLE_COPY(QDeclarativeDebugConnection)
@@ -67,7 +69,7 @@ private:
 };
 
 class QDeclarativeDebugClientPrivate;
-class Q_DECLARATIVE_EXPORT QDeclarativeDebugClient : public QObject
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeDebugClient : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDeclarativeDebugClient)

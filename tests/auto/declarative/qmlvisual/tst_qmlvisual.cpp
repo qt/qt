@@ -102,43 +102,25 @@ void tst_qmlvisual::visual_data()
     QTest::addColumn<QString>("testdata");
 
     QStringList files;
-    if (qgetenv("QMLVISUAL_ALL") != "")
-        files << findQmlFiles(QDir(QT_TEST_SOURCE_DIR));
-    else {
-        //these are newly added tests we want to try out in CI (then move to the stable list)
-        files << QT_TEST_SOURCE_DIR "/animation/qtbug10586/qtbug10586.qml";
-        files << QT_TEST_SOURCE_DIR "/qdeclarativeborderimage/animated.qml";
-        files << QT_TEST_SOURCE_DIR "/qdeclarativeflipable/test-flipable.qml";
-        files << QT_TEST_SOURCE_DIR "/qdeclarativepositioners/usingRepeater.qml";
-        files << QT_TEST_SOURCE_DIR "/animation/parentAnimation2/parentAnimation2.qml";
-
-        //these are tests we think are stable and useful enough to be run by the CI system
-        files << QT_TEST_SOURCE_DIR "/animation/bindinganimation/bindinganimation.qml";
-        files << QT_TEST_SOURCE_DIR "/animation/loop/loop.qml";
-        files << QT_TEST_SOURCE_DIR "/animation/parallelAnimation/parallelAnimation-visual.qml";
-        files << QT_TEST_SOURCE_DIR "/animation/parentAnimation/parentAnimation-visual.qml";
-        files << QT_TEST_SOURCE_DIR "/animation/reanchor/reanchor.qml";
-        files << QT_TEST_SOURCE_DIR "/animation/scriptAction/scriptAction-visual.qml";
-        files << QT_TEST_SOURCE_DIR "/qdeclarativemousearea/drag.qml";
-        files << QT_TEST_SOURCE_DIR "/fillmode/fillmode.qml";
-
-        // new tests
-        files << QT_TEST_SOURCE_DIR "/qdeclarativemousearea/mousearea-flickable.qml";
-
-        //these reliably fail in CI, for unknown reasons
-        //files << QT_TEST_SOURCE_DIR "/animation/easing/easing.qml";
-        //files << QT_TEST_SOURCE_DIR "/animation/pauseAnimation/pauseAnimation-visual.qml";
-        //files << QT_TEST_SOURCE_DIR "/qdeclarativeborderimage/borders.qml";
-        //files << QT_TEST_SOURCE_DIR "/qdeclarativeborderimage/animated-smooth.qml";
-
-        //these reliably fail on Linux because of color interpolation (different float rounding)
-#if !defined(Q_WS_X11) && !defined(Q_WS_QWS)
-        files << QT_TEST_SOURCE_DIR "/animation/colorAnimation/colorAnimation-visual.qml";
-        files << QT_TEST_SOURCE_DIR "/animation/propertyAction/propertyAction-visual.qml";
+    files << findQmlFiles(QDir(QT_TEST_SOURCE_DIR));
+    if (qgetenv("QMLVISUAL_ALL") != "1") {
+#if defined(Q_WS_X11)
+        //Text on X11 varies per version - and the CI system is currently using something outdated.
+        foreach(const QString &str, files.filter(QRegExp(".*text.*")))
+            files.removeAll(str);
 #endif
-
-        //this is unstable because the MouseArea press-and-hold timer is not synchronized to the animation framework.
-        //files << QT_TEST_SOURCE_DIR "/qdeclarativemousearea/mousearea-visual.qml";
+#if defined(Q_WS_MAC)
+        //Text on Mac also varies per version. Only check the text on 10.6
+        if(QSysInfo::MacintoshVersion != QSysInfo::MV_10_6)
+            foreach(const QString &str, files.filter(QRegExp(".*text.*")))
+                files.removeAll(str);
+#endif
+#if defined(Q_WS_QWS)
+        //We don't want QWS test results to mire down the CI system
+        files.clear();
+        //Needs at least one test data or it fails anyways
+        files << QT_TEST_SOURCE_DIR "/selftest_noimages/selftest_noimages.qml";
+#endif
     }
 
     foreach (const QString &file, files) {
@@ -157,7 +139,7 @@ void tst_qmlvisual::visual()
 
     QStringList arguments;
     arguments << "-script" << testdata
-              << "-scriptopts" << "play,testimages,testerror,exitoncomplete,exitonfailure" 
+              << "-scriptopts" << "play,testimages,testerror,testskip,exitoncomplete,exitonfailure"
               << file;
 #ifdef Q_WS_QWS
     arguments << "-qws";
@@ -165,9 +147,11 @@ void tst_qmlvisual::visual()
 
     QProcess p;
     p.start(qmlruntime, arguments);
-    QVERIFY(p.waitForFinished());
+    bool finished = p.waitForFinished();
+    QByteArray output = p.readAllStandardOutput() + p.readAllStandardError();
+    QVERIFY2(finished, output.data());
     if (p.exitCode() != 0)
-        qDebug() << p.readAllStandardError();
+        qDebug() << output;
     QCOMPARE(p.exitStatus(), QProcess::NormalExit);
     QCOMPARE(p.exitCode(), 0);
 }
@@ -278,7 +262,7 @@ void action(Mode mode, const QString &file)
             break;
         case Play:
             arguments << "-script" << testdata
-                  << "-scriptopts" << "play,testimages,testerror,exitoncomplete"
+                  << "-scriptopts" << "play,testimages,testerror,testskip,exitoncomplete"
                   << file;
             break;
         case TestVisuals:
@@ -345,6 +329,12 @@ void usage()
         "If you ONLY wish to use the 'error' property, you can record your test with\n"
         "-recordnovisuals, or discard existing visuals with -removevisuals; the test\n"
         "will then only fail on a syntax error, crash, or non-empty 'error' property.\n"
+        "\n"
+        "If your test has anything set to the 'skip' property on the root object then\n"
+        "test failures will be ignored. This allows for an opt-out of automated\n"
+        "aggregation of test results. The value of the 'skip' property (usually a\n"
+        "string) will then be printed to stdout when the test is run as part of the\n"
+        "message saying the test has been skipped.\n"
     );
 }
 

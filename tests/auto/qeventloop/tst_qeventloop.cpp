@@ -431,7 +431,7 @@ void tst_QEventLoop::exec()
         QCOMPARE(executor.returnCode, -1);
     }
 
-#if !defined(QT_NO_EXCEPTIONS) && !defined(Q_OS_WINCE_WM) && !defined(Q_OS_SYMBIAN)
+#if !defined(QT_NO_EXCEPTIONS) && !defined(Q_OS_WINCE_WM) && !defined(Q_OS_SYMBIAN) && !defined(NO_EVENTLOOP_EXCEPTIONS)
     // Windows Mobile cannot handle cross library exceptions
     // qobject.cpp will try to rethrow the exception after handling
     // which causes gwes.exe to crash

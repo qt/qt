@@ -282,8 +282,8 @@ QDialog::QDialog(QWidget *parent, Qt::WindowFlags f)
 QDialog::QDialog(QWidget *parent, const char *name, bool modal, Qt::WindowFlags f)
     : QWidget(*new QDialogPrivate, parent,
               f
-              | QFlag(modal ? Qt::WShowModal : 0)
-              | QFlag((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : 0)
+              | QFlag(modal ? Qt::WShowModal : Qt::WindowType(0))
+              | QFlag((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : Qt::WindowType(0))
         )
 {
     setObjectName(QString::fromAscii(name));
@@ -1111,7 +1111,7 @@ QSize QDialog::sizeHint() const
     // if size is not fixed, try to adjust it according to S60 layoutting
     if (minimumSize() != maximumSize()) {
         // In S60, dialogs are always the width of screen (in portrait, regardless of current layout)
-        return QSize(qMax(S60->screenHeightInPixels, S60->screenWidthInPixels), QWidget::sizeHint().height());
+        return QSize(qMin(S60->screenHeightInPixels, S60->screenWidthInPixels), QWidget::sizeHint().height());
     } else {
         return QWidget::sizeHint();
     }

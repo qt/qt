@@ -1,91 +1,101 @@
 import QtQuick 1.0
+import "../../shared" 1.0
 
 Rectangle {
-    id: s; width: 800; height: 1000; color: "lightsteelblue"
-    property string text: "The quick brown fox jumps over the lazy dog."
+    id: s; width: 620; height: 360; color: "lightsteelblue"
+    property string text: "Jackdaws love my big sphinx of quartz."
 
     Column {
-        spacing: 10
-        Text {
-            text: s.text
+        spacing: 8
+        TestText {
+            text: s.text; horizontalAlignment: Text.AlignLeft; width: s.width
         }
-        Text {
-            text: s.text; font.pixelSize: 18
+        TestText {
+            font.pixelSize: 18
+            text: s.text; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; width: s.width;
         }
-        Text {
-            text: s.text; font.pointSize: 25
+        TestText {
+            font.pixelSize: 24
+            text: s.text; horizontalAlignment: Text.AlignRight; verticalAlignment: Text.AlignBottom; width: s.width;
         }
-        Text {
-            text: s.text; color: "red"; smooth: true
+        Grid{
+            columns: 2
+            spacing: 4
+            TestText {
+                text: s.text; color: "red"; smooth: true
+            }
+            TestText {
+                text: s.text; font.capitalization: "AllUppercase"
+            }
+            TestText {
+                text: s.text; font.underline: true
+            }
+            TestText {
+                text: s.text; font.overline: true; smooth: true
+            }
+            TestText {
+                text: s.text; font.strikeout: true
+            }
+            TestText {
+                text: s.text; font.underline: true; font.overline: true; font.strikeout: true
+            }
+            TestText {
+                text: s.text; style: Text.Outline; styleColor: "white"
+            }
+            TestText {
+                text: s.text; style: Text.Sunken; styleColor: "gray"
+            }
+            TestText {
+                text: s.text; style: Text.Raised; styleColor: "yellow"
+            }
+            TestText {
+                text: s.text; font.letterSpacing: 2
+            }
         }
-        Text {
-            text: s.text; font.capitalization: "AllUppercase"
-        }
-        Text {
-            text: s.text; font.underline: true
-        }
-        Text {
-            text: s.text; font.overline: true; smooth: true
-        }
-        Text {
-            text: s.text; font.strikeout: true
-        }
-        Text {
-            text: s.text; font.underline: true; font.overline: true; font.strikeout: true
-        }
-        Text {
-            text: s.text; font.letterSpacing: 2
-        }
-        Text {
+        TestText {
             text: s.text; font.underline: true; font.letterSpacing: 2; font.capitalization: "AllUppercase"; color: "blue"
         }
-        Text {
+        TestText {
             text: s.text; font.overline: true; font.wordSpacing: 25; font.capitalization: "Capitalize"; color: "green"
         }
-        Text {
-            text: s.text; font.pixelSize: 18; style: Text.Outline; styleColor: "white"
+        Row{
+            height: childrenRect.height
+            spacing: 4
+            TestText {
+                text: s.text; elide: Text.ElideLeft; width: 200
+            }
+            TestText {
+                text: s.text; elide: Text.ElideMiddle; width: 200
+            }
+            TestText {
+                text: s.text; elide: Text.ElideRight; width: 200
+            }
         }
-        Text {
-            text: s.text; font.pixelSize: 18; style: Text.Sunken; styleColor: "gray"
+        Row{
+            height: childrenRect.height
+            spacing: 4
+            TestText{
+                text: s.text; elide: Text.ElideLeft; width: 200; wrapMode: Text.WordWrap
+            }
+            TestText {
+                text: s.text; elide: Text.ElideMiddle; width: 200; wrapMode: Text.WordWrap
+            }
+            TestText {
+                text: s.text; elide: Text.ElideRight; width: 200; wrapMode: Text.WordWrap
+            }
         }
-        Text {
-            text: s.text; font.pixelSize: 18; style: Text.Raised; styleColor: "yellow"
-        }
-        Text {
-            text: s.text; horizontalAlignment: Text.AlignLeft; width: 800
-        }
-        Text {
-            text: s.text; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; width: 800; height: 20
-        }
-        Text {
-            text: s.text; horizontalAlignment: Text.AlignRight; verticalAlignment: Text.AlignBottom; width: 800; height: 20
-        }
-        Text {
-            text: s.text; font.pixelSize: 18; style: Text.Outline; styleColor: "white"; wrapMode: Text.WordWrap; width: 200
-        }
-        Text {
-            text: s.text; elide: Text.ElideLeft; width: 200
-        }
-        Text {
-            text: s.text; elide: Text.ElideMiddle; width: 200
-        }
-        Text {
-            text: s.text; elide: Text.ElideRight; width: 200
-        }
-        Text {
-            text: s.text; elide: Text.ElideLeft; width: 200; wrapMode: Text.WordWrap
-        }
-        Text {
-            text: s.text; elide: Text.ElideMiddle; width: 200; wrapMode: Text.WordWrap
-        }
-        Text {
-            text: s.text; elide: Text.ElideRight; width: 200; wrapMode: Text.WordWrap
-        }
-        Text {
-            text: s.text + " thisisaverylongstringwithnospaces"; width: 150; wrapMode: Text.WrapAnywhere
-        }
-        Text {
-            text: s.text + " thisisaverylongstringwithnospaces"; width: 150; wrapMode: Text.Wrap
+        Row{
+            height: childrenRect.height
+            spacing: 4
+            TestText {
+                text: s.text + " thisisaverylongstringwithnospaces"; width: 150; wrapMode: Text.WrapAnywhere
+            }
+            TestText {
+                text: s.text + " thisisaverylongstringwithnospaces"; width: 150; wrapMode: Text.Wrap
+            }
+            TestText {
+text: s.text; font.pixelSize: 18; style: Text.Outline; styleColor: "white"; wrapMode: Text.WordWrap; width: 200
+            }
         }
     }
 }

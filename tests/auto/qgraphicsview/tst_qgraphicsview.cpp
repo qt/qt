@@ -69,8 +69,10 @@
 #include <QtGui/QStyle>
 #include <QtGui/QPushButton>
 #include <QtGui/QInputContext>
+#include <QtGui/QDesktopWidget>
 #include <private/qgraphicsview_p.h>
 #include "../../shared/util.h"
+#include "../platformquirks.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -400,10 +402,13 @@ void tst_QGraphicsView::interactive()
     scene.addItem(item);
 
     QGraphicsView view(&scene);
+    if (PlatformQuirks::isAutoMaximizing())
+        view.setWindowFlags(view.windowFlags()|Qt::X11BypassWindowManagerHint);
     view.setFixedSize(300, 300);
     QCOMPARE(item->events.size(), 0);
     view.show();
     QTest::qWaitForWindowShown(&view);
+    view.activateWindow();
 
     QApplication::processEvents();
     QTRY_COMPARE(item->events.size(), 1); // activate
@@ -531,13 +536,15 @@ void tst_QGraphicsView::sceneRect()
 
 void tst_QGraphicsView::sceneRect_growing()
 {
+    QWidget toplevel;
+
     QGraphicsScene scene;
     for (int i = 0; i < 100; ++i)
         scene.addText(QString("(0, %1)").arg((i - 50) * 20))->setPos(0, (i - 50) * 20);
 
-    QGraphicsView view(&scene);
+    QGraphicsView view(&scene, &toplevel);
     view.setFixedSize(200, 200);
-    view.show();
+    toplevel.show();
 
     int size = 200;
     scene.setSceneRect(-size, -size, size * 2, size * 2);
@@ -854,15 +861,17 @@ void tst_QGraphicsView::dragMode_rubberBand()
 
 void tst_QGraphicsView::rubberBandSelectionMode()
 {
+    QWidget toplevel;
+
     QGraphicsScene scene;
     QGraphicsRectItem *rect = scene.addRect(QRectF(10, 10, 80, 80));
     rect->setFlag(QGraphicsItem::ItemIsSelectable);
 
-    QGraphicsView view(&scene);
+    QGraphicsView view(&scene, &toplevel);
     QCOMPARE(view.rubberBandSelectionMode(), Qt::IntersectsItemShape);
     view.setDragMode(QGraphicsView::RubberBandDrag);
     view.resize(120, 120);
-    view.show();
+    toplevel.show();
 
     // Disable mouse tracking to prevent the window system from sending mouse
     // move events to the viewport while we are synthesizing events. If
@@ -1071,16 +1080,18 @@ void tst_QGraphicsView::matrix_combine()
 
 void tst_QGraphicsView::centerOnPoint()
 {
+    QWidget toplevel;
+
     QGraphicsScene scene;
     scene.addEllipse(QRectF(-100, -100, 50, 50));
     scene.addEllipse(QRectF(50, -100, 50, 50));
     scene.addEllipse(QRectF(-100, 50, 50, 50));
     scene.addEllipse(QRectF(50, 50, 50, 50));
 
-    QGraphicsView view(&scene);
+    QGraphicsView view(&scene, &toplevel);
     view.setSceneRect(-400, -400, 800, 800);
     view.setFixedSize(100, 100);
-    view.show();
+    toplevel.show();
 
     int tolerance = 5;
 
@@ -1155,6 +1166,8 @@ void tst_QGraphicsView::centerOnItem()
 
 void tst_QGraphicsView::ensureVisibleRect()
 {
+    QWidget toplevel;
+
     QGraphicsScene scene;
     QGraphicsItem *items[4];
     items[0] = scene.addEllipse(QRectF(-25, -25, 50, 50), QPen(Qt::black), QBrush(Qt::green));
@@ -1170,11 +1183,11 @@ void tst_QGraphicsView::ensureVisibleRect()
 
     QGraphicsItem *icon = scene.addEllipse(QRectF(-10, -10, 20, 20), QPen(Qt::black), QBrush(Qt::gray));
 
-    QGraphicsView view(&scene);
+    QGraphicsView view(&scene, &toplevel);
     view.setSceneRect(-500, -500, 1000, 1000);
     view.setFixedSize(250, 250);
-    view.show();
-    QTest::qWaitForWindowShown(&view);
+    toplevel.show();
+    QTest::qWaitForWindowShown(&toplevel);
 
     for (int y = -100; y < 100; y += 25) {
         for (int x = -100; x < 100; x += 13) {
@@ -1252,6 +1265,9 @@ void tst_QGraphicsView::fitInView()
 #else
     view.setFixedSize(400, 200);
 #endif
+
+    if (PlatformQuirks::isAutoMaximizing())
+        view.setWindowFlags(view.windowFlags()|Qt::X11BypassWindowManagerHint);
 
     view.show();
     view.fitInView(scene.itemsBoundingRect(), Qt::IgnoreAspectRatio);
@@ -1432,10 +1448,12 @@ void tst_QGraphicsView::itemsInRect_cosmeticAdjust()
     QGraphicsView view(&scene);
     view.setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, !adjustForAntialiasing);
     view.setRenderHint(QPainter::Antialiasing, adjustForAntialiasing);
+    if (PlatformQuirks::isAutoMaximizing())
+        view.setWindowFlags(view.windowFlags()|Qt::X11BypassWindowManagerHint);
     view.setFrameStyle(0);
     view.resize(300, 300);
     view.show();
-    QTest::qWaitForWindowShown(&view) ;
+    QTest::qWaitForWindowShown(&view);
     QTRY_VERIFY(rect->numPaints > 0);
 
     rect->numPaints = 0;
@@ -1614,7 +1632,8 @@ void tst_QGraphicsView::mapToScene()
     QGraphicsScene scene;
     scene.addPixmap(QPixmap("3D-Qt-1-2.png"));
 
-    QGraphicsView view;
+    QWidget topLevel;
+    QGraphicsView view(&topLevel);
     view.setScene(&scene);
     view.setSceneRect(-500, -500, 1000, 1000);
 #if defined(Q_OS_WINCE)
@@ -1624,7 +1643,7 @@ void tst_QGraphicsView::mapToScene()
 #endif
 
     view.setFixedSize(viewSize);
-    view.show();
+    topLevel.show();
     QApplication::processEvents();
     QVERIFY(view.isVisible());
     QCOMPARE(view.size(), viewSize);
@@ -1804,11 +1823,14 @@ void tst_QGraphicsView::mapFromScenePoint()
         }
     }
     {
+        QWidget toplevel;
+
         QGraphicsScene scene(0, 0, 200, 200);
         scene.addRect(QRectF(0, 0, 200, 200), QPen(Qt::black, 1));
-        QGraphicsView view(&scene);
+        QGraphicsView view(&scene, &toplevel);
+        view.ensurePolished();
         view.resize(view.sizeHint());
-        view.show();
+        toplevel.show();
 
         QCOMPARE(view.mapFromScene(0, 0), QPoint(0, 0));
         QCOMPARE(view.mapFromScene(0.4, 0.4), QPoint(0, 0));
@@ -1826,12 +1848,13 @@ void tst_QGraphicsView::mapFromScenePoint()
 void tst_QGraphicsView::mapFromSceneRect()
 {
     QGraphicsScene scene;
-    QGraphicsView view(&scene);
+    QWidget topLevel;
+    QGraphicsView view(&scene,&topLevel);
     view.rotate(90);
     view.setFixedSize(200, 200);
     view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view.show();
+    topLevel.show();
     QTest::qWait(25);
 
     QPolygon polygon;
@@ -2030,6 +2053,9 @@ void tst_QGraphicsView::cursor()
 #if defined(Q_OS_WINCE)
     QSKIP("Qt/CE does not have regular cursor support", SkipAll);
 #endif
+    if (PlatformQuirks::haveMouseCursor())
+        QSKIP("The Platform does not have regular cursor support", SkipAll);
+
     QGraphicsScene scene;
     QGraphicsItem *item = scene.addRect(QRectF(-10, -10, 20, 20));
     item->setCursor(Qt::IBeamCursor);
@@ -2057,6 +2083,9 @@ void tst_QGraphicsView::cursor2()
 #if defined(Q_OS_WINCE)
     QSKIP("Qt/CE does not have regular cursor support", SkipAll);
 #endif
+    if (PlatformQuirks::haveMouseCursor())
+        QSKIP("The Platform does not have regular cursor support", SkipAll);
+
     QGraphicsScene scene;
     QGraphicsItem *item = scene.addRect(QRectF(-10, -10, 20, 20));
     item->setCursor(Qt::IBeamCursor);
@@ -2209,6 +2238,8 @@ class CustomView : public QGraphicsView
     Q_OBJECT
 public:
     CustomView(QGraphicsScene *s = 0) : QGraphicsView(s) {}
+    CustomView(QGraphicsScene *s, QWidget *parent)
+        : QGraphicsView(s, parent) {}
     QList<QRegion> lastUpdateRegions;
     bool painted;
 
@@ -2227,8 +2258,11 @@ void tst_QGraphicsView::viewportUpdateMode()
     scene.setBackgroundBrush(Qt::red);
 
     CustomView view;
-    view.setFixedSize(500, 500);
+    QDesktopWidget desktop;
+    view.setFixedSize(QSize(500, 500).boundedTo(desktop.availableGeometry().size())); // 500 is too big for all common smartphones
     view.setScene(&scene);
+    if(PlatformQuirks::isAutoMaximizing())
+        view.setWindowFlags(view.windowFlags()|Qt::X11BypassWindowManagerHint);
     QCOMPARE(view.viewportUpdateMode(), QGraphicsView::MinimalViewportUpdate);
 
     // Show the view, and initialize our test.
@@ -2303,17 +2337,20 @@ void tst_QGraphicsView::viewportUpdateMode()
 
 void tst_QGraphicsView::viewportUpdateMode2()
 {
+    QWidget toplevel;
+
     // Create a view with viewport rect equal to QRect(0, 0, 200, 200).
     QGraphicsScene dummyScene;
-    CustomView view;
+    CustomView view(0, &toplevel);
     view.painted = false;
     view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     view.setScene(&dummyScene);
+    view.ensurePolished(); // make sure we get the right content margins
     int left, top, right, bottom;
     view.getContentsMargins(&left, &top, &right, &bottom);
     view.resize(200 + left + right, 200 + top + bottom);
-    view.show();
-    QTest::qWaitForWindowShown(&view);
+    toplevel.show();
+    QTest::qWaitForWindowShown(&toplevel);
     QTest::qWait(50);
     QTRY_VERIFY(view.painted);
     const QRect viewportRect = view.viewport()->rect();
@@ -3222,15 +3259,17 @@ void tst_QGraphicsView::scrollAfterResize()
 #else
     QCommonStyle style;
 #endif
-    QGraphicsView view;
+    QWidget toplevel;
+
+    QGraphicsView view(&toplevel);
     view.setStyle(&style);
     if (reverse)
         view.setLayoutDirection(Qt::RightToLeft);
 
     view.setSceneRect(-1000, -1000, 2000, 2000);
     view.resize(300, 300);
-    view.show();
-    QTest::qWaitForWindowShown(&view);
+    toplevel.show();
+    QTest::qWaitForWindowShown(&toplevel);
     view.horizontalScrollBar()->setValue(0);
     view.verticalScrollBar()->setValue(0);
     QCOMPARE(view.viewportTransform(), x1);
@@ -3321,8 +3360,10 @@ void tst_QGraphicsView::moveItemWhileScrolling()
 
 void tst_QGraphicsView::centerOnDirtyItem()
 {
-    QGraphicsView view;
-    view.setWindowFlags(view.windowFlags() | Qt::WindowStaysOnTopHint);
+    QWidget toplevel;
+
+    QGraphicsView view(&toplevel);
+    toplevel.setWindowFlags(view.windowFlags() | Qt::WindowStaysOnTopHint);
     view.resize(200, 200);
 
     QGraphicsScene *scene = new QGraphicsScene;
@@ -3334,8 +3375,9 @@ void tst_QGraphicsView::centerOnDirtyItem()
     scene->addItem(item);
     view.centerOn(item);
 
-    view.show();
-    QTest::qWaitForWindowShown(&view);
+    toplevel.show();
+    QTest::qWaitForWindowShown(&toplevel);
+    QTest::qWait(50);
 
     QImage before(view.viewport()->size(), QImage::Format_ARGB32);
     view.viewport()->render(&before);
@@ -3697,19 +3739,26 @@ void tst_QGraphicsView::update()
 {
     QFETCH(QRect, updateRect);
 
+    // some window manager resize the toplevel to max screen size
+    // so we must make our view a child (no layout!) of a dummy toplevel
+    // to ensure that it's really 200x200 pixels
+    QWidget toplevel;
+
     // Create a view with viewport rect equal to QRect(0, 0, 200, 200).
     QGraphicsScene dummyScene;
-    CustomView view;
+    CustomView view(0, &toplevel);
     view.setScene(&dummyScene);
+    view.ensurePolished(); // must ensure polished to get content margins right
     int left, top, right, bottom;
     view.getContentsMargins(&left, &top, &right, &bottom);
     view.resize(200 + left + right, 200 + top + bottom);
-    view.show();
-    QTest::qWaitForWindowShown(&view);
+    toplevel.show();
+    QTest::qWaitForWindowShown(&toplevel);
 
-    QApplication::setActiveWindow(&view);
+
+    QApplication::setActiveWindow(&toplevel);
     QApplication::processEvents();
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&toplevel));
 
     const QRect viewportRect = view.viewport()->rect();
     QCOMPARE(viewportRect, QRect(0, 0, 200, 200));
@@ -3718,6 +3767,7 @@ void tst_QGraphicsView::update()
     const bool intersects = updateRect.intersects(viewportRect);
     QGraphicsViewPrivate *viewPrivate = static_cast<QGraphicsViewPrivate *>(qt_widget_private(&view));
     QTRY_COMPARE(viewPrivate->updateRect(updateRect), intersects);
+    QApplication::processEvents();
 
     view.lastUpdateRegions.clear();
     viewPrivate->processPendingUpdates();
@@ -3741,22 +3791,22 @@ void tst_QGraphicsView::update2_data()
     QTest::addColumn<bool>("changedConnected");
 
     // Anti-aliased.
-    QTest::newRow("pen width: 0.0, antialiasing: true") << 0.0 << true << false;
-    QTest::newRow("pen width: 1.5, antialiasing: true") << 1.5 << true << false;
-    QTest::newRow("pen width: 2.0, antialiasing: true") << 2.0 << true << false;
-    QTest::newRow("pen width: 3.0, antialiasing: true") << 3.0 << true << false;
+    QTest::newRow("pen width: 0.0, antialiasing: true") << qreal(0.0) << true << false;
+    QTest::newRow("pen width: 1.5, antialiasing: true") << qreal(1.5) << true << false;
+    QTest::newRow("pen width: 2.0, antialiasing: true") << qreal(2.0) << true << false;
+    QTest::newRow("pen width: 3.0, antialiasing: true") << qreal(3.0) << true << false;
 
     // Aliased.
-    QTest::newRow("pen width: 0.0, antialiasing: false") << 0.0 << false << false;
-    QTest::newRow("pen width: 1.5, antialiasing: false") << 1.5 << false << false;
-    QTest::newRow("pen width: 2.0, antialiasing: false") << 2.0 << false << false;
-    QTest::newRow("pen width: 3.0, antialiasing: false") << 3.0 << false << false;
+    QTest::newRow("pen width: 0.0, antialiasing: false") << qreal(0.0) << false << false;
+    QTest::newRow("pen width: 1.5, antialiasing: false") << qreal(1.5) << false << false;
+    QTest::newRow("pen width: 2.0, antialiasing: false") << qreal(2.0) << false << false;
+    QTest::newRow("pen width: 3.0, antialiasing: false") << qreal(3.0) << false << false;
 
     // changed() connected
-    QTest::newRow("pen width: 0.0, antialiasing: false, changed") << 0.0 << false << true;
-    QTest::newRow("pen width: 1.5, antialiasing: true, changed") << 1.5 << true << true;
-    QTest::newRow("pen width: 2.0, antialiasing: false, changed") << 2.0 << false << true;
-    QTest::newRow("pen width: 3.0, antialiasing: true, changed") << 3.0 << true << true;
+    QTest::newRow("pen width: 0.0, antialiasing: false, changed") << qreal(0.0) << false << true;
+    QTest::newRow("pen width: 1.5, antialiasing: true, changed") << qreal(1.5) << true << true;
+    QTest::newRow("pen width: 2.0, antialiasing: false, changed") << qreal(2.0) << false << true;
+    QTest::newRow("pen width: 3.0, antialiasing: true, changed") << qreal(3.0) << true << true;
 }
 
 void tst_QGraphicsView::update2()
@@ -4198,8 +4248,8 @@ void tst_QGraphicsView::task255529_transformationAnchorMouseAndViewportMargins()
     class VpGraphicsView: public QGraphicsView
     {
     public:
-        VpGraphicsView(QGraphicsScene *scene)
-            : QGraphicsView(scene)
+        VpGraphicsView(QGraphicsScene *scene, QWidget *parent=0)
+            : QGraphicsView(scene, parent)
         {
             setViewportMargins(8, 16, 12, 20);
             setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
@@ -4210,6 +4260,7 @@ void tst_QGraphicsView::task255529_transformationAnchorMouseAndViewportMargins()
     VpGraphicsView view(&scene);
     view.setWindowFlags(Qt::X11BypassWindowManagerHint);
     view.show();
+
     QTest::qWaitForWindowShown(&view);
     QTest::qWait(50);
     QPoint mouseViewPos(20, 20);
@@ -4324,6 +4375,9 @@ void tst_QGraphicsView::QTBUG_4151_clipAndIgnore()
     view.setFrameStyle(0);
     view.resize(75, 75);
     view.show();
+    QTest::qWaitForWindowShown(&view);
+    view.activateWindow();
+
     QTRY_COMPARE(QApplication::activeWindow(), (QWidget *)&view);
 
     QCOMPARE(view.items(view.rect()).size(), numItems);
@@ -4357,6 +4411,8 @@ void tst_QGraphicsView::QTBUG_5859_exposedRect()
     scene.addItem(&item);
 
     QGraphicsView view(&scene);
+    if (PlatformQuirks::isAutoMaximizing())
+        view.setWindowFlags(view.windowFlags()|Qt::X11BypassWindowManagerHint);
     view.scale(4.15, 4.15);
     view.show();
     QTest::qWaitForWindowShown(&view);

@@ -1209,7 +1209,7 @@ QImage QFontEngineWin::alphaMapForGlyph(glyph_t glyph, const QTransform &xform)
 
     QImage indexed(mask->width(), mask->height(), QImage::Format_Indexed8);
 
-    // ### This part is kinda pointless, but we'll crash later if we dont because some
+    // ### This part is kinda pointless, but we'll crash later if we don't because some
     // code paths expects there to be colortables for index8-bit...
     QVector<QRgb> colors(256);
     for (int i=0; i<256; ++i)

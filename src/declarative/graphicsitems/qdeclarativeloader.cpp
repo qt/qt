@@ -129,14 +129,40 @@ void QDeclarativeLoaderPrivate::initResize()
 
     The loaded item can be accessed using the \l item property.
 
-    Loader is like any other visual item and must be positioned and sized 
-    accordingly to become visible. Once the component is loaded, the Loader 
-    is automatically resized to the size of the component.
-
     If the \l source or \l sourceComponent changes, any previously instantiated
     items are destroyed. Setting \l source to an empty string or setting
     \l sourceComponent to \c undefined destroys the currently loaded item,
     freeing resources and leaving the Loader empty.
+
+    \section2 Loader sizing behavior
+
+    Loader is like any other visual item and must be positioned and sized
+    accordingly to become visible.
+
+    \list
+    \o If an explicit size is not specified for the Loader, the Loader
+    is automatically resized to the size of the loaded item once the
+    component is loaded.
+    \o If the size of the Loader is specified explicitly by setting
+    the width, height or by anchoring, the loaded item will be resized
+    to the size of the Loader.
+    \endlist
+
+    In both scenarios the size of the item and the Loader are identical.
+    This ensures that anchoring to the Loader is equivalent to anchoring
+    to the loaded item.
+
+    \table
+    \row
+    \o sizeloader.qml
+    \o sizeitem.qml
+    \row
+    \o \snippet doc/src/snippets/declarative/loader/sizeloader.qml 0
+    \o \snippet doc/src/snippets/declarative/loader/sizeitem.qml 0
+    \row
+    \o The red rectangle will be sized to the size of the root item.
+    \o The red rectangle will be 50x50, centered in the root item.
+    \endtable
 
 
     \section2 Receiving signals from loaded items
@@ -216,7 +242,8 @@ QDeclarativeLoader::~QDeclarativeLoader()
     cannot load non-visual components.
 
     To unload the currently loaded item, set this property to an empty string,
-    or set \l sourceComponent to \c undefined.
+    or set \l sourceComponent to \c undefined. Setting \c source to a
+    new URL will also cause the item created by the previous URL to be unloaded.
 
     \sa sourceComponent, status, progress
 */
@@ -342,12 +369,14 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
         QDeclarativeContext *ctxt = new QDeclarativeContext(creationContext);
         ctxt->setContextObject(q);
 
-        QDeclarativeComponent *c = component;
-        QObject *obj = component->create(ctxt);
+        QDeclarativeGuard<QDeclarativeComponent> c = component;
+        QObject *obj = component->beginCreate(ctxt);
         if (component != c) {
             // component->create could trigger a change in source that causes
             // component to be set to something else. In that case we just
             // need to cleanup.
+            if (c)
+                c->completeCreate();
             delete obj;
             delete ctxt;
             return;
@@ -372,6 +401,7 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
             delete ctxt;
             source = QUrl();
         }
+        component->completeCreate();
         emit q->sourceChanged();
         emit q->statusChanged();
         emit q->progressChanged();
@@ -394,23 +424,25 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
     Use this status to provide an update or respond to the status change in some way.
     For example, you could:
 
-    \e {Trigger a state change:}
-    \qml 
-        State { name: 'loaded'; when: loader.status = Loader.Ready }
+    \list
+    \o Trigger a state change:
+    \qml
+        State { name: 'loaded'; when: loader.status == Loader.Ready }
     \endqml
 
-    \e {Implement an \c onStatusChanged signal handler:}
-    \qml 
+    \o Implement an \c onStatusChanged signal handler:
+    \qml
         Loader {
             id: loader
             onStatusChanged: if (loader.status == Loader.Ready) console.log('Loaded')
         }
     \endqml
 
-    \e {Bind to the status value:}
+    \o Bind to the status value:
     \qml
-        Text { text: loader.status != Loader.Ready ? 'Not Loaded' : 'Loaded' }
+        Text { text: loader.status == Loader.Ready ? 'Loaded' : 'Not loaded' }
     \endqml
+    \endlist
 
     Note that if the source is a local file, the status will initially be Ready (or Error). While
     there will be no onStatusChanged signal in that case, the onLoaded will still be invoked.

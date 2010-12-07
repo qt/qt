@@ -4389,7 +4389,6 @@ class WinIdChangeWidget : public QWidget {
 public:
     WinIdChangeWidget(QWidget *p = 0)
         : QWidget(p)
-        , m_winIdChangeEventCount(0)
     {
 
     }
@@ -4397,13 +4396,14 @@ protected:
     bool event(QEvent *e)
     {
         if (e->type() == QEvent::WinIdChange) {
-            ++m_winIdChangeEventCount;
+            m_winIdList.append(internalWinId());
             return true;
         }
         return QWidget::event(e);
     }
 public:
-    int m_winIdChangeEventCount;
+    QList<WId> m_winIdList;
+    int winIdChangeEventCount() const { return m_winIdList.count(); }
 };
 
 void tst_QWidget::winIdChangeEvent()
@@ -4414,7 +4414,7 @@ void tst_QWidget::winIdChangeEvent()
         const WId winIdBefore = widget.internalWinId();
         const WId winIdAfter = widget.winId();
         QVERIFY(winIdBefore != winIdAfter);
-        QCOMPARE(widget.m_winIdChangeEventCount, 1);
+        QCOMPARE(widget.winIdChangeEventCount(), 1);
     }
 
     {
@@ -4423,11 +4423,13 @@ void tst_QWidget::winIdChangeEvent()
         QWidget parent1, parent2;
         WinIdChangeWidget child(&parent1);
         const WId winIdBefore = child.winId();
-        QCOMPARE(child.m_winIdChangeEventCount, 1);
+        QCOMPARE(child.winIdChangeEventCount(), 1);
         child.setParent(&parent2);
         const WId winIdAfter = child.internalWinId();
         QVERIFY(winIdBefore != winIdAfter);
-        QCOMPARE(child.m_winIdChangeEventCount, 2);
+        QCOMPARE(child.winIdChangeEventCount(), 3);
+        // winId is set to zero during reparenting
+        QVERIFY(0 == child.m_winIdList[1]);
     }
 
     {
@@ -4437,15 +4439,16 @@ void tst_QWidget::winIdChangeEvent()
         QWidget parent(&grandparent1);
         WinIdChangeWidget child(&parent);
         const WId winIdBefore = child.winId();
-        QCOMPARE(child.m_winIdChangeEventCount, 1);
+        QCOMPARE(child.winIdChangeEventCount(), 1);
         parent.setParent(&grandparent2);
         const WId winIdAfter = child.internalWinId();
 #ifdef Q_OS_SYMBIAN
         QVERIFY(winIdBefore != winIdAfter);
-        QCOMPARE(child.m_winIdChangeEventCount, 2);
+        QVERIFY(winIdAfter != 0);
+        QCOMPARE(child.winIdChangeEventCount(), 2);
 #else
         QCOMPARE(winIdBefore, winIdAfter);
-        QCOMPARE(child.m_winIdChangeEventCount, 1);
+        QCOMPARE(child.winIdChangeEventCount(), 1);
 #endif
     }
 
@@ -4457,7 +4460,7 @@ void tst_QWidget::winIdChangeEvent()
         child.setParent(&parent2);
         const WId winIdAfter = child.internalWinId();
         QCOMPARE(winIdBefore, winIdAfter);
-        QCOMPARE(child.m_winIdChangeEventCount, 0);
+        QCOMPARE(child.winIdChangeEventCount(), 0);
     }
 
     {
@@ -4466,12 +4469,14 @@ void tst_QWidget::winIdChangeEvent()
         WinIdChangeWidget child(&parent);
         child.winId();
         const WId winIdBefore = child.internalWinId();
-        QCOMPARE(child.m_winIdChangeEventCount, 1);
+        QCOMPARE(child.winIdChangeEventCount(), 1);
         const Qt::WindowFlags flags = child.windowFlags();
         child.setWindowFlags(flags | Qt::Window);
         const WId winIdAfter = child.internalWinId();
         QVERIFY(winIdBefore != winIdAfter);
-        QCOMPARE(child.m_winIdChangeEventCount, 2);
+        QCOMPARE(child.winIdChangeEventCount(), 3);
+        // winId is set to zero during reparenting
+        QVERIFY(0 == child.m_winIdList[1]);
     }
 }
 
@@ -9718,14 +9723,25 @@ void tst_QWidget::destroyBackingStoreWhenHidden()
     child.setAutoFillBackground(true);
     child.setPalette(Qt::blue);
 
+    QWidget grandChild(&child);
+    grandChild.setAutoFillBackground(true);
+    grandChild.setPalette(Qt::yellow);
+
     QVBoxLayout layout(&parent);
     layout.setContentsMargins(10, 10, 10, 10);
     layout.addWidget(&child);
     parent.setLayout(&layout);
 
-    child.winId();
+    QVBoxLayout childLayout(&child);
+    childLayout.setContentsMargins(10, 10, 10, 10);
+    childLayout.addWidget(&grandChild);
+    child.setLayout(&childLayout);
+
+    // Ensure that this widget and all its ancestors are native
+    grandChild.winId();
 
     parent.show();
+
     QTest::qWaitForWindowShown(&parent);
 
     // Check that child window does not obscure parent window
@@ -9734,18 +9750,24 @@ void tst_QWidget::destroyBackingStoreWhenHidden()
     // Native child widget should share parent's backing store
     QVERIFY(0 != backingStore(parent));
     QVERIFY(0 == backingStore(child));
+    QVERIFY(0 == backingStore(grandChild));
 
     // Make child widget full screen
     child.setWindowFlags((child.windowFlags() | Qt::Window) ^ Qt::SubWindow);
     child.setWindowState(child.windowState() | Qt::WindowFullScreen);
     child.show();
+
+    // Paint into the child to ensure that it gets a backing store
+    QPainter painter(&child);
+    painter.fillRect(QRect(0, 0, 90, 90), Qt::white);
+
     QTest::qWaitForWindowShown(&child);
 
     // Ensure that 'window hidden' event is received by parent
     qApp->processEvents();
 
     // Check that child window obscures parent window
-    QVERIFY(parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
+    QVERIFY(parent.visibleRegion().subtracted(child.visibleRegion() + grandChild.visibleRegion()).isEmpty());
 
     // Now that extent of child widget goes beyond parent's extent,
     // a new backing store should be created for the child widget.
@@ -9761,11 +9783,12 @@ void tst_QWidget::destroyBackingStoreWhenHidden()
     QTest::qWaitForWindowShown(&child);
 
     // Check that parent is now visible again
-    QVERIFY(!parent.visibleRegion().subtracted(child.visibleRegion()).isEmpty());
+    QVERIFY(!parent.visibleRegion().subtracted(child.visibleRegion() + grandChild.visibleRegion()).isEmpty());
 
     // Native child widget should once again share parent's backing store
     QVERIFY(0 != backingStore(parent));
     QVERIFY(0 == backingStore(child));
+    QVERIFY(0 == backingStore(grandChild));
     }
 
     // 6. Partial reveal followed by full reveal

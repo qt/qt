@@ -51,6 +51,7 @@ Makefile*
 *.prl
 *.app
 *.pro.user
+*.qmlproject.user
 *.gcov
 bin/Qt*.dll
 bin/assistant*
@@ -234,3 +235,5 @@ qtc-debugging-helper
 src/corelib/lib
 src/network/lib
 src/xml/lib/
+
+.pc/

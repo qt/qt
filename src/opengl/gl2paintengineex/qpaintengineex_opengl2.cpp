@@ -102,7 +102,7 @@ extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 extern bool qt_applefontsmoothing_enabled;
 #endif
 
-extern QImage qt_imageForBrush(int brushStyle, bool invert);
+Q_DECL_IMPORT extern QImage qt_imageForBrush(int brushStyle, bool invert);
 
 ////////////////////////////////// Private Methods //////////////////////////////////////////
 
@@ -825,7 +825,7 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
                 glBindBuffer(GL_ARRAY_BUFFER, cache->vbo);
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cache->ibo);
 
-                if (glSupportsElementIndexUint)
+                if (QGLExtensions::glExtensions() & QGLExtensions::ElementIndexUint)
                     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quint32) * polys.indices.size(), polys.indices.data(), GL_STATIC_DRAW);
                 else
                     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quint16) * polys.indices.size(), polys.indices.data(), GL_STATIC_DRAW);
@@ -836,7 +836,7 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
                 glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
 #else
                 cache->vertices = (float *) qMalloc(sizeof(float) * polys.vertices.size());
-                if (glSupportsElementIndexUint) {
+                if (QGLExtensions::glExtensions() & QGLExtensions::ElementIndexUint) {
                     cache->indices = (quint32 *) qMalloc(sizeof(quint32) * polys.indices.size());
                     memcpy(cache->indices, polys.indices.data(), sizeof(quint32) * polys.indices.size());
                 } else {
@@ -853,7 +853,7 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
             glBindBuffer(GL_ARRAY_BUFFER, cache->vbo);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cache->ibo);
             setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, 0);
-            if (glSupportsElementIndexUint)
+            if (QGLExtensions::glExtensions() & QGLExtensions::ElementIndexUint)
                 glDrawElements(cache->primitiveType, cache->indexCount, GL_UNSIGNED_INT, 0);
             else
                 glDrawElements(cache->primitiveType, cache->indexCount, GL_UNSIGNED_SHORT, 0);
@@ -861,7 +861,7 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
             glBindBuffer(GL_ARRAY_BUFFER, 0);
 #else
             setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, cache->vertices);
-            if (glSupportsElementIndexUint)
+            if (QGLExtensions::glExtensions() & QGLExtensions::ElementIndexUint)
                 glDrawElements(cache->primitiveType, cache->indexCount, GL_UNSIGNED_INT, (qint32 *)cache->indices);
             else
                 glDrawElements(cache->primitiveType, cache->indexCount, GL_UNSIGNED_SHORT, (qint16 *)cache->indices);
@@ -1212,6 +1212,9 @@ void QGL2PaintEngineExPrivate::stroke(const QVectorPath &path, const QPen &pen)
         stroker.process(dashStroke, pen, clip);
     }
 
+    if (!stroker.vertexCount())
+        return;
+
     if (opaque) {
         prepareForDraw(opaque);
         setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, stroker.vertices());
@@ -1350,8 +1353,8 @@ void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
 
     ensureActive();
 
-    QFontEngineGlyphCache::Type glyphType = textItem->fontEngine->glyphFormat >= 0
-                                            ? QFontEngineGlyphCache::Type(textItem->fontEngine->glyphFormat)
+    QFontEngineGlyphCache::Type glyphType = textItem->fontEngine()->glyphFormat >= 0
+                                            ? QFontEngineGlyphCache::Type(textItem->fontEngine()->glyphFormat)
                                             : d->glyphCacheType;
     if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
         if (d->device->alphaRequested() || state()->matrix.type() > QTransform::TxTranslate
@@ -1430,7 +1433,7 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
         {
             QStaticTextItem staticTextItem;
             staticTextItem.chars = const_cast<QChar *>(ti.chars);
-            staticTextItem.fontEngine = ti.fontEngine;
+            staticTextItem.setFontEngine(ti.fontEngine);
             staticTextItem.glyphs = glyphs.data();
             staticTextItem.numChars = ti.num_chars;
             staticTextItem.numGlyphs = glyphs.size();
@@ -1475,18 +1478,20 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     QOpenGL2PaintEngineState *s = q->state();
 
     QGLTextureGlyphCache *cache =
-        (QGLTextureGlyphCache *) staticTextItem->fontEngine->glyphCache(ctx, glyphType, QTransform());
+        (QGLTextureGlyphCache *) staticTextItem->fontEngine()->glyphCache(ctx, glyphType, QTransform());
     if (!cache || cache->cacheType() != glyphType) {
         cache = new QGLTextureGlyphCache(ctx, glyphType, QTransform());
-        staticTextItem->fontEngine->setGlyphCache(ctx, cache);
+        staticTextItem->fontEngine()->setGlyphCache(ctx, cache);
+    } else if (cache->context() == 0) { // Old context has been destroyed, new context has same ptr value
+        cache->setContext(ctx);
     }
 
     bool recreateVertexArrays = false;
     if (staticTextItem->userDataNeedsUpdate)
         recreateVertexArrays = true;
-    else if (staticTextItem->userData == 0)
+    else if (staticTextItem->userData() == 0)
         recreateVertexArrays = true;
-    else if (staticTextItem->userData->type != QStaticTextUserData::OpenGLUserData)
+    else if (staticTextItem->userData()->type != QStaticTextUserData::OpenGLUserData)
         recreateVertexArrays = true;
 
     // We only need to update the cache with new glyphs if we are actually going to recreate the vertex arrays.
@@ -1494,8 +1499,13 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     // cache so this text is performed before we test if the cache size has changed.
     if (recreateVertexArrays) {
         cache->setPaintEnginePrivate(this);
-        cache->populate(staticTextItem->fontEngine, staticTextItem->numGlyphs, staticTextItem->glyphs,
-                        staticTextItem->glyphPositions);
+        if (!cache->populate(staticTextItem->fontEngine(), staticTextItem->numGlyphs,
+			     staticTextItem->glyphs, staticTextItem->glyphPositions)) {
+	    // No space in cache. We need to clear the cache and try again
+            cache->clear();
+            cache->populate(staticTextItem->fontEngine(), staticTextItem->numGlyphs,
+			    staticTextItem->glyphs, staticTextItem->glyphPositions);
+	}
     }
 
     if (cache->width() == 0 || cache->height() == 0)
@@ -1515,14 +1525,14 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     if (staticTextItem->useBackendOptimizations) {
         QOpenGLStaticTextUserData *userData = 0;
 
-        if (staticTextItem->userData == 0
-            || staticTextItem->userData->type != QStaticTextUserData::OpenGLUserData) {
+        if (staticTextItem->userData() == 0
+            || staticTextItem->userData()->type != QStaticTextUserData::OpenGLUserData) {
 
             userData = new QOpenGLStaticTextUserData();
             staticTextItem->setUserData(userData);
 
         } else {
-            userData = static_cast<QOpenGLStaticTextUserData*>(staticTextItem->userData);
+            userData = static_cast<QOpenGLStaticTextUserData*>(staticTextItem->userData());
         }
 
         // Use cache if backend optimizations is turned on

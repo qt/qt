@@ -497,7 +497,7 @@ bool QApplicationPrivate::fade_tooltip = false;
 bool QApplicationPrivate::animate_toolbox = false;
 bool QApplicationPrivate::widgetCount = false;
 bool QApplicationPrivate::load_testability = false;
-QString QApplicationPrivate::qmljsDebugArguments;
+QString QApplicationPrivate::qmljs_debug_arguments;
 #ifdef QT_KEYPAD_NAVIGATION
 #  ifdef Q_OS_SYMBIAN
 Qt::NavigationMode QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadDirectional;
@@ -570,7 +570,7 @@ void QApplicationPrivate::process_cmdline()
         if (arg == "-qdevel" || arg == "-qdebug") {
             // obsolete argument
         } else if (arg.indexOf("-qmljsdebugger=", 0) != -1) {
-            qmljsDebugArguments = QString::fromLocal8Bit(arg.right(arg.length() - 15));
+            qmljs_debug_arguments = QString::fromLocal8Bit(arg.right(arg.length() - 15));
         } else if (arg.indexOf("-style=", 0) != -1) {
             s = QString::fromLocal8Bit(arg.right(arg.length() - 7).toLower());
         } else if (arg == "-style" && i < argc-1) {
@@ -1430,10 +1430,18 @@ QStyle *QApplication::style()
         // Compile-time search for default style
         //
         QString style;
-        if (!QApplicationPrivate::styleOverride.isEmpty())
+#ifdef QT_BUILD_INTERNAL
+        QString envStyle = QString::fromLocal8Bit(qgetenv("QT_STYLE_OVERRIDE"));
+#else
+        QString envStyle;
+#endif
+        if (!QApplicationPrivate::styleOverride.isEmpty()) {
             style = QApplicationPrivate::styleOverride;
-        else
+        } else if (!envStyle.isEmpty()) {
+            style = envStyle;
+        } else {
             style = QApplicationPrivate::desktopStyleKey();
+        }
 
         QStyle *&app_style = QApplicationPrivate::app_style;
         app_style = QStyleFactory::create(style);
@@ -6084,6 +6092,11 @@ QPixmap QApplicationPrivate::getPixmapCursor(Qt::CursorShape cshape)
     }
 #endif
     return QPixmap();
+}
+
+QString QApplicationPrivate::qmljsDebugArgumentsString()
+{
+    return qmljs_debug_arguments;
 }
 
 QT_END_NAMESPACE

@@ -46,37 +46,22 @@
 #include <QtCore/qfile.h>
 #include <QtMultimedia/qaudioformat.h>
 
-/**
- * Helper class for reading WAV files
- *
- * See https://ccrma.stanford.edu/courses/422/projects/WaveFormat/
- */
-class WavFile
+class WavFile : public QFile
 {
 public:
-    WavFile(const QAudioFormat &format = QAudioFormat(),
-              qint64 dataLength = 0);
+    WavFile(QObject *parent = 0);
 
-    // Reads WAV header and seeks to start of data
-    bool readHeader(QIODevice &device);
-
-    // Writes WAV header
-    bool writeHeader(QIODevice &device);
-
-    // Read PCM data
-    qint64 readData(QIODevice &device, QByteArray &buffer,
-                    QAudioFormat outputFormat = QAudioFormat());
-
-    const QAudioFormat& format() const;
-    qint64 dataLength() const;
-
-    static qint64 headerLength();
-
-    static bool writeDataLength(QIODevice &device, qint64 dataLength);
+    bool open(const QString &fileName);
+    const QAudioFormat &fileFormat() const;
+    qint64 headerLength() const;
 
 private:
-    QAudioFormat m_format;
-    qint64 m_dataLength;
+    bool readHeader();
+
+private:
+    QAudioFormat m_fileFormat;
+    qint64 m_headerLength;
+
 };
 
 #endif

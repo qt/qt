@@ -3713,4 +3713,5 @@ EXPORTS
 	_ZrsR11QDataStreamR12QEasingCurve @ 3712 NONAME
 	_Z26qt_symbian_SetupThreadHeapiR24SStdEpocThreadCreateInfo @ 3713 NONAME
 	_ZN24QAbstractDeclarativeData17objectNameChangedE @ 3714 NONAME DATA 4
+	_ZN23QEventDispatcherSymbian36queueDeferredActiveObjectsCompletionEv @ 3715 NONAME
 

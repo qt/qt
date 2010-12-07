@@ -120,6 +120,8 @@ private slots:
     void childChanged();
     void objectListModel();
     void singleRole();
+    void modelProperties();
+    void noDelegate();
 
 private:
     QDeclarativeEngine engine;
@@ -363,6 +365,136 @@ void tst_qdeclarativevisualdatamodel::singleRole()
         QCOMPARE(name->text(), QString("Changed"));
     }
 }
+
+void tst_qdeclarativevisualdatamodel::modelProperties()
+{
+    {
+        QDeclarativeView view;
+
+        SingleRoleModel model;
+
+        QDeclarativeContext *ctxt = view.rootContext();
+        ctxt->setContextProperty("myModel", &model);
+
+        view.setSource(QUrl::fromLocalFile(SRCDIR "/data/modelproperties.qml"));
+
+        QDeclarativeListView *listview = qobject_cast<QDeclarativeListView*>(view.rootObject());
+        QVERIFY(listview != 0);
+
+        QDeclarativeItem *contentItem = listview->contentItem();
+        QVERIFY(contentItem != 0);
+
+        QDeclarativeItem *delegate = findItem<QDeclarativeItem>(contentItem, "delegate", 1);
+        QCOMPARE(delegate->property("test1").toString(),QString("two"));
+        QCOMPARE(delegate->property("test2").toString(),QString("two"));
+        QCOMPARE(delegate->property("test3").toString(),QString("two"));
+        QCOMPARE(delegate->property("test4").toString(),QString("two"));
+        QVERIFY(!delegate->property("test9").isValid());
+        QCOMPARE(delegate->property("test5").toString(),QString(""));
+        QVERIFY(delegate->property("test6").value<QObject*>() != 0);
+        QCOMPARE(delegate->property("test7").toInt(),1);
+        QCOMPARE(delegate->property("test8").toInt(),1);
+    }
+
+    {
+        QDeclarativeView view;
+
+        QList<QObject*> dataList;
+        dataList.append(new DataObject("Item 1", "red"));
+        dataList.append(new DataObject("Item 2", "green"));
+        dataList.append(new DataObject("Item 3", "blue"));
+        dataList.append(new DataObject("Item 4", "yellow"));
+
+        QDeclarativeContext *ctxt = view.rootContext();
+        ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
+
+        view.setSource(QUrl::fromLocalFile(SRCDIR "/data/modelproperties.qml"));
+
+        QDeclarativeListView *listview = qobject_cast<QDeclarativeListView*>(view.rootObject());
+        QVERIFY(listview != 0);
+
+        QDeclarativeItem *contentItem = listview->contentItem();
+        QVERIFY(contentItem != 0);
+
+        QDeclarativeItem *delegate = findItem<QDeclarativeItem>(contentItem, "delegate", 1);
+        QCOMPARE(delegate->property("test1").toString(),QString("Item 2"));
+        QEXPECT_FAIL("", "QTBUG-13576", Continue);
+        QCOMPARE(delegate->property("test2").toString(),QString("Item 2"));
+        QVERIFY(qobject_cast<DataObject*>(delegate->property("test3").value<QObject*>()) != 0);
+        QVERIFY(qobject_cast<DataObject*>(delegate->property("test4").value<QObject*>()) != 0);
+        QCOMPARE(delegate->property("test5").toString(),QString("Item 2"));
+        QCOMPARE(delegate->property("test9").toString(),QString("Item 2"));
+        QVERIFY(delegate->property("test6").value<QObject*>() != 0);
+        QCOMPARE(delegate->property("test7").toInt(),1);
+        QCOMPARE(delegate->property("test8").toInt(),1);
+    }
+
+    {
+        QDeclarativeView view;
+
+        QStandardItemModel model;
+        initStandardTreeModel(&model);
+
+        view.rootContext()->setContextProperty("myModel", &model);
+
+        QUrl source(QUrl::fromLocalFile(SRCDIR "/data/modelproperties2.qml"));
+
+        //3 items, 3 warnings each
+        QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":11: ReferenceError: Can't find variable: modelData");
+        QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":11: ReferenceError: Can't find variable: modelData");
+        QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":11: ReferenceError: Can't find variable: modelData");
+        QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":9: ReferenceError: Can't find variable: modelData");
+        QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":9: ReferenceError: Can't find variable: modelData");
+        QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":9: ReferenceError: Can't find variable: modelData");
+        QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":15: TypeError: Result of expression 'model.modelData' [undefined] is not an object.");
+        QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":15: TypeError: Result of expression 'model.modelData' [undefined] is not an object.");
+        QTest::ignoreMessage(QtWarningMsg, source.toString().toLatin1() + ":15: TypeError: Result of expression 'model.modelData' [undefined] is not an object.");
+
+        view.setSource(source);
+
+        QDeclarativeListView *listview = qobject_cast<QDeclarativeListView*>(view.rootObject());
+        QVERIFY(listview != 0);
+
+        QDeclarativeItem *contentItem = listview->contentItem();
+        QVERIFY(contentItem != 0);
+
+        QDeclarativeItem *delegate = findItem<QDeclarativeItem>(contentItem, "delegate", 1);
+        QCOMPARE(delegate->property("test1").toString(),QString("Row 2 Item"));
+        QCOMPARE(delegate->property("test2").toString(),QString("Row 2 Item"));
+        QVERIFY(!delegate->property("test3").isValid());
+        QVERIFY(!delegate->property("test4").isValid());
+        QVERIFY(!delegate->property("test5").isValid());
+        QVERIFY(!delegate->property("test9").isValid());
+        QVERIFY(delegate->property("test6").value<QObject*>() != 0);
+        QCOMPARE(delegate->property("test7").toInt(),1);
+        QCOMPARE(delegate->property("test8").toInt(),1);
+    }
+
+    //### should also test QStringList and QVariantList
+}
+
+void tst_qdeclarativevisualdatamodel::noDelegate()
+{
+    QDeclarativeView view;
+
+    QStandardItemModel model;
+    initStandardTreeModel(&model);
+
+    view.rootContext()->setContextProperty("myModel", &model);
+
+    view.setSource(QUrl::fromLocalFile(SRCDIR "/data/datalist.qml"));
+
+    QDeclarativeListView *listview = qobject_cast<QDeclarativeListView*>(view.rootObject());
+    QVERIFY(listview != 0);
+
+    QDeclarativeVisualDataModel *vdm = listview->findChild<QDeclarativeVisualDataModel*>("visualModel");
+    QVERIFY(vdm != 0);
+    QCOMPARE(vdm->count(), 3);
+
+    vdm->setDelegate(0);
+    QCOMPARE(vdm->count(), 0);
+}
+
 
 template<typename T>
 T *tst_qdeclarativevisualdatamodel::findItem(QGraphicsObject *parent, const QString &objectName, int index)

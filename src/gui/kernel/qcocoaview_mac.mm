@@ -939,10 +939,6 @@ static int qCocoaViewCount = 0;
         }
     }
 #endif //QT_NO_WHEELEVENT
-
-    if (!wheelOK) {
-        return [super scrollWheel:theEvent];
-    }
 }
 
 - (void)tabletProximity:(NSEvent *)tabletEvent

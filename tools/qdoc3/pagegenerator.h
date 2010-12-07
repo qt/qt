@@ -64,7 +64,7 @@ class PageGenerator : public Generator
     PageGenerator();
     ~PageGenerator();
 
-    virtual void generateTree(const Tree* tree, CodeMarker* marker);
+    virtual void generateTree(const Tree *tree);
 
  protected:
     virtual QString fileBase(const Node* node) const;
@@ -73,7 +73,7 @@ class PageGenerator : public Generator
     QString outFileName();
     virtual void beginSubPage(const Location& location, const QString& fileName);
     virtual void endSubPage();
-    virtual void generateInnerNode(const InnerNode* node, CodeMarker* marker);
+    virtual void generateInnerNode(const InnerNode *node);
     QTextStream& out();
 
     QString naturalLanguage;

@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
         printf("usage: normalize [--modify] <path>\n");
         printf("  <path> can be a single file or a directory (default: look for *.cpp recursively)");
         printf("  Outputs all filenames that contain non-normalized SIGNALs and SLOTs\n");
-        printf("  with --modify: fix all occurences of non-normalized SIGNALs and SLOTs\n");
+        printf("  with --modify: fix all occurrences of non-normalized SIGNALs and SLOTs\n");
         return 1;
     }
 

@@ -44,8 +44,8 @@
     \tableofcontents
 
     For information about which platforms are supported by Qt, see the
-    \l{Platform Notes}. For information on distributing Qt applications, see
-    \l{Deploying Qt Applications}.
+    \l{Platform and Compiler Notes}. For information on distributing Qt
+    applications, see \l{Deploying Qt Applications}.
 
     \target x11
     \section1 Qt for X11

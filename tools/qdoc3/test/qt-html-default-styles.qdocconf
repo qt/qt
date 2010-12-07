@@ -1,0 +1,50 @@
+# Define the location of the templates to use. Style sheets and scripts are
+# specified relative to the template directory and will be copied into
+# subdirectories of the output directory.
+
+HTML.templatedir = $QT_SOURCE_TREE/doc/src/template
+
+HTML.stylesheets = style/style.css \
+                   style/narrow.css
+
+HTML.scripts     =
+
+# Files not referenced in any qdoc file (last four needed by qtdemo)
+# See also qhp.Qt.extraFiles
+extraimages.HTML        = qt-logo \
+                          trolltech-logo \
+                          bg_l.png \
+                          bg_l_blank.png \
+                          bg_ll_blank.png \
+                          bg_ul_blank.png \
+                          header_bg.png \
+                          bg_r.png \
+                          box_bg.png \
+                          breadcrumb.png \
+                          bullet_gt.png \
+                          bullet_dn.png \
+                          bullet_sq.png \
+                          bullet_up.png \
+                          arrow_down.png \
+                          feedbackground.png \
+                          horBar.png \
+                          page.png \
+                          page_bg.png \
+                          sprites-combined.png \
+                          spinner.gif \
+                          stylesheet-coffee-plastique.png \
+                          taskmenuextension-example.png \
+                          coloreditorfactoryimage.png \
+                          dynamiclayouts-example.png
+    
+# Include the style sheets and scripts used.
+
+HTML.headerstyles = \
+    "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/narrow.css\" />\n" \
+    "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />\n"
+
+HTML.headerscripts = 
+
+HTML.endheader = \
+    "</head>\n" \
+    "<body class=\"offline creator\">\n"

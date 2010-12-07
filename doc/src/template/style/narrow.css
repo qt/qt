@@ -223,6 +223,7 @@
       float: right;
       margin: 15px 40px 0 0;
       font-size: 11px;
+      position: relative;
     }
 
     .narrow #narrowmenu {

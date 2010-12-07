@@ -827,7 +827,7 @@ QVariant QAbstractItemView::inputMethodQuery(Qt::InputMethodQuery query) const
     deleted. QAbstractItemView does not take ownership of \a delegate.
 
     \note If a delegate has been assigned to both a row and a column, the row
-    delegate (i.e., this delegate) will take presedence and manage the
+    delegate (i.e., this delegate) will take precedence and manage the
     intersecting cell index.
 
     \warning You should not share the same instance of a delegate between views.
@@ -885,7 +885,7 @@ QAbstractItemDelegate *QAbstractItemView::itemDelegateForRow(int row) const
     deleted. QAbstractItemView does not take ownership of \a delegate.
 
     \note If a delegate has been assigned to both a row and a column, the row
-    delegate will take presedence and manage the intersecting cell index.
+    delegate will take precedence and manage the intersecting cell index.
 
     \warning You should not share the same instance of a delegate between views.
     Doing so can cause incorrect or unintuitive editing behavior since each
@@ -1166,7 +1166,7 @@ QAbstractItemView::EditTriggers QAbstractItemView::editTriggers() const
     \property QAbstractItemView::verticalScrollMode
     \brief how the view scrolls its contents in the vertical direction
 
-    This property controlls how the view scroll its contents vertically.
+    This property controls how the view scroll its contents vertically.
     Scrolling can be done either per pixel or per item.
 */
 
@@ -1192,7 +1192,7 @@ QAbstractItemView::ScrollMode QAbstractItemView::verticalScrollMode() const
     \property QAbstractItemView::horizontalScrollMode
     \brief how the view scrolls its contents in the horizontal direction
 
-    This property controlls how the view scroll its contents horizontally.
+    This property controls how the view scroll its contents horizontally.
     Scrolling can be done either per pixel or per item.
 */
 
@@ -1275,7 +1275,7 @@ bool QAbstractItemView::hasAutoScroll() const
     \property QAbstractItemView::autoScrollMargin
     \brief the size of the area when auto scrolling is triggered
 
-    This property controlls the size of the area at the edge of the viewport that
+    This property controls the size of the area at the edge of the viewport that
     triggers autoscrolling. The default value is 16 pixels.
 */
 void QAbstractItemView::setAutoScrollMargin(int margin)
@@ -1363,7 +1363,7 @@ bool QAbstractItemView::dragEnabled() const
 
     Note that the model used needs to provide support for drag and drop operations.
 
-    \sa setDragDropMode() {Using drag & drop with item views}
+    \sa setDragDropMode() {Using drag and drop with item views}
 */
 
 /*!

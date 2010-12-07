@@ -42,7 +42,7 @@
     installation instructions and requirements for different platforms.
 
     Qt Quick includes a declarative language called
-    \l{Introduction to the QML language}{QML}, the \l{QtDeclarative Module}, and
+    \l{Introduction to the QML language}{QML}, the \l{Qt Declarative Module}, and
     \l{QML Viewer}.
 
     \section1 QML to Build User Interfaces
@@ -58,7 +58,12 @@
 
     \image qml-texteditor5_editmenu.png
 
-    To run the QML example code, merely provide the included \l{QML Viewer}{qmlviewer}
+    The final source code is in the \c{examples/tutorials/gettingStarted/gsQml}
+    directory. You may need to compile the C++ plugin in the
+    \c{examples/tutorials/gettingStarted/gsQml/} first. This will put the
+    C++ plugin in a directory where the QML files may find it.
+
+    To launch the text editor, merely provide the included \l{QML Viewer}{qmlviewer}
     tool with the QML file as the argument. The C++ portion of this tutorial assumes
     that the reader possesses basic knowledge of Qt's compilation procedures.
 
@@ -81,7 +86,7 @@
     In QML, the basic visual item is the \l {Rectangle}{Rectangle} element. The
     \c Rectangle element has properties to control the element's appearance and location.
 
-    \snippet examples/tutorials/gettingStarted/gsQml/core/Button.qml document
+    \snippet examples/tutorials/gettingStarted/gsQml/parts/part0/Button.qml document
 
     First, the \c { import QtQuick 1.0 } allows the qmlviewer tool to import the QML elements
     we will later use. This line must exist for every QML file. Notice that the version
@@ -1005,4 +1010,14 @@
     The application can function as a simple text editor, able to accept text
     and save the text into a file. The text editor can also load from a file and
     perform text manipulation.
+
+    \section1 Running the Text Editor
+
+    We need to compile the file dialog C++ plugin before the text editor can run.
+    To compile, enter the \c gsQml directory, then run \c qmake and compile
+    using \c make or \c nmake, depending on your platform. To run, launch
+    qmlviewer and open the \c texteditor.qml file.
+
+    The source code is in the \c{examples/tutorials/gettingStarted/gsQml}
+    directory.
 */

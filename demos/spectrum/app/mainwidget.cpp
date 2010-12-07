@@ -65,7 +65,7 @@ MainWidget::MainWidget(QWidget *parent)
     ,   m_mode(NoMode)
     ,   m_engine(new Engine(this))
 #ifndef DISABLE_WAVEFORM
-    ,   m_waveform(new Waveform(m_engine->buffer(), this))
+    ,   m_waveform(new Waveform(this))
 #endif
     ,   m_progressBar(new ProgressBar(this))
     ,   m_spectrograph(new Spectrograph(this))
@@ -166,19 +166,18 @@ void MainWidget::timerEvent(QTimerEvent *event)
     m_infoMessage->setText("");
 }
 
-void MainWidget::positionChanged(qint64 positionUs)
+void MainWidget::audioPositionChanged(qint64 position)
 {
 #ifndef DISABLE_WAVEFORM
-    qint64 positionBytes = audioLength(m_engine->format(), positionUs);
-    m_waveform->positionChanged(positionBytes);
+    m_waveform->audioPositionChanged(position);
 #else
-    Q_UNUSED(positionUs)
+    Q_UNUSED(position)
 #endif
 }
 
-void MainWidget::bufferDurationChanged(qint64 durationUs)
+void MainWidget::bufferLengthChanged(qint64 length)
 {
-    m_progressBar->bufferDurationChanged(durationUs);
+    m_progressBar->bufferLengthChanged(length);
 }
 
 
@@ -186,33 +185,22 @@ void MainWidget::bufferDurationChanged(qint64 durationUs)
 // Private slots
 //-----------------------------------------------------------------------------
 
-void MainWidget::dataDurationChanged(qint64 duration)
-{
-#ifndef DISABLE_WAVEFORM
-    const qint64 dataLength = audioLength(m_engine->format(), duration);
-    m_waveform->dataLengthChanged(dataLength);
-#else
-    Q_UNUSED(duration)
-#endif
-
-    updateButtonStates();
-}
-
 void MainWidget::showFileDialog()
 {
-    reset();
     const QString dir;
     const QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Open WAV file"), dir, "*.wav");
     if (fileNames.count()) {
+        reset();
         setMode(LoadFileMode);
         m_engine->loadFile(fileNames.front());
         updateButtonStates();
+    } else {
+        updateModeMenu();
     }
 }
 
 void MainWidget::showSettingsDialog()
 {
-    reset();
     m_settingsDialog->exec();
     if (m_settingsDialog->result() == QDialog::Accepted) {
         m_engine->setAudioInputDevice(m_settingsDialog->inputDevice());
@@ -223,9 +211,9 @@ void MainWidget::showSettingsDialog()
 
 void MainWidget::showToneGeneratorDialog()
 {
-    reset();
     m_toneGeneratorDialog->exec();
     if (m_toneGeneratorDialog->result() == QDialog::Accepted) {
+        reset();
         setMode(GenerateToneMode);
         const qreal amplitude = m_toneGeneratorDialog->amplitude();
         if (m_toneGeneratorDialog->isFrequencySweepEnabled()) {
@@ -236,6 +224,8 @@ void MainWidget::showToneGeneratorDialog()
             m_engine->generateTone(tone);
             updateButtonStates();
         }
+    } else {
+        updateModeMenu();
     }
 }
 
@@ -360,13 +350,13 @@ void MainWidget::connectUi()
     CHECKED_CONNECT(m_engine, SIGNAL(formatChanged(const QAudioFormat &)),
             this, SLOT(formatChanged(const QAudioFormat &)));
 
-    m_progressBar->bufferDurationChanged(m_engine->bufferDuration());
+    m_progressBar->bufferLengthChanged(m_engine->bufferLength());
 
-    CHECKED_CONNECT(m_engine, SIGNAL(bufferDurationChanged(qint64)),
-            this, SLOT(bufferDurationChanged(qint64)));
+    CHECKED_CONNECT(m_engine, SIGNAL(bufferLengthChanged(qint64)),
+            this, SLOT(bufferLengthChanged(qint64)));
 
-    CHECKED_CONNECT(m_engine, SIGNAL(dataDurationChanged(qint64)),
-            this, SLOT(dataDurationChanged(qint64)));
+    CHECKED_CONNECT(m_engine, SIGNAL(dataLengthChanged(qint64)),
+            this, SLOT(updateButtonStates()));
 
     CHECKED_CONNECT(m_engine, SIGNAL(recordPositionChanged(qint64)),
             m_progressBar, SLOT(recordPositionChanged(qint64)));
@@ -375,10 +365,10 @@ void MainWidget::connectUi()
             m_progressBar, SLOT(playPositionChanged(qint64)));
 
     CHECKED_CONNECT(m_engine, SIGNAL(recordPositionChanged(qint64)),
-            this, SLOT(positionChanged(qint64)));
+            this, SLOT(audioPositionChanged(qint64)));
 
     CHECKED_CONNECT(m_engine, SIGNAL(playPositionChanged(qint64)),
-            this, SLOT(positionChanged(qint64)));
+            this, SLOT(audioPositionChanged(qint64)));
 
     CHECKED_CONNECT(m_engine, SIGNAL(levelChanged(qreal, qreal, int)),
             m_levelMeter, SLOT(levelChanged(qreal, qreal, int)));
@@ -394,6 +384,11 @@ void MainWidget::connectUi()
 
     CHECKED_CONNECT(m_spectrograph, SIGNAL(infoMessage(QString, int)),
             this, SLOT(infoMessage(QString, int)));
+
+#ifndef DISABLE_WAVEFORM
+    CHECKED_CONNECT(m_engine, SIGNAL(bufferChanged(qint64, qint64, const QByteArray &)),
+            m_waveform, SLOT(bufferChanged(qint64, qint64, const QByteArray &)));
+#endif
 }
 
 void MainWidget::createMenus()
@@ -425,7 +420,7 @@ void MainWidget::updateButtonStates()
                                QAudio::IdleState == m_engine->state());
     m_pauseButton->setEnabled(pauseEnabled);
 
-    const bool playEnabled = (m_engine->dataDuration() &&
+    const bool playEnabled = (/*m_engine->dataLength() &&*/
                               (QAudio::AudioOutput != m_engine->mode() ||
                                (QAudio::ActiveState != m_engine->state() &&
                                 QAudio::IdleState != m_engine->state())));
@@ -445,10 +440,14 @@ void MainWidget::reset()
 
 void MainWidget::setMode(Mode mode)
 {
-
     m_mode = mode;
-    m_loadFileAction->setChecked(LoadFileMode == mode);
-    m_generateToneAction->setChecked(GenerateToneMode == mode);
-    m_recordAction->setChecked(RecordMode == mode);
+    updateModeMenu();
+}
+
+void MainWidget::updateModeMenu()
+{
+    m_loadFileAction->setChecked(LoadFileMode == m_mode);
+    m_generateToneAction->setChecked(GenerateToneMode == m_mode);
+    m_recordAction->setChecked(RecordMode == m_mode);
 }
 
