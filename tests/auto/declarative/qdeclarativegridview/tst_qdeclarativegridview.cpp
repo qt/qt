@@ -649,7 +649,6 @@ void tst_QDeclarativeGridView::currentIndex()
 #endif
     QTRY_VERIFY(canvas->hasFocus());
     QTRY_VERIFY(canvas->scene()->hasFocus());
-    gridview->forceActiveFocus();
     qApp->processEvents();
 
     QTest::keyClick(canvas, Qt::Key_Down);
@@ -667,7 +666,6 @@ void tst_QDeclarativeGridView::currentIndex()
 #endif
     QTRY_VERIFY(canvas->hasFocus());
     QTRY_VERIFY(canvas->scene()->hasFocus());
-    gridview->forceActiveFocus();
     qApp->processEvents();
 
     QTest::keyClick(canvas, Qt::Key_Right);

@@ -613,11 +613,10 @@ void tst_QDeclarativeListView::removed(bool animated)
     listview->setCurrentIndex(10);
 
     model.removeItem(1); // post: top item will be at 40
-    // let transitions settle.
     qApp->processEvents();
 
-    // Confirm items positioned correctly (we were at the fourth item and deleted one)
-    for (int i = 2; i < 2 + 16; ++i) {
+    // Confirm items positioned correctly
+    for (int i = 2; i < 18; ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QTRY_VERIFY(item);
@@ -664,12 +663,10 @@ void tst_QDeclarativeListView::removed(bool animated)
     listview->setContentY(80);
     QTest::qWait(300);
 
-    // remove all visible items
     model.removeItems(1, 17);
     QTest::qWait(300);
 
     // Confirm items positioned correctly
-    // we were at the fourth item, but deleted 1 through 17. So we should be at 1 now.
     itemCount = findItems<QDeclarativeItem>(contentItem, "wrapper").count();
     for (int i = 0; i < model.count() && i < itemCount-1; ++i) {
         QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i+2);
@@ -1079,7 +1076,6 @@ void tst_QDeclarativeListView::currentIndex()
 #endif
     QTRY_VERIFY(canvas->hasFocus());
     QTRY_VERIFY(canvas->scene()->hasFocus());
-    listview->forceActiveFocus();
     qApp->processEvents();
 
     QTest::keyClick(canvas, Qt::Key_Down);
