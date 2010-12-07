@@ -350,12 +350,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newQObject(
     v8::Handle<v8::Object> jsobject = *scriptObject;
     if (scriptObject->isQObject()) {
         // scriptObject is a wrapper of an qt object.
-        Q_ASSERT(jsobject->InternalFieldCount() == 1);
-        QtInstanceData *data = reinterpret_cast<QtInstanceData*>(jsobject->GetPointerFromInternalField(0));
-        Q_ASSERT(data);
-        delete data;
-        data = new QtInstanceData(this, qtobject, ownership, options);
-        jsobject->SetPointerInInternalField(0, data);
+        QtInstanceData::set(jsobject, new QtInstanceData(this, qtobject, ownership, options));
         return scriptObject;
     }
 
@@ -397,12 +392,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newVariant(
 
     if (object->isVariant()) {
         // object is a wrapper of a qvariant.
-        v8::Handle<v8::Object> jsobject = *object;
-        QtVariantData * data = QtVariantData::get(jsobject);
-        Q_ASSERT(data);
-        delete data;
-        data = new QtVariantData(value);
-        jsobject->SetPointerInInternalField(0, data);
+        QtVariantData::set(*object, new QtVariantData(value));
         return object;
     }
     // FIXME it create a new instance instead of reusing this one. It doesn't replace existing references in JS.

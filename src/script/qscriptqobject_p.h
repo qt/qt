@@ -33,6 +33,30 @@ QT_BEGIN_NAMESPACE
 class QScriptEnginePrivate;
 class QScriptable;
 
+template<class T>
+class QtData
+{
+public:
+    static T *get(v8::Handle<v8::Object> object)
+    {
+        Q_ASSERT(object->InternalFieldCount() == 1);
+        void *ptr = object->GetPointerFromInternalField(0);
+        return static_cast<T*>(ptr);
+    }
+
+    static T *safeGet(v8::Handle<v8::Object> object)
+    {
+        void *ptr = object->GetPointerFromInternalField(0);
+        return static_cast<T*>(ptr);
+    }
+
+    static void set(v8::Handle<v8::Object> object, T* data)
+    {
+        delete safeGet(object);
+        object->SetPointerInInternalField(0, data);
+    }
+};
+
 // Data associated with a QObject JS wrapper object.
 //
 // There can exist an arbitrary number of JS wrappers per C++ object,
@@ -46,7 +70,7 @@ class QScriptable;
 // - options: Flags that configure the binding
 //   (e.g. exclude super-class contents, skip methods in enumeration)
 //
-class QtInstanceData
+class QtInstanceData : public QtData<QtInstanceData>
 {
 public:
     QtInstanceData(QScriptEnginePrivate *, QObject *, QScriptEngine::ValueOwnership, const QScriptEngine::QObjectWrapOptions &);
@@ -63,13 +87,6 @@ public:
 
     QScriptEngine::QObjectWrapOptions options() const
     { return m_opt; }
-
-    static QtInstanceData *get(v8::Handle<v8::Object> object)
-    {
-        void *ptr = object->GetPointerFromInternalField(0);
-        Q_ASSERT(ptr != 0);
-        return static_cast<QtInstanceData*>(ptr);
-    }
 
     //returns a QScriptable if the object is a QScriptable, else, return 0
     QScriptable *toQScriptable()
@@ -88,7 +105,7 @@ private:
 
 // Data associated with a QMetaObject JS wrapper object.
 //
-class QtMetaObjectData
+class QtMetaObjectData : public QtData<QtMetaObjectData>
 {
 public:
     QtMetaObjectData(QScriptEnginePrivate *engine, const QMetaObject *mo, const QScriptValue &ctor)
@@ -97,13 +114,6 @@ public:
 
     const QMetaObject *metaObject() const
     { return m_metaObject;}
-
-    static QtMetaObjectData *get(v8::Handle<v8::Object> object)
-    {
-        void *ptr = object->GetPointerFromInternalField(0);
-        Q_ASSERT(ptr != 0);
-        return static_cast<QtMetaObjectData*>(ptr);
-    }
 
     QScriptEnginePrivate *engine() const
     { return m_engine; }
@@ -128,19 +138,12 @@ private:
 // It's also possible to explicitly create a QVariant wrapper
 // object by calling QScriptEngine::newVariant().
 //
-class QtVariantData
+class QtVariantData : public QtData<QtVariantData>
 {
 public:
     QtVariantData(const QVariant &value)
         : m_value(value)
     { }
-
-    static QtVariantData *get(v8::Handle<v8::Object> object)
-    {
-        void *ptr = object->GetPointerFromInternalField(0);
-        Q_ASSERT(ptr != 0);
-        return static_cast<QtVariantData*>(ptr);
-    }
 
     QVariant &value()
     { return m_value; }
