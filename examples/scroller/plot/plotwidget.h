@@ -45,10 +45,11 @@
 #include <QWidget>
 #include <QPointF>
 
+QT_BEGIN_NAMESPACE
 class QPushButton;
 class QLabel;
-
 class QScroller;
+QT_END_NAMESPACE
 
 class PlotWidget : public QWidget
 {
