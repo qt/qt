@@ -165,6 +165,9 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
 
         return false;
     }
+    // FIXME Set socket to nonblocking. While we are still a QNativeSocketEngine this is done already.
+    // Uncomment the following when we switch to QSymbianSocketEngine.
+    // setOption(NonBlockingSocketOption, 1)
 
     socketDescriptor = QSymbianSocketManager::instance().addSocket(nativeSocket);
     return true;
@@ -444,7 +447,8 @@ int QNativeSocketEnginePrivate::nativeAccept()
         qWarning("QNativeSocketEnginePrivate::nativeAccept() - error %d", status.Int());
         return 0;
     }
-
+    // FIXME Qt Handle of new socket must be retrieved from QSymbianSocketManager
+    // and then returned. Not the SubSessionHandle! Also set the socket to nonblocking.
     return blankSocket.SubSessionHandle();
 }
 
@@ -452,6 +456,8 @@ qint64 QNativeSocketEnginePrivate::nativeBytesAvailable() const
 {
     int nbytes = 0;
     qint64 available = 0;
+    // FIXME is this the right thing also for UDP?
+    // What is expected for UDP, the length for the next packet I guess?
     TInt err = nativeSocket.GetOpt(KSOReadBytesPending, KSOLSocket, nbytes);
     if(err)
         return 0;
@@ -476,6 +482,8 @@ qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
     int nbytes;
     TInt err = nativeSocket.GetOpt(KSOReadBytesPending,KSOLSocket, nbytes);
     return qint64(nbytes-28); //TODO: why -28 (open C version had this)?
+    // Why = Could it be that this is about header lengths etc? if yes
+    // this could be pretty broken, especially for IPv6
 }
 
 qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxSize,
@@ -744,6 +752,8 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
         //writeStat = ?
         array[count++] = writeStat;
     }
+    // TODO: for selecting, we can use getOpt(KSOSelectPoll) to get the select result
+    // and KIOCtlSelect for the selecting.
 
     User::WaitForNRequest(array, count);
     //IMPORTANT - WaitForNRequest only decrements the thread semaphore once, although more than one status may have completed.
