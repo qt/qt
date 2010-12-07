@@ -1046,6 +1046,9 @@ void QScrollerPrivate::setDpiFromWidget(QWidget *widget)
 */
 void QScrollerPrivate::updateVelocity(const QPointF &deltaPixelRaw, qint64 deltaTime)
 {
+    if (deltaTime <= 0)
+        return;
+
     Q_Q(QScroller);
     QPointF ppm = q->pixelPerMeter();
     const QScrollerPropertiesPrivate *sp = properties.d.data();
@@ -1057,14 +1060,12 @@ void QScrollerPrivate::updateVelocity(const QPointF &deltaPixelRaw, qint64 delta
     if (((deltaPixelRaw / qreal(deltaTime)).manhattanLength() / ((ppm.x() + ppm.y()) / 2) * 1000) > qreal(2.5))
         deltaPixel = deltaPixelRaw * qreal(2.5) * ppm / 1000 / (deltaPixelRaw / qreal(deltaTime)).manhattanLength();
 
-    qreal inversSmoothingFactor = ((qreal(1) - sp->dragVelocitySmoothingFactor) * qreal(deltaTime) / qreal(1000));
     QPointF newv = -deltaPixel / qreal(deltaTime) * qreal(1000) / ppm;
-    newv = newv * (qreal(1) - inversSmoothingFactor) + releaseVelocity * inversSmoothingFactor;
+    if (releaseVelocity != QPointF(0, 0))
+        newv = newv * sp->dragVelocitySmoothingFactor + releaseVelocity * (qreal(1) - sp->dragVelocitySmoothingFactor);
 
-    if (deltaPixel.x())
-        releaseVelocity.setX(qBound(-sp->maximumVelocity, newv.x(), sp->maximumVelocity));
-    if (deltaPixel.y())
-        releaseVelocity.setY(qBound(-sp->maximumVelocity, newv.y(), sp->maximumVelocity));
+    releaseVelocity.setX(qBound(-sp->maximumVelocity, newv.x(), sp->maximumVelocity));
+    releaseVelocity.setY(qBound(-sp->maximumVelocity, newv.y(), sp->maximumVelocity));
 
     qScrollerDebug() << "  --> new velocity:" << releaseVelocity;
 }
@@ -1568,6 +1569,9 @@ bool QScrollerPrivate::releaseWhileDragging(const QPointF &position, qint64 time
 {
     Q_Q(QScroller);
     const QScrollerPropertiesPrivate *sp = properties.d.data();
+
+    // handleDrag updates lastPosition, lastTimestamp and velocity
+    handleDrag(position, timestamp);
 
     // check if we moved at all - this can happen if you stop a running
     // scroller with a press and release shortly afterwards

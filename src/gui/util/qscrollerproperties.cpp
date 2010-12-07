@@ -61,7 +61,7 @@ QScrollerPropertiesPrivate *QScrollerPropertiesPrivate::defaults()
 #ifdef Q_WS_MAEMO_5
         spp.mousePressEventDelay = qreal(0);
         spp.dragStartDistance = qreal(2.5 / 1000);
-        spp.dragVelocitySmoothingFactor = qreal(0.15);
+        spp.dragVelocitySmoothingFactor = qreal(10);
         spp.axisLockThreshold = qreal(0);
         spp.scrollingCurve.setType(QEasingCurve::OutQuad);
         spp.decelerationFactor = 1.0;
@@ -82,7 +82,7 @@ QScrollerPropertiesPrivate *QScrollerPropertiesPrivate::defaults()
 #else
         spp.mousePressEventDelay = qreal(0.25);
         spp.dragStartDistance = qreal(5.0 / 1000);
-        spp.dragVelocitySmoothingFactor = qreal(0.02);
+        spp.dragVelocitySmoothingFactor = qreal(0.8);
         spp.axisLockThreshold = qreal(0);
         spp.scrollingCurve.setType(QEasingCurve::OutQuad);
         spp.decelerationFactor = qreal(0.125);
@@ -342,8 +342,9 @@ void QScrollerProperties::setScrollMetric(ScrollMetric metric, const QVariant &v
     moved before the flick gesture is triggered in \c m.
 
     \value DragVelocitySmoothingFactor A value that describes how much new drag velocities are
-    included in the final scrolling velocity. This value should be in the range between \c 0 and \c
-    1. Low values meaning that the last dragging velocity is not very important.
+    included in the final scrolling velocity.  This value should be in the range between \c 0 and
+    \c 1.  The lower the value, the more smoothing will be applied to the dragging velocity.  The
+    default value is \c 0.8.
 
     \value AxisLockThreshold If greater than zero a scroll movement will be restricted to one axis
     only if the movement is inside an angle about the axis. The threshold must be in the range \c 0
