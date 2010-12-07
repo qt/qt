@@ -696,6 +696,8 @@ inline void QScriptValuePrivate::setProperty(const QScriptStringPrivate *name, Q
 
 inline void QScriptValuePrivate::setProperty(const QString& name, QScriptValuePrivate* value, v8::PropertyAttribute attribs)
 {
+    if (!isObject())
+        return;
     v8::HandleScope handleScope;
     setProperty(QScriptConverter::toString(name), value, attribs);
 }
