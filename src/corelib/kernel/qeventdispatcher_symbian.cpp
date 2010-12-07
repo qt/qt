@@ -1136,6 +1136,86 @@ void CQtActiveScheduler::Error(TInt aError) const
     QT_CATCH (const std::bad_alloc&) {}    // ignore alloc fails, nothing more can be done
 }
 
+bool QActiveObject::wait(CActive* ao, int ms)
+{
+    if (!ao->IsActive())
+        return true; //request already complete
+    bool timedout = false;
+    if (ms > 0) {
+        TRequestStatus tstat;
+        RTimer t;
+        if (KErrNone != t.CreateLocal())
+            return false;
+        t.HighRes(tstat, ms*1000);
+        User::WaitForRequest(tstat, ao->iStatus);
+        if (tstat != KRequestPending) {
+            timedout = true;
+        } else {
+            t.Cancel();
+            //balance thread semaphore
+            User::WaitForRequest(tstat);
+        }
+        t.Close();
+    } else {
+        User::WaitForRequest(ao->iStatus);
+    }
+    if (timedout)
+        return false;
+
+    //evil cast to allow calling of protected virtual
+    ((QActiveObject*)ao)->RunL();
+
+    //clear active & pending flags
+    ao->iStatus = TRequestStatus();
+
+    return true;
+}
+
+bool QActiveObject::wait(QList<CActive*> aos, int ms)
+{
+    QVector<TRequestStatus*> stati;
+    stati.reserve(aos.count() + 1);
+    foreach (CActive* ao, aos) {
+        if (!ao->IsActive())
+            return true; //request already complete
+        stati.append(&(ao->iStatus));
+    }
+    bool timedout = false;
+    TRequestStatus tstat;
+    RTimer t;
+    if (ms > 0) {
+        if (KErrNone != t.CreateLocal())
+            return false;
+        t.HighRes(tstat, ms*1000);
+        stati.append(&tstat);
+    }
+    User::WaitForNRequest(stati.data(), stati.count());
+    if (ms > 0) {
+        if (tstat != KRequestPending) {
+            timedout = true;
+        } else {
+            t.Cancel();
+            //balance thread semaphore
+            User::WaitForRequest(tstat);
+        }
+        t.Close();
+    }
+    if (timedout)
+        return false;
+
+    foreach (CActive* ao, aos) {
+        if (ao->iStatus != KRequestPending) {
+            //evil cast to allow calling of protected virtual
+            ((QActiveObject*)ao)->RunL();
+
+            //clear active & pending flags
+            ao->iStatus = TRequestStatus();
+            break; //only call one
+        }
+    }
+    return true;
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qeventdispatcher_symbian_p.cpp"

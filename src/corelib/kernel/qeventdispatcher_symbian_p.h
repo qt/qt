@@ -76,7 +76,7 @@ QT_BEGIN_NAMESPACE
 class QEventDispatcherSymbian;
 class QTimerActiveObject;
 
-class QActiveObject : public CActive
+class Q_AUTOTEST_EXPORT QActiveObject : public CActive
 {
 public:
     QActiveObject(TInt priority, QEventDispatcherSymbian *dispatcher);
@@ -86,6 +86,8 @@ public:
 
     void reactivateAndComplete();
 
+    static bool wait(CActive* ao, int ms);
+    static bool wait(QList<CActive*> aos, int ms);
 protected:
     QEventDispatcherSymbian *m_dispatcher;
 
