@@ -40,6 +40,8 @@
 ****************************************************************************/
 
 //#define QHOSTINFO_DEBUG
+#include <QByteArray>
+#include <QUrl>
 
 #include "qplatformdefs.h"
 
@@ -92,7 +94,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 
 QString QHostInfo::localHostName()
 {
-    return QString()
+    return QString();
 }
 
 QString QHostInfo::localDomainName()
