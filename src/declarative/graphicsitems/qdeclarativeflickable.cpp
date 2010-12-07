@@ -600,7 +600,7 @@ void QDeclarativeFlickable::setFlickableDirection(FlickableDirection direction)
  */
 qreal QDeclarativeFlickable::minXExtent() const
 {
-    return 0;
+    return 0.0;
 }
 
 /*! \internal
@@ -609,7 +609,7 @@ qreal QDeclarativeFlickable::minXExtent() const
  */
 qreal QDeclarativeFlickable::minYExtent() const
 {
-    return 0;
+    return 0.0;
 }
 /*! \internal
     Returns the maximum horizontal content position.
@@ -617,7 +617,7 @@ qreal QDeclarativeFlickable::minYExtent() const
 qreal QDeclarativeFlickable::maxXExtent() const
 {
     Q_D(const QDeclarativeFlickable);
-    return qMax(qreal(0), d->contentItem->width());
+    return qMax(0.0, d->contentItem->width());
 }
 
 /*! \internal
@@ -626,7 +626,7 @@ qreal QDeclarativeFlickable::maxXExtent() const
 qreal QDeclarativeFlickable::maxYExtent() const
 {
     Q_D(const QDeclarativeFlickable);
-    return qMax(qreal(0), d->contentItem->height());
+    return qMax(0.0, d->contentItem->height());
 }
 
 /*! \internal
@@ -673,10 +673,10 @@ void QDeclarativeFlickable::geometryChanged(const QRectF &newGeometry,
 
         //qDebug() << "xxx geometryChanged: "<<this<<"new:" << newGeometry;
 
-        if (scroller->state() == QScroller::Inactive) {
-            scroller->ensureVisible(QRectF(minXExtent(), minYExtent(),
-                                           d->contentItem->width(), d->contentItem->height()), 0, 0, 0);
-        } else
+        if (scroller->state() == QScroller::Inactive)
+            scroller->ensureVisible( QRectF(0.0, 0.0,
+                                            d->contentItem->width(), d->contentItem->height() ), 0, 0, 0 );
+        else
             d->updateScrollerValues();
         d->updateBeginningEnd();
     }
@@ -840,10 +840,9 @@ void QDeclarativeFlickable::setContentWidth(qreal w)
 
     // Make sure that we're entirely in view.
     QScroller *scroller = QScroller::scroller(this);
-    if (scroller->state() == QScroller::Inactive) {
-        scroller->ensureVisible(QRectF(minXExtent(), minYExtent(),
-                                       d->contentItem->width(), d->contentItem->height()), 0, 0, 0);
-    } else
+    if (scroller->state() == QScroller::Inactive)
+        scroller->ensureVisible( QRectF(0.0, 0.0, d->contentItem->width(), d->contentItem->height() ), 0, 0, 0 );
+    else
         d->updateScrollerValues();
 
     emit contentWidthChanged();
@@ -870,8 +869,8 @@ void QDeclarativeFlickable::setContentHeight(qreal h)
     // Make sure that we're entirely in view.
     QScroller *scroller = QScroller::scroller(this);
     if (scroller->state() == QScroller::Inactive) {
-        scroller->ensureVisible(QRectF(minXExtent(), minYExtent(),
-                                       d->contentItem->width(), d->contentItem->height()), 0, 0, 0);
+        scroller->ensureVisible( QRectF(minXExtent(), minYExtent(),
+                                        d->contentItem->width(), d->contentItem->height() ), 0, 0, 0 );
     } else
         d->updateScrollerValues();
 
