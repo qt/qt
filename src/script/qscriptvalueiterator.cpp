@@ -300,8 +300,7 @@ inline bool QScriptValueIteratorPrivate::isValid() const
 
 inline QScriptEnginePrivate* QScriptValueIteratorPrivate::engine() const
 {
-    Q_ASSERT(isValid());
-    return m_object->engine();
+    return m_object ? m_object->engine() : 0;
 }
 
 //void QScriptValueIteratorPrivate::dump(QString fname) const
