@@ -3451,6 +3451,16 @@ int String::Utf8Length() const {
 }
 
 
+uint String::Hash() const
+{
+  return Utils::OpenHandle(this)->Hash();
+}
+
+bool String::Equals(Handle<String> other) const
+{
+    return Utils::OpenHandle(this)->Equals(*Utils::OpenHandle(*other));
+}
+
 int String::WriteUtf8(char* buffer,
                       int capacity,
                       int* nchars_ref,
