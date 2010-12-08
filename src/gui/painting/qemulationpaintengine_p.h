@@ -93,6 +93,9 @@ public:
 
     virtual void setState(QPainterState *s);
 
+    virtual void beginNativePainting();
+    virtual void endNativePainting();
+
     virtual uint flags() const {return QPaintEngineEx::IsEmulationEngine | QPaintEngineEx::DoNotEmulate;}
 
     inline QPainterState *state() { return (QPainterState *)QPaintEngine::state; }

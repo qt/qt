@@ -1263,7 +1263,7 @@ void tst_QDeclarativeGridView::header()
     QDeclarativeView *canvas = createView();
 
     TestModel model;
-    for (int i = 0; i < 7; i++)
+    for (int i = 0; i < 30; i++)
         model.addItem("Item" + QString::number(i), "");
 
     QDeclarativeContext *ctxt = canvas->rootContext();

@@ -91,7 +91,7 @@ void QNetworkReplyImplPrivate::_q_startOperation()
     }
 
 #ifndef QT_NO_BEARERMANAGEMENT
-    if (!backend->start()) {
+    if (!backend->start()) { // ### we should call that method even if bearer is not used
         // backend failed to start because the session state is not Connected.
         // QNetworkAccessManager will call reply->backend->start() again for us when the session
         // state changes.
@@ -115,11 +115,15 @@ void QNetworkReplyImplPrivate::_q_startOperation()
     }
 #endif
 
-    if (state != Finished) {
-        if (operation == QNetworkAccessManager::GetOperation)
-            pendingNotifications.append(NotifyDownstreamReadyWrite);
+    if (backend->isSynchronous()) {
+        state = Finished;
+    } else {
+        if (state != Finished) {
+            if (operation == QNetworkAccessManager::GetOperation)
+                pendingNotifications.append(NotifyDownstreamReadyWrite);
 
-        handleNotifications();
+            handleNotifications();
+        }
     }
 }
 
@@ -297,7 +301,25 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
     url = request.url();
     operation = op;
 
-    if (outgoingData && backend) {
+    q->QIODevice::open(QIODevice::ReadOnly);
+    // Internal code that does a HTTP reply for the synchronous Ajax
+    // in QtWebKit.
+    QVariant synchronousHttpAttribute = req.attribute(
+            static_cast<QNetworkRequest::Attribute>(QNetworkRequest::DownloadBufferAttribute + 1));
+    if (synchronousHttpAttribute.toBool()) {
+        backend->setSynchronous(true);
+        if (outgoingData && outgoingData->isSequential()) {
+            outgoingDataBuffer = new QRingBuffer();
+            QByteArray data;
+            do {
+                data = outgoingData->readAll();
+                if (data.isEmpty())
+                    break;
+                outgoingDataBuffer->append(data);
+            } while (1);
+        }
+    }
+    if (outgoingData && backend && !backend->isSynchronous()) {
         // there is data to be uploaded, e.g. HTTP POST.
 
         if (!backend->needsResetableUploadData() || !outgoingData->isSequential()) {
@@ -308,7 +330,7 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
         } else {
             bool bufferingDisallowed =
                     req.attribute(QNetworkRequest::DoNotBufferUploadDataAttribute,
-                                             false).toBool();
+                                  false).toBool();
 
             if (bufferingDisallowed) {
                 // if a valid content-length header for the request was supplied, we can disable buffering
@@ -333,17 +355,18 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
         // for HTTP, we want to send out the request as fast as possible to the network, without
         // invoking methods in a QueuedConnection
 #ifndef QT_NO_HTTP
-        if (qobject_cast<QNetworkAccessHttpBackend *>(backend)) {
+        if (qobject_cast<QNetworkAccessHttpBackend *>(backend) || (backend && backend->isSynchronous())) {
             _q_startOperation();
         } else {
             QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
         }
 #else
-        QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
+        if (backend->isSynchronous())
+            _q_startOperation();
+        else
+            QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
 #endif // QT_NO_HTTP
-    }
-
-    q->QIODevice::open(QIODevice::ReadOnly);
+        }
 }
 
 void QNetworkReplyImplPrivate::backendNotify(InternalNotifications notification)

@@ -10,122 +10,122 @@ VisualTest {
     }
     Frame {
         msec: 32
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 48
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 64
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 80
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 96
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 112
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 128
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 144
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 160
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 176
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 192
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 208
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 224
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 240
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 256
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 272
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 288
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 304
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 320
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 336
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 352
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 368
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 384
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 400
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 416
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 432
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 448
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 464
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 480
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
     Frame {
         msec: 496
-        hash: "8e36621abce059cb8579dd04b28e8d58"
+        hash: "7e082fa05e000cc20fcda7cb61d98edd"
     }
 }

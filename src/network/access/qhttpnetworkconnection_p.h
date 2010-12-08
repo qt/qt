@@ -108,7 +108,9 @@ public:
     QNetworkProxy transparentProxy() const;
 #endif
 
-    bool isEncrypted() const;
+    bool isSsl() const;
+
+    QHttpNetworkConnectionChannel *channels() const;
 
 #ifndef QT_NO_OPENSSL
     void setSslConfiguration(const QSslConfiguration &config);
