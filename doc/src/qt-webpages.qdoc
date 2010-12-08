@@ -201,11 +201,6 @@
 */
 
 /*!
-    \externalpage http://labs.qt.nokia.com/gitweb?p=qtestlib-tools;a=summary
-    \title qtestlib-tools
-*/
-
-/*!
     \externalpage http://qt.nokia.com/products/library/modular-class-library#info_scripting
     \title Qt Script for Applications (QSA)
 */
