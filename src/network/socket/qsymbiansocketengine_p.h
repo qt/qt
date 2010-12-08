@@ -154,14 +154,12 @@ public:
     ~QSymbianSocketEnginePrivate();
 
     int socketDescriptor;
-#ifdef Q_OS_SYMBIAN
     mutable RSocket nativeSocket;
     // From QtCore:
     RSocketServ& socketServer;
     // From QtCore, check lifetime issues, also should be pulling this out of a QNetworkSession somehow:
     RConnection *connection;
     mutable RTimer selectTimer;
-#endif
 
     QSocketNotifier *readNotifier, *writeNotifier, *exceptNotifier;
 

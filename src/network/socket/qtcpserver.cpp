@@ -105,7 +105,7 @@
 #include "qhostaddress.h"
 #include "qlist.h"
 #include "qpointer.h"
-#include "qnativesocketengine_p.h"
+#include "qabstractsocketengine_p.h"
 #include "qtcpserver.h"
 #include "qtcpsocket.h"
 #include "qnetworkproxy.h"
