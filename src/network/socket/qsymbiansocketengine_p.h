@@ -165,6 +165,7 @@ public:
 
     QSocketNotifier *readNotifier, *writeNotifier, *exceptNotifier;
 
+    // FIXME this is duplicated from qnativesocketengine_p.h
     enum ErrorString {
         NonBlockingInitFailedErrorString,
         BroadcastingInitFailedErrorString,
@@ -194,13 +195,13 @@ public:
 
         UnknownSocketErrorString = -1
     };
+    void setError(QAbstractSocket::SocketError error, ErrorString errorString) const;
 
 #ifdef Q_OS_SYMBIAN
     void getPortAndAddress(const TInetAddr& a, quint16 *port, QHostAddress *addr);
     void setPortAndAddress(TInetAddr& nativeAddr, quint16 port, const QHostAddress &addr);
     void setError(TInt symbianError);
 #endif
-    void setError(QAbstractSocket::SocketError error, ErrorString errorString) const;
 
     // FIXME
     int nativeSelect(int timeout, bool selectForRead) const;
