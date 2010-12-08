@@ -9,5 +9,7 @@ QT += network
 
 CONFIG += release
 
+symbian: TARGET.CAPABILITY = NetworkServices
+
 # Input
 SOURCES += main.cpp
