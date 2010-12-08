@@ -65,12 +65,7 @@
 #include <ctype.h>
 #endif
 
-#ifdef Q_OS_SYMBIAN // ### TODO: Are these headers right?
-#include <sys/socket.h>
-#include <netinet/in.h>
-#else
 #include <netinet/tcp.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -1049,11 +1044,7 @@ void QNativeSocketEnginePrivate::nativeClose()
     qDebug("QNativeSocketEngine::nativeClose()");
 #endif
 
-#ifdef Q_OS_SYMBIAN
-    ::close(socketDescriptor);
-#else
-	qt_safe_close(socketDescriptor);
-#endif
+    qt_safe_close(socketDescriptor);
 }
 
 qint64 QNativeSocketEnginePrivate::nativeWrite(const char *data, qint64 len)
@@ -1064,12 +1055,7 @@ qint64 QNativeSocketEnginePrivate::nativeWrite(const char *data, qint64 len)
     qt_ignore_sigpipe();
 
     ssize_t writtenBytes;
-#ifdef Q_OS_SYMBIAN
-    // Symbian does not support signals natively and Open C returns EINTR when moving to offline
-    writtenBytes = ::write(socketDescriptor, data, len);
-#else
     writtenBytes = qt_safe_write(socketDescriptor, data, len);
-#endif
 
     if (writtenBytes < 0) {
         switch (errno) {
@@ -1109,11 +1095,7 @@ qint64 QNativeSocketEnginePrivate::nativeRead(char *data, qint64 maxSize)
     }
 
     ssize_t r = 0;
-#ifdef Q_OS_SYMBIAN
-    r = ::read(socketDescriptor, data, maxSize);
-#else
     r = qt_safe_read(socketDescriptor, data, maxSize);
-#endif
 
     if (r < 0) {
         r = -1;
@@ -1130,9 +1112,6 @@ qint64 QNativeSocketEnginePrivate::nativeRead(char *data, qint64 maxSize)
         case EIO:
             //error string is now set in read(), not here in nativeRead()
             break;
-#ifdef Q_OS_SYMBIAN
-        case EPIPE:
-#endif
         case ECONNRESET:
 #if defined(Q_OS_VXWORKS)
         case ESHUTDOWN:
@@ -1163,40 +1142,11 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
     tv.tv_sec = timeout / 1000;
     tv.tv_usec = (timeout % 1000) * 1000;
 
-#ifdef Q_OS_SYMBIAN
-    fd_set fdexception;
-    FD_ZERO(&fdexception);
-    FD_SET(socketDescriptor, &fdexception);
-#endif
-
     int retval;
     if (selectForRead)
-#ifdef Q_OS_SYMBIAN
-        retval = ::select(socketDescriptor + 1, &fds, 0, &fdexception, timeout < 0 ? 0 : &tv);
-#else
         retval = qt_safe_select(socketDescriptor + 1, &fds, 0, 0, timeout < 0 ? 0 : &tv);
-#endif
     else
-#ifdef Q_OS_SYMBIAN
-        retval = ::select(socketDescriptor + 1, 0, &fds, &fdexception, timeout < 0 ? 0 : &tv);
-#else
         retval = qt_safe_select(socketDescriptor + 1, 0, &fds, 0, timeout < 0 ? 0 : &tv);
-#endif
-
-
-#ifdef Q_OS_SYMBIAN
-        bool selectForExec = false;
-        if(retval != 0) {
-            if(retval < 0) {
-                qWarning("nativeSelect(....) returned < 0 for socket %d", socketDescriptor);
-            }
-            selectForExec = FD_ISSET(socketDescriptor, &fdexception);
-        }
-        if(selectForExec) {
-            qWarning("nativeSelect (selectForRead %d, retVal %d, errno %d) Unexpected exception for fd %d",
-                    selectForRead, retval, errno, socketDescriptor);
-            }
-#endif
 
     return retval;
 }
@@ -1214,65 +1164,12 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
     if (checkWrite)
         FD_SET(socketDescriptor, &fdwrite);
 
-#ifdef Q_OS_SYMBIAN
-    fd_set fdexception;
-    FD_ZERO(&fdexception);
-    FD_SET(socketDescriptor, &fdexception);
-#endif
-
     struct timeval tv;
     tv.tv_sec = timeout / 1000;
     tv.tv_usec = (timeout % 1000) * 1000;
 
     int ret;
-#ifndef Q_OS_SYMBIAN
     ret = qt_safe_select(socketDescriptor + 1, &fdread, &fdwrite, 0, timeout < 0 ? 0 : &tv);
-#else
-    QElapsedTimer timer;
-    timer.start();
-
-    do {
-        ret = ::select(socketDescriptor + 1, &fdread, &fdwrite, &fdexception, timeout < 0 ? 0 : &tv);
-        bool selectForExec = false;
-        if(ret != 0) {
-            if(ret < 0) {
-                qWarning("nativeSelect(....) returned < 0 for socket %d", socketDescriptor);
-            }
-            selectForExec = FD_ISSET(socketDescriptor, &fdexception);
-        }
-        if(selectForExec) {
-            qWarning("nativeSelect (checkRead %d, checkWrite %d, ret %d, errno %d): Unexpected expectfds ready in fd %d",
-                    checkRead, checkWrite, ret, errno, socketDescriptor);
-            if (checkWrite){
-                FD_CLR(socketDescriptor, &fdread);
-                FD_SET(socketDescriptor, &fdwrite);
-            } else if (checkRead)
-                FD_SET(socketDescriptor, &fdread);
-
-
-            if ((ret == -1) && ( errno == ECONNREFUSED || errno == EPIPE ))
-                ret = 1;
-
-        }
-
-        if (ret != -1 || errno != EINTR) {
-            break;
-        }
-
-        if (timeout > 0) {
-            // recalculate the timeout
-            int t = timeout - timer.elapsed();
-            if (t < 0) {
-                // oops, timeout turned negative?
-                ret = -1;
-                break;
-            }
-
-            tv.tv_sec = t / 1000;
-            tv.tv_usec = (t % 1000) * 1000;
-        }
-    } while (true);
-#endif
 
     if (ret <= 0)
         return ret;

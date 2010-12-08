@@ -60,13 +60,6 @@
 #  include <winsock2.h>
 #endif
 
-#ifdef Q_OS_SYMBIAN
-#include <private/qeventdispatcher_symbian_p.h>
-#include <unistd.h>
-#include <es_sock.h>
-#include <in_sock.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 // Use our own defines and structs which we know are correct
