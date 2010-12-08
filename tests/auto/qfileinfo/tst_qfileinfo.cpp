@@ -54,6 +54,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <pwd.h>
 #endif
 #ifdef Q_OS_WIN
 #define _WIN32_WINNT  0x500
@@ -1675,8 +1677,10 @@ void tst_QFileInfo::owner()
 {
     QString userName;
 #if defined(Q_OS_UNIX)
-    char *usernameBuf = getlogin();
-    if (usernameBuf) {
+    {
+        passwd *user = getpwuid(geteuid());
+        QVERIFY(user);
+        char *usernameBuf = user->pw_name;
         userName = QString::fromLocal8Bit(usernameBuf);
     }
 #endif
@@ -1715,18 +1719,18 @@ void tst_QFileInfo::owner()
     if (userName.isEmpty())
         QSKIP("Can't retrieve the user name", SkipAll);
     QString fileName("ownertest.txt");
-    if (QFile::exists(fileName))
-        QFile::remove(fileName);
-    QFile testFile(fileName);
-    QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Text));
-    QByteArray testData("testfile");
-    QVERIFY(testFile.write(testData) != -1);
-    testFile.close();
+    QVERIFY(!QFile::exists(fileName) || QFile::remove(fileName));
+    {
+        QFile testFile(fileName);
+        QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Text));
+        QByteArray testData("testfile");
+        QVERIFY(testFile.write(testData) != -1);
+    }
     QFileInfo fi(fileName);
     QVERIFY(fi.exists());
-    QCOMPARE(userName, fi.owner());
-    if (QFile::exists(fileName))
-        QFile::remove(fileName);
+    QCOMPARE(fi.owner(), userName);
+
+    QFile::remove(fileName);
 #if defined(Q_OS_WIN)
     qt_ntfs_permission_lookup = 0;
 #endif
