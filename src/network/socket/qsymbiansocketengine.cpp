@@ -986,12 +986,12 @@ int QSymbianSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool 
             asyncSelect->IssueRequest(); //TODO: in error case should we restart or not?
         return err;
     }
-    if (selectFlags() & KSockSelectRead) {
-        Q_ASSERT(checkRead && selectForRead);
+    if (checkRead && (selectFlags() & KSockSelectRead)) {
+        Q_ASSERT(selectForRead);
         *selectForRead = true;
     }
-    if (selectFlags() & KSockSelectWrite) {
-        Q_ASSERT(checkWrite && selectForWrite);
+    if (checkWrite && (selectFlags() & KSockSelectWrite)) {
+        Q_ASSERT(selectForWrite);
         *selectForWrite = true;
     }
     //restart asynchronous notifier (only one IOCTL allowed at a time)
@@ -1417,6 +1417,7 @@ void QAsyncSelect::RunL()
     //    return;
 
     m_inSocketEvent = true;
+    m_selectBuf() &= m_selectFlags; //the select ioctl reports everything, so mask to only what we requested
     //TODO: KSockSelectReadContinuation does what?
     if (m_selectBuf() & KSockSelectRead) {
         QEvent e(QEvent::SockAct);
