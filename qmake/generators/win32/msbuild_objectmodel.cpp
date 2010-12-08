@@ -328,29 +328,45 @@ void XTreeNode::generateXML(XmlOutput &xml, XmlOutput &xmlFilter, const QString 
 
     if (children.size()) {
         // Filter
+        QString tempFilterName;
         ChildrenMap::ConstIterator it, end = children.constEnd();
         if (!tagName.isEmpty()) {
+            tempFilterName.append(filter);
+            tempFilterName.append("\\");
+            tempFilterName.append(tagName);
+            xmlFilter << tag(_ItemGroup);
             xmlFilter << tag("Filter")
-                      << attrTag("Include", tagName)
-                      << attrTagS("Extensions", "");
+                      << attrTag("Include", tempFilterName)
+                      << closetag();
+            xmlFilter << closetag();
         }
         // First round, do nested filters
         for (it = children.constBegin(); it != end; ++it)
             if ((*it)->children.size())
-                (*it)->generateXML(xml, xmlFilter, it.key(), tool, filter);
+            {
+                if ( !tempFilterName.isEmpty() )
+                    (*it)->generateXML(xml, xmlFilter, it.key(), tool, tempFilterName);
+                else
+                    (*it)->generateXML(xml, xmlFilter, it.key(), tool, filter);
+            }
         // Second round, do leafs
         for (it = children.constBegin(); it != end; ++it)
             if (!(*it)->children.size())
-                (*it)->generateXML(xml, xmlFilter, it.key(), tool, filter);
-
-        if (!tagName.isEmpty())
-            xml << closetag("Filter");
+            {
+                if ( !tempFilterName.isEmpty() )
+                    (*it)->generateXML(xml, xmlFilter, it.key(), tool, tempFilterName);
+                else
+                    (*it)->generateXML(xml, xmlFilter, it.key(), tool, filter);
+            }
     } else {
         // Leaf
+        xml << tag(_ItemGroup);
+        xmlFilter << tag(_ItemGroup);
         VCXProjectWriter::outputFileConfigs(tool, xml, xmlFilter, info, filter);
+        xmlFilter << closetag();
+        xml << closetag();
     }
 }
-
 
 // Flat file generation ---------------------------------------------
 void XFlatNode::generateXML(XmlOutput &xml, XmlOutput &xmlFilter, const QString &/*tagName*/, VCProject &tool, const QString &filter) {

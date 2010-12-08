@@ -76,9 +76,9 @@ MediaController::~MediaController()
 MediaController::Features MediaController::supportedFeatures() const
 {
     if (!d || !d->media) {
-        return false;
+        return Features();
     }
-    IFACE false;
+    IFACE Features();
     Features ret;
     if (iface->hasInterface(AddonInterface::AngleInterface)) {
         ret |= Angles;

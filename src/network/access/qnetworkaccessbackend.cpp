@@ -142,6 +142,7 @@ void QNetworkAccessBackend::emitReplyUploadProgress(qint64 bytesSent, qint64 byt
 QNetworkAccessBackend::QNetworkAccessBackend()
     : manager(0)
     , reply(0)
+    , synchronous(false)
 {
 }
 
