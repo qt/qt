@@ -146,6 +146,41 @@ private:
 
 class QSocketNotifier;
 
+class QReadNotifier;
+class QWriteNotifier;
+class QExceptionNotifier;
+class QAsyncSelect : public CActive
+{
+public:
+    QAsyncSelect(QAbstractEventDispatcher *dispatcher, RSocket& sock, QSymbianSocketEngine *parent);
+    ~QAsyncSelect();
+
+    void deleteLater();
+    void IssueRequest();
+
+    void refresh();
+
+    void setReadNotifier(QReadNotifier *rn) { iReadN = rn; }
+    void setWriteNotifier(QWriteNotifier *wn) { iWriteN = wn; }
+    void setExceptionNotifier(QExceptionNotifier *en) { iExcN = en; }
+
+protected:
+    void DoCancel();
+    void RunL();
+
+private:
+    QReadNotifier* iReadN;
+    QWriteNotifier* iWriteN;
+    QExceptionNotifier* iExcN;
+    bool m_inSocketEvent; // TODO ?
+    bool m_deleteLater; // TODO ?
+    RSocket &m_socket;
+
+    TUint m_selectFlags;
+    TPckgBuf<TUint> m_selectBuf; //in & out IPC buffer
+    QSymbianSocketEngine *engine;
+};
+
 class QSymbianSocketEnginePrivate : public QAbstractSocketEnginePrivate
 {
     Q_DECLARE_PUBLIC(QSymbianSocketEngine)
@@ -162,6 +197,7 @@ public:
     mutable RTimer selectTimer;
 
     QSocketNotifier *readNotifier, *writeNotifier, *exceptNotifier;
+    QAsyncSelect* asyncSelect;
 
     // FIXME this is duplicated from qnativesocketengine_p.h
     enum ErrorString {

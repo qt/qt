@@ -938,49 +938,65 @@ int QSymbianSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) c
 int QSymbianSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool checkWrite,
                        bool *selectForRead, bool *selectForWrite) const
 {
+    //cancel asynchronous notifier (only one IOCTL allowed at a time)
+    if (asyncSelect)
+        asyncSelect->Cancel();
     //TODO: implement
     //as above, but checking both read and write status at the same time
-    if (!selectTimer.Handle())
-        qt_symbian_throwIfError(selectTimer.CreateLocal());
-    TRequestStatus timerStat;
-    selectTimer.HighRes(timerStat, timeout * 1000);
-    TRequestStatus* readStat = 0;
-    TRequestStatus* writeStat = 0;
-    TRequestStatus* array[3];
-    array[0] = &timerStat;
-    int count = 1;
-    if (checkRead) {
-        //TODO: get from read AO
-        //readStat = ?
-        array[count++] = readStat;
-    }
-    if (checkWrite) {
-        //TODO: get from write AO
-        //writeStat = ?
-        array[count++] = writeStat;
-    }
-    // TODO: for selecting, we can use getOpt(KSOSelectPoll) to get the select result
-    // and KIOCtlSelect for the selecting.
 
-    User::WaitForNRequest(array, count);
-    //IMPORTANT - WaitForNRequest only decrements the thread semaphore once, although more than one status may have completed.
-    if (timerStat.Int() != KRequestPending) {
-        //timed out
-        return 0;
-    }
-    selectTimer.Cancel();
-    User::WaitForRequest(timerStat);
+    TPckgBuf<TUint> selectFlags;
+    selectFlags() = KSockSelectExcept;
+    if (selectForRead)
+        selectFlags() |= KSockSelectRead;
+    if (selectForWrite)
+        selectFlags() |= KSockSelectWrite;
+    TRequestStatus selectStat;
+    nativeSocket.Ioctl(KIOctlSelect, selectStat, &selectFlags, KSOLSocket);
 
-    if(readStat && readStat->Int() != KRequestPending) {
+    if (timeout < 0)
+        User::WaitForRequest(selectStat); //negative means no timeout
+    else {
+        if (!selectTimer.Handle())
+            qt_symbian_throwIfError(selectTimer.CreateLocal());
+        TRequestStatus timerStat;
+        selectTimer.HighRes(timerStat, timeout * 1000);
+        User::WaitForRequest(timerStat, selectStat);
+        if (selectStat == KRequestPending) {
+            nativeSocket.CancelIoctl();
+            //CancelIoctl completes the request (most likely with KErrCancel)
+            //We need to wait for this to keep the thread semaphore balanced (or active scheduler will panic)
+            User::WaitForRequest(selectStat);
+            //restart asynchronous notifier (only one IOCTL allowed at a time)
+            if (asyncSelect)
+                asyncSelect->IssueRequest();
+            return 0; //timeout
+        } else {
+            selectTimer.Cancel();
+            User::WaitForRequest(timerStat);
+        }
+    }
+
+    if (selectStat != KErrNone)
+        return selectStat.Int();
+    if (selectFlags() & KSockSelectExcept) {
+        TInt err;
+        nativeSocket.GetOpt(KSOSelectLastError, KSOLSocket, err);
+        //restart asynchronous notifier (only one IOCTL allowed at a time)
+        if (asyncSelect)
+            asyncSelect->IssueRequest(); //TODO: in error case should we restart or not?
+        return err;
+    }
+    if (selectFlags() & KSockSelectRead) {
         Q_ASSERT(checkRead && selectForRead);
-        //TODO: cancel the AO, but call its RunL anyway? looking for an UnsetActive()
         *selectForRead = true;
     }
-    if(writeStat && writeStat->Int() != KRequestPending) {
+    if (selectFlags() & KSockSelectWrite) {
         Q_ASSERT(checkWrite && selectForWrite);
-        //TODO: cancel the AO, but call its RunL anyway? looking for an UnsetActive()
         *selectForWrite = true;
     }
+    //restart asynchronous notifier (only one IOCTL allowed at a time)
+    if (asyncSelect)
+        asyncSelect->IssueRequest();
     return 1;
 }
 
@@ -1150,13 +1166,25 @@ void QSymbianSocketEnginePrivate::setError(QAbstractSocket::SocketError error, E
 
 class QReadNotifier : public QSocketNotifier
 {
+    friend class QAsyncSelect;
 public:
     QReadNotifier(int fd, QSymbianSocketEngine *parent)
         : QSocketNotifier(fd, QSocketNotifier::Read, parent)
     { engine = parent; }
 protected:
+    bool event(QEvent *);
+
     QSymbianSocketEngine *engine;
 };
+
+bool QReadNotifier::event(QEvent *e)
+{
+    if (e->type() == QEvent::SockAct) {
+        engine->readNotification();
+        return true;
+    }
+    return QSocketNotifier::event(e);
+}
 
 bool QSymbianSocketEngine::isReadNotificationEnabled() const
 {
@@ -1172,21 +1200,43 @@ void QSymbianSocketEngine::setReadNotificationEnabled(bool enable)
     if (d->readNotifier) {
         d->readNotifier->setEnabled(enable);
     } else if (enable && d->threadData->eventDispatcher) {
-        d->readNotifier = new QReadNotifier(d->socketDescriptor, this);
+        QReadNotifier *rn = new QReadNotifier(d->socketDescriptor, this);
+        d->readNotifier = rn;
+        if (!d->asyncSelect)
+            d->asyncSelect = q_check_ptr(new QAsyncSelect(0, d->nativeSocket, this));
+        d->asyncSelect->setReadNotifier(rn);
         d->readNotifier->setEnabled(true);
     }
+    // TODO: what do we do if event dispatcher doesn't exist yet?
+    if (d->asyncSelect)
+        d->asyncSelect->IssueRequest();
 }
 
 
 class QWriteNotifier : public QSocketNotifier
 {
+    friend class QAsyncSelect;
 public:
     QWriteNotifier(int fd, QSymbianSocketEngine *parent)
-        : QSocketNotifier(fd, QSocketNotifier::Read, parent)
+        : QSocketNotifier(fd, QSocketNotifier::Write, parent)
     { engine = parent; }
 protected:
+    bool event(QEvent *);
+
     QSymbianSocketEngine *engine;
 };
+
+bool QWriteNotifier::event(QEvent *e)
+{
+    if (e->type() == QEvent::SockAct) {
+        if (engine->state() == QAbstractSocket::ConnectingState)
+            engine->connectionNotification();
+        else
+            engine->writeNotification();
+        return true;
+    }
+    return QSocketNotifier::event(e);
+}
 
 bool QSymbianSocketEngine::isWriteNotificationEnabled() const
 {
@@ -1202,17 +1252,48 @@ void QSymbianSocketEngine::setWriteNotificationEnabled(bool enable)
     if (d->writeNotifier) {
         d->writeNotifier->setEnabled(enable);
     } else if (enable && d->threadData->eventDispatcher) {
-        d->writeNotifier = new QWriteNotifier(d->socketDescriptor, this);
+        QWriteNotifier *wn = new QWriteNotifier(d->socketDescriptor, this);
+        d->readNotifier = wn;
+        if (!(d->asyncSelect))
+            d->asyncSelect = q_check_ptr(new QAsyncSelect(d->threadData->eventDispatcher, d->nativeSocket, this));
+        d->asyncSelect->setWriteNotifier(wn);
         d->writeNotifier->setEnabled(true);
     }
+    // TODO: what do we do if event dispatcher doesn't exist yet?
+    if (d->asyncSelect)
+        d->asyncSelect->IssueRequest();
 }
 
-// FIXME do we really need this for symbian?
+class QExceptionNotifier : public QSocketNotifier
+{
+    friend class QAsyncSelect;
+public:
+    QExceptionNotifier(int fd, QSymbianSocketEngine *parent)
+        : QSocketNotifier(fd, QSocketNotifier::Exception, parent) { engine = parent; }
+
+protected:
+    bool event(QEvent *);
+
+    QSymbianSocketEngine *engine;
+};
+
+bool QExceptionNotifier::event(QEvent *e)
+{
+    if (e->type() == QEvent::SockAct) {
+        if (engine->state() == QAbstractSocket::ConnectingState)
+            engine->connectionNotification();
+        else
+            engine->exceptionNotification();
+        return true;
+    }
+    return QSocketNotifier::event(e);
+}
+
 bool QSymbianSocketEngine::isExceptionNotificationEnabled() const
 {
-//    Q_D(const QSymbianSocketEngine);
-//    // TODO
-//    return d->exceptNotifier && d->exceptNotifier->isEnabled();
+    Q_D(const QSymbianSocketEngine);
+    // TODO
+    return d->exceptNotifier && d->exceptNotifier->isEnabled();
     return false;
 }
 
@@ -1221,12 +1302,18 @@ void QSymbianSocketEngine::setExceptionNotificationEnabled(bool enable)
 {
     Q_D(QSymbianSocketEngine);
     // TODO
-//    if (d->exceptNotifier) {
-//        d->exceptNotifier->setEnabled(enable);
-//    } else if (enable && d->threadData->eventDispatcher) {
-//        d->exceptNotifier = new QExceptionNotifier(d->socketDescriptor, this);
-//        d->exceptNotifier->setEnabled(true);
-//    }
+    if (d->exceptNotifier) {
+        d->exceptNotifier->setEnabled(enable);
+    } else if (enable && d->threadData->eventDispatcher) {
+        QExceptionNotifier *en = new QExceptionNotifier(d->socketDescriptor, this);
+        d->exceptNotifier = en;
+        if (!(d->asyncSelect))
+            d->asyncSelect = q_check_ptr(new QAsyncSelect(d->threadData->eventDispatcher, d->nativeSocket, this));
+        d->asyncSelect->setExceptionNotifier(en);
+        d->writeNotifier->setEnabled(true);
+    }
+    if (d->asyncSelect)
+        d->asyncSelect->IssueRequest();
 }
 
 bool QSymbianSocketEngine::waitForRead(int msecs, bool *timedOut)
@@ -1302,5 +1389,81 @@ qint64 QSymbianSocketEngine::bytesToWrite() const
     return 0;
 }
 
+QAsyncSelect::QAsyncSelect(QAbstractEventDispatcher *dispatcher, RSocket& sock, QSymbianSocketEngine *parent)
+    : CActive(CActive::EPriorityStandard),
+      m_inSocketEvent(false),
+      m_deleteLater(false),
+      m_socket(sock),
+      m_selectFlags(0),
+      engine(parent)
+{
+    CActiveScheduler::Add(this);
+}
+
+QAsyncSelect::~QAsyncSelect()
+{
+    Cancel();
+}
+
+void QAsyncSelect::DoCancel()
+{
+    m_socket.CancelIoctl();
+}
+
+void QAsyncSelect::RunL()
+{
+    //TODO: block when event loop demands it
+    //if (maybeQueueForLater())
+    //    return;
+
+    m_inSocketEvent = true;
+    //TODO: KSockSelectReadContinuation does what?
+    if (m_selectBuf() & KSockSelectRead) {
+        QEvent e(QEvent::SockAct);
+        iReadN->event(&e);
+    }
+    if (m_selectBuf() & KSockSelectWrite) {
+        QEvent e(QEvent::SockAct);
+        iWriteN->event(&e);
+    }
+    if ((m_selectBuf() && KSockSelectExcept) || iStatus != KErrNone) {
+        QEvent e(QEvent::SockAct);
+        iExcN->event(&e);
+    }
+    m_inSocketEvent = false;
+    // select again (unless disabled by one of the callbacks)
+    IssueRequest();
+}
+
+void QAsyncSelect::deleteLater()
+{
+    if (m_inSocketEvent) {
+        m_deleteLater = true;
+    } else {
+        delete this;
+    }
+}
+
+void QAsyncSelect::IssueRequest()
+{
+    if (m_inSocketEvent)
+        return; //prevent thrashing during a callback - socket engine enables/disables multiple notifiers
+    TUint selectFlags = 0;
+    if (iReadN && iReadN->isEnabled())
+        selectFlags |= KSockSelectRead;
+    if (iWriteN && iWriteN->isEnabled())
+        selectFlags |= KSockSelectWrite;
+    if (iExcN && iExcN->isEnabled())
+        selectFlags |= KSockSelectExcept;
+    if (selectFlags != m_selectFlags) {
+        Cancel();
+        m_selectFlags = selectFlags;
+    }
+    if (m_selectFlags && !IsActive()) {
+        m_selectBuf() = m_selectFlags;
+        m_socket.Ioctl(KIOctlSelect, iStatus, &m_selectBuf, KSOLSocket);
+        SetActive();
+    }
+}
 
 QT_END_NAMESPACE
