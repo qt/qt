@@ -1320,6 +1320,9 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     Conversely, actions can be added to widgets with the addAction(),
     addActions() and insertAction() functions.
 
+    \warning To make QMenu visible on the screen, exec() or popup() should be
+    used instead of show().
+
     \section1 QMenu on Qt for Windows CE
 
     If a menu is integrated into the native menubar on Windows Mobile we
