@@ -119,7 +119,7 @@ void QSymbianSocketEnginePrivate::getPortAndAddress(const TInetAddr& a, quint16 
             TPckgBuf<TSoInetIfQuery> query;
             query().iSrcAddr = a;
             TInt err = nativeSocket.GetOpt(KSoInetIfQueryBySrcAddr, KSolInetIfQuery, query);
-            if(!err)
+            if (!err)
                 addr->setScopeId(qt_TDesC2QString(query().iName));
             else
             addr->setScopeId(QString::number(a.Scope()));
@@ -181,7 +181,7 @@ void QSymbianSocketEnginePrivate::setPortAndAddress(TInetAddr& nativeAddr, quint
         TPckgBuf<TSoInetIfQuery> query;
         query().iName = qt_QString2TPtrC(addr.scopeId());
         TInt err = nativeSocket.GetOpt(KSoInetIfQueryByName, KSolInetIfQuery, query);
-        if(!err)
+        if (!err)
             nativeAddr.SetScope(query().iIndex);
         else
             nativeAddr.SetScope(0);
@@ -638,7 +638,7 @@ int QSymbianSocketEngine::accept()
     TRequestStatus status;
     d->nativeSocket.Accept(blankSocket, status);
     User::WaitForRequest(status);
-    if(status.Int()) {
+    if (status.Int()) {
         qWarning("QSymbianSocketEnginePrivate::nativeAccept() - error %d", status.Int());
         return 0;
     }
@@ -655,7 +655,7 @@ qint64 QSymbianSocketEngine::bytesAvailable() const
     // FIXME is this the right thing also for UDP?
     // What is expected for UDP, the length for the next packet I guess?
     TInt err = d->nativeSocket.GetOpt(KSOReadBytesPending, KSOLSocket, nbytes);
-    if(err)
+    if (err)
         return 0;
     available = (qint64) nbytes;
 

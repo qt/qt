@@ -88,7 +88,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
         results.setErrorString(QString::fromLocal8Bit(gai_strerror(result)));
     }
     */
-	
+
     return results;
 }
 

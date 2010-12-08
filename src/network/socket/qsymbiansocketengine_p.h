@@ -124,8 +124,8 @@ public:
     bool waitForRead(int msecs = 30000, bool *timedOut = 0);
     bool waitForWrite(int msecs = 30000, bool *timedOut = 0);
     bool waitForReadOrWrite(bool *readyToRead, bool *readyToWrite,
-			    bool checkRead, bool checkWrite,
-			    int msecs = 30000, bool *timedOut = 0);
+                bool checkRead, bool checkWrite,
+                int msecs = 30000, bool *timedOut = 0);
 
     bool isReadNotificationEnabled() const;
     void setReadNotificationEnabled(bool enable);
