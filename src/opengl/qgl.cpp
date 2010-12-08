@@ -1853,18 +1853,6 @@ QGLTextureCache::~QGLTextureCache()
 void QGLTextureCache::insert(QGLContext* ctx, qint64 key, QGLTexture* texture, int cost)
 {
     QWriteLocker locker(&m_lock);
-    if (m_cache.totalCost() + cost > m_cache.maxCost()) {
-        // the cache is full - make an attempt to remove something
-        const QList<QGLTextureCacheKey> keys = m_cache.keys();
-        int i = 0;
-        while (i < m_cache.count()
-               && (m_cache.totalCost() + cost > m_cache.maxCost())) {
-            QGLTexture *tex = m_cache.object(keys.at(i));
-            if (tex->context == ctx)
-                m_cache.remove(keys.at(i));
-            ++i;
-        }
-    }
     const QGLTextureCacheKey cacheKey = {key, QGLContextPrivate::contextGroup(ctx)};
     m_cache.insert(cacheKey, texture, cost);
 }
