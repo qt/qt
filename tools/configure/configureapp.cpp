@@ -1522,6 +1522,8 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT3SUPPORT" ]          = "no";
         dictionary[ "OPENGL" ]              = "no";
         dictionary[ "OPENSSL" ]             = "yes";
+        // On Symbian we now always will have IPv6 with no chance to disable it
+        dictionary[ "IPV6" ]                = "yes";
         dictionary[ "STL" ]                 = "yes";
         dictionary[ "EXCEPTIONS" ]          = "yes";
         dictionary[ "RTTI" ]                = "yes";
