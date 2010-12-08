@@ -377,7 +377,25 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
     if (widgetPrivate->extraData()->glContext)
         return;
 
-    QGLContext *ctx = new QGLContext(surfaceFormat, widget);
+    QGLContext *ctx = NULL;
+
+    // Inspect the 'qglTranslucent' property of the target widget. If set to true,
+    // we need to create the surface in a 32bit alpha-compatible format. This is
+    // currently used by MeeGo graphics system extra API's. Could be in future
+    // used by other platform-specific graphic system API's.
+    if (widget->property("qglTranslucent").isValid()) {
+        QGLFormat modFormat(surfaceFormat);
+
+        if (widget->property("qglTranslucent").toBool() == true) {
+            modFormat.setSampleBuffers(false);
+            modFormat.setSamples(0);
+            modFormat.setAlpha(true);
+        }
+
+        ctx = new QGLContext(modFormat, widget);
+    } else
+        ctx = new QGLContext(surfaceFormat, widget);
+
     ctx->create(qt_gl_share_widget()->context());
 
 #ifndef QT_NO_EGL
