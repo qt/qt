@@ -91,7 +91,6 @@ private:
     bool showWidget;
     QTimer anim;
     QElapsedTimer checkTime;
-    double windowOpacity;
 };
 
 static QAlphaWidget* q_blend = 0;
@@ -107,7 +106,6 @@ QAlphaWidget::QAlphaWidget(QWidget* w, Qt::WindowFlags f)
 #endif
     setAttribute(Qt::WA_NoSystemBackground, true);
     widget = w;
-    windowOpacity = w->windowOpacity();
     alpha = 0;
 }
 
@@ -116,7 +114,7 @@ QAlphaWidget::~QAlphaWidget()
 #if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
     // Restore user-defined opacity value
     if (widget)
-        widget->setWindowOpacity(windowOpacity);
+        widget->setWindowOpacity(1);
 #endif
 }
 
@@ -255,10 +253,10 @@ void QAlphaWidget::render()
         alpha = 1;
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    if (alpha >= windowOpacity || !showWidget) {
+    if (alpha >= 1 || !showWidget) {
         anim.stop();
         qApp->removeEventFilter(this);
-        widget->setWindowOpacity(windowOpacity);
+        widget->setWindowOpacity(1);
         q_blend = 0;
         deleteLater();
     } else {
