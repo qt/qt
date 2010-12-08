@@ -170,6 +170,7 @@ private:
     bool isDefaultClipRegion(const QRegion& region);
     bool isDefaultClipRect(const QRect& rect);
     bool clearRect(const QRectF &rect, const QColor &color);
+    bool canVgWritePixels(const QImage &image) const;
 };
 
 QT_END_NAMESPACE

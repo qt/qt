@@ -38,7 +38,7 @@ Rectangle {
 
     Component {
         id: appHighlight
-        Rectangle { width: 100; height: 100; color: "white"; z: 3000 }
+        Rectangle { width: 100; height: 100; color: "white"; z: 0 }
     }
 
     GridView {

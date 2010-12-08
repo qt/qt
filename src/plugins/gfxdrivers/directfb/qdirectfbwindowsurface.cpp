@@ -344,9 +344,11 @@ void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
     if (!win)
         return;
 
+#ifndef QT_NO_QWS_PROXYSCREEN
     QWExtra *extra = qt_widget_private(widget)->extraData();
     if (extra && extra->proxyWidget)
         return;
+#endif
 
     const quint8 windowOpacity = quint8(win->windowOpacity() * 0xff);
     const QRect windowGeometry = geometry();
@@ -380,10 +382,17 @@ void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
     flushPending = false;
 }
 
-void QDirectFBWindowSurface::beginPaint(const QRegion &)
+void QDirectFBWindowSurface::beginPaint(const QRegion &region)
 {
     if (!engine) {
         engine = new QDirectFBPaintEngine(this);
+    }
+
+    if (dfbSurface) {
+        const QWidget *win = window();
+        if (win && win->testAttribute(Qt::WA_NoSystemBackground)) {
+            QDirectFBScreen::solidFill(dfbSurface, Qt::transparent, region);
+        }
     }
     flushPending = true;
 }

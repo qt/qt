@@ -464,6 +464,7 @@ void tst_QTreeWidget::editItem()
     QTreeWidget tree;
     populate(&tree, topLevelItems, new TreeItem(QStringList() << "1" << "2"));
     tree.show();
+    QTest::qWaitForWindowShown(&tree);
 
     QSignalSpy itemChangedSpy(
         &tree, SIGNAL(itemChanged(QTreeWidgetItem*,int)));
@@ -3098,8 +3099,9 @@ void tst_QTreeWidget::task253109_itemHeight()
 
 void tst_QTreeWidget::task206367_duplication()
 {
-    QTreeWidget treeWidget;
-    treeWidget.show();
+    QWidget topLevel;
+    QTreeWidget treeWidget(&topLevel);
+    topLevel.show();
     treeWidget.resize(200, 200);
 
     treeWidget.setSortingEnabled(true);

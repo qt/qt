@@ -57,7 +57,7 @@
 #include <eikbtgpc.h>
 #endif
 
-// This is necessary in order to be able to perform delayed invokation on slots
+// This is necessary in order to be able to perform delayed invocation on slots
 // which take arguments of type WId.  One example is
 // QWidgetPrivate::_q_delayedDestroy, which is used to delay destruction of
 // CCoeControl objects until after the CONE event handler has finished running.
@@ -544,7 +544,7 @@ void QWidgetPrivate::show_sys()
 
         id->MakeVisible(true);
 
-        if(q->isWindow())
+        if(q->isWindow()&&!q->testAttribute(Qt::WA_ShowWithoutActivating))
             id->setFocusSafely(true);
     }
 
@@ -577,7 +577,7 @@ void QWidgetPrivate::hide_sys()
     QSymbianControl *id = static_cast<QSymbianControl *>(q->internalWinId());
 
     if (id) {
-        //Incorrect optimisation - for popup windows, Qt's focus is moved before
+        //Incorrect optimization - for popup windows, Qt's focus is moved before
         //hide_sys is called, resulting in the popup window keeping its elevated
         //position in the CONE control stack.
         //This can result in keyboard focus being in an invisible widget in some
@@ -709,7 +709,8 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     // old_winid may not have received a 'not visible' visibility
     // changed event before being destroyed; make sure that it is
     // removed from the backing store's list of visible windows.
-    S60->controlVisibilityChanged(old_winid, false);
+    if (old_winid)
+        S60->controlVisibilityChanged(old_winid, false);
 
     setWinId(0);
 
@@ -766,17 +767,24 @@ void QWidgetPrivate::s60UpdateIsOpaque()
     if (!q->testAttribute(Qt::WA_WState_Created) || !q->testAttribute(Qt::WA_TranslucentBackground))
         return;
 
+    createTLExtra();
+
     RWindow *const window = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
 
 #ifdef Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
     window->SetSurfaceTransparency(!isOpaque);
+    extra->topextra->nativeWindowTransparencyEnabled = !isOpaque;
 #else
     if (!isOpaque) {
         const TDisplayMode displayMode = static_cast<TDisplayMode>(window->SetRequiredDisplayMode(EColor16MA));
-        if (window->SetTransparencyAlphaChannel() == KErrNone)
+        if (window->SetTransparencyAlphaChannel() == KErrNone) {
             window->SetBackgroundColor(TRgb(255, 255, 255, 0));
-    } else
+            extra->topextra->nativeWindowTransparencyEnabled = 1;
+        }
+    } else if (extra->topextra->nativeWindowTransparencyEnabled) {
         window->SetTransparentRegion(TRegionFix<1>());
+        extra->topextra->nativeWindowTransparencyEnabled = 0;
+    }
 #endif
 }
 
@@ -935,6 +943,7 @@ void QWidgetPrivate::registerDropSite(bool /* on */)
 void QWidgetPrivate::createTLSysExtra()
 {
     extra->topextra->inExpose = 0;
+    extra->topextra->nativeWindowTransparencyEnabled = 0;
 }
 
 void QWidgetPrivate::deleteTLSysExtra()

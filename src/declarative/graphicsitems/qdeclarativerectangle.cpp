@@ -260,10 +260,13 @@ void QDeclarativeRectangle::doUpdate()
 
     A width of 1 creates a thin line. For no line, use a width of 0 or a transparent color.
 
+    \note The width of the rectangle's border does not affect the geometry of the
+    rectangle itself or its position relative to other items if anchors are used.
+
     If \c border.width is an odd number, the rectangle is painted at a half-pixel offset to retain
-    border smoothness. Also, the border is rendered evenly on either side of the 
+    border smoothness. Also, the border is rendered evenly on either side of the
     rectangle's boundaries, and the spare pixel is rendered to the right and below the
-    rectangle (as documented for QRect rendering). This can cause unintended effects if 
+    rectangle (as documented for QRect rendering). This can cause unintended effects if
     \c border.width is 1 and the rectangle is \l{Item::clip}{clipped} by a parent item:
 
     \beginfloatright
@@ -417,6 +420,10 @@ void QDeclarativeRectangle::generateRoundedRect()
                 p.drawRoundedRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, d->rectImage.width()-(pw+1), d->rectImage.height()-(pw+1)), d->radius, d->radius);
             else
                 p.drawRoundedRect(QRectF(qreal(pw)/2, qreal(pw)/2, d->rectImage.width()-pw, d->rectImage.height()-pw), d->radius, d->radius);
+
+            // end painting before inserting pixmap
+            // to pixmap cache to avoid a deep copy
+            p.end();
             QPixmapCache::insert(key, d->rectImage);
         }
     }
@@ -451,6 +458,10 @@ void QDeclarativeRectangle::generateBorderedRect()
                 p.drawRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, d->rectImage.width()-(pw+1), d->rectImage.height()-(pw+1)));
             else
                 p.drawRect(QRectF(qreal(pw)/2, qreal(pw)/2, d->rectImage.width()-pw, d->rectImage.height()-pw));
+
+            // end painting before inserting pixmap
+            // to pixmap cache to avoid a deep copy
+            p.end();
             QPixmapCache::insert(key, d->rectImage);
         }
     }
@@ -477,7 +488,8 @@ void QDeclarativeRectangle::drawRect(QPainter &p)
 {
     Q_D(QDeclarativeRectangle);
     if ((d->gradient && d->gradient->gradient())
-        || d->radius > width()/2 || d->radius > height()/2) {
+        || d->radius > width()/2 || d->radius > height()/2
+        || width() < 3 || height() < 3) {
         // XXX This path is still slower than the image path
         // Image path won't work for gradients or invalid radius though
         bool oldAA = p.testRenderHint(QPainter::Antialiasing);

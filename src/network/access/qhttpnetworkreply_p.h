@@ -126,11 +126,14 @@ public:
     qint64 bytesAvailable() const;
     qint64 bytesAvailableNextBlock() const;
     QByteArray readAny();
+    QByteArray readAll();
     void setDownstreamLimited(bool t);
 
     bool isFinished() const;
 
     bool isPipeliningUsed() const;
+
+    QHttpNetworkConnection* connection();
 
 #ifndef QT_NO_OPENSSL
     QSslConfiguration sslConfiguration() const;
@@ -149,7 +152,11 @@ Q_SIGNALS:
     void headerChanged();
     void dataReadProgress(int done, int total);
     void dataSendProgress(qint64 done, qint64 total);
-
+    void cacheCredentials(const QHttpNetworkRequest &request, QAuthenticator *authenticator);
+#ifndef QT_NO_NETWORKPROXY
+    void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator);
+#endif
+    void authenticationRequired(const QHttpNetworkRequest &request, QAuthenticator *authenticator);
 private:
     Q_DECLARE_PRIVATE(QHttpNetworkReply)
     friend class QHttpNetworkConnection;

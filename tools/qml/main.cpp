@@ -155,7 +155,11 @@ void usage()
     qWarning("  -I <directory> ........................... prepend to the module import search path,");
     qWarning("                                             display path if <directory> is empty");
     qWarning("  -P <directory> ........................... prepend to the plugin search path");
+#if defined(Q_WS_MAC)
+    qWarning("  -no-opengl ............................... don't use a QGLWidget for the viewport");
+#else
     qWarning("  -opengl .................................. use a QGLWidget for the viewport");
+#endif
     qWarning("  -script <path> ........................... set the script to use");
     qWarning("  -scriptopts <options>|help ............... set the script options to use");
 
@@ -172,6 +176,7 @@ void scriptOptsUsage()
     qWarning("  play ..................................... playback an existing script");
     qWarning("  testimages ............................... record images or compare images on playback");
     qWarning("  testerror ................................ test 'error' property of root item on playback");
+    qWarning("  testskip  ................................ test 'skip' property of root item on playback");
     qWarning("  snapshot ................................. file being recorded is static,");
     qWarning("                                             only one frame will be recorded or tested");
     qWarning("  exitoncomplete ........................... cleanly exit the viewer on script completion");
@@ -305,6 +310,8 @@ static void parseScriptOptions()
             scriptOptions |= QDeclarativeViewer::TestImages;
         } else if (option == QLatin1String("testerror")) {
             scriptOptions |= QDeclarativeViewer::TestErrorProperty;
+        } else if (option == QLatin1String("testskip")) {
+            scriptOptions |= QDeclarativeViewer::TestSkipProperty;
         } else if (option == QLatin1String("exitoncomplete")) {
             scriptOptions |= QDeclarativeViewer::ExitOnComplete;
         } else if (option == QLatin1String("exitonfailure")) {
@@ -367,8 +374,13 @@ static void parseCommandLineOptions(const QStringList &arguments)
         } else if (arg == "-translation") {
             if (lastArg) usage();
             opts.translationFile = arguments.at(++i);
+#if defined(Q_WS_MAC)
+        } else if (arg == "-no-opengl") {
+            opts.useGL = false;
+#else
         } else if (arg == "-opengl") {
             opts.useGL = true;
+#endif
         } else if (arg == "-qmlbrowser") {
             opts.useNativeFileBrowser = false;
         } else if (arg == "-warnings") {

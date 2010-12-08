@@ -46,6 +46,7 @@ QT_BEGIN_NAMESPACE
 /*!
   \internal
   \class QListModelInterface
+  \since 4.7
   \brief The QListModelInterface class can be subclassed to provide C++ models to QDeclarativeGraphics Views
 
   This class is comprised primarily of pure virtual functions which
@@ -70,13 +71,8 @@ QT_BEGIN_NAMESPACE
   Returns the number of data entries in the model.
 */
 
-/*! \fn QHash<int,QVariant> QListModelInterface::data(int index, const QList<int>& roles) const
+/*! \fn QVariant QListModelInterface::data(int index, int role) const
   Returns the data at the given \a index for the specified \a roles.
-*/
-
-/*! \fn bool QListModelInterface::setData(int index, const QHash<int,QVariant>& values)
-  Sets the data at the given \a index. \a values is a mapping of
-  QVariant values to roles. Returns false.
 */
 
 /*! \fn QList<int> QListModelInterface::roles() const

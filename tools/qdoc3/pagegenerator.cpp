@@ -46,6 +46,7 @@
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qdebug.h>
+#include "codemarker.h"
 #include "pagegenerator.h"
 #include "tree.h"
 
@@ -175,9 +176,9 @@ bool PageGenerator::parseArg(const QString& src,
 /*!
   This function is recursive.
  */
-void PageGenerator::generateTree(const Tree *tree, CodeMarker *marker)
+void PageGenerator::generateTree(const Tree *tree)
 {
-    generateInnerNode(tree->root(), marker);
+    generateInnerNode(tree->root());
 }
 
 QString PageGenerator::fileBase(const Node *node) const
@@ -320,10 +321,10 @@ QTextStream &PageGenerator::out()
 }
 
 /*!
-  Recursive writing of html files from the root \a node.
+  Recursive writing of HTML files from the root \a node.
  */
 void
-PageGenerator::generateInnerNode(const InnerNode* node, CodeMarker* marker)
+PageGenerator::generateInnerNode(const InnerNode* node)
 {
     if (!node->url().isNull())
         return;
@@ -342,6 +343,11 @@ PageGenerator::generateInnerNode(const InnerNode* node, CodeMarker* marker)
         }
     }
 
+    /*
+      Obtain a code marker for the source file.
+     */
+    CodeMarker *marker = CodeMarker::markerForFileName(node->location().filePath());
+
     if (node->parent() != 0) {
 	beginSubPage(node->location(), fileName(node));
 	if (node->type() == Node::Namespace || node->type() == Node::Class) {
@@ -356,7 +362,7 @@ PageGenerator::generateInnerNode(const InnerNode* node, CodeMarker* marker)
     NodeList::ConstIterator c = node->childNodes().begin();
     while (c != node->childNodes().end()) {
 	if ((*c)->isInnerNode() && (*c)->access() != Node::Private)
-	    generateInnerNode((const InnerNode *) *c, marker);
+	    generateInnerNode((const InnerNode *) *c);
 	++c;
     }
 }

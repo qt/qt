@@ -552,6 +552,9 @@ bool QDBusConnectionPrivate::handleMessage(const QDBusMessage &amsg)
         (*(*list)[i])(amsg);
     }
 
+    if (!ref)
+        return false;
+
     switch (amsg.type()) {
     case QDBusMessage::SignalMessage:
         handleSignal(amsg);
@@ -713,6 +716,8 @@ static int findSlot(const QMetaObject *mo, const QByteArray &name, int flags,
     return -1;
 }
 
+static QDBusCallDeliveryEvent * const DIRECT_DELIVERY = (QDBusCallDeliveryEvent *)1;
+
 QDBusCallDeliveryEvent* QDBusConnectionPrivate::prepareReply(QDBusConnectionPrivate *target,
                                                              QObject *object, int idx,
                                                              const QList<int> &metaTypes,
@@ -736,6 +741,8 @@ QDBusCallDeliveryEvent* QDBusConnectionPrivate::prepareReply(QDBusConnectionPriv
 
     // we can deliver
     // prepare for the call
+    if (target == object)
+        return DIRECT_DELIVERY;
     return new QDBusCallDeliveryEvent(QDBusConnection(target), idx, target, msg, metaTypes);
 }
 
@@ -750,6 +757,12 @@ void QDBusConnectionPrivate::activateSignal(const QDBusConnectionPrivate::Signal
     // Slots can optionally have one final parameter that is a QDBusMessage
     // Slots receive read-only copies of the message (i.e., pass by value or by const-ref)
     QDBusCallDeliveryEvent *call = prepareReply(this, hook.obj, hook.midx, hook.params, msg);
+    if (call == DIRECT_DELIVERY) {
+        // short-circuit delivery
+        Q_ASSERT(this == hook.obj);
+        deliverCall(this, 0, msg, hook.params, hook.midx);
+        return;
+    }
     if (call)
         postEventToThread(ActivateSignalAction, hook.obj, call);
 }
@@ -801,7 +814,7 @@ bool QDBusConnectionPrivate::activateCall(QObject* object, int flags, const QDBu
         ++cacheIt;
     if (cacheIt == slotCache.hash.constEnd() || cacheIt.key() != cacheKey)
     {
-        // not cached, analyse the meta object
+        // not cached, analyze the meta object
         const QMetaObject *mo = object->metaObject();
         QByteArray memberName = msg.member().toUtf8();
 
@@ -1207,11 +1220,11 @@ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, in
     q_dbus_message_unref(msg);
 }
 
-void QDBusConnectionPrivate::_q_serviceOwnerChanged(const QString &name,
-                                                    const QString &oldOwner, const QString &newOwner)
+void QDBusConnectionPrivate::serviceOwnerChangedNoLock(const QString &name,
+                                                       const QString &oldOwner, const QString &newOwner)
 {
     Q_UNUSED(oldOwner);
-    QDBusWriteLocker locker(UpdateSignalHookOwnerAction, this);
+//    QDBusWriteLocker locker(UpdateSignalHookOwnerAction, this);
     WatchedServicesHash::Iterator it = watchedServices.find(name);
     if (it == watchedServices.end())
         return;
@@ -1686,11 +1699,11 @@ void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusError
     hook.obj = this;
     hook.params << QMetaType::Void << QVariant::String; // both functions take a QString as parameter and return void
 
-    hook.midx = staticMetaObject.indexOfSlot("registerService(QString)");
+    hook.midx = staticMetaObject.indexOfSlot("registerServiceNoLock(QString)");
     Q_ASSERT(hook.midx != -1);
     signalHooks.insert(QLatin1String("NameAcquired:" DBUS_INTERFACE_DBUS), hook);
 
-    hook.midx = staticMetaObject.indexOfSlot("unregisterService(QString)");
+    hook.midx = staticMetaObject.indexOfSlot("unregisterServiceNoLock(QString)");
     Q_ASSERT(hook.midx != -1);
     signalHooks.insert(QLatin1String("NameLost:" DBUS_INTERFACE_DBUS), hook);
 
@@ -2081,7 +2094,7 @@ void QDBusConnectionPrivate::connectSignal(const QString &key, const SignalHook 
                     // we need to watch for this service changing
                     connectSignal(dbusServiceString(), QString(), dbusInterfaceString(),
                                   QLatin1String("NameOwnerChanged"), QStringList() << hook.service, QString(),
-                                  this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
+                                  this, SLOT(serviceOwnerChangedNoLock(QString,QString,QString)));
                     data.owner = getNameOwnerNoCache(hook.service);
                     qDBusDebug() << this << "Watching service" << hook.service << "for owner changes (current owner:"
                             << data.owner << ")";
@@ -2342,12 +2355,22 @@ QDBusConnectionPrivate::findMetaObject(const QString &service, const QString &pa
 void QDBusConnectionPrivate::registerService(const QString &serviceName)
 {
     QDBusWriteLocker locker(RegisterServiceAction, this);
+    registerServiceNoLock(serviceName);
+}
+
+void QDBusConnectionPrivate::registerServiceNoLock(const QString &serviceName)
+{
     serviceNames.append(serviceName);
 }
 
 void QDBusConnectionPrivate::unregisterService(const QString &serviceName)
 {
     QDBusWriteLocker locker(UnregisterServiceAction, this);
+    unregisterServiceNoLock(serviceName);
+}
+
+void QDBusConnectionPrivate::unregisterServiceNoLock(const QString &serviceName)
+{
     serviceNames.removeAll(serviceName);
 }
 

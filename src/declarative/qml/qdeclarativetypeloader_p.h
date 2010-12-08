@@ -243,7 +243,6 @@ public:
     const QList<ScriptReference> &resolvedScripts() const;
 
     QDeclarativeCompiledData *compiledData() const;
-    QDeclarativeComponent *component() const;
 
     // Used by QDeclarativeComponent to get notifications
     struct TypeDataCallback {
@@ -278,7 +277,6 @@ private:
     bool m_typesResolved:1;
 
     QDeclarativeCompiledData *m_compiledData;
-    mutable QDeclarativeComponent *m_component;
 
     QList<TypeDataCallback *> m_callbacks;
    

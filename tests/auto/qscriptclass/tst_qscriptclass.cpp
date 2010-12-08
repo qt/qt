@@ -66,6 +66,7 @@ public:
 private slots:
     void newInstance();
     void getAndSetProperty();
+    void getProperty_invalidValue();
     void enumerate();
     void extension();
 };
@@ -739,6 +740,26 @@ void tst_QScriptClass::getAndSetProperty()
     QVERIFY(!obj1.property(foo).isValid());
     obj1.setProperty(bar, QScriptValue());
     QVERIFY(!obj1.property(bar).isValid());
+}
+
+void tst_QScriptClass::getProperty_invalidValue()
+{
+    QScriptEngine eng;
+    TestClass cls(&eng);
+    cls.addCustomProperty(eng.toStringHandle("foo"), QScriptClass::HandlesReadAccess,
+                          /*id=*/0, QScriptValue::ReadOnly, QScriptValue());
+    QScriptValue obj = eng.newObject(&cls);
+
+    QVERIFY(obj.property("foo").isUndefined());
+
+    eng.globalObject().setProperty("obj", obj);
+    QVERIFY(eng.evaluate("obj.hasOwnProperty('foo'))").toBool());
+    // The JS environment expects that a valid value is returned,
+    // otherwise we could crash.
+    QVERIFY(eng.evaluate("obj.foo").isUndefined());
+    QVERIFY(eng.evaluate("obj.foo + ''").isString());
+    QVERIFY(eng.evaluate("Object.getOwnPropertyDescriptor(obj, 'foo').value").isUndefined());
+    QVERIFY(eng.evaluate("Object.getOwnPropertyDescriptor(obj, 'foo').value +''").isString());
 }
 
 void tst_QScriptClass::enumerate()

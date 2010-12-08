@@ -127,7 +127,12 @@ Q_GLOBAL_STATIC(QGLDefaultOverlayFormat, defaultOverlayFormatInstance)
 Q_GLOBAL_STATIC(QGLSignalProxy, theSignalProxy)
 QGLSignalProxy *QGLSignalProxy::instance()
 {
-    return theSignalProxy();
+    QGLSignalProxy *proxy = theSignalProxy();
+    if (proxy && proxy->thread() != qApp->thread()) {
+        if (proxy->thread() == QThread::currentThread())
+            proxy->moveToThread(qApp->thread());
+    }
+    return proxy;
 }
 
 
@@ -1637,12 +1642,23 @@ const QGLContext *qt_gl_transfer_context(const QGLContext *ctx)
         return 0;
 }
 
+QGLContextPrivate::QGLContextPrivate(QGLContext *context)
+    : internal_context(false)
+    , q_ptr(context)
+{
+    group = new QGLContextGroup(context);
+    texture_destroyer = new QGLTextureDestroyer;
+    texture_destroyer->moveToThread(qApp->thread());
+}
+
 QGLContextPrivate::~QGLContextPrivate()
 {
     if (!group->m_refs.deref()) {
         Q_ASSERT(group->context() == q_ptr);
         delete group;
     }
+
+    delete texture_destroyer;
 }
 
 void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
@@ -2079,7 +2095,9 @@ void QGLContextPrivate::cleanup()
 void QGLContextPrivate::setVertexAttribArrayEnabled(int arrayIndex, bool enabled)
 {
     Q_ASSERT(arrayIndex < QT_GL_VERTEX_ARRAY_TRACKED_COUNT);
+#ifdef glEnableVertexAttribArray
     Q_ASSERT(glEnableVertexAttribArray);
+#endif
 
     if (vertexAttributeArraysEnabledState[arrayIndex] && !enabled)
         glDisableVertexAttribArray(arrayIndex);
@@ -2092,7 +2110,9 @@ void QGLContextPrivate::setVertexAttribArrayEnabled(int arrayIndex, bool enabled
 
 void QGLContextPrivate::syncGlState()
 {
+#ifdef glEnableVertexAttribArray
     Q_ASSERT(glEnableVertexAttribArray);
+#endif
     for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i) {
         if (vertexAttributeArraysEnabledState[i])
             glEnableVertexAttribArray(i);
@@ -2104,7 +2124,7 @@ void QGLContextPrivate::syncGlState()
 #undef ctx
 
 #ifdef QT_NO_EGL
-void QGLContextPrivate::swapRegion(const QRegion *)
+void QGLContextPrivate::swapRegion(const QRegion &)
 {
     Q_Q(QGLContext);
     q->swapBuffers();
@@ -5292,6 +5312,12 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
 #if defined(QT_OPENGL_ES)
     if (extensions.match("GL_OES_packed_depth_stencil"))
         glExtensions |= PackedDepthStencil;
+    if (extensions.match("GL_OES_element_index_uint"))
+        glExtensions |= ElementIndexUint;
+    if (extensions.match("GL_OES_depth24"))
+        glExtensions |= Depth24;
+#else
+    glExtensions |= ElementIndexUint;
 #endif
     if (extensions.match("GL_ARB_framebuffer_object")) {
         // ARB_framebuffer_object also includes EXT_framebuffer_blit.

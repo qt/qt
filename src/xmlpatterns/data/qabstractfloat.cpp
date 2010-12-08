@@ -118,7 +118,7 @@ bool AbstractFloat<isDouble>::isEqual(const xsDouble a, const xsDouble b)
         return qIsInf(a) && internalSignbit(a) == internalSignbit(b);
     else
     {
-        /* Preferrably, we would use std::numeric_limits<xsDouble>::espilon(), but
+        /* Preferably, we would use std::numeric_limits<xsDouble>::espilon(), but
          * we cannot since we cannot depend on the STL. The small xs:double value below,
          * was extracted by printing the std::numeric_limits<xsDouble>::epsilon() using
          * gdb. */

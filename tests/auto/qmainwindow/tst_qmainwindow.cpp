@@ -55,6 +55,7 @@
 #include <qtextedit.h>
 #include <private/qmainwindowlayout_p.h>
 #include <private/qdockarealayout_p.h>
+#include "../platformquirks.h"
 
 //TESTED_FILES=
 
@@ -701,10 +702,12 @@ void tst_QMainWindow::statusBar()
         // deleting the status bar should remove it from the main window
         QMainWindow mw;
         QStatusBar *sb = mw.statusBar();
-        int indexOfSb = mw.layout()->indexOf(sb);
+        QMainWindowLayout *l = qFindChild<QMainWindowLayout *>(&mw);
+        QVERIFY(l);
+        int indexOfSb = l->indexOf(sb);
         QVERIFY(indexOfSb != -1);
         delete sb;
-        indexOfSb = mw.layout()->indexOf(sb);
+        indexOfSb = l->indexOf(sb);
         QVERIFY(indexOfSb == -1);
     }
 }
@@ -1677,6 +1680,9 @@ void tst_QMainWindow::addToolbarAfterShow()
 
 void tst_QMainWindow::centralWidgetSize()
 {
+    if(PlatformQuirks::isAutoMaximizing())
+        QSKIP("The platform is auto maximizing, so the test makes no sense", SkipAll);;
+
     QMainWindow mainWindow;
     mainWindow.menuBar()->addMenu("menu");
 

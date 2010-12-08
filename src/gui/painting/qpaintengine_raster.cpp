@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qmutex.h>
 
 #define QT_FT_BEGIN_HEADER
 #define QT_FT_END_HEADER
@@ -874,9 +875,10 @@ void QRasterPaintEngine::updateState()
     if (s->dirty & DirtyTransform)
         updateMatrix(s->matrix);
 
-    if (s->dirty & (DirtyPen|DirtyCompositionMode)) {
+    if (s->dirty & (DirtyPen|DirtyCompositionMode|DirtyOpacity)) {
         const QPainter::CompositionMode mode = s->composition_mode;
         s->flags.fast_text = (s->penData.type == QSpanData::Solid)
+                       && s->intOpacity == 256
                        && (mode == QPainter::CompositionMode_Source
                            || (mode == QPainter::CompositionMode_SourceOver
                                && qAlpha(s->penData.solid.color) == 255));
@@ -900,6 +902,7 @@ void QRasterPaintEngine::opacityChanged()
     s->fillFlags |= DirtyOpacity;
     s->strokeFlags |= DirtyOpacity;
     s->pixmapFlags |= DirtyOpacity;
+    s->dirty |= DirtyOpacity;
     s->intOpacity = (int) (s->opacity * 256);
 }
 
@@ -1102,7 +1105,7 @@ void QRasterPaintEnginePrivate::updateMatrixData(QSpanData *spanData, const QBru
     Q_Q(QRasterPaintEngine);
     bool bilinear = q->state()->flags.bilinear;
 
-    if (b.d->transform.type() > QTransform::TxNone) { // FALCON: optimise
+    if (b.d->transform.type() > QTransform::TxNone) { // FALCON: optimize
         spanData->setupMatrix(b.transform() * m, bilinear);
     } else {
         if (m.type() <= QTransform::TxTranslate) {
@@ -3300,7 +3303,7 @@ void QRasterPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     ensureState();
 
     drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->glyphPositions,
-                     textItem->fontEngine);
+                     textItem->fontEngine());
 }
 
 /*!
@@ -4946,6 +4949,7 @@ public:
         for (int i = 0; i < stops.size() && i <= 2; i++)
             hash_val += stops[i].second.rgba();
 
+        QMutexLocker lock(&mutex);
         QGradientColorTableHash::const_iterator it = cache.constFind(hash_val);
 
         if (it == cache.constEnd())
@@ -4979,6 +4983,7 @@ protected:
     }
 
     QGradientColorTableHash cache;
+    QMutex mutex;
 };
 
 void QGradientCache::generateGradientColorTable(const QGradient& gradient, uint *colorTable, int size, int opacity) const

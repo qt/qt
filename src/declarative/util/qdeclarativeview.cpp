@@ -72,6 +72,7 @@
 QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(frameRateDebug, QML_SHOW_FRAMERATE)
+extern Q_GUI_EXPORT bool qt_applefontsmoothing_enabled;
 
 class QDeclarativeScene : public QGraphicsScene
 {
@@ -191,7 +192,7 @@ void QDeclarativeViewPrivate::itemGeometryChanged(QDeclarativeItem *resizeItem, 
 
 /*!
     \class QDeclarativeView
-  \since 4.7
+    \since 4.7
     \brief The QDeclarativeView class provides a widget for displaying a Qt Declarative user interface.
 
     QDeclarativeItem objects can be placed on a standard QGraphicsScene and 
@@ -359,13 +360,14 @@ QDeclarativeContext* QDeclarativeView::rootContext() const
 }
 
 /*!
-  \enum QDeclarativeView::Status
+    \enum QDeclarativeView::Status
     Specifies the loading status of the QDeclarativeView.
 
     \value Null This QDeclarativeView has no source set.
     \value Ready This QDeclarativeView has loaded and created the QML component.
     \value Loading This QDeclarativeView is loading network data.
-    \value Error An error has occurred.  Call errorDescription() to retrieve a description.
+    \value Error One or more errors has occurred. Call errors() to retrieve a list
+           of errors.
 */
 
 /*! \enum QDeclarativeView::ResizeMode
@@ -696,7 +698,14 @@ void QDeclarativeView::paintEvent(QPaintEvent *event)
     if (frameRateDebug()) 
         time = d->frameTimer.restart();
 
+#ifdef Q_WS_MAC
+    bool oldSmooth = qt_applefontsmoothing_enabled;
+    qt_applefontsmoothing_enabled = false;
+#endif
     QGraphicsView::paintEvent(event);
+#ifdef Q_WS_MAC
+    qt_applefontsmoothing_enabled = oldSmooth;
+#endif
 
     QDeclarativeDebugTrace::endRange(QDeclarativeDebugTrace::Painting);
 

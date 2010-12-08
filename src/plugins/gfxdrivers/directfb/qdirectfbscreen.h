@@ -159,6 +159,7 @@ public:
 
     void exposeRegion(QRegion r, int changing);
     void solidFill(const QColor &color, const QRegion &region);
+    static void solidFill(IDirectFBSurface *surface, const QColor &color, const QRegion &region);    
 
     void setMode(int width, int height, int depth);
     void blank(bool on);

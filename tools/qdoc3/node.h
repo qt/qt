@@ -86,8 +86,8 @@ class Node
 
     enum SubType { 
         NoSubType,
-        Example, 
-        HeaderFile, 
+        Example,
+        HeaderFile,
         File,
         Image,
         Group,
@@ -113,7 +113,7 @@ class Node
         Commendable, 
         Main, 
         Internal 
-    }; // don't reorder thisw enum
+    }; // don't reorder this enum
     
     enum ThreadSafeness { 
         UnspecifiedSafeness, 

@@ -567,7 +567,7 @@ const QString::Null QString::null = { };
     strings from a string list that contain a particular substring or
     that match a particular QRegExp using the QStringList::filter()
     function.
-:
+
     \section1 Querying String Data
 
     If you want to see if a QString starts or ends with a particular
@@ -3573,7 +3573,7 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
             }
             length = length % 16;
         }
-#elif QT_HAVE_NEON
+#elif defined(QT_ALWAYS_HAVE_NEON)
         // Refer to the documentation of the SSE2 implementation
         // this use eactly the same method as for SSE except:
         // 1) neon has unsigned comparison

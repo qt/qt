@@ -164,7 +164,6 @@ void QVGPixmapData::fromNativeType(void* pixmap, NativeType type)
         CFbsBitmap *bitmap = reinterpret_cast<CFbsBitmap*>(pixmap);
 
         bool deleteSourceBitmap = false;
-
 #ifdef Q_SYMBIAN_HAS_EXTENDED_BITMAP_TYPE
 
         // Rasterize extended bitmaps

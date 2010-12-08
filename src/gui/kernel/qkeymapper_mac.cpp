@@ -749,7 +749,7 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, EventHandlerCallRef e
         }
         return false;
     }
-    // Once we process the key down , we dont need to send the saved event again from
+    // Once we process the key down , we don't need to send the saved event again from
     // kEventTextInputUnicodeForKeyEvent, so clear it.
     if (currentContext && ekind == kEventRawKeyDown) {
         QMacInputContext *context = qobject_cast<QMacInputContext*>(currentContext);
@@ -765,7 +765,7 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, EventHandlerCallRef e
                                   &handled_event) == false)
         return handled_event;
     QString text(ourChar);
-    /* This is actually wrong - but unfortunatly it is the best that can be
+    /* This is actually wrong - but unfortunately it is the best that can be
        done for now because of the Control/Meta mapping problems */
     if (modifiers & (Qt::ControlModifier | Qt::MetaModifier)
         && !qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {

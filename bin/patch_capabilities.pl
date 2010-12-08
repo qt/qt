@@ -63,8 +63,11 @@ sub Usage() {
     print(" symbian-sbsv2 platform, 'target-platform' is REQUIRED. ***\n\n");
     print(" *** NOTE2: When patching gcce binaries built with symbian-sbsv2 toolchain,\n");
     print(" armv5 must be specified as platform.\n");
-    print("\nUsage: patch_capabilities.pl pkg_filename [target-platform [capability list]]\n");
+    print("\nUsage: patch_capabilities.pl [-c] pkg_filename [target-platform [capability list]]\n");
     print("\nE.g. patch_capabilities.pl myapp_template.pkg release-armv5 \"All -TCB\"\n");
+    print("\nThe parameter -c can be used to just check if package is compatible with self-signing\n");
+    print("without actually doing any patching.\n");
+    print("Explicit capability list cannot be used with -c parameter.\n");
     exit();
 }
 
@@ -78,7 +81,7 @@ sub trim($) {
 my $nullDevice = "/dev/null";
 $nullDevice = "NUL" if ($^O =~ /MSWin/);
 
-my @capabilitiesToAllow = ("LocalServices", "NetworkServices", "ReadUserData", "UserEnvironment", "WriteUserData");
+my @capabilitiesToAllow = ("LocalServices", "NetworkServices", "ReadUserData", "UserEnvironment", "WriteUserData", "Location");
 my @capabilitiesSpecified = ();
 
 # If arguments were given to the script,
@@ -86,6 +89,14 @@ if (@ARGV)
 {
     # Parse the first given script argument as a ".pkg" file name.
     my $pkgFileName = shift(@ARGV);
+    my $justCheck = "";
+    my $msgPrefix = "Patching:";
+
+    if ($pkgFileName eq "-c") {
+        $pkgFileName = shift(@ARGV);
+        $justCheck = true;
+        $msgPrefix = "Warning:";
+    }
 
     # These variables will only be set for template .pkg files.
     my $target;
@@ -123,15 +134,22 @@ if (@ARGV)
     if (($pkgFileName =~ m|\.pkg$|i) && -r($pkgFileName))
     {
         print ("\n");
-        print ("Patching package file and relevant binaries...\n");
+        if ($justCheck) {
+            print ("Checking");
+        } else {
+            print ("Patching");
+        }
+        print (" package file and relevant binaries...\n");
 
-        # If there are more arguments given, parse them as capabilities.
-        if (@ARGV)
-        {
-            @capabilitiesSpecified = ();
-            while (@ARGV)
+        if (!$justCheck) {
+            # If there are more arguments given, parse them as capabilities.
+            if (@ARGV)
             {
-                push (@capabilitiesSpecified, pop(@ARGV));
+                @capabilitiesSpecified = ();
+                while (@ARGV)
+                {
+                    push (@capabilitiesSpecified, pop(@ARGV));
+                }
             }
         }
 
@@ -139,11 +157,15 @@ if (@ARGV)
         my @binaries = ();
 
         my $tempPkgFileName = $pkgFileName."_@@TEMP@@";
-        unlink($tempPkgFileName);
-        open (NEW_PKG, ">>".$tempPkgFileName);
+
+        if (!$justCheck) {
+            unlink($tempPkgFileName);
+            open (NEW_PKG, ">>".$tempPkgFileName);
+        }
         open (PKG, "<".$pkgFileName);
 
-        my $manufacturerElseBlock = 0;
+        my $checkFailed = "";
+        my $somethingPatched = "";
 
         # Parse each line.
         while (<PKG>)
@@ -155,64 +177,17 @@ if (@ARGV)
             if ($line =~ m/^\#.*\((0x[0-7][0-9a-fA-F]*)\).*$/)
             {
                 my $oldUID = $1;
-                my $newUID = $oldUID;
-                $newUID =~ s/0x./0xE/i;
-                $newLine =~ s/$oldUID/$newUID/;
-                print ("Patching: UID $oldUID is not compatible with self-signing! Changed to: $newUID.\n");
-            }
+                print ("$msgPrefix UID $oldUID is not compatible with self-signing!\n");
 
-            # Patch embedded sis name and UID if UID is in protected range
-            if ($line =~ m/^@\"*(.*\.sis).*\((0x[0-7][0-9a-fA-F]*)\).*$/)
-            {
-                my $oldSisName = $1;
-                my $oldUID = $2;
-                my $newUID = $oldUID;
-                $newUID =~ s/0x./0xE/i;
-                $newLine =~ s/$oldUID/$newUID/;
-                print ("Patching: Embedded sis $oldSisName UID $oldUID changed to: $newUID.\n");
-
-                if ($oldSisName !~ m/^.*_selfsigned.sis$/i)
-                {
-                    my $newSisName = $oldSisName;
-                    $newSisName =~ s/\.sis$/_selfsigned\.sis/i;
-                    $newLine =~ s/$oldSisName/$newSisName/i;
-                    print ("Patching: Embedded sis $oldSisName name changed to: $newSisName.\n");
+                if ($justCheck) {
+                    $checkFailed = true;
+                } else {
+                    my $newUID = $oldUID;
+                    $newUID =~ s/0x./0xE/i;
+                    $newLine =~ s/$oldUID/$newUID/;
+                    print ("$msgPrefix Package UID changed to: $newUID.\n");
+                    $somethingPatched = true;
                 }
-            }
-
-            # Remove dependencies to known problem packages (i.e. packages that are likely to be patched, too)
-            # to reduce unnecessary error messages.
-            if ($line =~ m/^\((0x2002af5f)\).*\{.*\}$/)
-            {
-                $newLine = "\n";
-                print ("Patching: Removed dependency to sqlite3.sis ($1) to avoid installation issues in case sqlite3.sis is also patched.\n");
-            }
-            if ($line =~ m/^\((0x2001E61C)\).*\{.*\}$/)
-            {
-                $newLine = "\n";
-                print ("Patching: Removed dependency to qt.sis ($1) to avoid installation issues in case qt.sis is also patched.\n");
-            }
-
-            # Remove manufacturer ifdef
-            if ($line =~ m/^.*\(MANUFACTURER\)\=\(.*\).*$/)
-            {
-                $newLine = "\n";
-                print ("Patching: Removed manufacturer check as it is usually not desirable in self-signed packages.\n");
-            }
-
-            if ($line =~ m/^ELSEIF.*MANUFACTURER$/)
-            {
-                $manufacturerElseBlock = 1;
-            }
-
-            if ($manufacturerElseBlock eq 1)
-            {
-                $newLine = "\n";
-            }
-
-            if ($line =~ m/^ENDIF.*MANUFACTURER$/)
-            {
-                $manufacturerElseBlock = 0;
             }
 
             # If the line specifies a file, parse the source and destination locations.
@@ -231,16 +206,20 @@ if (@ARGV)
                         $sourcePath =~ s/\$\(TARGET\)/$target/gm;
                     }
 
-                    # Change the source file name (but only if not already patched)
-                    my $patchedSourcePath = $sourcePath;
-                    if ($patchedSourcePath !~ m/_patched_caps/)
-                    {
-                        $newLine =~ s/(^.*)(\.dll|\.exe)(.*)(\.dll|\.exe)/$1_patched_caps$2$3$4/i;
-                        $patchedSourcePath =~ s/(^.*)(\.dll|\.exe)/$1_patched_caps$2/i;
+                    if ($justCheck) {
+                        push (@binaries, $sourcePath);
+                    } else {
+                        # Change the source file name (but only if not already patched)
+                        my $patchedSourcePath = $sourcePath;
+                        if ($patchedSourcePath !~ m/_patched_caps/)
+                        {
+                            $newLine =~ s/(^.*)(\.dll|\.exe)(.*)(\.dll|\.exe)/$1_patched_caps$2$3$4/i;
+                            $patchedSourcePath =~ s/(^.*)(\.dll|\.exe)/$1_patched_caps$2/i;
 
-                        copy($sourcePath, $patchedSourcePath) or die "$sourcePath cannot be copied for patching.";
+                            copy($sourcePath, $patchedSourcePath) or die "$sourcePath cannot be copied for patching.";
+                        }
+                        push (@binaries, $patchedSourcePath);
                     }
-                    push (@binaries, $patchedSourcePath);
                 }
             }
 
@@ -250,11 +229,12 @@ if (@ARGV)
         }
 
         close (PKG);
-        close (NEW_PKG);
+        if (!$justCheck) {
+            close (NEW_PKG);
 
-        unlink($pkgFileName);
-        rename($tempPkgFileName, $pkgFileName);
-
+            unlink($pkgFileName);
+            rename($tempPkgFileName, $pkgFileName);
+        }
         print ("\n");
 
         my $baseCommandToExecute = "elftran -vid 0x0 -capability \"%s\" ";
@@ -265,15 +245,18 @@ if (@ARGV)
             # Create the command line for setting the capabilities.
             my ($binaryVolume, $binaryDirs, $binaryBaseName) = File::Spec->splitpath($binaryPath);
             my $commandToExecute = $baseCommandToExecute;
-            my $executeNeeded = 0;
+            my $executeNeeded = "";
             if (@capabilitiesSpecified)
             {
                 $commandToExecute = sprintf($baseCommandToExecute, join(" ", @capabilitiesSpecified));
+                $executeNeeded = true;
+                my $capString = join(" ", @capabilitiesSpecified);
+                print ("$msgPrefix Patching the the Vendor ID to 0 and the capabilities used to: \"$capString\" in \"$binaryBaseName\".\n");
             } else {
                 # Test which capabilities are present and then restrict them to the allowed set.
                 # This avoid raising the capabilities of apps that already have none.
                 my $dllCaps;
-                open($dllCaps, "elftran -dump s $binaryPath |") or die ("Could not execute elftran");
+                open($dllCaps, "elftran -dump s $binaryPath |") or die ("ERROR: Could not execute elftran");
                 my $capsFound = 0;
                 my $originalVid;
                 my @capabilitiesToSet;
@@ -285,8 +268,8 @@ if (@ARGV)
                         if ($binaryBaseName =~ /\.exe$/) {
                             # Installer refuses to install protected executables in a self signed package, so abort if one is detected.
                             # We can't simply just patch the executable SID, as any registration resources executable uses will be linked to it via SID.
-                            print ("Patching: Executable with SID in the protected range (0x$exeSid) detected: \"$binaryBaseName\". A self-signed sis with protected executables is not supported.\n");
-                            exit(1);
+                            print ("$msgPrefix Executable with SID in the protected range (0x$exeSid) detected: \"$binaryBaseName\". A self-signed sis with protected executables is not supported.\n\n");
+                            $checkFailed = true;
                         }
                     }
                     if (/^Vendor ID: ([0-9a-fA-F]*)$/) {
@@ -298,6 +281,9 @@ if (@ARGV)
                         $_ = trim($_);
                         if ($capabilitiesToAllow =~ /$_/) {
                             push(@capabilitiesToSet, $_);
+                            if (Location =~ /$_/i) {
+                                print ("$msgPrefix \"Location\" capability detected for binary: \"$binaryBaseName\". This capability is not self-signable for S60 3rd edition feature pack 1 devices, so installing this package on those devices will most likely not work.\n\n");
+                            }
                         } else {
                             push(@capabilitiesToDrop, $_);
                         }
@@ -305,21 +291,32 @@ if (@ARGV)
                 }
                 close($dllCaps);
                 if ($originalVid !~ "00000000") {
-                    print ("Patching: Vendor ID (0x$originalVid) incompatible with self-signed packages, setting it to zero for \"$binaryBaseName\".\n");
-                    $executeNeeded = 1;
+                    print ("$msgPrefix Non-zero vendor ID (0x$originalVid) is incompatible with self-signed packages in \"$binaryBaseName\"");
+                    if ($justCheck) {
+                        print (".\n\n");
+                        $checkFailed = true;
+                    } else {
+                        print (", setting it to zero.\n\n");
+                        $executeNeeded = true;
+                    }
                 }
                 if ($#capabilitiesToDrop) {
                     my $capsToDropStr = join("\", \"", @capabilitiesToDrop);
                     $capsToDropStr =~ s/\", \"$//;
 
-                    if ($binaryBaseName =~ /\.exe$/) {
-                        # While libraries often have capabilities they do not themselves need just to enable them to be loaded by wider variety of processes,
-                        # executables are more likely to need every capability they have been assigned or they won't function correctly.
-                        print ("Patching: Executable with capabilities incompatible with self-signing detected: \"$binaryBaseName\". (Incompatible capabilities: \"$capsToDropStr\".) Reducing capabilities is only supported for libraries.\n");
-                        exit(1);
+                    if ($justCheck) {
+                        print ("$msgPrefix The following capabilities used in \"$binaryBaseName\" are not compatible with a self-signed package: \"$capsToDropStr\".\n\n");
+                        $checkFailed = true;
                     } else {
-                        print ("Patching: The following capabilities used in \"$binaryBaseName\" are not compatible with a self-signed package and will be removed: \"$capsToDropStr\".\n");
-                        $executeNeeded = 1;
+                        if ($binaryBaseName =~ /\.exe$/) {
+                            # While libraries often have capabilities they do not themselves need just to enable them to be loaded by wider variety of processes,
+                            # executables are more likely to need every capability they have been assigned or they won't function correctly.
+                            print ("$msgPrefix Executable with capabilities incompatible with self-signing detected: \"$binaryBaseName\". (Incompatible capabilities: \"$capsToDropStr\".) Reducing capabilities is only supported for libraries.\n");
+                            $checkFailed = true;
+                        } else {
+                            print ("$msgPrefix The following capabilities used in \"$binaryBaseName\" are not compatible with a self-signed package and will be removed: \"$capsToDropStr\".\n");
+                            $executeNeeded = true;
+                        }
                     }
                 }
                 $commandToExecute = sprintf($baseCommandToExecute, join(" ", @capabilitiesToSet));
@@ -330,16 +327,37 @@ if (@ARGV)
                 # Actually execute the elftran command to set the capabilities.
                 print ("\n");
                 system ("$commandToExecute > $nullDevice");
+                $somethingPatched = true;
             }
             ## Create another command line to check that the set capabilities are correct.
             #$commandToExecute = "elftran -dump s ".$binaryPath;
         }
 
+        if ($checkFailed) {
+            print ("\n");
+            if ($justCheck) {
+                print ("$msgPrefix The package is not compatible with self-signing.\n");
+            } else {
+                print ("$msgPrefix Unable to patch the package for self-singing.\n");
+            }
+            print ("Use a proper developer certificate for signing this package.\n\n");
+            exit(1);
+        }
+
+        if ($justCheck) {
+            print ("Package is compatible with self-signing.\n");
+        } else {
+            if ($somethingPatched) {
+                print ("NOTE: A patched package may not work as expected due to reduced capabilities and other modifications,\n");
+                print ("      so it should not be used for any kind of Symbian signing or distribution!\n");
+                print ("      Use a proper certificate to avoid the need to patch the package.\n");
+            } else {
+                print ("No patching was required!\n");
+            }
+        }
         print ("\n");
-        print ("NOTE: A patched package may not work as expected due to reduced capabilities and other modifications,\n");
-        print ("      so it should not be used for any kind of Symbian signing or distribution!\n");
-        print ("      Use a proper certificate to avoid the need to patch the package.\n");
-        print ("\n");
+    } else {
+        Usage();
     }
 }
 else

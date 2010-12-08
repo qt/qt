@@ -176,6 +176,7 @@ struct StaticQtMetaObject : public QObject
 };
 
 static bool qt_QmlQtModule_registered = false;
+bool QDeclarativeEnginePrivate::qml_debugging_enabled = false;
 
 void QDeclarativeEnginePrivate::defineModule()
 {
@@ -608,7 +609,7 @@ QDeclarativeContext *QDeclarativeEngine::rootContext() const
   QNetworkAccessManager with specialized caching, proxy and cookie
   support.
 
-  The factory must be set before exceuting the engine.
+  The factory must be set before executing the engine.
 */
 void QDeclarativeEngine::setNetworkAccessManagerFactory(QDeclarativeNetworkAccessManagerFactory *factory)
 {
@@ -878,7 +879,7 @@ void QDeclarativeEngine::setContextForObject(QObject *object, QDeclarativeContex
   created by calling QDeclarativeCompnent::create() or
   QDeclarativeComponent::beginCreate() which have CppOwnership by
   default.  The ownership of these root-level objects is considered to
-  have been transfered to the C++ caller.
+  have been transferred to the C++ caller.
 
   Objects not-created by QML have CppOwnership by default.  The
   exception to this is objects returned from a C++ method call.  The
@@ -956,7 +957,7 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool cre
     if (!data)
         return 0; // Attached properties are only on objects created by QML
 
-    QObject *rv = data->extendedData?data->attachedProperties()->value(id):0;
+    QObject *rv = data->hasExtendedData()?data->attachedProperties()->value(id):0;
     if (rv || !create)
         return rv;
 
@@ -982,6 +983,35 @@ QObject *qmlAttachedPropertiesObject(int *idCache, const QObject *object,
         return 0;
 
     return qmlAttachedPropertiesObjectById(*idCache, object, create);
+}
+
+class QDeclarativeDataExtended {
+public:
+    QDeclarativeDataExtended();
+    ~QDeclarativeDataExtended();
+
+    QHash<int, QObject *> attachedProperties;
+    QDeclarativeNotifier objectNameNotifier;
+};
+
+QDeclarativeDataExtended::QDeclarativeDataExtended()
+{
+}
+
+QDeclarativeDataExtended::~QDeclarativeDataExtended()
+{
+}
+
+QDeclarativeNotifier *QDeclarativeData::objectNameNotifier() const
+{
+    if (!extendedData) extendedData = new QDeclarativeDataExtended;
+    return &extendedData->objectNameNotifier;
+}
+
+QHash<int, QObject *> *QDeclarativeData::attachedProperties() const
+{
+    if (!extendedData) extendedData = new QDeclarativeDataExtended;
+    return &extendedData->attachedProperties;
 }
 
 void QDeclarativeData::destroyed(QObject *object)
@@ -1072,28 +1102,6 @@ void QDeclarativeData::setBindingBit(QObject *obj, int bit)
     }
 
     bindingBits[bit / 32] |= (1 << (bit % 32));
-}
-
-QDeclarativeData::ExtendedData::ExtendedData()
-: objectNameNotifier(0)
-{
-}
-
-QDeclarativeData::ExtendedData::~ExtendedData()
-{
-    ((QDeclarativeNotifier *)&objectNameNotifier)->~QDeclarativeNotifier();
-}
-
-QDeclarativeNotifier *QDeclarativeData::objectNameNotifier() const
-{
-    if (!extendedData) extendedData = new ExtendedData;
-    return (QDeclarativeNotifier *)&extendedData->objectNameNotifier;
-}
-
-QHash<int, QObject *> *QDeclarativeData::attachedProperties() const
-{
-    if (!extendedData) extendedData = new ExtendedData;
-    return &extendedData->attachedProperties;
 }
 
 /*!
@@ -2224,6 +2232,8 @@ bool QDeclarative_isFileCaseCorrect(const QString &fileName)
         if (a != c)
             return false;
     }
+#else
+    Q_UNUSED(fileName);
 #endif
 
     return true;

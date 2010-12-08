@@ -138,7 +138,7 @@ namespace QPatternist
             /**
              * Continues execution of the machine with the given input @p transition.
              *
-             * @return @c true if the transition was successfull, @c false otherwise.
+             * @return @c true if the transition was successful, @c false otherwise.
              */
             bool proceed(TransitionType transition);
 
@@ -154,7 +154,7 @@ namespace QPatternist
              * @note To use this method, inputEqualsTransition must be implemented
              *       to find the right transition to use.
              *
-             * @return @c true if the transition was successfull, @c false otherwise.
+             * @return @c true if the transition was successful, @c false otherwise.
              */
             template <typename InputType>
             bool proceed(InputType input);

@@ -122,6 +122,7 @@ public:
 
     void registerWidget(QWidget *w);
     void unregisterWidget(QWidget *w);
+    void unregisterWidgetSubtree(QWidget *w);
 
     inline QWidgetBackingStore* data()
     {
@@ -225,6 +226,7 @@ struct QTLWExtra {
 #endif
 #elif defined(Q_OS_SYMBIAN)
     uint inExpose : 1; // Prevents drawing recursion
+    uint nativeWindowTransparencyEnabled : 1; // Tracks native window transparency
 #endif
 };
 

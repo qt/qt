@@ -387,6 +387,7 @@ private: //data members
 class QFocusFrame;
 class QProgressBar;
 class QS60StyleAnimation;
+class TactileFeedbackInterface;
 
 // Private class
 #ifdef Q_OS_SYMBIAN
@@ -522,8 +523,12 @@ public:
     static bool isSingleClickUi();
     static bool isWidgetPressed(const QWidget *widget);
 
-    // calculates average color based on button skin graphics (minus borders).
+#ifdef Q_WS_S60
+    static void deleteStoredSettings();
+    // calculates average color based on theme graphics (minus borders).
     QColor colorFromFrameGraphics(SkinFrameElements frame) const;
+#endif
+    QColor calculatedColor(SkinFrameElements frame) const;
 
     //set theme palette for application
     void setThemePalette(QApplication *application) const;
@@ -541,7 +546,6 @@ public:
     static const int m_numberOfLayouts;
 
     mutable QHash<QPair<QS60StyleEnums::FontCategories , int>, QFont> m_mappedFontsCache;
-    mutable QHash<SkinFrameElements, QColor> m_colorCache;
 
     // Has one entry per SkinFrameElements
     static const struct frameElementCenter {
@@ -572,6 +576,8 @@ public:
     void stopAnimation(QS60StyleEnums::SkinParts animation);
     static QS60StyleAnimation* animationDefinition(QS60StyleEnums::SkinParts part);
     static void removeAnimations();
+    //No support for tactile feedback in emulated style
+    void touchFeedback(QEvent *event, const QWidget *widget);
 
 #endif
 
@@ -626,6 +632,7 @@ private:
 #ifdef Q_WS_S60
     //list of progress bars having animation running
     QList<QProgressBar *> m_bars;
+    TactileFeedbackInterface *m_feedbackPlugin;
 #endif
 
 };

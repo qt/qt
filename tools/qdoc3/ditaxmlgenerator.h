@@ -89,7 +89,7 @@ class DitaXmlGenerator : public PageGenerator
     virtual void terminateGenerator();
     virtual QString format();
     virtual bool canHandleFormat(const QString& format);
-    virtual void generateTree(const Tree* tree, CodeMarker* marker);
+    virtual void generateTree(const Tree *tree);
 
     QString protectEnc(const QString& string);
     static QString protect(const QString& string, const QString& encoding = "ISO-8859-1");
@@ -224,19 +224,19 @@ class DitaXmlGenerator : public PageGenerator
     void generateStatus(const Node* node, CodeMarker* marker);
     
     QString registerRef(const QString& ref);
-    QString fileBase(const Node* node) const;
-    QString fileName(const Node* node);
-    void findAllClasses(const InnerNode* node);
-    void findAllFunctions(const InnerNode* node);
-    void findAllLegaleseTexts(const InnerNode* node);
-    void findAllNamespaces(const InnerNode* node);
-    void findAllSince(const InnerNode* node);
-    static int hOffset(const Node* node);
-    static bool isThreeColumnEnumValueTable(const Atom* atom);
-    virtual QString getLink(const Atom* atom, 
-                            const Node* relative, 
-                            CodeMarker* marker, 
-                            const Node** node);
+    QString fileBase(const Node *node) const;
+    QString fileName(const Node *node);
+    void findAllClasses(const InnerNode *node);
+    void findAllFunctions(const InnerNode *node);
+    void findAllLegaleseTexts(const InnerNode *node);
+    void findAllNamespaces(const InnerNode *node);
+    void findAllSince(const InnerNode *node);
+    static int hOffset(const Node *node);
+    static bool isThreeColumnEnumValueTable(const Atom *atom);
+    virtual QString getLink(const Atom *atom, 
+                            const Node *relative, 
+                            CodeMarker *marker, 
+                            const Node **node);
     virtual void generateIndex(const QString& fileBase, 
                                const QString& url,
                                const QString& title);

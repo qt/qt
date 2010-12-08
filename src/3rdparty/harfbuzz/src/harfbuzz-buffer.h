@@ -32,10 +32,6 @@
 
 HB_BEGIN_HEADER
 
-#ifdef HB_USE_PACKED_STRUCTS
-#pragma pack(push, 1)
-#endif
-
 typedef struct HB_GlyphItemRec_ {
   HB_UInt     gindex;
   HB_UInt     properties;
@@ -92,10 +88,6 @@ hb_buffer_add_glyph( HB_Buffer buffer,
 		      HB_UInt    glyph_index,
 		      HB_UInt    properties,
 		      HB_UInt    cluster );
-
-#ifdef HB_USE_PACKED_STRUCTS
-#pragma pack(pop)
-#endif
 
 HB_END_HEADER
 

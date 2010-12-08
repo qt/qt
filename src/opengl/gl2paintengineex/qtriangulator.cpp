@@ -58,7 +58,6 @@
 #include <math.h>
 
 #include <private/qgl_p.h>
-#include <private/qglextensions_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -340,7 +339,7 @@ static inline qint64 qPointDistanceFromLine(const QPodPoint &p, const QPodPoint 
 
 static inline bool qPointIsLeftOfLine(const QPodPoint &p, const QPodPoint &v1, const QPodPoint &v2)
 {
-    return qPointDistanceFromLine(p, v1, v2) < 0;
+    return QT_PREPEND_NAMESPACE(qPointDistanceFromLine)(p, v1, v2) < 0;
 }
 
 // Return:
@@ -1742,7 +1741,7 @@ bool QTriangulator<T>::ComplexToSimple::calculateIntersection(int left, int righ
     Intersection intersection;
     intersection.leftEdge = left;
     intersection.rightEdge = right;
-    intersection.intersectionPoint = qIntersectionPoint(u1, u2, v1, v2);
+    intersection.intersectionPoint = QT_PREPEND_NAMESPACE(qIntersectionPoint)(u1, u2, v1, v2);
 
     if (!intersection.intersectionPoint.isValid())
         return false;
@@ -1768,10 +1767,10 @@ bool QTriangulator<T>::ComplexToSimple::edgeIsLeftOfEdge(int leftEdgeIndex, int 
         return true;
     if (upper.x > qMax(l.x, u.x))
         return false;
-    qint64 d = qPointDistanceFromLine(upper, l, u);
+    qint64 d = QT_PREPEND_NAMESPACE(qPointDistanceFromLine)(upper, l, u);
     // d < 0: left, d > 0: right, d == 0: on top
     if (d == 0)
-        d = qPointDistanceFromLine(m_parent->m_vertices.at(leftEdge.lower()), l, u);
+        d = QT_PREPEND_NAMESPACE(qPointDistanceFromLine)(m_parent->m_vertices.at(leftEdge.lower()), l, u);
     return d < 0;
 }
 
@@ -1815,7 +1814,7 @@ QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator<T>::ComplexToSim
     while (current) {
         const QPodPoint &v1 = m_parent->m_vertices.at(m_edges.at(current->data).lower());
         const QPodPoint &v2 = m_parent->m_vertices.at(m_edges.at(current->data).upper());
-        qint64 d = qPointDistanceFromLine(point, v1, v2);
+        qint64 d = QT_PREPEND_NAMESPACE(qPointDistanceFromLine)(point, v1, v2);
         if (d == 0) {
             result.first = result.second = current;
             break;
@@ -1829,7 +1828,7 @@ QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator<T>::ComplexToSim
     while (current) {
         const QPodPoint &v1 = m_parent->m_vertices.at(m_edges.at(current->data).lower());
         const QPodPoint &v2 = m_parent->m_vertices.at(m_edges.at(current->data).upper());
-        qint64 d = qPointDistanceFromLine(point, v1, v2);
+        qint64 d = QT_PREPEND_NAMESPACE(qPointDistanceFromLine)(point, v1, v2);
         Q_ASSERT(d >= 0);
         if (d == 0) {
             result.first = current;
@@ -1843,7 +1842,7 @@ QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator<T>::ComplexToSim
     while (current) {
         const QPodPoint &v1 = m_parent->m_vertices.at(m_edges.at(current->data).lower());
         const QPodPoint &v2 = m_parent->m_vertices.at(m_edges.at(current->data).upper());
-        qint64 d = qPointDistanceFromLine(point, v1, v2);
+        qint64 d = QT_PREPEND_NAMESPACE(qPointDistanceFromLine)(point, v1, v2);
         Q_ASSERT(d <= 0);
         if (d == 0) {
             result.second = current;
@@ -1865,7 +1864,7 @@ QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator<T>::ComplexToSim
     while (current) {
         const QPodPoint &v1 = m_parent->m_vertices.at(m_edges.at(current->data).lower());
         const QPodPoint &v2 = m_parent->m_vertices.at(m_edges.at(current->data).upper());
-        qint64 d = qPointDistanceFromLine(point, v1, v2);
+        qint64 d = QT_PREPEND_NAMESPACE(qPointDistanceFromLine)(point, v1, v2);
         if (d == 0)
             break;
         if (d < 0) {
@@ -1886,7 +1885,7 @@ QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator<T>::ComplexToSim
     while (current) {
         const QPodPoint &v1 = m_parent->m_vertices.at(m_edges.at(current->data).lower());
         const QPodPoint &v2 = m_parent->m_vertices.at(m_edges.at(current->data).upper());
-        qint64 d = qPointDistanceFromLine(point, v1, v2);
+        qint64 d = QT_PREPEND_NAMESPACE(qPointDistanceFromLine)(point, v1, v2);
         Q_ASSERT(d >= 0);
         if (d == 0) {
             current = current->left;
@@ -1900,7 +1899,7 @@ QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> QTriangulator<T>::ComplexToSim
     while (current) {
         const QPodPoint &v1 = m_parent->m_vertices.at(m_edges.at(current->data).lower());
         const QPodPoint &v2 = m_parent->m_vertices.at(m_edges.at(current->data).upper());
-        qint64 d = qPointDistanceFromLine(point, v1, v2);
+        qint64 d = QT_PREPEND_NAMESPACE(qPointDistanceFromLine)(point, v1, v2);
         Q_ASSERT(d <= 0);
         if (d == 0) {
             current = current->right;
@@ -1963,7 +1962,7 @@ void QTriangulator<T>::ComplexToSimple::reorderEdgeListRange(QRBTree<int>::Node 
 template <typename T>
 void QTriangulator<T>::ComplexToSimple::sortEdgeList(const QPodPoint eventPoint)
 {
-    QIntersectionPoint eventPoint2 = qIntersectionPoint(eventPoint);
+    QIntersectionPoint eventPoint2 = QT_PREPEND_NAMESPACE(qIntersectionPoint)(eventPoint);
     while (!m_topIntersection.isEmpty() && m_topIntersection.top().intersectionPoint < eventPoint2) {
         Intersection intersection = m_topIntersection.pop();
 
@@ -2057,7 +2056,7 @@ void QTriangulator<T>::ComplexToSimple::calculateIntersections()
         QPair<QRBTree<int>::Node *, QRBTree<int>::Node *> range = bounds(event.point);
         QRBTree<int>::Node *leftNode = range.first ? m_edgeList.previous(range.first) : 0;
         int vertex = (event.type == Event::Upper ? m_edges.at(event.edge).upper() : m_edges.at(event.edge).lower());
-        QIntersectionPoint eventPoint = qIntersectionPoint(event.point);
+        QIntersectionPoint eventPoint = QT_PREPEND_NAMESPACE(qIntersectionPoint)(event.point);
 
         if (range.first != 0) {
             splitEdgeListRange(range.first, range.second, vertex, eventPoint);
@@ -2214,7 +2213,7 @@ void QTriangulator<T>::ComplexToSimple::removeUnwantedEdgesAndConnect()
             while (current != b.second) {
                 Q_ASSERT(current);
                 Q_ASSERT(m_edges.at(current->data).node == current);
-                Q_ASSERT(qIntersectionPoint(event.point).isOnLine(m_parent->m_vertices.at(m_edges.at(current->data).from), m_parent->m_vertices.at(m_edges.at(current->data).to)));
+                Q_ASSERT(QT_PREPEND_NAMESPACE(qIntersectionPoint)(event.point).isOnLine(m_parent->m_vertices.at(m_edges.at(current->data).from), m_parent->m_vertices.at(m_edges.at(current->data).to)));
                 Q_ASSERT(m_parent->m_vertices.at(m_edges.at(current->data).from) == event.point || m_parent->m_vertices.at(m_edges.at(current->data).to) == event.point);
                 insertEdgeIntoVectorIfWanted(orderedEdges, current->data);
                 current = m_edgeList.next(current);
@@ -2613,10 +2612,10 @@ bool QTriangulator<T>::SimpleToMonotone::edgeIsLeftOfEdge(int leftEdgeIndex, int
     const Edge &rightEdge = m_edges.at(rightEdgeIndex);
     const QPodPoint &u = m_parent->m_vertices.at(rightEdge.upper());
     const QPodPoint &l = m_parent->m_vertices.at(rightEdge.lower());
-    qint64 d = qPointDistanceFromLine(m_parent->m_vertices.at(leftEdge.upper()), l, u);
+    qint64 d = QT_PREPEND_NAMESPACE(qPointDistanceFromLine)(m_parent->m_vertices.at(leftEdge.upper()), l, u);
     // d < 0: left, d > 0: right, d == 0: on top
     if (d == 0)
-        d = qPointDistanceFromLine(m_parent->m_vertices.at(leftEdge.lower()), l, u);
+        d = QT_PREPEND_NAMESPACE(qPointDistanceFromLine)(m_parent->m_vertices.at(leftEdge.lower()), l, u);
     return d < 0;
 }
 
@@ -2646,7 +2645,7 @@ QRBTree<int>::Node *QTriangulator<T>::SimpleToMonotone::searchEdgeLeftOfPoint(in
     while (current) {
         const QPodPoint &p1 = m_parent->m_vertices.at(m_edges.at(current->data).lower());
         const QPodPoint &p2 = m_parent->m_vertices.at(m_edges.at(current->data).upper());
-        qint64 d = qPointDistanceFromLine(m_parent->m_vertices.at(pointIndex), p1, p2);
+        qint64 d = QT_PREPEND_NAMESPACE(qPointDistanceFromLine)(m_parent->m_vertices.at(pointIndex), p1, p2);
         if (d <= 0) {
             current = current->left;
         } else {
@@ -2669,7 +2668,7 @@ void QTriangulator<T>::SimpleToMonotone::classifyVertex(int i)
     const QPodPoint &p1 = m_parent->m_vertices.at(e1.from);
     const QPodPoint &p2 = m_parent->m_vertices.at(e2.from);
     const QPodPoint &p3 = m_parent->m_vertices.at(e2.to);
-    qint64 d = qPointDistanceFromLine(p1, p2, p3);
+    qint64 d = QT_PREPEND_NAMESPACE(qPointDistanceFromLine)(p1, p2, p3);
     Q_ASSERT(d != 0 || (!startOrSplit && !endOrMerge));
 
     e2.type = RegularVertex;
@@ -3014,10 +3013,8 @@ void QTriangulator<T>::MonotoneToTriangles::decompose()
 QTriangleSet qTriangulate(const qreal *polygon,
                           int count, uint hint, const QTransform &matrix)
 {
-    QGLContext *ctx = 0; // Not really used but needs to be introduced for glSupportsElementIndexUint
-
     QTriangleSet triangleSet;
-    if (glSupportsElementIndexUint) {
+    if (QGLExtensions::glExtensions() & QGLExtensions::ElementIndexUint) {
         QTriangulator<quint32> triangulator;
         triangulator.initialize(polygon, count, hint, matrix);
         QVertexSet<quint32> vertexSet = triangulator.triangulate();
@@ -3037,10 +3034,8 @@ QTriangleSet qTriangulate(const qreal *polygon,
 QTriangleSet qTriangulate(const QVectorPath &path,
                           const QTransform &matrix, qreal lod)
 {
-    QGLContext *ctx = 0; // Not really used but needs to be introduced for glSupportsElementIndexUint
-
     QTriangleSet triangleSet;
-    if (glSupportsElementIndexUint) {
+    if (QGLExtensions::glExtensions() & QGLExtensions::ElementIndexUint) {
         QTriangulator<quint32> triangulator;
         triangulator.initialize(path, matrix, lod);
         QVertexSet<quint32> vertexSet = triangulator.triangulate();
@@ -3059,10 +3054,8 @@ QTriangleSet qTriangulate(const QVectorPath &path,
 QTriangleSet qTriangulate(const QPainterPath &path,
                           const QTransform &matrix, qreal lod)
 {
-    QGLContext *ctx = 0; // Not really used but needs to be introduced for glSupportsElementIndexUint
-
     QTriangleSet triangleSet;
-    if (glSupportsElementIndexUint) {
+    if (QGLExtensions::glExtensions() & QGLExtensions::ElementIndexUint) {
         QTriangulator<quint32> triangulator;
         triangulator.initialize(path, matrix, lod);
         QVertexSet<quint32> vertexSet = triangulator.triangulate();
@@ -3081,10 +3074,8 @@ QTriangleSet qTriangulate(const QPainterPath &path,
 QPolylineSet qPolyline(const QVectorPath &path,
                        const QTransform &matrix, qreal lod)
 {
-    QGLContext *ctx = 0; // Not really used but needs to be introduced for glSupportsElementIndexUint
-
     QPolylineSet polyLineSet;
-    if (glSupportsElementIndexUint) {
+    if (QGLExtensions::glExtensions() & QGLExtensions::ElementIndexUint) {
         QTriangulator<quint32> triangulator;
         triangulator.initialize(path, matrix, lod);
         QVertexSet<quint32> vertexSet = triangulator.polyline();
@@ -3103,10 +3094,8 @@ QPolylineSet qPolyline(const QVectorPath &path,
 QPolylineSet qPolyline(const QPainterPath &path,
                        const QTransform &matrix, qreal lod)
 {
-    QGLContext *ctx = 0; // Not really used but needs to be introduced for glSupportsElementIndexUint
-
     QPolylineSet polyLineSet;
-    if (glSupportsElementIndexUint) {
+    if (QGLExtensions::glExtensions() & QGLExtensions::ElementIndexUint) {
         QTriangulator<quint32> triangulator;
         triangulator.initialize(path, matrix, lod);
         QVertexSet<quint32> vertexSet = triangulator.polyline();

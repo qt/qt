@@ -92,9 +92,7 @@ Rectangle {
             enabled: nameInputDialog.initialWidth != 0
         }
 
-        onOpened: nameInputText.focus = true;
         onClosed: {
-            nameInputText.focus = false;
             if (nameInputText.text != "")
                 Logic.saveHighScore(nameInputText.text);
         }
@@ -116,7 +114,7 @@ Rectangle {
         TextInput {
             id: nameInputText
             anchors { verticalCenter: parent.verticalCenter; left: dialogText.right }
-            focus: false
+            focus: visible
             autoScroll: false
             maximumLength: 24
             onTextChanged: {
@@ -133,7 +131,7 @@ Rectangle {
 
     Rectangle {
         id: toolBar
-        width: parent.width; height: 32
+        width: parent.width; height: 58
         color: activePalette.window
         anchors.bottom: screen.bottom
 
@@ -156,6 +154,7 @@ Rectangle {
             anchors { right: parent.right; rightMargin: 3; verticalCenter: parent.verticalCenter }
             text: "Score: " + gameCanvas.score
             font.bold: true
+            font.pixelSize: 24
             color: activePalette.windowText
         }
     }

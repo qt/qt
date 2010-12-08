@@ -2,7 +2,7 @@ import QtQuick 1.0
 
 Rectangle {
     color: "lightSteelBlue"
-    width: 300; height: 600
+    width: 200; height: 300
 
     ListModel {
         id: list
@@ -24,7 +24,7 @@ Rectangle {
             id: column
             Repeater {
                 model: list
-                Rectangle { width: 300; height: 200; color: mr.pressed ? "black" : dayColor
+                Rectangle { width: 200; height: 100; color: mr.pressed ? "black" : dayColor
                     MouseArea {
                         id: mr
                         anchors.fill: parent
@@ -85,6 +85,6 @@ Rectangle {
         height: 50
         x: 200
         y: parent.height - 50
-        color: blue
+        color: "blue"
     }
 }

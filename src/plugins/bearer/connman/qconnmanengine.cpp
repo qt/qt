@@ -170,13 +170,26 @@ bool QConnmanEngine::hasIdentifier(const QString &id)
 void QConnmanEngine::connectToId(const QString &id)
 {
     QMutexLocker locker(&mutex);
-    QConnmanConnectThread *thread;
-    thread = new QConnmanConnectThread(this);
-    thread->setServicePath(serviceFromId(id));
-    thread->setIdentifier(id);
-    connect(thread,SIGNAL(connectionError(QString,QBearerEngineImpl::ConnectionError)),
-            this,SIGNAL(connectionError(QString,QBearerEngineImpl::ConnectionError)));
-    thread->start();
+    QString servicePath = serviceFromId(id);
+    QConnmanServiceInterface serv(servicePath);
+    if(!serv.isValid()) {
+        emit connectionError(id, QBearerEngineImpl::InterfaceLookupError);
+    } else {
+        if(serv.getType() != "cellular") {
+
+            serv.connect();
+        } else {
+            QOfonoManagerInterface ofonoManager(0);
+            QString modemPath = ofonoManager.currentModem().path();
+            QOfonoDataConnectionManagerInterface dc(modemPath,0);
+            foreach(const QDBusObjectPath dcPath,dc.getPrimaryContexts()) {
+                if(dcPath.path().contains(servicePath.section("_",-1))) {
+                    QOfonoPrimaryDataContextInterface primaryContext(dcPath.path(),0);
+                    primaryContext.setActive(true);
+                }
+            }
+        }
+    }
 }
 
 void QConnmanEngine::disconnectFromId(const QString &id)
@@ -713,6 +726,7 @@ void QConnmanEngine::addNetworkConfiguration(const QString &networkPath)
 
     if(servicePath.isEmpty()) {
         id = QString::number(qHash(networkPath));
+        serv = 0;
     } else {
         id = QString::number(qHash(servicePath));
         serv = new QConnmanServiceInterface(servicePath,this);
@@ -789,62 +803,6 @@ void QConnmanEngine::addNetworkConfiguration(const QString &networkPath)
 bool QConnmanEngine::requiresPolling() const
 {
     return false;
-}
-
-
-QConnmanConnectThread::QConnmanConnectThread(QObject *parent)
-    :QThread(parent),
-    servicePath(), identifier()
-{
-}
-
-QConnmanConnectThread::~QConnmanConnectThread()
-{
-}
-
-void QConnmanConnectThread::stop()
-{
-    if(currentThread() != this) {
-        QMetaObject::invokeMethod(this, "quit",
-                                  Qt::QueuedConnection);
-    } else {
-        quit();
-    }
-    wait();
-}
-
-void QConnmanConnectThread::run()
-{
-    QConnmanServiceInterface serv(servicePath);
-    if(!serv.isValid()) {
-        emit connectionError(identifier, QBearerEngineImpl::InterfaceLookupError);
-    } else {
-        if(serv.getType() != "cellular") {
-            serv.connect();
-        } else {
-            QOfonoManagerInterface ofonoManager(0);
-            QString modemPath = ofonoManager.currentModem().path();
-            QOfonoDataConnectionManagerInterface dc(modemPath,0);
-            foreach(const QDBusObjectPath dcPath,dc.getPrimaryContexts()) {
-                if(dcPath.path().contains(servicePath.section("_",-1))) {
-                    QOfonoPrimaryDataContextInterface primaryContext(dcPath.path(),0);
-                    primaryContext.setActive(true);
-                }
-            }
-        }
-    }
-}
-
-void QConnmanConnectThread::setServicePath(const QString &path)
-{
-    QMutexLocker locker(&mutex);
-    servicePath = path;
-}
-
-void QConnmanConnectThread::setIdentifier(const QString &id)
-{
-    QMutexLocker locker(&mutex);
-    identifier = id;
 }
 
 QT_END_NAMESPACE

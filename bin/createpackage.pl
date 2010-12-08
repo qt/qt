@@ -82,6 +82,8 @@ Where supported options are as follows:
      [-s|stub]               = Generates stub sis for ROM.
      [-n|sisname <name>]     = Specifies the final sis name.
      [-g|gcce-is-armv5]      = Convert gcce platform to armv5.
+     [-d|dont-patch]         = Skip automatic patching of capabilities and pkg file if default certificate
+                               is used. Instead non-self-signable capabilities just cause warnings.
 Where parameters are as follows:
      templatepkg             = Name of .pkg file template
      target                  = Either debug or release
@@ -127,6 +129,7 @@ my $stub = "";
 my $signed_sis_name = "";
 my $onlyUnsigned = "";
 my $convertGcce = "";
+my $dontPatchCaps = "";
 
 unless (GetOptions('i|install' => \$install,
                    'p|preprocess' => \$preprocessonly,
@@ -135,12 +138,18 @@ unless (GetOptions('i|install' => \$install,
                    'o|only-unsigned' => \$onlyUnsigned,
                    's|stub' => \$stub,
                    'n|sisname=s' => \$signed_sis_name,
-                   'g|gcce-is-armv5' => \$convertGcce,)) {
+                   'g|gcce-is-armv5' => \$convertGcce,
+                   'd|dont-patch' => \$dontPatchCaps,)) {
     Usage();
 }
 
 my $epocroot = $ENV{EPOCROOT};
-$epocroot =~ s,[\\/]$,,x;
+if ($epocroot ne "") {
+    $epocroot =~ s,\\,/,g;
+    if ($epocroot =~ m,[^/]$,) {
+        $epocroot = $epocroot."/";
+    }
+}
 
 my $certfilepath = abs_path(dirname($certfile));
 
@@ -328,25 +337,29 @@ if ($preprocessonly) {
 
 if($stub) {
     if(!($epocroot)) { die("ERROR: EPOCROOT must be set to create stub sis files"); }
-    my $systeminstall = "$epocroot/epoc32/data/z/system/install";
+    my $systeminstall = "${epocroot}epoc32/data/z/system/install";
     mkpath($systeminstall);
     my $stub_sis_name = $systeminstall."/".$stub_sis_name;
     # Create stub SIS.
-    system ("$epocroot/epoc32/tools/makesis -s $pkgoutput $stub_sis_name");
+    system ("${epocroot}epoc32/tools/makesis -s $pkgoutput $stub_sis_name");
 } else {
     if ($certtext eq "Self Signed"
         && !@certificates
         && $templatepkg !~ m/_installer\.pkg$/i
         && !$onlyUnsigned) {
-        print("Auto-patching capabilities for self signed package.\n");
         my $patch_capabilities = File::Spec->catfile(dirname($0), "patch_capabilities");
-        system ("$patch_capabilities $pkgoutput") and die ("ERROR: Automatic patching failed");
+        if ($dontPatchCaps) {
+            system ("$patch_capabilities -c $pkgoutput") and print ("Warning: Package check for self-signing viability failed. Installing the package on a device will most likely fail!\n\n");
+        } else {
+            print("Auto-patching self-signed package.\n");
+            system ("$patch_capabilities $pkgoutput") and die ("ERROR: Automatic patching failed");
+        }
     }
 
     # Create SIS.
     # The 'and' is because system uses 0 to indicate success.
     if($epocroot) {
-        system ("$epocroot/epoc32/tools/makesis $pkgoutput $unsigned_sis_name") and die ("ERROR: makesis failed");
+        system ("${epocroot}epoc32/tools/makesis $pkgoutput $unsigned_sis_name") and die ("ERROR: makesis failed");
     } else {
         system ("makesis $pkgoutput $unsigned_sis_name") and die ("ERROR: makesis failed");
     }

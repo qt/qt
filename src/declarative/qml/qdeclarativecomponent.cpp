@@ -98,6 +98,43 @@ class QByteArray;
     int width = item->width();  // width = 200
     \endcode
 
+
+    \section2 Network Components
+
+    If the URL passed to QDeclarativeComponent is a network resource, or if the QML document references a
+    network resource, the QDeclarativeComponent has to fetch the network data before it is able to create
+    objects.  In this case, the QDeclarativeComponent will have a \l {QDeclarativeComponent::Loading}{Loading}
+    \l {QDeclarativeComponent::status()}{status}.  An application will have to wait until the component
+    is \l {QDeclarativeComponent::Ready}{Ready} before calling \l {QDeclarativeComponent::create()}.
+
+    The following example shows how to load a QML file from a network resource.  After creating
+    the QDeclarativeComponent, it tests whether the component is loading.  If it is, it connects to the
+    QDeclarativeComponent::statusChanged() signal and otherwise calls the \c {continueLoading()} method
+    directly. Note that QDeclarativeComponent::isLoading() may be false for a network component if the
+    component has been cached and is ready immediately.
+
+    \code
+    MyApplication::MyApplication()
+    {
+        // ...
+        component = new QDeclarativeComponent(engine, QUrl("http://www.example.com/main.qml"));
+        if (component->isLoading())
+            QObject::connect(component, SIGNAL(statusChanged(QDeclarativeComponent::Status)),
+                             this, SLOT(continueLoading()));
+        else
+            continueLoading();
+    }
+
+    void MyApplication::continueLoading()
+    {
+        if (component->isError()) {
+            qWarning() << component->errors();
+        } else {
+            QObject *myObject = component->create();
+        }
+    }
+    \endcode
+
     \sa {Using QML in C++ Applications}, {Integrating QML with existing Qt UI code}
 */
 
@@ -733,48 +770,45 @@ QDeclarativeComponentPrivate::beginCreate(QDeclarativeContextData *context, cons
         return 0;
     }
 
-    QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(engine);
+    return begin(context, creationContext, cc, start, count, &state, 0, bindings);
+}
 
-    bool isRoot = !ep->inBeginCreate;
+QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *parentContext, 
+                                              QDeclarativeContextData *componentCreationContext,
+                                              QDeclarativeCompiledData *component, int start, int count,
+                                              ConstructionState *state, QList<QDeclarativeError> *errors,
+                                              const QBitField &bindings)
+{
+    QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(parentContext->engine);
+    bool isRoot = !enginePriv->inBeginCreate;
+
+    Q_ASSERT(!isRoot || state); // Either this isn't a root component, or a state data must be provided
+    Q_ASSERT((state != 0) ^ (errors != 0)); // One of state or errors (but not both) must be provided
+
     if (isRoot) 
         QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Creating);
-    QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::Creating, cc->url);
 
     QDeclarativeContextData *ctxt = new QDeclarativeContextData;
     ctxt->isInternal = true;
-    ctxt->url = cc->url;
-    ctxt->imports = cc->importCache;
+    ctxt->url = component->url;
+    ctxt->imports = component->importCache;
 
     // Nested global imports
-    if (creationContext && start != -1) 
-        ctxt->importedScripts = creationContext->importedScripts;
+    if (componentCreationContext && start != -1) 
+        ctxt->importedScripts = componentCreationContext->importedScripts;
 
-    cc->importCache->addref();
-    ctxt->setParent(context);
+    component->importCache->addref();
+    ctxt->setParent(parentContext);
 
-    QObject *rv = begin(ctxt, ep, cc, start, count, &state, bindings);
-
-    if (ep->isDebugging && rv) {
-        if  (!context->isInternal)
-            context->asQDeclarativeContextPrivate()->instances.append(rv);
-        QDeclarativeEngineDebugServer::instance()->objectCreated(engine, rv);
-    }
-
-    return rv;
-}
-
-QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *ctxt, QDeclarativeEnginePrivate *enginePriv,
-                                              QDeclarativeCompiledData *component, int start, int count,
-                                              ConstructionState *state, const QBitField &bindings)
-{
-    bool isRoot = !enginePriv->inBeginCreate;
     enginePriv->inBeginCreate = true;
 
     QDeclarativeVME vme;
     QObject *rv = vme.run(ctxt, component, start, count, bindings);
 
-    if (vme.isError()) 
-        state->errors = vme.errors();
+    if (vme.isError()) {
+       if(errors) *errors = vme.errors();
+       else state->errors = vme.errors();
+    }
 
     if (isRoot) {
         enginePriv->inBeginCreate = false;
@@ -792,6 +826,12 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *ctxt, QDe
         enginePriv->finalizedParserStatus.clear();
         state->completePending = true;
         enginePriv->inProgressCreations++;
+    }
+
+    if (enginePriv->isDebugging && rv) {
+        if  (!parentContext->isInternal)
+            parentContext->asQDeclarativeContextPrivate()->instances.append(rv);
+        QDeclarativeEngineDebugServer::instance()->objectCreated(parentContext->engine, rv);
     }
 
     return rv;

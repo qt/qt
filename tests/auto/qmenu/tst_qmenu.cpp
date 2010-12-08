@@ -298,15 +298,17 @@ void tst_QMenu::mouseActivation()
 #ifdef Q_OS_WINCE_WM
     QSKIP("We have a separate mouseActivation test for Windows mobile.", SkipAll);
 #endif
-    QMenu menu;
+    QWidget topLevel;
+    QMenu menu(&topLevel);
+    topLevel.show();
     menu.addAction("Menu Action");
     menu.show();
-    QTest::mouseClick(&menu, Qt::LeftButton, 0, QPoint(5, 5), 300);
+    QTest::mouseClick(&menu, Qt::LeftButton, 0, menu.rect().center(), 300);
     QVERIFY(!menu.isVisible());
 
     //context menus can allways be accessed with right click except on windows
     menu.show();
-    QTest::mouseClick(&menu, Qt::RightButton, 0, QPoint(5, 5), 300);
+    QTest::mouseClick(&menu, Qt::RightButton, 0, menu.rect().center(), 300);
     QVERIFY(!menu.isVisible());
 
 #ifdef Q_OS_WIN
@@ -466,9 +468,9 @@ void tst_QMenu::overrideMenuAction()
 	m->addAction(aQuit);
 
 	w.show();
+    QTest::qWaitForWindowShown(&w);
     QApplication::setActiveWindow(&w);
     w.setFocus();
-    QTest::qWaitForWindowShown(&w);
     QTRY_VERIFY(w.hasFocus());
 
 	//test of the action inside the menu
@@ -504,6 +506,7 @@ void tst_QMenu::statusTip()
 
     w.addToolBar(&tb);
     w.show();
+    QTest::qWaitForWindowShown(&w);
 
     QRect rect1 = tb.actionGeometry(&a);
     QToolButton *btn = qobject_cast<QToolButton*>(tb.childAt(rect1.center()));
@@ -589,6 +592,8 @@ void tst_QMenu::tearOff()
     QVERIFY(menu->isTearOffEnabled());
 
     widget.show();
+    QTest::qWaitForWindowShown(&widget);
+    widget.activateWindow();
     menu->popup(QPoint(0,0));
     QTest::qWait(50);
     QVERIFY(!menu->isTearOffMenuVisible());

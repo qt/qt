@@ -92,7 +92,7 @@ class MyQmlObject : public QObject
     Q_PROPERTY(QDeclarativeListProperty<QObject> objectListProperty READ objectListProperty CONSTANT)
     Q_PROPERTY(int resettableProperty READ resettableProperty WRITE setResettableProperty RESET resetProperty)
     Q_PROPERTY(QRegExp regExp READ regExp WRITE setRegExp)
-    Q_PROPERTY(int nonscriptable READ nonscriptable WRITE setNonscriptable SCRIPTABLE false);
+    Q_PROPERTY(int nonscriptable READ nonscriptable WRITE setNonscriptable SCRIPTABLE false)
 
 public:
     MyQmlObject(): myinvokableObject(0), m_methodCalled(false), m_methodIntCalled(false), m_object(0), m_value(0), m_resetProperty(13) {}
@@ -562,8 +562,27 @@ signals:
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(MyTypeObject::MyFlags)
 
+class MyDerivedObject : public MyTypeObject
+{
+    Q_OBJECT
+public:
+    Q_INVOKABLE bool intProperty() const {
+        return true;
+    }
+};
+
 Q_DECLARE_METATYPE(QScriptValue);
-class MyInvokableObject : public QObject
+class MyInvokableBaseObject : public QObject
+{
+    Q_OBJECT
+public:
+    inline ~MyInvokableBaseObject() = 0;
+
+    Q_INVOKABLE inline void method_inherited(int a);
+    Q_INVOKABLE inline void method_overload();
+};
+
+class MyInvokableObject : public MyInvokableBaseObject
 {
     Q_OBJECT
     Q_ENUMS(TestEnum)
@@ -599,15 +618,33 @@ public:
     
     Q_INVOKABLE void method_overload(int a) { invoke(16); m_actuals << a; }
     Q_INVOKABLE void method_overload(int a, int b) { invoke(17); m_actuals << a << b; }
+    Q_INVOKABLE void method_overload(QString a) { invoke(18); m_actuals << a; }
 
-    Q_INVOKABLE void method_with_enum(TestEnum e) { invoke(18); m_actuals << (int)e; }
+    Q_INVOKABLE void method_with_enum(TestEnum e) { invoke(19); m_actuals << (int)e; }
+
+    Q_INVOKABLE int method_default(int a, int b = 19) { invoke(20); m_actuals << a << b; return b; }
 
 private:
+    friend class MyInvokableBaseObject;
     void invoke(int idx) { if (m_invoked != -1) m_invokedError = true; m_invoked = idx;}
     int m_invoked;
     bool m_invokedError;
     QVariantList m_actuals;
 };
+
+MyInvokableBaseObject::~MyInvokableBaseObject() {}
+
+void MyInvokableBaseObject::method_inherited(int a)
+{
+    static_cast<MyInvokableObject *>(this)->invoke(-3);
+    static_cast<MyInvokableObject *>(this)->m_actuals << a;
+}
+
+// This is a hidden overload of the MyInvokableObject::method_overload() method
+void MyInvokableBaseObject::method_overload()
+{
+    static_cast<MyInvokableObject *>(this)->invoke(-2);
+}
 
 class NumberAssignment : public QObject
 {

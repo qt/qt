@@ -57,7 +57,7 @@ public:
 public Q_SLOTS:
     void finishedReply();
     void finishedWithError(QNetworkReply::NetworkError errorCode, const QString &detail);
-    void challenge401(const QHttpNetworkRequest &request, QAuthenticator *authenticator, const QHttpNetworkConnection *connection);
+    void challenge401(const QHttpNetworkRequest &request, QAuthenticator *authenticator);
 #ifndef QT_NO_OPENSSL
     void sslErrors(const QList<QSslError> &errors);
 #endif
@@ -175,11 +175,9 @@ void tst_QHttpNetworkConnection::head()
     QFETCH(QString, statusString);
     QFETCH(int, contentLength);
 
-    QHttpNetworkConnection connection(host);
+    QHttpNetworkConnection connection(host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
-    if (encrypt)
-        connection.enableEncryption();
     QCOMPARE(connection.isEncrypted(), encrypt);
 
     QHttpNetworkRequest request(protocol + host + path, QHttpNetworkRequest::Head);
@@ -235,11 +233,9 @@ void tst_QHttpNetworkConnection::get()
     QFETCH(int, contentLength);
     QFETCH(int, downloadSize);
 
-    QHttpNetworkConnection connection(host);
+    QHttpNetworkConnection connection(host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
-    if (encrypt)
-        connection.enableEncryption();
     QCOMPARE(connection.isEncrypted(), encrypt);
 
     QHttpNetworkRequest request(protocol + host + path);
@@ -315,11 +311,9 @@ void tst_QHttpNetworkConnection::put()
     QFETCH(QString, data);
     QFETCH(bool, succeed);
 
-    QHttpNetworkConnection connection(host);
+    QHttpNetworkConnection connection(host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
-    if (encrypt)
-        connection.enableEncryption();
     QCOMPARE(connection.isEncrypted(), encrypt);
 
     QHttpNetworkRequest request(protocol + host + path, QHttpNetworkRequest::Put);
@@ -335,8 +329,6 @@ void tst_QHttpNetworkConnection::put()
     QHttpNetworkReply *reply = connection.sendRequest(request);
     connect(reply, SIGNAL(finished()), SLOT(finishedReply()));
     connect(reply, SIGNAL(finishedWithError(QNetworkReply::NetworkError, const QString &)),
-        SLOT(finishedWithError(QNetworkReply::NetworkError, const QString &)));
-    connect(&connection, SIGNAL(error(QNetworkReply::NetworkError, const QString &)),
         SLOT(finishedWithError(QNetworkReply::NetworkError, const QString &)));
 
     QTime stopWatch;
@@ -407,11 +399,9 @@ void tst_QHttpNetworkConnection::post()
     QFETCH(int, contentLength);
     QFETCH(int, downloadSize);
 
-    QHttpNetworkConnection connection(host);
+    QHttpNetworkConnection connection(host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
-    if (encrypt)
-        connection.enableEncryption();
     QCOMPARE(connection.isEncrypted(), encrypt);
 
     QHttpNetworkRequest request(protocol + host + path, QHttpNetworkRequest::Post);
@@ -496,14 +486,14 @@ void tst_QHttpNetworkConnection::_connect()
 }
 
 void tst_QHttpNetworkConnection::challenge401(const QHttpNetworkRequest &request,
-                                                        QAuthenticator *authenticator,
-                                                        const QHttpNetworkConnection *connection)
+                                                        QAuthenticator *authenticator)
 {
     Q_UNUSED(request)
-    Q_UNUSED(connection)
 
-    QHttpNetworkConnection *c = qobject_cast<QHttpNetworkConnection*>(sender());
-    if (connection) {
+    QHttpNetworkReply *reply = qobject_cast<QHttpNetworkReply*>(sender());
+    if (reply) {
+        QHttpNetworkConnection *c = reply->connection();
+
         QVariant val = c->property("setCredentials");
         if (val.toBool()) {
             QVariant user = c->property("username");
@@ -549,17 +539,15 @@ void tst_QHttpNetworkConnection::get401()
     QHttpNetworkConnection connection(host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
-    if (encrypt)
-        connection.enableEncryption();
     QCOMPARE(connection.isEncrypted(), encrypt);
-    connect(&connection, SIGNAL(authenticationRequired(const QHttpNetworkRequest&, QAuthenticator *, const QHttpNetworkConnection*)),
-                SLOT(challenge401(const QHttpNetworkRequest&, QAuthenticator *, const QHttpNetworkConnection*)));
     connection.setProperty("setCredentials", setCredentials);
     connection.setProperty("username", username);
     connection.setProperty("password", password);
 
     QHttpNetworkRequest request(protocol + host + path);
     QHttpNetworkReply *reply = connection.sendRequest(request);
+    connect(reply, SIGNAL(authenticationRequired(const QHttpNetworkRequest&, QAuthenticator *)),
+                           SLOT(challenge401(const QHttpNetworkRequest&, QAuthenticator *)));
 
     finishedCalled = false;
     finishedWithErrorCalled = false;
@@ -618,11 +606,9 @@ void tst_QHttpNetworkConnection::compression()
     QFETCH(bool, autoCompress);
     QFETCH(QString, contentCoding);
 
-    QHttpNetworkConnection connection(host);
+    QHttpNetworkConnection connection(host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
-    if (encrypt)
-        connection.enableEncryption();
     QCOMPARE(connection.isEncrypted(), encrypt);
 
     QHttpNetworkRequest request(protocol + host + path);
@@ -668,8 +654,10 @@ void tst_QHttpNetworkConnection::sslErrors(const QList<QSslError> &errors)
 {
     Q_UNUSED(errors)
 
-    QHttpNetworkConnection *connection = qobject_cast<QHttpNetworkConnection*>(sender());
-    if (connection) {
+    QHttpNetworkReply *reply = qobject_cast<QHttpNetworkReply*>(sender());
+    if (reply) {
+        QHttpNetworkConnection *connection = reply->connection();
+
         QVariant val = connection->property("ignoreFromSignal");
         if (val.toBool())
             connection->ignoreSslErrors();
@@ -711,17 +699,15 @@ void tst_QHttpNetworkConnection::ignoresslerror()
     QHttpNetworkConnection connection(host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
-    if (encrypt)
-        connection.enableEncryption();
     if (ignoreInit)
         connection.ignoreSslErrors();
     QCOMPARE(connection.isEncrypted(), encrypt);
-    connect(&connection, SIGNAL(sslErrors(const QList<QSslError>&)),
-        SLOT(sslErrors(const QList<QSslError>&)));
     connection.setProperty("ignoreFromSignal", ignoreFromSignal);
 
     QHttpNetworkRequest request(protocol + host + path);
     QHttpNetworkReply *reply = connection.sendRequest(request);
+    connect(reply, SIGNAL(sslErrors(const QList<QSslError>&)),
+        SLOT(sslErrors(const QList<QSslError>&)));
 
     finishedWithErrorCalled = false;
 
@@ -769,8 +755,6 @@ void tst_QHttpNetworkConnection::nossl()
     QHttpNetworkConnection connection(host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
-    if (encrypt)
-        connection.enableEncryption();
 
     QHttpNetworkRequest request(protocol + host + path);
     QHttpNetworkReply *reply = connection.sendRequest(request);

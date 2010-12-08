@@ -48,6 +48,11 @@
 #include "private/qpixmap_s60_p.h"
 #include "private/qcore_symbian_p.h"
 #include "qapplication.h"
+#include "qsettings.h"
+
+#include "qpluginloader.h"
+#include "qlibraryinfo.h"
+#include "private/qs60style_feedbackinterface_p.h"
 
 #include <w32std.h>
 #include <AknsConstants.h>
@@ -65,6 +70,8 @@
 #include <gulicon.h>
 #include <AknBitmapAnimation.h>
 
+#include <centralrepository.h>
+
 #if !defined(QT_NO_STYLE_S60) || defined(QT_PLUGIN)
 
 QT_BEGIN_NAMESPACE
@@ -76,6 +83,8 @@ enum TDrawType {
     EDrawAnimation,
     ENoDraw
 };
+
+const TUid personalisationUID = { 0x101F876F };
 
 enum TSupportRelease {
     ES60_None     = 0x0000, //indicates that the commonstyle should draw the graphics
@@ -685,6 +694,75 @@ bool QS60StylePrivate::isSingleClickUi()
     return (QSysInfo::s60Version() > QSysInfo::SV_S60_5_0);
 }
 
+void QS60StylePrivate::deleteStoredSettings()
+{
+    QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
+    settings.beginGroup(QLatin1String("QS60Style"));
+    settings.remove(QString());
+    settings.endGroup();
+}
+
+// Since S60Style has 'button' as a graphic, we don't have any native color which to use
+// for QPalette::Button. Therefore S60Style needs to guesstimate palette color by calculating
+// average rgb values for button pixels.
+// Returns Qt::black if there is an issue with the graphics (image is NULL, or no constBits() found).
+QColor QS60StylePrivate::colorFromFrameGraphics(SkinFrameElements frame) const
+{
+#ifndef QT_NO_SETTINGS
+    TInt themeID = 0;
+    //First we need to fetch active theme ID. We need to store the themeID at the same time
+    //as color, so that we can later check if the stored color is still from the same theme.
+    //Native side stores active theme UID/Timestamp into central repository.
+    int error = 0;
+    QT_TRAP_THROWING(
+        CRepository *themeRepository = CRepository::NewLC(personalisationUID);
+        if (themeRepository) {
+            TBuf<32> value; //themeID is currently max of 8 + 1 + 8 characters, but lets have some extra space
+            const TUint32 key = 0x00000002; //active theme key in the repository
+            error = themeRepository->Get(key, value);
+            if (error == KErrNone) {
+                TLex lex(value);
+                TPtrC numberToken(lex.NextToken());
+                if (numberToken.Length())
+                    error = TLex(numberToken).Val(themeID);
+                else
+                    error = KErrArgument;
+            }
+        }
+        CleanupStack::PopAndDestroy(themeRepository);
+    );
+
+    QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
+    settings.beginGroup(QLatin1String("QS60Style"));
+    if (themeID != 0) {
+        QVariant buttonColor = settings.value(QLatin1String("ButtonColor"));
+        if (!buttonColor.isNull()) {
+            //there is a stored color value, lets see if the theme ID matches
+            if (error == KErrNone) {
+                QVariant themeUID = settings.value(QLatin1String("ThemeUID"));
+                if (!themeUID.isNull() && themeUID.toInt() == themeID) {
+                    QColor storedColor(buttonColor.value<QColor>());
+                    if (storedColor.isValid())
+                        return storedColor;
+                }
+            }
+            settings.remove(QString()); //if color was invalid, or theme has been changed, just delete all stored settings
+        }
+    }
+#endif
+
+    QColor color = calculatedColor(frame);
+
+#ifndef QT_NO_SETTINGS
+    settings.setValue(QLatin1String("ThemeUID"), QVariant(themeID));
+    if (frame == SF_ButtonNormal) //other colors are not currently calculated from graphics
+        settings.setValue(QLatin1String("ButtonColor"), QVariant(color));
+    settings.endGroup();
+#endif
+
+    return color;
+}
+
 QPoint qt_s60_fill_background_offset(const QWidget *targetWidget)
 {
     CCoeControl *control = targetWidget->effectiveWinId();
@@ -1143,13 +1221,25 @@ void QS60StylePrivate::setActiveLayout()
 
 Q_GLOBAL_STATIC(QList<QS60StyleAnimation *>, m_animations)
 
-QS60StylePrivate::QS60StylePrivate()
+QS60StylePrivate::QS60StylePrivate() : m_feedbackPlugin(0)
 {
     //Animation defaults need to be created when style is instantiated
     QS60StyleAnimation* progressBarAnimation = new QS60StyleAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim, 7, 100);
     m_animations()->append(progressBarAnimation);
     // No need to set active layout, if dynamic metrics API is available
     setActiveLayout();
+
+    //Tactile feedback plugin is only available for touch devices.
+    if (isTouchSupported()) {
+        QString pluginsPath = QLibraryInfo::location(QLibraryInfo::PluginsPath);
+        pluginsPath += QLatin1String("/feedback/qtactilefeedback.dll");
+
+        // Create plugin loader
+        QPluginLoader pluginLoader(pluginsPath);
+        // Load plugin and store pointer to the plugin implementation
+        if (pluginLoader.load())
+            m_feedbackPlugin = qobject_cast<TactileFeedbackInterface*>(pluginLoader.instance());
+    }
 }
 
 void QS60StylePrivate::removeAnimations()
@@ -1437,6 +1527,12 @@ void QS60StylePrivate::stopAnimation(QS60StyleEnums::SkinParts animationPart)
         }
         animation->resetToDefaults();
     }
+}
+
+void QS60StylePrivate::touchFeedback(QEvent *event, const QWidget *widget)
+{
+    if (m_feedbackPlugin)
+        m_feedbackPlugin->touchFeedback(event, widget);
 }
 
 QVariant QS60StyleModeSpecifics::themeDefinition(

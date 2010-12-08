@@ -510,15 +510,18 @@ int Lexer::lex()
                     setDone(Eof);
                 }
             } else if (isLineTerminator()) {
-                shiftWindowsLineBreak();
-                yylineno++;
-                yycolumn = 0;
-                bol = true;
-                terminator = true;
-                syncProhibitAutomaticSemicolon();
                 if (restrKeyword) {
+                    // automatic semicolon insertion
+                    recordStartPos();
                     token = QDeclarativeJSGrammar::T_SEMICOLON;
                     setDone(Other);
+                } else {
+                    shiftWindowsLineBreak();
+                    yylineno++;
+                    yycolumn = 0;
+                    bol = true;
+                    terminator = true;
+                    syncProhibitAutomaticSemicolon();
                 }
             } else if (current == '"' || current == '\'') {
                 recordStartPos();

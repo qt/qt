@@ -68,8 +68,8 @@ QHttpNetworkConnectionChannel::QHttpNetworkConnectionChannel()
     , lastStatus(0)
     , pendingEncrypt(false)
     , reconnectAttempts(2)
-    , authMehtod(QAuthenticatorPrivate::None)
-    , proxyAuthMehtod(QAuthenticatorPrivate::None)
+    , authMethod(QAuthenticatorPrivate::None)
+    , proxyAuthMethod(QAuthenticatorPrivate::None)
 #ifndef QT_NO_OPENSSL
     , ignoreAllSslErrors(false)
 #endif
@@ -105,12 +105,22 @@ void QHttpNetworkConnectionChannel::init()
     QObject::connect(socket, SIGNAL(readyRead()),
                      this, SLOT(_q_readyRead()),
                      Qt::DirectConnection);
+
+    // The disconnected() and error() signals may already come
+    // while calling connectToHost().
+    // In case of a cached hostname or an IP this
+    // will then emit a signal to the user of QNetworkReply
+    // but cannot be caught because the user did not have a chance yet
+    // to connect to QNetworkReply's signals.
+    qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
     QObject::connect(socket, SIGNAL(disconnected()),
                      this, SLOT(_q_disconnected()),
-                     Qt::DirectConnection);
+                     Qt::QueuedConnection);
     QObject::connect(socket, SIGNAL(error(QAbstractSocket::SocketError)),
                      this, SLOT(_q_error(QAbstractSocket::SocketError)),
-                     Qt::DirectConnection);
+                     Qt::QueuedConnection);
+
+
 #ifndef QT_NO_NETWORKPROXY
     QObject::connect(socket, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                      this, SLOT(_q_proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
@@ -170,7 +180,6 @@ bool QHttpNetworkConnectionChannel::sendRequest()
         reply->d_func()->autoDecompress = request.d->autoDecompress;
         reply->d_func()->pipeliningUsed = false;
 
-        pendingEncrypt = false;
         // if the url contains authentication parameters, use the new ones
         // both channels will use the new authentication parameters
         if (!request.url().userInfo().isEmpty() && request.withCredentials()) {
@@ -180,6 +189,7 @@ bool QHttpNetworkConnectionChannel::sendRequest()
                 || (!url.password().isEmpty() && url.password() != auth.password())) {
                 auth.setUser(url.userName());
                 auth.setPassword(url.password());
+                emit reply->cacheCredentials(request, &auth);
                 connection->d_func()->copyCredentials(connection->d_func()->indexOf(socket), &auth, false);
             }
             // clear the userinfo,  since we use the same request for resending
@@ -299,7 +309,6 @@ bool QHttpNetworkConnectionChannel::sendRequest()
         break;
     }
     case QHttpNetworkConnectionChannel::ReadingState:
-    case QHttpNetworkConnectionChannel::Wait4AuthState:
         // ignore _q_bytesWritten in these states
         // fall through
     default:
@@ -402,7 +411,9 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
         }
         case QHttpNetworkReplyPrivate::ReadingDataState: {
            QHttpNetworkReplyPrivate *replyPrivate = reply->d_func();
-           if (replyPrivate->downstreamLimited && !replyPrivate->responseData.isEmpty() && replyPrivate->shouldEmitSignals()) {
+           if (socket->state() == QAbstractSocket::ConnectedState &&
+               replyPrivate->downstreamLimited && !replyPrivate->responseData.isEmpty() && replyPrivate->shouldEmitSignals()) {
+               // (only do the following when still connected, not when we have already been disconnected and there is still data)
                // We already have some HTTP body data. We don't read more from the socket until
                // this is fetched by QHttpNetworkAccessHttpBackend. If we would read more,
                // we could not limit our read buffer usage.
@@ -411,7 +422,6 @@ void QHttpNetworkConnectionChannel::_q_receiveReply()
                // to the read buffer maximum size, but we don't care since they should be small.
                return;
            }
-
             if (!replyPrivate->isChunked() && !replyPrivate->autoDecompress
                 && replyPrivate->bodyLength > 0) {
                 // bulk files like images should fulfill these properties and
@@ -787,8 +797,7 @@ void QHttpNetworkConnectionChannel::handleStatus()
                 ? QNetworkReply::ProxyAuthenticationRequiredError
                 : QNetworkReply::AuthenticationRequiredError;
             reply->d_func()->errorString = connection->d_func()->errorDetail(errorCode, socket);
-            emit connection->error(errorCode, reply->d_func()->errorString);
-            emit reply->finished();
+            emit reply->finishedWithError(errorCode, reply->d_func()->errorString);
         }
         break;
     default:
@@ -935,7 +944,6 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
 {
     if (!socket)
         return;
-    bool send2Reply = false;
     QNetworkReply::NetworkError errorCode = QNetworkReply::UnknownNetworkError;
 
     switch (socketError) {
@@ -953,7 +961,6 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
                 closeAndResendCurrentRequest();
                 return;
             } else {
-                send2Reply = true;
                 errorCode = QNetworkReply::RemoteHostClosedError;
             }
         } else {
@@ -966,7 +973,6 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
             closeAndResendCurrentRequest();
             return;
         }
-        send2Reply = true;
         errorCode = QNetworkReply::TimeoutError;
         break;
     case QAbstractSocket::ProxyAuthenticationRequiredError:
@@ -982,18 +988,14 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
     }
     QPointer<QHttpNetworkConnection> that = connection;
     QString errorString = connection->d_func()->errorDetail(errorCode, socket, socket->errorString());
-    if (send2Reply) {
-        if (reply) {
-            reply->d_func()->errorString = errorString;
-            // this error matters only to this reply
-            emit reply->finishedWithError(errorCode, errorString);
-        }
-        // send the next request
-        QMetaObject::invokeMethod(that, "_q_startNextRequest", Qt::QueuedConnection);
-    } else {
-        // the failure affects all requests.
-        emit connection->error(errorCode, errorString);
+
+    if (reply) {
+        reply->d_func()->errorString = errorString;
+        emit reply->finishedWithError(errorCode, errorString);
     }
+    // send the next request
+    QMetaObject::invokeMethod(that, "_q_startNextRequest", Qt::QueuedConnection);
+
     if (that) //signal emission triggered event loop
         close();
 }
@@ -1016,6 +1018,7 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
     if (!socket)
         return; // ### error
     state = QHttpNetworkConnectionChannel::IdleState;
+    pendingEncrypt = false;
     sendRequest();
 }
 
@@ -1024,7 +1027,11 @@ void QHttpNetworkConnectionChannel::_q_sslErrors(const QList<QSslError> &errors)
     if (!socket)
         return;
     //QNetworkReply::NetworkError errorCode = QNetworkReply::ProtocolFailure;
-    emit connection->sslErrors(errors);
+    // Also pause the connection because socket notifiers may fire while an user
+    // dialog is displaying
+    connection->d_func()->pauseConnection();
+    emit reply->sslErrors(errors);
+    connection->d_func()->resumeConnection();
 }
 
 void QHttpNetworkConnectionChannel::_q_encryptedBytesWritten(qint64 bytes)

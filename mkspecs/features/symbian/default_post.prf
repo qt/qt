@@ -3,12 +3,22 @@ load(default_post)
 contains(TEMPLATE, ".*app") {
     contains(CONFIG, stdbinary) {
         QMAKE_LIBS +=
-    } else:contains(QT, gui):contains(CONFIG,qt) {
-        S60MAIN_LIBS = -leuser
-        QMAKE_LIBS += -lqtmain$${QT_LIBINFIX}.lib $$S60MAIN_LIBS
-    } else {
+    } else:contains(CONFIG,qt) {
         QMAKE_LIBS += $$QMAKE_LIBS_QT_ENTRY
+    } else {
+        QMAKE_LIBS += $$QMAKE_LIBS_NO_QT_ENTRY
     }
+
+    contains(DESTDIR, "/.*") {
+        default_bin_deployment.sources += $$DESTDIR/$$symbianRemoveSpecialCharacters($$basename(TARGET)).exe
+    } else:isEmpty(DESTDIR) {
+        default_bin_deployment.sources += $$OUT_PWD/$$symbianRemoveSpecialCharacters($$basename(TARGET)).exe
+    } else {
+        default_bin_deployment.sources += $$OUT_PWD/$$DESTDIR/$$symbianRemoveSpecialCharacters($$basename(TARGET)).exe
+    }
+    default_bin_deployment.path += /sys/bin
+
+    load(application_icon.prf)
 }
 contains(TEMPLATE, lib): {
     contains(CONFIG, staticlib)|contains(CONFIG, static): {
@@ -24,10 +34,6 @@ contains(TEMPLATE, lib): {
 } else {
     # Applications don't need this
     MMP_RULES -= EXPORTUNFROZEN
-}
-
-contains(TEMPLATE, ".*app"):contains(QT, gui):contains(CONFIG,qt) {
-    load(application_icon.prf)
 }
 
 isEmpty(TARGET.UID3):TARGET.UID3 = $$generate_uid("$${OUT_PWD}/$${TARGET}")
@@ -46,3 +52,15 @@ isEmpty(TARGET.UID2) {
         }
     }
 }
+
+# Supports S60 3.1, 3.2, 5.0, Symbian^3, and Symbian^4 by default
+platform_product_id = S60ProductID
+platform_product_id = $$addLanguageDependentPkgItem(platform_product_id)
+pkg_platform_dependencies = \
+    "; Default HW/platform dependencies" \
+    "[0x102032BE],0,0,0,{$$platform_product_id}" \
+    "[0x102752AE],0,0,0,{$$platform_product_id}" \
+    "[0x1028315F],0,0,0,{$$platform_product_id}" \
+    "[0x20022E6D],0,0,0,{$$platform_product_id}" \
+    "[0x20032DE7],0,0,0,{$$platform_product_id}" \
+    " "

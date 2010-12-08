@@ -2,33 +2,34 @@ import QtQuick 1.0
 import Qt.labs.particles 1.0
 
 Rectangle {
+    property string skip: "May contain random numbers"
     width: 640; height: 480; color: "black"
 
-    Particles { id:particlesAnotEmitting
+    Particles { id:particlesAneverEmitting
         y:60; width: 260; height:30; source: "star.png";
         lifeSpan:1000; count: 50; angle:70; angleDeviation:36;
         velocity:30; velocityDeviation:10; emissionRate: 0
         ParticleMotionWander { yvariance:5; xvariance:30; pace:100 }
     }
-    Particles { id:particlesA
+    Particles { id:particlesA //snowy particles from the top
         y:0; width: 260; height:30; source: "star.png";
         lifeSpan:1000; count: 50; angle:70; angleDeviation:36;
         velocity:30; velocityDeviation:10; emissionRate: 10
         ParticleMotionWander { yvariance:5; xvariance:30; pace:100 }
     }
 
-    Particles { id:particlesB
+    Particles { id:particlesB //particle fountain bursting every second
         y:280; x:180; width:1; height:1; lifeSpan:1000; source: "star.png"
         count: 100; angle:270; angleDeviation:45; velocity:50; velocityDeviation:30;
         emissionRate: 0
         ParticleMotionGravity { yattractor: 1000; xattractor:0; acceleration:25 }
     }
 
-        Timer { running: true; interval: 1000; repeat: true; onTriggered: particlesB.burst(200, 2000); }
+    Timer { running: true; interval: 1000; repeat: true; onTriggered: particlesB.burst(200, 2000); }
 
     Column{
         x: 340;
-        Repeater{
+        Repeater{//emission variance test
             model: 5
             delegate: Component{
                 Item{

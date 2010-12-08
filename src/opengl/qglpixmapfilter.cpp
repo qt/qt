@@ -63,8 +63,8 @@
 QT_BEGIN_NAMESPACE
 
 // qpixmapfilter.cpp
-void qt_blurImage(QImage &blurImage, qreal radius, bool quality, int transposed = 0);
-QImage qt_halfScaled(const QImage &source);
+Q_DECL_IMPORT void qt_blurImage(QImage &blurImage, qreal radius, bool quality, int transposed = 0);
+Q_DECL_IMPORT QImage qt_halfScaled(const QImage &source);
 
 void QGLPixmapFilterBase::bindTexture(const QPixmap &src) const
 {
@@ -436,7 +436,7 @@ static inline uint nextMultiple(uint x, uint multiplier)
     return x + multiplier - mod;
 }
 
-void qt_memrotate90_gl(const quint32 *src, int srcWidth, int srcHeight, int srcStride,
+Q_DECL_IMPORT void qt_memrotate90_gl(const quint32 *src, int srcWidth, int srcHeight, int srcStride,
                        quint32 *dest, int dstStride);
 
 bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF &) const

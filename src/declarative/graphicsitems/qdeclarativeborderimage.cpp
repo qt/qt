@@ -361,6 +361,8 @@ QDeclarativeScaleGrid *QDeclarativeBorderImage::border()
     \o BorderImage.Repeat - Tile the image until there is no more space. May crop the last image.
     \o BorderImage.Round - Like Repeat, but scales the images down to ensure that the last image is not cropped.
     \endlist
+
+    The default tile mode for each property is BorderImage.Stretch.
 */
 QDeclarativeBorderImage::TileMode QDeclarativeBorderImage::horizontalTileMode() const
 {

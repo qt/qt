@@ -38,7 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ** This file implements the generic atomics interface using ARMv6 assembly
-** instructions. It is more efficent than the inline versions when Qt is
+** instructions. It is more efficient than the inline versions when Qt is
 ** built for the THUMB instruction set, as the required instructions are
 ** only available in ARM state.
 ****************************************************************************/

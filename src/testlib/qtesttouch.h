@@ -106,8 +106,8 @@ namespace QTest
         }
 
     private:
-        QTouchEventSequence(QWidget *widget, QTouchEvent::DeviceType deviceType)
-            : targetWidget(widget), deviceType(deviceType)
+        QTouchEventSequence(QWidget *widget, QTouchEvent::DeviceType aDeviceType)
+            : targetWidget(widget), deviceType(aDeviceType)
         {
         }
         QTouchEventSequence(const QTouchEventSequence &v);

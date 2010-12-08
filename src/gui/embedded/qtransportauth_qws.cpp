@@ -445,7 +445,7 @@ QIODevice *QTransportAuth::passThroughByClient( QWSClient *client ) const
 /*!
   \internal
   Return a QIODevice pointer (to an internal QBuffer) which can be used
-  to receive data after authorisation on transport \a d.
+  to receive data after authorization on transport \a d.
 
   The return QIODevice will act as a pass-through.
 
@@ -468,7 +468,7 @@ QAuthDevice *QTransportAuth::recvBuf( QTransportAuth::Data *data, QIODevice *iod
 
 /*!
   Return a QIODevice pointer (to an internal QBuffer) which can be used
-  to write data onto, for authorisation on transport \a d.
+  to write data onto, for authorization on transport \a d.
 
   The return QIODevice will act as a pass-through.
 

@@ -181,45 +181,52 @@ void Generator::initialize(const Config &config)
                 ++e;
             }
 
-            QStringList noExts;
-            QStringList scripts =
-                config.getStringList(CONFIG_SCRIPTS+Config::dot+(*g)->format());
-            e = scripts.begin();
-            while (e != scripts.end()) {
-                QString userFriendlyFilePath;
-                QString filePath = Config::findFile(config.lastLocation(),
-                                                    scriptFiles,
-                                                    scriptDirs,
-                                                    *e,
-                                                    noExts,
-                                                    userFriendlyFilePath);
-                if (!filePath.isEmpty())
-                    Config::copyFile(config.lastLocation(),
-                                     filePath,
-                                     userFriendlyFilePath,
-                                     (*g)->outputDir() +
-                                     "/scripts");
-                ++e;
-            }
+            // Documentation template handling
+            QString templateDir = config.getString(
+                (*g)->format() + Config::dot + CONFIG_TEMPLATEDIR);
 
-            QStringList styles =
-                config.getStringList(CONFIG_STYLES+Config::dot+(*g)->format());
-            e = styles.begin();
-            while (e != styles.end()) {
-                QString userFriendlyFilePath;
-                QString filePath = Config::findFile(config.lastLocation(),
-                                                    styleFiles,
-                                                    styleDirs,
-                                                    *e,
-                                                    noExts,
-                                                    userFriendlyFilePath);
-                if (!filePath.isEmpty())
-                    Config::copyFile(config.lastLocation(),
-                                     filePath,
-                                     userFriendlyFilePath,
-                                     (*g)->outputDir() +
-                                     "/style");
-                ++e;
+            if (!templateDir.isEmpty()) {
+                QStringList noExts;
+                QStringList searchDirs = QStringList() << templateDir;
+                QStringList scripts =
+                    config.getStringList((*g)->format()+Config::dot+CONFIG_SCRIPTS);
+                e = scripts.begin();
+                while (e != scripts.end()) {
+                    QString userFriendlyFilePath;
+                    QString filePath = Config::findFile(config.lastLocation(),
+                                                        scriptFiles,
+                                                        searchDirs,
+                                                        *e,
+                                                        noExts,
+                                                        userFriendlyFilePath);
+                    if (!filePath.isEmpty())
+                        Config::copyFile(config.lastLocation(),
+                                         filePath,
+                                         userFriendlyFilePath,
+                                         (*g)->outputDir() +
+                                         "/scripts");
+                    ++e;
+                }
+
+                QStringList styles =
+                    config.getStringList((*g)->format()+Config::dot+CONFIG_STYLESHEETS);
+                e = styles.begin();
+                while (e != styles.end()) {
+                    QString userFriendlyFilePath;
+                    QString filePath = Config::findFile(config.lastLocation(),
+                                                        styleFiles,
+                                                        searchDirs,
+                                                        *e,
+                                                        noExts,
+                                                        userFriendlyFilePath);
+                    if (!filePath.isEmpty())
+                        Config::copyFile(config.lastLocation(),
+                                         filePath,
+                                         userFriendlyFilePath,
+                                         (*g)->outputDir() +
+                                         "/style");
+                    ++e;
+                }
             }
         }
         ++g;
@@ -518,7 +525,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
             Doc::quoteFromFile(fake->doc().location(), quoter, fake->name());
             QString code = quoter.quoteTo(fake->location(), "", "");
             text << Atom(Atom::Code, code);
-            generateText(text, fake, marker);
+            generateText(text, fake, CodeMarker::markerForFileName(fake->name()));
         }
     }
 }
@@ -665,35 +672,6 @@ void Generator::generateExampleFiles(const FakeNode *fake, CodeMarker *marker)
     generateFileList(fake, marker, Node::File, QString("Files:"));
     generateFileList(fake, marker, Node::Image, QString("Images:"));
 }
-
-#if 0
-    QList<Generator *>::ConstIterator g = generators.begin();
-    while (g != generators.end()) {
-        if (outputFormats.contains((*g)->format())) {
-            (*g)->initializeGenerator(config);
-            QStringList extraImages =
-                config.getStringList(CONFIG_EXTRAIMAGES+Config::dot+(*g)->format());
-            QStringList::ConstIterator e = extraImages.begin();
-            while (e != extraImages.end()) {
-                QString userFriendlyFilePath;
-                QString filePath = Config::findFile(config.lastLocation(),
-                                                    imageFiles,
-                                                    imageDirs,
-                                                    *e,
-                                                    imgFileExts[(*g)->format()],
-                                                    userFriendlyFilePath);
-                if (!filePath.isEmpty())
-                    Config::copyFile(config.lastLocation(),
-                                     filePath,
-                                     userFriendlyFilePath,
-                                     (*g)->outputDir() +
-                                     "/images");
-                ++e;
-            }
-        }
-        ++g;
-    }
-#endif
 
 QString Generator::indent(int level, const QString& markedCode)
 {

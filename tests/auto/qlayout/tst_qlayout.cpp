@@ -133,12 +133,13 @@ void tst_QLayout::geometry()
     // For QWindowsStyle we know that QWidgetItem::geometry() and QWidget::geometry()
     // should be the same.
     QApplication::setStyle(new QWindowsStyle);
-    QWidget w;
+    QWidget topLevel;
+    QWidget w(&topLevel);
     QVBoxLayout layout(&w);
     SizeHinterFrame widget(QSize(100,100));
     layout.addWidget(&widget);
     QLayoutItem *item = layout.itemAt(0);
-    w.show();
+    topLevel.show();
     QApplication::processEvents();
     QCOMPARE(item->geometry().size(), QSize(100,100));
 

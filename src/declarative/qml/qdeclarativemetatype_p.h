@@ -58,6 +58,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qbitarray.h>
+#include <private/qdeclarativeglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -65,7 +66,7 @@ class QDeclarativeType;
 class QDeclarativeCustomParser;
 class QDeclarativeTypePrivate;
 
-class Q_DECLARATIVE_EXPORT QDeclarativeMetaType
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeMetaType
 {
 public:
     static bool copy(int type, void *data, const void *copy = 0);
@@ -105,7 +106,7 @@ public:
     static QList<QDeclarativePrivate::AutoParentFunction> parentFunctions();
 };
 
-class Q_DECLARATIVE_EXPORT QDeclarativeType
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeType
 {
 public:
     QByteArray typeName() const;

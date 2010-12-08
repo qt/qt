@@ -67,7 +67,7 @@ QT_END_NAMESPACE
 
 #ifdef Q_OS_WIN32
 #include <qt_windows.h>
-#include <windows/registry.h>
+#include <windows/registry_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -119,7 +119,7 @@ DotNET which_dotnet_version()
     int installed = 0;
     int i = 0;
     for(; dotNetCombo[i].version; ++i) {
-        QString path = readRegistryKey(HKEY_LOCAL_MACHINE, dotNetCombo[i].regKey);
+        QString path = qt_readRegistryKey(HKEY_LOCAL_MACHINE, dotNetCombo[i].regKey);
         if(!path.isEmpty()) {
             ++installed;
             current_version = dotNetCombo[i].version;
@@ -136,7 +136,7 @@ DotNET which_dotnet_version()
 
     i = installed = 0;
     for(; dotNetCombo[i].version; ++i) {
-        QString productPath = readRegistryKey(HKEY_LOCAL_MACHINE, dotNetCombo[i].regKey).toLower();
+        QString productPath = qt_readRegistryKey(HKEY_LOCAL_MACHINE, dotNetCombo[i].regKey).toLower();
                 if (productPath.isEmpty())
                         continue;
         QStringList::iterator it;
@@ -1587,10 +1587,10 @@ QString VcprojGenerator::fixFilename(QString ofile) const
     if(slashfind == -1) {
         ofile = ofile.replace('-', '_');
     } else {
-        int hypenfind = ofile.indexOf('-', slashfind);
-        while (hypenfind != -1 && slashfind < hypenfind) {
-            ofile = ofile.replace(hypenfind, 1, '_');
-            hypenfind = ofile.indexOf('-', hypenfind + 1);
+        int hyphenfind = ofile.indexOf('-', slashfind);
+        while (hyphenfind != -1 && slashfind < hyphenfind) {
+            ofile = ofile.replace(hyphenfind, 1, '_');
+            hyphenfind = ofile.indexOf('-', hyphenfind + 1);
         }
     }
     return ofile;

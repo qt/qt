@@ -185,12 +185,9 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
                     bindings = bindings.united(bindingSkipList);
 
                 QObject *o = 
-                    types.at(instr.create.type).createInstance(ctxt, bindings);
+                    types.at(instr.create.type).createInstance(ctxt, bindings, &vmeErrors);
 
                 if (!o) {
-                    if(types.at(instr.create.type).component)
-                        vmeErrors << types.at(instr.create.type).component->errors();
-
                     VME_EXCEPTION(QCoreApplication::translate("QDeclarativeVME","Unable to create object of type %1").arg(QString::fromLatin1(types.at(instr.create.type).className)));
                 }
 
@@ -933,8 +930,9 @@ QList<QDeclarativeError> QDeclarativeVME::errors() const
 }
 
 QObject *
-QDeclarativeCompiledData::TypeReference::createInstance(QDeclarativeContextData *ctxt, 
-                                                        const QBitField &bindings) const
+QDeclarativeCompiledData::TypeReference::createInstance(QDeclarativeContextData *ctxt,
+                                                        const QBitField &bindings,
+                                                        QList<QDeclarativeError> *errors) const
 {
     if (type) {
         QObject *rv = 0;
@@ -948,7 +946,7 @@ QDeclarativeCompiledData::TypeReference::createInstance(QDeclarativeContextData 
         return rv;
     } else {
         Q_ASSERT(component);
-        return QDeclarativeComponentPrivate::get(component)->create(ctxt, bindings);
+        return QDeclarativeComponentPrivate::begin(ctxt, 0, component, -1, -1, 0, errors, bindings);
     } 
 }
 

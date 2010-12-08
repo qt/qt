@@ -1300,6 +1300,9 @@ void tst_QPathClipper::task251909()
 
 void tst_QPathClipper::qtbug3778()
 {
+    if (sizeof(double) != sizeof(qreal)) {
+        QSKIP("This test only works for qreal=double, otherwise ends in rounding errors", SkipAll);
+    }
     QPainterPath path1;
     path1.moveTo(200, 3.22409e-5);
     // e-5 and higher leads to a bug

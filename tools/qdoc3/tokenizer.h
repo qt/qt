@@ -145,7 +145,7 @@ class Tokenizer
         int ch = getch();
         if (ch == EOF)
             return EOF;
-        // cast explicitely to make sure the value of ch 
+        // cast explicitly to make sure the value of ch 
         // is in range [0..255] to avoid assert messages 
         // when using debug CRT that checks its input.
         return int(uint(uchar(ch))); 

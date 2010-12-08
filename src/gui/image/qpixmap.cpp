@@ -1102,6 +1102,9 @@ QPixmap QPixmap::grabWidget(QWidget * widget, const QRect &rect)
         return QPixmap();
 
     QPixmap res(r.size());
+    if (!qt_widget_private(widget)->isOpaque)
+        res.fill(Qt::transparent);
+
     widget->d_func()->render(&res, QPoint(), r, QWidget::DrawWindowBackground
                              | QWidget::DrawChildren | QWidget::IgnoreMask, true);
     return res;

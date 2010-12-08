@@ -65,6 +65,9 @@ class Q_AUTOTEST_EXPORT QGraphicsLayoutItemPrivate
 public:
     virtual ~QGraphicsLayoutItemPrivate();
     QGraphicsLayoutItemPrivate(QGraphicsLayoutItem *parent, bool isLayout);
+    static QGraphicsLayoutItemPrivate *get(QGraphicsLayoutItem *q) { return q->d_func();}
+    static const QGraphicsLayoutItemPrivate *get(const QGraphicsLayoutItem *q) { return q->d_func();}
+
     void init();
     QSizeF *effectiveSizeHints(const QSizeF &constraint) const;
     QGraphicsItem *parentItem() const;
@@ -73,14 +76,19 @@ public:
     enum SizeComponent { Width, Height };
     void setSizeComponent(Qt::SizeHint which, SizeComponent component, qreal value);
 
+    bool hasHeightForWidth() const;
+    bool hasWidthForHeight() const;
+
     QSizePolicy sizePolicy;
     QGraphicsLayoutItem *parent;
 
     QSizeF *userSizeHints;
     mutable QSizeF cachedSizeHints[Qt::NSizeHints];
     mutable QSizeF cachedConstraint;
+    mutable QSizeF cachedSizeHintsWithConstraints[Qt::NSizeHints];
 
     mutable quint32 sizeHintCacheDirty : 1;
+    mutable quint32 sizeHintWithConstraintCacheDirty : 1;
     quint32 isLayout : 1;
     quint32 ownedByLayout : 1;
 

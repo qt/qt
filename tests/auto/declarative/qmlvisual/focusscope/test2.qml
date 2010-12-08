@@ -2,35 +2,33 @@ import QtQuick 1.0
 
 Rectangle {
     color: "white"
-    width: 800
-    height: 600
+    width: 400
+    height: 50
 
-    Text { text: "All five rectangles should be red" }
-
+    //All five rectangles should be red
     FocusScope {
-        y: 100
         focus: true
-        Rectangle { width: 50; height: 50; color: parent.activeFocus?"red":"blue" }
+        Rectangle { width: 40; height: 40; color: parent.activeFocus?"red":"blue" }
 
         FocusScope {
-            y: 100
+            x: 80
             focus: true
-            Rectangle { width: 50; height: 50; color: parent.activeFocus?"red":"blue" }
+            Rectangle { width: 40; height: 40; color: parent.activeFocus?"red":"blue" }
 
             FocusScope {
-                y: 100
+                x: 80
                 focus: true
-                Rectangle { width: 50; height: 50; color: parent.activeFocus?"red":"blue" }
+                Rectangle { width: 40; height: 40; color: parent.activeFocus?"red":"blue" }
 
                 FocusScope {
-                    y: 100
+                    x: 80
                     focus: true
-                    Rectangle { width: 50; height: 50; color: parent.activeFocus?"red":"blue" }
+                    Rectangle { width: 40; height: 40; color: parent.activeFocus?"red":"blue" }
 
                     FocusScope {
-                        y: 100
+                        x: 80
                         focus: true
-                        Rectangle { width: 50; height: 50; color: parent.activeFocus?"red":"blue" }
+                        Rectangle { width: 40; height: 40; color: parent.activeFocus?"red":"blue" }
                     }
                 }
             }

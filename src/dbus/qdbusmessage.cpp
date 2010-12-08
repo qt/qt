@@ -292,7 +292,7 @@ QDBusMessage QDBusMessagePrivate::makeLocal(const QDBusConnectionPrivate &conn,
     }
 
     // no complex types seen
-    // optimise by using the variant list itself
+    // optimize by using the variant list itself
     QDBusMessage retval;
     QDBusMessagePrivate *d = retval.d_ptr;
     d->arguments = asSent.d_ptr->arguments;
@@ -452,7 +452,7 @@ QDBusMessage QDBusMessage::createReply(const QVariantList &arguments) const
         d_ptr->localReply = new QDBusMessage(reply); // keep an internal copy
     }
 
-    // the reply must have a msg or be a local-loop optimisation
+    // the reply must have a msg or be a local-loop optimization
     Q_ASSERT(reply.d_ptr->reply || reply.d_ptr->localMessage);
     return reply;
 }
@@ -471,7 +471,7 @@ QDBusMessage QDBusMessage::createErrorReply(const QString name, const QString &m
         d_ptr->localReply = new QDBusMessage(reply); // keep an internal copy
     }
 
-    // the reply must have a msg or be a local-loop optimisation
+    // the reply must have a msg or be a local-loop optimization
     Q_ASSERT(reply.d_ptr->reply || reply.d_ptr->localMessage);
     return reply;
 }

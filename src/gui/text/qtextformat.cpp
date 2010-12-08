@@ -265,10 +265,18 @@ private:
     friend QDataStream &operator>>(QDataStream &, QTextFormat &);
 };
 
-// this is only safe if sizeof(int) == sizeof(float)
+// this is only safe because sizeof(int) == sizeof(float)
 static inline uint hash(float d)
 {
+#ifdef Q_CC_GNU
+    // this is a GCC extension and isn't guaranteed to work in other compilers
+    // the reinterpret_cast below generates a strict-aliasing warning with GCC
+    union { float f; uint u; } cvt;
+    cvt.f = d;
+    return cvt.u;
+#else
     return reinterpret_cast<uint&>(d);
+#endif
 }
 
 static inline uint hash(const QColor &color)

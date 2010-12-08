@@ -353,12 +353,13 @@ void tst_QAbstractScrollArea::task214488_layoutDirection()
 
 void tst_QAbstractScrollArea::patternBackground()
 {
-    QScrollArea scrollArea;
+    QWidget topLevel;
+    QScrollArea scrollArea(&topLevel);
     scrollArea.resize(200, 200);
     QWidget widget;
     widget.resize(600, 600);
     scrollArea.setWidget(&widget);
-    scrollArea.show();
+    topLevel.show();
 
     QLinearGradient linearGrad(QPointF(250, 250), QPointF(300, 300));
     linearGrad.setColorAt(0, Qt::yellow);

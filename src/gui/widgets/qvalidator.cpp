@@ -499,6 +499,8 @@ public:
     }
 
     QDoubleValidator::Notation notation;
+
+    QValidator::State validateWithLocale(QString & input, QLocalePrivate::NumberMode numMode, const QLocale &locale) const;
 };
 
 
@@ -654,42 +656,49 @@ QValidator::State QDoubleValidator::validate(QString & input, int &) const
             break;
     }
 
+    State currentLocaleValidation = d->validateWithLocale(input, numMode, locale());
+    if (currentLocaleValidation == Acceptable || locale().language() == QLocale::C)
+        return currentLocaleValidation;
+    State cLocaleValidation = d->validateWithLocale(input, numMode, QLocale(QLocale::C));
+    return qMax(currentLocaleValidation, cLocaleValidation);
+}
+
+QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QLocalePrivate::NumberMode numMode, const QLocale &locale) const
+{
+    Q_Q(const QDoubleValidator);
     QByteArray buff;
-    if (!locale().d()->validateChars(input, numMode, &buff, dec)) {
-        QLocale cl(QLocale::C);
-        if (!cl.d()->validateChars(input, numMode, &buff, dec))
-            return Invalid;
-    }
+    if (!locale.d()->validateChars(input, numMode, &buff, q->dec))
+        return QValidator::Invalid;
 
     if (buff.isEmpty())
-        return Intermediate;
+        return QValidator::Intermediate;
 
-    if (b >= 0 && buff.startsWith('-'))
-        return Invalid;
+    if (q->b >= 0 && buff.startsWith('-'))
+        return QValidator::Invalid;
 
-    if (t < 0 && buff.startsWith('+'))
-        return Invalid;
+    if (q->t < 0 && buff.startsWith('+'))
+        return QValidator::Invalid;
 
     bool ok, overflow;
     double i = QLocalePrivate::bytearrayToDouble(buff.constData(), &ok, &overflow);
     if (overflow)
-        return Invalid;
+        return QValidator::Invalid;
     if (!ok)
-        return Intermediate;
+        return QValidator::Intermediate;
 
-    if (i >= b && i <= t)
-        return Acceptable;
+    if (i >= q->b && i <= q->t)
+        return QValidator::Acceptable;
 
-    if (d->notation == StandardNotation) {
-        double max = qMax(qAbs(b), qAbs(t));
+    if (notation == QDoubleValidator::StandardNotation) {
+        double max = qMax(qAbs(q->b), qAbs(q->t));
         if (max < LLONG_MAX) {
             qlonglong n = pow10(numDigits(qlonglong(max))) - 1;
             if (qAbs(i) > n)
-                return Invalid;
+                return QValidator::Invalid;
         }
     }
 
-    return Intermediate;
+    return QValidator::Intermediate;
 }
 
 

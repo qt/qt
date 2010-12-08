@@ -508,6 +508,7 @@ uint IcdPrivate::state(QList<IcdStateResult>& state_results)
         mInterface.clear();
 	while ((time(0)<=(started+timeout_secs)) && mInterface.isEmpty()) {
 	    mDBus->synchronousDispatch(1000);
+        QCoreApplication::sendPostedEvents(icd, QEvent::MetaCall);
 	}
 
         if (time(0)>(started+timeout_secs)) {
@@ -685,6 +686,7 @@ uint IcdPrivate::addrinfo(QList<IcdAddressInfoResult>& addr_results)
         mInterface.clear();
 	while ((time(0)<=(started+timeout_secs)) && mInterface.isEmpty()) {
 	    mDBus->synchronousDispatch(1000);
+        QCoreApplication::sendPostedEvents(icd, QEvent::MetaCall);
 	}
 
         if (time(0)>(started+timeout_secs)) {
