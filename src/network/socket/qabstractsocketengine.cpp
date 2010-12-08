@@ -40,7 +40,13 @@
 ****************************************************************************/
 
 #include "qabstractsocketengine_p.h"
+
+#ifdef Q_OS_SYMBIAN
+#include "qsymbiansocketengine_p.h"
+#else
 #include "qnativesocketengine_p.h"
+#endif
+
 #include "qmutex.h"
 #include "qnetworkproxy.h"
 

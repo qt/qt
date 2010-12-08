@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 //#define QNATIVESOCKETENGINE_DEBUG
-#include "qnativesocketengine_p.h"
-#include "private/qnet_unix_p.h"
+#include "qsymbiansocketengine_p.h"
+
 #include "qiodevice.h"
 #include "qhostaddress.h"
 #include "qelapsedtimer.h"
@@ -49,11 +49,17 @@
 #include "qnetworkinterface.h"
 #include <es_sock.h>
 #include <in_sock.h>
-#include <QtCore/private/qcore_symbian_p.h>
 #ifndef QT_NO_IPV6IFNAME
 #include <net/if.h>
 #endif
-# include <private/qcore_symbian_p.h>
+
+#include <private/qcore_symbian_p.h>
+
+#if !defined(QT_NO_NETWORKPROXY)
+# include "qnetworkproxy.h"
+# include "qabstractsocket.h"
+# include "qtcpserver.h"
+#endif
 
 #define QNATIVESOCKETENGINE_DEBUG
 
@@ -137,6 +143,7 @@ void QSymbianSocketEnginePrivate::getPortAndAddress(const TInetAddr& a, quint16 
 bool QSymbianSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType socketType,
                                          QAbstractSocket::NetworkLayerProtocol socketProtocol)
 {
+    Q_Q(QSymbianSocketEngine);
 #ifndef QT_NO_IPV6
     TUint family = (socketProtocol == QAbstractSocket::IPv6Protocol) ? KAfInet6 : KAfInet;
 #else
@@ -177,10 +184,10 @@ bool QSymbianSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType so
 /*
     Returns the value of the socket option \a opt.
 */
-int QSymbianSocketEnginePrivate::option(QAbstractSocketEngine::SocketOption opt) const
+int QSymbianSocketEngine::option(QAbstractSocketEngine::SocketOption opt) const
 {
-    Q_Q(const QSymbianSocketEngine);
-    if (!q->isValid())
+    Q_D(const QSymbianSocketEngine);
+    if (!isValid())
         return -1;
 
     TUint n;
@@ -222,7 +229,7 @@ int QSymbianSocketEnginePrivate::option(QAbstractSocketEngine::SocketOption opt)
 
     int v = -1;
     //GetOpt() is non const
-    TInt err = nativeSocket.GetOpt(n, level, v);
+    TInt err = d->nativeSocket.GetOpt(n, level, v);
     if (!err)
         return v;
 
@@ -269,6 +276,10 @@ QSymbianSocketEnginePrivate::QSymbianSocketEnginePrivate() :
 {
 }
 
+QSymbianSocketEnginePrivate::~QSymbianSocketEnginePrivate()
+{
+}
+
 
 QSymbianSocketEngine::QSymbianSocketEngine(QObject *parent)
     : QAbstractSocketEngine(*new QSymbianSocketEnginePrivate(), parent)
@@ -279,6 +290,7 @@ QSymbianSocketEngine::QSymbianSocketEngine(QObject *parent)
 QSymbianSocketEngine::~QSymbianSocketEngine()
 {
     close();
+    // FIXME what else do we need to free?
 }
 
 /*
@@ -286,8 +298,8 @@ QSymbianSocketEngine::~QSymbianSocketEngine()
 */
 bool QSymbianSocketEngine::setOption(QAbstractSocketEngine::SocketOption opt, int v)
 {
-    Q_Q(QSymbianSocketEngine);
-    if (!q->isValid())
+    Q_D(QSymbianSocketEngine);
+    if (!isValid())
         return false;
 
     int n = 0;
@@ -325,59 +337,82 @@ bool QSymbianSocketEngine::setOption(QAbstractSocketEngine::SocketOption opt, in
         break;
     }
 
-    return (KErrNone == nativeSocket.SetOpt(n, level, v));
+    return (KErrNone == d->nativeSocket.SetOpt(n, level, v));
 }
 
-bool QSymbianSocketEngine::connect(const QHostAddress &addr, quint16 port)
+bool QSymbianSocketEngine::connectToHostByName(const QString &name, quint16 port)
 {
+    // FIXME for engines that support hostnames.. not for us then i guess.
+
+    return false;
+}
+
+
+bool QSymbianSocketEngine::connectToHost(const QHostAddress &addr, quint16 port)
+{
+    Q_D(QSymbianSocketEngine);
+
 #ifdef QNATIVESOCKETENGINE_DEBUG
-    qDebug("QSymbianSocketEnginePrivate::nativeConnect() : %d ", socketDescriptor);
+    qDebug("QSymbianSocketEngine::connectToHost() : %d ", d->socketDescriptor);
 #endif
 
+#if defined (QT_NO_IPV6)
+    if (addr.protocol() == QAbstractSocket::IPv6Protocol) {
+        d->setError(QAbstractSocket::UnsupportedSocketOperationError,
+                    NoIpV6ErrorString);
+        return false;
+    }
+#endif
+    if (!d->checkProxy(addr))
+        return false;
+
+    d->peerAddress = addr;
+    d->peerPort = port;
+
     TInetAddr nativeAddr;
-    setPortAndAddress(nativeAddr, port, addr);
+    d->setPortAndAddress(nativeAddr, port, addr);
     //TODO: async connect with active object - from here to end of function is a mess
     TRequestStatus status;
-    nativeSocket.Connect(nativeAddr, status);
+    d->nativeSocket.Connect(nativeAddr, status);
     User::WaitForRequest(status);
     TInt err = status.Int();
     if (err) {
         switch (err) {
         case KErrCouldNotConnect:
-            setError(QAbstractSocket::ConnectionRefusedError, ConnectionRefusedErrorString);
-            socketState = QAbstractSocket::UnconnectedState;
+            d->setError(QAbstractSocket::ConnectionRefusedError, ConnectionRefusedErrorString);
+            d->socketState = QAbstractSocket::UnconnectedState;
             break;
         case KErrTimedOut:
-            setError(QAbstractSocket::NetworkError, ConnectionTimeOutErrorString);
+            d->setError(QAbstractSocket::NetworkError, ConnectionTimeOutErrorString);
             break;
         case KErrHostUnreach:
-            setError(QAbstractSocket::NetworkError, HostUnreachableErrorString);
-            socketState = QAbstractSocket::UnconnectedState;
+            d->setError(QAbstractSocket::NetworkError, HostUnreachableErrorString);
+            d->socketState = QAbstractSocket::UnconnectedState;
             break;
         case KErrNetUnreach:
-            setError(QAbstractSocket::NetworkError, NetworkUnreachableErrorString);
-            socketState = QAbstractSocket::UnconnectedState;
+            d->setError(QAbstractSocket::NetworkError, NetworkUnreachableErrorString);
+            d->socketState = QAbstractSocket::UnconnectedState;
             break;
         case KErrInUse:
-            setError(QAbstractSocket::NetworkError, AddressInuseErrorString);
+            d->setError(QAbstractSocket::NetworkError, AddressInuseErrorString);
             break;
         case KErrPermissionDenied:
-            setError(QAbstractSocket::SocketAccessError, AccessErrorString);
-            socketState = QAbstractSocket::UnconnectedState;
+            d->setError(QAbstractSocket::SocketAccessError, AccessErrorString);
+            d->socketState = QAbstractSocket::UnconnectedState;
             break;
         case KErrNotSupported:
         case KErrBadDescriptor:
-            socketState = QAbstractSocket::UnconnectedState;
+            d->socketState = QAbstractSocket::UnconnectedState;
         default:
             break;
         }
 
-        if (socketState != QAbstractSocket::ConnectedState) {
+        if (d->socketState != QAbstractSocket::ConnectedState) {
 #if defined (QNATIVESOCKETENGINE_DEBUG)
             qDebug("QSymbianSocketEnginePrivate::nativeConnect(%s, %i) == false (%s)",
                    addr.toString().toLatin1().constData(), port,
-                   socketState == QAbstractSocket::ConnectingState
-                   ? "Connection in progress" : socketErrorString.toLatin1().constData());
+                   d->socketState == QAbstractSocket::ConnectingState
+                   ? "Connection in progress" : d->socketErrorString.toLatin1().constData());
 #endif
             return false;
         }
@@ -388,27 +423,29 @@ bool QSymbianSocketEngine::connect(const QHostAddress &addr, quint16 port)
            addr.toString().toLatin1().constData(), port);
 #endif
 
-    socketState = QAbstractSocket::ConnectedState;
+    d->socketState = QAbstractSocket::ConnectedState;
+    d->fetchConnectionParameters();
     return true;
 }
 
 bool QSymbianSocketEngine::bind(const QHostAddress &address, quint16 port)
 {
+    Q_D(QSymbianSocketEngine);
     TInetAddr nativeAddr;
-    setPortAndAddress(nativeAddr, port, address);
+    d->setPortAndAddress(nativeAddr, port, address);
 
-    TInt err = nativeSocket.Bind(nativeAddr);
+    TInt err = d->nativeSocket.Bind(nativeAddr);
 
     if (err) {
         switch(errno) {
         case KErrInUse:
-            setError(QAbstractSocket::AddressInUseError, AddressInuseErrorString);
+            d->setError(QAbstractSocket::AddressInUseError, AddressInuseErrorString);
             break;
         case KErrPermissionDenied:
-            setError(QAbstractSocket::SocketAccessError, AddressProtectedErrorString);
+            d->setError(QAbstractSocket::SocketAccessError, AddressProtectedErrorString);
             break;
         case KErrNotSupported:
-            setError(QAbstractSocket::UnsupportedSocketOperationError, OperationUnsupportedErrorString);
+            d->setError(QAbstractSocket::UnsupportedSocketOperationError, OperationUnsupportedErrorString);
             break;
         default:
             break;
@@ -416,7 +453,7 @@ bool QSymbianSocketEngine::bind(const QHostAddress &address, quint16 port)
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
         qDebug("QSymbianSocketEnginePrivate::nativeBind(%s, %i) == false (%s)",
-               address.toString().toLatin1().constData(), port, socketErrorString.toLatin1().constData());
+               address.toString().toLatin1().constData(), port, d->socketErrorString.toLatin1().constData());
 #endif
 
         return false;
@@ -426,17 +463,20 @@ bool QSymbianSocketEngine::bind(const QHostAddress &address, quint16 port)
     qDebug("QSymbianSocketEnginePrivate::nativeBind(%s, %i) == true",
            address.toString().toLatin1().constData(), port);
 #endif
-    socketState = QAbstractSocket::BoundState;
+    d->socketState = QAbstractSocket::BoundState;
     return true;
 }
 
-bool QSymbianSocketEngine::listen(int backlog)
+bool QSymbianSocketEngine::listen()
 {
-    TInt err = nativeSocket.Listen(backlog);
+    Q_D(QSymbianSocketEngine);
+    // TODO the value 50 is from the QNativeSocketEngine. Maybe it's a bit too much
+    // for a mobile platform
+    TInt err = d->nativeSocket.Listen(50);
     if (err) {
         switch (errno) {
         case KErrInUse:
-            setError(QAbstractSocket::AddressInUseError,
+            d->setError(QAbstractSocket::AddressInUseError,
                      PortInuseErrorString);
             break;
         default:
@@ -444,27 +484,28 @@ bool QSymbianSocketEngine::listen(int backlog)
         }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-        qDebug("QSymbianSocketEnginePrivate::nativeListen(%i) == false (%s)",
-               backlog, socketErrorString.toLatin1().constData());
+        qDebug("QSymbianSocketEnginePrivate::nativeListen() == false (%s)",
+               d->socketErrorString.toLatin1().constData());
 #endif
         return false;
     }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-    qDebug("QSymbianSocketEnginePrivate::nativeListen(%i) == true", backlog);
+    qDebug("QSymbianSocketEnginePrivate::nativeListen() == true");
 #endif
 
-    socketState = QAbstractSocket::ListeningState;
+    d->socketState = QAbstractSocket::ListeningState;
     return true;
 }
 
 int QSymbianSocketEngine::accept()
 {
+    Q_D(QSymbianSocketEngine);
     RSocket blankSocket;
     //TODO: this is unbelievably broken, needs to be properly async
-    blankSocket.Open(socketServer);
+    blankSocket.Open(d->socketServer);
     TRequestStatus status;
-    nativeSocket.Accept(blankSocket, status);
+    d->nativeSocket.Accept(blankSocket, status);
     User::WaitForRequest(status);
     if(status.Int()) {
         qWarning("QSymbianSocketEnginePrivate::nativeAccept() - error %d", status.Int());
@@ -477,11 +518,12 @@ int QSymbianSocketEngine::accept()
 
 qint64 QSymbianSocketEngine::bytesAvailable() const
 {
+    Q_D(const QSymbianSocketEngine);
     int nbytes = 0;
     qint64 available = 0;
     // FIXME is this the right thing also for UDP?
     // What is expected for UDP, the length for the next packet I guess?
-    TInt err = nativeSocket.GetOpt(KSOReadBytesPending, KSOLSocket, nbytes);
+    TInt err = d->nativeSocket.GetOpt(KSOReadBytesPending, KSOLSocket, nbytes);
     if(err)
         return 0;
     available = (qint64) nbytes;
@@ -494,34 +536,39 @@ qint64 QSymbianSocketEngine::bytesAvailable() const
 
 bool QSymbianSocketEngine::hasPendingDatagrams() const
 {
+    Q_D(const QSymbianSocketEngine);
     int nbytes;
-    TInt err = nativeSocket.GetOpt(KSOReadBytesPending,KSOLSocket, nbytes);
+    TInt err = d->nativeSocket.GetOpt(KSOReadBytesPending,KSOLSocket, nbytes);
     return err == KErrNone && nbytes > 0;
     //TODO: this is pretty horrible too...
+    // FIXME why?
 }
 
 qint64 QSymbianSocketEngine::pendingDatagramSize() const
 {
+    Q_D(const QSymbianSocketEngine);
     int nbytes;
-    TInt err = nativeSocket.GetOpt(KSOReadBytesPending,KSOLSocket, nbytes);
+    TInt err = d->nativeSocket.GetOpt(KSOReadBytesPending,KSOLSocket, nbytes);
     return qint64(nbytes-28); //TODO: why -28 (open C version had this)?
     // Why = Could it be that this is about header lengths etc? if yes
     // this could be pretty broken, especially for IPv6
 }
 
-qint64 QSymbianSocketEngine::nativeReceiveDatagram(char *data, qint64 maxSize,
+
+qint64 QSymbianSocketEngine::readDatagram(char *data, qint64 maxSize,
                                                     QHostAddress *address, quint16 *port)
 {
+    Q_D(QSymbianSocketEngine);
     TPtr8 buffer((TUint8*)data, (int)maxSize);
     TInetAddr addr;
     TRequestStatus status; //TODO: OMG sync receive!
-    nativeSocket.RecvFrom(buffer, addr, 0, status);
+    d->nativeSocket.RecvFrom(buffer, addr, 0, status);
     User::WaitForRequest(status);
 
     if (status.Int()) {
-        setError(QAbstractSocket::NetworkError, ReceiveDatagramErrorString);
+        d->setError(QAbstractSocket::NetworkError, ReceiveDatagramErrorString);
     } else if (port || address) {
-        getPortAndAddress(addr, port, address);
+        d->getPortAndAddress(addr, port, address);
     }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
@@ -537,15 +584,17 @@ qint64 QSymbianSocketEngine::nativeReceiveDatagram(char *data, qint64 maxSize,
     return qint64(buffer.Length());
 }
 
-qint64 QSymbianSocketEngine::sendDatagram(const char *data, qint64 len,
+
+qint64 QSymbianSocketEngine::writeDatagram(const char *data, qint64 len,
                                                    const QHostAddress &host, quint16 port)
 {
+    Q_D(QSymbianSocketEngine);
     TPtrC8 buffer((TUint8*)data, (int)len);
     TInetAddr addr;
-    setPortAndAddress(addr, port, host);
+    d->setPortAndAddress(addr, port, host);
     TSockXfrLength sentBytes;
     TRequestStatus status; //TODO: OMG sync send!
-    nativeSocket.SendTo(buffer, addr, 0, status, sentBytes);
+    d->nativeSocket.SendTo(buffer, addr, 0, status, sentBytes);
     User::WaitForRequest(status);
     TInt err = status.Int(); 
 
@@ -568,6 +617,7 @@ qint64 QSymbianSocketEngine::sendDatagram(const char *data, qint64 len,
     return qint64(sentBytes());
 }
 
+// FIXME check where the native socket engine called that..
 bool QSymbianSocketEnginePrivate::fetchConnectionParameters()
 {
     localPort = 0;
@@ -611,7 +661,8 @@ bool QSymbianSocketEnginePrivate::fetchConnectionParameters()
     TProtocolDesc protocol;
     TInt err = nativeSocket.Info(protocol);
     if (err) {
-        QAbstractSocket::UnknownSocketType;
+        // ?
+        // QAbstractSocket::UnknownSocketType;
     } else {
         switch (protocol.iProtocol) {
         case KProtocolInetTcp:
@@ -626,13 +677,13 @@ bool QSymbianSocketEnginePrivate::fetchConnectionParameters()
         }
     }
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-    QString socketProtocolStr = "UnknownProtocol";
-    if (socketProtocol == QAbstractSocket::IPv4Protocol) socketProtocolStr = "IPv4Protocol";
-    else if (socketProtocol == QAbstractSocket::IPv6Protocol) socketProtocolStr = "IPv6Protocol";
+    QString socketProtocolStr = QLatin1String("UnknownProtocol");
+    if (socketProtocol == QAbstractSocket::IPv4Protocol) socketProtocolStr = QLatin1String("IPv4Protocol");
+    else if (socketProtocol == QAbstractSocket::IPv6Protocol) socketProtocolStr = QLatin1String("IPv6Protocol");
 
-    QString socketTypeStr = "UnknownSocketType";
-    if (socketType == QAbstractSocket::TcpSocket) socketTypeStr = "TcpSocket";
-    else if (socketType == QAbstractSocket::UdpSocket) socketTypeStr = "UdpSocket";
+    QString socketTypeStr = QLatin1String("UnknownSocketType");
+    if (socketType == QAbstractSocket::TcpSocket) socketTypeStr = QLatin1String("TcpSocket");
+    else if (socketType == QAbstractSocket::UdpSocket) socketTypeStr = QLatin1String("UdpSocket");
 
     qDebug("QSymbianSocketEnginePrivate::fetchConnectionParameters() local == %s:%i,"
            " peer == %s:%i, socket == %s - %s",
@@ -645,22 +696,25 @@ bool QSymbianSocketEnginePrivate::fetchConnectionParameters()
 
 void QSymbianSocketEngine::close()
 {
+    Q_D(QSymbianSocketEngine);
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QSymbianSocketEnginePrivate::nativeClose()");
 #endif
 
     //TODO: call nativeSocket.Shutdown(EImmediate) in some cases?
-    nativeSocket.Close();
-    QSymbianSocketManager::instance().removeSocket(nativeSocket);
+    d->nativeSocket.Close();
+    QSymbianSocketManager::instance().removeSocket(d->nativeSocket);
+
+    // FIXME set nativeSocket to 0 ?
 }
 
 qint64 QSymbianSocketEngine::write(const char *data, qint64 len)
 {
-    Q_Q(QSymbianSocketEngine);
+    Q_D(QSymbianSocketEngine);
     TPtrC8 buffer((TUint8*)data, (int)len);
     TSockXfrLength sentBytes;
     TRequestStatus status; //TODO: OMG sync send!
-    nativeSocket.Send(buffer, 0, status, sentBytes);
+    d->nativeSocket.Send(buffer, 0, status, sentBytes);
     User::WaitForRequest(status);
     TInt err = status.Int(); 
 
@@ -668,16 +722,16 @@ qint64 QSymbianSocketEngine::write(const char *data, qint64 len)
         switch (err) {
         case KErrDisconnected:
             sentBytes = -1;
-            setError(QAbstractSocket::RemoteHostClosedError, RemoteHostClosedErrorString);
-            q->close();
+            d->setError(QAbstractSocket::RemoteHostClosedError, RemoteHostClosedErrorString);
+            close();
             break;
         case KErrTooBig:
-            setError(QAbstractSocket::DatagramTooLargeError, DatagramTooLargeErrorString);
+            d->setError(QAbstractSocket::DatagramTooLargeError, DatagramTooLargeErrorString);
             break;
         case KErrWouldBlock:
             sentBytes = 0;
         default:
-            setError(QAbstractSocket::NetworkError, SendDatagramErrorString);
+            d->setError(QAbstractSocket::NetworkError, SendDatagramErrorString);
         }
     }
 
@@ -693,8 +747,8 @@ qint64 QSymbianSocketEngine::write(const char *data, qint64 len)
 */
 qint64 QSymbianSocketEngine::read(char *data, qint64 maxSize)
 {
-    Q_Q(QSymbianSocketEngine);
-    if (!q->isValid()) {
+    Q_D(QSymbianSocketEngine);
+    if (!isValid()) {
         qWarning("QSymbianSocketEnginePrivate::nativeRead: Invalid socket");
         return -1;
     }
@@ -702,7 +756,7 @@ qint64 QSymbianSocketEngine::read(char *data, qint64 maxSize)
     TPtr8 buffer((TUint8*)data, (int)maxSize);
     TSockXfrLength received = 0;
     TRequestStatus status; //TODO: OMG sync receive!
-    nativeSocket.RecvOneOrMore(buffer, 0, status, received);
+    d->nativeSocket.RecvOneOrMore(buffer, 0, status, received);
     User::WaitForRequest(status);
     TInt err = status.Int();
     int r = received();
@@ -732,6 +786,7 @@ qint64 QSymbianSocketEngine::read(char *data, qint64 maxSize)
     return qint64(r);
 }
 
+// FIXME wait vs select
 int QSymbianSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) const
 {
     bool readyRead = false;
@@ -824,6 +879,38 @@ bool QSymbianSocketEngine::setMulticastInterface(const QNetworkInterface &iface)
 {
     //TODO
     return false;
+}
+
+bool QSymbianSocketEnginePrivate::checkProxy(const QHostAddress &address)
+{
+    if (address == QHostAddress::LocalHost || address == QHostAddress::LocalHostIPv6)
+        return true;
+
+#if !defined(QT_NO_NETWORKPROXY)
+    QObject *parent = q_func()->parent();
+    QNetworkProxy proxy;
+    if (QAbstractSocket *socket = qobject_cast<QAbstractSocket *>(parent)) {
+        proxy = socket->proxy();
+    } else if (QTcpServer *server = qobject_cast<QTcpServer *>(parent)) {
+        proxy = server->proxy();
+    } else {
+        // no parent -> no proxy
+        return true;
+    }
+
+    if (proxy.type() == QNetworkProxy::DefaultProxy)
+        proxy = QNetworkProxy::applicationProxy();
+
+    if (proxy.type() != QNetworkProxy::DefaultProxy &&
+        proxy.type() != QNetworkProxy::NoProxy) {
+        // QNativeSocketEngine doesn't do proxies
+        setError(QAbstractSocket::UnsupportedSocketOperationError,
+                 InvalidProxyTypeString);
+        return false;
+    }
+#endif
+
+    return true;
 }
 
 QT_END_NAMESPACE

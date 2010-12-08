@@ -207,6 +207,8 @@ public:
     int nativeSelect(int timeout, bool checkRead, bool checkWrite,
                            bool *selectForRead, bool *selectForWrite) const;
 
+    bool createNewSocket(QAbstractSocket::SocketType socketType,
+                                             QAbstractSocket::NetworkLayerProtocol socketProtocol);
 
     bool checkProxy(const QHostAddress &address);
     bool fetchConnectionParameters();
