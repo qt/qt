@@ -208,8 +208,8 @@ void BaselineHandler::provideBaselineChecksums(const QByteArray &itemListBlock)
     ImageItemList itemList;
     QDataStream ds(itemListBlock);
     ds >> itemList;
-    qDebug() << runId << logtime() << "Received request for checksums for" << itemList.count() << "items, engine"
-             << itemList.at(0).engineAsString() << "pixel format" << itemList.at(0).formatAsString();
+    qDebug() << runId << logtime() << "Received request for checksums for" << itemList.count()
+             << "items in test function" << itemList.at(0).testFunction;
 
     for (ImageItemList::iterator i = itemList.begin(); i != itemList.end(); ++i) {
         i->imageChecksums.clear();
@@ -232,10 +232,10 @@ void BaselineHandler::provideBaselineChecksums(const QByteArray &itemListBlock)
         if (file.open(QIODevice::ReadOnly)) {
             QTextStream in(&file);
             do {
-                QString scriptName = in.readLine();
-                if (!scriptName.isNull()) {
+                QString itemName = in.readLine();
+                if (!itemName.isNull()) {
                     for (ImageItemList::iterator i = itemList.begin(); i != itemList.end(); ++i) {
-                        if (i->scriptName == scriptName)
+                        if (i->itemName == itemName)
                             i->status = ImageItem::IgnoreItem;
                     }
                 }
@@ -258,7 +258,7 @@ void BaselineHandler::storeImage(const QByteArray &itemBlock, bool isBaseline)
     ds >> item;
 
     QString prefix = pathForItem(item, isBaseline);
-    qDebug() << runId << logtime() << "Received" << (isBaseline ? "baseline" : "mismatched") << "image for:" << item.scriptName << "Storing in" << prefix;
+    qDebug() << runId << logtime() << "Received" << (isBaseline ? "baseline" : "mismatched") << "image for:" << item.itemName << "Storing in" << prefix;
 
     QString dir = prefix.section(QLC('/'), 0, -2);
     QDir cwd;
@@ -333,17 +333,17 @@ QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline, boo
     if (mapped.isEmpty())
         mapPlatformInfo();
 
-    QString itemName = item.scriptName;
-    if (itemName.contains(QLC('.')))
-        itemName.replace(itemName.lastIndexOf(QLC('.')), 1, QLC('_'));
+    QString itemName = item.itemName;
+    itemName.replace(QLC('.'), QLC('_'));
     itemName.append(QLC('_'));
-    itemName.append(QString::number(item.scriptChecksum, 16).rightJustified(4, QLC('0')));
+    itemName.append(QString::number(item.itemChecksum, 16).rightJustified(4, QLC('0')));
 
     QStringList path;
     if (absolute)
         path += BaselineServer::storagePath();
+    path += mapped.value(PI_TestCase);
     path += QLS(isBaseline ? "baselines" : "mismatches");
-    path += item.engineAsString() + QLC('_') + item.formatAsString();
+    path += item.testFunction;
     path += mapped.value(PI_QtVersion);
     path += mapped.value(PI_QMakeSpec);
     path += mapped.value(PI_HostName);
@@ -397,6 +397,7 @@ QString BaselineHandler::updateSingleBaseline(const QString &oldBaseline, const 
     return res;
 }
 
+
 QString BaselineHandler::blacklistTest(const QString &context, const QString &itemId, bool removeFromBlacklist)
 {
     QFile file(BaselineServer::storagePath() + QLC('/') + context + QLS("/BLACKLIST"));
@@ -439,11 +440,10 @@ void BaselineHandler::testPathMapping()
           << QLS("localhost");
 
     ImageItem item;
-    item.scriptName = QLS("arcs.qps");
-    item.engine = ImageItem::Raster;
-    item.renderFormat = QImage::Format_ARGB32_Premultiplied;
+    item.testFunction = QLS("testPathMapping");
+    item.itemName = QLS("arcs.qps");
     item.imageChecksums << 0x0123456789abcdefULL;
-    item.scriptChecksum = 0x0123;
+    item.itemChecksum = 0x0123;
 
     plat.insert(PI_QtVersion, QLS("4.8.0"));
     plat.insert(PI_BuildKey, QLS("(nobuildkey)"));

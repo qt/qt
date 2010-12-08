@@ -52,6 +52,7 @@
 
 #define FileFormat "png"
 
+const QString PI_TestCase(QLS("TestCase"));
 const QString PI_HostName(QLS("HostName"));
 const QString PI_HostAddress(QLS("HostAddress"));
 const QString PI_OSName(QLS("OSName"));
@@ -73,19 +74,15 @@ struct ImageItem
 {
 public:
     ImageItem()
-        : status(Ok), renderFormat(QImage::Format_Invalid), engine(Raster), scriptChecksum(0)
+        : status(Ok), itemChecksum(0)
     {}
     ImageItem(const ImageItem &other)
     { *this = other; }
     ~ImageItem()
     {}
     ImageItem &operator=(const ImageItem &other);
-    static quint64 computeChecksum(const QImage& image);
-    QString engineAsString() const;
-    QString formatAsString() const;
 
-    void writeImageToStream(QDataStream &stream) const;
-    void readImageFromStream(QDataStream &stream);
+    static quint64 computeChecksum(const QImage& image);
 
     enum ItemStatus {
         Ok = 0,
@@ -93,19 +90,15 @@ public:
         IgnoreItem = 2
     };
 
-    enum GraphicsEngine {
-        Raster = 0,
-        OpenGL = 1
-    };
-
-    QString scriptName;
+    QString testFunction;
+    QString itemName;
     ItemStatus status;
-    QImage::Format renderFormat;
-    GraphicsEngine engine;
     QImage image;
     QList<quint64> imageChecksums;
-    // tbd: add diffscore
-    quint16 scriptChecksum;
+    quint16 itemChecksum;
+
+    void writeImageToStream(QDataStream &stream) const;
+    void readImageFromStream(QDataStream &stream);
 };
 QDataStream & operator<< (QDataStream &stream, const ImageItem &ii);
 QDataStream & operator>> (QDataStream &stream, ImageItem& ii);
@@ -124,7 +117,7 @@ public:
     // Important constants here
     // ****************************************************
     enum Constant {
-        ProtocolVersion = 3,
+        ProtocolVersion = 4,
         ServerPort = 54129,
         Timeout = 5000
     };
@@ -143,8 +136,8 @@ public:
     };
 
     // For client:
-    bool connect(bool *dryrun = 0);
-    bool requestBaselineChecksums(ImageItemList *itemList);
+    bool connect(const QString &testCase, bool *dryrun = 0);
+    bool requestBaselineChecksums(const QString &testFunction, ImageItemList *itemList);
     bool submitNewBaseline(const ImageItem &item, QByteArray *serverMsg);
     bool submitMismatch(const ImageItem &item, QByteArray *serverMsg);
 

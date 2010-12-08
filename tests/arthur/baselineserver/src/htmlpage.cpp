@@ -69,7 +69,7 @@ void HTMLPage::start(const QString &storagepath, const QString &runId, const Pla
     ctx = context;
     root = storagepath + QLC('/');
     imageItems = itemList;
-    reportDir = pinfo.value(PI_PulseGitBranch).isEmpty() ? QLS("reports/adhoc/") : QLS("reports/pulse/");
+    reportDir = pinfo.value(PI_TestCase) + QLC('/') + (pinfo.value(PI_PulseGitBranch).isEmpty() ? QLS("reports/adhoc/") : QLS("reports/pulse/"));
     QString dir = root + reportDir;
     QDir cwd;
     if (!cwd.exists(dir))
@@ -79,8 +79,7 @@ void HTMLPage::start(const QString &storagepath, const QString &runId, const Pla
 
 void HTMLPage::writeHeader(const ImageItem &item)
 {
-    path = reportDir + id + QLC('_') + item.engineAsString()
-            + QLC('_') + item.formatAsString() + QLS(".html");
+    path = reportDir + id + QLC('_') + item.testFunction + QLS(".html");
 
     QString pageUrl = BaselineServer::baseUrl() + path;
 
@@ -126,7 +125,7 @@ void HTMLPage::addItem(const QString &baseline, const QString &rendered, const I
     QString pageUrl = BaselineServer::baseUrl() + path;
 
     out << "<tr>\n";
-    out << "<td>" << item.scriptName << "</td>\n";
+    out << "<td>" << item.itemName << "</td>\n";
     QStringList images = QStringList() << baseline << rendered << compared;
     foreach(const QString& img, images)
         out << "<td><a href=\"/" << img << "\"><img src=\"/" << generateThumbnail(img) << "\" width=240 height=240></a></td>\n";
@@ -135,7 +134,7 @@ void HTMLPage::addItem(const QString &baseline, const QString &rendered, const I
         << "<p><a href=\"/cgi-bin/server.cgi?cmd=updateSingleBaseline&oldBaseline=" << baseline
         << "&newBaseline=" << rendered << "&url=" << pageUrl << "\">Replace baseline with rendered</a></p>\n"
         << "<p><a href=\"/cgi-bin/server.cgi?cmd=blacklist&context=" << ctx
-        << "&itemId=" << item.scriptName << "&url=" << pageUrl << "\">Blacklist this item</a></p>\n"
+        << "&itemId=" << item.itemName << "&url=" << pageUrl << "\">Blacklist this item</a></p>\n"
         << "<p><a href=\"/cgi-bin/server.cgi?cmd=view&baseline=" << baseline << "&rendered=" << rendered
         << "&compared=" << compared << "&url=" << pageUrl << "\">View</a></p>\n"
         << "</td>\n";
@@ -144,7 +143,7 @@ void HTMLPage::addItem(const QString &baseline, const QString &rendered, const I
     QMutableVectorIterator<ImageItem> it(imageItems);
     while (it.hasNext()) {
         it.next();
-        if (it.value().scriptName == item.scriptName) {
+        if (it.value().itemName == item.itemName) {
             it.remove();
             break;
         }
@@ -158,11 +157,11 @@ void HTMLPage::end()
         // Add the names of the scripts that passed the test, or were blacklisted
         QString pageUrl = BaselineServer::baseUrl() + path;
         for (int i=0; i<imageItems.count(); ++i) {
-            out << "<tr><td>" << imageItems.at(i).scriptName << "</td><td>N/A</td><td>N/A</td><td>N/A</td><td>";
+            out << "<tr><td>" << imageItems.at(i).itemName << "</td><td>N/A</td><td>N/A</td><td>N/A</td><td>";
             if (imageItems.at(i).status == ImageItem::IgnoreItem) {
                 out << "<span style=\"background-color:yellow\">Blacklisted</span> "
                     << "<a href=\"/cgi-bin/server.cgi?cmd=whitelist&context=" << ctx
-                    << "&itemId=" << imageItems.at(i).scriptName << "&url=" << pageUrl
+                    << "&itemId=" << imageItems.at(i).itemName << "&url=" << pageUrl
                     << "\">Whitelist item</a>";
             } else {
                 out << "<span style=\"color:green\">Test passed</span>";
