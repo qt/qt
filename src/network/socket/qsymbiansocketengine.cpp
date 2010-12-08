@@ -198,7 +198,7 @@ void QSymbianSocketEnginePrivate::setPortAndAddress(TInetAddr& nativeAddr, quint
 
 QSymbianSocketEnginePrivate::QSymbianSocketEnginePrivate() :
     socketDescriptor(-1),
-    socketServer(qt_symbianGetSocketServer()),
+    socketServer(QSymbianSocketManager::instance().getSocketServer()),
     connection(QSymbianSocketManager::instance().defaultConnection()),
     readNotifier(0),
     writeNotifier(0),
