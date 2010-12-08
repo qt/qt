@@ -195,11 +195,9 @@ public:
     };
     void setError(QAbstractSocket::SocketError error, ErrorString errorString) const;
 
-#ifdef Q_OS_SYMBIAN
     void getPortAndAddress(const TInetAddr& a, quint16 *port, QHostAddress *addr);
     void setPortAndAddress(TInetAddr& nativeAddr, quint16 port, const QHostAddress &addr);
     void setError(TInt symbianError);
-#endif
 
     // FIXME
     int nativeSelect(int timeout, bool selectForRead) const;

@@ -169,11 +169,8 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
     int protocol = AF_INET;
 #endif
     int type = (socketType == QAbstractSocket::UdpSocket) ? SOCK_DGRAM : SOCK_STREAM;
-#ifdef Q_OS_SYMBIAN
-    int socket = ::socket(protocol, type, 0);
-#else
+
 	int socket = qt_safe_socket(protocol, type, 0);
-#endif
 
     if (socket <= 0) {
         switch (errno) {
@@ -318,11 +315,9 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
         }
 #else // Q_OS_VXWORKS
         int onoff = 1;
-#ifdef Q_OS_SYMBIAN
-        if (::ioctl(socketDescriptor, FIONBIO, &onoff) < 0) {
-#else
+
         if (qt_safe_ioctl(socketDescriptor, FIONBIO, &onoff) < 0) {
-#endif
+
 #ifdef QNATIVESOCKETENGINE_DEBUG
             perror("QNativeSocketEnginePrivate::setOption(): ioctl(FIONBIO, 1) failed");
 #endif
@@ -332,7 +327,7 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
         return true;
     }
     case QNativeSocketEngine::AddressReusable:
-#if defined(SO_REUSEPORT) && !defined(Q_OS_SYMBIAN)
+#if defined(SO_REUSEPORT)
         n = SO_REUSEPORT;
 #else
         n = SO_REUSEADDR;
@@ -425,11 +420,8 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16
     } else {
         // unreachable
     }
-#ifdef Q_OS_SYMBIAN
-    int connectResult = ::connect(socketDescriptor, sockAddrPtr, sockAddrSize);
-#else
+
     int connectResult = qt_safe_connect(socketDescriptor, sockAddrPtr, sockAddrSize);
-#endif
     if (connectResult == -1) {
         switch (errno) {
         case EISCONN:
@@ -472,9 +464,6 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16
         case EBADF:
         case EFAULT:
         case ENOTSOCK:
-#ifdef Q_OS_SYMBIAN
-        case EPIPE:
-#endif
             socketState = QAbstractSocket::UnconnectedState;
         default:
             break;
@@ -573,11 +562,7 @@ bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &address, quint16
 
 bool QNativeSocketEnginePrivate::nativeListen(int backlog)
 {
-#ifdef Q_OS_SYMBIAN
-    if (::listen(socketDescriptor, backlog) < 0) {
-#else
     if (qt_safe_listen(socketDescriptor, backlog) < 0) {
-#endif
         switch (errno) {
         case EADDRINUSE:
             setError(QAbstractSocket::AddressInUseError,
@@ -604,21 +589,12 @@ bool QNativeSocketEnginePrivate::nativeListen(int backlog)
 
 int QNativeSocketEnginePrivate::nativeAccept()
 {
-#ifdef Q_OS_SYMBIAN
-    int acceptedDescriptor = ::accept(socketDescriptor, 0, 0);
-#else
     int acceptedDescriptor = qt_safe_accept(socketDescriptor, 0, 0);
-#endif
     //check if we have valid descriptor at all
     if(acceptedDescriptor > 0) {
         // Ensure that the socket is closed on exec*()
         ::fcntl(acceptedDescriptor, F_SETFD, FD_CLOEXEC);
     }
-#ifdef Q_OS_SYMBIAN
-    else {
-        qWarning("QNativeSocketEnginePrivate::nativeAccept() - acceptedDescriptor <= 0");
-    }
-#endif
 
     return acceptedDescriptor;
 }
@@ -793,11 +769,7 @@ qint64 QNativeSocketEnginePrivate::nativeBytesAvailable() const
     int nbytes = 0;
     // gives shorter than true amounts on Unix domain sockets.
     qint64 available = 0;
-#ifdef Q_OS_SYMBIAN
-	if (::ioctl(socketDescriptor, FIONREAD, (char *) &nbytes) >= 0)
-#else
     if (qt_safe_ioctl(socketDescriptor, FIONREAD, (char *) &nbytes) >= 0)
-#endif
         available = (qint64) nbytes;
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
@@ -816,15 +788,10 @@ bool QNativeSocketEnginePrivate::nativeHasPendingDatagrams() const
     // Peek 0 bytes into the next message. The size of the message may
     // well be 0, so we can't check recvfrom's return value.
     ssize_t readBytes;
-#ifdef Q_OS_SYMBIAN
-    char c;
-    readBytes = ::recvfrom(socketDescriptor, &c, 1, MSG_PEEK, &storage.a, &storageSize);
-#else
     do {
         char c;
         readBytes = ::recvfrom(socketDescriptor, &c, 1, MSG_PEEK, &storage.a, &storageSize);
     } while (readBytes == -1 && errno == EINTR);
-#endif
 
     // If there's no error, or if our buffer was too small, there must be a
     // pending datagram.
@@ -837,14 +804,6 @@ bool QNativeSocketEnginePrivate::nativeHasPendingDatagrams() const
     return result;
 }
 
-#ifdef Q_OS_SYMBIAN
-qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
-{
-    size_t nbytes = 0;
-    ::ioctl(socketDescriptor, E32IONREAD, (char *) &nbytes);
-    return qint64(nbytes-28);
-}
-#else
 qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
 {
     QVarLengthArray<char, 8192> udpMessagePeekBuffer(8192);
@@ -871,7 +830,7 @@ qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
 
     return qint64(recvResult);
 }
-#endif
+
 qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxSize,
                                                     QHostAddress *address, quint16 *port)
 {
@@ -881,17 +840,11 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
     sz = sizeof(aa);
 
     ssize_t recvFromResult = 0;
-#ifdef Q_OS_SYMBIAN
-    char c;
-    recvFromResult = ::recvfrom(socketDescriptor, maxSize ? data : &c, maxSize ? maxSize : 1,
-                                0, &aa.a, &sz);
-#else
     do {
         char c;
         recvFromResult = ::recvfrom(socketDescriptor, maxSize ? data : &c, maxSize ? maxSize : 1,
                                     0, &aa.a, &sz);
     } while (recvFromResult == -1 && errno == EINTR);
-#endif
 
     if (recvFromResult == -1) {
         setError(QAbstractSocket::NetworkError, ReceiveDatagramErrorString);
@@ -940,13 +893,8 @@ qint64 QNativeSocketEnginePrivate::nativeSendDatagram(const char *data, qint64 l
 
     // ignore the SIGPIPE signal
     qt_ignore_sigpipe();
-#ifdef Q_OS_SYMBIAN
-    ssize_t sentBytes = ::sendto(socketDescriptor, data, len,
-                                       0, sockAddrPtr, sockAddrSize);
-#else
     ssize_t sentBytes = qt_safe_sendto(socketDescriptor, data, len,
                                        0, sockAddrPtr, sockAddrSize);
-#endif
 
     if (sentBytes < 0) {
         switch (errno) {
