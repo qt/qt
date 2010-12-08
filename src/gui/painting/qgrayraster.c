@@ -982,7 +982,7 @@
     dx = DOWNSCALE( ras.x ) + to->x - 3 * ( control1->x + control2->x );
     if ( dx < 0 )
       dx = -dx;
-    dy = DOWNSCALE( ras.y ) + to->y - 3 * ( control1->x + control2->y );
+    dy = DOWNSCALE( ras.y ) + to->y - 3 * ( control1->y + control2->y );
     if ( dy < 0 )
       dy = -dy;
     if ( dx < dy )
