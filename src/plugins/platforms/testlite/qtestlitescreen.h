@@ -39,45 +39,65 @@
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSSYSTEM_TESTLITE_H
-#define QGRAPHICSSYSTEM_TESTLITE_H
+#ifndef QTESTLITESCREEN_H
+#define QTESTLITESCREEN_H
 
-//make sure textstream is included before any X11 headers
-#include <QtCore/QTextStream>
-
-#include <QtGui/QPlatformIntegration>
 #include <QtGui/QPlatformScreen>
-
-#include <QtGui/private/qt_x11_p.h>
+#include "qtestliteintegration.h"
 
 QT_BEGIN_NAMESPACE
 
-class QTestLiteScreen;
+class QTestLiteCursor;
 
-class QTestLiteIntegration : public QPlatformIntegration
+class QTestLiteScreen : public QPlatformScreen
 {
+    Q_OBJECT
 public:
-    QTestLiteIntegration(bool useOpenGL = false);
+    QTestLiteScreen();
 
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
+    ~QTestLiteScreen();
 
-    QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+    QRect geometry() const { return mGeometry; }
+    int depth() const { return mDepth; }
+    QImage::Format format() const { return mFormat; }
+    QSize physicalSize() const { return mPhysicalSize; }
 
-    QList<QPlatformScreen *> screens() const { return mScreens; }
+    Window rootWindow() { return RootWindow(mDisplay, mScreen); }
+    unsigned long blackPixel() { return BlackPixel(mDisplay, mScreen); }
+    unsigned long whitePixel() { return WhitePixel(mDisplay, mScreen); }
 
-    QPlatformFontDatabase *fontDatabase() const;
+    bool handleEvent(XEvent *xe);
+    QImage grabWindow(Window window, int x, int y, int w, int h);
 
-    bool hasOpenGL() const;
+    static QTestLiteScreen *testLiteScreenForWidget(QWidget *widget);
+
+    Display *display() const;
+    int xScreenNumber() const;
+
+    Atom wmProtocolsAtom() const;
+    Atom wmDeleteWindowAtom() const;
+    void setWmDeleteWindowAtom(Atom newDeleteWindowAtom);
+
+    Atom atomForMotifWmHints() const;
+
+
+public slots:
+    void eventDispatcher();
 
 private:
-    bool mUseOpenGL;
-    QTestLiteScreen *mPrimaryScreen;
-    QList<QPlatformScreen *> mScreens;
-    QPlatformFontDatabase *mFontDb;
+    QRect mGeometry;
+    QSize mPhysicalSize;
+    int mDepth;
+    QImage::Format mFormat;
+    QTestLiteCursor *mCursor;
+
+    Display * mDisplay;
+    int mScreen;
+    Atom mWmProtocolsAtom;
+    Atom mWmDeleteWindowAtom;
+    Atom mWmMotifHintAtom;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QTESTLITESCREEN_H

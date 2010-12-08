@@ -39,169 +39,81 @@
 **
 ****************************************************************************/
 
-#include "qtestliteintegration.h"
-#include <QWindowSystemInterface>
-#include <private/qwindowsurface_p.h>
-#include <QtGui/private/qapplication_p.h>
-
 #include "qtestlitewindow.h"
 
-#include <QBitmap>
-#include <QCursor>
-#include <QDateTime>
-#include <QPixmap>
-#include <QImage>
-#include <QSocketNotifier>
+#include "qtestliteintegration.h"
+#include "qtestlitescreen.h"
 
-#include <qdebug.h>
-#include <QTimer>
+#include <QtGui/QWindowSystemInterface>
+#include <QSocketNotifier>
 #include <QApplication>
+#include <QDebug>
+
+#include <QtGui/private/qwindowsurface_p.h>
+#include <QtGui/private/qapplication_p.h>
 
 #ifndef QT_NO_OPENGL
 #include "qglxintegration.h"
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-
-
-#include <X11/Xatom.h>
-
-#include <X11/cursorfont.h>
-
-
-
-//### remove stuff we don't want from qt_x11_p.h
-#undef ATOM
-#undef X11
-
 //#define MYX11_DEBUG
 
 QT_BEGIN_NAMESPACE
 
-static int (*original_x_errhandler)(Display *dpy, XErrorEvent *);
-static bool seen_badwindow;
-
-
-static Atom wmProtocolsAtom;
-static Atom wmDeleteWindowAtom;
-
-class MyX11CursorNode
+QTestLiteWindow::QTestLiteWindow(QWidget *window)
+    : QPlatformWindow(window)
+    , mGLContext(0)
+    , mScreen(QTestLiteScreen::testLiteScreenForWidget(window))
 {
-public:
-    MyX11CursorNode(int id, Cursor c) { idValue = id; cursorValue = c; refCount = 1; }
-    QDateTime expiration() { return t; }
-    void setExpiration(QDateTime val) { t = val; }
-    MyX11CursorNode * ante() { return before; }
-    void setAnte(MyX11CursorNode *node) { before = node; }
-    MyX11CursorNode * post() { return after; }
-    void setPost(MyX11CursorNode *node) { after = node; }
-    Cursor cursor() { return cursorValue; }
-    int id() { return idValue; }
-    unsigned int refCount;
-
-private:
-    MyX11CursorNode *before;
-    MyX11CursorNode *after;
-    QDateTime t;
-    Cursor cursorValue;
-    int idValue;
-
-    Display * display;
-};
-
-
-
-
-
-class MyX11Cursors : public QObject
-{
-    Q_OBJECT
-public:
-    MyX11Cursors(Display * d);
-    ~MyX11Cursors() { timer.stop(); }
-    void incrementUseCount(int id);
-    void decrementUseCount(int id);
-    void createNode(int id, Cursor c);
-    bool exists(int id) { return lookupMap.contains(id); }
-    Cursor cursor(int id);
-public slots:
-    void timeout();
-
-private:
-    void removeNode(MyX11CursorNode *node);
-    void insertNode(MyX11CursorNode *node);
-
-    // linked list of cursors currently not assigned to any window
-    MyX11CursorNode *firstExpired;
-    MyX11CursorNode *lastExpired;
-
-    QHash<int, MyX11CursorNode *> lookupMap;
-    QTimer timer;
-
-    Display *display;
-
-    int removalDelay;
-};
-
-
-
-
-
-QTestLiteWindow::QTestLiteWindow(const QTestLiteIntegration *platformIntegration,
-                                 QTestLiteScreen */*screen*/, QWidget *window)
-    :QPlatformWindow(window), mGLContext(0)
-{
-    xd = platformIntegration->xd;
-    xd->windowList.append(this);
-    {
-        int x = window->x();
-        int y = window->y();
-        int w = window->width();
-        int h = window->height();
+    int x = window->x();
+    int y = window->y();
+    int w = window->width();
+    int h = window->height();
 
         if(window->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
-           && QApplicationPrivate::platformIntegration()->hasOpenGL() ) {
+           && QApplicationPrivate
+                ::platformIntegration()->hasOpenGL() ) {
 #ifndef QT_NO_OPENGL
-            XVisualInfo *visualInfo = QGLXGLContext::findVisualInfo(xd,window->platformWindowFormat());
-            Colormap cmap = XCreateColormap(xd->display,xd->rootWindow(),visualInfo->visual,AllocNone);
+            XVisualInfo *visualInfo = QGLXContext::findVisualInfo(mScreen,window->platformWindowFormat());
+            Colormap cmap = XCreateColormap(mScreen->display(),mScreen->rootWindow(),visualInfo->visual,AllocNone);
 
             XSetWindowAttributes a;
             a.colormap = cmap;
-            x_window = XCreateWindow(xd->display, xd->rootWindow(),x, y, w, h,
+            x_window = XCreateWindow(mScreen->display(), mScreen->rootWindow(),x, y, w, h,
                                       0, visualInfo->depth, InputOutput, visualInfo->visual,
                                       CWColormap, &a);
 #endif //QT_NO_OPENGL
         } else {
-            x_window = XCreateSimpleWindow(xd->display, xd->rootWindow(),
+            x_window = XCreateSimpleWindow(mScreen->display(), mScreen->rootWindow(),
                                            x, y, w, h, 0 /*border_width*/,
-                                           xd->blackPixel(), xd->whitePixel());
+                                           mScreen->blackPixel(), mScreen->whitePixel());
         }
 
 #ifdef MYX11_DEBUG
         qDebug() << "QTestLiteWindow::QTestLiteWindow creating" << hex << x_window << window;
 #endif
-    }
+//    }
 
-    width = -1;
-    height = -1;
-    xpos = -1;
-    ypos = -1;
+//    width = -1;
+//    height = -1;
+//    xpos = -1;
+//    ypos = -1;
 
-    XSetWindowBackgroundPixmap(xd->display, x_window, XNone);
+    XSetWindowBackgroundPixmap(mScreen->display(), x_window, XNone);
 
-    XSelectInput(xd->display, x_window, ExposureMask | KeyPressMask | KeyReleaseMask |
+    XSelectInput(mScreen->display(), x_window, ExposureMask | KeyPressMask | KeyReleaseMask |
                  EnterWindowMask | LeaveWindowMask | FocusChangeMask |
                  PointerMotionMask | ButtonPressMask |  ButtonReleaseMask | ButtonMotionMask |
                  StructureNotifyMask);
 
     gc = createGC();
 
-    XChangeProperty (xd->display, x_window,
-			   wmProtocolsAtom,
-			   XA_ATOM, 32, PropModeAppend,
-			   (unsigned char *) &wmDeleteWindowAtom, 1);
-    currentCursor = -1;
+    Atom wmDeleteWindowAtom = mScreen->wmDeleteWindowAtom();
+    XChangeProperty (mScreen->display(), x_window,
+                           mScreen->wmProtocolsAtom(),
+                           XA_ATOM, 32, PropModeAppend,
+                           (unsigned char *) &wmDeleteWindowAtom, 1);
+    mScreen->setWmDeleteWindowAtom(wmDeleteWindowAtom);
 }
 
 
@@ -211,19 +123,12 @@ QTestLiteWindow::~QTestLiteWindow()
     qDebug() << "~QTestLiteWindow" << hex << x_window;
 #endif
     delete mGLContext;
-    XFreeGC(xd->display, gc);
-    XDestroyWindow(xd->display, x_window);
-
-    xd->windowList.removeAll(this);
+    XFreeGC(mScreen->display(), gc);
+    XDestroyWindow(mScreen->display(), x_window);
 }
-
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Mouse event stuff
-
-
-
-
 static Qt::MouseButtons translateMouseButtons(int s)
 {
     Qt::MouseButtons ret = 0;
@@ -236,12 +141,10 @@ static Qt::MouseButtons translateMouseButtons(int s)
     return ret;
 }
 
-
 static Qt::KeyboardModifiers translateModifiers(int s)
 {
     const uchar qt_alt_mask = Mod1Mask;
     const uchar qt_meta_mask = Mod4Mask;
-
 
     Qt::KeyboardModifiers ret = 0;
     if (s & ShiftMask)
@@ -327,7 +230,6 @@ void QTestLiteWindow::handleFocusOutEvent()
 {
     QWindowSystemInterface::handleWindowActivated(0);
 }
-
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Key event stuff -- not pretty either
@@ -570,7 +472,6 @@ static const unsigned int keyTbl[] = {
     0,                          0
 };
 
-
 static int lookupCode(unsigned int xkeycode)
 {
     if (xkeycode >= XK_F1 && xkeycode <= XK_F35)
@@ -585,7 +486,6 @@ static int lookupCode(unsigned int xkeycode)
 
     return 0;
 }
-
 
 static Qt::KeyboardModifiers modifierFromKeyCode(int qtcode)
 {
@@ -640,7 +540,7 @@ void QTestLiteWindow::handleKeyEvent(QEvent::Type type, void *ev)
 
 void QTestLiteWindow::setGeometry(const QRect &rect)
 {
-    XMoveResizeWindow(xd->display, x_window, rect.x(), rect.y(), rect.width(), rect.height());
+    XMoveResizeWindow(mScreen->display(), x_window, rect.x(), rect.y(), rect.width(), rect.height());
     QPlatformWindow::setGeometry(rect);
 }
 
@@ -658,17 +558,17 @@ WId QTestLiteWindow::winId() const
 void QTestLiteWindow::setParent(const QPlatformWindow *window)
 {
         QPoint point = widget()->mapTo(widget()->nativeParentWidget(),QPoint());
-        XReparentWindow(xd->display,x_window,window->winId(),point.x(),point.y());
+        XReparentWindow(mScreen->display(),x_window,window->winId(),point.x(),point.y());
 }
 
 void QTestLiteWindow::raise()
 {
-    XRaiseWindow(xd->display, x_window);
+    XRaiseWindow(mScreen->display(), x_window);
 }
 
 void QTestLiteWindow::lower()
 {
-    XLowerWindow(xd->display, x_window);
+    XLowerWindow(mScreen->display(), x_window);
 }
 
 void QTestLiteWindow::setWindowTitle(const QString &title)
@@ -680,14 +580,14 @@ void QTestLiteWindow::setWindowTitle(const QString &title)
     windowName.format   = 8;
     windowName.nitems   = ba.length();
 
-    XSetWMName(xd->display, x_window, &windowName);
+    XSetWMName(mScreen->display(), x_window, &windowName);
 }
 
 GC QTestLiteWindow::createGC()
 {
     GC gc;
 
-    gc = XCreateGC(xd->display, x_window, 0, 0);
+    gc = XCreateGC(mScreen->display(), x_window, 0, 0);
     if (gc < 0) {
         qWarning("QTestLiteWindow::createGC() could not create GC");
     }
@@ -701,33 +601,31 @@ void QTestLiteWindow::paintEvent()
 #endif
 
     if (QWindowSurface *surface = widget()->windowSurface())
-        surface->flush(widget(), QRect(xpos,ypos,width, height), QPoint());
+        surface->flush(widget(), widget()->geometry(), QPoint());
 }
 
 void QTestLiteWindow::requestActivateWindow()
 {
-    XSetInputFocus(xd->display, x_window, XRevertToParent, CurrentTime);
+    XSetInputFocus(mScreen->display(), x_window, XRevertToParent, CurrentTime);
 }
 
 void QTestLiteWindow::resizeEvent(XConfigureEvent *e)
 {
-    if ((e->width != width || e->height != height) && e->x == 0 && e->y == 0) {
+    int xpos = geometry().x();
+    int ypos = geometry().y();
+    if ((e->width != geometry().width() || e->height != geometry().height()) && e->x == 0 && e->y == 0) {
         //qDebug() << "resize with bogus pos" << e->x << e->y << e->width << e->height << "window"<< hex << window;
     } else {
         //qDebug() << "geometry change" << e->x << e->y << e->width << e->height << "window"<< hex << window;
         xpos = e->x;
         ypos = e->y;
     }
-    width = e->width;
-    height = e->height;
-
 #ifdef MYX11_DEBUG
     qDebug() << hex << x_window << dec << "ConfigureNotify" << e->x << e->y << e->width << e->height << "geometry" << xpos << ypos << width << height;
 #endif
 
-    QWindowSystemInterface::handleGeometryChange(widget(), QRect(xpos, ypos, width, height));
+    QWindowSystemInterface::handleGeometryChange(widget(), QRect(xpos, ypos, e->width, e->height));
 }
-
 
 void QTestLiteWindow::mousePressEvent(XButtonEvent *e)
 {
@@ -752,51 +650,7 @@ void QTestLiteWindow::mousePressEvent(XButtonEvent *e)
     handleMouseEvent(type, e);
 }
 
-
-
-// WindowFlag stuff, lots of copied code from qwidget_x11.cpp...
-
-//We're hacking here...
-
-
-// MWM support
-struct QtMWMHints {
-    ulong flags, functions, decorations;
-    long input_mode;
-    ulong status;
-};
-
-enum {
-    MWM_HINTS_FUNCTIONS   = (1L << 0),
-
-    MWM_FUNC_ALL      = (1L << 0),
-    MWM_FUNC_RESIZE   = (1L << 1),
-    MWM_FUNC_MOVE     = (1L << 2),
-    MWM_FUNC_MINIMIZE = (1L << 3),
-    MWM_FUNC_MAXIMIZE = (1L << 4),
-    MWM_FUNC_CLOSE    = (1L << 5),
-
-    MWM_HINTS_DECORATIONS = (1L << 1),
-
-    MWM_DECOR_ALL      = (1L << 0),
-    MWM_DECOR_BORDER   = (1L << 1),
-    MWM_DECOR_RESIZEH  = (1L << 2),
-    MWM_DECOR_TITLE    = (1L << 3),
-    MWM_DECOR_MENU     = (1L << 4),
-    MWM_DECOR_MINIMIZE = (1L << 5),
-    MWM_DECOR_MAXIMIZE = (1L << 6),
-
-    MWM_HINTS_INPUT_MODE = (1L << 2),
-
-    MWM_INPUT_MODELESS                  = 0L,
-    MWM_INPUT_PRIMARY_APPLICATION_MODAL = 1L,
-    MWM_INPUT_FULL_APPLICATION_MODAL    = 3L
-};
-
-static Atom mwm_hint_atom = XNone;
-
-#if 0
-static QtMWMHints GetMWMHints(Display *display, Window window)
+QtMWMHints QTestLiteWindow::getMWMHints() const
 {
     QtMWMHints mwmhints;
 
@@ -804,10 +658,10 @@ static QtMWMHints GetMWMHints(Display *display, Window window)
     int format;
     ulong nitems, bytesLeft;
     uchar *data = 0;
-    if ((XGetWindowProperty(display, window, mwm_hint_atom, 0, 5, false,
-                            mwm_hint_atom, &type, &format, &nitems, &bytesLeft,
+    if ((XGetWindowProperty(mScreen->display(), x_window, mScreen->atomForMotifWmHints(), 0, 5, false,
+                            mScreen->atomForMotifWmHints(), &type, &format, &nitems, &bytesLeft,
                             &data) == Success)
-        && (type == mwm_hint_atom
+        && (type == mScreen->atomForMotifWmHints()
             && format == 32
             && nitems >= 5)) {
         mwmhints = *(reinterpret_cast<QtMWMHints *>(data));
@@ -824,15 +678,15 @@ static QtMWMHints GetMWMHints(Display *display, Window window)
 
     return mwmhints;
 }
-#endif
 
-static void SetMWMHints(Display *display, Window window, const QtMWMHints &mwmhints)
+void QTestLiteWindow::setMWMHints(const QtMWMHints &mwmhints)
 {
     if (mwmhints.flags != 0l) {
-        XChangeProperty(display, window, mwm_hint_atom, mwm_hint_atom, 32,
+        XChangeProperty(mScreen->display(), x_window,
+                        mScreen->atomForMotifWmHints(), mScreen->atomForMotifWmHints(), 32,
                         PropModeReplace, (unsigned char *) &mwmhints, 5);
     } else {
-        XDeleteProperty(display, window, mwm_hint_atom);
+        XDeleteProperty(mScreen->display(), x_window, mScreen->atomForMotifWmHints());
     }
 }
 
@@ -849,16 +703,10 @@ static inline bool isTransient(const QWidget *w)
             && !w->testAttribute(Qt::WA_X11BypassTransientForHint));
 }
 
-
-
 Qt::WindowFlags QTestLiteWindow::setWindowFlags(Qt::WindowFlags flags)
 {
 //    Q_ASSERT(flags & Qt::Window);
     window_flags = flags;
-
-    if (mwm_hint_atom == XNone) {
-        mwm_hint_atom = XInternAtom(xd->display, "_MOTIF_WM_HINTS\0", False);
-    }
 
 #ifdef MYX11_DEBUG
     qDebug() << "QTestLiteWindow::setWindowFlags" << hex << x_window << "flags" << flags;
@@ -878,11 +726,9 @@ Qt::WindowFlags QTestLiteWindow::setWindowFlags(Qt::WindowFlags flags)
     bool tool = (type == Qt::Tool || type == Qt::SplashScreen
                  || type == Qt::ToolTip || type == Qt::Drawer);
 
-
     Q_UNUSED(topLevel);
     Q_UNUSED(dialog);
     Q_UNUSED(desktop);
-
 
     bool tooltip = (type == Qt::ToolTip);
 
@@ -964,7 +810,7 @@ Qt::WindowFlags QTestLiteWindow::setWindowFlags(Qt::WindowFlags flags)
         mwmhints.decorations = 0;
     }
 
-    SetMWMHints(xd->display, x_window, mwmhints);
+    setMWMHints(mwmhints);
 
 //##### only if initializeWindow???
 
@@ -977,7 +823,7 @@ Qt::WindowFlags QTestLiteWindow::setWindowFlags(Qt::WindowFlags flags)
 
         wsa.override_redirect = True;
         wsa.save_under = True;
-        XChangeWindowAttributes(xd->display, x_window, CWOverrideRedirect | CWSaveUnder,
+        XChangeWindowAttributes(mScreen->display(), x_window, CWOverrideRedirect | CWSaveUnder,
                                 &wsa);
     } else {
 #ifdef MYX11_DEBUG
@@ -994,38 +840,15 @@ void QTestLiteWindow::setVisible(bool visible)
     qDebug() << "QTestLiteWindow::setVisible" << visible << hex << x_window;
 #endif
     if (visible)
-         XMapWindow(xd->display, x_window);
+         XMapWindow(mScreen->display(), x_window);
     else
-        XUnmapWindow(xd->display, x_window);
+        XUnmapWindow(mScreen->display(), x_window);
 }
 
-
-void QTestLiteWindow::setCursor(QCursor * cursor)
+void QTestLiteWindow::setCursor(const Cursor &cursor)
 {
-    int id = cursor->handle();
-    if (id == currentCursor)
-        return;
-    Cursor c;
-    if (!xd->cursors->exists(id)) {
-        if (cursor->shape() == Qt::BitmapCursor)
-            c = createCursorBitmap(cursor);
-        else
-            c = createCursorShape(cursor->shape());
-        if (!c) {
-            return;
-        }
-        xd->cursors->createNode(id, c);
-    } else {
-        xd->cursors->incrementUseCount(id);
-        c = xd->cursors->cursor(id);
-    }
-
-    if (currentCursor != -1)
-        xd->cursors->decrementUseCount(currentCursor);
-    currentCursor = id;
-
-    XDefineCursor(xd->display, x_window, c);
-    XFlush(xd->display);
+    XDefineCursor(mScreen->display(), x_window, cursor);
+    XFlush(mScreen->display());
 }
 
 QPlatformGLContext *QTestLiteWindow::glContext() const
@@ -1035,574 +858,20 @@ QPlatformGLContext *QTestLiteWindow::glContext() const
     if (!mGLContext) {
         QTestLiteWindow *that = const_cast<QTestLiteWindow *>(this);
 #ifndef QT_NO_OPENGL
-        that->mGLContext = new QGLXGLContext(x_window, xd,widget()->platformWindowFormat());
+        that->mGLContext = new QGLXContext(x_window, mScreen,widget()->platformWindowFormat());
 #endif
     }
     return mGLContext;
 }
 
-Cursor QTestLiteWindow::createCursorBitmap(QCursor * cursor)
+Window QTestLiteWindow::xWindow() const
 {
-    XColor bg, fg;
-    bg.red   = 255 << 8;
-    bg.green = 255 << 8;
-    bg.blue  = 255 << 8;
-    fg.red   = 0;
-    fg.green = 0;
-    fg.blue  = 0;
-    QPoint spot = cursor->hotSpot();
-    Window rootwin = x_window;
-
-    QImage mapImage = cursor->bitmap()->toImage().convertToFormat(QImage::Format_MonoLSB);
-    QImage maskImage = cursor->mask()->toImage().convertToFormat(QImage::Format_MonoLSB);
-
-    int width = cursor->bitmap()->width();
-    int height = cursor->bitmap()->height();
-    int bytesPerLine = mapImage.bytesPerLine();
-    int destLineSize = width / 8;
-    if (width % 8)
-        destLineSize++;
-
-    const uchar * map = mapImage.bits();
-    const uchar * mask = maskImage.bits();
-
-    char * mapBits = new char[height * destLineSize];
-    char * maskBits = new char[height * destLineSize];
-    for (int i = 0; i < height; i++) {
-        memcpy(mapBits + (destLineSize * i),map + (bytesPerLine * i), destLineSize);
-        memcpy(maskBits + (destLineSize * i),mask + (bytesPerLine * i), destLineSize);
-    }
-
-    Pixmap cp = XCreateBitmapFromData(xd->display, rootwin, mapBits, width, height);
-    Pixmap mp = XCreateBitmapFromData(xd->display, rootwin, maskBits, width, height);
-    Cursor c = XCreatePixmapCursor(xd->display, cp, mp, &fg, &bg, spot.x(), spot.y());
-    XFreePixmap(xd->display, cp);
-    XFreePixmap(xd->display, mp);
-    delete[] mapBits;
-    delete[] maskBits;
-
-    return c;
+    return x_window;
 }
 
-Cursor QTestLiteWindow::createCursorShape(int cshape)
+GC QTestLiteWindow::graphicsContext() const
 {
-    Cursor cursor = 0;
-
-    if (cshape < 0 || cshape > Qt::LastCursor)
-        return 0;
-
-    switch (cshape) {
-    case Qt::ArrowCursor:
-        cursor =  XCreateFontCursor(xd->display, XC_left_ptr);
-        break;
-    case Qt::UpArrowCursor:
-        cursor =  XCreateFontCursor(xd->display, XC_center_ptr);
-        break;
-    case Qt::CrossCursor:
-        cursor =  XCreateFontCursor(xd->display, XC_crosshair);
-        break;
-    case Qt::WaitCursor:
-        cursor =  XCreateFontCursor(xd->display, XC_watch);
-        break;
-    case Qt::IBeamCursor:
-        cursor =  XCreateFontCursor(xd->display, XC_xterm);
-        break;
-    case Qt::SizeAllCursor:
-        cursor =  XCreateFontCursor(xd->display, XC_fleur);
-        break;
-    case Qt::PointingHandCursor:
-        cursor =  XCreateFontCursor(xd->display, XC_hand2);
-        break;
-    case Qt::SizeBDiagCursor:
-        cursor =  XCreateFontCursor(xd->display, XC_top_right_corner);
-        break;
-    case Qt::SizeFDiagCursor:
-        cursor =  XCreateFontCursor(xd->display, XC_bottom_right_corner);
-        break;
-    case Qt::SizeVerCursor:
-    case Qt::SplitVCursor:
-        cursor = XCreateFontCursor(xd->display, XC_sb_v_double_arrow);
-        break;
-    case Qt::SizeHorCursor:
-    case Qt::SplitHCursor:
-        cursor = XCreateFontCursor(xd->display, XC_sb_h_double_arrow);
-        break;
-    case Qt::WhatsThisCursor:
-        cursor = XCreateFontCursor(xd->display, XC_question_arrow);
-        break;
-    case Qt::ForbiddenCursor:
-        cursor = XCreateFontCursor(xd->display, XC_circle);
-        break;
-    case Qt::BusyCursor:
-        cursor = XCreateFontCursor(xd->display, XC_watch);
-        break;
-
-    default: //default cursor for all the rest
-        break;
-    }
-    return cursor;
+    return gc;
 }
-
-
-MyX11Cursors::MyX11Cursors(Display * d) : firstExpired(0), lastExpired(0), display(d), removalDelay(3)
-{
-    connect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
-}
-
-void MyX11Cursors::insertNode(MyX11CursorNode * node)
-{
-    QDateTime now = QDateTime::currentDateTime();
-    QDateTime timeout = now.addSecs(removalDelay);
-    node->setExpiration(timeout);
-    node->setPost(0);
-    if (lastExpired) {
-        lastExpired->setPost(node);
-        node->setAnte(lastExpired);
-    }
-    lastExpired = node;
-    if (!firstExpired) {
-        firstExpired = node;
-        node->setAnte(0);
-        int interval = removalDelay * 1000;
-        timer.setInterval(interval);
-        timer.start();
-    }
-}
-
-void MyX11Cursors::removeNode(MyX11CursorNode * node)
-{
-    MyX11CursorNode *pre = node->ante();
-    MyX11CursorNode *post = node->post();
-    if (pre)
-        pre->setPost(post);
-    if (post)
-        post->setAnte(pre);
-    if (node == lastExpired)
-        lastExpired = pre;
-    if (node == firstExpired) {
-        firstExpired = post;
-        if (!firstExpired) {
-            timer.stop();
-            return;
-        }
-        int interval = QDateTime::currentDateTime().secsTo(firstExpired->expiration()) * 1000;
-        timer.stop();
-        timer.setInterval(interval);
-        timer.start();
-    }
-}
-
-void MyX11Cursors::incrementUseCount(int id)
-{
-    MyX11CursorNode * node = lookupMap.value(id);
-    Q_ASSERT(node);
-    if (!node->refCount)
-        removeNode(node);
-    node->refCount++;
-}
-
-void MyX11Cursors::decrementUseCount(int id)
-{
-    MyX11CursorNode * node = lookupMap.value(id);
-    Q_ASSERT(node);
-    node->refCount--;
-    if (!node->refCount)
-        insertNode(node);
-}
-
-void MyX11Cursors::createNode(int id, Cursor c)
-{
-    MyX11CursorNode * node = new MyX11CursorNode(id, c);
-    lookupMap.insert(id, node);
-}
-
-void MyX11Cursors::timeout()
-{
-    MyX11CursorNode * node;
-    node = firstExpired;
-    QDateTime now = QDateTime::currentDateTime();
-    while (node && now.secsTo(node->expiration()) < 1) {
-        Cursor c = node->cursor();
-        int id = node->id();
-        lookupMap.take(id);
-        MyX11CursorNode * tmp = node;
-        node = node->post();
-        if (node)
-            node->setAnte(0);
-        delete tmp;
-        XFreeCursor(display, c);
-    }
-    firstExpired = node;
-    if (node == 0) {
-        timer.stop();
-        lastExpired = 0;
-    }
-    else {
-        int interval = QDateTime::currentDateTime().secsTo(firstExpired->expiration()) * 1000;
-        timer.setInterval(interval);
-        timer.start();
-    }
-}
-
-Cursor MyX11Cursors::cursor(int id)
-{
-    MyX11CursorNode * node = lookupMap.value(id);
-    Q_ASSERT(node);
-    return node->cursor();
-}
-
-
-
-/********************************************************************
-
-MyDisplay class - perhaps better placed in qplatformintegration_testlite?
-
-*********************************************************************/
-
-//### copied from qapplication_x11.cpp
-
-static int qt_x_errhandler(Display *dpy, XErrorEvent *err)
-{
-
-qDebug() << "qt_x_errhandler" << err->error_code;
-
-    switch (err->error_code) {
-    case BadAtom:
-#if 0
-        if (err->request_code == 20 /* X_GetProperty */
-            && (err->resourceid == XA_RESOURCE_MANAGER
-                || err->resourceid == XA_RGB_DEFAULT_MAP
-                || err->resourceid == ATOM(_NET_SUPPORTED)
-                || err->resourceid == ATOM(_NET_SUPPORTING_WM_CHECK)
-                || err->resourceid == ATOM(KDE_FULL_SESSION)
-                || err->resourceid == ATOM(KWIN_RUNNING)
-                || err->resourceid == ATOM(XdndProxy)
-                || err->resourceid == ATOM(XdndAware))
-
-
-            ) {
-            // Perhaps we're running under SECURITY reduction? :/
-            return 0;
-        }
-#endif
-        qDebug() << "BadAtom";
-        break;
-
-    case BadWindow:
-        if (err->request_code == 2 /* X_ChangeWindowAttributes */
-            || err->request_code == 38 /* X_QueryPointer */) {
-            for (int i = 0; i < ScreenCount(dpy); ++i) {
-                if (err->resourceid == RootWindow(dpy, i)) {
-                    // Perhaps we're running under SECURITY reduction? :/
-                    return 0;
-                }
-            }
-        }
-        seen_badwindow = true;
-        if (err->request_code == 25 /* X_SendEvent */) {
-            for (int i = 0; i < ScreenCount(dpy); ++i) {
-                if (err->resourceid == RootWindow(dpy, i)) {
-                    // Perhaps we're running under SECURITY reduction? :/
-                    return 0;
-                }
-            }
-#if 0
-            if (X11->xdndHandleBadwindow()) {
-                qDebug("xdndHandleBadwindow returned true");
-                return 0;
-            }
-#endif
-        }
-#if 0
-        if (X11->ignore_badwindow)
-            return 0;
-#endif
-        break;
-
-    case BadMatch:
-        if (err->request_code == 42 /* X_SetInputFocus */)
-            return 0;
-        break;
-
-    default:
-#if 0 //!defined(QT_NO_XINPUT)
-        if (err->request_code == X11->xinput_major
-            && err->error_code == (X11->xinput_errorbase + XI_BadDevice)
-            && err->minor_code == 3 /* X_OpenDevice */) {
-            return 0;
-        }
-#endif
-        break;
-    }
-
-    char errstr[256];
-    XGetErrorText( dpy, err->error_code, errstr, 256 );
-    char buffer[256];
-    char request_str[256];
-    qsnprintf(buffer, 256, "%d", err->request_code);
-    XGetErrorDatabaseText(dpy, "XRequest", buffer, "", request_str, 256);
-    if (err->request_code < 128) {
-        // X error for a normal protocol request
-        qWarning( "X Error: %s %d\n"
-                  "  Major opcode: %d (%s)\n"
-                  "  Resource id:  0x%lx",
-                  errstr, err->error_code,
-                  err->request_code,
-                  request_str,
-                  err->resourceid );
-    } else {
-        // X error for an extension request
-        const char *extensionName = 0;
-#if 0
-        if (err->request_code == X11->xrender_major)
-            extensionName = "RENDER";
-        else if (err->request_code == X11->xrandr_major)
-            extensionName = "RANDR";
-        else if (err->request_code == X11->xinput_major)
-            extensionName = "XInputExtension";
-        else if (err->request_code == X11->mitshm_major)
-            extensionName = "MIT-SHM";
-#endif
-        char minor_str[256];
-        if (extensionName) {
-            qsnprintf(buffer, 256, "%s.%d", extensionName, err->minor_code);
-            XGetErrorDatabaseText(dpy, "XRequest", buffer, "", minor_str, 256);
-        } else {
-            extensionName = "Uknown extension";
-            qsnprintf(minor_str, 256, "Unknown request");
-        }
-        qWarning( "X Error: %s %d\n"
-                  "  Extension:    %d (%s)\n"
-                  "  Minor opcode: %d (%s)\n"
-                  "  Resource id:  0x%lx",
-                  errstr, err->error_code,
-                  err->request_code,
-                  extensionName,
-                  err->minor_code,
-                  minor_str,
-                  err->resourceid );
-    }
-
-    // ### we really should distinguish between severe, non-severe and
-    // ### application specific errors
-
-    return 0;
-}
-
-
-#ifdef KeyPress
-#undef KeyPress
-#endif
-#ifdef KeyRelease
-#undef KeyRelease
-#endif
-
-bool MyDisplay::handleEvent(XEvent *xe)
-{
-    //qDebug() << "handleEvent" << xe->xany.type << xe->xany.window;
-    int quit = false;
-    QTestLiteWindow *xw = 0;
-    foreach (QTestLiteWindow *w, windowList) {
-        if (w->winId() == xe->xany.window) {
-            xw = w;
-            break;
-        }
-    }
-    if (!xw) {
-#ifdef MYX11_DEBUG
-        qWarning() << "Unknown window" << hex << xe->xany.window << "received event" <<  xe->type;
-#endif
-        return quit;
-    }
-
-    switch (xe->type) {
-
-    case ClientMessage:
-        if (xe->xclient.format == 32 && xe->xclient.message_type == wmProtocolsAtom) {
-            Atom a = xe->xclient.data.l[0];
-            if (a == wmDeleteWindowAtom)
-                xw->handleCloseEvent();
-#ifdef MYX11_DEBUG
-            qDebug() << "ClientMessage WM_PROTOCOLS" << a;
-#endif
-        }
-#ifdef MYX11_DEBUG
-        else
-            qDebug() << "ClientMessage" << xe->xclient.format << xe->xclient.message_type;
-#endif
-        break;
-
-    case Expose:
-        if (xw)
-            if (xe->xexpose.count == 0)
-                xw->paintEvent();
-        break;
-    case ConfigureNotify:
-        if (xw)
-            xw->resizeEvent(&xe->xconfigure);
-        break;
-
-    case ButtonPress:
-        xw->mousePressEvent(&xe->xbutton);
-        break;
-
-    case ButtonRelease:
-        xw->handleMouseEvent(QEvent::MouseButtonRelease, &xe->xbutton);
-        break;
-
-    case MotionNotify:
-        xw->handleMouseEvent(QEvent::MouseMove, &xe->xbutton);
-        break;
-
-        case XKeyPress:
-        xw->handleKeyEvent(QEvent::KeyPress, &xe->xkey);
-        break;
-
-    case XKeyRelease:
-        xw->handleKeyEvent(QEvent::KeyRelease, &xe->xkey);
-        break;
-
-    case EnterNotify:
-        xw->handleEnterEvent();
-        break;
-
-    case LeaveNotify:
-        xw->handleLeaveEvent();
-        break;
-
-    case XFocusIn:
-        xw->handleFocusInEvent();
-        break;
-
-    case XFocusOut:
-        xw->handleFocusOutEvent();
-        break;
-
-    default:
-#ifdef MYX11_DEBUG
-        qDebug() << hex << xe->xany.window << "Other X event" << xe->type;
-#endif
-        break;
-    }
-    return quit;
-};
-
-
-
-MyDisplay::MyDisplay()
-{
-    char *display_name = getenv("DISPLAY");
-    display = XOpenDisplay(display_name);
-    if (!display) {
-        fprintf(stderr, "Cannot connect to X server: %s\n",
-                display_name);
-        exit(1);
-    }
-
-#ifndef DONT_USE_MIT_SHM
-    Status MIT_SHM_extension_supported = XShmQueryExtension (display);
-    Q_ASSERT(MIT_SHM_extension_supported == True);
-#endif
-    original_x_errhandler = XSetErrorHandler(qt_x_errhandler);
-
-    if (qgetenv("DO_X_SYNCHRONIZE").toInt())
-        XSynchronize(display, true);
-
-    screen = DefaultScreen(display);
-    width = DisplayWidth(display, screen);
-    height = DisplayHeight(display, screen);
-    physicalWidth = DisplayWidthMM(display, screen);
-    physicalHeight = DisplayHeightMM(display, screen);
-
-    int xSocketNumber = XConnectionNumber(display);
-#ifdef MYX11_DEBUG
-    qDebug() << "X socket:"<< xSocketNumber;
-#endif
-    QSocketNotifier *sock = new QSocketNotifier(xSocketNumber, QSocketNotifier::Read, this);
-    connect(sock, SIGNAL(activated(int)), this, SLOT(eventDispatcher()));
-
-    wmProtocolsAtom = XInternAtom (display, "WM_PROTOCOLS", False);
-    wmDeleteWindowAtom = XInternAtom (display, "WM_DELETE_WINDOW", False);
-
-    cursors = new MyX11Cursors(display);
-}
-
-
-MyDisplay::~MyDisplay()
-{
-  XCloseDisplay(display);
-}
-
-
-void MyDisplay::eventDispatcher()
-{
-//    qDebug() << "eventDispatcher";
-
-
-    ulong marker = XNextRequest(display);
-//    int i = 0;
-    while (XPending(display)) {
-        XEvent event;
-        XNextEvent(display, &event);
-        /* done = */
-        handleEvent(&event);
-
-        if (event.xany.serial >= marker) {
-#ifdef MYX11_DEBUG
-            qDebug() << "potential livelock averted";
-#endif
-#if 0
-            if (XEventsQueued(display, QueuedAfterFlush)) {
-                qDebug() << "	with events queued";
-                QTimer::singleShot(0, this, SLOT(eventDispatcher()));
-            }
-#endif
-            break;
-        }
-    }
-}
-
-
-QImage MyDisplay::grabWindow(Window window, int x, int y, int w, int h)
-{
-    if (w == 0 || h ==0)
-        return QImage();
-
-    //WinId 0 means the desktop widget
-    if (!window)
-        window = rootWindow();
-
-    XWindowAttributes window_attr;
-    if (!XGetWindowAttributes(display, window, &window_attr))
-        return QImage();
-
-    if (w < 0)
-        w = window_attr.width - x;
-    if (h < 0)
-        h = window_attr.height - y;
-
-    // Ideally, we should also limit ourselves to the screen area, but the Qt docs say
-    // that it's "unsafe" to go outside the screen, so we can ignore that problem.
-
-    //We're definitely not optimizing for speed...
-    XImage *xi = XGetImage(display, window, x, y, w, h, AllPlanes, ZPixmap);
-
-    if (!xi)
-        return QImage();
-
-    //taking a copy to make sure we have ownership -- not fast
-    QImage result = QImage( (uchar*) xi->data, xi->width, xi->height, xi->bytes_per_line, QImage::Format_RGB32 ).copy();
-
-    XDestroyImage(xi);
-
-    return result;
-}
-
-
-
-
-
-
 
 QT_END_NAMESPACE
-#include "qtestlitewindow.moc"

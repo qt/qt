@@ -39,17 +39,14 @@
 **
 ****************************************************************************/
 
-
-
 #include "qtestliteintegration.h"
 #include "qtestlitewindowsurface.h"
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtCore/qdebug.h>
 
-#include <QPlatformCursor>
-
 #include "qtestlitewindow.h"
 #include "qgenericunixfontdatabase.h"
+#include "qtestlitescreen.h"
 
 #ifndef QT_NO_OPENGL
 #include <GL/glx.h>
@@ -59,50 +56,13 @@
 
 QT_BEGIN_NAMESPACE
 
-class MyCursor : QPlatformCursor
-{
-public:
-    MyCursor(QPlatformScreen *screen) : QPlatformCursor(screen) {}
-
-    void changeCursor(QCursor * cursor, QWidget * widget) {
-        QTestLiteWindow *w = 0;
-        if (widget) {
-            QWidget *window = widget->window();
-            w = static_cast<QTestLiteWindow*>(window->platformWindow());
-        } else {
-            // No X11 cursor control when there is no widget under the cursor
-            return;
-        }
-
-        //qDebug() << "changeCursor" << widget << ws;
-        if (!w)
-            return;
-
-        w->setCursor(cursor);
-    }
-};
-
 
 QTestLiteIntegration::QTestLiteIntegration(bool useOpenGL)
     : mUseOpenGL(useOpenGL)
     , mFontDb(new QGenericUnixFontDatabase())
 {
-    xd = new MyDisplay;
-
     mPrimaryScreen = new QTestLiteScreen();
-
-    mPrimaryScreen->mGeometry = QRect
-        (0, 0, xd->width, xd->height);
-    mPrimaryScreen->mDepth = 32;
-    mPrimaryScreen->mFormat = QImage::Format_RGB32;
-    mPrimaryScreen->mPhysicalSize =
-        QSize(xd->physicalWidth, xd->physicalHeight);
-
     mScreens.append(mPrimaryScreen);
-
-
-    (void)new MyCursor(mPrimaryScreen);
-
 }
 
 QPixmapData *QTestLiteIntegration::createPixmapData(QPixmapData::PixelType type) const
@@ -120,21 +80,33 @@ QWindowSurface *QTestLiteIntegration::createWindowSurface(QWidget *widget, WId) 
     if (mUseOpenGL)
         return new QGLWindowSurface(widget);
 #endif
-    return new QTestLiteWindowSurface(mPrimaryScreen, widget);
+    return new QTestLiteWindowSurface(widget);
 }
 
 
 QPlatformWindow *QTestLiteIntegration::createPlatformWindow(QWidget *widget, WId /*winId*/) const
 {
-    return new QTestLiteWindow(this, mPrimaryScreen, widget);
+    return new QTestLiteWindow(widget);
 }
 
 
 
 QPixmap QTestLiteIntegration::grabWindow(WId window, int x, int y, int width, int height) const
 {
-    QImage img = xd->grabWindow(window, x, y, width, height);
-    return QPixmap::fromImage(img);
+    QImage image;
+    QWidget *widget = QWidget::find(window);
+    if (widget) {
+        QTestLiteScreen *screen = QTestLiteScreen::testLiteScreenForWidget(widget);
+        image = screen->grabWindow(window,x,y,width,height);
+    } else {
+        for (int i = 0; i < mScreens.size(); i++) {
+            QTestLiteScreen *screen = static_cast<QTestLiteScreen *>(mScreens[i]);
+            if (screen->rootWindow() == window) {
+                image = screen->grabWindow(window,x,y,width,height);
+            }
+        }
+    }
+    return QPixmap::fromImage(image);
 }
 
 QPlatformFontDatabase *QTestLiteIntegration::fontDatabase() const
@@ -145,7 +117,8 @@ QPlatformFontDatabase *QTestLiteIntegration::fontDatabase() const
 bool QTestLiteIntegration::hasOpenGL() const
 {
 #ifndef QT_NO_OPENGL
-    return glXQueryExtension(xd->display, 0, 0) != 0;
+    QTestLiteScreen *screen = static_cast<const QTestLiteScreen *>(mScreens.at(0));
+    return glXQueryExtension(screen->display(), 0, 0) != 0;
 #endif
     return false;
 }

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtOpenVG module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,45 +39,31 @@
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSSYSTEM_TESTLITE_H
-#define QGRAPHICSSYSTEM_TESTLITE_H
+#ifndef QTESTLITECURSOR_H
+#define QTESTLITECURSOR_H
 
-//make sure textstream is included before any X11 headers
-#include <QtCore/QTextStream>
+#include <QtGui/QPlatformCursor>
 
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
-
-#include <QtGui/private/qt_x11_p.h>
+#include "qtestliteintegration.h"
 
 QT_BEGIN_NAMESPACE
 
-class QTestLiteScreen;
-
-class QTestLiteIntegration : public QPlatformIntegration
+class QTestLiteCursor : QPlatformCursor
 {
 public:
-    QTestLiteIntegration(bool useOpenGL = false);
+    QTestLiteCursor(QTestLiteScreen *screen);
 
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
-
-    QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
-
-    QList<QPlatformScreen *> screens() const { return mScreens; }
-
-    QPlatformFontDatabase *fontDatabase() const;
-
-    bool hasOpenGL() const;
-
+    void changeCursor(QCursor * cursor, QWidget * widget);
 private:
-    bool mUseOpenGL;
-    QTestLiteScreen *mPrimaryScreen;
-    QList<QPlatformScreen *> mScreens;
-    QPlatformFontDatabase *mFontDb;
+
+    Cursor createCursorBitmap(QCursor * cursor);
+    Cursor createCursorShape(int cshape);
+
+    QTestLiteScreen *testLiteScreen() const;
+    int currentCursor;
+    QMap<int, Cursor> cursorMap;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QTESTLITECURSOR_H
