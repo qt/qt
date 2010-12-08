@@ -153,8 +153,3 @@ void QMeeGoGraphicsSystemHelper::setTranslucent(bool translucent)
     ENSURE_RUNNING_MEEGO;
     QMeeGoRuntime::setTranslucent(translucent);
 }
-
-void QMeeGoGraphicsSystemHelper::setTranslucentWidget(QWidget w, bool translucent)
-{
-    w.setProperty("qglTranslucent", QVariant(translucent));
-}

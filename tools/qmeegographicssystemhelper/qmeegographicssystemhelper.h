@@ -182,24 +182,10 @@ public:
      When called with true, the base window surface will be translucent and initialized
      with QGLFormat.alpha == true.
 
-     This function is *deprecated*. Use ::setTranslucentWidget instead.
+     This function is *deprecated*. Set Qt::WA_TranslucentBackground attribute
+     on the top-level widget *before* you show it instead.
     */
     static void setTranslucent(bool translucent);
-
-    //! Sets translucency (alpha) on the given top-level widget.
-    /*!
-     This is a new API for enabling GL translucency on top-level widgets.
-     The specified widget needs to be top-level. When the time comes to create
-     a window surface for the widget, it'll be created with translucency enabled
-     (if translucent is true).
-
-     This function has no effect if the widget is already visible or if it's
-     not a top-level widget.
-
-     This function can be called even if not running MeeGo graphics system. It'll
-     have no effect though.
-    */
-    static void setTranslucentWidget(QWidget w, bool translucent);
 };
 
 #endif
