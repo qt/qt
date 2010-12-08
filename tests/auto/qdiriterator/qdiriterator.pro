@@ -3,11 +3,6 @@ SOURCES  += tst_qdiriterator.cpp
 RESOURCES      += qdiriterator.qrc
 QT = core
 
-wince*|symbian: {
-   addFiles.files = entrylist recursiveDirs foo
-   addFiles.path = .
-   DEPLOYMENT += addFiles
 wince*mips*|wincewm50smart-msvc200*: DEFINES += WINCE_BROKEN_ITERATE=1
-}
 
 CONFIG += parallel_test

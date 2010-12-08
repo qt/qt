@@ -5838,6 +5838,41 @@ bool operator==(const QDateTimeParser::SectionNode &s1, const QDateTimeParser::S
     return (s1.type == s2.type) && (s1.pos == s2.pos) && (s1.count == s2.count);
 }
 
+#ifdef Q_OS_SYMBIAN
+const static TTime UnixEpochOffset(I64LIT(0xdcddb30f2f8000));
+const static TInt64 MinimumMillisecondTime(KMinTInt64 / 1000);
+const static TInt64 MaximumMillisecondTime(KMaxTInt64 / 1000);
+QDateTime qt_symbian_TTime_To_QDateTime(const TTime& time)
+{
+    TTimeIntervalMicroSeconds absolute = time.MicroSecondsFrom(UnixEpochOffset);
+
+    return QDateTime::fromMSecsSinceEpoch(absolute.Int64() / 1000);
+}
+
+TTime qt_symbian_QDateTime_To_TTime(const QDateTime& datetime)
+{
+    qint64 absolute = datetime.toMSecsSinceEpoch();
+    if(absolute > MaximumMillisecondTime)
+        return TTime(KMaxTInt64);
+    if(absolute < MinimumMillisecondTime)
+        return TTime(KMinTInt64);
+    return TTime(absolute * 1000);
+}
+
+time_t qt_symbian_TTime_To_time_t(const TTime& time)
+{
+    TTimeIntervalSeconds interval;
+    TInt err = time.SecondsFrom(UnixEpochOffset, interval);
+    if (err || interval.Int() < 0)
+        return (time_t) 0;
+    return (time_t) interval.Int();
+}
+
+TTime qt_symbian_time_t_To_TTime(time_t time)
+{
+    return UnixEpochOffset + TTimeIntervalSeconds(time);
+}
+#endif //Q_OS_SYMBIAN
 
 #endif // QT_BOOTSTRAPPED
 
