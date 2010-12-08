@@ -540,7 +540,7 @@ bool QSymbianSocketEngine::connectToHost(const QHostAddress &addr, quint16 port)
 
         if (d->socketState != QAbstractSocket::ConnectedState) {
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-            qDebug("QSymbianSocketEnginePrivate::nativeConnect(%s, %i) == false (%s)",
+            qDebug("QSymbianSocketEngine::connectToHost(%s, %i) == false (%s)",
                    addr.toString().toLatin1().constData(), port,
                    d->socketState == QAbstractSocket::ConnectingState
                    ? "Connection in progress" : d->socketErrorString.toLatin1().constData());
