@@ -112,6 +112,7 @@ class DitaXmlGenerator : public PageGenerator
     void writeXrefListItem(const QString& link, const QString& text);
     QString fullQualification(const Node* n);
 
+    void writeCharacters(const QString& text);
     void writeDerivations(const ClassNode* cn, CodeMarker* marker);
     void writeLocation(const Node* n);
     void writeFunctions(const Section& s, 
