@@ -739,16 +739,20 @@ void QDeclarativeListViewPrivate::layout()
         return;
     }
     if (!visibleItems.isEmpty()) {
-        qreal oldEnd = visibleItems.last()->endPosition();
+        bool fixedCurrent = currentItem && visibleItems.first()->item == currentItem->item;
+        qreal sum = visibleItems.first()->size();
         qreal pos = visibleItems.first()->position() + visibleItems.first()->size() + spacing;
         for (int i=1; i < visibleItems.count(); ++i) {
             FxListItem *item = visibleItems.at(i);
             item->setPosition(pos);
             pos += item->size() + spacing;
+            sum += item->size();
+            fixedCurrent = fixedCurrent || (currentItem && item->item == currentItem->item);
         }
-        // move current item if it is after the visible items.
-        if (currentItem && currentIndex > lastVisibleIndex())
-            currentItem->setPosition(currentItem->position() + (visibleItems.last()->endPosition() - oldEnd));
+        averageSize = qRound(sum / visibleItems.count());
+        // move current item if it is not a visible item.
+        if (currentIndex >= 0 && currentItem && !fixedCurrent)
+            currentItem->setPosition(positionAt(currentIndex));
     }
     q->refill();
     minExtentDirty = true;
