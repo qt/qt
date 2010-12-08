@@ -49,9 +49,7 @@
 #include "qnetworkinterface.h"
 #include <es_sock.h>
 #include <in_sock.h>
-#ifndef QT_NO_IPV6IFNAME
 #include <net/if.h>
-#endif
 
 #include <private/qcore_symbian_p.h>
 
@@ -112,7 +110,6 @@ static QByteArray qt_prettyDebug(const char *data, int len, int maxSize)
 
 void QSymbianSocketEnginePrivate::getPortAndAddress(const TInetAddr& a, quint16 *port, QHostAddress *addr)
 {
-#if !defined(QT_NO_IPV6)
     if (a.Family() == KAfInet6) {
         Q_IPV6ADDR tmp;
         memcpy(&tmp, a.Ip6Address().u.iAddr8, sizeof(tmp));
@@ -120,21 +117,18 @@ void QSymbianSocketEnginePrivate::getPortAndAddress(const TInetAddr& a, quint16 
             QHostAddress tmpAddress;
             tmpAddress.setAddress(tmp);
             *addr = tmpAddress;
-#ifndef QT_NO_IPV6IFNAME
             TPckgBuf<TSoInetIfQuery> query;
             query().iSrcAddr = a;
             TInt err = nativeSocket.GetOpt(KSoInetIfQueryBySrcAddr, KSolInetIfQuery, query);
             if(!err)
                 addr->setScopeId(qt_TDesC2QString(query().iName));
             else
-#endif
             addr->setScopeId(QString::number(a.Scope()));
         }
         if (port)
             *port = a.Port();
         return;
     }
-#endif
     if (port)
         *port = a.Port();
     if (addr) {
@@ -152,12 +146,7 @@ bool QSymbianSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType so
                                          QAbstractSocket::NetworkLayerProtocol socketProtocol)
 {
     Q_Q(QSymbianSocketEngine);
-#ifndef QT_NO_IPV6
     TUint family = (socketProtocol == QAbstractSocket::IPv6Protocol) ? KAfInet6 : KAfInet;
-#else
-    Q_UNUSED(socketProtocol);
-    TUint family = KAfInet;
-#endif
     TUint type = (socketType == QAbstractSocket::UdpSocket) ? KSockDatagram : KSockStream;
     TUint protocol = (socketType == QAbstractSocket::UdpSocket) ? KProtocolInetUdp : KProtocolInetTcp;
     TInt err = nativeSocket.Open(socketServer, family, type, protocol, *connection);
@@ -189,9 +178,7 @@ bool QSymbianSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType so
 void QSymbianSocketEnginePrivate::setPortAndAddress(TInetAddr& nativeAddr, quint16 port, const QHostAddress &addr)
 {
     nativeAddr.SetPort(port);
-#if !defined(QT_NO_IPV6)
     if (addr.protocol() == QAbstractSocket::IPv6Protocol) {
-#ifndef QT_NO_IPV6IFNAME
         TPckgBuf<TSoInetIfQuery> query;
         query().iName = qt_QString2TPtrC(addr.scopeId());
         TInt err = nativeSocket.GetOpt(KSoInetIfQueryByName, KSolInetIfQuery, query);
@@ -199,16 +186,11 @@ void QSymbianSocketEnginePrivate::setPortAndAddress(TInetAddr& nativeAddr, quint
             nativeAddr.SetScope(query().iIndex);
         else
             nativeAddr.SetScope(0);
-#else
-        nativeAddr.SetScope(addr.scopeId().toInt());
-#endif
         Q_IPV6ADDR ip6 = addr.toIPv6Address();
         TIp6Addr v6addr;
         memcpy(v6addr.u.iAddr8, ip6.c, 16);
         nativeAddr.SetAddress(v6addr);
-    } else
-#endif
-    if (addr.protocol() == QAbstractSocket::IPv4Protocol) {
+    } else if (addr.protocol() == QAbstractSocket::IPv4Protocol) {
         nativeAddr.SetAddress(addr.toIPv4Address());
     } else {
         qWarning("unsupported network protocol (%d)", addr.protocol());
@@ -258,14 +240,6 @@ bool QSymbianSocketEngine::initialize(QAbstractSocket::SocketType socketType, QA
     Q_D(QSymbianSocketEngine);
     if (isValid())
         close();
-
-#if defined(QT_NO_IPV6)
-    if (protocol == QAbstractSocket::IPv6Protocol) {
-        d->setError(QAbstractSocket::UnsupportedSocketOperationError,
-                    d->NoIpV6ErrorString);
-        return false;
-    }
-#endif
 
     // Create the socket
     if (!d->createNewSocket(socketType, protocol)) {
@@ -521,13 +495,6 @@ bool QSymbianSocketEngine::connectToHost(const QHostAddress &addr, quint16 port)
     qDebug("QSymbianSocketEngine::connectToHost() : %d ", d->socketDescriptor);
 #endif
 
-#if defined (QT_NO_IPV6)
-    if (addr.protocol() == QAbstractSocket::IPv6Protocol) {
-        d->setError(QAbstractSocket::UnsupportedSocketOperationError,
-                    d->NoIpV6ErrorString);
-        return false;
-    }
-#endif
     if (!d->checkProxy(addr))
         return false;
 
@@ -808,11 +775,9 @@ bool QSymbianSocketEnginePrivate::fetchConnectionParameters()
     case KAfInet:
         socketProtocol = QAbstractSocket::IPv4Protocol;
         break;
-#if !defined (QT_NO_IPV6)
     case KAfInet6:
         socketProtocol = QAbstractSocket::IPv6Protocol;
         break;
-#endif
     default:
         socketProtocol = QAbstractSocket::UnknownNetworkLayerProtocol;
         break;
