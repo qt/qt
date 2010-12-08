@@ -551,7 +551,8 @@ void Context::Enter() {
 
 
 void Context::Exit() {
-  if (!i::V8::IsRunning()) return;
+  if (IsDeadCheck("v8::Context::Exit()")) return;
+  ENTER_V8;
   // TODO(isolates): Context should have a pointer to isolate.
   i::Isolate* isolate = i::Isolate::Current();
 
