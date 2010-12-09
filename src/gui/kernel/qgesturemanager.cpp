@@ -175,9 +175,9 @@ void QGestureManager::cleanupCachedGestures(QObject *target, Qt::GestureType typ
                 m_activeGestures.remove(g);
                 m_gestureOwners.remove(g);
                 m_gestureTargets.remove(g);
+                m_gesturesToDelete.insert(g);
             }
 
-            qDeleteAll(gestures);
             iter = m_objectGestures.erase(iter);
         } else {
             ++iter;
@@ -189,7 +189,7 @@ void QGestureManager::cleanupCachedGestures(QObject *target, Qt::GestureType typ
 QGesture *QGestureManager::getState(QObject *object, QGestureRecognizer *recognizer, Qt::GestureType type)
 {
     // if the widget is being deleted we should be careful not to
-    // create a new state, as it will create QWeakPointer which doesnt work
+    // create a new state, as it will create QWeakPointer which doesn't work
     // from the destructor.
     if (object->isWidgetType()) {
         if (static_cast<QWidget *>(object)->d_func()->data.in_destructor)
@@ -385,6 +385,11 @@ bool QGestureManager::filterEventThroughContexts(const QMultiMap<QObject *,
         recycle(gesture);
         m_gestureTargets.remove(gesture);
     }
+
+    //Clean up the Gestures
+    qDeleteAll(m_gesturesToDelete);
+    m_gesturesToDelete.clear();
+
     return ret;
 }
 
@@ -447,7 +452,8 @@ void QGestureManager::cancelGesturesForChildren(QGesture *original)
 void QGestureManager::cleanupGesturesForRemovedRecognizer(QGesture *gesture)
 {
     QGestureRecognizer *recognizer = m_deletedRecognizers.value(gesture);
-    Q_ASSERT(recognizer);
+    if(!recognizer) //The Gesture is removed while in the even loop, so the recognizers for this gestures was removed
+        return;
     m_deletedRecognizers.remove(gesture);
     if (m_deletedRecognizers.keys(recognizer).isEmpty()) {
         // no more active gestures, cleanup!

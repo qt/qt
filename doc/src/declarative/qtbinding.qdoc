@@ -31,7 +31,7 @@
 \title Using QML in C++ Applications
 
 QML is designed to be easily extensible from C++. The classes in the
-QtDeclarative module allow QML components to be loaded and manipulated from C++, and through
+Qt Declarative module allow QML components to be loaded and manipulated from C++, and through
 Qt's \l{The Meta-Object System}{meta-object system}, QML and C++ objects can easily
 communicate through Qt signals and slots. In addition, QML plugins can be written to create
 reusable QML components for distribution.
@@ -41,20 +41,20 @@ You may want to mix QML and C++ for a number of reasons. For example:
 \list
 \o To use functionality defined in a C++ source (for example, when using a C++ Qt-based data model, or
 calling functions in a third-party C++ library)
-\o To access functionality in the QtDeclarative module (for example, to dynamically generate
+\o To access functionality in the Qt Declarative module (for example, to dynamically generate
 images using QDeclarativeImageProvider)
 \o To write your own QML elements (whether for your applications, or for distribution to others)
 \endlist
 
-To use the QtDeclarative module, you must include and link to the module appropriately, as shown on
+To use the Qt Declarative module, you must include and link to the module appropriately, as shown on
 the \l {QtDeclarative}{module index page}. The \l {Qt Declarative UI Runtime} documentation
 shows how to build a basic C++ application that uses this module.
 
 
 \section1 Core module classes
 
-The QtDeclarative module provides a set of C++ APIs for extending your QML applications from C++ and
-embedding QML into C++ applications. There are several core classes in the QtDeclarative module
+The Qt Declarative module provides a set of C++ APIs for extending your QML applications from C++ and
+embedding QML into C++ applications. There are several core classes in the Qt Declarative module
 that provide the essential capabilities for doing this. These are:
 
 \list
@@ -230,7 +230,7 @@ Also see the QDeclarativeContext documentation for more information.
 
 \section2 Defining new QML elements
 
-While new QML elements can be \l {Defining new Components}{defined in QML}, they can also be
+While new QML elements can be \l {Defining New Components}{defined in QML}, they can also be
 defined by C++ classes; in fact, many of the core \l {QML Elements} are implemented through
 C++ classes. When you create a QML object using one of these elements, you are simply creating an
 instance of a QObject-based C++ class and setting its properties.
@@ -448,7 +448,8 @@ now be used from QML:
 \snippet doc/src/snippets/declarative/qtbinding/enums/standalone.qml 0
 
 The C++ type must be registered with QML to use its enums. If your C++ type is not instantiable, it
-can be registered using qmlRegisterUncreatableType().
+can be registered using qmlRegisterUncreatableType().  To be accessible from QML, the names of enum values
+must begin with a capital letter.
 
 See the \l {Tutorial: Writing QML extensions with C++}{Writing QML extensions with C++} tutorial and
 the \l {Extending QML in C++} reference documentation for more information.
@@ -520,7 +521,7 @@ a QColor-type property or to call a C++ function that requires a QColor paramete
 
 \section1 Writing QML plugins
 
-The QtDeclarative module includes the QDeclarativeExtensionPlugin class, which is an abstract
+The Qt Declarative module includes the QDeclarativeExtensionPlugin class, which is an abstract
 class for writing QML plugins. This allows QML extension types to be dynamically loaded into
 QML applications.
 

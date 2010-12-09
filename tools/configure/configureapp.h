@@ -122,8 +122,6 @@ private:
     QStringList qmakeStyles;
     QStringList qmakeStylePlugins;
 
-    QStringList qmakeFormatPlugins;
-
     QStringList qmakeVars;
     QStringList qmakeDefines;
     //  makeList[0] for qt and qtmain

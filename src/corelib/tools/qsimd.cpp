@@ -135,7 +135,7 @@ static inline uint detectProcessorFeatures()
 #if defined(QT_HAVE_IWMMXT)
     // runtime detection only available when running as a previlegied process
     features = IWMMXT;
-#elif defined(QT_HAVE_NEON)
+#elif defined(QT_ALWAYS_HAVE_NEON)
     features = NEON;
 #endif
 
@@ -285,7 +285,13 @@ static inline uint detectProcessorFeatures()
     uint features = MMX|SSE|SSE2|CMOV;
     uint feature_result = 0;
 
-#if defined(Q_CC_GNU)
+#if defined (Q_OS_WIN64)
+    {
+       int info[4];
+       __cpuid(info, 1);
+       feature_result = info[2];
+    }
+#elif defined(Q_CC_GNU)
     quint64 tmp;
     asm ("xchg %%rbx, %1\n"
          "cpuid\n"
@@ -294,12 +300,6 @@ static inline uint detectProcessorFeatures()
         : "a" (1)
         : "%edx"
         );
-#elif defined (Q_OS_WIN64)
-    {
-       int info[4];
-       __cpuid(info, 1);
-       feature_result = info[2];
-    }
 #endif
 
     if (feature_result & (1u))

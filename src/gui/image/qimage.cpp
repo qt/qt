@@ -1121,9 +1121,14 @@ QImage::QImage(const char * const xpm[])
 QImage::QImage(const QImage &image)
     : QPaintDevice()
 {
-    d = image.d;
-    if (d)
-        d->ref.ref();
+    if (image.paintingActive()) {
+        d = 0;
+        operator=(image.copy());
+    } else {
+        d = image.d;
+        if (d)
+            d->ref.ref();
+    }
 }
 
 #ifdef QT3_SUPPORT
@@ -1320,11 +1325,15 @@ QImage::~QImage()
 
 QImage &QImage::operator=(const QImage &image)
 {
-    if (image.d)
-        image.d->ref.ref();
-    if (d && !d->ref.deref())
-        delete d;
-    d = image.d;
+    if (image.paintingActive()) {
+        operator=(image.copy());
+    } else {
+        if (image.d)
+            image.d->ref.ref();
+        if (d && !d->ref.deref())
+            delete d;
+        d = image.d;
+    }
     return *this;
 }
 

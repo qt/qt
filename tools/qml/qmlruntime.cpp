@@ -1012,7 +1012,7 @@ void QDeclarativeViewer::addPluginPath(const QString& plugin)
 
 void QDeclarativeViewer::reload()
 {
-    open(currentFileOrUrl);
+    launch(currentFileOrUrl);
 }
 
 void QDeclarativeViewer::openFile()
@@ -1520,7 +1520,7 @@ void QDeclarativeViewer::updateSizeHints(bool initial)
     //qWarning() << "USH: R2V: setting free size ";
     layout()->setSizeConstraint(QLayout::SetNoConstraint);
     layout()->activate();
-    setMinimumSize(QSize(1,1));
+    setMinimumSize(minimumSizeHint());
     setMaximumSize(QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX));
     canvas->setMinimumSize(QSize(0,0));
     canvas->setMaximumSize(QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX));

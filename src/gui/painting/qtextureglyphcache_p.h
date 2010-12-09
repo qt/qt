@@ -96,7 +96,7 @@ public:
         int baseLineY;
     };
 
-    void populate(QFontEngine *fontEngine, int numGlyphs, const glyph_t *glyphs,
+    bool populate(QFontEngine *fontEngine, int numGlyphs, const glyph_t *glyphs,
                   const QFixedPoint *positions);
 
     virtual void createTextureData(int width, int height) = 0;
@@ -118,7 +118,7 @@ public:
 
     QImage textureMapForGlyph(glyph_t g) const;
     virtual int maxTextureWidth() const { return QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH; }
-    virtual int maxTextureHeight() const { return 32768; }
+    virtual int maxTextureHeight() const { return -1; }
 
 protected:
     QFontEngine *m_current_fontengine;

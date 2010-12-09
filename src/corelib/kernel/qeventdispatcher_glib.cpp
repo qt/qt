@@ -311,6 +311,10 @@ QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
         }
     }
 
+#if GLIB_CHECK_VERSION (2, 22, 0)
+    g_main_context_push_thread_default (mainContext);
+#endif
+
     // setup post event source
     postEventSource = reinterpret_cast<GPostEventSource *>(g_source_new(&postEventSourceFuncs,
                                                                         sizeof(GPostEventSource)));
@@ -389,6 +393,9 @@ QEventDispatcherGlib::~QEventDispatcherGlib()
     d->postEventSource = 0;
 
     Q_ASSERT(d->mainContext != 0);
+#if GLIB_CHECK_VERSION (2, 22, 0)
+    g_main_context_pop_thread_default (d->mainContext);
+#endif
     g_main_context_unref(d->mainContext);
     d->mainContext = 0;
 }

@@ -54,11 +54,18 @@ extern Q_GUI_EXPORT bool qt_cleartype_enabled;
 
 QGLTextureGlyphCache::QGLTextureGlyphCache(QGLContext *context, QFontEngineGlyphCache::Type type, const QTransform &matrix)
     : QImageTextureGlyphCache(type, matrix)
-    , ctx(context)
+    , ctx(0)
     , m_width(0)
     , m_height(0)
     , m_filterMode(Nearest)
 {
+    setContext(context);
+}
+
+void QGLTextureGlyphCache::setContext(QGLContext *context)
+{
+    ctx = context;
+
     // broken FBO readback is a bug in the SGX 1.3 and 1.4 drivers for the N900 where
     // copying between FBO's is broken if the texture is either GL_ALPHA or POT. The
     // workaround is to use a system-memory copy of the glyph cache for this device.
@@ -71,7 +78,7 @@ QGLTextureGlyphCache::QGLTextureGlyphCache(QGLContext *context, QFontEngineGlyph
             SLOT(contextDestroyed(const QGLContext*)));
 }
 
-QGLTextureGlyphCache::~QGLTextureGlyphCache()
+void QGLTextureGlyphCache::clear() 
 {
     if (ctx) {
         QGLShareContextScope scope(ctx);
@@ -81,7 +88,24 @@ QGLTextureGlyphCache::~QGLTextureGlyphCache()
 
         if (m_width || m_height)
             glDeleteTextures(1, &m_texture);
+
+        m_fbo = 0;
+        m_texture = 0;
+        m_width = 0;
+        m_height = 0;
+        m_w = 0;
+        m_h = 0;
+        m_cx = 0;
+        m_cy = 0;
+        m_currentRowHeight = 0;
+        coords.clear();
     }
+  
+}
+
+QGLTextureGlyphCache::~QGLTextureGlyphCache()
+{
+    clear();
 }
 
 void QGLTextureGlyphCache::createTextureData(int width, int height)
@@ -104,14 +128,17 @@ void QGLTextureGlyphCache::createTextureData(int width, int height)
     m_width = width;
     m_height = height;
 
-    QVarLengthArray<uchar> data(width * height);
-    for (int i = 0; i < data.size(); ++i)
-        data[i] = 0;
-
-    if (m_type == QFontEngineGlyphCache::Raster_RGBMask)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, &data[0]);
-    else
+    if (m_type == QFontEngineGlyphCache::Raster_RGBMask) {
+        QVarLengthArray<uchar> data(width * height * 4);
+        for (int i = 0; i < data.size(); ++i)
+            data[i] = 0;
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &data[0]);
+    } else {
+        QVarLengthArray<uchar> data(width * height);
+        for (int i = 0; i < data.size(); ++i)
+            data[i] = 0;
         glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, width, height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, &data[0]);
+    }
 
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -263,7 +290,7 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
     if (mask.format() == QImage::Format_RGB32) {
         glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_BGRA, GL_UNSIGNED_BYTE, mask.bits());
     } else {
-#ifdef QT_OPENGL_ES2
+#ifdef QT_OPENGL_ES_2
         glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_ALPHA, GL_UNSIGNED_BYTE, mask.bits());
 #else
         // glTexSubImage2D() might cause some garbage to appear in the texture if the mask width is

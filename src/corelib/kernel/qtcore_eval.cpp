@@ -90,14 +90,14 @@ static const char will_shutdown_now[] =
 
 static int qt_eval_is_supported()
 {
-    const char *const license_key = qt_eval_key_data + 12;
+    const volatile char *const license_key = qt_eval_key_data + 12;
 
     // fast fail
     if (!qt_eval_key_data[0] || !*license_key)
         return -1;
 
     // is this an unsupported evaluation?
-    const char* typecode = license_key;
+    const volatile char *typecode = license_key;
     int field = 2;
     for ( ; field && *typecode; ++typecode)
         if (*typecode == '-')

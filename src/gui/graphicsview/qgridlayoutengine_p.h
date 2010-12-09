@@ -224,13 +224,16 @@ public:
 
 typedef QMap<QPair<int, int>, QGridLayoutMultiCellData> MultiCellMap;
 
+class QGridLayoutRowInfo;
+
 class QGridLayoutRowData
 {
 public:
     void reset(int count);
-    void distributeMultiCells();
+    void distributeMultiCells(const QGridLayoutRowInfo &rowInfo);
     void calculateGeometries(int start, int end, qreal targetSize, qreal *positions, qreal *sizes,
-                             qreal *descents, const QGridLayoutBox &totalBox);
+                             qreal *descents, const QGridLayoutBox &totalBox,
+                             const QGridLayoutRowInfo &rowInfo);
     QGridLayoutBox totalBox(int start, int end) const;
     void stealBox(int start, int end, int which, qreal *positions, qreal *sizes);
 

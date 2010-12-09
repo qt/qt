@@ -102,6 +102,9 @@ public:
      When running with the 'runtime' graphics system, sets the currently active 
      system to 'meego'. The window surface and all the resources are automatically
      migrated to OpenGL. Will fail if the active graphics system is not 'runtime'.
+     Calling this function will emit QMeeGoSwitchEvent to the top level widgets.
+     Two events will be emitted for each switch -- one before the switch (QMeeGoSwitchEvent::WillSwitch)
+     and one after the switch (QMeeGoSwitchEvent::DidSwitch).
     */
     static void switchToMeeGo();
 
@@ -111,6 +114,9 @@ public:
      system to 'raster'. The window surface and the graphics resources (including the 
      EGL shared image resources) are automatically migrated back to the CPU. All OpenGL 
      resources (surface, context, cache, font cache) are automaticall anihilated.
+     Calling this function will emit QMeeGoSwitchEvent to the top level widgets.
+     Two events will be emitted for each switch -- one before the switch (QMeeGoSwitchEvent::WillSwitch)
+     and one after the switch (QMeeGoSwitchEvent::DidSwitch).
     */
     static void switchToRaster();
 
@@ -175,6 +181,9 @@ public:
      This function needs to be called *before* any widget/content is created. 
      When called with true, the base window surface will be translucent and initialized
      with QGLFormat.alpha == true.
+
+     This function is *deprecated*. Set Qt::WA_TranslucentBackground attribute
+     on the top-level widget *before* you show it instead.
     */
     static void setTranslucent(bool translucent);
 };

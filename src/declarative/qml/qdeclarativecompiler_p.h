@@ -89,14 +89,12 @@ public:
     struct TypeReference 
     {
         TypeReference()
-        : type(0), component(0), ref(0) {}
+        : type(0), component(0) {}
 
         QByteArray className;
         QDeclarativeType *type;
-//        QDeclarativeComponent *component;
         QDeclarativeCompiledData *component;
 
-        QDeclarativeRefCount *ref;
         QObject *createInstance(QDeclarativeContextData *, const QBitField &, QList<QDeclarativeError> *) const;
         const QMetaObject *metaObject() const;
     };
@@ -254,6 +252,7 @@ private:
 
     void genObject(QDeclarativeParser::Object *obj);
     void genObjectBody(QDeclarativeParser::Object *obj);
+    void genValueTypeProperty(QDeclarativeParser::Object *obj,QDeclarativeParser::Property *);
     void genComponent(QDeclarativeParser::Object *obj);
     void genValueProperty(QDeclarativeParser::Property *prop, QDeclarativeParser::Object *obj);
     void genListProperty(QDeclarativeParser::Property *prop, QDeclarativeParser::Object *obj);

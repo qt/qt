@@ -69,7 +69,7 @@ struct ObjectData : public QScriptDeclarativeClass::Object {
     virtual ~ObjectData() {
         if (object && !object->parent()) {
             QDeclarativeData *ddata = QDeclarativeData::get(object, false);
-            if (ddata && !ddata->indestructible && 0 == --ddata->objectDataRefCount)
+            if (ddata && !ddata->indestructible && 0 == --ddata->objectDataRefCount) 
                 object->deleteLater();
         }
     }
@@ -421,7 +421,7 @@ QScriptValue QDeclarativeObjectScriptClass::tostring(QScriptContext *context, QS
 
         ret += QString::fromUtf8(obj->metaObject()->className());
         ret += QLatin1String("(0x");
-        ret += QString::number((intptr_t)obj,16);
+        ret += QString::number((quintptr)obj,16);
 
         if (!objectName.isEmpty()) {
             ret += QLatin1String(", \"");
@@ -808,7 +808,14 @@ QScriptDeclarativeClass::Value MetaCallArgument::toValue(QDeclarativeEngine *e)
         }
         return QScriptDeclarativeClass::Value(engine, rv);
     } else if (type == -1 || type == qMetaTypeId<QVariant>()) {
-        return QScriptDeclarativeClass::Value(engine, QDeclarativeEnginePrivate::get(e)->scriptValueFromVariant(*((QVariant *)&data)));
+        QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(e);
+        QScriptValue rv = ep->scriptValueFromVariant(*((QVariant *)&data));
+        if (rv.isQObject()) {
+            QObject *object = rv.toQObject();
+            if (object)
+                QDeclarativeData::get(object, true)->setImplicitDestructible();
+        }
+        return QScriptDeclarativeClass::Value(engine, rv);
     } else {
         return QScriptDeclarativeClass::Value();
     }

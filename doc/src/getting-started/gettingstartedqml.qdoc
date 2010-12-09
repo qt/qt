@@ -42,7 +42,7 @@
     installation instructions and requirements for different platforms.
 
     Qt Quick includes a declarative language called
-    \l{Introduction to the QML language}{QML}, the \l{QtDeclarative Module}, and
+    \l{Introduction to the QML language}{QML}, the \l{Qt Declarative Module}, and
     \l{QML Viewer}.
 
     \section1 QML to Build User Interfaces
@@ -148,7 +148,7 @@
 
     \code
         Rectangle {
-            id:Button
+            id: button
             ...
 
             property color buttonColor: "lightblue"
