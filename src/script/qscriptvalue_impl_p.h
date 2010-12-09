@@ -688,13 +688,13 @@ inline void QScriptValuePrivate::setPrototype(QScriptValuePrivate* prototype)
     }
 }
 
-inline void QScriptValuePrivate::setProperty(const QScriptStringPrivate *name, QScriptValuePrivate* value, v8::PropertyAttribute attribs)
+inline void QScriptValuePrivate::setProperty(const QScriptStringPrivate *name, QScriptValuePrivate* value, uint attribs)
 {
     if (name->isValid())
         setProperty(name->asV8Value(), value, attribs);
 }
 
-inline void QScriptValuePrivate::setProperty(const QString& name, QScriptValuePrivate* value, v8::PropertyAttribute attribs)
+inline void QScriptValuePrivate::setProperty(const QString& name, QScriptValuePrivate* value, uint attribs)
 {
     if (!isObject())
         return;
@@ -702,7 +702,7 @@ inline void QScriptValuePrivate::setProperty(const QString& name, QScriptValuePr
     setProperty(QScriptConverter::toString(name), value, attribs);
 }
 
-inline void QScriptValuePrivate::setProperty(v8::Handle<v8::String> name, QScriptValuePrivate* value, v8::PropertyAttribute attribs)
+inline void QScriptValuePrivate::setProperty(v8::Handle<v8::String> name, QScriptValuePrivate* value, uint attribs)
 {
     if (!isObject())
         return;
@@ -723,10 +723,18 @@ inline void QScriptValuePrivate::setProperty(v8::Handle<v8::String> name, QScrip
         return;
     }
 
-    v8::Object::Cast(*m_value)->Set(name, value->m_value, attribs);
+    if (attribs & (QScriptValue::PropertyGetter | QScriptValue::PropertyGetter)) {
+        v8::Object::Cast(*m_value)->SetAccessor(name,
+                                        (attribs & QScriptValue::PropertyGetter) ? &propertyGetter : 0,
+                                        (attribs & QScriptValue::PropertySetter) ? &propertySetter : 0,
+                                        value->m_value, v8::DEFAULT,
+                                        v8::PropertyAttribute(attribs & QScriptConverter::PropertyAttributeMask));
+    } else {
+        v8::Object::Cast(*m_value)->Set(name, value->m_value, v8::PropertyAttribute(attribs & QScriptConverter::PropertyAttributeMask));
+    }
 }
 
-inline void QScriptValuePrivate::setProperty(quint32 index, QScriptValuePrivate* value, v8::PropertyAttribute attribs)
+inline void QScriptValuePrivate::setProperty(quint32 index, QScriptValuePrivate* value, uint attribs)
 {
     // FIXME this method should by integrated with other overloads to use the same code patch.
     // for now it is not possible as v8 doesn't allow to set property attributes using index based api.

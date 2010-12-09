@@ -1309,4 +1309,23 @@ qint64 QScriptValue::objectId() const
     return *reinterpret_cast<quintptr *>(*(d->m_value));
 }
 
+
+v8::Handle<v8::Value> QScriptValuePrivate::propertyGetter(v8::Local<v8::String> /*property*/, const v8::AccessorInfo& info)
+{
+    Q_ASSERT(info.Data()->IsObject());
+    v8::Object *function = v8::Object::Cast(*info.Data());
+    Q_ASSERT(function && function->IsCallable());
+    return function->Call(info.This(), 0, 0);
+}
+
+void QScriptValuePrivate::propertySetter(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+{
+    Q_ASSERT(info.Data()->IsObject());
+    v8::Object *function = v8::Object::Cast(*info.Data());
+    Q_ASSERT(function && function->IsCallable());
+    v8::Handle<v8::Value> argv[] = { value };
+    function->Call(info.This(), 1, argv);
+}
+
+
 QT_END_NAMESPACE

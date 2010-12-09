@@ -131,10 +131,10 @@ public:
     QScriptClassPrivate* scriptClass() const;
     void setScriptClass(QScriptClassPrivate* scriptclass);
 
-    inline void setProperty(const QScriptStringPrivate *name, QScriptValuePrivate *value, v8::PropertyAttribute attribs = v8::None);
-    inline void setProperty(const QString& name, QScriptValuePrivate *value, v8::PropertyAttribute attribs = v8::None);
-    inline void setProperty(v8::Handle<v8::String> name, QScriptValuePrivate *value, v8::PropertyAttribute attribs = v8::None);
-    inline void setProperty(quint32 index, QScriptValuePrivate *value, v8::PropertyAttribute attribs = v8::None);
+    inline void setProperty(const QScriptStringPrivate *name, QScriptValuePrivate *value, uint attribs = 0);
+    inline void setProperty(const QString &name, QScriptValuePrivate *value, uint attribs = 0);
+    inline void setProperty(v8::Handle<v8::String> name, QScriptValuePrivate *value, uint attribs = 0);
+    inline void setProperty(quint32 index, QScriptValuePrivate* value, uint attribs = 0);
     inline QScriptPassPointer<QScriptValuePrivate> property(const QString& name, const QScriptValue::ResolveFlags& mode) const;
     inline QScriptPassPointer<QScriptValuePrivate> property(QScriptStringPrivate* name, const QScriptValue::ResolveFlags& mode) const;
     inline QScriptPassPointer<QScriptValuePrivate> property(v8::Handle<v8::String> name, const QScriptValue::ResolveFlags& mode) const;
@@ -201,6 +201,9 @@ private:
     inline bool isNumberBased() const;
     inline bool isStringBased() const;
     inline bool prepareArgumentsForCall(v8::Handle<v8::Value> argv[], const QScriptValueList& arguments) const;
+
+    static v8::Handle<v8::Value> propertyGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+    static void propertySetter(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
 };
 
 QT_END_NAMESPACE

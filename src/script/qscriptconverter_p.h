@@ -140,16 +140,25 @@ public:
         return QString::fromLatin1(buf.constData());
     }
 
-    static v8::PropertyAttribute toPropertyAttributes(const QFlags<QScriptValue::PropertyFlag>& flags)
+    enum {
+        PropertyAttributeMask = v8::ReadOnly | v8::DontDelete | v8::DontEnum,
+    };
+
+    // return a mask of v8::PropertyAttribute that may also contains QScriptValue::PropertyGetter or QScriptValue::PropertySetter
+    static uint toPropertyAttributes(const QFlags<QScriptValue::PropertyFlag>& flags)
     {
-        int attr = 0;
+        uint attr = 0;
         if (flags.testFlag(QScriptValue::ReadOnly))
             attr |= v8::ReadOnly;
         if (flags.testFlag(QScriptValue::Undeletable))
             attr |= v8::DontDelete;
         if (flags.testFlag(QScriptValue::SkipInEnumeration))
             attr |= v8::DontEnum;
-        return v8::PropertyAttribute(attr);
+        if (flags.testFlag(QScriptValue::PropertyGetter))
+            attr |= QScriptValue::PropertyGetter;
+        if (flags.testFlag(QScriptValue::PropertySetter))
+            attr |= QScriptValue::PropertySetter;
+        return attr;
     }
 
 #ifndef QT_NO_REGEXP
