@@ -148,7 +148,11 @@ bool QSymbianSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType so
     TUint family = (socketProtocol == QAbstractSocket::IPv6Protocol) ? KAfInet6 : KAfInet;
     TUint type = (socketType == QAbstractSocket::UdpSocket) ? KSockDatagram : KSockStream;
     TUint protocol = (socketType == QAbstractSocket::UdpSocket) ? KProtocolInetUdp : KProtocolInetTcp;
-    TInt err = nativeSocket.Open(socketServer, family, type, protocol, *connection);
+    TInt err;
+    if (connection)
+        err = nativeSocket.Open(socketServer, family, type, protocol, *connection);
+    else
+        err = nativeSocket.Open(socketServer, family, type, protocol); //TODO: FIXME - deprecated API, make sure we always have a connection instead
 
     if (err != KErrNone) {
         switch (err) {
@@ -946,9 +950,9 @@ int QSymbianSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool 
 
     TPckgBuf<TUint> selectFlags;
     selectFlags() = KSockSelectExcept;
-    if (selectForRead)
+    if (checkRead)
         selectFlags() |= KSockSelectRead;
-    if (selectForWrite)
+    if (checkWrite)
         selectFlags() |= KSockSelectWrite;
     TRequestStatus selectStat;
     nativeSocket.Ioctl(KIOctlSelect, selectStat, &selectFlags, KSOLSocket);

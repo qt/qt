@@ -109,10 +109,12 @@ int main(int argc, char**argv)
     }
 
     // wait for connected
-    socketEngine->connectToHost(QHostAddress("74.125.77.99"), 80); // google
+    int r = socketEngine->connectToHost(QHostAddress("74.125.77.99"), 80); // google
     bool readyToRead = false;
     bool readyToWrite = false;
     socketEngine->waitForReadOrWrite(&readyToRead, &readyToWrite, true, true, 10*1000);
+    if (r <= 0) //timeout or error
+        exit(1);
     if (readyToWrite) {
         // write the request
         QByteArray request("GET /robots.txt HTTP/1.0\r\n\r\n");
@@ -129,7 +131,11 @@ int main(int argc, char**argv)
                 bzero(buf, bufsize);
                 ret = socketEngine->read(buf, available);
                 if (ret > 0) {
+#ifdef Q_OS_SYMBIAN
+                    qDebug() << buf; //printf goes only to screen, this goes to remote debug channel
+#else
                     printf("%s", buf);
+#endif
                 } else {
                     // some failure when reading
                     exit(1);
