@@ -89,6 +89,11 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     }
     */
 
+    //TODO: HACK to return qt-test-server's ip
+    QList<QHostAddress> addresses;
+    addresses.append(QHostAddress("192.168.1.8"));
+    results.setHostName(hostName);
+    results.setAddresses(addresses);
     return results;
 }
 

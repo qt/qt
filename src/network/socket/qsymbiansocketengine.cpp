@@ -206,7 +206,8 @@ QSymbianSocketEnginePrivate::QSymbianSocketEnginePrivate() :
     connection(QSymbianSocketManager::instance().defaultConnection()),
     readNotifier(0),
     writeNotifier(0),
-    exceptNotifier(0)
+    exceptNotifier(0),
+    asyncSelect(0)
 {
 }
 
@@ -306,6 +307,11 @@ bool QSymbianSocketEngine::initialize(int socketDescriptor, QAbstractSocket::Soc
     if (isValid())
         close();
 
+    if(!QSymbianSocketManager::instance().lookupSocket(socketDescriptor, d->nativeSocket)) {
+        d->setError(QAbstractSocket::SocketResourceError,
+            QSymbianSocketEnginePrivate::InvalidSocketErrorString);
+        return false;
+    }
     d->socketDescriptor = socketDescriptor;
 
     // determine socket type and protocol
@@ -666,9 +672,7 @@ int QSymbianSocketEngine::accept()
         qWarning("QSymbianSocketEnginePrivate::nativeAccept() - error %d", status.Int());
         return 0;
     }
-    // FIXME Qt Handle of new socket must be retrieved from QSymbianSocketManager
-    // and then returned. Not the SubSessionHandle! Also set the socket to nonblocking.
-    return blankSocket.SubSessionHandle();
+    return QSymbianSocketManager::instance().addSocket(blankSocket);
 }
 
 qint64 QSymbianSocketEngine::bytesAvailable() const
@@ -854,18 +858,47 @@ void QSymbianSocketEngine::close()
     qDebug("QSymbianSocketEnginePrivate::nativeClose()");
 #endif
 
+    if (d->readNotifier)
+        d->readNotifier->setEnabled(false);
+    if (d->writeNotifier)
+        d->writeNotifier->setEnabled(false);
+    if (d->exceptNotifier)
+        d->exceptNotifier->setEnabled(false);
+    if(d->asyncSelect) {
+        d->asyncSelect->deleteLater();
+        d->asyncSelect = 0;
+    }
+
     //TODO: call nativeSocket.Shutdown(EImmediate) in some cases?
     d->nativeSocket.Close();
     QSymbianSocketManager::instance().removeSocket(d->nativeSocket);
+    d->socketDescriptor = -1;
 
-    // FIXME set nativeSocket to 0 ?
+    d->socketState = QAbstractSocket::UnconnectedState;
+    d->hasSetSocketError = false;
+    d->localPort = 0;
+    d->localAddress.clear();
+    d->peerPort = 0;
+    d->peerAddress.clear();
+    if (d->readNotifier) {
+        qDeleteInEventHandler(d->readNotifier);
+        d->readNotifier = 0;
+    }
+    if (d->writeNotifier) {
+        qDeleteInEventHandler(d->writeNotifier);
+        d->writeNotifier = 0;
+    }
+    if (d->exceptNotifier) {
+        qDeleteInEventHandler(d->exceptNotifier);
+        d->exceptNotifier = 0;
+    }
 }
 
 qint64 QSymbianSocketEngine::write(const char *data, qint64 len)
 {
     Q_D(QSymbianSocketEngine);
     TPtrC8 buffer((TUint8*)data, (int)len);
-    TSockXfrLength sentBytes;
+    TSockXfrLength sentBytes = 0;
     TRequestStatus status; //TODO: OMG sync send!
     d->nativeSocket.Send(buffer, 0, status, sentBytes);
     User::WaitForRequest(status);
@@ -874,6 +907,7 @@ qint64 QSymbianSocketEngine::write(const char *data, qint64 len)
     if (err) {
         switch (err) {
         case KErrDisconnected:
+        case KErrEof:
             sentBytes = -1;
             d->setError(QAbstractSocket::RemoteHostClosedError, d->RemoteHostClosedErrorString);
             close();
@@ -882,9 +916,12 @@ qint64 QSymbianSocketEngine::write(const char *data, qint64 len)
             d->setError(QAbstractSocket::DatagramTooLargeError, d->DatagramTooLargeErrorString);
             break;
         case KErrWouldBlock:
-            sentBytes = 0;
+            break;
         default:
-            d->setError(QAbstractSocket::NetworkError, d->SendDatagramErrorString);
+            sentBytes = -1;
+            d->setError(err);
+            close();
+            break;
         }
     }
 
@@ -914,20 +951,13 @@ qint64 QSymbianSocketEngine::read(char *data, qint64 maxSize)
     TInt err = status.Int();
     int r = received();
 
-    if (err) {
-        switch(err) {
-        case KErrWouldBlock:
-            // No data was available for reading
-            r = -2;
-            break;
-        case KErrDisconnected:
-            r = 0;
-            break;
-        default:
-            r = -1;
-            //error string is now set in read(), not here in nativeRead()
-            break;
-        }
+    if (err == KErrWouldBlock) {
+        // No data was available for reading
+        r = -2;
+    } else if (err != KErrNone) {
+        d->setError(err);
+        close();
+        r = -1;
     }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
@@ -1188,6 +1218,36 @@ void QSymbianSocketEnginePrivate::setError(QAbstractSocket::SocketError error, E
     }
 }
 
+//TODO: use QSystemError class when file engine is merged to master
+void QSymbianSocketEnginePrivate::setError(TInt symbianError)
+{
+    hasSetSocketError = true;
+    switch(symbianError) {
+    case KErrDisconnected:
+    case KErrEof:
+        setError(QAbstractSocket::RemoteHostClosedError,
+                 QSymbianSocketEnginePrivate::RemoteHostClosedErrorString);
+        break;
+    case KErrNetUnreach:
+        setError(QAbstractSocket::NetworkError,
+                 QSymbianSocketEnginePrivate::NetworkUnreachableErrorString);
+        break;
+    case KErrHostUnreach:
+        setError(QAbstractSocket::NetworkError,
+                 QSymbianSocketEnginePrivate::HostUnreachableErrorString);
+        break;
+    case KErrNoProtocolOpt:
+        setError(QAbstractSocket::NetworkError,
+                 QSymbianSocketEnginePrivate::ProtocolUnsupportedErrorString);
+        break;
+    default:
+        socketError = QAbstractSocket::NetworkError;
+        socketErrorString = QString::number(symbianError);
+        break;
+    }
+
+}
+
 class QReadNotifier : public QSocketNotifier
 {
     friend class QAsyncSelect;
@@ -1277,7 +1337,7 @@ void QSymbianSocketEngine::setWriteNotificationEnabled(bool enable)
         d->writeNotifier->setEnabled(enable);
     } else if (enable && d->threadData->eventDispatcher) {
         QWriteNotifier *wn = new QWriteNotifier(d->socketDescriptor, this);
-        d->readNotifier = wn;
+        d->writeNotifier = wn;
         if (!(d->asyncSelect))
             d->asyncSelect = q_check_ptr(new QAsyncSelect(d->threadData->eventDispatcher, d->nativeSocket, this));
         d->asyncSelect->setWriteNotifier(wn);
@@ -1451,7 +1511,7 @@ void QAsyncSelect::RunL()
         QEvent e(QEvent::SockAct);
         iWriteN->event(&e);
     }
-    if ((m_selectBuf() && KSockSelectExcept) || iStatus != KErrNone) {
+    if ((m_selectBuf() & KSockSelectExcept) || iStatus != KErrNone) {
         QEvent e(QEvent::SockAct);
         iExcN->event(&e);
     }
@@ -1463,6 +1523,9 @@ void QAsyncSelect::RunL()
 void QAsyncSelect::deleteLater()
 {
     if (m_inSocketEvent) {
+        iExcN = 0;
+        iReadN = 0;
+        iWriteN = 0;
         m_deleteLater = true;
     } else {
         delete this;

@@ -1026,14 +1026,17 @@ bool QEventDispatcherSymbian::hasPendingEvents()
 
 void QEventDispatcherSymbian::registerSocketNotifier ( QSocketNotifier * notifier )
 {
-    QSocketActiveObject *socketAO = new QSocketActiveObject(this, notifier);
+    //TODO: just need to be able to do something when event loop has sockets disabled
+/*    QSocketActiveObject *socketAO = new QSocketActiveObject(this, notifier);
     Q_CHECK_PTR(socketAO);
     m_notifiers.insert(notifier, socketAO);
-    selectThread().requestSocketEvents(notifier, &socketAO->iStatus);
+    selectThread().requestSocketEvents(notifier, &socketAO->iStatus);*/
 }
 
 void QEventDispatcherSymbian::unregisterSocketNotifier ( QSocketNotifier * notifier )
 {
+    //TODO: just need to be able to do something when event loop has sockets disabled
+    /*
     if (m_selectThread)
         m_selectThread->cancelSocketEvents(notifier);
     if (m_notifiers.contains(notifier)) {
@@ -1042,6 +1045,7 @@ void QEventDispatcherSymbian::unregisterSocketNotifier ( QSocketNotifier * notif
         sockObj->deleteLater();
         m_notifiers.remove(notifier);
     }
+    */
 }
 
 void QEventDispatcherSymbian::reactivateSocketNotifier(QSocketNotifier *notifier)
