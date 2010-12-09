@@ -1477,16 +1477,18 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 
     QOpenGL2PaintEngineState *s = q->state();
 
+    bool recreateVertexArrays = false;
+
     QGLTextureGlyphCache *cache =
         (QGLTextureGlyphCache *) staticTextItem->fontEngine()->glyphCache(ctx, glyphType, QTransform());
     if (!cache || cache->cacheType() != glyphType) {
         cache = new QGLTextureGlyphCache(ctx, glyphType, QTransform());
         staticTextItem->fontEngine()->setGlyphCache(ctx, cache);
+        recreateVertexArrays = true;
     } else if (cache->context() == 0) { // Old context has been destroyed, new context has same ptr value
         cache->setContext(ctx);
     }
 
-    bool recreateVertexArrays = false;
     if (staticTextItem->userDataNeedsUpdate)
         recreateVertexArrays = true;
     else if (staticTextItem->userData() == 0)
