@@ -479,8 +479,8 @@ public:
 
     void setFocusHelper(Qt::FocusReason focusReason, bool climb, bool focusFromHide);
     void clearFocusHelper(bool giveFocusToParent);
-    void setSubFocus(QGraphicsItem *rootItem = 0);
-    void clearSubFocus(QGraphicsItem *rootItem = 0);
+    void setSubFocus(QGraphicsItem *rootItem = 0, QGraphicsItem *stopItem = 0);
+    void clearSubFocus(QGraphicsItem *rootItem = 0, QGraphicsItem *stopItem = 0);
     void resetFocusProxy();
     virtual void subFocusItemChange();
     virtual void focusScopeItemChange(bool isSubFocusItem);

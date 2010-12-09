@@ -868,9 +868,9 @@ QWingedEdge::QWingedEdge() :
 }
 
 QWingedEdge::QWingedEdge(const QPainterPath &subject, const QPainterPath &clip) :
-    m_edges(subject.length()),
-    m_vertices(subject.length()),
-    m_segments(subject.length())
+    m_edges(subject.elementCount()),
+    m_vertices(subject.elementCount()),
+    m_segments(subject.elementCount())
 {
     m_segments.setPath(subject);
     m_segments.addPath(clip);
@@ -1405,9 +1405,9 @@ bool QPathClipper::intersect()
     else if (clipIsRect)
         return subjectPath.intersects(r2);
 
-    QPathSegments a(subjectPath.length());
+    QPathSegments a(subjectPath.elementCount());
     a.setPath(subjectPath);
-    QPathSegments b(clipPath.length());
+    QPathSegments b(clipPath.elementCount());
     b.setPath(clipPath);
 
     QIntersectionFinder finder;
@@ -1450,9 +1450,9 @@ bool QPathClipper::contains()
     if (clipIsRect)
         return subjectPath.contains(r2);
 
-    QPathSegments a(subjectPath.length());
+    QPathSegments a(subjectPath.elementCount());
     a.setPath(subjectPath);
-    QPathSegments b(clipPath.length());
+    QPathSegments b(clipPath.elementCount());
     b.setPath(clipPath);
 
     QIntersectionFinder finder;
