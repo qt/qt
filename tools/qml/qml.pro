@@ -43,6 +43,11 @@ symbian {
     contains(QT_CONFIG, s60): {
         LIBS += -lavkon -lcone
     }
+
+    # Deploy plugin for remote debugging
+    qmldebuggingplugin.sources = $$QT_BUILD_TREE/plugins/qmldebugging/tcpserver$${QT_LIBINFIX}.dll
+    qmldebuggingplugin.path = c:$$QT_PLUGINS_BASE_DIR/qmldebugging
+    DEPLOYMENT +=  qmldebuggingplugin
 }
 mac {
     QMAKE_INFO_PLIST=Info_mac.plist
