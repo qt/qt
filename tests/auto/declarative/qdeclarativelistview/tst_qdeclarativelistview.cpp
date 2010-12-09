@@ -1609,13 +1609,20 @@ void tst_QDeclarativeListView::manualHighlight()
 
     QTRY_COMPARE(listview->currentIndex(), 0);
     QTRY_COMPARE(listview->currentItem(), findItem<QDeclarativeItem>(contentItem, "wrapper", 0));
-    QTRY_COMPARE(listview->highlightItem()->y(), listview->currentItem()->y());
+    QTRY_COMPARE(listview->highlightItem()->y() - 5, listview->currentItem()->y());
 
     listview->setCurrentIndex(2);
 
     QTRY_COMPARE(listview->currentIndex(), 2);
     QTRY_COMPARE(listview->currentItem(), findItem<QDeclarativeItem>(contentItem, "wrapper", 2));
-    QTRY_COMPARE(listview->highlightItem()->y(), listview->currentItem()->y());
+    QTRY_COMPARE(listview->highlightItem()->y() - 5, listview->currentItem()->y());
+
+    // QTBUG-15972
+    listview->positionViewAtIndex(3, QDeclarativeListView::Contain);
+
+    QTRY_COMPARE(listview->currentIndex(), 2);
+    QTRY_COMPARE(listview->currentItem(), findItem<QDeclarativeItem>(contentItem, "wrapper", 2));
+    QTRY_COMPARE(listview->highlightItem()->y() - 5, listview->currentItem()->y());
 
     delete canvas;
 }

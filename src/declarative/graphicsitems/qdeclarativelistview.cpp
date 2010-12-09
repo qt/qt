@@ -1571,7 +1571,8 @@ void QDeclarativeListView::setModel(const QVariant &model)
                 d->moveReason = QDeclarativeListViewPrivate::SetIndex;
                 d->updateCurrent(d->currentIndex);
                 if (d->highlight && d->currentItem) {
-                    d->highlight->setPosition(d->currentItem->position());
+                    if (d->autoHighlight)
+                        d->highlight->setPosition(d->currentItem->position());
                     d->updateTrackedItem();
                 }
             }
@@ -1642,7 +1643,8 @@ void QDeclarativeListView::setDelegate(QDeclarativeComponent *delegate)
             d->moveReason = QDeclarativeListViewPrivate::SetIndex;
             d->updateCurrent(d->currentIndex);
             if (d->highlight && d->currentItem) {
-                d->highlight->setPosition(d->currentItem->position());
+                if (d->autoHighlight)
+                    d->highlight->setPosition(d->currentItem->position());
                 d->updateTrackedItem();
             }
         }
@@ -2632,8 +2634,10 @@ void QDeclarativeListView::positionViewAtIndex(int index, int mode)
         cancelFlick();
         d->setPosition(pos);
         if (d->highlight) {
-            d->highlight->setPosition(d->currentItem->itemPosition());
-            d->highlight->setSize(d->currentItem->itemSize());
+            if (d->autoHighlight) {
+                d->highlight->setPosition(d->currentItem->itemPosition());
+                d->highlight->setSize(d->currentItem->itemSize());
+            }
             d->updateHighlight();
         }
     }
@@ -2679,7 +2683,8 @@ void QDeclarativeListView::componentComplete()
         else
             d->updateCurrent(d->currentIndex);
         if (d->highlight && d->currentItem) {
-            d->highlight->setPosition(d->currentItem->position());
+            if (d->autoHighlight)
+                d->highlight->setPosition(d->currentItem->position());
             d->updateTrackedItem();
         }
         d->moveReason = QDeclarativeListViewPrivate::Other;
@@ -3142,7 +3147,8 @@ void QDeclarativeListView::modelReset()
     d->moveReason = QDeclarativeListViewPrivate::SetIndex;
     d->updateCurrent(d->currentIndex);
     if (d->highlight && d->currentItem) {
-        d->highlight->setPosition(d->currentItem->position());
+        if (d->autoHighlight)
+            d->highlight->setPosition(d->currentItem->position());
         d->updateTrackedItem();
     }
     d->moveReason = QDeclarativeListViewPrivate::Other;
