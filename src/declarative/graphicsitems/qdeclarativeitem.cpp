@@ -2112,6 +2112,8 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
 
   Margins apply to top, bottom, left, right, and fill anchors.
   The \c anchors.margins property can be used to set all of the various margins at once, to the same value.
+  Note that margins are anchor-specific and are not applied if an item does not
+  use anchors.
 
   Offsets apply for horizontal center, vertical center, and baseline anchors.
 
