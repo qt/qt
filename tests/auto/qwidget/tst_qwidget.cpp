@@ -3852,29 +3852,6 @@ void tst_QWidget::testDeletionInEventHandlers()
 
 #ifdef Q_WS_MAC
 
-bool testAndRelease(const HIViewRef view)
-{
-//    qDebug() << CFGetRetainCount(view);
-    if (CFGetRetainCount(view) != 2)
-        return false;
-    CFRelease(view);
-    CFRelease(view);
-    return true;
-}
-
-typedef QPair<QWidget *, HIViewRef> WidgetViewPair;
-
-WidgetViewPair createAndRetain(QWidget * const parent = 0)
-{
-    QWidget * const widget = new QWidget(parent);
-    const HIViewRef view = (HIViewRef)widget->winId();
-    // Retain twice so we can safely call CFGetRetaintCount even if the retain count
-    // is off by one because of a double release.
-    CFRetain(view);
-    CFRetain(view);
-    return qMakePair(widget, view);
-}
-
 /*
     Test that retaining and releasing the HIView returned by QWidget::winId()
     works even if the widget itself is deleted.
@@ -4751,9 +4728,6 @@ void tst_QWidget::update()
         QRegion expectedVisible = QRegion(w.rect())
                                   - child.visibleRegion().translated(childOffset);
         QCOMPARE(w.visibleRegion(), expectedVisible);
-#ifdef QT_MAC_USE_COCOA
-        QEXPECT_FAIL(0, "Cocoa compositor paints the content view", Continue);
-#endif
         QCOMPARE(w.paintedRegion, expectedVisible);
 #ifdef QT_MAC_USE_COCOA
         QEXPECT_FAIL(0, "Cocoa compositor says to paint this.", Continue);
@@ -4803,14 +4777,8 @@ void tst_QWidget::update()
                  & sibling.visibleRegion().translated(siblingOffset));
 
         QCOMPARE(w.numPaintEvents, 1);
-#ifdef QT_MAC_USE_COCOA
-        QEXPECT_FAIL(0, "Cocoa compositor paints the content view", Continue);
-#endif
         QCOMPARE(w.paintedRegion,
                  w.visibleRegion() & sibling.visibleRegion().translated(siblingOffset));
-#ifdef QT_MAC_USE_COCOA
-        QEXPECT_FAIL(0, "Cocoa compositor paints the content view", Continue);
-#endif
         QCOMPARE(w.paintedRegion,
                  (w.visibleRegion() - child.visibleRegion().translated(childOffset))
                  & sibling.visibleRegion().translated(siblingOffset));
@@ -4833,7 +4801,8 @@ void tst_QWidget::update()
         QCOMPARE(sibling.paintedRegion, sibling.visibleRegion());
 
 #ifdef QT_MAC_USE_COCOA
-        QEXPECT_FAIL(0, "Cocoa compositor paints child and sibling", Continue);
+        if (child.internalWinId()) // child is native
+            QEXPECT_FAIL(0, "Cocoa compositor paints child and sibling", Continue);
 #endif
         QCOMPARE(child.numPaintEvents, 0);
         QCOMPARE(child.visibleRegion(),
@@ -5464,6 +5433,7 @@ public:
                                                    rect.width(), rect.height()); \
             QCOMPARE(pixmap.size(), rect.size());                       \
             QPixmap expectedPixmap(pixmap); /* ensure equal formats */  \
+            expectedPixmap.detach(); \
             expectedPixmap.fill(color);                                 \
             QImage image = pixmap.toImage();                          \
             uint alphaCorrection = image.format() == QImage::Format_RGB32 ? 0xff000000 : 0; \
@@ -5510,9 +5480,6 @@ void tst_QWidget::moveChild()
     QTest::qWait(30);
     const QPoint tlwOffset = parent.geometry().topLeft();
 
-#ifdef QT_MAC_USE_COCOA
-    QEXPECT_FAIL(0, "Cocoa compositor paints the entire content view, even when opaque", Continue);
-#endif
     QTRY_COMPARE(parent.r, QRegion(parent.rect()) - child.geometry());
     QTRY_COMPARE(child.r, QRegion(child.rect()));
     VERIFY_COLOR(child.geometry().translated(tlwOffset),

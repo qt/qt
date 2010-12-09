@@ -77,7 +77,7 @@ class QBitmap;
 class QPixmap;
 
 #if defined(Q_WS_MAC)
-void qt_mac_set_cursor(const QCursor *c, const QPoint &p);
+void qt_mac_set_cursor(const QCursor *c);
 #endif
 #if defined(Q_OS_SYMBIAN)
 extern void qt_symbian_show_pointer_sprite();
@@ -141,7 +141,8 @@ private:
     QCursorData *d;
 #if defined(Q_WS_MAC)
     friend void *qt_mac_nsCursorForQCursor(const QCursor &c);
-    friend void qt_mac_set_cursor(const QCursor *c, const QPoint &p);
+    friend void qt_mac_set_cursor(const QCursor *c);
+    friend void qt_mac_updateCursorWithWidgetUnderMouse(QWidget *widgetUnderMouse);
 #endif
 #if defined(Q_OS_SYMBIAN)
     friend void qt_symbian_show_pointer_sprite();

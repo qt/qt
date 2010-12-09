@@ -2772,7 +2772,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
     for (int i = 0; i < leaveList.size(); ++i) {
         w = leaveList.at(i);
         if (!QApplication::activeModalWidget() || QApplicationPrivate::tryModalHelper(w, 0)) {
-#if defined(Q_WS_WIN) || defined(Q_WS_X11)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_MAC)
             if (leaveAfterRelease == w)
                 leaveAfterRelease = 0;
 #endif
@@ -3143,13 +3143,11 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
         // Dispatch enter/leave if:
         // 1) the mouse grabber is an alien widget
         // 2) the button is released on an alien widget
-
         QWidget *enter = 0;
         if (nativeGuard)
             enter = alienGuard ? alienWidget : nativeWidget;
         else // The receiver is typically deleted on mouse release with drag'n'drop.
             enter = QApplication::widgetAt(event->globalPos());
-
         dispatchEnterLeave(enter, leaveAfterRelease);
         leaveAfterRelease = 0;
         lastMouseReceiver = enter;
@@ -3696,15 +3694,6 @@ void QApplication::changeOverrideCursor(const QCursor &cursor)
     if (qApp->d_func()->cursor_list.isEmpty())
         return;
     qApp->d_func()->cursor_list.removeFirst();
-#ifdef QT_MAC_USE_COCOA
-    // We use native NSCursor stacks in Cocoa. The currentCursor is the
-    // top of this stack. So to avoid flickering of cursor, we have to
-    // change the cusor instead of pop-ing the existing OverrideCursor
-    // and pushing the new one.
-    qApp->d_func()->cursor_list.prepend(cursor);
-    qt_cocoaChangeOverrideCursor(cursor);
-    return;
-#endif
     setOverrideCursor(cursor);
 }
 #endif

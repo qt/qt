@@ -359,7 +359,8 @@ public:
         DrawInvisible = 0x08,
         DontSubtractOpaqueChildren = 0x10,
         DontSetCompositionMode = 0x20,
-        DontDrawOpaqueChildren = 0x40
+        DontDrawOpaqueChildren = 0x40,
+        DontDrawNativeChildren = 0x80
     };
 
     enum CloseMode {
@@ -791,7 +792,6 @@ public:
 #elif defined(Q_WS_MAC) // <--------------------------------------------------------- MAC
     // This is new stuff
     uint needWindowChange : 1;
-    uint hasAlienChildren : 1;
 
     // Each wiget keeps a list of all its child and grandchild OpenGL widgets.
     // This list is used to update the gl context whenever a parent and a granparent
@@ -822,6 +822,7 @@ public:
     void macUpdateIgnoreMouseEvents();
     void macUpdateMetalAttribute();
     void macUpdateIsOpaque();
+    void macSetNeedsDisplay(QRegion region);
     void setEnabled_helper_sys(bool enable);
     bool isRealWindow() const;
     void adjustWithinMaxAndMinSize(int &w, int &h);

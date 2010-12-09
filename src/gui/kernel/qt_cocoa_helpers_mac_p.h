@@ -144,18 +144,14 @@ bool qt_mac_checkForNativeSizeGrip(const QWidget *widget);
 void qt_dispatchTabletProximityEvent(void * /*NSEvent * */ tabletEvent);
 #ifdef QT_MAC_USE_COCOA
 bool qt_dispatchKeyEventWithCocoa(void * /*NSEvent * */ keyEvent, QWidget *widgetToGetEvent);
-void qt_cocoaChangeOverrideCursor(const QCursor &cursor);
 // These methods exists only for supporting unified mode.
 void macDrawRectOnTop(void * /*OSWindowRef */ window);
 void macSyncDrawingOnFirstInvocation(void * /*OSWindowRef */window);
 void qt_cocoaStackChildWindowOnTopOfOtherChildren(QWidget *widget);
-#endif
 void qt_mac_menu_collapseSeparators(void * /*NSMenu */ menu, bool collapse);
+#endif
 bool qt_dispatchKeyEvent(void * /*NSEvent * */ keyEvent, QWidget *widgetToGetEvent);
 void qt_dispatchModifiersChanged(void * /*NSEvent * */flagsChangedEvent, QWidget *widgetToGetEvent);
-void qt_mac_dispatchNCMouseMessage(void */* NSWindow* */eventWindow, void */* NSEvent* */mouseEvent, 
-                                   QWidget *widgetToGetEvent, bool &leftButtonIsRightButton);
-bool qt_mac_handleMouseEvent(void * /*QCocoaView * */view, void * /*NSEvent * */event, QEvent::Type eventType, Qt::MouseButton button);
 bool qt_mac_handleTabletEvent(void * /*QCocoaView * */view, void * /*NSEvent * */event);
 inline QApplication *qAppInstance() { return static_cast<QApplication *>(QCoreApplication::instance()); }
 struct ::TabletProximityRec;
@@ -165,6 +161,29 @@ Qt::KeyboardModifiers qt_cocoaDragOperation2QtModifiers(uint dragOperations);
 QPixmap qt_mac_convert_iconref(const IconRef icon, int width, int height);
 void qt_mac_constructQIconFromIconRef(const IconRef icon, const IconRef overlayIcon, QIcon *retIcon,
                                       QStyle::StandardPixmap standardIcon = QStyle::SP_CustomBase);
+
+#if QT_MAC_USE_COCOA && __OBJC__
+struct DnDParams
+{
+    NSView *view;
+    NSEvent *theEvent;
+    QPoint globalPoint;
+    NSDragOperation performedAction;
+};
+
+DnDParams *macCurrentDnDParameters();
+NSDragOperation qt_mac_mapDropAction(Qt::DropAction action);
+NSDragOperation qt_mac_mapDropActions(Qt::DropActions actions);
+Qt::DropAction qt_mac_mapNSDragOperation(NSDragOperation nsActions);
+Qt::DropActions qt_mac_mapNSDragOperations(NSDragOperation nsActions);
+
+QWidget *qt_mac_getTargetForKeyEvent(QWidget *widgetThatReceivedEvent);
+QWidget *qt_mac_getTargetForMouseEvent(NSEvent *event, QEvent::Type eventType,
+    QPoint &returnLocalPoint, QPoint &returnGlobalPoint, QWidget *nativeWidget, QWidget **returnWidgetUnderMouse);
+bool qt_mac_handleMouseEvent(NSEvent *event, QEvent::Type eventType, Qt::MouseButton button, QWidget *nativeWidget);
+void qt_mac_handleNonClientAreaMouseEvent(NSWindow *window, NSEvent *event);
+#endif
+
 inline int flipYCoordinate(int y)
 {
     return QApplication::desktop()->screenGeometry(0).height() - y;    
@@ -221,6 +240,7 @@ public:
     }
 };
 void qt_cocoaPostMessage(id target, SEL selector, int argCount=0, id arg1=0, id arg2=0);
+void qt_cocoaPostMessageAfterEventLoopExit(id target, SEL selector, int argCount=0, id arg1=0, id arg2=0);
 #endif
 
 #endif

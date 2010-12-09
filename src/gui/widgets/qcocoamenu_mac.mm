@@ -47,6 +47,7 @@
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qapplication_p.h>
 #include <private/qaction_p.h>
+#include <private/qcocoaapplication_mac_p.h>
 
 #include <QtGui/QMenu>
 
@@ -60,6 +61,7 @@ QT_FORWARD_DECLARE_CLASS(QEvent)
 
 QT_BEGIN_NAMESPACE
 extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); //qapplication.cpp
+extern NSString *qt_mac_removePrivateUnicode(NSString* string);
 QT_END_NAMESPACE
 
 QT_USE_NAMESPACE
@@ -157,7 +159,6 @@ QT_USE_NAMESPACE
     // (i.e., fire the menu action).
     NSMenuItem *whichItem;
     // Change the private unicode keys to the ones used in setting the "Key Equivalents"
-    extern NSString *qt_mac_removePrivateUnicode(NSString* string);
     NSString *characters = qt_mac_removePrivateUnicode([event characters]);
     if ([self hasShortcut:menu
             forKey:characters
