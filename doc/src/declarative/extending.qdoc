@@ -596,10 +596,10 @@ the appropriate property on the extension object is used instead.
 When an extended type is installed, one of the
 \code
 template<typename T, typename ExtendedT>
-int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const char *qmlName)
+int qmlRegisterExtendedType(const char *uri, int versionMajor, int versionMinor, const char *qmlName)
 
 template<typename T, typename ExtendedT>
-int qmlRegisterType()
+int qmlRegisterExtendedType()
 \endcode
 functions should be used instead of the regular \c qmlRegisterType() variations.
 The arguments are identical to the corresponding non-extension registration functions,

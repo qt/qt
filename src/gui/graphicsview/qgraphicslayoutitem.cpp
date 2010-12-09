@@ -128,6 +128,7 @@ QGraphicsLayoutItemPrivate::~QGraphicsLayoutItemPrivate()
 void QGraphicsLayoutItemPrivate::init()
 {
     sizeHintCacheDirty = true;
+    sizeHintWithConstraintCacheDirty = true;
     sizePolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 }
 
@@ -828,6 +829,7 @@ void QGraphicsLayoutItem::updateGeometry()
 {
     Q_D(QGraphicsLayoutItem);
     d->sizeHintCacheDirty = true;
+    d->sizeHintWithConstraintCacheDirty = true;
 }
 
 /*!
