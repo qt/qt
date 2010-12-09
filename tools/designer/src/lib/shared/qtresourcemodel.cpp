@@ -184,14 +184,14 @@ const QByteArray *QtResourceModelPrivate::createResource(const QString &path, QS
             break;
         // return code cannot be fully trusted, might still be empty
         const ResourceDataFileMap resMap = library.resourceDataFileMap();
-        if (resMap.empty())
-            break;
-
         if (!library.output(buffer, errorDevice))
             break;
 
         *errorCount = library.failedResources().size();
         *contents = resMap.keys();
+
+        if (resMap.empty())
+            break;
 
         buffer.close();
         rc = new QByteArray(buffer.data());
@@ -225,15 +225,18 @@ void QtResourceModelPrivate::registerResourceSet(QtResourceSet *resourceSet)
             qDebug() << "registerResourceSet " << path;
         const PathDataMap::const_iterator itRcc = m_pathToData.constFind(path);
         if (itRcc != m_pathToData.constEnd()) { // otherwise data was not created yet
-            if (!QResource::registerResource(reinterpret_cast<const uchar *>(itRcc.value()->constData()))) {
-                qDebug() << "** WARNING: Failed to register " << path << " (QResource failure).";
-            } else {
-                QStringList contents = m_pathToContents.value(path);
-                QStringListIterator itContents(contents);
-                while (itContents.hasNext()) {
-                    const QString filePath = itContents.next();
-                    if (!m_fileToQrc.contains(filePath)) // the first loaded resource has higher priority in qt resource system
-                        m_fileToQrc.insert(filePath, path);
+            const QByteArray *data = itRcc.value();
+            if (data) {
+                if (!QResource::registerResource(reinterpret_cast<const uchar *>(data->constData()))) {
+                    qWarning() << "** WARNING: Failed to register " << path << " (QResource failure).";
+                } else {
+                    QStringList contents = m_pathToContents.value(path);
+                    QStringListIterator itContents(contents);
+                    while (itContents.hasNext()) {
+                        const QString filePath = itContents.next();
+                        if (!m_fileToQrc.contains(filePath)) // the first loaded resource has higher priority in qt resource system
+                            m_fileToQrc.insert(filePath, path);
+                    }
                 }
             }
         }
@@ -254,8 +257,11 @@ void QtResourceModelPrivate::unregisterResourceSet(QtResourceSet *resourceSet)
             qDebug() << "unregisterResourceSet " << path;
         const PathDataMap::const_iterator itRcc = m_pathToData.constFind(path);
         if (itRcc != m_pathToData.constEnd()) { // otherwise data was not created yet
-            if (!QResource::unregisterResource(reinterpret_cast<const uchar *>(itRcc.value()->constData())))
-                qDebug() << "** WARNING: Failed to unregister " << path << " (QResource failure).";
+            const QByteArray *data = itRcc.value();
+            if (data) {
+                if (!QResource::unregisterResource(reinterpret_cast<const uchar *>(itRcc.value()->constData())))
+                    qWarning() << "** WARNING: Failed to unregister " << path << " (QResource failure).";
+            }
         }
     }
     m_fileToQrc.clear();
@@ -292,15 +298,13 @@ void QtResourceModelPrivate::activate(QtResourceSet *resourceSet, const QStringL
             QStringList contents;
             int qrcErrorCount;
             generatedCount++;
-            if (const QByteArray *data = createResource(path, &contents, &qrcErrorCount, errorStream)) {
-                newPathToData.insert(path, data);
-                if (qrcErrorCount) // Count single failed files as sort of 1/2 error
-                    errorCount++;
-                addWatcher(path);
-            } else {
-                newPathToData.remove(path);
+            const QByteArray *data = createResource(path, &contents, &qrcErrorCount, errorStream);
+
+            newPathToData.insert(path, data);
+            if (qrcErrorCount) // Count single failed files as sort of 1/2 error
                 errorCount++;
-            }
+            addWatcher(path);
+
             m_pathToModified.insert(path, false);
             m_pathToContents.insert(path, contents);
             newResourceSetChanged = true;
@@ -326,7 +330,7 @@ void QtResourceModelPrivate::activate(QtResourceSet *resourceSet, const QStringL
     QListIterator<const QByteArray *> itOld(oldData);
     if (itOld.hasNext()) {
         const QByteArray *array = itOld.next();
-        if (!newData.contains(array))
+        if (array && !newData.contains(array))
             toDelete.append(array);
     }
 
