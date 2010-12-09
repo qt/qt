@@ -16,7 +16,7 @@ SUBDIRS=\
     qhttpnetworkconnection \
     qhttpnetworkreply \
     qhttpsocketengine \
-    qnativesocketengine \
+    platformsocketengine \
     qnetworkaccessmanager \
     qnetworkaddressentry \
     qnetworkconfiguration \
@@ -40,7 +40,7 @@ SUBDIRS=\
     qauthenticator \
     qhttpnetworkconnection \
     qhttpnetworkreply \
-    qnativesocketengine \
+    platformsocketengine \
     qsocketnotifier \
     qsocks5socketengine \
 
