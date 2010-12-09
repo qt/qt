@@ -1287,6 +1287,11 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             break;
         if (atom->string().startsWith("&"))
             writeCharacters(atom->string());
+        else if (atom->string() == "<sup>*</sup>") {
+            xmlWriter().writeStartElement("sup");
+            writeCharacters("*");
+            xmlWriter().writeEndElement(); // </sup>
+        }
         else {
             xmlWriter().writeStartElement("pre");
             xmlWriter().writeAttribute("outputclass","raw-html");
