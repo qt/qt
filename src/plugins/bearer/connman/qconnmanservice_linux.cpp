@@ -216,7 +216,6 @@ void QConnmanManagerInterface::registerCounter(const QString &path, quint32 inte
 {   QDBusReply<QList<QDBusObjectPath> > reply =  this->call(QLatin1String("RegisterCounter"),
                                                             QVariant::fromValue(path),
                                                             QVariant::fromValue(interval));
-    bool ok = true;
     if(reply.error().type() == QDBusError::InvalidArgs) {
         qWarning() << reply.error().message();
     }
@@ -225,7 +224,6 @@ void QConnmanManagerInterface::registerCounter(const QString &path, quint32 inte
 void QConnmanManagerInterface::unregisterCounter(const QString &path)
 {   QDBusReply<QList<QDBusObjectPath> > reply =  this->call(QLatin1String("UnregisterCounter"),
                                                             QVariant::fromValue(path));
-    bool ok = true;
     if(reply.error().type() == QDBusError::InvalidArgs) {
         qWarning() << reply.error().message();
     }

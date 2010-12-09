@@ -238,13 +238,25 @@ void tst_QDeclarativeViewer::loading()
     delete viewer;
 }
 
+static int numberOfWarnings = 0;
+static void checkWarnings(QtMsgType, const char *)
+{
+    numberOfWarnings++;
+}
+
 void tst_QDeclarativeViewer::fileBrowser()
 {
+    QtMsgHandler previousMsgHandler = qInstallMsgHandler(checkWarnings);
     QDeclarativeViewer *viewer = new QDeclarativeViewer();
     QVERIFY(viewer);
     viewer->setUseNativeFileBrowser(false);
     viewer->openFile();
     viewer->show();
+    QCoreApplication::processEvents();
+    qInstallMsgHandler(previousMsgHandler);
+
+    // QTBUG-15720
+    QVERIFY(numberOfWarnings == 0);
 
     QApplication::setActiveWindow(viewer);
     QTest::qWaitForWindowShown(viewer);

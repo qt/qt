@@ -132,6 +132,7 @@ private slots:
 
     // Bugs
     void crashOnValueProperty();
+    void aliasPropertyBindings();
 
     void copy();
 private:
@@ -1306,6 +1307,74 @@ void tst_qdeclarativeproperty::crashOnValueProperty()
     QCOMPARE(p.read(), QVariant(10));
     p.write(QVariant(20));
     QCOMPARE(p.read(), QVariant(20));
+}
+
+// QTBUG-13719
+void tst_qdeclarativeproperty::aliasPropertyBindings()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("aliasPropertyBindings.qml"));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("realProperty").toReal(), 90.);
+    QCOMPARE(object->property("aliasProperty").toReal(), 90.);
+
+    object->setProperty("test", 10);
+
+    QCOMPARE(object->property("realProperty").toReal(), 110.);
+    QCOMPARE(object->property("aliasProperty").toReal(), 110.);
+
+    QDeclarativeProperty realProperty(object, QLatin1String("realProperty"));
+    QDeclarativeProperty aliasProperty(object, QLatin1String("aliasProperty"));
+
+    // Check there is a binding on these two properties
+    QVERIFY(QDeclarativePropertyPrivate::binding(realProperty) != 0);
+    QVERIFY(QDeclarativePropertyPrivate::binding(aliasProperty) != 0);
+
+    // Check that its the same binding on these two properties
+    QCOMPARE(QDeclarativePropertyPrivate::binding(realProperty),
+             QDeclarativePropertyPrivate::binding(aliasProperty));
+
+    // Change the binding
+    object->setProperty("state", QString("switch"));
+
+    QVERIFY(QDeclarativePropertyPrivate::binding(realProperty) != 0);
+    QVERIFY(QDeclarativePropertyPrivate::binding(aliasProperty) != 0);
+    QCOMPARE(QDeclarativePropertyPrivate::binding(realProperty),
+             QDeclarativePropertyPrivate::binding(aliasProperty));
+
+    QCOMPARE(object->property("realProperty").toReal(), 96.);
+    QCOMPARE(object->property("aliasProperty").toReal(), 96.);
+
+    // Check the old binding really has not effect any more
+    object->setProperty("test", 4);
+
+    QCOMPARE(object->property("realProperty").toReal(), 96.);
+    QCOMPARE(object->property("aliasProperty").toReal(), 96.);
+
+    object->setProperty("test2", 9);
+
+    QCOMPARE(object->property("realProperty").toReal(), 288.);
+    QCOMPARE(object->property("aliasProperty").toReal(), 288.);
+
+    // Revert
+    object->setProperty("state", QString(""));
+
+    QVERIFY(QDeclarativePropertyPrivate::binding(realProperty) != 0);
+    QVERIFY(QDeclarativePropertyPrivate::binding(aliasProperty) != 0);
+    QCOMPARE(QDeclarativePropertyPrivate::binding(realProperty),
+             QDeclarativePropertyPrivate::binding(aliasProperty));
+
+    QCOMPARE(object->property("realProperty").toReal(), 20.);
+    QCOMPARE(object->property("aliasProperty").toReal(), 20.);
+
+    object->setProperty("test2", 3);
+
+    QCOMPARE(object->property("realProperty").toReal(), 20.);
+    QCOMPARE(object->property("aliasProperty").toReal(), 20.);
+
+    delete object;
 }
 
 void tst_qdeclarativeproperty::copy()

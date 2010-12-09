@@ -51,6 +51,10 @@
 #include <private/qdeclarativetypenamecache_p.h>
 #include <private/qdeclarativeengine_p.h>
 
+#ifdef Q_OS_SYMBIAN
+#include "private/qcore_symbian_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(qmlImportTrace, QML_IMPORT_TRACE)
@@ -658,8 +662,32 @@ QDeclarativeImportDatabase::QDeclarativeImportDatabase(QDeclarativeEngine *e)
 
     // Search order is applicationDirPath(), $QML_IMPORT_PATH, QLibraryInfo::ImportsPath
 
-    addImportPath(QLibraryInfo::location(QLibraryInfo::ImportsPath));
+    QString installImportsPath =  QLibraryInfo::location(QLibraryInfo::ImportsPath);
 
+#if defined(Q_OS_SYMBIAN)
+    // Append imports path for all available drives in Symbian
+    if (installImportsPath.at(1) != QChar(QLatin1Char(':'))) {
+        QString tempPath = installImportsPath;
+        if (tempPath.at(tempPath.length() - 1) != QDir::separator()) {
+            tempPath += QDir::separator();
+        }
+        RFs& fs = qt_s60GetRFs();
+        TPtrC tempPathPtr(reinterpret_cast<const TText*> (tempPath.constData()));
+        TFindFile finder(fs);
+        TInt err = finder.FindByDir(tempPathPtr, tempPathPtr);
+        while (err == KErrNone) {
+            QString foundDir(reinterpret_cast<const QChar *>(finder.File().Ptr()),
+                             finder.File().Length());
+            foundDir = QDir(foundDir).canonicalPath();
+            addImportPath(foundDir);
+            err = finder.Find();
+        }
+    } else {
+        addImportPath(installImportsPath);
+    }
+#else
+    addImportPath(installImportsPath);
+#endif
     // env import paths
     QByteArray envImportPath = qgetenv("QML_IMPORT_PATH");
     if (!envImportPath.isEmpty()) {
