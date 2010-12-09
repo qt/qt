@@ -1809,9 +1809,9 @@ void QDeclarativeItem::setClip(bool c)
 /*!
   \qmlproperty real Item::z
 
-  Sets the stacking order of the item.  By default the stacking order is 0.
+  Sets the stacking order of sibling items.  By default the stacking order is 0.
 
-  Items with a higher stacking value are drawn on top of items with a
+  Items with a higher stacking value are drawn on top of siblings with a
   lower stacking order.  Items with the same stacking value are drawn
   bottom up in the order they appear.  Items with a negative stacking
   value are drawn under their parent's content.
