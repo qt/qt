@@ -1477,16 +1477,18 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 
     QOpenGL2PaintEngineState *s = q->state();
 
+    bool recreateVertexArrays = false;
+
     QGLTextureGlyphCache *cache =
         (QGLTextureGlyphCache *) staticTextItem->fontEngine()->glyphCache(ctx, glyphType, QTransform());
     if (!cache || cache->cacheType() != glyphType) {
         cache = new QGLTextureGlyphCache(ctx, glyphType, QTransform());
         staticTextItem->fontEngine()->setGlyphCache(ctx, cache);
+        recreateVertexArrays = true;
     } else if (cache->context() == 0) { // Old context has been destroyed, new context has same ptr value
         cache->setContext(ctx);
     }
 
-    bool recreateVertexArrays = false;
     if (staticTextItem->userDataNeedsUpdate)
         recreateVertexArrays = true;
     else if (staticTextItem->userData() == 0)
@@ -2139,7 +2141,11 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
         const QPointF* const points = reinterpret_cast<const QPointF*>(path.points());
         QRectF rect(points[0], points[2]);
 
-        if (state()->matrix.type() <= QTransform::TxScale) {
+        if (state()->matrix.type() <= QTransform::TxScale
+            || (state()->matrix.type() == QTransform::TxRotate
+                && qFuzzyIsNull(state()->matrix.m11())
+                && qFuzzyIsNull(state()->matrix.m22())))
+        {
             state()->rectangleClip = state()->rectangleClip.intersected(state()->matrix.mapRect(rect).toRect());
             d->updateClipScissorTest();
             return;
