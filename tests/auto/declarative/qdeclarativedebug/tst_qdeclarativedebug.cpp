@@ -114,6 +114,7 @@ private slots:
     void tst_QDeclarativeDebugPropertyReference();
 
     void setMethodBody();
+    void queryObjectTree();
 };
 
 QDeclarativeDebugObjectReference tst_QDeclarativeDebug::findRootObject(int context)
@@ -307,6 +308,34 @@ void tst_QDeclarativeDebug::initTestCase()
                 "function myMethod(a) { return a + 9; }\n"
                 "function myMethodIndirect() { myMethod(3); }\n"
             "}";
+
+    // and a fourth to test states
+    qml << "import QtQuick 1.0\n"
+           "Rectangle {\n"
+                "id:rootRect\n"
+                "width:100\n"
+                "states: [\n"
+                    "State {\n"
+                        "name:\"state1\"\n"
+                        "PropertyChanges {\n"
+                            "target:rootRect\n"
+                            "width:200\n"
+                        "}\n"
+                    "}\n"
+                "]\n"
+                "transitions: [\n"
+                    "Transition {\n"
+                        "from:\"*\"\n"
+                        "to:\"state1\"\n"
+                        "PropertyAnimation {\n"
+                            "target:rootRect\n"
+                            "property:\"width\"\n"
+                            "duration:100\n"
+                        "}\n"
+                    "}\n"
+                "]\n"
+           "}\n"
+           ;
 
     for (int i=0; i<qml.count(); i++) {
         QDeclarativeComponent component(m_engine);
@@ -635,14 +664,14 @@ void tst_QDeclarativeDebug::queryRootContexts()
     QCOMPARE(context.debugId(), QDeclarativeDebugService::idForObject(actualContext));
     QCOMPARE(context.name(), actualContext->objectName());
 
-    QCOMPARE(context.objects().count(), 3); // 3 qml component objects created for context in main()
+    QCOMPARE(context.objects().count(), 4); // 4 qml component objects created for context in main()
 
     // root context query sends only root object data - it doesn't fill in
     // the children or property info
     QCOMPARE(context.objects()[0].properties().count(), 0);
     QCOMPARE(context.objects()[0].children().count(), 0);
 
-    QCOMPARE(context.contexts().count(), 4);
+    QCOMPARE(context.contexts().count(), 5);
     QVERIFY(context.contexts()[0].debugId() >= 0);
     QCOMPARE(context.contexts()[0].name(), QString("tst_QDeclarativeDebug_childContext"));
 
@@ -895,6 +924,70 @@ void tst_QDeclarativeDebug::tst_QDeclarativeDebugPropertyReference()
     copyAssign = ref;
     foreach (const QDeclarativeDebugPropertyReference &r, (QList<QDeclarativeDebugPropertyReference>() << copy << copyAssign))
         compareProperties(r, ref);
+}
+
+void tst_QDeclarativeDebug::queryObjectTree()
+{
+    const int sourceIndex = 3;
+
+    // Check if states/transitions are initialized when fetching root item
+    QDeclarativeDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
+    waitForQuery(q_engines);
+
+    QDeclarativeDebugRootContextQuery *q_context = m_dbg->queryRootContexts(q_engines->engines()[0].debugId(), this);
+    waitForQuery(q_context);
+
+    QVERIFY(q_context->rootContext().objects().count() > sourceIndex);
+    QDeclarativeDebugObjectReference rootObject = q_context->rootContext().objects()[sourceIndex];
+
+    QDeclarativeDebugObjectQuery *q_obj = m_dbg->queryObjectRecursive(rootObject, this);
+    waitForQuery(q_obj);
+
+    QDeclarativeDebugObjectReference obj = q_obj->object();
+
+    delete q_engines;
+    delete q_context;
+    delete q_obj;
+
+    QVERIFY(obj.debugId() != -1);
+    QVERIFY(obj.children().count() >= 2);
+
+
+
+    // check state
+    QDeclarativeDebugObjectReference state = obj.children()[0];
+    QCOMPARE(state.className(), QString("State"));
+    QVERIFY(state.children().count() > 0);
+
+    QDeclarativeDebugObjectReference propertyChange = state.children()[0];
+    QVERIFY(propertyChange.debugId() != -1);
+
+    QDeclarativeDebugPropertyReference propertyChangeTarget = findProperty(propertyChange.properties(),"target");
+    QCOMPARE(propertyChangeTarget.objectDebugId(), propertyChange.debugId());
+
+    QDeclarativeDebugObjectReference targetReference = qvariant_cast<QDeclarativeDebugObjectReference>(propertyChangeTarget.value());
+    QVERIFY(targetReference.debugId() != -1);
+
+
+
+    // check transition
+    QDeclarativeDebugObjectReference transition = obj.children()[1];
+    QCOMPARE(transition.className(), QString("Transition"));
+    QCOMPARE(findProperty(transition.properties(),"from").value().toString(), QString("*"));
+    QCOMPARE(findProperty(transition.properties(),"to").value(), findProperty(state.properties(),"name").value());
+    QVERIFY(transition.children().count() > 0);
+
+    QDeclarativeDebugObjectReference animation = transition.children()[0];
+    QVERIFY(animation.debugId() != -1);
+
+    QDeclarativeDebugPropertyReference animationTarget = findProperty(animation.properties(),"target");
+    QCOMPARE(animationTarget.objectDebugId(), animation.debugId());
+
+    targetReference = qvariant_cast<QDeclarativeDebugObjectReference>(animationTarget.value());
+    QVERIFY(targetReference.debugId() != -1);
+
+    QCOMPARE(findProperty(animation.properties(),"property").value().toString(), QString("width"));
+    QCOMPARE(findProperty(animation.properties(),"duration").value().toInt(), 100);
 }
 
 int main(int argc, char *argv[])
