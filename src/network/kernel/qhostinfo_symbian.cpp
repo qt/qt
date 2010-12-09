@@ -40,18 +40,43 @@
 ****************************************************************************/
 
 //#define QHOSTINFO_DEBUG
+
+// Symbian Headers
+#include <es_sock.h>
+#include <in_sock.h>
+
+// Qt Headers
 #include <QByteArray>
 #include <QUrl>
+#include <QList>
 
 #include "qplatformdefs.h"
 
 #include "qhostinfo_p.h"
+#include <private/qcore_symbian_p.h>
 
 QT_BEGIN_NAMESPACE
+
 
 QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 {
     QHostInfo results;
+
+    // Connect to ESOCK
+    RSocketServ socketServ(qt_symbianGetSocketServer());
+    RHostResolver hostResolver;
+
+    // Will return both IPv4 and IPv6
+    // TODO: Pass RHostResolver.Open() the global RConnection
+    int err = hostResolver.Open(socketServ, KAfInet, KProtocolInetUdp);
+    if (err) {
+        results.setError(QHostInfo::UnknownError);
+        results.setErrorString(tr("Symbian error code: %1").arg(err));
+
+        return results;
+    }
+
+    TNameEntry nameResult;
 
 #if defined(QHOSTINFO_DEBUG)
     qDebug("QHostInfoAgent::fromName(%s) looking up...",
@@ -61,8 +86,26 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     QHostAddress address;
     if (address.setAddress(hostName)) {
         // Reverse lookup
-        // TODO
-        results.setHostName("assume.it.works");
+
+        TInetAddr IpAdd;
+        IpAdd.Input(qt_QString2TPtrC(hostName));
+
+        // Synchronous request. nameResult returns Host Name.
+        hostResolver.GetByAddress(IpAdd, nameResult);
+        if (err) {
+            // TODO - Could there be other errors? Symbian docs don't say.
+            if (err = KErrNotFound) {
+                results.setError(QHostInfo::HostNotFound);
+                results.setErrorString(tr("Host not found"));
+            } else {
+                results.setError(QHostInfo::UnknownError);
+                results.setErrorString(tr("Symbian error code: %1").arg(err));
+            }
+
+            return results;
+        }
+
+        results.setHostName(qt_TDesC2QString(nameResult().iName));
         results.setAddresses(QList<QHostAddress>() << address);
         return results;
     }
@@ -78,32 +121,65 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
         return results;
     }
 
-    // Call getaddrinfo, and place all IPv4 addresses at the start and
-    // the IPv6 addresses at the end of the address list in results.
-    /*
-    results.setError(QHostInfo::HostNotFound);
-    results.setErrorString(tr("Host not found"));
-    } else {
-        results.setError(QHostInfo::UnknownError);
-        results.setErrorString(QString::fromLocal8Bit(gai_strerror(result)));
-    }
-    */
 
-    //TODO: HACK to return qt-test-server's ip
-    QList<QHostAddress> addresses;
-    addresses.append(QHostAddress("192.168.1.8"));
-    results.setHostName(hostName);
-    results.setAddresses(addresses);
+    // Call RHostResolver::GetByAddress, and place all IPv4 addresses at the start and
+    // the IPv6 addresses at the end of the address list in results.
+
+    // Synchronous request.
+    err = hostResolver.GetByName(qt_QString2TPtrC(aceHostname), nameResult);
+    if (err) {
+        // TODO - Could there be other errors? Symbian docs don't say.
+        if (err = KErrNotFound) {
+            results.setError(QHostInfo::HostNotFound);
+            results.setErrorString(tr("Host not found"));
+        } else {
+            results.setError(QHostInfo::UnknownError);
+            results.setErrorString(tr("Symbian error code: %1").arg(err));
+        }
+
+        return results;
+    }
+
+    QList<QHostAddress> hostAddresses;
+
+    TInetAddr hostAdd = nameResult().iAddr;
+    TBuf<16> ipAddr;
+    // Fill ipAddr with the IP address from hostAdd
+    hostAdd.Output(ipAddr);
+    if (ipAddr.Length() > 0)
+        hostAddresses.append(QHostAddress(qt_TDesC2QString(ipAddr)));
+
+    // Check if there's more than one IP address linkd to this name
+    while (hostResolver.Next(nameResult) == KErrNone) {
+        hostAdd = nameResult().iAddr;
+        hostAdd.Output(ipAddr);
+
+        if (ipAddr.Length() > 0) {
+           if (nameResult().iAddr.Family() == KAfInet) {
+                // IPv4 - prepend
+                hostAddresses.prepend(QHostAddress(qt_TDesC2QString(ipAddr)));
+            } else {
+                // IPv6 - append
+                hostAddresses.append(QHostAddress(qt_TDesC2QString(ipAddr)));
+            }
+        }
+    }
+
+    hostResolver.Close();
+
+    results.setAddresses(hostAddresses);
     return results;
 }
 
 QString QHostInfo::localHostName()
 {
+    // TODO - fill with code.
     return QString();
 }
 
 QString QHostInfo::localDomainName()
 {
+    // TODO - fill with code.
     return QString();
 }
 
