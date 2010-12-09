@@ -116,7 +116,6 @@ public:
     const QSymbianTypeFaceExtras *extras(const QString &typeface, bool bold, bool italic) const;
     void addFontFileToFontStore(const QFileInfo &fontFileInfo);
 
-#ifndef Q_SYMBIAN_HAS_FONTTABLE_API
     struct CFontFromFontStoreReleaser {
         static inline void cleanup(CFont *font)
         {
@@ -127,7 +126,6 @@ public:
             dbExtras->m_store->ReleaseFont(font);
         }
     };
-#endif // !Q_SYMBIAN_HAS_FONTTABLE_API
 
     struct CFontFromScreenDeviceReleaser {
         static inline void cleanup(CFont *font)
@@ -138,37 +136,38 @@ public:
         }
     };
 
-#ifndef Q_SYMBIAN_HAS_FONTTABLE_API
+// m_heap, m_store, m_rasterizer and m_extras are used if Symbian
+// does not provide the Font Table API
     RHeap* m_heap;
     CFontStore *m_store;
     COpenFontRasterizer *m_rasterizer;
     mutable QList<const QSymbianTypeFaceExtras *> m_extras;
-#endif // !Q_SYMBIAN_HAS_FONTTABLE_API
+
     mutable QHash<QString, const QSymbianTypeFaceExtras *> m_extrasHash;
 };
 
 QSymbianFontDatabaseExtrasImplementation::QSymbianFontDatabaseExtrasImplementation()
 {
-#ifndef Q_SYMBIAN_HAS_FONTTABLE_API
-    QStringList filters;
-    filters.append(QLatin1String("*.ttf"));
-    filters.append(QLatin1String("*.ccc"));
-    filters.append(QLatin1String("*.ltt"));
-    const QFileInfoList fontFiles = alternativeFilePaths(QLatin1String("resource\\Fonts"), filters);
+    if (!QSymbianTypeFaceExtras::symbianFontTableApiAvailable()) {
+        QStringList filters;
+        filters.append(QLatin1String("*.ttf"));
+        filters.append(QLatin1String("*.ccc"));
+        filters.append(QLatin1String("*.ltt"));
+        const QFileInfoList fontFiles = alternativeFilePaths(QLatin1String("resource\\Fonts"), filters);
 
-    const TInt heapMinLength = 0x1000;
-    const TInt heapMaxLength = qMax(0x20000 * fontFiles.count(), heapMinLength);
-    m_heap = User::ChunkHeap(NULL, heapMinLength, heapMaxLength);
-    QT_TRAP_THROWING(
-        m_store = CFontStore::NewL(m_heap);
-        m_rasterizer = COpenFontRasterizer::NewL(TUid::Uid(0x101F7F5E));
-        CleanupStack::PushL(m_rasterizer);
-        m_store->InstallRasterizerL(m_rasterizer);
-        CleanupStack::Pop(m_rasterizer););
+        const TInt heapMinLength = 0x1000;
+        const TInt heapMaxLength = qMax(0x20000 * fontFiles.count(), heapMinLength);
+        m_heap = User::ChunkHeap(NULL, heapMinLength, heapMaxLength);
+        QT_TRAP_THROWING(
+            m_store = CFontStore::NewL(m_heap);
+            m_rasterizer = COpenFontRasterizer::NewL(TUid::Uid(0x101F7F5E));
+            CleanupStack::PushL(m_rasterizer);
+            m_store->InstallRasterizerL(m_rasterizer);
+            CleanupStack::Pop(m_rasterizer););
 
-    foreach (const QFileInfo &fontFileInfo, fontFiles)
-        addFontFileToFontStore(fontFileInfo);
-#endif // !Q_SYMBIAN_HAS_FONTTABLE_API
+        foreach (const QFileInfo &fontFileInfo, fontFiles)
+            addFontFileToFontStore(fontFileInfo);
+    }
 }
 
 void qt_cleanup_symbianFontDatabaseExtras()
@@ -177,26 +176,26 @@ void qt_cleanup_symbianFontDatabaseExtras()
             static_cast<const QSymbianFontDatabaseExtrasImplementation*>(privateDb()->symbianExtras);
     if (!dbExtras)
         return; // initializeDb() has never been called
-#ifdef Q_SYMBIAN_HAS_FONTTABLE_API
-    qDeleteAll(dbExtras->m_extrasHash);
-#else // Q_SYMBIAN_HAS_FONTTABLE_API
-    typedef QList<const QSymbianTypeFaceExtras *>::iterator iterator;
-    for (iterator p = dbExtras->m_extras.begin(); p != dbExtras->m_extras.end(); ++p) {
-        dbExtras->m_store->ReleaseFont((*p)->fontOwner());
-        delete *p;
+    if (QSymbianTypeFaceExtras::symbianFontTableApiAvailable()) {
+        qDeleteAll(dbExtras->m_extrasHash);
+    } else {
+        typedef QList<const QSymbianTypeFaceExtras *>::iterator iterator;
+        for (iterator p = dbExtras->m_extras.begin(); p != dbExtras->m_extras.end(); ++p) {
+            dbExtras->m_store->ReleaseFont((*p)->fontOwner());
+            delete *p;
+        }
+        dbExtras->m_extras.clear();
     }
-    dbExtras->m_extras.clear();
-#endif // Q_SYMBIAN_HAS_FONTTABLE_API
     dbExtras->m_extrasHash.clear();
 }
 
 QSymbianFontDatabaseExtrasImplementation::~QSymbianFontDatabaseExtrasImplementation()
 {
     qt_cleanup_symbianFontDatabaseExtras();
-#ifndef Q_SYMBIAN_HAS_FONTTABLE_API
-    delete m_store;
-    m_heap->Close();
-#endif // !Q_SYMBIAN_HAS_FONTTABLE_API
+    if (!QSymbianTypeFaceExtras::symbianFontTableApiAvailable()) {
+        delete m_store;
+        m_heap->Close();
+    }
 }
 
 #ifndef FNTSTORE_H_INLINES_SUPPORT_FMM
@@ -228,44 +227,45 @@ const QSymbianTypeFaceExtras *QSymbianFontDatabaseExtrasImplementation::extras(c
             searchSpec.iFontStyle.SetPosture(EPostureItalic);
 
         CFont* font = NULL;
-#ifdef Q_SYMBIAN_HAS_FONTTABLE_API
-        const TInt err = S60->screenDevice()->GetNearestFontToDesignHeightInPixels(font, searchSpec);
-        Q_ASSERT(err == KErrNone && font);
-        QScopedPointer<CFont, CFontFromScreenDeviceReleaser> sFont(font);
-        QSymbianTypeFaceExtras *extras = new QSymbianTypeFaceExtras(font);
-        sFont.take();
-        m_extrasHash.insert(searchKey, extras);
-#else // Q_SYMBIAN_HAS_FONTTABLE_API
-        const TInt err = m_store->GetNearestFontToDesignHeightInPixels(font, searchSpec);
-        Q_ASSERT(err == KErrNone && font);
-        const CBitmapFont *bitmapFont = static_cast<CBitmapFont*>(font);
-        COpenFont *openFont =
-#ifdef FNTSTORE_H_INLINES_SUPPORT_FMM
-            bitmapFont->OpenFont();
-#else // FNTSTORE_H_INLINES_SUPPORT_FMM
-            OpenFontFromBitmapFont(bitmapFont);
-#endif // FNTSTORE_H_INLINES_SUPPORT_FMM
-        const TOpenFontFaceAttrib* const attrib = openFont->FaceAttrib();
-        const QString foundKey =
-                QString((const QChar*)attrib->FullName().Ptr(), attrib->FullName().Length());
-        if (!m_extrasHash.contains(foundKey)) {
-            QScopedPointer<CFont, CFontFromFontStoreReleaser> sFont(font);
-            QSymbianTypeFaceExtras *extras = new QSymbianTypeFaceExtras(font, openFont);
+        if (QSymbianTypeFaceExtras::symbianFontTableApiAvailable()) {
+            const TInt err = S60->screenDevice()->GetNearestFontToDesignHeightInPixels(font, searchSpec);
+            Q_ASSERT(err == KErrNone && font);
+            QScopedPointer<CFont, CFontFromScreenDeviceReleaser> sFont(font);
+            QSymbianTypeFaceExtras *extras = new QSymbianTypeFaceExtras(font);
             sFont.take();
-            m_extras.append(extras);
             m_extrasHash.insert(searchKey, extras);
-            m_extrasHash.insert(foundKey, extras);
         } else {
-            m_store->ReleaseFont(font);
-            m_extrasHash.insert(searchKey, m_extrasHash.value(foundKey));
+            const TInt err = m_store->GetNearestFontToDesignHeightInPixels(font, searchSpec);
+            Q_ASSERT(err == KErrNone && font);
+            const CBitmapFont *bitmapFont = static_cast<CBitmapFont*>(font);
+            COpenFont *openFont =
+#ifdef FNTSTORE_H_INLINES_SUPPORT_FMM
+                bitmapFont->OpenFont();
+#else // FNTSTORE_H_INLINES_SUPPORT_FMM
+                OpenFontFromBitmapFont(bitmapFont);
+#endif // FNTSTORE_H_INLINES_SUPPORT_FMM
+            const TOpenFontFaceAttrib* const attrib = openFont->FaceAttrib();
+            const QString foundKey =
+                    QString((const QChar*)attrib->FullName().Ptr(), attrib->FullName().Length());
+            if (!m_extrasHash.contains(foundKey)) {
+                QScopedPointer<CFont, CFontFromFontStoreReleaser> sFont(font);
+                QSymbianTypeFaceExtras *extras = new QSymbianTypeFaceExtras(font, openFont);
+                sFont.take();
+                m_extras.append(extras);
+                m_extrasHash.insert(searchKey, extras);
+                m_extrasHash.insert(foundKey, extras);
+            } else {
+                m_store->ReleaseFont(font);
+                m_extrasHash.insert(searchKey, m_extrasHash.value(foundKey));
+            }
         }
-#endif // Q_SYMBIAN_HAS_FONTTABLE_API
     }
     return m_extrasHash.value(searchKey);
 }
 
 void QSymbianFontDatabaseExtrasImplementation::addFontFileToFontStore(const QFileInfo &fontFileInfo)
 {
+    Q_ASSERT(!QSymbianTypeFaceExtras::symbianFontTableApiAvailable());
     const QString fontFile = QDir::toNativeSeparators(fontFileInfo.absoluteFilePath());
     TPtrC fontFilePtr(qt_QString2TPtrC(fontFile));
     QT_TRAP_THROWING(m_store->AddFileL(fontFilePtr));
