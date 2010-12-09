@@ -104,13 +104,8 @@ void tst_qmlvisual::visual_data()
     QStringList files;
     files << findQmlFiles(QDir(QT_TEST_SOURCE_DIR));
     if (qgetenv("QMLVISUAL_ALL") != "1") {
-#if defined(Q_WS_X11)
-        //Text on X11 varies per version - and the CI system is currently using something outdated.
-        foreach(const QString &str, files.filter(QRegExp(".*text.*")))
-            files.removeAll(str);
-#endif
 #if defined(Q_WS_MAC)
-        //Text on Mac also varies per version. Only check the text on 10.6
+        //Text on Mac varies per version. Only check the text on 10.6
         if(QSysInfo::MacintoshVersion != QSysInfo::MV_10_6)
             foreach(const QString &str, files.filter(QRegExp(".*text.*")))
                 files.removeAll(str);
@@ -138,6 +133,9 @@ void tst_qmlvisual::visual()
     QFETCH(QString, testdata);
 
     QStringList arguments;
+#ifdef Q_WS_MAC
+    arguments << "-no-opengl";
+#endif
     arguments << "-script" << testdata
               << "-scriptopts" << "play,testimages,testerror,testskip,exitoncomplete,exitonfailure"
               << file;
@@ -147,9 +145,11 @@ void tst_qmlvisual::visual()
 
     QProcess p;
     p.start(qmlruntime, arguments);
-    QVERIFY(p.waitForFinished());
+    bool finished = p.waitForFinished();
+    QByteArray output = p.readAllStandardOutput() + p.readAllStandardError();
+    QVERIFY2(finished, output.data());
     if (p.exitCode() != 0)
-        qDebug() << p.readAllStandardError();
+        qDebug() << output;
     QCOMPARE(p.exitStatus(), QProcess::NormalExit);
     QCOMPARE(p.exitCode(), 0);
 }
@@ -239,6 +239,9 @@ void action(Mode mode, const QString &file)
     QString testdata = tst_qmlvisual::toTestScript(file,mode);
 
     QStringList arguments;
+#ifdef Q_WS_MAC
+    arguments << "-no-opengl";
+#endif
     switch (mode) {
         case Test:
             // Don't run qml

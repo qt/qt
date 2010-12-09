@@ -279,7 +279,7 @@ void QDeclarativeFolderListModel::classBegin()
 
 void QDeclarativeFolderListModel::componentComplete()
 {
-    if (!d->folder.isValid() || !QDir().exists(d->folder.toLocalFile()))
+    if (!d->folder.isValid() || d->folder.toLocalFile().isEmpty() || !QDir().exists(d->folder.toLocalFile()))
         setFolder(QUrl(QLatin1String("file://")+QDir::currentPath()));
 
     if (!d->folderIndex.isValid())

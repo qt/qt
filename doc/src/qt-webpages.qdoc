@@ -201,11 +201,6 @@
 */
 
 /*!
-    \externalpage http://labs.qt.nokia.com/gitweb?p=qtestlib-tools;a=summary
-    \title qtestlib-tools
-*/
-
-/*!
     \externalpage http://qt.nokia.com/products/library/modular-class-library#info_scripting
     \title Qt Script for Applications (QSA)
 */
@@ -238,4 +233,14 @@
 /*!
     \externalpage http://get.qt.nokia.com/nokiasmartinstaller/
     \title Smart Installer
+*/
+
+/*!
+    \externalpage http://qt.gitorious.org/qt-labs/qtestlib-tools
+    \title qtestlib-tools
+*/
+
+/*!
+    \externalpage http://labs.qt.nokia.com
+    \title Qt Labs
 */

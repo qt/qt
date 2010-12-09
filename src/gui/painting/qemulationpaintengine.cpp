@@ -268,6 +268,15 @@ void QEmulationPaintEngine::setState(QPainterState *s)
     real_engine->setState(s);
 }
 
+void QEmulationPaintEngine::beginNativePainting()
+{
+    real_engine->beginNativePainting();
+}
+
+void QEmulationPaintEngine::endNativePainting()
+{
+    real_engine->endNativePainting();
+}
 
 void QEmulationPaintEngine::fillBGRect(const QRectF &r)
 {
