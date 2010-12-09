@@ -325,11 +325,6 @@ void QGLWidget::setMouseTracking(bool enable)
 bool QGLWidget::event(QEvent *e)
 {
     Q_D(QGLWidget);
-    if (e->type() == QEvent::WinIdChange) {
-        if (platformWindow()) {
-            d->glcx = QGLContext::fromPlatformGLContext(platformWindow()->glContext());
-        }
-    }
     return QWidget::event(e);
 }
 
