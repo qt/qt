@@ -465,6 +465,26 @@ int QSymbianSocketEngine::option(QAbstractSocketEngine::SocketOption opt) const
     return -1;
 }
 
+qint64 QSymbianSocketEngine::receiveBufferSize() const
+{
+    return option(ReceiveBufferSocketOption);
+}
+
+void QSymbianSocketEngine::setReceiveBufferSize(qint64 size)
+{
+    setOption(ReceiveBufferSocketOption, size);
+}
+
+qint64 QSymbianSocketEngine::sendBufferSize() const
+{
+    return option(SendBufferSocketOption);
+}
+
+void QSymbianSocketEngine::setSendBufferSize(qint64 size)
+{
+    setOption(SendBufferSocketOption, size);
+}
+
 bool QSymbianSocketEngine::connectToHostByName(const QString &name, quint16 port)
 {
     // FIXME for engines that support hostnames.. not for us then i guess.
