@@ -117,6 +117,7 @@ void QNetworkReplyImplPrivate::_q_startOperation()
 
     if (backend->isSynchronous()) {
         state = Finished;
+        q_func()->setFinished(true);
     } else {
         if (state != Finished) {
             if (operation == QNetworkAccessManager::GetOperation)
