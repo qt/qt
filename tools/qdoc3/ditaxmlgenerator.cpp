@@ -699,11 +699,11 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                 skipAhead++;
                 atom = atom->next();
             }
+            str[0] = str[0].toLower();
+            if (str.right(1) == ".")
+                str.truncate(str.length() - 1);
+            writeCharacters(str + ".");
         }
-        str[0] = str[0].toLower();
-        if (str.right(1) == ".")
-            str.truncate(str.length() - 1);
-        writeCharacters(str + ".");
         break;
     case Atom::BriefRight:
         //        if (relative->type() != Node::Fake) 
@@ -5315,7 +5315,7 @@ void DitaXmlGenerator::writeNestedClasses(const Section& s,
   Recursive writing of DITA XML files from the root \a node.
  */
 void
-DitaXmlGenerator::generateInnerNode(const InnerNode* node, CodeMarker* marker)
+DitaXmlGenerator::generateInnerNode(const InnerNode* node)
 {
     if (!node->url().isNull())
         return;
@@ -5333,6 +5333,11 @@ DitaXmlGenerator::generateInnerNode(const InnerNode* node, CodeMarker* marker)
                 qDebug("PAGE %s HAS CHILDREN", qPrintable(fakeNode->title()));
         }
     }
+
+    /*
+      Obtain a code marker for the source file.
+     */
+    CodeMarker *marker = CodeMarker::markerForFileName(node->location().filePath());
 
     if (node->parent() != 0) {
 	beginSubPage(node->location(), fileName(node));
@@ -5353,7 +5358,7 @@ DitaXmlGenerator::generateInnerNode(const InnerNode* node, CodeMarker* marker)
     NodeList::ConstIterator c = node->childNodes().begin();
     while (c != node->childNodes().end()) {
 	if ((*c)->isInnerNode() && (*c)->access() != Node::Private)
-	    generateInnerNode((const InnerNode*) *c, marker);
+	    generateInnerNode((const InnerNode*) *c);
 	++c;
     }
 }

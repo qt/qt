@@ -252,7 +252,7 @@ class DitaXmlGenerator : public PageGenerator
     GuidMap* lookupGuidMap(const QString& fileName);
     virtual void beginSubPage(const Location& location, const QString& fileName);
     virtual void endSubPage();
-    virtual void generateInnerNode(const InnerNode* node, CodeMarker* marker);
+    virtual void generateInnerNode(const InnerNode* node);
     QXmlStreamWriter& xmlWriter();
     void writeDetailedDescription(const Node* node,
                                   CodeMarker* marker,
