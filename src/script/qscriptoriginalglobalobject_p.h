@@ -56,6 +56,7 @@ public:
     inline QScriptValue::PropertyFlags getPropertyFlags(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property, const QScriptValue::ResolveFlags& mode);
     inline v8::Local<v8::Value> getOwnProperty(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property) const;
     inline void installArgFunctionOnOrgStringPrototype(v8::Handle<v8::Function> arg);
+    inline void defineGetterOrSetter(v8::Handle< v8::Object > recv, v8::Handle< v8::String > prototypeName, v8::Handle< v8::Value > value, uint attribs) const;
 private:
     Q_DISABLE_COPY(QScriptOriginalGlobalObject)
     inline v8::Local<v8::Object> getOwnPropertyDescriptor(v8::Handle<v8::Object> object, v8::Handle<v8::Value> property) const;
@@ -67,6 +68,8 @@ private:
     v8::Persistent<v8::Function> m_ownPropertyDescriptor;
     v8::Persistent<v8::Function> m_ownPropertyNames;
     v8::Persistent<v8::Object> m_globalObject;
+    v8::Persistent<v8::Function> m_defineGetter;
+    v8::Persistent<v8::Function> m_defineSetter;
 };
 
 v8::Handle<v8::Value> functionPrint(const v8::Arguments& args);
@@ -93,6 +96,14 @@ QScriptOriginalGlobalObject::QScriptOriginalGlobalObject(const QScriptEnginePriv
         v8::Handle<v8::Value> ownPropertyNames = objectConstructor->ToObject()->Get(v8::String::New("getOwnPropertyNames"));
         Q_ASSERT(!ownPropertyNames.IsEmpty());
         m_ownPropertyNames= v8::Persistent<v8::Function>::New(v8::Handle<v8::Function>::Cast(ownPropertyNames));
+    }
+    {
+        //initialize m_defineGetter and m_defineSetter
+        v8::Handle<v8::Value> objectPrototype = objectConstructor->ToObject()->Get(v8::String::New("__proto__"));
+        v8::Handle<v8::Value> defineGetter = objectConstructor->ToObject()->Get(v8::String::New("__defineGetter__"));
+        v8::Handle<v8::Value> defineSetter = objectConstructor->ToObject()->Get(v8::String::New("__defineSetter__"));
+        m_defineSetter = v8::Persistent<v8::Function>::New(v8::Handle<v8::Function>::Cast(defineSetter));
+        m_defineGetter = v8::Persistent<v8::Function>::New(v8::Handle<v8::Function>::Cast(defineGetter));
     }
 
     // Set our default properties.
@@ -142,6 +153,8 @@ inline void QScriptOriginalGlobalObject::destroy()
     m_ownPropertyNames.Dispose();
     m_ownPropertyDescriptor.Dispose();
     m_globalObject.Dispose();
+    m_defineGetter.Dispose();
+    m_defineSetter.Dispose();
 #ifndef QT_NO_DEBUG
     m_stringConstructor.Clear();
     m_stringPrototype.Clear();
@@ -225,6 +238,17 @@ inline v8::Local<v8::Object> QScriptOriginalGlobalObject::getOwnPropertyDescript
         return v8::Local<v8::Object>();
     return descriptor;
 }
+
+void QScriptOriginalGlobalObject::defineGetterOrSetter(v8::Handle<v8::Object> recv, v8::Handle<v8::String> prototypeName, v8::Handle<v8::Value> value, uint attribs) const
+{
+    v8::HandleScope handleScope;
+    v8::Handle<v8::Value> argv[2] = { prototypeName, value };
+    if (attribs & QScriptValue::PropertyGetter)
+        m_defineGetter->Call(recv, 2, argv);
+    if (attribs & QScriptValue::PropertySetter)
+        m_defineSetter->Call(recv, 2, argv);
+}
+
 
 QT_END_NAMESPACE
 

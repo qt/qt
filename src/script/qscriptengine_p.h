@@ -191,6 +191,7 @@ public:
     void emitSignalHandlerException();
 
     inline bool hasInstance(v8::Handle<v8::FunctionTemplate> fun, v8::Handle<v8::Value> value) const;
+    inline const QScriptOriginalGlobalObject *originalGlobalObject() const { return &m_originalGlobalObject; }
 
     v8::Persistent<v8::FunctionTemplate> declarativeClassTemplate;
     v8::Persistent<v8::FunctionTemplate> scriptClassTemplate;

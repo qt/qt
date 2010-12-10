@@ -201,9 +201,6 @@ private:
     inline bool isNumberBased() const;
     inline bool isStringBased() const;
     inline bool prepareArgumentsForCall(v8::Handle<v8::Value> argv[], const QScriptValueList& arguments) const;
-
-    static v8::Handle<v8::Value> propertyGetter(v8::Local<v8::String> property, const v8::AccessorInfo& info);
-    static void propertySetter(v8::Local<v8::String> property, v8::Local<v8::Value> value, const v8::AccessorInfo& info);
 };
 
 QT_END_NAMESPACE
