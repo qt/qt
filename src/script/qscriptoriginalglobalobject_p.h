@@ -193,19 +193,21 @@ inline QScriptValue::PropertyFlags QScriptOriginalGlobalObject::getPropertyFlags
 
     unsigned flags = 0;
 
-    if (!descriptor->Get(writableName)->BooleanValue())
-        flags |= QScriptValue::ReadOnly;
     if (!descriptor->Get(configurableName)->BooleanValue())
         flags |= QScriptValue::Undeletable;
     if (!descriptor->Get(enumerableName)->BooleanValue())
         flags |= QScriptValue::SkipInEnumeration;
-    if (descriptor->Get(getName)->IsObject())
-        flags |= QScriptValue::PropertyGetter;
-    if (descriptor->Get(setName)->IsObject())
-        flags |= QScriptValue::PropertySetter;
 
-    if (flags & (QScriptValue::PropertySetter | QScriptValue::PropertyGetter))
-        flags &= ~QScriptValue::ReadOnly; //that flag is wrongly added by V8
+    //"writable" is only a property of the descriptor if it is not an accessor
+    if(descriptor->Has(writableName)) {
+        if (!descriptor->Get(writableName)->BooleanValue())
+            flags |= QScriptValue::ReadOnly;
+    } else {
+        if (descriptor->Get(getName)->IsObject())
+            flags |= QScriptValue::PropertyGetter;
+        if (descriptor->Get(setName)->IsObject())
+            flags |= QScriptValue::PropertySetter;
+    }
 
     return QScriptValue::PropertyFlag(flags);
 }
