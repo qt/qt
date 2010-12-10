@@ -92,8 +92,8 @@ Rectangle {
                     to: 360
                     loops: NumberAnimation.Infinite
                     running: true
-                    duration: 2000                
-                }   
+                    duration: 2000               
+                }  
             }
         }
     }
@@ -168,6 +168,6 @@ Rectangle {
                 }
             }
         }
-    ]   
+    ]  
 
 } // treatsApp
