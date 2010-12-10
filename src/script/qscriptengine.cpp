@@ -566,10 +566,20 @@ bool QScriptEnginePrivate::isQtObject(v8::Handle<v8::Value> value)
 
 QObject *QScriptEnginePrivate::qtObjectFromJS(v8::Handle<v8::Value> value)
 {
-    if (!isQtObject(value))
-        return 0;
-    QtInstanceData *data = QtInstanceData::get(v8::Handle<v8::Object>::Cast(value));
-    return data->cppObject();
+    if (isQtObject(value)) {
+        QtInstanceData *data = QtInstanceData::get(v8::Handle<v8::Object>::Cast(value));
+        Q_ASSERT(data);
+        return data->cppObject();
+    }
+
+    if (isQtVariant(value)) {
+        QVariant var = variantFromJS(value);
+        int type = var.userType();
+        if ((type == QMetaType::QObjectStar) || (type == QMetaType::QWidgetStar))
+            return *reinterpret_cast<QObject* const *>(var.constData());
+    }
+
+    return 0;
 }
 
 bool QScriptEnginePrivate::convertToNativeQObject(v8::Handle<v8::Value> value,
