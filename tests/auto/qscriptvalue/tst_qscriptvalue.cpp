@@ -1959,7 +1959,6 @@ void tst_QScriptValue::getSetProperty_gettersAndSetters()
 
         // kill the setter
         object.setProperty("foo", QScriptValue(), QScriptValue::PropertySetter);
-        QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setProperty() failed: property 'foo' has a getter but no setter");
         object.setProperty("foo", str);
 
         // getter should still work
