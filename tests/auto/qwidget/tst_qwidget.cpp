@@ -10029,6 +10029,28 @@ void tst_QWidget::openModal_taskQTBUG_5804()
 }
 
 #ifdef Q_OS_SYMBIAN
+
+static CEikButtonGroupContainer* cba()
+{
+    CEikButtonGroupContainer *oldCba = NULL;
+
+    // Due to convoluted/buggy implementation of MEikAppUiFactory interface in Symbian,
+    // the only way to get the correct cba is to use SwapButtonGroup function.
+    // Calling SwapButtonGroup doesn't trigger anything, it only changes the value of iToolbar
+    // member variable, so this double switching should not cause any interference for test.
+    QT_TRAP_THROWING(
+        CEikButtonGroupContainer *dummyCba = CEikButtonGroupContainer::NewL(
+            CEikButtonGroupContainer::ECba, CEikButtonGroupContainer::EHorizontal, NULL, 0);
+
+        oldCba = CEikonEnv::Static()->AppUiFactory()->SwapButtonGroup(dummyCba);
+        CEikonEnv::Static()->AppUiFactory()->SwapButtonGroup(oldCba);
+
+        delete dummyCba;
+    )
+
+    return oldCba;
+}
+
 void tst_QWidget::cbaVisibility()
 {
     // Test case for task 261048
@@ -10061,7 +10083,7 @@ void tst_QWidget::cbaVisibility()
     // Verify window decorations i.e. status pane and CBA are visible.
     CEikStatusPane* statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
     QVERIFY(statusPane->IsVisible());
-    CEikButtonGroupContainer* buttonGroup = CEikonEnv::Static()->AppUiFactory()->Cba();
+    CEikButtonGroupContainer* buttonGroup = cba();
     QVERIFY(buttonGroup->IsVisible());
 }
 
@@ -10078,7 +10100,7 @@ void tst_QWidget::fullScreenWindowModeTransitions()
     const QRect fullScreenGeometry = qApp->desktop()->screenGeometry(&widget);
     const QRect maximumScreenGeometry = qApp->desktop()->availableGeometry(&widget);
     CEikStatusPane *statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
-    CEikButtonGroupContainer *buttonGroup = CEikonEnv::Static()->AppUiFactory()->Cba();
+    CEikButtonGroupContainer *buttonGroup = cba();
 
     //Enter
     widget.showNormal();
@@ -10132,7 +10154,7 @@ void tst_QWidget::maximizedWindowModeTransitions()
     const QRect fullScreenGeometry = qApp->desktop()->screenGeometry(&widget);
     const QRect maximumScreenGeometry = qApp->desktop()->availableGeometry(&widget);
     CEikStatusPane *statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
-    CEikButtonGroupContainer *buttonGroup = CEikonEnv::Static()->AppUiFactory()->Cba();
+    CEikButtonGroupContainer *buttonGroup = cba();
 
     //Enter
     widget.showNormal();
@@ -10188,7 +10210,7 @@ void tst_QWidget::minimizedWindowModeTransitions()
     const QRect fullScreenGeometry = qApp->desktop()->screenGeometry(&widget);
     const QRect maximumScreenGeometry = qApp->desktop()->availableGeometry(&widget);
     CEikStatusPane *statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
-    CEikButtonGroupContainer *buttonGroup = CEikonEnv::Static()->AppUiFactory()->Cba();
+    CEikButtonGroupContainer *buttonGroup = cba();
 
     //Enter
     widget.showNormal();
@@ -10244,7 +10266,7 @@ void tst_QWidget::normalWindowModeTransitions()
     const QRect fullScreenGeometry = qApp->desktop()->screenGeometry(&widget);
     const QRect maximumScreenGeometry = qApp->desktop()->availableGeometry(&widget);
     CEikStatusPane *statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
-    CEikButtonGroupContainer *buttonGroup = CEikonEnv::Static()->AppUiFactory()->Cba();
+    CEikButtonGroupContainer *buttonGroup = cba();
 
     //Enter
     widget.showMaximized();
