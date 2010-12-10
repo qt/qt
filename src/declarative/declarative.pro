@@ -2,7 +2,6 @@ TARGET     = QtDeclarative
 QPRO_PWD   = $$PWD
 QT         = core gui script network
 contains(QT_CONFIG, svg): QT += svg
-contains(QT_CONFIG, opengl): QT += opengl
 DEFINES   += QT_BUILD_DECLARATIVE_LIB QT_NO_URL_CAST_FROM_STRING
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x66000000
 solaris-cc*:QMAKE_CXXFLAGS_RELEASE -= -O2

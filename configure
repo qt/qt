@@ -8595,9 +8595,12 @@ for file in .projects .projects.3; do
 
         case $a in
         *winmain/winmain.pro)
-            [ "$XPLATFORM_MINGW" = "yes" ] || continue
+            if [ "$CFG_NOPROCESS" = "yes" ] || [ "$XPLATFORM_MINGW" != "yes" ]; then
+                continue
+            fi
             SPEC=$XQMAKESPEC ;;
-        *s60main/s60main.pro) if [ "$CFG_NOPROCESS" = "yes" ] || [ -z "`echo "$XPLATFORM" | grep "symbian" >/dev/null`"]; then
+        *s60main/s60main.pro)
+            if [ "$CFG_NOPROCESS" = "yes" ] || ! echo "$XPLATFORM" | grep "symbian" >/dev/null; then
                 continue
             fi;;
         *examples/activeqt/*) continue ;;
