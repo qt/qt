@@ -532,26 +532,29 @@ inline bool QScriptValuePrivate::equals(QScriptValuePrivate* other)
                 return false;
             }
         default:
-            Q_ASSERT_X(false, "equals()", "Not all states are included in the previous switch statement.");
+            Q_ASSERT_X(false, "QScriptValue::equals", "Not all states are included in the previous switch statement.");
         }
     }
 
     v8::HandleScope handleScope;
     if (isJSBased() && !other->isJSBased()) {
         if (!other->assignEngine(engine())) {
-            qWarning("equals(): Cannot compare to a value created in a different engine");
+            qWarning("QScriptValue::equals: cannot compare to a value created in a different engine");
             return false;
         }
     } else if (!isJSBased() && other->isJSBased()) {
         if (!assignEngine(other->engine())) {
-            qWarning("equals(): Cannot compare to a value created in a different engine");
+            qWarning("QScriptValue::equals: cannot compare to a value created in a different engine");
             return false;
         }
     }
 
     Q_ASSERT(this->engine() && other->engine());
+    if (this->engine() != other->engine()) {
+        qWarning("QScriptValue::equals: cannot compare to a value created in a different engine");
+        return false;
+    }
     return m_value->Equals(other->m_value);
-    return false;
 }
 
 inline bool QScriptValuePrivate::strictlyEquals(QScriptValuePrivate* other)
