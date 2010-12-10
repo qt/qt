@@ -2113,7 +2113,9 @@ void QGLContextPrivate::cleanup()
 void QGLContextPrivate::setVertexAttribArrayEnabled(int arrayIndex, bool enabled)
 {
     Q_ASSERT(arrayIndex < QT_GL_VERTEX_ARRAY_TRACKED_COUNT);
+#ifdef glEnableVertexAttribArray
     Q_ASSERT(glEnableVertexAttribArray);
+#endif
 
     if (vertexAttributeArraysEnabledState[arrayIndex] && !enabled)
         glDisableVertexAttribArray(arrayIndex);
@@ -2126,7 +2128,9 @@ void QGLContextPrivate::setVertexAttribArrayEnabled(int arrayIndex, bool enabled
 
 void QGLContextPrivate::syncGlState()
 {
+#ifdef glEnableVertexAttribArray
     Q_ASSERT(glEnableVertexAttribArray);
+#endif
     for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i) {
         if (vertexAttributeArraysEnabledState[i])
             glEnableVertexAttribArray(i);

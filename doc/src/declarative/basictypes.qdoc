@@ -33,7 +33,7 @@
     the \l {QML Elements}.
 
     Some of these types can also be used for defining 
-    \c property values in QML. See \l{Extending types from QML} for the
+    \c property values in QML. See \l{Writing QML Components: Properties, Methods and Signals} for the
     list of types that can be used for \c property values.
 
     \annotatedlist qmlbasictypes
@@ -380,7 +380,7 @@
     \c child1, \c child2 and \c child3 will be added to the children list
     in the order in which they appear.
 
-    List \l {Adding new properties}{properties} can be created as a
+    List \l {Adding Properties}{properties} can be created as a
     \c variant type, or as a \c list<Type> type, where \c Type is the
     type of the object in the list:
 

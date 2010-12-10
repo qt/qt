@@ -436,12 +436,13 @@ void QDeclarativeTextPrivate::invalidateImageCache()
 {
     Q_Q(QDeclarativeText);
 
-    if (imageCacheDirty)
-        return;
+    if(cacheAllTextAsImage || style != QDeclarativeText::Normal){//If actually using the image cache
+        if (imageCacheDirty)
+            return;
 
-    imageCacheDirty = true;
-    imageCache = QPixmap();
-
+        imageCacheDirty = true;
+        imageCache = QPixmap();
+    }
     if (q->isComponentComplete())
         q->update();
 }

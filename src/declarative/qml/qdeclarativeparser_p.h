@@ -358,6 +358,9 @@ namespace QDeclarativeParser
         bool isDeferred;
         // True if this property is a value-type pseudo-property
         bool isValueTypeSubProperty;
+        // True if this property is a property alias.  Set by the 
+        // QDeclarativeCompiler
+        bool isAlias;
 
         LocationSpan location;
         LocationRange listValueRange;

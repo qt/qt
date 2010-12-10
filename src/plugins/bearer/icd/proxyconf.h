@@ -58,6 +58,7 @@ public:
     virtual ~ProxyConf();
 
     QList<QNetworkProxy> flush(const QNetworkProxyQuery &query = QNetworkProxyQuery());  // read the proxies from db
+    void readProxyData();
 
     /* Note that for each update() call there should be corresponding
      * clear() call because the ProxyConf class implements a reference

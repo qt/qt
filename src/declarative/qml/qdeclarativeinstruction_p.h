@@ -132,6 +132,7 @@ public:
         AssignCustomType,         /* assignCustomType */
 
         StoreBinding,             /* assignBinding */
+        StoreBindingOnAlias,      /* assignBinding */
         StoreCompiledBinding,     /* assignBinding */
         StoreValueSource,         /* assignValueSource */
         StoreValueInterceptor,    /* assignValueInterceptor */
@@ -214,6 +215,7 @@ public:
     struct FetchValueInstruction {
         int property;
         int type;
+        quint32 bindingSkipList;
     };
     struct FetchQmlListInstruction {
         int property;
