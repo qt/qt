@@ -60,8 +60,8 @@ public:
         DisconnectionError,
     };
 
-    QBearerEngineImpl(QObject *parent = 0) : QBearerEngine(parent) { }
-    ~QBearerEngineImpl() { }
+    QBearerEngineImpl(QObject *parent = 0) : QBearerEngine(parent) {}
+    ~QBearerEngineImpl() {}
 
     virtual void connectToId(const QString &id) = 0;
     virtual void disconnectFromId(const QString &id) = 0;
@@ -81,4 +81,5 @@ Q_SIGNALS:
 QT_END_NAMESPACE
 
 #endif // QT_NO_BEARERMANAGEMENT
-#endif
+
+#endif // QBEARERENGINE_IMPL_H
