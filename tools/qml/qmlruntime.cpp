@@ -820,7 +820,7 @@ void QDeclarativeViewer::createMenu()
     fileMenu->addAction(reloadAction);
     fileMenu->addSeparator();
     fileMenu->addAction(closeAction);
-#if !defined(Q_OS_SYMBIAN)   
+#if !defined(Q_OS_SYMBIAN)
     fileMenu->addAction(quitAction);
 
     QMenu *recordMenu = menu->addMenu(tr("&Recording"));

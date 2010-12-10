@@ -122,7 +122,7 @@ public:
 
     int type() const { return m_type; }
     void setType(int t) { m_type = t; }
-   
+
     int button() const { return m_button; }
     void setButton(int b) { m_button = b; }
 
