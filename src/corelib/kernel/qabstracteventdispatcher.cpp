@@ -120,11 +120,20 @@ void QAbstractEventDispatcherPrivate::init()
     }
 }
 
+// Timer IDs are implemented using a free-list;
+// there's a vector initialized with:
+//    X[i] = i + 1
+// and nextFreeTimerId starts with 1.
+//
+// Allocating a timer ID involves taking the ID from
+//    X[nextFreeTimerId]
+// updating nextFreeTimerId to this value and returning the old value
+// (continues below).
 int QAbstractEventDispatcherPrivate::allocateTimerId()
 {
     int timerId, newTimerId;
     do {
-        timerId = nextFreeTimerId;
+        timerId = nextFreeTimerId; //.loadAcquire(); // ### FIXME Proper memory ordering semantics
 
         // which bucket are we looking in?
         int which = timerId & 0x00ffffff;
@@ -148,6 +157,17 @@ int QAbstractEventDispatcherPrivate::allocateTimerId()
     return timerId;
 }
 
+// Releasing a timer ID requires putting the current ID back in the vector;
+// we do it by setting:
+//    X[timerId] = nextFreeTimerId;
+// then we update nextFreeTimerId to the timer we've just released
+//
+// The extra code in allocateTimerId and releaseTimerId are ABA prevention
+// and bucket memory. The buckets are simply to make sure we allocate only
+// the necessary number of timers. See above.
+//
+// ABA prevention simply adds a value to 7 of the top 8 bits when resetting
+// nextFreeTimerId.
 void QAbstractEventDispatcherPrivate::releaseTimerId(int timerId)
 {
     int which = timerId & 0x00ffffff;
@@ -157,7 +177,7 @@ void QAbstractEventDispatcherPrivate::releaseTimerId(int timerId)
 
     int freeId, newTimerId;
     do {
-        freeId = nextFreeTimerId;
+        freeId = nextFreeTimerId;//.loadAcquire(); // ### FIXME Proper memory ordering semantics
         b[at] = freeId & 0x00ffffff;
 
         newTimerId = prepareNewValueWithSerialNumber(freeId, timerId);
