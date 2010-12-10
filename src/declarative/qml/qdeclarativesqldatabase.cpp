@@ -375,7 +375,6 @@ static QScriptValue qmlsqldatabase_open_sync(QScriptContext *context, QScriptEng
         } else {
             created = !QFile::exists(basename+QLatin1String(".sqlite"));
             database = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"), dbid);
-            QDir().mkpath(basename);
             if (created) {
                 ini.setValue(QLatin1String("Name"), dbname);
                 if (dbcreationCallback.isFunction())
