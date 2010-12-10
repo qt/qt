@@ -175,6 +175,8 @@ inline QScriptValue::PropertyFlags QScriptOriginalGlobalObject::getPropertyFlags
     v8::Local<v8::String> writableName = v8::String::New("writable");
     v8::Local<v8::String> configurableName = v8::String::New("configurable");
     v8::Local<v8::String> enumerableName = v8::String::New("enumerable");
+    v8::Local<v8::String> getName = v8::String::New("get");
+    v8::Local<v8::String> setName = v8::String::New("set");
 
     unsigned flags = 0;
 
@@ -184,6 +186,13 @@ inline QScriptValue::PropertyFlags QScriptOriginalGlobalObject::getPropertyFlags
         flags |= QScriptValue::Undeletable;
     if (!descriptor->Get(enumerableName)->BooleanValue())
         flags |= QScriptValue::SkipInEnumeration;
+    if (descriptor->Get(getName)->IsObject())
+        flags |= QScriptValue::PropertyGetter;
+    if (descriptor->Get(setName)->IsObject())
+        flags |= QScriptValue::PropertySetter;
+
+    if (flags & (QScriptValue::PropertySetter | QScriptValue::PropertyGetter))
+        flags &= ~QScriptValue::ReadOnly; //that flag is wrongly added by V8
 
     return QScriptValue::PropertyFlag(flags);
 }

@@ -3901,4 +3901,30 @@ void tst_QScriptValue::nestedObjectToVariant()
     QCOMPARE(o.toVariant(), expected);
 }
 
+void tst_QScriptValue::propertyFlags_data()
+{
+    QTest::addColumn<QString>("program");
+    QTest::addColumn<uint>("expected");
+
+    QTest::newRow("nothing") << "" << 0u;
+    QTest::newRow("getter") << "o.__defineGetter__('prop', function() { return 'blah' } );\n" << uint(QScriptValue::PropertyGetter);
+    QTest::newRow("setter") << "o.__defineSetter__('prop', function(a) { this.setted_prop2 = a; } );\n" << uint(QScriptValue::PropertySetter);
+    QTest::newRow("getterSetter") <<  "o.__defineGetter__('prop', function() { return 'ploup' } );\n"
+                                      "o.__defineSetter__('prop', function(a) { this.setted_prop3 = a; } );\n" << uint(QScriptValue::PropertySetter|QScriptValue::PropertyGetter);
+    QTest::newRow("nothing2") << "o.prop = 'nothing'" << 0u;
+}
+
+void tst_QScriptValue::propertyFlags()
+{
+    QFETCH(QString, program);
+    QFETCH(uint, expected);
+    QScriptEngine eng;
+    eng.evaluate("o = new Object;");
+    eng.evaluate(program);
+    QScriptValue o = eng.evaluate("o");
+
+    QCOMPARE(uint(o.propertyFlags("prop")), expected);
+}
+
+
 QTEST_MAIN(tst_QScriptValue)

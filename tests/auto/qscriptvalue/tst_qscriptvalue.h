@@ -164,6 +164,8 @@ private slots:
     void objectId();
     void nestedObjectToVariant_data();
     void nestedObjectToVariant();
+    void propertyFlags_data();
+    void propertyFlags();
 
 private:
     void newEngine()
