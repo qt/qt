@@ -78,14 +78,14 @@ extern "C" IMPORT_C void exit(int ret);
 GLDEF_C TInt QtMainWrapper()
 {
     int argc = 0;
-    char **argv = 0;
-    char **envp = 0;
+    // these variables are declared static in the expectation that this function is not reentrant
+    // and so that memory analysis tools can trace any memory allocated in __crt0() to global memory ownership.
+    static char **argv = 0;
+    static char **envp = 0;
     // get args & environment
     __crt0(argc, argv, envp);
     //Call user(application)'s main
     TRAPD(ret, QT_TRYCATCH_LEAVING(ret = CALLMAIN(argc, argv, envp);));
-    delete[] argv;
-    delete[] envp;
     return ret;
 }
 
