@@ -234,7 +234,7 @@ QIcon QFileIconProviderPrivate::getWinIcon(const QFileInfo &fileInfo) const
     const QString fileExtension = QLatin1Char('.') + fileInfo.suffix().toUpper();
 
     QString key;
-    if (fileInfo.isFile() && !fileInfo.isExecutable() && !fileInfo.isSymLink())
+    if (fileInfo.isFile() && !fileInfo.isExecutable() && !fileInfo.isSymLink() && fileExtension != QLatin1String(".ICO"))
         key = QLatin1String("qt_") + fileExtension;
 
     QPixmap pixmap;
