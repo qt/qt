@@ -814,7 +814,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(T n
         // and a property that doesn't exist; in the latter case, we should return an invalid value.
         return new QScriptValuePrivate();
     }
-    if ((mode == QScriptValue::ResolveLocal) && engine()->getOwnProperty(self, name).IsEmpty())
+    if (!(mode & QScriptValue::ResolvePrototype) && engine()->getOwnProperty(self, name).IsEmpty())
         return new QScriptValuePrivate();
 
     return new QScriptValuePrivate(engine(), result);

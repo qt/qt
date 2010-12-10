@@ -165,9 +165,11 @@ inline QScriptValue::PropertyFlags QScriptOriginalGlobalObject::getPropertyFlags
     v8::Handle<v8::Object> descriptor = getOwnPropertyDescriptor(object, property);
     if (descriptor.IsEmpty()) {
         // Property isn't owned by this object.
+        if (!(mode & QScriptValue::ResolvePrototype))
+            return 0;
         v8::Handle<v8::Value> prototype = object->GetPrototype();
-        if (mode == QScriptValue::ResolveLocal || prototype->IsNull())
-            return QScriptValue::PropertyFlag(0);
+        if (prototype->IsNull())
+            return 0;
         return getPropertyFlags(v8::Handle<v8::Object>::Cast(prototype), property, QScriptValue::ResolvePrototype);
     }
     v8::Local<v8::String> writableName = v8::String::New("writable");

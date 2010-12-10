@@ -508,7 +508,6 @@ void tst_QScriptValue::getSetProperty()
              .strictlyEquals(num2), true);
     QCOMPARE(object.property("propertyInPrototype", QScriptValue::ResolveLocal)
              .isValid(), false);
-    QEXPECT_FAIL("", "QScriptValue::ResolveScope is not implemented", Continue);
     QCOMPARE(object.property("propertyInPrototype", QScriptValue::ResolveScope)
              .strictlyEquals(num2), false);
     QCOMPARE(object.property("propertyInPrototype", QScriptValue::ResolveFull)
