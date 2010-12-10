@@ -420,6 +420,10 @@ void QDeclarativeRectangle::generateRoundedRect()
                 p.drawRoundedRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, d->rectImage.width()-(pw+1), d->rectImage.height()-(pw+1)), d->radius, d->radius);
             else
                 p.drawRoundedRect(QRectF(qreal(pw)/2, qreal(pw)/2, d->rectImage.width()-pw, d->rectImage.height()-pw), d->radius, d->radius);
+
+            // end painting before inserting pixmap
+            // to pixmap cache to avoid a deep copy
+            p.end();
             QPixmapCache::insert(key, d->rectImage);
         }
     }
@@ -454,6 +458,10 @@ void QDeclarativeRectangle::generateBorderedRect()
                 p.drawRect(QRectF(qreal(pw)/2+1, qreal(pw)/2+1, d->rectImage.width()-(pw+1), d->rectImage.height()-(pw+1)));
             else
                 p.drawRect(QRectF(qreal(pw)/2, qreal(pw)/2, d->rectImage.width()-pw, d->rectImage.height()-pw));
+
+            // end painting before inserting pixmap
+            // to pixmap cache to avoid a deep copy
+            p.end();
             QPixmapCache::insert(key, d->rectImage);
         }
     }
@@ -462,6 +470,8 @@ void QDeclarativeRectangle::generateBorderedRect()
 void QDeclarativeRectangle::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QDeclarativeRectangle);
+    if (width() <= 0 || height() <= 0)
+        return;
     if (d->radius > 0 || (d->pen && d->pen->isValid())
         || (d->gradient && d->gradient->gradient()) ) {
         drawRect(*p);
@@ -530,6 +540,12 @@ void QDeclarativeRectangle::drawRect(QPainter &p)
         int yOffset = (d->rectImage.height()-1)/2;
         Q_ASSERT(d->rectImage.width() == 2*xOffset + 1);
         Q_ASSERT(d->rectImage.height() == 2*yOffset + 1);
+
+        // check whether we've eliminated the center completely
+        if (2*xOffset > width()+pw)
+            xOffset = (width()+pw)/2;
+        if (2*yOffset > height()+pw)
+            yOffset = (height()+pw)/2;
 
         QMargins margins(xOffset, yOffset, xOffset, yOffset);
         QTileRules rules(Qt::StretchTile, Qt::StretchTile);

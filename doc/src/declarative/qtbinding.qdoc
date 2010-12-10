@@ -230,7 +230,7 @@ Also see the QDeclarativeContext documentation for more information.
 
 \section2 Defining new QML elements
 
-While new QML elements can be \l {Defining new Components}{defined in QML}, they can also be
+While new QML elements can be \l {Defining New Components}{defined in QML}, they can also be
 defined by C++ classes; in fact, many of the core \l {QML Elements} are implemented through
 C++ classes. When you create a QML object using one of these elements, you are simply creating an
 instance of a QObject-based C++ class and setting its properties.
