@@ -16,7 +16,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include <loudnessbase.h>
+#include <LoudnessBase.h>
 #include "loudness.h"
 
 QT_BEGIN_NAMESPACE
