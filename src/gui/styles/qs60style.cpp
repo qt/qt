@@ -2889,7 +2889,7 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             const int frameThickness = cmb->frame ? pixelMetric(PM_SpinBoxFrameWidth, cmb, widget) : 0;
             const int buttonMinSize = QS60StylePrivate::pixelMetric(PM_ButtonIconSize) + 2 * buttonMargin;
             QSize buttonSize;
-			//allow button to grow to one fourth of the frame height, if the frame is really tall
+            //allow button to grow to one fourth of the frame height, if the frame is really tall
             buttonSize.setHeight(qMin(height, qMax(width / 4, buttonMinSize)));
             buttonSize.setWidth(buttonSize.height());
             buttonSize = buttonSize.expandedTo(QApplication::globalStrut());
