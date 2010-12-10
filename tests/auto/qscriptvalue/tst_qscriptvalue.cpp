@@ -2041,9 +2041,9 @@ void tst_QScriptValue::getSetProperty_gettersAndSettersOnNative()
 
     QScriptValue fun = eng.newFunction(getSet__proto__);
     fun.setProperty("value", QScriptValue(&eng, "boo"));
-    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setProperty() failed: "
+/*    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setProperty() failed: "
                          "cannot set getter or setter of native property "
-                         "`__proto__'");
+                         "`__proto__'");*/
     object.setProperty("__proto__", fun,
                         QScriptValue::PropertyGetter | QScriptValue::PropertySetter
                         | QScriptValue::UserRange);
@@ -2071,12 +2071,12 @@ void tst_QScriptValue::getSetProperty_gettersAndSettersOnGlobalObject()
     {
         QScriptValue ret = eng.evaluate("this.globalGetterSetterProperty()");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'this.globalGetterSetterProperty' [123] is not a function."));
+        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Property 'globalGetterSetterProperty' of object #<an Object> is not a function"));
     }
     {
         QScriptValue ret = eng.evaluate("new this.globalGetterSetterProperty()");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'this.globalGetterSetterProperty' [123] is not a constructor."));
+        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: number is not a function"));
     }
 }
 
