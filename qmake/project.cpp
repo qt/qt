@@ -2173,7 +2173,7 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             const QRegExp regex(r, Qt::CaseSensitive, QRegExp::Wildcard);
             for(int d = 0; d < dirs.count(); d++) {
                 QString dir = dirs[d];
-                if(!dir.isEmpty() && !dir.endsWith(Option::dir_sep))
+                if(!dir.isEmpty() && !dir.endsWith(QDir::separator()))
                     dir += "/";
 
                 QDir qdir(dir);
@@ -2389,7 +2389,7 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
             return true;
         //regular expression I guess
         QString dirstr = qmake_getpwd();
-        int slsh = file.lastIndexOf(Option::dir_sep);
+        int slsh = file.lastIndexOf(QDir::separator());
         if(slsh != -1) {
             dirstr = file.left(slsh+1);
             file = file.right(file.length() - slsh - 1);
