@@ -74,17 +74,17 @@ public:
     QNetworkConfigurationManagerPrivate();
     virtual ~QNetworkConfigurationManagerPrivate();
 
-    QNetworkConfiguration defaultConfiguration();
-    QList<QNetworkConfiguration> allConfigurations(QNetworkConfiguration::StateFlags filter);
-    QNetworkConfiguration configurationFromIdentifier(const QString &identifier);
+    QNetworkConfiguration defaultConfiguration() const;
+    QList<QNetworkConfiguration> allConfigurations(QNetworkConfiguration::StateFlags filter) const;
+    QNetworkConfiguration configurationFromIdentifier(const QString &identifier) const;
 
-    bool isOnline();
+    bool isOnline() const;
 
-    QNetworkConfigurationManager::Capabilities capabilities();
+    QNetworkConfigurationManager::Capabilities capabilities() const;
 
     void performAsyncConfigurationUpdate();
 
-    QList<QBearerEngine *> engines();
+    QList<QBearerEngine *> engines() const;
 
     Q_INVOKABLE void startPolling();
 
@@ -111,7 +111,7 @@ private Q_SLOTS:
 private:
     QTimer *pollTimer;
 
-    QMutex mutex;
+    mutable QMutex mutex;
 
     QList<QBearerEngine *> sessionEngines;
 

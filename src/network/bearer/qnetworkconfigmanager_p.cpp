@@ -73,7 +73,7 @@ QNetworkConfigurationManagerPrivate::~QNetworkConfigurationManagerPrivate()
     qDeleteAll(sessionEngines);
 }
 
-QNetworkConfiguration QNetworkConfigurationManagerPrivate::defaultConfiguration()
+QNetworkConfiguration QNetworkConfigurationManagerPrivate::defaultConfiguration() const
 {
     QMutexLocker locker(&mutex);
 
@@ -190,7 +190,7 @@ QNetworkConfiguration QNetworkConfigurationManagerPrivate::defaultConfiguration(
     return QNetworkConfiguration();
 }
 
-QList<QNetworkConfiguration> QNetworkConfigurationManagerPrivate::allConfigurations(QNetworkConfiguration::StateFlags filter)
+QList<QNetworkConfiguration> QNetworkConfigurationManagerPrivate::allConfigurations(QNetworkConfiguration::StateFlags filter) const
 {
     QList<QNetworkConfiguration> result;
 
@@ -234,7 +234,7 @@ QList<QNetworkConfiguration> QNetworkConfigurationManagerPrivate::allConfigurati
     return result;
 }
 
-QNetworkConfiguration QNetworkConfigurationManagerPrivate::configurationFromIdentifier(const QString &identifier)
+QNetworkConfiguration QNetworkConfigurationManagerPrivate::configurationFromIdentifier(const QString &identifier) const
 {
     QNetworkConfiguration item;
 
@@ -258,14 +258,14 @@ QNetworkConfiguration QNetworkConfigurationManagerPrivate::configurationFromIden
     return item;
 }
 
-bool QNetworkConfigurationManagerPrivate::isOnline()
+bool QNetworkConfigurationManagerPrivate::isOnline() const
 {
     QMutexLocker locker(&mutex);
 
     return !onlineConfigurations.isEmpty();
 }
 
-QNetworkConfigurationManager::Capabilities QNetworkConfigurationManagerPrivate::capabilities()
+QNetworkConfigurationManager::Capabilities QNetworkConfigurationManagerPrivate::capabilities() const
 {
     QMutexLocker locker(&mutex);
 
@@ -431,7 +431,7 @@ void QNetworkConfigurationManagerPrivate::performAsyncConfigurationUpdate()
     }
 }
 
-QList<QBearerEngine *> QNetworkConfigurationManagerPrivate::engines()
+QList<QBearerEngine *> QNetworkConfigurationManagerPrivate::engines() const
 {
     QMutexLocker locker(&mutex);
 
