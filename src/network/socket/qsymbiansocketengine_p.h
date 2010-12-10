@@ -172,8 +172,8 @@ private:
     QReadNotifier* iReadN;
     QWriteNotifier* iWriteN;
     QExceptionNotifier* iExcN;
-    bool m_inSocketEvent; // TODO ?
-    bool m_deleteLater; // TODO ?
+    bool m_inSocketEvent;
+    bool m_deleteLater;
     RSocket &m_socket;
 
     TUint m_selectFlags;

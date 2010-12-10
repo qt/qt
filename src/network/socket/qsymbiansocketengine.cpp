@@ -641,6 +641,10 @@ bool QSymbianSocketEngine::bind(const QHostAddress &address, quint16 port)
     d->setPortAndAddress(nativeAddr, port, address);
 
     TInt err = d->nativeSocket.Bind(nativeAddr);
+#ifdef __WINS__
+    if (err == KErrArgument) // winsock prt returns wrong error code
+        err = KErrInUse;
+#endif
 
     if (err) {
         d->setError(err);
@@ -781,6 +785,8 @@ qint64 QSymbianSocketEngine::writeDatagram(const char *data, qint64 len,
                                                    const QHostAddress &host, quint16 port)
 {
     Q_D(QSymbianSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::writeDatagram(), -1);
+    Q_CHECK_TYPE(QNativeSocketEngine::writeDatagram(), QAbstractSocket::UdpSocket, -1);
     TPtrC8 buffer((TUint8*)data, (int)len);
     TInetAddr addr;
     d->setPortAndAddress(addr, port, host);
@@ -940,9 +946,9 @@ qint64 QSymbianSocketEngine::write(const char *data, qint64 len)
     Q_D(QSymbianSocketEngine);
     TPtrC8 buffer((TUint8*)data, (int)len);
     TSockXfrLength sentBytes = 0;
-    TRequestStatus status; //TODO: OMG sync send!
+    TRequestStatus status;
     d->nativeSocket.Send(buffer, 0, status, sentBytes);
-    User::WaitForRequest(status);
+    User::WaitForRequest(status); //TODO: on emulator this blocks for write >16kB (non blocking IO not implemented properly?)
     TInt err = status.Int(); 
 
     if (err) {

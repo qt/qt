@@ -283,7 +283,7 @@ int QSymbianSocketManager::lookupSocket(const RSocket& socket) const {
 
 bool QSymbianSocketManager::lookupSocket(int fd, RSocket& socket) const {
     QMutexLocker l(&iMutex);
-    int id = fd + socket_offset;
+    int id = fd - socket_offset;
     if(!reverseSocketMap.contains(id))
         return false;
     socket = reverseSocketMap.value(id);

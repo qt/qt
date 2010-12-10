@@ -9,5 +9,8 @@ MOC_DIR=tmp
 
 QT = core network
 
-symbian: TARGET.CAPABILITY = NetworkServices
-symbian: INCLUDEPATH += $$OS_LAYER_SYSTEMINCLUDE
+symbian {
+    TARGET.CAPABILITY = NetworkServices
+    INCLUDEPATH += $$OS_LAYER_SYSTEMINCLUDE
+    LIBS += -lesock
+}
