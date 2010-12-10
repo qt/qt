@@ -77,15 +77,28 @@ a property on a specific object instance.  To read a property's value, programme
 QDeclarativeProperty instance and call the read() method.  Likewise to write a property value the
 write() method is used.
 
+For example, for the following QML code:
+
+\qml
+// MyItem.qml
+import QtQuick 1.0
+
+Text { text: "A bit of text" }
+\endqml
+
+The \l Text object's properties could be accessed using QDeclarativeProperty, like this:
+
 \code
+#include <QDeclarativeProperty>
+#include <QGraphicsObject>
 
-QObject *object = declarativeComponent.create();
+...
 
-QDeclarativeProperty property(object, "font.pixelSize");
+QDeclarativeView view(QUrl::fromLocalFile("MyItem.qml"));
+QDeclarativeProperty property(view.rootObject(), "font.pixelSize");
 qWarning() << "Current pixel size:" << property.read().toInt();
 property.write(24);
 qWarning() << "Pixel size should now be 24:" << property.read().toInt();
-
 \endcode
 */
 
