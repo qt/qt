@@ -192,11 +192,6 @@ void QDeclarativeEngineDebugServer::buildObjectDump(QDataStream &message,
 {
     message << objectData(object);
 
-    // Some children aren't added to an object until particular properties are read
-    // - e.g. child state objects aren't added until the 'states' property is read -
-    // but this should only affect internal objects that aren't shown by the
-    // debugger anyway.
-
     QObjectList children = object->children();
     
     int childrenCount = children.count();
@@ -255,6 +250,18 @@ void QDeclarativeEngineDebugServer::buildObjectDump(QDataStream &message,
 
     for (int ii = 0; ii < fakeProperties.count(); ++ii)
         message << fakeProperties[ii];
+}
+
+void QDeclarativeEngineDebugServer::prepareDeferredObjects(QObject *obj)
+{
+    qmlExecuteDeferred(obj);
+
+    QObjectList children = obj->children();
+    for (int ii = 0; ii < children.count(); ++ii) {
+        QObject *child = children.at(ii);
+        prepareDeferredObjects(child);
+    }
+
 }
 
 void QDeclarativeEngineDebugServer::buildObjectList(QDataStream &message, QDeclarativeContext *ctxt)
@@ -393,8 +400,11 @@ void QDeclarativeEngineDebugServer::messageReceived(const QByteArray &message)
         QDataStream rs(&reply, QIODevice::WriteOnly);
         rs << QByteArray("FETCH_OBJECT_R") << queryId;
 
-        if (object) 
+        if (object) {
+            if (recurse)
+                prepareDeferredObjects(object);
             buildObjectDump(rs, object, recurse, dumpProperties);
+        }
 
         sendMessage(reply);
     } else if (type == "WATCH_OBJECT") {

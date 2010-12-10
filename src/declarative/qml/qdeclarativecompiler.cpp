@@ -65,7 +65,6 @@
 #include "private/qdeclarativebinding_p.h"
 #include "private/qdeclarativecompiledbindings_p.h"
 #include "private/qdeclarativeglobalscriptclass_p.h"
-#include "private/qdeclarativedebugservice_p.h"
 
 #include <QColor>
 #include <QDebug>
@@ -755,10 +754,7 @@ bool QDeclarativeCompiler::buildObject(Object *obj, const BindingContext &ctxt)
     QList<QDeclarativeCustomParserProperty> customProps;
 
     // Fetch the list of deferred properties
-    QStringList deferredList;
-    if (!QDeclarativeDebugService::isDebuggingEnabled()) {
-        deferredList = deferredProperties(obj);
-    }
+    QStringList deferredList = deferredProperties(obj);
 
     // Must do id property first.  This is to ensure that the id given to any
     // id reference created matches the order in which the objects are

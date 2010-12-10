@@ -105,6 +105,7 @@ private Q_SLOTS:
     void propertyChanged(int id, int objectId, const QMetaProperty &property, const QVariant &value);
 
 private:
+    void prepareDeferredObjects(QObject *);
     void buildObjectList(QDataStream &, QDeclarativeContext *);
     void buildObjectDump(QDataStream &, QObject *, bool, bool);
     QDeclarativeObjectData objectData(QObject *);
