@@ -768,6 +768,7 @@ void QWidgetPrivate::deleteTLSysExtra()
                 context->deleteQGLContext();
             }
         }
+        setWinId(0);
         delete extra->topextra->platformWindow;
         extra->topextra->platformWindow = 0;
         extra->topextra->backingStore.destroy();
