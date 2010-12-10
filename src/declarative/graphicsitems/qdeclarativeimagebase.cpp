@@ -146,6 +146,26 @@ void QDeclarativeImageBase::setCached(bool cached)
         load();
 }
 
+void QDeclarativeImageBase::setMirror(bool mirror)
+{
+    Q_D(QDeclarativeImageBase);
+    if (mirror == d->mirror)
+        return;
+
+    d->mirror = mirror;
+
+    if (isComponentComplete())
+        update();
+
+    emit mirrorChanged();
+}
+
+bool QDeclarativeImageBase::mirror() const
+{
+    Q_D(const QDeclarativeImageBase);
+    return d->mirror;
+}
+
 void QDeclarativeImageBase::load()
 {
     Q_D(QDeclarativeImageBase);

@@ -86,6 +86,16 @@ QT_BEGIN_NAMESPACE
     \sa BorderImage, Image
 */
 
+/*!
+    \qmlproperty bool AnimatedImage::mirror
+    \since Quick 1.1
+
+    This property holds whether the image should be horizontally inverted
+    (effectively displaying a mirrored image).
+
+    The default value is false.
+*/
+
 QDeclarativeAnimatedImage::QDeclarativeAnimatedImage(QDeclarativeItem *parent)
     : QDeclarativeImage(*(new QDeclarativeAnimatedImagePrivate), parent)
 {
@@ -126,7 +136,7 @@ void QDeclarativeAnimatedImage::setPaused(bool pause)
   \qmlproperty bool AnimatedImage::playing
   This property holds whether the animated image is playing.
 
-  By defaults, this property is true, meaning that the animation
+  By default, this property is true, meaning that the animation
   will start playing immediately.
 */
 bool QDeclarativeAnimatedImage::isPlaying() const

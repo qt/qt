@@ -79,6 +79,8 @@ private slots:
     void resized();
     void preserveAspectRatio();
     void smooth();
+    void mirror();
+    void mirror_data();
     void svg();
     void geometry();
     void geometry_data();
@@ -268,6 +270,90 @@ void tst_qdeclarativeimage::smooth()
     QCOMPARE(obj->fillMode(), QDeclarativeImage::Stretch);
 
     delete obj;
+}
+
+void tst_qdeclarativeimage::mirror()
+{
+    QFETCH(int, fillMode);
+
+    qreal width = 300;
+    qreal height = 250;
+
+    QString src = QUrl::fromLocalFile(SRCDIR "/data/heart200.png").toString();
+    QString componentStr = "import QtQuick 1.0\nImage { source: \"" + src + "\"; }";
+
+    QDeclarativeComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
+    QVERIFY(obj != 0);
+
+    obj->setProperty("width", width);
+    obj->setProperty("height", height);
+    obj->setFillMode((QDeclarativeImage::FillMode)fillMode);
+    obj->setProperty("mirror", true);
+
+    QGraphicsScene scene;
+    scene.addItem(qobject_cast<QGraphicsObject *>(obj));
+    QPixmap screenshot(width, height);
+    screenshot.fill();
+    QPainter p_screenshot(&screenshot);
+    scene.render(&p_screenshot, QRect(0, 0, width, height), QRect(0, 0, width, height));
+
+    QPixmap srcPixmap;
+    QVERIFY(srcPixmap.load(SRCDIR "/data/heart200.png"));
+
+    QPixmap expected(width, height);
+    expected.fill();
+    QPainter p_e(&expected);
+    QTransform transform;
+    transform.translate(width, 0).scale(-1, 1.0);
+    p_e.setTransform(transform);
+
+    switch (fillMode) {
+        case QDeclarativeImage::Stretch:
+            p_e.drawPixmap(QRect(0, 0, width, height), srcPixmap, QRect(0, 0, srcPixmap.width(), srcPixmap.height()));
+            break;
+        case QDeclarativeImage::PreserveAspectFit:
+            p_e.drawPixmap(QRect(25, 0, width / (width/height), height), srcPixmap, QRect(0, 0, srcPixmap.width(), srcPixmap.height()));
+            break;
+        case QDeclarativeImage::PreserveAspectCrop:
+        {
+            qreal ratio = width/srcPixmap.width(); // width is the longer side
+            QRect rect(0, 0, srcPixmap.width()*ratio, srcPixmap.height()*ratio);
+            rect.moveCenter(QRect(0, 0, width, height).center());
+            p_e.drawPixmap(rect, srcPixmap, QRect(0, 0, srcPixmap.width(), srcPixmap.height()));
+            break;
+        }
+        case QDeclarativeImage::Tile:
+            p_e.drawTiledPixmap(QRect(0, 0, width, height), srcPixmap);
+            break;
+        case QDeclarativeImage::TileVertically:
+            transform.scale(width / srcPixmap.width(), 1.0);
+            p_e.setTransform(transform);
+            p_e.drawTiledPixmap(QRect(0, 0, width, height), srcPixmap);
+            break;
+        case QDeclarativeImage::TileHorizontally:
+            transform.scale(1.0, height / srcPixmap.height());
+            p_e.setTransform(transform);
+            p_e.drawTiledPixmap(QRect(0, 0, width, height), srcPixmap);
+            break;
+    }
+
+    QCOMPARE(screenshot, expected);
+
+    delete obj;
+}
+
+void tst_qdeclarativeimage::mirror_data()
+{
+    QTest::addColumn<int>("fillMode");
+
+    QTest::newRow("Stretch") << int(QDeclarativeImage::Stretch);
+    QTest::newRow("PreserveAspectFit") << int(QDeclarativeImage::PreserveAspectFit);
+    QTest::newRow("PreserveAspectCrop") << int(QDeclarativeImage::PreserveAspectCrop);
+    QTest::newRow("Tile") << int(QDeclarativeImage::Tile);
+    QTest::newRow("TileVertically") << int(QDeclarativeImage::TileVertically);
+    QTest::newRow("TileHorizontally") << int(QDeclarativeImage::TileHorizontally);
 }
 
 void tst_qdeclarativeimage::svg()

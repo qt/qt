@@ -200,6 +200,16 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
 */
 
 /*!
+    \qmlproperty bool BorderImage::mirror
+    \since Quick 1.1
+
+    This property holds whether the image should be horizontally inverted
+    (effectively displaying a mirrored image).
+
+    The default value is false.
+*/
+
+/*!
     \qmlproperty url BorderImage::source
 
     This property holds the URL that refers to the source image.
@@ -534,8 +544,15 @@ void QDeclarativeBorderImage::paint(QPainter *p, const QStyleOptionGraphicsItem 
 
     bool oldAA = p->testRenderHint(QPainter::Antialiasing);
     bool oldSmooth = p->testRenderHint(QPainter::SmoothPixmapTransform);
+    QTransform oldTransform;
     if (d->smooth)
         p->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
+    if (d->mirror) {
+        oldTransform = p->transform();
+        QTransform mirror;
+        mirror.translate(d->width(), 0).scale(-1, 1.0);
+        p->setWorldTransform(mirror * oldTransform);
+    }
 
     const QDeclarativeScaleGrid *border = d->getScaleGrid();
     int left = border->left();
@@ -561,6 +578,8 @@ void QDeclarativeBorderImage::paint(QPainter *p, const QStyleOptionGraphicsItem 
         p->setRenderHint(QPainter::Antialiasing, oldAA);
         p->setRenderHint(QPainter::SmoothPixmapTransform, oldSmooth);
     }
+    if (d->mirror)
+        p->setWorldTransform(oldTransform);
 }
 
 QT_END_NAMESPACE

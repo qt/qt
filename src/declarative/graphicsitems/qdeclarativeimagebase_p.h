@@ -60,6 +60,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeImageBase : public QDeclarativeItem
     Q_PROPERTY(bool asynchronous READ asynchronous WRITE setAsynchronous NOTIFY asynchronousChanged)
     Q_PROPERTY(bool cached READ cached WRITE setCached NOTIFY cachedChanged) // ### VERSIONING: Only in QtQuick 1.1
     Q_PROPERTY(QSize sourceSize READ sourceSize WRITE setSourceSize NOTIFY sourceSizeChanged)
+    Q_PROPERTY(bool mirror READ mirror WRITE setMirror NOTIFY mirrorChanged) // ### VERSIONING: Only in QtQuick 1.1
 
 public:
     ~QDeclarativeImageBase();
@@ -79,6 +80,9 @@ public:
     virtual void setSourceSize(const QSize&);
     QSize sourceSize() const;
 
+    virtual void setMirror(bool mirror);
+    bool mirror() const;
+
 Q_SIGNALS:
     void sourceChanged(const QUrl &);
     void sourceSizeChanged();
@@ -86,6 +90,7 @@ Q_SIGNALS:
     void progressChanged(qreal progress);
     void asynchronousChanged();
     void cachedChanged();
+    void mirrorChanged();
 
 protected:
     virtual void load();

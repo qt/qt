@@ -43,6 +43,8 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QDir>
+#include <QGraphicsScene>
+#include <QPainter>
 
 #include <QtDeclarative/qdeclarativeengine.h>
 #include <QtDeclarative/qdeclarativecomponent.h>
@@ -77,6 +79,7 @@ private slots:
     void clearSource();
     void resized();
     void smooth();
+    void mirror();
     void tileModes();
     void sciSource();
     void sciSource_data();
@@ -214,6 +217,37 @@ void tst_qdeclarativeborderimage::smooth()
     QCOMPARE(obj->smooth(), true);
     QCOMPARE(obj->horizontalTileMode(), QDeclarativeBorderImage::Stretch);
     QCOMPARE(obj->verticalTileMode(), QDeclarativeBorderImage::Stretch);
+
+    delete obj;
+}
+
+void tst_qdeclarativeborderimage::mirror()
+{
+    QString componentStr = "import QtQuick 1.0\nBorderImage { source: \"" SRCDIR "/data/heart200.png\"; smooth: true; width: 300; height: 300; border { top: 50; right: 50; bottom: 50; left: 50 } }";
+    QDeclarativeComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeBorderImage *obj = qobject_cast<QDeclarativeBorderImage*>(component.create());
+    QVERIFY(obj != 0);
+
+    int width = obj->property("width").toInt();
+    int height = obj->property("height").toInt();
+
+    QGraphicsScene scene;
+    scene.addItem(qobject_cast<QGraphicsObject *>(obj));
+    QPixmap screenshot(width, height);
+    screenshot.fill();
+    QPainter p_screenshot(&screenshot);
+    scene.render(&p_screenshot, QRect(0, 0, width, height), QRect(0, 0, width, height));
+
+    QTransform transform;
+    transform.translate(width, 0).scale(-1, 1.0);
+    QPixmap expected = screenshot.transformed(transform);
+
+    obj->setProperty("mirror", true);
+    p_screenshot.fillRect(QRect(0, 0, width, height), Qt::white);
+    scene.render(&p_screenshot, QRect(0, 0, width, height), QRect(0, 0, width, height));
+
+    QCOMPARE(screenshot, expected);
 
     delete obj;
 }
