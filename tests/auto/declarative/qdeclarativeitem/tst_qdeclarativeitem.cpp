@@ -65,6 +65,7 @@ private slots:
     void keys();
     void keysProcessingOrder();
     void keyNavigation();
+    void keyNavigation_skipNotVisible();
     void smooth();
     void clip();
     void mapCoordinates();
@@ -435,6 +436,84 @@ void tst_QDeclarativeItem::keyNavigation()
     QVERIFY(key.isAccepted());
 
     item = findItem<QDeclarativeItem>(canvas->rootObject(), "item2");
+    QVERIFY(item);
+    QVERIFY(item->hasActiveFocus());
+
+    // backtab
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Backtab, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+
+    item = findItem<QDeclarativeItem>(canvas->rootObject(), "item1");
+    QVERIFY(item);
+    QVERIFY(item->hasActiveFocus());
+
+    delete canvas;
+}
+
+void tst_QDeclarativeItem::keyNavigation_skipNotVisible()
+{
+    QDeclarativeView *canvas = new QDeclarativeView(0);
+    canvas->setFixedSize(240,320);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/keynavigationtest.qml"));
+    canvas->show();
+    qApp->processEvents();
+
+    QEvent wa(QEvent::WindowActivate);
+    QApplication::sendEvent(canvas, &wa);
+    QFocusEvent fe(QEvent::FocusIn);
+    QApplication::sendEvent(canvas, &fe);
+
+    QDeclarativeItem *item = findItem<QDeclarativeItem>(canvas->rootObject(), "item1");
+    QVERIFY(item);
+    QVERIFY(item->hasActiveFocus());
+
+    // Set item 2 to not visible
+    item = findItem<QDeclarativeItem>(canvas->rootObject(), "item2");
+    QVERIFY(item);
+    item->setVisible(false);
+    QVERIFY(!item->isVisible());
+
+    // right
+    QKeyEvent key(QEvent::KeyPress, Qt::Key_Right, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+
+    item = findItem<QDeclarativeItem>(canvas->rootObject(), "item1");
+    QVERIFY(item);
+    QVERIFY(item->hasActiveFocus());
+
+    // tab
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Tab, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+
+    item = findItem<QDeclarativeItem>(canvas->rootObject(), "item3");
+    QVERIFY(item);
+    QVERIFY(item->hasActiveFocus());
+
+    // backtab
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Backtab, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+
+    item = findItem<QDeclarativeItem>(canvas->rootObject(), "item1");
+    QVERIFY(item);
+    QVERIFY(item->hasActiveFocus());
+
+    //Set item 3 to not visible
+    item = findItem<QDeclarativeItem>(canvas->rootObject(), "item3");
+    QVERIFY(item);
+    item->setVisible(false);
+    QVERIFY(!item->isVisible());
+
+    // tab
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Tab, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+
+    item = findItem<QDeclarativeItem>(canvas->rootObject(), "item4");
     QVERIFY(item);
     QVERIFY(item->hasActiveFocus());
 

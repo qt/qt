@@ -444,6 +444,11 @@ void QDeclarativeItemKeyFilter::componentComplete()
     \c KeyNavigation.BeforeItem allows the event to be used for key navigation
     before the item, rather than after.
 
+    If item to which the focus is switching is not enabled or visible, an attempt will
+    be made to skip this item and focus on the next. This is possible if there are
+    a chain of items with the same KeyNavigation handler. If multiple items in a row are not enabled
+    or visible, they will also be skipped.
+
     \sa {Keys}{Keys attached property}
 */
 
@@ -452,10 +457,12 @@ void QDeclarativeItemKeyFilter::componentComplete()
     \qmlproperty Item KeyNavigation::right
     \qmlproperty Item KeyNavigation::up
     \qmlproperty Item KeyNavigation::down
+    \qmlproperty Item KeyNavigation::tab
+    \qmlproperty Item KeyNavigation::backtab
 
     These properties hold the item to assign focus to
-    when Key_Left, Key_Right, Key_Up or Key_Down are
-    pressed.
+    when Key_Left, Key_Right, Key_Up, Key_Down, Key_Tab or Key_BackTab
+    are pressed.
 */
 
 QDeclarativeKeyNavigationAttached::QDeclarativeKeyNavigationAttached(QObject *parent)
@@ -603,37 +610,37 @@ void QDeclarativeKeyNavigationAttached::keyPressed(QKeyEvent *event, bool post)
     switch(event->key()) {
     case Qt::Key_Left:
         if (d->left) {
-            d->left->setFocus(true);
+            setFocusNavigation(d->left, "left");
             event->accept();
         }
         break;
     case Qt::Key_Right:
         if (d->right) {
-            d->right->setFocus(true);
+            setFocusNavigation(d->right, "right");
             event->accept();
         }
         break;
     case Qt::Key_Up:
         if (d->up) {
-            d->up->setFocus(true);
+            setFocusNavigation(d->up, "up");
             event->accept();
         }
         break;
     case Qt::Key_Down:
         if (d->down) {
-            d->down->setFocus(true);
+            setFocusNavigation(d->down, "down");
             event->accept();
         }
         break;
     case Qt::Key_Tab:
         if (d->tab) {
-            d->tab->setFocus(true);
+            setFocusNavigation(d->tab, "tab");
             event->accept();
         }
         break;
     case Qt::Key_Backtab:
         if (d->backtab) {
-            d->backtab->setFocus(true);
+            setFocusNavigation(d->backtab, "backtab");
             event->accept();
         }
         break;
@@ -690,6 +697,29 @@ void QDeclarativeKeyNavigationAttached::keyReleased(QKeyEvent *event, bool post)
     }
 
     if (!event->isAccepted()) QDeclarativeItemKeyFilter::keyReleased(event, post);
+}
+
+void QDeclarativeKeyNavigationAttached::setFocusNavigation(QDeclarativeItem *currentItem, const char *dir)
+{
+    QDeclarativeItem *initialItem = currentItem;
+    bool isNextItem = false;
+    do {
+        isNextItem = false;
+        if (currentItem->isVisible() && currentItem->isEnabled()) {
+            currentItem->setFocus(true);
+        } else {
+            QObject *attached =
+                qmlAttachedPropertiesObject<QDeclarativeKeyNavigationAttached>(currentItem, false);
+            if (attached) {
+                QDeclarativeItem *tempItem = qvariant_cast<QDeclarativeItem*>(attached->property(dir));
+                if (tempItem) {
+                    currentItem = tempItem;
+                    isNextItem = true;
+                }
+            }
+        }
+    }
+    while (currentItem != initialItem && isNextItem);
 }
 
 /*!

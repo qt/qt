@@ -411,6 +411,7 @@ Q_SIGNALS:
 private:
     virtual void keyPressed(QKeyEvent *event, bool post);
     virtual void keyReleased(QKeyEvent *event, bool post);
+    void setFocusNavigation(QDeclarativeItem *currentItem, const char *dir);
 };
 
 class QDeclarativeKeysAttachedPrivate : public QObjectPrivate
