@@ -426,6 +426,8 @@ void QMetaObject::removeGuard(QObject **ptr)
     if (!hash || hash->isEmpty())
         return;
     QMutexLocker locker(guardHashLock());
+    if (!*ptr) //check again, under the lock
+        return;
     GuardHash::iterator it = hash->find(*ptr);
     const GuardHash::iterator end = hash->end();
     bool more = false; //if the QObject has more pointer attached to it.
