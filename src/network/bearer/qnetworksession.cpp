@@ -39,11 +39,12 @@
 **
 ****************************************************************************/
 
+#include "qnetworksession.h"
+#include "qbearerengine_p.h"
+
 #include <QEventLoop>
 #include <QTimer>
 
-#include "qnetworksession.h"
-#include "qbearerengine_p.h"
 #include "qnetworkconfigmanager_p.h"
 #include "qnetworksession_p.h"
 
@@ -165,7 +166,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QNetworkSession::preferredConfigurationChanged(const QNetworkConfiguration& config, bool isSeamless)
+    \fn void QNetworkSession::preferredConfigurationChanged(const QNetworkConfiguration &config, bool isSeamless)
 
     This signal is emitted when the preferred configuration/access point for the
     session changes. Only sessions which are based on service network configurations
@@ -224,30 +225,29 @@ QT_BEGIN_NAMESPACE
 
     \sa QNetworkConfiguration
 */
-QNetworkSession::QNetworkSession(const QNetworkConfiguration& connectionConfig, QObject* parent)
-:   QObject(parent), d(0)
+QNetworkSession::QNetworkSession(const QNetworkConfiguration &connectionConfig, QObject *parent)
+    : QObject(parent), d(0)
 {
     // invalid configuration
-    if (connectionConfig.identifier().isNull())
-        return;
-
-    foreach (QBearerEngine *engine, qNetworkConfigurationManagerPrivate()->engines()) {
-        if (engine->hasIdentifier(connectionConfig.identifier())) {
-            d = engine->createSessionBackend();
-            d->q = this;
-            d->publicConfig = connectionConfig;
-            d->syncStateWithInterface();
-            connect(d, SIGNAL(quitPendingWaitsForOpened()), this, SIGNAL(opened()));
-            connect(d, SIGNAL(error(QNetworkSession::SessionError)),
-                    this, SIGNAL(error(QNetworkSession::SessionError)));
-            connect(d, SIGNAL(stateChanged(QNetworkSession::State)),
-                    this, SIGNAL(stateChanged(QNetworkSession::State)));
-            connect(d, SIGNAL(closed()), this, SIGNAL(closed()));
-            connect(d, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool)),
-                    this, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool)));
-            connect(d, SIGNAL(newConfigurationActivated()),
-                    this, SIGNAL(newConfigurationActivated()));
-            break;
+    if (!connectionConfig.identifier().isEmpty()) {
+        foreach (QBearerEngine *engine, qNetworkConfigurationManagerPrivate()->engines()) {
+            if (engine->hasIdentifier(connectionConfig.identifier())) {
+                d = engine->createSessionBackend();
+                d->q = this;
+                d->publicConfig = connectionConfig;
+                d->syncStateWithInterface();
+                connect(d, SIGNAL(quitPendingWaitsForOpened()), this, SIGNAL(opened()));
+                connect(d, SIGNAL(error(QNetworkSession::SessionError)),
+                        this, SIGNAL(error(QNetworkSession::SessionError)));
+                connect(d, SIGNAL(stateChanged(QNetworkSession::State)),
+                        this, SIGNAL(stateChanged(QNetworkSession::State)));
+                connect(d, SIGNAL(closed()), this, SIGNAL(closed()));
+                connect(d, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool)),
+                        this, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool)));
+                connect(d, SIGNAL(newConfigurationActivated()),
+                        this, SIGNAL(newConfigurationActivated()));
+                break;
+            }
         }
     }
 }
@@ -320,7 +320,7 @@ bool QNetworkSession::waitForOpened(int msecs)
                      loop, SLOT(quit()));
 
     //final call
-    if (msecs>=0)
+    if (msecs >= 0)
         QTimer::singleShot(msecs, loop, SLOT(quit()));
 
     loop->exec();
@@ -471,7 +471,7 @@ QString QNetworkSession::errorString() const
             \code
                     QNetworkConfigurationManager mgr;
                     QNetworkConfiguration ap = mgr.defaultConfiguration();
-                    QNetworkSession* session = new QNetworkSession(ap);
+                    QNetworkSession *session = new QNetworkSession(ap);
                     ... //code activates session
 
                     QString ident = session->sessionProperty("ActiveConfiguration").toString();
@@ -516,20 +516,13 @@ QString QNetworkSession::errorString() const
                has no effect for sessions that do not require polling.
     \endtable
 */
-QVariant QNetworkSession::sessionProperty(const QString& key) const
+QVariant QNetworkSession::sessionProperty(const QString &key) const
 {
-    if (!d)
+    if (!d || !d->publicConfig.isValid())
         return QVariant();
 
-    if (!d->publicConfig.isValid())
-        return QVariant();
-
-    if (key == QLatin1String("ActiveConfiguration")) {
-        if (!d->isOpen)
-            return QString();
-        else
-            return d->activeConfig.identifier();
-    }
+    if (key == QLatin1String("ActiveConfiguration"))
+        return d->isOpen ? d->activeConfig.identifier() : QString();
 
     if (key == QLatin1String("UserChoiceConfiguration")) {
         if (!d->isOpen || d->publicConfig.type() != QNetworkConfiguration::UserChoice)
@@ -552,7 +545,7 @@ QVariant QNetworkSession::sessionProperty(const QString& key) const
     Note that the \e UserChoiceConfiguration and \e ActiveConfiguration
     properties are read only and cannot be changed using this method.
 */
-void QNetworkSession::setSessionProperty(const QString& key, const QVariant& value)
+void QNetworkSession::setSessionProperty(const QString &key, const QVariant &value)
 {
     if (!d)
         return;
@@ -586,7 +579,7 @@ void QNetworkSession::migrate()
 */
 void QNetworkSession::ignore()
 {
-    // Needed on at least Symbian platform: the roaming must be explicitly 
+    // Needed on at least Symbian platform: the roaming must be explicitly
     // ignore()'d or migrate()'d
     if (d)
         d->ignore();
@@ -680,32 +673,34 @@ quint64 QNetworkSession::activeTime() const
 void QNetworkSession::connectNotify(const char *signal)
 {
     QObject::connectNotify(signal);
-    //check for preferredConfigurationChanged() signal connect notification
-    //This is not required on all platforms
+
     if (!d)
         return;
 
-    if (qstrcmp(signal, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool))) == 0)
+    //check for preferredConfigurationChanged() signal connect notification
+    //This is not required on all platforms
+    if (QLatin1String(signal) == SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool)))
         d->setALREnabled(true);
 }
 
 /*!
     \internal
 
-    This function is called when the client disconnects from the preferredConfigurationChanged()
-    signal.
+    This function is called when the client disconnects from the
+    preferredConfigurationChanged() signal.
 
     \sa connectNotify()
 */
 void QNetworkSession::disconnectNotify(const char *signal)
 {
     QObject::disconnectNotify(signal);
-    //check for preferredConfigurationChanged() signal disconnect notification
-    //This is not required on all platforms
+
     if (!d)
         return;
 
-    if (qstrcmp(signal, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool))) == 0)
+    //check for preferredConfigurationChanged() signal disconnect notification
+    //This is not required on all platforms
+    if (QLatin1String(signal) == SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool)))
         d->setALREnabled(false);
 }
 

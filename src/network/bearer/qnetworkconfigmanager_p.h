@@ -91,17 +91,22 @@ public:
     void enablePolling();
     void disablePolling();
 
-public slots:
+public Q_SLOTS:
     void updateConfigurations();
 
 Q_SIGNALS:
-    void configurationAdded(const QNetworkConfiguration& config);
-    void configurationRemoved(const QNetworkConfiguration& config);
+    void configurationAdded(const QNetworkConfiguration &config);
+    void configurationRemoved(const QNetworkConfiguration &config);
+    void configurationChanged(const QNetworkConfiguration &config);
     void configurationUpdateComplete();
-    void configurationChanged(const QNetworkConfiguration& config);
     void onlineStateChanged(bool isOnline);
 
-    void abort();
+private Q_SLOTS:
+    void configurationAdded(QNetworkConfigurationPrivatePointer ptr);
+    void configurationRemoved(QNetworkConfigurationPrivatePointer ptr);
+    void configurationChanged(QNetworkConfigurationPrivatePointer ptr);
+
+    void pollEngines();
 
 private:
     QTimer *pollTimer;
@@ -112,19 +117,12 @@ private:
 
     QSet<QString> onlineConfigurations;
 
-    QSet<int> pollingEngines;
-    QSet<int> updatingEngines;
+    QSet<QBearerEngine *> pollingEngines;
+    QSet<QBearerEngine *> updatingEngines;
     int forcedPolling;
     bool updating;
 
     bool firstUpdate;
-
-private Q_SLOTS:
-    void configurationAdded(QNetworkConfigurationPrivatePointer ptr);
-    void configurationRemoved(QNetworkConfigurationPrivatePointer ptr);
-    void configurationChanged(QNetworkConfigurationPrivatePointer ptr);
-
-    void pollEngines();
 };
 
 Q_NETWORK_EXPORT QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate();
@@ -133,4 +131,4 @@ QT_END_NAMESPACE
 
 #endif // QT_NO_BEARERMANAGEMENT
 
-#endif //QNETWORKCONFIGURATIONMANAGERPRIVATE_H
+#endif // QNETWORKCONFIGURATIONMANAGERPRIVATE_H

@@ -93,4 +93,4 @@ QT_END_HEADER
 
 #endif // QT_NO_BEARERMANAGEMENT
 
-#endif
+#endif // QBEARERPLUGIN_P_H
