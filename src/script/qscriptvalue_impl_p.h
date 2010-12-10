@@ -711,12 +711,15 @@ inline void QScriptValuePrivate::setProperty(v8::Handle<v8::String> name, QScrip
     if (!value->isValid()) {
         // Remove the property.
         v8::HandleScope handleScope;
+        v8::TryCatch tryCatch;
         v8::Handle<v8::Object> recv(v8::Object::Cast(*m_value));
         if (attribs & QScriptValue::PropertyGetter && !(attribs & QScriptValue::PropertySetter)) {
             v8::Local<v8::Value> setter = engine()->originalGlobalObject()->getOwnPropertyDescriptor(recv, name)->Get(v8::String::New("set"));
             if (!setter.IsEmpty() && !setter->IsUndefined()) {
                 recv->Delete(name);
                 engine()->originalGlobalObject()->defineGetterOrSetter(recv, name, setter, QScriptValue::PropertySetter);
+                if (tryCatch.HasCaught())
+                    engine()->setException(tryCatch.Exception(), tryCatch.Message());
                 return;
             }
         } else if (attribs & QScriptValue::PropertySetter && !(attribs & QScriptValue::PropertyGetter)) {
@@ -724,10 +727,14 @@ inline void QScriptValuePrivate::setProperty(v8::Handle<v8::String> name, QScrip
             if (!getter.IsEmpty() && !getter->IsUndefined()) {
                 recv->Delete(name);
                 engine()->originalGlobalObject()->defineGetterOrSetter(recv, name, getter, QScriptValue::PropertyGetter);
+                if (tryCatch.HasCaught())
+                    engine()->setException(tryCatch.Exception(), tryCatch.Message());
                 return;
             }
         }
         recv->Delete(name);
+        if (tryCatch.HasCaught())
+            engine()->setException(tryCatch.Exception(), tryCatch.Message());
         return;
     }
 
@@ -738,11 +745,14 @@ inline void QScriptValuePrivate::setProperty(v8::Handle<v8::String> name, QScrip
         return;
     }
 
+    v8::TryCatch tryCatch;
     if (attribs & (QScriptValue::PropertyGetter | QScriptValue::PropertySetter)) {
         engine()->originalGlobalObject()->defineGetterOrSetter(*this, name, value->m_value, attribs);
     } else {
         v8::Object::Cast(*m_value)->Set(name, value->m_value, v8::PropertyAttribute(attribs & QScriptConverter::PropertyAttributeMask));
     }
+    if (tryCatch.HasCaught())
+        engine()->setException(tryCatch.Exception(), tryCatch.Message());
 }
 
 inline void QScriptValuePrivate::setProperty(quint32 index, QScriptValuePrivate* value, uint attribs)
@@ -766,7 +776,10 @@ inline void QScriptValuePrivate::setProperty(quint32 index, QScriptValuePrivate*
     if (!value->isValid()) {
         // Remove the property.
         v8::HandleScope handleScope;
+        v8::TryCatch tryCatch;
         v8::Object::Cast(*m_value)->Delete(index);
+        if (tryCatch.HasCaught())
+            engine()->setException(tryCatch.Exception(), tryCatch.Message());
         return;
     }
 
@@ -776,7 +789,10 @@ inline void QScriptValuePrivate::setProperty(quint32 index, QScriptValuePrivate*
     }
 
     v8::HandleScope handleScope;
+    v8::TryCatch tryCatch;
     v8::Object::Cast(*m_value)->Set(index, value->m_value);
+    if (tryCatch.HasCaught())
+        engine()->setException(tryCatch.Exception(), tryCatch.Message());
 }
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(const QString& name, const QScriptValue::ResolveFlags& mode) const
@@ -820,8 +836,11 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(T n
 
     v8::TryCatch tryCatch;
     v8::Handle<v8::Value> result = self->Get(name);
-    // FIXME: Result may be empty if a property accessor throw an exception, but for some reasons
-    // tryCatch.HasCaught() returns false.
+    if (tryCatch.HasCaught()) {
+        result = tryCatch.Exception();
+        engine()->setException(result, tryCatch.Message());
+        return new QScriptValuePrivate(engine(), result);
+    }
     if (result.IsEmpty() || (result->IsUndefined() && !self->Has(name))) {
         // In QtScript we make a distinction between a property that exists and has value undefined,
         // and a property that doesn't exist; in the latter case, we should return an invalid value.

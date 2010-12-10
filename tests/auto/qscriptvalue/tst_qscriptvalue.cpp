@@ -2001,6 +2001,30 @@ void tst_QScriptValue::getSetProperty_gettersAndSettersThrowError()
     QVERIFY(ret.isError());
     QVERIFY(eng.hasUncaughtException());
     QVERIFY(ret.strictlyEquals(eng.uncaughtException()));
+    QCOMPARE(ret.toString(), QLatin1String("Error: get foo"));
+    eng.evaluate("Object"); // clear exception state...
+    QVERIFY(!eng.hasUncaughtException());
+    object.setProperty("foo", str);
+    QVERIFY(eng.hasUncaughtException());
+    QCOMPARE(eng.uncaughtException().toString(), QLatin1String("Error: set foo"));
+}
+
+void tst_QScriptValue::getSetProperty_gettersAndSettersThrowError2()
+{
+    // getter/setter that throws an error (from js function)
+    QScriptEngine eng;
+    QScriptValue str = QScriptValue(&eng, "bar");
+
+    eng.evaluate("o = new Object; "
+                 "o.__defineGetter__('foo', function() { throw new Error('get foo') }); "
+                 "o.__defineSetter__('foo', function() { throw new Error('set foo') }); ");
+    QScriptValue object = eng.evaluate("o");
+    QVERIFY(!eng.hasUncaughtException());
+    QScriptValue ret = object.property("foo");
+    QVERIFY(ret.isError());
+    QVERIFY(eng.hasUncaughtException());
+    QVERIFY(ret.strictlyEquals(eng.uncaughtException()));
+    QCOMPARE(ret.toString(), QLatin1String("Error: get foo"));
     eng.evaluate("Object"); // clear exception state...
     QVERIFY(!eng.hasUncaughtException());
     object.setProperty("foo", str);

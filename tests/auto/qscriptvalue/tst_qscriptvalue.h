@@ -126,6 +126,7 @@ private slots:
     void getSetProperty_twoEngines();
     void getSetProperty_gettersAndSetters();
     void getSetProperty_gettersAndSettersThrowError();
+    void getSetProperty_gettersAndSettersThrowError2();
     void getSetProperty_gettersAndSettersOnNative();
     void getSetProperty_gettersAndSettersOnGlobalObject();
     void getSetProperty_gettersAndSettersChange();
