@@ -1,4 +1,5 @@
 TEMPLATE = app
+QT =
 TARGET =
 DEPENDPATH += .
 INCLUDEPATH += .
