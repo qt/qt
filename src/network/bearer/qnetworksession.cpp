@@ -313,19 +313,16 @@ bool QNetworkSession::waitForOpened(int msecs)
     if (d->state != Connecting)
         return false;
 
-    QEventLoop* loop = new QEventLoop(this);
-    QObject::connect(d, SIGNAL(quitPendingWaitsForOpened()),
-                     loop, SLOT(quit()));
-    QObject::connect(this, SIGNAL(error(QNetworkSession::SessionError)),
-                     loop, SLOT(quit()));
+    QEventLoop loop;
+    QObject::connect(d, SIGNAL(quitPendingWaitsForOpened()), &loop, SLOT(quit()));
+    QObject::connect(this, SIGNAL(error(QNetworkSession::SessionError)), &loop, SLOT(quit()));
 
     //final call
     if (msecs >= 0)
-        QTimer::singleShot(msecs, loop, SLOT(quit()));
+        QTimer::singleShot(msecs, &loop, SLOT(quit()));
 
-    loop->exec();
-    loop->disconnect();
-    loop->deleteLater();
+    // enter the event loop and wait for opened/error/timeout
+    loop.exec(QEventLoop::ExcludeUserInputEvents | QEventLoop::WaitForMoreEvents);
 
     return d->isOpen;
 }
