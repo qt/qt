@@ -88,9 +88,11 @@ public:
     QNetworkConfiguration defaultConfiguration() const;
     QList<QNetworkConfiguration> allConfigurations(QNetworkConfiguration::StateFlags flags = 0) const;
     QNetworkConfiguration configurationFromIdentifier(const QString &identifier) const;
-    void updateConfigurations();
 
     bool isOnline() const;
+
+public Q_SLOTS:
+    void updateConfigurations();
 
 Q_SIGNALS:
     void configurationAdded(const QNetworkConfiguration &config);
