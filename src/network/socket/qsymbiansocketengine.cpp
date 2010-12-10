@@ -188,6 +188,7 @@ bool QSymbianSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType so
     else
         err = nativeSocket.Open(socketServer, family, type, protocol); //TODO: FIXME - deprecated API, make sure we always have a connection instead
 
+    //TODO: combine error handling with setError
     if (err != KErrNone) {
         switch (err) {
         case KErrNotSupported:
@@ -374,6 +375,12 @@ bool QSymbianSocketEngine::initialize(int socketDescriptor, QAbstractSocket::Soc
                 d->BroadcastingInitFailedErrorString);
             close();
             return false;
+        }
+
+        // Make sure we receive out-of-band data
+        if (socketType == QAbstractSocket::TcpSocket
+            && !setOption(ReceiveOutOfBandData, 1)) {
+            qWarning("QNativeSocketEngine::initialize unable to inline out-of-band data");
         }
     }
 
@@ -566,11 +573,11 @@ bool QSymbianSocketEngine::connectToHost(const QHostAddress &addr, quint16 port)
 
     TInetAddr nativeAddr;
     d->setPortAndAddress(nativeAddr, port, addr);
-    //TODO: async connect with active object - from here to end of function is a mess
     TRequestStatus status;
     d->nativeSocket.Connect(nativeAddr, status);
     User::WaitForRequest(status);
     TInt err = status.Int();
+    //TODO: combine with setError(int)
     if (err) {
         switch (err) {
         case KErrWouldBlock:
@@ -674,7 +681,8 @@ bool QSymbianSocketEngine::listen()
     // for a mobile platform
     TInt err = d->nativeSocket.Listen(50);
     if (err) {
-        switch (errno) {
+        //TODO: combine with setError(int)
+        switch (err) {
         case KErrInUse:
             d->setError(QAbstractSocket::AddressInUseError,
                      d->PortInuseErrorString);
@@ -702,7 +710,6 @@ int QSymbianSocketEngine::accept()
 {
     Q_D(QSymbianSocketEngine);
     RSocket blankSocket;
-    //TODO: this is unbelievably broken, needs to be properly async
     blankSocket.Open(d->socketServer);
     TRequestStatus status;
     d->nativeSocket.Accept(blankSocket, status);
@@ -717,10 +724,10 @@ int QSymbianSocketEngine::accept()
 qint64 QSymbianSocketEngine::bytesAvailable() const
 {
     Q_D(const QSymbianSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::bytesAvailable(), -1);
+    Q_CHECK_NOT_STATE(QNativeSocketEngine::bytesAvailable(), QAbstractSocket::UnconnectedState, false);
     int nbytes = 0;
     qint64 available = 0;
-    // FIXME is this the right thing also for UDP?
-    // What is expected for UDP, the length for the next packet I guess?
     TInt err = d->nativeSocket.GetOpt(KSOReadBytesPending, KSOLSocket, nbytes);
     if (err)
         return 0;
@@ -735,6 +742,9 @@ qint64 QSymbianSocketEngine::bytesAvailable() const
 bool QSymbianSocketEngine::hasPendingDatagrams() const
 {
     Q_D(const QSymbianSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::hasPendingDatagrams(), false);
+    Q_CHECK_NOT_STATE(QNativeSocketEngine::hasPendingDatagrams(), QAbstractSocket::UnconnectedState, false);
+    Q_CHECK_TYPE(QNativeSocketEngine::hasPendingDatagrams(), QAbstractSocket::UdpSocket, false);
     int nbytes;
     TInt err = d->nativeSocket.GetOpt(KSOReadBytesPending,KSOLSocket, nbytes);
     return err == KErrNone && nbytes > 0;

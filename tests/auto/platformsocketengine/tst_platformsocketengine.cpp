@@ -213,9 +213,6 @@ void tst_PlatformSocketEngine::simpleConnectToIMAP()
 //---------------------------------------------------------------------------
 void tst_PlatformSocketEngine::udpLoopbackTest()
 {
-#ifdef SYMBIAN_WINSOCK_CONNECTIVITY
-    QSKIP("Not working on Emulator without WinPCAP", SkipAll);
-#endif
     PLATFORMSOCKETENGINE udpSocket;
 
     // Initialize device #1
@@ -264,9 +261,6 @@ void tst_PlatformSocketEngine::udpLoopbackTest()
 //---------------------------------------------------------------------------
 void tst_PlatformSocketEngine::udpIPv6LoopbackTest()
 {
-#if defined(Q_OS_SYMBIAN)
-    QSKIP("Symbian: IPv6 is not yet supported", SkipAll);
-#endif
     PLATFORMSOCKETENGINE udpSocket;
 
     // Initialize device #1
@@ -695,7 +689,18 @@ void tst_PlatformSocketEngine::receiveUrgentData()
 
     // The server sends an urgent message
     msg = 'Q';
+#if defined(Q_OS_SYMBIAN)
+    RSocket sock;
+    QVERIFY(QSymbianSocketManager::instance().lookupSocket(socketDescriptor, sock));
+    TRequestStatus stat;
+    TSockXfrLength len;
+    sock.Send(TPtrC8((TUint8*)&msg,1), KSockWriteUrgent, stat, len);
+    User::WaitForRequest(stat);
+    QVERIFY(stat == KErrNone);
+    QCOMPARE(len(), 1);
+#else
     QCOMPARE(int(::send(socketDescriptor, &msg, sizeof(msg), MSG_OOB)), 1);
+#endif
 
     // The client receives the urgent message
     QVERIFY(client.waitForRead());
@@ -708,7 +713,15 @@ void tst_PlatformSocketEngine::receiveUrgentData()
     // The client sends an urgent message
     msg = 'T';
     int clientDescriptor = client.socketDescriptor();
+#if defined(Q_OS_SYMBIAN)
+    QVERIFY(QSymbianSocketManager::instance().lookupSocket(clientDescriptor, sock));
+    sock.Send(TPtrC8((TUint8*)&msg,1), KSockWriteUrgent, stat, len);
+    User::WaitForRequest(stat);
+    QVERIFY(stat == KErrNone);
+    QCOMPARE(len(), 1);
+#else
     QCOMPARE(int(::send(clientDescriptor, &msg, sizeof(msg), MSG_OOB)), 1);
+#endif
 
     // The server receives the urgent message
     QVERIFY(serverSocket.waitForRead());
