@@ -1478,7 +1478,7 @@ void QDeclarativePathView::itemsRemoved(int modelIndex, int count)
         currentChanged = true;
     } else if (d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count) {
         // current item has been removed.
-        d->currentIndex = qMin(modelIndex, d->modelCount-1);
+        d->currentIndex = qMin(modelIndex, d->modelCount-count-1);
         if (d->currentItem) {
             if (QDeclarativePathViewAttached *att = d->attached(d->currentItem))
                 att->setIsCurrentItem(true);
