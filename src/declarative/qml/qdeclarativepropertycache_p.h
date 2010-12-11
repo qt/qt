@@ -83,6 +83,7 @@ public:
                     IsConstant        = 0x00000001,
                     IsWritable        = 0x00000002,
                     IsResettable      = 0x00000004,
+                    IsAlias           = 0x00000008,
 
                     // These are mutualy exclusive
                     IsFunction        = 0x00000010,

@@ -345,7 +345,7 @@ void QGLWidgetPrivate::recreateEglSurface()
     // old surface before re-creating a new one. Note: This should not be the case as the
     // surface should be deleted before the old window id.
     if (glcx->d_func()->eglSurface != EGL_NO_SURFACE && (currentId != eglSurfaceWindowId)) {
-        qWarning("EGL surface for deleted window %lx was not destroyed", eglSurfaceWindowId);
+        qWarning("EGL surface for deleted window %lx was not destroyed", uint(eglSurfaceWindowId));
         glcx->d_func()->destroyEglSurfaceForDevice();
     }
 

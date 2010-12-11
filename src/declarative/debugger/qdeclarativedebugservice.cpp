@@ -226,9 +226,11 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
                     server->waitForConnection();
                 }
             } else {
-                qWarning(QString::fromAscii("QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
-                                            "Format is -qmljsdebugger=port:<port>[,block]").arg(
-                             appD->qmljsDebugArgumentsString()).toAscii().constData());
+                const QString message =
+                    QString::fromAscii("QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
+                                       "Format is -qmljsdebugger=port:<port>[,block]").
+                                       arg(appD->qmljsDebugArgumentsString());
+                qWarning("%s", qPrintable(message));
             }
         }
 #endif
