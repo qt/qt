@@ -127,7 +127,8 @@ private slots:
     void getSetProperty_resolveMode();
     void getSetProperty_twoEngines();
     void getSetProperty_gettersAndSetters();
-    void getSetProperty_gettersAndSettersThrowError();
+    void getSetProperty_gettersAndSettersThrowErrorNative();
+    void getSetProperty_gettersAndSettersThrowErrorJS();
     void getSetProperty_gettersAndSettersOnNative();
     void getSetProperty_gettersAndSettersOnGlobalObject();
     void getSetProperty_gettersAndSettersChange();
@@ -178,6 +179,8 @@ private slots:
     void objectId();
     void nestedObjectToVariant_data();
     void nestedObjectToVariant();
+    void propertyFlags_data();
+    void propertyFlags();
 
 
 private:
