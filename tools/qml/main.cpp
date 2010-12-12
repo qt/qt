@@ -59,6 +59,19 @@ QtMsgHandler systemMsgOutput = 0;
 static QDeclarativeViewer *openFile(const QString &fileName);
 static void showViewer(QDeclarativeViewer *viewer);
 
+QString warnings;
+void exitApp(int i)
+{
+#ifdef Q_OS_WIN
+    // Debugging output is not visible by default on Windows -
+    // therefore show modal dialog with errors instead.
+    if (!warnings.isEmpty()) {
+        QMessageBox::warning(0, QApplication::tr("Qt QML Viewer"), warnings);
+    }
+#endif
+    exit(i);
+}
+
 #if defined (Q_OS_SYMBIAN)
 #include <unistd.h>
 #include <sys/types.h>
@@ -84,19 +97,6 @@ void myMessageOutput(QtMsgType type, const char *msg)
 #else // !defined (Q_OS_SYMBIAN)
 
 QWeakPointer<LoggerWidget> logger;
-
-QString warnings;
-void exitApp(int i)
-{
-#ifdef Q_OS_WIN
-    // Debugging output is not visible by default on Windows -
-    // therefore show modal dialog with errors instead.
-    if (!warnings.isEmpty()) {
-        QMessageBox::warning(0, QApplication::tr("Qt QML Viewer"), warnings);
-    }
-#endif
-    exit(i);
-}
 
 static QAtomicInt recursiveLock(0);
 
