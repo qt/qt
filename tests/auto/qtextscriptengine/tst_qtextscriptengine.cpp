@@ -103,6 +103,7 @@ private slots:
 
     void khmer();
     void linearB();
+    void controlInSyllable_qtbug14204();
 };
 
 tst_QTextScriptEngine::tst_QTextScriptEngine()
@@ -1111,6 +1112,22 @@ void tst_QTextScriptEngine::greek()
 #endif
 }
 
+void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
+{
+    QString s;
+    s.append(QChar(0x0915));
+    s.append(QChar(0x094d));
+    s.append(QChar(0x200d));
+    s.append(QChar(0x0915));
+
+    QTextLayout layout(s);
+    QTextEngine *e = layout.d;
+    e->itemize();
+    e->shape(0);
+
+    QVERIFY(e->layoutData->items[0].num_glyphs == 2);
+    QVERIFY(e->layoutData->glyphLayout.advances_x[1] != 0);
+}
 
 QTEST_MAIN(tst_QTextScriptEngine)
 #include "tst_qtextscriptengine.moc"
