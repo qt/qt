@@ -236,6 +236,16 @@ QDeclarativeBorderImage::~QDeclarativeBorderImage()
 
     \sa QDeclarativeImageProvider
 */
+
+/*!
+    \qmlproperty QSize BorderImage::sourceSize
+
+    This property holds the actual width and height of the loaded image.
+
+    In BorderImage, this property is read-only.
+
+    \sa Image::sourceSize
+*/
 void QDeclarativeBorderImage::setSource(const QUrl &url)
 {
     Q_D(QDeclarativeBorderImage);
