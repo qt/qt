@@ -131,9 +131,7 @@ void QDeclarativeGradientStop::updateGradient()
 
     \section1 Example Usage
 
-    \beginfloatright
-    \inlineimage qml-gradient.png
-    \endfloat
+    \floatright qml-gradient.png
 
     The following example declares a \l Rectangle item with a gradient starting
     with red, blending to yellow at one third of the height of the rectangle,
@@ -217,9 +215,7 @@ void QDeclarativeGradient::doUpdate()
 
     \section1 Example Usage
 
-    \beginfloatright
-    \inlineimage declarative-rect.png
-    \endfloat
+    \floatright declarative-rect.png
 
     The following example shows the effects of some of the common properties on a
     Rectangle item, which in this case is used to create a square:
@@ -269,9 +265,7 @@ void QDeclarativeRectangle::doUpdate()
     rectangle (as documented for QRect rendering). This can cause unintended effects if
     \c border.width is 1 and the rectangle is \l{Item::clip}{clipped} by a parent item:
 
-    \beginfloatright
-    \inlineimage rect-border-width.png
-    \endfloat
+    \floatright rect-border-width.png
 
     \snippet doc/src/snippets/declarative/rectangle/rect-border-width.qml 0
 
@@ -293,9 +287,7 @@ QDeclarativePen *QDeclarativeRectangle::border()
     This property allows for the construction of simple vertical gradients.
     Other gradients may by formed by adding rotation to the rectangle.
 
-    \beginfloatleft
-    \inlineimage declarative-rect_gradient.png
-    \endfloat
+    \floatleft declarative-rect_gradient.png
 
     \snippet doc/src/snippets/declarative/rectangle/rectangle-gradient.qml rectangles
     \clearfloat
@@ -361,9 +353,7 @@ void QDeclarativeRectangle::setRadius(qreal radius)
 
     The default color is white.
 
-    \beginfloatright
-    \inlineimage rect-color.png
-    \endfloat
+    \floatright rect-color.png
 
     The following example shows rectangles with colors specified
     using hexadecimal and named color notation:
