@@ -61,7 +61,7 @@ Package {
 
             BorderImage {
                 anchors {
-                    fill: border.visible ? border : placeHolder
+                    fill: originalImage.status == Image.Ready ? border : placeHolder
                     leftMargin: -6; topMargin: -6; rightMargin: -8; bottomMargin: -8
                 }
                 source: 'images/box-shadow.png'; smooth: true
