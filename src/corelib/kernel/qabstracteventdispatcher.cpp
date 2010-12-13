@@ -132,18 +132,24 @@ void QAbstractEventDispatcherPrivate::init()
 // Allocating a timer ID involves taking the ID from
 //    X[nextFreeTimerId]
 // updating nextFreeTimerId to this value and returning the old value
+//
+// When the timer ID is allocated, its cell in the vector is unused (it's a
+// free list). As an added protection, we use the cell to store an invalid
+// (negative) value that we can later check for integrity.
+//
 // (continues below).
 int QAbstractEventDispatcherPrivate::allocateTimerId()
 {
     int timerId, newTimerId;
+    int at, *b;
     do {
         timerId = nextFreeTimerId; //.loadAcquire(); // ### FIXME Proper memory ordering semantics
 
         // which bucket are we looking in?
         int which = timerId & TimerIdMask;
         int bucket = bucketOffset(which);
-        int at = bucketIndex(bucket, which);
-        int *b = timerIds[bucket];
+        at = bucketIndex(bucket, which);
+        b = timerIds[bucket];
 
         if (!b) {
             // allocate a new bucket
@@ -157,6 +163,8 @@ int QAbstractEventDispatcherPrivate::allocateTimerId()
 
         newTimerId = prepareNewValueWithSerialNumber(timerId, b[at]);
     } while (!nextFreeTimerId.testAndSetRelaxed(timerId, newTimerId));
+
+    b[at] = -timerId;
 
     return timerId;
 }
@@ -178,6 +186,8 @@ void QAbstractEventDispatcherPrivate::releaseTimerId(int timerId)
     int bucket = bucketOffset(which);
     int at = bucketIndex(bucket, which);
     int *b = timerIds[bucket];
+
+    Q_ASSERT(b[at] == -timerId);
 
     int freeId, newTimerId;
     do {
