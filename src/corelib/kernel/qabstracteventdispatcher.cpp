@@ -49,14 +49,18 @@
 QT_BEGIN_NAMESPACE
 
 // we allow for 2^24 = 8^8 = 16777216 simultaneously running timers
-enum { NumberOfBuckets = 8, FirstBucketSize = 8 };
+enum { NumberOfBuckets = 8, FirstBucketSize = 32 };
 
 static const int BucketSize[NumberOfBuckets] =
-    { 8, 64, 512, 4096, 32768, 262144, 2097152, 16777216 - 2396744 };
+    { 32, 64, 512, 4096, 32768, 262144, 2097152, 16777216 - 2364000 };
 static const int BucketOffset[NumberOfBuckets] =
-    { 0,  8,  72,  584,  4680,  37448,  299592,  2396744 };
+    { 0,  32,  96,  608,  4704,  37448,  266848,  2364000 };
 
-static int FirstBucket[FirstBucketSize] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+static int FirstBucket[] = {
+     1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16,
+    17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32
+};
+
 static QBasicAtomicPointer<int> timerIds[NumberOfBuckets] =
     { Q_BASIC_ATOMIC_INITIALIZER(FirstBucket),
       Q_BASIC_ATOMIC_INITIALIZER(0),
