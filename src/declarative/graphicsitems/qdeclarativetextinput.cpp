@@ -361,6 +361,14 @@ void QDeclarativeTextInput::setReadOnly(bool ro)
     emit readOnlyChanged(ro);
 }
 
+/*!
+    \qmlproperty int TextInput::maximumLength
+    The maximum permitted length of the text in the TextInput.
+
+    If the text is too long, it is truncated at the limit.
+
+    By default, this property contains a value of 32767.
+*/
 int QDeclarativeTextInput::maxLength() const
 {
     Q_D(const QDeclarativeTextInput);
