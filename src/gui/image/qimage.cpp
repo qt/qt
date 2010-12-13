@@ -2018,11 +2018,11 @@ void QImage::fill(Qt::GlobalColor color)
     Fills the entire image with the given \a color.
 
     If the depth of the image is 1, the image will be filled with 1 if
-    \a color equals Qt::color0; it will otherwise be filled with 0.
+    \a color equals Qt::color1; it will otherwise be filled with 0.
 
     If the depth of the image is 8, the image will be filled with the
     index corresponding the \a color in the color table if present; it
-    will otherwise be filled with 0.|
+    will otherwise be filled with 0.
 
     \since 4.8
 */
