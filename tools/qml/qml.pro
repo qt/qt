@@ -4,7 +4,7 @@ DESTDIR = ../../bin
 
 include(qml.pri)
 
-SOURCES += main.cpp 
+SOURCES += main.cpp
 
 INCLUDEPATH += ../../include/QtDeclarative
 INCLUDEPATH += ../../src/declarative/util
@@ -26,7 +26,7 @@ wince* {
         QT += xmlpatterns
     }
     contains(QT_CONFIG, webkit) {
-        QT += webkit 
+        QT += webkit
     }
 }
 maemo5 {
