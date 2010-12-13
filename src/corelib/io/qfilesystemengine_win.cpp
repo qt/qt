@@ -433,6 +433,9 @@ void QFileSystemEngine::clearWinStatData(QFileSystemMetaData &data)
 {
     data.size_ = 0;
     data.fileAttribute_ =  0;
+    data.creationTime_ = FILETIME();
+    data.lastAccessTime_ = FILETIME();
+    data.lastWriteTime_ = FILETIME();
 }
 
 bool QFileSystemEngine::isCaseSensitive()

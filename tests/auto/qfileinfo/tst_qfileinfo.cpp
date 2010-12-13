@@ -196,6 +196,8 @@ private slots:
     void owner();
 #endif
     void group();
+
+    void invalidState();
 };
 
 tst_QFileInfo::tst_QFileInfo()
@@ -1759,6 +1761,49 @@ void tst_QFileInfo::group()
     QVERIFY(fi.exists());
 
     QCOMPARE(fi.group(), expected);
+}
+
+void tst_QFileInfo::invalidState()
+{
+    // Shouldn't crash;
+
+    {
+        QFileInfo info;
+        QCOMPARE(info.size(), qint64(0));
+        QVERIFY(!info.exists());
+
+        info.setCaching(false);
+
+        info.created();
+        info.lastRead();
+        info.lastModified();
+    }
+
+    {
+        QFileInfo info("");
+        QCOMPARE(info.size(), qint64(0));
+        QVERIFY(!info.exists());
+
+        info.setCaching(false);
+
+        info.created();
+        info.lastRead();
+        info.lastModified();
+    }
+
+    {
+        QFileInfo info("file-doesn't-really-exist.txt");
+        QCOMPARE(info.size(), qint64(0));
+        QVERIFY(!info.exists());
+
+        info.setCaching(false);
+
+        info.created();
+        info.lastRead();
+        info.lastModified();
+    }
+
+    QVERIFY(true);
 }
 
 QTEST_MAIN(tst_QFileInfo)
