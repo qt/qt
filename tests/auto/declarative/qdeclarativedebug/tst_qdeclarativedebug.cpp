@@ -72,7 +72,7 @@ class tst_QDeclarativeDebug : public QObject
     Q_OBJECT
 
 private:
-    QDeclarativeDebugObjectReference findRootObject(int context = 0);
+    QDeclarativeDebugObjectReference findRootObject(int context = 0, bool recursive = false);
     QDeclarativeDebugPropertyReference findProperty(const QList<QDeclarativeDebugPropertyReference> &props, const QString &name) const;
     void waitForQuery(QDeclarativeDebugQuery *query);
 
@@ -115,9 +115,10 @@ private slots:
 
     void setMethodBody();
     void queryObjectTree();
+    void setBindingInStates();
 };
 
-QDeclarativeDebugObjectReference tst_QDeclarativeDebug::findRootObject(int context)
+QDeclarativeDebugObjectReference tst_QDeclarativeDebug::findRootObject(int context, bool recursive)
 {
     QDeclarativeDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
     waitForQuery(q_engines);
@@ -129,7 +130,9 @@ QDeclarativeDebugObjectReference tst_QDeclarativeDebug::findRootObject(int conte
 
     if (q_context->rootContext().objects().count() == 0)
         return QDeclarativeDebugObjectReference();
-    QDeclarativeDebugObjectQuery *q_obj = m_dbg->queryObject(q_context->rootContext().objects()[context], this);
+    QDeclarativeDebugObjectQuery *q_obj = recursive ?
+                m_dbg->queryObjectRecursive(q_context->rootContext().objects()[context], this) :
+                m_dbg->queryObject(q_context->rootContext().objects()[context], this);
     waitForQuery(q_obj);
 
     QDeclarativeDebugObjectReference result = q_obj->object();
@@ -924,6 +927,98 @@ void tst_QDeclarativeDebug::tst_QDeclarativeDebugPropertyReference()
     copyAssign = ref;
     foreach (const QDeclarativeDebugPropertyReference &r, (QList<QDeclarativeDebugPropertyReference>() << copy << copyAssign))
         compareProperties(r, ref);
+}
+
+void tst_QDeclarativeDebug::setBindingInStates()
+{
+    // Check if changing bindings of propertychanges works
+
+    const int sourceIndex = 3;
+
+    QDeclarativeDebugObjectReference obj = findRootObject(sourceIndex);
+
+    QVERIFY(obj.debugId() != -1);
+    QVERIFY(obj.children().count() >= 2);
+
+    // We are going to switch state a couple of times, we need to get rid of the transition before
+    QDeclarativeDebugExpressionQuery *q_deleteTransition = m_dbg->queryExpressionResult(obj.debugId(),QString("transitions = []"),this);
+    waitForQuery(q_deleteTransition);
+    delete q_deleteTransition;
+
+
+    // check initial value of the property that is changing
+    QDeclarativeDebugExpressionQuery *q_setState;
+    q_setState = m_dbg->queryExpressionResult(obj.debugId(),QString("state=\"state1\""),this);
+    waitForQuery(q_setState);
+    delete q_setState;
+
+    obj = findRootObject(sourceIndex);
+    QCOMPARE(findProperty(obj.properties(),"width").value().toInt(),200);
+
+
+    q_setState = m_dbg->queryExpressionResult(obj.debugId(),QString("state=\"\""),this);
+    waitForQuery(q_setState);
+    delete q_setState;
+
+
+    obj = findRootObject(sourceIndex, true);
+    QCOMPARE(findProperty(obj.properties(),"width").value().toInt(),100);
+
+
+    // change the binding
+    QDeclarativeDebugObjectReference state = obj.children()[0];
+    QCOMPARE(state.className(), QString("State"));
+    QVERIFY(state.children().count() > 0);
+
+    QDeclarativeDebugObjectReference propertyChange = state.children()[0];
+    QVERIFY(propertyChange.debugId() != -1);
+
+    QVERIFY( m_dbg->setBindingForObject(propertyChange.debugId(), "width",QVariant(300),true) );
+
+    // check properties changed in state
+    obj = findRootObject(sourceIndex);
+    QCOMPARE(findProperty(obj.properties(),"width").value().toInt(),100);
+
+
+    q_setState = m_dbg->queryExpressionResult(obj.debugId(),QString("state=\"state1\""),this);
+    waitForQuery(q_setState);
+    delete q_setState;
+
+    obj = findRootObject(sourceIndex);
+    QCOMPARE(findProperty(obj.properties(),"width").value().toInt(),300);
+
+    // check changing properties of base state from within a state
+    QVERIFY(m_dbg->setBindingForObject(obj.debugId(),"width","height*2",false));
+    QVERIFY(m_dbg->setBindingForObject(obj.debugId(),"height","200",true));
+
+    obj = findRootObject(sourceIndex);
+    QCOMPARE(findProperty(obj.properties(),"width").value().toInt(),300);
+
+    q_setState = m_dbg->queryExpressionResult(obj.debugId(),QString("state=\"\""),this);
+    waitForQuery(q_setState);
+    delete q_setState;
+
+    obj = findRootObject(sourceIndex);
+    QCOMPARE(findProperty(obj.properties(),"width").value().toInt(), 400);
+
+    //  reset binding while in a state
+    q_setState = m_dbg->queryExpressionResult(obj.debugId(),QString("state=\"state1\""),this);
+    waitForQuery(q_setState);
+    delete q_setState;
+
+    obj = findRootObject(sourceIndex);
+    QCOMPARE(findProperty(obj.properties(),"width").value().toInt(), 300);
+
+    m_dbg->resetBindingForObject(propertyChange.debugId(), "width");
+
+    obj = findRootObject(sourceIndex);
+    QCOMPARE(findProperty(obj.properties(),"width").value().toInt(), 400);
+
+    // re-add binding
+    m_dbg->setBindingForObject(propertyChange.debugId(), "width", "300", true);
+
+    obj = findRootObject(sourceIndex);
+    QCOMPARE(findProperty(obj.properties(),"width").value().toInt(), 300);
 }
 
 void tst_QDeclarativeDebug::queryObjectTree()
