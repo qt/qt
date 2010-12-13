@@ -404,7 +404,18 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
     if (!d_ptr->fbo && d_ptr->tried_fbo)
         d_ptr->ctx = ctx;
 #else
-    QGLContext *ctx = new QGLContext(surfaceFormat, widget);
+    QGLContext *ctx = NULL;
+
+    // For translucent top-level widgets we need alpha in the format.
+    if (widget->testAttribute(Qt::WA_TranslucentBackground)) {
+        QGLFormat modFormat(surfaceFormat);
+        modFormat.setSampleBuffers(false);
+        modFormat.setSamples(0);
+        modFormat.setAlpha(true);
+        ctx = new QGLContext(modFormat, widget);
+    } else
+        ctx = new QGLContext(surfaceFormat, widget);
+
     ctx->create(qt_gl_share_widget()->context());
 #endif
 
