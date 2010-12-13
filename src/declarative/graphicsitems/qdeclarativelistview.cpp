@@ -265,6 +265,8 @@ public:
                 }
             }
             pos = (*(--visibleItems.constEnd()))->endPosition() + invisibleCount * (averageSize + spacing);
+        } else if (model && model->count()) {
+            pos = model->count() * averageSize + (model->count()-1) * spacing;
         }
         return pos;
     }
@@ -1050,6 +1052,8 @@ void QDeclarativeListViewPrivate::updateCurrent(int modelIndex)
         // This is slightly sub-optimal, but section heading caching minimizes the impact.
         if (currentItem->section)
             currentItem->section->setVisible(false);
+        if (visibleItems.isEmpty())
+            averageSize = currentItem->size();
     }
     updateHighlight();
     emit q->currentIndexChanged();
@@ -1576,6 +1580,7 @@ void QDeclarativeListView::setModel(const QVariant &model)
                     d->updateTrackedItem();
                 }
             }
+            d->updateViewport();
         }
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
@@ -1647,6 +1652,7 @@ void QDeclarativeListView::setDelegate(QDeclarativeComponent *delegate)
                     d->highlight->setPosition(d->currentItem->position());
                 d->updateTrackedItem();
             }
+            d->updateViewport();
         }
     }
     emit delegateChanged();
