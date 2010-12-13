@@ -27,6 +27,7 @@
 
 /*!
 \page qdeclarativei18n.html
+\ingroup qml-features
 \title QML Internationalization
 
 \section1 Overview

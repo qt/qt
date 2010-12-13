@@ -27,15 +27,21 @@
 
 /*!
 \page propertybinding.html
+\ingroup qml-features
+\contentspage QML Features
+\previouspage QML Features
+\nextpage Using QML Positioner and Repeater Items
 \title Property Binding
 
+
+\section1 Introduction
 Property binding is a declarative way of specifying the value of a property.  Binding allows
 a property's value to be expressed as an JavaScript expression that defines the value relative
-to other property values or data accessible in the application.  The property value is 
+to other property values or data accessible in the application.  The property value is
 automatically kept up to date if the other properties or data values change.
 
-Property bindings are created implicitly in QML whenever a property is assigned an JavaScript
-expression.  The following QML uses two property bindings to connect the size of the rectangle
+Property bindings are created implicitly in QML whenever a property is assigned a JavaScript
+expression.  The following QML  code uses two property bindings to connect the size of the rectangle
 to that of \c otherItem.
 
 \code
@@ -45,9 +51,9 @@ Rectangle {
 }
 \endcode
 
-QML extends a standards compliant JavaScript engine, so any valid JavaScript expression can be 
+QML extends a standards compliant JavaScript engine, so any valid JavaScript expression can be
 used as a property binding.  Bindings can access object properties, make function calls and even
-use builtin JavaScript objects like \e {Date} and \e {Math}.  Assigning a constant value to a 
+use built-in JavaScript objects like \c {Date} and \c {Math}.  Assigning a constant value to a
 property can even be thought of as a binding - after all, a constant is a valid JavaScript
 expression!  Here are some examples of more complex bindings:
 
@@ -71,10 +77,10 @@ function.
 
 \section1 Changing Bindings
 
-The \l PropertyChanges element can be used within a state change to modify the bindings on 
-properties.  
+The \l PropertyChanges element can be used within a state change to modify the bindings on
+properties.
 
-This example modifies the \l Rectangle's width property binding to be \c {otherItem.height} 
+This example modifies the \l Rectangle's width property binding to be \c {otherItem.height}
 when in the "square" state.  When it returns to its default state, width's original property
 binding will have been restored.
 
@@ -97,7 +103,7 @@ Rectangle {
 
 \section1 Effects of Property Assignment in JavaScript
 
-Assigning a property value from JavaScript does \e not create a property binding.
+Assigning a property value from JavaScript does \i not create a property binding.
 For example:
 
 \code
@@ -110,10 +116,10 @@ Rectangle {
 \endcode
 
 Instead of creating a property binding, this simply sets the \c width of the \l Rectangle
-to the value of \c other.width at the time the JavaScript code is invoked.  See 
+to the value of \c other.width at the time the JavaScript code is invoked.  See
 \l {Property Assignment vs Property Binding} for more details.
 
-Also note that assigning a value to a property that is currently bound will remove the binding.
+Also note that assigning a value to a property that is currently bound will remove the previous binding.
 A property can only have one value at a time, and if any code explicitly sets
 this value, the binding is removed.  The \l Rectangle in the example below will have
 a width of 13, regardless of the \c otherItem's width.
@@ -135,7 +141,7 @@ although it is possible to set up a \l Binding object (shown below).
 \section1 Binding Element
 
 The implicit binding syntax shown previously is easy to use and works perfectly for most uses
-of bindings.  In some advanced cases, it is necessary to create bindings explicitly using the 
+of bindings.  In some advanced cases, it is necessary to create bindings explicitly using the
 \l Binding element.
 
 For example, to bind a property exposed from C++ (\c system.brightness) to a value

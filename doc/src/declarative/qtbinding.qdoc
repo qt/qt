@@ -27,6 +27,7 @@
 
 /*!
 \page qtbinding.html
+\ingroup qml-features
 \target qtbinding
 \title Using QML in C++ Applications
 

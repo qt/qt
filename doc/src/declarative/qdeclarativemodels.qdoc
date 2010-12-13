@@ -27,10 +27,12 @@
 
 /*!
 \page qdeclarativemodels.html
+\ingroup qml-features
+\contentspage QML Features
 \target qmlmodels
 \title QML Data Models
 
-QML items such as ListView, GridView and \l Repeater require Data Models 
+QML items such as ListView, GridView and \l Repeater require Data Models
 that provide the data to be displayed.
 These items typically require a \e delegate component that
 creates an instance for each item in the model.  Models may be static, or
@@ -38,7 +40,7 @@ have items modified, inserted, removed or moved dynamically.
 
 Data is provided to the delegate via named data roles which the
 delegate may bind to. Here is a ListModel with two roles, \e type and \e age,
-and a ListView with a delegate that binds to these roles to display their 
+and a ListView with a delegate that binds to these roles to display their
 values:
 
 \snippet doc/src/snippets/declarative/qml-data-models/listmodel-listview.qml document
@@ -48,7 +50,7 @@ properties, the roles can be accessed with the qualified \e model name instead.
 For example, if a \l Text element had \e type or \e age properties, the text in the
 above example would display those property values instead of the \e type and \e age values
 from the model item. In this case, the properties could have been referenced as
-\c model.type and \c model.age instead to ensure the delegate displays the 
+\c model.type and \c model.age instead to ensure the delegate displays the
 property values from the model item.
 
 A special \e index role containing the index of the item in the model
@@ -125,10 +127,10 @@ be used to display an RSS feed.
 
 \section2 VisualItemModel
 
-VisualItemModel allows QML items to be provided as a model.  
+VisualItemModel allows QML items to be provided as a model.
 
 This model contains both the data and delegate; the child items of a
-VisualItemModel provide the contents of the delegate. The model 
+VisualItemModel provide the contents of the delegate. The model
 does not provide any roles.
 
 \code
@@ -165,7 +167,7 @@ models.
 
 A model may be a simple QStringList, which provides the contents of the list via the \e modelData role.
 
-Here is a ListView with a delegate that references its model item's 
+Here is a ListView with a delegate that references its model item's
 value using the \c modelData role:
 
 \snippet examples/declarative/modelviews/stringlistmodel/view.qml 0
@@ -184,7 +186,7 @@ the model by calling QDeclarativeContext::setContextProperty() again.
 
 \section2 QList<QObject*>
 
-A list of QObject* values can also be used as a model. A QList<QObject*> provides 
+A list of QObject* values can also be used as a model. A QList<QObject*> provides
 the properties of the objects in the list as roles.
 
 The following application creates a \c DataObject class that with
@@ -205,7 +207,7 @@ the ListView delegate:
 
 \snippet examples/declarative/modelviews/objectlistmodel/view.qml 0
 
-Note the use of the fully qualified access to the \c color property.  
+Note the use of the fully qualified access to the \c color property.
 The properties of the object are not replicated in the \c model
 object, since they are easily available via the \c modelData
 object.
@@ -221,10 +223,10 @@ the model by calling QDeclarativeContext::setContextProperty() again.
 
 A model can be defined by subclassing QAbstractItemModel. This is the
 best approach if you have a more complex model that cannot be supported
-by the other approaches. A QAbstractItemModel can also automatically 
+by the other approaches. A QAbstractItemModel can also automatically
 notify a QML view when the model data has changed.
 
-The roles of a QAbstractItemModel subclass can be exposed to QML by calling 
+The roles of a QAbstractItemModel subclass can be exposed to QML by calling
 QAbstractItemModel::setRoleNames(). The default role names set by Qt are:
 
 \table
@@ -244,9 +246,9 @@ that has \e type and \e size roles. It calls QAbstractItemModel::setRoleNames() 
 role names for accessing the properties via QML:
 
 \snippet examples/declarative/modelviews/abstractitemmodel/model.h 0
-\dots 
+\dots
 \snippet examples/declarative/modelviews/abstractitemmodel/model.h 1
-\dots 
+\dots
 \snippet examples/declarative/modelviews/abstractitemmodel/model.h 2
 \codeline
 \snippet examples/declarative/modelviews/abstractitemmodel/model.cpp 0
@@ -261,14 +263,14 @@ roles:
 
 QML views are automatically updated when the model changes. Remember the model
 must follow the standard rules for model changes and notify the view when
-the model has changed by using QAbstractItemModel::dataChanged(), 
+the model has changed by using QAbstractItemModel::dataChanged(),
 QAbstractItemModel::beginInsertRows(), etc. See the \l {Model subclassing reference} for
 more information.
 
 The complete example is available in Qt's \l {declarative/modelviews/abstractitemmodel}{examples/declarative/modelviews/abstractitemmodel} directory.
 
 QAbstractItemModel presents a hierarchy of tables, but the views currently provided by QML
-can only display list data.  
+can only display list data.
 In order to display child lists of a hierarchical model
 the VisualDataModel element provides several properties and functions for use
 with models of type QAbstractItemModel:
@@ -283,14 +285,14 @@ with models of type QAbstractItemModel:
 
 \section2 Exposing C++ data models to QML
 
-The above examples use QDeclarativeContext::setContextProperty() to set 
-model values directly in QML components. An alternative to this is to 
-register the C++ model class as a QML type from a QML C++ plugin using 
-QDeclarativeExtensionPlugin. This would allow the model classes to be 
+The above examples use QDeclarativeContext::setContextProperty() to set
+model values directly in QML components. An alternative to this is to
+register the C++ model class as a QML type from a QML C++ plugin using
+QDeclarativeExtensionPlugin. This would allow the model classes to be
 created directly as elements within QML:
 
 \table
-\row 
+\row
 
 \o
 \code
@@ -299,7 +301,7 @@ class MyModelPlugin : public QDeclarativeExtensionPlugin
 public:
     void registerTypes(const char *uri)
     {
-        qmlRegisterType<MyModel>(uri, 1, 0, 
+        qmlRegisterType<MyModel>(uri, 1, 0,
                 "MyModel");
     }
 }
@@ -466,6 +468,8 @@ updated, and that \e{value} holds the new value.
 
 /*!
 \page qml-presenting-data.html
+\ingroup qml-features
+\contentspage QML Features
 \title Presenting Data with QML
 
 \section1 Introduction

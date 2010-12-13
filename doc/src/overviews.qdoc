@@ -43,7 +43,7 @@
     web-enabled applications for desktop, mobile, and embedded
     operating systems. This page contains links to articles and overviews
 	explaining key components and techniuqes used in Qt development.
-	
+
     \generatelist {related}
  */
 
@@ -112,7 +112,7 @@
   \ingroup technology-apis
   \ingroup best-practices
   \ingroup qt-basic-concepts
-  
+
 
   These pages document Qt's API's for using SQL database systems
   in Qt applications.
@@ -133,7 +133,7 @@
 
     \generatelist{related}
 */
-/*! 
+/*!
 
 	\group licensing
 	\title Qt Licenses and Credits
@@ -145,4 +145,26 @@
 
 	\generatelist {related}
 
+*/
+
+/*!
+    \group qml-best-practices
+    \title QML Best Practices Guides
+
+    \brief QML Programming Best Practices Guides
+
+    These documents provide guidelines and best practices for using QML and Qt
+    to solve specific technical problems.
+
+    \generatelist {related}
+*/
+/*!
+    \group qml-features
+    \title QML Features
+
+    \brief Features of the QML Language
+
+    These are overviews of the many features of the QML Language.
+
+    \generatelist {related}
 */

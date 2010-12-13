@@ -28,13 +28,16 @@
 /*!
 \page qml-anchor-layout.html
 \target anchor-layout
+\contentspage QML Features
+\previouspage Using QML Positioner and Repeater Items
+\nextpage Using QML Positioner and Repeater Items
 \title Anchor-based Layout in QML
 
 In addition to the more traditional \l Grid, \l Row, and \l Column,
 QML also provides a way to layout items using the concept of \e anchors.
 Each item can be thought of as having a set of 7 invisible "anchor lines":
 \l {Item::anchors.left}{left}, \l {Item::anchors.horizontalCenter}{horizontalCenter},
-\l {Item::anchors.right}{right}, \l {Item::anchors.top}{top}, 
+\l {Item::anchors.right}{right}, \l {Item::anchors.top}{top},
 \l {Item::anchors.verticalCenter}{verticalCenter}, \l {Item::anchors.baseline}{baseline},
 and \l {Item::anchors.bottom}{bottom}.
 

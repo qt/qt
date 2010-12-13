@@ -28,6 +28,8 @@
 /*!
 \target qmlfocus
 \page qdeclarativefocus.html
+\ingroup qml-features
+\contentspage QML Features
 \title Keyboard Focus in QML
 
 When a key is pressed or released, a key event is generated and delivered to the

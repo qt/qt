@@ -27,6 +27,7 @@
 
 /*!
 \page qml-integration.html
+\ingroup qml-features
 \title Integrating QML with existing Qt UI code
 
 There are a number of ways to integrate QML into QWidget-based UI applications,
@@ -37,8 +38,8 @@ depending on the characteristics of your existing UI code.
 
 If you have an existing QWidget-based UI, QML widgets can be integrated into
 it using QDeclarativeView. QDeclarativeView is a subclass of QWidget so you
-can add it to your user interface like any other QWidget. Use 
-QDeclarativeView::setSource() to load a QML file into the view, then add the 
+can add it to your user interface like any other QWidget. Use
+QDeclarativeView::setSource() to load a QML file into the view, then add the
 view to your UI:
 
 \code
@@ -52,7 +53,7 @@ layout->addWidget(qmlView);
 
 The one drawback to this approach is that QDeclarativeView is slower to initialize
 and uses more memory than a QWidget, and creating large numbers of QDeclarativeView
-objects may lead to performance degradation. If this is the case, it may be 
+objects may lead to performance degradation. If this is the case, it may be
 better to rewrite your widgets in QML, and load the widgets from a main QML widget
 instead of using QDeclarativeView.
 
@@ -70,7 +71,7 @@ of simple and dynamic elements.
 If you have an existing UI based on the \l{Graphics View Framework},
 you can integrate QML widgets directly into your QGraphicsScene. Use
 QDeclarativeComponent to create a QGraphicsObject from a QML file, and
-place the graphics object into your scene using \l{QGraphicsScene::addItem()}, or 
+place the graphics object into your scene using \l{QGraphicsScene::addItem()}, or
 reparent it to an item already in the \l{QGraphicsScene}.
 
 For example:
@@ -95,7 +96,7 @@ of QML UIs:
 
 \section2 Loading QGraphicsWidget objects in QML
 
-An alternative approach is to expose your existing QGraphicsWidget objects to 
+An alternative approach is to expose your existing QGraphicsWidget objects to
 QML and construct your scene in QML instead. See the \l {declarative-cppextensions-qgraphicslayouts.html}{graphics layouts example}
 which shows how to expose Qt's graphics layout classes to QML in order
 to use QGraphicsWidget with classes like QGraphicsLinearLayout and QGraphicsGridLayout.

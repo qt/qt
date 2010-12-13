@@ -27,6 +27,8 @@
 
 /*!
 \page qml-extending.html
+\ingroup qml-features
+\contentspage QML Features
 \title Extending QML in C++
 
 The QML syntax declaratively describes how to construct an in-memory object
@@ -360,28 +362,28 @@ pointers to invalid objects.  QML makes the following guarentees:
 
 \list
 \o An object assigned to a QObject (or QObject-derived) pointer property will be
-valid at the time of assignment.  
+valid at the time of assignment.
 
-Following assignment, it is the responsibility of the class to subsequently guard 
+Following assignment, it is the responsibility of the class to subsequently guard
 this pointer, either through a class specific method or the generic QPointer class.
 
-\o An object assigned to a QVariant will be valid at the time of assignment.  
+\o An object assigned to a QVariant will be valid at the time of assignment.
 
-When assigning an object to a QVariant property, QML will always use a QMetaType::QObjectStar 
-typed QVariant.  It is the responsibility of the class to guard the pointer.  A 
-general rule when writing a class that uses QVariant properties is to check the 
-type of the QVariant when it is set and if the type is not handled by your class, 
+When assigning an object to a QVariant property, QML will always use a QMetaType::QObjectStar
+typed QVariant.  It is the responsibility of the class to guard the pointer.  A
+general rule when writing a class that uses QVariant properties is to check the
+type of the QVariant when it is set and if the type is not handled by your class,
 reset it to an invalid variant.
 
-\o An object assigned to a QObject (or QObject-derived) list property will be 
-valid at the time of assignment.  
+\o An object assigned to a QObject (or QObject-derived) list property will be
+valid at the time of assignment.
 
-Following assignment, it is the responsibility of the class to subsequently guard 
+Following assignment, it is the responsibility of the class to subsequently guard
 this pointer, either through a class specific method or the generic QPointer class.
 \endlist
 
 Elements should assume that any QML assigned object can be deleted at any time, and
-respond accordingly.  If documented as such an element need not continue to work in 
+respond accordingly.  If documented as such an element need not continue to work in
 this situation, but it must not crash.
 
 \section1 Signal Support
@@ -637,6 +639,7 @@ public:
 
 /*!
 \page qml-extending-types.html
+\ingroup qml-features
 \title Writing QML Components: Properties, Methods and Signals
 
 One of the key concepts in QML is the ability to define your own QML components that suit

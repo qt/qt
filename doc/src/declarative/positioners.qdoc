@@ -27,7 +27,12 @@
 
 /*!
 \page qml-positioners.html
+\ingroup qml-features
+\previouspage Property Binding
+\nextpage Anchor-based Layout in QML
+\contentspage QML Features
 \title Using QML Positioner and Repeater Items
+
 
 \section1 Introduction
 
