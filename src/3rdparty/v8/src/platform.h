@@ -111,18 +111,6 @@ int signbit(double x);
 #define V8_INFINITY std::numeric_limits<double>::infinity()
 #endif
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-//the c99 math macro are not available anymore, instead, they are function in the std namespace
-#include <cmath>
-namespace v8 {
-namespace internal {
-using std::isfinite;
-using std::fpclassify;
-using std::isless;
-} }
-#endif
-
-
 #endif  // __GNUC__
 
 namespace v8 {
