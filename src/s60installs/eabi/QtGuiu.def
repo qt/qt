@@ -12107,4 +12107,5 @@ EXPORTS
 	_ZN19QEventDispatcherS6031reactivateDeferredActiveObjectsEv @ 12106 NONAME
 	_ZN20QGraphicsItemPrivate11setSubFocusEP13QGraphicsItemS1_ @ 12107 NONAME
 	_ZN20QGraphicsItemPrivate13clearSubFocusEP13QGraphicsItemS1_ @ 12108 NONAME
+	_ZN12QLineControl21resetCursorBlinkTimerEv @ 12109 NONAME
 

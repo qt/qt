@@ -296,6 +296,7 @@ public:
 
     int cursorBlinkPeriod() const { return m_blinkPeriod; }
     void setCursorBlinkPeriod(int msec);
+    void resetCursorBlinkTimer();
 
     QString cancelText() const { return m_cancelText; }
     void setCancelText(const QString &text) { m_cancelText = text; }
