@@ -1593,6 +1593,9 @@ void QTextStream::resetStatus()
 
     Sets the status of the text stream to the \a status given.
 
+    Subsequent calls to setStatus() are ignored until resetStatus()
+    is called.
+
     \sa Status status() resetStatus()
 */
 void QTextStream::setStatus(Status status)

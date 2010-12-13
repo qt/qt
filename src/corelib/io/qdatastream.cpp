@@ -495,6 +495,9 @@ void QDataStream::resetStatus()
 /*!
     Sets the status of the data stream to the \a status given.
 
+    Subsequent calls to setStatus() are ignored until resetStatus()
+    is called.
+
     \sa Status status() resetStatus()
 */
 void QDataStream::setStatus(Status status)
