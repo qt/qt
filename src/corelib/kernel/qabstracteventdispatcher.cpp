@@ -77,10 +77,14 @@ Q_DESTRUCTOR_FUNCTION(timerIdsDestructorFunction)
 
 static QBasicAtomicInt nextFreeTimerId = Q_BASIC_ATOMIC_INITIALIZER(1);
 
+static const int TimerIdMask = 0x00ffffff;
+static const int TimerSerialMask = ~TimerIdMask & ~0x80000000;
+static const int TimerSerialCounter = TimerIdMask + 1;
+
 // avoid the ABA-problem by using 7 of the top 8 bits of the timerId as a serial number
 static inline int prepareNewValueWithSerialNumber(int oldId, int newId)
 {
-    return (newId & 0x00FFFFFF) | ((oldId + 0x01000000) & 0x7f000000);
+    return (newId & TimerIdMask) | ((oldId + TimerSerialCounter) & TimerSerialMask);
 }
 
 static inline int bucketOffset(int timerId)
@@ -136,7 +140,7 @@ int QAbstractEventDispatcherPrivate::allocateTimerId()
         timerId = nextFreeTimerId; //.loadAcquire(); // ### FIXME Proper memory ordering semantics
 
         // which bucket are we looking in?
-        int which = timerId & 0x00ffffff;
+        int which = timerId & TimerIdMask;
         int bucket = bucketOffset(which);
         int at = bucketIndex(bucket, which);
         int *b = timerIds[bucket];
@@ -170,7 +174,7 @@ int QAbstractEventDispatcherPrivate::allocateTimerId()
 // nextFreeTimerId.
 void QAbstractEventDispatcherPrivate::releaseTimerId(int timerId)
 {
-    int which = timerId & 0x00ffffff;
+    int which = timerId & TimerIdMask;
     int bucket = bucketOffset(which);
     int at = bucketIndex(bucket, which);
     int *b = timerIds[bucket];
@@ -178,7 +182,7 @@ void QAbstractEventDispatcherPrivate::releaseTimerId(int timerId)
     int freeId, newTimerId;
     do {
         freeId = nextFreeTimerId;//.loadAcquire(); // ### FIXME Proper memory ordering semantics
-        b[at] = freeId & 0x00ffffff;
+        b[at] = freeId & TimerIdMask;
 
         newTimerId = prepareNewValueWithSerialNumber(freeId, timerId);
     } while (!nextFreeTimerId.testAndSetRelease(freeId, newTimerId));
