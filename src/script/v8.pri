@@ -2,7 +2,7 @@ include($$PWD/v8base.pri)
 
 V8_GENERATED_SOURCES_DIR = generated
 
-DEFINES += BUILDING_V8_SHARED V8_SHARED ENABLE_DEBUGGER_SUPPORT
+DEFINES += ENABLE_DEBUGGER_SUPPORT
 
 # Because our patches to V8 are guarded by this define.
 DEFINES += QT_BUILD_SCRIPT_LIB
