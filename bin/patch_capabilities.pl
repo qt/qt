@@ -78,6 +78,16 @@ sub trim($) {
     return $string;
 }
 
+my $epocroot = $ENV{EPOCROOT};
+my $epocToolsDir = "";
+if ($epocroot ne "") {
+    $epocroot =~ s,\\,/,g;
+    if ($epocroot =~ m,[^/]$,) {
+        $epocroot = $epocroot."/";
+    }
+    $epocToolsDir = "${epocroot}epoc32/tools/";
+}
+
 my $nullDevice = "/dev/null";
 $nullDevice = "NUL" if ($^O =~ /MSWin/);
 
@@ -237,7 +247,7 @@ if (@ARGV)
         }
         print ("\n");
 
-        my $baseCommandToExecute = "elftran -vid 0x0 -capability \"%s\" ";
+        my $baseCommandToExecute = "${epocToolsDir}elftran -vid 0x0 -capability \"%s\" ";
 
         # Actually set the capabilities of the listed binaries.
         foreach my $binaryPath(@binaries)
@@ -256,7 +266,7 @@ if (@ARGV)
                 # Test which capabilities are present and then restrict them to the allowed set.
                 # This avoid raising the capabilities of apps that already have none.
                 my $dllCaps;
-                open($dllCaps, "elftran -dump s $binaryPath |") or die ("ERROR: Could not execute elftran");
+                open($dllCaps, "${epocToolsDir}elftran -dump s $binaryPath |") or die ("ERROR: Could not execute elftran");
                 my $capsFound = 0;
                 my $originalVid;
                 my @capabilitiesToSet;
@@ -329,8 +339,6 @@ if (@ARGV)
                 system ("$commandToExecute > $nullDevice");
                 $somethingPatched = true;
             }
-            ## Create another command line to check that the set capabilities are correct.
-            #$commandToExecute = "elftran -dump s ".$binaryPath;
         }
 
         if ($checkFailed) {

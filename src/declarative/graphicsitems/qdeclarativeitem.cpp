@@ -1839,9 +1839,9 @@ void QDeclarativeItem::setClip(bool c)
 /*!
   \qmlproperty real Item::z
 
-  Sets the stacking order of the item.  By default the stacking order is 0.
+  Sets the stacking order of sibling items.  By default the stacking order is 0.
 
-  Items with a higher stacking value are drawn on top of items with a
+  Items with a higher stacking value are drawn on top of siblings with a
   lower stacking order.  Items with the same stacking value are drawn
   bottom up in the order they appear.  Items with a negative stacking
   value are drawn under their parent's content.
@@ -2142,6 +2142,8 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
 
   Margins apply to top, bottom, left, right, and fill anchors.
   The \c anchors.margins property can be used to set all of the various margins at once, to the same value.
+  Note that margins are anchor-specific and are not applied if an item does not
+  use anchors.
 
   Offsets apply for horizontal center, vertical center, and baseline anchors.
 

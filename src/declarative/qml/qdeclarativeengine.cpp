@@ -262,6 +262,33 @@ of their use.
 \endlist
 */
 
+/*!
+\qmlmethod object Qt::include(string url, jsobject callback)
+
+Includes another JavaScript file. This method can only be used from within JavaScript files,
+and not regular QML files.
+
+This imports all functions from \a url into the current script's namespace.
+
+Qt.include() returns an object that describes the status of the operation.  The object has
+a single property, \c {status}, that is set to one of the following values:
+
+\table
+\header \o Symbol \o Value \o Description
+\row \o result.OK \o 0 \o The include completed successfully.
+\row \o result.LOADING \o 1 \o Data is being loaded from the network.
+\row \o result.NETWORK_ERROR \o 2 \o A network error occurred while fetching the url.
+\row \o result.EXCEPTION \o 3 \o A JavaScript exception occurred while executing the included code.
+An additional \c exception property will be set in this case.
+\endtable
+
+The \c status property will be updated as the operation progresses.
+
+If provided, \a callback is invoked when the operation completes.  The callback is passed
+the same object as is returned from the Qt.include() call.
+*/
+// Qt.include() is implemented in qdeclarativeinclude.cpp
+
 
 QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
 : captureProperties(false), rootContext(0), isDebugging(false),
@@ -678,6 +705,9 @@ QNetworkAccessManager *QDeclarativeEngine::networkAccessManager() const
   Image providers enable support for pixmap and threaded image
   requests. See the QDeclarativeImageProvider documentation for details on
   implementing and using image providers.
+
+  All required image providers should be added to the engine before any
+  QML sources files are loaded.
 
   Note that images loaded from a QDeclarativeImageProvider are cached
   by QPixmapCache, similar to any image loaded by QML.

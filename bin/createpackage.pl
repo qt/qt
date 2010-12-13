@@ -144,11 +144,13 @@ unless (GetOptions('i|install' => \$install,
 }
 
 my $epocroot = $ENV{EPOCROOT};
+my $epocToolsDir = "";
 if ($epocroot ne "") {
     $epocroot =~ s,\\,/,g;
     if ($epocroot =~ m,[^/]$,) {
         $epocroot = $epocroot."/";
     }
+    $epocToolsDir = "${epocroot}epoc32/tools/";
 }
 
 my $certfilepath = abs_path(dirname($certfile));
@@ -341,7 +343,7 @@ if($stub) {
     mkpath($systeminstall);
     my $stub_sis_name = $systeminstall."/".$stub_sis_name;
     # Create stub SIS.
-    system ("${epocroot}epoc32/tools/makesis -s $pkgoutput $stub_sis_name");
+    system ("${epocToolsDir}makesis -s $pkgoutput $stub_sis_name");
 } else {
     if ($certtext eq "Self Signed"
         && !@certificates
@@ -358,11 +360,8 @@ if($stub) {
 
     # Create SIS.
     # The 'and' is because system uses 0 to indicate success.
-    if($epocroot) {
-        system ("${epocroot}epoc32/tools/makesis $pkgoutput $unsigned_sis_name") and die ("ERROR: makesis failed");
-    } else {
-        system ("makesis $pkgoutput $unsigned_sis_name") and die ("ERROR: makesis failed");
-    }
+    system ("${epocToolsDir}makesis $pkgoutput $unsigned_sis_name") and die ("ERROR: makesis failed");
+
     print("\n");
 
     my $targetInsert = "";
@@ -389,7 +388,7 @@ if($stub) {
     my $relcert = File::Spec->abs2rel($certificate);
     my $relkey = File::Spec->abs2rel($key);
     # The 'and' is because system uses 0 to indicate success.
-    system ("signsis $unsigned_sis_name $signed_sis_name $relcert $relkey $passphrase") and die ("ERROR: signsis failed");
+    system ("${epocToolsDir}signsis $unsigned_sis_name $signed_sis_name $relcert $relkey $passphrase") and die ("ERROR: signsis failed");
 
     # Check if creating signed SIS Succeeded
     stat($signed_sis_name);
@@ -402,7 +401,7 @@ if($stub) {
             my $relcert = File::Spec->abs2rel(File::Spec->rel2abs( $row->[0], $certfilepath));
             my $relkey = File::Spec->abs2rel(File::Spec->rel2abs( $row->[1], $certfilepath));
 
-            system ("signsis $signed_sis_name $signed_sis_name $relcert $relkey $row->[2]");
+            system ("${epocToolsDir}signsis $signed_sis_name $signed_sis_name $relcert $relkey $row->[2]");
             print ("\tAdditionally signed the SIS with certificate: $row->[0]!\n");
         }
 

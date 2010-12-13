@@ -470,6 +470,8 @@ void QDeclarativeRectangle::generateBorderedRect()
 void QDeclarativeRectangle::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QDeclarativeRectangle);
+    if (width() <= 0 || height() <= 0)
+        return;
     if (d->radius > 0 || (d->pen && d->pen->isValid())
         || (d->gradient && d->gradient->gradient()) ) {
         drawRect(*p);
@@ -538,6 +540,12 @@ void QDeclarativeRectangle::drawRect(QPainter &p)
         int yOffset = (d->rectImage.height()-1)/2;
         Q_ASSERT(d->rectImage.width() == 2*xOffset + 1);
         Q_ASSERT(d->rectImage.height() == 2*yOffset + 1);
+
+        // check whether we've eliminated the center completely
+        if (2*xOffset > width()+pw)
+            xOffset = (width()+pw)/2;
+        if (2*yOffset > height()+pw)
+            yOffset = (height()+pw)/2;
 
         QMargins margins(xOffset, yOffset, xOffset, yOffset);
         QTileRules rules(Qt::StretchTile, Qt::StretchTile);

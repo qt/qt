@@ -429,6 +429,10 @@ void tst_QDeclarativePathView::dataModel()
     pathview->setOffset(0);
     QCOMPARE(findItems<QDeclarativeItem>(pathview, "wrapper").count(), 5);
 
+    pathview->setCurrentIndex(model.count()-1);
+    model.removeItem(model.count()-1);
+    QCOMPARE(pathview->currentIndex(), model.count()-1);
+
     delete canvas;
 }
 
