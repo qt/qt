@@ -151,7 +151,7 @@ int QAbstractEventDispatcherPrivate::allocateTimerId()
             }
         }
 
-        newTimerId = b[at];
+        newTimerId = prepareNewValueWithSerialNumber(timerId, b[at]);
     } while (!nextFreeTimerId.testAndSetRelaxed(timerId, newTimerId));
 
     return timerId;
