@@ -65,15 +65,17 @@ QML and the Qt Declarative Module separate the frontend UI logic from the backen
 
 \list
 \o \l{Intro to Qt Quick}{Introduction to Qt Quick}
-\o \l{Introduction to the QML language}{Introduction to the QML Language}
 \o \l{QML for Qt Programmers}{QML Programming for Qt Programmers}
 \o \l{Getting Started Programming with QML}
+
 \o \l{What's new in Qt Quick}{What's New in the Qt Quick Release}
+\o \l{QML Examples and Demos}
 \endlist
 
 \section1 QML Features
 
 \list
+\o \l{QML Syntax}
 \o \l{Property Binding}
 \o \l{Using QML Positioner and Repeater Items}{Component Layouts}
 \o \l{Anchor-based Layout in QML}{Anchor Layout}
@@ -113,6 +115,19 @@ QML and the Qt Declarative Module separate the frontend UI logic from the backen
 \o \l{Developing Qt Quick Applications}{Developing with Qt Creator}
 \endlist
 
+\section1 Reference
+
+\list
+\o \l{Introduction to the QML language}{QML Syntax}
+\o \l{QML Elements}
+\o \l{Qt Declarative Module}
+\o \l{QML Basic Types}{QML Data Types}
+\o \l{QML Coding Conventions}
+\o \l{Qt Creator Manual}
+\o \l{Programming with Qt}
+\o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/index.html}{Qt Mobility Documentation}
+\endlist
+
 \section1 Architecture
 
 \list
@@ -124,18 +139,6 @@ QML and the Qt Declarative Module separate the frontend UI logic from the backen
 \o \l{QML Global Object}
 \o \l{QML Security}
 \o \l{Qt Declarative Module}
-\endlist
-
-\section1 Reference
-
-\list
-\o \l{QML Elements}
-\o \l{Qt Declarative Module}
-\o \l{QML Basic Types}{QML Data Types}
-\o \l{QML Coding Conventions}
-\o \l{Qt Creator Manual}
-\o \l{Programming with Qt}
-\o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/index.html}{Qt Mobility Documentation}
 \endlist
 
 \section1 Examples
