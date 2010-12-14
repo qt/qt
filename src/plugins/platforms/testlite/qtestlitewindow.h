@@ -136,9 +136,6 @@ private:
     QPlatformGLContext *mGLContext;
     QTestLiteScreen *mScreen;
     Qt::WindowFlags window_flags;
-
-    Atom m_mwm_hint_atom;
-
 };
 
 #endif

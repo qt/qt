@@ -162,7 +162,6 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
 {
     Q_Q(QWidget);
 
-    //    QWidget *oldParent = q->parentWidget();
     Qt::WindowFlags oldFlags = data.window_flags;
 
     int targetScreen = -1;
@@ -214,13 +213,6 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
             data.window_flags = window->setWindowFlags(data.window_flags);
     }
     
-    // Reparenting child to toplevel 
-    if ((f&Qt::Window) && !(oldFlags&Qt::Window)) {
-        //qDebug() << "setParent_sys() change to toplevel";
-        q->create(); //### too early: this ought to happen at show() time
-    }
-
-
     if (q->isWindow() || (!newparent || newparent->isVisible()) || explicitlyHidden)
         q->setAttribute(Qt::WA_WState_Hidden);
     q->setAttribute(Qt::WA_WState_ExplicitShowHide, explicitlyHidden);
@@ -396,7 +388,11 @@ void QWidgetPrivate::show_sys()
 
     QPlatformWindow *window = q->platformWindow();
     if (window) {
-        const QRect geomRect = q->geometry();
+        QRect geomRect = q->geometry();
+        if (!q->isWindow()) {
+            QPoint topLeftOfWindow = q->mapTo(q->nativeParentWidget(),QPoint());
+            geomRect.moveTopLeft(topLeftOfWindow);
+        }
         const QRect windowRect = window->geometry();
         if (windowRect != geomRect) {
             window->setGeometry(geomRect);
@@ -591,7 +587,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     if (q->isVisible()) {
         if (q->platformWindow()) {
             if (q->isWindow()) {
-                q->platformWindow()->setGeometry(q->frameGeometry());
+                q->platformWindow()->setGeometry(q->geometry());
             } else {
                 QPoint posInNativeParent =  q->mapTo(q->nativeParentWidget(),QPoint());
                 q->platformWindow()->setGeometry(QRect(posInNativeParent,r.size()));

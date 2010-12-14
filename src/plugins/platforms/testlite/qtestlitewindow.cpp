@@ -71,8 +71,7 @@ QTestLiteWindow::QTestLiteWindow(QWidget *window)
     int h = window->height();
 
         if(window->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
-           && QApplicationPrivate
-                ::platformIntegration()->hasOpenGL() ) {
+           && QApplicationPrivate::platformIntegration()->hasOpenGL() ) {
 #ifndef QT_NO_OPENGL
             XVisualInfo *visualInfo = QGLXContext::findVisualInfo(mScreen,window->platformWindowFormat());
             Colormap cmap = XCreateColormap(mScreen->display(),mScreen->rootWindow(),visualInfo->visual,AllocNone);
@@ -115,6 +114,7 @@ QTestLiteWindow::QTestLiteWindow(QWidget *window)
                            (unsigned char *) &wmDeleteWindowAtom, 1);
     mScreen->setWmDeleteWindowAtom(wmDeleteWindowAtom);
 }
+
 
 
 QTestLiteWindow::~QTestLiteWindow()
@@ -557,8 +557,8 @@ WId QTestLiteWindow::winId() const
 
 void QTestLiteWindow::setParent(const QPlatformWindow *window)
 {
-        QPoint point = widget()->mapTo(widget()->nativeParentWidget(),QPoint());
-        XReparentWindow(mScreen->display(),x_window,window->winId(),point.x(),point.y());
+    QPoint topLeft = geometry().topLeft();
+    XReparentWindow(mScreen->display(),x_window,window->winId(),topLeft.x(),topLeft.y());
 }
 
 void QTestLiteWindow::raise()
@@ -624,7 +624,8 @@ void QTestLiteWindow::resizeEvent(XConfigureEvent *e)
     qDebug() << hex << x_window << dec << "ConfigureNotify" << e->x << e->y << e->width << e->height << "geometry" << xpos << ypos << width << height;
 #endif
 
-    QWindowSystemInterface::handleGeometryChange(widget(), QRect(xpos, ypos, e->width, e->height));
+    QRect newRect(xpos, ypos, e->width, e->height);
+    QWindowSystemInterface::handleGeometryChange(widget(), newRect);
 }
 
 void QTestLiteWindow::mousePressEvent(XButtonEvent *e)
