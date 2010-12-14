@@ -1479,6 +1479,7 @@ void QDeclarativeTextInput::cursorPosChanged()
     updateRect();//TODO: Only update rect between pos's
     updateMicroFocus();
     emit cursorPositionChanged();
+    d->control->resetCursorBlinkTimer();
 
     if(!d->control->hasSelectedText()){
         if(d->lastSelectionStart != d->control->cursor()){
