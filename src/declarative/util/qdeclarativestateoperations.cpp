@@ -367,16 +367,18 @@ QDeclarativeStateOperation::ActionList QDeclarativeParentChange::actions()
     a.event = this;
     actions << a;
 
+    QDeclarativeContext *ctxt = qmlContext(this);
+
     if (d->xString.isValid()) {
         bool ok = false;
         QString script = d->xString.value.script();
         qreal x = script.toFloat(&ok);
         if (ok) {
-            QDeclarativeAction xa(d->target, QLatin1String("x"), x);
+            QDeclarativeAction xa(d->target, QLatin1String("x"), ctxt, x);
             actions << xa;
         } else {
-            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, qmlContext(this));
-            newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("x")));
+            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, ctxt);
+            newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("x"), ctxt));
             QDeclarativeAction xa;
             xa.property = newBinding->property();
             xa.toBinding = newBinding;
@@ -391,11 +393,11 @@ QDeclarativeStateOperation::ActionList QDeclarativeParentChange::actions()
         QString script = d->yString.value.script();
         qreal y = script.toFloat(&ok);
         if (ok) {
-            QDeclarativeAction ya(d->target, QLatin1String("y"), y);
+            QDeclarativeAction ya(d->target, QLatin1String("y"), ctxt, y);
             actions << ya;
         } else {
-            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, qmlContext(this));
-            newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("y")));
+            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, ctxt);
+            newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("y"), ctxt));
             QDeclarativeAction ya;
             ya.property = newBinding->property();
             ya.toBinding = newBinding;
@@ -410,11 +412,11 @@ QDeclarativeStateOperation::ActionList QDeclarativeParentChange::actions()
         QString script = d->scaleString.value.script();
         qreal scale = script.toFloat(&ok);
         if (ok) {
-            QDeclarativeAction sa(d->target, QLatin1String("scale"), scale);
+            QDeclarativeAction sa(d->target, QLatin1String("scale"), ctxt, scale);
             actions << sa;
         } else {
-            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, qmlContext(this));
-            newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("scale")));
+            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, ctxt);
+            newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("scale"), ctxt));
             QDeclarativeAction sa;
             sa.property = newBinding->property();
             sa.toBinding = newBinding;
@@ -429,11 +431,11 @@ QDeclarativeStateOperation::ActionList QDeclarativeParentChange::actions()
         QString script = d->rotationString.value.script();
         qreal rotation = script.toFloat(&ok);
         if (ok) {
-            QDeclarativeAction ra(d->target, QLatin1String("rotation"), rotation);
+            QDeclarativeAction ra(d->target, QLatin1String("rotation"), ctxt, rotation);
             actions << ra;
         } else {
-            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, qmlContext(this));
-            newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("rotation")));
+            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, ctxt);
+            newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("rotation"), ctxt));
             QDeclarativeAction ra;
             ra.property = newBinding->property();
             ra.toBinding = newBinding;
@@ -448,11 +450,11 @@ QDeclarativeStateOperation::ActionList QDeclarativeParentChange::actions()
         QString script = d->widthString.value.script();
         qreal width = script.toFloat(&ok);
         if (ok) {
-            QDeclarativeAction wa(d->target, QLatin1String("width"), width);
+            QDeclarativeAction wa(d->target, QLatin1String("width"), ctxt, width);
             actions << wa;
         } else {
-            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, qmlContext(this));
-            newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("width")));
+            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, ctxt);
+            newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("width"), ctxt));
             QDeclarativeAction wa;
             wa.property = newBinding->property();
             wa.toBinding = newBinding;
@@ -467,11 +469,11 @@ QDeclarativeStateOperation::ActionList QDeclarativeParentChange::actions()
         QString script = d->heightString.value.script();
         qreal height = script.toFloat(&ok);
         if (ok) {
-            QDeclarativeAction ha(d->target, QLatin1String("height"), height);
+            QDeclarativeAction ha(d->target, QLatin1String("height"), ctxt, height);
             actions << ha;
         } else {
-            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, qmlContext(this));
-            newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("height")));
+            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, ctxt);
+            newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("height"), ctxt));
             QDeclarativeAction ha;
             ha.property = newBinding->property();
             ha.toBinding = newBinding;
@@ -1075,32 +1077,34 @@ QDeclarativeAnchorChanges::ActionList QDeclarativeAnchorChanges::actions()
     d->vCenterProp = QDeclarativeProperty(d->target, QLatin1String("anchors.verticalCenter"));
     d->baselineProp = QDeclarativeProperty(d->target, QLatin1String("anchors.baseline"));
 
+    QDeclarativeContext *ctxt = qmlContext(this);
+
     if (d->anchorSet->d_func()->usedAnchors & QDeclarativeAnchors::LeftAnchor) {
-        d->leftBinding = new QDeclarativeBinding(d->anchorSet->d_func()->leftScript.script(), d->target, qmlContext(this));
+        d->leftBinding = new QDeclarativeBinding(d->anchorSet->d_func()->leftScript.script(), d->target, ctxt);
         d->leftBinding->setTarget(d->leftProp);
     }
     if (d->anchorSet->d_func()->usedAnchors & QDeclarativeAnchors::RightAnchor) {
-        d->rightBinding = new QDeclarativeBinding(d->anchorSet->d_func()->rightScript.script(), d->target, qmlContext(this));
+        d->rightBinding = new QDeclarativeBinding(d->anchorSet->d_func()->rightScript.script(), d->target, ctxt);
         d->rightBinding->setTarget(d->rightProp);
     }
     if (d->anchorSet->d_func()->usedAnchors & QDeclarativeAnchors::HCenterAnchor) {
-        d->hCenterBinding = new QDeclarativeBinding(d->anchorSet->d_func()->hCenterScript.script(), d->target, qmlContext(this));
+        d->hCenterBinding = new QDeclarativeBinding(d->anchorSet->d_func()->hCenterScript.script(), d->target, ctxt);
         d->hCenterBinding->setTarget(d->hCenterProp);
     }
     if (d->anchorSet->d_func()->usedAnchors & QDeclarativeAnchors::TopAnchor) {
-        d->topBinding = new QDeclarativeBinding(d->anchorSet->d_func()->topScript.script(), d->target, qmlContext(this));
+        d->topBinding = new QDeclarativeBinding(d->anchorSet->d_func()->topScript.script(), d->target, ctxt);
         d->topBinding->setTarget(d->topProp);
     }
     if (d->anchorSet->d_func()->usedAnchors & QDeclarativeAnchors::BottomAnchor) {
-        d->bottomBinding = new QDeclarativeBinding(d->anchorSet->d_func()->bottomScript.script(), d->target, qmlContext(this));
+        d->bottomBinding = new QDeclarativeBinding(d->anchorSet->d_func()->bottomScript.script(), d->target, ctxt);
         d->bottomBinding->setTarget(d->bottomProp);
     }
     if (d->anchorSet->d_func()->usedAnchors & QDeclarativeAnchors::VCenterAnchor) {
-        d->vCenterBinding = new QDeclarativeBinding(d->anchorSet->d_func()->vCenterScript.script(), d->target, qmlContext(this));
+        d->vCenterBinding = new QDeclarativeBinding(d->anchorSet->d_func()->vCenterScript.script(), d->target, ctxt);
         d->vCenterBinding->setTarget(d->vCenterProp);
     }
     if (d->anchorSet->d_func()->usedAnchors & QDeclarativeAnchors::BaselineAnchor) {
-        d->baselineBinding = new QDeclarativeBinding(d->anchorSet->d_func()->baselineScript.script(), d->target, qmlContext(this));
+        d->baselineBinding = new QDeclarativeBinding(d->anchorSet->d_func()->baselineScript.script(), d->target, ctxt);
         d->baselineBinding->setTarget(d->baselineProp);
     }
 
@@ -1380,24 +1384,25 @@ QList<QDeclarativeAction> QDeclarativeAnchorChanges::additionalActions()
     bool vChange = combined & QDeclarativeAnchors::Vertical_Mask;
 
     if (d->target) {
+        QDeclarativeContext *ctxt = qmlContext(this);
         QDeclarativeAction a;
         if (hChange && d->fromX != d->toX) {
-            a.property = QDeclarativeProperty(d->target, QLatin1String("x"));
+            a.property = QDeclarativeProperty(d->target, QLatin1String("x"), ctxt);
             a.toValue = d->toX;
             extra << a;
         }
         if (vChange && d->fromY != d->toY) {
-            a.property = QDeclarativeProperty(d->target, QLatin1String("y"));
+            a.property = QDeclarativeProperty(d->target, QLatin1String("y"), ctxt);
             a.toValue = d->toY;
             extra << a;
         }
         if (hChange && d->fromWidth != d->toWidth) {
-            a.property = QDeclarativeProperty(d->target, QLatin1String("width"));
+            a.property = QDeclarativeProperty(d->target, QLatin1String("width"), ctxt);
             a.toValue = d->toWidth;
             extra << a;
         }
         if (vChange && d->fromHeight != d->toHeight) {
-            a.property = QDeclarativeProperty(d->target, QLatin1String("height"));
+            a.property = QDeclarativeProperty(d->target, QLatin1String("height"), ctxt);
             a.toValue = d->toHeight;
             extra << a;
         }

@@ -66,7 +66,7 @@ QDeclarativeAction::QDeclarativeAction()
 QDeclarativeAction::QDeclarativeAction(QObject *target, const QString &propertyName,
                const QVariant &value)
 : restore(true), actionDone(false), reverseEvent(false), deletableToBinding(false), 
-  property(target, propertyName), toValue(value), 
+  property(target, propertyName, qmlEngine(target)), toValue(value),
   fromBinding(0), event(0),
   specifiedObject(target), specifiedProperty(propertyName)
 {
