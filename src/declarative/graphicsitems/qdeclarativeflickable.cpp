@@ -373,7 +373,9 @@ void QDeclarativeFlickablePrivate::updateBeginningEnd()
 
     \section1 Example Usage
 
-    \floatright flickable.gif
+    \div {float-right}
+    \inlineimage flickable.gif
+    \enddiv
 
     The following example shows a small view onto a large image in which the
     user can drag or flick the image in order to view different parts of it.

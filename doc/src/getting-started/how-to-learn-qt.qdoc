@@ -51,7 +51,9 @@
     key overviews to deepen your understanding of Qt: The Qt \l{Object
     Model} and \l{Signals and Slots}.
 
-    \floatleft qtdemo-small.png
+    \div{float-left}
+    \inlineimage qtdemo-small.png
+    \enddiv
 
     \section1 Getting an Overview
 

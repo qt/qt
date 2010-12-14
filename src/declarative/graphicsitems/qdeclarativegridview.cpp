@@ -1095,7 +1095,9 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
 
     \snippet doc/src/snippets/declarative/gridview/ContactModel.qml 0
 
-    \floatright gridview-simple.png
+    \div {float-right}
+    \inlineimage gridview-simple.png
+    \enddiv
 
     This model can be referenced as \c ContactModel in other QML files. See \l{QML Modules}
     for more information about creating reusable components like this.

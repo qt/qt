@@ -176,7 +176,16 @@
     {
      /*   background-color: #E6E6E6;*/ /* disabled until further notice */
     }
-    		
+
+    div.float-left
+    {
+        float: left; margin-right: 2em
+    }
+    div.float-right
+    {
+        float: right; margin-left: 2em
+    }
+
     span.comment
     {
         color: #008B00;
