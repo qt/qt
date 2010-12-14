@@ -562,6 +562,8 @@ void DocParser::parse(const QString& source,
                         leavePara();
                         x = getArgument(true);
                         append(Atom::Div, x);
+                        openedCommands.push(cmd);
+                        enterPara();
                         break;
                     case CMD_CODELINE:
                         {
@@ -631,6 +633,7 @@ void DocParser::parse(const QString& source,
                         closeCommand(cmd);
                         break;
                     case CMD_ENDDIV:
+                        leavePara();
                         append(Atom::EndDiv);
                         closeCommand(cmd);
                         break;
