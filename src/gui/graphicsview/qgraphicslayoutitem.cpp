@@ -399,7 +399,7 @@ QGraphicsLayoutItem::QGraphicsLayoutItem(QGraphicsLayoutItem *parent, bool isLay
 {
     Q_D(QGraphicsLayoutItem);
     d->init();
-    sizePolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    d->sizePolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     d->q_ptr = this;
 }
 
