@@ -108,9 +108,7 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
     The following example shows a ListModel containing three elements, with the roles
     "name" and "cost".
 
-    \beginfloatright
-    \inlineimage listmodel.png
-    \endfloat
+    \floatright listmodel.png
 
     \snippet doc/src/snippets/declarative/listmodel.qml 0
 
@@ -133,9 +131,7 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
 
     The delegate displays all the fruit attributes:
 
-    \beginfloatright
-    \inlineimage listmodel-nested.png
-    \endfloat
+    \floatright listmodel-nested.png
 
     \snippet doc/src/snippets/declarative/listmodel-nested.qml delegate
 

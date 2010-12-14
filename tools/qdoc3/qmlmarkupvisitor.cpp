@@ -183,7 +183,8 @@ void QmlMarkupVisitor::addExtra(quint32 start, quint32 finish)
 }
 
 void QmlMarkupVisitor::addMarkedUpToken(
-    QDeclarativeJS::AST::SourceLocation &location, const QString &tagName)
+    QDeclarativeJS::AST::SourceLocation &location, const QString &tagName,
+    const QHash<QString, QString> &attributes)
 {
     if (!location.isValid())
         return;
@@ -193,7 +194,10 @@ void QmlMarkupVisitor::addMarkedUpToken(
     else if (cursor > location.offset)
         return;
 
-    output += QString(QLatin1String("<@%1>%2</@%3>")).arg(tagName, protect(sourceText(location)), tagName);
+    output += QString(QLatin1String("<@%1")).arg(tagName);
+    foreach (const QString &key, attributes)
+        output += QString(QLatin1String(" %1=\"%2\"")).arg(key).arg(attributes[key]);
+    output += QString(QLatin1String(">%2</@%3>")).arg(protect(sourceText(location)), tagName);
     cursor += location.length;
 }
 
@@ -853,9 +857,13 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::DebuggerStatement *statement)
     return true;
 }
 
+// Elements and items are represented by UiObjectDefinition nodes.
+
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UiObjectDefinition *definition)
 {
-    QDeclarativeJS::AST::Node::accept(definition->qualifiedTypeNameId, this);
+    QHash<QString, QString> attributes;
+    attributes[QLatin1String("node")] = sourceText(definition->qualifiedTypeNameId->identifierToken);
+    addMarkedUpToken(definition->qualifiedTypeNameId->identifierToken, QLatin1String("link"), attributes);
     QDeclarativeJS::AST::Node::accept(definition->initializer, this);
     return false;
 }

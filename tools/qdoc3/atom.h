@@ -134,7 +134,7 @@ class Atom
         Target,             // 69
         UnhandledFormat, 
         UnknownCommand,
-        Last = UnknownCommand 
+        Last = UnknownCommand
     };
 
     Atom(Type type, const QString &string = "")

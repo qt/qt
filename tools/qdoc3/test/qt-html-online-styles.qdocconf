@@ -18,10 +18,9 @@ HTML.scripts     = scripts/functions.js \
                    scripts/jquery.js
 
 
-# Files not referenced in any qdoc file (last four needed by qtdemo)
+# Files not referenced in any qdoc file.
 # See also qhp.Qt.extraFiles
-extraimages.HTML        = qt-logo \
-                          trolltech-logo \
+extraimages.HTML        = qt-logo.png \
                           bg_l.png \
                           bg_l_blank.png \
                           bg_ll_blank.png \
@@ -40,11 +39,7 @@ extraimages.HTML        = qt-logo \
                           page.png \
                           page_bg.png \
                           sprites-combined.png \
-                          spinner.gif \
-                          stylesheet-coffee-plastique.png \
-                          taskmenuextension-example.png \
-                          coloreditorfactoryimage.png \
-                          dynamiclayouts-example.png
+                          spinner.gif
     
 # Include the style sheets and scripts used.
 

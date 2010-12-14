@@ -490,7 +490,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         break;
 #ifdef QDOC_QML
     case Atom::Qml:
-        out() << "<pre class=\"highlightedCode brush: cpp\">"
+        out() << "<pre class=\"qml\">"
               << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),
                                                  marker,relative))
               << "</pre>\n";

@@ -678,6 +678,9 @@ QNetworkAccessManager *QDeclarativeEngine::networkAccessManager() const
   requests. See the QDeclarativeImageProvider documentation for details on
   implementing and using image providers.
 
+  All required image providers should be added to the engine before any
+  QML sources files are loaded.
+
   Note that images loaded from a QDeclarativeImageProvider are cached
   by QPixmapCache, similar to any image loaded by QML.
 
@@ -897,9 +900,7 @@ void QDeclarativeEngine::setObjectOwnership(QObject *object, ObjectOwnership own
     if (!object)
         return;
 
-    // No need to do anything if CppOwnership and there is no QDeclarativeData as
-    // the current ownership must be CppOwnership
-    QDeclarativeData *ddata = QDeclarativeData::get(object, ownership == JavaScriptOwnership);
+    QDeclarativeData *ddata = QDeclarativeData::get(object, true);
     if (!ddata)
         return;
 
@@ -2233,9 +2234,8 @@ bool QDeclarative_isFileCaseCorrect(const QString &fileName)
             return false;
     }
 #else
-    Q_UNUSED(fileName);
+    Q_UNUSED(fileName)
 #endif
-
     return true;
 }
 

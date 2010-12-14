@@ -198,7 +198,7 @@ HTML.footer = \
     "  </script>\n"
 
 
-# Files not referenced in any qdoc file (last four are needed by qtdemo)
+# Files not referenced in any qdoc file.
 # See also extraimages.HTML
 qhp.Qt.extraFiles = index.html \
                     images/bg_l.png \
@@ -220,10 +220,6 @@ qhp.Qt.extraFiles = index.html \
                     images/page_bg.png \
                     images/sprites-combined.png \
                     images/spinner.gif \
-                    images/stylesheet-coffee-plastique.png \
-                    images/taskmenuextension-example.png \
-                    images/coloreditorfactoryimage.png \
-                    images/dynamiclayouts-example.png \
                     scripts/functions.js \
                     scripts/jquery.js \
                     scripts/narrow.js \

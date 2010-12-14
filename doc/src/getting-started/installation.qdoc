@@ -684,7 +684,7 @@ Binary Package} document.
     We hope you will enjoy using Qt.
 
 */
-/*! \page install-Symbian-linux.html
+/*! \page install-symbian-linux.html
 \title Installing Qt for the Symbian platform using Linux (experimental)
 \ingroup installation
 \ingroup qtsymbian

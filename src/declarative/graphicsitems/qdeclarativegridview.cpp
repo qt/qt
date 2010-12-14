@@ -219,12 +219,8 @@ public:
             }
         } else {
             qreal pos = (modelIndex / columns) * rowSize();
-            if (header) {
-                qreal headerSize = flow == QDeclarativeGridView::LeftToRight
-                                   ? header->item->height()
-                                   : header->item->width();
-                pos += headerSize;
-            }
+            if (header)
+                pos += headerSize();
             return pos;
         }
         return 0;
@@ -291,11 +287,9 @@ public:
             if (item->index == -1)
                 continue;
             qreal itemTop = item->rowPos();
-            if (item->index == model->count()-1 || (itemTop+rowSize()/2 >= pos))
+            if (itemTop+rowSize()/2 >= pos && itemTop - rowSize()/2 <= pos)
                 return item;
         }
-        if (visibleItems.count() && visibleItems.first()->rowPos() <= pos)
-            return visibleItems.first();
         return 0;
     }
 
@@ -314,6 +308,16 @@ public:
         }
         return index;
     }
+
+    qreal headerSize() const {
+        if (!header)
+            return 0.0;
+
+        return flow == QDeclarativeGridView::LeftToRight
+                       ? header->item->height()
+                       : header->item->width();
+    }
+
 
     virtual void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry) {
         Q_Q(const QDeclarativeGridView);
@@ -878,14 +882,11 @@ void QDeclarativeGridViewPrivate::updateHeader()
     if (header) {
         if (visibleItems.count()) {
             qreal startPos = startPosition();
-            qreal headerSize = flow == QDeclarativeGridView::LeftToRight
-                               ? header->item->height()
-                               : header->item->width();
             if (visibleIndex == 0) {
-                header->setPosition(0, startPos - headerSize);
+                header->setPosition(0, startPos - headerSize());
             } else {
-                if (position() <= startPos || header->rowPos() > startPos - headerSize)
-                    header->setPosition(0, startPos - headerSize);
+                if (position() <= startPos || header->rowPos() > startPos - headerSize())
+                    header->setPosition(0, startPos - headerSize());
             }
         } else {
             header->setPosition(0, 0);
@@ -920,10 +921,14 @@ void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
             qreal bottomPos = qMax(bottomItem->rowPos() - highlightRangeEnd, -minExtent);
             pos = qAbs(data.move + topPos) < qAbs(data.move + bottomPos) ? topPos : bottomPos;
         } else if (topItem) {
-            pos = qMax(qMin(topItem->rowPos() - highlightRangeStart, -maxExtent), -minExtent);
+            if (topItem->index == 0 && header && position()+highlightRangeStart < header->rowPos()+headerSize()/2)
+                pos = header->rowPos() - highlightRangeStart;
+            else
+                pos = qMax(qMin(topItem->rowPos() - highlightRangeStart, -maxExtent), -minExtent);
         } else if (bottomItem) {
             pos = qMax(qMin(bottomItem->rowPos() - highlightRangeStart, -maxExtent), -minExtent);
         } else {
+            QDeclarativeFlickablePrivate::fixup(data, minExtent, maxExtent);
             fixupDuration = oldDuration;
             return;
         }
@@ -1090,9 +1095,7 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
 
     \snippet doc/src/snippets/declarative/gridview/ContactModel.qml 0
 
-    \beginfloatright
-    \inlineimage gridview-simple.png
-    \endfloat
+    \floatright gridview-simple.png
 
     This model can be referenced as \c ContactModel in other QML files. See \l{QML Modules}
     for more information about creating reusable components like this.
@@ -1106,9 +1109,7 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     \codeline
     \snippet doc/src/snippets/declarative/gridview/gridview.qml classdocs simple
 
-    \beginfloatright
-    \inlineimage gridview-highlight.png
-    \endfloat
+    \floatright gridview-highlight.png
 
     The view will create a new delegate for each item in the model. Note that the delegate
     is able to access the model's \c name and \c portrait data directly.
@@ -1764,8 +1765,10 @@ void QDeclarativeGridView::setFooter(QDeclarativeComponent *footer)
             d->footer = 0;
         }
         d->footerComponent = footer;
-        d->updateFooter();
-        d->updateGrid();
+        if (isComponentComplete()) {
+            d->updateFooter();
+            d->updateGrid();
+        }
         emit footerChanged();
     }
 }
@@ -1794,9 +1797,11 @@ void QDeclarativeGridView::setHeader(QDeclarativeComponent *header)
             d->header = 0;
         }
         d->headerComponent = header;
-        d->updateHeader();
-        d->updateFooter();
-        d->updateGrid();
+        if (isComponentComplete()) {
+            d->updateHeader();
+            d->updateFooter();
+            d->updateGrid();
+        }
         emit headerChanged();
     }
 }
@@ -2221,6 +2226,8 @@ void QDeclarativeGridView::componentComplete()
 {
     Q_D(QDeclarativeGridView);
     QDeclarativeFlickable::componentComplete();
+    d->updateHeader();
+    d->updateFooter();
     d->updateGrid();
     if (d->isValid()) {
         refill();

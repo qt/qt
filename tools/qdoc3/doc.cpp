@@ -376,6 +376,7 @@ class DocParser
     void leaveTableRow();
     CodeMarker *quoteFromFile();
     void expandMacro(const QString& name, const QString& def, int numParams);
+    QString expandMacroToString(const QString &name, const QString &def, int numParams);
     Doc::SectioningUnit getSectioningUnit();
     QString getArgument(bool verbatim = false);
     QString getOptionalArgument();
@@ -1239,7 +1240,7 @@ void DocParser::parse(const QString& source,
                                 }
                                 else {
                                     location().push(macro.defaultDefLocation.filePath());
-                                    in.insert(pos, macro.defaultDef);
+                                    in.insert(pos, expandMacroToString(cmdStr, macro.defaultDef, macro.numParams));
                                     len = in.length();
                                     openedInputs.push(pos + macro.defaultDef.length());
                                 }
@@ -1979,15 +1980,14 @@ void DocParser::expandMacro(const QString &name,
         int j = 0;
         while (j < def.size()) {
             int paramNo;
-            if ((def[j] == '\\') && (j < def.size() - 1) &&
-                ((paramNo = def[j + 1].digitValue()) >= 1) &&
+            if (((paramNo = def[j].unicode()) >= 1) &&
                 (paramNo <= numParams)) {
                 if (!rawString.isEmpty()) {
                     append(Atom::RawString, rawString);
                     rawString = "";
                 }
                 append(Atom::String, args[paramNo - 1]);
-                j += 2;
+                j += 1;
             }
             else {
                 rawString += def[j++];
@@ -1995,6 +1995,43 @@ void DocParser::expandMacro(const QString &name,
         }
         if (!rawString.isEmpty())
             append(Atom::RawString, rawString);
+    }
+}
+
+QString DocParser::expandMacroToString(const QString &name, const QString &def, int numParams)
+{
+    if (numParams == 0) {
+        return def;
+    }
+    else {
+        QStringList args;
+        QString rawString;
+
+        for (int i = 0; i < numParams; i++) {
+            if (numParams == 1 || isLeftBraceAhead()) {
+                args << getArgument(true);
+            }
+            else {
+                location().warning(tr("Macro '\\%1' invoked with too few"
+                                       " arguments (expected %2, got %3)")
+                                    .arg(name).arg(numParams).arg(i));
+                break;
+            }
+        }
+
+        int j = 0;
+        while (j < def.size()) {
+            int paramNo;
+            if (((paramNo = def[j].unicode()) >= 1) &&
+                (paramNo <= numParams)) {
+                rawString += args[paramNo - 1];
+                j += 1;
+            }
+            else {
+                rawString += def[j++];
+            }
+        }
+        return rawString;
     }
 }
 
@@ -2879,7 +2916,7 @@ void Doc::initialize(const Config& config)
             QString def = config.getString(macroDotName + Config::dot + *f);
             if (!def.isEmpty()) {
                 macro.otherDefs.insert(*f, def);
-                int m = Config::numParams(macro.defaultDef);
+                int m = Config::numParams(def);
                 if (macro.numParams == -1) {
                     macro.numParams = m;
                 }

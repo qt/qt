@@ -448,3 +448,8 @@
     \externalpage https://developer.mozilla.org/en/JavaScript/About_JavaScript
     \title About JavaScript
 */
+
+/*!
+    \externalpage http://www.libusb.org/
+    \title libusb
+*/

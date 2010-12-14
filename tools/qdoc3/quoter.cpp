@@ -235,10 +235,14 @@ QString Quoter::quoteSnippet(const Location &docLocation, const QString &identif
             QString lastLine = getLine();
             int dIndex = lastLine.indexOf(delimiter);
             if (dIndex > 0) {
+                // The delimiter might be preceded on the line by other
+                // delimeters, so look for the first comment on the line.
                 QString leading = lastLine.left(dIndex);
                 dIndex = leading.indexOf(comment);
                 if (dIndex != -1)
                     leading = leading.left(dIndex);
+                if (leading.endsWith(QLatin1String("<@comment>")))
+                    leading.chop(10);
                 if (!leading.trimmed().isEmpty())
                     t += leading;
             }

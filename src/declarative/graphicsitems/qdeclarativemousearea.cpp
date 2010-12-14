@@ -216,9 +216,7 @@ QDeclarativeMouseAreaPrivate::~QDeclarativeMouseAreaPrivate()
 
     \section1 Example Usage
 
-    \beginfloatright
-    \inlineimage qml-mousearea-snippet.png
-    \endfloat
+    \floatright qml-mousearea-snippet.png
 
     The following example uses a MouseArea in a \l Rectangle that changes
     the \l Rectangle color to red when clicked:
