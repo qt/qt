@@ -1110,6 +1110,10 @@ QFileSystemEntry QFileSystemEngine::currentPath()
 bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
 {
     Q_ASSERT(false);
+    Q_UNUSED(source)
+    Q_UNUSED(target)
+    Q_UNUSED(error)
+
     return false; // TODO implement; - code needs to be moved from qfsfileengine_win.cpp
 }
 

@@ -94,7 +94,7 @@ public:
 
         ReadPermissions     = OtherReadPermission | GroupReadPermission | UserReadPermission | OwnerReadPermission,
         WritePermissions    = OtherWritePermission | GroupWritePermission | UserWritePermission | OwnerWritePermission,
-        ExecutePermissions  =  OtherExecutePermission | GroupExecutePermission | UserExecutePermission | OwnerExecutePermission,
+        ExecutePermissions  = OtherExecutePermission | GroupExecutePermission | UserExecutePermission | OwnerExecutePermission,
 
         Permissions         = OtherPermissions | GroupPermissions | UserPermissions | OwnerPermissions,
 
