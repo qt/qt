@@ -381,12 +381,6 @@ void QGL2PaintEngineExPrivate::updateMatrix()
         dx = ceilf(dx - 0.5f);
         dy = ceilf(dy - 0.5f);
     }
-#ifndef Q_OS_SYMBIAN
-    if (addOffset) {
-        dx += 0.49f;
-        dy += 0.49f;
-    }
-#endif
     pmvMatrix[0][0] = (wfactor * transform.m11())  - transform.m13();
     pmvMatrix[1][0] = (wfactor * transform.m21())  - transform.m23();
     pmvMatrix[2][0] = (wfactor * dx) - transform.m33();
@@ -487,11 +481,6 @@ void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& s
     // Setup for texture drawing
     currentBrush = noBrush;
     shaderManager->setSrcPixelType(pattern ? QGLEngineShaderManager::PatternSrc : QGLEngineShaderManager::ImageSrc);
-
-    if (addOffset) {
-        addOffset = false;
-        matrixDirty = true;
-    }
 
     if (snapToPixelGrid) {
         snapToPixelGrid = false;
@@ -674,16 +663,6 @@ void QGL2PaintEngineExPrivate::cleanupVectorPath(QPaintEngineEx *engine, void *d
 void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 {
     transferMode(BrushDrawingMode);
-
-    const QOpenGL2PaintEngineState *s = q->state();
-    const bool newAddOffset = !(s->renderHints & QPainter::Antialiasing) &&
-                              (qbrush_style(currentBrush) == Qt::SolidPattern) &&
-                              !multisamplingAlwaysEnabled;
-
-    if (addOffset != newAddOffset) {
-        addOffset = newAddOffset;
-        matrixDirty = true;
-    }
 
     if (snapToPixelGrid) {
         snapToPixelGrid = false;
@@ -1203,12 +1182,6 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 void QGL2PaintEngineExPrivate::stroke(const QVectorPath &path, const QPen &pen)
 {
     const QOpenGL2PaintEngineState *s = q->state();
-    const bool newAddOffset = !(s->renderHints & QPainter::Antialiasing) && !multisamplingAlwaysEnabled;
-    if (addOffset != newAddOffset) {
-        addOffset = newAddOffset;
-        matrixDirty = true;
-    }
-
     if (snapToPixelGrid) {
         snapToPixelGrid = false;
         matrixDirty = true;
@@ -1638,10 +1611,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, (GLfloat*)vertexCoordinates->data());
     setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, (GLfloat*)textureCoordinates->data());
 
-    if (addOffset) {
-        addOffset = false;
-        matrixDirty = true;
-    }
     if (!snapToPixelGrid) {
         snapToPixelGrid = true;
         matrixDirty = true;
@@ -1785,11 +1754,6 @@ void QGL2PaintEngineExPrivate::drawPixmapFragments(const QPainter::PixmapFragmen
     vertexCoordinateArray.clear();
     textureCoordinateArray.clear();
     opacityArray.reset();
-
-    if (addOffset) {
-        addOffset = false;
-        matrixDirty = true;
-    }
 
     if (snapToPixelGrid) {
         snapToPixelGrid = false;
@@ -2087,10 +2051,6 @@ void QGL2PaintEngineExPrivate::writeClip(const QVectorPath &path, uint value)
 {
     transferMode(BrushDrawingMode);
 
-    if (addOffset) {
-        addOffset = false;
-        matrixDirty = true;
-    }
     if (snapToPixelGrid) {
         snapToPixelGrid = false;
         matrixDirty = true;

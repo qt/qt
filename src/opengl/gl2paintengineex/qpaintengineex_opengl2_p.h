@@ -181,7 +181,6 @@ public:
             elementIndicesVBOId(0),
             opacityArray(0),
             snapToPixelGrid(false),
-            addOffset(false),
             nativePaintingActive(false),
             inverseScale(1),
             lastMaskTextureUsed(0)
@@ -283,7 +282,6 @@ public:
     GLfloat staticTextureCoordinateArray[8];
 
     bool snapToPixelGrid;
-    bool addOffset; // When enabled, adds a 0.49,0.49 offset to matrix in updateMatrix
     bool nativePaintingActive;
     GLfloat pmvMatrix[3][3];
     GLfloat inverseScale;
