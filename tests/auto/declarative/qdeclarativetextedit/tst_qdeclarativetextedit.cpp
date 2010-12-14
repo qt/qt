@@ -110,7 +110,6 @@ private slots:
     void mouseSelection_data();
     void mouseSelection();
     void inputMethodHints();
-    void clearSelectionOnFocusLost();
 
     void cursorDelegate();
     void delegateLoading_data();
@@ -748,45 +747,6 @@ void tst_qdeclarativetextedit::inputMethodHints()
     textEditObject->setInputMethodHints(Qt::ImhUppercaseOnly);
     QVERIFY(textEditObject->inputMethodHints() & Qt::ImhUppercaseOnly);
 }
-
-// QTBUG-15341
-void tst_qdeclarativetextedit::clearSelectionOnFocusLost()
-{
-
-    // create a visible scene with two text edits
-    QGraphicsScene scene;
-    QGraphicsView view(&scene);
-    QDeclarativeTextEdit edit;
-    QDeclarativeTextEdit secondEdit;
-    edit.setText("Hello world!");
-    scene.addItem(&edit);
-    scene.addItem(&secondEdit);
-    view.show();
-    QApplication::setActiveWindow(&view);
-    QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
-
-    int index = 0;
-    while (index < Qt::NoFocusReason) {
-
-        // focus the first text edit and select text
-        edit.setFocus(true);
-        edit.selectAll();
-        QVERIFY(edit.hasActiveFocus() && !secondEdit.hasActiveFocus());
-        QCOMPARE(edit.selectedText().size(), 12);
-
-        // lose focus in the first text edit
-        qobject_cast<QGraphicsObject*>(&secondEdit)->setFocus(Qt::FocusReason(index));
-        QVERIFY(!edit.hasActiveFocus() && secondEdit.hasActiveFocus());
-
-        // depending on the focus reason, selection should now be cleared
-        bool clearSelection = (index != Qt::ActiveWindowFocusReason && index != Qt::PopupFocusReason);
-        QCOMPARE(edit.selectedText().isEmpty(), clearSelection);
-        index++;
-    }
-}
-
-
 
 void tst_qdeclarativetextedit::cursorDelegate()
 {
