@@ -521,7 +521,7 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
     // at least cleared the background (= painted something). In EGL API it's a
     // mistakte to call swapBuffers if nothing was painted. This check protects
     // the flush func from being executed if it's for nothing.
-    if (! d_ptr->did_paint)
+    if (!d_ptr->did_paint)
         return;
 
     QWidget *parent = widget->internalWinId() ? widget : widget->nativeParentWidget();
