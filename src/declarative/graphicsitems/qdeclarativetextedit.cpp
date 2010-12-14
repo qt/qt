@@ -994,6 +994,20 @@ void QDeclarativeTextEditPrivate::focusChanged(bool hasFocus)
     QDeclarativeItemPrivate::focusChanged(hasFocus);
 }
 
+void QDeclarativeTextEdit::focusOutEvent(QFocusEvent *event)
+{
+    Q_D(QDeclarativeTextEdit);
+    if (event->reason() != Qt::ActiveWindowFocusReason
+            && event->reason() != Qt::PopupFocusReason) {
+        QTextCursor cursor = d->control->textCursor();
+        if (cursor.hasSelection()) {
+            cursor.clearSelection();
+            d->control->setTextCursor(cursor);
+        }
+    }
+    QDeclarativePaintedItem::focusOutEvent(event);
+}
+
 /*!
     \qmlmethod void TextEdit::selectAll()
 
