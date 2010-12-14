@@ -12105,7 +12105,7 @@ EXPORTS
 	_ZN15QStaticTextItemD1Ev @ 12104 NONAME
 	_ZN15QStaticTextItemD2Ev @ 12105 NONAME
 	_ZN19QEventDispatcherS6031reactivateDeferredActiveObjectsEv @ 12106 NONAME
-	_Z18qt_addBitmapToPathffPKhiiiP12QPainterPath @ 12107 NONAME ABSENT
+	_Z18qt_addBitmapToPathffPKhiiiP12QPainterPath @ 12107 NONAME
 	_Z22qt_fontdata_from_indexi @ 12108 NONAME
 	_ZN10QBlittable4lockEv @ 12109 NONAME
 	_ZN10QBlittable6unlockEv @ 12110 NONAME

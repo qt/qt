@@ -1585,6 +1585,7 @@ void tst_QProcess::spaceArgsTest()
 #if defined(Q_OS_SYMBIAN)
         // Symbian test outputs to a file, so check that
         FILE* file = fopen("c:\\logs\\qprocess_args_test.txt","r");
+        QVERIFY(file);
         char buf[256];
         fgets(buf, 256, file);
         fclose(file);
@@ -1614,6 +1615,7 @@ void tst_QProcess::spaceArgsTest()
 #if defined(Q_OS_SYMBIAN)
         // Symbian test outputs to a file, so check that
         file = fopen("c:\\logs\\qprocess_args_test.txt","r");
+        QVERIFY(file);
         fgets(buf, 256, file);
         fclose(file);
         actual = QString::fromLatin1(buf).split("|");
@@ -1661,6 +1663,7 @@ void tst_QProcess::nativeArguments()
 # else
     FILE* file = fopen("\\temp\\qprocess_args_test.txt","r");
 # endif
+    QVERIFY(file);
     char buf[256];
     fgets(buf, 256, file);
     fclose(file);
@@ -2285,7 +2288,9 @@ void tst_QProcess::detachedWorkingDirectoryAndPid()
 
     QFileInfo fi(infoFile);
     fi.setCaching(false);
-    while (fi.size() == 0) {
+    //The guard counter ensures the test does not hang if the sub process fails.
+    //Instead, the test will fail when trying to open & verify the sub process output file.
+    for (int guard = 0; guard < 100 && fi.size() == 0; guard++) {
         QTest::qSleep(100);
     }
 
@@ -2397,6 +2402,7 @@ void tst_QProcess::startFinishStartFinish()
 #if defined(Q_OS_SYMBIAN)
         // Symbian test outputs to a file, so check that
         FILE* file = fopen("c:\\logs\\qprocess_output_test.txt","r");
+        QVERIFY(file);
         char buf[30];
         fgets(buf, 30, file);
         QCOMPARE(QString::fromLatin1(buf),
