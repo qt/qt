@@ -44,9 +44,8 @@
 
 #include <QtCore/qglobal.h>
 
-#ifdef Q_OS_LINUX
-# include <features.h>
-#endif
+// include stdlib.h and hope that it defines __GLIBC__ for glibc-based systems
+#include <stdlib.h>
 
 #ifdef __GLIBC__
 #include <byteswap.h>

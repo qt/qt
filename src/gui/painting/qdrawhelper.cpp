@@ -6432,6 +6432,8 @@ Q_STATIC_TEMPLATE_FUNCTION void blendTransformedTiled(int count, const QSpan *sp
                     int px = int(tx) - (tx < 0);
                     int py = int(ty) - (ty < 0);
 
+                    px %= image_width;
+                    py %= image_height;
                     if (px < 0)
                         px += image_width;
                     if (py < 0)
