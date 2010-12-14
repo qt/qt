@@ -145,36 +145,43 @@ const char *BaselineHandler::logtime()
     //return QTime::currentTime().toString(QLS("mm:ss.zzz"));
 }
 
+bool BaselineHandler::establishConnection()
+{
+    if (!proto.acceptConnection(&plat)) {
+        qWarning() << runId << logtime() << "Accepting new connection from" << proto.socket.peerAddress().toString() << "failed." << proto.errorMessage();
+        proto.socket.disconnectFromHost();
+        return false;
+    }
+    QString logMsg;
+    foreach (QString key, plat.keys()) {
+        if (key != PI_HostName && key != PI_HostAddress)
+            logMsg += key + QLS(": '") + plat.value(key) + QLS("', ");
+    }
+    qDebug() << runId << logtime() << "Connection established with" << plat.value(PI_HostName)
+             << "[" << qPrintable(plat.value(PI_HostAddress)) << "]" << logMsg;
+
+    // Filter on branch
+    QString branch = plat.value(PI_PulseGitBranch);
+    if (branch.isEmpty()) {
+        // Not run by Pulse, i.e. ad hoc run: Ok.
+    }
+    else if (branch != QLS("master-integration") || !plat.value(PI_GitCommit).contains(QLS("Merge branch 'master' of scm.dev.nokia.troll.no:qt/oslo-staging-2 into master-integration"))) {
+        qDebug() << runId << logtime() << "Did not pass branch/staging repo filter, disconnecting.";
+        proto.sendBlock(BaselineProtocol::Abort, QByteArray("This branch/staging repo is not assigned to be tested."));
+        proto.socket.disconnectFromHost();
+        return false;
+    }
+
+    proto.sendBlock(BaselineProtocol::Ack, QByteArray());
+
+    report.init(this, runId, plat);
+    return true;
+}
+
 void BaselineHandler::receiveRequest()
 {
     if (!connectionEstablished) {
-        if (!proto.acceptConnection(&plat)) {
-            qWarning() << runId << logtime() << "Accepting new connection from" << proto.socket.peerAddress().toString() << "failed." << proto.errorMessage();
-            proto.socket.disconnectFromHost();
-            return;
-        }
-        QString logMsg;
-        foreach (QString key, plat.keys()) {
-            if (key != PI_HostName && key != PI_HostAddress)
-                logMsg += key + QLS(": '") + plat.value(key) + QLS("', ");
-        }
-        qDebug() << runId << logtime() << "Connection established with" << plat.value(PI_HostName)
-                 << "[" << qPrintable(plat.value(PI_HostAddress)) << "]" << logMsg;
-
-        // Filter on branch
-        QString branch = plat.value(PI_PulseGitBranch);
-        if (branch.isEmpty()) {
-            // Not run by Pulse, i.e. ad hoc run: Ok.
-        }
-        else if (branch != QLS("master-integration") || !plat.value(PI_GitCommit).contains(QLS("Merge branch 'master' of scm.dev.nokia.troll.no:qt/oslo-staging-2 into master-integration"))) {
-            qDebug() << runId << logtime() << "Did not pass branch/staging repo filter, disconnecting.";
-            proto.sendBlock(BaselineProtocol::Abort, QByteArray("This branch/staging repo is not assigned to be tested."));
-            proto.socket.disconnectFromHost();
-            return;
-        }
-
-        proto.sendBlock(BaselineProtocol::Ack, QByteArray());
-        connectionEstablished = true;
+        connectionEstablished = establishConnection();
         return;
     }
 
@@ -247,7 +254,7 @@ void BaselineHandler::provideBaselineChecksums(const QByteArray &itemListBlock)
     QDataStream ods(&block, QIODevice::WriteOnly);
     ods << itemList;
     proto.sendBlock(BaselineProtocol::Ack, block);
-    report.start(BaselineServer::storagePath(), runId, plat, context, itemList);
+    report.addItems(itemList);
 }
 
 
@@ -274,19 +281,15 @@ void BaselineHandler::storeImage(const QByteArray &itemBlock, bool isBaseline)
     file.close();
 
     if (!isBaseline)
-        report.addItem(pathForItem(item, true, false) + QLS(FileFormat),
-                       pathForItem(item, false, false) + QLS(FileFormat),
-                       item);
+        report.addMismatch(item);
 
-    QByteArray msg(isBaseline ? "New baseline image stored: " :
-                                "Mismatch report: " );
-    msg += BaselineServer::baseUrl();
+    QString msg;
     if (isBaseline)
-        msg += pathForItem(item, true, false).toLatin1() + FileFormat;
+        msg = QLS("New baseline image stored: ") + pathForItem(item, true, true) + QLS(FileFormat);
     else
-        msg += report.filePath();
+        msg = BaselineServer::baseUrl() + report.filePath();
 
-    proto.sendBlock(BaselineProtocol::Ack, msg);
+    proto.sendBlock(BaselineProtocol::Ack, msg.toLatin1());
 }
 
 
@@ -298,7 +301,7 @@ void BaselineHandler::receiveDisconnect()
 }
 
 
-void BaselineHandler::mapPlatformInfo()
+void BaselineHandler::mapPlatformInfo() const
 {
     mapped = plat;
 
@@ -328,12 +331,13 @@ void BaselineHandler::mapPlatformInfo()
     mapped.insert(PI_QtVersion, ver.prepend(QLS("Qt-")));   //### TBD: remove patch version
 }
 
-QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline, bool absolute)
+QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline, bool absolute) const
 {
     if (mapped.isEmpty())
         mapPlatformInfo();
 
-    QString itemName = item.itemName;
+    QString itemName = item.itemName.simplified();
+    itemName.replace(QLC(' '), QLC('_'));
     itemName.replace(QLC('.'), QLC('_'));
     itemName.append(QLC('_'));
     itemName.append(QString::number(item.itemChecksum, 16).rightJustified(4, QLC('0')));

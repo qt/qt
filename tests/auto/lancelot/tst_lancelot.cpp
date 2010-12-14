@@ -252,7 +252,7 @@ void tst_Lancelot::runTestSuite(GraphicsEngine engine, QImage::Format format)
             if (dryRunMode)
                 qDebug() << "Dryrun mode, ignoring detected mismatch." << serverMsg;
             else
-                QFAIL("Rendered image differs from baseline.\n" + serverMsg);
+                QFAIL("Rendered image differs from baseline. Report:\n   " + serverMsg);
     }
 }
 

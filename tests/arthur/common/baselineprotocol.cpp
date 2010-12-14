@@ -48,6 +48,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QTime>
+#include <QPointer>
 
 #ifndef QMAKESPEC
 #define QMAKESPEC "Unknown"
@@ -262,6 +263,10 @@ QDataStream & operator>> (QDataStream &stream, ImageItem &ii)
     ii.status = ImageItem::ItemStatus(encStatus);
     ii.readImageFromStream(stream);
     return stream;
+}
+
+BaselineProtocol::BaselineProtocol()
+{
 }
 
 BaselineProtocol::~BaselineProtocol()

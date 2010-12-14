@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #ifndef BASELINEPROTOCOL_H
 #define BASELINEPROTOCOL_H
 
@@ -46,6 +47,7 @@
 #include <QImage>
 #include <QVector>
 #include <QMap>
+#include <QPointer>
 
 #define QLS QLatin1String
 #define QLC QLatin1Char
@@ -87,7 +89,8 @@ public:
     enum ItemStatus {
         Ok = 0,
         BaselineNotFound = 1,
-        IgnoreItem = 2
+        IgnoreItem = 2,
+        Mismatch = 3
     };
 
     QString testFunction;
@@ -107,11 +110,14 @@ Q_DECLARE_METATYPE(ImageItem);
 
 typedef QVector<ImageItem> ImageItemList;
 
+
 class BaselineProtocol
 {
 public:
-    BaselineProtocol() {}
+    BaselineProtocol();
     ~BaselineProtocol();
+
+    static BaselineProtocol *instance(QObject *parent = 0);
 
     // ****************************************************
     // Important constants here
@@ -136,6 +142,8 @@ public:
     };
 
     // For client:
+
+    // For advanced client:
     bool connect(const QString &testCase, bool *dryrun = 0);
     bool requestBaselineChecksums(const QString &testFunction, ImageItemList *itemList);
     bool submitNewBaseline(const ImageItem &item, QByteArray *serverMsg);
