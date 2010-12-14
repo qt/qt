@@ -30,38 +30,6 @@ macro.endcomment        = "\\c{*/}"
 macro.uuml.HTML         = "&uuml;"
 macro.mdash.HTML        = "&mdash;"
 
-# Macros for floating images and floating images with alt text.
-# Ideally, these would be HTML-only macros.
-
-macro.floatleft = "\\raw HTML\n" \
-                  "<div style=\"float: left; margin-right: 2em\">" \
-                  "\\endraw\n" \
-                  "\\inlineimage \1\n" \
-                  "\\raw HTML\n" \
-                  "</div>\n" \
-                  "\\endraw\n"
-macro.figureleft = "\\raw HTML\n" \
-                   "<div style=\"float: left; margin-right: 2em\">" \
-                   "\\endraw\n" \
-                   "\\inlineimage \1 \2\n" \
-                   "\\raw HTML\n" \
-                   "</div>\n" \
-                   "\\endraw\n"
-macro.floatright = "\\raw HTML\n" \
-                   "<div style=\"float: right; margin-left: 2em\">\n" \
-                   "\\endraw\n" \
-                   "\\inlineimage \1\n" \
-                   "\\raw HTML\n" \
-                   "</div>\n" \
-                   "\\endraw\n"
-macro.figureright = "\\raw HTML\n" \
-                    "<div style=\"float: right; margin-left: 2em\">" \
-                    "\\endraw\n" \
-                    "\\inlineimage \1 \2\n" \
-                    "\\raw HTML\n" \
-                    "</div>\n" \
-                    "\\endraw\n"
-
 macro.beginfloatleft.HTML   = "<div style=\"float: left; margin-right: 2em\">"
 macro.beginfloatright.HTML  = "<div style=\"float: right; margin-left: 2em\">"
 macro.endfloat.HTML         = "</div>"
