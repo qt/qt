@@ -4455,7 +4455,7 @@ class IMItem : public QGraphicsRectItem
 {
 public:
     IMItem(QGraphicsItem *parent = 0):
-        QGraphicsRectItem(mf.adjusted(-5, -5, 5, 5), parent)
+        QGraphicsRectItem(QRectF(0, 0, 20, 20), parent)
     {
         setFlag(QGraphicsItem::ItemIsFocusable, true);
         setFlag(QGraphicsItem::ItemAcceptsInputMethod, true);
@@ -4486,7 +4486,7 @@ void tst_QGraphicsView::QTBUG_16063_microFocusRect()
     scene.setFocusItem(item);
     view.setFocus();
     QRectF mfv = view.inputMethodQuery(Qt::ImMicroFocus).toRectF();
-    QCOMPARE(mfv, QRectF(13.5, 13.6, 10, 10));
+    QCOMPARE(mfv, IMItem::mf.translated(-view.mapToScene(view.sceneRect().toRect()).boundingRect().topLeft()));
 }
 
 QTEST_MAIN(tst_QGraphicsView)
