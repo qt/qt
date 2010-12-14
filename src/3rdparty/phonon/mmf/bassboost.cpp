@@ -16,7 +16,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include <bassboostbase.h>
+#include <BassBoostBase.h>
 #include "bassboost.h"
 
 QT_BEGIN_NAMESPACE

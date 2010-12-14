@@ -1633,6 +1633,13 @@ void qt_cleanup()
     //Change mouse pointer back
     S60->wsSession().SetPointerCursorMode(EPointerCursorNone);
 
+#ifdef Q_WS_S60
+    // Clear CBA
+    CEikonEnv::Static()->AppUiFactory()->SwapButtonGroup(0);
+    delete S60->buttonGroupContainer();
+    S60->setButtonGroupContainer(0);
+#endif
+
     if (S60->qtOwnsS60Environment) {
         // Restore the S60 framework trap handler. See qt_init().
         User::SetTrapHandler(S60->s60InstalledTrapHandler);
