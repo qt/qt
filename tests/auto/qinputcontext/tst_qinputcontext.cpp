@@ -50,6 +50,13 @@
 #include <qwindowsstyle.h>
 #include <qdesktopwidget.h>
 #include <qpushbutton.h>
+#include <qgraphicsview.h>
+#include <qgraphicsscene.h>
+
+#ifdef QT_WEBKIT_LIB
+#include <qwebview.h>
+#include <qgraphicswebview.h>
+#endif
 
 #ifdef Q_OS_SYMBIAN
 #include <private/qt_s60_p.h>
@@ -466,6 +473,115 @@ void tst_QInputContext::focusProxy()
     QCOMPARE(gic->focusWidget(), &proxy);
 }
 
+#ifdef QT_WEBKIT_LIB
+class AutoWebView : public QWebView
+{
+    Q_OBJECT
+
+public:
+    AutoWebView()
+        : m_length(0)
+        , m_mode(QLineEdit::Normal)
+    {
+        updatePage();
+    }
+    ~AutoWebView() {}
+
+    void updatePage()
+    {
+        // The update might reset the input method parameters.
+        bool imEnabled = testAttribute(Qt::WA_InputMethodEnabled);
+        Qt::InputMethodHints hints = inputMethodHints();
+
+        QString page = "<html><body onLoad=\"document.forms.testform.testinput.focus()\">"
+                "<form name=\"testform\"><input name=\"testinput\" type=\"%1\" %2></form></body></html>";
+        if (m_mode == QLineEdit::Password)
+            page = page.arg("password");
+        else
+            page = page.arg("text");
+
+        if (m_length == 0)
+            page = page.arg("");
+        else
+            page = page.arg("maxlength=\"" + QString::number(m_length) + "\"");
+
+        setHtml(page);
+
+        setAttribute(Qt::WA_InputMethodEnabled, imEnabled);
+        setInputMethodHints(hints);
+    }
+    void setMaxLength(int length)
+    {
+        m_length = length;
+        updatePage();
+    }
+    void setEchoMode(QLineEdit::EchoMode mode)
+    {
+        m_mode = mode;
+        updatePage();
+    }
+
+    int m_length;
+    QLineEdit::EchoMode m_mode;
+};
+
+class AutoGraphicsWebView : public QGraphicsView
+{
+    Q_OBJECT
+
+public:
+    AutoGraphicsWebView()
+        : m_length(0)
+        , m_mode(QLineEdit::Normal)
+    {
+        m_scene.addItem(&m_view);
+        setScene(&m_scene);
+        m_view.setFocus();
+        updatePage();
+    }
+    ~AutoGraphicsWebView() {}
+
+    void updatePage()
+    {
+        // The update might reset the input method parameters.
+        bool imEnabled = testAttribute(Qt::WA_InputMethodEnabled);
+        Qt::InputMethodHints hints = inputMethodHints();
+
+        QString page = "<html><body onLoad=\"document.forms.testform.testinput.focus()\">"
+                "<form name=\"testform\"><input name=\"testinput\" type=\"%1\" %2></form></body></html>";
+        if (m_mode == QLineEdit::Password)
+            page = page.arg("password");
+        else
+            page = page.arg("text");
+
+        if (m_length == 0)
+            page = page.arg("");
+        else
+            page = page.arg("maxlength=\"" + QString::number(m_length) + "\"");
+
+        m_view.setHtml(page);
+
+        setAttribute(Qt::WA_InputMethodEnabled, imEnabled);
+        setInputMethodHints(hints);
+    }
+    void setMaxLength(int length)
+    {
+        m_length = length;
+        updatePage();
+    }
+    void setEchoMode(QLineEdit::EchoMode mode)
+    {
+        m_mode = mode;
+        updatePage();
+    }
+
+    int m_length;
+    QLineEdit::EchoMode m_mode;
+    QGraphicsScene m_scene;
+    QGraphicsWebView m_view;
+};
+#endif // QT_WEBKIT_LIB
+
 void tst_QInputContext::symbianTestCoeFepInputContext_data()
 {
 #ifdef Q_OS_SYMBIAN
@@ -481,6 +597,10 @@ void tst_QInputContext::symbianTestCoeFepInputContext_data()
     symbianTestCoeFepInputContext_addData<QLineEdit>();
     symbianTestCoeFepInputContext_addData<QPlainTextEdit>();
     symbianTestCoeFepInputContext_addData<QTextEdit>();
+# ifdef QT_WEBKIT_LIB
+    symbianTestCoeFepInputContext_addData<AutoWebView>();
+    symbianTestCoeFepInputContext_addData<AutoGraphicsWebView>();
+# endif
 #endif
 }
 
@@ -1087,13 +1207,28 @@ void tst_QInputContext::symbianTestCoeFepInputContext()
 
     editwidget->setAttribute(Qt::WA_InputMethodEnabled, inputMethodEnabled);
     editwidget->setInputMethodHints(inputMethodHints);
-    QLineEdit *lineedit = qobject_cast<QLineEdit *>(editwidget);
-    if (lineedit) {
+    if (QLineEdit *lineedit = qobject_cast<QLineEdit *>(editwidget)) {
         if (maxLength > 0)
             lineedit->setMaxLength(maxLength);
         lineedit->setEchoMode(echoMode);
+#ifdef QT_WEBKIT_LIB
+    } else if (AutoWebView *webView = qobject_cast<AutoWebView *>(editwidget)) {
+        if (maxLength > 0)
+            webView->setMaxLength(maxLength);
+        webView->setEchoMode(echoMode);
+        // WebKit disables T9 everywhere.
+        if (inputMethodEnabled && !(inputMethodHints & Qt::ImhNoPredictiveText))
+            return;
+    } else if (AutoGraphicsWebView *webView = qobject_cast<AutoGraphicsWebView *>(editwidget)) {
+        if (maxLength > 0)
+            webView->setMaxLength(maxLength);
+        webView->setEchoMode(echoMode);
+        // WebKit disables T9 everywhere.
+        if (inputMethodEnabled && !(inputMethodHints & Qt::ImhNoPredictiveText))
+            return;
+#endif
     } else if (maxLength > 0 || echoMode != QLineEdit::Normal) {
-        // Only QLineEdits support these features so don't attempt any tests using those
+        // Only some widgets support these features so don't attempt any tests using those
         // on other widgets.
         return;
     }
