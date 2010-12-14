@@ -512,7 +512,7 @@ QX11EmbedWidget::~QX11EmbedWidget()
                  << "from container with winId" << d->container;
 #endif
         XUnmapWindow(x11Info().display(), internalWinId());
-        XReparentWindow(x11Info().display(), internalWinId(), x11Info().appRootWindow(), 0, 0);
+        XReparentWindow(x11Info().display(), internalWinId(), x11Info().appRootWindow(x11Info().screen()), 0, 0);
     }
 
 #ifdef QX11EMBED_DEBUG
@@ -791,13 +791,13 @@ bool QX11EmbedWidget::x11Event(XEvent *event)
         qDebug() << "QX11EmbedWidget::x11Event: client"
                  << (void *)this << "with winId" << winId()
                  << "received a ReparentNotify to"
-                 << ((event->xreparent.parent == x11Info().appRootWindow())
+                 << ((event->xreparent.parent == x11Info().appRootWindow(x11Info().screen()))
                      ? QString::fromLatin1("root") : QString::number(event->xreparent.parent));
 #endif
         // If the container shuts down, we will be reparented to the
         // root window. We must also consider the case that we may be
         // reparented from one container to another.
-        if (event->xreparent.parent == x11Info().appRootWindow()) {
+        if (event->xreparent.parent == x11Info().appRootWindow(x11Info().screen())) {
             if (((QHackWidget *)this)->topData()->embedded) {
                 d->container = 0;
                 emit containerClosed();
@@ -1115,7 +1115,7 @@ QX11EmbedContainer::~QX11EmbedContainer()
     Q_D(QX11EmbedContainer);
     if (d->client) {
 	XUnmapWindow(x11Info().display(), d->client);
-	XReparentWindow(x11Info().display(), d->client, x11Info().appRootWindow(), 0, 0);
+	XReparentWindow(x11Info().display(), d->client, x11Info().appRootWindow(x11Info().screen()), 0, 0);
     }
 
     if (d->xgrab)
@@ -1379,7 +1379,7 @@ bool QX11EmbedContainer::eventFilter(QObject *o, QEvent *event)
 	    // Wait until the messages have been processed. Then ask
 	    // the window manager to delete the window.
 	    XUnmapWindow(x11Info().display(), d->client);
-	    XReparentWindow(x11Info().display(), d->client, x11Info().appRootWindow(), 0, 0);
+	    XReparentWindow(x11Info().display(), d->client, x11Info().appRootWindow(x11Info().screen()), 0, 0);
 	    XSync(x11Info().display(), false);
 
 	    XEvent ev;
@@ -1627,7 +1627,7 @@ void QX11EmbedContainerPrivate::rejectClient(WId window)
     Q_Q(QX11EmbedContainer);
     q->setEnabled(false);
     XRemoveFromSaveSet(q->x11Info().display(), client);
-    XReparentWindow(q->x11Info().display(), window, q->x11Info().appRootWindow(), 0, 0);
+    XReparentWindow(q->x11Info().display(), window, q->x11Info().appRootWindow(q->x11Info().screen()), 0, 0);
 }
 
 /*! \internal

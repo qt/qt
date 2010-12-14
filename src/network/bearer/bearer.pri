@@ -15,4 +15,3 @@ SOURCES += bearer/qnetworksession.cpp \
            bearer/qnetworkconfigmanager_p.cpp \
            bearer/qbearerengine.cpp \
            bearer/qbearerplugin.cpp
-

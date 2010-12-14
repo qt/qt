@@ -716,7 +716,7 @@ QSslCertificate QSslCertificatePrivate::QSslCertificate_from_X509(X509 *x509)
 
 static bool matchLineFeed(const QByteArray &pem, int *offset)
 {
-    char ch;
+    char ch = 0;
 
     // ignore extra whitespace at the end of the line
     while (*offset < pem.size() && (ch = pem.at(*offset)) == ' ')

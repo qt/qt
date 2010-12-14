@@ -68,7 +68,6 @@ class QNetworkConfigurationManagerExport QNetworkConfigurationManager : public Q
     Q_OBJECT
 
 public:
-    
     enum Capability {
          CanStartAndStopInterfaces  = 0x00000001,
          DirectConnectionRouting = 0x00000002,
@@ -81,26 +80,26 @@ public:
 
     Q_DECLARE_FLAGS(Capabilities, Capability)
 
-    QNetworkConfigurationManager( QObject* parent = 0 );
+    explicit QNetworkConfigurationManager(QObject *parent = 0);
     virtual ~QNetworkConfigurationManager();
 
-    
     QNetworkConfigurationManager::Capabilities capabilities() const;
 
-    QNetworkConfiguration defaultConfiguration() const; 
+    QNetworkConfiguration defaultConfiguration() const;
     QList<QNetworkConfiguration> allConfigurations(QNetworkConfiguration::StateFlags flags = 0) const;
-    QNetworkConfiguration configurationFromIdentifier(const QString& identifier) const;
-    void updateConfigurations();
+    QNetworkConfiguration configurationFromIdentifier(const QString &identifier) const;
 
     bool isOnline() const;
 
+public Q_SLOTS:
+    void updateConfigurations();
+
 Q_SIGNALS:
-    void configurationAdded(const QNetworkConfiguration& config);
-    void configurationRemoved(const QNetworkConfiguration& config);
-    void configurationChanged(const QNetworkConfiguration& config);
+    void configurationAdded(const QNetworkConfiguration &config);
+    void configurationRemoved(const QNetworkConfiguration &config);
+    void configurationChanged(const QNetworkConfiguration &config);
     void onlineStateChanged(bool isOnline);
     void updateCompleted();
-
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QNetworkConfigurationManager::Capabilities)
@@ -115,5 +114,4 @@ QT_END_HEADER
 
 #endif // QT_NO_BEARERMANAGEMENT
 
-#endif //QNETWORKCONFIGURATIONMANAGER_H
-
+#endif // QNETWORKCONFIGURATIONMANAGER_H
