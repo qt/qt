@@ -267,6 +267,7 @@ struct QGLWindowSurfacePrivate
     int tried_pb : 1;
     int destructive_swap_buffers : 1;
     int geometry_updated : 1;
+    int did_paint : 1;
 
     QGLContext *ctx;
 
@@ -330,6 +331,7 @@ QGLWindowSurface::QGLWindowSurface(QWidget *window)
     d_ptr->glDevice.d = d_ptr;
     d_ptr->q_ptr = this;
     d_ptr->geometry_updated = false;
+    d_ptr->did_paint = false;
 }
 
 QGLWindowSurface::~QGLWindowSurface()
@@ -461,6 +463,8 @@ void QGLWindowSurface::beginPaint(const QRegion &)
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(clearFlags);
     }
+
+    d_ptr->did_paint = true;
 }
 
 void QGLWindowSurface::endPaint(const QRegion &rgn)
@@ -511,6 +515,13 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
     // flush() should not be called when d_ptr->geometry_updated is true. It assumes that either
     // d_ptr->fbo or d_ptr->pb is allocated and has the correct size.
     if (d_ptr->geometry_updated)
+        return;
+
+    // did_paint is set to true in ::beginPaint. ::beginPaint means that we
+    // at least cleared the background (= painted something). In EGL API it's a
+    // mistakte to call swapBuffers if nothing was painted. This check protects
+    // the flush func from being executed if it's for nothing.
+    if (! d_ptr->did_paint)
         return;
 
     QWidget *parent = widget->internalWinId() ? widget : widget->nativeParentWidget();
@@ -736,6 +747,8 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         ctx->swapBuffers();
     else
         glFlush();
+
+    d_ptr->did_paint = false;
 }
 
 
