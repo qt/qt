@@ -74,11 +74,11 @@ struct Macro
 enum {
     CMD_A, CMD_ABSTRACT, CMD_ANNOTATEDLIST, CMD_BADCODE,
     CMD_BASENAME, CMD_BOLD, CMD_BRIEF, CMD_C, CMD_CAPTION,
-    CMD_CHAPTER, CMD_CODE, CMD_CODELINE, CMD_DOTS, CMD_ELSE,
-    CMD_ENDABSTRACT, CMD_ENDCHAPTER, CMD_ENDCODE,
-    CMD_ENDFOOTNOTE, CMD_ENDIF, CMD_ENDLEGALESE, CMD_ENDLINK,
-    CMD_ENDLIST, CMD_ENDOMIT, CMD_ENDPART, CMD_ENDQUOTATION,
-    CMD_ENDRAW, CMD_ENDSECTION1, CMD_ENDSECTION2,
+    CMD_CHAPTER, CMD_CODE, CMD_CODELINE, CMD_DIV, CMD_DOTS,
+    CMD_ELSE, CMD_ENDABSTRACT, CMD_ENDCHAPTER, CMD_ENDCODE,
+    CMD_ENDDIV, CMD_ENDFOOTNOTE, CMD_ENDIF, CMD_ENDLEGALESE,
+    CMD_ENDLINK, CMD_ENDLIST, CMD_ENDOMIT, CMD_ENDPART,
+    CMD_ENDQUOTATION, CMD_ENDRAW, CMD_ENDSECTION1, CMD_ENDSECTION2,
     CMD_ENDSECTION3, CMD_ENDSECTION4, CMD_ENDSIDEBAR,
     CMD_ENDTABLE, CMD_EXPIRE, CMD_FOOTNOTE, CMD_GENERATELIST,
     CMD_GRANULARITY, CMD_HEADER, CMD_I, CMD_IF, CMD_IMAGE,
@@ -117,11 +117,13 @@ static struct {
     { "chapter", CMD_CHAPTER, 0 },
     { "code", CMD_CODE, 0 },
     { "codeline", CMD_CODELINE, 0},
+    { "div", CMD_DIV, 0 },
     { "dots", CMD_DOTS, 0 },
     { "else", CMD_ELSE, 0 },
     { "endabstract", CMD_ENDABSTRACT, 0 },
     { "endchapter", CMD_ENDCHAPTER, 0 },
     { "endcode", CMD_ENDCODE, 0 },
+    { "enddiv", CMD_ENDDIV, 0 },
     { "endfootnote", CMD_ENDFOOTNOTE, 0 },
     { "endif", CMD_ENDIF, 0 },
     { "endlegalese", CMD_ENDLEGALESE, 0 },
@@ -555,6 +557,11 @@ void DocParser::parse(const QString& source,
                         append(Atom::QmlText);
                         break;
 #endif
+                    case CMD_DIV:
+                        leavePara();
+                        x = getArgument(true);
+                        append(Atom::Div, x);
+                        break;
                     case CMD_CODELINE:
                         {
                             if (!quoting) {
@@ -620,6 +627,10 @@ void DocParser::parse(const QString& source,
                         endSection(0, cmd);
                         break;
                     case CMD_ENDCODE:
+                        closeCommand(cmd);
+                        break;
+                    case CMD_ENDDIV:
+                        append(Atom::EndDiv);
                         closeCommand(cmd);
                         break;
 #ifdef QDOC_QML
@@ -2348,6 +2359,8 @@ int DocParser::endCmdFor(int cmd)
         return CMD_ENDCHAPTER;
     case CMD_CODE:
         return CMD_ENDCODE;
+    case CMD_DIV:
+        return CMD_ENDDIV;
 #ifdef QDOC_QML        
     case CMD_QML:
         return CMD_ENDQML;

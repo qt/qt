@@ -72,7 +72,9 @@ class Atom
         CodeOld,
         CodeQuoteArgument,
         CodeQuoteCommand,
+        Div,
 #ifdef QDOC_QML
+        EndDiv,
         EndQmlText,
 #endif
         FootnoteLeft,

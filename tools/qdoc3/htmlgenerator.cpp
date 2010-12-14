@@ -211,13 +211,13 @@ static void addLink(const QString &linkTarget,
 HtmlGenerator::HtmlGenerator()
     : helpProjectWriter(0),
       inLink(false),
+      inObsoleteLink(false),
       inContents(false),
       inSectionHeading(false),
       inTableHeader(false),
       numTableRows(0),
       threeColumnEnumValueTable(true),
       funcLeftParen("\\S(\\()"),
-      inObsoleteLink(false),
       myTree(0),
       slow(false),
       obsoleteLinks(false)
@@ -510,6 +510,13 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         out() << "<pre class=\"highlightedCode brush: cpp\">"
               << trimmedTrailing(protectEnc(plainCode(indent(codeIndent,atom->string()))))
               << "</pre>\n";
+        break;
+    case Atom::Div:
+        out() << "<div";
+        if (!atom->string().isEmpty())
+            out() << " class=\"" << atom->string() << "\">";
+        else
+            out() << ">";
         break;
     case Atom::FootnoteLeft:
         // ### For now
@@ -1128,6 +1135,9 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::UnknownCommand:
         out() << "<b class=\"redFont\"><code>\\" << protectEnc(atom->string())
               << "</code></b>";
+        break;
+    case Atom::EndDiv:
+        out() << "</div>";
         break;
 #ifdef QDOC_QML
     case Atom::QmlText:

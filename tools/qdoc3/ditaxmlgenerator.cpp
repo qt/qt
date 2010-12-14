@@ -751,6 +751,14 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         writeCharacters(trimmedTrailing(plainCode(atom->string())));
         xmlWriter().writeEndElement(); // </codeblock>
 	break;
+    case Atom::Div:
+        xmlWriter().writeStartElement("bodydiv");
+        if (!atom->string().isEmpty())
+            xmlWriter().writeAttribute("outputclass", atom->string());
+        break;
+    case Atom::EndDiv:
+        xmlWriter().writeEndElement(); // </bodydiv>
+        break;
     case Atom::FootnoteLeft:
         // ### For now
         if (in_para) {
