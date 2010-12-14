@@ -168,3 +168,13 @@
 
     \generatelist {related}
 */
+/*!
+    \group qml-architecture
+    \title QML Architecture
+
+    \brief QML Architecture
+
+    These are overviews of the architecture of QML and Qt Declarative Module.
+
+    \generatelist {related}
+*/
