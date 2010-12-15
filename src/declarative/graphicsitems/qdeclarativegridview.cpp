@@ -1111,7 +1111,9 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     \codeline
     \snippet doc/src/snippets/declarative/gridview/gridview.qml classdocs simple
 
-    \floatright gridview-highlight.png
+    \div {float-right}
+    \inlineimage gridview-highlight.png
+    \enddiv
 
     The view will create a new delegate for each item in the model. Note that the delegate
     is able to access the model's \c name and \c portrait data directly.
