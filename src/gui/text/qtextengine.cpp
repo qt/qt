@@ -1233,6 +1233,8 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
             shaper_item.num_glyphs -= itemBoundaries[k + 1];
         }
         shaper_item.initialGlyphCount = shaper_item.num_glyphs;
+        if (shaper_item.num_glyphs < shaper_item.item.length)
+            shaper_item.num_glyphs = shaper_item.item.length;
 
         QFontEngine *actualFontEngine = font;
         uint engineIdx = 0;
@@ -1257,7 +1259,8 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
             }
 
             const QGlyphLayout g = availableGlyphs(&si).mid(glyph_pos);
-            moveGlyphData(g.mid(shaper_item.num_glyphs), g.mid(shaper_item.initialGlyphCount), remaining_glyphs);
+            if (shaper_item.num_glyphs > shaper_item.item.length)
+                moveGlyphData(g.mid(shaper_item.num_glyphs), g.mid(shaper_item.initialGlyphCount), remaining_glyphs);
 
             shaper_item.glyphs = g.glyphs;
             shaper_item.attributes = g.attributes;

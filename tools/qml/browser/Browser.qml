@@ -173,7 +173,7 @@ Rectangle {
         width: parent.width
         model: folders1
         delegate: folderDelegate
-        highlight: Rectangle { 
+        highlight: Rectangle {
             color: palette.highlight
             visible: root.showFocusHighlight && view1.count != 0
             gradient: Gradient {

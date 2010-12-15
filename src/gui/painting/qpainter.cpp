@@ -151,6 +151,13 @@ static inline uint line_emulation(uint emulation)
                         | QPaintEngine_OpaqueBackground);
 }
 
+static bool qt_paintengine_supports_transformations(QPaintEngine::Type type)
+{
+    return type == QPaintEngine::OpenGL2
+            || type == QPaintEngine::OpenVG
+            || type == QPaintEngine::OpenGL;
+}
+
 #ifndef QT_NO_DEBUG
 static bool qt_painter_thread_test(int devType, const char *what, bool extraCondition = false)
 {
@@ -5795,8 +5802,17 @@ void QPainter::drawGlyphs(const QPointF &position, const QGlyphs &glyphs)
 
     int count = qMin(glyphIndexes.size(), glyphPositions.size());
     QVarLengthArray<QFixedPoint, 128> fixedPointPositions(count);
-    for (int i=0; i<count; ++i)
-        fixedPointPositions[i] = QFixedPoint::fromPointF(position + glyphPositions.at(i));
+
+    bool paintEngineSupportsTransformations =
+            d->extended != 0
+            ? qt_paintengine_supports_transformations(d->extended->type())
+            : false;
+    for (int i=0; i<count; ++i) {
+        QPointF processedPosition = position + glyphPositions.at(i);
+        if (!paintEngineSupportsTransformations)
+            processedPosition = d->state->transform().map(processedPosition);
+        fixedPointPositions[i] = QFixedPoint::fromPointF(processedPosition);
+    }
 
     d->drawGlyphs(glyphIndexes.data(), fixedPointPositions.data(), count);
 
@@ -5988,10 +6004,7 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         return;
     }
 
-    bool paintEngineSupportsTransformations = d->extended->type() == QPaintEngine::OpenGL2
-                                           || d->extended->type() == QPaintEngine::OpenVG
-                                           || d->extended->type() == QPaintEngine::OpenGL;
-
+    bool paintEngineSupportsTransformations = qt_paintengine_supports_transformations(d->extended->type());
     if (paintEngineSupportsTransformations && !staticText_d->untransformedCoordinates) {
         staticText_d->untransformedCoordinates = true;
         staticText_d->needsRelayout = true;

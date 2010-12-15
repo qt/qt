@@ -1493,6 +1493,7 @@ namespace {
         QSize cacheSize;
         QGL2PEXVertexArray vertexCoordinateArray;
         QGL2PEXVertexArray textureCoordinateArray;
+        QFontEngineGlyphCache::Type glyphType;
     };
 
 }
@@ -1507,23 +1508,30 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     QOpenGL2PaintEngineState *s = q->state();
 
     void *cacheKey = const_cast<QGLContext *>(QGLContextPrivate::contextGroup(ctx)->context());
+    bool recreateVertexArrays = false;
+
     QGLTextureGlyphCache *cache =
             (QGLTextureGlyphCache *) staticTextItem->fontEngine()->glyphCache(cacheKey, glyphType, QTransform());
     if (!cache || cache->cacheType() != glyphType || cache->context() == 0) {
         cache = new QGLTextureGlyphCache(ctx, glyphType, QTransform());
         staticTextItem->fontEngine()->setGlyphCache(cacheKey, cache);
         cache->insert(ctx, cache);
+        recreateVertexArrays = true;
     } else if (cache->context() == 0) { // Old context has been destroyed, new context has same ptr value
         cache->setContext(ctx);
     }
 
-    bool recreateVertexArrays = false;
-    if (staticTextItem->userDataNeedsUpdate)
+    if (staticTextItem->userDataNeedsUpdate) {
         recreateVertexArrays = true;
-    else if (staticTextItem->userData() == 0)
+    } else if (staticTextItem->userData() == 0) {
         recreateVertexArrays = true;
-    else if (staticTextItem->userData()->type != QStaticTextUserData::OpenGLUserData)
+    } else if (staticTextItem->userData()->type != QStaticTextUserData::OpenGLUserData) {
         recreateVertexArrays = true;
+    } else {
+        QOpenGLStaticTextUserData *userData = static_cast<QOpenGLStaticTextUserData *>(staticTextItem->userData());
+        if (userData->glyphType != glyphType)
+            recreateVertexArrays = true;
+    }
 
     // We only need to update the cache with new glyphs if we are actually going to recreate the vertex arrays.
     // If the cache size has changed, we do need to regenerate the vertices, but we don't need to repopulate the
@@ -1561,6 +1569,8 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         } else {
             userData = static_cast<QOpenGLStaticTextUserData*>(staticTextItem->userData());
         }
+
+        userData->glyphType = glyphType;
 
         // Use cache if backend optimizations is turned on
         vertexCoordinates = &userData->vertexCoordinateArray;
@@ -2173,7 +2183,11 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
         const QPointF* const points = reinterpret_cast<const QPointF*>(path.points());
         QRectF rect(points[0], points[2]);
 
-        if (state()->matrix.type() <= QTransform::TxScale) {
+        if (state()->matrix.type() <= QTransform::TxScale
+            || (state()->matrix.type() == QTransform::TxRotate
+                && qFuzzyIsNull(state()->matrix.m11())
+                && qFuzzyIsNull(state()->matrix.m22())))
+        {
             state()->rectangleClip = state()->rectangleClip.intersected(state()->matrix.mapRect(rect).toRect());
             d->updateClipScissorTest();
             return;

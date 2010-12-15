@@ -149,6 +149,8 @@ private slots:
 
     void rgbSwapped_data();
     void rgbSwapped();
+
+    void deepCopyWhenPaintingActive();
 };
 
 tst_QImage::tst_QImage()
@@ -2011,6 +2013,20 @@ void tst_QImage::rgbSwapped()
     QCOMPARE(image, imageSwappedTwice);
 
     QCOMPARE(memcmp(image.constBits(), imageSwappedTwice.constBits(), image.numBytes()), 0);
+}
+
+void tst_QImage::deepCopyWhenPaintingActive()
+{
+    QImage image(64, 64, QImage::Format_ARGB32_Premultiplied);
+    image.fill(0);
+
+    QPainter painter(&image);
+    QImage copy = image;
+
+    painter.setBrush(Qt::black);
+    painter.drawEllipse(image.rect());
+
+    QVERIFY(copy != image);
 }
 
 QTEST_MAIN(tst_QImage)
