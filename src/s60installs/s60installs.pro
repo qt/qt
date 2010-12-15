@@ -88,7 +88,7 @@ symbian: {
     }
 
     !contains(S60_VERSION, 3.1):!contains(S60_VERSION, 3.2) {
-        feedback_plugin.sources = $$QT_BUILD_TREE/plugins/s60/feedback/qtactilefeedback$${QT_LIBINFIX}.dll
+        feedback_plugin.files = $$QT_BUILD_TREE/plugins/s60/feedback/qtactilefeedback$${QT_LIBINFIX}.dll
         feedback_plugin.path = c:$$QT_PLUGINS_BASE_DIR/feedback
         DEPLOYMENT += feedback_plugin
     }

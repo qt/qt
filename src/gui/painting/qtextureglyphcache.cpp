@@ -225,7 +225,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
                 // no room on the current line, start new glyph strip
                 m_cx = 0;
                 m_cy += m_currentRowHeight + paddingDoubled;
-                m_currentRowHeight = 0; // New row
+                m_currentRowHeight = c.h + margin * 2; // New row
             }
         }
 
@@ -445,7 +445,7 @@ void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g, QFixed subP
     QPoint base(c.x + glyphMargin(), c.y + glyphMargin() + c.baseLineY-1);
     if (m_image.rect().contains(base))
         m_image.setPixel(base, 255);
-    m_image.save(QString::fromLatin1("cache-%1.png").arg(int(this)));
+    m_image.save(QString::fromLatin1("cache-%1.png").arg(qint64(this)));
 #endif
 }
 

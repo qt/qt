@@ -434,7 +434,7 @@ private:
     // Lazily computed from the above user input
     mutable int q_cachedEffectiveFirstRows[NOrientations];
     mutable int q_cachedEffectiveLastRows[NOrientations];
-    mutable quint8 q_cachedConstraintOrientation : 2;
+    mutable quint8 q_cachedConstraintOrientation : 3;
 
     // Layout item input
     mutable QLayoutStyleInfo q_cachedDataForStyleInfo;

@@ -79,7 +79,7 @@ QCocoaIntegration::QCocoaIntegration()
     mPool = new QCocoaAutoReleasePool;
 
     //Make sure we have a nsapplication :)
-    [OurApplication sharedApplication];
+    [NSApplication sharedApplication];
 //    [[OurApplication alloc] init];
 
     NSArray *screens = [NSScreen screens];

@@ -242,7 +242,7 @@ QGLXGLContext::QGLXGLContext(Window window, MyDisplay *xd, const QPlatformWindow
     , m_context(0)
 {
 
-    QPlatformGLContext *sharePlatformContext;
+    const QPlatformGLContext *sharePlatformContext;
     if (format.useDefaultSharedContext()) {
         if (!QPlatformGLContext::defaultSharedContext()) {
             if (m_defaultSharedContextMutex.tryLock()){
@@ -259,7 +259,7 @@ QGLXGLContext::QGLXGLContext(Window window, MyDisplay *xd, const QPlatformWindow
     }
     GLXContext shareGlxContext = 0;
     if (sharePlatformContext)
-        shareGlxContext = static_cast<QGLXGLContext*>(sharePlatformContext)->glxContext();
+        shareGlxContext = static_cast<const QGLXGLContext*>(sharePlatformContext)->glxContext();
 
     GLXFBConfig config = findConfig(xd,format);
     m_context = glXCreateNewContext(xd->display,config,GLX_RGBA_TYPE,shareGlxContext,TRUE);
@@ -313,6 +313,7 @@ void QGLXGLContext::createDefaultSharedContex(MyDisplay *xd)
 
 void QGLXGLContext::makeCurrent()
 {
+    QPlatformGLContext::makeCurrent();
 #ifdef MYX11_DEBUG
     qDebug("QGLXGLContext::makeCurrent(window=0x%x, ctx=0x%x)", m_drawable, m_context);
 #endif
@@ -321,6 +322,7 @@ void QGLXGLContext::makeCurrent()
 
 void QGLXGLContext::doneCurrent()
 {
+    QPlatformGLContext::doneCurrent();
     glXMakeCurrent(m_xd->display, 0, 0);
 }
 

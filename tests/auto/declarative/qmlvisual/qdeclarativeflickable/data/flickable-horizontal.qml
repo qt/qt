@@ -994,7 +994,7 @@ VisualTest {
     }
     Frame {
         msec: 3264
-        hash: "10a89da9887cb4bbd812c090a8a56797"
+        hash: "244c12e82ee0b2528a0dbb02a8b8134a"
     }
     Mouse {
         type: 5

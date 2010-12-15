@@ -111,6 +111,7 @@ struct Q_GUI_EXPORT QImageData {        // internal image data
 };
 
 void qInitImageConversions();
+Q_GUI_EXPORT void qGamma_correct_back_to_linear_cs(QImage *image);
 
 inline int qt_depthForFormat(QImage::Format format)
 {

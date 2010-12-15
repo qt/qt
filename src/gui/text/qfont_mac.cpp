@@ -42,6 +42,7 @@
 #include "qfont.h"
 #include "qfont_p.h"
 #include "qfontengine_p.h"
+#include "qfontengine_mac_p.h"
 #include "qfontinfo.h"
 #include "qfontmetrics.h"
 #include "qpaintdevice.h"

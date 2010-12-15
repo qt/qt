@@ -209,6 +209,13 @@ bool DataModel::load(const QString &fileName, bool *langGuessed, QWidget *parent
         return false;
     }
 
+    if (!tor.messageCount()) {
+        QMessageBox::warning(parent, QObject::tr("Qt Linguist"),
+                             tr("The translation file '%1' will not be loaded because it is empty.")
+                             .arg(Qt::escape(fileName)));
+        return false;
+    }
+
     Translator::Duplicates dupes = tor.resolveDuplicates();
     if (!dupes.byId.isEmpty() || !dupes.byContents.isEmpty()) {
         QString err = tr("<qt>Duplicate messages found in '%1':").arg(Qt::escape(fileName));

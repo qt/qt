@@ -1389,7 +1389,7 @@ int QPdfBaseEngine::metric(QPaintDevice::PaintDeviceMetric metricType) const
 void QPdfBaseEngine::setProperty(PrintEnginePropertyKey key, const QVariant &value)
 {
     Q_D(QPdfBaseEngine);
-    switch (key) {
+    switch (int(key)) {
     case PPK_CollateCopies:
         d->collate = value.toBool();
         break;
@@ -1479,7 +1479,7 @@ QVariant QPdfBaseEngine::property(PrintEnginePropertyKey key) const
     Q_D(const QPdfBaseEngine);
 
     QVariant ret;
-    switch (key) {
+    switch (int(key)) {
     case PPK_CollateCopies:
         ret = d->collate;
         break;

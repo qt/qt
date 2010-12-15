@@ -1215,15 +1215,22 @@ void tst_QDeclarativeGridView::manualHighlight()
 
     QTRY_COMPARE(gridview->currentIndex(), 0);
     QTRY_COMPARE(gridview->currentItem(), findItem<QDeclarativeItem>(contentItem, "wrapper", 0));
-    QTRY_COMPARE(gridview->highlightItem()->y(), gridview->currentItem()->y());
-    QTRY_COMPARE(gridview->highlightItem()->x(), gridview->currentItem()->x());
+    QTRY_COMPARE(gridview->highlightItem()->y() - 5, gridview->currentItem()->y());
+    QTRY_COMPARE(gridview->highlightItem()->x() - 5, gridview->currentItem()->x());
 
     gridview->setCurrentIndex(2);
 
     QTRY_COMPARE(gridview->currentIndex(), 2);
     QTRY_COMPARE(gridview->currentItem(), findItem<QDeclarativeItem>(contentItem, "wrapper", 2));
-    QTRY_COMPARE(gridview->highlightItem()->y(), gridview->currentItem()->y());
-    QTRY_COMPARE(gridview->highlightItem()->x(), gridview->currentItem()->x());
+    QTRY_COMPARE(gridview->highlightItem()->y() - 5, gridview->currentItem()->y());
+    QTRY_COMPARE(gridview->highlightItem()->x() - 5, gridview->currentItem()->x());
+
+    gridview->positionViewAtIndex(8, QDeclarativeGridView::Contain);
+
+    QTRY_COMPARE(gridview->currentIndex(), 2);
+    QTRY_COMPARE(gridview->currentItem(), findItem<QDeclarativeItem>(contentItem, "wrapper", 2));
+    QTRY_COMPARE(gridview->highlightItem()->y() - 5, gridview->currentItem()->y());
+    QTRY_COMPARE(gridview->highlightItem()->x() - 5, gridview->currentItem()->x());
 }
 
 void tst_QDeclarativeGridView::footer()
@@ -1263,7 +1270,7 @@ void tst_QDeclarativeGridView::header()
     QDeclarativeView *canvas = createView();
 
     TestModel model;
-    for (int i = 0; i < 7; i++)
+    for (int i = 0; i < 30; i++)
         model.addItem("Item" + QString::number(i), "");
 
     QDeclarativeContext *ctxt = canvas->rootContext();

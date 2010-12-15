@@ -3295,9 +3295,13 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
     }
 
     // Update the child focus chain.
-    if (scene && scene->focusItem())
-        scene->focusItem()->d_ptr->clearSubFocus();
-    f->d_ptr->setSubFocus();
+    QGraphicsItem *commonAncestor = 0;
+    if (scene && scene->focusItem()) {
+        commonAncestor = scene->focusItem()->commonAncestorItem(f);
+        scene->focusItem()->d_ptr->clearSubFocus(scene->focusItem(), commonAncestor);
+    }
+
+    f->d_ptr->setSubFocus(f, commonAncestor);
 
     // Update the scene's focus item.
     if (scene) {
@@ -5554,7 +5558,7 @@ void QGraphicsItemPrivate::ensureSceneTransformRecursive(QGraphicsItem **topMost
 /*!
     \internal
 */
-void QGraphicsItemPrivate::setSubFocus(QGraphicsItem *rootItem)
+void QGraphicsItemPrivate::setSubFocus(QGraphicsItem *rootItem, QGraphicsItem *stopItem)
 {
     // Update focus child chain. Stop at panels, or if this item
     // is hidden, stop at the first item with a visible parent.
@@ -5567,7 +5571,7 @@ void QGraphicsItemPrivate::setSubFocus(QGraphicsItem *rootItem)
         if (parent != q_ptr && parent->d_ptr->subFocusItem) {
             if (parent->d_ptr->subFocusItem == q_ptr)
                 break;
-            parent->d_ptr->subFocusItem->d_ptr->clearSubFocus();
+            parent->d_ptr->subFocusItem->d_ptr->clearSubFocus(0, stopItem);
         }
         parent->d_ptr->subFocusItem = q_ptr;
         parent->d_ptr->subFocusItemChange();
@@ -5580,12 +5584,12 @@ void QGraphicsItemPrivate::setSubFocus(QGraphicsItem *rootItem)
 /*!
     \internal
 */
-void QGraphicsItemPrivate::clearSubFocus(QGraphicsItem *rootItem)
+void QGraphicsItemPrivate::clearSubFocus(QGraphicsItem *rootItem, QGraphicsItem *stopItem)
 {
     // Reset sub focus chain.
     QGraphicsItem *parent = rootItem ? rootItem : q_ptr;
     do {
-        if (parent->d_ptr->subFocusItem != q_ptr)
+        if (parent->d_ptr->subFocusItem != q_ptr || parent == stopItem)
             break;
         parent->d_ptr->subFocusItem = 0;
         parent->d_ptr->subFocusItemChange();

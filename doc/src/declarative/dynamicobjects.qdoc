@@ -102,6 +102,9 @@ Notice in both instances, \l {Component::createObject()}{createObject()} is call
 When using files with relative paths, the path should
 be relative to the file where \l {QML:Qt::createComponent()}{Qt.createComponent()} is executed.
 
+To connect signals to (or receive signals from) dynamically created objects, use the signal
+\c connect() method. See \l {Connecting signals to methods and other signals} for more information.
+
 
 \section2 Creating an object from a string of QML
 

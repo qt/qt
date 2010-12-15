@@ -41,6 +41,9 @@
 
 #include "qtextengine_p.h"
 
+#include <private/qfontengine_coretext_p.h>
+#include <private/qfontengine_mac_p.h>
+
 QT_BEGIN_NAMESPACE
 
 // set the glyph attributes heuristically. Assumes a 1 to 1 relationship between chars and glyphs

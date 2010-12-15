@@ -69,10 +69,10 @@ public:
     virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;
     virtual QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId = 0) const = 0;
     virtual QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const = 0;
-    virtual void moveToScreen(QWidget *window, int screen) {Q_UNUSED(window); Q_UNUSED(screen);}
 
 // Window System functions
     virtual QList<QPlatformScreen *> screens() const = 0;
+    virtual void moveToScreen(QWidget *window, int screen) {Q_UNUSED(window); Q_UNUSED(screen);}
     virtual bool isVirtualDesktop() { return false; }
     virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
 

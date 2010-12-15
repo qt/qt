@@ -156,14 +156,11 @@ QFontEngine *loadSingleEngine(int script,
     QFontEngine *engine = QFontCache::instance()->findEngine(key);
     if (!engine) {
         QPlatformFontDatabase *pfdb = QApplicationPrivate::platformIntegration()->fontDatabase();
-        if (size->handle) {
-            engine = pfdb->fontEngine(def,QUnicodeTables::Script(script),size->handle);
-            if (engine) {
-                QFontCache::Key key(def,script);
-                QFontCache::instance()->instance()->insertEngine(key,engine);
-            }
+        engine = pfdb->fontEngine(def,QUnicodeTables::Script(script),size->handle);
+        if (engine) {
+            QFontCache::Key key(def,script);
+            QFontCache::instance()->instance()->insertEngine(key,engine);
         }
-
     }
     return engine;
 }

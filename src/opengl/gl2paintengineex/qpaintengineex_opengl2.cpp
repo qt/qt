@@ -381,12 +381,6 @@ void QGL2PaintEngineExPrivate::updateMatrix()
         dx = ceilf(dx - 0.5f);
         dy = ceilf(dy - 0.5f);
     }
-#ifndef Q_OS_SYMBIAN
-    if (addOffset) {
-        dx += 0.49f;
-        dy += 0.49f;
-    }
-#endif
     pmvMatrix[0][0] = (wfactor * transform.m11())  - transform.m13();
     pmvMatrix[1][0] = (wfactor * transform.m21())  - transform.m23();
     pmvMatrix[2][0] = (wfactor * dx) - transform.m33();
@@ -487,11 +481,6 @@ void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& s
     // Setup for texture drawing
     currentBrush = noBrush;
     shaderManager->setSrcPixelType(pattern ? QGLEngineShaderManager::PatternSrc : QGLEngineShaderManager::ImageSrc);
-
-    if (addOffset) {
-        addOffset = false;
-        matrixDirty = true;
-    }
 
     if (snapToPixelGrid) {
         snapToPixelGrid = false;
@@ -674,16 +663,6 @@ void QGL2PaintEngineExPrivate::cleanupVectorPath(QPaintEngineEx *engine, void *d
 void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 {
     transferMode(BrushDrawingMode);
-
-    const QOpenGL2PaintEngineState *s = q->state();
-    const bool newAddOffset = !(s->renderHints & QPainter::Antialiasing) &&
-                              (qbrush_style(currentBrush) == Qt::SolidPattern) &&
-                              !multisamplingAlwaysEnabled;
-
-    if (addOffset != newAddOffset) {
-        addOffset = newAddOffset;
-        matrixDirty = true;
-    }
 
     if (snapToPixelGrid) {
         snapToPixelGrid = false;
@@ -1203,12 +1182,6 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 void QGL2PaintEngineExPrivate::stroke(const QVectorPath &path, const QPen &pen)
 {
     const QOpenGL2PaintEngineState *s = q->state();
-    const bool newAddOffset = !(s->renderHints & QPainter::Antialiasing) && !multisamplingAlwaysEnabled;
-    if (addOffset != newAddOffset) {
-        addOffset = newAddOffset;
-        matrixDirty = true;
-    }
-
     if (snapToPixelGrid) {
         snapToPixelGrid = false;
         matrixDirty = true;
@@ -1493,6 +1466,7 @@ namespace {
         QSize cacheSize;
         QGL2PEXVertexArray vertexCoordinateArray;
         QGL2PEXVertexArray textureCoordinateArray;
+        QFontEngineGlyphCache::Type glyphType;
     };
 
 }
@@ -1507,23 +1481,30 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     QOpenGL2PaintEngineState *s = q->state();
 
     void *cacheKey = const_cast<QGLContext *>(QGLContextPrivate::contextGroup(ctx)->context());
+    bool recreateVertexArrays = false;
+
     QGLTextureGlyphCache *cache =
             (QGLTextureGlyphCache *) staticTextItem->fontEngine()->glyphCache(cacheKey, glyphType, QTransform());
     if (!cache || cache->cacheType() != glyphType || cache->context() == 0) {
         cache = new QGLTextureGlyphCache(ctx, glyphType, QTransform());
         staticTextItem->fontEngine()->setGlyphCache(cacheKey, cache);
         cache->insert(ctx, cache);
+        recreateVertexArrays = true;
     } else if (cache->context() == 0) { // Old context has been destroyed, new context has same ptr value
         cache->setContext(ctx);
     }
 
-    bool recreateVertexArrays = false;
-    if (staticTextItem->userDataNeedsUpdate)
+    if (staticTextItem->userDataNeedsUpdate) {
         recreateVertexArrays = true;
-    else if (staticTextItem->userData() == 0)
+    } else if (staticTextItem->userData() == 0) {
         recreateVertexArrays = true;
-    else if (staticTextItem->userData()->type != QStaticTextUserData::OpenGLUserData)
+    } else if (staticTextItem->userData()->type != QStaticTextUserData::OpenGLUserData) {
         recreateVertexArrays = true;
+    } else {
+        QOpenGLStaticTextUserData *userData = static_cast<QOpenGLStaticTextUserData *>(staticTextItem->userData());
+        if (userData->glyphType != glyphType)
+            recreateVertexArrays = true;
+    }
 
     // We only need to update the cache with new glyphs if we are actually going to recreate the vertex arrays.
     // If the cache size has changed, we do need to regenerate the vertices, but we don't need to repopulate the
@@ -1561,6 +1542,8 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         } else {
             userData = static_cast<QOpenGLStaticTextUserData*>(staticTextItem->userData());
         }
+
+        userData->glyphType = glyphType;
 
         // Use cache if backend optimizations is turned on
         vertexCoordinates = &userData->vertexCoordinateArray;
@@ -1628,10 +1611,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, (GLfloat*)vertexCoordinates->data());
     setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, (GLfloat*)textureCoordinates->data());
 
-    if (addOffset) {
-        addOffset = false;
-        matrixDirty = true;
-    }
     if (!snapToPixelGrid) {
         snapToPixelGrid = true;
         matrixDirty = true;
@@ -1775,11 +1754,6 @@ void QGL2PaintEngineExPrivate::drawPixmapFragments(const QPainter::PixmapFragmen
     vertexCoordinateArray.clear();
     textureCoordinateArray.clear();
     opacityArray.reset();
-
-    if (addOffset) {
-        addOffset = false;
-        matrixDirty = true;
-    }
 
     if (snapToPixelGrid) {
         snapToPixelGrid = false;
@@ -2077,10 +2051,6 @@ void QGL2PaintEngineExPrivate::writeClip(const QVectorPath &path, uint value)
 {
     transferMode(BrushDrawingMode);
 
-    if (addOffset) {
-        addOffset = false;
-        matrixDirty = true;
-    }
     if (snapToPixelGrid) {
         snapToPixelGrid = false;
         matrixDirty = true;
@@ -2173,7 +2143,11 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
         const QPointF* const points = reinterpret_cast<const QPointF*>(path.points());
         QRectF rect(points[0], points[2]);
 
-        if (state()->matrix.type() <= QTransform::TxScale) {
+        if (state()->matrix.type() <= QTransform::TxScale
+            || (state()->matrix.type() == QTransform::TxRotate
+                && qFuzzyIsNull(state()->matrix.m11())
+                && qFuzzyIsNull(state()->matrix.m22())))
+        {
             state()->rectangleClip = state()->rectangleClip.intersected(state()->matrix.mapRect(rect).toRect());
             d->updateClipScissorTest();
             return;

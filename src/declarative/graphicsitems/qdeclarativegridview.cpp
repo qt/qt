@@ -219,12 +219,8 @@ public:
             }
         } else {
             qreal pos = (modelIndex / columns) * rowSize();
-            if (header) {
-                qreal headerSize = flow == QDeclarativeGridView::LeftToRight
-                                   ? header->item->height()
-                                   : header->item->width();
-                pos += headerSize;
-            }
+            if (header)
+                pos += headerSize();
             return pos;
         }
         return 0;
@@ -291,11 +287,9 @@ public:
             if (item->index == -1)
                 continue;
             qreal itemTop = item->rowPos();
-            if (item->index == model->count()-1 || (itemTop+rowSize()/2 >= pos))
+            if (itemTop+rowSize()/2 >= pos && itemTop - rowSize()/2 <= pos)
                 return item;
         }
-        if (visibleItems.count() && visibleItems.first()->rowPos() <= pos)
-            return visibleItems.first();
         return 0;
     }
 
@@ -314,6 +308,16 @@ public:
         }
         return index;
     }
+
+    qreal headerSize() const {
+        if (!header)
+            return 0.0;
+
+        return flow == QDeclarativeGridView::LeftToRight
+                       ? header->item->height()
+                       : header->item->width();
+    }
+
 
     virtual void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry) {
         Q_Q(const QDeclarativeGridView);
@@ -731,7 +735,7 @@ void QDeclarativeGridViewPrivate::createHighlight()
             QDeclarative_setParent_noEvent(item, q->contentItem());
             item->setParentItem(q->contentItem());
             highlight = new FxGridItem(item, q);
-            if (currentItem)
+            if (currentItem && autoHighlight)
                 highlight->setPosition(currentItem->colPos(), currentItem->rowPos());
             highlightXAnimator = new QSmoothedAnimation(q);
             highlightXAnimator->target = QDeclarativeProperty(highlight->item, QLatin1String("x"));
@@ -878,14 +882,11 @@ void QDeclarativeGridViewPrivate::updateHeader()
     if (header) {
         if (visibleItems.count()) {
             qreal startPos = startPosition();
-            qreal headerSize = flow == QDeclarativeGridView::LeftToRight
-                               ? header->item->height()
-                               : header->item->width();
             if (visibleIndex == 0) {
-                header->setPosition(0, startPos - headerSize);
+                header->setPosition(0, startPos - headerSize());
             } else {
-                if (position() <= startPos || header->rowPos() > startPos - headerSize)
-                    header->setPosition(0, startPos - headerSize);
+                if (position() <= startPos || header->rowPos() > startPos - headerSize())
+                    header->setPosition(0, startPos - headerSize());
             }
         } else {
             header->setPosition(0, 0);
@@ -920,10 +921,14 @@ void QDeclarativeGridViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
             qreal bottomPos = qMax(bottomItem->rowPos() - highlightRangeEnd, -minExtent);
             pos = qAbs(data.move + topPos) < qAbs(data.move + bottomPos) ? topPos : bottomPos;
         } else if (topItem) {
-            pos = qMax(qMin(topItem->rowPos() - highlightRangeStart, -maxExtent), -minExtent);
+            if (topItem->index == 0 && header && position()+highlightRangeStart < header->rowPos()+headerSize()/2)
+                pos = header->rowPos() - highlightRangeStart;
+            else
+                pos = qMax(qMin(topItem->rowPos() - highlightRangeStart, -maxExtent), -minExtent);
         } else if (bottomItem) {
             pos = qMax(qMin(bottomItem->rowPos() - highlightRangeStart, -maxExtent), -minExtent);
         } else {
+            QDeclarativeFlickablePrivate::fixup(data, minExtent, maxExtent);
             fixupDuration = oldDuration;
             return;
         }
@@ -1248,7 +1253,8 @@ void QDeclarativeGridView::setModel(const QVariant &model)
                 d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
                 d->updateCurrent(d->currentIndex);
                 if (d->highlight && d->currentItem) {
-                    d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+                    if (d->autoHighlight)
+                        d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
                     d->updateTrackedItem();
                 }
                 d->moveReason = QDeclarativeGridViewPrivate::Other;
@@ -1316,7 +1322,8 @@ void QDeclarativeGridView::setDelegate(QDeclarativeComponent *delegate)
             d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
             d->updateCurrent(d->currentIndex);
             if (d->highlight && d->currentItem) {
-                d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+                if (d->autoHighlight)
+                    d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
                 d->updateTrackedItem();
             }
             d->moveReason = QDeclarativeGridViewPrivate::Other;
@@ -1764,8 +1771,10 @@ void QDeclarativeGridView::setFooter(QDeclarativeComponent *footer)
             d->footer = 0;
         }
         d->footerComponent = footer;
-        d->updateFooter();
-        d->updateGrid();
+        if (isComponentComplete()) {
+            d->updateFooter();
+            d->updateGrid();
+        }
         emit footerChanged();
     }
 }
@@ -1794,9 +1803,11 @@ void QDeclarativeGridView::setHeader(QDeclarativeComponent *header)
             d->header = 0;
         }
         d->headerComponent = header;
-        d->updateHeader();
-        d->updateFooter();
-        d->updateGrid();
+        if (isComponentComplete()) {
+            d->updateHeader();
+            d->updateFooter();
+            d->updateGrid();
+        }
         emit headerChanged();
     }
 }
@@ -2221,6 +2232,8 @@ void QDeclarativeGridView::componentComplete()
 {
     Q_D(QDeclarativeGridView);
     QDeclarativeFlickable::componentComplete();
+    d->updateHeader();
+    d->updateFooter();
     d->updateGrid();
     if (d->isValid()) {
         refill();
@@ -2230,7 +2243,8 @@ void QDeclarativeGridView::componentComplete()
         else
             d->updateCurrent(d->currentIndex);
         if (d->highlight && d->currentItem) {
-            d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+            if (d->autoHighlight)
+                d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
             d->updateTrackedItem();
         }
         d->moveReason = QDeclarativeGridViewPrivate::Other;
@@ -2638,7 +2652,8 @@ void QDeclarativeGridView::modelReset()
     d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
     d->updateCurrent(d->currentIndex);
     if (d->highlight && d->currentItem) {
-        d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+        if (d->autoHighlight)
+            d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
         d->updateTrackedItem();
     }
     d->moveReason = QDeclarativeGridViewPrivate::Other;

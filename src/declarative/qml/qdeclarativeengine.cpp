@@ -261,6 +261,33 @@ of their use.
 \endlist
 */
 
+/*!
+\qmlmethod object Qt::include(string url, jsobject callback)
+
+Includes another JavaScript file. This method can only be used from within JavaScript files,
+and not regular QML files.
+
+This imports all functions from \a url into the current script's namespace.
+
+Qt.include() returns an object that describes the status of the operation.  The object has
+a single property, \c {status}, that is set to one of the following values:
+
+\table
+\header \o Symbol \o Value \o Description
+\row \o result.OK \o 0 \o The include completed successfully.
+\row \o result.LOADING \o 1 \o Data is being loaded from the network.
+\row \o result.NETWORK_ERROR \o 2 \o A network error occurred while fetching the url.
+\row \o result.EXCEPTION \o 3 \o A JavaScript exception occurred while executing the included code.
+An additional \c exception property will be set in this case.
+\endtable
+
+The \c status property will be updated as the operation progresses.
+
+If provided, \a callback is invoked when the operation completes.  The callback is passed
+the same object as is returned from the Qt.include() call.
+*/
+// Qt.include() is implemented in qdeclarativeinclude.cpp
+
 
 QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
 : captureProperties(false), rootContext(0), isDebugging(false),
@@ -678,6 +705,9 @@ QNetworkAccessManager *QDeclarativeEngine::networkAccessManager() const
   requests. See the QDeclarativeImageProvider documentation for details on
   implementing and using image providers.
 
+  All required image providers should be added to the engine before any
+  QML sources files are loaded.
+
   Note that images loaded from a QDeclarativeImageProvider are cached
   by QPixmapCache, similar to any image loaded by QML.
 
@@ -897,9 +927,7 @@ void QDeclarativeEngine::setObjectOwnership(QObject *object, ObjectOwnership own
     if (!object)
         return;
 
-    // No need to do anything if CppOwnership and there is no QDeclarativeData as
-    // the current ownership must be CppOwnership
-    QDeclarativeData *ddata = QDeclarativeData::get(object, ownership == JavaScriptOwnership);
+    QDeclarativeData *ddata = QDeclarativeData::get(object, true);
     if (!ddata)
         return;
 
@@ -957,7 +985,7 @@ QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool cre
     if (!data)
         return 0; // Attached properties are only on objects created by QML
 
-    QObject *rv = data->extendedData?data->attachedProperties()->value(id):0;
+    QObject *rv = data->hasExtendedData()?data->attachedProperties()->value(id):0;
     if (rv || !create)
         return rv;
 
@@ -983,6 +1011,35 @@ QObject *qmlAttachedPropertiesObject(int *idCache, const QObject *object,
         return 0;
 
     return qmlAttachedPropertiesObjectById(*idCache, object, create);
+}
+
+class QDeclarativeDataExtended {
+public:
+    QDeclarativeDataExtended();
+    ~QDeclarativeDataExtended();
+
+    QHash<int, QObject *> attachedProperties;
+    QDeclarativeNotifier objectNameNotifier;
+};
+
+QDeclarativeDataExtended::QDeclarativeDataExtended()
+{
+}
+
+QDeclarativeDataExtended::~QDeclarativeDataExtended()
+{
+}
+
+QDeclarativeNotifier *QDeclarativeData::objectNameNotifier() const
+{
+    if (!extendedData) extendedData = new QDeclarativeDataExtended;
+    return &extendedData->objectNameNotifier;
+}
+
+QHash<int, QObject *> *QDeclarativeData::attachedProperties() const
+{
+    if (!extendedData) extendedData = new QDeclarativeDataExtended;
+    return &extendedData->attachedProperties;
 }
 
 void QDeclarativeData::destroyed(QObject *object)
@@ -1073,28 +1130,6 @@ void QDeclarativeData::setBindingBit(QObject *obj, int bit)
     }
 
     bindingBits[bit / 32] |= (1 << (bit % 32));
-}
-
-QDeclarativeData::ExtendedData::ExtendedData()
-: objectNameNotifier(0)
-{
-}
-
-QDeclarativeData::ExtendedData::~ExtendedData()
-{
-    ((QDeclarativeNotifier *)&objectNameNotifier)->~QDeclarativeNotifier();
-}
-
-QDeclarativeNotifier *QDeclarativeData::objectNameNotifier() const
-{
-    if (!extendedData) extendedData = new ExtendedData;
-    return (QDeclarativeNotifier *)&extendedData->objectNameNotifier;
-}
-
-QHash<int, QObject *> *QDeclarativeData::attachedProperties() const
-{
-    if (!extendedData) extendedData = new ExtendedData;
-    return &extendedData->attachedProperties;
 }
 
 /*!
@@ -2225,8 +2260,9 @@ bool QDeclarative_isFileCaseCorrect(const QString &fileName)
         if (a != c)
             return false;
     }
+#else
+    Q_UNUSED(fileName)
 #endif
-
     return true;
 }
 

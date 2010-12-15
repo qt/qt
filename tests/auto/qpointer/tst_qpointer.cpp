@@ -73,6 +73,7 @@ private slots:
     void castDuringDestruction();
     void data() const;
     void dataSignature() const;
+    void threadSafety();
 };
 
 tst_QPointer::tst_QPointer()
@@ -344,6 +345,37 @@ void tst_QPointer::dataSignature() const
         QCOMPARE(p.data(), static_cast<QWidget *>(0));
     }
 }
+
+class TestRunnable : public QObject, public QRunnable {
+    void run() {
+        QPointer<QObject> obj1 = new QObject;
+        QPointer<QObject> obj2 = new QObject;
+        obj1->moveToThread(thread()); // this is the owner thread
+        obj1->deleteLater(); // the delete will happen in the owner thread
+        obj2->moveToThread(thread()); // this is the owner thread
+        obj2->deleteLater(); // the delete will happen in the owner thread
+    }
+};
+
+void tst_QPointer::threadSafety()
+{
+
+    QThread owner;
+    owner.start();
+
+    QThreadPool pool;
+    for (int i = 0; i < 300; i++) {
+        QPointer<TestRunnable> task = new TestRunnable;
+        task->setAutoDelete(true);
+        task->moveToThread(&owner);
+        pool.start(task);
+    }
+    pool.waitForDone();
+
+    owner.quit();
+    owner.wait();
+}
+
 
 QTEST_MAIN(tst_QPointer)
 #include "tst_qpointer.moc"
