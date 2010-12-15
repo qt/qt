@@ -1367,9 +1367,8 @@ void QScrollerPrivate::createScrollingSegments(qreal v, qreal startPos, qreal pp
             qreal oDistance = viewSize * sp->overshootScrollDistanceFactor * endV / sp->maximumVelocity;
             qreal oDeltaTime = sp->overshootScrollTime;
 
-            pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.5, stopPos, stopPos + oDistance, sp->scrollingCurve.type(), orientation);
-            pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.3, stopPos + oDistance, stopPos + oDistance * 0.3, QEasingCurve::InQuad, orientation);
-            pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.2, stopPos + oDistance * 0.3, stopPos, QEasingCurve::OutQuad, orientation);
+            pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.3, stopPos, stopPos + oDistance, sp->scrollingCurve.type(), orientation);
+            pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.7, stopPos + oDistance, stopPos, sp->scrollingCurve.type(), orientation);
         }
         return;
     }
