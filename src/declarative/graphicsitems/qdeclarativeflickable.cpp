@@ -700,8 +700,8 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
     bool rejectY = false;
     bool rejectX = false;
 
-    bool stealY = false;
-    bool stealX = false;
+    bool stealY = stealMouse;
+    bool stealX = stealMouse;
 
     if (q->yflick()) {
         int dy = int(event->pos().y() - pressPos.y());

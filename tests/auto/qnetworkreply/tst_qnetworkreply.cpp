@@ -336,9 +336,9 @@ private Q_SLOTS:
     void parentingRepliesToTheApp();
 };
 
-QT_BEGIN_NAMESPACE
-
 bool tst_QNetworkReply::seedCreated = false;
+
+QT_BEGIN_NAMESPACE
 
 namespace QTest {
     template<>

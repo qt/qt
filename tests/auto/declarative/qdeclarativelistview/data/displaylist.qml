@@ -1,6 +1,8 @@
 import QtQuick 1.0
 
 Rectangle {
+    id: root
+    property real delegateHeight: 20
     width: 240
     height: 320
     color: "#ffffff"
@@ -10,7 +12,8 @@ Rectangle {
             Rectangle {
                 id: wrapper
                 objectName: "wrapper"
-                height: 20
+                height: root.delegateHeight
+                Behavior on height { NumberAnimation {} }
                 width: 240
                 Text {
                     text: index
@@ -19,6 +22,10 @@ Rectangle {
                     x: 30
                     objectName: "displayText"
                     text: display
+                }
+                Text {
+                    x: 200
+                    text: wrapper.y
                 }
                 color: ListView.isCurrentItem ? "lightsteelblue" : "white"
             }

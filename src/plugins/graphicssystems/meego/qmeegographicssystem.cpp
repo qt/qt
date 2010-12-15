@@ -124,8 +124,10 @@ QPixmapData* QMeeGoGraphicsSystem::wrapPixmapData(QPixmapData *pmd)
 
 void QMeeGoGraphicsSystem::setSurfaceFixedSize(int /*width*/, int /*height*/)
 {
-    if (QMeeGoGraphicsSystem::surfaceWasCreated)
+    if (QMeeGoGraphicsSystem::surfaceWasCreated) {
         qWarning("Trying to set surface fixed size but surface already created!");
+        return;
+    }
 
 #ifdef QT_WAS_PATCHED
     QEglProperties *properties = new QEglProperties();
@@ -143,6 +145,11 @@ void QMeeGoGraphicsSystem::setSurfaceScaling(int x, int y, int width, int height
 
 void QMeeGoGraphicsSystem::setTranslucent(bool translucent)
 {
+    if (QMeeGoGraphicsSystem::surfaceWasCreated) {
+        qWarning("Trying to set translucency but surface already created!");
+        return;
+    }
+
     QGLWindowSurface::surfaceFormat.setSampleBuffers(false);
     QGLWindowSurface::surfaceFormat.setSamples(0);
     QGLWindowSurface::surfaceFormat.setAlpha(translucent);

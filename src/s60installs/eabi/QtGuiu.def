@@ -4658,11 +4658,11 @@ EXPORTS
 	_ZN20QGraphicsEllipseItemD1Ev @ 4657 NONAME
 	_ZN20QGraphicsEllipseItemD2Ev @ 4658 NONAME
 	_ZN20QGraphicsItemPrivate11removeChildEP13QGraphicsItem @ 4659 NONAME
-	_ZN20QGraphicsItemPrivate11setSubFocusEP13QGraphicsItem @ 4660 NONAME
+	_ZN20QGraphicsItemPrivate11setSubFocusEP13QGraphicsItem @ 4660 NONAME ABSENT
 	_ZN20QGraphicsItemPrivate12remapItemPosEP6QEventP13QGraphicsItem @ 4661 NONAME
 	_ZN20QGraphicsItemPrivate12resolveDepthEv @ 4662 NONAME
 	_ZN20QGraphicsItemPrivate12setPosHelperERK7QPointF @ 4663 NONAME
-	_ZN20QGraphicsItemPrivate13clearSubFocusEP13QGraphicsItem @ 4664 NONAME
+	_ZN20QGraphicsItemPrivate13clearSubFocusEP13QGraphicsItem @ 4664 NONAME ABSENT
 	_ZN20QGraphicsItemPrivate14setFocusHelperEN2Qt11FocusReasonEb @ 4665 NONAME ABSENT
 	_ZN20QGraphicsItemPrivate15resetFocusProxyEv @ 4666 NONAME
 	_ZN20QGraphicsItemPrivate16setEnabledHelperEbbb @ 4667 NONAME
@@ -12105,4 +12105,7 @@ EXPORTS
 	_ZN15QStaticTextItemD1Ev @ 12104 NONAME
 	_ZN15QStaticTextItemD2Ev @ 12105 NONAME
 	_ZN19QEventDispatcherS6031reactivateDeferredActiveObjectsEv @ 12106 NONAME
+	_ZN20QGraphicsItemPrivate11setSubFocusEP13QGraphicsItemS1_ @ 12107 NONAME
+	_ZN20QGraphicsItemPrivate13clearSubFocusEP13QGraphicsItemS1_ @ 12108 NONAME
+	_ZN12QLineControl21resetCursorBlinkTimerEv @ 12109 NONAME
 
