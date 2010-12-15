@@ -38,33 +38,27 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtCore/QCoreApplication>
-#include "baselineserver.h"
 
-int main(int argc, char *argv[])
-{
-    QCoreApplication a(argc, argv);
+#ifndef BASELINETEST_H
+#define BASELINETEST_H
 
-    QString queryString(qgetenv("QUERY_STRING"));
-    if (!queryString.isEmpty()) {
-        // run as CGI script
-        Report::handleCGIQuery(queryString);
-        return 0;
-    }
+#include <QTest>
 
-    if (a.arguments().contains(QLatin1String("-testmapping"))) {
-        BaselineHandler h;
-        h.testPathMapping();
-        return 0;
-    }
-
-    BaselineServer server;
-    if (!server.listen(QHostAddress::Any, BaselineProtocol::ServerPort)) {
-        qWarning("Failed to listen!");
-        return 1;
-    }
-
-    qDebug() << "\n*****" << argv[0] << "started, ready to serve on port" << BaselineProtocol::ServerPort
-             << "with baseline protocol version" << BaselineProtocol::ProtocolVersion << "*****\n";
-    return a.exec();
+namespace QBaselineTest {
+bool checkImage(const QImage& img, const char *name, quint16 checksum, QByteArray *msg, bool *error);
 }
+
+#define QBASELINE_CHECK_SUM(image, name, checksum)\
+do {\
+    QByteArray _msg;\
+    bool _err = false;\
+    if (!QBaselineTest::checkImage((image), (name), (checksum), &_msg, &_err)) {\
+        QFAIL(_msg.constData());\
+    } else if (_err) {\
+        QSKIP(_msg.constData(), SkipSingle);\
+    }\
+} while (0)
+
+#define QBASELINE_CHECK(image, name) QBASELINE_CHECK_SUM(image, name, 0)
+
+#endif // BASELINETEST_H
