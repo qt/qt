@@ -83,13 +83,9 @@ void QGLTextureGlyphCache::clear()
     if (ctx) {
         QGLShareContextScope scope(ctx);
 
-        if (!ctx->d_ptr->workaround_brokenFBOReadBack)
-            glDeleteFramebuffers(1, &m_fbo);
-
         if (m_width || m_height)
             glDeleteTextures(1, &m_texture);
 
-        m_fbo = 0;
         m_texture = 0;
         m_width = 0;
         m_height = 0;
@@ -105,6 +101,13 @@ void QGLTextureGlyphCache::clear()
 
 QGLTextureGlyphCache::~QGLTextureGlyphCache()
 {
+    if (ctx) {
+        QGLShareContextScope scope(ctx);
+
+        if (!ctx->d_ptr->workaround_brokenFBOReadBack)
+            glDeleteFramebuffers(1, &m_fbo);
+    }
+
     clear();
 }
 
