@@ -44,12 +44,14 @@
 
 #include <QScrollArea>
 
+QT_BEGIN_NAMESPACE
 class QScroller;
 class QGridLayout;
 class QSpinBox;
 class QComboBox;
 class QCheckBox;
 class QPlainTextEdit;
+QT_END_NAMESPACE
 
 class MetricItemUpdater;
 class SnapOverlay;

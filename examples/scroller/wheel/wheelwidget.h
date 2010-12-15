@@ -45,8 +45,10 @@
 #include <QWidget>
 #include <QStringList>
 
+QT_BEGIN_NAMESPACE
 class QPainter;
 class QRect;
+QT_END_NAMESPACE
 
 class AbstractWheelWidget : public QWidget {
     Q_OBJECT

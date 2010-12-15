@@ -64,6 +64,10 @@
 
 #include <QtDebug>
 
+#if defined(Q_WS_X11)
+#  include "private/qt_x11_p.h"
+#endif
+
 
 QT_BEGIN_NAMESPACE
 
@@ -986,38 +990,46 @@ bool QScroller::handleInput(Input input, const QPointF &position, qint64 timesta
     return false;
 }
 
-#ifdef Q_WS_MAEMO_5
+#if !defined(Q_WS_MAC)
+// the Mac version is implemented in qscroller_mac.mm
 
 QPointF QScrollerPrivate::realDpi(int screen)
 {
+#  ifdef Q_WS_MAEMO_5
     Q_UNUSED(screen);
+
     // The DPI value is hardcoded to 96 on Maemo5:
     // https://projects.maemo.org/bugzilla/show_bug.cgi?id=152525
     // This value (260) is only correct for the N900 though, but
     // there's no way to get the real DPI at run time.
     return QPointF(260, 260);
-}
 
-#elif defined(Q_WS_MAC)
+#  elif defined(Q_WS_X11) && !defined(QT_NO_XRANDR)
+    if (X11->use_xrandr && X11->ptrXRRSizes) {
+        int nsizes = 0;
+        XRRScreenSize *sizes = X11->ptrXRRSizes(X11->display, screen == -1 ? X11->defaultScreen : screen, &nsizes);
+        if (nsizes > 0 && sizes && sizes->width && sizes->height && sizes->mwidth && sizes->mheight) {
+            qScrollerDebug() << "XRandR DPI:" << QPointF(qreal(25.4) * qreal(sizes->width) / qreal(sizes->mwidth),
+                                                         qreal(25.4) * qreal(sizes->height) / qreal(sizes->mheight));
+            return QPointF(qreal(25.4) * qreal(sizes->width) / qreal(sizes->mwidth),
+                           qreal(25.4) * qreal(sizes->height) / qreal(sizes->mheight));
+        }
+    }
+#  endif
 
-// implemented in qscroller_mac.mm
-
-#else
-
-QPointF QScrollerPrivate::realDpi(int screen)
-{
     QWidget *w = QApplication::desktop()->screen(screen);
     return QPointF(w->physicalDpiX(), w->physicalDpiY());
 }
 
-#endif
+#endif // !Q_WS_MAC
+
 
 /*! \internal
     Returns the resolution of the used screen.
 */
 QPointF QScrollerPrivate::dpi() const
 {
-    return pixelPerMeter / qreal(39.3700787);
+    return pixelPerMeter * qreal(0.0254);
 }
 
 /*! \internal
@@ -1028,7 +1040,7 @@ QPointF QScrollerPrivate::dpi() const
 */
 void QScrollerPrivate::setDpi(const QPointF &dpi)
 {
-    pixelPerMeter = dpi * qreal(39.3700787);
+    pixelPerMeter = dpi / qreal(0.0254);
 }
 
 /*! \internal
@@ -1046,6 +1058,9 @@ void QScrollerPrivate::setDpiFromWidget(QWidget *widget)
 */
 void QScrollerPrivate::updateVelocity(const QPointF &deltaPixelRaw, qint64 deltaTime)
 {
+    if (deltaTime <= 0)
+        return;
+
     Q_Q(QScroller);
     QPointF ppm = q->pixelPerMeter();
     const QScrollerPropertiesPrivate *sp = properties.d.data();
@@ -1057,14 +1072,12 @@ void QScrollerPrivate::updateVelocity(const QPointF &deltaPixelRaw, qint64 delta
     if (((deltaPixelRaw / qreal(deltaTime)).manhattanLength() / ((ppm.x() + ppm.y()) / 2) * 1000) > qreal(2.5))
         deltaPixel = deltaPixelRaw * qreal(2.5) * ppm / 1000 / (deltaPixelRaw / qreal(deltaTime)).manhattanLength();
 
-    qreal inversSmoothingFactor = ((qreal(1) - sp->dragVelocitySmoothingFactor) * qreal(deltaTime) / qreal(1000));
     QPointF newv = -deltaPixel / qreal(deltaTime) * qreal(1000) / ppm;
-    newv = newv * (qreal(1) - inversSmoothingFactor) + releaseVelocity * inversSmoothingFactor;
+    if (releaseVelocity != QPointF(0, 0))
+        newv = newv * sp->dragVelocitySmoothingFactor + releaseVelocity * (qreal(1) - sp->dragVelocitySmoothingFactor);
 
-    if (deltaPixel.x())
-        releaseVelocity.setX(qBound(-sp->maximumVelocity, newv.x(), sp->maximumVelocity));
-    if (deltaPixel.y())
-        releaseVelocity.setY(qBound(-sp->maximumVelocity, newv.y(), sp->maximumVelocity));
+    releaseVelocity.setX(qBound(-sp->maximumVelocity, newv.x(), sp->maximumVelocity));
+    releaseVelocity.setY(qBound(-sp->maximumVelocity, newv.y(), sp->maximumVelocity));
 
     qScrollerDebug() << "  --> new velocity:" << releaseVelocity;
 }
@@ -1354,9 +1367,8 @@ void QScrollerPrivate::createScrollingSegments(qreal v, qreal startPos, qreal pp
             qreal oDistance = viewSize * sp->overshootScrollDistanceFactor * endV / sp->maximumVelocity;
             qreal oDeltaTime = sp->overshootScrollTime;
 
-            pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.5, stopPos, stopPos + oDistance, sp->scrollingCurve.type(), orientation);
-            pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.3, stopPos + oDistance, stopPos + oDistance * 0.3, QEasingCurve::InQuad, orientation);
-            pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.2, stopPos + oDistance * 0.3, stopPos, QEasingCurve::OutQuad, orientation);
+            pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.3, stopPos, stopPos + oDistance, sp->scrollingCurve.type(), orientation);
+            pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.7, stopPos + oDistance, stopPos, sp->scrollingCurve.type(), orientation);
         }
         return;
     }
@@ -1568,6 +1580,9 @@ bool QScrollerPrivate::releaseWhileDragging(const QPointF &position, qint64 time
 {
     Q_Q(QScroller);
     const QScrollerPropertiesPrivate *sp = properties.d.data();
+
+    // handleDrag updates lastPosition, lastTimestamp and velocity
+    handleDrag(position, timestamp);
 
     // check if we moved at all - this can happen if you stop a running
     // scroller with a press and release shortly afterwards
