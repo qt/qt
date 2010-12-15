@@ -657,6 +657,8 @@ void QCoeFepInputContext::UpdateFepInlineTextL(const TDesC& aNewInlineText,
     if (!w)
         return;
 
+    commitTemporaryPreeditString();
+
     m_inlinePosition = aPositionOfInsertionPointInInlineText;
 
     QList<QInputMethodEvent::Attribute> attributes;
@@ -694,6 +696,12 @@ void QCoeFepInputContext::SetInlineEditingCursorVisibilityL(TBool aCursorVisibil
 
 void QCoeFepInputContext::CancelFepInlineEdit()
 {
+    // We are not supposed to ever have a tempPreeditString and a real preedit string
+    // from S60 at the same time, so it should be safe to rely on this test to determine
+    // whether we should honor S60's request to clear the text or not.
+    if (m_hasTempPreeditString)
+        return;
+
     QList<QInputMethodEvent::Attribute> attributes;
     QInputMethodEvent event(QLatin1String(""), attributes);
     event.setCommitString(QLatin1String(""), 0, 0);

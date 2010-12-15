@@ -108,6 +108,7 @@ Module.
 \section1 Handling Data
 
 \list
+\o \l{QML Basic Types}{QML Basic Data Types}
 \o \l{Using QML Positioner and Repeater Items}
 \o \l{QML Data Models}
 \o \l{Presenting Data with QML}

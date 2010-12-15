@@ -181,6 +181,9 @@ public:
      This function needs to be called *before* any widget/content is created. 
      When called with true, the base window surface will be translucent and initialized
      with QGLFormat.alpha == true.
+
+     This function is *deprecated*. Set Qt::WA_TranslucentBackground attribute
+     on the top-level widget *before* you show it instead.
     */
     static void setTranslucent(bool translucent);
 };
