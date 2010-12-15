@@ -64,6 +64,10 @@
 
 #include <QtDebug>
 
+#if defined(Q_WS_X11)
+#  include "private/qt_x11_p.h"
+#endif
+
 
 QT_BEGIN_NAMESPACE
 
@@ -986,38 +990,46 @@ bool QScroller::handleInput(Input input, const QPointF &position, qint64 timesta
     return false;
 }
 
-#ifdef Q_WS_MAEMO_5
+#if !defined(Q_WS_MAC)
+// the Mac version is implemented in qscroller_mac.mm
 
 QPointF QScrollerPrivate::realDpi(int screen)
 {
+#  ifdef Q_WS_MAEMO_5
     Q_UNUSED(screen);
+
     // The DPI value is hardcoded to 96 on Maemo5:
     // https://projects.maemo.org/bugzilla/show_bug.cgi?id=152525
     // This value (260) is only correct for the N900 though, but
     // there's no way to get the real DPI at run time.
     return QPointF(260, 260);
-}
 
-#elif defined(Q_WS_MAC)
+#  elif defined(Q_WS_X11) && !defined(QT_NO_XRANDR)
+    if (X11->use_xrandr && X11->ptrXRRSizes) {
+        int nsizes = 0;
+        XRRScreenSize *sizes = X11->ptrXRRSizes(X11->display, screen == -1 ? X11->defaultScreen : screen, &nsizes);
+        if (nsizes > 0 && sizes && sizes->width && sizes->height && sizes->mwidth && sizes->mheight) {
+            qScrollerDebug() << "XRandR DPI:" << QPointF(qreal(25.4) * qreal(sizes->width) / qreal(sizes->mwidth),
+                                                         qreal(25.4) * qreal(sizes->height) / qreal(sizes->mheight));
+            return QPointF(qreal(25.4) * qreal(sizes->width) / qreal(sizes->mwidth),
+                           qreal(25.4) * qreal(sizes->height) / qreal(sizes->mheight));
+        }
+    }
+#  endif
 
-// implemented in qscroller_mac.mm
-
-#else
-
-QPointF QScrollerPrivate::realDpi(int screen)
-{
     QWidget *w = QApplication::desktop()->screen(screen);
     return QPointF(w->physicalDpiX(), w->physicalDpiY());
 }
 
-#endif
+#endif // !Q_WS_MAC
+
 
 /*! \internal
     Returns the resolution of the used screen.
 */
 QPointF QScrollerPrivate::dpi() const
 {
-    return pixelPerMeter / qreal(39.3700787);
+    return pixelPerMeter * qreal(0.0254);
 }
 
 /*! \internal
@@ -1028,7 +1040,7 @@ QPointF QScrollerPrivate::dpi() const
 */
 void QScrollerPrivate::setDpi(const QPointF &dpi)
 {
-    pixelPerMeter = dpi * qreal(39.3700787);
+    pixelPerMeter = dpi / qreal(0.0254);
 }
 
 /*! \internal
