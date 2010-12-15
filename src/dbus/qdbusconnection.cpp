@@ -42,6 +42,7 @@
 #include <qdebug.h>
 #include <qcoreapplication.h>
 #include <qstringlist.h>
+#include <qthread.h>
 
 #include "qdbusconnection.h"
 #include "qdbusconnectioninterface.h"
@@ -987,7 +988,16 @@ class QDBusDefaultConnection: public QDBusConnection
 public:
     inline QDBusDefaultConnection(BusType type, const char *name)
         : QDBusConnection(connectToBus(type, QString::fromLatin1(name))), ownName(name)
-    { }
+    {
+        // make sure this connection is running on the main thread
+        QCoreApplication *instance = QCoreApplication::instance();
+        if (!instance) {
+            qWarning("QDBusConnection: %s D-Bus connection created before QCoreApplication. Application may misbehave.",
+                     type == SessionBus ? "session" : type == SystemBus ? "system" : "generic");
+        } else {
+            QDBusConnectionPrivate::d(*this)->moveToThread(instance->thread());
+        }
+    }
 
     inline ~QDBusDefaultConnection()
     { disconnectFromBus(QString::fromLatin1(ownName)); }
