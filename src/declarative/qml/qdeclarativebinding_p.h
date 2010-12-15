@@ -162,6 +162,9 @@ public:
     virtual void update(QDeclarativePropertyPrivate::WriteFlags flags);
     virtual QString expression() const;
 
+    typedef int Identifier;
+    static QDeclarativeBinding *createBinding(Identifier, QObject *, QDeclarativeContext *, const QString &, int, QObject *parent=0);
+
 public Q_SLOTS:
     void update() { update(QDeclarativePropertyPrivate::DontRemoveBinding); }
 

@@ -42,6 +42,9 @@
 #include "private/qdeclarativepropertychanges_p.h"
 
 #include "private/qdeclarativeopenmetaobject_p.h"
+#include "private/qdeclarativerewrite_p.h"
+#include "private/qdeclarativeengine_p.h"
+#include "private/qdeclarativecompiler_p.h"
 
 #include <qdeclarativeinfo.h>
 #include <qdeclarativecustomparser_p.h>
@@ -219,6 +222,7 @@ public:
 
     QList<QPair<QByteArray, QVariant> > properties;
     QList<QPair<QByteArray, QDeclarativeExpression *> > expressions;
+    QList<QDeclarativeBinding::Identifier> ids;
     QList<QDeclarativeReplaceSignalHandler*> signalReplacements;
 
     QDeclarativeProperty property(const QByteArray &);
@@ -267,6 +271,7 @@ QDeclarativePropertyChangesParser::compile(const QList<QDeclarativeCustomParserP
         QDeclarativeParser::Variant v = qvariant_cast<QDeclarativeParser::Variant>(data.at(ii).second);
         QVariant var;
         bool isScript = v.isScript();
+        QDeclarativeBinding::Identifier id;
         switch(v.type()) {
         case QDeclarativeParser::Variant::Boolean:
             var = QVariant(v.asBoolean());
@@ -280,10 +285,17 @@ QDeclarativePropertyChangesParser::compile(const QList<QDeclarativeCustomParserP
         case QDeclarativeParser::Variant::Invalid:
         case QDeclarativeParser::Variant::Script:
             var = QVariant(v.asScript());
+            {
+                // Pre-rewrite the expression
+                QString expression = v.asScript();
+                id = rewriteBinding(expression, data.at(ii).first); //### recreates the AST, which is slow
+            }
             break;
         }
 
         ds << data.at(ii).first << isScript << var;
+        if (isScript)
+            ds << id;
     }
 
     return rv;
@@ -303,9 +315,12 @@ void QDeclarativePropertyChangesPrivate::decode()
         QByteArray name;
         bool isScript;
         QVariant data;
+        QDeclarativeBinding::Identifier id;
         ds >> name;
         ds >> isScript;
         ds >> data;
+        if (isScript)
+            ds >> id;
 
         QDeclarativeProperty prop = property(name);      //### better way to check for signal property?
         if (prop.type() & QDeclarativeProperty::SignalProperty) {
@@ -323,6 +338,7 @@ void QDeclarativePropertyChangesPrivate::decode()
             if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty())
                 expression->setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);
             expressions << qMakePair(name, expression);
+            ids << id;
         } else {
             properties << qMakePair(name, data);
         }
@@ -452,10 +468,14 @@ QDeclarativePropertyChanges::ActionList QDeclarativePropertyChanges::actions()
                 a.toValue = d->expressions.at(ii).second->evaluate();
             } else {
                 QDeclarativeExpression *e = d->expressions.at(ii).second;
-                QDeclarativeBinding *newBinding = 
-                    new QDeclarativeBinding(e->expression(), object(), qmlContext(this));
+
+                QDeclarativeBinding::Identifier id = d->ids.at(ii);
+                QDeclarativeBinding *newBinding = QDeclarativeBinding::createBinding(id, object(), qmlContext(this), e->sourceFile(), e->lineNumber());
+                if (!newBinding) {
+                    newBinding = new QDeclarativeBinding(e->expression(), object(), qmlContext(this));
+                    newBinding->setSourceLocation(e->sourceFile(), e->lineNumber());
+                }
                 newBinding->setTarget(prop);
-                newBinding->setSourceLocation(e->sourceFile(), e->lineNumber());
                 a.toBinding = newBinding;
                 a.deletableToBinding = true;
             }

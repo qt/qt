@@ -2262,6 +2262,35 @@ const QMetaObject *QDeclarativeCompiler::resolveType(const QByteArray& name) con
     return qmltype->metaObject();
 }
 
+// similar to logic of completeComponentBuild, but also sticks data
+// into datas at the end
+int QDeclarativeCompiler::rewriteBinding(const QString& expression, const QByteArray& name)
+{
+    QDeclarativeRewrite::RewriteBinding rewriteBinding;
+    rewriteBinding.setName('$' + name);
+    bool isSharable = false;
+    QString rewrite = rewriteBinding(expression, 0, &isSharable);
+
+    quint32 length = rewrite.length();
+    quint32 pc;
+
+    if (isSharable) {
+        pc = output->cachedClosures.count();
+        pc |= 0x80000000;
+        output->cachedClosures.append(0);
+    } else {
+        pc = output->cachedPrograms.length();
+        output->cachedPrograms.append(0);
+    }
+
+    QByteArray compiledData =
+        QByteArray((const char *)&pc, sizeof(quint32)) +
+        QByteArray((const char *)&length, sizeof(quint32)) +
+        QByteArray((const char *)rewrite.constData(),
+                   rewrite.length() * sizeof(QChar));
+
+    return output->indexForByteArray(compiledData);
+}
 
 // Ensures that the dynamic meta specification on obj is valid
 bool QDeclarativeCompiler::checkDynamicMeta(QDeclarativeParser::Object *obj)

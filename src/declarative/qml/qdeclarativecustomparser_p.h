@@ -56,6 +56,7 @@
 #include "private/qdeclarativemetatype_p.h"
 #include "qdeclarativeerror.h"
 #include "private/qdeclarativeparser_p.h"
+#include "private/qdeclarativebinding_p.h"
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qxmlstream.h>
@@ -139,6 +140,8 @@ protected:
     int evaluateEnum(const QByteArray&) const;
 
     const QMetaObject *resolveType(const QByteArray&) const;
+
+    QDeclarativeBinding::Identifier rewriteBinding(const QString&, const QByteArray&);
 
 private:
     QList<QDeclarativeError> exceptions;

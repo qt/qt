@@ -161,6 +161,7 @@ public:
 
     int evaluateEnum(const QByteArray& script) const; // for QDeclarativeCustomParser::evaluateEnum
     const QMetaObject *resolveType(const QByteArray& name) const; // for QDeclarativeCustomParser::resolveType
+    int rewriteBinding(const QString& expression, const QByteArray& name); // for QDeclarativeCustomParser::rewriteBinding
 
 private:
     static void reset(QDeclarativeCompiledData *);

@@ -46,6 +46,7 @@
 #include "qdeclarativecontext.h"
 #include "qdeclarativeinfo.h"
 #include "private/qdeclarativecontext_p.h"
+#include "private/qdeclarativecompiler_p.h"
 #include "private/qdeclarativedata_p.h"
 #include "private/qdeclarativestringconverters_p.h"
 #include "private/qdeclarativestate_p_p.h"
@@ -231,6 +232,19 @@ QDeclarativeBinding::QDeclarativeBinding(void *data, QDeclarativeRefCount *rc, Q
 {
     setParent(parent);
     setNotifyOnValueChanged(true);
+}
+
+QDeclarativeBinding *
+QDeclarativeBinding::createBinding(Identifier id, QObject *obj, QDeclarativeContext *ctxt,
+                                   const QString &url, int lineNumber, QObject *parent)
+{
+    QDeclarativeContextData *ctxtdata = QDeclarativeContextData::get(ctxt);
+
+    QDeclarativeEnginePrivate *engine = QDeclarativeEnginePrivate::get(qmlEngine(obj));
+    QDeclarativeCompiledData *cdata = 0;
+    if (engine && ctxtdata && !ctxtdata->url.isEmpty())
+        cdata = engine->typeLoader.get(ctxtdata->url)->compiledData();
+    return cdata ? new QDeclarativeBinding((void*)cdata->datas.at(id).constData(), cdata, obj, ctxtdata, url, lineNumber, parent) : 0;
 }
 
 QDeclarativeBinding::QDeclarativeBinding(const QString &str, QObject *obj, QDeclarativeContext *ctxt, 
