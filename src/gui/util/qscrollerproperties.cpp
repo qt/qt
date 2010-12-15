@@ -58,28 +58,6 @@ QScrollerPropertiesPrivate *QScrollerPropertiesPrivate::defaults()
 {
     if (!systemDefaults) {
         QScrollerPropertiesPrivate spp;
-#ifdef Q_WS_MAEMO_5
-        spp.mousePressEventDelay = qreal(0);
-        spp.dragStartDistance = qreal(2.5 / 1000);
-        spp.dragVelocitySmoothingFactor = qreal(10);
-        spp.axisLockThreshold = qreal(0);
-        spp.scrollingCurve.setType(QEasingCurve::OutQuad);
-        spp.decelerationFactor = 1.0;
-        spp.minimumVelocity = qreal(0.0195);
-        spp.maximumVelocity = qreal(6.84);
-        spp.maximumClickThroughVelocity = qreal(0.0684);
-        spp.acceleratingFlickMaximumTime = qreal(0.125);
-        spp.acceleratingFlickSpeedupFactor = qreal(3.0);
-        spp.snapPositionRatio = qreal(0.25);
-        spp.snapTime = qreal(1);
-        spp.overshootDragResistanceFactor = qreal(1);
-        spp.overshootDragDistanceFactor = qreal(0.3);
-        spp.overshootScrollDistanceFactor = qreal(0.3);
-        spp.overshootScrollTime = qreal(0.5);
-        spp.hOvershootPolicy = QScrollerProperties::OvershootWhenScrollable;
-        spp.vOvershootPolicy = QScrollerProperties::OvershootWhenScrollable;
-        spp.frameRate = QScrollerProperties::Fps30;
-#else
         spp.mousePressEventDelay = qreal(0.25);
         spp.dragStartDistance = qreal(5.0 / 1000);
         spp.dragVelocitySmoothingFactor = qreal(0.8);
@@ -104,7 +82,7 @@ QScrollerPropertiesPrivate *QScrollerPropertiesPrivate::defaults()
         spp.hOvershootPolicy = QScrollerProperties::OvershootWhenScrollable;
         spp.vOvershootPolicy = QScrollerProperties::OvershootWhenScrollable;
         spp.frameRate = QScrollerProperties::Standard;
-#endif
+
         systemDefaults = new QScrollerPropertiesPrivate(spp);
     }
     return new QScrollerPropertiesPrivate(userDefaults ? *userDefaults : *systemDefaults);
