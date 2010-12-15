@@ -38,42 +38,53 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef HTMLPAGE_H
-#define HTMLPAGE_H
+#ifndef REPORT_H
+#define REPORT_H
 
 #include "baselineprotocol.h"
 #include <QFile>
 #include <QTextStream>
+#include <QMap>
+#include <QStringList>
 
-class HTMLPage
+class BaselineHandler;
+
+class Report
 {
 public:
-    HTMLPage();
-    ~HTMLPage();
+    Report();
+    ~Report();
 
-    void start(const QString &storagePath, const QString &runId, const PlatformInfo pinfo, const QString &context, const ImageItemList &itemList);
-    void addItem(const QString &baseline, const QString &rendered, const ImageItem &item);
+    void init(const BaselineHandler *h, const QString &r, const PlatformInfo &p);
+    void addItems(const ImageItemList& items);
+    void addMismatch(const ImageItem& item);
     void end();
+
     QString filePath();
 
     static void handleCGIQuery(const QString &query);
 
 private:
-    void writeHeader(const ImageItem &item);
+    void write();
+    void writeFunctionResults(const ImageItemList &list);
+    void writeItem(const QString &baseline, const QString &rendered, const ImageItem &item, const QString &ctx);
+    void writeHeader();
     void writeFooter();
     QString generateCompared(const QString &baseline, const QString &rendered, bool fuzzy = false);
     QString generateThumbnail(const QString &image);
 
-    QString root;
-    QString path;
-    QString reportDir;
-    QFile file;
-    QTextStream out;
-    QString id;
+    const BaselineHandler *handler;
+    QString runId;
     PlatformInfo plat;
-    QString ctx;
-    ImageItemList imageItems;
-    bool headerWritten;
+    QString rootDir;
+    QString reportDir;
+    QString path;
+    QStringList testFunctions;
+    QMap<QString, ImageItemList> itemLists;
+    bool written;
+    int numItems;
+    int numMismatches;
+    QTextStream out;
 };
 
-#endif // HTMLPAGE_H
+#endif // REPORT_H

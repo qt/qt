@@ -1,4 +1,5 @@
 INCLUDEPATH += $$PWD
+DEPENDPATH += $$PWD
 
 QT *= network
 
