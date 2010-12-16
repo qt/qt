@@ -266,6 +266,8 @@ private:
     void drawGlyphsS60(const QPointF &p, const QTextItemInt &ti);
 #endif // Q_OS_SYMBIAN && QT_NO_FREETYPE
 
+    bool setClipRectInDeviceCoords(const QRect &r, Qt::ClipOperation op);
+
     inline void ensureBrush(const QBrush &brush) {
         if (!qbrush_fast_equals(state()->lastBrush, brush) || (brush.style() != Qt::NoBrush && state()->fillFlags))
             updateBrush(brush);
