@@ -613,9 +613,25 @@ void QDeclarativeEngineDebugServer::resetBinding(int objectId, const QString &pr
                 QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::setBinding(property, 0);
                 if (oldBinding)
                     oldBinding->destroy();
+            }
+            if (property.isResettable()) {
+                // Note: this will reset the property in any case, without regard to states
+                // Right now almost no QDeclarativeItem has reset methods for its properties (with the
+                // notable exception of QDeclarativeAnchors), so this is not a big issue
+                // later on, setBinding does take states into account
+                property.reset();
             } else {
-                if (property.isResettable()) {
-                    property.reset();
+                // overwrite with default value
+                if (QDeclarativeType *objType = QDeclarativeMetaType::qmlType(object->metaObject())) {
+                    if (QObject *emptyObject = objType->create()) {
+                        if (emptyObject->property(propertyName.toLatin1()).isValid()) {
+                            QVariant defaultValue = QDeclarativeProperty(emptyObject, propertyName).read();
+                            if (defaultValue.isValid()) {
+                                setBinding(objectId, propertyName, defaultValue, true);
+                            }
+                        }
+                        delete emptyObject;
+                    }
                 }
             }
         } else {
