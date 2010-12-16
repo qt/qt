@@ -2941,6 +2941,9 @@ QStringRef QXmlStreamReader::documentEncoding() const
   By default, QXmlStreamWriter encodes XML in UTF-8. Different
   encodings can be enforced using setCodec().
 
+  If an error occurs while writing to the underlying device, hasError()
+  starts returning true and subsequent writes are ignored.
+
   The \l{QXmlStream Bookmarks Example} illustrates how to use a
   stream writer to write an XML bookmark file (XBEL) that
   was previously read in by a QXmlStreamReader.
@@ -2976,6 +2979,7 @@ public:
     uint inEmptyElement :1;
     uint lastWasStartElement :1;
     uint wroteSomething :1;
+    uint hasError :1;
     uint autoFormatting :1;
     QByteArray autoFormattingIndent;
     NamespaceDeclaration emptyNamespace;
@@ -3008,6 +3012,7 @@ QXmlStreamWriterPrivate::QXmlStreamWriterPrivate(QXmlStreamWriter *q)
 #endif
     inStartElement = inEmptyElement = false;
     wroteSomething = false;
+    hasError = false;
     lastWasStartElement = false;
     lastNamespaceDeclaration = 1;
     autoFormatting = false;
@@ -3017,11 +3022,15 @@ QXmlStreamWriterPrivate::QXmlStreamWriterPrivate(QXmlStreamWriter *q)
 void QXmlStreamWriterPrivate::write(const QStringRef &s)
 {
     if (device) {
+        if (hasError)
+            return;
 #ifdef QT_NO_TEXTCODEC
-        device->write(s.toString().toLatin1(), s.size());
+        QByteArray bytes = s.toLatin1();
 #else
-        device->write(encoder->fromUnicode(s.constData(), s.size()));
+        QByteArray bytes = encoder->fromUnicode(s.constData(), s.size());
 #endif
+        if (device->write(bytes) != bytes.size())
+            hasError = true;
     }
     else if (stringDevice)
         s.appendTo(stringDevice);
@@ -3032,11 +3041,15 @@ void QXmlStreamWriterPrivate::write(const QStringRef &s)
 void QXmlStreamWriterPrivate::write(const QString &s)
 {
     if (device) {
+        if (hasError)
+            return;
 #ifdef QT_NO_TEXTCODEC
-        device->write(s.toLatin1(), s.size());
+        QByteArray bytes = s.toLatin1();
 #else
-        device->write(encoder->fromUnicode(s));
+        QByteArray bytes = encoder->fromUnicode(s);
 #endif
+        if (device->write(bytes) != bytes.size())
+            hasError = true;
     }
     else if (stringDevice)
         stringDevice->append(s);
@@ -3078,7 +3091,10 @@ void QXmlStreamWriterPrivate::writeEscaped(const QString &s, bool escapeWhitespa
 void QXmlStreamWriterPrivate::write(const char *s, int len)
 {
     if (device) {
-        device->write(s, len);
+        if (hasError)
+            return;
+        if (device->write(s, len) != len)
+            hasError = true;
     } else if (stringDevice) {
         stringDevice->append(QString::fromLatin1(s, len));
     } else
@@ -3359,6 +3375,17 @@ int QXmlStreamWriter::autoFormattingIndent() const
     return d->autoFormattingIndent.count(' ') - d->autoFormattingIndent.count('\t');
 }
 
+/*!
+    Returns \c true if the stream failed to write to the underlying device.
+
+    The error status is never reset. Writes happening after the error
+    occurred are ignored, even if the error condition is cleared.
+ */
+bool QXmlStreamWriter::hasError() const
+{
+    Q_D(const QXmlStreamWriter);
+    return d->hasError;
+}
 
 /*!
   \overload
