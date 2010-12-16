@@ -693,7 +693,7 @@ bool QTextStreamPrivate::flushWriteBuffer()
     // flush the file
 #ifndef QT_NO_QOBJECT
     QFile *file = qobject_cast<QFile *>(device);
-    bool flushed = file && file->flush();
+    bool flushed = !file || file->flush();
 #else
     bool flushed = true;
 #endif
