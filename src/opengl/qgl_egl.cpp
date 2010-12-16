@@ -204,6 +204,8 @@ void QGLContext::makeCurrent()
                 const char *egl_version = eglQueryString(d->eglContext->display(), EGL_VERSION);
                 if (egl_version && strstr(egl_version, "1.3"))
                     d->workaround_brokenFBOReadBack = true;
+                else if (egl_version && strstr(egl_version, "1.4"))
+                    d->workaround_brokenTexSubImage = true;
             }
         }
     }
