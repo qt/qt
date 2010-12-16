@@ -101,7 +101,7 @@ class Q_GUI_EXPORT QIntValidator : public QValidator
 
 public:
     explicit QIntValidator(QObject * parent = 0);
-    QIntValidator(int bottom, int top, QObject * parent);
+    QIntValidator(int bottom, int top, QObject *parent = 0);
     ~QIntValidator();
 
     QValidator::State validate(QString &, int &) const;
