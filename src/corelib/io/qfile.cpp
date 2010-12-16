@@ -48,6 +48,7 @@
 #include "qfileinfo.h"
 #include "private/qiodevice_p.h"
 #include "private/qfile_p.h"
+#include "private/qsystemerror_p.h"
 #if defined(QT_BUILD_CORE_LIB)
 # include "qcoreapplication.h"
 #endif
@@ -992,8 +993,14 @@ bool QFile::open(OpenMode mode)
         return false;
     }
 
+#ifdef Q_OS_SYMBIAN
+    // For symbian, the unbuffered flag is used to control write-behind cache behaviour
+    if (fileEngine()->open(mode))
+#else
     // QIODevice provides the buffering, so there's no need to request it from the file engine.
-    if (fileEngine()->open(mode | QIODevice::Unbuffered)) {
+    if (fileEngine()->open(mode | QIODevice::Unbuffered))
+#endif
+    {
         QIODevice::open(mode);
         if (mode & Append)
             seek(size());
@@ -1223,6 +1230,7 @@ bool QFile::unmap(uchar *address)
             d->setError(d->fileEngine->error(), d->fileEngine->errorString());
         return success;
     }
+    d->setError(PermissionsError, tr("No file engine available or engine does not support UnMapExtension"));
     return false;
 }
 
@@ -1477,7 +1485,17 @@ bool QFile::atEnd() const
 }
 
 /*!
-  \reimp
+    For random-access devices, this function sets the current position
+    to \a pos, returning true on success, or false if an error occurred.
+    For sequential devices, the default behavior is to do nothing and
+    return false.
+
+    Seeking beyond the end of a file:
+    If the position is beyond the end of a file, then seek() shall not
+    immediately extend the file. If a write is performed at this position,
+    then the file shall be extended. The content of the file between the
+    previous end of file and the newly written data is UNDEFINED and
+    varies between platforms and file systems.
 */
 
 bool QFile::seek(qint64 off)

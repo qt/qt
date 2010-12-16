@@ -4566,13 +4566,13 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
             itemCache->exposed.clear();
             deviceData->cacheIndent = QPoint();
             pix = QPixmap();
-        } else {
+        } else if (!viewRect.isNull()) {
             allowPartialCacheExposure = deviceData->cacheIndent != QPoint();
         }
 
         // Allow partial cache exposure if the device rect isn't fully contained and
         // deviceRect is 20% taller or wider than the viewRect.
-        if (!allowPartialCacheExposure && !viewRect.contains(deviceRect)) {
+        if (!allowPartialCacheExposure && !viewRect.isNull() && !viewRect.contains(deviceRect)) {
             allowPartialCacheExposure = (viewRect.width() * 1.2 < deviceRect.width())
                                          || (viewRect.height() * 1.2 < deviceRect.height());
         }

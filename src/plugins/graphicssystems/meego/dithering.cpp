@@ -154,7 +154,10 @@ unsigned short* convertRGB32_to_RGB565(const unsigned char *in, int width, int h
 
                 // Add the diffusion for this pixel we stored in the accumulator.
                 // >> 7 because the values in accumulator are stored * 128
-                component[c] += accumulator[c][x] >> 7;
+                if (x != 0 && x != (width - 1)) {
+                    if (accumulator[c][x] >> 7 != 0)
+                    component[c] += rand() % accumulator[c][x] >> 7;
+                }
 
                 // Make sure we're not over the boundaries.
                 CLAMP_256(component[c]);
@@ -172,10 +175,10 @@ unsigned short* convertRGB32_to_RGB565(const unsigned char *in, int width, int h
 
                 // Distribute the difference according to the matrix in the
                 // accumulation bufffer.
-                ACCUMULATE(accumulator[c], x + 1, 0, width, diff * 7);
-                ACCUMULATE(accumulator[c], x - 1, 1, width, diff * 3);
+                ACCUMULATE(accumulator[c], x + 1, 0, width, diff * 3);
+                ACCUMULATE(accumulator[c], x - 1, 1, width, diff * 5);
                 ACCUMULATE(accumulator[c], x, 1, width, diff * 5);
-                ACCUMULATE(accumulator[c], x + 1, 1, width, diff * 1);
+                ACCUMULATE(accumulator[c], x + 1, 1, width, diff * 3);
             }
 
             // Write the newly produced pixel

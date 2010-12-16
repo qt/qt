@@ -28,8 +28,8 @@ Item {
             objectName: "highlight"
             width: 80; height: 80
             color: "lightsteelblue"; radius: 5
-            y: grid.currentItem.y
-            x: grid.currentItem.x
+            y: grid.currentItem.y+5
+            x: grid.currentItem.x+5
         }
     }
 

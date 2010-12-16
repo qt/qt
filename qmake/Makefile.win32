@@ -73,6 +73,10 @@ QTOBJS= \
 	qbitarray.obj \
 	qbuffer.obj \
 	qcryptographichash.obj \
+	qfilesystementry.obj \
+	qfilesystemengine.obj \
+	qfilesystemengine_win.obj \
+	qfilesystemiterator_win.obj \
 	qfsfileengine.obj \
 	qfsfileengine_iterator.obj \
 	qbytearray.obj \
@@ -86,7 +90,6 @@ QTOBJS= \
 	qabstractfileengine.obj \
 	qfsfileengine_win.obj \
 	qsystemlibrary.obj \
-	qfsfileengine_iterator_win.obj \
 	qfileinfo.obj \
 	qglobal.obj \
 	qhash.obj \
@@ -101,6 +104,7 @@ QTOBJS= \
 	qutfcodec.obj \
 	qstring.obj \
 	qstringlist.obj \
+	qsystemerror.obj \
 	qtextstream.obj \
 	qdatastream.obj \
 	quuid.obj \

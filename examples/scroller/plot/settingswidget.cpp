@@ -348,7 +348,7 @@ private:
 MetricItem items[] = {
     { METRIC(MousePressEventDelay),           1000, "ms",       qreal(0), qreal(2000), qreal(10) },
     { METRIC(DragStartDistance),              1000, "mm",       qreal(1), qreal(20), qreal(0.1) },
-    { METRIC(DragVelocitySmoothingFactor),    1,    "",         qreal(0), qreal(1), qreal(0.01) },
+    { METRIC(DragVelocitySmoothingFactor),    1,    "",         qreal(0), qreal(1), qreal(0.1) },
     { METRIC(AxisLockThreshold),              1,    "",         qreal(0), qreal(1), qreal(0.01) },
 
     { METRIC(ScrollingCurve),                 1,    "",         QEasingCurve(), 0, 0 },

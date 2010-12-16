@@ -41,7 +41,10 @@
 
 
 #include <QtTest/QtTest>
+#ifdef QT_BUILD_INTERNAL
 #include "../../../src/gui/dialogs/qfilesystemmodel_p.h"
+#endif
+#include <QFileSystemModel>
 #include <QFileIconProvider>
 #include <QTreeView>
 #include <QHeaderView>
@@ -826,8 +829,10 @@ void tst_QFileSystemModel::sort()
     MyFriendFileSystemModel *myModel = new MyFriendFileSystemModel();
     QTreeView *tree = new QTreeView();
 
+#ifdef QT_BUILD_INTERNAL
     if (fileDialogMode)
         myModel->d_func()->disableRecursiveSort = true;
+#endif
 
     QDir dir(QDir::tempPath());
     //initialize the randomness
@@ -992,8 +997,8 @@ void tst_QFileSystemModel::dirsBeforeFiles()
         }
         dir.rmdir(dirPath);
     }
-    dir.mkpath(dirPath);
-    QVERIFY(dir.exists());
+    QVERIFY(dir.mkpath(dirPath));
+    QVERIFY(QDir(dirPath).exists());
 
     for (int i = 0; i < 3; ++i) {
         QLatin1Char c('a' + i);

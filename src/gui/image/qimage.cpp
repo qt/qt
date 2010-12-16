@@ -1085,9 +1085,14 @@ QImage::QImage(const char * const xpm[])
 QImage::QImage(const QImage &image)
     : QPaintDevice()
 {
-    d = image.d;
-    if (d)
-        d->ref.ref();
+    if (image.paintingActive()) {
+        d = 0;
+        operator=(image.copy());
+    } else {
+        d = image.d;
+        if (d)
+            d->ref.ref();
+    }
 }
 
 #ifdef QT3_SUPPORT
@@ -1284,11 +1289,15 @@ QImage::~QImage()
 
 QImage &QImage::operator=(const QImage &image)
 {
-    if (image.d)
-        image.d->ref.ref();
-    if (d && !d->ref.deref())
-        delete d;
-    d = image.d;
+    if (image.paintingActive()) {
+        operator=(image.copy());
+    } else {
+        if (image.d)
+            image.d->ref.ref();
+        if (d && !d->ref.deref())
+            delete d;
+        d = image.d;
+    }
     return *this;
 }
 
@@ -2018,11 +2027,11 @@ void QImage::fill(Qt::GlobalColor color)
     Fills the entire image with the given \a color.
 
     If the depth of the image is 1, the image will be filled with 1 if
-    \a color equals Qt::color0; it will otherwise be filled with 0.
+    \a color equals Qt::color1; it will otherwise be filled with 0.
 
     If the depth of the image is 8, the image will be filled with the
     index corresponding the \a color in the color table if present; it
-    will otherwise be filled with 0.|
+    will otherwise be filled with 0.
 
     \since 4.8
 */

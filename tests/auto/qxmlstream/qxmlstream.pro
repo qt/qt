@@ -8,7 +8,7 @@ wince*|symbian: {
    addFiles.files = data XML-Test-Suite
    addFiles.path = .
    DEPLOYMENT += addFiles
-   DEFINES += SRCDIR=\\\"\\\"
+   wince*:DEFINES += SRCDIR=\\\"\\\"
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
