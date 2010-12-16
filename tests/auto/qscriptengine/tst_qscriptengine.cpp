@@ -1570,7 +1570,7 @@ void tst_QScriptEngine::customGlobalObjectWithPrototype()
         {
             QScriptValue ret = engine.evaluate("print");
             QVERIFY(ret.isError());
-            QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: Can't find variable: print"));
+            QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: print is not defined"));
         }
         {
             QScriptValue ret = engine.evaluate("anotherProtoProperty");
@@ -1584,7 +1584,7 @@ void tst_QScriptEngine::customGlobalObjectWithPrototype()
         {
             QScriptValue ret = engine.evaluate("anotherProtoProperty");
             QVERIFY(ret.isError());
-            QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: Can't find variable: anotherProtoProperty"));
+            QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: anotherProtoProperty is not defined"));
         }
         {
             QScriptValue ret = engine.evaluate("print");
@@ -2035,7 +2035,7 @@ void tst_QScriptEngine::nestedEvaluate()
         QCOMPARE(result.property("evaluatedThisObjectId").toString(), QString("foo"));
         QScriptValue bar = eng.evaluate("bar");
         QVERIFY(bar.isError());
-        QCOMPARE(bar.toString(), QString::fromLatin1("ReferenceError: Can't find variable: bar"));
+        QCOMPARE(bar.toString(), QString::fromLatin1("ReferenceError: bar is not defined"));
     }
 
     {
@@ -2046,7 +2046,7 @@ void tst_QScriptEngine::nestedEvaluate()
         QCOMPARE(result.property("evaluatedThisObjectId").toString(), QString("foo"));
         QScriptValue bar = eng.evaluate("bar");
         QVERIFY(bar.isError());
-        QCOMPARE(bar.toString(), QString::fromLatin1("ReferenceError: Can't find variable: bar"));
+        QCOMPARE(bar.toString(), QString::fromLatin1("ReferenceError: bar is not defined"));
     }
 }
 
@@ -3652,7 +3652,7 @@ void tst_QScriptEngine::argumentsProperty()
         {
             QScriptValue ret = eng.evaluate("arguments");
             QVERIFY(ret.isError());
-            QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: Can't find variable: arguments"));
+            QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: arguments is not defined"));
         }
         eng.evaluate("arguments = 10");
         {
@@ -4512,7 +4512,7 @@ void tst_QScriptEngine::throwInsideWithStatement()
             "  bad;"
             "}");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: Can't find variable: bad"));
+        QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: bad is not defined"));
     }
     {
         QScriptValue ret = eng.evaluate(
@@ -4525,7 +4525,7 @@ void tst_QScriptEngine::throwInsideWithStatement()
             "  bad;"
             "}");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: Can't find variable: bad"));
+        QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: bad is not defined"));
     }
     {
         eng.clearExceptions();
@@ -4552,7 +4552,7 @@ void tst_QScriptEngine::throwInsideWithStatement()
         QVERIFY(ret.isNumber());
         QScriptValue ret2 = eng.evaluate("bug");
         QVERIFY(ret2.isError());
-        QCOMPARE(ret2.toString(), QString::fromLatin1("ReferenceError: Can't find variable: bug"));
+        QCOMPARE(ret2.toString(), QString::fromLatin1("ReferenceError: bug is not defined"));
     }
 }
 
@@ -5369,7 +5369,7 @@ void tst_QScriptEngine::evaluateProgram_customScope()
         {
             QScriptValue ret = eng.evaluate(program);
             QVERIFY(ret.isError());
-            QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: Can't find variable: a"));
+            QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: a is not defined"));
         }
 
         QScriptValue obj = eng.newObject();
@@ -5438,7 +5438,7 @@ void tst_QScriptEngine::evaluateProgram_executeLater()
         {
             QScriptValue ret = eng.evaluate(program);
             QVERIFY(ret.isError());
-            QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: Can't find variable: a"));
+            QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: a is not defined"));
         }
         eng.globalObject().setProperty("a", 122);
         {
@@ -5734,7 +5734,7 @@ void tst_QScriptEngine::newFixedStaticScopeObject()
     }
 
     // Property that doesn't exist.
-    QVERIFY(eng.evaluate("noSuchProperty").equals("ReferenceError: Can't find variable: noSuchProperty"));
+    QVERIFY(eng.evaluate("noSuchProperty").equals("ReferenceError: noSuchProperty is not defined"));
 
     // Write property from JS.
     {
@@ -5889,10 +5889,10 @@ void tst_QScriptEngine::newGrowingStaticScopeObject()
     {
         QScriptValue fun = eng.evaluate("(function() { return futureProperty; })");
         QVERIFY(fun.isFunction());
-        QCOMPARE(fun.call().toString(), QString::fromLatin1("ReferenceError: Can't find variable: futureProperty"));
+        QCOMPARE(fun.call().toString(), QString::fromLatin1("ReferenceError: futureProperty is not defined"));
         scope.setProperty("futureProperty", "added after the function was compiled");
         // If scope were dynamic, this would return the new property.
-        QCOMPARE(fun.call().toString(), QString::fromLatin1("ReferenceError: Can't find variable: futureProperty"));
+        QCOMPARE(fun.call().toString(), QString::fromLatin1("ReferenceError: futureProperty is not defined"));
     }
 
     eng.popContext();
