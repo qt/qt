@@ -223,6 +223,7 @@ QT_BEGIN_NAMESPACE
     \value ReadPastEnd      The data stream has read past the end of the
                             data in the underlying device.
     \value ReadCorruptData  The data stream has read corrupt data.
+    \value WriteFailed      The data stream cannot write to the underlying device.
 */
 
 /*****************************************************************************

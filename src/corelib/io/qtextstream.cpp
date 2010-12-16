@@ -224,6 +224,7 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
     \value ReadPastEnd      The text stream has read past the end of the
                             data in the underlying device.
     \value ReadCorruptData  The text stream has read corrupt data.
+    \value WriteFailed      The text stream cannot write to the underlying device.
 
     \sa status()
 */
