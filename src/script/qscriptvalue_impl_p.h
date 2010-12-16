@@ -666,7 +666,7 @@ inline bool QScriptValuePrivate::instanceOf(v8::Handle<v8::Object> other) const
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::prototype() const
 {
-    if (isJSBased() && m_value->IsObject()) {
+    if (isObject()) {
         v8::HandleScope handleScope;
         return new QScriptValuePrivate(engine(), v8::Handle<v8::Object>::Cast(m_value)->GetPrototype());
     }
