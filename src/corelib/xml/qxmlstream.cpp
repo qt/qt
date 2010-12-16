@@ -3070,17 +3070,7 @@ void QXmlStreamWriterPrivate::writeEscaped(const QString &s, bool escapeWhitespa
             escaped += QChar(c);
         }
     }
-    if (device) {
-#ifdef QT_NO_TEXTCODEC
-        device->write(escaped.toLatin1(), escaped.size());
-#else
-        device->write(encoder->fromUnicode(escaped));
-#endif
-    }
-    else if (stringDevice)
-        stringDevice->append(escaped);
-    else
-        qWarning("QXmlStreamWriter: No device");
+    write(escaped);
 }
 
 // ASCII only!
