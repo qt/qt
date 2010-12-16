@@ -1174,8 +1174,10 @@ void QSymbianControl::SizeChanged()
             if (!slowResize && tlwExtra)
                 tlwExtra->inTopLevelResize = false;
         } else {
-            QResizeEvent *e = new QResizeEvent(newSize, oldSize);
-            QApplication::postEvent(qwidget, e);
+            if (!qwidget->testAttribute(Qt::WA_PendingResizeEvent)) {
+                QResizeEvent *e = new QResizeEvent(newSize, oldSize);
+                QApplication::postEvent(qwidget, e);
+            }
         }
     }
 
