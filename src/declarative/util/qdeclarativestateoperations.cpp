@@ -83,6 +83,13 @@ public:
     QDeclarativeNullableValue<QDeclarativeScriptString> scaleString;
     QDeclarativeNullableValue<QDeclarativeScriptString> rotationString;
 
+    QDeclarativeNullableValue<qreal> x;
+    QDeclarativeNullableValue<qreal> y;
+    QDeclarativeNullableValue<qreal> width;
+    QDeclarativeNullableValue<qreal> height;
+    QDeclarativeNullableValue<qreal> scale;
+    QDeclarativeNullableValue<qreal> rotation;
+
     void doChange(QDeclarativeItem *targetParent, QDeclarativeItem *stackBefore = 0);
 };
 
@@ -213,10 +220,21 @@ QDeclarativeScriptString QDeclarativeParentChange::x() const
     return d->xString.value;
 }
 
+void tryReal(QDeclarativeNullableValue<qreal> &value, const QString &string)
+{
+    bool ok = false;
+    qreal realValue = string.toFloat(&ok);
+    if (ok)
+        value = realValue;
+    else
+        value.invalidate();
+}
+
 void QDeclarativeParentChange::setX(QDeclarativeScriptString x)
 {
     Q_D(QDeclarativeParentChange);
     d->xString = x;
+    tryReal(d->x, x.script());
 }
 
 bool QDeclarativeParentChange::xIsSet() const
@@ -235,6 +253,7 @@ void QDeclarativeParentChange::setY(QDeclarativeScriptString y)
 {
     Q_D(QDeclarativeParentChange);
     d->yString = y;
+    tryReal(d->y, y.script());
 }
 
 bool QDeclarativeParentChange::yIsSet() const
@@ -253,6 +272,7 @@ void QDeclarativeParentChange::setWidth(QDeclarativeScriptString width)
 {
     Q_D(QDeclarativeParentChange);
     d->widthString = width;
+    tryReal(d->width, width.script());
 }
 
 bool QDeclarativeParentChange::widthIsSet() const
@@ -271,6 +291,7 @@ void QDeclarativeParentChange::setHeight(QDeclarativeScriptString height)
 {
     Q_D(QDeclarativeParentChange);
     d->heightString = height;
+    tryReal(d->height, height.script());
 }
 
 bool QDeclarativeParentChange::heightIsSet() const
@@ -289,6 +310,7 @@ void QDeclarativeParentChange::setScale(QDeclarativeScriptString scale)
 {
     Q_D(QDeclarativeParentChange);
     d->scaleString = scale;
+    tryReal(d->scale, scale.script());
 }
 
 bool QDeclarativeParentChange::scaleIsSet() const
@@ -307,6 +329,7 @@ void QDeclarativeParentChange::setRotation(QDeclarativeScriptString rotation)
 {
     Q_D(QDeclarativeParentChange);
     d->rotationString = rotation;
+    tryReal(d->rotation, rotation.script());
 }
 
 bool QDeclarativeParentChange::rotationIsSet() const
@@ -370,14 +393,11 @@ QDeclarativeStateOperation::ActionList QDeclarativeParentChange::actions()
     QDeclarativeContext *ctxt = qmlContext(this);
 
     if (d->xString.isValid()) {
-        bool ok = false;
-        QString script = d->xString.value.script();
-        qreal x = script.toFloat(&ok);
-        if (ok) {
-            QDeclarativeAction xa(d->target, QLatin1String("x"), ctxt, x);
+        if (d->x.isValid()) {
+            QDeclarativeAction xa(d->target, QLatin1String("x"), ctxt, d->x.value);
             actions << xa;
         } else {
-            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, ctxt);
+            QDeclarativeBinding *newBinding = new QDeclarativeBinding(d->xString.value.script(), d->target, ctxt);
             newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("x"), ctxt));
             QDeclarativeAction xa;
             xa.property = newBinding->property();
@@ -389,14 +409,11 @@ QDeclarativeStateOperation::ActionList QDeclarativeParentChange::actions()
     }
 
     if (d->yString.isValid()) {
-        bool ok = false;
-        QString script = d->yString.value.script();
-        qreal y = script.toFloat(&ok);
-        if (ok) {
-            QDeclarativeAction ya(d->target, QLatin1String("y"), ctxt, y);
+        if (d->y.isValid()) {
+            QDeclarativeAction ya(d->target, QLatin1String("y"), ctxt, d->y.value);
             actions << ya;
         } else {
-            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, ctxt);
+            QDeclarativeBinding *newBinding = new QDeclarativeBinding(d->yString.value.script(), d->target, ctxt);
             newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("y"), ctxt));
             QDeclarativeAction ya;
             ya.property = newBinding->property();
@@ -408,14 +425,11 @@ QDeclarativeStateOperation::ActionList QDeclarativeParentChange::actions()
     }
 
     if (d->scaleString.isValid()) {
-        bool ok = false;
-        QString script = d->scaleString.value.script();
-        qreal scale = script.toFloat(&ok);
-        if (ok) {
-            QDeclarativeAction sa(d->target, QLatin1String("scale"), ctxt, scale);
+        if (d->scale.isValid()) {
+            QDeclarativeAction sa(d->target, QLatin1String("scale"), ctxt, d->scale.value);
             actions << sa;
         } else {
-            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, ctxt);
+            QDeclarativeBinding *newBinding = new QDeclarativeBinding(d->scaleString.value.script(), d->target, ctxt);
             newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("scale"), ctxt));
             QDeclarativeAction sa;
             sa.property = newBinding->property();
@@ -427,14 +441,11 @@ QDeclarativeStateOperation::ActionList QDeclarativeParentChange::actions()
     }
 
     if (d->rotationString.isValid()) {
-        bool ok = false;
-        QString script = d->rotationString.value.script();
-        qreal rotation = script.toFloat(&ok);
-        if (ok) {
-            QDeclarativeAction ra(d->target, QLatin1String("rotation"), ctxt, rotation);
+        if (d->rotation.isValid()) {
+            QDeclarativeAction ra(d->target, QLatin1String("rotation"), ctxt, d->rotation.value);
             actions << ra;
         } else {
-            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, ctxt);
+            QDeclarativeBinding *newBinding = new QDeclarativeBinding(d->rotationString.value.script(), d->target, ctxt);
             newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("rotation"), ctxt));
             QDeclarativeAction ra;
             ra.property = newBinding->property();
@@ -446,14 +457,11 @@ QDeclarativeStateOperation::ActionList QDeclarativeParentChange::actions()
     }
 
     if (d->widthString.isValid()) {
-        bool ok = false;
-        QString script = d->widthString.value.script();
-        qreal width = script.toFloat(&ok);
-        if (ok) {
-            QDeclarativeAction wa(d->target, QLatin1String("width"), ctxt, width);
+        if (d->width.isValid()) {
+            QDeclarativeAction wa(d->target, QLatin1String("width"), ctxt, d->width.value);
             actions << wa;
         } else {
-            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, ctxt);
+            QDeclarativeBinding *newBinding = new QDeclarativeBinding(d->widthString.value.script(), d->target, ctxt);
             newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("width"), ctxt));
             QDeclarativeAction wa;
             wa.property = newBinding->property();
@@ -465,14 +473,11 @@ QDeclarativeStateOperation::ActionList QDeclarativeParentChange::actions()
     }
 
     if (d->heightString.isValid()) {
-        bool ok = false;
-        QString script = d->heightString.value.script();
-        qreal height = script.toFloat(&ok);
-        if (ok) {
-            QDeclarativeAction ha(d->target, QLatin1String("height"), ctxt, height);
+        if (d->height.isValid()) {
+            QDeclarativeAction ha(d->target, QLatin1String("height"), ctxt, d->height.value);
             actions << ha;
         } else {
-            QDeclarativeBinding *newBinding = new QDeclarativeBinding(script, d->target, ctxt);
+            QDeclarativeBinding *newBinding = new QDeclarativeBinding(d->heightString.value.script(), d->target, ctxt);
             newBinding->setTarget(QDeclarativeProperty(d->target, QLatin1String("height"), ctxt));
             QDeclarativeAction ha;
             ha.property = newBinding->property();
