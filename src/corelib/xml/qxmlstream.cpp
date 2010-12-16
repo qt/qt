@@ -3083,16 +3083,11 @@ void QXmlStreamWriterPrivate::writeEscaped(const QString &s, bool escapeWhitespa
         qWarning("QXmlStreamWriter: No device");
 }
 
-
+// ASCII only!
 void QXmlStreamWriterPrivate::write(const char *s)
 {
     if (device) {
-#ifndef QT_NO_TEXTCODEC
-        if (codec->mibEnum() != 106)
-            device->write(encoder->fromUnicode(QLatin1String(s)));
-        else
-#endif
-            device->write(s, strlen(s));
+        device->write(s, strlen(s));
     } else if (stringDevice) {
         stringDevice->append(QLatin1String(s));
     } else
