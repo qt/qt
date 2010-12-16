@@ -472,9 +472,9 @@ void qt_symbian_setWindowGroupCursor(const QCursor &cursor, RWindowTreeNode &nod
     if (handle) {
         RWsPointerCursor *pcurs = reinterpret_cast<RWsPointerCursor *> (handle);
         node.SetCustomPointerCursor(*pcurs);
-    }
+    } else
 #ifdef Q_SYMBIAN_HAS_SYSTEM_CURSORS
-    else {
+    {
         TInt shape = qt_symbian_translate_cursor_shape(cursor.shape());
         node.SetPointerCursor(shape);
     }
