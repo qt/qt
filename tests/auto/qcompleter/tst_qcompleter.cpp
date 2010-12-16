@@ -1455,7 +1455,7 @@ void tst_QCompleter::task247560_keyboardNavigation()
 
 void tst_QCompleter::QTBUG_14292_filesystem()
 {
-    QDir tmpDir = QDir::temp();
+    QDir tmpDir = QDir::currentPath();
     qsrand(QTime::currentTime().msec());
     QString d = "tst_QCompleter_" + QString::number(qrand());
     QVERIFY(tmpDir.mkdir(d));
