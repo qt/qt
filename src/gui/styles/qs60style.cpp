@@ -3464,9 +3464,6 @@ bool QS60Style::eventFilter(QObject *object, QEvent *event)
 
                 if (d->m_pressedWidget)
                     d->m_pressedWidget->update();
-#ifdef Q_WS_S60
-                d->touchFeedback(event, w);
-#endif
             }
             break;
         }

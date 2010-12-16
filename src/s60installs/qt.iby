@@ -60,8 +60,6 @@ file=ABI_DIR\BUILD_DIR\qsymbianbearer.dll    SHARED_LIB_DIR\qsymbianbearer.dll
 // so don't bother including those plugins
 file=ABI_DIR\BUILD_DIR\qts60plugin_5_0.dll   SHARED_LIB_DIR\qts60plugin_5_0.dll
 
-file=ABI_DIR\BUILD_DIR\qtactilefeedback.dll   SHARED_LIB_DIR\qtactilefeedback.dll
-
 S60_APP_RESOURCE(s60main)
 
 // imageformats stubs
@@ -106,9 +104,6 @@ data=\epoc32\data\z\resource\qt\plugins\graphicssystems\qglgraphicssystem.qtplug
 
 // bearer stub
 data=\epoc32\data\z\resource\qt\plugins\bearer\qsymbianbearer.qtplugin resource\qt\plugins\bearer\qsymbianbearer.qtplugin
-
-// feedback
-data=\epoc32\data\z\resource\qt\plugins\feedback\qtactilefeedback.qtplugin              resource\qt\plugins\feedback\qtactilefeedback.qtplugin
 
 // Stub sis file
 data=ZSYSTEM\install\qt_stub.sis    System\Install\qt_stub.sis
