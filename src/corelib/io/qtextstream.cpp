@@ -396,19 +396,19 @@ public:
         npsInvalidPrefix
     };
 
-    inline bool write(const QString &data);
     inline bool getChar(QChar *ch);
     inline void ungetChar(const QChar &ch);
     NumberParsingStatus getNumber(qulonglong *l);
     bool getReal(double *f);
 
-    bool putNumber(qulonglong number, bool negative);
-    inline bool putString(const QString &ch, bool number = false);
+    inline void write(const QString &data);
+    inline void putString(const QString &ch, bool number = false);
+    void putNumber(qulonglong number, bool negative);
 
     // buffers
     bool fillReadBuffer(qint64 maxBytes = -1);
     void resetReadBuffer();
-    bool flushWriteBuffer();
+    void flushWriteBuffer();
     QString writeBuffer;
     QString readBuffer;
     int readBufferOffset;
@@ -642,14 +642,20 @@ void QTextStreamPrivate::resetReadBuffer()
 
 /*! \internal
 */
-bool QTextStreamPrivate::flushWriteBuffer()
+void QTextStreamPrivate::flushWriteBuffer()
 {
     // no buffer next to the QString itself; this function should only
     // be called internally, for devices.
     if (string || !device)
-        return false;
+        return;
+
+    // Stream went bye-bye already. Appending further data may succeed again,
+    // but would create a corrupted stream anyway.
+    if (status != QTextStream::Ok)
+        return;
+
     if (writeBuffer.isEmpty())
-        return true;
+        return;
 
 #if defined (Q_OS_WIN)
     // handle text translation and bypass the Text flag in the device.
@@ -681,8 +687,10 @@ bool QTextStreamPrivate::flushWriteBuffer()
     qDebug("QTextStreamPrivate::flushWriteBuffer(), device->write(\"%s\") == %d",
            qt_prettyDebug(data.constData(), qMin(data.size(),32), data.size()).constData(), int(bytesWritten));
 #endif
-    if (bytesWritten <= 0)
-        return false;
+    if (bytesWritten <= 0) {
+        status = QTextStream::WriteFailed;
+        return;
+    }
 
 #if defined (Q_OS_WIN)
     // replace the text flag
@@ -702,7 +710,8 @@ bool QTextStreamPrivate::flushWriteBuffer()
     qDebug("QTextStreamPrivate::flushWriteBuffer() wrote %d bytes",
            int(bytesWritten));
 #endif
-    return flushed && bytesWritten == qint64(data.size());
+    if (!flushed || bytesWritten != qint64(data.size()))
+        status = QTextStream::WriteFailed;
 }
 
 QString QTextStreamPrivate::read(int maxlen)
@@ -908,7 +917,7 @@ inline void QTextStreamPrivate::restoreToSavedConverterState()
 
 /*! \internal
 */
-inline bool QTextStreamPrivate::write(const QString &data)
+inline void QTextStreamPrivate::write(const QString &data)
 {
     if (string) {
         // ### What about seek()??
@@ -916,9 +925,8 @@ inline bool QTextStreamPrivate::write(const QString &data)
     } else {
         writeBuffer += data;
         if (writeBuffer.size() > QTEXTSTREAM_BUFFERSIZE)
-            return flushWriteBuffer();
+            flushWriteBuffer();
     }
-    return true;
 }
 
 /*! \internal
@@ -959,7 +967,7 @@ inline void QTextStreamPrivate::ungetChar(const QChar &ch)
 
 /*! \internal
 */
-inline bool QTextStreamPrivate::putString(const QString &s, bool number)
+inline void QTextStreamPrivate::putString(const QString &s, bool number)
 {
     QString tmp = s;
 
@@ -993,7 +1001,7 @@ inline bool QTextStreamPrivate::putString(const QString &s, bool number)
            qt_prettyDebug(a.constData(), a.size(), qMax(16, a.size())).constData(),
            qt_prettyDebug(b.constData(), b.size(), qMax(16, b.size())).constData());
 #endif
-    return write(tmp);
+    write(tmp);
 }
 
 /*!
@@ -2270,7 +2278,7 @@ QTextStream &QTextStream::operator>>(char *c)
 
 /*! \internal
  */
-bool QTextStreamPrivate::putNumber(qulonglong number, bool negative)
+void QTextStreamPrivate::putNumber(qulonglong number, bool negative)
 {
     QString result;
 
@@ -2310,7 +2318,7 @@ bool QTextStreamPrivate::putNumber(qulonglong number, bool negative)
             result.prepend(QLatin1Char('0'));
         }
     }
-    return putString(result, true);
+    putString(result, true);
 }
 
 /*!
