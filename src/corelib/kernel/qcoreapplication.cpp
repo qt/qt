@@ -71,6 +71,7 @@
 #  include <e32ldr.h>
 #  include "qeventdispatcher_symbian_p.h"
 #  include "private/qcore_symbian_p.h"
+#  include "private/qfilesystemengine_p.h"
 #elif defined(Q_OS_UNIX)
 #  if !defined(QT_NO_GLIB)
 #    include "qeventdispatcher_glib_p.h"
@@ -566,6 +567,12 @@ void QCoreApplication::init()
 
     Q_ASSERT_X(!self, "QCoreApplication", "there should be only one application object");
     QCoreApplication::self = this;
+
+#ifdef Q_OS_SYMBIAN
+    //ensure temp and working directories exist
+    QFileSystemEngine::createDirectory(QFileSystemEntry(QFileSystemEngine::tempPath()), true);
+    QFileSystemEngine::createDirectory(QFileSystemEntry(QFileSystemEngine::currentPath()), true);
+#endif
 
 #ifndef QT_NO_THREAD
     QThread::initialize();
