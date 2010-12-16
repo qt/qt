@@ -480,7 +480,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
             # Qt All-OS
             LICENSE_EXTENSION="-ALLOS"
             ;;
-        8M,* | KM,* | S9,* | SC,* | SU,* | SW,* | X9,* | XC,* | XU,* | XW,*)
+        8M,* | KM,* | S9,* | SC,* | SM,* | SU,* | SW,* | X9,* | XC,* | XU,* | XW,*)
             # Qt for Embedded Linux
             LICENSE_EXTENSION="-EMBEDDED"
             ;;
