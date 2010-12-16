@@ -2965,7 +2965,8 @@ public:
     void write(const QStringRef &);
     void write(const QString &);
     void writeEscaped(const QString &, bool escapeWhitespace = false);
-    void write(const char *s);
+    void write(const char *s, int len);
+    template <int N> void write(const char (&s)[N]) { write(s, N - 1); }
     bool finishStartElement(bool contents = true);
     void writeStartElement(const QString &namespaceUri, const QString &name);
     QIODevice *device;
@@ -3074,12 +3075,12 @@ void QXmlStreamWriterPrivate::writeEscaped(const QString &s, bool escapeWhitespa
 }
 
 // ASCII only!
-void QXmlStreamWriterPrivate::write(const char *s)
+void QXmlStreamWriterPrivate::write(const char *s, int len)
 {
     if (device) {
-        device->write(s, strlen(s));
+        device->write(s, len);
     } else if (stringDevice) {
-        stringDevice->append(QLatin1String(s));
+        stringDevice->append(QString::fromLatin1(s, len));
     } else
         qWarning("QXmlStreamWriter: No device");
 }
@@ -3157,7 +3158,7 @@ void QXmlStreamWriterPrivate::indent(int level)
 {
     write("\n");
     for (int i = level; i > 0; --i)
-        write(autoFormattingIndent.constData());
+        write(autoFormattingIndent.constData(), autoFormattingIndent.length());
 }
 
 
@@ -3744,7 +3745,7 @@ void QXmlStreamWriter::writeStartDocument(const QString &version)
 #ifdef QT_NO_TEXTCODEC
         d->write("iso-8859-1");
 #else
-        d->write(d->codec->name().constData());
+        d->write(d->codec->name().constData(), d->codec->name().length());
 #endif
     }
     d->write("\"?>");
@@ -3767,12 +3768,13 @@ void QXmlStreamWriter::writeStartDocument(const QString &version, bool standalon
 #ifdef QT_NO_TEXTCODEC
         d->write("iso-8859-1");
 #else
-        d->write(d->codec->name().constData());
+        d->write(d->codec->name().constData(), d->codec->name().length());
 #endif
     }
-    d->write("\" standalone=\"");
-    d->write(standalone ? "yes" : "no");
-    d->write("\"?>");
+    if (standalone)
+        d->write("\" standalone=\"yes\"?>");
+    else
+        d->write("\" standalone=\"no\"?>");
 }
 
 
