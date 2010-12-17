@@ -72,11 +72,11 @@
               \enddiv
               \div {sectionlist  tricol}
                 \list
-                    \o \l{qt-basic-concepts.html}{Programming with Qt}
-                    \o \l{qt-gui-concepts.html}{UI Design with Qt}
-                    \o \l{developing-with-qt.html}{Cross-platform and Platform-specific}
-                    \o \l{technology-apis.html}{Qt and Key Technologies}
-                    \o \l{best-practices.html}{Best Practices Guides}
+                    \o \l{Programming with Qt}
+                    \o \l{UI Design with Qt}
+                    \o \l{Cross-Platform and Platform-Specific Development}
+                    \o \l{Qt and Key Technologies}
+                    \o \l{Best Practice Guides}
                 \endlist
               \enddiv
               \div {sectionlist}
