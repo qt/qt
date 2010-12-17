@@ -735,7 +735,15 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mouse
             cursor.data()->pointerEvent(ev);
     }
 
+    int oldOpenPopupCount = openPopupCount;
     QApplication::sendSpontaneousEvent(mouseWidget, &ev);
+
+#ifndef QT_NO_CONTEXTMENU
+    if (type == QEvent::MouseButtonPress && button == Qt::RightButton && (openPopupCount == oldOpenPopupCount)) {
+        QContextMenuEvent e(QContextMenuEvent::Mouse, localPoint, globalPoint, modifiers);
+        QApplication::sendSpontaneousEvent(mouseWidget, &e);
+    }
+#endif // QT_NO_CONTEXTMENU
 }
 
 
