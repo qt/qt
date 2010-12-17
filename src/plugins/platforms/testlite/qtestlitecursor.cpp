@@ -71,8 +71,7 @@ void QTestLiteCursor::changeCursor(QCursor *cursor, QWidget *widget)
         return;
 
     int id = cursor->handle();
-    if (id == currentCursor)
-        return;
+
     Cursor c;
     if (!cursorMap.contains(id)) {
         if (cursor->shape() == Qt::BitmapCursor)

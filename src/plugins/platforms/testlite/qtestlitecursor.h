@@ -60,7 +60,6 @@ private:
     Cursor createCursorShape(int cshape);
 
     QTestLiteScreen *testLiteScreen() const;
-    int currentCursor;
     QMap<int, Cursor> cursorMap;
 };
 
