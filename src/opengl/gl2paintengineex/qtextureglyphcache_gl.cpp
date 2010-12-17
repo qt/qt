@@ -323,6 +323,9 @@ int QGLTextureGlyphCache::maxTextureWidth() const
 
 int QGLTextureGlyphCache::maxTextureHeight() const
 {
-    return ctx->d_ptr->maxTextureSize();
+    if (ctx->d_ptr->workaround_brokenTexSubImage)
+        return qMin(1024, ctx->d_ptr->maxTextureSize());
+    else
+        return ctx->d_ptr->maxTextureSize();
 }
 QT_END_NAMESPACE
