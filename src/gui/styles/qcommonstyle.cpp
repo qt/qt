@@ -2218,7 +2218,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
              if (vopt->state & QStyle::State_HasFocus) {
                 QStyleOptionFocusRect o;
                 o.QStyleOption::operator=(*vopt);
-                o.rect = subElementRect(SE_ItemViewItemFocusRect, vopt, widget);
+                o.rect = proxy()->subElementRect(SE_ItemViewItemFocusRect, vopt, widget);
                 o.state |= QStyle::State_KeyboardFocusChange;
                 o.state |= QStyle::State_Item;
                 QPalette::ColorGroup cg = (vopt->state & QStyle::State_Enabled)
