@@ -442,6 +442,7 @@ void QDeclarativeTextEdit::setSelectedTextColor(const QColor &color)
     \o TextEdit.AlignLeft (default)
     \o TextEdit.AlignRight 
     \o TextEdit.AlignHCenter
+    \o TextEdit.AlignJustify
     \endlist
     
     Valid values for \c verticalAlignment are:

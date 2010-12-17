@@ -297,6 +297,8 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
         lineWidth = q->width();
 
     QTextOption textOption = layout.textOption();
+    if (hAlign == QDeclarativeText::AlignJustify)
+        textOption.setAlignment(Qt::Alignment(hAlign));
     textOption.setWrapMode(QTextOption::WrapMode(wrapMode));
     layout.setTextOption(textOption);
 
@@ -325,7 +327,7 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
         height += line.height();
 
         if (!cacheAllTextAsImage) {
-            if (hAlign == QDeclarativeText::AlignLeft) {
+            if ((hAlign == QDeclarativeText::AlignLeft) || (hAlign == QDeclarativeText::AlignJustify)) {
                 x = 0;
             } else if (hAlign == QDeclarativeText::AlignRight) {
                 x = layoutWidth - line.naturalTextWidth();
@@ -351,7 +353,7 @@ QPixmap QDeclarativeTextPrivate::textLayoutImage(bool drawStyle)
     qreal x = 0;
     for (int i = 0; i < layout.lineCount(); ++i) {
         QTextLine line = layout.lineAt(i);
-        if (hAlign == QDeclarativeText::AlignLeft) {
+        if ((hAlign == QDeclarativeText::AlignLeft) || (hAlign == QDeclarativeText::AlignJustify)) {
             x = 0;
         } else if (hAlign == QDeclarativeText::AlignRight) {
             x = size.width() - line.naturalTextWidth();
@@ -898,8 +900,8 @@ void QDeclarativeText::setStyleColor(const QColor &color)
     Sets the horizontal and vertical alignment of the text within the Text items
     width and height.  By default, the text is top-left aligned.
 
-    The valid values for \c horizontalAlignment are \c Text.AlignLeft, \c Text.AlignRight and
-    \c Text.AlignHCenter.  The valid values for \c verticalAlignment are \c Text.AlignTop, \c Text.AlignBottom
+    The valid values for \c horizontalAlignment are \c Text.AlignLeft, \c Text.AlignRight, \c Text.AlignHCenter and
+    \c Text.AlignJustify.  The valid values for \c verticalAlignment are \c Text.AlignTop, \c Text.AlignBottom
     and \c Text.AlignVCenter.
 
     Note that for a single line of text, the size of the text is the area of the text. In this common case,
@@ -1117,6 +1119,7 @@ QRectF QDeclarativeText::boundingRect() const
 
     switch (d->hAlign) {
     case AlignLeft:
+    case AlignJustify:
         x = 0;
         break;
     case AlignRight:

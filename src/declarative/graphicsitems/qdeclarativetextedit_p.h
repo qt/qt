@@ -97,7 +97,8 @@ public:
     enum HAlignment {
         AlignLeft = Qt::AlignLeft,
         AlignRight = Qt::AlignRight,
-        AlignHCenter = Qt::AlignHCenter
+        AlignHCenter = Qt::AlignHCenter,
+        AlignJustify = Qt::AlignJustify // ### VERSIONING: Only in QtQuick 1.1
     };
 
     enum VAlignment {
