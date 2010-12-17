@@ -2267,7 +2267,7 @@ const QMetaObject *QDeclarativeCompiler::resolveType(const QByteArray& name) con
 int QDeclarativeCompiler::rewriteBinding(const QString& expression, const QByteArray& name)
 {
     QDeclarativeRewrite::RewriteBinding rewriteBinding;
-    rewriteBinding.setName('$' + name);
+    rewriteBinding.setName('$' + name.mid(name.lastIndexOf('.') + 1));
     bool isSharable = false;
     QString rewrite = rewriteBinding(expression, 0, &isSharable);
 
