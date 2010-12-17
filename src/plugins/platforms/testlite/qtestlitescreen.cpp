@@ -43,6 +43,7 @@
 
 #include "qtestlitecursor.h"
 #include "qtestlitewindow.h"
+#include "qtestlitekeyboard.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QSocketNotifier>
@@ -226,6 +227,7 @@ QTestLiteScreen::QTestLiteScreen()
     mWmMotifHintAtom = XInternAtom(mDisplay, "_MOTIF_WM_HINTS\0", False);
 
     mCursor = new QTestLiteCursor(this);
+    mKeyboard = new QTestLiteKeyboard(this);
 }
 
 QTestLiteScreen::~QTestLiteScreen()
@@ -299,11 +301,11 @@ bool QTestLiteScreen::handleEvent(XEvent *xe)
         break;
 
         case XKeyPress:
-        xw->handleKeyEvent(QEvent::KeyPress, &xe->xkey);
+        mKeyboard->handleKeyEvent(widget,QEvent::KeyPress, &xe->xkey);
         break;
 
     case XKeyRelease:
-        xw->handleKeyEvent(QEvent::KeyRelease, &xe->xkey);
+        mKeyboard->handleKeyEvent(widget,QEvent::KeyRelease, &xe->xkey);
         break;
 
     case EnterNotify:
@@ -425,6 +427,11 @@ void QTestLiteScreen::setWmDeleteWindowAtom(Atom newDeleteWindowAtom)
 Atom QTestLiteScreen::atomForMotifWmHints() const
 {
     return mWmMotifHintAtom;
+}
+
+QTestLiteKeyboard * QTestLiteScreen::keyboard() const
+{
+    return mKeyboard;
 }
 
 QT_END_NAMESPACE

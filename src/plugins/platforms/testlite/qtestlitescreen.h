@@ -48,6 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 class QTestLiteCursor;
+class QTestLiteKeyboard;
 
 class QTestLiteScreen : public QPlatformScreen
 {
@@ -80,6 +81,7 @@ public:
 
     Atom atomForMotifWmHints() const;
 
+    QTestLiteKeyboard *keyboard() const;
 
 public slots:
     void eventDispatcher();
@@ -90,6 +92,7 @@ private:
     int mDepth;
     QImage::Format mFormat;
     QTestLiteCursor *mCursor;
+    QTestLiteKeyboard *mKeyboard;
 
     Display * mDisplay;
     int mScreen;

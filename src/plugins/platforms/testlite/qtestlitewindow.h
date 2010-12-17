@@ -93,7 +93,6 @@ public:
     void mousePressEvent(XButtonEvent*);
     void handleMouseEvent(QEvent::Type, XButtonEvent *ev);
 
-    void handleKeyEvent(QEvent::Type, void *);
     void handleCloseEvent();
     void handleEnterEvent();
     void handleLeaveEvent();

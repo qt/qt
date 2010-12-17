@@ -9,14 +9,16 @@ SOURCES = \
         qtestlitewindowsurface.cpp \
         qtestlitewindow.cpp \
         qtestlitecursor.cpp \
-    qtestlitescreen.cpp
+    qtestlitescreen.cpp \
+    qtestlitekeyboard.cpp
 
 HEADERS = \
         qtestliteintegration.h \
         qtestlitewindowsurface.h \
         qtestlitewindow.h \
         qtestlitecursor.h \
-    qtestlitescreen.h
+    qtestlitescreen.h \
+    qtestlitekeyboard.h
 
 LIBS += -lX11 -lXext
 
