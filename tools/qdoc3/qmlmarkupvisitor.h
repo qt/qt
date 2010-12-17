@@ -159,10 +159,11 @@ protected:
     QString protect(const QString &string);
 
 private:
+    typedef QHash<QString, QString> StringHash;
     void addExtra(quint32 start, quint32 finish);
     void addMarkedUpToken(QDeclarativeJS::AST::SourceLocation &location,
                           const QString &text,
-                          const QHash<QString, QString> &attributes = QHash<QString, QString>());
+                          const StringHash &attributes = StringHash());
     void addVerbatim(QDeclarativeJS::AST::SourceLocation first,
                      QDeclarativeJS::AST::SourceLocation last = QDeclarativeJS::AST::SourceLocation());
     QString sourceText(QDeclarativeJS::AST::SourceLocation &location);

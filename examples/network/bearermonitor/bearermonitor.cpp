@@ -226,7 +226,7 @@ void BearerMonitor::updateConfigurations()
 
         if (defaultConfiguration.type() == QNetworkConfiguration::ServiceNetwork)
             updateSnapConfiguration(defaultItem, defaultConfiguration);
-    } else {
+    } else if (defaultConfiguration.isValid()) {
         configurationAdded(defaultConfiguration);
     }
 
