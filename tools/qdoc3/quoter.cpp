@@ -248,21 +248,8 @@ QString Quoter::quoteSnippet(const Location &docLocation, const QString &identif
             }
             return t;
         }
-        // Remove special macros to support Qt namespacing.
-	if (line.startsWith("QT_BEGIN_NAMESPACE")) {
-            getLine();
-        } else if (line.startsWith("QT_END_NAMESPACE")) {
-            getLine();
-            t += QLatin1Char('\n');
-        } else if (!line.startsWith(comment)) {
-            // Ordinary code
-            t += getLine();
-        } else {
-            // Normal comments
-            if (line.contains(QLatin1Char('\n')))
-                t += QLatin1Char('\n');
-            getLine();
-        }
+
+        t += removeSpecialLines(line, comment);
     }
     failedAtEnd(docLocation, QString("snippet (%1)").arg(delimiter));
     return t;
@@ -277,21 +264,7 @@ QString Quoter::quoteTo( const Location& docLocation, const QString& command,
     if ( pattern.isEmpty() ) {
         while ( !plainLines.isEmpty() ) {
             QString line = plainLines.first();
-            // Remove special macros to support Qt namespacing.
-	    if (line.startsWith("QT_BEGIN_NAMESPACE")) {
-                getLine();
-            } else if (line.startsWith("QT_END_NAMESPACE")) {
-                getLine();
-                t += QLatin1Char('\n');
-            } else if (!line.startsWith(comment))
-                // Ordinary code
-                t += getLine();
-            else {
-                // Normal comments
-                if (line.contains(QLatin1Char('\n')))
-                    t += QLatin1Char('\n');
-                getLine();
-            }
+            t += removeSpecialLines(line, comment);
         }
     } else {
         while ( !plainLines.isEmpty() ) {
@@ -367,6 +340,29 @@ QString Quoter::commentForCode() const
 {
     QString suffix = QFileInfo(codeLocation.fileName()).suffix();
     return commentHash.value(suffix, "//!");
+}
+
+QString Quoter::removeSpecialLines(const QString &line, const QString &comment)
+{
+    QString t;
+
+    // Remove special macros to support Qt namespacing.
+    QString trimmed = line.trimmed();
+    if (trimmed.startsWith("QT_BEGIN_NAMESPACE")) {
+        getLine();
+    } else if (trimmed.startsWith("QT_END_NAMESPACE")) {
+        getLine();
+        t += QLatin1Char('\n');
+    } else if (!trimmed.startsWith(comment)) {
+        // Ordinary code
+        t += getLine();
+    } else {
+        // Comments
+        if (line.contains(QLatin1Char('\n')))
+            t += QLatin1Char('\n');
+        getLine();
+    }
+    return t;
 }
 
 QT_END_NAMESPACE
