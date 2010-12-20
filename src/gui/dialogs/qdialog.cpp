@@ -901,15 +901,13 @@ bool QDialog::symbianAdjustedPosition()
     QPoint p;
     const bool doS60Positioning = !(isFullScreen()||isMaximized());
     if (doS60Positioning) {
+        QPoint oldPos = pos();
         // naive way to deduce screen orientation
         if (S60->screenHeightInPixels > S60->screenWidthInPixels) {
             int cbaHeight;
-            const CEikButtonGroupContainer* bgContainer = S60->buttonGroupContainer();
-            if (!bgContainer) {
-                cbaHeight = 0;
-            } else {
-                cbaHeight = qt_TSize2QSize(bgContainer->Size()).height();
-            }
+            TRect rect;
+            AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EControlPane, rect);
+            cbaHeight = rect.Height();
             p.setY(S60->screenHeightInPixels - height() - cbaHeight);
             p.setX(0);
         } else {
@@ -939,7 +937,8 @@ bool QDialog::symbianAdjustedPosition()
                 p.setX(qMax(0,S60->screenWidthInPixels - width()));
             }
         }
-        move(p);
+        if (oldPos != p || p.y() < 0)
+            move(p);
     }
     return doS60Positioning;
 #else

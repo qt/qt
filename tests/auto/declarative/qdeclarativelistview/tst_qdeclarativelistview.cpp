@@ -104,6 +104,7 @@ private slots:
     void sizeLessThan1();
     void QTBUG_14821();
     void resizeDelegate();
+    void QTBUG_16037();
 
 private:
     template <class T> void items();
@@ -1940,6 +1941,25 @@ void tst_QDeclarativeListView::resizeDelegate()
 
     QTRY_COMPARE(listview->currentItem()->y(), 70.0);
     QTRY_COMPARE(listview->highlightItem()->y(), 70.0);
+
+    delete canvas;
+}
+
+void tst_QDeclarativeListView::QTBUG_16037()
+{
+    QDeclarativeView *canvas = createView();
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/qtbug16037.qml"));
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "listview");
+    QTRY_VERIFY(listview != 0);
+
+    QVERIFY(listview->contentHeight() <= 0.0);
+
+    QMetaObject::invokeMethod(canvas->rootObject(), "setModel");
+
+    QTRY_COMPARE(listview->contentHeight(), 80.0);
 
     delete canvas;
 }

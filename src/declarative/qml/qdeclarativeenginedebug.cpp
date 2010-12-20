@@ -147,7 +147,10 @@ QDeclarativeEngineDebugServer::propertyData(QObject *obj, int propIdx)
     if (binding)
         rv.binding = binding->expression();
 
-    QVariant value = prop.read(obj);
+    QVariant value;
+    if (prop.userType() != 0) {
+        value = prop.read(obj);
+    }
     rv.value = valueContents(value);
 
     if (QDeclarativeValueTypeFactory::isValueType(prop.userType())) {

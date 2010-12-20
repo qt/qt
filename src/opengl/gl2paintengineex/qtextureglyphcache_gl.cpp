@@ -83,13 +83,9 @@ void QGLTextureGlyphCache::clear()
     if (ctx) {
         QGLShareContextScope scope(ctx);
 
-        if (!ctx->d_ptr->workaround_brokenFBOReadBack)
-            glDeleteFramebuffers(1, &m_fbo);
-
         if (m_width || m_height)
             glDeleteTextures(1, &m_texture);
 
-        m_fbo = 0;
         m_texture = 0;
         m_width = 0;
         m_height = 0;
@@ -105,6 +101,13 @@ void QGLTextureGlyphCache::clear()
 
 QGLTextureGlyphCache::~QGLTextureGlyphCache()
 {
+    if (ctx) {
+        QGLShareContextScope scope(ctx);
+
+        if (!ctx->d_ptr->workaround_brokenFBOReadBack)
+            glDeleteFramebuffers(1, &m_fbo);
+    }
+
     clear();
 }
 
@@ -320,6 +323,9 @@ int QGLTextureGlyphCache::maxTextureWidth() const
 
 int QGLTextureGlyphCache::maxTextureHeight() const
 {
-    return ctx->d_ptr->maxTextureSize();
+    if (ctx->d_ptr->workaround_brokenTexSubImage)
+        return qMin(1024, ctx->d_ptr->maxTextureSize());
+    else
+        return ctx->d_ptr->maxTextureSize();
 }
 QT_END_NAMESPACE
