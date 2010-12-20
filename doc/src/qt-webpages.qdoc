@@ -244,3 +244,19 @@
     \externalpage http://labs.qt.nokia.com
     \title Qt Labs
 */
+
+/*!
+    \externalpage http://doc.qt.nokia.com/qtcreator-snapshot/index.html
+    \title Qt Creator Manual
+*/
+
+/*!
+    \externalpage http://doc.qt.nokia.com/qtcreator-snapshot/creator-qml-application.html
+    \title Developing Qt Quick Applications with Creator
+*/
+
+/*!
+    \externalpage http://qt.gitorious.org/qt/pages/QtCodingStyle
+    \title Qt Coding Style
+*/
+

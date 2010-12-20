@@ -77,42 +77,41 @@ QML and the Qt Declarative Module separate the frontend UI logic from the backen
 \list
 \o \l{QML Syntax}
 \o \l{Property Binding}
+\o \l{QML Basic Types}{Data Types}
+\o \l{QML Basic Elements}{Basic Elements}
 \o \l{Using QML Positioner and Repeater Items}{Component Layouts}
-\o \l{Anchor-based Layout in QML}{Anchor Layout}
-\o \l{Writing QML Components: Properties, Methods and Signals}{Reusable Components}
-\o \l{Text Handling}
-\o \l{Keyboard Focus in QML}{Keyboard Focus}
+\o \l{Anchor-based Layout in QML}{Layouts using Anchors}
 \o \l{Mouse Events}
-\o \l{QML States} {States}
-\o \l{QML Animation}{Animation and Transitions}
-\o \l{QML Basic Types}{QML Basic Data Types}
+\o \l{QML Text Handling and Validators}{Text Handling and Validators}
+\o \l{Keyboard Focus in QML}{Keyboard Focus}
+\o \l{Importing Reusable Components}
+\o \l{QML States}{States}
+\o \l{QML Animation and Transitions}{Animation and Transitions}
 \o \l{QML Data Models}{Structuring Data with Models}
-\o \l{Presenting Data with QML}{Presenting Data with Views}
-\o \l{Affine Transformations}
+\o \l{Presenting Data with Views}
+\o \l{Extending QML Functionalities using C++}
+\o \l{Using QML Bindings in C++ Applications}
+\o \l{Integrating QML Code with Existing Qt UI Code}
+\o \l{QML Signal and Handler Event System}{Signal and Handler Event System}
 \o \l{Dynamic Object Management in QML}{Dynamic Object Management}
-\o \l{Network Transparency}{Resource Loading}
-\o \l{Extending QML in C++}{Extending QML Functionalities using C++}
-\o \l{Using QML in C++ Applications}
-\o \l{Integrating QML with existing Qt UI code}{Integrating QML Code with Existing Qt UI Code}
-\o \l{Signals and Slots Event System}
+\o \l{Network Transparency}{Loading Resources in QML}
 \o \l{QML Internationalization}{Internationalization}
-\o \l{Graphical Effects}
+\o \l{QML Graphical Effects}{Graphical Effects}
 \endlist
 
 \section1 QML Add-Ons
 
 \list
-\o \l{Qt WebKit}
-\o \l{Mobility QML bindings}
+\o \l{QtWebKit QML Module}
+\o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/qml-plugins.html}{Mobility QML Plugins}
 \endlist
 
 \section1 Qt Quick Tools
 
 \list
 \o \l{Debugging QML}
+\o \l{Developing Qt Quick Applications with Creator}{Developing with Qt Creator}
 \o \l{QML Viewer}
-\o \l{QML Performance}
-\o \l{Developing Qt Quick Applications}{Developing with Qt Creator}
 \endlist
 
 \section1 Reference
@@ -160,6 +159,9 @@ examples for porting}
 \list
 \o \l{QML Best Practices: Data Types}{Using Data Types in QML}
 \o \l{QML Best Practices: Coding Conventions}{Coding Tips}
+\o \l{QML Performance}{Performance Tips}
+\omit
 \o \l{Geir's screen size document}
+\endomit
 \endlist
 */

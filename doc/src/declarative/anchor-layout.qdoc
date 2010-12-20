@@ -29,8 +29,8 @@
 \page qml-anchor-layout.html
 \target anchor-layout
 \contentspage QML Features
-\previouspage Using QML Positioner and Repeater Items
-\nextpage Using QML Positioner and Repeater Items
+\previouspage {Using QML Positioner and Repeater Items}{Component Layouts}
+\nextpage {QML Mouse Events}{Mouse Events}
 \title Anchor-based Layout in QML
 
 \section1 Overview

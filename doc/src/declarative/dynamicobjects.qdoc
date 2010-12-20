@@ -29,13 +29,15 @@
 \page qdeclarativedynamicobjects.html
 \ingroup qml-features
 \contentspage {QML Features}
+\previouspage {QML Signal and Handler Event System}{Signal and Handler Event System}
+\nextpage {Network Transparency}{Loading Resources in QML}
 \title Dynamic Object Management in QML
 
 QML provides a number of ways to dynamically create and manage QML objects.
 The \l{Loader}, \l{Repeater}, \l{ListView}, \l{GridView} and \l{PathView} elements
 all support dynamic object management.  Objects can also be created and managed
 from C++, and this is the preferred method for hybrid QML/C++ applications
-(see \l{Using QML in C++ Applications}).
+(see \l{Using QML Bindings in C++ Applications}).
 
 QML also supports the dynamic creation of objects from within JavaScript
 code. This is useful if the existing QML elements do not fit the needs of your

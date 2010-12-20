@@ -29,7 +29,9 @@
 \page qdeclarativeanimation.html
 \ingroup qml-features
 \contentspage QML Features
-\title QML Animation
+\previouspage {QML States}{States}
+\nextpage {QML Data Models}{Structuring Data with Models}
+\title QML Animation and Transitions
 
 
 In QML, animations are created by applying animation objects to object property

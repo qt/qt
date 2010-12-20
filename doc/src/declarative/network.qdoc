@@ -28,6 +28,9 @@
 /*!
 \page qdeclarativenetwork.html
 \ingroup qml-features
+\previouspage {Dynamic Object Management in QML}{Dynamic Object Management}
+\nextpage {QML Internationalization}{Internationalization}
+\contentspage QML Features
 \title Network Transparency
 
 QML supports network transparency by using URLs (rather than file names) for all

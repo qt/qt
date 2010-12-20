@@ -29,13 +29,15 @@
     \page qdeclarativebasictypes.html
     \ingroup qml-features
     \contentspage QML Features
+    \previouspage {Property Binding}
+    \nextpage {QML Basic Elements}{Basic Elements}
     \title QML Basic Types
 
     QML has a set of primitive types, as listed below, that are used throughout
     the \l {QML Elements}.
 
     Some of these types can also be used for defining
-    \c property values in QML. See \l{Writing QML Components: Properties, Methods and Signals} for the
+    \c property values in QML. See \l{Importing Reusable Components} for the
     list of types that can be used for \c property values.
 
     \annotatedlist qmlbasictypes

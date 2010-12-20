@@ -30,6 +30,7 @@
 \title QML Syntax
 \ingroup QML Features
 \previouspage QML Features
+\nextpage Property Binding
 \contentspage QML Features
 
 \tableofcontents
@@ -38,11 +39,9 @@ QML is a declarative language designed to describe the user interface of a
 program: both what it looks like, and how it behaves. In QML, a user
 interface is specified as a tree of objects with properties.
 
-This introduction is meant for those with little or no programming
-experience. JavaScript is used as a scripting language in QML, so you may want
+JavaScript is used as a scripting language in QML, so you may want
 to learn a bit more about it (\l{Javascript Guide}) before diving
-deeper into QML. It's also helpful to have a basic understanding of other web
-technologies like HTML and CSS, but it's not required.
+deeper into QML.
 
 \section1 Basic QML Syntax
 

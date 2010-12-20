@@ -28,7 +28,10 @@
 /*!
 \page qml-integration.html
 \ingroup qml-features
-\title Integrating QML with existing Qt UI code
+\previouspage {Using QML Bindings in C++ Applications}
+\nextpage {QML Signal and Handler Event System}
+\contentspage QML Features
+\title Integrating QML Code with Existing Qt UI Code
 
 There are a number of ways to integrate QML into QWidget-based UI applications,
 depending on the characteristics of your existing UI code.
@@ -102,6 +105,7 @@ which shows how to expose Qt's graphics layout classes to QML in order
 to use QGraphicsWidget with classes like QGraphicsLinearLayout and QGraphicsGridLayout.
 
 To expose your existing QGraphicsWidget classes to QML, use \l {qmlRegisterType()}.
-See \l{Extending QML in C++} for further information on using C++ types in QML.
+See \l{Extending QML Functionalities using C++} for further information on
+how to use C++ types in QML.
 
 */

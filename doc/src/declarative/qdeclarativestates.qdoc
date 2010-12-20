@@ -29,6 +29,8 @@
 \page qdeclarativestates.html
 \ingroup qml-features
 \contentspage QML Features
+\previouspage {Importing Reusable Components}
+\nextpage {QML Animation and Transitions}{Animation and Transitions}
 \target qmlstates
 \title QML States
 
