@@ -82,7 +82,7 @@ QList<SerialPortId> enumerateSerialPorts(int loglevel)
 
     for (struct usb_bus *bus = usb_get_busses(); bus; bus = bus->next) {
         for (struct usb_device *device = bus->devices; device; device = device->next) {
-            for (int n = 0; n < device->descriptor.bNumConfigurations; ++n) {
+            for (int n = 0; n < device->descriptor.bNumConfigurations && device->config; ++n) {
                 struct usb_config_descriptor &usbConfig =device->config[n];
                 QList<int> usableInterfaces;
                 for (int m = 0; m < usbConfig.bNumInterfaces; ++m) {
