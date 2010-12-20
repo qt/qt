@@ -963,6 +963,7 @@ We hope you will enjoy using Qt.
     first install the Visual Studio Service Pack 1 available
     \l{http://www.microsoft.com/downloads/details.aspx?FamilyId=BB4A75AB-E2D4-4C96-B39D-37BAF6B5B1DC&amp;displaylang=en}{here}
     to avoid runtime conflicts.
+    Additionally, you must use the Check for Updates feature in the Help menu of the Visual Studio 2005 IDE to apply at least the following security updates: KB937061, KB971023, KB971090, KB973673.
 
     If you are using a source edition of Qt, you must first install Perl so
     that the syncqt script invoked by configure can be executed. You can download
