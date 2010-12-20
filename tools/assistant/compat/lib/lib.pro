@@ -1,3 +1,5 @@
+include($$QT_SOURCE_TREE/src/qt_targets.pri)
+
 TEMPLATE        = lib
 QT += network
 TARGET                = QtAssistantClient
