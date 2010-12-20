@@ -75,6 +75,7 @@ private:
     bool match( const Location& docLocation, const QString& pattern,
     		const QString& line );
     QString commentForCode() const;
+    QString removeSpecialLines(const QString &line, const QString &comment);
 
     bool silent; 
     bool validRegExp;
