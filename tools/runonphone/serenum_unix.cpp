@@ -158,6 +158,10 @@ QList<SerialPortId> enumerateSerialPorts(int loglevel)
                                              << "device" << device->filename
                                              << "interface" << descriptor.bInterfaceNumber;
                                 }
+#ifdef Q_OS_MAC
+                                eligibleInterfaces << QString("^cu\\.usbmodem.*%1$")
+                                                      .arg(QString("%1").arg(descriptor.bInterfaceNumber, 1, 16).toUpper()); 
+#else
                                 // ### manufacturer and product strings are only readable as root :(
                                 if (!manufacturerString.isEmpty() && !productString.isEmpty()) {
                                     eligibleInterfaces << QString("usb-%1_%2-if%3")
@@ -167,6 +171,7 @@ QList<SerialPortId> enumerateSerialPorts(int loglevel)
                                 } else {
                                     eligibleInterfaces << QString("if%1").arg(i, 2, 16, QChar('0')); // fix!
                                 }
+#endif
                                 eligibleInterfacesInfo << InterfaceInfo(manufacturerString, productString, device->descriptor.idVendor, device->descriptor.idProduct);
                             }
                         }
@@ -179,14 +184,24 @@ QList<SerialPortId> enumerateSerialPorts(int loglevel)
     if (loglevel > 1)
         qDebug() << "      searching for interfaces:" << eligibleInterfaces;
 
+#ifdef Q_OS_MAC
+    QDir dir("/dev/");
+    bool allowAny = false;
+#else
     QDir dir("/dev/serial/by-id/");
-    foreach (const QFileInfo &info, dir.entryInfoList()) {
+    bool allowAny = eligibleInterfaces.isEmpty();
+#endif
+    foreach (const QFileInfo &info, dir.entryInfoList(QDir::System)) {
         if (!info.isDir()) {
-            bool usable = eligibleInterfaces.isEmpty();
+            bool usable = allowAny;
+            QString friendlyName = info.fileName();
             foreach (const QString &iface, eligibleInterfaces) {
-                if (info.fileName().contains(iface)) {
+                if (info.fileName().contains(QRegExp(iface))) {
                     if (loglevel > 1)
                         qDebug() << "      found device file:" << info.fileName() << endl;
+#ifdef Q_OS_MAC
+                    friendlyName = eligibleInterfacesInfo[eligibleInterfaces.indexOf(iface)].product;
+#endif
                     usable = true;
                     break;
                 }
@@ -195,7 +210,7 @@ QList<SerialPortId> enumerateSerialPorts(int loglevel)
                 continue;
 
             SerialPortId id;
-            id.friendlyName = info.fileName();
+            id.friendlyName = friendlyName;
             id.portName = info.canonicalFilePath();
             list << id;
         }
