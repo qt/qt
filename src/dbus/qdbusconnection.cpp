@@ -873,6 +873,21 @@ QDBusConnectionInterface *QDBusConnection::interface() const
 }
 
 /*!
+    \internal
+    \since 4.8
+
+    Returns the internal, implementation-defined pointer for this
+    connection. Currently, this returns a DBusConnection* pointer,
+    without changing the reference count. It is the responsibility of
+    the caller to call dbus_connection_ref if it wants to store the
+    pointer.
+*/
+void *QDBusConnection::internalPointer() const
+{
+    return d ? d->connection : 0;
+}
+
+/*!
     Returns true if this QDBusConnection object is connected.
 */
 bool QDBusConnection::isConnected() const
