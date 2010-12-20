@@ -1253,17 +1253,6 @@ void QScrollerPrivate::createScrollingSegments(qreal v, qreal startPos, qreal pp
 
     qScrollerDebug() << "+++ createScrollingSegments: s:" << startPos << "maxPos:" << maxPos << "o:" << int(orientation);
 
-    // -- check if we are in overshoot
-    if (startPos < minPos) {
-        createScrollToSegments(v, sp->overshootScrollTime * 0.5, minPos, orientation, ScrollTypeOvershoot);
-        return;
-    }
-
-    if (startPos > maxPos) {
-        createScrollToSegments(v, sp->overshootScrollTime * 0.5, maxPos, orientation, ScrollTypeOvershoot);
-        return;
-    }
-
     qScrollerDebug() << "v = " << v << ", decelerationFactor = " << sp->decelerationFactor << ", curveType = " << sp->scrollingCurve.type();
 
     // This is only correct for QEasingCurve::OutQuad (linear velocity,
@@ -1298,6 +1287,20 @@ void QScrollerPrivate::createScrollingSegments(qreal v, qreal startPos, qreal pp
         higherSnapPos = nextSnap;
     if (nextSnap < lowerSnapPos || qIsNaN(lowerSnapPos))
         lowerSnapPos = nextSnap;
+
+    // -- check if we end in overshoot
+    if ((startPos < minPos && endPos < minPos) ||
+        (startPos > maxPos && endPos > maxPos)) {
+        qreal stopPos = endPos < minPos ? minPos : maxPos;
+        qreal oDistance = viewSize * sp->overshootScrollDistanceFactor * v / sp->maximumVelocity;
+        qreal oDeltaTime = sp->overshootScrollTime;
+
+        if (qAbs(v) > sp->minimumVelocity)
+            pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.5, startPos, startPos + oDistance, sp->scrollingCurve.type(), orientation);
+        pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.3, startPos + oDistance, stopPos + oDistance * 0.3, QEasingCurve::InQuad, orientation);
+        pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.2, stopPos + oDistance * 0.3, stopPos, QEasingCurve::OutQuad, orientation);
+        return;
+    }
 
     if (qAbs(v) < sp->minimumVelocity) {
 
