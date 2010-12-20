@@ -966,6 +966,9 @@ void QIcdEngine::connectionStateSignalsSlot(QDBusMessage msg)
 void QIcdEngine::icdServiceOwnerChanged(const QString &serviceName, const QString &oldOwner,
                                         const QString &newOwner)
 {
+    Q_UNUSED(serviceName);
+    Q_UNUSED(oldOwner);
+
     QMutexLocker locker(&mutex);
 
     if (newOwner.isEmpty()) {
