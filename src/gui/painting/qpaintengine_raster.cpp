@@ -5152,7 +5152,8 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
     case Qt::SolidPattern: {
         type = Solid;
         QColor c = qbrush_color(brush);
-        solid.color = PREMUL(ARGB_COMBINE_ALPHA(c.rgba(), alpha));
+        QRgb rgba = c.rgba();
+        solid.color = PREMUL(ARGB_COMBINE_ALPHA(rgba, alpha));
         if ((solid.color & 0xff000000) == 0
             && compositionMode == QPainter::CompositionMode_SourceOver) {
             type = None;
