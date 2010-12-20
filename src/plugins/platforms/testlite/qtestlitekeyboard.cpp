@@ -834,7 +834,7 @@ QString QTestLiteKeyboard::translateKeySym(KeySym keysym, uint xmodifiers,
             if (chars.isEmpty())
                 chars.resize(1);
             chars[0] = (unsigned char) (keysym & 0xff); // get only the fourth bit for conversion later
-            count++;
+            count = 1;
         }
     } else if (keysym >= 0x1000000 && keysym <= 0x100ffff) {
         converted = (ushort) (keysym - 0x1000000);
@@ -935,9 +935,9 @@ void QTestLiteKeyboard::handleKeyEvent(QWidget *widget, QEvent::Type type, XKeyE
     Qt::KeyboardModifiers modifiers;
     QByteArray chars;
     chars.resize(513);
-    int count = 1;
+    int count = 0;
     KeySym keySym;
     count = XLookupString(ev,chars.data(),chars.size(),&keySym,0);
     QString text = translateKeySym(keySym,ev->state,qtcode,modifiers,chars,count);
-    QWindowSystemInterface::handleKeyEvent(widget,ev->time,type,qtcode,modifiers,text);
+    QWindowSystemInterface::handleKeyEvent(widget,ev->time,type,qtcode,modifiers,text.left(count));
 }
