@@ -2825,23 +2825,31 @@ void QWidgetPrivate::setSubWindowStacking(bool set)
         if (NSWindow *pwin = [qt_mac_nativeview_for(parent) window]) {
             if (set) {
                 Qt::WindowType ptype = parent->window()->windowType();
-                if ([pwin isVisible] && (ptype == Qt::Window || ptype == Qt::Dialog) && ![qwin parentWindow])
+                if ([pwin isVisible] && (ptype == Qt::Window || ptype == Qt::Dialog) && ![qwin parentWindow]) {
+                    NSInteger level = [qwin level];
                     [pwin addChildWindow:qwin ordered:NSWindowAbove];
+                    if ([qwin level] < level)
+                        [qwin setLevel:level];
+                }
             } else {
                 [pwin removeChildWindow:qwin];
             }
         }
     }
 
-    QList<QWidget *> widgets = q->findChildren<QWidget *>();
+    QObjectList widgets = q->children();
     for (int i=0; i<widgets.size(); ++i) {
-        QWidget *child = widgets.at(i);
+        QWidget *child = qobject_cast<QWidget *>(widgets.at(i));
         if (child && child->isWindow()) {
             if (NSWindow *cwin = [qt_mac_nativeview_for(child) window]) {
                 if (set) {
                     Qt::WindowType ctype = child->window()->windowType();
-                    if ([cwin isVisible] && (ctype == Qt::Window || ctype == Qt::Dialog) && ![cwin parentWindow])
+                    if ([cwin isVisible] && (ctype == Qt::Window || ctype == Qt::Dialog) && ![cwin parentWindow]) {
+                        NSInteger level = [cwin level];
                         [qwin addChildWindow:cwin ordered:NSWindowAbove];
+                        if ([cwin level] < level)
+                            [cwin setLevel:level];
+                    }
                 } else {
                     [qwin removeChildWindow:qt_mac_window_for(child)];
                 }

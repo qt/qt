@@ -844,7 +844,7 @@ static void setChildrenWorksWhenModal(QWidget *widget, bool worksWhenModal)
         NSWindow *window = qt_mac_window_for(dialogs[i]);
         if (window && [window isKindOfClass:[NSPanel class]]) {
             [static_cast<NSPanel *>(window) setWorksWhenModal:worksWhenModal];
-            if (worksWhenModal && dialogs[i]->isVisible()){
+            if (worksWhenModal && [window isVisible]){
                 [window orderFront:window];
             }
         }
@@ -856,6 +856,7 @@ void QEventDispatcherMacPrivate::updateChildrenWorksWhenModal()
     // Make the dialog children of the widget
     // active. And make the dialog children of
     // the previous modal dialog unactive again:
+    QMacCocoaAutoReleasePool pool;
     int size = cocoaModalSessionStack.size();
     if (size > 0){
         if (QWidget *prevModal = cocoaModalSessionStack[size-1].widget)

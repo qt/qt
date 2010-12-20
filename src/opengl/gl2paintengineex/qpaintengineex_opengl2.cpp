@@ -163,6 +163,8 @@ void QGL2PaintEngineExPrivate::setBrush(const QBrush& brush)
     Q_ASSERT(newStyle != Qt::NoBrush);
 
     currentBrush = brush;
+    if (!currentBrushPixmap.isNull())
+        currentBrushPixmap = QPixmap();
     brushUniformsDirty = true; // All brushes have at least one uniform
 
     if (newStyle > Qt::SolidPattern)
@@ -221,10 +223,14 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
             updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE, q->state()->renderHints & QPainter::SmoothPixmapTransform);
     }
     else if (style == Qt::TexturePattern) {
-        const QPixmap& texPixmap = currentBrush.texture();
+        currentBrushPixmap = currentBrush.texture();
+
+        int max_texture_size = ctx->d_func()->maxTextureSize();
+        if (currentBrushPixmap.width() > max_texture_size || currentBrushPixmap.height() > max_texture_size)
+            currentBrushPixmap = currentBrushPixmap.scaled(max_texture_size, max_texture_size, Qt::KeepAspectRatio);
 
         glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
-        QGLTexture *tex = ctx->d_func()->bindTexture(texPixmap, GL_TEXTURE_2D, GL_RGBA,
+        QGLTexture *tex = ctx->d_func()->bindTexture(currentBrushPixmap, GL_TEXTURE_2D, GL_RGBA,
                                                      QGLContext::InternalBindOption |
                                                      QGLContext::CanFlipNativePixmapBindOption);
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
@@ -1307,13 +1313,30 @@ void QGL2PaintEngineEx::transformChanged()
 }
 
 
+static const QRectF scaleRect(const QRectF &r, qreal sx, qreal sy)
+{
+    return QRectF(r.x() * sx, r.y() * sy, r.width() * sx, r.height() * sy);
+}
+
 void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, const QRectF & src)
 {
     Q_D(QGL2PaintEngineEx);
+    QGLContext *ctx = d->ctx;
+
+    int max_texture_size = ctx->d_func()->maxTextureSize();
+    if (pixmap.width() > max_texture_size || pixmap.height() > max_texture_size) {
+        QPixmap scaled = pixmap.scaled(max_texture_size, max_texture_size, Qt::KeepAspectRatio);
+
+        const qreal sx = scaled.width() / qreal(pixmap.width());
+        const qreal sy = scaled.height() / qreal(pixmap.height());
+
+        drawPixmap(dest, scaled, scaleRect(src, sx, sy));
+        return;
+    }
+
     ensureActive();
     d->transferMode(ImageDrawingMode);
 
-    QGLContext *ctx = d->ctx;
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     QGLTexture *texture =
         ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA,
@@ -1336,11 +1359,24 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
                         Qt::ImageConversionFlags)
 {
     Q_D(QGL2PaintEngineEx);
+    QGLContext *ctx = d->ctx;
+
+    int max_texture_size = ctx->d_func()->maxTextureSize();
+    if (image.width() > max_texture_size || image.height() > max_texture_size) {
+        QImage scaled = image.scaled(max_texture_size, max_texture_size, Qt::KeepAspectRatio);
+
+        const qreal sx = scaled.width() / qreal(image.width());
+        const qreal sy = scaled.height() / qreal(image.height());
+
+        drawImage(dest, scaled, scaleRect(src, sx, sy));
+        return;
+    }
+
     ensureActive();
     d->transferMode(ImageDrawingMode);
 
-    QGLContext *ctx = d->ctx;
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
+
     QGLTexture *texture = ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
     GLuint id = texture->id;
 
@@ -1740,7 +1776,13 @@ void QGL2PaintEngineEx::drawPixmapFragments(const QPainter::PixmapFragment *frag
     }
 
     ensureActive();
-    d->drawPixmapFragments(fragments, fragmentCount, pixmap, hints);
+    int max_texture_size = d->ctx->d_func()->maxTextureSize();
+    if (pixmap.width() > max_texture_size || pixmap.height() > max_texture_size) {
+        QPixmap scaled = pixmap.scaled(max_texture_size, max_texture_size, Qt::KeepAspectRatio);
+        d->drawPixmapFragments(fragments, fragmentCount, scaled, hints);
+    } else {
+        d->drawPixmapFragments(fragments, fragmentCount, pixmap, hints);
+    }
 }
 
 
