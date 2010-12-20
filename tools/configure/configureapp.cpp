@@ -3276,8 +3276,14 @@ void Configure::generateConfigfiles()
     if (qmakeConfFile.open(QFile::WriteOnly | QFile::Text)) {
         QTextStream qmakeConfStream;
         qmakeConfStream.setDevice(&qmakeConfFile);
+        // While QMAKESPEC_ORIGINAL being relative or absolute doesn't matter for the
+        // primary use of this variable by qmake to identify the original mkspec, the
+        // variable is also used for few special cases where the absolute path is required.
+        // Conversely, the include of the original qmake.conf must be done using relative path,
+        // as some Qt binary deployments are done in a manner that doesn't allow for patching
+        // the paths at the installation time.
         qmakeConfStream << "QMAKESPEC_ORIGINAL=" << pltSpec << endl << endl;
-        qmakeConfStream << "include(" << pltSpec << "/qmake.conf)" << endl;
+        qmakeConfStream << "include(" << "../" << spec << "/qmake.conf)" << endl << endl;
         qmakeConfStream.flush();
         qmakeConfFile.close();
     }
