@@ -565,10 +565,8 @@ bool QDBusConnectionPrivate::handleMessage(const QDBusMessage &amsg)
         return true;
     case QDBusMessage::ReplyMessage:
     case QDBusMessage::ErrorMessage:
-        return false;           // we don't handle those here
     case QDBusMessage::InvalidMessage:
-        Q_ASSERT_X(false, "QDBusConnection", "Invalid message found when processing");
-        break;
+        return false;           // we don't handle those here
     }
 
     return false;
