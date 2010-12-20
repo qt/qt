@@ -119,36 +119,49 @@ static QString launchSymbianDialog(const QString dialogCaption, const QString st
 {
     QString selection;
 #if defined(Q_WS_S60) && defined(SYMBIAN_VERSION_SYMBIAN3)
-    QT_TRAP_THROWING(
-        TFileName startFolder;
-        if (!startDirectory.isEmpty()) {
-            QString dir = QDir::toNativeSeparators(startDirectory);
+    TFileName startFolder;
+    if (!startDirectory.isEmpty()) {
+        QString dir = QDir::toNativeSeparators(QFileDialogPrivate::workingDirectory(startDirectory));
+        startFolder = qt_QString2TPtrC(dir);
+    }
+    TInt types = AknCommonDialogsDynMem::EMemoryTypeMMCExternal|
+                 AknCommonDialogsDynMem::EMemoryTypeInternalMassStorage|
+                 AknCommonDialogsDynMem::EMemoryTypePhone;
+
+    TPtrC titlePtr(qt_QString2TPtrC(dialogCaption));
+    TFileName target;
+    bool select = false;
+    int tryCount = 2;
+    while (tryCount--) {
+        TInt err(KErrNone);
+        TRAP(err,
+            if (dialogMode == DialogOpen) {
+                CExtensionFilter* extensionFilter = new (ELeave) CExtensionFilter;
+                CleanupStack::PushL(extensionFilter);
+                extensionFilter->setFilter(filter);
+                select = AknCommonDialogsDynMem::RunSelectDlgLD(types, target,
+                         startFolder, NULL, NULL, titlePtr, extensionFilter);
+                CleanupStack::Pop(extensionFilter);
+            } else if (dialogMode == DialogSave) {
+                select = AknCommonDialogsDynMem::RunSaveDlgLD(types, target,
+                         startFolder, NULL, NULL, titlePtr);
+            } else if (dialogMode == DialogFolder) {
+                select = AknCommonDialogsDynMem::RunFolderSelectDlgLD(types, target, startFolder,
+                            0, 0, titlePtr, NULL, NULL);
+            }
+        );
+
+        if (err == KErrNone) {
+            tryCount = 0;
+        } else {
+            // Symbian native file dialog doesn't allow accessing files outside C:/Data
+            // It will always leave in that case, so default into QDir::rootPath() in error cases.
+            QString dir = QDir::toNativeSeparators(QDir::rootPath());
             startFolder = qt_QString2TPtrC(dir);
         }
-        TInt types = AknCommonDialogsDynMem::EMemoryTypeMMCExternal|
-                     AknCommonDialogsDynMem::EMemoryTypeInternalMassStorage|
-                     AknCommonDialogsDynMem::EMemoryTypePhone;
-
-        TPtrC titlePtr(qt_QString2TPtrC(dialogCaption));
-        TFileName target;
-        bool select = false;
-        if (dialogMode == DialogOpen) {
-            CExtensionFilter* extensionFilter = new (ELeave) CExtensionFilter;
-            CleanupStack::PushL(extensionFilter);
-            extensionFilter->setFilter(filter);
-            select = AknCommonDialogsDynMem::RunSelectDlgLD(types, target,
-                     startFolder, NULL, NULL, titlePtr, extensionFilter);
-            CleanupStack::Pop(extensionFilter);
-        } else if (dialogMode == DialogSave) {
-            select = AknCommonDialogsDynMem::RunSaveDlgLD(types, target,
-                     startFolder, NULL, NULL, titlePtr);
-        } else if (dialogMode == DialogFolder) {
-            select = AknCommonDialogsDynMem::RunFolderSelectDlgLD(types, target, startFolder,
-                        0, 0, titlePtr, NULL, NULL);
-        }
-        if (select)
-            selection.append(qt_TDesC2QString(target));
-    );
+    }
+    if (select)
+        selection.append(qt_TDesC2QString(target));
 #endif
     return selection;
 }
