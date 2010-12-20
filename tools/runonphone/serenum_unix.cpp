@@ -223,11 +223,15 @@ QList<SerialPortId> enumerateSerialPorts(int loglevel)
                      << iface.manufacturer
                      << "Product:"
                      << iface.product
+#ifdef Q_OS_LINUX
                      << endl
                      << "    Load generic driver using:"
                      << QString("sudo modprobe usbserial vendor=0x%1 product=0x%2")
                         .arg(iface.manufacturerid, 4, 16, QChar('0'))
                         .arg(iface.productid, 4, 16, QChar('0'));
+#else
+                     ;
+#endif
         }
     }
     return list;
