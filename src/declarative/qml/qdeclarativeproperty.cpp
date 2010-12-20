@@ -315,6 +315,8 @@ void QDeclarativePropertyPrivate::initProperty(QObject *obj, const QString &name
     if (property && !(property->flags & QDeclarativePropertyCache::Data::IsFunction)) {
         object = currentObject;
         core = *property;
+        nameCache = terminal;
+        isNameCached = true;
     }
 }
 
