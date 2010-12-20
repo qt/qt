@@ -220,12 +220,12 @@ public:
 
     void decode();
 
-    QList<QPair<QByteArray, QVariant> > properties;
-    QList<QPair<QByteArray, QDeclarativeExpression *> > expressions;
+    QList<QPair<QString, QVariant> > properties;
+    QList<QPair<QString, QDeclarativeExpression *> > expressions;
     QList<QDeclarativeBinding::Identifier> ids;
     QList<QDeclarativeReplaceSignalHandler*> signalReplacements;
 
-    QDeclarativeProperty property(const QByteArray &);
+    QDeclarativeProperty property(const QString &);
 };
 
 void
@@ -293,7 +293,7 @@ QDeclarativePropertyChangesParser::compile(const QList<QDeclarativeCustomParserP
             break;
         }
 
-        ds << data.at(ii).first << isScript << var;
+        ds << QString::fromUtf8(data.at(ii).first) << isScript << var;
         if (isScript)
             ds << id;
     }
@@ -312,7 +312,7 @@ void QDeclarativePropertyChangesPrivate::decode()
     int count;
     ds >> count;
     for (int ii = 0; ii < count; ++ii) {
-        QByteArray name;
+        QString name;
         bool isScript;
         QVariant data;
         QDeclarativeBinding::Identifier id;
@@ -405,15 +405,15 @@ void QDeclarativePropertyChanges::setRestoreEntryValues(bool v)
 }
 
 QDeclarativeProperty
-QDeclarativePropertyChangesPrivate::property(const QByteArray &property)
+QDeclarativePropertyChangesPrivate::property(const QString &property)
 {
     Q_Q(QDeclarativePropertyChanges);
-    QDeclarativeProperty prop(object, QString::fromUtf8(property), qmlContext(q));
+    QDeclarativeProperty prop(object, property, qmlContext(q));
     if (!prop.isValid()) {
-        qmlInfo(q) << QDeclarativePropertyChanges::tr("Cannot assign to non-existent property \"%1\"").arg(QString::fromUtf8(property));
+        qmlInfo(q) << QDeclarativePropertyChanges::tr("Cannot assign to non-existent property \"%1\"").arg(property);
         return QDeclarativeProperty();
     } else if (!(prop.type() & QDeclarativeProperty::SignalProperty) && !prop.isWritable()) {
-        qmlInfo(q) << QDeclarativePropertyChanges::tr("Cannot assign to read-only property \"%1\"").arg(QString::fromUtf8(property));
+        qmlInfo(q) << QDeclarativePropertyChanges::tr("Cannot assign to read-only property \"%1\"").arg(property);
         return QDeclarativeProperty();
     }
     return prop;
@@ -429,9 +429,7 @@ QDeclarativePropertyChanges::ActionList QDeclarativePropertyChanges::actions()
 
     for (int ii = 0; ii < d->properties.count(); ++ii) {
 
-        QByteArray property = d->properties.at(ii).first;
-
-        QDeclarativeAction a(d->object, QString::fromUtf8(property),
+        QDeclarativeAction a(d->object, d->properties.at(ii).first,
                  qmlContext(this), d->properties.at(ii).second);
 
         if (a.property.isValid()) {
@@ -453,7 +451,7 @@ QDeclarativePropertyChanges::ActionList QDeclarativePropertyChanges::actions()
 
     for (int ii = 0; ii < d->expressions.count(); ++ii) {
 
-        QByteArray property = d->expressions.at(ii).first;
+        const QString &property = d->expressions.at(ii).first;
         QDeclarativeProperty prop = d->property(property);
 
         if (prop.isValid()) {
@@ -462,7 +460,7 @@ QDeclarativePropertyChanges::ActionList QDeclarativePropertyChanges::actions()
             a.property = prop;
             a.fromValue = a.property.read();
             a.specifiedObject = d->object;
-            a.specifiedProperty = QString::fromUtf8(property);
+            a.specifiedProperty = property;
 
             if (d->isExplicit) {
                 a.toValue = d->expressions.at(ii).second->evaluate();
@@ -518,10 +516,10 @@ void QDeclarativePropertyChanges::setIsExplicit(bool e)
     d->isExplicit = e;
 }
 
-bool QDeclarativePropertyChanges::containsValue(const QByteArray &name) const
+bool QDeclarativePropertyChanges::containsValue(const QString &name) const
 {
     Q_D(const QDeclarativePropertyChanges);
-    typedef QPair<QByteArray, QVariant> PropertyEntry;
+    typedef QPair<QString, QVariant> PropertyEntry;
 
     QListIterator<PropertyEntry> propertyIterator(d->properties);
     while (propertyIterator.hasNext()) {
@@ -534,10 +532,10 @@ bool QDeclarativePropertyChanges::containsValue(const QByteArray &name) const
     return false;
 }
 
-bool QDeclarativePropertyChanges::containsExpression(const QByteArray &name) const
+bool QDeclarativePropertyChanges::containsExpression(const QString &name) const
 {
     Q_D(const QDeclarativePropertyChanges);
-    typedef QPair<QByteArray, QDeclarativeExpression *> ExpressionEntry;
+    typedef QPair<QString, QDeclarativeExpression *> ExpressionEntry;
 
     QListIterator<ExpressionEntry> expressionIterator(d->expressions);
     while (expressionIterator.hasNext()) {
@@ -550,16 +548,16 @@ bool QDeclarativePropertyChanges::containsExpression(const QByteArray &name) con
     return false;
 }
 
-bool QDeclarativePropertyChanges::containsProperty(const QByteArray &name) const
+bool QDeclarativePropertyChanges::containsProperty(const QString &name) const
 {
     return containsValue(name) || containsExpression(name);
 }
 
-void QDeclarativePropertyChanges::changeValue(const QByteArray &name, const QVariant &value)
+void QDeclarativePropertyChanges::changeValue(const QString &name, const QVariant &value)
 {
     Q_D(QDeclarativePropertyChanges);
-    typedef QPair<QByteArray, QVariant> PropertyEntry;
-    typedef QPair<QByteArray, QDeclarativeExpression *> ExpressionEntry;
+    typedef QPair<QString, QVariant> PropertyEntry;
+    typedef QPair<QString, QDeclarativeExpression *> ExpressionEntry;
 
     QMutableListIterator<ExpressionEntry> expressionIterator(d->expressions);
     while (expressionIterator.hasNext()) {
@@ -596,7 +594,7 @@ void QDeclarativePropertyChanges::changeValue(const QByteArray &name, const QVar
     action.property = d->property(name);
     action.fromValue = action.property.read();
     action.specifiedObject = object();
-    action.specifiedProperty = QString::fromUtf8(name);
+    action.specifiedProperty = name;
     action.toValue = value;
 
     propertyIterator.insert(PropertyEntry(name, value));
@@ -609,11 +607,11 @@ void QDeclarativePropertyChanges::changeValue(const QByteArray &name, const QVar
     }
 }
 
-void QDeclarativePropertyChanges::changeExpression(const QByteArray &name, const QString &expression)
+void QDeclarativePropertyChanges::changeExpression(const QString &name, const QString &expression)
 {
     Q_D(QDeclarativePropertyChanges);
-    typedef QPair<QByteArray, QVariant> PropertyEntry;
-    typedef QPair<QByteArray, QDeclarativeExpression *> ExpressionEntry;
+    typedef QPair<QString, QVariant> PropertyEntry;
+    typedef QPair<QString, QDeclarativeExpression *> ExpressionEntry;
 
     bool hadValue = false;
 
@@ -667,7 +665,7 @@ void QDeclarativePropertyChanges::changeExpression(const QByteArray &name, const
             action.property = d->property(name);
             action.fromValue = action.property.read();
             action.specifiedObject = object();
-            action.specifiedProperty = QString::fromUtf8(name);
+            action.specifiedProperty = name;
 
 
             if (d->isExplicit) {
@@ -690,11 +688,11 @@ void QDeclarativePropertyChanges::changeExpression(const QByteArray &name, const
     // what about the signal handler?
 }
 
-QVariant QDeclarativePropertyChanges::property(const QByteArray &name) const
+QVariant QDeclarativePropertyChanges::property(const QString &name) const
 {
     Q_D(const QDeclarativePropertyChanges);
-    typedef QPair<QByteArray, QVariant> PropertyEntry;
-    typedef QPair<QByteArray, QDeclarativeExpression *> ExpressionEntry;
+    typedef QPair<QString, QVariant> PropertyEntry;
+    typedef QPair<QString, QDeclarativeExpression *> ExpressionEntry;
 
     QListIterator<PropertyEntry> propertyIterator(d->properties);
     while (propertyIterator.hasNext()) {
@@ -715,11 +713,11 @@ QVariant QDeclarativePropertyChanges::property(const QByteArray &name) const
     return QVariant();
 }
 
-void QDeclarativePropertyChanges::removeProperty(const QByteArray &name)
+void QDeclarativePropertyChanges::removeProperty(const QString &name)
 {
     Q_D(QDeclarativePropertyChanges);
-    typedef QPair<QByteArray, QVariant> PropertyEntry;
-    typedef QPair<QByteArray, QDeclarativeExpression *> ExpressionEntry;
+    typedef QPair<QString, QVariant> PropertyEntry;
+    typedef QPair<QString, QDeclarativeExpression *> ExpressionEntry;
 
     QMutableListIterator<ExpressionEntry> expressionIterator(d->expressions);
     while (expressionIterator.hasNext()) {
@@ -742,10 +740,10 @@ void QDeclarativePropertyChanges::removeProperty(const QByteArray &name)
     }
 }
 
-QVariant QDeclarativePropertyChanges::value(const QByteArray &name) const
+QVariant QDeclarativePropertyChanges::value(const QString &name) const
 {
     Q_D(const QDeclarativePropertyChanges);
-    typedef QPair<QByteArray, QVariant> PropertyEntry;
+    typedef QPair<QString, QVariant> PropertyEntry;
 
     QListIterator<PropertyEntry> propertyIterator(d->properties);
     while (propertyIterator.hasNext()) {
@@ -758,10 +756,10 @@ QVariant QDeclarativePropertyChanges::value(const QByteArray &name) const
     return QVariant();
 }
 
-QString QDeclarativePropertyChanges::expression(const QByteArray &name) const
+QString QDeclarativePropertyChanges::expression(const QString &name) const
 {
     Q_D(const QDeclarativePropertyChanges);
-    typedef QPair<QByteArray, QDeclarativeExpression *> ExpressionEntry;
+    typedef QPair<QString, QDeclarativeExpression *> ExpressionEntry;
 
     QListIterator<ExpressionEntry> expressionIterator(d->expressions);
     while (expressionIterator.hasNext()) {
