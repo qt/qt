@@ -64,7 +64,7 @@ public:
         filterList.clear();
         if (filter.left(2) == QLatin1String("*.")) {
             //Filter has only extensions
-            filterList << filter.split(" ");
+            filterList << filter.split(QLatin1String(" "));
             return;
         } else {
             //Extensions are in parenthesis and there may be several filters
@@ -75,7 +75,7 @@ public:
                     return;
                 }
             }
-            QRegExp rx("\\(([^\\)]*)\\)");
+            QRegExp rx(QLatin1String("\\(([^\\)]*)\\)"));
             int pos = 0;
             while ((pos = rx.indexIn(filter, pos)) != -1) {
                 filterList << rx.cap(1).split(QLatin1String(" "));
