@@ -401,6 +401,7 @@ public:
     // workarounds for driver/hw bugs on different platforms
     uint workaround_needsFullClearOnEveryFrame : 1;
     uint workaround_brokenFBOReadBack : 1;
+    uint workaround_brokenTexSubImage : 1;
     uint workaroundsCached : 1;
 
     uint workaround_brokenTextureFromPixmap : 1;
