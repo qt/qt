@@ -512,7 +512,7 @@ void tst_qdeclarativeinstruction::dump()
     {
         QDeclarativeInstruction i;
         i.line = 50;
-        i.type = (QDeclarativeInstruction::Type)(1234); // Non-existant
+        i.type = (QDeclarativeInstruction::Type)(1234); // Non-existent
         data->bytecode << i;
     }
 

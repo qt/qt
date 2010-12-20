@@ -947,7 +947,7 @@ void tst_qdeclarativelanguage::aliasProperties()
         object->setProperty("value", QVariant(13));
         QCOMPARE(object->property("valueAlias").toInt(), 13);
 
-        // Write throught alias
+        // Write through alias
         object->setProperty("valueAlias", QVariant(19));
         QCOMPARE(object->property("valueAlias").toInt(), 19);
         QCOMPARE(object->property("value").toInt(), 19);
@@ -1109,7 +1109,7 @@ void tst_qdeclarativelanguage::aliasProperties()
         object->setProperty("rectProperty", QVariant(QRect(33, 12, 99, 100)));
         QCOMPARE(object->property("valueAlias").toRect(), QRect(33, 12, 99, 100));
 
-        // Write throught alias
+        // Write through alias
         object->setProperty("valueAlias", QVariant(QRect(3, 3, 4, 9)));
         QCOMPARE(object->property("valueAlias").toRect(), QRect(3, 3, 4, 9));
         QCOMPARE(object->property("rectProperty").toRect(), QRect(3, 3, 4, 9));
@@ -1129,7 +1129,7 @@ void tst_qdeclarativelanguage::aliasProperties()
         object->setProperty("rectProperty", QVariant(QRect(33, 8, 102, 111)));
         QCOMPARE(object->property("aliasProperty").toInt(), 33);
 
-        // Write throught alias
+        // Write through alias
         object->setProperty("aliasProperty", QVariant(4));
         QCOMPARE(object->property("aliasProperty").toInt(), 4);
         QCOMPARE(object->property("rectProperty").toRect(), QRect(4, 8, 102, 111));

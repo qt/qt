@@ -105,7 +105,7 @@ private slots:
     void constantsOverrideBindings();
     void outerBindingOverridesInnerBinding();
     void aliasPropertyAndBinding();
-    void nonExistantAttachedObject();
+    void nonExistentAttachedObject();
     void scope();
     void signalParameterTypes();
     void objectsCompareAsEqual();
@@ -643,7 +643,7 @@ void tst_qdeclarativeecmascript::attachedProperties()
 
 void tst_qdeclarativeecmascript::enums()
 {
-    // Existant enums
+    // Existent enums
     {
     QDeclarativeComponent component(&engine, TEST_FILE("enums.1.qml"));
     QObject *object = component.create();
@@ -785,9 +785,9 @@ Access a non-existent attached object.
 
 Tests for a regression where this used to crash.
 */
-void tst_qdeclarativeecmascript::nonExistantAttachedObject()
+void tst_qdeclarativeecmascript::nonExistentAttachedObject()
 {
-    QDeclarativeComponent component(&engine, TEST_FILE("nonExistantAttachedObject.qml"));
+    QDeclarativeComponent component(&engine, TEST_FILE("nonExistentAttachedObject.qml"));
 
     QString warning = component.url().toString() + ":4: Unable to assign [undefined] to QString stringProperty";
     QTest::ignoreMessage(QtWarningMsg, qPrintable(warning));
