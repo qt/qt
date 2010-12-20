@@ -517,10 +517,13 @@ void QTestLiteWindow::setVisible(bool visible)
 #ifdef MYX11_DEBUG
     qDebug() << "QTestLiteWindow::setVisible" << visible << hex << x_window;
 #endif
-    if (visible)
-         XMapWindow(mScreen->display(), x_window);
-    else
+    if (visible) {
+        //ensure that the window is viewed in correct position.
+        doSizeHints();
+        XMapWindow(mScreen->display(), x_window);
+    } else {
         XUnmapWindow(mScreen->display(), x_window);
+    }
 }
 
 void QTestLiteWindow::setCursor(const Cursor &cursor)
@@ -550,6 +553,25 @@ Window QTestLiteWindow::xWindow() const
 GC QTestLiteWindow::graphicsContext() const
 {
     return gc;
+}
+
+void QTestLiteWindow::doSizeHints()
+{
+    Q_ASSERT(widget()->testAttribute(Qt::WA_WState_Created));
+    XSizeHints s;
+    s.flags = 0;
+    QRect g = geometry();
+    s.x = g.x();
+    s.y = g.y();
+    s.width = g.width();
+    s.height = g.height();
+    s.flags |= USPosition;
+    s.flags |= PPosition;
+    s.flags |= USSize;
+    s.flags |= PSize;
+    s.flags |= PWinGravity;
+    s.win_gravity = QApplication::isRightToLeft() ? NorthEastGravity : NorthWestGravity;
+    XSetWMNormalHints(mScreen->display(), x_window, &s);
 }
 
 QT_END_NAMESPACE

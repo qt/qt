@@ -126,6 +126,8 @@ protected:
     void setMWMHints(const QtMWMHints &mwmhints);
     QtMWMHints getMWMHints() const;
 
+    void doSizeHints();
+
 private:
     Window x_window;
     GC gc;
