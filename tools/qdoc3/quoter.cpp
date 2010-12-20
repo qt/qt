@@ -41,7 +41,6 @@
 
 #include <qfileinfo.h>
 #include <qregexp.h>
-#include <qdebug.h>
 
 #include "quoter.h"
 
@@ -123,9 +122,9 @@ Quoter::Quoter()
     /* We're going to hard code these delimiters:
         * C++, Qt, Qt Script, Java:
           //! [<id>]
-        * .pro files:
+        * .pro, .py files:
           #! [<id>]
-        * .xq, .xml, .html files:
+        * .html, .qrc, .ui, .xq, .xml files:
           <!-- [<id>] -->
     */
     commentHash["pro"] = "#!";
@@ -236,10 +235,14 @@ QString Quoter::quoteSnippet(const Location &docLocation, const QString &identif
             QString lastLine = getLine();
             int dIndex = lastLine.indexOf(delimiter);
             if (dIndex > 0) {
+                // The delimiter might be preceded on the line by other
+                // delimeters, so look for the first comment on the line.
                 QString leading = lastLine.left(dIndex);
                 dIndex = leading.indexOf(comment);
                 if (dIndex != -1)
                     leading = leading.left(dIndex);
+                if (leading.endsWith(QLatin1String("<@comment>")))
+                    leading.chop(10);
                 if (!leading.trimmed().isEmpty())
                     t += leading;
             }

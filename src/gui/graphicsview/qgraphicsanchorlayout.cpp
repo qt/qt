@@ -56,9 +56,9 @@
     Items that are anchored are automatically added to the layout, and if items
     are removed, all their anchors will be automatically removed.
 
-    \beginfloatleft
+    \div {float-left}
     \inlineimage simpleanchorlayout-example.png Using an anchor layout to align simple colored widgets.
-    \endfloat
+    \enddiv
 
     Anchors are always set up between edges of an item, where the "center" is also considered to
     be an edge. Consider the following example:

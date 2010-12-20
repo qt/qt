@@ -55,7 +55,6 @@
 #include "doc.h"
 #include "location.h"
 #include "text.h"
-#include <QUuid>
 
 QT_BEGIN_NAMESPACE
 
@@ -87,8 +86,8 @@ class Node
 
     enum SubType { 
         NoSubType,
-        Example, 
-        HeaderFile, 
+        Example,
+        HeaderFile,
         File,
         Image,
         Group,
@@ -114,7 +113,7 @@ class Node
         Commendable, 
         Main, 
         Internal 
-    }; // don't reorder thisw enum
+    }; // don't reorder this enum
     
     enum ThreadSafeness { 
         UnspecifiedSafeness, 
@@ -165,6 +164,7 @@ class Node
     virtual bool isReimp() const { return false; }
     virtual bool isFunction() const { return false; }
     virtual bool isQmlNode() const { return false; }
+    virtual bool isInternal() const { return false; }
     Type type() const { return typ; }
     virtual SubType subType() const { return NoSubType; }
     InnerNode* parent() const { return par; }
@@ -191,7 +191,7 @@ class Node
     void clearRelated() { rel = 0; }
 
     virtual QString fileBase() const;
-    QUuid guid() const;
+    QString guid() const;
     QString ditaXmlHref();
     QString extractClassName(const QString &string) const;
 
@@ -223,7 +223,7 @@ class Node
     QString u;
     QString sinc;
     QString tpl;
-    mutable QUuid uuid;
+    mutable QString uuid;
 };
 
 class FunctionNode;
@@ -637,6 +637,7 @@ class FunctionNode : public LeafNode
     virtual bool isQmlNode() const { 
         return ((type() == QmlSignal) || (type() == QmlMethod)); 
     }
+    virtual bool isInternal() const;
 
     void debug() const;
 

@@ -107,10 +107,10 @@ class QPageSetupDialogPrivate : public QAbstractPageSetupDialogPrivate
 
     This value is obsolete and does nothing since Qt 4.5:
 
-    \value DontUseSheet In previous versions of Qt, exec() the page setup dialog
-    would create a sheet by default if the dialog was given a parent.
-    This is no longer supported in Qt 4.5.  If you want to use sheets, use
-    QPageSetupDialog::open() instead.
+    \value DontUseSheet In previous versions of QDialog::exec() the
+    page setup dialog would create a sheet by default if the dialog
+    was given a parent.  This is no longer supported from Qt 4.5.  If
+    you want to use sheets, use QPageSetupDialog::open() instead.
 
     \omitvalue None
     \omitvalue OwnsPrinter

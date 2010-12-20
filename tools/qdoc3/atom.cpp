@@ -107,6 +107,7 @@ QString Atom::UPPERROMAN_    ("upperroman");
   \value CodeOld
   \value CodeQuoteArgument
   \value CodeQuoteCommand
+  \value Div
   \value EndQmlText
   \value FormatElse
   \value FormatEndif
@@ -179,6 +180,8 @@ static const struct {
     { "CodeOld", Atom::CodeOld },
     { "CodeQuoteArgument", Atom::CodeQuoteArgument },
     { "CodeQuoteCommand", Atom::CodeQuoteCommand },
+    { "Div", Atom::Div },
+    { "EndDiv", Atom::EndDiv },
 #ifdef QDOC_QML
     { "EndQmlText", Atom::EndQmlText },
 #endif
@@ -190,6 +193,7 @@ static const struct {
     { "FormattingLeft", Atom::FormattingLeft },
     { "FormattingRight", Atom::FormattingRight },
     { "GeneratedList", Atom::GeneratedList },
+    { "GuidLink", Atom::GuidLink},
     { "Image", Atom::Image },
     { "ImageText", Atom::ImageText },
     { "InlineImage", Atom::InlineImage },
@@ -241,25 +245,25 @@ static const struct {
     { 0, 0 }
 };
 
-/*! \fn Atom::Atom( Type type, const QString& string )
+/*! \fn Atom::Atom(Type type, const QString& string)
 
   Constructs an atom (\a type, \a string) outside of any atom list.
 */
 
-/*! \fn Atom( Atom *prev, Type type, const QString& string )
+/*! \fn Atom(Atom *prev, Type type, const QString& string)
 
   Constructs an atom (\a type, \a string) that follows \a prev in \a
   prev's atom list.
 */
 
-/*! \fn void Atom::appendChar( QChar ch )
+/*! \fn void Atom::appendChar(QChar ch)
 
   Appends \a ch to the string parameter of this atom.
 
   \also string()
 */
 
-/*! \fn void Atom::appendString( const QString& string )
+/*! \fn void Atom::appendString(const QString& string)
 
   Appends \a string to the string parameter of this atom.
 
@@ -316,18 +320,18 @@ QString Atom::typeString() const
 {
     static bool deja = false;
 
-    if ( !deja ) {
+    if (!deja) {
 	int i = 0;
-	while ( atms[i].english != 0 ) {
-	    if ( atms[i].no != i )
-		Location::internalError( tr("atom %1 missing").arg(i) );
+	while (atms[i].english != 0) {
+	    if (atms[i].no != i)
+		Location::internalError(tr("atom %1 missing").arg(i));
 	    i++;
 	}
 	deja = true;
     }
 
     int i = (int) type();
-    if ( i < 0 || i > (int) Last )
+    if (i < 0 || i > (int) Last)
         return QLatin1String("Invalid");
     return QLatin1String(atms[i].english);
 }
@@ -346,10 +350,10 @@ QString Atom::typeString() const
 void Atom::dump() const
 {
     QString str = string();
-    str.replace( "\\", "\\\\" );
-    str.replace( "\"", "\\\"" );
-    str.replace( "\n", "\\n" );
-    str.replace( QRegExp("[^\x20-\x7e]"), "?" );
+    str.replace("\\", "\\\\");
+    str.replace("\"", "\\\"");
+    str.replace("\n", "\\n");
+    str.replace(QRegExp("[^\x20-\x7e]"), "?");
     if (!str.isEmpty())
         str = " \"" + str + "\"";
     fprintf(stderr,

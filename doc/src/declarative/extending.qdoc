@@ -463,7 +463,7 @@ constructing an animation object and manually setting the animation's "target"
 property, a property value source can be assigned directly to a property of any
 type and automatically set up this association.
 
-The example shown here is rather contrived: the \c announcment property of the
+The example shown here is rather contrived: the \c announcement property of the
 \c BirthdayParty object is a string that is printed every time it is assigned and
 the \c HappyBirthdaySong value source generates the lyrics of the song
 "Happy Birthday".

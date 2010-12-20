@@ -107,13 +107,6 @@ struct FastSection
 
 };
 
-#if 0
-                const QString& name0 = "",
-                const QString& divClass0 = "",
-                const QString& singularMember0 = "member",
-                const QString& pluralMember0 = "members")
-#endif
-
 class CodeMarker
 {
  public:

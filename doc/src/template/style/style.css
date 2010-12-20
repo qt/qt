@@ -176,15 +176,39 @@
     {
      /*   background-color: #E6E6E6;*/ /* disabled until further notice */
     }
-    		
+
+    div.float-left
+    {
+        float: left; margin-right: 2em
+    }
+    div.float-right
+    {
+        float: right; margin-left: 2em
+    }
+
     span.comment
     {
-        color: #8B0000;
-        font-style: italic;
+        color: #008B00;
     }
     span.string, span.char
     {
-        color: #254117;
+        color: #000084;
+    }
+    span.number
+    {
+        color: #a46200;
+    }
+    span.operator
+    {
+        color: black;
+    }
+    span.keyword
+    {
+        color: #840000;
+    }
+    span.name
+    {
+        color: black
     }
 
 
@@ -266,7 +290,7 @@
         color: #4c0033;
         text-decoration: none;
     }
-     .content a:visited:hover
+    .content a:visited:hover
     {
         color: #4c0033;
         text-decoration: underline;

@@ -667,9 +667,6 @@ void QSymbianControl::HandleStatusPaneSizeChange()
 {
     QS60MainAppUi *s60AppUi = static_cast<QS60MainAppUi *>(S60->appUi());
     s60AppUi->HandleStatusPaneSizeChange();
-    // Send resize event to trigger desktopwidget workAreaResized signal
-    QResizeEvent e(qt_desktopWidget->size(), qt_desktopWidget->size());
-    QApplication::sendEvent(qt_desktopWidget, &e);
 }
 #endif
 
@@ -1177,8 +1174,10 @@ void QSymbianControl::SizeChanged()
             if (!slowResize && tlwExtra)
                 tlwExtra->inTopLevelResize = false;
         } else {
-            QResizeEvent *e = new QResizeEvent(newSize, oldSize);
-            QApplication::postEvent(qwidget, e);
+            if (!qwidget->testAttribute(Qt::WA_PendingResizeEvent)) {
+                QResizeEvent *e = new QResizeEvent(newSize, oldSize);
+                QApplication::postEvent(qwidget, e);
+            }
         }
     }
 
@@ -1310,6 +1309,9 @@ void QSymbianControl::HandleResourceChange(int resourceType)
     case KEikDynamicLayoutVariantSwitch:
     {
         handleClientAreaChange();
+        // Send resize event to trigger desktopwidget workAreaResized signal
+        QResizeEvent e(qt_desktopWidget->size(), qt_desktopWidget->size());
+        QApplication::sendEvent(qt_desktopWidget, &e);
         break;
     }
 #endif
@@ -1632,6 +1634,13 @@ void qt_cleanup()
 
     //Change mouse pointer back
     S60->wsSession().SetPointerCursorMode(EPointerCursorNone);
+
+#ifdef Q_WS_S60
+    // Clear CBA
+    CEikonEnv::Static()->AppUiFactory()->SwapButtonGroup(0);
+    delete S60->buttonGroupContainer();
+    S60->setButtonGroupContainer(0);
+#endif
 
     if (S60->qtOwnsS60Environment) {
         // Restore the S60 framework trap handler. See qt_init().

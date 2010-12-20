@@ -427,12 +427,44 @@ By default, QML recognizes the following data types:
 \o QSize, QSizeF
 \o QRect, QRectF
 \o QVariant
+\o QVariantList, QVariantMap
 \o QObject*
 \o Enumerations declared with Q_ENUMS()
 \endlist
 
 To allow a custom C++ type to be created or used in QML, the C++ class must be registered as a QML
 type using qmlRegisterType(), as shown in the \l {Defining new QML elements} section above.
+
+
+\section2 JavaScript arrays and objects
+
+There is built-in support for automatic type conversion between QVariantList and JavaScript
+arrays, and QVariantMap and JavaScript objects.
+
+For example, the function defined in QML below left expects two arguments, an array and an object, and prints
+their contents using the standard JavaScript syntax for array and object item access. The C++ code
+below right calls this function, passing a QVariantList and a QVariantMap, which are automatically
+converted to JavaScript array and object values, repectively:
+
+\table
+\row
+\o \snippet doc/src/snippets/declarative/qtbinding/variantlistmap/MyItem.qml 0
+\o \snippet doc/src/snippets/declarative/qtbinding/variantlistmap/main.cpp 0
+\endtable
+
+This produces output like:
+
+\code
+Array item: 10
+Array item: #00ff00
+Array item: bottles
+Object item: language = QML
+Object item: released = Tue Sep 21 2010 00:00:00 GMT+1000 (EST)
+\endcode
+
+Similarly, if a C++ type uses a QVariantList or QVariantMap type for a property or method
+parameter, the value can be created as a JavaScript array or object in the QML
+side, and is automatically converted to a QVariantList or QVariantMap when it is passed to C++.
 
 
 \section2 Using enumerations of a custom type
@@ -456,7 +488,7 @@ See the \l {Tutorial: Writing QML extensions with C++}{Writing QML extensions wi
 the \l {Extending QML in C++} reference documentation for more information.
 
 
-\section2 Automatic type conversion
+\section2 Automatic type conversion from strings
 
 As a convenience, some basic types can be specified in QML using format strings to make it easier to
 pass simple values from QML to C++.

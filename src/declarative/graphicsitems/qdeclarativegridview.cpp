@@ -735,7 +735,7 @@ void QDeclarativeGridViewPrivate::createHighlight()
             QDeclarative_setParent_noEvent(item, q->contentItem());
             item->setParentItem(q->contentItem());
             highlight = new FxGridItem(item, q);
-            if (currentItem)
+            if (currentItem && autoHighlight)
                 highlight->setPosition(currentItem->colPos(), currentItem->rowPos());
             highlightXAnimator = new QSmoothedAnimation(q);
             highlightXAnimator->target = QDeclarativeProperty(highlight->item, QLatin1String("x"));
@@ -1095,9 +1095,9 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
 
     \snippet doc/src/snippets/declarative/gridview/ContactModel.qml 0
 
-    \beginfloatright
+    \div {float-right}
     \inlineimage gridview-simple.png
-    \endfloat
+    \enddiv
 
     This model can be referenced as \c ContactModel in other QML files. See \l{QML Modules}
     for more information about creating reusable components like this.
@@ -1111,9 +1111,9 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     \codeline
     \snippet doc/src/snippets/declarative/gridview/gridview.qml classdocs simple
 
-    \beginfloatright
+    \div {float-right}
     \inlineimage gridview-highlight.png
-    \endfloat
+    \enddiv
 
     The view will create a new delegate for each item in the model. Note that the delegate
     is able to access the model's \c name and \c portrait data directly.
@@ -1253,7 +1253,8 @@ void QDeclarativeGridView::setModel(const QVariant &model)
                 d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
                 d->updateCurrent(d->currentIndex);
                 if (d->highlight && d->currentItem) {
-                    d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+                    if (d->autoHighlight)
+                        d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
                     d->updateTrackedItem();
                 }
                 d->moveReason = QDeclarativeGridViewPrivate::Other;
@@ -1321,7 +1322,8 @@ void QDeclarativeGridView::setDelegate(QDeclarativeComponent *delegate)
             d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
             d->updateCurrent(d->currentIndex);
             if (d->highlight && d->currentItem) {
-                d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+                if (d->autoHighlight)
+                    d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
                 d->updateTrackedItem();
             }
             d->moveReason = QDeclarativeGridViewPrivate::Other;
@@ -2241,7 +2243,8 @@ void QDeclarativeGridView::componentComplete()
         else
             d->updateCurrent(d->currentIndex);
         if (d->highlight && d->currentItem) {
-            d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+            if (d->autoHighlight)
+                d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
             d->updateTrackedItem();
         }
         d->moveReason = QDeclarativeGridViewPrivate::Other;
@@ -2649,7 +2652,8 @@ void QDeclarativeGridView::modelReset()
     d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
     d->updateCurrent(d->currentIndex);
     if (d->highlight && d->currentItem) {
-        d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+        if (d->autoHighlight)
+            d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
         d->updateTrackedItem();
     }
     d->moveReason = QDeclarativeGridViewPrivate::Other;
