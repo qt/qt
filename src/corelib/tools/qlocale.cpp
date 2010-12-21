@@ -1576,8 +1576,6 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
        defaults to the default locale (see setDefault()).
     \endlist
 
-    The "C" locale is identical in behavior to \l{English}/\l{UnitedStates}.
-
     Use language() and country() to determine the actual language and
     country values used.
 

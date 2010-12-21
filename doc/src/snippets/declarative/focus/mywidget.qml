@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the documentation of the Qt Toolkit.
+** This file is part of the FOO module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -37,17 +37,22 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 import QtQuick 1.0
 
-//![0]
-Text {
-    text: "Hello world!"    //a basic greeting
-    /*
-        We want this text to stand out from the rest so
-        we give it a large size and different font.
-     */
-    font.family: "Helvetica"
-    font.pointSize: 24
+//! [mywidget]
+//MyWidget code
+Rectangle {
+    id: widget
+    color: "lightsteelblue"; width: 175; height: 25; radius: 10; smooth: true
+    Text { id: label; anchors.centerIn: parent}
+    focus: true
+    Keys.onPressed: {
+        if (event.key == Qt.Key_A)
+            label.text = 'Key A was pressed'
+        else if (event.key == Qt.Key_B)
+            label.text = 'Key B was pressed'
+        else if (event.key == Qt.Key_C)
+            label.text = 'Key C was pressed'
+    }
 }
-//![0]
+//! [mywidget]
