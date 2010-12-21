@@ -1556,7 +1556,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         }
     }
 
-
     if (recreateVertexArrays) {
         vertexCoordinates->clear();
         textureCoordinates->clear();
@@ -1569,7 +1568,10 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 
             QTextureGlyphCache::GlyphAndSubPixelPosition glyph(staticTextItem->glyphs[i], subPixelPosition);
 
-            const QTextureGlyphCache::Coord &c = cache->coords.value(glyph);
+            const QTextureGlyphCache::Coord &c = cache->coords[glyph];
+            if (c.isNull())
+                continue;
+
             int x = staticTextItem->glyphPositions[i].x.toInt() + c.baseLineX - margin;
             int y = staticTextItem->glyphPositions[i].y.toInt() - c.baseLineY - margin;
 
@@ -1580,10 +1582,12 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         staticTextItem->userDataNeedsUpdate = false;
     }
 
-    if (elementIndices.size() < staticTextItem->numGlyphs*6) {
+    int numGlyphs = vertexCoordinates->vertexCount() / 4;
+
+    if (elementIndices.size() < numGlyphs*6) {
         Q_ASSERT(elementIndices.size() % 6 == 0);
         int j = elementIndices.size() / 6 * 4;
-        while (j < staticTextItem->numGlyphs*4) {
+        while (j < numGlyphs*4) {
             elementIndices.append(j + 0);
             elementIndices.append(j + 0);
             elementIndices.append(j + 1);
@@ -1672,9 +1676,9 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
             updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
 #if defined(QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO)
-            glDrawElements(GL_TRIANGLE_STRIP, 6 * staticTextItem->numGlyphs, GL_UNSIGNED_SHORT, 0);
+            glDrawElements(GL_TRIANGLE_STRIP, 6 * numGlyphs, GL_UNSIGNED_SHORT, 0);
 #else
-            glDrawElements(GL_TRIANGLE_STRIP, 6 * staticTextItem->numGlyphs, GL_UNSIGNED_SHORT, elementIndices.data());
+            glDrawElements(GL_TRIANGLE_STRIP, 6 * numGlyphs, GL_UNSIGNED_SHORT, elementIndices.data());
 #endif
 
             shaderManager->setMaskType(QGLEngineShaderManager::SubPixelMaskPass2);
@@ -1722,10 +1726,10 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     }
 
 #if defined(QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO)
-    glDrawElements(GL_TRIANGLE_STRIP, 6 * staticTextItem->numGlyphs, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(GL_TRIANGLE_STRIP, 6 * numGlyphs, GL_UNSIGNED_SHORT, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 #else
-    glDrawElements(GL_TRIANGLE_STRIP, 6 * staticTextItem->numGlyphs, GL_UNSIGNED_SHORT, elementIndices.data());
+    glDrawElements(GL_TRIANGLE_STRIP, 6 * numGlyphs, GL_UNSIGNED_SHORT, elementIndices.data());
 #endif
 }
 

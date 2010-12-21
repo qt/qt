@@ -107,6 +107,11 @@ public:
 
         int baseLineX;
         int baseLineY;
+
+        bool isNull() const
+        {
+            return w == 0 || h == 0;
+        }
     };
 
     bool populate(QFontEngine *fontEngine, int numGlyphs, const glyph_t *glyphs,
