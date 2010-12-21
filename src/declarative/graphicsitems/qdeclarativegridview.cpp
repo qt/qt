@@ -1606,6 +1606,8 @@ void QDeclarativeGridView::setFlow(Flow flow)
             setContentHeight(-1);
             setFlickableDirection(QDeclarativeFlickable::HorizontalFlick);
         }
+        setContentX(0);
+        setContentY(0);
         d->clear();
         d->updateGrid();
         refill();
