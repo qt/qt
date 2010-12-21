@@ -345,8 +345,10 @@ private:
             QT_CLOSE(fd_);
         if (stream_)
             ::fclose(stream_);
+#ifdef Q_OS_SYMBIAN
         if (rfile_.SubSessionHandle())
             rfile_.Close();
+#endif
 
         fd_ = -1;
         stream_ = 0;
@@ -3282,6 +3284,25 @@ void tst_QFile::caseSensitivity()
     }
 }
 
+//MSVCRT asserts when any function is called with a closed file handle.
+//This replaces the default crashing error handler with one that ignores the error (allowing EBADF to be returned)
+class AutoIgnoreInvalidParameter
+{
+public:
+#if defined(Q_OS_WIN) && defined (Q_CC_MSVC)
+    static void ignore_invalid_parameter(const wchar_t*, const wchar_t*, const wchar_t*, unsigned int, uintptr_t) {}
+    AutoIgnoreInvalidParameter()
+    {
+        old = _set_invalid_parameter_handler(ignore_invalid_parameter);
+    }
+    ~AutoIgnoreInvalidParameter()
+    {
+        _set_invalid_parameter_handler(old);
+    }
+    _invalid_parameter_handler old;
+#endif
+};
+
 void tst_QFile::autocloseHandle()
 {
 #ifdef Q_OS_SYMBIAN
@@ -3318,41 +3339,56 @@ void tst_QFile::autocloseHandle()
     {
         QFile file("readonlyfile");
         QVERIFY(openFile(file, QIODevice::ReadOnly, OpenFd, QFile::AutoCloseHandle));
+        QCOMPARE(file.handle(), fd_);
         file.close();
+        QCOMPARE(file.handle(), -1);
+        AutoIgnoreInvalidParameter a;
+        Q_UNUSED(a);
         //file is closed, read should fail
         char buf;
-        QCOMPARE(::read(fd_, &buf, 1), -1);
+        QCOMPARE(QT_READ(fd_, &buf, 1), -1);
         QVERIFY(errno = EBADF);
+        fd_ = -1;
     }
 
     {
         QFile file("readonlyfile");
         QVERIFY(openFile(file, QIODevice::ReadOnly, OpenFd, QFile::DontCloseHandle));
+        QCOMPARE(file.handle(), fd_);
         file.close();
+        QCOMPARE(file.handle(), -1);
         //file is not closed, read should succeed
         char buf;
-        QCOMPARE(::read(fd_, &buf, 1), 1);
+        QCOMPARE(QT_READ(fd_, &buf, 1), 1);
         ::close(fd_);
+        fd_ = -1;
     }
 
     {
         QFile file("readonlyfile");
         QVERIFY(openFile(file, QIODevice::ReadOnly, OpenStream, QFile::AutoCloseHandle));
+        QCOMPARE(file.handle(), fileno(stream_));
         file.close();
+        QCOMPARE(file.handle(), -1);
+        AutoIgnoreInvalidParameter a;
+        Q_UNUSED(a);
         //file is closed, read should fail
         char buf;
         QCOMPARE(int(::fread(&buf, 1, 1, stream_)), 0);
-        QVERIFY(::ferror(stream_)); //actual error seems to be OS dependent
+        stream_ = 0;
     }
 
     {
         QFile file("readonlyfile");
         QVERIFY(openFile(file, QIODevice::ReadOnly, OpenStream, QFile::DontCloseHandle));
+        QCOMPARE(file.handle(), fileno(stream_));
         file.close();
+        QCOMPARE(file.handle(), -1);
         //file is not closed, read should succeed
         char buf;
         QCOMPARE(int(::fread(&buf, 1, 1, stream_)), 1);
         ::fclose(stream_);
+        stream_ = 0;
     }
 }
 
