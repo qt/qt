@@ -163,6 +163,7 @@ public:
     virtual QString expression() const;
 
     typedef int Identifier;
+    static Identifier Invalid;
     static QDeclarativeBinding *createBinding(Identifier, QObject *, QDeclarativeContext *, const QString &, int, QObject *parent=0);
 
 public Q_SLOTS:

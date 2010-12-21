@@ -220,9 +220,19 @@ public:
 
     void decode();
 
+    class ExpressionChange {
+    public:
+        ExpressionChange(const QString &_name,
+                         QDeclarativeBinding::Identifier _id,
+                         QDeclarativeExpression *_expr)
+            : name(_name), id(_id), expression(_expr) {}
+        QString name;
+        QDeclarativeBinding::Identifier id;
+        QDeclarativeExpression *expression;
+    };
+
     QList<QPair<QString, QVariant> > properties;
-    QList<QPair<QString, QDeclarativeExpression *> > expressions;
-    QList<QDeclarativeBinding::Identifier> ids;
+    QList<ExpressionChange> expressions;
     QList<QDeclarativeReplaceSignalHandler*> signalReplacements;
 
     QDeclarativeProperty property(const QString &);
@@ -315,7 +325,7 @@ void QDeclarativePropertyChangesPrivate::decode()
         QString name;
         bool isScript;
         QVariant data;
-        QDeclarativeBinding::Identifier id;
+        QDeclarativeBinding::Identifier id = QDeclarativeBinding::Invalid;
         ds >> name;
         ds >> isScript;
         ds >> data;
@@ -337,8 +347,7 @@ void QDeclarativePropertyChangesPrivate::decode()
             QDeclarativeData *ddata = QDeclarativeData::get(q);
             if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty())
                 expression->setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);
-            expressions << qMakePair(name, expression);
-            ids << id;
+            expressions << ExpressionChange(name, id, expression);
         } else {
             properties << qMakePair(name, data);
         }
@@ -366,7 +375,7 @@ QDeclarativePropertyChanges::~QDeclarativePropertyChanges()
 {
     Q_D(QDeclarativePropertyChanges);
     for(int ii = 0; ii < d->expressions.count(); ++ii)
-        delete d->expressions.at(ii).second;
+        delete d->expressions.at(ii).expression;
     for(int ii = 0; ii < d->signalReplacements.count(); ++ii)
         delete d->signalReplacements.at(ii);
 }
@@ -451,7 +460,7 @@ QDeclarativePropertyChanges::ActionList QDeclarativePropertyChanges::actions()
 
     for (int ii = 0; ii < d->expressions.count(); ++ii) {
 
-        const QString &property = d->expressions.at(ii).first;
+        const QString &property = d->expressions.at(ii).name;
         QDeclarativeProperty prop = d->property(property);
 
         if (prop.isValid()) {
@@ -463,12 +472,12 @@ QDeclarativePropertyChanges::ActionList QDeclarativePropertyChanges::actions()
             a.specifiedProperty = property;
 
             if (d->isExplicit) {
-                a.toValue = d->expressions.at(ii).second->evaluate();
+                a.toValue = d->expressions.at(ii).expression->evaluate();
             } else {
-                QDeclarativeExpression *e = d->expressions.at(ii).second;
+                QDeclarativeExpression *e = d->expressions.at(ii).expression;
 
-                QDeclarativeBinding::Identifier id = d->ids.at(ii);
-                QDeclarativeBinding *newBinding = QDeclarativeBinding::createBinding(id, object(), qmlContext(this), e->sourceFile(), e->lineNumber());
+                QDeclarativeBinding::Identifier id = d->expressions.at(ii).id;
+                QDeclarativeBinding *newBinding = id != QDeclarativeBinding::Invalid ? QDeclarativeBinding::createBinding(id, object(), qmlContext(this), e->sourceFile(), e->lineNumber()) : 0;
                 if (!newBinding) {
                     newBinding = new QDeclarativeBinding(e->expression(), object(), qmlContext(this));
                     newBinding->setSourceLocation(e->sourceFile(), e->lineNumber());
@@ -535,12 +544,12 @@ bool QDeclarativePropertyChanges::containsValue(const QString &name) const
 bool QDeclarativePropertyChanges::containsExpression(const QString &name) const
 {
     Q_D(const QDeclarativePropertyChanges);
-    typedef QPair<QString, QDeclarativeExpression *> ExpressionEntry;
+    typedef QDeclarativePropertyChangesPrivate::ExpressionChange ExpressionEntry;
 
     QListIterator<ExpressionEntry> expressionIterator(d->expressions);
     while (expressionIterator.hasNext()) {
         const ExpressionEntry &entry = expressionIterator.next();
-        if (entry.first == name) {
+        if (entry.name == name) {
             return true;
         }
     }
@@ -557,12 +566,12 @@ void QDeclarativePropertyChanges::changeValue(const QString &name, const QVarian
 {
     Q_D(QDeclarativePropertyChanges);
     typedef QPair<QString, QVariant> PropertyEntry;
-    typedef QPair<QString, QDeclarativeExpression *> ExpressionEntry;
+    typedef QDeclarativePropertyChangesPrivate::ExpressionChange ExpressionEntry;
 
     QMutableListIterator<ExpressionEntry> expressionIterator(d->expressions);
     while (expressionIterator.hasNext()) {
         const ExpressionEntry &entry = expressionIterator.next();
-        if (entry.first == name) {
+        if (entry.name == name) {
             expressionIterator.remove();
             if (state() && state()->isStateActive()) {
                 QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::binding(d->property(name));
@@ -611,7 +620,7 @@ void QDeclarativePropertyChanges::changeExpression(const QString &name, const QS
 {
     Q_D(QDeclarativePropertyChanges);
     typedef QPair<QString, QVariant> PropertyEntry;
-    typedef QPair<QString, QDeclarativeExpression *> ExpressionEntry;
+    typedef QDeclarativePropertyChangesPrivate::ExpressionChange ExpressionEntry;
 
     bool hadValue = false;
 
@@ -628,8 +637,8 @@ void QDeclarativePropertyChanges::changeExpression(const QString &name, const QS
     QMutableListIterator<ExpressionEntry> expressionIterator(d->expressions);
     while (expressionIterator.hasNext()) {
         const ExpressionEntry &entry = expressionIterator.next();
-        if (entry.first == name) {
-            entry.second->setExpression(expression);
+        if (entry.name == name) {
+            entry.expression->setExpression(expression);
             if (state() && state()->isStateActive()) {
                 QDeclarativeAbstractBinding *oldBinding = QDeclarativePropertyPrivate::binding(d->property(name));
                 if (oldBinding) {
@@ -646,7 +655,7 @@ void QDeclarativePropertyChanges::changeExpression(const QString &name, const QS
     }
 
     QDeclarativeExpression *newExpression = new QDeclarativeExpression(qmlContext(this), d->object, expression);
-    expressionIterator.insert(ExpressionEntry(name, newExpression));
+    expressionIterator.insert(ExpressionEntry(name, QDeclarativeBinding::Invalid, newExpression));
 
     if (state() && state()->isStateActive()) {
         if (hadValue) {
@@ -692,7 +701,7 @@ QVariant QDeclarativePropertyChanges::property(const QString &name) const
 {
     Q_D(const QDeclarativePropertyChanges);
     typedef QPair<QString, QVariant> PropertyEntry;
-    typedef QPair<QString, QDeclarativeExpression *> ExpressionEntry;
+    typedef QDeclarativePropertyChangesPrivate::ExpressionChange ExpressionEntry;
 
     QListIterator<PropertyEntry> propertyIterator(d->properties);
     while (propertyIterator.hasNext()) {
@@ -705,8 +714,8 @@ QVariant QDeclarativePropertyChanges::property(const QString &name) const
     QListIterator<ExpressionEntry> expressionIterator(d->expressions);
     while (expressionIterator.hasNext()) {
         const ExpressionEntry &entry = expressionIterator.next();
-        if (entry.first == name) {
-            return QVariant(entry.second->expression());
+        if (entry.name == name) {
+            return QVariant(entry.expression->expression());
         }
     }
 
@@ -717,12 +726,12 @@ void QDeclarativePropertyChanges::removeProperty(const QString &name)
 {
     Q_D(QDeclarativePropertyChanges);
     typedef QPair<QString, QVariant> PropertyEntry;
-    typedef QPair<QString, QDeclarativeExpression *> ExpressionEntry;
+    typedef QDeclarativePropertyChangesPrivate::ExpressionChange ExpressionEntry;
 
     QMutableListIterator<ExpressionEntry> expressionIterator(d->expressions);
     while (expressionIterator.hasNext()) {
         const ExpressionEntry &entry = expressionIterator.next();
-        if (entry.first == name) {
+        if (entry.name == name) {
             expressionIterator.remove();
             state()->removeEntryFromRevertList(object(), name);
             return;
@@ -759,13 +768,13 @@ QVariant QDeclarativePropertyChanges::value(const QString &name) const
 QString QDeclarativePropertyChanges::expression(const QString &name) const
 {
     Q_D(const QDeclarativePropertyChanges);
-    typedef QPair<QString, QDeclarativeExpression *> ExpressionEntry;
+    typedef QDeclarativePropertyChangesPrivate::ExpressionChange ExpressionEntry;
 
     QListIterator<ExpressionEntry> expressionIterator(d->expressions);
     while (expressionIterator.hasNext()) {
         const ExpressionEntry &entry = expressionIterator.next();
-        if (entry.first == name) {
-            return entry.second->expression();
+        if (entry.name == name) {
+            return entry.expression->expression();
         }
     }
 

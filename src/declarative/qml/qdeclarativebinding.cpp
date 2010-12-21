@@ -209,6 +209,8 @@ void QDeclarativeAbstractBinding::setEnabled(bool enabled, QDeclarativePropertyP
     if (enabled) update(flags);
 }
 
+QDeclarativeBinding::Identifier QDeclarativeBinding::Invalid = -1;
+
 void QDeclarativeBindingPrivate::refresh()
 {
     Q_Q(QDeclarativeBinding);
@@ -238,6 +240,9 @@ QDeclarativeBinding *
 QDeclarativeBinding::createBinding(Identifier id, QObject *obj, QDeclarativeContext *ctxt,
                                    const QString &url, int lineNumber, QObject *parent)
 {
+    if (id < 0)
+        return 0;
+
     QDeclarativeContextData *ctxtdata = QDeclarativeContextData::get(ctxt);
 
     QDeclarativeEnginePrivate *engine = QDeclarativeEnginePrivate::get(qmlEngine(obj));
