@@ -101,7 +101,7 @@ class Q_GUI_EXPORT QIntValidator : public QValidator
 
 public:
     explicit QIntValidator(QObject * parent = 0);
-    QIntValidator(int bottom, int top, QObject * parent);
+    QIntValidator(int bottom, int top, QObject *parent = 0);
     ~QIntValidator();
 
     QValidator::State validate(QString &, int &) const;
@@ -142,7 +142,7 @@ class Q_GUI_EXPORT QDoubleValidator : public QValidator
 
 public:
     explicit QDoubleValidator(QObject * parent = 0);
-    QDoubleValidator(double bottom, double top, int decimals, QObject * parent);
+    QDoubleValidator(double bottom, double top, int decimals, QObject *parent = 0);
     ~QDoubleValidator();
 
     enum Notation {
@@ -186,7 +186,7 @@ class Q_GUI_EXPORT QRegExpValidator : public QValidator
 
 public:
     explicit QRegExpValidator(QObject *parent = 0);
-    QRegExpValidator(const QRegExp& rx, QObject *parent);
+    QRegExpValidator(const QRegExp& rx, QObject *parent = 0);
     ~QRegExpValidator();
 
     virtual QValidator::State validate(QString& input, int& pos) const;
