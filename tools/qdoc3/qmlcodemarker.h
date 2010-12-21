@@ -64,7 +64,7 @@ public:
     virtual QString plainFullName(const Node *node, const Node *relative);
     virtual QString markedUpCode(const QString &code, 
                                  const Node *relative, 
-                                 const QString &dirPath);
+                                 const Location &location);
 
     virtual QString markedUpName(const Node *node);
     virtual QString markedUpFullName(const Node *node, const Node *relative);
@@ -76,8 +76,8 @@ public:
     QList<QDeclarativeJS::AST::SourceLocation> extractPragmas(QString &script);
 
 private:
-    QString addMarkUp(const QString &code, const Node * /* relative */,
-                      const QString & /* dirPath */);
+    QString addMarkUp(const QString &code, const Node *relative,
+                      const Location &location);
 };
 
 QT_END_NAMESPACE

@@ -62,11 +62,11 @@ public:
 
     virtual QString markedUpCode(const QString &code, 
                                  const Node *relative, 
-                                 const QString &dirPath);
+                                 const Location &location);
 
 private:
-    QString addMarkUp(const QString &code, const Node * /* relative */,
-                      const QString & /* dirPath */);
+    QString addMarkUp(const QString &code, const Node *relative,
+                      const Location &location);
 };
 
 QT_END_NAMESPACE

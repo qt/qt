@@ -63,7 +63,7 @@ class CppCodeMarker : public CodeMarker
     virtual QString plainFullName(const Node *node, const Node *relative);
     virtual QString markedUpCode(const QString& code, 
                                  const Node *relative, 
-                                 const QString& dirPath);
+                                 const Location &location);
     virtual QString markedUpSynopsis(const Node *node, 
                                      const Node *relative,
                                      SynopsisStyle style);
@@ -90,7 +90,7 @@ class CppCodeMarker : public CodeMarker
 private:
     QString addMarkUp(const QString& protectedCode, 
                       const Node *relative, 
-                      const QString& dirPath);
+                      const Location &location);
 };
 
 QT_END_NAMESPACE

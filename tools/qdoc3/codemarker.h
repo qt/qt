@@ -126,7 +126,7 @@ class CodeMarker
                                   const Node *relative = 0) = 0;
     virtual QString markedUpCode(const QString& code, 
                                  const Node *relative,
-                                 const QString& dirPath) = 0;
+                                 const Location &location) = 0;
     virtual QString markedUpSynopsis(const Node *node, 
                                      const Node *relative,
                                      SynopsisStyle style) = 0;
