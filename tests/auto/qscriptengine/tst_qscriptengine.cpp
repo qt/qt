@@ -1730,8 +1730,9 @@ void tst_QScriptEngine::builtinFunctionNames_data()
     QTest::newRow("Function.prototype.toString") << QString("Function.prototype.toString") << QString("toString");
     QTest::newRow("Function.prototype.apply") << QString("Function.prototype.apply") << QString("apply");
     QTest::newRow("Function.prototype.call") << QString("Function.prototype.call") << QString("call");
+/*  In V8, those function are only there for signals
     QTest::newRow("Function.prototype.connect") << QString("Function.prototype.connect") << QString("connect");
-    QTest::newRow("Function.prototype.disconnect") << QString("Function.prototype.disconnect") << QString("disconnect");
+    QTest::newRow("Function.prototype.disconnect") << QString("Function.prototype.disconnect") << QString("disconnect");*/
 
     QTest::newRow("Math.abs") << QString("Math.abs") << QString("abs");
     QTest::newRow("Math.acos") << QString("Math.acos") << QString("acos");
@@ -1819,32 +1820,32 @@ void tst_QScriptEngine::checkSyntax_data()
         << -1 << -1 << "";
     QTest::newRow("if (")
         << QString("if (\n") << int(QScriptSyntaxCheckResult::Intermediate)
-        << 1 << 4 << "";
+        << 0 << -1 << "Uncaught SyntaxError: Unexpected end of input";
     QTest::newRow("if else")
         << QString("\nif else") << int(QScriptSyntaxCheckResult::Error)
-        << 2 << 4 << "Expected `('";
+        << 2 << 3 << "Uncaught SyntaxError: Unexpected token else";
     QTest::newRow("foo[")
-        << QString("foo[") << int(QScriptSyntaxCheckResult::Error)
-        << 1 << 4 << "";
+        << QString("foo[") << int(QScriptSyntaxCheckResult::Intermediate)
+        << 1 << 4 << "Uncaught SyntaxError: Unexpected end of input";
     QTest::newRow("foo['bar']")
         << QString("foo['bar']") << int(QScriptSyntaxCheckResult::Valid)
         << -1 << -1 << "";
 
     QTest::newRow("/*")
-        << QString("/*") << int(QScriptSyntaxCheckResult::Intermediate)
-        << 1 << 1 << "Unclosed comment at end of file";
+        << QString("/*") << int(QScriptSyntaxCheckResult::Error)
+        << 1 << 0 << "Uncaught SyntaxError: Unexpected token ILLEGAL";
     QTest::newRow("/*\nMy comment")
-        << QString("/*\nMy comment") << int(QScriptSyntaxCheckResult::Intermediate)
-        << 1 << 1 << "Unclosed comment at end of file";
+        << QString("/*\nMy comment") << int(QScriptSyntaxCheckResult::Error)
+        << 1 << 0 << "Uncaught SyntaxError: Unexpected token ILLEGAL";
     QTest::newRow("/*\nMy comment */\nfoo = 10")
         << QString("/*\nMy comment */\nfoo = 10") << int(QScriptSyntaxCheckResult::Valid)
         << -1 << -1 << "";
     QTest::newRow("foo = 10 /*")
-        << QString("foo = 10 /*") << int(QScriptSyntaxCheckResult::Intermediate)
-        << -1 << -1 << "";
+        << QString("foo = 10 /*") << int(QScriptSyntaxCheckResult::Error)
+        << 1 << 9 << "Uncaught SyntaxError: Unexpected token ILLEGAL";
     QTest::newRow("foo = 10; /*")
-        << QString("foo = 10; /*") << int(QScriptSyntaxCheckResult::Intermediate)
-        << 1 << 11 << "Expected `end of file'";
+        << QString("foo = 10; /*") << int(QScriptSyntaxCheckResult::Error)
+        << 1 << 10 << "Uncaught SyntaxError: Unexpected token ILLEGAL";
     QTest::newRow("foo = 10 /* My comment */")
         << QString("foo = 10 /* My comment */") << int(QScriptSyntaxCheckResult::Valid)
         << -1 << -1 << "";
@@ -1868,7 +1869,7 @@ void tst_QScriptEngine::checkSyntax()
     QFETCH(QString, errorMessage);
 
     QScriptSyntaxCheckResult result = QScriptEngine::checkSyntax(code);
-    QCOMPARE(result.state(), QScriptSyntaxCheckResult::State(expectedState));
+    QCOMPARE(int(result.state()), expectedState);
     QCOMPARE(result.errorLineNumber(), errorLineNumber);
     QCOMPARE(result.errorColumnNumber(), errorColumnNumber);
     QCOMPARE(result.errorMessage(), errorMessage);
