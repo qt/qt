@@ -823,7 +823,7 @@ If the \l{Item::children}{children} property was not the default property for
 \qml
 Item {
     children: [
-        Rectangle {}
+        Rectangle {},
         Rectangle {}
     ]
 }

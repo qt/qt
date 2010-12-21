@@ -82,7 +82,7 @@ public:
 
     \qml
     MouseArea {
-        onClicked: { foo(...) }
+        onClicked: { foo(parameters) }
     }
     \endqml
 
@@ -103,7 +103,7 @@ public:
     \qml
     MouseArea {
         Connections {
-            onClicked: foo(...)
+            onClicked: foo(parameters)
         }
     }
     \endqml
@@ -115,10 +115,10 @@ public:
     MouseArea {
         id: area
     }
-    ...
+    // ...
     Connections {
         target: area
-        onClicked: foo(...)
+        onClicked: foo(parameters)
     }
     \endqml
 
