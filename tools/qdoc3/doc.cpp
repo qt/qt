@@ -536,7 +536,7 @@ void DocParser::parse(const QString& source,
                         enterPara();
                         x = untabifyEtc(getArgument(true));
                         marker = CodeMarker::markerForCode(x);
-                        append(Atom::C, marker->markedUpCode(x, 0, ""));
+                        append(Atom::C, marker->markedUpCode(x, 0, location()));
                         break;
                     case CMD_CAPTION:
                         leavePara();
@@ -2305,7 +2305,7 @@ QString DocParser::getCode(int cmd, CodeMarker *marker)
     code = unindent(minIndent, code);
     if (!marker)
         marker = CodeMarker::markerForCode(code);
-    return marker->markedUpCode(code, 0, "");
+    return marker->markedUpCode(code, 0, location());
 }
 
 /*!
@@ -3043,7 +3043,7 @@ CodeMarker *Doc::quoteFromFile(const Location &location,
     CodeMarker *marker = CodeMarker::markerForFileName(fileName);
     quoter.quoteFromFile(userFriendlyFilePath,
                          code,
-                         marker->markedUpCode(code, 0, dirPath));
+                         marker->markedUpCode(code, 0, location));
     return marker;
 }
 

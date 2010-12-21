@@ -103,14 +103,14 @@ bool JsCodeMarker::recognizeLanguage(const QString &language)
 
 QString JsCodeMarker::markedUpCode(const QString &code,
                                     const Node *relative,
-                                    const QString &dirPath)
+                                    const Location &location)
 {
-    return addMarkUp(code, relative, dirPath);
+    return addMarkUp(code, relative, location);
 }
 
 QString JsCodeMarker::addMarkUp(const QString &code,
                                  const Node * /* relative */,
-                                 const QString & /* dirPath */)
+                                 const Location &location)
 {
     QDeclarativeJS::Engine engine;
     QDeclarativeJS::Lexer lexer(&engine);
@@ -130,7 +130,13 @@ QString JsCodeMarker::addMarkUp(const QString &code,
         QmlMarkupVisitor visitor(code, pragmas, &engine);
         QDeclarativeJS::AST::Node::accept(ast, &visitor);
         output = visitor.markedUpCode();
+    } else {
+        location.warning(tr("Unable to parse JavaScript: \"%1\" at line %2, column %3").arg(
+            parser.errorMessage()).arg(parser.errorLineNumber()).arg(
+            parser.errorColumnNumber()));
+        output = protect(code);
     }
+
     return output;
 }
 

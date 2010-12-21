@@ -157,9 +157,9 @@ QString CppCodeMarker::plainFullName(const Node *node, const Node *relative)
 
 QString CppCodeMarker::markedUpCode(const QString &code,
                                     const Node *relative,
-				    const QString &dirPath)
+				    const Location &location)
 {
-    return addMarkUp(protect(code), relative, dirPath);
+    return addMarkUp(protect(code), relative, location);
 }
 
 QString CppCodeMarker::markedUpSynopsis(const Node *node,
@@ -440,7 +440,8 @@ QString CppCodeMarker::markedUpIncludes(const QStringList& includes)
 	code += "#include &lt;<@headerfile>" + *inc + "</@headerfile>&gt;\n";
 	++inc;
     }
-    return addMarkUp(code, 0, "");
+    Location location;
+    return addMarkUp(code, 0, location);
 }
 
 QString CppCodeMarker::functionBeginRegExp(const QString& funcName)
@@ -868,7 +869,7 @@ const Node *CppCodeMarker::resolveTarget(const QString& target,
 
 QString CppCodeMarker::addMarkUp(const QString& protectedCode,
                                  const Node * /* relative */,
-                                 const QString& /* dirPath */)
+                                 const Location & /* location */)
 {
     static QRegExp globalInclude("#include +&lt;([^<>&]+)&gt;");
     static QRegExp yHasTypeX("(?:^|\n *)([a-zA-Z_][a-zA-Z_0-9]*)"
