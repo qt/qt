@@ -37,4 +37,6 @@ win32 {
     LIBS+=-lole32 -luuid
 }
 
-
+symbian {
+    LIBS+=-lefsrv
+}
