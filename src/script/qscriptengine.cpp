@@ -815,6 +815,7 @@ v8::Handle<v8::Value> QScriptEnginePrivate::makeQtObject(QObject *object,
     v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
     Q_ASSERT(instance->InternalFieldCount() == 1);
 
+    /* FIXME according to valgrind this can leak tst_QScriptValue::getSetData_objects test */
     QtInstanceData *data = new QtInstanceData(this, object, own, opt);
     instance->SetPointerInInternalField(0, data);
 
