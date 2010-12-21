@@ -19,6 +19,5 @@ HEADERS += \
     $$PWD/qdeclarativedebug_p.h \
     $$PWD/qdeclarativedebugtrace_p.h \
     $$PWD/qdeclarativedebughelper_p.h \
-    $$PWD/qdeclarativedebugserverplugin_p.h \
     $$PWD/qdeclarativedebugserver_p.h \
     debugger/qdeclarativedebugserverconnection_p.h
