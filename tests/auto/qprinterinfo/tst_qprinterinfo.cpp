@@ -134,7 +134,7 @@ QStringList tst_QPrinterInfo::getPrintersFromSystem()
     QString output = getOutputFromCommand(command);
     QStringList list = output.split(QChar::fromLatin1('\n'));
 
-    QRegExp reg("^[Pp]rinter ([.a-zA-Z0-9_-]+)");
+    QRegExp reg("^[Pp]rinter ([.a-zA-Z0-9-_@]+)");
     for (int c = 0; c < list.size(); ++c) {
         if (reg.indexIn(list[c]) >= 0) {
             QString printer = reg.cap(1);
