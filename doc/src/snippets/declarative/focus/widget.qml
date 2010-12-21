@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the documentation of the Qt Toolkit.
+** This file is part of the FOO module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -37,17 +37,25 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 import QtQuick 1.0
 
-//![0]
-Text {
-    text: "Hello world!"    //a basic greeting
-    /*
-        We want this text to stand out from the rest so
-        we give it a large size and different font.
-     */
-    font.family: "Helvetica"
-    font.pointSize: 24
+//! [window]
+
+//Window code that imports MyWidget
+Rectangle {
+    id: window
+    color: "white"; width: 240; height: 150
+
+    Column {
+        anchors.centerIn: parent; spacing: 15
+
+        MyWidget {
+            focus: true             //set this MyWidget to receive the focus
+            color: "lightblue"
+        }
+        MyWidget {
+            color: "palegreen"
+        }
+    }
 }
-//![0]
+//! [window]

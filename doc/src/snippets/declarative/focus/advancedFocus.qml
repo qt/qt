@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the documentation of the Qt Toolkit.
+** This file is part of the FOO module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -37,17 +37,31 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 import QtQuick 1.0
 
-//![0]
-Text {
-    text: "Hello world!"    //a basic greeting
-    /*
-        We want this text to stand out from the rest so
-        we give it a large size and different font.
-     */
-    font.family: "Helvetica"
-    font.pointSize: 24
+//! [FocusScope delegate]
+Rectangle {
+    color: "lightsteelblue"; width: 100; height: 50
+
+    ListView {
+        anchors.fill: parent
+        focus: true
+
+        model: ListModel {
+            ListElement { name: "Bob" }
+            ListElement { name: "John" }
+            ListElement { name: "Michael" }
+        }
+
+        delegate: FocusScope {
+                width: childrenRect.width; height: childrenRect.height
+                x:childrenRect.x; y: childrenRect.y
+                TextInput {
+                    focus: true
+                    text: name
+                    Keys.onReturnPressed: console.log(name)
+                }
+        }
+    }
 }
-//![0]
+//! [FocusScope delegate]
