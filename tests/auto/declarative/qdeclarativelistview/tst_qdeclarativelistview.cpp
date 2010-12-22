@@ -667,7 +667,8 @@ void tst_QDeclarativeListView::removed(bool animated)
     listview->setContentY(80);
     QTest::qWait(300);
 
-    model.removeItems(1, 17);
+    // remove all visible items
+    model.removeItems(1, 18);
     QTest::qWait(300);
 
     // Confirm items positioned correctly
