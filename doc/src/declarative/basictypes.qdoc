@@ -95,6 +95,26 @@
 */
 
 /*!
+    \qmlbasictype double
+    \ingroup qmlbasictypes
+
+    \brief A double number has a decimal point and is stored in double precision.
+
+    A double number has a decimal point and is stored in double precision, \l
+    {http://en.wikipedia.org/wiki/IEEE_754} {IEEE floating point}
+    format.
+
+    Example:
+    \qml
+    Item {
+        property double number: 32155.2355
+    }
+    \endqml
+
+    \sa {QML Basic Types}
+*/
+
+/*!
     \qmlbasictype string
     \ingroup qmlbasictypes
 
