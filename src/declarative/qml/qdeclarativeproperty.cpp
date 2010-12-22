@@ -106,15 +106,16 @@ qWarning() << "Pixel size should now be 24:" << property.read().toInt();
     Create an invalid QDeclarativeProperty.
 */
 QDeclarativeProperty::QDeclarativeProperty()
-: d(new QDeclarativePropertyPrivate)
+: d(0)
 {
-    d->q = this;
 }
 
 /*!  \internal */
 QDeclarativeProperty::~QDeclarativeProperty()
 {
-    delete d; d = 0;
+    if (d)
+        d->release();
+    d = 0;
 }
 
 /*!
@@ -124,7 +125,6 @@ QDeclarativeProperty::~QDeclarativeProperty()
 QDeclarativeProperty::QDeclarativeProperty(QObject *obj)
 : d(new QDeclarativePropertyPrivate)
 {
-    d->q = this;
     d->initDefault(obj);
 }
 
@@ -137,7 +137,6 @@ QDeclarativeProperty::QDeclarativeProperty(QObject *obj)
 QDeclarativeProperty::QDeclarativeProperty(QObject *obj, QDeclarativeContext *ctxt)
 : d(new QDeclarativePropertyPrivate)
 {
-    d->q = this;
     d->context = ctxt?QDeclarativeContextData::get(ctxt):0;
     d->engine = ctxt?ctxt->engine():0;
     d->initDefault(obj);
@@ -152,7 +151,6 @@ QDeclarativeProperty::QDeclarativeProperty(QObject *obj, QDeclarativeContext *ct
 QDeclarativeProperty::QDeclarativeProperty(QObject *obj, QDeclarativeEngine *engine)
   : d(new QDeclarativePropertyPrivate)
 {
-    d->q = this;
     d->context = 0;
     d->engine = engine;
     d->initDefault(obj);
@@ -178,7 +176,6 @@ void QDeclarativePropertyPrivate::initDefault(QObject *obj)
 QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name)
 : d(new QDeclarativePropertyPrivate)
 {
-    d->q = this;
     d->initProperty(obj, name);
     if (!isValid()) d->object = 0;
 }
@@ -190,7 +187,6 @@ QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name)
 QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name, QDeclarativeContext *ctxt)
 : d(new QDeclarativePropertyPrivate)
 {
-    d->q = this;
     d->context = ctxt?QDeclarativeContextData::get(ctxt):0;
     d->engine = ctxt?ctxt->engine():0;
     d->initProperty(obj, name);
@@ -205,7 +201,6 @@ QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name, QD
 QDeclarativeProperty::QDeclarativeProperty(QObject *obj, const QString &name, QDeclarativeEngine *engine)
 : d(new QDeclarativePropertyPrivate)
 {
-    d->q = this;
     d->context = 0;
     d->engine = engine;
     d->initProperty(obj, name);
@@ -324,9 +319,10 @@ void QDeclarativePropertyPrivate::initProperty(QObject *obj, const QString &name
     Create a copy of \a other.
 */
 QDeclarativeProperty::QDeclarativeProperty(const QDeclarativeProperty &other)
-: d(new QDeclarativePropertyPrivate(*other.d))
 {
-    d->q = this;
+    d = other.d;
+    if (d)
+        d->addref();
 }
 
 /*!
@@ -355,13 +351,13 @@ QDeclarativeProperty::QDeclarativeProperty(const QDeclarativeProperty &other)
 */
 QDeclarativeProperty::PropertyTypeCategory QDeclarativeProperty::propertyTypeCategory() const
 {
-    return d->propertyTypeCategory();
+    return d ? d->propertyTypeCategory() : InvalidCategory;
 }
 
 QDeclarativeProperty::PropertyTypeCategory 
 QDeclarativePropertyPrivate::propertyTypeCategory() const
 {
-    uint type = q->type();
+    uint type = this->type();
 
     if (isValueType()) {
         return QDeclarativeProperty::Normal;
@@ -388,6 +384,8 @@ QDeclarativePropertyPrivate::propertyTypeCategory() const
 */
 const char *QDeclarativeProperty::propertyTypeName() const
 {
+    if (!d)
+        return 0;
     if (d->isValueType()) {
 
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(d->context);
@@ -414,6 +412,8 @@ const char *QDeclarativeProperty::propertyTypeName() const
 */
 bool QDeclarativeProperty::operator==(const QDeclarativeProperty &other) const
 {
+    if (!d || !other.d)
+        return false;
     // category is intentially omitted here as it is generated 
     // from the other members
     return d->object == other.d->object &&
@@ -427,7 +427,7 @@ bool QDeclarativeProperty::operator==(const QDeclarativeProperty &other) const
 */
 int QDeclarativeProperty::propertyType() const
 {
-    return d->propertyType();
+    return d ? d->propertyType() : QVariant::Invalid;
 }
 
 bool QDeclarativePropertyPrivate::isValueType() const
@@ -437,7 +437,7 @@ bool QDeclarativePropertyPrivate::isValueType() const
 
 int QDeclarativePropertyPrivate::propertyType() const
 {
-    uint type = q->type();
+    uint type = this->type();
     if (isValueType()) {
         return valueType.valueTypePropType;
     } else if (type & QDeclarativeProperty::Property) {
@@ -450,17 +450,22 @@ int QDeclarativePropertyPrivate::propertyType() const
     }
 }
 
+QDeclarativeProperty::Type QDeclarativePropertyPrivate::type() const
+{
+    if (core.flags & QDeclarativePropertyCache::Data::IsFunction)
+        return QDeclarativeProperty::SignalProperty;
+    else if (core.isValid())
+        return QDeclarativeProperty::Property;
+    else
+        return QDeclarativeProperty::Invalid;
+}
+
 /*!
     Returns the type of the property.
 */
 QDeclarativeProperty::Type QDeclarativeProperty::type() const
 {
-    if (d->core.flags & QDeclarativePropertyCache::Data::IsFunction)
-        return SignalProperty;
-    else if (d->core.isValid())
-        return Property;
-    else
-        return Invalid;
+    return d ? d->type() : Invalid;
 }
 
 /*!
@@ -484,7 +489,7 @@ bool QDeclarativeProperty::isSignalProperty() const
 */
 QObject *QDeclarativeProperty::object() const
 {
-    return d->object;
+    return d ? d->object : 0;
 }
 
 /*!
@@ -492,15 +497,11 @@ QObject *QDeclarativeProperty::object() const
 */
 QDeclarativeProperty &QDeclarativeProperty::operator=(const QDeclarativeProperty &other)
 {
-    d->context = other.d->context;
-    d->engine = other.d->engine;
-    d->object = other.d->object;
-
-    d->isNameCached = other.d->isNameCached;
-    d->core = other.d->core;
-    d->nameCache = other.d->nameCache;
-
-    d->valueType = other.d->valueType;
+    if (d)
+        d->release();
+    d = other.d;
+    if (d)
+        d->addref();
 
     return *this;
 }
@@ -510,6 +511,8 @@ QDeclarativeProperty &QDeclarativeProperty::operator=(const QDeclarativeProperty
 */
 bool QDeclarativeProperty::isWritable() const
 {
+    if (!d)
+        return false;
     if (!d->object)
         return false;
     if (d->core.flags & QDeclarativePropertyCache::Data::IsQList)           //list
@@ -527,6 +530,8 @@ bool QDeclarativeProperty::isWritable() const
 */
 bool QDeclarativeProperty::isDesignable() const
 {
+    if (!d)
+        return false;
     if (type() & Property && d->core.isValid() && d->object)
         return d->object->metaObject()->property(d->core.coreIndex).isDesignable();
     else
@@ -538,6 +543,8 @@ bool QDeclarativeProperty::isDesignable() const
 */
 bool QDeclarativeProperty::isResettable() const
 {
+    if (!d)
+        return false;
     if (type() & Property && d->core.isValid() && d->object)
         return d->core.flags & QDeclarativePropertyCache::Data::IsResettable;
     else
@@ -550,6 +557,8 @@ bool QDeclarativeProperty::isResettable() const
 */
 bool QDeclarativeProperty::isValid() const
 {
+    if (!d)
+        return false;
     return type() != Invalid;
 }
 
@@ -558,6 +567,8 @@ bool QDeclarativeProperty::isValid() const
 */
 QString QDeclarativeProperty::name() const
 {
+    if (!d)
+        return QString();
     if (!d->isNameCached) {
         // ###
         if (!d->object) {
@@ -594,6 +605,8 @@ QString QDeclarativeProperty::name() const
  */
 QMetaProperty QDeclarativeProperty::property() const
 {
+    if (!d)
+        return QMetaProperty();
     if (type() & Property && d->core.isValid() && d->object)
         return d->object->metaObject()->property(d->core.coreIndex);
     else
@@ -606,6 +619,8 @@ QMetaProperty QDeclarativeProperty::property() const
 */
 QMetaMethod QDeclarativeProperty::method() const
 {
+    if (!d)
+        return QMetaMethod();
     if (type() & SignalProperty && d->object)
         return d->object->metaObject()->method(d->core.coreIndex);
     else
@@ -619,7 +634,7 @@ QMetaMethod QDeclarativeProperty::method() const
 QDeclarativeAbstractBinding *
 QDeclarativePropertyPrivate::binding(const QDeclarativeProperty &that) 
 {
-    if (!that.isProperty() || !that.d->object)
+    if (!that.d || !that.isProperty() || !that.d->object)
         return 0;
 
     return binding(that.d->object, that.d->core.coreIndex, that.d->valueType.valueTypeCoreIdx);
@@ -643,7 +658,7 @@ QDeclarativePropertyPrivate::setBinding(const QDeclarativeProperty &that,
                                             QDeclarativeAbstractBinding *newBinding, 
                                             WriteFlags flags) 
 {
-    if (!that.isProperty() || !that.d->object) {
+    if (!that.d || !that.isProperty() || !that.d->object) {
         if (newBinding)
             newBinding->destroy();
         return 0;
@@ -893,6 +908,8 @@ QDeclarativePropertyPrivate::setSignalExpression(const QDeclarativeProperty &tha
 */
 QVariant QDeclarativeProperty::read() const
 {
+    if (!d)
+        return QVariant();
     if (!d->object)
         return QVariant();
 
@@ -1034,8 +1051,10 @@ bool QDeclarativePropertyPrivate::writeEnumProperty(const QMetaProperty &prop, i
 bool QDeclarativePropertyPrivate::writeValueProperty(const QVariant &value, WriteFlags flags)
 {
     // Remove any existing bindings on this property
-    if (!(flags & DontRemoveBinding)) {
-        QDeclarativeAbstractBinding *binding = setBinding(*q, 0);
+    if (!(flags & DontRemoveBinding) &&
+        (type() & QDeclarativeProperty::Property) && object) {
+        QDeclarativeAbstractBinding *binding = setBinding(object, core.coreIndex,
+                                                          valueType.valueTypeCoreIdx, 0, flags);
         if (binding) binding->destroy();
     }
 
@@ -1314,6 +1333,8 @@ bool QDeclarativeProperty::reset() const
 bool QDeclarativePropertyPrivate::write(const QDeclarativeProperty &that,
                                             const QVariant &value, WriteFlags flags) 
 {
+    if (!that.d)
+        return false;
     if (that.d->object && that.type() & QDeclarativeProperty::Property && 
         that.d->core.isValid() && that.isWritable()) 
         return that.d->writeValueProperty(value, flags);
@@ -1392,12 +1413,12 @@ bool QDeclarativeProperty::connectNotifySignal(QObject *dest, const char *slot) 
 */
 int QDeclarativeProperty::index() const
 {
-    return d->core.coreIndex;
+    return d ? d->core.coreIndex : -1;
 }
 
 int QDeclarativePropertyPrivate::valueTypeCoreIndex(const QDeclarativeProperty &that)
 {
-    return that.d->valueType.valueTypeCoreIdx;
+    return that.d ? that.d->valueType.valueTypeCoreIdx : -1;
 }
 
 /*!
@@ -1406,6 +1427,8 @@ int QDeclarativePropertyPrivate::valueTypeCoreIndex(const QDeclarativeProperty &
 */
 int QDeclarativePropertyPrivate::bindingIndex(const QDeclarativeProperty &that)
 {
+    if (!that.d)
+        return -1;
     int rv = that.d->core.coreIndex;
     if (rv != -1 && that.d->valueType.valueTypeCoreIdx != -1)
         rv = rv | (that.d->valueType.valueTypeCoreIdx << 24);
@@ -1457,6 +1480,7 @@ QDeclarativePropertyPrivate::restore(const QByteArray &data, QObject *object, QD
     if (data.isEmpty())
         return prop;
 
+    prop.d = new QDeclarativePropertyPrivate;
     prop.d->object = object;
     prop.d->context = ctxt;
     prop.d->engine = ctxt->engine;
