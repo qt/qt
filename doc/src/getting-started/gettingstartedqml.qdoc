@@ -148,7 +148,7 @@
 
     \code
         Rectangle {
-            id:Button
+            id: button
             ...
 
             property color buttonColor: "lightblue"
