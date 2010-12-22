@@ -66,6 +66,7 @@ QHttpNetworkConnectionChannel::QHttpNetworkConnectionChannel()
     , bytesTotal(0)
     , resendCurrent(false)
     , lastStatus(0)
+    , unhandledError(QNetworkReply::NoError)
     , pendingEncrypt(false)
     , reconnectAttempts(2)
     , authMethod(QAuthenticatorPrivate::None)
@@ -642,7 +643,23 @@ void QHttpNetworkConnectionChannel::allDone()
     // slot connected to it. The socket will not fire readyRead signal, if we are already
     // in the slot connected to readyRead
     if (emitFinished)
-        QMetaObject::invokeMethod(reply, "finished", Qt::QueuedConnection);
+    {
+        // Check whether _q_error was invoked previously and if it left a socket
+        // error unhandled AND that there are no http errors.
+        // In case there are both socket errors and http errors, the socket error is suppressed.
+        // Http errors are handled in the QNetworkAccessHttpBackend.
+        if(unhandledError != QNetworkReply::NoError && reply->statusCode() == 200) {
+            QString errorString = connection->d_func()->errorDetail(unhandledError, socket, socket->errorString());
+            qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
+            QMetaObject::invokeMethod(reply, "finishedWithError",
+                Qt::QueuedConnection,
+                Q_ARG(QNetworkReply::NetworkError, unhandledError),
+                Q_ARG(QString, errorString));
+        } else {
+            QMetaObject::invokeMethod(reply, "finished", Qt::QueuedConnection);
+        }
+        unhandledError = QNetworkReply::NoError; // Reset the value
+    }
     // reset the reconnection attempts after we receive a complete reply.
     // in case of failures, each channel will attempt two reconnects before emitting error.
     reconnectAttempts = 2;
@@ -964,6 +981,7 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
                 errorCode = QNetworkReply::RemoteHostClosedError;
             }
         } else {
+            unhandledError = QNetworkReply::RemoteHostClosedError;
             return;
         }
         break;

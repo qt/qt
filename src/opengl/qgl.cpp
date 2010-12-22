@@ -1706,6 +1706,7 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     active_engine = 0;
     workaround_needsFullClearOnEveryFrame = false;
     workaround_brokenFBOReadBack = false;
+    workaround_brokenTexSubImage = false;
     workaroundsCached = false;
 
     workaround_brokenTextureFromPixmap = false;

@@ -104,6 +104,8 @@ private slots:
     void sizeLessThan1();
     void QTBUG_14821();
     void resizeDelegate();
+    void QTBUG_16037();
+    void indexAt();
 
 private:
     template <class T> void items();
@@ -1940,6 +1942,57 @@ void tst_QDeclarativeListView::resizeDelegate()
 
     QTRY_COMPARE(listview->currentItem()->y(), 70.0);
     QTRY_COMPARE(listview->highlightItem()->y(), 70.0);
+
+    delete canvas;
+}
+
+void tst_QDeclarativeListView::QTBUG_16037()
+{
+    QDeclarativeView *canvas = createView();
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/qtbug16037.qml"));
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "listview");
+    QTRY_VERIFY(listview != 0);
+
+    QVERIFY(listview->contentHeight() <= 0.0);
+
+    QMetaObject::invokeMethod(canvas->rootObject(), "setModel");
+
+    QTRY_COMPARE(listview->contentHeight(), 80.0);
+
+    delete canvas;
+}
+
+void tst_QDeclarativeListView::indexAt()
+{
+    QDeclarativeView *canvas = createView();
+
+    TestModel model;
+    for (int i = 0; i < 30; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    TestObject *testObject = new TestObject;
+    ctxt->setContextProperty("testObject", testObject);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listviewtest.qml"));
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
+    QTRY_VERIFY(listview != 0);
+
+    QDeclarativeItem *contentItem = listview->contentItem();
+    QTRY_VERIFY(contentItem != 0);
+
+    QCOMPARE(listview->indexAt(0,0), 0);
+    QCOMPARE(listview->indexAt(0,19), 0);
+    QCOMPARE(listview->indexAt(239,19), 0);
+    QCOMPARE(listview->indexAt(0,20), 1);
+    QCOMPARE(listview->indexAt(240,20), -1);
 
     delete canvas;
 }

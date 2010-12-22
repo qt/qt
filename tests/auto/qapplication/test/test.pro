@@ -17,7 +17,7 @@ symbian: {
   someTest.sources = test.pro
   someTest.path = test
   windowIcon.sources = ../heart.svg
-  DEPLOYMENT = additional deploy someTest windowIcon
+  DEPLOYMENT += additional deploy someTest windowIcon
   LIBS += -lcone -lavkon
 }
 

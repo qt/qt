@@ -1324,7 +1324,7 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
 
 /*!
     \qmlclass RotationAnimation QDeclarativeRotationAnimation
-  \ingroup qml-animation-transition
+    \ingroup qml-animation-transition
     \since 4.7
     \inherits PropertyAnimation
     \brief The RotationAnimation element animates changes in rotation values.
@@ -1333,8 +1333,8 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
     over the direction of rotation during an animation. 
 
     By default, it rotates in the direction
-    of the numerical change; a rotation from 0 to 240 will rotate 220 degrees
-    clockwise, while a rotation from 240 to 0 will rotate 220 degrees
+    of the numerical change; a rotation from 0 to 240 will rotate 240 degrees
+    clockwise, while a rotation from 240 to 0 will rotate 240 degrees
     counterclockwise. The \l direction property can be set to specify the
     direction in which the rotation should occur.
 
@@ -1342,7 +1342,7 @@ void QDeclarativeVector3dAnimation::setTo(QVector3D t)
     between states via the shortest path:
 
     \snippet doc/src/snippets/declarative/rotationanimation.qml 0
-    
+
     Notice the RotationAnimation did not need to set a \l target
     value. As a convenience, when used in a transition, RotationAnimation will rotate all
     properties named "rotation" or "angle". You can override this by providing

@@ -575,7 +575,7 @@ void QStatusBar::reformat()
     d->savedStrut = maxH;
     vbox->addSpacing(2);
     d->box->activate();
-    repaint();
+    update();
 }
 
 /*!
