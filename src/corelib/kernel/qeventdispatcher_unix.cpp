@@ -509,6 +509,7 @@ bool QTimerInfoList::unregisterTimer(int timerId)
         }
     }
     // id not found
+    qWarning("Application asked to unregister timer 0x%x which is not registered in this thread. Fix application.", timerId);
     return false;
 }
 

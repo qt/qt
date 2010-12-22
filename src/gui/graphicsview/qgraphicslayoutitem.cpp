@@ -129,7 +129,6 @@ void QGraphicsLayoutItemPrivate::init()
 {
     sizeHintCacheDirty = true;
     sizeHintWithConstraintCacheDirty = true;
-    sizePolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 }
 
 /*!
@@ -395,6 +394,7 @@ QGraphicsLayoutItem::QGraphicsLayoutItem(QGraphicsLayoutItem *parent, bool isLay
 {
     Q_D(QGraphicsLayoutItem);
     d->init();
+    d->sizePolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     d->q_ptr = this;
 }
 
@@ -405,6 +405,7 @@ QGraphicsLayoutItem::QGraphicsLayoutItem(QGraphicsLayoutItemPrivate &dd)
     : d_ptr(&dd)
 {
     Q_D(QGraphicsLayoutItem);
+    d->init();
     d->q_ptr = this;
 }
 

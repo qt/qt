@@ -508,7 +508,7 @@ void QWidgetPrivate::show_sys()
                     CEikButtonGroupContainer *cba = CEikButtonGroupContainer::NewL(CEikButtonGroupContainer::ECba,
                         CEikButtonGroupContainer::EHorizontal,ui,R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
 
-                    CEikButtonGroupContainer *oldCba = CEikonEnv::Static()->AppUiFactory()->SwapButtonGroup(cba);
+                    CEikButtonGroupContainer *oldCba = factory->SwapButtonGroup(cba);
                     Q_ASSERT(!oldCba);
                     S60->setButtonGroupContainer(cba);
 
@@ -517,7 +517,7 @@ void QWidgetPrivate::show_sys()
                     menuBar->SetMenuType(CEikMenuBar::EMenuOptions);
                     S60->appUi()->AddToStackL(menuBar,ECoeStackPriorityMenu,ECoeStackFlagRefusesFocus);
 
-                    CEikMenuBar *oldMenu = CEikonEnv::Static()->AppUiFactory()->SwapMenuBar(menuBar);
+                    CEikMenuBar *oldMenu = factory->SwapMenuBar(menuBar);
                     Q_ASSERT(!oldMenu);
                 )
 

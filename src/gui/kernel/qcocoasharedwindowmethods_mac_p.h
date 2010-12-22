@@ -161,7 +161,7 @@ QT_END_NAMESPACE
     bool handled = false;
     // sometimes need to redirect mouse events to the popup.
     QWidget *popup = qAppInstance()->activePopupWidget();
-    if (popup) {
+    if (popup && popup != widget) {
         switch([event type])
         {
         case NSLeftMouseDown:
