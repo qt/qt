@@ -1103,6 +1103,9 @@ QApplication::~QApplication()
     QApplicationPrivate::is_app_closing = true;
     QApplicationPrivate::is_app_running = false;
 
+    delete QWidgetPrivate::mapper;
+    QWidgetPrivate::mapper = 0;
+
     // delete all widgets
     if (QWidgetPrivate::allWidgets) {
         QWidgetSet *mySet = QWidgetPrivate::allWidgets;
@@ -1131,9 +1134,6 @@ QApplication::~QApplication()
 #if defined(Q_WS_WIN)
     delete d->ignore_cursor; d->ignore_cursor = 0;
 #endif
-
-    delete QWidgetPrivate::mapper;
-    QWidgetPrivate::mapper = 0;
 
     delete QApplicationPrivate::app_pal;
     QApplicationPrivate::app_pal = 0;

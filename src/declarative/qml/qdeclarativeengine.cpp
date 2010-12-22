@@ -760,8 +760,10 @@ QImage QDeclarativeEnginePrivate::getImageFromProvider(const QUrl &url, QSize *s
     QImage image;
     QSharedPointer<QDeclarativeImageProvider> provider = imageProviders.value(url.host());
     locker.unlock();
-    if (provider)
-        image = provider->requestImage(url.path().mid(1), size, req_size);
+    if (provider) {
+        QString imageId = url.toString(QUrl::RemoveScheme | QUrl::RemoveAuthority).mid(1);
+        image = provider->requestImage(imageId, size, req_size);
+    }
     return image;
 }
 
@@ -771,8 +773,10 @@ QPixmap QDeclarativeEnginePrivate::getPixmapFromProvider(const QUrl &url, QSize 
     QPixmap pixmap;
     QSharedPointer<QDeclarativeImageProvider> provider = imageProviders.value(url.host());
     locker.unlock();
-    if (provider)
-        pixmap = provider->requestPixmap(url.path().mid(1), size, req_size);
+    if (provider) {
+        QString imageId = url.toString(QUrl::RemoveScheme | QUrl::RemoveAuthority).mid(1);
+        pixmap = provider->requestPixmap(imageId, size, req_size);
+    }
     return pixmap;
 }
 

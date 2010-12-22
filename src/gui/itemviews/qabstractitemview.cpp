@@ -630,6 +630,8 @@ QAbstractItemView::QAbstractItemView(QAbstractItemViewPrivate &dd, QWidget *pare
 */
 QAbstractItemView::~QAbstractItemView()
 {
+    // stop this timer here before ~QObject
+    d_func()->delayedReset.stop();
 }
 
 /*!

@@ -7711,17 +7711,6 @@ void qInitDrawhelperAsm()
         }
 #endif
 #endif // SSE
-#if defined(QT_HAVE_MMXEXT) && defined(QT_HAVE_SSE)
-    } else if (features & MMXEXT) {
-        qt_memfill32 = qt_memfill32_sse;
-        qDrawHelper[QImage::Format_RGB16].bitmapBlit = qt_bitmapblit16_sse;
-# ifdef QT_HAVE_3DNOW
-        if (features & MMX3DNOW) {
-            qt_memfill32 = qt_memfill32_sse3dnow;
-            qDrawHelper[QImage::Format_RGB16].bitmapBlit = qt_bitmapblit16_sse3dnow;
-        }
-# endif // 3DNOW
-#endif // MMXEXT
     }
 #ifdef QT_HAVE_MMX
     if (features & MMX) {

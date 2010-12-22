@@ -83,11 +83,11 @@ void QUnifiedToolbarSurface::recursiveRedirect(QObject *object, const QPoint &of
                 widget->d_func()->unifiedSurface = this;
                 widget->d_func()->isInUnifiedToolbar = true;
                 widget->d_func()->toolbar_offset = offset;
-            }
-        }
 
-        for (int i = 0; i < object->children().size(); ++i) {
-            recursiveRedirect(object->children().at(i), offset);
+                for (int i = 0; i < object->children().size(); ++i) {
+                    recursiveRedirect(object->children().at(i), offset);
+                }
+            }
         }
     }
 }

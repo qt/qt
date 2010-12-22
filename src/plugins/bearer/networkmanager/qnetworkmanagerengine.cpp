@@ -743,9 +743,11 @@ QNetworkConfigurationPrivate *QNetworkManagerEngine::parseConnection(const QStri
                     QNetworkConfigurationPrivatePointer ptr =
                         accessPointConfigurations.take(accessPointId);
 
-                    mutex.unlock();
-                    emit configurationRemoved(ptr);
-                    mutex.lock();
+                    if (ptr) {
+                        mutex.unlock();
+                        emit configurationRemoved(ptr);
+                        mutex.lock();
+                    }
                 }
                 break;
             }

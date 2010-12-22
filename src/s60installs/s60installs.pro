@@ -132,7 +132,7 @@ symbian: {
     codecs_plugins.path = c:$$QT_PLUGINS_BASE_DIR/codecs
 
     contains(QT_CONFIG, phonon-backend) {
-        phonon_backend_plugins.files += $$QMAKE_LIBDIR_QT/phonon_mmf$${QT_LIBINFIX}.dll
+        phonon_backend_plugins.files += $$QT_BUILD_TREE/plugins/phonon_backend/phonon_mmf$${QT_LIBINFIX}.dll
 
         phonon_backend_plugins.path = c:$$QT_PLUGINS_BASE_DIR/phonon_backend
         DEPLOYMENT += phonon_backend_plugins
