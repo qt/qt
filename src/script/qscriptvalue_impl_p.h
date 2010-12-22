@@ -1117,23 +1117,8 @@ bool QScriptValuePrivate::assignEngine(QScriptEnginePrivate* engine)
     }
     m_engine = engine;
     m_state = JSValue;
-    return true;
-}
 
-/*!
-  \internal
-  reinitialize this value to an invalid
-*/
-void QScriptValuePrivate::reinitialize()
-{
-    if (isJSBased()) {
-        m_value.Dispose();
-        m_value.Clear();
-    } else if (isStringBased()) {
-        delete u.m_string;
-    }
-    m_engine = 0;
-    m_state = Invalid;
+    return true;
 }
 
 /*!

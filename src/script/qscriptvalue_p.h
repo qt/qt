@@ -85,8 +85,7 @@ public:
     inline QScriptValuePrivate(QScriptEnginePrivate* engine, const QString& value);
     inline QScriptValuePrivate(QScriptEnginePrivate* engine, QScriptValue::SpecialValue value);
     inline QScriptValuePrivate(QScriptEnginePrivate* engine, v8::Handle<v8::Value>);
-    inline void reinitialize();
-    inline void reinitialize(QScriptEnginePrivate* engine, v8::Handle<v8::Value>);
+    inline void reinitialize(QScriptEnginePrivate* engine, v8::Handle<v8::Value> value);
 
     inline bool toBool() const;
     inline qsreal toNumber() const;
