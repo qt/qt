@@ -977,7 +977,7 @@ bool SymbianCommonGenerator::parseTsContent(const QString &tsFilename, SymbianLo
 
             QXmlStreamReader xml(&tsFile);
 
-            while (xml.name() != tsElement)
+            while (!xml.atEnd() && xml.name() != tsElement)
                 xml.readNextStartElement();
 
             while (xml.readNextStartElement()) {
