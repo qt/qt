@@ -357,10 +357,10 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newQObject(
     // FIXME it create a new instance instead of reusing this one. It doesn't replace existing references in JS.
     // Similar problem is in QSV::setScriptClass.
     // Q_UNIMPLEMENTED();
-    QScriptPassPointer<QScriptValuePrivate> obj(newQObject(qtobject, ownership, options));
-    QScriptPassPointer<QScriptValuePrivate> proto(scriptObject->prototype());
-    scriptObject->reinitialize(this, *obj.give());
-    scriptObject->setPrototype(proto.give());
+    QScriptSharedDataPointer<QScriptValuePrivate> obj(newQObject(qtobject, ownership, options));
+    QScriptSharedDataPointer<QScriptValuePrivate> proto(scriptObject->prototype());
+    scriptObject->reinitialize(this, *obj);
+    scriptObject->setPrototype(proto.data());
 
     return scriptObject;
 }
@@ -398,10 +398,10 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newVariant(
     // FIXME it create a new instance instead of reusing this one. It doesn't replace existing references in JS.
     // Similar problem is in QSV::setScriptClass and QSE::newQObject.
     // Q_UNIMPLEMENTED();
-    QScriptPassPointer<QScriptValuePrivate> obj(newVariant(value));
-    QScriptPassPointer<QScriptValuePrivate> proto(object->prototype());
-    object->reinitialize(this, *obj.give());
-    object->setPrototype(proto.give());
+    QScriptSharedDataPointer<QScriptValuePrivate> obj(newVariant(value));
+    QScriptSharedDataPointer<QScriptValuePrivate> proto(object->prototype());
+    object->reinitialize(this, *obj);
+    object->setPrototype(proto.data());
     return object;
 }
 
