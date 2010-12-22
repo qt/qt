@@ -130,6 +130,7 @@ QWindowsStylePrivate::QWindowsStylePrivate()
         pSHGetStockIconInfo = (PtrSHGetStockIconInfo)shellLib.resolve("SHGetStockIconInfo");
     }
 #endif
+    startTime.start();
 }
 
 // Returns true if the toplevel parent of \a widget has seen the Alt-key
