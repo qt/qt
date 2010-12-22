@@ -108,9 +108,16 @@ private:
 class QtMetaObjectData : public QtData<QtMetaObjectData>
 {
 public:
-    QtMetaObjectData(QScriptEnginePrivate *engine, const QMetaObject *mo, const QScriptValue &ctor)
-        : m_engine(engine), m_metaObject(mo), m_ctor(ctor)
-    { }
+    QtMetaObjectData(QScriptEnginePrivate *engine, const QMetaObject *mo, v8::Handle<v8::Value> ctor)
+        : m_engine(engine), m_metaObject(mo), m_ctor(v8::Persistent<v8::Value>::New(ctor))
+    {
+        Q_ASSERT(!ctor.IsEmpty());
+    }
+
+    ~QtMetaObjectData()
+    {
+        m_ctor.Dispose();
+    }
 
     const QMetaObject *metaObject() const
     { return m_metaObject;}
@@ -118,13 +125,13 @@ public:
     QScriptEnginePrivate *engine() const
     { return m_engine; }
 
-    QScriptValue constructor() const { return m_ctor; }
+    v8::Handle<v8::Value> constructor() const { return m_ctor; }
 
 
 private:
     QScriptEnginePrivate *m_engine;
     const QMetaObject *m_metaObject;
-    QScriptValue m_ctor;
+    v8::Persistent<v8::Value> m_ctor;
 };
 
 // Data associated with a QVariant JS wrapper object.

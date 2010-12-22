@@ -1004,9 +1004,9 @@ v8::Handle<v8::Value> QtMetaObjectPropertyGetter(v8::Local<v8::String> property,
     QString propertyName = QScriptConverter::toString(property);
 
     if (propertyName == QLatin1String("prototype")) {
-        QScriptValuePrivate *ctor = QScriptValuePrivate::get(data->constructor());
-        if (ctor->isObject())
-            return ctor->m_value->ToObject()->Get(property);
+        v8::Handle<v8::Value> ctor = data->constructor();
+        if (ctor->IsObject())
+            return ctor->ToObject()->Get(property);
     }
 
     QByteArray name = propertyName.toLatin1();
@@ -1037,14 +1037,14 @@ v8::Handle<v8::Value> QtMetaObjectCallback(const v8::Arguments& args)
 //         return v8::Handle<v8::Value>();
 //
 
-    QScriptValuePrivate *ctor = QScriptValuePrivate::get(data->constructor());
-    if (ctor->isFunction()) {
+    v8::Handle<v8::Value> ctor = data->constructor();
+    if (ctor->IsFunction()) {
         QVarLengthArray<v8::Handle<v8::Value>, 8> newArgs;
         newArgs.reserve(args.Length());
         for (int i = 0; i < args.Length(); i++) {
             newArgs.append(args[i]);
         }
-        return v8::Function::Cast(*ctor->m_value)->NewInstance(newArgs.count(), newArgs.data());
+        return v8::Function::Cast(*ctor)->NewInstance(newArgs.count(), newArgs.data());
     }
     return v8::Handle<v8::Value>();
 }
@@ -1327,7 +1327,16 @@ v8::Handle<v8::Object> QScriptEnginePrivate::newQMetaObject(const QMetaObject *m
     v8::Handle<v8::Object> instance = instanceTempl->NewInstance();
 
     Q_ASSERT(instance->InternalFieldCount() == 1);
-    QtMetaObjectData *data = new QtMetaObjectData(this, mo, ctor);
+
+    // FIXME I'm not sure about that logic at least it is better than before as we are checking for an empty handle
+    QScriptValuePrivate *tmp = QScriptValuePrivate::get(ctor);
+    v8::Handle<v8::Value> ctorHandle;
+    if (tmp->isObject())
+        ctorHandle = *tmp;
+    else
+        ctorHandle = v8::Null();
+    // FIXME that is likely to leak
+    QtMetaObjectData *data = new QtMetaObjectData(this, mo, ctorHandle);
     instance->SetPointerInInternalField(0, data);
 
     v8::Persistent<v8::Object> persistent = v8::Persistent<v8::Object>::New(instance);
