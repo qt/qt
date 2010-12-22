@@ -2996,6 +2996,7 @@ void QFileDialogPrivate::_q_useNameFilter(int index)
             const int fileNameExtensionLength = fileNameExtension.count();
             fileName.replace(fileName.count() - fileNameExtensionLength,
                              fileNameExtensionLength, newNameFilterExtension);
+            qFileDialogUi->listView->clearSelection();
             lineEdit()->setText(fileName);
         }
     }
