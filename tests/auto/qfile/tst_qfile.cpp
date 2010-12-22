@@ -75,6 +75,7 @@
 #endif
 
 #include <stdio.h>
+#include <errno.h>
 #include "../network-settings.h"
 
 #if defined(Q_OS_SYMBIAN)
@@ -3339,16 +3340,17 @@ void tst_QFile::autocloseHandle()
     {
         QFile file("readonlyfile");
         QVERIFY(openFile(file, QIODevice::ReadOnly, OpenFd, QFile::AutoCloseHandle));
-        QCOMPARE(file.handle(), fd_);
+        int fd = fd_;
+        QCOMPARE(file.handle(), fd);
         file.close();
+        fd_ = -1;
         QCOMPARE(file.handle(), -1);
         AutoIgnoreInvalidParameter a;
         Q_UNUSED(a);
         //file is closed, read should fail
         char buf;
-        QCOMPARE(QT_READ(fd_, &buf, 1), -1);
+        QCOMPARE(QT_READ(fd, &buf, 1), -1);
         QVERIFY(errno = EBADF);
-        fd_ = -1;
     }
 
     {
@@ -3367,15 +3369,16 @@ void tst_QFile::autocloseHandle()
     {
         QFile file("readonlyfile");
         QVERIFY(openFile(file, QIODevice::ReadOnly, OpenStream, QFile::AutoCloseHandle));
-        QCOMPARE(file.handle(), fileno(stream_));
+        int fd = fileno(stream_);
+        QCOMPARE(file.handle(), fd);
         file.close();
+        stream_ = 0;
         QCOMPARE(file.handle(), -1);
         AutoIgnoreInvalidParameter a;
         Q_UNUSED(a);
         //file is closed, read should fail
         char buf;
-        QCOMPARE(int(::fread(&buf, 1, 1, stream_)), 0);
-        stream_ = 0;
+        QCOMPARE(QT_READ(fd, &buf, 1), -1); //not using fread because the FILE* was freed by fclose
     }
 
     {
