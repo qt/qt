@@ -1402,8 +1402,9 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         }
         break;
     case CE_ProgressBarGroove:
-        qDrawShadePanel(p, opt->rect, opt->palette, true, 1,
-                        &opt->palette.brush(QPalette::Window));
+        if (opt->rect.isValid())
+            qDrawShadePanel(p, opt->rect, opt->palette, true, 1,
+                            &opt->palette.brush(QPalette::Window));
         break;
     case CE_ProgressBarLabel:
         if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {

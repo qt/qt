@@ -2395,8 +2395,10 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
 #ifndef QT_NO_PROGRESSBAR
     case CE_ProgressBarContents:
         if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
-
             QRect rect = pb->rect;
+            if (!rect.isValid())
+                return;
+
             bool vertical = false;
             bool inverted = false;
 

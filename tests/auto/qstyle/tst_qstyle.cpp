@@ -411,6 +411,13 @@ void tst_QStyle::testWindowsStyle()
     QWindowsStyle wstyle;
     testAllFunctions(&wstyle);
     lineUpLayoutTest(&wstyle);
+
+    // Tests drawing indeterminate progress with 0 size: QTBUG-15973
+    QStyleOptionProgressBar pb;
+    pb.rect = QRect(0,0,-9,0);
+    QPixmap surface(QSize(200, 200));
+    QPainter painter(&surface);
+    wstyle.drawControl(QStyle::CE_ProgressBar, &pb, &painter, 0);
 }
 
 void tst_QStyle::testWindowsXPStyle()
