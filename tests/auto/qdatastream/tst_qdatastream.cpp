@@ -168,6 +168,8 @@ private slots:
     void stream_atEnd_data();
     void stream_atEnd();
 
+    void stream_writeError();
+
     void stream_QByteArray2();
 
     void setVersion_data();
@@ -2343,6 +2345,55 @@ void tst_QDataStream::stream_atEnd()
 	    bIn.close();
 	}
     }
+}
+
+class FakeBuffer : public QBuffer
+{
+protected:
+    qint64 writeData(const char *c, qint64 i) { return m_lock ? 0 : QBuffer::writeData(c, i); }
+public:
+    FakeBuffer(bool locked = false) : m_lock(locked) {}
+    void setLocked(bool locked) { m_lock = locked; }
+private:
+    bool m_lock;
+};
+
+#define TEST_WRITE_ERROR(op) \
+    { \
+        FakeBuffer fb(false); \
+        QVERIFY(fb.open(QBuffer::ReadWrite)); \
+        QDataStream fs(&fb); \
+        fs.writeRawData("hello", 5); \
+        /* first write some initial content */ \
+        QCOMPARE(fs.status(), QDataStream::Ok); \
+        QCOMPARE(fb.data(), QByteArray("hello")); \
+        /* then test that writing can cause an error */ \
+        fb.setLocked(true); \
+        fs op; \
+        QCOMPARE(fs.status(), QDataStream::WriteFailed); \
+        QCOMPARE(fb.data(), QByteArray("hello")); \
+        /* finally test that writing after an error doesn't change the stream any more */ \
+        fb.setLocked(false); \
+        fs op; \
+        QCOMPARE(fs.status(), QDataStream::WriteFailed); \
+        QCOMPARE(fb.data(), QByteArray("hello")); \
+    }
+
+void tst_QDataStream::stream_writeError()
+{
+    TEST_WRITE_ERROR(<< true)
+    TEST_WRITE_ERROR(<< (qint8)1)
+    TEST_WRITE_ERROR(<< (quint8)1)
+    TEST_WRITE_ERROR(<< (qint16)1)
+    TEST_WRITE_ERROR(<< (quint16)1)
+    TEST_WRITE_ERROR(<< (qint32)1)
+    TEST_WRITE_ERROR(<< (quint32)1)
+    TEST_WRITE_ERROR(<< (qint64)1)
+    TEST_WRITE_ERROR(<< (quint64)1)
+    TEST_WRITE_ERROR(<< "hello")
+    TEST_WRITE_ERROR(<< (float)1.0)
+    TEST_WRITE_ERROR(<< (double)1.0)
+    TEST_WRITE_ERROR(.writeRawData("test", 4))
 }
 
 void tst_QDataStream::stream_QByteArray2()
