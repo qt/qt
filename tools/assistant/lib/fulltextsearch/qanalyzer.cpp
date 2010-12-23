@@ -99,7 +99,7 @@ QCLuceneStandardAnalyzer::QCLuceneStandardAnalyzer(const QStringList &stopWords)
 
     for (int i = 0; i < stopWords.count(); ++i)
         delete [] tArray[i];
-    
+
     delete [] tArray;
 }
 
@@ -155,7 +155,7 @@ QCLuceneStopAnalyzer::QCLuceneStopAnalyzer(const QStringList &stopWords)
 
     for (int i = 0; i < stopWords.count(); ++i)
         delete [] tArray[i];
-    
+
     delete [] tArray;
 }
 
