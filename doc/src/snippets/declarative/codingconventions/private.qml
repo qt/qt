@@ -40,14 +40,10 @@
 
 import QtQuick 1.0
 
-//![0]
-Text {
-    text: "Hello world!"    //a basic greeting
-    /*
-        We want this text to stand out from the rest so
-        we give it a large size and different font.
-     */
-    font.family: "Helvetica"
-    font.pointSize: 24
+//! [0]
+Item {
+    id: component
+    width: 40; height: 50
+    property real __area: width * height * 0.5    //not meant for outside use
 }
-//![0]
+//! [0]

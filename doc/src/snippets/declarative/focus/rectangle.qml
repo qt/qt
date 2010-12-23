@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the documentation of the Qt Toolkit.
+** This file is part of the FOO module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -37,17 +37,26 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 import QtQuick 1.0
 
-//![0]
-Text {
-    text: "Hello world!"    //a basic greeting
-    /*
-        We want this text to stand out from the rest so
-        we give it a large size and different font.
-     */
-    font.family: "Helvetica"
-    font.pointSize: 24
+//! [simple key event]
+Rectangle {
+    width: 100; height: 100
+    focus: true
+    Keys.onPressed: {
+        if (event.key == Qt.Key_A) {
+            console.log('Key A was pressed');
+            event.accepted = true;
+        }
+    }
+//! [simple key event]
+
+//! [active focus]
+    Text {
+        text: activeFocus ? "I have active focus!" : "I do not have active focus"
+    }
+//! [active focus]
+
+//! [simple key event end]
 }
-//![0]
+//! [simple key event end]
