@@ -105,7 +105,7 @@ Rectangle {
         source: "content/pics/pause.png"
         anchors.centerIn: parent;
         //opacity is deliberately not animated
-        opacity: activeGame && !runtime.isActiveWindow
+        opacity: activeGame && !Qt.application.active
     }
 
     Image {

@@ -11,6 +11,7 @@ SUBDIRS += \
            qdeclarativeanchors \
            qdeclarativeanimatedimage \
            qdeclarativeanimations \
+           qdeclarativeapplication \
            qdeclarativebehaviors \
            qdeclarativebinding \
            qdeclarativeborderimage \

@@ -70,6 +70,7 @@
 #include "private/qdeclarativeinclude_p.h"
 #include "private/qdeclarativenotifier_p.h"
 #include "private/qdeclarativedebugtrace_p.h"
+#include "private/qdeclarativeapplication_p.h"
 
 #include <QtCore/qmetaobject.h>
 #include <QScriptClass>
@@ -520,6 +521,9 @@ void QDeclarativeEnginePrivate::init()
     typeNameClass = new QDeclarativeTypeNameScriptClass(q);
     listClass = new QDeclarativeListScriptClass(q);
     rootContext = new QDeclarativeContext(q,true);
+
+    QScriptValue applicationObject = objectClass->newQObject(new QDeclarativeApplication(q));
+    scriptEngine.globalObject().property(QLatin1String("Qt")).setProperty(QLatin1String("application"), applicationObject);
 
     if (QCoreApplication::instance()->thread() == q->thread() &&
         QDeclarativeEngineDebugServer::isDebuggingEnabled()) {
