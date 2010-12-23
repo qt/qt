@@ -147,6 +147,12 @@ QCLuceneStopAnalyzer::QCLuceneStopAnalyzer(const QStringList &stopWords)
     tArray[stopWords.count()] = 0;
 
     d->analyzer = new lucene::analysis::StopAnalyzer(tArray);
+
+    // free memory
+    for(int i = 0; i < stopWords.count(); ++i) {
+        delete [] tArray[i];
+    }
+    delete [] tArray;
 }
 
 QStringList QCLuceneStopAnalyzer::englishStopWords() const
