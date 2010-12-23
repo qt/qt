@@ -1131,6 +1131,13 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     Delegates are instantiated as needed and may be destroyed at any time.
     State should \e never be stored in a delegate.
 
+    GridView attaches a number of properties to the root item of the delegate, for example
+    \c {GridView.isCurrentItem}.  In the following example, the root delegate item can access
+    this attached property directly as \c GridView.isCurrentItem, while the child
+    \c contactInfo object must refer to this property as \c wrapper.GridView.isCurrentItem.
+
+    \snippet doc/src/snippets/declarative/gridview/gridview.qml isCurrentItem
+
     \note Views do not set the \l{Item::}{clip} property automatically.
     If the view is not clipped by another item or the screen, it will be necessary
     to set this property to true in order to clip the items that are partially or
@@ -1167,6 +1174,8 @@ QDeclarativeGridView::~QDeclarativeGridView()
     This attached property holds the view that manages this delegate instance.
 
     It is attached to each instance of the delegate.
+
+    \snippet doc/src/snippets/declarative/gridview/gridview.qml isCurrentItem
 */
 
 /*!
