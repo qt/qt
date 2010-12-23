@@ -51,6 +51,7 @@
 #include <QtDeclarative/private/qdeclarativelistmodel_p.h>
 #include <QtDeclarative/private/qlistmodelinterface_p.h>
 #include "../../../shared/util.h"
+#include "incrementalmodel.h"
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -106,6 +107,7 @@ private slots:
     void resizeDelegate();
     void QTBUG_16037();
     void indexAt();
+    void incrementalModel();
 
 private:
     template <class T> void items();
@@ -1994,6 +1996,32 @@ void tst_QDeclarativeListView::indexAt()
     QCOMPARE(listview->indexAt(239,19), 0);
     QCOMPARE(listview->indexAt(0,20), 1);
     QCOMPARE(listview->indexAt(240,20), -1);
+
+    delete canvas;
+}
+
+void tst_QDeclarativeListView::incrementalModel()
+{
+    QDeclarativeView *canvas = createView();
+
+    IncrementalModel model;
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/displaylist.qml"));
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
+    QTRY_VERIFY(listview != 0);
+
+    QDeclarativeItem *contentItem = listview->contentItem();
+    QTRY_VERIFY(contentItem != 0);
+
+    QTRY_COMPARE(listview->count(), 20);
+
+    listview->positionViewAtIndex(10, QDeclarativeListView::Beginning);
+
+    QTRY_COMPARE(listview->count(), 25);
 
     delete canvas;
 }
