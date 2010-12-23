@@ -97,10 +97,9 @@ QCLuceneStandardAnalyzer::QCLuceneStandardAnalyzer(const QStringList &stopWords)
 
     d->analyzer = new lucene::analysis::standard::StandardAnalyzer(tArray);
 
-    // free memory
-    for(int i = 0; i < stopWords.count(); ++i) {
+    for (int i = 0; i < stopWords.count(); ++i)
         delete [] tArray[i];
-    }
+    
     delete [] tArray;
 }
 
@@ -154,10 +153,9 @@ QCLuceneStopAnalyzer::QCLuceneStopAnalyzer(const QStringList &stopWords)
 
     d->analyzer = new lucene::analysis::StopAnalyzer(tArray);
 
-    // free memory
-    for(int i = 0; i < stopWords.count(); ++i) {
+    for (int i = 0; i < stopWords.count(); ++i)
         delete [] tArray[i];
-    }
+    
     delete [] tArray;
 }
 
