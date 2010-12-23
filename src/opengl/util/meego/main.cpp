@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,57 +39,51 @@
 **
 ****************************************************************************/
 
-#ifndef QTIMESTAMP_H
-#define QTIMESTAMP_H
+#include <QtCore/qdebug.h>
 
-#include <QtCore/qglobal.h>
+#define QT_DEBUG_SHADER_CACHE
+#define QT_MEEGO_EXPERIMENTAL_SHADERCACHE
+#define QT_OPENGL_ES_2
+#define QT_BOOTSTRAPPED
 
-QT_BEGIN_HEADER
+typedef int GLsizei;
+typedef unsigned int GLenum;
 
-QT_BEGIN_NAMESPACE
+#include "../../gl2paintengineex/qglshadercache_meego_p.h"
 
-QT_MODULE(Core)
+#include <stdlib.h>
+#include <stdio.h>
 
-class Q_CORE_EXPORT QElapsedTimer
+int main()
 {
-public:
-    enum ClockType {
-        SystemTime,
-        MonotonicClock,
-        TickCounter,
-        MachAbsoluteTime,
-        PerformanceCounter
-    };
-    static ClockType clockType();
-    static bool isMonotonic();
+    ShaderCacheSharedMemory shm;
 
-    void start();
-    qint64 restart();
-    void invalidate();
-    bool isValid() const;
+    if (!shm.isAttached()) {
+        fprintf(stderr, "Unable to attach to shared memory\n");
+        return EXIT_FAILURE;
+    }
 
-    qint64 nsecsElapsed() const;
-    qint64 elapsed() const;
-    bool hasExpired(qint64 timeout) const;
+    ShaderCacheLocker locker(&shm);
+    if (!locker.isLocked()) {
+        fprintf(stderr, "Unable to lock shared memory\n");
+        return EXIT_FAILURE;
+    }
 
-    qint64 msecsSinceReference() const;
-    qint64 msecsTo(const QElapsedTimer &other) const;
-    qint64 secsTo(const QElapsedTimer &other) const;
+    void *data = shm.data();
+    Q_ASSERT(data);
 
-    bool operator==(const QElapsedTimer &other) const
-    { return t1 == other.t1 && t2 == other.t2; }
-    bool operator!=(const QElapsedTimer &other) const
-    { return !(*this == other); }
+    CachedShaders *cache = reinterpret_cast<CachedShaders *>(data);
 
-    friend bool Q_CORE_EXPORT operator<(const QElapsedTimer &v1, const QElapsedTimer &v2);
+    for (int i = 0; i < cache->shaderCount; ++i) {
+        printf("Shader %d: %d bytes\n", i, cache->headers[i].size);
+    }
 
-private:
-    qint64 t1;
-    qint64 t2;
-};
+    printf("\nSummary:\n\n"
+           "    Amount of cached shaders: %d\n"
+           "                  Bytes used: %d\n"
+           "             Bytes available: %d\n",
+           cache->shaderCount, cache->dataSize, cache->availableSize());
 
-QT_END_NAMESPACE
+    return EXIT_SUCCESS;
+}
 
-QT_END_HEADER
-
-#endif // QTIMESTAMP_H
