@@ -203,7 +203,7 @@ void tst_Headers::licenseCheck()
     QFETCH(QString, sourceFile);
 
     QFile f(sourceFile);
-    QVERIFY(f.open(QIODevice::ReadOnly));
+    QVERIFY2(f.open(QIODevice::ReadOnly), qPrintable(f.errorString()));
     QByteArray data = f.readAll();
     data.replace("\r\n", "\n"); // Windows
     data.replace('\r', '\n'); // Mac OS9
@@ -264,7 +264,7 @@ void tst_Headers::privateSlots()
         return;
 
     QFile f(header);
-    QVERIFY(f.open(QIODevice::ReadOnly));
+    QVERIFY2(f.open(QIODevice::ReadOnly), qPrintable(f.errorString()));
 
     QStringList content = QString::fromLocal8Bit(f.readAll()).split("\n");
     foreach (QString line, content) {
@@ -286,7 +286,7 @@ void tst_Headers::macros()
         return;
 
     QFile f(header);
-    QVERIFY(f.open(QIODevice::ReadOnly));
+    QVERIFY2(f.open(QIODevice::ReadOnly), qPrintable(f.errorString()));
 
     QByteArray data = f.readAll();
     QStringList content = QString::fromLocal8Bit(data.replace('\r', "")).split("\n");
