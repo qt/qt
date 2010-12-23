@@ -106,7 +106,7 @@ while (1) {
                     $origDefLine = <$origDefFile>;
                     if (defined($origDefLine)) {
                         $origDefLine =~ s/[\n\r]//;
-                        if ($origDefLine =~ /([a-z0-9_]+) +\@ ([0-9]+) (.*)/i) {
+                        if ($origDefLine =~ /([a-z0-9_]+) +\@ *([0-9]+) (.*)/i) {
                             $origSym = $1;
                             $origOrdinal = $2;
                             $origExtraData = $3;
@@ -121,7 +121,7 @@ while (1) {
             if ($savedNewDefFileLine) {
                 # This happens if the new def file was missing an entry.
                 $newDefLine = $savedNewDefFileLine;
-                $newDefLine =~ /([a-z0-9_]+) +\@ ([0-9]+) (.*)/i or die("$0: Shouldn't happen");
+                $newDefLine =~ /([a-z0-9_]+) +\@ *([0-9]+) (.*)/i or die("$0: Shouldn't happen");
                 $newSym = $1;
                 $newOrdinal = $2;
                 $newExtraData = $3;
@@ -131,7 +131,7 @@ while (1) {
                     $newDefLine = <$newDefFile>;
                     if (defined($newDefLine)) {
                         $newDefLine =~ s/[\n\r]//;
-                        if ($newDefLine =~ /([a-z0-9_]+) +\@ ([0-9]+) (.*)/i) {
+                        if ($newDefLine =~ /([a-z0-9_]+) +\@ *([0-9]+) (.*)/i) {
                             $newSym = $1;
                             $newOrdinal = $2;
                             $newExtraData = $3;
