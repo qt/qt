@@ -851,10 +851,9 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
                     }
                 }
 
-#if defined(QT_ALWAYS_HAVE_SSE2)
                 if (blendType != BlendTransformedBilinearTiled &&
                         (format == QImage::Format_ARGB32_Premultiplied || format == QImage::Format_RGB32)) {
-
+#if defined(QT_ALWAYS_HAVE_SSE2)
                     const __m128i disty_ = _mm_set1_epi16(disty);
                     const __m128i idisty_ = _mm_set1_epi16(idisty);
                     const __m128i colorMask = _mm_set1_epi32(0x00ff00ff);
@@ -884,8 +883,38 @@ const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *
                         rRB = _mm_srli_epi16(rRB, 8);
                         _mm_storeu_si128((__m128i*)(&intermediate_buffer[0][f]), rRB);
                     }
-                }
+#elif defined(QT_ALWAYS_HAVE_NEON)
+                    const int16x8_t disty_ = vdupq_n_s16(disty);
+                    const int16x8_t idisty_ = vdupq_n_s16(idisty);
+                    const int16x8_t colorMask = vdupq_n_s16(0x00ff);
+
+                    lim -= 3;
+                    for (; f < lim; x += 4, f += 4) {
+                        // Load 4 pixels from s1, and split the alpha-green and red-blue component
+                        int16x8_t top = vld1q_s16((int16_t*)((const uint *)(s1)+x));
+                        int16x8_t topAG = vreinterpretq_s16_u16(vshrq_n_u16(vreinterpretq_u16_s16(top), 8));
+                        int16x8_t topRB = vandq_s16(top, colorMask);
+                        // Multiplies each colour component by idisty
+                        topAG = vmulq_s16(topAG, idisty_);
+                        topRB = vmulq_s16(topRB, idisty_);
+
+                        // Same for the s2 vector
+                        int16x8_t bottom = vld1q_s16((int16_t*)((const uint *)(s2)+x));
+                        int16x8_t bottomAG = vreinterpretq_s16_u16(vshrq_n_u16(vreinterpretq_u16_s16(bottom), 8));
+                        int16x8_t bottomRB = vandq_s16(bottom, colorMask);
+                        bottomAG = vmulq_s16(bottomAG, disty_);
+                        bottomRB = vmulq_s16(bottomRB, disty_);
+
+                        // Add the values, and shift to only keep 8 significant bits per colors
+                        int16x8_t rAG = vaddq_s16(topAG, bottomAG);
+                        rAG = vreinterpretq_s16_u16(vshrq_n_u16(vreinterpretq_u16_s16(rAG), 8));
+                        vst1q_s16((int16_t*)(&intermediate_buffer[1][f]), rAG);
+                        int16x8_t rRB = vaddq_s16(topRB, bottomRB);
+                        rRB = vreinterpretq_s16_u16(vshrq_n_u16(vreinterpretq_u16_s16(rRB), 8));
+                        vst1q_s16((int16_t*)(&intermediate_buffer[0][f]), rRB);
+                    }
 #endif
+                }
                 for (; f < count; f++) { // Same as above but without sse2
                     if (blendType == BlendTransformedBilinearTiled) {
                         if (x >= image_width) x -= image_width;

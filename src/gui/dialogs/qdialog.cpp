@@ -899,9 +899,21 @@ bool QDialog::symbianAdjustedPosition()
 {
 #if defined(Q_WS_S60)
     QPoint p;
-    const bool doS60Positioning = !(isFullScreen()||isMaximized());
-    if (doS60Positioning) {
-        QPoint oldPos = pos();
+    QPoint oldPos = pos();
+    if (isFullScreen()) {
+        p.setX(0);
+        p.setY(0);
+    } else if (isMaximized()) {
+        TRect statusPaneRect = TRect();
+        if (S60->screenHeightInPixels > S60->screenWidthInPixels) {
+            AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStatusPane, statusPaneRect);
+        } else {
+            AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStaconTop, statusPaneRect);
+        }
+
+        p.setX(0);
+        p.setY(statusPaneRect.Height());
+    } else {
         // naive way to deduce screen orientation
         if (S60->screenHeightInPixels > S60->screenWidthInPixels) {
             int cbaHeight;
@@ -937,10 +949,10 @@ bool QDialog::symbianAdjustedPosition()
                 p.setX(qMax(0,S60->screenWidthInPixels - width()));
             }
         }
-        if (oldPos != p || p.y() < 0)
-            move(p);
     }
-    return doS60Positioning;
+    if (oldPos != p || p.y() < 0)
+        move(p);
+    return true;
 #else
     // TODO - check positioning requirement for Symbian, non-s60
     return false;
