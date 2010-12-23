@@ -1416,6 +1416,13 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     Delegates are instantiated as needed and may be destroyed at any time.
     State should \e never be stored in a delegate.
 
+    ListView attaches a number of properties to the root item of the delegate, for example
+    \c {ListView.isCurrentItem}.  In the following example, the root delegate item can access
+    this attached property directly as \c ListView.isCurrentItem, while the child
+    \c contactInfo object must refer to this property as \c wrapper.ListView.isCurrentItem.
+
+    \snippet doc/src/snippets/declarative/listview/listview.qml isCurrentItem
+
     \note Views do not enable \e clip automatically.  If the view
     is not clipped by another item or the screen, it will be necessary
     to set \e {clip: true} in order to have the out of view items clipped
