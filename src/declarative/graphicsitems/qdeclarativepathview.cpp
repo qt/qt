@@ -1133,8 +1133,10 @@ void QDeclarativePathViewPrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent 
     QPointF pathPoint = pointNear(event->pos(), &newPc);
     if (!stealMouse) {
         QPointF delta = pathPoint - startPoint;
-        if (qAbs(delta.x()) > QApplication::startDragDistance() || qAbs(delta.y()) > QApplication::startDragDistance())
+        if (qAbs(delta.x()) > QApplication::startDragDistance() || qAbs(delta.y()) > QApplication::startDragDistance()) {
             stealMouse = true;
+            startPc = newPc;
+        }
     }
 
     if (stealMouse) {
