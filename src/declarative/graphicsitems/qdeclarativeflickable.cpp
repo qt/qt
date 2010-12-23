@@ -671,10 +671,12 @@ void QDeclarativeFlickable::setFlickableDirection(FlickableDirection direction)
 
 void QDeclarativeFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
 {
+    Q_Q(QDeclarativeFlickable);
     if (interactive && timeline.isActive() && (qAbs(hData.velocity) > 10 || qAbs(vData.velocity) > 10))
         stealMouse = true; // If we've been flicked then steal the click.
     else
         stealMouse = false;
+    q->setKeepMouseGrab(stealMouse);
     pressed = true;
     timeline.clear();
     hData.velocity = 0;
@@ -769,6 +771,8 @@ void QDeclarativeFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent
     }
 
     stealMouse = stealX || stealY;
+    if (stealMouse)
+        q->setKeepMouseGrab(true);
 
     if (!lastPos.isNull()) {
         qreal elapsed = qreal(QDeclarativeItemPrivate::restart(lastPosTime)) / 1000.;
@@ -848,8 +852,6 @@ void QDeclarativeFlickable::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     Q_D(QDeclarativeFlickable);
     if (d->interactive) {
         d->handleMouseMoveEvent(event);
-        if (d->stealMouse)
-            setKeepMouseGrab(true);
         event->accept();
     } else {
         QDeclarativeItem::mouseMoveEvent(event);
