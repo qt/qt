@@ -662,31 +662,23 @@ QRasterPaintEngineState::QRasterPaintEngineState()
 
 QRasterPaintEngineState::QRasterPaintEngineState(QRasterPaintEngineState &s)
     : QPainterState(s)
+    , stroker(s.stroker)
+    , lastBrush(s.lastBrush)
+    , brushData(s.brushData)
+    , lastPen(s.lastPen)
+    , penData(s.penData)
+    , fillFlags(s.fillFlags)
+    , strokeFlags(s.strokeFlags)
+    , pixmapFlags(s.pixmapFlags)
+    , intOpacity(s.intOpacity)
+    , txscale(s.txscale)
+    , flag_bits(s.flag_bits)
+    , clip(s.clip)
+    , dirty(s.dirty)
 {
-    stroker = s.stroker;
-
-    lastBrush = s.lastBrush;
-    brushData = s.brushData;
     brushData.tempImage = 0;
-
-    lastPen = s.lastPen;
-    penData = s.penData;
     penData.tempImage = 0;
-
-    fillFlags = s.fillFlags;
-    strokeFlags = s.strokeFlags;
-    pixmapFlags = s.pixmapFlags;
-
-    intOpacity = s.intOpacity;
-
-    txscale = s.txscale;
-
-    flag_bits = s.flag_bits;
-
-    clip = s.clip;
     flags.has_clip_ownership = false;
-
-    dirty = s.dirty;
 }
 
 /*!
@@ -5165,7 +5157,8 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
     case Qt::SolidPattern: {
         type = Solid;
         QColor c = qbrush_color(brush);
-        solid.color = PREMUL(ARGB_COMBINE_ALPHA(c.rgba(), alpha));
+        QRgb rgba = c.rgba();
+        solid.color = PREMUL(ARGB_COMBINE_ALPHA(rgba, alpha));
         if ((solid.color & 0xff000000) == 0
             && compositionMode == QPainter::CompositionMode_SourceOver) {
             type = None;

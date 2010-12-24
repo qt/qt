@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,57 +39,60 @@
 **
 ****************************************************************************/
 
-#ifndef QTIMESTAMP_H
-#define QTIMESTAMP_H
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#ifndef QGLSHADERCACHE_P_H
+#define QGLSHADERCACHE_P_H
 
 #include <QtCore/qglobal.h>
+
+#if defined(QT_MEEGO_EXPERIMENTAL_SHADERCACHE) && defined(QT_OPENGL_ES_2)
+#  include "qglshadercache_meego_p.h"
+#else
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
+QT_MODULE(OpenGL)
 
-class Q_CORE_EXPORT QElapsedTimer
+class QGLShaderProgram;
+class QGLContext;
+
+class CachedShader
 {
 public:
-    enum ClockType {
-        SystemTime,
-        MonotonicClock,
-        TickCounter,
-        MachAbsoluteTime,
-        PerformanceCounter
-    };
-    static ClockType clockType();
-    static bool isMonotonic();
+    inline CachedShader(const QByteArray &, const QByteArray &)
+    {}
 
-    void start();
-    qint64 restart();
-    void invalidate();
-    bool isValid() const;
+    inline bool isCached()
+    {
+        return false;
+    }
 
-    qint64 nsecsElapsed() const;
-    qint64 elapsed() const;
-    bool hasExpired(qint64 timeout) const;
+    inline bool load(QGLShaderProgram *, const QGLContext *)
+    {
+        return false;
+    }
 
-    qint64 msecsSinceReference() const;
-    qint64 msecsTo(const QElapsedTimer &other) const;
-    qint64 secsTo(const QElapsedTimer &other) const;
-
-    bool operator==(const QElapsedTimer &other) const
-    { return t1 == other.t1 && t2 == other.t2; }
-    bool operator!=(const QElapsedTimer &other) const
-    { return !(*this == other); }
-
-    friend bool Q_CORE_EXPORT operator<(const QElapsedTimer &v1, const QElapsedTimer &v2);
-
-private:
-    qint64 t1;
-    qint64 t2;
+    inline bool store(QGLShaderProgram *, const QGLContext *)
+    {
+        return false;
+    }
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QTIMESTAMP_H
+#endif
+#endif
