@@ -47,6 +47,7 @@
 #include <QTimer>
 #include <QApplication>
 #include <QPushButton>
+#include <QDialogButtonBox>
 #if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
 #include <QMacStyle>
 #endif
@@ -119,6 +120,7 @@ private slots:
     void statics();
     void about();
     void detailsText();
+    void detailsButtonText();
 
     void shortcut();
 
@@ -659,6 +661,28 @@ void tst_QMessageBox::detailsText()
     QString text("This is the details text.");
     box.setDetailedText(text);
     QCOMPARE(box.detailedText(), text);
+}
+
+void tst_QMessageBox::detailsButtonText()
+{
+    QMessageBox box;
+    box.setDetailedText("bla");
+    box.open();
+    QApplication::postEvent(&box, new QEvent(QEvent::LanguageChange));
+    QApplication::processEvents();
+    QDialogButtonBox* bb = box.findChild<QDialogButtonBox*>("qt_msgbox_buttonbox");
+    QVERIFY(bb); //get the detail button
+
+    QList<QAbstractButton *> list = bb->buttons();
+    QAbstractButton* btn = NULL;
+    foreach(btn, list) {
+        if (btn && (btn->inherits("QPushButton"))) {
+            if (btn->text() != QMessageBox::tr("OK") && btn->text() != QMessageBox::tr("Show Details...")) {
+                qDebug() << btn->text();
+                QFAIL("Incorrect messagebox button text!");
+            }
+        }
+    }
 }
 
 void tst_QMessageBox::incorrectDefaultButton()
