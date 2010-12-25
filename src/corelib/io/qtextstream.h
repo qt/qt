@@ -89,7 +89,8 @@ public:
     enum Status {
         Ok,
         ReadPastEnd,
-        ReadCorruptData
+        ReadCorruptData,
+        WriteFailed
     };
     enum NumberFlag {
         ShowBase = 0x1,

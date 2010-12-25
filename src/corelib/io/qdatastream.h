@@ -101,7 +101,8 @@ public:
     enum Status {
         Ok,
         ReadPastEnd,
-	ReadCorruptData
+        ReadCorruptData,
+        WriteFailed
     };
 
     enum FloatingPointPrecision {
