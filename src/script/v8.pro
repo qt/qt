@@ -12,6 +12,7 @@ SOURCES += \
     $$V8DIR/src/assembler.cc \
     $$V8DIR/src/ast.cc \
     $$V8DIR/src/bignum.cc \
+    $$V8DIR/src/bignum-dtoa.cc \
     $$V8DIR/src/bootstrapper.cc \
     $$V8DIR/src/builtins.cc \
     $$V8DIR/src/cached-powers.cc \
@@ -60,6 +61,8 @@ SOURCES += \
     $$V8DIR/src/objects-visiting.cc \
     $$V8DIR/src/oprofile-agent.cc \
     $$V8DIR/src/parser.cc \
+    $$V8DIR/src/preparser.cc \
+    $$V8DIR/src/preparse-data.cc \
     $$V8DIR/src/profile-generator.cc \
     $$V8DIR/src/property.cc \
     $$V8DIR/src/regexp-macro-assembler-irregexp.cc \
@@ -90,11 +93,10 @@ SOURCES += \
     $$V8DIR/src/variables.cc \
     $$V8DIR/src/version.cc \
     $$V8DIR/src/virtual-frame.cc \
-    $$V8DIR/src/zone.cc
+    $$V8DIR/src/zone.cc \
+    $$V8DIR/src/extensions/gc-extension.cc \
+    $$V8DIR/src/extensions/externalize-string-extension.cc
 
-SOURCES += \
-    $$V8DIR/src/dtoa-config.c \
-    $$V8DIR/src/third_party/dtoa/dtoa.c
 
 arch_arm {
 DEFINES += V8_TARGET_ARCH_ARM
