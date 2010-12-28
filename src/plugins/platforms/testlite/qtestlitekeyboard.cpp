@@ -929,15 +929,32 @@ void QTestLiteKeyboard::changeLayout()
 
 }
 
+static Qt::KeyboardModifiers modifierFromKeyCode(int qtcode)
+{
+    switch (qtcode) {
+    case Qt::Key_Control:
+        return Qt::ControlModifier;
+    case Qt::Key_Alt:
+        return Qt::AltModifier;
+    case Qt::Key_Shift:
+        return Qt::ShiftModifier;
+    case Qt::Key_Meta:
+        return Qt::MetaModifier;
+    default:
+        return Qt::NoModifier;
+    }
+}
+
 void QTestLiteKeyboard::handleKeyEvent(QWidget *widget, QEvent::Type type, XKeyEvent *ev)
 {
     int qtcode = 0;
-    Qt::KeyboardModifiers modifiers;
+    Qt::KeyboardModifiers modifiers = translateModifiers(ev->state);
     QByteArray chars;
     chars.resize(513);
     int count = 0;
     KeySym keySym;
     count = XLookupString(ev,chars.data(),chars.size(),&keySym,0);
     QString text = translateKeySym(keySym,ev->state,qtcode,modifiers,chars,count);
+    modifiers ^= modifierFromKeyCode(qtcode);
     QWindowSystemInterface::handleKeyEvent(widget,ev->time,type,qtcode,modifiers,text.left(count));
 }
