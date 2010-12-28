@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,67 +39,32 @@
 **
 ****************************************************************************/
 
-#include "qclipboard.h"
+#ifndef QPLATFORMCLIPBOARD_QPA_H
+#define QPLATFORMCLIPBOARD_QPA_H
 
-#ifndef QT_NO_CLIPBOARD
+#include <qplatformdefs.h>
 
-#include "qmimedata.h"
-#include "private/qapplication_p.h"
-#include "qplatformclipboard_qpa.h"
+#include <QtGui/QClipboard>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_USE_NAMESPACE
+QT_MODULE(Gui)
 
-void QClipboard::clear(Mode mode)
+class Q_GUI_EXPORT QPlatformClipboard
 {
-    setMimeData(0,mode);
-}
+public:
+    virtual ~QPlatformClipboard();
 
-
-bool QClipboard::event(QEvent *e)
-{
-    return QObject::event(e);
-}
-
-const QMimeData* QClipboard::mimeData(Mode mode) const
-{
-    QPlatformClipboard *clipboard = QApplicationPrivate::platformIntegration()->clipboard();
-    if (!clipboard->supportsMode(mode)) return 0;
-    return clipboard->mimeData(mode);
-}
-
-void QClipboard::setMimeData(QMimeData* src, Mode mode)
-{
-    QPlatformClipboard *clipboard = QApplicationPrivate::platformIntegration()->clipboard();
-    if (!clipboard->supportsMode(mode)) return;
-
-    clipboard->setMimeData(src,mode);
-
-    emitChanged(mode);
-}
-
-bool QClipboard::supportsMode(Mode mode) const
-{
-    QPlatformClipboard *clipboard = QApplicationPrivate::platformIntegration()->clipboard();
-    return clipboard->supportsMode(mode);
-}
-
-bool QClipboard::ownsMode(Mode mode) const
-{
-    if (mode == Clipboard)
-        qWarning("QClipboard::ownsClipboard: UNIMPLEMENTED!");
-    return false;
-}
-
-void QClipboard::connectNotify( const char * )
-{
-}
-
-void QClipboard::ownerDestroyed()
-{
-}
-
-#endif // QT_NO_CLIPBOARD
+    virtual const QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard ) const;
+    virtual void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard);
+    virtual bool supportsMode(QClipboard::Mode mode) const;
+};
 
 QT_END_NAMESPACE
+
+QT_END_HEADER
+
+
+#endif //QPLATFORMCLIPBOARD_QPA_H
