@@ -48,7 +48,7 @@
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QPlatformScreen>
 
-#include <QtGui/private/qt_x11_p.h>
+#include "qtestlitestaticinfo.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -68,6 +68,7 @@ public:
     QList<QPlatformScreen *> screens() const { return mScreens; }
 
     QPlatformFontDatabase *fontDatabase() const;
+    QPlatformClipboard *clipboard() const;
 
     bool hasOpenGL() const;
 
@@ -76,6 +77,7 @@ private:
     QTestLiteScreen *mPrimaryScreen;
     QList<QPlatformScreen *> mScreens;
     QPlatformFontDatabase *mFontDb;
+    QPlatformClipboard *mClipboard;
 };
 
 QT_END_NAMESPACE

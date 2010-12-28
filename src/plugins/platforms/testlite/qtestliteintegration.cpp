@@ -47,6 +47,7 @@
 #include "qtestlitewindow.h"
 #include "qgenericunixfontdatabase.h"
 #include "qtestlitescreen.h"
+#include "qtestliteclipboard.h"
 
 #ifndef QT_NO_OPENGL
 #include <GL/glx.h>
@@ -60,6 +61,7 @@ QT_BEGIN_NAMESPACE
 QTestLiteIntegration::QTestLiteIntegration(bool useOpenGL)
     : mUseOpenGL(useOpenGL)
     , mFontDb(new QGenericUnixFontDatabase())
+    , mClipboard(0)
 {
     mPrimaryScreen = new QTestLiteScreen();
     mScreens.append(mPrimaryScreen);
@@ -114,6 +116,16 @@ QPlatformFontDatabase *QTestLiteIntegration::fontDatabase() const
     return mFontDb;
 }
 
+QPlatformClipboard * QTestLiteIntegration::clipboard() const
+{
+    //Use lazy init since clipboard needs QTestliteScreen
+    if (!mClipboard) {
+        QTestLiteIntegration *that = const_cast<QTestLiteIntegration *>(this);
+        that->mClipboard = new QTestLiteClipboard(mPrimaryScreen);
+    }
+    return mClipboard;
+}
+
 bool QTestLiteIntegration::hasOpenGL() const
 {
 #ifndef QT_NO_OPENGL
@@ -122,5 +134,6 @@ bool QTestLiteIntegration::hasOpenGL() const
 #endif
     return false;
 }
+
 
 QT_END_NAMESPACE

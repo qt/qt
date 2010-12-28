@@ -44,6 +44,7 @@
 #include "qtestliteintegration.h"
 #include "qtestlitescreen.h"
 #include "qtestlitekeyboard.h"
+#include "qtestlitestaticinfo.h"
 
 #include <QtGui/QWindowSystemInterface>
 #include <QSocketNotifier>
@@ -101,19 +102,26 @@ QTestLiteWindow::QTestLiteWindow(QWidget *window)
 
     XSetWindowBackgroundPixmap(mScreen->display(), x_window, XNone);
 
-    XSelectInput(mScreen->display(), x_window, ExposureMask | KeyPressMask | KeyReleaseMask |
+    XSelectInput(mScreen->display(), x_window,
+                 ExposureMask | KeyPressMask | KeyReleaseMask |
                  EnterWindowMask | LeaveWindowMask | FocusChangeMask |
-                 PointerMotionMask | ButtonPressMask |  ButtonReleaseMask | ButtonMotionMask |
+                 PointerMotionMask | ButtonPressMask |  ButtonReleaseMask |
+                 ButtonMotionMask | PropertyChangeMask |
                  StructureNotifyMask);
 
     gc = createGC();
 
-    Atom wmDeleteWindowAtom = mScreen->wmDeleteWindowAtom();
-    XChangeProperty (mScreen->display(), x_window,
-                           mScreen->wmProtocolsAtom(),
-                           XA_ATOM, 32, PropModeAppend,
-                           (unsigned char *) &wmDeleteWindowAtom, 1);
-    mScreen->setWmDeleteWindowAtom(wmDeleteWindowAtom);
+    Atom protocols[5];
+    int n = 0;
+    protocols[n++] = QTestLiteStaticInfo::atom(QTestLiteStaticInfo::WM_DELETE_WINDOW);        // support del window protocol
+    protocols[n++] = QTestLiteStaticInfo::atom(QTestLiteStaticInfo::WM_TAKE_FOCUS);                // support take focus window protocol
+    protocols[n++] = QTestLiteStaticInfo::atom(QTestLiteStaticInfo::_NET_WM_PING);                // support _NET_WM_PING protocol
+#ifndef QT_NO_XSYNC
+    protocols[n++] = QTestLiteStaticInfo::atom(QTestLiteStaticInfo::_NET_WM_SYNC_REQUEST);        // support _NET_WM_SYNC_REQUEST protocol
+#endif // QT_NO_XSYNC
+    if (window->windowFlags() & Qt::WindowContextHelpButtonHint)
+        protocols[n++] = QTestLiteStaticInfo::atom(QTestLiteStaticInfo::_NET_WM_CONTEXT_HELP);
+    XSetWMProtocols(mScreen->display(), x_window, protocols, n);
 }
 
 
@@ -336,10 +344,11 @@ QtMWMHints QTestLiteWindow::getMWMHints() const
     int format;
     ulong nitems, bytesLeft;
     uchar *data = 0;
-    if ((XGetWindowProperty(mScreen->display(), x_window, mScreen->atomForMotifWmHints(), 0, 5, false,
-                            mScreen->atomForMotifWmHints(), &type, &format, &nitems, &bytesLeft,
+    Atom atomForMotifWmHints = QTestLiteStaticInfo::atom(QTestLiteStaticInfo::_MOTIF_WM_HINTS);
+    if ((XGetWindowProperty(mScreen->display(), x_window, atomForMotifWmHints, 0, 5, false,
+                            atomForMotifWmHints, &type, &format, &nitems, &bytesLeft,
                             &data) == Success)
-        && (type == mScreen->atomForMotifWmHints()
+        && (type == atomForMotifWmHints
             && format == 32
             && nitems >= 5)) {
         mwmhints = *(reinterpret_cast<QtMWMHints *>(data));
@@ -359,12 +368,13 @@ QtMWMHints QTestLiteWindow::getMWMHints() const
 
 void QTestLiteWindow::setMWMHints(const QtMWMHints &mwmhints)
 {
+    Atom atomForMotifWmHints = QTestLiteStaticInfo::atom(QTestLiteStaticInfo::_MOTIF_WM_HINTS);
     if (mwmhints.flags != 0l) {
         XChangeProperty(mScreen->display(), x_window,
-                        mScreen->atomForMotifWmHints(), mScreen->atomForMotifWmHints(), 32,
+                        atomForMotifWmHints, atomForMotifWmHints, 32,
                         PropModeReplace, (unsigned char *) &mwmhints, 5);
     } else {
-        XDeleteProperty(mScreen->display(), x_window, mScreen->atomForMotifWmHints());
+        XDeleteProperty(mScreen->display(), x_window, atomForMotifWmHints);
     }
 }
 

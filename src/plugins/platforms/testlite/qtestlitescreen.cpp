@@ -44,9 +44,16 @@
 #include "qtestlitecursor.h"
 #include "qtestlitewindow.h"
 #include "qtestlitekeyboard.h"
+#include "qtestlitestaticinfo.h"
+#include "qtestliteclipboard.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QSocketNotifier>
+#include <QtCore/QElapsedTimer>
+
+#include <private/qapplication_p.h>
+
+#include <X11/extensions/Xfixes.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -183,11 +190,10 @@ qDebug() << "qt_x_errhandler" << err->error_code;
 
 QTestLiteScreen::QTestLiteScreen()
         : mFormat(QImage::Format_RGB32)
-        , mWmProtocolsAtom(0)
-        , mWmDeleteWindowAtom(0)
 {
     char *display_name = getenv("DISPLAY");
     mDisplay = XOpenDisplay(display_name);
+    mDisplayName = QString::fromLocal8Bit(display_name);
     if (!mDisplay) {
         fprintf(stderr, "Cannot connect to X server: %s\n",
                 display_name);
@@ -204,6 +210,7 @@ QTestLiteScreen::QTestLiteScreen()
         XSynchronize(mDisplay, true);
 
     mScreen = DefaultScreen(mDisplay);
+    XSelectInput(mDisplay,rootWindow(), KeymapStateMask | EnterWindowMask | LeaveWindowMask | PropertyChangeMask);
     int width = DisplayWidth(mDisplay, mScreen);
     int height = DisplayHeight(mDisplay, mScreen);
     mGeometry = QRect(0,0,width,height);
@@ -220,11 +227,6 @@ QTestLiteScreen::QTestLiteScreen()
 #endif
     QSocketNotifier *sock = new QSocketNotifier(xSocketNumber, QSocketNotifier::Read, this);
     connect(sock, SIGNAL(activated(int)), this, SLOT(eventDispatcher()));
-
-    mWmProtocolsAtom = XInternAtom (mDisplay, "WM_PROTOCOLS", False);
-    mWmDeleteWindowAtom = XInternAtom (mDisplay, "WM_DELETE_WINDOW", False);
-
-    mWmMotifHintAtom = XInternAtom(mDisplay, "_MOTIF_WM_HINTS\0", False);
 
     mCursor = new QTestLiteCursor(this);
     mKeyboard = new QTestLiteKeyboard(this);
@@ -243,9 +245,6 @@ QTestLiteScreen::~QTestLiteScreen()
 #undef KeyRelease
 #endif
 
-//Q_GUI_EXPORT extern Atom wmProtocolsAtom;
-//Q_GUI_EXPORT extern Atom wmDeleteWindowAtom;
-
 bool QTestLiteScreen::handleEvent(XEvent *xe)
 {
     int quit = false;
@@ -254,28 +253,17 @@ bool QTestLiteScreen::handleEvent(XEvent *xe)
     if (widget) {
         xw = static_cast<QTestLiteWindow *>(widget->platformWindow());
     }
-    if (!xw) {
-#ifdef MYX11_DEBUG
-        qWarning() << "Unknown window" << hex << xe->xany.window << "received event" <<  xe->type;
-#endif
-        return quit;
-    }
 
+    Atom wmProtocolsAtom = QTestLiteStaticInfo::atom(QTestLiteStaticInfo::WM_PROTOCOLS);
+    Atom wmDeleteWindowAtom = QTestLiteStaticInfo::atom(QTestLiteStaticInfo::WM_DELETE_WINDOW);
     switch (xe->type) {
 
     case ClientMessage:
-        if (xe->xclient.format == 32 && xe->xclient.message_type == wmProtocolsAtom()) {
+        if (xe->xclient.format == 32 && xe->xclient.message_type == wmProtocolsAtom) {
             Atom a = xe->xclient.data.l[0];
-            if (a == wmDeleteWindowAtom())
+            if (a == wmDeleteWindowAtom)
                 xw->handleCloseEvent();
-#ifdef MYX11_DEBUG
-            qDebug() << "ClientMessage WM_PROTOCOLS" << a;
-#endif
         }
-#ifdef MYX11_DEBUG
-        else
-            qDebug() << "ClientMessage" << xe->xclient.format << xe->xclient.message_type;
-#endif
         break;
 
     case Expose:
@@ -289,15 +277,18 @@ bool QTestLiteScreen::handleEvent(XEvent *xe)
         break;
 
     case ButtonPress:
-        xw->mousePressEvent(&xe->xbutton);
+        if (xw)
+            xw->mousePressEvent(&xe->xbutton);
         break;
 
     case ButtonRelease:
-        xw->handleMouseEvent(QEvent::MouseButtonRelease, &xe->xbutton);
+        if (xw)
+            xw->handleMouseEvent(QEvent::MouseButtonRelease, &xe->xbutton);
         break;
 
     case MotionNotify:
-        xw->handleMouseEvent(QEvent::MouseMove, &xe->xbutton);
+        if (xw)
+            xw->handleMouseEvent(QEvent::MouseMove, &xe->xbutton);
         break;
 
         case XKeyPress:
@@ -309,20 +300,39 @@ bool QTestLiteScreen::handleEvent(XEvent *xe)
         break;
 
     case EnterNotify:
-        xw->handleEnterEvent();
+        if (xw)
+            xw->handleEnterEvent();
         break;
 
     case LeaveNotify:
-        xw->handleLeaveEvent();
+        if (xw)
+            xw->handleLeaveEvent();
         break;
 
     case XFocusIn:
-        xw->handleFocusInEvent();
+        if (xw)
+            xw->handleFocusInEvent();
         break;
 
     case XFocusOut:
-        xw->handleFocusOutEvent();
+        if (xw)
+            xw->handleFocusOutEvent();
         break;
+
+    case PropertyNotify:
+        break;
+
+    case SelectionClear:
+        qDebug() << "Selection Clear!!!";
+        break;
+    case SelectionRequest:
+        handleSelectionRequest(xe);
+        break;
+    case SelectionNotify:
+        qDebug() << "Selection Notify!!!!";
+
+        break;
+
 
     default:
 #ifdef MYX11_DEBUG
@@ -330,7 +340,41 @@ bool QTestLiteScreen::handleEvent(XEvent *xe)
 #endif
         break;
     }
+
     return quit;
+}
+
+static Bool checkForClipboardEvents(Display *, XEvent *e, XPointer)
+{
+    Atom clipboard = QTestLiteStaticInfo::atom(QTestLiteStaticInfo::CLIPBOARD);
+    return ((e->type == SelectionRequest && (e->xselectionrequest.selection == XA_PRIMARY
+                                             || e->xselectionrequest.selection == clipboard))
+            || (e->type == SelectionClear && (e->xselectionclear.selection == XA_PRIMARY
+                                              || e->xselectionclear.selection == clipboard)));
+}
+
+bool QTestLiteScreen::waitForClipboardEvent(Window win, int type, XEvent *event, int timeout)
+{
+    QElapsedTimer timer;
+    timer.start();
+    do {
+        if (XCheckTypedWindowEvent(mDisplay,win,type,event))
+            return true;
+
+        // process other clipboard events, since someone is probably requesting data from us
+        XEvent e;
+        if (XCheckIfEvent(mDisplay, &e, checkForClipboardEvents, 0))
+            handleEvent(&e);
+
+        XFlush(mDisplay);
+
+        // sleep 50 ms, so we don't use up CPU cycles all the time.
+        struct timeval usleep_tv;
+        usleep_tv.tv_sec = 0;
+        usleep_tv.tv_usec = 50000;
+        select(0, 0, 0, 0, &usleep_tv);
+    } while (timer.elapsed() < timeout);
+    return false;
 }
 
 void QTestLiteScreen::eventDispatcher()
@@ -409,29 +453,16 @@ int QTestLiteScreen::xScreenNumber() const
     return mScreen;
 }
 
-Atom QTestLiteScreen::wmProtocolsAtom() const
-{
-    return mWmProtocolsAtom;
-}
-
-Atom QTestLiteScreen::wmDeleteWindowAtom() const
-{
-    return mWmDeleteWindowAtom;
-}
-
-void QTestLiteScreen::setWmDeleteWindowAtom(Atom newDeleteWindowAtom)
-{
-    mWmDeleteWindowAtom = newDeleteWindowAtom;
-}
-
-Atom QTestLiteScreen::atomForMotifWmHints() const
-{
-    return mWmMotifHintAtom;
-}
-
 QTestLiteKeyboard * QTestLiteScreen::keyboard() const
 {
     return mKeyboard;
+}
+
+void QTestLiteScreen::handleSelectionRequest(XEvent *event)
+{
+    QPlatformIntegration *integration = QApplicationPrivate::platformIntegration();
+    QTestLiteClipboard *clipboard = static_cast<QTestLiteClipboard *>(integration->clipboard());
+    clipboard->handleSelectionRequest(event);
 }
 
 QT_END_NAMESPACE

@@ -58,6 +58,8 @@ public:
 
     ~QTestLiteScreen();
 
+    QString displayName() const { return mDisplayName; }
+
     QRect geometry() const { return mGeometry; }
     int depth() const { return mDepth; }
     QImage::Format format() const { return mFormat; }
@@ -68,6 +70,8 @@ public:
     unsigned long whitePixel() { return WhitePixel(mDisplay, mScreen); }
 
     bool handleEvent(XEvent *xe);
+    bool waitForClipboardEvent(Window win, int type, XEvent *event, int timeout);
+
     QImage grabWindow(Window window, int x, int y, int w, int h);
 
     static QTestLiteScreen *testLiteScreenForWidget(QWidget *widget);
@@ -75,18 +79,15 @@ public:
     Display *display() const;
     int xScreenNumber() const;
 
-    Atom wmProtocolsAtom() const;
-    Atom wmDeleteWindowAtom() const;
-    void setWmDeleteWindowAtom(Atom newDeleteWindowAtom);
-
-    Atom atomForMotifWmHints() const;
-
     QTestLiteKeyboard *keyboard() const;
 
 public slots:
     void eventDispatcher();
 
 private:
+
+    void handleSelectionRequest(XEvent *event);
+    QString mDisplayName;
     QRect mGeometry;
     QSize mPhysicalSize;
     int mDepth;
@@ -96,9 +97,6 @@ private:
 
     Display * mDisplay;
     int mScreen;
-    Atom mWmProtocolsAtom;
-    Atom mWmDeleteWindowAtom;
-    Atom mWmMotifHintAtom;
 };
 
 QT_END_NAMESPACE
