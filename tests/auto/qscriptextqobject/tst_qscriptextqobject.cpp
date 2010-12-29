@@ -543,6 +543,10 @@ private slots:
     void getSetStaticProperty_customGetterSetter();
     void getSetStaticProperty_methodPersistence();
     void getSetDynamicProperty();
+    void getSetDynamicProperty_deleteFromCpp();
+    void getSetDynamicProperty_hideChildObject();
+    void getSetDynamicProperty_setBeforeGet();
+    void getSetDynamicProperty_doNotHideJSProperty();
     void getSetChildren();
     void callQtInvokable();
     void connectAndDisconnect();
@@ -555,6 +559,7 @@ private slots:
     void transferInvokable();
     void findChild();
     void findChildren();
+    void childObjects();
     void overloadedSlots();
     void enumerate_data();
     void enumerate();
@@ -1033,6 +1038,69 @@ void tst_QScriptExtQObject::getSetDynamicProperty()
     QCOMPARE(m_myObject->property("dynamicProperty").isValid(), false);
     QCOMPARE(m_engine->evaluate("myObject.dynamicProperty").isUndefined(), true);
     QCOMPARE(m_engine->evaluate("myObject.hasOwnProperty('dynamicProperty')").toBoolean(), false);
+}
+
+void tst_QScriptExtQObject::getSetDynamicProperty_deleteFromCpp()
+{
+    QScriptValue val = m_engine->newQObject(m_myObject);
+
+    m_myObject->setProperty("dynamicFromCpp", 1234);
+    QVERIFY(val.property("dynamicFromCpp").strictlyEquals(QScriptValue(m_engine, 1234)));
+
+    m_myObject->setProperty("dynamicFromCpp", 4321);
+    QVERIFY(val.property("dynamicFromCpp").strictlyEquals(QScriptValue(m_engine, 4321)));
+    QCOMPARE(m_myObject->property("dynamicFromCpp").toInt(), 4321);
+
+    // In this case we delete the property from C++
+    m_myObject->setProperty("dynamicFromCpp", QVariant());
+    QVERIFY(!m_myObject->property("dynamicFromCpp").isValid());
+    QVERIFY(!val.property("dynamicFromCpp").isValid());
+}
+
+void tst_QScriptExtQObject::getSetDynamicProperty_hideChildObject()
+{
+    QScriptValue val = m_engine->newQObject(m_myObject);
+
+    // Add our named child and access it
+    QObject *child = new QObject(m_myObject);
+    child->setObjectName("testName");
+    QCOMPARE(val.property("testName").toQObject(), child);
+
+    // Dynamic properties have precedence, hiding the child object
+    m_myObject->setProperty("testName", 42);
+    QVERIFY(val.property("testName").strictlyEquals(QScriptValue(m_engine, 42)));
+
+    // Remove dynamic property
+    m_myObject->setProperty("testName", QVariant());
+    QCOMPARE(val.property("testName").toQObject(), child);
+}
+
+void tst_QScriptExtQObject::getSetDynamicProperty_setBeforeGet()
+{
+    QScriptValue val = m_engine->newQObject(m_myObject);
+
+    m_myObject->setProperty("dynamic", 1111);
+    val.setProperty("dynamic", 42);
+
+    QVERIFY(val.property("dynamic").strictlyEquals(QScriptValue(m_engine, 42)));
+    QCOMPARE(m_myObject->property("dynamic").toInt(), 42);
+}
+
+void tst_QScriptExtQObject::getSetDynamicProperty_doNotHideJSProperty()
+{
+    QScriptValue val = m_engine->newQObject(m_myObject);
+
+    // Set property on JS and dynamically on our QObject
+    val.setProperty("x", 42);
+    m_myObject->setProperty("x", 2222);
+
+    QEXPECT_FAIL("", "", Continue);
+
+    // JS should see the original JS value
+    QVERIFY(val.property("x").strictlyEquals(QScriptValue(m_engine, 42)));
+
+    // The dynamic property is intact
+    QCOMPARE(m_myObject->property("x").toInt(), 2222);
 }
 
 void tst_QScriptExtQObject::getSetChildren()
@@ -2659,6 +2727,49 @@ void tst_QScriptExtQObject::findChildren()
     delete anotherChild;
     delete namelessChild;
     delete child;
+}
+
+void tst_QScriptExtQObject::childObjects()
+{
+    QObject *child1 = new QObject(m_myObject);
+    child1->setObjectName("child1");
+    QObject *child2 = new QObject(m_myObject);
+    QScriptValue wrapped = m_engine->newQObject(m_myObject);
+
+    QVERIFY(wrapped.property("child1").isQObject());
+    QCOMPARE(wrapped.property("child1").toQObject(), child1);
+    QVERIFY(!wrapped.property("child2").isQObject());
+    QVERIFY(!wrapped.property("child2").isValid());
+
+    // Setting the name later
+    child2->setObjectName("child2");
+
+    QVERIFY(wrapped.property("child1").isQObject());
+    QCOMPARE(wrapped.property("child1").toQObject(), child1);
+    QVERIFY(wrapped.property("child2").isQObject());
+    QCOMPARE(wrapped.property("child2").toQObject(), child2);
+
+    // Adding a child later
+    QObject *child3 = new QObject(m_myObject);
+    child3->setObjectName("child3");
+
+    QVERIFY(wrapped.property("child3").isQObject());
+    QCOMPARE(wrapped.property("child3").toQObject(), child3);
+
+    // Changing a child name
+    child1->setObjectName("anotherName");
+
+    QVERIFY(!wrapped.property("child1").isValid());
+    QVERIFY(wrapped.property("anotherName").isQObject());
+    QCOMPARE(wrapped.property("anotherName").toQObject(), child1);
+
+    // Creating another object wrapper excluding child from
+    // properties.
+    QScriptValue wrapped2 = m_engine->newQObject(m_myObject, QScriptEngine::QtOwnership, QScriptEngine::ExcludeChildObjects);
+
+    QVERIFY(!wrapped2.property("anotherName").isValid());
+    QVERIFY(!wrapped2.property("child2").isValid());
+    QVERIFY(!wrapped2.property("child3").isValid());
 }
 
 void tst_QScriptExtQObject::overloadedSlots()
