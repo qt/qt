@@ -1157,6 +1157,8 @@ void QPdfBaseEngine::updateState(const QPaintEngineState &state)
     }
     if (flags & DirtyBrush) {
         d->brush = state.brush();
+        if (d->brush.color().alpha() == 0 && d->brush.style() == Qt::SolidPattern)
+            d->brush.setStyle(Qt::NoBrush);
         d->hasBrush = d->brush.style() != Qt::NoBrush;
     }
     if (flags & DirtyBrushOrigin) {
