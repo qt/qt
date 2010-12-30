@@ -45,6 +45,9 @@
 #include <QtCore/qiodevice.h>
 #include <QtCore/qstring.h>
 #include <stdio.h>
+#ifdef Q_OS_SYMBIAN
+#include <f32file.h>
+#endif
 
 #ifdef open
 #error qfile.h must be included before any header file that defines open
@@ -97,6 +100,12 @@ public:
     };
     Q_DECLARE_FLAGS(Permissions, Permission)
 
+    enum FileHandleFlag {
+        AutoCloseHandle = 0x0001,
+        DontCloseHandle = 0
+    };
+    Q_DECLARE_FLAGS(FileHandleFlags, FileHandleFlag)
+
     QFile();
     QFile(const QString &name);
 #ifndef QT_NO_QOBJECT
@@ -145,6 +154,11 @@ public:
     bool open(OpenMode flags);
     bool open(FILE *f, OpenMode flags);
     bool open(int fd, OpenMode flags);
+#ifdef Q_OS_SYMBIAN
+    bool open(const RFile &f, OpenMode flags, FileHandleFlags handleFlags = DontCloseHandle);
+#endif
+    bool open(FILE *f, OpenMode ioFlags, FileHandleFlags handleFlags);
+    bool open(int fd, OpenMode ioFlags, FileHandleFlags handleFlags);
     virtual void close();
 
     qint64 size() const;
