@@ -714,8 +714,7 @@ void tst_QMessageBox::detailsButtonText()
     foreach(btn, list) {
         if (btn && (btn->inherits("QPushButton"))) {
             if (btn->text() != QMessageBox::tr("OK") && btn->text() != QMessageBox::tr("Show Details...")) {
-                qDebug() << btn->text();
-                QFAIL("Incorrect messagebox button text!");
+                QFAIL(qPrintable(QString("Unexpected messagebox button text: %1").arg(btn->text())));
             }
         }
     }
