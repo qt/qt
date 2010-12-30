@@ -392,6 +392,13 @@ void tst_qdeclarativetextinput::selection()
     textinputObject->select(0,100);
     QVERIFY(textinputObject->selectedText().size() == 10);
 
+    textinputObject->deselect();
+    QVERIFY(textinputObject->selectedText().isNull());
+    textinputObject->select(0,10);
+    QVERIFY(textinputObject->selectedText().size() == 10);
+    textinputObject->deselect();
+    QVERIFY(textinputObject->selectedText().isNull());
+
     delete textinputObject;
 }
 

@@ -223,6 +223,7 @@ Q_SIGNALS:
     void selectByMouseChanged(bool selectByMouse);
 
 public Q_SLOTS:
+    void deselect();
     void selectAll();
     void selectWord();
     void select(int start, int end);

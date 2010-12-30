@@ -996,6 +996,19 @@ void QDeclarativeTextEditPrivate::focusChanged(bool hasFocus)
 }
 
 /*!
+    \qmlmethod void TextEdit::deselect()
+
+    Removes active text selection.
+*/
+void QDeclarativeTextEdit::deselect()
+{
+    Q_D(QDeclarativeTextEdit);
+    QTextCursor c = d->control->textCursor();
+    c.clearSelection();
+    d->control->setTextCursor(c);
+}
+
+/*!
     \qmlmethod void TextEdit::selectAll()
 
     Causes all text to be selected.

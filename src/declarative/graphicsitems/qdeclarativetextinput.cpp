@@ -1166,6 +1166,17 @@ QVariant QDeclarativeTextInput::inputMethodQuery(Qt::InputMethodQuery property) 
 }
 
 /*!
+    \qmlmethod void TextInput::deselect()
+
+    Removes active text selection.
+*/
+void QDeclarativeTextInput::deselect()
+{
+    Q_D(QDeclarativeTextInput);
+    d->control->deselect();
+}
+
+/*!
     \qmlmethod void TextInput::selectAll()
 
     Causes all text to be selected.

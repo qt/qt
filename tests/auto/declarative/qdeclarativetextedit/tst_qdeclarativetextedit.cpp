@@ -689,6 +689,13 @@ void tst_qdeclarativetextedit::selection()
     QVERIFY(textEditObject->selectedText().size() == 10);
     textEditObject->select(0,100);
     QVERIFY(textEditObject->selectedText().size() == 10);
+
+    textEditObject->deselect();
+    QVERIFY(textEditObject->selectedText().isNull());
+    textEditObject->select(0,10);
+    QVERIFY(textEditObject->selectedText().size() == 10);
+    textEditObject->deselect();
+    QVERIFY(textEditObject->selectedText().isNull());
 }
 
 void tst_qdeclarativetextedit::mouseSelection_data()
