@@ -88,6 +88,9 @@ void myMessageOutput(QtMsgType type, const char *msg)
     ::write(fd, "\n", 1);
     ::fsync(fd);
 
+    if (systemMsgOutput)
+        systemMsgOutput(type, msg);
+
     switch (type) {
     case QtFatalMsg:
         abort();
@@ -529,11 +532,7 @@ QDeclarativeViewer *openFile(const QString &fileName)
 
 int main(int argc, char ** argv)
 {
-#if defined (Q_OS_SYMBIAN)
-    qInstallMsgHandler(myMessageOutput);
-#else
     systemMsgOutput = qInstallMsgHandler(myMessageOutput);
-#endif
 
 #if defined (Q_WS_X11) || defined (Q_WS_MAC)
     //### default to using raster graphics backend for now
