@@ -55,6 +55,8 @@
 #include <QCleanlooksStyle>
 #endif
 
+#include "../../shared/util.h"
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -383,7 +385,13 @@ void tst_QMessageBox::about()
     keyToSend = Qt::Key_Escape;
     sendKeySoon();
     QMessageBox::about(0, "Caption", "This is an auto test");
+    // On Mac, about and aboutQt are not modal, so we need to
+    // explicitly run the event loop
+#ifdef Q_WS_MAC
+    QTRY_COMPARE(keyToSend, -1);
+#else
     QCOMPARE(keyToSend, -1);
+#endif
 
 #if !defined(Q_OS_WINCE)
     keyToSend = Qt::Key_Enter;
@@ -392,7 +400,11 @@ void tst_QMessageBox::about()
 #endif
     sendKeySoon();
     QMessageBox::aboutQt(0, "Caption");
+#ifdef Q_WS_MAC
+    QTRY_COMPARE(keyToSend, -1);
+#else
     QCOMPARE(keyToSend, -1);
+#endif
 }
 
 // Old message box enums
