@@ -64,6 +64,14 @@ LoggerWidget::LoggerWidget(QWidget *parent) :
 
     m_plainTextEdit = new QPlainTextEdit();
 
+#if defined(Q_OS_SYMBIAN)
+    m_plainTextEdit->setReadOnly(true);
+    QAction* backAction = new QAction( tr("Back"), this );
+    backAction->setSoftKeyRole( QAction::NegativeSoftKey );
+    connect(backAction, SIGNAL(triggered()), this, SLOT(hide()));
+    addAction( backAction );
+#endif
+
 #ifdef Q_WS_MAEMO_5
     new TextEditAutoResizer(m_plainTextEdit);
     setAttribute(Qt::WA_Maemo5StackedWindow);
@@ -74,6 +82,7 @@ LoggerWidget::LoggerWidget(QWidget *parent) :
 #else
     setCentralWidget(m_plainTextEdit);
 #endif
+
     readSettings();
     setupPreferencesMenu();
 }

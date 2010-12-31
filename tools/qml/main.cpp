@@ -72,36 +72,15 @@ void exitApp(int i)
     exit(i);
 }
 
+QWeakPointer<LoggerWidget> logger;
+static QAtomicInt recursiveLock(0);
+
 #if defined (Q_OS_SYMBIAN)
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
-void myMessageOutput(QtMsgType type, const char *msg)
-{
-    static int fd = -1;
-    if (fd == -1)
-        fd = ::open("E:\\qml.log", O_WRONLY | O_CREAT);
-
-    ::write(fd, msg, strlen(msg));
-    ::write(fd, "\n", 1);
-    ::fsync(fd);
-
-    if (systemMsgOutput)
-        systemMsgOutput(type, msg);
-
-    switch (type) {
-    case QtFatalMsg:
-        abort();
-    }
-}
-
-#else // !defined (Q_OS_SYMBIAN)
-
-QWeakPointer<LoggerWidget> logger;
-
-static QAtomicInt recursiveLock(0);
+#endif
 
 void myMessageOutput(QtMsgType type, const char *msg)
 {
@@ -118,15 +97,27 @@ void myMessageOutput(QtMsgType type, const char *msg)
             warnings += QLatin1Char('\n');
         }
     }
-    if (systemMsgOutput) { // Windows
+#if defined (Q_OS_SYMBIAN)
+    static int fd = -1;
+    if (fd == -1)
+        fd = ::open("E:\\qml.log", O_WRONLY | O_CREAT);
+
+    ::write(fd, msg, strlen(msg));
+    ::write(fd, "\n", 1);
+    ::fsync(fd);
+    switch (type) {
+    case QtFatalMsg:
+        abort();
+    }
+#endif
+
+    if (systemMsgOutput) {
         systemMsgOutput(type, msg);
     } else { // Unix
         fprintf(stderr, "%s\n", msg);
         fflush(stderr);
     }
 }
-
-#endif
 
 static QDeclarativeViewer* globalViewer = 0;
 
@@ -472,7 +463,6 @@ static QDeclarativeViewer *createViewer()
         viewer->setScript(opts.script);
     }
 
-#if !defined(Q_OS_SYMBIAN)
     logger = viewer->warningsWidget();
     if (opts.warningsConfig == ShowWarnings) {
         logger.data()->setDefaultVisibility(LoggerWidget::ShowWarnings);
@@ -480,7 +470,6 @@ static QDeclarativeViewer *createViewer()
     } else if (opts.warningsConfig == HideWarnings){
         logger.data()->setDefaultVisibility(LoggerWidget::HideWarnings);
     }
-#endif
 
     if (opts.experimentalGestures)
         viewer->enableExperimentalGestures();

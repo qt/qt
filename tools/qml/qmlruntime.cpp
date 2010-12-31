@@ -742,8 +742,10 @@ void QDeclarativeViewer::createMenu()
     connect(slowAction, SIGNAL(triggered(bool)), this, SLOT(setSlowMode(bool)));
 
     showWarningsWindow = new QAction(tr("Show Warnings"), this);
+#if !defined(Q_OS_SYMBIAN)
     showWarningsWindow->setCheckable((true));
     showWarningsWindow->setChecked(loggerWindow->isVisible());
+#endif
     connect(showWarningsWindow, SIGNAL(triggered(bool)), this, SLOT(showWarnings(bool)));
 
     QAction *proxyAction = new QAction(tr("HTTP &Proxy..."), this);
@@ -826,11 +828,11 @@ void QDeclarativeViewer::createMenu()
     QMenu *recordMenu = menu->addMenu(tr("&Recording"));
     recordMenu->addAction(snapshotAction);
     recordMenu->addAction(recordAction);
+#endif // ! Q_OS_SYMBIAN
 
     QMenu *debugMenu = menu->addMenu(tr("&Debugging"));
     debugMenu->addAction(slowAction);
     debugMenu->addAction(showWarningsWindow);
-#endif // ! Q_OS_SYMBIAN
 
     QMenu *settingsMenu = menu->addMenu(tr("&Settings"));
     settingsMenu->addAction(proxyAction);
@@ -914,7 +916,11 @@ void QDeclarativeViewer::toggleFullScreen()
 
 void QDeclarativeViewer::showWarnings(bool show)
 {
+#if defined(Q_OS_SYMBIAN)
+    loggerWindow->showMaximized();
+#else
     loggerWindow->setVisible(show);
+#endif
 }
 
 void QDeclarativeViewer::warningsWidgetOpened()
