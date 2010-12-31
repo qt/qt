@@ -345,7 +345,7 @@ QHostAddress tst_NetworkSelfTest::serverIpAddress()
         // need resolving
         QHostInfo resolved = QHostInfo::fromName(QtNetworkSettings::serverName());
         if(resolved.error() != QHostInfo::NoError ||
-            !resolved.addresses().isEmpty()) {
+            resolved.addresses().isEmpty()) {
             qWarning("QHostInfo::fromName failed (%d).", resolved.error());
             return QHostAddress(QHostAddress::Null);
         }
