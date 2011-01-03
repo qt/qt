@@ -99,7 +99,7 @@ QString QTestLiteMime::xdndMimeAtomToString(Display *display, Atom a)
 {
     if (!a) return 0;
 
-    if (a == XA_STRING || a == QTestLiteStaticInfo::atom(QTestLiteStaticInfo::UTF8_STRING)) {
+    if (a == XA_STRING || a == QTestLiteStatic::atom(QTestLiteStatic::UTF8_STRING)) {
         return "text/plain"; // some Xdnd clients are dumb
     }
     char *atom = XGetAtomName(display, a);
@@ -123,10 +123,10 @@ QStringList QTestLiteMime::xdndMimeFormatsForAtom(Display *display, Atom a)
         formats.append(atomName);
 
         // special cases for string type
-        if (a == QTestLiteStaticInfo::atom(QTestLiteStaticInfo::UTF8_STRING)
+        if (a == QTestLiteStatic::atom(QTestLiteStatic::UTF8_STRING)
                 || a == XA_STRING
-                || a == QTestLiteStaticInfo::atom(QTestLiteStaticInfo::TEXT)
-                || a == QTestLiteStaticInfo::atom(QTestLiteStaticInfo::COMPOUND_TEXT))
+                || a == QTestLiteStatic::atom(QTestLiteStatic::TEXT)
+                || a == QTestLiteStatic::atom(QTestLiteStatic::COMPOUND_TEXT))
             formats.append(QLatin1String("text/plain"));
 
         // special cases for uris
@@ -152,27 +152,27 @@ bool QTestLiteMime::xdndMimeDataForAtom(Display *display, Atom a, QMimeData *mim
             *dataFormat = 16;
         ret = true;
     } else {
-        if ((a == QTestLiteStaticInfo::atom(QTestLiteStaticInfo::UTF8_STRING)
+        if ((a == QTestLiteStatic::atom(QTestLiteStatic::UTF8_STRING)
              || a == XA_STRING
-             || a == QTestLiteStaticInfo::atom(QTestLiteStaticInfo::TEXT)
-             || a == QTestLiteStaticInfo::atom(QTestLiteStaticInfo::COMPOUND_TEXT))
+             || a == QTestLiteStatic::atom(QTestLiteStatic::TEXT)
+             || a == QTestLiteStatic::atom(QTestLiteStatic::COMPOUND_TEXT))
             && QInternalMimeData::hasFormatHelper(QLatin1String("text/plain"), mimeData)) {
-            if (a == QTestLiteStaticInfo::atom(QTestLiteStaticInfo::UTF8_STRING)){
+            if (a == QTestLiteStatic::atom(QTestLiteStatic::UTF8_STRING)){
                 *data = QInternalMimeData::renderDataHelper(QLatin1String("text/plain"), mimeData);
                 ret = true;
             } else if (a == XA_STRING) {
                 *data = QString::fromUtf8(QInternalMimeData::renderDataHelper(
                         QLatin1String("text/plain"), mimeData)).toLocal8Bit();
                 ret = true;
-            } else if (a == QTestLiteStaticInfo::atom(QTestLiteStaticInfo::TEXT)
-                       || a == QTestLiteStaticInfo::atom(QTestLiteStaticInfo::COMPOUND_TEXT)) {
+            } else if (a == QTestLiteStatic::atom(QTestLiteStatic::TEXT)
+                       || a == QTestLiteStatic::atom(QTestLiteStatic::COMPOUND_TEXT)) {
                 // the ICCCM states that TEXT and COMPOUND_TEXT are in the
                 // encoding of choice, so we choose the encoding of the locale
                 QByteArray strData = QString::fromUtf8(QInternalMimeData::renderDataHelper(
                                      QLatin1String("text/plain"), mimeData)).toLocal8Bit();
                 char *list[] = { strData.data(), NULL };
 
-                XICCEncodingStyle style = (a == QTestLiteStaticInfo::atom(QTestLiteStaticInfo::COMPOUND_TEXT))
+                XICCEncodingStyle style = (a == QTestLiteStatic::atom(QTestLiteStatic::COMPOUND_TEXT))
                                         ? XCompoundTextStyle : XStdICCTextStyle;
                 XTextProperty textprop;
                 if (list[0] != NULL
@@ -222,10 +222,10 @@ QList<Atom> QTestLiteMime::xdndMimeAtomsForFormat(Display *display, const QStrin
 
     // special cases for strings
     if (format == QLatin1String("text/plain")) {
-        atoms.append(QTestLiteStaticInfo::atom(QTestLiteStaticInfo::UTF8_STRING));
+        atoms.append(QTestLiteStatic::atom(QTestLiteStatic::UTF8_STRING));
         atoms.append(XA_STRING);
-        atoms.append(QTestLiteStaticInfo::atom(QTestLiteStaticInfo::TEXT));
-        atoms.append(QTestLiteStaticInfo::atom(QTestLiteStaticInfo::COMPOUND_TEXT));
+        atoms.append(QTestLiteStatic::atom(QTestLiteStatic::TEXT));
+        atoms.append(QTestLiteStatic::atom(QTestLiteStatic::COMPOUND_TEXT));
     }
 
     // special cases for uris
@@ -262,12 +262,12 @@ QVariant QTestLiteMime::xdndMimeConvertToFormat(Display *display, Atom a, const 
 
     // special cases for string types
     if (format == QLatin1String("text/plain")) {
-        if (a == QTestLiteStaticInfo::atom(QTestLiteStaticInfo::UTF8_STRING))
+        if (a == QTestLiteStatic::atom(QTestLiteStatic::UTF8_STRING))
             return QString::fromUtf8(data);
         if (a == XA_STRING)
             return QString::fromLatin1(data);
-        if (a == QTestLiteStaticInfo::atom(QTestLiteStaticInfo::TEXT)
-                || a == QTestLiteStaticInfo::atom(QTestLiteStaticInfo::COMPOUND_TEXT))
+        if (a == QTestLiteStatic::atom(QTestLiteStatic::TEXT)
+                || a == QTestLiteStatic::atom(QTestLiteStatic::COMPOUND_TEXT))
             // #### might be wrong for COMPUND_TEXT
             return QString::fromLocal8Bit(data, data.size());
     }
@@ -312,12 +312,12 @@ Atom QTestLiteMime::xdndMimeAtomForFormat(Display *display, const QString &forma
 
     // find matches for string types
     if (format == QLatin1String("text/plain")) {
-        if (atoms.contains(QTestLiteStaticInfo::atom(QTestLiteStaticInfo::UTF8_STRING)))
-            return QTestLiteStaticInfo::atom(QTestLiteStaticInfo::UTF8_STRING);
-        if (atoms.contains(QTestLiteStaticInfo::atom(QTestLiteStaticInfo::COMPOUND_TEXT)))
-            return QTestLiteStaticInfo::atom(QTestLiteStaticInfo::COMPOUND_TEXT);
-        if (atoms.contains(QTestLiteStaticInfo::atom(QTestLiteStaticInfo::TEXT)))
-            return QTestLiteStaticInfo::atom(QTestLiteStaticInfo::TEXT);
+        if (atoms.contains(QTestLiteStatic::atom(QTestLiteStatic::UTF8_STRING)))
+            return QTestLiteStatic::atom(QTestLiteStatic::UTF8_STRING);
+        if (atoms.contains(QTestLiteStatic::atom(QTestLiteStatic::COMPOUND_TEXT)))
+            return QTestLiteStatic::atom(QTestLiteStatic::COMPOUND_TEXT);
+        if (atoms.contains(QTestLiteStatic::atom(QTestLiteStatic::TEXT)))
+            return QTestLiteStatic::atom(QTestLiteStatic::TEXT);
         if (atoms.contains(XA_STRING))
             return XA_STRING;
     }

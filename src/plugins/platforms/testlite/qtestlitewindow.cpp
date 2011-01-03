@@ -113,14 +113,14 @@ QTestLiteWindow::QTestLiteWindow(QWidget *window)
 
     Atom protocols[5];
     int n = 0;
-    protocols[n++] = QTestLiteStaticInfo::atom(QTestLiteStaticInfo::WM_DELETE_WINDOW);        // support del window protocol
-    protocols[n++] = QTestLiteStaticInfo::atom(QTestLiteStaticInfo::WM_TAKE_FOCUS);                // support take focus window protocol
-    protocols[n++] = QTestLiteStaticInfo::atom(QTestLiteStaticInfo::_NET_WM_PING);                // support _NET_WM_PING protocol
+    protocols[n++] = QTestLiteStatic::atom(QTestLiteStatic::WM_DELETE_WINDOW);        // support del window protocol
+    protocols[n++] = QTestLiteStatic::atom(QTestLiteStatic::WM_TAKE_FOCUS);                // support take focus window protocol
+    protocols[n++] = QTestLiteStatic::atom(QTestLiteStatic::_NET_WM_PING);                // support _NET_WM_PING protocol
 #ifndef QT_NO_XSYNC
-    protocols[n++] = QTestLiteStaticInfo::atom(QTestLiteStaticInfo::_NET_WM_SYNC_REQUEST);        // support _NET_WM_SYNC_REQUEST protocol
+    protocols[n++] = QTestLiteStatic::atom(QTestLiteStatic::_NET_WM_SYNC_REQUEST);        // support _NET_WM_SYNC_REQUEST protocol
 #endif // QT_NO_XSYNC
     if (window->windowFlags() & Qt::WindowContextHelpButtonHint)
-        protocols[n++] = QTestLiteStaticInfo::atom(QTestLiteStaticInfo::_NET_WM_CONTEXT_HELP);
+        protocols[n++] = QTestLiteStatic::atom(QTestLiteStatic::_NET_WM_CONTEXT_HELP);
     XSetWMProtocols(mScreen->display(), x_window, protocols, n);
 }
 
@@ -344,7 +344,7 @@ QtMWMHints QTestLiteWindow::getMWMHints() const
     int format;
     ulong nitems, bytesLeft;
     uchar *data = 0;
-    Atom atomForMotifWmHints = QTestLiteStaticInfo::atom(QTestLiteStaticInfo::_MOTIF_WM_HINTS);
+    Atom atomForMotifWmHints = QTestLiteStatic::atom(QTestLiteStatic::_MOTIF_WM_HINTS);
     if ((XGetWindowProperty(mScreen->display(), x_window, atomForMotifWmHints, 0, 5, false,
                             atomForMotifWmHints, &type, &format, &nitems, &bytesLeft,
                             &data) == Success)
@@ -368,7 +368,7 @@ QtMWMHints QTestLiteWindow::getMWMHints() const
 
 void QTestLiteWindow::setMWMHints(const QtMWMHints &mwmhints)
 {
-    Atom atomForMotifWmHints = QTestLiteStaticInfo::atom(QTestLiteStaticInfo::_MOTIF_WM_HINTS);
+    Atom atomForMotifWmHints = QTestLiteStatic::atom(QTestLiteStatic::_MOTIF_WM_HINTS);
     if (mwmhints.flags != 0l) {
         XChangeProperty(mScreen->display(), x_window,
                         atomForMotifWmHints, atomForMotifWmHints, 32,

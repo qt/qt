@@ -246,7 +246,7 @@ public:
         return supported;
     }
 
-    Atom atom(QTestLiteStaticInfo::X11Atom atom)
+    Atom atom(QTestLiteStatic::X11Atom atom)
     {
         return m_allAtoms[atom];
     }
@@ -260,10 +260,58 @@ public:
         return ptrXFixesSelectSelectionInput;
     }
 
+    QImage qimageFromXImage(XImage *xi)
+    {
+        QImage::Format format = QImage::Format_ARGB32_Premultiplied;
+        if (xi->depth == 24)
+            format = QImage::Format_RGB32;
+        else if (xi->depth == 16)
+            format = QImage::Format_RGB16;
+
+        QImage image = QImage((uchar *)xi->data, xi->width, xi->height, xi->bytes_per_line, format).copy();
+
+        // we may have to swap the byte order
+        if ((QSysInfo::ByteOrder == QSysInfo::LittleEndian && xi->byte_order == MSBFirst)
+            || (QSysInfo::ByteOrder == QSysInfo::BigEndian && xi->byte_order == LSBFirst))
+        {
+            for (int i=0; i < image.height(); i++) {
+                if (xi->depth == 16) {
+                    ushort *p = (ushort*)image.scanLine(i);
+                    ushort *end = p + image.width();
+                    while (p < end) {
+                        *p = ((*p << 8) & 0xff00) | ((*p >> 8) & 0x00ff);
+                        p++;
+                    }
+                } else {
+                    uint *p = (uint*)image.scanLine(i);
+                    uint *end = p + image.width();
+                    while (p < end) {
+                        *p = ((*p << 24) & 0xff000000) | ((*p << 8) & 0x00ff0000)
+                             | ((*p >> 8) & 0x0000ff00) | ((*p >> 24) & 0x000000ff);
+                        p++;
+                    }
+                }
+            }
+        }
+
+        // fix-up alpha channel
+        if (format == QImage::Format_RGB32) {
+            QRgb *p = (QRgb *)image.bits();
+            for (int y = 0; y < xi->height; ++y) {
+                for (int x = 0; x < xi->width; ++x)
+                    p[x] |= 0xff000000;
+                p += xi->bytes_per_line / 4;
+            }
+        }
+
+        return image;
+    }
+
+
 private:
 
     void initializeAllAtoms(QTestLiteScreen *screen) {
-        const char *names[QTestLiteStaticInfo::NAtoms];
+        const char *names[QTestLiteStatic::NAtoms];
         const char *ptr = x11_atomnames;
 
         int i = 0;
@@ -274,17 +322,17 @@ private:
             ++ptr;
         }
 
-        Q_ASSERT(i == QTestLiteStaticInfo::NPredefinedAtoms);
+        Q_ASSERT(i == QTestLiteStatic::NPredefinedAtoms);
 
         QByteArray settings_atom_name("_QT_SETTINGS_TIMESTAMP_");
         settings_atom_name += XDisplayName(qPrintable(screen->displayName()));
         names[i++] = settings_atom_name;
 
-        Q_ASSERT(i == QTestLiteStaticInfo::NAtoms);
+        Q_ASSERT(i == QTestLiteStatic::NAtoms);
     #if 0//defined(XlibSpecificationRelease) && (XlibSpecificationRelease >= 6)
         XInternAtoms(screen->display(), (char **)names, i, False, m_allAtoms);
     #else
-        for (i = 0; i < QTestLiteStaticInfo::NAtoms; ++i)
+        for (i = 0; i < QTestLiteStatic::NAtoms; ++i)
             m_allAtoms[i] = XInternAtom(screen->display(), (char *)names[i], False);
     #endif
     }
@@ -298,7 +346,7 @@ private:
         unsigned char *data = 0;
 
         int e = XGetWindowProperty(screen->display(), screen->rootWindow(),
-                                   this->atom(QTestLiteStaticInfo::_NET_SUPPORTED), 0, 0,
+                                   this->atom(QTestLiteStatic::_NET_SUPPORTED), 0, 0,
                                    False, XA_ATOM, &type, &format, &nitems, &after, &data);
         if (data)
             XFree(data);
@@ -309,7 +357,7 @@ private:
 
             while (after > 0) {
                 XGetWindowProperty(screen->display(), screen->rootWindow(),
-                                   this->atom(QTestLiteStaticInfo::_NET_SUPPORTED), offset, 1024,
+                                   this->atom(QTestLiteStatic::_NET_SUPPORTED), offset, 1024,
                                    False, XA_ATOM, &type, &format, &nitems, &after, &data);
 
                 if (type == XA_ATOM && format == 32) {
@@ -367,7 +415,7 @@ private:
     }
 
     Atom *m_supportedAtoms;
-    Atom m_allAtoms[QTestLiteStaticInfo::NAtoms];
+    Atom m_allAtoms[QTestLiteStatic::NAtoms];
 
 #ifndef QT_NO_XFIXES
     PtrXFixesQueryExtension ptrXFixesQueryExtension;
@@ -385,33 +433,38 @@ private:
 Q_GLOBAL_STATIC(QTestLiteStaticInfoPrivate, qTestLiteStaticInfoPrivate);
 
 
-Atom QTestLiteStaticInfo::atom(QTestLiteStaticInfo::X11Atom atom)
+Atom QTestLiteStatic::atom(QTestLiteStatic::X11Atom atom)
 {
     return qTestLiteStaticInfoPrivate()->atom(atom);
 }
 
-bool QTestLiteStaticInfo::isSupportedByWM(Atom atom)
+bool QTestLiteStatic::isSupportedByWM(Atom atom)
 {
     return qTestLiteStaticInfoPrivate()->isSupportedByWM(atom);
 }
 
-bool QTestLiteStaticInfo::useXFixes()
+bool QTestLiteStatic::useXFixes()
 {
     return qTestLiteStaticInfoPrivate()->useXFixes();
 }
 
-int QTestLiteStaticInfo::xFixesEventBase()
+int QTestLiteStatic::xFixesEventBase()
 {
     return qTestLiteStaticInfoPrivate()->xFixesEventBase();
 }
 
 #ifndef QT_NO_XFIXES
-PtrXFixesSelectSelectionInput QTestLiteStaticInfo::xFixesSelectSelectionInput()
+PtrXFixesSelectSelectionInput QTestLiteStatic::xFixesSelectSelectionInput()
 {
     qDebug() << qTestLiteStaticInfoPrivate()->useXFixes();
     if (!qTestLiteStaticInfoPrivate()->useXFixes())
         return 0;
 
     return qTestLiteStaticInfoPrivate()->xFixesSelectSelectionInput();
+}
+
+QImage QTestLiteStatic::qimageFromXImage(XImage *xi)
+{
+    return qTestLiteStaticInfoPrivate()->qimageFromXImage(xi);
 }
 #endif //QT_NO_XFIXES

@@ -248,14 +248,14 @@ QTestLiteScreen::~QTestLiteScreen()
 bool QTestLiteScreen::handleEvent(XEvent *xe)
 {
     int quit = false;
-    QTestLiteWindow *xw = 0;
+    QTestLiteWindow *platformWindow = 0;
     QWidget *widget = QWidget::find(xe->xany.window);
     if (widget) {
         xw = static_cast<QTestLiteWindow *>(widget->platformWindow());
     }
 
-    Atom wmProtocolsAtom = QTestLiteStaticInfo::atom(QTestLiteStaticInfo::WM_PROTOCOLS);
-    Atom wmDeleteWindowAtom = QTestLiteStaticInfo::atom(QTestLiteStaticInfo::WM_DELETE_WINDOW);
+    Atom wmProtocolsAtom = QTestLiteStatic::atom(QTestLiteStatic::WM_PROTOCOLS);
+    Atom wmDeleteWindowAtom = QTestLiteStatic::atom(QTestLiteStatic::WM_DELETE_WINDOW);
     switch (xe->type) {
 
     case ClientMessage:
@@ -346,7 +346,7 @@ bool QTestLiteScreen::handleEvent(XEvent *xe)
 
 static Bool checkForClipboardEvents(Display *, XEvent *e, XPointer)
 {
-    Atom clipboard = QTestLiteStaticInfo::atom(QTestLiteStaticInfo::CLIPBOARD);
+    Atom clipboard = QTestLiteStatic::atom(QTestLiteStatic::CLIPBOARD);
     return ((e->type == SelectionRequest && (e->xselectionrequest.selection == XA_PRIMARY
                                              || e->xselectionrequest.selection == clipboard))
             || (e->type == SelectionClear && (e->xselectionclear.selection == XA_PRIMARY

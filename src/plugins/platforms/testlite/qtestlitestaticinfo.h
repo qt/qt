@@ -190,7 +190,7 @@ enum {
 #endif
 
 
-class QTestLiteStaticInfo
+class QTestLiteStatic
 {
 public:
     enum X11Atom {
@@ -364,6 +364,7 @@ public:
     static PtrXFixesSelectSelectionInput xFixesSelectSelectionInput();
     #endif //QT_NO_XFIXES
 
+    static QImage qimageFromXImage(XImage *xi);
 
 
 };
