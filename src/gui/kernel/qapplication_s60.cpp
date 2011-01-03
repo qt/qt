@@ -1546,6 +1546,8 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     repository = 0;
 #endif
 
+    qt_keymapper_private()->updateInputLanguage();
+
 #ifdef QT_KEYPAD_NAVIGATION
     if (touch) {
         QApplicationPrivate::navigationMode = Qt::NavigationModeNone;
@@ -2086,6 +2088,13 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
         }
         break;
 #endif
+
+#ifdef Q_WS_S60
+    case KEikInputLanguageChange:
+        qt_keymapper_private()->updateInputLanguage();
+        break;
+#endif
+
     default:
         break;
     }
