@@ -251,7 +251,7 @@ bool QTestLiteScreen::handleEvent(XEvent *xe)
     QTestLiteWindow *platformWindow = 0;
     QWidget *widget = QWidget::find(xe->xany.window);
     if (widget) {
-        xw = static_cast<QTestLiteWindow *>(widget->platformWindow());
+        platformWindow = static_cast<QTestLiteWindow *>(widget->platformWindow());
     }
 
     Atom wmProtocolsAtom = QTestLiteStatic::atom(QTestLiteStatic::WM_PROTOCOLS);
@@ -262,33 +262,33 @@ bool QTestLiteScreen::handleEvent(XEvent *xe)
         if (xe->xclient.format == 32 && xe->xclient.message_type == wmProtocolsAtom) {
             Atom a = xe->xclient.data.l[0];
             if (a == wmDeleteWindowAtom)
-                xw->handleCloseEvent();
+                platformWindow->handleCloseEvent();
         }
         break;
 
     case Expose:
-        if (xw)
+        if (platformWindow)
             if (xe->xexpose.count == 0)
-                xw->paintEvent();
+                platformWindow->paintEvent();
         break;
     case ConfigureNotify:
-        if (xw)
-            xw->resizeEvent(&xe->xconfigure);
+        if (platformWindow)
+            platformWindow->resizeEvent(&xe->xconfigure);
         break;
 
     case ButtonPress:
-        if (xw)
-            xw->mousePressEvent(&xe->xbutton);
+        if (platformWindow)
+            platformWindow->mousePressEvent(&xe->xbutton);
         break;
 
     case ButtonRelease:
-        if (xw)
-            xw->handleMouseEvent(QEvent::MouseButtonRelease, &xe->xbutton);
+        if (platformWindow)
+            platformWindow->handleMouseEvent(QEvent::MouseButtonRelease, &xe->xbutton);
         break;
 
     case MotionNotify:
-        if (xw)
-            xw->handleMouseEvent(QEvent::MouseMove, &xe->xbutton);
+        if (platformWindow)
+            platformWindow->handleMouseEvent(QEvent::MouseMove, &xe->xbutton);
         break;
 
         case XKeyPress:
@@ -300,23 +300,23 @@ bool QTestLiteScreen::handleEvent(XEvent *xe)
         break;
 
     case EnterNotify:
-        if (xw)
-            xw->handleEnterEvent();
+        if (platformWindow)
+            platformWindow->handleEnterEvent();
         break;
 
     case LeaveNotify:
-        if (xw)
-            xw->handleLeaveEvent();
+        if (platformWindow)
+            platformWindow->handleLeaveEvent();
         break;
 
     case XFocusIn:
-        if (xw)
-            xw->handleFocusInEvent();
+        if (platformWindow)
+            platformWindow->handleFocusInEvent();
         break;
 
     case XFocusOut:
-        if (xw)
-            xw->handleFocusOutEvent();
+        if (platformWindow)
+            platformWindow->handleFocusOutEvent();
         break;
 
     case PropertyNotify:
