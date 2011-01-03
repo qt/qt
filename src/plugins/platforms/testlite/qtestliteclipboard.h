@@ -5,7 +5,6 @@
 #include "qtestlitestaticinfo.h"
 
 class QTestLiteScreen;
-class QTestLiteMime;
 class QTestLiteClipboard : public QPlatformClipboard
 {
 public:
@@ -13,6 +12,8 @@ public:
 
     const QMimeData *mimeData(QClipboard::Mode mode) const;
     void setMimeData(QMimeData *data, QClipboard::Mode mode);
+
+    bool supportsMode(QClipboard::Mode mode) const;
 
     QTestLiteScreen *screen() const;
 
@@ -36,10 +37,10 @@ private:
 
     QTestLiteScreen *m_screen;
 
-    QTestLiteMime *m_xClipboard;
+    QMimeData *m_xClipboard;
     QMimeData *m_clientClipboard;
 
-    QTestLiteMime *m_xSelection;
+    QMimeData *m_xSelection;
     QMimeData *m_clientSelection;
 
     Window m_requestor;

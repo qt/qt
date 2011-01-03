@@ -4,98 +4,21 @@
 #include "qtestlitescreen.h"
 
 #include <QtCore/QTextCodec>
+#include <QtGui/QImageWriter>
+#include <QtCore/QBuffer>
 
-QTestLiteMime::QTestLiteMime(QClipboard::Mode mode, QTestLiteClipboard *clipboard)
-    : QInternalMimeData(), m_clipboard(clipboard)
-{
-    switch (mode) {
-    case QClipboard::Selection:
-        modeAtom = XA_PRIMARY;
-        break;
-
-    case QClipboard::Clipboard:
-        modeAtom = QTestLiteStaticInfo::atom(QTestLiteStaticInfo::CLIPBOARD);
-        break;
-
-    default:
-        qWarning("QTestLiteMime: Internal error: Unsupported clipboard mode");
-        break;
-    }
-}
+QTestLiteMime::QTestLiteMime()
+    : QInternalMimeData()
+{ }
 
 QTestLiteMime::~QTestLiteMime()
-{
-}
-
-bool QTestLiteMime::empty() const
-{
-    Window win = XGetSelectionOwner(m_clipboard->screen()->display(), modeAtom);
-
-    return win == XNone;
-}
-
-QStringList QTestLiteMime::formats_sys() const
-{
-    if (empty())
-        return QStringList();
-
-    if (!formatList.count()) {
-        // get the list of targets from the current clipboard owner - we do this
-        // once so that multiple calls to this function don't require multiple
-        // server round trips...
-
-        format_atoms = m_clipboard->getDataInFormat(modeAtom,QTestLiteStaticInfo::atom(QTestLiteStaticInfo::TARGETS));
-
-        if (format_atoms.size() > 0) {
-            Atom *targets = (Atom *) format_atoms.data();
-            int size = format_atoms.size() / sizeof(Atom);
-
-            for (int i = 0; i < size; ++i) {
-                if (targets[i] == 0)
-                    continue;
-
-                QStringList formatsForAtom = xdndMimeFormatsForAtom(m_clipboard->screen()->display(),targets[i]);
-                for (int j = 0; j < formatsForAtom.size(); ++j) {
-                    if (!formatList.contains(formatsForAtom.at(j)))
-                        formatList.append(formatsForAtom.at(j));
-                }
-            }
-        }
-    }
-
-    return formatList;
-}
-
-bool QTestLiteMime::hasFormat_sys(const QString &format) const
-{
-    QStringList list = formats();
-    return list.contains(format);
-}
-
-QVariant QTestLiteMime::retrieveData_sys(const QString &fmt, QVariant::Type requestedType) const
-{
-    if (fmt.isEmpty() || empty())
-        return QByteArray();
-
-    (void)formats(); // trigger update of format list
-
-    QList<Atom> atoms;
-    Atom *targets = (Atom *) format_atoms.data();
-    int size = format_atoms.size() / sizeof(Atom);
-    for (int i = 0; i < size; ++i)
-        atoms.append(targets[i]);
-
-    QByteArray encoding;
-    Atom fmtatom = xdndMimeAtomForFormat(m_clipboard->screen()->display(),fmt, requestedType, atoms, &encoding);
-
-    if (fmtatom == 0)
-        return QVariant();
-
-    return xdndMimeConvertToFormat(m_clipboard->screen()->display(),fmtatom, m_clipboard->getDataInFormat(modeAtom,fmtatom), fmt, requestedType, encoding);
-}
+{}
 
 
-QString QTestLiteMime::xdndMimeAtomToString(Display *display, Atom a)
+
+
+
+QString QTestLiteMime::mimeAtomToString(Display *display, Atom a)
 {
     if (!a) return 0;
 
@@ -108,18 +31,18 @@ QString QTestLiteMime::xdndMimeAtomToString(Display *display, Atom a)
     return result;
 }
 
-Atom QTestLiteMime::xdndMimeStringToAtom(Display *display, const QString &mimeType)
+Atom QTestLiteMime::mimeStringToAtom(Display *display, const QString &mimeType)
 {
     if (mimeType.isEmpty())
         return 0;
     return XInternAtom(display, mimeType.toLatin1().constData(), False);
 }
 
-QStringList QTestLiteMime::xdndMimeFormatsForAtom(Display *display, Atom a)
+QStringList QTestLiteMime::mimeFormatsForAtom(Display *display, Atom a)
 {
     QStringList formats;
     if (a) {
-        QString atomName = xdndMimeAtomToString(display, a);
+        QString atomName = mimeAtomToString(display, a);
         formats.append(atomName);
 
         // special cases for string type
@@ -140,12 +63,12 @@ QStringList QTestLiteMime::xdndMimeFormatsForAtom(Display *display, Atom a)
     return formats;
 }
 
-bool QTestLiteMime::xdndMimeDataForAtom(Display *display, Atom a, QMimeData *mimeData, QByteArray *data, Atom *atomFormat, int *dataFormat)
+bool QTestLiteMime::mimeDataForAtom(Display *display, Atom a, QMimeData *mimeData, QByteArray *data, Atom *atomFormat, int *dataFormat)
 {
     bool ret = false;
     *atomFormat = a;
     *dataFormat = 8;
-    QString atomName = xdndMimeAtomToString(display, a);
+    QString atomName = mimeAtomToString(display, a);
     if (QInternalMimeData::hasFormatHelper(atomName, mimeData)) {
         *data = QInternalMimeData::renderDataHelper(atomName, mimeData);
         if (atomName == QLatin1String("application/x-color"))
@@ -195,30 +118,16 @@ bool QTestLiteMime::xdndMimeDataForAtom(Display *display, Atom a, QMimeData *mim
             *data = QByteArray(reinterpret_cast<const char *>(mozUri.utf16()), mozUri.length() * 2);
             ret = true;
         } else if ((a == XA_PIXMAP || a == XA_BITMAP) && mimeData->hasImage()) {
-            QPixmap pm = qvariant_cast<QPixmap>(mimeData->imageData());
-            if (a == XA_BITMAP && pm.depth() != 1) {
-                QImage img = pm.toImage();
-                img = img.convertToFormat(QImage::Format_MonoLSB);
-                pm = QPixmap::fromImage(img);
-            }
-//            QDragManager *dm = QDragManager::self();
-//            if (dm) {
-//                Pixmap handle = pm.handle();
-//                *data = QByteArray((const char *) &handle, sizeof(Pixmap));
-//                dm->xdndMimeTransferedPixmap[dm->xdndMimeTransferedPixmapIndex] = pm;
-//                dm->xdndMimeTransferedPixmapIndex =
-//                            (dm->xdndMimeTransferedPixmapIndex + 1) % 2;
-//                ret = true;
-//            }
+            ret = true;
         }
     }
     return ret && data != 0;
 }
 
-QList<Atom> QTestLiteMime::xdndMimeAtomsForFormat(Display *display, const QString &format)
+QList<Atom> QTestLiteMime::mimeAtomsForFormat(Display *display, const QString &format)
 {
     QList<Atom> atoms;
-    atoms.append(xdndMimeStringToAtom(display, format));
+    atoms.append(mimeStringToAtom(display, format));
 
     // special cases for strings
     if (format == QLatin1String("text/plain")) {
@@ -230,7 +139,7 @@ QList<Atom> QTestLiteMime::xdndMimeAtomsForFormat(Display *display, const QStrin
 
     // special cases for uris
     if (format == QLatin1String("text/uri-list")) {
-        atoms.append(xdndMimeStringToAtom(display,QLatin1String("text/x-moz-url")));
+        atoms.append(mimeStringToAtom(display,QLatin1String("text/x-moz-url")));
     }
 
     //special cases for images
@@ -242,9 +151,9 @@ QList<Atom> QTestLiteMime::xdndMimeAtomsForFormat(Display *display, const QStrin
     return atoms;
 }
 
-QVariant QTestLiteMime::xdndMimeConvertToFormat(Display *display, Atom a, const QByteArray &data, const QString &format, QVariant::Type requestedType, const QByteArray &encoding)
+QVariant QTestLiteMime::mimeConvertToFormat(Display *display, Atom a, const QByteArray &data, const QString &format, QVariant::Type requestedType, const QByteArray &encoding)
 {
-    QString atomName = xdndMimeAtomToString(display,a);
+    QString atomName = mimeAtomToString(display,a);
     if (atomName == format)
         return data;
 
@@ -288,25 +197,35 @@ QVariant QTestLiteMime::xdndMimeConvertToFormat(Display *display, Atom a, const 
     // special cas for images
     if (format == QLatin1String("image/ppm")) {
         if (a == XA_PIXMAP && data.size() == sizeof(Pixmap)) {
-//            Pixmap xpm = *((Pixmap*)data.data());
-//            if (!xpm)
-//                return QByteArray();
-//            QPixmap qpm = QPixmap::fromX11Pixmap(xpm);
-//            QImageWriter imageWriter;
-//            imageWriter.setFormat("PPMRAW");
-//            QImage imageToWrite = qpm.toImage();
-//            QBuffer buf;
-//            buf.open(QIODevice::WriteOnly);
-//            imageWriter.setDevice(&buf);
-//            imageWriter.write(imageToWrite);
-//            return buf.buffer();
-            return QVariant();
+            Pixmap xpm = *((Pixmap*)data.data());
+            if (!xpm)
+                return QByteArray();
+            Window root;
+            int x;
+            int y;
+            uint width;
+            uint height;
+            uint border_width;
+            uint depth;
+
+            XGetGeometry(display, xpm, &root, &x, &y, &width, &height, &border_width, &depth);
+            XImage *ximg = XGetImage(display,xpm,x,y,width,height,AllPlanes,depth==1 ? XYPixmap : ZPixmap);
+            QImage qimg = QTestLiteStatic::qimageFromXImage(ximg);
+            XDestroyImage(ximg);
+
+            QImageWriter imageWriter;
+            imageWriter.setFormat("PPMRAW");
+            QBuffer buf;
+            buf.open(QIODevice::WriteOnly);
+            imageWriter.setDevice(&buf);
+            imageWriter.write(qimg);
+            return buf.buffer();
         }
     }
     return QVariant();
 }
 
-Atom QTestLiteMime::xdndMimeAtomForFormat(Display *display, const QString &format, QVariant::Type requestedType, const QList<Atom> &atoms, QByteArray *requestedEncoding)
+Atom QTestLiteMime::mimeAtomForFormat(Display *display, const QString &format, QVariant::Type requestedType, const QList<Atom> &atoms, QByteArray *requestedEncoding)
 {
     requestedEncoding->clear();
 
@@ -324,10 +243,10 @@ Atom QTestLiteMime::xdndMimeAtomForFormat(Display *display, const QString &forma
 
     // find matches for uri types
     if (format == QLatin1String("text/uri-list")) {
-        Atom a = xdndMimeStringToAtom(display,format);
+        Atom a = mimeStringToAtom(display,format);
         if (a && atoms.contains(a))
             return a;
-        a = xdndMimeStringToAtom(display,QLatin1String("text/x-moz-url"));
+        a = mimeStringToAtom(display,QLatin1String("text/x-moz-url"));
         if (a && atoms.contains(a))
             return a;
     }
@@ -347,14 +266,14 @@ Atom QTestLiteMime::xdndMimeAtomForFormat(Display *display, const QString &forma
         QString formatWithCharset = format;
         formatWithCharset.append(QLatin1String(";charset=utf-8"));
 
-        Atom a = xdndMimeStringToAtom(display,formatWithCharset);
+        Atom a = mimeStringToAtom(display,formatWithCharset);
         if (a && atoms.contains(a)) {
             *requestedEncoding = "utf-8";
             return a;
         }
     }
 
-    Atom a = xdndMimeStringToAtom(display,format);
+    Atom a = mimeStringToAtom(display,format);
     if (a && atoms.contains(a))
         return a;
 

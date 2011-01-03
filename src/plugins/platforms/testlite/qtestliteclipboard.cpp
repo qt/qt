@@ -7,6 +7,104 @@
 
 #include <QtCore/QDebug>
 
+class QTestLiteClipboardMime : public QTestLiteMime
+{
+    Q_OBJECT
+public:
+    QTestLiteClipboardMime(QClipboard::Mode mode, QTestLiteClipboard *clipboard)
+        : QTestLiteMime()
+        , m_clipboard(clipboard)
+    {
+        switch (mode) {
+        case QClipboard::Selection:
+            modeAtom = XA_PRIMARY;
+            break;
+
+        case QClipboard::Clipboard:
+            modeAtom = QTestLiteStatic::atom(QTestLiteStatic::CLIPBOARD);
+            break;
+
+        default:
+            qWarning("QTestLiteMime: Internal error: Unsupported clipboard mode");
+            break;
+        }
+    }
+
+protected:
+    QStringList formats_sys() const
+    {
+        if (empty())
+            return QStringList();
+
+        if (!formatList.count()) {
+            QTestLiteClipboardMime *that = const_cast<QTestLiteClipboardMime *>(this);
+            // get the list of targets from the current clipboard owner - we do this
+            // once so that multiple calls to this function don't require multiple
+            // server round trips...
+            that->format_atoms = m_clipboard->getDataInFormat(modeAtom,QTestLiteStatic::atom(QTestLiteStatic::TARGETS));
+
+            if (format_atoms.size() > 0) {
+                Atom *targets = (Atom *) format_atoms.data();
+                int size = format_atoms.size() / sizeof(Atom);
+
+                for (int i = 0; i < size; ++i) {
+                    if (targets[i] == 0)
+                        continue;
+
+                    QStringList formatsForAtom = mimeFormatsForAtom(m_clipboard->screen()->display(),targets[i]);
+                    for (int j = 0; j < formatsForAtom.size(); ++j) {
+                        if (!formatList.contains(formatsForAtom.at(j)))
+                            that->formatList.append(formatsForAtom.at(j));
+                    }
+                }
+            }
+        }
+
+        return formatList;
+    }
+
+    bool hasFormat_sys(const QString &format) const
+    {
+        QStringList list = formats();
+        return list.contains(format);
+    }
+
+    QVariant retrieveData_sys(const QString &fmt, QVariant::Type requestedType) const
+    {
+        if (fmt.isEmpty() || empty())
+            return QByteArray();
+
+        (void)formats(); // trigger update of format list
+
+        QList<Atom> atoms;
+        Atom *targets = (Atom *) format_atoms.data();
+        int size = format_atoms.size() / sizeof(Atom);
+        for (int i = 0; i < size; ++i)
+            atoms.append(targets[i]);
+
+        QByteArray encoding;
+        Atom fmtatom = mimeAtomForFormat(m_clipboard->screen()->display(),fmt, requestedType, atoms, &encoding);
+
+        if (fmtatom == 0)
+            return QVariant();
+
+        return mimeConvertToFormat(m_clipboard->screen()->display(),fmtatom, m_clipboard->getDataInFormat(modeAtom,fmtatom), fmt, requestedType, encoding);
+    }
+private:
+    bool empty() const
+    {
+        Window win = XGetSelectionOwner(m_clipboard->screen()->display(), modeAtom);
+
+        return win == XNone;
+    }
+
+
+    Atom modeAtom;
+    QTestLiteClipboard *m_clipboard;
+    QStringList formatList;
+    QByteArray format_atoms;
+};
+
 const int QTestLiteClipboard::clipboard_timeout = 5000;
 
 QTestLiteClipboard::QTestLiteClipboard(QTestLiteScreen *screen)
@@ -26,13 +124,24 @@ const QMimeData * QTestLiteClipboard::mimeData(QClipboard::Mode mode) const
     if (mode == QClipboard::Clipboard) {
         if (!m_xClipboard) {
             QTestLiteClipboard *that = const_cast<QTestLiteClipboard *>(this);
-            that->m_xClipboard = new QTestLiteMime(mode,that);
+            that->m_xClipboard = new QTestLiteClipboardMime(mode,that);
         }
         Window clipboardOwner = XGetSelectionOwner(screen()->display(),QTestLiteStatic::atom(QTestLiteStatic::CLIPBOARD));
         if (clipboardOwner == owner()) {
             return m_clientClipboard;
         } else {
             return m_xClipboard;
+        }
+    } else if (mode == QClipboard::Selection) {
+        if (!m_xSelection) {
+            QTestLiteClipboard *that = const_cast<QTestLiteClipboard *>(this);
+            that->m_xSelection = new QTestLiteClipboardMime(mode,that);
+        }
+        Window clipboardOwner = XGetSelectionOwner(screen()->display(),XA_PRIMARY);
+        if (clipboardOwner == owner()) {
+            return m_clientSelection;
+        } else {
+            return m_xSelection;
         }
     }
     return 0;
@@ -71,13 +180,18 @@ void QTestLiteClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
     XSetSelectionOwner(m_screen->display(), modeAtom, newOwner, CurrentTime);
 
     if (XGetSelectionOwner(m_screen->display(), modeAtom) != newOwner) {
-//        qWarning("QClipboard::setData: Cannot set X11 selection owner for %s",
-//                 xdndAtomToString(atom).data());
-        *d = 0;
-        return;
+        qWarning("QClipboard::setData: Cannot set X11 selection owner");
     }
 
 }
+
+bool QTestLiteClipboard::supportsMode(QClipboard::Mode mode) const
+{
+    if (mode == QClipboard::Clipboard || mode == QClipboard::Selection)
+        return true;
+    return false;
+}
+
 
 QTestLiteScreen * QTestLiteClipboard::screen() const
 {
@@ -153,14 +267,14 @@ Atom QTestLiteClipboard::sendSelection(QMimeData *d, Atom target, Window window,
     int dataFormat = 0;
     QByteArray data;
 
-    QString fmt = QTestLiteMime::xdndMimeAtomToString(screen()->display(), target);
+    QString fmt = QTestLiteMime::mimeAtomToString(screen()->display(), target);
     if (fmt.isEmpty()) { // Not a MIME type we have
         qDebug() << "QClipboard: send_selection(): converting to type '%s' is not supported" << fmt.data();
         return XNone;
     }
     qDebug() << "QClipboard: send_selection(): converting to type '%s'" << fmt.data();
 
-    if (QTestLiteMime::xdndMimeDataForAtom(screen()->display(),target, d, &data, &atomFormat, &dataFormat)) {
+    if (QTestLiteMime::mimeDataForAtom(screen()->display(),target, d, &data, &atomFormat, &dataFormat)) {
 
          // don't allow INCR transfers when using MULTIPLE or to
         // Motif clients (since Motif doesn't support INCR)
@@ -517,3 +631,5 @@ QByteArray QTestLiteClipboard::getDataInFormat(Atom modeAtom, Atom fmtatom)
 
     return buf;
 }
+
+#include "qtestliteclipboard.moc"
