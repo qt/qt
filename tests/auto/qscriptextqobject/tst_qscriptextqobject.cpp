@@ -1070,8 +1070,6 @@ void tst_QScriptExtQObject::getSetDynamicProperty_hideChildObject()
     m_myObject->setProperty("testName", 42);
     QVERIFY(val.property("testName").strictlyEquals(QScriptValue(m_engine, 42)));
 
-    QEXPECT_FAIL("", "FIXME: QtDynamicPropertyGetter isn't falling back when the property doesn't exist anymore", Continue);
-
     // Remove dynamic property
     m_myObject->setProperty("testName", QVariant());
     QCOMPARE(val.property("testName").toQObject(), child);

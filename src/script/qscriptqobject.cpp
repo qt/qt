@@ -896,8 +896,11 @@ v8::Handle<v8::Value> QtDynamicPropertyGetter(v8::Local<v8::String> property,
     if (!value.isValid()) {
         // The property no longer exists. Remove this accessor.
         self->ForceDelete(property);
-        // ### Make sure this causes fallback to interceptor
-        return v8::Handle<v8::Value>();
+
+        // Fallback to V8 to get our property again. Unless other
+        // property is found on the prototype chain, we'll end up
+        // in QObject interceptor again.
+        return self->Get(property);
     }
     return engine->variantToJS(value);
 }
