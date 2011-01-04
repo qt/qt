@@ -406,6 +406,27 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
         t << "\t$(ABLD)" << testClause << " reallyclean " << item << " urel" << endl;
     }
     t << endl;
+
+    t << "freeze: $(ABLD)" << endl;
+    t << "\t$(ABLD)" << testClause << " freeze" << endl;
+    t << endl;
+
+    // Abld toolchain doesn't differentiate between freezing release or debug
+    t << "freeze-debug: freeze" << endl << endl;
+    t << "freeze-release: freeze" << endl << endl;
+
+    // For more specific builds, targets are in this form: freeze-build-platform, e.g. freeze-release-armv5,
+    // though note that debug and release targets of each platform are identical in symbian-abld.
+    foreach(QString item, debugPlatforms) {
+        t << "freeze-debug-" << item << ": $(ABLD)" << endl;
+        t << "\t$(ABLD)" << testClause << " freeze " << item << endl;
+    }
+    foreach(QString item, releasePlatforms) {
+        t << "freeze-release-" << item << ": $(ABLD)" << endl;
+        t << "\t$(ABLD)" << testClause << " freeze " << item << endl;
+    }
+
+    t << endl;
 }
 
 void SymbianAbldMakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t, const QString &iconTargetFile)
