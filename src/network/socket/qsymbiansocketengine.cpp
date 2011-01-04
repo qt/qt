@@ -378,7 +378,7 @@ bool QSymbianSocketEngine::initialize(int socketDescriptor, QAbstractSocket::Soc
         }
 
         // Make sure we receive out-of-band data
-        if (socketType == QAbstractSocket::TcpSocket
+        if (d->socketType == QAbstractSocket::TcpSocket
             && !setOption(ReceiveOutOfBandData, 1)) {
             qWarning("QNativeSocketEngine::initialize unable to inline out-of-band data");
         }
