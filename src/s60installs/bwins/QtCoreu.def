@@ -4585,4 +4585,9 @@ EXPORTS
 	?advance@QAnimationDriver@@QAEXXZ @ 4584 NONAME ; void QAnimationDriver::advance(void)
 	?start@QAnimationDriver@@AAEXXZ @ 4585 NONAME ; void QAnimationDriver::start(void)
 	?unlockInline@QMutex@@QAEXXZ @ 4586 NONAME ; void QMutex::unlockInline(void)
-
+	??0QSystemError@@QAE@HW4ErrorScope@0@@Z @ 4587 NONAME ; QSystemError::QSystemError(int, enum QSystemError::ErrorScope)
+	??0QSystemError@@QAE@XZ @ 4588 NONAME ; QSystemError::QSystemError(void)
+	?error@QSystemError@@QAEHXZ @ 4589 NONAME ; int QSystemError::error(void)
+	?scope@QSystemError@@QAE?AW4ErrorScope@1@XZ @ 4590 NONAME ; enum QSystemError::ErrorScope QSystemError::scope(void)
+	?toString@QSystemError@@QAE?AVQString@@XZ @ 4591 NONAME ; class QString QSystemError::toString(void)
+	??0QFileInfo@@QAE@PAVQFileInfoPrivate@@@Z @ 4592 NONAME ; QFileInfo::QFileInfo(class QFileInfoPrivate *)

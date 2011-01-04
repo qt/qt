@@ -745,6 +745,16 @@ tst_Suite::tst_Suite()
     addExpectedFailure("ecma/TypeConversion/9.3.1-3.js", "1/-1e-2000", willFixInNextReleaseMessage);
 #endif
 
+#ifdef Q_OS_SYMBIAN
+    addExpectedFailure("ecma/Math/15.8.2.13.js", "Math.pow(-1, 0.5)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.13.js", "Math.pow(-1, -0.5)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/Operators/order-01.js", "operator evaluation order: 11.5.1 *", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/Operators/order-01.js", "operator evaluation order: 11.5.2 /", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/Operators/order-01.js", "operator evaluation order: 11.6.2 -", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/Operators/order-01.js", "operator evaluation order: 11.13.2 *=", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/Operators/order-01.js", "operator evaluation order: 11.13.2 /=", willFixInNextReleaseMessage);
+#endif
+
     static const char klass[] = "tst_QScriptJsTestSuite";
 
     QVector<uint> *data = qt_meta_data_tst_Suite();

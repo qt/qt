@@ -437,6 +437,8 @@ int QDeclarativeTextInput::cursorPosition() const
 void QDeclarativeTextInput::setCursorPosition(int cp)
 {
     Q_D(QDeclarativeTextInput);
+    if (cp < 0 || cp > d->control->text().length())
+        return;
     d->control->moveCursor(cp);
 }
 
@@ -771,7 +773,7 @@ void QDeclarativeTextInput::setEchoMode(QDeclarativeTextInput::EchoMode echo)
         imHints &= ~(Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
     setInputMethodHints(imHints);
     d->control->setEchoMode((uint)echo);
-    update();
+    q_textChanged();
     emit echoModeChanged(echoMode());
 }
 
@@ -1479,6 +1481,7 @@ void QDeclarativeTextInput::cursorPosChanged()
     updateRect();//TODO: Only update rect between pos's
     updateMicroFocus();
     emit cursorPositionChanged();
+    d->control->resetCursorBlinkTimer();
 
     if(!d->control->hasSelectedText()){
         if(d->lastSelectionStart != d->control->cursor()){

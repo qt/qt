@@ -62,6 +62,9 @@
 #include <qaccessible.h>
 #endif
 #include <private/qsoftkeymanager_p.h>
+#ifndef QT_NO_GESTURE
+#  include <qscroller.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -188,6 +191,37 @@ void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index
             emit q->viewportEntered();
         }
         enteredIndex = index;
+    }
+}
+
+// stores and restores the selection and current item when flicking
+void QAbstractItemViewPrivate::_q_scrollerStateChanged()
+{
+    Q_Q(QAbstractItemView);
+
+    if (QScroller *scroller = QScroller::scroller(viewport)) {
+        switch (scroller->state()) {
+        case QScroller::Pressed:
+            // store the current selection in case we start scrolling
+            if (q->selectionModel()) {
+                oldSelection = q->selectionModel()->selection();
+                oldCurrent = q->selectionModel()->currentIndex();
+            }
+            break;
+
+        case QScroller::Dragging:
+            // restore the old selection if we really start scrolling
+            if (q->selectionModel()) {
+                q->selectionModel()->select(oldSelection, QItemSelectionModel::ClearAndSelect);
+                q->selectionModel()->setCurrentIndex(oldCurrent, QItemSelectionModel::NoUpdate);
+            }
+            // fall through
+
+        default:
+            oldSelection = QItemSelection();
+            oldCurrent = QModelIndex();
+            break;
+        }
     }
 }
 
@@ -596,6 +630,8 @@ QAbstractItemView::QAbstractItemView(QAbstractItemViewPrivate &dd, QWidget *pare
 */
 QAbstractItemView::~QAbstractItemView()
 {
+    // stop this timer here before ~QObject
+    d_func()->delayedReset.stop();
 }
 
 /*!
@@ -828,7 +864,7 @@ QVariant QAbstractItemView::inputMethodQuery(Qt::InputMethodQuery query) const
     deleted. QAbstractItemView does not take ownership of \a delegate.
 
     \note If a delegate has been assigned to both a row and a column, the row
-    delegate (i.e., this delegate) will take presedence and manage the
+    delegate (i.e., this delegate) will take precedence and manage the
     intersecting cell index.
 
     \warning You should not share the same instance of a delegate between views.
@@ -886,7 +922,7 @@ QAbstractItemDelegate *QAbstractItemView::itemDelegateForRow(int row) const
     deleted. QAbstractItemView does not take ownership of \a delegate.
 
     \note If a delegate has been assigned to both a row and a column, the row
-    delegate will take presedence and manage the intersecting cell index.
+    delegate will take precedence and manage the intersecting cell index.
 
     \warning You should not share the same instance of a delegate between views.
     Doing so can cause incorrect or unintuitive editing behavior since each
@@ -1616,6 +1652,11 @@ bool QAbstractItemView::viewportEvent(QEvent *event)
     case QEvent::WindowDeactivate:
         d->viewport->update();
         break;
+    case QEvent::ScrollPrepare:
+        executeDelayedItemsLayout();
+        connect(QScroller::scroller(d->viewport), SIGNAL(stateChanged(QScroller::State)), this, SLOT(_q_scrollerStateChanged()), Qt::UniqueConnection);
+        break;
+
     default:
         break;
     }

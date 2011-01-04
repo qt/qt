@@ -103,6 +103,22 @@ qint64 QElapsedTimer::restart()
     return t1 - old;
 }
 
+/*! \since 4.8
+
+    Returns the number of nanoseconds since this QElapsedTimer was last
+    started. Calling this function in a QElapsedTimer that was invalidated
+    will result in undefined results.
+
+    On platforms that do not provide nanosecond resolution, the value returned
+    will be the best estimate available.
+
+    \sa start(), restart(), hasExpired(), invalidate()
+*/
+qint64 QElapsedTimer::nsecsElapsed() const
+{
+    return elapsed() * 1000000;
+}
+
 /*!
     Returns the number of milliseconds since this QElapsedTimer was last
     started. Calling this function in a QElapsedTimer that was invalidated

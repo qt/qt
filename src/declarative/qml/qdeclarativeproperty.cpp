@@ -77,15 +77,28 @@ a property on a specific object instance.  To read a property's value, programme
 QDeclarativeProperty instance and call the read() method.  Likewise to write a property value the
 write() method is used.
 
+For example, for the following QML code:
+
+\qml
+// MyItem.qml
+import QtQuick 1.0
+
+Text { text: "A bit of text" }
+\endqml
+
+The \l Text object's properties could be accessed using QDeclarativeProperty, like this:
+
 \code
+#include <QDeclarativeProperty>
+#include <QGraphicsObject>
 
-QObject *object = declarativeComponent.create();
+...
 
-QDeclarativeProperty property(object, "font.pixelSize");
+QDeclarativeView view(QUrl::fromLocalFile("MyItem.qml"));
+QDeclarativeProperty property(view.rootObject(), "font.pixelSize");
 qWarning() << "Current pixel size:" << property.read().toInt();
 property.write(24);
 qWarning() << "Pixel size should now be 24:" << property.read().toInt();
-
 \endcode
 */
 
@@ -607,26 +620,7 @@ QDeclarativePropertyPrivate::binding(const QDeclarativeProperty &that)
     if (!that.isProperty() || !that.d->object)
         return 0;
 
-    QDeclarativeData *data = QDeclarativeData::get(that.d->object);
-    if (!data) 
-        return 0;
-
-    if (!data->hasBindingBit(that.d->core.coreIndex))
-        return 0;
-
-    QDeclarativeAbstractBinding *binding = data->bindings;
-    while (binding && binding->propertyIndex() != that.d->core.coreIndex) 
-        binding = binding->m_nextBinding;
-
-    if (binding && that.d->valueType.valueTypeCoreIdx != -1) {
-        if (binding->bindingType() == QDeclarativeAbstractBinding::ValueTypeProxy) {
-            QDeclarativeValueTypeProxyBinding *proxy = static_cast<QDeclarativeValueTypeProxyBinding *>(binding);
-
-            binding = proxy->binding(bindingIndex(that));
-        }
-    }
-
-    return binding;
+    return binding(that.d->object, that.d->core.coreIndex, that.d->valueType.valueTypeCoreIdx);
 }
 
 /*!
@@ -658,11 +652,105 @@ QDeclarativePropertyPrivate::setBinding(const QDeclarativeProperty &that,
 }
 
 QDeclarativeAbstractBinding *
+QDeclarativePropertyPrivate::binding(QObject *object, int coreIndex, int valueTypeIndex)
+{
+    QDeclarativeData *data = QDeclarativeData::get(object);
+    if (!data)
+        return 0;
+
+    QDeclarativePropertyCache::Data *propertyData = 
+        data->propertyCache?data->propertyCache->property(coreIndex):0;
+    if (propertyData && propertyData->flags & QDeclarativePropertyCache::Data::IsAlias) {
+        const QDeclarativeVMEMetaObject *vme = 
+            static_cast<const QDeclarativeVMEMetaObject *>(metaObjectForProperty(object->metaObject(), coreIndex));
+
+        QObject *aObject = 0; int aCoreIndex = -1; int aValueTypeIndex = -1;
+        if (!vme->aliasTarget(coreIndex, &aObject, &aCoreIndex, &aValueTypeIndex))
+            return 0;
+
+        // This will either be a value type sub-reference or an alias to a value-type sub-reference not both
+        Q_ASSERT(valueTypeIndex == -1 || aValueTypeIndex == -1);
+        return binding(aObject, aCoreIndex, (valueTypeIndex == -1)?aValueTypeIndex:valueTypeIndex);
+    }
+
+    if (!data->hasBindingBit(coreIndex))
+        return 0;
+
+    QDeclarativeAbstractBinding *binding = data->bindings;
+    while (binding && binding->propertyIndex() != coreIndex)
+        binding = binding->m_nextBinding;
+
+    if (binding && valueTypeIndex != -1) {
+        if (binding->bindingType() == QDeclarativeAbstractBinding::ValueTypeProxy) {
+            int index = coreIndex | (valueTypeIndex << 24);
+            binding = static_cast<QDeclarativeValueTypeProxyBinding *>(binding)->binding(index);
+        }
+    }
+
+    return binding;
+}
+
+void QDeclarativePropertyPrivate::findAliasTarget(QObject *object, int bindingIndex, 
+                                                  QObject **targetObject, int *targetBindingIndex)
+{
+    int coreIndex = bindingIndex & 0xFFFFFF;
+    int valueTypeIndex = bindingIndex >> 24;
+    if (valueTypeIndex == 0) valueTypeIndex = -1;
+
+    QDeclarativeData *data = QDeclarativeData::get(object, false);
+    if (data) {
+        QDeclarativePropertyCache::Data *propertyData = 
+            data->propertyCache?data->propertyCache->property(coreIndex):0;
+        if (propertyData && propertyData->flags & QDeclarativePropertyCache::Data::IsAlias) {
+            const QDeclarativeVMEMetaObject *vme = 
+                static_cast<const QDeclarativeVMEMetaObject *>(metaObjectForProperty(object->metaObject(), coreIndex));
+            QObject *aObject = 0; int aCoreIndex = -1; int aValueTypeIndex = -1;
+            if (vme->aliasTarget(coreIndex, &aObject, &aCoreIndex, &aValueTypeIndex)) {
+                // This will either be a value type sub-reference or an alias to a value-type sub-reference not both
+                Q_ASSERT(valueTypeIndex == -1 || aValueTypeIndex == -1);
+
+                int aBindingIndex = aCoreIndex;
+                if (aValueTypeIndex != -1) 
+                    aBindingIndex |= aValueTypeIndex << 24;
+                else if (valueTypeIndex != -1)
+                    aBindingIndex |= valueTypeIndex << 24;
+
+                findAliasTarget(aObject, aBindingIndex, targetObject, targetBindingIndex);
+                return;
+            }
+        }
+    }
+
+    *targetObject = object; 
+    *targetBindingIndex = bindingIndex;
+}
+
+QDeclarativeAbstractBinding *
 QDeclarativePropertyPrivate::setBinding(QObject *object, int coreIndex, int valueTypeIndex,
                                         QDeclarativeAbstractBinding *newBinding, WriteFlags flags)
 {
     QDeclarativeData *data = QDeclarativeData::get(object, 0 != newBinding);
     QDeclarativeAbstractBinding *binding = 0;
+
+    if (data) {
+        QDeclarativePropertyCache::Data *propertyData = 
+            data->propertyCache?data->propertyCache->property(coreIndex):0;
+        if (propertyData && propertyData->flags & QDeclarativePropertyCache::Data::IsAlias) {
+            const QDeclarativeVMEMetaObject *vme = 
+                static_cast<const QDeclarativeVMEMetaObject *>(metaObjectForProperty(object->metaObject(), coreIndex));
+
+            QObject *aObject = 0; int aCoreIndex = -1; int aValueTypeIndex = -1;
+            if (!vme->aliasTarget(coreIndex, &aObject, &aCoreIndex, &aValueTypeIndex)) {
+                if (newBinding) newBinding->destroy();
+                return 0;
+            }
+
+            // This will either be a value type sub-reference or an alias to a value-type sub-reference not both
+            Q_ASSERT(valueTypeIndex == -1 || aValueTypeIndex == -1);
+            return setBinding(aObject, aCoreIndex, (valueTypeIndex == -1)?aValueTypeIndex:valueTypeIndex,
+                              newBinding, flags);
+        }
+    }
 
     if (data && data->hasBindingBit(coreIndex)) {
         binding = data->bindings;
@@ -671,16 +759,72 @@ QDeclarativePropertyPrivate::setBinding(QObject *object, int coreIndex, int valu
             binding = binding->m_nextBinding;
     }
 
-    if (binding && valueTypeIndex != -1 && binding->bindingType() == QDeclarativeAbstractBinding::ValueTypeProxy) {
-        int index = coreIndex | (valueTypeIndex << 24);
+    int index = coreIndex;
+    if (valueTypeIndex != -1)
+        index |= (valueTypeIndex << 24);
+
+    if (binding && valueTypeIndex != -1 && binding->bindingType() == QDeclarativeAbstractBinding::ValueTypeProxy) 
         binding = static_cast<QDeclarativeValueTypeProxyBinding *>(binding)->binding(index);
+
+    if (binding) {
+        binding->removeFromObject();
+        binding->setEnabled(false, 0);
     }
 
+    if (newBinding) {
+        newBinding->addToObject(object, index);
+        newBinding->setEnabled(true, flags);
+    }
+
+    return binding;
+}
+
+QDeclarativeAbstractBinding *
+QDeclarativePropertyPrivate::setBindingNoEnable(QObject *object, int coreIndex, int valueTypeIndex,
+                                                QDeclarativeAbstractBinding *newBinding)
+{
+    QDeclarativeData *data = QDeclarativeData::get(object, 0 != newBinding);
+    QDeclarativeAbstractBinding *binding = 0;
+
+    if (data) {
+        QDeclarativePropertyCache::Data *propertyData = 
+            data->propertyCache?data->propertyCache->property(coreIndex):0;
+        if (propertyData && propertyData->flags & QDeclarativePropertyCache::Data::IsAlias) {
+            const QDeclarativeVMEMetaObject *vme = 
+                static_cast<const QDeclarativeVMEMetaObject *>(metaObjectForProperty(object->metaObject(), coreIndex));
+
+            QObject *aObject = 0; int aCoreIndex = -1; int aValueTypeIndex = -1;
+            if (!vme->aliasTarget(coreIndex, &aObject, &aCoreIndex, &aValueTypeIndex)) {
+                if (newBinding) newBinding->destroy();
+                return 0;
+            }
+
+            // This will either be a value type sub-reference or an alias to a value-type sub-reference not both
+            Q_ASSERT(valueTypeIndex == -1 || aValueTypeIndex == -1);
+            return setBindingNoEnable(aObject, aCoreIndex, (valueTypeIndex == -1)?aValueTypeIndex:valueTypeIndex,
+                                      newBinding);
+        }
+    }
+
+    if (data && data->hasBindingBit(coreIndex)) {
+        binding = data->bindings;
+
+        while (binding && binding->propertyIndex() != coreIndex) 
+            binding = binding->m_nextBinding;
+    }
+
+    int index = coreIndex;
+    if (valueTypeIndex != -1)
+        index |= (valueTypeIndex << 24);
+
+    if (binding && valueTypeIndex != -1 && binding->bindingType() == QDeclarativeAbstractBinding::ValueTypeProxy) 
+        binding = static_cast<QDeclarativeValueTypeProxyBinding *>(binding)->binding(index);
+
     if (binding) 
-        binding->setEnabled(false);
+        binding->removeFromObject();
 
     if (newBinding) 
-        newBinding->setEnabled(true, flags);
+        newBinding->addToObject(object, index);
 
     return binding;
 }
@@ -1392,9 +1536,24 @@ static inline int QMetaObject_methods(const QMetaObject *metaObject)
         int className;
         int classInfoCount, classInfoData;
         int methodCount, methodData;
+        int propertyCount, propertyData;
     };
 
     return reinterpret_cast<const Private *>(metaObject->d.data)->methodCount;
+}
+
+static inline int QMetaObject_properties(const QMetaObject *metaObject)
+{
+    struct Private
+    {
+        int revision;
+        int className;
+        int classInfoCount, classInfoData;
+        int methodCount, methodData;
+        int propertyCount, propertyData;
+    };
+
+    return reinterpret_cast<const Private *>(metaObject->d.data)->propertyCount;
 }
 
 static inline void flush_vme_signal(const QObject *object, int index)
@@ -1435,6 +1594,21 @@ bool QDeclarativePropertyPrivate::connect(const QObject *sender, int signal_inde
     flush_vme_signal(receiver, method_index);
 
     return QMetaObject::connect(sender, signal_index, receiver, method_index, type, types);
+}
+
+/*!
+Return \a metaObject's [super] meta object that provides data for \a property.
+*/
+const QMetaObject *QDeclarativePropertyPrivate::metaObjectForProperty(const QMetaObject *metaObject, int property)
+{
+    int propertyOffset = metaObject->propertyOffset();
+
+    while (propertyOffset > property) {
+        metaObject = metaObject->d.superdata;
+        propertyOffset -= QMetaObject_properties(metaObject);
+    }
+
+    return metaObject;
 }
 
 QT_END_NAMESPACE

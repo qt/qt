@@ -662,31 +662,23 @@ QRasterPaintEngineState::QRasterPaintEngineState()
 
 QRasterPaintEngineState::QRasterPaintEngineState(QRasterPaintEngineState &s)
     : QPainterState(s)
+    , stroker(s.stroker)
+    , lastBrush(s.lastBrush)
+    , brushData(s.brushData)
+    , lastPen(s.lastPen)
+    , penData(s.penData)
+    , fillFlags(s.fillFlags)
+    , strokeFlags(s.strokeFlags)
+    , pixmapFlags(s.pixmapFlags)
+    , intOpacity(s.intOpacity)
+    , txscale(s.txscale)
+    , flag_bits(s.flag_bits)
+    , clip(s.clip)
+    , dirty(s.dirty)
 {
-    stroker = s.stroker;
-
-    lastBrush = s.lastBrush;
-    brushData = s.brushData;
     brushData.tempImage = 0;
-
-    lastPen = s.lastPen;
-    penData = s.penData;
     penData.tempImage = 0;
-
-    fillFlags = s.fillFlags;
-    strokeFlags = s.strokeFlags;
-    pixmapFlags = s.pixmapFlags;
-
-    intOpacity = s.intOpacity;
-
-    txscale = s.txscale;
-
-    flag_bits = s.flag_bits;
-
-    clip = s.clip;
     flags.has_clip_ownership = false;
-
-    dirty = s.dirty;
 }
 
 /*!
@@ -1211,7 +1203,7 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
     // There are some cases that are not supported by clip(QRect)
     if (op != Qt::UniteClip && (op != Qt::IntersectClip || !s->clip
                                 || s->clip->hasRectClip || s->clip->hasRegionClip)) {
-        if (s->matrix.type() <= QTransform::TxTranslate
+        if (s->matrix.type() <= QTransform::TxScale
             && ((path.shape() == QVectorPath::RectangleHint)
                 || (isRect(points, path.elementCount())
                     && (!types || (types[0] == QPainterPath::MoveToElement
@@ -1223,8 +1215,8 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 #endif
 
             QRectF r(points[0], points[1], points[4]-points[0], points[5]-points[1]);
-            clip(r.toRect(), op);
-            return;
+            if (setClipRectInDeviceCoords(s->matrix.mapRect(r).toRect(), op))
+                return;
         }
     }
 
@@ -1285,7 +1277,6 @@ void QRasterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
     qDebug() << "QRasterPaintEngine::clip(): " << rect << op;
 #endif
 
-    Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();
 
     if (op == Qt::NoClip) {
@@ -1295,11 +1286,23 @@ void QRasterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
         QPaintEngineEx::clip(rect, op);
         return;
 
-    } else if (op == Qt::ReplaceClip || s->clip == 0) {
+    } else if (!setClipRectInDeviceCoords(s->matrix.mapRect(rect), op)) {
+        QPaintEngineEx::clip(rect, op);
+        return;
+    }
+}
+
+
+bool QRasterPaintEngine::setClipRectInDeviceCoords(const QRect &r, Qt::ClipOperation op)
+{
+    Q_D(QRasterPaintEngine);
+    QRect clipRect = r & d->deviceRect;
+    QRasterPaintEngineState *s = state();
+
+    if (op == Qt::ReplaceClip || s->clip == 0) {
 
         // No current clip, hence we intersect with sysclip and be
         // done with it...
-        QRect clipRect = s->matrix.mapRect(rect) & d->deviceRect;
         QRegion clipRegion = systemClip();
         QClipData *clip = new QClipData(d->rasterBuffer->height());
 
@@ -1315,12 +1318,11 @@ void QRasterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
         s->clip->enabled = true;
         s->flags.has_clip_ownership = true;
 
-    } else { // intersect clip with current clip
+    } else if (op == Qt::IntersectClip){ // intersect clip with current clip
         QClipData *base = s->clip;
 
         Q_ASSERT(base);
         if (base->hasRectClip || base->hasRegionClip) {
-            QRect clipRect = s->matrix.mapRect(rect) & d->deviceRect;
             if (!s->flags.has_clip_ownership) {
                 s->clip = new QClipData(d->rasterBuffer->height());
                 s->flags.has_clip_ownership = true;
@@ -1331,11 +1333,14 @@ void QRasterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
                 s->clip->setClipRegion(base->clipRegion & clipRect);
             s->clip->enabled = true;
         } else {
-            QPaintEngineEx::clip(rect, op);
-            return;
+            return false;
         }
+    } else {
+        return false;
     }
+
     qrasterpaintengine_dirty_clip(d, s);
+    return true;
 }
 
 
@@ -5152,7 +5157,8 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
     case Qt::SolidPattern: {
         type = Solid;
         QColor c = qbrush_color(brush);
-        solid.color = PREMUL(ARGB_COMBINE_ALPHA(c.rgba(), alpha));
+        QRgb rgba = c.rgba();
+        solid.color = PREMUL(ARGB_COMBINE_ALPHA(rgba, alpha));
         if ((solid.color & 0xff000000) == 0
             && compositionMode == QPainter::CompositionMode_SourceOver) {
             type = None;

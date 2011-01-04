@@ -88,7 +88,7 @@ symbian: {
     }
 
     !contains(S60_VERSION, 3.1):!contains(S60_VERSION, 3.2) {
-        feedback_plugin.sources = $$QT_BUILD_TREE/plugins/s60/feedback/qtactilefeedback$${QT_LIBINFIX}.dll
+        feedback_plugin.files = $$QT_BUILD_TREE/plugins/s60/feedback/qtactilefeedback$${QT_LIBINFIX}.dll
         feedback_plugin.path = c:$$QT_PLUGINS_BASE_DIR/feedback
         DEPLOYMENT += feedback_plugin
     }
@@ -132,7 +132,7 @@ symbian: {
     codecs_plugins.path = c:$$QT_PLUGINS_BASE_DIR/codecs
 
     contains(QT_CONFIG, phonon-backend) {
-        phonon_backend_plugins.files += $$QMAKE_LIBDIR_QT/phonon_mmf$${QT_LIBINFIX}.dll
+        phonon_backend_plugins.files += $$QT_BUILD_TREE/plugins/phonon_backend/phonon_mmf$${QT_LIBINFIX}.dll
 
         phonon_backend_plugins.path = c:$$QT_PLUGINS_BASE_DIR/phonon_backend
         DEPLOYMENT += phonon_backend_plugins

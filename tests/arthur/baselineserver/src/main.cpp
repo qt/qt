@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     QString queryString(qgetenv("QUERY_STRING"));
     if (!queryString.isEmpty()) {
         // run as CGI script
-        HTMLPage::handleCGIQuery(queryString);
+        Report::handleCGIQuery(queryString);
         return 0;
     }
 

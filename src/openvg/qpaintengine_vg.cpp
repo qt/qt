@@ -3210,8 +3210,7 @@ void QVGPaintEngine::drawTiledPixmap
         (const QRectF &r, const QPixmap &pixmap, const QPointF &s)
 {
     QBrush brush(state()->pen.color(), pixmap);
-    QTransform xform;
-    xform.translate(-s.x(), -s.y());
+    QTransform xform = QTransform::fromTranslate(r.x() - s.x(), r.y() - s.y());
     brush.setTransform(xform);
     fillRect(r, brush);
 }

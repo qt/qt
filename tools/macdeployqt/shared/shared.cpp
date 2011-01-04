@@ -574,9 +574,13 @@ void createDiskImage(const QString &appBundlePath)
     }
 
     // More dmg options can be found in the hdiutil man page.
-    QString options = QString("create %1.dmg -srcfolder %1.app -format UDZO -volname %1").arg(appBaseName);
+    QStringList options = QStringList()
+            << "create" << dmgName
+            << "-srcfolder" << appBundlePath
+            << "-format" << "UDZO"
+            << "-volname" << appBaseName;
 
     QProcess hdutil;
-    hdutil.start("hdiutil", options.split(' '));
+    hdutil.start("hdiutil", options);
     hdutil.waitForFinished(-1);
 }

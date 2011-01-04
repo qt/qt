@@ -52,8 +52,8 @@ Rectangle {
             scale: PathView.iconScale
             opacity: PathView.iconOpacity
             Column {
-                Image { anchors.horizontalCenter: name.horizontalCenter; width: 64; height: 64; source: icon }
-                Text { text: name; font.pointSize: 16}
+                Image { anchors.horizontalCenter: nameText.horizontalCenter; width: 64; height: 64; source: icon }
+                Text { id: nameText; text: name; font.pointSize: 16 }
             }
         }
     }

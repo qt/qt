@@ -163,6 +163,8 @@ void QGL2PaintEngineExPrivate::setBrush(const QBrush& brush)
     Q_ASSERT(newStyle != Qt::NoBrush);
 
     currentBrush = brush;
+    if (!currentBrushPixmap.isNull())
+        currentBrushPixmap = QPixmap();
     brushUniformsDirty = true; // All brushes have at least one uniform
 
     if (newStyle > Qt::SolidPattern)
@@ -221,10 +223,14 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
             updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE, q->state()->renderHints & QPainter::SmoothPixmapTransform);
     }
     else if (style == Qt::TexturePattern) {
-        const QPixmap& texPixmap = currentBrush.texture();
+        currentBrushPixmap = currentBrush.texture();
+
+        int max_texture_size = ctx->d_func()->maxTextureSize();
+        if (currentBrushPixmap.width() > max_texture_size || currentBrushPixmap.height() > max_texture_size)
+            currentBrushPixmap = currentBrushPixmap.scaled(max_texture_size, max_texture_size, Qt::KeepAspectRatio);
 
         glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
-        QGLTexture *tex = ctx->d_func()->bindTexture(texPixmap, GL_TEXTURE_2D, GL_RGBA,
+        QGLTexture *tex = ctx->d_func()->bindTexture(currentBrushPixmap, GL_TEXTURE_2D, GL_RGBA,
                                                      QGLContext::InternalBindOption |
                                                      QGLContext::CanFlipNativePixmapBindOption);
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
@@ -381,12 +387,6 @@ void QGL2PaintEngineExPrivate::updateMatrix()
         dx = ceilf(dx - 0.5f);
         dy = ceilf(dy - 0.5f);
     }
-#ifndef Q_OS_SYMBIAN
-    if (addOffset) {
-        dx += 0.49f;
-        dy += 0.49f;
-    }
-#endif
     pmvMatrix[0][0] = (wfactor * transform.m11())  - transform.m13();
     pmvMatrix[1][0] = (wfactor * transform.m21())  - transform.m23();
     pmvMatrix[2][0] = (wfactor * dx) - transform.m33();
@@ -487,11 +487,6 @@ void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& s
     // Setup for texture drawing
     currentBrush = noBrush;
     shaderManager->setSrcPixelType(pattern ? QGLEngineShaderManager::PatternSrc : QGLEngineShaderManager::ImageSrc);
-
-    if (addOffset) {
-        addOffset = false;
-        matrixDirty = true;
-    }
 
     if (snapToPixelGrid) {
         snapToPixelGrid = false;
@@ -674,16 +669,6 @@ void QGL2PaintEngineExPrivate::cleanupVectorPath(QPaintEngineEx *engine, void *d
 void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 {
     transferMode(BrushDrawingMode);
-
-    const QOpenGL2PaintEngineState *s = q->state();
-    const bool newAddOffset = !(s->renderHints & QPainter::Antialiasing) &&
-                              (qbrush_style(currentBrush) == Qt::SolidPattern) &&
-                              !multisamplingAlwaysEnabled;
-
-    if (addOffset != newAddOffset) {
-        addOffset = newAddOffset;
-        matrixDirty = true;
-    }
 
     if (snapToPixelGrid) {
         snapToPixelGrid = false;
@@ -1203,12 +1188,6 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 void QGL2PaintEngineExPrivate::stroke(const QVectorPath &path, const QPen &pen)
 {
     const QOpenGL2PaintEngineState *s = q->state();
-    const bool newAddOffset = !(s->renderHints & QPainter::Antialiasing) && !multisamplingAlwaysEnabled;
-    if (addOffset != newAddOffset) {
-        addOffset = newAddOffset;
-        matrixDirty = true;
-    }
-
     if (snapToPixelGrid) {
         snapToPixelGrid = false;
         matrixDirty = true;
@@ -1334,13 +1313,30 @@ void QGL2PaintEngineEx::transformChanged()
 }
 
 
+static const QRectF scaleRect(const QRectF &r, qreal sx, qreal sy)
+{
+    return QRectF(r.x() * sx, r.y() * sy, r.width() * sx, r.height() * sy);
+}
+
 void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, const QRectF & src)
 {
     Q_D(QGL2PaintEngineEx);
+    QGLContext *ctx = d->ctx;
+
+    int max_texture_size = ctx->d_func()->maxTextureSize();
+    if (pixmap.width() > max_texture_size || pixmap.height() > max_texture_size) {
+        QPixmap scaled = pixmap.scaled(max_texture_size, max_texture_size, Qt::KeepAspectRatio);
+
+        const qreal sx = scaled.width() / qreal(pixmap.width());
+        const qreal sy = scaled.height() / qreal(pixmap.height());
+
+        drawPixmap(dest, scaled, scaleRect(src, sx, sy));
+        return;
+    }
+
     ensureActive();
     d->transferMode(ImageDrawingMode);
 
-    QGLContext *ctx = d->ctx;
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     QGLTexture *texture =
         ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA,
@@ -1363,11 +1359,24 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
                         Qt::ImageConversionFlags)
 {
     Q_D(QGL2PaintEngineEx);
+    QGLContext *ctx = d->ctx;
+
+    int max_texture_size = ctx->d_func()->maxTextureSize();
+    if (image.width() > max_texture_size || image.height() > max_texture_size) {
+        QImage scaled = image.scaled(max_texture_size, max_texture_size, Qt::KeepAspectRatio);
+
+        const qreal sx = scaled.width() / qreal(image.width());
+        const qreal sy = scaled.height() / qreal(image.height());
+
+        drawImage(dest, scaled, scaleRect(src, sx, sy));
+        return;
+    }
+
     ensureActive();
     d->transferMode(ImageDrawingMode);
 
-    QGLContext *ctx = d->ctx;
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
+
     QGLTexture *texture = ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
     GLuint id = texture->id;
 
@@ -1493,6 +1502,7 @@ namespace {
         QSize cacheSize;
         QGL2PEXVertexArray vertexCoordinateArray;
         QGL2PEXVertexArray textureCoordinateArray;
+        QFontEngineGlyphCache::Type glyphType;
     };
 
 }
@@ -1507,23 +1517,30 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     QOpenGL2PaintEngineState *s = q->state();
 
     void *cacheKey = const_cast<QGLContext *>(QGLContextPrivate::contextGroup(ctx)->context());
+    bool recreateVertexArrays = false;
+
     QGLTextureGlyphCache *cache =
             (QGLTextureGlyphCache *) staticTextItem->fontEngine()->glyphCache(cacheKey, glyphType, QTransform());
     if (!cache || cache->cacheType() != glyphType || cache->context() == 0) {
         cache = new QGLTextureGlyphCache(ctx, glyphType, QTransform());
         staticTextItem->fontEngine()->setGlyphCache(cacheKey, cache);
         cache->insert(ctx, cache);
+        recreateVertexArrays = true;
     } else if (cache->context() == 0) { // Old context has been destroyed, new context has same ptr value
         cache->setContext(ctx);
     }
 
-    bool recreateVertexArrays = false;
-    if (staticTextItem->userDataNeedsUpdate)
+    if (staticTextItem->userDataNeedsUpdate) {
         recreateVertexArrays = true;
-    else if (staticTextItem->userData() == 0)
+    } else if (staticTextItem->userData() == 0) {
         recreateVertexArrays = true;
-    else if (staticTextItem->userData()->type != QStaticTextUserData::OpenGLUserData)
+    } else if (staticTextItem->userData()->type != QStaticTextUserData::OpenGLUserData) {
         recreateVertexArrays = true;
+    } else {
+        QOpenGLStaticTextUserData *userData = static_cast<QOpenGLStaticTextUserData *>(staticTextItem->userData());
+        if (userData->glyphType != glyphType)
+            recreateVertexArrays = true;
+    }
 
     // We only need to update the cache with new glyphs if we are actually going to recreate the vertex arrays.
     // If the cache size has changed, we do need to regenerate the vertices, but we don't need to repopulate the
@@ -1561,6 +1578,8 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         } else {
             userData = static_cast<QOpenGLStaticTextUserData*>(staticTextItem->userData());
         }
+
+        userData->glyphType = glyphType;
 
         // Use cache if backend optimizations is turned on
         vertexCoordinates = &userData->vertexCoordinateArray;
@@ -1628,10 +1647,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, (GLfloat*)vertexCoordinates->data());
     setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, (GLfloat*)textureCoordinates->data());
 
-    if (addOffset) {
-        addOffset = false;
-        matrixDirty = true;
-    }
     if (!snapToPixelGrid) {
         snapToPixelGrid = true;
         matrixDirty = true;
@@ -1761,7 +1776,13 @@ void QGL2PaintEngineEx::drawPixmapFragments(const QPainter::PixmapFragment *frag
     }
 
     ensureActive();
-    d->drawPixmapFragments(fragments, fragmentCount, pixmap, hints);
+    int max_texture_size = d->ctx->d_func()->maxTextureSize();
+    if (pixmap.width() > max_texture_size || pixmap.height() > max_texture_size) {
+        QPixmap scaled = pixmap.scaled(max_texture_size, max_texture_size, Qt::KeepAspectRatio);
+        d->drawPixmapFragments(fragments, fragmentCount, scaled, hints);
+    } else {
+        d->drawPixmapFragments(fragments, fragmentCount, pixmap, hints);
+    }
 }
 
 
@@ -1775,11 +1796,6 @@ void QGL2PaintEngineExPrivate::drawPixmapFragments(const QPainter::PixmapFragmen
     vertexCoordinateArray.clear();
     textureCoordinateArray.clear();
     opacityArray.reset();
-
-    if (addOffset) {
-        addOffset = false;
-        matrixDirty = true;
-    }
 
     if (snapToPixelGrid) {
         snapToPixelGrid = false;
@@ -2077,10 +2093,6 @@ void QGL2PaintEngineExPrivate::writeClip(const QVectorPath &path, uint value)
 {
     transferMode(BrushDrawingMode);
 
-    if (addOffset) {
-        addOffset = false;
-        matrixDirty = true;
-    }
     if (snapToPixelGrid) {
         snapToPixelGrid = false;
         matrixDirty = true;
@@ -2173,7 +2185,11 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
         const QPointF* const points = reinterpret_cast<const QPointF*>(path.points());
         QRectF rect(points[0], points[2]);
 
-        if (state()->matrix.type() <= QTransform::TxScale) {
+        if (state()->matrix.type() <= QTransform::TxScale
+            || (state()->matrix.type() == QTransform::TxRotate
+                && qFuzzyIsNull(state()->matrix.m11())
+                && qFuzzyIsNull(state()->matrix.m22())))
+        {
             state()->rectangleClip = state()->rectangleClip.intersected(state()->matrix.mapRect(rect).toRect());
             d->updateClipScissorTest();
             return;

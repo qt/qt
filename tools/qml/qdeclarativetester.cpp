@@ -54,9 +54,9 @@ QT_BEGIN_NAMESPACE
 
 extern Q_GUI_EXPORT bool qt_applefontsmoothing_enabled;
 
-QDeclarativeTester::QDeclarativeTester(const QString &script, QDeclarativeViewer::ScriptOptions opts, 
+QDeclarativeTester::QDeclarativeTester(const QString &script, QDeclarativeViewer::ScriptOptions opts,
                      QDeclarativeView *parent)
-: QAbstractAnimation(parent), m_script(script), m_view(parent), filterEvents(true), options(opts), 
+: QAbstractAnimation(parent), m_script(script), m_view(parent), filterEvents(true), options(opts),
   testscript(0), hasCompleted(false), hasFailed(false)
 {
     parent->viewport()->installEventFilter(this);
@@ -75,8 +75,8 @@ QDeclarativeTester::QDeclarativeTester(const QString &script, QDeclarativeViewer
 
 QDeclarativeTester::~QDeclarativeTester()
 {
-    if (!hasFailed && 
-        options & QDeclarativeViewer::Record && 
+    if (!hasFailed &&
+        options & QDeclarativeViewer::Record &&
         options & QDeclarativeViewer::SaveOnExit)
         save();
 }
@@ -228,7 +228,7 @@ void QDeclarativeTester::save()
         }
         ts << "    }\n";
 
-        while (!mouseevents.isEmpty() && 
+        while (!mouseevents.isEmpty() &&
                mouseevents.first().msec == fe.msec) {
             MouseEvent me = mouseevents.takeFirst();
 
@@ -274,7 +274,16 @@ void QDeclarativeTester::updateCurrentTime(int msec)
 
     if (options & QDeclarativeViewer::TestImages) {
         img.fill(qRgb(255,255,255));
+
+#ifdef Q_WS_MAC
+        bool oldSmooth = qt_applefontsmoothing_enabled;
+        qt_applefontsmoothing_enabled = false;
+#endif
         QPainter p(&img);
+#ifdef Q_WS_MAC
+        qt_applefontsmoothing_enabled = oldSmooth;
+#endif
+
         m_view->render(&p);
     }
 
@@ -336,7 +345,7 @@ void QDeclarativeTester::updateCurrentTime(int msec)
         if (QDeclarativeVisualTestFrame *frame = qobject_cast<QDeclarativeVisualTestFrame *>(event)) {
             if (frame->msec() < msec) {
                 if (options & QDeclarativeViewer::TestImages && !(options & QDeclarativeViewer::Record)) {
-                    qWarning() << "QDeclarativeTester(" << m_script << "): Extra frame.  Seen:" 
+                    qWarning() << "QDeclarativeTester(" << m_script << "): Extra frame.  Seen:"
                                << msec << "Expected:" << frame->msec();
                     imagefailure();
                 }
@@ -362,7 +371,7 @@ void QDeclarativeTester::updateCurrentTime(int msec)
                 }
                 if (goodImage != img) {
                     QString reject(frame->image().toLocalFile() + ".reject.png");
-                    qWarning() << "QDeclarativeTester(" << m_script << "): Image mismatch.  Reject saved to:" 
+                    qWarning() << "QDeclarativeTester(" << m_script << "): Image mismatch.  Reject saved to:"
                                << reject;
                     img.save(reject);
                     bool doDiff = (goodImage.size() == img.size());
@@ -415,7 +424,7 @@ void QDeclarativeTester::updateCurrentTime(int msec)
                 ke.destination = ViewPort;
             }
             m_savedKeyEvents.append(ke);
-        } 
+        }
         testscriptidx++;
     }
 

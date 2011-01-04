@@ -596,8 +596,10 @@ void QTextDocument::markContentsDirty(int from, int length)
     Q_D(QTextDocument);
     d->documentChange(from, length);
     if (!d->inContentsChange) {
-        d->lout->documentChanged(d->docChangeFrom, d->docChangeOldLength, d->docChangeLength);
-        d->docChangeFrom = -1;
+        if (d->lout) {
+            d->lout->documentChanged(d->docChangeFrom, d->docChangeOldLength, d->docChangeLength);
+            d->docChangeFrom = -1;
+        }
     }
 }
 

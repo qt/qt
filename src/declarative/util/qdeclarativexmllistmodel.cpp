@@ -503,9 +503,9 @@ void QDeclarativeXmlListModelPrivate::clear_role(QDeclarativeListProperty<QDecla
     \qmlclass XmlListModel QDeclarativeXmlListModel
     \ingroup qml-working-with-data
   \since 4.7
-    \brief The XmlListModel element is used to specify a model using XPath expressions.
+    \brief The XmlListModel element is used to specify a read-only model using XPath expressions.
 
-    XmlListModel is used to create a model from XML data. It can be used as a data source
+    XmlListModel is used to create a read-only model from XML data. It can be used as a data source
     for view elements (such as ListView, PathView, GridView) and other elements that interact with model
     data (such as \l Repeater).
 
@@ -924,6 +924,7 @@ void QDeclarativeXmlListModel::reload()
     } else {
         d->notifyQueryStarted(true);
         QNetworkRequest req(d->src);
+        req.setRawHeader("Accept", "application/xml");
         d->reply = qmlContext(this)->engine()->networkAccessManager()->get(req);
         QObject::connect(d->reply, SIGNAL(finished()), this, SLOT(requestFinished()));
         QObject::connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),

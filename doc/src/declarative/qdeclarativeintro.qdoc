@@ -186,7 +186,7 @@ Item {
 \section3 The \c id property
 
 Each object can be given a special unique property called an \e id. No other object within the
-same \l{QML Documents}{QML document} can have the same \c id value. Assigning an id enables the object
+same QML component (see \l{QML Documents}) can have the same \c id value. Assigning an id enables the object
 to be referred to by other objects and scripts.
 
 The first Rectangle element below has an \e id, "myRect". The second Rectangle element defines its
@@ -232,6 +232,10 @@ Image {
     children: Rectangle {}
 }
 \endcode
+
+Items in the list can be accessed by index. See the \l{list}{list type} documentation
+for more details about list properties and their available operations.
+
 
 \section2 Default properties
 

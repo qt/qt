@@ -265,6 +265,8 @@ public:
                 }
             }
             pos = (*(--visibleItems.constEnd()))->endPosition() + invisibleCount * (averageSize + spacing);
+        } else if (model && model->count()) {
+            pos = model->count() * averageSize + (model->count()-1) * spacing;
         }
         return pos;
     }
@@ -402,6 +404,8 @@ public:
     void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry) {
         Q_Q(QDeclarativeListView);
         QDeclarativeFlickablePrivate::itemGeometryChanged(item, newGeometry, oldGeometry);
+        if (!q->isComponentComplete())
+            return;
         if (item != contentItem && (!highlight || item != highlight->item)) {
             if ((orient == QDeclarativeListView::Vertical && newGeometry.height() != oldGeometry.height())
                 || (orient == QDeclarativeListView::Horizontal && newGeometry.width() != oldGeometry.width())) {
@@ -639,7 +643,8 @@ void QDeclarativeListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
         int i = visibleItems.count() - 1;
         while (i > 0 && visibleItems.at(i)->index == -1)
             --i;
-        modelIndex = visibleItems.at(i)->index + 1;
+        if (visibleItems.at(i)->index != -1)
+            modelIndex = visibleItems.at(i)->index + 1;
     }
 
     bool changed = false;
@@ -737,16 +742,20 @@ void QDeclarativeListViewPrivate::layout()
         return;
     }
     if (!visibleItems.isEmpty()) {
-        qreal oldEnd = visibleItems.last()->endPosition();
+        bool fixedCurrent = currentItem && visibleItems.first()->item == currentItem->item;
+        qreal sum = visibleItems.first()->size();
         qreal pos = visibleItems.first()->position() + visibleItems.first()->size() + spacing;
         for (int i=1; i < visibleItems.count(); ++i) {
             FxListItem *item = visibleItems.at(i);
             item->setPosition(pos);
             pos += item->size() + spacing;
+            sum += item->size();
+            fixedCurrent = fixedCurrent || (currentItem && item->item == currentItem->item);
         }
-        // move current item if it is after the visible items.
-        if (currentItem && currentIndex > lastVisibleIndex())
-            currentItem->setPosition(currentItem->position() + (visibleItems.last()->endPosition() - oldEnd));
+        averageSize = qRound(sum / visibleItems.count());
+        // move current item if it is not a visible item.
+        if (currentIndex >= 0 && currentItem && !fixedCurrent)
+            currentItem->setPosition(positionAt(currentIndex));
     }
     q->refill();
     minExtentDirty = true;
@@ -1044,6 +1053,8 @@ void QDeclarativeListViewPrivate::updateCurrent(int modelIndex)
         // This is slightly sub-optimal, but section heading caching minimizes the impact.
         if (currentItem->section)
             currentItem->section->setVisible(false);
+        if (visibleItems.isEmpty())
+            averageSize = currentItem->size();
     }
     updateHighlight();
     emit q->currentIndexChanged();
@@ -1123,8 +1134,6 @@ void QDeclarativeListViewPrivate::updateHeader()
             QDeclarativeItemPrivate *itemPrivate = static_cast<QDeclarativeItemPrivate*>(QGraphicsItemPrivate::get(item));
             itemPrivate->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
             header = new FxListItem(item, q);
-            if (visibleItems.isEmpty())
-                visiblePos = header->size();
         }
     }
     if (header) {
@@ -1137,6 +1146,8 @@ void QDeclarativeListViewPrivate::updateHeader()
                     header->setPosition(startPos - header->size());
             }
         } else {
+            if (itemCount == 0)
+                visiblePos = header->size();
             header->setPosition(0);
         }
     }
@@ -1185,10 +1196,14 @@ void QDeclarativeListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal m
         FxListItem *bottomItem = snapItemAt(position()+highlightRangeEnd);
         qreal pos;
         if (topItem) {
-            pos = qMax(qMin(topItem->position() - highlightRangeStart, -maxExtent), -minExtent);
+            if (topItem->index == 0 && header && position()+highlightRangeStart < header->position()+header->size()/2)
+                pos = header->position() - highlightRangeStart;
+            else
+                pos = qMax(qMin(topItem->position() - highlightRangeStart, -maxExtent), -minExtent);
         } else if (bottomItem) {
            pos = qMax(qMin(bottomItem->position() - highlightRangeStart, -maxExtent), -minExtent);
         } else {
+            QDeclarativeFlickablePrivate::fixup(data, minExtent, maxExtent);
             fixupDuration = oldDuration;
             return;
         }
@@ -1401,6 +1416,13 @@ void QDeclarativeListViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     Delegates are instantiated as needed and may be destroyed at any time.
     State should \e never be stored in a delegate.
 
+    ListView attaches a number of properties to the root item of the delegate, for example
+    \c {ListView.isCurrentItem}.  In the following example, the root delegate item can access
+    this attached property directly as \c ListView.isCurrentItem, while the child
+    \c contactInfo object must refer to this property as \c wrapper.ListView.isCurrentItem.
+
+    \snippet doc/src/snippets/declarative/listview/listview.qml isCurrentItem
+
     \note Views do not enable \e clip automatically.  If the view
     is not clipped by another item or the screen, it will be necessary
     to set \e {clip: true} in order to have the out of view items clipped
@@ -1561,10 +1583,12 @@ void QDeclarativeListView::setModel(const QVariant &model)
                 d->moveReason = QDeclarativeListViewPrivate::SetIndex;
                 d->updateCurrent(d->currentIndex);
                 if (d->highlight && d->currentItem) {
-                    d->highlight->setPosition(d->currentItem->position());
+                    if (d->autoHighlight)
+                        d->highlight->setPosition(d->currentItem->position());
                     d->updateTrackedItem();
                 }
             }
+            d->updateViewport();
         }
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
@@ -1632,9 +1656,11 @@ void QDeclarativeListView::setDelegate(QDeclarativeComponent *delegate)
             d->moveReason = QDeclarativeListViewPrivate::SetIndex;
             d->updateCurrent(d->currentIndex);
             if (d->highlight && d->currentItem) {
-                d->highlight->setPosition(d->currentItem->position());
+                if (d->autoHighlight)
+                    d->highlight->setPosition(d->currentItem->position());
                 d->updateTrackedItem();
             }
+            d->updateViewport();
         }
     }
     emit delegateChanged();
@@ -2211,8 +2237,10 @@ void QDeclarativeListView::setFooter(QDeclarativeComponent *footer)
         d->footerComponent = footer;
         d->minExtentDirty = true;
         d->maxExtentDirty = true;
-        d->updateFooter();
-        d->updateViewport();
+        if (isComponentComplete()) {
+            d->updateFooter();
+            d->updateViewport();
+        }
         emit footerChanged();
     }
 }
@@ -2243,9 +2271,11 @@ void QDeclarativeListView::setHeader(QDeclarativeComponent *header)
         d->headerComponent = header;
         d->minExtentDirty = true;
         d->maxExtentDirty = true;
-        d->updateHeader();
-        d->updateFooter();
-        d->updateViewport();
+        if (isComponentComplete()) {
+            d->updateHeader();
+            d->updateFooter();
+            d->updateViewport();
+        }
         emit headerChanged();
     }
 }
@@ -2618,8 +2648,10 @@ void QDeclarativeListView::positionViewAtIndex(int index, int mode)
         cancelFlick();
         d->setPosition(pos);
         if (d->highlight) {
-            d->highlight->setPosition(d->currentItem->itemPosition());
-            d->highlight->setSize(d->currentItem->itemSize());
+            if (d->autoHighlight) {
+                d->highlight->setPosition(d->currentItem->itemPosition());
+                d->highlight->setSize(d->currentItem->itemSize());
+            }
             d->updateHighlight();
         }
     }
@@ -2655,6 +2687,8 @@ void QDeclarativeListView::componentComplete()
     Q_D(QDeclarativeListView);
     QDeclarativeFlickable::componentComplete();
     updateSections();
+    d->updateHeader();
+    d->updateFooter();
     if (d->isValid()) {
         refill();
         d->moveReason = QDeclarativeListViewPrivate::SetIndex;
@@ -2663,7 +2697,8 @@ void QDeclarativeListView::componentComplete()
         else
             d->updateCurrent(d->currentIndex);
         if (d->highlight && d->currentItem) {
-            d->highlight->setPosition(d->currentItem->position());
+            if (d->autoHighlight)
+                d->highlight->setPosition(d->currentItem->position());
             d->updateTrackedItem();
         }
         d->moveReason = QDeclarativeListViewPrivate::Other;
@@ -2777,7 +2812,10 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
         int i = d->visibleItems.count() - 1;
         while (i > 0 && d->visibleItems.at(i)->index == -1)
             --i;
-        if (d->visibleItems.at(i)->index + 1 == modelIndex
+        if (i == 0 && d->visibleItems.first()->index == -1) {
+            // there are no visible items except items marked for removal
+            index = d->visibleItems.count();
+        } else if (d->visibleItems.at(i)->index + 1 == modelIndex
             && d->visibleItems.at(i)->endPosition() < d->buffer+d->position()+d->size()-1) {
             // Special case of appending an item to the model.
             index = d->visibleItems.count();
@@ -2809,7 +2847,7 @@ void QDeclarativeListView::itemsInserted(int modelIndex, int count)
 
     // index can be the next item past the end of the visible items list (i.e. appended)
     int pos = index < d->visibleItems.count() ? d->visibleItems.at(index)->position()
-                                                : d->visibleItems.at(index-1)->endPosition()+d->spacing+1;
+                                                : d->visibleItems.last()->endPosition()+d->spacing+1;
     int initialPos = pos;
     int diff = 0;
     QList<FxListItem*> added;
@@ -2961,14 +2999,16 @@ void QDeclarativeListView::itemsRemoved(int modelIndex, int count)
     }
 
     // update visibleIndex
+    bool haveVisibleIndex = false;
     for (it = d->visibleItems.begin(); it != d->visibleItems.end(); ++it) {
         if ((*it)->index != -1) {
             d->visibleIndex = (*it)->index;
+            haveVisibleIndex = true;
             break;
         }
     }
 
-    if (removedVisible && d->visibleItems.isEmpty()) {
+    if (removedVisible && !haveVisibleIndex) {
         d->timeline.clear();
         if (d->itemCount == 0) {
             d->visibleIndex = 0;
@@ -3126,7 +3166,8 @@ void QDeclarativeListView::modelReset()
     d->moveReason = QDeclarativeListViewPrivate::SetIndex;
     d->updateCurrent(d->currentIndex);
     if (d->highlight && d->currentItem) {
-        d->highlight->setPosition(d->currentItem->position());
+        if (d->autoHighlight)
+            d->highlight->setPosition(d->currentItem->position());
         d->updateTrackedItem();
     }
     d->moveReason = QDeclarativeListViewPrivate::Other;

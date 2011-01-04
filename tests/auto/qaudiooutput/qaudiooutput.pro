@@ -6,7 +6,7 @@ QT = core multimedia
 
 wince*|symbian: {
     deploy.files += 4.wav
-    DEPLOYMENT = deploy
+    DEPLOYMENT += deploy
     !symbian {
         DEFINES += SRCDIR=\\\"\\\"
         QT += gui

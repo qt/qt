@@ -74,7 +74,9 @@ private slots:
     void massive();
     void cancelcrash();
     void shrinkcache();
+#ifndef QT_NO_CONCURRENT
     void networkCrash();
+#endif
 private:
     QDeclarativeEngine engine;
     QUrl thisfile;
@@ -363,6 +365,7 @@ void createNetworkServer()
    eventLoop.exec();
 }
 
+#ifndef QT_NO_CONCURRENT
 // QT-3957
 void tst_qdeclarativepixmapcache::networkCrash()
 {
@@ -377,6 +380,7 @@ void tst_qdeclarativepixmapcache::networkCrash()
     }
     future.cancel();
 }
+#endif
 
 QTEST_MAIN(tst_qdeclarativepixmapcache)
 

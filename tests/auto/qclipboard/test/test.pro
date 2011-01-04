@@ -28,5 +28,5 @@ wince*|symbian: {
     reg_resource.path = $$REG_RESOURCE_IMPORT_DIR
   }
   
-  DEPLOYMENT = copier paster rsc reg_resource
+  DEPLOYMENT += copier paster rsc reg_resource
 }

@@ -1729,6 +1729,7 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     active_engine = 0;
     workaround_needsFullClearOnEveryFrame = false;
     workaround_brokenFBOReadBack = false;
+    workaround_brokenTexSubImage = false;
     workaroundsCached = false;
 
     workaround_brokenTextureFromPixmap = false;
@@ -1853,18 +1854,6 @@ QGLTextureCache::~QGLTextureCache()
 void QGLTextureCache::insert(QGLContext* ctx, qint64 key, QGLTexture* texture, int cost)
 {
     QWriteLocker locker(&m_lock);
-    if (m_cache.totalCost() + cost > m_cache.maxCost()) {
-        // the cache is full - make an attempt to remove something
-        const QList<QGLTextureCacheKey> keys = m_cache.keys();
-        int i = 0;
-        while (i < m_cache.count()
-               && (m_cache.totalCost() + cost > m_cache.maxCost())) {
-            QGLTexture *tex = m_cache.object(keys.at(i));
-            if (tex->context == ctx)
-                m_cache.remove(keys.at(i));
-            ++i;
-        }
-    }
     const QGLTextureCacheKey cacheKey = {key, QGLContextPrivate::contextGroup(ctx)};
     m_cache.insert(cacheKey, texture, cost);
 }
@@ -2125,7 +2114,9 @@ void QGLContextPrivate::cleanup()
 void QGLContextPrivate::setVertexAttribArrayEnabled(int arrayIndex, bool enabled)
 {
     Q_ASSERT(arrayIndex < QT_GL_VERTEX_ARRAY_TRACKED_COUNT);
+#ifdef glEnableVertexAttribArray
     Q_ASSERT(glEnableVertexAttribArray);
+#endif
 
     if (vertexAttributeArraysEnabledState[arrayIndex] && !enabled)
         glDisableVertexAttribArray(arrayIndex);
@@ -2138,7 +2129,9 @@ void QGLContextPrivate::setVertexAttribArrayEnabled(int arrayIndex, bool enabled
 
 void QGLContextPrivate::syncGlState()
 {
+#ifdef glEnableVertexAttribArray
     Q_ASSERT(glEnableVertexAttribArray);
+#endif
     for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i) {
         if (vertexAttributeArraysEnabledState[i])
             glEnableVertexAttribArray(i);

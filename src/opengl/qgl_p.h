@@ -409,6 +409,7 @@ public:
     // workarounds for driver/hw bugs on different platforms
     uint workaround_needsFullClearOnEveryFrame : 1;
     uint workaround_brokenFBOReadBack : 1;
+    uint workaround_brokenTexSubImage : 1;
     uint workaroundsCached : 1;
 
     uint workaround_brokenTextureFromPixmap : 1;
@@ -509,6 +510,7 @@ Q_SIGNALS:
 
 private slots:
     void freeTexture_slot(QGLContext *context, QPixmapData *boundPixmap, GLuint id) {
+        Q_UNUSED(boundPixmap);
 #if defined(Q_WS_X11)
         if (boundPixmap) {
             QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
