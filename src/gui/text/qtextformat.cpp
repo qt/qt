@@ -1878,7 +1878,7 @@ QFont QTextCharFormat::font() const
 */
 
 /*!
-    \since 4.7
+    \since 4.8
     \enum QTextBlockFormat::LineHeightTypes
 
     This enum describes the various types of line spacing support paragraphs can have.
@@ -1887,7 +1887,7 @@ QFont QTextCharFormat::font() const
     \value ProportionalHeight This sets the spacing proportional to the line (in percentage).
                               For example, set to 200 for double spacing.
     \value FixedHeight This sets the line height to a fixed line height (in pixels).
-    \value AtLeastHeight This sets the minimum line height (in pixels).
+    \value MinimumHeight This sets the minimum line height (in pixels).
     \value LineDistanceHeight This adds the specified height between lines (in pixels).
 
     \sa lineHeight(), lineHeightType(), setLineHeight()
@@ -2112,7 +2112,7 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
 
 /*!
     \fn void QTextBlockFormat::setLineHeight(qreal height, int heightType)
-    \since 4.7
+    \since 4.8
 
     This sets the line height for the paragraph to the value in height
     which is dependant on heightType, described by the LineHeightTypes enum.
@@ -2123,7 +2123,7 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
 
 /*!
     \fn qreal QTextBlockFormat::lineHeight(qreal scriptLineHeight, qreal scaling) const
-    \since 4.7
+    \since 4.8
 
     This returns what the height of the lines in the paragraph will be depending
     on the given height of the script line and the scaling. The value that is returned
@@ -2137,7 +2137,7 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
 
 /*!
     \fn qreal QTextBlockFormat::lineHeight() const
-    \since 4.7
+    \since 4.8
 
     This returns the LineHeight property for the paragraph.
 
@@ -2147,7 +2147,7 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
 
 /*!
     \fn qreal QTextBlockFormat::lineHeightType() const
-    \since 4.7
+    \since 4.8
 
     This returns the LineHeightType property of the paragraph.
 

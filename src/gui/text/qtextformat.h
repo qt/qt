@@ -537,7 +537,7 @@ public:
         SingleHeight = 0,
         ProportionalHeight = 1,
         FixedHeight = 2,
-        AtLeastHeight = 3,
+        MinimumHeight = 3,
         LineDistanceHeight = 4
     };
 
@@ -619,7 +619,7 @@ inline qreal QTextBlockFormat::lineHeight(qreal scriptLineHeight, qreal scaling 
       return(scriptLineHeight * doubleProperty(LineHeight) / 100.0);
     case FixedHeight:
       return(doubleProperty(LineHeight) * scaling);
-    case AtLeastHeight:
+    case MinimumHeight:
       return(qMax(scriptLineHeight, doubleProperty(LineHeight) * scaling));
     case LineDistanceHeight:
       return(scriptLineHeight + doubleProperty(LineHeight) * scaling);

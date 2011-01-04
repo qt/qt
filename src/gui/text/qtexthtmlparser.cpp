@@ -1252,13 +1252,9 @@ void QTextHtmlParserNode::applyCssDeclarations(const QVector<QCss::Declaration> 
             break;
        case QCss::LineHeight: {
             qreal lineHeight;
-            if (decl.realValue(&lineHeight, "px"))
+            if (decl.realValue(&lineHeight, "px")) {
                 blockFormat.setLineHeight(lineHeight, QTextBlockFormat::FixedHeight);
-            else if (decl.realValue(&lineHeight, "al"))
-                blockFormat.setLineHeight(lineHeight, QTextBlockFormat::AtLeastHeight);
-            else if (decl.realValue(&lineHeight, "ld"))
-                blockFormat.setLineHeight(lineHeight, QTextBlockFormat::LineDistanceHeight);
-            else {
+            } else {
                 bool ok;
                 QString value = decl.d->values.first().toString();
                 lineHeight = value.toDouble(&ok);
