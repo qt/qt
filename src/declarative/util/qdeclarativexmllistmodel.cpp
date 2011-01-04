@@ -382,7 +382,7 @@ void QDeclarativeXmlQuery::doSubQueryJob()
     for (int i = 0; i < queries.size(); ++i) {
         QList<QVariant> resultList;
         if (!queries[i].isEmpty()) {
-            subquery.setQuery(m_prefix + QLatin1String("(let $v := ") + queries[i] + QLatin1String(" return if ($v) then ") + queries[i] + QLatin1String(" else \"\")"));
+            subquery.setQuery(m_prefix + QLatin1String("(let $v := string(") + queries[i] + QLatin1String(") return if ($v) then ") + queries[i] + QLatin1String(" else \"\")"));
             if (subquery.isValid()) {
                 QXmlResultItems resultItems;
                 subquery.evaluateTo(&resultItems);
