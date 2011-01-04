@@ -185,6 +185,18 @@
     {
         float: right; margin-left: 2em
     }
+    div.clear-both
+    {
+        clear: both 
+    }
+    div.clear-left
+    {
+        clear: left 
+    }
+    div.clear-right
+    {
+        clear: right 
+    }
 
     span.comment
     {
