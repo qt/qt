@@ -331,7 +331,7 @@ void DitaXmlGenerator::addLink(const QString& href,
 {
     if (!href.isEmpty()) {
         xmlWriter().writeStartElement("xref");
-        xmlWriter().writeAttribute("format", "html");
+        // formathtml
         xmlWriter().writeAttribute("href", href);
         writeCharacters(text.toString());
         xmlWriter().writeEndElement(); // </xref>
@@ -753,12 +753,12 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         xmlWriter().writeEndElement(); // </codeblock>
 	break;
     case Atom::Div:
-        xmlWriter().writeStartElement("bodydiv");
+        xmlWriter().writeStartElement("sectiondiv");
         if (!atom->string().isEmpty())
             xmlWriter().writeAttribute("outputclass", atom->string());
         break;
     case Atom::EndDiv:
-        xmlWriter().writeEndElement(); // </bodydiv>
+        xmlWriter().writeEndElement(); // </sectiondiv>
         break;
     case Atom::FootnoteLeft:
         // ### For now
@@ -1027,7 +1027,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                                 xmlWriter().writeStartElement("p");
                                 xmlWriter().writeCharacters("Class ");
                                 xmlWriter().writeStartElement("xref");
-                                xmlWriter().writeAttribute("format", "html");
+                                // formathtml
                                 xmlWriter().writeAttribute("href",linkForNode(pmap.key(), 0));
                                 QStringList pieces = fullName(pmap.key(), 0, marker).split("::");
                                 writeCharacters(protectEnc(pieces.last()));
@@ -2003,7 +2003,7 @@ void DitaXmlGenerator::writeXrefListItem(const QString& link, const QString& tex
 {
     xmlWriter().writeStartElement("li");
     xmlWriter().writeStartElement("xref");
-    xmlWriter().writeAttribute("format", "html");
+    // formathtml
     xmlWriter().writeAttribute("href",link);
     writeCharacters(text);
     xmlWriter().writeEndElement(); // </xref>
@@ -2780,7 +2780,7 @@ void DitaXmlGenerator::generateCompactList(const Node* relative,
             QChar ch('a' + i);
             if (usedParagraphNames.contains(char('a' + i))) {
                 xmlWriter().writeStartElement("xref");
-                xmlWriter().writeAttribute("format", "html");
+                // formathtml
                 QString guid = lookupGuid(outFileName(),QString(ch));
                 QString attr = outFileName() + QString("#%1").arg(guid);
                 xmlWriter().writeAttribute("href", attr);
@@ -2840,7 +2840,7 @@ void DitaXmlGenerator::generateCompactList(const Node* relative,
               require some special formatting.
             */
             xmlWriter().writeStartElement("xref");
-            xmlWriter().writeAttribute("format", "html");
+            // formathtml
             xmlWriter().writeAttribute("href",linkForNode(it.value(), relative));
             
             QStringList pieces;
@@ -2875,7 +2875,7 @@ void DitaXmlGenerator::generateFunctionIndex(const Node* relative,
     for (int i = 0; i < 26; i++) {
         QChar ch('a' + i);
         xmlWriter().writeStartElement("xref");
-        xmlWriter().writeAttribute("format", "html");
+        // formathtml
         QString guid = lookupGuid(outFileName(),QString(ch));
         QString attr = outFileName() + QString("#%1").arg(guid);
         xmlWriter().writeAttribute("href", attr);
@@ -3056,7 +3056,7 @@ void DitaXmlGenerator::generateOverviewList(const Node* relative, CodeMarker* /*
             xmlWriter().writeStartElement("p");
             xmlWriter().writeAttribute("outputclass","h3");
             xmlWriter().writeStartElement("xref");
-            xmlWriter().writeAttribute("format", "html");
+            // formathtml
             xmlWriter().writeAttribute("href",linkForNode(groupNode, relative));
             writeCharacters(protectEnc(groupNode->fullTitle()));
             xmlWriter().writeEndElement(); // </xref>
@@ -3071,7 +3071,7 @@ void DitaXmlGenerator::generateOverviewList(const Node* relative, CodeMarker* /*
                     title.remove(0, 4);
                 xmlWriter().writeStartElement("li");
                 xmlWriter().writeStartElement("xref");
-                xmlWriter().writeAttribute("format", "html");
+                // formathtml
                 xmlWriter().writeAttribute("href",linkForNode(fakeNode, relative));
                 writeCharacters(protectEnc(title));
                 xmlWriter().writeEndElement(); // </xref>
@@ -3093,7 +3093,7 @@ void DitaXmlGenerator::generateOverviewList(const Node* relative, CodeMarker* /*
                 title.remove(0, 4);
             xmlWriter().writeStartElement("li");
             xmlWriter().writeStartElement("xref");
-            xmlWriter().writeAttribute("format", "html");
+            // formathtml
             xmlWriter().writeAttribute("href",linkForNode(fakeNode, relative));
             writeCharacters(protectEnc(title));
             xmlWriter().writeEndElement(); // </xref>
@@ -3152,7 +3152,7 @@ void DitaXmlGenerator::generateSectionInheritedList(const Section& section,
         text += " inherited from ";
         writeCharacters(text);
         xmlWriter().writeStartElement("xref");
-        xmlWriter().writeAttribute("format", "html");
+        // formathtml
         // zzz
         text = fileName((*p).first) + "#";
         text += DitaXmlGenerator::cleanRef(section.name.toLower());
@@ -3728,7 +3728,7 @@ void DitaXmlGenerator::generateFullName(const Node* apparentNode,
     if (actualNode == 0)
         actualNode = apparentNode;
     xmlWriter().writeStartElement("xref");
-    xmlWriter().writeAttribute("format", "html");
+    // formathtml
     QString href = linkForNode(actualNode, relative);
     xmlWriter().writeAttribute("href",href);
     writeCharacters(protectEnc(fullName(apparentNode, relative, marker)));
@@ -4157,7 +4157,7 @@ void DitaXmlGenerator::beginLink(const QString& link)
     if (link.isEmpty())
         return;
     xmlWriter().writeStartElement("xref");
-    xmlWriter().writeAttribute("format", "html");
+    // formathtml
     xmlWriter().writeAttribute("href",link);
     inLink = true;
 }
