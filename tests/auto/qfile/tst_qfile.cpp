@@ -3349,7 +3349,7 @@ void tst_QFile::autocloseHandle()
         Q_UNUSED(a);
         //file is closed, read should fail
         char buf;
-        QCOMPARE(QT_READ(fd, &buf, 1), -1);
+        QCOMPARE((int)QT_READ(fd, &buf, 1), -1);
         QVERIFY(errno = EBADF);
     }
 
@@ -3361,7 +3361,7 @@ void tst_QFile::autocloseHandle()
         QCOMPARE(file.handle(), -1);
         //file is not closed, read should succeed
         char buf;
-        QCOMPARE(QT_READ(fd_, &buf, 1), 1);
+        QCOMPARE((int)QT_READ(fd_, &buf, 1), 1);
         ::close(fd_);
         fd_ = -1;
     }
@@ -3378,7 +3378,7 @@ void tst_QFile::autocloseHandle()
         Q_UNUSED(a);
         //file is closed, read should fail
         char buf;
-        QCOMPARE(QT_READ(fd, &buf, 1), -1); //not using fread because the FILE* was freed by fclose
+        QCOMPARE((int)QT_READ(fd, &buf, 1), -1); //not using fread because the FILE* was freed by fclose
     }
 
     {
