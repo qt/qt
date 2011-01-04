@@ -55,6 +55,7 @@ public:
 
 private slots:
     void active();
+    void layoutDirection();
 
 private:
     QDeclarativeEngine engine;
@@ -89,6 +90,28 @@ void tst_qdeclarativeapplication::active()
     QApplication::setActiveWindow(0);
     QVERIFY(!item->property("active").toBool());
     QCOMPARE(item->property("active").toBool(), QApplication::activeWindow() != 0);
+}
+
+void tst_qdeclarativeapplication::layoutDirection()
+{
+    QDeclarativeComponent component(&engine);
+    component.setData("import QtQuick 1.0; Item { property bool layoutDirection: Qt.application.layoutDirection }", QUrl::fromLocalFile(""));
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem *>(component.create());
+    QVERIFY(item);
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    scene.addItem(item);
+
+    // not mirrored
+    QCOMPARE(Qt::LayoutDirection(item->property("layoutDirection").toInt()), Qt::LeftToRight);
+
+    // mirrored
+    QApplication::setLayoutDirection(Qt::RightToLeft);
+    QCOMPARE(Qt::LayoutDirection(item->property("layoutDirection").toInt()), Qt::RightToLeft);
+
+    // not mirrored again
+    QApplication::setLayoutDirection(Qt::LeftToRight);
+    QCOMPARE(Qt::LayoutDirection(item->property("layoutDirection").toInt()), Qt::LeftToRight);
 }
 
 QTEST_MAIN(tst_qdeclarativeapplication)

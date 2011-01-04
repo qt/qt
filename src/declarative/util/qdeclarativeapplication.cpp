@@ -47,8 +47,10 @@ class QDeclarativeApplicationPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeApplication)
 public:
-    QDeclarativeApplicationPrivate() : active(QApplication::activeWindow() != 0) {}
+    QDeclarativeApplicationPrivate() : active(QApplication::activeWindow() != 0),
+    layoutDirection(QApplication::layoutDirection()) {}
     bool active;
+    Qt::LayoutDirection layoutDirection;
 };
 
 /*!
@@ -58,7 +60,8 @@ public:
     \brief The Application element provides access to global application
     state properties shared by many QML components.
 
-    These properties include application activity property \c active.
+    These properties include application activity property \c active,
+    and default layout direction property \c layoutDirection.
 
     \section1 Example Usage
 
@@ -97,6 +100,24 @@ bool QDeclarativeApplication::active() const
     return d->active;
 }
 
+/*!
+    \qmlproperty bool Application::layoutDirection
+
+    This property can be used to query the default layout direction of the
+    application. On system start-up, the default layout direction depends on the
+    application's language. The property has a value Qt.RightToLeft in locales
+    where text and graphic elements are read from right to left, and Qt.LeftToRight
+    where the reading direction flows from left to right. You can bind to the
+    property to customize your application layouts to support both layout
+    directions. This property is readonly.
+
+*/
+bool QDeclarativeApplication::layoutDirection() const
+{
+    Q_D(const QDeclarativeApplication);
+    return d->layoutDirection;
+}
+
 bool QDeclarativeApplication::eventFilter(QObject *obj, QEvent *event)
 {
     Q_UNUSED(obj)
@@ -112,6 +133,13 @@ bool QDeclarativeApplication::eventFilter(QObject *obj, QEvent *event)
         if (d->active != active) {
             d->active = active;
             emit activeChanged();
+        }
+    }
+    if (event->type() == QEvent::LayoutDirectionChange) {
+        Qt::LayoutDirection direction = QApplication::layoutDirection();
+        if (d->layoutDirection != direction) {
+            d->layoutDirection = direction;
+            emit layoutDirectionChanged();
         }
     }
     return false;
