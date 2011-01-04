@@ -545,6 +545,8 @@ private slots:
     void getSetDynamicProperty();
     void getSetDynamicProperty_deleteFromCpp();
     void getSetDynamicProperty_hideChildObject();
+    void getSetDynamicProperty_setBeforeGet();
+    void getSetDynamicProperty_hideJSProperty();
     void getSetChildren();
     void callQtInvokable();
     void connectAndDisconnect();
@@ -1073,6 +1075,35 @@ void tst_QScriptExtQObject::getSetDynamicProperty_hideChildObject()
     // Remove dynamic property
     m_myObject->setProperty("testName", QVariant());
     QCOMPARE(val.property("testName").toQObject(), child);
+}
+
+void tst_QScriptExtQObject::getSetDynamicProperty_setBeforeGet()
+{
+    QScriptValue val = m_engine->newQObject(m_myObject);
+
+    m_myObject->setProperty("dynamic", 1111);
+    val.setProperty("dynamic", 42);
+
+    QVERIFY(val.property("dynamic").strictlyEquals(QScriptValue(m_engine, 42)));
+    QEXPECT_FAIL("", "FIXME: QtDynamicPropertySetter wasn't called for the dynamic property, Prototype setters are not being called in v8", Continue);
+    QCOMPARE(m_myObject->property("dynamic").toInt(), 42);
+}
+
+void tst_QScriptExtQObject::getSetDynamicProperty_hideJSProperty()
+{
+    QScriptValue val = m_engine->newQObject(m_myObject);
+
+    // Set property on JS and dynamically on our QObject
+    val.setProperty("x", 42);
+    m_myObject->setProperty("x", 2222);
+
+    QEXPECT_FAIL("", "Dynamic properties should hide JS properties", Continue);
+    // And JS should see the dynamic property (higher priority)
+    QVERIFY(val.property("x").strictlyEquals(QScriptValue(m_engine, 2222)));
+
+    // And back to old JS value when dynamic property is deleted
+    m_myObject->setProperty("x", QVariant());
+    QVERIFY(val.property("x").strictlyEquals(QScriptValue(m_engine, 42)));
 }
 
 void tst_QScriptExtQObject::getSetChildren()
