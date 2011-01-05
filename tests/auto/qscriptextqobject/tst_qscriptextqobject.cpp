@@ -546,7 +546,7 @@ private slots:
     void getSetDynamicProperty_deleteFromCpp();
     void getSetDynamicProperty_hideChildObject();
     void getSetDynamicProperty_setBeforeGet();
-    void getSetDynamicProperty_hideJSProperty();
+    void getSetDynamicProperty_doNotHideJSProperty();
     void getSetChildren();
     void callQtInvokable();
     void connectAndDisconnect();
@@ -1087,7 +1087,7 @@ void tst_QScriptExtQObject::getSetDynamicProperty_setBeforeGet()
     QCOMPARE(m_myObject->property("dynamic").toInt(), 42);
 }
 
-void tst_QScriptExtQObject::getSetDynamicProperty_hideJSProperty()
+void tst_QScriptExtQObject::getSetDynamicProperty_doNotHideJSProperty()
 {
     QScriptValue val = m_engine->newQObject(m_myObject);
 
@@ -1095,13 +1095,11 @@ void tst_QScriptExtQObject::getSetDynamicProperty_hideJSProperty()
     val.setProperty("x", 42);
     m_myObject->setProperty("x", 2222);
 
-    QEXPECT_FAIL("", "Dynamic properties should hide JS properties", Continue);
-    // And JS should see the dynamic property (higher priority)
-    QVERIFY(val.property("x").strictlyEquals(QScriptValue(m_engine, 2222)));
-
-    // And back to old JS value when dynamic property is deleted
-    m_myObject->setProperty("x", QVariant());
+    // JS should see the original JS value
     QVERIFY(val.property("x").strictlyEquals(QScriptValue(m_engine, 42)));
+
+    // The dynamic property is intact
+    QCOMPARE(m_myObject->property("x").toInt(), 2222);
 }
 
 void tst_QScriptExtQObject::getSetChildren()
