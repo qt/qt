@@ -28,6 +28,10 @@ HEADERS = \
 
 LIBS += -lX11 -lXext
 
+mac {
+    LIBS += -L/usr/X11/lib -lz -framework Carbon
+}
+
 include (../fontdatabases/genericunix/genericunix.pri)
 
 contains(QT_CONFIG, opengl) {
