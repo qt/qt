@@ -70,9 +70,12 @@
 #elif defined(Q_OS_WINCE)
 # include <qplatformdefs.h>
 # include <private/qfsfileengine_p.h>
+#elif defined(Q_OS_SYMBIAN)
+# include <f32file.h>
 #endif
 
 #include <stdio.h>
+#include <errno.h>
 #include "../network-settings.h"
 
 #if defined(Q_OS_SYMBIAN)
@@ -221,6 +224,8 @@ private slots:
 #endif
     void caseSensitivity();
 
+    void autocloseHandle();
+
     // --- Task related tests below this line
     void task167217();
 
@@ -233,12 +238,20 @@ public:
     void invalidFile();
 
 private:
-    enum FileType { OpenQFile, OpenFd, OpenStream };
+    enum FileType {
+        OpenQFile,
+        OpenFd,
+        OpenStream,
+#ifdef Q_OS_SYMBIAN
+        OpenRFile,
+#endif
+        NumberOfFileTypes
+    };
 
     void openStandardStreamsFileDescriptors();
     void openStandardStreamsBufferedStreams();
 
-    bool openFd(QFile &file, QIODevice::OpenMode mode)
+    bool openFd(QFile &file, QIODevice::OpenMode mode, QFile::FileHandleFlags handleFlags)
     {
         int fdMode = QT_OPEN_LARGEFILE | QT_OPEN_BINARY;
 
@@ -250,10 +263,10 @@ private:
 
         fd_ = QT_OPEN(qPrintable(file.fileName()), fdMode);
 
-        return (-1 != fd_) && file.open(fd_, mode);
+        return (-1 != fd_) && file.open(fd_, mode, handleFlags);
     }
 
-    bool openStream(QFile &file, QIODevice::OpenMode mode)
+    bool openStream(QFile &file, QIODevice::OpenMode mode, QFile::FileHandleFlags handleFlags)
     {
         char const *streamMode = "";
 
@@ -265,10 +278,37 @@ private:
 
         stream_ = QT_FOPEN(qPrintable(file.fileName()), streamMode);
 
-        return stream_ && file.open(stream_, mode);
+        return stream_ && file.open(stream_, mode, handleFlags);
     }
 
-    bool openFile(QFile &file, QIODevice::OpenMode mode, FileType type = OpenQFile)
+#ifdef Q_OS_SYMBIAN
+    bool openRFile(QFile &file, QIODevice::OpenMode mode, QFile::FileHandleFlags handleFlags)
+    {
+        //connect file server first time
+        if (!rfs_.Handle() && rfs_.Connect() != KErrNone)
+                return false;
+        //symbian does not like ./ in filenames, so open by absolute path
+        QString fileName(QDir::toNativeSeparators(QFileInfo(file).absoluteFilePath()));
+        TPtrC fn(fileName.utf16(), fileName.length());
+        TInt smode = 0;
+        if (mode & QIODevice::WriteOnly)
+            smode |= EFileWrite;
+        if (mode & QIODevice::ReadOnly)
+            smode |= EFileRead;
+        TInt r;
+        if ((mode & QIODevice::Truncate) || (!(mode & QIODevice::ReadOnly) && !(mode & QIODevice::Append))) {
+            r = rfile_.Replace(rfs_, fn, smode);
+        } else {
+            r = rfile_.Open(rfs_, fn, smode);
+            if (r == KErrNotFound && (mode & QIODevice::WriteOnly)) {
+                r = rfile_.Create(rfs_, fn, smode);
+            }
+        }
+        return (r == KErrNone) && file.open(rfile_, mode, handleFlags);
+    }
+#endif
+
+    bool openFile(QFile &file, QIODevice::OpenMode mode, FileType type = OpenQFile, QFile::FileHandleFlags handleFlags = QFile::DontCloseHandle)
     {
         if (mode & QIODevice::WriteOnly && !file.exists())
         {
@@ -285,10 +325,14 @@ private:
                 return file.open(mode);
 
             case OpenFd:
-                return openFd(file, mode);
+                return openFd(file, mode, handleFlags);
 
             case OpenStream:
-                return openStream(file, mode);
+                return openStream(file, mode, handleFlags);
+#ifdef Q_OS_SYMBIAN
+            case OpenRFile:
+                return openRFile(file, mode, handleFlags);
+#endif
         }
 
         return false;
@@ -302,6 +346,10 @@ private:
             QT_CLOSE(fd_);
         if (stream_)
             ::fclose(stream_);
+#ifdef Q_OS_SYMBIAN
+        if (rfile_.SubSessionHandle())
+            rfile_.Close();
+#endif
 
         fd_ = -1;
         stream_ = 0;
@@ -309,6 +357,10 @@ private:
 
     int fd_;
     FILE *stream_;
+#ifdef Q_OS_SYMBIAN
+    RFs rfs_;
+    RFile rfile_;
+#endif
 };
 
 tst_QFile::tst_QFile()
@@ -2214,6 +2266,9 @@ void tst_QFile::writeLargeDataBlock_data()
     QTest::newRow("localfile-QFile")  << "./largeblockfile.txt" << (int)OpenQFile;
     QTest::newRow("localfile-Fd")     << "./largeblockfile.txt" << (int)OpenFd;
     QTest::newRow("localfile-Stream") << "./largeblockfile.txt" << (int)OpenStream;
+#ifdef Q_OS_SYMBIAN
+    QTest::newRow("localfile-RFile")  << "./largeblockfile.txt" << (int)OpenRFile;
+#endif
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     // Some semi-randomness to avoid collisions.
@@ -3100,7 +3155,7 @@ void tst_QFile::openStandardStreams()
 
 void tst_QFile::writeNothing()
 {
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < NumberOfFileTypes; ++i) {
         QFile file("file.txt");
         QVERIFY( openFile(file, QIODevice::WriteOnly | QIODevice::Unbuffered, FileType(i)) );
         QVERIFY( 0 == file.write((char *)0, 0) );
@@ -3116,6 +3171,9 @@ void tst_QFile::resize_data()
     QTest::newRow("native") << int(OpenQFile);
     QTest::newRow("fileno") << int(OpenFd);
     QTest::newRow("stream") << int(OpenStream);
+#ifdef Q_OS_SYMBIAN
+    QTest::newRow("rfile")  << int(OpenRFile);
+#endif
 }
 
 void tst_QFile::resize()
@@ -3224,6 +3282,116 @@ void tst_QFile::caseSensitivity()
         QCOMPARE(f2.open(QIODevice::ReadOnly), !caseSensitive);
         if (!caseSensitive)
             QCOMPARE(f2.readAll(), testData);
+    }
+}
+
+//MSVCRT asserts when any function is called with a closed file handle.
+//This replaces the default crashing error handler with one that ignores the error (allowing EBADF to be returned)
+class AutoIgnoreInvalidParameter
+{
+public:
+#if defined(Q_OS_WIN) && defined (Q_CC_MSVC)
+    static void ignore_invalid_parameter(const wchar_t*, const wchar_t*, const wchar_t*, unsigned int, uintptr_t) {}
+    AutoIgnoreInvalidParameter()
+    {
+        old = _set_invalid_parameter_handler(ignore_invalid_parameter);
+    }
+    ~AutoIgnoreInvalidParameter()
+    {
+        _set_invalid_parameter_handler(old);
+    }
+    _invalid_parameter_handler old;
+#endif
+};
+
+void tst_QFile::autocloseHandle()
+{
+#ifdef Q_OS_SYMBIAN
+    // these tests are a bit different, because using a closed file handle results in a panic rather than error
+    {
+        QFile file("readonlyfile");
+        QFile file2("readonlyfile");
+        QVERIFY(openFile(file, QIODevice::ReadOnly, OpenRFile, QFile::AutoCloseHandle));
+        // file is opened with mandatory lock, so opening again should fail
+        QVERIFY(!file2.open(QIODevice::ReadOnly));
+
+        file.close();
+        // opening again should now succeed (because handle is closed)
+        QVERIFY(file2.open(QIODevice::ReadOnly));
+    }
+
+    {
+        QFile file("readonlyfile");
+        QFile file2("readonlyfile");
+        QVERIFY(openFile(file, QIODevice::ReadOnly, OpenRFile, QFile::DontCloseHandle));
+        // file is opened with mandatory lock, so opening again should fail
+        QVERIFY(!file2.open(QIODevice::ReadOnly));
+
+        file.close();
+        // opening again should still fail (because handle is not auto closed)
+        QVERIFY(!file2.open(QIODevice::ReadOnly));
+
+        rfile_.Close();
+        // now it should succeed
+        QVERIFY(file2.open(QIODevice::ReadOnly));
+    }
+#endif
+
+    {
+        QFile file("readonlyfile");
+        QVERIFY(openFile(file, QIODevice::ReadOnly, OpenFd, QFile::AutoCloseHandle));
+        int fd = fd_;
+        QCOMPARE(file.handle(), fd);
+        file.close();
+        fd_ = -1;
+        QCOMPARE(file.handle(), -1);
+        AutoIgnoreInvalidParameter a;
+        Q_UNUSED(a);
+        //file is closed, read should fail
+        char buf;
+        QCOMPARE((int)QT_READ(fd, &buf, 1), -1);
+        QVERIFY(errno = EBADF);
+    }
+
+    {
+        QFile file("readonlyfile");
+        QVERIFY(openFile(file, QIODevice::ReadOnly, OpenFd, QFile::DontCloseHandle));
+        QCOMPARE(file.handle(), fd_);
+        file.close();
+        QCOMPARE(file.handle(), -1);
+        //file is not closed, read should succeed
+        char buf;
+        QCOMPARE((int)QT_READ(fd_, &buf, 1), 1);
+        ::close(fd_);
+        fd_ = -1;
+    }
+
+    {
+        QFile file("readonlyfile");
+        QVERIFY(openFile(file, QIODevice::ReadOnly, OpenStream, QFile::AutoCloseHandle));
+        int fd = fileno(stream_);
+        QCOMPARE(file.handle(), fd);
+        file.close();
+        stream_ = 0;
+        QCOMPARE(file.handle(), -1);
+        AutoIgnoreInvalidParameter a;
+        Q_UNUSED(a);
+        //file is closed, read should fail
+        char buf;
+        QCOMPARE((int)QT_READ(fd, &buf, 1), -1); //not using fread because the FILE* was freed by fclose
+    }
+
+    {
+        QFile file("readonlyfile");
+        QVERIFY(openFile(file, QIODevice::ReadOnly, OpenStream, QFile::DontCloseHandle));
+        QCOMPARE(file.handle(), fileno(stream_));
+        file.close();
+        QCOMPARE(file.handle(), -1);
+        //file is not closed, read should succeed
+        char buf;
+        QCOMPARE(int(::fread(&buf, 1, 1, stream_)), 1);
+        ::fclose(stream_);
+        stream_ = 0;
     }
 }
 

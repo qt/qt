@@ -57,12 +57,27 @@ public:
     tst_qdeclarativecomponent() { }
 
 private slots:
+    void null();
     void loadEmptyUrl();
     void qmlCreateObject();
 
 private:
     QDeclarativeEngine engine;
 };
+
+void tst_qdeclarativecomponent::null()
+{
+    {
+        QDeclarativeComponent c;
+        QVERIFY(c.isNull());
+    }
+
+    {
+        QDeclarativeComponent c(&engine);
+        QVERIFY(c.isNull());
+    }
+}
+
 
 void tst_qdeclarativecomponent::loadEmptyUrl()
 {

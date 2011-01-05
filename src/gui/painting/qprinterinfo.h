@@ -42,8 +42,9 @@
 #ifndef QPRINTERINFO_H
 #define QPRINTERINFO_H
 
-#include <QtGui/QPrinter>
 #include <QtCore/QList>
+
+#include <QtGui/QPrinter>
 
 QT_BEGIN_HEADER
 
@@ -56,15 +57,13 @@ class QPrinterInfoPrivate;
 class QPrinterInfoPrivateDeleter;
 class Q_GUI_EXPORT QPrinterInfo
 {
-Q_DECLARE_PRIVATE(QPrinterInfo)
-
 public:
     QPrinterInfo();
-    QPrinterInfo(const QPrinterInfo& src);
-    QPrinterInfo(const QPrinter& printer);
+    QPrinterInfo(const QPrinterInfo &other);
+    QPrinterInfo(const QPrinter &printer);
     ~QPrinterInfo();
 
-    QPrinterInfo& operator=(const QPrinterInfo& src);
+    QPrinterInfo &operator=(const QPrinterInfo &other);
 
     QString printerName() const;
     bool isNull() const;
@@ -75,8 +74,10 @@ public:
     static QPrinterInfo defaultPrinter();
 
 private:
-    QPrinterInfo(const QString& name);
+    QPrinterInfo(const QString &name);
 
+private:
+    Q_DECLARE_PRIVATE(QPrinterInfo)
     QScopedPointer<QPrinterInfoPrivate, QPrinterInfoPrivateDeleter> d_ptr;
 };
 
