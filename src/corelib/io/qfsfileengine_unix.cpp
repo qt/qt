@@ -251,6 +251,65 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
     closeFileHandle = true;
     return true;
 }
+
+bool QFSFileEngine::open(QIODevice::OpenMode openMode, const RFile &file, QFile::FileHandleFlags handleFlags)
+{
+    Q_D(QFSFileEngine);
+
+    // Append implies WriteOnly.
+    if (openMode & QFile::Append)
+        openMode |= QFile::WriteOnly;
+
+    // WriteOnly implies Truncate if neither ReadOnly nor Append are sent.
+    if ((openMode & QFile::WriteOnly) && !(openMode & (QFile::ReadOnly | QFile::Append)))
+        openMode |= QFile::Truncate;
+
+    d->openMode = openMode;
+    d->lastFlushFailed = false;
+    d->closeFileHandle = (handleFlags & QFile::AutoCloseHandle);
+    d->fileEntry.clear();
+    d->fh = 0;
+    d->fd = -1;
+    d->tried_stat = 0;
+
+#ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
+    //RFile64 adds only functions to RFile, no data members
+    d->symbianFile = static_cast<const RFile64&>(file);
+#else
+    d->symbianFile = file;
+#endif
+    TInt ret;
+    d->symbianFilePos = 0;
+    if (openMode & QFile::Append) {
+        // Seek to the end when in Append mode.
+        ret = d->symbianFile.Size(d->symbianFilePos);
+    } else {
+        // Seek to current otherwise
+        ret = d->symbianFile.Seek(ESeekCurrent, d->symbianFilePos);
+    }
+
+    if (ret != KErrNone) {
+        setError(QFile::OpenError, QSystemError(ret, QSystemError::NativeError).toString());
+
+        d->openMode = QIODevice::NotOpen;
+#ifdef SYMBIAN_ENABLE_64_BIT_FILE_SERVER_API
+        d->symbianFile = RFile64();
+#else
+        d->symbianFile = RFile();
+#endif
+        return false;
+    }
+
+    // Extract filename (best effort)
+    TFileName fn;
+    TInt err = d->symbianFile.FullName(fn);
+    if (err == KErrNone)
+        d->fileEntry = QFileSystemEntry(qt_TDesC2QString(fn), QFileSystemEntry::FromNativePath());
+    else
+        d->fileEntry.clear();
+
+    return true;
+}
 #else
 /*!
     \internal
