@@ -520,9 +520,10 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
 
     // did_paint is set to true in ::beginPaint. ::beginPaint means that we
     // at least cleared the background (= painted something). In EGL API it's a
-    // mistakte to call swapBuffers if nothing was painted. This check protects
-    // the flush func from being executed if it's for nothing.
-    if (!d_ptr->did_paint)
+    // mistake to call swapBuffers if nothing was painted unless
+    // EGL_BUFFER_PRESERVED is set. This check protects the flush func from
+    // being executed if it's for nothing.
+    if (!hasPartialUpdateSupport() && !d_ptr->did_paint)
         return;
 
     QWidget *parent = widget->internalWinId() ? widget : widget->nativeParentWidget();
