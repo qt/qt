@@ -128,7 +128,7 @@ public:
 #endif
 
 #ifndef QT_NO_BEARERMANAGEMENT
-    QNetworkSession *networkSession;
+    QSharedPointer<QNetworkSession> networkSession;
     QString networkConfiguration;
     QNetworkAccessManager::NetworkAccessibility networkAccessible;
     bool online;
