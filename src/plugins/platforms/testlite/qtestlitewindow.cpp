@@ -54,9 +54,15 @@
 #include <QtGui/private/qwindowsurface_p.h>
 #include <QtGui/private/qapplication_p.h>
 
-#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
+#if !defined(QT_NO_OPENGL)
+#if !defined(QT_OPENGL_ES_2)
 #include "qglxintegration.h"
-#endif
+#else
+#include "../eglconvenience/qeglconvenience.h"
+#include "../eglconvenience/qeglplatformcontext.h"
+#include "qtestliteeglintegration.h"
+#endif  //QT_OPENGL_ES_2
+#endif //QT_NO_OPENGL
 
 //#define MYX11_DEBUG
 
@@ -74,16 +80,36 @@ QTestLiteWindow::QTestLiteWindow(QWidget *window)
 
         if(window->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
            && QApplicationPrivate::platformIntegration()->hasOpenGL() ) {
-#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
+        #if !defined(QT_NO_OPENGL)
+#if !defined(QT_OPENGL_ES_2)
             XVisualInfo *visualInfo = QGLXContext::findVisualInfo(mScreen,window->platformWindowFormat());
-            Colormap cmap = XCreateColormap(mScreen->display(),mScreen->rootWindow(),visualInfo->visual,AllocNone);
+#else
+            QPlatformWindowFormat windowFormat = correctColorBuffers(window->platformWindowFormat());
 
-            XSetWindowAttributes a;
-            a.colormap = cmap;
-            x_window = XCreateWindow(mScreen->display(), mScreen->rootWindow(),x, y, w, h,
-                                      0, visualInfo->depth, InputOutput, visualInfo->visual,
-                                      CWColormap, &a);
-#endif //!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
+            EGLDisplay eglDisplay = eglGetDisplay(mScreen->display());
+            EGLConfig eglConfig = q_configFromQPlatformWindowFormat(eglDisplay,windowFormat);
+            VisualID id = QTestLiteEglIntegration::getCompatibleVisualId(mScreen->display(),eglConfig);
+
+            XVisualInfo visualInfoTemplate;
+            memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
+            visualInfoTemplate.visualid = id;
+
+            XVisualInfo *visualInfo;
+            int matchingCount = 0;
+            visualInfo = XGetVisualInfo(mScreen->display(), VisualIDMask, &visualInfoTemplate, &matchingCount);
+#endif //!defined(QT_OPENGL_ES_2)
+            if (visualInfo) {
+                Colormap cmap = XCreateColormap(mScreen->display(),mScreen->rootWindow(),visualInfo->visual,AllocNone);
+
+                XSetWindowAttributes a;
+                a.colormap = cmap;
+                x_window = XCreateWindow(mScreen->display(), mScreen->rootWindow(),x, y, w, h,
+                                          0, visualInfo->depth, InputOutput, visualInfo->visual,
+                                          CWColormap, &a);
+            } else {
+                qFatal("no window!");
+            }
+#endif //!defined(QT_NO_OPENGL)
         } else {
             x_window = XCreateSimpleWindow(mScreen->display(), mScreen->rootWindow(),
                                            x, y, w, h, 0 /*border_width*/,
@@ -93,12 +119,6 @@ QTestLiteWindow::QTestLiteWindow(QWidget *window)
 #ifdef MYX11_DEBUG
         qDebug() << "QTestLiteWindow::QTestLiteWindow creating" << hex << x_window << window;
 #endif
-//    }
-
-//    width = -1;
-//    height = -1;
-//    xpos = -1;
-//    ypos = -1;
 
     XSetWindowBackgroundPixmap(mScreen->display(), x_window, XNone);
 
@@ -548,8 +568,23 @@ QPlatformGLContext *QTestLiteWindow::glContext() const
         return 0;
     if (!mGLContext) {
         QTestLiteWindow *that = const_cast<QTestLiteWindow *>(this);
-#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
+#if !defined(QT_NO_OPENGL)
+#if !defined(QT_OPENGL_ES_2)
         that->mGLContext = new QGLXContext(x_window, mScreen,widget()->platformWindowFormat());
+#else
+        EGLDisplay display = eglGetDisplay(mScreen->display());
+
+        QPlatformWindowFormat windowFormat = correctColorBuffers(widget()->platformWindowFormat());
+
+        EGLConfig config = q_configFromQPlatformWindowFormat(display,windowFormat);
+        QVector<EGLint> eglContextAttrs;
+        eglContextAttrs.append(EGL_CONTEXT_CLIENT_VERSION);
+        eglContextAttrs.append(2);
+        eglContextAttrs.append(EGL_NONE);
+
+        EGLSurface eglSurface = eglCreateWindowSurface(display,config,(EGLNativeWindowType)x_window,0);
+        that->mGLContext = new QEGLPlatformContext(display, config, eglContextAttrs.data(), eglSurface, EGL_OPENGL_ES_API);
+#endif
 #endif
     }
     return mGLContext;
@@ -582,6 +617,29 @@ void QTestLiteWindow::doSizeHints()
     s.flags |= PWinGravity;
     s.win_gravity = QApplication::isRightToLeft() ? NorthEastGravity : NorthWestGravity;
     XSetWMNormalHints(mScreen->display(), x_window, &s);
+}
+
+QPlatformWindowFormat QTestLiteWindow::correctColorBuffers(const QPlatformWindowFormat &platformWindowFormat) const
+{
+    // I have only tested this setup on a dodgy intel setup, where I didn't use standard libs,
+    // so this might be not what we want to do :)
+    if ( !(platformWindowFormat.redBufferSize() == -1   &&
+           platformWindowFormat.greenBufferSize() == -1 &&
+           platformWindowFormat.blueBufferSize() == -1))
+        return platformWindowFormat;
+
+    QPlatformWindowFormat windowFormat = platformWindowFormat;
+    if (mScreen->depth() == 16) {
+        windowFormat.setRedBufferSize(5);
+        windowFormat.setGreenBufferSize(6);
+        windowFormat.setBlueBufferSize(5);
+    } else {
+        windowFormat.setRedBufferSize(8);
+        windowFormat.setGreenBufferSize(8);
+        windowFormat.setBlueBufferSize(8);
+    }
+
+    return windowFormat;
 }
 
 QT_END_NAMESPACE

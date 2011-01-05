@@ -129,6 +129,8 @@ protected:
     void doSizeHints();
 
 private:
+    QPlatformWindowFormat correctColorBuffers(const QPlatformWindowFormat &windowFormat)const;
+
     Window x_window;
     GC gc;
 

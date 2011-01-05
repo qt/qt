@@ -52,13 +52,14 @@
 #if !defined(QT_NO_OPENGL)
 #if !defined(QT_OPENGL_ES_2)
 #include <GL/glx.h>
+#else
+#include <EGL/egl.h>
 #endif //!defined(QT_OPENGL_ES_2)
 #include <private/qwindowsurface_gl_p.h>
 #include <private/qpixmapdata_gl_p.h>
 #endif //QT_NO_OPENGL
 
 QT_BEGIN_NAMESPACE
-
 
 QTestLiteIntegration::QTestLiteIntegration(bool useOpenGL)
     : mUseOpenGL(useOpenGL)
@@ -130,9 +131,23 @@ QPlatformClipboard * QTestLiteIntegration::clipboard() const
 
 bool QTestLiteIntegration::hasOpenGL() const
 {
-#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
+#if !defined(QT_NO_OPENGL)
+#if !defined(QT_OPENGL_ES_2)
     QTestLiteScreen *screen = static_cast<const QTestLiteScreen *>(mScreens.at(0));
     return glXQueryExtension(screen->display(), 0, 0) != 0;
+#else
+    static bool eglHasbeenInitialized = false;
+    static bool wasEglInitialized = false;
+    if (!eglHasbeenInitialized) {
+        eglHasbeenInitialized = true;
+        QTestLiteScreen *screen = static_cast<const QTestLiteScreen *>(mScreens.at(0));
+        EGLint major, minor;
+        eglBindAPI(EGL_OPENGL_ES_API);
+        EGLDisplay disp = eglGetDisplay(screen->display());
+        wasEglInitialized = eglInitialize(disp,&major,&minor);
+    }
+    return wasEglInitialized;
+#endif
 #endif
     return false;
 }
