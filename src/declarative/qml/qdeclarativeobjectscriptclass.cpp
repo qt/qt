@@ -166,6 +166,20 @@ QDeclarativeObjectScriptClass::queryProperty(QObject *obj, const Identifier &nam
     QDeclarativeEnginePrivate *enginePrivate = QDeclarativeEnginePrivate::get(engine);
     lastData = QDeclarativePropertyCache::property(engine, obj, name, local);
 
+    if (lastData && lastData->revision > 0 && (hints & ImplicitObject)) {
+        QDeclarativeData *data = QDeclarativeData::get(obj);
+        if (data) {
+            if (!data->type) {
+                lastData = 0;
+            } else if (lastData->flags & QDeclarativePropertyCache::Data::IsFunction) {
+                if (!data->type->isMethodAvailable(lastData->coreIndex, lastData->revision))
+                    lastData = 0;
+            } else if (!data->type->isPropertyAvailable(lastData->coreIndex, lastData->revision)) {
+                lastData = 0;
+            }
+        }
+    }
+
     if (lastData)
         return QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess;
 

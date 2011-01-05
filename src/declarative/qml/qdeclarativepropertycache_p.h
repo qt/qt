@@ -110,6 +110,7 @@ public:
             int notifyIndex; // When !IsFunction
             int relatedIndex; // When IsFunction
         };
+        int revision;
 
         static Flags flagsForProperty(const QMetaProperty &, QDeclarativeEngine *engine = 0);
         void load(const QMetaProperty &, QDeclarativeEngine *engine = 0);
@@ -176,7 +177,8 @@ bool QDeclarativePropertyCache::Data::operator==(const QDeclarativePropertyCache
     return flags == other.flags &&
            propType == other.propType &&
            coreIndex == other.coreIndex &&
-           notifyIndex == other.notifyIndex;
+           notifyIndex == other.notifyIndex &&
+           revision == other.revision;
 }
 
 QDeclarativePropertyCache::Data *

@@ -307,7 +307,6 @@ ProcessAST::defineObjectBinding(AST::UiQualifiedId *propertyName,
         obj->location = location;
 
         if (propertyCount) {
-
             Property *prop = currentProperty();
             Value *v = new Value;
             v->object = obj;

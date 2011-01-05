@@ -76,6 +76,7 @@ public:
 
     static QDeclarativeType *qmlType(const QByteArray &, int, int);
     static QDeclarativeType *qmlType(const QMetaObject *);
+    static QDeclarativeType *qmlType(const QMetaObject *metaObject, const QByteArray &module, int version_major, int version_minor);
     static QDeclarativeType *qmlType(int);
 
     static QMetaProperty defaultProperty(const QMetaObject *);
@@ -115,6 +116,9 @@ public:
     int majorVersion() const;
     int minorVersion() const;
     bool availableInVersion(int vmajor, int vminor) const;
+    bool availableInVersion(const QByteArray &module, int vmajor, int vminor) const;
+    bool isPropertyAvailable(int index, int revision) const;
+    bool isMethodAvailable(int index, int revision) const;
 
     QObject *create() const;
     void create(QObject **, void **, size_t) const;
@@ -149,6 +153,7 @@ public:
     int index() const;
 
 private:
+    QDeclarativeType *superType() const;
     friend class QDeclarativeTypePrivate;
     friend struct QDeclarativeMetaTypeData;
     friend int registerType(const QDeclarativePrivate::RegisterType &);

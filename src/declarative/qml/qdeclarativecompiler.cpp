@@ -902,6 +902,7 @@ void QDeclarativeCompiler::genObject(QDeclarativeParser::Object *obj)
         create.line = obj->location.start.line;
         create.createSimple.create = output->types.at(obj->type).type->createFunction();
         create.createSimple.typeSize = output->types.at(obj->type).type->createSize();
+        create.createSimple.type = obj->type;
         create.createSimple.column = obj->location.start.column;
         output->bytecode << create;
 
@@ -1351,7 +1352,8 @@ bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDecl
     if(name[0] >= 'A' && name[0] <= 'Z')
         name[0] = name[0] - 'A' + 'a';
 
-    int sigIdx = QDeclarativePropertyPrivate::findSignalByName(obj->metaObject(), name).methodIndex();
+    QMetaMethod method = QDeclarativePropertyPrivate::findSignalByName(obj->metaObject(), name);
+    int sigIdx = method.methodIndex();
 
     if (sigIdx == -1) {
 
@@ -1363,6 +1365,13 @@ bool QDeclarativeCompiler::buildSignal(QDeclarativeParser::Property *prop, QDecl
 
         if (prop->value || prop->values.count() != 1)
             COMPILE_EXCEPTION(prop, tr("Incorrectly specified signal assignment"));
+
+        if (method.revision() > 0) {
+            QDeclarativeType *type = output->types.at(obj->type).type;
+            if (!type->isMethodAvailable(sigIdx, method.revision())) {
+                COMPILE_EXCEPTION(prop, tr("Signal \"%1\" not available in %2 %3.%4").arg(QString::fromUtf8(prop->name)).arg(QString::fromUtf8(type->qmlTypeName())).arg(obj->majorVersion).arg(obj->minorVersion));
+            }
+        }
 
         prop->index = sigIdx;
         obj->addSignalProperty(prop);
@@ -1481,6 +1490,12 @@ bool QDeclarativeCompiler::buildProperty(QDeclarativeParser::Property *prop,
         // successful index resolution
         if (p.name()) {
             prop->type = p.userType();
+            if (p.revision() > 0) {
+                QDeclarativeType *type = output->types.at(obj->type).type;
+                if (!type->isPropertyAvailable(prop->index, p.revision())) {
+                    COMPILE_EXCEPTION(prop, tr("Property \"%1\" not available in %2 %3.%4").arg(QString::fromUtf8(prop->name)).arg(QString::fromUtf8(type->qmlTypeName())).arg(obj->majorVersion).arg(obj->minorVersion));
+                }
+            }
         }
 
         // Check if this is an alias

@@ -1,0 +1,1 @@
+9:5:Property "propD" not available in Test/MyRevisionedClass 1.1

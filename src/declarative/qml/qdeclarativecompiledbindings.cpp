@@ -2527,6 +2527,10 @@ bool QDeclarativeBindingCompilerPrivate::fetch(Result &rv, const QMetaObject *mo
     rv.metaObject = 0;
     rv.type = 0;
 
+    //XXX binding optimizer doesn't handle properties with a revision
+    if (prop.revision() > 0)
+        return false;
+
     int fastFetchIndex = fastProperties()->accessorIndexForProperty(mo, idx);
 
     Instr fetch;

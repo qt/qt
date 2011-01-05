@@ -176,6 +176,9 @@ private slots:
     void callQtInvokables();
     void invokableObjectArg();
     void invokableObjectRet();
+
+    void revisionErrors();
+    void revision();
 private:
     QDeclarativeEngine engine;
 };
@@ -2844,6 +2847,85 @@ void tst_qdeclarativeecmascript::aliasWritesOverrideBindings()
     QCOMPARE(o->property("test").toBool(), true);
 
     delete o;
+    }
+}
+
+void tst_qdeclarativeecmascript::revisionErrors()
+{
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("metaobjectRevisionErrors.qml"));
+        QString url = component.url().toString();
+
+        QString warning1 = url + ":8: ReferenceError: Can't find variable: prop2";
+        QString warning2 = url + ":11: ReferenceError: Can't find variable: prop2";
+        QString warning3 = url + ":13: ReferenceError: Can't find variable: method2";
+
+        QTest::ignoreMessage(QtWarningMsg, warning1.toLatin1().constData());
+        QTest::ignoreMessage(QtWarningMsg, warning2.toLatin1().constData());
+        QTest::ignoreMessage(QtWarningMsg, warning3.toLatin1().constData());
+        MyRevisionedClass *object = qobject_cast<MyRevisionedClass *>(component.create());
+        QVERIFY(object != 0);
+    }
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("metaobjectRevisionErrors2.qml"));
+        QString url = component.url().toString();
+
+        // MyRevisionedSubclass 1.0 uses MyRevisionedClass revision 0
+        // method2, prop2 from MyRevisionedClass not available
+        // method4, prop4 from MyRevisionedSubclass not available
+        QString warning1 = url + ":8: ReferenceError: Can't find variable: prop2";
+        QString warning2 = url + ":14: ReferenceError: Can't find variable: prop2";
+        QString warning3 = url + ":10: ReferenceError: Can't find variable: prop4";
+        QString warning4 = url + ":16: ReferenceError: Can't find variable: prop4";
+        QString warning5 = url + ":20: ReferenceError: Can't find variable: method2";
+
+        QTest::ignoreMessage(QtWarningMsg, warning1.toLatin1().constData());
+        QTest::ignoreMessage(QtWarningMsg, warning2.toLatin1().constData());
+        QTest::ignoreMessage(QtWarningMsg, warning3.toLatin1().constData());
+        QTest::ignoreMessage(QtWarningMsg, warning4.toLatin1().constData());
+        QTest::ignoreMessage(QtWarningMsg, warning5.toLatin1().constData());
+        MyRevisionedClass *object = qobject_cast<MyRevisionedClass *>(component.create());
+        QVERIFY(object != 0);
+    }
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("metaobjectRevisionErrors3.qml"));
+        QString url = component.url().toString();
+
+        // MyRevisionedSubclass 1.1 uses MyRevisionedClass revision 1
+        // All properties/methods available, except MyRevisionedBaseClassUnregistered rev 1
+        QString warning1 = url + ":30: ReferenceError: Can't find variable: methodD";
+        QString warning2 = url + ":10: ReferenceError: Can't find variable: propD";
+        QString warning3 = url + ":20: ReferenceError: Can't find variable: propD";
+        QTest::ignoreMessage(QtWarningMsg, warning1.toLatin1().constData());
+        QTest::ignoreMessage(QtWarningMsg, warning2.toLatin1().constData());
+        QTest::ignoreMessage(QtWarningMsg, warning3.toLatin1().constData());
+        MyRevisionedClass *object = qobject_cast<MyRevisionedClass *>(component.create());
+        QVERIFY(object != 0);
+    }
+}
+
+void tst_qdeclarativeecmascript::revision()
+{
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("metaobjectRevision.qml"));
+        QString url = component.url().toString();
+
+        MyRevisionedClass *object = qobject_cast<MyRevisionedClass *>(component.create());
+        QVERIFY(object != 0);
+    }
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("metaobjectRevision2.qml"));
+        QString url = component.url().toString();
+
+        MyRevisionedClass *object = qobject_cast<MyRevisionedClass *>(component.create());
+        QVERIFY(object != 0);
+    }
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("metaobjectRevision3.qml"));
+        QString url = component.url().toString();
+
+        MyRevisionedClass *object = qobject_cast<MyRevisionedClass *>(component.create());
+        QVERIFY(object != 0);
     }
 }
 

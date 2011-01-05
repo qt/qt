@@ -52,6 +52,15 @@ void registerTypes()
     qmlRegisterType<MyNamespace::MySecondNamespacedType>("Test",1,0,"MySecondNamespacedType");
     qmlRegisterType<MyParserStatus>("Test",1,0,"MyParserStatus");
     qmlRegisterType<MyGroupedObject>();
+    qmlRegisterType<MyRevisionedClass>("Test",1,0,"MyRevisionedClass");
+    qmlRegisterType<MyRevisionedClass,1>("Test",1,1,"MyRevisionedClass");
+
+    // Register the uncreatable base class
+    qmlRegisterRevision<MyRevisionedBaseClassRegistered,1>("Test",1,1);
+    // MyRevisionedSubclass 1.0 uses MyRevisionedClass revision 0
+    qmlRegisterType<MyRevisionedSubclass>("Test",1,0,"MyRevisionedSubclass");
+    // MyRevisionedSubclass 1.1 uses MyRevisionedClass revision 1
+    qmlRegisterType<MyRevisionedSubclass,1>("Test",1,1,"MyRevisionedSubclass");
 
     qmlRegisterCustomType<MyCustomParserType>("Test", 1, 0, "MyCustomParserType", new MyCustomParserTypeParser);
 

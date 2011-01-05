@@ -88,6 +88,7 @@ void QDeclarativePropertyCache::Data::load(const QMetaProperty &p, QDeclarativeE
     coreIndex = p.propertyIndex();
     notifyIndex = p.notifySignalIndex();
     flags = flagsForProperty(p, engine);
+    revision = p.revision();
 }
 
 void QDeclarativePropertyCache::Data::load(const QMetaMethod &m)
@@ -106,6 +107,7 @@ void QDeclarativePropertyCache::Data::load(const QMetaMethod &m)
     QList<QByteArray> params = m.parameterTypes();
     if (!params.isEmpty())
         flags |= Data::HasArguments;
+    revision = m.revision();
 }
 
 
@@ -235,7 +237,6 @@ void QDeclarativePropertyCache::append(QDeclarativeEngine *engine, const QMetaOb
                                        Data::Flag propertyFlags, Data::Flag methodFlags, Data::Flag signalFlags)
 {
     QDeclarativeEnginePrivate *enginePriv = QDeclarativeEnginePrivate::get(engine);
-
     int methodCount = metaObject->methodCount();
     // 3 to block the destroyed signal and the deleteLater() slot
     int methodOffset = qMax(3, metaObject->methodOffset()); 

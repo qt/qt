@@ -1,0 +1,1 @@
+7:5:Property "prop2" not available in Test/MyRevisionedClass 1.0

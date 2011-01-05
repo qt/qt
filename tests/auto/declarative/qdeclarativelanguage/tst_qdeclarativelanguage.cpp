@@ -153,6 +153,8 @@ private slots:
     void customOnProperty();
     void variantNotify();
 
+    void revisions();
+
     // regression tests for crashes
     void crash1();
     void crash2();
@@ -421,6 +423,10 @@ void tst_qdeclarativelanguage::errors_data()
         << "incorrectCase.errors.sensitive.txt" 
 #endif
         << false;
+
+    QTest::newRow("metaobjectRevision.1") << "metaobjectRevision.1.qml" << "metaobjectRevision.1.errors.txt" << false;
+    QTest::newRow("metaobjectRevision.2") << "metaobjectRevision.2.qml" << "metaobjectRevision.2.errors.txt" << false;
+    QTest::newRow("metaobjectRevision.3") << "metaobjectRevision.3.qml" << "metaobjectRevision.3.errors.txt" << false;
 }
 
 
@@ -1886,6 +1892,62 @@ void tst_qdeclarativelanguage::variantNotify()
     QCOMPARE(object->property("notifyCount").toInt(), 1);
 
     delete object;
+}
+
+void tst_qdeclarativelanguage::revisions()
+{
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("revisions10.qml"));
+
+        VERIFY_ERRORS(0);
+        MyRevisionedClass *object = qobject_cast<MyRevisionedClass*>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->prop2(), 2.0);
+        QCOMPARE(object->property("prop2").toReal(), 10.0);
+
+        delete object;
+    }
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("revisions11.qml"));
+
+        VERIFY_ERRORS(0);
+        MyRevisionedClass *object = qobject_cast<MyRevisionedClass*>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->prop2(), 10.0);
+
+        delete object;
+    }
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("revisionssub10.qml"));
+
+        VERIFY_ERRORS(0);
+        MyRevisionedSubclass *object = qobject_cast<MyRevisionedSubclass*>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->prop2(), 2.0);
+        QCOMPARE(object->property("prop2").toReal(), 10.0);
+
+        QCOMPARE(object->prop4(), 4.0);
+        QCOMPARE(object->property("prop4").toReal(), 10.0);
+
+        delete object;
+    }
+    {
+        QDeclarativeComponent component(&engine, TEST_FILE("revisionssub11.qml"));
+
+        VERIFY_ERRORS(0);
+        MyRevisionedSubclass *object = qobject_cast<MyRevisionedSubclass*>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->prop1(), 10.0);
+        QCOMPARE(object->prop2(), 10.0);
+        QCOMPARE(object->prop3(), 10.0);
+        QCOMPARE(object->prop4(), 10.0);
+
+        delete object;
+    }
 }
 
 void tst_qdeclarativelanguage::initTestCase()
