@@ -4,7 +4,7 @@
 
 HTML.templatedir = $QT_SOURCE_TREE/doc/src/template
 
-HTML.stylesheets = style/style.css
+HTML.stylesheets = style/offline.css
 
 HTML.scripts     =
 
@@ -19,14 +19,14 @@ extraimages.HTML        = qt-logo.png \
                           bullet_up.png \
                           horBar.png \
                           sprites-combined.png
-    
+
 # Include the style sheets and scripts used.
 
 HTML.headerstyles = \
-    "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/style.css\" />\n"
+    "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/offline.css\" />\n"
 
 HTML.headerscripts = 
 
 HTML.endheader = \
     "</head>\n" \
-    "<body class=\"offline creator\">\n"
+    "<body>\n"

@@ -61,7 +61,7 @@ public:
     bool recognizeLanguage( const QString& lang );
     QString plainName( const Node *node );
     QString plainFullName( const Node *node, const Node *relative );
-    QString markedUpCode( const QString& code, const Node *relative, const QString& dirPath );
+    QString markedUpCode( const QString& code, const Node *relative, const Location &location );
     QString markedUpSynopsis( const Node *node, const Node *relative,
         		      SynopsisStyle style );
     QString markedUpName( const Node *node );

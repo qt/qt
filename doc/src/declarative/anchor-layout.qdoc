@@ -28,10 +28,14 @@
 /*!
 \page qml-anchor-layout.html
 \target anchor-layout
+<<<<<<< HEAD
 \contentspage QML Features
 \previouspage {Using QML Positioner and Repeater Items}{Component Layouts}
 \nextpage {QML Mouse Events}{Mouse Events}
 \title Anchor-based Layout in QML
+=======
+\title Anchor-Based Layout in QML
+>>>>>>> f44f7084a3020ed8e249644d5b5e07f74cb7b070
 
 \section1 Overview
 

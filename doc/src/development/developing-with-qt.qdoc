@@ -28,7 +28,7 @@
 /*!
     \page developing-with-qt.html
     
-    \title Cross-platform & Platform-specific Development
+    \title Cross-Platform and Platform-Specific Development
 	Qt allows you to write advanced applications and UIs once, and deploy them
 	across desktop and embedded operating systems without rewriting the source
 	code. The top section of this page provides an overview of the tools and
@@ -37,7 +37,7 @@
 	links to documents that describe platform-specific features provided by Qt,
 	and discuss issues related to particular platforms and environments.
 
-	\section1 Cross-platform Development with Qt
+    \section1 Cross-Platform Development with Qt
 
     Qt is provided with a set of build tools to help developers automate
     the process of building and installing Qt applications.
@@ -68,7 +68,7 @@
     \endlist
     \endtable
 	
-	\section1 Platform-specific Development with Qt
+	\section1 Platform-Specific Development with Qt
 	
     These documents describe platform-specific features provided by Qt, and
     discuss issues related to particular platforms and environments.
@@ -110,6 +110,4 @@
         \o  Collections of notes about Qt implementations on different window systems.
     \endlist
     \endtable
-	
-	
 */

@@ -270,12 +270,6 @@ void HtmlGenerator::initializeGenerator(const Config &config)
     postPostHeader = config.getString(HtmlGenerator::format() +
                                       Config::dot +
                                       HTMLGENERATOR_POSTPOSTHEADER);
-    creatorPostHeader = config.getString(HtmlGenerator::format() +
-                                  Config::dot +
-                                  HTMLGENERATOR_CREATORPOSTHEADER);
-    creatorPostPostHeader = config.getString(HtmlGenerator::format() +
-                                      Config::dot +
-                                      HTMLGENERATOR_CREATORPOSTPOSTHEADER);
     footer = config.getString(HtmlGenerator::format() +
                               Config::dot +
                               HTMLGENERATOR_FOOTER);
