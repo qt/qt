@@ -757,10 +757,36 @@ protected:
     qreal m_p4;
 };
 
+class MySubclass : public MyRevisionedClass
+{
+    Q_OBJECT
+    Q_PROPERTY(qreal prop5 READ prop5 WRITE setProp5 NOTIFY prop5Changed)
+
+public:
+    MySubclass() : m_p5(5) {}
+
+    qreal prop5() const { return m_p5; }
+    void setProp5(qreal p) {
+        if (p != m_p5) {
+            m_p5 = p;
+            emit prop5Changed();
+        }
+    }
+
+    Q_INVOKABLE void method5() { }
+
+signals:
+    void prop5Changed();
+
+protected:
+    qreal m_p5;
+};
+
 QML_DECLARE_TYPE(MyRevisionedBaseClassRegistered)
 QML_DECLARE_TYPE(MyRevisionedBaseClassUnregistered)
 QML_DECLARE_TYPE(MyRevisionedClass)
 QML_DECLARE_TYPE(MyRevisionedSubclass)
+QML_DECLARE_TYPE(MySubclass)
 
 
 

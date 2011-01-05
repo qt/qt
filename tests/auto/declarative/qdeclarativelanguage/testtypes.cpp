@@ -62,6 +62,9 @@ void registerTypes()
     // MyRevisionedSubclass 1.1 uses MyRevisionedClass revision 1
     qmlRegisterType<MyRevisionedSubclass,1>("Test",1,1,"MyRevisionedSubclass");
 
+    // Only version 1.0, but its super class is registered in version 1.1 also
+    qmlRegisterType<MySubclass>("Test",1,0,"MySubclass");
+
     qmlRegisterCustomType<MyCustomParserType>("Test", 1, 0, "MyCustomParserType", new MyCustomParserTypeParser);
 
     qmlRegisterTypeNotAvailable("Test",1,0,"UnavailableType", "UnavailableType is unavailable for testing");

@@ -1935,7 +1935,8 @@ void tst_qdeclarativelanguage::revisions()
         delete object;
     }
     {
-        QDeclarativeComponent component(&engine, TEST_FILE("revisionssub11.qml"));
+        QDeclarativeEngine myEngine;
+        QDeclarativeComponent component(&myEngine, TEST_FILE("revisionssub11.qml"));
 
         VERIFY_ERRORS(0);
         MyRevisionedSubclass *object = qobject_cast<MyRevisionedSubclass*>(component.create());
@@ -1945,6 +1946,20 @@ void tst_qdeclarativelanguage::revisions()
         QCOMPARE(object->prop2(), 10.0);
         QCOMPARE(object->prop3(), 10.0);
         QCOMPARE(object->prop4(), 10.0);
+
+        delete object;
+    }
+    {
+        // If this is uncommented it will work
+        // qmlRegisterType<MySubclass,0>("Test",1,1,"MySubclass");
+        QDeclarativeComponent component(&engine, TEST_FILE("versionedbase.qml"));
+        QEXPECT_FAIL("", "Class version 1.0 with base class version 1.1 registered", Abort);
+        VERIFY_ERRORS(0);
+        MySubclass *object = qobject_cast<MySubclass*>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->prop1(), 10.0);
+        QCOMPARE(object->prop2(), 10.0);
 
         delete object;
     }
