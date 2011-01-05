@@ -365,7 +365,7 @@ EXPORTS
 	?samples@QGLFramebufferObjectFormat@@QBEHXZ @ 364 NONAME ; int QGLFramebufferObjectFormat::samples(void) const
 	?setInactive@QGLCustomShaderStage@@QAEXXZ @ 365 NONAME ; void QGLCustomShaderStage::setInactive(void)
 	?extensionFuncs@QGLContextPrivate@@SAAAUQGLExtensionFuncs@@PBVQGLContext@@@Z @ 366 NONAME ; struct QGLExtensionFuncs & QGLContextPrivate::extensionFuncs(class QGLContext const *)
-	?value@QGLContextResource@@QAEPAXPBVQGLContext@@@Z @ 367 NONAME ; void * QGLContextResource::value(class QGLContext const *)
+	?value@QGLContextResource@@QAEPAXPBVQGLContext@@@Z @ 367 NONAME ABSENT ; void * QGLContextResource::value(class QGLContext const *)
 	?majorVersion@QGLFormat@@QBEHXZ @ 368 NONAME ; int QGLFormat::majorVersion(void) const
 	?rgba@QGLFormat@@QBE_NXZ @ 369 NONAME ; bool QGLFormat::rgba(void) const
 	?paintDevice@QGLWindowSurface@@UAEPAVQPaintDevice@@XZ @ 370 NONAME ; class QPaintDevice * QGLWindowSurface::paintDevice(void)
