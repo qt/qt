@@ -10,5 +10,9 @@ wince*|symbian: {
    addFiles.sources = baseline
    addFiles.path = .
    DEPLOYMENT += addFiles
+} else {
+   test_data.files = baseline/*
+   test_data.path =  $${target.path}/baseline
+   INSTALLS += test_data
 }
 
