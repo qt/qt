@@ -49,6 +49,7 @@
 
 #include <QtCore/QMutex>
 
+#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
 #include <GL/glx.h>
 
 QT_BEGIN_NAMESPACE
@@ -87,5 +88,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif //!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
 
 #endif

@@ -54,7 +54,7 @@
 #include <QtGui/private/qwindowsurface_p.h>
 #include <QtGui/private/qapplication_p.h>
 
-#ifndef QT_NO_OPENGL
+#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
 #include "qglxintegration.h"
 #endif
 
@@ -74,7 +74,7 @@ QTestLiteWindow::QTestLiteWindow(QWidget *window)
 
         if(window->platformWindowFormat().windowApi() == QPlatformWindowFormat::OpenGL
            && QApplicationPrivate::platformIntegration()->hasOpenGL() ) {
-#ifndef QT_NO_OPENGL
+#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
             XVisualInfo *visualInfo = QGLXContext::findVisualInfo(mScreen,window->platformWindowFormat());
             Colormap cmap = XCreateColormap(mScreen->display(),mScreen->rootWindow(),visualInfo->visual,AllocNone);
 
@@ -83,7 +83,7 @@ QTestLiteWindow::QTestLiteWindow(QWidget *window)
             x_window = XCreateWindow(mScreen->display(), mScreen->rootWindow(),x, y, w, h,
                                       0, visualInfo->depth, InputOutput, visualInfo->visual,
                                       CWColormap, &a);
-#endif //QT_NO_OPENGL
+#endif //!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
         } else {
             x_window = XCreateSimpleWindow(mScreen->display(), mScreen->rootWindow(),
                                            x, y, w, h, 0 /*border_width*/,
@@ -548,7 +548,7 @@ QPlatformGLContext *QTestLiteWindow::glContext() const
         return 0;
     if (!mGLContext) {
         QTestLiteWindow *that = const_cast<QTestLiteWindow *>(this);
-#ifndef QT_NO_OPENGL
+#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
         that->mGLContext = new QGLXContext(x_window, mScreen,widget()->platformWindowFormat());
 #endif
     }

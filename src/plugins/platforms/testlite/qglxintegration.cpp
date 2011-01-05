@@ -46,6 +46,7 @@
 #include "qtestlitewindow.h"
 #include "qtestlitescreen.h"
 
+#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <GL/glx.h>
@@ -371,3 +372,5 @@ QPlatformWindowFormat QGLXContext::platformWindowFormat() const
 }
 
 QT_END_NAMESPACE
+
+#endif //!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)

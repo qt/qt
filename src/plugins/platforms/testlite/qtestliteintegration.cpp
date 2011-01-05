@@ -49,8 +49,10 @@
 #include "qtestlitescreen.h"
 #include "qtestliteclipboard.h"
 
-#ifndef QT_NO_OPENGL
+#if !defined(QT_NO_OPENGL)
+#if !defined(QT_OPENGL_ES_2)
 #include <GL/glx.h>
+#endif //!defined(QT_OPENGL_ES_2)
 #include <private/qwindowsurface_gl_p.h>
 #include <private/qpixmapdata_gl_p.h>
 #endif //QT_NO_OPENGL
@@ -128,7 +130,7 @@ QPlatformClipboard * QTestLiteIntegration::clipboard() const
 
 bool QTestLiteIntegration::hasOpenGL() const
 {
-#ifndef QT_NO_OPENGL
+#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
     QTestLiteScreen *screen = static_cast<const QTestLiteScreen *>(mScreens.at(0));
     return glXQueryExtension(screen->display(), 0, 0) != 0;
 #endif
