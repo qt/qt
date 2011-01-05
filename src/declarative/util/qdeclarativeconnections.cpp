@@ -45,6 +45,7 @@
 #include <qdeclarativeproperty_p.h>
 #include <qdeclarativeboundsignal_p.h>
 #include <qdeclarativecontext.h>
+#include <qdeclarativecontext_p.h>
 #include <qdeclarativeinfo.h>
 
 #include <QtCore/qdebug.h>
@@ -257,7 +258,11 @@ void QDeclarativeConnections::connectSignals()
         if (prop.isValid() && (prop.type() & QDeclarativeProperty::SignalProperty)) {
             QDeclarativeBoundSignal *signal =
                 new QDeclarativeBoundSignal(target(), prop.method(), this);
-            signal->setExpression(new QDeclarativeExpression(qmlContext(this), 0, script));
+            QDeclarativeExpression *expression = new QDeclarativeExpression(qmlContext(this), 0, script);
+            QDeclarativeData *ddata = QDeclarativeData::get(this);
+            if (ddata && ddata->outerContext && !ddata->outerContext->url.isEmpty())
+                expression->setSourceLocation(ddata->outerContext->url.toString(), ddata->lineNumber);
+            signal->setExpression(expression);
             d->boundsignals += signal;
         } else {
             if (!d->ignoreUnknownSignals)
