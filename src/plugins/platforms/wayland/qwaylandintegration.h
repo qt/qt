@@ -115,12 +115,12 @@ private:
 
     static void outputHandleGeometry(void *data,
 				     struct wl_output *output,
+                                     int32_t x, int32_t y,
 				     int32_t width, int32_t height);
 
     static void shellHandleConfigure(void *data, struct wl_shell *shell,
 				     uint32_t time, uint32_t edges,
 				     struct wl_surface *surface,
-				     int32_t x, int32_t y,
 				     int32_t width, int32_t height);
 
     static int sourceUpdate(uint32_t mask, void *data);

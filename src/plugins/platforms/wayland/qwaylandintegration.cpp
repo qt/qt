@@ -259,7 +259,6 @@ const struct wl_drm_listener QWaylandDisplay::drmListener = {
 void QWaylandDisplay::shellHandleConfigure(void *data, struct wl_shell *shell,
 					   uint32_t time, uint32_t edges,
 					   struct wl_surface *surface,
-					   int32_t x, int32_t y,
 					   int32_t width, int32_t height)
 {
     Q_UNUSED(data);
@@ -268,7 +267,7 @@ void QWaylandDisplay::shellHandleConfigure(void *data, struct wl_shell *shell,
     Q_UNUSED(edges);
     QWaylandWindow *ww = (QWaylandWindow *) wl_surface_get_user_data(surface);
 
-    ww->configure(time, edges, x, y, width, height);
+    ww->configure(time, edges, 0, 0, width, height);
 }
 
 const struct wl_shell_listener QWaylandDisplay::shellListener = {
@@ -277,14 +276,15 @@ const struct wl_shell_listener QWaylandDisplay::shellListener = {
 
 void QWaylandDisplay::outputHandleGeometry(void *data,
 					   struct wl_output *output,
-					   int32_t width, int32_t height)
+					   int32_t x, int32_t y,
+                                           int32_t width, int32_t height)
 {
     Q_UNUSED(output);
     QWaylandDisplay *qwd = (QWaylandDisplay *) data;
     QWaylandScreen *screen;
 
     screen = new QWaylandScreen();
-    screen->mGeometry = QRect(0, 0, width, height);
+    screen->mGeometry = QRect(x, y, width, height);
     screen->mDepth = 32;
     screen->mFormat = QImage::Format_ARGB32_Premultiplied;
     screen->mOutput = output;
@@ -344,7 +344,7 @@ static void forceRoundtrip(struct wl_display *display)
 	wl_display_iterate(display, WL_DISPLAY_READABLE);
 }
 
-static const char socket_name[] = "\0wayland";
+static const char *socket_name = NULL;
 
 void QWaylandDisplay::eventDispatcher(void)
 {
@@ -376,7 +376,7 @@ void QWaylandDisplay::flushRequests(void)
 QWaylandDisplay::QWaylandDisplay(void)
     : mWriteNotifier(0)
 {
-    mDisplay = wl_display_create(socket_name, sizeof socket_name);
+    mDisplay = wl_display_connect(socket_name);
     if (mDisplay == NULL) {
 	fprintf(stderr, "failed to create display: %m\n");
 	return;
@@ -483,9 +483,8 @@ void QWaylandWindow::attach(QWaylandBuffer *buffer)
 
     mBuffer = buffer;
     if (mSurface) {
-	wl_surface_attach(mSurface, mBuffer->mBuffer);
-	wl_surface_map(mSurface, geometry.x(), geometry.y(),
-		       geometry.width(), geometry.height());
+	wl_surface_attach(mSurface, mBuffer->mBuffer,geometry.x(),geometry.y());
+	wl_surface_map_toplevel(mSurface);
     }
 }
 
