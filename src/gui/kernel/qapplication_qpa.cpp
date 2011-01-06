@@ -444,11 +444,11 @@ void QApplication::alert(QWidget *, int)
 {
 }
 
-static void init_platform(const QString &name)
+static void init_platform(const QString &name, const QString &platformPluginPath)
 {
-    QApplicationPrivate::platform_integration = QPlatformIntegrationFactory::create(name);
+    QApplicationPrivate::platform_integration = QPlatformIntegrationFactory::create(name, platformPluginPath);
     if (!QApplicationPrivate::platform_integration) {
-        QStringList keys = QPlatformIntegrationFactory::keys();
+        QStringList keys = QPlatformIntegrationFactory::keys(platformPluginPath);
         QString fatalMessage =
             QString::fromLatin1("Failed to load platform plugin \"%1\". Available platforms are: \n").arg(name);
         foreach(QString key, keys) {
@@ -513,6 +513,7 @@ void qt_init(QApplicationPrivate *priv, int type)
     }
 
     QList<QByteArray> pluginList;
+    QString platformPluginPath = QLatin1String(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));
     QString platformName = QLatin1String(qgetenv("QT_QPA_PLATFORM"));
 
     // Get command line params
@@ -527,6 +528,9 @@ void qt_init(QApplicationPrivate *priv, int type)
         if (arg == "-fn" || arg == "-font") {
             if (++i < argc)
                 appFont = QString::fromLocal8Bit(argv[i]);
+        } else if (arg == "-platformpluginpath") {
+            if (++i < argc)
+                platformPluginPath = QLatin1String(argv[i]);
         } else if (arg == "-platform") {
             if (++i < argc)
                 platformName = QLatin1String(argv[i]);
@@ -550,7 +554,7 @@ void qt_init(QApplicationPrivate *priv, int type)
     }
 #endif
 
-    init_platform(platformName);
+    init_platform(platformName, platformPluginPath);
     init_plugins(pluginList);
 
     QColormap::initialize();
