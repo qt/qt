@@ -161,7 +161,7 @@ while QAbstractItemModel provides a more flexible solution for more complex
 models.
 
 
-\section2 QStringList
+\section2 QStringList-based model
 
 A model may be a simple QStringList, which provides the contents of the list via the \e modelData role.
 
@@ -182,7 +182,7 @@ have changed.  If the QStringList changes, it will be necessary to reset
 the model by calling QDeclarativeContext::setContextProperty() again.
 
 
-\section2 QList<QObject*>
+\section2 QObjectList-based model
 
 A list of QObject* values can also be used as a model. A QList<QObject*> provides 
 the properties of the objects in the list as roles.

@@ -69,8 +69,11 @@ private slots:
     void numberModel();
     void objectList();
     void stringList();
-    void dataModel();
+    void dataModel_adding();
+    void dataModel_removing();
+    void dataModel_changes();
     void itemModel();
+    void resetModel();
     void properties();
 
 private:
@@ -186,6 +189,11 @@ void tst_QDeclarativeRepeater::numberModel()
     QVERIFY(repeater != 0);
     QCOMPARE(repeater->parentItem()->childItems().count(), 5+1);
 
+    QVERIFY(!repeater->itemAt(-1));
+    for (int i=0; i<repeater->count(); i++)
+        QCOMPARE(repeater->itemAt(i), repeater->parentItem()->childItems().at(i));
+    QVERIFY(!repeater->itemAt(repeater->count()));
+
     QMetaObject::invokeMethod(canvas->rootObject(), "checkProperties");
     QVERIFY(testObject->error() == false);
 
@@ -222,6 +230,17 @@ void tst_QDeclarativeRepeater::objectList()
     QVERIFY(repeater != 0);
     QCOMPARE(repeater->property("errors").toInt(), 0);//If this fails either they are out of order or can't find the object's data
     QCOMPARE(repeater->property("instantiated").toInt(), 100);
+
+    QVERIFY(!repeater->itemAt(-1));
+    for (int i=0; i<data.count(); i++)
+        QCOMPARE(repeater->itemAt(i), repeater->parentItem()->childItems().at(i));
+    QVERIFY(!repeater->itemAt(data.count()));
+
+    QSignalSpy addedSpy(repeater, SIGNAL(itemAdded(int,QDeclarativeItem*)));
+    QSignalSpy removedSpy(repeater, SIGNAL(itemRemoved(int,QDeclarativeItem*)));
+    ctxt->setContextProperty("testData", QVariant::fromValue(data));
+    QCOMPARE(addedSpy.count(), data.count());
+    QCOMPARE(removedSpy.count(), data.count());
 
     qDeleteAll(data);
     delete canvas;
@@ -284,7 +303,137 @@ void tst_QDeclarativeRepeater::stringList()
     delete canvas;
 }
 
-void tst_QDeclarativeRepeater::dataModel()
+void tst_QDeclarativeRepeater::dataModel_adding()
+{
+    QDeclarativeView *canvas = createView();
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    TestObject *testObject = new TestObject;
+    ctxt->setContextProperty("testObject", testObject);
+
+    TestModel testModel;
+    ctxt->setContextProperty("testData", &testModel);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/repeater2.qml"));
+    qApp->processEvents();
+
+    QDeclarativeRepeater *repeater = findItem<QDeclarativeRepeater>(canvas->rootObject(), "repeater");
+    QVERIFY(repeater != 0);
+    QDeclarativeItem *container = findItem<QDeclarativeItem>(canvas->rootObject(), "container");
+    QVERIFY(container != 0);
+
+    QVERIFY(!repeater->itemAt(0));
+
+    QSignalSpy countSpy(repeater, SIGNAL(countChanged()));
+    QSignalSpy addedSpy(repeater, SIGNAL(itemAdded(int,QDeclarativeItem*)));
+
+    // add to empty model
+    testModel.addItem("two", "2");
+    QCOMPARE(repeater->itemAt(0), container->childItems().at(0));
+    QCOMPARE(countSpy.count(), 1); countSpy.clear();
+    QCOMPARE(addedSpy.count(), 1);
+    QCOMPARE(addedSpy.at(0).at(0).toInt(), 0);
+    QCOMPARE(addedSpy.at(0).at(1).value<QDeclarativeItem*>(), container->childItems().at(0));
+    addedSpy.clear();
+
+    // insert at start
+    testModel.insertItem(0, "one", "1");
+    QCOMPARE(repeater->itemAt(0), container->childItems().at(0));
+    QCOMPARE(countSpy.count(), 1); countSpy.clear();
+    QCOMPARE(addedSpy.count(), 1);
+    QCOMPARE(addedSpy.at(0).at(0).toInt(), 0);
+    QCOMPARE(addedSpy.at(0).at(1).value<QDeclarativeItem*>(), container->childItems().at(0));
+    addedSpy.clear();
+
+    // insert at end
+    testModel.insertItem(2, "four", "4");
+    QCOMPARE(repeater->itemAt(2), container->childItems().at(2));
+    QCOMPARE(countSpy.count(), 1); countSpy.clear();
+    QCOMPARE(addedSpy.count(), 1);
+    QCOMPARE(addedSpy.at(0).at(0).toInt(), 2);
+    QCOMPARE(addedSpy.at(0).at(1).value<QDeclarativeItem*>(), container->childItems().at(2));
+    addedSpy.clear();
+
+    // insert in middle
+    testModel.insertItem(2, "three", "3");
+    QCOMPARE(repeater->itemAt(2), container->childItems().at(2));
+    QCOMPARE(countSpy.count(), 1); countSpy.clear();
+    QCOMPARE(addedSpy.count(), 1);
+    QCOMPARE(addedSpy.at(0).at(0).toInt(), 2);
+    QCOMPARE(addedSpy.at(0).at(1).value<QDeclarativeItem*>(), container->childItems().at(2));
+    addedSpy.clear();
+
+    delete testObject;
+    delete canvas;
+}
+
+void tst_QDeclarativeRepeater::dataModel_removing()
+{
+    QDeclarativeView *canvas = createView();
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    TestObject *testObject = new TestObject;
+    ctxt->setContextProperty("testObject", testObject);
+
+    TestModel testModel;
+    testModel.addItem("one", "1");
+    testModel.addItem("two", "2");
+    testModel.addItem("three", "3");
+    testModel.addItem("four", "4");
+    testModel.addItem("five", "5");
+
+    ctxt->setContextProperty("testData", &testModel);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/repeater2.qml"));
+    qApp->processEvents();
+
+    QDeclarativeRepeater *repeater = findItem<QDeclarativeRepeater>(canvas->rootObject(), "repeater");
+    QVERIFY(repeater != 0);
+    QDeclarativeItem *container = findItem<QDeclarativeItem>(canvas->rootObject(), "container");
+    QVERIFY(container != 0);
+    QCOMPARE(container->childItems().count(), repeater->count()+1);
+
+    QSignalSpy countSpy(repeater, SIGNAL(countChanged()));
+    QSignalSpy removedSpy(repeater, SIGNAL(itemRemoved(int,QDeclarativeItem*)));
+
+    // remove at start
+    QDeclarativeItem *item = repeater->itemAt(0);
+    QCOMPARE(item, container->childItems().at(0));
+
+    testModel.removeItem(0);
+    QVERIFY(repeater->itemAt(0) != item);
+    QCOMPARE(countSpy.count(), 1); countSpy.clear();
+    QCOMPARE(removedSpy.count(), 1);
+    QCOMPARE(removedSpy.at(0).at(0).toInt(), 0);
+    QCOMPARE(removedSpy.at(0).at(1).value<QDeclarativeItem*>(), item);
+    removedSpy.clear();
+
+    // remove at end
+    int lastIndex = testModel.count()-1;
+    item = repeater->itemAt(lastIndex);
+    QCOMPARE(item, container->childItems().at(lastIndex));
+
+    testModel.removeItem(lastIndex);
+    QVERIFY(repeater->itemAt(lastIndex) != item);
+    QCOMPARE(countSpy.count(), 1); countSpy.clear();
+    QCOMPARE(removedSpy.count(), 1);
+    QCOMPARE(removedSpy.at(0).at(0).toInt(), lastIndex);
+    QCOMPARE(removedSpy.at(0).at(1).value<QDeclarativeItem*>(), item);
+    removedSpy.clear();
+
+    // remove from middle
+    item = repeater->itemAt(1);
+    QCOMPARE(item, container->childItems().at(1));
+
+    testModel.removeItem(1);
+    QVERIFY(repeater->itemAt(lastIndex) != item);
+    QCOMPARE(countSpy.count(), 1); countSpy.clear();
+    QCOMPARE(removedSpy.count(), 1);
+    QCOMPARE(removedSpy.at(0).at(0).toInt(), 1);
+    QCOMPARE(removedSpy.at(0).at(1).value<QDeclarativeItem*>(), item);
+    removedSpy.clear();
+
+    delete testObject;
+    delete canvas;
+}
+
+void tst_QDeclarativeRepeater::dataModel_changes()
 {
     QDeclarativeView *canvas = createView();
     QDeclarativeContext *ctxt = canvas->rootContext();
@@ -297,26 +446,14 @@ void tst_QDeclarativeRepeater::dataModel()
     testModel.addItem("three", "3");
 
     ctxt->setContextProperty("testData", &testModel);
-
     canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/repeater2.qml"));
     qApp->processEvents();
 
     QDeclarativeRepeater *repeater = findItem<QDeclarativeRepeater>(canvas->rootObject(), "repeater");
     QVERIFY(repeater != 0);
-
     QDeclarativeItem *container = findItem<QDeclarativeItem>(canvas->rootObject(), "container");
     QVERIFY(container != 0);
-
-    QCOMPARE(container->childItems().count(), 4);
-
-    QSignalSpy repeaterSpy(repeater, SIGNAL(countChanged()));
-    testModel.addItem("four", "4");
-    QCOMPARE(container->childItems().count(), 5);
-    QCOMPARE(repeaterSpy.count(),1);
-
-    testModel.removeItem(2);
-    QCOMPARE(container->childItems().count(), 4);
-    QCOMPARE(repeaterSpy.count(),2);
+    QCOMPARE(container->childItems().count(), repeater->count()+1);
 
     // Check that model changes are propagated
     QDeclarativeText *text = findItem<QDeclarativeText>(canvas->rootObject(), "myName", 1);
@@ -375,6 +512,61 @@ void tst_QDeclarativeRepeater::itemModel()
 
     delete testObject;
     delete canvas;
+}
+
+void tst_QDeclarativeRepeater::resetModel()
+{
+    QDeclarativeView *canvas = createView();
+
+    QStringList dataA;
+    for (int i=0; i<10; i++)
+        dataA << QString::number(i);
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testData", dataA);
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/repeater1.qml"));
+    qApp->processEvents();
+    QDeclarativeRepeater *repeater = findItem<QDeclarativeRepeater>(canvas->rootObject(), "repeater");
+    QVERIFY(repeater != 0);
+    QDeclarativeItem *container = findItem<QDeclarativeItem>(canvas->rootObject(), "container");
+    QVERIFY(container != 0);
+
+    QCOMPARE(repeater->count(), dataA.count());
+
+    QSignalSpy countSpy(repeater, SIGNAL(countChanged()));
+    QSignalSpy addedSpy(repeater, SIGNAL(itemAdded(int,QDeclarativeItem*)));
+    QSignalSpy removedSpy(repeater, SIGNAL(itemRemoved(int,QDeclarativeItem*)));
+
+    QStringList dataB;
+    for (int i=0; i<20; i++)
+        dataB << QString::number(i);
+
+    // reset context property
+    ctxt->setContextProperty("testData", dataB);
+    QCOMPARE(repeater->count(), dataB.count());
+
+    QCOMPARE(countSpy.count(), 1);
+    QCOMPARE(removedSpy.count(), dataA.count());
+    QCOMPARE(addedSpy.count(), dataB.count());
+    for (int i=0; i<dataB.count(); i++) {
+        QCOMPARE(addedSpy.at(i).at(0).toInt(), i);
+        QCOMPARE(addedSpy.at(i).at(1).value<QDeclarativeItem*>(), repeater->itemAt(i));
+    }
+    countSpy.clear();
+    removedSpy.clear();
+    addedSpy.clear();
+
+    // reset via setModel()
+    repeater->setModel(dataA);
+    QCOMPARE(repeater->count(), dataA.count());
+
+    QCOMPARE(countSpy.count(), 1);
+    QCOMPARE(removedSpy.count(), dataB.count());
+    QCOMPARE(addedSpy.count(), dataA.count());
+    for (int i=0; i<dataA.count(); i++) {
+        QCOMPARE(addedSpy.at(i).at(0).toInt(), i);
+        QCOMPARE(addedSpy.at(i).at(1).value<QDeclarativeItem*>(), repeater->itemAt(i));
+    }
 }
 
 void tst_QDeclarativeRepeater::properties()
