@@ -176,7 +176,9 @@ void tst_Headers::allSourceFilesData()
             || sourceFile.endsWith(".ui.h")
             || sourceFile.endsWith("/src/corelib/global/qconfig.h")
             || sourceFile.endsWith("/src/corelib/global/qconfig.cpp")
-            || sourceFile.endsWith("/src/tools/uic/qclass_lib_map.h"))
+            || sourceFile.endsWith("/src/tools/uic/qclass_lib_map.h")
+            || sourceFile.endsWith("src/network/access/qnetworkcookiejartlds_p.h")
+            )
             continue;
 
         QTest::newRow(qPrintable(sourceFile)) << sourceFile;
