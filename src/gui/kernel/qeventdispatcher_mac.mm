@@ -588,7 +588,10 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
         // manually (rather than from a QEventLoop), we cannot enter a tight
         // loop and block this call, but instead we need to return after one flush:
         const bool canExec_3rdParty = d->nsAppRunCalledByQt || ![NSApp isRunning];
-        const bool canExec_Qt = flags & QEventLoop::DialogExec || flags & QEventLoop::EventLoopExec;
+        const bool canExec_Qt =
+                (flags & QEventLoop::DialogExec || flags & QEventLoop::EventLoopExec)
+                && !(flags & QEventLoop::ExcludeUserInputEvents);
+
 
         if (canExec_Qt && canExec_3rdParty) {
             // We can use exec-mode, meaning that we can stay in a tight loop until
