@@ -199,7 +199,7 @@ int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const c
     QByteArray listName("QDeclarativeListProperty<" + name + ">");
 
     QDeclarativePrivate::RegisterType type = {
-        2,
+        1,
 
         qRegisterMetaType<T *>(pointerName.constData()),
         qRegisterMetaType<QDeclarativeListProperty<T> >(listName.constData()),
@@ -233,7 +233,7 @@ int qmlRegisterRevision(const char *uri, int versionMajor, int versionMinor)
     QByteArray listName("QDeclarativeListProperty<" + name + ">");
 
     QDeclarativePrivate::RegisterType type = {
-        2,
+        1,
 
         qRegisterMetaType<T *>(pointerName.constData()),
         qRegisterMetaType<QDeclarativeListProperty<T> >(listName.constData()),
