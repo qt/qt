@@ -87,6 +87,7 @@ private slots:
     void emptyModel();
     void closed();
     void pathUpdate();
+    void visualDataModel();
 
 private:
     QDeclarativeView *createView();
@@ -837,6 +838,19 @@ void tst_QDeclarativePathView::pathUpdate()
     QCOMPARE(item->x(), 150.0);
 
     delete canvas;
+}
+
+void tst_QDeclarativePathView::visualDataModel()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/vdm.qml"));
+
+    QDeclarativePathView *obj = qobject_cast<QDeclarativePathView*>(c.create());
+    QVERIFY(obj != 0);
+
+    QCOMPARE(obj->count(), 3);
+
+    delete obj;
 }
 
 QDeclarativeView *tst_QDeclarativePathView::createView()
