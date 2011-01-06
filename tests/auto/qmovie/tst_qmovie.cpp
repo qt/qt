@@ -72,6 +72,7 @@ private slots:
     void jumpToFrame_data();
     void jumpToFrame();
     void changeMovieFile();
+    void infiniteLoop();
 };
 
 // Testing get/set functions
@@ -206,6 +207,18 @@ void tst_QMovie::changeMovieFile()
     movie.stop();
     movie.setFileName("animations/trolltech.gif");
     QVERIFY(movie.currentFrameNumber() == -1);
+}
+
+void tst_QMovie::infiniteLoop()
+{
+    QLabel label;
+    label.show();
+    QMovie *movie = new QMovie(QLatin1String(":animations/corrupt.gif"), QByteArray(), &label);
+    label.setMovie(movie);
+    movie->start();
+
+    QTestEventLoop::instance().enterLoop(1);
+    QTestEventLoop::instance().timeout();
 }
 
 QTEST_MAIN(tst_QMovie)

@@ -293,7 +293,7 @@ EXPORTS
 	_ZN17QGLContextPrivate14extensionFuncsEPK10QGLContext @ 292 NONAME
 	_ZN17QGLGraphicsSystemC1Eb @ 293 NONAME
 	_ZN17QGLGraphicsSystemC2Eb @ 294 NONAME
-	_ZN18QGLContextResource5valueEPK10QGLContext @ 295 NONAME
+	_ZN18QGLContextResource5valueEPK10QGLContext @ 295 NONAME ABSENT
 	_ZN18QGLContextResource6insertEPK10QGLContextPv @ 296 NONAME
 	_ZN18QGLContextResource7cleanupEPK10QGLContextPv @ 297 NONAME
 	_ZN18QGLContextResourceC1EPFvPvE @ 298 NONAME

@@ -96,6 +96,11 @@ QCLuceneStandardAnalyzer::QCLuceneStandardAnalyzer(const QStringList &stopWords)
     tArray[stopWords.count()] = 0;
 
     d->analyzer = new lucene::analysis::standard::StandardAnalyzer(tArray);
+
+    for (int i = 0; i < stopWords.count(); ++i)
+        delete [] tArray[i];
+
+    delete [] tArray;
 }
 
 
@@ -147,6 +152,11 @@ QCLuceneStopAnalyzer::QCLuceneStopAnalyzer(const QStringList &stopWords)
     tArray[stopWords.count()] = 0;
 
     d->analyzer = new lucene::analysis::StopAnalyzer(tArray);
+
+    for (int i = 0; i < stopWords.count(); ++i)
+        delete [] tArray[i];
+
+    delete [] tArray;
 }
 
 QStringList QCLuceneStopAnalyzer::englishStopWords() const

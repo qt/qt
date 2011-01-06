@@ -1925,7 +1925,7 @@ void QMessageBoxPrivate::retranslateStrings()
 {
 #ifndef QT_NO_TEXTEDIT
     if (detailsButton)
-        detailsButton->setLabel(detailsText->isHidden() ? HideLabel : ShowLabel);
+        detailsButton->setLabel(detailsText->isHidden() ? ShowLabel : HideLabel);
 #endif
 }
 

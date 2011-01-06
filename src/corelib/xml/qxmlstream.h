@@ -474,6 +474,8 @@ public:
     void writeCurrentToken(const QXmlStreamReader &reader);
 #endif
 
+    bool hasError() const;
+
 private:
     Q_DISABLE_COPY(QXmlStreamWriter)
     Q_DECLARE_PRIVATE(QXmlStreamWriter)
