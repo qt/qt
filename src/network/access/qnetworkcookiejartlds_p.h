@@ -6476,4 +6476,6 @@ static const char tldData[] = {
 "santafe.museum\0org.ws\0"
 };
 
+QT_END_NAMESPACE
+
 #endif // QNETWORKCOOKIEJARTLD_P_H
