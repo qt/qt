@@ -200,7 +200,8 @@ QDeclarativeType::QDeclarativeType(int index, const QDeclarativePrivate::Registe
     d->m_name = name;
     d->m_version_maj = type.versionMajor;
     d->m_version_min = type.versionMinor;
-    d->m_revision = type.revision;
+    if (type.version > 1) // revisions added in version 2
+        d->m_revision = type.revision;
     d->m_typeId = type.typeId;
     d->m_listId = type.listId;
     d->m_allocationSize = type.objectSize;
