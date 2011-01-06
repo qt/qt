@@ -675,6 +675,14 @@ void tst_QUrl::setUrl()
         QCOMPARE(url.encodedPath().constData(), "text/javascript,d5%20%3D%20'five%5Cu0027s'%3B");
     }
 
+    { //check it calls detach
+        QUrl u1("http://aaa.com");
+        QUrl u2 = u1;
+        u2.setUrl("http://bbb.com");
+        QCOMPARE(u1.host(), QString::fromLatin1("aaa.com"));
+        QCOMPARE(u2.host(), QString::fromLatin1("bbb.com"));
+    }
+
 /*
    The tests below are copied from kdelibs/kdecore/tests/kurltest.cpp (an old version of)
 
