@@ -188,8 +188,6 @@ private:
     ScriptOptions m_scriptOptions;
     QDeclarativeTester *tester;
 
-    QNetworkReply *wgtreply;
-    QString wgtdir;
     NetworkAccessManagerFactory *namFactory;
 
     bool useQmlFileBrowser;

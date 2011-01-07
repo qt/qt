@@ -192,6 +192,7 @@ bool FormWindowManager::eventFilter(QObject *o, QEvent *e)
     case QEvent::ToolTip:
     case QEvent::WhatsThis:
     case QEvent::WhatsThisClicked:
+    case QEvent::WinIdChange:
     case QEvent::DynamicPropertyChange:
     case QEvent::HoverEnter:
     case QEvent::HoverLeave:
