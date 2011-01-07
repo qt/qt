@@ -175,6 +175,10 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QGraphicsEffect>();
 #endif
 
+    // QtQuick 1.1 items
+    qmlRegisterType<QDeclarativeRepeater, 1>("QtQuick",1,1,"Repeater");
+
+
     qmlRegisterUncreatableType<QDeclarativeKeyNavigationAttached>("QtQuick",1,0,"KeyNavigation",QDeclarativeKeyNavigationAttached::tr("KeyNavigation is only available via attached properties"));
     qmlRegisterUncreatableType<QDeclarativeKeysAttached>("QtQuick",1,0,"Keys",QDeclarativeKeysAttached::tr("Keys is only available via attached properties"));
 
