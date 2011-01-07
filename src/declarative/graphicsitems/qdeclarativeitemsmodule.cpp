@@ -142,6 +142,7 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QGraphicsScale>("QtQuick",1,0,"Scale");
     qmlRegisterType<QDeclarativeText>("QtQuick",1,0,"Text");
     qmlRegisterType<QDeclarativeTextEdit>("QtQuick",1,0,"TextEdit");
+    qmlRegisterType<QDeclarativeTextEdit,1>("QtQuick",1,1,"TextEdit");
 #ifndef QT_NO_LINEEDIT
     qmlRegisterType<QDeclarativeTextInput>("QtQuick",1,0,"TextInput");
 #endif
