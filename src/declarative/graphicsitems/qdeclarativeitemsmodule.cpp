@@ -142,20 +142,16 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QGraphicsScale>("QtQuick",1,0,"Scale");
     qmlRegisterType<QDeclarativeText>("QtQuick",1,0,"Text");
     qmlRegisterType<QDeclarativeTextEdit>("QtQuick",1,0,"TextEdit");
-    qmlRegisterType<QDeclarativeTextEdit,1>("QtQuick",1,1,"TextEdit");
 #ifndef QT_NO_LINEEDIT
     qmlRegisterType<QDeclarativeTextInput>("QtQuick",1,0,"TextInput");
 #endif
     qmlRegisterType<QDeclarativeViewSection>("QtQuick",1,0,"ViewSection");
     qmlRegisterType<QDeclarativeVisualDataModel>("QtQuick",1,0,"VisualDataModel");
     qmlRegisterType<QDeclarativeVisualItemModel>("QtQuick",1,0,"VisualItemModel");
-    qmlRegisterType<QDeclarativePinchArea>("QtQuick",1,1,"PinchArea");
-    qmlRegisterType<QDeclarativePinch>();
 
     qmlRegisterType<QDeclarativeAnchors>();
     qmlRegisterType<QDeclarativeKeyEvent>();
     qmlRegisterType<QDeclarativeMouseEvent>();
-    qmlRegisterType<QDeclarativePinchEvent>();
     qmlRegisterType<QGraphicsObject>();
     qmlRegisterType<QGraphicsWidget>("QtQuick",1,0,"QGraphicsWidget");
     qmlRegisterExtendedType<QGraphicsWidget,QDeclarativeGraphicsWidget>("QtQuick",1,0,"QGraphicsWidget");
@@ -176,12 +172,15 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QGraphicsEffect>();
 #endif
 
-    // QtQuick 1.1 items
-    qmlRegisterType<QDeclarativeRepeater, 1>("QtQuick",1,1,"Repeater");
-
-
     qmlRegisterUncreatableType<QDeclarativeKeyNavigationAttached>("QtQuick",1,0,"KeyNavigation",QDeclarativeKeyNavigationAttached::tr("KeyNavigation is only available via attached properties"));
     qmlRegisterUncreatableType<QDeclarativeKeysAttached>("QtQuick",1,0,"Keys",QDeclarativeKeysAttached::tr("Keys is only available via attached properties"));
+
+    // QtQuick 1.1 items
+    qmlRegisterType<QDeclarativePinchArea>("QtQuick",1,1,"PinchArea");
+    qmlRegisterType<QDeclarativePinch>("QtQuick",1,1,"Pinch");
+    qmlRegisterType<QDeclarativePinchEvent>();
+    qmlRegisterType<QDeclarativeRepeater, 1>("QtQuick",1,1,"Repeater");
+    qmlRegisterType<QDeclarativeTextEdit,1>("QtQuick",1,1,"TextEdit");
 
 #ifndef QT_NO_IMPORT_QT47_QML
 #ifdef QT_NO_MOVIE
