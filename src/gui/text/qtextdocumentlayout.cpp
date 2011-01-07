@@ -327,7 +327,7 @@ static inline bool isLineSeparatorBlockAfterTable(const QTextBlock &block, const
 
 /*
 
-Optimisation strategies:
+Optimization strategies:
 
 HTML layout:
 

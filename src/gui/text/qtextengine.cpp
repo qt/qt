@@ -1879,7 +1879,7 @@ void QTextEngine::justify(const QScriptLine &line)
         if (end == layoutData->string.length())
             return; // no justification at end of paragraph
         if (end && layoutData->items[findItem(end-1)].analysis.flags == QScriptAnalysis::LineOrParagraphSeparator)
-            return; // no justification at the end of an explicitely separated line
+            return; // no justification at the end of an explicitly separated line
     }
 
     // justify line
