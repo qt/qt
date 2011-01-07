@@ -33,7 +33,7 @@ Rectangle {
                 whiteRect.center = pinch.center
                 whiteRect.scale = pinch.scale
             }
-            onPinchChanged: {
+            onPinchUpdated: {
                 whiteRect.center = pinch.center
                 whiteRect.scale = pinch.scale
             }

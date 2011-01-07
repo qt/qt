@@ -193,11 +193,11 @@ class Q_AUTOTEST_EXPORT QDeclarativePinchEvent : public QObject
 
     Q_PROPERTY(QPointF center READ center)
     Q_PROPERTY(QPointF startCenter READ startCenter)
-    Q_PROPERTY(QPointF lastCenter READ lastCenter)
+    Q_PROPERTY(QPointF previousCenter READ previousCenter)
     Q_PROPERTY(qreal scale READ scale)
-    Q_PROPERTY(qreal lastScale READ lastScale)
+    Q_PROPERTY(qreal previousScale READ previousScale)
     Q_PROPERTY(qreal angle READ angle)
-    Q_PROPERTY(qreal lastAngle READ lastAngle)
+    Q_PROPERTY(qreal previousAngle READ previousAngle)
     Q_PROPERTY(qreal rotation READ rotation)
     Q_PROPERTY(QPointF point1 READ point1)
     Q_PROPERTY(QPointF startPoint1 READ startPoint1)
@@ -212,14 +212,14 @@ public:
     QPointF center() const { return m_center; }
     QPointF startCenter() const { return m_startCenter; }
     void setStartCenter(QPointF c) { m_startCenter = c; }
-    QPointF lastCenter() const { return m_lastCenter; }
-    void setLastCenter(QPointF c) { m_lastCenter = c; }
+    QPointF previousCenter() const { return m_lastCenter; }
+    void setPreviousCenter(QPointF c) { m_lastCenter = c; }
     qreal scale() const { return m_scale; }
-    qreal lastScale() const { return m_lastScale; }
-    void setLastScale(qreal s) { m_lastScale = s; }
+    qreal previousScale() const { return m_lastScale; }
+    void setPreviousScale(qreal s) { m_lastScale = s; }
     qreal angle() const { return m_angle; }
-    qreal lastAngle() const { return m_lastAngle; }
-    void setLastAngle(qreal a) { m_lastAngle = a; }
+    qreal previousAngle() const { return m_lastAngle; }
+    void setPreviousAngle(qreal a) { m_lastAngle = a; }
     qreal rotation() const { return m_rotation; }
     QPointF point1() const { return m_point1; }
     void setPoint1(QPointF p) { m_point1 = p; }
@@ -271,7 +271,7 @@ public:
 Q_SIGNALS:
     void enabledChanged();
     void pinchStarted(QDeclarativePinchEvent *pinch);
-    void pinchChanged(QDeclarativePinchEvent *pinch);
+    void pinchUpdated(QDeclarativePinchEvent *pinch);
     void pinchFinished(QDeclarativePinchEvent *pinch);
 
 protected:

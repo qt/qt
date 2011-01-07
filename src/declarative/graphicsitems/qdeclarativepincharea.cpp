@@ -58,11 +58,11 @@ QT_BEGIN_NAMESPACE
 
     \bold {The PinchEvent element was added in QtQuick 1.1}
 
-    The \c center, \c startCenter, \c lastCenter properties provide the center position between the two touch points.
+    The \c center, \c startCenter, \c previousCenter properties provide the center position between the two touch points.
 
-    The \c scale and \c lastScale properties provide the scale factor.
+    The \c scale and \c previousScale properties provide the scale factor.
 
-    The \c angle, \c lastAngle and \c rotation properties provide the angle between the two points and the amount of rotation.
+    The \c angle, \c previousAngle and \c rotation properties provide the angle between the two points and the amount of rotation.
 
     The \c point1, \c point2, \c startPoint1, \c startPoint2 properties provide the positions of the touch points.
 
@@ -75,26 +75,26 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmlproperty QPointF PinchEvent::center
     \qmlproperty QPointF PinchEvent::startCenter
-    \qmlproperty QPointF PinchEvent::lastCenter
+    \qmlproperty QPointF PinchEvent::previousCenter
 
     These properties hold the position of the center point between the two touch points.
 
     \list
     \o \c center is the current center point
-    \o \c lastCenter is the center point of the previous event.
+    \o \c previousCenter is the center point of the previous event.
     \o \c startCenter is the center point when the gesture began
     \endlist
 */
 
 /*!
     \qmlproperty real PinchEvent::scale
-    \qmlproperty real PinchEvent::lastScale
+    \qmlproperty real PinchEvent::previousScale
 
     These properties hold the scale factor determined by the change in distance between the two touch points.
 
     \list
     \o \c scale is the current scale factor.
-    \o \c lastScale is the scale factor of the previous event.
+    \o \c previousScale is the scale factor of the previous event.
     \endlist
 
     When a pinch gesture is started, the scale is 1.0.
@@ -102,14 +102,14 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlproperty real PinchEvent::angle
-    \qmlproperty real PinchEvent::lastAngle
+    \qmlproperty real PinchEvent::previousAngle
     \qmlproperty real PinchEvent::rotation
 
     These properties hold the angle between the two touch points.
 
     \list
     \o \c angle is the current angle between the two points in the range -180 to 180.
-    \o \c lastAngle is the angle of the previous event.
+    \o \c previousAngle is the angle of the previous event.
     \o \c rotation is the total rotation since the pinch gesture started.
     \endlist
 
@@ -169,7 +169,7 @@ QDeclarativePinchAreaPrivate::~QDeclarativePinchAreaPrivate()
 
     \list
     \o setting a \c pinch.target to provide automatic interaction with an element
-    \o using the onPinchStarted, onPinchChanged and onPinchFinished handlers
+    \o using the onPinchStarted, onPinchUpdated and onPinchFinished handlers
     \endlist
 
     \sa PinchEvent
@@ -188,7 +188,7 @@ QDeclarativePinchAreaPrivate::~QDeclarativePinchAreaPrivate()
 */
 
 /*!
-    \qmlsignal PinchArea::onPinchChanged()
+    \qmlsignal PinchArea::onPinchUpdated()
 
     This handler is called when the pinch area detects that a pinch gesture has changed.
 
@@ -304,9 +304,9 @@ void QDeclarativePinchArea::updatePinch()
             QPointF pinchCenter = mapFromScene(d->sceneLastCenter);
             QDeclarativePinchEvent pe(pinchCenter, d->pinchLastScale, d->pinchLastAngle, rotationAngle);
             pe.setStartCenter(d->pinchStartCenter);
-            pe.setLastCenter(pinchCenter);
-            pe.setLastAngle(d->pinchLastAngle);
-            pe.setLastScale(d->pinchLastScale);
+            pe.setPreviousCenter(pinchCenter);
+            pe.setPreviousAngle(d->pinchLastAngle);
+            pe.setPreviousScale(d->pinchLastScale);
             pe.setStartPoint1(mapFromScene(d->sceneStartPoint1));
             pe.setStartPoint2(mapFromScene(d->sceneStartPoint2));
             pe.setPoint1(d->lastPoint1);
@@ -352,9 +352,9 @@ void QDeclarativePinchArea::updatePinch()
                     d->lastPoint2 = d->touchPoints.at(1).pos();
                     QDeclarativePinchEvent pe(d->pinchStartCenter, 1.0, angle, 0.0);
                     pe.setStartCenter(d->pinchStartCenter);
-                    pe.setLastCenter(d->pinchStartCenter);
-                    pe.setLastAngle(d->pinchLastAngle);
-                    pe.setLastScale(d->pinchLastScale);
+                    pe.setPreviousCenter(d->pinchStartCenter);
+                    pe.setPreviousAngle(d->pinchLastAngle);
+                    pe.setPreviousScale(d->pinchLastScale);
                     pe.setStartPoint1(mapFromScene(d->sceneStartPoint1));
                     pe.setStartPoint2(mapFromScene(d->sceneStartPoint2));
                     pe.setPoint1(d->lastPoint1);
@@ -383,9 +383,9 @@ void QDeclarativePinchArea::updatePinch()
                 QPointF pinchCenter = mapFromScene(sceneCenter);
                 QDeclarativePinchEvent pe(pinchCenter, scale, angle, rotationAngle);
                 pe.setStartCenter(d->pinchStartCenter);
-                pe.setLastCenter(mapFromScene(d->sceneLastCenter));
-                pe.setLastAngle(d->pinchLastAngle);
-                pe.setLastScale(d->pinchLastScale);
+                pe.setPreviousCenter(mapFromScene(d->sceneLastCenter));
+                pe.setPreviousAngle(d->pinchLastAngle);
+                pe.setPreviousScale(d->pinchLastScale);
                 pe.setStartPoint1(mapFromScene(d->sceneStartPoint1));
                 pe.setStartPoint2(mapFromScene(d->sceneStartPoint2));
                 pe.setPoint1(d->touchPoints.at(0).pos());
@@ -395,7 +395,7 @@ void QDeclarativePinchArea::updatePinch()
                 d->pinchLastAngle = angle;
                 d->lastPoint1 = d->touchPoints.at(0).pos();
                 d->lastPoint2 = d->touchPoints.at(1).pos();
-                emit pinchChanged(&pe);
+                emit pinchUpdated(&pe);
                 if (d->pinch && d->pinch->target()) {
                     qreal s = d->pinchStartScale * scale;
                     s = qMin(qMax(pinch()->minimumScale(),s), pinch()->maximumScale());

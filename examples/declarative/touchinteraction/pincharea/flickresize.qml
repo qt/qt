@@ -56,11 +56,11 @@ Rectangle {
             height: Math.max(flick.contentHeight, flick.height)
             onPinchChanged: {
                 // adjust content pos due to drag
-                flick.contentX += pinch.lastCenter.x - pinch.center.x
-                flick.contentY += pinch.lastCenter.y - pinch.center.y
+                flick.contentX += pinch.previousCenter.x - pinch.center.x
+                flick.contentY += pinch.previousCenter.y - pinch.center.y
 
                 // resize content
-                var scale = 1.0 + pinch.scale - pinch.lastScale
+                var scale = 1.0 + pinch.scale - pinch.previousScale
                 flick.resizeContent(flick.contentWidth * scale, flick.contentHeight * scale, pinch.center)
             }
 
