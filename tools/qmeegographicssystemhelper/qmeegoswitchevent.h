@@ -52,7 +52,7 @@
  when going to software mode.
 */
 
-class QMeeGoSwitchEvent : public QEvent
+class Q_DECL_EXPORT QMeeGoSwitchEvent : public QEvent
 {
 public:
 
@@ -83,7 +83,7 @@ public:
      The type is registered on first access. Use this to detect incoming
      QMeeGoSwitchEvents.
     */
-    QEvent::Type eventNumber();
+    static QEvent::Type eventNumber();
 
 private:
     QString name;

@@ -35,6 +35,8 @@ Rectangle {
         id: photoPathView; model: rssModel; delegate: photoDelegate
         anchors.fill: parent;  z: 1
         anchors.topMargin:40
+        highlightMoveDuration: 200
+        flickDeceleration: 200
         path: Path {
             startX: -50; startY: 40;
             

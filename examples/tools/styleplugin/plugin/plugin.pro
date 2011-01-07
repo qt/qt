@@ -8,8 +8,8 @@ SOURCES     = simplestyle.cpp \
 TARGET      = simplestyleplugin
 #! [0]
 win32 {
-    debug:DESTDIR = ../debug/styles/
-    release:DESTDIR = ../release/styles/
+    CONFIG(debug, release|debug):DESTDIR = ../debug/styles/
+    CONFIG(release, release|debug):DESTDIR = ../release/styles/
 } else {
     DESTDIR = ../styles/
 }
