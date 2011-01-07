@@ -652,6 +652,19 @@ void tst_qdeclarativetextedit::selection()
     QVERIFY(textEditObject->selectionEnd() == 0);
     QVERIFY(textEditObject->selectedText().isNull());
 
+    // Verify invalid positions are ignored.
+    textEditObject->setCursorPosition(-1);
+    QVERIFY(textEditObject->cursorPosition() == 0);
+    QVERIFY(textEditObject->selectionStart() == 0);
+    QVERIFY(textEditObject->selectionEnd() == 0);
+    QVERIFY(textEditObject->selectedText().isNull());
+
+    textEditObject->setCursorPosition(textEditObject->text().count()+1);
+    QVERIFY(textEditObject->cursorPosition() == 0);
+    QVERIFY(textEditObject->selectionStart() == 0);
+    QVERIFY(textEditObject->selectionEnd() == 0);
+    QVERIFY(textEditObject->selectedText().isNull());
+
     //Test selection
     for(int i=0; i<= testStr.size(); i++) {
         textEditObject->select(0,i);

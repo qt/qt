@@ -187,7 +187,7 @@ Q_GLOBAL_STATIC(QStringList, resourceSearchPaths)
     A QResource can either be loaded with an absolute path, either treated
     as a file system rooted with a \c{/} character, or in resource notation
     rooted with a \c{:} character. A relative resource can also be opened
-    which will be found through the searchPaths().
+    which will be found in the list of paths returned by QDir::searchPaths().
 
     A QResource that is representing a file will have data backing it, this
     data can possibly be compressed, in which case qUncompress() must be

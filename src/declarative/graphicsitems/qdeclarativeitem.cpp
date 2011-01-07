@@ -461,8 +461,16 @@ void QDeclarativeItemKeyFilter::componentComplete()
     \qmlproperty Item KeyNavigation::backtab
 
     These properties hold the item to assign focus to
-    when Key_Left, Key_Right, Key_Up, Key_Down, Key_Tab or Key_BackTab
-    are pressed.
+    when the left, right, up or down cursor keys, or the
+    tab key are pressed.
+*/
+
+/*!
+    \qmlproperty Item KeyNavigation::tab
+    \qmlproperty Item KeyNavigation::backtab
+
+    These properties hold the item to assign focus to
+    when the Tab key or Shift+Tab key combination (Backtab) are pressed.
 */
 
 QDeclarativeKeyNavigationAttached::QDeclarativeKeyNavigationAttached(QObject *parent)
@@ -941,6 +949,20 @@ void QDeclarativeKeyNavigationAttached::setFocusNavigation(QDeclarativeItem *cur
 */
 
 /*!
+    \qmlsignal Keys::onTabPressed(KeyEvent event)
+
+    This handler is called when the Tab key has been pressed. The \a event
+    parameter provides information about the event.
+*/
+
+/*!
+    \qmlsignal Keys::onBacktabPressed(KeyEvent event)
+
+    This handler is called when the Shift+Tab key combination (Backtab) has
+    been pressed. The \a event parameter provides information about the event.
+*/
+
+/*!
     \qmlsignal Keys::onAsteriskPressed(KeyEvent event)
 
     This handler is called when the Asterisk '*' has been pressed. The \a event
@@ -1341,23 +1363,6 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
     }
     \endqml
 
-    \section1 Identity
-
-    Each item has an "id" - the identifier of the Item.
-
-    The identifier can be used in bindings and other expressions to
-    refer to the item. For example:
-
-    \qml
-    Text { id: myText; ... }
-    Text { text: myText.text }
-    \endqml
-
-    The identifier is available throughout to the \l {components}{component}
-    where it is declared.  The identifier must be unique in the component.
-
-    The id should not be thought of as a "property" - it makes no sense
-    to write \c myText.id, for example.
 
     \section1 Key Handling
 
@@ -1384,17 +1389,6 @@ QDeclarativeKeysAttached *QDeclarativeKeysAttached::qmlAttachedProperties(QObjec
     \endqml
 
     See the \l {Keys}{Keys} attached property for detailed documentation.
-
-    \section1 Property Change Signals
-
-    Most properties on Item and Item derivatives have a signal
-    emitted when they change. By convention, the signals are
-    named <propertyName>Changed, e.g. xChanged will be emitted when an item's
-    x property changes. Note that these also have signal handers e.g.
-    the onXChanged signal handler will be called when an item's x property
-    changes. For many properties in Item or Item derivatives this can be used
-    to add a touch of imperative logic to your application (when absolutely
-    necessary).
 */
 
 /*!

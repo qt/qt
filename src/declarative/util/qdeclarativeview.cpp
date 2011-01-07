@@ -191,7 +191,7 @@ void QDeclarativeViewPrivate::itemGeometryChanged(QDeclarativeItem *resizeItem, 
 
 /*!
     \class QDeclarativeView
-  \since 4.7
+    \since 4.7
     \brief The QDeclarativeView class provides a widget for displaying a Qt Declarative user interface.
 
     QDeclarativeItem objects can be placed on a standard QGraphicsScene and 
@@ -362,13 +362,14 @@ QDeclarativeContext* QDeclarativeView::rootContext() const
 }
 
 /*!
-  \enum QDeclarativeView::Status
+    \enum QDeclarativeView::Status
     Specifies the loading status of the QDeclarativeView.
 
     \value Null This QDeclarativeView has no source set.
     \value Ready This QDeclarativeView has loaded and created the QML component.
     \value Loading This QDeclarativeView is loading network data.
-    \value Error An error has occurred.  Call errorDescription() to retrieve a description.
+    \value Error One or more errors has occurred. Call errors() to retrieve a list
+           of errors.
 */
 
 /*! \enum QDeclarativeView::ResizeMode

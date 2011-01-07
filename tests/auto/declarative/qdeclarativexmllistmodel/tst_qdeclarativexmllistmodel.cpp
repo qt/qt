@@ -46,6 +46,9 @@
 
 #include <qtest.h>
 #include <QtTest/qsignalspy.h>
+#include <QtDeclarative/qdeclarativenetworkaccessmanagerfactory.h>
+#include <QtNetwork/qnetworkaccessmanager.h>
+#include <QtNetwork/qnetworkrequest.h>
 #include <QtCore/qtimer.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qtemporaryfile.h>
@@ -88,6 +91,7 @@ private slots:
     void roles();
     void roleErrors();
     void uniqueRoleNames();
+    void headers();
     void xml();
     void xml_data();
     void source();
@@ -145,6 +149,44 @@ private:
 
     QDeclarativeEngine engine;
 };
+
+class CustomNetworkAccessManagerFactory : public QObject, public QDeclarativeNetworkAccessManagerFactory
+{
+    Q_OBJECT
+public:
+    QVariantMap lastSentHeaders;
+
+protected:
+    QNetworkAccessManager *create(QObject *parent);
+};
+
+class CustomNetworkAccessManager : public QNetworkAccessManager
+{
+    Q_OBJECT
+public:
+    CustomNetworkAccessManager(CustomNetworkAccessManagerFactory *factory, QObject *parent)
+        : QNetworkAccessManager(parent), m_factory(factory) {}
+
+protected:
+    QNetworkReply *createRequest(Operation op, const QNetworkRequest &req, QIODevice * outgoingData = 0)
+    {
+        if (m_factory) {
+            QVariantMap map;
+            foreach (const QString &header, req.rawHeaderList())
+                map[header] = req.rawHeader(header.toUtf8());
+            m_factory->lastSentHeaders = map;
+        }
+        return QNetworkAccessManager::createRequest(op, req, outgoingData);
+    }
+
+    QPointer<CustomNetworkAccessManagerFactory> m_factory;
+};
+
+QNetworkAccessManager *CustomNetworkAccessManagerFactory::create(QObject *parent)
+{
+    return new CustomNetworkAccessManager(this, parent);
+}
+
 
 void tst_qdeclarativexmllistmodel::buildModel()
 {
@@ -360,6 +402,31 @@ void tst_qdeclarativexmllistmodel::xml_data()
     QTest::newRow("xml with no items") << "<Pets></Pets>" << 0;
     QTest::newRow("empty xml") << "" << 0;
     QTest::newRow("one item") << "<Pets><Pet><name>Hobbes</name><type>Tiger</type><age>7</age><size>Large</size></Pet></Pets>" << 1;
+}
+
+void tst_qdeclarativexmllistmodel::headers()
+{
+    // ensure the QNetworkAccessManagers created for this test are immediately deleted
+    QDeclarativeEngine qmlEng;
+
+    CustomNetworkAccessManagerFactory factory;
+    qmlEng.setNetworkAccessManagerFactory(&factory);
+
+    QDeclarativeComponent component(&qmlEng, QUrl::fromLocalFile(SRCDIR "/data/model.qml"));
+    QDeclarativeXmlListModel *model = qobject_cast<QDeclarativeXmlListModel*>(component.create());
+    QVERIFY(model != 0);
+    QTRY_COMPARE(model->status(), QDeclarativeXmlListModel::Ready);
+
+    QVariantMap expectedHeaders;
+    expectedHeaders["Accept"] = "application/xml";
+
+    QCOMPARE(factory.lastSentHeaders.count(), expectedHeaders.count());
+    foreach (const QString &header, expectedHeaders.keys()) {
+        QVERIFY(factory.lastSentHeaders.contains(header));
+        QCOMPARE(factory.lastSentHeaders[header].toString(), expectedHeaders[header].toString());
+    }
+
+    delete model;
 }
 
 void tst_qdeclarativexmllistmodel::source()

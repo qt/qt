@@ -48,8 +48,18 @@ Rectangle {
     Component {
         id: delegate
         Column {
-            Image { anchors.horizontalCenter: name.horizontalCenter; width: 64; height: 64; source: icon }
-            Text { text: name; font.pointSize: 16 }
+            id: wrapper
+            Image {
+                anchors.horizontalCenter: nameText.horizontalCenter
+                width: 64; height: 64
+                source: icon
+            }
+            Text {
+                id: nameText
+                text: name
+                font.pointSize: 16
+                color: wrapper.PathView.isCurrentItem ? "red" : "black"
+            }
         }
     }
 //! [1]

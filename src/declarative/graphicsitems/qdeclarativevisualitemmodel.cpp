@@ -774,6 +774,8 @@ void QDeclarativeVisualDataModel::setModel(const QVariant &model)
         QObject::connect(d->m_abstractItemModel, SIGNAL(modelReset()), this, SLOT(_q_modelReset()));
         QObject::connect(d->m_abstractItemModel, SIGNAL(layoutChanged()), this, SLOT(_q_layoutChanged()));
         d->m_metaDataCacheable = true;
+        if (d->m_abstractItemModel->canFetchMore(d->m_root))
+            d->m_abstractItemModel->fetchMore(d->m_root);
         return;
     }
     if ((d->m_visualItemModel = qvariant_cast<QDeclarativeVisualDataModel *>(model))) {
@@ -871,6 +873,8 @@ void QDeclarativeVisualDataModel::setRootIndex(const QVariant &root)
     if (d->m_root != modelIndex) {
         int oldCount = d->modelCount();
         d->m_root = modelIndex;
+        if (d->m_abstractItemModel && d->m_abstractItemModel->canFetchMore(modelIndex))
+            d->m_abstractItemModel->fetchMore(modelIndex);
         int newCount = d->modelCount();
         if (d->m_delegate && oldCount)
             emit itemsRemoved(0, oldCount);
@@ -1095,6 +1099,8 @@ QDeclarativeItem *QDeclarativeVisualDataModel::item(int index, const QByteArray 
             d->m_delegateValidated = true;
         }
     }
+    if (d->modelCount()-1 == index && d->m_abstractItemModel && d->m_abstractItemModel->canFetchMore(d->m_root))
+        d->m_abstractItemModel->fetchMore(d->m_root);
 
     return item;
 }

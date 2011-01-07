@@ -81,7 +81,6 @@ class Q_AUTOTEST_EXPORT QDeclarativeComponentPrivate : public QObjectPrivate, pu
 public:
     QDeclarativeComponentPrivate() : typeData(0), progress(0.), start(-1), count(-1), cc(0), engine(0), creationContext(0) {}
 
-    QObject *create(QDeclarativeContextData *, const QBitField &);
     QObject *beginCreate(QDeclarativeContextData *, const QBitField &);
     void completeCreate();
 

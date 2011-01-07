@@ -85,6 +85,7 @@ private slots:
     void manualHighlight();
     void footer();
     void header();
+    void indexAt();
 
 private:
     QDeclarativeView *createView();
@@ -1391,6 +1392,42 @@ void tst_QDeclarativeGridView::header()
     QTRY_COMPARE(header->y(), 0.0);
 }
 
+void tst_QDeclarativeGridView::indexAt()
+{
+    QDeclarativeView *canvas = createView();
+
+    TestModel model;
+    model.addItem("Fred", "12345");
+    model.addItem("John", "2345");
+    model.addItem("Bob", "54321");
+    model.addItem("Billy", "22345");
+    model.addItem("Sam", "2945");
+    model.addItem("Ben", "04321");
+    model.addItem("Jim", "0780");
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testTopToBottom", QVariant(false));
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
+    qApp->processEvents();
+
+    QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
+    QTRY_VERIFY(gridview != 0);
+
+    QDeclarativeItem *contentItem = gridview->contentItem();
+    QTRY_VERIFY(contentItem != 0);
+
+    QTRY_COMPARE(gridview->count(), model.count());
+
+    QCOMPARE(gridview->indexAt(0, 0), 0);
+    QCOMPARE(gridview->indexAt(79, 59), 0);
+    QCOMPARE(gridview->indexAt(80, 0), 1);
+    QCOMPARE(gridview->indexAt(0, 60), 3);
+    QCOMPARE(gridview->indexAt(240, 0), -1);
+
+    delete canvas;
+}
 
 QDeclarativeView *tst_QDeclarativeGridView::createView()
 {

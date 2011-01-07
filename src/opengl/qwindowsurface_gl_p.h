@@ -102,6 +102,9 @@ public:
 
     static QGLFormat surfaceFormat;
 
+    enum SwapMode { AutomaticSwap, AlwaysFullSwap, AlwaysPartialSwap, KillSwap };
+    static SwapMode swapBehavior;
+
 private slots:
     void deleted(QObject *object);
 

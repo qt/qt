@@ -354,6 +354,19 @@ void tst_qdeclarativetextinput::selection()
     QVERIFY(textinputObject->selectionEnd() == 0);
     QVERIFY(textinputObject->selectedText().isNull());
 
+    // Verify invalid positions are ignored.
+    textinputObject->setCursorPosition(-1);
+    QVERIFY(textinputObject->cursorPosition() == 0);
+    QVERIFY(textinputObject->selectionStart() == 0);
+    QVERIFY(textinputObject->selectionEnd() == 0);
+    QVERIFY(textinputObject->selectedText().isNull());
+
+    textinputObject->setCursorPosition(textinputObject->text().count()+1);
+    QVERIFY(textinputObject->cursorPosition() == 0);
+    QVERIFY(textinputObject->selectionStart() == 0);
+    QVERIFY(textinputObject->selectionEnd() == 0);
+    QVERIFY(textinputObject->selectedText().isNull());
+
     //Test selection
     for(int i=0; i<= testStr.size(); i++) {
         textinputObject->select(0,i);

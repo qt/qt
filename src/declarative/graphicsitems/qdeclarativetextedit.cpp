@@ -644,6 +644,8 @@ int QDeclarativeTextEdit::cursorPosition() const
 void QDeclarativeTextEdit::setCursorPosition(int pos)
 {
     Q_D(QDeclarativeTextEdit);
+    if (pos < 0 || pos > d->text.length())
+        return;
     QTextCursor cursor = d->control->textCursor();
     if (cursor.position() == pos)
         return;

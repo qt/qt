@@ -394,6 +394,11 @@ void tst_QDeclarativeItem::keyNavigation()
     QVERIFY(item);
     QVERIFY(item->hasActiveFocus());
 
+    QVariant result;
+    QVERIFY(QMetaObject::invokeMethod(canvas->rootObject(), "verify",
+            Q_RETURN_ARG(QVariant, result)));
+    QVERIFY(result.toBool());
+
     // right
     QKeyEvent key(QEvent::KeyPress, Qt::Key_Right, Qt::NoModifier, "", false, 1);
     QApplication::sendEvent(canvas, &key);

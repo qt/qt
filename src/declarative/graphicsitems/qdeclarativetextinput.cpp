@@ -445,6 +445,8 @@ int QDeclarativeTextInput::cursorPosition() const
 void QDeclarativeTextInput::setCursorPosition(int cp)
 {
     Q_D(QDeclarativeTextInput);
+    if (cp < 0 || cp > d->control->text().length())
+        return;
     d->control->moveCursor(cp);
 }
 

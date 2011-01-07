@@ -699,17 +699,6 @@ QObject *QDeclarativeComponent::create(QDeclarativeContext *context)
     return rv;
 }
 
-QObject *QDeclarativeComponentPrivate::create(QDeclarativeContextData *context, 
-                                              const QBitField &bindings)
-{
-    if (!context)
-        context = QDeclarativeContextData::get(engine->rootContext());
-
-    QObject *rv = beginCreate(context, bindings);
-    completeCreate();
-    return rv;
-}
-
 /*!
     This method provides more advanced control over component instance creation.
     In general, programmers should use QDeclarativeComponent::create() to create a 

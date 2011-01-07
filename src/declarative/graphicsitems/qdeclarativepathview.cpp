@@ -393,6 +393,13 @@ void QDeclarativePathViewPrivate::regenerate()
     Delegates are instantiated as needed and may be destroyed at any time.
     State should \e never be stored in a delegate.
 
+    PathView attaches a number of properties to the root item of the delegate, for example
+    \c {PathView.isCurrentItem}.  In the following example, the root delegate item can access
+    this attached property directly as \c PathView.isCurrentItem, while the child
+    \c nameText object must refer to this property as \c wrapper.PathView.isCurrentItem.
+
+    \snippet doc/src/snippets/declarative/pathview/pathview.qml 1
+
     \bold Note that views do not enable \e clip automatically.  If the view
     is not clipped by another item or the screen, it will be necessary
     to set \e {clip: true} in order to have the out of view items clipped
@@ -452,6 +459,8 @@ QDeclarativePathView::~QDeclarativePathView()
     It is attached to each instance of the delegate.
 
     This property may be used to adjust the appearance of the current item.
+
+    \snippet doc/src/snippets/declarative/pathview/pathview.qml 1
 */
 
 /*!
@@ -1133,8 +1142,10 @@ void QDeclarativePathViewPrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent 
     QPointF pathPoint = pointNear(event->pos(), &newPc);
     if (!stealMouse) {
         QPointF delta = pathPoint - startPoint;
-        if (qAbs(delta.x()) > QApplication::startDragDistance() || qAbs(delta.y()) > QApplication::startDragDistance())
+        if (qAbs(delta.x()) > QApplication::startDragDistance() || qAbs(delta.y()) > QApplication::startDragDistance()) {
             stealMouse = true;
+            startPc = newPc;
+        }
     }
 
     if (stealMouse) {
@@ -1307,8 +1318,10 @@ void QDeclarativePathView::componentComplete()
     // It is possible that a refill has already happended to to Path
     // bindings being handled in the componentComplete().  If so
     // don't do it again.
-    if (d->items.count() == 0)
+    if (d->items.count() == 0 && d->model) {
+        d->modelCount = d->model->count();
         d->regenerate();
+    }
     d->updateHighlight();
 }
 
