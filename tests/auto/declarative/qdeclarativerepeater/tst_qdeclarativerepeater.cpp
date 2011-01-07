@@ -75,6 +75,8 @@ private slots:
     void itemModel();
     void resetModel();
     void properties();
+    void testQtQuick11Attributes();
+    void testQtQuick11Attributes_data();
 
 private:
     QDeclarativeView *createView();
@@ -598,6 +600,50 @@ void tst_QDeclarativeRepeater::properties()
 
     delete rootObject;
 }
+
+void tst_QDeclarativeRepeater::testQtQuick11Attributes()
+{
+    QFETCH(QString, code);
+    QFETCH(QString, warning);
+    QFETCH(QString, error);
+
+    QDeclarativeEngine engine;
+    QObject *obj;
+
+    QDeclarativeComponent invalid(&engine);
+    invalid.setData("import QtQuick 1.0; Repeater { " + code.toUtf8() + " }", QUrl(""));
+    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
+    obj = invalid.create();
+    QCOMPARE(invalid.errorString(), error);
+    delete obj;
+
+    QDeclarativeComponent valid(&engine);
+    valid.setData("import QtQuick 1.1; Repeater { " + code.toUtf8() + " }", QUrl(""));
+    obj = valid.create();
+    QVERIFY(obj);
+    QVERIFY(valid.errorString().isEmpty());
+    delete obj;
+}
+
+void tst_QDeclarativeRepeater::testQtQuick11Attributes_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<QString>("warning");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("itemAdded") << "onItemAdded: count"
+            << "QDeclarativeComponent: Component is not ready"
+            << ":1 Signal \"onItemAdded\" not available in QtQuick/Repeater 1.0\n";
+
+    QTest::newRow("itemRemoved") << "onItemRemoved: count"
+            << "QDeclarativeComponent: Component is not ready"
+            << ":1 Signal \"onItemRemoved\" not available in QtQuick/Repeater 1.0\n";
+
+    QTest::newRow("itemAt") << "Component.onCompleted: itemAt(0)"
+            << "<Unknown File>:1: ReferenceError: Can't find variable: itemAt"
+            << "";
+}
+
 
 QDeclarativeView *tst_QDeclarativeRepeater::createView()
 {
