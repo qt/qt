@@ -79,7 +79,6 @@ int qt_last_x = 0;
 int qt_last_y = 0;
 QPointer<QWidget> qt_last_mouse_receiver = 0;
 
-static Qt::KeyboardModifiers modifiers = Qt::NoModifier;
 static Qt::MouseButtons buttons = Qt::NoButton;
 static ulong mousePressTime;
 static Qt::MouseButton mousePressButton = Qt::NoButton;
@@ -731,7 +730,7 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mouse
 
     // qDebug() << "sending mouse ev." << ev.type() << localPoint << globalPoint << ev.button() << ev.buttons() << mouseWidget << "mouse grabber" << implicit_mouse_grabber;
 
-    QMouseEvent ev(type, localPoint, globalPoint, button, buttons, modifiers);
+    QMouseEvent ev(type, localPoint, globalPoint, button, buttons, QApplication::keyboardModifiers());
 
     QList<QWeakPointer<QPlatformCursor> > cursors = QPlatformCursorPrivate::getInstances();
     foreach (QWeakPointer<QPlatformCursor> cursor, cursors) {
@@ -744,7 +743,7 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mouse
 
 #ifndef QT_NO_CONTEXTMENU
     if (type == QEvent::MouseButtonPress && button == Qt::RightButton && (openPopupCount == oldOpenPopupCount)) {
-        QContextMenuEvent e(QContextMenuEvent::Mouse, localPoint, globalPoint, modifiers);
+        QContextMenuEvent e(QContextMenuEvent::Mouse, localPoint, globalPoint, QApplication::keyboardModifiers());
         QApplication::sendSpontaneousEvent(mouseWidget, &e);
     }
 #endif // QT_NO_CONTEXTMENU
@@ -786,7 +785,7 @@ void QApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wheel
          p = mouseWidget->mapFromGlobal(globalPoint);
      }
 
-     QWheelEvent ev(p, globalPoint, e->delta, buttons, modifiers,
+     QWheelEvent ev(p, globalPoint, e->delta, buttons, QApplication::keyboardModifiers(),
                    e->orient);
      QApplication::sendSpontaneousEvent(mouseWidget, &ev);
 }
@@ -817,7 +816,6 @@ void QApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyEven
     if (app_do_modal && !qt_try_modal(focusW, e->keyType))
         return;
 
-    modifiers = e->modifiers;
     QKeyEvent ev(e->keyType, e->key, e->modifiers, e->unicode, e->repeat, e->repeatCount);
     QApplication::sendSpontaneousEvent(focusW, &ev);
 }
