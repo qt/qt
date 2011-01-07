@@ -113,10 +113,12 @@ CEikAppUi *QS60MainDocument::CreateAppUiL()
  */
 CFileStore *QS60MainDocument::OpenFileL(TBool /*aDoOpen*/, const TDesC &aFilename, RFs &/*aFs*/)
 {
-    QCoreApplication* app = QCoreApplication::instance();
-    QString qname = qt_TDesC2QString(aFilename);
-    QFileOpenEvent* event = new QFileOpenEvent(qname);
-    app->postEvent(app, event);
+    QT_TRYCATCH_LEAVING( {
+        QCoreApplication* app = QCoreApplication::instance();
+        QString qname = qt_TDesC2QString(aFilename);
+        QFileOpenEvent* event = new QFileOpenEvent(qname);
+        app->postEvent(app, event);
+    })
     return 0;
 }
 
@@ -125,8 +127,12 @@ CFileStore *QS60MainDocument::OpenFileL(TBool /*aDoOpen*/, const TDesC &aFilenam
  */
 void QS60MainDocument::OpenFileL(CFileStore *&aFileStore, RFile &aFile)
 {
-    QCoreApplication* app = QCoreApplication::instance();
-    QFileOpenEvent* event = new QFileOpenEvent(aFile);
+    QT_TRYCATCH_LEAVING( {
+        QCoreApplication* app = QCoreApplication::instance();
+        QFileOpenEvent* event = new QFileOpenEvent(aFile);
+        app->postEvent(app, event);
+        aFileStore = 0;
+    })
 }
 
 QT_END_NAMESPACE

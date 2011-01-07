@@ -13142,4 +13142,6 @@ EXPORTS
 	?viewportSize@QScrollPrepareEvent@@QBE?AVQSizeF@@XZ @ 13141 NONAME ; class QSizeF QScrollPrepareEvent::viewportSize(void) const
 	?staticMetaObject@QScroller@@2UQMetaObject@@B @ 13142 NONAME ; struct QMetaObject const QScroller::staticMetaObject
 	?staticMetaObject@QFlickGesture@@2UQMetaObject@@B @ 13143 NONAME ; struct QMetaObject const QFlickGesture::staticMetaObject
-
+	?ProcessCommandParametersL@QS60MainAppUi@@UAEHW4TApaCommand@@AAV?$TBuf@$0BAA@@@ABVTDesC8@@@Z @ 13144 NONAME ; int QS60MainAppUi::ProcessCommandParametersL(enum TApaCommand, class TBuf<256> &, class TDesC8 const &)
+	?openFile@QFileOpenEvent@@QBE_NAAVQFile@@V?$QFlags@W4OpenModeFlag@QIODevice@@@@@Z @ 13145 NONAME ; bool QFileOpenEvent::openFile(class QFile &, class QFlags<enum QIODevice::OpenModeFlag>) const
+	??0QFileOpenEvent@@QAE@ABVRFile@@@Z @ 13146 NONAME ; QFileOpenEvent::QFileOpenEvent(class RFile const &)

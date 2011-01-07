@@ -657,7 +657,7 @@ public:
 
     inline QString file() const { return f; }
     QUrl url() const;
-    void openFile(QFile &file, QIODevice::OpenMode flags) const;
+    bool openFile(QFile &file, QIODevice::OpenMode flags) const;
 private:
     QString f;
 };

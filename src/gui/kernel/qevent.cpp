@@ -3099,9 +3099,11 @@ QUrl QFileOpenEvent::url() const
 }
 
 /*!
-    \fn void openFile(QFile &file, QIODevice::OpenMode flags) const
+    \fn bool openFile(QFile &file, QIODevice::OpenMode flags) const
 
     Opens a QFile on the file referenced by this event.
+    Returns true if successful; otherwise returns false.
+    
     This is necessary as some files cannot be opened with the filename alone, but require specific
     information stored in this event.
     For example, if this QFileOpenEvent contains a request to open a Symbian data caged file,
@@ -3109,18 +3111,22 @@ QUrl QFileOpenEvent::url() const
 
     \since 4.8
 */
-void QFileOpenEvent::openFile(QFile &file, QIODevice::OpenMode flags) const
+bool QFileOpenEvent::openFile(QFile &file, QIODevice::OpenMode flags) const
 {
     file.setFileName(f);
 #ifdef Q_OS_SYMBIAN
     const QFileOpenEventPrivate *priv = reinterpret_cast<const QFileOpenEventPrivate *>(d);
     if (priv->file.SubSessionHandle()) {
-        // TODO return a QFile opened from the file handle
-        file.open(flags);
-        return;
+        RFile dup;
+        if (dup.Duplicate(priv->file) == KErrNone) {
+            QScopedPointer<RFile, QScopedPointerRCloser<RFile> > dupCloser(&dup);
+            bool open = file.open(dup, flags, QFile::AutoCloseHandle);
+            dupCloser.take();
+            return open;
+        }
     }
 #endif
-    file.open(flags);
+    return file.open(flags);
 }
 
 #ifndef QT_NO_TOOLBAR
