@@ -84,5 +84,15 @@ symbian {
     LIBS += -lhal
 }
 
+symbian {
+    symbian-abld|symbian-sbsv2 {
+        MMP_RULES += ALWAYS_BUILD_AS_ARM
+    }  else {
+        QMAKE_CFLAGS -= --thumb
+        QMAKE_CXXFLAGS -= --thumb
+    }
+    QMAKE_CXXFLAGS.ARMCC += -OTime -O3
+}
+
 # WebKit doesn't compile in C++0x mode
 *-g++*:QMAKE_CXXFLAGS -= -std=c++0x -std=gnu++0x
