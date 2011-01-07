@@ -332,6 +332,24 @@ void Win32MakefileGenerator::processVars()
     if(!(*libDir_it).isEmpty())
         (*libDir_it) = Option::fixPathToTargetOS((*libDir_it), false, false);
     }
+
+    if (project->values("TEMPLATE").contains("app")) {
+        project->values("QMAKE_CFLAGS") += project->values("QMAKE_CFLAGS_APP");
+        project->values("QMAKE_CXXFLAGS") += project->values("QMAKE_CXXFLAGS_APP");
+        project->values("QMAKE_LFLAGS") += project->values("QMAKE_LFLAGS_APP");
+    } else if (project->values("TEMPLATE").contains("lib") && project->isActiveConfig("dll")) {
+        if(!project->isActiveConfig("plugin") || !project->isActiveConfig("plugin_no_share_shlib_cflags")) {
+            project->values("QMAKE_CFLAGS") += project->values("QMAKE_CFLAGS_SHLIB");
+            project->values("QMAKE_CXXFLAGS") += project->values("QMAKE_CXXFLAGS_SHLIB");
+        }
+        if (project->isActiveConfig("plugin")) {
+            project->values("QMAKE_CFLAGS") += project->values("QMAKE_CFLAGS_PLUGIN");
+            project->values("QMAKE_CXXFLAGS") += project->values("QMAKE_CXXFLAGS_PLUGIN");
+            project->values("QMAKE_LFLAGS") += project->values("QMAKE_LFLAGS_PLUGIN");
+        } else {
+            project->values("QMAKE_LFLAGS") += project->values("QMAKE_LFLAGS_SHLIB");
+        }
+    }
 }
 
 void Win32MakefileGenerator::fixTargetExt()
