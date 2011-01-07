@@ -218,6 +218,12 @@ void createRvctObjectScriptFile(const QString &fileName, const QStringList &objL
 
 void MingwMakefileGenerator::writeMingwParts(QTextStream &t)
 {
+    if (!project->isEmpty("QMAKE_SYMBIAN_SHLIB")) {
+        t << "vpath %.dso " << project->values("QMAKE_LIBDIR").join(";") << endl;
+        t << "vpath %.lib " << project->values("QMAKE_LIBDIR").join(";") << endl;
+        t << "\n\n";
+    }
+
     writeStandardParts(t);
 
     if (!preCompHeaderOut.isEmpty()) {
