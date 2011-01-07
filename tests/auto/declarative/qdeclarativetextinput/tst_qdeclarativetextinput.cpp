@@ -57,6 +57,8 @@
 #define SRCDIR "."
 #endif
 
+Q_DECLARE_METATYPE(QDeclarativeTextInput::SelectionMode)
+
 QString createExpectedFileIfNotFound(const QString& filebasename, const QImage& actual)
 {
     // XXX This will be replaced by some clever persistent platform image store.
@@ -87,6 +89,8 @@ private slots:
     void font();
     void color();
     void selection();
+    void moveCursorSelection_data();
+    void moveCursorSelection();
 
     void horizontalAlignment_data();
     void horizontalAlignment();
@@ -124,7 +128,8 @@ tst_qdeclarativetextinput::tst_qdeclarativetextinput()
 {
     standard << "the quick brown fox jumped over the lazy dog"
         << "It's supercalifragisiticexpialidocious!"
-        << "Hello, world!";
+        << "Hello, world!"
+        << "!dlrow ,olleH";
 
     colorStrings << "aliceblue"
                  << "antiquewhite"
@@ -413,6 +418,162 @@ void tst_qdeclarativetextinput::selection()
     QVERIFY(textinputObject->selectedText().isNull());
 
     delete textinputObject;
+}
+
+void tst_qdeclarativetextinput::moveCursorSelection_data()
+{
+    QTest::addColumn<QString>("testStr");
+    QTest::addColumn<int>("cursorPosition");
+    QTest::addColumn<int>("movePosition");
+    QTest::addColumn<QDeclarativeTextInput::SelectionMode>("mode");
+    QTest::addColumn<int>("selectionStart");
+    QTest::addColumn<int>("selectionEnd");
+    QTest::addColumn<bool>("reversible");
+
+    QTest::newRow("(t)he|characters")
+            << standard[0] << 0 << 1 << QDeclarativeTextInput::SelectCharacters << 0 << 1 << true;
+    QTest::newRow("do(g)|characters")
+            << standard[0] << 43 << 44 << QDeclarativeTextInput::SelectCharacters << 43 << 44 << true;
+    QTest::newRow("jum(p)ed|characters")
+            << standard[0] << 23 << 24 << QDeclarativeTextInput::SelectCharacters << 23 << 24 << true;
+    QTest::newRow("jumped( )over|characters")
+            << standard[0] << 26 << 27 << QDeclarativeTextInput::SelectCharacters << 26 << 27 << true;
+    QTest::newRow("(the )|characters")
+            << standard[0] << 0 << 4 << QDeclarativeTextInput::SelectCharacters << 0 << 4 << true;
+    QTest::newRow("( dog)|characters")
+            << standard[0] << 40 << 44 << QDeclarativeTextInput::SelectCharacters << 40 << 44 << true;
+    QTest::newRow("( jumped )|characters")
+            << standard[0] << 19 << 27 << QDeclarativeTextInput::SelectCharacters << 19 << 27 << true;
+    QTest::newRow("th(e qu)ick|characters")
+            << standard[0] << 2 << 6 << QDeclarativeTextInput::SelectCharacters << 2 << 6 << true;
+    QTest::newRow("la(zy d)og|characters")
+            << standard[0] << 38 << 42 << QDeclarativeTextInput::SelectCharacters << 38 << 42 << true;
+    QTest::newRow("jum(ped ov)er|characters")
+            << standard[0] << 23 << 29 << QDeclarativeTextInput::SelectCharacters << 23 << 29 << true;
+    QTest::newRow("()the|characters")
+            << standard[0] << 0 << 0 << QDeclarativeTextInput::SelectCharacters << 0 << 0 << true;
+    QTest::newRow("dog()|characters")
+            << standard[0] << 44 << 44 << QDeclarativeTextInput::SelectCharacters << 44 << 44 << true;
+    QTest::newRow("jum()ped|characters")
+            << standard[0] << 23 << 23 << QDeclarativeTextInput::SelectCharacters << 23 << 23 << true;
+
+    QTest::newRow("(t)he|words")
+            << standard[0] << 0 << 1 << QDeclarativeTextInput::SelectWords << 0 << 3 << true;
+    QTest::newRow("do(g)|words")
+            << standard[0] << 43 << 44 << QDeclarativeTextInput::SelectWords << 41 << 44 << true;
+    QTest::newRow("jum(p)ed|words")
+            << standard[0] << 23 << 24 << QDeclarativeTextInput::SelectWords << 20 << 26 << true;
+    QTest::newRow("jumped( )over|words")
+            << standard[0] << 26 << 27 << QDeclarativeTextInput::SelectWords << 27 << 27 << false;
+    QTest::newRow("jumped( )over|words,reversed")
+            << standard[0] << 27 << 26 << QDeclarativeTextInput::SelectWords << 26 << 26 << false;
+    QTest::newRow("(the )|words")
+            << standard[0] << 0 << 4 << QDeclarativeTextInput::SelectWords << 0 << 3 << true;
+    QTest::newRow("( dog)|words")
+            << standard[0] << 40 << 44 << QDeclarativeTextInput::SelectWords << 41 << 44 << true;
+    QTest::newRow("( jumped )|words")
+            << standard[0] << 19 << 27 << QDeclarativeTextInput::SelectWords << 20 << 26 << true;
+    QTest::newRow("th(e qu)ick|words")
+            << standard[0] << 2 << 6 << QDeclarativeTextInput::SelectWords << 0 << 9 << true;
+    QTest::newRow("la(zy d)og|words")
+            << standard[0] << 38 << 42 << QDeclarativeTextInput::SelectWords << 36 << 44 << true;
+    QTest::newRow("jum(ped ov)er|words")
+            << standard[0] << 23 << 29 << QDeclarativeTextInput::SelectWords << 20 << 31 << true;
+    QTest::newRow("()the|words")
+            << standard[0] << 0 << 0 << QDeclarativeTextInput::SelectWords << 0 << 0 << true;
+    QTest::newRow("dog()|words")
+            << standard[0] << 44 << 44 << QDeclarativeTextInput::SelectWords << 44 << 44 << true;
+    QTest::newRow("jum()ped|words")
+            << standard[0] << 23 << 23 << QDeclarativeTextInput::SelectWords << 23 << 23 << true;
+
+    QTest::newRow("Hello(,) |words")
+            << standard[2] << 5 << 6 << QDeclarativeTextInput::SelectWords << 5 << 6 << true;
+    QTest::newRow("Hello(, )|words")
+            << standard[2] << 5 << 7 << QDeclarativeTextInput::SelectWords << 5 << 6 << true;
+    QTest::newRow("Hel(lo, )|words")
+            << standard[2] << 3 << 7 << QDeclarativeTextInput::SelectWords << 0 << 6 << true;
+    QTest::newRow("Hel(lo),|words")
+            << standard[2] << 3 << 5 << QDeclarativeTextInput::SelectWords << 0 << 5 << true;
+    QTest::newRow("Hello(),|words")
+            << standard[2] << 5 << 5 << QDeclarativeTextInput::SelectWords << 5 << 5 << true;
+    QTest::newRow("Hello,()|words")
+            << standard[2] << 6 << 6 << QDeclarativeTextInput::SelectWords << 6 << 6 << true;
+    QTest::newRow("Hello,( )|words")
+            << standard[2] << 6 << 7 << QDeclarativeTextInput::SelectWords << 7 << 7 << false;
+    QTest::newRow("Hello,( )|words,reversed")
+            << standard[2] << 7 << 6 << QDeclarativeTextInput::SelectWords << 6 << 6 << false;
+    QTest::newRow("Hello,( world)|words")
+            << standard[2] << 6 << 12 << QDeclarativeTextInput::SelectWords << 7 << 12 << true;
+    QTest::newRow("Hello,( world!)|words")
+            << standard[2] << 6 << 13 << QDeclarativeTextInput::SelectWords << 7 << 13 << true;
+    QTest::newRow("Hello(, world!)|words")
+            << standard[2] << 5 << 13 << QDeclarativeTextInput::SelectWords << 5 << 13 << true;
+    QTest::newRow("world(!)|words")
+            << standard[2] << 12 << 13 << QDeclarativeTextInput::SelectWords << 12 << 13 << true;
+    QTest::newRow("world!())|words")
+            << standard[2] << 13 << 13 << QDeclarativeTextInput::SelectWords << 13 << 13 << true;
+    QTest::newRow("world()!)|words")
+            << standard[2] << 12 << 12 << QDeclarativeTextInput::SelectWords << 12 << 12 << true;
+
+    QTest::newRow("(,)olleH |words")
+            << standard[3] << 7 << 8 << QDeclarativeTextInput::SelectWords << 7 << 8 << true;
+    QTest::newRow("( ,)olleH|words")
+            << standard[3] << 6 << 8 << QDeclarativeTextInput::SelectWords << 7 << 8 << true;
+    QTest::newRow("( ,ol)leH|words")
+            << standard[3] << 6 << 10 << QDeclarativeTextInput::SelectWords << 7 << 13 << true;
+    QTest::newRow(",(ol)leH,|words")
+            << standard[3] << 8 << 10 << QDeclarativeTextInput::SelectWords << 8 << 13 << true;
+    QTest::newRow(",()olleH|words")
+            << standard[3] << 8 << 8 << QDeclarativeTextInput::SelectWords << 8 << 8 << true;
+    QTest::newRow("(),olleH|words")
+            << standard[3] << 7 << 7 << QDeclarativeTextInput::SelectWords << 7 << 7 << true;
+    QTest::newRow("( ),olleH|words")
+            << standard[3] << 6 << 7 << QDeclarativeTextInput::SelectWords << 7 << 7 << false;
+    QTest::newRow("( ),olleH|words,reversed")
+            << standard[3] << 7 << 6 << QDeclarativeTextInput::SelectWords << 6 << 6 << false;
+    QTest::newRow("(dlrow ),olleH|words")
+            << standard[3] << 1 << 7 << QDeclarativeTextInput::SelectWords << 1 << 6 << true;
+    QTest::newRow("(!dlrow ),olleH|words")
+            << standard[3] << 0 << 7 << QDeclarativeTextInput::SelectWords << 0 << 6 << true;
+    QTest::newRow("(!dlrow ,)olleH|words")
+            << standard[3] << 0 << 8 << QDeclarativeTextInput::SelectWords << 0 << 8 << true;
+    QTest::newRow("(!)dlrow|words")
+            << standard[3] << 0 << 1 << QDeclarativeTextInput::SelectWords << 0 << 1 << true;
+    QTest::newRow("()!dlrow|words")
+            << standard[3] << 0 << 0 << QDeclarativeTextInput::SelectWords << 0 << 0 << true;
+    QTest::newRow("!()dlrow|words")
+            << standard[3] << 1 << 1 << QDeclarativeTextInput::SelectWords << 1 << 1 << true;
+}
+
+void tst_qdeclarativetextinput::moveCursorSelection()
+{
+    QFETCH(QString, testStr);
+    QFETCH(int, cursorPosition);
+    QFETCH(int, movePosition);
+    QFETCH(QDeclarativeTextInput::SelectionMode, mode);
+    QFETCH(int, selectionStart);
+    QFETCH(int, selectionEnd);
+    QFETCH(bool, reversible);
+
+    QString componentStr = "import QtQuick 1.1\nTextInput {  text: \""+ testStr +"\"; }";
+    QDeclarativeComponent textinputComponent(&engine);
+    textinputComponent.setData(componentStr.toLatin1(), QUrl());
+    QDeclarativeTextInput *textinputObject = qobject_cast<QDeclarativeTextInput*>(textinputComponent.create());
+    QVERIFY(textinputObject != 0);
+
+    textinputObject->setCursorPosition(cursorPosition);
+    textinputObject->moveCursorSelection(movePosition, mode);
+
+    QCOMPARE(textinputObject->selectionStart(), selectionStart);
+    QCOMPARE(textinputObject->selectionEnd(), selectionEnd);
+
+    if (reversible) {
+        textinputObject->setCursorPosition(movePosition);
+        textinputObject->moveCursorSelection(cursorPosition, mode);
+
+        QCOMPARE(textinputObject->selectionStart(), selectionStart);
+        QCOMPARE(textinputObject->selectionEnd(), selectionEnd);
+    }
 }
 
 void tst_qdeclarativetextinput::horizontalAlignment_data()

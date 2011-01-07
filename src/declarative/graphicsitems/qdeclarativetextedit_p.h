@@ -65,6 +65,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeTextEdit : public QDeclarativePaintedItem
     Q_ENUMS(HAlignment)
     Q_ENUMS(TextFormat)
     Q_ENUMS(WrapMode)
+    Q_ENUMS(SelectionMode)
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
@@ -119,6 +120,11 @@ public:
                     WrapAtWordBoundaryOrAnywhere = QTextOption::WrapAtWordBoundaryOrAnywhere, // COMPAT
                     Wrap = QTextOption::WrapAtWordBoundaryOrAnywhere
                   };
+
+    enum SelectionMode {
+        SelectCharacters,
+        SelectWords
+    };
 
     Q_INVOKABLE void openSoftwareInputPanel();
     Q_INVOKABLE void closeSoftwareInputPanel();
@@ -195,6 +201,7 @@ public:
     Q_INVOKABLE QRectF positionToRectangle(int) const;
     Q_INVOKABLE int positionAt(int x, int y) const;
     Q_INVOKABLE void moveCursorSelection(int pos);
+    Q_INVOKABLE Q_REVISION(1) void moveCursorSelection(int pos, SelectionMode mode);
 
     QRectF boundingRect() const;
 

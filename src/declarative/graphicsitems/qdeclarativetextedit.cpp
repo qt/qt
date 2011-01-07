@@ -579,29 +579,6 @@ int QDeclarativeTextEdit::positionAt(int x, int y) const
     return r;
 }
 
-/*!
-    \qmlmethod int TextEdit::moveCursorSelection(int pos)
-
-    Moves the cursor to \a position and updates the selection accordingly.
-    (To only move the cursor, set the \l cursorPosition property.)
-
-    When this method is called it additionally sets either the
-    selectionStart or the selectionEnd (whichever was at the previous cursor position)
-    to the specified position. This allows you to easily extend and contract the selected
-    text range.
-
-    For example, take this sequence of calls:
-
-    \code
-        cursorPosition = 5
-        moveCursorSelection(9)
-        moveCursorSelection(7)
-    \endcode
-
-    This moves the cursor to position 5, extend the selection end from 5 to 9
-    and then retract the selection end from 9 to 7, leaving the text from position 5 to 7
-    selected (the 6th and 7th characters).
-*/
 void QDeclarativeTextEdit::moveCursorSelection(int pos)
 {
     //Note that this is the same as setCursorPosition but with the KeepAnchor flag set
@@ -610,6 +587,100 @@ void QDeclarativeTextEdit::moveCursorSelection(int pos)
     if (cursor.position() == pos)
         return;
     cursor.setPosition(pos, QTextCursor::KeepAnchor);
+    d->control->setTextCursor(cursor);
+}
+
+/*!
+    \qmlmethod void TextEdit::moveCursorSelection(int position, SelectionMode mode = TextEdit.SelectCharacters)
+    \since Quick 1.1
+
+    Moves the cursor to \a position and updates the selection according to the optional \a mode
+    parameter. (To only move the cursor, set the \l cursorPosition property.)
+
+    When this method is called it additionally sets either the
+    selectionStart or the selectionEnd (whichever was at the previous cursor position)
+    to the specified position. This allows you to easily extend and contract the selected
+    text range.
+
+    The selection mode specifies whether the selection is updated on a per character or a per word
+    basis.  If not specified the selection mode will default to TextEdit.SelectCharacters.
+
+    \list
+    \o TextEdit.SelectCharacters - Sets either the selectionStart or selectionEnd (whichever was at
+    the previous cursor position) to the specified position.
+    \o TextEdit.SelectWords - Sets the selectionStart and selectionEnd to include all
+    words between the specified postion and the previous cursor position.  Words partially in the
+    range are included.
+    \endlist
+
+    For example, take this sequence of calls:
+
+    \code
+        cursorPosition = 5
+        moveCursorSelection(9, TextEdit.SelectCharacters)
+        moveCursorSelection(7, TextEdit.SelectCharacters)
+    \endcode
+
+    This moves the cursor to position 5, extend the selection end from 5 to 9
+    and then retract the selection end from 9 to 7, leaving the text from position 5 to 7
+    selected (the 6th and 7th characters).
+
+    The same sequence with TextEdit.SelectWords will extend the selection start to a word boundary
+    before or on position 5 and extend the selection end to a word boundary past position 9, and
+    then if there is a word boundary between position 7 and 8 retract the selection end to that
+    boundary.  If there is whitespace at position 7 the selection will be retracted further.
+*/
+void QDeclarativeTextEdit::moveCursorSelection(int pos, SelectionMode mode)
+{
+    Q_D(QDeclarativeTextEdit);
+    QTextCursor cursor = d->control->textCursor();
+    if (cursor.position() == pos)
+        return;
+    if (mode == SelectCharacters) {
+        cursor.setPosition(pos, QTextCursor::KeepAnchor);
+    } else if (cursor.anchor() < pos) {
+        cursor.setPosition(cursor.anchor(), QTextCursor::MoveAnchor);
+        cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+        if (cursor.position() == cursor.anchor()) {
+            cursor.movePosition(QTextCursor::NextWord, QTextCursor::MoveAnchor);
+        } else {
+            cursor.movePosition(QTextCursor::PreviousCharacter, QTextCursor::MoveAnchor);
+            cursor.movePosition(QTextCursor::StartOfWord, QTextCursor::MoveAnchor);
+        }
+        cursor.setPosition(pos, QTextCursor::KeepAnchor);
+        cursor.movePosition(QTextCursor::StartOfWord, QTextCursor::KeepAnchor);
+        if (cursor.position() == pos) {
+            cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
+            cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+
+            if (cursor.anchor() > cursor.position())
+                cursor.setPosition(pos, QTextCursor::MoveAnchor);
+        } else {
+            cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+        }
+    } else if (cursor.anchor() > pos) {
+        cursor.setPosition(cursor.anchor(), QTextCursor::MoveAnchor);
+        cursor.movePosition(QTextCursor::StartOfWord, QTextCursor::KeepAnchor);
+        if (cursor.position() == cursor.anchor()) {
+            cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::MoveAnchor);
+            cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::MoveAnchor);
+        } else {
+            cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::MoveAnchor);
+        }
+        cursor.setPosition(pos, QTextCursor::KeepAnchor);
+        cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+        if (cursor.position() == pos) {
+            cursor.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor);
+
+            if (cursor.anchor() < cursor.position())
+                cursor.setPosition(pos, QTextCursor::MoveAnchor);
+        } else {
+            cursor.movePosition(QTextCursor::PreviousCharacter, QTextCursor::KeepAnchor);
+            cursor.movePosition(QTextCursor::StartOfWord, QTextCursor::KeepAnchor);
+        }
+    } else {
+        cursor.setPosition(pos, QTextCursor::MoveAnchor);
+    }
     d->control->setTextCursor(cursor);
 }
 
@@ -655,7 +726,7 @@ void QDeclarativeTextEdit::setCursorPosition(int pos)
     if (pos < 0 || pos > d->text.length())
         return;
     QTextCursor cursor = d->control->textCursor();
-    if (cursor.position() == pos)
+    if (cursor.position() == pos && cursor.anchor() == pos)
         return;
     cursor.setPosition(pos);
     d->control->setTextCursor(cursor);

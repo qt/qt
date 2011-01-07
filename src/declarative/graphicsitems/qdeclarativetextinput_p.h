@@ -63,6 +63,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeTextInput : public QDeclarativePaintedItem
     Q_OBJECT
     Q_ENUMS(HAlignment)
     Q_ENUMS(EchoMode)
+    Q_ENUMS(SelectionMode)
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
@@ -112,10 +113,16 @@ public:
         AlignHCenter = Qt::AlignHCenter
     };
 
+    enum SelectionMode {
+        SelectCharacters,
+        SelectWords
+    };
+
     //Auxilliary functions needed to control the TextInput from QML
     Q_INVOKABLE int positionAt(int x) const;
     Q_INVOKABLE QRectF positionToRectangle(int pos) const;
     Q_INVOKABLE void moveCursorSelection(int pos);
+    Q_INVOKABLE Q_REVISION(1) void moveCursorSelection(int pos, SelectionMode mode);
 
     Q_INVOKABLE void openSoftwareInputPanel();
     Q_INVOKABLE void closeSoftwareInputPanel();

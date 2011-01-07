@@ -50,6 +50,7 @@
 #include <QApplication>
 #include <QFontMetrics>
 #include <QPainter>
+#include <QTextBoundaryFinder>
 
 #ifndef QT_NO_LINEEDIT
 
@@ -1320,35 +1321,119 @@ void QDeclarativeTextInput::setSelectByMouse(bool on)
     }
 }
 
+void QDeclarativeTextInput::moveCursorSelection(int position)
+{
+    Q_D(QDeclarativeTextInput);
+    d->control->moveCursor(position, true);
+    d->updateHorizontalScroll();
+}
 
 /*!
-    \qmlmethod void TextInput::moveCursorSelection(int position)
+    \qmlmethod void TextInput::moveCursorSelection(int position, SelectionMode mode = TextInput.SelectCharacters)
+    \since Quick 1.1
 
-    Moves the cursor to \a position and updates the selection accordingly.
-    (To only move the cursor, set the \l cursorPosition property.)
+    Moves the cursor to \a position and updates the selection according to the optional \a mode
+    parameter.  (To only move the cursor, set the \l cursorPosition property.)
 
     When this method is called it additionally sets either the
     selectionStart or the selectionEnd (whichever was at the previous cursor position)
     to the specified position. This allows you to easily extend and contract the selected
     text range.
 
+    The selection mode specifies whether the selection is updated on a per character or a per word
+    basis.  If not specified the selection mode will default to TextInput.SelectCharacters.
+
+    \list
+    \o TextEdit.SelectCharacters - Sets either the selectionStart or selectionEnd (whichever was at
+    the previous cursor position) to the specified position.
+    \o TextEdit.SelectWords - Sets the selectionStart and selectionEnd to include all
+    words between the specified postion and the previous cursor position.  Words partially in the
+    range are included.
+    \endlist
+
     For example, take this sequence of calls:
 
     \code
         cursorPosition = 5
-        moveCursorSelection(9)
-        moveCursorSelection(7)
+        moveCursorSelection(9, TextInput.SelectCharacters)
+        moveCursorSelection(7, TextInput.SelectCharacters)
     \endcode
 
     This moves the cursor to position 5, extend the selection end from 5 to 9
     and then retract the selection end from 9 to 7, leaving the text from position 5 to 7
     selected (the 6th and 7th characters).
+
+    The same sequence with TextInput.SelectWords will extend the selection start to a word boundary
+    before or on position 5 and extend the selection end to a word boundary past position 9, and
+    then if there is a word boundary between position 7 and 8 retract the selection end to that
+    boundary.  If there is whitespace at position 7 the selection will be retracted further.
 */
-void QDeclarativeTextInput::moveCursorSelection(int position)
+void QDeclarativeTextInput::moveCursorSelection(int pos, SelectionMode mode)
 {
     Q_D(QDeclarativeTextInput);
-    d->control->moveCursor(position, true);
-    d->updateHorizontalScroll();
+
+    if (mode == SelectCharacters) {
+        d->control->moveCursor(pos, true);
+    } else if (pos != d->control->cursor()){
+        int anchor;
+        if (!d->control->hasSelectedText())
+            anchor = d->control->cursor();
+        else if (d->control->selectionStart() == d->control->cursor())
+            anchor = d->control->selectionEnd();
+        else
+            anchor = d->control->selectionStart();
+
+        if (anchor < pos) {
+            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, d->control->text());
+            finder.setPosition(anchor);
+
+            if (!(finder.boundaryReasons() & QTextBoundaryFinder::StartWord)) {
+                 finder.toNextBoundary();
+                 if (finder.boundaryReasons() != QTextBoundaryFinder::StartWord)
+                    finder.toPreviousBoundary();
+            }
+            anchor = finder.position();
+
+            finder.setPosition(pos);
+            if (!(finder.boundaryReasons() & QTextBoundaryFinder::EndWord)) {
+                finder.toPreviousBoundary();
+                if (finder.boundaryReasons() != QTextBoundaryFinder::EndWord)
+                    finder.toNextBoundary();
+            }
+            int cursor = finder.position();
+
+            if (anchor < cursor)
+                d->control->setSelection(anchor, cursor - anchor);
+            else
+                d->control->moveCursor(pos, false);
+
+        } else if (anchor > pos) {
+            QTextBoundaryFinder finder(QTextBoundaryFinder::Word, d->control->text());
+
+            finder.setPosition(anchor);
+            if (!(finder.boundaryReasons() & QTextBoundaryFinder::EndWord)) {
+                finder.toPreviousBoundary();
+                if (finder.boundaryReasons() != QTextBoundaryFinder::EndWord)
+                    finder.toNextBoundary();
+            }
+            anchor = finder.position();
+
+            finder.setPosition(pos);
+            if (!(finder.boundaryReasons() & QTextBoundaryFinder::StartWord)) {
+                 finder.toNextBoundary();
+                 if (finder.boundaryReasons() != QTextBoundaryFinder::StartWord)
+                    finder.toPreviousBoundary();
+            }
+            int cursor = finder.position();
+
+            if (anchor > cursor)
+                d->control->setSelection(anchor, cursor - anchor);
+            else
+                d->control->moveCursor(pos, false);
+        } else {
+            d->control->moveCursor(pos, false);
+        }
+    }
 }
 
 /*!
