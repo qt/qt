@@ -1,7 +1,5 @@
 #include "qtestlitekeyboard.h"
 
-#include <QDebug>
-
 #include "qtestlitescreen.h"
 
 #include <QtGui/QWindowSystemInterface>
@@ -949,21 +947,13 @@ static Qt::KeyboardModifiers modifierFromKeyCode(int qtcode)
 
 void QTestLiteKeyboard::handleKeyEvent(QWidget *widget, QEvent::Type type, XKeyEvent *ev)
 {
-    const int xkeycode = ev->keycode;
-    const uint xmodifiers = ev->state;
-
-    KeySym baseKeySym;
-    uint consumedModifiers;
-    if (!XkbLookupKeySym(m_screen->display(), xkeycode, (xmodifiers & (LockMask | m_num_lock_mask)),
-                         &consumedModifiers, &baseKeySym))
-        return;
-
-    Qt::KeyboardModifiers baseModifiers = 0;
-    int baseCode = -1;
+    int qtcode = 0;
+    Qt::KeyboardModifiers modifiers = translateModifiers(ev->state);
     QByteArray chars;
+    chars.resize(513);
     int count = 0;
-    QString text = translateKeySym(baseKeySym, xmodifiers, baseCode, baseModifiers, chars, count);
-
-    QWindowSystemInterface::handleKeyEvent(widget,ev->time,type,baseCode,baseModifiers,text.left(count));
-
+    KeySym keySym;
+    count = XLookupString(ev,chars.data(),chars.size(),&keySym,0);
+    QString text = translateKeySym(keySym,ev->state,qtcode,modifiers,chars,count);
+    QWindowSystemInterface::handleKeyEvent(widget,ev->time,type,qtcode,modifiers,text.left(count));
 }

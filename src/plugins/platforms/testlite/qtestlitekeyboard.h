@@ -14,7 +14,6 @@ public:
 
     Qt::KeyboardModifiers translateModifiers(int s);
 
-    enum { MaxBits = sizeof(uint) * 8 };
 private:
 
     void setMask(KeySym sym, uint mask);
