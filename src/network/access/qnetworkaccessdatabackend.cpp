@@ -124,7 +124,11 @@ bool QNetworkAccessDataBackend::waitForUpstreamBytesWritten(int)
 
 bool QNetworkAccessDataBackend::processRequestSynchronously()
 {
+#ifndef QT_NO_BEARERMANAGEMENT
     start();
+#else
+    open();
+#endif
     return true;
 }
 
