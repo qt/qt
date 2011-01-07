@@ -105,7 +105,6 @@ public:
     qint64 bytesTotal;
     bool resendCurrent;
     int lastStatus; // last status received on this channel
-    QNetworkReply::NetworkError unhandledError; // Stored code of an unhandled error.
     bool pendingEncrypt; // for https (send after encrypted)
     int reconnectAttempts; // maximum 2 reconnection attempts
     QAuthenticatorPrivate::Method authMethod;
