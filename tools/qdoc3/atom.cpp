@@ -107,7 +107,8 @@ QString Atom::UPPERROMAN_    ("upperroman");
   \value CodeOld
   \value CodeQuoteArgument
   \value CodeQuoteCommand
-  \value Div
+  \value DivLeft
+  \value DivRight
   \value EndQmlText
   \value FormatElse
   \value FormatEndif
@@ -180,8 +181,8 @@ static const struct {
     { "CodeOld", Atom::CodeOld },
     { "CodeQuoteArgument", Atom::CodeQuoteArgument },
     { "CodeQuoteCommand", Atom::CodeQuoteCommand },
-    { "Div", Atom::Div },
-    { "EndDiv", Atom::EndDiv },
+    { "DivLeft", Atom::DivLeft },
+    { "DivRight", Atom::DivRight },
 #ifdef QDOC_QML
     { "EndQmlText", Atom::EndQmlText },
 #endif

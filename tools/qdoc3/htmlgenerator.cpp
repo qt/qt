@@ -511,12 +511,19 @@ int HtmlGenerator::generateAtom(const Atom *atom,
               << trimmedTrailing(protectEnc(plainCode(indent(codeIndent,atom->string()))))
               << "</pre>\n";
         break;
-    case Atom::Div:
+    case Atom::DivLeft:
         out() << "<div";
-        if (!atom->string().isEmpty())
-            out() << " class=\"" << atom->string() << "\">";
+        if (!atom->string().isEmpty()) {
+            if (atom->string().contains('='))
+                out() << " " << atom->string() << ">";
+            else
+                out() << " class=\"" << atom->string() << "\">";
+        }
         else
             out() << ">";
+        break;
+    case Atom::DivRight:
+        out() << "</div>";
         break;
     case Atom::FootnoteLeft:
         // ### For now
@@ -1135,9 +1142,6 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::UnknownCommand:
         out() << "<b class=\"redFont\"><code>\\" << protectEnc(atom->string())
               << "</code></b>";
-        break;
-    case Atom::EndDiv:
-        out() << "</div>";
         break;
 #ifdef QDOC_QML
     case Atom::QmlText:

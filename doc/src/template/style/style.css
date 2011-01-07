@@ -198,6 +198,92 @@
         clear: right 
     }
 
+    #color-white
+    {
+        background: #ffffff; 
+        color: #000000;
+    }
+    #color-black
+    {
+        background: #000000;
+        color: #ffffff;
+    }
+    #color-red
+    {
+        background: #ff0000;
+        color: #000000;
+    }
+    #color-darkRed
+    {
+        background: #800000;
+        color: #ffffff;
+    }
+    #color-green
+    {
+        background: #00ff00;
+        color: #000000;
+    }
+    #color-darkGreen
+    {
+        background: #008000;
+        color: #ffffff;
+    }
+    #color-blue
+    {
+        background: #0000ff;
+        color: #ffffff;
+    }
+    #color-darkBlue
+    {
+        background: #000080;
+        color: #ffffff;
+    }
+    #color-cyan
+    {
+        background: #00ffff;
+        color: #000000;
+    }
+    #color-darkCyan
+    {
+        background: #008080;
+        color: #ffffff;
+    }
+    #color-magenta
+    {
+        background: #ff00ff;
+        color: #000000;
+    }
+    #color-darkMagenta
+    {
+        background: #800080;
+        color: #ffffff;
+    }
+    #color-yellow
+    {
+        background: #ffff00;
+        color: #000000;
+    }
+    #color-darkYellow
+    {
+        background: #808000;
+        color: #ffffff;
+    }
+    #color-gray
+    {
+        background: #a0a0a4;
+        color: #000000;
+    }
+    #color-darkGray
+    {
+        background: #808080;
+        color: #ffffff;
+    }
+    #color-lightGray
+    {
+        background: #c0c0c0;
+        color: #000000;
+    }
+
     span.comment
     {
         color: #008B00;
@@ -526,7 +612,7 @@
         background: url(../images/page.png) no-repeat 100% -60px;
         overflow: hidden;
     }
-	.navTop{ 
+	.navTop{
 	float:right;
 	display:block;
 	padding-right:15px;
@@ -1590,11 +1676,11 @@
 		word-wrap:break-word;
     }
 	
-    .creator .wrap .content ol li { 
+    .creator .wrap .content ol li {
         background:none; 
         font: inherit; 
         padding-left: 0px;
-    } 
+    }
 	
     .creator .wrap .content .descr ol li {
 	margin-left: 45px;

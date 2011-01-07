@@ -72,15 +72,15 @@ class Atom
         CodeOld,
         CodeQuoteArgument,
         CodeQuoteCommand,
-        Div,
+        DivLeft,            // 16
+        DivRight,           // 17
 #ifdef QDOC_QML
-        EndDiv,
         EndQmlText,
 #endif
         FootnoteLeft,
-        FootnoteRight,
+        FootnoteRight,      // 20 
         FormatElse,
-        FormatEndif,        // 20
+        FormatEndif,
         FormatIf,
         FormattingLeft,
         FormattingRight,
@@ -88,30 +88,30 @@ class Atom
         GuidLink,
         Image,
         ImageText,
-        InlineImage,
+        InlineImage,        // 30
         LegaleseLeft,
-        LegaleseRight,      // 30
+        LegaleseRight,
         LineBreak,
         Link,
         LinkNode,
         ListLeft,
         ListItemNumber,
-        ListTagLeft,        // 36
-        ListTagRight,       // 37
-        ListItemLeft,       // 38
-        ListItemRight,      // 39
-        ListRight,          // 40
+        ListTagLeft,        // 38
+        ListTagRight,       // 39
+        ListItemLeft,       // 40
+        ListItemRight,      // 41
+        ListRight,          // 42
         Nop,
-        ParaLeft,
-        ParaRight,
+        ParaLeft,           // 44
+        ParaRight,          // 45
 #ifdef QDOC_QML
         Qml,
         QmlText,
 #endif
         QuotationLeft,
         QuotationRight,
-        RawString,
-        SectionLeft,        // 49
+        RawString,          // 50
+        SectionLeft,        // 51
         SectionRight,
         SectionHeadingLeft,
         SectionHeadingRight,
@@ -120,9 +120,9 @@ class Atom
         SinceList,
         SnippetCommand,
         SnippetIdentifier,
-        SnippetLocation,
-        String,             // 59
-        TableLeft,          // 60
+        SnippetLocation,    // 60
+        String,             // 61
+        TableLeft,          // 62
         TableRight,
         TableHeaderLeft,
         TableHeaderRight,
@@ -130,8 +130,8 @@ class Atom
         TableRowRight,
         TableItemLeft,
         TableItemRight,
-        TableOfContents,
-        Target,             // 69
+        TableOfContents,    // 70
+        Target,             // 71
         UnhandledFormat, 
         UnknownCommand,
         Last = UnknownCommand

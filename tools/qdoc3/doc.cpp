@@ -55,6 +55,7 @@
 #include <qregexp.h>
 #include <ctype.h>
 #include <limits.h>
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -368,8 +369,8 @@ class DocParser
     void appendToCode(const QString &code);
     void startNewPara();
     void enterPara(Atom::Type leftType = Atom::ParaLeft,
-                    Atom::Type rightType = Atom::ParaRight,
-                    const QString& string = "");
+                   Atom::Type rightType = Atom::ParaRight,
+                   const QString& string = "");
     void leavePara();
     void leaveValue();
     void leaveValueList();
@@ -559,11 +560,26 @@ void DocParser::parse(const QString& source,
                         break;
 #endif
                     case CMD_DIV:
-                        leavePara();
                         x = getArgument(true);
-                        append(Atom::Div, x);
-                        openedCommands.push(cmd);
-                        enterPara();
+                        leavePara();
+                        enterPara(Atom::DivLeft, Atom::DivRight,x);
+#if 0
+                        if (x.contains('=')) {
+                            leavePara();
+                            enterPara(Atom::DivLeft, Atom::DivRight,x);
+                        }
+                        else {
+                            leavePara();
+                            append(Atom::DivLeft, x);
+                            openedCommands.push(cmd);
+                            enterPara();
+                        }
+#endif
+                        break;
+                    case CMD_ENDDIV:
+                        leavePara();
+                        //                        append(Atom::DivRight);
+                        //                        closeCommand(cmd);
                         break;
                     case CMD_CODELINE:
                         {
@@ -630,11 +646,6 @@ void DocParser::parse(const QString& source,
                         endSection(0, cmd);
                         break;
                     case CMD_ENDCODE:
-                        closeCommand(cmd);
-                        break;
-                    case CMD_ENDDIV:
-                        leavePara();
-                        append(Atom::EndDiv);
                         closeCommand(cmd);
                         break;
 #ifdef QDOC_QML
@@ -1806,8 +1817,18 @@ void DocParser::parseAlso()
     }
 }
 
+//static bool debug = false;
+
 void DocParser::append(Atom::Type type, const QString &string)
 {
+#if 0    
+    if (type == Atom::DivLeft)
+        debug = true;
+    if (debug)
+        qDebug() << type << string;
+    if (type == Atom::DivRight)
+        debug = false;
+#endif    
     Atom::Type lastType = priv->text.lastAtom()->type();
 #ifdef QDOC_QML
     if (((lastType == Atom::Code) || (lastType == Atom::Code)) &&
@@ -1865,15 +1886,16 @@ void DocParser::enterPara(Atom::Type leftType,
                           const QString& string)
 {
     if (paraState == OutsidePara) {
-        if (priv->text.lastAtom()->type() != Atom::ListItemLeft)
+        if ((priv->text.lastAtom()->type() != Atom::ListItemLeft) &&
+            (priv->text.lastAtom()->type() != Atom::DivLeft)) {
             leaveValueList();
+        }
         append(leftType, string);
         indexStartedPara = false;
         pendingParaLeftType = leftType;
         pendingParaRightType = rightType;
         pendingParaString = string;
-        if (
-             leftType == Atom::SectionHeadingLeft) {
+        if (leftType == Atom::SectionHeadingLeft) {
             paraState = InsideSingleLinePara;
         }
         else {
