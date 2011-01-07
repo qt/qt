@@ -199,6 +199,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     }
 
     QToolBar *toolBar = addToolBar(tr("Bookmark Toolbar"));
+    toolBar->setObjectName(QLatin1String("Bookmark Toolbar"));
     bookMarkManager->setBookmarksToolbar(toolBar);
 
     // Show the widget here, otherwise the restore geometry and state won't work
@@ -458,10 +459,6 @@ void MainWindow::setupActions()
     GlobalActions *globalActions = GlobalActions::instance(this);
     menu->addAction(globalActions->printAction());
     menu->addSeparator();
-
-    m_closeTabAction = menu->addAction(tr("&Close Tab"), m_centralWidget,
-        SLOT(closeTab()));
-    m_closeTabAction->setShortcuts(QKeySequence::Close);
 
     QIcon appExitIcon = QIcon::fromTheme("application-exit");
     QAction *tmp;
