@@ -106,7 +106,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     TRACE_OBJ
 
     setToolButtonStyle(Qt::ToolButtonFollowStyle);
-    setDockOptions(ForceTabbedDocks); // Has no effect; Qt bug?
+    setDockOptions(dockOptions() | AllowNestedDocks);
 
     QString collectionFile;
     if (usesDefaultCollection()) {
@@ -218,8 +218,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     } else {
         tabifyDockWidget(contentDock, indexDock);
         tabifyDockWidget(indexDock, bookmarkDock);
-        tabifyDockWidget(bookmarkDock, openPagesDock);
-        tabifyDockWidget(openPagesDock, searchDock);
+        tabifyDockWidget(bookmarkDock, searchDock);
         contentDock->raise();
         const QRect screen = QApplication::desktop()->screenGeometry();
         resize(4*screen.width()/5, 4*screen.height()/5);
