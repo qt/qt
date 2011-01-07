@@ -45,7 +45,7 @@
 #include <QWebView>
 
 class ImageAnalyzer;
-class QNetworkDiskCache;
+QT_FORWARD_DECLARE_CLASS(QNetworkDiskCache)
 
 class MainWin : public QWebView
 {

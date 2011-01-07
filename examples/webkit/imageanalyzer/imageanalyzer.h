@@ -44,9 +44,9 @@
 #include <QFutureWatcher>
 #include <QtGui>
 
-class QNetworkAccessManager;
-class QNetworkReply;
-class QNetworkDiskCache;
+QT_FORWARD_DECLARE_CLASS(QNetworkAccessManager)
+QT_FORWARD_DECLARE_CLASS(QNetworkReply)
+QT_FORWARD_DECLARE_CLASS(QNetworkDiskCache)
 
 //! [ ImageAnalyzer - public interface ]
 class ImageAnalyzer : public QObject
