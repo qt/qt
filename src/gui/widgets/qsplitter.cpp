@@ -124,7 +124,7 @@ QSplitterHandle::QSplitterHandle(Qt::Orientation orientation, QSplitter *parent)
 
 /*!
     Sets the orientation of the splitter handle to \a orientation.
-    This is usually propogated from the QSplitter.
+    This is usually propagated from the QSplitter.
 
     \sa QSplitter::setOrientation()
 */

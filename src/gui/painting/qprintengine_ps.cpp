@@ -908,7 +908,7 @@ void QPSPrintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, con
 
     if (d->clipEnabled && d->allClipped)
         return;
-    // ### Optimise implementation!
+    // ### Optimize implementation!
     qreal yPos = r.y();
     qreal yOff = p.y();
     while(yPos < r.y() + r.height()) {
