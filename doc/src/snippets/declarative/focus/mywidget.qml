@@ -37,10 +37,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+//! [document]
 import QtQuick 1.0
 
 //! [mywidget]
-//MyWidget code
 Rectangle {
     id: widget
     color: "lightsteelblue"; width: 175; height: 25; radius: 10; smooth: true

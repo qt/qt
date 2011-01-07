@@ -37,6 +37,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+//! [document]
 import QtQuick 1.0
 
 //! [focusscope window]
@@ -59,3 +60,4 @@ Rectangle {
 
 }
 //! [focusscope window]
+//! [document]
