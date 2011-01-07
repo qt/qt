@@ -103,6 +103,14 @@ TextEdit {
     \sa Text, TextInput, {declarative/text/textselection}{Text Selection example}
 */
 
+/*!
+    \qmlsignal TextEdit::onLinkActivated(string link)
+    \since Quick 1.1
+
+    This handler is called when the user clicks on a link embedded in the text.
+    The link must be in rich text or HTML format and the
+    \a link string provides access to the particular link.
+*/
 QDeclarativeTextEdit::QDeclarativeTextEdit(QDeclarativeItem *parent)
 : QDeclarativePaintedItem(*(new QDeclarativeTextEditPrivate), parent)
 {
@@ -896,11 +904,11 @@ void QDeclarativeTextEdit::setReadOnly(bool r)
         return;
 
 
-    Qt::TextInteractionFlags flags = Qt::NoTextInteraction;
+    Qt::TextInteractionFlags flags = Qt::LinksAccessibleByMouse;
     if (r) {
-        flags = Qt::TextSelectableByMouse;
+        flags = flags | Qt::TextSelectableByMouse;
     } else {
-        flags = Qt::TextEditorInteraction;
+        flags = flags | Qt::TextEditorInteraction;
     }
     d->control->setTextInteractionFlags(flags);
     if (!r)
@@ -1262,6 +1270,7 @@ void QDeclarativeTextEditPrivate::init()
 
     control = new QTextControl(q);
     control->setIgnoreUnusedNavigationEvents(true);
+    control->setTextInteractionFlags(control->textInteractionFlags() | Qt::LinksAccessibleByMouse);
 
     // QTextControl follows the default text color
     // defined by the platform, declarative text
@@ -1280,6 +1289,7 @@ void QDeclarativeTextEditPrivate::init()
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SLOT(updateSelectionMarkers()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorPositionChanged()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorRectangleChanged()));
+    QObject::connect(control, SIGNAL(linkActivated(QString)), q, SIGNAL(linkActivated(QString)));
 
     document = control->document();
     document->setDefaultFont(font);

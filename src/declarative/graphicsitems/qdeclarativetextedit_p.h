@@ -221,6 +221,7 @@ Q_SIGNALS:
     void persistentSelectionChanged(bool isPersistentSelection);
     void textMarginChanged(qreal textMargin);
     void selectByMouseChanged(bool selectByMouse);
+    Q_REVISION(1) void linkActivated(const QString &link);
 
 public Q_SLOTS:
     void deselect();
