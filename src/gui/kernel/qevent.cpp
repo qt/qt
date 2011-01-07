@@ -3103,7 +3103,7 @@ QUrl QFileOpenEvent::url() const
 
     Opens a QFile on the file referenced by this event.
     Returns true if successful; otherwise returns false.
-    
+
     This is necessary as some files cannot be opened with the filename alone, but require specific
     information stored in this event.
     For example, if this QFileOpenEvent contains a request to open a Symbian data caged file,
