@@ -43,6 +43,8 @@
 #include <private/qobject_p.h>
 #include <QtGui/QApplication>
 
+QT_BEGIN_NAMESPACE
+
 class QDeclarativeApplicationPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeApplication)
@@ -144,3 +146,5 @@ bool QDeclarativeApplication::eventFilter(QObject *obj, QEvent *event)
     }
     return false;
 }
+
+QT_END_NAMESPACE
