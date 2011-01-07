@@ -229,7 +229,7 @@ void tst_QDeclarativePinchArea::scale()
     QTest::touchEvent(vp).move(0, p1).move(1, p2);
 
     QCOMPARE(root->property("scale").toReal(), 1.5);
-    QCOMPARE(root->property("center").toPointF(), QPointF(90, 90));
+    QCOMPARE(root->property("center").toPointF(), QPointF(40, 40)); // blackrect is at 50,50
     QCOMPARE(blackRect->scale(), 1.5);
 
     // scale beyond bound
@@ -283,7 +283,7 @@ void tst_QDeclarativePinchArea::pan()
     p2 += QPoint(10,10);
     QTest::touchEvent(vp).move(0, p1).move(1, p2);
 
-    QCOMPARE(root->property("center").toPointF(), QPointF(110, 110));
+    QCOMPARE(root->property("center").toPointF(), QPointF(60, 60)); // blackrect is at 50,50
 
     QCOMPARE(blackRect->x(), 60.0);
     QCOMPARE(blackRect->y(), 60.0);

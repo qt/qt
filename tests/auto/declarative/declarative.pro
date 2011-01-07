@@ -45,6 +45,7 @@ SUBDIRS += \
            qdeclarativemousearea \
            qdeclarativeparticles \
            qdeclarativepathview \
+           qdeclarativepincharea \
            qdeclarativepixmapcache \
            qdeclarativepositioners \
            qdeclarativeproperty \
