@@ -8261,7 +8261,9 @@ if [ "$CFG_WEBKIT" != "no" ]; then
     fi
 fi
 echo "Declarative module ..... $CFG_DECLARATIVE"
-echo "Declarative debugging ...$CFG_DECLARATIVE_DEBUG"
+if [ "$CFG_DECLARATIVE" = "yes" ]; then
+    echo "Declarative debugging ...$CFG_DECLARATIVE_DEBUG"
+fi
 echo "Support for S60 ........ $CFG_S60"
 echo "Symbian DEF files ...... $CFG_SYMBIAN_DEFFILES"
 echo "STL support ............ $CFG_STL"
