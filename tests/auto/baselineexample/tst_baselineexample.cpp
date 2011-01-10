@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,10 +54,8 @@ private Q_SLOTS:
     void testMultipleImages();
     void testDataDriven_data();
     void testDataDriven();
-    void testDataDrivenMultiple_data();
-    void testDataDrivenMultiple();
-    void testChecksum_data();
-    void testChecksum();
+    void testDataDrivenChecksum_data();
+    void testDataDrivenChecksum();
 };
 
 
@@ -98,9 +96,11 @@ void tst_BaselineExample::testMultipleImages()
 void tst_BaselineExample::testDataDriven_data()
 {
     QTest::addColumn<QString>("label");
-    QTest::newRow("short") << "Ok!";
-    QTest::newRow("long") << "A really long button text that just does not seem to end";
-    QTest::newRow("empty") << "";
+    QBaselineTest::newRow("short") << "Ok!";
+    QBaselineTest::newRow("long") << "A really long button text that just does not seem to end";
+    QBaselineTest::newRow("empty") << "";
+    QBaselineTest::newRow("signs") << "!@#$%^&*()_";
+    QBaselineTest::newRow("html") << "<b>BOLD</b>";
 }
 
 
@@ -111,45 +111,33 @@ void tst_BaselineExample::testDataDriven()
     b.resize(100, 50);
     b.show();
     QTest::qWaitForWindowShown(&b);
-    QBASELINE_CHECK(QPixmap::grabWidget(&b).toImage(), 0);
+    QBASELINE_TEST(QPixmap::grabWidget(&b).toImage());
 }
 
 
-void tst_BaselineExample::testDataDrivenMultiple_data()
+void tst_BaselineExample::testDataDrivenChecksum_data()
 {
-    testDataDriven_data();
+    QTest::addColumn<QString>("label");
+
+    const int numItems = 5;
+    const char *tags[numItems] = {"short", "long", "empty", "signs", "html"};
+    const char *labels[numItems] = {"Ok!", "A really long button text that just does not seem to end", "", "!@#$%^&*()_", "<b>BOLD</b>"};
+
+    for (int i = 0; i<numItems; i++) {
+        quint16 checksum = qChecksum(labels[i], qstrlen(labels[i]));
+        QBaselineTest::newRow(tags[i], checksum) << labels[i];
+    }
 }
 
 
-void tst_BaselineExample::testDataDrivenMultiple()
-{
-    QFETCH(QString, label);
-    QPushButton b(label);
-    b.resize(100, 50);
-    b.show();
-    QTest::qWaitForWindowShown(&b);
-    QBASELINE_CHECK(QPixmap::grabWidget(&b).toImage(), "normal");
-
-    b.setText(label.prepend('&'));
-    QTest::qWait(50);
-    QBASELINE_CHECK(QPixmap::grabWidget(&b).toImage(), "shortcut");
-}
-
-
-void tst_BaselineExample::testChecksum_data()
-{
-    testDataDriven_data();
-}
-
-
-void tst_BaselineExample::testChecksum()
+void tst_BaselineExample::testDataDrivenChecksum()
 {
     QFETCH(QString, label);
     QPushButton b(label);
     b.resize(100, 50);
     b.show();
     QTest::qWaitForWindowShown(&b);
-    QBASELINE_CHECK_SUM(QPixmap::grabWidget(&b).toImage(), 0, quint16(qHash(label)));
+    QBASELINE_TEST(QPixmap::grabWidget(&b).toImage());
 }
 
 

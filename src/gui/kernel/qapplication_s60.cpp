@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1071,6 +1071,14 @@ void QSymbianControl::Draw(const TRect& controlRect) const
     Q_ASSERT(topExtra);
     if (!topExtra->inExpose) {
         topExtra->inExpose = true;
+        if (!qwidget->isWindow()) {
+            // If we get here, then it means we have a native child window
+            // Since no content should ever be painted to these windows, we
+            // erase them with a transparent brush when they get an expose.
+            CWindowGc &gc = SystemGc();
+            gc.SetBrushColor(TRgb(0, 0, 0, 0));
+            gc.Clear(controlRect);
+        }
         QRect exposeRect = qt_TRect2QRect(controlRect);
         qwidget->d_func()->syncBackingStore(exposeRect);
         topExtra->inExpose = false;

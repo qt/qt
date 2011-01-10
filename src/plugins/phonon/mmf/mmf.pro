@@ -128,7 +128,7 @@ symbian {
         is_using_gnupoc {
             LIBS += -laudioequalizereffect -lbassboosteffect -ldistanceattenuationeffect -ldopplerbase -leffectbase -lenvironmentalreverbeffect -llistenerdopplereffect -llistenerlocationeffect -llistenerorientationeffect -llocationbase -lloudnesseffect -lorientationbase -lsourcedopplereffect -lsourcelocationeffect -lsourceorientationeffect -lstereowideningeffect
         } else {
-            LIBS += -lAudioEqualizerEffect -lBassBoostEffect -lDistanceAttenuationEffect -lDopplerBase -lEffectBase -lEnvironmentalReverbEffect -lListenerDopplerEffect -lListenerLocationEffect -lListenerOrientationEffect -lLocationBase -lLoudnessEffect -lOrientationBase -lSourceDopplerEffect -lSourceLocationEffect -lSourceOrientationEffect -lStereoWideningEffect
+	    LIBS += -lAudioEqualizerEffect -lBassBoostEffect -lDistanceAttenuationEffect -lDopplerbase -lEffectBase -lEnvironmentalReverbEffect -lListenerDopplerEffect -lListenerLocationEffect -lListenerOrientationEffect -lLocationBase -lLoudnessEffect -lOrientationBase -lSourceDopplerEffect -lSourceLocationEffect -lSourceOrientationEffect -lStereoWideningEffect
         }
 
 	# This is needed for having the .qtplugin file properly created on Symbian.

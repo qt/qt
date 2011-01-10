@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -289,6 +289,9 @@ void QFileSystemMetaData::fillFromStatBuf(const QT_STATBUF &statBuffer)
 
 void QFileSystemMetaData::fillFromDirEnt(const QT_DIRENT &entry)
 {
+#if defined(_DIRENT_HAVE_D_TYPE) || defined(Q_OS_BSD4) || defined(Q_OS_SYMBIAN)
+    // BSD4 includes Mac OS X
+
     // ### This will clear all entry flags and knownFlagsMask
     switch (entry.d_type)
     {
@@ -344,6 +347,9 @@ void QFileSystemMetaData::fillFromDirEnt(const QT_DIRENT &entry)
     default:
         clear();
     }
+#else
+    Q_UNUSED(entry)
+#endif
 }
 
 #endif

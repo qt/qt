@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,13 +44,75 @@
 
 namespace QBaselineTest {
 
+BaselineProtocol proto;
 bool connected = false;
 bool triedConnecting = false;
-BaselineProtocol proto;
+
+QByteArray curFunction;
+ImageItemList itemList;
+bool gotBaselines;
 
 
-bool checkImage(const QImage& img, const char *name, quint16 checksum, QByteArray *msg, bool *error)
+bool connect(QByteArray *msg, bool *error)
 {
+    if (!triedConnecting) {
+        triedConnecting = true;
+        if (!proto.connect(QTest::testObject()->metaObject()->className())) {
+            *msg += "Failed to connect to baseline server: " + proto.errorMessage().toLatin1();
+            *error = true;
+            return false;
+        }
+        connected = true;
+    }
+    if (!connected) {
+        *msg = "Not connected to baseline server.";
+        *error = true;
+        return false;
+    }
+    return true;
+}
+
+
+bool compareItem(const ImageItem &baseline, const QImage &img, QByteArray *msg, bool *error)
+{
+    ImageItem item = baseline;
+    item.image = img;
+    item.imageChecksums.clear();
+    item.imageChecksums.prepend(ImageItem::computeChecksum(img));
+    QByteArray srvMsg;
+    switch (baseline.status) {
+    case ImageItem::Ok:
+        break;
+    case ImageItem::IgnoreItem :
+        qDebug() << msg->constData() << "Ignored, blacklisted on server.";
+        return true;
+        break;
+    case ImageItem::BaselineNotFound:
+        if (proto.submitNewBaseline(item, &srvMsg))
+            qDebug() << msg->constData() << "Baseline not found on server. New baseline uploaded.";
+        else
+            qDebug() << msg->constData() << "Baseline not found on server. Uploading of new baseline failed:" << srvMsg;
+        return true;
+        break;
+    default:
+        qWarning() << "Unexpected reply from baseline server.";
+        return true;
+        break;
+    }
+    *error = false;
+    // The actual comparison of the given image with the baseline:
+    if (baseline.imageChecksums.contains(item.imageChecksums.at(0)))
+        return true;
+    proto.submitMismatch(item, &srvMsg);
+    *msg += "Mismatch. See report:\n   " + srvMsg;
+    return false;
+}
+
+bool checkImage(const QImage &img, const char *name, quint16 checksum, QByteArray *msg, bool *error)
+{
+    if (!connected && !connect(msg, error))
+        return true;
+
     QByteArray itemName;
     bool hasName = qstrlen(name);
     const char *tag = QTest::currentDataTag();
@@ -64,25 +126,11 @@ bool checkImage(const QImage& img, const char *name, quint16 checksum, QByteArra
 
     *msg = "Baseline check of image '" + itemName + "': ";
 
-    if (!triedConnecting) {
-        triedConnecting = true;
-        if (!proto.connect(QTest::testObject()->metaObject()->className())) {
-            *msg += "Failed to connect to baseline server: " + proto.errorMessage().toLatin1();
-            *error = true;
-            return true;
-        }
-        connected = true;
-    }
-    if (!connected) {
-        *msg = "Not connected to baseline server.";
-        *error = true;
-        return true;
-    }
 
     ImageItem item;
-    item.itemName = QLatin1String(itemName);
+    item.itemName = QString::fromLatin1(itemName);
     item.itemChecksum = checksum;
-    item.testFunction = QLatin1String(QTest::currentTestFunction());
+    item.testFunction = QString::fromLatin1(QTest::currentTestFunction());
     ImageItemList list;
     list.append(item);
     if (!proto.requestBaselineChecksums(QLatin1String(QTest::currentTestFunction()), &list) || list.isEmpty()) {
@@ -90,35 +138,56 @@ bool checkImage(const QImage& img, const char *name, quint16 checksum, QByteArra
         *error = true;
         return true;
     }
-    item.image = img;
-    item.imageChecksums.prepend(ImageItem::computeChecksum(img));
-    QByteArray srvMsg;
-    switch (list.at(0).status) {
-    case ImageItem::IgnoreItem :
-        qDebug() << msg->constData() << "Ignored, blacklisted on server.";
-        return true;
-        break;
-    case ImageItem::BaselineNotFound:
-        if (proto.submitNewBaseline(item, &srvMsg))
-            qDebug() << msg->constData() << "Baseline not found on server. New baseline uploaded.";
-        else
-            qDebug() << msg->constData() << "Baseline not found on server. Uploading of new baseline failed:" << srvMsg;
-        return true;
-        break;
-    case ImageItem::Ok:
-        break;
-    default:
-        qWarning() << "Unexpected reply from baseline server.";
-        return true;
-        break;
+
+    return compareItem(list.at(0), img, msg, error);
+}
+
+
+QTestData &newRow(const char *dataTag, quint16 checksum)
+{
+    if (QTest::currentTestFunction() != curFunction) {
+        curFunction = QTest::currentTestFunction();
+        itemList.clear();
+        gotBaselines = false;
     }
-    *error = false;
-    // The actual comparison of the given image with the baseline:
-    if (list.at(0).imageChecksums.contains(item.imageChecksums.at(0)))
+    ImageItem item;
+    item.itemName = QString::fromLatin1(dataTag);
+    item.itemChecksum = checksum;
+    item.testFunction = QString::fromLatin1(QTest::currentTestFunction());
+    itemList.append(item);
+
+    return QTest::newRow(dataTag);
+}
+
+
+bool testImage(const QImage& img, QByteArray *msg, bool *error)
+{
+    if (!connected && !connect(msg, error))
         return true;
-    proto.submitMismatch(item, &srvMsg);
-    *msg += "Mismatch. See report:\n   " + srvMsg;
-    return false;
+
+    if (QTest::currentTestFunction() != curFunction || itemList.isEmpty()) {
+        qWarning() << "Usage error: QBASELINE_TEST used without corresponding QBaselineTest::newRow()";
+        return true;
+    }
+
+    if (!gotBaselines) {
+        if (!proto.requestBaselineChecksums(QString::fromLatin1(QTest::currentTestFunction()), &itemList) || itemList.isEmpty()) {
+            *msg = "Communication with baseline server failed: " + proto.errorMessage().toLatin1();
+            *error = true;
+            return true;
+        }
+        gotBaselines = true;
+    }
+
+    QString curTag = QString::fromLatin1(QTest::currentDataTag());
+    ImageItemList::const_iterator it = itemList.constBegin();
+    while (it != itemList.constEnd() && it->itemName != curTag)
+        ++it;
+    if (it == itemList.constEnd()) {
+        qWarning() << "Usage error: QBASELINE_TEST used without corresponding QBaselineTest::newRow() for row" << curTag;
+        return true;
+    }
+    return compareItem(*it, img, msg, error);
 }
 
 }

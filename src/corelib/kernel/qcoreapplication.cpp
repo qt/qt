@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -336,6 +336,16 @@ void QCoreApplicationPrivate::createEventDispatcher()
 #endif
 }
 
+void QCoreApplicationPrivate::_q_initializeProcessManager()
+{
+#ifndef QT_NO_PROCESS
+#  ifdef Q_OS_UNIX
+    QProcessPrivate::initializeProcessManager();
+#  endif
+#endif
+}
+
+
 QThread *QCoreApplicationPrivate::theMainThread = 0;
 QThread *QCoreApplicationPrivate::mainThread()
 {
@@ -598,12 +608,6 @@ void QCoreApplication::init()
     } else {
         d->appendApplicationPathToLibraryPaths();
     }
-#endif
-
-#if defined(Q_OS_UNIX) && !(defined(QT_NO_PROCESS))
-    // Make sure the process manager thread object is created in the main
-    // thread.
-    QProcessPrivate::initializeProcessManager();
 #endif
 
 #ifdef QT_EVAL
@@ -2666,3 +2670,5 @@ int QCoreApplication::loopLevel()
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qcoreapplication.cpp"

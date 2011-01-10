@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -695,17 +695,6 @@ QObject *QDeclarativeComponent::create(QDeclarativeContext *context)
         context = d->engine->rootContext();
 
     QObject *rv = beginCreate(context);
-    completeCreate();
-    return rv;
-}
-
-QObject *QDeclarativeComponentPrivate::create(QDeclarativeContextData *context, 
-                                              const QBitField &bindings)
-{
-    if (!context)
-        context = QDeclarativeContextData::get(engine->rootContext());
-
-    QObject *rv = beginCreate(context, bindings);
     completeCreate();
     return rv;
 }

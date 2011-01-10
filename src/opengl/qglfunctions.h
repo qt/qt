@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -41,6 +41,11 @@
 
 #ifndef QGLFUNCTIONS_H
 #define QGLFUNCTIONS_H
+
+#ifdef __GLEW_H__
+#warning qglfunctions.h is not compatible with GLEW, GLEW defines will be undefined
+#warning To use GLEW with Qt, do not include <QtOpenGL> or <QGLFunctions> after glew.h
+#endif
 
 #include <QtOpenGL/qgl.h>
 
