@@ -1204,7 +1204,8 @@ void QPainterPath::connectPath(const QPainterPath &other)
     int first = d->elements.size();
     d->elements += other.d_func()->elements;
 
-    d->elements[first].type = LineToElement;
+    if (first != 0)
+        d->elements[first].type = LineToElement;
 
     // avoid duplicate points
     if (first > 0 && QPointF(d->elements[first]) == QPointF(d->elements[first - 1])) {

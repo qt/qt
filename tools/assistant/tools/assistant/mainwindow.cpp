@@ -106,7 +106,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     TRACE_OBJ
 
     setToolButtonStyle(Qt::ToolButtonFollowStyle);
-    setDockOptions(ForceTabbedDocks); // Has no effect; Qt bug?
+    setDockOptions(dockOptions() | AllowNestedDocks);
 
     QString collectionFile;
     if (usesDefaultCollection()) {
@@ -199,6 +199,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     }
 
     QToolBar *toolBar = addToolBar(tr("Bookmark Toolbar"));
+    toolBar->setObjectName(QLatin1String("Bookmark Toolbar"));
     bookMarkManager->setBookmarksToolbar(toolBar);
 
     // Show the widget here, otherwise the restore geometry and state won't work
@@ -218,8 +219,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     } else {
         tabifyDockWidget(contentDock, indexDock);
         tabifyDockWidget(indexDock, bookmarkDock);
-        tabifyDockWidget(bookmarkDock, openPagesDock);
-        tabifyDockWidget(openPagesDock, searchDock);
+        tabifyDockWidget(bookmarkDock, searchDock);
         contentDock->raise();
         const QRect screen = QApplication::desktop()->screenGeometry();
         resize(4*screen.width()/5, 4*screen.height()/5);
@@ -459,10 +459,6 @@ void MainWindow::setupActions()
     GlobalActions *globalActions = GlobalActions::instance(this);
     menu->addAction(globalActions->printAction());
     menu->addSeparator();
-
-    m_closeTabAction = menu->addAction(tr("&Close Tab"), m_centralWidget,
-        SLOT(closeTab()));
-    m_closeTabAction->setShortcuts(QKeySequence::Close);
 
     QIcon appExitIcon = QIcon::fromTheme("application-exit");
     QAction *tmp;

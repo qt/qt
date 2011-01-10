@@ -33,38 +33,38 @@ $(TARGET_TOOLS): $(QT_TOOLS)
 else
 $(TARGET_TOOLS): $(SOURCEDIR)/qmake$(DOTEXE)
 endif
-    $(call startrule,qtconf_deploy) \
-    $(GNUCP) $(SOURCEDIR)/$$(notdir $$@) $$@ \
-    $(call endrule,qtconf_deploy)
+	$(call startrule,qtconf_deploy) \
+	$(GNUCP) $(SOURCEDIR)/$$(notdir $$@) $$@ \
+	$(call endrule,qtconf_deploy)
 
 ifneq ($(filter linux,$(HOSTPLATFORM)),)
 $(QT_TOOLS): $(TOOLSSRCDIR)/bootstrap
-    $(call startrule,qtconf_tools_build) \
-    cd $$@; \
-    $(GNUMAKE38); \
-    cd .. \
-    $(call endrule,qtconf_tools_build)
+	$(call startrule,qtconf_tools_build) \
+	cd $$@; \
+	$(GNUMAKE38); \
+	cd .. \
+	$(call endrule,qtconf_tools_build)
 
 $(TOOLSSRCDIR)/bootstrap:$(SOURCEDIR)/qmake$(DOTEXE)
-    $(call startrule,qtconf_bootstrap_build) \
-    cd $(TOOLSSRCDIR)/bootstrap; \
-    $(GNUMAKE38); \
-    cd .. \
-    $(call endrule,qtconf_bootstrap_build)
+	$(call startrule,qtconf_bootstrap_build) \
+	cd $(TOOLSSRCDIR)/bootstrap; \
+	$(GNUMAKE38); \
+	cd .. \
+	$(call endrule,qtconf_bootstrap_build)
 endif
 
 
 $(SOURCEDIR)/qmake$(DOTEXE): $(EXTENSION_ROOT)/$(QT_ROOT)/$(CONFIGURE_APP)
-    $(call startrule,qtconf) \
-    cd $(EXTENSION_ROOT)/$(QT_ROOT) && unset INCLUDE && unset LIB && $(EXTENSION_ROOT)/$(QT_ROOT)/$(CONFIGURE_APP) -platform $(PLATFORM) -xplatform $(XPLATFORM) $(OPTIONS) \
-    $(call endrule,qtconf)
-    $(call startrule,headerexport) \
-    cd $(EXTENSION_ROOT)/$(QT_ROOT)/config.profiles/symbian && \
-    perl headerexport -base-dir $(EXTENSION_ROOT)/$(QT_ROOT) -copy -oneway -outdir $(EPOCROOT)/epoc32/include/ -outsubdir mw
-    $(call endrule,headerexport)
-    $(call startrule,mkspecexport) \
-    $(GNUCP) -R $(EXTENSION_ROOT)/$(QT_ROOT)/mkspecs $(MKSPECDIR)
-    $(call endrule,mkspecexport)
+	$(call startrule,qtconf) \
+	cd $(EXTENSION_ROOT)/$(QT_ROOT) && unset INCLUDE && unset LIB && $(EXTENSION_ROOT)/$(QT_ROOT)/$(CONFIGURE_APP) -platform $(PLATFORM) -xplatform $(XPLATFORM) $(OPTIONS) \
+	$(call endrule,qtconf)
+	$(call startrule,headerexport) \
+	cd $(EXTENSION_ROOT)/$(QT_ROOT)/config.profiles/symbian && \
+	perl headerexport -base-dir $(EXTENSION_ROOT)/$(QT_ROOT) -copy -oneway -outdir $(EPOCROOT)/epoc32/include/ -outsubdir mw
+	$(call endrule,headerexport)
+	$(call startrule,mkspecexport) \
+	$(GNUCP) -R $(EXTENSION_ROOT)/$(QT_ROOT)/mkspecs $(MKSPECDIR)
+	$(call endrule,mkspecexport)
 endef
 
 # Here a variable named "done_<sanitised $SISFILE>" gets created

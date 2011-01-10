@@ -4309,6 +4309,7 @@ void QUrl::setUrl(const QString &url)
 */
 void QUrl::setUrl(const QString &url, ParsingMode parsingMode)
 {
+    detach();
     // escape all reserved characters and delimiters
     // reserved      = gen-delims / sub-delims
     if (parsingMode != TolerantMode) {
