@@ -407,6 +407,7 @@ QPacket::QPacket()
     buf = new QBuffer(&b);
     buf->open(QIODevice::WriteOnly);
     setDevice(buf);
+    setVersion(QDataStream::Qt_4_7);
 }
 
 /*!
