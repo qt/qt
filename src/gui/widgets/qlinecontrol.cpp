@@ -541,10 +541,10 @@ void QLineControl::draw(QPainter *painter, const QPoint &offset, const QRect &cl
 */
 void QLineControl::selectWordAtPos(int cursor)
 {
-    int c = m_textLayout.previousCursorPosition(cursor, QTextLayout::SkipWords);
+    int c = m_textLayout.previousCursorPosition(cursor+1, QTextLayout::SkipWords);
     moveCursor(c, false);
     // ## text layout should support end of words.
-    int end = m_textLayout.nextCursorPosition(cursor, QTextLayout::SkipWords);
+    int end = m_textLayout.nextCursorPosition(c, QTextLayout::SkipWords);
     while (end > cursor && m_text[end-1].isSpace())
         --end;
     moveCursor(end, true);
