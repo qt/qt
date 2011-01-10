@@ -54,7 +54,7 @@ Rectangle {
         PinchArea {
             width: Math.max(flick.contentWidth, flick.width)
             height: Math.max(flick.contentHeight, flick.height)
-            onPinchChanged: {
+            onPinchUpdated: {
                 // adjust content pos due to drag
                 flick.contentX += pinch.previousCenter.x - pinch.center.x
                 flick.contentY += pinch.previousCenter.y - pinch.center.y
