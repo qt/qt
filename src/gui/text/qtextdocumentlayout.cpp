@@ -2513,7 +2513,7 @@ static inline void getLineHeightParams(const QTextBlockFormat &blockFormat, cons
     if (blockFormat.lineHeightType() == QTextBlockFormat::FixedHeight || blockFormat.lineHeightType() == QTextBlockFormat::MinimumHeight) {
         *lineBreakHeight = *lineHeight;
         if (blockFormat.lineHeightType() == QTextBlockFormat::FixedHeight)
-            *lineAdjustment = QFixed::fromReal(line.ascent() + qMax(line.leading(), 0.0)) - ((*lineHeight * 4) / 5);
+            *lineAdjustment = QFixed::fromReal(line.ascent() + qMax(line.leading(), qreal(0.0))) - ((*lineHeight * 4) / 5);
         else
             *lineAdjustment = QFixed::fromReal(line.height()) - *lineHeight;
     }
