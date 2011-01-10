@@ -85,6 +85,21 @@
 
   Returns the QML type id.
 
+  There are two forms of this template function:
+
+  \code
+  template<typename T>
+  int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const char *qmlName);
+
+  template<typename T, int metaObjectRevision>
+  int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const char *qmlName);
+  \endcode
+
+  The former is the standard form which registers the type \e T as a new type.
+  The latter allows a particular revision of a class to be registered in
+  a specified version (see \l {QML Type Versioning}).
+
+
   For example, this registers a C++ class \c MySliderItem as a QML type
   named \c Slider for version 1.0 of a \l{QML Modules}{module} called
   "com.mycompany.qmlcomponents":
