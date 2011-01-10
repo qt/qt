@@ -190,7 +190,7 @@ public:
     bool insert(int index, const QScriptValue&);
     QScriptValue get(int index) const;
     void set(int index, const QScriptValue&, QList<int> *roles);
-    void setProperty(int index, const QString& property, const QVariant& value, QList<int> *role);
+    void setProperty(int index, const QString& property, const QVariant& value, QList<int> *roles);
     void move(int from, int to, int count);
 
     QVariant valueForNode(ModelNode *, bool *hasNested = 0) const;
@@ -255,9 +255,9 @@ struct ModelNode
     QDeclarativeListModel *model(const NestedListModel *model);
     ModelObject *object(const NestedListModel *model);
 
-    void setObjectValue(const QScriptValue& valuemap, bool writeToCache = true);
+    bool setObjectValue(const QScriptValue& valuemap, bool writeToCache = true);
     void setListValue(const QScriptValue& valuelist);
-    void setProperty(const QString& prop, const QVariant& val);
+    bool setProperty(const QString& prop, const QVariant& val);
     void changedProperty(const QString &name) const;
     void updateListIndexes();
     static void dump(ModelNode *node, int ind);
