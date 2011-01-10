@@ -60,10 +60,6 @@
 class RFile;
 #endif
 
-#ifdef Q_OS_SYMBIAN
-class RFile;
-#endif
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
