@@ -238,10 +238,10 @@ protected:
     void focusInEvent(QFocusEvent *event);
 
 public Q_SLOTS:
-    void deselect();
     void selectAll();
     void selectWord();
     void select(int start, int end);
+    Q_REVISION(1) void deselect();
 #ifndef QT_NO_CLIPBOARD
     void cut();
     void copy();
