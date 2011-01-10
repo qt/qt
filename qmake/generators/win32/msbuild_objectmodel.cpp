@@ -994,10 +994,6 @@ static inline QString toString(subSystemOption option)
         return "Console";
     case subSystemWindows:
         return "Windows";
-    case optLTCGOptimize:
-        return "PGOptimization";
-    case optLTCGUpdate:
-        return "PGUpdate";
     }
     return QString();
 }

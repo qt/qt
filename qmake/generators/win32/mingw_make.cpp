@@ -142,6 +142,9 @@ bool MingwMakefileGenerator::writeMakefile(QTextStream &t)
 
     if(project->first("TEMPLATE") == "app" ||
        project->first("TEMPLATE") == "lib") {
+        if(project->isActiveConfig("create_pc") && project->first("TEMPLATE") == "lib")
+            writePkgConfigFile();
+
         if(Option::mkfile::do_stub_makefile) {
             t << "QMAKE    = " << var("QMAKE_QMAKE") << endl;
             QStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
