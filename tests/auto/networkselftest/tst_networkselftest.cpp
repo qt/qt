@@ -398,6 +398,8 @@ void tst_NetworkSelfTest::serverReachability()
 void tst_NetworkSelfTest::remotePortsOpen_data()
 {
     QTest::addColumn<int>("portNumber");
+    QTest::newRow("echo") << 7;
+    QTest::newRow("daytime") << 13;
     QTest::newRow("ftp") << 21;
     QTest::newRow("ssh") << 22;
     QTest::newRow("imap") << 143;
