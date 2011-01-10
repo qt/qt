@@ -42,8 +42,9 @@
 #include <QtCore/qdebug.h>
 #include <QtGui/private/qapplication_p.h>
 
-#include "qwaylandintegration.h"
+#include "qwaylanddisplay.h"
 #include "qwaylandwindowsurface.h"
+#include "qwaylandwindow.h"
 
 #include <wayland-client.h>
 #include <unistd.h>

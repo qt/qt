@@ -1,6 +1,10 @@
-#include <QWindowSystemInterface>
+#include "qwaylandinputdevice.h"
+
 #include "qwaylandintegration.h"
 #include "qwaylandwindowsurface.h"
+#include "qwaylandwindow.h"
+
+#include <QWindowSystemInterface>
 
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/QPlatformWindow>
@@ -51,7 +55,7 @@ void QWaylandInputDevice::inputHandleMotion(void *data,
 					     time,
 					     inputDevice->mSurfacePos,
 					     inputDevice->mGlobalPos,
-					     inputDevice->mButtons);
+                                             inputDevice->mButtons);
 }
 
 void QWaylandInputDevice::inputHandleButton(void *data,

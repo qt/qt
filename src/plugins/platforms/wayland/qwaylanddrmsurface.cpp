@@ -49,8 +49,10 @@
 #include <QtOpenGL/private/qgl_p.h>
 #include <QtOpenGL/private/qglpaintdevice_p.h>
 
-#include "qwaylandintegration.h"
+#include "qwaylanddisplay.h"
 #include "qwaylandwindowsurface.h"
+#include "qwaylandwindow.h"
+#include "qwaylandscreen.h"
 
 #include <wayland-client.h>
 #include <unistd.h>

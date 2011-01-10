@@ -52,8 +52,6 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
-#include <QtOpenGL/qgl.h>
-
 QT_BEGIN_NAMESPACE
 
 class QWaylandDisplay;

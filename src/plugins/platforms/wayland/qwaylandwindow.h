@@ -38,9 +38,43 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <wayland-client.h>
 
-int main(int, char **)
+#ifndef QWAYLANDWINDOW_H
+#define QWAYLANDWINDOW_H
+
+#include <QtGui/QPlatformWindow>
+
+#include <stdint.h>
+
+class QWaylandDisplay;
+class QWaylandBuffer;
+
+class QWaylandWindow : public QPlatformWindow
 {
-    return 0;
-}
+public:
+    QWaylandWindow(QWidget *window, QWaylandDisplay *display);
+    ~QWaylandWindow();
+    struct wl_surface *surface() { return mSurface; }
+
+    void setVisible(bool visible);
+    void configure(uint32_t time, uint32_t edges,
+                   int32_t x, int32_t y, int32_t width, int32_t height);
+    WId winId() const;
+    void setParent(const QPlatformWindow *parent);
+    QPlatformGLContext *glContext() const;
+    void attach(QWaylandBuffer *buffer);
+    QWaylandBuffer *getBuffer(void) { return mBuffer; }
+    QWaylandWindow *getParentWindow(void) { return mParentWindow; }
+
+private:
+    struct wl_surface *mSurface;
+    QWaylandDisplay *mDisplay;
+    QPlatformGLContext *mGLContext;
+    WId mWindowId;
+
+    QWaylandBuffer *mBuffer;
+    QWaylandWindow *mParentWindow;
+};
+
+
+#endif // QWAYLANDWINDOW_H

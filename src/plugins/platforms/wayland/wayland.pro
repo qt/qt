@@ -8,10 +8,19 @@ SOURCES =   main.cpp \
             qwaylandshmsurface.cpp \
             qwaylanddrmsurface.cpp \
             qwaylandinputdevice.cpp \
-            qwaylandglcontext.cpp
+            qwaylandglcontext.cpp \
+    qwaylandcursor.cpp \
+    qwaylanddisplay.cpp \
+    qwaylandwindow.cpp \
+    qwaylandscreen.cpp
 
 HEADERS =   qwaylandintegration.h \
-            qwaylandwindowsurface.h
+            qwaylandwindowsurface.h \
+    qwaylandcursor.h \
+    qwaylanddisplay.h \
+    qwaylandwindow.h \
+    qwaylandscreen.h \
+    qwaylandglcontext.h
 
 contains(QT_CONFIG, opengl) {
     QT += opengl

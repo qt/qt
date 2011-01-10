@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the config.tests of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,9 +38,27 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <wayland-client.h>
 
-int main(int, char **)
+#ifndef QWAYLANDSCREEN_H
+#define QWAYLANDSCREEN_H
+
+#include <QtGui/QPlatformScreen>
+
+class QWaylandScreen : public QPlatformScreen
 {
-    return 0;
-}
+public:
+    QWaylandScreen() {}
+
+    QRect geometry() const { return mGeometry; }
+    int depth() const { return mDepth; }
+    QImage::Format format() const { return mFormat; }
+
+public:
+    QRect mGeometry;
+    int mDepth;
+    QImage::Format mFormat;
+    QSize mPhysicalSize;
+    struct wl_output *mOutput;
+};
+
+#endif // QWAYLANDSCREEN_H

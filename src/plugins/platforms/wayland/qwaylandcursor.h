@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the config.tests of the Qt Toolkit.
+** This file is part of the QtOpenVG module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,9 +38,25 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <wayland-client.h>
 
-int main(int, char **)
-{
-    return 0;
-}
+#ifndef QWAYLANDCURSOR_H
+#define QWAYLANDCURSOR_H
+
+#include <QtGui/QPlatformCursor>
+
+class QWaylandShmBuffer;
+class QWaylandDisplay;
+
+class QWaylandCursor : QPlatformCursor {
+public:
+    QWaylandCursor(QWaylandDisplay *display,
+                   QPlatformScreen *screen)
+        : QPlatformCursor(screen)
+        , mBuffer(0), mDisplay(display) { }
+
+    void changeCursor(QCursor *cursor, QWidget *widget);
+    QWaylandShmBuffer *mBuffer;
+    QWaylandDisplay *mDisplay;
+};
+
+#endif // QWAYLANDCURSOR_H

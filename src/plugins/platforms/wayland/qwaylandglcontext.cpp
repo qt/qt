@@ -1,7 +1,8 @@
-#define GL_GLEXT_PROTOTYPES
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
+#include "qwaylandglcontext.h"
 
+#include "qwaylanddisplay.h"
+#include "qwaylandwindow.h"
+#include "qwaylandwindowsurface.h"
 #include "qfontconfigdatabase.h"
 
 #include <QImageReader>
@@ -18,9 +19,6 @@
 #include <private/qwindowsurface_gl_p.h>
 #include <private/qpixmapdata_gl_p.h>
 #include <private/qpaintengineex_opengl2_p.h>
-
-#include "qwaylandintegration.h"
-#include "qwaylandwindowsurface.h"
 
 #include <unistd.h>
 #include <fcntl.h>
