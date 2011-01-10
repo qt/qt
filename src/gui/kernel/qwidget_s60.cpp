@@ -780,6 +780,14 @@ void QWidgetPrivate::s60UpdateIsOpaque()
         if (window->SetTransparencyAlphaChannel() == KErrNone) {
             window->SetBackgroundColor(TRgb(255, 255, 255, 0));
             extra->topextra->nativeWindowTransparencyEnabled = 1;
+
+            if (extra->topextra->backingStore.data() &&
+                    QApplicationPrivate::graphics_system_name == QLatin1String("openvg")) {
+                // Semi-transparent EGL surfaces aren't supported. We need to
+                // recreate backing store to get translucent surface (raster surface).
+                extra->topextra->backingStore.create(q);
+                extra->topextra->backingStore.registerWidget(q);
+            }
         }
     } else if (extra->topextra->nativeWindowTransparencyEnabled) {
         window->SetTransparentRegion(TRegionFix<1>());
