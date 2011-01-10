@@ -1353,8 +1353,13 @@ UnixMakefileGenerator::pkgConfigFileName(bool fixify)
     if(dot != -1)
         ret = ret.left(dot);
     ret += Option::pkgcfg_ext;
-    if(!project->isEmpty("QMAKE_PKGCONFIG_DESTDIR"))
-        ret.prepend(project->first("QMAKE_PKGCONFIG_DESTDIR") + Option::dir_sep);
+    QString subdir = project->first("QMAKE_PKGCONFIG_DESTDIR");
+    if(!subdir.isEmpty()) {
+        // initOutPaths() appends dir_sep, but just to be safe..
+        if (!subdir.endsWith(Option::dir_sep))
+            ret.prepend(Option::dir_sep);
+        ret.prepend(subdir);
+    }
     if(fixify) {
         if(QDir::isRelativePath(ret) && !project->isEmpty("DESTDIR"))
             ret.prepend(project->first("DESTDIR"));
