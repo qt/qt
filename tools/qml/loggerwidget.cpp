@@ -45,6 +45,8 @@
 #include <QActionGroup>
 #include <QMenu>
 #include <QPlainTextEdit>
+#include <QLabel>
+#include <QVBoxLayout>
 #ifdef Q_WS_MAEMO_5
 #  include <QScrollArea>
 #  include <QVBoxLayout>
@@ -82,6 +84,14 @@ LoggerWidget::LoggerWidget(QWidget *parent) :
 #else
     setCentralWidget(m_plainTextEdit);
 #endif
+
+    m_noWarningsLabel = new QLabel(m_plainTextEdit);
+    m_noWarningsLabel->setText(tr("(No warnings)"));
+    m_noWarningsLabel->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(m_noWarningsLabel);
+    m_plainTextEdit->setLayout(layout);
+    connect(m_plainTextEdit, SIGNAL(textChanged()), this, SLOT(updateNoWarningsLabel()));
 
     readSettings();
     setupPreferencesMenu();
@@ -205,6 +215,11 @@ void LoggerWidget::setupPreferencesMenu()
     default:
         autoWarningsPreference->setChecked(true);
     }
+}
+
+void LoggerWidget::updateNoWarningsLabel()
+{
+    m_noWarningsLabel->setVisible(m_plainTextEdit->toPlainText().length() == 0);
 }
 
 QT_END_NAMESPACE

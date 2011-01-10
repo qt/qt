@@ -48,6 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 class QPlainTextEdit;
+class QLabel;
 class QMenu;
 class QAction;
 
@@ -66,6 +67,7 @@ public:
 
 public slots:
     void append(const QString &msg);
+    void updateNoWarningsLabel();
 
 private slots:
     void warningsPreferenceChanged(QAction *action);
@@ -86,7 +88,7 @@ private:
     QMenu *m_preferencesMenu;
     QAction *m_showWidgetAction;
     QPlainTextEdit *m_plainTextEdit;
-
+    QLabel *m_noWarningsLabel;
     enum ConfigOrigin { CommandLineOrigin, SettingsOrigin };
     ConfigOrigin m_visibilityOrigin;
     Visibility m_visibility;
