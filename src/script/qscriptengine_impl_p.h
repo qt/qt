@@ -26,6 +26,7 @@
 
 #include "qscriptengine_p.h"
 #include "qscriptvalue_impl_p.h"
+#include "qscriptqobject_impl_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -392,7 +393,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newVariant(
 
     if (object->isVariant()) {
         // object is a wrapper of a qvariant.
-        QtVariantData::set(*object, new QtVariantData(value));
+        QtVariantData::set(*object, new QtVariantData(this, value));
         return object;
     }
     // FIXME it create a new instance instead of reusing this one. It doesn't replace existing references in JS.

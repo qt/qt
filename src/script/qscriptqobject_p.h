@@ -36,24 +36,14 @@ template<class T>
 class QtData
 {
 public:
-    static T *get(v8::Handle<v8::Object> object)
-    {
-        Q_ASSERT(object->InternalFieldCount() == 1);
-        void *ptr = object->GetPointerFromInternalField(0);
-        return static_cast<T*>(ptr);
-    }
+    inline QtData(QScriptEnginePrivate *engine);
+    static T *get(v8::Handle<v8::Object> object);
+    static T *safeGet(v8::Handle<v8::Object> object);
+    static void set(v8::Handle<v8::Object> object, T* data);
 
-    static T *safeGet(v8::Handle<v8::Object> object)
-    {
-        void *ptr = object->GetPointerFromInternalField(0);
-        return static_cast<T*>(ptr);
-    }
-
-    static void set(v8::Handle<v8::Object> object, T* data)
-    {
-        delete safeGet(object);
-        object->SetPointerInInternalField(0, data);
-    }
+    inline QScriptEnginePrivate *engine() const;
+private:
+    QScriptEnginePrivate *m_engine;
 };
 
 // Data associated with a QObject JS wrapper object.
@@ -72,31 +62,14 @@ public:
 class QtInstanceData : public QtData<QtInstanceData>
 {
 public:
-    QtInstanceData(QScriptEnginePrivate *, QObject *, QScriptEngine::ValueOwnership, const QScriptEngine::QObjectWrapOptions &);
-    ~QtInstanceData();
-
-    QScriptEnginePrivate *engine() const
-    { return m_engine; }
-
-    QObject *cppObject() const
-    { return m_cppObject; }
-
-    QScriptEngine::ValueOwnership ownership() const
-    { return m_own; }
-
-    QScriptEngine::QObjectWrapOptions options() const
-    { return m_opt; }
-
-    //returns a QScriptable if the object is a QScriptable, else, return 0
-    QScriptable *toQScriptable()
-    {
-        Q_ASSERT(m_cppObject);
-        void *ptr = m_cppObject->qt_metacast("QScriptable");
-        return reinterpret_cast<QScriptable*>(ptr);
-    }
+    inline QtInstanceData(QScriptEnginePrivate *, QObject *, QScriptEngine::ValueOwnership, const QScriptEngine::QObjectWrapOptions &);
+    inline ~QtInstanceData();
+    inline QObject *cppObject() const;
+    inline QScriptEngine::ValueOwnership ownership() const;
+    inline QScriptEngine::QObjectWrapOptions options() const;
+    inline QScriptable *toQScriptable();
 
 private:
-    QScriptEnginePrivate *m_engine;
     QPointer<QObject> m_cppObject;
     QScriptEngine::ValueOwnership m_own;
     QScriptEngine::QObjectWrapOptions m_opt;
@@ -107,26 +80,10 @@ private:
 class QtMetaObjectData : public QtData<QtMetaObjectData>
 {
 public:
-    QtMetaObjectData(QScriptEnginePrivate *engine, const QMetaObject *mo, v8::Handle<v8::Value> ctor)
-        : m_engine(engine), m_metaObject(mo), m_ctor(v8::Persistent<v8::Value>::New(ctor))
-    {
-        Q_ASSERT(!ctor.IsEmpty());
-    }
-
-    ~QtMetaObjectData()
-    {
-        m_ctor.Dispose();
-    }
-
-    const QMetaObject *metaObject() const
-    { return m_metaObject;}
-
-    QScriptEnginePrivate *engine() const
-    { return m_engine; }
-
-    v8::Handle<v8::Value> constructor() const { return m_ctor; }
-
-
+    inline QtMetaObjectData(QScriptEnginePrivate *engine, const QMetaObject *mo, v8::Handle<v8::Value> ctor);
+    inline ~QtMetaObjectData();
+    inline const QMetaObject *metaObject() const;
+    inline v8::Handle<v8::Value> constructor() const;
 private:
     QScriptEnginePrivate *m_engine;
     const QMetaObject *m_metaObject;
@@ -147,15 +104,9 @@ private:
 class QtVariantData : public QtData<QtVariantData>
 {
 public:
-    QtVariantData(const QVariant &value)
-        : m_value(value)
-    { }
-
-    QVariant &value()
-    { return m_value; }
-    void setValue(const QVariant &value)
-    { m_value = value; }
-
+    inline QtVariantData(QScriptEnginePrivate *engine, const QVariant &value);
+    inline QVariant &value();
+    inline void setValue(const QVariant &value);
 private:
     QVariant m_value;
 };

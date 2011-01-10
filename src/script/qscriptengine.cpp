@@ -39,6 +39,7 @@
 #include "qscriptvalue_impl_p.h"
 #include "qscriptsyntaxcheckresult_p.h"
 #include "qscriptqobject_p.h"
+#include "qscriptqobject_impl_p.h"
 #include "qscriptisolate_p.h"
 #include "qscriptprogram_p.h"
 
@@ -640,7 +641,7 @@ v8::Handle<v8::Object> QScriptEnginePrivate::makeVariant(const QVariant &value)
         instance->SetPrototype(info.prototype);
 
     Q_ASSERT(instance->InternalFieldCount() == 1);
-    QtVariantData *data = new QtVariantData(value);
+    QtVariantData *data = new QtVariantData(this, value);
     instance->SetPointerInInternalField(0, data);
 
     v8::Persistent<v8::Object> persistent = v8::Persistent<v8::Object>::New(instance);

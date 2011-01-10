@@ -39,6 +39,7 @@
 #include "qscriptcontext_impl_p.h"
 #include "qscriptable_p.h"
 #include "qscriptable_impl_p.h"
+#include "qscriptqobject_impl_p.h"
 
 #include <v8.h>
 
@@ -687,32 +688,6 @@ int QtConnection::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     }
     return _id;
 }
-
-
-QtInstanceData::QtInstanceData(QScriptEnginePrivate *engine, QObject *object,
-                               QScriptEngine::ValueOwnership own,
-                               const QScriptEngine::QObjectWrapOptions &opt)
-    : m_engine(engine), m_cppObject(object), m_own(own), m_opt(opt)
-{
-}
-
-QtInstanceData::~QtInstanceData()
-{
-//    qDebug("~QtInstanceData()");
-    switch (m_own) {
-    case QScriptEngine::QtOwnership:
-        break;
-    case QScriptEngine::AutoOwnership:
-        if (m_cppObject && m_cppObject->parent())
-            break;
-    case QScriptEngine::ScriptOwnership:
-        delete m_cppObject;
-        break;
-    }
-}
-
-
-
 
 #if 0
 struct StringType
