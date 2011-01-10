@@ -502,8 +502,9 @@ void tst_QSslSocket::simpleConnectWithIgnore()
     if (!socket.canReadLine())
         enterLoop(10);
 
-    QCOMPARE(socket.readAll(), QtNetworkSettings::expectedReplySSL());
+    QByteArray data = socket.readAll();
     socket.disconnectFromHost();
+    QVERIFY2(QtNetworkSettings::compareReplyIMAPSSL(data), data.constData());
 }
 
 void tst_QSslSocket::sslErrors_data()
