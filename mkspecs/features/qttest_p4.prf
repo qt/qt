@@ -14,7 +14,7 @@ symbian:{
 !contains(TARGET, ^tst_.*):TARGET = $$join(TARGET,,"tst_")
 
 isEmpty(target.path) {
-    target.path += $$[QT_INSTALL_PREFIX]/tests/qt4
+    target.path += $$[QT_INSTALL_PREFIX]/tests/qt4/$${TARGET}
 }
 
 INSTALLS += target
