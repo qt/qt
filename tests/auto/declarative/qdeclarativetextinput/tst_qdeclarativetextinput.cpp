@@ -91,6 +91,7 @@ private slots:
     void selection();
     void moveCursorSelection_data();
     void moveCursorSelection();
+    void dragMouseSelection();
 
     void horizontalAlignment_data();
     void horizontalAlignment();
@@ -574,6 +575,50 @@ void tst_qdeclarativetextinput::moveCursorSelection()
         QCOMPARE(textinputObject->selectionStart(), selectionStart);
         QCOMPARE(textinputObject->selectionEnd(), selectionEnd);
     }
+}
+
+void tst_qdeclarativetextinput::dragMouseSelection()
+{
+    QString qmlfile = SRCDIR "/data/mouseselection_true.qml";
+
+    QDeclarativeView *canvas = createView(qmlfile);
+
+    canvas->show();
+    QApplication::setActiveWindow(canvas);
+    QTest::qWaitForWindowShown(canvas);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(canvas));
+
+    QVERIFY(canvas->rootObject() != 0);
+    QDeclarativeTextInput *textInputObject = qobject_cast<QDeclarativeTextInput *>(canvas->rootObject());
+    QVERIFY(textInputObject != 0);
+
+    // press-and-drag-and-release from x1 to x2
+    int x1 = 10;
+    int x2 = 70;
+    int y = textInputObject->height()/2;
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x1,y)));
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(x2,y)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+    QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x2,y)));
+
+    QString str1 = textInputObject->selectedText();
+    QVERIFY(str1.length() > 3);
+
+    // press and drag the current selection.
+    x1 = 40;
+    x2 = 100;
+    QTest::mousePress(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x1,y)));
+    {
+        QMouseEvent mv(QEvent::MouseMove, canvas->mapFromScene(QPoint(x2,y)), Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
+        QApplication::sendEvent(canvas->viewport(), &mv);
+    }
+        QTest::mouseRelease(canvas->viewport(), Qt::LeftButton, 0, canvas->mapFromScene(QPoint(x2,y)));
+    QString str2 = textInputObject->selectedText();
+    QVERIFY(str2.length() > 3);
+
+    QVERIFY(str1 != str2); // Verify the second press and drag is a new selection and doesn't not the first moved.
 }
 
 void tst_qdeclarativetextinput::horizontalAlignment_data()

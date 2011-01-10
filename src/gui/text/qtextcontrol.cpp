@@ -114,6 +114,7 @@ static QTextLine currentTextLine(const QTextCursor &cursor)
 QTextControlPrivate::QTextControlPrivate()
     : doc(0), cursorOn(false), cursorIsFocusIndicator(false),
       interactionFlags(Qt::TextEditorInteraction),
+      dragEnabled(true),
 #ifndef QT_NO_DRAGANDDROP
       mousePressed(false), mightStartDrag(false),
 #endif
@@ -1551,7 +1552,8 @@ void QTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton button, con
                 setCursorPosition(cursorPos, QTextCursor::KeepAnchor);
         } else {
 
-            if (cursor.hasSelection()
+            if (dragEnabled
+                && cursor.hasSelection()
                 && !cursorIsFocusIndicator
                 && cursorPos >= cursor.selectionStart()
                 && cursorPos <= cursor.selectionEnd()
@@ -2326,6 +2328,19 @@ bool QTextControl::cursorIsFocusIndicator() const
 {
     Q_D(const QTextControl);
     return d->cursorIsFocusIndicator;
+}
+
+
+void QTextControl::setDragEnabled(bool enabled)
+{
+    Q_D(QTextControl);
+    d->dragEnabled = enabled;
+}
+
+bool QTextControl::isDragEnabled() const
+{
+    Q_D(const QTextControl);
+    return d->dragEnabled;
 }
 
 #ifndef QT_NO_PRINTER

@@ -1342,6 +1342,7 @@ void QDeclarativeTextEditPrivate::init()
     control = new QTextControl(q);
     control->setIgnoreUnusedNavigationEvents(true);
     control->setTextInteractionFlags(control->textInteractionFlags() | Qt::LinksAccessibleByMouse);
+    control->setDragEnabled(false);
 
     // QTextControl follows the default text color
     // defined by the platform, declarative text
