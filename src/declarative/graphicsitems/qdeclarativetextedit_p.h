@@ -231,10 +231,10 @@ Q_SIGNALS:
     Q_REVISION(1) void linkActivated(const QString &link);
 
 public Q_SLOTS:
-    void deselect();
     void selectAll();
     void selectWord();
     void select(int start, int end);
+    Q_REVISION(1) void deselect();
 #ifndef QT_NO_CLIPBOARD
     void cut();
     void copy();
