@@ -224,7 +224,7 @@ bool QSemaphore::tryAcquire(int n, int timeout)
         timer.start();
         while (n > d->avail) {
             const qint64 elapsed = timer.elapsed();
-            if (timeout - elapsed > 0
+            if (timeout - elapsed <= 0
                 || !d->cond.wait(locker.mutex(), timeout - elapsed))
                 return false;
         }
