@@ -433,6 +433,9 @@ void tst_QNetworkCookieJar::effectiveTLDs_data()
 
 void tst_QNetworkCookieJar::effectiveTLDs()
 {
+#ifndef QT_BUILD_INTERNAL
+    QSKIP("Test requires private API", SkipAll);
+#endif
     QFETCH(QString, domain);
     QFETCH(bool, isTLD);
     QCOMPARE(QNetworkCookieJarPrivate::isEffectiveTLD(domain), isTLD);
