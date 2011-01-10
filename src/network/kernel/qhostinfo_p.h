@@ -68,7 +68,7 @@
 #include "QtCore/qrunnable.h"
 #include "QtCore/qlist.h"
 #include "QtCore/qqueue.h"
-#include <QTime>
+#include <QElapsedTimer>
 #include <QCache>
 #endif
 
@@ -135,7 +135,7 @@ private:
     bool enabled;
     struct QHostInfoCacheElement {
         QHostInfo info;
-        QTime age;
+        QElapsedTimer age;
     };
     QCache<QString,QHostInfoCacheElement> cache;
     QMutex mutex;

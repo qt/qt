@@ -740,7 +740,7 @@ void QHostInfoCache::put(const QString &name, const QHostInfo &info)
 
     QHostInfoCacheElement* element = new QHostInfoCacheElement();
     element->info = info;
-    element->age = QTime();
+    element->age = QElapsedTimer();
     element->age.start();
 
     QMutexLocker locker(&this->mutex);
