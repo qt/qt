@@ -1048,7 +1048,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::construct(co
     if (isQMetaObject()) {
         QtMetaObjectData *data = QtMetaObjectData::get(*this);
         Q_ASSERT(data);
-        QScriptSharedDataPointer<QScriptValuePrivate> ctor(new (engine()) QScriptValuePrivate(engine(), data->constructor()));
+        QScriptSharedDataPointer<QScriptValuePrivate> ctor(new QScriptValuePrivate(engine(), data->constructor()));
         return ctor->construct(args);
     }
     if (!isFunction())
