@@ -58,7 +58,6 @@ QScriptSyntaxCheckResultPrivate::QScriptSyntaxCheckResultPrivate(const QString& 
     , m_errorColumnNumber(-1)
  {
     // FIXME do we really need to create a new context to parse a script?
-    v8::V8::Initialize();
     v8::Isolate *isolate = v8::Isolate::New();
     isolate->Enter();
     v8::Persistent<v8::Context> context = v8::Context::New();
