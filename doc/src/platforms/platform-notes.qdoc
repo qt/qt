@@ -426,7 +426,7 @@
     details.
 
     \note A MinGW installation is only needed to build against the
-    binary pacakge, not to run the pre-compiled binaries that are in
+    binary package, not to run the pre-compiled binaries that are in
     the package.
 
     \section2 Intel C++ Compiler (Windows, Altix)
