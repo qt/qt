@@ -1379,7 +1379,17 @@ QScriptValue QDeclarativeEnginePrivate::vector3d(QScriptContext *ctxt, QScriptEn
 
 /*!
 \qmlmethod string Qt::formatDate(datetime date, variant format)
-Returns the string representation of \c date, formatted according to \c format.
+
+Returns a string representation of \c date, optionally formatted according
+to \c format.
+
+The \a date parameter may be a JavaScript \c Date object, a \l{date}{date}
+property, a QDate, or QDateTime value. The \a format parameter may be any of
+the possible format values as described for
+\l{QML:Qt::formatDateTime()}{Qt.formatDateTime()}.
+
+If \a format is not specified, \a date is formatted using
+\l {Qt::DefaultLocaleShortDate}{Qt.DefaultLocaleShortDate}.
 */
 #ifndef QT_NO_DATESTRING
 QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptEngine*engine)
@@ -1406,9 +1416,16 @@ QScriptValue QDeclarativeEnginePrivate::formatDate(QScriptContext*ctxt, QScriptE
 
 /*!
 \qmlmethod string Qt::formatTime(datetime time, variant format)
-Returns the string representation of \c time, formatted according to \c format.
 
-See Qt::formatDateTime for how to define \c format.
+Returns a string representation of \c time, optionally formatted according to
+\c format.
+
+The \a time parameter may be a JavaScript \c Date object, a QTime, or QDateTime
+value. The \a format parameter may be any of the possible format values as
+described for \l{QML:Qt::formatDateTime()}{Qt.formatDateTime()}.
+
+If \a format is not specified, \a time is formatted using
+\l {Qt::DefaultLocaleShortDate}{Qt.DefaultLocaleShortDate}.
 */
 QScriptValue QDeclarativeEnginePrivate::formatTime(QScriptContext*ctxt, QScriptEngine*engine)
 {
@@ -1416,29 +1433,49 @@ QScriptValue QDeclarativeEnginePrivate::formatTime(QScriptContext*ctxt, QScriptE
     if(argCount == 0 || argCount > 2)
         return ctxt->throwError(QLatin1String("Qt.formatTime(): Invalid arguments"));
 
-    QTime date = ctxt->argument(0).toDateTime().time();
+    QTime time;
+    QScriptValue sv = ctxt->argument(0);
+    if (sv.isDate())
+        time = sv.toDateTime().time();
+    else if (sv.toVariant().type() == QVariant::Time)
+        time = sv.toVariant().toTime();
+
     Qt::DateFormat enumFormat = Qt::DefaultLocaleShortDate;
     if (argCount == 2) {
         QScriptValue formatArg = ctxt->argument(1);
         if (formatArg.isString()) {
             QString format = formatArg.toString();
-            return engine->newVariant(qVariantFromValue(date.toString(format)));
+            return engine->newVariant(qVariantFromValue(time.toString(format)));
         } else if (formatArg.isNumber()) {
             enumFormat = Qt::DateFormat(formatArg.toUInt32());
         } else {
             return ctxt->throwError(QLatin1String("Qt.formatTime(): Invalid time format"));
         }
     }
-    return engine->newVariant(qVariantFromValue(date.toString(enumFormat)));
+    return engine->newVariant(qVariantFromValue(time.toString(enumFormat)));
 }
 
 /*!
 \qmlmethod string Qt::formatDateTime(datetime dateTime, variant format)
-Returns the string representation of \c dateTime, formatted according to \c format.
 
-\c format for the date/time formatting functions is be specified as follows.
+Returns a string representation of \c datetime, optionally formatted according to
+\c format.
 
-    These expressions may be used for the date:
+The \a date parameter may be a JavaScript \c Date object, a \l{date}{date}
+property, a QDate, QTime, or QDateTime value.
+
+If \a format is not provided, \a dateTime is formatted using
+\l {Qt::DefaultLocaleShortDate}{Qt.DefaultLocaleShortDate}. Otherwise,
+\a format should be either.
+
+\list
+\o One of the Qt::DateFormat enumeration values, such as
+   \c Qt.DefaultLocaleShortDate or \c Qt.ISODate
+\o A string that specifies the format of the returned string, as detailed below.
+\endlist
+
+If \a format specifies a format string, it should use the following expressions
+to specify the date:
 
     \table
     \header \i Expression \i Output
@@ -1462,7 +1499,7 @@ Returns the string representation of \c dateTime, formatted according to \c form
     \row \i yyyy \i the year as four digit number
     \endtable
 
-    These expressions may be used for the time:
+In addition the following expressions can be used to specify the time:
 
     \table
     \header \i Expression \i Output
@@ -1483,23 +1520,28 @@ Returns the string representation of \c dateTime, formatted according to \c form
     \endtable
 
     All other input characters will be ignored. Any sequence of characters that
-    are enclosed in singlequotes will be treated as text and not be used as an
-    expression. Two consecutive singlequotes ("''") are replaced by a singlequote
+    are enclosed in single quotes will be treated as text and not be used as an
+    expression. Two consecutive single quotes ("''") are replaced by a single quote
     in the output.
 
-    Example format strings (assumed that the date and time is 21 May 2001
-    14:13:09):
+For example, if the following date/time value was specified:
+
+    \code
+    // 21 May 2001 14:13:09
+    var dateTime = new Date(2001, 5, 21, 14, 13, 09)
+    \endcode
+
+This \a dateTime value could be passed to \c Qt.formatDateTime(),
+\l {QML:Qt::formatDate()}{Qt.formatDate()} or \l {QML:Qt::formatTime()}{Qt.formatTime()}
+with the \a format values below to produce the following results:
 
     \table
-    \header \i Format       \i Result
-    \row \i dd.MM.yyyy      \i 21.05.2001
-    \row \i ddd MMMM d yy   \i Tue May 21 01
-    \row \i hh:mm:ss.zzz    \i 14:13:09.042
-    \row \i h:m:s ap        \i 2:13:9 pm
+    \header \i Format \i Result
+    \row \i "dd.MM.yyyy"      \i 21.05.2001
+    \row \i "ddd MMMM d yy"   \i Tue May 21 01
+    \row \i "hh:mm:ss.zzz"    \i 14:13:09.042
+    \row \i "h:m:s ap"        \i 2:13:9 pm
     \endtable
-
-If no format is specified the locale's short format is used. Alternatively, you can specify
-\c Qt.DefaultLocaleLongDate to get the locale's long format.
 */
 QScriptValue QDeclarativeEnginePrivate::formatDateTime(QScriptContext*ctxt, QScriptEngine*engine)
 {
