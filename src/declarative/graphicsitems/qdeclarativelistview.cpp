@@ -451,6 +451,7 @@ public:
     void updateHeader();
     void updateFooter();
     void fixupPosition();
+    void positionViewAtIndex(int index, int mode);
     virtual void fixup(AxisData &data, qreal minExtent, qreal maxExtent);
     virtual void flick(QDeclarativeFlickablePrivate::AxisData &data, qreal minExtent, qreal maxExtent, qreal vSize,
                         QDeclarativeTimeLineCallback::Callback fixupCallback, qreal velocity);
@@ -2558,6 +2559,79 @@ void QDeclarativeListView::decrementCurrentIndex()
     }
 }
 
+void QDeclarativeListViewPrivate::positionViewAtIndex(int index, int mode)
+{
+    Q_Q(QDeclarativeListView);
+    if (!isValid())
+        return;
+    if (mode < QDeclarativeListView::Beginning || mode > QDeclarativeListView::Contain)
+        return;
+qDebug() << "positionViewAtIndex";
+    int idx = qMax(qMin(index, model->count()-1), 0);
+
+    if (layoutScheduled)
+        layout();
+    qreal pos = position();
+    FxListItem *item = visibleItem(idx);
+    if (!item) {
+        int itemPos = positionAt(idx);
+        // save the currently visible items in case any of them end up visible again
+        QList<FxListItem*> oldVisible = visibleItems;
+        visibleItems.clear();
+        visiblePos = itemPos;
+        visibleIndex = idx;
+        setPosition(itemPos);
+        // now release the reference to all the old visible items.
+        for (int i = 0; i < oldVisible.count(); ++i)
+            releaseItem(oldVisible.at(i));
+        item = visibleItem(idx);
+    }
+    if (item) {
+        const qreal itemPos = item->position();
+        switch (mode) {
+        case QDeclarativeListView::Beginning:
+            pos = itemPos;
+            if (index < 0 && header)
+                pos -= header->size();
+            break;
+        case QDeclarativeListView::Center:
+            pos = itemPos - (size() - item->size())/2;
+            break;
+        case QDeclarativeListView::End:
+            pos = itemPos - size() + item->size();
+            if (index >= model->count() && footer)
+                pos += footer->size();
+            break;
+        case QDeclarativeListView::Visible:
+            if (itemPos > pos + size())
+                pos = itemPos - size() + item->size();
+            else if (item->endPosition() < pos)
+                pos = itemPos;
+            break;
+        case QDeclarativeListView::Contain:
+            if (item->endPosition() > pos + size())
+                pos = itemPos - size() + item->size();
+            if (itemPos < pos)
+                pos = itemPos;
+        }
+        qreal maxExtent = orient == QDeclarativeListView::Vertical ? -q->maxYExtent() : -q->maxXExtent();
+        pos = qMin(pos, maxExtent);
+        qreal minExtent = orient == QDeclarativeListView::Vertical ? -q->minYExtent() : -q->minXExtent();
+        pos = qMax(pos, minExtent);
+        moveReason = QDeclarativeListViewPrivate::Other;
+        q->cancelFlick();
+        setPosition(pos);
+        if (highlight) {
+            if (autoHighlight) {
+                highlight->setPosition(currentItem->itemPosition());
+                highlight->setSize(currentItem->itemSize());
+            }
+            updateHighlight();
+        }
+    }
+    fixupPosition();
+}
+
 /*!
     \qmlmethod ListView::positionViewAtIndex(int index, PositionMode mode)
 
@@ -2596,66 +2670,42 @@ void QDeclarativeListView::positionViewAtIndex(int index, int mode)
     Q_D(QDeclarativeListView);
     if (!d->isValid() || index < 0 || index >= d->model->count())
         return;
-    if (mode < Beginning || mode > Contain)
-        return;
+    d->positionViewAtIndex(index, mode);
+}
 
-    if (d->layoutScheduled)
-        d->layout();
-    qreal pos = d->position();
-    FxListItem *item = d->visibleItem(index);
-    if (!item) {
-        int itemPos = d->positionAt(index);
-        // save the currently visible items in case any of them end up visible again
-        QList<FxListItem*> oldVisible = d->visibleItems;
-        d->visibleItems.clear();
-        d->visiblePos = itemPos;
-        d->visibleIndex = index;
-        d->setPosition(itemPos);
-        // now release the reference to all the old visible items.
-        for (int i = 0; i < oldVisible.count(); ++i)
-            d->releaseItem(oldVisible.at(i));
-        item = d->visibleItem(index);
-    }
-    if (item) {
-        const qreal itemPos = item->position();
-        switch (mode) {
-        case Beginning:
-            pos = itemPos;
-            break;
-        case Center:
-            pos = itemPos - (d->size() - item->size())/2;
-            break;
-        case End:
-            pos = itemPos - d->size() + item->size();
-            break;
-        case Visible:
-            if (itemPos > pos + d->size())
-                pos = itemPos - d->size() + item->size();
-            else if (item->endPosition() < pos)
-                pos = itemPos;
-            break;
-        case Contain:
-            if (item->endPosition() > pos + d->size())
-                pos = itemPos - d->size() + item->size();
-            if (itemPos < pos)
-                pos = itemPos;
-        }
-        qreal maxExtent = d->orient == QDeclarativeListView::Vertical ? -maxYExtent() : -maxXExtent();
-        pos = qMin(pos, maxExtent);
-        qreal minExtent = d->orient == QDeclarativeListView::Vertical ? -minYExtent() : -minXExtent();
-        pos = qMax(pos, minExtent);
-        d->moveReason = QDeclarativeListViewPrivate::Other;
-        cancelFlick();
-        d->setPosition(pos);
-        if (d->highlight) {
-            if (d->autoHighlight) {
-                d->highlight->setPosition(d->currentItem->itemPosition());
-                d->highlight->setSize(d->currentItem->itemSize());
-            }
-            d->updateHighlight();
-        }
-    }
-    d->fixupPosition();
+/*!
+    \qmlmethod ListView::positionViewAtBeginning()
+    \qmlmethod ListView::positionViewAtEnd()
+
+    Positions the view at the beginning or end, taking into account any header or footer.
+
+    It is not recommended to use \l {Flickable::}{contentX} or \l {Flickable::}{contentY} to position the view
+    at a particular index.  This is unreliable since removing items from the start
+    of the list does not cause all other items to be repositioned, and because
+    the actual start of the view can vary based on the size of the delegates.
+
+    \bold Note: methods should only be called after the Component has completed.  To position
+    the view at startup, this method should be called by Component.onCompleted.  For
+    example, to position the view at the end on startup:
+
+    \code
+    Component.onCompleted: positionViewAtEnd()
+    \endcode
+*/
+void QDeclarativeListView::positionViewAtBeginning()
+{
+    Q_D(QDeclarativeListView);
+    if (!d->isValid())
+        return;
+    d->positionViewAtIndex(-1, Beginning);
+}
+
+void QDeclarativeListView::positionViewAtEnd()
+{
+    Q_D(QDeclarativeListView);
+    if (!d->isValid())
+        return;
+    d->positionViewAtIndex(d->model->count(), End);
 }
 
 /*!

@@ -2,6 +2,8 @@ import QtQuick 1.0
 
 Rectangle {
     id: root
+    property bool showHeader: false
+    property bool showFooter: false
     property int added: -1
     property variant removed
 
@@ -40,6 +42,10 @@ Rectangle {
                 GridView.onAdd: root.added = index
                 GridView.onRemove: root.removed = name
             }
+        },
+        Component {
+            id: headerFooter
+            Rectangle { width: 30; height: 320; color: "blue" }
         }
     ]
     GridView {
@@ -52,5 +58,7 @@ Rectangle {
         flow: (testTopToBottom == false) ? "LeftToRight" : "TopToBottom"
         model: testModel
         delegate: myDelegate
+        header: root.showHeader ? headerFooter : null
+        footer: root.showFooter ? headerFooter : null
     }
 }

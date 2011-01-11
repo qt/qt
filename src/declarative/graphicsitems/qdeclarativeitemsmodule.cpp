@@ -180,6 +180,8 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativePinch>("QtQuick",1,1,"Pinch");
     qmlRegisterType<QDeclarativePinchEvent>();
     qmlRegisterType<QDeclarativeFlickable,1>("QtQuick",1,1,"Flickable");
+    qmlRegisterType<QDeclarativeListView,1>("QtQuick",1,1,"ListView");
+    qmlRegisterType<QDeclarativeGridView,1>("QtQuick",1,1,"GridView");
     qmlRegisterType<QDeclarativeRepeater,1>("QtQuick",1,1,"Repeater");
     qmlRegisterType<QDeclarativeTextEdit,1>("QtQuick",1,1,"TextEdit");
 #ifndef QT_NO_LINEEDIT

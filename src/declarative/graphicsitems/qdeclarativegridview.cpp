@@ -336,6 +336,7 @@ public:
         }
     }
 
+    void positionViewAtIndex(int index, int mode);
     virtual void fixup(AxisData &data, qreal minExtent, qreal maxExtent);
     virtual void flick(AxisData &data, qreal minExtent, qreal maxExtent, qreal vSize,
                 QDeclarativeTimeLineCallback::Callback fixupCallback, qreal velocity);
@@ -2124,6 +2125,77 @@ void QDeclarativeGridView::moveCurrentIndexRight()
     }
 }
 
+void QDeclarativeGridViewPrivate::positionViewAtIndex(int index, int mode)
+{
+    Q_Q(QDeclarativeGridView);
+    if (!isValid())
+        return;
+    if (mode < QDeclarativeGridView::Beginning || mode > QDeclarativeGridView::Contain)
+        return;
+
+    int idx = qMax(qMin(index, model->count()-1), 0);
+
+    if (layoutScheduled)
+        layout();
+    qreal pos = position();
+    FxGridItem *item = visibleItem(idx);
+    if (!item) {
+        int itemPos = rowPosAt(idx);
+        // save the currently visible items in case any of them end up visible again
+        QList<FxGridItem*> oldVisible = visibleItems;
+        visibleItems.clear();
+        visibleIndex = idx - idx % columns;
+        setPosition(itemPos);
+        // now release the reference to all the old visible items.
+        for (int i = 0; i < oldVisible.count(); ++i)
+            releaseItem(oldVisible.at(i));
+        item = visibleItem(idx);
+    }
+    if (item) {
+        qreal itemPos = item->rowPos();
+        switch (mode) {
+        case QDeclarativeGridView::Beginning:
+            pos = itemPos;
+            if (index < 0 && header) {
+                pos -= flow == QDeclarativeGridView::LeftToRight
+                            ? header->item->height()
+                            : header->item->width();
+            }
+            break;
+        case QDeclarativeGridView::Center:
+            pos = itemPos - (size() - rowSize())/2;
+            break;
+        case QDeclarativeGridView::End:
+            pos = itemPos - size() + rowSize();
+            if (index >= model->count() && footer) {
+                pos += flow == QDeclarativeGridView::LeftToRight
+                            ? footer->item->height()
+                            : footer->item->width();
+            }
+            break;
+        case QDeclarativeGridView::Visible:
+            if (itemPos > pos + size())
+                pos = itemPos - size() + rowSize();
+            else if (item->endRowPos() < pos)
+                pos = itemPos;
+            break;
+        case QDeclarativeGridView::Contain:
+            if (item->endRowPos() > pos + size())
+                pos = itemPos - size() + rowSize();
+            if (itemPos < pos)
+                pos = itemPos;
+        }
+        qreal maxExtent = flow == QDeclarativeGridView::LeftToRight ? -q->maxYExtent() : -q->maxXExtent();
+        pos = qMin(pos, maxExtent);
+        qreal minExtent = flow == QDeclarativeGridView::LeftToRight ? -q->minYExtent() : -q->minXExtent();
+        pos = qMax(pos, minExtent);
+        moveReason = QDeclarativeGridViewPrivate::Other;
+        q->cancelFlick();
+        setPosition(pos);
+    }
+    fixupPosition();
+}
+
 /*!
     \qmlmethod GridView::positionViewAtIndex(int index, PositionMode mode)
 
@@ -2161,58 +2233,42 @@ void QDeclarativeGridView::positionViewAtIndex(int index, int mode)
     Q_D(QDeclarativeGridView);
     if (!d->isValid() || index < 0 || index >= d->model->count())
         return;
-    if (mode < Beginning || mode > Contain)
-        return;
+    d->positionViewAtIndex(index, mode);
+}
 
-    if (d->layoutScheduled)
-        d->layout();
-    qreal pos = d->position();
-    FxGridItem *item = d->visibleItem(index);
-    if (!item) {
-        int itemPos = d->rowPosAt(index);
-        // save the currently visible items in case any of them end up visible again
-        QList<FxGridItem*> oldVisible = d->visibleItems;
-        d->visibleItems.clear();
-        d->visibleIndex = index - index % d->columns;
-        d->setPosition(itemPos);
-        // now release the reference to all the old visible items.
-        for (int i = 0; i < oldVisible.count(); ++i)
-            d->releaseItem(oldVisible.at(i));
-        item = d->visibleItem(index);
-    }
-    if (item) {
-        qreal itemPos = item->rowPos();
-        switch (mode) {
-        case Beginning:
-            pos = itemPos;
-            break;
-        case Center:
-            pos = itemPos - (d->size() - d->rowSize())/2;
-            break;
-        case End:
-            pos = itemPos - d->size() + d->rowSize();
-            break;
-        case Visible:
-            if (itemPos > pos + d->size())
-                pos = itemPos - d->size() + d->rowSize();
-            else if (item->endRowPos() < pos)
-                pos = itemPos;
-            break;
-        case Contain:
-            if (item->endRowPos() > pos + d->size())
-                pos = itemPos - d->size() + d->rowSize();
-            if (itemPos < pos)
-                pos = itemPos;
-        }
-        qreal maxExtent = d->flow == QDeclarativeGridView::LeftToRight ? -maxYExtent() : -maxXExtent();
-        pos = qMin(pos, maxExtent);
-        qreal minExtent = d->flow == QDeclarativeGridView::LeftToRight ? -minYExtent() : -minXExtent();
-        pos = qMax(pos, minExtent);
-        d->moveReason = QDeclarativeGridViewPrivate::Other;
-        cancelFlick();
-        d->setPosition(pos);
-    }
-    d->fixupPosition();
+/*!
+    \qmlmethod GridView::positionViewAtBeginning()
+    \qmlmethod GridView::positionViewAtEnd()
+
+    Positions the view at the beginning or end, taking into account any header or footer.
+
+    It is not recommended to use \l {Flickable::}{contentX} or \l {Flickable::}{contentY} to position the view
+    at a particular index.  This is unreliable since removing items from the start
+    of the list does not cause all other items to be repositioned, and because
+    the actual start of the view can vary based on the size of the delegates.
+
+    \bold Note: methods should only be called after the Component has completed.  To position
+    the view at startup, this method should be called by Component.onCompleted.  For
+    example, to position the view at the end on startup:
+
+    \code
+    Component.onCompleted: positionViewAtEnd()
+    \endcode
+*/
+void QDeclarativeGridView::positionViewAtBeginning()
+{
+    Q_D(QDeclarativeGridView);
+    if (!d->isValid())
+        return;
+    d->positionViewAtIndex(-1, Beginning);
+}
+
+void QDeclarativeGridView::positionViewAtEnd()
+{
+    Q_D(QDeclarativeGridView);
+    if (!d->isValid())
+        return;
+    d->positionViewAtIndex(d->model->count(), End);
 }
 
 /*!
