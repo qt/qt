@@ -133,6 +133,10 @@ void tst_QDeclarativeDebugService::sendMessage()
     client.sendMessage(msg);
     QByteArray resp = client.waitForResponse();
     QCOMPARE(resp, msg);
+
+    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugService: Conflicting plugin name \"tst_QDeclarativeDebugService::sendMessage()\" ");
+    QDeclarativeDebugService duplicate("tst_QDeclarativeDebugService::sendMessage()");
+    duplicate.sendMessage("msg");
 }
 
 void tst_QDeclarativeDebugService::idForObject()
