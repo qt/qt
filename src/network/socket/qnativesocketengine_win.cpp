@@ -1038,7 +1038,7 @@ bool QNativeSocketEnginePrivate::nativeHasPendingDatagrams() const
     bool result = false;
     fd_set readS;
     FD_ZERO(&readS);
-    FD_SET(socketDescriptor, &readS);
+    FD_SET((SOCKET)socketDescriptor, &readS);
     timeval timeout;
     timeout.tv_sec = 0;
     timeout.tv_usec = 5000;
@@ -1333,7 +1333,7 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
 
     memset(&fds, 0, sizeof(fd_set));
     fds.fd_count = 1;
-    fds.fd_array[0] = socketDescriptor;
+    fds.fd_array[0] = (SOCKET)socketDescriptor;
 
     struct timeval tv;
     tv.tv_sec = timeout / 1000;
@@ -1347,12 +1347,12 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
         // Windows needs this to report errors when connecting a socket ...
         fd_set fdexception;
         FD_ZERO(&fdexception);
-        FD_SET(socketDescriptor, &fdexception);
+        FD_SET((SOCKET)socketDescriptor, &fdexception);
 
         ret = select(0, 0, &fds, &fdexception, timeout < 0 ? 0 : &tv);
 
         // ... but if it is actually set, pretend it did not happen
-        if (ret > 0 && FD_ISSET(socketDescriptor, &fdexception))
+        if (ret > 0 && FD_ISSET((SOCKET)socketDescriptor, &fdexception))
             ret--;
     }
 
@@ -1379,16 +1379,16 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout,
     memset(&fdread, 0, sizeof(fd_set));
     if (checkRead) {
         fdread.fd_count = 1;
-        fdread.fd_array[0] = socketDescriptor;
+        fdread.fd_array[0] = (SOCKET)socketDescriptor;
     }
     memset(&fdwrite, 0, sizeof(fd_set));
     FD_ZERO(&fdexception);
     if (checkWrite) {
         fdwrite.fd_count = 1;
-        fdwrite.fd_array[0] = socketDescriptor;
+        fdwrite.fd_array[0] = (SOCKET)socketDescriptor;
 
         // Windows needs this to report errors when connecting a socket
-        FD_SET(socketDescriptor, &fdexception);
+        FD_SET((SOCKET)socketDescriptor, &fdexception);
     }
 
     struct timeval tv;
@@ -1402,7 +1402,7 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout,
 #endif
 
      //... but if it is actually set, pretend it did not happen
-    if (ret > 0 && FD_ISSET(socketDescriptor, &fdexception))
+    if (ret > 0 && FD_ISSET((SOCKET)socketDescriptor, &fdexception))
         ret--;
 
     if (readEnabled)
@@ -1411,8 +1411,8 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout,
     if (ret <= 0)
         return ret;
 
-    *selectForRead = FD_ISSET(socketDescriptor, &fdread);
-    *selectForWrite = FD_ISSET(socketDescriptor, &fdwrite);
+    *selectForRead = FD_ISSET((SOCKET)socketDescriptor, &fdread);
+    *selectForWrite = FD_ISSET((SOCKET)socketDescriptor, &fdwrite);
 
     return ret;
 }
