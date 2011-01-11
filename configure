@@ -185,27 +185,11 @@ fi
 #-------------------------------------------------------------------------------
 
 PLATFORM_X11=no
-PLATFORM_MAC=no
-PLATFORM_QWS=no
-
-if [ -f "$relpath"/src/gui/kernel/qapplication_mac.mm ] && [ -d /System/Library/Frameworks/Carbon.framework ]; then
-    # Qt/Mac
-    # ~ the Carbon SDK exists
-    # ~ src/gui/base/qapplication_mac.cpp is present
-    # ~ this is the internal edition and Qt/Mac sources exist
+PLATFORM_QWS=maybe
+if [ -d /System/Library/Frameworks/Carbon.framework ]; then
     PLATFORM_MAC=maybe
-elif [ -f "$relpath"/src/gui/kernel/qapplication_qws.cpp ]; then
-    # Qt Embedded
-    # ~ src/gui/base/qapplication_qws.cpp is present
-    # ~ this is the free or commercial edition
-    # ~ this is the internal edition and Qt Embedded is explicitly enabled
-    if [ -f "$relpath"/src/gui/kernel/qapplication_mac.mm ]; then
-        # This is a depot build, or an all-platforms package
-        PLATFORM_QWS=maybe
-    else
-        # This must be the embedded package, since the Qt/Mac source files are not present
-	PLATFORM_QWS=yes
-    fi
+else
+    PLATFORM_MAC=no
 fi
 
 #-----------------------------------------------------------------------------
@@ -314,16 +298,9 @@ earlyArgParse()
         case "$VAR" in
         embedded)
             CFG_EMBEDDED="$VAL"
-            if [ "$PLATFORM_QWS" != "no" ]; then
-                if [ "$PLATFORM_QWS" = "maybe" ]; then
-                    PLATFORM_X11=no
-                    PLATFORM_MAC=no
-                    PLATFORM_QWS=yes
-                fi
-            else
-                echo "No license exists to enable Qt for Embedded Linux. Disabling."
-                CFG_EMBEDDED=no
-            fi
+            PLATFORM_X11=no
+            PLATFORM_MAC=no
+            PLATFORM_QWS=yes
             ;;
         developer-build)
             CFG_DEV="yes"
@@ -1235,16 +1212,9 @@ while [ "$#" -gt 0 ]; do
         ;;
     embedded)
         CFG_EMBEDDED="$VAL"
-        if [ "$PLATFORM_QWS" != "no" ]; then
-            if [ "$PLATFORM_QWS" = "maybe" ]; then
-                PLATFORM_X11=no
-                PLATFORM_MAC=no
-                PLATFORM_QWS=yes
-            fi
-        else
-            echo "No license exists to enable Qt for Embedded Linux. Disabling."
-            CFG_EMBEDDED=no
-        fi
+        PLATFORM_X11=no
+        PLATFORM_MAC=no
+        PLATFORM_QWS=yes
         ;;
     sse)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -1349,14 +1319,8 @@ while [ "$#" -gt 0 ]; do
 	CFG_BUILD_PARTS="$CFG_BUILD_PARTS $VAL"
         ;;
     x11)
-        if [ "$PLATFORM_MAC" = "yes" ]; then
-            PLATFORM_MAC=no
-        elif [ "$PLATFORM_QWS" = "yes" ]; then
-            PLATFORM_QWS=no
-        fi
-        if [ "$CFG_FRAMEWORK" = "auto" ]; then
-            CFG_FRAMEWORK=no
-        fi
+        PLATFORM_MAC=no
+        PLATFORM_QWS=no
         PLATFORM_X11=yes
         ;;
     sdk)
