@@ -32,18 +32,25 @@ QT_BEGIN_NAMESPACE
 class QScriptEnginePrivate;
 class QScriptable;
 
+class QtDataBase
+{
+public:
+    // QtData use virtual destructor for deleting "unspecified" data from QSEP::dealllocateAddtionalData.
+    inline QtDataBase(QScriptEnginePrivate *engine);
+    inline virtual ~QtDataBase();
+    inline QScriptEnginePrivate *engine() const;
+private:
+    QScriptEnginePrivate *m_engine;
+};
+
 template<class T>
-class QtData
+class QtData : public QtDataBase
 {
 public:
     inline QtData(QScriptEnginePrivate *engine);
     static T *get(v8::Handle<v8::Object> object);
     static T *safeGet(v8::Handle<v8::Object> object);
     static void set(v8::Handle<v8::Object> object, T* data);
-
-    inline QScriptEnginePrivate *engine() const;
-private:
-    QScriptEnginePrivate *m_engine;
 };
 
 // Data associated with a QObject JS wrapper object.

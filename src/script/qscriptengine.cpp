@@ -665,7 +665,7 @@ QScriptEnginePrivate::QScriptEnginePrivate(QScriptEngine* engine, QScriptEngine:
             v8::Persistent<v8::Context>::New(v8::Context::GetCurrent()) : v8::Context::New())
     , m_originalGlobalObject(this, m_v8Context)
     , m_currentQsContext(0)
-    , m_isEvaluating(false)
+    , m_state(Idle)
 {
     qMetaTypeId<QScriptValue>();
     qMetaTypeId<QList<int> >();
@@ -747,6 +747,8 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
 
     m_isolate->Exit();
     m_isolate->Dispose();
+    m_state = Destroyed;
+    deallocateAdditionalResources();
 }
 
 QScriptContextPrivate *QScriptEnginePrivate::pushContext()
@@ -767,11 +769,11 @@ void QScriptEnginePrivate::popContext()
 QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(v8::Handle<v8::Script> script, v8::TryCatch& tryCatch)
 {
     v8::HandleScope handleScope;
-    m_isEvaluating = true;
+    m_state = Evaluating;
     clearExceptions();
     if (script.IsEmpty()) {
         v8::Handle<v8::Value> exception = tryCatch.Exception();
-        m_isEvaluating = false;
+        m_state = Idle;
         if (exception.IsEmpty()) {
             // This is possible on syntax errors like { a:12, b:21 } <- missing "(", ")" around expression.
             return new QScriptValuePrivate();
@@ -793,10 +795,10 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(v8::Handl
         if (exception.IsEmpty())
             exception = v8::Exception::Error(v8::String::New("missing exception value"));
         setException(exception, tryCatch.Message());
-        m_isEvaluating = false;
+        m_state = Idle;
         return new QScriptValuePrivate(this, exception);
     }
-    m_isEvaluating = false;
+    m_state = Idle;
     return new QScriptValuePrivate(this, result);
 }
 

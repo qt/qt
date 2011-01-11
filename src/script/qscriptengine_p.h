@@ -51,6 +51,7 @@ class QDateTime;
 class QScriptEngine;
 class QScriptContextPrivate;
 class QScriptClassPrivate;
+class QtDataBase;
 
 class QScriptEnginePrivate
     : public QScriptSharedData
@@ -83,6 +84,7 @@ public:
     inline QScriptPassPointer<QScriptValuePrivate> evaluate(QScriptProgramPrivate* program);
     QScriptPassPointer<QScriptValuePrivate> evaluate(v8::Handle<v8::Script> script, v8::TryCatch& tryCatch);
     inline bool isEvaluating() const;
+    inline bool isDestroyed() const;
     inline void collectGarbage();
     inline void reportAdditionalMemoryCost(int cost);
     inline v8::Handle<v8::Object> globalObject() const;
@@ -193,6 +195,13 @@ public:
     inline bool hasInstance(v8::Handle<v8::FunctionTemplate> fun, v8::Handle<v8::Value> value) const;
     inline const QScriptOriginalGlobalObject *originalGlobalObject() const { return &m_originalGlobalObject; }
 
+    // Additional resources allocated by QSV and kept as weak references can leak if not collected
+    // by GC before context destruction. So we need to track them separetly.
+    // data should be a QtData instance
+    inline void registerAdditionalResources(QtDataBase *data);
+    inline void unregisterAdditionalResources(QtDataBase *data);
+    inline void deallocateAdditionalResources();
+
     v8::Persistent<v8::FunctionTemplate> declarativeClassTemplate;
     v8::Persistent<v8::FunctionTemplate> scriptClassTemplate;
     v8::Persistent<v8::FunctionTemplate> metaMethodTemplate;
@@ -242,11 +251,13 @@ private:
     QScriptContextPrivate *m_currentQsContext;
     QScopedPointer<QScriptContextPrivate> m_baseQsContext;
     QSet<int> visitedConversionObjects;
-    bool m_isEvaluating;
     TypeInfos m_typeInfos;
 
     QSet<QString> importedExtensions;
     QSet<QString> extensionsBeingImported;
+
+    enum State { Idle, Evaluating, Destroyed } m_state;
+    QSet<QtDataBase*> m_additionalResources;
 };
 
 QT_END_NAMESPACE

@@ -147,7 +147,12 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(QS
 
 inline bool QScriptEnginePrivate::isEvaluating() const
 {
-    return m_isEvaluating;
+    return m_state == Evaluating;
+}
+
+inline bool QScriptEnginePrivate::isDestroyed() const
+{
+    return m_state == Destroyed;
 }
 
 void QScriptEnginePrivate::collectGarbage()
@@ -338,6 +343,25 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newQObject(
         const QScriptEngine::QObjectWrapOptions &opt)
 {
     return new QScriptValuePrivate(this, makeQtObject(object, own, opt));
+}
+
+inline void QScriptEnginePrivate::registerAdditionalResources(QtDataBase *data)
+{
+    m_additionalResources.insert(data);
+}
+
+inline void QScriptEnginePrivate::unregisterAdditionalResources(QtDataBase *data)
+{
+    m_additionalResources.remove(data);
+}
+
+inline void QScriptEnginePrivate::deallocateAdditionalResources()
+{
+    QSet<QtDataBase*>::const_iterator i = m_additionalResources.constBegin();
+    for (; i != m_additionalResources.constEnd(); ++i) {
+        delete *i;
+    }
+    m_additionalResources.clear();
 }
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newQObject(QScriptValuePrivate *scriptObject,

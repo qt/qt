@@ -28,37 +28,38 @@
 #include "qscriptengine_p.h"
 #include "qscriptvalue.h"
 #include "qscriptvalue_p.h"
+#include "qscriptqobject_p.h"
 
-struct QScriptNativeFunctionData
+struct QScriptNativeFunctionData : public QtDataBase
 {
     QScriptNativeFunctionData(QScriptEnginePrivate *engine, QScriptEngine::FunctionSignature fun)
-        : engine(engine)
+        : QtDataBase(engine)
         , fun(fun)
     {
     }
 
-    QScriptValue call(QScriptContext *scriptContext) {
-        return fun(scriptContext, QScriptEnginePrivate::get(engine));
+    QScriptValue call(QScriptContext *scriptContext)
+    {
+        return fun(scriptContext, QScriptEnginePrivate::get(engine()));
     }
 
-    QScriptEnginePrivate *engine;
     QScriptEngine::FunctionSignature fun;
 };
 
-struct QScriptNativeFunctionWithArgData
+struct QScriptNativeFunctionWithArgData : public QtDataBase
 {
     QScriptNativeFunctionWithArgData(QScriptEnginePrivate *engine, QScriptEngine::FunctionWithArgSignature fun, void *arg)
-        : engine(engine)
+        : QtDataBase(engine)
         , fun(fun)
         , arg(arg)
     {
     }
 
-    QScriptValue call(QScriptContext *scriptContext) {
-        return fun(scriptContext, QScriptEnginePrivate::get(engine), arg);
+    QScriptValue call(QScriptContext *scriptContext)
+    {
+        return fun(scriptContext, QScriptEnginePrivate::get(engine()), arg);
     }
 
-    QScriptEnginePrivate *engine;
     QScriptEngine::FunctionWithArgSignature fun;
     void *arg;
 };
@@ -67,8 +68,8 @@ template <typename T>
 void QtNativeFunctionCleanup(v8::Persistent<v8::Value> object, void *parameter)
 {
     T *data = reinterpret_cast<T *>(parameter);
+    data->engine()->unregisterAdditionalResources(data);
     delete data;
-
     object.Dispose();
     object.Clear();
 }
@@ -81,7 +82,7 @@ v8::Handle<v8::Value> QtNativeFunctionCallback(const v8::Arguments& arguments)
     v8::Handle<v8::External> wrap = v8::Handle<v8::External>::Cast(arguments.Data());
     T *data = reinterpret_cast<T *>(wrap->Value());
 
-    QScriptEnginePrivate *engine = data->engine;
+    QScriptEnginePrivate *engine = data->engine();
     QScriptContextPrivate qScriptContext(engine, &arguments);
 
     // To match semantics of JSC, we must inherit the scope chain of the caller.

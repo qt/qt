@@ -36,11 +36,25 @@
 #ifndef QSCRIPTQOBJECT_IMPL_P_H
 #define QSCRIPTQOBJECT_IMPL_P_H
 
-template<class T>
-QtData<T>::QtData(QScriptEnginePrivate *engine)
+inline QtDataBase::QtDataBase(QScriptEnginePrivate *engine)
     : m_engine(engine)
 {
+    Q_ASSERT(engine);
+    engine->registerAdditionalResources(this);
 }
+
+inline QtDataBase::~QtDataBase()
+{}
+
+inline QScriptEnginePrivate *QtDataBase::engine() const
+{
+    return m_engine;
+}
+
+template<class T>
+QtData<T>::QtData(QScriptEnginePrivate *engine)
+    : QtDataBase(engine)
+{ }
 
 template<class T>
 T* QtData<T>::get(v8::Handle<v8::Object> object)
@@ -60,7 +74,9 @@ T* QtData<T>::safeGet(v8::Handle<v8::Object> object)
 template<class T>
 void QtData<T>::set(v8::Handle<v8::Object> object, T* data)
 {
-    delete safeGet(object);
+    T* oldData = safeGet(object);
+    delete oldData;
+    oldData->engine()->unregisterAdditionalResources(oldData);
     object->SetPointerInInternalField(0, data);
 }
 
@@ -72,12 +88,6 @@ inline QtInstanceData::QtInstanceData(QScriptEnginePrivate *engine, QObject *obj
     , m_own(own)
     , m_opt(opt)
 {
-}
-
-template<class T>
-inline QScriptEnginePrivate *QtData<T>::engine() const
-{
-    return m_engine;
 }
 
 inline QtInstanceData::~QtInstanceData()
@@ -131,7 +141,8 @@ inline QtMetaObjectData::QtMetaObjectData(QScriptEnginePrivate *engine, const QM
 
 inline QtMetaObjectData::~QtMetaObjectData()
 {
-    m_ctor.Dispose();
+    if (!engine()->isDestroyed())
+        m_ctor.Dispose();
 }
 
 inline const QMetaObject *QtMetaObjectData::metaObject() const
