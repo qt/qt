@@ -1114,6 +1114,7 @@ void tst_QTextScriptEngine::greek()
 
 void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
 {
+#if defined(Q_WS_X11)
     QString s;
     s.append(QChar(0x0915));
     s.append(QChar(0x094d));
@@ -1127,6 +1128,9 @@ void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
 
     QVERIFY(e->layoutData->items[0].num_glyphs == 2);
     QVERIFY(e->layoutData->glyphLayout.advances_x[1] != 0);
+#else
+    QSKIP("X11 specific test", SkipAll);
+#endif
 }
 
 QTEST_MAIN(tst_QTextScriptEngine)
