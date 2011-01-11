@@ -971,11 +971,13 @@ bool QProcessPrivate::_q_canWrite()
     qDebug("QProcessPrivate::canWrite(), wrote %d bytes to the process input", int(written));
 #endif
 
-    writeBuffer.free(written);
-    if (!emittedBytesWritten) {
-        emittedBytesWritten = true;
-        emit q->bytesWritten(written);
-        emittedBytesWritten = false;
+    if (written != 0) {
+        writeBuffer.free(written);
+        if (!emittedBytesWritten) {
+            emittedBytesWritten = true;
+            emit q->bytesWritten(written);
+            emittedBytesWritten = false;
+        }
     }
     if (stdinChannel.notifier && !writeBuffer.isEmpty())
         stdinChannel.notifier->setEnabled(true);

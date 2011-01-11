@@ -869,6 +869,11 @@ qint64 QProcessPrivate::writeToStdin(const char *data, qint64 maxlen)
     if (written == -1)
         qDebug("QProcessPrivate::writeToStdin(), failed to write (%s)", qt_error_string(errno));
 #endif
+    // If the O_NONBLOCK flag is set and If some data can be written without blocking
+    // the process, write() will transfer what it can and return the number of bytes written.
+    // Otherwise, it will return -1 and set errno to EAGAIN
+    if (written == -1 && errno == EAGAIN)
+        written = 0;
     return written;
 }
 
