@@ -1,12 +1,3 @@
-/*
-============================================================================
- Name		: QtFileOpeningApp.cpp
- Author	  :
- Copyright   : Your copyright notice
- Description : Main GUI Application
-============================================================================
-*/
-
 #include <QtGui>
 #include <QApplication>
 #include <QEvent>
