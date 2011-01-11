@@ -180,6 +180,7 @@ enum Property {
     TextTransform,
     QtListNumberPrefix,
     QtListNumberSuffix,
+    LineHeight,
     NumProperties
 };
 
