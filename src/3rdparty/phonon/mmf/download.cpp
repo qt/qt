@@ -20,6 +20,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "utils.h"
 #include <QtCore/QDir>
 #include <QtCore/private/qcore_symbian_p.h>
+#include <mmf/common/mmfcontrollerframeworkbase.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -43,7 +44,7 @@ DownloadPrivate::~DownloadPrivate()
     m_downloadManager.Close();
 }
 
-bool DownloadPrivate::start()
+bool DownloadPrivate::start(int iap)
 {
     TRACE_CONTEXT(DownloadPrivate::start, EVideoApi);
     Q_ASSERT(!m_download);
@@ -54,6 +55,8 @@ bool DownloadPrivate::start()
     TRACE("connect err %d", err);
     if (KErrNone == err) {
         // Start download
+        if (KUseDefaultIap != iap)
+            m_downloadManager.SetIntAttribute(EDlMgrIap, iap);
         QHBufC url(m_parent->sourceUrl().toString());
         TPtr8 url8 = url->Des().Collapse();
         TRAP(err, m_download = &m_downloadManager.CreateDownloadL(url8));
@@ -140,12 +143,12 @@ const QString &Download::targetFileName() const
     return m_targetFileName;
 }
 
-void Download::start()
+void Download::start(int iap)
 {
     TRACE_CONTEXT(Download::start, EVideoApi);
     TRACE_ENTRY_0();
     Q_ASSERT(Idle == m_state);
-    const bool ok = m_private->start();
+    const bool ok = m_private->start(iap);
     setState(ok ? Initializing : Error);
     TRACE_EXIT_0();
 }
