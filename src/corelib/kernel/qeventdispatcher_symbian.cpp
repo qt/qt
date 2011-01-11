@@ -217,13 +217,13 @@ QTimerActiveObject::QTimerActiveObject(QEventDispatcherSymbian *dispatcher, Symb
 QTimerActiveObject::~QTimerActiveObject()
 {
     Cancel();
+    m_rTimer.Close(); //close of null handle is safe
 }
 
 void QTimerActiveObject::DoCancel()
 {
     if (m_timerInfo->interval > 0) {
         m_rTimer.Cancel();
-        m_rTimer.Close();
     } else {
         if (iStatus.Int() == KRequestPending) {
             TRequestStatus *status = &iStatus;
@@ -302,7 +302,9 @@ void QTimerActiveObject::Start()
     CActiveScheduler::Add(this);
     m_timerInfo->msLeft = m_timerInfo->interval;
     if (m_timerInfo->interval > 0) {
-        m_rTimer.CreateLocal();
+        if (!m_rTimer.Handle()) {
+            qt_symbian_throwIfError(m_rTimer.CreateLocal());
+        }
         StartTimer();
     } else {
         iStatus = KRequestPending;

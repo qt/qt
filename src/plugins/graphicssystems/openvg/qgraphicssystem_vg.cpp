@@ -45,11 +45,13 @@
 #if defined(Q_OS_SYMBIAN) && !defined(Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE)
 #include <QtGui/private/qwidget_p.h>
 #endif
+#include <QtGui/private/qapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
 QVGGraphicsSystem::QVGGraphicsSystem()
 {
+    QApplicationPrivate::graphics_system_name = QLatin1String("openvg");
 }
 
 QPixmapData *QVGGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
