@@ -86,6 +86,8 @@ private slots:
     void footer();
     void header();
     void indexAt();
+    void testQtQuick11Attributes();
+    void testQtQuick11Attributes_data();
 
 private:
     QDeclarativeView *createView();
@@ -1133,6 +1135,24 @@ void tst_QDeclarativeGridView::positionViewAtIndex()
     gridview->positionViewAtIndex(25, QDeclarativeGridView::Contain);
     QTRY_COMPARE(gridview->contentX(), 240.);
 
+    // positionViewAtBeginning
+    gridview->positionViewAtBeginning();
+    QTRY_COMPARE(gridview->contentX(), 0.);
+
+    gridview->setContentX(80);
+    canvas->rootObject()->setProperty("showHeader", true);
+    gridview->positionViewAtBeginning();
+    QTRY_COMPARE(gridview->contentX(), -30.);
+
+    // positionViewAtEnd
+    gridview->positionViewAtEnd();
+    QTRY_COMPARE(gridview->contentX(), 430.);
+
+    gridview->setContentX(80);
+    canvas->rootObject()->setProperty("showFooter", true);
+    gridview->positionViewAtEnd();
+    QTRY_COMPARE(gridview->contentX(), 460.);
+
     delete canvas;
 }
 
@@ -1427,6 +1447,45 @@ void tst_QDeclarativeGridView::indexAt()
     QCOMPARE(gridview->indexAt(240, 0), -1);
 
     delete canvas;
+}
+
+void tst_QDeclarativeGridView::testQtQuick11Attributes()
+{
+    QFETCH(QString, code);
+    QFETCH(QString, warning);
+    QFETCH(QString, error);
+
+    QDeclarativeEngine engine;
+    QObject *obj;
+
+    QDeclarativeComponent valid(&engine);
+    valid.setData("import QtQuick 1.1; GridView { " + code.toUtf8() + " }", QUrl(""));
+    obj = valid.create();
+    QVERIFY(obj);
+    QVERIFY(valid.errorString().isEmpty());
+    delete obj;
+
+    QDeclarativeComponent invalid(&engine);
+    invalid.setData("import QtQuick 1.0; GridView { " + code.toUtf8() + " }", QUrl(""));
+    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
+    obj = invalid.create();
+    QCOMPARE(invalid.errorString(), error);
+    delete obj;
+}
+
+void tst_QDeclarativeGridView::testQtQuick11Attributes_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<QString>("warning");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("positionViewAtBeginning") << "Component.onCompleted: positionViewAtBeginning()"
+        << "<Unknown File>:1: ReferenceError: Can't find variable: positionViewAtBeginning"
+        << "";
+
+    QTest::newRow("positionViewAtEnd") << "Component.onCompleted: positionViewAtEnd()"
+        << "<Unknown File>:1: ReferenceError: Can't find variable: positionViewAtEnd"
+        << "";
 }
 
 QDeclarativeView *tst_QDeclarativeGridView::createView()

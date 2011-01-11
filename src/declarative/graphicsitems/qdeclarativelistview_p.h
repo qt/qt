@@ -209,6 +209,8 @@ public:
 
     Q_INVOKABLE void positionViewAtIndex(int index, int mode);
     Q_INVOKABLE int indexAt(int x, int y) const;
+    Q_INVOKABLE Q_REVISION(1) void positionViewAtBeginning();
+    Q_INVOKABLE Q_REVISION(1) void positionViewAtEnd();
 
 public Q_SLOTS:
     void incrementCurrentIndex();
