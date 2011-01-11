@@ -95,7 +95,7 @@ QT_END_NAMESPACE
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qlist.h>
-#include <qmap.h>
+#include <qhash.h>
 #include <qmutex.h>
 #include <qsemaphore.h>
 #include <qsocketnotifier.h>
@@ -163,7 +163,7 @@ public:
 
 private:
     QMutex mutex;
-    QMap<int, QProcessInfo *> children;
+    QHash<int, QProcessInfo *> children;
 };
 
 
@@ -281,7 +281,7 @@ void QProcessManager::catchDeadChildren()
 
     // try to catch all children whose pid we have registered, and whose
     // deathPipe is still valid (i.e, we have not already notified it).
-    QMap<int, QProcessInfo *>::Iterator it = children.begin();
+    QHash<int, QProcessInfo *>::Iterator it = children.begin();
     while (it != children.end()) {
         // notify all children that they may have died. they need to run
         // waitpid() in their own thread.
@@ -320,15 +320,11 @@ void QProcessManager::remove(QProcess *process)
     QMutexLocker locker(&mutex);
 
     int serial = process->d_func()->serial;
-    QProcessInfo *info = children.value(serial);
-    if (!info)
-        return;
-
+    QProcessInfo *info = children.take(serial);
 #if defined (QPROCESS_DEBUG)
-    qDebug() << "QProcessManager::remove() removing pid" << info->pid << "process" << info->process;
+    if (info)
+        qDebug() << "QProcessManager::remove() removing pid" << info->pid << "process" << info->process;
 #endif
-
-    children.remove(serial);
     delete info;
 }
 
