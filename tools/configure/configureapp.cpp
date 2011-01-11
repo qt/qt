@@ -1031,6 +1031,8 @@ void Configure::parseCmdLine()
                     QString("\\resource\\qt%1\\plugins").arg(dictionary[ "QT_LIBINFIX" ]);
                 dictionary[ "QT_INSTALL_IMPORTS" ] =
                     QString("\\resource\\qt%1\\imports").arg(dictionary[ "QT_LIBINFIX" ]);
+                dictionary[ "QT_INSTALL_TRANSLATIONS" ] =
+                    QString("\\resource\\qt%1\\translations").arg(dictionary[ "QT_LIBINFIX" ]);
             }
         } else if (configCmdLine.at(i) == "-D") {
             ++i;
