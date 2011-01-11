@@ -40,6 +40,8 @@ DownloadPrivate::DownloadPrivate(Download *parent)
 
 DownloadPrivate::~DownloadPrivate()
 {
+    if (m_download)
+        m_download->Delete();
     m_downloadManager.Disconnect();
     m_downloadManager.Close();
 }
