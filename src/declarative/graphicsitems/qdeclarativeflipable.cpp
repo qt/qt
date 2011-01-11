@@ -177,8 +177,8 @@ void QDeclarativeFlipable::retransformBack()
 /*!
   \qmlproperty enumeration Flipable::side
 
-  The side of the Flippable currently visible. Possible values are \c
-  Flippable.Front and \c Flippable.Back.
+  The side of the Flipable currently visible. Possible values are \c
+  Flipable.Front and \c Flipable.Back.
 */
 QDeclarativeFlipable::Side QDeclarativeFlipable::side() const
 {
