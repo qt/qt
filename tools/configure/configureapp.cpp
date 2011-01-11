@@ -3578,7 +3578,11 @@ void Configure::generateHeaders()
         QStringList env;
         env += QString("QTDIR=" + sourcePath);
         env += QString("PATH=" + buildPath + "/bin/;" + qgetenv("PATH"));
-        Environment::execute(args, env, QStringList());
+        int retc = Environment::execute(args, env, QStringList());
+        if (retc) {
+            cout << "syncqt failed, return code " << retc << endl << endl;
+            dictionary["DONE"] = "error";
+        }
     }
 }
 
