@@ -866,6 +866,8 @@ qint64 QProcessPrivate::writeToStdin(const char *data, qint64 maxlen)
 #if defined QPROCESS_DEBUG
     qDebug("QProcessPrivate::writeToStdin(%p \"%s\", %lld) == %lld",
            data, qt_prettyDebug(data, maxlen, 16).constData(), maxlen, written);
+    if (written == -1)
+        qDebug("QProcessPrivate::writeToStdin(), failed to write (%s)", qt_error_string(errno));
 #endif
     return written;
 }
