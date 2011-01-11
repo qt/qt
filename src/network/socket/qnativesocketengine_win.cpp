@@ -918,7 +918,8 @@ QNetworkInterface QNativeSocketEnginePrivate::nativeMulticastInterface() const
     }
 #endif
 
-    struct in_addr v = { 0 };
+    struct in_addr v;
+    v.s_addr = 0;
     QT_SOCKOPTLEN_T sizeofv = sizeof(v);
     if (::getsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_IF, (char *) &v, &sizeofv) == -1)
         return QNetworkInterface();
