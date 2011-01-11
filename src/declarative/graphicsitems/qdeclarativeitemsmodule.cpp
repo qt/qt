@@ -179,6 +179,7 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativePinchArea>("QtQuick",1,1,"PinchArea");
     qmlRegisterType<QDeclarativePinch>("QtQuick",1,1,"Pinch");
     qmlRegisterType<QDeclarativePinchEvent>();
+    qmlRegisterType<QDeclarativeFlickable,1>("QtQuick",1,1,"Flickable");
     qmlRegisterType<QDeclarativeRepeater,1>("QtQuick",1,1,"Repeater");
     qmlRegisterType<QDeclarativeTextEdit,1>("QtQuick",1,1,"TextEdit");
 #ifndef QT_NO_LINEEDIT

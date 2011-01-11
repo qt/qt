@@ -72,6 +72,8 @@ private slots:
     void qgraphicswidget();
     void resizeContent();
     void returnToBounds();
+    void testQtQuick11Attributes();
+    void testQtQuick11Attributes_data();
 
 private:
     QDeclarativeEngine engine;
@@ -330,6 +332,47 @@ void tst_qdeclarativeflickable::returnToBounds()
 
     delete root;
 }
+
+void tst_qdeclarativeflickable::testQtQuick11Attributes()
+{
+    QFETCH(QString, code);
+    QFETCH(QString, warning);
+    QFETCH(QString, error);
+
+    QDeclarativeEngine engine;
+    QObject *obj;
+
+    QDeclarativeComponent invalid(&engine);
+    invalid.setData("import QtQuick 1.0; Flickable { " + code.toUtf8() + " }", QUrl(""));
+    QTest::ignoreMessage(QtWarningMsg, warning.toUtf8());
+    obj = invalid.create();
+    QCOMPARE(invalid.errorString(), error);
+    delete obj;
+
+    QDeclarativeComponent valid(&engine);
+    valid.setData("import QtQuick 1.1; Flickable { " + code.toUtf8() + " }", QUrl(""));
+    obj = valid.create();
+    QVERIFY(obj);
+    QVERIFY(valid.errorString().isEmpty());
+    delete obj;
+}
+
+void tst_qdeclarativeflickable::testQtQuick11Attributes_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<QString>("warning");
+    QTest::addColumn<QString>("error");
+
+    QTest::newRow("resizeContent") << "Component.onCompleted: resizeContent(100,100,Qt.point(50,50))"
+            << "<Unknown File>:1: ReferenceError: Can't find variable: resizeContent"
+            << "";
+
+    QTest::newRow("returnToBounds") << "Component.onCompleted: returnToBounds()"
+            << "<Unknown File>:1: ReferenceError: Can't find variable: returnToBounds"
+            << "";
+
+}
+
 
 template<typename T>
 T *tst_qdeclarativeflickable::findItem(QGraphicsObject *parent, const QString &objectName)
