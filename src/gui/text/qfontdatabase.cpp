@@ -664,6 +664,9 @@ public:
     }
 
     int count;
+#if defined(Q_WS_X11) && !defined(QT_NO_FONTCONFIG)
+    QString systemLang;
+#endif
     QtFontFamily **families;
 
     struct ApplicationFont {
