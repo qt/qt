@@ -778,7 +778,13 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(v8::Handl
         setException(exception, tryCatch.Message());
         return new QScriptValuePrivate(this, exception);
     }
-    v8::Handle<v8::Value> result = script->Run();
+    v8::Handle<v8::Value> result;
+    if (m_baseQsContext.data() == m_currentQsContext || !m_currentQsContext->arguments) {
+        result = script->Run();
+    } else {
+        const v8::Arguments *arguments = m_currentQsContext->arguments;
+        result = script->Run(arguments->This());
+    }
     if (result.IsEmpty()) {
         v8::Handle<v8::Value> exception = tryCatch.Exception();
         // TODO: figure out why v8 doesn't always produce an exception value
