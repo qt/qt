@@ -386,14 +386,16 @@ void QDeclarativeImage::updatePaintedGeometry()
     if (d->fillMode == PreserveAspectFit) {
         if (!d->pix.width() || !d->pix.height())
             return;
-        qreal widthScale = width() / qreal(d->pix.width());
-        qreal heightScale = height() / qreal(d->pix.height());
+        int effectiveHeight = heightValid() ? height() : d->pix.height();
+        int effectiveWidth = widthValid() ? width() : d->pix.width();
+        qreal widthScale = effectiveWidth / qreal(d->pix.width());
+        qreal heightScale = effectiveHeight / qreal(d->pix.height());
         if (widthScale <= heightScale) {
-            d->paintedWidth = width();
+            d->paintedWidth = effectiveWidth;
             d->paintedHeight = widthScale * qreal(d->pix.height());
         } else if(heightScale < widthScale) {
             d->paintedWidth = heightScale * qreal(d->pix.width());
-            d->paintedHeight = height();
+            d->paintedHeight = effectiveHeight;
         }
         if (widthValid() && !heightValid()) {
             setImplicitHeight(d->paintedHeight);
