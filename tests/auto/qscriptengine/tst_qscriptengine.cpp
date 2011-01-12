@@ -4708,48 +4708,48 @@ void tst_QScriptEngine::reentrancy()
     }
 }
 
-void tst_QScriptEngine:: incDecNonObjectProperty()
+void tst_QScriptEngine::incDecNonObjectProperty()
 {
     QScriptEngine eng;
     {
         QScriptValue ret = eng.evaluate("var a; a.n++");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'a' [undefined] is not an object."));
+        QVERIFY(ret.toString().startsWith("TypeError:"));
     }
     {
         QScriptValue ret = eng.evaluate("var a; a.n--");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'a' [undefined] is not an object."));
+        QVERIFY(ret.toString().startsWith("TypeError:"));
     }
     {
         QScriptValue ret = eng.evaluate("var a = null; a.n++");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'a' [null] is not an object."));
+        QVERIFY(ret.toString().startsWith("TypeError:"));
     }
     {
         QScriptValue ret = eng.evaluate("var a = null; a.n--");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'a' [null] is not an object."));
+        QVERIFY(ret.toString().startsWith("TypeError:"));
     }
     {
         QScriptValue ret = eng.evaluate("var a; ++a.n");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'a' [null] is not an object."));
+        QVERIFY(ret.toString().startsWith("TypeError:"));
     }
     {
         QScriptValue ret = eng.evaluate("var a; --a.n");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'a' [null] is not an object."));
+        QVERIFY(ret.toString().startsWith("TypeError:"));
     }
     {
         QScriptValue ret = eng.evaluate("var a; a.n += 1");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'a' [null] is not an object."));
+        QVERIFY(ret.toString().startsWith("TypeError:"));
     }
     {
         QScriptValue ret = eng.evaluate("var a; a.n -= 1");
         QVERIFY(ret.isError());
-        QCOMPARE(ret.toString(), QString::fromLatin1("TypeError: Result of expression 'a' [null] is not an object."));
+        QVERIFY(ret.toString().startsWith("TypeError:"));
     }
     {
         QScriptValue ret = eng.evaluate("var a = 'ciao'; a.length++");
