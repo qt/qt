@@ -49,9 +49,6 @@
 #include "qrgb.h"
 #include "qstringlist.h"
 
-#if defined(Q_WS_WINCE)
-#include "qguifunctions_wince.h"
-#endif
 QT_BEGIN_NAMESPACE
 
 static inline int h2i(char hex)
@@ -290,33 +287,16 @@ static const int rgbTblSize = sizeof(rgbTbl) / sizeof(RGBData);
 
 #undef rgb
 
-QT_BEGIN_INCLUDE_NAMESPACE
-#include <stdlib.h>
-QT_END_INCLUDE_NAMESPACE
+inline bool operator<(const char *name, const RGBData &data)
+{ return qstrcmp(name, data.name) < 0; }
+inline bool operator<(const RGBData &data, const char *name)
+{ return qstrcmp(data.name, name) < 0; }
 
-#if defined(Q_C_CALLBACKS)
-extern "C" {
-#endif
-
-#ifdef Q_OS_WINCE
-static int __cdecl rgb_cmp(const void *d1, const void *d2)
-#else
-static int rgb_cmp(const void *d1, const void *d2)
-#endif
+static bool get_named_rgb(const char *name_no_space, QRgb *rgb)
 {
-    return qstricmp(((RGBData *)d1)->name, ((RGBData *)d2)->name);
-}
-
-#if defined(Q_C_CALLBACKS)
-}
-#endif
-
-static bool get_named_rgb(const char *name, QRgb *rgb)
-{
-    RGBData x;
-    x.name = name;
-    RGBData *r = (RGBData*)bsearch(&x, rgbTbl, rgbTblSize, sizeof(RGBData), rgb_cmp);
-    if (r) {
+    QByteArray name = QByteArray(name_no_space).toLower();
+    const RGBData *r = qBinaryFind(rgbTbl, rgbTbl + rgbTblSize, name.constData());
+    if (r != rgbTbl + rgbTblSize) {
         *rgb = r->value;
         return true;
     }

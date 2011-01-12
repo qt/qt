@@ -96,7 +96,7 @@ There are a number of ways to extend your QML application through C++. For examp
 \list
 \o Load a QML component and manipulate it (or its children) from C++
 \o Embed a C++ object and its properties directly into a QML component (for example, to make a
-particular C++ object callable from QML, or to replace a dummy list model data with a real data set)
+particular C++ object callable from QML, or to replace a dummy list model with a real data set)
 \o Define new QML elements (through QObject-based C++ classes) and create them directly from your
 QML code
 \endlist
@@ -297,17 +297,20 @@ methods on the \c myObject object, which has been set using QDeclarativeContext:
 \snippet doc/src/snippets/declarative/qtbinding/functions-cpp/main.cpp 0
 \endtable
 
-Note that QML does not support overloaded functions. If a C++ has more than one function with the
-same name, there is no guarantee which overloaded function will be called from QML.
+QML supports the calling of overloaded C++ functions. If there are multiple C++ functions with the
+same name but different arguments, the correct function will be called according to the number and
+the types of arguments that are provided.
 
 
 \section2 Receiving signals
 
 All QML signals are automatically available to C++, and can be connected to using QObject::connect()
-like any ordinary Qt C++ signal.
+like any ordinary Qt C++ signal. In return, any C++ signal can be received by a QML object using
+\l {Signal Handlers}{signal handlers}.
 
 Here is a QML component with a signal named \c qmlSignal. This signal is connected to a C++ object's
-slot using QObject::connect():
+slot using QObject::connect(), so that the \c cppSlot() method is called whenever the \c qmlSignal
+is emitted:
 
 \table
 \row

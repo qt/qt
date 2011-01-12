@@ -267,6 +267,13 @@ void BaselineHandler::storeImage(const QByteArray &itemBlock, bool isBaseline)
     QString prefix = pathForItem(item, isBaseline);
     qDebug() << runId << logtime() << "Received" << (isBaseline ? "baseline" : "mismatched") << "image for:" << item.itemName << "Storing in" << prefix;
 
+    QString msg;
+    if (isBaseline)
+        msg = QLS("New baseline image stored: ") + pathForItem(item, true, true) + QLS(FileFormat);
+    else
+        msg = BaselineServer::baseUrl() + report.filePath();
+    proto.sendBlock(BaselineProtocol::Ack, msg.toLatin1());
+
     QString dir = prefix.section(QLC('/'), 0, -2);
     QDir cwd;
     if (!cwd.exists(dir))
@@ -282,14 +289,6 @@ void BaselineHandler::storeImage(const QByteArray &itemBlock, bool isBaseline)
 
     if (!isBaseline)
         report.addMismatch(item);
-
-    QString msg;
-    if (isBaseline)
-        msg = QLS("New baseline image stored: ") + pathForItem(item, true, true) + QLS(FileFormat);
-    else
-        msg = BaselineServer::baseUrl() + report.filePath();
-
-    proto.sendBlock(BaselineProtocol::Ack, msg.toLatin1());
 }
 
 

@@ -391,6 +391,14 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
             t << clause;
         }
         t << endl;
+
+        t << "freeze-debug: " << BLD_INF_FILENAME << endl;
+        t << "\t$(SBS) freeze";
+        foreach(QString clause, debugClauses) {
+            t << clause;
+        }
+        t << endl;
+
         t << "release: " << locFileDep << BLD_INF_FILENAME << endl;
         t << "\t$(SBS)";
         foreach(QString clause, releaseClauses) {
@@ -399,6 +407,13 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
         t << endl;
         t << "clean-release: " << BLD_INF_FILENAME << endl;
         t << "\t$(SBS) reallyclean";
+        foreach(QString clause, releaseClauses) {
+            t << clause;
+        }
+        t << endl;
+
+        t << "freeze-release: " << BLD_INF_FILENAME << endl;
+        t << "\t$(SBS) freeze";
         foreach(QString clause, releaseClauses) {
             t << clause;
         }
@@ -427,6 +442,8 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
             t << "\t$(SBS)" << clause << endl;
             t << "clean-debug-" << item << ": " << BLD_INF_FILENAME << endl;
             t << "\t$(SBS) reallyclean" << clause << endl;
+            t << "freeze-debug-" << item << ": " << BLD_INF_FILENAME << endl;
+            t << "\t$(SBS) freeze" << clause << endl;
         }
 
         foreach(QString item, releasePlatforms) {
@@ -440,6 +457,8 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
             t << "\t$(SBS)" << clause << endl;
             t << "clean-release-" << item << ": " << BLD_INF_FILENAME << endl;
             t << "\t$(SBS) reallyclean" << clause << endl;
+            t << "freeze-release-" << item << ": " << BLD_INF_FILENAME << endl;
+            t << "\t$(SBS) freeze" << clause << endl;
         }
 
         foreach(QString item, armPlatforms) {
@@ -450,10 +469,14 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
                 t << "\t$(SBS)" << debugClause << endl;
                 t << "clean-debug-" << item << "-" << compilerVersion << ": " << BLD_INF_FILENAME << endl;
                 t << "\t$(SBS) reallyclean" << debugClause << endl;
+                t << "freeze-debug-" << item << "-" << compilerVersion << ": " << BLD_INF_FILENAME << endl;
+                t << "\t$(SBS) freeze" << debugClause << endl;
                 t << "release-" << item << "-" << compilerVersion << ": " << locFileDep << BLD_INF_FILENAME << endl;
                 t << "\t$(SBS)" << releaseClause << endl;
                 t << "clean-release-" << item << "-" << compilerVersion << ": " << BLD_INF_FILENAME << endl;
                 t << "\t$(SBS) reallyclean" << releaseClause << endl;
+                t << "freeze-release-" << item << "-" << compilerVersion << ": " << BLD_INF_FILENAME << endl;
+                t << "\t$(SBS) freeze" << releaseClause << endl;
             }
         }
 
@@ -471,6 +494,12 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
             t << clause;
         }
         t << endl << endl;
+
+        // Typically one wants to freeze release binaries, so make plain freeze target equal to
+        // freeze-release. If freezing of debug binaries is needed for some reason, then
+        // freeze-debug target should be used. There is no point to try freezing both with one
+        // target as both produce the same def file.
+        t << "freeze: freeze-release" << endl << endl;
     }
 
     // Add all extra targets including extra compiler targets also to wrapper makefile,

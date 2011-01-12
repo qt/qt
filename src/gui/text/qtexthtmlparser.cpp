@@ -1250,6 +1250,20 @@ void QTextHtmlParserNode::applyCssDeclarations(const QVector<QCss::Declaration> 
         case QCss::QtBlockIndent:
             blockFormat.setIndent(decl.d->values.first().variant.toInt());
             break;
+       case QCss::LineHeight: {
+            qreal lineHeight;
+            if (decl.realValue(&lineHeight, "px")) {
+                blockFormat.setLineHeight(lineHeight, QTextBlockFormat::FixedHeight);
+            } else {
+                bool ok;
+                QString value = decl.d->values.first().toString();
+                lineHeight = value.toDouble(&ok);
+                if (ok)
+                    blockFormat.setLineHeight(lineHeight, QTextBlockFormat::ProportionalHeight);
+                else
+                    blockFormat.setLineHeight(0, QTextBlockFormat::SingleHeight);
+            }
+            break; }
         case QCss::TextIndent: {
             qreal indent = 0;
             if (decl.realValue(&indent, "px"))

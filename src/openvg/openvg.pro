@@ -42,7 +42,7 @@ symbian {
 
 include(../qbase.pri)
 
-unix:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
+unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
 symbian:TARGET.UID3 = 0x2001E62F
 
 !isEmpty(QMAKE_INCDIR_OPENVG): INCLUDEPATH += $$QMAKE_INCDIR_OPENVG

@@ -809,6 +809,18 @@ QString Win32MakefileGenerator::defaultInstall(const QString &t)
                 uninst.append("\n\t");
             uninst.append("-$(DEL_FILE) \"" + dst_prl + "\"");
         }
+        if(project->isActiveConfig("create_pc")) {
+            QString dst_pc = pkgConfigFileName(false);
+            if (!dst_pc.isEmpty()) {
+                dst_pc = filePrefixRoot(root, targetdir + dst_pc);
+                if(!ret.isEmpty())
+                    ret += "\n\t";
+                ret += "-$(INSTALL_FILE) \"" + pkgConfigFileName(true) + "\" \"" + dst_pc + "\"";
+                if(!uninst.isEmpty())
+                    uninst.append("\n\t");
+                uninst.append("-$(DEL_FILE) \"" + dst_pc + "\"");
+            }
+        }
         if(project->isActiveConfig("shared") && !project->isActiveConfig("plugin")) {
             QString lib_target = getLibTarget();
             lib_target.remove('"');

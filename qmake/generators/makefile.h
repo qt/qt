@@ -105,6 +105,11 @@ protected:
     virtual bool writeStubMakefile(QTextStream &t);
     virtual bool writeMakefile(QTextStream &t);
 
+    QString pkgConfigPrefix() const;
+    QString pkgConfigFileName(bool fixify=true);
+    QString pkgConfigFixPath(QString) const;
+    void writePkgConfigFile();   // for pkg-config
+
     //generating subtarget makefiles
     struct SubTarget
     {
