@@ -669,16 +669,17 @@ void tst_MediaObject::playSDP()
 void tst_MediaObject::playUrl_data()
 {
     QTest::addColumn<QUrl>("url");
+#ifdef Q_OS_SYMBIAN
     QTest::addColumn<QString>("iap");
+#endif //Q_OS_SYMBIAN
 
     QUrl rtspLink("rtsp://v1.cache8.c.youtube.com/CjgLENy73wIaLwnoDBCE7tF7fxMYESARFEIJbXYtZ29vZ2xlSARSB3Jlc3VsdHNgpbWqq7L7je5KDA==/0/0/0/video.3gp");
     QUrl httpLink("http://www.theflute.co.uk/media/BachCPE_SonataAmin_1.wma");
 
+#ifdef Q_OS_SYMBIAN
     QTest::newRow("default_IAP_rtsp") << rtspLink << KDefaultIAP;
     QTest::newRow("invalid_IAP_rtsp") << rtspLink << KInvalidIAP;
     //don't test HTTP link with invalid or default IAP as it will prompt the user
-
-#ifdef Q_OS_SYMBIAN
     //Add tests with a valid IAP if we can get one from CommsDB
     QString validIAP;
     TRAPD(err, validIAP = getValidIAPL());
@@ -686,6 +687,9 @@ void tst_MediaObject::playUrl_data()
         QTest::newRow("valid_IAP_rtsp") << rtspLink << validIAP;
         QTest::newRow("valid_IAP_http") << httpLink << validIAP;
     }
+#else
+    QTest::newRow("default_IAP_rtsp") << rtspLink;
+    QTest::newRow("invalid_IAP_rtsp") << rtspLink;
 #endif //Q_OS_SYMBIAN
 }
 
@@ -721,7 +725,9 @@ QString tst_MediaObject::getValidIAPL()
 void tst_MediaObject::playUrl()
 {
     QFETCH(QUrl, url);
+#ifdef Q_OS_SYMBIAN
     QFETCH(QString, iap);
+#endif
     MediaObject media(this);
 
     //Create a proper media path for video and audio
