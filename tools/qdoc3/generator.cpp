@@ -262,6 +262,7 @@ void Generator::initialize(const Config &config)
                 }
                 else {
                     int paramPos = def.indexOf("\1");
+                    qDebug() << "ZZZZZ:" << *n << def.left(paramPos) << def.mid(paramPos + 1);
                     fmtLeftMaps[*f].insert(*n, def.left(paramPos));
                     fmtRightMaps[*f].insert(*n, def.mid(paramPos + 1));
                 }
