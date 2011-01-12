@@ -1155,7 +1155,7 @@ lupdate - это один из инструментов Qt Linguist. Он изв
         <translation>Незавершенный текст в конце строки</translation>
     </message>
     <message>
-        <source>Illegal escape squence</source>
+        <source>Illegal escape sequence</source>
         <translation>Неверная esc-последовательность</translation>
     </message>
     <message>

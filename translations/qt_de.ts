@@ -1947,7 +1947,7 @@ nach
         <translation>Zeichenkette am Zeilenende nicht abgeschlossen</translation>
     </message>
     <message>
-        <source>Illegal escape squence</source>
+        <source>Illegal escape sequence</source>
         <translation>Ungültiges Escape-Sequenz</translation>
     </message>
     <message>

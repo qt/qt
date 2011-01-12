@@ -2238,7 +2238,7 @@ superior, inferior nin vcenter.</translation>
         <translation>Cadea non pechada no fin dunha liña</translation>
     </message>
     <message>
-        <source>Illegal escape squence</source>
+        <source>Illegal escape sequence</source>
         <translation>Secuencia de escape ilegal</translation>
     </message>
     <message>
