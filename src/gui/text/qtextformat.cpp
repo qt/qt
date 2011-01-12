@@ -1858,7 +1858,7 @@ QFont QTextCharFormat::font() const
     indentation is set with setIndent(), the indentation of the first
     line with setTextIndent().
 
-    Line spacing is set with setLineHeight() and retreived via lineHeight()
+    Line spacing is set with setLineHeight() and retrieved via lineHeight()
     and lineHeightType(). The types of line spacing available are in the
     LineHeightTypes enum.
 
