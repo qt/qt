@@ -54,6 +54,7 @@
 
 // #seconds between update checks
 #define HEARTBEAT 10
+#define MetadataFileExt "metadata"
 
 class BaselineServer : public QTcpServer
 {
@@ -115,6 +116,8 @@ private:
     bool establishConnection();
     void provideBaselineChecksums(const QByteArray &itemListBlock);
     void storeImage(const QByteArray &itemBlock, bool isBaseline);
+    void storeItemMetadata(const PlatformInfo &metadata, const QString &path);
+    PlatformInfo fetchItemMetadata(const QString &path);
     void mapPlatformInfo() const;
     const char *logtime();
     QString computeMismatchScore(const QImage& baseline, const QImage& rendered);

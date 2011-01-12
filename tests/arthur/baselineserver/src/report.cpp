@@ -170,13 +170,15 @@ void Report::writeFunctionResults(const ImageItemList &list)
     foreach (const ImageItem &item, list) {
         out << "<tr>\n";
         out << "<td>" << item.itemName << "</td>\n";
-        QString baseline = handler->pathForItem(item, true, false) + QLS(FileFormat);
+        QString prefix = handler->pathForItem(item, true, false);
+        QString baseline = prefix + QLS(FileFormat);
+        QString metadata = prefix + QLS(MetadataFileExt);
         if (item.status == ImageItem::Mismatch) {
             QString rendered = handler->pathForItem(item, false, false) + QLS(FileFormat);
-            writeItem(baseline, rendered, item, ctx);
+            writeItem(baseline, rendered, item, ctx, metadata);
         }
         else {
-            out << "<td align=center><a href=\"/" << baseline << "\">view</a></td>\n"
+            out << "<td align=center><a href=\"/" << baseline << "\">image</a> <a href=\"/" << metadata << "\">info</a></td>\n"
                 << "<td align=center colspan=2><small>n/a</small></td>\n"
                 << "<td align=center>";
             switch (item.status) {
@@ -204,7 +206,7 @@ void Report::writeFunctionResults(const ImageItemList &list)
     out << "</table>\n";
 }
 
-void Report::writeItem(const QString &baseline, const QString &rendered, const ImageItem &item, const QString &ctx)
+void Report::writeItem(const QString &baseline, const QString &rendered, const ImageItem &item, const QString &ctx, const QString &metadata)
 {
     QString compared = generateCompared(baseline, rendered);
     QString pageUrl = BaselineServer::baseUrl() + path;
@@ -215,6 +217,7 @@ void Report::writeItem(const QString &baseline, const QString &rendered, const I
 
     out << "<td align=center>\n"
         << "<p><span style=\"color:red\">Mismatch reported</span></p>\n"
+        << "<p><a href=\"/" << metadata << "\">Baseline Info</a>\n"
         << "<p><a href=\"/cgi-bin/server.cgi?cmd=updateSingleBaseline&oldBaseline=" << baseline
         << "&newBaseline=" << rendered << "&url=" << pageUrl << "\">Replace baseline with rendered</a></p>\n"
         << "<p><a href=\"/cgi-bin/server.cgi?cmd=blacklist&context=" << ctx
