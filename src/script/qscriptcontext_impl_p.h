@@ -41,16 +41,28 @@ QT_BEGIN_NAMESPACE
 #include "qscriptvalue_p.h"
 #include "qscriptengine_p.h"
 
-inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args)
-: q_ptr(this), engine(engine), arguments(args), accessorInfo(0), parent(engine->setCurrentQSContext(this))
+inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine)
+    : q_ptr(this), engine(engine), arguments(0), accessorInfo(0), parent(engine->setCurrentQSContext(this))
 {
     Q_ASSERT(engine);
 }
 
-inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::AccessorInfo *accessor)
-: q_ptr(this), engine(engine), arguments(0), accessorInfo(accessor), parent(engine->setCurrentQSContext(this))
+inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args)
+    : q_ptr(this), engine(engine), arguments(args), accessorInfo(0),
+      context(v8::Persistent<v8::Context>::New(v8::Context::NewFunctionContext())),
+      parent(engine->setCurrentQSContext(this))
 {
     Q_ASSERT(engine);
+    context->Enter();
+}
+
+inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::AccessorInfo *accessor)
+: q_ptr(this), engine(engine), arguments(0), accessorInfo(accessor),
+  context(v8::Persistent<v8::Context>::New(v8::Context::NewFunctionContext())),
+  parent(engine->setCurrentQSContext(this))
+{
+    Q_ASSERT(engine);
+    context->Enter();
 }
 
 inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, v8::Handle<v8::Context> context)

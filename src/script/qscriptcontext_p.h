@@ -53,7 +53,8 @@ public:
     static QScriptContextPrivate *get(const QScriptContext *q) { Q_ASSERT(q->d_ptr); return q->d_ptr; }
     static QScriptContext *get(QScriptContextPrivate *d) { return d->q_func(); }
 
-    inline QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args = 0);
+    inline QScriptContextPrivate(QScriptEnginePrivate *engine);
+    inline QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args);
     inline QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::AccessorInfo *accessor);
     inline QScriptContextPrivate(QScriptEnginePrivate *engine, v8::Handle<v8::Context> context);
     inline ~QScriptContextPrivate();
