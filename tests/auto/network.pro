@@ -25,6 +25,7 @@ SUBDIRS=\
     qnetworkcookiejar \
     qnetworkinterface \
     qnetworkproxy \
+    qnetworkproxyfactory \
     qnetworkrequest \
     qnetworksession \
     qobjectperformance \
