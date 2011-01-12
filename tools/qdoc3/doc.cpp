@@ -562,24 +562,21 @@ void DocParser::parse(const QString& source,
                     case CMD_DIV:
                         x = getArgument(true);
                         leavePara();
-                        enterPara(Atom::DivLeft, Atom::DivRight,x);
-#if 0
                         if (x.contains('=')) {
-                            leavePara();
                             enterPara(Atom::DivLeft, Atom::DivRight,x);
+                            openedCommands.push(cmd);
                         }
                         else {
-                            leavePara();
                             append(Atom::DivLeft, x);
                             openedCommands.push(cmd);
                             enterPara();
                         }
-#endif
+
                         break;
                     case CMD_ENDDIV:
                         leavePara();
-                        //                        append(Atom::DivRight);
-                        //                        closeCommand(cmd);
+                        append(Atom::DivRight);
+                        closeCommand(cmd);
                         break;
                     case CMD_CODELINE:
                         {
