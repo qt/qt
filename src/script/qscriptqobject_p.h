@@ -25,6 +25,7 @@
 #define QSCRIPTQOBJECT_P_H
 
 #include <QtCore/qmetaobject.h>
+#include "qscripttools_p.h"
 #include <v8.h>
 
 QT_BEGIN_NAMESPACE
@@ -32,7 +33,7 @@ QT_BEGIN_NAMESPACE
 class QScriptEnginePrivate;
 class QScriptable;
 
-class QtDataBase
+class QtDataBase : public QScriptLinkedNode
 {
 public:
     // QtData use virtual destructor for deleting "unspecified" data from QSEP::dealllocateAddtionalData.

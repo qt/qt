@@ -38,6 +38,7 @@
 #include "qscriptoriginalglobalobject_p.h"
 #include "qscriptvalue.h"
 #include "qscriptprogram_p.h"
+#include "qscripttools_p.h"
 #include <v8.h>
 
 Q_DECLARE_METATYPE(QScriptValue)
@@ -257,7 +258,7 @@ private:
     QSet<QString> extensionsBeingImported;
 
     enum State { Idle, Evaluating, Destroyed } m_state;
-    QSet<QtDataBase*> m_additionalResources;
+    QScriptBagContainer<QtDataBase> m_additionalResources;
 };
 
 QT_END_NAMESPACE
