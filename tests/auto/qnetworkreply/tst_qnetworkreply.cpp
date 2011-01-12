@@ -3850,19 +3850,13 @@ void tst_QNetworkReply::ioPostToHttpUploadProgress()
     disconnect(&server, SIGNAL(newConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 
     incomingSocket->setReadBufferSize(1*1024);
-    QTestEventLoop::instance().enterLoop(2);
+    QTestEventLoop::instance().enterLoop(5);
     // some progress should have been made
     QList<QVariant> args = spy.last();
     QVERIFY(!args.isEmpty());
     QVERIFY(args.at(0).toLongLong() > 0);
-
-    incomingSocket->setReadBufferSize(32*1024);
-    incomingSocket->read(16*1024);
-    QTestEventLoop::instance().enterLoop(2);
-    // some more progress than before
-    QList<QVariant> args2 = spy.last();
-    QVERIFY(!args2.isEmpty());
-    QVERIFY(args2.at(0).toLongLong() > args.at(0).toLongLong());
+    // but not everything!
+    QVERIFY(args.at(0).toLongLong() != sourceFile.size());
 
     // set the read buffer to unlimited
     incomingSocket->setReadBufferSize(0);
@@ -3870,8 +3864,10 @@ void tst_QNetworkReply::ioPostToHttpUploadProgress()
     // progress should be finished
     QList<QVariant> args3 = spy.last();
     QVERIFY(!args3.isEmpty());
-    QVERIFY(args3.at(0).toLongLong() > args2.at(0).toLongLong());
+    // More progress than before
+    QVERIFY(args3.at(0).toLongLong() > args.at(0).toLongLong());
     QCOMPARE(args3.at(0).toLongLong(), args3.at(1).toLongLong());
+    // And actually finished..
     QCOMPARE(args3.at(0).toLongLong(), sourceFile.size());
 
     // after sending this, the QNAM should emit finished()
