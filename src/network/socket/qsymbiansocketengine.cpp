@@ -578,7 +578,10 @@ bool QSymbianSocketEngine::connectToHost(const QHostAddress &addr, quint16 port)
     User::WaitForRequest(status);
     TInt err = status.Int();
     //TODO: combine with setError(int)
-    if (err) {
+    //For non blocking connect, KErrAlreadyExists is returned from the second Connect() to indicate
+    //the connection is up. So treat this the same as KErrNone which would be returned from the first
+    //call if it wouldn't block. (e.g. winsock wrapper in the emulator ignores the nonblocking flag)
+    if (err && err != KErrAlreadyExists) {
         switch (err) {
         case KErrWouldBlock:
             d->socketState = QAbstractSocket::ConnectingState;
