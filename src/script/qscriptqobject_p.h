@@ -25,7 +25,6 @@
 #define QSCRIPTQOBJECT_P_H
 
 #include <QtCore/qmetaobject.h>
-#include "qscriptvalue.h"
 #include <v8.h>
 
 QT_BEGIN_NAMESPACE
