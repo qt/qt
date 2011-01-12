@@ -4842,9 +4842,8 @@ void tst_QScriptEngine::installTranslatorFunctions()
     }
     {
         QScriptValue ret = eng.evaluate("'foo%0'.arg('bar')");
-        QEXPECT_FAIL("Custom global object", "FIXME: why we expect that String prototype exists?", Continue);
+        QEXPECT_FAIL("Custom global object", "FIXME: why we expect that String prototype exists?", Abort);
         QVERIFY(ret.isString());
-        QEXPECT_FAIL("Custom global object", "FIXME: why we expect that String prototype exists?", Continue);
         QCOMPARE(ret.toString(), QString::fromLatin1("foobar"));
     }
     {
