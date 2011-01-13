@@ -60,8 +60,8 @@ class Q_AUTOTEST_EXPORT QDeclarativeFlipable : public QDeclarativeItem
     Q_OBJECT
 
     Q_ENUMS(Side)
-    Q_PROPERTY(QGraphicsObject *front READ front WRITE setFront)
-    Q_PROPERTY(QGraphicsObject *back READ back WRITE setBack)
+    Q_PROPERTY(QGraphicsObject *front READ front WRITE setFront NOTIFY frontChanged)
+    Q_PROPERTY(QGraphicsObject *back READ back WRITE setBack NOTIFY backChanged)
     Q_PROPERTY(Side side READ side NOTIFY sideChanged)
     //### flipAxis
     //### flipRotation
@@ -79,6 +79,8 @@ public:
     Side side() const;
 
 Q_SIGNALS:
+    void frontChanged();
+    void backChanged();
     void sideChanged();
 
 private Q_SLOTS:
