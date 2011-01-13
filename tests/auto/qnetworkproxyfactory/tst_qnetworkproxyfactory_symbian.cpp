@@ -68,9 +68,8 @@ QString tst_QNetworkProxyFactory_symbian::formatProxyName(const QNetworkProxy & 
 
 void tst_QNetworkProxyFactory_symbian::systemProxyForQuery() const
 {
-    QNetworkProxyFactory proxyFactory;
     QNetworkProxyQuery query(QUrl(QString("http://www.abc.com")), QNetworkProxyQuery::UrlRequest);
-    QList<QNetworkProxy> systemProxyList = proxyFactory.systemProxyForQuery(query);
+    QList<QNetworkProxy> systemProxyList = QNetworkProxyFactory::systemProxyForQuery(query);
     bool pass = true;
     QNetworkProxy proxy;
 
