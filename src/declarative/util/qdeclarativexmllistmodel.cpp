@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -924,6 +924,7 @@ void QDeclarativeXmlListModel::reload()
     } else {
         d->notifyQueryStarted(true);
         QNetworkRequest req(d->src);
+        req.setRawHeader("Accept", "application/xml");
         d->reply = qmlContext(this)->engine()->networkAccessManager()->get(req);
         QObject::connect(d->reply, SIGNAL(finished()), this, SLOT(requestFinished()));
         QObject::connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),

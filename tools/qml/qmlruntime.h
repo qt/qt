@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -188,8 +188,6 @@ private:
     ScriptOptions m_scriptOptions;
     QDeclarativeTester *tester;
 
-    QNetworkReply *wgtreply;
-    QString wgtdir;
     NetworkAccessManagerFactory *namFactory;
 
     bool useQmlFileBrowser;

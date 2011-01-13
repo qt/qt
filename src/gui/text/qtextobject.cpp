@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1488,7 +1488,7 @@ QTextBlock::iterator QTextBlock::end() const
 */
 QTextBlock QTextBlock::next() const
 {
-    if (!p)
+    if (!isValid())
         return QTextBlock();
 
     return QTextBlock(p, p->blockMap().next(n));
@@ -1504,7 +1504,7 @@ QTextBlock QTextBlock::next() const
 */
 QTextBlock QTextBlock::previous() const
 {
-    if (!p)
+    if (!isValid())
         return QTextBlock();
 
     return QTextBlock(p, p->blockMap().previous(n));

@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,12 +39,51 @@
 **
 ****************************************************************************/
 
-#include <QObject>
+#include "incrementalmodel.h"
+#include <QApplication>
+#include <QDebug>
 
-class TactileFeedbackInterface : public QObject
+IncrementalModel::IncrementalModel(QObject *parent)
+    : QAbstractListModel(parent), count(0)
 {
-    public:
-        virtual void touchFeedback(QEvent *event, const QWidget *widget) = 0;
-};
+    for (int i = 0; i < 100; ++i)
+        list.append("Item " + QString::number(i));
+}
 
-Q_DECLARE_INTERFACE(TactileFeedbackInterface, "com.trolltech.Qt.TactileFeedbackInterface/1.0")
+int IncrementalModel::rowCount(const QModelIndex & /* parent */) const
+{
+    return count;
+}
+
+QVariant IncrementalModel::data(const QModelIndex &index, int role) const
+{
+    if (!index.isValid())
+        return QVariant();
+    
+    if (index.row() >= list.size() || index.row() < 0)
+        return QVariant();
+    
+    if (role == Qt::DisplayRole)
+        return list.at(index.row());
+    return QVariant();
+}
+
+bool IncrementalModel::canFetchMore(const QModelIndex & /* index */) const
+{
+    if (count < list.size())
+        return true;
+    else
+        return false;
+}
+
+void IncrementalModel::fetchMore(const QModelIndex & /* index */)
+{
+    int remainder = list.size() - count;
+    int itemsToFetch = qMin(5, remainder);
+
+    beginInsertRows(QModelIndex(), count, count+itemsToFetch-1);
+    
+    count += itemsToFetch;
+
+    endInsertRows();
+}

@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,16 +39,30 @@
 **
 ****************************************************************************/
 
-#include <QEvent>
-#include <QWidget>
+#ifndef IncrementalModel_H
+#define IncrementalModel_H
 
-#include "private/qs60style_feedbackinterface_p.h"
+#include <QAbstractListModel>
+#include <QList>
+#include <QStringList>
 
-class QTactileFeedback : public TactileFeedbackInterface
+class IncrementalModel : public QAbstractListModel
 {
     Q_OBJECT
-    Q_INTERFACES(TactileFeedbackInterface)
 
-    public:
-        void touchFeedback(QEvent *event, const QWidget *widget);
- };
+public:
+    IncrementalModel(QObject *parent = 0);
+
+    int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+
+protected:
+    bool canFetchMore(const QModelIndex &parent) const;
+    void fetchMore(const QModelIndex &parent);
+
+private:
+    QStringList list;
+    int count;
+};
+
+#endif

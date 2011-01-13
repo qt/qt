@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -3464,9 +3464,6 @@ bool QS60Style::eventFilter(QObject *object, QEvent *event)
 
                 if (d->m_pressedWidget)
                     d->m_pressedWidget->update();
-#ifdef Q_WS_S60
-                d->touchFeedback(event, w);
-#endif
             }
             break;
         }
