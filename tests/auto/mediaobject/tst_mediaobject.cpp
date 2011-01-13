@@ -101,6 +101,70 @@ const qint64 ALLOWED_TIME_FOR_SEEKING = 1000; // 1s
 const qint64 SEEKING_TOLERANCE = 0;
 #endif //Q_OS_WINCE
 
+#ifdef Q_OS_SYMBIAN
+#include <cdbcols.h>
+#include <cdblen.h>
+#include <commdb.h>
+#include <rconnmon.h>
+
+const QString KDefaultIAP = QLatin1String("default");
+const QString KInvalidIAP = QLatin1String("invalid IAP");
+
+class CConnectionObserver : public CBase, public MConnectionMonitorObserver
+{
+public:
+    static CConnectionObserver* NewL()
+    {
+        CConnectionObserver* self = new (ELeave) CConnectionObserver();
+        CleanupStack::PushL(self);
+        self->ConstructL();
+        CleanupStack::Pop(self);
+        return self;
+    }
+    QString currentIAP()
+    {
+        return m_currentIAPName;
+    }
+    ~CConnectionObserver()
+    {
+        m_connMon.Close();
+    }
+private:
+    CConnectionObserver()
+    {
+    }
+    void ConstructL()
+    {
+        m_connMon.ConnectL();
+        m_connMon.NotifyEventL(*this);
+    }
+    void EventL (const CConnMonEventBase &aConnEvent)
+    {
+        TInt event = aConnEvent.EventType();
+        TUint connId = aConnEvent.ConnectionId();
+        TRequestStatus status;
+        switch (event) {
+        case EConnMonCreateConnection: {
+                TBuf<KCommsDbSvrMaxColumnNameLength> iapName;
+                m_connMon.GetStringAttribute(connId, 0, KIAPName, iapName, status);
+                User::WaitForRequest(status);
+                m_currentIAPName = QString(reinterpret_cast<const QChar *>(iapName.Ptr()), iapName.Length());
+                qDebug() << "A new connection created using: " << m_currentIAPName;
+                break;
+        }
+        default:
+            break;
+        }
+    }
+
+private:
+    RConnectionMonitor m_connMon;
+    QString m_currentIAPName;
+};
+
+#endif
+
+
 class tst_MediaObject : public QObject
 {
     Q_OBJECT
@@ -140,6 +204,8 @@ class tst_MediaObject : public QObject
         void pauseToPlay();
         void pauseToStop();
         void playSDP();
+        void playUrl_data();
+        void playUrl();
 
         void testPrefinishMark();
         void testSeek();
@@ -161,6 +227,10 @@ class tst_MediaObject : public QObject
         Phonon::MediaObject *m_media;
         QSignalSpy *m_stateChangedSignalSpy;
         QString m_tmpFileName;
+#ifdef Q_OS_SYMBIAN
+        CConnectionObserver *m_iapConnectionObserver;
+        QString getValidIAPL();
+#endif //Q_OS_SYMBIAN
 
         static void copyMediaFile(const QString &original,
                                   const QString &name,
@@ -451,6 +521,10 @@ void tst_MediaObject::initTestCase()
     QCOMPARE(m_media->outputPaths().size(), 1);
     QCOMPARE(audioOutput->inputPaths().size(), 1);
 
+#ifdef Q_OS_SYMBIAN
+    TRAP_IGNORE(m_iapConnectionObserver = CConnectionObserver::NewL());
+#endif //Q_OS_SYMBIAN
+
 }
 
 void tst_MediaObject::checkForDefaults()
@@ -584,6 +658,121 @@ void tst_MediaObject::playSDP()
 #else
     QSKIP("Unsupported on this platform.", SkipAll);
 #endif
+}
+
+/*!
+    Attempt to play from an RTSP link, and, on Symbian, to specify the IAP that
+    should be used to connect to the network. This test requires the unit under test
+    to have a default internet connection that will support streaming media, and ideally
+    one other internet connection that will also support streaming.
+ */
+void tst_MediaObject::playUrl_data()
+{
+    QTest::addColumn<QUrl>("url");
+#ifdef Q_OS_SYMBIAN
+    QTest::addColumn<QString>("iap");
+#endif //Q_OS_SYMBIAN
+
+    QUrl rtspLink("rtsp://v1.cache8.c.youtube.com/CjgLENy73wIaLwnoDBCE7tF7fxMYESARFEIJbXYtZ29vZ2xlSARSB3Jlc3VsdHNgpbWqq7L7je5KDA==/0/0/0/video.3gp");
+    QUrl httpLink("http://www.theflute.co.uk/media/BachCPE_SonataAmin_1.wma");
+
+#ifdef Q_OS_SYMBIAN
+    QTest::newRow("default_IAP_rtsp") << rtspLink << KDefaultIAP;
+    QTest::newRow("invalid_IAP_rtsp") << rtspLink << KInvalidIAP;
+    //don't test HTTP link with invalid or default IAP as it will prompt the user
+    //Add tests with a valid IAP if we can get one from CommsDB
+    QString validIAP;
+    TRAPD(err, validIAP = getValidIAPL());
+    if (KErrNone == err) {
+        QTest::newRow("valid_IAP_rtsp") << rtspLink << validIAP;
+        QTest::newRow("valid_IAP_http") << httpLink << validIAP;
+    }
+#else
+    QTest::newRow("default_IAP_rtsp") << rtspLink;
+    QTest::newRow("invalid_IAP_rtsp") << rtspLink;
+#endif //Q_OS_SYMBIAN
+}
+
+#ifdef Q_OS_SYMBIAN
+QString tst_MediaObject::getValidIAPL()
+{
+    CCommsDatabase* commsDb = CCommsDatabase::NewL(EDatabaseTypeIAP);
+    CleanupStack::PushL(commsDb);
+    commsDb->ShowHiddenRecords();
+    CCommsDbTableView* view = commsDb->OpenTableLC(TPtrC(IAP));
+    QString validIAP;
+    TBool found = EFalse;
+    TInt record = view->GotoFirstRecord();
+    while (KErrNotFound != record) {
+        TBuf<KCommsDbSvrMaxColumnNameLength> iapName;
+        view->ReadTextL(TPtrC(COMMDB_NAME), iapName);
+        validIAP = QString::fromUtf16(iapName.Ptr(),iapName.Length());
+        //We don't want the "Easy WLAN" IAP as it will try and prompt the user
+        if ("Easy WLAN" != validIAP) {
+            qDebug() << "playUrl_data() adding a valid IAP test: " << validIAP;
+            found = ETrue;
+            break;
+        }
+        record = view->GotoNextRecord();
+    }
+    CleanupStack::PopAndDestroy(2);
+    if (!found)
+        User::Leave(KErrNotFound);
+    return validIAP;
+}
+#endif //Q_OS_SYMBIAN
+
+void tst_MediaObject::playUrl()
+{
+    QFETCH(QUrl, url);
+#ifdef Q_OS_SYMBIAN
+    QFETCH(QString, iap);
+#endif
+    MediaObject media(this);
+
+    //Create a proper media path for video and audio
+    VideoWidget videoOutput;
+    Path path = createPath(&media, &videoOutput);
+    QVERIFY(path.isValid());
+    AudioOutput audioOutput(Phonon::MusicCategory, this);
+    path = createPath(&media, &audioOutput);
+    QVERIFY(path.isValid());
+
+#ifdef Q_OS_SYMBIAN
+    //The Symbian backend allows the IAP used for streaming connections to be specified
+    //by the application, using the "InternetAccessPointName" property.
+    if (KDefaultIAP != iap)
+        media.setProperty("InternetAccessPointName", iap);
+#endif  //Q_OS_SYMBIAN
+    media.setCurrentSource(Phonon::MediaSource(url));
+    QVERIFY(media.state() != Phonon::ErrorState);
+
+    //we use a long 30s timeout here as it can take a long time for the streaming source to
+    //be sucessfully prepared depending on the network.
+    if (media.state() != Phonon::StoppedState)
+        QTest::waitForSignal(&media, SIGNAL(stateChanged(Phonon::State, Phonon::State)), 30000);
+    QCOMPARE(media.state(), Phonon::StoppedState);
+
+    media.play();
+    if (media.state() != Phonon::PlayingState)
+        QTest::waitForSignal(&media, SIGNAL(stateChanged(Phonon::State, Phonon::State)), 15000);
+    QCOMPARE(media.state(), Phonon::PlayingState);
+
+    //sleep and allow some of the stream to be played
+    QTest::qSleep(10000);
+
+#ifdef Q_OS_SYMBIAN
+    // Verify that the specified IAP is actually being used when we're not doing negative tests
+    if ((KDefaultIAP == iap || KInvalidIAP == iap) == false) {
+        if (m_iapConnectionObserver)
+            QCOMPARE(iap,m_iapConnectionObserver->currentIAP());
+    }
+#endif //Q_OS_SYMBIAN
+
+    media.stop();
+    if (media.state() != Phonon::StoppedState)
+        QTest::waitForSignal(&media, SIGNAL(stateChanged(Phonon::State, Phonon::State)), 15000);
+    QCOMPARE(media.state(), Phonon::StoppedState);
 }
 
 void tst_MediaObject::testPrefinishMark()
@@ -937,6 +1126,10 @@ void tst_MediaObject::cleanupTestCase()
     if (!m_tmpFileName.isNull()) {
         QVERIFY(QFile::remove(m_tmpFileName));
     }
+#ifdef Q_OS_SYMBIAN
+    if (m_iapConnectionObserver)
+        delete m_iapConnectionObserver;
+#endif //Q_OS_SYMBIAN
 }
 
 void tst_MediaObject::_testOneSeek(qint64 seekTo)
