@@ -54,11 +54,6 @@ class QScriptClassPrivate;
 /*
   \internal
   \class QScriptValuePrivate
-  TODO we need to preallocate some values
-    // TODO: bring back these!
-    //
-    //    inline void* operator new(size_t, QScriptEnginePrivate*);
-    //    inline void operator delete(void*);
 */
 class QScriptValuePrivate : public QScriptSharedData
 {
