@@ -1028,8 +1028,9 @@ void DocParser::parse(const QString& source,
                         break;
                     case CMD_ROW:
                         if (openedCommands.top() == CMD_TABLE) {
+                            x = getArgument(true);
                             leaveTableRow();
-                            append(Atom::TableRowLeft);
+                            append(Atom::TableRowLeft,x);
                             inTableRow = true;
                         }
                         else {

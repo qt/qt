@@ -284,6 +284,56 @@
         background: #c0c0c0;
         color: #000000;
     }
+    #QtGuiColor
+    {
+      background-color: #98fd00;
+      color: black;
+    }
+    #QtCoreColor
+    {
+      background-color: #9c9cff;
+      color: black;
+    }
+    #DefaultColor
+    {
+      background-color: #f6f6dc;
+      color: black;
+    }
+    #FreetypeColor
+    {
+      background-color: #e6e6fa;
+      color: black;
+    }
+    #GLColor
+    {
+      background-color: #ffc0cb;
+      color: black;
+    }
+    #PthreadColor
+    {
+      background-color: #bdb76b;
+      color: black;
+    }
+    #OptionalColor
+    {
+      background-color: #cae1ff;
+      color: black;
+    }
+    #SMColor
+    {
+      background-color: #c2fafa;
+      color: black;
+    }
+    #MiscColor
+    {
+      background-color: #f0f9ff;
+      color: black;
+    }
+    #GlibColor
+    {
+      background-color: #b3b3b3;
+      color: black;
+    }
     .figCaption
     {
       color:#363534;

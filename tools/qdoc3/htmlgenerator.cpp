@@ -1106,7 +1106,14 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         }
         break;
     case Atom::TableRowLeft:
-        if (++numTableRows % 2 == 1)
+        if (!atom->string().isEmpty()) {
+            out() << "<tr ";
+            if (atom->string().contains('='))
+                out() << " " << atom->string() << ">";
+            else
+                out() << " class=\"" << atom->string() << "\">";
+        }
+        else if (++numTableRows % 2 == 1)
             out() << "<tr class=\"odd topAlign\">";
         else
             out() << "<tr class=\"even topAlign\">";
@@ -1127,10 +1134,12 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                     out() << " colspan=\"" << spans.at(0) << "\"";
                 if (spans.at(1) != "1")
                     out() << " rowspan=\"" << spans.at(1) << "\"";
-            if (inTableHeader)
-                out() << ">";
-            else
-                out() << "><p>"; 
+                if (inTableHeader)
+                    out() << ">";
+                else {
+                    out() << ">"; 
+                    //out() << "><p>"; 
+                }
             }
             if (matchAhead(atom, Atom::ParaLeft))
                 skipAhead = 1;
@@ -1139,8 +1148,10 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::TableItemRight:
         if (inTableHeader)
             out() << "</th>";
-        else
-            out() << "</p></td>";
+        else {
+            out() << "</td>";
+            //out() << "</p></td>";
+        }
         if (matchAhead(atom, Atom::ParaLeft))
             skipAhead = 1;
         break;
