@@ -482,6 +482,17 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         }
         out() << formattingRightMap()[ATOM_FORMATTING_TELETYPE];
         break;
+    case Atom::CaptionLeft:
+        out() << "<p class=\"figCaption\">";
+        in_para = true;
+        break;
+    case Atom::CaptionRight:
+        endLink();
+        if (in_para) {
+            out() << "</p\n";
+            in_para = false;
+        }
+        break;
     case Atom::Code:
         out() << "<pre class=\"highlightedCode brush: cpp\">"
               << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),
@@ -1063,8 +1074,10 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             in_para = false;
         }
         if (!atom->string().isEmpty()) {
-            if (atom->string().contains("%"))
-                out() << "<table class=\"generic\">\n "; // width=\"" << atom->string() << "\">\n ";
+            if (atom->string().contains("%")) {
+                out() << "<table class=\"generic\" width=\""
+                      << atom->string() << "\">\n ";
+            }
             else {
                 out() << "<table class=\"generic\">\n";
             }

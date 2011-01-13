@@ -541,7 +541,7 @@ void DocParser::parse(const QString& source,
                         break;
                     case CMD_CAPTION:
                         leavePara();
-                        /* ... */
+                        enterPara(Atom::CaptionLeft, Atom::CaptionRight);
                         break;
                     case CMD_CHAPTER:
                         startSection(Doc::Chapter, cmd);

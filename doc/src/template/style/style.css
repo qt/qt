@@ -135,10 +135,11 @@
         font-size: 11px;
         margin-bottom: 25px;
     }
-	pre.highlightedCode {
-		display: block;
-		overflow:hidden;
-	}	
+    pre.highlightedCode 
+    {
+      display: block;
+      overflow:hidden;
+    }	
     thead
     {
         margin-top: 5px;
@@ -283,7 +284,13 @@
         background: #c0c0c0;
         color: #000000;
     }
-
+    .figCaption
+    {
+      color:#363534;
+      font:italic 11px/1.2 Verdana;
+      text-align: center;
+      padding-top:0;
+    }
     span.comment
     {
         color: #008B00;

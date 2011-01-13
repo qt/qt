@@ -225,6 +225,7 @@ QString DitaXmlGenerator::ditaTags[] =
         "tgroup",
         "thead",
         "title",
+        "tm",
         "topic",
         "topicmeta",
         "topicref",
@@ -1292,6 +1293,11 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             writeStartTag(DT_sup);
             writeCharacters("*");
             writeEndTag(); // </sup>
+        }
+        else if (atom->string() == "<sup>&reg;</sup>") {
+            writeStartTag(DT_tm);
+            xmlWriter().writeAttribute("tmtype","reg");
+            writeEndTag(); // </tm>
         }
         else {
             writeStartTag(DT_pre);

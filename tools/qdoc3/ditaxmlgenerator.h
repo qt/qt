@@ -216,6 +216,7 @@ class DitaXmlGenerator : public PageGenerator
         DT_tgroup,
         DT_thead,
         DT_title,
+        DT_tm,
         DT_topic,
         DT_topicmeta,
         DT_topicref,
