@@ -255,8 +255,8 @@ Then, any QML code loaded by your C++ application or \l{QDeclarativeExtensionPlu
 
 
 It is advised that you avoid using QGraphicsItem functionality beyond the properties documented in QDeclarativeItem.
-This is because the GraphicsView backend is an implementation detail for QML, so the QtQuick items can be moved to faster backends as they become available with no change from a QML perspective.
-To minimize any porting requirements for custom visual items, try to stick to the documented properties in QDeclarative item where possible as properties it inherits but doesn't document are classed as implementation details and may disappear.
+This is because the GraphicsView backend is intended to be an implementation detail for QML, so the QtQuick items can be moved to faster backends as they become available with no change from a QML perspective.
+To minimize any porting requirements for custom visual items, try to stick to the documented properties in QDeclarativeItem where possible. Properties QDeclarativeItem inherits but doesn't document are classed as implementation details; they are not officially supported and may disappear between releases.
 
 Note that custom C++ types do not have to inherit from QDeclarativeItem; this is only necessary if it is
 a displayable item. If the item is not displayable, it can simply inherit from QObject.
