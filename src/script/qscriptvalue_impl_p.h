@@ -1170,6 +1170,14 @@ v8::Handle<v8::Value> QScriptValuePrivate::asV8Value(QScriptEnginePrivate* engin
     return m_value;
 }
 
+qint64 QScriptValuePrivate::objectId() const
+{
+    // FIXME: Get rid of that! It is really internal; based on QtScript 4.5 implementation detail, used
+    // only by debugger and it causes gcc warnings.
+    if (!isObject())
+        return -1;
+    return *reinterpret_cast<quintptr *>(*(m_value));
+}
 
 /*!
   \internal

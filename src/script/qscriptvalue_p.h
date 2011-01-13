@@ -162,6 +162,7 @@ public:
     inline operator v8::Handle<v8::Value>() const;
     inline operator v8::Handle<v8::Object>() const;
     inline v8::Handle<v8::Value> asV8Value(QScriptEnginePrivate* engine);
+    inline qint64 objectId() const;
 private:
     QScriptSharedDataPointer<QScriptEnginePrivate> m_engine;
 
@@ -190,11 +191,9 @@ private:
         CValue(qsreal number) : m_number(number) {}
         CValue(QString* string) : m_string(string) {}
     } u;
-
-public: // FIXME it shouldn't be public it is an implementation detail.
     // v8::Persistent is not a POD, so can't be part of the union.
     v8::Persistent<v8::Value> m_value;
-private:
+
     Q_DISABLE_COPY(QScriptValuePrivate)
     inline bool isJSBased() const;
     inline bool isNumberBased() const;
