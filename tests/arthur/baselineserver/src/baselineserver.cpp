@@ -348,9 +348,8 @@ void BaselineHandler::mapPlatformInfo() const
     if (host.isEmpty() || host == QLS("localhost")) {
         host = plat.value(PI_HostAddress);
     } else {
-        //# Site specific, should be in a config file
-        if (!host.startsWith(QLS("oldhcp"))) {
-            // remove index postfix typical of vm hostnames
+        if (!plat.value(PI_PulseGitBranch).isEmpty()) {
+            // i.e. pulse run, so remove index postfix typical of vm hostnames
             host.remove(QRegExp(QLS("\\d+$")));
             if (host.endsWith(QLC('-')))
                 host.chop(1);
@@ -366,7 +365,7 @@ void BaselineHandler::mapPlatformInfo() const
 
     // Map Qt version
     QString ver = plat.value(PI_QtVersion);
-    mapped.insert(PI_QtVersion, ver.prepend(QLS("Qt-")));   //### TBD: remove patch version
+    mapped.insert(PI_QtVersion, ver.prepend(QLS("Qt-")));
 }
 
 QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline, bool absolute) const
@@ -479,7 +478,8 @@ void BaselineHandler::testPathMapping()
           << QLS("macbuilder-02.test.troll.no")
           << QLS("bqvm1164")
           << QLS("chimera")
-          << QLS("localhost");
+          << QLS("localhost")
+          << QLS("");
 
     ImageItem item;
     item.testFunction = QLS("testPathMapping");
@@ -489,7 +489,8 @@ void BaselineHandler::testPathMapping()
 
     plat.insert(PI_QtVersion, QLS("4.8.0"));
     plat.insert(PI_BuildKey, QLS("(nobuildkey)"));
-    plat.insert(PI_QMakeSpec, "linux-g++");
+    plat.insert(PI_QMakeSpec, QLS("linux-g++"));
+    plat.insert(PI_PulseGitBranch, QLS("somebranch"));
     foreach(const QString& host, hosts) {
         mapped.clear();
         plat.insert(PI_HostName, host);

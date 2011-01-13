@@ -138,8 +138,9 @@ void Report::writeHeader()
     QString title = plat.value(PI_TestCase) + QLS(" Qt Baseline Test Report");
     out << "<head><title>" << title << "</title></head>\n"
         << "<html><body><h1>" << title << "</h1>\n"
-        << "<p>Run Id: <b>" << runId << "</b></p>\n"
-        << "<p>Summary: <b>" << numMismatches << " of " << numItems << "</b> items reported mismatching</p>\n\n";
+        << "<p>Note: This is a <i>static</i> page, generated at " << QDateTime::currentDateTime().toString()
+        << " for the test run with id " << runId << "</p>\n"
+        << "<p>Summary: <b><span style=\"color:red\">" << numMismatches << " of " << numItems << "</b></span> items reported mismatching</p>\n\n";
     out << "<h3>Platform Info:</h3>\n"
         << "<table>\n";
     foreach (QString key, plat.keys())
