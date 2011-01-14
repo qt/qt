@@ -52,6 +52,7 @@ class QDateTime;
 class QScriptEngine;
 class QScriptContextPrivate;
 class QScriptClassPrivate;
+class QScriptablePrivate;
 class QtDataBase;
 
 class QScriptEnginePrivate
@@ -211,6 +212,10 @@ public:
     inline void unregisterString(QScriptStringPrivate *data);
     inline void invalidateAllString();
 
+    inline void registerScriptable(QScriptablePrivate *data);
+    inline void unregisterScriptable(QScriptablePrivate *data);
+    inline void invalidateAllScriptable();
+
     v8::Persistent<v8::FunctionTemplate> declarativeClassTemplate;
     v8::Persistent<v8::FunctionTemplate> scriptClassTemplate;
     v8::Persistent<v8::FunctionTemplate> metaMethodTemplate;
@@ -269,6 +274,7 @@ private:
     QScriptBagContainer<QtDataBase> m_additionalResources;
     QScriptBagContainer<QScriptValuePrivate> m_values;
     QScriptBagContainer<QScriptStringPrivate> m_strings;
+    QScriptBagContainer<QScriptablePrivate> m_scriptable;
 };
 
 QT_END_NAMESPACE

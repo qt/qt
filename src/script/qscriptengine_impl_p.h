@@ -27,6 +27,7 @@
 #include "qscriptengine_p.h"
 #include "qscriptvalue_impl_p.h"
 #include "qscriptqobject_impl_p.h"
+#include "qscriptable_impl_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -390,6 +391,16 @@ inline void QScriptEnginePrivate::unregisterString(QScriptStringPrivate *data)
     m_strings.remove(data);
 }
 
+inline void QScriptEnginePrivate::registerScriptable(QScriptablePrivate *data)
+{
+    m_scriptable.insert(data);
+}
+
+inline void QScriptEnginePrivate::unregisterScriptable(QScriptablePrivate *data)
+{
+    m_scriptable.remove(data);
+}
+
 class QtScriptInvalidator
 {
 public:
@@ -412,6 +423,13 @@ inline void QScriptEnginePrivate::invalidateAllString()
     QtScriptInvalidator invalidator;
     m_strings.forEach(invalidator);
     m_strings.clear();
+}
+
+inline void QScriptEnginePrivate::invalidateAllScriptable()
+{
+    QtScriptInvalidator invalidator;
+    m_scriptable.forEach(invalidator);
+    m_scriptable.clear();
 }
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newQObject(QScriptValuePrivate *scriptObject,

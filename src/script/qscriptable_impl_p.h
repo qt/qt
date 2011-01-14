@@ -43,7 +43,7 @@ QT_BEGIN_NAMESPACE
 
 inline QScriptEnginePrivate* QScriptablePrivate::engine() const
 {
-    return m_engine.data();
+    return m_engine;
 }
 
 inline QScriptContextPrivate* QScriptablePrivate::context() const
@@ -80,9 +80,20 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptablePrivate::argument(int 
 
 QScriptEnginePrivate *QScriptablePrivate::swapEngine(QScriptEnginePrivate* newEngine)
 {
-    QScriptEnginePrivate *oldEngine = m_engine.data();
+    QScriptEnginePrivate *oldEngine = m_engine;
+
+    if (oldEngine)
+        oldEngine->unregisterScriptable(this);
+    if (newEngine)
+        newEngine->registerScriptable(this);
+
     m_engine = newEngine;
     return oldEngine;
+}
+
+inline void QScriptablePrivate::reinitialize()
+{
+    swapEngine(0);
 }
 
 
