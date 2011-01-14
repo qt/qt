@@ -3,6 +3,8 @@ CONFIG += staticlib
 
 CONFIG += building-libs
 
+QT =
+
 include($$PWD/v8.pri)
 
 SOURCES += \
