@@ -64,37 +64,37 @@ QScriptValue QScriptValuePrivate::get(QScriptValuePrivate* d)
 }
 
 QScriptValuePrivate::QScriptValuePrivate()
-    : m_state(Invalid)
+    : m_engine(0), m_state(Invalid)
 {
 }
 
 QScriptValuePrivate::QScriptValuePrivate(bool value)
-    : m_state(CBool), u(value)
+    : m_engine(0), m_state(CBool), u(value)
 {
 }
 
 QScriptValuePrivate::QScriptValuePrivate(int value)
-    : m_state(CNumber), u(value)
+    : m_engine(0), m_state(CNumber), u(value)
 {
 }
 
 QScriptValuePrivate::QScriptValuePrivate(uint value)
-    : m_state(CNumber), u(value)
+    : m_engine(0), m_state(CNumber), u(value)
 {
 }
 
 QScriptValuePrivate::QScriptValuePrivate(qsreal value)
-    : m_state(CNumber), u(value)
+    : m_engine(0), m_state(CNumber), u(value)
 {
 }
 
 QScriptValuePrivate::QScriptValuePrivate(const QString& value)
-    : m_state(CString), u(new QString(value))
+    : m_engine(0), m_state(CString), u(new QString(value))
 {
 }
 
 QScriptValuePrivate::QScriptValuePrivate(QScriptValue::SpecialValue value)
-    : m_state(value == QScriptValue::NullValue ? CNull : CUndefined)
+    : m_engine(0), m_state(value == QScriptValue::NullValue ? CNull : CUndefined)
 {
 }
 
@@ -104,6 +104,7 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, bool valu
     Q_ASSERT(engine);
     v8::HandleScope handleScope;
     m_value = v8::Persistent<v8::Value>::New(m_engine->makeJSValue(value));
+    m_engine->registerValue(this);
 }
 
 QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, int value)
@@ -112,6 +113,7 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, int value
     Q_ASSERT(engine);
     v8::HandleScope handleScope;
     m_value = v8::Persistent<v8::Value>::New(m_engine->makeJSValue(value));
+    m_engine->registerValue(this);
 }
 
 QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, uint value)
@@ -120,6 +122,7 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, uint valu
     Q_ASSERT(engine);
     v8::HandleScope handleScope;
     m_value = v8::Persistent<v8::Value>::New(m_engine->makeJSValue(value));
+    m_engine->registerValue(this);
 }
 
 QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, qsreal value)
@@ -128,6 +131,7 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, qsreal va
     Q_ASSERT(engine);
     v8::HandleScope handleScope;
     m_value = v8::Persistent<v8::Value>::New(m_engine->makeJSValue(value));
+    m_engine->registerValue(this);
 }
 
 QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, const QString& value)
@@ -136,6 +140,7 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, const QSt
     Q_ASSERT(engine);
     v8::HandleScope handleScope;
     m_value = v8::Persistent<v8::Value>::New(m_engine->makeJSValue(value));
+    m_engine->registerValue(this);
 }
 
 QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, QScriptValue::SpecialValue value)
@@ -144,6 +149,7 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate* engine, QScriptVa
     Q_ASSERT(engine);
     v8::HandleScope handleScope;
     m_value = v8::Persistent<v8::Value>::New(m_engine->makeJSValue(value));
+    m_engine->registerValue(this);
 }
 
 QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate *engine, v8::Handle<v8::Value> value)
@@ -153,11 +159,13 @@ QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate *engine, v8::Handl
     // It shouldn't happen, v8 shows errors by returning an empty handler. This is important debug
     // information and it can't be simply ignored.
     Q_ASSERT(!value.IsEmpty());
+    m_engine->registerValue(this);
 }
 
 QScriptValuePrivate::~QScriptValuePrivate()
 {
     if (isJSBased()) {
+        m_engine->unregisterValue(this);
         QScriptIsolate api(m_engine);
         m_value.Dispose();
     } else if (isStringBased()) {
@@ -1119,7 +1127,25 @@ bool QScriptValuePrivate::assignEngine(QScriptEnginePrivate* engine)
     m_engine = engine;
     m_state = JSValue;
 
+    m_engine->registerValue(this);
     return true;
+}
+
+/*!
+  \internal
+  reinitialize this value to an invalid value.
+*/
+void QScriptValuePrivate::reinitialize()
+{
+    if (isJSBased()) {
+        m_engine->unregisterValue(this);
+        m_value.Dispose();
+        m_value.Clear();
+    } else if (isStringBased()) {
+        delete u.m_string;
+    }
+    m_engine = 0;
+    m_state = Invalid;
 }
 
 /*!
@@ -1130,19 +1156,20 @@ void QScriptValuePrivate::reinitialize(QScriptEnginePrivate* engine, v8::Handle<
 {
     if (isJSBased()) {
         m_value.Dispose();
+        // avoid double registration
+        m_engine->unregisterValue(this);
     } else if (isStringBased()) {
         delete u.m_string;
     }
     m_engine = engine;
     m_state = JSValue;
     m_value = v8::Persistent<v8::Value>::New(value);
+    m_engine->registerValue(this);
 }
 
 QScriptEnginePrivate* QScriptValuePrivate::engine() const
 {
-    // As long as m_engine is an autoinitializated pointer we can safely return it without
-    // checking current state.
-    return const_cast<QScriptEnginePrivate*>(m_engine.constData());
+    return m_engine;
 }
 
 inline QScriptValuePrivate::operator v8::Handle<v8::Value>() const

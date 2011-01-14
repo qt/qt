@@ -203,6 +203,10 @@ public:
     inline void unregisterAdditionalResources(QtDataBase *data);
     inline void deallocateAdditionalResources();
 
+    inline void registerValue(QScriptValuePrivate *data);
+    inline void unregisterValue(QScriptValuePrivate *data);
+    inline void invalidateAllValues();
+
     v8::Persistent<v8::FunctionTemplate> declarativeClassTemplate;
     v8::Persistent<v8::FunctionTemplate> scriptClassTemplate;
     v8::Persistent<v8::FunctionTemplate> metaMethodTemplate;
@@ -259,6 +263,7 @@ private:
 
     enum State { Idle, Evaluating, Destroyed } m_state;
     QScriptBagContainer<QtDataBase> m_additionalResources;
+    QScriptBagContainer<QScriptValuePrivate> m_values;
 };
 
 QT_END_NAMESPACE

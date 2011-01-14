@@ -44,6 +44,7 @@
 #include <qdebug.h>
 
 #include "qscriptconverter_p.h"
+#include "qscripttools_p.h"
 #include "qscriptshareddata_p.h"
 #include "qscriptvalue.h"
 #include "qscriptstring_p.h"
@@ -51,14 +52,15 @@
 QT_BEGIN_NAMESPACE
 
 class QScriptClassPrivate;
-/*
+/*!
   \internal
   \class QScriptValuePrivate
 */
-class QScriptValuePrivate : public QScriptSharedData
+class QScriptValuePrivate
+        : public QScriptSharedData
+        , public QScriptLinkedNode
 {
 public:
-
     inline static QScriptValuePrivate* get(const QScriptValue& q);
     inline static QScriptValue get(const QScriptValuePrivate* d);
     inline static QScriptValue get(QScriptValuePrivate* d);
@@ -80,6 +82,7 @@ public:
     inline QScriptValuePrivate(QScriptEnginePrivate* engine, const QString& value);
     inline QScriptValuePrivate(QScriptEnginePrivate* engine, QScriptValue::SpecialValue value);
     inline QScriptValuePrivate(QScriptEnginePrivate* engine, v8::Handle<v8::Value>);
+    inline void reinitialize();
     inline void reinitialize(QScriptEnginePrivate* engine, v8::Handle<v8::Value> value);
 
     inline bool toBool() const;
@@ -159,7 +162,7 @@ public:
     inline v8::Handle<v8::Value> asV8Value(QScriptEnginePrivate* engine);
     inline qint64 objectId() const;
 private:
-    QScriptSharedDataPointer<QScriptEnginePrivate> m_engine;
+    QScriptEnginePrivate *m_engine;
 
     // Please, update class documentation when you change the enum.
     enum State {

@@ -370,6 +370,31 @@ inline void QScriptEnginePrivate::deallocateAdditionalResources()
     m_additionalResources.clear();
 }
 
+inline void QScriptEnginePrivate::registerValue(QScriptValuePrivate *data)
+{
+    m_values.insert(data);
+}
+
+inline void QScriptEnginePrivate::unregisterValue(QScriptValuePrivate *data)
+{
+    m_values.remove(data);
+}
+
+class QtScriptValueInvalidator
+{
+public:
+    void operator () (QScriptValuePrivate* value)
+    {
+        value->reinitialize();
+    }
+};
+inline void QScriptEnginePrivate::invalidateAllValues()
+{
+    QtScriptValueInvalidator invalidator;
+    m_values.forEach(invalidator);
+    m_values.clear();
+}
+
 inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newQObject(QScriptValuePrivate *scriptObject,
                                                                          QObject *qtobject,
                                                                          QScriptEngine::ValueOwnership ownership,

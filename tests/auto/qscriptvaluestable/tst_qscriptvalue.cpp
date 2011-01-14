@@ -682,56 +682,6 @@ void tst_QScriptValue::toStringSimple()
     QCOMPARE(engine.evaluate(code).toString(), result);
 }
 
-void tst_QScriptValue::copyConstructor_data()
-{
-    QScriptEngine engine;
-    QScriptValue nnumber(123);
-    QScriptValue nstring("ping");
-    QScriptValue number(engine.evaluate("1"));
-    QScriptValue string(engine.evaluate("'foo'"));
-    QScriptValue object(engine.evaluate("new Object"));
-    QScriptValue undefined(engine.evaluate("undefined"));
-    QScriptValue null(engine.evaluate("null"));
-
-    QTest::addColumn<QScriptValue>("value");
-    QTest::addColumn<QString>("result");
-
-    QTest::newRow("native number") << nnumber << QString::number(123);
-    QTest::newRow("native string") << nstring << QString("ping");
-    QTest::newRow("number") << number << QString::fromAscii("1");
-    QTest::newRow("string") << string << QString::fromAscii("foo");
-    QTest::newRow("object") << object << QString::fromAscii("[object Object]");
-    QTest::newRow("undefined") << undefined << QString::fromAscii("undefined");
-    QTest::newRow("null") << null << QString::fromAscii("null");
-}
-
-void tst_QScriptValue::copyConstructor()
-{
-    QFETCH(QScriptValue, value);
-    QFETCH(QString, result);
-
-    QVERIFY(value.isValid());
-    QScriptValue tmp(value);
-    QVERIFY(tmp.isValid());
-    QCOMPARE(tmp.toString(), result);
-}
-
-void tst_QScriptValue::assignOperator_data()
-{
-    copyConstructor_data();
-}
-
-void tst_QScriptValue::assignOperator()
-{
-    QFETCH(QScriptValue, value);
-    QFETCH(QString, result);
-
-    QScriptValue tmp;
-    tmp = value;
-    QVERIFY(tmp.isValid());
-    QCOMPARE(tmp.toString(), result);
-}
-
 /* Test internal data sharing between a diffrenet QScriptValue. */
 void tst_QScriptValue::dataSharing()
 {
@@ -757,8 +707,6 @@ void tst_QScriptValue::dataSharing()
 
 void tst_QScriptValue::constructors_data()
 {
-    QScriptEngine engine;
-
     QTest::addColumn<QScriptValue>("value");
     QTest::addColumn<QString>("string");
     QTest::addColumn<bool>("valid");
@@ -769,7 +717,6 @@ void tst_QScriptValue::constructors_data()
     QTest::newRow("bool") << QScriptValue(true) << QString::fromAscii("true") << true << false;
     QTest::newRow("double") << QScriptValue(21.12) << QString::number(21.12) << true << false;
     QTest::newRow("string") << QScriptValue("AlaMaKota") << QString::fromAscii("AlaMaKota") << true << false;
-    QTest::newRow("object") << engine.evaluate("new Object") << QString::fromAscii("[object Object]") << true << true;
     QTest::newRow("null") << QScriptValue(QScriptValue::NullValue)<< QString::fromAscii("null") << true << false;
     QTest::newRow("undef") << QScriptValue(QScriptValue::UndefinedValue)<< QString::fromAscii("undefined") << true << false;
 }

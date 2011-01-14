@@ -3790,8 +3790,6 @@ void tst_QScriptValue::engineDeleted()
 
     delete eng;
 
-    QSKIP("QSEP should stay alive", SkipAll);
-
     QVERIFY(!v1.isValid());
     QVERIFY(v1.engine() == 0);
     QVERIFY(!v2.isValid());

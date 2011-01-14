@@ -724,6 +724,9 @@ v8::Handle<v8::String> QScriptEnginePrivate::qtDataId()
 QScriptEnginePrivate::~QScriptEnginePrivate()
 {
     m_isolate->Enter();
+
+    invalidateAllValues();
+
     // FIXME Do we really need to dispose all persistent handlers before context destruction?
     m_originalGlobalObject.destroy();
     if (!m_variantTemplate.IsEmpty())

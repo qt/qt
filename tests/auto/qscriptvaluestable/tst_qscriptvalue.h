@@ -65,10 +65,6 @@ public:
 private slots:
     void toStringSimple_data();
     void toStringSimple();
-    void copyConstructor_data();
-    void copyConstructor();
-    void assignOperator_data();
-    void assignOperator();
     void dataSharing();
     void constructors_data();
     void constructors();
