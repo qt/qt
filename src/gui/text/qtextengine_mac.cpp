@@ -604,8 +604,9 @@ void QTextEngine::shapeTextMac(int item) const
     bool stringToCMapFailed = false;
     if (!fe->stringToCMap(str, len, &g, &num_glyphs, flags, log_clusters, attributes())) {
         ensureSpace(num_glyphs);
-        stringToCMapFailed = fe->stringToCMap(str, len, &g, &num_glyphs, flags, log_clusters,
-                                              attributes());
+        g = availableGlyphs(&si);
+        stringToCMapFailed = !fe->stringToCMap(str, len, &g, &num_glyphs, flags, log_clusters,
+                                               attributes());
     }
 
     if (!stringToCMapFailed) {
