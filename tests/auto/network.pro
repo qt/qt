@@ -35,6 +35,7 @@ SUBDIRS=\
     qsslerror \
     qsslkey \
     qsslsocket \
+#    qnetworkproxyfactory \ # Uses a hardcoded proxy configuration
 
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
     qauthenticator \
