@@ -1525,7 +1525,7 @@ while [ "$#" -gt 0 ]; do
         ;;
 
     framework)
-        if [ "$PLATFORM_MAC" = "yes" ]; then
+        if [ "$PLATFORM_MAC" = "yes" ] || [ "$PLATFORM_QPA" = "yes" ]; then
             CFG_FRAMEWORK="$VAL"
         else
             UNKNOWN_OPT=yes
