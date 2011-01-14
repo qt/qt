@@ -1150,7 +1150,7 @@ void QScriptValuePrivate::reinitialize()
 
 /*!
   \internal
-  reinitialize this value to an JSValue or invalid (if the given handle point to invalid)
+  reinitialize this value to an JSValue.
 */
 void QScriptValuePrivate::reinitialize(QScriptEnginePrivate* engine, v8::Handle<v8::Value> value)
 {
