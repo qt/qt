@@ -5,7 +5,7 @@
 load(qttest_p4)
 QT = core network
 
-symbian: SOURCES += tst_qnetworkproxyfactory_symbian.cpp
+SOURCES += tst_qnetworkproxyfactory.cpp
 
 symbian: TARGET.CAPABILITY = NetworkServices
 
