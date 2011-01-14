@@ -136,7 +136,6 @@ void tst_QScriptString::test()
 
         delete eng2;
 
-        QEXPECT_FAIL("", "New version of the QtScript doesn't invalidate values", Abort);
         QVERIFY(!oneInterned.isValid());
         QVERIFY(!twoInterned.isValid());
         QVERIFY(!copy1.isValid());

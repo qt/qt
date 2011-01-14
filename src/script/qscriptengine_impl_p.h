@@ -380,19 +380,38 @@ inline void QScriptEnginePrivate::unregisterValue(QScriptValuePrivate *data)
     m_values.remove(data);
 }
 
-class QtScriptValueInvalidator
+inline void QScriptEnginePrivate::registerString(QScriptStringPrivate *data)
+{
+    m_strings.insert(data);
+}
+
+inline void QScriptEnginePrivate::unregisterString(QScriptStringPrivate *data)
+{
+    m_strings.remove(data);
+}
+
+class QtScriptInvalidator
 {
 public:
-    void operator () (QScriptValuePrivate* value)
+    template<class T>
+    void operator () (T* value)
     {
         value->reinitialize();
     }
 };
+
 inline void QScriptEnginePrivate::invalidateAllValues()
 {
-    QtScriptValueInvalidator invalidator;
+    QtScriptInvalidator invalidator;
     m_values.forEach(invalidator);
     m_values.clear();
+}
+
+inline void QScriptEnginePrivate::invalidateAllString()
+{
+    QtScriptInvalidator invalidator;
+    m_strings.forEach(invalidator);
+    m_strings.clear();
 }
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::newQObject(QScriptValuePrivate *scriptObject,

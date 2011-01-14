@@ -37,6 +37,7 @@
 
 #include "qscriptconverter_p.h"
 #include "qscriptstring_p.h"
+#include "qscriptengine_p.h"
 #include <QtCore/qnumeric.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qhash.h>
@@ -44,15 +45,37 @@
 QT_BEGIN_NAMESPACE
 
 QScriptStringPrivate::QScriptStringPrivate()
+    : m_engine(0)
 {}
 
 QScriptStringPrivate::QScriptStringPrivate(QScriptEnginePrivate *engine, v8::Handle<v8::String> str)
     : m_engine(engine), m_string(v8::Persistent<v8::String>::New(str))
-{}
+{
+    Q_ASSERT(!m_string.IsEmpty());
+    m_engine->registerString(this);
+}
 
 QScriptStringPrivate::~QScriptStringPrivate()
 {
-    m_string.Dispose();
+    if (isValid()) {
+        m_engine->unregisterString(this);
+        m_string.Dispose();
+    }
+}
+
+/*!
+  \internal
+  Change this string to an invalid one
+*/
+inline void QScriptStringPrivate::reinitialize()
+{
+    if (isValid()) {
+        m_engine->unregisterString(this);
+        m_string.Dispose();
+        m_string.Clear();
+        m_engine = 0;
+    }
+    Q_ASSERT(!isValid());
 }
 
 QScriptString QScriptStringPrivate::get(QScriptStringPrivate* d)
@@ -126,7 +149,7 @@ inline v8::Handle<v8::String> QScriptStringPrivate::asV8Value()const
 
 inline QScriptEnginePrivate* QScriptStringPrivate::engine() const
 {
-    return m_engine.data();
+    return m_engine;
 }
 
 QT_END_NAMESPACE

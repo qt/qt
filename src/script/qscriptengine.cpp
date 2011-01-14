@@ -727,6 +727,7 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     m_isolate->Enter();
 
     invalidateAllValues();
+    invalidateAllString();
 
     // FIXME Do we really need to dispose all persistent handlers before context destruction?
     m_originalGlobalObject.destroy();

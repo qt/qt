@@ -36,6 +36,7 @@
 //
 
 #include "qscriptshareddata_p.h"
+#include "qscripttools_p.h"
 #include "qscriptstring.h"
 #include "v8.h"
 
@@ -43,7 +44,10 @@ QT_BEGIN_NAMESPACE
 
 class QScriptEnginePrivate;
 
-class QScriptStringPrivate : public QScriptSharedData {
+class QScriptStringPrivate
+        : public QScriptSharedData
+        , public QScriptLinkedNode
+{
 public:
     static inline QScriptString get(QScriptStringPrivate* d);
     static inline QScriptString get(QScriptPassPointer<QScriptStringPrivate> d);
@@ -52,6 +56,7 @@ public:
     inline QScriptStringPrivate();
     inline QScriptStringPrivate(QScriptEnginePrivate *, v8::Handle<v8::String>);
     inline ~QScriptStringPrivate();
+    inline void reinitialize();
 
     inline bool operator==(const QScriptStringPrivate& other) const;
     inline bool operator!=(const QScriptStringPrivate& other) const;
@@ -63,10 +68,9 @@ public:
     inline operator v8::Handle<v8::String>() const;
     inline v8::Handle<v8::String> asV8Value() const;
     inline QScriptEnginePrivate* engine() const;
-
 private:
     Q_DISABLE_COPY(QScriptStringPrivate)
-    QScriptSharedDataPointer<QScriptEnginePrivate> m_engine;
+    QScriptEnginePrivate *m_engine;
     v8::Persistent<v8::String> m_string;
 };
 

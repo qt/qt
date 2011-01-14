@@ -207,6 +207,10 @@ public:
     inline void unregisterValue(QScriptValuePrivate *data);
     inline void invalidateAllValues();
 
+    inline void registerString(QScriptStringPrivate *data);
+    inline void unregisterString(QScriptStringPrivate *data);
+    inline void invalidateAllString();
+
     v8::Persistent<v8::FunctionTemplate> declarativeClassTemplate;
     v8::Persistent<v8::FunctionTemplate> scriptClassTemplate;
     v8::Persistent<v8::FunctionTemplate> metaMethodTemplate;
@@ -264,6 +268,7 @@ private:
     enum State { Idle, Evaluating, Destroyed } m_state;
     QScriptBagContainer<QtDataBase> m_additionalResources;
     QScriptBagContainer<QScriptValuePrivate> m_values;
+    QScriptBagContainer<QScriptStringPrivate> m_strings;
 };
 
 QT_END_NAMESPACE
