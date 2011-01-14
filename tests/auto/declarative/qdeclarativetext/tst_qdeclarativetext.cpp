@@ -49,6 +49,7 @@
 #include <qmath.h>
 #include <QDeclarativeView>
 #include <private/qapplication_p.h>
+#include <limits.h>
 
 #include "../../../shared/util.h"
 #include "testhttpserver.h"
@@ -77,6 +78,8 @@ private slots:
 
     void embeddedImages_data();
     void embeddedImages();
+
+    void lineCount();
 
     // ### these tests may be trivial    
     void horizontalAlignment();
@@ -1018,6 +1021,33 @@ void tst_qdeclarativetext::embeddedImages()
         QCOMPARE(textObject->width(), 16.0); // default size of QTextDocument broken image icon
         QCOMPARE(textObject->height(), 16.0);
     }
+}
+
+void tst_qdeclarativetext::lineCount()
+{
+    QDeclarativeView *canvas = createView(SRCDIR "/data/lineCount.qml");
+
+    QDeclarativeText *myText = canvas->rootObject()->findChild<QDeclarativeText*>("myText");
+    QVERIFY(myText != 0);
+
+    QVERIFY(myText->lineCount() > 1);
+    QVERIFY(!myText->truncated());
+    QCOMPARE(myText->maximumLineCount(), INT_MAX);
+
+    myText->setMaximumLineCount(2);
+    QCOMPARE(myText->lineCount(), 2);
+    QCOMPARE(myText->truncated(), true);
+    QCOMPARE(myText->maximumLineCount(), 2);
+
+    myText->resetMaximumLineCount();
+    QCOMPARE(myText->maximumLineCount(), INT_MAX);
+    QCOMPARE(myText->truncated(), false);
+
+    myText->setElideMode(QDeclarativeText::ElideRight);
+    myText->setMaximumLineCount(2);
+    QCOMPARE(myText->lineCount(), 2);
+    QCOMPARE(myText->truncated(), true);
+    QCOMPARE(myText->maximumLineCount(), 2);
 }
 
 QTEST_MAIN(tst_qdeclarativetext)

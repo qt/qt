@@ -54,6 +54,7 @@
 #include <QPainter>
 #include <QAbstractTextDocumentLayout>
 #include <qmath.h>
+#include <limits.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -84,12 +85,14 @@ private:
 
 DEFINE_BOOL_CONFIG_OPTION(enableImageCache, QML_ENABLE_TEXT_IMAGE_CACHE);
 
+QString QDeclarativeTextPrivate::elideChar = QString(0x2026);
+
 QDeclarativeTextPrivate::QDeclarativeTextPrivate()
 : color((QRgb)0), style(QDeclarativeText::Normal), hAlign(QDeclarativeText::AlignLeft), 
   vAlign(QDeclarativeText::AlignTop), elideMode(QDeclarativeText::ElideNone),
-  format(QDeclarativeText::AutoText), wrapMode(QDeclarativeText::NoWrap), imageCacheDirty(true), 
-  updateOnComponentComplete(true), richText(false), singleline(false), cacheAllTextAsImage(true), 
-  internalWidthUpdate(false), doc(0) 
+  format(QDeclarativeText::AutoText), wrapMode(QDeclarativeText::NoWrap), lineCount(1), truncated(false), maximumLineCount(INT_MAX),
+  maximumLineCountValid(false), imageCacheDirty(true), updateOnComponentComplete(true), richText(false), singleline(false),
+  cacheAllTextAsImage(true), internalWidthUpdate(false), doc(0)
 {
     cacheAllTextAsImage = enableImageCache();
     QGraphicsItemPrivate::acceptedMouseButtons = Qt::LeftButton;
@@ -192,9 +195,13 @@ void QDeclarativeTextPrivate::updateLayout()
             QString tmp = text;
             tmp.replace(QLatin1Char('\n'), QChar::LineSeparator);
             singleline = !tmp.contains(QChar::LineSeparator);
-            if (singleline && elideMode != QDeclarativeText::ElideNone && q->widthValid()) {
+            if (singleline && !maximumLineCountValid && elideMode != QDeclarativeText::ElideNone && q->widthValid()) {
                 QFontMetrics fm(font);
                 tmp = fm.elidedText(tmp,(Qt::TextElideMode)elideMode,q->width()); // XXX still worth layout...?
+                if (tmp != text && !truncated) {
+                    truncated = true;
+                    emit q->truncatedChanged();
+                }
             }
             layout.setText(tmp);
         } else {
@@ -291,6 +298,8 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
     qreal height = 0;
     qreal widthUsed = 0;
     qreal lineWidth = 0;
+    int visibleTextLength = 0;
+    int visibleCount = 0;
 
     //set manual width
     if ((wrapMode != QDeclarativeText::NoWrap || elideMode != QDeclarativeText::ElideNone) && q->widthValid())
@@ -302,16 +311,71 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
     textOption.setWrapMode(QTextOption::WrapMode(wrapMode));
     layout.setTextOption(textOption);
 
-    layout.beginLayout();
-    forever {
-        QTextLine line = layout.createLine();
-        if (!line.isValid())
-            break;
+    bool elideText = false;
+    bool truncate = false;
 
-        if (lineWidth)
-            line.setLineWidth(lineWidth);
+    QFontMetrics fm(layout.font());
+    qreal elideWidth = fm.width(elideChar);
+    elidePos = QPointF();
+
+    if (maximumLineCountValid) {
+        layout.beginLayout();
+        int y = 0;
+        int linesLeft = maximumLineCount;
+        while (linesLeft > 0) {
+            QTextLine line = layout.createLine();
+            if (!line.isValid())
+                break;
+
+            visibleCount++;
+
+            if (lineWidth) {
+                if (--linesLeft == 0) {
+                    line.setLineWidth(q->width()*2); // Set out more than is required, but not too much.
+                    if (line.naturalTextWidth() > lineWidth)
+                        line.setLineWidth(lineWidth - elideWidth);
+                    visibleTextLength += line.textLength(); // Used to catch new lines that are shorter than the layout width.
+
+                    if (visibleTextLength < text.length()) {
+                        truncate = true;
+                        if (elideMode==QDeclarativeText::ElideRight) {
+                            // Need to correct for alignment
+                            int x = line.naturalTextWidth();
+                            if (hAlign == QDeclarativeText::AlignRight) {
+                                x = q->width()-elideWidth;
+                            } else if (hAlign == QDeclarativeText::AlignHCenter) {
+                                x = (q->width()+line.naturalTextWidth()-elideWidth)/2;
+                            }
+                            elidePos = QPointF(x, y + fm.ascent());
+                        }
+                    }
+                } else {
+                    line.setLineWidth(lineWidth);
+                    visibleTextLength += line.textLength();
+                }
+
+                y += line.height();
+            }
+        }
+        layout.endLayout();
+
+        //Update truncated
+        if (truncated != truncate) {
+            truncated = truncate;
+            emit q->truncatedChanged();
+        }
+    } else {
+        layout.beginLayout();
+        forever {
+            QTextLine line = layout.createLine();
+            if (!line.isValid())
+                break;
+            visibleCount++;
+            if (lineWidth)
+                line.setLineWidth(lineWidth);
+        }
+        layout.endLayout();
     }
-    layout.endLayout();
 
     for (int i = 0; i < layout.lineCount(); ++i) {
         QTextLine line = layout.lineAt(i);
@@ -331,11 +395,21 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
                 x = 0;
             } else if (hAlign == QDeclarativeText::AlignRight) {
                 x = layoutWidth - line.naturalTextWidth();
+                if (elideText && i == layout.lineCount()-1)
+                    x -= elideWidth; // Correct for when eliding multilines
             } else if (hAlign == QDeclarativeText::AlignHCenter) {
                 x = (layoutWidth - line.naturalTextWidth()) / 2;
+                if (elideText && i == layout.lineCount()-1)
+                    x -= elideWidth/2; // Correct for when eliding multilines
             }
             line.setPosition(QPointF(x, line.y()));
         }
+    }
+
+    //Update the number of visible lines
+    if (lineCount != visibleCount) {
+        lineCount = visibleCount;
+        emit q->lineCountChanged();
     }
 
     return layout.boundingRect().toAlignedRect().size();
@@ -391,7 +465,9 @@ void QDeclarativeTextPrivate::drawTextLayout(QPainter *painter, const QPointF &p
     else
         painter->setPen(color);
     painter->setFont(font);
-    layout.draw(painter, pos); 
+    layout.draw(painter, pos);
+    if (!elidePos.isNull())
+        painter->drawText(elidePos, elideChar);
 }
 
 /*!
@@ -979,6 +1055,76 @@ void QDeclarativeText::setWrapMode(WrapMode mode)
     emit wrapModeChanged();
 }
 
+/*!
+    \qmlproperty int Text::lineCount
+
+    Returns the number of lines visible in the text item.
+
+    This property is not supported for rich text.
+
+    \sa maximumLineCount
+*/
+int QDeclarativeText::lineCount() const
+{
+    Q_D(const QDeclarativeText);
+    return d->lineCount;
+}
+
+/*!
+    \qmlproperty bool Text::truncated
+
+    Returns if the text has been truncated due to \l maximumLineCount
+    or \l elide.
+
+    This property is not supported for rich text.
+
+    \sa maximumLineCount, elide
+*/
+bool QDeclarativeText::truncated() const
+{
+    Q_D(const QDeclarativeText);
+    return d->truncated;
+}
+
+/*!
+    \qmlproperty int Text::maximumLineCount
+
+    Set this property to limit the number of lines that the text item will show.
+    If elide is set to Text.ElideRight, the text will be elided appropriately.
+    By default, this is the value of the largest possible integer.
+
+    This property is not supported for rich text.
+
+    \sa lineCount, elide
+*/
+int QDeclarativeText::maximumLineCount() const
+{
+    Q_D(const QDeclarativeText);
+    return d->maximumLineCount;
+}
+
+void QDeclarativeText::setMaximumLineCount(int lines)
+{
+    Q_D(QDeclarativeText);
+
+    d->maximumLineCountValid = lines==INT_MAX ? false : true;
+    if (d->maximumLineCount != lines) {
+        d->maximumLineCount = lines;
+        d->updateLayout();
+        emit maximumLineCountChanged();
+    }
+}
+
+void QDeclarativeText::resetMaximumLineCount()
+{
+    Q_D(QDeclarativeText);
+    setMaximumLineCount(INT_MAX);
+    d->elidePos = QPointF();
+    if (d->truncated != false) {
+        d->truncated = false;
+        emit truncatedChanged();
+    }
+}
 
 /*!
     \qmlproperty enumeration Text::textFormat
@@ -1066,7 +1212,7 @@ void QDeclarativeText::setTextFormat(TextFormat format)
     Set this property to elide parts of the text fit to the Text item's width.
     The text will only elide if an explicit width has been set.
 
-    This property cannot be used with multi-line text or with rich text.
+    This property cannot be used with rich text.
 
     Eliding can be:
     \list
@@ -1075,6 +1221,9 @@ void QDeclarativeText::setTextFormat(TextFormat format)
     \o Text.ElideMiddle
     \o Text.ElideRight
     \endlist
+
+    If this property is set to Text.ElideRight, it can be used with multiline
+    text. The text will only elide if maximumLineCount has been set.
 
     If the text is a multi-length string, and the mode is not \c Text.ElideNone,
     the first string that fits will be used, otherwise the last will be elided.
@@ -1153,7 +1302,7 @@ void QDeclarativeText::geometryChanged(const QRectF &newGeometry, const QRectF &
             && (d->wrapMode != QDeclarativeText::NoWrap
                 || d->elideMode != QDeclarativeText::ElideNone
                 || d->hAlign != QDeclarativeText::AlignLeft)) {
-        if (d->singleline && d->elideMode != QDeclarativeText::ElideNone && widthValid()) {
+        if ((d->singleline || d->maximumLineCountValid) && d->elideMode != QDeclarativeText::ElideNone && widthValid()) {
             // We need to re-elide
             d->updateLayout();
         } else {

@@ -88,6 +88,13 @@ public:
     QDeclarativeText::TextElideMode elideMode;
     QDeclarativeText::TextFormat format;
     QDeclarativeText::WrapMode wrapMode;
+    int lineCount;
+    bool truncated;
+    int maximumLineCount;
+    int maximumLineCountValid;
+    QPointF elidePos;
+
+    static QString elideChar;
 
     void invalidateImageCache();
     void checkImageCache();

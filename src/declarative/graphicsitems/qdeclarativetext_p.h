@@ -71,6 +71,10 @@ class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeText : public QDeclarativeItem
     Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign NOTIFY horizontalAlignmentChanged)
     Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign NOTIFY verticalAlignmentChanged)
     Q_PROPERTY(WrapMode wrapMode READ wrapMode WRITE setWrapMode NOTIFY wrapModeChanged)
+    Q_PROPERTY(int lineCount READ lineCount NOTIFY lineCountChanged)
+    Q_PROPERTY(bool truncated READ truncated NOTIFY truncatedChanged)
+    Q_PROPERTY(int maximumLineCount READ maximumLineCount WRITE setMaximumLineCount NOTIFY maximumLineCountChanged RESET resetMaximumLineCount)
+
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat NOTIFY textFormatChanged)
     Q_PROPERTY(TextElideMode elide READ elideMode WRITE setElideMode NOTIFY elideModeChanged) //### elideMode?
     Q_PROPERTY(qreal paintedWidth READ paintedWidth NOTIFY paintedSizeChanged)
@@ -131,6 +135,13 @@ public:
     WrapMode wrapMode() const;
     void setWrapMode(WrapMode w);
 
+    int lineCount() const;
+    bool truncated() const;
+
+    int maximumLineCount() const;
+    void setMaximumLineCount(int lines);
+    void resetMaximumLineCount();
+
     TextFormat textFormat() const;
     void setTextFormat(TextFormat format);
 
@@ -158,6 +169,9 @@ Q_SIGNALS:
     void horizontalAlignmentChanged(HAlignment alignment);
     void verticalAlignmentChanged(VAlignment alignment);
     void wrapModeChanged();
+    void lineCountChanged();
+    void truncatedChanged();
+    void maximumLineCountChanged();
     void textFormatChanged(TextFormat textFormat);
     void elideModeChanged(TextElideMode mode);
     void paintedSizeChanged();
