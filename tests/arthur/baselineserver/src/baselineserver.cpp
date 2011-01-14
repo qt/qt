@@ -53,16 +53,16 @@
 #include <QProcess>
 #include <QDirIterator>
 
-QString BaselineServer::storage;
-
 // extra fields, for use in image metadata storage
 const QString PI_ImageChecksum(QLS("ImageChecksum"));
 const QString PI_RunId(QLS("RunId"));
 const QString PI_CreationDate(QLS("CreationDate"));
 
+QString BaselineServer::storage;
+QString BaselineServer::url;
 
 BaselineServer::BaselineServer(QObject *parent)
-    : QTcpServer(parent)
+    : QTcpServer(parent), lastRunIdIdx(0)
 {
     QFileInfo me(QCoreApplication::applicationFilePath());
     meLastMod = me.lastModified();
@@ -76,22 +76,32 @@ QString BaselineServer::storagePath()
     if (storage.isEmpty()) {
         storage = QLS(qgetenv("QT_LANCELOT_DIR"));
         if (storage.isEmpty())
-            storage =  QLS("/var/www");
+            storage = QLS("/var/www");
     }
     return storage;
 }
 
 QString BaselineServer::baseUrl()
 {
-    return QLS("http://")
-            + QHostInfo::localHostName().toLatin1() + '.'
-            + QHostInfo::localDomainName().toLatin1() + '/';
+    if (url.isEmpty()) {
+        url = QLS("http://")
+                + QHostInfo::localHostName().toLatin1() + '.'
+                + QHostInfo::localDomainName().toLatin1() + '/';
+    }
+    return url;
 }
 
 void BaselineServer::incomingConnection(int socketDescriptor)
 {
-    qDebug() << "Server: New connection!";
-    BaselineThread *thread = new BaselineThread(socketDescriptor, this);
+    QString runId = QDateTime::currentDateTime().toString(QLS("MMMdd-hhmmss"));
+    if (runId == lastRunId) {
+        runId += QLC('-') + QString::number(++lastRunIdIdx);
+    } else {
+        lastRunId = runId;
+        lastRunIdIdx = 0;
+    }
+    qDebug() << "Server: New connection! RunId:" << runId;
+    BaselineThread *thread = new BaselineThread(runId, socketDescriptor, this);
     connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
     thread->start();
 }
@@ -119,23 +129,21 @@ void BaselineServer::heartbeat()
         QCoreApplication::exit();
 }
 
-BaselineThread::BaselineThread(int socketDescriptor, QObject *parent)
-    : QThread(parent), socketDescriptor(socketDescriptor)
+BaselineThread::BaselineThread(const QString &runId, int socketDescriptor, QObject *parent)
+    : QThread(parent), runId(runId), socketDescriptor(socketDescriptor)
 {
 }
 
 void BaselineThread::run()
 {
-    BaselineHandler handler(socketDescriptor);
+    BaselineHandler handler(runId, socketDescriptor);
     exec();
 }
 
 
-BaselineHandler::BaselineHandler(int socketDescriptor)
-    : QObject(), connectionEstablished(false)
+BaselineHandler::BaselineHandler(const QString &runId, int socketDescriptor)
+    : QObject(), runId(runId), connectionEstablished(false)
 {
-    runId = QDateTime::currentDateTime().toString(QLS("MMMdd-hhmmss"));
-
     if (socketDescriptor == -1)
         return;
 

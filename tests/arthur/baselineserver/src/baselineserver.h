@@ -75,7 +75,10 @@ private slots:
 private:
     QTimer *heartbeatTimer;
     QDateTime meLastMod;
+    QString lastRunId;
+    int lastRunIdIdx;
     static QString storage;
+    static QString url;
 };
 
 
@@ -85,10 +88,11 @@ class BaselineThread : public QThread
     Q_OBJECT
 
 public:
-    BaselineThread(int socketDescriptor, QObject *parent);
+    BaselineThread(const QString &runId, int socketDescriptor, QObject *parent);
     void run();
 
 private:
+    QString runId;
     int socketDescriptor;
 };
 
@@ -98,7 +102,7 @@ class BaselineHandler : public QObject
     Q_OBJECT
 
 public:
-    BaselineHandler(int socketDescriptor = -1);
+    BaselineHandler(const QString &runId, int socketDescriptor = -1);
     void testPathMapping();
     QString pathForItem(const ImageItem &item, bool isBaseline = true, bool absolute = true) const;
 
@@ -125,8 +129,8 @@ private:
     BaselineProtocol proto;
     PlatformInfo plat;
     mutable PlatformInfo mapped;
-    bool connectionEstablished;
     QString runId;
+    bool connectionEstablished;
     Report report;
 };
 
