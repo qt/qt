@@ -46,7 +46,7 @@
 #ifndef ATOM_H
 #define ATOM_H
 
-#include <qstring.h>
+#include <qstringlist.h>
 
 #define QDOC_QML
 
@@ -137,24 +137,51 @@ class Atom
         Last = UnknownCommand
     };
 
-    Atom(Type type, const QString &string = "")
-	: nxt(0), typ(type), str(string) { }
-    Atom(Atom *prev, Type type, const QString &string = "")
-	: nxt(prev->nxt), typ(type), str(string) { prev->nxt = this; }
+    Atom(Type type, const QString& string = "")
+	: nxt(0), typ(type) 
+    {
+        strs << string; 
+    }
 
-    void appendChar(QChar ch) { str += ch; }
-    void appendString(const QString& string) { str += string; }
-    void chopString() { str.chop(1); }
-    void setString(const QString &string) { str = string; }
-    Atom *next() { return nxt; }
-    void setNext(Atom *newNext) { nxt = newNext; }
+    Atom(Type type, const QString& p1, const QString& p2)
+	: nxt(0), typ(type) 
+    { 
+        strs << p1; 
+        if (!p2.isEmpty()) 
+            strs << p2; 
+    }
 
-    const Atom *next() const { return nxt; }
-    const Atom *next(Type t) const;
-    const Atom *next(Type t, const QString& s) const;
+    Atom(Atom* prev, Type type, const QString& string = "")
+	: nxt(prev->nxt), typ(type) 
+    { 
+        strs << string; 
+        prev->nxt = this; 
+    }
+    
+    Atom(Atom* prev, Type type, const QString& p1, const QString& p2)
+	: nxt(prev->nxt), typ(type) 
+    { 
+        strs << p1; 
+        if (!p2.isEmpty()) 
+            strs << p2; 
+        prev->nxt = this; 
+    }
+
+    void appendChar(QChar ch) { strs[0] += ch; }
+    void appendString(const QString& string) { strs[0] += string; }
+    void chopString() { strs[0].chop(1); }
+    void setString(const QString& string) { strs[0] = string; }
+    Atom* next() { return nxt; }
+    void setNext(Atom* newNext) { nxt = newNext; }
+
+    const Atom* next() const { return nxt; }
+    const Atom* next(Type t) const;
+    const Atom* next(Type t, const QString& s) const;
     Type type() const { return typ; }
     QString typeString() const;
-    const QString& string() const { return str; }
+    const QString& string() const { return strs[0]; }
+    const QString& string(int i) const { return strs[i]; }
+    int count() const { return strs.size(); }
     void dump() const;
 
     static QString BOLD_;
@@ -177,9 +204,9 @@ class Atom
     static QString UPPERROMAN_;
 
  private:
-    Atom *nxt;
+    Atom* nxt;
     Type typ;
-    QString str;
+    QStringList strs;
 };
 
 #define ATOM_FORMATTING_BOLD            "bold"

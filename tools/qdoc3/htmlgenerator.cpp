@@ -1091,14 +1091,14 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         out() << "</table>\n";
         break;
     case Atom::TableHeaderLeft:
-        out() << "<thead><tr class=\"qt-style topAlign\">";
+        out() << "<thead><tr class=\"qt-style\">";
         inTableHeader = true;
         break;
     case Atom::TableHeaderRight:
         out() << "</tr>";
         if (matchAhead(atom, Atom::TableHeaderLeft)) {
             skipAhead = 1;
-            out() << "\n<tr class=\"qt-style topAlign\">";
+            out() << "\n<tr class=\"qt-style\">";
         }
         else {
             out() << "</thead>\n";
@@ -1114,9 +1114,9 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                 out() << " class=\"" << atom->string() << "\">";
         }
         else if (++numTableRows % 2 == 1)
-            out() << "<tr class=\"odd topAlign\">";
+            out() << "<tr class=\"odd\">";
         else
-            out() << "<tr class=\"even topAlign\">";
+            out() << "<tr class=\"even\">";
         break;
     case Atom::TableRowRight:
         out() << "</tr>\n";
@@ -1128,18 +1128,28 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             else
                 out() << "<td ";
 
-            QStringList spans = atom->string().split(",");
-            if (spans.size() == 2) {
-                if (spans.at(0) != "1")
-                    out() << " colspan=\"" << spans.at(0) << "\"";
-                if (spans.at(1) != "1")
-                    out() << " rowspan=\"" << spans.at(1) << "\"";
-                if (inTableHeader)
-                    out() << ">";
-                else {
-                    out() << ">"; 
-                    //out() << "><p>"; 
+            for (int i=0; i<atom->count(); ++i) {
+                if (i > 0)
+                    out() << " ";
+                QString p = atom->string(i);
+                if (p.contains('=')) {
+                    out() << p;
                 }
+                else {
+                    QStringList spans = p.split(",");
+                    if (spans.size() == 2) {
+                        if (spans.at(0) != "1")
+                            out() << " colspan=\"" << spans.at(0) << "\"";
+                        if (spans.at(1) != "1")
+                            out() << " rowspan=\"" << spans.at(1) << "\"";
+                    }
+                }
+            }
+            if (inTableHeader)
+                out() << ">";
+            else {
+                out() << ">"; 
+                //out() << "><p>"; 
             }
             if (matchAhead(atom, Atom::ParaLeft))
                 skipAhead = 1;
