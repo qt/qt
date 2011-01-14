@@ -70,6 +70,7 @@ private:
   get: O(1)
   forEach: O(n)
   \note This container doesn't take ownership of pointed values.
+  \attention All values have to be unique.
 */
 template<class T>
 class QScriptBagContainer
@@ -86,6 +87,8 @@ public:
     */
     void insert(T* value)
     {
+        Q_ASSERT(checkState());
+        Q_ASSERT_X(!contains(value), Q_FUNC_INFO, "Can't insert a value which is in the bag already");
         QScriptLinkedNode* v = static_cast<QScriptLinkedNode*>(value);
         Q_ASSERT(v);
         if (!m_last) {
@@ -97,6 +100,7 @@ public:
         v->m_next = m_first;
         v->m_prev = 0;
         m_first = v;
+        Q_ASSERT(checkState());
     }
 
     /*!
@@ -105,6 +109,8 @@ public:
     */
     void remove(T* value)
     {
+        Q_ASSERT(checkState());
+        Q_ASSERT_X(contains(value), Q_FUNC_INFO, "Can't remove a value which is not in the bag");
         QScriptLinkedNode* v = static_cast<QScriptLinkedNode*>(value);
         Q_ASSERT(v);
         if (v->m_next)
@@ -116,16 +122,19 @@ public:
             v->m_prev->m_next = v->m_next;
         else
             m_first = v->m_next;
+        Q_ASSERT(checkState());
     }
 
     /*!
       \internal
       Call \a fun for each element in this container. Fun should accept T* as a parameter.
-      \note It is not allowed to change this container (by calling put or get functions).
+      \note In general it is not allowed to change this container by calling put() or get() unless
+      given value is the same as currently procceded by forEach.
     */
     template<class Functor>
     void forEach(Functor fun)
     {
+        Q_ASSERT(checkState());
         QScriptLinkedNode *i = m_first;
         QScriptLinkedNode *tmp;
         while (i) {
@@ -133,6 +142,7 @@ public:
             i = i->m_next;
             fun(static_cast<T*>(tmp));
         }
+        Q_ASSERT(checkState());
     }
 
     /*!
@@ -155,7 +165,23 @@ public:
 //        }
 //    }
 
+
 private:
+    bool checkState() const
+    {
+        return (!m_first && !m_last) || (m_first && m_last);
+    }
+
+    bool contains(T *value) const
+    {
+        QScriptLinkedNode *i = m_first;
+        while (i) {
+            if (static_cast<T*>(i) == value)
+                return true;
+            i = i->m_next;
+        }
+        return false;
+    }
     QScriptLinkedNode *m_first;
     QScriptLinkedNode *m_last;
 };
