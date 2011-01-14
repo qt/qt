@@ -1073,7 +1073,7 @@ int QDeclarativeText::lineCount() const
 /*!
     \qmlproperty bool Text::truncated
 
-    Returns if the text has been truncated due to \l maximumLineCount
+    Returns true if the text has been truncated due to \l maximumLineCount
     or \l elide.
 
     This property is not supported for rich text.

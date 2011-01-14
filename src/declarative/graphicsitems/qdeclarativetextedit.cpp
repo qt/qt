@@ -51,6 +51,7 @@
 #include <QTextLayout>
 #include <QTextLine>
 #include <QTextDocument>
+#include <QTextObject>
 #include <QGraphicsSceneMouseEvent>
 #include <QDebug>
 #include <QPainter>
@@ -524,6 +525,17 @@ void QDeclarativeTextEdit::setWrapMode(WrapMode mode)
     d->updateDefaultTextOption();
     updateSize();
     emit wrapModeChanged();
+}
+
+/*!
+    \qmlproperty int TextEdit::lineCount
+
+    Returns the total number of lines in the textEdit item.
+*/
+int QDeclarativeTextEdit::lineCount() const
+{
+    Q_D(const QDeclarativeTextEdit);
+    return d->lineCount;
 }
 
 /*!
@@ -1376,6 +1388,7 @@ void QDeclarativeTextEdit::q_textChanged()
     Q_D(QDeclarativeTextEdit);
     d->text = text();
     updateSize();
+    updateTotalLines();
     updateMicroFocus();
     emit textChanged(d->text);
 }
@@ -1485,6 +1498,26 @@ void QDeclarativeTextEdit::updateSize()
         d->dirty = true;
     }
     emit update();
+}
+
+void QDeclarativeTextEdit::updateTotalLines()
+{
+    Q_D(QDeclarativeTextEdit);
+
+    int subLines = 0;
+
+    for (QTextBlock it = d->document->begin(); it != d->document->end(); it = it.next()) {
+        QTextLayout *layout = it.layout();
+        if (!layout)
+            continue;
+        subLines += layout->lineCount()-1;
+    }
+
+    int newTotalLines = d->document->lineCount() + subLines;
+    if (d->lineCount != newTotalLines) {
+        d->lineCount = newTotalLines;
+        emit lineCountChanged();
+    }
 }
 
 void QDeclarativeTextEditPrivate::updateDefaultTextOption()

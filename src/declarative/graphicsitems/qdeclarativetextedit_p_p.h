@@ -118,6 +118,7 @@ public:
     QTextDocument *document;
     QTextControl *control;
     QDeclarativeTextEdit::WrapMode wrapMode;
+    int lineCount;
     bool selectByMouse;
     int yoff;
 };

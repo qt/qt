@@ -75,6 +75,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeTextEdit : public QDeclarativePaintedItem
     Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign NOTIFY horizontalAlignmentChanged)
     Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign NOTIFY verticalAlignmentChanged)
     Q_PROPERTY(WrapMode wrapMode READ wrapMode WRITE setWrapMode NOTIFY wrapModeChanged)
+    Q_PROPERTY(int lineCount READ lineCount NOTIFY lineCountChanged)
     Q_PROPERTY(qreal paintedWidth READ paintedWidth NOTIFY paintedSizeChanged)
     Q_PROPERTY(qreal paintedHeight READ paintedHeight NOTIFY paintedSizeChanged)
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat NOTIFY textFormatChanged)
@@ -156,6 +157,8 @@ public:
     WrapMode wrapMode() const;
     void setWrapMode(WrapMode w);
 
+    int lineCount() const;
+
     bool isCursorVisible() const;
     void setCursorVisible(bool on);
 
@@ -220,6 +223,7 @@ Q_SIGNALS:
     void horizontalAlignmentChanged(HAlignment alignment);
     void verticalAlignmentChanged(VAlignment alignment);
     void wrapModeChanged();
+    void lineCountChanged();
     void textFormatChanged(TextFormat textFormat);
     void readOnlyChanged(bool isReadOnly);
     void cursorVisibleChanged(bool isCursorVisible);
@@ -250,6 +254,7 @@ private Q_SLOTS:
 
 private:
     void updateSize();
+    void updateTotalLines();
 
 protected:
     virtual void geometryChanged(const QRectF &newGeometry, 
