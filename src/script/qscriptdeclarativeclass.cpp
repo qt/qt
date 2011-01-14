@@ -34,6 +34,7 @@
 #include <QtCore/qstringlist.h>
 #include "qscriptdeclarativeclassobject_p.h"
 #include "qscriptisolate_p.h"
+#include "qscriptstring_impl_p.h"
 
 QT_BEGIN_NAMESPACE
 

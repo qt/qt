@@ -56,6 +56,7 @@ HEADERS += \
     $$PWD/qscriptprogram_p.h \
     $$PWD/qscriptstring.h \
     $$PWD/qscriptstring_p.h \
+    $$PWD/qscriptstring_impl_p.h \
     $$PWD/qscriptsyntaxcheckresult_p.h \
     $$PWD/qscriptvalue.h \
     $$PWD/qscriptvalue_p.h \

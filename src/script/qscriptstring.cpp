@@ -24,6 +24,7 @@
 #include "qscriptstring.h"
 
 #include "qscriptstring_p.h"
+#include "qscriptstring_impl_p.h"
 #include "qscriptisolate_p.h"
 #include "qscriptengine_p.h"
 #include "qscriptengine_impl_p.h"

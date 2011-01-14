@@ -29,6 +29,7 @@
 #include "qscriptengine_impl_p.h"
 #include "qscriptvalue_p.h"
 #include "qscriptvalue_impl_p.h"
+#include "qscriptstring_impl_p.h"
 
 #include <QtCore/qstringlist.h>
 

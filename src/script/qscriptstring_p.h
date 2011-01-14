@@ -36,11 +36,8 @@
 //
 
 #include "qscriptshareddata_p.h"
-#include "qscriptconverter_p.h"
 #include "qscriptstring.h"
-#include <QtCore/qnumeric.h>
-#include <QtCore/qshareddata.h>
-#include <QtCore/qhash.h>
+#include "v8.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -73,92 +70,6 @@ private:
     v8::Persistent<v8::String> m_string;
 };
 
-
-QScriptStringPrivate::QScriptStringPrivate()
-{}
-
-QScriptStringPrivate::QScriptStringPrivate(QScriptEnginePrivate *engine, v8::Handle<v8::String> str)
-    : m_engine(engine), m_string(v8::Persistent<v8::String>::New(str))
-{}
-
-QScriptStringPrivate::~QScriptStringPrivate()
-{
-    m_string.Dispose();
-}
-
-QScriptString QScriptStringPrivate::get(QScriptStringPrivate* d)
-{
-    Q_ASSERT(d);
-    return QScriptString(d);
-}
-
-QScriptString QScriptStringPrivate::get(QScriptPassPointer<QScriptStringPrivate> d)
-{
-    Q_ASSERT(d);
-    return QScriptString(d);
-}
-
-QScriptStringPrivate* QScriptStringPrivate::get(const QScriptString& p)
-{
-    return p.d_ptr.data();
-}
-
-bool QScriptStringPrivate::isValid() const
-{
-    return !m_string.IsEmpty();
-}
-
-bool QScriptStringPrivate::operator==(const QScriptStringPrivate& other) const
-{
-    v8::HandleScope handleScope;
-    return isValid() && other.isValid() && m_string->Equals(other.m_string);
-}
-
-bool QScriptStringPrivate::operator!=(const QScriptStringPrivate& other) const
-{
-    v8::HandleScope handleScope;
-    return isValid() && other.isValid() && !m_string->Equals(other.m_string);
-}
-
-quint32 QScriptStringPrivate::toArrayIndex(bool* ok) const
-{
-    quint32 idx = 0xffffffff;
-    if (isValid()) {
-        v8::HandleScope handleScope;
-        v8::Handle<v8::Uint32> converted = m_string->ToArrayIndex();
-        if (!converted.IsEmpty())
-            idx = converted->Uint32Value();
-    }
-    if (ok)
-        *ok = (idx != 0xffffffff);
-    return idx;
-}
-
-QString QScriptStringPrivate::toString() const
-{
-    return QScriptConverter::toString(m_string);
-}
-
-quint64 QScriptStringPrivate::id() const
-{
-    return m_string->Hash();
-}
-
-inline QScriptStringPrivate::operator v8::Handle<v8::String>() const
-{
-    Q_ASSERT(isValid());
-    return m_string;
-}
-
-inline v8::Handle<v8::String> QScriptStringPrivate::asV8Value()const
-{
-    return m_string;
-}
-
-inline QScriptEnginePrivate* QScriptStringPrivate::engine() const
-{
-    return m_engine.data();
-}
 QT_END_NAMESPACE
 
 #endif

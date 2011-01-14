@@ -25,6 +25,7 @@
 
 #include "qscriptisolate_p.h"
 #include "qscriptstring_p.h"
+#include "qscriptstring_impl_p.h"
 #include "qscriptvalue_p.h"
 #include "qscriptvalue_impl_p.h"
 #include "qscriptclass_p.h"

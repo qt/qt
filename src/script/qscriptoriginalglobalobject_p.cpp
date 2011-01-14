@@ -25,6 +25,7 @@
 #include "qscriptengine_p.h"
 #include "qscriptengine_impl_p.h"
 #include "qscriptconverter_p.h"
+#include "qscriptstring_impl_p.h"
 
 QT_BEGIN_NAMESPACE
 

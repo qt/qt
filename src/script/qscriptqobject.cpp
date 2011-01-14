@@ -40,6 +40,7 @@
 #include "qscriptable_p.h"
 #include "qscriptable_impl_p.h"
 #include "qscriptqobject_impl_p.h"
+#include "qscriptstring_impl_p.h"
 
 #include <v8.h>
 
