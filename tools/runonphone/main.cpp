@@ -56,7 +56,7 @@
 void printUsage(QTextStream& outstream, QString exeName)
 {
     outstream << exeName << " [options] [program] [program arguments]" << endl
-            << "-s, --sis <file>                         specify sis file to install" << endl
+            << "-s, --sis <local file>                   specify sis file to install" << endl
             << "-p, --portname <COMx>                    specify COM port to use by device name" << endl
             << "-f, --portfriendlyname <substring>       specify COM port to use by friendly name" << endl
             << "-t, --timeout <milliseconds>             terminate test if timeout occurs" << endl
