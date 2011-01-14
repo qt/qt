@@ -938,8 +938,13 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
 
     if (bindValues.count)
         ep->bindValues << bindValues;
+    else if (bindValues.values)
+        bindValues.clear();
+
     if (parserStatus.count)
         ep->parserStatus << parserStatus;
+    else if (parserStatus.values)
+        parserStatus.clear();
 
     Q_ASSERT(stack.count() == 1);
     return stack.top();
