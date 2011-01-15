@@ -32,6 +32,7 @@
 #include "qscriptstring_impl_p.h"
 
 #include <QtCore/qstringlist.h>
+#include "qscriptcontextinfo.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -402,8 +403,13 @@ QScriptContext::ExecutionState QScriptContext::state() const
 */
 QStringList QScriptContext::backtrace() const
 {
-    Q_UNIMPLEMENTED();
-    return QStringList();
+    QStringList result;
+    const QScriptContext *ctx = this;
+    while (ctx) {
+        result.append(ctx->toString());
+        ctx = ctx->parentContext();
+    }
+    return result;
 }
 
 /*!
@@ -416,8 +422,54 @@ QStringList QScriptContext::backtrace() const
 */
 QString QScriptContext::toString() const
 {
-    Q_UNIMPLEMENTED();
-    return QString();
+    QScriptContextInfo info(this);
+    QString result;
+
+    QString functionName = info.functionName();
+    if (functionName.isEmpty()) {
+        if (parentContext()) {
+            Q_UNIMPLEMENTED();
+            /*const JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
+            if (info.functionType() == QScriptContextInfo::ScriptFunction)
+                result.append(QLatin1String("<anonymous>"));
+            else if(frame->callerFrame()->hasHostCallFrameFlag())
+                result.append(QLatin1String("<eval>"));
+            else*/
+                result.append(QLatin1String("<native>"));
+        } else {
+            result.append(QLatin1String("<global>"));
+        }
+    } else {
+        result.append(functionName);
+    }
+
+    QStringList parameterNames = info.functionParameterNames();
+    result.append(QLatin1Char('('));
+    for (int i = 0; i < argumentCount(); ++i) {
+        if (i > 0)
+            result.append(QLatin1String(", "));
+        if (i < parameterNames.count()) {
+            result.append(parameterNames.at(i));
+            result.append(QLatin1String(" = "));
+        }
+        QScriptValue arg = argument(i);
+        if (arg.isString())
+            result.append(QLatin1Char('\''));
+        result.append(arg.toString());
+        if (arg.isString())
+            result.append(QLatin1Char('\''));
+    }
+    result.append(QLatin1Char(')'));
+
+    QString fileName = info.fileName();
+    int lineNumber = info.lineNumber();
+    result.append(QLatin1String(" at "));
+    if (!fileName.isEmpty()) {
+        result.append(fileName);
+        result.append(QLatin1Char(':'));
+    }
+    result.append(QString::number(lineNumber));
+    return result;
 }
 
 /*!

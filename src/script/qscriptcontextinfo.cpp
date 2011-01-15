@@ -26,6 +26,11 @@
 #include "qscriptengine.h"
 #include <QtCore/qdatastream.h>
 #include <QtCore/qmetaobject.h>
+#include "qscriptcontext_p.h"
+#include "qscriptconverter_p.h"
+
+#include <qdebug.h>
+#include "qscriptisolate_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -74,7 +79,6 @@ QT_BEGIN_NAMESPACE
 
 class QScriptContextInfoPrivate
 {
-    Q_DECLARE_PUBLIC(QScriptContextInfo)
 public:
     QScriptContextInfoPrivate();
     QScriptContextInfoPrivate(const QScriptContext *context);
@@ -96,13 +100,13 @@ public:
 
     QBasicAtomicInt ref;
 
-    QScriptContextInfo *q_ptr;
+    bool null;
 };
 
 /*!
   \internal
 */
-QScriptContextInfoPrivate::QScriptContextInfoPrivate()
+QScriptContextInfoPrivate::QScriptContextInfoPrivate() : null(true)
 {
     ref = 0;
     functionType = QScriptContextInfo::NativeFunction;
@@ -117,9 +121,10 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate()
 /*!
   \internal
 */
-QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *context)
+QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *context) : null(false)
 {
     Q_ASSERT(context);
+
     ref = 0;
     functionType = QScriptContextInfo::NativeFunction;
     functionMetaIndex = -1;
@@ -148,16 +153,16 @@ QScriptContextInfoPrivate::~QScriptContextInfoPrivate()
   previously created QScriptContextInfo.
 */
 QScriptContextInfo::QScriptContextInfo(const QScriptContext *context)
-{
-    Q_UNUSED(context);
-}
+    : d_ptr(new QScriptContextInfoPrivate(context))
+
+{}
 
 /*!
   Constructs a new QScriptContextInfo from the \a other info.
 */
 QScriptContextInfo::QScriptContextInfo(const QScriptContextInfo &other)
+    : d_ptr(other.d_ptr)
 {
-    Q_UNUSED(other);
 }
 
 /*!
@@ -165,7 +170,7 @@ QScriptContextInfo::QScriptContextInfo(const QScriptContextInfo &other)
 
   \sa isNull()
 */
-QScriptContextInfo::QScriptContextInfo()
+QScriptContextInfo::QScriptContextInfo() : d_ptr(new QScriptContextInfoPrivate)
 {
 }
 
@@ -182,8 +187,7 @@ QScriptContextInfo::~QScriptContextInfo()
 */
 QScriptContextInfo &QScriptContextInfo::operator=(const QScriptContextInfo &other)
 {
-    Q_UNUSED(other);
-    Q_UNIMPLEMENTED();
+    d_ptr = other.d_ptr;
     return *this;
 }
 
@@ -211,8 +215,7 @@ qint64 QScriptContextInfo::scriptId() const
 */
 QString QScriptContextInfo::fileName() const
 {
-    Q_UNIMPLEMENTED();
-    return QString();
+    return d_ptr->fileName;
 }
 
 /*!
@@ -226,8 +229,7 @@ QString QScriptContextInfo::fileName() const
 */
 int QScriptContextInfo::lineNumber() const
 {
-    Q_UNIMPLEMENTED();
-    return -1;
+    return d_ptr->lineNumber;
 }
 
 /*!
@@ -252,8 +254,7 @@ int QScriptContextInfo::columnNumber() const
 */
 QString QScriptContextInfo::functionName() const
 {
-    Q_UNIMPLEMENTED();
-    return QString();
+    return d_ptr->functionName;
 }
 
 /*!
@@ -263,8 +264,7 @@ QString QScriptContextInfo::functionName() const
 */
 QScriptContextInfo::FunctionType QScriptContextInfo::functionType() const
 {
-    Q_UNIMPLEMENTED();
-    return NativeFunction;
+    return d_ptr->functionType;
 }
 
 /*!
@@ -334,8 +334,7 @@ int QScriptContextInfo::functionMetaIndex() const
 */
 bool QScriptContextInfo::isNull() const
 {
-    Q_UNIMPLEMENTED();
-    return false;
+    return d_ptr->null;
 }
 
 /*!
