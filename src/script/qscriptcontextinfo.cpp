@@ -134,7 +134,17 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
     lineNumber = -1;
     columnNumber = -1;
 
-    Q_UNIMPLEMENTED();
+    QScriptContextPrivate *context_p = QScriptContextPrivate::get(context);
+    QScriptIsolate api(context_p->engine);
+    v8::HandleScope handleScope;
+    if (!context_p->frame.IsEmpty()) {
+        v8::Handle<v8::StackFrame> frame = context_p->frame;
+        columnNumber = frame->GetColumn();
+        lineNumber = frame->GetLineNumber();
+        functionType = QScriptContextInfo::ScriptFunction;
+        functionName = QScriptConverter::toString(frame->GetFunctionName());
+        fileName = QScriptConverter::toString(frame->GetScriptName());
+    }
 }
 
 /*!

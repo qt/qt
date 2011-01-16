@@ -53,10 +53,11 @@ public:
     static QScriptContextPrivate *get(const QScriptContext *q) { Q_ASSERT(q->d_ptr); return q->d_ptr; }
     static QScriptContext *get(QScriptContextPrivate *d) { return d->q_func(); }
 
-    inline QScriptContextPrivate(QScriptEnginePrivate *engine);
-    inline QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args);
-    inline QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::AccessorInfo *accessor);
-    inline QScriptContextPrivate(QScriptEnginePrivate *engine, v8::Handle<v8::Context> context);
+    inline QScriptContextPrivate(QScriptEnginePrivate *engine); // the global context (member of QScriptEnginePrivate)
+    inline QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args); // native function context (on the stack)
+    inline QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::AccessorInfo *accessor); // native acessors (on the stack)
+    inline QScriptContextPrivate(QScriptEnginePrivate *engine, v8::Handle<v8::Context> context); // from QScriptEngine::pushContext
+    inline QScriptContextPrivate(QScriptContextPrivate *parent, v8::Handle<v8::StackFrame> frame); // internal, for js frame (allocated in parentContext())
     inline ~QScriptContextPrivate();
 
     inline QScriptPassPointer<QScriptValuePrivate> argument(int index) const;
@@ -80,7 +81,12 @@ public:
     v8::Persistent<v8::Context> context;
     QList<v8::Persistent<v8::Context> > scopes;
     v8::Persistent<v8::Context> inheritedScope;
-    QScriptContextPrivate *parent;
+    QScriptContextPrivate *parent; //the parent native frame as seen by the engine
+    mutable QScriptContextPrivate *previous; //the previous js frame (lazily build)
+    v8::Persistent<v8::StackFrame> frame; //only for js frames
+
+    static const int stackTraceLimit = 100;
+
 private:
     Q_DISABLE_COPY(QScriptContextPrivate)
 };

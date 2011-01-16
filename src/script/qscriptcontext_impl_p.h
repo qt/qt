@@ -42,7 +42,7 @@ QT_BEGIN_NAMESPACE
 #include "qscriptengine_p.h"
 
 inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine)
-    : q_ptr(this), engine(engine), arguments(0), accessorInfo(0), parent(engine->setCurrentQSContext(this))
+    : q_ptr(this), engine(engine), arguments(0), accessorInfo(0), parent(engine->setCurrentQSContext(this)), previous(0)
 {
     Q_ASSERT(engine);
 }
@@ -50,7 +50,7 @@ inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine
 inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args)
     : q_ptr(this), engine(engine), arguments(args), accessorInfo(0),
       context(v8::Persistent<v8::Context>::New(v8::Context::NewFunctionContext())),
-      parent(engine->setCurrentQSContext(this))
+      parent(engine->setCurrentQSContext(this)), previous(0)
 {
     Q_ASSERT(engine);
     context->Enter();
@@ -59,7 +59,7 @@ inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine
 inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::AccessorInfo *accessor)
 : q_ptr(this), engine(engine), arguments(0), accessorInfo(accessor),
   context(v8::Persistent<v8::Context>::New(v8::Context::NewFunctionContext())),
-  parent(engine->setCurrentQSContext(this))
+  parent(engine->setCurrentQSContext(this)), previous(0)
 {
     Q_ASSERT(engine);
     context->Enter();
@@ -67,22 +67,39 @@ inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine
 
 inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, v8::Handle<v8::Context> context)
     : q_ptr(this), engine(engine), arguments(0), accessorInfo(0),
-      context(v8::Persistent<v8::Context>::New(context)), parent(engine->setCurrentQSContext(this))
+      context(v8::Persistent<v8::Context>::New(context)), parent(engine->setCurrentQSContext(this)),
+      previous(0)
 {
     Q_ASSERT(engine);
     context->Enter();
 }
 
+inline QScriptContextPrivate::QScriptContextPrivate(QScriptContextPrivate *parent, v8::Handle<v8::StackFrame> frame)
+    : q_ptr(this), engine(parent->engine), arguments(0), accessorInfo(0),
+      parent(parent), previous(0), frame(v8::Persistent<v8::StackFrame>::New(frame))
+{
+    Q_ASSERT(engine);
+}
+
+
 inline QScriptContextPrivate::~QScriptContextPrivate()
 {
     Q_ASSERT(engine);
+    if (previous)
+        delete previous;
+
     if (!parent)
         return;
-    QScriptContextPrivate *old = engine->setCurrentQSContext(parent);
-    if (old != this) {
-        qWarning("QScriptEngine::pushContext() doesn't match with popContext()");
-        old->parent = 0;
-        //old is most likely leaking.
+
+    if (frame.IsEmpty()) {
+        QScriptContextPrivate *old = engine->setCurrentQSContext(parent);
+        if (old != this) {
+            qWarning("QScriptEngine::pushContext() doesn't match with popContext()");
+            old->parent = 0;
+            //old is most likely leaking.
+        }
+    } else {
+        frame.Dispose();
     }
 
     while (!scopes.isEmpty())
@@ -193,7 +210,7 @@ inline QScriptValueList QScriptContextPrivate::scopeChain() const
         } while (!current.IsEmpty());
     }
 
-    if (parentContext()) {
+    if (parent) {
         // Implicit global context
         list.append(QScriptValuePrivate::get(new QScriptValuePrivate(engine, engine->globalObject())));
     }
