@@ -93,7 +93,7 @@ void tst_QNetworkProxyFactory::systemProxyForQuery() const
     }
 
     if (!pass)
-        QFAIL("One or more system proxy lookup failures occured.");
+        QFAIL("One or more system proxy lookup failures occurred.");
 }
 
 QTEST_MAIN(tst_QNetworkProxyFactory)
