@@ -3397,6 +3397,19 @@
 
     \tableofcontents{2}
 
+    \section1 packagesExist(packages)
+
+    Uses the PKGCONFIG mechanism to determine whether or not the given packages
+    exist at the time of project parsing.
+
+    This can be useful to optionally enable or disable features. For example:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 157
+
+    And then, in the code:
+
+    \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 158
+
     \section1 basename(variablename)
 
     Returns the basename of the file specified. For example:
