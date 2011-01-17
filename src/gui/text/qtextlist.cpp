@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -242,7 +242,7 @@ QString QTextList::itemText(const QTextBlock &blockIt) const
                             if (i % 4) {
                                 // c[i] == 4|5|9|40|50|90|400|500|900
                                 if ((i-2) % 4) {
-                                    // c[i] == 4|9|40|90|400|900 => with substraction (IV, IX, XL, XC, ...)
+                                    // c[i] == 4|9|40|90|400|900 => with subtraction (IV, IX, XL, XC, ...)
                                     numDigits = 2;
                                 }
                                 else {
