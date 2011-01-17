@@ -247,9 +247,15 @@ QDeclarativeBinding::createBinding(Identifier id, QObject *obj, QDeclarativeCont
 
     QDeclarativeEnginePrivate *engine = QDeclarativeEnginePrivate::get(qmlEngine(obj));
     QDeclarativeCompiledData *cdata = 0;
-    if (engine && ctxtdata && !ctxtdata->url.isEmpty())
-        cdata = engine->typeLoader.get(ctxtdata->url)->compiledData();
-    return cdata ? new QDeclarativeBinding((void*)cdata->datas.at(id).constData(), cdata, obj, ctxtdata, url, lineNumber, parent) : 0;
+    QDeclarativeTypeData *typeData = 0;
+    if (engine && ctxtdata && !ctxtdata->url.isEmpty()) {
+        typeData = engine->typeLoader.get(ctxtdata->url);
+        cdata = typeData->compiledData();
+    }
+    QDeclarativeBinding *rv = cdata ? new QDeclarativeBinding((void*)cdata->datas.at(id).constData(), cdata, obj, ctxtdata, url, lineNumber, parent) : 0;
+    if (typeData)
+        typeData->release();
+    return rv;
 }
 
 QDeclarativeBinding::QDeclarativeBinding(const QString &str, QObject *obj, QDeclarativeContext *ctxt, 
