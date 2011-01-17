@@ -908,7 +908,7 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Illegal escape squence</source>
+        <source>Illegal escape sequence</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
