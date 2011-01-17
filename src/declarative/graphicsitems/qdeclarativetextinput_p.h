@@ -95,6 +95,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeTextInput : public QDeclarativePaintedItem
     Q_PROPERTY(QString displayText READ displayText NOTIFY displayTextChanged)
     Q_PROPERTY(bool autoScroll READ autoScroll WRITE setAutoScroll NOTIFY autoScrollChanged)
     Q_PROPERTY(bool selectByMouse READ selectByMouse WRITE setSelectByMouse NOTIFY selectByMouseChanged)
+    Q_REVISION(1) Q_PROPERTY(bool canPaste READ canPaste NOTIFY canPasteChanged)
 
 public:
     QDeclarativeTextInput(QDeclarativeItem* parent=0);
@@ -197,6 +198,7 @@ public:
     QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
 
     QRectF boundingRect() const;
+    bool canPaste() const;
 
 Q_SIGNALS:
     void textChanged();
@@ -223,6 +225,7 @@ Q_SIGNALS:
     void activeFocusOnPressChanged(bool activeFocusOnPress);
     void autoScrollChanged(bool autoScroll);
     void selectByMouseChanged(bool selectByMouse);
+    Q_REVISION(1) void canPasteChanged();
 
 protected:
     virtual void geometryChanged(const QRectF &newGeometry,
@@ -256,6 +259,7 @@ private Q_SLOTS:
     void moveCursor();
     void cursorPosChanged();
     void updateRect(const QRect &r = QRect());
+    void q_canPasteChanged();
 
 private:
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QDeclarativeTextInput)

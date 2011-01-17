@@ -73,7 +73,7 @@ public:
       showInputPanelOnFocus(true), clickCausedFocus(false), persistentSelection(true), textMargin(0.0),
       lastSelectionStart(0), lastSelectionEnd(0), cursorComponent(0), cursor(0),
       format(QDeclarativeTextEdit::AutoText), document(0), wrapMode(QDeclarativeTextEdit::NoWrap),
-      selectByMouse(false),
+      selectByMouse(false), canPaste(false),
       yoff(0)
     {
 #ifdef Q_OS_SYMBIAN
@@ -120,6 +120,7 @@ public:
     QDeclarativeTextEdit::WrapMode wrapMode;
     int lineCount;
     bool selectByMouse;
+    bool canPaste;
     int yoff;
 };
 

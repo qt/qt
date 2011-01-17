@@ -1111,9 +1111,17 @@ void tst_qdeclarativetextedit::copyAndPaste() {
     QCOMPARE(textEdit->selectedText(), QString("Hello world!"));
     QCOMPARE(textEdit->selectedText().length(), 12);
     textEdit->setCursorPosition(0);
+    QVERIFY(textEdit->canPaste());
     textEdit->paste();
     QCOMPARE(textEdit->text(), QString("Hello world!Hello world!"));
     QCOMPARE(textEdit->text().length(), 24);
+
+    // canPaste
+    QVERIFY(textEdit->canPaste());
+    textEdit->setReadOnly(true);
+    QVERIFY(!textEdit->canPaste());
+    textEdit->setReadOnly(false);
+    QVERIFY(textEdit->canPaste());
 
     // QTBUG-12339
     // test that document and internal text attribute are in sync

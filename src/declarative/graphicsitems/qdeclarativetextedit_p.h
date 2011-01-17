@@ -92,6 +92,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeTextEdit : public QDeclarativePaintedItem
     Q_PROPERTY(qreal textMargin READ textMargin WRITE setTextMargin NOTIFY textMarginChanged)
     Q_PROPERTY(Qt::InputMethodHints inputMethodHints READ inputMethodHints WRITE setInputMethodHints)
     Q_PROPERTY(bool selectByMouse READ selectByMouse WRITE setSelectByMouse NOTIFY selectByMouseChanged)
+    Q_REVISION(1) Q_PROPERTY(bool canPaste READ canPaste NOTIFY canPasteChanged)
 
 public:
     QDeclarativeTextEdit(QDeclarativeItem *parent=0);
@@ -185,6 +186,8 @@ public:
     bool selectByMouse() const;
     void setSelectByMouse(bool);
 
+    bool canPaste() const;
+
     virtual void componentComplete();
 
     /* FROM EDIT */
@@ -233,6 +236,7 @@ Q_SIGNALS:
     void textMarginChanged(qreal textMargin);
     void selectByMouseChanged(bool selectByMouse);
     Q_REVISION(1) void linkActivated(const QString &link);
+    Q_REVISION(1) void canPasteChanged();
 
 public Q_SLOTS:
     void selectAll();
@@ -251,6 +255,7 @@ private Q_SLOTS:
     void updateSelectionMarkers();
     void moveCursorDelegate();
     void loadCursorDelegate();
+    void q_canPasteChanged();
 
 private:
     void updateSize();

@@ -1222,7 +1222,8 @@ void QDeclarativeTextInput::copy()
 void QDeclarativeTextInput::paste()
 {
     Q_D(QDeclarativeTextInput);
-    d->control->paste();
+    if(!d->control->isReadOnly())
+        d->control->paste();
 }
 #endif // QT_NO_CLIPBOARD
 
@@ -1319,6 +1320,12 @@ void QDeclarativeTextInput::setSelectByMouse(bool on)
         d->selectByMouse = on;
         emit selectByMouseChanged(on);
     }
+}
+
+bool QDeclarativeTextInput::canPaste() const
+{
+    Q_D(const QDeclarativeTextInput);
+    return d->canPaste;
 }
 
 void QDeclarativeTextInput::moveCursorSelection(int position)
@@ -1569,6 +1576,12 @@ void QDeclarativeTextInputPrivate::init()
                q, SIGNAL(accepted()));
     q->connect(control, SIGNAL(updateNeeded(QRect)),
                q, SLOT(updateRect(QRect)));
+#ifndef QT_NO_CLIPBOARD
+    q->connect(q, SIGNAL(readOnlyChanged(bool)),
+            q, SLOT(q_canPasteChanged()));
+    q->connect(QApplication::clipboard(), SIGNAL(dataChanged()),
+            q, SLOT(q_canPasteChanged()));
+#endif // QT_NO_CLIPBOARD
     q->updateSize();
     oldValidity = control->hasAcceptableInput();
     lastSelectionStart = 0;
@@ -1668,6 +1681,17 @@ void QDeclarativeTextInput::updateSize(bool needsRedraw)
         clearCache();
         update();
     }
+}
+
+void QDeclarativeTextInput::q_canPasteChanged()
+{
+    Q_D(QDeclarativeTextInput);
+    bool old = d->canPaste;
+#ifndef QT_NO_CLIPBOARD
+    d->canPaste = !d->control->isReadOnly() && QApplication::clipboard()->text().length() != 0;
+#endif
+    if(d->canPaste != old)
+        emit canPasteChanged();
 }
 
 QT_END_NAMESPACE

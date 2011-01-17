@@ -952,9 +952,17 @@ void tst_qdeclarativetextinput::copyAndPaste() {
     QCOMPARE(textInput->selectedText(), QString("Hello world!"));
     QCOMPARE(textInput->selectedText().length(), 12);
     textInput->setCursorPosition(0);
+    QVERIFY(textInput->canPaste());
     textInput->paste();
     QCOMPARE(textInput->text(), QString("Hello world!Hello world!"));
     QCOMPARE(textInput->text().length(), 24);
+
+    // can paste
+    QVERIFY(textInput->canPaste());
+    textInput->setReadOnly(true);
+    QVERIFY(!textInput->canPaste());
+    textInput->setReadOnly(false);
+    QVERIFY(textInput->canPaste());
 
     // select word
     textInput->setCursorPosition(0);
@@ -973,6 +981,7 @@ void tst_qdeclarativetextinput::copyAndPaste() {
     QClipboard *clipboard = QApplication::clipboard();
     QVERIFY(clipboard);
     clipboard->clear();
+    QVERIFY(!textInput->canPaste());
 
     // test that copy functionality is disabled
     // when echo mode is set to hide text/password mode

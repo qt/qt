@@ -1342,6 +1342,21 @@ void QDeclarativeTextEdit::updateImgCache(const QRectF &rf)
     filtering at the beginning of the animation and reenable it at the conclusion.
 */
 
+/*!
+    \qmlproperty bool TextEdit::canPaste
+
+    Returns true if the TextEdit is writable and the content of the clipboard is
+    suitable for pasting into the TextEdit.
+
+    \since QtQuick 1.1
+*/
+
+bool QDeclarativeTextEdit::canPaste() const
+{
+    Q_D(const QDeclarativeTextEdit);
+    return d->canPaste;
+}
+
 void QDeclarativeTextEditPrivate::init()
 {
     Q_Q(QDeclarativeTextEdit);
@@ -1374,6 +1389,10 @@ void QDeclarativeTextEditPrivate::init()
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorPositionChanged()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorRectangleChanged()));
     QObject::connect(control, SIGNAL(linkActivated(QString)), q, SIGNAL(linkActivated(QString)));
+#ifndef QT_NO_CLIPBOARD
+    QObject::connect(q, SIGNAL(readOnlyChanged(bool)), q, SLOT(q_canPasteChanged()));
+    QObject::connect(QApplication::clipboard(), SIGNAL(dataChanged()), q, SLOT(q_canPasteChanged()));
+#endif
 
     document = control->document();
     document->setDefaultFont(font);
@@ -1646,6 +1665,15 @@ void QDeclarativeTextEdit::focusInEvent(QFocusEvent *event)
         }
     }
     QDeclarativePaintedItem::focusInEvent(event);
+}
+
+void QDeclarativeTextEdit::q_canPasteChanged()
+{
+    Q_D(QDeclarativeTextEdit);
+    bool old = d->canPaste;
+    d->canPaste = d->control->canPaste();
+    if(old!=d->canPaste)
+        emit canPasteChanged();
 }
 
 QT_END_NAMESPACE
