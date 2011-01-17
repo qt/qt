@@ -39,7 +39,6 @@
 ****************************************************************************/
 import QtQuick 1.0
 
-//![0]
 Rectangle {
     id: rect
     width: 100; height: 100
@@ -48,19 +47,14 @@ Rectangle {
     MouseArea { id: mouseArea; anchors.fill: parent }
 
     states: State {
-        name: "brighter"
-        when: mouseArea.pressed
-        PropertyChanges { target: rect; color: "yellow"; x: 50 }
+        name: "brighter"; when: mouseArea.pressed
+        PropertyChanges { target: rect; color: "yellow" }
     }
 
-    //! [sequential animations]
-    transitions: Transition { 
-        SequentialAnimation {
-            PropertyAnimation { property: "x"; duration: 1000 }
-            ColorAnimation { duration: 1000 }
-        }
+    //! [modified transition]
+    transitions: Transition {
+        to: "brighter"
+        ColorAnimation { duration: 1000 }
     }
-    //! [sequential animations]
+    //! [modified transition]
 }
-//![0]
-

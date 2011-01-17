@@ -37,30 +37,53 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-import QtQuick 1.0
 
-//![0]
+import Qt 4.7
+
 Rectangle {
-    id: rect
-    width: 100; height: 100
-    color: "red"
+  width: 150; height: 250
 
-    MouseArea { id: mouseArea; anchors.fill: parent }
+  Rectangle {
+      id: stopLight
+      x: 25; y: 15; width: 100; height: 100
+  }
+  Rectangle {
+      id: goLight
+      x: 25; y: 135; width: 100; height: 100
+  }
 
-    states: State {
-        name: "brighter"
-        when: mouseArea.pressed
-        PropertyChanges { target: rect; color: "yellow"; x: 50 }
+  states: [
+    State {
+      name: "stop"
+      PropertyChanges { target: stopLight; color: "red" }
+      PropertyChanges { target: goLight; color: "black" }
+    },
+    State {
+      name: "go"
+      PropertyChanges { target: stopLight; color: "black" }
+      PropertyChanges { target: goLight; color: "green" }
     }
+  ]
 
-    //! [sequential animations]
-    transitions: Transition { 
-        SequentialAnimation {
-            PropertyAnimation { property: "x"; duration: 1000 }
-            ColorAnimation { duration: 1000 }
-        }
-    }
-    //! [sequential animations]
+  state: "stop"
+
+  MouseArea {
+      anchors.fill: parent
+      onClicked: parent.state == "stop" ?
+                 parent.state = "go" : parent.state = "stop"
+  }
+
+  //! [list of transitions]
+  transitions: [
+    Transition {
+        from: "stop"; to: "go"
+        PropertyAnimation { target: stopLight
+                            properties: "color"; duration: 1000 }
+    },
+    Transition {
+        from: "go"; to: "stop"
+        PropertyAnimation { target: goLight
+                            properties: "color"; duration: 1000 }
+    } ]
+  //! [list of transitions]
 }
-//![0]
-
