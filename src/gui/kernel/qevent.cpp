@@ -728,12 +728,12 @@ QWheelEvent::QWheelEvent(const QPoint &pos, const QPoint& globalPos, int delta, 
     The \a type parameter must be QEvent::KeyPress, QEvent::KeyRelease,
     or QEvent::ShortcutOverride.
 
-    Int \a key is the code for the Qt::Key that the event loop should listen 
-    for. If \a key is 0, the event is not a result of a known key; for 
+    Int \a key is the code for the Qt::Key that the event loop should listen
+    for. If \a key is 0, the event is not a result of a known key; for
     example, it may be the result of a compose sequence or keyboard macro.
-    The \a modifiers holds the keyboard modifiers, and the given \a text 
-    is the Unicode text that the key generated. If \a autorep is true, 
-    isAutoRepeat() will be true. \a count is the number of keys involved 
+    The \a modifiers holds the keyboard modifiers, and the given \a text
+    is the Unicode text that the key generated. If \a autorep is true,
+    isAutoRepeat() will be true. \a count is the number of keys involved
     in the event.
 */
 QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers, const QString& text,
@@ -1662,7 +1662,7 @@ Qt::ButtonState QContextMenuEvent::state() const
     string is controlled by the widget only). The AttributeType enum
     describes the different attributes that can be set.
 
-    A class implementing QWidget::inputMethodEvent() or 
+    A class implementing QWidget::inputMethodEvent() or
     QGraphicsItem::inputMethodEvent() should at least understand and
     honor the \l TextFormat and \l Cursor attributes.
 
@@ -3061,9 +3061,8 @@ QFileOpenEvent::QFileOpenEvent(const RFile &fileHandle)
 {
     TFileName fullName;
     fileHandle.FullName(fullName);
-    QString file = qt_TDesC2QString(fullName);
-    f = file;
-    QScopedPointer<QFileOpenEventPrivate> priv(new QFileOpenEventPrivate(QUrl::fromLocalFile(file)));
+    f = qt_TDesC2QString(fullName);
+    QScopedPointer<QFileOpenEventPrivate> priv(new QFileOpenEventPrivate(QUrl::fromLocalFile(f)));
     qt_symbian_throwIfError(priv->file.Duplicate(fileHandle));
     d = reinterpret_cast<QEventPrivate *>(priv.take());
 }
@@ -3104,10 +3103,10 @@ QUrl QFileOpenEvent::url() const
     Opens a QFile on the file referenced by this event.
     Returns true if successful; otherwise returns false.
 
-    This is necessary as some files cannot be opened with the filename alone, but require specific
+    This is necessary as some files cannot be opened by name, but require specific
     information stored in this event.
     For example, if this QFileOpenEvent contains a request to open a Symbian data caged file,
-    this function must be used to open a QFile on it.
+    the QFile could only be opened from the Symbian RFile used in the construction of this event.
 
     \since 4.8
 */
@@ -3677,7 +3676,7 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
 
 #endif
 
-/*! 
+/*!
     \class QTouchEvent
     \brief The QTouchEvent class contains parameters that describe a touch event.
     \since 4.6
