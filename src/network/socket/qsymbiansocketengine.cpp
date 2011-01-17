@@ -1308,6 +1308,9 @@ void QSymbianSocketEnginePrivate::setError(TInt symbianError)
     case KErrNotSupported:
         setError(QAbstractSocket::UnsupportedSocketOperationError, OperationUnsupportedErrorString);
         break;
+    case KErrNoMemory:
+        setError(QAbstractSocket::SocketResourceError, ResourceErrorString);
+        break;
     default:
         socketError = QAbstractSocket::NetworkError;
         socketErrorString = QString::number(symbianError);
@@ -1564,22 +1567,47 @@ void QAsyncSelect::DoCancel()
 
 void QAsyncSelect::RunL()
 {
+    QT_TRYCATCH_LEAVING(run());
+}
+
+//RunError is called by the active scheduler if RunL leaves.
+//Typically this will happen if a std::bad_alloc propagates down from the application
+TInt QAsyncSelect::RunError(TInt aError)
+{
+    if (engine) {
+        QT_TRY {
+            engine->d_func()->setError(aError);
+            QEvent e(QEvent::SockAct);
+            if (iExcN)
+                iExcN->event(&e);
+            if (iReadN)
+                iReadN->event(&e);
+        }
+        QT_CATCH(...) {}
+    }
+#ifdef QNATIVESOCKETENGINE_DEBUG
+    qDebug() << "QAsyncSelect::RunError" << aError;
+#endif
+    return KErrNone;
+}
+
+void QAsyncSelect::run()
+{
     //TODO: block when event loop demands it
     //if (maybeQueueForLater())
     //    return;
-
     m_inSocketEvent = true;
     m_selectBuf() &= m_selectFlags; //the select ioctl reports everything, so mask to only what we requested
     //TODO: KSockSelectReadContinuation does what?
-    if (m_selectBuf() & KSockSelectRead) {
+    if (iReadN && (m_selectBuf() & KSockSelectRead)) {
         QEvent e(QEvent::SockAct);
         iReadN->event(&e);
     }
-    if (m_selectBuf() & KSockSelectWrite) {
+    if (iWriteN && (m_selectBuf() & KSockSelectWrite)) {
         QEvent e(QEvent::SockAct);
         iWriteN->event(&e);
     }
-    if ((m_selectBuf() & KSockSelectExcept) || iStatus != KErrNone) {
+    if (iExcN && ((m_selectBuf() & KSockSelectExcept) || iStatus != KErrNone)) {
         QEvent e(QEvent::SockAct);
         iExcN->event(&e);
     }
@@ -1598,6 +1626,7 @@ void QAsyncSelect::deleteLater()
         iExcN = 0;
         iReadN = 0;
         iWriteN = 0;
+        engine = 0;
         m_deleteLater = true;
     } else {
         delete this;

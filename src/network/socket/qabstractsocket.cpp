@@ -375,6 +375,7 @@
 #include <qpointer.h>
 #include <qtimer.h>
 #include <qelapsedtimer.h>
+#include <qscopedvaluerollback.h>
 
 #ifndef QT_NO_OPENSSL
 #include <QtNetwork/qsslsocket.h>
@@ -592,6 +593,7 @@ bool QAbstractSocketPrivate::canReadNotification()
             socketEngine->setReadNotificationEnabled(false);
         }
     }
+    QScopedValueRollback<bool> rsncrollback(readSocketNotifierCalled);
     readSocketNotifierCalled = true;
 
     if (!isBuffered)
@@ -605,7 +607,6 @@ bool QAbstractSocketPrivate::canReadNotification()
 #if defined (QABSTRACTSOCKET_DEBUG)
             qDebug("QAbstractSocketPrivate::canReadNotification() buffer is full");
 #endif
-            readSocketNotifierCalled = false;
             return false;
         }
 
@@ -617,7 +618,6 @@ bool QAbstractSocketPrivate::canReadNotification()
             qDebug("QAbstractSocketPrivate::canReadNotification() disconnecting socket");
 #endif
             q->disconnectFromHost();
-            readSocketNotifierCalled = false;
             return false;
         }
         newBytes = readBuffer.size() - newBytes;
@@ -637,9 +637,9 @@ bool QAbstractSocketPrivate::canReadNotification()
         ;
 
     if (!emittedReadyRead && hasData) {
+        QScopedValueRollback<bool> r(emittedReadyRead);
         emittedReadyRead = true;
         emit q->readyRead();
-        emittedReadyRead = false;
     }
 
     // If we were closed as a result of the readyRead() signal,
@@ -648,7 +648,6 @@ bool QAbstractSocketPrivate::canReadNotification()
 #if defined (QABSTRACTSOCKET_DEBUG)
         qDebug("QAbstractSocketPrivate::canReadNotification() socket is closing - returning");
 #endif
-        readSocketNotifierCalled = false;
         return true;
     }
 
@@ -662,7 +661,6 @@ bool QAbstractSocketPrivate::canReadNotification()
         socketEngine->setReadNotificationEnabled(readSocketNotifierState);
         readSocketNotifierStateSet = false;
     }
-    readSocketNotifierCalled = false;
     return true;
 }
 
@@ -768,9 +766,9 @@ bool QAbstractSocketPrivate::flush()
     if (written > 0) {
         // Don't emit bytesWritten() recursively.
         if (!emittedBytesWritten) {
+            QScopedValueRollback<bool> r(emittedBytesWritten);
             emittedBytesWritten = true;
             emit q->bytesWritten(written);
-            emittedBytesWritten = false;
         }
     }
 

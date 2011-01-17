@@ -72,6 +72,7 @@ class QNetworkInterface;
 class Q_AUTOTEST_EXPORT QSymbianSocketEngine : public QAbstractSocketEngine
 {
     Q_OBJECT
+    friend class QAsyncSelect;
 public:
     QSymbianSocketEngine(QObject *parent = 0);
     ~QSymbianSocketEngine();
@@ -167,6 +168,8 @@ public:
 protected:
     void DoCancel();
     void RunL();
+    void run();
+    TInt RunError(TInt aError);
 
 private:
     QReadNotifier* iReadN;
