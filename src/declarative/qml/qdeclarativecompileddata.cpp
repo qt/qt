@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -169,8 +169,8 @@ QDeclarativeCompiledData::QDeclarativeCompiledData(QDeclarativeEngine *engine)
 QDeclarativeCompiledData::~QDeclarativeCompiledData()
 {
     for (int ii = 0; ii < types.count(); ++ii) {
-        if (types.at(ii).ref)
-            types.at(ii).ref->release();
+        if (types.at(ii).component)
+            types.at(ii).component->release();
     }
 
     for (int ii = 0; ii < propertyCaches.count(); ++ii) 

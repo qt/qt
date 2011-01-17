@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,7 +66,7 @@ QT_END_NAMESPACE
 
 #ifdef Q_OS_WIN32
 #include <qt_windows.h>
-#include <windows/registry.h>
+#include <windows/registry_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -118,7 +118,7 @@ DotNET which_dotnet_version()
     int installed = 0;
     int i = 0;
     for(; dotNetCombo[i].version; ++i) {
-        QString path = readRegistryKey(HKEY_LOCAL_MACHINE, dotNetCombo[i].regKey);
+        QString path = qt_readRegistryKey(HKEY_LOCAL_MACHINE, dotNetCombo[i].regKey);
         if(!path.isEmpty()) {
             ++installed;
             current_version = dotNetCombo[i].version;
@@ -135,7 +135,7 @@ DotNET which_dotnet_version()
 
     i = installed = 0;
     for(; dotNetCombo[i].version; ++i) {
-        QString productPath = readRegistryKey(HKEY_LOCAL_MACHINE, dotNetCombo[i].regKey).toLower();
+        QString productPath = qt_readRegistryKey(HKEY_LOCAL_MACHINE, dotNetCombo[i].regKey).toLower();
                 if (productPath.isEmpty())
                         continue;
         QStringList::iterator it;

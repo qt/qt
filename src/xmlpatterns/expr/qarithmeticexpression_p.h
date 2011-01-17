@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 namespace QPatternist
 {
     /**
-     * @short Implements arithmetics, such as multiplication and substraction.
+     * @short Implements arithmetics, such as multiplication and subtraction.
      *
      *
      * Optimizations: there's some operator/value combos that are no ops. For

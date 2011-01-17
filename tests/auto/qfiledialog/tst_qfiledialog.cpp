@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,9 +61,13 @@
 #include <qlineedit.h>
 #include <qlayout.h>
 #include "../../shared/util.h"
+#if defined QT_BUILD_INTERNAL
 #include "../../../src/gui/dialogs/qsidebar_p.h"
 #include "../../../src/gui/dialogs/qfilesystemmodel_p.h"
 #include "../../../src/gui/dialogs/qfiledialog_p.h"
+#endif
+#include <QFileDialog>
+#include <QFileSystemModel>
 
 #include "../network-settings.h"
 
@@ -183,7 +187,7 @@ public:
     QSize sizeHint(const QStyleOptionViewItem &, const QModelIndex &) const { return QSize(); }
 };
 
-// emited any time the selection model emits current changed
+// emitted any time the selection model emits current changed
 void tst_QFiledialog::currentChangedSignal()
 {
     QNonNativeFileDialog fd;
@@ -208,7 +212,7 @@ void tst_QFiledialog::currentChangedSignal()
     QCOMPARE(spyCurrentChanged.count(), 1);
 }
 
-// only emited from the views, sidebar, or lookin combo
+// only emitted from the views, sidebar, or lookin combo
 void tst_QFiledialog::directoryEnteredSignal()
 {
 #if defined QT_BUILD_INTERNAL
@@ -269,13 +273,13 @@ void tst_QFiledialog::filesSelectedSignal_data()
     QTest::newRow("existingFiles") << QFileDialog::ExistingFiles;
 }
 
-// emited when the dialog closes with the selected files
+// emitted when the dialog closes with the selected files
 void tst_QFiledialog::filesSelectedSignal()
 {
     QNonNativeFileDialog fd;
     fd.setViewMode(QFileDialog::List);
     fd.setOptions(QFileDialog::DontUseNativeDialog);
-    QDir testDir(SRCDIR"/../../..");
+    QDir testDir(SRCDIR);
     fd.setDirectory(testDir);
     QFETCH(QFileDialog::FileMode, fileMode);
     fd.setFileMode(fileMode);
@@ -313,7 +317,7 @@ void tst_QFiledialog::filesSelectedSignal()
     QCOMPARE(spyFilesSelected.count(), 1);
 }
 
-// only emited when the combo box is activated
+// only emitted when the combo box is activated
 void tst_QFiledialog::filterSelectedSignal()
 {
     QNonNativeFileDialog fd;
@@ -1304,6 +1308,10 @@ QString saveName(QWidget *, const QString &, const QString &, const QString &, Q
 
 void tst_QFiledialog::hooks()
 {
+#ifdef Q_OS_SYMBIAN
+    if(QSysInfo::symbianVersion() < QSysInfo::SV_SF_3)
+        QSKIP("writing to data exports in paged dll not supported and crashes on symbian versions prior to ^3", SkipAll);
+#endif
     qt_filedialog_existing_directory_hook = &existing;
     qt_filedialog_save_filename_hook = &saveName;
     qt_filedialog_open_filename_hook = &openName;

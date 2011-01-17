@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -74,7 +74,6 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
         // Use the same configuration as the widget we are sharing with.
         ctx->setConfig(shareContext->config());
 #if QGL_RENDER_TEXTURE
-        EGLint value = EGL_FALSE;
         if (ctx->configAttrib(EGL_BIND_TO_TEXTURE_RGBA) == EGL_TRUE)
             textureFormat = EGL_TEXTURE_RGBA;
         else if (ctx->configAttrib(EGL_BIND_TO_TEXTURE_RGB) == EGL_TRUE)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,6 +52,7 @@
 #include <QtCore/qwaitcondition.h>
 #include <QtScript/qscriptvalueiterator.h>
 #include <QtCore/qfile.h>
+#include <QtCore/qdatetime.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtDeclarative/qdeclarativeinfo.h>
 #include "qdeclarativenetworkaccessmanagerfactory.h"
@@ -314,6 +315,12 @@ QVariant QDeclarativeWorkerScriptEnginePrivate::scriptValueToVariant(const QScri
         return QVariant(value.toString());
     } else if (value.isNumber()) {
         return QVariant((qreal)value.toNumber());
+    } else if (value.isDate()) {
+        return QVariant(value.toDateTime());
+#ifndef QT_NO_REGEXP
+    } else if (value.isRegExp()) {
+        return QVariant(value.toRegExp());
+#endif
     } else if (value.isArray()) {
         QVariantList list;
 
@@ -364,6 +371,12 @@ QScriptValue QDeclarativeWorkerScriptEnginePrivate::variantToScriptValue(const Q
         return QScriptValue(value.toString());
     } else if (value.userType() == QMetaType::QReal) {
         return QScriptValue(value.toReal());
+    } else if (value.userType() == QVariant::DateTime) {
+        return engine->newDate(value.toDateTime());
+#ifndef QT_NO_REGEXP
+    } else if (value.userType() == QVariant::RegExp) {
+        return engine->newRegExp(value.toRegExp());
+#endif
     } else if (value.userType() == qMetaTypeId<QDeclarativeListModelWorkerAgent::VariantRef>()) {
         QDeclarativeListModelWorkerAgent::VariantRef vr = qvariant_cast<QDeclarativeListModelWorkerAgent::VariantRef>(value);
         if (vr.a->scriptEngine() == 0)
@@ -445,7 +458,7 @@ QDeclarativeWorkerScriptEngine::QDeclarativeWorkerScriptEngine(QDeclarativeEngin
 {
     d->m_lock.lock();
     connect(d, SIGNAL(stopThread()), this, SLOT(quit()), Qt::DirectConnection);
-    start(QThread::LowPriority);
+    start(QThread::IdlePriority);
     d->m_wait.wait(&d->m_lock);
     d->moveToThread(this);
     d->m_lock.unlock();

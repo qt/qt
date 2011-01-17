@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -226,9 +226,11 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
                     server->waitForConnection();
                 }
             } else {
-                qWarning(QString::fromAscii("QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
-                                            "Format is -qmljsdebugger=port:<port>[,block]").arg(
-                             appD->qmljsDebugArgumentsString()).toAscii().constData());
+                const QString message =
+                    QString::fromAscii("QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
+                                       "Format is -qmljsdebugger=port:<port>[,block]").
+                                       arg(appD->qmljsDebugArgumentsString());
+                qWarning("%s", qPrintable(message));
             }
         }
 #endif

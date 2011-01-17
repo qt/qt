@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -91,6 +91,8 @@ private slots:
     void toUInt32();
     void toUInt16();
     void toVariant();
+    void toQObject_nonQObject_data();
+    void toQObject_nonQObject();
     void toQObject();
     void toDateTime();
     void toRegExp();
@@ -125,7 +127,8 @@ private slots:
     void getSetProperty_resolveMode();
     void getSetProperty_twoEngines();
     void getSetProperty_gettersAndSetters();
-    void getSetProperty_gettersAndSettersThrowError();
+    void getSetProperty_gettersAndSettersThrowErrorNative();
+    void getSetProperty_gettersAndSettersThrowErrorJS();
     void getSetProperty_gettersAndSettersOnNative();
     void getSetProperty_gettersAndSettersOnGlobalObject();
     void getSetProperty_gettersAndSettersChange();
@@ -155,7 +158,18 @@ private slots:
     void call_array();
     void call_nonFunction_data();
     void call_nonFunction();
+    void construct_nonFunction_data();
+    void construct_nonFunction();
+    void construct_simple();
+    void construct_newObjectJS();
+    void construct_undefined();
+    void construct_newObjectCpp();
+    void construct_arg();
+    void construct_proto();
+    void construct_returnInt();
+    void construct_throw();
     void construct();
+    void construct_twoEngines();
     void construct_constructorThrowsPrimitive();
     void castToPointer();
     void prettyPrinter_data();
@@ -165,6 +179,8 @@ private slots:
     void objectId();
     void nestedObjectToVariant_data();
     void nestedObjectToVariant();
+    void propertyFlags_data();
+    void propertyFlags();
 
 
 private:

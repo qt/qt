@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -135,6 +135,8 @@ private slots:
     void scriptConnect();
     void scriptDisconnect();
     void ownership();
+    void cppOwnershipReturnValue();
+    void ownershipCustomReturnValue();
     void qlistqobjectMethods();
     void strictlyEquals();
     void compiled();
@@ -164,6 +166,10 @@ private slots:
     void in();
     void sharedAttachedObject();
     void objectName();
+    void writeRemovesBinding();
+    void aliasBindingsAssignCorrectly();
+    void aliasBindingsOverrideTarget();
+    void aliasWritesOverrideBindings();
 
     void include();
 
@@ -741,11 +747,9 @@ void tst_qdeclarativeecmascript::constantsOverrideBindings()
         QVERIFY(object != 0);
 
         QCOMPARE(object->property("c1").toInt(), 0);
-        QEXPECT_FAIL("", "QTBUG-13719", Continue);
         QCOMPARE(object->property("c3").toInt(), 10);
         object->setProperty("c1", QVariant(9));
         QCOMPARE(object->property("c1").toInt(), 9);
-        QEXPECT_FAIL("", "QTBUG-13719", Continue);
         QCOMPARE(object->property("c3").toInt(), 10);
     }
 }
@@ -1782,6 +1786,22 @@ void tst_qdeclarativeecmascript::callQtInvokables()
     QCOMPARE(o.invoked(), -3);
     QCOMPARE(o.actuals().count(), 1);
     QCOMPARE(o.actuals().at(0), QVariant(9));
+
+    o.reset();
+    QCOMPARE(engine->evaluate("object.method_QVariant(9)").isUndefined(), true);
+    QCOMPARE(o.error(), false);
+    QCOMPARE(o.invoked(), 21);
+    QCOMPARE(o.actuals().count(), 2);
+    QCOMPARE(o.actuals().at(0), QVariant(9));
+    QCOMPARE(o.actuals().at(1), QVariant());
+
+    o.reset();
+    QCOMPARE(engine->evaluate("object.method_QVariant(\"Hello\", \"World\")").isUndefined(), true);
+    QCOMPARE(o.error(), false);
+    QCOMPARE(o.invoked(), 21);
+    QCOMPARE(o.actuals().count(), 2);
+    QCOMPARE(o.actuals().at(0), QVariant(QString("Hello")));
+    QCOMPARE(o.actuals().at(1), QVariant(QString("World")));
 }
 
 // QTBUG-13047 (check that you can pass registered object types as args)
@@ -2096,6 +2116,87 @@ void tst_qdeclarativeecmascript::ownership()
 
         delete object;
     }
+}
+
+class CppOwnershipReturnValue : public QObject
+{
+    Q_OBJECT
+public:
+    CppOwnershipReturnValue() : value(0) {}
+    ~CppOwnershipReturnValue() { delete value; }
+
+    Q_INVOKABLE QObject *create() {
+        Q_ASSERT(value == 0);
+
+        value = new QObject;
+        QDeclarativeEngine::setObjectOwnership(value, QDeclarativeEngine::CppOwnership);
+        return value;
+    }
+
+    Q_INVOKABLE MyQmlObject *createQmlObject() {
+        Q_ASSERT(value == 0);
+
+        MyQmlObject *rv = new MyQmlObject;
+        value = rv;
+        return rv;
+    }
+
+    QPointer<QObject> value;
+};
+
+// QTBUG-15695.  
+// Test setObjectOwnership(CppOwnership) works even when there is no QDeclarativeData
+void tst_qdeclarativeecmascript::cppOwnershipReturnValue()
+{
+    CppOwnershipReturnValue source;
+
+    {
+    QDeclarativeEngine engine;
+    engine.rootContext()->setContextProperty("source", &source);
+
+    QVERIFY(source.value == 0);
+
+    QDeclarativeComponent component(&engine);
+    component.setData("import QtQuick 1.0\nQtObject {\nComponent.onCompleted: { var a = source.create(); }\n}\n", QUrl());
+
+    QObject *object = component.create();
+
+    QVERIFY(object != 0);
+    QVERIFY(source.value != 0);
+
+    delete object;
+    }
+
+    QCoreApplication::instance()->processEvents(QEventLoop::DeferredDeletion);
+
+    QVERIFY(source.value != 0);
+}
+
+// QTBUG-15697
+void tst_qdeclarativeecmascript::ownershipCustomReturnValue()
+{
+    CppOwnershipReturnValue source;
+
+    {
+    QDeclarativeEngine engine;
+    engine.rootContext()->setContextProperty("source", &source);
+
+    QVERIFY(source.value == 0);
+
+    QDeclarativeComponent component(&engine);
+    component.setData("import QtQuick 1.0\nQtObject {\nComponent.onCompleted: { var a = source.createQmlObject(); }\n}\n", QUrl());
+
+    QObject *object = component.create();
+
+    QVERIFY(object != 0);
+    QVERIFY(source.value != 0);
+
+    delete object;
+    }
+
+    QCoreApplication::instance()->processEvents(QEventLoop::DeferredDeletion);
+
+    QVERIFY(source.value == 0);
 }
 
 class QListQObjectMethodsObject : public QObject
@@ -2669,6 +2770,97 @@ void tst_qdeclarativeecmascript::objectName()
     QCOMPARE(o->property("test2").toString(), QString("orl"));
 
     delete o;
+}
+
+void tst_qdeclarativeecmascript::writeRemovesBinding()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("writeRemovesBinding.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test").toBool(), true);
+
+    delete o;
+}
+
+// Test bindings assigned to alias properties actually assign to the alias' target
+void tst_qdeclarativeecmascript::aliasBindingsAssignCorrectly()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("aliasBindingsAssignCorrectly.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test").toBool(), true);
+
+    delete o;
+}
+
+// Test bindings assigned to alias properties override a binding on the target (QTBUG-13719)
+void tst_qdeclarativeecmascript::aliasBindingsOverrideTarget()
+{
+    { 
+    QDeclarativeComponent component(&engine, TEST_FILE("aliasBindingsOverrideTarget.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test").toBool(), true);
+
+    delete o;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("aliasBindingsOverrideTarget.2.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test").toBool(), true);
+
+    delete o;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("aliasBindingsOverrideTarget.3.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test").toBool(), true);
+
+    delete o;
+    }
+}
+
+// Test that writes to alias properties override bindings on the alias target (QTBUG-13719)
+void tst_qdeclarativeecmascript::aliasWritesOverrideBindings()
+{
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("aliasWritesOverrideBindings.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test").toBool(), true);
+
+    delete o;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("aliasWritesOverrideBindings.2.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test").toBool(), true);
+
+    delete o;
+    }
+
+    {
+    QDeclarativeComponent component(&engine, TEST_FILE("aliasWritesOverrideBindings.3.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+
+    QCOMPARE(o->property("test").toBool(), true);
+
+    delete o;
+    }
 }
 
 QTEST_MAIN(tst_qdeclarativeecmascript)

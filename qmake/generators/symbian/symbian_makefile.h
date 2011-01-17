@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -81,18 +81,18 @@ public:
             }
         }
 
-        if (generatePkg) {
-            generatePkgFile(iconFile, false);
-        }
+        SymbianLocalizationList symbianLocalizationList;
+        parseTsFiles(&symbianLocalizationList);
 
-        // Get the application translations and convert to symbian OS lang code, i.e. decical number
-        QStringList symbianLangCodes = symbianLangCodesFromTsFiles();
+        if (generatePkg) {
+            generatePkgFile(iconFile, false, symbianLocalizationList);
+        }
 
         if (targetType == TypeExe) {
             if (!this->project->values("CONFIG").contains("no_icon", Qt::CaseInsensitive)) {
                 writeRegRssFile(userRssRules);
                 writeRssFile(numberOfIcons, iconFile);
-                writeLocFile(symbianLangCodes);
+                writeLocFile(symbianLocalizationList);
             }
         }
 

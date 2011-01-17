@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -49,10 +49,6 @@
 #include "private/qcore_symbian_p.h"
 #include "qapplication.h"
 #include "qsettings.h"
-
-#include "qpluginloader.h"
-#include "qlibraryinfo.h"
-#include "private/qs60style_feedbackinterface_p.h"
 
 #include <w32std.h>
 #include <AknsConstants.h>
@@ -698,7 +694,7 @@ void QS60StylePrivate::deleteStoredSettings()
 {
     QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
     settings.beginGroup(QLatin1String("QS60Style"));
-    settings.remove("");
+    settings.remove(QString());
     settings.endGroup();
 }
 
@@ -717,7 +713,6 @@ QColor QS60StylePrivate::colorFromFrameGraphics(SkinFrameElements frame) const
     QT_TRAP_THROWING(
         CRepository *themeRepository = CRepository::NewLC(personalisationUID);
         if (themeRepository) {
-            static const TInt KThemePkgIDDesSize = 23; //size of the stored theme package ID
             TBuf<32> value; //themeID is currently max of 8 + 1 + 8 characters, but lets have some extra space
             const TUint32 key = 0x00000002; //active theme key in the repository
             error = themeRepository->Get(key, value);
@@ -747,7 +742,7 @@ QColor QS60StylePrivate::colorFromFrameGraphics(SkinFrameElements frame) const
                         return storedColor;
                 }
             }
-            settings.remove(""); //if color was invalid, or theme has been changed, just delete all stored settings
+            settings.remove(QString()); //if color was invalid, or theme has been changed, just delete all stored settings
         }
     }
 #endif
@@ -1222,25 +1217,13 @@ void QS60StylePrivate::setActiveLayout()
 
 Q_GLOBAL_STATIC(QList<QS60StyleAnimation *>, m_animations)
 
-QS60StylePrivate::QS60StylePrivate() : m_feedbackPlugin(0)
+QS60StylePrivate::QS60StylePrivate()
 {
     //Animation defaults need to be created when style is instantiated
     QS60StyleAnimation* progressBarAnimation = new QS60StyleAnimation(QS60StyleEnums::SP_QgnGrafBarWaitAnim, 7, 100);
     m_animations()->append(progressBarAnimation);
     // No need to set active layout, if dynamic metrics API is available
     setActiveLayout();
-
-    //Tactile feedback plugin is only available for touch devices.
-    if (isTouchSupported()) {
-        QString pluginsPath = QLibraryInfo::location(QLibraryInfo::PluginsPath);
-        pluginsPath += QLatin1String("/feedback/qtactilefeedback.dll");
-
-        // Create plugin loader
-        QPluginLoader pluginLoader(pluginsPath);
-        // Load plugin and store pointer to the plugin implementation
-        if (pluginLoader.load())
-            m_feedbackPlugin = qobject_cast<TactileFeedbackInterface*>(pluginLoader.instance());
-    }
 }
 
 void QS60StylePrivate::removeAnimations()
@@ -1528,12 +1511,6 @@ void QS60StylePrivate::stopAnimation(QS60StyleEnums::SkinParts animationPart)
         }
         animation->resetToDefaults();
     }
-}
-
-void QS60StylePrivate::touchFeedback(QEvent *event, const QWidget *widget)
-{
-    if (m_feedbackPlugin)
-        m_feedbackPlugin->touchFeedback(event, widget);
 }
 
 QVariant QS60StyleModeSpecifics::themeDefinition(

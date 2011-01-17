@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -85,8 +85,10 @@ public:
     QSizeF *userSizeHints;
     mutable QSizeF cachedSizeHints[Qt::NSizeHints];
     mutable QSizeF cachedConstraint;
+    mutable QSizeF cachedSizeHintsWithConstraints[Qt::NSizeHints];
 
     mutable quint32 sizeHintCacheDirty : 1;
+    mutable quint32 sizeHintWithConstraintCacheDirty : 1;
     quint32 isLayout : 1;
     quint32 ownedByLayout : 1;
 

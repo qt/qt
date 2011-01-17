@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -95,6 +95,12 @@ qint64 QElapsedTimer::restart()
     t2 = 0;
 
     return absoluteToMSecs(t1 - old);
+}
+
+qint64 QElapsedTimer::nsecsElapsed() const
+{
+    uint64_t cpu_time = mach_absolute_time();
+    return absoluteToNSecs(cpu_time - t1);
 }
 
 qint64 QElapsedTimer::elapsed() const

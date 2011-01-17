@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2015,12 +2015,15 @@ void qt_init(QApplicationPrivate *priv, int,
                     (PtrXRRRootToScreen) xrandrLib.resolve("XRRRootToScreen");
                 X11->ptrXRRQueryExtension =
                     (PtrXRRQueryExtension) xrandrLib.resolve("XRRQueryExtension");
+                X11->ptrXRRSizes =
+                    (PtrXRRSizes) xrandrLib.resolve("XRRSizes");
             }
 #  else
             X11->ptrXRRSelectInput = XRRSelectInput;
             X11->ptrXRRUpdateConfiguration = XRRUpdateConfiguration;
             X11->ptrXRRRootToScreen = XRRRootToScreen;
             X11->ptrXRRQueryExtension = XRRQueryExtension;
+            X11->ptrXRRSizes = XRRSizes;
 #  endif
 
             if (X11->ptrXRRQueryExtension

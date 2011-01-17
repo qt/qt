@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -97,6 +97,7 @@ private slots:
     void qglContextDefaultBindTexture();
     void textureCleanup();
     void threadImages();
+    void nullRectCrash();
 };
 
 tst_QGL::tst_QGL()
@@ -2365,6 +2366,28 @@ void tst_QGL::threadImages()
     }
 
     delete widget;
+}
+
+void tst_QGL::nullRectCrash()
+{
+    if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
+
+    QGLWidget glw;
+    glw.makeCurrent();
+
+    QGLFramebufferObjectFormat fboFormat;
+    fboFormat.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+
+    QGLFramebufferObject *fbo = new QGLFramebufferObject(128, 128, fboFormat);
+
+    QPainter fboPainter(fbo);
+
+    fboPainter.setPen(QPen(QColor(255, 127, 127, 127), 2));
+    fboPainter.setBrush(QColor(127, 255, 127, 127));
+    fboPainter.drawRect(QRectF());
+
+    fboPainter.end();
 }
 
 class tst_QGLDummy : public QObject

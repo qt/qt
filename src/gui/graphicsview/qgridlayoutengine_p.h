@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -224,13 +224,16 @@ public:
 
 typedef QMap<QPair<int, int>, QGridLayoutMultiCellData> MultiCellMap;
 
+class QGridLayoutRowInfo;
+
 class QGridLayoutRowData
 {
 public:
     void reset(int count);
-    void distributeMultiCells();
+    void distributeMultiCells(const QGridLayoutRowInfo &rowInfo);
     void calculateGeometries(int start, int end, qreal targetSize, qreal *positions, qreal *sizes,
-                             qreal *descents, const QGridLayoutBox &totalBox);
+                             qreal *descents, const QGridLayoutBox &totalBox,
+                             const QGridLayoutRowInfo &rowInfo);
     QGridLayoutBox totalBox(int start, int end) const;
     void stealBox(int start, int end, int which, qreal *positions, qreal *sizes);
 
@@ -431,7 +434,7 @@ private:
     // Lazily computed from the above user input
     mutable int q_cachedEffectiveFirstRows[NOrientations];
     mutable int q_cachedEffectiveLastRows[NOrientations];
-    mutable quint8 q_cachedConstraintOrientation : 2;
+    mutable quint8 q_cachedConstraintOrientation : 3;
 
     // Layout item input
     mutable QLayoutStyleInfo q_cachedDataForStyleInfo;

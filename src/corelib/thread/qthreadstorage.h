@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -91,6 +91,11 @@ inline
 void qThreadStorage_setLocalData(QThreadStorageData &d, T **t)
 { (void) d.set(*t); }
 
+template <typename T>
+inline
+void qThreadStorage_deleteData(void *d, T **)
+{ delete static_cast<T *>(d); }
+
 // value-based specialization
 template <typename T>
 inline
@@ -114,6 +119,12 @@ inline
 void qThreadStorage_setLocalData(QThreadStorageData &d, T *t)
 { (void) d.set(new T(*t)); }
 
+template <typename T>
+inline
+void qThreadStorage_deleteData(void *d, T *)
+{ delete static_cast<T *>(d); }
+
+
 // MOC_SKIP_END
 #endif
 
@@ -126,7 +137,7 @@ private:
     Q_DISABLE_COPY(QThreadStorage)
 
     static inline void deleteData(void *x)
-    { delete static_cast<T>(x); }
+    { qThreadStorage_deleteData(x, reinterpret_cast<T*>(0)); }
 
 public:
     inline QThreadStorage() : d(deleteData) { }

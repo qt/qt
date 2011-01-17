@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1049,12 +1049,14 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         priv->backend->setParent(reply);
         priv->backend->reply = priv;
     }
-    // fourth step: setup the reply
-    priv->setup(op, request, outgoingData);
 
 #ifndef QT_NO_OPENSSL
     reply->setSslConfiguration(request.sslConfiguration());
 #endif
+
+    // fourth step: setup the reply
+    priv->setup(op, request, outgoingData);
+
     return reply;
 }
 
@@ -1130,6 +1132,11 @@ void QNetworkAccessManagerPrivate::authenticationRequired(QNetworkAccessBackend 
         }
     }
 
+    // if we emit a signal here in synchronous mode, the user might spin
+    // an event loop, which might recurse and lead to problems
+    if (backend->isSynchronous())
+        return;
+
     backend->reply->urlForLastAuthentication = url;
     emit q->authenticationRequired(backend->reply->q_func(), authenticator);
     cacheCredentials(url, authenticator);
@@ -1156,6 +1163,11 @@ void QNetworkAccessManagerPrivate::proxyAuthenticationRequired(QNetworkAccessBac
             return;
         }
     }
+
+    // if we emit a signal here in synchronous mode, the user might spin
+    // an event loop, which might recurse and lead to problems
+    if (backend->isSynchronous())
+        return;
 
     backend->reply->lastProxyAuthentication = proxy;
     emit q->proxyAuthenticationRequired(proxy, authenticator);

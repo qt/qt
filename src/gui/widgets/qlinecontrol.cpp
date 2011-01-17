@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1306,6 +1306,15 @@ void QLineControl::setCursorBlinkPeriod(int msec)
             emit updateNeeded(inputMask().isEmpty() ? cursorRect() : QRect());
     }
     m_blinkPeriod = msec;
+}
+
+void QLineControl::resetCursorBlinkTimer()
+{
+    if (m_blinkPeriod == 0 || m_blinkTimer == 0)
+        return;
+    killTimer(m_blinkTimer);
+    m_blinkTimer = startTimer(m_blinkPeriod / 2);
+    m_blinkStatus = 1;
 }
 
 void QLineControl::timerEvent(QTimerEvent *event)

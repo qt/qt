@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -392,6 +392,11 @@ void tst_QDeclarativeItem::keyNavigation()
     QDeclarativeItem *item = findItem<QDeclarativeItem>(canvas->rootObject(), "item1");
     QVERIFY(item);
     QVERIFY(item->hasActiveFocus());
+
+    QVariant result;
+    QVERIFY(QMetaObject::invokeMethod(canvas->rootObject(), "verify",
+            Q_RETURN_ARG(QVariant, result)));
+    QVERIFY(result.toBool());
 
     // right
     QKeyEvent key(QEvent::KeyPress, Qt::Key_Right, Qt::NoModifier, "", false, 1);

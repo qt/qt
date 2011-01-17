@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -106,7 +106,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     TRACE_OBJ
 
     setToolButtonStyle(Qt::ToolButtonFollowStyle);
-    setDockOptions(ForceTabbedDocks); // Has no effect; Qt bug?
+    setDockOptions(dockOptions() | AllowNestedDocks);
 
     QString collectionFile;
     if (usesDefaultCollection()) {
@@ -199,6 +199,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     }
 
     QToolBar *toolBar = addToolBar(tr("Bookmark Toolbar"));
+    toolBar->setObjectName(QLatin1String("Bookmark Toolbar"));
     bookMarkManager->setBookmarksToolbar(toolBar);
 
     // Show the widget here, otherwise the restore geometry and state won't work
@@ -218,8 +219,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     } else {
         tabifyDockWidget(contentDock, indexDock);
         tabifyDockWidget(indexDock, bookmarkDock);
-        tabifyDockWidget(bookmarkDock, openPagesDock);
-        tabifyDockWidget(openPagesDock, searchDock);
+        tabifyDockWidget(bookmarkDock, searchDock);
         contentDock->raise();
         const QRect screen = QApplication::desktop()->screenGeometry();
         resize(4*screen.width()/5, 4*screen.height()/5);
@@ -460,14 +460,16 @@ void MainWindow::setupActions()
     menu->addAction(globalActions->printAction());
     menu->addSeparator();
 
-    QAction *tmp = menu->addAction(QIcon::fromTheme("application-exit"),
-                                   tr("&Quit"), this, SLOT(close()));
-    tmp->setMenuRole(QAction::QuitRole);
+    QIcon appExitIcon = QIcon::fromTheme("application-exit");
+    QAction *tmp;
 #ifdef Q_OS_WIN
+    tmp = menu->addAction(appExitIcon, tr("E&xit"), this, SLOT(close()));
     tmp->setShortcut(QKeySequence(tr("CTRL+Q")));
 #else
+    tmp = menu->addAction(appExitIcon, tr("&Quit"), this, SLOT(close()));
     tmp->setShortcut(QKeySequence::Quit);
 #endif
+    tmp->setMenuRole(QAction::QuitRole);
 
     menu = menuBar()->addMenu(tr("&Edit"));
     menu->addAction(globalActions->copyAction());
@@ -807,7 +809,7 @@ void MainWindow::showAboutDialog()
         aboutDia.setText(tr("<center>"
             "<h3>%1</h3>"
             "<p>Version %2</p></center>"
-            "<p>Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</p>")
+            "<p>Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).</p>")
             .arg(tr("Qt Assistant")).arg(QLatin1String(QT_VERSION_STR)),
             resources);
         QLatin1String path(":/trolltech/assistant/images/assistant-128.png");

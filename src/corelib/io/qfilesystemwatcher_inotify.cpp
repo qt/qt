@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -340,7 +340,7 @@ QStringList QInotifyFileSystemWatcherEngine::removePaths(const QStringList &path
 
 void QInotifyFileSystemWatcherEngine::stop()
 {
-    QMetaObject::invokeMethod(this, "quit");
+    quit();
 }
 
 void QInotifyFileSystemWatcherEngine::readFromInotify()
@@ -356,7 +356,7 @@ void QInotifyFileSystemWatcherEngine::readFromInotify()
     char *at = buffer.data();
     char * const end = at + buffSize;
 
-    QMap<int, inotify_event *> eventForId;
+    QHash<int, inotify_event *> eventForId;
     while (at < end) {
         inotify_event *event = reinterpret_cast<inotify_event *>(at);
 
@@ -368,7 +368,7 @@ void QInotifyFileSystemWatcherEngine::readFromInotify()
         at += sizeof(inotify_event) + event->len;
     }
 
-    QMap<int, inotify_event *>::const_iterator it = eventForId.constBegin();
+    QHash<int, inotify_event *>::const_iterator it = eventForId.constBegin();
     while (it != eventForId.constEnd()) {
         const inotify_event &event = **it;
         ++it;

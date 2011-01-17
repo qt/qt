@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -32,7 +32,7 @@
   \brief A dictionary of standard QML elements.
 
   This is a dictionary of all standard QML elements made available
-  in the QtDeclarative module.
+  in the Qt Declarative module.
 
   To see the QML elements listed by functional area, see the
   \l{Groups Of Related QML Elements} page.

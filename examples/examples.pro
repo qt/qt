@@ -20,6 +20,7 @@ SUBDIRS       = \
                 mainwindows \
                 painting \
                 richtext \
+                scroller \
                 sql \
                 tools \
                 tutorials \

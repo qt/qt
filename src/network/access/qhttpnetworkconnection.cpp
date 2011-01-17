@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -855,10 +855,15 @@ QHttpNetworkReply* QHttpNetworkConnection::sendRequest(const QHttpNetworkRequest
     return d->queueRequest(request);
 }
 
-bool QHttpNetworkConnection::isEncrypted() const
+bool QHttpNetworkConnection::isSsl() const
 {
     Q_D(const QHttpNetworkConnection);
     return d->encrypt;
+}
+
+QHttpNetworkConnectionChannel *QHttpNetworkConnection::channels() const
+{
+    return d_func()->channels;
 }
 
 #ifndef QT_NO_NETWORKPROXY

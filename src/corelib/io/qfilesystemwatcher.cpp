@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -198,7 +198,7 @@ QStringList QPollingFileSystemWatcherEngine::removePaths(const QStringList &path
 
 void QPollingFileSystemWatcherEngine::stop()
 {
-    QMetaObject::invokeMethod(this, "quit");
+    quit();
 }
 
 void QPollingFileSystemWatcherEngine::timeout()
@@ -228,8 +228,14 @@ void QPollingFileSystemWatcherEngine::timeout()
             dit.remove();
             emit directoryChanged(path, true);
         } else if (x.value() != fi) {
-            x.value() = fi;
-            emit directoryChanged(path, false);
+            fi.refresh();
+            if (!fi.exists()) {
+                dit.remove();
+                emit directoryChanged(path, true);
+            } else {
+                x.value() = fi;
+                emit directoryChanged(path, false);
+            }
         }
         
     }
@@ -426,11 +432,6 @@ QFileSystemWatcher::QFileSystemWatcher(const QStringList &paths, QObject *parent
 
 /*!
     Destroys the file system watcher.
-
-    \note To avoid deadlocks on shutdown, all instances of QFileSystemWatcher
-    need to be destroyed before QCoreApplication. Note that passing
-    QCoreApplication::instance() as the parent object when creating
-    QFileSystemWatcher is not sufficient.
 */
 QFileSystemWatcher::~QFileSystemWatcher()
 {

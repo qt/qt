@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -145,7 +145,7 @@ HelpEngineWrapper::HelpEngineWrapper(const QString &collectionFile)
 
     /*
      * Otherwise we will waste time if several new docs are found,
-     * because we will start to index them, only to be interupted
+     * because we will start to index them, only to be interrupted
      * by the next request. Also, there is a nasty SQLITE bug that will
      * cause the application to hang for minutes in that case.
      * This call is reverted by initialDocSetupDone(), which must be

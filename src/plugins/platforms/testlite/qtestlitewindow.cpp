@@ -649,7 +649,6 @@ void QTestLiteWindow::setParent(const QPlatformWindow *window)
 {
         QPoint point = widget()->mapTo(widget()->nativeParentWidget(),QPoint());
         XReparentWindow(xd->display,x_window,window->winId(),point.x(),point.y());
-        XMapWindow(xd->display, x_window);
 }
 
 void QTestLiteWindow::raise()
@@ -1022,7 +1021,7 @@ QPlatformGLContext *QTestLiteWindow::glContext() const
     if (!mGLContext) {
         QTestLiteWindow *that = const_cast<QTestLiteWindow *>(this);
 #ifndef QT_NO_OPENGL
-        that->mGLContext = new QGLXGLContext(x_window, xd, widget()->platformWindowFormat());
+        that->mGLContext = new QGLXGLContext(x_window, xd,widget()->platformWindowFormat());
 #endif
     }
     return mGLContext;

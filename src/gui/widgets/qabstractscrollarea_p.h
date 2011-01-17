@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -84,11 +84,13 @@ public:
     int left, top, right, bottom; // viewport margin
 
     int xoffset, yoffset;
+    QPoint overshoot;
 
     void init();
     void layoutChildren();
     // ### Fix for 4.4, talk to Bjoern E or Girish.
     virtual void scrollBarPolicyChanged(Qt::Orientation, Qt::ScrollBarPolicy) {}
+    bool canStartScrollingAt( const QPoint &startPos );
 
     void _q_hslide(int);
     void _q_vslide(int);

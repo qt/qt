@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -286,6 +286,7 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
     extern CGContextRef qt_mac_graphicsContextFor(QWidget *);
     CGContextRef context = qt_mac_graphicsContextFor(widget);
 #endif
+    CGContextRetain(context);
     CGContextSaveGState(context);
 
     // Flip context.
@@ -318,6 +319,8 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
 
     // Restore context.
     CGContextRestoreGState(context);
+    CGContextRelease(context);
+
 
 #endif // Q_WS_MAC
 

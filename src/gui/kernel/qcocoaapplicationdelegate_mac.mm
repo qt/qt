@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -177,7 +177,7 @@ static void cleanupCocoaApplicationDelegate()
     qtMenuLoader = menuLoader;
 }
 
-- (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)menuLoader;
+- (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)menuLoader
 {
     return [[qtMenuLoader retain] autorelease];
 }
@@ -271,7 +271,7 @@ static void cleanupCocoaApplicationDelegate()
     }
 }
 
-- (void)applicationDidResignActive:(NSNotification *)notification;
+- (void)applicationDidResignActive:(NSNotification *)notification
 {
     if (reflectionDelegate
         && [reflectionDelegate respondsToSelector:@selector(applicationDidResignActive:)])

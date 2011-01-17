@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -765,7 +765,7 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, EventHandlerCallRef e
                                   &handled_event) == false)
         return handled_event;
     QString text(ourChar);
-    /* This is actually wrong - but unfortunatly it is the best that can be
+    /* This is actually wrong - but unfortunately it is the best that can be
        done for now because of the Control/Meta mapping problems */
     if (modifiers & (Qt::ControlModifier | Qt::MetaModifier)
         && !qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {

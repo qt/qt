@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -596,8 +596,10 @@ void QTextDocument::markContentsDirty(int from, int length)
     Q_D(QTextDocument);
     d->documentChange(from, length);
     if (!d->inContentsChange) {
-        d->lout->documentChanged(d->docChangeFrom, d->docChangeOldLength, d->docChangeLength);
-        d->docChangeFrom = -1;
+        if (d->lout) {
+            d->lout->documentChanged(d->docChangeFrom, d->docChangeOldLength, d->docChangeLength);
+            d->docChangeFrom = -1;
+        }
     }
 }
 

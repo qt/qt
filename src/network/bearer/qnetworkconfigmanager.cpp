@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -124,14 +124,14 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
 */
 
 /*! 
-    \fn void QNetworkConfigurationManager::configurationAdded(const QNetworkConfiguration& config)
+    \fn void QNetworkConfigurationManager::configurationAdded(const QNetworkConfiguration &config)
 
     This signal is emitted whenever a new network configuration is added to the system. The new
     configuration is specified by \a config.
 */
 
 /*!
-    \fn void QNetworkConfigurationManager::configurationRemoved(const QNetworkConfiguration& configuration)
+    \fn void QNetworkConfigurationManager::configurationRemoved(const QNetworkConfiguration &config)
 
     This signal is emitted when a configuration is about to be removed from the system. The removed
     \a configuration is invalid but retains name and identifier.
@@ -144,7 +144,7 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
     be initiated via \l updateConfigurations().
 */
 
-/*! \fn void QNetworkConfigurationManager::configurationChanged(const QNetworkConfiguration& config)
+/*! \fn void QNetworkConfigurationManager::configurationChanged(const QNetworkConfiguration &config)
 
     This signal is emitted when the \l {QNetworkConfiguration::state()}{state} of \a config changes.
 */
@@ -204,7 +204,7 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
 /*!
     Constructs a QNetworkConfigurationManager with the given \a parent.
 */
-QNetworkConfigurationManager::QNetworkConfigurationManager( QObject* parent )
+QNetworkConfigurationManager::QNetworkConfigurationManager(QObject *parent)
     : QObject(parent)
 {
     QNetworkConfigurationManagerPrivate *priv = qNetworkConfigurationManagerPrivate();
@@ -213,12 +213,12 @@ QNetworkConfigurationManager::QNetworkConfigurationManager( QObject* parent )
             this, SIGNAL(configurationAdded(QNetworkConfiguration)));
     connect(priv, SIGNAL(configurationRemoved(QNetworkConfiguration)),
             this, SIGNAL(configurationRemoved(QNetworkConfiguration)));
-    connect(priv, SIGNAL(configurationUpdateComplete()),
-            this, SIGNAL(updateCompleted()));
-    connect(priv, SIGNAL(onlineStateChanged(bool)), 
-            this, SIGNAL(onlineStateChanged(bool)));
     connect(priv, SIGNAL(configurationChanged(QNetworkConfiguration)),
             this, SIGNAL(configurationChanged(QNetworkConfiguration)));
+    connect(priv, SIGNAL(onlineStateChanged(bool)),
+            this, SIGNAL(onlineStateChanged(bool)));
+    connect(priv, SIGNAL(configurationUpdateComplete()),
+            this, SIGNAL(updateCompleted()));
 
     priv->enablePolling();
 }

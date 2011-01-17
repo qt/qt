@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,11 +44,13 @@
 #include "qpixmap_raster_p.h"
 #include "qnativeimage_p.h"
 #include "qimage_p.h"
+#include "qpaintengine.h"
 
 #include "qbitmap.h"
 #include "qimage.h"
 #include <QBuffer>
 #include <QImageReader>
+#include <private/qimage_p.h>
 #include <private/qsimd_p.h>
 #include <private/qwidget_p.h>
 #include <private/qdrawhelper_p.h>
@@ -206,7 +208,13 @@ void QRasterPixmapData::fill(const QColor &color)
                 else
 #endif
                     toFormat = QImage::Format_ARGB32_Premultiplied;
-                image = QImage(image.width(), image.height(), toFormat);
+
+                if (!image.isNull() && qt_depthForFormat(image.format()) == qt_depthForFormat(toFormat)) {
+                    image.detach();
+                    image.d->format = toFormat;
+                } else {
+                    image = QImage(image.width(), image.height(), toFormat);
+                }
             }
 
             switch (image.format()) {
@@ -302,6 +310,15 @@ bool QRasterPixmapData::hasAlphaChannel() const
 
 QImage QRasterPixmapData::toImage() const
 {
+    if (!image.isNull()) {
+        QImageData *data = const_cast<QImage &>(image).data_ptr();
+        if (data->paintEngine && data->paintEngine->isActive()
+            && data->paintEngine->paintDevice() == &image)
+        {
+            return image.copy();
+        }
+    }
+
     return image;
 }
 

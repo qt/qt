@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,6 +45,7 @@
 
 #ifndef QT_NO_THREAD
 #include "qatomic.h"
+#include "qelapsedtimer.h"
 #include "qthread.h"
 #include "qmutex_p.h"
 
@@ -157,15 +158,12 @@ void QMutex::lock()
             return;
         }
 
-        bool isLocked = d->contenders.fetchAndAddAcquire(1) == 0;
+        bool isLocked = d->contenders.testAndSetAcquire(0, 1);
         if (!isLocked) {
             // didn't get the lock, wait for it
             isLocked = d->wait();
             Q_ASSERT_X(isLocked, "QMutex::lock",
                        "Internal error, infinite wait has timed out.");
-
-            // don't need to wait for the lock anymore
-            d->contenders.deref();
         }
 
         d->owner = self;
@@ -174,8 +172,7 @@ void QMutex::lock()
         return;
     }
 
-
-    bool isLocked = d->contenders == 0 && d->contenders.testAndSetAcquire(0, 1);
+    bool isLocked = d->contenders.testAndSetAcquire(0, 1);
     if (!isLocked) {
         lockInternal();
     }
@@ -211,7 +208,7 @@ bool QMutex::tryLock()
             return true;
         }
 
-        bool isLocked = d->contenders == 0 && d->contenders.testAndSetAcquire(0, 1);
+        bool isLocked = d->contenders.testAndSetAcquire(0, 1);
         if (!isLocked) {
             // some other thread has the mutex locked, or we tried to
             // recursively lock an non-recursive mutex
@@ -224,13 +221,7 @@ bool QMutex::tryLock()
         return isLocked;
     }
 
-    bool isLocked = d->contenders == 0 && d->contenders.testAndSetAcquire(0, 1);
-    if (!isLocked) {
-        // some other thread has the mutex locked, or we tried to
-        // recursively lock an non-recursive mutex
-        return isLocked;
-    }
-    return isLocked;
+    return d->contenders.testAndSetAcquire(0, 1);
 }
 
 /*! \overload
@@ -269,13 +260,10 @@ bool QMutex::tryLock(int timeout)
             return true;
         }
 
-        bool isLocked = d->contenders.fetchAndAddAcquire(1) == 0;
+        bool isLocked = d->contenders.testAndSetAcquire(0, 1);
         if (!isLocked) {
             // didn't get the lock, wait for it
             isLocked = d->wait(timeout);
-
-            // don't need to wait for the lock anymore
-            d->contenders.deref();
             if (!isLocked)
                 return false;
         }
@@ -286,17 +274,9 @@ bool QMutex::tryLock(int timeout)
         return true;
     }
 
-    bool isLocked = d->contenders.fetchAndAddAcquire(1) == 0;
-    if (!isLocked) {
-        // didn't get the lock, wait for it
-        isLocked = d->wait(timeout);
-
-        // don't need to wait for the lock anymore
-        d->contenders.deref();
-        if (!isLocked)
-            return false;
-    }
-    return true;
+    return (d->contenders.testAndSetAcquire(0, 1)
+            // didn't get the lock, wait for it
+            || d->wait(timeout));
 }
 
 
@@ -310,7 +290,6 @@ bool QMutex::tryLock(int timeout)
 void QMutex::unlock()
 {
     QMutexPrivate *d = static_cast<QMutexPrivate *>(this->d);
-
     if (d->recursive) {
         if (!--d->count) {
             d->owner = 0;
@@ -451,37 +430,57 @@ void QMutex::unlock()
 void QMutex::lockInternal()
 {
     QMutexPrivate *d = static_cast<QMutexPrivate *>(this->d);
-    int spinCount = 0;
-    int lastSpinCount = d->lastSpinCount;
 
-    enum { AdditionalSpins = 20, SpinCountPenalizationDivisor = 4 };
-    const int maximumSpinCount = lastSpinCount + AdditionalSpins;
+    if (QThread::idealThreadCount() == 1) {
+        // don't spin on single cpu machines
+        bool isLocked = d->wait();
+        Q_ASSERT_X(isLocked, "QMutex::lock",
+                   "Internal error, infinite wait has timed out.");
+        Q_UNUSED(isLocked);
+        return;
+    }
 
+    QElapsedTimer elapsedTimer;
+    elapsedTimer.start();
     do {
-        if (spinCount++ > maximumSpinCount) {
-            // puts("spinning useless, sleeping");
-            bool isLocked = d->contenders.fetchAndAddAcquire(1) == 0;
-            if (!isLocked) {
+        qint64 spinTime = elapsedTimer.nsecsElapsed();
+        if (spinTime > d->maximumSpinTime) {
+            // didn't get the lock, wait for it, since we're not going to gain anything by spinning more
+            elapsedTimer.start();
+            bool isLocked = d->wait();
+            Q_ASSERT_X(isLocked, "QMutex::lock",
+                       "Internal error, infinite wait has timed out.");
+            Q_UNUSED(isLocked);
 
-                // didn't get the lock, wait for it
-                isLocked = d->wait();
-                Q_ASSERT_X(isLocked, "QMutex::lock",
-                            "Internal error, infinite wait has timed out.");
-
-                // don't need to wait for the lock anymore
-                d->contenders.deref();
+            qint64 maximumSpinTime = d->maximumSpinTime;
+            qint64 averageWaitTime = d->averageWaitTime;
+            qint64 actualWaitTime = elapsedTimer.nsecsElapsed();
+            if (actualWaitTime < (QMutexPrivate::MaximumSpinTimeThreshold * 3 / 2)) {
+                // measure the wait times
+                averageWaitTime = d->averageWaitTime = qMin((averageWaitTime + actualWaitTime) / 2, qint64(QMutexPrivate::MaximumSpinTimeThreshold));
             }
-            // decrease the lastSpinCount since we didn't actually get the lock by spinning
-            spinCount = -d->lastSpinCount / SpinCountPenalizationDivisor;
-            break;
+
+            // adjust the spin count when spinning does not benefit contention performance
+            if ((spinTime + actualWaitTime) - qint64(QMutexPrivate::MaximumSpinTimeThreshold) >= qint64(QMutexPrivate::MaximumSpinTimeThreshold)) {
+                // long waits, stop spinning
+                d->maximumSpinTime = 0;
+            } else {
+                // allow spinning if wait times decrease, but never spin more than the average wait time (otherwise we may perform worse)
+                d->maximumSpinTime = qBound(qint64(averageWaitTime * 3 / 2), maximumSpinTime / 2, qint64(QMutexPrivate::MaximumSpinTimeThreshold));
+            }
+            return;
         }
+        // be a good citizen... yielding lets something else run if there is something to run, but may also relieve memory pressure if not
+        QThread::yieldCurrentThread();
     } while (d->contenders != 0 || !d->contenders.testAndSetAcquire(0, 1));
 
-    // adjust the last spin lock count
-    lastSpinCount = d->lastSpinCount;
-    d->lastSpinCount = spinCount >= 0
-                        ? qMax(lastSpinCount, spinCount)
-                        : lastSpinCount + spinCount;
+    // spinning is working, do not change the spin time (unless we are using much less time than allowed to spin)
+    qint64 maximumSpinTime = d->maximumSpinTime;
+    qint64 spinTime = elapsedTimer.nsecsElapsed();
+    if (spinTime < maximumSpinTime / 2) {
+        // we are using much less time than we need, adjust the limit
+        d->maximumSpinTime = qBound(qint64(d->averageWaitTime * 3 / 2), maximumSpinTime / 2, qint64(QMutexPrivate::MaximumSpinTimeThreshold));
+    }
 }
 
 /*!

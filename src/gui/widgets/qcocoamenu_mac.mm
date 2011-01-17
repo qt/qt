@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,6 +44,7 @@
 #ifdef QT_MAC_USE_COCOA
 #import <private/qcocoamenu_mac_p.h>
 #import <private/qcocoamenuloader_mac_p.h>
+#import <private/qcocoaapplication_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qapplication_p.h>
 #include <private/qaction_p.h>
@@ -80,7 +81,7 @@ QT_USE_NAMESPACE
     return self;
 }
 
-- (void)menu:(NSMenu*)menu willHighlightItem:(NSMenuItem*)item;
+- (void)menu:(NSMenu*)menu willHighlightItem:(NSMenuItem*)item
 {
     Q_UNUSED(menu);
 
@@ -101,7 +102,7 @@ QT_USE_NAMESPACE
     }
 }
 
-- (void)menuWillOpen:(NSMenu*)menu;
+- (void)menuWillOpen:(NSMenu*)menu
 {
     while (QWidget *popup
                 = QApplication::activePopupWidget())
@@ -111,7 +112,7 @@ QT_USE_NAMESPACE
     qt_mac_menu_collapseSeparators(menu, qtmenu->separatorsCollapsible());
 }
 
-- (void)menuDidClose:(NSMenu*)menu;
+- (void)menuDidClose:(NSMenu*)menu
 {
     qt_mac_emit_menuSignals(((QT_MANGLE_NAMESPACE(QCocoaMenu) *)menu)->qmenu, false);
     if (previousAction) {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -202,7 +202,7 @@ ItemType::Ptr AtomicValue::qtToXDMType(const QXmlItem &item)
     Q_ASSERT(item.isAtomicValue());
     const QVariant v(item.toAtomicValue());
 
-    switch(v.type())
+    switch(int(v.type()))
     {
         case QVariant::Char:
         /* Fallthrough. */

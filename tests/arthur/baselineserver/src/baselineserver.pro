@@ -20,8 +20,11 @@ include(../../common/baselineprotocol.pri)
 
 SOURCES += main.cpp \
     baselineserver.cpp \
-    htmlpage.cpp
+    report.cpp
 
 HEADERS += \
     baselineserver.h \
-    htmlpage.h
+    report.h
+
+RESOURCES += \
+    baselineserver.qrc

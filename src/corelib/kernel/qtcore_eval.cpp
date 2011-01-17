@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 
 static const char boilerplate_unsuported[] =
     "\nQt %1 Evaluation License\n"
-    "Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).\n"
+    "Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).\n"
     "All rights reserved.\n\n"
     "This trial version may only be used for evaluation purposes\n"
     "and will shut down after 120 minutes.\n"
@@ -65,7 +65,7 @@ static const char boilerplate_unsuported[] =
 
 static const char boilerplate_supported[] =
     "\nQt %1 Evaluation License\n"
-    "Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).\n"
+    "Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).\n"
     "All rights reserved.\n\n"
     "This trial version may only be used for evaluation purposes\n"
     "Registered to:\n"
@@ -90,14 +90,14 @@ static const char will_shutdown_now[] =
 
 static int qt_eval_is_supported()
 {
-    const char *const license_key = qt_eval_key_data + 12;
+    const volatile char *const license_key = qt_eval_key_data + 12;
 
     // fast fail
     if (!qt_eval_key_data[0] || !*license_key)
         return -1;
 
     // is this an unsupported evaluation?
-    const char* typecode = license_key;
+    const volatile char *typecode = license_key;
     int field = 2;
     for ( ; field && *typecode; ++typecode)
         if (*typecode == '-')

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -147,32 +147,36 @@ class QByteArray;
     Components are reusable, encapsulated QML elements with well-defined interfaces.
 
     Components are often defined by \l {qdeclarativedocuments.html}{component files} -
-    that is, \c .qml files. The \e Component element allows components to be defined
-    within QML items rather than in a separate file. This may be useful for reusing 
-    a small component within a QML file, or for defining a component that logically 
-    belongs with other QML components within a file.
+    that is, \c .qml files. The \e Component element essentially allows QML components
+    to be defined inline, within a \l {QML Document}{QML document}, rather than as a separate QML file.
+    This may be useful for reusing a small component within a QML file, or for defining
+    a component that logically belongs with other QML components within a file.
 
     For example, here is a component that is used by multiple \l Loader objects.
-    It contains a top level \l Rectangle item:
+    It contains a single item, a \l Rectangle:
 
     \snippet doc/src/snippets/declarative/component.qml 0
 
     Notice that while a \l Rectangle by itself would be automatically 
     rendered and displayed, this is not the case for the above rectangle
     because it is defined inside a \c Component. The component encapsulates the
-    QML elements within, as if they were defined in a separate \c .qml
+    QML elements within, as if they were defined in a separate QML
     file, and is not loaded until requested (in this case, by the
     two \l Loader objects).
 
-    A Component cannot contain anything other
-    than an \c id and a single top level item. While the \c id is optional,
-    the top level item is not; you cannot define an empty component.
+    Defining a \c Component is similar to defining a \l {QML Document}{QML document}.
+    A QML document has a single top-level item that defines the behaviors and
+    properties of that component, and cannot define properties or behaviors outside
+    of that top-level item. In the same way, a \c Component definition contains a single
+    top level item (which in the above example is a \l Rectangle) and cannot define any
+    data outside of this item, with the exception of an \e id (which in the above example
+    is \e redSquare).
 
-    The Component element is commonly used to provide graphical components
-    for views. For example, the ListView::delegate property requires a Component
+    The \c Component element is commonly used to provide graphical components
+    for views. For example, the ListView::delegate property requires a \c Component
     to specify how each list item is to be displayed.
 
-    Component objects can also be dynamically created using
+    \c Component objects can also be created dynamically using
     \l{QML:Qt::createComponent()}{Qt.createComponent()}.
 */
 
@@ -695,17 +699,6 @@ QObject *QDeclarativeComponent::create(QDeclarativeContext *context)
     return rv;
 }
 
-QObject *QDeclarativeComponentPrivate::create(QDeclarativeContextData *context, 
-                                              const QBitField &bindings)
-{
-    if (!context)
-        context = QDeclarativeContextData::get(engine->rootContext());
-
-    QObject *rv = beginCreate(context, bindings);
-    completeCreate();
-    return rv;
-}
-
 /*!
     This method provides more advanced control over component instance creation.
     In general, programmers should use QDeclarativeComponent::create() to create a 
@@ -876,9 +869,12 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
             QDeclarativeEnginePrivate::SimpleList<QDeclarativeAbstractBinding> bv = 
                 state->bindValues.at(ii);
             for (int jj = 0; jj < bv.count; ++jj) {
-                if(bv.at(jj)) 
+                if(bv.at(jj)) {
+                    // XXX akennedy
+                    bv.at(jj)->m_mePtr = 0;
                     bv.at(jj)->setEnabled(true, QDeclarativePropertyPrivate::BypassInterceptor | 
                                                 QDeclarativePropertyPrivate::DontRemoveBinding);
+                }
             }
             QDeclarativeEnginePrivate::clear(bv);
         }

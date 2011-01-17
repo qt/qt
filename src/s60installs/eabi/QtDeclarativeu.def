@@ -1747,8 +1747,8 @@ EXPORTS
 	_ZN21QDeclarativeListModelC1EPKS_P32QDeclarativeListModelWorkerAgent @ 1746 NONAME ABSENT
 	_ZN21QDeclarativeListModelC2EPKS_P32QDeclarativeListModelWorkerAgent @ 1747 NONAME ABSENT
 	_ZNK21QDeclarativeListModel14inWorkerThreadEv @ 1748 NONAME ABSENT
-	_ZN23QDeclarativeDebugHelper15getScriptEngineEP18QDeclarativeEngine @ 1749 NONAME ABSENT
-	_ZN23QDeclarativeDebugHelper26setAnimationSlowDownFactorEf @ 1750 NONAME ABSENT
+	_ZN23QDeclarativeDebugHelper15getScriptEngineEP18QDeclarativeEngine @ 1749 NONAME
+	_ZN23QDeclarativeDebugHelper26setAnimationSlowDownFactorEf @ 1750 NONAME
 	_ZN17QDeclarativeTimer10classBeginEv @ 1751 NONAME ABSENT
 	_ZN17QDeclarativeTimer10setRunningEb @ 1752 NONAME ABSENT
 	_ZN17QDeclarativeTimer11qt_metacallEN11QMetaObject4CallEiPPv @ 1753 NONAME ABSENT

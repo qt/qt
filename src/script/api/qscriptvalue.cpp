@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1716,7 +1716,14 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
 
     QVarLengthArray<JSC::JSValue, 8> argsVector(args.size());
     for (int i = 0; i < args.size(); ++i) {
-        if (!args.at(i).isValid())
+        QScriptValue arg = args.at(i);
+        if (QScriptValuePrivate::getEngine(arg) != d->engine && QScriptValuePrivate::getEngine(arg)) {
+            qWarning("QScriptValue::construct() failed: "
+                     "cannot construct function with argument created in "
+                     "a different engine");
+            return QScriptValue();
+        }
+        if (!arg.isValid())
             argsVector[i] = JSC::jsUndefined();
         else
             argsVector[i] = d->engine->scriptValueToJSCValue(args.at(i));
@@ -1766,6 +1773,12 @@ QScriptValue QScriptValue::construct(const QScriptValue &arguments)
 
     JSC::ExecState *exec = d->engine->currentFrame;
 
+    if (QScriptValuePrivate::getEngine(arguments) != d->engine && QScriptValuePrivate::getEngine(arguments)) {
+        qWarning("QScriptValue::construct() failed: "
+                 "cannot construct function with argument created in "
+                 "a different engine");
+        return QScriptValue();
+    }
     JSC::JSValue array = d->engine->scriptValueToJSCValue(arguments);
     // copied from runtime/FunctionPrototype.cpp, functionProtoFuncApply()
     JSC::MarkedArgumentBuffer applyArgs;

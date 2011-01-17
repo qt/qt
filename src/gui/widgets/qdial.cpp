@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -83,6 +83,7 @@ public:
     int valueFromPoint(const QPoint &) const;
     double angle(const QPoint &, const QPoint &) const;
     void init();
+    virtual int bound(int val) const;
 };
 
 void QDialPrivate::init()
@@ -95,6 +96,20 @@ void QDialPrivate::init()
     QObject::connect(q, SIGNAL(sliderMoved(int)), q, SIGNAL(dialMoved(int)));
     QObject::connect(q, SIGNAL(sliderReleased()), q, SIGNAL(dialReleased()));
 #endif
+}
+
+int QDialPrivate::bound(int val) const
+{
+    if (wrapping) {
+        if ((val >= minimum) && (val <= maximum))
+            return val;
+        val = minimum + ((val - minimum) % (maximum - minimum));
+        if (val < minimum)
+            val += maximum - minimum;
+        return val;
+    } else {
+        return QAbstractSliderPrivate::bound(val);
+    }
 }
 
 /*!

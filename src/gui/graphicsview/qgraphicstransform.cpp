@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,7 +54,7 @@
     instances to one QGraphicsItem. Each QGraphicsTransform is applied in
     order, one at a time, to the QGraphicsItem it's assigned to.
 
-    QGraphicsTransform is particularily useful for animations. Whereas
+    QGraphicsTransform is particularly useful for animations. Whereas
     QGraphicsItem::setTransform() lets you assign any transform directly to an
     item, there is no direct way to interpolate between two different
     transformations (e.g., when transitioning between two states, each for

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -48,6 +48,20 @@
 
 #define PRINT_FILE_CREATE_ERROR(filename) fprintf(stderr, "Error: Could not create '%s'\n", qPrintable(filename));
 
+class SymbianLocalization
+{
+public:
+    QString qtLanguageCode;
+    QString symbianLanguageCode;
+    QString shortCaption;
+    QString longCaption;
+    QString pkgDisplayName;
+    QString installerPkgDisplayName;
+};
+
+typedef QList<SymbianLocalization> SymbianLocalizationList;
+typedef QListIterator<SymbianLocalization> SymbianLocalizationListIterator;
+
 class SymbianCommonGenerator
 {
 public:
@@ -59,6 +73,7 @@ public:
         TypeSubdirs
     };
 
+
     SymbianCommonGenerator(MakefileGenerator *generator);
 
     virtual void init();
@@ -68,7 +83,9 @@ protected:
     QString removePathSeparators(QString &file);
     void removeSpecialCharacters(QString& str);
     void removeEpocSpecialCharacters(QString& str);
-    void generatePkgFile(const QString &iconFile, bool epocBuild);
+    void generatePkgFile(const QString &iconFile,
+                         bool epocBuild,
+                         const SymbianLocalizationList &symbianLocalizationList);
     bool containsStartWithItem(const QChar &c, const QStringList& src);
 
     void writeRegRssFile(QMap<QString, QStringList> &useritems);
@@ -76,15 +93,15 @@ protected:
                          const QString &listTag,
                          const QString &listItem);
     void writeRssFile(QString &numberOfIcons, QString &iconfile);
-    void writeLocFile(QStringList &symbianLangCodes);
+    void writeLocFile(const SymbianLocalizationList &symbianLocalizationList);
     void readRssRules(QString &numberOfIcons,
                       QString &iconFile,
                       QMap<QString, QStringList> &userRssRules);
 
     void writeCustomDefFile();
 
-    QStringList symbianLangCodesFromTsFiles();
-    void fillQt2S60LangMapTable();
+    void parseTsFiles(SymbianLocalizationList *symbianLocalizationList);
+    void fillQt2SymbianLocalizationList(SymbianLocalizationList *symbianLocalizationList);
 
     void parsePreRules(const QString &deploymentVariable,
                        const QString &variableSuffix,
@@ -95,7 +112,13 @@ protected:
     void parsePostRules(const QString &deploymentVariable,
                         const QString &variableSuffix,
                         QStringList *rawRuleList);
-
+    bool parseTsContent(const QString &tsFilename, SymbianLocalization *loc);
+    QString generatePkgNameForHeader(const SymbianLocalizationList &symbianLocalizationList,
+                                     const QString &defaultName,
+                                     bool isForSmartInstaller);
+    void addLocalizedResourcesToDeployment(const QString &deploymentFilesVar,
+                                           const SymbianLocalizationList &symbianLocalizationList);
+    QString generateLocFileName();
 
 protected:
     MakefileGenerator *generator;
@@ -106,8 +129,6 @@ protected:
     QString privateDirUid;
     QString uid3;
     TargetType targetType;
-
-    QHash<QString, QString> qt2S60LangMapTable;
 };
 
 #endif // SYMBIANCOMMON_H

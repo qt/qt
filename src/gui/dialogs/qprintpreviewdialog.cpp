@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -676,6 +676,8 @@ void QPrintPreviewDialogPrivate::_q_zoomFactorChanged()
     Call QPrintPreviewDialog::exec() to show the preview dialog.
     \endlist
 
+    In Symbian, there is no support for printing. Hence, this dialog should not
+    be used in Symbian.
 
     \sa QPrinter, QPrintDialog, QPageSetupDialog, QPrintPreviewWidget
 */

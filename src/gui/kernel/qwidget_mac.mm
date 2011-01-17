@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2330,7 +2330,10 @@ void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWin
     } else {
         [windowRef setHidesOnDeactivate:NO];
     }
-    [windowRef setHasShadow:YES];
+    if (q->testAttribute(Qt::WA_MacNoShadow))
+        [windowRef setHasShadow:NO];
+    else
+        [windowRef setHasShadow:YES];
     Q_UNUSED(parentWidget);
     Q_UNUSED(dialog);
 
@@ -2873,23 +2876,31 @@ void QWidgetPrivate::setSubWindowStacking(bool set)
         if (NSWindow *pwin = [qt_mac_nativeview_for(parent) window]) {
             if (set) {
                 Qt::WindowType ptype = parent->window()->windowType();
-                if ([pwin isVisible] && (ptype == Qt::Window || ptype == Qt::Dialog) && ![qwin parentWindow])
+                if ([pwin isVisible] && (ptype == Qt::Window || ptype == Qt::Dialog) && ![qwin parentWindow]) {
+                    NSInteger level = [qwin level];
                     [pwin addChildWindow:qwin ordered:NSWindowAbove];
+                    if ([qwin level] < level)
+                        [qwin setLevel:level];
+                }
             } else {
                 [pwin removeChildWindow:qwin];
             }
         }
     }
 
-    QList<QWidget *> widgets = q->findChildren<QWidget *>();
+    QObjectList widgets = q->children();
     for (int i=0; i<widgets.size(); ++i) {
-        QWidget *child = widgets.at(i);
+        QWidget *child = qobject_cast<QWidget *>(widgets.at(i));
         if (child && child->isWindow()) {
             if (NSWindow *cwin = [qt_mac_nativeview_for(child) window]) {
                 if (set) {
                     Qt::WindowType ctype = child->window()->windowType();
-                    if ([cwin isVisible] && (ctype == Qt::Window || ctype == Qt::Dialog) && ![cwin parentWindow])
+                    if ([cwin isVisible] && (ctype == Qt::Window || ctype == Qt::Dialog) && ![cwin parentWindow]) {
+                        NSInteger level = [cwin level];
                         [qwin addChildWindow:cwin ordered:NSWindowAbove];
+                        if ([cwin level] < level)
+                            [cwin setLevel:level];
+                    }
                 } else {
                     [qwin removeChildWindow:qt_mac_window_for(child)];
                 }
@@ -2982,7 +2993,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     // unless this is an alien widget. )
     const bool nonWindowWithCreatedParent = !q->isWindow() && parent->testAttribute(Qt::WA_WState_Created);
     const bool nativeWidget = q->internalWinId() != 0;
-    if (wasCreated || nativeWidget && nonWindowWithCreatedParent) {
+    if (wasCreated || (nativeWidget && nonWindowWithCreatedParent)) {
         createWinId();
         if (q->isWindow()) {
 #ifndef QT_MAC_USE_COCOA
@@ -4265,7 +4276,7 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
             }
         }
 
-        // Check if we need to clip q inside the screen:
+#ifndef QT_MAC_USE_COCOA
         const QRect validRange(-XCOORD_MAX,-XCOORD_MAX, 2*XCOORD_MAX, 2*XCOORD_MAX);
         if (!validRange.contains(wrectInParentCoordSys)) {
             // We're too big, and must clip:
@@ -4284,6 +4295,7 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
             wrect = wrectInParentCoordSys;
             wrect.translate(-data.crect.topLeft());
         }
+#endif //QT_MAC_USE_COCOA
     }
 
     // unmap if we are outside the valid window system coord system

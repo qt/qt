@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -776,10 +776,8 @@ QMessageBox::QMessageBox(QWidget *parent)
     added at any time using addButton(). The \a parent and \a f
     arguments are passed to the QDialog constructor.
 
-    If \a parent is 0, the message box is an \l{Qt::ApplicationModal}
-    {application modal} dialog box. If \a parent is a widget, the
-    message box is \l{Qt::WindowModal} {window modal} relative to \a
-    parent.
+    The message box is an \l{Qt::ApplicationModal} {application modal}
+    dialog box.
 
     On Mac OS X, if \a parent is not 0 and you want your message box
     to appear as a Qt::Sheet of that parent, set the message box's
@@ -1549,10 +1547,8 @@ static QMessageBox::StandardButton showNewMessageBox(QWidget *parent,
     \key Esc was pressed instead, the \l{Default and Escape Keys}
     {escape button} is returned.
 
-    If \a parent is 0, the message box is an \l{Qt::ApplicationModal}
-    {application modal} dialog box. If \a parent is a widget, the
-    message box is \l{Qt::WindowModal} {window modal} relative to \a
-    parent.
+    The message box is an \l{Qt::ApplicationModal} {application modal}
+    dialog box.
 
     \sa question(), warning(), critical()
 */
@@ -1579,10 +1575,8 @@ QMessageBox::StandardButton QMessageBox::information(QWidget *parent, const QStr
     \key Esc was pressed instead, the \l{Default and Escape Keys}
     {escape button} is returned.
 
-    If \a parent is 0, the message box is an \l{Qt::ApplicationModal}
-    {application modal} dialog box. If \a parent is a widget, the
-    message box is \l{Qt::WindowModal} {window modal} relative to \a
-    parent.
+    The message box is an \l{Qt::ApplicationModal} {application modal}
+    dialog box.
 
     \sa information(), warning(), critical()
 */
@@ -1607,10 +1601,8 @@ QMessageBox::StandardButton QMessageBox::question(QWidget *parent, const QString
     \key Esc was pressed instead, the \l{Default and Escape Keys}
     {escape button} is returned.
 
-    If \a parent is 0, the message box is an \l{Qt::ApplicationModal}
-    {application modal} dialog box. If \a parent is a widget, the
-    message box is \l{Qt::WindowModal} {window modal} relative to \a
-    parent.
+    The message box is an \l{Qt::ApplicationModal} {application modal}
+    dialog box.
 
     \sa question(), information(), critical()
 */
@@ -1635,10 +1627,8 @@ QMessageBox::StandardButton QMessageBox::warning(QWidget *parent, const QString 
     \key Esc was pressed instead, the \l{Default and Escape Keys}
     {escape button} is returned.
 
-    If \a parent is 0, the message box is an \l{Qt::ApplicationModal}
-    {application modal} dialog box. If \a parent is a widget, the
-    message box is \l{Qt::WindowModal} {window modal} relative to \a
-    parent.
+    The message box is an \l{Qt::ApplicationModal} {application modal}
+    dialog box.
 
   \warning Do not delete \a parent during the execution of the dialog.
            If you want to do this, you should create the dialog
@@ -1670,7 +1660,7 @@ QMessageBox::StandardButton QMessageBox::critical(QWidget *parent, const QString
 
     The about box has a single button labelled "OK". On Mac OS X, the
     about box is popped up as a modeless window; on other platforms,
-    it is currently a window modal.
+    it is currently application modal.
 
     \sa QWidget::windowIcon(), QApplication::activeWindow()
 */
@@ -1723,7 +1713,7 @@ void QMessageBox::about(QWidget *parent, const QString &title, const QString &te
     QApplication provides this functionality as a slot.
 
     On Mac OS X, the about box is popped up as a modeless window; on
-    other platforms, it is currently window modal.
+    other platforms, it is currently application modal.
 
     \sa QApplication::aboutQt()
 */
@@ -1771,7 +1761,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "to comply with the terms of the GNU GPL version 3.0.</p>"
         "<p>Please see <a href=\"http://qt.nokia.com/products/licensing\">qt.nokia.com/products/licensing</a> "
         "for an overview of Qt licensing.</p>"
-        "<p>Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).</p>"
+        "<p>Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).</p>"
         "<p>Qt is a Nokia product. See <a href=\"http://qt.nokia.com/\">qt.nokia.com</a> "
         "for more information.</p>"
         );
@@ -1935,7 +1925,7 @@ void QMessageBoxPrivate::retranslateStrings()
 {
 #ifndef QT_NO_TEXTEDIT
     if (detailsButton)
-        detailsButton->setLabel(detailsText->isHidden() ? HideLabel : ShowLabel);
+        detailsButton->setLabel(detailsText->isHidden() ? ShowLabel : HideLabel);
 #endif
 }
 
@@ -1983,10 +1973,8 @@ void QMessageBoxPrivate::retranslateStrings()
 
     \snippet doc/src/snippets/dialogs/dialogs.cpp 2
 
-    If \a parent is 0, the message box is an \l{Qt::ApplicationModal}
-    {application modal} dialog box. If \a parent is a widget, the
-    message box is \l{Qt::WindowModal} {window modal} relative to \a
-    parent.
+    The message box is an \l{Qt::ApplicationModal} {application modal}
+    dialog box.
 
     The \a parent and \a f arguments are passed to
     the QDialog constructor.
@@ -2035,10 +2023,8 @@ QMessageBox::QMessageBox(const QString &title, const QString &text, Icon icon,
     Returns the identity (QMessageBox::Ok, or QMessageBox::No, etc.)
     of the button that was clicked.
 
-    If \a parent is 0, the message box is an \l{Qt::ApplicationModal}
-    {application modal} dialog box. If \a parent is a widget, the
-    message box is \l{Qt::WindowModal} {window modal} relative to \a
-    parent.
+    The message box is an \l{Qt::ApplicationModal} {application modal}
+    dialog box.
 
   \warning Do not delete \a parent during the execution of the dialog.
            If you want to do this, you should create the dialog
@@ -2073,10 +2059,8 @@ int QMessageBox::information(QWidget *parent, const QString &title, const QStrin
     supply 0, 1 or 2 to make pressing \key Esc equivalent to clicking
     the relevant button.
 
-    If \a parent is 0, the message box is an \l{Qt::ApplicationModal}
-    {application modal} dialog box. If \a parent is a widget, the
-    message box is \l{Qt::WindowModal} {window modal} relative to \a
-    parent.
+    The message box is an \l{Qt::ApplicationModal} {application modal}
+    dialog box.
 
   \warning Do not delete \a parent during the execution of the dialog.
            If you want to do this, you should create the dialog
@@ -2125,10 +2109,8 @@ int QMessageBox::information(QWidget *parent, const QString &title, const QStrin
     Returns the identity (QMessageBox::Yes, or QMessageBox::No, etc.)
     of the button that was clicked.
 
-    If \a parent is 0, the message box is an \l{Qt::ApplicationModal}
-    {application modal} dialog box. If \a parent is a widget, the
-    message box is \l{Qt::WindowModal} {window modal} relative to \a
-    parent.
+    The message box is an \l{Qt::ApplicationModal} {application modal}
+    dialog box.
 
   \warning Do not delete \a parent during the execution of the dialog.
            If you want to do this, you should create the dialog
@@ -2163,10 +2145,8 @@ int QMessageBox::question(QWidget *parent, const QString &title, const QString& 
     supply 0, 1 or 2 to make pressing Escape equivalent to clicking
     the relevant button.
 
-    If \a parent is 0, the message box is an \l{Qt::ApplicationModal}
-    {application modal} dialog box. If \a parent is a widget, the
-    message box is \l{Qt::WindowModal} {window modal} relative to \a
-    parent.
+    The message box is an \l{Qt::ApplicationModal} {application modal}
+    dialog box.
 
   \warning Do not delete \a parent during the execution of the dialog.
            If you want to do this, you should create the dialog
@@ -2215,10 +2195,8 @@ int QMessageBox::question(QWidget *parent, const QString &title, const QString& 
     Returns the identity (QMessageBox::Ok or QMessageBox::No or ...)
     of the button that was clicked.
 
-    If \a parent is 0, the message box is an \l{Qt::ApplicationModal}
-    {application modal} dialog box. If \a parent is a widget, the
-    message box is \l{Qt::WindowModal} {window modal} relative to \a
-    parent.
+    The message box is an \l{Qt::ApplicationModal} {application modal}
+    dialog box.
 
   \warning Do not delete \a parent during the execution of the dialog.
            If you want to do this, you should create the dialog
@@ -2253,10 +2231,8 @@ int QMessageBox::warning(QWidget *parent, const QString &title, const QString& t
     supply 0, 1, or 2 to make pressing Escape equivalent to clicking
     the relevant button.
 
-    If \a parent is 0, the message box is an \l{Qt::ApplicationModal}
-    {application modal} dialog box. If \a parent is a widget, the
-    message box is \l{Qt::WindowModal} {window modal} relative to \a
-    parent.
+    The message box is an \l{Qt::ApplicationModal} {application modal}
+    dialog box.
 
   \warning Do not delete \a parent during the execution of the dialog.
            If you want to do this, you should create the dialog
@@ -2304,10 +2280,8 @@ int QMessageBox::warning(QWidget *parent, const QString &title, const QString& t
     Returns the identity (QMessageBox::Ok, or QMessageBox::No, etc.)
     of the button that was clicked.
 
-    If \a parent is 0, the message box is an \l{Qt::ApplicationModal}
-    {application modal} dialog box. If \a parent is a widget, the
-    message box is \l{Qt::WindowModal} {window modal} relative to \a
-    parent.
+    The message box is an \l{Qt::ApplicationModal} {application modal}
+    dialog box.
 
   \warning Do not delete \a parent during the execution of the dialog.
            If you want to do this, you should create the dialog
@@ -2343,10 +2317,8 @@ int QMessageBox::critical(QWidget *parent, const QString &title, const QString& 
     supply 0, 1, or 2 to make pressing Escape equivalent to clicking
     the relevant button.
 
-    If \a parent is 0, the message box is an \l{Qt::ApplicationModal}
-    {application modal} dialog box. If \a parent is a widget, the
-    message box is \l{Qt::WindowModal} {window modal} relative to \a
-    parent.
+    The message box is an \l{Qt::ApplicationModal} {application modal}
+    dialog box.
 
   \warning Do not delete \a parent during the execution of the dialog.
            If you want to do this, you should create the dialog

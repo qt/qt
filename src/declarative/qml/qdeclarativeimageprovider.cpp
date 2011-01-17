@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -182,13 +182,17 @@ QDeclarativeImageProvider::ImageType QDeclarativeImageProvider::imageType() cons
     Implement this method to return the image with \a id. The default 
     implementation returns an empty image.
 
+    The \a id is the requested image source, with the "image:" scheme and
+    provider identifier removed. For example, if the image \l{Image::}{source}
+    was "image://myprovider/icons/home", the given \a id would be "icons/home".
+
     The \a requestedSize corresponds to the \l {Image::sourceSize} requested by
     an Image element. If \a requestedSize is a valid size, the image
     returned should be of that size.
 
     In all cases, \a size must be set to the original size of the image. This
-    is used to set the \l {Item::}{width} and \l {Item::}{height} of image
-    elements that should be automatically sized to the loaded image.
+    is used to set the \l {Item::}{width} and \l {Item::}{height} of the
+    relevant \l Image if these values have not been set explicitly.
 
     \note this method may be called by multiple threads, so ensure the
     implementation of this method is reentrant.
@@ -207,13 +211,17 @@ QImage QDeclarativeImageProvider::requestImage(const QString &id, QSize *size, c
     Implement this method to return the pixmap with \a id. The default
     implementation returns an empty pixmap.
 
+    The \a id is the requested image source, with the "image:" scheme and
+    provider identifier removed. For example, if the image \l{Image::}{source}
+    was "image://myprovider/icons/home", the given \a id would be "icons/home".
+
     The \a requestedSize corresponds to the \l {Image::sourceSize} requested by
     an Image element. If \a requestedSize is a valid size, the image
     returned should be of that size.
 
     In all cases, \a size must be set to the original size of the image. This
-    is used to set the \l {Item::}{width} and \l {Item::}{height} of image
-    elements that should be automatically sized to the loaded image.
+    is used to set the \l {Item::}{width} and \l {Item::}{height} of the
+    relevant \l Image if these values have not been set explicitly.
 */
 QPixmap QDeclarativeImageProvider::requestPixmap(const QString &id, QSize *size, const QSize& requestedSize)
 {

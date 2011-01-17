@@ -66,7 +66,7 @@ public:
     virtual void swapBuffers();
     virtual void* getProcAddress(const QString& procName);
 
-    GLXContext glxContext() {return m_context;}
+    GLXContext glxContext() const {return m_context;}
 
     QPlatformWindowFormat platformWindowFormat() const;
 

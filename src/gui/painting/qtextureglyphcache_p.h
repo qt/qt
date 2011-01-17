@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -107,9 +107,14 @@ public:
 
         int baseLineX;
         int baseLineY;
+
+        bool isNull() const
+        {
+            return w == 0 || h == 0;
+        }
     };
 
-    void populate(QFontEngine *fontEngine, int numGlyphs, const glyph_t *glyphs,
+    bool populate(QFontEngine *fontEngine, int numGlyphs, const glyph_t *glyphs,
                   const QFixedPoint *positions);
     void fillInPendingGlyphs();
 
@@ -137,7 +142,7 @@ public:
 
     QHash<GlyphAndSubPixelPosition, Coord> coords;
     virtual int maxTextureWidth() const { return QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH; }
-    virtual int maxTextureHeight() const { return 32768; }
+    virtual int maxTextureHeight() const { return -1; }
 
     QImage textureMapForGlyph(glyph_t g, QFixed subPixelPosition) const;
 

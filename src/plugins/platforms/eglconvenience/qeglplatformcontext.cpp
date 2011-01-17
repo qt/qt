@@ -88,6 +88,7 @@ QEGLPlatformContext::~QEGLPlatformContext()
 
 void QEGLPlatformContext::makeCurrent()
 {
+    QPlatformGLContext::makeCurrent();
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglContext::makeCurrent: %p\n",this);
 #endif
@@ -117,6 +118,7 @@ void QEGLPlatformContext::makeCurrent()
 }
 void QEGLPlatformContext::doneCurrent()
 {
+    QPlatformGLContext::doneCurrent();
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglContext::doneCurrent:%p\n",this);
 #endif
@@ -144,7 +146,7 @@ void* QEGLPlatformContext::getProcAddress(const QString& procName)
     return (void *)eglGetProcAddress(qPrintable(procName));
 }
 
-void QEGLPlatformContext::makeDefaultSaredContext()
+void QEGLPlatformContext::makeDefaultSharedContext()
 {
     setDefaultSharedContext(this);
 }

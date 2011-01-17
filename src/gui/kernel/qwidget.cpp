@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1689,13 +1689,8 @@ void QWidgetPrivate::setWinId(WId id)                // set widget identifier
     }
 
     if(oldWinId != id) {
-        // Do not emit an event when the old winId is destroyed.  This only
-        // happens (a) during widget destruction, and (b) immediately prior
-        // to creation of a new winId, for example as a result of re-parenting.
-        if(id != 0) {
-            QEvent e(QEvent::WinIdChange);
-            QCoreApplication::sendEvent(q, &e);
-        }
+        QEvent e(QEvent::WinIdChange);
+        QCoreApplication::sendEvent(q, &e);
     }
 }
 
@@ -8869,7 +8864,7 @@ void QWidget::mousePressEvent(QMouseEvent *event)
         QWidget* w;
         while ((w = QApplication::activePopupWidget()) && w != this){
             w->close();
-            if (QApplication::activePopupWidget() == w) // widget does not want to dissappear
+            if (QApplication::activePopupWidget() == w) // widget does not want to disappear
                 w->hide(); // hide at least
         }
         if (!rect().contains(event->pos())){
@@ -9338,7 +9333,7 @@ void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
 #ifndef QT_NO_IM
     Q_D(QWidget);
     d->imHints = hints;
-    // Optimisation to update input context only it has already been created.
+    // Optimization to update input context only it has already been created.
     if (d->ic || qApp->d_func()->inputContext) {
         QInputContext *ic = inputContext();
         if (ic)

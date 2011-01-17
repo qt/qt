@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -39,11 +39,11 @@ and generally chip vendors start out with the official version and
 implement their own plugins to optimize the operations their hardware
 supports.
 
-We recommend using Qt 4.6 with DirectFB. DirectFB support was introduced
-already into Qt for Embedded Linux as a labs project for Qt 4.3 and folded
+We recommend using Qt 4.6 or later with DirectFB. Support for DirectFB was
+introduced into Qt for Embedded Linux as a labs project for Qt 4.3 and folded
 into Qt as a screen driver for Qt 4.4, but not supported fully. In Qt 4.5,
 major changes were made to make it work with the optimized raster paint
-engine. And in Qt 4.6 these have been further improved.
+engine. These changes were further improved in Qt 4.6.
 
 \tableofcontents
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -63,6 +63,17 @@
     You can access each item in the layout by calling count() and itemAt(). Calling
     removeAt() will remove an item from the layout, without
     destroying it.
+
+    \section1 Size Hints and Size Policies in QGraphicsGridLayout
+
+    QGraphicsGridLayout respects each item's size hints and size policies,
+    and when a cell in the grid has more space than the items can fill, each item
+    is arranged according to the layout's alignment for that item. You can set
+    an alignment for each item by calling setAlignment(), and check the
+    alignment for any item by calling alignment(). You can also set the alignment
+    for an entire row or column by calling setRowAlignment() and setColumnAlignment()
+    respectively.  By default, items are aligned to the top left.
+
 
     \sa QGraphicsLinearLayout, QGraphicsWidget
 */

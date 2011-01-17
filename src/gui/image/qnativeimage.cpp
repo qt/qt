@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -255,6 +255,8 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool /*
     case QImage::Format_ARGB8555_Premultiplied:
     case QImage::Format_ARGB4444_Premultiplied:
         cgflags = kCGImageAlphaPremultipliedFirst;
+        break;
+    default:
         break;
     }
 

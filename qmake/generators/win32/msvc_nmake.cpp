@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -83,6 +83,45 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
         return true;
     }
     return false;
+}
+
+QString NmakeMakefileGenerator::getPdbTarget()
+{
+    return QString(project->first("TARGET") + project->first("TARGET_VERSION_EXT") + ".pdb");
+}
+
+QString NmakeMakefileGenerator::defaultInstall(const QString &t)
+{
+    if((t != "target" && t != "dlltarget") ||
+       (t == "dlltarget" && (project->first("TEMPLATE") != "lib" || !project->isActiveConfig("shared"))) ||
+        project->first("TEMPLATE") == "subdirs")
+       return QString();
+
+    QString ret = Win32MakefileGenerator::defaultInstall(t);
+
+    const QString root = "$(INSTALL_ROOT)";
+    QStringList &uninst = project->values(t + ".uninstall");
+    QString targetdir = Option::fixPathToTargetOS(project->first(t + ".path"), false);
+    targetdir = fileFixify(targetdir, FileFixifyAbsolute);
+    if(targetdir.right(1) != Option::dir_sep)
+        targetdir += Option::dir_sep;
+
+    if(t == "target" && project->first("TEMPLATE") == "lib") {
+        if(project->isActiveConfig("shared") && project->isActiveConfig("debug")) {
+            QString pdb_target = getPdbTarget();
+            pdb_target.remove('"');
+            QString src_targ = (project->isEmpty("DESTDIR") ? QString("$(DESTDIR)") : project->first("DESTDIR")) + pdb_target;
+            QString dst_targ = filePrefixRoot(root, fileFixify(targetdir + pdb_target, FileFixifyAbsolute));
+            if(!ret.isEmpty())
+                ret += "\n\t";
+            ret += QString("-$(INSTALL_FILE)") + " \"" + src_targ + "\" \"" + dst_targ + "\"";
+            if(!uninst.isEmpty())
+                uninst.append("\n\t");
+            uninst.append("-$(DEL_FILE) \"" + dst_targ + "\"");
+        }
+    }
+
+    return ret;
 }
 
 QStringList &NmakeMakefileGenerator::findDependencies(const QString &file)

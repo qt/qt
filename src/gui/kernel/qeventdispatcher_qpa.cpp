@@ -51,6 +51,8 @@
 #include <QtCore/QAtomicInt>
 #include <QtCore/QSemaphore>
 
+#include <QtCore/QDebug>
+
 #include <errno.h>
 
 QT_BEGIN_NAMESPACE
@@ -122,7 +124,8 @@ public:
            selectWorkerNeedsSync(true),
            selectWorkerHasResult(false),
            m_integrationInitialised(false),
-           m_hasIntegration(false)
+           m_hasIntegration(false),
+           m_isEventLoopIntegrationRunning(false)
     {
 
     }
@@ -160,6 +163,20 @@ public:
         return m_hasIntegration;
     }
 
+    bool isEventLoopIntegrationRunning() const
+    {
+        return m_isEventLoopIntegrationRunning;
+    }
+
+    void runEventLoopIntegration()
+    {
+        if (qApp && (qApp->thread() == QThread::currentThread())) {
+            m_isEventLoopIntegrationRunning = true;
+            QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
+            eventLoopIntegration->startEventLoop();
+        }
+    }
+
     QPlatformEventLoopIntegration *eventLoopIntegration;
     Rendezvous *barrierBeforeBlocking;
     Rendezvous *barrierReturnValue;
@@ -172,6 +189,7 @@ public:
 private:
     bool m_integrationInitialised;
     bool m_hasIntegration;
+    bool m_isEventLoopIntegrationRunning;
 };
 
 QEventDispatcherQPA::QEventDispatcherQPA(QObject *parent)
@@ -184,6 +202,17 @@ QEventDispatcherQPA::~QEventDispatcherQPA()
 bool QEventDispatcherQPA::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     Q_D(QEventDispatcherQPA);
+
+    if (d->hasIntegration()) {
+        if (!d->isEventLoopIntegrationRunning()) {
+            d->runEventLoopIntegration();
+        }
+        if (d->threadData->quitNow) {
+            d->eventLoopIntegration->quitEventLoop();
+            return false;
+        }
+    }
+
     int nevents = 0;
 
     // handle gui and posted events
@@ -213,8 +242,10 @@ bool QEventDispatcherQPA::processEvents(QEventLoop::ProcessEventsFlags flags)
     }
 
     if (!d->interrupt) {
-        if (QEventDispatcherUNIX::processEvents(flags))
+        if (QEventDispatcherUNIX::processEvents(flags)) {
+            QEventDispatcherUNIX::processEvents(flags);
             return true;
+        }
     }
     return (nevents > 0);
 }
@@ -248,7 +279,6 @@ void QEventDispatcherQPA::flush()
         qApp->sendPostedEvents();
 }
 
-
 int QEventDispatcherQPA::select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
                                 timeval *timeout)
 {
@@ -266,6 +296,7 @@ int QEventDispatcherQPA::select(int nfds, fd_set *readfds, fd_set *writefds, fd_
 
                 d->selectReturnMutex->unlock();
                 d->barrierReturnValue->checkpoint();
+                d->eventLoopIntegration->setNextTimerEvent(0);
                 return retVal;
             } else {
                 d->selectWorkerNeedsSync = false;
@@ -274,7 +305,7 @@ int QEventDispatcherQPA::select(int nfds, fd_set *readfds, fd_set *writefds, fd_
             }
         }
         d->selectReturnMutex->unlock();
-        d->eventLoopIntegration->processEvents(timeoutmsec);
+        d->eventLoopIntegration->setNextTimerEvent(timeoutmsec);
         retVal = 0; //is 0 if select has not returned
     } else {
         retVal = QEventDispatcherUNIX::select(nfds, readfds, writefds, exceptfds, timeout);
@@ -282,14 +313,16 @@ int QEventDispatcherQPA::select(int nfds, fd_set *readfds, fd_set *writefds, fd_
     return retVal;
 }
 
+
 void SelectWorker::run()
 {
+
     while(true) {
         m_retVal = 0;
         m_edPrivate->barrierBeforeBlocking->checkpoint(); // wait for mainthread
         int tmpRet = qt_safe_select(m_nfds,m_readfds,m_writefds,m_exceptfds,0);
         m_edPrivate->selectReturnMutex->lock();
-        m_edPrivate->eventLoopIntegration->wakeup();
+        m_edPrivate->eventLoopIntegration->qtNeedsToProcessEvents();
 
         m_edPrivate->selectWorkerNeedsSync = true;
         m_edPrivate->selectWorkerHasResult = true;

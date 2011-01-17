@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -180,14 +180,14 @@ static int qCocoaViewCount = 0;
     [super dealloc];
 }
 
-- (BOOL)isOpaque;
+- (BOOL)isOpaque
 {
     if (!qwidgetprivate)
         return [super isOpaque];
     return qwidgetprivate->isOpaque;
 }
 
-- (BOOL)isFlipped;
+- (BOOL)isFlipped
 {
     return YES;
 }
@@ -266,6 +266,7 @@ static int qCocoaViewCount = 0;
     }
 
     CGContextRef cg = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
+    CGContextRetain(cg);
     qwidgetprivate->hd = cg;
 
     // We steal the CGContext for flushing in the unified toolbar with the raster engine.
@@ -354,6 +355,7 @@ static int qCocoaViewCount = 0;
     }
     qwidgetprivate->hd = 0;
     CGContextRestoreGState(cg);
+    CGContextRelease(cg);
 }
 
 - (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
@@ -604,7 +606,7 @@ static int qCocoaViewCount = 0;
         [super tabletPoint:tabletEvent];
 }
 
-- (void)magnifyWithEvent:(NSEvent *)event;
+- (void)magnifyWithEvent:(NSEvent *)event
 {
     QPoint qlocal, qglobal;
     QWidget *widgetToGetGesture = 0;
@@ -624,7 +626,7 @@ static int qCocoaViewCount = 0;
 #endif // QT_NO_GESTURES
 }
 
-- (void)rotateWithEvent:(NSEvent *)event;
+- (void)rotateWithEvent:(NSEvent *)event
 {
     QPoint qlocal, qglobal;
     QWidget *widgetToGetGesture = 0;
@@ -644,7 +646,7 @@ static int qCocoaViewCount = 0;
 #endif // QT_NO_GESTURES
 }
 
-- (void)swipeWithEvent:(NSEvent *)event;
+- (void)swipeWithEvent:(NSEvent *)event
 {
     QPoint qlocal, qglobal;
     QWidget *widgetToGetGesture = 0;
@@ -671,7 +673,7 @@ static int qCocoaViewCount = 0;
 #endif // QT_NO_GESTURES
 }
 
-- (void)beginGestureWithEvent:(NSEvent *)event;
+- (void)beginGestureWithEvent:(NSEvent *)event
 {
     QPoint qlocal, qglobal;
     QWidget *widgetToGetGesture = 0;
@@ -690,7 +692,7 @@ static int qCocoaViewCount = 0;
 #endif // QT_NO_GESTURES
 }
 
-- (void)endGestureWithEvent:(NSEvent *)event;
+- (void)endGestureWithEvent:(NSEvent *)event
 {
     QPoint qlocal, qglobal;
     QWidget *widgetToGetGesture = 0;

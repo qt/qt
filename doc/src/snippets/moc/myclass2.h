@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,8 +58,11 @@ public:
     MyClass(QObject *parent = 0);
     ~MyClass();
 
-    void setPriority(Priority priority);
-    Priority priority() const;
+    void setPriority(Priority priority) { m_priority = priority; }
+    Priority priority() const { return m_priority; }
+
+private:
+    Priority m_priority;
 };
 //! [0]
 

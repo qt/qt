@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -69,7 +69,7 @@ struct ObjectData : public QScriptDeclarativeClass::Object {
     virtual ~ObjectData() {
         if (object && !object->parent()) {
             QDeclarativeData *ddata = QDeclarativeData::get(object, false);
-            if (ddata && !ddata->indestructible && 0 == --ddata->objectDataRefCount)
+            if (ddata && !ddata->indestructible && 0 == --ddata->objectDataRefCount) 
                 object->deleteLater();
         }
     }
@@ -808,7 +808,14 @@ QScriptDeclarativeClass::Value MetaCallArgument::toValue(QDeclarativeEngine *e)
         }
         return QScriptDeclarativeClass::Value(engine, rv);
     } else if (type == -1 || type == qMetaTypeId<QVariant>()) {
-        return QScriptDeclarativeClass::Value(engine, QDeclarativeEnginePrivate::get(e)->scriptValueFromVariant(*((QVariant *)&data)));
+        QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(e);
+        QScriptValue rv = ep->scriptValueFromVariant(*((QVariant *)&data));
+        if (rv.isQObject()) {
+            QObject *object = rv.toQObject();
+            if (object)
+                QDeclarativeData::get(object, true)->setImplicitDestructible();
+        }
+        return QScriptDeclarativeClass::Value(engine, rv);
     } else {
         return QScriptDeclarativeClass::Value();
     }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1156,6 +1156,8 @@ void QPdfBaseEngine::updateState(const QPaintEngineState &state)
     }
     if (flags & DirtyBrush) {
         d->brush = state.brush();
+        if (d->brush.color().alpha() == 0 && d->brush.style() == Qt::SolidPattern)
+            d->brush.setStyle(Qt::NoBrush);
         d->hasBrush = d->brush.style() != Qt::NoBrush;
     }
     if (flags & DirtyBrushOrigin) {
@@ -1389,7 +1391,7 @@ int QPdfBaseEngine::metric(QPaintDevice::PaintDeviceMetric metricType) const
 void QPdfBaseEngine::setProperty(PrintEnginePropertyKey key, const QVariant &value)
 {
     Q_D(QPdfBaseEngine);
-    switch (key) {
+    switch (int(key)) {
     case PPK_CollateCopies:
         d->collate = value.toBool();
         break;
@@ -1479,7 +1481,7 @@ QVariant QPdfBaseEngine::property(PrintEnginePropertyKey key) const
     Q_D(const QPdfBaseEngine);
 
     QVariant ret;
-    switch (key) {
+    switch (int(key)) {
     case PPK_CollateCopies:
         ret = d->collate;
         break;

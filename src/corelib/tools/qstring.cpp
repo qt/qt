@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -714,7 +714,7 @@ const QString::Null QString::null = { };
     formats, the \e precision represents the maximum number of
     significant digits (trailing zeroes are omitted).
 
-    \section1 More Efficient String Construction 
+    \section1 More Efficient String Construction
 
     Using the QString \c{'+'} operator, it is easy to construct a
     complex string from multiple substrings. You will often write code
@@ -924,7 +924,7 @@ int QString::grow(int size)
 /*!
     \since 4.2
 
-    Returns a copy of the \a string, where the encoding of \a string depends on 
+    Returns a copy of the \a string, where the encoding of \a string depends on
     the size of wchar. If wchar is 4 bytes, the \a string is interpreted as ucs-4,
     if wchar is 2 bytes it is interpreted as ucs-2.
 
@@ -3606,7 +3606,7 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
             }
             length = length % 16;
         }
-#elif QT_ALWAYS_HAVE_NEON
+#elif defined(QT_ALWAYS_HAVE_NEON)
         // Refer to the documentation of the SSE2 implementation
         // this use eactly the same method as for SSE except:
         // 1) neon has unsigned comparison
@@ -6261,28 +6261,32 @@ void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::
     if (version == QChar::Unicode_Unassigned) {
         version = UNICODE_DATA_VERSION;
     } else if (version != UNICODE_DATA_VERSION) {
-        QString &s = *data;
+        const QString &s = *data;
+        QChar *d = 0;
         for (int i = 0; i < NumNormalizationCorrections; ++i) {
             const NormalizationCorrection &n = uc_normalization_corrections[i];
             if (n.version > version) {
                 int pos = from;
-                if (n.ucs4 > 0xffff) {
+                if (QChar::requiresSurrogates(n.ucs4)) {
                     ushort ucs4High = QChar::highSurrogate(n.ucs4);
                     ushort ucs4Low = QChar::lowSurrogate(n.ucs4);
                     ushort oldHigh = QChar::highSurrogate(n.old_mapping);
                     ushort oldLow = QChar::lowSurrogate(n.old_mapping);
                     while (pos < s.length() - 1) {
                         if (s.at(pos).unicode() == ucs4High && s.at(pos + 1).unicode() == ucs4Low) {
-                            s[pos] = oldHigh;
-                            s[pos + 1] = oldLow;
-                            ++pos;
+                            if (!d)
+                                d = data->data();
+                            d[pos] = QChar(oldHigh);
+                            d[++pos] = QChar(oldLow);
                         }
                         ++pos;
                     }
                 } else {
                     while (pos < s.length()) {
                         if (s.at(pos).unicode() == n.ucs4) {
-                            s[pos] = n.old_mapping;
+                            if (!d)
+                                d = data->data();
+                            d[pos] = QChar(n.old_mapping);
                         }
                         ++pos;
                     }

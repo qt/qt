@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -415,7 +415,7 @@ void tst_QKeySequence::mnemonic()
 
 #ifndef QT_NO_DEBUG
     if (warning) {
-        QString str = QString::fromLatin1("QKeySequence::mnemonic: \"%1\" contains multiple occurences of '&'").arg(string);
+        QString str = QString::fromLatin1("QKeySequence::mnemonic: \"%1\" contains multiple occurrences of '&'").arg(string);
         QTest::ignoreMessage(QtWarningMsg, qPrintable(str));
     //    qWarning(qPrintable(str));
     }
