@@ -343,8 +343,7 @@ public:
     { this->engine = eng; }
     ~QScriptGenericMetaMethodData()
     {
-        if (!m_object.IsEmpty())
-            m_object.Dispose();
+        m_object.Dispose();
     }
 
     // The QObject wrapper object that this signal is bound to.
@@ -538,10 +537,8 @@ QtConnection::QtConnection(QtSignalData *signal)
 
 QtConnection::~QtConnection()
 {
-    if (!m_callback.IsEmpty())
-        m_callback.Dispose();
-    if (!m_receiver.IsEmpty())
-        m_receiver.Dispose();
+    m_callback.Dispose();
+    m_receiver.Dispose();
 }
 
 

@@ -730,20 +730,18 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     invalidateAllString();
 
     // FIXME Do we really need to dispose all persistent handlers before context destruction?
-    m_originalGlobalObject.destroy();
-    if (!m_variantTemplate.IsEmpty())
-        m_variantTemplate.Dispose();
-    if (!m_metaObjectTemplate.IsEmpty())
-        m_metaObjectTemplate.Dispose();
-    if (!m_globalObjectTemplate.IsEmpty())
-        m_globalObjectTemplate.Dispose();
+    m_variantTemplate.Dispose();
+    m_metaObjectTemplate.Dispose();
+    m_globalObjectTemplate.Dispose();
+
     QHash<const QMetaObject *, v8::Persistent<v8::FunctionTemplate> >::iterator i = m_qtClassTemplates.begin();
     for (; i != m_qtClassTemplates.end(); ++i) {
-        if (!(*i).IsEmpty())
-            (*i).Dispose();
+        (*i).Dispose();
     }
+
     m_typeInfos.clear();
     clearExceptions();
+    m_originalGlobalObject.destroy();
 
     m_v8Context->Exit(); // Exit the context that was entered in QScriptOriginalGlobalObject ctor.
     m_v8Context.Dispose();

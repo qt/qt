@@ -88,9 +88,7 @@ inline QScriptContextPrivate::~QScriptContextPrivate()
     while (!scopes.isEmpty())
         QScriptValuePrivate::get(popScope());
 
-    if (!inheritedScope.IsEmpty())
-        inheritedScope.Dispose();
-
+    inheritedScope.Dispose();
     if (!context.IsEmpty()) {
         context->Exit();
         context.Dispose();

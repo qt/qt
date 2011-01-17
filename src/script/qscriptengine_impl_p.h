@@ -251,14 +251,10 @@ inline void QScriptEnginePrivate::Exception::set(v8::Handle<v8::Value> value, v8
 
 inline void QScriptEnginePrivate::Exception::clear()
 {
-    if (!m_value.IsEmpty()) {
-        m_value.Dispose();
-        m_value.Clear();
-    }
-    if (!m_message.IsEmpty()) {
-        m_message.Dispose();
-        m_message.Clear();
-    }
+    m_value.Dispose();
+    m_value.Clear();
+    m_message.Dispose();
+    m_message.Clear();
 }
 
 inline QScriptEnginePrivate::Exception::operator bool() const

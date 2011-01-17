@@ -49,7 +49,6 @@ class QScriptOriginalGlobalObject
 {
 public:
     inline QScriptOriginalGlobalObject(const QScriptEnginePrivate *engine, v8::Handle<v8::Context> context);
-    inline ~QScriptOriginalGlobalObject();
     inline void destroy();
 
     inline v8::Local<v8::Array> getOwnPropertyNames(v8::Handle<v8::Object> object) const;
@@ -134,18 +133,13 @@ inline void QScriptOriginalGlobalObject::initializeMember(v8::Handle<v8::String>
     Q_ASSERT(prototype->IsObject());
 }
 
-QScriptOriginalGlobalObject::~QScriptOriginalGlobalObject()
-{
-    // QScriptOriginalGlobalObject live as long as QScriptEnginePrivate that keeps it. In ~QSEP
-    // the v8 context is removed, so we need to remove our handlers before. It is why destroy method
-    // should be called before destructor.
-    Q_ASSERT_X(m_stringConstructor.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
-    Q_ASSERT_X(m_stringPrototype.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
-    Q_ASSERT_X(m_ownPropertyDescriptor.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
-    Q_ASSERT_X(m_ownPropertyNames.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
-    Q_ASSERT_X(m_globalObject.IsEmpty(), Q_FUNC_INFO, "QScriptOriginalGlobalObject should be destroyed before context");
-}
 
+/*!
+    \internal
+    QScriptOriginalGlobalObject lives as long as QScriptEnginePrivate that keeps it. In ~QSEP
+    the v8 context is removed, so we need to remove our handlers before. to break this dependency
+    destroy method should be called before or insight QSEP destructor.
+*/
 inline void QScriptOriginalGlobalObject::destroy()
 {
     m_stringConstructor.Dispose();
@@ -155,13 +149,7 @@ inline void QScriptOriginalGlobalObject::destroy()
     m_globalObject.Dispose();
     m_defineGetter.Dispose();
     m_defineSetter.Dispose();
-#ifndef QT_NO_DEBUG
-    m_stringConstructor.Clear();
-    m_stringPrototype.Clear();
-    m_ownPropertyNames.Clear();
-    m_ownPropertyDescriptor.Clear();
-    m_globalObject.Clear();
-#endif
+    // After this line this instance is unusable.
 }
 
 inline v8::Local<v8::Array> QScriptOriginalGlobalObject::getOwnPropertyNames(v8::Handle<v8::Object> object) const
