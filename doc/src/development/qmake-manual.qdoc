@@ -1900,8 +1900,17 @@
     \target PWD
     \section1 PWD
 
-    This variable contains the full path leading to the directory where
-    the \c qmake project file (project.pro) is located.
+    The \c PWD variable specifies the full path leading to the directory
+    containing the current file being parsed. This can be useful
+    to refer to files within the source tree when writing project files to
+    support shadow builds.
+
+    See also \l{#_PRO_FILE_PWD_}{_PRO_FILE_PWD_}.
+
+    \note IN_PWD is an alias for PWD.
+
+    \note Function calls have no effect on the value of PWD. PWD will refer to
+    the path of the calling file.
 
     \target OUT_PWD
     \section1 OUT_PWD
