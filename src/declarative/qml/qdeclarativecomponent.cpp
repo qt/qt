@@ -627,6 +627,10 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
     must provide a valid \a parent value or set the returned object's \l{Item::parent}{parent} 
     property, or else the object will not be visible.
 
+    If a \a parent is not provided to createObject(), a reference to the returned object must be held so that
+    it is not destroyed by the garbage collector.  This is regardless of Item.parent being set afterwards,
+    since setting the Item parent does not change object ownership; only the graphical parent is changed.
+
     Dynamically created instances can be deleted with the \c destroy() method.
     See \l {Dynamic Object Management in QML} for more information.
 */
