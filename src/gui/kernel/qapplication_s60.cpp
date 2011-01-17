@@ -2017,6 +2017,9 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
                 S60->wsSession().SetPointerCursorMode(EPointerCursorNormal);
         }
 #endif
+#ifdef QT_SOFTKEYS_ENABLED
+        QSoftKeyManager::updateSoftKeys();
+#endif
         break;
     case EEventFocusLost:
         if (callSymbianEventFilters(symbianEvent))
