@@ -48,7 +48,7 @@
 #include "qabstractnetworkcache.h"
 
 #include "QtNetwork/qnetworksession.h"
-#include "qsharednetworksession_p.h"
+#include "QtNetwork/private/qsharednetworksession_p.h"
 
 #include "qnetworkaccesshttpbackend_p.h"
 #include "qnetworkaccessftpbackend_p.h"
