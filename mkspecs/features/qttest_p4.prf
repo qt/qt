@@ -24,7 +24,6 @@ else:win32: {
     else:check.commands += $(DESTDIR_TARGET)
 }
 embedded:  check.commands += -qws
-check.commands += $(TESTARGS)
 QMAKE_EXTRA_TARGETS += check
 
 !debug_and_release|build_pass {
