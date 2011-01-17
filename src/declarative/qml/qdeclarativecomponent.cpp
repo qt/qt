@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -135,7 +135,7 @@ class QByteArray;
     }
     \endcode
 
-    \sa {Using QML Bindings in C++ Applications}, {Integrating QML Code with Existing Qt UI Code}
+    \sa {Using QML in C++ Applications}, {Integrating QML with existing Qt UI code}
 */
 
 /*!
@@ -157,7 +157,7 @@ class QByteArray;
 
     \snippet doc/src/snippets/declarative/component.qml 0
 
-    Notice that while a \l Rectangle by itself would be automatically
+    Notice that while a \l Rectangle by itself would be automatically 
     rendered and displayed, this is not the case for the above rectangle
     because it is defined inside a \c Component. The component encapsulates the
     QML elements within, as if they were defined in a separate QML
@@ -227,7 +227,7 @@ class QByteArray;
 
 /*!
     \enum QDeclarativeComponent::Status
-
+    
     Specifies the loading status of the QDeclarativeComponent.
 
     \value Null This QDeclarativeComponent has no data.  Call loadUrl() or setData() to add QML content.
@@ -279,8 +279,8 @@ void QDeclarativeComponentPrivate::clear()
         typeData->release();
         typeData = 0;
     }
-
-    if (cc) {
+        
+    if (cc) { 
         cc->release();
         cc = 0;
     }
@@ -436,12 +436,12 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeEngine *engine, const Q
 }
 
 /*!
-    Create a QDeclarativeComponent from the given \a fileName and give it the specified
+    Create a QDeclarativeComponent from the given \a fileName and give it the specified 
     \a parent and \a engine.
 
     \sa loadUrl()
 */
-QDeclarativeComponent::QDeclarativeComponent(QDeclarativeEngine *engine, const QString &fileName,
+QDeclarativeComponent::QDeclarativeComponent(QDeclarativeEngine *engine, const QString &fileName, 
                            QObject *parent)
 : QObject(*(new QDeclarativeComponentPrivate), parent)
 {
@@ -480,7 +480,7 @@ void QDeclarativeComponent::setData(const QByteArray &data, const QUrl &url)
     d->url = url;
 
     QDeclarativeTypeData *typeData = QDeclarativeEnginePrivate::get(d->engine)->typeLoader.get(data, url);
-
+    
     if (typeData->isCompleteOrError()) {
         d->fromTypeData(typeData);
     } else {
@@ -615,7 +615,7 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
 /*!
     \qmlmethod object Component::createObject(Item parent)
 
-    Creates and returns an object instance of this component that will have the given
+    Creates and returns an object instance of this component that will have the given 
     \a parent. Returns null if object creation fails.
 
     The object will be created in the same context as the one in which the component
@@ -623,8 +623,8 @@ QDeclarativeComponent::QDeclarativeComponent(QDeclarativeComponentPrivate &dd, Q
     which were not created in QML.
 
     If you wish to create an object without setting a parent, specify \c null for
-    the \a parent value. Note that if the returned object is to be displayed, you
-    must provide a valid \a parent value or set the returned object's \l{Item::parent}{parent}
+    the \a parent value. Note that if the returned object is to be displayed, you 
+    must provide a valid \a parent value or set the returned object's \l{Item::parent}{parent} 
     property, or else the object will not be visible.
 
     Dynamically created instances can be deleted with the \c destroy() method.
@@ -669,7 +669,7 @@ QScriptValue QDeclarativeComponent::createObject(QObject* parent)
             }
         }
 
-        if (needParent)
+        if (needParent) 
             qWarning("QDeclarativeComponent: Created graphical object was not placed in the graphics scene.");
     }
     completeCreate();
@@ -682,7 +682,7 @@ QScriptValue QDeclarativeComponent::createObject(QObject* parent)
 /*!
     Create an object instance from this component.  Returns 0 if creation
     failed.  \a context specifies the context within which to create the object
-    instance.
+    instance.  
 
     If \a context is 0 (the default), it will create the instance in the
     engine' s \l {QDeclarativeEngine::rootContext()}{root context}.
@@ -699,34 +699,23 @@ QObject *QDeclarativeComponent::create(QDeclarativeContext *context)
     return rv;
 }
 
-QObject *QDeclarativeComponentPrivate::create(QDeclarativeContextData *context,
-                                              const QBitField &bindings)
-{
-    if (!context)
-        context = QDeclarativeContextData::get(engine->rootContext());
-
-    QObject *rv = beginCreate(context, bindings);
-    completeCreate();
-    return rv;
-}
-
 /*!
     This method provides more advanced control over component instance creation.
-    In general, programmers should use QDeclarativeComponent::create() to create a
+    In general, programmers should use QDeclarativeComponent::create() to create a 
     component.
 
     Create an object instance from this component.  Returns 0 if creation
     failed.  \a context specifies the context within which to create the object
-    instance.
+    instance.  
 
     When QDeclarativeComponent constructs an instance, it occurs in three steps:
     \list 1
     \i The object hierarchy is created, and constant values are assigned.
     \i Property bindings are evaluated for the the first time.
     \i If applicable, QDeclarativeParserStatus::componentComplete() is called on objects.
-    \endlist
+    \endlist 
     QDeclarativeComponent::beginCreate() differs from QDeclarativeComponent::create() in that it
-    only performs step 1.  QDeclarativeComponent::completeCreate() must be called to
+    only performs step 1.  QDeclarativeComponent::completeCreate() must be called to 
     complete steps 2 and 3.
 
     This breaking point is sometimes useful when using attached properties to
@@ -777,7 +766,7 @@ QDeclarativeComponentPrivate::beginCreate(QDeclarativeContextData *context, cons
     return begin(context, creationContext, cc, start, count, &state, 0, bindings);
 }
 
-QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *parentContext,
+QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *parentContext, 
                                               QDeclarativeContextData *componentCreationContext,
                                               QDeclarativeCompiledData *component, int start, int count,
                                               ConstructionState *state, QList<QDeclarativeError> *errors,
@@ -789,7 +778,7 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *parentCon
     Q_ASSERT(!isRoot || state); // Either this isn't a root component, or a state data must be provided
     Q_ASSERT((state != 0) ^ (errors != 0)); // One of state or errors (but not both) must be provided
 
-    if (isRoot)
+    if (isRoot) 
         QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Creating);
 
     QDeclarativeContextData *ctxt = new QDeclarativeContextData;
@@ -798,7 +787,7 @@ QObject * QDeclarativeComponentPrivate::begin(QDeclarativeContextData *parentCon
     ctxt->imports = component->importCache;
 
     // Nested global imports
-    if (componentCreationContext && start != -1)
+    if (componentCreationContext && start != -1) 
         ctxt->importedScripts = componentCreationContext->importedScripts;
 
     component->importCache->addref();
@@ -850,7 +839,7 @@ void QDeclarativeComponentPrivate::beginDeferred(QDeclarativeEnginePrivate *engi
     QDeclarativeVME vme;
     vme.runDeferred(object);
 
-    if (vme.isError())
+    if (vme.isError()) 
         state->errors = vme.errors();
 
     if (isRoot) {
@@ -877,13 +866,13 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
     if (state->completePending) {
 
         for (int ii = 0; ii < state->bindValues.count(); ++ii) {
-            QDeclarativeEnginePrivate::SimpleList<QDeclarativeAbstractBinding> bv =
+            QDeclarativeEnginePrivate::SimpleList<QDeclarativeAbstractBinding> bv = 
                 state->bindValues.at(ii);
             for (int jj = 0; jj < bv.count; ++jj) {
                 if(bv.at(jj)) {
                     // XXX akennedy
                     bv.at(jj)->m_mePtr = 0;
-                    bv.at(jj)->setEnabled(true, QDeclarativePropertyPrivate::BypassInterceptor |
+                    bv.at(jj)->setEnabled(true, QDeclarativePropertyPrivate::BypassInterceptor | 
                                                 QDeclarativePropertyPrivate::DontRemoveBinding);
                 }
             }
@@ -891,7 +880,7 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
         }
 
         for (int ii = 0; ii < state->parserStatus.count(); ++ii) {
-            QDeclarativeEnginePrivate::SimpleList<QDeclarativeParserStatus> ps =
+            QDeclarativeEnginePrivate::SimpleList<QDeclarativeParserStatus> ps = 
                 state->parserStatus.at(ii);
 
             for (int jj = ps.count - 1; jj >= 0; --jj) {
@@ -942,7 +931,7 @@ void QDeclarativeComponentPrivate::complete(QDeclarativeEnginePrivate *enginePri
 
 /*!
     This method provides more advanced control over component instance creation.
-    In general, programmers should use QDeclarativeComponent::create() to create a
+    In general, programmers should use QDeclarativeComponent::create() to create a 
     component.
 
     Complete a component creation begin with QDeclarativeComponent::beginCreate().

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -673,6 +673,14 @@ void tst_QUrl::setUrl()
         QCOMPARE(url.host(), QString());
         QCOMPARE(url.path(), QString("text/javascript,d5 = 'five\\u0027s';"));
         QCOMPARE(url.encodedPath().constData(), "text/javascript,d5%20%3D%20'five%5Cu0027s'%3B");
+    }
+
+    { //check it calls detach
+        QUrl u1("http://aaa.com");
+        QUrl u2 = u1;
+        u2.setUrl("http://bbb.com");
+        QCOMPARE(u1.host(), QString::fromLatin1("aaa.com"));
+        QCOMPARE(u2.host(), QString::fromLatin1("bbb.com"));
     }
 
 /*

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -190,6 +190,12 @@ QVariant QDeclarativeFolderListModel::data(const QModelIndex &index, int role) c
     return rv;
 }
 
+/*!
+    \qmlproperty int FolderListModel::count
+
+    Returns the number of items in the current folder that match the
+    filter criteria.
+*/
 int QDeclarativeFolderListModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
@@ -225,6 +231,11 @@ void QDeclarativeFolderListModel::setFolder(const QUrl &folder)
     }
 }
 
+/*!
+    \qmlproperty url FolderListModel::parentFolder
+
+    Returns the URL of the parent of of the current \l folder.
+*/
 QUrl QDeclarativeFolderListModel::parentFolder() const
 {
     QString localFile = d->folder.toLocalFile();
@@ -286,6 +297,21 @@ void QDeclarativeFolderListModel::componentComplete()
         QMetaObject::invokeMethod(this, "refresh", Qt::QueuedConnection);
 }
 
+/*!
+    \qmlproperty enumeration FolderListModel::sortField
+
+    The \a sortField property contains field to use for sorting.  sortField
+    may be one of:
+    \list
+    \o Unsorted - no sorting is applied.  The order is system default.
+    \o Name - sort by filename
+    \o Time - sort by time modified
+    \o Size - sort by file size
+    \o Type - sort by file type (extension)
+    \endlist
+
+    \sa sortReversed
+*/
 QDeclarativeFolderListModel::SortField QDeclarativeFolderListModel::sortField() const
 {
     return d->sortField;
@@ -299,6 +325,13 @@ void QDeclarativeFolderListModel::setSortField(SortField field)
     }
 }
 
+/*!
+    \qmlproperty bool FolderListModel::sortReversed
+
+    If set to true, reverses the sort order.  The default is false.
+
+    \sa sortField
+*/
 bool QDeclarativeFolderListModel::sortReversed() const
 {
     return d->sortReversed;

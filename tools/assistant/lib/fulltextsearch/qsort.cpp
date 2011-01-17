@@ -3,7 +3,7 @@
 ** Copyright (C) 2003-2006 Ben van Klinken and the CLucene Team.
 ** All rights reserved.
 **
-** Portion Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Portion Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 **
 ** This file may be used under the terms of the GNU Lesser General Public
@@ -84,7 +84,7 @@ void QCLuceneSort::setSort(const QStringList &fieldNames)
 
     for (int i = 0; i < fieldNames.count(); ++i)
         delete [] nameArray[i];
-    delete nameArray;
+    delete [] nameArray;
 }
 
 void QCLuceneSort::setSort(const QString &field, bool reverse)

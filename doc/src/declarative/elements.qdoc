@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -47,7 +47,7 @@ To see the QML elements listed by functional area, see the
 \o \l {QML:QtObject} {QtObject} - Basic element containing only the objectName property
 \endlist
 
-\section1 Graphical Elements
+\section1 Graphics
 \list
 \o \l {Rectangle} - A rectangle element
 \o \l {Image} - For incorporating bitmaps into a scene
@@ -58,7 +58,7 @@ To see the QML elements listed by functional area, see the
 \o \l {SystemPalette} - Provides access to the Qt palettes
 \endlist
 
-\section1 Text Handling Elements
+\section1 Text Handling
 \list
 \o \l {Text} - For inserting formatted text into a scene
 \o \l {TextInput} - Captures user key input
@@ -69,25 +69,26 @@ To see the QML elements listed by functional area, see the
 \o \l {FontLoader} - Loads fonts by name or URL
 \endlist
 
-\section1 Mouse and Interaction Area Elements
+\section1 Mouse and Interaction Area
 \list
 \o \l {MouseArea} - Sets up an area for mouse interaction
+\o \l {Keys} - Provides components with attached properties to handle key input.
 \o \l {FocusScope} - Element that mediate keyboard focus changes
 \o \l {Flickable} - Provides a surface that can be "flicked"
 \o \l {Flipable} - Provides a surface that produces "flipping" effects
 \o \l {GestureArea} - Enables simple gesture handling
 \endlist
 
-\section1 Positioners and Repeater Elements
+\section1 Positioners and Repeater
 \list
 \o \l {Column} - Arranges its children vertically
 \o \l {Row} - Arranges its children horizontally
 \o \l {Grid} - Positions its children in a grid
 \o \l {Flow} - Positions its children with wrapping support
-\o \l {Repeater} - Uses a model to create multiples of components
+\o \l {Repeater} - Uses a model to create multiple components
 \endlist
 
-\section1 Transformation Elements
+\section1 Transformations
 \list
 \o \l {Scale} - Assigns item scaling behaviors
 \o \l {Rotation} - Assigns item rotation behaviors
@@ -144,16 +145,7 @@ Elements that animate properties based on data types
 \list
 \o \l {ListView} - Provides a list visualization of a model
 \o \l {GridView} - Provides a grid visualization of a model
-\o \l {WebView} - Allows the addition of web content to a canvas
 \o \l {PathView} - Visualizes a model's contents along a path. See \l {Path Definition}{Path Elements} for more information.
-\endlist
-
-\section1 Add-On Elements
-These elements are not included in QML by default. Their respective QML bindings
-should first be obtained.
-\list
-\o \l{QtWebKit QML Module}
-\o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/qml-plugins.html}{Mobility QML Plugins}
 \endlist
 
 \section1 Path Definition
@@ -182,6 +174,14 @@ should first be obtained.
 \o \l {ParticleMotionLinear} - Adds linear motion behavior to \l {Particles}
 \o \l {ParticleMotionGravity} - Adds gravitational motion to \l {Particles}
 \o \l {ParticleMotionWander} - Adds varied motions to \l {Particles}
+\endlist
+
+\section1 Add-On Elements
+These elements are not included in the \c{QtQuick 1.0} module. Their respective QML bindings
+should first be obtained and installed.
+\list
+\o \l{WebView}{QtWebKit QML Module - WebView Element} - For displaying Web contents
+\o \l{http://doc.qt.nokia.com/qtmobility-1.1.0/qml-plugins.html}{Mobility QML Plugins}
 \endlist
 
 */

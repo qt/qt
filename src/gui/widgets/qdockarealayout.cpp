@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -3163,7 +3163,7 @@ int QDockAreaLayout::separatorMove(const QList<int> &separator, const QPoint &or
 }
 
 #ifndef QT_NO_TABBAR
-// Sets the correct positions for the seperator widgets
+// Sets the correct positions for the separator widgets
 // Allocates new sepearator widgets with getSeparatorWidget
 void QDockAreaLayout::updateSeparatorWidgets() const
 {
