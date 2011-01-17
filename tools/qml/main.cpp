@@ -550,8 +550,11 @@ int main(int argc, char ** argv)
 
     QTranslator qmlTranslator;
     if (!opts.translationFile.isEmpty()) {
-        qmlTranslator.load(opts.translationFile);
-        app.installTranslator(&qmlTranslator);
+        if (qmlTranslator.load(opts.translationFile)) {
+            app.installTranslator(&qmlTranslator);
+        } else {
+            qWarning() << "Could not load the translation file" << opts.translationFile;
+        }
     }
 
     if (opts.fullScreen && opts.maximized)
