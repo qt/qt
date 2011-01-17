@@ -444,7 +444,7 @@ QDeclarativePathView::~QDeclarativePathView()
     Component {
         Rectangle {
             visible: PathView.onPath
-            ...
+            // ...
         }
     }
     \endqml

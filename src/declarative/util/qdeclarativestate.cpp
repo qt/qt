@@ -216,15 +216,18 @@ bool QDeclarativeState::isWhenKnown() const
 
     \snippet doc/src/snippets/declarative/state-when.qml 0
 
-    If multiple states in a group have \c when clauses that evaluate to \c true at the same time,
-    the first matching state will be applied. For example, in the following snippet
-    \c state1 will always be selected rather than \c state2 when sharedCondition becomes
-    \c true.
+    If multiple states in a group have \c when clauses that evaluate to \c true
+    at the same time, the first matching state will be applied. For example, in
+    the following snippet \c state1 will always be selected rather than
+    \c state2 when sharedCondition becomes \c true.
     \qml
-    states: [
-        State { name: "state1"; when: sharedCondition },
-        State { name: "state2"; when: sharedCondition }
-    ]
+    Item {
+        states: [
+            State { name: "state1"; when: sharedCondition },
+            State { name: "state2"; when: sharedCondition }
+        ]
+        // ...
+    }
     \endqml
 */
 QDeclarativeBinding *QDeclarativeState::when() const
