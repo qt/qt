@@ -72,6 +72,7 @@ private slots:
     void iterateGetterSetter();
     void assignObjectToIterator();
     void iterateNonObject();
+    void iterateOverObjectFromDeletedEngine();
 };
 
 tst_QScriptValueIterator::tst_QScriptValueIterator()
@@ -658,6 +659,51 @@ void tst_QScriptValueIterator::iterateNonObject()
     QScriptValue num(5);
     it = num;
     QVERIFY(!it.hasNext());
+}
+
+void tst_QScriptValueIterator::iterateOverObjectFromDeletedEngine()
+{
+    QScriptEngine *engine = new QScriptEngine;
+    QScriptValue objet = engine->newObject();
+
+    // populate object with properties
+    QHash<QString, int> properties;
+    properties.insert("foo",1235);
+    properties.insert("oof",5321);
+    properties.insert("ofo",3521);
+    QHash<QString, int>::const_iterator i = properties.constBegin();
+    for(; i != properties.constEnd(); ++i) {
+        objet.setProperty(i.key(), i.value());
+    }
+
+    // start iterating
+    QScriptValueIterator it(objet);
+    it.next();
+    QVERIFY(properties.contains(it.name()));
+
+    delete engine;
+
+    QVERIFY(!objet.isValid());
+    QVERIFY(it.name().isEmpty());
+    QVERIFY(!it.value().isValid());
+
+    QVERIFY(!it.hasNext());
+    it.next();
+
+    QVERIFY(it.name().isEmpty());
+    QVERIFY(!it.scriptName().isValid());
+    QVERIFY(!it.value().isValid());
+    it.setValue("1234567");
+    it.remove();
+
+    QVERIFY(!it.hasPrevious());
+    it.previous();
+
+    QVERIFY(it.name().isEmpty());
+    QVERIFY(!it.scriptName().isValid());
+    QVERIFY(!it.value().isValid());
+    it.setValue("1234567");
+    it.remove();
 }
 
 QTEST_MAIN(tst_QScriptValueIterator)

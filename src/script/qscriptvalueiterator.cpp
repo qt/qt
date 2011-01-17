@@ -176,7 +176,9 @@ inline QScriptValueIteratorPrivate::~QScriptValueIteratorPrivate()
 inline bool QScriptValueIteratorPrivate::hasNext()
 {
     //dump("hasNext()");
-    return m_iterator.hasNext() || (m_classIterator && m_classIterator->hasNext());
+    return isValid()
+            ? m_iterator.hasNext() || (m_classIterator && m_classIterator->hasNext())
+            : false;
 }
 
 inline void QScriptValueIteratorPrivate::next()
@@ -194,7 +196,9 @@ inline void QScriptValueIteratorPrivate::next()
 inline bool QScriptValueIteratorPrivate::hasPrevious()
 {
     //dump("hasPrevious()");
-    return (m_classIterator && m_classIterator->hasPrevious()) || m_iterator.hasPrevious();
+    return isValid()
+            ? (m_classIterator && m_classIterator->hasPrevious()) || m_iterator.hasPrevious()
+            : false;
 }
 
 inline void QScriptValueIteratorPrivate::previous()
@@ -296,7 +300,12 @@ QScriptValue::PropertyFlags QScriptValueIteratorPrivate::flags() const
 
 inline bool QScriptValueIteratorPrivate::isValid() const
 {
-    return m_object;
+    bool result = m_object ? m_object->isValid() : false;
+    // We know that if this object is still valid then it is an object
+    // if this assumption is not correct then some other logic in this class
+    // have to be changed too.
+    Q_ASSERT(!result || m_object->isObject());
+    return result;
 }
 
 inline QScriptEnginePrivate* QScriptValueIteratorPrivate::engine() const
