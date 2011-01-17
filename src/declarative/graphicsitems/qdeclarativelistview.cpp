@@ -2566,7 +2566,6 @@ void QDeclarativeListViewPrivate::positionViewAtIndex(int index, int mode)
         return;
     if (mode < QDeclarativeListView::Beginning || mode > QDeclarativeListView::Contain)
         return;
-qDebug() << "positionViewAtIndex";
     int idx = qMax(qMin(index, model->count()-1), 0);
 
     if (layoutScheduled)

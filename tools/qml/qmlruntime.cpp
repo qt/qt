@@ -586,7 +586,6 @@ QNetworkAccessManager *NetworkAccessManagerFactory::create(QObject *parent)
     }
     connect(manager, SIGNAL(destroyed(QObject*)), this, SLOT(managerDestroyed(QObject*)));
     namList.append(manager);
-    qDebug() << "created new network access manager for" << parent;
     return manager;
 }
 
