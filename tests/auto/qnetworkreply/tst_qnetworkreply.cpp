@@ -5128,6 +5128,7 @@ public:
 
     void finishedSlot() {
         // We should have already received all readyRead
+        QVERIFY(!bytesAvailableList.isEmpty());
         QVERIFY(bytesAvailableList.last() == uploadSize);
     }
 };
