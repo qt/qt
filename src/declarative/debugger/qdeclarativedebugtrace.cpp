@@ -165,6 +165,12 @@ void QDeclarativeDebugTrace::sendMessages()
         for (int i = 0; i < m_data.count(); ++i)
             sendMessage(m_data.at(i).toByteArray());
         m_data.clear();
+
+        //indicate completion
+        QByteArray data;
+        QDataStream ds(&data, QIODevice::WriteOnly);
+        ds << (qint64)-1 << (int)Complete;
+        sendMessage(data);
     }
 }
 

@@ -70,6 +70,7 @@ public:
         RangeStart,
         RangeData,
         RangeEnd,
+        Complete,
 
         MaximumMessage
     };
