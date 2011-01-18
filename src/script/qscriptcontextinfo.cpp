@@ -80,8 +80,7 @@ QT_BEGIN_NAMESPACE
 class QScriptContextInfoPrivate
 {
 public:
-    QScriptContextInfoPrivate();
-    QScriptContextInfoPrivate(const QScriptContext *context);
+    QScriptContextInfoPrivate(const QScriptContext *context = 0);
     ~QScriptContextInfoPrivate();
 
     qint64 scriptId;
@@ -106,7 +105,7 @@ public:
 /*!
   \internal
 */
-QScriptContextInfoPrivate::QScriptContextInfoPrivate() : null(true)
+QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *context)
 {
     ref = 0;
     functionType = QScriptContextInfo::NativeFunction;
@@ -116,23 +115,10 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate() : null(true)
     scriptId = -1;
     lineNumber = -1;
     columnNumber = -1;
-}
+    null = context;
 
-/*!
-  \internal
-*/
-QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *context) : null(false)
-{
-    Q_ASSERT(context);
-
-    ref = 0;
-    functionType = QScriptContextInfo::NativeFunction;
-    functionMetaIndex = -1;
-    functionStartLineNumber = -1;
-    functionEndLineNumber = -1;
-    scriptId = -1;
-    lineNumber = -1;
-    columnNumber = -1;
+    if (!context)
+        return;
 
     QScriptContextPrivate *context_p = QScriptContextPrivate::get(context);
     QScriptIsolate api(context_p->engine);
@@ -210,8 +196,7 @@ QScriptContextInfo &QScriptContextInfo::operator=(const QScriptContextInfo &othe
 */
 qint64 QScriptContextInfo::scriptId() const
 {
-    Q_UNIMPLEMENTED();
-    return 0;
+    return d_ptr->scriptId;
 }
 
 /*!
@@ -247,7 +232,7 @@ int QScriptContextInfo::lineNumber() const
 */
 int QScriptContextInfo::columnNumber() const
 {
-    Q_UNIMPLEMENTED();
+    return d_ptr->columnNumber;
     return -1;
 }
 
@@ -288,8 +273,7 @@ QScriptContextInfo::FunctionType QScriptContextInfo::functionType() const
 */
 int QScriptContextInfo::functionStartLineNumber() const
 {
-    Q_UNIMPLEMENTED();
-    return -1;
+    return d_ptr->functionStartLineNumber;
 }
 
 /*!
@@ -303,8 +287,7 @@ int QScriptContextInfo::functionStartLineNumber() const
 */
 int QScriptContextInfo::functionEndLineNumber() const
 {
-    Q_UNIMPLEMENTED();
-    return -1;
+    return d_ptr->functionEndLineNumber;
 }
 
 /*!
@@ -353,9 +336,22 @@ bool QScriptContextInfo::isNull() const
 */
 bool QScriptContextInfo::operator==(const QScriptContextInfo &other) const
 {
-    Q_UNUSED(other);
-    Q_UNIMPLEMENTED();
-    return false;
+    Q_D(const QScriptContextInfo);
+    const QScriptContextInfoPrivate *od = other.d_func();
+    if (d == od)
+        return true;
+    if (!d || !od)
+        return false;
+    return ((d->scriptId == od->scriptId)
+            && (d->lineNumber == od->lineNumber)
+            && (d->columnNumber == od->columnNumber)
+            && (d->fileName == od->fileName)
+            && (d->functionName == od->functionName)
+            && (d->functionType == od->functionType)
+            && (d->functionStartLineNumber == od->functionStartLineNumber)
+            && (d->functionEndLineNumber == od->functionEndLineNumber)
+            && (d->functionMetaIndex == od->functionMetaIndex)
+            && (d->parameterNames == od->parameterNames));
 }
 
 /*!
@@ -364,7 +360,6 @@ bool QScriptContextInfo::operator==(const QScriptContextInfo &other) const
 */
 bool QScriptContextInfo::operator!=(const QScriptContextInfo &other) const
 {
-    // FIXME it could be inlined.
     return !(*this == other);
 }
 
@@ -404,13 +399,6 @@ QDataStream &operator<<(QDataStream &out, const QScriptContextInfo &info)
 */
 Q_SCRIPT_EXPORT QDataStream &operator>>(QDataStream &in, QScriptContextInfo &info)
 {
-    Q_UNUSED(info);
-    Q_UNIMPLEMENTED();
-    /*
-    if (!info.d_ptr) {
-        info.d_ptr = new QScriptContextInfoPrivate();
-    }
-
     in >> info.d_ptr->scriptId;
 
     qint32 line;
@@ -441,7 +429,6 @@ Q_SCRIPT_EXPORT QDataStream &operator>>(QDataStream &in, QScriptContextInfo &inf
     in >> info.d_ptr->functionName;
     in >> info.d_ptr->parameterNames;
 
-    */
     return in;
 }
 #endif
