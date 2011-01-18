@@ -791,6 +791,8 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(v8::Handl
         result = script->Run();
     } else {
         const v8::Arguments *arguments = m_currentQsContext->arguments;
+        // Lazily initialize the 'arguments' property in JS context
+        m_currentQsContext->initializeArgumentsProperty();
         result = script->Run(arguments->This());
     }
     if (result.IsEmpty()) {

@@ -54,7 +54,6 @@ inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine
 {
     Q_ASSERT(engine);
     context->Enter();
-    initializeArgumentsProperty();
 }
 
 inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::AccessorInfo *accessor)
@@ -272,12 +271,21 @@ static v8::Handle<v8::Value> argumentsPropertyGetter(v8::Local<v8::String> prope
 
 inline void QScriptContextPrivate::initializeArgumentsProperty()
 {
-    QScriptSharedDataPointer<QScriptValuePrivate> activation(activationObject());
-    Q_ASSERT(activation->isValid());
-    Q_ASSERT(activation->property(QString::fromLatin1("arguments"), QScriptValue::ResolvePrototype)->isValid());
+    Q_ASSERT(arguments);
 
-    v8::Handle<v8::Object> act = *activation;
-    act->SetAccessor(v8::String::New("arguments"), argumentsPropertyGetter, 0, v8::External::Wrap(this));
+    // Since this is in the hotpath for QScriptEngine::evaluate(), cut
+    // some corners and access "extension object" via v8 directly
+    // instead of using activationObject().
+
+    v8::Handle<v8::Object> activation = context->GetExtensionObject();
+    if (activation->Has(v8::String::New("arguments")))
+        return;
+
+    // If the argsObject wasn't created yet, we just add an accessor
+    if (!argsObject)
+        activation->SetAccessor(v8::String::New("arguments"), argumentsPropertyGetter, 0, v8::External::Wrap(this));
+    else
+        activation->Set(v8::String::New("arguments"), *argsObject);
 }
 
 inline v8::Handle<v8::Value> QScriptContextPrivate::throwError(QScriptContext::Error error, const QString& text)
