@@ -76,7 +76,7 @@
 
 void QDeclarativeUtilModule::defineModule()
 {
-    qmlRegisterUncreatableType<QDeclarativeApplication>("QtQuick",1,1,"Application", "Application is an abstract class");
+    qmlRegisterUncreatableType<QDeclarativeApplication>("QtQuick",1,1,"Application", QDeclarativeApplication::tr("Application is an abstract class"));
 
     qmlRegisterType<QDeclarativeAnchorAnimation>("QtQuick",1,0,"AnchorAnimation");
     qmlRegisterType<QDeclarativeAnchorChanges>("QtQuick",1,0,"AnchorChanges");

@@ -539,7 +539,6 @@ void QDeclarativeEngineDebugServer::setBinding(int objectId,
 {
     QObject *object = objectForId(objectId);
     QDeclarativeContext *context = qmlContext(object);
-    QByteArray propertyNameArray = propertyName.toUtf8();
 
     if (object && context) {
         QDeclarativeProperty property(object, propertyName, context);
@@ -550,7 +549,7 @@ void QDeclarativeEngineDebugServer::setBinding(int objectId,
             foreach(QWeakPointer<QDeclarativeState> statePointer, m_allStates) {
                 if (QDeclarativeState *state = statePointer.data()) {
                     // here we assume that the revert list on itself defines the base state
-                    if ( state->isStateActive() && state->containsPropertyInRevertList(object, propertyNameArray) ) {
+                    if (state->isStateActive() && state->containsPropertyInRevertList(object, propertyName)) {
                         inBaseState = false;
 
                         QDeclarativeBinding *newBinding = 0;
@@ -560,10 +559,10 @@ void QDeclarativeEngineDebugServer::setBinding(int objectId,
                             newBinding->setNotifyOnValueChanged(true);
                         }
 
-                        state->changeBindingInRevertList(object,propertyNameArray, newBinding);
+                        state->changeBindingInRevertList(object, propertyName, newBinding);
 
                         if (isLiteralValue)
-                            state->changeValueInRevertList(object, propertyNameArray, expression);
+                            state->changeValueInRevertList(object, propertyName, expression);
                     }
                 }
             }
@@ -592,9 +591,9 @@ void QDeclarativeEngineDebugServer::setBinding(int objectId,
             // not a valid property
             if (QDeclarativePropertyChanges *propertyChanges = dynamic_cast<QDeclarativePropertyChanges *>(object)) {
                 if (isLiteralValue) {
-                    propertyChanges->changeValue(propertyName.toUtf8(),expression);
+                    propertyChanges->changeValue(propertyName, expression);
                 } else {
-                    propertyChanges->changeExpression(propertyName.toUtf8(),expression.toString());
+                    propertyChanges->changeExpression(propertyName, expression.toString());
                 }
             } else {
                 qWarning() << "QDeclarativeEngineDebugServer::setBinding: unable to set property" << propertyName << "on object" << object;
@@ -639,7 +638,7 @@ void QDeclarativeEngineDebugServer::resetBinding(int objectId, const QString &pr
             }
         } else {
             if (QDeclarativePropertyChanges *propertyChanges = dynamic_cast<QDeclarativePropertyChanges *>(object)) {
-                propertyChanges->removeProperty(propertyName.toUtf8());
+                propertyChanges->removeProperty(propertyName);
             }
         }
     }

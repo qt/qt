@@ -2618,11 +2618,7 @@ void QDeclarativeGridView::itemsMoved(int from, int to, int count)
         return;
     QHash<int,FxGridItem*> moved;
 
-    bool removedBeforeVisible = false;
     FxGridItem *firstItem = d->firstVisibleItem();
-
-    if (from < to && from < d->visibleIndex && to > d->visibleIndex)
-        removedBeforeVisible = true;
 
     QList<FxGridItem*>::Iterator it = d->visibleItems.begin();
     while (it != d->visibleItems.end()) {
@@ -2632,16 +2628,12 @@ void QDeclarativeGridView::itemsMoved(int from, int to, int count)
             item->index += (to-from);
             moved.insert(item->index, item);
             it = d->visibleItems.erase(it);
-            if (item->rowPos() < firstItem->rowPos())
-                removedBeforeVisible = true;
         } else {
             if (item->index > from && item->index != -1) {
                 // move everything after the moved items.
                 item->index -= count;
                 if (item->index < d->visibleIndex)
                     d->visibleIndex = item->index;
-            } else if (item->index != -1) {
-                removedBeforeVisible = true;
             }
             ++it;
         }
