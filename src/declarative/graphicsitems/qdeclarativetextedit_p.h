@@ -92,7 +92,7 @@ class Q_AUTOTEST_EXPORT QDeclarativeTextEdit : public QDeclarativePaintedItem
     Q_PROPERTY(qreal textMargin READ textMargin WRITE setTextMargin NOTIFY textMarginChanged)
     Q_PROPERTY(Qt::InputMethodHints inputMethodHints READ inputMethodHints WRITE setInputMethodHints)
     Q_PROPERTY(bool selectByMouse READ selectByMouse WRITE setSelectByMouse NOTIFY selectByMouseChanged)
-    Q_REVISION(1) Q_PROPERTY(bool canPaste READ canPaste NOTIFY canPasteChanged)
+    Q_PROPERTY(bool canPaste READ canPaste NOTIFY canPasteChanged REVISION 1)
 
 public:
     QDeclarativeTextEdit(QDeclarativeItem *parent=0);
