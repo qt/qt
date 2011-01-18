@@ -10,3 +10,4 @@ RESOURCES += $$QT_SOURCE_TREE/tests/arthur/common/images.qrc
 include($$QT_SOURCE_TREE/tests/arthur/common/qbaselinetest.pri)
 
 !symbian:!wince*:DEFINES += SRCDIR=\\\"$$PWD\\\"
+linux-g++-maemo:DEFINES += USE_RUNTIME_DIR
