@@ -345,6 +345,16 @@ void QDeclarativeTextInput::setHAlign(HAlignment align)
     emit horizontalAlignmentChanged(d->hAlign);
 }
 
+/*!
+    \qmlproperty bool TextInput::readOnly
+
+    Sets whether user input can modify the contents of the TextInput.
+
+    If readOnly is set to true, then user input will not affect the text
+    property. Any bindings or attempts to set the text property will still
+    work.
+*/
+
 bool QDeclarativeTextInput::isReadOnly() const
 {
     Q_D(const QDeclarativeTextInput);
