@@ -342,6 +342,8 @@ private Q_SLOTS:
     void synchronousRequest();
     void synchronousRequestSslFailure();
 
+    void httpAbort();
+
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 };
@@ -4566,7 +4568,7 @@ void tst_QNetworkReply::proxyChange()
     manager.setProxy(dummyProxy);
     QNetworkReplyPtr reply3 = manager.get(req);
     connect(reply3, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(1);
+    QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QVERIFY(int(reply3->error()) > 0);
@@ -5500,6 +5502,18 @@ void tst_QNetworkReply::synchronousRequestSslFailure()
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::SslHandshakeFailedError);
     QCOMPARE(sslErrorsSpy.count(), 0);
+}
+
+void tst_QNetworkReply::httpAbort()
+{
+    // FIXME: Implement a test that aborts a big HTTP reply
+    // a) after the first readyRead()
+    // b) immediatly after the get()
+    // c) after the finished()
+    // The goal is no crash and no irrelevant signals after the abort
+
+    // FIXME Also implement one where we do a big upload and then abort().
+    // It must not crash either.
 }
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!
