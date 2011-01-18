@@ -619,6 +619,7 @@ void tst_qdeclarativetextinput::dragMouseSelection()
     QVERIFY(str2.length() > 3);
 
     QVERIFY(str1 != str2); // Verify the second press and drag is a new selection and doesn't not the first moved.
+    delete canvas;
 }
 
 void tst_qdeclarativetextinput::horizontalAlignment_data()
@@ -1129,6 +1130,8 @@ void tst_qdeclarativetextinput::echoMode()
     input->setFocus(false);
     QVERIFY(input->hasActiveFocus() == false);
     QCOMPARE(input->displayText(), QLatin1String("Q"));
+
+    delete canvas;
 }
 
 void tst_qdeclarativetextinput::simulateKey(QDeclarativeView *view, int key)
