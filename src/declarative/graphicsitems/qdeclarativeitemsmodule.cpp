@@ -182,6 +182,9 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativeFlickable,1>("QtQuick",1,1,"Flickable");
     qmlRegisterType<QDeclarativeListView,1>("QtQuick",1,1,"ListView");
     qmlRegisterType<QDeclarativeGridView,1>("QtQuick",1,1,"GridView");
+    qmlRegisterType<QDeclarativeRow,1>("QtQuick",1,1,"Row");
+    qmlRegisterType<QDeclarativeGrid,1>("QtQuick",1,1,"Grid");
+    qmlRegisterType<QDeclarativeFlow,1>("QtQuick",1,1,"Flow");
     qmlRegisterType<QDeclarativeRepeater,1>("QtQuick",1,1,"Repeater");
     qmlRegisterType<QDeclarativeTextEdit,1>("QtQuick",1,1,"TextEdit");
 #ifndef QT_NO_LINEEDIT
