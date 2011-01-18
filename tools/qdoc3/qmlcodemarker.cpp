@@ -175,7 +175,7 @@ QString QmlCodeMarker::markedUpIncludes(const QStringList& includes)
         ++inc;
     }
     Location location;
-    return protect(addMarkUp(code, 0, location));
+    return addMarkUp(code, 0, location);
 }
 
 QString QmlCodeMarker::functionBeginRegExp(const QString& funcName)
