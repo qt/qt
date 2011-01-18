@@ -219,7 +219,7 @@ HtmlGenerator::HtmlGenerator()
       threeColumnEnumValueTable(true),
       funcLeftParen("\\S(\\()"),
       myTree(0),
-      slow(false),
+      syntaxHighlighting(false),
       obsoleteLinks(false)
 {
 }
@@ -320,7 +320,7 @@ void HtmlGenerator::initializeGenerator(const Config &config)
         ++edition;
     }
 
-    slow = config.getBool(CONFIG_SLOW);
+    syntaxHighlighting = config.getBool(CONFIG_SYNTAXHIGHLIGHTING);
 
     codeIndent = config.getInt(CONFIG_CODEINDENT);
 
@@ -472,7 +472,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             out() << protectEnc(plainCode(atom->string()));
         }
         else {
-            out() << highlightedCode(atom->string(), marker, relative);
+            out() << protectEnc(plainCode(atom->string()));
         }
         out() << formattingRightMap()[ATOM_FORMATTING_TELETYPE];
         break;
@@ -2781,7 +2781,7 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
     }
 
 
-    if (slow) {
+    if (syntaxHighlighting) {
         // is this block ever used at all?
         // replace all <@func> tags: "(<@func target=\"([^\"]*)\">)(.*)(</@func>)"
         src = html;

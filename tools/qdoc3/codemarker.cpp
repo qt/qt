@@ -59,7 +59,7 @@ QList<CodeMarker *> CodeMarker::markers;
   been read.
  */
 CodeMarker::CodeMarker()
-    : slow(false)
+    : linksInMarkup(false)
 {
     markers.prepend(this);
 }
@@ -74,14 +74,14 @@ CodeMarker::~CodeMarker()
 }
 
 /*!
-  The only thing a code market initializes is its \e{slow}
-  flag. The \e{slow} flag indicates whether the operations
-  that slow down qdoc are to be performed or not. It is
-  turned off by default. 
+  The only thing a code market initializes is its \e{linksInMarkup}
+  flag. The \e{linksInMarkup} flag indicates whether links are created for
+  names that have corresponding entries in the API documentation.
+  It is turned off by default. 
  */
 void CodeMarker::initializeMarker(const Config &config)
 {
-    slow = config.getBool(QLatin1String(CONFIG_SLOW));
+    linksInMarkup = config.getBool(QLatin1String(CONFIG_LINKSINMARKUP));
 }
 
 /*!

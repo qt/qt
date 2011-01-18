@@ -147,7 +147,8 @@ static void processQdocconfFile(const QString &fileName)
                              QStringList() << defaults[i].value);
 	++i;
     }
-    config.setStringList(CONFIG_SLOW, QStringList(slow ? "true" : "false"));
+    config.setStringList(CONFIG_SYNTAXHIGHLIGHTING, QStringList(slow ? "true" : "false"));
+    config.setStringList(CONFIG_LINKSINMARKUP, QStringList(slow ? "true" : "false"));
     config.setStringList(CONFIG_SHOWINTERNAL,
                          QStringList(showInternal ? "true" : "false"));
     config.setStringList(CONFIG_OBSOLETELINKS,

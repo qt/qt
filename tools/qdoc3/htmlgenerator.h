@@ -279,7 +279,7 @@ class HtmlGenerator : public PageGenerator
     QStringList stylesheets;
     QStringList customHeadElements;
     const Tree *myTree;
-    bool slow;
+    bool syntaxHighlighting;
     bool obsoleteLinks;
     QMap<QString, NodeMap > moduleClassMap;
     QMap<QString, NodeMap > moduleNamespaceMap;

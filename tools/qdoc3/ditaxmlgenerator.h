@@ -291,7 +291,6 @@ class DitaXmlGenerator : public PageGenerator
     QStringList stylesheets;
     QStringList customHeadElements;
     const Tree* myTree;
-    bool slow;
     bool obsoleteLinks;
     bool noLinks;
     int tableColumnCount;

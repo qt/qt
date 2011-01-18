@@ -164,8 +164,6 @@ class CodeMarker
     static QString stringForNode(const Node *node);
 
  protected:
-    bool hurryUp() const { return !slow; }
-
     virtual QString sortName(const Node *node);
     QString protect(const QString &string);
     QString typified(const QString &string);
@@ -184,7 +182,7 @@ class CodeMarker
  private:
     QString macName(const Node *parent, const QString &name = QString());
 
-    bool slow;
+    bool linksInMarkup;
 
     static QString defaultLang;
     static QList<CodeMarker *> markers;
