@@ -167,7 +167,7 @@ int QDeclarativeBoundSignal::qt_metacall(QMetaObject::Call c, int id, void **a)
 {
     if (c == QMetaObject::InvokeMetaMethod && id == evaluateIdx) {
         QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::HandlingSignal);
-        QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::HandlingSignal, QLatin1String(m_signal.signature()) + QLatin1String(": ") + (m_expression ? m_expression->expression() : ""));
+        QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::HandlingSignal, QLatin1String(m_signal.signature()) + QLatin1String(": ") + (m_expression ? m_expression->expression() : QLatin1String("")));
         m_isEvaluating = true;
         if (!m_paramsValid) {
             if (!m_signal.parameterTypes().isEmpty())

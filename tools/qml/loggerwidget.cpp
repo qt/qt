@@ -67,6 +67,11 @@ LoggerWidget::LoggerWidget(QWidget *parent) :
     m_plainTextEdit = new QPlainTextEdit();
 
 #if defined(Q_OS_SYMBIAN)
+    QAction* clearAction = new QAction(tr("Clear"), this);
+    clearAction->setSoftKeyRole(QAction::PositiveSoftKey);
+    connect(clearAction, SIGNAL(triggered()), m_plainTextEdit, SLOT(clear()));
+    addAction(clearAction);
+
     m_plainTextEdit->setReadOnly(true);
     QAction* backAction = new QAction( tr("Back"), this );
     backAction->setSoftKeyRole( QAction::NegativeSoftKey );
