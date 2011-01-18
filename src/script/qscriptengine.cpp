@@ -2069,7 +2069,7 @@ v8::Handle<v8::Value> QtTranslateFunctionQsTranslate(const v8::Arguments& argume
     QString comment;
     if (arguments.Length() > 2)
         comment = QScriptConverter::toString(arguments[2]->ToString());
-    QCoreApplication::Encoding encoding = QCoreApplication::CodecForTr;
+    QCoreApplication::Encoding encoding = QCoreApplication::UnicodeUTF8;
     if (arguments.Length() > 3) {
         QString encStr(QScriptConverter::toString(arguments[3]->ToString()));
         if (encStr == QLatin1String("CodecForTr"))
@@ -2084,9 +2084,9 @@ v8::Handle<v8::Value> QtTranslateFunctionQsTranslate(const v8::Arguments& argume
     int n = -1;
     if (arguments.Length() > 4)
         n = arguments[4]->Int32Value();
-    QString result = QCoreApplication::translate(context.toLatin1().constData(),
-                                         text.toLatin1().constData(),
-                                         comment.toLatin1().constData(),
+    QString result = QCoreApplication::translate(context.toUtf8().constData(),
+                                         text.toUtf8().constData(),
+                                         comment.toUtf8().constData(),
                                          encoding, n);
     return QScriptConverter::toString(result);
 }
@@ -2134,10 +2134,10 @@ v8::Handle<v8::Value> QtTranslateFunctionQsTr(const v8::Arguments& arguments)
     if (arguments.Length() > 2)
         n = arguments[2]->Int32Value();
 
-    QString result = QCoreApplication::translate(context.toLatin1().constData(),
-                                         text.toLatin1().constData(),
-                                         comment.toLatin1().constData(),
-                                         QCoreApplication::CodecForTr, n);
+    QString result = QCoreApplication::translate(context.toUtf8().constData(),
+                                         text.toUtf8().constData(),
+                                         comment.toUtf8().constData(),
+                                         QCoreApplication::UnicodeUTF8, n);
     return QScriptConverter::toString(result);
 }
 
@@ -2163,7 +2163,7 @@ v8::Handle<v8::Value> QtTranslateFunctionQsTrId(const v8::Arguments& arguments)
     int n = -1;
     if (arguments.Length() > 1)
         n = arguments[1]->Int32Value();
-    return QScriptConverter::toString(qtTrId(QScriptConverter::toString(id).toLatin1().constData(), n));
+    return QScriptConverter::toString(qtTrId(QScriptConverter::toString(id).toUtf8().constData(), n));
 }
 
 v8::Handle<v8::Value> QtTranslateFunctionQsTrIdNoOp(const v8::Arguments& arguments)
