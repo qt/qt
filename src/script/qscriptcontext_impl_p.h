@@ -54,6 +54,7 @@ inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine
 {
     Q_ASSERT(engine);
     context->Enter();
+    initializeArgumentsProperty();
 }
 
 inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::AccessorInfo *accessor)
@@ -257,6 +258,26 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::createArgu
     args->setProperty(QString::fromLatin1("length"), new QScriptValuePrivate(engine, argc), v8::DontEnum);
     args->setProperty(QString::fromLatin1("callee"), QScriptValuePrivate::get(callee_), v8::DontEnum);
     return args;
+}
+
+static v8::Handle<v8::Value> argumentsPropertyGetter(v8::Local<v8::String> property, const v8::AccessorInfo &info)
+{
+    v8::Local<v8::Object> self = info.Holder();
+    QScriptContextPrivate *ctx = static_cast<QScriptContextPrivate *>(v8::External::Unwrap(info.Data()));
+
+    QScriptSharedDataPointer<QScriptValuePrivate> argsObject(ctx->argumentsObject());
+    self->ForceSet(property, *argsObject);
+    return *argsObject;
+}
+
+inline void QScriptContextPrivate::initializeArgumentsProperty()
+{
+    QScriptSharedDataPointer<QScriptValuePrivate> activation(activationObject());
+    Q_ASSERT(activation->isValid());
+    Q_ASSERT(activation->property(QString::fromLatin1("arguments"), QScriptValue::ResolvePrototype)->isValid());
+
+    v8::Handle<v8::Object> act = *activation;
+    act->SetAccessor(v8::String::New("arguments"), argumentsPropertyGetter, 0, v8::External::Wrap(this));
 }
 
 inline v8::Handle<v8::Value> QScriptContextPrivate::throwError(QScriptContext::Error error, const QString& text)

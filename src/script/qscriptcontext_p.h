@@ -72,6 +72,7 @@ public:
     inline QScriptPassPointer<QScriptValuePrivate> popScope();
     inline void setInheritedScope(v8::Handle<v8::Context>);
     inline QScriptPassPointer<QScriptValuePrivate> createArgumentsObject();
+    inline void initializeArgumentsProperty();
 
     inline v8::Handle<v8::Value> throwError(Error error, const QString &text);
 
