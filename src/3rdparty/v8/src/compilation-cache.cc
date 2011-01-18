@@ -235,7 +235,11 @@ void CompilationCacheScript::Put(Handle<String> source,
 
 
 Handle<SharedFunctionInfo> CompilationCacheEval::Lookup(
-    Handle<String> source, Handle<Context> context) {
+    Handle<String> source, Handle<Context> context
+#ifdef QT_BUILD_SCRIPT_LIB
+    , Handle<Object> name, int line_offset, int column_offset
+#endif
+    ) {
   // Make sure not to leak the table into the surrounding handle
   // scope. Otherwise, we risk keeping old tables around even after
   // having cleared the cache.
@@ -244,9 +248,18 @@ Handle<SharedFunctionInfo> CompilationCacheEval::Lookup(
   { HandleScope scope;
     for (generation = 0; generation < generations(); generation++) {
       Handle<CompilationCacheTable> table = GetTable(generation);
-      result = table->LookupEval(*source, *context);
-      if (result->IsSharedFunctionInfo()) {
-        break;
+      Handle<Object> probe(table->LookupEval(*source, *context));
+      if (probe->IsSharedFunctionInfo()) {
+#ifdef QT_BUILD_SCRIPT_LIB
+        Handle<SharedFunctionInfo> function_info =
+          Handle<SharedFunctionInfo>::cast(probe);
+        // Break when we've found a suitable shared function info that
+        // matches the origin.
+        if (CompilationCacheScript::HasOrigin(function_info, name, line_offset, column_offset)) {
+          result = *function_info;
+          break;
+        }
+#endif
       }
     }
   }
@@ -365,16 +378,29 @@ Handle<SharedFunctionInfo> CompilationCache::LookupScript(Handle<String> source,
 
 Handle<SharedFunctionInfo> CompilationCache::LookupEval(Handle<String> source,
                                                         Handle<Context> context,
-                                                        bool is_global) {
+                                                        bool is_global
+#ifdef QT_BUILD_SCRIPT_LIB
+                                                        , Handle<Object> script_name,
+                                                        int line_offset, int column_offset
+#endif
+                                                       ) {
   if (!IsEnabled()) {
     return Handle<SharedFunctionInfo>::null();
   }
 
   Handle<SharedFunctionInfo> result;
   if (is_global) {
-    result = eval_global_.Lookup(source, context);
+    result = eval_global_.Lookup(source, context
+#ifdef QT_BUILD_SCRIPT_LIB
+        ,script_name, line_offset, column_offset
+#endif
+        );
   } else {
-    result = eval_contextual_.Lookup(source, context);
+    result = eval_contextual_.Lookup(source, context
+#ifdef QT_BUILD_SCRIPT_LIB
+        ,script_name, line_offset, column_offset
+#endif
+        );
   }
   return result;
 }

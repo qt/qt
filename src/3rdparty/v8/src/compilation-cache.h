@@ -101,6 +101,10 @@ class CompilationCacheScript : public CompilationSubCache {
   Handle<CompilationCacheTable> TablePut(
       Handle<String> source, Handle<SharedFunctionInfo> function_info);
 
+#ifdef QT_BUILD_SCRIPT_LIB
+public:
+  static
+#endif
   bool HasOrigin(Handle<SharedFunctionInfo> function_info,
                  Handle<Object> name,
                  int line_offset,
@@ -120,7 +124,11 @@ class CompilationCacheEval: public CompilationSubCache {
       : CompilationSubCache(generations) { }
 
   Handle<SharedFunctionInfo> Lookup(Handle<String> source,
-                                    Handle<Context> context);
+                                    Handle<Context> context
+#ifdef QT_BUILD_SCRIPT_LIB
+                                    , Handle<Object> script_name, int line_offset, int column_offset
+#endif
+                                   );
 
   void Put(Handle<String> source,
            Handle<Context> context,
@@ -186,7 +194,12 @@ class CompilationCache {
   // contain a script for the given source string.
   Handle<SharedFunctionInfo> LookupEval(Handle<String> source,
                                         Handle<Context> context,
-                                        bool is_global);
+                                        bool is_global
+#ifdef QT_BUILD_SCRIPT_LIB
+                                        , Handle<Object> script_name  = Handle<Object>(),
+                                        int line_offset = 0, int column_offset = 0
+#endif
+                                       );
 
   // Returns the regexp data associated with the given regexp if it
   // is in cache, otherwise an empty handle.

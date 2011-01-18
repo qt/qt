@@ -170,7 +170,12 @@ class Compiler : public AllStatic {
   // Compile a String source within a context for Eval.
   static Handle<SharedFunctionInfo> CompileEval(Handle<String> source,
                                                 Handle<Context> context,
-                                                bool is_global);
+                                                bool is_global
+#ifdef QT_BUILD_SCRIPT_LIB
+                                                , Handle<Object> script_name = Handle<Object>(),
+                                                int line_offset = 0, int column_offset = 0
+#endif
+                                               );
 
   // Compile from function info (used for lazy compilation). Returns true on
   // success and false if the compilation resulted in a stack overflow.
