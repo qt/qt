@@ -1212,6 +1212,10 @@ bool qt_mac_handleMouseEvent(NSEvent *event, QEvent::Type eventType, Qt::MouseBu
     if (qt_mac_sendMacEventToWidget(widgetToGetMouse, carbonEvent))
         return true;
 
+    // Keep previousButton to make sure we don't send double click
+    // events when the user double clicks using two different buttons:
+    static Qt::MouseButton previousButton = Qt::NoButton;
+
     Qt::KeyboardModifiers keyMods = qt_cocoaModifiers2QtModifiers([event modifierFlags]);
     NSInteger clickCount = [event clickCount];
     Qt::MouseButtons buttons = 0;
@@ -1235,7 +1239,7 @@ bool qt_mac_handleMouseEvent(NSEvent *event, QEvent::Type eventType, Qt::MouseBu
         break;
     case QEvent::MouseButtonPress:
         qt_button_down = widgetUnderMouse;
-        if (clickCount % 2 == 0 && buttons == button)
+        if (clickCount % 2 == 0 && (previousButton == Qt::NoButton || previousButton == button))
             eventType = QEvent::MouseButtonDblClick;
         if (button == Qt::LeftButton && (keyMods & Qt::MetaModifier)) {
             button = Qt::RightButton;
@@ -1277,6 +1281,7 @@ bool qt_mac_handleMouseEvent(NSEvent *event, QEvent::Type eventType, Qt::MouseBu
         qt_mac_checkEnterLeaveForNativeWidgets(widgetUnderMouse);
     }
 
+    previousButton = button;
     return true;
 }
 #endif

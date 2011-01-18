@@ -161,6 +161,17 @@ QObjectPrivate::QObjectPrivate(int version)
 
 QObjectPrivate::~QObjectPrivate()
 {
+    if (pendTimer) {
+        // unregister pending timers
+        if (threadData->eventDispatcher)
+            threadData->eventDispatcher->unregisterTimers(q_ptr);
+    }
+
+    if (postedEvents)
+        QCoreApplication::removePostedEvents(q_ptr, 0);
+
+    threadData->deref();
+
     delete static_cast<QAbstractDynamicMetaObject*>(metaObject);
 #ifdef QT_JAMBI_BUILD
     if (deleteWatch)
@@ -911,24 +922,13 @@ QObject::~QObject()
         }
     }
 
-    if (d->pendTimer) {
-        // unregister pending timers
-        if (d->threadData->eventDispatcher)
-            d->threadData->eventDispatcher->unregisterTimers(this);
-    }
-
     if (!d->children.isEmpty())
         d->deleteChildren();
 
     qt_removeObject(this);
 
-    if (d->postedEvents)
-        QCoreApplication::removePostedEvents(this, 0);
-
     if (d->parent)        // remove it from parent object
         d->setParent_helper(0);
-
-    d->threadData->deref();
 
 #ifdef QT_JAMBI_BUILD
     if (d->inEventHandler) {
