@@ -443,17 +443,19 @@ QString QScriptContext::toString() const
 
     QString functionName = info.functionName();
     if (functionName.isEmpty()) {
-        if (d_ptr->parent) {
-            Q_UNIMPLEMENTED();
-            /*const JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
-            if (info.functionType() == QScriptContextInfo::ScriptFunction)
-                result.append(QLatin1String("<anonymous>"));
-            else if(frame->callerFrame()->hasHostCallFrameFlag())
-                result.append(QLatin1String("<eval>"));
-            else*/
-                result.append(QLatin1String("<native>"));
-        } else {
+        if (!d_ptr->parent || (!d_ptr->previous && !d_ptr->frame.IsEmpty())) {
             result.append(QLatin1String("<global>"));
+        } else {
+            if (d_ptr->frame.IsEmpty()) {
+                result.append(QLatin1String("<native>"));
+            } else {
+                QScriptIsolate api(d_ptr->engine);
+                if (d_ptr->frame->IsEval()) {
+                    result.append(QLatin1String("<eval>"));
+                } else {
+                    result.append(QLatin1String("<anonymous>"));
+                }
+            }
         }
     } else {
         result.append(functionName);
