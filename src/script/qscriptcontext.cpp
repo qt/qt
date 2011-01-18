@@ -279,6 +279,10 @@ bool QScriptContext::isCalledAsConstructor() const
 {
     if (d_ptr->arguments)
         return d_ptr->arguments->IsConstructCall();
+    if (!d_ptr->frame.IsEmpty()) {
+        QScriptIsolate api(d_ptr->engine);
+        return d_ptr->frame->IsConstructor();
+    }
     return false;
 }
 
