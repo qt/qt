@@ -611,7 +611,7 @@ void QDeclarativeRow::doPositioning(QSizeF *contentSize)
 {
     int hoffset = 0;
 
-    int hoffsets[positionedItems.count()];
+    QList<int> hoffsets;
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
         if (!child.item || !child.isVisible)
@@ -621,7 +621,7 @@ void QDeclarativeRow::doPositioning(QSizeF *contentSize)
             if(child.item->x() != hoffset)
                 positionX(hoffset, child);
         }else{
-            hoffsets[ii] = hoffset;
+            hoffsets << hoffset;
         }
 
         contentSize->setHeight(qMax(contentSize->height(), QGraphicsItemPrivate::get(child.item)->height()));
@@ -642,11 +642,12 @@ void QDeclarativeRow::doPositioning(QSizeF *contentSize)
     else
         end = width();
 
+    int acc = 0;
     for (int ii = 0; ii < positionedItems.count(); ++ii) {
         const PositionedItem &child = positionedItems.at(ii);
         if (!child.item || !child.isVisible)
             continue;
-        hoffset = end - hoffsets[ii] - QGraphicsItemPrivate::get(child.item)->width();
+        hoffset = end - hoffsets[acc++] - QGraphicsItemPrivate::get(child.item)->width();
         if(child.item->x() != hoffset)
             positionX(hoffset, child);
     }
@@ -1234,7 +1235,7 @@ void QDeclarativeFlow::doPositioning(QSizeF *contentSize)
     int hoffset = 0;
     int voffset = 0;
     int linemax = 0;
-    int hoffsets[positionedItems.count()];
+    QList<int> hoffsets;
 
     for (int i = 0; i < positionedItems.count(); ++i) {
         const PositionedItem &child = positionedItems.at(i);
@@ -1260,7 +1261,7 @@ void QDeclarativeFlow::doPositioning(QSizeF *contentSize)
             if(child.item->x() != hoffset)
                 positionX(hoffset, child);
         }else{
-            hoffsets[i] = hoffset;
+            hoffsets << hoffset;
         }
         if(child.item->y() != voffset)
             positionY(voffset, child);
@@ -1287,11 +1288,12 @@ void QDeclarativeFlow::doPositioning(QSizeF *contentSize)
         end = width();
     else
         end = contentSize->width();
+    int acc = 0;
     for (int i = 0; i < positionedItems.count(); ++i) {
         const PositionedItem &child = positionedItems.at(i);
         if (!child.item || !child.isVisible)
             continue;
-        hoffset = end - hoffsets[i] - QGraphicsItemPrivate::get(child.item)->width();
+        hoffset = end - hoffsets[acc++] - QGraphicsItemPrivate::get(child.item)->width();
         if(child.item->x() != hoffset)
             positionX(hoffset, child);
     }
