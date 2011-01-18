@@ -781,9 +781,11 @@ void QDeclarativeViewer::createMenu()
     aboutAction->setMenuRole(QAction::AboutQtRole);
     connect(aboutAction, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
+#if !defined(Q_OS_SYMBIAN)
     QAction *closeAction = new QAction(tr("&Close"), this);
     closeAction->setShortcuts(QKeySequence::Close);
     connect(closeAction, SIGNAL(triggered()), this, SLOT(close()));
+#endif
 
     QAction *quitAction = new QAction(tr("&Quit"), this);
     quitAction->setMenuRole(QAction::QuitRole);
@@ -819,9 +821,9 @@ void QDeclarativeViewer::createMenu()
     fileMenu->addAction(openAction);
     fileMenu->addAction(openUrlAction);
     fileMenu->addAction(reloadAction);
+#if !defined(Q_OS_SYMBIAN)
     fileMenu->addSeparator();
     fileMenu->addAction(closeAction);
-#if !defined(Q_OS_SYMBIAN)
     fileMenu->addAction(quitAction);
 
     QMenu *recordMenu = menu->addMenu(tr("&Recording"));
