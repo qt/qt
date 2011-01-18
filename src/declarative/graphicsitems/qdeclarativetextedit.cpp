@@ -326,22 +326,35 @@ void QDeclarativeTextEdit::setTextFormat(TextFormat format)
 QFont QDeclarativeTextEdit::font() const
 {
     Q_D(const QDeclarativeTextEdit);
-    return d->font;
+    return d->sourceFont;
 }
 
 void QDeclarativeTextEdit::setFont(const QFont &font)
 {
     Q_D(QDeclarativeTextEdit);
-    d->font = font;
+    if (d->sourceFont == font)
+        return;
 
-    clearCache();
-    d->document->setDefaultFont(d->font);
-    if(d->cursor){
-        d->cursor->setHeight(QFontMetrics(d->font).height());
-        moveCursorDelegate();
+    d->sourceFont = font;
+    QFont oldFont = d->font;
+    d->font = font;
+    if (d->font.pointSizeF() != -1) {
+        // 0.5pt resolution
+        qreal size = qRound(d->font.pointSizeF()*2.0);
+        d->font.setPointSizeF(size/2.0);
     }
-    updateSize();
-    update();
+
+    if (oldFont != d->font) {
+        clearCache();
+        d->document->setDefaultFont(d->font);
+        if(d->cursor){
+            d->cursor->setHeight(QFontMetrics(d->font).height());
+            moveCursorDelegate();
+        }
+        updateSize();
+        update();
+    }
+    emit fontChanged(d->sourceFont);
 }
 
 /*!
