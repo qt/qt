@@ -959,7 +959,7 @@ QRect QDeclarativePixmap::rect() const
 
 void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url)
 {
-    load(engine, url, QSize(), QDeclarativePixmap::Cached);
+    load(engine, url, QSize(), QDeclarativePixmap::Cache);
 }
 
 void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url, QDeclarativePixmap::Options options)
@@ -969,7 +969,7 @@ void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url, QDecl
 
 void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url, const QSize &size)
 {
-    load(engine, url, size, QDeclarativePixmap::Cached);
+    load(engine, url, size, QDeclarativePixmap::Cache);
 }
 
 void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url, const QSize &requestSize, QDeclarativePixmap::Options options)
@@ -994,7 +994,7 @@ void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url, const
             bool ok = false;
             d = createPixmapDataSync(engine, url, requestSize, &ok);
             if (ok) {
-                if (options & QDeclarativePixmap::Cached)
+                if (options & QDeclarativePixmap::Cache)
                     d->addToCache();
                 return;
             }
@@ -1008,7 +1008,7 @@ void QDeclarativePixmap::load(QDeclarativeEngine *engine, const QUrl &url, const
         QDeclarativePixmapReader *reader = QDeclarativePixmapReader::instance(engine);
 
         d = new QDeclarativePixmapData(url, requestSize);
-        if (options & QDeclarativePixmap::Cached)
+        if (options & QDeclarativePixmap::Cache)
             d->addToCache();
 
         d->reply = reader->getImage(d);

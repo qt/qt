@@ -71,7 +71,7 @@ public:
         progress(0.0),
         explicitSourceSize(false),
         async(false),
-        cached(true),
+        cache(true),
         mirror(false)
     {
         QGraphicsItemPrivate::flags = QGraphicsItemPrivate::flags & ~QGraphicsItem::ItemHasNoContents;
@@ -84,7 +84,7 @@ public:
     QSize sourcesize;
     bool explicitSourceSize : 1;
     bool async : 1;
-    bool cached : 1;
+    bool cache : 1;
     bool mirror: 1;
 };
 

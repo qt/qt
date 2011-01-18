@@ -68,7 +68,7 @@ public:
 
     enum Option {
         Asynchronous = 0x00000001,
-        Cached       = 0x00000002
+        Cache        = 0x00000002
     };
     Q_DECLARE_FLAGS(Options, Option)
 

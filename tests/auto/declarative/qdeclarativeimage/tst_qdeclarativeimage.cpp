@@ -126,7 +126,7 @@ void tst_qdeclarativeimage::imageSource_data()
     QTest::addColumn<double>("height");
     QTest::addColumn<bool>("remote");
     QTest::addColumn<bool>("async");
-    QTest::addColumn<bool>("cached");
+    QTest::addColumn<bool>("cache");
     QTest::addColumn<QString>("error");
 
     QTest::newRow("local") << QUrl::fromLocalFile(SRCDIR "/data/colors.png").toString() << 120.0 << 120.0 << false << false << true << "";
@@ -151,7 +151,7 @@ void tst_qdeclarativeimage::imageSource()
     QFETCH(double, height);
     QFETCH(bool, remote);
     QFETCH(bool, async);
-    QFETCH(bool, cached);
+    QFETCH(bool, cache);
     QFETCH(QString, error);
 
     TestHTTPServer server(SERVER_PORT);
@@ -165,8 +165,8 @@ void tst_qdeclarativeimage::imageSource()
         QTest::ignoreMessage(QtWarningMsg, error.toUtf8());
 
     QString componentStr = "import QtQuick 1.0\nImage { source: \"" + source + "\"; asynchronous: "
-        + (async ? QLatin1String("true") : QLatin1String("false")) + "; cached: "
-        + (cached ? QLatin1String("true") : QLatin1String("false")) + " }";
+        + (async ? QLatin1String("true") : QLatin1String("false")) + "; cache: "
+        + (cache ? QLatin1String("true") : QLatin1String("false")) + " }";
     QDeclarativeComponent component(&engine);
     component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
     QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
@@ -177,10 +177,10 @@ void tst_qdeclarativeimage::imageSource()
     else
         QVERIFY(obj->asynchronous() == false);
 
-    if (cached)
-        QVERIFY(obj->cached() == true);
+    if (cache)
+        QVERIFY(obj->cache() == true);
     else
-        QVERIFY(obj->cached() == false);
+        QVERIFY(obj->cache() == false);
 
     if (remote || async)
         QTRY_VERIFY(obj->status() == QDeclarativeImage::Loading);

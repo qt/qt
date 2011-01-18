@@ -459,11 +459,11 @@ QRectF QDeclarativeImage::boundingRect() const
 */
 
 /*!
-    \qmlproperty bool Image::cached
+    \qmlproperty bool Image::cache
     \since Quick 1.1
 
-    Specifies that the image should be cached. The default value is
-    true. Setting \a cached to false is useful when dealing with large images,
+    Specifies whether the image should be cached. The default value is
+    true. Setting \a cache to false is useful when dealing with large images,
     to make sure that they aren't cached at the expense of small 'ui element' images.
 */
 

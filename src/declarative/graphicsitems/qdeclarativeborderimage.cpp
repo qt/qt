@@ -313,8 +313,8 @@ void QDeclarativeBorderImage::load()
             QDeclarativePixmap::Options options;
             if (d->async)
                 options |= QDeclarativePixmap::Asynchronous;
-            if (d->cached)
-                options |= QDeclarativePixmap::Cached;
+            if (d->cache)
+                options |= QDeclarativePixmap::Cache;
             d->pix.load(qmlEngine(this), d->url, options);
 
             if (d->pix.isLoading()) {
@@ -442,8 +442,8 @@ void QDeclarativeBorderImage::setGridScaledImage(const QDeclarativeGridScaledIma
         QDeclarativePixmap::Options options;
         if (d->async)
             options |= QDeclarativePixmap::Asynchronous;
-        if (d->cached)
-            options |= QDeclarativePixmap::Cached;
+        if (d->cache)
+            options |= QDeclarativePixmap::Cache;
         d->pix.load(qmlEngine(this), d->sciurl, options);
 
         if (d->pix.isLoading()) {

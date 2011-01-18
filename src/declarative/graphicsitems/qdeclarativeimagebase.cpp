@@ -128,20 +128,20 @@ QSize QDeclarativeImageBase::sourceSize() const
     return QSize(width != -1 ? width : implicitWidth(), height != -1 ? height : implicitHeight());
 }
 
-bool QDeclarativeImageBase::cached() const
+bool QDeclarativeImageBase::cache() const
 {
     Q_D(const QDeclarativeImageBase);
-    return d->cached;
+    return d->cache;
 }
 
-void QDeclarativeImageBase::setCached(bool cached)
+void QDeclarativeImageBase::setCache(bool cache)
 {
     Q_D(QDeclarativeImageBase);
-    if (d->cached == cached)
+    if (d->cache == cache)
         return;
 
-    d->cached = cached;
-    emit cachedChanged();
+    d->cache = cache;
+    emit cacheChanged();
     if (isComponentComplete())
         load();
 }
@@ -184,8 +184,8 @@ void QDeclarativeImageBase::load()
         QDeclarativePixmap::Options options;
         if (d->async)
             options |= QDeclarativePixmap::Asynchronous;
-        if (d->cached)
-            options |= QDeclarativePixmap::Cached;
+        if (d->cache)
+            options |= QDeclarativePixmap::Cache;
         d->pix.load(qmlEngine(this), d->url, d->explicitSourceSize ? sourceSize() : QSize(), options);
 
         if (d->pix.isLoading()) {
