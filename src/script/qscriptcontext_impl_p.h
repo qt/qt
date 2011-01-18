@@ -141,17 +141,11 @@ inline int QScriptContextPrivate::argumentCount() const
 inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::argumentsObject() const
 {
     if (arguments) {
-        // Create a fake arguments object.
-        // TODO: Get the real one from v8, if possible.
-        int argc = argumentCount();
-        QScriptPassPointer<QScriptValuePrivate> args = engine->newArray(argc);
-        for (int i = 0; i < argc; ++i) {
-            QScriptValue arg = QScriptValuePrivate::get(argument(i));
-            args->setProperty(i, QScriptValuePrivate::get(arg), v8::DontEnum);
+        if (!argsObject) {
+            QScriptContextPrivate *that = const_cast<QScriptContextPrivate *>(this);
+            that->argsObject = that->createArgumentsObject();
         }
-        QScriptValue callee_ = QScriptValuePrivate::get(callee());
-        args->setProperty(QString::fromLatin1("callee"), QScriptValuePrivate::get(callee_), v8::DontEnum);
-        return args;
+        return argsObject.data();
     }
 
     Q_UNIMPLEMENTED();
@@ -245,6 +239,24 @@ inline void QScriptContextPrivate::setInheritedScope(v8::Handle<v8::Context> obj
 {
     Q_ASSERT(inheritedScope.IsEmpty());
     inheritedScope = v8::Persistent<v8::Context>::New(object);
+}
+
+inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::createArgumentsObject()
+{
+    Q_ASSERT(arguments);
+
+    // Create a fake arguments object.
+    // TODO: Get the real one from v8, if possible.
+    int argc = argumentCount();
+    QScriptPassPointer<QScriptValuePrivate> args = engine->newObject(); // ECMA says it's an Object
+    for (int i = 0; i < argc; ++i) {
+        QScriptValue arg = QScriptValuePrivate::get(argument(i));
+        args->setProperty(i, QScriptValuePrivate::get(arg), v8::DontEnum);
+    }
+    QScriptValue callee_ = QScriptValuePrivate::get(callee());
+    args->setProperty(QString::fromLatin1("length"), new QScriptValuePrivate(engine, argc), v8::DontEnum);
+    args->setProperty(QString::fromLatin1("callee"), QScriptValuePrivate::get(callee_), v8::DontEnum);
+    return args;
 }
 
 inline v8::Handle<v8::Value> QScriptContextPrivate::throwError(QScriptContext::Error error, const QString& text)

@@ -71,6 +71,7 @@ public:
     inline void pushScope(QScriptValuePrivate *object);
     inline QScriptPassPointer<QScriptValuePrivate> popScope();
     inline void setInheritedScope(v8::Handle<v8::Context>);
+    inline QScriptPassPointer<QScriptValuePrivate> createArgumentsObject();
 
     inline v8::Handle<v8::Value> throwError(Error error, const QString &text);
 
@@ -84,6 +85,7 @@ public:
     QScriptContextPrivate *parent; //the parent native frame as seen by the engine
     mutable QScriptContextPrivate *previous; //the previous js frame (lazily build)
     v8::Persistent<v8::StackFrame> frame; //only for js frames
+    QScriptSharedDataPointer<QScriptValuePrivate> argsObject;
 
     static const int stackTraceLimit = 100;
 
