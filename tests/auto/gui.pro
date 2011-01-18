@@ -2,7 +2,7 @@
 # (i.e. QT=core gui network).
 # The test system is allowed to run these tests before the rest of Qt has
 # been compiled.
-# 
+#
 TEMPLATE=subdirs
 SUBDIRS=\
     gestures \
@@ -49,6 +49,7 @@ SUBDIRS=\
     qfiledialog \
     qfiledialog2 \
     qfileiconprovider \
+    qfileopenevent \
     qfilesystemmodel \
     qfocusframe \
     qfont \

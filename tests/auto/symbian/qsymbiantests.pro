@@ -1,4 +1,4 @@
 TEMPLATE = subdirs
-SUBDIRS = qmainexceptions orientationchange qfileopenevent
+SUBDIRS = qmainexceptions orientationchange
 
 requires(symbian)
