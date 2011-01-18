@@ -2116,9 +2116,16 @@ v8::Handle<v8::Value> QtTranslateFunctionQsTr(const v8::Arguments& arguments)
     QString context;
     // This engine should be always valid, because this function can be called if and only if the engine is still alive.
     QScriptEnginePrivate *engine = static_cast<QScriptEnginePrivate*>(v8::Handle<v8::Object>::Cast(arguments.Data())->GetPointerFromInternalField(0));
-    QScriptContext *ctx = engine->currentContext();
-    if (ctx && ctx->parentContext())
-        context = QFileInfo(QScriptContextInfo(ctx->parentContext()).fileName()).baseName();
+    QScriptContextPrivate qScriptContext(engine, &arguments);
+    QScriptContext *ctx = qScriptContext.parentContext();
+    while (ctx) {
+        QString fn = QScriptContextInfo(ctx).fileName();
+        if (!fn.isEmpty()) {
+            context = QFileInfo(fn).baseName();
+            break;
+        }
+        ctx = ctx->parentContext();
+    }
     QString text(QScriptConverter::toString(arguments[0]->ToString()));
     QString comment;
     if (arguments.Length() > 1)
