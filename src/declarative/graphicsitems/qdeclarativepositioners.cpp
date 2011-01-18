@@ -905,6 +905,9 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
         c = (numVisible+(m_rows-1))/m_rows;
     }
 
+    if(r==0 || c==0)
+        return; //Nothing to do
+
     QList<int> maxColWidth;
     QList<int> maxRowHeight;
     int childIndex =0;
@@ -949,14 +952,14 @@ void QDeclarativeGrid::doPositioning(QSizeF *contentSize)
     }
 
     int widthSum = 0;
-    for(int j=0; j < c; j++){
+    for(int j=0; j < maxColWidth.size(); j++){
         if(j)
             widthSum += spacing();
         widthSum += maxColWidth[j];
     }
 
     int heightSum = 0;
-    for(int i=0; i < r; i++){
+    for(int i=0; i < maxRowHeight.size(); i++){
         if(i)
             heightSum += spacing();
         heightSum += maxRowHeight[i];
