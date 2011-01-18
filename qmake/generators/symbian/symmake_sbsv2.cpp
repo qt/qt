@@ -386,7 +386,7 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
         }
         t << endl;
         t << "clean-debug: " << BLD_INF_FILENAME << endl;
-        t << "\t$(SBS) reallyclean";
+        t << "\t$(SBS) reallyclean --toolcheck=off";
         foreach(QString clause, debugClauses) {
             t << clause;
         }
@@ -406,7 +406,7 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
         }
         t << endl;
         t << "clean-release: " << BLD_INF_FILENAME << endl;
-        t << "\t$(SBS) reallyclean";
+        t << "\t$(SBS) reallyclean --toolcheck=off";
         foreach(QString clause, releaseClauses) {
             t << clause;
         }
@@ -516,8 +516,10 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
 
     generateDistcleanTargets(t);
 
+    // Do not check for tools when doing generic clean, as most tools are not actually needed for
+    // cleaning. Mainly this is relevant for environments that do not have winscw compiler.
     t << "clean: " << BLD_INF_FILENAME << endl;
-    t << "\t-$(SBS) reallyclean";
+    t << "\t-$(SBS) reallyclean --toolcheck=off";
     foreach(QString clause, allClauses) {
         t << clause;
     }
