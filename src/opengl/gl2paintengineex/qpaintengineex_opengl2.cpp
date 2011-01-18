@@ -337,7 +337,13 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
         matrix.translate(brushOrigin.x(), brushOrigin.y());
 
         QTransform translate(1, 0, 0, 1, -translationPoint.x(), -translationPoint.y());
-        QTransform gl_to_qt(1, 0, 0, -1, 0, height);
+        qreal m22 = -1;
+        qreal dy = height;
+        if (device->isFlipped()) {
+            m22 = 1;
+            dy = 0;
+        }
+        QTransform gl_to_qt(1, 0, 0, m22, 0, dy);
         QTransform inv_matrix;
         if (style == Qt::TexturePattern && textureInvertedY == -1)
             inv_matrix = gl_to_qt * (QTransform(1, 0, 0, -1, 0, currentBrush.texture().height()) * brushQTransform * matrix).inverted() * translate;
@@ -376,9 +382,15 @@ void QGL2PaintEngineExPrivate::updateMatrix()
     // NOTE: The resultant matrix is also transposed, as GL expects column-major matracies
 
     const GLfloat wfactor = 2.0f / width;
-    const GLfloat hfactor = -2.0f / height;
+    GLfloat hfactor = -2.0f / height;
+
     GLfloat dx = transform.dx();
     GLfloat dy = transform.dy();
+
+    if (device->isFlipped()) {
+        hfactor *= -1;
+        dy -= height;
+    }
 
     // Non-integer translates can have strange effects for some rendering operations such as
     // anti-aliased text rendering. In such cases, we snap the translate to the pixel grid.
@@ -2059,7 +2071,10 @@ void QGL2PaintEngineExPrivate::setScissor(const QRect &rect)
 {
     const int left = rect.left();
     const int width = rect.width();
-    const int bottom = height - (rect.top() + rect.height());
+    int bottom = height - (rect.top() + rect.height());
+    if (device->isFlipped()) {
+        bottom = rect.top();
+    }
     const int height = rect.height();
 
     glScissor(left, bottom, width, height);
