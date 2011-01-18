@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,7 +54,6 @@
 #include "tree.h"
 
 #include <limits.h>
-#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -591,12 +590,6 @@ void Tree::resolveGroups()
         if (fake && fake->subType() == Node::Group) {
             fake->addGroupMember(i.value());
         }
-#if 0        
-        else {
-            if (prevGroup != i.key())
-                i.value()->doc().location().warning(tr("No such group '%1'").arg(i.key()));
-        }
-#endif        
 
         prevGroup = i.key();
     }
@@ -812,6 +805,12 @@ void Tree::readIndexSection(const QDomElement &element,
             subtype = Node::Page;
         else if (element.attribute("subtype") == "externalpage")
             subtype = Node::ExternalPage;
+        else if (element.attribute("subtype") == "qmlclass")
+            subtype = Node::QmlClass;
+        else if (element.attribute("subtype") == "qmlpropertygroup")
+            subtype = Node::QmlPropertyGroup;
+        else if (element.attribute("subtype") == "qmlbasictype")
+            subtype = Node::QmlBasicType;
         else
             return;
 
@@ -1986,15 +1985,7 @@ QString Tree::fullDocumentLocation(const Node *node) const
         else
             parentName = fullDocumentLocation(node->parent());
     }
-#if 0
-    if (node->type() == Node::QmlProperty) {
-        qDebug() << "Node::QmlProperty:" << node->name()
-                 << "parentName:" << parentName;
-        if (parentNode)
-            qDebug() << "PARENT NODE" << parentNode->type()
-                     << parentNode->subType() << parentNode->name();
-    }
-#endif
+
     switch (node->type()) {
         case Node::Class:
         case Node::Namespace:

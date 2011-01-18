@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2009,15 +2009,20 @@ Q3ValueList<QHostAddress> Q3Dns::addresses() const
     \class Q3Dns::MailServer
     \brief The Q3Dns::MailServer class is  described in Q3Dns::mailServers().
 
-    \internal
+*/
+
+
+/*! \fn Q3Dns::MailServer::MailServer(const QString& n, Q_UINT16 p)
+  The constructor sets the public data members name and priority.
+  \a n is the name and \a p is the priority.
 */
 
 /*!
     Returns a list of mail servers if the record type is \c Mx. The
     class Q3Dns::MailServer contains the following public variables:
     \list
-    \i QString Q3Dns::MailServer::name
-    \i Q_UINT16 Q3Dns::MailServer::priority
+    \o QString Q3Dns::MailServer::name
+    \o Q_UINT16 Q3Dns::MailServer::priority
     \endlist
 
     Note that if you want to iterate over the list, you should iterate
@@ -2048,22 +2053,26 @@ Q3ValueList<Q3Dns::MailServer> Q3Dns::mailServers() const
     return result;
 }
 
-
 /*!
     \class Q3Dns::Server
     \brief The Q3Dns::Server class is described in Q3Dns::servers().
 
-    \internal
+*/
+
+/*! \fn Q3Dns::Server::Server(const QString& n, Q_UINT16 p, Q_UINT16 w, Q_UINT16 po)
+  The constructor sets the public data members name, priority,
+  weight, and port. \a n is the name, \a p is the priority,
+  \a w is the weight, and \a po is the port.
 */
 
 /*!
     Returns a list of servers if the record type is \c Srv. The class
     Q3Dns::Server contains the following public variables:
     \list
-    \i QString Q3Dns::Server::name
-    \i Q_UINT16 Q3Dns::Server::priority
-    \i Q_UINT16 Q3Dns::Server::weight
-    \i Q_UINT16 Q3Dns::Server::port
+    \o QString Q3Dns::Server::name
+    \o Q_UINT16 Q3Dns::Server::priority
+    \o Q_UINT16 Q3Dns::Server::weight
+    \o Q_UINT16 Q3Dns::Server::port
     \endlist
 
     Note that if you want to iterate over the list, you should iterate

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -390,10 +390,6 @@ QString Location::top() const
     if (lineNo() >= 1) {
         str += QLatin1Char(':'); 
         str += QString::number(lineNo());
-#if 0
-        if (columnNo() >= 1)
-            str += ":" + QString::number(columnNo());
-#endif
     }
     if (etc())
         str += QLatin1String(" (etc.)");

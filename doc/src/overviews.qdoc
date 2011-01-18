@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -122,9 +122,9 @@
 
 /*!
     \group best-practices
-    \title Best Practices Guides
+    \title Best Practice Guides
 
-    \brief How-To Guides and Best Practices
+    \brief How-To and Best Practice Guides
 
     These documents provide guidelines and best practices for using Qt
     to solve specific technical problems. They are listed

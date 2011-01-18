@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -82,7 +82,7 @@ public:
 
     \qml
     MouseArea {
-        onClicked: { foo(...) }
+        onClicked: { foo(parameters) }
     }
     \endqml
 
@@ -103,7 +103,7 @@ public:
     \qml
     MouseArea {
         Connections {
-            onClicked: foo(...)
+            onClicked: foo(parameters)
         }
     }
     \endqml
@@ -115,10 +115,10 @@ public:
     MouseArea {
         id: area
     }
-    ...
+    // ...
     Connections {
         target: area
-        onClicked: foo(...)
+        onClicked: foo(parameters)
     }
     \endqml
 

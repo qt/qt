@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -78,12 +78,12 @@ QT_BEGIN_NAMESPACE
     names.
 
     \table
+    \header
+    \o RGB \o HSV \o CMYK
     \row
     \o \inlineimage qcolor-rgb.png
     \o \inlineimage qcolor-hsv.png
     \o \inlineimage qcolor-cmyk.png
-    \header
-    \o RGB \o HSV \o CMYK
     \endtable
 
     The QColor constructor creates the color based on RGB values.  To

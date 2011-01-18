@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -221,8 +221,8 @@
 
     New elements are not initialized.
 
-    \a optim is either Q3GArray::MemOptim (the default) or
-    Q3GArray::SpeedOptim. When optimizing for speed rather than memory
+    \a optim is either \c MemOptim (the default) or
+    \c SpeedOptim. When optimizing for speed rather than memory
     consumption, the array uses a smart grow and shrink algorithm that
     might allocate more memory than is actually needed for \a size
     elements. This speeds up subsequent resize operations, for example

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -47,7 +47,6 @@
 
 #include <stdio.h>
 #include <errno.h>
-#include <qdebug.h>
 
 #include "codechunk.h"
 #include "config.h"
@@ -258,18 +257,18 @@ QString CppCodeParser::language()
 /*!
   Returns a list of extensions for header files.
  */
-QString CppCodeParser::headerFileNameFilter()
+QStringList CppCodeParser::headerFileNameFilter()
 {
-    return "*.ch *.h *.h++ *.hh *.hpp *.hxx";
+    return QStringList() << "*.ch" << "*.h" << "*.h++" << "*.hh" << "*.hpp" << "*.hxx";
 }
 
 /*!
   Returns a list of extensions for source files, i.e. not
   header files.
  */
-QString CppCodeParser::sourceFileNameFilter()
+QStringList CppCodeParser::sourceFileNameFilter()
 {
-    return "*.c++ *.cc *.cpp *.cxx";
+    return QStringList() << "*.c++" << "*.cc" << "*.cpp" << "*.cxx" << "*.mm";
 }
 
 /*!
@@ -966,16 +965,6 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
                     .arg(COMMAND_REIMP).arg(node->name()));
             }
 
-#if 0
-            // Reimplemented functions now reported in separate sections.
-            /*
-              Note: Setting the access to Private hides the documentation,
-              but setting the status to Internal makes the node available
-              in the XML output when the WebXMLGenerator is used.
-            */
-            func->setAccess(Node::Private);
-            func->setStatus(Node::Internal);
-#endif
             func->setReimp(true);
         }
         else {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -41,7 +41,6 @@
 
 #include <qfileinfo.h>
 #include <qregexp.h>
-#include <qdebug.h>
 
 #include "quoter.h"
 
@@ -123,9 +122,9 @@ Quoter::Quoter()
     /* We're going to hard code these delimiters:
         * C++, Qt, Qt Script, Java:
           //! [<id>]
-        * .pro files:
+        * .pro, .py files:
           #! [<id>]
-        * .xq, .xml, .html files:
+        * .html, .qrc, .ui, .xq, .xml files:
           <!-- [<id>] -->
     */
     commentHash["pro"] = "#!";
@@ -236,30 +235,21 @@ QString Quoter::quoteSnippet(const Location &docLocation, const QString &identif
             QString lastLine = getLine();
             int dIndex = lastLine.indexOf(delimiter);
             if (dIndex > 0) {
+                // The delimiter might be preceded on the line by other
+                // delimeters, so look for the first comment on the line.
                 QString leading = lastLine.left(dIndex);
                 dIndex = leading.indexOf(comment);
                 if (dIndex != -1)
                     leading = leading.left(dIndex);
+                if (leading.endsWith(QLatin1String("<@comment>")))
+                    leading.chop(10);
                 if (!leading.trimmed().isEmpty())
                     t += leading;
             }
             return t;
         }
-        // Remove special macros to support Qt namespacing.
-	if (line.startsWith("QT_BEGIN_NAMESPACE")) {
-            getLine();
-        } else if (line.startsWith("QT_END_NAMESPACE")) {
-            getLine();
-            t += QLatin1Char('\n');
-        } else if (!line.startsWith(comment)) {
-            // Ordinary code
-            t += getLine();
-        } else {
-            // Normal comments
-            if (line.contains(QLatin1Char('\n')))
-                t += QLatin1Char('\n');
-            getLine();
-        }
+
+        t += removeSpecialLines(line, comment);
     }
     failedAtEnd(docLocation, QString("snippet (%1)").arg(delimiter));
     return t;
@@ -274,21 +264,7 @@ QString Quoter::quoteTo( const Location& docLocation, const QString& command,
     if ( pattern.isEmpty() ) {
         while ( !plainLines.isEmpty() ) {
             QString line = plainLines.first();
-            // Remove special macros to support Qt namespacing.
-	    if (line.startsWith("QT_BEGIN_NAMESPACE")) {
-                getLine();
-            } else if (line.startsWith("QT_END_NAMESPACE")) {
-                getLine();
-                t += QLatin1Char('\n');
-            } else if (!line.startsWith(comment))
-                // Ordinary code
-                t += getLine();
-            else {
-                // Normal comments
-                if (line.contains(QLatin1Char('\n')))
-                    t += QLatin1Char('\n');
-                getLine();
-            }
+            t += removeSpecialLines(line, comment);
         }
     } else {
         while ( !plainLines.isEmpty() ) {
@@ -364,6 +340,29 @@ QString Quoter::commentForCode() const
 {
     QString suffix = QFileInfo(codeLocation.fileName()).suffix();
     return commentHash.value(suffix, "//!");
+}
+
+QString Quoter::removeSpecialLines(const QString &line, const QString &comment)
+{
+    QString t;
+
+    // Remove special macros to support Qt namespacing.
+    QString trimmed = line.trimmed();
+    if (trimmed.startsWith("QT_BEGIN_NAMESPACE")) {
+        getLine();
+    } else if (trimmed.startsWith("QT_END_NAMESPACE")) {
+        getLine();
+        t += QLatin1Char('\n');
+    } else if (!trimmed.startsWith(comment)) {
+        // Ordinary code
+        t += getLine();
+    } else {
+        // Comments
+        if (line.contains(QLatin1Char('\n')))
+            t += QLatin1Char('\n');
+        getLine();
+    }
+    return t;
 }
 
 QT_END_NAMESPACE

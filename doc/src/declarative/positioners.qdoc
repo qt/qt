@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -53,9 +53,9 @@ graphical elements:
 
 \section2 Column
 
-\beginfloatright
-\image qml-column.png
-\endfloat
+\div{float-right}
+\inlineimage qml-column.png
+\enddiv
 
 \l Column items are used to vertically arrange items. The following example
 uses a Column item to arrange three \l Rectangle items in an area defined
@@ -70,9 +70,9 @@ must be added to a parent Rectangle, if desired.
 
 \section2 Row
 
-\beginfloatright
-\image qml-row.png
-\endfloat
+\div{float-right}
+\inlineimage qml-row.png
+\enddiv
 
 \l Row items are used to horizontally arrange items. The following example
 uses a Row item to arrange three rounded \l Rectangle items in an area defined
@@ -87,9 +87,9 @@ left around the edges of the horizontally centered Row item.
 
 \section2 Grid
 
-\beginfloatright
-\image qml-grid-spacing.png
-\endfloat
+\div{float-right}
+\inlineimage qml-grid-spacing.png
+\enddiv
 
 \l Grid items are used to place items in a grid or table arrangement.
 The following example uses a Grid item to place four \l Rectangle items
@@ -108,10 +108,10 @@ at the appropriate places in the Grid definition.
 
 \section2 Flow
 
-\beginfloatright
-\image qml-flow-text1.png
-\image qml-flow-text2.png
-\endfloat
+\div{float-right}
+\inlineimage qml-flow-text1.png
+\inlineimage qml-flow-text2.png
+\enddiv
 
 \l Flow items are used to place items like words on a page, with rows or
 columns of non-overlapping items.
@@ -137,9 +137,9 @@ control of spacing between items and between lines of items.
 
 \section1 Repeaters
 
-\beginfloatright
-\image qml-repeater-grid-index.png
-\endfloat
+\div{float-right}
+\inlineimage qml-repeater-grid-index.png
+\enddiv
 
 Repeaters create items from a template for use with positioners, using data
 from a model. Combining repeaters and positioners is an easy way to lay out

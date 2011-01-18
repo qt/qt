@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -963,6 +963,7 @@ We hope you will enjoy using Qt.
     first install the Visual Studio Service Pack 1 available
     \l{http://www.microsoft.com/downloads/details.aspx?FamilyId=BB4A75AB-E2D4-4C96-B39D-37BAF6B5B1DC&amp;displaylang=en}{here}
     to avoid runtime conflicts.
+    Additionally, you must use the Check for Updates feature in the Help menu of the Visual Studio 2005 IDE to apply at least the following security updates: KB937061, KB971023, KB971090, KB973673.
 
     If you are using a source edition of Qt, you must first install Perl so
     that the syncqt script invoked by configure can be executed. You can download
@@ -1027,9 +1028,9 @@ We hope you will enjoy using Qt.
     Qt from its source code, you will also need to install the development
     packages for these libraries for your system.
 
-    \table 90%
-    \header \o Name \o Library \o Notes \o Configuration options \o Minimum working version
     \raw HTML
+    <table class="generic"> 
+    <thead><tr class="qt-style topAlign"><th>Name</th><th>Library</th><th>Notes</th><th>Configuration options</th><th>Minimum working version 
     <tr id="OptionalColor">
     <td> XRender </td><td> libXrender </td><td> X Rendering Extension; used for anti-aliasing</td>
     <td><tt>-xrender</tt> or auto-detected</td><td>0.9.0</td>
@@ -1076,9 +1077,9 @@ We hope you will enjoy using Qt.
     </tr><tr id="PthreadColor">
     <td> pthread </td><td> libpthread </td><td> Multithreading</td>
     <td></td><td>2.3.5</td>
-    </tr>
+    </tr></th></tr></thead> 
+    </table>  
     \endraw
-    \endtable
 
     \note You must compile with XRender support to get alpha transparency
     support for pixmaps and images.
@@ -1166,8 +1167,9 @@ We hope you will enjoy using Qt.
             {Windows Mobile 6 Professional/Standard}
     \endlist
 
+    \bold{Note:}
     \table
-        \row \bold{Note:}
+        \row
             \o
             \list 1
                 \o Currently, there is only compile support for Windows CE 5.0

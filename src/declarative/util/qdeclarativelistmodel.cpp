@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -108,9 +108,9 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
     The following example shows a ListModel containing three elements, with the roles
     "name" and "cost".
 
-    \beginfloatright
+    \div {float-right}
     \inlineimage listmodel.png
-    \endfloat
+    \enddiv
 
     \snippet doc/src/snippets/declarative/listmodel.qml 0
 
@@ -133,9 +133,9 @@ QDeclarativeListModelParser::ListInstruction *QDeclarativeListModelParser::ListM
 
     The delegate displays all the fruit attributes:
 
-    \beginfloatright
+    \div {float-right}
     \inlineimage listmodel-nested.png
-    \endfloat
+    \enddiv
 
     \snippet doc/src/snippets/declarative/listmodel-nested.qml delegate
 

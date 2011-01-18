@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -599,25 +599,7 @@ public:
     ScriptAction to specify the point in the transition at which
     the StateChangeScript should to be run.
 
-    \qml
-    State {
-        name "state1"
-        StateChangeScript {
-            name: "myScript"
-            script: doStateStuff();
-        }
-        ...
-    }
-    ...
-    Transition {
-        to: "state1"
-        SequentialAnimation {
-            NumberAnimation { ... }
-            ScriptAction { scriptName: "myScript" }
-            NumberAnimation { ... }
-        }
-    }
-    \endqml
+    \snippet snippets/declarative/states/statechangescript.qml state and transition
 
     \sa ScriptAction
 */

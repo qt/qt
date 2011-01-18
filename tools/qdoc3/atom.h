@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -56,82 +56,85 @@ class Atom
 {
  public:
     enum Type { 
-        AbstractLeft, 
-        AbstractRight, 
+        AbstractLeft,       // 00
+        AbstractRight,
         AnnotatedList,
         AutoLink,
-        BaseName, 
+        BaseName,
         BriefLeft,
-        BriefRight, 
+        BriefRight,
         C,
-        CaptionLeft, 
+        CaptionLeft,
         CaptionRight,
-        Code, 
-        CodeBad, 
-        CodeNew, 
-        CodeOld, 
+        Code,               // 10
+        CodeBad,
+        CodeNew,
+        CodeOld,
         CodeQuoteArgument,
         CodeQuoteCommand,
+        Div,
 #ifdef QDOC_QML
+        EndDiv,
         EndQmlText,
 #endif
         FootnoteLeft,
         FootnoteRight,
-        FormatElse, 
-        FormatEndif,
+        FormatElse,
+        FormatEndif,        // 20
         FormatIf,
         FormattingLeft,
         FormattingRight,
         GeneratedList,
-        Image, 
+        GuidLink,
+        Image,
         ImageText,
         InlineImage,
         LegaleseLeft,
-        LegaleseRight,
-        LineBreak, 
-        Link, 
+        LegaleseRight,      // 30
+        LineBreak,
+        Link,
         LinkNode,
-        ListLeft, 
+        ListLeft,
         ListItemNumber,
-        ListTagLeft,
-        ListTagRight,
-        ListItemLeft,
-        ListItemRight, 
-        ListRight, 
-        Nop, 
+        ListTagLeft,        // 36
+        ListTagRight,       // 37
+        ListItemLeft,       // 38
+        ListItemRight,      // 39
+        ListRight,          // 40
+        Nop,
         ParaLeft,
-        ParaRight, 
+        ParaRight,
 #ifdef QDOC_QML
         Qml,
         QmlText,
 #endif
-        QuotationLeft, 
+        QuotationLeft,
         QuotationRight,
         RawString,
-        SectionLeft,
+        SectionLeft,        // 49
         SectionRight,
         SectionHeadingLeft,
         SectionHeadingRight,
-        SidebarLeft, 
+        SidebarLeft,
         SidebarRight,
         SinceList,
         SnippetCommand,
         SnippetIdentifier,
         SnippetLocation,
-        String,
-        TableLeft,
-        TableRight, 
+        String,             // 59
+        TableLeft,          // 60
+        TableRight,
         TableHeaderLeft,
         TableHeaderRight,
         TableRowLeft,
-        TableRowRight, 
-        TableItemLeft, 
+        TableRowRight,
+        TableItemLeft,
         TableItemRight,
         TableOfContents,
-        Target,
+        Target,             // 69
         UnhandledFormat, 
         UnknownCommand,
-        Last = UnknownCommand 
+        Last = UnknownCommand
     };
 
     Atom(Type type, const QString &string = "")

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,7 +43,6 @@
   cppcodemarker.cpp
 */
 
-#include <qdebug.h>
 #include "atom.h"
 #include "cppcodemarker.h"
 #include "node.h"
@@ -158,9 +157,9 @@ QString CppCodeMarker::plainFullName(const Node *node, const Node *relative)
 
 QString CppCodeMarker::markedUpCode(const QString &code,
                                     const Node *relative,
-				    const QString &dirPath)
+				    const Location &location)
 {
-    return addMarkUp(protect(code), relative, dirPath);
+    return addMarkUp(protect(code), relative, location);
 }
 
 QString CppCodeMarker::markedUpSynopsis(const Node *node,
@@ -441,7 +440,8 @@ QString CppCodeMarker::markedUpIncludes(const QStringList& includes)
 	code += "#include &lt;<@headerfile>" + *inc + "</@headerfile>&gt;\n";
 	++inc;
     }
-    return addMarkUp(code, 0, "");
+    Location location;
+    return addMarkUp(code, 0, location);
 }
 
 QString CppCodeMarker::functionBeginRegExp(const QString& funcName)
@@ -454,21 +454,6 @@ QString CppCodeMarker::functionEndRegExp(const QString& /* funcName */)
 {
     return "^\\}$";
 }
-
-#if 0
-	    FastSection privateReimpFuncs(classe,
-                                          "Private Reimplemented Functions",
-                                          "private reimplemented function",
-                                          "private reimplemented functions");
-	    FastSection protectedReimpFuncs(classe,
-                                            "Protected Reimplemented Functions",
-                                            "protected reimplemented function",
-                                            "protected reimplemented functions");
-	    FastSection publicReimpFuncs(classe,
-                                         "Public Reimplemented Functions",
-                                         "public reimplemented function",
-                                         "public reimplemented functions");
-#endif
 
 QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                                        SynopsisStyle style,
@@ -884,7 +869,7 @@ const Node *CppCodeMarker::resolveTarget(const QString& target,
 
 QString CppCodeMarker::addMarkUp(const QString& protectedCode,
                                  const Node * /* relative */,
-                                 const QString& /* dirPath */)
+                                 const Location & /* location */)
 {
     static QRegExp globalInclude("#include +&lt;([^<>&]+)&gt;");
     static QRegExp yHasTypeX("(?:^|\n *)([a-zA-Z_][a-zA-Z_0-9]*)"

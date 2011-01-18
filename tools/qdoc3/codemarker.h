@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -107,13 +107,6 @@ struct FastSection
 
 };
 
-#if 0
-                const QString& name0 = "",
-                const QString& divClass0 = "",
-                const QString& singularMember0 = "member",
-                const QString& pluralMember0 = "members")
-#endif
-
 class CodeMarker
 {
  public:
@@ -133,7 +126,7 @@ class CodeMarker
                                   const Node *relative = 0) = 0;
     virtual QString markedUpCode(const QString& code, 
                                  const Node *relative,
-                                 const QString& dirPath) = 0;
+                                 const Location &location) = 0;
     virtual QString markedUpSynopsis(const Node *node, 
                                      const Node *relative,
                                      SynopsisStyle style) = 0;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -504,9 +504,9 @@ a Web browser.
 \l ListView shows a classic list of items with horizontal or vertical placing
 of items.
 
-\beginfloatright
+\div{float-right}
 \inlineimage qml-listview-snippet.png
-\endfloat
+\enddiv
 
 The following example shows a minimal ListView displaying a sequence of
 numbers (using an \l{QML Data Models#An Integer}{integer as a model}).
