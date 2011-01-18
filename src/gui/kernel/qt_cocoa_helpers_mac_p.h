@@ -227,7 +227,10 @@ void qt_cocoaPostMessage(id target, SEL selector, int argCount=0, id arg1=0, id 
 
 void qt_mac_post_retranslateAppMenu();
 
+#ifdef QT_MAC_USE_COCOA
 void qt_mac_display(QWidget *widget);
+void qt_mac_setneedsdisplay(QWidget *widget);
+#endif // QT_MAC_USE_COCOA
 
 QT_END_NAMESPACE
 

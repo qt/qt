@@ -1590,6 +1590,13 @@ void qt_mac_display(QWidget *widget)
     return;
 }
 
+void qt_mac_setneedsdisplay(QWidget *widget)
+{
+    NSView *theNSView = qt_mac_nativeview_for(widget);
+    [theNSView setNeedsDisplay:YES];
+    return;
+}
+
 #endif // QT_MAC_USE_COCOA
 
 QT_END_NAMESPACE
