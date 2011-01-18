@@ -57,13 +57,13 @@ class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeApplication : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool active READ active NOTIFY activeChanged)
-    Q_PROPERTY(bool layoutDirection READ layoutDirection NOTIFY layoutDirectionChanged)
+    Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection NOTIFY layoutDirectionChanged)
 
 public:
     explicit QDeclarativeApplication(QObject *parent = 0);
     virtual ~QDeclarativeApplication();
     bool active() const;
-    bool layoutDirection() const;
+    Qt::LayoutDirection layoutDirection() const;
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);

@@ -103,7 +103,7 @@ bool QDeclarativeApplication::active() const
 }
 
 /*!
-    \qmlproperty bool Application::layoutDirection
+    \qmlproperty enumeration Application::layoutDirection
 
     This property can be used to query the default layout direction of the
     application. On system start-up, the default layout direction depends on the
@@ -113,8 +113,17 @@ bool QDeclarativeApplication::active() const
     property to customize your application layouts to support both layout
     directions. This property is readonly.
 
+    Possible values are:
+
+    \list
+    \o Qt.LeftToRight - Text and graphics elements should be positioned
+                        from left to right.
+    \o Qt.RightToLeft - Text and graphics elements should be positioned
+                        from right to left.
+    \endlist
+
 */
-bool QDeclarativeApplication::layoutDirection() const
+Qt::LayoutDirection QDeclarativeApplication::layoutDirection() const
 {
     Q_D(const QDeclarativeApplication);
     return d->layoutDirection;
