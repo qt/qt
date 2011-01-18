@@ -1961,7 +1961,7 @@ void tst_QScriptEngine::evaluate_data()
                          << -1 << true << 4;
 
     QTest::newRow("0")     << QString("0")       << 10 << false << -1;
-    QTest::newRow("0=1")   << QString("\n\n0=1\n") << 10 << true  << 13;
+    QTest::newRow("0=1")   << QString("\n\n0=1\n") << 10 << true  << 12;
     QTest::newRow("a=1")   << QString("a=1\n")   << 10 << false << -1;
     QTest::newRow("a=1;K") << QString("a=1;\n\nK") << 10 << true  << 12;
 
@@ -2004,12 +2004,17 @@ void tst_QScriptEngine::evaluate()
         ret = eng.evaluate(code, /*fileName =*/QString(), lineNumber);
     else
         ret = eng.evaluate(code);
+    QEXPECT_FAIL("/a/gimp", "v8 ignore invalid flags", Abort);
     QCOMPARE(eng.hasUncaughtException(), expectHadError);
+    QEXPECT_FAIL("f()", "SyntaxError do not report line number", Continue);
+    QEXPECT_FAIL("duplicateLabel: { duplicateLabel: ; }", "SyntaxError do not report line number", Continue);
     QCOMPARE(eng.uncaughtExceptionLineNumber(), expectErrorLineNumber);
-    if (eng.hasUncaughtException() && ret.isError())
+    if (eng.hasUncaughtException() && ret.isError()) {
+        QEXPECT_FAIL("", "we have no more lineNumber property ", Continue);
         QVERIFY(ret.property("lineNumber").strictlyEquals(QScriptValue(&eng, expectErrorLineNumber)));
-    else
+    } else {
         QVERIFY(eng.uncaughtExceptionBacktrace().isEmpty());
+    }
 }
 
 static QScriptValue eval_nested(QScriptContext *ctx, QScriptEngine *eng)

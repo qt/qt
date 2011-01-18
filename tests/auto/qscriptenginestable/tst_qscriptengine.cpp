@@ -687,8 +687,6 @@ void tst_QScriptEngine::uncaughtException()
                                         QString::fromLatin1("FooScript") + QString::number(x),
                                         /* lineNumber */ x);
         QVERIFY(eng.hasUncaughtException());
-        if (x != 1)
-            QEXPECT_FAIL("", "FIXME: not implemented", Continue);
         QCOMPARE(eng.uncaughtExceptionLineNumber(), x + 2);
         QVERIFY(eng.uncaughtException().strictlyEquals(ret));
         QVERIFY(eng.hasUncaughtException());
@@ -698,8 +696,6 @@ void tst_QScriptEngine::uncaughtException()
         QCOMPARE(eng.uncaughtExceptionBacktrace().join(""), backtrace);
         QVERIFY(fun.call().isNull());
         QVERIFY(eng.hasUncaughtException());
-        if (x != 1)
-            QEXPECT_FAIL("", "FIXME: not implemented", Continue);
         QCOMPARE(eng.uncaughtExceptionLineNumber(), x + 2);
         QVERIFY(eng.uncaughtException().strictlyEquals(ret));
         eng.clearExceptions();

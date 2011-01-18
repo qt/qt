@@ -108,9 +108,9 @@ inline v8::Local<v8::Value> QScriptEnginePrivate::getOwnProperty(v8::Handle<v8::
 
 QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(const QString& program, const QString& fileName, int lineNumber)
 {
-    Q_UNUSED(lineNumber);
     v8::TryCatch tryCatch;
-    v8::Handle<v8::Script> script = v8::Script::CompileEval(QScriptConverter::toString(program), QScriptConverter::toString(fileName));
+    v8::ScriptOrigin scriptOrigin(QScriptConverter::toString(fileName), v8::Integer::New(lineNumber - 1));
+    v8::Handle<v8::Script> script = v8::Script::CompileEval(QScriptConverter::toString(program), &scriptOrigin);
     if (script.IsEmpty()) {
         // TODO: Why don't we get the exception, as with Script::Compile()?
         // Q_ASSERT(tryCatch.HasCaught());

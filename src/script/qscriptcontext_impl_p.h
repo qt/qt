@@ -135,7 +135,7 @@ inline int QScriptContextPrivate::argumentCount() const
     }
 
     Q_UNIMPLEMENTED();
-    return -1;
+    return 0;
 }
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::argumentsObject() const
