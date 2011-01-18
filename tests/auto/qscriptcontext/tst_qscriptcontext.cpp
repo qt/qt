@@ -680,7 +680,7 @@ void tst_QScriptContext::backtrace_data()
 
         QStringList expected;
         expected << "<native>(123) at -1"
-                 << "foo('hello', [object Object]) at testfile:2"
+                 << "foo() at testfile:2"
                  << "<global>() at testfile:4";
 
 
@@ -699,10 +699,7 @@ void tst_QScriptContext::backtrace_data()
 
            expected << "<native>('hey') at -1"
                     << "<eval>() at 3"
-                    << QString::fromLatin1("foo(arg1 = 'hello', arg2 = 456) at testfile:%0")
-               // interpreter unfortunately doesn't provide line number for eval()
-               .arg(qt_script_isJITEnabled() ? 2 : -1);
-           expected
+                    << "foo() at testfile:2"
                     << "<global>() at testfile:4";
 
             QTest::newRow("eval") << source << expected;
@@ -723,9 +720,9 @@ void tst_QScriptContext::backtrace_data()
 
         QStringList expected;
         expected << "<native>('m') at -1"
-                 << "bar(a = 'b') at eval.js:2"
+                 << "bar() at eval.js:2"
                  << "<eval>() at eval.js:4"
-                 << QString("<native>('%1', 'eval.js') at -1").arg(eval_code.replace("\\n", "\n"))
+//                 << QString("<native>('%1', 'eval.js') at -1").arg(eval_code.replace("\\n", "\n")) //v8 hides natives
                  << "foo() at testfile:2"
                  << "<global>() at testfile:4";
 
@@ -742,9 +739,9 @@ void tst_QScriptContext::backtrace_data()
 
         QStringList expected;
         expected << "<native>('b') at -1"
-                 << "<anonymous>(a = 'b') at testfile:5"
-                 << QString("foo(f = %1) at testfile:2").arg(f)
-                 << "<global>() at testfile:6";
+                 << "<anonymous>() at testfile:5"
+                 << "foo() at testfile:2"
+                 << "<global>() at testfile:4";
 
         QTest::newRow("closure") << source << expected;
     }
@@ -761,10 +758,7 @@ void tst_QScriptContext::backtrace_data()
 
            expected << "<native>('hey') at -1"
                     << "<eval>() at 3"
-                    << QString::fromLatin1("plop('hello', 456) at testfile:%0")
-               // interpreter unfortunately doesn't provide line number for eval()
-               .arg(qt_script_isJITEnabled() ? 3 : -1);
-           expected
+                    << "plop() at testfile:3"
                     << "<global>() at testfile:5";
 
             QTest::newRow("eval in member") << source << expected;
@@ -783,8 +777,8 @@ void tst_QScriptContext::backtrace_data()
 
         QStringList expected;
         expected << "<native>(123) at -1"
-                 << "foo(a = 'arg', 4) at testfile:2"
-                 << "bar('hello', [object Object]) at testfile:5"
+                 << "foo() at testfile:2"
+                 << "bar() at testfile:5"
                  << "<global>() at testfile:8";
 
 
@@ -802,8 +796,8 @@ void tst_QScriptContext::backtrace_data()
 
         QStringList expected;
         expected << "<native>('hello') at -1"
-                 << "foo(a = 'hello') at testfile:2"
-                 << QString("<native>(%1, 'hello') at -1").arg(func)
+                 << "foo() at testfile:2"
+                //<< QString("<native>(%1, 'hello') at -1").arg(func) //v8 hides natives
                  << "<global>() at testfile:4";
 
         QTest::newRow("call") << source << expected;
@@ -816,7 +810,7 @@ void tst_QScriptContext::backtrace_data()
 
         QStringList expected;
         expected << "<native>('hello_world') at -1"
-        << "<native>(function () {\n    [native code]\n}, 'hello_world') at -1"
+        //<< "<native>(function () {\n    [native code]\n}, 'hello_world') at -1" //v8 hides natives
         << "<global>() at testfile:2";
 
         QTest::newRow("call native") << source << expected;
@@ -837,9 +831,9 @@ void tst_QScriptContext::backtrace_data()
 
         QStringList expected;
         expected << "<native>(22) at -1"
-            << "<native>(function () {\n    [native code]\n}, 22) at -1"
-            << "f1(12) at testfile:5"
-            << QString::fromLatin1("<native>(%1, 12) at -1").arg(func)
+            //<< "<native>(function () {\n    [native code]\n}, 22) at -1"
+            << "f1() at testfile:5"
+            //<< QString::fromLatin1("<native>(%1, 12) at -1").arg(func)
             << "f2() at testfile:7"
             << "<global>() at testfile:9";
 
@@ -861,10 +855,10 @@ void tst_QScriptContext::backtrace_data()
 
         QStringList expected;
         expected << "<native>() at -1" << "js_bt() at testfile:3";
-        for(int n = 1; n <= 12; n++) {
+        /*for(int n = 1; n <= 12; n++) {
             expected << QString::fromLatin1("<native>(%1, %2) at -1")
                 .arg(func).arg(n);
-        }
+        }*/
         expected << "f() at testfile:6";
         expected << "<global>() at testfile:8";
 
@@ -890,8 +884,7 @@ void tst_QScriptContext::backtrace_data()
         QStringList expected;
         expected << "<native>() at -1" << "finish() at testfile:3";
         for(int n = 1; n <= 12; n++) {
-            expected << QString::fromLatin1("rec(n = %1) at testfile:%2")
-                .arg(n).arg((n==1) ? 7 : 9);
+            expected << QString::fromLatin1("rec() at testfile:%1").arg((n==1) ? 7 : 9);
         }
         expected << "f() at testfile:12";
         expected << "<global>() at testfile:14";
