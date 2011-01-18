@@ -3030,6 +3030,13 @@ QShowEvent::~QShowEvent()
     \note This class is currently supported for Mac OS X and Symbian only.
 */
 
+QFileOpenEventPrivate::~QFileOpenEventPrivate()
+{
+#ifdef Q_OS_SYMBIAN
+    file.Close();
+#endif
+}
+
 /*!
     \internal
 
@@ -3063,6 +3070,7 @@ QFileOpenEvent::QFileOpenEvent(const RFile &fileHandle)
     fileHandle.FullName(fullName);
     f = qt_TDesC2QString(fullName);
     QScopedPointer<QFileOpenEventPrivate> priv(new QFileOpenEventPrivate(QUrl::fromLocalFile(f)));
+    // Duplicate here allows the file handle to be valid after S60 app construction is complete.
     qt_symbian_throwIfError(priv->file.Duplicate(fileHandle));
     d = reinterpret_cast<QEventPrivate *>(priv.take());
 }
@@ -3072,11 +3080,7 @@ QFileOpenEvent::QFileOpenEvent(const RFile &fileHandle)
 */
 QFileOpenEvent::~QFileOpenEvent()
 {
-    QFileOpenEventPrivate *priv = reinterpret_cast<QFileOpenEventPrivate *>(d);
-#ifdef Q_OS_SYMBIAN
-    priv->file.Close();
-#endif
-    delete priv;
+    delete reinterpret_cast<QFileOpenEventPrivate *>(d);
 }
 
 /*!
@@ -3117,6 +3121,8 @@ bool QFileOpenEvent::openFile(QFile &file, QIODevice::OpenMode flags) const
     const QFileOpenEventPrivate *priv = reinterpret_cast<const QFileOpenEventPrivate *>(d);
     if (priv->file.SubSessionHandle()) {
         RFile dup;
+        // Duplicate here means that the opened QFile will continue to be valid beyond the lifetime of this QFileOpenEvent.
+        // It also allows openFile to be used in threads other than the thread in which the QFileOpenEvent was created.
         if (dup.Duplicate(priv->file) == KErrNone) {
             QScopedPointer<RFile, QScopedPointerRCloser<RFile> > dupCloser(&dup);
             bool open = file.open(dup, flags, QFile::AutoCloseHandle);

@@ -408,7 +408,8 @@ void QS60MainAppUi::HandleForegroundEventL(TBool aForeground)
 TBool QS60MainAppUi::ProcessCommandParametersL(TApaCommand /*aCommand*/, TFileName &aDocumentName, const TDesC8 &/*aTail*/)
 {
     // bypass CEikAppUi::ProcessCommandParametersL(..) which modifies aDocumentName, preventing apparc document opening from working.
-    return ConeUtils::FileExists(aDocumentName);
+    // The return value is effectively unused in Qt apps (see QS60MainDocument::OpenFileL)
+    return EFalse;
 }
 
 #ifndef Q_WS_S60

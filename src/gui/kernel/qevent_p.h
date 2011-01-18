@@ -178,6 +178,7 @@ public:
         : url(url)
     {
     }
+    ~QFileOpenEventPrivate();
 
     QUrl url;
 #ifdef Q_OS_SYMBIAN
