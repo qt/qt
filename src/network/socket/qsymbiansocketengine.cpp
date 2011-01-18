@@ -208,8 +208,13 @@ bool QSymbianSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType so
 
         return false;
     }
-
+#ifdef QNATIVESOCKETENGINE_DEBUG
+    qDebug() << "QSymbianSocketEnginePrivate::createNewSocket - created" << nativeSocket.SubSessionHandle();
+#endif
     socketDescriptor = QSymbianSocketManager::instance().addSocket(nativeSocket);
+#ifdef QNATIVESOCKETENGINE_DEBUG
+    qDebug() << " - allocated socket descriptor" << socketDescriptor;
+#endif
     return true;
 }
 
@@ -343,10 +348,15 @@ bool QSymbianSocketEngine::initialize(int socketDescriptor, QAbstractSocket::Soc
         close();
 
     if (!QSymbianSocketManager::instance().lookupSocket(socketDescriptor, d->nativeSocket)) {
+        qWarning("QSymbianSocketEngine::initialize - socket descriptor not found");
         d->setError(QAbstractSocket::SocketResourceError,
             QSymbianSocketEnginePrivate::InvalidSocketErrorString);
         return false;
     }
+#ifdef QNATIVESOCKETENGINE_DEBUG
+    qDebug() << "QSymbianSocketEngine::initialize - attached to" << d->nativeSocket.SubSessionHandle() << socketDescriptor;
+#endif
+    Q_ASSERT(d->socketDescriptor == socketDescriptor || d->socketDescriptor == -1);
     d->socketDescriptor = socketDescriptor;
 
     // determine socket type and protocol
@@ -712,16 +722,28 @@ bool QSymbianSocketEngine::listen()
 int QSymbianSocketEngine::accept()
 {
     Q_D(QSymbianSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QSymbianSocketEngine::accept(), -1);
+    Q_CHECK_STATE(QSymbianSocketEngine::accept(), QAbstractSocket::ListeningState, false);
+    Q_CHECK_TYPE(QSymbianSocketEngine::accept(), QAbstractSocket::TcpSocket, false);
     RSocket blankSocket;
     blankSocket.Open(d->socketServer);
     TRequestStatus status;
     d->nativeSocket.Accept(blankSocket, status);
     User::WaitForRequest(status);
     if (status.Int()) {
+        blankSocket.Close();
         qWarning("QSymbianSocketEnginePrivate::nativeAccept() - error %d", status.Int());
-        return 0;
+        return -1;
     }
-    return QSymbianSocketManager::instance().addSocket(blankSocket);
+
+#ifdef QNATIVESOCKETENGINE_DEBUG
+    qDebug() << "QSymbianSocketEnginePrivate::accept - created" << blankSocket.SubSessionHandle();
+#endif
+    int fd = QSymbianSocketManager::instance().addSocket(blankSocket);
+#ifdef QNATIVESOCKETENGINE_DEBUG
+    qDebug() << " - allocated socket descriptor" << fd;
+#endif
+    return fd;
 }
 
 qint64 QSymbianSocketEngine::bytesAvailable() const
@@ -930,8 +952,13 @@ void QSymbianSocketEngine::close()
         d->nativeSocket.Shutdown(RSocket::EImmediate, stat);
         User::WaitForRequest(stat);
     }
-    d->nativeSocket.Close();
+#ifdef QNATIVESOCKETENGINE_DEBUG
+    qDebug() << "QSymbianSocketEngine::close - closing socket" << d->nativeSocket.SubSessionHandle() << d->socketDescriptor;
+#endif
+    //remove must come before close to avoid a race where another thread gets the old subsession handle
+    //reused & asserts when calling QSymbianSocketManager::instance->addSocket
     QSymbianSocketManager::instance().removeSocket(d->nativeSocket);
+    d->nativeSocket.Close();
     d->socketDescriptor = -1;
 
     d->socketState = QAbstractSocket::UnconnectedState;
