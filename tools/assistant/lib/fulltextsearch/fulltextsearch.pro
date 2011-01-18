@@ -23,7 +23,7 @@ contains(QT_CONFIG, reduce_exports) {
     linux*-g++*:DEFINES += _GLIBCXX_EXTERN_TEMPLATE=0
 }
 
-unix:QMAKE_PKGCONFIG_REQUIRES = QtCore
+unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
 # impossible to disable exceptions in clucene atm
 CONFIG(exceptions_off) {
