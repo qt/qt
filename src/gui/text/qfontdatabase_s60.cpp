@@ -45,6 +45,7 @@
 #include "qfontengine_s60_p.h"
 #include "qabstractfileengine.h"
 #include "qdesktopservices.h"
+#include "qtemporaryfile.h"
 #include <private/qpixmap_s60_p.h>
 #include <private/qt_s60_p.h>
 #include "qendian.h"
@@ -114,7 +115,14 @@ public:
     ~QSymbianFontDatabaseExtrasImplementation();
 
     const QSymbianTypeFaceExtras *extras(const QString &typeface, bool bold, bool italic) const;
-    void addFontFileToFontStore(const QFileInfo &fontFileInfo);
+    void removeAppFontData(QFontDatabasePrivate::ApplicationFont *fnt);
+    static inline bool appFontLimitReached();
+    TUid addFontFileToFontStore(const QFileInfo &fontFileInfo);
+    static void clear();
+
+    static inline QString tempAppFontFolder();
+    static const QString appFontMarkerPrefix;
+    static QString appFontMarker(); // 'qaf<shortUid[+shortPid]>'
 
     struct CFontFromFontStoreReleaser {
         static inline void cleanup(CFont *font)
@@ -146,6 +154,33 @@ public:
     mutable QHash<QString, const QSymbianTypeFaceExtras *> m_extrasHash;
 };
 
+const QString QSymbianFontDatabaseExtrasImplementation::appFontMarkerPrefix =
+        QLatin1String("qaf");
+
+inline QString QSymbianFontDatabaseExtrasImplementation::tempAppFontFolder()
+{
+    return QDir::toNativeSeparators(QDir::tempPath()) + QLatin1Char('\\');
+}
+
+QString QSymbianFontDatabaseExtrasImplementation::appFontMarker()
+{
+    static QString result;
+    if (result.isEmpty()) {
+        const quint32 uid = RProcess().Type().MostDerived().iUid;
+        quint16 crossSum = static_cast<quint16>(uid + (uid >> 16));
+        if (!QSymbianTypeFaceExtras::symbianFontTableApiAvailable()) {
+            // If no font table Api is available, we must not even load a font
+            // from a previous (crashed) run of this application. Reason: we
+            // won't get the font tables, they are not in the CFontStore.
+            // So, we add the pid to the uniqueness of the marker.
+            const quint32 pid = static_cast<quint32>(RProcess().Id().Id());
+            crossSum += static_cast<quint16>(pid + (pid >> 16));
+        }
+        result = appFontMarkerPrefix + QString::number(crossSum, 16);
+    }
+    return result;
+}
+
 QSymbianFontDatabaseExtrasImplementation::QSymbianFontDatabaseExtrasImplementation()
 {
     if (!QSymbianTypeFaceExtras::symbianFontTableApiAvailable()) {
@@ -170,10 +205,13 @@ QSymbianFontDatabaseExtrasImplementation::QSymbianFontDatabaseExtrasImplementati
     }
 }
 
-void qt_cleanup_symbianFontDatabaseExtras()
+void QSymbianFontDatabaseExtrasImplementation::clear()
 {
+    QFontDatabasePrivate *db = privateDb();
+    if (!db)
+        return;
     const QSymbianFontDatabaseExtrasImplementation *dbExtras =
-            static_cast<const QSymbianFontDatabaseExtrasImplementation*>(privateDb()->symbianExtras);
+            static_cast<const QSymbianFontDatabaseExtrasImplementation*>(db->symbianExtras);
     if (!dbExtras)
         return; // initializeDb() has never been called
     if (QSymbianTypeFaceExtras::symbianFontTableApiAvailable()) {
@@ -189,9 +227,32 @@ void qt_cleanup_symbianFontDatabaseExtras()
     dbExtras->m_extrasHash.clear();
 }
 
+void qt_cleanup_symbianFontDatabase()
+{
+    QFontDatabasePrivate *db = privateDb();
+    if (!db)
+        return;
+
+    QSymbianFontDatabaseExtrasImplementation::clear();
+
+    if (!db->applicationFonts.isEmpty()) {
+        QFontDatabase::removeAllApplicationFonts();
+        // We remove the left over temporary font files of Qt application.
+        // Active fonts are undeletable since the font server holds a handle
+        // on them, so we do not need to worry to delete other running
+        // applications' fonts.
+        const QDir dir(QSymbianFontDatabaseExtrasImplementation::tempAppFontFolder());
+        const QStringList filter(
+                QSymbianFontDatabaseExtrasImplementation::appFontMarkerPrefix + QLatin1String("*.ttf"));
+        foreach (const QFileInfo &ttfFile, dir.entryInfoList(filter))
+            QFile(ttfFile.absoluteFilePath()).remove();
+        db->applicationFonts.clear();
+    }
+}
+
 QSymbianFontDatabaseExtrasImplementation::~QSymbianFontDatabaseExtrasImplementation()
 {
-    qt_cleanup_symbianFontDatabaseExtras();
+    qt_cleanup_symbianFontDatabase();
     if (!QSymbianTypeFaceExtras::symbianFontTableApiAvailable()) {
         delete m_store;
         m_heap->Close();
@@ -263,12 +324,40 @@ const QSymbianTypeFaceExtras *QSymbianFontDatabaseExtrasImplementation::extras(c
     return m_extrasHash.value(searchKey);
 }
 
-void QSymbianFontDatabaseExtrasImplementation::addFontFileToFontStore(const QFileInfo &fontFileInfo)
+void QSymbianFontDatabaseExtrasImplementation::removeAppFontData(
+    QFontDatabasePrivate::ApplicationFont *fnt)
+{
+    clear();
+    if (!QSymbianTypeFaceExtras::symbianFontTableApiAvailable()
+            && fnt->fontStoreFontFileUid.iUid != 0)
+        m_store->RemoveFile(fnt->fontStoreFontFileUid);
+    if (fnt->screenDeviceFontFileId != 0)
+        S60->screenDevice()->RemoveFile(fnt->screenDeviceFontFileId);
+    QFile::remove(fnt->temporaryFileName);
+    *fnt = QFontDatabasePrivate::ApplicationFont();
+}
+
+bool QSymbianFontDatabaseExtrasImplementation::appFontLimitReached()
+{
+    QFontDatabasePrivate *db = privateDb();
+    if (!db)
+        return false;
+    const int maxAppFonts = 5;
+    int registeredAppFonts = 0;
+    foreach (const QFontDatabasePrivate::ApplicationFont &appFont, db->applicationFonts)
+        if (!appFont.families.isEmpty() && ++registeredAppFonts == maxAppFonts)
+            return true;
+    return false;
+}
+
+TUid QSymbianFontDatabaseExtrasImplementation::addFontFileToFontStore(const QFileInfo &fontFileInfo)
 {
     Q_ASSERT(!QSymbianTypeFaceExtras::symbianFontTableApiAvailable());
     const QString fontFile = QDir::toNativeSeparators(fontFileInfo.absoluteFilePath());
-    TPtrC fontFilePtr(qt_QString2TPtrC(fontFile));
-    QT_TRAP_THROWING(m_store->AddFileL(fontFilePtr));
+    const TPtrC fontFilePtr(qt_QString2TPtrC(fontFile));
+    TUid fontUid = {0};
+    TRAP_IGNORE(fontUid = m_store->AddFileL(fontFilePtr));
+    return fontUid;
 }
 
 #else // QT_NO_FREETYPE
@@ -331,9 +420,9 @@ void QFontEngineMultiS60::loadEngine(int at)
     Q_ASSERT(engines[at]);
 }
 
-static bool addFontToScreenDevice(int screenDeviceFontIndex,
-                                  const QSymbianFontDatabaseExtrasImplementation *dbExtras)
-{    
+static bool registerScreenDeviceFont(int screenDeviceFontIndex,
+                                     const QSymbianFontDatabaseExtrasImplementation *dbExtras)
+{
     TTypefaceSupport typefaceSupport;
         S60->screenDevice()->TypefaceSupport(typefaceSupport, screenDeviceFontIndex);
     CFont *font; // We have to get a font instance in order to know all the details
@@ -398,7 +487,12 @@ static void initializeDb()
     const QSymbianFontDatabaseExtrasImplementation *dbExtras =
             static_cast<const QSymbianFontDatabaseExtrasImplementation*>(db->symbianExtras);
     for (int i = 0; i < numTypeFaces; i++)
-        addFontToScreenDevice(i, dbExtras);
+        registerScreenDeviceFont(i, dbExtras);
+
+    // We have to clear/release all CFonts, here, in case one of the fonts is
+    // an application font of another running Qt app. Otherwise the other Qt app
+    // cannot remove it's application font, anymore -> "Zombie Font".
+    QSymbianFontDatabaseExtrasImplementation::clear();
 
     lock.relock();
 
@@ -423,18 +517,123 @@ static inline void load(const QString &family = QString(), int script = -1)
 
 static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
 {
-    Q_UNUSED(fnt);
+    if (QSymbianFontDatabaseExtrasImplementation::appFontLimitReached())
+        return;
+
+    QFontDatabasePrivate *db = privateDb();
+    if (!db)
+        return;
+
+    if (!db->count)
+        initializeDb();
+
+    if (fnt->data.isEmpty() && !fnt->fileName.endsWith(QLatin1String(".ttf"), Qt::CaseInsensitive))
+        return; // Only buffer or .ttf
+    QSymbianFontDatabaseExtrasImplementation *dbExtras =
+            static_cast<QSymbianFontDatabaseExtrasImplementation*>(db->symbianExtras);
+    if (!dbExtras)
+        return;
+
+    // The QTemporaryFile object being used in the following section must be
+    // destructed before letting Symbian load the TTF file. Symbian would not
+    // load it otherwise, because QTemporaryFile will still keep some handle
+    // on it. The scope is used to reduce the life time of the QTemporaryFile.
+    // In order to prevent other processes from modifying the file between the
+    // moment where the QTemporaryFile is destructed and the file is loaded by
+    // Symbian, we have a QFile "tempFileGuard" outside the scope which opens
+    // the file in ReadOnly mode while the QTemporaryFile is still alive.
+    QFile tempFileGuard;
+    {
+        QTemporaryFile tempfile(QSymbianFontDatabaseExtrasImplementation::tempAppFontFolder()
+                                + QSymbianFontDatabaseExtrasImplementation::appFontMarker()
+                                + QLatin1String("XXXXXX.ttf"));
+        if (!tempfile.open())
+            return;
+        const QString tempFileName = QFileInfo(tempfile).canonicalFilePath();
+        if (fnt->data.isEmpty()) {
+            QFile sourceFile(fnt->fileName);
+            if (!sourceFile.open(QIODevice::ReadOnly))
+                return;
+            fnt->data = sourceFile.readAll();
+        }
+        if (tempfile.write(fnt->data) == -1)
+            return;
+        tempfile.setAutoRemove(false);
+        tempfile.close(); // Tempfile still keeps a file handle, forbidding write access
+        tempFileGuard.setFileName(tempFileName);
+        if (!tempFileGuard.open(QIODevice::ReadOnly))
+            return;
+        fnt->temporaryFileName = tempFileName;
+    }
+
+    const QString fullFileName = QDir::toNativeSeparators(fnt->temporaryFileName);
+    QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
+    const QStringList fontsOnServerBefore = qt_symbian_fontFamiliesOnFontServer();
+    const TInt err =
+            S60->screenDevice()->AddFile(qt_QString2TPtrC(fullFileName), fnt->screenDeviceFontFileId);
+    tempFileGuard.close(); // Did its job
+    const QStringList fontsOnServerAfter = qt_symbian_fontFamiliesOnFontServer();
+    if (err == KErrNone && fontsOnServerBefore.count() < fontsOnServerAfter.count()) { // Added to screen device?
+        int fontOnServerIndex = fontsOnServerAfter.count() - 1;
+        for (int i = 0; i < fontsOnServerBefore.count(); i++) {
+            if (fontsOnServerBefore.at(i) != fontsOnServerAfter.at(i)) {
+                fontOnServerIndex = i;
+                break;
+            }
+        }
+
+        // Must remove all font engines with their CFonts, first.
+        QFontCache::instance()->clear();
+        db->free();
+        QSymbianFontDatabaseExtrasImplementation::clear();
+
+        if (!QSymbianTypeFaceExtras::symbianFontTableApiAvailable())
+            fnt->fontStoreFontFileUid = dbExtras->addFontFileToFontStore(QFileInfo(fullFileName));
+
+        fnt->families.append(fontsOnServerAfter.at(fontOnServerIndex));
+        if (!registerScreenDeviceFont(fontOnServerIndex, dbExtras))
+            dbExtras->removeAppFontData(fnt);
+    } else {
+        QFile::remove(fnt->temporaryFileName);
+        *fnt = QFontDatabasePrivate::ApplicationFont();
+    }
+    lock.relock();
 }
 
 bool QFontDatabase::removeApplicationFont(int handle)
 {
-    Q_UNUSED(handle);
-    return false;
+    QMutexLocker locker(fontDatabaseMutex());
+
+    QFontDatabasePrivate *db = privateDb();
+    if (!db || handle < 0 || handle >= db->applicationFonts.count())
+        return false;
+    QSymbianFontDatabaseExtrasImplementation *dbExtras =
+            static_cast<QSymbianFontDatabaseExtrasImplementation*>(db->symbianExtras);
+    if (!dbExtras)
+        return false;
+
+    QFontDatabasePrivate::ApplicationFont *fnt = &db->applicationFonts[handle];
+    if (fnt->families.isEmpty())
+        return true; // Nothing to remove. Return peacefully.
+
+    // Must remove all font engines with their CFonts, first
+    QFontCache::instance()->clear();
+    db->free();
+    dbExtras->removeAppFontData(fnt);
+
+    db->invalidate(); // This will just emit 'fontDatabaseChanged()'
+    return true;
 }
 
 bool QFontDatabase::removeAllApplicationFonts()
 {
-    return false;
+    QMutexLocker locker(fontDatabaseMutex());
+
+    const int applicationFontsCount = privateDb()->applicationFonts.count();
+    for (int i = 0; i < applicationFontsCount; ++i)
+        if (!removeApplicationFont(i))
+            return false;
+    return true;
 }
 
 bool QFontDatabase::supportsThreadedFontRendering()
