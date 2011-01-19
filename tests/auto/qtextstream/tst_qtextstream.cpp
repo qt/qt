@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -228,6 +228,7 @@ private slots:
     void status_real_read();
     void status_integer_read();
     void status_word_read();
+    void status_write_error();
 
     // use case tests
     void useCase1();
@@ -4174,6 +4175,42 @@ void tst_QTextStream::status_word_read()
     QCOMPARE(s.status(), QTextStream::Ok);
     s >> w;
     QCOMPARE(s.status(), QTextStream::ReadPastEnd);
+}
+
+class FakeBuffer : public QBuffer
+{
+protected:
+    qint64 writeData(const char *c, qint64 i) { return m_lock ? 0 : QBuffer::writeData(c, i); }
+public:
+    FakeBuffer(bool locked = false) : m_lock(locked) {}
+    void setLocked(bool locked) { m_lock = locked; }
+private:
+    bool m_lock;
+};
+
+void tst_QTextStream::status_write_error()
+{
+    FakeBuffer fb(false);
+    QVERIFY(fb.open(QBuffer::ReadWrite));
+    QTextStream fs(&fb);
+    fs.setCodec(QTextCodec::codecForName("latin1"));
+    /* first write some initial content */
+    fs << "hello";
+    fs.flush();
+    QCOMPARE(fs.status(), QTextStream::Ok);
+    QCOMPARE(fb.data(), QByteArray("hello"));
+    /* then test that writing can cause an error */
+    fb.setLocked(true);
+    fs << "error";
+    fs.flush();
+    QCOMPARE(fs.status(), QTextStream::WriteFailed);
+    QCOMPARE(fb.data(), QByteArray("hello"));
+    /* finally test that writing after an error doesn't change the stream any more */
+    fb.setLocked(false);
+    fs << "can't do that";
+    fs.flush();
+    QCOMPARE(fs.status(), QTextStream::WriteFailed);
+    QCOMPARE(fb.data(), QByteArray("hello"));
 }
 
 void tst_QTextStream::task180679_alignAccountingStyle()

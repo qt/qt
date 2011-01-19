@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,14 +54,20 @@ QT_BEGIN_NAMESPACE
 
 extern Q_GUI_EXPORT bool qt_applefontsmoothing_enabled;
 
-QDeclarativeTester::QDeclarativeTester(const QString &script, QDeclarativeViewer::ScriptOptions opts, 
+QDeclarativeTester::QDeclarativeTester(const QString &script, QDeclarativeViewer::ScriptOptions opts,
                      QDeclarativeView *parent)
-: QAbstractAnimation(parent), m_script(script), m_view(parent), filterEvents(true), options(opts), 
+: QAbstractAnimation(parent), m_script(script), m_view(parent), filterEvents(true), options(opts),
   testscript(0), hasCompleted(false), hasFailed(false)
 {
     parent->viewport()->installEventFilter(this);
     parent->installEventFilter(this);
     QUnifiedTimer::instance()->setConsistentTiming(true);
+
+    //Font antialiasing makes tests system-specific, so disable it
+    QFont noAA = QApplication::font();
+    noAA.setStyleStrategy(QFont::NoAntialias);
+    QApplication::setFont(noAA);
+
     if (options & QDeclarativeViewer::Play)
         this->run();
     start();
@@ -69,8 +75,8 @@ QDeclarativeTester::QDeclarativeTester(const QString &script, QDeclarativeViewer
 
 QDeclarativeTester::~QDeclarativeTester()
 {
-    if (!hasFailed && 
-        options & QDeclarativeViewer::Record && 
+    if (!hasFailed &&
+        options & QDeclarativeViewer::Record &&
         options & QDeclarativeViewer::SaveOnExit)
         save();
 }
@@ -222,7 +228,7 @@ void QDeclarativeTester::save()
         }
         ts << "    }\n";
 
-        while (!mouseevents.isEmpty() && 
+        while (!mouseevents.isEmpty() &&
                mouseevents.first().msec == fe.msec) {
             MouseEvent me = mouseevents.takeFirst();
 
@@ -268,6 +274,7 @@ void QDeclarativeTester::updateCurrentTime(int msec)
 
     if (options & QDeclarativeViewer::TestImages) {
         img.fill(qRgb(255,255,255));
+
 #ifdef Q_WS_MAC
         bool oldSmooth = qt_applefontsmoothing_enabled;
         qt_applefontsmoothing_enabled = false;
@@ -276,6 +283,7 @@ void QDeclarativeTester::updateCurrentTime(int msec)
 #ifdef Q_WS_MAC
         qt_applefontsmoothing_enabled = oldSmooth;
 #endif
+
         m_view->render(&p);
     }
 
@@ -286,7 +294,7 @@ void QDeclarativeTester::updateCurrentTime(int msec)
     fe.msec = msec;
     if (msec == 0 || !(options & QDeclarativeViewer::TestImages)) {
         // Skip first frame, skip if not doing images
-    } else if (0 == (m_savedFrameEvents.count() % 60) || snapshot) {
+    } else if (0 == ((m_savedFrameEvents.count()-1) % 60) || snapshot) {
         fe.image = img;
     } else {
         QCryptographicHash hash(QCryptographicHash::Md5);
@@ -337,14 +345,14 @@ void QDeclarativeTester::updateCurrentTime(int msec)
         if (QDeclarativeVisualTestFrame *frame = qobject_cast<QDeclarativeVisualTestFrame *>(event)) {
             if (frame->msec() < msec) {
                 if (options & QDeclarativeViewer::TestImages && !(options & QDeclarativeViewer::Record)) {
-                    qWarning() << "QDeclarativeTester: Extra frame.  Seen:" 
+                    qWarning() << "QDeclarativeTester(" << m_script << "): Extra frame.  Seen:"
                                << msec << "Expected:" << frame->msec();
                     imagefailure();
                 }
             } else if (frame->msec() == msec) {
                 if (!frame->hash().isEmpty() && frame->hash().toUtf8() != fe.hash.toHex()) {
                     if (options & QDeclarativeViewer::TestImages && !(options & QDeclarativeViewer::Record)) {
-                        qWarning() << "QDeclarativeTester: Mismatched frame hash at" << msec
+                        qWarning() << "QDeclarativeTester(" << m_script << "): Mismatched frame hash at" << msec
                                    << ".  Seen:" << fe.hash.toHex()
                                    << "Expected:" << frame->hash().toUtf8();
                         imagefailure();
@@ -356,9 +364,14 @@ void QDeclarativeTester::updateCurrentTime(int msec)
 
             if (options & QDeclarativeViewer::TestImages && !(options & QDeclarativeViewer::Record) && !frame->image().isEmpty()) {
                 QImage goodImage(frame->image().toLocalFile());
+                if (frame->msec() == 16 && goodImage.size() != img.size()){
+                    //Also an image mismatch, but this warning is more informative. Only checked at start though.
+                    qWarning() << "QDeclarativeTester(" << m_script << "): Size mismatch. This test must be run at " << goodImage.size();
+                    imagefailure();
+                }
                 if (goodImage != img) {
                     QString reject(frame->image().toLocalFile() + ".reject.png");
-                    qWarning() << "QDeclarativeTester: Image mismatch.  Reject saved to:" 
+                    qWarning() << "QDeclarativeTester(" << m_script << "): Image mismatch.  Reject saved to:"
                                << reject;
                     img.save(reject);
                     bool doDiff = (goodImage.size() == img.size());
@@ -411,7 +424,7 @@ void QDeclarativeTester::updateCurrentTime(int msec)
                 ke.destination = ViewPort;
             }
             m_savedKeyEvents.append(ke);
-        } 
+        }
         testscriptidx++;
     }
 

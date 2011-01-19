@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -206,12 +206,6 @@ void QNetworkAccessFileBackend::closeDownstreamChannel()
     if (operation() == QNetworkAccessManager::GetOperation) {
         file.close();
     }
-}
-
-bool QNetworkAccessFileBackend::waitForDownstreamReadyRead(int)
-{
-    Q_ASSERT(operation() == QNetworkAccessManager::GetOperation);
-    return readMoreFromFile();
 }
 
 void QNetworkAccessFileBackend::downstreamReadyWrite()

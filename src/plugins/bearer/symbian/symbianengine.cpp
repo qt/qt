@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -135,15 +135,18 @@ void SymbianEngine::initialize()
 
     updateConfigurations();
     updateStatesToSnaps();
-    updateAvailableAccessPoints(); // On first time updates synchronously (without WLAN scans)
+    updateAvailableAccessPoints(); // On first time updates (without WLAN scans)
     // Start monitoring IAP and/or SNAP changes in Symbian CommsDB
     startCommsDatabaseNotifications();
-    iFirstUpdate = false;
 }
 
 SymbianEngine::~SymbianEngine()
 {
     Cancel();
+
+    //The scanner may be using the connection monitor so it needs to be
+    //deleted first while the handle is still valid.
+    delete ipAccessPointsAvailabilityScanner;
 
     iConnectionMonitor.CancelNotifications();
     iConnectionMonitor.Close();
@@ -152,8 +155,6 @@ SymbianEngine::~SymbianEngine()
     iCmManager.Close();
 #endif
     
-    delete ipAccessPointsAvailabilityScanner;
-
     // CCommsDatabase destructor uses cleanup stack. Since QNetworkConfigurationManager
     // is a global static, but the time we are here, E32Main() has been exited already and
     // the thread's default cleanup stack has been deleted. Without this line, a
@@ -790,6 +791,12 @@ void SymbianEngine::accessPointScanningReady(TBool scanSuccessful, TConnMonIapIn
         mutex.unlock();
         emit updateCompleted();
         mutex.lock();
+    } else {
+        iFirstUpdate = false;
+        if (iScanInQueue) {
+            iScanInQueue = EFalse;
+            updateAvailableAccessPoints();
+        }
     }
 }
 
@@ -1356,27 +1363,39 @@ AccessPointsAvailabilityScanner::~AccessPointsAvailabilityScanner()
 void AccessPointsAvailabilityScanner::DoCancel()
 {
     iConnectionMonitor.CancelAsyncRequest(EConnMonGetPckgAttribute);
+    iScanActive = EFalse;
+    iOwner.iScanInQueue = EFalse;
 }
 
 void AccessPointsAvailabilityScanner::StartScanning()
 {
-    if (iOwner.iFirstUpdate) {
-        // On first update (the mgr is being instantiated) update only those bearers who
-        // don't need time-consuming scans (WLAN).
-        // Note: EBearerIdWCDMA covers also GPRS bearer
-        iConnectionMonitor.GetPckgAttribute(EBearerIdWCDMA, 0, KIapAvailability, iIapBuf, iStatus);
-    } else {
-        iConnectionMonitor.GetPckgAttribute(EBearerIdAll, 0, KIapAvailability, iIapBuf, iStatus);
-    }
+    if (!iScanActive) {
+        iScanActive = ETrue;
+        if (iOwner.iFirstUpdate) {
+            // On first update (the mgr is being instantiated) update only those bearers who
+            // don't need time-consuming scans (WLAN).
+            // Note: EBearerIdWCDMA covers also GPRS bearer
+            iConnectionMonitor.GetPckgAttribute(EBearerIdWCDMA, 0, KIapAvailability, iIapBuf, iStatus);
+        } else {
+            iConnectionMonitor.GetPckgAttribute(EBearerIdAll, 0, KIapAvailability, iIapBuf, iStatus);
+        }
 
-    if (!IsActive())
-        SetActive();
+        if (!IsActive()) {
+            SetActive();
+        }
+    } else {
+        // Queue scan for getting WLAN info after first request returns
+        if (iOwner.iFirstUpdate) {
+            iOwner.iScanInQueue = ETrue;
+        }
+    }
 }
 
 void AccessPointsAvailabilityScanner::RunL()
 {
     QMutexLocker locker(&iOwner.mutex);
 
+    iScanActive = EFalse;
     if (iStatus.Int() != KErrNone) {
         iIapBuf().iCount = 0;
         QT_TRYCATCH_LEAVING(iOwner.accessPointScanningReady(false,iIapBuf()));

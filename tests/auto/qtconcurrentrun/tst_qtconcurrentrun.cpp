@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,6 +61,9 @@ private slots:
     void implicitConvertibleTypes();
     void runWaitLoop();
     void recursive();
+#ifndef QT_NO_EXCEPTIONS
+    void exceptions();
+#endif
 #if 0
     void createFunctor();
 #endif
@@ -373,6 +376,41 @@ int fn2(double, int *)
 {
     return 1;
 }
+
+
+#ifndef QT_NO_EXCEPTIONS
+void throwFunction()
+{
+    throw QtConcurrent::Exception();
+}
+
+int throwFunctionReturn()
+{
+    throw QtConcurrent::Exception();
+    return 0;
+}
+
+void tst_QtConcurrentRun::exceptions()
+{
+    bool caught = false;
+    try  {
+        QtConcurrent::run(throwFunction).waitForFinished();
+    } catch (Exception &e) {
+        caught = true;
+    }
+    if (!caught)
+        QFAIL("did not get exception");
+
+    caught = false;
+    try  {
+        QtConcurrent::run(throwFunctionReturn).waitForFinished();
+    } catch (Exception &e) {
+        caught = true;
+    }
+    if (!caught)
+        QFAIL("did not get exception");
+}
+#endif
 
 #if 0
 void tst_QtConcurrentRun::createFunctor()

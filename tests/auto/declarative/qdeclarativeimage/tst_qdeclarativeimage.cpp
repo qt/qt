@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -80,11 +80,14 @@ private slots:
     void preserveAspectRatio();
     void smooth();
     void svg();
+    void geometry();
+    void geometry_data();
     void big();
     void tiling_QTBUG_6716();
     void noLoading();
     void paintedWidthHeight();
     void sourceSize_QTBUG_14303();
+    void nullPixmapPaint();
 
 private:
     template<typename T>
@@ -288,6 +291,78 @@ void tst_qdeclarativeimage::svg()
     delete obj;
 }
 
+void tst_qdeclarativeimage::geometry_data()
+{
+    QTest::addColumn<QString>("fillMode");
+    QTest::addColumn<bool>("explicitWidth");
+    QTest::addColumn<bool>("explicitHeight");
+    QTest::addColumn<double>("itemWidth");
+    QTest::addColumn<double>("paintedWidth");
+    QTest::addColumn<double>("boundingWidth");
+    QTest::addColumn<double>("itemHeight");
+    QTest::addColumn<double>("paintedHeight");
+    QTest::addColumn<double>("boundingHeight");
+
+    // tested image has width 200, height 100
+
+    // bounding rect and item rect are equal with fillMode PreserveAspectFit, painted rect may be smaller if the aspect ratio doesn't match
+    QTest::newRow("PreserveAspectFit") << "PreserveAspectFit" << false << false << 200.0 << 200.0 << 200.0 << 100.0 << 100.0 << 100.0;
+    QTest::newRow("PreserveAspectFit explicit width 300") << "PreserveAspectFit" << true << false << 300.0 << 200.0 << 300.0 << 100.0 << 100.0 << 100.0;
+    QTest::newRow("PreserveAspectFit explicit height 400") << "PreserveAspectFit" << false << true << 200.0 << 200.0 << 200.0 << 400.0 << 100.0 << 400.0;
+    QTest::newRow("PreserveAspectFit explicit width 300, height 400") << "PreserveAspectFit" << true << true << 300.0 << 300.0 << 300.0 << 400.0 << 150.0 << 400.0;
+
+    // bounding rect and painted rect are equal with fillMode PreserveAspectCrop, item rect may be smaller if the aspect ratio doesn't match
+    QTest::newRow("PreserveAspectCrop") << "PreserveAspectCrop" << false << false << 200.0 << 200.0 << 200.0 << 100.0 << 100.0 << 100.0;
+    QTest::newRow("PreserveAspectCrop explicit width 300") << "PreserveAspectCrop" << true << false << 300.0 << 300.0 << 300.0 << 100.0 << 150.0 << 150.0;
+    QTest::newRow("PreserveAspectCrop explicit height 400") << "PreserveAspectCrop" << false << true << 200.0 << 800.0 << 800.0 << 400.0 << 400.0 << 400.0;
+    QTest::newRow("PreserveAspectCrop explicit width 300, height 400") << "PreserveAspectCrop" << true << true << 300.0 << 800.0 << 800.0 << 400.0 << 400.0 << 400.0;
+
+    // bounding rect, painted rect and item rect are equal in stretching and tiling images
+    QStringList fillModes;
+    fillModes << "Stretch" << "Tile" << "TileVertically" << "TileHorizontally";
+    foreach (QString fillMode, fillModes) {
+        QTest::newRow(fillMode.toLatin1()) << fillMode << false << false << 200.0 << 200.0 << 200.0 << 100.0 << 100.0 << 100.0;
+        QTest::newRow(QString(fillMode + " explicit width 300").toLatin1()) << fillMode << true << false << 300.0 << 300.0 << 300.0 << 100.0 << 100.0 << 100.0;
+        QTest::newRow(QString(fillMode + " explicit height 400").toLatin1()) << fillMode << false << true << 200.0 << 200.0 << 200.0 << 400.0 << 400.0 << 400.0;
+        QTest::newRow(QString(fillMode + " explicit width 300, height 400").toLatin1()) << fillMode << true << true << 300.0 << 300.0 << 300.0 << 400.0 << 400.0 << 400.0;
+    }
+}
+
+void tst_qdeclarativeimage::geometry()
+{
+    QFETCH(QString, fillMode);
+    QFETCH(bool, explicitWidth);
+    QFETCH(bool, explicitHeight);
+    QFETCH(double, itemWidth);
+    QFETCH(double, itemHeight);
+    QFETCH(double, paintedWidth);
+    QFETCH(double, paintedHeight);
+    QFETCH(double, boundingWidth);
+    QFETCH(double, boundingHeight);
+
+    QString src = QUrl::fromLocalFile(SRCDIR "/data/rect.png").toString();
+    QString componentStr = "import QtQuick 1.0\nImage { source: \"" + src + "\"; fillMode: Image." + fillMode + "; ";
+
+    if (explicitWidth)
+        componentStr.append("width: 300; ");
+    if (explicitHeight)
+        componentStr.append("height: 400; ");
+    componentStr.append("}");
+    QDeclarativeComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeImage *obj = qobject_cast<QDeclarativeImage*>(component.create());
+    QVERIFY(obj != 0);
+
+    QCOMPARE(obj->width(), itemWidth);
+    QCOMPARE(obj->paintedWidth(), paintedWidth);
+    QCOMPARE(obj->boundingRect().width(), boundingWidth);
+
+    QCOMPARE(obj->height(), itemHeight);
+    QCOMPARE(obj->paintedHeight(), paintedHeight);
+    QCOMPARE(obj->boundingRect().height(), boundingHeight);
+    delete obj;
+}
+
 void tst_qdeclarativeimage::big()
 {
     // If the JPEG loader does not implement scaling efficiently, it would
@@ -464,6 +539,35 @@ void tst_qdeclarativeimage::sourceSize_QTBUG_14303()
     QTRY_COMPARE(obj->sourceSize().width(), 200);
     QTRY_COMPARE(obj->sourceSize().height(), 200);
     QTRY_COMPARE(sourceSizeSpy.count(), 2);
+}
+
+static int numberOfWarnings = 0;
+static void checkWarnings(QtMsgType, const char *)
+{
+    numberOfWarnings++;
+}
+
+// QTBUG-15690
+void tst_qdeclarativeimage::nullPixmapPaint()
+{
+    QString componentStr = QString("import QtQuick 1.0\nImage { width: 10; height:10; fillMode: Image.PreserveAspectFit; source: \"")
+            + SERVER_ADDR + QString("/no-such-file.png\" }");
+    QDeclarativeComponent component(&engine);
+    component.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeImage *image = qobject_cast<QDeclarativeImage*>(component.create());
+
+    QTRY_VERIFY(image != 0);
+    
+    QtMsgHandler previousMsgHandler = qInstallMsgHandler(checkWarnings);
+
+    QPixmap pm(100, 100);
+    QPainter p(&pm);
+
+    // used to print "QTransform::translate with NaN called"
+    image->paint(&p, 0, 0);
+    qInstallMsgHandler(previousMsgHandler);
+    QVERIFY(numberOfWarnings == 0);
+    delete image;
 }
 
 /*

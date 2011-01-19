@@ -3,7 +3,7 @@ CONFIG += depend_includepath
 QMAKE_INCREMENTAL =
 SKIP_DEPENDS += qconfig.h qmodules.h
 DEFINES += QT_NO_TEXTCODEC QT_NO_LIBRARY QT_NO_STL QT_NO_COMPRESS QT_NO_UNICODETABLES \
-           QT_NO_GEOM_VARIANT QT_NO_DATASTREAM
+           QT_NO_GEOM_VARIANT QT_NO_DATASTREAM QLIBRARYINFO_EPOCROOT
 
 #qmake code
 SOURCES += project.cpp property.cpp main.cpp generators/makefile.cpp \
@@ -36,8 +36,8 @@ HEADERS += project.h property.h generators/makefile.h \
            generators/symbian/symmake_abld.h \
            generators/symbian/symmake_sbsv2.h \
            generators/symbian/initprojectdeploy_symbian.h \
-           windows/registry.h \
-           symbian/epocroot.h
+           windows/registry_p.h \
+           symbian/epocroot_p.h
 
 contains(QT_EDITION, OpenSource) {
    DEFINES += QMAKE_OPENSOURCE_EDITION
@@ -57,6 +57,8 @@ bootstrap { #Qt code
         qfile.cpp \
         qabstractfileengine.cpp \
         qfileinfo.cpp \
+        qfilesystementry.cpp \
+        qfilesystemengine.cpp \
         qfsfileengine.cpp \
         qfsfileengine_iterator.cpp \
         qglobal.cpp \
@@ -80,6 +82,7 @@ bootstrap { #Qt code
         quuid.cpp \
         qsettings.cpp \
         qlibraryinfo.cpp \
+        qsystemerror.cpp \
         qvariant.cpp \
         qvector.cpp \
         qvsnprintf.cpp \
@@ -96,6 +99,7 @@ bootstrap { #Qt code
         qdatetime.h \
         qdatetime_p.h \
         qdir.h \
+        qdir_p.h \
         qdiriterator.h \
         qfile.h \
         qabstractfileengine.h \
@@ -116,6 +120,7 @@ bootstrap { #Qt code
         qstring.h \
         qstringlist.h \
         qstringmatcher.h \
+        qsystemerror_p.h \
         qtemporaryfile.h \
         qtextstream.h \
         qurl.h \
@@ -125,14 +130,15 @@ bootstrap { #Qt code
         qxmlutils.h
 
     unix {
-        SOURCES += qfsfileengine_unix.cpp qfsfileengine_iterator_unix.cpp
+        SOURCES += qfilesystemengine_unix.cpp qfilesystemiterator_unix.cpp qfsfileengine_unix.cpp
         mac {
+          SOURCES += qfilesystemengine_mac.cpp
           SOURCES += qcore_mac.cpp qsettings_mac.cpp
           QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.4 #enables weak linking for 10.4 (exported)
           LIBS += -framework ApplicationServices
         }
     } else:win32 {
-	SOURCES += qfsfileengine_win.cpp qfsfileengine_iterator_win.cpp qsettings_win.cpp \
+        SOURCES += qfilesystemengine_win.cpp qfsfileengine_win.cpp qfilesystemiterator_win.cpp qsettings_win.cpp \
             qsystemlibrary.cpp
         win32-msvc*:LIBS += ole32.lib advapi32.lib
         win32-g++*:LIBS += -lole32 -luuid

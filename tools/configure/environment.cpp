@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,8 +60,8 @@ using namespace std;
 #include <qt_windows.h>
 #endif
 
-#include <symbian/epocroot.h> // from tools/shared
-#include <windows/registry.h> // from tools/shared
+#include <symbian/epocroot_p.h> // from tools/shared
+#include <windows/registry_p.h> // from tools/shared
 
 QT_BEGIN_NAMESPACE
 
@@ -153,7 +153,7 @@ Compiler Environment::detectCompiler()
     QString paths = qgetenv("PATH");
     QStringList pathlist = paths.toLower().split(";");
     for(int i = 0; compiler_info[i].compiler; ++i) {
-        QString productPath = readRegistryKey(HKEY_LOCAL_MACHINE, compiler_info[i].regKey).toLower();
+        QString productPath = qt_readRegistryKey(HKEY_LOCAL_MACHINE, compiler_info[i].regKey).toLower();
         if (productPath.length()) {
             QStringList::iterator it;
             for(it = pathlist.begin(); it != pathlist.end(); ++it) {
@@ -456,8 +456,8 @@ bool Environment::rmdir(const QString &name)
 
 QString Environment::symbianEpocRoot()
 {
-    // Call function defined in tools/shared/symbian/epocroot.h
-    return ::epocRoot();
+    // Call function defined in tools/shared/symbian/epocroot_p.h
+    return ::qt_epocRoot();
 }
 
 QT_END_NAMESPACE

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -101,7 +101,7 @@ private:
         NotGesture,
         MaybeGesture // this means timers are up and waiting for some
                      // more events, and input events are handled by
-                     // gesture recognizer explicitely
+                     // gesture recognizer explicitly
     } state;
 
     struct ObjectGesture
@@ -130,6 +130,7 @@ private:
 
     QHash<QGestureRecognizer *, QSet<QGesture *> > m_obsoleteGestures;
     QHash<QGesture *, QGestureRecognizer *> m_deletedRecognizers;
+    QSet<QGesture *> m_gesturesToDelete;
     void cleanupGesturesForRemovedRecognizer(QGesture *gesture);
 
     QGesture *getState(QObject *widget, QGestureRecognizer *recognizer,

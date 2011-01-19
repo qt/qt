@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -68,7 +68,7 @@ class QDeclarativeExpression;
 class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativePropertyPrivate
 {
 public:
-    enum WriteFlag { BypassInterceptor = 0x01, DontRemoveBinding = 0x02 };
+    enum WriteFlag { BypassInterceptor = 0x01, DontRemoveBinding = 0x02, RemoveBindingOnAliasWrite = 0x04 };
     Q_DECLARE_FLAGS(WriteFlags, WriteFlag)
 
     QDeclarativePropertyPrivate()
@@ -108,9 +108,13 @@ public:
                                   const QVariant &value, int flags);
     static bool write(QObject *, const QDeclarativePropertyCache::Data &, const QVariant &, 
                       QDeclarativeContextData *, WriteFlags flags = 0);
+    static void findAliasTarget(QObject *, int, QObject **, int *);
     static QDeclarativeAbstractBinding *setBinding(QObject *, int coreIndex, int valueTypeIndex /* -1 */,
                                                    QDeclarativeAbstractBinding *,
                                                    WriteFlags flags = DontRemoveBinding);
+    static QDeclarativeAbstractBinding *setBindingNoEnable(QObject *, int coreIndex, int valueTypeIndex /* -1 */,
+                                                           QDeclarativeAbstractBinding *);
+    static QDeclarativeAbstractBinding *binding(QObject *, int coreIndex, int valueTypeIndex /* -1 */);
 
     static QByteArray saveValueType(const QMetaObject *, int, 
                                     const QMetaObject *, int);
@@ -119,7 +123,6 @@ public:
 
     static bool equal(const QMetaObject *, const QMetaObject *);
     static bool canConvert(const QMetaObject *from, const QMetaObject *to);
-
 
     // "Public" (to QML) methods
     static QDeclarativeAbstractBinding *binding(const QDeclarativeProperty &that);
@@ -136,6 +139,7 @@ public:
     static bool connect(const QObject *sender, int signal_index,
                         const QObject *receiver, int method_index,
                         int type = 0, int *types = 0);
+    static const QMetaObject *metaObjectForProperty(const QMetaObject *, int);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDeclarativePropertyPrivate::WriteFlags)

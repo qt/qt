@@ -47,10 +47,28 @@
 #include <QProcess>
 #include <QFileInfo>
 #include <QDir>
+#include <QTime>
+#include <QPointer>
 
 #ifndef QMAKESPEC
 #define QMAKESPEC "Unknown"
 #endif
+
+#if defined(Q_OS_WIN)
+#include <QtCore/qt_windows.h>
+#endif
+#if defined(Q_OS_UNIX)
+#include <time.h>
+#endif
+void BaselineProtocol::sysSleep(int ms)
+{
+#if defined(Q_OS_WIN)
+    Sleep(DWORD(ms));
+#else
+    struct timespec ts = { ms / 1000, (ms % 1000) * 1000 * 1000 };
+    nanosleep(&ts, NULL);
+#endif
+}
 
 PlatformInfo::PlatformInfo(bool useLocal)
     : QMap<QString, QString>()
@@ -111,11 +129,10 @@ PlatformInfo::PlatformInfo(bool useLocal)
 
 ImageItem &ImageItem::operator=(const ImageItem &other)
 {
-    scriptName = other.scriptName;
-    scriptChecksum = other.scriptChecksum;
+    testFunction = other.testFunction;
+    itemName = other.itemName;
+    itemChecksum = other.itemChecksum;
     status = other.status;
-    renderFormat = other.renderFormat;
-    engine = other.engine;
     image = other.image;
     imageChecksums = other.imageChecksums;
     return *this;
@@ -141,12 +158,6 @@ quint64 ImageItem::computeChecksum(const QImage &image)
             p += bpl;
         }
     }
-    if (img.format() == QImage::Format_RGB32) {    // Thank you, Haavard
-        quint32 *p = (quint32 *)img.bits();
-        const quint32 *end = p + (img.byteCount()/4);
-        while (p<end)
-            *p++ &= RGB_MASK;
-    }
 
     quint32 h1 = 0xfeedbacc;
     quint32 h2 = 0x21604894;
@@ -154,6 +165,7 @@ quint64 ImageItem::computeChecksum(const QImage &image)
     return (quint64(h1) << 32) | h2;
 }
 
+#if 0
 QString ImageItem::engineAsString() const
 {
     switch (engine) {
@@ -194,23 +206,67 @@ QString ImageItem::formatAsString() const
         return QLS("UnknownFormat");
     return QLS(formatNames[renderFormat]);
 }
+#endif
+
+void ImageItem::writeImageToStream(QDataStream &out) const
+{
+    if (image.isNull() || image.format() == QImage::Format_Invalid) {
+        out << quint8(0);
+        return;
+    }
+    out << quint8('Q') << quint8(image.format());
+    out << quint8(QSysInfo::ByteOrder) << quint8(0);       // pad to multiple of 4 bytes
+    out << quint32(image.width()) << quint32(image.height()) << quint32(image.bytesPerLine());
+    out << qCompress((const uchar *)image.constBits(), image.byteCount());
+    //# can be followed by colormap for formats that use it
+}
+
+void ImageItem::readImageFromStream(QDataStream &in)
+{
+    quint8 hdr, fmt, endian, pad;
+    quint32 width, height, bpl;
+    QByteArray data;
+
+    in >> hdr;
+    if (hdr != 'Q') {
+        image = QImage();
+        return;
+    }
+    in >> fmt >> endian >> pad;
+    if (!fmt || fmt >= QImage::NImageFormats) {
+        image = QImage();
+        return;
+    }
+    if (endian != QSysInfo::ByteOrder) {
+        qWarning("ImageItem cannot read streamed image with different endianness");
+        image = QImage();
+        return;
+    }
+    in >> width >> height >> bpl;
+    in >> data;
+    data = qUncompress(data);
+    QImage res((const uchar *)data.constData(), width, height, bpl, QImage::Format(fmt));
+    image = res.copy();  //# yuck, seems there is currently no way to avoid data copy
+}
 
 QDataStream & operator<< (QDataStream &stream, const ImageItem &ii)
 {
-    stream << ii.scriptName << ii.scriptChecksum << quint8(ii.status) << quint8(ii.renderFormat)
-           << quint8(ii.engine) << ii.image << ii.imageChecksums;
+    stream << ii.testFunction << ii.itemName << ii.itemChecksum << quint8(ii.status) << ii.imageChecksums;
+    ii.writeImageToStream(stream);
     return stream;
 }
 
 QDataStream & operator>> (QDataStream &stream, ImageItem &ii)
 {
-    quint8 encFormat, encStatus, encEngine;
-    stream >> ii.scriptName >> ii.scriptChecksum >> encStatus >> encFormat
-           >> encEngine >> ii.image >> ii.imageChecksums;
-    ii.renderFormat = QImage::Format(encFormat);
+    quint8 encStatus;
+    stream >> ii.testFunction >> ii.itemName >> ii.itemChecksum >> encStatus >> ii.imageChecksums;
     ii.status = ImageItem::ItemStatus(encStatus);
-    ii.engine = ImageItem::GraphicsEngine(encEngine);
+    ii.readImageFromStream(stream);
     return stream;
+}
+
+BaselineProtocol::BaselineProtocol()
+{
 }
 
 BaselineProtocol::~BaselineProtocol()
@@ -221,7 +277,7 @@ BaselineProtocol::~BaselineProtocol()
 }
 
 
-bool BaselineProtocol::connect()
+bool BaselineProtocol::connect(const QString &testCase, bool *dryrun)
 {
     errMsg.clear();
     QByteArray serverName(qgetenv("QT_LANCELOT_SERVER"));
@@ -230,11 +286,15 @@ bool BaselineProtocol::connect()
 
     socket.connectToHost(serverName, ServerPort);
     if (!socket.waitForConnected(Timeout)) {
-        errMsg += QLS("TCP connectToHost failed. Host:") + serverName + QLS(" port:") + QString::number(ServerPort);
-        return false;
+        sysSleep(Timeout);  // Wait a bit and try again, the server might just be restarting
+        if (!socket.waitForConnected(Timeout)) {
+            errMsg += QLS("TCP connectToHost failed. Host:") + serverName + QLS(" port:") + QString::number(ServerPort);
+            return false;
+        }
     }
 
     PlatformInfo pi(true);
+    pi.insert(PI_TestCase, testCase);
     QByteArray block;
     QDataStream ds(&block, QIODevice::ReadWrite);
     ds << pi;
@@ -243,9 +303,22 @@ bool BaselineProtocol::connect()
         return false;
     }
 
-    Command cmd = Ack;
-    if (!receiveBlock(&cmd, &block) || cmd != Ack) {
+    Command cmd = UnknownError;
+    if (!receiveBlock(&cmd, &block)) {
         errMsg += QLS("Failed to get response from server.");
+        return false;
+    }
+
+    if (cmd == Abort) {
+        errMsg += QLS("Server aborted connection. Reason: ") + QString::fromLatin1(block);
+        return false;
+    }
+
+    if (dryrun)
+        *dryrun = (cmd == DoDryRun);
+
+    if (cmd != Ack && cmd != DoDryRun) {
+        errMsg += QLS("Unexpected response from server.");
         return false;
     }
 
@@ -268,17 +341,19 @@ bool BaselineProtocol::acceptConnection(PlatformInfo *pi)
         pi->insert(PI_HostAddress, socket.peerAddress().toString());
     }
 
-    if (!sendBlock(Ack, QByteArray()))
-        return false;
     return true;
 }
 
 
-bool BaselineProtocol::requestBaselineChecksums(ImageItemList *itemList)
+bool BaselineProtocol::requestBaselineChecksums(const QString &testFunction, ImageItemList *itemList)
 {
     errMsg.clear();
     if (!itemList)
         return false;
+
+    for(ImageItemList::iterator it = itemList->begin(); it != itemList->end(); it++)
+        it->testFunction = testFunction;
+
     QByteArray block;
     QDataStream ds(&block, QIODevice::ReadWrite);
     ds << *itemList;

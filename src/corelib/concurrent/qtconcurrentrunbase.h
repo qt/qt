@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -100,7 +100,18 @@ public:
             this->reportFinished();
             return;
         }
-        this->runFunctor();
+#ifndef QT_NO_EXCEPTIONS
+        try {
+#endif
+            this->runFunctor();
+#ifndef QT_NO_EXCEPTIONS
+        } catch (QtConcurrent::Exception &e) {
+            QFutureInterface<T>::reportException(e);
+        } catch (...) {
+            QFutureInterface<T>::reportException(QtConcurrent::UnhandledException());
+        }
+#endif
+
         this->reportResult(result);
         this->reportFinished();
     }
@@ -117,7 +128,17 @@ public:
             this->reportFinished();
             return;
         }
-        this->runFunctor();
+#ifndef QT_NO_EXCEPTIONS
+        try {
+#endif
+            this->runFunctor();
+#ifndef QT_NO_EXCEPTIONS
+        } catch (QtConcurrent::Exception &e) {
+            QFutureInterface<void>::reportException(e);
+        } catch (...) {
+            QFutureInterface<void>::reportException(QtConcurrent::UnhandledException());
+        }
+#endif
         this->reportFinished();
     }
 };

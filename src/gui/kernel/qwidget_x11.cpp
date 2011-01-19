@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -905,8 +905,17 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
             inputContext->setFocusWidget(q);
     }
 
-    if (destroyw)
+    if (destroyw) {
         qt_XDestroyWindow(q, dpy, destroyw);
+        if (QTLWExtra *topData = maybeTopData()) {
+#ifndef QT_NO_XSYNC
+            if (topData->syncUpdateCounter)
+                XSyncDestroyCounter(dpy, topData->syncUpdateCounter);
+#endif
+            // we destroyed our old window - reset the top-level state
+            createTLSysExtra();
+        }
+    }
 
     // newly created windows are positioned at the window system's
     // (0,0) position. If the parent uses wrect mapping to expand the

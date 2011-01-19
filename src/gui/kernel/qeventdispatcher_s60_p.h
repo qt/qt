@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -56,7 +56,36 @@
 #include <private/qeventdispatcher_symbian_p.h>
 #include "qt_s60_p.h"
 
+#include <eikenv.h>
+
 QT_BEGIN_NAMESPACE
+
+class QEventDispatcherS60;
+
+class QtEikonEnv : public CEikonEnv
+{
+public:
+    QtEikonEnv();
+    ~QtEikonEnv();
+
+    // from CActive.
+    void RunL();
+    void DoCancel();
+
+    void complete();
+
+private:
+    // Workaround for a BC break from S60 3.2 -> 5.0, where the CEikonEnv override was removed.
+    // To avoid linking to that when we build against 3.2, define an empty body here.
+    // Reserved_*() have been verified to be empty in the S60 code.
+    void Reserved_1() {}
+    void Reserved_2() {}
+
+private:
+    int m_lastIterationCount;
+    TInt m_savedStatusCode;
+    bool m_hasAlreadyRun;
+};
 
 class Q_GUI_EXPORT QEventDispatcherS60 : public QEventDispatcherSymbian
 {
@@ -72,6 +101,8 @@ public:
     bool excludeUserInputEvents() { return m_noInputEvents; }
 
     void saveInputEvent(QSymbianControl *control, QWidget *widget, QInputEvent *event);
+
+    void reactivateDeferredActiveObjects();
 
 private:
     bool sendDeferredInputEvents();

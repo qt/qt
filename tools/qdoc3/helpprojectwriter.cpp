@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -49,6 +49,7 @@
 #include "config.h"
 #include "node.h"
 #include "tree.h"
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -250,8 +251,9 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
     foreach (const QString &name, project.subprojects.keys()) {
         SubProject subproject = project.subprojects[name];
         // No selectors: accept all nodes.
-        if (subproject.selectors.isEmpty())
+        if (subproject.selectors.isEmpty()) {
             project.subprojects[name].nodes[objName] = node;
+        }
         else if (subproject.selectors.contains(node->type())) {
             // Accept only the node types in the selectors hash.
             if (node->type() != Node::Fake)
@@ -262,9 +264,10 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
                 const FakeNode *fakeNode = static_cast<const FakeNode *>(node);
                 if (subproject.selectors[node->type()].contains(fakeNode->subType()) &&
                     fakeNode->subType() != Node::ExternalPage &&
-                    !fakeNode->fullTitle().isEmpty())
+                    !fakeNode->fullTitle().isEmpty()) {
 
                     project.subprojects[name].nodes[objName] = node;
+                }
             }
         }
     }
@@ -527,13 +530,11 @@ void HelpProjectWriter::writeNode(HelpProject &project, QXmlStreamWriter &writer
             writer.writeStartElement("section");
             writer.writeAttribute("ref", href);
             writer.writeAttribute("title", fakeNode->fullTitle());
-            //            qDebug() << "Title:" << fakeNode->fullTitle();
             
-            if (fakeNode->subType() == Node::HeaderFile) {
-
+            if ((fakeNode->subType() == Node::HeaderFile) || (fakeNode->subType() == Node::QmlClass)) {
                 // Write subsections for all members, obsolete members and Qt 3
                 // members.
-                if (!project.memberStatus[node].isEmpty()) {
+                if (!project.memberStatus[node].isEmpty() || (fakeNode->subType() == Node::QmlClass)) {
                     QString membersPath = href.left(href.size()-5) + "-members.html";
                     writer.writeStartElement("section");
                     writer.writeAttribute("ref", membersPath);
@@ -690,8 +691,9 @@ void HelpProjectWriter::generateProject(HelpProject &project)
             if (subproject.sortPages) {
                 QStringList titles = subproject.nodes.keys();
                 titles.sort();
-                foreach (const QString &title, titles)
+                foreach (const QString &title, titles) {
                     writeNode(project, writer, subproject.nodes[title]);
+                }
             } else {
                 // Find a contents node and navigate from there, using the NextLink values.
                 foreach (const Node *node, subproject.nodes) {

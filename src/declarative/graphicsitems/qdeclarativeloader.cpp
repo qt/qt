@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -48,7 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 QDeclarativeLoaderPrivate::QDeclarativeLoaderPrivate()
-    : item(0), component(0), ownComponent(false)
+    : item(0), component(0), ownComponent(false), isComponentComplete(false)
 {
 }
 
@@ -129,14 +129,40 @@ void QDeclarativeLoaderPrivate::initResize()
 
     The loaded item can be accessed using the \l item property.
 
-    Loader is like any other visual item and must be positioned and sized 
-    accordingly to become visible. Once the component is loaded, the Loader 
-    is automatically resized to the size of the component.
-
     If the \l source or \l sourceComponent changes, any previously instantiated
     items are destroyed. Setting \l source to an empty string or setting
     \l sourceComponent to \c undefined destroys the currently loaded item,
     freeing resources and leaving the Loader empty.
+
+    \section2 Loader sizing behavior
+
+    Loader is like any other visual item and must be positioned and sized
+    accordingly to become visible.
+
+    \list
+    \o If an explicit size is not specified for the Loader, the Loader
+    is automatically resized to the size of the loaded item once the
+    component is loaded.
+    \o If the size of the Loader is specified explicitly by setting
+    the width, height or by anchoring, the loaded item will be resized
+    to the size of the Loader.
+    \endlist
+
+    In both scenarios the size of the item and the Loader are identical.
+    This ensures that anchoring to the Loader is equivalent to anchoring
+    to the loaded item.
+
+    \table
+    \row
+    \o sizeloader.qml
+    \o sizeitem.qml
+    \row
+    \o \snippet doc/src/snippets/declarative/loader/sizeloader.qml 0
+    \o \snippet doc/src/snippets/declarative/loader/sizeitem.qml 0
+    \row
+    \o The red rectangle will be sized to the size of the root item.
+    \o The red rectangle will be 50x50, centered in the root item.
+    \endtable
 
 
     \section2 Receiving signals from loaded items
@@ -236,6 +262,7 @@ void QDeclarativeLoader::setSource(const QUrl &url)
     d->clear();
 
     d->source = url;
+
     if (d->source.isEmpty()) {
         emit sourceChanged();
         emit statusChanged();
@@ -246,18 +273,9 @@ void QDeclarativeLoader::setSource(const QUrl &url)
 
     d->component = new QDeclarativeComponent(qmlEngine(this), d->source, this);
     d->ownComponent = true;
-    if (!d->component->isLoading()) {
-        d->_q_sourceLoaded();
-    } else {
-        connect(d->component, SIGNAL(statusChanged(QDeclarativeComponent::Status)),
-                this, SLOT(_q_sourceLoaded()));
-        connect(d->component, SIGNAL(progressChanged(qreal)),
-                this, SIGNAL(progressChanged()));
-        emit statusChanged();
-        emit progressChanged();
-        emit sourceChanged();
-        emit itemChanged();
-    }
+
+    if (d->isComponentComplete)
+        d->load();
 }
 
 /*!
@@ -298,6 +316,7 @@ void QDeclarativeLoader::setSourceComponent(QDeclarativeComponent *comp)
 
     d->component = comp;
     d->ownComponent = false;
+
     if (!d->component) {
         emit sourceChanged();
         emit statusChanged();
@@ -306,23 +325,34 @@ void QDeclarativeLoader::setSourceComponent(QDeclarativeComponent *comp)
         return;
     }
 
-    if (!d->component->isLoading()) {
-        d->_q_sourceLoaded();
-    } else {
-        connect(d->component, SIGNAL(statusChanged(QDeclarativeComponent::Status)),
-                this, SLOT(_q_sourceLoaded()));
-        connect(d->component, SIGNAL(progressChanged(qreal)),
-                this, SIGNAL(progressChanged()));
-        emit progressChanged();
-        emit sourceChanged();
-        emit statusChanged();
-        emit itemChanged();
-    }
+    if (d->isComponentComplete)
+        d->load();
 }
 
 void QDeclarativeLoader::resetSourceComponent()
 {
     setSourceComponent(0);
+}
+
+void QDeclarativeLoaderPrivate::load()
+{
+    Q_Q(QDeclarativeLoader);
+
+    if (!isComponentComplete || !component)
+        return;
+
+    if (!component->isLoading()) {
+        _q_sourceLoaded();
+    } else {
+        QObject::connect(component, SIGNAL(statusChanged(QDeclarativeComponent::Status)),
+                q, SLOT(_q_sourceLoaded()));
+        QObject::connect(component, SIGNAL(progressChanged(qreal)),
+                q, SIGNAL(progressChanged()));
+        emit q->statusChanged();
+        emit q->progressChanged();
+        emit q->sourceChanged();
+        emit q->itemChanged();
+    }
 }
 
 void QDeclarativeLoaderPrivate::_q_sourceLoaded()
@@ -343,12 +373,14 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
         QDeclarativeContext *ctxt = new QDeclarativeContext(creationContext);
         ctxt->setContextObject(q);
 
-        QDeclarativeComponent *c = component;
-        QObject *obj = component->create(ctxt);
+        QDeclarativeGuard<QDeclarativeComponent> c = component;
+        QObject *obj = component->beginCreate(ctxt);
         if (component != c) {
             // component->create could trigger a change in source that causes
             // component to be set to something else. In that case we just
             // need to cleanup.
+            if (c)
+                c->completeCreate();
             delete obj;
             delete ctxt;
             return;
@@ -373,6 +405,7 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
             delete ctxt;
             source = QUrl();
         }
+        component->completeCreate();
         emit q->sourceChanged();
         emit q->statusChanged();
         emit q->progressChanged();
@@ -395,23 +428,25 @@ void QDeclarativeLoaderPrivate::_q_sourceLoaded()
     Use this status to provide an update or respond to the status change in some way.
     For example, you could:
 
-    \e {Trigger a state change:}
-    \qml 
-        State { name: 'loaded'; when: loader.status = Loader.Ready }
+    \list
+    \o Trigger a state change:
+    \qml
+        State { name: 'loaded'; when: loader.status == Loader.Ready }
     \endqml
 
-    \e {Implement an \c onStatusChanged signal handler:}
-    \qml 
+    \o Implement an \c onStatusChanged signal handler:
+    \qml
         Loader {
             id: loader
             onStatusChanged: if (loader.status == Loader.Ready) console.log('Loaded')
         }
     \endqml
 
-    \e {Bind to the status value:}
+    \o Bind to the status value:
     \qml
-        Text { text: loader.status != Loader.Ready ? 'Not Loaded' : 'Loaded' }
+        Text { text: loader.status == Loader.Ready ? 'Loaded' : 'Not loaded' }
     \endqml
+    \endlist
 
     Note that if the source is a local file, the status will initially be Ready (or Error). While
     there will be no onStatusChanged signal in that case, the onLoaded will still be invoked.
@@ -434,9 +469,11 @@ QDeclarativeLoader::Status QDeclarativeLoader::status() const
 
 void QDeclarativeLoader::componentComplete()
 {
+    Q_D(QDeclarativeLoader);
+
     QDeclarativeItem::componentComplete();
-    if (status() == Ready)
-        emit loaded();
+    d->isComponentComplete = true;
+    d->load();
 }
 
 

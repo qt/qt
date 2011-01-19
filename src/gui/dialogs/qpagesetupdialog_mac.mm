@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,7 +61,7 @@ QT_USE_NAMESPACE
 @end
 
 @implementation QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate)
-- (id)initWithMacPrintEngine:(QMacPrintEnginePrivate *)printEngine;
+- (id)initWithMacPrintEngine:(QMacPrintEnginePrivate *)printEngine
 {
     self = [super init];
     if (self) {
@@ -312,4 +312,4 @@ int QPageSetupDialog::exec()
 
 QT_END_NAMESPACE
 
-#endif QT_NO_PRINTDIALOG
+#endif /* QT_NO_PRINTDIALOG */

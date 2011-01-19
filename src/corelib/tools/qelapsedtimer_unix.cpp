@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -165,6 +165,17 @@ void QElapsedTimer::start()
 qint64 QElapsedTimer::restart()
 {
     return elapsedAndRestart(t1, t2, &t1, &t2);
+}
+
+qint64 QElapsedTimer::nsecsElapsed() const
+{
+    qint64 sec, frac;
+    do_gettime(&sec, &frac);
+    sec = sec - t1;
+    frac = frac - t2;
+    if (!monotonicClockAvailable)
+        frac *= 1000;
+    return sec * Q_INT64_C(1000000000) + frac;
 }
 
 qint64 QElapsedTimer::elapsed() const

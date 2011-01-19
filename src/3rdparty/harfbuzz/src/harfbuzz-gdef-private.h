@@ -33,11 +33,6 @@
 
 HB_BEGIN_HEADER
 
-
-#ifdef HB_USE_PACKED_STRUCTS
-#pragma pack(push, 1)
-#endif
-
 /* Attachment related structures */
 
 struct  HB_AttachPoint_
@@ -125,10 +120,6 @@ _HB_GDEF_LoadMarkAttachClassDef_From_LookupFlags( HB_GDEFHeader* gdef,
 						  HB_Stream      input,
 						  HB_Lookup*     lo,
 						  HB_UShort      num_lookups );
-
-#ifdef HB_USE_PACKED_STRUCTS
-#pragma pack(pop)
-#endif
 
 HB_END_HEADER
 

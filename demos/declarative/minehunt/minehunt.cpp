@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -211,7 +211,7 @@ bool MinehuntGame::flip(int row, int col)
 bool MinehuntGame::flag(int row, int col)
 {
     TileData *t = tile(row, col);
-    if(!t || !playing)
+    if(!t || !playing || t->flipped())
         return false;
 
     t->setHasFlag(!t->hasFlag());

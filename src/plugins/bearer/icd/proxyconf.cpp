@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -142,16 +142,23 @@ QHash<QString,QVariant> GConfItemFast::getEntries() const
 
 
 
-class NetworkProxyFactory : QNetworkProxyFactory {
+class NetworkProxyFactory : QNetworkProxyFactory
+{
+    ProxyConf proxy_conf;
+    bool proxy_data_read;
+
 public:
-    NetworkProxyFactory() { }
+    NetworkProxyFactory() : proxy_data_read(false) {  }
     QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query = QNetworkProxyQuery());
 };
 
 
 QList<QNetworkProxy> NetworkProxyFactory::queryProxy(const QNetworkProxyQuery &query)
 {
-    ProxyConf proxy_conf;
+    if (proxy_data_read == false) {
+        proxy_data_read = true;
+        proxy_conf.readProxyData();
+    }
 
     QList<QNetworkProxy> result = proxy_conf.flush(query);
     if (result.isEmpty())
@@ -299,12 +306,12 @@ QList<QNetworkProxy> ProxyConfPrivate::flush(const QNetworkProxyQuery &query)
     if (isHostExcluded(query.peerHostName()))
         return result;          // no proxy for this host
 
-    if (mode == "auto") {
+    if (mode == QLatin1String("AUTO")) {
         // TODO: pac currently not supported, fix me
         return result;
     }
 
-    if (mode == "manual") {
+    if (mode == QLatin1String("MANUAL")) {
         bool isHttps = false;
 	QString protocol = query.protocolTag().toLower();
 
@@ -377,10 +384,13 @@ ProxyConf::~ProxyConf()
     delete d_ptr;
 }
 
+void ProxyConf::readProxyData()
+{
+    d_ptr->readProxyData();
+}
 
 QList<QNetworkProxy> ProxyConf::flush(const QNetworkProxyQuery &query)
 {
-    d_ptr->readProxyData();
     return d_ptr->flush(query);
 }
 

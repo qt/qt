@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -83,6 +83,7 @@ public:
                     IsConstant        = 0x00000001,
                     IsWritable        = 0x00000002,
                     IsResettable      = 0x00000004,
+                    IsAlias           = 0x00000008,
 
                     // These are mutualy exclusive
                     IsFunction        = 0x00000010,

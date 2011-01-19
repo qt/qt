@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -441,7 +441,7 @@ bool QUndoStackPrivate::checkUndoLimit()
 
 /*!
     Constructs an empty undo stack with the parent \a parent. The
-    stack will initally be in the clean state. If \a parent is a
+    stack will initially be in the clean state. If \a parent is a
     QUndoGroup object, the stack is automatically added to the group.
 
     \sa push()

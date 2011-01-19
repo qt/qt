@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -88,18 +88,6 @@ QNetworkAccessBackendFactory::~QNetworkAccessBackendFactory()
 QNetworkAccessBackend *QNetworkAccessManagerPrivate::findBackend(QNetworkAccessManager::Operation op,
                                                                  const QNetworkRequest &request)
 {
-    QNetworkRequest::CacheLoadControl mode =
-        static_cast<QNetworkRequest::CacheLoadControl>(
-            request.attribute(QNetworkRequest::CacheLoadControlAttribute,
-                              QNetworkRequest::PreferNetwork).toInt());
-    if (mode == QNetworkRequest::AlwaysCache
-        && (op == QNetworkAccessManager::GetOperation
-        || op == QNetworkAccessManager::HeadOperation)) {
-        QNetworkAccessBackend *backend = new QNetworkAccessCacheBackend;
-        backend->manager = this;
-        return backend;
-    }
-
     if (!factoryDataShutdown) {
         QMutexLocker locker(&factoryData()->mutex);
         QNetworkAccessBackendFactoryData::ConstIterator it = factoryData()->constBegin(),
@@ -154,6 +142,7 @@ void QNetworkAccessBackend::emitReplyUploadProgress(qint64 bytesSent, qint64 byt
 QNetworkAccessBackend::QNetworkAccessBackend()
     : manager(0)
     , reply(0)
+    , synchronous(false)
 {
 }
 

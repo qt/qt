@@ -59,6 +59,8 @@ SOURCES += \
            ../../corelib/io/qdiriterator.cpp \
            ../../corelib/io/qfile.cpp \
            ../../corelib/io/qfileinfo.cpp \
+           ../../corelib/io/qfilesystementry.cpp \
+           ../../corelib/io/qfilesystemengine.cpp \
            ../../corelib/io/qfsfileengine.cpp \
            ../../corelib/io/qfsfileengine_iterator.cpp \
            ../../corelib/io/qiodevice.cpp \
@@ -67,6 +69,7 @@ SOURCES += \
            ../../corelib/io/qurl.cpp \
            ../../corelib/kernel/qmetatype.cpp \
            ../../corelib/kernel/qvariant.cpp \
+           ../../corelib/kernel/qsystemerror.cpp \
            ../../corelib/tools/qbitarray.cpp \
            ../../corelib/tools/qbytearray.cpp \
            ../../corelib/tools/qbytearraymatcher.cpp \
@@ -81,19 +84,22 @@ SOURCES += \
            ../../corelib/tools/qvector.cpp \
            ../../corelib/tools/qvsnprintf.cpp \
            ../../corelib/xml/qxmlutils.cpp \
-	   ../../corelib/xml/qxmlstream.cpp \
+           ../../corelib/xml/qxmlstream.cpp \
            ../../xml/dom/qdom.cpp \
            ../../xml/sax/qxml.cpp
 
-unix:SOURCES += ../../corelib/io/qfsfileengine_unix.cpp \
-                ../../corelib/io/qfsfileengine_iterator_unix.cpp
+unix:SOURCES += ../../corelib/io/qfilesystemengine_unix.cpp \
+                ../../corelib/io/qfilesystemiterator_unix.cpp \
+                ../../corelib/io/qfsfileengine_unix.cpp
 
-win32:SOURCES += ../../corelib/io/qfsfileengine_win.cpp \
-                 ../../corelib/io/qfsfileengine_iterator_win.cpp \
+win32:SOURCES += ../../corelib/io/qfilesystemengine_win.cpp \
+                 ../../corelib/io/qfilesystemiterator_win.cpp \
+                 ../../corelib/io/qfsfileengine_win.cpp \
                  ../../corelib/plugin/qsystemlibrary.cpp \
 
 macx: {
    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.4 #enables weak linking for 10.4 (exported)
+   SOURCES += ../../corelib/io/qfilesystemengine_mac.cpp
    SOURCES += ../../corelib/kernel/qcore_mac.cpp
    LIBS += -framework CoreServices
 }

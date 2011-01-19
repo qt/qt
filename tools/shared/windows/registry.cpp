@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,8 +40,11 @@
 ****************************************************************************/
 
 #include <QtCore/qstringlist.h>
-#include "registry.h"
+#include "registry_p.h"
 
+QT_BEGIN_NAMESPACE
+
+#ifdef Q_OS_WIN32
 /*!
   Returns the path part of a registry key.
   e.g.
@@ -73,12 +76,13 @@ static QString keyName(const QString &rKey)
         return rKey;
 
     QString res(rKey.mid(idx + 1));
-    if (res == "Default" || res == ".")
-        res = "";
+    if (res == QLatin1String("Default") || res == QLatin1String("."))
+        res = QString();
     return res;
 }
+#endif
 
-QString readRegistryKey(HKEY parentHandle, const QString &rSubkey)
+QString qt_readRegistryKey(HKEY parentHandle, const QString &rSubkey)
 {
     QString result;
 
@@ -128,7 +132,7 @@ QString readRegistryKey(HKEY parentHandle, const QString &rSubkey)
                     break;
                 l.append(s);
             }
-            result = l.join(", ");
+            result = l.join(QLatin1String(", "));
             break;
         }
 
@@ -153,9 +157,13 @@ QString readRegistryKey(HKEY parentHandle, const QString &rSubkey)
     }
 
     RegCloseKey(handle);
+#else
+    Q_UNUSED(parentHandle);
+    Q_UNUSED(rSubkey)
 #endif
 
     return result;
 }
 
+QT_END_NAMESPACE
 

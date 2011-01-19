@@ -38,6 +38,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#define QT_USE_FAST_CONCATENATION
+#define QT_USE_FAST_OPERATOR_PLUS
+
 #include "baselineserver.h"
 #include <QBuffer>
 #include <QFile>
@@ -47,11 +51,18 @@
 #include <QHostInfo>
 #include <QTextStream>
 #include <QProcess>
+#include <QDirIterator>
+
+// extra fields, for use in image metadata storage
+const QString PI_ImageChecksum(QLS("ImageChecksum"));
+const QString PI_RunId(QLS("RunId"));
+const QString PI_CreationDate(QLS("CreationDate"));
 
 QString BaselineServer::storage;
+QString BaselineServer::url;
 
 BaselineServer::BaselineServer(QObject *parent)
-    : QTcpServer(parent)
+    : QTcpServer(parent), lastRunIdIdx(0)
 {
     QFileInfo me(QCoreApplication::applicationFilePath());
     meLastMod = me.lastModified();
@@ -63,26 +74,34 @@ BaselineServer::BaselineServer(QObject *parent)
 QString BaselineServer::storagePath()
 {
     if (storage.isEmpty()) {
-        QByteArray envDir = qgetenv("QT_LANCELOT_DIR");
-        if (!envDir.isEmpty())
-            storage = QLS(envDir.append('/'));
-        else
-            storage =  QLS("/var/www/");
+        storage = QLS(qgetenv("QT_LANCELOT_DIR"));
+        if (storage.isEmpty())
+            storage = QLS("/var/www");
     }
     return storage;
 }
 
 QString BaselineServer::baseUrl()
 {
-    return QLS("http://")
-            + QHostInfo::localHostName().toLatin1() + '.'
-            + QHostInfo::localDomainName().toLatin1() + '/';
+    if (url.isEmpty()) {
+        url = QLS("http://")
+                + QHostInfo::localHostName().toLatin1() + '.'
+                + QHostInfo::localDomainName().toLatin1() + '/';
+    }
+    return url;
 }
 
 void BaselineServer::incomingConnection(int socketDescriptor)
 {
-    qDebug() << "Server: New connection!";
-    BaselineThread *thread = new BaselineThread(socketDescriptor, this);
+    QString runId = QDateTime::currentDateTime().toString(QLS("MMMdd-hhmmss"));
+    if (runId == lastRunId) {
+        runId += QLC('-') + QString::number(++lastRunIdIdx);
+    } else {
+        lastRunId = runId;
+        lastRunIdIdx = 0;
+    }
+    qDebug() << "Server: New connection! RunId:" << runId;
+    BaselineThread *thread = new BaselineThread(runId, socketDescriptor, this);
     connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
     thread->start();
 }
@@ -93,9 +112,11 @@ void BaselineServer::heartbeat()
     QFileInfo me(QCoreApplication::applicationFilePath());
     if (me.lastModified() == meLastMod)
         return;
+    if (!me.exists() || !me.isExecutable())
+        return;
 
-    // (could close() here to avoid accepting new connections, to avoid livelock)
-    // also, could check for a timeout to force exit, to avoid hung threads blocking
+    //# (could close() here to avoid accepting new connections, to avoid livelock)
+    //# also, could check for a timeout to force exit, to avoid hung threads blocking
     bool isServing = false;
     foreach(BaselineThread *thread, findChildren<BaselineThread *>()) {
         if (thread->isRunning()) {
@@ -108,23 +129,21 @@ void BaselineServer::heartbeat()
         QCoreApplication::exit();
 }
 
-BaselineThread::BaselineThread(int socketDescriptor, QObject *parent)
-    : QThread(parent), socketDescriptor(socketDescriptor)
+BaselineThread::BaselineThread(const QString &runId, int socketDescriptor, QObject *parent)
+    : QThread(parent), runId(runId), socketDescriptor(socketDescriptor)
 {
 }
 
 void BaselineThread::run()
 {
-    BaselineHandler handler(socketDescriptor);
+    BaselineHandler handler(runId, socketDescriptor);
     exec();
 }
 
 
-BaselineHandler::BaselineHandler(int socketDescriptor)
-    : QObject(), connectionEstablished(false)
+BaselineHandler::BaselineHandler(const QString &runId, int socketDescriptor)
+    : QObject(), runId(runId), connectionEstablished(false)
 {
-    runId = QDateTime::currentDateTime().toString(QLS("MMMdd-hhmmss"));
-
     if (socketDescriptor == -1)
         return;
 
@@ -139,22 +158,43 @@ const char *BaselineHandler::logtime()
     //return QTime::currentTime().toString(QLS("mm:ss.zzz"));
 }
 
+bool BaselineHandler::establishConnection()
+{
+    if (!proto.acceptConnection(&plat)) {
+        qWarning() << runId << logtime() << "Accepting new connection from" << proto.socket.peerAddress().toString() << "failed." << proto.errorMessage();
+        proto.socket.disconnectFromHost();
+        return false;
+    }
+    QString logMsg;
+    foreach (QString key, plat.keys()) {
+        if (key != PI_HostName && key != PI_HostAddress)
+            logMsg += key + QLS(": '") + plat.value(key) + QLS("', ");
+    }
+    qDebug() << runId << logtime() << "Connection established with" << plat.value(PI_HostName)
+             << "[" << qPrintable(plat.value(PI_HostAddress)) << "]" << logMsg;
+
+    // Filter on branch
+    QString branch = plat.value(PI_PulseGitBranch);
+    if (branch.isEmpty()) {
+        // Not run by Pulse, i.e. ad hoc run: Ok.
+    }
+    else if (branch != QLS("master-integration") || !plat.value(PI_GitCommit).contains(QLS("Merge branch 'master' of scm.dev.nokia.troll.no:qt/oslo-staging-2 into master-integration"))) {
+        qDebug() << runId << logtime() << "Did not pass branch/staging repo filter, disconnecting.";
+        proto.sendBlock(BaselineProtocol::Abort, QByteArray("This branch/staging repo is not assigned to be tested."));
+        proto.socket.disconnectFromHost();
+        return false;
+    }
+
+    proto.sendBlock(BaselineProtocol::Ack, QByteArray());
+
+    report.init(this, runId, plat);
+    return true;
+}
+
 void BaselineHandler::receiveRequest()
 {
     if (!connectionEstablished) {
-        if (!proto.acceptConnection(&plat)) {
-            qWarning() << runId << logtime() << "Accepting new connection from" << proto.socket.peerAddress().toString() << "failed." << proto.errorMessage();
-            proto.socket.disconnectFromHost();
-            return;
-        }
-        connectionEstablished = true;
-        QString logMsg;
-        foreach (QString key, plat.keys()) {
-            if (key != PI_HostName && key != PI_HostAddress)
-                logMsg += key + QLS(": '") + plat.value(key) + QLS("', ");
-        }
-        qDebug() << runId << logtime() << "Connection established with" << plat.value(PI_HostName)
-                 << "[" << qPrintable(plat.value(PI_HostAddress)) << "]" << logMsg;
+        connectionEstablished = establishConnection();
         return;
     }
 
@@ -188,34 +228,35 @@ void BaselineHandler::provideBaselineChecksums(const QByteArray &itemListBlock)
     ImageItemList itemList;
     QDataStream ds(itemListBlock);
     ds >> itemList;
-    qDebug() << runId << logtime() << "Received request for checksums for" << itemList.count() << "items, engine"
-             << itemList.at(0).engineAsString() << "pixel format" << itemList.at(0).formatAsString();
+    qDebug() << runId << logtime() << "Received request for checksums for" << itemList.count()
+             << "items in test function" << itemList.at(0).testFunction;
 
     for (ImageItemList::iterator i = itemList.begin(); i != itemList.end(); ++i) {
         i->imageChecksums.clear();
+        i->status = ImageItem::BaselineNotFound;
         QString prefix = pathForItem(*i, true);
-        QFile file(prefix + QLS("metadata"));
-        if (file.open(QIODevice::ReadOnly)) {
-            QDataStream checkSums(&file);
-            checkSums >> i->imageChecksums;
-            file.close();
-            i->status = ImageItem::Ok;
+        PlatformInfo itemData = fetchItemMetadata(prefix);
+        if (itemData.contains(PI_ImageChecksum)) {
+            bool ok = false;
+            quint64 checksum = itemData.value(PI_ImageChecksum).toULongLong(&ok, 16);
+            if (ok) {
+                i->imageChecksums.prepend(checksum);
+                i->status = ImageItem::Ok;
+            }
         }
-        if (!i->imageChecksums.count())
-            i->status = ImageItem::BaselineNotFound;
     }
 
     // Find and mark blacklisted items
+    QString context = pathForItem(itemList.at(0), true, false).section(QLC('/'), 0, -2);
     if (itemList.count() > 0) {
-        QString prefix = pathForItem(itemList.at(0), true).section(QLC('/'), 0, -2);
-        QFile file(prefix + QLS("/.blacklist"));
+        QFile file(BaselineServer::storagePath() + QLC('/') + context + QLS("/BLACKLIST"));
         if (file.open(QIODevice::ReadOnly)) {
             QTextStream in(&file);
             do {
-                QString scriptName = in.readLine();
-                if (!scriptName.isNull()) {
+                QString itemName = in.readLine();
+                if (!itemName.isNull()) {
                     for (ImageItemList::iterator i = itemList.begin(); i != itemList.end(); ++i) {
-                        if (i->scriptName == scriptName)
+                        if (i->itemName == itemName)
                             i->status = ImageItem::IgnoreItem;
                     }
                 }
@@ -227,7 +268,7 @@ void BaselineHandler::provideBaselineChecksums(const QByteArray &itemListBlock)
     QDataStream ods(&block, QIODevice::WriteOnly);
     ods << itemList;
     proto.sendBlock(BaselineProtocol::Ack, block);
-    report.start(BaselineServer::storagePath(), runId, plat, proto.socket.peerAddress().toString(), itemList);
+    report.addItems(itemList);
 }
 
 
@@ -238,7 +279,14 @@ void BaselineHandler::storeImage(const QByteArray &itemBlock, bool isBaseline)
     ds >> item;
 
     QString prefix = pathForItem(item, isBaseline);
-    qDebug() << runId << logtime() << "Received" << (isBaseline ? "baseline" : "mismatched") << "image for:" << item.scriptName << "Storing in" << prefix;
+    qDebug() << runId << logtime() << "Received" << (isBaseline ? "baseline" : "mismatched") << "image for:" << item.itemName << "Storing in" << prefix;
+
+    QString msg;
+    if (isBaseline)
+        msg = QLS("New baseline image stored: ") + pathForItem(item, true, true) + QLS(FileFormat);
+    else
+        msg = BaselineServer::baseUrl() + report.filePath();
+    proto.sendBlock(BaselineProtocol::Ack, msg.toLatin1());
 
     QString dir = prefix.section(QLC('/'), 0, -2);
     QDir cwd;
@@ -246,27 +294,48 @@ void BaselineHandler::storeImage(const QByteArray &itemBlock, bool isBaseline)
         cwd.mkpath(dir);
     item.image.save(prefix + QLS(FileFormat), FileFormat);
 
-    //# Could use QSettings or XML or even DB, could use common file for whole dir or even whole storage - but for now, keep it simple
-    QFile file(prefix + QLS("metadata"));
-    file.open(QIODevice::WriteOnly | QIODevice::Truncate);
-    QDataStream checkSums(&file);
-    checkSums << item.imageChecksums;
-    file.close();
+    PlatformInfo itemData = plat;
+    itemData.insert(PI_ImageChecksum, QString::number(item.imageChecksums.at(0), 16));  //# Only the first is stored. TBD: get rid of list
+    itemData.insert(PI_RunId, runId);
+    itemData.insert(PI_CreationDate, QDateTime::currentDateTime().toString());
+    storeItemMetadata(itemData, prefix);
 
     if (!isBaseline)
-        report.addItem(pathForItem(item, true, false) + QLS(FileFormat),
-                       pathForItem(item, false, false) + QLS(FileFormat),
-                       item);
+        report.addMismatch(item);
+}
 
-    QByteArray msg(isBaseline ? "New baseline image stored: " :
-                                "Mismatch report: " );
-    msg += BaselineServer::baseUrl();
-    if (isBaseline)
-        msg += pathForItem(item, true, false).toLatin1() + FileFormat;
-    else
-        msg += report.filePath();
 
-    proto.sendBlock(BaselineProtocol::Ack, msg);
+void BaselineHandler::storeItemMetadata(const PlatformInfo &metadata, const QString &path)
+{
+    QFile file(path + QLS(MetadataFileExt));
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        qWarning() << runId << logtime() << "ERROR: could not write to file" << file.fileName();
+        return;
+    }
+    QTextStream out(&file);
+    PlatformInfo::const_iterator it = metadata.constBegin();
+    while (it != metadata.constEnd()) {
+        out << it.key()  << ": " << it.value() << endl;
+        ++it;
+    }
+    file.close();
+}
+
+
+PlatformInfo BaselineHandler::fetchItemMetadata(const QString &path)
+{
+    PlatformInfo res;
+    QFile file(path + QLS(MetadataFileExt));
+    if (!file.open(QIODevice::ReadOnly))
+        return res;
+    QTextStream in(&file);
+    do {
+        QString line = in.readLine();
+        int idx = line.indexOf(QLS(": "));
+        if (idx > 0)
+            res.insert(line.left(idx), line.mid(idx+2));
+    } while (!in.atEnd());
+    return res;
 }
 
 
@@ -278,95 +347,98 @@ void BaselineHandler::receiveDisconnect()
 }
 
 
-QString BaselineHandler::itemSubPath(const QString &engine, const QString &format, bool isBaseline)
+void BaselineHandler::mapPlatformInfo() const
 {
-    if (isBaseline)
-        return QString(QLS("baselines_%1_%2/")).arg(engine, format);
-    else
-        return QString(QLS("mismatches_%1_%2/")).arg(engine, format);
-}
+    mapped = plat;
 
-QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline, bool absolute)
-{
-    if (pathForRun.isNull()) {
-        QString host = plat.value(PI_HostName).section(QLC('.'), 0, 0);  // Filter away domain, if any
-        if (host.isEmpty() || host == QLS("localhost")) {
-            host = proto.socket.peerAddress().toString();
-            if (host.isEmpty())
-                host = QLS("Unknown");
-        } else {
-            host.replace(QRegExp(QLS("^(bq|oslo?)-(.*)$")), QLS("\\2"));
-            host.replace(QRegExp(QLS("^(.*)-\\d+$")), QLS("vm-\\1"));
+    // Map hostname
+    QString host = plat.value(PI_HostName).section(QLC('.'), 0, 0);  // Filter away domain, if any
+    if (host.isEmpty() || host == QLS("localhost")) {
+        host = plat.value(PI_HostAddress);
+    } else {
+        if (!plat.value(PI_PulseGitBranch).isEmpty()) {
+            // i.e. pulse run, so remove index postfix typical of vm hostnames
+            host.remove(QRegExp(QLS("\\d+$")));
+            if (host.endsWith(QLC('-')))
+                host.chop(1);
         }
-        pathForRun = host + QLC('/');
     }
+    if (host.isEmpty())
+        host = QLS("unknownhost");
+    mapped.insert(PI_HostName, host);
 
-    QString storePath = pathForRun;
-    if (isBaseline)
-        storePath += itemSubPath(item.engineAsString(), item.formatAsString(), isBaseline);
-    else
-        storePath += itemSubPath(item.engineAsString(), item.formatAsString(), isBaseline) + runId + QLC('/');
+    // Map qmakespec
+    QString mkspec = plat.value(PI_QMakeSpec);
+    mapped.insert(PI_QMakeSpec, mkspec.replace(QLC('/'), QLC('_')));
 
-    QString itemName = item.scriptName;
-    if (itemName.contains(QLC('.')))
-        itemName.replace(itemName.lastIndexOf(QLC('.')), 1, QLC('_'));
+    // Map Qt version
+    QString ver = plat.value(PI_QtVersion);
+    mapped.insert(PI_QtVersion, ver.prepend(QLS("Qt-")));
+}
+
+QString BaselineHandler::pathForItem(const ImageItem &item, bool isBaseline, bool absolute) const
+{
+    if (mapped.isEmpty())
+        mapPlatformInfo();
+
+    QString itemName = item.itemName.simplified();
+    itemName.replace(QLC(' '), QLC('_'));
+    itemName.replace(QLC('.'), QLC('_'));
     itemName.append(QLC('_'));
-    itemName.append(QString::number(item.scriptChecksum, 16).rightJustified(4, QLC('0')));
+    itemName.append(QString::number(item.itemChecksum, 16).rightJustified(4, QLC('0')));
 
+    QStringList path;
     if (absolute)
-        storePath.prepend(BaselineServer::storagePath());
-    return storePath + itemName + QLC('.');
+        path += BaselineServer::storagePath();
+    path += mapped.value(PI_TestCase);
+    path += QLS(isBaseline ? "baselines" : "mismatches");
+    path += item.testFunction;
+    path += mapped.value(PI_QtVersion);
+    path += mapped.value(PI_QMakeSpec);
+    path += mapped.value(PI_HostName);
+    if (!isBaseline)
+        path += runId;
+    path += itemName + QLC('.');
+
+    return path.join(QLS("/"));
 }
 
 
-QString BaselineHandler::updateAllBaselines(const QString &host, const QString &id,
-                                            const QString &engine, const QString &format)
+QString BaselineHandler::view(const QString &baseline, const QString &rendered, const QString &compared)
 {
-    QString basePath(BaselineServer::storagePath());
-    QString srcDir(basePath + host + QLC('/') + itemSubPath(engine, format, false) + id);
-    QString dstDir(basePath + host + QLC('/') + itemSubPath(engine, format));
+    QFile f(":/templates/view.html");
+    f.open(QIODevice::ReadOnly);
+    return QString::fromLatin1(f.readAll()).arg('/'+baseline, '/'+rendered, '/'+compared);
+}
 
-    QDir dir(srcDir);
-    QStringList nameFilter;
-    nameFilter << "*.metadata" << "*.png";
-    QStringList fileList = dir.entryList(nameFilter, QDir::Files | QDir::NoDotAndDotDot);
 
-    // remove the generated _fuzzycompared.png and _compared.png files from the list
-    QMutableStringListIterator it(fileList);
+QString BaselineHandler::clearAllBaselines(const QString &context)
+{
+    int tot = 0;
+    int failed = 0;
+    QDirIterator it(BaselineServer::storagePath() + QLC('/') + context,
+                    QStringList() << QLS("*.") + QLS(FileFormat) << QLS("*.") + QLS(MetadataFileExt));
     while (it.hasNext()) {
-        it.next();
-        if (it.value().endsWith(QLS("compared.png")))
-            it.remove();
+        tot++;
+        if (!QFile::remove(it.next()))
+            failed++;
     }
-
-    QString res;
-    QProcess proc;
-    proc.setWorkingDirectory(srcDir);
-    proc.setProcessChannelMode(QProcess::MergedChannels);
-    proc.start(QLS("cp"), QStringList() << QLS("-f") << fileList << dstDir);
-    proc.waitForFinished();
-    if (proc.exitCode() == 0)
-        res = QLS("Successfully updated baseline for all failed tests.");
-    else
-        res = QString("Error updating baseline: %1<br>"
-                      "Command output: <pre>%2</pre>").arg(proc.errorString(), proc.readAll().constData());
-
-    return res;
+    return QString(QLS("%1 of %2 baselines cleared from context ")).arg((tot-failed)/2).arg(tot/2) + context;
 }
 
 QString BaselineHandler::updateSingleBaseline(const QString &oldBaseline, const QString &newBaseline)
 {
     QString res;
-    QString basePath(BaselineServer::storagePath());
+    QString basePath(BaselineServer::storagePath() + QLC('/'));
     QString srcBase(basePath + newBaseline.left(newBaseline.length() - 3));
     QString dstDir(basePath + oldBaseline.left(oldBaseline.lastIndexOf(QLC('/'))));
 
     QProcess proc;
     proc.setProcessChannelMode(QProcess::MergedChannels);
-    proc.start(QLS("cp"), QStringList() << QLS("-f") << srcBase + QLS("png") << srcBase + QLS("metadata") << dstDir);
+    proc.start(QLS("cp"), QStringList() << QLS("-f") << srcBase + QLS(FileFormat) << srcBase + QLS(MetadataFileExt) << dstDir);
     proc.waitForFinished();
     if (proc.exitCode() == 0)
-        res = QString("Successfully updated '%1'").arg(oldBaseline + QLS("/metadata"));
+        res = QString("Successfully updated '%1'").arg(oldBaseline);
     else
         res = QString("Error updating baseline: %1<br>"
                       "Command output: <pre>%2</pre>").arg(proc.errorString(), proc.readAll().constData());
@@ -374,53 +446,30 @@ QString BaselineHandler::updateSingleBaseline(const QString &oldBaseline, const 
     return res;
 }
 
-QString BaselineHandler::blacklistTest(const QString &scriptName, const QString &host, const QString &engine,
-                                       const QString &format)
+
+QString BaselineHandler::blacklistTest(const QString &context, const QString &itemId, bool removeFromBlacklist)
 {
-    QString configFile(BaselineServer::storagePath() + host + QLC('/')
-                       + itemSubPath(engine, format) + QLS(".blacklist"));
-    QFile file(configFile);
-    if (file.open(QIODevice::Append)) {
-        QTextStream out(&file);
-        out << scriptName << endl;
-        return QLS("Blacklisted ") + scriptName;
+    QFile file(BaselineServer::storagePath() + QLC('/') + context + QLS("/BLACKLIST"));
+    QStringList blackList;
+    if (file.open(QIODevice::ReadWrite)) {
+        while (!file.atEnd())
+            blackList.append(file.readLine().trimmed());
+
+        if (removeFromBlacklist)
+            blackList.removeAll(itemId);
+        else if (!blackList.contains(itemId))
+            blackList.append(itemId);
+
+        file.resize(0);
+        foreach (QString id, blackList)
+            file.write(id.toLatin1() + '\n');
+        file.close();
+        return QLS(removeFromBlacklist ? "Whitelisted " : "Blacklisted ") + itemId + QLS(" in context ") + context;
     } else {
-        return QLS("Unable to update blacklisted tests.");
+        return QLS("Unable to update blacklisted tests, failed to open ") + file.fileName();
     }
 }
 
-QString BaselineHandler::whitelistTest(const QString &scriptName, const QString &host, const QString &engine,
-                                       const QString &format)
-{
-    QString configFile(BaselineServer::storagePath() + host + QLC('/')
-                       + itemSubPath(engine, format) + QLS(".blacklist"));
-    QFile file(configFile);
-    QStringList tests;
-    if (file.open(QIODevice::ReadOnly)) {
-        QTextStream in(&file);
-        do {
-            tests << in.readLine();
-        } while (!in.atEnd());
-        if (tests.count() != 0) {
-            QMutableStringListIterator it(tests);
-            while (it.hasNext()) {
-                it.next();
-                if (it.value() == scriptName)
-                    it.remove();
-            }
-        }
-        file.close();
-        if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            QTextStream out(&file);
-            for (int i=0; i<tests.count(); ++i)
-                out << tests.at(i);
-            return QLS("Whitelisted ") + scriptName;
-        } else {
-            QLS("Unable to whitelist ") + scriptName + QLS(". Unable to truncate blacklist file.");
-        }
-    }
-    return QLS("Unable to whitelist ") + scriptName + QLS(". Unable to open blacklist file.");
-}
 
 void BaselineHandler::testPathMapping()
 {
@@ -433,23 +482,28 @@ void BaselineHandler::testPathMapping()
           << QLS("osl-mac-master-6.test.qt.nokia.com")
           << QLS("sv-xp-vs-010")
           << QLS("sv-xp-vs-011")
+          << QLS("sv-solaris-sparc-008")
+          << QLS("macbuilder-02.test.troll.no")
+          << QLS("bqvm1164")
           << QLS("chimera")
-          << QLS("localhost");
+          << QLS("localhost")
+          << QLS("");
 
     ImageItem item;
-    item.scriptName = QLS("arcs.qps");
-    item.engine = ImageItem::Raster;
-    item.renderFormat = QImage::Format_ARGB32_Premultiplied;
+    item.testFunction = QLS("testPathMapping");
+    item.itemName = QLS("arcs.qps");
     item.imageChecksums << 0x0123456789abcdefULL;
-    item.scriptChecksum = 0x0123;
+    item.itemChecksum = 0x0123;
 
     plat.insert(PI_QtVersion, QLS("4.8.0"));
     plat.insert(PI_BuildKey, QLS("(nobuildkey)"));
+    plat.insert(PI_QMakeSpec, QLS("linux-g++"));
+    plat.insert(PI_PulseGitBranch, QLS("somebranch"));
     foreach(const QString& host, hosts) {
-        pathForRun = QString();
+        mapped.clear();
         plat.insert(PI_HostName, host);
-        qDebug() << "Baseline from" << host << "->" << pathForItem(item, true).remove(BaselineServer::storagePath());
-        qDebug() << "Mismatch from" << host << "->" << pathForItem(item, false).remove(BaselineServer::storagePath());
+        qDebug() << "Baseline from" << host << "->" << pathForItem(item, true);
+        qDebug() << "Mismatch from" << host << "->" << pathForItem(item, false);
     }
 }
 

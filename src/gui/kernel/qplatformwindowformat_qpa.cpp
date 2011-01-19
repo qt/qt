@@ -53,7 +53,7 @@ public:
         , opts(QPlatformWindowFormat::DoubleBuffer | QPlatformWindowFormat::DepthBuffer
              | QPlatformWindowFormat::Rgba | QPlatformWindowFormat::DirectRendering
              | QPlatformWindowFormat::StencilBuffer | QPlatformWindowFormat::DeprecatedFunctions
-             | QPlatformWindowFormat::UseDefaultSharedContext)
+             | QPlatformWindowFormat::UseDefaultSharedContext | QPlatformWindowFormat::HasWindowSurface)
         , depthSize(-1)
         , accumSize(-1)
         , stencilSize(-1)
@@ -102,9 +102,15 @@ public:
 /*!
     \class QPlatformWindowFormat
     \brief The QPlatformWindowFormat class specifies the display format of an OpenGL
-    rendering context.
+    rendering context and if possible attributes of the corresponding QPlatformWindow.
 
-    \ingroup painting-3D
+    \ingroup painting
+
+    QWidget has a setter and getter function for QPlatformWindowFormat. These functions can be used
+    by the application programmer to signal what kind of format he wants to the window and glcontext
+    should have. However, it is not always possible to fulfill these requirements. The application
+    programmer should therefore check the resulting QPlatformWindowFormat from QPlatformGLContext
+    to see the format that was actually created.
 
     A display format has several characteristics:
     \list
@@ -162,7 +168,7 @@ public:
         United States and other countries.
     \endlegalese
 
-    \sa QGLContext, QGLWidget
+    \sa QPlatformContext, QWidget
 */
 
 /*!
@@ -616,31 +622,32 @@ QPlatformGLContext *QPlatformWindowFormat::sharedGLContext() const
     return d->sharedContext;
 }
 
-///*!
-//    \fn bool QPlatformWindowFormat::hasOverlay() const
+/*!
+    \fn bool QPlatformWindowFormat::hasWindowSurface() const
 
-//    Returns true if overlay plane is enabled; otherwise returns false.
+    Returns true if the corresponding widget has an instance of QWindowSurface.
 
-//    Overlay is disabled by default.
+    Otherwise returns false.
 
-//    \sa setOverlay()
-//*/
+    WindowSurface is enabled by default.
 
-///*!
-//    If \a enable is true enables an overlay plane; otherwise disables
-//    the overlay plane.
+    \sa setOverlay()
+*/
 
-//    Enabling the overlay plane will cause QGLWidget to create an
-//    additional context in an overlay plane. See the QGLWidget
-//    documentation for further information.
+/*!
+    If \a enable is true a top level QWidget will create a QWindowSurface at creation;
 
-//    \sa hasOverlay()
-//*/
+    otherwise the QWidget will only have a QPlatformWindow.
 
-//void QPlatformWindowFormat::setOverlay(bool enable)
-//{
-//    setOption(enable ? QPlatformWindowFormat::HasOverlay : QPlatformWindowFormat::NoOverlay);
-//}
+    This is useful for ie. QGLWidget where the QPlatformGLContext controls the surface.
+
+    \sa hasOverlay()
+*/
+
+void QPlatformWindowFormat::setWindowSurface(bool enable)
+{
+    setOption(enable ? QPlatformWindowFormat::HasWindowSurface : QPlatformWindowFormat::NoWindowSurface);
+}
 
 /*!
     Sets the format option to \a opt.

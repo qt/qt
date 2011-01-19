@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -126,7 +126,7 @@ public:
       widthValid(false), heightValid(false),
       componentComplete(true), keepMouse(false),
       smooth(false), transformOriginDirty(true), doneEventPreHandler(false), keyHandler(0),
-      mWidth(0), mHeight(0), implicitWidth(0), implicitHeight(0)
+      mWidth(0), mHeight(0), implicitWidth(0), implicitHeight(0), hadSubFocusItem(false)
     {
         QGraphicsItemPrivate::acceptedMouseButtons = 0;
         isDeclarativeItem = 1;
@@ -259,7 +259,7 @@ public:
     QDeclarativeStateGroup *_states();
     QDeclarativeStateGroup *_stateGroup;
 
-    QDeclarativeItem::TransformOrigin origin:4;
+    QDeclarativeItem::TransformOrigin origin:5;
     bool widthValid:1;
     bool heightValid:1;
     bool componentComplete:1;
@@ -275,6 +275,8 @@ public:
     qreal implicitWidth;
     qreal implicitHeight;
 
+    bool hadSubFocusItem;
+
     QPointF computeTransformOrigin() const;
 
     virtual void setPosHelper(const QPointF &pos)
@@ -288,9 +290,11 @@ public:
     // Reimplemented from QGraphicsItemPrivate
     virtual void subFocusItemChange()
     {
-        if (flags & QGraphicsItem::ItemIsFocusScope || !parent)
-            emit q_func()->activeFocusChanged(subFocusItem != 0);
+        bool hasSubFocusItem = subFocusItem != 0;
+        if (((flags & QGraphicsItem::ItemIsFocusScope) || !parent) && hasSubFocusItem != hadSubFocusItem)
+            emit q_func()->activeFocusChanged(hasSubFocusItem);
         //see also QDeclarativeItemPrivate::focusChanged
+        hadSubFocusItem = hasSubFocusItem;
     }
 
     // Reimplemented from QGraphicsItemPrivate

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -345,7 +345,7 @@ void QGLWidgetPrivate::recreateEglSurface()
     // old surface before re-creating a new one. Note: This should not be the case as the
     // surface should be deleted before the old window id.
     if (glcx->d_func()->eglSurface != EGL_NO_SURFACE && (currentId != eglSurfaceWindowId)) {
-        qWarning("EGL surface for deleted window %lx was not destroyed", eglSurfaceWindowId);
+        qWarning("EGL surface for deleted window %lx was not destroyed", uint(eglSurfaceWindowId));
         glcx->d_func()->destroyEglSurfaceForDevice();
     }
 
@@ -376,7 +376,7 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmap *pixmap, cons
         checkedForEglImageTFP = true;
 
         // We need to be able to create an EGLImage from a native pixmap, which was split
-        // into a seperate EGL extension, EGL_KHR_image_pixmap. It is possible to have
+        // into a separate EGL extension, EGL_KHR_image_pixmap. It is possible to have
         // eglCreateImageKHR & eglDestroyImageKHR without support for pixmaps, so we must
         // check we have the EGLImage from pixmap functionality.
         if (QEgl::hasExtension("EGL_KHR_image") || QEgl::hasExtension("EGL_KHR_image_pixmap")) {

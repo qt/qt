@@ -6,7 +6,7 @@ VisualTest {
     }
     Frame {
         msec: 16
-        hash: "b3bfd7a06d3e246f4256ab5a267360b0"
+        image: "parentAnimation2.0.png"
     }
     Frame {
         msec: 32
@@ -258,11 +258,11 @@ VisualTest {
     }
     Frame {
         msec: 960
-        image: "parentAnimation2.0.png"
+        hash: "5983f3e0800859134bff0182fe9e0142"
     }
     Frame {
         msec: 976
-        hash: "95b4fe1e5eeffe1673e199308e8ce76c"
+        image: "parentAnimation2.1.png"
     }
     Frame {
         msec: 992
@@ -514,11 +514,11 @@ VisualTest {
     }
     Frame {
         msec: 1920
-        image: "parentAnimation2.1.png"
+        hash: "3210f97ac2799d84fc1d872c4c2994f7"
     }
     Frame {
         msec: 1936
-        hash: "60ed700e49bf2c51aba9b44400b56294"
+        image: "parentAnimation2.2.png"
     }
     Frame {
         msec: 1952
@@ -762,11 +762,11 @@ VisualTest {
     }
     Frame {
         msec: 2880
-        image: "parentAnimation2.2.png"
+        hash: "acab4a79f22ebc8a45759ae282e8f3db"
     }
     Frame {
         msec: 2896
-        hash: "acab4a79f22ebc8a45759ae282e8f3db"
+        image: "parentAnimation2.3.png"
     }
     Mouse {
         type: 3
@@ -1018,6 +1018,6 @@ VisualTest {
     }
     Frame {
         msec: 3840
-        image: "parentAnimation2.3.png"
+        hash: "b3bfd7a06d3e246f4256ab5a267360b0"
     }
 }

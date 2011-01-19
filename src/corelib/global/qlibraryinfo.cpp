@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,6 +60,10 @@ QT_END_NAMESPACE
 
 #ifdef Q_OS_MAC
 #  include "private/qcore_mac_p.h"
+#endif
+
+#ifdef QLIBRARYINFO_EPOCROOT
+# include "symbian/epocroot_p.h"
 #endif
 
 #include "qconfig.cpp"
@@ -433,6 +437,14 @@ QLibraryInfo::location(LibraryLocation loc)
                             QString::fromLocal8Bit(qgetenv(ret.mid(rep + 2,
                                 reg_var.matchedLength() - 3).toLatin1().constData()).constData()));
             }
+
+#ifdef QLIBRARYINFO_EPOCROOT
+            // $${EPOCROOT} is a special case, resolve it similarly to qmake.
+            QRegExp epocrootMatcher(QLatin1String("\\$\\$\\{EPOCROOT\\}"));
+            if ((rep = epocrootMatcher.indexIn(ret)) != -1)
+                ret.replace(rep, epocrootMatcher.matchedLength(), qt_epocRoot());
+#endif
+
             config->endGroup();
         }
     }
@@ -506,7 +518,7 @@ extern "C" void qt_core_boilerplate();
 void qt_core_boilerplate()
 {
     printf("This is the QtCore library version " QT_VERSION_STR "\n"
-           "Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).\n"
+           "Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).\n"
            "Contact: Nokia Corporation (qt-info@nokia.com)\n"
            "\n"
            "Build key:           " QT_BUILD_KEY "\n"

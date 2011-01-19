@@ -8,7 +8,7 @@ wince* {
   additional.path = desktopsettingsaware
   someTest.files = test.pro
   someTest.path = test
-  DEPLOYMENT = additional deploy someTest
+  DEPLOYMENT += additional deploy someTest
 }
 
 symbian: {
@@ -17,7 +17,7 @@ symbian: {
   someTest.files = test.pro
   someTest.path = test
   windowIcon.files = ../heart.svg
-  DEPLOYMENT = additional deploy someTest windowIcon
+  DEPLOYMENT += additional deploy someTest windowIcon
   LIBS += -lcone -lavkon
 }
 

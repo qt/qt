@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -181,7 +181,12 @@ private slots:
     void incDecNonObjectProperty();
     void installTranslatorFunctions_data();
     void installTranslatorFunctions();
+    void translateScript_data();
     void translateScript();
+    void translateScript_crossScript();
+    void translateScript_callQsTrFromNative();
+    void translateScript_trNoOp();
+    void translateScript_callQsTrFromCpp();
     void translateWithInvalidArgs_data();
     void translateWithInvalidArgs();
     void translationContext_data();
@@ -4876,78 +4881,134 @@ void tst_QScriptEngine::installTranslatorFunctions()
     QVERIFY(eng.evaluate("QT_TRID_NOOP()").isUndefined());
 }
 
-static QScriptValue callQsTr(QScriptContext *ctx, QScriptEngine *eng)
+class TranslationScope
 {
-    return eng->globalObject().property("qsTr").call(ctx->thisObject(), ctx->argumentsObject());
-}
+public:
+    TranslationScope(const QString &fileName)
+    {
+        translator.load(fileName);
+        QCoreApplication::instance()->installTranslator(&translator);
+    }
+    ~TranslationScope()
+    {
+        QCoreApplication::instance()->removeTranslator(&translator);
+    }
 
-void tst_QScriptEngine::translateScript()
-{
-    QScriptEngine engine;
-
+private:
     QTranslator translator;
-    translator.load(":/translations/translatable_la");
-    QCoreApplication::instance()->installTranslator(&translator);
-    engine.installTranslatorFunctions();
+};
+
+void tst_QScriptEngine::translateScript_data()
+{
+    QTest::addColumn<QString>("expression");
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<QString>("expectedTranslation");
 
     QString fileName = QString::fromLatin1("translatable.js");
     // Top-level
-    QCOMPARE(engine.evaluate("qsTr('One')", fileName).toString(), QString::fromLatin1("En"));
-    QCOMPARE(engine.evaluate("qsTr('Hello')", fileName).toString(), QString::fromLatin1("Hallo"));
+    QTest::newRow("qsTr('One')@translatable.js")
+            << QString::fromLatin1("qsTr('One')") << fileName << QString::fromLatin1("En");
+    QTest::newRow("qsTr('Hello')@translatable.js")
+            << QString::fromLatin1("qsTr('Hello')") << fileName << QString::fromLatin1("Hallo");
     // From function
-    QCOMPARE(engine.evaluate("(function() { return qsTr('One'); })()", fileName).toString(), QString::fromLatin1("En"));
-    QCOMPARE(engine.evaluate("(function() { return qsTr('Hello'); })()", fileName).toString(), QString::fromLatin1("Hallo"));
+    QTest::newRow("(function() { return qsTr('One'); })()@translatable.js")
+            << QString::fromLatin1("(function() { return qsTr('One'); })()") << fileName << QString::fromLatin1("En");
+    QTest::newRow("(function() { return qsTr('Hello'); })()@translatable.js")
+            << QString::fromLatin1("(function() { return qsTr('Hello'); })()") << fileName << QString::fromLatin1("Hallo");
     // From eval
-    QCOMPARE(engine.evaluate("eval('qsTr(\\'One\\')')", fileName).toString(), QString::fromLatin1("En"));
-    QCOMPARE(engine.evaluate("eval('qsTr(\\'Hello\\')')", fileName).toString(), QString::fromLatin1("Hallo"));
+    QTest::newRow("eval('qsTr(\\'One\\')')@translatable.js")
+            << QString::fromLatin1("eval('qsTr(\\'One\\')')") << fileName << QString::fromLatin1("En");
+    QTest::newRow("eval('qsTr(\\'Hello\\')')@translatable.js")
+            << QString::fromLatin1("eval('qsTr(\\'Hello\\')')") << fileName << QString::fromLatin1("Hallo");
+    // Plural
+    QTest::newRow("qsTr('%n message(s) saved', '', 1)@translatable.js")
+            << QString::fromLatin1("qsTr('%n message(s) saved', '', 1)") << fileName << QString::fromLatin1("1 melding lagret");
+    QTest::newRow("qsTr('%n message(s) saved', '', 3).arg@translatable.js")
+            << QString::fromLatin1("qsTr('%n message(s) saved', '', 3)") << fileName << QString::fromLatin1("3 meldinger lagret");
 
-    QCOMPARE(engine.evaluate("qsTranslate('FooContext', 'Two')", fileName).toString(), QString::fromLatin1("To"));
-    QCOMPARE(engine.evaluate("qsTranslate('FooContext', 'Goodbye')", fileName).toString(), QString::fromLatin1("Farvel"));
+    // Top-level
+    QTest::newRow("qsTranslate('FooContext', 'Two')@translatable.js")
+            << QString::fromLatin1("qsTranslate('FooContext', 'Two')") << fileName << QString::fromLatin1("To");
+    QTest::newRow("qsTranslate('FooContext', 'Goodbye')@translatable.js")
+            << QString::fromLatin1("qsTranslate('FooContext', 'Goodbye')") << fileName << QString::fromLatin1("Farvel");
     // From eval
-    QCOMPARE(engine.evaluate("eval('qsTranslate(\\'FooContext\\', \\'Two\\')')", fileName).toString(), QString::fromLatin1("To"));
-    QCOMPARE(engine.evaluate("eval('qsTranslate(\\'FooContext\\', \\'Goodbye\\')')", fileName).toString(), QString::fromLatin1("Farvel"));
+    QTest::newRow("eval('qsTranslate(\\'FooContext\\', \\'Two\\')')@translatable.js")
+            << QString::fromLatin1("eval('qsTranslate(\\'FooContext\\', \\'Two\\')')") << fileName << QString::fromLatin1("To");
+    QTest::newRow("eval('qsTranslate(\\'FooContext\\', \\'Goodbye\\')')@translatable.js")
+            << QString::fromLatin1("eval('qsTranslate(\\'FooContext\\', \\'Goodbye\\')')") << fileName << QString::fromLatin1("Farvel");
 
-    QCOMPARE(engine.evaluate("qsTranslate('FooContext', 'Goodbye', '', 'UnicodeUTF8')", fileName).toString(), QString::fromLatin1("Farvel"));
-    QCOMPARE(engine.evaluate("qsTranslate('FooContext', 'Goodbye', '', 'CodecForTr')", fileName).toString(), QString::fromLatin1("Farvel"));
+    QTest::newRow("qsTranslate('FooContext', 'Goodbye', '', 'UnicodeUTF8')@translatable.js")
+            << QString::fromLatin1("qsTranslate('FooContext', 'Goodbye', '', 'UnicodeUTF8')") << fileName << QString::fromLatin1("Farvel");
+    QTest::newRow("qsTranslate('FooContext', 'Goodbye', '', 'CodecForTr')@translatable.js")
+            << QString::fromLatin1("qsTranslate('FooContext', 'Goodbye', '', 'CodecForTr')") << fileName << QString::fromLatin1("Farvel");
 
-    QCOMPARE(engine.evaluate("qsTranslate('FooContext', 'Goodbye', '', 'UnicodeUTF8', 42)", fileName).toString(), QString::fromLatin1("Goodbye"));
+    QTest::newRow("qsTranslate('FooContext', 'Goodbye', '', 'UnicodeUTF8', 42)@translatable.js")
+            << QString::fromLatin1("qsTranslate('FooContext', 'Goodbye', '', 'UnicodeUTF8', 42)") << fileName << QString::fromLatin1("Goodbye");
 
-    QCOMPARE(engine.evaluate("qsTr('One', 'not the same one')", fileName).toString(), QString::fromLatin1("Enda en"));
+    QTest::newRow("qsTr('One', 'not the same one')@translatable.js")
+            << QString::fromLatin1("qsTr('One', 'not the same one')") << fileName << QString::fromLatin1("Enda en");
 
-    QCOMPARE(engine.evaluate("qsTr('One', 'not the same one', 42)", fileName).toString(), QString::fromLatin1("One"));
+    QTest::newRow("qsTr('One', 'not the same one', 42)@translatable.js")
+            << QString::fromLatin1("qsTr('One', 'not the same one', 42)") << fileName << QString::fromLatin1("One");
 
-    QVERIFY(engine.evaluate("QT_TR_NOOP()").isUndefined());
-    QCOMPARE(engine.evaluate("QT_TR_NOOP('One')").toString(), QString::fromLatin1("One"));
-
-    QVERIFY(engine.evaluate("QT_TRANSLATE_NOOP()").isUndefined());
-    QVERIFY(engine.evaluate("QT_TRANSLATE_NOOP('FooContext')").isUndefined());
-    QCOMPARE(engine.evaluate("QT_TRANSLATE_NOOP('FooContext', 'Two')").toString(), QString::fromLatin1("Two"));
+    // Plural
+    QTest::newRow("qsTranslate('FooContext', '%n fooish bar(s) found', '', 'UnicodeUTF8', 1)@translatable.js")
+            << QString::fromLatin1("qsTranslate('FooContext', '%n fooish bar(s) found', '', 'UnicodeUTF8', 1)") << fileName << QString::fromLatin1("1 fooaktig bar funnet");
+    QTest::newRow("qsTranslate('FooContext', '%n fooish bar(s) found', '', 'UnicodeUTF8', 2)@translatable.js")
+            << QString::fromLatin1("qsTranslate('FooContext', '%n fooish bar(s) found', '', 'UnicodeUTF8', 2)") << fileName << QString::fromLatin1("2 fooaktige barer funnet");
 
     // Don't exist in translation
-    QCOMPARE(engine.evaluate("qsTr('Three')", fileName).toString(), QString::fromLatin1("Three"));
-    QCOMPARE(engine.evaluate("qsTranslate('FooContext', 'So long')", fileName).toString(), QString::fromLatin1("So long"));
-    QCOMPARE(engine.evaluate("qsTranslate('BarContext', 'Goodbye')", fileName).toString(), QString::fromLatin1("Goodbye"));
-
-    // From C++
-    // There is no context, but it shouldn't crash
-    QCOMPARE(engine.globalObject().property("qsTr").call(
-                 QScriptValue(), QScriptValueList() << "One").toString(), QString::fromLatin1("One"));
+    QTest::newRow("qsTr('Three')@translatable.js")
+            << QString::fromLatin1("qsTr('Three')") << fileName << QString::fromLatin1("Three");
+    QTest::newRow("qsTranslate('FooContext', 'So long')@translatable.js")
+            << QString::fromLatin1("qsTranslate('FooContext', 'So long')") << fileName << QString::fromLatin1("So long");
+    QTest::newRow("qsTranslate('BarContext', 'Goodbye')@translatable.js")
+            << QString::fromLatin1("qsTranslate('BarContext', 'Goodbye')") << fileName << QString::fromLatin1("Goodbye");
 
     // Translate strings from the second script (translatable2.js)
 
     QString fileName2 = QString::fromLatin1("translatable2.js");
-
-    QCOMPARE(engine.evaluate("qsTr('Three')", fileName2).toString(), QString::fromLatin1("Tre"));
-    QCOMPARE(engine.evaluate("qsTr('Happy birthday!')", fileName2).toString(), QString::fromLatin1("Gratulerer med dagen!"));
+    QTest::newRow("qsTr('Three')@translatable2.js")
+            << QString::fromLatin1("qsTr('Three')") << fileName2 << QString::fromLatin1("Tre");
+    QTest::newRow("qsTr('Happy birthday!')@translatable2.js")
+            << QString::fromLatin1("qsTr('Happy birthday!')") << fileName2 << QString::fromLatin1("Gratulerer med dagen!");
 
     // Not translated because translation is only in translatable.js
-    QCOMPARE(engine.evaluate("qsTr('One')", fileName2).toString(), QString::fromLatin1("One"));
-    QCOMPARE(engine.evaluate("(function() { return qsTr('One'); })()", fileName2).toString(), QString::fromLatin1("One"));
+    QTest::newRow("qsTr('One')@translatable2.js")
+            << QString::fromLatin1("qsTr('One')") << fileName2 << QString::fromLatin1("One");
+    QTest::newRow("(function() { return qsTr('One'); })()@translatable2.js")
+            << QString::fromLatin1("(function() { return qsTr('One'); })()") << fileName2 << QString::fromLatin1("One");
 
     // For qsTranslate() the filename shouldn't matter
-    QCOMPARE(engine.evaluate("qsTranslate('FooContext', 'Two')", fileName2).toString(), QString::fromLatin1("To"));
-    QCOMPARE(engine.evaluate("qsTranslate('BarContext', 'Congratulations!')", fileName).toString(), QString::fromLatin1("Gratulerer!"));
+    QTest::newRow("qsTranslate('FooContext', 'Two')@translatable2.js")
+            << QString::fromLatin1("qsTranslate('FooContext', 'Two')") << fileName2 << QString::fromLatin1("To");
+    QTest::newRow("qsTranslate('BarContext', 'Congratulations!')@translatable.js")
+            << QString::fromLatin1("qsTranslate('BarContext', 'Congratulations!')") << fileName << QString::fromLatin1("Gratulerer!");
+}
 
+void tst_QScriptEngine::translateScript()
+{
+    QFETCH(QString, expression);
+    QFETCH(QString, fileName);
+    QFETCH(QString, expectedTranslation);
+
+    QScriptEngine engine;
+
+    TranslationScope tranScope(":/translations/translatable_la");
+    engine.installTranslatorFunctions();
+
+    QCOMPARE(engine.evaluate(expression, fileName).toString(), expectedTranslation);
+    QVERIFY(!engine.hasUncaughtException());
+}
+
+void tst_QScriptEngine::translateScript_crossScript()
+{
+    QScriptEngine engine;
+    TranslationScope tranScope(":/translations/translatable_la");
+    engine.installTranslatorFunctions();
+
+    QString fileName = QString::fromLatin1("translatable.js");
+    QString fileName2 = QString::fromLatin1("translatable2.js");
     // qsTr() should use the innermost filename as context
     engine.evaluate("function foo(s) { return bar(s); }", fileName);
     engine.evaluate("function bar(s) { return qsTr(s); }", fileName2);
@@ -4960,15 +5021,52 @@ void tst_QScriptEngine::translateScript()
     QCOMPARE(engine.evaluate("bar('Three')", fileName2).toString(), QString::fromLatin1("Three"));
     QCOMPARE(engine.evaluate("bar('One')", fileName).toString(), QString::fromLatin1("En"));
     QCOMPARE(engine.evaluate("bar('One')", fileName2).toString(), QString::fromLatin1("En"));
+}
 
+static QScriptValue callQsTr(QScriptContext *ctx, QScriptEngine *eng)
+{
+    return eng->globalObject().property("qsTr").call(ctx->thisObject(), ctx->argumentsObject());
+}
+
+void tst_QScriptEngine::translateScript_callQsTrFromNative()
+{
+    QScriptEngine engine;
+    TranslationScope tranScope(":/translations/translatable_la");
+    engine.installTranslatorFunctions();
+
+    QString fileName = QString::fromLatin1("translatable.js");
+    QString fileName2 = QString::fromLatin1("translatable2.js");
     // Calling qsTr() from a native function
     engine.globalObject().setProperty("qsTrProxy", engine.newFunction(callQsTr));
     QCOMPARE(engine.evaluate("qsTrProxy('One')", fileName).toString(), QString::fromLatin1("En"));
     QCOMPARE(engine.evaluate("qsTrProxy('One')", fileName2).toString(), QString::fromLatin1("One"));
     QCOMPARE(engine.evaluate("qsTrProxy('Three')", fileName).toString(), QString::fromLatin1("Three"));
     QCOMPARE(engine.evaluate("qsTrProxy('Three')", fileName2).toString(), QString::fromLatin1("Tre"));
+}
 
-    QCoreApplication::instance()->removeTranslator(&translator);
+void tst_QScriptEngine::translateScript_trNoOp()
+{
+    QScriptEngine engine;
+    TranslationScope tranScope(":/translations/translatable_la");
+    engine.installTranslatorFunctions();
+
+    QVERIFY(engine.evaluate("QT_TR_NOOP()").isUndefined());
+    QCOMPARE(engine.evaluate("QT_TR_NOOP('One')").toString(), QString::fromLatin1("One"));
+
+    QVERIFY(engine.evaluate("QT_TRANSLATE_NOOP()").isUndefined());
+    QVERIFY(engine.evaluate("QT_TRANSLATE_NOOP('FooContext')").isUndefined());
+    QCOMPARE(engine.evaluate("QT_TRANSLATE_NOOP('FooContext', 'Two')").toString(), QString::fromLatin1("Two"));
+}
+
+void tst_QScriptEngine::translateScript_callQsTrFromCpp()
+{
+    QScriptEngine engine;
+    TranslationScope tranScope(":/translations/translatable_la");
+    engine.installTranslatorFunctions();
+
+    // There is no context, but it shouldn't crash
+    QCOMPARE(engine.globalObject().property("qsTr").call(
+             QScriptValue(), QScriptValueList() << "One").toString(), QString::fromLatin1("One"));
 }
 
 void tst_QScriptEngine::translateWithInvalidArgs_data()
@@ -5038,9 +5136,7 @@ void tst_QScriptEngine::translationContext_data()
 
 void tst_QScriptEngine::translationContext()
 {
-    QTranslator translator;
-    translator.load(":/translations/translatable_la");
-    QCoreApplication::instance()->installTranslator(&translator);
+    TranslationScope tranScope(":/translations/translatable_la");
 
     QScriptEngine engine;
     engine.installTranslatorFunctions();
@@ -5051,17 +5147,13 @@ void tst_QScriptEngine::translationContext()
     QScriptValue ret = engine.evaluate(QString::fromLatin1("qsTr('%0')").arg(text), path);
     QVERIFY(ret.isString());
     QCOMPARE(ret.toString(), expectedTranslation);
-
-    QCoreApplication::instance()->removeTranslator(&translator);
 }
 
 void tst_QScriptEngine::translateScriptIdBased()
 {
     QScriptEngine engine;
 
-    QTranslator translator;
-    translator.load(":/translations/idtranslatable_la");
-    QCoreApplication::instance()->installTranslator(&translator);
+    TranslationScope tranScope(":/translations/idtranslatable_la");
     engine.installTranslatorFunctions();
 
     QString fileName = QString::fromLatin1("idtranslatable.js");
@@ -5143,15 +5235,11 @@ void tst_QScriptEngine::translateScriptUnicode()
 
     QScriptEngine engine;
 
-    QTranslator translator;
-    QVERIFY(translator.load(":/translations/translatable-unicode"));
-    QCoreApplication::instance()->installTranslator(&translator);
+    TranslationScope tranScope(":/translations/translatable-unicode");
     engine.installTranslatorFunctions();
 
     QCOMPARE(engine.evaluate(expression, fileName).toString(), expectedTranslation);
     QVERIFY(!engine.hasUncaughtException());
-
-    QCoreApplication::instance()->removeTranslator(&translator);
 }
 
 void tst_QScriptEngine::translateScriptUnicodeIdBased_data()
@@ -5178,15 +5266,11 @@ void tst_QScriptEngine::translateScriptUnicodeIdBased()
 
     QScriptEngine engine;
 
-    QTranslator translator;
-    QVERIFY(translator.load(":/translations/idtranslatable-unicode"));
-    QCoreApplication::instance()->installTranslator(&translator);
+    TranslationScope tranScope(":/translations/idtranslatable-unicode");
     engine.installTranslatorFunctions();
 
     QCOMPARE(engine.evaluate(expression).toString(), expectedTranslation);
     QVERIFY(!engine.hasUncaughtException());
-
-    QCoreApplication::instance()->removeTranslator(&translator);
 }
 
 void tst_QScriptEngine::functionScopes()

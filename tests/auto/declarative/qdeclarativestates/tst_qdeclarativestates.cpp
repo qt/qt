@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,7 +44,6 @@
 #include <private/qdeclarativeanchors_p_p.h>
 #include <private/qdeclarativerectangle_p.h>
 #include <private/qdeclarativeimage_p.h>
-#include <private/qdeclarativetext_p.h>
 #include <private/qdeclarativepropertychanges_p.h>
 #include <private/qdeclarativestategroup_p.h>
 #include <private/qdeclarativeitem_p.h>
@@ -143,6 +142,7 @@ private slots:
     void returnToBase();
     void extendsBug();
     void editProperties();
+    void QTBUG_14830();
 };
 
 void tst_qdeclarativestates::initTestCase()
@@ -1125,15 +1125,15 @@ void tst_qdeclarativestates::reset()
     QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
     QVERIFY(rect != 0);
 
-    QDeclarativeText *text = rect->findChild<QDeclarativeText*>();
-    QVERIFY(text != 0);
-    QCOMPARE(text->width(), qreal(40.));
-    QVERIFY(text->width() < text->height());
+    QDeclarativeImage *image = rect->findChild<QDeclarativeImage*>();
+    QVERIFY(image != 0);
+    QCOMPARE(image->width(), qreal(40.));
+    QCOMPARE(image->height(), qreal(20.));
 
     QDeclarativeItemPrivate::get(rect)->setState("state1");
 
-    QVERIFY(text->width() > 41);
-    QVERIFY(text->width() > text->height());
+    QCOMPARE(image->width(), 20.0);
+    QCOMPARE(image->height(), qreal(20.));
 }
 
 void tst_qdeclarativestates::illegalObjectCreation()
@@ -1373,6 +1373,18 @@ void tst_qdeclarativestates::editProperties()
     rectPrivate->setState("blue");
     QCOMPARE(childRect->width(), qreal(402));
     QCOMPARE(childRect->height(), qreal(40));
+}
+
+void tst_qdeclarativestates::QTBUG_14830()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent c(&engine, SRCDIR "/data/QTBUG-14830.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect != 0);
+    QDeclarativeItem *item = rect->findChild<QDeclarativeItem*>("area");
+
+    QCOMPARE(item->width(), qreal(171));
 }
 
 QTEST_MAIN(tst_qdeclarativestates)

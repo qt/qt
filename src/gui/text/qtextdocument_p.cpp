@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -91,7 +91,7 @@ QT_BEGIN_NAMESPACE
   END_OF_PARA/START_OF_FRAME/END_OF_FRAME (see below).
 
   Lists are not in here, as they are treated specially. A list is just
-  a collection of (not neccessarily connected) blocks, that share the
+  a collection of (not necessarily connected) blocks, that share the
   same objectIndex() in the format that refers to the list format and
   object.
 

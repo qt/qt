@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -349,6 +349,10 @@ static void processProjects(
     foreach (const QString &proFile, proFiles) {
         ProFileEvaluator visitor;
         visitor.setVerbose(options & Verbose);
+
+        QHash<QString, QStringList> lupdateConfig;
+        lupdateConfig.insert(QLatin1String("CONFIG"), QStringList(QLatin1String("lupdate_run")));
+        visitor.addVariables(lupdateConfig);
 
         QFileInfo pfi(proFile);
         ProFile pro(pfi.absoluteFilePath());

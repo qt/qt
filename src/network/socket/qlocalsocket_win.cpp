@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -322,9 +322,9 @@ bool QLocalSocketPrivate::completeAsyncRead()
             // buffer. We will read the remaining data in the next call.
             break;
         case ERROR_PIPE_NOT_CONNECTED:
-            setErrorString(QLatin1String("QLocalSocketPrivate::completeAsyncRead"));
-            // fall through
+            return false;
         default:
+            setErrorString(QLatin1String("QLocalSocketPrivate::completeAsyncRead"));
             return false;
         }
     }

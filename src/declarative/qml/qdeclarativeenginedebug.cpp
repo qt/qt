@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -146,7 +146,10 @@ QDeclarativeEngineDebugServer::propertyData(QObject *obj, int propIdx)
     if (binding)
         rv.binding = binding->expression();
 
-    QVariant value = prop.read(obj);
+    QVariant value;
+    if (prop.userType() != 0) {
+        value = prop.read(obj);
+    }
     rv.value = valueContents(value);
 
     if (QDeclarativeValueTypeFactory::isValueType(prop.userType())) {
@@ -502,7 +505,8 @@ void QDeclarativeEngineDebugServer::setBinding(int objectId,
             property.write(expression);
         } else if (hasValidSignal(object, propertyName)) {
             QDeclarativeExpression *declarativeExpression = new QDeclarativeExpression(context, object, expression.toString());
-            QDeclarativePropertyPrivate::setSignalExpression(property, declarativeExpression);
+            QDeclarativeExpression *oldExpression = QDeclarativePropertyPrivate::setSignalExpression(property, declarativeExpression);
+            declarativeExpression->setSourceLocation(oldExpression->sourceFile(), oldExpression->lineNumber());
         } else if (property.isProperty()) {
             QDeclarativeBinding *binding = new QDeclarativeBinding(expression.toString(), object, context);
             binding->setTarget(property);

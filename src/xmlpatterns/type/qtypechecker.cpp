@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -168,7 +168,7 @@ Expression::Ptr TypeChecker::verifyType(const Expression::Ptr &operand,
 
     /* Since we haven't exited yet, it means that the operandType is a super type
      * of reqType, and that there hence is a path down to it through the
-     * type hierachy -- but that doesn't neccessarily mean that a up-cast(down the
+     * type hierachy -- but that doesn't necessarily mean that a up-cast(down the
      * hierarchy) would succeed. */
 
     Expression::Ptr result(operand);

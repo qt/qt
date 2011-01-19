@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -79,6 +79,10 @@
 #include <private/qglwindowsurface_qws_p.h>
 #endif
 
+#ifdef Q_WS_QPA
+#include <QtGui/QPlatformGLContext>
+#endif
+
 #include <qglpixelbuffer.h>
 #include <qglframebufferobject.h>
 
@@ -117,7 +121,9 @@ struct QGLThreadContext {
     QGLContext *context;
 };
 
+#ifndef Q_WS_QPA
 static QThreadStorage<QGLThreadContext *> qgl_context_storage;
+#endif
 
 Q_GLOBAL_STATIC(QGLFormat, qgl_default_format)
 
@@ -136,7 +142,12 @@ Q_GLOBAL_STATIC(QGLDefaultOverlayFormat, defaultOverlayFormatInstance)
 Q_GLOBAL_STATIC(QGLSignalProxy, theSignalProxy)
 QGLSignalProxy *QGLSignalProxy::instance()
 {
-    return theSignalProxy();
+    QGLSignalProxy *proxy = theSignalProxy();
+    if (proxy && proxy->thread() != qApp->thread()) {
+        if (proxy->thread() == QThread::currentThread())
+            proxy->moveToThread(qApp->thread());
+    }
+    return proxy;
 }
 
 
@@ -1650,12 +1661,23 @@ const QGLContext *qt_gl_transfer_context(const QGLContext *ctx)
         return 0;
 }
 
+QGLContextPrivate::QGLContextPrivate(QGLContext *context)
+    : internal_context(false)
+    , q_ptr(context)
+{
+    group = new QGLContextGroup(context);
+    texture_destroyer = new QGLTextureDestroyer;
+    texture_destroyer->moveToThread(qApp->thread());
+}
+
 QGLContextPrivate::~QGLContextPrivate()
 {
     if (!group->m_refs.deref()) {
         Q_ASSERT(group->context() == q_ptr);
         delete group;
     }
+
+    delete texture_destroyer;
 }
 
 void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
@@ -1707,6 +1729,7 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     active_engine = 0;
     workaround_needsFullClearOnEveryFrame = false;
     workaround_brokenFBOReadBack = false;
+    workaround_brokenTexSubImage = false;
     workaroundsCached = false;
 
     workaround_brokenTextureFromPixmap = false;
@@ -1831,18 +1854,6 @@ QGLTextureCache::~QGLTextureCache()
 void QGLTextureCache::insert(QGLContext* ctx, qint64 key, QGLTexture* texture, int cost)
 {
     QWriteLocker locker(&m_lock);
-    if (m_cache.totalCost() + cost > m_cache.maxCost()) {
-        // the cache is full - make an attempt to remove something
-        const QList<QGLTextureCacheKey> keys = m_cache.keys();
-        int i = 0;
-        while (i < m_cache.count()
-               && (m_cache.totalCost() + cost > m_cache.maxCost())) {
-            QGLTexture *tex = m_cache.object(keys.at(i));
-            if (tex->context == ctx)
-                m_cache.remove(keys.at(i));
-            ++i;
-        }
-    }
     const QGLTextureCacheKey cacheKey = {key, QGLContextPrivate::contextGroup(ctx)};
     m_cache.insert(cacheKey, texture, cost);
 }
@@ -2103,7 +2114,9 @@ void QGLContextPrivate::cleanup()
 void QGLContextPrivate::setVertexAttribArrayEnabled(int arrayIndex, bool enabled)
 {
     Q_ASSERT(arrayIndex < QT_GL_VERTEX_ARRAY_TRACKED_COUNT);
+#ifdef glEnableVertexAttribArray
     Q_ASSERT(glEnableVertexAttribArray);
+#endif
 
     if (vertexAttributeArraysEnabledState[arrayIndex] && !enabled)
         glDisableVertexAttribArray(arrayIndex);
@@ -2116,7 +2129,9 @@ void QGLContextPrivate::setVertexAttribArrayEnabled(int arrayIndex, bool enabled
 
 void QGLContextPrivate::syncGlState()
 {
+#ifdef glEnableVertexAttribArray
     Q_ASSERT(glEnableVertexAttribArray);
+#endif
     for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i) {
         if (vertexAttributeArraysEnabledState[i])
             glEnableVertexAttribArray(i);
@@ -3282,11 +3297,16 @@ bool QGLContext::areSharing(const QGLContext *context1, const QGLContext *contex
 bool QGLContext::create(const QGLContext* shareContext)
 {
     Q_D(QGLContext);
+#ifdef Q_WS_QPA
+    if (!d->paintDevice && !d->platformContext)
+#else
     if (!d->paintDevice)
+#endif
         return false;
+
     reset();
     d->valid = chooseContext(shareContext);
-    if (d->valid && d->paintDevice->devType() == QInternal::Widget) {
+    if (d->valid && d->paintDevice && d->paintDevice->devType() == QInternal::Widget) {
         QWidgetPrivate *wd = qt_widget_private(static_cast<QWidget *>(d->paintDevice));
         wd->usesDoubleBufferedGLContext = d->glFormat.doubleBuffer();
     }
@@ -3365,14 +3385,24 @@ void QGLContext::setInitialized(bool on)
 
 const QGLContext* QGLContext::currentContext()
 {
+#ifdef Q_WS_QPA
+    if (const QPlatformGLContext *threadContext = QPlatformGLContext::currentContext()) {
+        return QGLContext::fromPlatformGLContext(const_cast<QPlatformGLContext *>(threadContext));
+    }
+    return 0;
+#else
     QGLThreadContext *threadContext = qgl_context_storage.localData();
     if (threadContext)
         return threadContext->context;
     return 0;
+#endif //Q_WS_QPA
 }
 
 void QGLContextPrivate::setCurrentContext(QGLContext *context)
 {
+#ifdef Q_WS_QPA
+    Q_UNUSED(context);
+#else
     QGLThreadContext *threadContext = qgl_context_storage.localData();
     if (!threadContext) {
         if (!QThread::currentThread()) {
@@ -3385,6 +3415,7 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
     }
     threadContext->context = context;
     QGLContext::currentCtx = context; // XXX: backwards-compat, not thread-safe
+#endif
 }
 
 /*!
@@ -3741,7 +3772,24 @@ QGLWidget::QGLWidget(QWidget *parent, const QGLWidget* shareWidget, Qt::WindowFl
     setAttribute(Qt::WA_PaintOnScreen);
     setAttribute(Qt::WA_NoSystemBackground);
     setAutoFillBackground(true); // for compatibility
+#ifdef Q_WS_QPA
+    QPlatformWindowFormat platformFormat = QGLFormat::toPlatformWindowFormat(QGLFormat::defaultFormat());
+    platformFormat.setUseDefaultSharedContext(false);
+    if (shareWidget && shareWidget->d_func()->glcx) {
+        QPlatformGLContext *sharedPlatformContext = shareWidget->d_func()->glcx->d_func()->platformContext;
+        platformFormat.setSharedContext(sharedPlatformContext);
+    }
+    setPlatformWindowFormat(platformFormat);
+    winId(); // create window;
+    QGLContext *glContext = 0;
+    if (platformWindow())
+        glContext = QGLContext::fromPlatformGLContext(platformWindow()->glContext());
+    if (glContext){
+        d->init(glContext,shareWidget);
+    }
+#else
     d->init(new QGLContext(QGLFormat::defaultFormat(), this), shareWidget);
+#endif
 }
 
 
@@ -3781,7 +3829,24 @@ QGLWidget::QGLWidget(const QGLFormat &format, QWidget *parent, const QGLWidget* 
     setAttribute(Qt::WA_PaintOnScreen);
     setAttribute(Qt::WA_NoSystemBackground);
     setAutoFillBackground(true); // for compatibility
+#ifdef Q_WS_QPA
+    QPlatformWindowFormat platformFormat = QGLFormat::toPlatformWindowFormat(format);
+    platformFormat.setUseDefaultSharedContext(false);
+    if (shareWidget && shareWidget->d_func()->glcx) {
+        QPlatformGLContext *sharedPlatformContext = shareWidget->d_func()->glcx->d_func()->platformContext;
+        platformFormat.setSharedContext(sharedPlatformContext);
+    }
+    setPlatformWindowFormat(platformFormat);
+    winId(); // create window;
+    QGLContext *glContext = 0;
+    if (platformWindow())
+        glContext = QGLContext::fromPlatformGLContext(platformWindow()->glContext());
+    if (glContext){
+        d->init(glContext,shareWidget);
+    }
+#else
     d->init(new QGLContext(format, this), shareWidget);
+#endif
 }
 
 /*!

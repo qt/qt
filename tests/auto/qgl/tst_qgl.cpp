@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -96,6 +96,8 @@ private slots:
     void shareRegister();
     void qglContextDefaultBindTexture();
     void textureCleanup();
+    void threadImages();
+    void nullRectCrash();
 };
 
 tst_QGL::tst_QGL()
@@ -2243,6 +2245,149 @@ void tst_QGL::textureCleanup()
     copyOfPixmap = QPixmap();
     QCOMPARE(QGLTextureCache::instance()->size(), startCacheItemCount);
 #endif
+}
+
+namespace ThreadImages {
+
+class Producer : public QObject
+{
+    Q_OBJECT
+public:
+    Producer()
+    {
+        startTimer(20);
+
+        QThread *thread = new QThread;
+        thread->start();
+
+        connect(this, SIGNAL(destroyed()), thread, SLOT(quit()));
+
+        moveToThread(thread);
+        connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+    }
+
+signals:
+    void imageReady(const QImage &image);
+
+protected:
+    void timerEvent(QTimerEvent *)
+    {
+        QImage image(256, 256, QImage::Format_RGB32);
+        QLinearGradient g(0, 0, 0, 256);
+        g.setColorAt(0, QColor(255, 180, 180));
+        g.setColorAt(1, Qt::white);
+        g.setSpread(QGradient::ReflectSpread);
+
+        QBrush brush(g);
+        brush.setTransform(QTransform::fromTranslate(0, delta));
+        delta += 10;
+
+        QPainter p(&image);
+        p.fillRect(image.rect(), brush);
+
+        if (images.size() > 10)
+            images.removeFirst();
+
+        images.append(image);
+
+        emit imageReady(image);
+    }
+
+private:
+    QList<QImage> images;
+    int delta;
+};
+
+
+class DisplayWidget : public QGLWidget
+{
+    Q_OBJECT
+public:
+    DisplayWidget(QWidget *parent) : QGLWidget(parent) {}
+    void paintEvent(QPaintEvent *)
+    {
+        QPainter p(this);
+        p.drawImage(rect(), m_image);
+    }
+
+public slots:
+    void setImage(const QImage &image)
+    {
+        m_image = image;
+        update();
+    }
+
+private:
+    QImage m_image;
+};
+
+class Widget : public QWidget
+{
+    Q_OBJECT
+public:
+    Widget()
+        : iterations(0)
+        , display(0)
+        , producer(new Producer)
+    {
+        startTimer(400);
+        connect(this, SIGNAL(destroyed()), producer, SLOT(deleteLater()));
+    }
+
+    int iterations;
+
+protected:
+    void timerEvent(QTimerEvent *)
+    {
+        ++iterations;
+
+        delete display;
+        display = new DisplayWidget(this);
+        connect(producer, SIGNAL(imageReady(const QImage &)), display, SLOT(setImage(const QImage &)));
+
+        display->setGeometry(rect());
+        display->show();
+    }
+
+private:
+    DisplayWidget *display;
+    Producer *producer;
+};
+
+}
+
+void tst_QGL::threadImages()
+{
+    ThreadImages::Widget *widget = new ThreadImages::Widget;
+    widget->show();
+
+    while (widget->iterations <= 5) {
+        qApp->processEvents();
+    }
+
+    delete widget;
+}
+
+void tst_QGL::nullRectCrash()
+{
+    if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
+
+    QGLWidget glw;
+    glw.makeCurrent();
+
+    QGLFramebufferObjectFormat fboFormat;
+    fboFormat.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+
+    QGLFramebufferObject *fbo = new QGLFramebufferObject(128, 128, fboFormat);
+
+    QPainter fboPainter(fbo);
+
+    fboPainter.setPen(QPen(QColor(255, 127, 127, 127), 2));
+    fboPainter.setBrush(QColor(127, 255, 127, 127));
+    fboPainter.drawRect(QRectF());
+
+    fboPainter.end();
 }
 
 class tst_QGLDummy : public QObject

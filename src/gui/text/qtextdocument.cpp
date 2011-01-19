@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -596,8 +596,10 @@ void QTextDocument::markContentsDirty(int from, int length)
     Q_D(QTextDocument);
     d->documentChange(from, length);
     if (!d->inContentsChange) {
-        d->lout->documentChanged(d->docChangeFrom, d->docChangeOldLength, d->docChangeLength);
-        d->docChangeFrom = -1;
+        if (d->lout) {
+            d->lout->documentChanged(d->docChangeFrom, d->docChangeOldLength, d->docChangeLength);
+            d->docChangeFrom = -1;
+        }
     }
 }
 
@@ -2612,8 +2614,8 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
 
             if (format.hasProperty(QTextFormat::ListNumberPrefix)) {
                 QString numberPrefix = format.numberPrefix();
-                numberPrefix.replace('"', "\\22");
-                numberPrefix.replace('\'', "\\27"); // FIXME: There's a problem in the CSS parser the prevents this from being correctly restored
+                numberPrefix.replace(QLatin1Char('"'), QLatin1String("\\22"));
+                numberPrefix.replace(QLatin1Char('\''), QLatin1String("\\27")); // FIXME: There's a problem in the CSS parser the prevents this from being correctly restored
                 styleString += QLatin1String(" -qt-list-number-prefix: ");
                 styleString += QLatin1Char('\'');
                 styleString += numberPrefix;
@@ -2624,8 +2626,8 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
             if (format.hasProperty(QTextFormat::ListNumberSuffix)) {
                 if (format.numberSuffix() != QLatin1String(".")) { // this is our default
                     QString numberSuffix = format.numberSuffix();
-                    numberSuffix.replace('"', "\\22");
-                    numberSuffix.replace('\'', "\\27"); // see above
+                    numberSuffix.replace(QLatin1Char('"'), QLatin1String("\\22"));
+                    numberSuffix.replace(QLatin1Char('\''), QLatin1String("\\27")); // see above
                     styleString += QLatin1String(" -qt-list-number-suffix: ");
                     styleString += QLatin1Char('\'');
                     styleString += numberSuffix;

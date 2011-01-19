@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -91,7 +91,7 @@
 
 /* Minimum buffer size for raster object, that accounts
    for TWorker and TCell sizes.*/
-#define MINIMUM_POOL_SIZE 4096
+#define MINIMUM_POOL_SIZE 8192
 
   QT_FT_EXPORT_VAR( const QT_FT_Raster_Funcs )  qt_ft_grays_raster;
 

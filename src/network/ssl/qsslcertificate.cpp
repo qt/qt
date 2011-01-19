@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -716,7 +716,7 @@ QSslCertificate QSslCertificatePrivate::QSslCertificate_from_X509(X509 *x509)
 
 static bool matchLineFeed(const QByteArray &pem, int *offset)
 {
-    char ch;
+    char ch = 0;
 
     // ignore extra whitespace at the end of the line
     while (*offset < pem.size() && (ch = pem.at(*offset)) == ' ')

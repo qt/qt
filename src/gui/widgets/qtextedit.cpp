@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -773,7 +773,7 @@ Qt::Alignment QTextEdit::alignment() const
     is the document's parent object. The parent object of the provided document
     remains the owner of the object.
 
-    If the current document is a child of the text editor, then it is deleted.
+    The editor does not delete the current document, even if it is a child of the editor.
 
     \sa document()
 */

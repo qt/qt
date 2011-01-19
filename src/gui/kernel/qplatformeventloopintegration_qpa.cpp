@@ -39,3 +39,48 @@
 **
 ****************************************************************************/
 
+#include "qplatformeventloopintegration_qpa.h"
+
+#include <QtCore/QCoreApplication>
+
+#include <QtCore/QDebug>
+
+class QPlatformEventLoopIntegrationPrivate
+{
+public:
+    QPlatformEventLoopIntegrationPrivate();
+    qint64 nextTimerEvent;
+};
+
+QPlatformEventLoopIntegrationPrivate::QPlatformEventLoopIntegrationPrivate()
+    : nextTimerEvent(0)
+{
+}
+
+QPlatformEventLoopIntegration::QPlatformEventLoopIntegration()
+    : d_ptr(new QPlatformEventLoopIntegrationPrivate)
+
+{
+}
+
+QPlatformEventLoopIntegration::~QPlatformEventLoopIntegration()
+{
+}
+
+qint64 QPlatformEventLoopIntegration::nextTimerEvent() const
+{
+    Q_D(const QPlatformEventLoopIntegration);
+    return d->nextTimerEvent;
+}
+
+
+void QPlatformEventLoopIntegration::setNextTimerEvent(qint64 nextTimerEvent)
+{
+    Q_D(QPlatformEventLoopIntegration);
+    d->nextTimerEvent = nextTimerEvent;
+}
+
+void QPlatformEventLoopIntegration::processEvents()
+{
+    QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
+}

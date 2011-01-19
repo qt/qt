@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,6 +54,7 @@ QT_MODULE(Core)
 
 class QAnimationGroup;
 class QSequentialAnimationGroup;
+class QAnimationDriver;
 
 class QAbstractAnimationPrivate;
 class Q_CORE_EXPORT QAbstractAnimation : public QObject
@@ -131,6 +132,36 @@ private:
     Q_DISABLE_COPY(QAbstractAnimation)
     Q_DECLARE_PRIVATE(QAbstractAnimation)
 };
+
+class QAnimationDriverPrivate;
+class Q_CORE_EXPORT QAnimationDriver : public QObject
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QAnimationDriver)
+
+public:
+    QAnimationDriver(QObject *parent);
+
+    void advance();
+    void install();
+
+    bool isRunning() const;
+
+protected:
+    virtual void started() = 0;
+    virtual void stopped() = 0;
+
+    QAnimationDriver(QAnimationDriverPrivate &dd, QObject *parent = 0);
+
+private:
+    friend class QUnifiedTimer;
+
+    void start();
+    void stop();
+};
+
+
+
 
 #endif //QT_NO_ANIMATION
 

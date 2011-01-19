@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qmeegolivepixmapdata.h"
-#include "qmeegoextensions.h"
 #include "qmeegorasterpixmapdata.h"
 #include <private/qimage_p.h>
 #include <private/qwindowsurface_gl_p.h>
@@ -171,10 +170,17 @@ QPixmapData *QMeeGoLivePixmapData::createCompatiblePixmapData() const
     return new QMeeGoRasterPixmapData(pixelType());
 }
 
-QImage* QMeeGoLivePixmapData::lock()
+QImage* QMeeGoLivePixmapData::lock(EGLSyncKHR fenceSync)
 {
     QGLShareContextScope ctx(qt_gl_share_widget()->context());
     QMeeGoExtensions::ensureInitialized();
+
+    if (fenceSync) {
+        QMeeGoExtensions::eglClientWaitSyncKHR(QEgl::display(),
+                                               fenceSync,
+                                               EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
+                                               EGL_FOREVER_KHR);
+    }
 
     void *data = 0;
     int pitch = 0;
@@ -214,7 +220,6 @@ bool QMeeGoLivePixmapData::release(QImage* /*img*/)
 
     if (QMeeGoExtensions::eglUnlockSurfaceKHR(QEgl::display(), getSurfaceForBackingPixmap())) {
         lockedImage = QImage();
-        glFinish();
         return true;
     } else {
         lockedImage = QImage();
@@ -229,7 +234,7 @@ Qt::HANDLE QMeeGoLivePixmapData::handle()
 
 bool QMeeGoLivePixmapData::scroll(int dx, int dy, const QRect &rect)
 {
-    lock();
+    lock(NULL);
 
     if (!lockedImage.isNull())
         qt_scrollRectInImage(lockedImage, rect, QPoint(dx, dy));

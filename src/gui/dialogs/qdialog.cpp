@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -282,8 +282,8 @@ QDialog::QDialog(QWidget *parent, Qt::WindowFlags f)
 QDialog::QDialog(QWidget *parent, const char *name, bool modal, Qt::WindowFlags f)
     : QWidget(*new QDialogPrivate, parent,
               f
-              | QFlag(modal ? Qt::WShowModal : 0)
-              | QFlag((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : 0)
+              | QFlag(modal ? Qt::WShowModal : Qt::WindowType(0))
+              | QFlag((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : Qt::WindowType(0))
         )
 {
     setObjectName(QString::fromAscii(name));
@@ -899,17 +899,27 @@ bool QDialog::symbianAdjustedPosition()
 {
 #if defined(Q_WS_S60)
     QPoint p;
-    const bool doS60Positioning = !(isFullScreen()||isMaximized());
-    if (doS60Positioning) {
+    QPoint oldPos = pos();
+    if (isFullScreen()) {
+        p.setX(0);
+        p.setY(0);
+    } else if (isMaximized()) {
+        TRect statusPaneRect = TRect();
+        if (S60->screenHeightInPixels > S60->screenWidthInPixels) {
+            AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStatusPane, statusPaneRect);
+        } else {
+            AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStaconTop, statusPaneRect);
+        }
+
+        p.setX(0);
+        p.setY(statusPaneRect.Height());
+    } else {
         // naive way to deduce screen orientation
         if (S60->screenHeightInPixels > S60->screenWidthInPixels) {
             int cbaHeight;
-            const CEikButtonGroupContainer* bgContainer = S60->buttonGroupContainer();
-            if (!bgContainer) {
-                cbaHeight = 0;
-            } else {
-                cbaHeight = qt_TSize2QSize(bgContainer->Size()).height();
-            }
+            TRect rect;
+            AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EControlPane, rect);
+            cbaHeight = rect.Height();
             p.setY(S60->screenHeightInPixels - height() - cbaHeight);
             p.setX(0);
         } else {
@@ -939,9 +949,10 @@ bool QDialog::symbianAdjustedPosition()
                 p.setX(qMax(0,S60->screenWidthInPixels - width()));
             }
         }
-        move(p);
     }
-    return doS60Positioning;
+    if (oldPos != p || p.y() < 0)
+        move(p);
+    return true;
 #else
     // TODO - check positioning requirement for Symbian, non-s60
     return false;

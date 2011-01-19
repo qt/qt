@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -605,9 +605,28 @@ void QFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int n
     addBitmapFontToPath(x, y, g, path, flags);
 }
 
+QImage QFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed /*subPixelPosition*/)
+{
+    // For font engines don't support subpixel positioning
+    return alphaMapForGlyph(glyph);
+}
+
 QImage QFontEngine::alphaMapForGlyph(glyph_t glyph, const QTransform &t)
 {
     QImage i = alphaMapForGlyph(glyph);
+    if (t.type() > QTransform::TxTranslate)
+        i = i.transformed(t).convertToFormat(QImage::Format_Indexed8);
+    Q_ASSERT(i.depth() <= 8); // To verify that transformed didn't change the format...
+
+    return i;
+}
+
+QImage QFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t)
+{
+    if (! supportsSubPixelPositions())
+        return alphaMapForGlyph(glyph, t);
+
+    QImage i = alphaMapForGlyph(glyph, subPixelPosition);
     if (t.type() > QTransform::TxTranslate)
         i = i.transformed(t).convertToFormat(QImage::Format_Indexed8);
     Q_ASSERT(i.depth() <= 8); // To verify that transformed didn't change the format...

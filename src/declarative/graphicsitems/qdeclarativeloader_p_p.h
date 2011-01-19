@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -72,11 +72,13 @@ public:
     void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry);
     void clear();
     void initResize();
+    void load();
 
     QUrl source;
     QGraphicsObject *item;
     QDeclarativeComponent *component;
     bool ownComponent : 1;
+    bool isComponentComplete : 1;
 
     void _q_sourceLoaded();
     void _q_updateSize(bool loaderGeometryChanged = true);

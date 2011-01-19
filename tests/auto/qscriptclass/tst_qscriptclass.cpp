@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,6 +66,7 @@ public:
 private slots:
     void newInstance();
     void getAndSetProperty();
+    void getProperty_invalidValue();
     void enumerate();
     void extension();
     void originalProperties1();
@@ -763,6 +764,26 @@ void tst_QScriptClass::getAndSetProperty()
     QVERIFY(!obj1.property(bar).isValid());
 }
 
+void tst_QScriptClass::getProperty_invalidValue()
+{
+    QScriptEngine eng;
+    TestClass cls(&eng);
+    cls.addCustomProperty(eng.toStringHandle("foo"), QScriptClass::HandlesReadAccess,
+                          /*id=*/0, QScriptValue::ReadOnly, QScriptValue());
+    QScriptValue obj = eng.newObject(&cls);
+
+    QVERIFY(obj.property("foo").isUndefined());
+
+    eng.globalObject().setProperty("obj", obj);
+    QVERIFY(eng.evaluate("obj.hasOwnProperty('foo'))").toBool());
+    // The JS environment expects that a valid value is returned,
+    // otherwise we could crash.
+    QVERIFY(eng.evaluate("obj.foo").isUndefined());
+    QVERIFY(eng.evaluate("obj.foo + ''").isString());
+    QVERIFY(eng.evaluate("Object.getOwnPropertyDescriptor(obj, 'foo').value").isUndefined());
+    QVERIFY(eng.evaluate("Object.getOwnPropertyDescriptor(obj, 'foo').value +''").isString());
+}
+
 void tst_QScriptClass::enumerate()
 {
     QScriptEngine eng;
@@ -1098,6 +1119,7 @@ void tst_QScriptClass::originalProperties1()
         QCOMPARE(obj1.property(orig3).toString(), QString::fromLatin1("bar"));
         QVERIFY(!obj1.property(new1).isValid());
         QCOMPARE(obj1.property(new2).toString(), QString::fromLatin1("world"));
+
 
         QEXPECT_FAIL("", "Changing class of arbitrary script object does not propagate", Continue);
         QCOMPARE(obj2.scriptClass(), &cls2);

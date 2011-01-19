@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -118,7 +118,7 @@ bool AbstractFloat<isDouble>::isEqual(const xsDouble a, const xsDouble b)
         return qIsInf(a) && internalSignbit(a) == internalSignbit(b);
     else
     {
-        /* Preferrably, we would use std::numeric_limits<xsDouble>::espilon(), but
+        /* Preferably, we would use std::numeric_limits<xsDouble>::espilon(), but
          * we cannot since we cannot depend on the STL. The small xs:double value below,
          * was extracted by printing the std::numeric_limits<xsDouble>::epsilon() using
          * gdb. */

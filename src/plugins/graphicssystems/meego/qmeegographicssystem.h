@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -69,9 +69,12 @@ public:
 
     static QPixmapData *pixmapDataWithNewLiveTexture(int w, int h, QImage::Format format);
     static QPixmapData *pixmapDataFromLiveTextureHandle(Qt::HANDLE handle);
-    static QImage *lockLiveTexture(QPixmap* pixmap);
+    static QImage *lockLiveTexture(QPixmap* pixmap, void* fenceSync);
     static bool releaseLiveTexture(QPixmap *pixmap, QImage *image);
     static Qt::HANDLE getLiveTextureHandle(QPixmap *pixmap);
+
+    static void* createFenceSync();
+    static void destroyFenceSync(void* fenceSync);
 
 private:
     static bool meeGoRunning();
@@ -95,9 +98,11 @@ extern "C" {
     Q_DECL_EXPORT void qt_meego_set_translucent(bool translucent);    
     Q_DECL_EXPORT QPixmapData* qt_meego_pixmapdata_with_new_live_texture(int w, int h, QImage::Format format);
     Q_DECL_EXPORT QPixmapData* qt_meego_pixmapdata_from_live_texture_handle(Qt::HANDLE handle);
-    Q_DECL_EXPORT QImage* qt_meego_live_texture_lock(QPixmap *pixmap);
+    Q_DECL_EXPORT QImage* qt_meego_live_texture_lock(QPixmap *pixmap, void *fenceSync);
     Q_DECL_EXPORT bool qt_meego_live_texture_release(QPixmap *pixmap, QImage *image);
     Q_DECL_EXPORT Qt::HANDLE qt_meego_live_texture_get_handle(QPixmap *pixmap);
+    Q_DECL_EXPORT void* qt_meego_create_fence_sync(void);
+    Q_DECL_EXPORT void qt_meego_destroy_fence_sync(void* fs);
 }
 
 #endif 

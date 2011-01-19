@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -899,10 +899,16 @@ void QNetworkHeadersPrivate::parseAndSetHeader(const QByteArray &key, const QByt
     // is it a known header?
     QNetworkRequest::KnownHeaders parsedKey = parseHeaderName(key);
     if (parsedKey != QNetworkRequest::KnownHeaders(-1)) {
-        if (value.isNull())
+        if (value.isNull()) {
             cookedHeaders.remove(parsedKey);
-        else
+        } else if (parsedKey == QNetworkRequest::ContentLengthHeader
+                 && cookedHeaders.contains(QNetworkRequest::ContentLengthHeader)) {
+            // Only set the cooked header "Content-Length" once.
+            // See bug QTBUG-15311
+        } else {
             cookedHeaders.insert(parsedKey, parseHeaderValue(parsedKey, value));
+        }
+
     }
 }
 

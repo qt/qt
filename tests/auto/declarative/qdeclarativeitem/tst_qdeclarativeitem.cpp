@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -393,6 +393,11 @@ void tst_QDeclarativeItem::keyNavigation()
     QVERIFY(item);
     QVERIFY(item->hasActiveFocus());
 
+    QVariant result;
+    QVERIFY(QMetaObject::invokeMethod(canvas->rootObject(), "verify",
+            Q_RETURN_ARG(QVariant, result)));
+    QVERIFY(result.toBool());
+
     // right
     QKeyEvent key(QEvent::KeyPress, Qt::Key_Right, Qt::NoModifier, "", false, 1);
     QApplication::sendEvent(canvas, &key);
@@ -686,6 +691,8 @@ void tst_QDeclarativeItem::propertyChanges()
     QSignalSpy focusSpy(item, SIGNAL(focusChanged(bool)));
     QSignalSpy wantsFocusSpy(parentItem, SIGNAL(activeFocusChanged(bool)));
     QSignalSpy childrenChangedSpy(parentItem, SIGNAL(childrenChanged()));
+    QSignalSpy xSpy(item, SIGNAL(xChanged()));
+    QSignalSpy ySpy(item, SIGNAL(yChanged()));
 
     item->setParentItem(parentItem);
     item->setWidth(100.0);
@@ -730,6 +737,14 @@ void tst_QDeclarativeItem::propertyChanges()
     QCOMPARE(parentItem->hasActiveFocus(), false);
     QCOMPARE(parentItem->hasFocus(), false);
     QCOMPARE(wantsFocusSpy.count(),0);
+
+    item->setX(10.0);
+    QCOMPARE(item->x(), 10.0);
+    QCOMPARE(xSpy.count(), 1);
+
+    item->setY(10.0);
+    QCOMPARE(item->y(), 10.0);
+    QCOMPARE(ySpy.count(), 1);
 
     delete canvas;
 }

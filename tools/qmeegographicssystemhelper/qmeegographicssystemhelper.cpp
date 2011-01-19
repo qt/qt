@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,7 +45,9 @@
 #include <private/qapplication_p.h>
 #include <private/qgraphicssystem_runtime_p.h>
 #include <private/qpixmap_raster_p.h>
+#include <private/qwindowsurface_gl_p.h>
 #include "qmeegoruntime.h"
+#include "qmeegoswitchevent.h"
 
 QString QMeeGoGraphicsSystemHelper::runningGraphicsSystemName()
 {
@@ -81,8 +83,16 @@ void QMeeGoGraphicsSystemHelper::switchToMeeGo()
     if (QApplicationPrivate::instance()->graphics_system_name != QLatin1String("runtime"))
         qWarning("Can't switch to meego - switching only supported with 'runtime' graphics system.");
     else {
+        QMeeGoSwitchEvent willSwitchEvent(QLatin1String("meego"), QMeeGoSwitchEvent::WillSwitch);
+        foreach (QWidget *widget, QApplication::topLevelWidgets())
+            QCoreApplication::sendEvent(widget, &willSwitchEvent);
+
         QApplication *app = static_cast<QApplication *>(QCoreApplication::instance());
         app->setGraphicsSystem(QLatin1String("meego"));
+
+        QMeeGoSwitchEvent didSwitchEvent(QLatin1String("meego"), QMeeGoSwitchEvent::DidSwitch);
+        foreach (QWidget *widget, QApplication::topLevelWidgets())
+            QCoreApplication::sendEvent(widget, &didSwitchEvent);
     }
 }
 
@@ -94,8 +104,16 @@ void QMeeGoGraphicsSystemHelper::switchToRaster()
     if (QApplicationPrivate::instance()->graphics_system_name != QLatin1String("runtime"))
         qWarning("Can't switch to raster - switching only supported with 'runtime' graphics system.");
     else {
+        QMeeGoSwitchEvent willSwitchEvent(QLatin1String("raster"), QMeeGoSwitchEvent::WillSwitch);
+        foreach (QWidget *widget, QApplication::topLevelWidgets())
+            QCoreApplication::sendEvent(widget, &willSwitchEvent);
+
         QApplication *app = static_cast<QApplication *>(QCoreApplication::instance());
         app->setGraphicsSystem(QLatin1String("raster"));
+
+        QMeeGoSwitchEvent didSwitchEvent(QLatin1String("raster"), QMeeGoSwitchEvent::DidSwitch);
+        foreach (QWidget *widget, QApplication::topLevelWidgets())
+            QCoreApplication::sendEvent(widget, &didSwitchEvent);
     }
 }
 
@@ -135,4 +153,18 @@ void QMeeGoGraphicsSystemHelper::setTranslucent(bool translucent)
 {
     ENSURE_RUNNING_MEEGO;
     QMeeGoRuntime::setTranslucent(translucent);
+}
+
+void QMeeGoGraphicsSystemHelper::setSwapBehavior(SwapMode mode)
+{
+    ENSURE_RUNNING_MEEGO;
+
+    if (mode == AutomaticSwap)
+        QGLWindowSurface::swapBehavior = QGLWindowSurface::AutomaticSwap;
+    else if (mode == AlwaysFullSwap)
+        QGLWindowSurface::swapBehavior = QGLWindowSurface::AlwaysFullSwap;
+    else if (mode == AlwaysPartialSwap)
+        QGLWindowSurface::swapBehavior = QGLWindowSurface::AlwaysPartialSwap;
+    else if (mode == KillSwap)
+        QGLWindowSurface::swapBehavior = QGLWindowSurface::KillSwap;
 }

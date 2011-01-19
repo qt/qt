@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -302,7 +302,6 @@ static int qCocoaViewCount = 0;
     QMimeData *mimeData = dropData;
     if (QDragManager::self()->source())
         mimeData = QDragManager::self()->dragPrivate()->data;
-    NSPoint globalPoint = [[sender draggingDestinationWindow] convertBaseToScreen:windowPoint];
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
     QPoint posDrag(localPoint.x, localPoint.y);
     NSDragOperation nsActions = [sender draggingSourceOperationMask];
@@ -365,7 +364,6 @@ static int qCocoaViewCount = 0;
         return NSDragOperationNone;
     }
     // return last value, if we are still in the answerRect.
-    NSPoint globalPoint = [[sender draggingDestinationWindow] convertBaseToScreen:windowPoint];
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
     NSDragOperation nsActions = [sender draggingSourceOperationMask];
     QPoint posDrag(localPoint.x, localPoint.y);
@@ -434,7 +432,6 @@ static int qCocoaViewCount = 0;
     dragEnterSequence = -1;
     [self addDropData:sender];
 
-    NSPoint globalPoint = [[sender draggingDestinationWindow] convertBaseToScreen:windowPoint];
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
     QPoint posDrop(localPoint.x, localPoint.y);
 
@@ -470,14 +467,14 @@ static int qCocoaViewCount = 0;
     [super dealloc];
 }
 
-- (BOOL)isOpaque;
+- (BOOL)isOpaque
 {
     if (!qwidgetprivate)
         return [super isOpaque];
     return qwidgetprivate->isOpaque;
 }
 
-- (BOOL)isFlipped;
+- (BOOL)isFlipped
 {
     return YES;
 }
@@ -557,6 +554,7 @@ static int qCocoaViewCount = 0;
     }
 
     CGContextRef cg = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
+    CGContextRetain(cg);
     qwidgetprivate->hd = cg;
 
     // We steal the CGContext for flushing in the unified toolbar with the raster engine.
@@ -620,8 +618,8 @@ static int qCocoaViewCount = 0;
         // is the case. This makes sure child widgets are drawn as well, Cocoa does not know about
         // those and wont send them drawRect calls.
         if (qwidget->testAttribute(Qt::WA_NativeWindow) && qt_widget_private(qwidget)->hasAlienChildren == false) {
-        if (engine && !qwidget->testAttribute(Qt::WA_NoSystemBackground)
-            && (qwidget->isWindow() || qwidget->autoFillBackground())
+        if ((engine && !qwidget->testAttribute(Qt::WA_NoSystemBackground)
+             && (qwidget->isWindow() || qwidget->autoFillBackground()))
                 || qwidget->testAttribute(Qt::WA_TintedBackground)
                 || qwidget->testAttribute(Qt::WA_StyledBackground)) {
 #ifdef DEBUG_WIDGET_PAINT
@@ -656,6 +654,7 @@ static int qCocoaViewCount = 0;
     }
     qwidgetprivate->hd = 0;
     CGContextRestoreGState(cg);
+    CGContextRelease(cg);
 }
 
 - (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
@@ -978,32 +977,32 @@ static int qCocoaViewCount = 0;
 }
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
-- (void)touchesBeganWithEvent:(NSEvent *)event;
+- (void)touchesBeganWithEvent:(NSEvent *)event
 {
     bool all = qwidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
     qt_translateRawTouchEvent(qwidget, QTouchEvent::TouchPad, QCocoaTouch::getCurrentTouchPointList(event, all));
 }
 
-- (void)touchesMovedWithEvent:(NSEvent *)event;
+- (void)touchesMovedWithEvent:(NSEvent *)event
 {
     bool all = qwidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
     qt_translateRawTouchEvent(qwidget, QTouchEvent::TouchPad, QCocoaTouch::getCurrentTouchPointList(event, all));
 }
 
-- (void)touchesEndedWithEvent:(NSEvent *)event;
+- (void)touchesEndedWithEvent:(NSEvent *)event
 {
     bool all = qwidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
     qt_translateRawTouchEvent(qwidget, QTouchEvent::TouchPad, QCocoaTouch::getCurrentTouchPointList(event, all));
 }
 
-- (void)touchesCancelledWithEvent:(NSEvent *)event;
+- (void)touchesCancelledWithEvent:(NSEvent *)event
 {
     bool all = qwidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
     qt_translateRawTouchEvent(qwidget, QTouchEvent::TouchPad, QCocoaTouch::getCurrentTouchPointList(event, all));
 }
 #endif // MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
 
-- (void)magnifyWithEvent:(NSEvent *)event;
+- (void)magnifyWithEvent:(NSEvent *)event
 {
     if (!QApplicationPrivate::tryModalHelper(qwidget, 0))
         return;
@@ -1018,7 +1017,7 @@ static int qCocoaViewCount = 0;
 #endif // QT_NO_GESTURES
 }
 
-- (void)rotateWithEvent:(NSEvent *)event;
+- (void)rotateWithEvent:(NSEvent *)event
 {
     if (!QApplicationPrivate::tryModalHelper(qwidget, 0))
         return;
@@ -1033,7 +1032,7 @@ static int qCocoaViewCount = 0;
 #endif // QT_NO_GESTURES
 }
 
-- (void)swipeWithEvent:(NSEvent *)event;
+- (void)swipeWithEvent:(NSEvent *)event
 {
     if (!QApplicationPrivate::tryModalHelper(qwidget, 0))
         return;
@@ -1055,7 +1054,7 @@ static int qCocoaViewCount = 0;
 #endif // QT_NO_GESTURES
 }
 
-- (void)beginGestureWithEvent:(NSEvent *)event;
+- (void)beginGestureWithEvent:(NSEvent *)event
 {
     if (!QApplicationPrivate::tryModalHelper(qwidget, 0))
         return;
@@ -1069,7 +1068,7 @@ static int qCocoaViewCount = 0;
 #endif // QT_NO_GESTURES
 }
 
-- (void)endGestureWithEvent:(NSEvent *)event;
+- (void)endGestureWithEvent:(NSEvent *)event
 {
     if (!QApplicationPrivate::tryModalHelper(qwidget, 0))
         return;
@@ -1609,7 +1608,6 @@ Qt::DropAction QDragManager::drag(QDrag *o)
                         dndParams.localPoint.y + pix.height() - hotspot.y()};
     NSSize mouseOffset = {0.0, 0.0};
     NSPasteboard *pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-    NSPoint windowPoint = [dndParams.theEvent locationInWindow];
     dragPrivate()->executed_action = Qt::ActionMask;
     // do the drag
     [dndParams.view retain];

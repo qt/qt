@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -180,23 +180,6 @@ void QNetworkAccessFtpBackend::closeDownstreamChannel()
 #else
         exit(3);
 #endif
-}
-
-bool QNetworkAccessFtpBackend::waitForDownstreamReadyRead(int ms)
-{
-    if (!ftp)
-        return false;
-
-    if (ftp->bytesAvailable()) {
-        ftpReadyRead();
-        return true;
-    }
-
-    if (ms == 0)
-        return false;
-
-    qCritical("QNetworkAccess: FTP backend does not support waitForReadyRead()");
-    return false;
 }
 
 void QNetworkAccessFtpBackend::downstreamReadyWrite()

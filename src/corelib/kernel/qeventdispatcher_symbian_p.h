@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -247,7 +247,9 @@ public:
 
     void addDeferredActiveObject(QActiveObject *object);
     void removeDeferredActiveObject(QActiveObject *object);
-    void reactivateDeferredActiveObjects();
+    void queueDeferredActiveObjectsCompletion();
+    // Can be overridden to activate local active objects too, but do call baseclass!
+    virtual void reactivateDeferredActiveObjects();
 
     inline int iterationCount() const { return m_iterationCount; }
 

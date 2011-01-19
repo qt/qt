@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -663,7 +663,8 @@
     \example declarative/ui-components/tabwidget
 
     This example shows how to create a tab widget. It also demonstrates how
-    \l {Setting default properties}{default properties} can be used to collect and 
+    \l {Property aliases}{property aliases} and
+    \l {Default Properties}{default properties} can be used to collect and
     assemble the child items declared within an \l Item.
 
     \image qml-tabwidget-example.png

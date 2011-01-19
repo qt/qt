@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -57,7 +57,7 @@
 #include <eikbtgpc.h>
 #endif
 
-// This is necessary in order to be able to perform delayed invokation on slots
+// This is necessary in order to be able to perform delayed invocation on slots
 // which take arguments of type WId.  One example is
 // QWidgetPrivate::_q_delayedDestroy, which is used to delay destruction of
 // CCoeControl objects until after the CONE event handler has finished running.
@@ -508,7 +508,7 @@ void QWidgetPrivate::show_sys()
                     CEikButtonGroupContainer *cba = CEikButtonGroupContainer::NewL(CEikButtonGroupContainer::ECba,
                         CEikButtonGroupContainer::EHorizontal,ui,R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
 
-                    CEikButtonGroupContainer *oldCba = CEikonEnv::Static()->AppUiFactory()->SwapButtonGroup(cba);
+                    CEikButtonGroupContainer *oldCba = factory->SwapButtonGroup(cba);
                     Q_ASSERT(!oldCba);
                     S60->setButtonGroupContainer(cba);
 
@@ -517,7 +517,7 @@ void QWidgetPrivate::show_sys()
                     menuBar->SetMenuType(CEikMenuBar::EMenuOptions);
                     S60->appUi()->AddToStackL(menuBar,ECoeStackPriorityMenu,ECoeStackFlagRefusesFocus);
 
-                    CEikMenuBar *oldMenu = CEikonEnv::Static()->AppUiFactory()->SwapMenuBar(menuBar);
+                    CEikMenuBar *oldMenu = factory->SwapMenuBar(menuBar);
                     Q_ASSERT(!oldMenu);
                 )
 
@@ -771,17 +771,32 @@ void QWidgetPrivate::s60UpdateIsOpaque()
     if (!q->testAttribute(Qt::WA_WState_Created) || !q->testAttribute(Qt::WA_TranslucentBackground))
         return;
 
+    createTLExtra();
+
     RWindow *const window = static_cast<RWindow *>(q->effectiveWinId()->DrawableWindow());
 
 #ifdef Q_SYMBIAN_SEMITRANSPARENT_BG_SURFACE
     window->SetSurfaceTransparency(!isOpaque);
+    extra->topextra->nativeWindowTransparencyEnabled = !isOpaque;
 #else
     if (!isOpaque) {
         const TDisplayMode displayMode = static_cast<TDisplayMode>(window->SetRequiredDisplayMode(EColor16MA));
-        if (window->SetTransparencyAlphaChannel() == KErrNone)
+        if (window->SetTransparencyAlphaChannel() == KErrNone) {
             window->SetBackgroundColor(TRgb(255, 255, 255, 0));
-    } else
+            extra->topextra->nativeWindowTransparencyEnabled = 1;
+
+            if (extra->topextra->backingStore.data() &&
+                    QApplicationPrivate::graphics_system_name == QLatin1String("openvg")) {
+                // Semi-transparent EGL surfaces aren't supported. We need to
+                // recreate backing store to get translucent surface (raster surface).
+                extra->topextra->backingStore.create(q);
+                extra->topextra->backingStore.registerWidget(q);
+            }
+        }
+    } else if (extra->topextra->nativeWindowTransparencyEnabled) {
         window->SetTransparentRegion(TRegionFix<1>());
+        extra->topextra->nativeWindowTransparencyEnabled = 0;
+    }
 #endif
 }
 
@@ -940,6 +955,7 @@ void QWidgetPrivate::registerDropSite(bool /* on */)
 void QWidgetPrivate::createTLSysExtra()
 {
     extra->topextra->inExpose = 0;
+    extra->topextra->nativeWindowTransparencyEnabled = 0;
 }
 
 void QWidgetPrivate::deleteTLSysExtra()

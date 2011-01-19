@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -437,6 +437,8 @@ int QDeclarativeTextInput::cursorPosition() const
 void QDeclarativeTextInput::setCursorPosition(int cp)
 {
     Q_D(QDeclarativeTextInput);
+    if (cp < 0 || cp > d->control->text().length())
+        return;
     d->control->moveCursor(cp);
 }
 
@@ -460,10 +462,9 @@ QRect QDeclarativeTextInput::cursorRectangle() const
     text edit.
 
     Note that if selectionStart == selectionEnd then there is no current
-    selection. If you attempt to set selectionStart to a value outside of
-    the current text, selectionStart will not be changed.
+    selection.
 
-    \sa selectionEnd, cursorPosition, selectedText
+    \sa selectionEnd, cursorPosition, selectedText, select()
 */
 int QDeclarativeTextInput::selectionStart() const
 {
@@ -479,10 +480,9 @@ int QDeclarativeTextInput::selectionStart() const
     text edit.
 
     Note that if selectionStart == selectionEnd then there is no current
-    selection. If you attempt to set selectionEnd to a value outside of
-    the current text, selectionEnd will not be changed.
+    selection.
 
-    \sa selectionStart, cursorPosition, selectedText
+    \sa selectionStart, cursorPosition, selectedText, select()
 */
 int QDeclarativeTextInput::selectionEnd() const
 {
@@ -490,6 +490,19 @@ int QDeclarativeTextInput::selectionEnd() const
     return d->lastSelectionEnd;
 }
 
+/*!
+    \qmlmethod void TextInput::select(int start, int end)
+
+    Causes the text from \a start to \a end to be selected.
+
+    If either start or end is out of range, the selection is not changed.
+
+    After calling this, selectionStart will become the lesser
+    and selectionEnd will become the greater (regardless of the order passed
+    to this method).
+
+    \sa selectionStart, selectionEnd
+*/
 void QDeclarativeTextInput::select(int start, int end)
 {
     Q_D(QDeclarativeTextInput);
@@ -760,7 +773,7 @@ void QDeclarativeTextInput::setEchoMode(QDeclarativeTextInput::EchoMode echo)
         imHints &= ~(Qt::ImhNoAutoUppercase | Qt::ImhNoPredictiveText);
     setInputMethodHints(imHints);
     d->control->setEchoMode((uint)echo);
-    update();
+    q_textChanged();
     emit echoModeChanged(echoMode());
 }
 
@@ -1468,6 +1481,7 @@ void QDeclarativeTextInput::cursorPosChanged()
     updateRect();//TODO: Only update rect between pos's
     updateMicroFocus();
     emit cursorPositionChanged();
+    d->control->resetCursorBlinkTimer();
 
     if(!d->control->hasSelectedText()){
         if(d->lastSelectionStart != d->control->cursor()){

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -518,6 +518,8 @@ public:
 #endif
 
         WA_X11DoNotAcceptFocus = 132,
+
+        WA_MacNoShadow = 133,
 
         // Add new attributes before this line
         WA_AttributeCount

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -137,6 +137,11 @@ void tst_QDeclarativeWorkerScript::messaging_data()
     QTest::newRow("real") << qVariantFromValue(10334.375);
     QTest::newRow("string") << qVariantFromValue(QString("More cheeeese, Gromit!"));
     QTest::newRow("variant list") << qVariantFromValue((QVariantList() << "a" << "b" << "c"));
+    QTest::newRow("date time") << qVariantFromValue(QDateTime::currentDateTime());
+#ifndef QT_NO_REGEXP
+    // QtScript's QScriptValue -> QRegExp uses RegExp2 pattern syntax
+    QTest::newRow("regexp") << qVariantFromValue(QRegExp("^\\d\\d?$", Qt::CaseInsensitive, QRegExp::RegExp2));
+#endif
 }
 
 void tst_QDeclarativeWorkerScript::messaging_sendQObjectList()

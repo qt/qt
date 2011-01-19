@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1050,6 +1050,7 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
 
         newProc->Resume();
         newProc->Close();
+        delete newProc;
         return true;
     }
 

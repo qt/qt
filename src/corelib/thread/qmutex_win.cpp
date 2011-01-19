@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -48,7 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 QMutexPrivate::QMutexPrivate(QMutex::RecursionMode mode)
-    : QMutexData(mode), lastSpinCount(0), owner(0), count(0)
+    : QMutexData(mode), maximumSpinTime(MaximumSpinTimeThreshold), averageWaitTime(0), owner(0), count(0)
 {
     event = CreateEvent(0, FALSE, FALSE, 0);
     if (!event)
@@ -60,7 +60,13 @@ QMutexPrivate::~QMutexPrivate()
 
 bool QMutexPrivate::wait(int timeout)
 {
-    return WaitForSingleObject(event, timeout < 0 ? INFINITE : timeout) ==  WAIT_OBJECT_0;
+    if (contenders.fetchAndAddAcquire(1) == 0) {
+        // lock acquired without waiting
+        return true;
+    }
+    bool returnValue = (WaitForSingleObject(event, timeout < 0 ? INFINITE : timeout) ==  WAIT_OBJECT_0);
+    contenders.deref();
+    return returnValue;
 }
 
 void QMutexPrivate::wakeUp()

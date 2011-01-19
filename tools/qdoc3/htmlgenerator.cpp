@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1930,7 +1930,7 @@ void HtmlGenerator::generateHeader(const QString& title,
     }
 
     if (node && !node->links().empty())
-        out() << "<p>\n" << navigationLinks << "</p><p/>\n";
+        out() << "<p class=\"naviNextPrevious headerNavi\">\n" << navigationLinks << "</p><p/>\n";
 }
 
 void HtmlGenerator::generateTitle(const QString& title,
@@ -1955,7 +1955,7 @@ void HtmlGenerator::generateTitle(const QString& title,
 void HtmlGenerator::generateFooter(const Node *node)
 {
     if (node && !node->links().empty())
-        out() << "<p>\n" << navigationLinks << "</p>\n";
+        out() << "<p class=\"naviNextPrevious footerNavi\">\n" << navigationLinks << "</p>\n";
 
     out() << QString(footer).replace("\\" + COMMAND_VERSION, myTree->version())
           << QString(address).replace("\\" + COMMAND_VERSION, myTree->version());
@@ -3413,7 +3413,7 @@ QString HtmlGenerator::protect(const QString &string, const QString &outputEncod
 #undef APPEND
 }
 
-QString HtmlGenerator::fileBase(const Node *node)
+QString HtmlGenerator::fileBase(const Node *node) const
 {
     QString result;
 
@@ -3544,8 +3544,11 @@ QString HtmlGenerator::linkForNode(const Node *node, const Node *relative)
         return QString();
  
     fn = fileName(node);
-/*    if (!node->url().isEmpty())
-        return fn;*/
+#if 0
+    if (!node->url().isEmpty())
+        return fn;
+#endif    
+
 #if 0
     // ### reintroduce this test, without breaking .dcf files
     if (fn != outFileName())
@@ -3719,7 +3722,11 @@ void HtmlGenerator::findAllClasses(const InnerNode *node)
                      (*c)->subType() == Node::QmlClass &&
                      !(*c)->doc().isEmpty()) {
                 QString qmlClassName = (*c)->name();
-                qmlClasses.insert(qmlClassName,*c);
+                // Remove the "QML:" prefix if present.
+                if (qmlClassName.startsWith(QLatin1String("QML:")))
+                    qmlClasses.insert(qmlClassName.mid(4),*c);
+                else
+                    qmlClasses.insert(qmlClassName,*c);
             }
             else if ((*c)->isInnerNode()) {
                 findAllClasses(static_cast<InnerNode *>(*c));

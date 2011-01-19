@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -82,6 +82,7 @@ void QMacWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint 
     extern CGContextRef qt_mac_graphicsContextFor(QWidget *);
     CGContextRef context = qt_mac_graphicsContextFor(widget);
 #endif
+    CGContextRetain(context);
     CGContextSaveGState(context);
 
     // Flip context.
@@ -109,6 +110,7 @@ void QMacWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint 
 #else
     CGContextFlush(context);
 #endif
+    CGContextRelease(context);
 }
 
 void QMacWindowSurface::setGeometry(const QRect &rect)

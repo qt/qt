@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -130,18 +130,6 @@ void QNetworkAccessCacheBackend::closeDownstreamChannel()
 void QNetworkAccessCacheBackend::closeUpstreamChannel()
 {
     Q_ASSERT_X(false, Q_FUNC_INFO, "This function show not have been called!");
-}
-
-bool QNetworkAccessCacheBackend::waitForDownstreamReadyRead(int)
-{
-    Q_ASSERT_X(false, Q_FUNC_INFO , "This function show not have been called!");
-    return false;
-}
-
-bool QNetworkAccessCacheBackend::waitForUpstreamBytesWritten(int)
-{
-    Q_ASSERT_X(false, Q_FUNC_INFO, "This function show not have been called!");
-    return false;
 }
 
 void QNetworkAccessCacheBackend::upstreamReadyRead()

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -86,7 +86,8 @@ extern uint qGlobalPostedEventsCount();
 
 enum {
     WM_QT_SOCKETNOTIFIER = WM_USER,
-    WM_QT_SENDPOSTEDEVENTS = WM_USER + 1
+    WM_QT_SENDPOSTEDEVENTS = WM_USER + 1,
+    SendPostedEventsWindowsTimerId = ~1u
 };
 
 #if defined(Q_OS_WINCE)
@@ -355,7 +356,7 @@ public:
 
     // for controlling when to send posted events
     QAtomicInt serialNumber;
-    int lastSerialNumber;
+    int lastSerialNumber, sendPostedEventsWindowsTimerId;
     QAtomicInt wakeUps;
 
     // timers
@@ -380,7 +381,7 @@ public:
 
 QEventDispatcherWin32Private::QEventDispatcherWin32Private()
     : threadId(GetCurrentThreadId()), interrupt(false), internalHwnd(0), getMessageHook(0),
-      serialNumber(0), lastSerialNumber(0), wakeUps(0)
+      serialNumber(0), lastSerialNumber(0), sendPostedEventsWindowsTimerId(0), wakeUps(0)
 {
     resolveTimerAPI();
 }
@@ -487,16 +488,20 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
             }
         }
         return 0;
-    } else if (message == WM_TIMER) {    
-        Q_ASSERT(d != 0);
-        d->sendTimerEvent(wp);
-        return 0;
-    } else if (message == WM_QT_SENDPOSTEDEVENTS) {
+    } else if (message == WM_QT_SENDPOSTEDEVENTS
+               // we also use a Windows timer to send posted events when the message queue is full
+               || (message == WM_TIMER
+                   && d->sendPostedEventsWindowsTimerId != 0
+                   && wp == (uint)d->sendPostedEventsWindowsTimerId)) {
         int localSerialNumber = d->serialNumber;
         if (localSerialNumber != d->lastSerialNumber) {
             d->lastSerialNumber = localSerialNumber;
             QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
         }
+        return 0;
+    } else if (message == WM_TIMER) {
+        Q_ASSERT(d != 0);
+        d->sendTimerEvent(wp);
         return 0;
     }
 
@@ -509,21 +514,36 @@ LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
         QEventDispatcherWin32 *q = qobject_cast<QEventDispatcherWin32 *>(QAbstractEventDispatcher::instance());
         Q_ASSERT(q != 0);
         if (q) {
+            MSG *msg = (MSG *) lp;
             QEventDispatcherWin32Private *d = q->d_func();
             int localSerialNumber = d->serialNumber;
-            MSG unused;
-            if ((HIWORD(GetQueueStatus(QS_INPUT | QS_RAWINPUT)) == 0
-                 && PeekMessage(&unused, 0, WM_TIMER, WM_TIMER, PM_NOREMOVE) == 0)) {
-                // no more input or timer events in the message queue or more than 10ms has elapsed since
-                // we send posted events, we can allow posted events to be sent now
+            if (HIWORD(GetQueueStatus(QS_TIMER | QS_INPUT | QS_RAWINPUT)) == 0) {
+                // no more input or timer events in the message queue, we can allow posted events to be sent normally now
+                if (d->sendPostedEventsWindowsTimerId != 0) {
+                    // stop the timer to send posted events, since we now allow the WM_QT_SENDPOSTEDEVENTS message
+                    KillTimer(d->internalHwnd, d->sendPostedEventsWindowsTimerId);
+                    d->sendPostedEventsWindowsTimerId = 0;
+                }
                 (void) d->wakeUps.fetchAndStoreRelease(0);
-                MSG *msg = (MSG *) lp;
                 if (localSerialNumber != d->lastSerialNumber
                     // if this message IS the one that triggers sendPostedEvents(), no need to post it again
                     && (msg->hwnd != d->internalHwnd
                         || msg->message != WM_QT_SENDPOSTEDEVENTS)) {
                     PostMessage(d->internalHwnd, WM_QT_SENDPOSTEDEVENTS, 0, 0);
                 }
+            } else if (d->sendPostedEventsWindowsTimerId == 0
+                       && localSerialNumber != d->lastSerialNumber
+                       // if this message IS the one that triggers sendPostedEvents(), no need to post it again
+                       && (msg->hwnd != d->internalHwnd
+                           || msg->message != WM_QT_SENDPOSTEDEVENTS)) {
+                // start a special timer to continue delivering posted events while
+                // there are still input and timer messages in the message queue
+                d->sendPostedEventsWindowsTimerId = SetTimer(d->internalHwnd,
+                                                             SendPostedEventsWindowsTimerId,
+                                                             0, // we specify zero, but Windows uses USER_TIMER_MINIMUM
+                                                             NULL);
+                // we don't check the return value of SetTimer()... if creating the timer failed, there's little
+                // we can do. we just have to accept that posted events will be starved
             }
         }
     }

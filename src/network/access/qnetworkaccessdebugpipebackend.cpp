@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -278,12 +278,6 @@ void QNetworkAccessDebugPipeBackend::socketConnected()
 {
 }
 
-bool QNetworkAccessDebugPipeBackend::waitForDownstreamReadyRead(int ms)
-{
-    Q_UNUSED(ms);
-    qCritical("QNetworkAccess: Debug pipe backend does not support waitForReadyRead()");
-    return false;
-}
 
 #endif
 

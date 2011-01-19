@@ -56,7 +56,7 @@ public:
     void swapBuffers();
     void* getProcAddress(const QString& procName);
 
-    void makeDefaultSaredContext();
+    void makeDefaultSharedContext();
 
     QPlatformWindowFormat platformWindowFormat() const;
 private:

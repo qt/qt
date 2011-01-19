@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -179,7 +179,6 @@ bool QHttpNetworkConnectionChannel::sendRequest()
         replyPrivate->autoDecompress = request.d->autoDecompress;
         replyPrivate->pipeliningUsed = false;
 
-        pendingEncrypt = false;
         // if the url contains authentication parameters, use the new ones
         // both channels will use the new authentication parameters
         if (!request.url().userInfo().isEmpty() && request.withCredentials()) {
@@ -1047,6 +1046,7 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
     if (!socket)
         return; // ### error
     state = QHttpNetworkConnectionChannel::IdleState;
+    pendingEncrypt = false;
     sendRequest();
 }
 

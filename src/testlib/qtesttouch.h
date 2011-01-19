@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -106,8 +106,8 @@ namespace QTest
         }
 
     private:
-        QTouchEventSequence(QWidget *widget, QTouchEvent::DeviceType deviceType)
-            : targetWidget(widget), deviceType(deviceType)
+        QTouchEventSequence(QWidget *widget, QTouchEvent::DeviceType aDeviceType)
+            : targetWidget(widget), deviceType(aDeviceType)
         {
         }
         QTouchEventSequence(const QTouchEventSequence &v);

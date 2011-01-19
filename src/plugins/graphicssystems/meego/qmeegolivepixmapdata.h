@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,6 +43,7 @@
 #define MLIVEPIXMAPDATA_H
 
 #include <private/qpixmapdata_gl_p.h>
+#include "qmeegoextensions.h"
 
 class QMeeGoLivePixmapData : public QGLPixmapData
 {
@@ -50,16 +51,16 @@ public:
     QMeeGoLivePixmapData(int w, int h, QImage::Format format);
     QMeeGoLivePixmapData(Qt::HANDLE h);
     ~QMeeGoLivePixmapData();
-    
+
     QPixmapData *createCompatiblePixmapData() const;
     bool scroll(int dx, int dy, const QRect &rect);
 
     void initializeThroughEGLImage();
-        
-    QImage* lock();
+
+    QImage* lock(EGLSyncKHR fenceSync);
     bool release(QImage *img);
     Qt::HANDLE handle();
-    
+
     EGLSurface getSurfaceForBackingPixmap();
     void destroySurfaceForPixmapData(QPixmapData* pmd);
 

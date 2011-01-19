@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,6 +45,7 @@
 #if !defined(Q_WS_MAC)
 
 #include <QtTest/QtTest>
+#include <QtGui/QtGui>
 #include <private/qtextengine_p.h>
 
 #include "bidireorderstring.h"
@@ -68,6 +69,8 @@ public slots:
 private slots:
     void bidiReorderString_data();
     void bidiReorderString();
+    void bidiCursor_qtbug2795();
+    void bidiCursor_PDF();
 };
 
 tst_QComplexText::tst_QComplexText()
@@ -159,6 +162,42 @@ void tst_QComplexText::bidiReorderString()
     QTEST(visual, "VISUAL");
 }
 
+void tst_QComplexText::bidiCursor_qtbug2795()
+{
+    QString str = QString::fromUtf8("الجزيرة نت");
+    QTextLayout l1(str);
+
+    l1.beginLayout();
+    QTextLine line1 = l1.createLine();
+    l1.endLayout();
+
+    qreal x1 = line1.cursorToX(0) - line1.cursorToX(str.size());
+
+    str.append("1");
+    QTextLayout l2(str);
+    l2.beginLayout();
+    QTextLine line2 = l2.createLine();
+    l2.endLayout();
+
+    qreal x2 = line2.cursorToX(0) - line2.cursorToX(str.size());
+
+    // The cursor should remain at the same position after a digit is appended
+    QVERIFY(x1 == x2);
+}
+
+void tst_QComplexText::bidiCursor_PDF()
+{
+    QString str = QString::fromUtf8("\342\200\252hello\342\200\254");
+    QTextLayout layout(str);
+
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    layout.endLayout();
+
+    int size = str.size();
+
+    QVERIFY(line.cursorToX(size) == line.cursorToX(size - 1));
+}
 
 QTEST_MAIN(tst_QComplexText)
 #include "tst_qcomplextext.moc"

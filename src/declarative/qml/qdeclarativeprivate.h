@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -55,9 +55,6 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qvariant.h>
-#ifndef Q_OS_WIN
-#include <stdint.h>
-#endif
 
 QT_BEGIN_HEADER
 
@@ -105,7 +102,7 @@ namespace QDeclarativePrivate
     template<class From, class To>
     struct StaticCastSelectorClass<From, To, sizeof(int)>
     {
-        static inline int cast() { return int(reinterpret_cast<intptr_t>(static_cast<To *>(reinterpret_cast<From *>(0x10000000)))) - 0x10000000; }
+        static inline int cast() { return int(reinterpret_cast<quintptr>(static_cast<To *>(reinterpret_cast<From *>(0x10000000)))) - 0x10000000; }
     };
 
     template<class From, class To>

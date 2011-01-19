@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -47,7 +47,7 @@
 #include <qdebug.h>
 
 // Included from tools/shared
-#include <symbian/epocroot.h>
+#include <symbian/epocroot_p.h>
 
 #define SYSBIN_DIR "/sys/bin"
 #define HW_Z_DIR "epoc32/data/z"
@@ -75,7 +75,7 @@ static bool isPlugin(const QFileInfo& info, const QString& devicePath)
             && (devicePath.size() < 8
              || (0 != devicePath.compare(QLatin1String(SYSBIN_DIR), Qt::CaseInsensitive)
                 && 0 != devicePath.mid(1).compare(QLatin1String(":" SYSBIN_DIR), Qt::CaseInsensitive)
-                && 0 != devicePath.compare(epocRoot() + QLatin1String(HW_Z_DIR SYSBIN_DIR))))) {
+                && 0 != devicePath.compare(qt_epocRoot() + QLatin1String(HW_Z_DIR SYSBIN_DIR))))) {
         return true;
     } else {
         return false;
@@ -182,7 +182,7 @@ void initProjectDeploySymbian(QMakeProject* project,
 
     QString deploymentDrive;
     if (0 == platform.compare(QLatin1String(ROM_DEPLOYMENT_PLATFORM))) {
-        deploymentDrive = epocRoot() + HW_Z_DIR;
+        deploymentDrive = qt_epocRoot() + HW_Z_DIR;
     } else {
         deploymentDrive = targetPathHasDriveLetter ? targetPath.left(2) : QLatin1String("c:");
     }
@@ -225,9 +225,9 @@ void initProjectDeploySymbian(QMakeProject* project,
         } else {
             if (0 == platform.compare(QLatin1String(EMULATOR_DEPLOYMENT_PLATFORM))) {
                 if (devicePathHasDriveLetter) {
-                    devicePath = epocRoot() + "epoc32/winscw/" + devicePath.remove(1, 1);
+                    devicePath = qt_epocRoot() + "epoc32/winscw/" + devicePath.remove(1, 1);
                 } else {
-                    devicePath = epocRoot() + "epoc32/winscw/c" + devicePath;
+                    devicePath = qt_epocRoot() + "epoc32/winscw/c" + devicePath;
                 }
             } else {
                 if (devicePathHasDriveLetter
@@ -279,7 +279,7 @@ void initProjectDeploySymbian(QMakeProject* project,
                             // Executables and libraries are deployed to \sys\bin
                             QFileInfo targetPath;
                             if (epocBuild)
-                                targetPath.setFile(epocRoot() + "epoc32/release/" + platform + "/" + build + "/");
+                                targetPath.setFile(qt_epocRoot() + "epoc32/release/" + platform + "/" + build + "/");
                             else
                                 targetPath.setFile(info.path() + QDir::separator());
                             if(devicePathHasDriveLetter) {

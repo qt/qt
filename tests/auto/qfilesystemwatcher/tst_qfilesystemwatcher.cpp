@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -82,6 +82,8 @@ private slots:
     void removeFileAndUnWatch();
 
     void cleanup();
+
+    void QTBUG15255_deadlock();
 private:
     QStringList do_force_engines;
     bool do_force_native;
@@ -135,14 +137,11 @@ void tst_QFileSystemWatcher::basicTest()
     // create watcher, forcing it to use a specific backend
     QFileSystemWatcher watcher;
     watcher.setObjectName(QLatin1String("_qt_autotest_force_engine_") + backend);
+    watcher.removePath(testFile.fileName());
     watcher.addPath(testFile.fileName());
 
     QSignalSpy changedSpy(&watcher, SIGNAL(fileChanged(const QString &)));
     QEventLoop eventLoop;
-    connect(&watcher,
-            SIGNAL(fileChanged(const QString &)),
-            &eventLoop,
-            SLOT(quit()));
     QTimer timer;
     connect(&timer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
 
@@ -278,10 +277,6 @@ void tst_QFileSystemWatcher::watchDirectory()
 
     QSignalSpy changedSpy(&watcher, SIGNAL(directoryChanged(const QString &)));
     QEventLoop eventLoop;
-    connect(&watcher,
-            SIGNAL(directoryChanged(const QString &)),
-            &eventLoop,
-            SLOT(quit()));
     QTimer timer;
     connect(&timer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
 
@@ -556,6 +551,24 @@ void tst_QFileSystemWatcher::removeFileAndUnWatch()
     }
     watcher.addPath(filename);
 }
+
+class SomeSingleton : public QObject
+{
+public:
+    SomeSingleton() : mFsWatcher(new QFileSystemWatcher(this)) { mFsWatcher->addPath(QLatin1String("/usr/lib"));}
+    void bla() const {}
+    QFileSystemWatcher* mFsWatcher;
+};
+
+Q_GLOBAL_STATIC(SomeSingleton, someSingleton)
+
+void tst_QFileSystemWatcher::QTBUG15255_deadlock()
+{
+    someSingleton()->bla();
+    //the test must still finish
+    QTest::qWait(30);
+}
+
 
 QTEST_MAIN(tst_QFileSystemWatcher)
 #include "tst_qfilesystemwatcher.moc"

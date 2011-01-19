@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2054,6 +2054,7 @@ void tst_QTextDocument::clonePreservesIndentWidth()
     doc->setIndentWidth(42);
     QTextDocument *clone = doc->clone();
     QCOMPARE(clone->indentWidth(), qreal(42));
+    delete clone;
 }
 
 void tst_QTextDocument::blockCount()

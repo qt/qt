@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -154,7 +154,7 @@ QByteArray PreprocessorCache::readFile(const QString &filename) const
     // read the file for us.
     if (receivers(SIGNAL(readFile(QByteArray&,QString))) > 0) {
         QByteArray array;
-        // Workaround for "not beeing able to emit from const function"
+        // Workaround for "not being able to emit from const function"
         PreprocessorCache *cache = const_cast<PreprocessorCache *>(this);
         emit cache->readFile(array, filename);
         return array;

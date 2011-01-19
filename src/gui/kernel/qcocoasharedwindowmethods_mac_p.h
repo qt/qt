@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -161,7 +161,7 @@ QT_END_NAMESPACE
     bool handled = false;
     // sometimes need to redirect mouse events to the popup.
     QWidget *popup = qAppInstance()->activePopupWidget();
-    if (popup) {
+    if (popup && popup != widget) {
         switch([event type])
         {
         case NSLeftMouseDown:

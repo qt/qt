@@ -70,6 +70,7 @@ public:
     virtual int depth() const = 0;
     virtual QImage::Format format() const = 0;
     virtual QSize physicalSize() const;
+    //jl: should setDirty be removed.
     virtual void setDirty(const QRect &) {}
     virtual QWidget *topLevelAt(const QPoint &point) const;
 };

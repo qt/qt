@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -260,6 +260,7 @@ private slots:
     void drawPointScaled();
 
     void QTBUG14614_gradientCacheRaceCondition();
+    void drawTextOpacity();
 
 private:
     void fillData();
@@ -4581,32 +4582,6 @@ void tst_QPainter::drawText_subPixelPositionsInRaster_qtbug5053()
 #if !defined(Q_WS_MAC) || !defined(QT_MAC_USE_COCOA)
     QSKIP("Only Mac/Cocoa supports sub pixel positions in raster engine currently", SkipAll);
 #endif
-
-    int w = 10, h = 10;
-    QImage image(w, h, QImage::Format_RGB32);
-    image.fill(0xffffffff);
-    QPainter p(&image);
-    p.drawText(0, h, "X\\");
-    p.end();
-
-    bool foundNonGrayPixel = false;
-    const int *bits = (const int *) ((const QImage &) image).bits();
-    int bpl = image.bytesPerLine() / 4;
-    for (int y=0; y<w; ++y) {
-        for (int x=0; x<h; ++x) {
-            int r = qRed(bits[x]);
-            int g = qGreen(bits[x]);
-            int b = qBlue(bits[x]);
-            if (r != g || r != b) {
-                foundNonGrayPixel = true;
-                break;
-            }
-        }
-        bits += bpl;
-    }
-    if (!foundNonGrayPixel)
-        QSKIP("Font smoothing must be turned on for this test", SkipAll);
-
     QFontMetricsF fm(qApp->font());
 
     QImage baseLine(fm.width(QChar::fromLatin1('e')), fm.height(), QImage::Format_RGB32);
@@ -4683,6 +4658,30 @@ void tst_QPainter::QTBUG14614_gradientCacheRaceCondition()
         producers[i].start();
     for (int i = 0; i < threadCount; ++i)
         producers[i].wait();
+}
+
+void tst_QPainter::drawTextOpacity()
+{
+    QImage image(32, 32, QImage::Format_RGB32);
+    image.fill(0xffffffff);
+
+    QPainter p(&image);
+    p.setPen(QColor("#6F6F6F"));
+    p.setOpacity(0.5);
+    p.drawText(5, 30, QLatin1String("Qt"));
+    p.end();
+
+    QImage copy = image;
+    image.fill(0xffffffff);
+
+    p.begin(&image);
+    p.setPen(QColor("#6F6F6F"));
+    p.drawLine(-10, -10, -1, -1);
+    p.setOpacity(0.5);
+    p.drawText(5, 30, QLatin1String("Qt"));
+    p.end();
+
+    QCOMPARE(image, copy);
 }
 
 QTEST_MAIN(tst_QPainter)

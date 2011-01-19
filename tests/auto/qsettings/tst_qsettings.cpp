@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -51,6 +51,7 @@
 #include <QtCore/QMetaType>
 #include <QtCore/QtDebug>
 #include <QtCore/QString>
+#include "../../shared/util.h"
 
 #if !defined(Q_OS_SYMBIAN)
 # include <cctype>
@@ -1726,26 +1727,22 @@ void tst_QSettings::testUpdateRequestEvent()
     settings1.setValue("key1", 1);
     QVERIFY(QFileInfo("foo").size() == 0);
 
-    qApp->processEvents();
-    QVERIFY(QFileInfo("foo").size() > 0);
+    QTRY_VERIFY(QFileInfo("foo").size() > 0);
 
     settings1.remove("key1");
     QVERIFY(QFileInfo("foo").size() > 0);
 
-    qApp->processEvents();
-    QVERIFY(QFileInfo("foo").size() == 0);
+    QTRY_VERIFY(QFileInfo("foo").size() == 0);
 
     settings1.setValue("key2", 2);
     QVERIFY(QFileInfo("foo").size() == 0);
 
-    qApp->processEvents();
-    QVERIFY(QFileInfo("foo").size() > 0);
+    QTRY_VERIFY(QFileInfo("foo").size() > 0);
 
     settings1.clear();
     QVERIFY(QFileInfo("foo").size() > 0);
 
-    qApp->processEvents();
-    QVERIFY(QFileInfo("foo").size() == 0);
+    QTRY_VERIFY(QFileInfo("foo").size() == 0);
 }
 
 const int NumIterations = 5;

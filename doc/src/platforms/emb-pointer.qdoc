@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -105,7 +105,7 @@
     {touch panels} in which case the driver must be specified
     explicitly to determine which device to use.
 
-    To manually specify which driver to use, set the QWS_MOUSE_PROTO
+    To manually specify which driver to use, set the \c QWS_MOUSE_PROTO
     environment variable. For example (if the current shell is bash,
     ksh, zsh or sh):
 
@@ -156,7 +156,7 @@
     \snippet doc/src/snippets/code/doc_src_emb-pointer.qdoc 8
 
     To make \l{Qt for Embedded Linux} explicitly choose the tslib mouse
-    handler, set the QWS_MOUSE_PROTO environment variable as explained
+    handler, set the \c QWS_MOUSE_PROTO environment variable as explained
     above.
 
     \endtable

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,6 +54,7 @@ class tst_qdeclarativedebughelper : public QObject {
 private slots:
     void getScriptEngine();
     void setAnimationSlowDownFactor();
+    void enableDebugging();
 };
 
 class TestAnimation : public QAbstractAnimation {
@@ -107,6 +108,12 @@ void tst_qdeclarativedebughelper::setAnimationSlowDownFactor()
     animation.start();
     QTest::qWait(animation.totalDuration() + 50);
     QVERIFY(animation.updateCalled > 1);
+}
+
+void tst_qdeclarativedebughelper::enableDebugging()
+{
+    QTest::ignoreMessage(QtWarningMsg, "Qml debugging is enabled. Only use this in a safe environment!");
+    QDeclarativeDebugHelper::enableDebugging();
 }
 
 QTEST_MAIN(tst_qdeclarativedebughelper)

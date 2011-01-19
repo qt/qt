@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1620,7 +1620,11 @@ void QWidgetPrivate::repaint_sys(const QRegion &rgn)
         extra->staticContentsSize = data.crect.size();
     }
 
+#ifdef Q_WS_QPA //Dont even call q->p
+    QPaintEngine *engine = 0;
+#else
     QPaintEngine *engine = q->paintEngine();
+#endif
     // QGLWidget does not support partial updates if:
     // 1) The context is double buffered
     // 2) The context is single buffered and auto-fill background is enabled.

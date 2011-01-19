@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -214,7 +214,7 @@ void QVGPixmapData::createPixmapForImage(QImage &image, Qt::ImageConversionFlags
     else if (!(flags & Qt::NoOpaqueDetection) && const_cast<QImage &>(image).data_ptr()->checkForAlphaPixels())
         format = sourceFormat();
     else
-        format = QImage::Format_RGB32;
+        format = image.hasAlphaChannel() ? sourceFormat() : QImage::Format_RGB32;
 
     if (inPlace && image.data_ptr()->convertInPlace(format, flags))
         source = image;

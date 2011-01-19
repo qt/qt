@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -445,7 +445,7 @@ namespace {
             const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
 
             QStaticTextItem currentItem;
-            currentItem.fontEngine = ti.fontEngine;
+            currentItem.setFontEngine(ti.fontEngine);
             currentItem.font = ti.font();
             currentItem.charOffset = m_chars.size();
             currentItem.numChars = ti.num_chars;
@@ -711,6 +711,26 @@ void QStaticTextPrivate::init()
     }
 
     needsRelayout = false;
+}
+
+QStaticTextItem::~QStaticTextItem()
+{
+    if (m_userData != 0 && !m_userData->ref.deref())
+        delete m_userData;
+    if (!m_fontEngine->ref.deref())
+        delete m_fontEngine;
+}
+
+void QStaticTextItem::setFontEngine(QFontEngine *fe)
+{
+    if (m_fontEngine != 0) {
+        if (!m_fontEngine->ref.deref())
+            delete m_fontEngine;
+    }
+
+    m_fontEngine = fe;
+    if (m_fontEngine != 0)
+        m_fontEngine->ref.ref();
 }
 
 QT_END_NAMESPACE

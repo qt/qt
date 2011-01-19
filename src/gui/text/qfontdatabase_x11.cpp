@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1018,6 +1018,13 @@ static void loadFontConfig()
     QFontDatabasePrivate *db = privateDb();
     FcFontSet  *fonts;
 
+    FcPattern *pattern = FcPatternCreate();
+    FcDefaultSubstitute(pattern);
+    FcChar8 *lang = 0;
+    if (FcPatternGetString(pattern, FC_LANG, 0, &lang) == FcResultMatch)
+        db->systemLang = QString::fromUtf8((const char *) lang);
+    FcPatternDestroy(pattern);
+
     QString familyName;
     FcChar8 *value = 0;
     int weight_value;
@@ -1455,6 +1462,7 @@ void qt_addPatternProps(FcPattern *pattern, int screen, int script, const QFontD
         weight_value = FC_WEIGHT_DEMIBOLD;
     else if (request.weight < (QFont::Bold + QFont::Black) / 2)
         weight_value = FC_WEIGHT_BOLD;
+    FcPatternDel(pattern, FC_WEIGHT);
     FcPatternAddInteger(pattern, FC_WEIGHT, weight_value);
 
     int slant_value = FC_SLANT_ROMAN;
@@ -1462,20 +1470,25 @@ void qt_addPatternProps(FcPattern *pattern, int screen, int script, const QFontD
         slant_value = FC_SLANT_ITALIC;
     else if (request.style == QFont::StyleOblique)
         slant_value = FC_SLANT_OBLIQUE;
+    FcPatternDel(pattern, FC_SLANT);
     FcPatternAddInteger(pattern, FC_SLANT, slant_value);
 
     double size_value = qMax(qreal(1.), request.pixelSize);
+    FcPatternDel(pattern, FC_PIXEL_SIZE);
     FcPatternAddDouble(pattern, FC_PIXEL_SIZE, size_value);
 
     int stretch = request.stretch;
     if (!stretch)
         stretch = 100;
+    FcPatternDel(pattern, FC_WIDTH);
     FcPatternAddInteger(pattern, FC_WIDTH, stretch);
 
     if (X11->display && QX11Info::appDepth(screen) <= 8) {
+        FcPatternDel(pattern, FC_ANTIALIAS);
         // can't do antialiasing on 8bpp
         FcPatternAddBool(pattern, FC_ANTIALIAS, false);
     } else if (request.styleStrategy & (QFont::PreferAntialias|QFont::NoAntialias)) {
+        FcPatternDel(pattern, FC_ANTIALIAS);
         FcPatternAddBool(pattern, FC_ANTIALIAS,
                          !(request.styleStrategy & QFont::NoAntialias));
     }
@@ -1484,6 +1497,7 @@ void qt_addPatternProps(FcPattern *pattern, int screen, int script, const QFontD
         Q_ASSERT(script < QUnicodeTables::ScriptCount);
         FcLangSet *ls = FcLangSetCreate();
         FcLangSetAdd(ls, (const FcChar8*)specialLanguages[script]);
+        FcPatternDel(pattern, FC_LANG);
         FcPatternAddLangSet(pattern, FC_LANG, ls);
         FcLangSetDestroy(ls);
     }
@@ -2030,6 +2044,7 @@ static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
     int count = 0;
 
     QStringList families;
+    QFontDatabasePrivate *db = privateDb();
 
     FcPattern *pattern = 0;
     do {
@@ -2041,8 +2056,19 @@ static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
         FcPatternDel(pattern, FC_FILE);
         FcPatternAddString(pattern, FC_FILE, (const FcChar8 *)fnt->fileName.toUtf8().constData());
 
-        FcChar8 *fam = 0;
-        if (FcPatternGetString(pattern, FC_FAMILY, 0, &fam) == FcResultMatch) {
+        FcChar8 *fam = 0, *familylang = 0;
+        int i, n = 0;
+        for (i = 0; ; i++) {
+            if (FcPatternGetString(pattern, FC_FAMILYLANG, i, &familylang) != FcResultMatch)
+                break;
+            QString familyLang = QString::fromUtf8((const char *) familylang);
+            if (familyLang.compare(db->systemLang, Qt::CaseInsensitive) == 0) {
+                n = i;
+                break;
+            }
+        }
+
+        if (FcPatternGetString(pattern, FC_FAMILY, n, &fam) == FcResultMatch) {
             QString family = QString::fromUtf8(reinterpret_cast<const char *>(fam));
             families << family;
         }

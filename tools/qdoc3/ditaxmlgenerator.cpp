@@ -1,7 +1,7 @@
 
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2015,7 +2015,7 @@ void DitaXmlGenerator::generateIncludes(const InnerNode *inner, CodeMarker *mark
 }
 
 /*!
-  Generates a table of contents begining at \a node.
+  Generates a table of contents beginning at \a node.
  */
 void DitaXmlGenerator::generateTableOfContents(const Node *node,
                                             CodeMarker *marker,
@@ -2101,7 +2101,7 @@ void DitaXmlGenerator::generateTableOfContents(const Node *node,
 
 /*!
   Revised for the new doc format.
-  Generates a table of contents begining at \a node.
+  Generates a table of contents beginning at \a node.
  */
 void DitaXmlGenerator::generateTableOfContents(const Node *node,
                                             CodeMarker *marker,

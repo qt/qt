@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -202,6 +202,35 @@ int QGLFramebufferObjectFormat::samples() const
 }
 
 /*!
+    \since 4.8
+
+    Enables or disables mipmapping. Mipmapping is disabled by default.
+    If mipmapping is enabled, additional memory will be allocated for
+    the mipmap levels. The mipmap levels can be updated by binding the
+    texture and calling glGenerateMipmap(). Mipmapping cannot be enabled
+    for multisampled framebuffer objects.
+
+    \sa mipmap(), texture()
+*/
+void QGLFramebufferObjectFormat::setMipmap(bool enabled)
+{
+    detach();
+    d->mipmap = enabled;
+}
+
+/*!
+    \since 4.8
+
+    Returns true if mipmapping is enabled.
+
+    \sa setMipmap()
+*/
+bool QGLFramebufferObjectFormat::mipmap() const
+{
+    return d->mipmap;
+}
+
+/*!
     Sets the attachment configuration of a framebuffer object to \a attachment.
 
     \sa attachment()
@@ -398,7 +427,8 @@ bool QGLFramebufferObjectPrivate::checkFramebufferStatus() const
 
 void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
                                        QGLFramebufferObject::Attachment attachment,
-                                       GLenum texture_target, GLenum internal_format, GLint samples)
+                                       GLenum texture_target, GLenum internal_format,
+                                       GLint samples, bool mipmap)
 {
     QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     fbo_guard.setContext(ctx);
@@ -426,6 +456,8 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
         glBindTexture(target, texture);
         glTexImage2D(target, 0, internal_format, size.width(), size.height(), 0,
                 GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        if (mipmap)
+            glGenerateMipmap(GL_TEXTURE_2D);
 #ifndef QT_OPENGL_ES
         glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -446,6 +478,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
 
         color_buffer = 0;
     } else {
+        mipmap = false;
         GLint maxSamples;
         glGetIntegerv(GL_MAX_SAMPLES_EXT, &maxSamples);
 
@@ -606,6 +639,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     format.setSamples(int(samples));
     format.setAttachment(fbo_attachment);
     format.setInternalTextureFormat(internal_format);
+    format.setMipmap(mipmap);
 }
 
 /*!
@@ -777,7 +811,7 @@ QGLFramebufferObject::QGLFramebufferObject(const QSize &size, const QGLFramebuff
 {
     Q_D(QGLFramebufferObject);
     d->init(this, size, format.attachment(), format.textureTarget(), format.internalTextureFormat(),
-            format.samples());
+            format.samples(), format.mipmap());
 }
 
 /*! \overload
@@ -791,7 +825,7 @@ QGLFramebufferObject::QGLFramebufferObject(int width, int height, const QGLFrame
 {
     Q_D(QGLFramebufferObject);
     d->init(this, QSize(width, height), format.attachment(), format.textureTarget(),
-            format.internalTextureFormat(), format.samples());
+            format.internalTextureFormat(), format.samples(), format.mipmap());
 }
 
 #ifdef Q_MAC_COMPAT_GL_FUNCTIONS

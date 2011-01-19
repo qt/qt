@@ -10,7 +10,7 @@ wince*|symbian {
     resour.files += ..\\resources\\file1.ext1
     resour.path = resources
 
-    DEPLOYMENT = files resour
+    DEPLOYMENT += files resour
 }
 
 wince* {
@@ -37,4 +37,6 @@ win32 {
     LIBS+=-lole32 -luuid
 }
 
-
+symbian {
+    LIBS+=-lefsrv
+}

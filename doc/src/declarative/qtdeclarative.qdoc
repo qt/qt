@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -27,7 +27,7 @@
 
 /*!
   \module QtDeclarative
-  \title QtDeclarative Module
+  \title Qt Declarative Module
   \ingroup modules
 
   \brief The Qt Declarative module provides a declarative framework
@@ -57,6 +57,8 @@
   \relates QDeclarativeEngine
 
   Equivalent to \c Q_DECLARE_METATYPE(TYPE) and \c Q_DECLARE_METATYPE(QDeclarativeListProperty<TYPE>)
+
+  #include <QtDeclarative> to use this macro.
 */
 
 /*!
@@ -68,6 +70,8 @@
   
   Current the only supported type info is \c QML_HAS_ATTACHED_PROPERTIES which
   declares that the \a Type supports \l {Attached Properties}.
+
+  #include <QtDeclarative> to use this macro.
 */
 
 
@@ -86,6 +90,10 @@
   "com.mycompany.qmlcomponents":
 
   \code
+  #include <QtDeclarative>
+
+  ...
+
   qmlRegisterType<MySliderItem>("com.mycompany.qmlcomponents", 1, 0, "Slider");
   \endcode
 
@@ -118,6 +126,8 @@
   This is useful where the type is only intended for providing attached properties or enum values.
 
   Returns the QML type id.
+
+  #include <QtDeclarative> to use this function.
 
   \sa qmlRegisterTypeNotAvailable()
 */
@@ -154,6 +164,8 @@
 
   Without this, a generic "Game is not a type" message would be given.
 
+  #include <QtDeclarative> to use this function.
+
   \sa qmlRegisterUncreatableType()
 */
 
@@ -166,6 +178,8 @@
   system. Instances of this type cannot be created from the QML
   system.
 
+  #include <QtDeclarative> to use this function.
+
   Returns the QML type id.
 */
 
@@ -175,6 +189,8 @@
 
   This template function registers the C++ type in the QML system
   under the name \a typeName.
+
+  #include <QtDeclarative> to use this function.
 
   Returns the QML type id.
   */

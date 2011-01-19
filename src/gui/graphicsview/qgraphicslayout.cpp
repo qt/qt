@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -307,10 +307,13 @@ void QGraphicsLayout::invalidate()
         // does not call the base implementation? In addition, updateGeometry()
         // does more than we need.
         layoutItem->d_func()->sizeHintCacheDirty = true;
+        layoutItem->d_func()->sizeHintWithConstraintCacheDirty = true;
         layoutItem = layoutItem->parentLayoutItem();
     }
-    if (layoutItem)
+    if (layoutItem) {
         layoutItem->d_func()->sizeHintCacheDirty = true;
+        layoutItem->d_func()->sizeHintWithConstraintCacheDirty = true;
+    }
 
     bool postIt = layoutItem ? !layoutItem->isLayout() : false;
     if (postIt) {

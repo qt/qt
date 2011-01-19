@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -42,6 +42,7 @@
 #include "qfont.h"
 #include "qfont_p.h"
 #include "qfontengine_p.h"
+#include "qfontengine_mac_p.h"
 #include "qfontinfo.h"
 #include "qfontmetrics.h"
 #include "qpaintdevice.h"

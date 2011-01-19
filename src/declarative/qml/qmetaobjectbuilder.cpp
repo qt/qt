@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,10 +40,6 @@
 ****************************************************************************/
 
 #include "private/qmetaobjectbuilder_p.h"
-
-#ifndef Q_OS_WIN
-#include <stdint.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -1264,8 +1260,8 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     char *str = reinterpret_cast<char *>(buf + size);
     if (buf) {
         if (relocatable) {
-            meta->d.stringdata = reinterpret_cast<const char *>((intptr_t)size);
-            meta->d.data = reinterpret_cast<uint *>((intptr_t)pmetaSize);
+            meta->d.stringdata = reinterpret_cast<const char *>((quintptr)size);
+            meta->d.data = reinterpret_cast<uint *>((quintptr)pmetaSize);
         } else {
             meta->d.stringdata = str;
             meta->d.data = reinterpret_cast<uint *>(data);
@@ -1502,8 +1498,8 @@ void QMetaObjectBuilder::fromRelocatableData(QMetaObject *output,
     const char *buf = data.constData();
     const QMetaObject *dataMo = reinterpret_cast<const QMetaObject *>(buf);
 
-    intptr_t stringdataOffset = (intptr_t)dataMo->d.stringdata;
-    intptr_t dataOffset = (intptr_t)dataMo->d.data;
+    quintptr stringdataOffset = (quintptr)dataMo->d.stringdata;
+    quintptr dataOffset = (quintptr)dataMo->d.data;
 
     output->d.superdata = superclass;
     output->d.stringdata = buf + stringdataOffset;

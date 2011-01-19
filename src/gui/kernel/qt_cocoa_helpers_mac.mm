@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -79,6 +79,7 @@
 #include <qdesktopwidget.h>
 #include <qevent.h>
 #include <qpixmapcache.h>
+#include <qvarlengtharray.h>
 #include <private/qevent_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qt_mac_p.h>
@@ -616,6 +617,27 @@ Qt::KeyboardModifiers qt_cocoaModifiers2QtModifiers(ulong modifierFlags)
     return qtMods;
 }
 
+NSString *qt_mac_removePrivateUnicode(NSString* string)
+{
+    int len = [string length];
+    if (len) {
+        QVarLengthArray <unichar, 10> characters(len);
+        bool changed = false;
+        for (int i = 0; i<len; i++) {
+            characters[i] = [string characterAtIndex:i];
+            // check if they belong to key codes in private unicode range
+            // currently we need to handle only the NSDeleteFunctionKey
+            if (characters[i] == NSDeleteFunctionKey) {
+                characters[i] = NSDeleteCharacter;
+                changed = true;
+            }
+        }
+        if (changed)
+            return [NSString stringWithCharacters:characters.data() length:len];
+    }
+    return string;
+}
+
 Qt::KeyboardModifiers qt_cocoaDragOperation2QtModifiers(uint dragOperations)
 {
     Qt::KeyboardModifiers qtMods =Qt::NoModifier;
@@ -1031,6 +1053,7 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
     Qt::KeyboardModifiers keyMods = qt_cocoaModifiers2QtModifiers([theEvent modifierFlags]);
     NSInteger clickCount = [theEvent clickCount];
     Qt::MouseButtons buttons = 0;
+    static Qt::MouseButton previousButton = Qt::NoButton;
     {
         UInt32 mac_buttons;
         if (GetEventParameter(carbonEvent, kEventParamMouseChord, typeUInt32, 0,
@@ -1049,7 +1072,7 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
 #ifndef QT_NAMESPACE
         Q_ASSERT(clickCount > 0);
 #endif
-        if (clickCount % 2 == 0 && buttons == button)
+        if (clickCount % 2 == 0 && (previousButton == Qt::NoButton || previousButton == button))
             eventType = QEvent::MouseButtonDblClick;
         if (button == Qt::LeftButton && (keyMods & Qt::MetaModifier)) {
             button = Qt::RightButton;
@@ -1083,6 +1106,7 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
         QContextMenuEvent qcme(QContextMenuEvent::Mouse, qlocalPoint, qglobalPoint, keyMods);
         qt_sendSpontaneousEvent(widgetToGetMouse, &qcme);
     }
+    previousButton = button;
     return true;
 #endif
 }

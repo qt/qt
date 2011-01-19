@@ -5,7 +5,7 @@ QT = core
 
 wince*|symbian: {
 deploy.files += NormalizationTest.txt
-DEPLOYMENT = deploy
+DEPLOYMENT += deploy
 }
 
 symbian: {
@@ -13,3 +13,4 @@ symbian: {
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
+CONFIG += parallel_test

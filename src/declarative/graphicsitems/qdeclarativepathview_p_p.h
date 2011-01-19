@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -82,7 +82,7 @@ public:
         , dragMargin(0), deceleration(100)
         , moveOffset(this, &QDeclarativePathViewPrivate::setAdjustedOffset)
         , firstIndex(-1), pathItems(-1), requestedIndex(-1)
-        , moveReason(Other), attType(0), highlightComponent(0), highlightItem(0)
+        , moveReason(Other), moveDirection(Shortest), attType(0), highlightComponent(0), highlightItem(0)
         , moveHighlight(this, &QDeclarativePathViewPrivate::setHighlightPosition)
         , highlightPosition(0)
         , highlightRangeStart(0), highlightRangeEnd(0)
@@ -173,6 +173,8 @@ public:
     QVariant modelVariant;
     enum MovementReason { Other, SetIndex, Mouse };
     MovementReason moveReason;
+    enum MovementDirection { Shortest, Negative, Positive };
+    MovementDirection moveDirection;
     QDeclarativeOpenMetaObjectType *attType;
     QDeclarativeComponent *highlightComponent;
     QDeclarativeItem *highlightItem;

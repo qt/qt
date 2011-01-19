@@ -146,6 +146,7 @@ SUBDIRS=\
     qregion \
     qscrollarea \
     qscrollbar \
+    qscroller \
     qsharedpointer_and_qwidget \
     qshortcut \
     qsidebar \
@@ -198,7 +199,6 @@ SUBDIRS=\
     qtreeview \
     qtreewidget \
     qtreewidgetitemiterator \
-    qtwidgets \
     qudpsocket \
     qundogroup \
     qundostack \

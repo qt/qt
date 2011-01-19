@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -102,6 +102,9 @@ Notice in both instances, \l {Component::createObject()}{createObject()} is call
 When using files with relative paths, the path should
 be relative to the file where \l {QML:Qt::createComponent()}{Qt.createComponent()} is executed.
 
+To connect signals to (or receive signals from) dynamically created objects, use the signal
+\c connect() method. See \l {Connecting signals to methods and other signals} for more information.
+
 
 \section2 Creating an object from a string of QML
 
@@ -173,7 +176,11 @@ component. Each instance runs a NumberAnimation, and when the animation has fini
 Alternatively, the \c application.qml could have destroyed the created object
 by calling \c object.destroy().
 
-Notice that if a \c SelfDestroyingRect instance was created statically like this:
+Note that it is safe to call destroy() on an object within that object. Objects are not destroyed the
+instant destroy() is called, but are cleaned up sometime between the end of that script block and the next frame
+(unless you specified a non-zero delay).
+
+Note also that if a \c SelfDestroyingRect instance was created statically like this:
 
 \qml
 Item {

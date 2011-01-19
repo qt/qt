@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -509,7 +509,7 @@ void QDeclarativeBorderImage::doUpdate()
 void QDeclarativeBorderImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_D(QDeclarativeBorderImage);
-    if (d->pix.isNull())
+    if (d->pix.isNull() || d->width() <= 0.0 || d->height() <= 0.0)
         return;
 
     bool oldAA = p->testRenderHint(QPainter::Antialiasing);
@@ -518,7 +518,23 @@ void QDeclarativeBorderImage::paint(QPainter *p, const QStyleOptionGraphicsItem 
         p->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
 
     const QDeclarativeScaleGrid *border = d->getScaleGrid();
-    QMargins margins(border->left(), border->top(), border->right(), border->bottom());
+    int left = border->left();
+    int right = border->right();
+    qreal borderWidth = left + right;
+    if (borderWidth > 0.0 && d->width() < borderWidth) {
+        qreal diff = borderWidth - d->width() - 1;
+        left -= qRound(diff * qreal(left) / borderWidth);
+        right -= qRound(diff * qreal(right) / borderWidth);
+    }
+    int top = border->top();
+    int bottom = border->bottom();
+    qreal borderHeight = top + bottom;
+    if (borderHeight > 0.0 && d->height() < borderHeight) {
+        qreal diff = borderHeight - d->height() - 1;
+        top -= qRound(diff * qreal(top) / borderHeight);
+        bottom -= qRound(diff * qreal(bottom) / borderHeight);
+    }
+    QMargins margins(left, top, right, bottom);
     QTileRules rules((Qt::TileRule)d->horizontalTileMode, (Qt::TileRule)d->verticalTileMode);
     qDrawBorderPixmap(p, QRect(0, 0, (int)d->width(), (int)d->height()), margins, d->pix, d->pix.rect(), margins, rules);
     if (d->smooth) {

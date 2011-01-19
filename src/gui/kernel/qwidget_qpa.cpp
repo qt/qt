@@ -48,6 +48,7 @@
 #include "QtGui/private/qapplication_p.h"
 #include "QtGui/qdesktopwidget.h"
 #include "QtGui/qplatformwindow_qpa.h"
+#include "QtGui/qplatformglcontext_qpa.h"
 
 #include <QtGui/QPlatformCursor>
 
@@ -97,8 +98,12 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     }
     Q_ASSERT(platformWindow);
 
-    if (!surface) {
-        surface = QApplicationPrivate::platformIntegration()->createWindowSurface(q,platformWindow->winId());
+    if (!surface ) {
+        if (platformWindow && q->platformWindowFormat().hasWindowSurface()) {
+            surface = QApplicationPrivate::platformIntegration()->createWindowSurface(q,platformWindow->winId());
+        } else {
+            q->setAttribute(Qt::WA_PaintOnScreen,true);
+        }
     }
 
     data.window_flags = q->platformWindow()->setWindowFlags(data.window_flags);
@@ -392,25 +397,22 @@ void QWidgetPrivate::show_sys()
 
     QPlatformWindow *window = q->platformWindow();
     if (window) {
-         const QRect geomRect = q->geometry();
-         const QRect windowRect = window->geometry();
-         if (windowRect != geomRect) {
-             window->setGeometry(geomRect);
-         }
-         if (q->isWindow()) {
-             if (QWindowSurface *surface = q->windowSurface()) {
-                 if (windowRect.size() != geomRect.size()) {
-                     surface->resize(geomRect.size());
-                 }
-             }
+        const QRect geomRect = q->geometry();
+        const QRect windowRect = window->geometry();
+        if (windowRect != geomRect) {
+            window->setGeometry(geomRect);
+        }
+        if (QWindowSurface *surface = q->windowSurface()) {
+            if (windowRect.size() != geomRect.size()) {
+                surface->resize(geomRect.size());
+            }
+        }
+        if (window)
+            window->setVisible(true);
 
-             if (window)
-                 window->setVisible(true);
-
-             if (q->windowType() != Qt::Popup && q->windowType() != Qt::ToolTip && !(q->windowFlags() & Qt::X11BypassWindowManagerHint))
-                 q->activateWindow(); //###
-         }
-     }
+        if (q->isWindow() && q->windowType() != Qt::Popup && q->windowType() != Qt::ToolTip && !(q->windowFlags() & Qt::X11BypassWindowManagerHint))
+            q->activateWindow(); //### QWindowSystemInterface should have callback function for when WS actually activates window.
+    }
 }
 
 
@@ -787,6 +789,15 @@ void QWidgetPrivate::createTLSysExtra()
 void QWidgetPrivate::deleteTLSysExtra()
 {
     if (extra && extra->topextra) {
+        //the toplevel might have a context with a "qglcontext associated with it. We need to
+        //delete the qglcontext before we delete the qplatformglcontext.
+        //One unfortunate thing about this is that we potentially create a glContext just to
+        //delete it straight afterwards.
+        if (extra->topextra->platformWindow) {
+            if (QPlatformGLContext *context = extra->topextra->platformWindow->glContext()) {
+                context->deleteQGLContext();
+            }
+        }
         delete extra->topextra->platformWindow;
         extra->topextra->platformWindow = 0;
         extra->topextra->backingStore.destroy();
@@ -831,7 +842,10 @@ QPaintEngine *QWidget::paintEngine() const
 QWindowSurface *QWidgetPrivate::createDefaultWindowSurface_sys()
 {
     Q_Q(QWidget);
-    return QApplicationPrivate::platformIntegration()->createWindowSurface(q,0);
+    if (q->platformWindowFormat().hasWindowSurface())
+        return QApplicationPrivate::platformIntegration()->createWindowSurface(q,0);
+    else
+        return 0;
 }
 
 void QWidgetPrivate::setModal_sys()

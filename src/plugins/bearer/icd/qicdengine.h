@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 class QNetworkConfigurationPrivate;
 class IapMonitor;
 class QDBusInterface;
+class QDBusServiceWatcher;
 
 inline QNetworkConfiguration::BearerType bearerTypeFromIapType(const QString &iapType)
 {
@@ -147,12 +148,15 @@ private Q_SLOTS:
     void finishAsyncConfigurationUpdate();
     void asyncUpdateConfigurationsSlot(QDBusMessage msg);
     void connectionStateSignalsSlot(QDBusMessage msg);
+    void icdServiceOwnerChanged(const QString &serviceName, const QString &oldOwner,
+                                const QString &newOwner);
 
 private:
     void startListeningStateSignalsForAllConnections();
     void doRequestUpdate(QList<Maemo::IcdScanResult> scanned = QList<Maemo::IcdScanResult>());
     void cancelAsyncConfigurationUpdate();
     void getIcdInitialState();
+    bool ensureDBusConnection();
 
 private:
     IapMonitor *iapMonitor;
@@ -161,6 +165,8 @@ private:
     QString m_onlineIapId;
     QStringList m_typesToBeScanned;
     QList<Maemo::IcdScanResult> m_scanResult;
+
+    QDBusServiceWatcher *m_icdServiceWatcher;
 
     bool firstUpdate;
     bool m_scanGoingOn;

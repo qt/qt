@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -117,6 +117,7 @@ public:
     static QSslCipher QSslCipher_from_SSL_CIPHER(SSL_CIPHER *cipher);
     static QList<QSslCertificate> STACKOFX509_to_QSslCertificates(STACK_OF(X509) *x509);
     Q_AUTOTEST_EXPORT static bool isMatchingHostname(const QString &cn, const QString &hostname);
+    static QString getErrorsFromOpenSsl();
 };
 
 #if defined(Q_OS_SYMBIAN)
@@ -165,6 +166,7 @@ private:
     CCertAttributeFilter* iCertFilter;
     TInt iCurrentCertIndex;
     QByteArray iCertificateData;
+    TPtr8 iCertificatePtr;
     QList<QByteArray>* iCertificates;
     TInt iSequenceError;
 };

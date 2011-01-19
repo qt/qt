@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1078,7 +1078,7 @@ void QNetworkSessionPrivateImpl::RunL()
             TInt error = KErrNone;
             QNetworkConfiguration newActiveConfig = activeConfiguration();
             if (!newActiveConfig.isValid()) {
-                // RConnection startup was successfull but no configuration
+                // RConnection startup was successful but no configuration
                 // was found. That indicates that user has chosen to create a
                 // new WLAN configuration (from scan results), but that new
                 // configuration does not have access to Internet (Internet
@@ -1151,10 +1151,10 @@ void QNetworkSessionPrivateImpl::RunL()
             serviceConfig = QNetworkConfiguration();
             iError = QNetworkSession::InvalidConfigurationError;
             QT_TRYCATCH_LEAVING(emit QNetworkSessionPrivate::error(iError));
-            Cancel();
             if (ipConnectionNotifier) {
                 ipConnectionNotifier->StopNotifications();
             }
+            Cancel();
             QT_TRYCATCH_LEAVING(syncStateWithInterface());
             break;
         case KErrCancel: // Connection attempt cancelled
@@ -1173,10 +1173,10 @@ void QNetworkSessionPrivateImpl::RunL()
                 iError = QNetworkSession::UnknownSessionError;
             }
             QT_TRYCATCH_LEAVING(emit QNetworkSessionPrivate::error(iError));
-            Cancel();
             if (ipConnectionNotifier) {
                 ipConnectionNotifier->StopNotifications();
             }
+            Cancel();
             QT_TRYCATCH_LEAVING(syncStateWithInterface());
             break;
     }
@@ -1268,10 +1268,10 @@ bool QNetworkSessionPrivateImpl::newState(QNetworkSession::State newState, TUint
         serviceConfig = QNetworkConfiguration();
         iError = QNetworkSession::SessionAbortedError;
         emit QNetworkSessionPrivate::error(iError);
-        Cancel();
         if (ipConnectionNotifier) {
             ipConnectionNotifier->StopNotifications();
         }
+        Cancel();
         // Start handling IAP state change signals from QNetworkConfigurationManagerPrivate
         iHandleStateNotificationsFromManager = true;
         emitSessionClosed = true; // Emit SessionClosed after state change has been reported

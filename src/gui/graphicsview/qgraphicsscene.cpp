@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -4367,25 +4367,8 @@ static void _q_paintIntoCache(QPixmap *pix, QGraphicsItem *item, const QRegion &
 static inline bool transformIsSimple(const QTransform& transform)
 {
     QTransform::TransformationType type = transform.type();
-    if (type == QTransform::TxNone || type == QTransform::TxTranslate) {
+    if (type <= QTransform::TxScale) {
         return true;
-    } else if (type == QTransform::TxScale) {
-        // Check for 0 and 180 degree rotations.
-        // (0 might happen after 4 rotations of 90 degrees).
-        qreal m11 = transform.m11();
-        qreal m12 = transform.m12();
-        qreal m21 = transform.m21();
-        qreal m22 = transform.m22();
-        if (m12 == 0.0f && m21 == 0.0f) {
-            if (m11 == 1.0f && m22 == 1.0f)
-                return true; // 0 degrees
-            else if (m11 == -1.0f && m22 == -1.0f)
-                return true; // 180 degrees.
-            if(m11 == 1.0f && m22 == -1.0f)
-                return true; // 0 degrees inverted y.
-            else if(m11 == -1.0f && m22 == 1.0f)
-                return true; // 180 degrees inverted y.
-        }
     } else if (type == QTransform::TxRotate) {
         // Check for 90, and 270 degree rotations.
         qreal m11 = transform.m11();
@@ -4583,13 +4566,13 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
             itemCache->exposed.clear();
             deviceData->cacheIndent = QPoint();
             pix = QPixmap();
-        } else {
+        } else if (!viewRect.isNull()) {
             allowPartialCacheExposure = deviceData->cacheIndent != QPoint();
         }
 
         // Allow partial cache exposure if the device rect isn't fully contained and
         // deviceRect is 20% taller or wider than the viewRect.
-        if (!allowPartialCacheExposure && !viewRect.contains(deviceRect)) {
+        if (!allowPartialCacheExposure && !viewRect.isNull() && !viewRect.contains(deviceRect)) {
             allowPartialCacheExposure = (viewRect.width() * 1.2 < deviceRect.width())
                                          || (viewRect.height() * 1.2 < deviceRect.height());
         }

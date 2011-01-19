@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -4376,7 +4376,6 @@ class WinIdChangeWidget : public QWidget {
 public:
     WinIdChangeWidget(QWidget *p = 0)
         : QWidget(p)
-        , m_winIdChangeEventCount(0)
     {
 
     }
@@ -4384,13 +4383,14 @@ protected:
     bool event(QEvent *e)
     {
         if (e->type() == QEvent::WinIdChange) {
-            ++m_winIdChangeEventCount;
+            m_winIdList.append(internalWinId());
             return true;
         }
         return QWidget::event(e);
     }
 public:
-    int m_winIdChangeEventCount;
+    QList<WId> m_winIdList;
+    int winIdChangeEventCount() const { return m_winIdList.count(); }
 };
 
 void tst_QWidget::winIdChangeEvent()
@@ -4401,7 +4401,7 @@ void tst_QWidget::winIdChangeEvent()
         const WId winIdBefore = widget.internalWinId();
         const WId winIdAfter = widget.winId();
         QVERIFY(winIdBefore != winIdAfter);
-        QCOMPARE(widget.m_winIdChangeEventCount, 1);
+        QCOMPARE(widget.winIdChangeEventCount(), 1);
     }
 
     {
@@ -4410,11 +4410,13 @@ void tst_QWidget::winIdChangeEvent()
         QWidget parent1, parent2;
         WinIdChangeWidget child(&parent1);
         const WId winIdBefore = child.winId();
-        QCOMPARE(child.m_winIdChangeEventCount, 1);
+        QCOMPARE(child.winIdChangeEventCount(), 1);
         child.setParent(&parent2);
         const WId winIdAfter = child.internalWinId();
         QVERIFY(winIdBefore != winIdAfter);
-        QCOMPARE(child.m_winIdChangeEventCount, 2);
+        QCOMPARE(child.winIdChangeEventCount(), 3);
+        // winId is set to zero during reparenting
+        QVERIFY(0 == child.m_winIdList[1]);
     }
 
     {
@@ -4424,15 +4426,16 @@ void tst_QWidget::winIdChangeEvent()
         QWidget parent(&grandparent1);
         WinIdChangeWidget child(&parent);
         const WId winIdBefore = child.winId();
-        QCOMPARE(child.m_winIdChangeEventCount, 1);
+        QCOMPARE(child.winIdChangeEventCount(), 1);
         parent.setParent(&grandparent2);
         const WId winIdAfter = child.internalWinId();
 #ifdef Q_OS_SYMBIAN
         QVERIFY(winIdBefore != winIdAfter);
-        QCOMPARE(child.m_winIdChangeEventCount, 2);
+        QVERIFY(winIdAfter != 0);
+        QCOMPARE(child.winIdChangeEventCount(), 2);
 #else
         QCOMPARE(winIdBefore, winIdAfter);
-        QCOMPARE(child.m_winIdChangeEventCount, 1);
+        QCOMPARE(child.winIdChangeEventCount(), 1);
 #endif
     }
 
@@ -4444,7 +4447,7 @@ void tst_QWidget::winIdChangeEvent()
         child.setParent(&parent2);
         const WId winIdAfter = child.internalWinId();
         QCOMPARE(winIdBefore, winIdAfter);
-        QCOMPARE(child.m_winIdChangeEventCount, 0);
+        QCOMPARE(child.winIdChangeEventCount(), 0);
     }
 
     {
@@ -4453,12 +4456,14 @@ void tst_QWidget::winIdChangeEvent()
         WinIdChangeWidget child(&parent);
         child.winId();
         const WId winIdBefore = child.internalWinId();
-        QCOMPARE(child.m_winIdChangeEventCount, 1);
+        QCOMPARE(child.winIdChangeEventCount(), 1);
         const Qt::WindowFlags flags = child.windowFlags();
         child.setWindowFlags(flags | Qt::Window);
         const WId winIdAfter = child.internalWinId();
         QVERIFY(winIdBefore != winIdAfter);
-        QCOMPARE(child.m_winIdChangeEventCount, 2);
+        QCOMPARE(child.winIdChangeEventCount(), 3);
+        // winId is set to zero during reparenting
+        QVERIFY(0 == child.m_winIdList[1]);
     }
 }
 
@@ -10046,7 +10051,7 @@ void tst_QWidget::cbaVisibility()
     // Verify window decorations i.e. status pane and CBA are visible.
     CEikStatusPane* statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
     QVERIFY(statusPane->IsVisible());
-    CEikButtonGroupContainer* buttonGroup = CEikonEnv::Static()->AppUiFactory()->Cba();
+    CEikButtonGroupContainer* buttonGroup = CEikButtonGroupContainer::Current();
     QVERIFY(buttonGroup->IsVisible());
 }
 
@@ -10063,7 +10068,7 @@ void tst_QWidget::fullScreenWindowModeTransitions()
     const QRect fullScreenGeometry = qApp->desktop()->screenGeometry(&widget);
     const QRect maximumScreenGeometry = qApp->desktop()->availableGeometry(&widget);
     CEikStatusPane *statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
-    CEikButtonGroupContainer *buttonGroup = CEikonEnv::Static()->AppUiFactory()->Cba();
+    CEikButtonGroupContainer *buttonGroup = CEikButtonGroupContainer::Current();
 
     //Enter
     widget.showNormal();
@@ -10117,7 +10122,7 @@ void tst_QWidget::maximizedWindowModeTransitions()
     const QRect fullScreenGeometry = qApp->desktop()->screenGeometry(&widget);
     const QRect maximumScreenGeometry = qApp->desktop()->availableGeometry(&widget);
     CEikStatusPane *statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
-    CEikButtonGroupContainer *buttonGroup = CEikonEnv::Static()->AppUiFactory()->Cba();
+    CEikButtonGroupContainer *buttonGroup = CEikButtonGroupContainer::Current();
 
     //Enter
     widget.showNormal();
@@ -10173,7 +10178,7 @@ void tst_QWidget::minimizedWindowModeTransitions()
     const QRect fullScreenGeometry = qApp->desktop()->screenGeometry(&widget);
     const QRect maximumScreenGeometry = qApp->desktop()->availableGeometry(&widget);
     CEikStatusPane *statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
-    CEikButtonGroupContainer *buttonGroup = CEikonEnv::Static()->AppUiFactory()->Cba();
+    CEikButtonGroupContainer *buttonGroup = CEikButtonGroupContainer::Current();
 
     //Enter
     widget.showNormal();
@@ -10229,7 +10234,7 @@ void tst_QWidget::normalWindowModeTransitions()
     const QRect fullScreenGeometry = qApp->desktop()->screenGeometry(&widget);
     const QRect maximumScreenGeometry = qApp->desktop()->availableGeometry(&widget);
     CEikStatusPane *statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
-    CEikButtonGroupContainer *buttonGroup = CEikonEnv::Static()->AppUiFactory()->Cba();
+    CEikButtonGroupContainer *buttonGroup = CEikButtonGroupContainer::Current();
 
     //Enter
     widget.showMaximized();

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,9 +60,11 @@ typedef void (*QMeeGoSetSurfaceScalingFunc) (int x, int y, int w, int h);
 typedef void (*QMeeGoSetTranslucentFunc) (bool translucent);
 typedef QPixmapData* (*QMeeGoPixmapDataWithNewLiveTextureFunc) (int w, int h, QImage::Format format);
 typedef QPixmapData* (*QMeeGoPixmapDataFromLiveTextureHandleFunc) (Qt::HANDLE h);
-typedef QImage* (*QMeeGoLiveTextureLockFunc) (QPixmap*);
+typedef QImage* (*QMeeGoLiveTextureLockFunc) (QPixmap*, void* fenceSync);
 typedef bool (*QMeeGoLiveTextureReleaseFunc) (QPixmap*, QImage *i);
 typedef Qt::HANDLE (*QMeeGoLiveTextureGetHandleFunc) (QPixmap*);
+typedef void* (*QMeeGoCreateFenceSyncFunc) (void);
+typedef void (*QMeeGoDestroyFenceSyncFunc) (void *fs);
 
 static QMeeGoImageToEglSharedImageFunc qt_meego_image_to_egl_shared_image = NULL;
 static QMeeGoPixmapDataFromEglSharedImageFunc qt_meego_pixmapdata_from_egl_shared_image = NULL;
@@ -77,6 +79,8 @@ static QMeeGoPixmapDataFromLiveTextureHandleFunc qt_meego_pixmapdata_from_live_t
 static QMeeGoLiveTextureLockFunc qt_meego_live_texture_lock = NULL;
 static QMeeGoLiveTextureReleaseFunc qt_meego_live_texture_release = NULL;
 static QMeeGoLiveTextureGetHandleFunc qt_meego_live_texture_get_handle = NULL;
+static QMeeGoCreateFenceSyncFunc qt_meego_create_fence_sync = NULL;
+static QMeeGoDestroyFenceSyncFunc qt_meego_destroy_fence_sync = NULL;
 
 void QMeeGoRuntime::initialize()
 {
@@ -103,12 +107,15 @@ void QMeeGoRuntime::initialize()
         qt_meego_live_texture_lock = (QMeeGoLiveTextureLockFunc) library.resolve("qt_meego_live_texture_lock");
         qt_meego_live_texture_release = (QMeeGoLiveTextureReleaseFunc) library.resolve("qt_meego_live_texture_release");
         qt_meego_live_texture_get_handle = (QMeeGoLiveTextureGetHandleFunc) library.resolve("qt_meego_live_texture_get_handle");
+        qt_meego_create_fence_sync = (QMeeGoCreateFenceSyncFunc) library.resolve("qt_meego_create_fence_sync");
+        qt_meego_destroy_fence_sync = (QMeeGoDestroyFenceSyncFunc) library.resolve("qt_meego_destroy_fence_sync");
 
         if (qt_meego_image_to_egl_shared_image && qt_meego_pixmapdata_from_egl_shared_image && 
             qt_meego_pixmapdata_with_gl_texture && qt_meego_destroy_egl_shared_image && qt_meego_update_egl_shared_image_pixmap && 
             qt_meego_set_surface_fixed_size && qt_meego_set_surface_scaling && qt_meego_set_translucent && 
             qt_meego_pixmapdata_with_new_live_texture && qt_meego_pixmapdata_from_live_texture_handle &&
-            qt_meego_live_texture_lock && qt_meego_live_texture_release && qt_meego_live_texture_get_handle)
+            qt_meego_live_texture_lock && qt_meego_live_texture_release && qt_meego_live_texture_get_handle &&
+            qt_meego_create_fence_sync && qt_meego_destroy_fence_sync)
         {
             qDebug("Successfully resolved MeeGo graphics system: %s %s\n", qPrintable(libraryPrivate->fileName), qPrintable(libraryPrivate->fullVersion));
         } else {
@@ -191,11 +198,11 @@ QPixmapData* QMeeGoRuntime::pixmapDataFromLiveTextureHandle(Qt::HANDLE h)
     return qt_meego_pixmapdata_from_live_texture_handle(h);
 }
 
-QImage* QMeeGoRuntime::lockLiveTexture(QPixmap *p)
+QImage* QMeeGoRuntime::lockLiveTexture(QPixmap *p, void* fenceSync)
 {
     ENSURE_INITIALIZED;
     Q_ASSERT(qt_meego_live_texture_lock);
-    return qt_meego_live_texture_lock(p);
+    return qt_meego_live_texture_lock(p, fenceSync);
 }
 
 bool QMeeGoRuntime::releaseLiveTexture(QPixmap *p, QImage *i)
@@ -210,4 +217,18 @@ Qt::HANDLE QMeeGoRuntime::getLiveTextureHandle(QPixmap *pixmap)
     ENSURE_INITIALIZED;
     Q_ASSERT(qt_meego_live_texture_get_handle);
     return qt_meego_live_texture_get_handle(pixmap);
+}
+
+void* QMeeGoRuntime::createFenceSync()
+{
+    ENSURE_INITIALIZED;
+    Q_ASSERT(qt_meego_create_fence_sync);
+    return qt_meego_create_fence_sync();
+}
+
+void QMeeGoRuntime::destroyFenceSync(void *fs)
+{
+    ENSURE_INITIALIZED;
+    Q_ASSERT(qt_meego_destroy_fence_sync);
+    qt_meego_destroy_fence_sync(fs);
 }

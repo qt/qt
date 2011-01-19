@@ -31,3 +31,5 @@ linux*:!static:!symbian-armcc:!symbian-gcce {
 
 # Compensate for lack of platform defines in Symbian3 and Symbian4
 symbian: DEFINES += SYMBIAN_VERSION_$$upper($$replace(SYMBIAN_VERSION,\\.,_))
+
+include(../../../tools/shared/symbian/epocroot.pri)

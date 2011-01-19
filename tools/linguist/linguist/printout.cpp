@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -130,7 +130,7 @@ void PrintOut::addBox(int percent, const QString &text, Style style, Qt::Alignme
     cp.rect.setSize(QSize(cp.rect.width() + wd, qMax(cp.rect.height(), ht)));
 }
 
-// use init if inital vsize should be calculated (first breakPage call)
+// use init if initial vsize should be calculated (first breakPage call)
 void PrintOut::breakPage(bool init)
 {
     static const int LeftAlign = Qt::AlignLeft | Qt::AlignTop;

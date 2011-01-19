@@ -1,7 +1,7 @@
 #!/bin/sh
 #############################################################################
 ##
-## Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+## Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ## All rights reserved.
 ## Contact: Nokia Corporation (qt-info@nokia.com)
 ##
@@ -346,7 +346,7 @@ earlyArgParse()
             fi
             ;;
         qpa)
-            CFG_EMBEDDED="$VAL"
+            CFG_EMBEDDED="no"
             if [ "$PLATFORM_QPA" != "no" ]; then
                 if [ "$PLATFORM_QPA" = "maybe" ]; then
                     PLATFORM_X11=no
@@ -525,7 +525,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
             # Qt All-OS
             LICENSE_EXTENSION="-ALLOS"
             ;;
-        8M,* | KM,* | S9,* | SC,* | SU,* | SW,* | X9,* | XC,* | XU,* | XW,*)
+        8M,* | KM,* | S9,* | SC,* | SM,* | SU,* | SW,* | X9,* | XC,* | XU,* | XW,*)
             # Qt for Embedded Linux
             LICENSE_EXTENSION="-EMBEDDED"
             ;;
@@ -634,12 +634,14 @@ fi
 # initalize variables
 #-------------------------------------------------------------------------------
 
-SYSTEM_VARIABLES="CC CXX CFLAGS CXXFLAGS LDFLAGS"
+SYSTEM_VARIABLES="RANLIB STRIP OBJDUMP LD CC CXX CFLAGS CXXFLAGS LDFLAGS"
 for varname in $SYSTEM_VARIABLES; do
     qmakevarname="${varname}"
     # use LDFLAGS for autoconf compat, but qmake uses QMAKE_LFLAGS
     if [ "${varname}" = "LDFLAGS" ]; then
         qmakevarname="LFLAGS"
+    elif [ "${varname}" = "LD" ]; then
+        qmakevarname="LINK"
     fi
     cmd=`echo \
 'if [ -n "\$'${varname}'" ]; then
@@ -847,6 +849,7 @@ CFG_ALSA=auto
 CFG_PULSEAUDIO=auto
 CFG_COREWLAN=auto
 CFG_ICD=auto
+CFG_NOPROCESS=no
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -885,6 +888,9 @@ QT_LIBS_GLIB=
 # flags for GStreamer (X11 only)
 QT_CFLAGS_GSTREAMER=
 QT_LIBS_GSTREAMER=
+
+#flag for Symbian fpu settings
+QT_CFLAGS_FPU=
 
 # flags for libconnsettings0 (used for Maemo ICD bearer management plugin)
 QT_CFLAGS_CONNSETTINGS=
@@ -1170,6 +1176,16 @@ while [ "$#" -gt 0 ]; do
             VAL=`echo $1 | sed 's,-D,,'`
         fi
         ;;
+    -fpu)
+        VAR="fpu"
+        # this option may or may not be followed by an argument
+        if [ -z "$2" ] || echo "$2" | grep '^-' >/dev/null 2>&1; then
+            VAL=no
+        else
+            shift
+            VAL=$1
+        fi
+        ;;
     -I?*|-I)
         VAR="add_ipath"
         if [ "$1" = "-I" ]; then
@@ -1333,7 +1349,7 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     embedded-lite|qpa)
-        CFG_EMBEDDED="$VAL"
+        CFG_EMBEDDED="no"
         if [ "$PLATFORM_QPA" != "no" ]; then
             if [ "$PLATFORM_QPA" = "maybe" ]; then
                 PLATFORM_X11=no
@@ -2355,6 +2371,12 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    dont-process)
+        CFG_NOPROCESS=yes
+        ;;
+    process)
+        CFG_NOPROCESS=no
+        ;;
     audio-backend)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_AUDIO_BACKEND="$VAL"
@@ -2362,6 +2384,11 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    fpu)
+       if [ "$VAL" != "no" ]; then
+          QT_CFLAGS_FPU=$VAL
+       fi
+       ;;
     *)
         UNKNOWN_OPT=yes
         ;;
@@ -2616,7 +2643,6 @@ fi ### help
 #-------------------------------------------------------------------------------
 
 [ "$PLATFORM_QWS" = "yes" -a "$CFG_EMBEDDED" = "no" ] && CFG_EMBEDDED=auto
-[ "$PLATFORM_QPA" = "yes" -a "$CFG_EMBEDDED" = "no" ] && CFG_EMBEDDED=auto
 if [ "$CFG_EMBEDDED" != "no" ]; then
     case "$UNAME_SYSTEM:$UNAME_RELEASE" in
     Darwin:*)
@@ -2699,7 +2725,7 @@ if [ -z "$PLATFORM" ]; then
     PLATFORM_NOTES=
     case "$UNAME_SYSTEM:$UNAME_RELEASE" in
      Darwin:*)
-        if [ "$PLATFORM_MAC" = "yes" ]; then
+        if [ "$PLATFORM_MAC" = "yes" -o "$PLATFORM_QPA" = "yes" ]; then
           PLATFORM=macx-g++
         # PLATFORM=macx-xcode
         else
@@ -2933,7 +2959,7 @@ if [ '!' -f "${XQMAKESPEC}/qplatformdefs.h" ]; then
 fi
 
 # now look at the configs and figure out what platform we are config'd for
-[ "$CFG_EMBEDDED" = "no" ] \
+[ "$CFG_EMBEDDED" = "no" ] && [ "$PLATFORM_QPA" != "yes" ] \
   && [ '!' -z "`getQMakeConf \"$XQMAKESPEC\" | grep QMAKE_LIBS_X11 | awk '{print $3;}'`" ] \
   && PLATFORM_X11=yes
 ### echo "$XQMAKESPEC" | grep mkspecs/qws >/dev/null 2>&1 && PLATFORM_QWS=yes
@@ -3462,11 +3488,9 @@ if [ -z "$QT_INSTALL_PREFIX" ]; then
         if [ "$PLATFORM" != "$XPLATFORM" ]; then
             QT_INSTALL_PREFIX="${QT_INSTALL_PREFIX}-${CFG_ARCH}"
         fi
-    elif [ -d "$EPOCROOT" ]; then
-        if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
-            QT_INSTALL_PREFIX="$EPOCROOT/epoc32/"
-            QT_INSTALL_LIBS="$EPOCROOT/epoc32/release/armv5/lib/"
-        fi
+    elif [ -d "$EPOCROOT" ] && [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
+        QT_INSTALL_PREFIX="$EPOCROOT/epoc32/"
+        QT_INSTALL_LIBS="$EPOCROOT/epoc32/release/armv5/lib/"
     else
         QT_INSTALL_PREFIX="/usr/local/Trolltech/Qt-${QT_VERSION}" # the default install prefix is /usr/local/Trolltech/Qt-$QT_VERSION
     fi
@@ -3676,7 +3700,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-verbose] [-v] [-silent] [-no-nis] [-nis] [-no-cups] [-cups] [-no-iconv]
         [-iconv] [-no-pch] [-pch] [-no-dbus] [-dbus] [-dbus-linked] [-no-gui]
         [-no-separate-debug-info] [-no-mmx] [-no-3dnow] [-no-sse] [-no-sse2]
-        [-no-sse3] [-no-ssse3] [-no-sse4.1] [-no-sse4.2] [-no-avx]
+        [-no-sse3] [-no-ssse3] [-no-sse4.1] [-no-sse4.2] [-no-avx] [-no-neon]
         [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info] [-armfpa]
         [-no-optimized-qmake] [-optimized-qmake] [-no-xmlpatterns] [-xmlpatterns]
         [-no-multimedia] [-multimedia] [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
@@ -3880,6 +3904,7 @@ cat << EOF
     -no-sse4.1.......... Do not compile with use of SSE4.1 instructions.
     -no-sse4.2.......... Do not compile with use of SSE4.2 instructions.
     -no-avx ............ Do not compile with use of AVX instructions.
+    -no-neon ........... Do not compile with use of NEON instructions.
 
     -qtnamespace <name>  Wraps all Qt library code in 'namespace <name> {...}'.
     -qtlibinfix <infix>  Renames all libQt*.so to libQt*<infix>.so.
@@ -4313,8 +4338,6 @@ Qt for Embedded Linux only:
 
     -iwmmxt ............ Compile using the iWMMXt instruction set
                          (available on some XScale CPUs).
-
-    -no-neon ........... Do not compile with use of NEON instructions.
 EOF
 fi
 
@@ -4671,7 +4694,7 @@ if [ -n "$EVALKEY" ]; then
     rm -f "$outpath/src/corelib/global/qconfig_eval.cpp"
     cat > "$outpath/src/corelib/global/qconfig_eval.cpp" <<EOF
 /* Evaluation license key */
-static const char qt_eval_key_data                   [512 + 12] = "$EVALKEY";
+static const volatile char qt_eval_key_data                   [512 + 12] = "$EVALKEY";
 EOF
     chmod -w "$outpath/src/corelib/global/qconfig_eval.cpp"
 fi
@@ -5017,6 +5040,9 @@ if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
 
     if [ "$CFG_LARGEFILE" = auto ]; then
         CFG_LARGEFILE=no
+    fi
+    if [ "$CFG_PHONON" = auto ]; then
+        CFG_PHONON=yes
     fi
 
     if test -z "$EPOCROOT"; then
@@ -6900,9 +6926,11 @@ else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_STYLE_S60"
 fi
 
-# Disable OpenGL on Symbian.
+# Just check if OpenGL is not set by command argumets for Symbian.
 if [ "$XPLATFORM_SYMBIAN" = "yes" ]; then
-        CFG_OPENGL="no"
+        if [ "$CFG_OPENGL" = "auto" ]; then
+            CFG_OPENGL="no"
+        fi
 fi
 
 # enable opengl
@@ -6961,7 +6989,6 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
     rm -f "src/.moc/$QMAKE_OUTDIR/allmoc.cpp" # needs remaking if config changes
 fi
 if [ "$PLATFORM_QPA" = "yes" ]; then
-    QMAKE_OUTDIR="${QMAKE_OUTDIR}-emb-$CFG_EMBEDDED"
     QMAKE_CONFIG="$QMAKE_CONFIG qpa"
     QT_CONFIG="$QT_CONFIG qpa"
     rm -f "src/.moc/$QMAKE_OUTDIR/allmoc.cpp" # needs remaking if config changes
@@ -8223,6 +8250,12 @@ if [ "$CFG_DEV" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG private_tests"
 fi
 
+if [ -z "$QT_CFLAGS_FPU" ]; then
+    if echo "$XPLATFORM" | grep "symbian-sbsv2" > /dev/null 2>&1; then
+        QT_CFLAGS_FPU=softvfp
+    fi
+fi
+
 # Make the application arch follow the Qt arch for single arch builds.
 # (for multiple-arch builds, set CONFIG manually in the application .pro file)
 if [ `echo "$CFG_MAC_ARCHS" | wc -w` -eq 1 ]; then
@@ -8256,10 +8289,11 @@ if [ -n "$QT_GCC_MAJOR_VERSION" ]; then
     echo "QT_GCC_MINOR_VERSION = $QT_GCC_MINOR_VERSION" >> "$QTCONFIG.tmp"
     echo "QT_GCC_PATCH_VERSION = $QT_GCC_PATCH_VERSION" >> "$QTCONFIG.tmp"
 fi
-if [ "$XPLATFORM_SYMBIAN_SBSV2" = "yes" ]; then
+if [ -n "$QT_CFLAGS_FPU" ]; then
     echo "#Qt for symbian FPU settings" >> "$QTCONFIG.tmp"
-    echo "MMP_RULES += \"ARMFPU softvfp\"" >> "$QTCONFIG.tmp"
+    echo "MMP_RULES += \"ARMFPU $QT_CFLAGS_FPU\"" >> "$QTCONFIG.tmp"
 fi
+
 # replace qconfig.pri if it differs from the newly created temp file
 if cmp -s "$QTCONFIG.tmp" "$QTCONFIG"; then
     rm -f "$QTCONFIG.tmp"
@@ -8682,11 +8716,13 @@ EXEC=""
 #-------------------------------------------------------------------------------
 
 echo "Finding project files. Please wait..."
-"$outpath/bin/qmake" -prl -r "${relpath}/projects.pro"
-if [ -f "${relpath}/projects.pro" ]; then
-    mkfile="${outpath}/Makefile"
-    [ -f "$mkfile" ] && chmod +w "$mkfile"
-    QTDIR="$outpath" "$outpath/bin/qmake" -spec "$XQMAKESPEC" "${relpath}/projects.pro" -o "$mkfile"
+if [ "$CFG_NOPROCESS" != "yes" ]; then
+    "$outpath/bin/qmake" -prl -r "${relpath}/projects.pro"
+    if [ -f "${relpath}/projects.pro" ]; then
+        mkfile="${outpath}/Makefile"
+        [ -f "$mkfile" ] && chmod +w "$mkfile"
+        QTDIR="$outpath" "$outpath/bin/qmake" -spec "$XQMAKESPEC" "${relpath}/projects.pro" -o "$mkfile"
+    fi
 fi
 
 # .projects      -> projects to process
@@ -8815,8 +8851,8 @@ PART_ROOTS=
 for part in $CFG_BUILD_PARTS; do
     case "$part" in
     tools) PART_ROOTS="$PART_ROOTS tools" ;;
-    libs) PART_ROOTS="$PART_ROOTS src" ;;
-    translations) PART_ROOTS="$PART_ROOTS tools/linguist/lrelease translations" ;;
+    libs) PART_ROOTS="$PART_ROOTS src tools/linguist/lrelease" ;;
+    translations) PART_ROOTS="$PART_ROOTS translations" ;;
     examples) PART_ROOTS="$PART_ROOTS examples demos" ;;
     *) ;;
     esac
@@ -8841,15 +8877,22 @@ for file in .projects .projects.3; do
 
         case $a in
         *winmain/winmain.pro)
-            [ "$XPLATFORM_MINGW" = "yes" ] || continue
+            if [ "$CFG_NOPROCESS" = "yes" ] || [ "$XPLATFORM_MINGW" != "yes" ]; then
+                continue
+            fi
             SPEC=$XQMAKESPEC ;;
         *s60main/s60main.pro)
-            [ "$XPLATFORM_SYMBIAN" = "yes" ] || continue
-            ;;
+            if [ "$CFG_NOPROCESS" = "yes" ] || [ "$XPLATFORM_SYMBIAN" != "yes" ]; then
+                continue
+            fi;;
         *examples/activeqt/*) continue ;;
         */qmake/qmake.pro) continue ;;
         *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*|*linguist/lrelease*) SPEC=$QMAKESPEC ;;
-        *) SPEC=$XQMAKESPEC ;;
+        *) if [ "$CFG_NOPROCESS" = "yes" ]; then
+              continue
+           else
+              SPEC=$XQMAKESPEC
+           fi;;
         esac
         dir=`dirname "$a" | sed -e "s;$sepath;.;g"`
         test -d "$dir" || mkdir -p "$dir"

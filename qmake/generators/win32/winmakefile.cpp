@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -78,8 +78,14 @@ Win32MakefileGenerator::findHighestVersion(const QString &d, const QString &stem
 
     int biggest=-1;
     if(!project->isActiveConfig("no_versionlink")) {
-        QDir dir(bd);
-        QStringList entries = dir.entryList();
+        static QHash<QString, QStringList> dirEntryListCache;
+        QStringList entries = dirEntryListCache.value(bd);
+        if (entries.isEmpty()) {
+            QDir dir(bd);
+            entries = dir.entryList();
+            dirEntryListCache.insert(bd, entries);
+        }
+
         QRegExp regx(QString("((lib)?%1([0-9]*)).(%2|prl)$").arg(dllStem).arg(ext), Qt::CaseInsensitive);
         for(QStringList::Iterator it = entries.begin(); it != entries.end(); ++it) {
             if(regx.exactMatch((*it))) {
@@ -775,11 +781,6 @@ QString Win32MakefileGenerator::getLibTarget()
     return QString(project->first("TARGET") + project->first("TARGET_VERSION_EXT") + ".lib");
 }
 
-QString Win32MakefileGenerator::getPdbTarget()
-{
-    return QString(project->first("TARGET") + project->first("TARGET_VERSION_EXT") + ".pdb");
-}
-
 QString Win32MakefileGenerator::defaultInstall(const QString &t)
 {
     if((t != "target" && t != "dlltarget") ||
@@ -808,23 +809,23 @@ QString Win32MakefileGenerator::defaultInstall(const QString &t)
                 uninst.append("\n\t");
             uninst.append("-$(DEL_FILE) \"" + dst_prl + "\"");
         }
+        if(project->isActiveConfig("create_pc")) {
+            QString dst_pc = pkgConfigFileName(false);
+            if (!dst_pc.isEmpty()) {
+                dst_pc = filePrefixRoot(root, targetdir + dst_pc);
+                if(!ret.isEmpty())
+                    ret += "\n\t";
+                ret += "-$(INSTALL_FILE) \"" + pkgConfigFileName(true) + "\" \"" + dst_pc + "\"";
+                if(!uninst.isEmpty())
+                    uninst.append("\n\t");
+                uninst.append("-$(DEL_FILE) \"" + dst_pc + "\"");
+            }
+        }
         if(project->isActiveConfig("shared") && !project->isActiveConfig("plugin")) {
             QString lib_target = getLibTarget();
             lib_target.remove('"');
             QString src_targ = (project->isEmpty("DESTDIR") ? QString("$(DESTDIR)") : project->first("DESTDIR")) + lib_target;
             QString dst_targ = filePrefixRoot(root, fileFixify(targetdir + lib_target, FileFixifyAbsolute));
-            if(!ret.isEmpty())
-                ret += "\n\t";
-            ret += QString("-$(INSTALL_FILE)") + " \"" + src_targ + "\" \"" + dst_targ + "\"";
-            if(!uninst.isEmpty())
-                uninst.append("\n\t");
-            uninst.append("-$(DEL_FILE) \"" + dst_targ + "\"");
-        }
-        if(project->isActiveConfig("shared") && project->isActiveConfig("debug")) {
-            QString pdb_target = getPdbTarget();
-            pdb_target.remove('"');
-            QString src_targ = (project->isEmpty("DESTDIR") ? QString("$(DESTDIR)") : project->first("DESTDIR")) + pdb_target;
-            QString dst_targ = filePrefixRoot(root, fileFixify(targetdir + pdb_target, FileFixifyAbsolute));
             if(!ret.isEmpty())
                 ret += "\n\t";
             ret += QString("-$(INSTALL_FILE)") + " \"" + src_targ + "\" \"" + dst_targ + "\"";

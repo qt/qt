@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -94,7 +94,7 @@ class DrawTextItemRecorder: public QPaintEngine
             if (!m_inertText->items.isEmpty()) {
                 QStaticTextItem &last = m_inertText->items[m_inertText->items.count() - 1];
 
-                if (last.fontEngine == ti.fontEngine && last.font == ti.font() && 
+                if (last.fontEngine() == ti.fontEngine && last.font == ti.font() &&
                     (!m_dirtyPen || last.color == state->pen().color())) {
                     needFreshCurrentItem = false;
 
@@ -107,7 +107,7 @@ class DrawTextItemRecorder: public QPaintEngine
             if (needFreshCurrentItem) {
                 QStaticTextItem currentItem;
 
-                currentItem.fontEngine = ti.fontEngine;
+                currentItem.setFontEngine(ti.fontEngine);
                 currentItem.font = ti.font();
                 currentItem.charOffset = charOffset;
                 currentItem.numChars = ti.num_chars;
@@ -285,6 +285,19 @@ void QDeclarativeTextLayout::beginLayout()
     QTextLayout::beginLayout();
 }
 
+void QDeclarativeTextLayout::clearLayout()
+{
+    if (d && d->cached) {
+        d->cached = false;
+        d->items.clear();
+        d->positions.clear();
+        d->glyphs.clear();
+        d->chars.clear();
+        d->position = QPointF();
+    }
+    QTextLayout::clearLayout();
+}
+
 void QDeclarativeTextLayout::prepare()
 {
     if (!d || !d->cached) {
@@ -348,10 +361,18 @@ void QDeclarativeTextLayout::draw(QPainter *painter, const QPointF &p)
         d->position = p;
     }
 
+    QPen oldPen = priv->state->pen;
+    QColor currentColor = oldPen.color();
     for (int ii = 0; ii < itemCount; ++ii) {
         QStaticTextItem &item = d->items[ii];
+        if (item.color.isValid() && currentColor != item.color) {
+            painter->setPen(item.color);
+            currentColor = item.color;
+        }
         priv->extended->drawStaticTextItem(&item);
     }
+    if (currentColor != oldPen.color())
+        painter->setPen(oldPen);
 }
 
 QT_END_NAMESPACE

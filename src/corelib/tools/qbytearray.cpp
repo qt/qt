@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -541,6 +541,11 @@ QByteArray qUncompress(const uchar* data, int nbytes)
 
     forever {
         ulong alloc = len;
+        if (len  >= (1 << 31) - sizeof(QByteArray::Data)) {
+            //QByteArray does not support that huge size anyway.
+            qWarning("qUncompress: Input data is corrupted");
+            return QByteArray();
+        }
         QByteArray::Data *p = static_cast<QByteArray::Data *>(qRealloc(d.data(), sizeof(QByteArray::Data) + alloc));
         if (!p) {
             // we are not allowed to crash here when compiling with QT_NO_EXCEPTIONS
@@ -556,6 +561,11 @@ QByteArray qUncompress(const uchar* data, int nbytes)
         switch (res) {
         case Z_OK:
             if (len != alloc) {
+                if (len  >= (1 << 31) - sizeof(QByteArray::Data)) {
+                    //QByteArray does not support that huge size anyway.
+                    qWarning("qUncompress: Input data is corrupted");
+                    return QByteArray();
+                }
                 QByteArray::Data *p = static_cast<QByteArray::Data *>(qRealloc(d.data(), sizeof(QByteArray::Data) + len));
                 if (!p) {
                     // we are not allowed to crash here when compiling with QT_NO_EXCEPTIONS

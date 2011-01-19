@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -68,7 +68,7 @@ QT_MODULE(Network)
 
 struct Q_NETWORK_EXPORT QBearerEngineFactoryInterface : public QFactoryInterface
 {
-    virtual QBearerEngine *create(const QString &key = QString()) const = 0;
+    virtual QBearerEngine *create(const QString &key) const = 0;
 };
 
 #define QBearerEngineFactoryInterface_iid "com.trolltech.Qt.QBearerEngineFactoryInterface"
@@ -84,7 +84,7 @@ public:
     virtual ~QBearerEnginePlugin();
 
     virtual QStringList keys() const = 0;
-    virtual QBearerEngine *create(const QString &key = QString()) const = 0;
+    virtual QBearerEngine *create(const QString &key) const = 0;
 };
 
 QT_END_NAMESPACE
@@ -93,4 +93,4 @@ QT_END_HEADER
 
 #endif // QT_NO_BEARERMANAGEMENT
 
-#endif
+#endif // QBEARERPLUGIN_P_H

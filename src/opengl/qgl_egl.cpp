@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -88,7 +88,7 @@ void qt_eglproperties_set_glformat(QEglProperties& eglProperties, const QGLForma
     // put in the list before 32-bit configs. So, to make sure 16-bit is preffered over 32-bit,
     // we must set the red/green/blue sizes to zero. This has an unfortunate consequence that
     // if the application sets the red/green/blue size to 5/6/5 on the QGLFormat, they will
-    // probably get a 32-bit config, even when there's an RGB565 config avaliable. Oh well.
+    // probably get a 32-bit config, even when there's an RGB565 config available. Oh well.
 
     // Now normalize the values so -1 becomes 0
     redSize   = redSize   > 0 ? redSize   : 0;
@@ -204,6 +204,8 @@ void QGLContext::makeCurrent()
                 const char *egl_version = eglQueryString(d->eglContext->display(), EGL_VERSION);
                 if (egl_version && strstr(egl_version, "1.3"))
                     d->workaround_brokenFBOReadBack = true;
+                else if (egl_version && strstr(egl_version, "1.4"))
+                    d->workaround_brokenTexSubImage = true;
             }
         }
     }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -429,7 +429,7 @@ void QFontEngineXLFD::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFl
 {
     int i = glyphs->numGlyphs;
     XCharStruct *xcs;
-    // inlined for better perfomance
+    // inlined for better performance
     if (!_fs->per_char) {
         xcs = &_fs->min_bounds;
         while (i != 0) {

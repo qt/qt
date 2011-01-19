@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1508,7 +1508,7 @@ int QGraphicsProxyWidget::type() const
   Creates a proxy widget for the given \a child of the widget
   contained in this proxy.
 
-  This function makes it possible to aquire proxies for
+  This function makes it possible to acquire proxies for
   non top-level widgets. For instance, you can embed a dialog,
   and then transform only one of its widgets.
 

@@ -1351,26 +1351,30 @@ void QWebPagePrivate::inputMethodEvent(QInputMethodEvent *ev)
         }
     }
 
-    if (!ev->commitString().isEmpty())
+    if (renderTextControl && ev->replacementLength() > 0) {
+        renderTextControl->setSelectionStart(qMax(renderTextControl->selectionStart() + ev->replacementStart(), 0));
+        renderTextControl->setSelectionEnd(qMin(renderTextControl->selectionStart() + ev->replacementLength(), static_cast<int>(renderTextControl->text().length())));
+        // Commit regardless of whether commitString is empty, to get rid of selection.
         editor->confirmComposition(ev->commitString());
-    else {
-        // 1. empty preedit with a selection attribute, and start/end of 0 cancels composition
-        // 2. empty preedit with a selection attribute, and start/end of non-0 updates selection of current preedit text
-        // 3. populated preedit with a selection attribute, and start/end of 0 or non-0 updates selection of supplied preedit text
-        // 4. otherwise event is updating supplied pre-edit text
-        QString preedit = ev->preeditString();
-#if QT_VERSION >= 0x040600
-        if (hasSelection) {
-            QString text = (renderTextControl) ? QString(renderTextControl->text()) : QString();
-            if (preedit.isEmpty() && selection.start + selection.length > 0)
-                preedit = text;
-            editor->setComposition(preedit, underlines,
-                                   (selection.length < 0) ? selection.start + selection.length : selection.start,
-                                   (selection.length < 0) ? selection.start : selection.start + selection.length);
-        } else
-#endif
-            editor->setComposition(preedit, underlines, preedit.length(), 0);
+    } else if (!ev->commitString().isEmpty()) {
+        editor->confirmComposition(ev->commitString());
     }
+    // 1. empty preedit with a selection attribute, and start/end of 0 cancels composition
+    // 2. empty preedit with a selection attribute, and start/end of non-0 updates selection of current preedit text
+    // 3. populated preedit with a selection attribute, and start/end of 0 or non-0 updates selection of supplied preedit text
+    // 4. otherwise event is updating supplied pre-edit text
+    QString preedit = ev->preeditString();
+#if QT_VERSION >= 0x040600
+    if (hasSelection) {
+        QString text = (renderTextControl) ? QString(renderTextControl->text()) : QString();
+        if (preedit.isEmpty() && selection.start + selection.length > 0)
+            preedit = text;
+        editor->setComposition(preedit, underlines,
+                               (selection.length < 0) ? selection.start + selection.length : selection.start,
+                               (selection.length < 0) ? selection.start : selection.start + selection.length);
+    } else
+#endif
+        editor->setComposition(preedit, underlines, preedit.length(), 0);
 
     ev->accept();
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1365,7 +1365,7 @@ void MainWindow::about()
     box.setText(tr("<center><img src=\":/images/splash.png\"/></img><p>%1</p></center>"
                     "<p>Qt Linguist is a tool for adding translations to Qt "
                     "applications.</p>"
-                    "<p>Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)."
+                    "<p>Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies)."
                    ).arg(version));
 
     box.setWindowTitle(QApplication::translate("AboutDialog", "Qt Linguist"));
@@ -2498,8 +2498,8 @@ void MainWindow::updateDanger(const MultiDataIndex &index, bool verbose)
             }
 
             if (m_ui.actionPlaceMarkerMatches->isChecked()) {
-                // Stores the occurence count of the place markers in the map placeMarkerIndexes.
-                // i.e. the occurence count of %1 is stored at placeMarkerIndexes[1],
+                // Stores the occurrence count of the place markers in the map placeMarkerIndexes.
+                // i.e. the occurrence count of %1 is stored at placeMarkerIndexes[1],
                 // count of %2 is stored at placeMarkerIndexes[2] etc.
                 // In the first pass, it counts all place markers in the sourcetext.
                 // In the second pass it (de)counts all place markers in the translation.

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -64,6 +64,7 @@
 #include "qgraphicssceneevent.h"
 #include "qprinter.h"
 #include "qtextdocumentwriter.h"
+#include "private/qtextcursor_p.h"
 
 #include <qtextformat.h>
 #include <qdatetime.h>
@@ -1904,6 +1905,8 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
     }
     layout->setAdditionalFormats(overrides);
     cursor.endEditBlock();
+    if (cursor.d)
+        cursor.d->setX();
 }
 
 QVariant QTextControl::inputMethodQuery(Qt::InputMethodQuery property) const

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,10 +44,6 @@
 #include <QByteArray>
 
 #include <QtScript>
-
-#if defined(Q_OS_SYMBIAN)
-# define SRCDIR ""
-#endif
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -217,9 +213,8 @@ int tst_Suite::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 
 tst_Suite::tst_Suite()
 {
-    testsDir = QDir(SRCDIR);
-    bool testsFound = testsDir.cd("tests");
-    if (!testsFound) {
+    testsDir = QDir(":/tests");
+    if (!testsDir.exists()) {
         qWarning("*** no tests/ dir!");
     } else {
         if (!testsDir.exists("mjsunit.js"))
@@ -297,8 +292,7 @@ tst_Suite::tst_Suite()
     appendCString(stringdata, "");
 
     QFileInfoList testFileInfos;
-    if (testsFound)
-        testFileInfos = testsDir.entryInfoList(QStringList() << "*.js", QDir::Files);
+    testFileInfos = testsDir.entryInfoList(QStringList() << "*.js", QDir::Files);
     foreach (QFileInfo tfi, testFileInfos) {
         QString name = tfi.baseName();
         // slot: signature, parameters, type, tag, flags

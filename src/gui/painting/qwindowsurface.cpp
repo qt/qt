@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -74,7 +74,7 @@ public:
     \since 4.3
     \internal
     \preliminary
-    \ingroup qws
+    \ingroup qws qpa
 
     \brief The QWindowSurface class provides the drawing area for top-level
     windows.
@@ -179,11 +179,20 @@ QRect QWindowSurface::geometry() const
     return d_ptr->geometry;
 }
 #else
+
+/*!
+      Sets the size of the windowsurface to be \a size.
+
+      \sa size()
+*/
 void QWindowSurface::resize(const QSize &size)
 {
     d_ptr->size = size;
 }
 
+/*!
+    Returns the current size of the windowsurface.
+*/
 QSize QWindowSurface::size() const
 {
     return d_ptr->size;

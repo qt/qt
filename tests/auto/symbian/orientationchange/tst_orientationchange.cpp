@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,6 +45,8 @@
 
 #include <eikenv.h>
 #include <aknappui.h>
+#include <private/qcore_symbian_p.h>
+#include <QDesktopWidget>
 
 class tst_orientationchange : public QObject
 {
@@ -150,6 +152,47 @@ void tst_orientationchange::resizeEventOnOrientationChange()
         QCOMPARE(maximizedWidget->size(), maximizedWidget->resizeEventSize);
     }
     QCOMPARE(normalWidget->resizeEventCount, 0);
+
+    QDesktopWidget desktop;
+    QRect qtAvail = desktop.availableGeometry(normalWidget);
+    TRect clientRect = static_cast<CEikAppUi*>(CCoeEnv::Static()-> AppUi())->ClientRect();
+    QRect symbianAvail = qt_TRect2QRect(clientRect);
+    QCOMPARE(qtAvail, symbianAvail);
+
+    // Switch orientation back to original
+    orientation = orientation == CAknAppUi::EAppUiOrientationPortrait
+                                 ? CAknAppUi::EAppUiOrientationLandscape
+                                 : CAknAppUi::EAppUiOrientationPortrait;
+
+
+    fullScreenWidget->reset();
+    maximizedWidget->reset();
+    normalWidget->reset();
+
+    TRAP(err, appUi->SetOrientationL(orientation));
+
+    QCoreApplication::sendPostedEvents();
+    QCoreApplication::sendPostedEvents();
+
+    // setOrientationL is not guaranteed to change orientation
+    // (if emulator configured to support just portrait or landscape, then
+    //  setOrientationL call shouldn't do anything).
+    // So let's ensure that we do not get resize event twice.
+
+    QVERIFY(fullScreenWidget->resizeEventCount <= 1);
+    if (fullScreenWidget->resizeEventCount) {
+        QCOMPARE(fullScreenWidget->size(), fullScreenWidget->resizeEventSize);
+    }
+    QVERIFY(maximizedWidget->resizeEventCount <= 1);
+    if (fullScreenWidget->resizeEventCount) {
+        QCOMPARE(maximizedWidget->size(), maximizedWidget->resizeEventSize);
+    }
+    QCOMPARE(normalWidget->resizeEventCount, 0);
+
+    qtAvail = desktop.availableGeometry(normalWidget);
+    clientRect = static_cast<CEikAppUi*>(CCoeEnv::Static()-> AppUi())->ClientRect();
+    symbianAvail = qt_TRect2QRect(clientRect);
+    QCOMPARE(qtAvail, symbianAvail);
 
     TRAP(err, appUi->SetOrientationL(CAknAppUi::EAppUiOrientationUnspecified));
 

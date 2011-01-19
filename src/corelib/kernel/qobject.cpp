@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -161,6 +161,17 @@ QObjectPrivate::QObjectPrivate(int version)
 
 QObjectPrivate::~QObjectPrivate()
 {
+    if (pendTimer) {
+        // unregister pending timers
+        if (threadData->eventDispatcher)
+            threadData->eventDispatcher->unregisterTimers(q_ptr);
+    }
+
+    if (postedEvents)
+        QCoreApplication::removePostedEvents(q_ptr, 0);
+
+    threadData->deref();
+
     delete static_cast<QAbstractDynamicMetaObject*>(metaObject);
 #ifdef QT_JAMBI_BUILD
     if (deleteWatch)
@@ -408,6 +419,8 @@ void QMetaObject::removeGuard(QObject **ptr)
     if (!hash || hash->isEmpty())
         return;
     QMutexLocker locker(guardHashLock());
+    if (!*ptr) //check again, under the lock
+        return;
     GuardHash::iterator it = hash->find(*ptr);
     const GuardHash::iterator end = hash->end();
     bool more = false; //if the QObject has more pointer attached to it.
@@ -909,24 +922,13 @@ QObject::~QObject()
         }
     }
 
-    if (d->pendTimer) {
-        // unregister pending timers
-        if (d->threadData->eventDispatcher)
-            d->threadData->eventDispatcher->unregisterTimers(this);
-    }
-
     if (!d->children.isEmpty())
         d->deleteChildren();
 
     qt_removeObject(this);
 
-    if (d->postedEvents)
-        QCoreApplication::removePostedEvents(this, 0);
-
     if (d->parent)        // remove it from parent object
         d->setParent_helper(0);
-
-    d->threadData->deref();
 
 #ifdef QT_JAMBI_BUILD
     if (d->inEventHandler) {

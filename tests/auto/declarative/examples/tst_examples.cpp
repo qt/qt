@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -86,6 +86,7 @@ tst_examples::tst_examples()
 
     // Add directories you want excluded here
     excludedDirs << "doc/src/snippets/declarative/visualdatamodel_rootindex";
+    excludedDirs << "doc/src/snippets/declarative/qtbinding";
 
 #ifdef QT_NO_WEBKIT
     excludedDirs << "examples/declarative/modelviews/webview";

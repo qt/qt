@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -41,6 +41,7 @@
 
 #include "qmeegolivepixmap.h"
 #include "qmeegolivepixmap_p.h"
+#include "qmeegofencesync_p.h"
 #include "qmeegoruntime.h"
 
 /* QMeeGoLivePixmapPrivate */
@@ -102,10 +103,12 @@ QMeeGoLivePixmap::~QMeeGoLivePixmap()
 {
 }
 
-QImage* QMeeGoLivePixmap::lock()
+QImage* QMeeGoLivePixmap::lock(QMeeGoFenceSync *fenceSync)
 {
-    return QMeeGoRuntime::lockLiveTexture(this);
-
+    if (fenceSync)
+        return QMeeGoRuntime::lockLiveTexture(this, fenceSync->d_func()->syncObject);
+    else
+        return QMeeGoRuntime::lockLiveTexture(this, NULL);
 }
 
 void QMeeGoLivePixmap::release(QImage *img)

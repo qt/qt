@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -57,9 +57,11 @@ public:
     static void setTranslucent(bool translucent);
     static QPixmapData* pixmapDataWithNewLiveTexture(int w, int h, QImage::Format format);
     static QPixmapData* pixmapDataFromLiveTextureHandle(Qt::HANDLE h);
-    static QImage* lockLiveTexture(QPixmap *pixmap);
+    static QImage* lockLiveTexture(QPixmap *pixmap, void *fenceSync);
     static bool releaseLiveTexture(QPixmap *pixmap, QImage *image);
     static Qt::HANDLE getLiveTextureHandle(QPixmap *pixmap);
+    static void* createFenceSync();
+    static void destroyFenceSync(void *fs);
 
 private:
     static bool initialized;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -67,14 +67,11 @@ class Q_NETWORK_EXPORT QNetworkSessionPrivate : public QObject
     friend class QNetworkSession;
 
 public:
-    QNetworkSessionPrivate()
-    :   state(QNetworkSession::Invalid), isOpen(false)
-    {
-    }
-
+    QNetworkSessionPrivate() : QObject(),
+        state(QNetworkSession::Invalid), isOpen(false)
+    {}
     virtual ~QNetworkSessionPrivate()
-    {
-    }
+    {}
 
     //called by QNetworkSession constructor and ensures
     //that the state is immediately updated (w/o actually opening
@@ -85,14 +82,14 @@ public:
 #ifndef QT_NO_NETWORKINTERFACE
     virtual QNetworkInterface currentInterface() const = 0;
 #endif
-    virtual QVariant sessionProperty(const QString& key) const = 0;
-    virtual void setSessionProperty(const QString& key, const QVariant& value) = 0;
+    virtual QVariant sessionProperty(const QString &key) const = 0;
+    virtual void setSessionProperty(const QString &key, const QVariant &value) = 0;
 
     virtual void open() = 0;
     virtual void close() = 0;
     virtual void stop() = 0;
 
-    virtual void setALREnabled(bool /*enabled*/) { }
+    virtual void setALREnabled(bool /*enabled*/) {}
     virtual void migrate() = 0;
     virtual void accept() = 0;
     virtual void ignore() = 0;
@@ -150,5 +147,4 @@ QT_END_NAMESPACE
 
 #endif // QT_NO_BEARERMANAGEMENT
 
-#endif //QNETWORKSESSIONPRIVATE_H
-
+#endif // QNETWORKSESSIONPRIVATE_H
