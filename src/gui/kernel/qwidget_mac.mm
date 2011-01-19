@@ -4561,17 +4561,11 @@ void QWidgetPrivate::setGeometry_sys_helper(int x, int y, int w, int h, bool isM
         const QRect oldRect(oldp, olds);
         if (!isResize && QApplicationPrivate::graphicsSystem())
             moveRect(oldRect, x - oldp.x(), y - oldp.y());
+
         setWSGeometry(false, oldRect);
-        if (isResize && QApplicationPrivate::graphicsSystem()) {
-            invalidateBuffer(q->rect());
-            if (extra && !graphicsEffect && !extra->mask.isEmpty()) {
-                QRegion oldRegion(extra->mask.translated(oldp));
-                oldRegion &= oldRect;
-                q->parentWidget()->d_func()->invalidateBuffer(oldRegion);
-            } else {
-                q->parentWidget()->d_func()->invalidateBuffer(effectiveRectFor(oldRect));
-            }
-        }
+
+        if (isResize && QApplicationPrivate::graphicsSystem())
+            invalidateBuffer_resizeHelper(oldp, olds);
     }
 
     if(isMove || isResize) {
