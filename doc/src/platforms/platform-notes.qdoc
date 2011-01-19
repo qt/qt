@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -426,7 +426,7 @@
     details.
 
     \note A MinGW installation is only needed to build against the
-    binary pacakge, not to run the pre-compiled binaries that are in
+    binary package, not to run the pre-compiled binaries that are in
     the package.
 
     \section2 Intel C++ Compiler (Windows, Altix)

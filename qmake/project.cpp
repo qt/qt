@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1642,6 +1642,7 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QMap<QString, QStringL
     if(flags & IncludeFlagFeature) {
         if(!file.endsWith(Option::prf_ext))
             file += Option::prf_ext;
+        validateModes(); // init dir_sep
         if(file.indexOf(Option::dir_sep) == -1 || !QFile::exists(file)) {
             static QStringList *feature_roots = 0;
             if(!feature_roots) {
@@ -2988,6 +2989,7 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
         var = ".BUILTIN." + var;
         place[var] = QStringList(qmake_getpwd());
     } else if(var == QLatin1String("DIR_SEPARATOR")) {
+        validateModes();
         var = ".BUILTIN." + var;
         place[var] =  QStringList(Option::dir_sep);
     } else if(var == QLatin1String("DIRLIST_SEPARATOR")) {

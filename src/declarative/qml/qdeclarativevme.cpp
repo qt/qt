@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -942,8 +942,13 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
 
     if (bindValues.count)
         ep->bindValues << bindValues;
+    else if (bindValues.values)
+        bindValues.clear();
+
     if (parserStatus.count)
         ep->parserStatus << parserStatus;
+    else if (parserStatus.values)
+        parserStatus.clear();
 
     Q_ASSERT(stack.count() == 1);
     return stack.top();

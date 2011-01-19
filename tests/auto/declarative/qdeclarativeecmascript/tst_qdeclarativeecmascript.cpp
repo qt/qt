@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1789,6 +1789,22 @@ void tst_qdeclarativeecmascript::callQtInvokables()
     QCOMPARE(o.invoked(), -3);
     QCOMPARE(o.actuals().count(), 1);
     QCOMPARE(o.actuals().at(0), QVariant(9));
+
+    o.reset();
+    QCOMPARE(engine->evaluate("object.method_QVariant(9)").isUndefined(), true);
+    QCOMPARE(o.error(), false);
+    QCOMPARE(o.invoked(), 21);
+    QCOMPARE(o.actuals().count(), 2);
+    QCOMPARE(o.actuals().at(0), QVariant(9));
+    QCOMPARE(o.actuals().at(1), QVariant());
+
+    o.reset();
+    QCOMPARE(engine->evaluate("object.method_QVariant(\"Hello\", \"World\")").isUndefined(), true);
+    QCOMPARE(o.error(), false);
+    QCOMPARE(o.invoked(), 21);
+    QCOMPARE(o.actuals().count(), 2);
+    QCOMPARE(o.actuals().at(0), QVariant(QString("Hello")));
+    QCOMPARE(o.actuals().at(1), QVariant(QString("World")));
 }
 
 // QTBUG-13047 (check that you can pass registered object types as args)

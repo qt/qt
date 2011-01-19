@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1431,21 +1431,20 @@ void qt_init(QApplicationPrivate * /* priv */, int)
         // The S60 framework has not been initialized. We need to do it.
         TApaApplicationFactory factory(S60->s60ApplicationFactory ?
                 S60->s60ApplicationFactory : newS60Application);
-        CApaCommandLine* commandLine = 0;
-        TInt err = CApaCommandLine::GetCommandLineFromProcessEnvironment(commandLine);
-        // After this construction, CEikonEnv will be available from CEikonEnv::Static().
-        // (much like our qApp).
-        QtEikonEnv* coe = new QtEikonEnv;
-        //not using QT_TRAP_THROWING, because coe owns the cleanupstack so it can't be pushed there.
-        if(err == KErrNone)
-            TRAP(err, coe->ConstructAppFromCommandLineL(factory,*commandLine));
-        delete commandLine;
-        if(err != KErrNone) {
-            qWarning() << "qt_init: Eikon application construct failed ("
-                       << err
-                       << "), maybe missing resource file on S60 3.1?";
-            delete coe;
-            qt_symbian_throwIfError(err);
+        CApaCommandLine* commandLine = q_check_ptr(QCoreApplicationPrivate::symbianCommandLine());
+        if (commandLine) {
+            // After this construction, CEikonEnv will be available from CEikonEnv::Static().
+            // (much like our qApp).
+            QtEikonEnv* coe = new QtEikonEnv;
+            //not using QT_TRAP_THROWING, because coe owns the cleanupstack so it can't be pushed there.
+            TRAPD(err, coe->ConstructAppFromCommandLineL(factory, *commandLine));
+            if(err != KErrNone) {
+                qWarning() << "qt_init: Eikon application construct failed ("
+                           << err
+                           << "), maybe missing resource file on S60 3.1?";
+                delete coe;
+                qt_symbian_throwIfError(err);
+            }
         }
 
         S60->s60InstalledTrapHandler = User::SetTrapHandler(origTrapHandler);
@@ -2016,6 +2015,9 @@ int QApplicationPrivate::symbianProcessWsEvent(const QSymbianEvent *symbianEvent
 #endif
                 S60->wsSession().SetPointerCursorMode(EPointerCursorNormal);
         }
+#endif
+#ifdef QT_SOFTKEYS_ENABLED
+        QSoftKeyManager::updateSoftKeys();
 #endif
         break;
     case EEventFocusLost:

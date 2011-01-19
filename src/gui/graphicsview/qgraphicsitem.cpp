@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -5589,10 +5589,11 @@ void QGraphicsItemPrivate::clearSubFocus(QGraphicsItem *rootItem, QGraphicsItem 
     // Reset sub focus chain.
     QGraphicsItem *parent = rootItem ? rootItem : q_ptr;
     do {
-        if (parent->d_ptr->subFocusItem != q_ptr || parent == stopItem)
+        if (parent->d_ptr->subFocusItem != q_ptr)
             break;
         parent->d_ptr->subFocusItem = 0;
-        parent->d_ptr->subFocusItemChange();
+        if (parent != stopItem && !parent->isAncestorOf(stopItem))
+            parent->d_ptr->subFocusItemChange();
     } while (!parent->isPanel() && (parent = parent->d_ptr->parent));
 }
 
