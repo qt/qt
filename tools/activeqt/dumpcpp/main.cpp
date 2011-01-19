@@ -48,6 +48,7 @@
 #include <QStringList>
 #include <QUuid>
 #include <QWidget>
+#include <QFileInfo>
 #include <qt_windows.h>
 #include <ocidl.h>
 
@@ -129,10 +130,10 @@ void writeEnums(QTextStream &out, const QMetaObject *mo)
     }
 }
 
-void writeHeader(QTextStream &out, const QByteArray &nameSpace)
+void writeHeader(QTextStream &out, const QByteArray &nameSpace, const QString &outFileName)
 {
-    out << "#ifndef QAX_DUMPCPP_" << nameSpace.toUpper() << "_H" << endl;
-    out << "#define QAX_DUMPCPP_" << nameSpace.toUpper() << "_H" << endl;
+    out << "#ifndef QAX_DUMPCPP_" << outFileName.toUpper() << "_H" << endl;
+    out << "#define QAX_DUMPCPP_" << outFileName.toUpper() << "_H" << endl;
     out << endl;
     out << "// Define this symbol to __declspec(dllexport) or __declspec(dllimport)" << endl;
     out << "#ifndef " << nameSpace.toUpper() << "_EXPORT" << endl;
@@ -880,7 +881,7 @@ bool generateClass(QAxObject *object, const QByteArray &className, const QByteAr
         out << "****************************************************************************/" << endl;
         out << endl;
 
-        writeHeader(out, nameSpace);
+        writeHeader(out, nameSpace, outfile.fileName());
         generateNameSpace(out, mo, nameSpace);
 
         // close namespace file
@@ -1040,7 +1041,8 @@ bool generateTypeLibrary(const QByteArray &typeLib, const QByteArray &outname, O
         declOut << "****************************************************************************/" << endl;
         declOut << endl;
 
-        writeHeader(declOut, libName.toLatin1());
+        QFileInfo cppFileInfo(cppFile);
+        writeHeader(declOut, libName.toLatin1(), cppFileInfo.fileName());
 
         UINT typeCount = typelib->GetTypeInfoCount();
         if (declFile.isOpen()) {
