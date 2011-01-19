@@ -426,26 +426,24 @@ QString BaselineHandler::clearAllBaselines(const QString &context)
     return QString(QLS("%1 of %2 baselines cleared from context ")).arg((tot-failed)/2).arg(tot/2) + context;
 }
 
-QString BaselineHandler::updateSingleBaseline(const QString &oldBaseline, const QString &newBaseline)
+QString BaselineHandler::updateBaselines(const QString &context, const QString &mismatchContext, const QString &itemId)
 {
-    QString res;
-    QString basePath(BaselineServer::storagePath() + QLC('/'));
-    QString srcBase(basePath + newBaseline.left(newBaseline.length() - 3));
-    QString dstDir(basePath + oldBaseline.left(oldBaseline.lastIndexOf(QLC('/'))));
-
-    QProcess proc;
-    proc.setProcessChannelMode(QProcess::MergedChannels);
-    proc.start(QLS("cp"), QStringList() << QLS("-f") << srcBase + QLS(FileFormat) << srcBase + QLS(MetadataFileExt) << dstDir);
-    proc.waitForFinished();
-    if (proc.exitCode() == 0)
-        res = QString("Successfully updated '%1'").arg(oldBaseline);
-    else
-        res = QString("Error updating baseline: %1<br>"
-                      "Command output: <pre>%2</pre>").arg(proc.errorString(), proc.readAll().constData());
-
-    return res;
+    int tot = 0;
+    int failed = 0;
+    QString storagePrefix = BaselineServer::storagePath() + QLC('/');
+    // If itemId is set, update just that one, otherwise, update all:
+    QString filter = (itemId.isEmpty() ? QLS("*") : itemId) + QLS("_????.");  // Match any checksum. #vulnerable to changes in file naming
+    QDirIterator it(storagePrefix + mismatchContext, QStringList() << filter + QLS(FileFormat) << filter + QLS(MetadataFileExt));
+    while (it.hasNext()) {
+        tot++;
+        it.next();
+        QString oldFile = storagePrefix + context + QLC('/') + it.fileName();
+        QFile::remove(oldFile);                       // Remove existing baseline file
+        if (!QFile::copy(it.filePath(), oldFile))     // and replace it with the mismatch
+            failed++;
+    }
+    return QString(QLS("%1 of %2 baselines updated in context %3 from context %4")).arg((tot-failed)/2).arg(tot/2).arg(context, mismatchContext);
 }
-
 
 QString BaselineHandler::blacklistTest(const QString &context, const QString &itemId, bool removeFromBlacklist)
 {
