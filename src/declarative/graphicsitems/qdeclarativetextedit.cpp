@@ -1352,8 +1352,12 @@ void QDeclarativeTextEdit::updateSize()
         int dy = height();
         // ### assumes that if the width is set, the text will fill to edges
         // ### (unless wrap is false, then clipping will occur)
-        if (widthValid() && d->document->textWidth() != width())
-            d->document->setTextWidth(width());
+        if (widthValid()) {
+            if (d->document->textWidth() != width())
+                d->document->setTextWidth(width());
+        } else {
+            d->document->setTextWidth(-1);
+        }
         dy -= (int)d->document->size().height();
 
         int nyoff;
