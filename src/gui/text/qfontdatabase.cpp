@@ -624,6 +624,10 @@ public:
     { }
     ~QFontDatabasePrivate() {
         free();
+#if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
+        if (symbianExtras)
+            delete symbianExtras;
+#endif
     }
     QtFontFamily *family(const QString &f, bool = false);
     void free() {
@@ -632,12 +636,6 @@ public:
         ::free(families);
         families = 0;
         count = 0;
-#if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
-        if (symbianExtras) {
-            delete symbianExtras;
-            symbianExtras = 0;
-        }
-#endif
         // don't clear the memory fonts!
     }
 
@@ -653,6 +651,10 @@ public:
         QVector<FONTSIGNATURE> signatures;
 #elif defined(Q_WS_MAC)
         ATSFontContainerRef handle;
+#elif defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
+        QString temporaryFileName;
+        TInt screenDeviceFontFileId;
+        TUid fontStoreFontFileUid;
 #endif
         QStringList families;
     };
@@ -680,7 +682,7 @@ public:
     QDataStream *stream;
     QStringList fallbackFamilies;
 #elif defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
-    const QSymbianFontDatabaseExtras *symbianExtras;
+    QSymbianFontDatabaseExtras *symbianExtras;
 #endif
 };
 

@@ -1617,7 +1617,7 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     qRegisterMetaType<WId>("WId");
 }
 
-extern void qt_cleanup_symbianFontDatabaseExtras(); // qfontdatabase_s60.cpp
+extern void qt_cleanup_symbianFontDatabase(); // qfontdatabase_s60.cpp
 
 /*****************************************************************************
   qt_cleanup() - cleans up when the application is finished
@@ -1631,7 +1631,7 @@ void qt_cleanup()
     QFontCache::cleanup(); // Has to happen now, since QFontEngineS60 has FBS handles
     QPixmapCache::clear(); // Has to happen now, since QS60PixmapData has FBS handles
 
-    qt_cleanup_symbianFontDatabaseExtras();
+    qt_cleanup_symbianFontDatabase();
 // S60 structure and window server session are freed in eventdispatcher destructor as they are needed there
 
     // It's important that this happens here, before the event dispatcher gets
