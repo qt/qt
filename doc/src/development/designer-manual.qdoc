@@ -1385,7 +1385,7 @@
 
 
     \target CreatingAMenu
-    \div {float-left}
+    \div {class="float-left"}
     \inlineimage designer-creating-menu1.png
     \inlineimage designer-creating-menu2.png
     \br
@@ -1406,7 +1406,7 @@
     \key Escape to reject it. You can undo the editing operation later if
     required.
 
-    \div {clear-both}
+    \div {class="clear-both"}
     \enddiv
 
     Menus can also be rearranged in the menu bar simply by dragging and
@@ -1418,7 +1418,7 @@
     navigating the menu structure in the usual way.
 
     \target CreatingAMenuEntry
-    \div {float-right}
+    \div {class="float-right"}
     \inlineimage designer-creating-menu-entry1.png
     \inlineimage designer-creating-menu-entry2.png
     \br
@@ -1444,7 +1444,7 @@
     be accessible via the \l{#TheActionEditor}{Action Editor}, and any
     associated keyboard shortcut can be set there.
 
-    \div {clear-both}
+    \div {class="clear-both"}
     \enddiv
 
     Just like with menus, entries can be moved around simply by dragging and
@@ -1455,7 +1455,7 @@
 
     \section1 Toolbars
 
-    \div {float-left}
+    \div {class="float-left"}
     \inlineimage designer-creating-toolbar.png
     \enddiv
 
@@ -1469,7 +1469,7 @@
     Toolbars are removed from the form via an entry in the toolbar's context
     menu.
 
-    \div {clear-both}
+    \div {class="clear-both"}
     \enddiv
 
     \section2 Adding and Removing Toolbar Buttons
@@ -1479,7 +1479,7 @@
     Since actions can be represented by menu entries and toolbar buttons,
     they can be moved between menus and toolbars.
 
-    \div {float-right}
+    \div {class="float-right"}
     \inlineimage designer-adding-toolbar-action.png
     \inlineimage designer-removing-toolbar-action.png
     \enddiv
@@ -1491,7 +1491,7 @@
 
     Toolbar buttons are removed via the toolbar's context menu.
 
-    \div {clear-both}
+    \div {class="clear-both"}
     \enddiv
 
     \section1 Actions
@@ -1501,7 +1501,7 @@
     action editor window, simplifying the creation and management of actions.
 
     \target TheActionEditor
-    \div {float-left}
+    \div {class="float-left"}
     \inlineimage designer-action-editor.png
     \enddiv
 
@@ -1519,7 +1519,7 @@
     \gui{Detailed View}. You can also copy and paste actions between menus,
     toolbars and forms.
 
-    \div {clear-both}
+    \div {class="clear-both"}
     \enddiv
 
     \section2 Creating an Action
@@ -1535,11 +1535,11 @@
 
     Once the action is created, it can be used wherever actions are applicable.
 
-    \div {clear-left}
+    \div {class="clear-left"}
     \enddiv
 
     \target AddingAnAction
-    \div {float-right}
+    \div {class="float-right"}
     \inlineimage designer-adding-menu-action.png
     \inlineimage designer-adding-toolbar-action.png
     \enddiv
@@ -1554,7 +1554,7 @@
     will be added. Release the mouse button to add the action when you have
     found the right spot.
 
-    \div {clear-right}
+    \div {class="clear-right"}
     \enddiv
 
     \section1 Dock Widgets
@@ -1567,7 +1567,7 @@
 
     \target AddingADockWidget
 
-    \div {float-left}
+    \div {class="float-left"}
     \inlineimage designer-adding-dockwidget.png
     \enddiv
 
@@ -1588,7 +1588,7 @@
     \l{QDockWidget::}{windowTitle} property. This also helps to identify them on the
     form.
 
-    \div {clear-both}
+    \div {class="clear-both"}
     \enddiv
 */
 

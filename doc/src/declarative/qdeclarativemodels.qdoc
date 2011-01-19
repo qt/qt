@@ -504,7 +504,7 @@ a Web browser.
 \l ListView shows a classic list of items with horizontal or vertical placing
 of items.
 
-\div{float-right}
+\div {class="float-right"}
 \inlineimage qml-listview-snippet.png
 \enddiv
 

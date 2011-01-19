@@ -91,6 +91,7 @@ QString DitaXmlGenerator::sinceTitles[] =
  */
 QString DitaXmlGenerator::ditaTags[] =
     {
+        "",
         "alt",
         "apiDesc",
         "APIMap",
@@ -286,9 +287,11 @@ void DitaXmlGenerator::writeStartTag(DitaTag t)
   Pop the current DITA tag off the stack, and write the
   appropriate end tag to the DITA XML file. 
  */
-void DitaXmlGenerator::writeEndTag()
+void DitaXmlGenerator::writeEndTag(DitaTag t)
 {
-    tagStack.pop();
+    DitaTag top = tagStack.pop();
+    if (t > DT_NONE && top != t)
+        qDebug() << "Expected:" << t << "ACTUAL:" << top;
     xmlWriter().writeEndElement();
 }
 
@@ -583,7 +586,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     int skipAhead = 0;
     QString hx, str;
     static bool in_para = false;
-    QString guid, hc;
+    QString guid, hc, attr;
 
     switch (atom->type()) {
     case Atom::AbstractLeft:
@@ -694,15 +697,12 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
 	break;
     case Atom::DivLeft:
         {
-            QString attr = atom->string();
+            attr = atom->string();
             DitaTag t = currentTag();
             if ((t == DT_section) || (t == DT_sectiondiv))
-                t = DT_sectiondiv;
+                writeStartTag(DT_sectiondiv);
             else if ((t == DT_body) || (t == DT_bodydiv))
-                t = DT_bodydiv;
-            else
-                t = DT_p;
-            writeStartTag(t);
+                writeStartTag(DT_bodydiv);
             if (!attr.isEmpty()) {
                 if (attr.contains('=')) {
                     int index = 0;
@@ -729,7 +729,8 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         }
         break;
     case Atom::DivRight:
-        writeEndTag(); // </sectiondiv>
+        if ((currentTag() == DT_sectiondiv) || (currentTag() == DT_bodydiv))
+            writeEndTag(); // </sectiondiv>, </bodydiv>, or </p>
         break;
     case Atom::FootnoteLeft:
         // ### For now
@@ -1414,6 +1415,30 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             writeStartTag(DT_tbody);
         }
         writeStartTag(DT_row);
+        attr = atom->string();
+        if (!attr.isEmpty()) {
+            if (attr.contains('=')) {
+                int index = 0;
+                int from = 0;
+                QString values;
+                while (index >= 0) {
+                    index = attr.indexOf('"',from);
+                    if (index >= 0) {
+                        ++index;
+                        from = index;
+                        index = attr.indexOf('"',from);
+                        if (index > from) {
+                            if (!values.isEmpty())
+                                values.append(' ');
+                            values += attr.mid(from,index-from);
+                            from = index+1;
+                        }
+                    }
+                }
+                attr = values;
+            }
+            xmlWriter().writeAttribute("outputclass", attr);
+        }
         xmlWriter().writeAttribute("valign","top");
         break;
     case Atom::TableRowRight:
@@ -1421,16 +1446,40 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::TableItemLeft:
         {
+            QString values = "";
             writeStartTag(DT_entry);
-            QStringList spans = atom->string().split(",");
-            if (spans.size() == 2) {
-                if (inTableHeader ||
-                    (spans[0].toInt() != 1) ||
-                    (spans[1].toInt() != 1)) {
-                    QString s = "span(" + spans[0] + "," + spans[1] + ")";
-                    xmlWriter().writeAttribute("outputclass",s);
+            for (int i=0; i<atom->count(); ++i) {
+                attr = atom->string(i);
+                if (attr.contains('=')) {
+                    int index = 0;
+                    int from = 0;
+                    while (index >= 0) {
+                        index = attr.indexOf('"',from);
+                        if (index >= 0) {
+                            ++index;
+                            from = index;
+                            index = attr.indexOf('"',from);
+                            if (index > from) {
+                                if (!values.isEmpty())
+                                    values.append(' ');
+                                values += attr.mid(from,index-from);
+                                from = index+1;
+                            }
+                        }
+                    }
+                }
+                else {
+                    qDebug() << "ATTR:" << attr;
+                    QStringList spans = attr.split(",");
+                    if (spans.size() == 2) {
+                        if ((spans[0].toInt()>1) || (spans[1].toInt()>1)) {
+                            values += "span(" + spans[0] + "," + spans[1] + ")";
+                        }
+                    }
                 }
             }
+            if (!values.isEmpty())
+                xmlWriter().writeAttribute("outputclass",values);
             if (matchAhead(atom, Atom::ParaLeft))
                 skipAhead = 1;
         }

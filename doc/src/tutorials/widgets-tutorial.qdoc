@@ -133,7 +133,7 @@
     In the following example, we use QWidget to create and show a window with
     a default size:
 
-    \div {qt-code}
+    \div {class="qt-code"}
     \table
     \row
     \o \snippet tutorials/widgets/toplevel/main.cpp main program
@@ -155,7 +155,7 @@
     passing \c window as the parent to its constructor. In this case, we add a
     button to the window and place it in a specific location:
 
-    \div {qt-code}
+    \div {class="qt-code"}
     \table
     \row
     \o \snippet tutorials/widgets/childwidget/main.cpp main program
@@ -177,7 +177,7 @@
     construct a label and line edit widget that we would like to arrange
     side-by-side.
 
-    \div {qt-code}
+    \div {class="qt-code"}
     \table
     \row
     \o \snippet tutorials/widgets/windowlayout/main.cpp main program
@@ -215,7 +215,7 @@
     \c{mainLayout} is a QVBoxLayout that contains \c{queryLayout} and a
     QTableView arranged vertically.
 
-    \div {qt-code}
+    \div {class="qt-code"}
     \table
     \row
     \o \snippet tutorials/widgets/nestedlayouts/main.cpp first part

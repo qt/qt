@@ -403,9 +403,14 @@ class DocParser
     Location cachedLoc;
     int cachedPos;
 
-    DocPrivate *priv;
-    enum ParaState { OutsidePara, InsideSingleLinePara, InsideMultiLinePara };
-    ParaState paraState;
+    DocPrivate* priv;
+    enum ParagraphState {
+        OutsidePara,
+        InSingleLinePara,
+        InMultiLinePara
+    };
+    QStack<ParagraphState> paragraphStateStack;
+    ParagraphState paraState;
     bool inTableHeader;
     bool inTableRow;
     bool inTableItem;
@@ -452,6 +457,7 @@ void DocParser::parse(const QString& source,
     priv = docPrivate;
     priv->text << Atom::Nop;
 
+    paragraphStateStack.clear();
     paraState = OutsidePara;
     inTableHeader = false;
     inTableRow = false;
@@ -561,18 +567,11 @@ void DocParser::parse(const QString& source,
                         break;
 #endif
                     case CMD_DIV:
-                        p1 = getArgument(true);
                         leavePara();
-                        if (p1.contains('=')) {
-                            enterPara(Atom::DivLeft, Atom::DivRight,p1);
-                            openedCommands.push(cmd);
-                        }
-                        else {
-                            append(Atom::DivLeft, p1);
-                            openedCommands.push(cmd);
-                            enterPara();
-                        }
-
+                        p1 = getArgument(true);
+                        //enterPara(Atom::DivLeft, Atom::DivRight, p1);
+                        append(Atom::DivLeft, p1);
+                        openedCommands.push(cmd);
                         break;
                     case CMD_ENDDIV:
                         leavePara();
@@ -658,7 +657,7 @@ void DocParser::parse(const QString& source,
                         if (closeCommand(cmd)) {
                             leavePara();
                             append(Atom::FootnoteRight);
-                            paraState = InsideMultiLinePara; // ###
+                            paraState = InMultiLinePara; // ###
                         }
                         break;
                     case CMD_ENDIF:
@@ -1339,7 +1338,7 @@ void DocParser::parse(const QString& source,
                     if (ch.isSpace()) {
                         ++pos;
                         if ((ch == '\n') &&
-                            (paraState == InsideSingleLinePara ||
+                            (paraState == InSingleLinePara ||
                              isBlankLine())) {
                             leavePara();
                             newWord = false;
@@ -1904,10 +1903,10 @@ void DocParser::enterPara(Atom::Type leftType,
         pendingParaRightType = rightType;
         pendingParaString = string;
         if (leftType == Atom::SectionHeadingLeft) {
-            paraState = InsideSingleLinePara;
+            paraState = InSingleLinePara;
         }
         else {
-            paraState = InsideMultiLinePara;
+            paraState = InMultiLinePara;
         }
         skipSpacesOrOneEndl();
     }

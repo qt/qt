@@ -51,7 +51,7 @@
     key overviews to deepen your understanding of Qt: The Qt \l{Object
     Model} and \l{Signals and Slots}.
 
-    \div{float-left}
+    \div {class="float-left"}
     \inlineimage qtdemo-small.png
     \enddiv
 

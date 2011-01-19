@@ -524,14 +524,9 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::DivLeft:
         out() << "<div";
-        if (!atom->string().isEmpty()) {
-            if (atom->string().contains('='))
-                out() << " " << atom->string() << ">";
-            else
-                out() << " class=\"" << atom->string() << "\">";
-        }
-        else
-            out() << ">";
+        if (!atom->string().isEmpty())
+            out() << " " << atom->string();
+        out() << ">";
         break;
     case Atom::DivRight:
         out() << "</div>";
@@ -1106,13 +1101,8 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         }
         break;
     case Atom::TableRowLeft:
-        if (!atom->string().isEmpty()) {
-            out() << "<tr ";
-            if (atom->string().contains('='))
-                out() << " " << atom->string() << ">";
-            else
-                out() << " class=\"" << atom->string() << "\">";
-        }
+        if (!atom->string().isEmpty())
+            out() << "<tr " << atom->string() << ">";
         else if (++numTableRows % 2 == 1)
             out() << "<tr class=\"odd\">";
         else

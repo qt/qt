@@ -82,6 +82,7 @@ class DitaXmlGenerator : public PageGenerator
     };
 
     enum DitaTag {
+        DT_NONE,
         DT_alt,
         DT_apiDesc,
         DT_APIMap,
@@ -407,7 +408,7 @@ class DitaXmlGenerator : public PageGenerator
     void addLink(const QString& href, const QStringRef& text);
     void writeDitaMap();
     void writeStartTag(DitaTag t);
-    void writeEndTag();
+    void writeEndTag(DitaTag t=DT_NONE);
     DitaTag currentTag();
 
  private:
