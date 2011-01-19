@@ -3060,25 +3060,24 @@ void tst_QGraphicsGridLayout::heightForWidth()
     layout->setSpacing(0);
     RectWidget *w00 = new RectWidget;
     w00->setSizeHint(Qt::MinimumSize, QSizeF(1,1));
-    w00->setSizeHint(Qt::PreferredSize, QSizeF(50,50));
+    w00->setSizeHint(Qt::PreferredSize, QSizeF(10,10));
     w00->setSizeHint(Qt::MaximumSize, QSizeF(100,100));
     layout->addItem(w00, 0, 0);
 
     RectWidget *w01 = new RectWidget;
     w01->setSizeHint(Qt::MinimumSize, QSizeF(1,1));
-    w01->setSizeHint(Qt::PreferredSize, QSizeF(50,50));
+    w01->setSizeHint(Qt::PreferredSize, QSizeF(10,10));
     w01->setSizeHint(Qt::MaximumSize, QSizeF(100,100));
     layout->addItem(w01, 0, 1);
 
     RectWidget *w10 = new RectWidget;
     w10->setSizeHint(Qt::MinimumSize, QSizeF(1,1));
-    w10->setSizeHint(Qt::PreferredSize, QSizeF(50,50));
+    w10->setSizeHint(Qt::PreferredSize, QSizeF(10,10));
     w10->setSizeHint(Qt::MaximumSize, QSizeF(100,100));
     layout->addItem(w10, 1, 0);
 
     RectWidget *w11 = new RectWidget;
     w11->setSizeHint(Qt::MinimumSize, QSizeF(1,1));
-    w11->setSizeHint(Qt::PreferredSize, QSizeF(50,400));
     w11->setSizeHint(Qt::MaximumSize, QSizeF(30000,30000));
     w11->setConstraintFunction(hfw);
     QSizePolicy sp(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -3087,28 +3086,32 @@ void tst_QGraphicsGridLayout::heightForWidth()
     layout->addItem(w11, 1, 1);
 
     QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(-1, -1)), QSizeF(2, 2));
-    QEXPECT_FAIL("", "QTBUG-14693", Continue);
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(-1, -1)), QSizeF(210, 110));
     QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(-1, -1)), QSizeF(30100, 30100));
 
     QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(2, -1)), QSizeF(2, 20001));
-    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(2, -1)), QSizeF(2, 20050));
+    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(2, -1)), QSizeF(2, 20010));
     QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(2, -1)), QSizeF(2, 20100));
 
-    QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(20, -1)), QSizeF(20, 1 + 2000));
-    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(20, -1)), QSizeF(20, 50 + 2000));
-    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(20, -1)), QSizeF(20, 100 + 2000));
+    // Since 20 is somewhere between "minimum width hint" (2) and
+    // "preferred width hint" (210), it will try to do distribution by
+    // stretching them with different factors.
+    // Since column 1 has a "preferred width" of 200 it means that
+    // column 1 will be a bit wider than column 0. Thus it will also be a bit
+    // shorter than 2001, (the expected height if all columns had width=10)
+    QSizeF sh = layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(20, -1));
+    // column 1 cannot be wider than 19, which means that it must be taller than 20000/19~=1052
+    QVERIFY(sh.height() < 2000 + 1 && sh.height() > 1052 + 1);
 
-    QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(300, -1)), QSizeF(300, 1 + 100));
-    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(300, -1)), QSizeF(300, 50 + 100));
-    QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(300, -1)), QSizeF(300, 100 + 100));
+    sh = layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(20, -1));
+    QVERIFY(sh.height() < 2000 + 10 && sh.height() > 1052 + 10);
+
+    sh = layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(20, -1));
+    QVERIFY(sh.height() < 2000 + 100 && sh.height() > 1052 + 100);
 
     // the height of the hfw widget is shorter than the one to the left, which is 100, so
     // the total height of the last row is 100 (which leaves the layout height to be 200)
     QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(500, -1)), QSizeF(500, 100 + 100));
-
-    // hfw item size: (500, 40) -> preferred size is maxed up to preferred size of item w10 (50)
-    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(600, -1)), QSizeF(600, 50 + 50));
 
 }
 
