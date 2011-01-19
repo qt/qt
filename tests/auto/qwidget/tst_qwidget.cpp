@@ -8883,6 +8883,7 @@ void tst_QWidget::setClearAndResizeMask()
 
     UpdateWidget child(&topLevel);
     child.setAutoFillBackground(true); // NB! Opaque child.
+    child.setPalette(Qt::red);
     child.resize(100, 100);
     child.show();
     QTest::qWait(10);
@@ -8898,10 +8899,11 @@ void tst_QWidget::setClearAndResizeMask()
     // and ensure that the child widget doesn't get any update.
 #ifdef Q_WS_MAC
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
-    QCOMPARE(child.numPaintEvents, 1);
-#else
-    QCOMPARE(child.numPaintEvents, 0);
+    if (child.internalWinId())
+        QCOMPARE(child.numPaintEvents, 1);
+    else
 #endif
+    QCOMPARE(child.numPaintEvents, 0);
     // and the parent widget gets an update for the newly exposed area.
     QTRY_COMPARE(topLevel.numPaintEvents, 1);
     QRegion expectedParentExpose(child.rect());
@@ -8918,10 +8920,11 @@ void tst_QWidget::setClearAndResizeMask()
     // and ensure that that the child widget gets an update for the area outside the old mask.
     QTRY_COMPARE(child.numPaintEvents, 1);
     outsideOldMask = child.rect();
-#ifndef Q_WS_MAC
+#ifdef Q_WS_MAC
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
-    outsideOldMask -= childMask;
+    if (!child.internalWinId())
 #endif
+    outsideOldMask -= childMask;
     QCOMPARE(child.paintedRegion, outsideOldMask);
     // and the parent widget doesn't get any update.
     QCOMPARE(topLevel.numPaintEvents, 0);
@@ -8934,11 +8937,12 @@ void tst_QWidget::setClearAndResizeMask()
     QTest::qWait(100);
 #ifdef Q_WS_MAC
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
-    QTRY_COMPARE(child.numPaintEvents, 1);
-#else
+    if (child.internalWinId())
+        QTRY_COMPARE(child.numPaintEvents, 1);
+    else
+#endif
     // and ensure that we don't get any updates at all.
     QTRY_COMPARE(child.numPaintEvents, 0);
-#endif
     QCOMPARE(topLevel.numPaintEvents, 0);
 
     // ...and the same applies when clearing the mask.
@@ -8946,10 +8950,11 @@ void tst_QWidget::setClearAndResizeMask()
     QTest::qWait(100);
 #ifdef Q_WS_MAC
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
-    QTRY_VERIFY(child.numPaintEvents > 0);
-#else
-    QCOMPARE(child.numPaintEvents, 0);
+    if (child.internalWinId())
+        QTRY_VERIFY(child.numPaintEvents > 0);
+    else
 #endif
+    QCOMPARE(child.numPaintEvents, 0);
     QCOMPARE(topLevel.numPaintEvents, 0);
 
     QWidget resizeParent;
@@ -8975,10 +8980,11 @@ void tst_QWidget::setClearAndResizeMask()
     QTest::qWait(200);
 #ifdef Q_WS_MAC
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
-    QTRY_COMPARE(resizeChild.paintedRegion, resizeChild.mask());
-#else
-    QTRY_COMPARE(resizeChild.paintedRegion, QRegion());
+    if (child.internalWinId())
+        QTRY_COMPARE(resizeChild.paintedRegion, resizeChild.mask());
+    else
 #endif
+    QTRY_COMPARE(resizeChild.paintedRegion, QRegion());
 
     resizeChild.paintedRegion = QRegion();
     const QRegion oldMask = resizeChild.mask();
@@ -8986,10 +8992,11 @@ void tst_QWidget::setClearAndResizeMask()
     QTest::qWait(100);
 #ifdef Q_WS_MAC
     // Mac always issues a full update when calling setMask, and we cannot force it to not do so.
-    QTRY_COMPARE(resizeChild.paintedRegion, resizeChild.mask());
-#else
-    QTRY_COMPARE(resizeChild.paintedRegion, resizeChild.mask() - oldMask);
+    if (child.internalWinId())
+        QTRY_COMPARE(resizeChild.paintedRegion, resizeChild.mask());
+    else
 #endif
+    QTRY_COMPARE(resizeChild.paintedRegion, resizeChild.mask() - oldMask);
 }
 
 void tst_QWidget::maskedUpdate()

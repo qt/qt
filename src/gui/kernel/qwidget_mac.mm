@@ -5007,19 +5007,24 @@ void QWidgetPrivate::registerTouchWindow()
 void QWidgetPrivate::setMask_sys(const QRegion &region)
 {
     Q_UNUSED(region);
-#ifndef QT_MAC_USE_COCOA
     Q_Q(QWidget);
+
+#ifndef QT_MAC_USE_COCOA
     if (q->isWindow())
         ReshapeCustomWindow(qt_mac_window_for(q));
     else
         HIViewReshapeStructure(qt_mac_nativeview_for(q));
 #else
+    if (!q->internalWinId())
+        return;
+
     if (extra->mask.isEmpty()) {
         extra->maskBits = QImage();
         finishCocoaMaskSetup();
     } else {
         syncCocoaMask();
     }
+
     topLevelAt_cache = 0;
 #endif
 }
