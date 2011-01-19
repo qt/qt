@@ -143,7 +143,9 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     QList<QHostAddress> hostAddresses;
 
     TInetAddr hostAdd = nameResult().iAddr;
-    TBuf<16> ipAddr;
+    // 39 is the maximum length of an IPv6 address.
+    TBuf<39> ipAddr;
+
     // Fill ipAddr with the IP address from hostAdd
     hostAdd.Output(ipAddr);
     if (ipAddr.Length() > 0)
@@ -173,8 +175,24 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 
 QString QHostInfo::localHostName()
 {
-    // TODO - fill with code.
-    return QString();
+    // Connect to ESOCK
+    RSocketServ socketServ(qt_symbianGetSocketServer());
+    RHostResolver hostResolver;
+
+    // Will return both IPv4 and IPv6
+    // TODO: Pass RHostResolver.Open() the global RConnection
+    int err = hostResolver.Open(socketServ, KAfInet, KProtocolInetUdp);
+    if (err)
+        return QString();
+
+    THostName hostName;
+    err = hostResolver.GetHostName(hostName);
+    if (err)
+        return QString();
+
+    hostResolver.Close();
+
+    return qt_TDesC2QString(hostName);
 }
 
 QString QHostInfo::localDomainName()
