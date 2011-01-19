@@ -3117,7 +3117,6 @@ void tst_QGraphicsGridLayout::heightForWidth()
 
 void tst_QGraphicsGridLayout::widthForHeight()
 {
-#if 0
     QGraphicsWidget *widget = new QGraphicsWidget;
     QGraphicsGridLayout *layout = new QGraphicsGridLayout;
     widget->setLayout(layout);
@@ -3144,9 +3143,10 @@ void tst_QGraphicsGridLayout::widthForHeight()
     layout->addItem(w10, 1, 0);
 
     RectWidget *w11 = new RectWidget;
-    w11->setMinimumSize(1,1);
-    w11->setPreferredSize(50, 50);
-    w11->setMaximumSize(30000,30000);
+    w11->setSizeHint(Qt::MinimumSize, QSizeF(1,1));
+    w11->setSizeHint(Qt::PreferredSize, QSizeF(50,50));
+    w11->setSizeHint(Qt::MaximumSize, QSizeF(30000,30000));
+
     // This will make sure its always square.
     w11->setConstraintFunction(wfh);
     QSizePolicy sp(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -3190,7 +3190,6 @@ void tst_QGraphicsGridLayout::widthForHeight()
     QCOMPARE(layout->effectiveSizeHint(Qt::MinimumSize, QSizeF(-1, 300)), QSizeF(1 + 200, 300));
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize, QSizeF(-1, 300)), QSizeF(50 + 200, 300));
     QCOMPARE(layout->effectiveSizeHint(Qt::MaximumSize, QSizeF(-1, 300)), QSizeF(100 + 200, 300));
-#endif
 }
 
 void tst_QGraphicsGridLayout::heightForWidthWithSpanning()
