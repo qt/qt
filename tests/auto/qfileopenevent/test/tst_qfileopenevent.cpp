@@ -45,6 +45,7 @@
 #ifdef Q_OS_SYMBIAN
 #include <apgcli.h>
 #include "private/qcore_symbian_p.h"
+#endif
 
 class tst_qfileopenevent : public QObject
 {
@@ -66,34 +67,73 @@ private slots:
     void external();
 
 private:
+#ifdef Q_OS_SYMBIAN
     RFile createRFile(const TDesC& filename, const TDesC8& content);
-    void checkReadAndWrite(QFileOpenEvent& event, const QString& readContent, const QString& writeContent, bool writeOk);
-    QString readFileContent(QFileOpenEvent& event);
-    bool appendFileContent(QFileOpenEvent& event, const QString& writeContent);
+#else
+    void createFile(const QString &filename, const QByteArray &content);
+#endif
+    QFileOpenEvent * createFileAndEvent(const QString &filename, const QByteArray &content);
+    void checkReadAndWrite(QFileOpenEvent& event, const QByteArray& readContent, const QByteArray& writeContent, bool writeOk);
+    QByteArray readFileContent(QFileOpenEvent& event);
+    bool appendFileContent(QFileOpenEvent& event, const QByteArray& writeContent);
 
     bool event(QEvent *);
 
 private:
-    RFs fsSession;
+#ifdef Q_OS_SYMBIAN
+    struct AutoRFs : public RFs
+    {
+        AutoRFs()
+        {
+            qt_symbian_throwIfError(Connect());
+            qt_symbian_throwIfError(ShareProtected());
+        }
+
+        ~AutoRFs()
+        {
+            Close();
+        }
+    };
+    AutoRFs fsSession;
+#endif
 };
 
 tst_qfileopenevent::~tst_qfileopenevent()
 {
-    fsSession.Close();
 };
 
 void tst_qfileopenevent::initTestCase()
 {
-    qt_symbian_throwIfError(fsSession.Connect());
-    qt_symbian_throwIfError(fsSession.ShareProtected());
 }
 
+#ifdef Q_OS_SYMBIAN
 RFile tst_qfileopenevent::createRFile(const TDesC& filename, const TDesC8& content)
 {
     RFile file;
     qt_symbian_throwIfError(file.Replace(fsSession, filename, EFileWrite));
     qt_symbian_throwIfError(file.Write(content));
     return file;
+}
+#else
+void tst_qfileopenevent::createFile(const QString &filename, const QByteArray &content)
+{
+    QFile file(filename);
+    file.open(QFile::WriteOnly);
+    file.write(content);
+    file.close();
+}
+#endif
+
+QFileOpenEvent * tst_qfileopenevent::createFileAndEvent(const QString &filename, const QByteArray &content)
+{
+#ifdef Q_OS_SYMBIAN
+    RFile rFile = createRFile(qt_QString2TPtrC(filename), TPtrC8((TText8*)content.constData(), content.size()));
+    QScopedPointer<RFile, QScopedPointerRCloser<RFile> > closeRFile(&rFile);
+    return new QFileOpenEvent(rFile);
+#else
+    createFile(filename, content);
+    return new QFileOpenEvent(filename);
+#endif
 }
 
 void tst_qfileopenevent::constructor()
@@ -106,6 +146,7 @@ void tst_qfileopenevent::constructor()
     QFileOpenEvent urlTest(QUrl(QLatin1String("file:///urlNameTest")));
     QCOMPARE(urlTest.url().toString(), QLatin1String("file:///urlNameTest"));
 
+#ifdef Q_OS_SYMBIAN
     // check that RFile construction works
     RFile rFile = createRFile(_L("testRFile"), _L8("test content"));
     QFileOpenEvent rFileTest(rFile);
@@ -113,27 +154,28 @@ void tst_qfileopenevent::constructor()
     QCOMPARE(rFileTest.file().right(targetName.size()), targetName);
     QCOMPARE(rFileTest.url().toString().right(targetName.size()), targetName);
     rFile.Close();
+#endif
 }
 
-QString tst_qfileopenevent::readFileContent(QFileOpenEvent& event)
+QByteArray tst_qfileopenevent::readFileContent(QFileOpenEvent& event)
 {
     QFile file;
     event.openFile(file, QFile::ReadOnly);
     file.seek(0);
     QByteArray data = file.readAll();
-    return QString(data);
+    return data;
 }
 
-bool tst_qfileopenevent::appendFileContent(QFileOpenEvent& event, const QString& writeContent)
+bool tst_qfileopenevent::appendFileContent(QFileOpenEvent& event, const QByteArray& writeContent)
 {
     QFile file;
     bool ok = event.openFile(file, QFile::Append | QFile::Unbuffered);
     if (ok)
-        ok = file.write(writeContent.toUtf8()) == writeContent.size();
+        ok = file.write(writeContent) == writeContent.size();
     return ok;
 }
 
-void tst_qfileopenevent::checkReadAndWrite(QFileOpenEvent& event, const QString& readContent, const QString& writeContent, bool writeOk)
+void tst_qfileopenevent::checkReadAndWrite(QFileOpenEvent& event, const QByteArray& readContent, const QByteArray& writeContent, bool writeOk)
 {
     QCOMPARE(readFileContent(event), readContent);
     QCOMPARE(appendFileContent(event, writeContent), writeOk);
@@ -142,11 +184,12 @@ void tst_qfileopenevent::checkReadAndWrite(QFileOpenEvent& event, const QString&
 
 void tst_qfileopenevent::fileOpen()
 {
+#ifdef Q_OS_SYMBIAN
     // create writeable file
     {
         RFile rFile = createRFile(_L("testFileOpen"), _L8("test content"));
         QFileOpenEvent rFileTest(rFile);
-        checkReadAndWrite(rFileTest, QLatin1String("test content"), QLatin1String("+RFileWrite"), true);
+        checkReadAndWrite(rFileTest, QByteArray("test content"), QByteArray("+RFileWrite"), true);
         rFile.Close();
     }
 
@@ -155,30 +198,33 @@ void tst_qfileopenevent::fileOpen()
         RFile rFile;
         int err = rFile.Open(fsSession, _L("testFileOpen"), EFileRead);
         QFileOpenEvent rFileTest(rFile);
-        checkReadAndWrite(rFileTest, QLatin1String("test content+RFileWrite"), QLatin1String("+RFileRead"), false);
+        checkReadAndWrite(rFileTest, QByteArray("test content+RFileWrite"), QByteArray("+RFileRead"), false);
         rFile.Close();
     }
+#else
+    createFile(QLatin1String("testFileOpen"), QByteArray("test content+RFileWrite"));
+#endif
 
     // filename event
     QUrl fileUrl;   // need to get the URL during the file test, for use in the URL test
     {
         QFileOpenEvent nameTest(QLatin1String("testFileOpen"));
         fileUrl = nameTest.url();
-        checkReadAndWrite(nameTest, QLatin1String("test content+RFileWrite"), QLatin1String("+nameWrite"), true);
+        checkReadAndWrite(nameTest, QByteArray("test content+RFileWrite"), QByteArray("+nameWrite"), true);
     }
 
     // url event
     {
         QFileOpenEvent urlTest(fileUrl);
-        checkReadAndWrite(urlTest, QLatin1String("test content+RFileWrite+nameWrite"), QLatin1String("+urlWrite"), true);
+        checkReadAndWrite(urlTest, QByteArray("test content+RFileWrite+nameWrite"), QByteArray("+urlWrite"), true);
     }
+
+    QFile::remove(QLatin1String("testFileOpen"));
 }
 
 void tst_qfileopenevent::handleLifetime()
 {
-    RFile rFile = createRFile(_L("testHandleLifetime"), _L8("test content"));
-    QScopedPointer<QFileOpenEvent> event(new QFileOpenEvent(rFile));
-    rFile.Close();
+    QScopedPointer<QFileOpenEvent> event(createFileAndEvent(QLatin1String("testHandleLifetime"), QByteArray("test content")));
 
     // open a QFile after the original RFile is closed
     QFile qFile;
@@ -195,17 +241,18 @@ void tst_qfileopenevent::handleLifetime()
     check.open(QFile::ReadOnly);
     QString content(check.readAll());
     QCOMPARE(content, QLatin1String("test content+closed original handles"));
+    check.close();
+
+    QFile::remove(QLatin1String("testHandleLifetime"));
 }
 
 void tst_qfileopenevent::multiOpen()
 {
-    RFile rFile = createRFile(_L("testMultiOpen"), _L8("itlum"));
-    QFileOpenEvent event(rFile);
-    rFile.Close();
+    QScopedPointer<QFileOpenEvent> event(createFileAndEvent(QLatin1String("testMultiOpen"), QByteArray("itlum")));
 
     QFile files[5];
     for (int i=0; i<5; i++) {
-        QCOMPARE(event.openFile(files[i], QFile::ReadOnly), true);
+        QCOMPARE(event->openFile(files[i], QFile::ReadOnly), true);
     }
     for (int i=0; i<5; i++)
         files[i].seek(i);
@@ -217,6 +264,8 @@ void tst_qfileopenevent::multiOpen()
         files[i].close();
     }
     QCOMPARE(str, QLatin1String("multi"));
+
+    QFile::remove(QLatin1String("testMultiOpen"));
 }
 
 bool tst_qfileopenevent::event(QEvent *event)
@@ -230,10 +279,9 @@ bool tst_qfileopenevent::event(QEvent *event)
 
 void tst_qfileopenevent::sendAndReceive()
 {
-    RFile rFile = createRFile(_L("testSendAndReceive"), _L8("sending"));
-    QFileOpenEvent* event = new QFileOpenEvent(rFile);
-    rFile.Close();
-    QCoreApplication::instance()->postEvent(this, event);
+    QScopedPointer<QFileOpenEvent> event(createFileAndEvent(QLatin1String("testSendAndReceive"), QByteArray("sending")));
+
+    QCoreApplication::instance()->postEvent(this, event.take());
     QCoreApplication::instance()->processEvents();
 
     // check the content
@@ -241,6 +289,9 @@ void tst_qfileopenevent::sendAndReceive()
     QCOMPARE(check.open(QFile::ReadOnly), true);
     QString content(check.readAll());
     QCOMPARE(content, QLatin1String("sending+received"));
+    check.close();
+
+    QFile::remove(QLatin1String("testSendAndReceive"));
 }
 
 void tst_qfileopenevent::external_data()
@@ -261,6 +312,10 @@ void tst_qfileopenevent::external_data()
 
 void tst_qfileopenevent::external()
 {
+#ifndef Q_OS_SYMBIAN
+    QSKIP("external app file open test only valid in Symbian", SkipAll);
+#else
+
     QFETCH(QString, filename);
     QFETCH(QByteArray, targetContent);
     QFETCH(bool, sendHandle);
@@ -295,10 +350,10 @@ void tst_qfileopenevent::external()
     QCOMPARE(check.open(QFile::ReadOnly), true);
     QCOMPARE(check.readAll(), targetContent);
     bool ok = check.remove();
+
+    QFile::remove(filename);
+#endif
 }
 
 QTEST_MAIN(tst_qfileopenevent)
 #include "tst_qfileopenevent.moc"
-#else
-QTEST_NOOP_MAIN
-#endif
