@@ -925,13 +925,14 @@ inline void QScriptValuePrivate::setData(QScriptValuePrivate* data) const
         self->SetHiddenValue(dataId, data->m_value);
 }
 
+//returns -1 if arguments is not an array, returns -2 if it is not on the same engine
 inline int QScriptValuePrivate::convertArguments(QVarLengthArray<v8::Handle<v8::Value>, 8> *argv, const QScriptValue& arguments)
 {
     // Convert all arguments and bind to the engine.
     QScriptValuePrivate *args = QScriptValuePrivate::get(arguments);
 
-    if (!args->isJSBased() && !args->assignEngine(engine()))
-        return -1;
+    if (!args->assignEngine(engine()))
+        return -2;
 
     // argc == -1 will cause a type error to be thrown.
     int argc = -1;
@@ -987,6 +988,10 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::call(QScript
 
     QVarLengthArray<v8::Handle<v8::Value>, 8> argv;
     int argc = convertArguments(&argv, arguments);
+    if (argc == -2) {
+        qWarning("QScriptValue::call() failed: cannot call function with thisObject created in a different engine");
+        return new QScriptValuePrivate();
+    }
     return call(thisObject, argc, argv.data());
 }
 
@@ -1068,7 +1073,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::construct(co
     int argc = args.size();
     QVarLengthArray<v8::Handle<v8::Value>, 8> argv(argc);
     if (!prepareArgumentsForCall(argv.data(), args)) {
-        qWarning("QScriptValue::construct() failed: cannot call function with values created in a different engine");
+        qWarning("QScriptValue::construct() failed: cannot construct function with argument created in a different engine");
         return new QScriptValuePrivate();
     }
 
@@ -1084,6 +1089,10 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::construct(co
 
     QVarLengthArray<v8::Handle<v8::Value>, 8> argv;
     int argc = convertArguments(&argv, arguments);
+    if (argc == -2) {
+        qWarning("QScriptValue::construct() failed: cannot construct function with argument created in a different engine");
+        return new QScriptValuePrivate();
+    }
 
     return construct(argc, argv.data());
 }
