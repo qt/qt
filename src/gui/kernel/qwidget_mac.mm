@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -4224,6 +4224,7 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
             }
         }
 
+#ifndef QT_MAC_USE_COCOA
         const QRect validRange(-XCOORD_MAX,-XCOORD_MAX, 2*XCOORD_MAX, 2*XCOORD_MAX);
         if (!validRange.contains(xrect)) {
             // we are too big, and must clip
@@ -4242,6 +4243,7 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
             wrect = xrect;
             wrect.translate(-data.crect.topLeft()); // translate wrect in my Qt coordinates
         }
+#endif //QT_MAC_USE_COCOA
     }
 
     // unmap if we are outside the valid window system coord system
