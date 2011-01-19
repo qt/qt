@@ -541,7 +541,9 @@ QVariant QScriptEnginePrivate::variantFromJS(v8::Handle<v8::Value> value)
         return QVariant();
     if (value->IsBoolean())
         return value->ToBoolean()->Value();
-    if (value->IsNumber())
+    else if (value->IsInt32())
+        return value->ToInt32()->Value();
+    else if (value->IsNumber())
         return value->ToNumber()->Value();
     if (value->IsString())
         return QScriptConverter::toString(value->ToString());
