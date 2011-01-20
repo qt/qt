@@ -386,9 +386,9 @@ void QTestLiteClipboard::handleSelectionRequest(XEvent *xevent)
             ;
         } else if (target == xa_timestamp) {
 //            if (d->timestamp != CurrentTime) {
-                XChangeProperty(screen()->display(), req->requestor, property, XA_INTEGER, 32,
-                                PropModeReplace, CurrentTime, 1);
-                ret = property;
+//                XChangeProperty(screen()->display(), req->requestor, property, XA_INTEGER, 32,
+//                                PropModeReplace, CurrentTime, 1);
+//                ret = property;
 //            } else {
 //                qWarning("QClipboard: Invalid data timestamp");
 //            }
