@@ -29,13 +29,9 @@
     \example effects/fademessage
     \title Fade Message Effect Example
 
-    \raw HTML
-    <div style="text-align: center">
-    \endraw
+    \div { style="text-align: center"}
     \inlineimage fademessageeffect-example.png
     \inlineimage fademessageeffect-example-faded.png
-    \raw HTML
-    </div>
-    \endraw
+    \enddiv
 
 */
