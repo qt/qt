@@ -103,6 +103,14 @@ bool QmlCodeMarker::recognizeLanguage(const QString &language)
 }
 
 /*!
+  Returns the type of atom used to represent QML code in the documentation.
+*/
+Atom::Type QmlCodeMarker::atomType() const
+{
+    return Atom::Qml;
+}
+
+/*!
   Returns the name of the \a node. Method names include are returned with a
   trailing set of parentheses.
  */

@@ -103,6 +103,14 @@ bool CppCodeMarker::recognizeLanguage(const QString &lang)
 }
 
 /*!
+  Returns the type of atom used to represent C++ code in the documentation.
+*/
+Atom::Type CppCodeMarker::atomType() const
+{
+    return Atom::Code;
+}
+
+/*!
   Returns the \a node name, or "()" if \a node is a
   Node::Function node.
  */
@@ -417,7 +425,6 @@ QString CppCodeMarker::markedUpIncludes(const QStringList& includes)
 	code += "<@preprocessor>#include &lt;<@headerfile>" + *inc + "</@headerfile>&gt;</@preprocessor>\n";
 	++inc;
     }
-    Location location;
     return code;
 }
 
@@ -937,6 +944,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
     while (ch != EOF) {
 	int second = i;
 	QString tag;
+        bool target = false;
 
 	if (isalpha(ch) || ch == '_') {
 	    QString ident;
@@ -946,9 +954,10 @@ QString CppCodeMarker::addMarkUp(const QString &in,
 	    } while (isalnum(ch) || ch == '_');
 
 	    if (classRegExp.exactMatch(ident)) {
-		tag = QLatin1String("class");
+		tag = QLatin1String("type");
             } else if (functionRegExp.exactMatch(ident)) {
-                tag = QLatin1String("function");
+                tag = QLatin1String("func");
+                target = true;
 	    } else if (types.contains(ident)) {
 		tag = QLatin1String("type");
 	    } else if (keywords.contains(ident)) {
@@ -956,7 +965,8 @@ QString CppCodeMarker::addMarkUp(const QString &in,
 	    } else if (braceDepth == 0 && parenDepth == 0) {
 		if (QString(code.unicode() + i - 1, code.length() - (i - 1))
 		     .indexOf(QRegExp(QLatin1String("^\\s*\\("))) == 0)
-		    tag = QLatin1String("function");
+		    tag = QLatin1String("func");
+                    target = true;
 	    }
 	} else if (isdigit(ch)) {
 	    do {
@@ -1074,13 +1084,20 @@ QString CppCodeMarker::addMarkUp(const QString &in,
 	    }
 	}
 
-	if (!tag.isEmpty())
-	    out += QLatin1String("<@") + tag + QLatin1String(">");
-
+        QString text;
         if (tag.isEmpty() && i == code.length())
-            out += protect(code.mid(second - 1, i - second + 1));
+            text = code.mid(second - 1, i - second + 1);
         else
-            out += protect(code.mid(second - 1, i - second));
+            text = code.mid(second - 1, i - second);
+
+	if (!tag.isEmpty()) {
+	    out += QLatin1String("<@") + tag;
+            if (target)
+                out += QLatin1String(" target=\"") + text + QLatin1String("()\"");
+            out += QLatin1String(">");
+        }
+
+        out += protect(text);
 
 	if (!tag.isEmpty())
 	    out += QLatin1String("</@") + tag + QLatin1String(">");

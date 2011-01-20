@@ -467,6 +467,9 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             out() << "</p>\n";
         break;
     case Atom::C:
+        // This may at one time have been used to mark up C++ code but it is
+        // now widely used to write teletype text. As a result, text marked
+        // with the \c command is not passed to a code marker.
         out() << formattingLeftMap()[ATOM_FORMATTING_TELETYPE];
         if (inLink) {
             out() << protectEnc(plainCode(atom->string()));
@@ -477,7 +480,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         out() << formattingRightMap()[ATOM_FORMATTING_TELETYPE];
         break;
     case Atom::Code:
-        out() << "<pre class=\"highlightedCode brush: cpp\">"
+        out() << "<pre class=\"cpp\">"
               << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),
                                                  marker,relative))
               << "</pre>\n";
@@ -489,10 +492,16 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                                                  marker,relative))
               << "</pre>\n";
         break;
+    case Atom::JavaScript:
+        out() << "<pre class=\"js\">"
+              << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),
+                                                 marker,relative))
+              << "</pre>\n";
+        break;
 #endif
     case Atom::CodeNew:
         out() << "<p>you can rewrite it as</p>\n"
-              << "<pre class=\"highlightedCode brush: cpp\">"
+              << "<pre class=\"cpp\">"
               << trimmedTrailing(highlightedCode(indent(codeIndent,atom->string()),
                                                  marker,relative))
               << "</pre>\n";
@@ -501,7 +510,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         out() << "<p>For example, if you have code like</p>\n";
         // fallthrough
     case Atom::CodeBad:
-        out() << "<pre class=\"highlightedCode brush: cpp\">"
+        out() << "<pre class=\"cpp\">"
               << trimmedTrailing(protectEnc(plainCode(indent(codeIndent,atom->string()))))
               << "</pre>\n";
         break;
@@ -1773,7 +1782,7 @@ void HtmlGenerator::generateBrief(const Node *node, CodeMarker *marker,
 void HtmlGenerator::generateIncludes(const InnerNode *inner, CodeMarker *marker)
 {
     if (!inner->includes().isEmpty()) {
-        out() << "<pre class=\"highlightedCode brush: cpp\">"
+        out() << "<pre class=\"cpp\">"
               << trimmedTrailing(highlightedCode(indent(codeIndent,
                                                         marker->markedUpIncludes(inner->includes())),
                                                  marker,inner))
@@ -2757,8 +2766,8 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
     // replace all <@link> tags: "(<@link node=\"([^\"]+)\">).*(</@link>)"
     bool done = false;
     for (int i = 0, srcSize = src.size(); i < srcSize;) {
-        if (src.at(i) == charLangle && src.at(i + 1).unicode() == '@') {
-            if (alignNames && !done) {// && (i != 0)) Why was this here?
+        if (src.at(i) == charLangle && src.at(i + 1) == charAt) {
+            if (alignNames && !done) {
                 html += "</td><td class=\"memItemRight bottomAlign\">";
                 done = true;
             }
@@ -2819,6 +2828,7 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
             if (parseArg(src, typeTag, &i, srcSize, &arg, &par1)) {
                 par1 = QStringRef();
                 const Node* n = marker->resolveTarget(arg.toString(), myTree, relative, self);
+                html += QLatin1String("<span class=\"type\">");
                 if (n && n->subType() == Node::QmlBasicType) {
                     if (relative && relative->subType() == Node::QmlClass)
                         addLink(linkForNode(n,relative), arg, &html);
@@ -2827,6 +2837,7 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
                 }
                 else
                     addLink(linkForNode(n,relative), arg, &html);
+                html += QLatin1String("</span>");
                 handled = true;
             }
             else if (parseArg(src, headerTag, &i, srcSize, &arg, &par1)) {

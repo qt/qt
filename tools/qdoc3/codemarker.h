@@ -48,6 +48,7 @@
 
 #include <qpair.h>
 
+#include "atom.h"
 #include "node.h"
 
 QT_BEGIN_NAMESPACE
@@ -121,6 +122,7 @@ class CodeMarker
     virtual bool recognizeCode(const QString& code) = 0;
     virtual bool recognizeExtension(const QString& ext) = 0;
     virtual bool recognizeLanguage(const QString& lang) = 0;
+    virtual Atom::Type atomType() const = 0;
     virtual QString plainName(const Node *node) = 0;
     virtual QString plainFullName(const Node *node, 
                                   const Node *relative = 0) = 0;
