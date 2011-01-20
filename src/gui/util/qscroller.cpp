@@ -1006,9 +1006,18 @@ QPointF QScrollerPrivate::realDpi(int screen)
     return QPointF(260, 260);
 
 #  elif defined(Q_WS_X11) && !defined(QT_NO_XRANDR)
-    if (X11->use_xrandr && X11->ptrXRRSizes) {
+    if (X11 && X11->use_xrandr && X11->ptrXRRSizes && X11->ptrXRRRootToScreen) {
         int nsizes = 0;
-        XRRScreenSize *sizes = X11->ptrXRRSizes(X11->display, screen == -1 ? X11->defaultScreen : screen, &nsizes);
+        // QDesktopWidget is based on Xinerama screens, which do not always
+        // correspond to RandR screens: NVidia's TwinView e.g.  will show up
+        // as 2 screens in QDesktopWidget, but libXRandR will only see 1 screen.
+        // (although with the combined size of the Xinerama screens).
+        // Additionally, libXrandr will simply crash when calling XRRSizes
+        // for (the non-existant) screen 1 in this scenario.
+        Window root =  RootWindow(X11->display, screen == -1 ? X11->defaultScreen : screen);
+        int randrscreen = (root != XNone) ? X11->ptrXRRRootToScreen(X11->display, root) : -1;
+
+        XRRScreenSize *sizes = X11->ptrXRRSizes(X11->display, randrscreen == -1 ? 0 : randrscreen, &nsizes);
         if (nsizes > 0 && sizes && sizes->width && sizes->height && sizes->mwidth && sizes->mheight) {
             qScrollerDebug() << "XRandR DPI:" << QPointF(qreal(25.4) * qreal(sizes->width) / qreal(sizes->mwidth),
                                                          qreal(25.4) * qreal(sizes->height) / qreal(sizes->mheight));
