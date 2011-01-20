@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1088,7 +1088,7 @@ bool QAbstractScrollArea::event(QEvent *e)
   You can reimplement this function in a subclass, but we recommend
   using one of the specialized event handlers instead.
 
-  Specialised handlers for viewport events are: paintEvent(),
+  Specialized handlers for viewport events are: paintEvent(),
   mousePressEvent(), mouseReleaseEvent(), mouseDoubleClickEvent(),
   mouseMoveEvent(), wheelEvent(), dragEnterEvent(), dragMoveEvent(),
   dragLeaveEvent(), dropEvent(), contextMenuEvent(), and

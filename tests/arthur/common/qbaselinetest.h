@@ -46,6 +46,8 @@
 
 namespace QBaselineTest {
 bool checkImage(const QImage& img, const char *name, quint16 checksum, QByteArray *msg, bool *error);
+bool testImage(const QImage& img, QByteArray *msg, bool *error);
+QTestData &newRow(const char *dataTag, quint16 checksum = 0);
 }
 
 #define QBASELINE_CHECK_SUM(image, name, checksum)\
@@ -60,5 +62,16 @@ do {\
 } while (0)
 
 #define QBASELINE_CHECK(image, name) QBASELINE_CHECK_SUM(image, name, 0)
+
+#define QBASELINE_TEST(image)\
+do {\
+    QByteArray _msg;\
+    bool _err = false;\
+    if (!QBaselineTest::testImage((image), &_msg, &_err)) {\
+        QFAIL(_msg.constData());\
+    } else if (_err) {\
+        QSKIP(_msg.constData(), SkipSingle);\
+    }\
+} while (0)
 
 #endif // BASELINETEST_H

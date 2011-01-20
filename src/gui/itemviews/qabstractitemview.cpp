@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -630,8 +630,15 @@ QAbstractItemView::QAbstractItemView(QAbstractItemViewPrivate &dd, QWidget *pare
 */
 QAbstractItemView::~QAbstractItemView()
 {
-    // stop this timer here before ~QObject
-    d_func()->delayedReset.stop();
+    Q_D(QAbstractItemView);
+    // stop these timers here before ~QObject
+    d->delayedReset.stop();
+    d->updateTimer.stop();
+    d->delayedEditing.stop();
+    d->delayedAutoScroll.stop();
+    d->autoScrollTimer.stop();
+    d->delayedLayout.stop();
+    d->fetchMoreTimer.stop();
 }
 
 /*!

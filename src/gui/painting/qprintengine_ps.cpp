@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -908,7 +908,7 @@ void QPSPrintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, con
 
     if (d->clipEnabled && d->allClipped)
         return;
-    // ### Optimise implementation!
+    // ### Optimize implementation!
     qreal yPos = r.y();
     qreal yOff = p.y();
     while(yPos < r.y() + r.height()) {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -103,8 +103,6 @@ private Q_SLOTS:
 
     void doRequestUpdate();
     void servicePropertyChangedContext(const QString &,const QString &,const QDBusVariant &);
-    void networkPropertyChangedContext(const QString &,const QString &,const QDBusVariant &);
-    void devicePropertyChangedContext(const QString &,const QString &,const QDBusVariant &);
     void propertyChangedContext(const QString &,const QString &,const QDBusVariant &);
     void technologyPropertyChangedContext(const QString &,const QString &, const QDBusVariant &);
 
@@ -112,10 +110,6 @@ private:
     QConnmanManagerInterface *connmanManager;
 
     QList<QNetworkConfigurationPrivate *> foundConfigurations;
-
-    void getNetworkListing();
-
-    QString getServiceForNetwork(const QString &network);
 
     QString serviceFromId(const QString &id);
     QString networkFromId(const QString &id);
@@ -125,15 +119,12 @@ private:
 
     void removeConfiguration(const QString &servicePath);
     void addServiceConfiguration(const QString &servicePath);
-    void addNetworkConfiguration(const QString &worknetPath);
     QDateTime activeTime;
 
 
     QMap<QString,QConnmanTechnologyInterface *> technologies; // techpath, tech interface
     QMap<QString,QString> configInterfaces; // id, interface name
-    QMap<QString,QStringList> knownNetworks; //device path, net paths list
-    QMap<QString,QStringList> deviceMap; //tech path,  device path
-    QMap<QString, QString> serviceNetworks; //service, network
+    QList<QString> serviceNetworks; //servpath
 
     QNetworkConfiguration::BearerType ofonoTechToBearerType(const QString &type);
     bool isRoamingAllowed(const QString &context);
