@@ -460,21 +460,21 @@ void V8::ClearWeak(i::Object** obj) {
 
 bool V8::IsGlobalNearDeath(i::Object** obj) {
   LOG_API("IsGlobalNearDeath");
-  if (!i::V8::IsRunning()) return false;
+  if (IsDeadCheck("V8::IsGlobalNearDeath()")) return false;
   return i::GlobalHandles::IsNearDeath(obj);
 }
 
 
 bool V8::IsGlobalWeak(i::Object** obj) {
   LOG_API("IsGlobalWeak");
-  if (!i::V8::IsRunning()) return false;
+  if (IsDeadCheck("V8::IsGlobalWeak()")) return false;
   return i::GlobalHandles::IsWeak(obj);
 }
 
 
 void V8::DisposeGlobal(i::Object** obj) {
   LOG_API("DisposeGlobal");
-  if (!i::V8::IsRunning()) return;
+  if (IsDeadCheck("V8::DisposeGlobal()")) return;
   i::Isolate::Current()->global_handles()->Destroy(obj);
 }
 
