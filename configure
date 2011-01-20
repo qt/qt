@@ -1266,7 +1266,9 @@ while [ "$#" -gt 0 ]; do
     openvg)
         if [ "$VAL" = "auto" ] || [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_OPENVG="$VAL"
-            CFG_EGL="auto"
+            if [ "$CFG_EGL" = "no" ] && [ "$VAL" != "no" ]; then
+                CFG_EGL=auto
+            fi
         else
             UNKNOWN_OPT=yes
         fi
