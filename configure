@@ -6058,14 +6058,14 @@ fi # QWS
 if [ "$PLATFORM_X11" = "yes" -o "$PLATFORM_QWS" = "yes" ]; then
     if [ "$CFG_EGL" != "no" ]; then
         # detect EGL support
-        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/egl" "EGL (EGL/egl.h)" $L_FLAGS $I_FLAGS $l_FLAGS; then
-            # EGL specified by QMAKE_*_EGL, included with <EGL/egl.h>
-            CFG_EGL=yes
-            CFG_EGL_GLES_INCLUDES=no
-        elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/egl4gles1" "EGL (GLES/egl.h)" $L_FLAGS $I_FLAGS $l_FLAGS; then
+        if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/egl4gles1" "EGL (GLES/egl.h)" $L_FLAGS $I_FLAGS $l_FLAGS; then
             # EGL specified by QMAKE_*_EGL, included with <GLES/egl.h>
             CFG_EGL=yes
             CFG_EGL_GLES_INCLUDES=yes
+        elif "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "config.tests/unix/egl" "EGL (EGL/egl.h)" $L_FLAGS $I_FLAGS $l_FLAGS; then
+            # EGL specified by QMAKE_*_EGL, included with <EGL/egl.h>
+            CFG_EGL=yes
+            CFG_EGL_GLES_INCLUDES=no
         else
             if [ "$CFG_EGL" = "yes" ]; then
                 echo "The EGL functionality test failed!"
