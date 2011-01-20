@@ -4662,6 +4662,17 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &qscrollRect)
         return;
     }
 
+    static int accelEnv = -1;
+    if (accelEnv == -1) {
+        accelEnv = qgetenv("QT_NO_FAST_SCROLL").toInt() == 0;
+    }
+
+    // Scroll the whole widget instead if qscrollRect is not valid:
+    QRect validScrollRect = qscrollRect.isValid() ? qscrollRect : q->rect();
+    // If q is overlapped by other widgets, we cannot just blit pixels since
+    // this will move overlapping widgets as well. In case we just update:
+    const bool overlapped = isOverlapped(validScrollRect.translated(data.crect.topLeft()));
+    const bool accelerateScroll = accelEnv && isOpaque && !overlapped;
     const bool isAlien = (q->internalWinId() == 0);
     const QPoint scrollDelta(dx, dy);
 
@@ -4677,10 +4688,21 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &qscrollRect)
             return;
     }
 
+    if (!accelerateScroll) {
+        if (overlapped) {
+            QRegion region(validScrollRect);
+            subtractOpaqueSiblings(region);
+            update_sys(region);
+        }else {
+            update_sys(qscrollRect);
+        }
+        return;
+    }
 
 #ifdef QT_MAC_USE_COCOA
     QMacCocoaAutoReleasePool pool;
 #else
+    Q_UNUSED(isAlien);
     // We're not sure what the following call is supposed to achive
     // but until we see what it breaks, we don't bring it into the
     // Cocoa port:
@@ -4749,9 +4771,6 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &qscrollRect)
         OSViewRef view = qt_mac_nativeview_for(nativeWidget);
         if (!view)
             return;
-
-        // Scroll the whole widget instead if qscrollRect is not valid:
-        QRect validScrollRect = qscrollRect.isValid() ? qscrollRect : QRect(0, 0, q->width(), q->height());
 
         if (isAlien) {
             // Since q is alien, we need to translate the scroll rect:

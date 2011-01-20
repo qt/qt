@@ -129,6 +129,7 @@ extern "C" {
     extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
+//#define ALIEN_DEBUG 1
 #ifdef ALIEN_DEBUG
 static int qCocoaViewCount = 0;
 #endif
@@ -146,7 +147,7 @@ static int qCocoaViewCount = 0;
 
 #ifdef ALIEN_DEBUG
     ++qCocoaViewCount;
-    qDebug() << "init: qCocoaViewCount is" << qCocoaViewCount;
+    qDebug() << "Alien: create native view for" << widget << ". qCocoaViewCount is:" << qCocoaViewCount;
 #endif
 
     composing = false;
@@ -174,7 +175,7 @@ static int qCocoaViewCount = 0;
 
 #ifdef ALIEN_DEBUG
     --qCocoaViewCount;
-    qDebug() << "qCocoaViewCount is" << qCocoaViewCount;
+    qDebug() << "Alien: widget deallocated. qCocoaViewCount is:" << qCocoaViewCount;
 #endif
 
     [super dealloc];
