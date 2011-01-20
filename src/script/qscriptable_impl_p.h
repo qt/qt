@@ -59,7 +59,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptablePrivate::thisObject() 
     QScriptContextPrivate *c = context();
     if (!c)
         return new QScriptValuePrivate();
-    return c->thisObject();
+    return new QScriptValuePrivate(c->engine, c->thisObject());
 }
 
 inline int QScriptablePrivate::argumentCount() const

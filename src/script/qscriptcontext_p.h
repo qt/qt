@@ -63,7 +63,8 @@ public:
     inline QScriptPassPointer<QScriptValuePrivate> argument(int index) const;
     inline int argumentCount() const;
     inline QScriptPassPointer<QScriptValuePrivate> argumentsObject() const;
-    inline QScriptPassPointer<QScriptValuePrivate> thisObject() const;
+    v8::Handle<v8::Object> thisObject() const;
+    inline void setThisObject(QScriptValuePrivate *);
     inline QScriptPassPointer<QScriptValuePrivate> callee() const;
 
     inline QScriptPassPointer<QScriptValuePrivate> activationObject() const;
@@ -87,6 +88,7 @@ public:
     mutable QScriptContextPrivate *previous; //the previous js frame (lazily build)
     v8::Persistent<v8::StackFrame> frame; //only for js frames
     QScriptSharedDataPointer<QScriptValuePrivate> argsObject;
+    v8::Persistent<v8::Object> m_thisObject;
 
     static const int stackTraceLimit = 100;
 

@@ -56,7 +56,7 @@ v8::Handle<v8::Value> QScriptClassObject::property(v8::Handle<v8::String> proper
     Q_ASSERT(m_scriptclass);
 
     QScriptString str = QScriptStringPrivate::get(new QScriptStringPrivate(engine, property));
-    QScriptValue that = QScriptValuePrivate::get(engine->currentContext()->thisObject());
+    QScriptValue that = engine->scriptValueFromInternal(engine->currentContext()->thisObject());
 
     uint id = 0;
     QScriptClass::QueryFlags userFlags =
@@ -89,7 +89,7 @@ v8::Handle<v8::Value> QScriptClassObject::setProperty(v8::Handle<v8::String> pro
     v8::HandleScope handleScope;
 
     QScriptString str = QScriptStringPrivate::get(new QScriptStringPrivate(engine, property));
-    QScriptValue that = QScriptValuePrivate::get(engine->currentContext()->thisObject());
+    QScriptValue that = engine->scriptValueFromInternal(engine->currentContext()->thisObject());
 
     uint id = 0;
     QScriptClass::QueryFlags userFlags =
@@ -124,7 +124,7 @@ v8::Handle<v8::Boolean> QScriptClassObject::removeProperty(v8::Handle<v8::String
 
     v8::HandleScope handleScope;
     QScriptString str = QScriptStringPrivate::get(new QScriptStringPrivate(engine, property));
-    QScriptValue that = QScriptValuePrivate::get(engine->currentContext()->thisObject());
+    QScriptValue that = engine->scriptValueFromInternal(engine->currentContext()->thisObject());
 
     uint id = 0;
     QScriptClass::QueryFlags userFlags =
@@ -160,7 +160,7 @@ v8::Handle<v8::Integer> QScriptClassObject::propertyFlags(v8::Handle<v8::String>
     }
 
     QScriptString str = QScriptStringPrivate::get(new QScriptStringPrivate(engine, property));
-    QScriptValue that = QScriptValuePrivate::get(engine->currentContext()->thisObject());
+    QScriptValue that = engine->scriptValueFromInternal(engine->currentContext()->thisObject());
 
     uint id = 0;
     QScriptClass::QueryFlags userFlags =
@@ -193,7 +193,7 @@ v8::Handle<v8::Array> QScriptClassObject::enumerate()
     v8::Handle<v8::Array> names;
     uint32_t idx = 0;
     if (m_scriptclass) {
-        QScriptValue that = QScriptValuePrivate::get(engine->currentContext()->thisObject());
+        QScriptValue that = engine->scriptValueFromInternal(engine->currentContext()->thisObject());
         QScopedPointer<QScriptClassPropertyIterator> iter(m_scriptclass->userCallback()->newIterator(that));
         if (iter) {
             names = v8::Array::New(originalNames->Length()); // Length will be at least equal to that (or bigger).

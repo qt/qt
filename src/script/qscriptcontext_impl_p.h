@@ -88,6 +88,8 @@ inline QScriptContextPrivate::~QScriptContextPrivate()
     if (previous)
         delete previous;
 
+    m_thisObject.Dispose();
+
     if (!parent)
         return;
 
@@ -152,16 +154,41 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::argumentsO
     return new QScriptValuePrivate();
 }
 
-inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::thisObject() const
+inline v8::Handle<v8::Object> QScriptContextPrivate::thisObject() const
 {
     if (arguments) {
-        return new QScriptValuePrivate(engine, arguments->This());
+        return arguments->This();
     } else if (accessorInfo) {
-        return new QScriptValuePrivate(engine, accessorInfo->This());
+        return accessorInfo->This();
+    } else if (!m_thisObject.IsEmpty()) {
+        return m_thisObject;
+    } else {
+        return engine->globalObject();
     }
-
-    return new QScriptValuePrivate();
 }
+
+inline void QScriptContextPrivate::setThisObject(QScriptValuePrivate *newThis)
+{
+    if (!newThis->isObject()) {
+//        qWarning() << "QScriptContext::setThisObject: cannot set this object for native context";
+        return;
+    }
+    if (newThis->engine() != engine) {
+        qWarning("QScriptContext::setThisObject() failed: cannot set an object created in "
+                 "a different engine");
+        return;
+    }
+    if (!parent) {
+        //global object
+        engine->setGlobalObject(newThis);
+        return;
+    }
+    if (!frame.IsEmpty())
+        qWarning() << "QScriptContext::setThisObject: cannot set this object for native context";
+    m_thisObject.Dispose();
+    m_thisObject = v8::Persistent<v8::Object>::New(*newThis);
+}
+
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::callee() const
 {

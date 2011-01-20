@@ -386,7 +386,8 @@ QScriptValue QScriptContext::thisObject() const
 {
     Q_D(const QScriptContext);
     QScriptIsolate api(d->engine);
-    return QScriptValuePrivate::get(d->thisObject());
+    v8::HandleScope handleScope;
+    return d->engine->scriptValueFromInternal(d->thisObject());
 }
 
 /*!
@@ -397,8 +398,10 @@ QScriptValue QScriptContext::thisObject() const
 */
 void QScriptContext::setThisObject(const QScriptValue &thisObject)
 {
-    Q_UNUSED(thisObject);
-    Q_UNIMPLEMENTED();
+    Q_D(QScriptContext);
+    QScriptIsolate api(d->engine);
+    v8::HandleScope handleScope;
+    d->setThisObject(QScriptValuePrivate::get(thisObject));
 }
 
 /*!
