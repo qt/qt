@@ -862,8 +862,7 @@ bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::DebuggerStatement *statement)
 bool QmlMarkupVisitor::visit(QDeclarativeJS::AST::UiObjectDefinition *definition)
 {
     QHash<QString, QString> attributes;
-    attributes[QLatin1String("node")] = sourceText(definition->qualifiedTypeNameId->identifierToken);
-    addMarkedUpToken(definition->qualifiedTypeNameId->identifierToken, QLatin1String("link"), attributes);
+    addMarkedUpToken(definition->qualifiedTypeNameId->identifierToken, QLatin1String("type"));
     QDeclarativeJS::AST::Node::accept(definition->initializer, this);
     return false;
 }
