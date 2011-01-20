@@ -30,3 +30,5 @@ symbian: {
 }
 
 DEFINES += QT_NO_OPENTYPE
+INCLUDEPATH += ../3rdparty/harfbuzz/src
+

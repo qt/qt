@@ -60,3 +60,5 @@ contains(QT_CONFIG, openvg_on_opengl) {
     !isEmpty(QMAKE_LIBDIR_OPENGL): LIBS_PRIVATE += -L$$QMAKE_LIBDIR_OPENGL
     !isEmpty(QMAKE_LIBS_OPENGL): LIBS_PRIVATE += $$QMAKE_LIBS_OPENGL
 }
+
+INCLUDEPATH += ../3rdparty/harfbuzz/src
