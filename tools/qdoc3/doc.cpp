@@ -96,6 +96,7 @@ enum {
 #ifdef QDOC_QML    
     CMD_QML, CMD_ENDQML, CMD_CPP, CMD_ENDCPP, CMD_QMLTEXT,
     CMD_ENDQMLTEXT, CMD_CPPTEXT, CMD_ENDCPPTEXT,
+    CMD_JS, CMD_ENDJS,
 #endif    
     NOT_A_CMD
 };
@@ -202,6 +203,8 @@ static struct {
     { "endqmltext", CMD_ENDQMLTEXT, 0 },
     { "cpptext", CMD_CPPTEXT, 0 },
     { "endcpptext", CMD_ENDCPPTEXT, 0 },
+    { "js", CMD_JS, 0 },
+    { "endjs", CMD_ENDJS, 0 },
 #endif
     { 0, 0, 0 }
 };
@@ -557,6 +560,10 @@ void DocParser::parse(const QString& source,
                     case CMD_QMLTEXT:
                         append(Atom::QmlText);
                         break;
+                    case CMD_JS:
+                        leavePara();
+                        append(Atom::JavaScript, getCode(CMD_JS, CodeMarker::markerForLanguage(QLatin1String("JavaScript"))));
+                        break;
 #endif
                     case CMD_DIV:
                         leavePara();
@@ -643,6 +650,9 @@ void DocParser::parse(const QString& source,
                         break;
                     case CMD_ENDQMLTEXT:
                         append(Atom::EndQmlText);
+                        break;
+                    case CMD_ENDJS:
+                        closeCommand(cmd);
                         break;
 #endif                        
                     case CMD_ENDFOOTNOTE:
@@ -2406,6 +2416,8 @@ int DocParser::endCmdFor(int cmd)
         return CMD_ENDQML;
     case CMD_QMLTEXT:
         return CMD_ENDQMLTEXT;
+    case CMD_JS:
+        return CMD_ENDJS;
 #endif        
     case CMD_FOOTNOTE:
         return CMD_ENDFOOTNOTE;
