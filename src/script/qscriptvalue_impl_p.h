@@ -725,22 +725,28 @@ inline void QScriptValuePrivate::setProperty(v8::Handle<v8::String> name, QScrip
         v8::TryCatch tryCatch;
         v8::Handle<v8::Object> recv(v8::Object::Cast(*m_value));
         if (attribs & QScriptValue::PropertyGetter && !(attribs & QScriptValue::PropertySetter)) {
-            v8::Local<v8::Value> setter = engine()->originalGlobalObject()->getOwnPropertyDescriptor(recv, name)->Get(v8::String::New("set"));
-            if (!setter.IsEmpty() && !setter->IsUndefined()) {
-                recv->Delete(name);
-                engine()->originalGlobalObject()->defineGetterOrSetter(recv, name, setter, QScriptValue::PropertySetter);
-                if (tryCatch.HasCaught())
-                    engine()->setException(tryCatch.Exception(), tryCatch.Message());
-                return;
+            v8::Local<v8::Object> descriptor = engine()->originalGlobalObject()->getOwnPropertyDescriptor(recv, name);
+            if (!descriptor.IsEmpty()) {
+                v8::Local<v8::Value> setter = descriptor->Get(v8::String::New("set"));
+                if (!setter.IsEmpty() && !setter->IsUndefined()) {
+                    recv->Delete(name);
+                    engine()->originalGlobalObject()->defineGetterOrSetter(recv, name, setter, QScriptValue::PropertySetter);
+                    if (tryCatch.HasCaught())
+                        engine()->setException(tryCatch.Exception(), tryCatch.Message());
+                    return;
+                }
             }
         } else if (attribs & QScriptValue::PropertySetter && !(attribs & QScriptValue::PropertyGetter)) {
-            v8::Local<v8::Value> getter = engine()->originalGlobalObject()->getOwnPropertyDescriptor(recv, name)->Get(v8::String::New("get"));
-            if (!getter.IsEmpty() && !getter->IsUndefined()) {
-                recv->Delete(name);
-                engine()->originalGlobalObject()->defineGetterOrSetter(recv, name, getter, QScriptValue::PropertyGetter);
-                if (tryCatch.HasCaught())
-                    engine()->setException(tryCatch.Exception(), tryCatch.Message());
-                return;
+            v8::Local<v8::Object> descriptor = engine()->originalGlobalObject()->getOwnPropertyDescriptor(recv, name);
+            if (!descriptor.IsEmpty()) {
+                v8::Local<v8::Value> getter = descriptor->Get(v8::String::New("get"));
+                if (!getter.IsEmpty() && !getter->IsUndefined()) {
+                    recv->Delete(name);
+                    engine()->originalGlobalObject()->defineGetterOrSetter(recv, name, getter, QScriptValue::PropertyGetter);
+                    if (tryCatch.HasCaught())
+                        engine()->setException(tryCatch.Exception(), tryCatch.Message());
+                    return;
+                }
             }
         }
         recv->Delete(name);

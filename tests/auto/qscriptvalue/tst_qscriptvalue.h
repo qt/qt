@@ -132,6 +132,7 @@ private slots:
     void getSetProperty_gettersAndSettersOnNative();
     void getSetProperty_gettersAndSettersOnGlobalObject();
     void getSetProperty_gettersAndSettersChange();
+    void getSetProperty_gettersAndSettersStupid();
     void getSetProperty_array();
     void getSetProperty();
     void arrayElementGetterSetter();

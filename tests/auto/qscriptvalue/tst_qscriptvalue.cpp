@@ -2103,6 +2103,37 @@ void tst_QScriptValue::getSetProperty_array()
     QCOMPARE(array.property(1).isValid(), false);
 }
 
+void tst_QScriptValue::getSetProperty_gettersAndSettersStupid()
+{  //removing unexisting Setter or Getter should not crash.
+    QScriptEngine eng;
+    QScriptValue num = QScriptValue(&eng, 123.0);
+
+    {
+        QScriptValue object = eng.newObject();
+        object.setProperty("foo", QScriptValue(), QScriptValue::PropertyGetter);
+        QVERIFY(!object.property("foo").isValid());
+        object.setProperty("foo", num);
+        QCOMPARE(object.property("foo").strictlyEquals(num), true);
+    }
+
+    {
+        QScriptValue object = eng.newObject();
+        object.setProperty("foo", QScriptValue(), QScriptValue::PropertySetter);
+        QVERIFY(!object.property("foo").isValid());
+        object.setProperty("foo", num);
+        QCOMPARE(object.property("foo").strictlyEquals(num), true);
+    }
+
+    {
+        QScriptValue object = eng.globalObject();
+        object.setProperty("foo", QScriptValue(), QScriptValue::PropertySetter);
+        object.setProperty("foo", QScriptValue(), QScriptValue::PropertyGetter);
+        QVERIFY(!object.property("foo").isValid());
+        object.setProperty("foo", num);
+        QCOMPARE(object.property("foo").strictlyEquals(num), true);
+    }
+}
+
 void tst_QScriptValue::getSetProperty()
 {
     QScriptEngine eng;
