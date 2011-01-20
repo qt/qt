@@ -141,7 +141,6 @@ class Config
 #define CONFIG_IMAGES                   "images"
 #define CONFIG_INDEXES                  "indexes"
 #define CONFIG_LANGUAGE                 "language"
-#define CONFIG_LINKSINMARKUP            "linksinmarkup"
 #define CONFIG_MACRO                    "macro"
 #define CONFIG_NATURALLANGUAGE          "naturallanguage"
 #define CONFIG_OBSOLETELINKS            "obsoletelinks"

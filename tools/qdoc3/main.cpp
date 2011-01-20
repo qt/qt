@@ -148,7 +148,6 @@ static void processQdocconfFile(const QString &fileName)
 	++i;
     }
     config.setStringList(CONFIG_SYNTAXHIGHLIGHTING, QStringList(slow ? "true" : "false"));
-    config.setStringList(CONFIG_LINKSINMARKUP, QStringList(slow ? "true" : "false"));
     config.setStringList(CONFIG_SHOWINTERNAL,
                          QStringList(showInternal ? "true" : "false"));
     config.setStringList(CONFIG_OBSOLETELINKS,

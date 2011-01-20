@@ -219,7 +219,6 @@ HtmlGenerator::HtmlGenerator()
       threeColumnEnumValueTable(true),
       funcLeftParen("\\S(\\()"),
       myTree(0),
-      syntaxHighlighting(false),
       obsoleteLinks(false)
 {
 }
@@ -319,8 +318,6 @@ void HtmlGenerator::initializeGenerator(const Config &config)
 
         ++edition;
     }
-
-    syntaxHighlighting = config.getBool(CONFIG_SYNTAXHIGHLIGHTING);
 
     codeIndent = config.getInt(CONFIG_CODEINDENT);
 
@@ -2790,30 +2787,27 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
     }
 
 
-    if (syntaxHighlighting) {
-        // is this block ever used at all?
-        // replace all <@func> tags: "(<@func target=\"([^\"]*)\">)(.*)(</@func>)"
-        src = html;
-        html = QString();
-        for (int i = 0, srcSize = src.size(); i < srcSize;) {
-            if (src.at(i) == charLangle && src.at(i + 1) == charAt) {
-                i += 2;
-                if (parseArg(src, funcTag, &i, srcSize, &arg, &par1)) {
-                    const Node* n = marker->resolveTarget(par1.toString(),
-                                                          myTree,
-                                                          relative);
-                    QString link = linkForNode(n, relative);
-                    addLink(link, arg, &html);
-                    par1 = QStringRef();
-                }
-                else {
-                    html += charLangle;
-                    html += charAt;
-                }
+    // replace all <@func> tags: "(<@func target=\"([^\"]*)\">)(.*)(</@func>)"
+    src = html;
+    html = QString();
+    for (int i = 0, srcSize = src.size(); i < srcSize;) {
+        if (src.at(i) == charLangle && src.at(i + 1) == charAt) {
+            i += 2;
+            if (parseArg(src, funcTag, &i, srcSize, &arg, &par1)) {
+                const Node* n = marker->resolveTarget(par1.toString(),
+                                                      myTree,
+                                                      relative);
+                QString link = linkForNode(n, relative);
+                addLink(link, arg, &html);
+                par1 = QStringRef();
             }
             else {
-                html += src.at(i++);
+                html += charLangle;
+                html += charAt;
             }
+        }
+        else {
+            html += src.at(i++);
         }
     }
 

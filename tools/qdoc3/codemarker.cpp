@@ -59,7 +59,6 @@ QList<CodeMarker *> CodeMarker::markers;
   been read.
  */
 CodeMarker::CodeMarker()
-    : linksInMarkup(false)
 {
     markers.prepend(this);
 }
@@ -74,14 +73,11 @@ CodeMarker::~CodeMarker()
 }
 
 /*!
-  The only thing a code market initializes is its \e{linksInMarkup}
-  flag. The \e{linksInMarkup} flag indicates whether links are created for
-  names that have corresponding entries in the API documentation.
-  It is turned off by default. 
+  A code market performs no initialization by default. Marker-specific
+  initialization is performed in subclasses.
  */
 void CodeMarker::initializeMarker(const Config &config)
 {
-    linksInMarkup = config.getBool(QLatin1String(CONFIG_LINKSINMARKUP));
 }
 
 /*!

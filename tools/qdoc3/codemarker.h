@@ -184,8 +184,6 @@ class CodeMarker
  private:
     QString macName(const Node *parent, const QString &name = QString());
 
-    bool linksInMarkup;
-
     static QString defaultLang;
     static QList<CodeMarker *> markers;
 };
