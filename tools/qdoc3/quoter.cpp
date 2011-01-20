@@ -221,10 +221,13 @@ QString Quoter::quoteSnippet(const Location &docLocation, const QString &identif
     QString comment = commentForCode();
     QString delimiter = comment + QString(" [%1]").arg(identifier);
     QString t;
+    int indent = 0;
 
     while (!plainLines.isEmpty()) {
         if (match(docLocation, delimiter, plainLines.first())) {
-            getLine();
+            QString startLine = getLine();
+            while (indent < startLine.length() && startLine[indent] == QLatin1Char(' '))
+                indent++;
             break;
         }
         getLine();
@@ -232,7 +235,7 @@ QString Quoter::quoteSnippet(const Location &docLocation, const QString &identif
     while (!plainLines.isEmpty()) {
         QString line = plainLines.first();
         if (match(docLocation, delimiter, line)) {
-            QString lastLine = getLine();
+            QString lastLine = getLine(indent);
             int dIndex = lastLine.indexOf(delimiter);
             if (dIndex > 0) {
                 // The delimiter might be preceded on the line by other
@@ -249,7 +252,7 @@ QString Quoter::quoteSnippet(const Location &docLocation, const QString &identif
             return t;
         }
 
-        t += removeSpecialLines(line, comment);
+        t += removeSpecialLines(line, comment, indent);
     }
     failedAtEnd(docLocation, QString("snippet (%1)").arg(delimiter));
     return t;
@@ -286,7 +289,7 @@ QString Quoter::quoteUntil( const Location& docLocation, const QString& command,
     return t;
 }
 
-QString Quoter::getLine()
+QString Quoter::getLine(int unindent)
 {
     if ( plainLines.isEmpty() )
         return QString();
@@ -294,6 +297,11 @@ QString Quoter::getLine()
     plainLines.removeFirst();
 
     QString t = markedLines.takeFirst();
+    int i = 0;
+    while (i < unindent && i < t.length() && t[i] == QLatin1Char(' '))
+        i++;
+
+    t = t.mid(i);
     t += QLatin1Char('\n');
     codeLocation.advanceLines( t.count( QLatin1Char('\n') ) );
     return t;
@@ -342,7 +350,7 @@ QString Quoter::commentForCode() const
     return commentHash.value(suffix, "//!");
 }
 
-QString Quoter::removeSpecialLines(const QString &line, const QString &comment)
+QString Quoter::removeSpecialLines(const QString &line, const QString &comment, int unindent)
 {
     QString t;
 
@@ -355,7 +363,7 @@ QString Quoter::removeSpecialLines(const QString &line, const QString &comment)
         t += QLatin1Char('\n');
     } else if (!trimmed.startsWith(comment)) {
         // Ordinary code
-        t += getLine();
+        t += getLine(unindent);
     } else {
         // Comments
         if (line.contains(QLatin1Char('\n')))
