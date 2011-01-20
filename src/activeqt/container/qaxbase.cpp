@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1671,12 +1671,11 @@ private:
         QVariant::Type vartype = QVariant::nameToType(prop.type);
         switch(vartype) {
         case QVariant::Invalid:
+        case QVariant::UserType:
             if (prop.type == "QVariant") {
                 prop.typeId |= 0xff << 24;
                 break;
             }
-            // fall through
-        case QVariant::UserType:
             if (QMetaType::type(prop.type) == -1)
                 qWarning("QAxBase: Unsupported property type: %s", prop.type.data());
             break;

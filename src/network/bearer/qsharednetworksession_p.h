@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,43 +38,44 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
 
-#include <QWidget>
-#include <QWhatsThis>
-#include "ui_standard.h"
-#include "ui_advanced.h"
-#include "ui_system.h"
+#ifndef QSHAREDNETWORKSESSIONPRIVATE_H
+#define QSHAREDNETWORKSESSIONPRIVATE_H
 
-class StyleWidget : public QWidget
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include "qnetworksession.h"
+#include "qnetworkconfiguration.h"
+#include <QHash>
+#include <QSharedPointer>
+#include <QWeakPointer>
+#include <QMutex>
+
+#ifndef QT_NO_BEARERMANAGEMENT
+
+QT_BEGIN_NAMESPACE
+
+class QSharedNetworkSessionManager
 {
-    Q_OBJECT
-
 public:
-    StyleWidget(QWidget *parent = 0, Qt::WFlags f = 0);
-    ~StyleWidget();
-
-public slots:
-    void onWhatsThis() { QWhatsThis::enterWhatsThisMode(); }
-
+    static QSharedPointer<QNetworkSession> getSession(QNetworkConfiguration config);
+    static void setSession(QNetworkConfiguration config, QSharedPointer<QNetworkSession> session);
 private:
-    void addComboBoxItems();
-    void addListItems();
-    void addTextEdit();
-    void setupOtherWidgets();
-    void setupButtons();
-    void addTreeItems();
-    void addTreeListItems();
-
-    Ui::Standard m_staWidget;
-    Ui::Advanced m_advWidget;
-    Ui::System m_sysWidget;
-
-    QIcon m_small1;
-    QIcon m_small2;
-    QIcon m_big;
+    QHash<QNetworkConfiguration, QWeakPointer<QNetworkSession> > sessions;
 };
 
-#endif //MAINWINDOW_H
+QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT
+
+#endif //QSHAREDNETWORKSESSIONPRIVATE_H
 

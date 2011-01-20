@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -51,7 +51,7 @@
 #define EXISTING_SIZE 1024
 
 #ifdef Q_OS_SYMBIAN
-#define SRCDIR "c:/data/qsharedmemorytemp/"
+#define SRCDIR "c:/data/qsharedmemorytemp/lackey/"
 #define LACKEYDIR SRCDIR "lackey"
 #elif defined(Q_OS_WINCE)
 #define LACKEYDIR SRCDIR
@@ -624,6 +624,10 @@ public:
         QVERIFY(producer.isAttached());
         char *memory = (char*)producer.data();
         memory[1] = '0';
+#if defined(Q_OS_SYMBIAN)
+        // Sleep a while to ensure that consumers start properly
+        QTest::qSleep(1000);
+#endif
         QTime timer;
         timer.start();
         int i = 0;
@@ -645,10 +649,6 @@ public:
         memory[0] = 'E';
         QVERIFY(producer.unlock());
 
-#if defined(Q_OS_SYMBIAN)
-        // Sleep a while to ensure that consumers start properly
-        QTest::qSleep(1000);
-#endif
     }
 private:
 

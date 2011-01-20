@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,9 +44,9 @@
 #include <QFutureWatcher>
 #include <QtGui>
 
-class QNetworkAccessManager;
-class QNetworkReply;
-class QNetworkDiskCache;
+QT_FORWARD_DECLARE_CLASS(QNetworkAccessManager)
+QT_FORWARD_DECLARE_CLASS(QNetworkReply)
+QT_FORWARD_DECLARE_CLASS(QNetworkDiskCache)
 
 //! [ ImageAnalyzer - public interface ]
 class ImageAnalyzer : public QObject

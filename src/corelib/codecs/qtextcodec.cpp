@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1090,8 +1090,11 @@ QTextCodec* QTextCodec::codecForMib(int mib)
     QByteArray key = "MIB: " + QByteArray::number(mib);
     QTextCodecCache *cache = qTextCodecCache();
     QTextCodec *codec;
-    if (cache)
+    if (cache) {
         codec = cache->value(key);
+        if (codec)
+            return codec;
+    }
 
     QList<QTextCodec*>::ConstIterator i;
     for (int i = 0; i < all->size(); ++i) {

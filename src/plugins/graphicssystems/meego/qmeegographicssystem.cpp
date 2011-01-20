@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -75,6 +75,8 @@ QMeeGoGraphicsSystem::~QMeeGoGraphicsSystem()
 
 QWindowSurface* QMeeGoGraphicsSystem::createWindowSurface(QWidget *widget) const
 {
+    QGLShareContextScope ctx(qt_gl_share_widget()->context());
+
     QMeeGoGraphicsSystem::surfaceWasCreated = true;
     QWindowSurface *surface = new QGLWindowSurface(widget);
     return surface;
@@ -82,12 +84,6 @@ QWindowSurface* QMeeGoGraphicsSystem::createWindowSurface(QWidget *widget) const
 
 QPixmapData *QMeeGoGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
 {
-    // Long story short: without this it's possible to hit an
-    // uninitialized paintDevice due to a Qt bug too complex to even
-    // explain here... not to mention fix without going crazy.
-    // MDK
-    QGLShareContextScope ctx(qt_gl_share_widget()->context());
-
     return new QRasterPixmapData(type);
 }
 

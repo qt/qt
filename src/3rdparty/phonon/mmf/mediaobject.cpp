@@ -36,6 +36,10 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <QDir>
 #include <QResource>
 #include <QUrl>
+#include <cdbcols.h>
+#include <cdblen.h>
+#include <commdb.h>
+#include <mmf/common/mmfcontrollerframeworkbase.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,7 +68,8 @@ MMF::MediaObject::MediaObject(QObject *parent) : MMF::MediaNode::MediaNode(paren
     const int err = m_fileServer.Connect();
     QT_TRAP_THROWING(User::LeaveIfError(err));
 
-    Q_UNUSED(parent);
+    parent->installEventFilter(this);
+    m_iap = KUseDefaultIap;
 
     TRACE_EXIT_0();
 }
@@ -74,6 +79,7 @@ MMF::MediaObject::~MediaObject()
     TRACE_CONTEXT(MediaObject::~MediaObject, EAudioApi);
     TRACE_ENTRY_0();
 
+    parent()->removeEventFilter(this);
     delete m_resource;
 
     if (m_file)
@@ -490,6 +496,55 @@ void MMF::MediaObject::switchToNextSource()
     } else {
         emit finished();
     }
+}
+
+//-----------------------------------------------------------------------------
+// IAP support
+//-----------------------------------------------------------------------------
+
+int MMF::MediaObject::currentIAP() const
+{
+    return m_iap;
+}
+
+bool MMF::MediaObject::eventFilter(QObject *watched, QEvent *event)
+{
+    if (event->type() == QEvent::DynamicPropertyChange ) {
+        QDynamicPropertyChangeEvent* dynamicEvent = static_cast<QDynamicPropertyChangeEvent*>(event);
+        if (dynamicEvent->propertyName() == "InternetAccessPointName") {
+            QVariant value = watched->property("InternetAccessPointName");
+            if (value.isValid()) {
+                QString iapName = value.toString();
+                TRAPD(err, setIAPIdFromNameL(iapName));
+                if (err)
+                    m_player->setError(tr("Failed to set requested IAP"), err);
+            }
+        }
+    }
+    return false;
+}
+
+void MMF::MediaObject::setIAPIdFromNameL(const QString& iapString)
+{
+    TRACE_CONTEXT(MediaObject::getIapIdFromName, EVideoInternal);
+    TBuf<KCommsDbSvrMaxColumnNameLength> iapDes = qt_QString2TPtrC(iapString);
+    CCommsDatabase *commsDb = CCommsDatabase::NewL(EDatabaseTypeIAP);
+    CleanupStack::PushL(commsDb);
+    commsDb->ShowHiddenRecords();
+    CCommsDbTableView *view = commsDb->OpenTableLC(TPtrC(IAP));
+    for (TInt l = view->GotoFirstRecord(); l != KErrNotFound; l = view->GotoNextRecord()) {
+        TBuf<KCommsDbSvrMaxColumnNameLength> iapName;
+        view->ReadTextL(TPtrC(COMMDB_NAME), iapName);
+        TRACE("found IAP %S", &iapName);
+        if (iapName.CompareF(iapDes) == 0) {
+            TUint32 uiap;
+            view->ReadUintL(TPtrC(COMMDB_ID), uiap);
+            TRACE("matched IAP %S, setting m_iap %d", &iapName, uiap);
+            m_iap = uiap;
+            break;
+        }
+    }
+    CleanupStack::PopAndDestroy(2); // commsDb, view
 }
 
 //-----------------------------------------------------------------------------

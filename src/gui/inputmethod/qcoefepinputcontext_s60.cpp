@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -706,6 +706,7 @@ void QCoeFepInputContext::CancelFepInlineEdit()
     QInputMethodEvent event(QLatin1String(""), attributes);
     event.setCommitString(QLatin1String(""), 0, 0);
     m_preeditString.clear();
+    m_inlinePosition = 0;
     sendEvent(event);
 }
 
@@ -853,6 +854,7 @@ void QCoeFepInputContext::commitCurrentString(bool cancelFepTransaction)
     QInputMethodEvent event(QLatin1String(""), attributes);
     event.setCommitString(m_preeditString, 0, 0);
     m_preeditString.clear();
+    m_inlinePosition = 0;
     sendEvent(event);
 
     m_hasTempPreeditString = false;

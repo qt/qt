@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -284,6 +284,7 @@ struct QGLWindowSurfacePrivate
 };
 
 QGLFormat QGLWindowSurface::surfaceFormat;
+QGLWindowSurface::SwapMode QGLWindowSurface::swapBehavior = QGLWindowSurface::AutomaticSwap;
 
 void QGLWindowSurfaceGLPaintDevice::endPaint()
 {
@@ -519,9 +520,10 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
 
     // did_paint is set to true in ::beginPaint. ::beginPaint means that we
     // at least cleared the background (= painted something). In EGL API it's a
-    // mistakte to call swapBuffers if nothing was painted. This check protects
-    // the flush func from being executed if it's for nothing.
-    if (!d_ptr->did_paint)
+    // mistake to call swapBuffers if nothing was painted unless
+    // EGL_BUFFER_PRESERVED is set. This check protects the flush func from
+    // being executed if it's for nothing.
+    if (!hasPartialUpdateSupport() && !d_ptr->did_paint)
         return;
 
     QWidget *parent = widget->internalWinId() ? widget : widget->nativeParentWidget();
@@ -540,6 +542,9 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
 
     const GLenum target = GL_TEXTURE_2D;
     Q_UNUSED(target);
+
+    if (QGLWindowSurface::swapBehavior == QGLWindowSurface::KillSwap)
+        return;
 
     if (context()) {
         context()->makeCurrent();
@@ -588,7 +593,14 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
                 }
             }
 #endif
-            bool doingPartialUpdate = hasPartialUpdateSupport() && br.width() * br.height() < parent->geometry().width() * parent->geometry().height() * 0.2;
+            bool doingPartialUpdate = false;
+            if (QGLWindowSurface::swapBehavior == QGLWindowSurface::AutomaticSwap)
+                doingPartialUpdate = hasPartialUpdateSupport() && br.width() * br.height() < parent->geometry().width() * parent->geometry().height() * 0.2;
+            else if (QGLWindowSurface::swapBehavior == QGLWindowSurface::AlwaysFullSwap)
+                doingPartialUpdate = false;
+            else if (QGLWindowSurface::swapBehavior == QGLWindowSurface::AlwaysPartialSwap)
+                doingPartialUpdate = hasPartialUpdateSupport();
+
             QGLContext *ctx = reinterpret_cast<QGLContext *>(parent->d_func()->extraData()->glContext);
             if (widget != window()) {
                 if (initializeOffscreenTexture(window()->size()))

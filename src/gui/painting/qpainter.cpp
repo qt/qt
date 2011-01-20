@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -9085,7 +9085,7 @@ void QPainter::drawPixmapFragments(const PixmapFragment *fragments, int fragment
     QPainter::drawPixmapFragments() function. The variables \a x, \a y, \a
     width and \a height are used to calculate the target rectangle that is
     drawn. \a x and \a y denotes the center of the target rectangle. The \a
-    width and \a heigth in the target rectangle is scaled by the \a scaleX and
+    width and \a height in the target rectangle is scaled by the \a scaleX and
     \a scaleY values. The resulting target rectangle is then rotated \a
     rotation degrees around the \a x, \a y center point.
 
