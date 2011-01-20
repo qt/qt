@@ -517,6 +517,9 @@ static inline void load(const QString &family = QString(), int script = -1)
 
 static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)
 {
+    if (QSysInfo::symbianVersion() <= QSysInfo::SV_SF_2)
+        return; // See QTBUG-16514 for what 'font collisions' can cause in Symbian^1 and lower
+
     if (QSymbianFontDatabaseExtrasImplementation::appFontLimitReached())
         return;
 
