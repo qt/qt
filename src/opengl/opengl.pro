@@ -156,5 +156,3 @@ symbian {
 
     symbian:TARGET.UID3 = 0x2002131A
 }
-
-INCLUDEPATH += ../3rdparty/harfbuzz/src
