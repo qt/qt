@@ -999,6 +999,7 @@ bool QScriptEngine::canEvaluate(const QString &program) const
 bool QScriptEngine::hasUncaughtException() const
 {
     Q_D(const QScriptEngine);
+    QScriptIsolate api(d_ptr);
     return d->hasUncaughtException();
 }
 
@@ -1016,6 +1017,7 @@ bool QScriptEngine::hasUncaughtException() const
 QScriptValue QScriptEngine::uncaughtException() const
 {
     Q_D(const QScriptEngine);
+    QScriptIsolate api(d_ptr);
     return QScriptValuePrivate::get(d->uncaughtException());
 }
 
@@ -1035,6 +1037,7 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::uncaughtException(
 void QScriptEngine::clearExceptions()
 {
     Q_D(QScriptEngine);
+    QScriptIsolate api(d);
     d->clearExceptions();
 }
 
@@ -1085,6 +1088,7 @@ QStringList QScriptEngine::uncaughtExceptionBacktrace() const
 void QScriptEngine::collectGarbage()
 {
     Q_D(QScriptEngine);
+    QScriptIsolate api(d);
     d->collectGarbage();
 }
 
@@ -1112,6 +1116,7 @@ void QScriptEngine::collectGarbage()
 void QScriptEngine::reportAdditionalMemoryCost(int cost)
 {
     Q_D(QScriptEngine);
+    QScriptIsolate api(d);
     d->reportAdditionalMemoryCost(cost);
 }
 
