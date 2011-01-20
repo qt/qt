@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -623,6 +623,8 @@ public:
     Q_INVOKABLE void method_with_enum(TestEnum e) { invoke(19); m_actuals << (int)e; }
 
     Q_INVOKABLE int method_default(int a, int b = 19) { invoke(20); m_actuals << a << b; return b; }
+
+    Q_INVOKABLE void method_QVariant(QVariant a, QVariant b = QVariant()) { invoke(21); m_actuals << a << b; }
 
 private:
     friend class MyInvokableBaseObject;

@@ -34,11 +34,13 @@ environment.prf /epoc32/tools/qt/mkspecs/features/environment.prf
 //for loc
 loc.prf                  /epoc32/tools/qt/mkspecs/features/loc.prf
 
+#ifdef FF_QT_IN_UDA
 //For UDA image
 confml/qt.confml                  CONFML_EXPORT_PATH(qt.confml,uda_content)
 implml/qt_copy.implml             CRML_EXPORT_PATH(qt_copy.implml,uda_content)
 content/apps/qt.sisx               CRML_EXPORT_PATH(../content/sis/,uda_content)
 content/apps/qt_stub.sis          /epoc32/data/z/system/install/qt_stub.sis
+#endif
 
 //tools
 ../../bin/createpackage.bat         /epoc32/tools/createpackage.bat
@@ -72,13 +74,6 @@ translations/qt_zh_tw_symbian.ts /epoc32/include/platform/qt/translations/qt_zh_
 ../../translations/qt_sl.ts /epoc32/include/platform/qt/translations/
 ../../translations/qt_sv.ts /epoc32/include/platform/qt/translations/
 ../../translations/qt_uk.ts /epoc32/include/platform/qt/translations/
-
-
-PRJ_MMPFILES
-
-
-PRJ_TESTMMPFILES
-
 
 PRJ_EXTENSIONS
 START EXTENSION qt/qtconfig

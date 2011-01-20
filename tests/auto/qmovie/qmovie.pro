@@ -12,6 +12,7 @@ wince*: {
    DEPLOYMENT += addFiles
 }
 
+RESOURCES += resources.qrc
 
 symbian: {
    addFiles.files = animations\\*
