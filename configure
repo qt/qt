@@ -8310,7 +8310,7 @@ else
     echo "OpenGL support ......... no"
 fi
 if [ "$CFG_EGL" != "no" ]; then
-    if [ "$CFG_EGL_GLES_INCLUDES" != "no" ]; then
+    if [ "$CFG_EGL_GLES_INCLUDES" = "yes" ]; then
         echo "EGL support ............ yes <GLES/egl.h>"
     else
         echo "EGL support ............ yes <EGL/egl.h>"
