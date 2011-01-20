@@ -10,4 +10,3 @@ SOURCES = main.cpp qgraphicssystem_trace.cpp
 
 target.path += $$[QT_INSTALL_PLUGINS]/graphicssystems
 INSTALLS += target
-INCLUDEPATH += ../../../3rdparty/harfbuzz/src
