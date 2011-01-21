@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -90,6 +90,26 @@
     \note In QML all reals are stored in single precision, \l
     {http://en.wikipedia.org/wiki/IEEE_754} {IEEE floating point}
     format.
+
+    \sa {QML Basic Types}
+*/
+
+/*!
+    \qmlbasictype double
+    \ingroup qmlbasictypes
+
+    \brief A double number has a decimal point and is stored in double precision.
+
+    A double number has a decimal point and is stored in double precision, \l
+    {http://en.wikipedia.org/wiki/IEEE_754} {IEEE floating point}
+    format.
+
+    Example:
+    \qml
+    Item {
+        property double number: 32155.2355
+    }
+    \endqml
 
     \sa {QML Basic Types}
 */
@@ -412,7 +432,8 @@
     list only modify a \e copy of the list and not the actual list. (These current limitations
     are due to restrictions on \l {Property Binding} where lists are involved.)
 
-    To create a modifiable list, create an array object from within a \c .js JavaScript file,
+    You can, however, modify a copy of the list and then reassign the property to the modified
+    value. Other options are to create an array object from within a \c .js JavaScript file,
     or implement a custom list element in C++. Here is a QML element that modifies the list in a
     JavaScript file:
 
@@ -451,6 +472,78 @@
 
     \sa {QML Basic Types}
 */
+
+
+/*!
+    \qmlbasictype variant
+    \ingroup qmlbasictypes
+
+    \brief A variant type is a generic property type.
+
+    A variant is a generic property type. A variant type property can hold any of the
+    \l {QML Basic Types}{basic type} values:
+
+    \qml
+    Item {
+        property variant aNumber : 100
+        property variant aString : "Hello world!"
+        property variant aList : [ 1, 2, "buckle my shoe" ]
+    }
+    \endqml
+
+    The \c variant type can also hold a \e copy of a JavaScript object. For example, the
+    \c animal property below defines a JavaScript object defined with JSON notation. The
+    object's properties and values can be examined using the standard JavaScript syntax,
+    as shown in the \c Component.onCompleted handler.
+
+    \qml
+    Item {
+        property variant animal : { 'type': 'bird', 'species': 'galah', 'age': 7 }
+
+        Component.onCompleted: {
+            for (var attribute in animal)
+                console.log(attribute, "=", animal[attribute])
+        }
+    }
+    \endqml
+
+    It must be noted that the \c animal property holds a \e copy of the defined object, and
+    not the object itself. (This is true even if the property refers to an object defined in
+    some JavaScript file; the property will hold a copy of the object, and not the actual
+    object.) The property essentially holds a copy of the contents within the object. This
+    has several implications:
+
+    \list
+    \o Changes to any of the property's values (for example, the \c animal.type value
+       above) only modify the \e copy of the object, not the object itself. You can, however,
+       modify a copy of the object and then reassign the property to the modified value.
+    \o Because the property only holds a copy of the object, \l{Property Binding}{bindings} to
+       any of the property's individual values are not updated until the whole property is
+       reassigned to a new value. For example:
+
+       \qml
+       Item {
+           property variant animal : { 'type': 'bird', 'species': 'galah', 'age': 7 }
+
+           Text { text: "Animal species: " + animal.species }
+
+           Component.onCompleted: {
+               animal.species = 'kookaburra'    // this has no effect on the displayed text
+
+               var newObj = animal
+               newObj.species = 'kookaburra'
+               animal = newObj  // this will update the displayed text
+           }
+       }
+       \endqml
+    \o Since the object values are copied, it does not hold any reference to the original
+       object, and extra data such as the object's JavaScript prototype chain is lost in the
+       process.
+    \endlist
+
+    \sa {QML Basic Types}
+*/
+
 
 /*!
     \qmlbasictype vector3d

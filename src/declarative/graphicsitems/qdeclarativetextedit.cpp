@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -350,11 +350,13 @@ void QDeclarativeTextEdit::setFont(const QFont &font)
     The text color.
 
     \qml
-// green text using hexadecimal notation
-TextEdit { color: "#00FF00"; ...  }
+    // green text using hexadecimal notation
+    TextEdit { color: "#00FF00" }
+    \endqml
 
-// steelblue text using SVG color name
-TextEdit { color: "steelblue"; ...  }
+    \qml
+    // steelblue text using SVG color name
+    TextEdit { color: "steelblue" }
     \endqml
 */
 QColor QDeclarativeTextEdit::color() const
@@ -643,6 +645,8 @@ int QDeclarativeTextEdit::cursorPosition() const
 void QDeclarativeTextEdit::setCursorPosition(int pos)
 {
     Q_D(QDeclarativeTextEdit);
+    if (pos < 0 || pos > d->text.length())
+        return;
     QTextCursor cursor = d->control->textCursor();
     if (cursor.position() == pos)
         return;

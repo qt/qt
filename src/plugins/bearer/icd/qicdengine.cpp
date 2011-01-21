@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -966,6 +966,9 @@ void QIcdEngine::connectionStateSignalsSlot(QDBusMessage msg)
 void QIcdEngine::icdServiceOwnerChanged(const QString &serviceName, const QString &oldOwner,
                                         const QString &newOwner)
 {
+    Q_UNUSED(serviceName);
+    Q_UNUSED(oldOwner);
+
     QMutexLocker locker(&mutex);
 
     if (newOwner.isEmpty()) {

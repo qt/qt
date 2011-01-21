@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -216,6 +216,8 @@ JavaScript files must always be imported with a named import:
     }
 \endqml
 
+The qualifier ("MyScript" in the above example) must be unique within the QML document.
+Unlike ordinary modules, multiple scripts cannot be imported into the same namespace.
 
 
 \section1 Writing a qmldir file

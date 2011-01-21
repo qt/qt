@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -647,6 +647,19 @@ void tst_qdeclarativetextedit::selection()
     }
 
     textEditObject->setCursorPosition(0);
+    QVERIFY(textEditObject->cursorPosition() == 0);
+    QVERIFY(textEditObject->selectionStart() == 0);
+    QVERIFY(textEditObject->selectionEnd() == 0);
+    QVERIFY(textEditObject->selectedText().isNull());
+
+    // Verify invalid positions are ignored.
+    textEditObject->setCursorPosition(-1);
+    QVERIFY(textEditObject->cursorPosition() == 0);
+    QVERIFY(textEditObject->selectionStart() == 0);
+    QVERIFY(textEditObject->selectionEnd() == 0);
+    QVERIFY(textEditObject->selectedText().isNull());
+
+    textEditObject->setCursorPosition(textEditObject->text().count()+1);
     QVERIFY(textEditObject->cursorPosition() == 0);
     QVERIFY(textEditObject->selectionStart() == 0);
     QVERIFY(textEditObject->selectionEnd() == 0);

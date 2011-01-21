@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -413,6 +413,13 @@ void tst_QStyle::testWindowsStyle()
     QWindowsStyle wstyle;
     testAllFunctions(&wstyle);
     lineUpLayoutTest(&wstyle);
+
+    // Tests drawing indeterminate progress with 0 size: QTBUG-15973
+    QStyleOptionProgressBar pb;
+    pb.rect = QRect(0,0,-9,0);
+    QPixmap surface(QSize(200, 200));
+    QPainter painter(&surface);
+    wstyle.drawControl(QStyle::CE_ProgressBar, &pb, &painter, 0);
 }
 
 void tst_QStyle::testWindowsXPStyle()

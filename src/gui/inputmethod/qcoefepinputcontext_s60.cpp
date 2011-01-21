@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -89,7 +89,7 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
         m_fepState->SetFlags(EAknEditorFlagDefault);
     m_fepState->SetDefaultInputMode( EAknEditorTextInputMode );
     m_fepState->SetPermittedInputModes( EAknEditorAllInputModes );
-    m_fepState->SetDefaultCase( EAknEditorLowerCase );
+    m_fepState->SetDefaultCase( EAknEditorTextCase );
     m_fepState->SetPermittedCases( EAknEditorAllCaseModes );
     m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG);
     m_fepState->SetNumericKeymap( EAknEditorStandardNumberModeKeymap );

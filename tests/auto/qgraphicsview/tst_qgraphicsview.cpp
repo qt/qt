@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -246,6 +246,7 @@ private slots:
     void QTBUG_4151_clipAndIgnore();
     void QTBUG_5859_exposedRect();
     void QTBUG_7438_cursor();
+    void QTBUG_16063_microFocusRect();
 
 public slots:
     void dummySlot() {}
@@ -4448,6 +4449,44 @@ void tst_QGraphicsView::QTBUG_7438_cursor()
     sendMouseRelease(view.viewport(), view.mapFromScene(0, 0));
     QCOMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
 #endif
+}
+
+class IMItem : public QGraphicsRectItem
+{
+public:
+    IMItem(QGraphicsItem *parent = 0):
+        QGraphicsRectItem(QRectF(0, 0, 20, 20), parent)
+    {
+        setFlag(QGraphicsItem::ItemIsFocusable, true);
+        setFlag(QGraphicsItem::ItemAcceptsInputMethod, true);
+    }
+
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const
+    {
+        return mf;
+    }
+
+    static QRectF mf;
+};
+
+QRectF IMItem::mf(1.5, 1.6, 10, 10);
+
+void tst_QGraphicsView::QTBUG_16063_microFocusRect()
+{
+    QGraphicsScene scene;
+    IMItem *item = new IMItem();
+    scene.addItem(item);
+
+    QGraphicsView view(&scene);
+
+    view.setFixedSize(40, 40);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    scene.setFocusItem(item);
+    view.setFocus();
+    QRectF mfv = view.inputMethodQuery(Qt::ImMicroFocus).toRectF();
+    QCOMPARE(mfv, IMItem::mf.translated(-view.mapToScene(view.sceneRect().toRect()).boundingRect().topLeft()));
 }
 
 QTEST_MAIN(tst_QGraphicsView)

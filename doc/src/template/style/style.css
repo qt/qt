@@ -230,10 +230,15 @@
     {
         font-size: 13px;
     }
-    .red
-    {
-        color:red;
-    }
+	.red
+	{
+		color:red;
+	}
+	.figCaption{
+	color:#363534;
+	font:italic 11px/1.2 Verdana;
+	padding-top:0;
+	}
 /* end font style elements */
 
 /* global settings*/

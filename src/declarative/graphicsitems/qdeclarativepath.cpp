@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -46,6 +46,8 @@
 #include <QTime>
 
 #include <private/qbezier_p.h>
+#include <QtCore/qmath.h>
+#include <QtCore/qnumeric.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -367,9 +369,11 @@ void QDeclarativePath::createPointCache() const
 {
     Q_D(const QDeclarativePath);
     qreal pathLength = d->_path.length();
+    if (pathLength <= 0 || qIsNaN(pathLength))
+        return;
     // more points means less jitter between items as they move along the
     // path, but takes longer to generate
-    const int points = int(pathLength*5);
+    const int points = qCeil(pathLength*5);
     const int lastElement = d->_path.elementCount() - 1;
     d->_pointCache.resize(points+1);
 
@@ -418,6 +422,8 @@ QPointF QDeclarativePath::pointAt(qreal p) const
     Q_D(const QDeclarativePath);
     if (d->_pointCache.isEmpty()) {
         createPointCache();
+        if (d->_pointCache.isEmpty())
+            return QPointF();
     }
     int idx = qRound(p*d->_pointCache.size());
     if (idx >= d->_pointCache.size())
@@ -839,7 +845,7 @@ void QDeclarativePathCubic::addToPath(QPainterPath &path)
     \o
     \qml
     PathView {
-        ...
+        // ...
         Path {
             startX: 20; startY: 0
             PathQuad { x: 50; y: 80; controlX: 0; controlY: 80 }
@@ -853,7 +859,7 @@ void QDeclarativePathCubic::addToPath(QPainterPath &path)
     \o
     \qml
     PathView {
-        ...
+        // ...
         Path {
             startX: 20; startY: 0
             PathQuad { x: 50; y: 80; controlX: 0; controlY: 80 }
@@ -886,7 +892,7 @@ void QDeclarativePathCubic::addToPath(QPainterPath &path)
 
     \qml
     PathView {
-        ...
+        // ...
         Path {
             startX: 0; startY: 0
             PathLine { x:100; y: 0; }

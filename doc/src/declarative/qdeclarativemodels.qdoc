@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -281,7 +281,7 @@ with models of type QAbstractItemModel:
 \endlist
 
 
-\section2 Exposing C++ data models to QML
+\section2 Exposing C++ Data Models to QML
 
 The above examples use QDeclarativeContext::setContextProperty() to set 
 model values directly in QML components. An alternative to this is to 
@@ -313,7 +313,9 @@ MyModel {
     id: myModel
     ListElement { someProperty: "some value" }
 }
+\endqml
 
+\qml
 ListView {
     width: 200; height: 250
     model: myModel

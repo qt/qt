@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -133,7 +133,7 @@
     the interactive area where mouse movements are detected. For our button, we anchor the
     whole MouseArea to its parent, which is \c simplebutton. The \c anchors.fill syntax is
     one way of accessing a specific property called \c fill inside a group of properties
-    called \c anchors. QML uses \l {Anchor-based Layout in QML}{anchor based layouts} where
+    called \c anchors. QML uses \l {Anchor-Based Layout in QML}{anchor-based layouts} where
     items can anchor to another item, creating robust layouts.
 
     The \c MouseArea has many signal handlers that are called during mouse movements within

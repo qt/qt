@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -82,15 +82,7 @@ QT_BEGIN_NAMESPACE
 
     To define multiple transitions, specify \l Item::transitions as a list:
 
-    \qml
-    Item {
-        ...
-        transitions: [
-            Transition { to: "state1" ... },
-            Transition { ... }
-        ]
-    }
-    \endqml
+    \snippet doc/src/snippets/declarative/transitions-list.qml list of transitions
 
     If multiple Transitions are specified, only a single (best-matching) Transition will be applied for any particular
     state change. In the example above, when changing to \c state1, the first transition will be used, rather
@@ -222,13 +214,7 @@ void QDeclarativeTransition::prepare(QDeclarativeStateOperation::ActionList &act
 
     If the transition was changed to this:
 
-    \qml
-        transitions: Transition { 
-            to: "brighter"
-            ColorAnimation { duration: 1000 }
-        }
-    }
-    \endqml
+    \snippet doc/src/snippets/declarative/transition-from-to-modified.qml modified transition
 
     The animation would only be applied when changing from the default state to
     the "brighter" state (i.e. when the mouse is pressed, but not on release).
@@ -313,24 +299,12 @@ void QDeclarativeTransition::setToState(const QString &t)
 
     This property holds a list of the animations to be run for this transition.
 
-    \qml
-    Transition {
-        PropertyAnimation { ... }
-        NumberAnimation { ... }
-    }
-    \endqml
+    \snippet examples/declarative/toys/dynamicscene/dynamicscene.qml top-level transitions
 
     The top-level animations are run in parallel. To run them sequentially,
     define them within a SequentialAnimation:
 
-    \qml
-    Transition {
-        SequentialAnimation {
-            PropertyAnimation { ... }
-            NumberAnimation { ... }
-        }
-    }
-    \endqml
+    \snippet doc/src/snippets/declarative/transition-reversible.qml sequential animations
 */
 QDeclarativeListProperty<QDeclarativeAbstractAnimation> QDeclarativeTransition::animations()
 {

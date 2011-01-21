@@ -43,7 +43,7 @@ class DownloadPrivate : public QObject
 public:
     DownloadPrivate(Download *parent);
     ~DownloadPrivate();
-    bool start();
+    bool start(int iap);
     void resume();
 signals:
     void error();
@@ -69,7 +69,7 @@ public:
     ~Download();
     const QUrl &sourceUrl() const;
     const QString &targetFileName() const;
-    void start();
+    void start(int iap);
     void resume();
 
     enum State {

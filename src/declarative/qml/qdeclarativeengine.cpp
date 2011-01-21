@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -760,8 +760,10 @@ QImage QDeclarativeEnginePrivate::getImageFromProvider(const QUrl &url, QSize *s
     QImage image;
     QSharedPointer<QDeclarativeImageProvider> provider = imageProviders.value(url.host());
     locker.unlock();
-    if (provider)
-        image = provider->requestImage(url.path().mid(1), size, req_size);
+    if (provider) {
+        QString imageId = url.toString(QUrl::RemoveScheme | QUrl::RemoveAuthority).mid(1);
+        image = provider->requestImage(imageId, size, req_size);
+    }
     return image;
 }
 
@@ -771,8 +773,10 @@ QPixmap QDeclarativeEnginePrivate::getPixmapFromProvider(const QUrl &url, QSize 
     QPixmap pixmap;
     QSharedPointer<QDeclarativeImageProvider> provider = imageProviders.value(url.host());
     locker.unlock();
-    if (provider)
-        pixmap = provider->requestPixmap(url.path().mid(1), size, req_size);
+    if (provider) {
+        QString imageId = url.toString(QUrl::RemoveScheme | QUrl::RemoveAuthority).mid(1);
+        pixmap = provider->requestPixmap(imageId, size, req_size);
+    }
     return pixmap;
 }
 
@@ -1868,14 +1872,24 @@ QScriptValue QDeclarativeEnginePrivate::quit(QScriptContext * /*ctxt*/, QScriptE
 }
 
 /*!
-\qmlmethod color Qt::tint(color baseColor, color tintColor)
+    \qmlmethod color Qt::tint(color baseColor, color tintColor)
     This function allows tinting one color with another.
 
-    The tint color should usually be mostly transparent, or you will not be able to see the underlying color. The below example provides a slight red tint by having the tint color be pure red which is only 1/16th opaque.
+    The tint color should usually be mostly transparent, or you will not be
+    able to see the underlying color. The below example provides a slight red
+    tint by having the tint color be pure red which is only 1/16th opaque.
 
     \qml
-    Rectangle { x: 0; width: 80; height: 80; color: "lightsteelblue" }
-    Rectangle { x: 100; width: 80; height: 80; color: Qt.tint("lightsteelblue", "#10FF0000") }
+    Item {
+        Rectangle {
+            x: 0; width: 80; height: 80
+            color: "lightsteelblue"
+        }
+        Rectangle {
+            x: 100; width: 80; height: 80
+            color: Qt.tint("lightsteelblue", "#10FF0000")
+        }
+    }
     \endqml
     \image declarative-rect_tint.png
 

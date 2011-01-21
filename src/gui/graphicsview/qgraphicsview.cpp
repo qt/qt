@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2494,7 +2494,7 @@ QVariant QGraphicsView::inputMethodQuery(Qt::InputMethodQuery query) const
 
     QVariant value = d->scene->inputMethodQuery(query);
     if (value.type() == QVariant::RectF)
-        value = mapFromScene(value.toRectF()).boundingRect();
+        value = d->mapRectFromScene(value.toRectF());
     else if (value.type() == QVariant::PointF)
         value = mapFromScene(value.toPointF());
     else if (value.type() == QVariant::Rect)

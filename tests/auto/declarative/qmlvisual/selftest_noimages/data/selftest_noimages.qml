@@ -196,6 +196,14 @@ VisualTest {
     Frame {
         msec: 1024
     }
+    Mouse {
+        type: 2
+        button: 1
+        buttons: 1
+        x: 53; y: 47
+        modifiers: 0
+        sendToViewport: true
+    }
     Frame {
         msec: 1040
     }
@@ -213,6 +221,14 @@ VisualTest {
     }
     Frame {
         msec: 1120
+    }
+    Mouse {
+        type: 3
+        button: 1
+        buttons: 0
+        x: 53; y: 47
+        modifiers: 0
+        sendToViewport: true
     }
     Frame {
         msec: 1136
@@ -259,14 +275,6 @@ VisualTest {
     Frame {
         msec: 1360
     }
-    Mouse {
-        type: 2
-        button: 1
-        buttons: 1
-        x: 77; y: 7
-        modifiers: 0
-        sendToViewport: true
-    }
     Frame {
         msec: 1376
     }
@@ -281,14 +289,6 @@ VisualTest {
     }
     Frame {
         msec: 1440
-    }
-    Mouse {
-        type: 3
-        button: 1
-        buttons: 0
-        x: 77; y: 7
-        modifiers: 0
-        sendToViewport: true
     }
     Frame {
         msec: 1456
@@ -352,119 +352,5 @@ VisualTest {
     }
     Frame {
         msec: 1776
-    }
-    Frame {
-        msec: 1792
-    }
-    Frame {
-        msec: 1808
-    }
-    Frame {
-        msec: 1824
-    }
-    Frame {
-        msec: 1840
-    }
-    Frame {
-        msec: 1856
-    }
-    Frame {
-        msec: 1872
-    }
-    Frame {
-        msec: 1888
-    }
-    Frame {
-        msec: 1904
-    }
-    Frame {
-        msec: 1920
-    }
-    Frame {
-        msec: 1936
-    }
-    Frame {
-        msec: 1952
-    }
-    Frame {
-        msec: 1968
-    }
-    Frame {
-        msec: 1984
-    }
-    Frame {
-        msec: 2000
-    }
-    Frame {
-        msec: 2016
-    }
-    Frame {
-        msec: 2032
-    }
-    Frame {
-        msec: 2048
-    }
-    Frame {
-        msec: 2064
-    }
-    Frame {
-        msec: 2080
-    }
-    Frame {
-        msec: 2096
-    }
-    Frame {
-        msec: 2112
-    }
-    Frame {
-        msec: 2128
-    }
-    Frame {
-        msec: 2144
-    }
-    Frame {
-        msec: 2160
-    }
-    Frame {
-        msec: 2176
-    }
-    Frame {
-        msec: 2192
-    }
-    Frame {
-        msec: 2208
-    }
-    Frame {
-        msec: 2224
-    }
-    Frame {
-        msec: 2240
-    }
-    Frame {
-        msec: 2256
-    }
-    Frame {
-        msec: 2272
-    }
-    Frame {
-        msec: 2288
-    }
-    Frame {
-        msec: 2304
-    }
-    Frame {
-        msec: 2320
-    }
-    Frame {
-        msec: 2336
-    }
-    Frame {
-        msec: 2352
-    }
-    Frame {
-        msec: 2368
-    }
-    Frame {
-        msec: 2384
     }
 }

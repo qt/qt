@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -129,7 +129,6 @@ void QGraphicsLayoutItemPrivate::init()
 {
     sizeHintCacheDirty = true;
     sizeHintWithConstraintCacheDirty = true;
-    sizePolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 }
 
 /*!
@@ -400,6 +399,7 @@ QGraphicsLayoutItem::QGraphicsLayoutItem(QGraphicsLayoutItem *parent, bool isLay
 {
     Q_D(QGraphicsLayoutItem);
     d->init();
+    d->sizePolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     d->q_ptr = this;
 }
 
@@ -410,6 +410,7 @@ QGraphicsLayoutItem::QGraphicsLayoutItem(QGraphicsLayoutItemPrivate &dd)
     : d_ptr(&dd)
 {
     Q_D(QGraphicsLayoutItem);
+    d->init();
     d->q_ptr = this;
 }
 
