@@ -4772,6 +4772,34 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &qscrollRect)
         if (!view)
             return;
 
+        // Calculate the rectangles that needs to be redrawn
+        // after the scroll. This will be source rect minus destination rect:
+        QRect deltaXRect;
+        if (dx != 0) {
+            deltaXRect.setY(validScrollRect.y());
+            deltaXRect.setHeight(validScrollRect.height());
+            if (dx > 0) {
+                deltaXRect.setX(validScrollRect.x());
+                deltaXRect.setWidth(dx);
+            } else {
+                deltaXRect.setX(validScrollRect.x() + validScrollRect.width() + dx);
+                deltaXRect.setWidth(-dx);
+            }
+        }
+
+        QRect deltaYRect;
+        if (dy != 0) {
+            deltaYRect.setX(validScrollRect.x());
+            deltaYRect.setWidth(validScrollRect.width());
+            if (dy > 0) {
+                deltaYRect.setY(validScrollRect.y());
+                deltaYRect.setHeight(dy);
+           } else {
+                deltaYRect.setY(validScrollRect.y() + validScrollRect.height() + dy);
+                deltaYRect.setHeight(-dy);
+            }
+        }
+
         if (isAlien) {
             // Since q is alien, we need to translate the scroll rect:
             QPoint widgetTopLeftInsideNative = nativeWidget->mapFromGlobal(q->mapToGlobal(QPoint()));
@@ -4805,44 +4833,12 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &qscrollRect)
             }
         }
 
+        // Now, scroll the pixels:
         NSRect nsscrollRect = NSMakeRect(
             validScrollRect.x(), validScrollRect.y(),
             validScrollRect.width(), validScrollRect.height());
-
-        // Calculate the rectangles that needs to be redrawn
-        // after the scroll. This will be source rect minus destination rect:
-
-        NSRect deltaXRect = { {0, 0}, {0, 0} };
-        NSRect deltaYRect = { {0, 0}, {0, 0} };
-
-        if (dy != 0) {
-            deltaYRect.size.width = nsscrollRect.size.width;
-            deltaYRect.origin.x = nsscrollRect.origin.x;
-            if (dy > 0) {
-                deltaYRect.size.height = dy;
-                deltaYRect.origin.y = nsscrollRect.origin.y;
-            } else {
-                deltaYRect.size.height = -dy;
-                deltaYRect.origin.y = nsscrollRect.origin.y + nsscrollRect.size.height + dy;
-            }
-        }
-
-        if (dx != 0) {
-            deltaXRect.size.height = nsscrollRect.size.height;
-            deltaXRect.origin.y = nsscrollRect.origin.y;
-            if (dx > 0) {
-                deltaXRect.size.width = dx;
-                deltaXRect.origin.x = nsscrollRect.origin.x;
-            } else {
-                deltaXRect.size.width = -dx;
-                deltaXRect.origin.x = nsscrollRect.origin.x + nsscrollRect.size.width + dx;
-            }
-        }
-
         NSSize deltaSize = NSMakeSize(dx, dy);
         [view scrollRect:nsscrollRect by:deltaSize];
-        [view setNeedsDisplayInRect:deltaXRect];
-        [view setNeedsDisplayInRect:deltaYRect];
 
         // Some areas inside the scroll rect might have been marked as dirty from before, which
         // means that they are scheduled to be redrawn. But as we now scroll, those dirty rects
@@ -4851,19 +4847,20 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &qscrollRect)
         // rect, the old calls to setNeedsDisplay still makes sense.
         // NB: Using [view translateRectsNeedingDisplayInRect:nsscrollRect by:deltaSize] have
         // so far not been proven fruitful to solve this problem.
-        const QVector<QRect> &rects = dirtyOnWidget.rects();
-        const QVector<QRect>::const_iterator end = rects.end();
-        QVector<QRect>::const_iterator it = rects.begin();
-        while (it != end) {
-            QRect qdirtyRect = *it;
-            if (isAlien) {
-                const QPoint dirtyTopLeftInsideNative = nativeWidget->mapFromGlobal(q->mapToGlobal(qdirtyRect.topLeft()));
-                qdirtyRect.moveTo(dirtyTopLeftInsideNative);
-            }
-            const NSRect nsdirtyRect = NSMakeRect(qdirtyRect.x() + dx, qdirtyRect.y() + dy, qdirtyRect.width(), qdirtyRect.height());
-            [view setNeedsDisplayInRect:nsdirtyRect];
-            ++it;
+        const QVector<QRect> &dirtyRectsToScroll = dirtyOnWidget.rects();
+        for (int i=0; i<dirtyRectsToScroll.size(); ++i) {
+            QRect qdirtyRect = dirtyRectsToScroll[i];
+            qdirtyRect.moveBy(dx, dy);
+            update_sys(qdirtyRect);
         }
+
+        // Update newly exposed areas. This will generate new dirty areas on
+        // q, and therefore, we do it after updating the old dirty rects above:
+        if (dx != 0)
+            update_sys(deltaXRect);
+        if (dy != 0)
+            update_sys(deltaYRect);
+
 #endif // QT_MAC_USE_COCOA
     }
 
