@@ -50,6 +50,8 @@ static void usage()
     qWarning(" ");
     qWarning(" options:");
     qWarning("  -d <directory>................................ output directory");
+    qWarning("  -b............................................ set bold");
+    qWarning("  -i............................................ set italic");
 
     qWarning(" ");
     exit(1);
@@ -135,8 +137,13 @@ int main(int argc, char *argv[])
         destDir = dfi.canonicalFilePath();
     }
 
+    bool bold = args.contains("-b");
+    bool italic = args.contains("-i");
+
     QStringList families = QFontDatabase::applicationFontFamilies(fontID);
     QFont f(families.at(0));
+    f.setBold(bold);
+    f.setItalic(italic);
     DistanceFieldFontAtlas atlas(f);
 
     QMap<int, QImage> distfields;
