@@ -126,8 +126,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::argument(i
         return new QScriptValuePrivate(engine, (*arguments)[index]);
     }
 
-    Q_UNIMPLEMENTED();
-    return new QScriptValuePrivate();
+    return new QScriptValuePrivate(engine, QScriptValue::UndefinedValue);
 }
 
 inline int QScriptContextPrivate::argumentCount() const
@@ -136,7 +135,6 @@ inline int QScriptContextPrivate::argumentCount() const
         return arguments->Length();
     }
 
-    Q_UNIMPLEMENTED();
     return 0;
 }
 
@@ -150,8 +148,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::argumentsO
         return argsObject.data();
     }
 
-    Q_UNIMPLEMENTED();
-    return new QScriptValuePrivate();
+    return engine->newObject();
 }
 
 inline v8::Handle<v8::Object> QScriptContextPrivate::thisObject() const
