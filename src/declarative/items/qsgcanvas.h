@@ -55,7 +55,7 @@ QT_MODULE(Declarative)
 class QSGItem;
 class QSGContext;
 class QSGCanvasPrivate;
-class QSGCanvas : public QGLWidget
+class Q_DECLARATIVE_EXPORT QSGCanvas : public QGLWidget
 {
 Q_OBJECT
 Q_DECLARE_PRIVATE(QSGCanvas)

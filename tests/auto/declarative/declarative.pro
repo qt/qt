@@ -26,6 +26,10 @@ SUBDIRS += \
            qmlvisual \
            moduleqt47
 
+SUBDIRS += \
+           qsgitem \
+           texturemanager \
+
 contains(QT_CONFIG, private_tests) {
     SUBDIRS += \
            qdeclarativeanchors \
