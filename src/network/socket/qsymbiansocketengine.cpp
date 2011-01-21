@@ -179,7 +179,7 @@ bool QSymbianSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType so
                                          QAbstractSocket::NetworkLayerProtocol socketProtocol)
 {
     Q_Q(QSymbianSocketEngine);
-    TUint family = (socketProtocol == QAbstractSocket::IPv6Protocol) ? KAfInet6 : KAfInet;
+    TUint family = KAfInet; // KAfInet6 is only used as an address family, not as a protocol family
     TUint type = (socketType == QAbstractSocket::UdpSocket) ? KSockDatagram : KSockStream;
     TUint protocol = (socketType == QAbstractSocket::UdpSocket) ? KProtocolInetUdp : KProtocolInetTcp;
     TInt err;
