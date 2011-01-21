@@ -265,6 +265,7 @@ bool QSharedMemoryPrivate::detach()
         return false;
     }
     memory = 0;
+    size = 0;
 
     // Get the number of current attachments
     if (!handle())

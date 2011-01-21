@@ -186,6 +186,7 @@ bool QSharedMemoryPrivate::detach()
         return false;
     }
     memory = 0;
+    size = 0;
 
     // close handle
     return cleanHandle();
