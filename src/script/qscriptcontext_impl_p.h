@@ -335,10 +335,13 @@ inline v8::Handle<v8::Value> QScriptContextPrivate::throwError(QScriptContext::E
         case RangeError:
             exception = v8::Exception::RangeError(message);
             break;
-        case URIError:
-            //FIXME
-            exception = v8::Exception::Error(message);
+        case URIError: {
+            QScriptSharedDataPointer<QScriptValuePrivate> fun(engine->evaluate(QString::fromLatin1("(function(message) {return new URIError(message)})")));
+            v8::Handle<v8::Value> argv[] = { message };
+            QScriptSharedDataPointer<QScriptValuePrivate> err(fun->call(QScriptValuePrivate::get(QScriptValue()), 1, argv));
+            exception = err->asV8Value(engine);
             break;
+        }
     }
     return engine->throwException(exception);
 }
