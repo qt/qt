@@ -221,7 +221,12 @@ bool QSymbianSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType so
 void QSymbianSocketEnginePrivate::setPortAndAddress(TInetAddr& nativeAddr, quint16 port, const QHostAddress &addr)
 {
     nativeAddr.SetPort(port);
-    if (addr.protocol() == QAbstractSocket::IPv6Protocol) {
+    if (addr == QHostAddress::Any) {
+        //Should allow both IPv4 and IPv6
+        //Listening on "0.0.0.0" accepts ONLY ipv4 connections
+        //Listening on "::" accepts ONLY ipv6 connections
+        nativeAddr.SetFamily(KAFUnspec);
+    } else if (addr.protocol() == QAbstractSocket::IPv6Protocol) {
         TPckgBuf<TSoInetIfQuery> query;
         query().iName = qt_QString2TPtrC(addr.scopeId());
         TInt err = nativeSocket.GetOpt(KSoInetIfQueryByName, KSolInetIfQuery, query);
