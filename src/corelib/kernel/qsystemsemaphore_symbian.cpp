@@ -73,6 +73,7 @@ void QSystemSemaphorePrivate::setErrorString(const QString &function, int err)
     case KErrInUse:
         errorString = QCoreApplication::tr("%1: out of resources", "QSystemSemaphore").arg(function);
         error = QSystemSemaphore::OutOfResources;
+        break;
     case KErrPermissionDenied:
         errorString = QCoreApplication::tr("%1: permission denied", "QSystemSemaphore").arg(function);
         error = QSystemSemaphore::PermissionDenied;
