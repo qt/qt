@@ -124,8 +124,8 @@ bool QSharedMemoryPrivate::cleanHandle()
 {
     if (hand != 0 && !CloseHandle(hand)) {
         hand = 0;
-        return false;
         setErrorString(QLatin1String("QSharedMemory::cleanHandle"));
+        return false;
     }
     hand = 0;
     return true;
