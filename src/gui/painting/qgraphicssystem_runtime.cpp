@@ -322,7 +322,6 @@ QRuntimeGraphicsSystem::QRuntimeGraphicsSystem()
     : m_windowSurfaceDestroyPolicy(DestroyImmediately),
       m_graphicsSystem(0)
 {
-    QApplicationPrivate::graphics_system_name = QLatin1String("runtime");
     QApplicationPrivate::runtime_graphics_system = true;
 
 #ifdef QT_DEFAULT_RUNTIME_SYSTEM
