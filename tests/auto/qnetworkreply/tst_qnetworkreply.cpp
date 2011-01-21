@@ -47,6 +47,7 @@
 #include <QtCore/QEventLoop>
 #include <QtCore/QFile>
 #include <QtCore/QSharedPointer>
+#include <QtCore/QScopedPointer>
 #include <QtCore/QTemporaryFile>
 #include <QtNetwork/QTcpServer>
 #include <QtNetwork/QTcpSocket>
@@ -410,16 +411,23 @@ public:
     QTcpSocket *client; // always the last one that was received
     QByteArray dataToTransmit;
     QByteArray receivedData;
+    QSemaphore ready;
     bool doClose;
     bool doSsl;
     bool multiple;
     int totalConnections;
 
-    MiniHttpServer(const QByteArray &data, bool ssl = false)
+    MiniHttpServer(const QByteArray &data, bool ssl = false, QThread *thread = 0)
         : client(0), dataToTransmit(data), doClose(true), doSsl(ssl),
           multiple(false), totalConnections(0)
     {
         listen();
+        if (thread) {
+            connect(thread, SIGNAL(started()), this, SLOT(threadStartedSlot()));
+            moveToThread(thread);
+            thread->start();
+            ready.acquire();
+        }
     }
 
 protected:
@@ -491,6 +499,11 @@ public slots:
                 client = 0;
             }
         }
+    }
+
+    void threadStartedSlot()
+    {
+        ready.release();
     }
 };
 
@@ -4478,6 +4491,26 @@ void tst_QNetworkReply::httpProxyCommandsSynchronous_data()
     httpProxyCommands_data();
 }
 
+struct QThreadCleanup
+{
+    static inline void cleanup(QThread *thread)
+    {
+        thread->quit();
+        if (thread->wait(3000))
+            delete thread;
+        else
+            qWarning("thread hung, leaking memory so test can finish");
+    }
+};
+
+struct QDeleteLaterCleanup
+{
+    static inline void cleanup(QObject *o)
+    {
+        o->deleteLater();
+    }
+};
+
 void tst_QNetworkReply::httpProxyCommandsSynchronous()
 {
     QFETCH(QUrl, url);
@@ -4487,11 +4520,9 @@ void tst_QNetworkReply::httpProxyCommandsSynchronous()
     // when using synchronous commands, we need a different event loop for
     // the server thread, because the client is never returning to the
     // event loop
-    MiniHttpServer proxyServer(responseToSend);
-    QThread serverThread;
-    proxyServer.moveToThread(&serverThread);
-    serverThread.start();
-    QNetworkProxy proxy(QNetworkProxy::HttpProxy, "127.0.0.1", proxyServer.serverPort());
+    QScopedPointer<QThread, QThreadCleanup> serverThread(new QThread);
+    QScopedPointer<MiniHttpServer, QDeleteLaterCleanup> proxyServer(new MiniHttpServer(responseToSend, false, serverThread.data()));
+    QNetworkProxy proxy(QNetworkProxy::HttpProxy, "127.0.0.1", proxyServer->serverPort());
 
     manager.setProxy(proxy);
     QNetworkRequest request(url);
@@ -4504,8 +4535,6 @@ void tst_QNetworkReply::httpProxyCommandsSynchronous()
     QNetworkReplyPtr reply = manager.get(request);
     QVERIFY(reply->isFinished()); // synchronous
     manager.setProxy(QNetworkProxy());
-    serverThread.quit();
-    serverThread.wait(3000);
 
     //qDebug() << reply->error() << reply->errorString();
 
@@ -4513,7 +4542,7 @@ void tst_QNetworkReply::httpProxyCommandsSynchronous()
     // especially since it won't succeed in the HTTPS case
     // so just check that the command was correct
 
-    QString receivedHeader = proxyServer.receivedData.left(expectedCommand.length());
+    QString receivedHeader = proxyServer->receivedData.left(expectedCommand.length());
     QCOMPARE(receivedHeader, expectedCommand);
 }
 
