@@ -38,12 +38,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "qwaylandshmsurface.h"
 
 #include <QtCore/qdebug.h>
 #include <QtGui/private/qapplication_p.h>
 
 #include "qwaylanddisplay.h"
-#include "qwaylandwindowsurface.h"
 #include "qwaylandwindow.h"
 
 #include <wayland-client.h>
@@ -104,7 +104,7 @@ QWaylandShmWindowSurface::~QWaylandShmWindowSurface()
 
 QPaintDevice *QWaylandShmWindowSurface::paintDevice()
 {
-    return &mBuffer->mImage;
+    return mBuffer->image();
 }
 
 void QWaylandShmWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
@@ -129,7 +129,7 @@ void QWaylandShmWindowSurface::resize(const QSize &size)
     QWindowSurface::resize(size);
     QImage::Format format = QApplicationPrivate::platformIntegration()->screens().first()->format();
 
-    if (mBuffer != NULL && mBuffer->mImage.size() == size)
+    if (mBuffer != NULL && mBuffer->size() == size)
 	return;
 
     if (mBuffer != NULL)

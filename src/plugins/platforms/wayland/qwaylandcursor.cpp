@@ -42,12 +42,12 @@
 #include "qwaylandcursor.h"
 
 #include "qwaylanddisplay.h"
-#include "qwaylandwindowsurface.h"
 #include "qwaylandinputdevice.h"
+#include "qwaylandshmsurface.h"
 
 #include <QtGui/QImageReader>
 
-#define DATADIR "/usr/share"
+#define DATADIR "/home/jlind/install/share"
 
 static const struct pointer_image {
     const char *filename;
@@ -156,7 +156,7 @@ void QWaylandCursor::changeCursor(QCursor *cursor, QWidget *widget)
 
     QImageReader reader(p->filename);
 
-    if (mBuffer == NULL || mBuffer->mImage.size() != reader.size()) {
+    if (mBuffer == NULL || mBuffer->size() != reader.size()) {
         if (mBuffer)
             delete mBuffer;
 
@@ -164,7 +164,7 @@ void QWaylandCursor::changeCursor(QCursor *cursor, QWidget *widget)
                                         QImage::Format_ARGB32);
     }
 
-    reader.read(&mBuffer->mImage);
+    reader.read(mBuffer->image());
 
     mDisplay->setCursor(mBuffer, p->hotspot_x, p->hotspot_y);
 }

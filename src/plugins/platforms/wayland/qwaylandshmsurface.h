@@ -42,32 +42,23 @@
 #ifndef QWINDOWSURFACE_WAYLAND_H
 #define QWINDOWSURFACE_WAYLAND_H
 
-#include <QGLFramebufferObject>
+#include "qwaylandbuffer.h"
 #include <QtGui/private/qwindowsurface_p.h>
 
 #include <QtGui/QPlatformWindow>
 
-#define MESA_EGL_NO_X11_HEADERS
-#define EGL_EGLEXT_PROTOTYPES
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-
 QT_BEGIN_NAMESPACE
 
 class QWaylandDisplay;
-
-class QWaylandBuffer {
-public:
-    QWaylandBuffer() { }
-    virtual ~QWaylandBuffer() { }
-    struct wl_buffer *mBuffer;
-};
 
 class QWaylandShmBuffer : public QWaylandBuffer {
 public:
     QWaylandShmBuffer(QWaylandDisplay *display,
 		   const QSize &size, QImage::Format format);
     ~QWaylandShmBuffer();
+    QSize size() const { return mImage.size(); }
+    QImage *image() { return &mImage; }
+private:
     QImage mImage;
 };
 
@@ -85,36 +76,6 @@ private:
     QWaylandShmBuffer *mBuffer;
     QWaylandDisplay *mDisplay;
 };
-
-class QWaylandDrmBuffer : public QWaylandBuffer {
-public:
-    QWaylandDrmBuffer(QWaylandDisplay *display,
-		       const QSize &size, QImage::Format format);
-    ~QWaylandDrmBuffer();
-    EGLContext mContext;
-    EGLImageKHR mImage;
-    GLuint mTexture;
-    QWaylandDisplay *mDisplay;
-    QSize mSize;
-    GLuint mFbo;
-};
-
-class QWaylandDrmWindowSurface : public QWindowSurface
-{
-public:
-    QWaylandDrmWindowSurface(QWidget *window, QWaylandDisplay *display);
-    ~QWaylandDrmWindowSurface();
-
-    QPaintDevice *paintDevice();
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
-    void resize(const QSize &size);
-
-private:
-    QWaylandDrmBuffer *mBuffer;
-    QWaylandDisplay *mDisplay;
-    QPaintDevice *mPaintDevice;
-};
-
 
 QT_END_NAMESPACE
 

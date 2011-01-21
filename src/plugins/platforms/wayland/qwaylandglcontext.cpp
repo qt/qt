@@ -1,24 +1,52 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the plugins of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
 #include "qwaylandglcontext.h"
 
 #include "qwaylanddisplay.h"
 #include "qwaylandwindow.h"
-#include "qwaylandwindowsurface.h"
-#include "qfontconfigdatabase.h"
-
-#include <QImageReader>
-#include <QWindowSystemInterface>
-#include <QPlatformCursor>
-#include <QPaintEngine>
+#include "qwaylanddrmsurface.h"
 
 #include <QtGui/QPlatformGLContext>
 #include <QtGui/QPlatformWindowFormat>
-
-#include <QtGui/private/qpixmap_raster_p.h>
-#include <QtGui/QPlatformWindow>
-
-#include <private/qwindowsurface_gl_p.h>
-#include <private/qpixmapdata_gl_p.h>
-#include <private/qpaintengineex_opengl2_p.h>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -27,165 +55,80 @@ extern "C" {
 #include <xf86drm.h>
 }
 
-QWaylandGLContext::QWaylandGLContext(QWaylandDisplay *wd, QWaylandWindow *window, const QPlatformWindowFormat &format)
+Q_GLOBAL_STATIC(QMutex,qt_defaultSharedContextMutex);
+
+EGLint QWaylandGLContext::contextAttibutes[] = {
+    EGL_CONTEXT_CLIENT_VERSION, 2,
+    EGL_NONE
+};
+
+QWaylandGLContext::QWaylandGLContext(QWaylandDisplay *wd, const QPlatformWindowFormat &format)
     : QPlatformGLContext()
     , mFormat(format)
     , mDisplay(wd)
-    , mWindow(window)
-    , parentFbo(0)
-    , parentRbo(0)
 {
+    QPlatformGLContext *sharePlatformContext;
+    if (format.useDefaultSharedContext()) {
+        if (!QPlatformGLContext::defaultSharedContext()) {
+            if (qt_defaultSharedContextMutex()->tryLock()){
+                createDefaultSharedContex(wd);
+                qt_defaultSharedContextMutex()->unlock();
+            } else {
+                qt_defaultSharedContextMutex()->lock(); //wait to the the shared context is created
+                qt_defaultSharedContextMutex()->unlock();
+            }
+        }
+        sharePlatformContext = QPlatformGLContext::defaultSharedContext();
+    } else {
+        sharePlatformContext = format.sharedGLContext();
+    }
+    mFormat.setSharedContext(sharePlatformContext);
+    EGLContext shareEGLContext = EGL_NO_CONTEXT;
+    if (sharePlatformContext)
+        shareEGLContext = static_cast<const QWaylandGLContext*>(sharePlatformContext)->mContext;
+
+    eglBindAPI(EGL_OPENGL_ES_API);
+    mContext = eglCreateContext(mDisplay->eglDisplay(), NULL,
+                                shareEGLContext, contextAttibutes);
+
+    mFormat.setAccum(false);
+    mFormat.setAlphaBufferSize(8);
+    mFormat.setRedBufferSize(8);
+    mFormat.setGreenBufferSize(8);
+    mFormat.setBlueBufferSize(8);
+    mFormat.setDepth(false);
+//    mFormat.setDepthBufferSize(8);
+    mFormat.setStencil(false);
+//    mFormat.setStencilBufferSize(24);
+//    mFormat.setSampleBuffers(false);
+
 }
+
+QWaylandGLContext::QWaylandGLContext()
+    : QPlatformGLContext()
+    , mDisplay(0)
+    , mContext(EGL_NO_CONTEXT)
+{ }
 
 QWaylandGLContext::~QWaylandGLContext()
 {
-    glDeleteRenderbuffers(1, &parentRbo);
-    glDeleteFramebuffers(1, &parentFbo);
+    eglDestroyContext(mDisplay->eglDisplay(),mContext);
 }
 
 void QWaylandGLContext::makeCurrent()
 {
-    QWaylandDrmBuffer *mBuffer = (QWaylandDrmBuffer *)mWindow->getBuffer();
-    QRect geometry = mWindow->geometry();
-
-    if (!mBuffer)
-	return;
-
-    eglMakeCurrent(mDisplay->eglDisplay(), 0, 0, mBuffer->mContext);
-
-    glViewport(0, 0, geometry.width(), geometry.height());
-    glBindFramebuffer(GL_FRAMEBUFFER, mBuffer->mFbo);
-    glBindTexture(GL_TEXTURE_2D, mBuffer->mTexture);
-    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, mBuffer->mImage);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-			   GL_TEXTURE_2D, mBuffer->mTexture, 0);
+    QPlatformGLContext::makeCurrent();
+    eglMakeCurrent(mDisplay->eglDisplay(), EGL_NO_SURFACE, EGL_NO_SURFACE, mContext);
 }
 
 void QWaylandGLContext::doneCurrent()
 {
-}
-
-/* drawTexture - Draw from a texture into a the current framebuffer
- * @rect: GL normalized coords for drawing (between -1.0f and 1.0f)
- * @tex_id: texture source
- * @texSize: size of source rectangle in Qt coords
- * @br: bounding rect for drawing
- */
-static void drawTexture(const QRectF &rect, GLuint tex_id,
-			const QSize &texSize, const QRectF &br)
-{
-    QRectF src = br.isEmpty()
-        ? QRectF(QPointF(), texSize)
-        : QRectF(QPointF(br.x(), texSize.height() - br.bottom()), br.size());
-    qreal width = texSize.width();
-    qreal height = texSize.height();
-
-    src.setLeft(src.left() / width);
-    src.setRight(src.right() / width);
-    src.setTop(src.top() / height);
-    src.setBottom(src.bottom() / height);
-
-    const GLfloat tx1 = src.left();
-    const GLfloat tx2 = src.right();
-    const GLfloat ty1 = src.top();
-    const GLfloat ty2 = src.bottom();
-
-    GLfloat texCoordArray[4*2] = {
-        tx1, ty2, tx2, ty2, tx2, ty1, tx1, ty1
-    };
-
-    GLfloat vertexArray[4*2];
-    extern void qt_add_rect_to_array(const QRectF &r, GLfloat *array);
-    qt_add_rect_to_array(rect, vertexArray);
-
-    glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexArray);
-    glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, texCoordArray);
-
-    glBindTexture(GL_TEXTURE_2D, tex_id);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-    glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
-    glEnableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-    glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
-    glDisableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
+    QPlatformGLContext::doneCurrent();
+    eglMakeCurrent(mDisplay->eglDisplay(), EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 }
 
 void QWaylandGLContext::swapBuffers()
 {
-    QWaylandWindow *mParentWindow = mWindow->getParentWindow();
-    QWaylandDrmBuffer *mBuffer, *mParentBuffer;
-    QRect geometry = mWindow->geometry(), parentGeometry;
-    QGLShaderProgram *blitProgram;
-    QRectF r;
-    qreal w;
-    qreal h;
-
-    if (!mParentWindow) {
-	qDebug("swap without parent widget?\n");
-	return;
-    }
-
-    if (!mParentWindow->surface()) {
-	qDebug("parent has no surface??\n");
-	return;
-    }
-
-    parentGeometry = mParentWindow->geometry();
-    mBuffer = (QWaylandDrmBuffer *)mWindow->getBuffer();
-    mParentBuffer = (QWaylandDrmBuffer *)mParentWindow->getBuffer();
-
-    glDisable(GL_DEPTH_TEST);
-
-    /* These need to be generated against the src context */
-    if (!parentFbo)
-	glGenFramebuffers(1, &parentFbo);
-    if (!parentRbo)
-	glGenRenderbuffers(1, &parentRbo);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, parentFbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, parentRbo);
-    glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER,
-					   mParentBuffer->mImage);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-			      GL_RENDERBUFFER, parentRbo);
-    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, mBuffer->mImage);
-    glViewport(0, 0, parentGeometry.width(), parentGeometry.height());
-
-    blitProgram = QGLEngineSharedShaders::shadersForContext(QGLContext::currentContext())->blitProgram();
-    blitProgram->bind();
-    blitProgram->setUniformValue("imageTexture", 0);
-
-    /* Transform the target rect to the appropriate coords on the parent */
-    w = parentGeometry.width();
-    h = parentGeometry.height();
-
-    r.setLeft((geometry.left() / w) * 2.0f - 1.0f);
-    if (geometry.right() == (parentGeometry.width() - 1))
-	r.setRight(1.0f);
-    else
-	r.setRight((geometry.right() / w) * 2.0f - 1.0f);
-
-    r.setTop((geometry.top() / h) * 2.0f - 1.0f);
-    if (geometry.bottom() == (parentGeometry.height() - 1))
-       r.setBottom(-1.0f);
-    else
-	r.setBottom((geometry.bottom() / h) * 2.0f - 1.0f);
-
-    drawTexture(r, mBuffer->mTexture, mParentWindow->widget()->size(), parentGeometry);
-
-    wl_surface_damage(mParentWindow->surface(), geometry.left(), geometry.top(),
-		      geometry.right(), geometry.bottom());
-    /* restore things to the last valid GL state */
-    makeCurrent();
-    /* hack: avoid tight swapBuffers loops */
-    usleep(20000);
 }
 
 void *QWaylandGLContext::getProcAddress(const QString &string)
@@ -193,13 +136,12 @@ void *QWaylandGLContext::getProcAddress(const QString &string)
     return (void *) eglGetProcAddress(string.toLatin1().data());
 }
 
-QPlatformGLContext *QWaylandWindow::glContext() const
+void QWaylandGLContext::createDefaultSharedContex(QWaylandDisplay *display)
 {
-    if (!mGLContext) {
-        QWaylandWindow *that = const_cast<QWaylandWindow *>(this);
-        that->mGLContext = new QWaylandGLContext(mDisplay, that, widget()->platformWindowFormat());
-    }
-
-    return mGLContext;
+    QWaylandGLContext *defaultSharedContext = new QWaylandGLContext;
+    defaultSharedContext->mDisplay = display;
+    defaultSharedContext->mContext = eglCreateContext(mDisplay->eglDisplay(), NULL,
+                                                      EGL_NO_CONTEXT, contextAttibutes);
+    QPlatformGLContext::setDefaultSharedContext(defaultSharedContext);
 }
 

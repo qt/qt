@@ -15,17 +15,19 @@ SOURCES =   main.cpp \
     qwaylandscreen.cpp
 
 HEADERS =   qwaylandintegration.h \
-            qwaylandwindowsurface.h \
     qwaylandcursor.h \
     qwaylanddisplay.h \
     qwaylandwindow.h \
     qwaylandscreen.h \
-    qwaylandglcontext.h
+    qwaylandglcontext.h \
+    qwaylandshmsurface.h \
+    qwaylanddrmsurface.h \
+    qwaylandbuffer.h
 
 contains(QT_CONFIG, opengl) {
     QT += opengl
 }
-LIBS += -lwayland-client -lxkbcommon -lEGL -lGLESv2
+LIBS += -lwayland-client -lxkbcommon -lEGL
 unix {
 	CONFIG += link_pkgconfig
 	PKGCONFIG += libdrm

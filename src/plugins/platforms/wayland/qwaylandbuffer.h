@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the config.tests of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,42 +39,22 @@
 **
 ****************************************************************************/
 
-#ifndef QWAYLANDGLCONTEXT_H
-#define QWAYLANDGLCONTEXT_H
+#ifndef QWAYLANDBUFFER_H
+#define QWAYLANDBUFFER_H
 
-#include <QtGui/QPlatformGLContext>
+#include <QtCore/QSize>
 
-#include <QtCore/QMutex>
-class QWaylandDisplay;
-class QWaylandWindow;
-class QWaylandDrmWindowSurface;
+#include <wayland-client-protocol.h>
 
-#define MESA_EGL_NO_X11_HEADERS
-#define EGL_EGLEXT_PROTOTYPES
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-
-class QWaylandGLContext : public QPlatformGLContext {
+class QWaylandBuffer {
 public:
-    QWaylandGLContext(QWaylandDisplay *wd, const QPlatformWindowFormat &format);
-    ~QWaylandGLContext();
-    void makeCurrent();
-    void doneCurrent();
-    void swapBuffers();
-    void* getProcAddress(const QString&);
-    QPlatformWindowFormat platformWindowFormat() const { return mFormat; }
+    QWaylandBuffer() { }
+    virtual ~QWaylandBuffer() { }
+    wl_buffer *buffer() {return mBuffer;}
+    virtual QSize size() const = 0;
 
-private:
-    QPlatformWindowFormat mFormat;
-    QWaylandDisplay *mDisplay;
-
-    static EGLint contextAttibutes[];
-    EGLContext mContext;
-
-    void createDefaultSharedContex(QWaylandDisplay *display);
-    QWaylandGLContext();
-
+protected:
+    struct wl_buffer *mBuffer;
 };
 
-
-#endif // QWAYLANDGLCONTEXT_H
+#endif // QWAYLANDBUFFER_H

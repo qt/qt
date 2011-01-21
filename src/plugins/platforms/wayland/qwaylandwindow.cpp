@@ -42,15 +42,19 @@
 #include "qwaylandwindow.h"
 
 #include "qwaylanddisplay.h"
-#include "qwaylandwindowsurface.h"
 #include "qwaylandglcontext.h"
+#include "qwaylandbuffer.h"
+
+#include "qwaylanddrmsurface.h"
 
 #include <QtGui/QWidget>
 #include <QtGui/QWindowSystemInterface>
 
+#include <QDebug>
+
 QWaylandWindow::QWaylandWindow(QWidget *window, QWaylandDisplay *display)
     : QPlatformWindow(window)
-    , mSurface(0)
+    , mSurface(display->createSurface())
     , mDisplay(display)
     , mGLContext(0)
     , mBuffer(0)
@@ -81,9 +85,8 @@ void QWaylandWindow::setParent(const QPlatformWindow *parent)
 void QWaylandWindow::setVisible(bool visible)
 {
     if (visible) {
-        mSurface = mDisplay->createSurface();
         wl_surface_set_user_data(mSurface, this);
-        attach(mBuffer);
+        wl_surface_map_toplevel(mSurface);
     } else {
         wl_surface_destroy(mSurface);
         mSurface = NULL;
@@ -92,12 +95,8 @@ void QWaylandWindow::setVisible(bool visible)
 
 void QWaylandWindow::attach(QWaylandBuffer *buffer)
 {
-    QRect geometry = widget()->geometry();
-
-    mBuffer = buffer;
     if (mSurface) {
-        wl_surface_attach(mSurface, mBuffer->mBuffer,geometry.x(),geometry.y());
-        wl_surface_map_toplevel(mSurface);
+        wl_surface_attach(mSurface, buffer->buffer(),0,0);
     }
 }
 
@@ -110,4 +109,14 @@ void QWaylandWindow::configure(uint32_t time, uint32_t edges,
     QRect geometry = QRect(x, y, width, height);
 
     QWindowSystemInterface::handleGeometryChange(widget(), geometry);
+}
+
+QPlatformGLContext *QWaylandWindow::glContext() const
+{
+    if (!mGLContext) {
+        QWaylandWindow *that = const_cast<QWaylandWindow *>(this);
+        that->mGLContext = new QWaylandGLContext(mDisplay, widget()->platformWindowFormat());
+    }
+
+    return mGLContext;
 }
