@@ -228,9 +228,9 @@ inline QScriptValueList QScriptContextPrivate::scopeChain() const
         } while (!current.IsEmpty());
     }
 
-    if (!parent) {
+    if (frame.IsEmpty()) {
         // Implicit global context
-        list.append(QScriptValuePrivate::get(new QScriptValuePrivate(engine, engine->globalObject())));
+        list.append(QScriptValuePrivate::get(new QScriptValuePrivate(engine, thisObject())));
     }
 
     return list;
