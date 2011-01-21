@@ -23,6 +23,8 @@ include(util/util.pri)
 include(graphicsitems/graphicsitems.pri)
 include(qml/qml.pri)
 include(debugger/debugger.pri)
+include(scenegraph/scenegraph.pri)
+include(items/items.pri)
 
 symbian: {
     TARGET.UID3=0x2001E623

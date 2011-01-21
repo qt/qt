@@ -101,6 +101,8 @@ QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(xhrDump, QML_XHR_DUMP);
 
+namespace {
+
 class DocumentImpl;
 class NodeImpl 
 {
@@ -322,6 +324,8 @@ public:
     static QScriptValue prototype(QScriptEngine *);
     static QScriptValue load(QScriptEngine *engine, const QByteArray &data);
 };
+
+}
 
 QT_END_NAMESPACE
 
