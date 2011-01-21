@@ -58,6 +58,8 @@ QByteArray QDeclarativeDebugData::toByteArray() const
     ds << time << messageType << detailType;
     if (messageType == (int)QDeclarativeDebugTrace::RangeData)
         ds << detailData;
+    if (messageType == (int)QDeclarativeDebugTrace::RangeLocation)
+        ds << detailData << line;
     return data;
 }
 
@@ -92,6 +94,18 @@ void QDeclarativeDebugTrace::rangeData(RangeType t, const QUrl &data)
         traceInstance()->rangeDataImpl(t, data);
 }
 
+void QDeclarativeDebugTrace::rangeLocation(RangeType t, const QString &fileName, int line)
+{
+    if (QDeclarativeDebugService::isDebuggingEnabled())
+        traceInstance()->rangeLocationImpl(t, fileName, line);
+}
+
+void QDeclarativeDebugTrace::rangeLocation(RangeType t, const QUrl &fileName, int line)
+{
+    if (QDeclarativeDebugService::isDebuggingEnabled())
+        traceInstance()->rangeLocationImpl(t, fileName, line);
+}
+
 void QDeclarativeDebugTrace::endRange(RangeType t)
 {
     if (QDeclarativeDebugService::isDebuggingEnabled()) 
@@ -103,7 +117,7 @@ void QDeclarativeDebugTrace::addEventImpl(EventType event)
     if (status() != Enabled || !m_enabled)
         return;
 
-    QDeclarativeDebugData ed = {m_timer.elapsed(), (int)Event, (int)event, QString()};
+    QDeclarativeDebugData ed = {m_timer.elapsed(), (int)Event, (int)event, QString(), -1};
     processMessage(ed);
 }
 
@@ -112,7 +126,7 @@ void QDeclarativeDebugTrace::startRangeImpl(RangeType range)
     if (status() != Enabled || !m_enabled)
         return;
 
-    QDeclarativeDebugData rd = {m_timer.elapsed(), (int)RangeStart, (int)range, QString()};
+    QDeclarativeDebugData rd = {m_timer.elapsed(), (int)RangeStart, (int)range, QString(), -1};
     processMessage(rd);
 }
 
@@ -121,7 +135,7 @@ void QDeclarativeDebugTrace::rangeDataImpl(RangeType range, const QString &rData
     if (status() != Enabled || !m_enabled)
         return;
 
-    QDeclarativeDebugData rd = {m_timer.elapsed(), (int)RangeData, (int)range, rData};
+    QDeclarativeDebugData rd = {m_timer.elapsed(), (int)RangeData, (int)range, rData, -1};
     processMessage(rd);
 }
 
@@ -130,7 +144,25 @@ void QDeclarativeDebugTrace::rangeDataImpl(RangeType range, const QUrl &rData)
     if (status() != Enabled || !m_enabled)
         return;
 
-    QDeclarativeDebugData rd = {m_timer.elapsed(), (int)RangeData, (int)range, rData.toEncoded(QUrl::FormattingOption(0x100))};
+    QDeclarativeDebugData rd = {m_timer.elapsed(), (int)RangeData, (int)range, rData.toEncoded(QUrl::FormattingOption(0x100)), -1};
+    processMessage(rd);
+}
+
+void QDeclarativeDebugTrace::rangeLocationImpl(RangeType range, const QString &fileName, int line)
+{
+    if (status() != Enabled || !m_enabled)
+        return;
+
+    QDeclarativeDebugData rd = {m_timer.elapsed(), (int)RangeLocation, (int)range, fileName, line};
+    processMessage(rd);
+}
+
+void QDeclarativeDebugTrace::rangeLocationImpl(RangeType range, const QUrl &fileName, int line)
+{
+    if (status() != Enabled || !m_enabled)
+        return;
+
+    QDeclarativeDebugData rd = {m_timer.elapsed(), (int)RangeLocation, (int)range, fileName.toEncoded(QUrl::FormattingOption(0x100)), line};
     processMessage(rd);
 }
 
@@ -139,7 +171,7 @@ void QDeclarativeDebugTrace::endRangeImpl(RangeType range)
     if (status() != Enabled || !m_enabled)
         return;
 
-    QDeclarativeDebugData rd = {m_timer.elapsed(), (int)RangeEnd, (int)range, QString()};
+    QDeclarativeDebugData rd = {m_timer.elapsed(), (int)RangeEnd, (int)range, QString(), -1};
     processMessage(rd);
 }
 

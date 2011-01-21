@@ -51,6 +51,7 @@
 #include "private/qdeclarativeglobal_p.h"
 #include "private/qdeclarativedebugtrace_p.h"
 
+#include <QtCore/qstringbuilder.h>
 #include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -166,8 +167,13 @@ QDeclarativeBoundSignal *QDeclarativeBoundSignal::cast(QObject *o)
 int QDeclarativeBoundSignal::qt_metacall(QMetaObject::Call c, int id, void **a)
 {
     if (c == QMetaObject::InvokeMetaMethod && id == evaluateIdx) {
-        QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::HandlingSignal);
-        QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::HandlingSignal, QLatin1String(m_signal.signature()) + QLatin1String(": ") + (m_expression ? m_expression->expression() : QLatin1String("")));
+        if (!m_expression)
+            return -1;
+        if (QDeclarativeDebugService::isDebuggingEnabled()) {
+            QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::HandlingSignal);
+            QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::HandlingSignal, QLatin1String(m_signal.signature()) % QLatin1String(": ") % m_expression->expression());
+            QDeclarativeDebugTrace::rangeLocation(QDeclarativeDebugTrace::HandlingSignal, m_expression->sourceFile(), m_expression->lineNumber());
+        }
         m_isEvaluating = true;
         if (!m_paramsValid) {
             if (!m_signal.parameterTypes().isEmpty())

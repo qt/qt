@@ -54,12 +54,13 @@ struct QDeclarativeDebugData
     qint64 time;
     int messageType;
     int detailType;
-    QString detailData;
+
+    //###
+    QString detailData; //used by RangeData and RangeLocation
+    int line;           //used by RangeLocation
 
     QByteArray toByteArray() const;
 };
-
-Q_DECLARE_TYPEINFO(QDeclarativeDebugData,Q_PRIMITIVE_TYPE);
 
 class QUrl;
 class Q_AUTOTEST_EXPORT QDeclarativeDebugTrace : public QDeclarativeDebugService
@@ -69,6 +70,7 @@ public:
         Event,
         RangeStart,
         RangeData,
+        RangeLocation,
         RangeEnd,
         Complete,
 
@@ -98,6 +100,8 @@ public:
     static void startRange(RangeType);
     static void rangeData(RangeType, const QString &);
     static void rangeData(RangeType, const QUrl &);
+    static void rangeLocation(RangeType, const QString &, int);
+    static void rangeLocation(RangeType, const QUrl &, int);
     static void endRange(RangeType);
 
     QDeclarativeDebugTrace();
@@ -108,6 +112,8 @@ private:
     void startRangeImpl(RangeType);
     void rangeDataImpl(RangeType, const QString &);
     void rangeDataImpl(RangeType, const QUrl &);
+    void rangeLocationImpl(RangeType, const QString &, int);
+    void rangeLocationImpl(RangeType, const QUrl &, int);
     void endRangeImpl(RangeType);
     void processMessage(const QDeclarativeDebugData &);
     void sendMessages();

@@ -298,6 +298,7 @@ public:
     {
         QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Binding);
         QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::Binding, bind->expression());
+        QDeclarativeDebugTrace::rangeLocation(QDeclarativeDebugTrace::Binding, bind->sourceFile(), bind->lineNumber());
     }
 
     ~QDeclarativeBindingProfiler()

@@ -964,8 +964,14 @@ Q_AUTOTEST_EXPORT void qmlExecuteDeferred(QObject *object)
     QDeclarativeData *data = QDeclarativeData::get(object);
 
     if (data && data->deferredComponent) {
-        QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Creating);
-        QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::Creating, QLatin1String("Deferred Creation:") + object->metaObject()->className());
+        if (QDeclarativeDebugService::isDebuggingEnabled()) {
+            QDeclarativeDebugTrace::startRange(QDeclarativeDebugTrace::Creating);
+            QDeclarativeType *type = QDeclarativeMetaType::qmlType(object->metaObject());
+            QString typeName = type ? QLatin1String(type->qmlTypeName()) : QString::fromLatin1(object->metaObject()->className());
+            QDeclarativeDebugTrace::rangeData(QDeclarativeDebugTrace::Creating, typeName);
+            if (data->outerContext)
+                QDeclarativeDebugTrace::rangeLocation(QDeclarativeDebugTrace::Creating, data->outerContext->url, data->lineNumber);
+        }
         QDeclarativeEnginePrivate *ep = QDeclarativeEnginePrivate::get(data->context->engine);
 
         QDeclarativeComponentPrivate::ConstructionState state;
