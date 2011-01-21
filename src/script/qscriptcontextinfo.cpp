@@ -31,6 +31,12 @@
 
 #include <qdebug.h>
 #include "qscriptisolate_p.h"
+#include "qscriptengine_p.h"
+#include "qscriptengine_impl_p.h"
+#include "qscriptcontext_p.h"
+#include "qscriptcontext_impl_p.h"
+#include "qscriptstring_p.h"
+#include "qscriptstring_impl_p.h"
 
 QT_BEGIN_NAMESPACE
 
