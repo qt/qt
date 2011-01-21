@@ -4803,13 +4803,8 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &qscrollRect)
         }
 
         if (isAlien) {
-            // Since q is alien, we need to translate the scroll rect:
-            QPoint widgetTopLeftInsideNative = nativeWidget->mapFromGlobal(q->mapToGlobal(QPoint()));
-            QPoint widgetBottomRightInsideNative = nativeWidget->mapFromGlobal(q->mapToGlobal(q->rect().bottomRight()));
-            QPoint scrollTopLeftInsideNative = nativeWidget->mapFromGlobal(q->mapToGlobal(validScrollRect.topLeft()));
-            QPoint scrollBottomRightInsideNative = nativeWidget->mapFromGlobal(q->mapToGlobal(validScrollRect.bottomRight()));
-
             // Adjust the scroll rect to the location as seen from the native parent:
+            QPoint scrollTopLeftInsideNative = nativeWidget->mapFromGlobal(q->mapToGlobal(validScrollRect.topLeft()));
             validScrollRect.moveTo(scrollTopLeftInsideNative);
         }
 
