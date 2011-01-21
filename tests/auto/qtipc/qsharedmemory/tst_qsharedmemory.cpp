@@ -358,7 +358,8 @@ void tst_QSharedMemory::lock()
     QVERIFY(shm.lock());
     QTest::ignoreMessage(QtWarningMsg, "QSharedMemory::lock: already locked");
     QVERIFY(shm.lock());
-    // don't lock forever
+    // we didn't unlock(), so ignore the warning from auto-detach in destructor
+    QTest::ignoreMessage(QtWarningMsg, "QSharedMemory::lock: already locked");
 }
 
 /*!
