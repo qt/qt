@@ -4667,8 +4667,10 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &qscrollRect)
         accelEnv = qgetenv("QT_NO_FAST_SCROLL").toInt() == 0;
     }
 
-    // Scroll the whole widget instead if qscrollRect is not valid:
+    // Scroll the whole widget if qscrollRect is not valid:
     QRect validScrollRect = qscrollRect.isValid() ? qscrollRect : q->rect();
+    validScrollRect &= clipRect();
+
     // If q is overlapped by other widgets, we cannot just blit pixels since
     // this will move overlapping widgets as well. In case we just update:
     const bool overlapped = isOverlapped(validScrollRect.translated(data.crect.topLeft()));
@@ -4809,34 +4811,15 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &qscrollRect)
 
             // Adjust the scroll rect to the location as seen from the native parent:
             validScrollRect.moveTo(scrollTopLeftInsideNative);
-
-            // Ensure that that the destination rect of the
-            // scroll doesn't draw outside of q's geometry:
-            if (dy != 0) {
-                if (scrollTopLeftInsideNative.y() + dy < widgetTopLeftInsideNative.y()) {
-                    // Scrolling outside top
-                    validScrollRect.setTop(widgetTopLeftInsideNative.y() - dy);
-                } else if (scrollBottomRightInsideNative.y() + dy > widgetBottomRightInsideNative.y()) {
-                    // Scrolling outside bottom
-                    validScrollRect.setBottom(widgetBottomRightInsideNative.y() - dy);
-                }
-            }
-
-            if (dx != 0) {
-                if (scrollTopLeftInsideNative.x() + dx < widgetTopLeftInsideNative.x()) {
-                    // Scrolling outside left edge
-                    validScrollRect.setLeft(widgetTopLeftInsideNative.x() - dx);
-                } else if (scrollBottomRightInsideNative.x() + dx > widgetBottomRightInsideNative.x()) {
-                    // Scrolling outside right edge
-                    validScrollRect.setRight(widgetBottomRightInsideNative.x() - dx);
-                }
-            }
         }
 
-        // Now, scroll the pixels:
+        // Make the pixel copy rect within the validScrollRect bounds:
         NSRect nsscrollRect = NSMakeRect(
-            validScrollRect.x(), validScrollRect.y(),
-            validScrollRect.width(), validScrollRect.height());
+            validScrollRect.x() + (dx < 0 ? -dx : 0),
+            validScrollRect.y() + (dy < 0 ? -dy : 0),
+            validScrollRect.width() + (dx > 0 ? -dx : 0),
+            validScrollRect.height() + (dy > 0 ? -dy : 0));
+
         NSSize deltaSize = NSMakeSize(dx, dy);
         [view scrollRect:nsscrollRect by:deltaSize];
 

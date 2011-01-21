@@ -93,9 +93,11 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifdef QT_MAC_USE_COCOA
 // Cmd + left mousebutton should produce a right button
 //  press (mainly for mac users with one-button mice):
 static bool qt_leftButtonIsRightButton = false;
+#endif
 
 Q_GLOBAL_STATIC(QMacWindowFader, macwindowFader);
 
