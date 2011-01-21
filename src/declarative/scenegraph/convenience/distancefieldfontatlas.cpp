@@ -261,7 +261,11 @@ bool DistanceFieldFontAtlas::useDistanceFieldForFont(const QFont &font)
         return a.distanceFieldAvailable();
     }
 #else
-    qWarning("Warning: DistanceFieldGlyphNode is not implemented yet on Windows and Mac.");
+    static bool warningPrinted = false;
+    if (!warningPrinted) {
+        warningPrinted = true;
+        qWarning("Warning: DistanceFieldGlyphNode is not implemented yet on Windows and Mac.");
+    }
 #endif
     return false;
 }
