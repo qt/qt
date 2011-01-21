@@ -223,7 +223,9 @@ QSymbianSocketManager::QSymbianSocketManager() :
     // ### In future this could be changed to KAfInet6 when that is more common than IPv4
     preferences.iAddrFamily = KAfInet;
     preferences.iProtocol = KProtocolInetIp;
-    qt_symbian_throwIfError(iSocketServ.Connect(preferences));
+    //use global message pool, as we do not know how many sockets app will use
+    //TODO: is this the right choice?
+    qt_symbian_throwIfError(iSocketServ.Connect(preferences, -1));
     qt_symbian_throwIfError(iSocketServ.ShareAuto());
 }
 
