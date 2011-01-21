@@ -161,15 +161,17 @@ void DistanceFieldTextMaterialData::updateEffectState(Renderer *renderer, Abstra
             || oldMaterial->texture()->textureId() != material->texture()->textureId()) {
         renderer->setTexture(0, material->texture());
 
-        // Set the mag/min filters to be linear. We only need to do this when the texture
-        // has been recreated.
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        if (material->updateTextureFiltering()) {
+            // Set the mag/min filters to be linear. We only need to do this when the texture
+            // has been recreated.
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        }
     }
 }
 
 DistanceFieldTextMaterial::DistanceFieldTextMaterial()
-    : m_texture(0), m_opacity(1.0), m_scale(1.0)
+    : m_texture(0), m_opacity(1.0), m_scale(1.0), m_dirtyTexture(false)
 {
    setFlags(Blending);
 }
