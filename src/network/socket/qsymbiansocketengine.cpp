@@ -59,6 +59,8 @@
 # include "qtcpserver.h"
 #endif
 
+#include <QCoreApplication>
+
 #include <qabstracteventdispatcher.h>
 #include <qsocketnotifier.h>
 #include <qnetworkinterface.h>
@@ -1576,6 +1578,41 @@ qint64 QSymbianSocketEngine::bytesToWrite() const
     return 0;
 }
 
+//TODO: is defining PostThreadChangeEvent as QEvent::User + 1 safe?
+//TODO: would QMetaObject::invokeMethod(obj, "postThreadChangeSlot", Qt::QueuedConnection) be better?
+//TODO: if QTBUG-16787 is implemented, use that instead
+bool QSymbianSocketEngine::event(QEvent* ev)
+{
+    Q_D(QSymbianSocketEngine);
+    switch (ev->type()) {
+    case QEvent::ThreadChange:
+        if (d->asyncSelect) {
+            delete d->asyncSelect;
+            d->asyncSelect = 0;
+            QEvent *postThreadChangeEvent = new QEvent(PostThreadChangeEvent);
+            QCoreApplication::postEvent(this, postThreadChangeEvent);
+        }
+        return true;
+    case PostThreadChangeEvent:
+        // recreate select in new thread
+        d->asyncSelect = q_check_ptr(new QAsyncSelect(0, d->nativeSocket, this));
+        if (d->readNotifier) {
+            d->asyncSelect->setReadNotifier(static_cast<QReadNotifier*>(d->readNotifier));
+            setReadNotificationEnabled(d->readNotifier->isEnabled());
+        }
+        if (d->writeNotifier) {
+            d->asyncSelect->setWriteNotifier(static_cast<QWriteNotifier*>(d->writeNotifier));
+            setReadNotificationEnabled(d->writeNotifier->isEnabled());
+        }
+        if (d->exceptNotifier) {
+            d->asyncSelect->setExceptionNotifier(static_cast<QExceptionNotifier*>(d->exceptNotifier));
+            setReadNotificationEnabled(d->exceptNotifier->isEnabled());
+        }
+        return true;
+    }
+    return QAbstractSocketEngine::event(ev);
+}
+
 QAsyncSelect::QAsyncSelect(QAbstractEventDispatcher *dispatcher, RSocket& sock, QSymbianSocketEngine *parent)
     : CActive(CActive::EPriorityStandard),
       m_inSocketEvent(false),
@@ -1631,11 +1668,11 @@ void QAsyncSelect::run()
     m_inSocketEvent = true;
     m_selectBuf() &= m_selectFlags; //the select ioctl reports everything, so mask to only what we requested
     //TODO: KSockSelectReadContinuation does what?
-    if (iReadN && (m_selectBuf() & KSockSelectRead)) {
+    if (iReadN && ((m_selectBuf() & KSockSelectRead) || iStatus != KErrNone)) {
         QEvent e(QEvent::SockAct);
         iReadN->event(&e);
     }
-    if (iWriteN && (m_selectBuf() & KSockSelectWrite)) {
+    if (iWriteN && ((m_selectBuf() & KSockSelectWrite) || iStatus != KErrNone)) {
         QEvent e(QEvent::SockAct);
         iWriteN->event(&e);
     }
@@ -1681,7 +1718,8 @@ void QAsyncSelect::IssueRequest()
         m_selectFlags = selectFlags;
     }
     if (m_selectFlags && !IsActive()) {
-        m_selectBuf() = m_selectFlags;
+        //always request errors (write notification does not complete on connect errors)
+        m_selectBuf() = m_selectFlags | KSockSelectExcept;
         m_socket.Ioctl(KIOctlSelect, iStatus, &m_selectBuf, KSOLSocket);
         SetActive();
     }

@@ -135,6 +135,10 @@ public:
     bool isExceptionNotificationEnabled() const;
     void setExceptionNotificationEnabled(bool enable);
 
+    bool event(QEvent* ev);
+
+    static const QEvent::Type PostThreadChangeEvent = (QEvent::Type)(QEvent::User + 1);
+
 public Q_SLOTS:
     // TODO: Why do we do this? This is private Qt implementation stuff anyway, no need for it
     // non-virtual override;
