@@ -98,8 +98,7 @@ int QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode)
     if (key.isEmpty())
         return 0;
 
-    QString safeName = makeKeyFileName();
-    TPtrC name(qt_QString2TPtrC(safeName));
+    TPtrC name(qt_QString2TPtrC(fileName));
     int err = KErrAlreadyExists;
     int tryCount = 10;
     // Sort out race conditions by retrying several times until existing handle is acquired.
