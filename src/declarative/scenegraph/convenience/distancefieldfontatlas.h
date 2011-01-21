@@ -44,11 +44,11 @@
 
 #include <private/qfont_p.h>
 #include <private/qfontengine_p.h>
-#include "qsgtexturemanager.h"
+#include <QtDeclarative/qsgtexturemanager.h>
 
 void qt_disableFontHinting(QFont &font);
 
-class DistanceFieldFontAtlas
+class Q_DECLARATIVE_EXPORT DistanceFieldFontAtlas
 {
 public:
     DistanceFieldFontAtlas(const QFont &font);
