@@ -672,7 +672,9 @@ QDeclarativeColorAnimation::~QDeclarativeColorAnimation()
 
     \qml
     Item {
-        states: [ ... ]
+        states: [
+            // States are defined here...
+        ]
 
         transition: Transition {
             NumberAnimation { from: "#c0c0c0"; duration: 2000 }

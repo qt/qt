@@ -46,74 +46,72 @@ Rectangle {
     width: childrenRect.width
     height: childrenRect.height
 
-Row {
+    Row {
+        //! [intro]
+        Rectangle {
+            width: 100; height: 100
+            color: "green"
 
-//! [intro]
-Rectangle { 
-    width: 100; height: 100
-    color: "green"
-
-    MouseArea { 
-        anchors.fill: parent
-        onClicked: { parent.color = 'red' }
-    }
-}
-//! [intro]
-
-//! [intro-extended]
-Rectangle {
-    width: 100; height: 100
-    color: "green"
-
-    MouseArea {
-        anchors.fill: parent
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
-        onClicked: {
-            if (mouse.button == Qt.RightButton)
-                parent.color = 'blue';
-            else
-                parent.color = 'red';
+            MouseArea {
+                anchors.fill: parent
+                onClicked: { parent.color = 'red' }
+            }
         }
-    }
-}
-//! [intro-extended]
+        //! [intro]
 
-//! [drag]
-Rectangle {
-    id: container
-    width: 600; height: 200
+        //! [intro-extended]
+        Rectangle {
+            width: 100; height: 100
+            color: "green"
 
-    Rectangle {
-        id: rect
-        width: 50; height: 50
-        color: "red"
-        opacity: (600.0 - rect.x) / 600
-
-        MouseArea {
-            anchors.fill: parent
-            drag.target: rect
-            drag.axis: Drag.XAxis
-            drag.minimumX: 0
-            drag.maximumX: container.width - rect.width
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                onClicked: {
+                    if (mouse.button == Qt.RightButton)
+                        parent.color = 'blue';
+                    else
+                        parent.color = 'red';
+                }
+            }
         }
+        //! [intro-extended]
+
+        //! [drag]
+        Rectangle {
+            id: container
+            width: 600; height: 200
+
+            Rectangle {
+                id: rect
+                width: 50; height: 50
+                color: "red"
+                opacity: (600.0 - rect.x) / 600
+
+                MouseArea {
+                    anchors.fill: parent
+                    drag.target: rect
+                    drag.axis: Drag.XAxis
+                    drag.minimumX: 0
+                    drag.maximumX: container.width - rect.width
+                }
+            }
+        }
+        //! [drag]
+
+        //! [mousebuttons]
+        Text {
+            text: mouseArea.pressedButtons & Qt.RightButton ? "right" : ""
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+
+            MouseArea {
+                id: mouseArea
+                anchors.fill: parent
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
+            }
+        }
+        //! [mousebuttons]
+
     }
-}
-//! [drag]
-
-//! [mousebuttons]
-Text {
-    text: mouseArea.pressedButtons & Qt.RightButton ? "right" : ""
-    horizontalAlignment: Text.AlignHCenter
-    verticalAlignment: Text.AlignVCenter
-
-    MouseArea {
-        id: mouseArea
-        anchors.fill: parent
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
-    }
-}
-//! [mousebuttons]
-
-}
-
 }
