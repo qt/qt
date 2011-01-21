@@ -4828,7 +4828,7 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &qscrollRect)
         const QVector<QRect> &dirtyRectsToScroll = dirtyOnWidget.rects();
         for (int i=0; i<dirtyRectsToScroll.size(); ++i) {
             QRect qdirtyRect = dirtyRectsToScroll[i];
-            qdirtyRect.moveBy(dx, dy);
+            qdirtyRect.translate(dx, dy);
             update_sys(qdirtyRect);
         }
 
