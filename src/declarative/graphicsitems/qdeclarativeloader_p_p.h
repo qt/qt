@@ -72,13 +72,11 @@ public:
     void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry);
     void clear();
     void initResize();
-    void load();
 
     QUrl source;
     QGraphicsObject *item;
     QDeclarativeComponent *component;
     bool ownComponent : 1;
-    bool isComponentComplete : 1;
 
     void _q_sourceLoaded();
     void _q_updateSize(bool loaderGeometryChanged = true);
