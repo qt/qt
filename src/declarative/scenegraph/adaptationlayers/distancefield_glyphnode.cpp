@@ -42,7 +42,7 @@
 #include "distancefield_glyphnode.h"
 #include "distancefield_glyphnode_p.h"
 #include "utilities.h"
-#include "distancefieldfontatlas.h"
+#include "distancefieldfontatlas_p.h"
 
 #include <QtCore/qfileinfo.h>
 

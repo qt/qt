@@ -14,7 +14,7 @@ HEADERS += $$PWD/coreapi/geometry.h \
     $$PWD/coreapi/qsgtexturemanager.h \
     $$PWD/coreapi/qsgtexturemanager_p.h \
     $$PWD/coreapi/qsgcontext.h \
-    $$PWD/convenience/distancefieldfontatlas.h
+    $$PWD/convenience/distancefieldfontatlas_p.h
 
 SOURCES += $$PWD/coreapi/geometry.cpp \
     $$PWD/coreapi/material.cpp \

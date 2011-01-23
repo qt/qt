@@ -43,7 +43,7 @@
 #include "qsgtext_p.h"
 #include "qsgtext_p_p.h"
 
-#include "distancefieldfontatlas.h"
+#include "distancefieldfontatlas_p.h"
 #include "qsgcontext.h"
 #include "adaptationlayer.h"
 #include "qsgtextnode_p.h"

@@ -45,8 +45,6 @@
 #include <QObject>
 #include <qabstractanimation.h>
 
-#include <QGLContext>
-
 #include "node.h"
 
 class QSGContextPrivate;
@@ -55,6 +53,8 @@ class TextureNodeInterface;
 class GlyphNodeInterface;
 class Renderer;
 class QSGTextureManager;
+
+class QGLContext;
 
 class Q_DECLARATIVE_EXPORT QSGContext : public QObject
 {

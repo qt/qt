@@ -49,13 +49,14 @@
 #include "default/default_texturenode.h"
 #include "default/default_glyphnode.h"
 #include "distancefield_glyphnode.h"
-#include "distancefieldfontatlas.h"
+#include "distancefieldfontatlas_p.h"
 
 #include "qsgtexturemanager.h"
 #include "qsgpartialuploadtexturemanager.h"
 #include "qsgthreadedtexturemanager.h"
 
 #include <QApplication>
+#include <QGLContext>
 
 //#ifdef Q_WS_MAC
 //#include "mactexturemanager.h"

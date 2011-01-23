@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "distancefieldfontatlas.h"
+#include "distancefieldfontatlas_p.h"
 
 #if !defined(Q_WS_WIN) && !defined(Q_WS_MAC)
 #include <private/qfontengine_ft_p.h>
