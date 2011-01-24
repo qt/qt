@@ -101,6 +101,8 @@ private slots:
     void clickLink();
 
     void QTBUG_12291();
+    void implicitSize_data();
+    void implicitSize();
 
 private:
     QStringList standard;
@@ -1048,6 +1050,33 @@ void tst_qdeclarativetext::lineCount()
     QCOMPARE(myText->lineCount(), 2);
     QCOMPARE(myText->truncated(), true);
     QCOMPARE(myText->maximumLineCount(), 2);
+}
+
+void tst_qdeclarativetext::implicitSize_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<QString>("wrap");
+    QTest::newRow("plain") << "The quick red fox jumped over the lazy brown dog" << "Text.NoWrap";
+    QTest::newRow("richtext") << "<b>The quick red fox jumped over the lazy brown dog</b>" << "Text.NoWrap";
+    QTest::newRow("plain_wrap") << "The quick red fox jumped over the lazy brown dog" << "Text.Wrap";
+    QTest::newRow("richtext_wrap") << "<b>The quick red fox jumped over the lazy brown dog</b>" << "Text.Wrap";
+}
+
+void tst_qdeclarativetext::implicitSize()
+{
+    QFETCH(QString, text);
+    QFETCH(QString, wrap);
+    QString componentStr = "import QtQuick 1.1\nText { text: \"" + text + "\"; width: 50; wrapMode: " + wrap + " }";
+    QDeclarativeComponent textComponent(&engine);
+    textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeText *textObject = qobject_cast<QDeclarativeText*>(textComponent.create());
+
+    QVERIFY(textObject->width() < textObject->implicitWidth());
+    QVERIFY(textObject->height() == textObject->implicitHeight());
+
+    textObject->resetWidth();
+    QVERIFY(textObject->width() == textObject->implicitWidth());
+    QVERIFY(textObject->height() == textObject->implicitHeight());
 }
 
 QTEST_MAIN(tst_qdeclarativetext)

@@ -54,7 +54,7 @@
 //
 
 #include "qdeclarativeitem.h"
-#include "private/qdeclarativeitem_p.h"
+#include "private/qdeclarativeimplicitsizeitem_p_p.h"
 #include "private/qdeclarativetextlayout_p.h"
 
 #include <qdeclarative.h>
@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
 class QTextLayout;
 class QTextDocumentWithImageResources;
 
-class QDeclarativeTextPrivate : public QDeclarativeItemPrivate
+class QDeclarativeTextPrivate : public QDeclarativeImplicitSizeItemPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeText)
 public:
@@ -107,9 +107,12 @@ public:
     bool singleline:1;
     bool cacheAllTextAsImage:1;
     bool internalWidthUpdate:1;
+    bool requireImplicitWidth:1;
 
     QSize layedOutTextSize;
-    
+    QSize paintedSize;
+    qreal naturalWidth;
+    virtual qreal implicitWidth() const;
     void ensureDoc();
     QPixmap textDocumentImage(bool drawStyle);
     QTextDocumentWithImageResources *doc;

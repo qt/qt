@@ -76,7 +76,7 @@ QT_BEGIN_NAMESPACE
     \sa TextEdit, Text, {declarative/text/textselection}{Text Selection example}
 */
 QDeclarativeTextInput::QDeclarativeTextInput(QDeclarativeItem* parent)
-    : QDeclarativePaintedItem(*(new QDeclarativeTextInputPrivate), parent)
+    : QDeclarativeImplicitSizePaintedItem(*(new QDeclarativeTextInputPrivate), parent)
 {
     Q_D(QDeclarativeTextInput);
     d->init();

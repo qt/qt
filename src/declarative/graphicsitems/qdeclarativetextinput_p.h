@@ -43,7 +43,7 @@
 #define QDECLARATIVETEXTINPUT_H
 
 #include "private/qdeclarativetext_p.h"
-#include "private/qdeclarativepainteditem_p.h"
+#include "private/qdeclarativeimplicitsizeitem_p.h"
 
 #include <QGraphicsSceneMouseEvent>
 #include <QIntValidator>
@@ -58,7 +58,7 @@ QT_MODULE(Declarative)
 
 class QDeclarativeTextInputPrivate;
 class QValidator;
-class Q_AUTOTEST_EXPORT QDeclarativeTextInput : public QDeclarativePaintedItem
+class Q_AUTOTEST_EXPORT QDeclarativeTextInput : public QDeclarativeImplicitSizePaintedItem
 {
     Q_OBJECT
     Q_ENUMS(HAlignment)

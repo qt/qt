@@ -39,51 +39,54 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVELOADER_P_H
-#define QDECLARATIVELOADER_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "private/qdeclarativeloader_p.h"
-
+#include "private/qdeclarativeimplicitsizeitem_p.h"
 #include "private/qdeclarativeimplicitsizeitem_p_p.h"
-#include "private/qdeclarativeitemchangelistener_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeContext;
-class QDeclarativeLoaderPrivate : public QDeclarativeImplicitSizeItemPrivate, public QDeclarativeItemChangeListener
+void QDeclarativeImplicitSizeItemPrivate::implicitWidthChanged()
 {
-    Q_DECLARE_PUBLIC(QDeclarativeLoader)
+    Q_Q(QDeclarativeImplicitSizeItem);
+    emit q->implicitWidthChanged();
+}
 
-public:
-    QDeclarativeLoaderPrivate();
-    ~QDeclarativeLoaderPrivate();
+void QDeclarativeImplicitSizeItemPrivate::implicitHeightChanged()
+{
+    Q_Q(QDeclarativeImplicitSizeItem);
+    emit q->implicitHeightChanged();
+}
 
-    void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry);
-    void clear();
-    void initResize();
-    void load();
+QDeclarativeImplicitSizeItem::QDeclarativeImplicitSizeItem(QDeclarativeItem *parent)
+    : QDeclarativeItem(*(new QDeclarativeImplicitSizeItemPrivate), parent)
+{
+}
 
-    QUrl source;
-    QGraphicsObject *item;
-    QDeclarativeComponent *component;
-    bool ownComponent : 1;
-    bool isComponentComplete : 1;
+QDeclarativeImplicitSizeItem::QDeclarativeImplicitSizeItem(QDeclarativeImplicitSizeItemPrivate &dd, QDeclarativeItem *parent)
+    : QDeclarativeItem(dd, parent)
+{
+}
 
-    void _q_sourceLoaded();
-    void _q_updateSize(bool loaderGeometryChanged = true);
-};
+
+void QDeclarativeImplicitSizePaintedItemPrivate::implicitWidthChanged()
+{
+    Q_Q(QDeclarativeImplicitSizePaintedItem);
+    emit q->implicitWidthChanged();
+}
+
+void QDeclarativeImplicitSizePaintedItemPrivate::implicitHeightChanged()
+{
+    Q_Q(QDeclarativeImplicitSizePaintedItem);
+    emit q->implicitHeightChanged();
+}
+
+QDeclarativeImplicitSizePaintedItem::QDeclarativeImplicitSizePaintedItem(QDeclarativeItem *parent)
+    : QDeclarativePaintedItem(*(new QDeclarativeImplicitSizePaintedItemPrivate), parent)
+{
+}
+
+QDeclarativeImplicitSizePaintedItem::QDeclarativeImplicitSizePaintedItem(QDeclarativeImplicitSizePaintedItemPrivate &dd, QDeclarativeItem *parent)
+    : QDeclarativePaintedItem(dd, parent)
+{
+}
 
 QT_END_NAMESPACE
-
-#endif // QDECLARATIVELOADER_P_H

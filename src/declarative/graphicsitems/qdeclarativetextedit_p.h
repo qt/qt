@@ -43,7 +43,7 @@
 #define QDECLARATIVETEXTEDIT_H
 
 #include "private/qdeclarativetext_p.h"
-#include "private/qdeclarativepainteditem_p.h"
+#include "private/qdeclarativeimplicitsizeitem_p.h"
 
 #include <QtGui/qtextdocument.h>
 #include <QtGui/qtextoption.h>
@@ -58,7 +58,7 @@ QT_MODULE(Declarative)
 
 
 class QDeclarativeTextEditPrivate;
-class Q_AUTOTEST_EXPORT QDeclarativeTextEdit : public QDeclarativePaintedItem
+class Q_AUTOTEST_EXPORT QDeclarativeTextEdit : public QDeclarativeImplicitSizePaintedItem
 {
     Q_OBJECT
     Q_ENUMS(VAlignment)

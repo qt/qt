@@ -111,14 +111,14 @@ void QDeclarativeBasePositioner::graphicsWidgetGeometryChanged()
     Note that the subclass is responsible for adding the spacing in between items.
 */
 QDeclarativeBasePositioner::QDeclarativeBasePositioner(PositionerType at, QDeclarativeItem *parent)
-    : QDeclarativeItem(*(new QDeclarativeBasePositionerPrivate), parent)
+    : QDeclarativeImplicitSizeItem(*(new QDeclarativeBasePositionerPrivate), parent)
 {
     Q_D(QDeclarativeBasePositioner);
     d->init(at);
 }
 
 QDeclarativeBasePositioner::QDeclarativeBasePositioner(QDeclarativeBasePositionerPrivate &dd, PositionerType at, QDeclarativeItem *parent)
-    : QDeclarativeItem(dd, parent)
+    : QDeclarativeImplicitSizeItem(dd, parent)
 {
     Q_D(QDeclarativeBasePositioner);
     d->init(at);

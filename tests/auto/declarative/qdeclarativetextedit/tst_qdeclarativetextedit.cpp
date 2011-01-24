@@ -127,6 +127,8 @@ private slots:
     void openInputPanelOnFocus();
     void geometrySignals();
     void pastingRichText_QTBUG_14003();
+    void implicitSize_data();
+    void implicitSize();
 
 private:
     void simulateKey(QDeclarativeView *, int key);
@@ -1445,6 +1447,33 @@ void tst_qdeclarativetextedit::pastingRichText_QTBUG_14003()
     QTRY_VERIFY(obj->text() == "");
     QTRY_VERIFY(obj->textFormat() == QDeclarativeTextEdit::PlainText);
 #endif
+}
+
+void tst_qdeclarativetextedit::implicitSize_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<QString>("wrap");
+    QTest::newRow("plain") << "The quick red fox jumped over the lazy brown dog" << "TextEdit.NoWrap";
+    QTest::newRow("richtext") << "<b>The quick red fox jumped over the lazy brown dog</b>" << "TextEdit.NoWrap";
+    QTest::newRow("plain_wrap") << "The quick red fox jumped over the lazy brown dog" << "TextEdit.Wrap";
+    QTest::newRow("richtext_wrap") << "<b>The quick red fox jumped over the lazy brown dog</b>" << "TextEdit.Wrap";
+}
+
+void tst_qdeclarativetextedit::implicitSize()
+{
+    QFETCH(QString, text);
+    QFETCH(QString, wrap);
+    QString componentStr = "import QtQuick 1.1\nTextEdit { text: \"" + text + "\"; width: 50; wrapMode: " + wrap + " }";
+    QDeclarativeComponent textComponent(&engine);
+    textComponent.setData(componentStr.toLatin1(), QUrl::fromLocalFile(""));
+    QDeclarativeTextEdit *textObject = qobject_cast<QDeclarativeTextEdit*>(textComponent.create());
+
+    QVERIFY(textObject->width() < textObject->implicitWidth());
+    QVERIFY(textObject->height() == textObject->implicitHeight());
+
+    textObject->resetWidth();
+    QVERIFY(textObject->width() == textObject->implicitWidth());
+    QVERIFY(textObject->height() == textObject->implicitHeight());
 }
 
 QTEST_MAIN(tst_qdeclarativetextedit)

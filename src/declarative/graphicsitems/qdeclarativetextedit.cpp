@@ -113,7 +113,7 @@ TextEdit {
     \a link string provides access to the particular link.
 */
 QDeclarativeTextEdit::QDeclarativeTextEdit(QDeclarativeItem *parent)
-: QDeclarativePaintedItem(*(new QDeclarativeTextEditPrivate), parent)
+: QDeclarativeImplicitSizePaintedItem(*(new QDeclarativeTextEditPrivate), parent)
 {
     Q_D(QDeclarativeTextEdit);
     d->init();
@@ -559,7 +559,8 @@ int QDeclarativeTextEdit::lineCount() const
 */
 qreal QDeclarativeTextEdit::paintedWidth() const
 {
-    return implicitWidth();
+    Q_D(const QDeclarativeTextEdit);
+    return d->paintedSize.width();
 }
 
 /*!
@@ -570,7 +571,8 @@ qreal QDeclarativeTextEdit::paintedWidth() const
 */
 qreal QDeclarativeTextEdit::paintedHeight() const
 {
-    return implicitHeight();
+    Q_D(const QDeclarativeTextEdit);
+    return d->paintedSize.height();
 }
 
 /*!
@@ -1482,6 +1484,17 @@ QRectF QDeclarativeTextEdit::boundingRect() const
     return r.translated(0,d->yoff);
 }
 
+qreal QDeclarativeTextEditPrivate::implicitWidth() const
+{
+    Q_Q(const QDeclarativeTextEdit);
+    if (!requireImplicitWidth) {
+        // We don't calculate implicitWidth unless it is required.
+        // We need to force a size update now to ensure implicitWidth is calculated
+        const_cast<QDeclarativeTextEditPrivate*>(this)->requireImplicitWidth = true;
+        const_cast<QDeclarativeTextEdit*>(q)->updateSize();
+    }
+    return mImplicitWidth;
+}
 
 //### we should perhaps be a bit smarter here -- depending on what has changed, we shouldn't
 //    need to do all the calculations each time
@@ -1489,16 +1502,27 @@ void QDeclarativeTextEdit::updateSize()
 {
     Q_D(QDeclarativeTextEdit);
     if (isComponentComplete()) {
-        QFontMetrics fm = QFontMetrics(d->font);
-        int dy = height();
+        qreal naturalWidth = d->mImplicitWidth;
         // ### assumes that if the width is set, the text will fill to edges
         // ### (unless wrap is false, then clipping will occur)
         if (widthValid()) {
+            if (!d->requireImplicitWidth) {
+                emit implicitWidthChanged();
+                // if the implicitWidth is used, then updateSize() has already been called (recursively)
+                if (d->requireImplicitWidth)
+                    return;
+            }
+            if (d->requireImplicitWidth) {
+                d->document->setTextWidth(-1);
+                naturalWidth = d->document->idealWidth();
+            }
             if (d->document->textWidth() != width())
                 d->document->setTextWidth(width());
         } else {
             d->document->setTextWidth(-1);
         }
+        QFontMetrics fm = QFontMetrics(d->font);
+        int dy = height();
         dy -= (int)d->document->size().height();
 
         int nyoff;
@@ -1523,12 +1547,15 @@ void QDeclarativeTextEdit::updateSize()
         if (!widthValid() && d->document->textWidth() != newWidth)
             d->document->setTextWidth(newWidth); // ### Text does not align if width is not set (QTextDoc bug)
         // ### Setting the implicitWidth triggers another updateSize(), and unless there are bindings nothing has changed.
-        setImplicitWidth(newWidth);
+        if (!widthValid())
+            setImplicitWidth(newWidth);
+        else if (d->requireImplicitWidth)
+            setImplicitWidth(naturalWidth);
         qreal newHeight = d->document->isEmpty() ? fm.height() : (int)d->document->size().height();
         setImplicitHeight(newHeight);
 
-        setContentsSize(QSize(newWidth, newHeight));
-
+        d->paintedSize = QSize(newWidth, newHeight);
+        setContentsSize(d->paintedSize);
         emit paintedSizeChanged();
     } else {
         d->dirty = true;

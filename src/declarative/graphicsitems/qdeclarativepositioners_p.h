@@ -42,7 +42,7 @@
 #ifndef QDECLARATIVELAYOUTS_H
 #define QDECLARATIVELAYOUTS_H
 
-#include "qdeclarativeitem.h"
+#include "qdeclarativeimplicitsizeitem_p.h"
 
 #include <private/qdeclarativestate_p.h>
 #include <private/qpodvector_p.h>
@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 class QDeclarativeBasePositionerPrivate;
 
-class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeBasePositioner : public QDeclarativeItem
+class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeBasePositioner : public QDeclarativeImplicitSizeItem
 {
     Q_OBJECT
 

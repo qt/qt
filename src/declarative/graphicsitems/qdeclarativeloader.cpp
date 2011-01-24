@@ -216,7 +216,7 @@ void QDeclarativeLoaderPrivate::initResize()
 */
 
 QDeclarativeLoader::QDeclarativeLoader(QDeclarativeItem *parent)
-  : QDeclarativeItem(*(new QDeclarativeLoaderPrivate), parent)
+  : QDeclarativeImplicitSizeItem(*(new QDeclarativeLoaderPrivate), parent)
 {
     Q_D(QDeclarativeLoader);
     d->flags |= QGraphicsItem::ItemIsFocusScope;

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVELOADER_P_H
-#define QDECLARATIVELOADER_P_H
+#ifndef QDECLARATIVEIMPLICITSIZEITEM_P_H
+#define QDECLARATIVEIMPLICITSIZEITEM_P_H
 
 //
 //  W A R N I N G
@@ -53,37 +53,38 @@
 // We mean it.
 //
 
-#include "private/qdeclarativeloader_p.h"
-
-#include "private/qdeclarativeimplicitsizeitem_p_p.h"
-#include "private/qdeclarativeitemchangelistener_p.h"
+#include "private/qdeclarativeitem_p.h"
+#include "private/qdeclarativepainteditem_p_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeContext;
-class QDeclarativeLoaderPrivate : public QDeclarativeImplicitSizeItemPrivate, public QDeclarativeItemChangeListener
+class QDeclarativeImplicitSizeItemPrivate : public QDeclarativeItemPrivate
 {
-    Q_DECLARE_PUBLIC(QDeclarativeLoader)
+    Q_DECLARE_PUBLIC(QDeclarativeImplicitSizeItem)
 
 public:
-    QDeclarativeLoaderPrivate();
-    ~QDeclarativeLoaderPrivate();
+    QDeclarativeImplicitSizeItemPrivate()
+    {
+    }
 
-    void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry);
-    void clear();
-    void initResize();
-    void load();
+    virtual void implicitWidthChanged();
+    virtual void implicitHeightChanged();
+};
 
-    QUrl source;
-    QGraphicsObject *item;
-    QDeclarativeComponent *component;
-    bool ownComponent : 1;
-    bool isComponentComplete : 1;
 
-    void _q_sourceLoaded();
-    void _q_updateSize(bool loaderGeometryChanged = true);
+class QDeclarativeImplicitSizePaintedItemPrivate : public QDeclarativePaintedItemPrivate
+{
+    Q_DECLARE_PUBLIC(QDeclarativeImplicitSizePaintedItem)
+
+public:
+    QDeclarativeImplicitSizePaintedItemPrivate()
+    {
+    }
+
+    virtual void implicitWidthChanged();
+    virtual void implicitHeightChanged();
 };
 
 QT_END_NAMESPACE
 
-#endif // QDECLARATIVELOADER_P_H
+#endif // QDECLARATIVEIMPLICITSIZEITEM_P_H

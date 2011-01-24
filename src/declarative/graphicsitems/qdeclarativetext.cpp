@@ -92,7 +92,7 @@ QDeclarativeTextPrivate::QDeclarativeTextPrivate()
   vAlign(QDeclarativeText::AlignTop), elideMode(QDeclarativeText::ElideNone),
   format(QDeclarativeText::AutoText), wrapMode(QDeclarativeText::NoWrap), lineCount(1), truncated(false), maximumLineCount(INT_MAX),
   maximumLineCountValid(false), imageCacheDirty(true), updateOnComponentComplete(true), richText(false), singleline(false),
-  cacheAllTextAsImage(true), internalWidthUpdate(false), doc(0)
+  cacheAllTextAsImage(true), internalWidthUpdate(false), requireImplicitWidth(false), naturalWidth(0), doc(0)
 {
     cacheAllTextAsImage = enableImageCache();
     QGraphicsItemPrivate::acceptedMouseButtons = Qt::LeftButton;
@@ -179,6 +179,18 @@ QDeclarativeTextPrivate::~QDeclarativeTextPrivate()
 {
 }
 
+qreal QDeclarativeTextPrivate::implicitWidth() const
+{
+    if (!requireImplicitWidth) {
+        // We don't calculate implicitWidth unless it is required.
+        // We need to force a size update now to ensure implicitWidth is calculated
+        QDeclarativeTextPrivate *me = const_cast<QDeclarativeTextPrivate*>(this);
+        me->requireImplicitWidth = true;
+        me->updateSize();
+    }
+    return mImplicitWidth;
+}
+
 void QDeclarativeTextPrivate::updateLayout()
 {
     Q_Q(QDeclarativeText);
@@ -222,12 +234,20 @@ void QDeclarativeTextPrivate::updateSize()
         return;
     }
 
+    if (!requireImplicitWidth) {
+        emit q->implicitWidthChanged();
+        // if the implicitWidth is used, then updateSize() has already been called (recursively)
+        if (requireImplicitWidth)
+            return;
+    }
+
     invalidateImageCache();
 
     QFontMetrics fm(font);
     if (text.isEmpty()) {
         q->setImplicitWidth(0);
         q->setImplicitHeight(fm.height());
+        paintedSize = QSize(0, fm.height());
         emit q->paintedSizeChanged();
         q->update();
         return;
@@ -251,6 +271,10 @@ void QDeclarativeTextPrivate::updateSize()
         QTextOption option((Qt::Alignment)int(hAlign | vAlign));
         option.setWrapMode(QTextOption::WrapMode(wrapMode));
         doc->setDefaultTextOption(option);
+        if (requireImplicitWidth && q->widthValid()) {
+            doc->setTextWidth(-1);
+            naturalWidth = doc->idealWidth();
+        }
         if (wrapMode != QDeclarativeText::NoWrap && q->widthValid())
             doc->setTextWidth(q->width());
         else
@@ -275,10 +299,16 @@ void QDeclarativeTextPrivate::updateSize()
 
     //### need to comfirm cost of always setting these for richText
     internalWidthUpdate = true;
-    q->setImplicitWidth(size.width());
+    if (!q->widthValid())
+        q->setImplicitWidth(size.width());
+    else if (requireImplicitWidth)
+        q->setImplicitWidth(naturalWidth);
     internalWidthUpdate = false;
     q->setImplicitHeight(size.height());
-    emit q->paintedSizeChanged();
+    if (paintedSize != size) {
+        paintedSize = size;
+        emit q->paintedSizeChanged();
+    }
     q->update();
 }
 
@@ -317,6 +347,22 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
     QFontMetrics fm(layout.font());
     qreal elideWidth = fm.width(elideChar);
     elidePos = QPointF();
+
+    if (requireImplicitWidth && q->widthValid()) {
+        // requires an extra layout
+        layout.beginLayout();
+        forever {
+            QTextLine line = layout.createLine();
+            if (!line.isValid())
+                break;
+        }
+        layout.endLayout();
+        naturalWidth = 0;
+        for (int i = 0; i < layout.lineCount(); ++i) {
+            QTextLine line = layout.lineAt(i);
+            naturalWidth = qMax(naturalWidth, line.naturalTextWidth());
+        }
+    }
 
     if (maximumLineCountValid) {
         layout.beginLayout();
@@ -383,6 +429,8 @@ QSize QDeclarativeTextPrivate::setupTextLayout()
     }
 
     qreal layoutWidth = q->widthValid() ? q->width() : widthUsed;
+    if (!q->widthValid())
+        naturalWidth = layoutWidth;
 
     qreal x = 0;
     for (int i = 0; i < layout.lineCount(); ++i) {
@@ -660,7 +708,7 @@ QPixmap QDeclarativeTextPrivate::drawOutline(const QPixmap &source, const QPixma
     \sa {declarative/text/fonts}{Fonts example}
 */
 QDeclarativeText::QDeclarativeText(QDeclarativeItem *parent)
-  : QDeclarativeItem(*(new QDeclarativeTextPrivate), parent)
+  : QDeclarativeImplicitSizeItem(*(new QDeclarativeTextPrivate), parent)
 {
 }
 
@@ -1331,7 +1379,8 @@ void QDeclarativeText::geometryChanged(const QRectF &newGeometry, const QRectF &
 */
 qreal QDeclarativeText::paintedWidth() const
 {
-    return implicitWidth();
+    Q_D(const QDeclarativeText);
+    return d->paintedSize.width();
 }
 
 /*!
@@ -1342,7 +1391,8 @@ qreal QDeclarativeText::paintedWidth() const
 */
 qreal QDeclarativeText::paintedHeight() const
 {
-    return implicitHeight();
+    Q_D(const QDeclarativeText);
+    return d->paintedSize.height();
 }
 
 /*!

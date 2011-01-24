@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "private/qdeclarativeitem_p.h"
+#include "private/qdeclarativeimplicitsizeitem_p_p.h"
 #include "private/qdeclarativepixmapcache_p.h"
 
 #include <QtCore/QPointer>
@@ -61,7 +61,7 @@
 QT_BEGIN_NAMESPACE
 
 class QNetworkReply;
-class QDeclarativeImageBasePrivate : public QDeclarativeItemPrivate
+class QDeclarativeImageBasePrivate : public QDeclarativeImplicitSizeItemPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeImageBase)
 

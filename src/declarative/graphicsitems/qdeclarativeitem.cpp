@@ -3056,13 +3056,24 @@ void QDeclarativeItemPrivate::resetWidth()
     q->setImplicitWidth(q->implicitWidth());
 }
 
+void QDeclarativeItemPrivate::implicitWidthChanged()
+{
+    Q_Q(QDeclarativeItem);
+    emit q->implicitWidthChanged();
+}
+
+qreal QDeclarativeItemPrivate::implicitWidth() const
+{
+    return mImplicitWidth;
+}
+
 /*!
     Returns the width of the item that is implied by other properties that determine the content.
 */
 qreal QDeclarativeItem::implicitWidth() const
 {
     Q_D(const QDeclarativeItem);
-    return d->implicitWidth;
+    return d->implicitWidth();
 }
 
 /*!
@@ -3072,9 +3083,13 @@ qreal QDeclarativeItem::implicitWidth() const
 void QDeclarativeItem::setImplicitWidth(qreal w)
 {
     Q_D(QDeclarativeItem);
-    d->implicitWidth = w;
-    if (d->mWidth == w || widthValid())
+    bool changed = w != d->mImplicitWidth;
+    d->mImplicitWidth = w;
+    if (d->mWidth == w || widthValid()) {
+        if (changed)
+            d->implicitWidthChanged();
         return;
+    }
 
     qreal oldWidth = d->mWidth;
 
@@ -3083,6 +3098,9 @@ void QDeclarativeItem::setImplicitWidth(qreal w)
 
     geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), oldWidth, height()));
+
+    if (changed)
+        d->implicitWidthChanged();
 }
 
 /*!
@@ -3164,14 +3182,62 @@ void QDeclarativeItemPrivate::resetHeight()
     q->setImplicitHeight(q->implicitHeight());
 }
 
+void QDeclarativeItemPrivate::implicitHeightChanged()
+{
+    Q_Q(QDeclarativeItem);
+    emit q->implicitHeightChanged();
+}
+
+qreal QDeclarativeItemPrivate::implicitHeight() const
+{
+    return mImplicitHeight;
+}
+
 /*!
     Returns the height of the item that is implied by other properties that determine the content.
 */
 qreal QDeclarativeItem::implicitHeight() const
 {
     Q_D(const QDeclarativeItem);
-    return d->implicitHeight;
+    return d->implicitHeight();
 }
+
+/*!
+    \qmlproperty real Item::implicitWidth
+    \qmlproperty real Item::implicitHeight
+    \since Quick 1.1
+
+    Defines the natural width or height of the Item if no \l width or \l height is specified.
+
+    The default implicit size for most items is 0x0, however some elements have an inherent
+    implicit size which cannot be overridden, e.g. Image, Text.
+
+    Setting the implicit size is useful for defining components that have a preferred size
+    based on their content, for example:
+
+    \code
+    // Label.qml
+    import QtQuick 1.1
+
+    Item {
+        property alias icon: image.source
+        property alias label: text.text
+        implicitWidth: text.implicitWidth + image.implicitWidth
+        implicitHeight: Math.max(text.implicitHeight, image.implicitHeight)
+        Image { id: image }
+        Text {
+            id: text
+            wrapMode: Text.Wrap
+            anchors.left: image.right; anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+        }
+    }
+    \endcode
+
+    \bold Note: using implicitWidth of Text or TextEdit and setting the width explicitly
+    incurs a performance penalty as the text must be layed out twice.
+*/
+
 
 /*!
     Sets the implied height of the item to \a h.
@@ -3180,9 +3246,13 @@ qreal QDeclarativeItem::implicitHeight() const
 void QDeclarativeItem::setImplicitHeight(qreal h)
 {
     Q_D(QDeclarativeItem);
-    d->implicitHeight = h;
-    if (d->mHeight == h || heightValid())
+    bool changed = h != d->mImplicitHeight;
+    d->mImplicitHeight = h;
+    if (d->mHeight == h || heightValid()) {
+        if (changed)
+            d->implicitHeightChanged();
         return;
+    }
 
     qreal oldHeight = d->mHeight;
 
@@ -3191,6 +3261,9 @@ void QDeclarativeItem::setImplicitHeight(qreal h)
 
     geometryChanged(QRectF(x(), y(), width(), height()),
                     QRectF(x(), y(), width(), oldHeight));
+
+    if (changed)
+        d->implicitHeightChanged();
 }
 
 /*!

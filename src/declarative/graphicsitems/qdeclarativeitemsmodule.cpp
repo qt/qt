@@ -179,6 +179,7 @@ void QDeclarativeItemModule::defineModule()
     qmlRegisterType<QDeclarativePinchArea>("QtQuick",1,1,"PinchArea");
     qmlRegisterType<QDeclarativePinch>("QtQuick",1,1,"Pinch");
     qmlRegisterType<QDeclarativePinchEvent>();
+    qmlRegisterType<QDeclarativeItem,1>("QtQuick",1,1,"Item");
     qmlRegisterType<QDeclarativeFlickable,1>("QtQuick",1,1,"Flickable");
     qmlRegisterType<QDeclarativeListView,1>("QtQuick",1,1,"ListView");
     qmlRegisterType<QDeclarativeGridView,1>("QtQuick",1,1,"GridView");
@@ -190,6 +191,10 @@ void QDeclarativeItemModule::defineModule()
 #ifndef QT_NO_LINEEDIT
     qmlRegisterType<QDeclarativeTextInput,1>("QtQuick",1,1,"TextInput");
 #endif
+    qmlRegisterRevision<QDeclarativeImplicitSizeItem,0>("QtQuick",1,0);
+    qmlRegisterRevision<QDeclarativeImplicitSizeItem,1>("QtQuick",1,1);
+    qmlRegisterRevision<QDeclarativeImplicitSizePaintedItem,0>("QtQuick",1,0);
+    qmlRegisterRevision<QDeclarativeImplicitSizePaintedItem,1>("QtQuick",1,1);
 
 #ifndef QT_NO_IMPORT_QT47_QML
 #ifdef QT_NO_MOVIE

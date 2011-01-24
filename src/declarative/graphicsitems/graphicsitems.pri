@@ -52,7 +52,10 @@ HEADERS += \
     $$PWD/qdeclarativegraphicswidget_p.h \
     $$PWD/qdeclarativetextlayout_p.h \
     $$PWD/qdeclarativepincharea_p.h \
-    $$PWD/qdeclarativepincharea_p_p.h
+    $$PWD/qdeclarativepincharea_p_p.h \
+    $$PWD/qdeclarativeimplicitsizeitem_p.h \
+    $$PWD/qdeclarativeimplicitsizeitem_p_p.h
+
 
 SOURCES += \
     $$PWD/qdeclarativeitemsmodule.cpp \
@@ -86,5 +89,6 @@ SOURCES += \
     $$PWD/qdeclarativelayoutitem.cpp \
     $$PWD/qdeclarativegraphicswidget.cpp \
     $$PWD/qdeclarativetextlayout.cpp \
-    $$PWD/qdeclarativepincharea.cpp
+    $$PWD/qdeclarativepincharea.cpp \
+    $$PWD/qdeclarativeimplicitsizeitem.cpp
 

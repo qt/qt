@@ -42,14 +42,14 @@
 #ifndef QDECLARATIVEIMAGEBASE_H
 #define QDECLARATIVEIMAGEBASE_H
 
-#include "qdeclarativeitem.h"
+#include "qdeclarativeimplicitsizeitem_p.h"
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 class QDeclarativeImageBasePrivate;
-class Q_AUTOTEST_EXPORT QDeclarativeImageBase : public QDeclarativeItem
+class Q_AUTOTEST_EXPORT QDeclarativeImageBase : public QDeclarativeImplicitSizeItem
 {
     Q_OBJECT
     Q_ENUMS(Status)

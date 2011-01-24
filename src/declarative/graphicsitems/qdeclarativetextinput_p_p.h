@@ -44,7 +44,7 @@
 
 #include "private/qdeclarativetextinput_p.h"
 
-#include "private/qdeclarativepainteditem_p_p.h"
+#include "private/qdeclarativeimplicitsizeitem_p_p.h"
 
 #include <qdeclarative.h>
 
@@ -66,7 +66,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeTextInputPrivate : public QDeclarativePaintedItemPrivate
+class QDeclarativeTextInputPrivate : public QDeclarativeImplicitSizePaintedItemPrivate
 {
     Q_DECLARE_PUBLIC(QDeclarativeTextInput)
 public:
