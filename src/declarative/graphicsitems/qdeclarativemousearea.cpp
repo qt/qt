@@ -863,15 +863,16 @@ bool QDeclarativeMouseArea::setPressed(bool p)
             me.setX(d->lastPos.x());
             me.setY(d->lastPos.y());
             emit mousePositionChanged(&me);
+            emit pressedChanged();
         } else {
             emit released(&me);
             me.setX(d->lastPos.x());
             me.setY(d->lastPos.y());
+            emit pressedChanged();
             if (isclick && !d->longPress && !d->doubleClick)
                 emit clicked(&me);
         }
 
-        emit pressedChanged();
         return me.isAccepted();
     }
     return false;
