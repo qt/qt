@@ -35,14 +35,16 @@ QSGTextureRef QSGMacTextureManager::upload(const QImage &image)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_STORAGE_HINT_APPLE, GL_STORAGE_SHARED_APPLE);
 
+    QImage converted = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width(), image.height(), 0, GL_BGRA,
-                 GL_UNSIGNED_INT_8_8_8_8_REV, image.constBits());
+                 GL_UNSIGNED_INT_8_8_8_8_REV, converted.constBits());
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, 0);
 
     QSGMacTexture *texture = new QSGMacTexture;
-    texture->image = image;
+    texture->image = converted;
     texture->setTextureId(id);
     texture->setTextureSize(image.size());
     texture->setOwnsTexture(true);
