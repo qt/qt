@@ -66,8 +66,12 @@ SOURCES += \
     $$PWD/3d/qcustomdataarray.cpp \
     $$PWD/3d/qcolor4ub.cpp \
 
-!win32: !mac {
+!qpa {
+contains(QT_CONFIG, freetype) {
     INCLUDEPATH += $$PWD/../../3rdparty/freetype/include
+} else:contains(QT_CONFIG, system-freetype) {
+    include($$QT_SOURCE_TREE/config.tests/unix/freetype/freetype.pri)
+}
 }
 
 include(adaptationlayers/adaptationlayers.pri)
