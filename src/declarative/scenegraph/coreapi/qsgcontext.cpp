@@ -48,8 +48,11 @@
 #include "default/default_rectanglenode.h"
 #include "default/default_texturenode.h"
 #include "default/default_glyphnode.h"
+
+#ifdef QML_DISTANCE_FIELDS
 #include "distancefield_glyphnode.h"
 #include "distancefieldfontatlas_p.h"
+#endif
 
 #include "qsgtexturemanager.h"
 #include "qsgpartialuploadtexturemanager.h"
@@ -211,11 +214,13 @@ TextureNodeInterface *QSGContext::createTextureNode()
  */
 GlyphNodeInterface *QSGContext::createGlyphNode()
 {
+#ifdef QML_DISTANCE_FIELDS
     static QStringList args = qApp->arguments();
 
     if (args.contains("--distancefield-text"))
         return new DistanceFieldGlyphNode;
     else
+#endif
         return new DefaultGlyphNode;
 }
 
@@ -236,10 +241,12 @@ QAnimationDriver *QSGContext::createAnimationDriver(QWidget *window)
  */
 GlyphNodeInterface *QSGContext::createGlyphNode(const QFont &font)
 {
+#ifdef QML_DISTANCE_FIELDS
     static QStringList args = qApp->arguments();
     if (args.contains("--distancefield-text") && DistanceFieldFontAtlas::useDistanceFieldForFont(font))
         return new DistanceFieldGlyphNode;
     else
+#endif
         return new DefaultGlyphNode;
 }
 
