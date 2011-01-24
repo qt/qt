@@ -4981,6 +4981,7 @@ void QWidgetPrivate::registerDropSite(bool on)
 
 void QWidgetPrivate::registerTouchWindow(bool enable)
 {
+    Q_UNUSED(enable);
 #ifdef QT_MAC_USE_COCOA
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
     if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_6)
@@ -5007,8 +5008,6 @@ void QWidgetPrivate::registerTouchWindow(bool enable)
             [view setAcceptsTouchEvents:NO];
         }
     }
-#else
-    Q_UNUSED(on);
 #endif
 #endif
 }
