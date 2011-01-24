@@ -591,7 +591,7 @@ void QDeclarativeMouseArea::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_D(QDeclarativeMouseArea);
     if (!d->absorb) {
-        QDeclarativeItem::hoverEnterEvent(event);
+        QDeclarativeItem::hoverMoveEvent(event);
     } else {
         d->lastPos = event->pos();
         QDeclarativeMouseEvent me(d->lastPos.x(), d->lastPos.y(), Qt::NoButton, d->lastButtons, d->lastModifiers, false, d->longPress);
