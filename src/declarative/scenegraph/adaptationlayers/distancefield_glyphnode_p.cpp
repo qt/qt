@@ -84,8 +84,8 @@ const char *DistanceFieldTextMaterialData::fragmentShader() const {
         "varying highp vec2 sampleCoord;                                             \n"
         "uniform sampler2D texture;                                                  \n"
         "uniform lowp vec4 color;                                                    \n"
-        "uniform lowp float alphaMin;                                                \n"
-        "uniform lowp float alphaMax;                                                \n"
+        "uniform highp float alphaMin;                                               \n"
+        "uniform highp float alphaMax;                                               \n"
         "void main() {                                                               \n"
         "    gl_FragColor = color * smoothstep(alphaMin,                             \n"
         "                                      alphaMax,                             \n"
@@ -161,15 +161,17 @@ void DistanceFieldTextMaterialData::updateEffectState(Renderer *renderer, Abstra
             || oldMaterial->texture()->textureId() != material->texture()->textureId()) {
         renderer->setTexture(0, material->texture());
 
-        // Set the mag/min filters to be linear. We only need to do this when the texture
-        // has been recreated.
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        if (material->updateTextureFiltering()) {
+            // Set the mag/min filters to be linear. We only need to do this when the texture
+            // has been recreated.
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        }
     }
 }
 
 DistanceFieldTextMaterial::DistanceFieldTextMaterial()
-    : m_texture(0), m_opacity(1.0), m_scale(1.0)
+    : m_texture(0), m_opacity(1.0), m_scale(1.0), m_dirtyTexture(false)
 {
    setFlags(Blending);
 }

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the Qt scene graph research project.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,46 +39,40 @@
 **
 ****************************************************************************/
 
-#ifndef DISTANCEFIELDTEXTMATERIAL_H
-#define DISTANCEFIELDTEXTMATERIAL_H
+#include <QtGui/qapplication.h>
+#include <QtDeclarative/qdeclarative.h>
+#include <QtDeclarative/qsgview.h>
+#include <private/qsgpainteditem_p.h>
 
-#include <material.h>
-
-class DistanceFieldTextMaterial: public AbstractEffect
+class MyPaintItem : public QSGPaintedItem
 {
+    Q_OBJECT
 public:
-    DistanceFieldTextMaterial();
-    ~DistanceFieldTextMaterial();
-
-    virtual AbstractEffectType *type() const;
-    virtual AbstractEffectProgram *createProgram() const;
-    virtual int compare(const AbstractEffect *other) const;
-
-    void setColor(const QColor &color) { m_color = color; }
-    const QColor &color() const { return m_color; }
-
-    void setTexture(QSGTextureRef t) { m_dirtyTexture = true; m_texture = t; }
-    const QSGTextureRef &texture() const { return m_texture; }
-
-    void setOpacity(qreal opacity) { m_opacity = opacity; }
-    qreal opacity() const { return m_opacity; }
-
-    void setScale(qreal scale) { m_scale = scale; }
-    qreal scale() const { return m_scale; }
-
-    bool updateTextureFiltering()
+    virtual void paint(QPainter *p)
     {
-        bool oldDirty = m_dirtyTexture;
-        m_dirtyTexture = false;
-        return oldDirty;
+        QRectF rect(0, 0, width(), height());
+        rect.adjust(10, 10, -10, -10);
+        p->setPen(QPen(Qt::black, 20));
+        p->setBrush(Qt::yellow);
+        p->drawEllipse(rect);
+        p->setPen(Qt::black);
+        p->setFont(QFont(QLatin1String("Times"), qRound(rect.height() / 2)));
+        p->drawText(rect, Qt::AlignCenter, QLatin1String(":-)"));
     }
-
-private:
-    QSGTextureRef m_texture;
-    QColor m_color;
-    qreal m_opacity;
-    qreal m_scale;
-    bool m_dirtyTexture;
 };
 
-#endif // DISTANCEFIELDTEXTMATERIAL_H
+int main(int argc, char ** argv)
+{
+    QApplication app(argc, argv);
+
+    qmlRegisterType<MyPaintItem>("MyModule", 1, 0, "MyPaintItem");
+
+    QSGView view;
+    view.setSource(QUrl::fromLocalFile("myfile.qml"));
+    view.show();
+    view.raise();
+
+    return app.exec();
+}
+
+#include "main.moc"
