@@ -83,9 +83,9 @@ bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
 
 QDebug &operator<<(QDebug &dbg, const QScrollerPrivate::ScrollSegment &s)
 {
-    dbg << "\n  Time: start:" << s.startTime << " duration:" << s.deltaTime;
-    dbg << "\n  Pos: start:" << s.startPos << " delta:" << s.deltaPos;
-    dbg << "\n  Curve: type:" << s.curve.type() << " max progress:" << s.maxProgress << "\n";
+    dbg << "\n  Time: start:" << s.startTime << " duration:" << s.deltaTime << " stop progress:" << s.stopProgress;
+    dbg << "\n  Pos: start:" << s.startPos << " delta:" << s.deltaPos << " stop:" << s.stopPos;
+    dbg << "\n  Curve: type:" << s.curve.type() << "\n";
     return dbg;
 }
 
@@ -601,18 +601,17 @@ QPointF QScroller::velocity() const
 
         if (!d->xSegments.isEmpty()) {
             const QScrollerPrivate::ScrollSegment &s = d->xSegments.head();
-            qreal progress = qreal(now - s.startTime) / (qreal(s.deltaTime) / s.maxProgress);
-            qreal v = qSign(s.deltaPos) * qreal(s.deltaTime) / s.maxProgress / qreal(1000) * sp->decelerationFactor * qreal(0.5) * differentialForProgress(s.curve, progress);
+            qreal progress = qreal(now - s.startTime) / qreal(s.deltaTime);
+            qreal v = qSign(s.deltaPos) * qreal(s.deltaTime) / qreal(1000) * sp->decelerationFactor * qreal(0.5) * differentialForProgress(s.curve, progress);
             vel.setX(v);
         }
 
         if (!d->ySegments.isEmpty()) {
             const QScrollerPrivate::ScrollSegment &s = d->ySegments.head();
-            qreal progress = qreal(now - s.startTime) / (qreal(s.deltaTime) / s.maxProgress);
-            qreal v = qSign(s.deltaPos) * qreal(s.deltaTime) / s.maxProgress / qreal(1000) * sp->decelerationFactor * qreal(0.5) * differentialForProgress(s.curve, progress);
+            qreal progress = qreal(now - s.startTime) / qreal(s.deltaTime);
+            qreal v = qSign(s.deltaPos) * qreal(s.deltaTime) / qreal(1000) * sp->decelerationFactor * qreal(0.5) * differentialForProgress(s.curve, progress);
             vel.setY(v);
         }
-        //qScrollerDebug() << "Velocity: " << vel;
         return vel;
      }
      default:
@@ -1083,8 +1082,23 @@ void QScrollerPrivate::updateVelocity(const QPointF &deltaPixelRaw, qint64 delta
         deltaPixel = deltaPixelRaw * qreal(2.5) * ppm / 1000 / (deltaPixelRaw / qreal(deltaTime)).manhattanLength();
 
     QPointF newv = -deltaPixel / qreal(deltaTime) * qreal(1000) / ppm;
-    if (releaseVelocity != QPointF(0, 0))
-        newv = newv * sp->dragVelocitySmoothingFactor + releaseVelocity * (qreal(1) - sp->dragVelocitySmoothingFactor);
+    // around 95% of all updates are in the [1..50] ms range, so make sure
+    // to scale the smoothing factor over that range: this way a 50ms update
+    // will have full impact, while 5ms update will only have a 10% impact.
+    qreal smoothing = sp->dragVelocitySmoothingFactor * qMin(qreal(deltaTime), qreal(50)) / qreal(50);
+
+    // only smooth if we already have a release velocity and only if the
+    // user hasn't stopped to move his finger for more than 100ms
+    if ((releaseVelocity != QPointF(0, 0)) && (deltaTime < 100)) {
+        qScrollerDebug() << "SMOOTHED from " << newv << " to " << newv * smoothing + releaseVelocity * (qreal(1) - smoothing);
+        // smooth x or y only if the new velocity is either 0 or at least in
+        // the same direction of the release velocity
+        if (!newv.x() || (qSign(releaseVelocity.x()) == qSign(newv.x())))
+            newv.setX(newv.x() * smoothing + releaseVelocity.x() * (qreal(1) - smoothing));
+        if (!newv.y() || (qSign(releaseVelocity.y()) == qSign(newv.y())))
+            newv.setY(newv.y() * smoothing + releaseVelocity.y() * (qreal(1) - smoothing));
+    } else
+        qScrollerDebug() << "NO SMOOTHING to " << newv;
 
     releaseVelocity.setX(qBound(-sp->maximumVelocity, newv.x(), sp->maximumVelocity));
     releaseVelocity.setY(qBound(-sp->maximumVelocity, newv.y(), sp->maximumVelocity));
@@ -1092,23 +1106,24 @@ void QScrollerPrivate::updateVelocity(const QPointF &deltaPixelRaw, qint64 delta
     qScrollerDebug() << "  --> new velocity:" << releaseVelocity;
 }
 
-void QScrollerPrivate::pushSegment(ScrollType type, qreal deltaTime, qreal startPos, qreal endPos, QEasingCurve::Type curve, Qt::Orientation orientation, qreal maxProgress)
+void QScrollerPrivate::pushSegment(ScrollType type, qreal deltaTime, qreal stopProgress, qreal startPos, qreal deltaPos, qreal stopPos, QEasingCurve::Type curve, Qt::Orientation orientation)
 {
-    if (startPos == endPos)
+    if (startPos == stopPos || deltaPos == 0)
         return;
 
     ScrollSegment s;
     if (orientation == Qt::Horizontal && !xSegments.isEmpty())
-        s.startTime = xSegments.last().startTime + xSegments.last().deltaTime;
+        s.startTime = xSegments.last().startTime + xSegments.last().deltaTime * xSegments.last().stopProgress;
     else if (orientation == Qt::Vertical && !ySegments.isEmpty())
-        s.startTime = ySegments.last().startTime + ySegments.last().deltaTime;
+        s.startTime = ySegments.last().startTime + ySegments.last().deltaTime * ySegments.last().stopProgress;
     else
         s.startTime = monotonicTimer.elapsed();
 
     s.startPos = startPos;
-    s.deltaPos = endPos - startPos;
+    s.deltaPos = deltaPos;
+    s.stopPos = stopPos;
     s.deltaTime = deltaTime * 1000;
-    s.maxProgress = maxProgress;
+    s.stopProgress = stopProgress;
     s.curve.setType(curve);
     s.type = type;
 
@@ -1143,23 +1158,17 @@ void QScrollerPrivate::recalcScrollingSegments(bool forceRecalc)
 */
 qreal QScrollerPrivate::scrollingSegmentsEndPos(Qt::Orientation orientation) const
 {
-    const QQueue<ScrollSegment> *segments;
-    qreal endPos;
-
     if (orientation == Qt::Horizontal) {
-        segments = &xSegments;
-        endPos = contentPosition.x() + overshootPosition.x();
+        if (xSegments.isEmpty())
+            return contentPosition.x() + overshootPosition.x();
+        else
+            return xSegments.last().stopPos;
     } else {
-        segments = &ySegments;
-        endPos = contentPosition.y() + overshootPosition.y();
+        if (ySegments.isEmpty())
+            return contentPosition.y() + overshootPosition.y();
+        else
+            return ySegments.last().stopPos;
     }
-
-    if (!segments->isEmpty()) {
-        const ScrollSegment &last = segments->last();
-        endPos = last.startPos + last.deltaPos;
-    }
-
-    return endPos;
 }
 
 /*! \internal
@@ -1185,23 +1194,23 @@ bool QScrollerPrivate::scrollingSegmentsValid(Qt::Orientation orientation)
         return true;
 
     const ScrollSegment &last = segments->last();
-    qreal endPos = last.startPos + last.deltaPos;
+    qreal stopPos = last.stopPos;
 
     if (last.type == ScrollTypeScrollTo)
         return true; // scrollTo is always valid
 
     if (last.type == ScrollTypeOvershoot &&
-        endPos != minPos && endPos != maxPos)
+        (stopPos != minPos && stopPos != maxPos))
         return false;
 
-    if (endPos < minPos || endPos > maxPos)
+    if (stopPos < minPos || stopPos > maxPos)
         return false;
 
-    if (endPos == minPos || endPos == maxPos) // the begin and the end of the list are always ok
+    if (stopPos == minPos || stopPos == maxPos) // the begin and the end of the list are always ok
         return true;
 
-    qreal nextSnap = nextSnapPos(endPos, 0, orientation);
-    if (!qIsNaN(nextSnap) && endPos != nextSnap)
+    qreal nextSnap = nextSnapPos(stopPos, 0, orientation);
+    if (!qIsNaN(nextSnap) && stopPos != nextSnap)
         return false;
 
     return true;
@@ -1214,11 +1223,10 @@ void QScrollerPrivate::createScrollToSegments(qreal v, qreal deltaTime, qreal en
 {
     Q_UNUSED(v);
 
-    if (orientation == Qt::Horizontal) {
+    if (orientation == Qt::Horizontal)
         xSegments.clear();
-    } else {
+    else
         ySegments.clear();
-    }
 
     qScrollerDebug() << "+++ createScrollToSegments: t:" << deltaTime << "ep:" << endPos << "o:" << int(orientation);
 
@@ -1226,10 +1234,10 @@ void QScrollerPrivate::createScrollToSegments(qreal v, qreal deltaTime, qreal en
 
     qreal startPos = (orientation == Qt::Horizontal) ? contentPosition.x() + overshootPosition.x()
                                                      : contentPosition.y() + overshootPosition.y();
-    qreal deltaPos = endPos - startPos;
+    qreal deltaPos = (endPos - startPos) / 2;
 
-    pushSegment(type, deltaTime * 0.3, startPos, startPos + deltaPos * 0.5, QEasingCurve::InQuad, orientation);
-    pushSegment(type, deltaTime * 0.7, startPos + deltaPos * 0.5, endPos, sp->scrollingCurve.type(), orientation);
+    pushSegment(type, deltaTime * 0.3, 1.0, startPos, deltaPos, startPos + deltaPos, QEasingCurve::InQuad, orientation);
+    pushSegment(type, deltaTime * 0.7, 1.0, startPos + deltaPos, deltaPos, endPos, sp->scrollingCurve.type(), orientation);
 }
 
 /*! \internal
@@ -1298,17 +1306,13 @@ void QScrollerPrivate::createScrollingSegments(qreal v, qreal startPos, qreal pp
     if (nextSnap < lowerSnapPos || qIsNaN(lowerSnapPos))
         lowerSnapPos = nextSnap;
 
-    // -- check if we end in overshoot
+    // -- check if are in overshoot and end in overshoot
     if ((startPos < minPos && endPos < minPos) ||
         (startPos > maxPos && endPos > maxPos)) {
         qreal stopPos = endPos < minPos ? minPos : maxPos;
-        qreal oDistance = viewSize * sp->overshootScrollDistanceFactor * v / sp->maximumVelocity;
         qreal oDeltaTime = sp->overshootScrollTime;
 
-        if (qAbs(v) > sp->minimumVelocity)
-            pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.5, startPos, startPos + oDistance, sp->scrollingCurve.type(), orientation);
-        pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.3, startPos + oDistance, stopPos + oDistance * 0.3, QEasingCurve::InQuad, orientation);
-        pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.2, stopPos + oDistance * 0.3, stopPos, QEasingCurve::OutQuad, orientation);
+        pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.7, 1.0, startPos, stopPos - startPos, stopPos, sp->scrollingCurve.type(), orientation);
         return;
     }
 
@@ -1337,8 +1341,9 @@ void QScrollerPrivate::createScrollingSegments(qreal v, qreal startPos, qreal pp
             endPos = higherSnapPos;
 
         deltaPos = endPos - startPos;
-        pushSegment(ScrollTypeFlick, sp->snapTime * 0.3, startPos, startPos + deltaPos * 0.3, QEasingCurve::InQuad, orientation);
-        pushSegment(ScrollTypeFlick, sp->snapTime * 0.7, startPos + deltaPos * 0.3, endPos, sp->scrollingCurve.type(), orientation);
+        qreal midPos = startPos + deltaPos * 0.3;
+        pushSegment(ScrollTypeFlick, sp->snapTime * 0.3, 1.0, startPos, midPos - startPos, midPos, QEasingCurve::InQuad, orientation);
+        pushSegment(ScrollTypeFlick, sp->snapTime * 0.7, 1.0, midPos, endPos - midPos, endPos, sp->scrollingCurve.type(), orientation);
         return;
     }
 
@@ -1365,28 +1370,33 @@ void QScrollerPrivate::createScrollingSegments(qreal v, qreal startPos, qreal pp
 
         qScrollerDebug() << "Overshoot: delta:" << (stopPos - startPos);
 
-        qreal maxProgress = progressForValue(sp->scrollingCurve, qAbs((stopPos - startPos) / deltaPos));
-        qScrollerDebug() << "Overshoot maxp:" << maxProgress;
+        qreal stopProgress = progressForValue(sp->scrollingCurve, qAbs((stopPos - startPos) / deltaPos));
 
-        pushSegment(ScrollTypeFlick, deltaTime * maxProgress, startPos, stopPos, sp->scrollingCurve.type(), orientation, maxProgress);
+        if (!canOvershoot) {
+            qScrollerDebug() << "Overshoot stopp:" << stopProgress;
 
-        if (canOvershoot) {
-            qreal endV = qSign(v) * deltaTime * sp->decelerationFactor * qreal(0.5) * differentialForProgress(sp->scrollingCurve, maxProgress);
-            qScrollerDebug() << "Overshoot: velocity" << endV;
-            qScrollerDebug() << "Overshoot: maxVelocity" << sp->maximumVelocity;
-            qScrollerDebug() << "Overshoot: viewsize" << viewSize;
-            qScrollerDebug() << "Overshoot: factor" << sp->overshootScrollDistanceFactor;
-
-            qreal oDistance = viewSize * sp->overshootScrollDistanceFactor * endV / sp->maximumVelocity;
+            pushSegment(ScrollTypeFlick, deltaTime, stopProgress, startPos, endPos, stopPos, sp->scrollingCurve.type(), orientation);
+        } else {
             qreal oDeltaTime = sp->overshootScrollTime;
+            qreal oStopProgress = qMin(stopProgress + oDeltaTime * 0.3 / deltaTime, qreal(1));
+            qreal oDistance = startPos + deltaPos * sp->scrollingCurve.valueForProgress(oStopProgress) - stopPos;
+            qreal oMaxDistance = qSign(oDistance) * (viewSize * sp->overshootScrollDistanceFactor);
 
-            pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.3, stopPos, stopPos + oDistance, sp->scrollingCurve.type(), orientation);
-            pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.7, stopPos + oDistance, stopPos, sp->scrollingCurve.type(), orientation);
+            qScrollerDebug() << "1 oDistance:" << oDistance << "Max:" << oMaxDistance << "stopP/oStopP" << stopProgress << oStopProgress;
+
+            if (qAbs(oDistance) > qAbs(oMaxDistance)) {
+                oStopProgress = progressForValue(sp->scrollingCurve, qAbs((stopPos + oMaxDistance - startPos) / deltaPos));
+                oDistance = oMaxDistance;
+                qScrollerDebug() << "2 oDistance:" << oDistance << "Max:" << oMaxDistance << "stopP/oStopP" << stopProgress << oStopProgress;
+            }
+
+            pushSegment(ScrollTypeFlick, deltaTime, oStopProgress, startPos, deltaPos, stopPos + oDistance, sp->scrollingCurve.type(), orientation);
+            pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.7, 1.0, stopPos + oDistance, -oDistance, stopPos, sp->scrollingCurve.type(), orientation);
         }
         return;
     }
 
-    pushSegment(ScrollTypeFlick, deltaTime, startPos, endPos, sp->scrollingCurve.type(), orientation);
+    pushSegment(ScrollTypeFlick, deltaTime, 1.0, startPos, deltaPos, endPos, sp->scrollingCurve.type(), orientation);
 }
 
 
@@ -1810,13 +1820,18 @@ qreal QScrollerPrivate::nextSegmentPosition(QQueue<ScrollSegment> &segments, qin
     while (!segments.isEmpty()) {
         const ScrollSegment s = segments.head();
 
-        if ((s.startTime + s.deltaTime) <= now) {
+        if ((s.startTime + s.deltaTime * s.stopProgress) <= now) {
             segments.dequeue();
-            pos = s.startPos + s.deltaPos;
+            pos = s.stopPos;
         } else if (s.startTime <= now) {
-            qreal progress = qreal(now - s.startTime) / (qreal(s.deltaTime) / s.maxProgress);
-            pos = s.startPos + s.deltaPos * s.curve.valueForProgress(progress) / s.curve.valueForProgress(s.maxProgress);
-            break;
+            qreal progress = qreal(now - s.startTime) / qreal(s.deltaTime);
+            pos = s.startPos + s.deltaPos * s.curve.valueForProgress(progress);
+            if (s.deltaPos > 0 ? pos > s.stopPos : pos < s.stopPos) {
+                segments.dequeue();
+                pos = s.stopPos;
+            } else {
+                break;
+            }
         } else {
             break;
         }
