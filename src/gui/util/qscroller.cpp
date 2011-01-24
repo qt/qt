@@ -1236,8 +1236,8 @@ void QScrollerPrivate::createScrollToSegments(qreal v, qreal deltaTime, qreal en
                                                      : contentPosition.y() + overshootPosition.y();
     qreal deltaPos = (endPos - startPos) / 2;
 
-    pushSegment(type, deltaTime * 0.3, 1.0, startPos, deltaPos, startPos + deltaPos, QEasingCurve::InQuad, orientation);
-    pushSegment(type, deltaTime * 0.7, 1.0, startPos + deltaPos, deltaPos, endPos, sp->scrollingCurve.type(), orientation);
+    pushSegment(type, deltaTime * qreal(0.3), qreal(1.0), startPos, deltaPos, startPos + deltaPos, QEasingCurve::InQuad, orientation);
+    pushSegment(type, deltaTime * qreal(0.7), qreal(1.0), startPos + deltaPos, deltaPos, endPos, sp->scrollingCurve.type(), orientation);
 }
 
 /*! \internal
@@ -1312,7 +1312,7 @@ void QScrollerPrivate::createScrollingSegments(qreal v, qreal startPos, qreal pp
         qreal stopPos = endPos < minPos ? minPos : maxPos;
         qreal oDeltaTime = sp->overshootScrollTime;
 
-        pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.7, 1.0, startPos, stopPos - startPos, stopPos, sp->scrollingCurve.type(), orientation);
+        pushSegment(ScrollTypeOvershoot, oDeltaTime * qreal(0.7), qreal(1.0), startPos, stopPos - startPos, stopPos, sp->scrollingCurve.type(), orientation);
         return;
     }
 
@@ -1341,9 +1341,9 @@ void QScrollerPrivate::createScrollingSegments(qreal v, qreal startPos, qreal pp
             endPos = higherSnapPos;
 
         deltaPos = endPos - startPos;
-        qreal midPos = startPos + deltaPos * 0.3;
-        pushSegment(ScrollTypeFlick, sp->snapTime * 0.3, 1.0, startPos, midPos - startPos, midPos, QEasingCurve::InQuad, orientation);
-        pushSegment(ScrollTypeFlick, sp->snapTime * 0.7, 1.0, midPos, endPos - midPos, endPos, sp->scrollingCurve.type(), orientation);
+        qreal midPos = startPos + deltaPos * qreal(0.3);
+        pushSegment(ScrollTypeFlick, sp->snapTime * qreal(0.3), qreal(1.0), startPos, midPos - startPos, midPos, QEasingCurve::InQuad, orientation);
+        pushSegment(ScrollTypeFlick, sp->snapTime * qreal(0.7), qreal(1.0), midPos, endPos - midPos, endPos, sp->scrollingCurve.type(), orientation);
         return;
     }
 
@@ -1378,7 +1378,7 @@ void QScrollerPrivate::createScrollingSegments(qreal v, qreal startPos, qreal pp
             pushSegment(ScrollTypeFlick, deltaTime, stopProgress, startPos, endPos, stopPos, sp->scrollingCurve.type(), orientation);
         } else {
             qreal oDeltaTime = sp->overshootScrollTime;
-            qreal oStopProgress = qMin(stopProgress + oDeltaTime * 0.3 / deltaTime, qreal(1));
+            qreal oStopProgress = qMin(stopProgress + oDeltaTime * qreal(0.3) / deltaTime, qreal(1));
             qreal oDistance = startPos + deltaPos * sp->scrollingCurve.valueForProgress(oStopProgress) - stopPos;
             qreal oMaxDistance = qSign(oDistance) * (viewSize * sp->overshootScrollDistanceFactor);
 
@@ -1391,12 +1391,12 @@ void QScrollerPrivate::createScrollingSegments(qreal v, qreal startPos, qreal pp
             }
 
             pushSegment(ScrollTypeFlick, deltaTime, oStopProgress, startPos, deltaPos, stopPos + oDistance, sp->scrollingCurve.type(), orientation);
-            pushSegment(ScrollTypeOvershoot, oDeltaTime * 0.7, 1.0, stopPos + oDistance, -oDistance, stopPos, sp->scrollingCurve.type(), orientation);
+            pushSegment(ScrollTypeOvershoot, oDeltaTime * qreal(0.7), qreal(1.0), stopPos + oDistance, -oDistance, stopPos, sp->scrollingCurve.type(), orientation);
         }
         return;
     }
 
-    pushSegment(ScrollTypeFlick, deltaTime, 1.0, startPos, deltaPos, endPos, sp->scrollingCurve.type(), orientation);
+    pushSegment(ScrollTypeFlick, deltaTime, qreal(1.0), startPos, deltaPos, endPos, sp->scrollingCurve.type(), orientation);
 }
 
 
