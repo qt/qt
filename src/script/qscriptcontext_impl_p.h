@@ -252,7 +252,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::popScope()
         Q_UNIMPLEMENTED();
         return InvalidValue();
     }
-    v8::Persistent<v8::Context> scopeContext = scopes.takeFirst();
+    v8::Persistent<v8::Context> scopeContext = scopes.takeLast();
     v8::Handle<v8::Object> object = scopeContext->GetExtensionObject();
     scopeContext->Exit();
     scopeContext.Dispose();
