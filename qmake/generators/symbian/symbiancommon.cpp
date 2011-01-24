@@ -629,6 +629,7 @@ void SymbianCommonGenerator::writeRssFile(QString &numberOfIcons, QString &iconF
         t << "// * user." << endl;
         t << "// ============================================================================" << endl;
         t << endl;
+        t << "CHARACTER_SET UTF8" << endl;
         t << "#include <appinfo.rh>" << endl;
         t << "#include \"" << fixedTarget << ".loc\"" << endl;
         t << endl;
