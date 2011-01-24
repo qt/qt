@@ -47,6 +47,8 @@
 
 #include <float.h>
 
+#define QML_RUNTIME_TESTING
+
 class Renderer;
 
 class Node;
@@ -163,7 +165,7 @@ public:
 
     virtual QRectF subtreeBoundingRect() const;
 
-#if defined(QML_RUNTIME_TESTING)
+#ifdef QML_RUNTIME_TESTING
     QString description;
 #endif
 
@@ -191,11 +193,6 @@ private:
     DirtyFlags m_flags;
     uint m_updateFlags;
     bool m_subtree_enabled;
-#ifndef QT_NO_DEBUG
-    friend class NodeUpdater;
-    static int currentSerialNumber;
-    int m_serial_number;
-#endif
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Node::DirtyFlags);

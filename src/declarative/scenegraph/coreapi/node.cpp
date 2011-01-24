@@ -47,20 +47,6 @@
 
 #include "limits.h"
 
-#ifndef QT_NO_DEBUG
-int Node::currentSerialNumber = 0;
-#endif
-
-#ifndef QT_NO_DEBUG
-static int qt_node_count = 0;
-
-static void qt_print_node_count()
-{
-    qDebug("Number of leaked nodes: %i", qt_node_count);
-    qt_node_count = -1;
-}
-#endif
-
 Node::Node()
     : m_parent(0)
     , m_nodeFlags(0)
@@ -68,28 +54,10 @@ Node::Node()
     , m_updateFlags(0)
     , m_subtree_enabled(true)
 {
-#ifndef QT_NO_DEBUG
-    ++qt_node_count;
-    static bool atexit_registered = false;
-    if (!atexit_registered) {
-        atexit(qt_print_node_count);
-        atexit_registered = true;
-    }
-#endif
-
-#ifndef QT_NO_DEBUG
-    m_serial_number = currentSerialNumber++;
-#endif
 }
 
 Node::~Node()
 {
-#ifndef QT_NO_DEBUG
-    --qt_node_count;
-    if (qt_node_count < 0)
-        qDebug("Node destroyed after qt_print_node_count() was called.");
-#endif
-
     destroy();
 }
 

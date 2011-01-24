@@ -96,6 +96,7 @@ public:
 QSGContext::QSGContext(QObject *parent) :
     QObject(*(new QSGContextPrivate), parent)
 {
+    printf("Node in declarative is size: %d\n", sizeof(Node));
 }
 
 
