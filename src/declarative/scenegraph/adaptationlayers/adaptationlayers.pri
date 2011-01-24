@@ -11,8 +11,7 @@ HEADERS += \
     $$PWD/qsgthreadedtexturemanager.h \
     $$PWD/distancefield_glyphnode.h \
     $$PWD/distancefield_glyphnode_p.h \
-    $$PWD/qvsyncanimationdriver_p.h \
-    scenegraph/adaptationlayers/qsgmactexturemanager_mac_p.h
+    $$PWD/qvsyncanimationdriver_p.h
 
 SOURCES += \
     $$PWD/adaptationlayer.cpp \
@@ -25,13 +24,12 @@ SOURCES += \
     $$PWD/qsgthreadedtexturemanager.cpp \
     $$PWD/distancefield_glyphnode.cpp \
     $$PWD/distancefield_glyphnode_p.cpp \
-    $$PWD/qvsyncanimationdriver.cpp \
-    scenegraph/adaptationlayers/qsgmactexturemanager_mac.cpp
+    $$PWD/qvsyncanimationdriver.cpp
 
-#macx:{
-#    SOURCES += $$PWD/mactexturemanager.cpp
-#    HEADERS += $$PWD/mactexturemanager.h
-#}
+macx:{
+    SOURCES += $$PWD/qsgmactexturemanager_mac.cpp
+    HEADERS += $$PWD/qsgmactexturemanager_mac_p.h
+}
 
 
 #contains(QT_CONFIG, qpa) {
