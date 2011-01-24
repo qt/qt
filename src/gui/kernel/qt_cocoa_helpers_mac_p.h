@@ -103,6 +103,7 @@
 #include <qtimer.h>
 #include <qtooltip.h>
 #include <private/qeffects_p.h>
+#include <private/qwidget_p.h>
 #include <qtextdocument.h>
 #include <qdebug.h>
 #include <qpoint.h>
@@ -244,6 +245,59 @@ void qt_cocoaPostMessageAfterEventLoopExit(id target, SEL selector, int argCount
 #endif
 
 #endif
+
+class QMacScrollOptimization {
+    // This class is made optimize for the case when the user
+    // scrolls both horizontally and vertically at the same
+    // time. This will result in two QWheelEvents (one for each
+    // direction), which will typically result in two calls to
+    // QWidget::_scroll_sys. Rather than copying pixels twize on
+    // screen because of this, we add this helper class to try to
+    // get away with only one blit.
+    static QWidgetPrivate *_target;
+    static bool _inWheelEvent;
+    static int _dx;
+    static int _dy;
+    static QRect _scrollRect;
+
+public:
+    static void initNewScroll()
+    {
+        _inWheelEvent = true;
+    }
+
+    static bool delayScroll(QWidgetPrivate *target, int dx, int dy, const QRect &scrollRect)
+    {
+        if (!_inWheelEvent)
+            return false;
+        if (_target && _target != target)
+            return false;
+        if (_scrollRect.width() != -1 && _scrollRect != scrollRect)
+            return false;
+
+        _target = target;
+        _dx += dx;
+        _dy += dy;
+        _scrollRect = scrollRect;
+        return true;
+    }
+
+    static void performDelayedScroll()
+    {
+        if (!_inWheelEvent)
+            return;
+        if (!_target)
+            return;
+
+        _inWheelEvent = false;
+        _target->scroll_sys(_dx, _dy, _scrollRect);
+
+        _target = 0;
+        _dx = 0;
+        _dy = 0;
+        _scrollRect = QRect(0, 0, -1, -1);
+    }
+};
 
 void qt_mac_post_retranslateAppMenu();
 

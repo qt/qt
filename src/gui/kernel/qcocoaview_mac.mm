@@ -579,6 +579,10 @@ static int qCocoaViewCount = 0;
     }
 
 #ifndef QT_NO_WHEELEVENT
+    // ### Qt 5: Send one QWheelEvent with dx, dy and dz
+
+    QMacScrollOptimization::initNewScroll();
+
     if (deltaX != 0) {
         QWheelEvent qwe(qlocal, qglobal, deltaX, buttons, keyMods, Qt::Horizontal);
         qt_sendSpontaneousEvent(widgetToGetMouse, &qwe);
@@ -595,6 +599,8 @@ static int qCocoaViewCount = 0;
         QWheelEvent qwe(qlocal, qglobal, deltaZ, buttons, keyMods, (Qt::Orientation)3);
         qt_sendSpontaneousEvent(widgetToGetMouse, &qwe);
     }
+
+    QMacScrollOptimization::performDelayedScroll();
 #endif //QT_NO_WHEELEVENT
 }
 

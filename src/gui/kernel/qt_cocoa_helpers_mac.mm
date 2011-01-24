@@ -1724,6 +1724,12 @@ void qt_mac_post_retranslateAppMenu()
 #endif
 }
 
+QWidgetPrivate *QMacScrollOptimization::_target = 0;
+bool QMacScrollOptimization::_inWheelEvent = false;
+int QMacScrollOptimization::_dx = 0;
+int QMacScrollOptimization::_dy = 0;
+QRect QMacScrollOptimization::_scrollRect = QRect(0, 0, -1, -1);
+
 #ifdef QT_MAC_USE_COCOA
 // This method implements the magic for the drawRectSpecial method.
 // We draw a line at the upper edge of the content view in order to
