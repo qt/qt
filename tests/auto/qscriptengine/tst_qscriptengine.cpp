@@ -1229,7 +1229,6 @@ void tst_QScriptEngine::getSetGlobalObject()
     QCOMPARE(glob.isValid(), true);
     QCOMPARE(glob.isObject(), true);
     QVERIFY(!glob.isFunction());
-    QEXPECT_FAIL("", "currentContext is not yet implemented", Continue);
     QVERIFY(eng.currentContext()->thisObject().strictlyEquals(glob));
     QVERIFY(eng.currentContext()->activationObject().strictlyEquals(glob));
     QCOMPARE(glob.toString(), QString::fromLatin1("[object global]"));
@@ -1247,7 +1246,6 @@ void tst_QScriptEngine::getSetGlobalObject()
     QScriptValue obj = eng.newObject();
     eng.setGlobalObject(obj);
     QVERIFY(eng.globalObject().strictlyEquals(obj));
-    QEXPECT_FAIL("", "currentContext is not yet implemented", Continue);
     QVERIFY(eng.currentContext()->thisObject().strictlyEquals(obj));
     QVERIFY(eng.currentContext()->activationObject().strictlyEquals(obj));
     QVERIFY(eng.evaluate("this").strictlyEquals(obj));
@@ -1260,13 +1258,11 @@ void tst_QScriptEngine::getSetGlobalObject()
     obj = eng.newObject();
     eng.setGlobalObject(obj);
     QVERIFY(eng.globalObject().strictlyEquals(obj));
-    QEXPECT_FAIL("", "currentContext is not yet implemented", Continue);
     QVERIFY(eng.currentContext()->thisObject().strictlyEquals(obj));
     QVERIFY(eng.currentContext()->activationObject().strictlyEquals(obj));
 
     collectGarbage_helper(eng);
     QVERIFY(eng.globalObject().strictlyEquals(obj));
-    QEXPECT_FAIL("", "currentContext is not yet implemented", Continue);
     QVERIFY(eng.currentContext()->thisObject().strictlyEquals(obj));
     QVERIFY(eng.currentContext()->activationObject().strictlyEquals(obj));
 
