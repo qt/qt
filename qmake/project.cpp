@@ -254,11 +254,6 @@ static QStringList split_arg_list(QString params)
             while(x && params_data[x-1].unicode() == SPACE)
                 --x;
             QString mid(params_data+last, x-last);
-            if(quote) {
-                if(mid[0] == quote && mid[(int)mid.length()-1] == quote)
-                    mid = mid.mid(1, mid.length()-2);
-                quote = 0;
-            }
             args << mid;
             break;
         }
