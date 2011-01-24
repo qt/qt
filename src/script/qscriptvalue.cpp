@@ -42,7 +42,7 @@ QT_BEGIN_NAMESPACE
     Constructs an invalid value.
 */
 QScriptValue::QScriptValue()
-    : d_ptr(new QScriptValuePrivate())
+    : d_ptr(InvalidValue())
 {
 }
 

@@ -233,7 +233,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValueIteratorPrivate::valu
 {
     //dump("value()");
     if (!isValid())
-        return new QScriptValuePrivate();
+        return InvalidValue();
     // FIXME it could be faster!
     if (m_usingClassIterator)
         return m_object->property(m_classIterator->name().toString(), QScriptValue::ResolveLocal);

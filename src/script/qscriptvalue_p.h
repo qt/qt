@@ -60,6 +60,8 @@ class QScriptValuePrivate
         : public QScriptSharedData
         , public QScriptLinkedNode
 {
+protected:
+    inline QScriptValuePrivate();
 public:
     inline static QScriptValuePrivate* get(const QScriptValue& q);
     inline static QScriptValue get(const QScriptValuePrivate* d);
@@ -67,7 +69,6 @@ public:
     inline static QScriptValue get(QScriptPassPointer<QScriptValuePrivate> d);
     inline ~QScriptValuePrivate();
 
-    inline QScriptValuePrivate();
     inline QScriptValuePrivate(bool value);
     inline QScriptValuePrivate(int value);
     inline QScriptValuePrivate(uint value);
@@ -198,6 +199,27 @@ private:
     inline bool isStringBased() const;
     inline bool prepareArgumentsForCall(v8::Handle<v8::Value> argv[], const QScriptValueList& arguments) const;
 };
+
+/*!
+   \internal
+   Do not use directly! Please use InvalidValue which is a static instance pointer.
+   \attention Instances of that classes leak reference so they can't be deleted by a smart pointer.
+*/
+class QScriptInvalidValuePrivate : public QScriptValuePrivate
+{
+public:
+    QScriptInvalidValuePrivate()
+        : QScriptValuePrivate()
+    {
+        ref.ref();
+    }
+
+    ~QScriptInvalidValuePrivate()
+    {
+        ref.deref();
+    }
+};
+Q_GLOBAL_STATIC(QScriptInvalidValuePrivate, InvalidValue)
 
 QT_END_NAMESPACE
 

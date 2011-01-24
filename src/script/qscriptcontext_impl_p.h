@@ -117,7 +117,7 @@ inline QScriptContextPrivate::~QScriptContextPrivate()
 inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::argument(int index) const
 {
     if (index < 0)
-        return new QScriptValuePrivate();
+        return InvalidValue();
 
     if (arguments) {
         if (index >= arguments->Length())
@@ -193,7 +193,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::callee() c
         return new QScriptValuePrivate(engine, arguments->Callee());
 
     Q_UNIMPLEMENTED();
-    return new QScriptValuePrivate();
+    return InvalidValue();
 }
 
 inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::activationObject() const
@@ -202,7 +202,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::activation
         return new QScriptValuePrivate(engine, engine->globalObject());
     if (context.IsEmpty()) {
         Q_UNIMPLEMENTED();
-        return new QScriptValuePrivate();
+        return InvalidValue();
     }
     Q_ASSERT(!context.IsEmpty());
     return new QScriptValuePrivate(engine, context->GetExtensionObject());
@@ -250,7 +250,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::popScope()
         // In the old back-end, this would pop the activation object
         // from the scope chain.
         Q_UNIMPLEMENTED();
-        return new QScriptValuePrivate();
+        return InvalidValue();
     }
     v8::Persistent<v8::Context> scopeContext = scopes.takeFirst();
     v8::Handle<v8::Object> object = scopeContext->GetExtensionObject();

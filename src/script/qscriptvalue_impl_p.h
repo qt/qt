@@ -238,7 +238,7 @@ QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::toObject(QScriptEng
     Q_ASSERT(engine);
     if (this->engine() && engine != this->engine()) {
         qWarning("QScriptEngine::toObject: cannot convert value created in a different engine");
-        return new QScriptValuePrivate();
+        return InvalidValue();
     }
 
     v8::HandleScope scope;
@@ -257,11 +257,11 @@ QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::toObject(QScriptEng
         if (m_value->IsObject())
             return const_cast<QScriptValuePrivate*>(this);
         if (m_value->IsNull() || m_value->IsUndefined()) // avoid "Uncaught TypeError: Cannot convert null to object"
-            return new QScriptValuePrivate();
+            return InvalidValue();
         return new QScriptValuePrivate(engine, m_value->ToObject());
     default:
         Q_ASSERT_X(false, Q_FUNC_INFO, "Not all states are included in this switch");
-        return new QScriptValuePrivate();
+        return InvalidValue();
     }
 }
 
@@ -678,7 +678,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::prototype() 
         v8::HandleScope handleScope;
         return new QScriptValuePrivate(engine(), v8::Handle<v8::Object>::Cast(m_value)->GetPrototype());
     }
-    return new QScriptValuePrivate();
+    return InvalidValue();
 }
 
 inline void QScriptValuePrivate::setPrototype(QScriptValuePrivate* prototype)
@@ -815,7 +815,7 @@ inline void QScriptValuePrivate::setProperty(quint32 index, QScriptValuePrivate*
 inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(const QString& name, const QScriptValue::ResolveFlags& mode) const
 {
     if (!isObject() || !name.length())
-        return new QScriptValuePrivate();
+        return InvalidValue();
 
     v8::HandleScope handleScope;
     return property(QScriptConverter::toString(name), mode);
@@ -824,7 +824,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(con
 inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(QScriptStringPrivate* name, const QScriptValue::ResolveFlags& mode) const
 {
     if (!isObject() || !name->isValid())
-        return new QScriptValuePrivate();
+        return InvalidValue();
 
     v8::HandleScope handleScope;
     return property(name->asV8Value(), mode);
@@ -840,7 +840,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(v8:
 inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(quint32 index, const QScriptValue::ResolveFlags& mode) const
 {
     if (!isObject())
-        return new QScriptValuePrivate();
+        return InvalidValue();
     return property<>(index, mode);
 }
 
@@ -861,10 +861,10 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::property(T n
     if (result.IsEmpty() || (result->IsUndefined() && !self->Has(name))) {
         // In QtScript we make a distinction between a property that exists and has value undefined,
         // and a property that doesn't exist; in the latter case, we should return an invalid value.
-        return new QScriptValuePrivate();
+        return InvalidValue();
     }
     if (!(mode & QScriptValue::ResolvePrototype) && engine()->getOwnProperty(self, name).IsEmpty())
-        return new QScriptValuePrivate();
+        return InvalidValue();
 
     return new QScriptValuePrivate(engine(), result);
 }
@@ -909,12 +909,12 @@ inline QScriptValue::PropertyFlags QScriptValuePrivate::propertyFlags(v8::Handle
 inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::data() const
 {
     if (!isObject())
-        return new QScriptValuePrivate();
+        return InvalidValue();
     v8::HandleScope handleScope;
     v8::Handle<v8::Object> self(v8::Object::Cast(*m_value));
     v8::Handle<v8::Value> value = self->GetHiddenValue(engine()->qtDataId());
     if (value.IsEmpty())
-        return new QScriptValuePrivate();
+        return InvalidValue();
     return new QScriptValuePrivate(engine(), value);
 }
 
@@ -970,7 +970,7 @@ inline int QScriptValuePrivate::convertArguments(QVarLengthArray<v8::Handle<v8::
 inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::call(QScriptValuePrivate* thisObject, const QScriptValueList& args)
 {
     if (!isCallable())
-        return new QScriptValuePrivate();
+        return InvalidValue();
 
     v8::HandleScope handleScope;
 
@@ -979,7 +979,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::call(QScript
     QVarLengthArray<v8::Handle<v8::Value>, 8> argv(argc);
     if (!prepareArgumentsForCall(argv.data(), args)) {
         qWarning("QScriptValue::call() failed: cannot call function with argument created in a different engine");
-        return new QScriptValuePrivate();
+        return InvalidValue();
     }
 
     return call(thisObject, argc, argv.data());
@@ -988,7 +988,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::call(QScript
 inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::call(QScriptValuePrivate* thisObject, const QScriptValue& arguments)
 {
     if (!isCallable())
-        return new QScriptValuePrivate();
+        return InvalidValue();
 
     v8::HandleScope handleScope;
 
@@ -996,7 +996,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::call(QScript
     int argc = convertArguments(&argv, arguments);
     if (argc == -2) {
         qWarning("QScriptValue::call() failed: cannot call function with thisObject created in a different engine");
-        return new QScriptValuePrivate();
+        return InvalidValue();
     }
     return call(thisObject, argc, argv.data());
 }
@@ -1013,7 +1013,7 @@ QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::call(QScriptValuePr
     } else {
         if (!thisObject->assignEngine(e)) {
             qWarning("QScriptValue::call() failed: cannot call function with thisObject created in a different engine");
-            return new QScriptValuePrivate();
+            return InvalidValue();
         }
 
         recv = v8::Handle<v8::Object>(v8::Object::Cast(*thisObject->m_value));
@@ -1071,7 +1071,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::construct(co
         return ctor->construct(args);
     }
     if (!isFunction())
-        return new QScriptValuePrivate();
+        return InvalidValue();
 
     v8::HandleScope handleScope;
 
@@ -1080,7 +1080,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::construct(co
     QVarLengthArray<v8::Handle<v8::Value>, 8> argv(argc);
     if (!prepareArgumentsForCall(argv.data(), args)) {
         qWarning("QScriptValue::construct() failed: cannot construct function with argument created in a different engine");
-        return new QScriptValuePrivate();
+        return InvalidValue();
     }
 
     return construct(argc, argv.data());
@@ -1089,7 +1089,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::construct(co
 inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::construct(const QScriptValue& arguments)
 {
     if (!isFunction())
-        return new QScriptValuePrivate();
+        return InvalidValue();
 
     v8::HandleScope handleScope;
 
@@ -1097,7 +1097,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptValuePrivate::construct(co
     int argc = convertArguments(&argv, arguments);
     if (argc == -2) {
         qWarning("QScriptValue::construct() failed: cannot construct function with argument created in a different engine");
-        return new QScriptValuePrivate();
+        return InvalidValue();
     }
 
     return construct(argc, argv.data());
@@ -1169,6 +1169,7 @@ void QScriptValuePrivate::reinitialize()
 */
 void QScriptValuePrivate::reinitialize(QScriptEnginePrivate* engine, v8::Handle<v8::Value> value)
 {
+    Q_ASSERT_X(this != InvalidValue(), Q_FUNC_INFO, "static invalid can't be reinitialized to a different value");
     if (isJSBased()) {
         m_value.Dispose();
         // avoid double registration

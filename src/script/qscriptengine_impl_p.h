@@ -142,7 +142,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(QS
 //    v8::Handle<v8::Script> script = program->compiled(this);
 //    return evaluate(script, tryCatch);
     if (program->isNull())
-        return new QScriptValuePrivate();
+        return InvalidValue();
     return evaluate(program->m_program, program->m_fileName, program->m_line);
 }
 

@@ -781,7 +781,7 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::evaluate(v8::Handl
         m_state = Idle;
         if (exception.IsEmpty()) {
             // This is possible on syntax errors like { a:12, b:21 } <- missing "(", ")" around expression.
-            return new QScriptValuePrivate();
+            return InvalidValue();
         }
         setException(exception, tryCatch.Message());
         return new QScriptValuePrivate(this, exception);
@@ -1028,7 +1028,7 @@ QScriptValue QScriptEngine::uncaughtException() const
 QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::uncaughtException() const
 {
     if (!hasUncaughtException())
-        return new QScriptValuePrivate();
+        return InvalidValue();
     return new QScriptValuePrivate(const_cast<QScriptEnginePrivate*>(this), static_cast<v8::Handle<v8::Value> >(m_exception));
 }
 
@@ -1687,7 +1687,7 @@ QScriptPassPointer<QScriptValuePrivate> QScriptEnginePrivate::defaultPrototype(i
 {
     TypeInfos::TypeInfo info = m_typeInfos.value(metaTypeId);
     if (info.prototype.IsEmpty())
-        return new QScriptValuePrivate();
+        return InvalidValue();
     return new QScriptValuePrivate(this, info.prototype);
 }
 

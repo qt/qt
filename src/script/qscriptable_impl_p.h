@@ -58,7 +58,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptablePrivate::thisObject() 
 {
     QScriptContextPrivate *c = context();
     if (!c)
-        return new QScriptValuePrivate();
+        return InvalidValue();
     return new QScriptValuePrivate(c->engine, c->thisObject());
 }
 
@@ -74,7 +74,7 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptablePrivate::argument(int 
 {
     QScriptContextPrivate *c = context();
     if (!c)
-        return new QScriptValuePrivate();
+        return InvalidValue();
     return c->argument(index);
 }
 
