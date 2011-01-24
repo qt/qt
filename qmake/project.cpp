@@ -287,7 +287,7 @@ static QStringList split_value_list(const QString &vals)
 {
     QString build;
     QStringList ret;
-    QStack<char> quote;
+    ushort quote = 0;
 
     const ushort LPAREN = '(';
     const ushort RPAREN = ')';
@@ -303,17 +303,17 @@ static QStringList split_value_list(const QString &vals)
         if(x != (int)vals_len-1 && unicode == BACKSLASH &&
             (vals_data[x+1].unicode() == SINGLEQUOTE || vals_data[x+1].unicode() == DOUBLEQUOTE)) {
             build += vals_data[x++]; //get that 'escape'
-        } else if(!quote.isEmpty() && unicode == quote.top()) {
-            quote.pop();
-        } else if(unicode == SINGLEQUOTE || unicode == DOUBLEQUOTE) {
-            quote.push(unicode);
+        } else if(quote && unicode == quote) {
+            quote = 0;
+        } else if(!quote && (unicode == SINGLEQUOTE || unicode == DOUBLEQUOTE)) {
+            quote = unicode;
         } else if(unicode == RPAREN) {
             --parens;
         } else if(unicode == LPAREN) {
             ++parens;
         }
 
-        if(!parens && quote.isEmpty() && (vals_data[x] == Option::field_sep)) {
+        if(!parens && !quote && (vals_data[x] == Option::field_sep)) {
             ret << build;
             build.clear();
         } else {
