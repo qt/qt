@@ -2124,16 +2124,18 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
   \o \image declarative-anchors_example.png
   \o Text anchored to Image, horizontally centered and vertically below, with a margin.
   \qml
-  Image {
-      id: pic
-      // ...
-  }
-  Text {
-      id: label
-      anchors.horizontalCenter: pic.horizontalCenter
-      anchors.top: pic.bottom
-      anchors.topMargin: 5
-      // ...
+  Item {
+      Image {
+          id: pic
+          // ...
+      }
+      Text {
+          id: label
+          anchors.horizontalCenter: pic.horizontalCenter
+          anchors.top: pic.bottom
+          anchors.topMargin: 5
+          // ...
+      }
   }
   \endqml
   \row
@@ -2143,16 +2145,18 @@ QDeclarativeAnchorLine QDeclarativeItemPrivate::baseline() const
   property of both defaults to 0.
 
   \qml
-    Image {
-        id: pic
-        // ...
-    }
-    Text {
-        id: label
-        anchors.left: pic.right
-        anchors.leftMargin: 5
-        // ...
-    }
+  Item {
+      Image {
+          id: pic
+          // ...
+      }
+      Text {
+          id: label
+          anchors.left: pic.right
+          anchors.leftMargin: 5
+          // ...
+      }
+  }
   \endqml
   \endtable
 
