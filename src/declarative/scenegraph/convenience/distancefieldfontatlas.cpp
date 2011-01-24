@@ -80,11 +80,12 @@ void qt_disableFontHinting(QFont &font)
         QFontEngineFT *ftEngine = static_cast<QFontEngineFT *>(fontEngine);
         ftEngine->setDefaultHintStyle(QFontEngineFT::HintNone);
     }
-#elif defined(USE_S60_ENGINE)
-#elif defined(USE_WIN_ENGINE)
-#elif defined(USE_CORETEXT_ENGINE)
-#elif defined(USE_MAC_ENGINE)
-#elif defined(USE_QPA_ENGINE)
+#else
+    static bool warned = false;
+    if (!warned) {
+        qWarning("Warning: Un-hinted fonts are not supported yet on this platform.");
+        warned = true;
+    }
 #endif
 }
 
@@ -157,9 +158,9 @@ QHash<QFontEngine::FaceId, QString> DistanceFieldFontAtlas::m_distfield_images;
 QHash<QFontEngine::FaceId, QSGTextureRef> DistanceFieldFontAtlas::m_textures;
 
 DistanceFieldFontAtlas::DistanceFieldFontAtlas(const QFont &font)
-    : m_font(font)
 {
-    m_fontEngine = QFontPrivate::get(font)->engineForScript(QUnicodeTables::Common);\
+    m_font = font;
+    m_fontEngine = QFontPrivate::get(m_font)->engineForScript(QUnicodeTables::Common);\
     QFontEngine *realEngine = m_fontEngine;
     if (realEngine->type() == QFontEngine::Multi) {
         QFontEngineMulti *fem = static_cast<QFontEngineMulti *>(realEngine);
@@ -277,18 +278,6 @@ QImage DistanceFieldFontAtlas::distanceFieldAtlas() const
 
 bool DistanceFieldFontAtlas::useDistanceFieldForFont(const QFont &font)
 {
-#if !defined(Q_WS_WIN) && !defined(Q_WS_MAC)
-    static QStringList args = qApp->arguments();
-    if (args.contains("--distancefield-text")) {
-        DistanceFieldFontAtlas a(font);
-        return a.distanceFieldAvailable();
-    }
-#else
-    static bool warningPrinted = false;
-    if (!warningPrinted) {
-        warningPrinted = true;
-        qWarning("Warning: DistanceFieldGlyphNode is not implemented yet on Windows and Mac.");
-    }
-#endif
-    return false;
+    DistanceFieldFontAtlas a(font);
+    return a.distanceFieldAvailable();
 }
