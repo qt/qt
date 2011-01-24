@@ -859,6 +859,7 @@ public:
     bool isInUnifiedToolbar;
     QWindowSurface *unifiedSurface;
     QPoint toolbar_offset;
+    bool touchEventsEnabled;
 #endif
     void determineWindowClass();
     void transferChildren();
@@ -871,7 +872,7 @@ public:
     static OSStatus qt_window_event(EventHandlerCallRef er, EventRef event, void *);
     static OSStatus qt_widget_event(EventHandlerCallRef er, EventRef event, void *);
     static bool qt_widget_rgn(QWidget *, short, RgnHandle, bool);
-    void registerTouchWindow();
+    void registerTouchWindow(bool enable = true);
 #elif defined(Q_WS_QWS) // <--------------------------------------------------------- QWS
     void setMaxWindowState_helper();
     void setFullScreenSize_helper();

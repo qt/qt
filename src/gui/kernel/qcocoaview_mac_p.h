@@ -71,6 +71,7 @@ Q_GUI_EXPORT
     bool sendKeyEvents;
     bool fromKeyDownEvent;
     QString *composingText;
+    @public int alienTouchCount;
 }
 - (id)initWithQWidget:(QWidget *)widget widgetPrivate:(QWidgetPrivate *)widgetprivate;
 - (void) finishInitWithQWidget:(QWidget *)widget widgetPrivate:(QWidgetPrivate *)widgetprivate;

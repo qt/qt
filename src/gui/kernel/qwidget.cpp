@@ -327,6 +327,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
     hasOwnContext = false;
     isInUnifiedToolbar = false;
     unifiedSurface = 0;
+    touchEventsEnabled = false;
 #endif // QT_MAC_USE_COCOA
 #ifdef QWIDGET_EXTRA_DEBUG
     static int count = 0;

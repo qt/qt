@@ -153,6 +153,8 @@ static int qCocoaViewCount = 0;
     composing = false;
     sendKeyEvents = true;
     fromKeyDownEvent = false;
+    alienTouchCount = 0;
+
     [self setHidden:YES];
     return self;
 }

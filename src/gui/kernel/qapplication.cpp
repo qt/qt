@@ -4423,6 +4423,22 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         break;
     }
 #endif // QT_NO_GESTURES
+#ifdef QT_MAC_USE_COCOA
+    case QEvent::Enter:
+        if (receiver->isWidgetType()) {
+            QWidget *w = static_cast<QWidget *>(receiver);
+            if (w->testAttribute(Qt::WA_AcceptTouchEvents))
+                qt_widget_private(w)->registerTouchWindow(true);
+        }
+    break;
+    case QEvent::Leave:
+        if (receiver->isWidgetType()) {
+            QWidget *w = static_cast<QWidget *>(receiver);
+            if (w->testAttribute(Qt::WA_AcceptTouchEvents))
+                qt_widget_private(w)->registerTouchWindow(false);
+        }
+    break;
+#endif
     default:
         res = d->notify_helper(receiver, e);
         break;

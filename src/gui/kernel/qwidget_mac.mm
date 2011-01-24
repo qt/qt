@@ -2697,8 +2697,6 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         setWSGeometry();
     if (destroyid)
         qt_mac_destructView(destroyid);
-    if (q->testAttribute(Qt::WA_AcceptTouchEvents))
-        registerTouchWindow();
 }
 
 /*!
@@ -4981,19 +4979,36 @@ void QWidgetPrivate::registerDropSite(bool on)
 #endif
 }
 
-void QWidgetPrivate::registerTouchWindow()
+void QWidgetPrivate::registerTouchWindow(bool enable)
 {
+#ifdef QT_MAC_USE_COCOA
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
     if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_6)
         return;
+
     Q_Q(QWidget);
-    if (!q->testAttribute(Qt::WA_WState_Created))
+    if (enable == touchEventsEnabled)
         return;
-#ifndef QT_MAC_USE_COCOA
-    // Needs implementation!
+
+    QCocoaView *view = static_cast<QCocoaView *>(qt_mac_effectiveview_for(q));
+    if (!view)
+        return;
+
+    if (enable) {
+        ++view->alienTouchCount;
+        if (view->alienTouchCount == 1) {
+            touchEventsEnabled = true;
+            [view setAcceptsTouchEvents:YES];
+        }
+    } else {
+        --view->alienTouchCount;
+        if (view->alienTouchCount == 0) {
+            touchEventsEnabled = false;
+            [view setAcceptsTouchEvents:NO];
+        }
+    }
 #else
-    NSView *view = qt_mac_effectiveview_for(q);
-    [view setAcceptsTouchEvents:YES];
+    Q_UNUSED(on);
 #endif
 #endif
 }
