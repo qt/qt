@@ -55,14 +55,16 @@
 #include <private/qdeclarativeglobal_p.h>
 #include <private/qdeclarativefastproperties_p.h>
 
+
 QT_BEGIN_NAMESPACE
 
-DEFINE_BOOL_CONFIG_OPTION(qmlExperimental, QML_EXPERIMENTAL);
-DEFINE_BOOL_CONFIG_OPTION(qmlDisableOptimizer, QML_DISABLE_OPTIMIZER);
-DEFINE_BOOL_CONFIG_OPTION(qmlDisableFastProperties, QML_DISABLE_FAST_PROPERTIES);
-DEFINE_BOOL_CONFIG_OPTION(bindingsDump, QML_BINDINGS_DUMP);
+DEFINE_BOOL_CONFIG_OPTION(qmlExperimental, QML_EXPERIMENTAL)
+DEFINE_BOOL_CONFIG_OPTION(qmlDisableOptimizer, QML_DISABLE_OPTIMIZER)
+DEFINE_BOOL_CONFIG_OPTION(qmlDisableFastProperties, QML_DISABLE_FAST_PROPERTIES)
+DEFINE_BOOL_CONFIG_OPTION(bindingsDump, QML_BINDINGS_DUMP)
+DEFINE_BOOL_CONFIG_OPTION(qmlMissedOptimizations, QML_MISSED_OPTIMIZATIONS)
 
-Q_GLOBAL_STATIC(QDeclarativeFastProperties, fastProperties);
+Q_GLOBAL_STATIC(QDeclarativeFastProperties, fastProperties)
 
 #if defined(Q_CC_GNU) && (!defined(Q_CC_INTEL) || __INTEL_COMPILER >= 1200)
 #  define QML_THREADED_INTERPRETER
@@ -554,7 +556,7 @@ struct Program {
 };
 }
 
-struct QDeclarativeBindingCompilerPrivate
+struct QDeclarativeBindingCompilerPrivate: protected AST::Visitor
 {
     struct Result {
         Result() : unknownType(false), metaObject(0), type(-1), reg(-1) {}
@@ -575,7 +577,7 @@ struct QDeclarativeBindingCompilerPrivate
         QSet<QString> subscriptionSet;
     };
 
-    QDeclarativeBindingCompilerPrivate() : registers(0) {}
+    QDeclarativeBindingCompilerPrivate() : registers(0), _expr(0) {}
 
     void resetInstanceState();
     int commitCompile();
@@ -591,27 +593,11 @@ struct QDeclarativeBindingCompilerPrivate
 
     bool compile(QDeclarativeJS::AST::Node *);
 
-    bool parseExpression(QDeclarativeJS::AST::Node *, Result &);
-
-    bool tryName(QDeclarativeJS::AST::Node *);
-    bool parseName(QDeclarativeJS::AST::Node *, Result &);
-
-    bool tryArith(QDeclarativeJS::AST::Node *);
-    bool parseArith(QDeclarativeJS::AST::Node *, Result &);
     bool numberArith(Result &, const Result &, const Result &, QSOperator::Op op);
     bool stringArith(Result &, const Result &, const Result &, QSOperator::Op op);
 
-    bool tryLogic(QDeclarativeJS::AST::Node *);
-    bool parseLogic(QDeclarativeJS::AST::Node *, Result &);
-
-    bool tryConditional(QDeclarativeJS::AST::Node *);
-    bool parseConditional(QDeclarativeJS::AST::Node *, Result &);
-
-    bool tryConstant(QDeclarativeJS::AST::Node *);
+    bool parseName(QDeclarativeJS::AST::Node *, Result &);
     bool parseConstant(QDeclarativeJS::AST::Node *, Result &);
-
-    bool tryMethod(QDeclarativeJS::AST::Node *);
-    bool parseMethod(QDeclarativeJS::AST::Node *, Result &);
 
     bool buildName(QStringList &, QDeclarativeJS::AST::Node *, QList<QDeclarativeJS::AST::ExpressionNode *> *nodes = 0);
     bool fetch(Result &type, const QMetaObject *, int reg, int idx, const QStringList &, QDeclarativeJS::AST::ExpressionNode *);
@@ -656,6 +642,460 @@ struct QDeclarativeBindingCompilerPrivate
 
     QByteArray buildSignalTable() const;
     QByteArray buildExceptionData() const;
+
+protected:
+    bool expression(AST::ExpressionNode *ast, Result *r) {
+        std::swap(_expr, r);
+        accept(ast);
+        std::swap(_expr, r);
+        return r->reg != -1;
+    }
+
+    void statement(AST::Statement *ast) {
+        accept(ast);
+    }
+
+    inline void accept(AST::Node *ast) { AST::Node::accept(ast, this); }
+
+    // QML
+    virtual bool visit(AST::UiProgram *) { return false; }
+    virtual bool visit(AST::UiImportList *) { return false; }
+    virtual bool visit(AST::UiImport *) { return false; }
+    virtual bool visit(AST::UiPublicMember *) { return false; }
+    virtual bool visit(AST::UiSourceElement *) { return false; }
+    virtual bool visit(AST::UiObjectDefinition *) { return false; }
+    virtual bool visit(AST::UiObjectInitializer *) { return false; }
+    virtual bool visit(AST::UiObjectBinding *) { return false; }
+    virtual bool visit(AST::UiScriptBinding *) { return false; }
+    virtual bool visit(AST::UiArrayBinding *) { return false; }
+    virtual bool visit(AST::UiObjectMemberList *) { return false; }
+    virtual bool visit(AST::UiArrayMemberList *) { return false; }
+    virtual bool visit(AST::UiQualifiedId *) { return false; }
+    virtual bool visit(AST::UiSignature *) { return false; }
+    virtual bool visit(AST::UiFormalList *) { return false; }
+    virtual bool visit(AST::UiFormal *) { return false; }
+
+    // object, array and regex literals.
+    virtual bool visit(AST::ArrayLiteral *) { return false; }
+    virtual bool visit(AST::RegExpLiteral *) { return false; }
+    virtual bool visit(AST::ObjectLiteral *) { return false; }
+    virtual bool visit(AST::ElementList *) { return false; }
+    virtual bool visit(AST::Elision *) { return false; }
+    virtual bool visit(AST::PropertyNameAndValueList *) { return false; }
+    virtual bool visit(AST::IdentifierPropertyName *) { return false; }
+    virtual bool visit(AST::StringLiteralPropertyName *) { return false; }
+    virtual bool visit(AST::NumericLiteralPropertyName *) { return false; }
+    virtual bool visit(AST::NewMemberExpression *) { return false; }
+    virtual bool visit(AST::NewExpression *) { return false; }
+
+    // JS
+    virtual bool visit(AST::NestedExpression *) { return true; } // the value of the nested expression
+
+    // expressions with side-effects
+    virtual bool visit(AST::PreIncrementExpression *) { return false; }
+    virtual bool visit(AST::PreDecrementExpression *) { return false; }
+    virtual bool visit(AST::PostIncrementExpression *) { return false; }
+    virtual bool visit(AST::PostDecrementExpression *) { return false; }
+    virtual bool visit(AST::DeleteExpression *) { return false; }
+
+    virtual bool visit(AST::ThisExpression *) { return false; }
+    virtual bool visit(AST::NullExpression *) { return false; }
+
+    virtual bool visit(AST::TrueLiteral *ast) { parseConstant(ast, *_expr); return false; }
+    virtual bool visit(AST::FalseLiteral *ast) { parseConstant(ast, *_expr); return false; }
+    virtual bool visit(AST::StringLiteral *ast) { parseConstant(ast, *_expr); return false; }
+    virtual bool visit(AST::NumericLiteral *ast) { parseConstant(ast, *_expr); return false; }
+
+    virtual bool visit(AST::IdentifierExpression *ast) { parseName(ast, *_expr); return false; }
+    virtual bool visit(AST::FieldMemberExpression *ast) { parseName(ast, *_expr); return false; }
+
+    virtual bool visit(AST::ArrayMemberExpression *) { return false; }
+    virtual bool visit(AST::VoidExpression *) { return false; } // evaluate the expression for its side-effect.
+    virtual bool visit(AST::TypeOfExpression *) { return false; }
+
+
+    virtual bool visit(AST::ArgumentList *) { return false; } // unreachable
+
+    virtual bool visit(AST::CallExpression *expr)
+    {
+        QStringList name;
+        if (!buildName(name, expr->base))
+            return false;
+
+        if (name.count() != 2 || name.at(0) != QLatin1String("Math"))
+            return false;
+
+        QString method = name.at(1);
+
+        AST::ArgumentList *args = expr->arguments;
+        if (!args) return false;
+        AST::ExpressionNode *arg0 = args->expression;
+        args = args->next;
+        if (!args) return false;
+        AST::ExpressionNode *arg1 = args->expression;
+        if (args->next != 0) return false;
+        if (!arg0 || !arg1) return false;
+
+        Result r0;
+        if (!expression(arg0, &r0)) return false;
+        Result r1;
+        if (!expression(arg1, &r1)) return false;
+
+        if (r0.type != QMetaType::QReal || r1.type != QMetaType::QReal)
+            return false;
+
+        Instr op;
+        if (method == QLatin1String("max")) {
+            op.common.type = Instr::MaxReal;
+        } else if (method == QLatin1String("min")) {
+            op.common.type = Instr::MinReal;
+        } else {
+            return false;
+        }
+        // We release early to reuse registers
+        releaseReg(r0.reg);
+        releaseReg(r1.reg);
+
+        op.binaryop.output = acquireReg();
+        if (op.binaryop.output == -1)
+            return false;
+
+        op.binaryop.src1 = r0.reg;
+        op.binaryop.src2 = r1.reg;
+        bytecode << op;
+
+        _expr->type = QMetaType::QReal;
+        _expr->reg = op.binaryop.output;
+
+        return false;
+    }
+
+    virtual bool visit(AST::UnaryPlusExpression *ast)
+    {
+        if (qmlMissedOptimizations()) {
+            Result expr;
+            if (expression(ast->expression, &expr)) {
+                qDebug() << "missed optimization opportunity (unary plus)";
+            }
+        }
+        return false;
+    }
+
+    virtual bool visit(AST::UnaryMinusExpression *ast)
+    {
+        if (qmlMissedOptimizations()) {
+            Result expr;
+            if (expression(ast->expression, &expr)) {
+                qDebug() << "missed optimization opportunity (unary minus)";
+            }
+        }
+        return false;
+    }
+
+    virtual bool visit(AST::TildeExpression *ast)
+    {
+        if (qmlMissedOptimizations()) {
+            Result expr;
+            if (expression(ast->expression, &expr)) {
+                qDebug() << "missed optimization opportunity (tilde expression)";
+            }
+        }
+        return false;
+    }
+
+    virtual bool visit(AST::NotExpression *ast)
+    {
+        if (qmlMissedOptimizations()) {
+            Result expr;
+            if (expression(ast->expression, &expr)) {
+                qDebug() << "missed optimization opportunity (not expression)";
+            }
+        }
+        return false;
+    }
+
+    virtual bool visit(AST::BinaryExpression *ast)
+    {
+        switch (static_cast<QSOperator::Op>(ast->op)) {
+        case QSOperator::Add:
+        case QSOperator::Sub: {
+            Result lhs, rhs;
+
+            if (! expression(ast->left, &lhs))
+                return false;
+            else if (! expression(ast->right, &rhs))
+                return false;
+
+            Result type;
+            type.reg = acquireReg(); // re-use
+
+            if (type.reg != -1) {
+                bool ok = false;
+
+                if ((lhs.type == QVariant::Int || lhs.type == QMetaType::QReal) &&
+                    (rhs.type == QVariant::Int || rhs.type == QMetaType::QReal))
+                    ok = numberArith(type, lhs, rhs, (QSOperator::Op)ast->op);
+                else if(ast->op == QSOperator::Sub)
+                    ok = numberArith(type, lhs, rhs, (QSOperator::Op)ast->op);
+                else if ((lhs.type == QMetaType::QString || lhs.unknownType) &&
+                         (rhs.type == QMetaType::QString || rhs.unknownType) &&
+                         (lhs.type == QMetaType::QString || rhs.type == QMetaType::QString))
+                    ok = stringArith(type, lhs, rhs, (QSOperator::Op)ast->op);
+
+                if (ok)
+                    *_expr = type;
+            }
+
+        } break;
+
+        // ### missed optimization opportunity
+        case QSOperator::Gt:
+        case QSOperator::Equal:
+        case QSOperator::NotEqual: {
+            Result lhs, rhs;
+
+            if (! expression(ast->left, &lhs))
+                return false;
+            else if (! expression(ast->right, &rhs))
+                return false;
+
+            Result type;
+
+            type.reg = acquireReg();
+            if (type.reg == -1)
+                return false;
+
+            type.metaObject = 0;
+            type.type = QVariant::Bool;
+
+            if (lhs.type == QMetaType::QReal && rhs.type == QMetaType::QReal) {
+
+                Instr op;
+                if (ast->op == QSOperator::Gt)
+                    op.common.type = Instr::GreaterThanReal;
+                else if (ast->op == QSOperator::Equal)
+                    op.common.type = Instr::CompareReal;
+                else if (ast->op == QSOperator::NotEqual)
+                    op.common.type = Instr::NotCompareReal;
+                else
+                    return false;
+                op.binaryop.output = type.reg;
+                op.binaryop.src1 = lhs.reg;
+                op.binaryop.src2 = rhs.reg;
+                bytecode << op;
+
+
+            } else if (lhs.type == QMetaType::QString && rhs.type == QMetaType::QString) {
+
+                Instr op;
+                if (ast->op == QSOperator::Equal)
+                    op.common.type = Instr::CompareString;
+                else if (ast->op == QSOperator::NotEqual)
+                    op.common.type = Instr::NotCompareString;
+                else
+                    return false;
+                op.binaryop.output = type.reg;
+                op.binaryop.src1 = lhs.reg;
+                op.binaryop.src2 = rhs.reg;
+                bytecode << op;
+
+            } else {
+                return false;
+            }
+
+            releaseReg(lhs.reg);
+            releaseReg(rhs.reg);
+            *_expr = type;
+        } break;
+
+        default: {
+            if (qmlMissedOptimizations()) {
+                Result lhs, rhs;
+
+                if (! expression(ast->left, &lhs))
+                    return false;
+                else if (! expression(ast->right, &rhs))
+                    return false;
+
+                qDebug() << "missed optimization opportunity (binary expression" << operatorName(ast->op) << ")";
+            }
+
+        } break;
+
+        } // switch
+
+        return false;
+    }
+
+    static const char *operatorName(int op) {
+        static const char *name[] = {
+            "Add",
+            "And",
+            "InplaceAnd",
+            "Assign",
+            "BitAnd",
+            "BitOr",
+            "BitXor",
+            "InplaceSub",
+            "Div",
+            "InplaceDiv",
+            "Equal",
+            "Ge",
+            "Gt",
+            "In",
+            "InplaceAdd",
+            "InstanceOf",
+            "Le",
+            "LShift",
+            "InplaceLeftShift",
+            "Lt",
+            "Mod",
+            "InplaceMod",
+            "Mul",
+            "InplaceMul",
+            "NotEqual",
+            "Or",
+            "InplaceOr",
+            "RShift",
+            "InplaceRightShift",
+            "StrictEqual",
+            "StrictNotEqual",
+            "Sub",
+            "URShift",
+            "InplaceURightShift",
+            "InplaceXor"
+        };
+        return name[op];
+    }
+
+    virtual bool visit(AST::ConditionalExpression *ast)
+    {
+        Result etype, ok, ko;
+        expression(ast->expression, &etype);
+        if (etype.reg != -1 || etype.type != QVariant::Bool)
+            return false;
+
+        expression(ast->ok, &ok);
+        if (ok.reg != -1 || ok.unknownType)
+            return false;
+
+        expression(ast->ko, &ko);
+        if (ko.reg != -1 || ko.unknownType)
+            return false;
+
+        Instr skip;
+        skip.common.type = Instr::Skip;
+        skip.skip.reg = etype.reg;
+        skip.skip.count = 0;
+        int skipIdx = bytecode.count();
+        bytecode << skip;
+
+        // Release to allow reuse of reg
+        releaseReg(etype.reg);
+
+        QSet<QString> preSubSet = subscriptionSet;
+
+        // int preConditionalSubscriptions = subscriptionSet.count();
+
+        int skipIdx2 = bytecode.count();
+        skip.skip.reg = -1;
+        bytecode << skip;
+
+        // Release to allow reuse of reg
+        releaseReg(ok.reg);
+        bytecode[skipIdx].skip.count = bytecode.count() - skipIdx - 1;
+
+        subscriptionSet = preSubSet;
+
+        // Release to allow reuse of reg
+        releaseReg(ko.reg);
+        bytecode[skipIdx2].skip.count = bytecode.count() - skipIdx2 - 1;
+
+        if (ok != ko)
+            return false; // Must be same type and in same register
+
+        subscriptionSet = preSubSet;
+
+        if (!subscriptionNeutral(subscriptionSet, ok.subscriptionSet, ko.subscriptionSet))
+            return false; // Conditionals cannot introduce new subscriptions
+
+        *_expr = ok;
+
+        return false;
+    }
+
+    virtual bool visit(AST::Expression *ast)
+    {
+        // a comma expression
+
+        if (qmlMissedOptimizations()) {
+            Result left, right;
+            if (! expression(ast->left, &left))
+                return false;
+
+            if (! expression(ast->right, &right))
+                return false;
+
+            qDebug() << "missed optimization opportunity (comma expression)";
+
+            releaseReg(left.reg);
+            *_expr = right;
+        }
+
+        return false;
+    }
+
+    // skip statements
+    virtual bool visit(AST::IfStatement *)
+    {
+        // ### missed optimization opportunity
+        return false;
+    }
+
+    virtual bool visit(AST::Block *)
+    {
+        // ### missed optimization opportunity
+        return false;
+    }
+
+    virtual bool visit(AST::StatementList *) { return false; }
+    virtual bool visit(AST::VariableStatement *) { return false; }
+    virtual bool visit(AST::VariableDeclarationList *) { return false; }
+    virtual bool visit(AST::VariableDeclaration *) { return false; }
+    virtual bool visit(AST::EmptyStatement *) { return false; }
+    virtual bool visit(AST::ExpressionStatement *) { return false; }
+    virtual bool visit(AST::DoWhileStatement *) { return false; }
+    virtual bool visit(AST::WhileStatement *) { return false; }
+    virtual bool visit(AST::ForStatement *) { return false; }
+    virtual bool visit(AST::LocalForStatement *) { return false; }
+    virtual bool visit(AST::ForEachStatement *) { return false; }
+    virtual bool visit(AST::LocalForEachStatement *) { return false; }
+    virtual bool visit(AST::ContinueStatement *) { return false; }
+    virtual bool visit(AST::BreakStatement *) { return false; }
+    virtual bool visit(AST::ReturnStatement *) { return false; }
+    virtual bool visit(AST::WithStatement *) { return false; }
+    virtual bool visit(AST::SwitchStatement *) { return false; }
+    virtual bool visit(AST::CaseBlock *) { return false; }
+    virtual bool visit(AST::CaseClauses *) { return false; }
+    virtual bool visit(AST::CaseClause *) { return false; }
+    virtual bool visit(AST::DefaultClause *) { return false; }
+    virtual bool visit(AST::LabelledStatement *) { return false; }
+    virtual bool visit(AST::ThrowStatement *) { return false; }
+    virtual bool visit(AST::TryStatement *) { return false; }
+    virtual bool visit(AST::Catch *) { return false; }
+    virtual bool visit(AST::Finally *) { return false; }
+    virtual bool visit(AST::FunctionDeclaration *) { return false; }
+    virtual bool visit(AST::FunctionExpression *) { return false; }
+    virtual bool visit(AST::FormalParameterList *) { return false; }
+    virtual bool visit(AST::FunctionBody *) { return false; }
+    virtual bool visit(AST::Program *) { return false; }
+    virtual bool visit(AST::SourceElements *) { return false; }
+    virtual bool visit(AST::FunctionSourceElement *) { return false; }
+    virtual bool visit(AST::StatementSourceElement *) { return false; }
+    virtual bool visit(AST::DebuggerStatement *) { return false; }
+
+private:
+    Result *_expr;
 };
 
 void QDeclarativeCompiledBindingsPrivate::unsubscribe(int subIndex)
@@ -1668,7 +2108,7 @@ bool QDeclarativeBindingCompilerPrivate::compile(QDeclarativeJS::AST::Node *node
 
     Result type;
 
-    if (!parseExpression(node, type)) 
+    if (!expression(node->expressionCast(), &type))
         return false;
 
     if (subscriptionSet.count() > 0xFFFF ||
@@ -1794,35 +2234,6 @@ bool QDeclarativeBindingCompilerPrivate::compile(QDeclarativeJS::AST::Node *node
             return false;
         }
     }
-}
-
-bool QDeclarativeBindingCompilerPrivate::parseExpression(QDeclarativeJS::AST::Node *node, Result &type)
-{
-    while (node->kind == AST::Node::Kind_NestedExpression)
-        node = static_cast<AST::NestedExpression *>(node)->expression;
-
-    if (tryArith(node)) {
-        if (!parseArith(node, type)) return false;
-    } else if (tryLogic(node)) {
-        if (!parseLogic(node, type)) return false;
-    } else if (tryConditional(node)) {
-        if (!parseConditional(node, type)) return false;
-    } else if (tryName(node)) {
-        if (!parseName(node, type)) return false;
-    } else if (tryConstant(node)) {
-        if (!parseConstant(node, type)) return false;
-    } else if (tryMethod(node)) {
-        if (!parseMethod(node, type)) return false;
-    } else {
-        return false;
-    }
-    return true;
-}
-
-bool QDeclarativeBindingCompilerPrivate::tryName(QDeclarativeJS::AST::Node *node)
-{
-    return node->kind == AST::Node::Kind_IdentifierExpression ||
-           node->kind == AST::Node::Kind_FieldMemberExpression;
 }
 
 bool QDeclarativeBindingCompilerPrivate::parseName(AST::Node *node, Result &type)
@@ -2057,46 +2468,6 @@ bool QDeclarativeBindingCompilerPrivate::parseName(AST::Node *node, Result &type
     return true;
 }
 
-bool QDeclarativeBindingCompilerPrivate::tryArith(QDeclarativeJS::AST::Node *node)
-{
-    if (node->kind != AST::Node::Kind_BinaryExpression)
-        return false;
-
-    AST::BinaryExpression *expression = static_cast<AST::BinaryExpression *>(node);
-    if (expression->op == QSOperator::Add ||
-        expression->op == QSOperator::Sub)
-        return true;
-    else
-        return false;
-}
-
-bool QDeclarativeBindingCompilerPrivate::parseArith(QDeclarativeJS::AST::Node *node, Result &type)
-{
-    AST::BinaryExpression *expression = static_cast<AST::BinaryExpression *>(node);
-
-    type.reg = acquireReg();
-    if (type.reg == -1)
-        return false;
-
-    Result lhs;
-    Result rhs;
-
-    if (!parseExpression(expression->left, lhs)) return false;
-    if (!parseExpression(expression->right, rhs)) return false;
-
-    if ((lhs.type == QVariant::Int || lhs.type == QMetaType::QReal) &&
-        (rhs.type == QVariant::Int || rhs.type == QMetaType::QReal))
-        return numberArith(type, lhs, rhs, (QSOperator::Op)expression->op);
-    else if(expression->op == QSOperator::Sub)
-        return numberArith(type, lhs, rhs, (QSOperator::Op)expression->op);
-    else if ((lhs.type == QMetaType::QString || lhs.unknownType) && 
-             (rhs.type == QMetaType::QString || rhs.unknownType) && 
-             (lhs.type == QMetaType::QString || rhs.type == QMetaType::QString))
-        return stringArith(type, lhs, rhs, (QSOperator::Op)expression->op);
-    else
-        return false;
-}
-
 bool QDeclarativeBindingCompilerPrivate::numberArith(Result &type, const Result &lhs, const Result &rhs, QSOperator::Op op)
 {
     bool nativeReal = rhs.type == QMetaType::QReal ||
@@ -2237,154 +2608,6 @@ bool QDeclarativeBindingCompilerPrivate::stringArith(Result &type, const Result 
     return true;
 }
 
-bool QDeclarativeBindingCompilerPrivate::tryLogic(QDeclarativeJS::AST::Node *node)
-{
-    if (node->kind != AST::Node::Kind_BinaryExpression)
-        return false;
-
-    AST::BinaryExpression *expression = static_cast<AST::BinaryExpression *>(node);
-    if (expression->op == QSOperator::Gt ||
-        expression->op == QSOperator::Equal ||
-        expression->op == QSOperator::NotEqual)
-        return true;
-    else
-        return false;
-}
-
-bool QDeclarativeBindingCompilerPrivate::parseLogic(QDeclarativeJS::AST::Node *node, Result &type)
-{
-    AST::BinaryExpression *expression = static_cast<AST::BinaryExpression *>(node);
-
-    Result lhs;
-    Result rhs;
-
-    if (!parseExpression(expression->left, lhs)) return false;
-    if (!parseExpression(expression->right, rhs)) return false;
-
-    type.reg = acquireReg();
-    if (type.reg == -1)
-        return false;
-
-    type.metaObject = 0;
-    type.type = QVariant::Bool;
-
-    if (lhs.type == QMetaType::QReal && rhs.type == QMetaType::QReal) {
-
-        Instr op;
-        if (expression->op == QSOperator::Gt)
-            op.common.type = Instr::GreaterThanReal;
-        else if (expression->op == QSOperator::Equal)
-            op.common.type = Instr::CompareReal;
-        else if (expression->op == QSOperator::NotEqual)
-            op.common.type = Instr::NotCompareReal;
-        else
-            return false;
-        op.binaryop.output = type.reg;
-        op.binaryop.src1 = lhs.reg;
-        op.binaryop.src2 = rhs.reg;
-        bytecode << op;
-
-
-    } else if (lhs.type == QMetaType::QString && rhs.type == QMetaType::QString) {
-
-        Instr op;
-        if (expression->op == QSOperator::Equal)
-            op.common.type = Instr::CompareString;
-        else if (expression->op == QSOperator::NotEqual)
-            op.common.type = Instr::NotCompareString;
-        else
-            return false;
-        op.binaryop.output = type.reg;
-        op.binaryop.src1 = lhs.reg;
-        op.binaryop.src2 = rhs.reg;
-        bytecode << op;
-
-    } else {
-        return false;
-    }
-
-    releaseReg(lhs.reg);
-    releaseReg(rhs.reg);
-
-    return true;
-}
-
-bool QDeclarativeBindingCompilerPrivate::tryConditional(QDeclarativeJS::AST::Node *node)
-{
-    return (node->kind == AST::Node::Kind_ConditionalExpression);
-}
-
-bool QDeclarativeBindingCompilerPrivate::parseConditional(QDeclarativeJS::AST::Node *node, Result &type)
-{
-    AST::ConditionalExpression *expression = static_cast<AST::ConditionalExpression *>(node);
-
-    AST::Node *test = expression->expression;
-    if (test->kind == AST::Node::Kind_NestedExpression)
-        test = static_cast<AST::NestedExpression*>(test)->expression;
-
-    Result etype;
-    if (!parseExpression(test, etype)) return false;
-
-    if (etype.type != QVariant::Bool) 
-        return false;
-
-    Instr skip;
-    skip.common.type = Instr::Skip;
-    skip.skip.reg = etype.reg;
-    skip.skip.count = 0;
-    int skipIdx = bytecode.count();
-    bytecode << skip;
-
-    // Release to allow reuse of reg
-    releaseReg(etype.reg);
-
-    QSet<QString> preSubSet = subscriptionSet;
-
-    // int preConditionalSubscriptions = subscriptionSet.count();
-
-    Result ok;
-    if (!parseExpression(expression->ok, ok)) return false;
-    if (ok.unknownType) return false;
-
-    int skipIdx2 = bytecode.count();
-    skip.skip.reg = -1;
-    bytecode << skip;
-
-    // Release to allow reuse of reg
-    releaseReg(ok.reg);
-    bytecode[skipIdx].skip.count = bytecode.count() - skipIdx - 1;
-
-    subscriptionSet = preSubSet;
-
-    Result ko;
-    if (!parseExpression(expression->ko, ko)) return false;
-    if (ko.unknownType) return false;
-
-    // Release to allow reuse of reg
-    releaseReg(ko.reg);
-    bytecode[skipIdx2].skip.count = bytecode.count() - skipIdx2 - 1;
-
-    if (ok != ko)
-        return false; // Must be same type and in same register
-
-    subscriptionSet = preSubSet;
-
-    if (!subscriptionNeutral(subscriptionSet, ok.subscriptionSet, ko.subscriptionSet))
-        return false; // Conditionals cannot introduce new subscriptions
-
-    type = ok;
-
-    return true;
-}
-
-bool QDeclarativeBindingCompilerPrivate::tryConstant(QDeclarativeJS::AST::Node *node)
-{
-    return node->kind == AST::Node::Kind_TrueLiteral ||
-           node->kind == AST::Node::Kind_FalseLiteral ||
-           node->kind == AST::Node::Kind_NumericLiteral ||
-           node->kind == AST::Node::Kind_StringLiteral;
-}
-
 bool QDeclarativeBindingCompilerPrivate::parseConstant(QDeclarativeJS::AST::Node *node, Result &type)
 {
     type.metaObject = 0;
@@ -2430,67 +2653,6 @@ bool QDeclarativeBindingCompilerPrivate::parseConstant(QDeclarativeJS::AST::Node
     } else {
         return false;
     }
-}
-
-bool QDeclarativeBindingCompilerPrivate::tryMethod(QDeclarativeJS::AST::Node *node)
-{
-    return node->kind == AST::Node::Kind_CallExpression; 
-}
-
-bool QDeclarativeBindingCompilerPrivate::parseMethod(QDeclarativeJS::AST::Node *node, Result &result)
-{
-    AST::CallExpression *expr = static_cast<AST::CallExpression *>(node);
-
-    QStringList name;
-    if (!buildName(name, expr->base))
-        return false;
-
-    if (name.count() != 2 || name.at(0) != QLatin1String("Math"))
-        return false;
-
-    QString method = name.at(1);
-
-    AST::ArgumentList *args = expr->arguments;
-    if (!args) return false;
-    AST::ExpressionNode *arg0 = args->expression;
-    args = args->next;
-    if (!args) return false;
-    AST::ExpressionNode *arg1 = args->expression;
-    if (args->next != 0) return false;
-    if (!arg0 || !arg1) return false;
-
-    Result r0;
-    if (!parseExpression(arg0, r0)) return false;
-    Result r1;
-    if (!parseExpression(arg1, r1)) return false;
-
-    if (r0.type != QMetaType::QReal || r1.type != QMetaType::QReal)
-        return false;
-
-    Instr op;
-    if (method == QLatin1String("max")) {
-        op.common.type = Instr::MaxReal;
-    } else if (method == QLatin1String("min")) {
-        op.common.type = Instr::MinReal;
-    } else {
-        return false;
-    }
-    // We release early to reuse registers
-    releaseReg(r0.reg);
-    releaseReg(r1.reg);
-
-    op.binaryop.output = acquireReg();
-    if (op.binaryop.output == -1)
-        return false;
-
-    op.binaryop.src1 = r0.reg;
-    op.binaryop.src2 = r1.reg;
-    bytecode << op;
-
-    result.type = QMetaType::QReal;
-    result.reg = op.binaryop.output;
-
-    return true;
 }
 
 bool QDeclarativeBindingCompilerPrivate::buildName(QStringList &name,
