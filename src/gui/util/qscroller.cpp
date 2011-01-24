@@ -1012,7 +1012,7 @@ QPointF QScrollerPrivate::realDpi(int screen)
         // as 2 screens in QDesktopWidget, but libXRandR will only see 1 screen.
         // (although with the combined size of the Xinerama screens).
         // Additionally, libXrandr will simply crash when calling XRRSizes
-        // for (the non-existant) screen 1 in this scenario.
+        // for (the non-existent) screen 1 in this scenario.
         Window root =  RootWindow(X11->display, screen == -1 ? X11->defaultScreen : screen);
         int randrscreen = (root != XNone) ? X11->ptrXRRRootToScreen(X11->display, root) : -1;
 
