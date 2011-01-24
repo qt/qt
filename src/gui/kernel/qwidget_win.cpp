@@ -2064,9 +2064,8 @@ void QWidgetPrivate::setModal_sys()
 {
 }
 
-void QWidgetPrivate::registerTouchWindow(bool enable)
+void QWidgetPrivate::registerTouchWindow()
 {
-    Q_UNUSED(enable);
     Q_Q(QWidget);
 
     // enable WM_TOUCH* messages on our window

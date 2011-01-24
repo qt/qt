@@ -990,9 +990,8 @@ void QWidgetPrivate::setMask_sys(const QRegion& /* region */)
 
 }
 
-void QWidgetPrivate::registerTouchWindow(bool enable)
+void QWidgetPrivate::registerTouchWindow()
 {
-    Q_UNUSED(enable);
 #ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
     Q_Q(QWidget);
     if (q->testAttribute(Qt::WA_WState_Created) && q->windowType() != Qt::Desktop) {
