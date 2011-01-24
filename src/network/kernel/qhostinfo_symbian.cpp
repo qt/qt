@@ -126,7 +126,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     // the IPv6 addresses at the end of the address list in results.
 
     // Synchronous request.
-    err = hostResolver.GetByName(qt_QString2TPtrC(aceHostname), nameResult);
+    err = hostResolver.GetByName(qt_QString2TPtrC(QString::fromLatin1(aceHostname)), nameResult);
     if (err) {
         // TODO - Could there be other errors? Symbian docs don't say.
         if (err = KErrNotFound) {
