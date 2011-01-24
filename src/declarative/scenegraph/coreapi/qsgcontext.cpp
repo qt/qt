@@ -235,7 +235,8 @@ QAnimationDriver *QSGContext::createAnimationDriver(QWidget *window)
  */
 GlyphNodeInterface *QSGContext::createGlyphNode(const QFont &font)
 {
-    if (DistanceFieldFontAtlas::useDistanceFieldForFont(font))
+    static QStringList args = qApp->arguments();
+    if (args.contains("--distancefield-text") && DistanceFieldFontAtlas::useDistanceFieldForFont(font))
         return new DistanceFieldGlyphNode;
     else
         return new DefaultGlyphNode;
