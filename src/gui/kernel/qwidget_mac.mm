@@ -4653,11 +4653,10 @@ void QWidgetPrivate::scroll_sys(int dx, int dy)
 
 void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &qscrollRect)
 {
-    Q_Q(QWidget);
-
     if (QMacScrollOptimization::delayScroll(this, dx, dy, qscrollRect))
         return;
 
+    Q_Q(QWidget);
     if (QApplicationPrivate::graphicsSystem() && !paintOnScreen()) {
         // INVARIANT: Alien paint engine
         scrollRect(qscrollRect, dx, dy);

@@ -4430,6 +4430,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             if (w->testAttribute(Qt::WA_AcceptTouchEvents))
                 qt_widget_private(w)->registerTouchWindow(true);
         }
+        res = d->notify_helper(receiver, e);
     break;
     case QEvent::Leave:
         if (receiver->isWidgetType()) {
@@ -4437,6 +4438,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             if (w->testAttribute(Qt::WA_AcceptTouchEvents))
                 qt_widget_private(w)->registerTouchWindow(false);
         }
+        res = d->notify_helper(receiver, e);
     break;
 #endif
     default:

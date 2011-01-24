@@ -286,10 +286,10 @@ public:
     {
         if (!_inWheelEvent)
             return;
+        _inWheelEvent = false;
         if (!_target)
             return;
 
-        _inWheelEvent = false;
         _target->scroll_sys(_dx, _dy, _scrollRect);
 
         _target = 0;
