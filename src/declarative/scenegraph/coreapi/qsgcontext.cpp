@@ -58,6 +58,10 @@
 #include "qsgpartialuploadtexturemanager.h"
 #include "qsgthreadedtexturemanager.h"
 
+#ifdef Q_WS_MAC
+#include "qsgmactexturemanager_mac_p.h"
+#endif
+
 #include <QApplication>
 #include <QGLContext>
 
@@ -282,7 +286,11 @@ QSGTextureManager *QSGContext::createTextureManager()
         manager = new QSGThreadedTextureManager;
 
     } else {
+#ifdef Q_WS_MAC
+        manager = new QSGMacTextureManager;
+#else
         manager = new QSGPartialUploadTextureManager;
+#endif
     }
 
 //#if defined (Q_WS_MAC)

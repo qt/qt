@@ -10,6 +10,7 @@ HEADERS += \
     $$PWD/qsgpartialuploadtexturemanager.h \
     $$PWD/qsgthreadedtexturemanager.h \
     $$PWD/qvsyncanimationdriver_p.h \
+    scenegraph/adaptationlayers/qsgmactexturemanager_mac_p.h
 
 SOURCES += \
     $$PWD/adaptationlayer.cpp \
@@ -21,6 +22,7 @@ SOURCES += \
     $$PWD/qsgpartialuploadtexturemanager.cpp \
     $$PWD/qsgthreadedtexturemanager.cpp \
     $$PWD/qvsyncanimationdriver.cpp \
+    scenegraph/adaptationlayers/qsgmactexturemanager_mac.cpp
 
 #macx:{
 #    SOURCES += $$PWD/mactexturemanager.cpp
