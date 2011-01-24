@@ -1204,6 +1204,17 @@
         margin: 15px;
     }
 
+        .details
+        {
+            text-align: left;
+            font-size: 80%;
+            color: blue
+        }
+        .variableName
+        {
+            font-family: courier;
+	    color: blue
+        }
 
     .qmltype
     {

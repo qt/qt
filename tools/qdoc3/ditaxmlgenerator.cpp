@@ -202,6 +202,7 @@ QString DitaXmlGenerator::ditaTags[] =
         "fig",
         "i",
         "image",
+        "keyword",
         "li",
         "link",
         "linktext",
@@ -209,6 +210,7 @@ QString DitaXmlGenerator::ditaTags[] =
         "ol",
         "p",
         "parameter",
+        "ph",
         "pre",
         "related-links",
         "row",
@@ -759,6 +761,9 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                 t = DT_i;
             else if (atom->string() == ATOM_FORMATTING_TELETYPE)
                 t = DT_tt;
+            else if (atom->string().startsWith("span ")) {
+                t = DT_keyword;
+            }
             else if (atom->string() == ATOM_FORMATTING_UNDERLINE)
                 t = DT_u;
             else if (atom->string() == ATOM_FORMATTING_INDEX)
@@ -781,6 +786,32 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                         skipAhead = 1;
                     }
                 }
+            }
+            else if (t == DT_keyword) {
+                QString attr = atom->string().mid(5);
+                if (!attr.isEmpty()) {
+                    if (attr.contains('=')) {
+                        int index = 0;
+                        int from = 0;
+                        QString values;
+                        while (index >= 0) {
+                            index = attr.indexOf('"',from);
+                            if (index >= 0) {
+                                ++index;
+                                from = index;
+                                index = attr.indexOf('"',from);
+                                if (index > from) {
+                                    if (!values.isEmpty())
+                                        values.append(' ');
+                                    values += attr.mid(from,index-from);
+                                    from = index+1;
+                                }
+                            }
+                        }
+                        attr = values;
+                    }
+                }
+                xmlWriter().writeAttribute("outputclass", attr);
             }
         }
         break;

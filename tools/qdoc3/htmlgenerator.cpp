@@ -548,7 +548,11 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::FormatIf:
         break;
     case Atom::FormattingLeft:
-        out() << formattingLeftMap()[atom->string()];
+        if (atom->string().startsWith("span ")) {
+            out() << "<" + atom->string() << ">";
+        }
+        else
+            out() << formattingLeftMap()[atom->string()];
         if (atom->string() == ATOM_FORMATTING_PARAMETER) {
             if (atom->next() != 0 && atom->next()->type() == Atom::String) {
                 QRegExp subscriptRegExp("([a-z]+)_([0-9n])");
@@ -563,6 +567,9 @@ int HtmlGenerator::generateAtom(const Atom *atom,
     case Atom::FormattingRight:
         if (atom->string() == ATOM_FORMATTING_LINK) {
             endLink();
+        }
+        else if (atom->string().startsWith("span ")) {
+            out() << "</span>";
         }
         else {
             out() << formattingRightMap()[atom->string()];
@@ -948,10 +955,10 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         else { // (atom->string() == ATOM_LIST_VALUE)
             // ### Trenton
 
-            out() << "<tr><td  class=\"topAlign\"><tt>"
+            out() << "<tr><td class=\"topAlign\"><tt>"
                   << protectEnc(plainCode(marker->markedUpEnumValue(atom->next()->string(),
                                                                  relative)))
-                  << "</tt></td><td class=\" topAlign\">";
+                  << "</tt></td><td class=\"topAlign\">";
 
             QString itemValue;
             if (relative->type() == Node::Enum) {
@@ -977,7 +984,7 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         }
         else if (atom->string() == ATOM_LIST_VALUE) {
             if (threeColumnEnumValueTable) {
-                out() << "</td><td  class=\"topAlign\">";
+                out() << "</td><td class=\"topAlign\">";
                 if (matchAhead(atom, Atom::ListItemRight))
                     out() << "&nbsp;";
             }
@@ -2601,7 +2608,7 @@ void HtmlGenerator::generateSection(const NodeList& nl,
         else {
             if (twoColumn)
                 out() << "<table class=\"propsummary\">\n"
-                      << "<tr><td  class=\"topAlign\">";
+                      << "<tr><td class=\"topAlign\">";
             out() << "<ul>\n";
         }
 
@@ -2618,7 +2625,7 @@ void HtmlGenerator::generateSection(const NodeList& nl,
             }
             else {
                 if (twoColumn && i == (int) (nl.count() + 1) / 2)
-                    out() << "</ul></td><td  class=\"topAlign\"><ul>\n";
+                    out() << "</ul></td><td class=\"topAlign\"><ul>\n";
                 out() << "<li class=\"fn\">";
             }
 
@@ -2662,7 +2669,7 @@ void HtmlGenerator::generateSectionList(const Section& section,
         else {
             if (twoColumn)
                 out() << "<table class=\"propsummary\">\n"
-                      << "<tr><td  class=\"topAlign\">";
+                      << "<tr><td class=\"topAlign\">";
             out() << "<ul>\n";
         }
 

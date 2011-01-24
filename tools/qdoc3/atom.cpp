@@ -51,6 +51,7 @@ QString Atom::INDEX_         ("index");
 QString Atom::ITALIC_        ("italic");
 QString Atom::LINK_          ("link");
 QString Atom::PARAMETER_     ("parameter");
+QString Atom::SPAN_          ("span");
 QString Atom::SUBSCRIPT_     ("subscript");
 QString Atom::SUPERSCRIPT_   ("superscript");
 QString Atom::TELETYPE_      ("teletype");

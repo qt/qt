@@ -189,6 +189,7 @@ class Atom
     static QString ITALIC_;
     static QString LINK_;
     static QString PARAMETER_;
+    static QString SPAN_;
     static QString SUBSCRIPT_;
     static QString SUPERSCRIPT_;
     static QString TELETYPE_;
@@ -214,6 +215,7 @@ class Atom
 #define ATOM_FORMATTING_ITALIC          "italic"
 #define ATOM_FORMATTING_LINK            "link"
 #define ATOM_FORMATTING_PARAMETER       "parameter"
+#define ATOM_FORMATTING_SPAN            "span "
 #define ATOM_FORMATTING_SUBSCRIPT       "subscript"
 #define ATOM_FORMATTING_SUPERSCRIPT     "superscript"
 #define ATOM_FORMATTING_TELETYPE        "teletype"

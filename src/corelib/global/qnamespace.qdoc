@@ -233,23 +233,23 @@
 
     Qt's predefined QColor objects:
 
-    \value white       \div {id="color-white"} White (#ffffff) \enddiv
-    \value black       \div {id="color-black"} Black (#000000) \enddiv
-    \value red         \div {id="color-red"} Red (#ff0000) \enddiv
-    \value darkRed     \div {id="color-darkRed"} Dark red (#800000) \enddiv
-    \value green       \div {id="color-green"} Green (#00ff00) \enddiv
-    \value darkGreen   \div {id="color-darkGreen"} Dark green (#008000) \enddiv
-    \value blue        \div {id="color-blue"} Blue (#0000ff) \enddiv
-    \value darkBlue    \div {id="color-darkBlue"} Dark blue (#000080) \enddiv
-    \value cyan        \div {id="color-cyan"} Cyan (#00ffff) \enddiv
-    \value darkCyan    \div {id="color-darkCyan"} Dark cyan (#008080) \enddiv
-    \value magenta     \div {id="color-magenta"} Magenta (#ff00ff) \enddiv
-    \value darkMagenta \div {id="color-darkMagenta"} Dark magenta (#800080) \enddiv
-    \value yellow      \div {id="color-yellow"} Yellow (#ffff00) \enddiv
-    \value darkYellow  \div {id="color-darkYellow"} Dark yellow (#808000) \enddiv
-    \value gray        \div {id="color-gray"} Gray (#a0a0a4) \enddiv
-    \value darkGray    \div {id="color-darkGray"} Dark gray (#808080) \enddiv
-    \value lightGray   \div {id="color-lightGray"} Light gray (#c0c0c0) \enddiv
+    \value white       \span {id="color-white"} {White (#ffffff) }
+    \value black       \span {id="color-black"} {Black (#000000) }
+    \value red         \span {id="color-red"} {Red (#ff0000) }
+    \value darkRed     \span {id="color-darkRed"} {Dark red (#800000) }
+    \value green       \span {id="color-green"} {Green (#00ff00) }
+    \value darkGreen   \span {id="color-darkGreen"} {Dark green (#008000) }
+    \value blue        \span {id="color-blue"} {Blue (#0000ff) }
+    \value darkBlue    \span {id="color-darkBlue"} {Dark blue (#000080) }
+    \value cyan        \span {id="color-cyan"} {Cyan (#00ffff) }
+    \value darkCyan    \span {id="color-darkCyan"} {Dark cyan (#008080) }
+    \value magenta     \span {id="color-magenta"} {Magenta (#ff00ff) }
+    \value darkMagenta \span {id="color-darkMagenta"} {Dark magenta (#800080) }
+    \value yellow      \span {id="color-yellow"} {Yellow (#ffff00) }
+    \value darkYellow  \span {id="color-darkYellow"} {Dark yellow (#808000) }
+    \value gray        \span {id="color-gray"} {Gray (#a0a0a4) }
+    \value darkGray    \span {id="color-darkGray"} {Dark gray (#808080) }
+    \value lightGray   \span {id="color-lightGray"} {Light gray (#c0c0c0) }
     \value transparent a transparent black value (i.e., QColor(0, 0, 0, 0))
     \value color0 0 pixel value (for bitmaps)
     \value color1 1 pixel value (for bitmaps)
