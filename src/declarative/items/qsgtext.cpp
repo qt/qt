@@ -43,7 +43,10 @@
 #include "qsgtext_p.h"
 #include "qsgtext_p_p.h"
 
+#ifdef QML_DISTANCE_FIELDS
 #include "distancefieldfontatlas_p.h"
+#endif
+
 #include "qsgcontext.h"
 #include "adaptationlayer.h"
 #include "qsgtextnode_p.h"
@@ -581,8 +584,11 @@ void QSGText::setFont(const QFont &font)
         return;
 
     d->font = font;
+
+#ifdef QML_DISTANCE_FIELDS
     if (DistanceFieldFontAtlas::useDistanceFieldForFont(d->font))
         qt_disableFontHinting(d->font);
+#endif
 
     d->updateLayout();
 
