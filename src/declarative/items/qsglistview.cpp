@@ -90,15 +90,15 @@ QString QSGViewSection::sectionString(const QString &value)
 
 //----------------------------------------------------------------------------
 
-class FxListItem
+class FxListItemSG
 {
 public:
-    FxListItem(QSGItem *i, QSGListView *v) : item(i), section(0), view(v) {
+    FxListItemSG(QSGItem *i, QSGListView *v) : item(i), section(0), view(v) {
         attached = static_cast<QSGListViewAttached*>(qmlAttachedPropertiesObject<QSGListView>(item));
         if (attached)
             attached->setView(view);
     }
-    ~FxListItem() {}
+    ~FxListItemSG() {}
     qreal position() const {
         if (section)
             return (view->orientation() == QSGListView::Vertical ? section->y() : section->x());
@@ -189,13 +189,13 @@ public:
 
     void init();
     void clear();
-    FxListItem *createItem(int modelIndex);
-    void releaseItem(FxListItem *item);
+    FxListItemSG *createItem(int modelIndex);
+    void releaseItem(FxListItemSG *item);
 
-    FxListItem *visibleItem(int modelIndex) const {
+    FxListItemSG *visibleItem(int modelIndex) const {
         if (modelIndex >= visibleIndex && modelIndex < visibleIndex + visibleItems.count()) {
             for (int i = modelIndex - visibleIndex; i < visibleItems.count(); ++i) {
-                FxListItem *item = visibleItems.at(i);
+                FxListItemSG *item = visibleItems.at(i);
                 if (item->index == modelIndex)
                     return item;
             }
@@ -203,21 +203,21 @@ public:
         return 0;
     }
 
-    FxListItem *firstVisibleItem() const {
+    FxListItemSG *firstVisibleItem() const {
         const qreal pos = position();
         for (int i = 0; i < visibleItems.count(); ++i) {
-            FxListItem *item = visibleItems.at(i);
+            FxListItemSG *item = visibleItems.at(i);
             if (item->index != -1 && item->endPosition() > pos)
                 return item;
         }
         return visibleItems.count() ? visibleItems.first() : 0;
     }
 
-    FxListItem *nextVisibleItem() const {
+    FxListItemSG *nextVisibleItem() const {
         const qreal pos = position();
         bool foundFirst = false;
         for (int i = 0; i < visibleItems.count(); ++i) {
-            FxListItem *item = visibleItems.at(i);
+            FxListItemSG *item = visibleItems.at(i);
             if (item->index != -1) {
                 if (foundFirst)
                     return item;
@@ -270,7 +270,7 @@ public:
     }
 
     qreal positionAt(int modelIndex) const {
-        if (FxListItem *item = visibleItem(modelIndex))
+        if (FxListItemSG *item = visibleItem(modelIndex))
             return item->position();
         if (!visibleItems.isEmpty()) {
             if (modelIndex < visibleIndex) {
@@ -297,7 +297,7 @@ public:
     }
 
     qreal endPositionAt(int modelIndex) const {
-        if (FxListItem *item = visibleItem(modelIndex))
+        if (FxListItemSG *item = visibleItem(modelIndex))
             return item->endPosition();
         if (!visibleItems.isEmpty()) {
             if (modelIndex < visibleIndex) {
@@ -319,7 +319,7 @@ public:
     }
 
     QString sectionAt(int modelIndex) {
-        if (FxListItem *item = visibleItem(modelIndex))
+        if (FxListItemSG *item = visibleItem(modelIndex))
             return item->attached->section();
 
         QString section;
@@ -336,7 +336,7 @@ public:
     }
 
     qreal snapPosAt(qreal pos) {
-        if (FxListItem *snapItem = snapItemAt(pos))
+        if (FxListItemSG *snapItem = snapItemAt(pos))
             return snapItem->position();
         if (visibleItems.count()) {
             qreal firstPos = visibleItems.first()->position();
@@ -349,10 +349,10 @@ public:
         return qRound((pos - startPosition()) / averageSize) * averageSize + startPosition();
     }
 
-    FxListItem *snapItemAt(qreal pos) {
-        FxListItem *snapItem = 0;
+    FxListItemSG *snapItemAt(qreal pos) {
+        FxListItemSG *snapItem = 0;
         for (int i = 0; i < visibleItems.count(); ++i) {
-            FxListItem *item = visibleItems[i];
+            FxListItemSG *item = visibleItems[i];
             if (item->index == -1)
                 continue;
             qreal itemTop = item->position();
@@ -367,7 +367,7 @@ public:
     int lastVisibleIndex() const {
         int lastIndex = -1;
         for (int i = visibleItems.count()-1; i >= 0; --i) {
-            FxListItem *listItem = visibleItems.at(i);
+            FxListItemSG *listItem = visibleItems.at(i);
             if (listItem->index != -1) {
                 lastIndex = listItem->index;
                 break;
@@ -381,7 +381,7 @@ public:
         if (modelIndex < visibleIndex || modelIndex >= visibleIndex + visibleItems.count())
             return -1;
         for (int i = 0; i < visibleItems.count(); ++i) {
-            FxListItem *listItem = visibleItems.at(i);
+            FxListItemSG *listItem = visibleItems.at(i);
             if (listItem->index == modelIndex)
                 return i;
             if (listItem->index > modelIndex)
@@ -424,7 +424,7 @@ public:
     void checkVisible() const {
         int skip = 0;
         for (int i = 0; i < visibleItems.count(); ++i) {
-            FxListItem *listItem = visibleItems.at(i);
+            FxListItemSG *listItem = visibleItems.at(i);
             if (listItem->index == -1) {
                 ++skip;
             } else if (listItem->index != visibleIndex + i - skip) {
@@ -441,7 +441,7 @@ public:
     void updateTrackedItem();
     void createHighlight();
     void updateHighlight();
-    void createSection(FxListItem *);
+    void createSection(FxListItemSG *);
     void updateSections();
     void updateCurrentSection();
     void updateCurrent(int);
@@ -455,9 +455,9 @@ public:
 
     QDeclarativeGuard<QSGVisualModel> model;
     QVariant modelVariant;
-    QList<FxListItem*> visibleItems;
+    QList<FxListItemSG*> visibleItems;
     QHash<QSGItem*,int> unrequestedItems;
-    FxListItem *currentItem;
+    FxListItemSG *currentItem;
     QSGListView::Orientation orient;
     qreal visiblePos;
     int visibleIndex;
@@ -468,8 +468,8 @@ public:
     qreal highlightRangeStart;
     qreal highlightRangeEnd;
     QDeclarativeComponent *highlightComponent;
-    FxListItem *highlight;
-    FxListItem *trackedItem;
+    FxListItemSG *highlight;
+    FxListItemSG *trackedItem;
     enum MovementReason { Other, SetIndex, Mouse };
     MovementReason moveReason;
     int buffer;
@@ -488,9 +488,9 @@ public:
     QSGListView::SnapMode snapMode;
     qreal overshootDist;
     QDeclarativeComponent *footerComponent;
-    FxListItem *footer;
+    FxListItemSG *footer;
     QDeclarativeComponent *headerComponent;
-    FxListItem *header;
+    FxListItemSG *header;
     enum BufferMode { NoBuffer = 0x00, BufferBefore = 0x01, BufferAfter = 0x02 };
     int bufferMode;
     mutable qreal minExtent;
@@ -542,27 +542,27 @@ void QSGListViewPrivate::clear()
     itemCount = 0;
 }
 
-FxListItem *QSGListViewPrivate::createItem(int modelIndex)
+FxListItemSG *QSGListViewPrivate::createItem(int modelIndex)
 {
     Q_Q(QSGListView);
     // create object
     requestedIndex = modelIndex;
-    FxListItem *listItem = 0;
+    FxListItemSG *listItem = 0;
     if (QSGItem *item = model->item(modelIndex, false)) {
-        listItem = new FxListItem(item, q);
+        listItem = new FxListItemSG(item, q);
         listItem->index = modelIndex;
         // initialise attached properties
         if (sectionCriteria) {
             QString propValue = model->stringValue(modelIndex, sectionCriteria->property());
             listItem->attached->m_section = sectionCriteria->sectionString(propValue);
             if (modelIndex > 0) {
-                if (FxListItem *item = visibleItem(modelIndex-1))
+                if (FxListItemSG *item = visibleItem(modelIndex-1))
                     listItem->attached->m_prevSection = item->attached->section();
                 else
                     listItem->attached->m_prevSection = sectionAt(modelIndex-1);
             }
             if (modelIndex < model->count()-1) {
-                if (FxListItem *item = visibleItem(modelIndex+1))
+                if (FxListItemSG *item = visibleItem(modelIndex+1))
                     listItem->attached->m_nextSection = item->attached->section();
                 else
                     listItem->attached->m_nextSection = sectionAt(modelIndex+1);
@@ -589,7 +589,7 @@ FxListItem *QSGListViewPrivate::createItem(int modelIndex)
     return listItem;
 }
 
-void QSGListViewPrivate::releaseItem(FxListItem *item)
+void QSGListViewPrivate::releaseItem(FxListItemSG *item)
 {
     Q_Q(QSGListView);
     if (!item || !model)
@@ -645,7 +645,7 @@ void QSGListViewPrivate::refill(qreal from, qreal to, bool doBuffer)
     }
 
     bool changed = false;
-    FxListItem *item = 0;
+    FxListItemSG *item = 0;
     qreal pos = itemEnd + 1;
     while (modelIndex < model->count() && pos <= fillTo) {
 //        qDebug() << "refill: append item" << modelIndex << "pos" << pos;
@@ -743,7 +743,7 @@ void QSGListViewPrivate::layout()
         qreal sum = visibleItems.first()->size();
         qreal pos = visibleItems.first()->position() + visibleItems.first()->size() + spacing;
         for (int i=1; i < visibleItems.count(); ++i) {
-            FxListItem *item = visibleItems.at(i);
+            FxListItemSG *item = visibleItems.at(i);
             item->setPosition(pos);
             pos += item->size() + spacing;
             sum += item->size();
@@ -799,7 +799,7 @@ void QSGListViewPrivate::updateUnrequestedPositions()
 void QSGListViewPrivate::updateTrackedItem()
 {
     Q_Q(QSGListView);
-    FxListItem *item = currentItem;
+    FxListItemSG *item = currentItem;
     if (highlight)
         item = highlight;
     trackedItem = item;
@@ -843,7 +843,7 @@ void QSGListViewPrivate::createHighlight()
         if (item) {
             QDeclarative_setParent_noEvent(item, q->contentItem());
             item->setParentItem(q->contentItem());
-            highlight = new FxListItem(item, q);
+            highlight = new FxListItemSG(item, q);
             if (currentItem && autoHighlight) {
                 if (orient == QSGListView::Vertical) {
                     highlight->item->setHeight(currentItem->item->height());
@@ -896,7 +896,7 @@ void QSGListViewPrivate::updateHighlight()
     updateTrackedItem();
 }
 
-void QSGListViewPrivate::createSection(FxListItem *listItem)
+void QSGListViewPrivate::createSection(FxListItemSG *listItem)
 {
     Q_Q(QSGListView);
     if (!sectionCriteria || !sectionCriteria->delegate())
@@ -1029,7 +1029,7 @@ void QSGListViewPrivate::updateCurrent(int modelIndex)
         updateHighlight();
         return;
     }
-    FxListItem *oldCurrentItem = currentItem;
+    FxListItemSG *oldCurrentItem = currentItem;
     currentIndex = modelIndex;
     currentItem = createItem(modelIndex);
     if (oldCurrentItem && (!currentItem || oldCurrentItem->item != currentItem->item))
@@ -1088,7 +1088,7 @@ void QSGListViewPrivate::updateFooter()
             item->setZ(1);
             QSGItemPrivate *itemPrivate = QSGItemPrivate::get(item);
             itemPrivate->addItemChangeListener(this, QSGItemPrivate::Geometry);
-            footer = new FxListItem(item, q);
+            footer = new FxListItemSG(item, q);
         }
     }
     if (footer) {
@@ -1128,7 +1128,7 @@ void QSGListViewPrivate::updateHeader()
             item->setZ(1);
             QSGItemPrivate *itemPrivate = QSGItemPrivate::get(item);
             itemPrivate->addItemChangeListener(this, QSGItemPrivate::Geometry);
-            header = new FxListItem(item, q);
+            header = new FxListItemSG(item, q);
         }
     }
     if (header) {
@@ -1187,8 +1187,8 @@ void QSGListViewPrivate::fixup(AxisData &data, qreal minExtent, qreal maxExtent)
         }
         vTime = timeline.time();
     } else if (snapMode != QSGListView::NoSnap) {
-        FxListItem *topItem = snapItemAt(position()+highlightRangeStart);
-        FxListItem *bottomItem = snapItemAt(position()+highlightRangeEnd);
+        FxListItemSG *topItem = snapItemAt(position()+highlightRangeStart);
+        FxListItemSG *bottomItem = snapItemAt(position()+highlightRangeEnd);
         qreal pos;
         if (topItem) {
             if (topItem->index == 0 && header && position()+highlightRangeStart < header->position()+header->size()/2)
@@ -1234,7 +1234,7 @@ void QSGListViewPrivate::flick(AxisData &data, qreal minExtent, qreal maxExtent,
     if (velocity > 0) {
         if (data.move.value() < minExtent) {
             if (snapMode == QSGListView::SnapOneItem) {
-                if (FxListItem *item = firstVisibleItem())
+                if (FxListItemSG *item = firstVisibleItem())
                     maxDistance = qAbs(item->position() + data.move.value());
             } else {
                 maxDistance = qAbs(minExtent - data.move.value());
@@ -1245,7 +1245,7 @@ void QSGListViewPrivate::flick(AxisData &data, qreal minExtent, qreal maxExtent,
     } else {
         if (data.move.value() > maxExtent) {
             if (snapMode == QSGListView::SnapOneItem) {
-                if (FxListItem *item = nextVisibleItem())
+                if (FxListItemSG *item = nextVisibleItem())
                     maxDistance = qAbs(item->position() + data.move.value());
             } else {
                 maxDistance = qAbs(maxExtent - data.move.value());
@@ -1905,7 +1905,7 @@ void QSGListView::viewportMoved()
             d->highlight->setPosition(qRound(pos));
 
             // update current index
-            if (FxListItem *snapItem = d->snapItemAt(d->highlight->position())) {
+            if (FxListItemSG *snapItem = d->snapItemAt(d->highlight->position())) {
                 if (snapItem->index >= 0 && snapItem->index != d->currentIndex)
                     d->updateCurrent(snapItem->index);
             }
@@ -2118,11 +2118,11 @@ void QSGListView::positionViewAtIndex(int index, int mode)
     if (d->layoutScheduled)
         d->layout();
     qreal pos = d->position();
-    FxListItem *item = d->visibleItem(index);
+    FxListItemSG *item = d->visibleItem(index);
     if (!item) {
         int itemPos = d->positionAt(index);
         // save the currently visible items in case any of them end up visible again
-        QList<FxListItem*> oldVisible = d->visibleItems;
+        QList<FxListItemSG*> oldVisible = d->visibleItems;
         d->visibleItems.clear();
         d->visiblePos = itemPos;
         d->visibleIndex = index;
@@ -2176,7 +2176,7 @@ int QSGListView::indexAt(int x, int y) const
 {
     Q_D(const QSGListView);
     for (int i = 0; i < d->visibleItems.count(); ++i) {
-        const FxListItem *listItem = d->visibleItems.at(i);
+        const FxListItemSG *listItem = d->visibleItems.at(i);
         if(listItem->contains(x, y))
             return listItem->index;
     }
@@ -2322,7 +2322,7 @@ void QSGListView::itemsInserted(int modelIndex, int count)
                 // Insert before visible items
                 d->visibleIndex += count;
                 for (int i = 0; i < d->visibleItems.count(); ++i) {
-                    FxListItem *listItem = d->visibleItems.at(i);
+                    FxListItemSG *listItem = d->visibleItems.at(i);
                     if (listItem->index != -1 && listItem->index >= modelIndex)
                         listItem->index += count;
                 }
@@ -2348,9 +2348,9 @@ void QSGListView::itemsInserted(int modelIndex, int count)
                                                 : d->visibleItems.at(index-1)->endPosition()+d->spacing+1;
     int initialPos = pos;
     int diff = 0;
-    QList<FxListItem*> added;
+    QList<FxListItemSG*> added;
     bool addedVisible = false;
-    FxListItem *firstVisible = d->firstVisibleItem();
+    FxListItemSG *firstVisible = d->firstVisibleItem();
     if (firstVisible && pos < firstVisible->position()) {
         // Insert items before the visible item.
         int insertionIdx = index;
@@ -2361,7 +2361,7 @@ void QSGListView::itemsInserted(int modelIndex, int count)
                 d->scheduleLayout();
                 addedVisible = true;
             }
-            FxListItem *item = d->createItem(modelIndex + i);
+            FxListItemSG *item = d->createItem(modelIndex + i);
             d->visibleItems.insert(insertionIdx, item);
             pos -= item->size() + d->spacing;
             item->setPosition(pos);
@@ -2371,7 +2371,7 @@ void QSGListView::itemsInserted(int modelIndex, int count)
             // If we didn't insert all our new items - anything
             // before the current index is not visible - remove it.
             while (insertionIdx--) {
-                FxListItem *item = d->visibleItems.takeFirst();
+                FxListItemSG *item = d->visibleItems.takeFirst();
                 if (item->index != -1)
                     d->visibleIndex++;
                 d->releaseItem(item);
@@ -2379,7 +2379,7 @@ void QSGListView::itemsInserted(int modelIndex, int count)
         } else {
             // adjust pos of items before inserted items.
             for (int i = insertionIdx-1; i >= 0; i--) {
-                FxListItem *listItem = d->visibleItems.at(i);
+                FxListItemSG *listItem = d->visibleItems.at(i);
                 listItem->setPosition(listItem->position() - (initialPos - pos));
             }
         }
@@ -2391,7 +2391,7 @@ void QSGListView::itemsInserted(int modelIndex, int count)
                 d->scheduleLayout();
                 addedVisible = true;
             }
-            FxListItem *item = d->createItem(modelIndex + i);
+            FxListItemSG *item = d->createItem(modelIndex + i);
             d->visibleItems.insert(index, item);
             item->setPosition(pos);
             added.append(item);
@@ -2417,7 +2417,7 @@ void QSGListView::itemsInserted(int modelIndex, int count)
     }
     // Update the indexes of the following visible items.
     for (; index < d->visibleItems.count(); ++index) {
-        FxListItem *listItem = d->visibleItems.at(index);
+        FxListItemSG *listItem = d->visibleItems.at(index);
         if (d->currentItem && listItem->item != d->currentItem->item)
             listItem->setPosition(listItem->position() + diff);
         if (listItem->index != -1)
@@ -2441,13 +2441,13 @@ void QSGListView::itemsRemoved(int modelIndex, int count)
     d->updateUnrequestedIndexes();
     d->itemCount -= count;
 
-    FxListItem *firstVisible = d->firstVisibleItem();
+    FxListItemSG *firstVisible = d->firstVisibleItem();
     int preRemovedSize = 0;
     bool removedVisible = false;
     // Remove the items from the visible list, skipping anything already marked for removal
-    QList<FxListItem*>::Iterator it = d->visibleItems.begin();
+    QList<FxListItemSG*>::Iterator it = d->visibleItems.begin();
     while (it != d->visibleItems.end()) {
-        FxListItem *item = *it;
+        FxListItemSG *item = *it;
         if (item->index == -1 || item->index < modelIndex) {
             // already removed, or before removed items
             ++it;
@@ -2529,9 +2529,9 @@ void QSGListView::itemsRemoved(int modelIndex, int count)
 void QSGListView::destroyRemoved()
 {
     Q_D(QSGListView);
-    for (QList<FxListItem*>::Iterator it = d->visibleItems.begin();
+    for (QList<FxListItemSG*>::Iterator it = d->visibleItems.begin();
             it != d->visibleItems.end();) {
-        FxListItem *listItem = *it;
+        FxListItemSG *listItem = *it;
         if (listItem->index == -1 && listItem->attached->delayRemove() == false) {
             d->releaseItem(listItem);
             it = d->visibleItems.erase(it);
@@ -2557,14 +2557,14 @@ void QSGListView::itemsMoved(int from, int to, int count)
     }
 
     d->moveReason = QSGListViewPrivate::Other;
-    FxListItem *firstVisible = d->firstVisibleItem();
+    FxListItemSG *firstVisible = d->firstVisibleItem();
     qreal firstItemPos = firstVisible->position();
-    QHash<int,FxListItem*> moved;
+    QHash<int,FxListItemSG*> moved;
     int moveBy = 0;
 
-    QList<FxListItem*>::Iterator it = d->visibleItems.begin();
+    QList<FxListItemSG*>::Iterator it = d->visibleItems.begin();
     while (it != d->visibleItems.end()) {
-        FxListItem *item = *it;
+        FxListItemSG *item = *it;
         if (item->index >= from && item->index < from + count) {
             // take the items that are moving
             item->index += (to-from);
@@ -2584,10 +2584,10 @@ void QSGListView::itemsMoved(int from, int to, int count)
     int endIndex = d->visibleIndex;
     it = d->visibleItems.begin();
     while (it != d->visibleItems.end()) {
-        FxListItem *item = *it;
+        FxListItemSG *item = *it;
         if (remaining && item->index >= to && item->index < to + count) {
             // place items in the target position, reusing any existing items
-            FxListItem *movedItem = moved.take(item->index);
+            FxListItemSG *movedItem = moved.take(item->index);
             if (!movedItem)
                 movedItem = d->createItem(item->index);
             if (item->index <= firstVisible->index)
@@ -2609,7 +2609,7 @@ void QSGListView::itemsMoved(int from, int to, int count)
 
     // If we have moved items to the end of the visible items
     // then add any existing moved items that we have
-    while (FxListItem *item = moved.take(endIndex+1)) {
+    while (FxListItemSG *item = moved.take(endIndex+1)) {
         d->visibleItems.append(item);
         ++endIndex;
     }
@@ -2635,7 +2635,7 @@ void QSGListView::itemsMoved(int from, int to, int count)
     // Whatever moved items remain are no longer visible items.
     while (moved.count()) {
         int idx = moved.begin().key();
-        FxListItem *item = moved.take(idx);
+        FxListItemSG *item = moved.take(idx);
         if (d->currentItem && item->item == d->currentItem->item)
             item->setPosition(d->positionAt(idx));
         d->releaseItem(item);
