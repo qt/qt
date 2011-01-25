@@ -743,7 +743,8 @@ int QSymbianSocketEngine::accept()
     User::WaitForRequest(status);
     if (status.Int()) {
         blankSocket.Close();
-        qWarning("QSymbianSocketEnginePrivate::nativeAccept() - error %d", status.Int());
+        if (status != KErrWouldBlock)
+            qWarning("QSymbianSocketEnginePrivate::nativeAccept() - error %d", status.Int());
         return -1;
     }
 
