@@ -5302,7 +5302,7 @@ void tst_QNetworkReply::getFromUnreachableIp()
     QNetworkReplyPtr reply = manager.get(request);
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(5);
+    QTestEventLoop::instance().enterLoop(10);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QVERIFY(reply->error() != QNetworkReply::NoError);
@@ -5469,7 +5469,7 @@ void tst_QNetworkReply::synchronousRequest_data()
         << QString("text/plain");
 
     QTest::newRow("simple-file")
-        << QUrl(QString::fromLatin1("file:///" SRCDIR "/rfc3252.txt"))
+        << QUrl::fromLocalFile(SRCDIR "/rfc3252.txt")
         << QString("file:" SRCDIR "/rfc3252.txt")
         << true
         << QString();
