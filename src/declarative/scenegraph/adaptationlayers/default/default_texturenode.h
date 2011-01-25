@@ -64,7 +64,6 @@ private:
     void updateGeometry();
     void updateTexture();
 
-    QSGTextureRef m_texture;
     TextureMaterial m_material;
     TextureMaterialWithOpacity m_materialO;
 

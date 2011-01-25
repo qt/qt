@@ -45,8 +45,7 @@
 #include <qvarlengtharray.h>
 
 DefaultTextureNode::DefaultTextureNode()
-    : m_texture(0)
-    , m_dirty_texture(false)
+    : m_dirty_texture(false)
     , m_dirty_geometry(false)
 {
     m_material.setLinearFiltering(m_linear_filtering);
@@ -57,7 +56,7 @@ DefaultTextureNode::DefaultTextureNode()
     updateGeometryDescription(Utilities::getTexturedRectGeometryDescription(), GL_UNSIGNED_SHORT);
 
 #ifdef QML_RUNTIME_TESTING
-    description = "pixmap";
+    description = QLatin1String("pixmap");
 #endif
 }
 
