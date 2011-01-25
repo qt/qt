@@ -237,57 +237,54 @@ static QStringList split_arg_list(QString params)
     const ushort RPAREN = ')';
     const ushort SINGLEQUOTE = '\'';
     const ushort DOUBLEQUOTE = '"';
+    const ushort BACKSLASH = '\\';
     const ushort COMMA = ',';
     const ushort SPACE = ' ';
     //const ushort TAB = '\t';
 
-    ushort unicode;
     const QChar *params_data = params.data();
     const int params_len = params.length();
-    int last = 0;
-    while(last < params_len && (params_data[last].unicode() == SPACE
-                                /*|| params_data[last].unicode() == TAB*/))
-        ++last;
-    for(int x = last, parens = 0; x <= params_len; x++) {
-        unicode = params_data[x].unicode();
-        if(x == params_len) {
-            while(x && params_data[x-1].unicode() == SPACE)
-                --x;
-            QString mid(params_data+last, x-last);
-            if(quote) {
-                if(mid[0] == quote && mid[(int)mid.length()-1] == quote)
-                    mid = mid.mid(1, mid.length()-2);
-                quote = 0;
+    for(int last = 0; ;) {
+        while(last < params_len && (params_data[last].unicode() == SPACE
+                                    /*|| params_data[last].unicode() == TAB*/))
+            ++last;
+        for(int x = last, parens = 0; ; x++) {
+            if(x == params_len) {
+                while(x > last && params_data[x-1].unicode() == SPACE)
+                    --x;
+                args << params.mid(last, x - last);
+                return args;
             }
-            args << mid;
-            break;
-        }
-        if(unicode == LPAREN) {
-            --parens;
-        } else if(unicode == RPAREN) {
-            ++parens;
-        } else if(quote && unicode == quote) {
-            quote = 0;
-        } else if(!quote && (unicode == SINGLEQUOTE || unicode == DOUBLEQUOTE)) {
-            quote = unicode;
-        }
-        if(!parens && !quote && unicode == COMMA) {
-            QString mid = params.mid(last, x - last).trimmed();
-            args << mid;
-            last = x+1;
-            while(last < params_len && (params_data[last].unicode() == SPACE
-                                        /*|| params_data[last].unicode() == TAB*/))
-                ++last;
+            ushort unicode = params_data[x].unicode();
+            if(x != (int)params_len-1 && unicode == BACKSLASH &&
+                (params_data[x+1].unicode() == SINGLEQUOTE || params_data[x+1].unicode() == DOUBLEQUOTE)) {
+                x++; //get that 'escape'
+            } else if(quote && unicode == quote) {
+                quote = 0;
+            } else if(!quote && (unicode == SINGLEQUOTE || unicode == DOUBLEQUOTE)) {
+                quote = unicode;
+            } else if(unicode == RPAREN) {
+                --parens;
+            } else if(unicode == LPAREN) {
+                ++parens;
+            }
+            if(!parens && !quote && unicode == COMMA) {
+                int prev = last;
+                last = x+1;
+                while(x > prev && params_data[x-1].unicode() == SPACE)
+                    --x;
+                args << params.mid(prev, x - prev);
+                break;
+            }
         }
     }
-    return args;
 }
 
 static QStringList split_value_list(const QString &vals)
 {
     QString build;
     QStringList ret;
-    QStack<char> quote;
+    ushort quote = 0;
 
     const ushort LPAREN = '(';
     const ushort RPAREN = ')';
@@ -303,17 +300,17 @@ static QStringList split_value_list(const QString &vals)
         if(x != (int)vals_len-1 && unicode == BACKSLASH &&
             (vals_data[x+1].unicode() == SINGLEQUOTE || vals_data[x+1].unicode() == DOUBLEQUOTE)) {
             build += vals_data[x++]; //get that 'escape'
-        } else if(!quote.isEmpty() && unicode == quote.top()) {
-            quote.pop();
-        } else if(unicode == SINGLEQUOTE || unicode == DOUBLEQUOTE) {
-            quote.push(unicode);
+        } else if(quote && unicode == quote) {
+            quote = 0;
+        } else if(!quote && (unicode == SINGLEQUOTE || unicode == DOUBLEQUOTE)) {
+            quote = unicode;
         } else if(unicode == RPAREN) {
             --parens;
         } else if(unicode == LPAREN) {
             ++parens;
         }
 
-        if(!parens && quote.isEmpty() && (vals_data[x] == Option::field_sep)) {
+        if(!parens && !quote && (vals_data[x] == Option::field_sep)) {
             ret << build;
             build.clear();
         } else {
