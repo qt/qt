@@ -91,6 +91,8 @@ Q_GLOBAL_STATIC(QDeclarativeFastProperties, fastProperties)
     F(AddString)               /* binaryop */ \
     F(MinusReal)               /* binaryop */ \
     F(MinusInt)                /* binaryop */ \
+    F(MulReal)                 /* binaryop */ \
+    F(MulInt)                  /* binaryop */ \
     F(CompareReal)             /* binaryop */ \
     F(CompareString)           /* binaryop */ \
     F(NotCompareReal)          /* binaryop */ \
@@ -569,6 +571,7 @@ struct QDeclarativeBindingCompilerPrivate: protected AST::Visitor
         bool operator!=(const Result &o) const { 
             return !(*this == o);
         }
+
         bool unknownType;
         const QMetaObject *metaObject;
         int type;
@@ -816,7 +819,8 @@ protected:
 
     virtual bool visit(AST::BinaryExpression *ast)
     {
-        switch (static_cast<QSOperator::Op>(ast->op)) {
+        switch (QSOperator::Op op = static_cast<QSOperator::Op>(ast->op)) {
+        case QSOperator::Mul:
         case QSOperator::Add:
         case QSOperator::Sub: {
             Result lhs, rhs;
@@ -827,20 +831,19 @@ protected:
                 return false;
 
             Result type;
-            type.reg = acquireReg(); // re-use
+            type.reg = acquireReg();
 
             if (type.reg != -1) {
                 bool ok = false;
 
                 if ((lhs.type == QVariant::Int || lhs.type == QMetaType::QReal) &&
                     (rhs.type == QVariant::Int || rhs.type == QMetaType::QReal))
-                    ok = numberArith(type, lhs, rhs, (QSOperator::Op)ast->op);
-                else if(ast->op == QSOperator::Sub)
-                    ok = numberArith(type, lhs, rhs, (QSOperator::Op)ast->op);
-                else if ((lhs.type == QMetaType::QString || lhs.unknownType) &&
+                    ok = numberArith(type, lhs, rhs, op); // binary Add, Sub, and Mul on numbers
+                else if (op == QSOperator::Add &&
+                         (lhs.type == QMetaType::QString || lhs.unknownType) &&
                          (rhs.type == QMetaType::QString || rhs.unknownType) &&
                          (lhs.type == QMetaType::QString || rhs.type == QMetaType::QString))
-                    ok = stringArith(type, lhs, rhs, (QSOperator::Op)ast->op);
+                    ok = stringArith(type, lhs, rhs, op); // binary Add on strings.
 
                 if (ok)
                     *_expr = type;
@@ -1449,6 +1452,12 @@ static void dumpInstruction(const Instr *instr)
     case Instr::MinusInt:
         qWarning().nospace() << "\t" << "MinusInt" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
         break;
+    case Instr::MulReal:
+        qWarning().nospace() << "\t" << "MulReal" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        break;
+    case Instr::MulInt:
+        qWarning().nospace() << "\t" << "MulInt" << "\t\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
+        break;
     case Instr::CompareReal:
         qWarning().nospace() << "\t" << "CompareReal" << "\t\t" << instr->binaryop.output << "\t" << instr->binaryop.src1 << "\t" << instr->binaryop.src2;
         break;
@@ -1760,6 +1769,26 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         else output.setint(lhs.getint() - rhs.getint());
     }
     QML_END_INSTR(MinusInt)
+
+    QML_BEGIN_INSTR(MulReal)
+    {
+        const Register &lhs = registers[instr->binaryop.src1];
+        const Register &rhs = registers[instr->binaryop.src2];
+        Register &output = registers[instr->binaryop.output];
+        if (lhs.isUndefined() || rhs.isUndefined()) output.setNaN();
+        else output.setqreal(lhs.getqreal() * rhs.getqreal());
+    }
+    QML_END_INSTR(MulReal)
+
+    QML_BEGIN_INSTR(MulInt)
+    {
+        const Register &lhs = registers[instr->binaryop.src1];
+        const Register &rhs = registers[instr->binaryop.src2];
+        Register &output = registers[instr->binaryop.output];
+        if (lhs.isUndefined() || rhs.isUndefined()) output.setNaN();
+        else output.setint(lhs.getint() * rhs.getint());
+    }
+    QML_END_INSTR(MulInt)
 
     QML_BEGIN_INSTR(CompareReal)
     {
@@ -2529,6 +2558,8 @@ bool QDeclarativeBindingCompilerPrivate::numberArith(Result &type, const Result 
         arith.common.type = nativeReal?Instr::AddReal:Instr::AddInt;
     } else if (op == QSOperator::Sub) {
         arith.common.type = nativeReal?Instr::MinusReal:Instr::MinusInt;
+    } else if (op == QSOperator::Mul) {
+        arith.common.type = nativeReal?Instr::MulReal:Instr::MulInt;
     } else {
         qFatal("Unsupported arithmetic operator");
     }
