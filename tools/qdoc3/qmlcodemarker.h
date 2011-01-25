@@ -60,6 +60,7 @@ public:
     virtual bool recognizeCode(const QString &code);
     virtual bool recognizeExtension(const QString &ext);
     virtual bool recognizeLanguage(const QString &language);
+    virtual Atom::Type atomType() const;
     virtual QString plainName(const Node *node);
     virtual QString plainFullName(const Node *node, const Node *relative);
     virtual QString markedUpCode(const QString &code, 

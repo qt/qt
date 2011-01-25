@@ -210,6 +210,10 @@
     {
         color: black
     }
+    span.type
+    {
+        font-weight: bold
+    }
 /* end basic elements */
 
 /* font style elements */

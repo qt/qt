@@ -354,7 +354,6 @@ DitaXmlGenerator::DitaXmlGenerator()
       offlineDocs(true),
       funcLeftParen("\\S(\\()"),
       myTree(0),
-      slow(false),
       obsoleteLinks(false),
       noLinks(false),
       tableColumnCount(0)
@@ -460,8 +459,6 @@ void DitaXmlGenerator::initializeGenerator(const Config &config)
 
         ++edition;
     }
-
-    slow = config.getBool(CONFIG_SLOW);
 
     stylesheets = config.getStringList(DitaXmlGenerator::format() +
                                        Config::dot +

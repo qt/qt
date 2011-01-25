@@ -38,80 +38,52 @@
 **
 ****************************************************************************/
 
-//! [import]
-import QtQuick 1.0
-//! [import]
+import Qt 4.7
 
 Rectangle {
-    width: childrenRect.width
-    height: childrenRect.height
+  width: 150; height: 250
 
-    Row {
-        //! [intro]
-        Rectangle {
-            width: 100; height: 100
-            color: "green"
+  Rectangle {
+      id: stopLight
+      x: 25; y: 15; width: 100; height: 100
+  }
+  Rectangle {
+      id: goLight
+      x: 25; y: 135; width: 100; height: 100
+  }
 
-            MouseArea {
-                anchors.fill: parent
-                onClicked: { parent.color = 'red' }
-            }
-        }
-        //! [intro]
-
-        //! [intro-extended]
-        Rectangle {
-            width: 100; height: 100
-            color: "green"
-
-            MouseArea {
-                anchors.fill: parent
-                acceptedButtons: Qt.LeftButton | Qt.RightButton
-                onClicked: {
-                    if (mouse.button == Qt.RightButton)
-                        parent.color = 'blue';
-                    else
-                        parent.color = 'red';
-                }
-            }
-        }
-        //! [intro-extended]
-
-        //! [drag]
-        Rectangle {
-            id: container
-            width: 600; height: 200
-
-            Rectangle {
-                id: rect
-                width: 50; height: 50
-                color: "red"
-                opacity: (600.0 - rect.x) / 600
-
-                MouseArea {
-                    anchors.fill: parent
-                    drag.target: rect
-                    drag.axis: Drag.XAxis
-                    drag.minimumX: 0
-                    drag.maximumX: container.width - rect.width
-                }
-            }
-        }
-        //! [drag]
-
-        //! [mousebuttons]
-        Text {
-            text: mouseArea.pressedButtons & Qt.RightButton ? "right" : ""
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-
-            MouseArea {
-                id: mouseArea
-                anchors.fill: parent
-                acceptedButtons: Qt.LeftButton | Qt.RightButton
-            }
-        }
-        //! [mousebuttons]
-
+  states: [
+    State {
+      name: "stop"
+      PropertyChanges { target: stopLight; color: "red" }
+      PropertyChanges { target: goLight; color: "black" }
+    },
+    State {
+      name: "go"
+      PropertyChanges { target: stopLight; color: "black" }
+      PropertyChanges { target: goLight; color: "green" }
     }
+  ]
+
+  state: "stop"
+
+  MouseArea {
+      anchors.fill: parent
+      onClicked: parent.state == "stop" ?
+                 parent.state = "go" : parent.state = "stop"
+  }
+
+  //! [list of transitions]
+  transitions: [
+    Transition {
+        from: "stop"; to: "go"
+        PropertyAnimation { target: stopLight
+                            properties: "color"; duration: 1000 }
+    },
+    Transition {
+        from: "go"; to: "stop"
+        PropertyAnimation { target: goLight
+                            properties: "color"; duration: 1000 }
+    } ]
+  //! [list of transitions]
 }

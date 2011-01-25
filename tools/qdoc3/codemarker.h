@@ -48,6 +48,7 @@
 
 #include <qpair.h>
 
+#include "atom.h"
 #include "node.h"
 
 QT_BEGIN_NAMESPACE
@@ -121,6 +122,7 @@ class CodeMarker
     virtual bool recognizeCode(const QString& code) = 0;
     virtual bool recognizeExtension(const QString& ext) = 0;
     virtual bool recognizeLanguage(const QString& lang) = 0;
+    virtual Atom::Type atomType() const = 0;
     virtual QString plainName(const Node *node) = 0;
     virtual QString plainFullName(const Node *node, 
                                   const Node *relative = 0) = 0;
@@ -164,8 +166,6 @@ class CodeMarker
     static QString stringForNode(const Node *node);
 
  protected:
-    bool hurryUp() const { return !slow; }
-
     virtual QString sortName(const Node *node);
     QString protect(const QString &string);
     QString typified(const QString &string);
@@ -183,8 +183,6 @@ class CodeMarker
 
  private:
     QString macName(const Node *parent, const QString &name = QString());
-
-    bool slow;
 
     static QString defaultLang;
     static QList<CodeMarker *> markers;

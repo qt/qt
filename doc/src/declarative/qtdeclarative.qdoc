@@ -103,7 +103,9 @@
   \qml
   import com.mycompany.qmlcomponents 1.0
 
-  Slider { ... }
+  Slider {
+      // ...
+  }
   \endqml
 
   Note that it's perfectly reasonable for a library to register types to older versions

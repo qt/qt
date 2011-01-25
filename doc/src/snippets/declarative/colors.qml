@@ -38,80 +38,88 @@
 **
 ****************************************************************************/
 
-//! [import]
 import QtQuick 1.0
-//! [import]
 
 Rectangle {
-    width: childrenRect.width
-    height: childrenRect.height
+    width: 160; height: 250
+    
+    Image {
+        width: 160; height: 200
+        source: "pics/checker.svg"
+        fillMode: Image.Tile
 
-    Row {
-        //! [intro]
+        //! [colors]
         Rectangle {
-            width: 100; height: 100
-            color: "green"
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: { parent.color = 'red' }
-            }
+            color: "steelblue"
+            width: 40; height: 40
         }
-        //! [intro]
-
-        //! [intro-extended]
         Rectangle {
-            width: 100; height: 100
-            color: "green"
-
-            MouseArea {
-                anchors.fill: parent
-                acceptedButtons: Qt.LeftButton | Qt.RightButton
-                onClicked: {
-                    if (mouse.button == Qt.RightButton)
-                        parent.color = 'blue';
-                    else
-                        parent.color = 'red';
-                }
-            }
+            color: "transparent"
+            y: 40; width: 40; height: 40
         }
-        //! [intro-extended]
-
-        //! [drag]
         Rectangle {
-            id: container
-            width: 600; height: 200
+            color: "#FF0000"
+            y: 80; width: 40; height: 40
+        }
+        Rectangle {
+            color: "#800000FF"
+            y: 120; width: 40; height: 40
+        }
+        Rectangle {
+            color: "#00000000"    // ARGB fully transparent
+            y: 160
+            width: 40; height: 40
+        }
+        //! [colors]
 
-            Rectangle {
-                id: rect
-                width: 50; height: 50
-                color: "red"
-                opacity: (600.0 - rect.x) / 600
+        Rectangle {
+            x: 40
+            width: 120; height: 200
 
-                MouseArea {
-                    anchors.fill: parent
-                    drag.target: rect
-                    drag.axis: Drag.XAxis
-                    drag.minimumX: 0
-                    drag.maximumX: container.width - rect.width
-                }
+            Text {
+                font.pixelSize: 16
+                text: "steelblue"
+                x: 10; height: 40
+                verticalAlignment: Text.AlignVCenter
+            }
+            Text {
+                font.pixelSize: 16
+                text: "transparent"
+                x: 10; y: 40; height: 40
+                verticalAlignment: Text.AlignVCenter
+            }
+            Text {
+                font.pixelSize: 16
+                text: "FF0000"
+                x: 10; y: 80; height: 40
+                verticalAlignment: Text.AlignVCenter
+            }
+            Text {
+                font.pixelSize: 16
+                text: "800000FF"
+                x: 10; y: 120; height: 40
+                verticalAlignment: Text.AlignVCenter
+            }
+            Text {
+                font.pixelSize: 16
+                text: "00000000"
+                x: 10; y: 160; height: 40
+                verticalAlignment: Text.AlignVCenter
             }
         }
-        //! [drag]
+    }
 
-        //! [mousebuttons]
-        Text {
-            text: mouseArea.pressedButtons & Qt.RightButton ? "right" : ""
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
+    Image {
+        y: 210
+        width: 40; height: 40
+        source: "pics/checker.svg"
+        fillMode: Image.Tile
+    }
 
-            MouseArea {
-                id: mouseArea
-                anchors.fill: parent
-                acceptedButtons: Qt.LeftButton | Qt.RightButton
-            }
-        }
-        //! [mousebuttons]
-
+    Text {
+        font.pixelSize: 16
+        text: "(background)"
+        x: 50; y: 210; height: 40
+        verticalAlignment: Text.AlignVCenter
     }
 }

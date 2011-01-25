@@ -60,7 +60,10 @@ QT_BEGIN_NAMESPACE
 
     Example:
     \qml
-    Rectangle { border.width: 2; border.color: "red" ... }
+    Rectangle {
+        border.width: 2
+        border.color: "red"
+    }
     \endqml
 */
 
