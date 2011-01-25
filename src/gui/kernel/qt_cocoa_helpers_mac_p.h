@@ -247,7 +247,7 @@ void qt_cocoaPostMessageAfterEventLoopExit(id target, SEL selector, int argCount
 #endif
 
 class QMacScrollOptimization {
-    // This class is made optimize for the case when the user
+    // This class is made to optimize for the case when the user
     // scrolls both horizontally and vertically at the same
     // time. This will result in two QWheelEvents (one for each
     // direction), which will typically result in two calls to
@@ -261,7 +261,7 @@ class QMacScrollOptimization {
     static QRect _scrollRect;
 
 public:
-    static void initNewScroll()
+    static void initDelayedScroll()
     {
         _inWheelEvent = true;
     }

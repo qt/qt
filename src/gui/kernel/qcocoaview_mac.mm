@@ -581,26 +581,28 @@ static int qCocoaViewCount = 0;
 #ifndef QT_NO_WHEELEVENT
     // ### Qt 5: Send one QWheelEvent with dx, dy and dz
 
-    QMacScrollOptimization::initNewScroll();
+    if (deltaX != 0 && deltaY != 0)
+        QMacScrollOptimization::initDelayedScroll();
 
     if (deltaX != 0) {
         QWheelEvent qwe(qlocal, qglobal, deltaX, buttons, keyMods, Qt::Horizontal);
         qt_sendSpontaneousEvent(widgetToGetMouse, &qwe);
     }
 
-    if (deltaY) {
+    if (deltaY != 0) {
         QWheelEvent qwe(qlocal, qglobal, deltaY, buttons, keyMods, Qt::Vertical);
         qt_sendSpontaneousEvent(widgetToGetMouse, &qwe);
     }
 
-    if (deltaZ) {
+    if (deltaZ != 0) {
         // Qt doesn't explicitly support wheels with a Z component. In a misguided attempt to
         // try to be ahead of the pack, I'm adding this extra value.
         QWheelEvent qwe(qlocal, qglobal, deltaZ, buttons, keyMods, (Qt::Orientation)3);
         qt_sendSpontaneousEvent(widgetToGetMouse, &qwe);
     }
 
-    QMacScrollOptimization::performDelayedScroll();
+    if (deltaX != 0 && deltaY != 0)
+        QMacScrollOptimization::performDelayedScroll();
 #endif //QT_NO_WHEELEVENT
 }
 
