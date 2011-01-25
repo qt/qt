@@ -81,6 +81,7 @@ include(script.pri)
 
 symbian {
     TARGET.UID3=0x2001B2E1
+    LIBS += -lhal
 }
 
 symbian {
