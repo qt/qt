@@ -278,6 +278,10 @@ QImage DistanceFieldFontAtlas::distanceFieldAtlas() const
 
 bool DistanceFieldFontAtlas::useDistanceFieldForFont(const QFont &font)
 {
-    DistanceFieldFontAtlas a(font);
-    return a.distanceFieldAvailable();
+    static QStringList args = qApp->arguments();
+    if (args.contains("--distancefield-text")) {
+        DistanceFieldFontAtlas a(font);
+        return a.distanceFieldAvailable();
+    }
+    return false;
 }
