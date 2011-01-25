@@ -86,6 +86,7 @@ have a scope focused item), and the other items will have their focus cleared.
 // #define DIRTY_DEBUG
 
 QSGItem::UpdatePaintNodeData::UpdatePaintNodeData()
+: transformNode(0)
 {
 }
 
@@ -931,6 +932,7 @@ void QSGCanvasPrivate::updateDirtyNode(QSGItem *item)
     if (dirty & QSGItemPrivate::ContentUpdateMask) {
 
         if (itemPriv->flags & QSGItem::ItemHasContents) {
+            updatePaintNodeData.transformNode = itemPriv->itemNode(); 
             itemPriv->paintNode = item->updatePaintNode(itemPriv->paintNode, &updatePaintNodeData);
 
             Q_ASSERT(itemPriv->paintNode == 0 || 

@@ -90,6 +90,7 @@ class QSGAnchors;
 class QSGItemPrivate;
 class QSGCanvas;
 class Node;
+class TransformNode;
 class Q_DECLARATIVE_EXPORT QSGItem : public QObject, public QDeclarativeParserStatus
 {
     Q_OBJECT
@@ -280,6 +281,7 @@ public:
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
 
     struct UpdatePaintNodeData {
+       TransformNode *transformNode;
     private:
        friend class QSGCanvasPrivate;
        UpdatePaintNodeData();
