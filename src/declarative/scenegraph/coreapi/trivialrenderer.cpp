@@ -45,7 +45,7 @@
 #include "trivialrenderer.h"
 #include "material.h"
 
-#include <qglattributevalue.h>
+#include <qsgattributevalue.h>
 
 TrivialRenderer::TrivialRenderer()
 {

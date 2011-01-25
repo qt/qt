@@ -45,7 +45,7 @@
 #include "qmlrenderer.h"
 #include "material.h"
 
-#include <qglattributevalue.h>
+#include <qsgattributevalue.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/qapplication.h>
 #include <QtCore/qpair.h>
@@ -376,10 +376,10 @@ void QMLRenderer::renderNodes(const QVector<GeometryNode *> &list)
 
         Geometry *g = geomNode->geometry();
 
-        const QGL::VertexAttribute *attributes = program->requiredFields();
+        const QSG::VertexAttribute *attributes = program->requiredFields();
         int offset = 0;
-        for (; *attributes != QGL::VertexAttribute(-1); ++attributes) {
-            QGLAttributeValue attr = g->attributeValue(*attributes);
+        for (; *attributes != QSG::VertexAttribute(-1); ++attributes) {
+            QSGAttributeValue attr = g->attributeValue(*attributes);
             if (!attr.isNull()) {
 #if defined(QT_OPENGL_ES_2)
                 GLboolean normalize = attr.type() != GL_FLOAT;

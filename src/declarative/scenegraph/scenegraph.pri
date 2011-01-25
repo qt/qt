@@ -44,25 +44,18 @@ SOURCES += $$PWD/convenience/areaallocator.cpp \
 
 # 3D API (duplicates with qt3d)
 HEADERS += \
-    $$PWD/3d/qglnamespace.h \
-    $$PWD/3d/qt3dglobal.h \
-    $$PWD/3d/qglattributedescription.h \
-    $$PWD/3d/qglattributevalue.h \
-    $$PWD/3d/qmatrix4x4stack.h \
-    $$PWD/3d/qmatrix4x4stack_p.h \
-    $$PWD/3d/qarray.h \
-    $$PWD/3d/qcustomdataarray.h \
-    $$PWD/3d/qcolor4ub.h \
+    $$PWD/3d/qsgattributedescription.h \
+    $$PWD/3d/qsgattributevalue.h \
+    $$PWD/3d/qsgmatrix4x4stack.h \
+    $$PWD/3d/qsgmatrix4x4stack_p.h \
+    $$PWD/3d/qsgarray.h \
 
 
 SOURCES += \
-    $$PWD/3d/qarray.cpp \
-    $$PWD/3d/qmatrix4x4stack.cpp \
-    $$PWD/3d/qglattributedescription.cpp \
-    $$PWD/3d/qglattributevalue.cpp \
-    $$PWD/3d/qglnamespace.cpp \
-    $$PWD/3d/qcustomdataarray.cpp \
-    $$PWD/3d/qcolor4ub.cpp \
+    $$PWD/3d/qsgarray.cpp \
+    $$PWD/3d/qsgmatrix4x4stack.cpp \
+    $$PWD/3d/qsgattributedescription.cpp \
+    $$PWD/3d/qsgattributevalue.cpp \
 
 !qpa {
 contains(QT_CONFIG, freetype) {

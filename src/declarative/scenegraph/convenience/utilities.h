@@ -88,9 +88,9 @@ public:
 //    static SubTexture2DPtr getTextureForPixmap(const QPixmap &pixmap, bool clampToEdge, bool dynamic = true);
 
     static void setupRectGeometry(Geometry *geometry, const QRectF &rect, const QSize &textureSize = QSize(), const QRectF &sourceRect = QRectF());
-    static QVector<QGLAttributeDescription> &getRectGeometryDescription();
-    static QVector<QGLAttributeDescription> &getTexturedRectGeometryDescription();
-    static QVector<QGLAttributeDescription> &getColoredRectGeometryDescription();
+    static QVector<QSGAttributeDescription> &getRectGeometryDescription();
+    static QVector<QSGAttributeDescription> &getTexturedRectGeometryDescription();
+    static QVector<QSGAttributeDescription> &getColoredRectGeometryDescription();
     static Geometry *createRectGeometry(const QRectF &rect);
     static Geometry *createTexturedRectGeometry(const QRectF &rect, const QSize &textureSize, const QRectF &sourceRect);
 

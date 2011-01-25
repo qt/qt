@@ -39,14 +39,14 @@
 **
 ****************************************************************************/
 
-#include "qmatrix4x4stack.h"
-#include "qmatrix4x4stack_p.h"
+#include "qsgmatrix4x4stack.h"
+#include "qsgmatrix4x4stack_p.h"
 
 QT_BEGIN_NAMESPACE
 
 /*!
-    \class QMatrix4x4Stack
-    \brief The QMatrix4x4Stack class manages stacks of transformation matrices in GL applications.
+    \class QSGMatrix4x4Stack
+    \brief The QSGMatrix4x4Stack class manages stacks of transformation matrices in GL applications.
     \since 4.8
     \ingroup qt3d
     \ingroup qt3d::enablers
@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
     organized into stacks, which allow the current matrix state to be
     saved with push() and restored later with pop().
 
-    QMatrix4x4Stack assists QGLPainter with the management of matrix
+    QSGMatrix4x4Stack assists QGLPainter with the management of matrix
     stacks, providing operations to set and modify transformation
     matrices in each of the standard matrix stacks.
 
@@ -96,7 +96,7 @@ QT_BEGIN_NAMESPACE
     can force the GL server to update the server with a call to
     QGLPainter::update().
 
-    QMatrix4x4Stack is supported on all GL platforms, including OpenGL/ES 2.0
+    QSGMatrix4x4Stack is supported on all GL platforms, including OpenGL/ES 2.0
     which doesn't support matrix stacks natively.  On that platform, the
     matrix stack is simulated in client memory.  When the application
     selects a shader program to draw under OpenGL/ES 2.0, it calls
@@ -108,15 +108,15 @@ QT_BEGIN_NAMESPACE
 /*!
     Creates a matrix stack.
 */
-QMatrix4x4Stack::QMatrix4x4Stack()
-    : d_ptr(new QMatrix4x4StackPrivate)
+QSGMatrix4x4Stack::QSGMatrix4x4Stack()
+    : d_ptr(new QSGMatrix4x4StackPrivate)
 {
 }
 
 /*!
     Destroy this matrix stack.
 */
-QMatrix4x4Stack::~QMatrix4x4Stack()
+QSGMatrix4x4Stack::~QSGMatrix4x4Stack()
 {
 }
 
@@ -133,9 +133,9 @@ QMatrix4x4Stack::~QMatrix4x4Stack()
 
     \sa pop(), top()
 */
-void QMatrix4x4Stack::push()
+void QSGMatrix4x4Stack::push()
 {
-    Q_D(QMatrix4x4Stack);
+    Q_D(QSGMatrix4x4Stack);
     d->stack.push(d->matrix);
 }
 
@@ -146,9 +146,9 @@ void QMatrix4x4Stack::push()
 
     \sa push()
 */
-void QMatrix4x4Stack::pop()
+void QSGMatrix4x4Stack::pop()
 {
-    Q_D(QMatrix4x4Stack);
+    Q_D(QSGMatrix4x4Stack);
     if (!d->stack.isEmpty())
         d->matrix = d->stack.pop();
     d->isDirty = true;
@@ -159,9 +159,9 @@ void QMatrix4x4Stack::pop()
 
     \sa operator=()
 */
-void QMatrix4x4Stack::setToIdentity()
+void QSGMatrix4x4Stack::setToIdentity()
 {
-    Q_D(QMatrix4x4Stack);
+    Q_D(QSGMatrix4x4Stack);
     d->matrix.setToIdentity();
     d->isDirty = true;
 }
@@ -173,14 +173,14 @@ void QMatrix4x4Stack::setToIdentity()
 
     \sa operator=()
 */
-const QMatrix4x4 &QMatrix4x4Stack::top() const
+const QMatrix4x4 &QSGMatrix4x4Stack::top() const
 {
-    Q_D(const QMatrix4x4Stack);
+    Q_D(const QSGMatrix4x4Stack);
     return d->matrix;
 }
 
 /*!
-    \fn QMatrix4x4Stack::operator const QMatrix4x4 &() const
+    \fn QSGMatrix4x4Stack::operator const QMatrix4x4 &() const
 
     Returns a const reference to the current matrix at the top of
     this matrix stack.
@@ -193,9 +193,9 @@ const QMatrix4x4 &QMatrix4x4Stack::top() const
 
     \sa top()
 */
-QMatrix4x4Stack& QMatrix4x4Stack::operator=(const QMatrix4x4& matrix)
+QSGMatrix4x4Stack& QSGMatrix4x4Stack::operator=(const QMatrix4x4& matrix)
 {
-    Q_D(QMatrix4x4Stack);
+    Q_D(QSGMatrix4x4Stack);
     d->matrix = matrix;
     d->isDirty = true;
     return *this;
@@ -206,9 +206,9 @@ QMatrix4x4Stack& QMatrix4x4Stack::operator=(const QMatrix4x4& matrix)
 
     \sa top()
 */
-QMatrix4x4Stack& QMatrix4x4Stack::operator*=(const QMatrix4x4& matrix)
+QSGMatrix4x4Stack& QSGMatrix4x4Stack::operator*=(const QMatrix4x4& matrix)
 {
-    Q_D(QMatrix4x4Stack);
+    Q_D(QSGMatrix4x4Stack);
     d->matrix *= matrix;
     d->isDirty = true;
     return *this;
@@ -226,9 +226,9 @@ QMatrix4x4Stack& QMatrix4x4Stack::operator*=(const QMatrix4x4& matrix)
 
     \sa scale(), rotate()
 */
-void QMatrix4x4Stack::translate(qreal x, qreal y, qreal z)
+void QSGMatrix4x4Stack::translate(qreal x, qreal y, qreal z)
 {
-    Q_D(QMatrix4x4Stack);
+    Q_D(QSGMatrix4x4Stack);
     d->matrix.translate(x, y, z);
     d->isDirty = true;
 }
@@ -239,9 +239,9 @@ void QMatrix4x4Stack::translate(qreal x, qreal y, qreal z)
 
     \sa scale(), rotate()
 */
-void QMatrix4x4Stack::translate(const QVector3D& vector)
+void QSGMatrix4x4Stack::translate(const QVector3D& vector)
 {
-    Q_D(QMatrix4x4Stack);
+    Q_D(QSGMatrix4x4Stack);
     d->matrix.translate(vector);
     d->isDirty = true;
 }
@@ -258,9 +258,9 @@ void QMatrix4x4Stack::translate(const QVector3D& vector)
 
     \sa translate(), rotate()
 */
-void QMatrix4x4Stack::scale(qreal x, qreal y, qreal z)
+void QSGMatrix4x4Stack::scale(qreal x, qreal y, qreal z)
 {
-    Q_D(QMatrix4x4Stack);
+    Q_D(QSGMatrix4x4Stack);
     d->matrix.scale(x, y, z);
     d->isDirty = true;
 }
@@ -277,9 +277,9 @@ void QMatrix4x4Stack::scale(qreal x, qreal y, qreal z)
 
     \sa translate(), rotate()
 */
-void QMatrix4x4Stack::scale(qreal factor)
+void QSGMatrix4x4Stack::scale(qreal factor)
 {
-    Q_D(QMatrix4x4Stack);
+    Q_D(QSGMatrix4x4Stack);
     d->matrix.scale(factor);
     d->isDirty = true;
 }
@@ -290,9 +290,9 @@ void QMatrix4x4Stack::scale(qreal factor)
 
     \sa translate(), rotate()
 */
-void QMatrix4x4Stack::scale(const QVector3D& vector)
+void QSGMatrix4x4Stack::scale(const QVector3D& vector)
 {
-    Q_D(QMatrix4x4Stack);
+    Q_D(QSGMatrix4x4Stack);
     d->matrix.scale(vector);
     d->isDirty = true;
 }
@@ -310,9 +310,9 @@ void QMatrix4x4Stack::scale(const QVector3D& vector)
 
     \sa scale(), translate()
 */
-void QMatrix4x4Stack::rotate(qreal angle, qreal x, qreal y, qreal z)
+void QSGMatrix4x4Stack::rotate(qreal angle, qreal x, qreal y, qreal z)
 {
-    Q_D(QMatrix4x4Stack);
+    Q_D(QSGMatrix4x4Stack);
     d->matrix.rotate(angle, x, y, z);
     d->isDirty = true;
 }
@@ -323,9 +323,9 @@ void QMatrix4x4Stack::rotate(qreal angle, qreal x, qreal y, qreal z)
 
     \sa scale(), translate()
 */
-void QMatrix4x4Stack::rotate(qreal angle, const QVector3D& vector)
+void QSGMatrix4x4Stack::rotate(qreal angle, const QVector3D& vector)
 {
-    Q_D(QMatrix4x4Stack);
+    Q_D(QSGMatrix4x4Stack);
     d->matrix.rotate(angle, vector);
     d->isDirty = true;
 }
@@ -343,9 +343,9 @@ void QMatrix4x4Stack::rotate(qreal angle, const QVector3D& vector)
 
     \sa scale(), translate()
 */
-void QMatrix4x4Stack::rotate(const QQuaternion &quaternion)
+void QSGMatrix4x4Stack::rotate(const QQuaternion &quaternion)
 {
-    Q_D(QMatrix4x4Stack);
+    Q_D(QSGMatrix4x4Stack);
     d->matrix.rotate(quaternion);
     d->isDirty = true;
 }
@@ -356,9 +356,9 @@ void QMatrix4x4Stack::rotate(const QQuaternion &quaternion)
 
     \sa setDirty()
 */
-bool QMatrix4x4Stack::isDirty() const
+bool QSGMatrix4x4Stack::isDirty() const
 {
-    Q_D(const QMatrix4x4Stack);
+    Q_D(const QSGMatrix4x4Stack);
     return d->isDirty;
 }
 
@@ -371,9 +371,9 @@ bool QMatrix4x4Stack::isDirty() const
 
     \sa isDirty()
 */
-void QMatrix4x4Stack::setDirty(bool dirty)
+void QSGMatrix4x4Stack::setDirty(bool dirty)
 {
-    Q_D(QMatrix4x4Stack);
+    Q_D(QSGMatrix4x4Stack);
     d->isDirty = dirty;
 }
 

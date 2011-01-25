@@ -39,62 +39,36 @@
 **
 ****************************************************************************/
 
-#ifndef QMATRIX4X4STACK_H
-#define QMATRIX4X4STACK_H
+#ifndef QSGMATRIX4X4STACK_P_H
+#define QSGMATRIX4X4STACK_P_H
 
-#include "qt3dglobal.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtGui/qmatrix4x4.h>
-#include <QtCore/qscopedpointer.h>
+#include <QtCore/qstack.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QMatrix4x4StackPrivate;
-
-class Q_QT3D_EXPORT QMatrix4x4Stack
+class QSGMatrix4x4StackPrivate
 {
 public:
-    QMatrix4x4Stack();
-    ~QMatrix4x4Stack();
+    QSGMatrix4x4StackPrivate() : isDirty(true) {}
 
-    const QMatrix4x4 &top() const;
-
-    void push();
-    void pop();
-
-    void setToIdentity();
-
-    void translate(qreal x, qreal y, qreal z);
-    void translate(const QVector3D& vector);
-    void scale(qreal x, qreal y, qreal z);
-    void scale(qreal factor);
-    void scale(const QVector3D& vector);
-    void rotate(qreal angle, qreal x, qreal y, qreal z);
-    void rotate(qreal angle, const QVector3D& vector);
-    void rotate(const QQuaternion &quaternion);
-
-    QMatrix4x4Stack& operator=(const QMatrix4x4& matrix);
-    QMatrix4x4Stack& operator*=(const QMatrix4x4& matrix);
-
-    operator const QMatrix4x4 &() const;
-
-    bool isDirty() const;
-    void setDirty(bool dirty);
-
-private:
-    Q_DISABLE_COPY(QMatrix4x4Stack)
-    Q_DECLARE_PRIVATE(QMatrix4x4Stack)
-
-    QScopedPointer<QMatrix4x4StackPrivate> d_ptr;
-
-    friend class QGLPainter;
+    QMatrix4x4 matrix;
+    QStack<QMatrix4x4> stack;
+    bool isDirty;
 };
-
-inline QMatrix4x4Stack::operator const QMatrix4x4 &() const
-{
-    return top();
-}
 
 QT_END_NAMESPACE
 

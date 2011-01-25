@@ -43,7 +43,7 @@
 #define NODEUPDATER_P_H
 
 #include "node.h"
-#include <qmatrix4x4stack.h>
+#include "qsgmatrix4x4stack.h"
 #include <qstack.h>
 
 class NodeUpdater : public NodeVisitor
@@ -60,7 +60,7 @@ public:
     void visitNode(Node *n);
 
 
-    QMatrix4x4Stack m_matrix_stack;
+    QSGMatrix4x4Stack m_matrix_stack;
     QStack<QMatrix4x4 *> m_combined_matrix_stack;
     const ClipNode *m_current_clip;
     int m_disable_count;

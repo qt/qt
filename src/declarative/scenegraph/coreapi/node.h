@@ -213,7 +213,7 @@ public:
     ~BasicGeometryNode();
 
     void setGeometry(Geometry *geometry, int firstIndex = 0, int endIndex = -1);
-    void updateGeometryDescription(const QVector<QGLAttributeDescription> &description, GLenum indexType);
+    void updateGeometryDescription(const QVector<QSGAttributeDescription> &description, GLenum indexType);
     Geometry *geometry() const { return m_geometry; }
     int firstIndex() const { return m_first_index; }
     void setFirstIndex(int index);

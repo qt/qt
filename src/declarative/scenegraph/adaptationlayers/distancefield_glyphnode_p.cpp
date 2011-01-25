@@ -94,7 +94,7 @@ const char *DistanceFieldTextMaterialData::fragmentShader() const {
 }
 
 const AbstractShaderEffectProgram::Attributes DistanceFieldTextMaterialData::attributes() const {
-    static const QGL::VertexAttribute ids[] = { QGL::Position, QGL::TextureCoord0, QGL::VertexAttribute(-1) };
+    static const QSG::VertexAttribute ids[] = { QSG::Position, QSG::TextureCoord0, QSG::VertexAttribute(-1) };
     static const char *const names[] = { "vCoord", "tCoord", 0 };
     static const Attributes attr = { ids, names };
     return attr;

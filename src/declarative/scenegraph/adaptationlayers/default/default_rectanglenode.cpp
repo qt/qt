@@ -661,11 +661,11 @@ void DefaultRectangleNode::updateGeometry()
     Q_ASSERT(fillVertexCount <= fill->vertexCount());
     Q_ASSERT(fillIndexCount <= fill->indexCount());
 
-    fill->setDrawingMode(QGL::TriangleStrip);
+    fill->setDrawingMode(QSG::TriangleStrip);
     fill->setVertexCount(fillVertexCount);
     fill->setIndexCount(fillIndexCount);
 
-    border->setDrawingMode(QGL::TriangleStrip);
+    border->setDrawingMode(QSG::TriangleStrip);
     border->setVertexCount(borderVertexCount);
 
     markDirty(DirtyGeometry);

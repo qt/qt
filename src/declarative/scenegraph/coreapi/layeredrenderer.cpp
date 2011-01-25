@@ -43,7 +43,7 @@
 
 #include "layeredrenderer.h"
 #include "node.h"
-#include <qglattributevalue.h>
+#include <qsgattributevalue.h>
 
 #include <qalgorithms.h>
 
@@ -398,7 +398,7 @@ void LayeredRenderer::renderNodes(const QLinkedList<GeometryNode *> &nodes)
         Geometry *geometry = node->geometry();
 
 #ifdef VERTEX_MERGING
-        if (geometry->drawingMode() == QGL::TriangleStrip) {
+        if (geometry->drawingMode() == QSG::TriangleStrip) {
             // Peak ahead to see if the upcoming nodes in the list require the exact same
             // setup. If they do, we can merge them into one big VBO and upload / draw only
             // once. "it" is incremented just after the node is fechted up above, so it already
@@ -462,13 +462,13 @@ void LayeredRenderer::mergeAndDraw(NodeList::const_iterator first, NodeList::con
     m_float_vertices.resize(0);
 
     AbstractEffectProgram *program = prepareMaterial((*first)->material());
-    const QGL::VertexAttribute *attr = program->requiredFields();
+    const QSG::VertexAttribute *attr = program->requiredFields();
 
     int attributeCount = 0;
-    while (attributeCount < 16 && attr[attributeCount] != QGL::VertexAttribute(-1))
+    while (attributeCount < 16 && attr[attributeCount] != QSG::VertexAttribute(-1))
         ++attributeCount;
 
-    QGLAttributeValue values[16];
+    QSGAttributeValue values[16];
     int tupleSizes[16];
 
     int indexOffset = 0;
@@ -478,7 +478,7 @@ void LayeredRenderer::mergeAndDraw(NodeList::const_iterator first, NodeList::con
         const Geometry *g = n->geometry();
 
         for (int ai = 0; ai<attributeCount; ++ai) {
-            values[ai] = g->attributeValue((QGL::VertexAttribute) attr[ai]);
+            values[ai] = g->attributeValue((QSG::VertexAttribute) attr[ai]);
             tupleSizes[ai] = values[ai].tupleSize();
             Q_ASSERT(values[ai].type() == GL_FLOAT);
         }

@@ -45,9 +45,9 @@
 #include <qset.h>
 #include <qhash.h>
 
-#include <qmatrix4x4stack.h>
+#include "qsgmatrix4x4stack.h"
 
-#include <qarray.h>
+#include <qsgarray.h>
 
 #include <qglfunctions.h>
 #include <qglshaderprogram.h>
@@ -111,8 +111,8 @@ public:
     inline void setDeviceRect(const QSize &size) { setDeviceRect(QRect(QPoint(), size)); }
     QRect deviceRect() const { return m_device_rect; }
 
-    QMatrix4x4Stack &projectionMatrix() { return m_projectionMatrix; }
-    QMatrix4x4Stack &modelViewMatrix() { return m_modelViewMatrix; }
+    QSGMatrix4x4Stack &projectionMatrix() { return m_projectionMatrix; }
+    QSGMatrix4x4Stack &modelViewMatrix() { return m_modelViewMatrix; }
 
     void setProjectMatrixToDeviceRect();
     void setProjectMatrixToRect(const QRectF &rect);
@@ -148,8 +148,8 @@ protected:
     void removeNodesToPreprocess(Node *node);
 
     QColor m_clear_color;
-    QMatrix4x4Stack m_projectionMatrix;
-    QMatrix4x4Stack m_modelViewMatrix;
+    QSGMatrix4x4Stack m_projectionMatrix;
+    QSGMatrix4x4Stack m_modelViewMatrix;
 
 private:
     RootNode *m_root_node;

@@ -39,13 +39,13 @@
 **
 ****************************************************************************/
 
-#include "qglattributedescription.h"
+#include "qsgattributedescription.h"
 
 QT_BEGIN_NAMESPACE
 
 /*!
-    \class QGLQGLAttributeDescription
-    \brief The QGLQGLAttributeDescription class encapsulates information about an OpenGL attribute value's layout and type.
+    \class QSGAttributeDescription
+    \brief The QSGAttributeDescription class encapsulates information about an OpenGL attribute value's layout and type.
     \since 4.8
     \ingroup qt3d
     \ingroup qt3d::enablers
@@ -59,49 +59,49 @@ QT_BEGIN_NAMESPACE
     vertex buffers, the data pointer may be an offset into the vertex
     buffer instead.
 
-    QGLQGLAttributeDescription encapsulates the vertex attribute() kind
-    (QGL::Position, QGL::Normal, etc) with the type(), tupleSize(),
+    QSGAttributeDescription encapsulates the vertex attribute() kind
+    (QSG::Position, QSG::Normal, etc) with the type(), tupleSize(),
     and stride() information of an attribute.  The companion
-    QGLAttributeValue class adds the data pointer.
+    QSGAttributeValue class adds the data pointer.
 
-    \sa QGLAttributeValue
+    \sa QSGAttributeValue
 */
 
 /*!
-    \fn QGLQGLAttributeDescription::QGLQGLAttributeDescription()
+    \fn QSGAttributeDescription::QSGAttributeDescription()
 
     Constructs a null attribute description with default parameters of
     tupleSize() and stride() set to zero, type() set to GL_FLOAT,
-    and attribute() set to QGL::Position.
+    and attribute() set to QSG::Position.
 
     \sa isNull()
 */
 
 /*!
-    \fn QGLQGLAttributeDescription::QGLQGLAttributeDescription(QGL::VertexAttribute attribute, int tupleSize, GLenum type, int stride)
+    \fn QSGAttributeDescription::QSGAttributeDescription(QSG::VertexAttribute attribute, int tupleSize, GLenum type, int stride)
 
     Constructs an attribute description with the fields \a attribute,
     \a tupleSize, \a type, and \a stride.
 */
 
 /*!
-    \fn bool QGLQGLAttributeDescription::isNull() const
+    \fn bool QSGAttributeDescription::isNull() const
 
     Returns true if tupleSize() is zero, which indicates an unset
     attribute description; false otherwise.
 */
 
 /*!
-    \fn QGL::VertexAttribute QGLQGLAttributeDescription::attribute() const
+    \fn QSG::VertexAttribute QSGAttributeDescription::attribute() const
 
     Returns the vertex attribute that this description applies to.
-    The default value is QGL::Position.
+    The default value is QSG::Position.
 
     \sa setAttribute(), type()
 */
 
 /*!
-    \fn void QGLQGLAttributeDescription::setAttribute(QGL::VertexAttribute attribute)
+    \fn void QSGAttributeDescription::setAttribute(QSG::VertexAttribute attribute)
 
     Sets the vertex \a attribute that this description applies to.
 
@@ -109,7 +109,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn GLenum QGLQGLAttributeDescription::type() const
+    \fn GLenum QSGAttributeDescription::type() const
 
     Returns the component type for this attribute description.  The default
     value is GL_FLOAT.
@@ -118,7 +118,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QGLQGLAttributeDescription::setType(GLenum type)
+    \fn void QSGAttributeDescription::setType(GLenum type)
 
     Sets the component \a type for this attribute description.
 
@@ -130,7 +130,7 @@ QT_BEGIN_NAMESPACE
 
     \sa type(), tupleSize()
 */
-int QGLAttributeDescription::sizeOfType() const
+int QSGAttributeDescription::sizeOfType() const
 {
     switch (m_type) {
     case GL_BYTE:           return int(sizeof(GLbyte));
@@ -148,7 +148,7 @@ int QGLAttributeDescription::sizeOfType() const
 }
 
 /*!
-    \fn int QGLQGLAttributeDescription::tupleSize() const
+    \fn int QSGAttributeDescription::tupleSize() const
 
     Returns the tuple size of this attribute in components.  For example,
     a return value of 3 indicates a vector of 3-dimensional values.
@@ -158,7 +158,7 @@ int QGLAttributeDescription::sizeOfType() const
 */
 
 /*!
-    \fn void QGLQGLAttributeDescription::setTupleSize(int tupleSize)
+    \fn void QSGAttributeDescription::setTupleSize(int tupleSize)
 
     Sets the tuple size of this attribute in components to \a tupleSize.
 
@@ -166,7 +166,7 @@ int QGLAttributeDescription::sizeOfType() const
 */
 
 /*!
-    \fn int QGLQGLAttributeDescription::stride() const
+    \fn int QSGAttributeDescription::stride() const
 
     Returns the stride in bytes from one vertex element to the
     next for this attribute description.  The default value of 0 indicates
@@ -176,7 +176,7 @@ int QGLAttributeDescription::sizeOfType() const
 */
 
 /*!
-    \fn void QGLQGLAttributeDescription::setStride(int stride)
+    \fn void QSGAttributeDescription::setStride(int stride)
 
     Sets the \a stride in bytes from one vertex element to the next
     for this attribute description.

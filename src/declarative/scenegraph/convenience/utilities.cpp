@@ -76,13 +76,13 @@
 
 void Utilities::setupRectGeometry(Geometry *geometry, const QRectF &rect, const QSize &textureSize, const QRectF &sourceRect)
 {
-    geometry->setDrawingMode(QGL::TriangleStrip);
+    geometry->setDrawingMode(QSG::TriangleStrip);
     geometry->setVertexCount(4);
 
-    const QVector<QGLAttributeDescription> &d = geometry->vertexDescription();
+    const QVector<QSGAttributeDescription> &d = geometry->vertexDescription();
     int offset = 0;
     for (int i = 0; i < d.size(); ++i) {
-        if (d.at(i).attribute() == QGL::Position) {
+        if (d.at(i).attribute() == QSG::Position) {
             Q_ASSERT(d.at(i).tupleSize() >= 2);
             Q_ASSERT(d.at(i).type() == GL_FLOAT);
             for (int j = 0; j < 4; ++j) {
@@ -92,7 +92,7 @@ void Utilities::setupRectGeometry(Geometry *geometry, const QRectF &rect, const 
                 for (int k = 2; k < d.at(i).tupleSize(); ++k)
                     f[k] = k - 2;
             }
-        } else if (d.at(i).attribute() == QGL::TextureCoord0) {
+        } else if (d.at(i).attribute() == QSG::TextureCoord0) {
             Q_ASSERT(d.at(i).tupleSize() >= 2);
             Q_ASSERT(d.at(i).type() == GL_FLOAT);
 
@@ -111,30 +111,30 @@ void Utilities::setupRectGeometry(Geometry *geometry, const QRectF &rect, const 
     }
 }
 
-QVector<QGLAttributeDescription> &Utilities::getRectGeometryDescription()
+QVector<QSGAttributeDescription> &Utilities::getRectGeometryDescription()
 {
-    static QVector<QGLAttributeDescription> desc;
+    static QVector<QSGAttributeDescription> desc;
     if (desc.isEmpty())
-        desc << QGLAttributeDescription(QGL::Position, 2, GL_FLOAT, 2 * sizeof(float));
+        desc << QSGAttributeDescription(QSG::Position, 2, GL_FLOAT, 2 * sizeof(float));
     return desc;
 }
 
-QVector<QGLAttributeDescription> &Utilities::getTexturedRectGeometryDescription()
+QVector<QSGAttributeDescription> &Utilities::getTexturedRectGeometryDescription()
 {
-    static QVector<QGLAttributeDescription> desc;
+    static QVector<QSGAttributeDescription> desc;
     if (desc.isEmpty()) {
-        desc << QGLAttributeDescription(QGL::Position, 2, GL_FLOAT, 4 * sizeof(float));
-        desc << QGLAttributeDescription(QGL::TextureCoord0, 2, GL_FLOAT, 4 * sizeof(float));
+        desc << QSGAttributeDescription(QSG::Position, 2, GL_FLOAT, 4 * sizeof(float));
+        desc << QSGAttributeDescription(QSG::TextureCoord0, 2, GL_FLOAT, 4 * sizeof(float));
     }
     return desc;
 }
 
-QVector<QGLAttributeDescription> &Utilities::getColoredRectGeometryDescription()
+QVector<QSGAttributeDescription> &Utilities::getColoredRectGeometryDescription()
 {
-    static QVector<QGLAttributeDescription> desc;
+    static QVector<QSGAttributeDescription> desc;
     if (desc.isEmpty()) {
-        desc << QGLAttributeDescription(QGL::Position, 2, GL_FLOAT, 6 * sizeof(float));
-        desc << QGLAttributeDescription(QGL::Color, 4, GL_FLOAT, 6 * sizeof(float));
+        desc << QSGAttributeDescription(QSG::Position, 2, GL_FLOAT, 6 * sizeof(float));
+        desc << QSGAttributeDescription(QSG::Color, 4, GL_FLOAT, 6 * sizeof(float));
     }
     return desc;
 }
@@ -217,7 +217,7 @@ Geometry *Utilities::createTexturedRectGeometry(const QRectF &rect, const QSize 
 //        QGLTexture2DPtr texture(new QGLTexture2D);
 //        texture->setImage(image);
 //        texture->setBindOptions(QGLContext::InternalBindOption);
-//        QGL::TextureWrap wrap = clampToEdge ? QGL::ClampToEdge : QGL::Repeat;
+//        QSG::TextureWrap wrap = clampToEdge ? QSG::ClampToEdge : QSG::Repeat;
 //        texture->setVerticalWrap(wrap);
 //        texture->setHorizontalWrap(wrap);
 //        SubTexture2DPtr subtex(new SubTexture2D(texture.constCast<const QGLTexture2D>()));

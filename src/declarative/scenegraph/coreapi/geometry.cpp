@@ -42,11 +42,11 @@
 #include "geometry.h"
 #include "utilities.h"
 
-#include "qglattributevalue.h"
+#include "qsgattributevalue.h"
 #include <QApplication>
 
 Geometry::Geometry()
-    : m_mode(QGL::Triangles)
+    : m_mode(QSG::Triangles)
     , m_vertex_stride(0)
     , m_index_stride(0)
 {
@@ -54,8 +54,8 @@ Geometry::Geometry()
     GeometryDataUploader::registerGeometry(this);
 }
 
-Geometry::Geometry(const QVector<QGLAttributeDescription> &description, GLenum indexType)
-    : m_mode(QGL::Triangles)
+Geometry::Geometry(const QVector<QSGAttributeDescription> &description, GLenum indexType)
+    : m_mode(QSG::Triangles)
 {
     setIndexType(indexType);
     setVertexDescription(description);
@@ -73,7 +73,7 @@ void *Geometry::vertexData()
     return m_vertex_data.data();
 }
 
-void Geometry::setVertexDescription(const QVector<QGLAttributeDescription> &description)
+void Geometry::setVertexDescription(const QVector<QSGAttributeDescription> &description)
 {
     m_vertex_data.clear();
     m_vertex_stride = 0;
@@ -128,23 +128,23 @@ const uint *Geometry::constUintIndexData() const
     return 0;
 }
 
-QGLAttributeValue Geometry::attributeValue(QGL::VertexAttribute attribute) const
+QSGAttributeValue Geometry::attributeValue(QSG::VertexAttribute attribute) const
 {
     int offset = 0;
     for (int i = 0; i < m_vertex_description.size(); ++i) {
-        const QGLAttributeDescription &desc = m_vertex_description.at(i);
+        const QSGAttributeDescription &desc = m_vertex_description.at(i);
         if (desc.attribute() == attribute) {
-            return QGLAttributeValue(desc.tupleSize(), desc.type(), m_vertex_stride,
+            return QSGAttributeValue(desc.tupleSize(), desc.type(), m_vertex_stride,
                                      m_vertex_data.constData() + offset, vertexCount());
         }
         offset += desc.tupleSize() * desc.sizeOfType();
     }
-    return QGLAttributeValue();
+    return QSGAttributeValue();
 }
 
 
 // Copy bigger memory blocks at once
-static inline void arraycpy(QArray<uchar> &dest, const QArray<uchar> &src)
+static inline void arraycpy(QSGArray<uchar> &dest, const QSGArray<uchar> &src)
 {
     int extendSize = src.size();
     int size = dest.size();
@@ -156,8 +156,8 @@ bool GeometryDataUploader::m_use_buffers = true;
 QSet<const Geometry *> GeometryDataUploader::m_geometries;
 QGLBuffer GeometryDataUploader::m_vertex_buffer(QGLBuffer::VertexBuffer);
 QGLBuffer GeometryDataUploader::m_index_buffer(QGLBuffer::IndexBuffer);
-QArray<uchar> GeometryDataUploader::m_vertex_data;
-QArray<uchar> GeometryDataUploader::m_index_data;
+QSGArray<uchar> GeometryDataUploader::m_vertex_data;
+QSGArray<uchar> GeometryDataUploader::m_index_data;
 QHash<const Geometry *, int> GeometryDataUploader::m_vertex_offsets;
 QHash<const Geometry *, int> GeometryDataUploader::m_index_offsets;
 bool GeometryDataUploader::m_vertex_bound = false;
@@ -186,7 +186,7 @@ void GeometryDataUploader::addGeometryVertex(const Geometry *g)
     if (!m_use_buffers || g->vertexCount() == 0)
         return;
 
-    const QArray<uchar> &vertexData = g->vertexArray();
+    const QSGArray<uchar> &vertexData = g->vertexArray();
     m_vertex_offsets.insert(g, m_vertex_data.count());
     arraycpy(m_vertex_data, vertexData);
 }
@@ -197,7 +197,7 @@ void GeometryDataUploader::addGeometryIndex(const Geometry *g)
         return;
 
     if (g->indexCount()) {
-        const QArray<uchar> &indexData = g->indexArray();
+        const QSGArray<uchar> &indexData = g->indexArray();
         m_index_offsets.insert(g, m_index_data.count());
         arraycpy(m_index_data, indexData);
     }

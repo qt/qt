@@ -80,7 +80,7 @@ const TextureMaterialData::Attributes TextureMaterialData::attributes() const
     return attr;
 }
 
-const QGL::VertexAttribute *TextureMaterialData::requiredFields() const
+const QSG::VertexAttribute *TextureMaterialData::requiredFields() const
 {
     return attributeIds;
 }
@@ -88,10 +88,10 @@ const QGL::VertexAttribute *TextureMaterialData::requiredFields() const
 AbstractEffectType TextureMaterialData::type;
 
 
-const QGL::VertexAttribute TextureMaterialData::attributeIds[] = {
-    QGL::Position,
-    QGL::TextureCoord0,
-    QGL::VertexAttribute(-1)
+const QSG::VertexAttribute TextureMaterialData::attributeIds[] = {
+    QSG::Position,
+    QSG::TextureCoord0,
+    QSG::VertexAttribute(-1)
 };
 
 const char *const TextureMaterialData::attributeNames[] = {

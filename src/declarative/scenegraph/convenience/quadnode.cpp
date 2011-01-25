@@ -56,18 +56,18 @@ QuadNode::QuadNode(const QRectF &t, const QRectF &sourceRect, qreal z, int meshS
         updateGeometryDescription(Utilities::getTexturedRectGeometryDescription(), GL_UNSIGNED_SHORT);
         Utilities::setupRectGeometry(geometry(),t, QSize(1, 1), sourceRect);
     } else {
-        QVector<QGLAttributeDescription> desc;
+        QVector<QSGAttributeDescription> desc;
         if (z == 0) {
-            desc << QGLAttributeDescription(QGL::Position, 2, GL_FLOAT, 4 * sizeof(float));
-            desc << QGLAttributeDescription(QGL::TextureCoord0, 2, GL_FLOAT, 4 * sizeof(float));
+            desc << QSGAttributeDescription(QSG::Position, 2, GL_FLOAT, 4 * sizeof(float));
+            desc << QSGAttributeDescription(QSG::TextureCoord0, 2, GL_FLOAT, 4 * sizeof(float));
         } else {
-            desc << QGLAttributeDescription(QGL::Position, 3, GL_FLOAT, 5 * sizeof(float));
-            desc << QGLAttributeDescription(QGL::TextureCoord0, 2, GL_FLOAT, 5 * sizeof(float));
+            desc << QSGAttributeDescription(QSG::Position, 3, GL_FLOAT, 5 * sizeof(float));
+            desc << QSGAttributeDescription(QSG::TextureCoord0, 2, GL_FLOAT, 5 * sizeof(float));
         }
 
         updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
         Geometry *g = geometry();
-        g->setDrawingMode(QGL::Triangles);
+        g->setDrawingMode(QSG::Triangles);
         g->setVertexCount((meshSize + 1) * (meshSize + 1));
         g->setIndexCount(meshSize * meshSize * 6);
 

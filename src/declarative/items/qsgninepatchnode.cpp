@@ -105,13 +105,13 @@ void QSGNinePatchNode::updateGeometry()
 
     Geometry *g = geometry();
     if (g->isNull()) {
-        QVector<QGLAttributeDescription> desc;
-        desc << QGLAttributeDescription(QGL::Position, 2, GL_FLOAT, 5 * sizeof(float));
-        desc << QGLAttributeDescription(QGL::TextureCoord0, 2, GL_FLOAT, 5 * sizeof(float));
+        QVector<QSGAttributeDescription> desc;
+        desc << QSGAttributeDescription(QSG::Position, 2, GL_FLOAT, 5 * sizeof(float));
+        desc << QSGAttributeDescription(QSG::TextureCoord0, 2, GL_FLOAT, 5 * sizeof(float));
         updateGeometryDescription(desc, GL_UNSIGNED_SHORT);
         g->setVertexCount(6 * 6); // Grid of 6x6 vertices.
         g->setIndexCount(5 * 5 * 6); // Grid of 5x5 cells, 2 triangles per cell.
-        g->setDrawingMode(QGL::Triangles);
+        g->setDrawingMode(QSG::Triangles);
 
         ushort *indices = g->ushortIndexData();
         int count = 0;
