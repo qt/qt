@@ -249,10 +249,9 @@ static QStringList split_arg_list(QString params)
             ++last;
         for(int x = last, parens = 0; ; x++) {
             if(x == params_len) {
-                while(x && params_data[x-1].unicode() == SPACE)
+                while(x > last && params_data[x-1].unicode() == SPACE)
                     --x;
-                QString mid(params_data+last, x-last);
-                args << mid;
+                args << params.mid(last, x - last);
                 return args;
             }
             ushort unicode = params_data[x].unicode();
@@ -266,9 +265,11 @@ static QStringList split_arg_list(QString params)
                 quote = unicode;
             }
             if(!parens && !quote && unicode == COMMA) {
-                QString mid = params.mid(last, x - last).trimmed();
-                args << mid;
+                int prev = last;
                 last = x+1;
+                while(x > prev && params_data[x-1].unicode() == SPACE)
+                    --x;
+                args << params.mid(prev, x - prev);
                 break;
             }
         }
