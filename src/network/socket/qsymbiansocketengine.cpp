@@ -626,6 +626,10 @@ bool QSymbianSocketEngine::connectToHost(const QHostAddress &addr, quint16 port)
             d->setError(QAbstractSocket::SocketAccessError, d->AccessErrorString);
             d->socketState = QAbstractSocket::UnconnectedState;
             break;
+        case KErrBadName:
+            d->setError(QAbstractSocket::NetworkError, d->InvalidAddressError);
+            d->socketState = QAbstractSocket::UnconnectedState;
+            break;
         case KErrNotSupported:
         case KErrBadDescriptor:
         default:
@@ -1305,6 +1309,9 @@ void QSymbianSocketEnginePrivate::setError(QAbstractSocket::SocketError error, E
         break;
     case InvalidProxyTypeString:
         socketErrorString = QSymbianSocketEngine::tr("The proxy type is invalid for this operation");
+        break;
+    case InvalidAddressError:
+        socketErrorString = QSymbianSocketEngine::tr("The address is invalid for this operation");
         break;
     case UnknownSocketErrorString:
         socketErrorString = QSymbianSocketEngine::tr("Unknown error");

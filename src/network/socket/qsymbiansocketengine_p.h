@@ -233,6 +233,8 @@ public:
         PortInuseErrorString,
         NotSocketErrorString,
         InvalidProxyTypeString,
+        //symbian specific
+        InvalidAddressError,
 
         UnknownSocketErrorString = -1
     };
