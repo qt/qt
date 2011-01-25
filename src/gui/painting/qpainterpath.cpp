@@ -2915,8 +2915,11 @@ QPointF QPainterPath::pointAtPercent(qreal t) const
         return QPointF();
     }
 
-    if (isEmpty())
+    if (!d_ptr || d_ptr->elements.size() == 0)
         return QPointF();
+
+    if (d_ptr->elements.size() == 1)
+        return d_ptr->elements.at(0);
 
     qreal totalLength = length();
     qreal curLen = 0;

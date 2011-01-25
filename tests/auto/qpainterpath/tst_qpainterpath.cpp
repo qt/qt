@@ -1040,6 +1040,11 @@ void tst_QPainterPath::pointAtPercent_data()
     QRectF rect(241, 273, 185, 228);
     path.addEllipse(rect);
     QTest::newRow("Case 17") << path << qreal(1.0) << QPointF(rect.right(), qreal(0.5) * (rect.top() + rect.bottom()));
+
+    path = QPainterPath();
+    path.moveTo(100, 100);
+    QTest::newRow("Case 18") << path << qreal(0.0) << QPointF(100, 100);
+    QTest::newRow("Case 19") << path << qreal(1.0) << QPointF(100, 100);
 }
 
 void tst_QPainterPath::pointAtPercent()
