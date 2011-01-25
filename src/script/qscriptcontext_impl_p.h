@@ -306,16 +306,6 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::createArgu
     return args;
 }
 
-static v8::Handle<v8::Value> argumentsPropertyGetter(v8::Local<v8::String> property, const v8::AccessorInfo &info)
-{
-    v8::Local<v8::Object> self = info.Holder();
-    QScriptContextPrivate *ctx = static_cast<QScriptContextPrivate *>(v8::External::Unwrap(info.Data()));
-
-    QScriptSharedDataPointer<QScriptValuePrivate> argsObject(ctx->argumentsObject());
-    self->ForceSet(property, *argsObject);
-    return *argsObject;
-}
-
 inline void QScriptContextPrivate::initializeArgumentsProperty()
 {
     Q_ASSERT(arguments);

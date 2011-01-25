@@ -94,6 +94,7 @@ public:
     static const int stackTraceLimit = 100;
 
 private:
+    static v8::Handle<v8::Value> argumentsPropertyGetter(v8::Local<v8::String> , const v8::AccessorInfo &);
     Q_DISABLE_COPY(QScriptContextPrivate)
 };
 
