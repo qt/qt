@@ -47,6 +47,7 @@
 
 #include <QtGui/private/qwindowsurface_p.h>
 #include <QtCore/QVarLengthArray>
+#include <QtOpenGL/private/qglpaintdevice_p.h>
 
 #define GL_GLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
@@ -71,16 +72,45 @@ public:
                        const QSize &size, QImage::Format format);
     ~QWaylandDrmBuffer();
 
-    void bindToCurrentContext();
+    void bindToCurrentFbo();
     QSize size() const { return mSize; }
 
 private:
     EGLImageKHR mImage;
     QWaylandDisplay *mDisplay;
     QSize mSize;
-    GLuint mFbo;
     GLuint mTexture;
+
+};
+
+class QWaylandPaintDevice : public QGLPaintDevice
+{
+public:
+    QWaylandPaintDevice(QWaylandDisplay *display, QWindowSurface *windowSurface, QPlatformGLContext *context);
+    ~QWaylandPaintDevice();
+
+    QSize size() const;
+    QGLContext *context() const;
+    QPaintEngine *paintEngine() const;
+
+    void beginPaint();
+
+    bool isFlipped()const;
+
+    void resize(const QSize &size);
+
+    QWaylandDrmBuffer *currentDrmBuffer() const;
+    QWaylandDrmBuffer *currentDrmBufferAndSwap();
+
+private:
+    QWaylandDisplay *mDisplay;
+    QPlatformGLContext  *mPlatformGLContext;
+    QWindowSurface *mWindowSurface;
+    QVarLengthArray<QWaylandDrmBuffer *> mBufferList;
+    int mCurrentPaintBuffer;
     GLuint mDepthStencil;
+    QSize mSize;
+
 };
 
 class QWaylandDrmWindowSurface : public QWindowSurface
@@ -95,12 +125,10 @@ public:
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
     void resize(const QSize &size);
 
-    QWaylandDrmBuffer *currentPaintBuffer() const;
 private:
-    QVarLengthArray<QWaylandDrmBuffer *> mBufferList;
-    int mCurrentPaintBuffer;
+
     QWaylandDisplay *mDisplay;
-    QPaintDevice *mPaintDevice;
+    QWaylandPaintDevice *mPaintDevice;
 };
 
 #endif // QWAYLANDDRMSURFACE_H
