@@ -241,41 +241,38 @@ static QStringList split_arg_list(QString params)
     const ushort SPACE = ' ';
     //const ushort TAB = '\t';
 
-    ushort unicode;
     const QChar *params_data = params.data();
     const int params_len = params.length();
-    int last = 0;
-    while(last < params_len && (params_data[last].unicode() == SPACE
-                                /*|| params_data[last].unicode() == TAB*/))
-        ++last;
-    for(int x = last, parens = 0; x <= params_len; x++) {
-        unicode = params_data[x].unicode();
-        if(x == params_len) {
-            while(x && params_data[x-1].unicode() == SPACE)
-                --x;
-            QString mid(params_data+last, x-last);
-            args << mid;
-            break;
-        }
-        if(unicode == LPAREN) {
-            --parens;
-        } else if(unicode == RPAREN) {
-            ++parens;
-        } else if(quote && unicode == quote) {
-            quote = 0;
-        } else if(!quote && (unicode == SINGLEQUOTE || unicode == DOUBLEQUOTE)) {
-            quote = unicode;
-        }
-        if(!parens && !quote && unicode == COMMA) {
-            QString mid = params.mid(last, x - last).trimmed();
-            args << mid;
-            last = x+1;
-            while(last < params_len && (params_data[last].unicode() == SPACE
-                                        /*|| params_data[last].unicode() == TAB*/))
-                ++last;
+    for(int last = 0; ;) {
+        while(last < params_len && (params_data[last].unicode() == SPACE
+                                    /*|| params_data[last].unicode() == TAB*/))
+            ++last;
+        for(int x = last, parens = 0; ; x++) {
+            if(x == params_len) {
+                while(x && params_data[x-1].unicode() == SPACE)
+                    --x;
+                QString mid(params_data+last, x-last);
+                args << mid;
+                return args;
+            }
+            ushort unicode = params_data[x].unicode();
+            if(unicode == LPAREN) {
+                --parens;
+            } else if(unicode == RPAREN) {
+                ++parens;
+            } else if(quote && unicode == quote) {
+                quote = 0;
+            } else if(!quote && (unicode == SINGLEQUOTE || unicode == DOUBLEQUOTE)) {
+                quote = unicode;
+            }
+            if(!parens && !quote && unicode == COMMA) {
+                QString mid = params.mid(last, x - last).trimmed();
+                args << mid;
+                last = x+1;
+                break;
+            }
         }
     }
-    return args;
 }
 
 static QStringList split_value_list(const QString &vals)
