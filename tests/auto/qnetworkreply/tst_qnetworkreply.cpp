@@ -65,6 +65,11 @@
 #include <QtNetwork/qsslerror.h>
 #include <QtNetwork/qsslconfiguration.h>
 #endif
+#ifndef QT_NO_BEARERMANAGEMENT
+#include <QtNetwork/qnetworkconfigmanager.h>
+#include <QtNetwork/qnetworkconfiguration.h>
+#include <QtNetwork/qnetworksession.h>
+#endif
 
 #include <time.h>
 
@@ -135,6 +140,11 @@ class tst_QNetworkReply: public QObject
 #ifndef QT_NO_OPENSSL
     QSslConfiguration storedSslConfiguration;
     QList<QSslError> storedExpectedSslErrors;
+#endif
+#ifndef QT_NO_BEARER_MANAGEMENT
+    QNetworkConfigurationManager *netConfMan;
+    QNetworkConfiguration networkConfiguration;
+    QScopedPointer<QNetworkSession> networkSession;
 #endif
 
 public:
@@ -1140,6 +1150,18 @@ void tst_QNetworkReply::initTestCase()
 #endif
 
     QDir::setSearchPaths("srcdir", QStringList() << SRCDIR);
+#ifndef QT_NO_OPENSSL
+    QSslSocket::defaultCaCertificates(); //preload certificates
+#endif
+#ifndef QT_NO_BEARERMANAGEMENT
+    netConfMan = new QNetworkConfigurationManager(this);
+    networkConfiguration = netConfMan->defaultConfiguration();
+    networkSession.reset(new QNetworkSession(networkConfiguration));
+    if (!networkSession->isOpen()) {
+        networkSession->open();
+        QVERIFY(networkSession->waitForOpened(30000));
+    }
+#endif
 }
 
 void tst_QNetworkReply::cleanupTestCase()
@@ -1147,6 +1169,9 @@ void tst_QNetworkReply::cleanupTestCase()
 #if !defined Q_OS_WIN
     QFile::remove(wronlyFileName);
 #endif
+    if (networkSession && networkSession->isOpen()) {
+        networkSession->close();
+    }
 }
 
 void tst_QNetworkReply::init()
