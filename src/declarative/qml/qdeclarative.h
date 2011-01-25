@@ -53,6 +53,9 @@
 
 QT_BEGIN_HEADER
 
+#define QML_VERSION     0x020000
+#define QML_VERSION_STR "2.0"
+
 #define QML_DECLARE_TYPE(TYPE) \
     Q_DECLARE_METATYPE(TYPE *) \
     Q_DECLARE_METATYPE(QDeclarativeListProperty<TYPE>) 
