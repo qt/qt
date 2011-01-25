@@ -340,7 +340,7 @@ inline void QScriptContextPrivate::initializeArgumentsProperty()
 inline v8::Handle<v8::Value> QScriptContextPrivate::throwError(QScriptContext::Error error, const QString& text)
 {
     v8::Handle<v8::String> message = QScriptConverter::toString(text);
-    v8::Handle<v8::Value> exception;
+    v8::Local<v8::Value> exception;
     switch (error) {
         case UnknownError:
             exception = v8::Exception::Error(message);
@@ -361,7 +361,7 @@ inline v8::Handle<v8::Value> QScriptContextPrivate::throwError(QScriptContext::E
             QScriptSharedDataPointer<QScriptValuePrivate> fun(engine->evaluate(QString::fromLatin1("(function(message) {return new URIError(message)})")));
             v8::Handle<v8::Value> argv[] = { message };
             QScriptSharedDataPointer<QScriptValuePrivate> err(fun->call(QScriptValuePrivate::get(QScriptValue()), 1, argv));
-            exception = err->asV8Value(engine);
+            exception = v8::Local<v8::Value>::New(err->asV8Value(engine));
             break;
         }
     }
