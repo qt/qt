@@ -7,7 +7,7 @@ QT =
 
 include($$PWD/v8.pri)
 
-SOURCES += \
+V8SOURCES = \
     $$V8DIR/src/accessors.cc \
     $$V8DIR/src/allocation.cc \
     $$V8DIR/src/api.cc \
@@ -102,7 +102,7 @@ SOURCES += \
 
 arch_arm {
 DEFINES += V8_TARGET_ARCH_ARM
-SOURCES += \
+V8SOURCES += \
     $$V8DIR/src/jump-target-light.cc \
     $$V8DIR/src/virtual-frame-light.cc \
     $$V8DIR/src/arm/builtins-arm.cc \
@@ -126,7 +126,7 @@ SOURCES += \
 
 arch_mips {
 DEFINES += V8_TARGET_ARCH_MIPS
-SOURCES += \
+V8SOURCES += \
     $$V8DIR/src/mips/assembler-mips.cc \
     $$V8DIR/src/mips/builtins-mips.cc \
     $$V8DIR/src/mips/codegen-mips.cc \
@@ -146,7 +146,7 @@ SOURCES += \
 
 arch_i386 {
 DEFINES += V8_TARGET_ARCH_IA32
-SOURCES += \
+V8SOURCES += \
     $$V8DIR/src/jump-target-heavy.cc \
     $$V8DIR/src/virtual-frame-heavy.cc \
     $$V8DIR/src/ia32/assembler-ia32.cc \
@@ -169,7 +169,7 @@ SOURCES += \
 
 arch_x86_64 {
 DEFINES += V8_TARGET_ARCH_X64
-SOURCES += \
+V8SOURCES += \
     $$V8DIR/src/jump-target-heavy.cc \
     $$V8DIR/src/virtual-frame-heavy.cc \
     $$V8DIR/src/x64/assembler-x64.cc \
@@ -191,29 +191,42 @@ SOURCES += \
 }
 
 unix:!symbian {
-SOURCES += \
+V8SOURCES += \
     $$V8DIR/src/platform-linux.cc \
     $$V8DIR/src/platform-posix.cc
 }
 
 #os:macos
 macx {
-SOURCES += \
+V8SOURCES += \
     $$V8DIR/src/platform-macos.cc \
     $$V8DIR/src/platform-posix.cc
 }
 
 win32 {
-SOURCES += \
+V8SOURCES += \
     $$V8DIR/src/platform-win32.cc
 }
 
 #mode:debug
 CONFIG(debug) {
-    SOURCES += \
+    V8SOURCES += \
         $$V8DIR/src/objects-debug.cc \
         $$V8DIR/src/prettyprinter.cc \
         $$V8DIR/src/regexp-macro-assembler-tracer.cc
+}
+
+symbian {
+    # RVCT 2.2 doesn't understand .cc extension, and -cpp option doesn't
+    # seem to do the right thing either. So we create .cpp files that
+    # simply include the corresponding .cc file.
+    wrapcc.commands = perl wrapcc.pl ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
+    wrapcc.input = V8SOURCES
+    wrapcc.output = $$V8_GENERATED_SOURCES_DIR/${QMAKE_FILE_BASE}.cpp
+    wrapcc.variable_out = SOURCES
+    QMAKE_EXTRA_COMPILERS += wrapcc
+} else {
+    SOURCES += $$V8SOURCES
 }
 
 V8_LIBRARY_FILES = \
