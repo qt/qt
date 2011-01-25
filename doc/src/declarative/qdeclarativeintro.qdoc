@@ -160,19 +160,19 @@ characters other than letters, numbers and underscores.
 
 JavaScript expressions can be used to assign property values. For example:
 
-\code
+\qml
 Item {
     width: 100 * 3
     height: 50 + 22
 }
-\endcode
+\endqml
 
 These expressions can include references to other objects and properties, in which case
 a \l{Property Binding}{binding} is established: when the value of the expression changes,
 the property to which the expression is assigned is automatically updated to the
 new value. For example:
 
-\code
+\qml
 Item {
     width: 300
     height: 300
@@ -183,7 +183,7 @@ Item {
         color: "yellow"
     }
 }
-\endcode
+\endqml
 
 Here, the \l Rectangle object's \c width property is set relative to the width
 of its parent. Whenever the parent's width changes, the width of the \l Rectangle is
@@ -330,7 +330,7 @@ element that attaches \e property.
 For example, the \l ListView element attaches the \e ListView.isCurrentItem property
 to each delegate it creates:
 
-\code
+\qml
 Component {
     id: myDelegate
     Text {
@@ -338,10 +338,13 @@ Component {
         color: ListView.isCurrentItem ? "red" : "blue"
     }
 }
+\endqml
+
+\qml
 ListView {
     delegate: myDelegate
 }
-\endcode
+\endqml
 
 Another example of attached properties is the \l Keys element which
 attaches properties for handling key presses to
@@ -390,6 +393,4 @@ MouseArea {
     }
 }
 \endqml
-
-
 */

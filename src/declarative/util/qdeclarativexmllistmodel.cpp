@@ -96,7 +96,9 @@ typedef QPair<int, int> QDeclarativeXmlListRange;
             query: "title/string()"
         }
     }
+    \endqml
 
+    \qml
     ListView {
         model: xmlModel
         delegate: Text { text: title }
