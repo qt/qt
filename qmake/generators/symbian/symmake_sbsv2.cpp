@@ -686,7 +686,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
         fixFlmCmd(&postLinkCmd, commandsToReplace);
         t << "START EXTENSION qt/qmake_post_link" << endl;
         t << "OPTION POST_LINK_CMD " << postLinkCmd << endl;
-        t << "OPTION LINK_TARGET " << removePathSeparators(escapeFilePath(fileFixify(project->first("TARGET"))).append(".").append(getTargetExtension())) << endl;
+        t << "OPTION LINK_TARGET " << fixedTarget << QLatin1String(".") << getTargetExtension() << endl;
         t << "END" << endl;
         t << endl;
     }
