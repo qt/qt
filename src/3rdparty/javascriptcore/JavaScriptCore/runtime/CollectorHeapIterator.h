@@ -97,12 +97,14 @@ namespace JSC {
 
     inline LiveObjectIterator& LiveObjectIterator::operator++()
     {
-        advance(HeapConstants::cellsPerBlock - 1);
-        if (m_block < m_heap.nextBlock || (m_block == m_heap.nextBlock && m_cell < m_heap.nextCell))
+        if (m_block < m_heap.nextBlock || m_cell < m_heap.nextCell) {
+            advance(HeapConstants::cellsPerBlock);
             return *this;
+        }
 
-        while (m_block < m_heap.usedBlocks && !m_heap.blocks[m_block]->marked.get(m_cell))
-            advance(HeapConstants::cellsPerBlock - 1);
+        do {
+            advance(HeapConstants::cellsPerBlock);
+        } while (m_block < m_heap.usedBlocks && !m_heap.blocks[m_block]->marked.get(m_cell));
         return *this;
     }
 
