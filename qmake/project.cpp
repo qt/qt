@@ -237,6 +237,7 @@ static QStringList split_arg_list(QString params)
     const ushort RPAREN = ')';
     const ushort SINGLEQUOTE = '\'';
     const ushort DOUBLEQUOTE = '"';
+    const ushort BACKSLASH = '\\';
     const ushort COMMA = ',';
     const ushort SPACE = ' ';
     //const ushort TAB = '\t';
@@ -255,14 +256,17 @@ static QStringList split_arg_list(QString params)
                 return args;
             }
             ushort unicode = params_data[x].unicode();
-            if(unicode == LPAREN) {
-                --parens;
-            } else if(unicode == RPAREN) {
-                ++parens;
+            if(x != (int)params_len-1 && unicode == BACKSLASH &&
+                (params_data[x+1].unicode() == SINGLEQUOTE || params_data[x+1].unicode() == DOUBLEQUOTE)) {
+                x++; //get that 'escape'
             } else if(quote && unicode == quote) {
                 quote = 0;
             } else if(!quote && (unicode == SINGLEQUOTE || unicode == DOUBLEQUOTE)) {
                 quote = unicode;
+            } else if(unicode == RPAREN) {
+                --parens;
+            } else if(unicode == LPAREN) {
+                ++parens;
             }
             if(!parens && !quote && unicode == COMMA) {
                 int prev = last;
