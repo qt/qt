@@ -547,7 +547,7 @@ static int qCocoaViewCount = 0;
         }
 
         // Since we don't want to use the native engine, we must exit, however
-        // widgets that are set to paint on screen, spesifically QGLWidget,
+        // widgets that are set to paint on screen, specifically QGLWidget,
         // requires the following code to execute in order to be drawn.
         if (!qwidget->testAttribute(Qt::WA_PaintOnScreen))
             return;
