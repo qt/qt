@@ -169,19 +169,10 @@ void QWaylandDisplay::outputHandleGeometry(void *data,
                                            int32_t x, int32_t y,
                                            int32_t width, int32_t height)
 {
-    Q_UNUSED(output);
-    QWaylandDisplay *qwd = (QWaylandDisplay *) data;
-    QWaylandScreen *screen;
+    QWaylandDisplay *waylandDisplay = (QWaylandDisplay *) data;
 
-    screen = new QWaylandScreen();
-    screen->mGeometry = QRect(x, y, width, height);
-    screen->mDepth = 32;
-    screen->mFormat = QImage::Format_ARGB32_Premultiplied;
-    screen->mOutput = output;
-
-    new QWaylandCursor(qwd, screen);
-
-    qwd->mScreens.append(screen);
+    QRect outputRect = QRect(x, y, width, height);
+    waylandDisplay->createNewScreen(output, outputRect);
 }
 
 const struct wl_output_listener QWaylandDisplay::outputListener = {
@@ -303,6 +294,12 @@ QWaylandDisplay::~QWaylandDisplay(void)
 {
     close(mFd);
     wl_display_destroy(mDisplay);
+}
+
+void QWaylandDisplay::createNewScreen(struct wl_output *output, QRect geometry)
+{
+    QWaylandScreen *waylandScreen = new QWaylandScreen(this,output,geometry);
+    mScreens.append(waylandScreen);
 }
 
 void QWaylandDisplay::syncCallback(wl_display_sync_func_t func, void *data)

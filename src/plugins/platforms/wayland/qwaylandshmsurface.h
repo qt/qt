@@ -65,7 +65,7 @@ private:
 class QWaylandShmWindowSurface : public QWindowSurface
 {
 public:
-    QWaylandShmWindowSurface(QWidget *window, QWaylandDisplay *display);
+    QWaylandShmWindowSurface(QWidget *window);
     ~QWaylandShmWindowSurface();
 
     QPaintDevice *paintDevice();

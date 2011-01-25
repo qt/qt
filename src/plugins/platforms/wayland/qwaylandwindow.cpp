@@ -42,6 +42,7 @@
 #include "qwaylandwindow.h"
 
 #include "qwaylanddisplay.h"
+#include "qwaylandscreen.h"
 #include "qwaylandglcontext.h"
 #include "qwaylandbuffer.h"
 
@@ -52,16 +53,16 @@
 
 #include <QDebug>
 
-QWaylandWindow::QWaylandWindow(QWidget *window, QWaylandDisplay *display)
+QWaylandWindow::QWaylandWindow(QWidget *window)
     : QPlatformWindow(window)
-    , mSurface(display->createSurface())
-    , mDisplay(display)
+    , mDisplay(QWaylandScreen::waylandScreenFromWidget(window)->display())
     , mGLContext(0)
     , mBuffer(0)
 {
     static WId id = 1;
-
     mWindowId = id++;
+
+    mSurface = mDisplay->createSurface();
 }
 
 QWaylandWindow::~QWaylandWindow()

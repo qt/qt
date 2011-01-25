@@ -116,7 +116,7 @@ private:
 class QWaylandDrmWindowSurface : public QWindowSurface
 {
 public:
-    QWaylandDrmWindowSurface(QWidget *window, QWaylandDisplay *display);
+    QWaylandDrmWindowSurface(QWidget *window);
     ~QWaylandDrmWindowSurface();
 
     void beginPaint(const QRegion &);

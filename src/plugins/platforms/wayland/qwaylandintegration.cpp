@@ -80,7 +80,7 @@ QPixmapData *QWaylandIntegration::createPixmapData(QPixmapData::PixelType type) 
 QPlatformWindow *QWaylandIntegration::createPlatformWindow(QWidget *widget, WId winId) const
 {
     Q_UNUSED(winId);
-    return new QWaylandWindow(widget, mDisplay);
+    return new QWaylandWindow(widget);
 }
 
 QWindowSurface *QWaylandIntegration::createWindowSurface(QWidget *widget, WId winId) const
@@ -89,8 +89,8 @@ QWindowSurface *QWaylandIntegration::createWindowSurface(QWidget *widget, WId wi
     Q_UNUSED(winId);
 
     if (mUseOpenGL)
-	return new QWaylandDrmWindowSurface(widget, mDisplay);
-    return new QWaylandShmWindowSurface(widget, mDisplay);
+        return new QWaylandDrmWindowSurface(widget);
+    return new QWaylandShmWindowSurface(widget);
 }
 
 QPlatformFontDatabase *QWaylandIntegration::fontDatabase() const

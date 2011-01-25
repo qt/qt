@@ -44,21 +44,31 @@
 
 #include <QtGui/QPlatformScreen>
 
+class QWaylandDisplay;
+class QWaylandCursor;
+
 class QWaylandScreen : public QPlatformScreen
 {
 public:
-    QWaylandScreen() {}
+    QWaylandScreen(QWaylandDisplay *waylandDisplay, struct wl_output *output, QRect geometry);
+    ~QWaylandScreen();
 
-    QRect geometry() const { return mGeometry; }
-    int depth() const { return mDepth; }
-    QImage::Format format() const { return mFormat; }
+    QWaylandDisplay *display() const;
 
-public:
+    QRect geometry() const;
+    int depth() const;
+    QImage::Format format() const;
+
+    static QWaylandScreen *waylandScreenFromWidget(QWidget *widget);
+
+private:
+    QWaylandDisplay *mWaylandDisplay;
+    struct wl_output *mOutput;
     QRect mGeometry;
     int mDepth;
     QImage::Format mFormat;
     QSize mPhysicalSize;
-    struct wl_output *mOutput;
+    QWaylandCursor *mWaylandCursor;
 };
 
 #endif // QWAYLANDSCREEN_H

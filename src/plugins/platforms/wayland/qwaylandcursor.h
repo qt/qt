@@ -46,13 +46,11 @@
 
 class QWaylandShmBuffer;
 class QWaylandDisplay;
+class QWaylandScreen;
 
 class QWaylandCursor : QPlatformCursor {
 public:
-    QWaylandCursor(QWaylandDisplay *display,
-                   QPlatformScreen *screen)
-        : QPlatformCursor(screen)
-        , mBuffer(0), mDisplay(display) { }
+    QWaylandCursor(QWaylandScreen *screen);
 
     void changeCursor(QCursor *cursor, QWidget *widget);
     QWaylandShmBuffer *mBuffer;

@@ -219,10 +219,9 @@ QWaylandDrmBuffer *QWaylandPaintDevice::currentDrmBufferAndSwap()
     return currentDrmBuffer;
 }
 
-QWaylandDrmWindowSurface::QWaylandDrmWindowSurface(QWidget *window,
-						   QWaylandDisplay *display)
+QWaylandDrmWindowSurface::QWaylandDrmWindowSurface(QWidget *window)
     : QWindowSurface(window)
-    , mDisplay(display)
+    , mDisplay(QWaylandScreen::waylandScreenFromWidget(window)->display())
     , mPaintDevice(new QWaylandPaintDevice(mDisplay, this,window->platformWindow()->glContext()))
 {
 

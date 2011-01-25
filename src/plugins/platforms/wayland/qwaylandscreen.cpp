@@ -41,3 +41,47 @@
 
 #include "qwaylandscreen.h"
 
+#include "qwaylanddisplay.h"
+#include "qwaylandcursor.h"
+
+QWaylandScreen::QWaylandScreen(QWaylandDisplay *waylandDisplay, struct wl_output *output, QRect geometry)
+    : QPlatformScreen()
+    , mWaylandDisplay(waylandDisplay)
+    , mOutput(output)
+    , mGeometry(geometry)
+    , mDepth(32)
+    , mFormat(QImage::Format_ARGB32_Premultiplied)
+    , mWaylandCursor(new QWaylandCursor(this))
+{
+}
+
+QWaylandScreen::~QWaylandScreen()
+{
+    delete mWaylandCursor;
+}
+
+QWaylandDisplay * QWaylandScreen::display() const
+{
+    return mWaylandDisplay;
+}
+
+QRect QWaylandScreen::geometry() const
+{
+    return mGeometry;
+}
+
+int QWaylandScreen::depth() const
+{
+    return mDepth;
+}
+
+QImage::Format QWaylandScreen::format() const
+{
+    return mFormat;
+}
+
+QWaylandScreen * QWaylandScreen::waylandScreenFromWidget(QWidget *widget)
+{
+    QPlatformScreen *platformScreen = QPlatformScreen::platformScreenForWidget(widget);
+    return static_cast<QWaylandScreen *>(platformScreen);
+}

@@ -45,6 +45,7 @@
 
 #include "qwaylanddisplay.h"
 #include "qwaylandwindow.h"
+#include "qwaylandscreen.h"
 
 #include <wayland-client.h>
 #include <unistd.h>
@@ -90,11 +91,10 @@ QWaylandShmBuffer::~QWaylandShmBuffer(void)
     wl_buffer_destroy(mBuffer);
 }
 
-QWaylandShmWindowSurface::QWaylandShmWindowSurface(QWidget *window,
-						   QWaylandDisplay *display)
+QWaylandShmWindowSurface::QWaylandShmWindowSurface(QWidget *window)
     : QWindowSurface(window)
     , mBuffer(0)
-    , mDisplay(display)
+    , mDisplay(QWaylandScreen::waylandScreenFromWidget(window)->display())
 {
 }
 

@@ -52,7 +52,7 @@ class QWaylandBuffer;
 class QWaylandWindow : public QPlatformWindow
 {
 public:
-    QWaylandWindow(QWidget *window, QWaylandDisplay *display);
+    QWaylandWindow(QWidget *window);
     ~QWaylandWindow();
     struct wl_surface *surface() { return mSurface; }
 

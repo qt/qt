@@ -44,6 +44,7 @@
 #include "qwaylanddisplay.h"
 #include "qwaylandinputdevice.h"
 #include "qwaylandshmsurface.h"
+#include "qwaylandscreen.h"
 
 #include <QtGui/QImageReader>
 
@@ -99,6 +100,13 @@ static const struct pointer_image {
     /* Qt::DragLinkCursor */
     { DATADIR "/wayland/dnd-link.png",			13, 13 },
 };
+
+QWaylandCursor::QWaylandCursor(QWaylandScreen *screen)
+    : QPlatformCursor(screen)
+    , mBuffer(0)
+    , mDisplay(screen->display())
+{
+}
 
 void QWaylandCursor::changeCursor(QCursor *cursor, QWidget *widget)
 {
