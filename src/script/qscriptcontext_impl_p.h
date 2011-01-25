@@ -42,7 +42,8 @@ QT_BEGIN_NAMESPACE
 #include "qscriptengine_p.h"
 
 inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine)
-    : q_ptr(this), engine(engine), arguments(0), accessorInfo(0), parent(engine->setCurrentQSContext(this)), previous(0)
+    : q_ptr(this), engine(engine), arguments(0), accessorInfo(0), parent(engine->setCurrentQSContext(this)),
+      previous(0) , hasArgumentGetter(false)
 {
     Q_ASSERT(engine);
 }
@@ -50,7 +51,7 @@ inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine
 inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::Arguments *args)
     : q_ptr(this), engine(engine), arguments(args), accessorInfo(0),
       context(v8::Persistent<v8::Context>::New(v8::Context::NewFunctionContext())),
-      parent(engine->setCurrentQSContext(this)), previous(0)
+      parent(engine->setCurrentQSContext(this)), previous(0), hasArgumentGetter(false)
 {
     Q_ASSERT(engine);
     context->Enter();
@@ -59,7 +60,7 @@ inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine
 inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, const v8::AccessorInfo *accessor)
 : q_ptr(this), engine(engine), arguments(0), accessorInfo(accessor),
   context(v8::Persistent<v8::Context>::New(v8::Context::NewFunctionContext())),
-  parent(engine->setCurrentQSContext(this)), previous(0)
+  parent(engine->setCurrentQSContext(this)), previous(0), hasArgumentGetter(false)
 {
     Q_ASSERT(engine);
     context->Enter();
@@ -68,7 +69,7 @@ inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine
 inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine, v8::Handle<v8::Context> context)
     : q_ptr(this), engine(engine), arguments(0), accessorInfo(0),
       context(v8::Persistent<v8::Context>::New(context)), parent(engine->setCurrentQSContext(this)),
-      previous(0)
+      previous(0), hasArgumentGetter(false)
 {
     Q_ASSERT(engine);
     context->Enter();
@@ -76,7 +77,7 @@ inline QScriptContextPrivate::QScriptContextPrivate(QScriptEnginePrivate *engine
 
 inline QScriptContextPrivate::QScriptContextPrivate(QScriptContextPrivate *parent, v8::Handle<v8::StackFrame> frame)
     : q_ptr(this), engine(parent->engine), arguments(0), accessorInfo(0),
-      parent(parent), previous(0), frame(v8::Persistent<v8::StackFrame>::New(frame))
+      parent(parent), previous(0), frame(v8::Persistent<v8::StackFrame>::New(frame)), hasArgumentGetter(false)
 {
     Q_ASSERT(engine);
 }
@@ -205,7 +206,16 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::activation
         return InvalidValue();
     }
     Q_ASSERT(!context.IsEmpty());
-    return new QScriptValuePrivate(engine, context->GetExtensionObject());
+
+    v8::Handle<v8::Object> activation = context->GetExtensionObject();
+    if (hasArgumentGetter || (arguments && !activation->Has(v8::String::New("arguments")))) {
+        //we need to build the arguments now just in case the activationobject is used after the
+        // QScriptContext is out of scope
+        QScriptSharedDataPointer<QScriptValuePrivate> argsObject(argumentsObject());
+        activation->ForceSet(v8::String::New("arguments"), *argsObject);
+        const_cast<bool&>(hasArgumentGetter) = false;
+    }
+    return new QScriptValuePrivate(engine, activation);
 }
 
 inline void QScriptContextPrivate::setActivationObject(QScriptValuePrivate *activation)
@@ -319,10 +329,12 @@ inline void QScriptContextPrivate::initializeArgumentsProperty()
         return;
 
     // If the argsObject wasn't created yet, we just add an accessor
-    if (!argsObject)
+    if (!argsObject) {
         activation->SetAccessor(v8::String::New("arguments"), argumentsPropertyGetter, 0, v8::External::Wrap(this));
-    else
+        hasArgumentGetter = true;
+    } else {
         activation->Set(v8::String::New("arguments"), *argsObject);
+    }
 }
 
 inline v8::Handle<v8::Value> QScriptContextPrivate::throwError(QScriptContext::Error error, const QString& text)

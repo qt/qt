@@ -90,6 +90,7 @@ public:
     v8::Persistent<v8::StackFrame> frame; //only for js frames
     QScriptSharedDataPointer<QScriptValuePrivate> argsObject;
     v8::Persistent<v8::Object> m_thisObject;
+    bool hasArgumentGetter;
 
     static const int stackTraceLimit = 100;
 

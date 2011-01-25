@@ -557,6 +557,7 @@ v8::Handle<v8::Value> QScriptContextPrivate::argumentsPropertyGetter(v8::Local<v
 
     QScriptSharedDataPointer<QScriptValuePrivate> argsObject(ctx->argumentsObject());
     self->ForceSet(property, *argsObject);
+    ctx->hasArgumentGetter = false;
     return *argsObject;
 }
 

@@ -1215,12 +1215,11 @@ void tst_QScriptContext::getSetActivationObject()
         QScriptValue ret = eng.evaluate("get_activationObject(1, 2, 3)");
         QVERIFY(ret.isObject());
         QScriptValue arguments = ret.property("arguments");
-        QEXPECT_FAIL("", "Getting arguments property of activation object doesn't work", Abort);
         QVERIFY(arguments.isObject());
         QCOMPARE(arguments.property("length").toInt32(), 3);
         QCOMPARE(arguments.property("0").toInt32(), 1);
-        QCOMPARE(arguments.property("1").toInt32(), 1);
-        QCOMPARE(arguments.property("2").toInt32(), 1);
+        QCOMPARE(arguments.property("1").toInt32(), 2);
+        QCOMPARE(arguments.property("2").toInt32(), 3);
     }
 }
 
