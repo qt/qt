@@ -1383,6 +1383,11 @@ Node *QSGItem::updatePaintNode(Node *oldNode, UpdatePaintNodeData *)
     return 0;
 }
 
+TransformNode *QSGItemPrivate::createTransformNode()
+{
+    return new TransformNode;
+}
+
 void QSGItem::updatePolish()
 {
 }

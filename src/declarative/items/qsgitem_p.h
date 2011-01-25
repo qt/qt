@@ -354,6 +354,8 @@ public:
     Node *paintNode;
     int paintNodeIndex;
 
+    virtual TransformNode *createTransformNode();
+
     // A reference from an effect item means that this item is hidden by the effect, so
     // it shouldn't be included in the main scene.  The itemNodeInstance should contain
     // the identity transform.
@@ -606,7 +608,7 @@ private:
 TransformNode *QSGItemPrivate::itemNode() 
 { 
     if (!itemNodeInstance) {
-        itemNodeInstance = new TransformNode;
+        itemNodeInstance = createTransformNode();
 #ifdef QML_RUNTIME_TESTING
         Q_Q(QSGItem);
         itemNodeInstance->description = QString::fromLatin1("QSGItem(%1)").arg(q->metaObject()->className());
