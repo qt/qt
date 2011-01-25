@@ -45,7 +45,7 @@
 #include "renderer.h"
 #include "material.h"
 
-#include <qarray.h>
+#include <qsgarray.h>
 #include <QLinkedList>
 
 class LayeredRenderer : public Renderer
@@ -74,8 +74,8 @@ private:
     int m_lowest_render_order;
     int m_highest_render_order;
 
-    QArray<float> m_float_vertices;
-    QArray<quint16> m_indices;
+    QSGArray<float> m_float_vertices;
+    QSGArray<quint16> m_indices;
 };
 
 #endif // LAYEREDRENDERER_H

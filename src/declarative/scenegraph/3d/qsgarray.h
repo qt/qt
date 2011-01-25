@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QARRAY_H
-#define QARRAY_H
+#ifndef QSGARRAY_H
+#define QSGARRAY_H
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qatomic.h>
@@ -49,8 +49,6 @@
 #include <string.h>
 #include <new>
 
-#include "qt3dglobal.h"
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -58,58 +56,58 @@ QT_BEGIN_NAMESPACE
 #if defined(Q_DECL_ALIGN) && defined(Q_ALIGNOF)
 
 #if defined(Q_CC_GNU) && (__GNUC__ >= 4 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3))
-    typedef char __attribute__((__may_alias__)) QArrayAlignedChar;
+    typedef char __attribute__((__may_alias__)) QSGArrayAlignedChar;
 #else
-    typedef char QArrayAlignedChar;
+    typedef char QSGArrayAlignedChar;
 #endif
 
 template <typename T, int PreallocSize, size_t AlignT>
-struct QArrayAlignedPrealloc;
+struct QSGArrayAlignedPrealloc;
 template <typename T, int PreallocSize>
-struct QArrayAlignedPrealloc<T, PreallocSize, 1>
+struct QSGArrayAlignedPrealloc<T, PreallocSize, 1>
 {
-    QArrayAlignedChar Q_DECL_ALIGN(1) data[sizeof(T) * PreallocSize];
+    QSGArrayAlignedChar Q_DECL_ALIGN(1) data[sizeof(T) * PreallocSize];
 };
 template <typename T, int PreallocSize>
-struct QArrayAlignedPrealloc<T, PreallocSize, 2>
+struct QSGArrayAlignedPrealloc<T, PreallocSize, 2>
 {
-    QArrayAlignedChar Q_DECL_ALIGN(2) data[sizeof(T) * PreallocSize];
+    QSGArrayAlignedChar Q_DECL_ALIGN(2) data[sizeof(T) * PreallocSize];
 };
 template <typename T, int PreallocSize>
-struct QArrayAlignedPrealloc<T, PreallocSize, 4>
+struct QSGArrayAlignedPrealloc<T, PreallocSize, 4>
 {
-    QArrayAlignedChar Q_DECL_ALIGN(4) data[sizeof(T) * PreallocSize];
+    QSGArrayAlignedChar Q_DECL_ALIGN(4) data[sizeof(T) * PreallocSize];
 };
 template <typename T, int PreallocSize>
-struct QArrayAlignedPrealloc<T, PreallocSize, 8>
+struct QSGArrayAlignedPrealloc<T, PreallocSize, 8>
 {
-    QArrayAlignedChar Q_DECL_ALIGN(8) data[sizeof(T) * PreallocSize];
+    QSGArrayAlignedChar Q_DECL_ALIGN(8) data[sizeof(T) * PreallocSize];
 };
 template <typename T, int PreallocSize>
-struct QArrayAlignedPrealloc<T, PreallocSize, 16>
+struct QSGArrayAlignedPrealloc<T, PreallocSize, 16>
 {
-    QArrayAlignedChar Q_DECL_ALIGN(16) data[sizeof(T) * PreallocSize];
+    QSGArrayAlignedChar Q_DECL_ALIGN(16) data[sizeof(T) * PreallocSize];
 };
 template <typename T, int PreallocSize>
-struct QArrayAlignedPrealloc<T, PreallocSize, 32>
+struct QSGArrayAlignedPrealloc<T, PreallocSize, 32>
 {
-    QArrayAlignedChar Q_DECL_ALIGN(32) data[sizeof(T) * PreallocSize];
+    QSGArrayAlignedChar Q_DECL_ALIGN(32) data[sizeof(T) * PreallocSize];
 };
 template <typename T, int PreallocSize>
-struct QArrayAlignedPrealloc<T, PreallocSize, 64>
+struct QSGArrayAlignedPrealloc<T, PreallocSize, 64>
 {
-    QArrayAlignedChar Q_DECL_ALIGN(64) data[sizeof(T) * PreallocSize];
+    QSGArrayAlignedChar Q_DECL_ALIGN(64) data[sizeof(T) * PreallocSize];
 };
 template <typename T, int PreallocSize>
-struct QArrayAlignedPrealloc<T, PreallocSize, 128>
+struct QSGArrayAlignedPrealloc<T, PreallocSize, 128>
 {
-    QArrayAlignedChar Q_DECL_ALIGN(128) data[sizeof(T) * PreallocSize];
+    QSGArrayAlignedChar Q_DECL_ALIGN(128) data[sizeof(T) * PreallocSize];
 };
 
 #else
 
 template <typename T, int PreallocSize, size_t AlignT>
-union QArrayAlignedPrealloc
+union QSGArrayAlignedPrealloc
 {
     char data[sizeof(T) * PreallocSize];
     qint64 q_for_alignment_1;
@@ -119,13 +117,13 @@ union QArrayAlignedPrealloc
 #endif
 
 template <typename T, int PreallocSize>
-class QArrayData
+class QSGArrayData
 {
 public:
 #if defined(Q_ALIGNOF)
-    QArrayAlignedPrealloc<T, PreallocSize, Q_ALIGNOF(T)> m_prealloc;
+    QSGArrayAlignedPrealloc<T, PreallocSize, Q_ALIGNOF(T)> m_prealloc;
 #else
-    QArrayAlignedPrealloc<T, PreallocSize, sizeof(T)> m_prealloc;
+    QSGArrayAlignedPrealloc<T, PreallocSize, sizeof(T)> m_prealloc;
 #endif
 
     inline T *prealloc()
@@ -140,7 +138,7 @@ public:
 };
 
 template <typename T>
-class QArrayData<T, 0>
+class QSGArrayData<T, 0>
 {
 public:
 
@@ -154,25 +152,25 @@ public:
 };
 
 template <typename T, int PreallocSize = 8>
-class QArray : private QArrayData<T, PreallocSize>
+class QSGArray : private QSGArrayData<T, PreallocSize>
 {
 public:
-    QArray();
-    explicit QArray(int size);
-    QArray(int size, const T &value);
-    QArray(const T *values, int size);
-    QArray(const QArray<T, PreallocSize> &other);
-    ~QArray();
+    QSGArray();
+    explicit QSGArray(int size);
+    QSGArray(int size, const T &value);
+    QSGArray(const T *values, int size);
+    QSGArray(const QSGArray<T, PreallocSize> &other);
+    ~QSGArray();
 
 #ifdef Q_CC_RVCT // RVCT 2.2. doesn't see inherited templated functions without scope.
-    inline bool isPrealloc(const T *start) const { return QArrayData<T, PreallocSize>::isPrealloc(start); }
+    inline bool isPrealloc(const T *start) const { return QSGArrayData<T, PreallocSize>::isPrealloc(start); }
 #endif
 
     typedef T *iterator;
     typedef const T *const_iterator;
 
-    QArray<T, PreallocSize> &operator=
-        (const QArray<T, PreallocSize> &other);
+    QSGArray<T, PreallocSize> &operator=
+        (const QSGArray<T, PreallocSize> &other);
 
     int size() const;
     int count() const;
@@ -199,7 +197,7 @@ public:
     void append(const T &value1, const T &value2, const T &value3);
     void append(const T &value1, const T &value2, const T &value3, const T &value4);
     void append(const T *values, int count);
-    void append(const QArray<T, PreallocSize> &other);
+    void append(const QSGArray<T, PreallocSize> &other);
 
     void prepend(const T &value);
 
@@ -228,29 +226,29 @@ public:
     void reserve(int size);
     void squeeze();
 
-    QArray<T, PreallocSize> &fill(const T &value, int size = -1);
+    QSGArray<T, PreallocSize> &fill(const T &value, int size = -1);
 
     void reverse();
-    QArray<T, PreallocSize> reversed() const;
+    QSGArray<T, PreallocSize> reversed() const;
 
-    QArray<T, PreallocSize> mid(int index, int length = -1) const;
-    QArray<T, PreallocSize> left(int length) const;
-    QArray<T, PreallocSize> right(int length) const;
+    QSGArray<T, PreallocSize> mid(int index, int length = -1) const;
+    QSGArray<T, PreallocSize> left(int length) const;
+    QSGArray<T, PreallocSize> right(int length) const;
 
     T *data();
     const T *data() const;
     const T *constData() const;
 
-    static QArray<T, PreallocSize> fromRawData(const T *data, int size);
-    static QArray<T, PreallocSize> fromWritableRawData(T *data, int size);
+    static QSGArray<T, PreallocSize> fromRawData(const T *data, int size);
+    static QSGArray<T, PreallocSize> fromWritableRawData(T *data, int size);
 
-    bool operator==(const QArray<T, PreallocSize> &other) const;
-    bool operator!=(const QArray<T, PreallocSize> &other) const;
+    bool operator==(const QSGArray<T, PreallocSize> &other) const;
+    bool operator!=(const QSGArray<T, PreallocSize> &other) const;
 
-    QArray<T, PreallocSize> &operator+=(const T &value);
-    QArray<T, PreallocSize> &operator+=(const QArray<T, PreallocSize> &other);
-    QArray<T, PreallocSize> &operator<<(const T &value);
-    QArray<T, PreallocSize> &operator<<(const QArray<T, PreallocSize> &other);
+    QSGArray<T, PreallocSize> &operator+=(const T &value);
+    QSGArray<T, PreallocSize> &operator+=(const QSGArray<T, PreallocSize> &other);
+    QSGArray<T, PreallocSize> &operator<<(const T &value);
+    QSGArray<T, PreallocSize> &operator<<(const QSGArray<T, PreallocSize> &other);
 
     typedef iterator Iterator;
     typedef const_iterator ConstIterator;
@@ -317,11 +315,11 @@ private:
 
     inline void initPrealloc()
     {
-        m_end = m_start = QArrayData<T, PreallocSize>::prealloc();
+        m_end = m_start = QSGArrayData<T, PreallocSize>::prealloc();
         m_limit = m_start + PreallocSize;
     }
 
-    QArray(const T *data, int size, bool isWritable);
+    QSGArray(const T *data, int size, bool isWritable);
 
     void free(T *data, int count);
     void release();
@@ -329,15 +327,15 @@ private:
     Data *copyData(const T *src, int size, int capacity);
     void reallocate(int capacity);
     void detach_helper();
-    void assign(const QArray<T, PreallocSize> &other);
+    void assign(const QSGArray<T, PreallocSize> &other);
     void grow(int needed);
     void setSize(int size);
 };
 
-int Q_QT3D_EXPORT qArrayAllocMore(int alloc, int extra, int sizeOfT);
+int Q_DECLARATIVE_EXPORT qArrayAllocMore(int alloc, int extra, int sizeOfT);
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::free(T *data, int count)
+Q_INLINE_TEMPLATE void QSGArray<T, PreallocSize>::free(T *data, int count)
 {
     while (count-- > 0) {
         data->~T();
@@ -346,7 +344,7 @@ Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::free(T *data, int count)
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::release()
+Q_INLINE_TEMPLATE void QSGArray<T, PreallocSize>::release()
 {
     if (m_data) {
         if (!m_data->ref.deref()) {
@@ -362,7 +360,7 @@ Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::release()
 
 // Copy values to initialized memory, replacing previous values.
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::copyReplace(T *dst, const T *src, int count)
+Q_INLINE_TEMPLATE void QSGArray<T, PreallocSize>::copyReplace(T *dst, const T *src, int count)
 {
     if (!QTypeInfo<T>::isStatic) {
         ::memmove(dst, src, count * sizeof(T));
@@ -374,7 +372,7 @@ Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::copyReplace(T *dst, const T *src
 
 // Make a copy of m_data, while remaining exception-safe.
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE Q_TYPENAME QArray<T, PreallocSize>::Data *QArray<T, PreallocSize>::copyData(const T *src, int size, int capacity)
+Q_INLINE_TEMPLATE Q_TYPENAME QSGArray<T, PreallocSize>::Data *QSGArray<T, PreallocSize>::copyData(const T *src, int size, int capacity)
 {
     Data *data = reinterpret_cast<Data *>
         (qMalloc(sizeof(Data) + sizeof(T) * (capacity - 1)));
@@ -399,7 +397,7 @@ Q_INLINE_TEMPLATE Q_TYPENAME QArray<T, PreallocSize>::Data *QArray<T, PreallocSi
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::reallocate(int capacity)
+Q_INLINE_TEMPLATE void QSGArray<T, PreallocSize>::reallocate(int capacity)
 {
     int size = m_end - m_start;
     if (!QTypeInfo<T>::isStatic) {
@@ -420,7 +418,7 @@ Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::reallocate(int capacity)
 }
 
 template <typename T, int PreallocSize>
-Q_OUTOFLINE_TEMPLATE void QArray<T, PreallocSize>::detach_helper()
+Q_OUTOFLINE_TEMPLATE void QSGArray<T, PreallocSize>::detach_helper()
 {
     // If the reference count is 1, then the array may have been
     // copied and then the copy released.  So just reset the limit.
@@ -441,7 +439,7 @@ Q_OUTOFLINE_TEMPLATE void QArray<T, PreallocSize>::detach_helper()
 }
 
 template <typename T, int PreallocSize>
-Q_OUTOFLINE_TEMPLATE void QArray<T, PreallocSize>::assign(const QArray<T, PreallocSize> &other)
+Q_OUTOFLINE_TEMPLATE void QSGArray<T, PreallocSize>::assign(const QSGArray<T, PreallocSize> &other)
 {
     if (other.m_data) {
         m_start = other.m_start;
@@ -467,7 +465,7 @@ Q_OUTOFLINE_TEMPLATE void QArray<T, PreallocSize>::assign(const QArray<T, Preall
 }
 
 template <typename T, int PreallocSize>
-Q_OUTOFLINE_TEMPLATE void QArray<T, PreallocSize>::grow(int needed)
+Q_OUTOFLINE_TEMPLATE void QSGArray<T, PreallocSize>::grow(int needed)
 {
     int size = m_end - m_start;
     int capacity = qArrayAllocMore(size, needed, sizeof(T));
@@ -494,7 +492,7 @@ Q_OUTOFLINE_TEMPLATE void QArray<T, PreallocSize>::grow(int needed)
 }
 
 template <typename T, int PreallocSize>
-Q_OUTOFLINE_TEMPLATE void QArray<T, PreallocSize>::setSize(int size)
+Q_OUTOFLINE_TEMPLATE void QSGArray<T, PreallocSize>::setSize(int size)
 {
     if (size <= PreallocSize) {
         initPrealloc();
@@ -514,14 +512,14 @@ Q_OUTOFLINE_TEMPLATE void QArray<T, PreallocSize>::setSize(int size)
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE QArray<T, PreallocSize>::QArray()
+Q_INLINE_TEMPLATE QSGArray<T, PreallocSize>::QSGArray()
 {
     initPrealloc();
     m_data = 0;
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE QArray<T, PreallocSize>::QArray(int size)
+Q_INLINE_TEMPLATE QSGArray<T, PreallocSize>::QSGArray(int size)
 {
     setSize(size);
     while (size-- > 0)
@@ -529,7 +527,7 @@ Q_INLINE_TEMPLATE QArray<T, PreallocSize>::QArray(int size)
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE QArray<T, PreallocSize>::QArray(int size, const T &value)
+Q_INLINE_TEMPLATE QSGArray<T, PreallocSize>::QSGArray(int size, const T &value)
 {
     setSize(size);
     while (size-- > 0)
@@ -537,7 +535,7 @@ Q_INLINE_TEMPLATE QArray<T, PreallocSize>::QArray(int size, const T &value)
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE QArray<T, PreallocSize>::QArray(const T *values, int size)
+Q_INLINE_TEMPLATE QSGArray<T, PreallocSize>::QSGArray(const T *values, int size)
 {
     setSize(size);
     while (size-- > 0)
@@ -545,13 +543,13 @@ Q_INLINE_TEMPLATE QArray<T, PreallocSize>::QArray(const T *values, int size)
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE QArray<T, PreallocSize>::QArray(const QArray<T, PreallocSize> &other)
+Q_INLINE_TEMPLATE QSGArray<T, PreallocSize>::QSGArray(const QSGArray<T, PreallocSize> &other)
 {
     assign(other);
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE QArray<T, PreallocSize>::QArray(const T *data, int size, bool isWritable)
+Q_INLINE_TEMPLATE QSGArray<T, PreallocSize>::QSGArray(const T *data, int size, bool isWritable)
 {
     // Constructing a raw data array.
     m_start = const_cast<T *>(data);
@@ -564,13 +562,13 @@ Q_INLINE_TEMPLATE QArray<T, PreallocSize>::QArray(const T *data, int size, bool 
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE QArray<T, PreallocSize>::~QArray()
+Q_INLINE_TEMPLATE QSGArray<T, PreallocSize>::~QSGArray()
 {
     release();
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE QArray<T, PreallocSize> &QArray<T, PreallocSize>::operator=(const QArray<T, PreallocSize> &other)
+Q_INLINE_TEMPLATE QSGArray<T, PreallocSize> &QSGArray<T, PreallocSize>::operator=(const QSGArray<T, PreallocSize> &other)
 {
     if (this == &other)
         return *this;
@@ -582,19 +580,19 @@ Q_INLINE_TEMPLATE QArray<T, PreallocSize> &QArray<T, PreallocSize>::operator=(co
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE int QArray<T, PreallocSize>::size() const
+Q_INLINE_TEMPLATE int QSGArray<T, PreallocSize>::size() const
 {
     return m_end - m_start;
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE int QArray<T, PreallocSize>::count() const
+Q_INLINE_TEMPLATE int QSGArray<T, PreallocSize>::count() const
 {
     return m_end - m_start;
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE int QArray<T, PreallocSize>::capacity() const
+Q_INLINE_TEMPLATE int QSGArray<T, PreallocSize>::capacity() const
 {
     if (m_data)
         return m_data->capacity;
@@ -605,13 +603,13 @@ Q_INLINE_TEMPLATE int QArray<T, PreallocSize>::capacity() const
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE bool QArray<T, PreallocSize>::isEmpty() const
+Q_INLINE_TEMPLATE bool QSGArray<T, PreallocSize>::isEmpty() const
 {
     return m_start == m_end;
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE bool QArray<T, PreallocSize>::isDetached() const
+Q_INLINE_TEMPLATE bool QSGArray<T, PreallocSize>::isDetached() const
 {
     // If m_limit is the same as m_start, then the array
     // is either shared or contains raw data.
@@ -619,14 +617,14 @@ Q_INLINE_TEMPLATE bool QArray<T, PreallocSize>::isDetached() const
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::detach()
+Q_INLINE_TEMPLATE void QSGArray<T, PreallocSize>::detach()
 {
     if (m_limit == m_start)
         detach_helper();
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::clear()
+Q_INLINE_TEMPLATE void QSGArray<T, PreallocSize>::clear()
 {
     release();
     initPrealloc();
@@ -634,31 +632,31 @@ Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::clear()
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE const T &QArray<T, PreallocSize>::operator[](int index) const
+Q_INLINE_TEMPLATE const T &QSGArray<T, PreallocSize>::operator[](int index) const
 {
     Q_ASSERT_X(index >= 0 && index < size(),
-               "QArray<T>::at", "index out of range");
+               "QSGArray<T>::at", "index out of range");
     return m_start[index];
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE const T &QArray<T, PreallocSize>::at(int index) const
+Q_INLINE_TEMPLATE const T &QSGArray<T, PreallocSize>::at(int index) const
 {
     Q_ASSERT_X(index >= 0 && index < size(),
-               "QArray<T>::operator[]", "index out of range");
+               "QSGArray<T>::operator[]", "index out of range");
     return m_start[index];
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE T &QArray<T, PreallocSize>::operator[](int index)
+Q_INLINE_TEMPLATE T &QSGArray<T, PreallocSize>::operator[](int index)
 {
     Q_ASSERT_X(index >= 0 && index < size(),
-               "QArray<T>::operator[]", "index out of range");
+               "QSGArray<T>::operator[]", "index out of range");
     return data()[index];
 }
 
 template <typename T, int PreallocSize>
-Q_OUTOFLINE_TEMPLATE T QArray<T, PreallocSize>::value(int index) const
+Q_OUTOFLINE_TEMPLATE T QSGArray<T, PreallocSize>::value(int index) const
 {
     if (index >= 0 && index < size())
         return m_start[index];
@@ -667,7 +665,7 @@ Q_OUTOFLINE_TEMPLATE T QArray<T, PreallocSize>::value(int index) const
 }
 
 template <typename T, int PreallocSize>
-Q_OUTOFLINE_TEMPLATE T QArray<T, PreallocSize>::value(int index, const T &defaultValue) const
+Q_OUTOFLINE_TEMPLATE T QSGArray<T, PreallocSize>::value(int index, const T &defaultValue) const
 {
     if (index >= 0 && index < size())
         return m_start[index];
@@ -676,7 +674,7 @@ Q_OUTOFLINE_TEMPLATE T QArray<T, PreallocSize>::value(int index, const T &defaul
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE T *QArray<T, PreallocSize>::extend(int size)
+Q_INLINE_TEMPLATE T *QSGArray<T, PreallocSize>::extend(int size)
 {
     Q_ASSERT(size > 0);
     if ((m_end + size) >= m_limit)
@@ -687,7 +685,7 @@ Q_INLINE_TEMPLATE T *QArray<T, PreallocSize>::extend(int size)
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::append(const T &value)
+Q_INLINE_TEMPLATE void QSGArray<T, PreallocSize>::append(const T &value)
 {
     if (m_end >= m_limit)
         grow(1);
@@ -696,7 +694,7 @@ Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::append(const T &value)
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::append(const T &value1, const T &value2)
+Q_INLINE_TEMPLATE void QSGArray<T, PreallocSize>::append(const T &value1, const T &value2)
 {
     if ((m_end + 1) >= m_limit)
         grow(2);
@@ -707,7 +705,7 @@ Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::append(const T &value1, const T 
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::append(const T &value1, const T &value2, const T &value3)
+Q_INLINE_TEMPLATE void QSGArray<T, PreallocSize>::append(const T &value1, const T &value2, const T &value3)
 {
     if ((m_end + 2) >= m_limit)
         grow(3);
@@ -720,7 +718,7 @@ Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::append(const T &value1, const T 
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::append(const T &value1, const T &value2, const T &value3, const T &value4)
+Q_INLINE_TEMPLATE void QSGArray<T, PreallocSize>::append(const T &value1, const T &value2, const T &value3, const T &value4)
 {
     if ((m_end + 3) >= m_limit)
         grow(4);
@@ -735,7 +733,7 @@ Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::append(const T &value1, const T 
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::append(const T *values, int count)
+Q_INLINE_TEMPLATE void QSGArray<T, PreallocSize>::append(const T *values, int count)
 {
     if (count <= 0)
         return;
@@ -748,7 +746,7 @@ Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::append(const T *values, int coun
 }
 
 template <typename T, int PreallocSize>
-Q_OUTOFLINE_TEMPLATE void QArray<T, PreallocSize>::append(const QArray<T, PreallocSize> &other)
+Q_OUTOFLINE_TEMPLATE void QSGArray<T, PreallocSize>::append(const QSGArray<T, PreallocSize> &other)
 {
     if (isEmpty()) {
         *this = other;
@@ -760,35 +758,35 @@ Q_OUTOFLINE_TEMPLATE void QArray<T, PreallocSize>::append(const QArray<T, Preall
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::prepend(const T &value)
+Q_INLINE_TEMPLATE void QSGArray<T, PreallocSize>::prepend(const T &value)
 {
     insert(begin(), 1, value);
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::insert(int index, const T &value)
+Q_INLINE_TEMPLATE void QSGArray<T, PreallocSize>::insert(int index, const T &value)
 {
     Q_ASSERT_X(index >= 0 && index <= size(),
-               "QArray<T>::insert", "index out of range");
+               "QSGArray<T>::insert", "index out of range");
     insert(begin() + index, 1, value);
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::insert(int index, int count, const T &value)
+Q_INLINE_TEMPLATE void QSGArray<T, PreallocSize>::insert(int index, int count, const T &value)
 {
     Q_ASSERT_X(index >= 0 && index <= size(),
-               "QArray<T>::insert", "index out of range");
+               "QSGArray<T>::insert", "index out of range");
     insert(begin() + index, count, value);
 }
 
 template <typename T, int PreallocSize>
-Q_OUTOFLINE_TEMPLATE Q_TYPENAME QArray<T, PreallocSize>::iterator QArray<T, PreallocSize>::insert(iterator before, int count, const T &value)
+Q_OUTOFLINE_TEMPLATE Q_TYPENAME QSGArray<T, PreallocSize>::iterator QSGArray<T, PreallocSize>::insert(iterator before, int count, const T &value)
 {
     // Check the parameters.
     int size = this->size();
     int offset = int(before - m_start);
     Q_ASSERT_X(offset >= 0 && offset <= size,
-               "QArray<T>::insert", "iterator offset is out of range");
+               "QSGArray<T>::insert", "iterator offset is out of range");
     Q_ASSERT(count >= 0);
     if (count <= 0)
         return m_start + offset;
@@ -828,21 +826,21 @@ Q_OUTOFLINE_TEMPLATE Q_TYPENAME QArray<T, PreallocSize>::iterator QArray<T, Prea
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE Q_TYPENAME QArray<T, PreallocSize>::iterator QArray<T, PreallocSize>::insert(iterator before, const T &value)
+Q_INLINE_TEMPLATE Q_TYPENAME QSGArray<T, PreallocSize>::iterator QSGArray<T, PreallocSize>::insert(iterator before, const T &value)
 {
     return insert(before, 1, value);
 }
 
 template <typename T, int PreallocSize>
-Q_OUTOFLINE_TEMPLATE void QArray<T, PreallocSize>::replace(int index, const T &value)
+Q_OUTOFLINE_TEMPLATE void QSGArray<T, PreallocSize>::replace(int index, const T &value)
 {
     Q_ASSERT_X(index >= 0 && index < size(),
-               "QArray<T>::replace", "index out of range");
+               "QSGArray<T>::replace", "index out of range");
     data()[index] = value;
 }
 
 template <typename T, int PreallocSize>
-Q_OUTOFLINE_TEMPLATE void QArray<T, PreallocSize>::replace(int index, const T *values, int count)
+Q_OUTOFLINE_TEMPLATE void QSGArray<T, PreallocSize>::replace(int index, const T *values, int count)
 {
     if (index < 0 || count <= 0)
         return;
@@ -853,13 +851,13 @@ Q_OUTOFLINE_TEMPLATE void QArray<T, PreallocSize>::replace(int index, const T *v
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::remove(int index)
+Q_INLINE_TEMPLATE void QSGArray<T, PreallocSize>::remove(int index)
 {
     remove(index, 1);
 }
 
 template <typename T, int PreallocSize>
-Q_OUTOFLINE_TEMPLATE void QArray<T, PreallocSize>::remove(int index, int count)
+Q_OUTOFLINE_TEMPLATE void QSGArray<T, PreallocSize>::remove(int index, int count)
 {
     // Truncate the range to be removed.
     int currentSize = size();
@@ -884,7 +882,7 @@ Q_OUTOFLINE_TEMPLATE void QArray<T, PreallocSize>::remove(int index, int count)
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE Q_TYPENAME QArray<T, PreallocSize>::iterator QArray<T, PreallocSize>::erase(iterator begin, iterator end)
+Q_INLINE_TEMPLATE Q_TYPENAME QSGArray<T, PreallocSize>::iterator QSGArray<T, PreallocSize>::erase(iterator begin, iterator end)
 {
     int index = begin - m_start;
     remove(index, end - begin);
@@ -892,7 +890,7 @@ Q_INLINE_TEMPLATE Q_TYPENAME QArray<T, PreallocSize>::iterator QArray<T, Preallo
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE Q_TYPENAME QArray<T, PreallocSize>::iterator QArray<T, PreallocSize>::erase(iterator pos)
+Q_INLINE_TEMPLATE Q_TYPENAME QSGArray<T, PreallocSize>::iterator QSGArray<T, PreallocSize>::erase(iterator pos)
 {
     int index = pos - m_start;
     remove(index, 1);
@@ -900,7 +898,7 @@ Q_INLINE_TEMPLATE Q_TYPENAME QArray<T, PreallocSize>::iterator QArray<T, Preallo
 }
 
 template <typename T, int PreallocSize>
-Q_OUTOFLINE_TEMPLATE int QArray<T, PreallocSize>::indexOf(const T &value, int from) const
+Q_OUTOFLINE_TEMPLATE int QSGArray<T, PreallocSize>::indexOf(const T &value, int from) const
 {
     if (from < 0)
         from = qMax(from + size(), 0);
@@ -914,7 +912,7 @@ Q_OUTOFLINE_TEMPLATE int QArray<T, PreallocSize>::indexOf(const T &value, int fr
 }
 
 template <typename T, int PreallocSize>
-Q_OUTOFLINE_TEMPLATE int QArray<T, PreallocSize>::lastIndexOf(const T &value, int from) const
+Q_OUTOFLINE_TEMPLATE int QSGArray<T, PreallocSize>::lastIndexOf(const T &value, int from) const
 {
     int size = count();
     if (from < 0)
@@ -933,7 +931,7 @@ Q_OUTOFLINE_TEMPLATE int QArray<T, PreallocSize>::lastIndexOf(const T &value, in
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE bool QArray<T, PreallocSize>::contains(const T &value) const
+Q_INLINE_TEMPLATE bool QSGArray<T, PreallocSize>::contains(const T &value) const
 {
     const T *ptr = m_start;
     while (ptr < m_end) {
@@ -945,7 +943,7 @@ Q_INLINE_TEMPLATE bool QArray<T, PreallocSize>::contains(const T &value) const
 }
 
 template <typename T, int PreallocSize>
-Q_OUTOFLINE_TEMPLATE int QArray<T, PreallocSize>::count(const T &value) const
+Q_OUTOFLINE_TEMPLATE int QSGArray<T, PreallocSize>::count(const T &value) const
 {
     const T *ptr = m_start;
     int count = 0;
@@ -958,7 +956,7 @@ Q_OUTOFLINE_TEMPLATE int QArray<T, PreallocSize>::count(const T &value) const
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::resize(int size)
+Q_INLINE_TEMPLATE void QSGArray<T, PreallocSize>::resize(int size)
 {
     if (size < 0)
         return;
@@ -978,7 +976,7 @@ Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::resize(int size)
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::reserve(int size)
+Q_INLINE_TEMPLATE void QSGArray<T, PreallocSize>::reserve(int size)
 {
     int cap = capacity();
     if (size > cap)
@@ -986,7 +984,7 @@ Q_INLINE_TEMPLATE void QArray<T, PreallocSize>::reserve(int size)
 }
 
 template <typename T, int PreallocSize>
-Q_OUTOFLINE_TEMPLATE QArray<T, PreallocSize> &QArray<T, PreallocSize>::fill(const T &value, int size)
+Q_OUTOFLINE_TEMPLATE QSGArray<T, PreallocSize> &QSGArray<T, PreallocSize>::fill(const T &value, int size)
 {
     if (size >= 0)
         resize(size);
@@ -997,7 +995,7 @@ Q_OUTOFLINE_TEMPLATE QArray<T, PreallocSize> &QArray<T, PreallocSize>::fill(cons
 }
 
 template <typename T, int PreallocSize>
-Q_OUTOFLINE_TEMPLATE void QArray<T, PreallocSize>::squeeze()
+Q_OUTOFLINE_TEMPLATE void QSGArray<T, PreallocSize>::squeeze()
 {
     int size = count();
     if (size <= 0) {
@@ -1008,7 +1006,7 @@ Q_OUTOFLINE_TEMPLATE void QArray<T, PreallocSize>::squeeze()
 }
 
 template <typename T, int PreallocSize>
-Q_OUTOFLINE_TEMPLATE void QArray<T, PreallocSize>::reverse()
+Q_OUTOFLINE_TEMPLATE void QSGArray<T, PreallocSize>::reverse()
 {
     if (count() > 0) {
         T *src = m_start;
@@ -1019,9 +1017,9 @@ Q_OUTOFLINE_TEMPLATE void QArray<T, PreallocSize>::reverse()
 }
 
 template <typename T, int PreallocSize>
-Q_OUTOFLINE_TEMPLATE QArray<T, PreallocSize> QArray<T, PreallocSize>::reversed() const
+Q_OUTOFLINE_TEMPLATE QSGArray<T, PreallocSize> QSGArray<T, PreallocSize>::reversed() const
 {
-    QArray<T, PreallocSize> result;
+    QSGArray<T, PreallocSize> result;
     int count = size();
     if (count > 0) {
         result.extend(count);
@@ -1039,7 +1037,7 @@ Q_OUTOFLINE_TEMPLATE QArray<T, PreallocSize> QArray<T, PreallocSize>::reversed()
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE QArray<T, PreallocSize> QArray<T, PreallocSize>::mid(int index, int length) const
+Q_INLINE_TEMPLATE QSGArray<T, PreallocSize> QSGArray<T, PreallocSize>::mid(int index, int length) const
 {
     int count = size();
     Q_ASSERT(index >= 0 && index <= count);
@@ -1047,19 +1045,19 @@ Q_INLINE_TEMPLATE QArray<T, PreallocSize> QArray<T, PreallocSize>::mid(int index
         length = count - index;
     if (index == 0 && length == count)
         return *this;
-    QArray<T, PreallocSize> result;
+    QSGArray<T, PreallocSize> result;
     result.append(constData() + index, length);
     return result;
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE QArray<T, PreallocSize> QArray<T, PreallocSize>::left(int length) const
+Q_INLINE_TEMPLATE QSGArray<T, PreallocSize> QSGArray<T, PreallocSize>::left(int length) const
 {
     return mid(0, length);
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE QArray<T, PreallocSize> QArray<T, PreallocSize>::right(int length) const
+Q_INLINE_TEMPLATE QSGArray<T, PreallocSize> QSGArray<T, PreallocSize>::right(int length) const
 {
     int size = count();
     if (length < 0 || length >= size)
@@ -1068,41 +1066,41 @@ Q_INLINE_TEMPLATE QArray<T, PreallocSize> QArray<T, PreallocSize>::right(int len
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE T *QArray<T, PreallocSize>::data()
+Q_INLINE_TEMPLATE T *QSGArray<T, PreallocSize>::data()
 {
     detach();
     return m_start;
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE const T *QArray<T, PreallocSize>::data() const
+Q_INLINE_TEMPLATE const T *QSGArray<T, PreallocSize>::data() const
 {
     return m_start;
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE const T *QArray<T, PreallocSize>::constData() const
+Q_INLINE_TEMPLATE const T *QSGArray<T, PreallocSize>::constData() const
 {
     return m_start;
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE QArray<T, PreallocSize> QArray<T, PreallocSize>::fromRawData(const T *data, int size)
+Q_INLINE_TEMPLATE QSGArray<T, PreallocSize> QSGArray<T, PreallocSize>::fromRawData(const T *data, int size)
 {
     Q_ASSERT(size >= 0);
-    return QArray<T, PreallocSize>(data, size, false);
+    return QSGArray<T, PreallocSize>(data, size, false);
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE QArray<T, PreallocSize> QArray<T, PreallocSize>::fromWritableRawData(T *data, int size)
+Q_INLINE_TEMPLATE QSGArray<T, PreallocSize> QSGArray<T, PreallocSize>::fromWritableRawData(T *data, int size)
 {
     Q_ASSERT(size >= 0);
-    return QArray<T, PreallocSize>(data, size, true);
+    return QSGArray<T, PreallocSize>(data, size, true);
 }
 
 template <typename T, int PreallocSize>
-Q_OUTOFLINE_TEMPLATE bool QArray<T, PreallocSize>::operator==
-    (const QArray<T, PreallocSize> &other) const
+Q_OUTOFLINE_TEMPLATE bool QSGArray<T, PreallocSize>::operator==
+    (const QSGArray<T, PreallocSize> &other) const
 {
     if (this == &other)
         return true;
@@ -1123,35 +1121,35 @@ Q_OUTOFLINE_TEMPLATE bool QArray<T, PreallocSize>::operator==
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE bool QArray<T, PreallocSize>::operator!=
-    (const QArray<T, PreallocSize> &other) const
+Q_INLINE_TEMPLATE bool QSGArray<T, PreallocSize>::operator!=
+    (const QSGArray<T, PreallocSize> &other) const
 {
     return !(*this == other);
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE QArray<T, PreallocSize> &QArray<T, PreallocSize>::operator+=(const T &value)
+Q_INLINE_TEMPLATE QSGArray<T, PreallocSize> &QSGArray<T, PreallocSize>::operator+=(const T &value)
 {
     append(value);
     return *this;
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE QArray<T, PreallocSize> &QArray<T, PreallocSize>::operator+=(const QArray<T, PreallocSize> &other)
+Q_INLINE_TEMPLATE QSGArray<T, PreallocSize> &QSGArray<T, PreallocSize>::operator+=(const QSGArray<T, PreallocSize> &other)
 {
     append(other);
     return *this;
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE QArray<T, PreallocSize> &QArray<T, PreallocSize>::operator<<(const T &value)
+Q_INLINE_TEMPLATE QSGArray<T, PreallocSize> &QSGArray<T, PreallocSize>::operator<<(const T &value)
 {
     append(value);
     return *this;
 }
 
 template <typename T, int PreallocSize>
-Q_INLINE_TEMPLATE QArray<T, PreallocSize> &QArray<T, PreallocSize>::operator<<(const QArray<T, PreallocSize> &other)
+Q_INLINE_TEMPLATE QSGArray<T, PreallocSize> &QSGArray<T, PreallocSize>::operator<<(const QSGArray<T, PreallocSize> &other)
 {
     append(other);
     return *this;
@@ -1160,7 +1158,7 @@ Q_INLINE_TEMPLATE QArray<T, PreallocSize> &QArray<T, PreallocSize>::operator<<(c
 #ifndef QT_NO_DATASTREAM
 
 template <typename T, int PreallocSize>
-QDataStream& operator<<(QDataStream& stream, const QArray<T, PreallocSize>& array)
+QDataStream& operator<<(QDataStream& stream, const QSGArray<T, PreallocSize>& array)
 {
     int size = array.size();
     stream << quint32(size);
@@ -1170,7 +1168,7 @@ QDataStream& operator<<(QDataStream& stream, const QArray<T, PreallocSize>& arra
 }
 
 template <typename T, int PreallocSize>
-QDataStream& operator>>(QDataStream& stream, QArray<T, PreallocSize>& array)
+QDataStream& operator>>(QDataStream& stream, QSGArray<T, PreallocSize>& array)
 {
     array.clear();
     quint32 size;
@@ -1191,9 +1189,9 @@ QDataStream& operator>>(QDataStream& stream, QArray<T, PreallocSize>& array)
 #ifndef QT_NO_DEBUG_STREAM
 
 template <typename T, int PreallocSize>
-QDebug operator<<(QDebug dbg, const QArray<T, PreallocSize>& array)
+QDebug operator<<(QDebug dbg, const QSGArray<T, PreallocSize>& array)
 {
-    dbg.nospace() << "QArray(\n";
+    dbg.nospace() << "QSGArray(\n";
     int size = array.size();
     for (int index = 0; index < size; ++index) {
         dbg << "   " << index << ":  " << array.at(index) << "\n";

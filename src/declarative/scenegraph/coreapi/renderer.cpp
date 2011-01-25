@@ -45,7 +45,7 @@
 
 #include "adaptationlayer.h"
 
-#include <qglattributevalue.h>
+#include <qsgattributevalue.h>
 #include <QGLShaderProgram>
 #include <qglframebufferobject.h>
 #include <QtGui/qapplication.h>
@@ -293,7 +293,7 @@ Renderer::ClipType Renderer::updateStencilClip(const ClipNode *clip)
                         "void main() {                                   \n"
                         "    gl_FragColor = vec4(0.81, 0.83, 0.12, 1.0); \n" // Trolltech green ftw!
                         "}");
-                    m_clip_program.bindAttributeLocation("vCoord", QGL::Position);
+                    m_clip_program.bindAttributeLocation("vCoord", QSG::Position);
                     m_clip_program.link();
                     m_clip_matrix_id = m_clip_program.uniformLocation("matrix");
                 }
@@ -307,7 +307,7 @@ Renderer::ClipType Renderer::updateStencilClip(const ClipNode *clip)
                 glDepthMask(GL_FALSE);
 
                 m_clip_program.bind();
-                m_clip_program.enableAttributeArray(QGL::Position);
+                m_clip_program.enableAttributeArray(QSG::Position);
 
                 stencilEnabled = true;
             }
@@ -317,8 +317,8 @@ Renderer::ClipType Renderer::updateStencilClip(const ClipNode *clip)
 
             Geometry *geometry = clip->geometry();
 
-            const QGLAttributeValue &v = geometry->attributeValue(QGL::Position);
-            glVertexAttribPointer(QGL::Position, v.tupleSize(), v.type(), GL_FALSE, v.stride(),
+            const QSGAttributeValue &v = geometry->attributeValue(QSG::Position);
+            glVertexAttribPointer(QSG::Position, v.tupleSize(), v.type(), GL_FALSE, v.stride(),
                                   GeometryDataUploader::vertexData(geometry));
 
             m_clip_program.setUniformValue(m_clip_matrix_id, m);
@@ -338,7 +338,7 @@ Renderer::ClipType Renderer::updateStencilClip(const ClipNode *clip)
     }
 
     if (stencilEnabled) {
-        m_clip_program.disableAttributeArray(QGL::Position);
+        m_clip_program.disableAttributeArray(QSG::Position);
         glEnable(GL_DEPTH_TEST);
         glStencilFunc(GL_EQUAL, clipDepth, 0xff); // stencil test, ref, test mask
         glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); // stencil fail, z fail, z pass

@@ -81,7 +81,7 @@ const char *FlatColorMaterialData::fragmentShader() const {
 }
 
 const AbstractShaderEffectProgram::Attributes FlatColorMaterialData::attributes() const {
-    static const QGL::VertexAttribute ids[] = { QGL::Position, QGL::VertexAttribute(-1) };
+    static const QSG::VertexAttribute ids[] = { QSG::Position, QSG::VertexAttribute(-1) };
     static const char *const names[] = { "vCoord", 0 };
     static const Attributes attr = { ids, names };
     return attr;

@@ -39,16 +39,16 @@
 **
 ****************************************************************************/
 
-#ifndef QGLNAMESPACE_H
-#define QGLNAMESPACE_H
+#ifndef QSGAttributeDescription_H
+#define QSGAttributeDescription_H
 
-#include "qt3dglobal.h"
+#include <QtOpenGL/qgl.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-namespace QGL
+namespace QSG
 {
     enum VertexAttribute {
         Position,
@@ -61,23 +61,6 @@ namespace QGL
         CustomVertex1,
         UserVertex
     };
-
-    enum Face
-    {
-        FrontFaces                  = 0x0404, // GL_FRONT
-        BackFaces                   = 0x0405, // GL_BACK
-        AllFaces                    = 0x0408  // GL_FRONT_AND_BACK
-    };
-
-    enum CullFace
-    {
-        CullDisabled                = 0,
-        CullFrontFaces              = 0x0404, // GL_FRONT
-        CullBackFaces               = 0x0405, // GL_BACK
-        CullAllFaces                = 0x0408, // GL_FRONT_AND_BACK
-        CullClockwise               = 0x10000
-    };
-    Q_DECLARE_FLAGS(CullFaces, CullFace)
 
     enum DrawingMode
     {
@@ -93,53 +76,97 @@ namespace QGL
         TrianglesAdjacency          = 0x000C, // GL_TRIANGLES_ADJACENCY
         TriangleStripAdjacency      = 0x000D  // GL_TRIANGLE_STRIP_ADJACENCY
     };
-
-    enum StandardEffect
-    {
-        FlatColor,
-        FlatPerVertexColor,
-        FlatReplaceQGLTexture2D,
-        FlatDecalQGLTexture2D,
-        LitMaterial,
-        LitDecalQGLTexture2D,
-        LitModulateQGLTexture2D
-    };
-
-    enum TextureWrap
-    {
-        Repeat                      = 0x2901,   // GL_REPEAT
-        Clamp                       = 0x2900,   // GL_CLAMP
-        ClampToBorder               = 0x812D,   // GL_CLAMP_TO_BORDER
-        ClampToEdge                 = 0x812F,   // GL_CLAMP_TO_EDGE
-        MirroredRepeat              = 0x8370    // GL_MIRRORED_REPEAT
-    };
-
-    enum ClearBuffer
-    {
-        NoClearBuffers              = 0x0000,
-        ClearDepthBuffer            = 0x0100,   // GL_DEPTH_BUFFER_BIT
-        ClearStencilBuffer          = 0x0400,   // GL_STENCIL_BUFFER_BIT
-        ClearColorBuffer            = 0x4000    // GL_COLOR_BUFFER_BIT
-    };
-    Q_DECLARE_FLAGS(ClearBuffers, ClearBuffer)
-
-    enum Eye
-    {
-        NoEye,
-        LeftEye,
-        RightEye
-    };
-
-    enum Smoothing
-    {
-        NoSmoothing,
-        Smooth,
-        Faceted
-    };
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QGL::CullFaces)
-Q_DECLARE_OPERATORS_FOR_FLAGS(QGL::ClearBuffers)
+class Q_DECLARATIVE_EXPORT QSGAttributeDescription
+{
+public:
+    QSGAttributeDescription();
+    QSGAttributeDescription(QSG::VertexAttribute attribute,
+                            int tupleSize, GLenum type, int stride);
+
+    bool isNull() const;
+
+    QSG::VertexAttribute attribute() const;
+    void setAttribute(QSG::VertexAttribute attribute);
+
+    GLenum type() const;
+    void setType(GLenum type);
+
+    int sizeOfType() const;
+
+    int tupleSize() const;
+    void setTupleSize(int tupleSize);
+
+    int stride() const;
+    void setStride(int stride);
+
+private:
+    QSG::VertexAttribute m_attribute;
+    GLenum m_type;
+    int m_tupleSize;
+    int m_stride;
+};
+
+inline QSGAttributeDescription::QSGAttributeDescription()
+    : m_attribute(QSG::Position), m_type(GL_FLOAT),
+      m_tupleSize(0), m_stride(0)
+{
+}
+
+inline QSGAttributeDescription::QSGAttributeDescription
+        (QSG::VertexAttribute attribute, int tupleSize, GLenum type, int stride)
+    : m_attribute(attribute), m_type(type),
+      m_tupleSize(tupleSize), m_stride(stride)
+{
+    Q_ASSERT(tupleSize >= 1 && tupleSize <= 4);
+}
+
+inline bool QSGAttributeDescription::isNull() const
+{
+    return m_tupleSize == 0;
+}
+
+inline QSG::VertexAttribute QSGAttributeDescription::attribute() const
+{
+    return m_attribute;
+}
+
+inline void QSGAttributeDescription::setAttribute(QSG::VertexAttribute attribute)
+{
+    m_attribute = attribute;
+}
+
+inline GLenum QSGAttributeDescription::type() const
+{
+    return m_type;
+}
+
+inline void QSGAttributeDescription::setType(GLenum type)
+{
+    m_type = type;
+}
+
+inline int QSGAttributeDescription::tupleSize() const
+{
+    return m_tupleSize;
+}
+
+inline void QSGAttributeDescription::setTupleSize(int tupleSize)
+{
+    Q_ASSERT(tupleSize >= 1 && tupleSize <= 4);
+    m_tupleSize = tupleSize;
+}
+
+inline int QSGAttributeDescription::stride() const
+{
+    return m_stride;
+}
+
+inline void QSGAttributeDescription::setStride(int stride)
+{
+    m_stride = stride;
+}
 
 QT_END_NAMESPACE
 

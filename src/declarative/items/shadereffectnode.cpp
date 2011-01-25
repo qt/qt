@@ -53,7 +53,7 @@ public:
     virtual void deactivate();
     virtual void updateRendererState(Renderer *renderer, Renderer::Updates updates);
     virtual void updateEffectState(Renderer *renderer, AbstractEffect *newEffect, AbstractEffect *oldEffect);
-    virtual const QGL::VertexAttribute *requiredFields() const;
+    virtual const QSG::VertexAttribute *requiredFields() const;
 
     ShaderEffectNode *node;
 };
@@ -138,7 +138,7 @@ void CustomShaderMaterialData::updateEffectState(Renderer *r, AbstractEffect *ne
     }
 }
 
-const QGL::VertexAttribute *CustomShaderMaterialData::requiredFields() const
+const QSG::VertexAttribute *CustomShaderMaterialData::requiredFields() const
 {
     node->updateShaderProgram();
     return node->m_source.attributes.constData();
@@ -277,9 +277,9 @@ void ShaderEffectNode::updateShaderProgram()
         qWarning() << m_program.log();
     }
 
-    if (!m_source.attributes.contains(QGL::Position))
+    if (!m_source.attributes.contains(QSG::Position))
         qWarning("ShaderEffectItem: Missing reference to \'qt_Vertex\'.");
-    if (!m_source.attributes.contains(QGL::TextureCoord0))
+    if (!m_source.attributes.contains(QSG::TextureCoord0))
         qWarning("ShaderEffectItem: Missing reference to \'qt_MultiTexCoord0\'.");
     if (!m_source.respectsMatrix)
         qWarning("ShaderEffectItem: Missing reference to \'qt_ModelViewProjectionMatrix\'.");

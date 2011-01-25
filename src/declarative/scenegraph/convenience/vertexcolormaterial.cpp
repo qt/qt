@@ -85,7 +85,7 @@ const char *VertexColorMaterialData::fragmentShader() const {
 }
 
 const AbstractShaderEffectProgram::Attributes VertexColorMaterialData::attributes() const {
-    static const QGL::VertexAttribute ids[] = { QGL::Position, QGL::Color, QGL::VertexAttribute(-1) };
+    static const QSG::VertexAttribute ids[] = { QSG::Position, QSG::Color, QSG::VertexAttribute(-1) };
     static const char *const names[] = { "vertexCoord", "vertexColor", 0 };
     static const Attributes attr = { ids, names };
     return attr;

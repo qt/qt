@@ -342,7 +342,7 @@ void ShaderEffectItem::updateProperties()
     }
 
     // Append an 'end of array' marker so that m_source.attributes.constData() can be returned in requiredFields().
-    m_source.attributes.append(QGL::VertexAttribute(-1));
+    m_source.attributes.append(QSG::VertexAttribute(-1));
     connectPropertySignals();
 }
 
@@ -363,10 +363,10 @@ void ShaderEffectItem::lookThroughShaderCode(const QString &code)
         if (decl == QLatin1String("attribute")) {
             if (name == QLatin1String("qt_Vertex")) {
                 m_source.attributeNames.append(name.toLatin1());
-                m_source.attributes.append(QGL::Position);
+                m_source.attributes.append(QSG::Position);
             } else if (name == QLatin1String("qt_MultiTexCoord0")) {
                 m_source.attributeNames.append(name.toLatin1());
-                m_source.attributes.append(QGL::TextureCoord0);
+                m_source.attributes.append(QSG::TextureCoord0);
             } else {
                 // TODO: Support user defined attributes.
                 qWarning("ShaderEffectItem: Attribute \'%s\' not recognized.", qPrintable(name));

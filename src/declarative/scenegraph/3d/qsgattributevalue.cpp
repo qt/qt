@@ -39,13 +39,13 @@
 **
 ****************************************************************************/
 
-#include "qglattributevalue.h"
+#include "qsgattributevalue.h"
 
 QT_BEGIN_NAMESPACE
 
 /*!
-    \class QGLAttributeValue
-    \brief The QGLAttributeValue class encapsulates information about an OpenGL attribute value.
+    \class QSGAttributeValue
+    \brief The QSGAttributeValue class encapsulates information about an OpenGL attribute value.
     \since 4.8
     \ingroup qt3d
     \ingroup qt3d::enablers
@@ -59,20 +59,20 @@ QT_BEGIN_NAMESPACE
     vertex buffers, the data pointer may be an offset into the vertex
     buffer instead.
 
-    QGLAttributeValue encapsulates these four values so that they can
+    QSGAttributeValue encapsulates these four values so that they can
     be easily manipulated as a set during OpenGL painting operations.
-    Constructors are provided for converting QArray and
+    Constructors are provided for converting QSGArray and
     QCustomDataArray objects into an attribute value.
 
     Because the data() value is a raw pointer to arbitrary memory,
     care should be taken that the memory remains valid until the
-    QGLAttributeValue is no longer required.
+    QSGAttributeValue is no longer required.
 
-    \sa QGLAttributeDescription, QArray, QCustomDataArray
+    \sa QSGAttributeDescription, QSGArray, QCustomDataArray
 */
 
 /*!
-    \fn QGLAttributeValue::QGLAttributeValue()
+    \fn QSGAttributeValue::QSGAttributeValue()
 
     Constructs a null attribute value with default parameters of
     tupleSize(), stride(), and offset() set to zero, type() set to
@@ -82,7 +82,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QGLAttributeValue::QGLAttributeValue(const QArray<float>& array)
+    \fn QSGAttributeValue::QSGAttributeValue(const QSGArray<float>& array)
 
     Constructs an attribute value that refers to the contents of \a array,
     setting tupleSize() to 1, type() to GL_FLOAT, and stride() to zero.
@@ -92,7 +92,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QGLAttributeValue::QGLAttributeValue(const QArray<QVector2D>& array)
+    \fn QSGAttributeValue::QSGAttributeValue(const QSGArray<QVector2D>& array)
 
     Constructs an attribute value that refers to the contents of \a array,
     setting tupleSize() to 2, type() to GL_FLOAT, and stride() to zero.
@@ -102,7 +102,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QGLAttributeValue::QGLAttributeValue(const QArray<QVector3D>& array)
+    \fn QSGAttributeValue::QSGAttributeValue(const QSGArray<QVector3D>& array)
 
     Constructs an attribute value that refers to the contents of \a array,
     setting tupleSize() to 3, type() to GL_FLOAT, and stride() to zero.
@@ -112,7 +112,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QGLAttributeValue::QGLAttributeValue(const QArray<QVector4D>& array)
+    \fn QSGAttributeValue::QSGAttributeValue(const QSGArray<QVector4D>& array)
 
     Constructs an attribute value that refers to the contents of \a array,
     setting tupleSize() to 4, type() to GL_FLOAT, and stride() to zero.
@@ -122,86 +122,35 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QGLAttributeValue::QGLAttributeValue(const QArray<QColor4ub>& array)
-
-    Constructs an attribute value that refers to the contents of \a array,
-    setting tupleSize() to 4, type() to GL_UNSIGNED_BYTE, and stride() to zero.
-
-    The \a array must not be destroyed or modified until the attribute
-    value is no longer required.
-*/
-
-/*!
-    Constructs an attribute value that refers to the contents of \a array.
-    The tupleSize() and type() of the attribute value will be set according
-    to the QCustomDataArray::elementType() of \a array.
-
-    The \a array must not be destroyed or modified until the attribute
-    value is no longer required.
-*/
-QGLAttributeValue::QGLAttributeValue(const QCustomDataArray& array)
-    : m_data(array.data()), m_count(0)
-{
-    switch (array.elementType()) {
-    case QCustomDataArray::Float:
-        m_description.setTupleSize(1);
-        m_description.setType(GL_FLOAT);
-        break;
-    case QCustomDataArray::Vector2D:
-        m_description.setTupleSize(2);
-        m_description.setType(GL_FLOAT);
-        break;
-    case QCustomDataArray::Vector3D:
-        m_description.setTupleSize(3);
-        m_description.setType(GL_FLOAT);
-        break;
-    case QCustomDataArray::Vector4D:
-        m_description.setTupleSize(4);
-        m_description.setType(GL_FLOAT);
-        break;
-    case QCustomDataArray::Color:
-        m_description.setTupleSize(4);
-        m_description.setType(GL_UNSIGNED_BYTE);
-        break;
-    default:
-        // Just in case: set the object to null.
-        m_description.setTupleSize(0);
-        m_description.setType(GL_FLOAT);
-        m_data = 0;
-        break;
-    }
-}
-
-/*!
-    \fn QGLAttributeValue::QGLAttributeValue(int tupleSize, GLenum type, int stride, const void *data, int count)
+    \fn QSGAttributeValue::QSGAttributeValue(int tupleSize, GLenum type, int stride, const void *data, int count)
 
     Constructs an attribute value with the fields \a tupleSize, \a type,
     \a stride, \a data, and \a count.
 */
 
 /*!
-    \fn QGLAttributeValue::QGLAttributeValue(int tupleSize, GLenum type, int stride, int offset, int count)
+    \fn QSGAttributeValue::QSGAttributeValue(int tupleSize, GLenum type, int stride, int offset, int count)
 
     Constructs an attribute value with the fields \a tupleSize, \a type,
     \a stride, \a offset, and \a count.
 */
 
 /*!
-    \fn QGLAttributeValue::QGLAttributeValue(const QGLAttributeDescription& description, const void *data, int count)
+    \fn QSGAttributeValue::QSGAttributeValue(const QSGAttributeDescription& description, const void *data, int count)
 
     Constructs an attribute value with the supplied \a description,
     \a data, and \a count.
 */
 
 /*!
-    \fn QGLAttributeValue::QGLAttributeValue(const QGLAttributeDescription& description, int offset, int count)
+    \fn QSGAttributeValue::QSGAttributeValue(const QSGAttributeDescription& description, int offset, int count)
 
     Constructs an attribute value with the supplied \a description,
     \a offset, and \a count.
 */
 
 /*!
-    \fn bool QGLAttributeValue::isNull() const
+    \fn bool QSGAttributeValue::isNull() const
 
     Returns true if tupleSize() is zero, which indicates an unset
     attribute value; false otherwise.
@@ -214,7 +163,7 @@ QGLAttributeValue::QGLAttributeValue(const QCustomDataArray& array)
 */
 
 /*!
-    \fn const QGLAttributeDescription &QGLAttributeValue::description() const
+    \fn const QSGAttributeDescription &QSGAttributeValue::description() const
 
     Returns a reference to the description of this attribute.
 
@@ -222,7 +171,7 @@ QGLAttributeValue::QGLAttributeValue(const QCustomDataArray& array)
 */
 
 /*!
-    \fn GLenum QGLAttributeValue::type() const
+    \fn GLenum QSGAttributeValue::type() const
 
     Returns the component type for this attribute value.  The default
     value is GL_FLOAT.
@@ -235,7 +184,7 @@ QGLAttributeValue::QGLAttributeValue(const QCustomDataArray& array)
 
     \sa type(), tupleSize()
 */
-int QGLAttributeValue::sizeOfType() const
+int QSGAttributeValue::sizeOfType() const
 {
     switch (m_description.type()) {
     case GL_BYTE:           return int(sizeof(GLbyte));
@@ -253,7 +202,7 @@ int QGLAttributeValue::sizeOfType() const
 }
 
 /*!
-    \fn int QGLAttributeValue::tupleSize() const
+    \fn int QSGAttributeValue::tupleSize() const
 
     Returns the tuple size of this attribute in components.  For example,
     a return value of 3 indicates a vector of 3-dimensional values.
@@ -263,7 +212,7 @@ int QGLAttributeValue::sizeOfType() const
 */
 
 /*!
-    \fn int QGLAttributeValue::stride() const
+    \fn int QSGAttributeValue::stride() const
 
     Returns the stride in bytes from one vertex element to the
     next for this attribute value.  The default value of 0 indicates
@@ -271,7 +220,7 @@ int QGLAttributeValue::sizeOfType() const
 */
 
 /*!
-    \fn int QGLAttributeValue::offset() const
+    \fn int QSGAttributeValue::offset() const
 
     Returns the vertex buffer offset for this attribute value.
 
@@ -282,7 +231,7 @@ int QGLAttributeValue::sizeOfType() const
 */
 
 /*!
-    \fn const void *QGLAttributeValue::data() const
+    \fn const void *QSGAttributeValue::data() const
 
     Returns the data pointer for the elements in this attribute value.
 
@@ -290,7 +239,7 @@ int QGLAttributeValue::sizeOfType() const
 */
 
 /*!
-    \fn const float *QGLAttributeValue::floatData() const
+    \fn const float *QSGAttributeValue::floatData() const
 
     Returns the data pointer for the elements in this attribute value
     as a pointer to float.
@@ -302,7 +251,7 @@ int QGLAttributeValue::sizeOfType() const
 */
 
 /*!
-    \fn int QGLAttributeValue::count() const
+    \fn int QSGAttributeValue::count() const
 
     Returns the count of vertex elements in this attribute value;
     zero if the count is unknown.

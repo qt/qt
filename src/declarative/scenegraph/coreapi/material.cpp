@@ -64,7 +64,7 @@ void AbstractShaderEffectProgram::deactivate()
         m_program.disableAttributeArray(attr.ids[i]);
 }
 
-const QGL::VertexAttribute *AbstractShaderEffectProgram::requiredFields() const
+const QSG::VertexAttribute *AbstractShaderEffectProgram::requiredFields() const
 {
     return attributes().ids;
 }

@@ -59,8 +59,8 @@ DefaultTextureAtlas::DefaultTextureAtlas(const QSize &size, uint flags)
     image.fill(0);
     m_texture->setImage(image);
 
-    m_texture->setHorizontalWrap(QGL::ClampToEdge);
-    m_texture->setVerticalWrap(QGL::ClampToEdge);
+    m_texture->setHorizontalWrap(QSG::ClampToEdge);
+    m_texture->setVerticalWrap(QSG::ClampToEdge);
     m_texture->setBindOptions(QGLContext::InternalBindOption);
 }
 

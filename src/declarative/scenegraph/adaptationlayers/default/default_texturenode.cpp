@@ -163,7 +163,7 @@ void DefaultTextureNode::updateGeometry()
     yDst.append(m_rect.bottom());
 
     if (xSrc.size() == 2 && ySrc.size() == 2) {
-        g->setDrawingMode(QGL::TriangleStrip);
+        g->setDrawingMode(QSG::TriangleStrip);
         g->setVertexCount(4);
         if (!m_clamp_to_edge) {
             g->setIndexCount(4);
@@ -171,7 +171,7 @@ void DefaultTextureNode::updateGeometry()
                 g->ushortIndexData()[i] = i;
         }
     } else {
-        g->setDrawingMode(QGL::Triangles);
+        g->setDrawingMode(QSG::Triangles);
         int cellCount = (xSrc.size() - 1) * (ySrc.size() - 1);
         int vertexCount = cellCount * 4; // Four vertices per grid cell.
         if (vertexCount > 0x10000)

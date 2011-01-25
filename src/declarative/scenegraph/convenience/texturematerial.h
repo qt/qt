@@ -88,9 +88,9 @@ public:
     virtual const char *vertexShader() const;
     virtual const char *fragmentShader() const;
     virtual const Attributes attributes() const;
-    virtual const QGL::VertexAttribute *requiredFields() const;
+    virtual const QSG::VertexAttribute *requiredFields() const;
 
-    static const QGL::VertexAttribute attributeIds[];
+    static const QSG::VertexAttribute attributeIds[];
     static const char *const attributeNames[];
     static AbstractEffectType type;
 

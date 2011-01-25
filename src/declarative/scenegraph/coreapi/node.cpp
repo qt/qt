@@ -43,7 +43,7 @@
 #include "renderer.h"
 #include "nodeupdater_p.h"
 #include "material.h"
-#include <qglattributevalue.h>
+#include <qsgattributevalue.h>
 
 #include "limits.h"
 
@@ -259,7 +259,7 @@ void BasicGeometryNode::setGeometry(Geometry *geometry, int firstIndex, int endI
     markDirty(DirtyGeometry);
 }
 
-void BasicGeometryNode::updateGeometryDescription(const QVector<QGLAttributeDescription> &description, GLenum indexType)
+void BasicGeometryNode::updateGeometryDescription(const QVector<QSGAttributeDescription> &description, GLenum indexType)
 {
     m_geometry->setIndexType(indexType);
     m_geometry->setVertexDescription(description);
@@ -508,9 +508,9 @@ QDebug operator<<(QDebug d, const GeometryNode *n)
 
     const Geometry *g = n->geometry();
     switch (g->drawingMode()) {
-    case QGL::TriangleStrip: d << "strip"; break;
-    case QGL::TriangleFan: d << "fan"; break;
-    case QGL::Triangles: d << "triangles"; break;
+    case QSG::TriangleStrip: d << "strip"; break;
+    case QSG::TriangleFan: d << "fan"; break;
+    case QSG::Triangles: d << "triangles"; break;
     default: break;
     }
 
@@ -522,7 +522,7 @@ QDebug operator<<(QDebug d, const GeometryNode *n)
         d << "effect=" << n->material() << "type=" << n->material()->type();
     d << "order=" << n->renderOrder();
 
-    QGLAttributeValue a = g->attributeValue(QGL::Position);
+    QSGAttributeValue a = g->attributeValue(QSG::Position);
     if (!a.isNull() && a.type() == GL_FLOAT) {
         float x1 = 1e10, x2 = -1e10, y1=1e10, y2=-1e10;
         int stride = a.stride();

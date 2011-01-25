@@ -123,7 +123,7 @@ void QSGClipNode::updateGeometry()
             }
         }
 
-        g->setDrawingMode(QGL::TriangleStrip);
+        g->setDrawingMode(QSG::TriangleStrip);
         g->setVertexCount(vertexCount);
 
         markDirty(DirtyGeometry);

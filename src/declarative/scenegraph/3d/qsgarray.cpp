@@ -39,43 +39,43 @@
 **
 ****************************************************************************/
 
-#include "qarray.h"
+#include "qsgarray.h"
 #include <limits.h>
 
 QT_BEGIN_NAMESPACE
 
 /*!
-    \class QArray
-    \brief The QArray class is a template class that provides a dynamic array of simple types.
+    \class QSGArray
+    \brief The QSGArray class is a template class that provides a dynamic array of simple types.
     \since 4.8
     \ingroup qt3d
     \ingroup qt3d::enablers
 
-    QArray is similar to QVector except that it has much less overhead
+    QSGArray is similar to QVector except that it has much less overhead
     when constructing large arrays by appending individual elements
     one by one.
 
-    QArray instances have a preallocated data area for quickly
+    QSGArray instances have a preallocated data area for quickly
     building small arrays on the stack without malloc overhead.
     Once the array grows beyond the preallocated size, it is copied
     to the heap.  The size of the preallocated area, which defaults to 8,
     can be specified with the second template parameter:
 
     \code
-    QArray<QVector3D, 32> array;
+    QSGArray<QVector3D, 32> array;
     \endcode
 
-    QArray uses implicit sharing and copy-on-write semantics to support
+    QSGArray uses implicit sharing and copy-on-write semantics to support
     passing large arrays around an application with little overhead.
 
-    QArray is heavily optimized for copy-on-write and the case of
+    QSGArray is heavily optimized for copy-on-write and the case of
     constructing an array by calling append().  It has a slight
     performance penalty for random access using the non-const
     version of operator[]().
 */
 
 /*!
-    \fn QArray::QArray()
+    \fn QSGArray::QSGArray()
 
     Constructs an empty array.
 
@@ -83,7 +83,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QArray::QArray(int size, const T &value)
+    \fn QSGArray::QSGArray(int size, const T &value)
 
     Constructs an array of \a size elements, all initialized
     to \a value.
@@ -92,21 +92,21 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QArray::QArray(int size)
+    \fn QSGArray::QSGArray(int size)
 
     Constructs an array of \a size elements, all initialized
     to their default-constructed values.
 */
 
 /*!
-    \fn QArray::QArray(const T *values, int size)
+    \fn QSGArray::QSGArray(const T *values, int size)
 
     Constructs an array of \a size elements, initialized
     from \a values.
 */
 
 /*!
-    \fn QArray::QArray(const QArray<T, PreallocSize> &other)
+    \fn QSGArray::QSGArray(const QSGArray<T, PreallocSize> &other)
 
     Constructs a copy of \a other.
 
@@ -114,20 +114,20 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QArray::~QArray()
+    \fn QSGArray::~QSGArray()
 
     Destroys the array.
 */
 
 /*!
-    \fn QArray<T, PreallocSize> &QArray::operator=(const QArray<T, PreallocSize> &other)
+    \fn QSGArray<T, PreallocSize> &QSGArray::operator=(const QSGArray<T, PreallocSize> &other)
 
     Assigns \a other to this array and returns a reference
     to this array.
 */
 
 /*!
-    \fn int QArray::size() const
+    \fn int QSGArray::size() const
 
     Returns the number of elements in this array.
 
@@ -135,14 +135,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn int QArray::count() const
+    \fn int QSGArray::count() const
     \overload
 
     Same as size(), provided for convenience.
 */
 
 /*!
-    \fn int QArray::capacity() const
+    \fn int QSGArray::capacity() const
 
     Returns the number of elements that can be stored in this
     array before reallocation.
@@ -151,7 +151,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QArray::isEmpty() const
+    \fn bool QSGArray::isEmpty() const
 
     Returns true if this array is empty; false otherwise.
 
@@ -159,7 +159,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QArray::isDetached() const
+    \fn bool QSGArray::isDetached() const
     \internal
 
     Returns true if this array has definitely been detached from all
@@ -180,7 +180,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QArray::detach()
+    \fn void QSGArray::detach()
     \internal
 
     Detaches this array from all other shared copies of the data.
@@ -189,7 +189,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QArray::clear()
+    \fn void QSGArray::clear()
 
     Clears all elements from this array and sets the size to zero.
 
@@ -201,7 +201,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const T &QArray::at(int index) const
+    \fn const T &QSGArray::at(int index) const
 
     Returns the item at position \a index in the array.
 
@@ -212,21 +212,21 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn T &QArray::operator[](int index)
+    \fn T &QSGArray::operator[](int index)
 
     Returns the item at position \a index as a modifiable reference.
 
     \a index must be a valid index position in the vector (i.e., 0 <= \a index
     < size()).
 
-    Note that using non-const operators can cause QArray
+    Note that using non-const operators can cause QSGArray
     to do a deep copy.
 
     \sa at(), value()
 */
 
 /*!
-    \fn const T &QArray::operator[](int index) const
+    \fn const T &QSGArray::operator[](int index) const
 
     \overload
 
@@ -234,7 +234,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn T QArray::value(int index) const
+    \fn T QSGArray::value(int index) const
 
     Returns the value at position \a index in the vector.
 
@@ -247,7 +247,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn T QArray::value(int index, const T &defaultValue) const
+    \fn T QSGArray::value(int index, const T &defaultValue) const
     \overload
 
     If the \a index is out of bounds, the function returns
@@ -255,7 +255,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn T *QArray::extend(int size)
+    \fn T *QSGArray::extend(int size)
 
     Extends this array by \a size elements and returns a pointer
     to the storage, which is not initialized.  The pointer is only
@@ -267,7 +267,7 @@ QT_BEGIN_NAMESPACE
     the in-place new operator to set elements:
 
     \code
-    QArray<QRegExp> array;
+    QSGArray<QRegExp> array;
     QRegExp *space = array.extend(1);
     new (space) QRegExp(QLatin1String("exp"));
     \endcode
@@ -276,7 +276,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QArray::append(const T &value)
+    \fn void QSGArray::append(const T &value)
 
     Appends \a value to this array.
 
@@ -284,7 +284,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QArray::append(const T &value1, const T &value2)
+    \fn void QSGArray::append(const T &value1, const T &value2)
 
     \overload
 
@@ -292,7 +292,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QArray::append(const T &value1, const T &value2, const T &value3)
+    \fn void QSGArray::append(const T &value1, const T &value2, const T &value3)
 
     \overload
 
@@ -300,7 +300,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QArray::append(const T &value1, const T &value2, const T &value3, const T &value4)
+    \fn void QSGArray::append(const T &value1, const T &value2, const T &value3, const T &value4)
 
     \overload
 
@@ -308,19 +308,19 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QArray::append(const T *values, int count)
+    \fn void QSGArray::append(const T *values, int count)
 
     Appends the \a count elements of \a values to this array.
 */
 
 /*!
-    \fn void QArray::append(const QArray<T, PreallocSize> &other)
+    \fn void QSGArray::append(const QSGArray<T, PreallocSize> &other)
 
     Appends the elements of \a other to this array.
 */
 
 /*!
-    \fn void QArray::prepend(const T &value)
+    \fn void QSGArray::prepend(const T &value)
 
     Prepends \a value to this array.
 
@@ -328,7 +328,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QArray::insert(int index, const T &value)
+    \fn void QSGArray::insert(int index, const T &value)
 
     Inserts \a value at position \a index in this array.
     If \a index is 0, then \a value is prepended to the array.
@@ -338,7 +338,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QArray::insert(int index, int count, const T &value)
+    \fn void QSGArray::insert(int index, int count, const T &value)
     \overload
 
     Inserts \a count copies of \a value at position \a index
@@ -346,7 +346,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QArray::iterator QArray::insert(iterator before, int count, const T &value)
+    \fn QSGArray::iterator QSGArray::insert(iterator before, int count, const T &value)
 
     Inserts \a count copies of \a value in front of the item
     pointed to by the iterator \a before.  Returns an iterator
@@ -354,7 +354,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QArray::iterator QArray::insert(iterator before, const T &value)
+    \fn QSGArray::iterator QSGArray::insert(iterator before, const T &value)
     \overload
 
     Inserts \a value in front of the item pointed to by the
@@ -363,7 +363,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QArray::replace(int index, const T &value)
+    \fn void QSGArray::replace(int index, const T &value)
 
     Replaces the element at \a index with \a value.
 
@@ -371,7 +371,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QArray::replace(int index, const T *values, int count)
+    \fn void QSGArray::replace(int index, const T *values, int count)
     \overload
 
     Replaces the \a count elements of this array with the
@@ -384,7 +384,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QArray::remove(int index)
+    \fn void QSGArray::remove(int index)
 
     \overload
 
@@ -392,7 +392,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QArray::remove(int index, int count)
+    \fn void QSGArray::remove(int index, int count)
 
     Removes the \a count elements starting at position \a index
     in this array.  If \a index or \a count is out of range,
@@ -401,7 +401,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QArray::iterator QArray::erase(iterator begin, iterator end)
+    \fn QSGArray::iterator QSGArray::erase(iterator begin, iterator end)
     \overload
 
     Removes all the items from \a begin up to (but not including) \a
@@ -410,7 +410,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QArray::iterator QArray::erase(iterator pos)
+    \fn QSGArray::iterator QSGArray::erase(iterator pos)
 
     Removes the item pointed to by the iterator \a pos from the
     vector, and returns an iterator to the next item in the vector
@@ -420,7 +420,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QArray::removeFirst()
+    \fn void QSGArray::removeFirst()
 
     Removes the first element from this array.  Does nothing if
     the array is empty.
@@ -429,7 +429,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QArray::removeLast()
+    \fn void QSGArray::removeLast()
 
     Removes the last element from this array.  Does nothing if
     the array is empty.
@@ -438,7 +438,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn int QArray::indexOf(const T &value, int from) const
+    \fn int QSGArray::indexOf(const T &value, int from) const
 
     Returns the index position of the first occurrence of
     \a value in the array, searching forward from index
@@ -455,7 +455,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn int QArray::lastIndexOf(const T &value, int from) const
+    \fn int QSGArray::lastIndexOf(const T &value, int from) const
 
     Returns the index position of the last occurrence of
     \a value in the array, searching backward from index
@@ -472,7 +472,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QArray::contains(const T &value) const
+    \fn bool QSGArray::contains(const T &value) const
 
     Returns true if the array contains an occurrence of \a value;
     false otherwise.
@@ -484,7 +484,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn int QArray::count(const T &value) const
+    \fn int QSGArray::count(const T &value) const
 
     Returns the number of occurrences of \a value in the array.
 
@@ -495,7 +495,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QArray::resize(int size)
+    \fn void QSGArray::resize(int size)
 
     Sets the size of the array to \a size.  If \a size is greater
     than the current size, elements are added to the end and are
@@ -506,7 +506,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QArray::reserve(int size)
+    \fn void QSGArray::reserve(int size)
 
     Increases the capacity of this array to reserve space for
     at least \a size elements.  If the capacity is already larger
@@ -521,7 +521,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QArray::squeeze()
+    \fn void QSGArray::squeeze()
 
     Releases any memory not required to store the array's elements
     by reducing its capacity() to size().
@@ -536,7 +536,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QArray<T, PreallocSize> &QArray::fill(const T &value, int size)
+    \fn QSGArray<T, PreallocSize> &QSGArray::fill(const T &value, int size)
 
     Assigns \a value to all items in the array. If \a size is
     different from -1 (the default), the array is resized to
@@ -546,7 +546,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QArray::reverse()
+    \fn void QSGArray::reverse()
 
     Reverses the order of this array in place.
 
@@ -554,7 +554,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QArray<T, PreallocSize> QArray::reversed() const
+    \fn QSGArray<T, PreallocSize> QSGArray::reversed() const
 
     Returns a copy of this array with elements in the reverse order.
 
@@ -562,7 +562,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QArray<T, PreallocSize> QArray::mid(int index, int length) const
+    \fn QSGArray<T, PreallocSize> QSGArray::mid(int index, int length) const
 
     Returns an array containing the \a length elements of
     this array, starting at \a index.  If \a length is less
@@ -574,7 +574,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QArray<T, PreallocSize> QArray::left(int length) const;
+    \fn QSGArray<T, PreallocSize> QSGArray::left(int length) const;
 
     Returns an array containing the first \a length
     elements of this array.  If \a length is less than zero,
@@ -585,7 +585,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QArray<T, PreallocSize> QArray::right(int length) const;
+    \fn QSGArray<T, PreallocSize> QSGArray::right(int length) const;
 
     Returns an array containing the last \a length
     elements of this array.  If \a length is less than zero,
@@ -596,7 +596,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn T *QArray::data()
+    \fn T *QSGArray::data()
 
     Returns a pointer to the data stored in the array.  The pointer
     can be used to access and modify the items in the array.
@@ -612,13 +612,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const T *QArray::data() const
+    \fn const T *QSGArray::data() const
 
     \overload
 */
 
 /*!
-    \fn const T *QArray::constData() const
+    \fn const T *QSGArray::constData() const
 
     Returns a const pointer to the data stored in the array.
     The pointer can be used to access the items in the array.
@@ -632,7 +632,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QArray<T, PreallocSize> QArray::fromRawData(const T *data, int size)
+    \fn QSGArray<T, PreallocSize> QSGArray::fromRawData(const T *data, int size)
 
     Returns an array consisting of the \a size elements from \a data.
 
@@ -646,19 +646,19 @@ QT_BEGIN_NAMESPACE
 
     \code
     // Makes a copy of the data immediately.
-    QArray<float> array;
+    QSGArray<float> array;
     array.append(data, size);
 
     // Does not make a copy of the data until the array is modified.
-    QArray<float> array;
-    array = QArray<float>::fromRawData(data, size);
+    QSGArray<float> array;
+    array = QSGArray<float>::fromRawData(data, size);
     \endcode
 
     \sa fromWritableRawData(), append()
 */
 
 /*!
-    \fn QArray<T, PreallocSize> QArray::fromWritableRawData(T *data, int size)
+    \fn QSGArray<T, PreallocSize> QSGArray::fromWritableRawData(T *data, int size)
 
     Returns an array consisting of the \a size elements from \a data.
 
@@ -684,7 +684,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QArray::operator==(const QArray<T, PreallocSize> &other) const
+    \fn bool QSGArray::operator==(const QSGArray<T, PreallocSize> &other) const
 
     Returns true if \a other is equal to this array; otherwise
     returns false.
@@ -699,7 +699,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QArray::operator!=(const QArray<T, PreallocSize> &other) const
+    \fn bool QSGArray::operator!=(const QSGArray<T, PreallocSize> &other) const
 
     Returns true if \a other is not equal to this array; otherwise
     returns false.
@@ -714,7 +714,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QArray<T, PreallocSize> &QArray::operator+=(const T &value)
+    \fn QSGArray<T, PreallocSize> &QSGArray::operator+=(const T &value)
 
     \overload
 
@@ -725,7 +725,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QArray<T, PreallocSize> &QArray::operator+=(const QArray<T, PreallocSize> &other)
+    \fn QSGArray<T, PreallocSize> &QSGArray::operator+=(const QSGArray<T, PreallocSize> &other)
 
     Appends the elements of the \a other array to this array
     and returns a reference to this array.
@@ -734,7 +734,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QArray<T, PreallocSize> &QArray::operator<<(const T &value)
+    \fn QSGArray<T, PreallocSize> &QSGArray::operator<<(const T &value)
 
     \overload
 
@@ -745,7 +745,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QArray<T, PreallocSize> &QArray::operator<<(const QArray<T, PreallocSize> &other)
+    \fn QSGArray<T, PreallocSize> &QSGArray::operator<<(const QSGArray<T, PreallocSize> &other)
 
     Appends the elements of the \a other array to this array
     and returns a reference to this array.
@@ -754,127 +754,127 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \typedef QArray::iterator
+    \typedef QSGArray::iterator
 
-    The QArray::iterator typedef provides an STL-style non-const
-    iterator for QArray.  The iterator is simply a typedef
+    The QSGArray::iterator typedef provides an STL-style non-const
+    iterator for QSGArray.  The iterator is simply a typedef
     for "T *" (pointer to T).
 
-    \sa QArray::begin(), QArray::const_iterator
+    \sa QSGArray::begin(), QSGArray::const_iterator
 */
 
 /*!
-    \typedef QArray::const_iterator
+    \typedef QSGArray::const_iterator
 
-    The QArray::iterator typedef provides an STL-style const
-    iterator for QArray.  The iterator is simply a typedef
+    The QSGArray::iterator typedef provides an STL-style const
+    iterator for QSGArray.  The iterator is simply a typedef
     for "const T *" (pointer to const T).
 
-    \sa QArray::constBegin(), QArray::iterator
+    \sa QSGArray::constBegin(), QSGArray::iterator
 */
 
 /*!
-    \typedef QArray::Iterator
+    \typedef QSGArray::Iterator
 
-    Qt-style synonym for QArray::iterator.
+    Qt-style synonym for QSGArray::iterator.
 */
 
 /*!
-    \typedef QArray::ConstIterator
+    \typedef QSGArray::ConstIterator
 
-    Qt-style synonym for QArray::const_iterator.
+    Qt-style synonym for QSGArray::const_iterator.
 */
 
 /*!
-    \typedef QArray::const_pointer
+    \typedef QSGArray::const_pointer
 
     Typedef for const T *. Provided for STL compatibility.
 */
 
 /*!
-    \typedef QArray::const_reference
+    \typedef QSGArray::const_reference
 
     Typedef for T &. Provided for STL compatibility.
 */
 
 /*!
-    \typedef QArray::difference_type
+    \typedef QSGArray::difference_type
 
     Typedef for ptrdiff_t. Provided for STL compatibility.
 */
 
 /*!
-    \typedef QArray::pointer
+    \typedef QSGArray::pointer
 
     Typedef for T *. Provided for STL compatibility.
 */
 
 /*!
-    \typedef QArray::reference
+    \typedef QSGArray::reference
 
     Typedef for T &. Provided for STL compatibility.
 */
 
 /*!
-    \typedef QArray::size_type
+    \typedef QSGArray::size_type
 
     Typedef for int. Provided for STL compatibility.
 */
 
 /*!
-    \typedef QArray::value_type
+    \typedef QSGArray::value_type
 
     Typedef for T. Provided for STL compatibility.
 */
 
 /*!
-    \fn QArray::iterator QArray::begin()
+    \fn QSGArray::iterator QSGArray::begin()
 
     Returns an STL-style iterator pointing to the first item
     in the array.
 
-    \sa end(), constBegin(), QArray::iterator
+    \sa end(), constBegin(), QSGArray::iterator
 */
 
 /*!
-    \fn QArray::const_iterator QArray::begin() const
+    \fn QSGArray::const_iterator QSGArray::begin() const
     \overload
 */
 
 /*!
-    \fn QArray::const_iterator QArray::constBegin() const
+    \fn QSGArray::const_iterator QSGArray::constBegin() const
 
     Returns a const STL-style iterator pointing to the first item
     in the array.
 
-    \sa constEnd(), begin(), QArray::const_iterator
+    \sa constEnd(), begin(), QSGArray::const_iterator
 */
 
 /*!
-    \fn QArray::iterator QArray::end()
+    \fn QSGArray::iterator QSGArray::end()
 
     Returns an STL-style iterator pointing to the imaginary item
     after the last item in the array.
 
-    \sa begin(), constEnd(), QArray::iterator
+    \sa begin(), constEnd(), QSGArray::iterator
 */
 
 /*!
-    \fn QArray::const_iterator QArray::end() const
+    \fn QSGArray::const_iterator QSGArray::end() const
     \overload
 */
 
 /*!
-    \fn QArray::const_iterator QArray::constEnd() const
+    \fn QSGArray::const_iterator QSGArray::constEnd() const
 
     Returns a const STL-style iterator pointing to the imaginary item
     after the last item in the array.
 
-    \sa constBegin(), end(), QArray::const_iterator
+    \sa constBegin(), end(), QSGArray::const_iterator
 */
 
 /*!
-    \fn T &QArray::first()
+    \fn T &QSGArray::first()
 
     Returns a reference to the first item in the array. This
     function assumes that the array isn't empty.
@@ -883,12 +883,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const T &QArray::first() const
+    \fn const T &QSGArray::first() const
     \overload
 */
 
 /*!
-    \fn T &QArray::last()
+    \fn T &QSGArray::last()
 
     Returns a reference to the last item in the array. This function
     assumes that the array isn't empty.
@@ -897,12 +897,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const T &QArray::last() const
+    \fn const T &QSGArray::last() const
     \overload
 */
 
 /*!
-    \fn bool QArray::startsWith(const T &value) const
+    \fn bool QSGArray::startsWith(const T &value) const
 
     Returns true if this array is not empty and its first
     item is equal to \a value; otherwise returns false.
@@ -911,7 +911,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QArray::endsWith(const T &value) const
+    \fn bool QSGArray::endsWith(const T &value) const
 
     Returns true if this array is not empty and its last
     item is equal to \a value; otherwise returns false.
@@ -920,59 +920,59 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QArray::push_back(const T &value)
+    \fn void QSGArray::push_back(const T &value)
 
     This function is provided for STL compatibility. It is equivalent
     to append(\a value).
 */
 
 /*!
-    \fn void QArray::push_front(const T &value)
+    \fn void QSGArray::push_front(const T &value)
 
     This function is provided for STL compatibility. It is equivalent
     to prepend(\a value).
 */
 
 /*!
-    \fn void QArray::pop_front()
+    \fn void QSGArray::pop_front()
 
     This function is provided for STL compatibility. It is equivalent
     to removeFirst().
 */
 
 /*!
-    \fn void QArray::pop_back()
+    \fn void QSGArray::pop_back()
 
     This function is provided for STL compatibility. It is equivalent
     to removeLast().
 */
 
 /*!
-    \fn QArray::reference QArray::front()
+    \fn QSGArray::reference QSGArray::front()
 
     This function is provided for STL compatibility. It is equivalent
     to first().
 */
 
 /*!
-    \fn QArray::const_reference QArray::front() const
+    \fn QSGArray::const_reference QSGArray::front() const
     \overload
 */
 
 /*!
-    \fn QArray::reference QArray::back()
+    \fn QSGArray::reference QSGArray::back()
 
     This function is provided for STL compatibility. It is equivalent
     to last().
 */
 
 /*!
-    \fn QArray::const_reference QArray::back() const
+    \fn QSGArray::const_reference QSGArray::back() const
     \overload
 */
 
 /*!
-    \fn bool QArray::empty() const
+    \fn bool QSGArray::empty() const
 
     This function is provided for STL compatibility. It is equivalent
     to isEmpty(), returning true if the array is empty; otherwise
@@ -982,16 +982,16 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_DATASTREAM
 
 /*!
-    \fn QDataStream& operator<<(QDataStream& stream, const QArray<T, PreallocSize>& array)
-    \relates QArray
+    \fn QDataStream& operator<<(QDataStream& stream, const QSGArray<T, PreallocSize>& array)
+    \relates QSGArray
 
     Writes \a array to the given \a stream and returns a reference
     to the \a stream.
 */
 
 /*!
-    \fn QDataStream& operator>>(QDataStream& stream, QArray<T, PreallocSize>& array)
-    \relates QArray
+    \fn QDataStream& operator>>(QDataStream& stream, QSGArray<T, PreallocSize>& array)
+    \relates QSGArray
 
     Reads \a array from the given \a stream and returns a reference
     to the \a stream.

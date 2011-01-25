@@ -66,7 +66,7 @@ struct ShaderEffectProgram
     QString vertexCode;
     QString fragmentCode;
 
-    QVector<QGL::VertexAttribute> attributes;
+    QVector<QSG::VertexAttribute> attributes;
     QVector<QByteArray> attributeNames;
     QSet<QByteArray> uniformNames;
 

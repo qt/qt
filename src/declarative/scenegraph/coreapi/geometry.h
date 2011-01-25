@@ -42,27 +42,27 @@
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
 
-#include <qglattributedescription.h>
-#include <qarray.h>
+#include <qsgattributedescription.h>
+#include <qsgarray.h>
 #include <QtCore/qvector.h>
 #include <qglfunctions.h>
 #include <QGLBuffer>
 
-class QGLAttributeValue;
+class QSGAttributeValue;
 
 class Q_DECLARATIVE_EXPORT Geometry
 {
 public:
     Geometry(); // Creates a null geometry.
-    Geometry(const QVector<QGLAttributeDescription> &description, GLenum indexType = GL_UNSIGNED_SHORT);
+    Geometry(const QVector<QSGAttributeDescription> &description, GLenum indexType = GL_UNSIGNED_SHORT);
     ~Geometry();
 
     void *vertexData();
     const void *constVertexData() const { return m_vertex_data.constData(); }
-    const QArray<uchar> &vertexArray() const { return m_vertex_data; }
+    const QSGArray<uchar> &vertexArray() const { return m_vertex_data; }
 
-    void setVertexDescription(const QVector<QGLAttributeDescription> &description);
-    const QVector<QGLAttributeDescription> &vertexDescription() const { return m_vertex_description; }
+    void setVertexDescription(const QVector<QSGAttributeDescription> &description);
+    const QVector<QSGAttributeDescription> &vertexDescription() const { return m_vertex_description; }
 
     int vertexCount() const { return m_vertex_data.size() / m_vertex_stride; }
     void setVertexCount(int count) {
@@ -80,7 +80,7 @@ public:
     const void *constIndexData() const { return m_index_data.constData(); }
     const ushort *constUshortIndexData() const;
     const uint *constUintIndexData() const;
-    const QArray<uchar> &indexArray() const { return m_index_data; }
+    const QSGArray<uchar> &indexArray() const { return m_index_data; }
 
     void setIndexType(GLenum indexType);
     GLenum indexType() const { return m_index_type; }
@@ -95,22 +95,22 @@ public:
             m_index_data.resize(newSize);
     }
 
-    QGL::DrawingMode drawingMode() const { return m_mode; }
-    void setDrawingMode(QGL::DrawingMode mode) { m_mode = mode; }
+    QSG::DrawingMode drawingMode() const { return m_mode; }
+    void setDrawingMode(QSG::DrawingMode mode) { m_mode = mode; }
 
     int stride() const { return m_vertex_stride; }
 
-    QGLAttributeValue attributeValue(QGL::VertexAttribute attribute) const;
+    QSGAttributeValue attributeValue(QSG::VertexAttribute attribute) const;
 
     bool isNull() const { return m_vertex_description.isEmpty(); }
 
 protected:
-    QArray<uchar> m_vertex_data;
-    QArray<uchar> m_index_data;
+    QSGArray<uchar> m_vertex_data;
+    QSGArray<uchar> m_index_data;
 
-    QVector<QGLAttributeDescription> m_vertex_description; // QGLAttributeDescription should have offset and normalized, must assume tightly packed data for now.
+    QVector<QSGAttributeDescription> m_vertex_description; // QSGAttributeDescription should have offset and normalized, must assume tightly packed data for now.
     GLenum m_index_type;
-    QGL::DrawingMode m_mode;
+    QSG::DrawingMode m_mode;
     int m_vertex_stride;
     int m_index_stride;
 };
@@ -145,8 +145,8 @@ private:
     static QSet<const Geometry *> m_geometries;
     static QGLBuffer m_vertex_buffer;
     static QGLBuffer m_index_buffer;
-    static QArray<uchar> m_vertex_data;
-    static QArray<uchar> m_index_data;
+    static QSGArray<uchar> m_vertex_data;
+    static QSGArray<uchar> m_index_data;
     static QHash<const Geometry *, int> m_vertex_offsets;
     static QHash<const Geometry *, int> m_index_offsets;
     static bool m_vertex_bound;

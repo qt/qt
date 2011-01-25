@@ -492,7 +492,7 @@ private:
     QGLContext *m_ctx;
 };
 
-class QGLTextureDestroyer : public QObject
+class Q_OPENGL_EXPORT QGLTextureDestroyer : public QObject
 {
     Q_OBJECT
 public:

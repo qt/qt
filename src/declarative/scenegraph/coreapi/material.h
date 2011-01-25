@@ -42,7 +42,7 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
-#include <qglnamespace.h>
+#include "qsgattributedescription.h"
 #include "renderer.h"
 #include <qglshaderprogram.h>
 
@@ -57,7 +57,7 @@ public:
     virtual void deactivate() { }
     virtual void updateRendererState(Renderer *renderer, Renderer::Updates updates) { Q_UNUSED(renderer) Q_UNUSED(updates) }
     virtual void updateEffectState(Renderer *renderer, AbstractEffect *newEffect, AbstractEffect *oldEffect) { Q_UNUSED(renderer) Q_UNUSED(newEffect) Q_UNUSED(oldEffect) }
-    virtual const QGL::VertexAttribute *requiredFields() const = 0; // Array must end with QGL::VertexAttribute(-1).
+    virtual const QSG::VertexAttribute *requiredFields() const = 0; // Array must end with QSG::VertexAttribute(-1).
 };
 
 class Q_DECLARATIVE_EXPORT AbstractShaderEffectProgram : public AbstractEffectProgram
@@ -67,11 +67,11 @@ public:
 
     virtual void activate();
     virtual void deactivate();
-    virtual const QGL::VertexAttribute *requiredFields() const;
+    virtual const QSG::VertexAttribute *requiredFields() const;
 protected:
     struct Attributes
     {
-        const QGL::VertexAttribute *ids;
+        const QSG::VertexAttribute *ids;
         const char *const *names;
     };
 
