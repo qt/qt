@@ -77,7 +77,7 @@ browser.  The following objects and properties are supported by the QML implemen
 \o lastChild
 \o previousSibling
 \o nextSibling
-\o attribtes
+\o attributes
 \endlist
 
 \o 
