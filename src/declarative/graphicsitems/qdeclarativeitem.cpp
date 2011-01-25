@@ -3235,7 +3235,7 @@ qreal QDeclarativeItem::implicitHeight() const
     \endcode
 
     \bold Note: using implicitWidth of Text or TextEdit and setting the width explicitly
-    incurs a performance penalty as the text must be layed out twice.
+    incurs a performance penalty as the text must be laid out twice.
 */
 
 
