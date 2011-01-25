@@ -56,6 +56,10 @@
 #include <qglobal.h>
 #include "private/qwindowsurface_p.h"
 
+#ifdef QT_MAC_USE_COCOA
+# include <private/qt_cocoa_helpers_mac_p.h>
+#endif // QT_MAC_USE_COCOA
+
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_WS_WIN
@@ -105,6 +109,13 @@ public:
     void beginPaint(const QRegion &rgn);
     void setGeometry(const QRect &rect);
     bool scroll(const QRegion &area, int dx, int dy);
+
+#ifdef QT_MAC_USE_COCOA
+    CGContextRef imageContext();
+
+    bool needsFlush;
+    QRegion regionToFlush;
+#endif // QT_MAC_USE_COCOA
 
 private:
     void prepareBuffer(QImage::Format format, QWidget *widget);

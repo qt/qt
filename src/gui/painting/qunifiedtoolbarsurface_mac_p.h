@@ -82,10 +82,13 @@ public:
     void setGeometry(const QRect &rect);
     void beginPaint(const QRegion &rgn);
     void insertToolbar(QWidget *toolbar, const QPoint &offset);
+    void updateRedirection(QWidget *widget);
+    void updateToolbarOffset(QWidget *widget);
+
+    QPaintDevice *paintDevice();
+    CGContextRef imageContext();
 
 private:
-    QPaintDevice *paintDevice();
-    void updateToolbarOffset(QWidget *widget);
     void prepareBuffer(QImage::Format format, QWidget *widget);
     void recursiveRedirect(QObject *widget, const QPoint &offset);
 

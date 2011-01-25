@@ -92,6 +92,11 @@ void QUnifiedToolbarSurface::recursiveRedirect(QObject *object, const QPoint &of
     }
 }
 
+void QUnifiedToolbarSurface::updateRedirection(QWidget *widget)
+{
+    recursiveRedirect(widget, widget->d_func()->toolbar_offset);
+}
+
 void QUnifiedToolbarSurface::insertToolbar(QWidget *toolbar, const QPoint &offset)
 {
     setGeometry(QRect(QPoint(0, 0), QSize(offset.x() + toolbar->width(), 100))); // FIXME
@@ -130,67 +135,13 @@ void QUnifiedToolbarSurface::updateToolbarOffset(QWidget *widget)
 void QUnifiedToolbarSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &offset)
 {
     Q_D(QUnifiedToolbarSurface);
-
-    QRegion flushingRegion(widget->rect());
-
-    if (!d->image || rgn.rectCount() == 0) {
-        return;
-    }
-
     Q_UNUSED(offset);
 
-    // Get a context for the widget.
-    CGContextRef context;
-    if (!(widget->d_func()->hasOwnContext)) {
-        widget->d_func()->ut_rg = rgn;
-        widget->d_func()->ut_pt = offset;
-        qt_mac_display(widget);
+    if (!d->image || rgn.rectCount() == 0)
         return;
-    } else {
-        // We render the content of the toolbar in the surface.
-        updateToolbarOffset(widget);
-        QRect beginPaintRect(widget->d_func()->toolbar_offset.x(), widget->d_func()->toolbar_offset.y(), widget->geometry().width(), widget->geometry().height());
-        QRegion beginPaintRegion(beginPaintRect);
 
-        context = widget->d_func()->cgContext;
-        beginPaint(beginPaintRegion);
-        widget->render(widget->d_func()->unifiedSurface->paintDevice(), widget->d_func()->toolbar_offset, QRegion(), QWidget::DrawChildren);
-    }
-
-    CGContextSaveGState(context);
-
-    int areaX = widget->d_func()->toolbar_offset.x();
-    int areaY = widget->d_func()->toolbar_offset.y();
-    int areaWidth = widget->geometry().width();
-    int areaHeight = widget->geometry().height();
-    const CGRect area = CGRectMake(areaX, areaY, areaWidth, areaHeight);
-
-    // Clip to region.
-    const QVector<QRect> &rects = flushingRegion.rects();
-    for (int i = 0; i < rects.size(); ++i) {
-        const QRect &rect = rects.at(i);
-        CGContextAddRect(context, CGRectMake(rect.x(), rect.y(), rect.width(), rect.height()));
-    }
-    CGContextAddRect(context, area);
-    CGContextClip(context);
-
-
-    CGImageRef image = CGBitmapContextCreateImage(d->image->cg);
-    CGImageRef subImage = CGImageCreateWithImageInRect(image, area);
-
-    const CGRect drawingArea = CGRectMake(0, 0, areaWidth, areaHeight);
-    qt_mac_drawCGImage(context, &drawingArea, subImage);
-
-    CGImageRelease(subImage);
-    CGImageRelease(image);
-
-    CGContextFlush(context);
-
-    // Restore context.
-    CGContextRestoreGState(context);
-    CGContextRelease(context);
-    widget->d_func()->cgContext = 0;
-    widget->d_func()->hasOwnContext = false;
+    widget->d_func()->askedForFlush = true;
+    qt_mac_setneedsdisplay(widget);
 }
 
 void QUnifiedToolbarSurface::prepareBuffer(QImage::Format format, QWidget *widget)
@@ -252,6 +203,12 @@ void QUnifiedToolbarSurface::prepareBuffer(QImage::Format format, QWidget *widge
     }
 
     delete oldImage;
+}
+
+CGContextRef QUnifiedToolbarSurface::imageContext()
+{
+    Q_D(QUnifiedToolbarSurface);
+    return d->image->cg;
 }
 
 QT_END_NAMESPACE

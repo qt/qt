@@ -852,13 +852,16 @@ public:
     // Do we need to change the methods?
     bool changeMethods;
     bool hasOwnContext;
+
+    // Unified toolbar variables
     CGContextRef cgContext;
     QRegion ut_rg;
     QPoint ut_pt;
     bool isInUnifiedToolbar;
     QWindowSurface *unifiedSurface;
     QPoint toolbar_offset;
-#endif
+    bool askedForFlush;
+#endif // QT_MAC_USE_COCOA
     void determineWindowClass();
     void transferChildren();
     bool qt_mac_dnd_event(uint, DragRef);
