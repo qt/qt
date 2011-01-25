@@ -3701,7 +3701,9 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                         editRect.translate(cb->iconSize.width() + spacing, 0);
             }
             if (!cb->currentText.isEmpty() && !cb->editable) {
-                drawItemText(p, editRect.adjusted(0, 0, 0, 0), Qt::AlignLeft | Qt::AlignVCenter, cb->palette,
+                QPalette styledPalette(cb->palette);
+                rule.configurePalette(&styledPalette, QPalette::Text, QPalette::Base);
+                drawItemText(p, editRect.adjusted(0, 0, 0, 0), Qt::AlignLeft | Qt::AlignVCenter, styledPalette,
                              cb->state & State_Enabled, cb->currentText, QPalette::Text);
             }
             p->restore();
