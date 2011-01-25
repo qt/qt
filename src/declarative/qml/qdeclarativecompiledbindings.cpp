@@ -81,6 +81,7 @@ Q_GLOBAL_STATIC(QDeclarativeFastProperties, fastProperties)
     F(LoadRoot)                /* load */ \
     F(LoadAttached)            /* attached */ \
     F(UnaryMinus)              /* unaryop */ \
+    F(UnaryPlus)               /* unaryop */ \
     F(ConvertIntToReal)        /* unaryop */ \
     F(ConvertRealToInt)        /* unaryop */ \
     F(Real)                    /* real_value */ \
@@ -776,10 +777,23 @@ protected:
 
     virtual bool visit(AST::UnaryPlusExpression *ast)
     {
-        if (qmlMissedOptimizations()) {
-            Result expr;
-            if (expression(ast->expression, &expr)) {
-                qDebug() << "missed optimization opportunity (unary plus)";
+        Result expr;
+        if (expression(ast->expression, &expr)) {
+            if (expr.type == QMetaType::QReal || expr.type == QMetaType::Int) {
+                _expr->reg = acquireReg();
+                if (_expr->reg == -1)
+                    return false;
+
+                _expr->type = expr.type;
+
+                Instr instr;
+                instr.common.type = Instr::UnaryPlus;
+                instr.unaryop.output = _expr->reg;
+                instr.unaryop.src = expr.reg;
+                bytecode << instr;
+                releaseReg(expr.reg);
+            } else if (qmlMissedOptimizations()) {
+                qDebug() << "missed optimization opportunity (unary plus)" << QMetaType::typeName(expr.type);
             }
         }
         return false;
@@ -1436,6 +1450,9 @@ static void dumpInstruction(const Instr *instr)
     case Instr::UnaryMinus:
         qWarning().nospace() << "\t" << "UnaryMinus" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
         break;
+    case Instr::UnaryPlus:
+        qWarning().nospace() << "\t" << "UnaryPlus" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
+        break;
     case Instr::ConvertIntToReal:
         qWarning().nospace() << "\t" << "ConvertIntToReal" << "\t" << instr->unaryop.output << "\t" << instr->unaryop.src;
         break;
@@ -1694,6 +1711,15 @@ void QDeclarativeCompiledBindingsPrivate::run(int instrIndex,
         else if (output.type == QMetaType::Int) output.setint(-input.getint());
     }
     QML_END_INSTR(UnaryMinus)
+
+    QML_BEGIN_INSTR(UnaryPlus)
+    {
+        const Register &input = registers[instr->unaryop.src];
+        Register &output = registers[instr->unaryop.output];
+        if (output.type == QMetaType::QReal) output.setqreal(+input.getqreal());
+        else if (output.type == QMetaType::Int) output.setint(+input.getint());
+    }
+    QML_END_INSTR(UnaryPlus)
 
     QML_BEGIN_INSTR(ConvertIntToReal)
     {
