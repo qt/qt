@@ -112,9 +112,11 @@ public:
 
     void writePNG(const QImage& image)
     {
-#ifndef QT_LINUXBASE
+#if !defined(QT_LINUXBASE) && \
+    (PNG_LIBPNG_VER_MAJOR < 1 || (PNG_LIBPNG_VER_MAJOR == 1 && PNG_LIBPNG_VER_MINOR <= 4))
         // LSB disallows accessing the info_ptr directly. LSB's png_set_IHDR sets
-        // the channels anyways, so just comment it out for LSB usage
+        // the channels anyways, so just comment it out for LSB usage.
+        // In libpng >= 1.5, the png_info struct is no longer exported.
         info_ptr->channels = 4;
 #endif
         png_set_sig_bytes(png_ptr, 8); // Pretend we already wrote the sig
