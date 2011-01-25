@@ -42,7 +42,7 @@
 #include <QtCore>
 #include <QtGui>
 
-#include <QtDeclarative/distancefieldfontatlas.h>
+#include <private/distancefieldfontatlas_p.h>
 
 static void usage()
 {
