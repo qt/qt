@@ -736,7 +736,6 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     // FIXME Do we really need to dispose all persistent handlers before context destruction?
     m_variantTemplate.Dispose();
     m_metaObjectTemplate.Dispose();
-    m_globalObjectTemplate.Dispose();
 
     QHash<const QMetaObject *, v8::Persistent<v8::FunctionTemplate> >::iterator i = m_qtClassTemplates.begin();
     for (; i != m_qtClassTemplates.end(); ++i) {
@@ -749,8 +748,6 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
 
     m_v8Context->Exit(); // Exit the context that was entered in QScriptOriginalGlobalObject ctor.
     m_v8Context.Dispose();
-    for (int i = 0; i < m_v8Contexts.count(); ++i)
-        m_v8Contexts[i].Dispose();
 
     m_isolate->Exit();
     m_isolate->Dispose();
@@ -1481,7 +1478,7 @@ static v8::Handle<v8::Integer> QtGlobalObjectNamedPropertyQuery(v8::Local<v8::St
     v8::HandleScope handleScope;
     v8::Local<v8::Array> data = v8::Local<v8::Array>::Cast(info.Data());
     v8::Local<v8::Object> customGlobalObject = v8::Local<v8::Object>::Cast(data->Get(0));
-    QScriptEnginePrivate *engine = static_cast<QScriptEnginePrivate*>(v8::Local<v8::Object>::Cast(data->Get(1))->GetPointerFromInternalField(0));
+    QScriptEnginePrivate *engine = static_cast<QScriptEnginePrivate*>(v8::External::Unwrap(data->Get(1)));
     int result = QScriptConverter::toPropertyAttributes(engine->getPropertyFlags(customGlobalObject, property, QScriptValue::ResolveLocal));
     // always intercepts
     return handleScope.Close(v8::Integer::New(result));
@@ -1536,8 +1533,7 @@ static v8::Handle<v8::Integer> QtGlobalObjectIndexedPropertyQuery(uint32_t index
     v8::HandleScope handleScope;
     v8::Local<v8::Array> data = v8::Local<v8::Array>::Cast(info.Data());
     v8::Local<v8::Object> customGlobalObject = v8::Local<v8::Object>::Cast(data->Get(0));
-
-    QScriptEnginePrivate *engine = static_cast<QScriptEnginePrivate*>(v8::Local<v8::Object>::Cast(data->Get(1))->GetPointerFromInternalField(0));
+    QScriptEnginePrivate *engine = static_cast<QScriptEnginePrivate*>(v8::External::Unwrap(data->Get(1)));
     int result = QScriptConverter::toPropertyAttributes(engine->getPropertyFlags(customGlobalObject, v8::Integer::New(index), QScriptValue::ResolveLocal));
     // always intercepts
     return handleScope.Close(v8::Integer::New(result));
@@ -1566,51 +1562,34 @@ static v8::Handle<v8::Array> QtGlobalObjectIndexedPropertyEnumeration(const v8::
 
 void QScriptEnginePrivate::setGlobalObject(QScriptValuePrivate* newGlobalObjectValue)
 {
-    // FIXME we need more test for this functionality. This algorithm do not remove the original global
-    // object (it is not possible as it is needed for example in the QScriptOriginalGlobalObject
-    // so it would be nice to check if we do not expose original global object in the new environment
     if (!newGlobalObjectValue->isObject())
         return;
 
-    // We need to leak this value, It needs to live as long as a Global Object, which means as long
-    // as this QSEP.
-    // FIXME check if a Persistent handle is removed with context in which it was created. We don't
-    // want to leak too much.
-    v8::Persistent<v8::Value>::New(static_cast<v8::Handle<v8::Value> >(*newGlobalObjectValue));
     v8::Handle<v8::Value> securityToken = m_v8Context->GetSecurityToken();
-    if (m_globalObjectTemplate.IsEmpty()) {
-        // Initialize m_globalObjectTemplate
+    v8::Handle<v8::ObjectTemplate> objectTemplate = v8::ObjectTemplate::New();
+    // Create template that would be a wrapper around QScriptEnginePrivate pointer. We can use
+    // a raw pointer here because callbacks could be called only if engine is valid
 
-        v8::Handle<v8::ObjectTemplate> objectTemplate = v8::ObjectTemplate::New();
-        // Create template that would be a wrapper around QScriptEnginePrivate pointer. We can use
-        // a raw pointer here because callbacks could be called only if engine is valid
-        v8::Handle<v8::ObjectTemplate> engineWrapperTemplate = v8::ObjectTemplate::New();
-        engineWrapperTemplate->SetInternalFieldCount(1);
-        v8::Handle<v8::Object> engineWrapper = engineWrapperTemplate->NewInstance();
-        engineWrapper->SetPointerInInternalField(0, this);
+    // Create a data package, that would contain the new global object and pointer to this engine.
+    v8::Handle<v8::Array> data = v8::Array::New(2);
+    data->Set(0, *newGlobalObjectValue);
+    data->Set(1, v8::External::Wrap(this));
 
-        // Create a data package, that would contain the new global object and pointer to this engine.
-        v8::Handle<v8::Array> data = v8::Array::New(2);
-        data->Set(0, *newGlobalObjectValue);
-        data->Set(1, engineWrapper);
-
-        objectTemplate->SetNamedPropertyHandler(QtGlobalObjectNamedPropertyGetter,
-                                                QtGlobalObjectNamedPropertySetter,
-                                                QtGlobalObjectNamedPropertyQuery,
-                                                QtGlobalObjectNamedPropertyDeleter,
-                                                QtGlobalObjectNamedPropertyEnumeration,
-                                                data);
-        objectTemplate->SetIndexedPropertyHandler(QtGlobalObjectIndexedPropertyGetter,
-                                                QtGlobalObjectIndexedPropertySetter,
-                                                QtGlobalObjectIndexedPropertyQuery,
-                                                QtGlobalObjectIndexedPropertyDeleter,
-                                                QtGlobalObjectIndexedPropertyEnumeration,
-                                                data);
-        m_globalObjectTemplate = v8::Persistent<v8::ObjectTemplate>::New(objectTemplate);
-    }
+    objectTemplate->SetNamedPropertyHandler(QtGlobalObjectNamedPropertyGetter,
+                                            QtGlobalObjectNamedPropertySetter,
+                                            QtGlobalObjectNamedPropertyQuery,
+                                            QtGlobalObjectNamedPropertyDeleter,
+                                            QtGlobalObjectNamedPropertyEnumeration,
+                                            data);
+    objectTemplate->SetIndexedPropertyHandler(QtGlobalObjectIndexedPropertyGetter,
+                                            QtGlobalObjectIndexedPropertySetter,
+                                            QtGlobalObjectIndexedPropertyQuery,
+                                            QtGlobalObjectIndexedPropertyDeleter,
+                                            QtGlobalObjectIndexedPropertyEnumeration,
+                                            data);
     m_v8Context->Exit();
-    m_v8Contexts.append(m_v8Context);
-    m_v8Context = v8::Context::New(/* ExtensionConfiguration */ 0, m_globalObjectTemplate);
+    m_v8Context.Dispose();
+    m_v8Context = v8::Context::New(/* ExtensionConfiguration */ 0, objectTemplate);
     m_v8Context->Enter();
     m_v8Context->SetSecurityToken(securityToken);
     newGlobalObjectValue->reinitialize(this, m_v8Context->Global());
@@ -2215,21 +2194,6 @@ void QScriptEnginePrivate::installTranslatorFunctions(QScriptValuePrivate* objec
     // arg funciton on String prototype even if it could be not accessible? why we are support
     // String.prototype.arg even if it doesn't exist after setGlobalObject call?
     m_originalGlobalObject.installArgFunctionOnOrgStringPrototype(v8::FunctionTemplate::New(QtTranslateFunctionStringArg)->GetFunction());
-
-    // FIXME Should we install arg function on each context?
-    // FIXME We should be able to avoid a custom global object interceptor and have direct access to
-    // hidden String prototype, but it is not possible without modyfication in the v8 api.
-    if (m_v8Contexts.count()) {
-        v8::Handle<v8::Value> stringConstructor = m_v8Context->Global()->Get(v8::String::New("String"));
-        if (stringConstructor.IsEmpty() || !stringConstructor->IsObject()) {
-            return;
-        }
-        v8::Handle<v8::Value> stringPtototype = v8::Handle<v8::Object>::Cast(stringConstructor)->Get(v8::String::New("prototype"));
-        if (stringPtototype.IsEmpty() || !stringPtototype->IsObject()) {
-            return;
-        }
-        v8::Handle<v8::Object>::Cast(stringPtototype)->Set(v8::String::New("arg"), v8::FunctionTemplate::New(QtTranslateFunctionStringArg)->GetFunction());
-    }
 }
 
 void QScriptEnginePrivate::installTranslatorFunctions(v8::Handle<v8::Value> value)

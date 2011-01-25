@@ -253,7 +253,6 @@ private:
     QScriptEngine* q_ptr;
     v8::Isolate *m_isolate;
     v8::Persistent<v8::Context> m_v8Context;
-    QVarLengthArray<v8::Persistent<v8::Context>, 8> m_v8Contexts;
     Exception m_exception;
     QScriptOriginalGlobalObject m_originalGlobalObject;
     v8::Persistent<v8::String> m_qtDataId;
@@ -261,7 +260,6 @@ private:
     QHash<const QMetaObject *, v8::Persistent<v8::FunctionTemplate> > m_qtClassTemplates;
     v8::Persistent<v8::FunctionTemplate> m_variantTemplate;
     v8::Persistent<v8::FunctionTemplate> m_metaObjectTemplate;
-    v8::Persistent<v8::ObjectTemplate> m_globalObjectTemplate;
     QScriptContextPrivate *m_currentQsContext;
     QScopedPointer<QScriptContextPrivate> m_baseQsContext;
     QSet<int> visitedConversionObjects;
