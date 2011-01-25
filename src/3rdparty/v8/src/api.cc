@@ -3661,6 +3661,12 @@ Local<Object> v8::Context::GetExtensionObject() {
   return Local<v8::Object>(ToApi<Object>(extension_handle));
 }
 
+void v8::Context::SetExtensionObject(Handle<Object> extension) {
+    if (IsDeadCheck("v8::Context::SetExtensionObject()")) return;
+    ENTER_V8;
+    i::Handle<i::Context> env = Utils::OpenHandle(this);
+    env->set_extension(*Utils::OpenHandle(*extension));
+}
 
 v8::Local<v8::Context> Context::GetCallerContext()
 {

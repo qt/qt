@@ -375,8 +375,10 @@ QScriptValue QScriptContext::activationObject() const
 */
 void QScriptContext::setActivationObject(const QScriptValue &activation)
 {
-    Q_UNUSED(activation);
-    Q_UNIMPLEMENTED();
+    Q_D(QScriptContext);
+    QScriptIsolate api(d->engine);
+    v8::HandleScope handleScope;
+    d->setActivationObject(QScriptValuePrivate::get(activation));
 }
 
 /*!

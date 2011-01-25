@@ -208,6 +208,29 @@ inline QScriptPassPointer<QScriptValuePrivate> QScriptContextPrivate::activation
     return new QScriptValuePrivate(engine, context->GetExtensionObject());
 }
 
+inline void QScriptContextPrivate::setActivationObject(QScriptValuePrivate *activation)
+{
+    if (!activation->isObject())
+        return;
+    if (activation->engine() != engine) {
+        qWarning("QScriptContext::setActivationObject() failed: "
+                 "cannot set an object created in "
+                 "a different engine");
+        return;
+    }
+
+    if (!parent) {
+        engine->setGlobalObject(activation);
+        return;
+    }
+
+    if (!context.IsEmpty()) {
+        context->SetExtensionObject(*activation);
+        return;
+    }
+    Q_UNIMPLEMENTED();
+}
+
 inline QScriptValueList QScriptContextPrivate::scopeChain() const
 {
     QScriptValueList list;

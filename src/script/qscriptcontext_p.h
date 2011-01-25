@@ -68,6 +68,7 @@ public:
     inline QScriptPassPointer<QScriptValuePrivate> callee() const;
 
     inline QScriptPassPointer<QScriptValuePrivate> activationObject() const;
+    inline void setActivationObject(QScriptValuePrivate *);
     inline QScriptValueList scopeChain() const;
     inline void pushScope(QScriptValuePrivate *object);
     inline QScriptPassPointer<QScriptValuePrivate> popScope();

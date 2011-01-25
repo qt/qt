@@ -3289,6 +3289,11 @@ class V8EXPORT Context {
   Local<Object> GetExtensionObject();
 
   /**
+   * Set the extention object
+   */
+  void SetExtensionObject(Handle<Object>);
+
+  /**
    * Gets the previous context.
    */
   Local<Context> GetPrevious();
