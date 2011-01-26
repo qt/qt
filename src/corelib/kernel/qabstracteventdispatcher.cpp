@@ -49,6 +49,11 @@
 QT_BEGIN_NAMESPACE
 
 // we allow for 2^24 = 8^8 = 16777216 simultaneously running timers
+static const int TimerIdMask = 0x00ffffff;
+static const int TimerSerialMask = ~TimerIdMask & ~0x80000000;
+static const int TimerSerialCounter = TimerIdMask + 1;
+static const int MaxTimerId = TimerSerialCounter - 1;
+
 enum { NumberOfBuckets = 8, FirstBucketSize = 32 };
 
 static const int BucketSize[NumberOfBuckets] =
@@ -80,10 +85,6 @@ static void timerIdsDestructorFunction()
 Q_DESTRUCTOR_FUNCTION(timerIdsDestructorFunction)
 
 static QBasicAtomicInt nextFreeTimerId = Q_BASIC_ATOMIC_INITIALIZER(1);
-
-static const int TimerIdMask = 0x00ffffff;
-static const int TimerSerialMask = ~TimerIdMask & ~0x80000000;
-static const int TimerSerialCounter = TimerIdMask + 1;
 
 // avoid the ABA-problem by using 7 of the top 8 bits of the timerId as a serial number
 static inline int prepareNewValueWithSerialNumber(int oldId, int newId)
