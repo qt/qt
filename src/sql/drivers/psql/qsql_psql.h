@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -97,6 +97,7 @@ class Q_EXPORT_SQLDRIVER_PSQL QPSQLDriver : public QSqlDriver
     Q_OBJECT
 public:
     enum Protocol {
+        VersionUnknown = -1,
         Version6 = 6,
         Version7 = 7,
         Version71 = 8,
@@ -104,7 +105,10 @@ public:
         Version74 = 10,
         Version8 = 11,
         Version81 = 12,
-        Version82 = 13
+        Version82 = 13,
+        Version83 = 14,
+        Version84 = 15,
+        Version9 = 16,
     };
 
     explicit QPSQLDriver(QObject *parent=0);

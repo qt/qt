@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -51,6 +51,7 @@
 #include <QtDeclarative/private/qdeclarativelistmodel_p.h>
 #include <QtDeclarative/private/qlistmodelinterface_p.h>
 #include "../../../shared/util.h"
+#include "incrementalmodel.h"
 
 #ifdef Q_OS_SYMBIAN
 // In Symbian OS test data is located in applications private dir
@@ -103,6 +104,10 @@ private slots:
     void resizeView();
     void sizeLessThan1();
     void QTBUG_14821();
+    void resizeDelegate();
+    void QTBUG_16037();
+    void indexAt();
+    void incrementalModel();
 
 private:
     template <class T> void items();
@@ -664,7 +669,8 @@ void tst_QDeclarativeListView::removed(bool animated)
     listview->setContentY(80);
     QTest::qWait(300);
 
-    model.removeItems(1, 17);
+    // remove all visible items
+    model.removeItems(1, 18);
     QTest::qWait(300);
 
     // Confirm items positioned correctly
@@ -1406,6 +1412,8 @@ void tst_QDeclarativeListView::resetModel()
         QTRY_VERIFY(display != 0);
         QTRY_COMPARE(display->text(), strings.at(i));
     }
+
+    delete canvas;
 }
 
 void tst_QDeclarativeListView::propertyChanges()
@@ -1606,13 +1614,22 @@ void tst_QDeclarativeListView::manualHighlight()
 
     QTRY_COMPARE(listview->currentIndex(), 0);
     QTRY_COMPARE(listview->currentItem(), findItem<QDeclarativeItem>(contentItem, "wrapper", 0));
-    QTRY_COMPARE(listview->highlightItem()->y(), listview->currentItem()->y());
+    QTRY_COMPARE(listview->highlightItem()->y() - 5, listview->currentItem()->y());
 
     listview->setCurrentIndex(2);
 
     QTRY_COMPARE(listview->currentIndex(), 2);
     QTRY_COMPARE(listview->currentItem(), findItem<QDeclarativeItem>(contentItem, "wrapper", 2));
-    QTRY_COMPARE(listview->highlightItem()->y(), listview->currentItem()->y());
+    QTRY_COMPARE(listview->highlightItem()->y() - 5, listview->currentItem()->y());
+
+    // QTBUG-15972
+    listview->positionViewAtIndex(3, QDeclarativeListView::Contain);
+
+    QTRY_COMPARE(listview->currentIndex(), 2);
+    QTRY_COMPARE(listview->currentItem(), findItem<QDeclarativeItem>(contentItem, "wrapper", 2));
+    QTRY_COMPARE(listview->highlightItem()->y() - 5, listview->currentItem()->y());
+
+    delete canvas;
 }
 
 void tst_QDeclarativeListView::QTBUG_11105()
@@ -1752,6 +1769,8 @@ void tst_QDeclarativeListView::footer()
 
     model.clear();
     QTRY_COMPARE(footer->y(), 0.0);
+
+    delete canvas;
 }
 
 void tst_QDeclarativeListView::resizeView()
@@ -1794,6 +1813,8 @@ void tst_QDeclarativeListView::resizeView()
 
     QMetaObject::invokeMethod(canvas->rootObject(), "heightRatio", Q_RETURN_ARG(QVariant, heightRatio));
     QCOMPARE(heightRatio.toReal(), 0.25);
+
+    delete canvas;
 }
 
 void tst_QDeclarativeListView::sizeLessThan1()
@@ -1849,6 +1870,160 @@ void tst_QDeclarativeListView::QTBUG_14821()
 
     listview->incrementCurrentIndex();
     QCOMPARE(listview->currentIndex(), 0);
+
+    delete canvas;
+}
+
+void tst_QDeclarativeListView::resizeDelegate()
+{
+    QDeclarativeView *canvas = createView();
+
+    QStringList strings;
+    for (int i = 0; i < 30; ++i)
+        strings << QString::number(i);
+    QStringListModel model(strings);
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/displaylist.qml"));
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
+    QTRY_VERIFY(listview != 0);
+
+    QDeclarativeItem *contentItem = listview->contentItem();
+    QTRY_VERIFY(contentItem != 0);
+
+    QTRY_COMPARE(listview->count(), model.rowCount());
+
+    listview->setCurrentIndex(25);
+    listview->setContentY(0);
+
+    for (int i = 0; i < 16; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i);
+        QVERIFY(item != 0);
+        QCOMPARE(item->y(), i*20.0);
+    }
+
+    QCOMPARE(listview->currentItem()->y(), 500.0);
+    QTRY_COMPARE(listview->highlightItem()->y(), 500.0);
+
+    canvas->rootObject()->setProperty("delegateHeight", 30);
+    qApp->processEvents();
+
+    for (int i = 0; i < 11; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i);
+        QVERIFY(item != 0);
+        QTRY_COMPARE(item->y(), i*30.0);
+    }
+
+    QTRY_COMPARE(listview->currentItem()->y(), 750.0);
+    QTRY_COMPARE(listview->highlightItem()->y(), 750.0);
+
+    listview->setCurrentIndex(1);
+    listview->positionViewAtIndex(25, QDeclarativeListView::Beginning);
+    listview->positionViewAtIndex(5, QDeclarativeListView::Beginning);
+
+    for (int i = 5; i < 16; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i);
+        QVERIFY(item != 0);
+        QCOMPARE(item->y(), i*30.0);
+    }
+
+    QTRY_COMPARE(listview->currentItem()->y(), 30.0);
+    QTRY_COMPARE(listview->highlightItem()->y(), 30.0);
+
+    canvas->rootObject()->setProperty("delegateHeight", 20);
+    qApp->processEvents();
+
+    for (int i = 5; i < 11; ++i) {
+        QDeclarativeItem *item = findItem<QDeclarativeItem>(contentItem, "wrapper", i);
+        QVERIFY(item != 0);
+        QTRY_COMPARE(item->y(), 150 + (i-5)*20.0);
+    }
+
+    QTRY_COMPARE(listview->currentItem()->y(), 70.0);
+    QTRY_COMPARE(listview->highlightItem()->y(), 70.0);
+
+    delete canvas;
+}
+
+void tst_QDeclarativeListView::QTBUG_16037()
+{
+    QDeclarativeView *canvas = createView();
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/qtbug16037.qml"));
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "listview");
+    QTRY_VERIFY(listview != 0);
+
+    QVERIFY(listview->contentHeight() <= 0.0);
+
+    QMetaObject::invokeMethod(canvas->rootObject(), "setModel");
+
+    QTRY_COMPARE(listview->contentHeight(), 80.0);
+
+    delete canvas;
+}
+
+void tst_QDeclarativeListView::indexAt()
+{
+    QDeclarativeView *canvas = createView();
+
+    TestModel model;
+    for (int i = 0; i < 30; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    TestObject *testObject = new TestObject;
+    ctxt->setContextProperty("testObject", testObject);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/listviewtest.qml"));
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
+    QTRY_VERIFY(listview != 0);
+
+    QDeclarativeItem *contentItem = listview->contentItem();
+    QTRY_VERIFY(contentItem != 0);
+
+    QCOMPARE(listview->indexAt(0,0), 0);
+    QCOMPARE(listview->indexAt(0,19), 0);
+    QCOMPARE(listview->indexAt(239,19), 0);
+    QCOMPARE(listview->indexAt(0,20), 1);
+    QCOMPARE(listview->indexAt(240,20), -1);
+
+    delete canvas;
+}
+
+void tst_QDeclarativeListView::incrementalModel()
+{
+    QDeclarativeView *canvas = createView();
+
+    IncrementalModel model;
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/displaylist.qml"));
+    qApp->processEvents();
+
+    QDeclarativeListView *listview = findItem<QDeclarativeListView>(canvas->rootObject(), "list");
+    QTRY_VERIFY(listview != 0);
+
+    QDeclarativeItem *contentItem = listview->contentItem();
+    QTRY_VERIFY(contentItem != 0);
+
+    QTRY_COMPARE(listview->count(), 20);
+
+    listview->positionViewAtIndex(10, QDeclarativeListView::Beginning);
+
+    QTRY_COMPARE(listview->count(), 25);
+
+    delete canvas;
 }
 
 void tst_QDeclarativeListView::qListModelInterface_items()

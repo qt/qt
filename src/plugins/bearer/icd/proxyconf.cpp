@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -306,12 +306,12 @@ QList<QNetworkProxy> ProxyConfPrivate::flush(const QNetworkProxyQuery &query)
     if (isHostExcluded(query.peerHostName()))
         return result;          // no proxy for this host
 
-    if (mode == "auto") {
+    if (mode == QLatin1String("AUTO")) {
         // TODO: pac currently not supported, fix me
         return result;
     }
 
-    if (mode == "manual") {
+    if (mode == QLatin1String("MANUAL")) {
         bool isHttps = false;
 	QString protocol = query.protocolTag().toLower();
 

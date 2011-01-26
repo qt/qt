@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -288,6 +288,7 @@ private slots:
     void taskQT657_paintIntoCacheWithTransparentParts();
     void taskQTBUG_7863_paintIntoCacheWithTransparentParts();
     void taskQT_3674_doNotCrash();
+    void taskQTBUG_15977_renderWithDeviceCoordinateCache();
 };
 
 void tst_QGraphicsScene::initTestCase()
@@ -4627,6 +4628,28 @@ void tst_QGraphicsScene::zeroScale()
     rect1->setPos(20,20);
     QApplication::processEvents();
     QTRY_COMPARE(cl.changes.count(), 2);
+}
+
+void tst_QGraphicsScene::taskQTBUG_15977_renderWithDeviceCoordinateCache()
+{
+    QGraphicsScene scene;
+    scene.setSceneRect(0, 0, 100, 100);
+    QGraphicsRectItem *rect = scene.addRect(0, 0, 100, 100);
+    rect->setPen(Qt::NoPen);
+    rect->setBrush(Qt::red);
+    rect->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+
+    QImage image(100, 100, QImage::Format_RGB32);
+    QPainter p(&image);
+    scene.render(&p);
+    p.end();
+
+    QImage expected(100, 100, QImage::Format_RGB32);
+    p.begin(&expected);
+    p.fillRect(expected.rect(), Qt::red);
+    p.end();
+
+    QCOMPARE(image, expected);
 }
 
 QTEST_MAIN(tst_QGraphicsScene)

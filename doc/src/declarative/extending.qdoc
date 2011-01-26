@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -461,7 +461,7 @@ constructing an animation object and manually setting the animation's "target"
 property, a property value source can be assigned directly to a property of any
 type and automatically set up this association.
 
-The example shown here is rather contrived: the \c announcment property of the
+The example shown here is rather contrived: the \c announcement property of the
 \c BirthdayParty object is a string that is printed every time it is assigned and
 the \c HappyBirthdaySong value source generates the lyrics of the song
 "Happy Birthday".
@@ -596,10 +596,10 @@ the appropriate property on the extension object is used instead.
 When an extended type is installed, one of the
 \code
 template<typename T, typename ExtendedT>
-int qmlRegisterType(const char *uri, int versionMajor, int versionMinor, const char *qmlName)
+int qmlRegisterExtendedType(const char *uri, int versionMajor, int versionMinor, const char *qmlName)
 
 template<typename T, typename ExtendedT>
-int qmlRegisterType()
+int qmlRegisterExtendedType()
 \endcode
 functions should be used instead of the regular \c qmlRegisterType() variations.
 The arguments are identical to the corresponding non-extension registration functions,
@@ -753,15 +753,15 @@ with their default values and the corresponding C++ type:
 
 \table
 \header \o QML Type Name \o Default value \o C++ Type Name
-\row \o int \o 0 \o int
-\row \o bool \o \c false \o bool
-\row \o double \o 0.0 \o double
-\row \o real \o 0.0 \o double
-\row \o string \o "" (empty string) \o QString
-\row \o url \o "" (empty url) \o QUrl
-\row \o color \o #000000 (black) \o QColor
-\row \o date \o \c undefined \o QDateTime
-\row \o variant \o \c undefined \o QVariant
+\row \o \l int \o 0 \o int
+\row \o \l bool \o \c false \o bool
+\row \o \l double \o 0.0 \o double
+\row \o \l real \o 0.0 \o double
+\row \o \l string \o "" (empty string) \o QString
+\row \o \l url \o "" (empty url) \o QUrl
+\row \o \l color \o #000000 (black) \o QColor
+\row \o \l date \o \c undefined \o QDateTime
+\row \o \l variant \o \c undefined \o QVariant
 \endtable
 
 QML object types can also be used as property types. This includes
@@ -776,6 +776,10 @@ property MyCustomType customProperty
 
 Such object-type properties default to an \c undefined value.
 
+It is also possible to store a copy of a JavaScript object using the \c variant
+property type. This creates some restrictions on how the property should be used;
+see the \l {variant}{variant type documentation} for details.
+
 \l{list}{List properties} are created with the \c list<Type> syntax, and default to an empty
 list:
 
@@ -785,8 +789,6 @@ property list<Item> listOfItems
 
 Note that list properties cannot be modified like ordinary JavaScript
 arrays. See the \l {list}{list type documentation} for details.
-
-For details about accessing and manipulating QML properties from C++, see \l {Using QML with C++}.
 
 
 \section2 Property change signals

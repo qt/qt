@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -413,7 +413,11 @@ void QMacPixmapData::fill(const QColor &fillColor)
                 *(dptr + i) = colr;
         }
     }
-    macSetHasAlpha(fillColor.alpha() != 255);
+
+    // If we had an alpha channel from before, don't
+    // switch it off. Only go from no alpha to alpha:
+    if (fillColor.alpha() != 255)
+        macSetHasAlpha(true);
 }
 
 QPixmap QMacPixmapData::alphaChannel() const

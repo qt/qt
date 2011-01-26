@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -3210,8 +3210,7 @@ void QVGPaintEngine::drawTiledPixmap
         (const QRectF &r, const QPixmap &pixmap, const QPointF &s)
 {
     QBrush brush(state()->pen.color(), pixmap);
-    QTransform xform;
-    xform.translate(-s.x(), -s.y());
+    QTransform xform = QTransform::fromTranslate(r.x() - s.x(), r.y() - s.y());
     brush.setTransform(xform);
     fillRect(r, brush);
 }
@@ -3540,8 +3539,8 @@ void QVGPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     QVarLengthArray<VGfloat> adjustments_x(numGlyphs);
     QVarLengthArray<VGfloat> adjustments_y(numGlyphs);
     for (int i = 1; i < numGlyphs; ++i) {
-        adjustments_x[i-1] = (positions[i].x - positions[i-1].x).toReal();
-        adjustments_y[i-1] = (positions[i].y - positions[i-1].y).toReal();
+        adjustments_x[i-1] = (positions[i].x - positions[i-1].x).round().toReal();
+        adjustments_y[i-1] = (positions[i].y - positions[i-1].y).round().toReal();
     }
 
     // Set the glyph drawing origin.

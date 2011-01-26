@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -479,8 +479,8 @@ public:
 
     void setFocusHelper(Qt::FocusReason focusReason, bool climb, bool focusFromHide);
     void clearFocusHelper(bool giveFocusToParent);
-    void setSubFocus(QGraphicsItem *rootItem = 0);
-    void clearSubFocus(QGraphicsItem *rootItem = 0);
+    void setSubFocus(QGraphicsItem *rootItem = 0, QGraphicsItem *stopItem = 0);
+    void clearSubFocus(QGraphicsItem *rootItem = 0, QGraphicsItem *stopItem = 0);
     void resetFocusProxy();
     virtual void subFocusItemChange();
     virtual void focusScopeItemChange(bool isSubFocusItem);

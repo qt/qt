@@ -15,8 +15,11 @@ wince* {
   TARGET.CAPABILITY += AllFiles
   TARGET.UID3 = 0xE0340002
   DEFINES += SYMBIAN_SRCDIR_UID=$$lower($$replace(TARGET.UID3,"0x",""))
+  LIBS += -lefsrv
+  INCLUDEPATH += $$MW_LAYER_SYSTEMINCLUDE
 } else {
   contains(QT_CONFIG, qt3support):QT += qt3support
   DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 
+CONFIG += parallel_test

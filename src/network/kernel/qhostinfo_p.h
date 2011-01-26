@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,7 +66,7 @@
 #include "QtCore/qrunnable.h"
 #include "QtCore/qlist.h"
 #include "QtCore/qqueue.h"
-#include <QTime>
+#include <QElapsedTimer>
 #include <QCache>
 
 
@@ -132,7 +132,7 @@ private:
     bool enabled;
     struct QHostInfoCacheElement {
         QHostInfo info;
-        QTime age;
+        QElapsedTimer age;
     };
     QCache<QString,QHostInfoCacheElement> cache;
     QMutex mutex;

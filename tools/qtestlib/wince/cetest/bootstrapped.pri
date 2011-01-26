@@ -4,11 +4,14 @@ SOURCES += \
            $$QT_SOURCE_TREE/src/corelib/tools/qstringlist.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfile.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qdir.cpp \
+           $$QT_SOURCE_TREE/src/corelib/io/qfilesystementry.cpp \
+           $$QT_SOURCE_TREE/src/corelib/io/qfilesystemengine.cpp \
+           $$QT_SOURCE_TREE/src/corelib/io/qfilesystemengine_win.cpp \
+           $$QT_SOURCE_TREE/src/corelib/io/qfilesystemiterator_win.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qabstractfileengine.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine_win.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine_iterator.cpp \
-           $$QT_SOURCE_TREE/src/corelib/io/qfsfileengine_iterator_win.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qfileinfo.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qtemporaryfile.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qdiriterator.cpp \

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -65,7 +65,7 @@ QT_MODULE(Declarative)
     }
 
 #ifdef Q_OS_SYMBIAN
-#define Q_DECLARATIVE_PRIVATE_EXPORT
+#define Q_DECLARATIVE_PRIVATE_EXPORT Q_AUTOTEST_EXPORT
 #else
 #define Q_DECLARATIVE_PRIVATE_EXPORT Q_DECLARATIVE_EXPORT
 #endif

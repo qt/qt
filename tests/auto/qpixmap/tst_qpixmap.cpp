@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -131,10 +131,7 @@ private slots:
     void isNull();
     void task_246446();
 
-#ifdef Q_WS_QWS
     void convertFromImageNoDetach();
-#endif
-
     void convertFromImageDetach();
 
 #if defined(Q_WS_WIN)
@@ -186,6 +183,8 @@ private slots:
 
     void preserveDepth();
     void splash_crash();
+
+    void toImageDeepCopy();
 
     void loadAsBitmapOrPixmap();
 };
@@ -927,11 +926,13 @@ void tst_QPixmap::isNull()
     }
 }
 
-#ifdef Q_WS_QWS
 void tst_QPixmap::convertFromImageNoDetach()
 {
+    QPixmap randomPixmap(10, 10);
+    if (randomPixmap.pixmapData()->classId() != QPixmapData::RasterClass)
+        QSKIP("Test only valid for raster pixmaps", SkipAll);
+
     //first get the screen format
-    QPixmap randomPixmap(10,10);
     QImage::Format screenFormat = randomPixmap.toImage().format();
     QVERIFY(screenFormat != QImage::Format_Invalid);
 
@@ -946,7 +947,6 @@ void tst_QPixmap::convertFromImageNoDetach()
     const QImage constCopy = copy;
     QVERIFY(constOrig.bits() == constCopy.bits());
 }
-#endif //Q_WS_QWS
 
 void tst_QPixmap::convertFromImageDetach()
 {
@@ -1767,6 +1767,21 @@ void tst_QPixmap::loadAsBitmapOrPixmap()
     QVERIFY(bitmap.isQBitmap());
 }
 
+void tst_QPixmap::toImageDeepCopy()
+{
+    QPixmap pixmap(64, 64);
+    pixmap.fill(Qt::white);
+
+    QPainter painter(&pixmap);
+    QImage first = pixmap.toImage();
+
+    painter.setBrush(Qt::black);
+    painter.drawEllipse(pixmap.rect());
+
+    QImage second = pixmap.toImage();
+
+    QVERIFY(first != second);
+}
 
 
 QTEST_MAIN(tst_QPixmap)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -260,6 +260,33 @@ of their use.
     \o \l{QML:Qt::createQmlObject()}{object Qt.createQmlObject(string qml, object parent, string filepath)}
 \endlist
 */
+
+/*!
+\qmlmethod object Qt::include(string url, jsobject callback)
+
+Includes another JavaScript file. This method can only be used from within JavaScript files,
+and not regular QML files.
+
+This imports all functions from \a url into the current script's namespace.
+
+Qt.include() returns an object that describes the status of the operation.  The object has
+a single property, \c {status}, that is set to one of the following values:
+
+\table
+\header \o Symbol \o Value \o Description
+\row \o result.OK \o 0 \o The include completed successfully.
+\row \o result.LOADING \o 1 \o Data is being loaded from the network.
+\row \o result.NETWORK_ERROR \o 2 \o A network error occurred while fetching the url.
+\row \o result.EXCEPTION \o 3 \o A JavaScript exception occurred while executing the included code.
+An additional \c exception property will be set in this case.
+\endtable
+
+The \c status property will be updated as the operation progresses.
+
+If provided, \a callback is invoked when the operation completes.  The callback is passed
+the same object as is returned from the Qt.include() call.
+*/
+// Qt.include() is implemented in qdeclarativeinclude.cpp
 
 
 QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
@@ -733,8 +760,10 @@ QImage QDeclarativeEnginePrivate::getImageFromProvider(const QUrl &url, QSize *s
     QImage image;
     QSharedPointer<QDeclarativeImageProvider> provider = imageProviders.value(url.host());
     locker.unlock();
-    if (provider)
-        image = provider->requestImage(url.path().mid(1), size, req_size);
+    if (provider) {
+        QString imageId = url.toString(QUrl::RemoveScheme | QUrl::RemoveAuthority).mid(1);
+        image = provider->requestImage(imageId, size, req_size);
+    }
     return image;
 }
 
@@ -744,8 +773,10 @@ QPixmap QDeclarativeEnginePrivate::getPixmapFromProvider(const QUrl &url, QSize 
     QPixmap pixmap;
     QSharedPointer<QDeclarativeImageProvider> provider = imageProviders.value(url.host());
     locker.unlock();
-    if (provider)
-        pixmap = provider->requestPixmap(url.path().mid(1), size, req_size);
+    if (provider) {
+        QString imageId = url.toString(QUrl::RemoveScheme | QUrl::RemoveAuthority).mid(1);
+        pixmap = provider->requestPixmap(imageId, size, req_size);
+    }
     return pixmap;
 }
 

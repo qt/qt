@@ -54,8 +54,6 @@
 #define SRCDIR "."
 #endif
 
-static const QLatin1String scriptsDir(SRCDIR "/scripts/");
-
 class tst_Lancelot : public QObject
 {
 Q_OBJECT
@@ -66,15 +64,21 @@ public:
     static bool simfail;
 
 private:
-    ImageItem render(const ImageItem &item);
+    enum GraphicsEngine {
+        Raster = 0,
+        OpenGL = 1
+    };
+
+    bool setupTestSuite(const QStringList& blacklist);
+    void runTestSuite(GraphicsEngine engine, QImage::Format format);
+    ImageItem render(const ImageItem &item, GraphicsEngine engine, QImage::Format format);
     void paint(QPaintDevice *device, const QStringList &script, const QString &filePath);
-    void runTestSuite();
-    bool setupTestSuite(ImageItem::GraphicsEngine engine, QImage::Format format, const QStringList& blacklist);
 
     BaselineProtocol proto;
     ImageItemList baseList;
     QHash<QString, QStringList> scripts;
     bool dryRunMode;
+    QString scriptsDir;
 
 private slots:
     void initTestCase();
@@ -108,9 +112,14 @@ void tst_Lancelot::initTestCase()
 #if defined(Q_OS_SOMEPLATFORM)
     QSKIP("This test is not supported on this platform.", SkipAll);
 #endif
-    if (!proto.connect(&dryRunMode))
+    if (!proto.connect(QLatin1String("tst_Lancelot"), &dryRunMode))
         QSKIP(qPrintable(proto.errorMessage()), SkipAll);
 
+#if defined(USE_RUNTIME_DIR)
+    scriptsDir = QCoreApplication::applicationDirPath() + "/scripts/";
+#else
+    scriptsDir = SRCDIR "/scripts/";
+#endif
     QDir qpsDir(scriptsDir);
     QStringList files = qpsDir.entryList(QStringList() << QLatin1String("*.qps"), QDir::Files | QDir::Readable);
     if (files.isEmpty()) {
@@ -125,8 +134,8 @@ void tst_Lancelot::initTestCase()
         file.open(QFile::ReadOnly);
         QByteArray cont = file.readAll();
         scripts.insert(fileName, QString::fromLatin1(cont).split(QLatin1Char('\n'), QString::SkipEmptyParts));
-        it->scriptName = fileName;
-        it->scriptChecksum = qChecksum(cont.constData(), cont.size());
+        it->itemName = fileName;
+        it->itemChecksum = qChecksum(cont.constData(), cont.size());
         it++;
     }
 }
@@ -135,42 +144,42 @@ void tst_Lancelot::initTestCase()
 void tst_Lancelot::testRasterARGB32PM_data()
 {
     QStringList localBlacklist;
-    if (!setupTestSuite(ImageItem::Raster, QImage::Format_ARGB32_Premultiplied, localBlacklist))
+    if (!setupTestSuite(localBlacklist))
         QSKIP("Communication with baseline image server failed.", SkipAll);
 }
 
 
 void tst_Lancelot::testRasterARGB32PM()
 {
-    runTestSuite();
+    runTestSuite(Raster, QImage::Format_ARGB32_Premultiplied);
 }
 
 
 void tst_Lancelot::testRasterRGB32_data()
 {
     QStringList localBlacklist;
-    if (!setupTestSuite(ImageItem::Raster, QImage::Format_RGB32, localBlacklist))
+    if (!setupTestSuite(localBlacklist))
         QSKIP("Communication with baseline image server failed.", SkipAll);
 }
 
 
 void tst_Lancelot::testRasterRGB32()
 {
-    runTestSuite();
+    runTestSuite(Raster, QImage::Format_RGB32);
 }
 
 
 void tst_Lancelot::testRasterRGB16_data()
 {
     QStringList localBlacklist;
-    if (!setupTestSuite(ImageItem::Raster, QImage::Format_RGB16, localBlacklist))
+    if (!setupTestSuite(localBlacklist))
         QSKIP("Communication with baseline image server failed.", SkipAll);
 }
 
 
 void tst_Lancelot::testRasterRGB16()
 {
-    runTestSuite();
+    runTestSuite(Raster, QImage::Format_RGB16);
 }
 
 
@@ -178,7 +187,7 @@ void tst_Lancelot::testRasterRGB16()
 void tst_Lancelot::testOpenGL_data()
 {
     QStringList localBlacklist = QStringList() << QLatin1String("rasterops.qps");
-    if (!setupTestSuite(ImageItem::OpenGL, QImage::Format_RGB32, localBlacklist))
+    if (!setupTestSuite(localBlacklist))
         QSKIP("Communication with baseline image server failed.", SkipAll);
 }
 
@@ -197,45 +206,39 @@ void tst_Lancelot::testOpenGL()
             ok = true;
     }
     if (ok)
-        runTestSuite();
+        runTestSuite(OpenGL, QImage::Format_RGB32);
     else
         QSKIP("System under test does not meet preconditions for GL testing. Skipping.", SkipAll);
 }
 #endif
 
 
-bool tst_Lancelot::setupTestSuite(ImageItem::GraphicsEngine engine, QImage::Format format, const QStringList& blacklist)
+bool tst_Lancelot::setupTestSuite(const QStringList& blacklist)
 {
     QTest::addColumn<ImageItem>("baseline");
 
     ImageItemList itemList(baseList);
-
-    for(ImageItemList::iterator it = itemList.begin(); it != itemList.end(); it++) {
-        it->engine = engine;
-        it->renderFormat = format;
-    }
-
-    if (!proto.requestBaselineChecksums(&itemList)) {
+    if (!proto.requestBaselineChecksums(QTest::currentTestFunction(), &itemList)) {
         QWARN(qPrintable(proto.errorMessage()));
         return false;
     }
 
     foreach(const ImageItem& item, itemList) {
-        if (!blacklist.contains(item.scriptName))
-            QTest::newRow(item.scriptName.toLatin1()) << item;
+        if (!blacklist.contains(item.itemName))
+            QTest::newRow(item.itemName.toLatin1()) << item;
     }
     return true;
 }
 
 
-void tst_Lancelot::runTestSuite()
+void tst_Lancelot::runTestSuite(GraphicsEngine engine, QImage::Format format)
 {
     QFETCH(ImageItem, baseline);
 
     if (baseline.status == ImageItem::IgnoreItem)
         QSKIP("Blacklisted by baseline server.", SkipSingle);
 
-    ImageItem rendered = render(baseline);
+    ImageItem rendered = render(baseline, engine, format);
     if (rendered.image.isNull()) {    // Assume an error in the test environment, not Qt
         QWARN("Error: Failed to render image.");
         QSKIP("Aborted due to errors.", SkipSingle);
@@ -253,26 +256,26 @@ void tst_Lancelot::runTestSuite()
             if (dryRunMode)
                 qDebug() << "Dryrun mode, ignoring detected mismatch." << serverMsg;
             else
-                QFAIL("Rendered image differs from baseline.\n" + serverMsg);
+                QFAIL("Rendered image differs from baseline. Report:\n   " + serverMsg);
     }
 }
 
 
-ImageItem tst_Lancelot::render(const ImageItem &item)
+ImageItem tst_Lancelot::render(const ImageItem &item, GraphicsEngine engine, QImage::Format format)
 {
     ImageItem res = item;
     res.imageChecksums.clear();
     res.image = QImage();
-    QString filePath = scriptsDir + item.scriptName;
-    QStringList script = scripts.value(item.scriptName);
+    QString filePath = scriptsDir + item.itemName;
+    QStringList script = scripts.value(item.itemName);
 
-    if (item.engine == ImageItem::Raster) {
-        QImage img(800, 800, item.renderFormat);
+    if (engine == Raster) {
+        QImage img(800, 800, format);
         paint(&img, script, QFileInfo(filePath).absoluteFilePath()); // eh yuck (filePath stuff)
         res.image = img;
         res.imageChecksums.append(ImageItem::computeChecksum(img));
 #ifndef QT_NO_OPENGL
-    } else if (item.engine == ImageItem::OpenGL) {
+    } else if (engine == OpenGL) {
         QGLWidget glWidget;
         if (glWidget.isValid()) {
             glWidget.makeCurrent();
@@ -281,7 +284,7 @@ ImageItem tst_Lancelot::render(const ImageItem &item)
             fboFormat.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
             QGLFramebufferObject fbo(800, 800, fboFormat);
             paint(&fbo, script, QFileInfo(filePath).absoluteFilePath()); // eh yuck (filePath stuff)
-            res.image = fbo.toImage().convertToFormat(item.renderFormat);
+            res.image = fbo.toImage().convertToFormat(format);
             res.imageChecksums.append(ImageItem::computeChecksum(res.image));
         }
 #endif

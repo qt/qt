@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -45,8 +45,10 @@
 #include <QWidget>
 #include <QStringList>
 
+QT_BEGIN_NAMESPACE
 class QPainter;
 class QRect;
+QT_END_NAMESPACE
 
 class AbstractWheelWidget : public QWidget {
     Q_OBJECT

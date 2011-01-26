@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -784,14 +784,14 @@ void QSortFilterProxyModelPrivate::source_items_inserted(
         if (orthogonal_source_to_proxy.isEmpty()) {
             const int ortho_end = (orient == Qt::Horizontal) ? model->rowCount(source_parent) : model->columnCount(source_parent);
 
+            orthogonal_source_to_proxy.resize(ortho_end);
+
             for (int ortho_item = 0; ortho_item < ortho_end; ++ortho_item) {
                 if ((orient == Qt::Horizontal) ? q->filterAcceptsRow(ortho_item, source_parent)
                         : q->filterAcceptsColumn(ortho_item, source_parent)) {
                     orthogonal_proxy_to_source.append(ortho_item);
                 }
             }
-            orthogonal_source_to_proxy.resize(orthogonal_proxy_to_source.size());
-
             if (orient == Qt::Horizontal) {
                 // We're reacting to columnsInserted, but we've just inserted new rows. Sort them.
                 sort_source_rows(orthogonal_proxy_to_source, source_parent);

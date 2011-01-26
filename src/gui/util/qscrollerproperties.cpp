@@ -58,31 +58,9 @@ QScrollerPropertiesPrivate *QScrollerPropertiesPrivate::defaults()
 {
     if (!systemDefaults) {
         QScrollerPropertiesPrivate spp;
-#ifdef Q_WS_MAEMO_5
-        spp.mousePressEventDelay = qreal(0);
-        spp.dragStartDistance = qreal(2.5 / 1000);
-        spp.dragVelocitySmoothingFactor = qreal(0.15);
-        spp.axisLockThreshold = qreal(0);
-        spp.scrollingCurve.setType(QEasingCurve::OutQuad);
-        spp.decelerationFactor = 1.0;
-        spp.minimumVelocity = qreal(0.0195);
-        spp.maximumVelocity = qreal(6.84);
-        spp.maximumClickThroughVelocity = qreal(0.0684);
-        spp.acceleratingFlickMaximumTime = qreal(0.125);
-        spp.acceleratingFlickSpeedupFactor = qreal(3.0);
-        spp.snapPositionRatio = qreal(0.25);
-        spp.snapTime = qreal(1);
-        spp.overshootDragResistanceFactor = qreal(1);
-        spp.overshootDragDistanceFactor = qreal(0.3);
-        spp.overshootScrollDistanceFactor = qreal(0.3);
-        spp.overshootScrollTime = qreal(0.5);
-        spp.hOvershootPolicy = QScrollerProperties::OvershootWhenScrollable;
-        spp.vOvershootPolicy = QScrollerProperties::OvershootWhenScrollable;
-        spp.frameRate = QScrollerProperties::Fps30;
-#else
         spp.mousePressEventDelay = qreal(0.25);
         spp.dragStartDistance = qreal(5.0 / 1000);
-        spp.dragVelocitySmoothingFactor = qreal(0.02);
+        spp.dragVelocitySmoothingFactor = qreal(0.8);
         spp.axisLockThreshold = qreal(0);
         spp.scrollingCurve.setType(QEasingCurve::OutQuad);
         spp.decelerationFactor = qreal(0.125);
@@ -104,7 +82,7 @@ QScrollerPropertiesPrivate *QScrollerPropertiesPrivate::defaults()
         spp.hOvershootPolicy = QScrollerProperties::OvershootWhenScrollable;
         spp.vOvershootPolicy = QScrollerProperties::OvershootWhenScrollable;
         spp.frameRate = QScrollerProperties::Standard;
-#endif
+
         systemDefaults = new QScrollerPropertiesPrivate(spp);
     }
     return new QScrollerPropertiesPrivate(userDefaults ? *userDefaults : *systemDefaults);
@@ -117,11 +95,11 @@ QScrollerPropertiesPrivate *QScrollerPropertiesPrivate::defaults()
 
     The QScrollerProperties class stores the parameters used by QScroller.
 
-    The default settings are platform dependant and Qt will emulate the
+    The default settings are platform dependent so that Qt emulates the
     platform behaviour for kinetic scrolling.
 
     As a convention the QScrollerProperties are in physical units (meter,
-    seconds) and will be converted by QScroller using the current DPI.
+    seconds) and are converted by QScroller using the current DPI.
 
     \sa QScroller
 */
@@ -201,10 +179,10 @@ bool QScrollerPropertiesPrivate::operator==(const QScrollerPropertiesPrivate &p)
 }
 
 /*!
-     Sets the scroller properties returned by the default constructor to \a sp.
+     Sets the scroller properties for all new QScrollerProperties objects to \a sp.
 
      Use this function to override the platform default properties returned by the default
-     constructor. If you only want to change the scroller properties of a single scroller, then use
+     constructor. If you only want to change the scroller properties of a single scroller, use
      QScroller::setScrollerProperties()
 
      \note Calling this function will not change the content of already existing
@@ -313,49 +291,48 @@ void QScrollerProperties::setScrollMetric(ScrollMetric metric, const QVariant &v
 
     This enum describes the various modes of overshooting.
 
-    \value OvershootWhenScrollable Overshooting is when the content is scrollable. This is the
+    \value OvershootWhenScrollable Overshooting is possible when the content is scrollable. This is the
                                    default.
 
-    \value OvershootAlwaysOff Overshooting is never enabled (even when the content is scrollable).
+    \value OvershootAlwaysOff Overshooting is never enabled, even when the content is scrollable.
 
-    \value OvershootAlwaysOn Overshooting is always enabled (even when the content is not
-                             scrollable).
+    \value OvershootAlwaysOn Overshooting is always enabled, even when the content is not
+                             scrollable.
 */
 
 /*!
     \enum QScrollerProperties::ScrollMetric
 
     This enum contains the different scroll metric types. When not indicated otherwise the
-    setScrollMetric function expects a QVariant of a real value.
+    setScrollMetric function expects a QVariant of type qreal.
 
-    See the QScroller documentation for a further explanation of the concepts behind the different
+    See the QScroller documentation for further details of the concepts behind the different
     values.
 
-    \value MousePressEventDelay This is the time a mouse press event will be delayed when starting
+    \value MousePressEventDelay This is the time a mouse press event is delayed when starting
     a flick gesture in \c{[s]}. If the gesture is triggered within that time, no mouse press or
-    release will be sent to the scrolled object. If it triggers after that delay the (delayed)
-    mouse press plus a faked release event (at global postion \c{QPoint(-QWIDGETSIZE_MAX,
-    -QWIDGETSIZE_MAX)} will be sent. If the gesture is canceled, then both the (delayed) mouse
-    press plus the real release event will be delivered.
+    release is sent to the scrolled object. If it triggers after that delay the delayed
+    mouse press plus a faked release event at global postion \c{QPoint(-QWIDGETSIZE_MAX,
+    -QWIDGETSIZE_MAX)} is sent. If the gesture is canceled, then both the delayed mouse
+    press plus the real release event are delivered.
 
     \value DragStartDistance This is the minimum distance the touch or mouse point needs to be
     moved before the flick gesture is triggered in \c m.
 
-    \value DragVelocitySmoothingFactor A value that describes how much new drag velocities are
-    included in the final scrolling velocity. This value should be in the range between \c 0 and \c
-    1. Low values meaning that the last dragging velocity is not very important.
+    \value DragVelocitySmoothingFactor A value that describes to which extent new drag velocities are
+    included in the final scrolling velocity.  This value should be in the range between \c 0 and
+    \c 1.  The lower the value, the more smoothing is applied to the dragging velocity.
 
-    \value AxisLockThreshold If greater than zero a scroll movement will be restricted to one axis
-    only if the movement is inside an angle about the axis. The threshold must be in the range \c 0
-    to \c 1.
+    \value AxisLockThreshold Restricts the movement to one axis if the movement is inside an angle
+    around the axis. The threshold must be in the range \c 0 to \c 1.
 
     \value ScrollingCurve The QEasingCurve used when decelerating the scrolling velocity after an
     user initiated flick. Please note that this is the easing curve for the positions, \bold{not}
-    the velocity: the default is QEasingCurve::OutQuad, which results is a linear decrease in
+    the velocity: the default is QEasingCurve::OutQuad, which results in a linear decrease in
     velocity (1st derivative) and a constant deceleration (2nd derivative).
 
     \value DecelerationFactor This factor influences how long it takes the scroller to decelerate
-    to 0 velocity. The actual value heavily depends on the chosen ScrollingCurve, but for most
+    to 0 velocity. The actual value depends on the chosen ScrollingCurve. For most
     types the value should be in the range from \c 0.1 to \c 2.0
 
     \value MinimumVelocity The minimum velocity that is needed after ending the touch or releasing
@@ -365,39 +342,38 @@ void QScrollerProperties::setScrollMetric(ScrollMetric metric, const QVariant &v
 
     \value MaximumClickThroughVelocity This is the maximum allowed scroll speed for a click-through
     in \c{m/s}. This means that a click on a currently (slowly) scrolling object will not only stop
-    the scrolling but the click event will also be delivered to the UI control - this is very
+    the scrolling but the click event will also be delivered to the UI control. This is
     useful when using exponential-type scrolling curves.
 
     \value AcceleratingFlickMaximumTime This is the maximum time in \c seconds that a flick gesture
-    can take to be recognized as an accelerating flick. If set to zero no such gesture will be
+    can take to be recognized as an accelerating flick. If set to zero no such gesture is
     detected. An "accelerating flick" is a flick gesture executed on an already scrolling object.
     In such cases the scrolling speed is multiplied by AcceleratingFlickSpeedupFactor in order to
     accelerate it.
 
-    \value AcceleratingFlickSpeedupFactor The current speed will be multiplied by this number if an
-    accelerating flick is detected. Should be \c{> 1}.
+    \value AcceleratingFlickSpeedupFactor The current speed is multiplied by this number if an
+    accelerating flick is detected. Should be \c{>= 1}.
 
     \value SnapPositionRatio This is the distance that the user must drag the area beween two snap
-    points in order to snap it to the next position. e.g. \c{0.33} means that the scroll must only
+    points in order to snap it to the next position. \c{0.33} means that the scroll must only
     reach one third of the distance between two snap points to snap to the next one. The ratio must
-    be in the range \c 0 to \c 1.
+    be between \c 0 and \c 1.
 
     \value SnapTime This is the time factor for the scrolling curve. A lower value means that the
     scrolling will take longer. The scrolling distance is independet of this value.
 
     \value OvershootDragResistanceFactor This value is the factor between the mouse dragging and
-    the actual scroll area movement (during overshoot). The factor must be in the range \c 0 to \c
-    1.
+    the actual scroll area movement (during overshoot). The factor must be between \c 0 and \c 1.
 
     \value OvershootDragDistanceFactor This is the maximum distance for overshoot movements while
-    dragging. The actual overshoot distance will be calculated by multiplying this value with the
-    viewport size of the scrolled object. The factor must be in the range \c 0 to \c 1.
+    dragging. The actual overshoot distance is calculated by multiplying this value with the
+    viewport size of the scrolled object. The factor must be between \c 0 and \c 1.
 
     \value OvershootScrollDistanceFactor This is the maximum distance for overshoot movements while
-    scrolling. The actual overshoot distance will be calculated by multiplying this value with the
-    viewport size of the scrolled object. The factor must be in the range \c 0 to \c 1.
+    scrolling. The actual overshoot distance is calculated by multiplying this value with the
+    viewport size of the scrolled object. The factor must be between \c 0 and \c 1.
 
-    \value OvershootScrollTime This is the time in \c seconds that will be used to play the
+    \value OvershootScrollTime This is the time in \c seconds that is used to play the
     complete overshoot animation.
 
     \value HorizontalOvershootPolicy This is the horizontal overshooting policy (see OvershootPolicy).
@@ -406,13 +382,12 @@ void QScrollerProperties::setScrollMetric(ScrollMetric metric, const QVariant &v
 
     \value FrameRate This is the frame rate which should be used while dragging or scrolling.
     QScroller uses a QAbstractAnimation timer internally to sync all scrolling operations to other
-    animations that might be active at the same time.  If the Standard value of 60 frames per
-    second is too fast for your use case, you can lower the frames per second with this setting
-    (while still being in-sync with QAbstractAnimation).  Please note that only the values of the
+    animations that might be active at the same time.  If the standard value of 60 frames per
+    second is too fast, it can be lowered with this setting,
+    while still being in-sync with QAbstractAnimation. Please note that only the values of the
     FrameRates enum are allowed here.
 
-    \value ScrollMetricCount This is just used when enumerating the metrics. It is always the last
-    entry.
+    \value ScrollMetricCount This is always the last entry.
 */
 
 QT_END_NAMESPACE

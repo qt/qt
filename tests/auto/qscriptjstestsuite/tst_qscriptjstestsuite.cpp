@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -743,6 +743,16 @@ tst_Suite::tst_Suite()
     addExpectedFailure("ecma/Math/15.8.2.9.js", "Infinity/Math.floor(-0)", willFixInNextReleaseMessage);
     addExpectedFailure("ecma/TypeConversion/9.3.1-3.js", "var z = 0; print(1/-z)", willFixInNextReleaseMessage);
     addExpectedFailure("ecma/TypeConversion/9.3.1-3.js", "1/-1e-2000", willFixInNextReleaseMessage);
+#endif
+
+#ifdef Q_OS_SYMBIAN
+    addExpectedFailure("ecma/Math/15.8.2.13.js", "Math.pow(-1, 0.5)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma/Math/15.8.2.13.js", "Math.pow(-1, -0.5)", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/Operators/order-01.js", "operator evaluation order: 11.5.1 *", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/Operators/order-01.js", "operator evaluation order: 11.5.2 /", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/Operators/order-01.js", "operator evaluation order: 11.6.2 -", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/Operators/order-01.js", "operator evaluation order: 11.13.2 *=", willFixInNextReleaseMessage);
+    addExpectedFailure("ecma_3/Operators/order-01.js", "operator evaluation order: 11.13.2 /=", willFixInNextReleaseMessage);
 #endif
 
     static const char klass[] = "tst_QScriptJsTestSuite";

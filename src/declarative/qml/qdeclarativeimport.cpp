@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -382,7 +382,13 @@ bool QDeclarativeImportsPrivate::importExtension(const QString &absoluteFilePath
         foreach (const QDeclarativeDirParser::Plugin &plugin, qmldirParser.plugins()) {
 
             QString resolvedFilePath = database->resolvePlugin(dir, plugin.path, plugin.name);
-
+#if defined(QT_LIBINFIX) && defined(Q_OS_SYMBIAN)
+            if (resolvedFilePath.isEmpty()) {
+                // In case of libinfixed build, attempt to load libinfixed version, too.
+                QString infixedPluginName = plugin.name + QLatin1String(QT_LIBINFIX);
+                resolvedFilePath = database->resolvePlugin(dir, plugin.path, infixedPluginName);
+            }
+#endif
             if (!resolvedFilePath.isEmpty()) {
                 if (!database->importPlugin(resolvedFilePath, uri, errorString)) {
                     if (errorString)

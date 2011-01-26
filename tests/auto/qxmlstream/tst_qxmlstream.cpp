@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -54,6 +54,10 @@
 
 //TESTED_CLASS=QXmlStreamReader QXmlStreamWriter
 //TESTED_FILES=corelib/xml/stream/qxmlutils.cpp corelib/xml/stream/qxmlstream.cpp corelib/xml/stream/qxmlstream_p.h
+
+#ifdef Q_OS_SYMBIAN
+#define SRCDIR ""
+#endif
 
 Q_DECLARE_METATYPE(QXmlStreamReader::ReadElementTextBehaviour)
 
@@ -570,6 +574,7 @@ private slots:
     void checkCommentIndentation() const;
     void checkCommentIndentation_data() const;
     void qtbug9196_crash() const;
+    void hasError() const;
 
 private:
     static QByteArray readFile(const QString &filename);
@@ -1554,6 +1559,87 @@ void tst_QXmlStream::qtbug9196_crash() const
     while (!xml.atEnd()) {
          xml.readNext();
     }
+}
+
+class FakeBuffer : public QBuffer
+{
+protected:
+    qint64 writeData(const char *c, qint64 i)
+    {
+        qint64 ai = qMin(m_capacity, i);
+        m_capacity -= ai;
+        return ai ? QBuffer::writeData(c, ai) : 0;
+    }
+public:
+    void setCapacity(int capacity) { m_capacity = capacity; }
+private:
+    qint64 m_capacity;
+};
+
+void tst_QXmlStream::hasError() const
+{
+    {
+        FakeBuffer fb;
+        QVERIFY(fb.open(QBuffer::ReadWrite));
+        fb.setCapacity(1000);
+        QXmlStreamWriter writer(&fb);
+        writer.writeStartDocument();
+        writer.writeEndDocument();
+        QVERIFY(!writer.hasError());
+        QCOMPARE(fb.data(), QByteArray("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"));
+    }
+
+    {
+        // Failure caused by write(QString)
+        FakeBuffer fb;
+        QVERIFY(fb.open(QBuffer::ReadWrite));
+        fb.setCapacity(strlen("<?xml version=\""));
+        QXmlStreamWriter writer(&fb);
+        writer.writeStartDocument();
+        QVERIFY(writer.hasError());
+        QCOMPARE(fb.data(), QByteArray("<?xml version=\""));
+    }
+
+    {
+        // Failure caused by write(char *)
+        FakeBuffer fb;
+        QVERIFY(fb.open(QBuffer::ReadWrite));
+        fb.setCapacity(strlen("<?xml version=\"1.0"));
+        QXmlStreamWriter writer(&fb);
+        writer.writeStartDocument();
+        QVERIFY(writer.hasError());
+        QCOMPARE(fb.data(), QByteArray("<?xml version=\"1.0"));
+    }
+
+    {
+        // Failure caused by write(QStringRef)
+        FakeBuffer fb;
+        QVERIFY(fb.open(QBuffer::ReadWrite));
+        fb.setCapacity(strlen("<?xml version=\"1.0\" encoding=\"UTF-8\"?><test xmlns:"));
+        QXmlStreamWriter writer(&fb);
+        writer.writeStartDocument();
+        writer.writeStartElement("test");
+        writer.writeNamespace("http://foo.bar", "foo");
+        QVERIFY(writer.hasError());
+        QCOMPARE(fb.data(), QByteArray("<?xml version=\"1.0\" encoding=\"UTF-8\"?><test xmlns:"));
+    }
+
+    {
+        // Refusal to write after 1st failure
+        FakeBuffer fb;
+        QVERIFY(fb.open(QBuffer::ReadWrite));
+        fb.setCapacity(10);
+        QXmlStreamWriter writer(&fb);
+        writer.writeStartDocument();
+        QVERIFY(writer.hasError());
+        QCOMPARE(fb.data(), QByteArray("<?xml vers"));
+        fb.setCapacity(1000);
+        writer.writeStartElement("test"); // literal & qstring
+        writer.writeNamespace("http://foo.bar", "foo"); // literal & qstringref
+        QVERIFY(writer.hasError());
+        QCOMPARE(fb.data(), QByteArray("<?xml vers"));
+    }
+
 }
 
 #include "tst_qxmlstream.moc"

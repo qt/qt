@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -45,10 +45,11 @@
 #include <QWidget>
 #include <QPointF>
 
+QT_BEGIN_NAMESPACE
 class QPushButton;
 class QLabel;
-
 class QScroller;
+QT_END_NAMESPACE
 
 class PlotWidget : public QWidget
 {

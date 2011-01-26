@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -735,7 +735,7 @@ void QDeclarativeGridViewPrivate::createHighlight()
             QDeclarative_setParent_noEvent(item, q->contentItem());
             item->setParentItem(q->contentItem());
             highlight = new FxGridItem(item, q);
-            if (currentItem)
+            if (currentItem && autoHighlight)
                 highlight->setPosition(currentItem->colPos(), currentItem->rowPos());
             highlightXAnimator = new QSmoothedAnimation(q);
             highlightXAnimator->target = QDeclarativeProperty(highlight->item, QLatin1String("x"));
@@ -1131,6 +1131,13 @@ void QDeclarativeGridViewPrivate::flick(AxisData &data, qreal minExtent, qreal m
     Delegates are instantiated as needed and may be destroyed at any time.
     State should \e never be stored in a delegate.
 
+    GridView attaches a number of properties to the root item of the delegate, for example
+    \c {GridView.isCurrentItem}.  In the following example, the root delegate item can access
+    this attached property directly as \c GridView.isCurrentItem, while the child
+    \c contactInfo object must refer to this property as \c wrapper.GridView.isCurrentItem.
+
+    \snippet doc/src/snippets/declarative/gridview/gridview.qml isCurrentItem
+
     \note Views do not set the \l{Item::}{clip} property automatically.
     If the view is not clipped by another item or the screen, it will be necessary
     to set this property to true in order to clip the items that are partially or
@@ -1167,6 +1174,8 @@ QDeclarativeGridView::~QDeclarativeGridView()
     This attached property holds the view that manages this delegate instance.
 
     It is attached to each instance of the delegate.
+
+    \snippet doc/src/snippets/declarative/gridview/gridview.qml isCurrentItem
 */
 
 /*!
@@ -1253,7 +1262,8 @@ void QDeclarativeGridView::setModel(const QVariant &model)
                 d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
                 d->updateCurrent(d->currentIndex);
                 if (d->highlight && d->currentItem) {
-                    d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+                    if (d->autoHighlight)
+                        d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
                     d->updateTrackedItem();
                 }
                 d->moveReason = QDeclarativeGridViewPrivate::Other;
@@ -1321,7 +1331,8 @@ void QDeclarativeGridView::setDelegate(QDeclarativeComponent *delegate)
             d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
             d->updateCurrent(d->currentIndex);
             if (d->highlight && d->currentItem) {
-                d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+                if (d->autoHighlight)
+                    d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
                 d->updateTrackedItem();
             }
             d->moveReason = QDeclarativeGridViewPrivate::Other;
@@ -2241,7 +2252,8 @@ void QDeclarativeGridView::componentComplete()
         else
             d->updateCurrent(d->currentIndex);
         if (d->highlight && d->currentItem) {
-            d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+            if (d->autoHighlight)
+                d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
             d->updateTrackedItem();
         }
         d->moveReason = QDeclarativeGridViewPrivate::Other;
@@ -2649,7 +2661,8 @@ void QDeclarativeGridView::modelReset()
     d->moveReason = QDeclarativeGridViewPrivate::SetIndex;
     d->updateCurrent(d->currentIndex);
     if (d->highlight && d->currentItem) {
-        d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
+        if (d->autoHighlight)
+            d->highlight->setPosition(d->currentItem->colPos(), d->currentItem->rowPos());
         d->updateTrackedItem();
     }
     d->moveReason = QDeclarativeGridViewPrivate::Other;

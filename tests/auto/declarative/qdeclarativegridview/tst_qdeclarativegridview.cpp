@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -84,6 +84,7 @@ private slots:
     void manualHighlight();
     void footer();
     void header();
+    void indexAt();
 
 private:
     QDeclarativeView *createView();
@@ -1215,15 +1216,22 @@ void tst_QDeclarativeGridView::manualHighlight()
 
     QTRY_COMPARE(gridview->currentIndex(), 0);
     QTRY_COMPARE(gridview->currentItem(), findItem<QDeclarativeItem>(contentItem, "wrapper", 0));
-    QTRY_COMPARE(gridview->highlightItem()->y(), gridview->currentItem()->y());
-    QTRY_COMPARE(gridview->highlightItem()->x(), gridview->currentItem()->x());
+    QTRY_COMPARE(gridview->highlightItem()->y() - 5, gridview->currentItem()->y());
+    QTRY_COMPARE(gridview->highlightItem()->x() - 5, gridview->currentItem()->x());
 
     gridview->setCurrentIndex(2);
 
     QTRY_COMPARE(gridview->currentIndex(), 2);
     QTRY_COMPARE(gridview->currentItem(), findItem<QDeclarativeItem>(contentItem, "wrapper", 2));
-    QTRY_COMPARE(gridview->highlightItem()->y(), gridview->currentItem()->y());
-    QTRY_COMPARE(gridview->highlightItem()->x(), gridview->currentItem()->x());
+    QTRY_COMPARE(gridview->highlightItem()->y() - 5, gridview->currentItem()->y());
+    QTRY_COMPARE(gridview->highlightItem()->x() - 5, gridview->currentItem()->x());
+
+    gridview->positionViewAtIndex(8, QDeclarativeGridView::Contain);
+
+    QTRY_COMPARE(gridview->currentIndex(), 2);
+    QTRY_COMPARE(gridview->currentItem(), findItem<QDeclarativeItem>(contentItem, "wrapper", 2));
+    QTRY_COMPARE(gridview->highlightItem()->y() - 5, gridview->currentItem()->y());
+    QTRY_COMPARE(gridview->highlightItem()->x() - 5, gridview->currentItem()->x());
 }
 
 void tst_QDeclarativeGridView::footer()
@@ -1292,6 +1300,42 @@ void tst_QDeclarativeGridView::header()
     QTRY_COMPARE(header->y(), 0.0);
 }
 
+void tst_QDeclarativeGridView::indexAt()
+{
+    QDeclarativeView *canvas = createView();
+
+    TestModel model;
+    model.addItem("Fred", "12345");
+    model.addItem("John", "2345");
+    model.addItem("Bob", "54321");
+    model.addItem("Billy", "22345");
+    model.addItem("Sam", "2945");
+    model.addItem("Ben", "04321");
+    model.addItem("Jim", "0780");
+
+    QDeclarativeContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testTopToBottom", QVariant(false));
+
+    canvas->setSource(QUrl::fromLocalFile(SRCDIR "/data/gridview1.qml"));
+    qApp->processEvents();
+
+    QDeclarativeGridView *gridview = findItem<QDeclarativeGridView>(canvas->rootObject(), "grid");
+    QTRY_VERIFY(gridview != 0);
+
+    QDeclarativeItem *contentItem = gridview->contentItem();
+    QTRY_VERIFY(contentItem != 0);
+
+    QTRY_COMPARE(gridview->count(), model.count());
+
+    QCOMPARE(gridview->indexAt(0, 0), 0);
+    QCOMPARE(gridview->indexAt(79, 59), 0);
+    QCOMPARE(gridview->indexAt(80, 0), 1);
+    QCOMPARE(gridview->indexAt(0, 60), 3);
+    QCOMPARE(gridview->indexAt(240, 0), -1);
+
+    delete canvas;
+}
 
 QDeclarativeView *tst_QDeclarativeGridView::createView()
 {
