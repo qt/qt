@@ -749,19 +749,28 @@ QDeclarativeText::~QDeclarativeText()
 QFont QDeclarativeText::font() const
 {
     Q_D(const QDeclarativeText);
-    return d->font;
+    return d->sourceFont;
 }
 
 void QDeclarativeText::setFont(const QFont &font)
 {
     Q_D(QDeclarativeText);
-    if (d->font == font)
+    if (d->sourceFont == font)
         return;
 
+    d->sourceFont = font;
+    QFont oldFont = d->font;
     d->font = font;
-    d->updateLayout();
+    if (d->font.pointSizeF() != -1) {
+        // 0.5pt resolution
+        qreal size = qRound(d->font.pointSizeF()*2.0);
+        d->font.setPointSizeF(size/2.0);
+    }
 
-    emit fontChanged(d->font);
+    if (oldFont != d->font)
+        d->updateLayout();
+
+    emit fontChanged(d->sourceFont);
 }
 
 /*!

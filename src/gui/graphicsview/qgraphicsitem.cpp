@@ -5592,9 +5592,8 @@ void QGraphicsItemPrivate::clearSubFocus(QGraphicsItem *rootItem, QGraphicsItem 
         if (parent->d_ptr->subFocusItem != q_ptr)
             break;
         parent->d_ptr->subFocusItem = 0;
-        if (parent == stopItem)
-            break;
-        parent->d_ptr->subFocusItemChange();
+        if (parent != stopItem && !parent->isAncestorOf(stopItem))
+            parent->d_ptr->subFocusItemChange();
     } while (!parent->isPanel() && (parent = parent->d_ptr->parent));
 }
 

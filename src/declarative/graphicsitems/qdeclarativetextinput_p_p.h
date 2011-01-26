@@ -107,6 +107,7 @@ public:
     QLineControl* control;
 
     QFont font;
+    QFont sourceFont;
     QColor  color;
     QColor  selectionColor;
     QColor  selectedTextColor;

@@ -94,6 +94,12 @@ defineTest(qtPrepareTool) {
         else:$$1 = $$[QT_INSTALL_BINS]/$$2
     }
     $$1 ~= s,[/\\\\],$$QMAKE_DIR_SEP,
-    contains(QMAKE_HOST.os, Windows):!contains($$1, .*\\.exe$):$$1 = $$eval($$1).exe
+    contains(QMAKE_HOST.os, Windows):!contains($$1, .*\\.(exe|bat)$) {
+        exists($$eval($$1).bat) {
+            $$1 = $$eval($$1).bat
+        } else {
+            $$1 = $$eval($$1).exe
+        }
+    }
     export($$1)
 }

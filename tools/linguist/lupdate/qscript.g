@@ -859,7 +859,7 @@ int QScript::Lexer::lex()
                 } else {
                     setDone(Bad);
                     err = IllegalEscapeSequence;
-                    errmsg = LU::tr("Illegal escape squence");
+                    errmsg = LU::tr("Illegal escape sequence");
                 }
             } else if (current == 'x')
                 state = InHexEscape;

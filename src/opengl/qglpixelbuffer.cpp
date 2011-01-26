@@ -416,8 +416,8 @@ QPaintEngine *QGLPixelBuffer::paintEngine() const
 #endif
 }
 
-Q_DECL_IMPORT extern int qt_defaultDpiX();
-Q_DECL_IMPORT extern int qt_defaultDpiY();
+Q_GUI_EXPORT int qt_defaultDpiX();
+Q_GUI_EXPORT int qt_defaultDpiY();
 
 /*! \reimp */
 int QGLPixelBuffer::metric(PaintDeviceMetric metric) const
