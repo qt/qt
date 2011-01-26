@@ -67,7 +67,7 @@ T* QtData<T>::get(v8::Handle<v8::Object> object)
 template<class T>
 T* QtData<T>::safeGet(v8::Handle<v8::Object> object)
 {
-    void *ptr = object->GetPointerFromInternalField(0);
+    void *ptr = object->InternalFieldCount() > 0 ? object->GetPointerFromInternalField(0) : 0;
     return static_cast<T*>(ptr);
 }
 
