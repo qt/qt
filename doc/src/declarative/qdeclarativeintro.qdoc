@@ -27,7 +27,7 @@
 
 /*!
 \page qdeclarativeintroduction.html
-\title Introduction to the QML language
+\title Introduction to the QML Language
 
 \tableofcontents
 
@@ -121,7 +121,7 @@ line opacity: 0.5 has been turned into a comment.
 
 
 
-\section1 Object identifiers
+\section1 Object Identifiers
 
 Each object can be given a special \e id value that allows the object to be identified
 and referred to by other objects.
@@ -194,7 +194,7 @@ automatically updated.
 \section1 Properties
 \target intro-properties
 
-\section2 Basic property types
+\section2 Basic Property Types
 
 QML supports properties of many types (see \l{QML Basic Types}). The basic types include \c int,
 \c real, \c bool, \c string and \c color.
@@ -222,7 +222,7 @@ Note that with the exception of \l {Attached Properties}, properties always begi
 letter.
 
 
-\section2 Property change notifications
+\section2 Property Change Notifications
 
 When a property changes value, it can send a signal to notify others of this change.
 
@@ -271,7 +271,7 @@ Items in the list can be accessed by index. See the \l{list}{list type} document
 for more details about list properties and their available operations.
 
 
-\section2 Default properties
+\section2 Default Properties
 
 Each object type can specify one of its list or object properties as its default property.
 If a property has been declared as the default property, the property tag can be omitted.

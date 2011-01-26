@@ -732,7 +732,7 @@ void QDeclarativeColorAnimation::setTo(const QColor &t)
     \inherits Animation
     \brief The ScriptAction element allows scripts to be run during an animation.
 
-    ScriptAction can be used to run script at a specific point in an animation.
+    ScriptAction can be used to run a script at a specific point in an animation.
 
     \qml
     SequentialAnimation {
