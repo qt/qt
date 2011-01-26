@@ -214,7 +214,7 @@ int main(int argc, char **argv)
     else
         mw.show();
 #if defined(Q_WS_MAC)
-    mw->raise();
+    mw.raise();
 #endif
     return a.exec();
 }
