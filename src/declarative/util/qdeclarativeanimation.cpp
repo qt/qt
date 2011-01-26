@@ -890,14 +890,7 @@ QAbstractAnimation *QDeclarativeScriptAction::qtAnimation()
     then jump to \c Item.BottomRight. To fix this, insert a PropertyAction
     before the RotationAnimation begins:
 
-    \qml
-    transitions: Transition {
-        SequentialAnimation {
-            PropertyAction { target: rect; property: "transformOrigin" }
-            RotationAnimation { ... }
-        }
-    }
-    \endqml
+    \snippet doc/src/snippets/declarative/propertyaction-sequential.qml sequential
     
     This immediately sets the \c transformOrigin property to the value defined
     in the end state of the \l Transition (i.e. the value defined in the 
@@ -1186,7 +1179,9 @@ void QDeclarativeNumberAnimation::init()
 
     \qml
     Item {
-        states: [ ... ]
+        states: [
+            // ...
+        ]
 
         transition: Transition {
             NumberAnimation { properties: "x"; from: 100; duration: 200 }

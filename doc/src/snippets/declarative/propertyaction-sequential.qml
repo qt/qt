@@ -41,7 +41,6 @@ import QtQuick 1.0
 
 Row {
 
-    //![transition]
     Item {
         width: 400; height: 400
 
@@ -55,29 +54,19 @@ Row {
                 PropertyChanges { target: rect; rotation: 180; transformOrigin: Item.BottomRight }
             }
 
+            //! [sequential]
             transitions: Transition {
-                RotationAnimation { duration: 1000; direction: RotationAnimation.Counterclockwise }
+                SequentialAnimation {
+                    PropertyAction { target: rect; property: "transformOrigin" }
+                    RotationAnimation { duration: 1000; direction: RotationAnimation.Counterclockwise }
+                }
             }
+            //! [sequential]
 
             MouseArea {
                 anchors.fill: parent
                 onClicked: rect.state = "rotated"
             }
         }
-    }
-    //![transition]
-
-    Item {
-        width: 300; height: 300
-
-        Image { id: img; source: "pics/qt.png" }
-
-        //![standalone]
-        SequentialAnimation {
-            PropertyAction { target: img; property: "smooth"; value: "true" }
-            NumberAnimation { target: img; property: "width"; to: 300; duration: 1000 }
-            PropertyAction { target: img; property: "smooth"; value: "false" }
-        }
-        //![standalone]
     }
 }

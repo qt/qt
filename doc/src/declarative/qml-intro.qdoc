@@ -61,7 +61,7 @@ The basic syntax of an \l{QML Elements}{element} is
 \qml
 SomeElement {
     id: myObject
-    ... some other things here ...
+    // ... some other things here ...
 }
 \endqml
 
