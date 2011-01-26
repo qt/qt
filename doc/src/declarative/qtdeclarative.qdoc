@@ -56,7 +56,7 @@
   \macro QML_DECLARE_TYPE()
   \relates QDeclarativeEngine
 
-  Equivalent to \c Q_DECLARE_METATYPE(TYPE) and \c Q_DECLARE_METATYPE(QDeclarativeListProperty<TYPE>)
+  Equivalent to \c Q_DECLARE_METATYPE(TYPE *) and \c Q_DECLARE_METATYPE(QDeclarativeListProperty<TYPE>)
 
   #include <QtDeclarative> to use this macro.
 */

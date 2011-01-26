@@ -32,6 +32,8 @@
     The Audio Output example demonstrates the basic use of the QAudioOutput class
     provided with Qt.
 
+    \image audiooutput-example.png
+
     This example provides a tone generator to supply continuous audio playback.
     The first button allows pause and resume of the playback.
     The second button allows toggling between push and pull modes of operation.
