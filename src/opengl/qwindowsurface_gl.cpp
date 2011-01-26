@@ -473,6 +473,8 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize,
 
 void QGLWindowSurface::beginPaint(const QRegion &)
 {
+    d_ptr->did_paint = true;
+
     if (!context())
         return;
 
@@ -487,8 +489,6 @@ void QGLWindowSurface::beginPaint(const QRegion &)
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(clearFlags);
     }
-
-    d_ptr->did_paint = true;
 }
 
 void QGLWindowSurface::endPaint(const QRegion &rgn)
