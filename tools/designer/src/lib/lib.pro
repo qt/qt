@@ -13,7 +13,7 @@ isEmpty(QT_MAJOR_VERSION) {
    VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 }
 
-unix:QMAKE_PKGCONFIG_REQUIRES += QtXml
+unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES += QtXml
 
 include(../../../../src/qt_targets.pri)
 QMAKE_TARGET_PRODUCT = Designer

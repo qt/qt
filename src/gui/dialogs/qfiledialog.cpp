@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -3311,7 +3311,7 @@ QString QFSCompleter::pathFromIndex(const QModelIndex &index) const
         if (currentLocation == QDir::separator())
             return path.mid(currentLocation.length());
 #endif
-        if (currentLocation.endsWith('/'))
+        if (currentLocation.endsWith(QLatin1Char('/')))
             return path.mid(currentLocation.length());
         else
             return path.mid(currentLocation.length()+1);

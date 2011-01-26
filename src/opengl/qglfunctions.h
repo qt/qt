@@ -42,6 +42,11 @@
 #ifndef QGLFUNCTIONS_H
 #define QGLFUNCTIONS_H
 
+#ifdef __GLEW_H__
+#warning qglfunctions.h is not compatible with GLEW, GLEW defines will be undefined
+#warning To use GLEW with Qt, do not include <QtOpenGL> or <QGLFunctions> after glew.h
+#endif
+
 #include <QtOpenGL/qgl.h>
 
 QT_BEGIN_HEADER

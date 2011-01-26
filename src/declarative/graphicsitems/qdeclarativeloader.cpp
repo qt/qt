@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -48,7 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 QDeclarativeLoaderPrivate::QDeclarativeLoaderPrivate()
-    : item(0), component(0), ownComponent(false)
+    : item(0), component(0), ownComponent(false), isComponentComplete(false)
 {
 }
 
@@ -262,6 +262,7 @@ void QDeclarativeLoader::setSource(const QUrl &url)
     d->clear();
 
     d->source = url;
+
     if (d->source.isEmpty()) {
         emit sourceChanged();
         emit statusChanged();
@@ -272,18 +273,9 @@ void QDeclarativeLoader::setSource(const QUrl &url)
 
     d->component = new QDeclarativeComponent(qmlEngine(this), d->source, this);
     d->ownComponent = true;
-    if (!d->component->isLoading()) {
-        d->_q_sourceLoaded();
-    } else {
-        connect(d->component, SIGNAL(statusChanged(QDeclarativeComponent::Status)),
-                this, SLOT(_q_sourceLoaded()));
-        connect(d->component, SIGNAL(progressChanged(qreal)),
-                this, SIGNAL(progressChanged()));
-        emit statusChanged();
-        emit progressChanged();
-        emit sourceChanged();
-        emit itemChanged();
-    }
+
+    if (d->isComponentComplete)
+        d->load();
 }
 
 /*!
@@ -324,6 +316,7 @@ void QDeclarativeLoader::setSourceComponent(QDeclarativeComponent *comp)
 
     d->component = comp;
     d->ownComponent = false;
+
     if (!d->component) {
         emit sourceChanged();
         emit statusChanged();
@@ -332,23 +325,34 @@ void QDeclarativeLoader::setSourceComponent(QDeclarativeComponent *comp)
         return;
     }
 
-    if (!d->component->isLoading()) {
-        d->_q_sourceLoaded();
-    } else {
-        connect(d->component, SIGNAL(statusChanged(QDeclarativeComponent::Status)),
-                this, SLOT(_q_sourceLoaded()));
-        connect(d->component, SIGNAL(progressChanged(qreal)),
-                this, SIGNAL(progressChanged()));
-        emit progressChanged();
-        emit sourceChanged();
-        emit statusChanged();
-        emit itemChanged();
-    }
+    if (d->isComponentComplete)
+        d->load();
 }
 
 void QDeclarativeLoader::resetSourceComponent()
 {
     setSourceComponent(0);
+}
+
+void QDeclarativeLoaderPrivate::load()
+{
+    Q_Q(QDeclarativeLoader);
+
+    if (!isComponentComplete || !component)
+        return;
+
+    if (!component->isLoading()) {
+        _q_sourceLoaded();
+    } else {
+        QObject::connect(component, SIGNAL(statusChanged(QDeclarativeComponent::Status)),
+                q, SLOT(_q_sourceLoaded()));
+        QObject::connect(component, SIGNAL(progressChanged(qreal)),
+                q, SIGNAL(progressChanged()));
+        emit q->statusChanged();
+        emit q->progressChanged();
+        emit q->sourceChanged();
+        emit q->itemChanged();
+    }
 }
 
 void QDeclarativeLoaderPrivate::_q_sourceLoaded()
@@ -465,9 +469,11 @@ QDeclarativeLoader::Status QDeclarativeLoader::status() const
 
 void QDeclarativeLoader::componentComplete()
 {
+    Q_D(QDeclarativeLoader);
+
     QDeclarativeItem::componentComplete();
-    if (status() == Ready)
-        emit loaded();
+    d->isComponentComplete = true;
+    d->load();
 }
 
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -69,6 +69,10 @@ private slots:
     void getProperty_invalidValue();
     void enumerate();
     void extension();
+    void originalProperties1();
+    void originalProperties2();
+    void originalProperties3();
+    void originalProperties4();
     void defaultImplementations();
 };
 
@@ -1047,6 +1051,248 @@ void tst_QScriptClass::extension()
             QVERIFY(ret.isBoolean());
             QVERIFY(ret.toBoolean());
         }
+    }
+}
+
+// tests made to match Qt 4.7 (JSC) behaviour
+void tst_QScriptClass::originalProperties1()
+{
+    QScriptEngine eng;
+
+    QScriptString orig1 = eng.toStringHandle("orig1");
+    QScriptString orig2 = eng.toStringHandle("orig2");
+    QScriptString orig3 = eng.toStringHandle("orig3");
+    QScriptString new1 = eng.toStringHandle("new1");
+    QScriptString new2 = eng.toStringHandle("new2");
+
+    {
+        TestClass cls1(&eng);
+        cls1.addCustomProperty(orig2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, 89);
+        cls1.addCustomProperty(new1, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, "hello");
+
+        TestClass cls2(&eng);
+        cls2.addCustomProperty(orig2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, 59);
+        cls2.addCustomProperty(new2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, "world");
+
+        QScriptValue obj1 = eng.newObject();
+        obj1.setProperty(orig1 , 42);
+        obj1.setProperty(orig2 , "foo");
+        obj1.prototype().setProperty(orig3, "bar");
+
+        QCOMPARE(obj1.property(orig1).toInt32(), 42);
+        QCOMPARE(obj1.property(orig2).toString(), QString::fromLatin1("foo"));
+        QCOMPARE(obj1.property(orig3).toString(), QString::fromLatin1("bar"));
+        QVERIFY(!obj1.property(new1).isValid());
+        QVERIFY(!obj1.property(new2).isValid());
+
+        eng.globalObject().setProperty("obj" , obj1);
+
+        obj1.setScriptClass(&cls1);
+        QCOMPARE(obj1.property(orig1).toInt32(), 42);
+        QCOMPARE(obj1.property(orig2).toString(), QString::fromLatin1("foo"));
+        QCOMPARE(obj1.property(orig3).toString(), QString::fromLatin1("bar"));
+        QCOMPARE(obj1.property(new1).toString(), QString::fromLatin1("hello"));
+        QVERIFY(!obj1.property(new2).isValid());
+
+        QScriptValue obj2 = eng.evaluate("obj");
+        QCOMPARE(obj2.scriptClass(), &cls1);
+        QCOMPARE(obj2.property(orig1).toInt32(), 42);
+        QCOMPARE(obj2.property(orig2).toString(), QString::fromLatin1("foo"));
+        QCOMPARE(obj2.property(orig3).toString(), QString::fromLatin1("bar"));
+        QCOMPARE(obj2.property(new1).toString(), QString::fromLatin1("hello"));
+        QVERIFY(!obj2.property(new2).isValid());
+
+        obj1.setScriptClass(&cls2);
+        QCOMPARE(obj1.property(orig1).toInt32(), 42);
+        QCOMPARE(obj1.property(orig2).toString(), QString::fromLatin1("foo"));
+        QCOMPARE(obj1.property(orig3).toString(), QString::fromLatin1("bar"));
+        QVERIFY(!obj1.property(new1).isValid());
+        QCOMPARE(obj1.property(new2).toString(), QString::fromLatin1("world"));
+
+        QCOMPARE(obj2.scriptClass(), &cls2);
+        QCOMPARE(obj2.property(orig1).toInt32(), 42);
+        QCOMPARE(obj2.property(orig2).toString(), QString::fromLatin1("foo"));
+        QCOMPARE(obj2.property(orig3).toString(), QString::fromLatin1("bar"));
+        QVERIFY(!obj2.property(new1).isValid());
+        QCOMPARE(obj2.property(new2).toString(), QString::fromLatin1("world"));
+
+        obj1.setScriptClass(0);
+        QCOMPARE(obj1.property(orig1).toInt32(), 42);
+        QCOMPARE(obj1.property(orig2).toString(), QString::fromLatin1("foo"));
+        QCOMPARE(obj1.property(orig3).toString(), QString::fromLatin1("bar"));
+        QVERIFY(!obj1.property(new1).isValid());
+        QVERIFY(!obj1.property(new2).isValid());
+    }
+}
+
+void tst_QScriptClass::originalProperties2()
+{
+    QScriptEngine eng;
+
+    QScriptString orig1 = eng.toStringHandle("orig1");
+    QScriptString orig2 = eng.toStringHandle("orig2");
+    QScriptString orig3 = eng.toStringHandle("orig3");
+    QScriptString new1 = eng.toStringHandle("new1");
+    QScriptString new2 = eng.toStringHandle("new2");
+
+    {
+        TestClass cls1(&eng);
+        cls1.addCustomProperty(orig2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, 89);
+        cls1.addCustomProperty(new1, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, "hello");
+
+        TestClass cls2(&eng);
+        cls2.addCustomProperty(orig2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, 59);
+        cls2.addCustomProperty(new2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, "world");
+
+        QScriptValue obj1 = eng.newObject();
+        obj1.setProperty(orig1 , 42);
+        obj1.setProperty(orig2 , "foo");
+        obj1.prototype().setProperty(orig3, "bar");
+
+        QCOMPARE(obj1.property(orig1).toInt32(), 42);
+        QCOMPARE(obj1.property(orig2).toString(), QString::fromLatin1("foo"));
+        QCOMPARE(obj1.property(orig3).toString(), QString::fromLatin1("bar"));
+        QVERIFY(!obj1.property(new1).isValid());
+        QVERIFY(!obj1.property(new2).isValid());
+
+        obj1.setScriptClass(&cls1);
+        obj1.setProperty(orig1 , QScriptValue(&eng, 852));
+        obj1.setProperty(orig2 , "oli");
+        obj1.setProperty(orig3 , "fu*c");
+        obj1.setProperty(new1 , "moo");
+        obj1.setProperty(new2 , "allo?");
+        QCOMPARE(obj1.property(orig1).toInt32(), 852);
+        QCOMPARE(obj1.property(orig2).toString(), QString::fromLatin1("foo"));
+        QCOMPARE(obj1.property(orig3).toString(), QString::fromLatin1("fu*c"));
+        QCOMPARE(obj1.property(new1).toString(), QString::fromLatin1("moo"));
+        QCOMPARE(obj1.property(new2).toString(), QString::fromLatin1("allo?"));
+
+        obj1.setScriptClass(&cls2);
+        QCOMPARE(obj1.property(orig1).toInt32(), 852);
+        QCOMPARE(obj1.property(orig2).toString(), QString::fromLatin1("foo"));
+        QCOMPARE(obj1.property(orig3).toString(), QString::fromLatin1("fu*c"));
+        QVERIFY(!obj1.property(new1).isValid());
+        QCOMPARE(obj1.property(new2).toString(), QString::fromLatin1("allo?"));
+
+        obj1.setScriptClass(0);
+        QCOMPARE(obj1.property(orig1).toInt32(), 852);
+        QCOMPARE(obj1.property(orig2).toString(), QString::fromLatin1("foo"));
+        QCOMPARE(obj1.property(orig3).toString(), QString::fromLatin1("fu*c"));
+        QVERIFY(!obj1.property(new1).isValid());
+        QCOMPARE(obj1.property(new2).toString(), QString::fromLatin1("allo?"));
+    }
+}
+
+void tst_QScriptClass::originalProperties3()
+{
+    QScriptEngine eng;
+
+    QScriptString orig1 = eng.toStringHandle("orig1");
+    QScriptString orig2 = eng.toStringHandle("orig2");
+    QScriptString orig3 = eng.toStringHandle("orig3");
+    QScriptString new1 = eng.toStringHandle("new1");
+    QScriptString new2 = eng.toStringHandle("new2");
+
+    {
+        TestClass cls1(&eng);
+        cls1.addCustomProperty(orig2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, 89);
+        cls1.addCustomProperty(new1, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, "hello");
+
+        TestClass cls2(&eng);
+        cls2.addCustomProperty(orig2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, 59);
+        cls2.addCustomProperty(new2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, "world");
+
+        QScriptValue obj1 = eng.newObject(&cls1);
+        QVERIFY(!obj1.property(orig1).isValid());
+        QCOMPARE(obj1.property(orig2).toInt32(), 89);
+        QCOMPARE(obj1.property(new1).toString(), QString::fromLatin1("hello"));
+        QVERIFY(!obj1.property(new2).isValid());
+        obj1.setProperty(orig1, 42);
+        QCOMPARE(obj1.property(orig1).toInt32(), 42);
+
+        eng.globalObject().setProperty("obj" , obj1);
+        obj1.setScriptClass(&cls2);
+        QCOMPARE(obj1.property(orig1).toInt32(), 42);
+        QCOMPARE(obj1.property(orig2).toInt32(), 59);
+        QVERIFY(!obj1.property(new1).isValid());
+        QCOMPARE(obj1.property(new2).toString(), QString::fromLatin1("world"));
+
+        QScriptValue obj2 = eng.evaluate("obj");
+        QCOMPARE(obj2.scriptClass(), &cls2);
+        QCOMPARE(obj2.property(orig1).toInt32(), 42);
+        QCOMPARE(obj2.property(orig2).toInt32(), 59);
+        QVERIFY(!obj2.property(new1).isValid());
+        QCOMPARE(obj2.property(new2).toString(), QString::fromLatin1("world"));
+
+        obj1.setScriptClass(0);
+        QCOMPARE(obj1.property(orig1).toInt32(), 42);
+        QVERIFY(!obj1.property(orig2).isValid());
+        QVERIFY(!obj1.property(new1).isValid());
+        QVERIFY(!obj1.property(new2).isValid());
+
+        QCOMPARE(obj2.scriptClass(), (QScriptClass *)0);
+        QCOMPARE(obj2.property(orig1).toInt32(), 42);
+        QVERIFY(!obj2.property(orig2).isValid());
+        QVERIFY(!obj2.property(new1).isValid());
+        QVERIFY(!obj2.property(new2).isValid());
+    }
+}
+
+void tst_QScriptClass::originalProperties4()
+{
+    QScriptEngine eng;
+
+    QScriptString orig1 = eng.toStringHandle("orig1");
+    QScriptString orig2 = eng.toStringHandle("orig2");
+    QScriptString orig3 = eng.toStringHandle("orig3");
+    QScriptString new1 = eng.toStringHandle("new1");
+    QScriptString new2 = eng.toStringHandle("new2");
+
+    {
+        TestClass cls1(&eng);
+        cls1.addCustomProperty(orig2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, 89);
+        cls1.addCustomProperty(new1, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, "hello");
+
+        TestClass cls2(&eng);
+        cls2.addCustomProperty(orig2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, 59);
+        cls2.addCustomProperty(new2, QScriptClass::HandlesReadAccess | QScriptClass::HandlesWriteAccess, 1, 0, "world");
+
+        QScriptValue obj1 = eng.newObject(&cls1);
+        QVERIFY(!obj1.property(orig1).isValid());
+        QCOMPARE(obj1.property(orig2).toInt32(), 89);
+        QCOMPARE(obj1.property(new1).toString(), QString::fromLatin1("hello"));
+        QVERIFY(!obj1.property(new2).isValid());
+
+        eng.globalObject().setProperty("obj" , obj1);
+
+        obj1.setScriptClass(0);
+        QVERIFY(obj1.isObject());
+        QVERIFY(!obj1.property(orig1).isValid());
+        QVERIFY(!obj1.property(orig2).isValid());
+        QVERIFY(!obj1.property(new1).isValid());
+        QVERIFY(!obj1.property(new2).isValid());
+        obj1.setProperty(orig1, 42);
+        QCOMPARE(obj1.property(orig1).toInt32(), 42);
+
+        QScriptValue obj2 = eng.evaluate("obj");
+        QCOMPARE(obj2.scriptClass(), (QScriptClass *)0);
+        QVERIFY(obj2.isObject());
+        QCOMPARE(obj2.property(orig1).toInt32(), 42);
+        QVERIFY(!obj2.property(orig2).isValid());
+        QVERIFY(!obj2.property(new1).isValid());
+        QVERIFY(!obj2.property(new2).isValid());
+
+        obj1.setScriptClass(&cls2);
+        QCOMPARE(obj1.property(orig1).toInt32(), 42);
+        QCOMPARE(obj1.property(orig2).toInt32(), 59);
+        QVERIFY(!obj1.property(new1).isValid());
+        QCOMPARE(obj1.property(new2).toString(), QString::fromLatin1("world"));
+
+        QCOMPARE(obj2.scriptClass(), (QScriptClass *)(&cls2));
+        QCOMPARE(obj2.property(orig1).toInt32(), 42);
+        QCOMPARE(obj2.property(orig2).toInt32(), 59);
+        QVERIFY(!obj2.property(new1).isValid());
+        QCOMPARE(obj2.property(new2).toString(), QString::fromLatin1("world"));
     }
 }
 

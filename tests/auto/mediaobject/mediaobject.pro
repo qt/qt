@@ -18,5 +18,7 @@ symbian:{
    addFiles.files = media/test.sdp
    addFiles.path = media
    DEPLOYMENT += addFiles
+   LIBS += -lCommDb -lconnmon
+   TARGET.CAPABILITY += "NetworkServices"
 }
 

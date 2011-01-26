@@ -7,7 +7,7 @@ irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
 !win32:!embedded:!qpa:!mac:!symbian:CONFIG      += x11
 
-unix:QMAKE_PKGCONFIG_REQUIRES = QtCore
+unix|win32-g++*:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
 include(../qbase.pri)
 
