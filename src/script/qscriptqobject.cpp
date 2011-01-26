@@ -312,7 +312,9 @@ public:
     { return m_callback; }
 
     // This class implements qt_metacall() and friends manually; moc should
-    // not process it. But then the Q_OBJECT macro must be manually expanded:
+    // not process it. Qt Meta System doesn't allow to connect ta a slot with undefined arguments
+    // as the type safety check should be always performed. This is a hack that allow to skip the check.
+    // The Q_OBJECT macro must be manually expanded:
     static const QMetaObject staticMetaObject;
     Q_OBJECT_GETSTATICMETAOBJECT
     virtual const QMetaObject *metaObject() const;
@@ -321,6 +323,7 @@ public:
 
     // Slot.
     void onSignal(void **);
+    void deleteNow() { delete this; }
 
 private:
     QtSignalData *m_signal;
@@ -423,6 +426,7 @@ public:
         return static_cast<QtSignalData*>(ptr);
     }
 
+    void unregisterQtConnection(QtConnection *connection) { m_connections.removeAll(connection); }
 private:
     static v8::Handle<v8::Value> QtConnectCallback(const v8::Arguments& args);
     static v8::Handle<v8::Value> QtDisconnectCallback(const v8::Arguments& args);
@@ -500,9 +504,11 @@ template <typename T,  v8::Persistent<v8::FunctionTemplate> QScriptEnginePrivate
 v8::Handle<v8::Value> QScriptGenericMetaMethodData<T, functionTemplate>::call()
 {
     QtInstanceData *instance = QtInstanceData::get(object());
-    QObject *qobject = instance->cppObject();
+    v8::Local<v8::Value> error;
+    QObject *qobject = instance->cppObject(&error);
     if (!qobject)
-        return v8::Undefined();
+        return error;
+
     const QMetaObject *meta = qobject->metaObject();
     const v8::Arguments *args = this->engine->currentContext()->arguments;
 
@@ -537,6 +543,7 @@ QtConnection::QtConnection(QtSignalData *signal)
 
 QtConnection::~QtConnection()
 {
+    m_signal->unregisterQtConnection(this);
     m_callback.Dispose();
     m_receiver.Dispose();
 }
@@ -550,13 +557,25 @@ bool QtConnection::connect(v8::Handle<v8::Object> receiver, v8::Handle<v8::Objec
     Q_ASSERT(m_callback.IsEmpty());
     QtInstanceData *instance = QtInstanceData::get(m_signal->object());
     QObject *sender = instance->cppObject();
-    bool ok = sender && QMetaObject::connect(sender, m_signal->index(),
-                                   this, staticMetaObject.methodOffset(), type);
-    if (ok) {
-        QtObjectNotifyCaller::callConnectNotify(sender, m_signal->index());
-        m_callback = v8::Persistent<v8::Object>::New(callback);
-        m_receiver = v8::Persistent<v8::Object>::New(receiver);
-    }
+    bool ok;
+    if (sender) {
+        if (QMetaObject::connect(sender, m_signal->index(), this, staticMetaObject.methodOffset(), type)) {
+            if (!receiver.IsEmpty() && (instance = QtInstanceData::safeGet(receiver))) {
+                QObject *recv = instance->cppObject(QtInstanceData::IgnoreException);
+                if (recv) {
+                    // FIXME: we are connecting to qobjects, can we try to connect them directly?
+                    QObject::connect(recv, SIGNAL(destroyed()), this, SLOT(deleteNow()));
+                }
+            }
+
+            QtObjectNotifyCaller::callConnectNotify(sender, m_signal->index());
+            m_callback = v8::Persistent<v8::Object>::New(callback);
+            m_receiver = v8::Persistent<v8::Object>::New(receiver);
+            ok = true;
+        } else
+            ok = false;
+    } else
+        ok = false;
     return ok;
 }
 
@@ -615,6 +634,13 @@ void QtConnection::onSignal(void **argv)
     v8::Handle<v8::Object> receiver = m_receiver;
     if (receiver.IsEmpty())
         receiver = v8::Context::GetCurrent()->Global();
+
+    /*QtInstanceData *instance = QtInstanceData::safeGet(receiver);
+    if (instance) {
+        QObject *obj = instance->cppObject(QtInstanceData::IgnoreException);
+        if (!obj)
+            return;
+    }*/
     m_callback->Call(receiver, argc, const_cast<v8::Handle<v8::Value>*>(jsArgv.constData()));
 
     if (tryCatch.HasCaught()) {
@@ -633,7 +659,7 @@ static const uint qt_meta_data_QtConnection[] = {
        5,       // revision
        0,       // classname
        0,    0, // classinfo
-       1,   14, // methods
+       2,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -642,12 +668,13 @@ static const uint qt_meta_data_QtConnection[] = {
 
  // slots: signature, parameters, type, tag, flags
       14,   13,   13,   13, 0x0a,
+      25,   13,   13,   13, 0x0a,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_QtConnection[] = {
-    "QtConnection\0\0onSignal()\0"
+    "QtConnection\0\0onSignal()\0deleteNow()\0"
 };
 
 const QMetaObject QtConnection::staticMetaObject = {
@@ -680,9 +707,10 @@ int QtConnection::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
         case 0: onSignal(_a); break;
+        case 1: deleteNow(); break;
         default: ;
         }
-        _id -= 1;
+        _id -= 2;
     }
     return _id;
 }
@@ -772,9 +800,11 @@ static v8::Handle<v8::Value> QtMetaPropertyGetter(v8::Local<v8::String> property
     QScriptEnginePrivate *engine = data->engine();
     QScriptContextPrivate context(engine, &info);
 
-    QObject *qobject = data->cppObject();
+    v8::Local<v8::Value> error;
+    QObject *qobject = data->cppObject(&error);
     if (!qobject)
-        return v8::Undefined();
+        return error;
+
     const QMetaObject *meta = qobject->metaObject();
 
     int propertyIndex = v8::Int32::Cast(*info.Data())->Value();
@@ -810,7 +840,9 @@ static void QtMetaPropertySetter(v8::Local<v8::String> /*property*/,
     QScriptContextPrivate context(engine, &info);
 
     QObject *qobject = data->cppObject();
-    Q_ASSERT(qobject != 0);
+    if (!qobject)
+        return;
+
     const QMetaObject *meta = qobject->metaObject();
 
     int propertyIndex = v8::Int32::Cast(*info.Data())->Value();
@@ -862,7 +894,11 @@ v8::Handle<v8::Value> QtDynamicPropertyGetter(v8::Local<v8::String> property,
     QtInstanceData *data = QtInstanceData::get(self);
     QScriptEnginePrivate *engine = data->engine();
     QScriptContextPrivate context(engine, &info);
-    QObject *qobject = data->cppObject();
+
+    v8::Local<v8::Value> error;
+    QObject *qobject = data->cppObject(&error);
+    if (!qobject)
+        return error;
 
     QByteArray name = QScriptConverter::toString(property).toLatin1();
     QVariant value = qobject->property(name);
@@ -889,7 +925,10 @@ void QtDynamicPropertySetter(v8::Local<v8::String> property,
     QtInstanceData *data = QtInstanceData::get(self);
     QScriptEnginePrivate *engine = data->engine();
     QScriptContextPrivate context(engine, &info);
+
     QObject *qobject = data->cppObject();
+    if (!qobject)
+        return;
 
     QByteArray name = QScriptConverter::toString(property).toLatin1();
     if (qobject->dynamicPropertyNames().indexOf(name) == -1) {
@@ -919,7 +958,11 @@ static v8::Handle<v8::Value> QtLazyPropertyGetter(v8::Local<v8::String> property
     QtInstanceData *data = QtInstanceData::get(self);
     Q_ASSERT(engine == data->engine());
     QScriptContextPrivate context(engine, &info);
-    QObject *qobject = data->cppObject();
+
+    v8::Local<v8::Value> error;
+    QObject *qobject = data->cppObject(&error);
+    if (!qobject)
+        return error;
 
     QByteArray name = QScriptConverter::toString(property).toLatin1();
 
@@ -1113,7 +1156,12 @@ static v8::Handle<v8::Value> QtGetMetaMethod(v8::Local<v8::String> /*property*/,
     QtInstanceData *instance = QtInstanceData::get(self);
     Q_ASSERT(engine == instance->engine());
     //QScriptContextPrivate context(engine, &info);
-    QObject *qobject = instance->cppObject();
+
+    v8::Local<v8::Value> error;
+    QObject *qobject = instance->cppObject(&error);
+    if (!qobject)
+        return error;
+
     const QMetaObject *meta = qobject->metaObject();
     uint intData = v8::Uint32::Cast(*dataArray->Get(1))->Value();
     int methodIndex = intData & 0x3fffffff;
@@ -1146,7 +1194,11 @@ static v8::Handle<v8::Value> findChildCallback(const v8::Arguments& args)
         QtInstanceData *data = QtInstanceData::get(self);
     Q_ASSERT(engine == data->engine());
     QScriptContextPrivate context(engine, &args);
-    QObject *qobject = data->cppObject();
+
+    v8::Local<v8::Value> error;
+    QObject *qobject = data->cppObject(&error);
+    if (!qobject)
+        return error;
 
     QString name;
     if (args.Length() != 0)
@@ -1167,7 +1219,11 @@ static v8::Handle<v8::Value> findChildrenCallback(const v8::Arguments& args)
         QtInstanceData *data = QtInstanceData::get(self);
     Q_ASSERT(engine == data->engine());
     QScriptContextPrivate context(engine, &args);
-    QObject *qobject = data->cppObject();
+
+    v8::Local<v8::Value> error;
+    QObject *qobject = data->cppObject(&error);
+    if (!qobject)
+        return error;
 
     QString name;
     if (args.Length() != 0) {

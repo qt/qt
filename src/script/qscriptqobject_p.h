@@ -70,9 +70,12 @@ public:
 class QtInstanceData : public QtData<QtInstanceData>
 {
 public:
+    enum Mode {RaiseException, IgnoreException};
+
     inline QtInstanceData(QScriptEnginePrivate *, QObject *, QScriptEngine::ValueOwnership, const QScriptEngine::QObjectWrapOptions &);
     inline ~QtInstanceData();
-    inline QObject *cppObject() const;
+    inline QObject *cppObject(v8::Local<v8::Value> *error = 0) const;
+    inline QObject *cppObject(const Mode mode) const;
     inline QScriptEngine::ValueOwnership ownership() const;
     inline QScriptEngine::QObjectWrapOptions options() const;
     inline QScriptable *toQScriptable();

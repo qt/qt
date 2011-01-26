@@ -573,7 +573,9 @@ QObject *QScriptEnginePrivate::qtObjectFromJS(v8::Handle<v8::Value> value)
     if (isQtObject(value)) {
         QtInstanceData *data = QtInstanceData::get(v8::Handle<v8::Object>::Cast(value));
         Q_ASSERT(data);
-        return data->cppObject();
+        Q_ASSERT(this == data->engine());
+        QObject *result = data->cppObject();
+        return result;
     }
 
     if (isQtVariant(value)) {

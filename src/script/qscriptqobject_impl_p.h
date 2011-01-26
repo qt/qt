@@ -105,9 +105,32 @@ inline QtInstanceData::~QtInstanceData()
     }
 }
 
-inline QObject *QtInstanceData::cppObject() const
+inline QObject *QtInstanceData::cppObject(v8::Local<v8::Value> *error) const
 {
+    if (!m_cppObject) {
+        v8::Local<v8::String> msg = v8::String::New("cannot access member of deleted QObject");
+        /*v8::Handle<v8::String> msg = v8::String::Concat(
+                    v8::String::New("cannot access member `"),
+                    v8::String::Concat(property, v8::String::New("' of deleted QObject")));*/
+        // FIXME: Workaround for http://code.google.com/p/v8/issues/detail?id=1072
+        // We should throw an error here and QSVP::property should return an error value.
+        // But because of the v8 bug, tryCatch in QSVP doesn't catch the error and obtain as a result
+        // an empty handler.
+        // v8::ThrowException(err);
+        v8::Local<v8::Value> err = v8::Exception::Error(msg);
+        engine()->setException(err);
+        if (error) {
+            *error = err;
+        }
+    }
     return m_cppObject;
+}
+
+inline QObject *QtInstanceData::cppObject(const Mode mode) const
+{
+    if (mode == IgnoreException)
+        return m_cppObject;
+    return cppObject();
 }
 
 inline QScriptEngine::ValueOwnership QtInstanceData::ownership() const
