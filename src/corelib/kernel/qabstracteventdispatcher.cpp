@@ -52,24 +52,44 @@ QT_BEGIN_NAMESPACE
 static const int TimerIdMask = 0x00ffffff;
 static const int TimerSerialMask = ~TimerIdMask & ~0x80000000;
 static const int TimerSerialCounter = TimerIdMask + 1;
-static const int MaxTimerId = TimerSerialCounter - 1;
-
-enum { NumberOfBuckets = 8, FirstBucketSize = 32 };
-
-static const int BucketSize[NumberOfBuckets] =
-    { 32, 64, 512, 4096, 32768, 262144, 2097152, 16777216 - 2364000 };
-static const int BucketOffset[NumberOfBuckets] =
-    { 0,  32,  96,  608,  4704,  37448,  266848,  2364000 };
+static const int MaxTimerId = TimerIdMask;
 
 static int FirstBucket[] = {
      1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16,
     17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32
 };
 
-static QBasicAtomicPointer<int> timerIds[NumberOfBuckets] =
+enum {
+    FirstBucketOffset  = 0,
+    SecondBucketOffset = sizeof(FirstBucket) / sizeof(FirstBucket[0]),
+    ThirdBucketOffset  = 0x100,
+    FourthBucketOffset = 0x1000,
+    FifthBucketOffset  = 0x10000,
+    SixthBucketOffset  = 0x100000
+};
+
+enum {
+    FirstBucketSize  = SecondBucketOffset,
+    SecondBucketSize = ThirdBucketOffset - SecondBucketOffset,
+    ThirdBucketSize  = FourthBucketOffset - ThirdBucketOffset,
+    FourthBucketSize = FifthBucketOffset - FourthBucketOffset,
+    FifthBucketSize  = SixthBucketOffset - FifthBucketOffset,
+    SixthBucketSize  = MaxTimerId - SixthBucketOffset
+};
+
+static const int BucketSize[] = {
+    FirstBucketSize, SecondBucketSize, ThirdBucketSize,
+    FourthBucketSize, FifthBucketSize, SixthBucketSize
+};
+enum { NumberOfBuckets = sizeof(BucketSize) / sizeof(BucketSize[0]) };
+
+static const int BucketOffset[] = {
+    FirstBucketOffset, SecondBucketOffset, ThirdBucketOffset,
+    FourthBucketOffset, FifthBucketOffset, SixthBucketOffset
+};
+
+static QBasicAtomicPointer<int> timerIds[] =
     { Q_BASIC_ATOMIC_INITIALIZER(FirstBucket),
-      Q_BASIC_ATOMIC_INITIALIZER(0),
-      Q_BASIC_ATOMIC_INITIALIZER(0),
       Q_BASIC_ATOMIC_INITIALIZER(0),
       Q_BASIC_ATOMIC_INITIALIZER(0),
       Q_BASIC_ATOMIC_INITIALIZER(0),
@@ -92,8 +112,17 @@ static inline int prepareNewValueWithSerialNumber(int oldId, int newId)
     return (newId & TimerIdMask) | ((oldId + TimerSerialCounter) & TimerSerialMask);
 }
 
+namespace {
+    template<bool> struct QStaticAssertType;
+    template<> struct QStaticAssertType<true> { enum { Value = 1 }; };
+}
+#define q_static_assert(expr)     (void)QStaticAssertType<expr>::Value
+
 static inline int bucketOffset(int timerId)
 {
+    q_static_assert(sizeof BucketSize == sizeof BucketOffset);
+    q_static_assert(sizeof(timerIds) / sizeof(timerIds[0]) == NumberOfBuckets);
+
     for (int i = 0; i < NumberOfBuckets; ++i) {
         if (timerId < BucketSize[i])
             return i;
