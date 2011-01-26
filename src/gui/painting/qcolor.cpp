@@ -1781,7 +1781,7 @@ QColor QColor::toHsl() const
     color.ct.ahsl.lightness = qRound(lightness * USHRT_MAX);
     if (qFuzzyIsNull(delta)) {
         // achromatic case, hue is undefined
-        color.ct.ahsl.hue = 0;
+        color.ct.ahsl.hue = USHRT_MAX;
         color.ct.ahsl.saturation = 0;
     } else {
         // chromatic case
