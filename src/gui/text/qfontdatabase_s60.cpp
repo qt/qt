@@ -721,7 +721,7 @@ static inline bool ttfMarkAppFont(QByteArray &ttf, const QString &marker)
         memoryRanges.append(Range(offset, lengthAligned));
 
         quint32 checkSum = qFromBigEndian(tableRecord->checkSum);
-        if (tableRecord->tag == qToBigEndian('head')) {
+        if (tableRecord->tag == qToBigEndian(static_cast<quint32>('head'))) {
             if (length < ttfCheckSumAdjustmentOffset + sizeof(quint32))
                 return false; // Invalid 'head' table
             const quint32 *checkSumAdjustmentTag =
@@ -735,7 +735,7 @@ static inline bool ttfMarkAppFont(QByteArray &ttf, const QString &marker)
 
         bool updateTableChecksum = false;
         QByteArray table;
-        if (tableRecord->tag == qToBigEndian('name')) {
+        if (tableRecord->tag == qToBigEndian(static_cast<quint32>('name'))) {
             table = QByteArray(ttf.constData() + offset, length);
             if (!ttfMarkNameTable(table, marker))
                 return false; // Name table was not markable.
