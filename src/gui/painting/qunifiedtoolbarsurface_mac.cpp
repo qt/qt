@@ -140,7 +140,7 @@ void QUnifiedToolbarSurface::flush(QWidget *widget, const QRegion &rgn, const QP
     if (!d->image || rgn.rectCount() == 0)
         return;
 
-    widget->d_func()->askedForFlush = true;
+    widget->d_func()->flushRequested = true;
     qt_mac_setneedsdisplay(widget);
 }
 

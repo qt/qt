@@ -860,7 +860,7 @@ public:
     bool isInUnifiedToolbar;
     QWindowSurface *unifiedSurface;
     QPoint toolbar_offset;
-    bool askedForFlush;
+    bool flushRequested;
 #endif // QT_MAC_USE_COCOA
     void determineWindowClass();
     void transferChildren();
