@@ -178,7 +178,7 @@ bool BaselineHandler::establishConnection()
     if (branch.isEmpty()) {
         // Not run by Pulse, i.e. ad hoc run: Ok.
     }
-    else if (branch != QLS("master-integration") || !plat.value(PI_GitCommit).contains(QLS("Merge branch 'master' of scm.dev.nokia.troll.no:qt/oslo-staging-2 into master-integration"))) {
+    else if (branch != QLS("master-integration") || !plat.value(PI_GitCommit).contains(QLS("Merge branch 'master' of scm.dev.nokia.troll.no:qt/qt-fire-staging into master-integration"))) {
         qDebug() << runId << logtime() << "Did not pass branch/staging repo filter, disconnecting.";
         proto.sendBlock(BaselineProtocol::Abort, QByteArray("This branch/staging repo is not assigned to be tested."));
         proto.socket.disconnectFromHost();
