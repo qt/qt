@@ -1029,6 +1029,8 @@ void Configure::parseCmdLine()
                     QString("\\resource\\qt%1\\plugins").arg(dictionary[ "QT_LIBINFIX" ]);
                 dictionary[ "QT_INSTALL_IMPORTS" ] =
                     QString("\\resource\\qt%1\\imports").arg(dictionary[ "QT_LIBINFIX" ]);
+                dictionary[ "QT_INSTALL_TRANSLATIONS" ] =
+                    QString("\\resource\\qt%1\\translations").arg(dictionary[ "QT_LIBINFIX" ]);
             }
         } else if (configCmdLine.at(i) == "-D") {
             ++i;
@@ -3449,8 +3451,12 @@ void Configure::displayConfig()
             webkit = "yes (debug)";
         cout << "WebKit support.............." << webkit << endl;
     }
-    cout << "Declarative support........." << dictionary[ "DECLARATIVE" ] << endl;
-    cout << "Declarative debugging......." << dictionary[ "DECLARATIVE_DEBUG" ] << endl;
+    {
+        QString declarative = dictionary[ "DECLARATIVE" ];
+        cout << "Declarative support........." << declarative << endl;
+        if (declarative == "yes")
+            cout << "Declarative debugging......." << dictionary[ "DECLARATIVE_DEBUG" ] << endl;
+    }
     cout << "QtScript support............" << dictionary[ "SCRIPT" ] << endl;
     cout << "QtScriptTools support......." << dictionary[ "SCRIPTTOOLS" ] << endl;
     cout << "Graphics System............." << dictionary[ "GRAPHICS_SYSTEM" ] << endl;
@@ -3581,7 +3587,11 @@ void Configure::generateHeaders()
         QStringList env;
         env += QString("QTDIR=" + sourcePath);
         env += QString("PATH=" + buildPath + "/bin/;" + qgetenv("PATH"));
-        Environment::execute(args, env, QStringList());
+        int retc = Environment::execute(args, env, QStringList());
+        if (retc) {
+            cout << "syncqt failed, return code " << retc << endl << endl;
+            dictionary["DONE"] = "error";
+        }
     }
 }
 
