@@ -200,7 +200,7 @@
     }
     span.operator
     {
-        color: black;
+        color: #202020;
     }
     span.keyword
     {
@@ -213,6 +213,14 @@
     span.type
     {
         font-weight: bold
+    }
+    span.type a:visited
+    {
+        color: #0F5300;
+    }
+    span.preprocessor
+    {
+        color: #404040
     }
 /* end basic elements */
 
