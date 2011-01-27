@@ -2139,13 +2139,15 @@ void QDeclarativeGridViewPrivate::positionViewAtIndex(int index, int mode)
         layout();
     qreal pos = position();
     FxGridItem *item = visibleItem(idx);
+    qreal maxExtent = flow == QDeclarativeGridView::LeftToRight ? -q->maxYExtent() : -q->maxXExtent();
     if (!item) {
         int itemPos = rowPosAt(idx);
         // save the currently visible items in case any of them end up visible again
         QList<FxGridItem*> oldVisible = visibleItems;
         visibleItems.clear();
         visibleIndex = idx - idx % columns;
-        setPosition(itemPos);
+        maxExtent = flow == QDeclarativeGridView::LeftToRight ? -q->maxYExtent() : -q->maxXExtent();
+        setPosition(qMin(qreal(itemPos), maxExtent));
         // now release the reference to all the old visible items.
         for (int i = 0; i < oldVisible.count(); ++i)
             releaseItem(oldVisible.at(i));
@@ -2185,7 +2187,6 @@ void QDeclarativeGridViewPrivate::positionViewAtIndex(int index, int mode)
             if (itemPos < pos)
                 pos = itemPos;
         }
-        qreal maxExtent = flow == QDeclarativeGridView::LeftToRight ? -q->maxYExtent() : -q->maxXExtent();
         pos = qMin(pos, maxExtent);
         qreal minExtent = flow == QDeclarativeGridView::LeftToRight ? -q->minYExtent() : -q->minXExtent();
         pos = qMax(pos, minExtent);
