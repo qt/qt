@@ -112,7 +112,12 @@ public:
     static QByteArray saveValueType(const QMetaObject *, int, 
                                     const QMetaObject *, int);
     static QByteArray saveProperty(const QMetaObject *, int);
+
     static QDeclarativeProperty restore(const QByteArray &, QObject *, QDeclarativeContextData *);
+    static QDeclarativeProperty restore(const QDeclarativePropertyCache::Data &,
+                                        const QDeclarativePropertyCache::ValueTypeData &,
+                                        QObject *,
+                                        QDeclarativeContextData *);
 
     static bool equal(const QMetaObject *, const QMetaObject *);
     static bool canConvert(const QMetaObject *from, const QMetaObject *to);

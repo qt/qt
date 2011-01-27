@@ -1480,19 +1480,28 @@ QDeclarativePropertyPrivate::restore(const QByteArray &data, QObject *object, QD
     if (data.isEmpty())
         return prop;
 
+    const SerializedData *sd = (const SerializedData *)data.constData();
+    if (sd->isValueType) {
+        const ValueTypeSerializedData *vt = (const ValueTypeSerializedData *)sd;
+        return restore(vt->core, vt->valueType, object, ctxt);
+    } else {
+        QDeclarativePropertyCache::ValueTypeData data;
+        return restore(sd->core, data, object, ctxt);
+    }
+}
+
+QDeclarativeProperty
+QDeclarativePropertyPrivate::restore(const QDeclarativePropertyCache::Data &data, const QDeclarativePropertyCache::ValueTypeData &valueType, QObject *object, QDeclarativeContextData *ctxt)
+{
+    QDeclarativeProperty prop;
+
     prop.d = new QDeclarativePropertyPrivate;
     prop.d->object = object;
     prop.d->context = ctxt;
     prop.d->engine = ctxt->engine;
 
-    const SerializedData *sd = (const SerializedData *)data.constData();
-    if (sd->isValueType) {
-        const ValueTypeSerializedData *vt = (const ValueTypeSerializedData *)sd;
-        prop.d->core = vt->core;
-        prop.d->valueType = vt->valueType;
-    } else {
-        prop.d->core = sd->core;
-    }
+    prop.d->core = data;
+    prop.d->valueType = valueType;
 
     return prop;
 }
