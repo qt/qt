@@ -72,6 +72,7 @@ public:
     void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry);
     void clear();
     void initResize();
+    void load();
 
     QUrl source;
     QGraphicsObject *item;
