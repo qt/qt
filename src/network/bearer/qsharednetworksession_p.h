@@ -1,10 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the QtNetwork module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDECLARATIVELOADER_P_H
-#define QDECLARATIVELOADER_P_H
+#ifndef QSHAREDNETWORKSESSIONPRIVATE_H
+#define QSHAREDNETWORKSESSIONPRIVATE_H
 
 //
 //  W A R N I N G
@@ -53,35 +53,29 @@
 // We mean it.
 //
 
-#include "private/qdeclarativeloader_p.h"
+#include "qnetworksession.h"
+#include "qnetworkconfiguration.h"
+#include <QHash>
+#include <QSharedPointer>
+#include <QWeakPointer>
+#include <QMutex>
 
-#include "private/qdeclarativeitem_p.h"
-#include "private/qdeclarativeitemchangelistener_p.h"
+#ifndef QT_NO_BEARERMANAGEMENT
 
 QT_BEGIN_NAMESPACE
 
-class QDeclarativeContext;
-class QDeclarativeLoaderPrivate : public QDeclarativeItemPrivate, public QDeclarativeItemChangeListener
+class QSharedNetworkSessionManager
 {
-    Q_DECLARE_PUBLIC(QDeclarativeLoader)
-
 public:
-    QDeclarativeLoaderPrivate();
-    ~QDeclarativeLoaderPrivate();
-
-    void itemGeometryChanged(QDeclarativeItem *item, const QRectF &newGeometry, const QRectF &oldGeometry);
-    void clear();
-    void initResize();
-
-    QUrl source;
-    QGraphicsObject *item;
-    QDeclarativeComponent *component;
-    bool ownComponent : 1;
-
-    void _q_sourceLoaded();
-    void _q_updateSize(bool loaderGeometryChanged = true);
+    static QSharedPointer<QNetworkSession> getSession(QNetworkConfiguration config);
+    static void setSession(QNetworkConfiguration config, QSharedPointer<QNetworkSession> session);
+private:
+    QHash<QNetworkConfiguration, QWeakPointer<QNetworkSession> > sessions;
 };
 
 QT_END_NAMESPACE
 
-#endif // QDECLARATIVELOADER_P_H
+#endif // QT_NO_BEARERMANAGEMENT
+
+#endif //QSHAREDNETWORKSESSIONPRIVATE_H
+

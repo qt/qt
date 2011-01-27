@@ -92,6 +92,7 @@ public:
 
     QString text;
     QFont font;
+    QFont sourceFont;
     QColor  color;
     QColor  selectionColor;
     QColor  selectedTextColor;

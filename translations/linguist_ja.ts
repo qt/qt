@@ -1112,7 +1112,7 @@ Qt TS XML). 新しく追加されたり変更されたメッセージは既存�
         <translation>ファイルの終端までに閉じられていない文字列</translation>
     </message>
     <message>
-        <source>Illegal escape squence</source>
+        <source>Illegal escape sequence</source>
         <translation>無効なエスケープシーケンス</translation>
     </message>
     <message>
