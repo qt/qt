@@ -201,6 +201,9 @@ bool QDeclarativeCompiler::testLiteralAssignment(const QMetaProperty &prop,
         case QVariant::String:
             if (!v->value.isString()) COMPILE_EXCEPTION(v, tr("Invalid property assignment: string expected"));
             break;
+        case QVariant::ByteArray:
+            if (!v->value.isString()) COMPILE_EXCEPTION(v, tr("Invalid property assignment: byte array expected"));
+            break;
         case QVariant::Url:
             if (!v->value.isString()) COMPILE_EXCEPTION(v, tr("Invalid property assignment: url expected"));
             break;
@@ -369,6 +372,13 @@ void QDeclarativeCompiler::genLiteralAssignment(const QMetaProperty &prop,
             instr.type = QDeclarativeInstruction::StoreString;
             instr.storeString.propertyIndex = prop.propertyIndex();
             instr.storeString.value = output->indexForString(string);
+            }
+            break;
+        case QVariant::ByteArray:
+            {
+            instr.type = QDeclarativeInstruction::StoreByteArray;
+            instr.storeByteArray.propertyIndex = prop.propertyIndex();
+            instr.storeByteArray.value = output->indexForByteArray(string.toLatin1());
             }
             break;
         case QVariant::Url:

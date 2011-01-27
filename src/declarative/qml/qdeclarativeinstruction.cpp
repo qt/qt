@@ -96,6 +96,9 @@ void QDeclarativeCompiledData::dump(QDeclarativeInstruction *instr, int idx)
     case QDeclarativeInstruction::StoreString:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_STRING\t\t" << instr->storeString.propertyIndex << "\t" << instr->storeString.value << "\t\t" << primitives.at(instr->storeString.value);
         break;
+    case QDeclarativeInstruction::StoreByteArray:
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_BYTEARRAY" << instr->storeByteArray.propertyIndex << "\t" << instr->storeByteArray.value << "\t\t" << datas.at(instr->storeByteArray.value);
+        break;
     case QDeclarativeInstruction::StoreUrl:
         qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_URL\t\t" << instr->storeUrl.propertyIndex << "\t" << instr->storeUrl.value << "\t\t" << urls.at(instr->storeUrl.value);
         break;

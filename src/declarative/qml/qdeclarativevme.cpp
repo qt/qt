@@ -377,6 +377,15 @@ QObject *QDeclarativeVME::run(QDeclarativeVMEStack<QObject *> &stack,
             }
             break;
 
+        case QDeclarativeInstruction::StoreByteArray:
+            {
+                QObject *target = stack.top();
+                void *a[] = { (void *)&datas.at(instr.storeByteArray.value), 0, &status, &flags };
+                QMetaObject::metacall(target, QMetaObject::WriteProperty,
+                                      instr.storeByteArray.propertyIndex, a);
+            }
+            break;
+
         case QDeclarativeInstruction::StoreUrl:
             {
                 QObject *target = stack.top();
