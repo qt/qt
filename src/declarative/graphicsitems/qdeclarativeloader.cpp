@@ -48,7 +48,8 @@
 QT_BEGIN_NAMESPACE
 
 QDeclarativeLoaderPrivate::QDeclarativeLoaderPrivate()
-    : item(0), component(0), ownComponent(false), isComponentComplete(false)
+    : item(0), component(0), ownComponent(false), isComponentComplete(false), updatingSize(false),
+      itemWidthValid(false), itemHeightValid(false)
 {
 }
 
@@ -99,6 +100,10 @@ void QDeclarativeLoaderPrivate::initResize()
         QDeclarativeItemPrivate *p =
                 static_cast<QDeclarativeItemPrivate *>(QGraphicsItemPrivate::get(qmlItem));
         p->addItemChangeListener(this, QDeclarativeItemPrivate::Geometry);
+        // We may override the item's size, so we need to remember
+        // whether the item provided its own valid size.
+        itemWidthValid = p->widthValid;
+        itemHeightValid = p->heightValid;
     } else if (item && item->isWidget()) {
         QGraphicsWidget *widget = static_cast<QGraphicsWidget*>(item);
         widget->installEventFilter(q);
@@ -510,13 +515,21 @@ qreal QDeclarativeLoader::progress() const
 void QDeclarativeLoaderPrivate::_q_updateSize(bool loaderGeometryChanged)
 {
     Q_Q(QDeclarativeLoader);
-    if (!item)
+    if (!item || updatingSize)
         return;
+
+    updatingSize = true;
     if (QDeclarativeItem *qmlItem = qobject_cast<QDeclarativeItem*>(item)) {
-        q->setImplicitWidth(qmlItem->width());
+        if (!itemWidthValid)
+            q->setImplicitWidth(qmlItem->implicitWidth());
+        else
+            q->setImplicitWidth(qmlItem->width());
         if (loaderGeometryChanged && q->widthValid())
             qmlItem->setWidth(q->width());
-        q->setImplicitHeight(qmlItem->height());
+        if (!itemHeightValid)
+            q->setImplicitHeight(qmlItem->implicitHeight());
+        else
+            q->setImplicitHeight(qmlItem->height());
         if (loaderGeometryChanged && q->heightValid())
             qmlItem->setHeight(q->height());
     } else if (item && item->isWidget()) {
@@ -531,6 +544,7 @@ void QDeclarativeLoaderPrivate::_q_updateSize(bool loaderGeometryChanged)
         if (widget->size() != widgetSize)
             widget->resize(widgetSize);
     }
+    updatingSize = false;
 }
 
 /*!

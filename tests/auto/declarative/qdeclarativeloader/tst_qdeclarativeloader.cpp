@@ -89,6 +89,7 @@ private slots:
     void nonItem();
     void vmeErrors();
     void creationContext();
+    void QTBUG_16928();
 
 private:
     QDeclarativeEngine engine;
@@ -588,6 +589,18 @@ void tst_QDeclarativeLoader::creationContext()
     QCOMPARE(o->property("test").toBool(), true);
 
     delete o;
+}
+
+void tst_QDeclarativeLoader::QTBUG_16928()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("QTBUG_16928.qml"));
+    QDeclarativeItem *item = qobject_cast<QDeclarativeItem*>(component.create());
+    QVERIFY(item);
+
+    QCOMPARE(item->width(), 250.);
+    QCOMPARE(item->height(), 250.);
+
+    delete item;
 }
 
 QTEST_MAIN(tst_QDeclarativeLoader)
