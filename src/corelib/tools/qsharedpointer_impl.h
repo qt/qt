@@ -44,7 +44,17 @@
 #ifndef QSHAREDPOINTER_H
 #error Do not include qsharedpointer_impl.h directly
 #endif
+
 #if 0
+// These macros are duplicated here to make syncqt not complain a about
+// this header, as we have a "qt_sync_stop_processing" below, which in turn
+// is here because this file contains a template mess and duplicates the
+// classes found in qsharedpointer.h
+QT_BEGIN_HEADER
+QT_BEGIN_NAMESPACE
+QT_MODULE(Core)
+QT_END_NAMESPACE
+QT_END_HEADER
 #pragma qt_sync_stop_processing
 #endif
 
