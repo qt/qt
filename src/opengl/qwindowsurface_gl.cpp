@@ -402,11 +402,6 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
     if (widgetPrivate->extraData()->glContext)
         return;
 
-#ifdef Q_WS_QPA
-    QGLContext *ctx = QGLContext::fromPlatformGLContext(widget->platformWindow()->glContext());
-    if (!d_ptr->fbo && d_ptr->tried_fbo)
-        d_ptr->ctx = ctx;
-#else
     QGLContext *ctx = NULL;
 
     // For translucent top-level widgets we need alpha in the format.
@@ -419,8 +414,7 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
     } else
         ctx = new QGLContext(surfaceFormat, widget);
 
-    ctx->create(qt_gl_share_widget()->context());
-#endif
+    ctx->create(qt_gl_share_context());
 
 #ifndef QT_NO_EGL
     static bool checkedForNOKSwapRegion = false;
@@ -480,6 +474,8 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize,
 
 void QGLWindowSurface::beginPaint(const QRegion &)
 {
+    d_ptr->did_paint = true;
+
     if (!context())
         return;
 
@@ -494,8 +490,6 @@ void QGLWindowSurface::beginPaint(const QRegion &)
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(clearFlags);
     }
-
-    d_ptr->did_paint = true;
 }
 
 void QGLWindowSurface::endPaint(const QRegion &rgn)

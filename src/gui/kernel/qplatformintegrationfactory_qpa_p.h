@@ -66,8 +66,8 @@ class QPlatformIntegration;
 class QPlatformIntegrationFactory
 {
 public:
-    static QStringList keys();
-    static QPlatformIntegration *create(const QString&);
+    static QStringList keys(const QString &platformPluginPath = QString());
+    static QPlatformIntegration *create(const QString &key, const QString &platformPluginPath = QString());
 };
 
 QT_END_NAMESPACE

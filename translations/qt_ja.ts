@@ -1945,7 +1945,7 @@ to
         <translation>文字列が行末で閉じていません</translation>
     </message>
     <message>
-        <source>Illegal escape squence</source>
+        <source>Illegal escape sequence</source>
         <translation>無効なエスケープシーケンスです</translation>
     </message>
     <message>

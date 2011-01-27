@@ -506,6 +506,8 @@ public:
     static void processEnterEvent(QWindowSystemInterfacePrivate::EnterEvent *e);
     static void processLeaveEvent(QWindowSystemInterfacePrivate::LeaveEvent *e);
 
+    static void processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *e);
+
     static void processWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e);
 
 //    static void reportScreenCount(int count);
