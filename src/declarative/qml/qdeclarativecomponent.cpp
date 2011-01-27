@@ -665,8 +665,8 @@ QScriptValue QDeclarativeComponent::createObject(QObject* parent, const QScriptV
 {
     Q_D(QDeclarativeComponent);
 
-    if (valuemap.isObject() && !valuemap.isArray()) {
-        qmlInfo(this) << tr("creatObject: value is not an object");
+    if (!valuemap.isObject() || valuemap.isArray()) {
+        qmlInfo(this) << tr("createObject: value is not an object");
         return QScriptValue(QScriptValue::NullValue);
     }
     return d->createObject(parent, valuemap);
