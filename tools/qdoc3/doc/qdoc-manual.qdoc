@@ -7804,20 +7804,14 @@
            about this process.
 
     \row
-        \o \bold slow \target slow
-        \o \bold {The \c slow variable specifies whether QDoc should do
-           time-consuming processing, such as syntax highlighting.}
+        \o \bold slow (removed) \target slow
+        \o \bold {The \c slow variable previously specified whether QDoc should
+           do time-consuming processing, such as syntax highlighting.}
 
-           By default, this setting is false.
+           This option has been replaced by the \l{syntaxhighlighing} option.
 
-           Example:
-
-           \code
-               slow = true
-           \endcode
-
-           Another way to turn on "slowness" is to invoke QDoc with the
-           \c -slow command-line option.
+           For compatibility, the \c -slow command-line option has been
+           retained. This has the effect of enabling syntax highlighting.
 
     \row
         \o \bold sourcedirs \target sourcedirs
@@ -7955,6 +7949,21 @@
            \code
            qt-4.0/src/opengl/qgl_mac.cpp:156: Missing parameter name
            \endcode
+
+    \row
+        \o \bold syntaxhighlighting \target syntaxhighlighting
+        \o \bold{The \c syntaxhighlighting variable specifies whether QDoc
+           should perform syntax highlighting on source code quoted in the
+           documentation it output.}
+
+           For example:
+
+           \code
+           syntaxhighlighting = true
+           \endcode
+
+           will enable syntax highlighting for all supported programming
+           languages.
 
     \row
         \o \bold tabsize \target tabsize

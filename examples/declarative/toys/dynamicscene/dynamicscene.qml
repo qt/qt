@@ -215,9 +215,10 @@ Item {
         PropertyChanges { target: stars; opacity: 0 }
     }
 
+    //! [top-level transitions]
     transitions: Transition {
         PropertyAnimation { duration: 3000 }
         ColorAnimation { duration: 3000 }
     }
-
+    //! [top-level transitions]
 }

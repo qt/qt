@@ -524,8 +524,9 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
             Quoter quoter;
             Doc::quoteFromFile(fake->doc().location(), quoter, fake->name());
             QString code = quoter.quoteTo(fake->location(), "", "");
-            text << Atom(Atom::Code, code);
-            generateText(text, fake, CodeMarker::markerForFileName(fake->name()));
+            CodeMarker *codeMarker = CodeMarker::markerForFileName(fake->name());
+            text << Atom(codeMarker->atomType(), code);
+            generateText(text, fake, codeMarker);
         }
     }
 }
@@ -683,26 +684,17 @@ QString Generator::indent(int level, const QString& markedCode)
 
     int i = 0;
     while (i < (int) markedCode.length()) {
-        if (markedCode.at(i) == QLatin1Char('<')) {
-            while (i < (int) markedCode.length()) {
-                t += markedCode.at(i++);
-                if (markedCode.at(i - 1) == QLatin1Char('>'))
-                    break;
-            }
+        if (markedCode.at(i) == QLatin1Char('\n')) {
+            column = 0;
         }
         else {
-            if (markedCode.at(i) == QLatin1Char('\n')) {
-                column = 0;
+            if (column == 0) {
+                for (int j = 0; j < level; j++)
+                    t += QLatin1Char(' ');
             }
-            else {
-                if (column == 0) {
-                    for (int j = 0; j < level; j++)
-                        t += QLatin1Char(' ');
-                }
-                column++;
-            }
-            t += markedCode.at(i++);
+            column++;
         }
+        t += markedCode.at(i++);
     }
     return t;
 }

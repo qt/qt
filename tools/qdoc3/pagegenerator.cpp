@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
   Nothing to do in the constructor.
  */
 PageGenerator::PageGenerator()
+    : outputCodec(0)
 {
     // nothing.
 }
@@ -294,7 +295,9 @@ void PageGenerator::beginSubPage(const Location& location,
     if (!outFile->open(QFile::WriteOnly))
 	location.fatal(tr("Cannot open output file '%1'").arg(outFile->fileName()));
     QTextStream* out = new QTextStream(outFile);
-    out->setCodec(outputCodec);
+
+    if (outputCodec)
+        out->setCodec(outputCodec);
     outStreamStack.push(out);
 }
 

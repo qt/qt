@@ -163,6 +163,7 @@ class Config
 #define CONFIG_STYLE                    "style"
 #define CONFIG_STYLES                   "styles"
 #define CONFIG_STYLESHEETS              "stylesheets"
+#define CONFIG_SYNTAXHIGHLIGHTING       "syntaxhighlighting"
 #define CONFIG_TEMPLATEDIR              "templatedir"
 #define CONFIG_TABSIZE                  "tabsize"
 #define CONFIG_TAGFILE                  "tagfile"

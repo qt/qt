@@ -663,7 +663,8 @@ void QTextDocumentPrivate::move(int pos, int to, int length, QTextUndoCommand::O
 
     Q_ASSERT(blocks.length() == fragments.length());
 
-    finishEdit();
+    if (!blockCursorAdjustment)
+        finishEdit();
 }
 
 void QTextDocumentPrivate::remove(int pos, int length, QTextUndoCommand::Operation op)
@@ -678,6 +679,7 @@ void QTextDocumentPrivate::remove(int pos, int length, QTextUndoCommand::Operati
             curs->changed = true;
         }
     }
+    finishEdit();
 }
 
 void QTextDocumentPrivate::setCharFormat(int pos, int length, const QTextCharFormat &newFormat, FormatChangeMode mode)

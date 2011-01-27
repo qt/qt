@@ -665,7 +665,7 @@ QDeclarativePropertyPrivate::binding(QObject *object, int coreIndex, int valueTy
             static_cast<const QDeclarativeVMEMetaObject *>(metaObjectForProperty(object->metaObject(), coreIndex));
 
         QObject *aObject = 0; int aCoreIndex = -1; int aValueTypeIndex = -1;
-        if (!vme->aliasTarget(coreIndex, &aObject, &aCoreIndex, &aValueTypeIndex))
+        if (!vme->aliasTarget(coreIndex, &aObject, &aCoreIndex, &aValueTypeIndex) || aCoreIndex == -1)
             return 0;
 
         // This will either be a value type sub-reference or an alias to a value-type sub-reference not both

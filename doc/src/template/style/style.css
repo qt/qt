@@ -200,7 +200,7 @@
     }
     span.operator
     {
-        color: black;
+        color: #202020;
     }
     span.keyword
     {
@@ -209,6 +209,18 @@
     span.name
     {
         color: black
+    }
+    span.type
+    {
+        font-weight: bold
+    }
+    span.type a:visited
+    {
+        color: #0F5300;
+    }
+    span.preprocessor
+    {
+        color: #404040
     }
 /* end basic elements */
 
@@ -226,15 +238,15 @@
     {
         font-size: 13px;
     }
-	.red
-	{
-		color:red;
-	}
-	.figCaption{
-	color:#363534;
-	font:italic 11px/1.2 Verdana;
-	padding-top:0;
-	}
+    .red
+    {
+        color:red;
+    }
+    .figCaption{
+        color:#363534;
+        font:italic 11px/1.2 Verdana;
+        padding-top:0;
+    }
 /* end font style elements */
 
 /* global settings*/

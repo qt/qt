@@ -558,11 +558,24 @@ QPixmap QDeclarativeTextPrivate::drawOutline(const QPixmap &source, const QPixma
     \brief The Text item allows you to add formatted text to a scene.
     \inherits Item
 
-    A Text item can display both plain and rich text. For example:
+    Text items can display both plain and rich text. For example, red text with
+    a specific font and size can be defined like this:
 
     \qml
-    Text { text: "Hello World!"; font.family: "Helvetica"; font.pointSize: 24; color: "red" }
-    Text { text: "<b>Hello</b> <i>World!</i>" }
+    Text {
+        text: "Hello World!"
+        font.family: "Helvetica"
+        font.pointSize: 24
+        color: "red"
+    }
+    \endqml
+
+    Rich text is defined using HTML-style markup:
+
+    \qml
+    Text {
+        text: "<b>Hello</b> <i>World!</i>"
+    }
     \endqml
 
     \image declarative-text.png
@@ -736,19 +749,28 @@ QDeclarativeText::~QDeclarativeText()
 QFont QDeclarativeText::font() const
 {
     Q_D(const QDeclarativeText);
-    return d->font;
+    return d->sourceFont;
 }
 
 void QDeclarativeText::setFont(const QFont &font)
 {
     Q_D(QDeclarativeText);
-    if (d->font == font)
+    if (d->sourceFont == font)
         return;
 
+    d->sourceFont = font;
+    QFont oldFont = d->font;
     d->font = font;
-    d->updateLayout();
+    if (d->font.pointSizeF() != -1) {
+        // 0.5pt resolution
+        qreal size = qRound(d->font.pointSizeF()*2.0);
+        d->font.setPointSizeF(size/2.0);
+    }
 
-    emit fontChanged(d->font);
+    if (oldFont != d->font)
+        d->updateLayout();
+
+    emit fontChanged(d->sourceFont);
 }
 
 /*!
@@ -789,12 +811,20 @@ void QDeclarativeText::setText(const QString &n)
 
     The text color.
 
+    An example of green text defined using hexadecimal notation:
     \qml
-    //green text using hexadecimal notation
-    Text { color: "#00FF00"; ... }
+    Text {
+        color: "#00FF00"
+        text: "green text"
+    }
+    \endqml
 
-    //steelblue text using SVG color name
-    Text { color: "steelblue"; ... }
+    An example of steel blue text defined using an SVG color name:
+    \qml
+    Text {
+        color: "steelblue"
+        text: "blue text"
+    }
     \endqml
 */
 QColor QDeclarativeText::color() const
