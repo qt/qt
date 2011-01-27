@@ -86,6 +86,7 @@ private slots:
     void implicitSize();
     void testQtQuick11Attributes();
     void testQtQuick11Attributes_data();
+    void qtbug_16871();
 
 private:
     template<typename T>
@@ -992,6 +993,14 @@ void tst_QDeclarativeItem::testQtQuick11Attributes_data()
     QTest::newRow("onImplicitHeightChanged") << "onImplicitHeightChanged: x"
         << "QDeclarativeComponent: Component is not ready"
         << ":1 \"Item.onImplicitHeightChanged\" is not available in QtQuick 1.0.\n";
+}
+
+void tst_QDeclarativeItem::qtbug_16871()
+{
+    QDeclarativeComponent component(&engine, SRCDIR "/data/qtbug_16871.qml");
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    delete o;
 }
 
 
